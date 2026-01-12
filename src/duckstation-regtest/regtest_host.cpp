@@ -166,6 +166,11 @@ void Host::ReportErrorAsync(std::string_view title, std::string_view message)
     ERROR_LOG("ReportErrorAsync: {}", message);
 }
 
+void Host::ReportStatusMessage(std::string_view message)
+{
+  INFO_LOG("ReportStatusMessage: {}", message);
+}
+
 void Host::ConfirmMessageAsync(std::string_view title, std::string_view message, ConfirmMessageAsyncCallback callback,
                                std::string_view yes_text, std::string_view no_text)
 {

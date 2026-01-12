@@ -2081,6 +2081,14 @@ void Host::ReportErrorAsync(std::string_view title, std::string_view message)
                             message.empty() ? QString() : QString::fromUtf8(message.data(), message.size()));
 }
 
+void Host::ReportStatusMessage(std::string_view message)
+{
+  if (message.empty())
+    return;
+
+  emit g_core_thread->statusMessage(QtUtils::StringViewToQString(message));
+}
+
 void Host::ConfirmMessageAsync(std::string_view title, std::string_view message, ConfirmMessageAsyncCallback callback,
                                std::string_view yes_text, std::string_view no_text)
 {

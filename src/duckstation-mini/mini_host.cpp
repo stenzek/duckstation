@@ -1329,6 +1329,11 @@ void Host::ReportErrorAsync(std::string_view title, std::string_view message)
   SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, TinyString(title).c_str(), SmallString(message).c_str(), nullptr);
 }
 
+void Host::ReportStatusMessage(std::string_view message)
+{
+  Host::AddOSDMessage(OSDMessageType::Info, std::string(message));
+}
+
 void Host::RequestResizeHostDisplay(s32 width, s32 height)
 {
   using namespace MiniHost;
