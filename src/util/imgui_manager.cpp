@@ -1366,7 +1366,7 @@ bool ImGuiManager::ProcessGenericInputEvent(GenericInputBinding key, float value
     ImGuiKey_GamepadL1,          // L1
     ImGuiKey_GamepadL2,          // L2
     ImGuiKey_GamepadR1,          // R1
-    ImGuiKey_GamepadL2,          // R2
+    ImGuiKey_GamepadR2,          // R2
   };
 
   const ImGuiKey imkey = (static_cast<u32>(key) < key_map.size()) ? key_map[static_cast<u32>(key)] : ImGuiKey_None;
@@ -1401,6 +1401,10 @@ bool ImGuiManager::ProcessGenericInputEvent(GenericInputBinding key, float value
         if (new_state != 0)
           s_state.imgui_context->IO.AddKeyAnalogEvent(map_to_key(axis, new_state), true, 1.0f);
       }
+    }
+    else if (imkey == ImGuiKey_GamepadL2 || imkey == ImGuiKey_GamepadR2)
+    {
+      s_state.imgui_context->IO.AddKeyAnalogEvent(imkey, (value > 0.0f), value);
     }
     else
     {

@@ -14228,8 +14228,8 @@ static float ImGui::NavUpdatePageUpPageDown()
     if ((window->Flags & ImGuiWindowFlags_NoNavInputs) || g.NavWindowingTarget != NULL)
         return 0.0f;
 
-    const bool page_up_held = IsKeyDown(ImGuiKey_PageUp, ImGuiKeyOwner_NoOwner);
-    const bool page_down_held = IsKeyDown(ImGuiKey_PageDown, ImGuiKeyOwner_NoOwner);
+    const bool page_up_held = IsKeyDown(ImGuiKey_PageUp, ImGuiKeyOwner_NoOwner) || IsKeyDown(ImGuiKey_GamepadL2, ImGuiKeyOwner_NoOwner);
+    const bool page_down_held = IsKeyDown(ImGuiKey_PageDown, ImGuiKeyOwner_NoOwner) || IsKeyDown(ImGuiKey_GamepadR2, ImGuiKeyOwner_NoOwner);
     const bool home_pressed = IsKeyPressed(ImGuiKey_Home, ImGuiInputFlags_Repeat, ImGuiKeyOwner_NoOwner);
     const bool end_pressed = IsKeyPressed(ImGuiKey_End, ImGuiInputFlags_Repeat, ImGuiKeyOwner_NoOwner);
     if (page_up_held == page_down_held && home_pressed == end_pressed) // Proceed if either (not both) are pressed, otherwise early out
@@ -14241,9 +14241,9 @@ static float ImGui::NavUpdatePageUpPageDown()
     if ((window->DC.NavLayersActiveMask & (1 << ImGuiNavLayer_Main)) == 0 && window->DC.NavWindowHasScrollY)
     {
         // Fallback manual-scroll when window has no navigable item
-        if (IsKeyPressed(ImGuiKey_PageUp, ImGuiInputFlags_Repeat, ImGuiKeyOwner_NoOwner))
+        if (IsKeyPressed(ImGuiKey_PageUp, ImGuiInputFlags_Repeat, ImGuiKeyOwner_NoOwner) || IsKeyPressed(ImGuiKey_GamepadL2, ImGuiInputFlags_Repeat, ImGuiKeyOwner_NoOwner))
             SetScrollY(window, window->Scroll.y - window->InnerRect.GetHeight());
-        else if (IsKeyPressed(ImGuiKey_PageDown, ImGuiInputFlags_Repeat, ImGuiKeyOwner_NoOwner))
+        else if (IsKeyPressed(ImGuiKey_PageDown, ImGuiInputFlags_Repeat, ImGuiKeyOwner_NoOwner) || IsKeyPressed(ImGuiKey_GamepadR2, ImGuiInputFlags_Repeat, ImGuiKeyOwner_NoOwner))
             SetScrollY(window, window->Scroll.y + window->InnerRect.GetHeight());
         else if (home_pressed)
             SetScrollY(window, 0.0f);
@@ -14255,14 +14255,14 @@ static float ImGui::NavUpdatePageUpPageDown()
         ImRect& nav_rect_rel = window->NavRectRel[g.NavLayer];
         const float page_offset_y = ImMax(0.0f, window->InnerRect.GetHeight() - window->FontRefSize * 1.0f + nav_rect_rel.GetHeight());
         float nav_scoring_rect_offset_y = 0.0f;
-        if (IsKeyPressed(ImGuiKey_PageUp, true))
+        if (IsKeyPressed(ImGuiKey_PageUp, true) || IsKeyPressed(ImGuiKey_GamepadL2, true))
         {
             nav_scoring_rect_offset_y = -page_offset_y;
             g.NavMoveDir = ImGuiDir_Down; // Because our scoring rect is offset up, we request the down direction (so we can always land on the last item)
             g.NavMoveClipDir = ImGuiDir_Up;
             g.NavMoveFlags = ImGuiNavMoveFlags_AllowCurrentNavId | ImGuiNavMoveFlags_IsPageMove; // ImGuiNavMoveFlags_AlsoScoreVisibleSet may be added later
         }
-        else if (IsKeyPressed(ImGuiKey_PageDown, true))
+        else if (IsKeyPressed(ImGuiKey_PageDown, true) || IsKeyPressed(ImGuiKey_GamepadR2, true))
         {
             nav_scoring_rect_offset_y = +page_offset_y;
             g.NavMoveDir = ImGuiDir_Up; // Because our scoring rect is offset down, we request the up direction (so we can always land on the last item)
