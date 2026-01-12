@@ -424,8 +424,6 @@ void FullscreenUI::ShutdownWidgets(bool preserve_fsui_state)
   s_state.transition_blend_pipeline.reset();
   g_gpu_device->RecycleTexture(std::move(s_state.transition_prev_texture));
   g_gpu_device->RecycleTexture(std::move(s_state.transition_current_texture));
-  s_state.transition_state = TransitionState::Inactive;
-  s_state.transition_start_callback = {};
 
   s_state.texture_upload_queue.clear();
   s_state.placeholder_texture.reset();
@@ -437,6 +435,10 @@ void FullscreenUI::ShutdownWidgets(bool preserve_fsui_state)
 
   if (!preserve_fsui_state)
   {
+    s_state.transition_state = TransitionState::Inactive;
+    if (s_state.transition_start_callback) [[unlikely]]
+      WARNING_LOG("Shutting down FullscreenUI while a transition callback is still set.");
+    s_state.transition_start_callback = {};
     s_state.fullscreen_footer_icon_mapping = {};
     s_state.background_progress_dialogs.clear();
     s_state.fullscreen_footer_text.clear();
