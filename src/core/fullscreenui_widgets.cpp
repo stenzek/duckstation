@@ -1404,8 +1404,8 @@ bool FullscreenUI::BeginFullscreenColumnWindow(float start, float end, const cha
   ImGui::SetCursorPos(pos);
 
   return ImGui::BeginChild(name, size,
-                           (padding.x != 0.0f || padding.y != 0.0f) ? ImGuiChildFlags_AlwaysUseWindowPadding : 0,
-                           ImGuiChildFlags_NavFlattened);
+                           ((padding.x != 0.0f || padding.y != 0.0f) ? ImGuiChildFlags_AlwaysUseWindowPadding : 0) |
+                             ImGuiChildFlags_NavFlattened | ImGuiChildFlags_NoNavCancel);
 }
 
 void FullscreenUI::EndFullscreenColumnWindow()
