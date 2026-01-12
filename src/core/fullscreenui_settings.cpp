@@ -1685,6 +1685,8 @@ void FullscreenUI::SwitchToGameSettings(const GameList::Entry* entry, SettingsPa
   s_settings_locals.game_settings_interface = System::GetGameSettingsInterface(
     s_settings_locals.game_settings_entry->dbentry, s_settings_locals.game_settings_entry->serial, true, false);
   PopulatePatchesAndCheatsList();
+  PopulatePostProcessingChain(*s_settings_locals.game_settings_interface,
+                              PostProcessing::Config::DISPLAY_CHAIN_SECTION);
   s_settings_locals.settings_page = page;
   s_settings_locals.selected_controller_port = -1;
   SwitchToMainWindow(MainWindowType::Settings);
