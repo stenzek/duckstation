@@ -2133,7 +2133,7 @@ bool FullscreenUI::OpenLoadStateSelectorForGameResume(const GameList::Entry* ent
 
 void FullscreenUI::DrawResumeStateSelector()
 {
-  if (!BeginFixedPopupDialog(LayoutScale(30.0f), LayoutScale(40.0f), ImVec2(LayoutScale(550.0f), 0.0f)))
+  if (!BeginFixedPopupDialog(LayoutScale(30.0f), LayoutScale(40.0f), ImVec2(LayoutScale(850.0f), 0.0f)))
   {
     ClearSaveStateEntryList();
     return;
@@ -2149,7 +2149,7 @@ void FullscreenUI::DrawResumeStateSelector()
   ImGui::PopFont();
 
   const GPUTexture* image = entry.preview_texture ? entry.preview_texture.get() : GetPlaceholderTexture().get();
-  const float image_height = LayoutScale(280.0f);
+  const float image_height = LayoutScale(400.0f);
   const float image_width =
     image_height * (static_cast<float>(image->GetWidth()) / static_cast<float>(image->GetHeight()));
   const ImVec2 pos(ImGui::GetCursorScreenPos() +
@@ -2163,9 +2163,9 @@ void FullscreenUI::DrawResumeStateSelector()
   ImGui::SetCursorPosY(ImGui::GetCursorPosY() + image_height + LayoutScale(40.0f));
 
   ResetFocusHere();
-  BeginMenuButtons();
+  BeginHorizontalMenuButtons(4);
 
-  if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_FA_FOLDER_OPEN, "Load State"), true, LAYOUT_CENTER_ALIGN_TEXT))
+  if (HorizontalMenuButton(FSUI_ICONVSTR(ICON_FA_FOLDER_OPEN, "Load State"), true, LAYOUT_CENTER_ALIGN_TEXT))
   {
     std::string game_path = std::move(entry.game_path);
     std::string state_path = std::move(entry.state_path);
@@ -2174,7 +2174,7 @@ void FullscreenUI::DrawResumeStateSelector()
     DoStartPath(std::move(game_path), std::move(state_path));
   }
 
-  if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_FA_PLAY, "Clean Boot"), true, LAYOUT_CENTER_ALIGN_TEXT))
+  if (HorizontalMenuButton(FSUI_ICONVSTR(ICON_FA_PLAY, "Clean Boot"), true, LAYOUT_CENTER_ALIGN_TEXT))
   {
     std::string game_path = std::move(entry.game_path);
     ClearSaveStateEntryList();
@@ -2182,7 +2182,7 @@ void FullscreenUI::DrawResumeStateSelector()
     DoStartPath(std::move(game_path));
   }
 
-  if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_FA_TRASH, "Delete State"), true, LAYOUT_CENTER_ALIGN_TEXT))
+  if (HorizontalMenuButton(FSUI_ICONVSTR(ICON_FA_TRASH, "Delete State"), true, LAYOUT_CENTER_ALIGN_TEXT))
   {
     Error error;
     if (FileSystem::DeleteFile(entry.state_path.c_str(), &error))
@@ -2198,10 +2198,10 @@ void FullscreenUI::DrawResumeStateSelector()
     }
   }
 
-  if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_FA_SQUARE_XMARK, "Cancel"), true, LAYOUT_CENTER_ALIGN_TEXT))
+  if (HorizontalMenuButton(FSUI_ICONVSTR(ICON_FA_SQUARE_XMARK, "Cancel"), true, LAYOUT_CENTER_ALIGN_TEXT))
     CloseFixedPopupDialog();
 
-  EndMenuButtons();
+  EndHorizontalMenuButtons();
 
   SetStandardSelectionFooterText(false);
 
