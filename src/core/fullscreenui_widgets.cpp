@@ -2203,29 +2203,34 @@ void FullscreenUI::TextUnformatted(std::string_view text)
 
 void FullscreenUI::MenuHeading(std::string_view title, bool draw_line /*= true*/)
 {
-  const float line_thickness = draw_line ? LayoutScale(1.0f) : 0.0f;
-  const float line_padding = draw_line ? LayoutScale(5.0f) : 0.0f;
+  const float line_thickness = LayoutScale(1.0f);
+  const float line_padding = LayoutScale(5.0f);
+  const float avail_width = MenuButtonBounds::CalcAvailWidth();
 
-  const MenuButtonBounds bb(title, ImVec2(), {});
-  bool visible, hovered;
-  MenuButtonFrame(title, false, bb.frame_bb, &visible, &hovered);
-  if (!visible)
-    return;
+  const ImGuiWindow* const window = ImGui::GetCurrentWindowRead();
+  const ImGuiStyle& style = ImGui::GetStyle();
+  const ImVec2 pos = ImVec2(window->DC.CursorPos + style.FramePadding);
 
-  const u32 color = ImGui::GetColorU32(ImGuiCol_TextDisabled);
-  RenderShadowedTextClipped(UIStyle.Font, UIStyle.LargeFontSize, UIStyle.BoldFontWeight, bb.title_bb.Min,
-                            bb.title_bb.Max, color, title, &bb.title_size, ImVec2(0.0f, 0.0f), bb.title_size.x,
-                            &bb.title_bb);
+  static constexpr const float& font_size = UIStyle.LargeFontSize;
+  static constexpr const float& font_weight = UIStyle.BoldFontWeight;
+  const ImVec2 title_size =
+    UIStyle.Font->CalcTextSizeA(font_size, font_weight, FLT_MAX, avail_width, IMSTR_START_END(title));
+  const u32 title_color = ImGui::GetColorU32(ImGuiCol_TextDisabled);
+  RenderShadowedTextClipped(UIStyle.Font, font_size, font_weight, pos, pos + title_size,
+                            title_color, title, &title_size, ImVec2(0.0f, 0.0f), avail_width);
+
+  float total_height = UIStyle.LargeFontSize + style.FramePadding.y;
 
   if (draw_line)
   {
-    const ImVec2 line_start(bb.title_bb.Min.x, bb.title_bb.Max.y + line_padding);
-    const ImVec2 line_end(bb.title_bb.Min.x + bb.available_width, line_start.y);
-    const ImVec2 shadow_offset = LayoutScale(LAYOUT_SHADOW_OFFSET, LAYOUT_SHADOW_OFFSET);
-    ImGui::GetWindowDrawList()->AddLine(line_start + shadow_offset, line_end + shadow_offset, UIStyle.ShadowColor,
-                                        line_thickness);
-    ImGui::GetWindowDrawList()->AddLine(line_start, line_end, color, line_thickness);
+    const ImVec2 line_start = ImVec2(pos.x, pos.y + title_size.y + line_padding);
+    const ImVec2 line_end = ImVec2(line_start.x + avail_width, line_start.y);
+
+    window->DrawList->AddLine(line_start, line_end, title_color, line_thickness);
+    total_height += line_thickness + line_padding;
   }
+
+  ImGui::Dummy(ImVec2(0.0f, total_height));
 }
 
 bool FullscreenUI::MenuHeadingButton(std::string_view title, std::string_view value /*= {}*/,
