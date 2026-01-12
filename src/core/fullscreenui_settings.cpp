@@ -1813,13 +1813,13 @@ void FullscreenUI::DrawSettingsWindow()
   const bool show_localized_titles = GameList::ShouldShowLocalizedTitles();
 
   static constexpr const SettingsPage global_pages[] = {
-    SettingsPage::Interface,  SettingsPage::GameList,    SettingsPage::Console,        SettingsPage::Emulation,
-    SettingsPage::BIOS,       SettingsPage::Graphics,    SettingsPage::PostProcessing, SettingsPage::Audio,
-    SettingsPage::Controller, SettingsPage::MemoryCards, SettingsPage::Achievements,   SettingsPage::Advanced};
+    SettingsPage::Interface, SettingsPage::GameList,     SettingsPage::BIOS,       SettingsPage::Console,
+    SettingsPage::Emulation, SettingsPage::MemoryCards,  SettingsPage::Graphics,   SettingsPage::PostProcessing,
+    SettingsPage::Audio,     SettingsPage::Achievements, SettingsPage::Controller, SettingsPage::Advanced};
   static constexpr const SettingsPage per_game_pages[] = {
-    SettingsPage::Summary,     SettingsPage::Console,      SettingsPage::Emulation, SettingsPage::Patches,
-    SettingsPage::Cheats,      SettingsPage::Graphics,     SettingsPage::Audio,     SettingsPage::Controller,
-    SettingsPage::MemoryCards, SettingsPage::Achievements, SettingsPage::Advanced};
+    SettingsPage::Summary, SettingsPage::Console,     SettingsPage::Emulation,    SettingsPage::Patches,
+    SettingsPage::Cheats,  SettingsPage::MemoryCards, SettingsPage::Graphics,     SettingsPage::PostProcessing,
+    SettingsPage::Audio,   SettingsPage::Controller,  SettingsPage::Achievements, SettingsPage::Advanced};
   static constexpr std::array<std::pair<const char*, const char*>, static_cast<u32>(SettingsPage::Count)> titles = {
     {{FSUI_NSTR("Summary"), ICON_FA_FILE},
      {FSUI_NSTR("Interface Settings"), ICON_FA_TV},
