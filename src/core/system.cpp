@@ -330,10 +330,13 @@ struct ALIGN_TO_CACHE_LINE StateVars
   std::optional<UndoSaveStateBuffer> undo_load_state;
 
   // Used to track play time. We use a monotonic timer here, in case of clock changes.
-  u64 session_start_time = 0;
+  Timer::Value session_start_time = 0;
 
   // internal async task counters
   std::atomic_uint32_t outstanding_save_state_tasks{0};
+
+  // process start time
+  Timer::Value process_start_time = 0;
 
 #ifdef ENABLE_SOCKET_MULTIPLEXER
   std::unique_ptr<SocketMultiplexer> socket_multiplexer;
@@ -507,6 +510,7 @@ bool System::ProcessStartup(Error* error)
     return false;
 #endif
 
+  s_state.process_start_time = Timer::GetCurrentValue();
   return true;
 }
 
@@ -514,6 +518,11 @@ void System::ProcessShutdown()
 {
   Bus::ReleaseMemory();
   CPU::CodeCache::ProcessShutdown();
+}
+
+float System::GetProcessUptime()
+{
+  return static_cast<float>(Timer::ConvertValueToSeconds(Timer::GetCurrentValue() - s_state.process_start_time));
 }
 
 bool System::CoreThreadInitialize(Error* error)

@@ -68,6 +68,9 @@ bool ProcessStartup(Error* error);
 /// Called on process shutdown.
 void ProcessShutdown();
 
+/// Returns the number of seconds since the process started.
+float GetProcessUptime();
+
 /// Called on CPU thread initialization.
 bool CoreThreadInitialize(Error* error);
 
