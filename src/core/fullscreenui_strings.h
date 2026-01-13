@@ -261,6 +261,7 @@ TRANSLATE_NOOP("FullscreenUI", "Determines the size of screenshots created by Du
 TRANSLATE_NOOP("FullscreenUI", "Determines whether a prompt will be displayed to confirm closing the game.");
 TRANSLATE_NOOP("FullscreenUI", "Determines which algorithm is used to convert interlaced frames to progressive for display on your system.");
 TRANSLATE_NOOP("FullscreenUI", "Device Settings");
+TRANSLATE_NOOP("FullscreenUI", "Disable Background Input");
 TRANSLATE_NOOP("FullscreenUI", "Disable Mailbox Presentation");
 TRANSLATE_NOOP("FullscreenUI", "Disable Speedup on MDEC");
 TRANSLATE_NOOP("FullscreenUI", "Disable Subdirectory Scanning");
@@ -560,6 +561,7 @@ TRANSLATE_NOOP("FullscreenUI", "Preload Replacement Textures");
 TRANSLATE_NOOP("FullscreenUI", "Preserve Projection Precision");
 TRANSLATE_NOOP("FullscreenUI", "Press To Toggle");
 TRANSLATE_NOOP("FullscreenUI", "Pressure");
+TRANSLATE_NOOP("FullscreenUI", "Prevents inputs from being processed when another application is active.");
 TRANSLATE_NOOP("FullscreenUI", "Prevents resizing of the window while a game is running.");
 TRANSLATE_NOOP("FullscreenUI", "Prevents the emulator from producing any audible sound.");
 TRANSLATE_NOOP("FullscreenUI", "Prevents the screen saver from activating and the host from sleeping while emulation is running.");

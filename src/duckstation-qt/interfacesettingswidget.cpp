@@ -67,7 +67,8 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* dialog, QWidget
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.pauseOnFocusLoss, "Main", "PauseOnFocusLoss", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.pauseOnControllerDisconnection, "Main",
                                                "PauseOnControllerDisconnection", false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.pauseOnStart, "Main", "StartPaused", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.disableBackgroundInput, "Main", "DisableBackgroundInput",
+                                               false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.saveStateOnGameClose, "Main", "SaveStateOnExit", true);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.confirmGameClose, "Main", "ConfirmPowerOff", true);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.startFullscreen, "Main", "StartFullscreen", false);
@@ -159,8 +160,8 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* dialog, QWidget
   dialog->registerWidgetHelp(
     m_ui.inhibitScreensaver, tr("Inhibit Screensaver"), tr("Checked"),
     tr("Prevents the screen saver from activating and the host from sleeping while emulation is running."));
-  dialog->registerWidgetHelp(m_ui.pauseOnStart, tr("Pause On Start"), tr("Unchecked"),
-                             tr("Pauses the emulator when a game is started."));
+  dialog->registerWidgetHelp(m_ui.disableBackgroundInput, tr("Disable Background Input"), tr("Unchecked"),
+                             tr("Prevents inputs from being processed when another application is active."));
   dialog->registerWidgetHelp(m_ui.pauseOnFocusLoss, tr("Pause On Focus Loss"), tr("Unchecked"),
                              tr("Pauses the emulator when you minimize the window or switch to another application, "
                                 "and unpauses when you switch back."));

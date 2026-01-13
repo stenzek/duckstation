@@ -4856,6 +4856,9 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
     }
   }
 
+  if (g_settings.ignore_background_input != old_settings.ignore_background_input)
+    InputManager::UpdateInputIgnoreState();
+
   Achievements::UpdateSettings(old_settings);
 
 #ifdef ENABLE_DISCORD_PRESENCE

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>652</width>
-    <height>490</height>
+    <height>572</height>
    </rect>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
@@ -50,24 +50,10 @@
         </property>
        </widget>
       </item>
-      <item row="1" column="1">
-       <widget class="QCheckBox" name="pauseOnStart">
-        <property name="text">
-         <string>Pause On Start</string>
-        </property>
-       </widget>
-      </item>
       <item row="2" column="0">
        <widget class="QCheckBox" name="pauseOnFocusLoss">
         <property name="text">
          <string>Pause On Focus Loss</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="1">
-       <widget class="QCheckBox" name="pauseOnControllerDisconnection">
-        <property name="text">
-         <string>Pause On Controller Disconnection</string>
         </property>
        </widget>
       </item>
@@ -82,6 +68,20 @@
        <widget class="QCheckBox" name="enableDiscordPresence">
         <property name="text">
          <string>Enable Discord Presence</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QCheckBox" name="pauseOnControllerDisconnection">
+        <property name="text">
+         <string>Pause On Controller Disconnection</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QCheckBox" name="disableBackgroundInput">
+        <property name="text">
+         <string>Disable Background Input</string>
         </property>
        </widget>
       </item>

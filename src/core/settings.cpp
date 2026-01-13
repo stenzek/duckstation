@@ -217,6 +217,7 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
   inhibit_screensaver = si.GetBoolValue("Main", "InhibitScreensaver", true);
   pause_on_focus_loss = si.GetBoolValue("Main", "PauseOnFocusLoss", false);
   pause_on_controller_disconnection = si.GetBoolValue("Main", "PauseOnControllerDisconnection", false);
+  ignore_background_input = si.GetBoolValue("Main", "IgnoreBackgroundInput", false);
   save_state_on_exit = si.GetBoolValue("Main", "SaveStateOnExit", true);
   create_save_state_backups = si.GetBoolValue("Main", "CreateSaveStateBackups", DEFAULT_SAVE_STATE_BACKUPS);
   confim_power_off = si.GetBoolValue("Main", "ConfirmPowerOff", true);
@@ -630,6 +631,8 @@ void Settings::Save(SettingsInterface& si, bool ignore_base) const
     si.SetBoolValue("Main", "ConfirmPowerOff", confim_power_off);
     si.SetBoolValue("Main", "EnableDiscordPresence", enable_discord_presence);
   }
+
+  si.SetBoolValue("Main", "IgnoreBackgroundInput", ignore_background_input);
 
   si.SetBoolValue("Main", "LoadDevicesFromSaveStates", load_devices_from_save_states);
   si.SetBoolValue("Main", "DisableAllEnhancements", disable_all_enhancements);

@@ -164,6 +164,7 @@ static void InternalClearEffects();
 static void GenerateRelativeMouseEvents();
 [[maybe_unused]] static void ReloadDevices();
 
+static bool ShouldMaskBackgroundInput(InputBindingKey key);
 static bool DoEventHook(InputBindingKey key, float value);
 static bool PreprocessEvent(InputBindingKey key, float value, GenericInputBinding generic_key);
 static bool ProcessEvent(InputBindingKey key, float value, bool skip_button_handlers);
@@ -228,6 +229,14 @@ struct ALIGN_TO_CACHE_LINE State
   // Input sources. Keyboard/mouse don't exist here.
   std::array<std::unique_ptr<InputSource>, static_cast<u32>(InputSourceType::Count)> input_sources;
 
+  bool application_in_background = false;
+  bool ignore_input_events = false;
+  bool has_pointer_device_bindings = false;
+  bool relative_mouse_mode = false;
+  bool relative_mouse_mode_active = false;
+  bool hide_host_mouse_cursor = false;
+  bool hide_host_mouse_cusor_active = false;
+
 #ifdef _WIN32
   // Device notification handle for Windows.
   HCMNOTIFICATION device_notification_handle = nullptr;
@@ -244,11 +253,6 @@ struct ALIGN_TO_CACHE_LINE State
 
   // Window size, used for clamping the mouse position in raw input modes.
   std::array<float, 2> window_size = {};
-  bool has_pointer_device_bindings = false;
-  bool relative_mouse_mode = false;
-  bool relative_mouse_mode_active = false;
-  bool hide_host_mouse_cursor = false;
-  bool hide_host_mouse_cusor_active = false;
 };
 
 } // namespace
@@ -1157,14 +1161,28 @@ bool InputManager::IsAxisHandler(const InputEventHandler& handler)
   return std::holds_alternative<InputAxisEventHandler>(handler);
 }
 
-bool InputManager::InvokeEvents(InputBindingKey key, float value, GenericInputBinding generic_key)
+bool InputManager::ShouldMaskBackgroundInput(InputBindingKey key)
+{
+  // Keyboard events won't get sent to us if we're in the background.
+  // We want to still update our mouse pointer state.
+  // Sensors are probably fine, but not used on desktop.
+  // Everything else should be ignored.
+  return (key.source_type > InputSourceType::Sensor && s_state.ignore_input_events);
+}
+
+void InputManager::InvokeEvents(InputBindingKey key, float value, GenericInputBinding generic_key)
 {
   if (DoEventHook(key, value))
-    return true;
+    return;
 
   // If imgui ate the event, don't fire our handlers.
   const bool skip_button_handlers = PreprocessEvent(key, value, generic_key);
-  return ProcessEvent(key, value, skip_button_handlers);
+
+  // Background input test
+  if (ShouldMaskBackgroundInput(key))
+    return;
+
+  ProcessEvent(key, value, skip_button_handlers);
 }
 
 bool InputManager::ProcessEvent(InputBindingKey key, float value, bool skip_button_handlers)
@@ -1534,7 +1552,7 @@ void InputManager::UpdatePointerRelativeDelta(u32 index, InputPointerAxis axis, 
 
   s_state.host_pointer_positions[index][static_cast<u8>(axis)] += d;
   s_state.pointer_state[index][static_cast<u8>(axis)].delta.fetch_add(static_cast<s32>(d * 65536.0f),
-                                                                      std::memory_order_release);
+                                                                      std::memory_order_acq_rel);
 
   // We need to clamp the position ourselves in relative mode.
   if (axis <= InputPointerAxis::Y)
@@ -1619,6 +1637,32 @@ void InputManager::SetDisplayWindowSize(float width, float height)
 std::pair<float, float> InputManager::GetDisplayWindowSize()
 {
   return std::make_pair(s_state.window_size[0], s_state.window_size[1]);
+}
+
+void InputManager::OnApplicationBackgroundStateChanged(bool in_background)
+{
+  s_state.application_in_background = in_background;
+  UpdateInputIgnoreState();
+}
+
+void InputManager::UpdateInputIgnoreState()
+{
+  const bool prev_ignore_input_events = s_state.ignore_input_events;
+  s_state.ignore_input_events = s_state.application_in_background && g_settings.ignore_background_input;
+  if (s_state.ignore_input_events != prev_ignore_input_events)
+  {
+    if (s_state.ignore_input_events)
+    {
+      VERBOSE_COLOR_LOG(StrongOrange, "Application in background, ignoring input events");
+    }
+    else
+    {
+      VERBOSE_COLOR_LOG(StrongGreen, "Application in foreground, processing input events");
+
+      // Synchronize button state, it might have changed
+      SynchronizeBindingHandlerState();
+    }
+  }
 }
 
 void InputManager::SetDefaultSourceConfig(SettingsInterface& si)

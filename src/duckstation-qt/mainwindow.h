@@ -253,8 +253,6 @@ private:
                                      Host::AuxiliaryRenderWindowHandle* handle, WindowInfo* wi, Error* error);
   void onDestroyAuxiliaryRenderWindow(Host::AuxiliaryRenderWindowHandle handle, QPoint* pos, QSize* size);
 
-  void onApplicationStateChanged(Qt::ApplicationState state);
-
   void onToolbarContextMenuRequested(const QPoint& pos);
   void onToolbarTopLevelChanged(bool top_level);
 
@@ -355,7 +353,6 @@ private:
   MemoryEditorWindow* m_memory_editor_window = nullptr;
   CoverDownloadWindow* m_cover_download_window = nullptr;
 
-  bool m_was_paused_by_focus_loss = false;
   bool m_relative_mouse_mode = false;
   bool m_hide_mouse_cursor = false;
 

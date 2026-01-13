@@ -680,36 +680,6 @@ void MainWindow::onMediaCaptureStopped()
   m_ui.actionMediaCapture->setChecked(false);
 }
 
-void MainWindow::onApplicationStateChanged(Qt::ApplicationState state)
-{
-  if (!s_locals.system_valid)
-    return;
-
-  const bool focus_loss = (state != Qt::ApplicationActive);
-  if (focus_loss)
-  {
-    if (g_settings.pause_on_focus_loss && !m_was_paused_by_focus_loss && !s_locals.system_paused)
-    {
-      g_core_thread->setSystemPaused(true);
-      m_was_paused_by_focus_loss = true;
-    }
-
-    // Clear the state of all keyboard binds.
-    // That way, if we had a key held down, and lost focus, the bind won't be stuck enabled because we never
-    // got the key release message, because it happened in another window which "stole" the event.
-    g_core_thread->clearInputBindStateFromSource(InputManager::MakeHostKeyboardKey(0));
-  }
-  else
-  {
-    if (m_was_paused_by_focus_loss)
-    {
-      if (s_locals.system_paused)
-        g_core_thread->setSystemPaused(false);
-      m_was_paused_by_focus_loss = false;
-    }
-  }
-}
-
 void MainWindow::onStartFileActionTriggered()
 {
   QString filename = QDir::toNativeSeparators(
@@ -2440,7 +2410,6 @@ void MainWindow::switchToEmulationView()
 
 void MainWindow::connectSignals()
 {
-  connect(qApp, &QGuiApplication::applicationStateChanged, this, &MainWindow::onApplicationStateChanged);
   connect(m_ui.toolBar, &QToolBar::customContextMenuRequested, this, &MainWindow::onToolbarContextMenuRequested);
   connect(m_ui.toolBar, &QToolBar::topLevelChanged, this, &MainWindow::onToolbarTopLevelChanged);
 

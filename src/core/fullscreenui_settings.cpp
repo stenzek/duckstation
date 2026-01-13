@@ -2266,9 +2266,10 @@ void FullscreenUI::DrawInterfaceSettingsPage()
     bsi, FSUI_ICONVSTR(ICON_FA_WAND_MAGIC_SPARKLES, "Inhibit Screensaver"),
     FSUI_VSTR("Prevents the screen saver from activating and the host from sleeping while emulation is running."),
     "Main", "InhibitScreensaver", true);
-  DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_PAUSE, "Pause On Start"),
-                    FSUI_VSTR("Pauses the emulator when a game is started."), "Main", "StartPaused", false);
-  DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_EYE_LOW_VISION, "Pause On Focus Loss"),
+  DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_EYE_LOW_VISION, "Disable Background Input"),
+                    FSUI_VSTR("Prevents inputs from being processed when another application is active."), "Main",
+                    "DisableBackgroundInput", false);
+  DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_PAUSE, "Pause On Focus Loss"),
                     FSUI_VSTR("Pauses the emulator when you minimize the window or switch to another "
                               "application, and unpauses when you switch back."),
                     "Main", "PauseOnFocusLoss", false);
@@ -5180,6 +5181,9 @@ void FullscreenUI::DrawAdvancedSettingsPage()
     bsi, FSUI_VSTR("Prefer OpenGL ES Context"),
     FSUI_VSTR("Uses OpenGL ES even when desktop OpenGL is supported. May improve performance on some SBC drivers."),
     "GPU", "PreferGLESContext", Settings::DEFAULT_GPU_PREFER_GLES_CONTEXT);
+
+  DrawToggleSetting(bsi, FSUI_VSTR("Pause On Start"), FSUI_VSTR("Pauses the emulator when a game is started."), "Main",
+                    "StartPaused", false);
 
   DrawToggleSetting(
     bsi, FSUI_VSTR("Load Devices From Save States"),

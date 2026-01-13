@@ -310,7 +310,7 @@ void AddVibrationBinding(u32 pad_index, u32 bind_index, const InputBindingKey& b
 
 /// Updates internal state for any binds for this key, and fires callbacks as needed.
 /// Returns true if anything was bound to this key, otherwise false.
-bool InvokeEvents(InputBindingKey key, float value, GenericInputBinding generic_key = GenericInputBinding::Unknown);
+void InvokeEvents(InputBindingKey key, float value, GenericInputBinding generic_key = GenericInputBinding::Unknown);
 
 /// Clears internal state for any binds with a matching source/index.
 void ClearBindStateFromSource(InputBindingKey key);
@@ -369,6 +369,10 @@ bool IsUsingRawInput();
 /// Updates InputManager's view of the window size, used for clamping raw input coordinates.
 void SetDisplayWindowSize(float width, float height);
 std::pair<float, float> GetDisplayWindowSize();
+
+/// Called when the application window gains or loses focus.
+void OnApplicationBackgroundStateChanged(bool in_background);
+void UpdateInputIgnoreState();
 
 /// Restores default configuration.
 void SetDefaultSourceConfig(SettingsInterface& si);

@@ -259,6 +259,8 @@ void AdvancedSettingsWidget::addTweakOptions()
                         "ApplyCompatibilitySettings", true);
   addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Load Devices From Save States"), "Main",
                         "LoadDevicesFromSaveStates", false);
+  addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Pause On Start"), "Main", "StartPaused",
+                        false);
   addChoiceTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Save State Compression"), "Main", "SaveStateCompression",
                        &Settings::ParseSaveStateCompressionModeName, &Settings::GetSaveStateCompressionModeName,
                        &Settings::GetSaveStateCompressionModeDisplayName,
@@ -334,6 +336,7 @@ void AdvancedSettingsWidget::onResetToDefaultClicked()
 
     setBooleanTweakOption(m_ui.tweakOptionTable, i++, true);  // Apply Game Settings
     setBooleanTweakOption(m_ui.tweakOptionTable, i++, true);  // Apply Compatibility settings
+    setBooleanTweakOption(m_ui.tweakOptionTable, i++, false); // Pause On Start
     setBooleanTweakOption(m_ui.tweakOptionTable, i++, false); // Load Devices From Save States
     setChoiceTweakOption(m_ui.tweakOptionTable, i++,
                          Settings::DEFAULT_SAVE_STATE_COMPRESSION_MODE); // Save State Compression
@@ -376,6 +379,7 @@ void AdvancedSettingsWidget::onResetToDefaultClicked()
   INISettingsInterface* sif = m_dialog->getSettingsInterface();
   sif->DeleteValue("Main", "ApplyCompatibilitySettings");
   sif->DeleteValue("Main", "LoadDevicesFromSaveStates");
+  sif->DeleteValue("Main", "PauseOnStart");
   sif->DeleteValue("Main", "CompressSaveStates");
   sif->DeleteValue("Display", "ActiveStartOffset");
   sif->DeleteValue("Display", "ActiveEndOffset");

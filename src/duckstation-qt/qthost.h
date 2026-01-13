@@ -166,6 +166,7 @@ public:
   void dumpVRAM(const QString& path);
   void dumpSPURAM(const QString& path);
   void saveScreenshot();
+  void applicationStateChanged(Qt::ApplicationState state);
   void redrawDisplayWindow();
   void toggleFullscreen();
   void setFullscreen(bool fullscreen);
@@ -175,7 +176,6 @@ public:
   void applyCheat(const QString& name);
   void reloadPostProcessingShaders();
   void updatePostProcessingSettings(bool display, bool internal, bool force_reload);
-  void clearInputBindStateFromSource(InputBindingKey key);
   void reloadTextureReplacements();
   void captureGPUFrameDump();
   void startControllerTest();
@@ -215,6 +215,7 @@ private:
   bool m_shutdown_flag = false;
   bool m_gpu_thread_run_idle = false;
   bool m_is_fullscreen_ui_started = false;
+  bool m_was_paused_by_focus_loss = false;
 
   float m_last_speed = std::numeric_limits<float>::infinity();
   float m_last_game_fps = std::numeric_limits<float>::infinity();

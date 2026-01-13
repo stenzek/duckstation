@@ -1291,17 +1291,6 @@ void CoreThread::updatePostProcessingSettings(bool display, bool internal, bool 
     GPUPresenter::ReloadPostProcessingSettings(display, internal, force_reload);
 }
 
-void CoreThread::clearInputBindStateFromSource(InputBindingKey key)
-{
-  if (!isCurrentThread())
-  {
-    QMetaObject::invokeMethod(this, &CoreThread::clearInputBindStateFromSource, Qt::QueuedConnection, key);
-    return;
-  }
-
-  InputManager::ClearBindStateFromSource(key);
-}
-
 void CoreThread::reloadTextureReplacements()
 {
   if (!isCurrentThread())
@@ -1658,6 +1647,38 @@ void CoreThread::saveScreenshot()
   System::SaveScreenshot();
 }
 
+void CoreThread::applicationStateChanged(Qt::ApplicationState state)
+{
+  const bool background = (state != Qt::ApplicationActive);
+  InputManager::OnApplicationBackgroundStateChanged(background);
+
+  if (!System::IsValid())
+    return;
+
+  if (background)
+  {
+    if (g_settings.pause_on_focus_loss && !m_was_paused_by_focus_loss && !System::IsPaused())
+    {
+      setSystemPaused(true);
+      m_was_paused_by_focus_loss = true;
+    }
+
+    // Clear the state of all keyboard binds.
+    // That way, if we had a key held down, and lost focus, the bind won't be stuck enabled because we never
+    // got the key release message, because it happened in another window which "stole" the event.
+    InputManager::ClearBindStateFromSource(InputManager::MakeHostKeyboardKey(0));
+  }
+  else
+  {
+    if (m_was_paused_by_focus_loss)
+    {
+      if (System::IsPaused())
+        setSystemPaused(false);
+      m_was_paused_by_focus_loss = false;
+    }
+  }
+}
+
 void Host::OnAchievementsLoginRequested(Achievements::LoginRequestReason reason)
 {
   emit g_core_thread->achievementsLoginRequested(reason);
@@ -1963,6 +1984,9 @@ void CoreThread::run()
   // start up worker threads
   // TODO: Replace this with QThreads
   s_async_task_queue.SetWorkerCount(NUM_ASYNC_WORKER_THREADS);
+
+  // connections
+  connect(qApp, &QGuiApplication::applicationStateChanged, this, &CoreThread::applicationStateChanged);
 
   // enumerate all devices, even those which were added early
   m_input_device_list_model->enumerateDevices();
