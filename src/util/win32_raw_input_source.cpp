@@ -351,14 +351,17 @@ void Win32RawInputSource::CloseDevices()
   if (m_mice.empty())
     return;
 
-  m_mice.clear();
-
-  const u32 num_mice = static_cast<u32>(m_mice.size());
-  for (u32 i = 0; i < num_mice; i++)
+  for (size_t i = 0; i < m_mice.size(); i++)
   {
-    InputManager::OnInputDeviceDisconnected(MakeGenericControllerDeviceKey(InputSourceType::Pointer, i),
-                                            InputManager::GetPointerDeviceName(i));
+    if (!m_mice[i].device)
+      continue;
+
+    InputManager::OnInputDeviceDisconnected(
+      MakeGenericControllerDeviceKey(InputSourceType::Pointer, static_cast<u32>(i)),
+      InputManager::GetPointerDeviceName(static_cast<u32>(i)));
   }
+
+  m_mice.clear();
 }
 
 void Win32RawInputSource::EnsureRawInputRegistered()
