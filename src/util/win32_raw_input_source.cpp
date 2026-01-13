@@ -335,7 +335,14 @@ bool Win32RawInputSource::ReloadDevices()
   while (!m_mice.empty() && !m_mice.back().device)
     m_mice.pop_back();
 
-  DEV_LOG("Found {} mice", std::ranges::count_if(m_mice, [](const MouseState& ms) { return (ms.device != nullptr); }));
+  const size_t num_mice = std::ranges::count_if(m_mice, [](const MouseState& ms) { return (ms.device != nullptr); });
+  DEV_LOG("Found {} mice", num_mice);
+
+  if (num_mice > 0)
+    EnsureRawInputRegistered();
+  else
+    UnregisterRawInput();
+
   return any_changed;
 }
 
