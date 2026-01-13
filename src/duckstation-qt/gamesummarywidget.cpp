@@ -164,7 +164,7 @@ void GameSummaryWidget::populateUi(const GameList::Entry* entry)
       if (dbentry->min_players != dbentry->max_players)
         release_info.append(tr("%1-%2 players").arg(dbentry->min_players).arg(dbentry->max_players));
       else
-        release_info.append(tr("%1 players").arg(dbentry->min_players));
+        release_info.append(tr("%n player(s)", nullptr, dbentry->min_players));
     }
     if (dbentry->min_blocks != 0)
     {
@@ -173,7 +173,7 @@ void GameSummaryWidget::populateUi(const GameList::Entry* entry)
       if (dbentry->min_blocks != dbentry->max_blocks)
         release_info.append(tr("%1-%2 memory card blocks").arg(dbentry->min_blocks).arg(dbentry->max_blocks));
       else
-        release_info.append(tr("%1 memory card blocks").arg(dbentry->min_blocks));
+        release_info.append(tr("%n memory card block(s)", nullptr, dbentry->min_blocks));
     }
     if (!release_info.isEmpty())
       m_ui.releaseInfo->setText(release_info);
@@ -326,8 +326,7 @@ void GameSummaryWidget::populateTracksInfo()
   if (!image)
     return;
 
-  m_ui.revision->setText(tr("%1 tracks covering %2 MB (%3 MB on disk)")
-                           .arg(image->GetTrackCount())
+  m_ui.revision->setText(tr("%n track(s) covering %1 MB (%2 MB on disk)", nullptr, image->GetTrackCount())
                            .arg(((image->GetLBACount() * CDImage::RAW_SECTOR_SIZE) + 1048575) / 1048576)
                            .arg((image->GetSizeOnDisk() + 1048575) / 1048576));
 

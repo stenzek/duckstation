@@ -2355,14 +2355,14 @@ SmallString FullscreenUI::FormatRelativeTimestamp(time_t timestamp, time_t curre
 
   if (diff < HOUR)
   {
-    const s64 minutes = diff / MINUTE;
-    return TRANSLATE_PLURAL_SSTR("Achievements", "%n minutes ago", "Relative time", static_cast<int>(minutes));
+    const int minutes = static_cast<int>(diff / MINUTE);
+    return TRANSLATE_PLURAL_SSTR("Achievements", "%n minutes ago", "Relative time", minutes);
   }
 
   if (diff < DAY)
   {
-    const s64 hours = diff / HOUR;
-    return TRANSLATE_PLURAL_SSTR("Achievements", "%n hours ago", "Relative time", static_cast<int>(hours));
+    const int hours = static_cast<int>(diff / HOUR);
+    return TRANSLATE_PLURAL_SSTR("Achievements", "%n hours ago", "Relative time", hours);
   }
 
   if (diff < DAY * 2)
@@ -2380,8 +2380,8 @@ SmallString FullscreenUI::FormatRelativeTimestamp(time_t timestamp, time_t curre
 
   if (diff < WEEK)
   {
-    const s64 days = diff / DAY;
-    return TRANSLATE_PLURAL_SSTR("Achievements", "%n days ago", "Relative time", static_cast<int>(days));
+    const int days = static_cast<int>(diff / DAY);
+    return TRANSLATE_PLURAL_SSTR("Achievements", "%n days ago", "Relative time", days);
   }
 
   const std::optional<std::tm> timestamp_tm = Common::LocalTime(timestamp);
@@ -2395,8 +2395,8 @@ SmallString FullscreenUI::FormatRelativeTimestamp(time_t timestamp, time_t curre
   if (total_months == 0)
   {
     // Less than a month - use weeks
-    const s64 weeks = diff / WEEK;
-    return TRANSLATE_PLURAL_SSTR("Achievements", "%n weeks ago", "Relative time", static_cast<int>(weeks));
+    const int weeks = static_cast<int>(diff / WEEK);
+    return TRANSLATE_PLURAL_SSTR("Achievements", "%n weeks ago", "Relative time", weeks);
   }
 
   if (total_months < 12)

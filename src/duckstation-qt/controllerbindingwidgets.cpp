@@ -673,7 +673,7 @@ void ControllerMacroEditWidget::updateFrequencyText()
   if (m_frequency == 0)
     m_ui.frequencyText->setText(tr("Macro will not repeat."));
   else
-    m_ui.frequencyText->setText(tr("Macro will toggle buttons every %1 frames.").arg(m_frequency));
+    m_ui.frequencyText->setText(tr("Macro will toggle buttons every %n frame(s).", nullptr, m_frequency));
 }
 
 void ControllerMacroEditWidget::updateBinds()
