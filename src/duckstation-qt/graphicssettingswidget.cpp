@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "graphicssettingswidget.h"
@@ -7,7 +7,6 @@
 #include "qtwindowinfo.h"
 #include "settingswindow.h"
 #include "settingwidgetbinder.h"
-#include "ui_texturereplacementsettingsdialog.h"
 
 #include "core/core.h"
 #include "core/fullscreenui_widgets.h"
@@ -1427,18 +1426,6 @@ void GraphicsSettingsWidget::onGPUThreadChanged()
   m_ui.maxQueuedFramesLabel->setEnabled(enabled);
 }
 
-namespace {
-class TextureReplacementSettingsDialog final : public QDialog
-{
-public:
-  TextureReplacementSettingsDialog(SettingsWindow* settings_window, QWidget* parent);
-
-private:
-  void onExportClicked();
-
-  Ui::TextureReplacementSettingsDialog m_ui;
-};
-
 TextureReplacementSettingsDialog::TextureReplacementSettingsDialog(SettingsWindow* settings_window, QWidget* parent)
   : QDialog(parent)
 {
@@ -1545,7 +1532,6 @@ void TextureReplacementSettingsDialog::onExportClicked()
   });
   idlg->open();
 }
-} // namespace
 
 void GraphicsSettingsWidget::onTextureReplacementOptionsClicked()
 {

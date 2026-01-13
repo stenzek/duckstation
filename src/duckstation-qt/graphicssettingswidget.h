@@ -1,15 +1,17 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #pragma once
 
-#include <QtWidgets/QWidget>
-
-#include "ui_graphicssettingswidget.h"
-
 #include "core/types.h"
 
 #include "util/gpu_device.h"
+
+#include <QtWidgets/QDialog>
+#include <QtWidgets/QWidget>
+
+#include "ui_graphicssettingswidget.h"
+#include "ui_texturereplacementsettingsdialog.h"
 
 enum class GPURenderer : u8;
 
@@ -84,4 +86,17 @@ private:
 
   GPUDevice::AdapterInfoList m_adapters;
   RenderAPI m_adapters_render_api = RenderAPI::None;
+};
+
+class TextureReplacementSettingsDialog final : public QDialog
+{
+  Q_OBJECT
+
+public:
+  TextureReplacementSettingsDialog(SettingsWindow* settings_window, QWidget* parent);
+
+private:
+  void onExportClicked();
+
+  Ui::TextureReplacementSettingsDialog m_ui;
 };
