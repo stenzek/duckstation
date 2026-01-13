@@ -244,6 +244,7 @@ struct ALIGN_TO_CACHE_LINE State
 
   // Window size, used for clamping the mouse position in raw input modes.
   std::array<float, 2> window_size = {};
+  bool has_pointer_device_bindings = false;
   bool relative_mouse_mode = false;
   bool relative_mouse_mode_active = false;
   bool hide_host_mouse_cursor = false;
@@ -1079,6 +1080,10 @@ void InputManager::AddPadBindings(const SettingsInterface& si, const std::string
       break;
 
       case InputBindingInfo::Type::Pointer:
+        // handled in device
+        s_state.has_pointer_device_bindings = true;
+        break;
+
       case InputBindingInfo::Type::Device:
         // handled in device
         break;
@@ -1547,7 +1552,8 @@ void InputManager::UpdateRelativeMouseMode()
 {
   // Check for relative mode bindings, and enable if there's anything using it.
   // Raw input needs to force relative mode/clipping, because it's now disconnected from the system pointer.
-  bool has_relative_mode_bindings = !s_state.pointer_move_callbacks.empty() || IsUsingRawInput();
+  bool has_relative_mode_bindings =
+    !s_state.pointer_move_callbacks.empty() || (IsUsingRawInput() && s_state.has_pointer_device_bindings);
   if (!has_relative_mode_bindings)
   {
     for (const auto& it : s_state.binding_map)
@@ -2191,6 +2197,7 @@ void InputManager::InternalReloadBindings(const SettingsInterface& binding_si,
   s_state.pad_led_array.clear();
   s_state.macro_buttons.clear();
   s_state.pointer_move_callbacks.clear();
+  s_state.has_pointer_device_bindings = false;
 
   Host::AddFixedInputBindings(binding_si);
 
@@ -2205,7 +2212,7 @@ void InputManager::InternalReloadBindings(const SettingsInterface& binding_si,
       continue;
 
     const Controller::ControllerInfo& cinfo = Controller::GetControllerInfo(g_settings.controller_types[pad]);
-    const std::string section(Controller::GetSettingsSection(pad));
+    const std::string section = Controller::GetSettingsSection(pad);
     AddPadBindings(binding_si, section, pad, cinfo);
     LoadMacroButtonConfig(binding_si, section, pad, cinfo);
   }
