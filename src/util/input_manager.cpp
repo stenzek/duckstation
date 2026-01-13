@@ -2316,7 +2316,8 @@ InputManager::DeviceList InputManager::EnumerateDevices()
   mouse_key.source_type = InputSourceType::Pointer;
 
   ret.emplace_back(keyboard_key, "Keyboard", TRANSLATE_STR("InputManager", "Keyboard"));
-  ret.emplace_back(mouse_key, GetPointerDeviceName(0), TRANSLATE_STR("InputManager", "Mouse"));
+  if (!IsUsingRawInput())
+    ret.emplace_back(mouse_key, GetPointerDeviceName(0), TRANSLATE_STR("InputManager", "Mouse"));
 
   for (u32 i = FIRST_EXTERNAL_INPUT_SOURCE; i < LAST_EXTERNAL_INPUT_SOURCE; i++)
   {

@@ -7,6 +7,8 @@
 
 #include "core/gpu_thread.h"
 
+#include "util/translation.h"
+
 #include "common/assert.h"
 #include "common/error.h"
 #include "common/log.h"
@@ -48,6 +50,10 @@ bool Win32RawInputSource::Initialize(const SettingsInterface& si, std::unique_lo
     return false;
   }
 
+  // "Disconnect" the normal Mouse device added by InputManager.
+  Host::OnInputDeviceDisconnected(MakeGenericControllerDeviceKey(InputSourceType::Pointer, 0),
+                                  InputManager::GetPointerDeviceName(0));
+
   ReloadDevices();
   return true;
 }
@@ -61,6 +67,10 @@ void Win32RawInputSource::Shutdown()
   CloseDevices();
   UnregisterRawInput();
   DestroyDummyWindow();
+
+  // Restore the normal Mouse device. If we're shutting down, this won't do much.
+  Host::OnInputDeviceConnected(MakeGenericControllerDeviceKey(InputSourceType::Pointer, 0),
+                               InputManager::GetPointerDeviceName(0), TRANSLATE_SV("InputManager", "Mouse"));
 }
 
 void Win32RawInputSource::PollEvents()
