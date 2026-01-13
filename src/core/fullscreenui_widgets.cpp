@@ -50,7 +50,7 @@ LOG_CHANNEL(FullscreenUI);
 
 namespace FullscreenUI {
 
-static constexpr float MENU_BACKGROUND_ANIMATION_TIME = 0.5f;
+static constexpr float MENU_BACKGROUND_ANIMATION_TIME = 0.25f;
 static constexpr float SMOOTH_SCROLLING_SPEED = 3.5f;
 static constexpr u32 LOADING_PROGRESS_SAMPLE_COUNT = 30;
 
