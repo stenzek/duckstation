@@ -99,7 +99,7 @@ void InputBindingWidget::updateTextAndToolTip()
   else if (m_bindings.size() > 1)
   {
     m_full_text.clear();
-    setText(tr("%n bindings", "", static_cast<int>(m_bindings.size())));
+    setText(tr("%n bindings", nullptr, static_cast<int>(m_bindings.size())));
 
     // keep the full thing for the tooltip
     const QString qss = QString::fromStdString(StringUtil::JoinString(m_bindings.begin(), m_bindings.end(), "\n"));
