@@ -327,7 +327,7 @@ struct Settings : public GPUSettings
   bool inhibit_screensaver : 1 = true;
   bool pause_on_focus_loss : 1 = false;
   bool pause_on_controller_disconnection : 1 = false;
-  bool ignore_background_input : 1 = false;
+  bool disable_background_input : 1 = false;
   bool save_state_on_exit : 1 = true;
   bool create_save_state_backups : 1 = DEFAULT_SAVE_STATE_BACKUPS;
   bool confim_power_off : 1 = true;

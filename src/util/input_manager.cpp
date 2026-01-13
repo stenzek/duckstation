@@ -1175,12 +1175,12 @@ void InputManager::InvokeEvents(InputBindingKey key, float value, GenericInputBi
   if (DoEventHook(key, value))
     return;
 
-  // If imgui ate the event, don't fire our handlers.
-  const bool skip_button_handlers = PreprocessEvent(key, value, generic_key);
-
   // Background input test
   if (ShouldMaskBackgroundInput(key))
     return;
+
+  // If imgui ate the event, don't fire our handlers.
+  const bool skip_button_handlers = PreprocessEvent(key, value, generic_key);
 
   ProcessEvent(key, value, skip_button_handlers);
 }
@@ -1648,7 +1648,7 @@ void InputManager::OnApplicationBackgroundStateChanged(bool in_background)
 void InputManager::UpdateInputIgnoreState()
 {
   const bool prev_ignore_input_events = s_state.ignore_input_events;
-  s_state.ignore_input_events = s_state.application_in_background && g_settings.ignore_background_input;
+  s_state.ignore_input_events = s_state.application_in_background && g_settings.disable_background_input;
   if (s_state.ignore_input_events != prev_ignore_input_events)
   {
     if (s_state.ignore_input_events)

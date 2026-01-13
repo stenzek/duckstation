@@ -4856,7 +4856,7 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
     }
   }
 
-  if (g_settings.ignore_background_input != old_settings.ignore_background_input)
+  if (g_settings.disable_background_input != old_settings.disable_background_input)
     InputManager::UpdateInputIgnoreState();
 
   Achievements::UpdateSettings(old_settings);
