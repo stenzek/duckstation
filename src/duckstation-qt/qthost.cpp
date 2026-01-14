@@ -146,6 +146,7 @@ static bool ParseCommandLineParametersAndInitializeConfig(QApplication& app,
                                                           std::shared_ptr<SystemBootParameters>& boot_params);
 
 #ifdef __linux__
+static void AdjustQtEnvironmentVariables();
 static void ApplyWaylandWorkarounds();
 #endif
 } // namespace QtHost
@@ -233,7 +234,7 @@ bool QtHost::VeryEarlyProcessStartup()
 {
   CrashHandler::Install(&Bus::CleanupMemoryMap);
 
-#ifdef _WIN32
+#if defined(_WIN32)
   // Ensure COM is initialized before Qt gets a chance to do it, since this could change in the future.
   HRESULT hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
   if (FAILED(hr)) [[unlikely]]
@@ -241,6 +242,8 @@ bool QtHost::VeryEarlyProcessStartup()
     MessageBoxA(nullptr, fmt::format("CoInitializeEx failed: 0x{:08X}", hr).c_str(), "Error", MB_ICONERROR);
     return false;
   }
+#elif defined(__linux__)
+  AdjustQtEnvironmentVariables();
 #endif
 
   QGuiApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
@@ -338,6 +341,29 @@ bool QtHost::IsDisplayWidgetContainerNeeded()
 }
 
 #ifdef __linux__
+
+void QtHost::AdjustQtEnvironmentVariables()
+{
+  const char* desktop = std::getenv("XDG_SESSION_DESKTOP");
+  if (!desktop)
+    return;
+
+  std::fprintf(stderr, "XDG_SESSION_DESKTOP=%s\n", desktop);
+
+  if (std::strcmp(desktop, "KDE") == 0 || std::strcmp(desktop, "GNOME") == 0)
+  {
+    const char* platform_theme = std::getenv("QT_QPA_PLATFORMTHEME");
+    if (platform_theme)
+    {
+      std::fprintf(stderr, "QT_QPA_PLATFORMTHEME=%s, not overridding\n", platform_theme);
+    }
+    else
+    {
+      std::fputs("Enabling xdg-desktop-portal platform theme.\n", stderr);
+      setenv("QT_QPA_PLATFORMTHEME", "xdgdesktopportal", true);
+    }
+  }
+}
 
 void QtHost::ApplyWaylandWorkarounds()
 {
