@@ -803,6 +803,7 @@ void OpenGLDevice::EndPresent(GPUSwapChain* swap_chain, bool explicit_present, u
   }
 
   m_gl_context->SwapBuffers();
+  swap_chain->UpdateLastFramePresentedTime();
 
   if (swap_chain == m_main_swap_chain.get() && m_gpu_timing_enabled)
     StartTimestampQuery();

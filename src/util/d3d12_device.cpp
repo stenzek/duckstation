@@ -1266,6 +1266,7 @@ void D3D12Device::SubmitPresent(GPUSwapChain* swap_chain)
   const UINT flags =
     (SC->GetVSyncMode() == GPUVSyncMode::Disabled && SC->IsUsingAllowTearing()) ? DXGI_PRESENT_ALLOW_TEARING : 0;
   SC->GetSwapChain()->Present(sync_interval, flags);
+  SC->UpdateLastFramePresentedTime();
 }
 
 #ifdef ENABLE_GPU_OBJECT_NAMES

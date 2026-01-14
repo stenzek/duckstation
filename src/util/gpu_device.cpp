@@ -300,8 +300,13 @@ bool GPUSwapChain::ShouldSkipPresentingFrame()
   if (diff < throttle_period)
     return true;
 
-  m_last_frame_displayed_time = now;
   return false;
+}
+
+void GPUSwapChain::UpdateLastFramePresentedTime(u64 presented_time)
+{
+  if (m_allow_present_throttle)
+    m_last_frame_displayed_time = (presented_time != 0) ? presented_time : Timer::GetCurrentValue();
 }
 
 void GPUSwapChain::ThrottlePresentation()

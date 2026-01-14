@@ -1254,6 +1254,7 @@ void VulkanDevice::QueuePresent(VulkanSwapChain* present_swap_chain)
   // submission. Don't care if it fails, we'll deal with that at the presentation call site.
   // Credit to dxvk for the idea.
   present_swap_chain->AcquireNextImage(false);
+  present_swap_chain->UpdateLastFramePresentedTime();
 }
 
 void VulkanDevice::BeginCommandBuffer(u32 index)

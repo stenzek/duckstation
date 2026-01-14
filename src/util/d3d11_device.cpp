@@ -734,6 +734,7 @@ void D3D11Device::EndPresent(GPUSwapChain* swap_chain, bool explicit_present, u6
   const UINT flags =
     (SC->GetVSyncMode() == GPUVSyncMode::Disabled && SC->IsUsingAllowTearing()) ? DXGI_PRESENT_ALLOW_TEARING : 0;
   SC->GetSwapChain()->Present(sync_interval, flags);
+  SC->UpdateLastFramePresentedTime();
 
   if (m_gpu_timing_enabled)
     StartTimestampQuery();

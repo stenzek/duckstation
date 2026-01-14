@@ -488,6 +488,7 @@ public:
   virtual bool IsExclusiveFullscreen() const;
 
   bool ShouldSkipPresentingFrame();
+  void UpdateLastFramePresentedTime(u64 presented_time = 0);
   void ThrottlePresentation();
 
   static GSVector4i PreRotateClipRect(WindowInfo::PreRotation prerotation, const GSVector2i surface_size,

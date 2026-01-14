@@ -2592,16 +2592,19 @@ void MetalDevice::EndPresent(GPUSwapChain* swap_chain, bool explicit_present, u6
   EndAnyEncoding();
 
   Timer::Value current_time;
+  Timer::Value presented_time;
   if (present_time != 0 && (current_time = Timer::GetCurrentValue()) < present_time)
   {
     // Need to convert to mach absolute time. Time values should already be in nanoseconds.
     const u64 mach_time_nanoseconds = CocoaTools::ConvertMachTimeBaseToNanoseconds(mach_absolute_time());
     const double mach_present_time = static_cast<double>(mach_time_nanoseconds + (present_time - current_time)) / 1e+9;
     [m_render_cmdbuf presentDrawable:m_layer_drawable atTime:mach_present_time];
+    presented_time = present_time;
   }
   else
   {
     [m_render_cmdbuf presentDrawable:m_layer_drawable];
+    presented_time = 0;
   }
 
   DeferRelease(m_layer_drawable);
@@ -2609,6 +2612,8 @@ void MetalDevice::EndPresent(GPUSwapChain* swap_chain, bool explicit_present, u6
 
   SubmitCommandBuffer();
   TrimTexturePool();
+
+  swap_chain->UpdateLastFramePresentedTime(presented_time);
 }
 
 void MetalDevice::SubmitPresent(GPUSwapChain* swap_chainwel)

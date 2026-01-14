@@ -1275,6 +1275,7 @@ bool GPUPresenter::PresentFrame(GPUPresenter* presenter, GPUBackend* backend, bo
       g_gpu_device->SubmitPresent(swap_chain);
     }
 
+    swap_chain->UpdateLastFramePresentedTime();
     ImGuiManager::NewFrame();
   }
   else
