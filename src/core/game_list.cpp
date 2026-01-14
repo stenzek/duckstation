@@ -274,10 +274,11 @@ bool GameList::GetExeListEntry(const std::string& path, GameList::Entry* entry)
     entry->region = BIOS::GetPSExeDiscRegion(header);
   }
 
-  const auto data = FileSystem::ReadBinaryFile(fp.get());
+  Error error;
+  const auto data = FileSystem::ReadBinaryFile(fp.get(), &error);
   if (!data.has_value())
   {
-    WARNING_LOG("Failed to read {}", path);
+    WARNING_LOG("Failed to read {}: {}", Path::GetFileName(path), error.GetDescription());
     return false;
   }
 
@@ -289,9 +290,13 @@ bool GameList::GetExeListEntry(const std::string& path, GameList::Entry* entry)
 bool GameList::GetPsfListEntry(const std::string& path, Entry* entry)
 {
   // we don't need to walk the library chain here - the top file is enough
+  Error error;
   PSFLoader::File file;
-  if (!file.Load(path.c_str(), nullptr))
+  if (!file.Load(path.c_str(), &error))
+  {
+    ERROR_LOG("Failed to load PSF file '{}': {}", Path::GetFileName(path), error.GetDescription());
     return false;
+  }
 
   entry->serial.clear();
   entry->region = file.GetRegion();
@@ -327,9 +332,13 @@ bool GameList::GetPsfListEntry(const std::string& path, Entry* entry)
 
 bool GameList::GetDiscListEntry(const std::string& path, Entry* entry)
 {
-  std::unique_ptr<CDImage> cdi = CDImage::Open(path.c_str(), false, nullptr);
+  Error error;
+  std::unique_ptr<CDImage> cdi = CDImage::Open(path.c_str(), false, &error);
   if (!cdi)
+  {
+    ERROR_LOG("Failed to open disc image '{}': {}", Path::GetFileName(path), error.GetDescription());
     return false;
+  }
 
   entry->path = path;
   entry->file_size = cdi->GetSizeOnDisk();
