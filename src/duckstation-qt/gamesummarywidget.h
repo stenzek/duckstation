@@ -33,6 +33,7 @@ public:
 private:
   void populateUi(const GameList::Entry* entry);
   void setCustomTitle(const std::string& text);
+  void setCustomDiscSetTitle(const std::string& text);
   void setCustomRegion(int region);
 
   void populateTracksInfo();

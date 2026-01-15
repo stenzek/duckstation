@@ -10,7 +10,7 @@
     <height>562</height>
    </rect>
   </property>
-  <layout class="QGridLayout" name="gridLayout">
+  <layout class="QGridLayout" name="mainLayout">
    <property name="leftMargin">
     <number>0</number>
    </property>
@@ -61,27 +61,50 @@
     </widget>
    </item>
    <item row="2" column="0">
+    <widget class="QLabel" name="discSetTitleLabel">
+     <property name="text">
+      <string>Disc Set Title:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="1">
+    <widget class="QLineEdit" name="discSetTitle"/>
+   </item>
+   <item row="2" column="2">
+    <widget class="QPushButton" name="restoreDiscSetTitle">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+     <property name="toolTip">
+      <string>Restore Disc Set Title</string>
+     </property>
+     <property name="icon">
+      <iconset theme="restart-line"/>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="0">
     <widget class="QLabel" name="label">
      <property name="text">
       <string>Serial:</string>
      </property>
     </widget>
    </item>
-   <item row="2" column="1" colspan="2">
+   <item row="3" column="1" colspan="2">
     <widget class="QLineEdit" name="serial">
      <property name="readOnly">
       <bool>true</bool>
      </property>
     </widget>
    </item>
-   <item row="3" column="0">
+   <item row="4" column="0">
     <widget class="QLabel" name="label_10">
      <property name="text">
       <string>Type:</string>
      </property>
     </widget>
    </item>
-   <item row="3" column="1" colspan="2">
+   <item row="4" column="1" colspan="2">
     <layout class="QHBoxLayout" name="horizontalLayout_4" stretch="1,0">
      <item>
       <widget class="QComboBox" name="entryType">
@@ -102,14 +125,14 @@
      </item>
     </layout>
    </item>
-   <item row="4" column="0">
+   <item row="5" column="0">
     <widget class="QLabel" name="label_3">
      <property name="text">
       <string>Region:</string>
      </property>
     </widget>
    </item>
-   <item row="4" column="1">
+   <item row="5" column="1">
     <widget class="QComboBox" name="region">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
@@ -119,7 +142,7 @@
      </property>
     </widget>
    </item>
-   <item row="4" column="2">
+   <item row="5" column="2">
     <widget class="QPushButton" name="restoreRegion">
      <property name="enabled">
       <bool>false</bool>
@@ -132,14 +155,14 @@
      </property>
     </widget>
    </item>
-   <item row="5" column="0">
+   <item row="6" column="0">
     <widget class="QLabel" name="label_5">
      <property name="text">
       <string>Languages:</string>
      </property>
     </widget>
    </item>
-   <item row="5" column="1" colspan="2">
+   <item row="6" column="1" colspan="2">
     <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="1,0">
      <item>
       <widget class="QLineEdit" name="languages">
@@ -153,91 +176,91 @@
      </item>
     </layout>
    </item>
-   <item row="6" column="0">
+   <item row="7" column="0">
     <widget class="QLabel" name="label_7">
      <property name="text">
       <string>Compatibility:</string>
      </property>
     </widget>
    </item>
-   <item row="6" column="1">
+   <item row="7" column="1">
     <widget class="QComboBox" name="compatibility">
      <property name="enabled">
       <bool>false</bool>
      </property>
     </widget>
    </item>
-   <item row="6" column="2">
+   <item row="8" column="2">
     <widget class="QPushButton" name="compatibilityComments">
      <property name="icon">
       <iconset theme="information-line"/>
      </property>
     </widget>
    </item>
-   <item row="7" column="0">
+   <item row="8" column="0">
     <widget class="QLabel" name="label_11">
      <property name="text">
       <string>Genre:</string>
      </property>
     </widget>
    </item>
-   <item row="7" column="1" colspan="2">
+   <item row="8" column="1" colspan="2">
     <widget class="QLineEdit" name="genre">
      <property name="readOnly">
       <bool>true</bool>
      </property>
     </widget>
    </item>
-   <item row="8" column="0">
+   <item row="9" column="0">
     <widget class="QLabel" name="label_12">
      <property name="text">
       <string>Developer:</string>
      </property>
     </widget>
    </item>
-   <item row="8" column="1" colspan="2">
+   <item row="9" column="1" colspan="2">
     <widget class="QLineEdit" name="developer">
      <property name="readOnly">
       <bool>true</bool>
      </property>
     </widget>
    </item>
-   <item row="9" column="0">
+   <item row="10" column="0">
     <widget class="QLabel" name="label_14">
      <property name="text">
       <string>Release Info:</string>
      </property>
     </widget>
    </item>
-   <item row="9" column="1" colspan="2">
+   <item row="10" column="1" colspan="2">
     <widget class="QLineEdit" name="releaseInfo">
      <property name="readOnly">
       <bool>true</bool>
      </property>
     </widget>
    </item>
-   <item row="10" column="0">
+   <item row="11" column="0">
     <widget class="QLabel" name="label_15">
      <property name="text">
       <string>Controllers:</string>
      </property>
     </widget>
    </item>
-   <item row="10" column="1" colspan="2">
+   <item row="11" column="1" colspan="2">
     <widget class="QLineEdit" name="controllers">
      <property name="readOnly">
       <bool>true</bool>
      </property>
     </widget>
    </item>
-   <item row="11" column="0">
+   <item row="12" column="0">
     <widget class="QLabel" name="label_9">
      <property name="text">
       <string>Controller Preset:</string>
      </property>
     </widget>
    </item>
-   <item row="11" column="1" colspan="2">
+   <item row="12" column="1" colspan="2">
     <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="1,0">
      <item>
       <widget class="QComboBox" name="inputProfile"/>
@@ -251,14 +274,14 @@
      </item>
     </layout>
    </item>
-   <item row="12" column="0">
+   <item row="13" column="0">
     <widget class="QLabel" name="label_8">
      <property name="text">
       <string>Tracks:</string>
      </property>
     </widget>
    </item>
-   <item row="12" column="1" colspan="2">
+   <item row="13" column="1" colspan="2">
     <layout class="QHBoxLayout" name="verifyLayout" stretch="1,0">
      <item>
       <widget class="QLineEdit" name="revision">
@@ -282,7 +305,7 @@
      </item>
     </layout>
    </item>
-   <item row="13" column="0" colspan="3">
+   <item row="14" column="0" colspan="3">
     <widget class="QTreeWidget" name="tracks">
      <property name="editTriggers">
       <set>QAbstractItemView::EditTrigger::NoEditTriggers</set>
@@ -328,7 +351,7 @@
      </column>
     </widget>
    </item>
-   <item row="14" column="0" colspan="3">
+   <item row="15" column="0" colspan="3">
     <spacer name="verticalSpacer">
      <property name="orientation">
       <enum>Qt::Orientation::Vertical</enum>

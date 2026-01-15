@@ -83,6 +83,8 @@ void SelectDiscDialog::populateList(const GameDatabase::DiscSetEntry* dsentry, b
     }
   }
 
-  setWindowTitle(
-    tr("Select Disc for %1").arg(QtUtils::StringViewToQString(dsentry->GetDisplayTitle(localized_titles))));
+  const GameList::Entry* dsgentry = GameList::GetEntryForPath(dsentry->GetSaveTitle());
+  setWindowTitle(tr("Select Disc for %1")
+                   .arg(QtUtils::StringViewToQString(dsgentry ? dsgentry->GetDisplayTitle(localized_titles) :
+                                                                dsentry->GetDisplayTitle(localized_titles))));
 }

@@ -123,7 +123,8 @@ static void ScanFile(std::string path, std::time_t timestamp, std::unique_lock<s
 static bool LoadOrInitializeCache(std::FILE* fp, bool invalidate_cache);
 static bool LoadEntriesFromCache(BinaryFileReader& reader);
 static bool WriteEntryToCache(const Entry* entry, const std::string& entry_path, BinaryFileWriter& writer);
-static void CreateDiscSetEntries(const std::vector<std::string>& excluded_paths, const PlayedTimeMap& played_time_map);
+static void CreateDiscSetEntries(const std::vector<std::string>& excluded_paths, const PlayedTimeMap& played_time_map,
+                                 const INISettingsInterface& custom_attributes_ini);
 
 static std::string GetPlayedTimePath();
 static bool ParsePlayedTimeLine(char* line, std::string_view& serial, PlayedTimeEntry& entry);
@@ -1118,7 +1119,7 @@ void GameList::Refresh(bool invalidate_cache, bool only_cache, ProgressCallback*
   s_state.cache_map.clear();
 
   // merge multi-disc games
-  CreateDiscSetEntries(excluded_paths, played_time);
+  CreateDiscSetEntries(excluded_paths, played_time, custom_attributes_ini);
 }
 
 GameList::EntryList GameList::TakeEntryList()
@@ -1129,7 +1130,8 @@ GameList::EntryList GameList::TakeEntryList()
 }
 
 void GameList::CreateDiscSetEntries(const std::vector<std::string>& excluded_paths,
-                                    const PlayedTimeMap& played_time_map)
+                                    const PlayedTimeMap& played_time_map,
+                                    const INISettingsInterface& custom_attributes_ini)
 {
   std::unique_lock lock(s_state.mutex);
 
@@ -1213,6 +1215,7 @@ void GameList::CreateDiscSetEntries(const std::vector<std::string>& excluded_pat
     }
 
     DEV_LOG("Created disc set {} from {} entries", dsentry->title, num_parts);
+    ApplyCustomAttributes(set_entry.path, &set_entry, custom_attributes_ini);
 
     // we have to do the exclusion check at the end, because otherwise the individual discs get added
     if (!IsPathExcluded(excluded_paths, dsentry->title))
@@ -1897,23 +1900,31 @@ bool GameList::SaveCustomTitleForPath(const std::string& path, const std::string
   if (!PutCustomPropertiesField(custom_attributes_ini, path, "Title", custom_title.c_str()))
     return false;
 
-  if (!custom_title.empty())
+  // Can skip the rescan and just update the value directly.
+  auto lock = GetLock();
+  Entry* entry = GetMutableEntryForPath(path);
+  if (entry)
   {
-    // Can skip the rescan and just update the value directly.
-    auto lock = GetLock();
-    Entry* entry = GetMutableEntryForPath(path);
-    if (entry)
+    if (!custom_title.empty())
     {
       entry->title = custom_title;
       entry->has_custom_title = true;
+      return true;
+    }
+    else
+    {
+      // Can pull it from the db? Applies to both discs + disc sets.
+      if (entry->dbentry)
+      {
+        entry->title = {};
+        entry->has_custom_title = false;
+        return true;
+      }
     }
   }
-  else
-  {
-    // Let the cache update by rescanning. Only need to do this on deletion, to get the original value.
-    RescanCustomAttributesForPath(path, custom_attributes_ini);
-  }
 
+  // Let the cache update by rescanning. Only need to do this on deletion, to get the original value.
+  RescanCustomAttributesForPath(path, custom_attributes_ini);
   return true;
 }
 

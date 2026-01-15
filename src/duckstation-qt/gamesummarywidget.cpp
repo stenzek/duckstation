@@ -16,6 +16,7 @@
 
 #include "util/translation.h"
 
+#include "common/assert.h"
 #include "common/error.h"
 #include "common/string_util.h"
 
@@ -79,7 +80,18 @@ GameSummaryWidget::GameSummaryWidget(const GameList::Entry* entry, SettingsWindo
       m_ui.title->setModified(false);
     }
   });
-  connect(m_ui.restoreTitle, &QAbstractButton::clicked, this, [this]() { setCustomTitle(std::string()); });
+  connect(m_ui.restoreTitle, &QAbstractButton::clicked, this, [this]() { setCustomTitle({}); });
+  if (m_ui.discSetTitle)
+  {
+    connect(m_ui.discSetTitle, &QLineEdit::editingFinished, this, [this]() {
+      if (m_ui.discSetTitle->isModified())
+      {
+        setCustomDiscSetTitle(m_ui.discSetTitle->text().toStdString());
+        m_ui.discSetTitle->setModified(false);
+      }
+    });
+    connect(m_ui.restoreDiscSetTitle, &QAbstractButton::clicked, this, [this]() { setCustomDiscSetTitle({}); });
+  }
   connect(m_ui.region, &QComboBox::currentIndexChanged, this, [this](int index) { setCustomRegion(index); });
   connect(m_ui.restoreRegion, &QAbstractButton::clicked, this, [this]() { setCustomRegion(-1); });
   connect(m_ui.customLanguage, &QComboBox::currentIndexChanged, this, &GameSummaryWidget::onCustomLanguageChanged);
@@ -134,6 +146,26 @@ void GameSummaryWidget::populateUi(const GameList::Entry* entry)
   m_ui.customLanguage->setCurrentIndex(entry->HasCustomLanguage() ? (static_cast<u32>(entry->custom_language) + 1) : 0);
   if (entry->IsDiscSet())
     m_ui.customLanguage->setEnabled(false);
+
+  // Need to look up the entry for the disc set itself
+  Assert(!entry->disc_set_member || entry->GetDiscSetEntry());
+  const GameList::Entry* disc_set_entry =
+    entry->disc_set_member ? GameList::GetEntryForPath(entry->GetDiscSetEntry()->GetSaveTitle()) : nullptr;
+  if (disc_set_entry)
+  {
+    m_ui.discSetTitle->setText(
+      QtUtils::StringViewToQString(disc_set_entry->GetDisplayTitle(GameList::ShouldShowLocalizedTitles())));
+    m_ui.restoreDiscSetTitle->setEnabled(disc_set_entry->has_custom_title);
+  }
+  else
+  {
+    m_ui.mainLayout->removeWidget(m_ui.discSetTitleLabel);
+    QtUtils::SafeDeleteWidget(m_ui.discSetTitleLabel);
+    m_ui.mainLayout->removeWidget(m_ui.discSetTitle);
+    QtUtils::SafeDeleteWidget(m_ui.discSetTitle);
+    m_ui.mainLayout->removeWidget(m_ui.restoreDiscSetTitle);
+    QtUtils::SafeDeleteWidget(m_ui.restoreDiscSetTitle);
+  }
 
   if (const GameDatabase::Entry* dbentry = entry->dbentry)
   {
@@ -276,6 +308,30 @@ void GameSummaryWidget::setCustomTitle(const std::string& text)
   }
 
   g_main_window->getGameListWidget()->getModel()->invalidateColumnForPath(m_path, GameListModel::Column_Title);
+}
+
+void GameSummaryWidget::setCustomDiscSetTitle(const std::string& text)
+{
+  const auto lock = GameList::GetLock();
+  const GameList::Entry* entry = GameList::GetEntryForPath(m_path);
+  if (!entry->disc_set_member)
+    return;
+
+  const GameList::Entry* disc_set_entry =
+    entry->disc_set_member ? GameList::GetEntryForPath(entry->GetDiscSetEntry()->GetSaveTitle()) : nullptr;
+  if (!disc_set_entry)
+    return;
+
+  GameList::SaveCustomTitleForPath(disc_set_entry->path, text);
+
+  const QSignalBlocker sb(m_ui.title);
+  m_ui.discSetTitle->setText(
+    QtUtils::StringViewToQString(disc_set_entry->GetDisplayTitle(GameList::ShouldShowLocalizedTitles())));
+
+  m_ui.restoreDiscSetTitle->setEnabled(disc_set_entry->has_custom_title);
+
+  g_main_window->getGameListWidget()->getModel()->invalidateColumnForPath(disc_set_entry->path,
+                                                                          GameListModel::Column_Title);
 }
 
 void GameSummaryWidget::setCustomRegion(int region)

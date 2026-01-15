@@ -961,7 +961,7 @@ void FullscreenUI::HandleGameListOptions(const GameList::Entry* entry)
     };
 
     const GameDatabase::DiscSetEntry* dsentry = entry->dbentry->disc_set;
-    OpenChoiceDialog(dsentry->GetDisplayTitle(GameList::ShouldShowLocalizedTitles()), false, std::move(options),
+    OpenChoiceDialog(entry->GetDisplayTitle(GameList::ShouldShowLocalizedTitles()), false, std::move(options),
                      [dsentry](s32 index, const std::string& title, bool checked) mutable {
                        switch (index)
                        {
@@ -1009,17 +1009,20 @@ void FullscreenUI::HandleSelectDiscForDiscSet(const GameDatabase::DiscSetEntry* 
   }
   options.emplace_back(FSUI_ICONVSTR(ICON_FA_SQUARE_XMARK, "Close Menu"), false);
 
-  OpenChoiceDialog(
-    fmt::format(FSUI_FSTR("Select Disc for {}"), dsentry->GetDisplayTitle(GameList::ShouldShowLocalizedTitles())),
-    false, std::move(options), [paths = std::move(paths)](s32 index, const std::string& title, bool checked) {
-      if (static_cast<u32>(index) >= paths.size())
-        return;
+  const GameList::Entry* dsgentry = GameList::GetEntryForPath(dsentry->GetSaveTitle());
+  const bool localized_titles = GameList::ShouldShowLocalizedTitles();
+  OpenChoiceDialog(fmt::format(FSUI_FSTR("Select Disc for {}"), dsgentry ? dsgentry->GetDisplayTitle(localized_titles) :
+                                                                           dsentry->GetDisplayTitle(localized_titles)),
+                   false, std::move(options),
+                   [paths = std::move(paths)](s32 index, const std::string& title, bool checked) {
+                     if (static_cast<u32>(index) >= paths.size())
+                       return;
 
-      auto lock = GameList::GetLock();
-      const GameList::Entry* entry = GameList::GetEntryForPath(paths[index]);
-      if (entry)
-        HandleGameListActivate(entry);
-    });
+                     auto lock = GameList::GetLock();
+                     const GameList::Entry* entry = GameList::GetEntryForPath(paths[index]);
+                     if (entry)
+                       HandleGameListActivate(entry);
+                   });
 }
 
 void FullscreenUI::SwitchToGameList()
