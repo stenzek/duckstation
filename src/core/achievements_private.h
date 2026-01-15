@@ -16,7 +16,6 @@ namespace Achievements {
 
 inline constexpr float INDICATOR_FADE_IN_TIME = 0.2f;
 inline constexpr float INDICATOR_FADE_OUT_TIME = 0.4f;
-extern const std::string_view NOTIFICATION_SPINNER_NOTE;
 
 struct LeaderboardTrackerIndicator
 {

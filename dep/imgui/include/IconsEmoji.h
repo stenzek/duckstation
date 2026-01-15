@@ -51,3 +51,4 @@
 #define ICON_EMOJI_BAR_CHART "\xf0\x9f\x93\x8a"
 #define ICON_EMOJI_CHART_UPWARDS_TREND "\xf0\x9f\x93\x88"
 #define ICON_EMOJI_DIRECT_HIT "\xf0\x9f\x8e\xaf"
+#define ICON_EMOJI_RED_FLAG "\xf0\x9f\x9a\xa9"

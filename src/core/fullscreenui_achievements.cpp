@@ -7,6 +7,7 @@
 #include "host.h"
 #include "system.h"
 
+#include "util/gpu_texture.h"
 #include "util/imgui_manager.h"
 #include "util/translation.h"
 
@@ -59,7 +60,8 @@ struct Notification
   float duration;
   float target_y;
   float last_y;
-  float min_width;
+  u16 min_width;
+  AchievementNotificationNoteType note_type;
 };
 
 struct PauseMenuAchievementInfo
@@ -238,7 +240,8 @@ void FullscreenUI::DrawAchievementsOverlays()
 }
 
 void FullscreenUI::AddAchievementNotification(std::string key, float duration, std::string image_path,
-                                              std::string title, std::string text, std::string note, float min_width)
+                                              std::string title, std::string text, std::string note,
+                                              AchievementNotificationNoteType note_type, u16 min_width)
 {
   const bool prev_had_notifications = s_achievements_locals.notifications.empty();
   const Timer::Value current_time = Timer::GetCurrentValue();
@@ -255,6 +258,7 @@ void FullscreenUI::AddAchievementNotification(std::string key, float duration, s
         it->note = std::move(note);
         it->badge_path = std::move(image_path);
         it->min_width = min_width;
+        it->note_type = note_type;
 
         // Don't fade it in again
         const float time_passed = static_cast<float>(Timer::ConvertValueToSeconds(current_time - it->start_time));
@@ -277,6 +281,7 @@ void FullscreenUI::AddAchievementNotification(std::string key, float duration, s
   notif.target_y = -1.0f;
   notif.last_y = -1.0f;
   notif.min_width = min_width;
+  notif.note_type = note_type;
   s_achievements_locals.notifications.push_back(std::move(notif));
 
   if (!prev_had_notifications)
@@ -302,8 +307,8 @@ void FullscreenUI::DrawNotifications(NotificationLayout& layout)
   const float max_text_width = max_width - badge_size - (horizontal_padding * 2.0f) - horizontal_spacing;
   const float min_height = (vertical_padding * 2.0f) + badge_size;
   const float rounding = FullscreenUI::LayoutScale(20.0f);
-  const float spinner_size = FullscreenUI::LayoutScale(16.0f);
   const float min_rounded_width = rounding * 2.0f;
+  const float note_icon_padding = LayoutScale(30.0f);
 
   ImFont*& font = UIStyle.Font;
   const float& title_font_size = UIStyle.LargeFontSize;
@@ -329,26 +334,67 @@ void FullscreenUI::DrawNotifications(NotificationLayout& layout)
     }
 
     // place note to the right of the title
-    const bool is_spinner = (notif.note == Achievements::NOTIFICATION_SPINNER_NOTE);
-    const bool is_icon_note =
-      (!is_spinner && !notif.note.empty() && (StringUtil::GetUTF8CharacterCount(notif.note) == 1));
-    const float note_font_size = is_spinner ? spinner_size : (is_icon_note ? note_icon_size : note_text_size);
-    const float note_font_weight = is_icon_note ? UIStyle.NormalFontWeight : note_text_weight;
-    const ImVec2 note_size = is_spinner ?
-                               LayoutScale(note_font_size, note_font_size) :
-                               (notif.note.empty() ? ImVec2() :
-                                                     font->CalcTextSizeA(note_font_size, note_font_weight, FLT_MAX,
-                                                                         0.0f, IMSTR_START_END(notif.note)));
+    GPUTexture* note_image = nullptr;
+    float note_font_size, note_font_weight, note_offset_y, note_spacing;
+    ImVec2 note_size;
+    switch (notif.note_type)
+    {
+      case AchievementNotificationNoteType::Text:
+        note_font_size = note_text_size;
+        note_font_weight = note_text_weight;
+        note_size = font->CalcTextSizeA(note_font_size, note_font_weight, FLT_MAX, 0.0f, IMSTR_START_END(notif.note));
+        note_offset_y = 0.0f;
+        note_spacing = larger_horizontal_spacing;
+        break;
+
+      case AchievementNotificationNoteType::IconText:
+        note_font_size = note_icon_size;
+        note_font_weight = UIStyle.NormalFontWeight;
+        note_size = font->CalcTextSizeA(note_font_size, note_font_weight, FLT_MAX, 0.0f, IMSTR_START_END(notif.note));
+        note_offset_y = 0.0f;
+        note_spacing = note_icon_padding;
+        break;
+
+      case AchievementNotificationNoteType::Spinner:
+        note_font_size = 0.0f;
+        note_font_weight = 0.0f;
+        note_size = ImVec2(note_text_size, note_text_size);
+        note_offset_y = ImFloor((note_icon_size - note_text_size) * 0.5f);
+        note_spacing = note_icon_padding;
+        break;
+
+      case AchievementNotificationNoteType::Image:
+        note_font_size = 0.0f;
+        note_font_weight = 0.0f;
+        note_image = GetCachedTexture(notif.note, static_cast<u32>(note_text_size), static_cast<u32>(note_text_size));
+        note_size = (note_image && note_image->GetWidth() > note_image->GetHeight()) ?
+                      ImVec2(note_text_size * (static_cast<float>(note_image->GetWidth()) /
+                                               static_cast<float>(note_image->GetHeight())),
+                             note_text_size) :
+                      ImVec2(note_text_size, note_text_size * (static_cast<float>(note_image->GetHeight()) /
+                                                               static_cast<float>(note_image->GetWidth())));
+        note_offset_y = ImFloor((note_icon_size - note_text_size) * 0.5f);
+        note_spacing = note_icon_padding;
+        break;
+
+      case AchievementNotificationNoteType::None:
+      default:
+        note_font_size = 0.0f;
+        note_font_weight = 0.0f;
+        note_size = ImVec2();
+        note_offset_y = 0.0f;
+        note_spacing = 0.0f;
+        break;
+    }
+
     const ImVec2 title_size = font->CalcTextSizeA(title_font_size, title_font_weight, max_text_width - note_size.x,
                                                   max_text_width - note_size.x, IMSTR_START_END(notif.title));
     const ImVec2 text_size = font->CalcTextSizeA(text_font_size, text_font_weight, max_text_width, max_text_width,
                                                  IMSTR_START_END(notif.text));
 
-    const float box_width =
-      std::max((horizontal_padding * 2.0f) + badge_size + horizontal_spacing +
-                 ImCeil(std::max(title_size.x + (notif.note.empty() ? 0.0f : (larger_horizontal_spacing + note_size.x)),
-                                 text_size.x)),
-               std::max(LayoutScale(notif.min_width), min_width));
+    const float box_width = std::max((horizontal_padding * 2.0f) + badge_size + horizontal_spacing +
+                                       ImCeil(std::max(title_size.x + note_spacing + note_size.x, text_size.x)),
+                                     std::max(static_cast<float>(LayoutScale(notif.min_width)), min_width));
     const float box_height =
       std::max((vertical_padding * 2.0f) + ImCeil(title_size.y) + vertical_spacing + ImCeil(text_size.y), min_height);
 
@@ -424,18 +470,38 @@ void FullscreenUI::DrawNotifications(NotificationLayout& layout)
     RenderShadowedTextClipped(dl, font, text_font_size, text_font_weight, text_bb.Min, text_bb.Max, text_col,
                               notif.text, &text_size, ImVec2(0.0f, 0.0f), max_text_width, &text_bb);
 
-    if (notif.note == Achievements::NOTIFICATION_SPINNER_NOTE)
+    const ImVec2 note_pos =
+      ImVec2((box_min.x + box_width) - horizontal_padding - note_size.x, box_min.y + vertical_padding + note_offset_y);
+    switch (notif.note_type)
     {
-      DrawSpinner(dl, ImVec2((box_min.x + box_width) - horizontal_padding - note_size.x, box_min.y + vertical_padding),
-                  title_col, note_size.x, LayoutScale(4.0f));
-    }
-    else if (!notif.note.empty())
-    {
-      const ImVec2 note_pos =
-        ImVec2((box_min.x + box_width) - horizontal_padding - note_size.x, box_min.y + vertical_padding);
-      const ImRect note_bb = ImRect(note_pos, note_pos + note_size);
-      RenderShadowedTextClipped(dl, font, note_font_size, note_font_weight, note_bb.Min, note_bb.Max, title_col,
-                                notif.note, &note_size, ImVec2(0.0f, 0.0f), max_text_width, &note_bb);
+      case AchievementNotificationNoteType::Text:
+      case AchievementNotificationNoteType::IconText:
+      {
+        const ImRect note_bb = ImRect(note_pos, note_pos + note_size);
+        RenderShadowedTextClipped(dl, font, note_font_size, note_font_weight, note_bb.Min, note_bb.Max, title_col,
+                                  notif.note, &note_size, ImVec2(0.0f, 0.0f), max_text_width, &note_bb);
+      }
+      break;
+
+      case AchievementNotificationNoteType::Spinner:
+      {
+        DrawSpinner(dl, note_pos, title_col, note_size.x, LayoutScale(4.0f));
+      }
+      break;
+
+      case AchievementNotificationNoteType::Image:
+      {
+        if (note_image)
+        {
+          const ImRect image_rect = CenterImage(note_size, note_image);
+          dl->AddImage(note_image, note_pos + image_rect.Min, note_pos + image_rect.Max);
+        }
+      }
+      break;
+
+      case AchievementNotificationNoteType::None:
+      default:
+        break;
     }
 
     ++iter;

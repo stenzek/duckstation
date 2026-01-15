@@ -119,9 +119,20 @@ bool IsInputBindingDialogOpen();
 // Achievements
 //////////////////////////////////////////////////////////////////////////
 
+enum class AchievementNotificationNoteType
+{
+  None,
+  Text,
+  IconText,
+  Spinner,
+  Image,
+};
+
 /// Schedules an achievement notification to be shown.
 void AddAchievementNotification(std::string key, float duration, std::string image_path, std::string title,
-                                std::string text, std::string note = {}, float min_width = 0.0f);
+                                std::string text, std::string note = {},
+                                AchievementNotificationNoteType note_type = AchievementNotificationNoteType::None,
+                                u16 min_width = 0);
 
 /// Draws ImGui overlays when ingame.
 void DrawAchievementsOverlays();
