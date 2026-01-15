@@ -128,9 +128,10 @@ static bool OpenLeaderboardById(u32 leaderboard_id);
 static void FetchNextLeaderboardEntries();
 static void CloseLeaderboard();
 static void DrawLeaderboardListEntry(const rc_client_leaderboard_t* lboard);
-static void DrawLeaderboardEntry(const rc_client_leaderboard_entry_t& entry, u32 index, bool is_self,
+static bool DrawLeaderboardEntry(const rc_client_leaderboard_entry_t& entry, u32 index, bool is_self,
                                  float rank_column_width, float name_column_width, float time_column_width,
                                  float column_spacing, std::time_t current_time, const std::tm& current_tm);
+static void DrawLeaderboardLoadingIndicator(float pos_y, float avail_height, bool short_text);
 static SmallString FormatRelativeTimestamp(std::time_t timestamp, std::time_t current_time, const std::tm& current_tm);
 
 namespace {
@@ -425,23 +426,8 @@ void FullscreenUI::DrawNotifications(NotificationLayout& layout)
 
     if (notif.note == Achievements::NOTIFICATION_SPINNER_NOTE)
     {
-      // based on https://github.com/ocornut/imgui/issues/1901
-      static constexpr u32 num_segments = 30;
-      const float radius = ImFloor(note_size.x * 0.5f);
-      const float thickness = LayoutScale(4.0f);
-      const ImVec2 pos = ImVec2((box_min.x + box_width) - horizontal_padding - note_size.x + radius,
-                                box_min.y + vertical_padding + radius);
-      const float start =
-        std::abs(ImSin(static_cast<float>(GImGui->Time * 1.8f)) * static_cast<float>(num_segments - 5));
-      const float a_min = IM_PI * 2.0f * start / static_cast<float>(num_segments);
-      const float a_max = IM_PI * 2.0f * (static_cast<float>(num_segments - 3) / static_cast<float>(num_segments));
-      for (u32 i = 0; i < num_segments; i++)
-      {
-        const float a = a_min + ((float)i / (float)num_segments) * (a_max - a_min);
-        dl->PathLineTo(ImVec2(pos.x + ImCos(static_cast<float>(a + GImGui->Time * 8.0f)) * radius,
-                              pos.y + ImSin(static_cast<float>(a + GImGui->Time * 8.0f)) * radius));
-      }
-      dl->PathStroke(title_col, false, thickness);
+      DrawSpinner(dl, ImVec2((box_min.x + box_width) - horizontal_padding - note_size.x, box_min.y + vertical_padding),
+                  title_col, note_size.x, LayoutScale(4.0f));
     }
     else if (!notif.note.empty())
     {
@@ -2372,26 +2358,29 @@ void FullscreenUI::DrawLeaderboardsWindow()
       ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
       ImGui::PushStyleVar(ImGuiStyleVar_PopupBorderSize, 0.0f);
 
+      u32 total_count = 0;
+      u32 last_visible_count = 0;
       if (!s_achievements_locals.is_showing_all_leaderboard_entries)
       {
         if (s_achievements_locals.leaderboard_nearby_entries)
         {
           for (u32 i = 0; i < s_achievements_locals.leaderboard_nearby_entries->num_entries; i++)
           {
-            DrawLeaderboardEntry(s_achievements_locals.leaderboard_nearby_entries->entries[i], i,
-                                 static_cast<s32>(i) == s_achievements_locals.leaderboard_nearby_entries->user_index,
-                                 rank_column_width, name_column_width, time_column_width, column_spacing, current_time,
-                                 current_tm.value());
+            total_count++;
+
+            if (DrawLeaderboardEntry(s_achievements_locals.leaderboard_nearby_entries->entries[i], i,
+                                     static_cast<s32>(i) ==
+                                       s_achievements_locals.leaderboard_nearby_entries->user_index,
+                                     rank_column_width, name_column_width, time_column_width, column_spacing,
+                                     current_time, current_tm.value()))
+            {
+              last_visible_count = total_count;
+            }
           }
         }
         else
         {
-          const ImVec2 pos_min(0.0f, heading_height);
-          const ImVec2 pos_max(display_size.x, display_size.y);
-          RenderShadowedTextClipped(UIStyle.Font, UIStyle.MediumLargeFontSize, UIStyle.BoldFontWeight, pos_min, pos_max,
-                                    text_color,
-                                    TRANSLATE_SV("Achievements", "Downloading leaderboard data, please wait..."),
-                                    nullptr, ImVec2(0.5f, 0.5f), 0.0f);
+          DrawLeaderboardLoadingIndicator(heading_height, display_size.y - heading_height, false);
         }
       }
       else
@@ -2400,19 +2389,29 @@ void FullscreenUI::DrawLeaderboardsWindow()
         {
           for (u32 i = 0; i < list->num_entries; i++)
           {
-            DrawLeaderboardEntry(list->entries[i], i, static_cast<s32>(i) == list->user_index, rank_column_width,
-                                 name_column_width, time_column_width, column_spacing, current_time,
-                                 current_tm.value());
+            total_count++;
+
+            if (DrawLeaderboardEntry(list->entries[i], i, static_cast<s32>(i) == list->user_index, rank_column_width,
+                                     name_column_width, time_column_width, column_spacing, current_time,
+                                     current_tm.value()))
+            {
+              last_visible_count = total_count;
+            }
           }
         }
 
         if (!s_achievements_locals.has_fetched_all_leaderboard_entries)
         {
-          bool visible;
-          text.format(ICON_FA_HOURGLASS_HALF " {}", TRANSLATE_SV("Achievements", "Loading..."));
-          MenuButtonWithVisibilityQuery(text, text, {}, {}, &visible, false);
-          if (visible && !s_achievements_locals.leaderboard_fetch_handle)
+          // if showing the last few, fetch the next batch
+          if ((total_count - last_visible_count) <= 3 && !s_achievements_locals.leaderboard_fetch_handle)
             FetchNextLeaderboardEntries();
+
+          // show the loading indicator in the bottom-right
+          if (s_achievements_locals.leaderboard_fetch_handle)
+          {
+            const ImRect& win_rc = ImGui::GetCurrentWindow()->InnerRect;
+            DrawLeaderboardLoadingIndicator(win_rc.Min.y, win_rc.GetHeight(), true);
+          }
         }
       }
 
@@ -2449,7 +2448,7 @@ void FullscreenUI::DrawLeaderboardsWindow()
   }
 }
 
-void FullscreenUI::DrawLeaderboardEntry(const rc_client_leaderboard_entry_t& entry, u32 index, bool is_self,
+bool FullscreenUI::DrawLeaderboardEntry(const rc_client_leaderboard_entry_t& entry, u32 index, bool is_self,
                                         float rank_column_width, float name_column_width, float time_column_width,
                                         float column_spacing, std::time_t current_time, const std::tm& current_tm)
 {
@@ -2457,7 +2456,7 @@ void FullscreenUI::DrawLeaderboardEntry(const rc_client_leaderboard_entry_t& ent
   bool visible, hovered;
   bool pressed = MenuButtonFrame(entry.user, UIStyle.MediumLargeFontSize, true, &bb, &visible, &hovered);
   if (!visible)
-    return;
+    return false;
 
   const float midpoint = bb.Min.y + UIStyle.MediumLargeFontSize + LayoutScale(4.0f);
   float text_start_x = bb.Min.x;
@@ -2536,6 +2535,44 @@ void FullscreenUI::DrawLeaderboardEntry(const rc_client_leaderboard_entry_t& ent
     INFO_LOG("Opening profile details: {}", url);
     Host::OpenURL(url);
   }
+
+  return true;
+}
+
+void FullscreenUI::DrawLeaderboardLoadingIndicator(float pos_y, float avail_height, bool short_text)
+{
+  static constexpr const float& font_weight = UIStyle.BoldFontWeight;
+  const float font_size = short_text ? UIStyle.MediumFontSize : UIStyle.MediumLargeFontSize;
+  const u32 color = ImGui::GetColorU32(DarkerColor(ImGui::GetStyle().Colors[ImGuiCol_Text], 0.9f));
+  const std::string_view text = short_text ?
+                                  TRANSLATE_SV("Achievements", "Loading...") :
+                                  TRANSLATE_SV("Achievements", "Downloading leaderboard data, please wait...");
+  const ImVec2 text_size = UIStyle.Font->CalcTextSizeA(font_size, font_weight, FLT_MAX, 0.0f, IMSTR_START_END(text));
+  const float spinner_size = font_size;
+  const float spinner_spacing = short_text ? LayoutScale(12.0f) : LayoutScale(16.0f);
+  const float total_width = spinner_size + spinner_spacing + text_size.x;
+  const float display_width = ImGui::GetIO().DisplaySize.x;
+
+  // position in right side of screen if short text, center otherwise
+  const ImVec2 pos = short_text ?
+                       ImVec2((display_width - total_width) - LayoutScale(25.0f),
+                              pos_y + avail_height - font_size - LayoutScale(10.0f)) :
+                       ImVec2((display_width - total_width) * 0.5f, pos_y + (avail_height - font_size) * 0.5f);
+
+  // for short text, draw a background box
+  if (short_text)
+  {
+    const ImVec2 padding = ImVec2(LayoutScale(10.0f), LayoutScale(6.0f));
+    ImGui::GetWindowDrawList()->AddRectFilled(ImVec2(pos.x - padding.x, pos.y - padding.y),
+                                              ImVec2(pos.x + total_width + padding.x, pos.y + font_size + padding.y),
+                                              ImGui::GetColorU32(ModAlpha(UIStyle.PopupBackgroundColor, 0.8f)),
+                                              LayoutScale(LAYOUT_MENU_ITEM_BORDER_ROUNDING));
+  }
+
+  DrawSpinner(ImGui::GetWindowDrawList(), pos, color, spinner_size, LayoutScale(3.0f));
+  const ImVec2 text_pos = ImVec2(pos.x + spinner_size + spinner_spacing, pos.y);
+  RenderShadowedTextClipped(UIStyle.Font, font_size, UIStyle.BoldFontWeight, text_pos, text_pos + text_size, color,
+                            text, &text_size);
 }
 
 SmallString FullscreenUI::FormatRelativeTimestamp(time_t timestamp, time_t current_time, const std::tm& current_tm)

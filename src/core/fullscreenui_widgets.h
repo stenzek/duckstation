@@ -320,6 +320,7 @@ void PopPrimaryColor();
 
 void DrawRoundedGradientRect(ImDrawList* const dl, const ImVec2& pos_min, const ImVec2& pos_max, ImU32 col_left,
                              ImU32 col_right, float rounding);
+void DrawSpinner(ImDrawList* const dl, const ImVec2& pos, ImU32 color, float size, float thickness);
 
 void DrawWindowTitle(std::string_view title);
 

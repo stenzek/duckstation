@@ -1351,6 +1351,24 @@ void FullscreenUI::DrawRoundedGradientRect(ImDrawList* const dl, const ImVec2& p
                     ImDrawFlags_RoundCornersRight);
 }
 
+void FullscreenUI::DrawSpinner(ImDrawList* const dl, const ImVec2& pos, ImU32 color, float size, float thickness)
+{
+  // based off https://github.com/ocornut/imgui/issues/1901
+  static constexpr u32 num_segments = 30;
+  const float radius = ImFloor(size * 0.5f);
+  const ImVec2 center = ImVec2(pos.x + radius, pos.y + radius);
+  const float start = std::abs(ImSin(static_cast<float>(GImGui->Time * 1.8f)) * static_cast<float>(num_segments - 5));
+  const float a_min = IM_PI * 2.0f * start / static_cast<float>(num_segments);
+  const float a_max = IM_PI * 2.0f * (static_cast<float>(num_segments - 3) / static_cast<float>(num_segments));
+  for (u32 i = 0; i < num_segments; i++)
+  {
+    const float a = a_min + ((float)i / (float)num_segments) * (a_max - a_min);
+    dl->PathLineTo(ImVec2(center.x + ImCos(static_cast<float>(a + GImGui->Time * 8.0f)) * radius,
+                          center.y + ImSin(static_cast<float>(a + GImGui->Time * 8.0f)) * radius));
+  }
+  dl->PathStroke(color, false, thickness);
+}
+
 bool FullscreenUI::BeginFullscreenColumns(const char* title, float pos_y, bool expand_to_screen_width, bool footer)
 {
   ImGui::SetNextWindowPos(ImVec2(expand_to_screen_width ? 0.0f : UIStyle.LayoutPaddingLeft, pos_y));
