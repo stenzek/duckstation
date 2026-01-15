@@ -462,7 +462,7 @@ void GameSummaryWidget::onInputProfileChanged(int index)
       {
         const auto lock = Core::GetSettingsLock();
         SettingsInterface* base_sif = Core::GetBaseSettingsLayer();
-        InputManager::CopyConfiguration(sif, *base_sif, true, true, true, false);
+        InputManager::CopyConfiguration(sif, *base_sif, true, false, true, false);
 
         QtUtils::AsyncMessageBox(this, QMessageBox::Information, QtUtils::GetRootWidget(this)->windowTitle(),
                                  tr("Per-game controller configuration initialized with global settings."));

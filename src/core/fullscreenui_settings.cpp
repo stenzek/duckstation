@@ -3029,7 +3029,7 @@ void FullscreenUI::CopyGlobalControllerSettingsToGame()
   SettingsInterface* dsi = GetEditingSettingsInterface(true);
   SettingsInterface* ssi = GetEditingSettingsInterface(false);
 
-  InputManager::CopyConfiguration(dsi, *ssi, true, true, false);
+  InputManager::CopyConfiguration(dsi, *ssi, true, false, true, false);
   SetSettingsChanged(dsi);
 
   ShowToast(OSDMessageType::Quick, {}, FSUI_STR("Per-game controller configuration initialized with global settings."));
@@ -3040,7 +3040,7 @@ void FullscreenUI::DoLoadInputProfile()
   std::vector<std::string> profiles = InputManager::GetInputProfileNames();
   if (profiles.empty())
   {
-    ShowToast(OSDMessageType::Quick, {}, FSUI_STR("No input profiles available."));
+    ShowToast(OSDMessageType::Quick, {}, FSUI_STR("No controller presets available."));
     return;
   }
 
@@ -3048,25 +3048,27 @@ void FullscreenUI::DoLoadInputProfile()
   coptions.reserve(profiles.size());
   for (std::string& name : profiles)
     coptions.emplace_back(std::move(name), false);
-  OpenChoiceDialog(FSUI_ICONVSTR(ICON_FA_FOLDER_OPEN, "Load Preset"), false, std::move(coptions),
-                   [](s32 index, const std::string& title, bool checked) {
-                     if (index < 0)
-                       return;
+  OpenChoiceDialog(
+    FSUI_ICONVSTR(ICON_FA_FOLDER_OPEN, "Load Preset"), false, std::move(coptions),
+    [](s32 index, const std::string& title, bool checked) {
+      if (index < 0)
+        return;
 
-                     INISettingsInterface ssi(System::GetInputProfilePath(title));
-                     if (!ssi.Load())
-                     {
-                       ShowToast(OSDMessageType::Info, {}, fmt::format(FSUI_FSTR("Failed to load '{}'."), title));
-                       return;
-                     }
+      INISettingsInterface ssi(System::GetInputProfilePath(title));
+      if (!ssi.Load())
+      {
+        ShowToast(OSDMessageType::Info, {}, fmt::format(FSUI_FSTR("Failed to load '{}'."), title));
+        return;
+      }
 
-                     const auto lock = Core::GetSettingsLock();
-                     SettingsInterface* dsi = GetEditingSettingsInterface();
-                     InputManager::CopyConfiguration(dsi, ssi, true, true, true, IsEditingGameSettings(dsi));
-                     SetSettingsChanged(dsi);
-                     ShowToast(OSDMessageType::Quick, {},
-                               fmt::format(FSUI_FSTR("Controller preset '{}' loaded."), title));
-                   });
+      const auto lock = Core::GetSettingsLock();
+      SettingsInterface* dsi = GetEditingSettingsInterface();
+      const bool copy_hotkey_bindings = ssi.GetBoolValue("ControllerPorts", "UseProfileHotkeyBindings", false);
+      const bool copy_sources = ssi.GetBoolValue("ControllerPorts", "UseProfileInputSources", false);
+      InputManager::CopyConfiguration(dsi, ssi, true, copy_sources, true, copy_hotkey_bindings);
+      SetSettingsChanged(dsi);
+      ShowToast(OSDMessageType::Quick, {}, fmt::format(FSUI_FSTR("Controller preset '{}' loaded."), title));
+    });
 }
 
 void FullscreenUI::DoSaveInputProfile(const std::string& name)
@@ -3075,7 +3077,7 @@ void FullscreenUI::DoSaveInputProfile(const std::string& name)
 
   const auto lock = Core::GetSettingsLock();
   SettingsInterface* ssi = GetEditingSettingsInterface();
-  InputManager::CopyConfiguration(&dsi, *ssi, true, true, true, IsEditingGameSettings(ssi));
+  InputManager::CopyConfiguration(&dsi, *ssi, true, false, true, false);
   if (dsi.Save())
     ShowToast(OSDMessageType::Quick, {}, fmt::format(FSUI_FSTR("Controller preset '{}' saved."), name));
   else
@@ -3138,6 +3140,11 @@ void FullscreenUI::DrawControllerSettingsPage()
   const bool game_settings = IsEditingGameSettings(bsi);
   const bool empty_game_settings =
     (game_settings && !bsi->GetBoolValue("ControllerPorts", "UseGameSettingsForController", false));
+  const bool show_input_sources =
+    (!game_settings || (!empty_game_settings && bsi->GetBoolValue("ControllerPorts", "UseProfileInputSources", false)));
+  const bool show_hotkeys =
+    (!game_settings ||
+     (!empty_game_settings && bsi->GetBoolValue("ControllerPorts", "UseProfileHotkeyBindings", false)));
 
   BeginInnerSplitWindow();
 
@@ -3189,7 +3196,6 @@ void FullscreenUI::DrawControllerSettingsPage()
     }
   }
 
-  const bool show_hotkeys = !IsEditingGameSettings(bsi);
   if (show_hotkeys && SplitWindowSidebarItem(FSUI_ICONVSTR(ICON_PF_KEYBOARD_ALT, "Hotkeys"),
                                              (s_settings_locals.selected_controller_port == -2)))
   {
@@ -3216,11 +3222,11 @@ void FullscreenUI::DrawControllerSettingsPage()
     MenuHeading(FSUI_VSTR("Configuration"));
     ResetSplitWindowContentFocusHere();
 
-    if (IsEditingGameSettings(bsi))
+    if (game_settings)
     {
       if (DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_GEARS, "Per-Game Configuration"),
                             FSUI_VSTR("Uses game-specific settings for controllers for this game."), "ControllerPorts",
-                            "UseGameSettingsForController", false, IsEditingGameSettings(bsi), false))
+                            "UseGameSettingsForController", false, true, false))
       {
         // did we just enable per-game for the first time?
         if (bsi->GetBoolValue("ControllerPorts", "UseGameSettingsForController", false) &&
@@ -3230,17 +3236,24 @@ void FullscreenUI::DrawControllerSettingsPage()
           CopyGlobalControllerSettingsToGame();
         }
       }
-    }
 
-    if (empty_game_settings)
-    {
-      // nothing to edit..
-      content_done();
-      return;
-    }
+      if (empty_game_settings)
+      {
+        // nothing to edit..
+        content_done();
+        return;
+      }
 
-    if (IsEditingGameSettings(bsi))
-    {
+      DrawToggleSetting(
+        bsi, FSUI_ICONVSTR(ICON_FA_KEY, "Use Per-Game Input Sources"),
+        FSUI_VSTR(
+          "Uses game-specific configuration for input sources. If disabled, the global configuration will be used."),
+        "ControllerPorts", "UseProfileInputSources", false, true, false);
+      DrawToggleSetting(
+        bsi, FSUI_ICONVSTR(ICON_FA_KEY, "Use Per-Game Hotkeys"),
+        FSUI_VSTR("Uses game-specific configuration for hotkeys. If disabled, global hotkeys will be used."),
+        "ControllerPorts", "UseProfileHotkeyBindings", false, true, false);
+
       if (MenuButton(FSUI_ICONVSTR(ICON_FA_COPY, "Copy Global Settings"),
                      FSUI_VSTR("Copies the global controller configuration to this game.")))
       {
@@ -3267,24 +3280,27 @@ void FullscreenUI::DrawControllerSettingsPage()
       DoSaveInputProfile();
     }
 
-    MenuHeading(FSUI_VSTR("Input Sources"));
+    if (show_input_sources)
+    {
+      MenuHeading(FSUI_VSTR("Input Sources"));
 
-    DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_GEAR, "Enable SDL Input Source"),
-                      FSUI_VSTR("The SDL input source supports most controllers."), "InputSources", "SDL", true, true,
-                      false);
-    DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_WIFI, "SDL DualShock 4 / DualSense Enhanced Mode"),
-                      FSUI_VSTR("Provides vibration and LED control support over Bluetooth."), "InputSources",
-                      "SDLControllerEnhancedMode", false, bsi->GetBoolValue("InputSources", "SDL", true), false);
-    DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_LIGHTBULB, "SDL DualSense Player LED"),
-                      FSUI_VSTR("Enable/Disable the Player LED on DualSense controllers."), "InputSources",
-                      "SDLPS5PlayerLED", false, bsi->GetBoolValue("InputSources", "SDL", true), false);
+      DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_GEAR, "Enable SDL Input Source"),
+                        FSUI_VSTR("The SDL input source supports most controllers."), "InputSources", "SDL", true, true,
+                        false);
+      DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_WIFI, "SDL DualShock 4 / DualSense Enhanced Mode"),
+                        FSUI_VSTR("Provides vibration and LED control support over Bluetooth."), "InputSources",
+                        "SDLControllerEnhancedMode", false, bsi->GetBoolValue("InputSources", "SDL", true), false);
+      DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_LIGHTBULB, "SDL DualSense Player LED"),
+                        FSUI_VSTR("Enable/Disable the Player LED on DualSense controllers."), "InputSources",
+                        "SDLPS5PlayerLED", false, bsi->GetBoolValue("InputSources", "SDL", true), false);
 #ifdef _WIN32
-    DrawToggleSetting(
-      bsi, FSUI_ICONVSTR(ICON_FA_GEAR, "Enable XInput Input Source"),
-      FSUI_VSTR("Support for controllers that use the XInput protocol. XInput should only be used if you "
-                "are using a XInput wrapper library."),
-      "InputSources", "XInput", false);
+      DrawToggleSetting(
+        bsi, FSUI_ICONVSTR(ICON_FA_GEAR, "Enable XInput Input Source"),
+        FSUI_VSTR("Support for controllers that use the XInput protocol. XInput should only be used if you "
+                  "are using a XInput wrapper library."),
+        "InputSources", "XInput", false);
 #endif
+    }
 
     MenuHeading(FSUI_VSTR("Multitap"));
     DrawEnumSetting(bsi, FSUI_ICONVSTR(ICON_FA_SITEMAP, "Multitap Mode"),

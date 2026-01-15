@@ -209,24 +209,20 @@ void ControllerSettingsWindow::onNewProfileClicked()
 
       // from global
       const auto lock = Core::GetSettingsLock();
-      InputManager::CopyConfiguration(&temp_si, *Core::GetBaseSettingsLayer(), true, true, true, copy_hotkey_bindings);
+      InputManager::CopyConfiguration(&temp_si, *Core::GetBaseSettingsLayer(), true, false, true, copy_hotkey_bindings);
     }
     else
     {
       // from profile
       const bool copy_hotkey_bindings =
         m_editing_settings_interface->GetBoolValue("ControllerPorts", "UseProfileHotkeyBindings", false);
+      const bool copy_sources =
+        m_editing_settings_interface->GetBoolValue("ControllerPorts", "UseProfileInputSources", false);
       temp_si.SetBoolValue("ControllerPorts", "UseProfileHotkeyBindings", copy_hotkey_bindings);
-      InputManager::CopyConfiguration(&temp_si, *m_editing_settings_interface, true, true, true, copy_hotkey_bindings);
+      temp_si.SetBoolValue("ControllerPorts", "UseProfileInputSources", copy_sources);
+      InputManager::CopyConfiguration(&temp_si, *m_editing_settings_interface, true, copy_sources, true,
+                                      copy_hotkey_bindings);
     }
-  }
-  else
-  {
-    // still need to copy the source config
-    if (!m_editing_settings_interface)
-      InputManager::CopyConfiguration(&temp_si, *Core::GetBaseSettingsLayer(), false, true, false, false);
-    else
-      InputManager::CopyConfiguration(&temp_si, *m_editing_settings_interface, false, true, false, false);
   }
 
   if (!temp_si.Save())
@@ -255,9 +251,11 @@ void ControllerSettingsWindow::onApplyProfileClicked()
   {
     const bool copy_hotkey_bindings =
       m_editing_settings_interface->GetBoolValue("ControllerPorts", "UseProfileHotkeyBindings", false);
+    const bool copy_sources =
+      m_editing_settings_interface->GetBoolValue("ControllerPorts", "UseProfileInputSources", false);
     const auto lock = Core::GetSettingsLock();
-    InputManager::CopyConfiguration(Core::GetBaseSettingsLayer(), *m_editing_settings_interface, true, true, true,
-                                    copy_hotkey_bindings);
+    InputManager::CopyConfiguration(Core::GetBaseSettingsLayer(), *m_editing_settings_interface, true, copy_sources,
+                                    true, copy_hotkey_bindings);
     QtHost::QueueSettingsSave();
   }
   g_core_thread->applySettings();
@@ -312,7 +310,7 @@ void ControllerSettingsWindow::onCopyGlobalSettingsClicked()
 
   {
     const auto lock = Core::GetSettingsLock();
-    InputManager::CopyConfiguration(m_editing_settings_interface, *Core::GetBaseSettingsLayer(), true, true, true,
+    InputManager::CopyConfiguration(m_editing_settings_interface, *Core::GetBaseSettingsLayer(), true, false, true,
                                     false);
   }
 

@@ -28,74 +28,131 @@ ControllerGlobalSettingsWidget::ControllerGlobalSettingsWidget(QWidget* parent, 
 
   SettingsInterface* sif = dialog->getEditingSettingsInterface();
 
-  ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.enableSDLSource, "InputSources", "SDL", true);
-  ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.enableSDLEnhancedMode, "InputSources",
-                                                              "SDLControllerEnhancedMode", false);
-  ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.enableTouchPadAsPointer, "InputSources",
-                                                              "SDLTouchpadAsPointer", false);
-  ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.enableSDLPS5PlayerLED, "InputSources",
-                                                              "SDLPS5PlayerLED", false);
-  connect(m_ui.enableSDLSource, &QCheckBox::checkStateChanged, this,
-          &ControllerGlobalSettingsWidget::updateSDLOptionsEnabled);
-  connect(m_ui.ledSettings, &QToolButton::clicked, this, &ControllerGlobalSettingsWidget::ledSettingsClicked);
-  connect(m_ui.SDLHelpText, &QLabel::linkActivated, this, &ControllerGlobalSettingsWidget::sdlHelpTextLinkClicked);
-
-#ifdef _WIN32
-  ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.enableDInputSource, "InputSources", "DInput",
-                                                              false);
-  ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.enableXInputSource, "InputSources", "XInput",
-                                                              false);
-  ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.enableRawInput, "InputSources", "RawInput",
-                                                              false);
-#else
-  m_ui.mainLayout->removeWidget(m_ui.xinputGroup);
-  delete m_ui.xinputGroup;
-  m_ui.xinputGroup = nullptr;
-  m_ui.mainLayout->removeWidget(m_ui.dinputGroup);
-  delete m_ui.dinputGroup;
-  m_ui.dinputGroup = nullptr;
-#endif
-
-  ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.enableMouseMapping, "UI", "EnableMouseMapping",
-                                                              false);
-  ControllerSettingWidgetBinder::BindWidgetToInputProfileEnumSetting(
-    sif, m_ui.multitapMode, "ControllerPorts", "MultitapMode", &Settings::ParseMultitapModeName,
-    &Settings::GetMultitapModeName, &Settings::GetMultitapModeDisplayName, Settings::DEFAULT_MULTITAP_MODE,
-    MultitapMode::Count);
-  ControllerSettingWidgetBinder::BindWidgetToInputProfileFloat(sif, m_ui.pointerXScale, "ControllerPorts",
-                                                               "PointerXScale", 8.0f);
-  ControllerSettingWidgetBinder::BindWidgetToInputProfileFloat(sif, m_ui.pointerYScale, "ControllerPorts",
-                                                               "PointerYScale", 8.0f);
-
-  if (dialog->isEditingProfile())
+  // editing game profile or input profile
+  bool remove_sources = false;
+  if (sif)
   {
-    m_ui.useProfileHotkeyBindings->setChecked(
-      m_dialog->getBoolValue("ControllerPorts", "UseProfileHotkeyBindings", false));
+    m_ui.useProfileHotkeyBindings->setChecked(sif->GetBoolValue("ControllerPorts", "UseProfileHotkeyBindings", false));
     connect(m_ui.useProfileHotkeyBindings, &QCheckBox::checkStateChanged, this, [this](int new_state) {
       m_dialog->setBoolValue("ControllerPorts", "UseProfileHotkeyBindings", (new_state == Qt::Checked));
       emit bindingSetupChanged();
     });
+    m_ui.useProfileInputSources->setChecked(sif->GetBoolValue("ControllerPorts", "UseProfileInputSources", false));
+    connect(m_ui.useProfileInputSources, &QCheckBox::checkStateChanged, this, [this](int new_state) {
+      m_dialog->setBoolValue("ControllerPorts", "UseProfileInputSources", (new_state == Qt::Checked));
+      emit bindingSetupChanged();
+    });
+    remove_sources = !m_ui.useProfileInputSources->isChecked();
   }
   else
   {
     // remove profile options from the UI.
     m_ui.mainLayout->removeWidget(m_ui.profileSettings);
-    delete m_ui.profileSettings;
-    m_ui.profileSettings = nullptr;
+    QtUtils::SafeDeleteWidget(m_ui.profileSettings);
+    m_ui.profileSettingsLayout = nullptr;
+    m_ui.profileSettingsDescription = nullptr;
+    m_ui.useProfileHotkeyBindings = nullptr;
+    m_ui.useProfileInputSources = nullptr;
+  }
+
+  if (!remove_sources)
+  {
+    ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.enableSDLSource, "InputSources", "SDL", true);
+    ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.enableSDLEnhancedMode, "InputSources",
+                                                                "SDLControllerEnhancedMode", false);
+    ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.enableTouchPadAsPointer, "InputSources",
+                                                                "SDLTouchpadAsPointer", false);
+    ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.enableSDLPS5PlayerLED, "InputSources",
+                                                                "SDLPS5PlayerLED", false);
+    connect(m_ui.enableSDLSource, &QCheckBox::checkStateChanged, this,
+            &ControllerGlobalSettingsWidget::updateSDLOptionsEnabled);
+    connect(m_ui.ledSettings, &QToolButton::clicked, this, &ControllerGlobalSettingsWidget::ledSettingsClicked);
+    connect(m_ui.sdlHelpText, &QLabel::linkActivated, this, &ControllerGlobalSettingsWidget::sdlHelpTextLinkClicked);
+
+#ifdef _WIN32
+    ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.enableDInputSource, "InputSources", "DInput",
+                                                                false);
+    ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.enableXInputSource, "InputSources", "XInput",
+                                                                false);
+    ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.enableRawInput, "InputSources", "RawInput",
+                                                                false);
+#else
+    m_ui.mainLayout->removeWidget(m_ui.xinputGroup);
+    QtUtils::SafeDeleteWidget(m_ui.xinputGroup);
+    m_ui.xinputLayout = nullptr;
+    m_ui.enableXInputSource = nullptr;
+    m_ui.xinputDescription = nullptr;
+    m_ui.mainLayout->removeWidget(m_ui.dinputGroup);
+    QtUtils::SafeDeleteWidget(m_ui.dinputGroup);
+    m_ui.dinputLayout = nullptr;
+    m_ui.enableDInputSource = nullptr;
+    m_ui.dinputDescription = nullptr;
+    m_ui.pointerOptionsLayout->removeWidget(m_ui.enableRawInput);
+    QtUtils::SafeDeleteWidget(m_ui.enableRawInput);
+#endif
+
+    ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.enableMouseMapping, "UI",
+                                                                "EnableMouseMapping", false);
+    ControllerSettingWidgetBinder::BindWidgetToInputProfileFloat(sif, m_ui.pointerXScale, "ControllerPorts",
+                                                                 "PointerXScale", 8.0f);
+    ControllerSettingWidgetBinder::BindWidgetToInputProfileFloat(sif, m_ui.pointerYScale, "ControllerPorts",
+                                                                 "PointerYScale", 8.0f);
+
+    connect(m_ui.pointerXScale, &QSlider::valueChanged, this,
+            [this](int value) { m_ui.pointerXScaleLabel->setText(QStringLiteral("%1").arg(value)); });
+    connect(m_ui.pointerYScale, &QSlider::valueChanged, this,
+            [this](int value) { m_ui.pointerYScaleLabel->setText(QStringLiteral("%1").arg(value)); });
+    m_ui.pointerXScaleLabel->setText(QStringLiteral("%1").arg(m_ui.pointerXScale->value()));
+    m_ui.pointerYScaleLabel->setText(QStringLiteral("%1").arg(m_ui.pointerYScale->value()));
+
+    updateSDLOptionsEnabled();
+  }
+  else
+  {
+    m_ui.mainLayout->removeWidget(m_ui.sdlGroup);
+    QtUtils::SafeDeleteWidget(m_ui.sdlGroup);
+    m_ui.sdlGridLayout = nullptr;
+    m_ui.sdlLEDLayout = nullptr;
+    m_ui.enableSDLPS5PlayerLED = nullptr;
+    m_ui.ledSettings = nullptr;
+    m_ui.enableSDLSource = nullptr;
+    m_ui.enableSDLEnhancedMode = nullptr;
+    m_ui.sdlHelpText = nullptr;
+    m_ui.enableTouchPadAsPointer = nullptr;
+    m_ui.mainLayout->removeWidget(m_ui.xinputGroup);
+    QtUtils::SafeDeleteWidget(m_ui.xinputGroup);
+    m_ui.xinputLayout = nullptr;
+    m_ui.enableXInputSource = nullptr;
+    m_ui.xinputDescription = nullptr;
+    m_ui.mainLayout->removeWidget(m_ui.dinputGroup);
+    QtUtils::SafeDeleteWidget(m_ui.dinputGroup);
+    m_ui.dinputLayout = nullptr;
+    m_ui.enableDInputSource = nullptr;
+    m_ui.dinputDescription = nullptr;
+    m_ui.mainLayout->removeWidget(m_ui.pointerGroup);
+    QtUtils::SafeDeleteWidget(m_ui.pointerGroup);
+    m_ui.pointerLayout = nullptr;
+    m_ui.pointerDescription = nullptr;
+    m_ui.pointerXScaleDescription = nullptr;
+    m_ui.pointerXScaleLayout = nullptr;
+    m_ui.pointerXScale = nullptr;
+    m_ui.pointerXScaleLabel = nullptr;
+    m_ui.pointerYScaleDescription = nullptr;
+    m_ui.pointerYScaleLayout = nullptr;
+    m_ui.pointerYScale = nullptr;
+    m_ui.pointerYScaleLabel = nullptr;
+    m_ui.pointerOptionsLayout = nullptr;
+    m_ui.enableMouseMapping = nullptr;
+    m_ui.enableRawInput = nullptr;
   }
 
   m_ui.deviceList->setModel(g_core_thread->getInputDeviceListModel());
 
+  ControllerSettingWidgetBinder::BindWidgetToInputProfileEnumSetting(
+    sif, m_ui.multitapMode, "ControllerPorts", "MultitapMode", &Settings::ParseMultitapModeName,
+    &Settings::GetMultitapModeName, &Settings::GetMultitapModeDisplayName, Settings::DEFAULT_MULTITAP_MODE,
+    MultitapMode::Count);
   connect(m_ui.multitapMode, &QComboBox::currentIndexChanged, this, [this]() { emit bindingSetupChanged(); });
-
-  connect(m_ui.pointerXScale, &QSlider::valueChanged, this,
-          [this](int value) { m_ui.pointerXScaleLabel->setText(QStringLiteral("%1").arg(value)); });
-  connect(m_ui.pointerYScale, &QSlider::valueChanged, this,
-          [this](int value) { m_ui.pointerYScaleLabel->setText(QStringLiteral("%1").arg(value)); });
-  m_ui.pointerXScaleLabel->setText(QStringLiteral("%1").arg(m_ui.pointerXScale->value()));
-  m_ui.pointerYScaleLabel->setText(QStringLiteral("%1").arg(m_ui.pointerYScale->value()));
-
-  updateSDLOptionsEnabled();
 
   QtUtils::RemoveEmptyRowsAndColumns(m_ui.mainLayout);
 }

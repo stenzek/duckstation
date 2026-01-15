@@ -59,7 +59,7 @@ enum : u32
 };
 
 /// Delay before showing any controller connected notifications after startup.
-static constexpr float DEVICE_CONNECTED_NOTIFICATION_DELAY = 3.0f;
+static constexpr float DEVICE_CONNECTED_NOTIFICATION_DELAY = 5.0f;
 
 // ------------------------------------------------------------------------
 // Binding Type
@@ -2522,15 +2522,16 @@ void InputManager::UpdateInputSourceState(const SettingsInterface& si, std::uniq
   }
 }
 
-void InputManager::ReloadSourcesAndBindings(const SettingsInterface& si, const SettingsInterface& hotkey_binding_si,
+void InputManager::ReloadSourcesAndBindings(const SettingsInterface& sources_si, const SettingsInterface& binding_si,
+                                            const SettingsInterface& hotkey_binding_si,
                                             std::unique_lock<std::mutex>& settings_lock)
 {
   std::unique_lock lock(s_state.mutex);
 
 #ifdef _WIN32
-  UpdateInputSourceState(si, settings_lock, InputSourceType::DInput, &InputSource::CreateDInputSource);
-  UpdateInputSourceState(si, settings_lock, InputSourceType::XInput, &InputSource::CreateXInputSource);
-  UpdateInputSourceState(si, settings_lock, InputSourceType::RawInput, &InputSource::CreateWin32RawInputSource);
+  UpdateInputSourceState(sources_si, settings_lock, InputSourceType::DInput, &InputSource::CreateDInputSource);
+  UpdateInputSourceState(sources_si, settings_lock, InputSourceType::XInput, &InputSource::CreateXInputSource);
+  UpdateInputSourceState(sources_si, settings_lock, InputSourceType::RawInput, &InputSource::CreateWin32RawInputSource);
 
   // Request device notifications when using raw input/xinput/dinput, as we need to manually handle device changes
   if (s_state.input_sources[static_cast<u32>(InputSourceType::DInput)] ||
@@ -2547,15 +2548,15 @@ void InputManager::ReloadSourcesAndBindings(const SettingsInterface& si, const S
   }
 #endif
 #ifdef ENABLE_SDL
-  UpdateInputSourceState(si, settings_lock, InputSourceType::SDL, &InputSource::CreateSDLSource);
+  UpdateInputSourceState(sources_si, settings_lock, InputSourceType::SDL, &InputSource::CreateSDLSource);
 #endif
 #ifdef __ANDROID__
-  UpdateInputSourceState(si, settings_lock, InputSourceType::Android, &InputSource::CreateAndroidSource);
+  UpdateInputSourceState(sources_si, settings_lock, InputSourceType::Android, &InputSource::CreateAndroidSource);
 #endif
 
   UpdatePointerCount();
 
-  InternalReloadBindings(si, hotkey_binding_si);
+  InternalReloadBindings(binding_si, hotkey_binding_si);
   UpdateRelativeMouseMode();
 }
 

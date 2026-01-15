@@ -151,6 +151,7 @@ struct UndoSaveStateBuffer : public SaveStateBuffer
 static void CheckCacheLineSize();
 static void LogStartupInformation();
 
+static const SettingsInterface& GetInputSourceSettingsLayer(std::unique_lock<std::mutex>& lock);
 static const SettingsInterface& GetControllerSettingsLayer(std::unique_lock<std::mutex>& lock);
 static const SettingsInterface& GetHotkeySettingsLayer(std::unique_lock<std::mutex>& lock);
 
@@ -1248,7 +1249,6 @@ void System::LoadSettings(bool display_osd_messages)
   auto lock = Core::GetSettingsLock();
   const SettingsInterface& si = *Core::GetSettingsInterface();
   const SettingsInterface& controller_si = GetControllerSettingsLayer(lock);
-  const SettingsInterface& hotkey_si = GetHotkeySettingsLayer(lock);
   const bool previous_safe_mode = g_settings.disable_all_enhancements;
   g_settings.Load(si, controller_si);
 
@@ -1270,7 +1270,8 @@ void System::LoadSettings(bool display_osd_messages)
 
   Settings::UpdateLogConfig(si);
   Host::LoadSettings(si, lock);
-  InputManager::ReloadSourcesAndBindings(controller_si, hotkey_si, lock);
+  InputManager::ReloadSourcesAndBindings(GetInputSourceSettingsLayer(lock), controller_si, GetHotkeySettingsLayer(lock),
+                                         lock);
 
   // apply compatibility settings
   if (g_settings.apply_compatibility_settings && s_state.running_game_entry)
@@ -1285,9 +1286,8 @@ void System::LoadSettings(bool display_osd_messages)
 void System::ReloadInputSources()
 {
   auto lock = Core::GetSettingsLock();
-  const SettingsInterface& controller_si = GetControllerSettingsLayer(lock);
-  const SettingsInterface& hotkey_si = GetHotkeySettingsLayer(lock);
-  InputManager::ReloadSourcesAndBindings(controller_si, hotkey_si, lock);
+  InputManager::ReloadSourcesAndBindings(GetInputSourceSettingsLayer(lock), GetControllerSettingsLayer(lock),
+                                         GetHotkeySettingsLayer(lock), lock);
 }
 
 void System::ReloadInputBindings()
@@ -1297,9 +1297,27 @@ void System::ReloadInputBindings()
     return;
 
   auto lock = Core::GetSettingsLock();
-  const SettingsInterface& controller_si = GetControllerSettingsLayer(lock);
-  const SettingsInterface& hotkey_si = GetHotkeySettingsLayer(lock);
-  InputManager::ReloadBindings(controller_si, hotkey_si);
+  InputManager::ReloadBindings(GetControllerSettingsLayer(lock), GetHotkeySettingsLayer(lock));
+}
+
+const SettingsInterface& System::GetInputSourceSettingsLayer(std::unique_lock<std::mutex>& lock)
+{
+  // Select input profile _or_ game settings, not both.
+  if (const SettingsInterface* isi = Core::GetInputSettingsLayer();
+      isi && isi->GetBoolValue("ControllerPorts", "UseProfileInputSources", false))
+  {
+    return *isi;
+  }
+  else if (const SettingsInterface* gsi = Core::GetGameSettingsLayer();
+           gsi && gsi->GetBoolValue("ControllerPorts", "UseGameSettingsForController", false) &&
+           gsi->GetBoolValue("ControllerPorts", "UseProfileInputSources", false))
+  {
+    return *gsi;
+  }
+  else
+  {
+    return *Core::GetBaseSettingsLayer();
+  }
 }
 
 const SettingsInterface& System::GetControllerSettingsLayer(std::unique_lock<std::mutex>& lock)
@@ -1327,6 +1345,12 @@ const SettingsInterface& System::GetHotkeySettingsLayer(std::unique_lock<std::mu
       isi && isi->GetBoolValue("ControllerPorts", "UseProfileHotkeyBindings", false))
   {
     return *isi;
+  }
+  else if (const SettingsInterface* gsi = Core::GetGameSettingsLayer();
+           gsi && gsi->GetBoolValue("ControllerPorts", "UseGameSettingsForController", false) &&
+           gsi->GetBoolValue("ControllerPorts", "UseProfileHotkeyBindings", false))
+  {
+    return *gsi;
   }
   else
   {

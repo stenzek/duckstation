@@ -279,11 +279,11 @@ bool IsInputSourceEnabled(const SettingsInterface& si, InputSourceType type);
 void SynchronizeBindingHandlerState();
 
 /// Re-parses the config and registers all hotkey and pad bindings.
-void ReloadBindings(const SettingsInterface& si, const SettingsInterface& hotkey_binding_si);
+void ReloadBindings(const SettingsInterface& binding_si, const SettingsInterface& hotkey_binding_si);
 
 /// Re-parses the sources part of the config and initializes any backends.
-void ReloadSourcesAndBindings(const SettingsInterface& si, const SettingsInterface& hotkey_binding_si,
-                              std::unique_lock<std::mutex>& settings_lock);
+void ReloadSourcesAndBindings(const SettingsInterface& sources_si, const SettingsInterface& binding_si,
+                              const SettingsInterface& hotkey_binding_si, std::unique_lock<std::mutex>& settings_lock);
 
 /// Shuts down any enabled input sources.
 void CloseSources();

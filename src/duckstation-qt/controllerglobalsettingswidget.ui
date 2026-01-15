@@ -30,7 +30,7 @@
      </property>
      <layout class="QGridLayout" name="sdlGridLayout">
       <item row="2" column="1">
-       <layout class="QHBoxLayout" name="horizontalLayout_4">
+       <layout class="QHBoxLayout" name="sdlLEDLayout">
         <item>
          <widget class="QCheckBox" name="enableSDLPS5PlayerLED">
           <property name="sizePolicy">
@@ -86,7 +86,7 @@
        </widget>
       </item>
       <item row="0" column="0" colspan="2">
-       <widget class="QLabel" name="SDLHelpText">
+       <widget class="QLabel" name="sdlHelpText">
         <property name="text">
          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The SDL input source supports most controllers, and is the preferred option. Enhanced mode may be required for the Vibration/LED functionality of DualShock 4 / DualSense pads in Bluetooth mode. You can also edit &lt;a href=&quot;ADVANCED_SDL_OPTIONS&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#99ebff;&quot;&gt;advanced options&lt;/span&gt;&lt;/a&gt; which control device-specific behavior.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
@@ -113,9 +113,9 @@
      <property name="title">
       <string>XInput Source</string>
      </property>
-     <layout class="QGridLayout" name="gridLayout_3">
+     <layout class="QGridLayout" name="xinputLayout">
       <item row="0" column="0">
-       <widget class="QLabel" name="label_3">
+       <widget class="QLabel" name="xinputDescription">
         <property name="text">
          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The XInput source provides support for controllers that use the XInput protocol. This source should &lt;span style=&quot; font-weight:700;&quot;&gt;only&lt;/span&gt; be used if you are using a XInput wrapper library.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
@@ -139,9 +139,9 @@
      <property name="title">
       <string>DirectInput Source</string>
      </property>
-     <layout class="QGridLayout" name="gridLayout_4">
+     <layout class="QGridLayout" name="dinputLayout">
       <item row="0" column="0">
-       <widget class="QLabel" name="label_9">
+       <widget class="QLabel" name="dinputDescription">
         <property name="text">
          <string>The DirectInput source provides support for legacy controllers which do not support XInput. Accessing these controllers via SDL is recommended instead.</string>
         </property>
@@ -161,13 +161,13 @@
     </widget>
    </item>
    <item row="3" column="0">
-    <widget class="QGroupBox" name="groupBox_5">
+    <widget class="QGroupBox" name="pointerGroup">
      <property name="title">
       <string>Mouse/Pointer Source</string>
      </property>
-     <layout class="QGridLayout" name="gridLayout_6" columnstretch="0,1">
+     <layout class="QGridLayout" name="pointerLayout" columnstretch="0,1">
       <item row="0" column="0" colspan="2">
-       <widget class="QLabel" name="label_7">
+       <widget class="QLabel" name="pointerDescription">
         <property name="text">
          <string>Using raw input improves precision when you bind controller sticks to the mouse pointer. Also enables multiple mice to be used.</string>
         </property>
@@ -177,14 +177,14 @@
        </widget>
       </item>
       <item row="1" column="0">
-       <widget class="QLabel" name="label_5">
+       <widget class="QLabel" name="pointerXScaleDescription">
         <property name="text">
          <string>Horizontal Sensitivity:</string>
         </property>
        </widget>
       </item>
       <item row="1" column="1">
-       <layout class="QHBoxLayout" name="horizontalLayout">
+       <layout class="QHBoxLayout" name="pointerXScaleLayout">
         <item>
          <widget class="QSlider" name="pointerXScale">
           <property name="sizePolicy">
@@ -232,14 +232,14 @@
        </layout>
       </item>
       <item row="2" column="0">
-       <widget class="QLabel" name="label_6">
+       <widget class="QLabel" name="pointerYScaleDescription">
         <property name="text">
          <string>Vertical Sensitivity:</string>
         </property>
        </widget>
       </item>
       <item row="2" column="1">
-       <layout class="QHBoxLayout" name="horizontalLayout_2">
+       <layout class="QHBoxLayout" name="pointerYScaleLayout">
         <item>
          <widget class="QSlider" name="pointerYScale">
           <property name="sizePolicy">
@@ -287,7 +287,7 @@
        </layout>
       </item>
       <item row="3" column="0" colspan="2">
-       <layout class="QHBoxLayout" name="horizontalLayout_3">
+       <layout class="QHBoxLayout" name="pointerOptionsLayout">
         <item>
          <widget class="QCheckBox" name="enableMouseMapping">
           <property name="toolTip">
@@ -314,13 +314,13 @@
     </widget>
    </item>
    <item row="4" column="0">
-    <widget class="QGroupBox" name="groupBox_4">
+    <widget class="QGroupBox" name="multitapGroup">
      <property name="title">
       <string>Controller Multitap</string>
      </property>
-     <layout class="QGridLayout" name="gridLayout_2" columnstretch="0,1">
+     <layout class="QGridLayout" name="multitapLayout" columnstretch="0,1">
       <item row="0" column="0" colspan="2">
-       <widget class="QLabel" name="label">
+       <widget class="QLabel" name="multitapDescription">
         <property name="text">
          <string>The multitap enables up to 8 controllers to be connected to the console. Each multitap provides 4 ports. Multitap is not supported by all games.</string>
         </property>
@@ -330,7 +330,7 @@
        </widget>
       </item>
       <item row="1" column="0">
-       <widget class="QLabel" name="label_8">
+       <widget class="QLabel" name="multitapModeLabel">
         <property name="text">
          <string>Multitap Mode:</string>
         </property>
@@ -342,16 +342,16 @@
      </layout>
     </widget>
    </item>
-   <item row="5" column="0">
+   <item row="0" column="0">
     <widget class="QGroupBox" name="profileSettings">
      <property name="title">
       <string>Profile Settings</string>
      </property>
-     <layout class="QGridLayout" name="gridLayout_5">
-      <item row="0" column="0">
-       <widget class="QLabel" name="label_4">
+     <layout class="QGridLayout" name="profileSettingsLayout">
+      <item row="0" column="0" colspan="2">
+       <widget class="QLabel" name="profileSettingsDescription">
         <property name="text">
-         <string>When this option is enabled, hotkeys can be set in this input profile, and will be used instead of the global hotkeys. By default, hotkeys are always shared between all profiles.</string>
+         <string>When these options are enabled, input sources and hotkeys can be set in this input profile, and will be used instead of the global source/hotkey configuration. By default, sources and hotkeys are always shared between all profiles.</string>
         </property>
         <property name="wordWrap">
          <bool>true</bool>
@@ -359,9 +359,16 @@
        </widget>
       </item>
       <item row="1" column="0">
+       <widget class="QCheckBox" name="useProfileInputSources">
+        <property name="text">
+         <string>Use Profile Input Sources</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
        <widget class="QCheckBox" name="useProfileHotkeyBindings">
         <property name="text">
-         <string>Use Per-Profile Hotkeys</string>
+         <string>Use Profile Hotkeys</string>
         </property>
        </widget>
       </item>
@@ -375,8 +382,8 @@
      </property>
      <property name="sizeHint" stdset="0">
       <size>
-       <width>20</width>
-       <height>1</height>
+       <width>0</width>
+       <height>0</height>
       </size>
      </property>
     </spacer>
@@ -386,7 +393,7 @@
      <property name="title">
       <string>Detected Devices</string>
      </property>
-     <layout class="QGridLayout" name="gridLayout">
+     <layout class="QGridLayout" name="deviceListLayout">
       <item row="0" column="0" colspan="2">
        <widget class="QListView" name="deviceList">
         <property name="minimumSize">
