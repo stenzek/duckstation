@@ -190,7 +190,7 @@
      </property>
     </widget>
    </item>
-   <item row="8" column="2">
+   <item row="7" column="2">
     <widget class="QPushButton" name="compatibilityComments">
      <property name="icon">
       <iconset theme="information-line"/>
