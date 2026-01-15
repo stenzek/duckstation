@@ -96,6 +96,8 @@ ControllerGlobalSettingsWidget::ControllerGlobalSettingsWidget(QWidget* parent, 
   m_ui.pointerYScaleLabel->setText(QStringLiteral("%1").arg(m_ui.pointerYScale->value()));
 
   updateSDLOptionsEnabled();
+
+  QtUtils::RemoveEmptyRowsAndColumns(m_ui.mainLayout);
 }
 
 ControllerGlobalSettingsWidget::~ControllerGlobalSettingsWidget() = default;

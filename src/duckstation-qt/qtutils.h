@@ -22,6 +22,7 @@ class Error;
 
 class QComboBox;
 class QFrame;
+class QGridLayout;
 class QKeyEvent;
 class QLabel;
 class QMenu;
@@ -85,6 +86,10 @@ inline void SafeDeleteWidget(T*& widget)
 /// Any values of -1 will stretch the column to use the remaining space.
 void SetColumnWidthsForTableView(QTableView* view, const std::initializer_list<int>& widths);
 void SetColumnWidthsForTreeView(QTreeView* view, const std::initializer_list<int>& widths);
+
+/// Rearranges a grid layout to remove any empty rows or columns.
+/// Note that due to the way QGridLayout works, the total row/column count will not be changed.
+void RemoveEmptyRowsAndColumns(QGridLayout* const layout);
 
 /// Returns a key id for a key event, including any modifiers that we need (e.g. Keypad).
 std::optional<u32> KeyEventToCode(const QKeyEvent* ev);
