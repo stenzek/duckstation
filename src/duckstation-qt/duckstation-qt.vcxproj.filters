@@ -146,7 +146,6 @@
     <QtUi Include="controllerbindingwidget_analog_joystick.ui" />
     <QtUi Include="controllerbindingwidget_negcon.ui" />
     <QtUi Include="controllerbindingwidget_guncon.ui" />
-    <QtUi Include="controllermacrowidget.ui" />
     <QtUi Include="controllermacroeditwidget.ui" />
     <QtUi Include="controllerbindingwidget_mouse.ui" />
     <QtUi Include="coverdownloadwindow.ui" />

@@ -5,16 +5,15 @@
 
 #include "core/controller.h"
 #include "core/settings.h"
+
 #include <QtWidgets/QDialog>
+#include <QtWidgets/QSplitter>
 #include <QtWidgets/QWidget>
 #include <functional>
 #include <vector>
 
 #include "ui_controllerbindingwidget.h"
 #include "ui_controllermacroeditwidget.h"
-#include "ui_controllermacrowidget.h"
-
-class QVBoxLayout;
 
 class InputBindingWidget;
 class ControllerSettingsWindow;
@@ -71,7 +70,7 @@ private:
 
 //////////////////////////////////////////////////////////////////////////
 
-class ControllerMacroWidget : public QWidget
+class ControllerMacroWidget : public QSplitter
 {
   Q_OBJECT
 
@@ -82,12 +81,11 @@ public:
   void updateListItem(u32 index);
 
 private:
-  static constexpr u32 NUM_MACROS = InputManager::NUM_MACRO_BUTTONS_PER_CONTROLLER;
+  void createWidgets(ControllerBindingWidget* bwidget);
 
-  void createWidgets(ControllerBindingWidget* parent);
-
-  Ui::ControllerMacroWidget m_ui;
-  std::array<ControllerMacroEditWidget*, NUM_MACROS> m_macros;
+  QListWidget* m_macroList;
+  QStackedWidget* m_container;
+  std::array<ControllerMacroEditWidget*, InputManager::NUM_MACRO_BUTTONS_PER_CONTROLLER> m_macros;
 };
 
 //////////////////////////////////////////////////////////////////////////

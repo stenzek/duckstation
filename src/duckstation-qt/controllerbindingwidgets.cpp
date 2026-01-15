@@ -510,9 +510,9 @@ void ControllerBindingWidget::bindBindingWidgets(QWidget* parent)
 
 //////////////////////////////////////////////////////////////////////////
 
-ControllerMacroWidget::ControllerMacroWidget(ControllerBindingWidget* parent) : QWidget(parent)
+ControllerMacroWidget::ControllerMacroWidget(ControllerBindingWidget* parent) : QSplitter(parent)
 {
-  m_ui.setupUi(this);
+  setChildrenCollapsible(false);
   setWindowTitle(tr("Controller Port %1 Macros").arg(parent->getPortNumber() + 1u));
   createWidgets(parent);
 }
@@ -521,27 +521,39 @@ ControllerMacroWidget::~ControllerMacroWidget() = default;
 
 void ControllerMacroWidget::updateListItem(u32 index)
 {
-  m_ui.portList->item(static_cast<int>(index))
-    ->setText(tr("Macro %1\n%2").arg(index + 1).arg(m_macros[index]->getSummary()));
+  QString summary = m_macros[index]->getSummary();
+  QListWidgetItem* item = m_macroList->item(static_cast<int>(index));
+  item->setText(tr("Macro %1\n%2").arg(index + 1).arg(summary));
+  item->setToolTip(summary);
 }
 
-void ControllerMacroWidget::createWidgets(ControllerBindingWidget* parent)
+void ControllerMacroWidget::createWidgets(ControllerBindingWidget* bwidget)
 {
-  for (u32 i = 0; i < NUM_MACROS; i++)
+  m_macroList = new QListWidget(this);
+  m_macroList->setIconSize(QSize(32, 32));
+  m_macroList->setMinimumWidth(150);
+  addWidget(m_macroList);
+  setStretchFactor(0, 1);
+
+  m_container = new QStackedWidget(this);
+  addWidget(m_container);
+  setStretchFactor(1, 3);
+
+  for (u32 i = 0; i < m_macros.size(); i++)
   {
-    m_macros[i] = new ControllerMacroEditWidget(this, parent, i);
-    m_ui.container->addWidget(m_macros[i]);
+    m_macros[i] = new ControllerMacroEditWidget(this, bwidget, i);
+    m_container->addWidget(m_macros[i]);
 
     QListWidgetItem* item = new QListWidgetItem();
     item->setIcon(QIcon::fromTheme(QStringLiteral("flashlight-line")));
-    m_ui.portList->addItem(item);
+    m_macroList->addItem(item);
     updateListItem(i);
   }
 
-  m_ui.portList->setCurrentRow(0);
-  m_ui.container->setCurrentIndex(0);
+  m_macroList->setCurrentRow(0);
+  m_container->setCurrentIndex(0);
 
-  connect(m_ui.portList, &QListWidget::currentRowChanged, m_ui.container, &QStackedWidget::setCurrentIndex);
+  connect(m_macroList, &QListWidget::currentRowChanged, m_container, &QStackedWidget::setCurrentIndex);
 }
 
 //////////////////////////////////////////////////////////////////////////
