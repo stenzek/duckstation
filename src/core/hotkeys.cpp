@@ -169,7 +169,7 @@ DEFINE_HOTKEY("ToggleTurbo", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_NOOP
 
 DEFINE_NON_ANDROID_HOTKEY("PowerOff", TRANSLATE_NOOP("Hotkeys", "System"),
                           TRANSLATE_NOOP("Hotkeys", "Power Off System"), [](s32 pressed) {
-                            if (!pressed && System::CanPauseSystem(true))
+                            if (!pressed)
                               Host::RequestSystemShutdown(true, g_settings.save_state_on_exit, true);
                           })
 
