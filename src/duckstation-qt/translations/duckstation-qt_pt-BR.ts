@@ -495,25 +495,23 @@ Token gerado %2.</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1494"/>
-        <source>Your Time: {} (Best: {})</source>
-        <translation>Seu tempo: {} (melhor: {})</translation>
+        <source>Your Time: {0} (Best: {1})</source>
+        <translation>Seu tempo: {0} (melhor: {1})</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1495"/>
-        <source>Your Score: {} (Best: {})</source>
-        <translation>Sua pontuação: {} (melhor: {})</translation>
+        <source>Your Score: {0} (Best: {1})</source>
+        <translation>Sua pontuação: {0} (melhor: {1})</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1496"/>
-        <source>Your Value: {} (Best: {})</source>
-        <translation>Sua pontuação: {} (melhor: {})</translation>
+        <source>Your Value: {0} (Best: {1})</source>
+        <translation>Sua pontuação: {0} (melhor: {1})</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1501"/>
-        <source>{}
-Leaderboard Position: {} of {}</source>
-        <translation>{}
-Posição na tabela de classificação: {} de {}</translation>
+        <source>Leaderboard Position: {0} of {1}</source>
+        <translation>Posição na tabela de classificação: {0} de {1}</translation>
     </message>
     <message>
         <source>Server error in {}:
@@ -762,18 +760,18 @@ Mensagens não lidas: {}</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1465"/>
-        <source>Your Time: {}{}</source>
-        <translation>Seu tempo: {}{}</translation>
+        <source>Your Time: {}</source>
+        <translation>Seu tempo: {}</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1466"/>
-        <source>Your Score: {}{}</source>
-        <translation>Sua pontuação: {}{}</translation>
+        <source>Your Score: {}</source>
+        <translation>Sua pontuação: {}</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1467"/>
-        <source>Your Value: {}{}</source>
-        <translation>Sua pontuação: {}{}</translation>
+        <source>Your Value: {}</source>
+        <translation>Sua pontuação: {}</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1475"/>

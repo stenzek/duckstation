@@ -432,13 +432,13 @@ Token di accesso generato il %2.</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1140"/>
-        <source>Your Score: {}{}</source>
-        <translation>Il tuo Punteggio: {}{}</translation>
+        <source>Your Score: {}</source>
+        <translation>Il tuo Punteggio: {}</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1141"/>
-        <source>Your Value: {}{}</source>
-        <translation>Il tuo Valore: {}{}</translation>
+        <source>Your Value: {}</source>
+        <translation>Il tuo Valore: {}</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1150"/>
@@ -447,25 +447,23 @@ Token di accesso generato il %2.</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1169"/>
-        <source>Your Time: {} (Best: {})</source>
-        <translation>Il tuo Tempo: {} (Migliore: {})</translation>
+        <source>Your Time: {0} (Best: {1})</source>
+        <translation>Il tuo Tempo: {0} (Migliore: {1})</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1170"/>
-        <source>Your Score: {} (Best: {})</source>
-        <translation>Il tuo Punteggio: {} (Migliore: {})</translation>
+        <source>Your Score: {0} (Best: {1})</source>
+        <translation>Il tuo Punteggio: {0} (Migliore: {1})</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1171"/>
-        <source>Your Value: {} (Best: {})</source>
-        <translation>Il tuo Valore: {} (Migliore: {})</translation>
+        <source>Your Value: {0} (Best: {1})</source>
+        <translation>Il tuo Valore: {0} (Migliore: {1})</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1176"/>
-        <source>{}
-Leaderboard Position: {} of {}</source>
-        <translation>{}
-Posizione in Classifica: {} di {}</translation>
+        <source>Leaderboard Position: {0} of {1}</source>
+        <translation>Posizione in Classifica: {0} di {1}</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1306"/>

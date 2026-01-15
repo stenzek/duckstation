@@ -429,18 +429,18 @@ Tek kullanımlık giriş kodu (access token) oluşturulma tarihi: %2.</translati
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1677"/>
-        <source>Your Time: {}{}</source>
-        <translation>Süren: {}{}</translation>
+        <source>Your Time: {}</source>
+        <translation>Süren: {}</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1678"/>
-        <source>Your Score: {}{}</source>
-        <translation>Skorun: {}{}</translation>
+        <source>Your Score: {}</source>
+        <translation>Skorun: {}</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1679"/>
-        <source>Your Value: {}{}</source>
-        <translation>Puanın: {}{}</translation>
+        <source>Your Value: {}</source>
+        <translation>Puanın: {}}</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1688"/>
@@ -449,25 +449,23 @@ Tek kullanımlık giriş kodu (access token) oluşturulma tarihi: %2.</translati
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1712"/>
-        <source>Your Time: {} (Best: {})</source>
-        <translation>Süren: {} (Rekorun: {})</translation>
+        <source>Your Time: {0} (Best: {1})</source>
+        <translation>Süren: {0} (Rekorun: {1})</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1713"/>
-        <source>Your Score: {} (Best: {})</source>
-        <translation>Skorun: {} (Rekorun: {})</translation>
+        <source>Your Score: {0} (Best: {1})</source>
+        <translation>Skorun: {0} (Rekorun: {1})</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1714"/>
-        <source>Your Value: {} (Best: {})</source>
-        <translation>Puanın: {} (Rekorun: {})</translation>
+        <source>Your Value: {0} (Best: {1})</source>
+        <translation>Puanın: {0} (Rekorun: {1})</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1719"/>
-        <source>{}
-Leaderboard Position: {} of {}</source>
-        <translation>{}
-Lider Tahtasındaki Yer : {} inci {}</translation>
+        <source>Leaderboard Position: {0} of {1}</source>
+        <translation>Lider Tahtasındaki Yer : {0} inci {1}</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1853"/>

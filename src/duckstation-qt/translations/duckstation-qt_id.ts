@@ -507,13 +507,13 @@ Pesan yang belum dibaca: {}</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1678"/>
-        <source>Your Score: {}{}</source>
-        <translation>Skor Anda: {} {}</translation>
+        <source>Your Score: {}</source>
+        <translation>Skor Anda: {}</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1679"/>
-        <source>Your Value: {}{}</source>
-        <translation>Nilai Anda: {} {}</translation>
+        <source>Your Value: {}</source>
+        <translation>Nilai Anda: {}</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1688"/>
@@ -522,25 +522,23 @@ Pesan yang belum dibaca: {}</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1712"/>
-        <source>Your Time: {} (Best: {})</source>
-        <translation>Waktu Anda: {} (Terbaik: {})</translation>
+        <source>Your Time: {0} (Best: {1})</source>
+        <translation>Waktu Anda: {0} (Terbaik: {1})</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1713"/>
-        <source>Your Score: {} (Best: {})</source>
-        <translation>Skor Anda: {} (Terbaik: {})</translation>
+        <source>Your Score: {0} (Best: {1})</source>
+        <translation>Skor Anda: {0} (Terbaik: {1})</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1714"/>
-        <source>Your Value: {} (Best: {})</source>
-        <translation>Nilai Anda: {} (Terbaik: {})</translation>
+        <source>Your Value: {0} (Best: {1})</source>
+        <translation>Nilai Anda: {0} (Terbaik: {1})</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1719"/>
-        <source>{}
-Leaderboard Position: {} of {}</source>
-        <translation>{}
-Posisi Papan Pencapaian: {} of {}</translation>
+        <source>Leaderboard Position: {0} of {1}</source>
+        <translation>Posisi Papan Pencapaian: {0} of {1}</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1853"/>

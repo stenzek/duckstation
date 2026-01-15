@@ -497,25 +497,23 @@ Login token generated on %2.</source>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1610"/>
-        <source>Your Time: {} (Best: {})</source>
-        <translation>사용 시간 : {}(최고 기록 : {})</translation>
+        <source>Your Time: {0} (Best: {1})</source>
+        <translation>사용 시간 : {0}(최고 기록 : {1})</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1611"/>
-        <source>Your Score: {} (Best: {})</source>
-        <translation>현재 점수 : {}(최고 기록 : {})</translation>
+        <source>Your Score: {0} (Best: {1})</source>
+        <translation>현재 점수 : {0}(최고 기록 : {1})</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1612"/>
-        <source>Your Value: {} (Best: {})</source>
-        <translation>현재 가치 : {}(최고 기록 : {})</translation>
+        <source>Your Value: {0} (Best: {1})</source>
+        <translation>현재 가치 : {0}(최고 기록 : {1})</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1617"/>
-        <source>{}
-Leaderboard Position: {} of {}</source>
-        <translation>{}
-순위표 위치 : {}의 {}</translation>
+        <source>Leaderboard Position: {0} of {1}</source>
+        <translation>순위표 위치 : {0}의 {1}</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1795"/>

@@ -74,6 +74,7 @@ static constexpr const char* UNLOCK_SOUND_NAME = "sounds/achievements/unlock.wav
 static constexpr const char* LBSUBMIT_SOUND_NAME = "sounds/achievements/lbsubmit.wav";
 static constexpr const char* CACHE_SUBDIRECTORY_NAME = "achievement_images";
 constexpr const char* const RA_LOGO_ICON_NAME = "images/ra-icon.webp";
+constexpr const std::string_view NOTIFICATION_SPINNER_NOTE = "__spinner__";
 
 static constexpr float LOGIN_NOTIFICATION_TIME = 5.0f;
 static constexpr float ACHIEVEMENT_SUMMARY_NOTIFICATION_TIME = 5.0f;
@@ -84,6 +85,7 @@ static constexpr float CHALLENGE_STARTED_NOTIFICATION_TIME = 5.0f;
 static constexpr float CHALLENGE_FAILED_NOTIFICATION_TIME = 5.0f;
 static constexpr float LEADERBOARD_STARTED_NOTIFICATION_TIME = 3.0f;
 static constexpr float LEADERBOARD_FAILED_NOTIFICATION_TIME = 3.0f;
+static constexpr float LEADERBOARD_NOTIFICATION_MIN_WIDTH = 380.0f;
 
 // Some API calls are really slow. Set a longer timeout.
 static constexpr float SERVER_CALL_TIMEOUT = 60.0f;
@@ -1444,23 +1446,26 @@ void Achievements::HandleLeaderboardSubmittedEvent(const rc_client_event_t* even
 
   if (g_settings.achievements_leaderboard_notifications)
   {
-    static const char* value_strings[NUM_RC_CLIENT_LEADERBOARD_FORMATS] = {
-      TRANSLATE_NOOP("Achievements", "Your Time: {}{}"),
-      TRANSLATE_NOOP("Achievements", "Your Score: {}{}"),
-      TRANSLATE_NOOP("Achievements", "Your Value: {}{}"),
+    static const char* value_strings[NUM_RC_CLIENT_LEADERBOARD_FORMATS][2] = {
+      {ICON_EMOJI_CLOCK_FIVE_OCLOCK, TRANSLATE_NOOP("Achievements", "Your Time: {}")},
+      {ICON_EMOJI_DIRECT_HIT, TRANSLATE_NOOP("Achievements", "Your Score: {}")},
+      {ICON_EMOJI_CLIPBOARD, TRANSLATE_NOOP("Achievements", "Your Value: {}")},
     };
 
     std::string message = fmt::format(
-      fmt::runtime(Host::TranslateToStringView(
-        "Achievements",
-        value_strings[std::min<u8>(event->leaderboard->format, NUM_RC_CLIENT_LEADERBOARD_FORMATS - 1)])),
-      event->leaderboard->tracker_value ? event->leaderboard->tracker_value : "Unknown",
-      g_settings.achievements_spectator_mode ? std::string_view() : TRANSLATE_SV("Achievements", " (Submitting)"));
+      "{} {}", value_strings[std::min<u8>(event->leaderboard->format, NUM_RC_CLIENT_LEADERBOARD_FORMATS - 1)][0],
+      TinyString::from_format(
+        fmt::runtime(Host::TranslateToStringView(
+          "Achievements",
+          value_strings[std::min<u8>(event->leaderboard->format, NUM_RC_CLIENT_LEADERBOARD_FORMATS - 1)][1])),
+        event->leaderboard->tracker_value ? event->leaderboard->tracker_value : "Unknown"));
 
-    FullscreenUI::AddAchievementNotification(fmt::format("leaderboard_{}", event->leaderboard->id),
-                                             static_cast<float>(g_settings.achievements_leaderboard_duration),
-                                             s_state.game_icon, std::string(event->leaderboard->title),
-                                             std::move(message), {});
+    FullscreenUI::AddAchievementNotification(
+      fmt::format("leaderboard_{}", event->leaderboard->id),
+      static_cast<float>(g_settings.achievements_leaderboard_duration), s_state.game_icon,
+      std::string(event->leaderboard->title), std::move(message),
+      std::string(g_settings.achievements_spectator_mode ? std::string_view() : NOTIFICATION_SPINNER_NOTE),
+      LEADERBOARD_NOTIFICATION_MIN_WIDTH);
   }
 
   if (g_settings.achievements_sound_effects)
@@ -1474,24 +1479,28 @@ void Achievements::HandleLeaderboardScoreboardEvent(const rc_client_event_t* eve
 
   if (g_settings.achievements_leaderboard_notifications)
   {
-    static const char* value_strings[NUM_RC_CLIENT_LEADERBOARD_FORMATS] = {
-      TRANSLATE_NOOP("Achievements", "Your Time: {} (Best: {})"),
-      TRANSLATE_NOOP("Achievements", "Your Score: {} (Best: {})"),
-      TRANSLATE_NOOP("Achievements", "Your Value: {} (Best: {})"),
+    static const char* value_strings[NUM_RC_CLIENT_LEADERBOARD_FORMATS][2] = {
+      {ICON_EMOJI_CLOCK_FIVE_OCLOCK, TRANSLATE_NOOP("Achievements", "Your Time: {0} (Best: {1})")},
+      {ICON_EMOJI_DIRECT_HIT, TRANSLATE_NOOP("Achievements", "Your Score: {0} (Best: {1})")},
+      {ICON_EMOJI_CLIPBOARD, TRANSLATE_NOOP("Achievements", "Your Value: {0} (Best: {1})")},
     };
 
-    std::string title = event->leaderboard->title;
     std::string message = fmt::format(
-      TRANSLATE_FS("Achievements", "{}\nLeaderboard Position: {} of {}"),
-      fmt::format(fmt::runtime(Host::TranslateToStringView(
-                    "Achievements",
-                    value_strings[std::min<u8>(event->leaderboard->format, NUM_RC_CLIENT_LEADERBOARD_FORMATS - 1)])),
-                  event->leaderboard_scoreboard->submitted_score, event->leaderboard_scoreboard->best_score),
-      event->leaderboard_scoreboard->new_rank, event->leaderboard_scoreboard->num_entries);
+      "{} {}\n" ICON_EMOJI_BAR_CHART " {}",
+      value_strings[std::min<u8>(event->leaderboard->format, NUM_RC_CLIENT_LEADERBOARD_FORMATS - 1)][0],
+      TinyString::from_format(
+        fmt::runtime(Host::TranslateToStringView(
+          "Achievements",
+          value_strings[std::min<u8>(event->leaderboard->format, NUM_RC_CLIENT_LEADERBOARD_FORMATS - 1)][1])),
+        event->leaderboard_scoreboard->submitted_score, event->leaderboard_scoreboard->best_score),
+      TinyString::from_format(TRANSLATE_FS("Achievements", "Your Position: {0} of {1}"),
+                              event->leaderboard_scoreboard->new_rank, event->leaderboard_scoreboard->num_entries));
 
     FullscreenUI::AddAchievementNotification(fmt::format("leaderboard_{}", event->leaderboard->id),
                                              static_cast<float>(g_settings.achievements_leaderboard_duration),
-                                             s_state.game_icon, std::move(title), std::move(message), {});
+                                             s_state.game_icon, std::string(event->leaderboard->title),
+                                             std::move(message), ICON_EMOJI_CHART_UPWARDS_TREND,
+                                             LEADERBOARD_NOTIFICATION_MIN_WIDTH);
   }
 }
 

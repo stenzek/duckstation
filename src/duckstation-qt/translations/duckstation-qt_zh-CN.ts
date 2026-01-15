@@ -527,13 +527,13 @@ Login token generated at:</source>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1422"/>
-        <source>Your Score: {}{}</source>
-        <translation>您的得分: {}{}</translation>
+        <source>Your Score: {}</source>
+        <translation>您的得分: {}</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1423"/>
-        <source>Your Value: {}{}</source>
-        <translation>您的值: {}{}</translation>
+        <source>Your Value: {}</source>
+        <translation>您的值: {}</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1431"/>
@@ -542,25 +542,23 @@ Login token generated at:</source>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1450"/>
-        <source>Your Time: {} (Best: {})</source>
-        <translation>您的时间: {} (最佳: {})</translation>
+        <source>Your Time: {0} (Best: {1})</source>
+        <translation>您的时间: {0} (最佳: {1})</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1451"/>
-        <source>Your Score: {} (Best: {})</source>
-        <translation>您的得分: {} (最佳: {})</translation>
+        <source>Your Score: {0} (Best: {1})</source>
+        <translation>您的得分: {0} (最佳: {1})</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1452"/>
-        <source>Your Value: {} (Best: {})</source>
-        <translation>您的值: {} (最佳: {})</translation>
+        <source>Your Value: {0} (Best: {1})</source>
+        <translation>您的值: {0} (最佳: {1})</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1457"/>
-        <source>{}
-Leaderboard Position: {} of {}</source>
-        <translation>{}
-排行榜位置: {}/{}</translation>
+        <source>Leaderboard Position: {0} of {1}</source>
+        <translation>排行榜位置: {0}/{1}</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1541"/>

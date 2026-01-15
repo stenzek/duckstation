@@ -48,3 +48,6 @@
 #define ICON_EMOJI_NOTEBOOK "\xf0\x9f\x93\x99"
 #define ICON_EMOJI_GEAR "\xe2\x9a\x99"
 #define ICON_EMOJI_NO_ENTRY_SIGN "\xe2\x9b\x94"
+#define ICON_EMOJI_BAR_CHART "\xf0\x9f\x93\x8a"
+#define ICON_EMOJI_CHART_UPWARDS_TREND "\xf0\x9f\x93\x88"
+#define ICON_EMOJI_DIRECT_HIT "\xf0\x9f\x8e\xaf"

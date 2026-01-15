@@ -486,18 +486,18 @@ Login token generated on %2.</source>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1421"/>
-        <source>Your Time: {}{}</source>
-        <translation>Ваше время: {}{}</translation>
+        <source>Your Time: {}</source>
+        <translation>Ваше время: {}</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1422"/>
-        <source>Your Score: {}{}</source>
-        <translation>Ваш результат: {}{}</translation>
+        <source>Your Score: {}</source>
+        <translation>Ваш результат: {}</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1423"/>
-        <source>Your Value: {}{}</source>
-        <translation type="unfinished">Ваше значение: {}{}</translation>
+        <source>Your Value: {}</source>
+        <translation type="unfinished">Ваше значение: {}</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1431"/>
@@ -506,25 +506,23 @@ Login token generated on %2.</source>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1450"/>
-        <source>Your Time: {} (Best: {})</source>
-        <translation>Ваше время: {} (Лучший результат: {})</translation>
+        <source>Your Time: {0} (Best: {1})</source>
+        <translation>Ваше время: {0} (Лучший результат: {1})</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1451"/>
-        <source>Your Score: {} (Best: {})</source>
-        <translation>Ваш результат: {} (Лучший: {})</translation>
+        <source>Your Score: {0} (Best: {1})</source>
+        <translation>Ваш результат: {0} (Лучший: {1})</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1452"/>
-        <source>Your Value: {} (Best: {})</source>
-        <translation>Ваше значение: {} (Лучший: {})</translation>
+        <source>Your Value: {0} (Best: {1})</source>
+        <translation>Ваше значение: {0} (Лучший: {1})</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1457"/>
-        <source>{}
-Leaderboard Position: {} of {}</source>
-        <translation>{}
-Позиция в списке лидеров: {} из {}</translation>
+        <source>Leaderboard Position: {0} of {1}</source>
+        <translation>Позиция в списке лидеров: {0} из {1}</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1541"/>

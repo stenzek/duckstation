@@ -408,30 +408,28 @@ Inloggningstoken genererades %2.</translation>
         <translation>Ledartavleförsök misslyckades.</translation>
     </message>
     <message>
-        <source>Your Score: {}{}</source>
-        <translation>Dina poäng: {}{}</translation>
+        <source>Your Score: {}</source>
+        <translation>Dina poäng: {}</translation>
     </message>
     <message>
         <source> (Submitting)</source>
         <translation> (Skickar in)</translation>
     </message>
     <message>
-        <source>Your Time: {} (Best: {})</source>
-        <translation>Din tid: {} (Bästa: {})</translation>
+        <source>Your Time: {0} (Best: {1})</source>
+        <translation>Din tid: {0} (Bästa: {1})</translation>
     </message>
     <message>
-        <source>Your Score: {} (Best: {})</source>
-        <translation>Dina poäng: {} (Bästa: {})</translation>
+        <source>Your Score: {0} (Best: {1})</source>
+        <translation>Dina poäng: {0} (Bästa: {1})</translation>
     </message>
     <message>
-        <source>Your Value: {} (Best: {})</source>
-        <translation>Ditt värde: {} (Bästa: {})</translation>
+        <source>Your Value: {0} (Best: {1})</source>
+        <translation>Ditt värde: {0} (Bästa: {1})</translation>
     </message>
     <message>
-        <source>{}
-Leaderboard Position: {} of {}</source>
-        <translation>{}
-Position på ledartavlan: {} av {}</translation>
+        <source>Leaderboard Position: {0} of {1}</source>
+        <translation>Position på ledartavlan: {0} av {1}</translation>
     </message>
     <message>
         <source>Server error in {}:
