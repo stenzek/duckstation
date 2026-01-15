@@ -32,8 +32,8 @@ static constexpr const char* PROFILE_DETAILS_URL_TEMPLATE = "https://retroachiev
 static constexpr float WINDOW_ALPHA = 0.9f;
 static constexpr float WINDOW_HEADING_ALPHA = 0.95f;
 
-static constexpr u32 LEADERBOARD_NEARBY_ENTRIES_TO_FETCH = 10;
-static constexpr u32 LEADERBOARD_ALL_FETCH_SIZE = 20;
+static constexpr u32 LEADERBOARD_NEARBY_ENTRIES_TO_FETCH = 20;
+static constexpr u32 LEADERBOARD_ALL_FETCH_SIZE = 50;
 
 // How long the last progress update is shown in the pause menu.
 static constexpr float PAUSE_MENU_PROGRESS_DISPLAY_TIME = 60.0f;
