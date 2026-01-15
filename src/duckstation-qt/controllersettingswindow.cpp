@@ -101,7 +101,8 @@ ControllerSettingsWindow::ControllerSettingsWindow(INISettingsInterface* game_si
     }
   }
 
-  createWidgets();
+  if (m_ui.settingsContainer->count() == 0)
+    createWidgets();
 }
 
 ControllerSettingsWindow::~ControllerSettingsWindow() = default;
