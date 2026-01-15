@@ -78,6 +78,7 @@ static void BeginMenuButtonDrawSplit();
 static void EndMenuButtonDrawSplit();
 static void SetMenuButtonSplitLayer(int layer);
 static void DrawMenuButtonFrameAt(const ImVec2& frame_min, const ImVec2& frame_max, u32 col, bool border);
+static void DrawMenuButtonFrameAtOnCurrentLayer(const ImVec2& frame_min, const ImVec2& frame_max, u32 col, bool border);
 static void PostDrawMenuButtonFrame();
 
 static void DrawBackgroundProgressDialogs(float& current_y);
@@ -1829,6 +1830,14 @@ void FullscreenUI::DrawMenuButtonFrameAt(const ImVec2& frame_min, const ImVec2& 
 {
   SetMenuButtonSplitLayer(MENU_BUTTON_SPLIT_LAYER_HIGHLIGHT);
 
+  DrawMenuButtonFrameAtOnCurrentLayer(frame_min, frame_max, col, border);
+
+  SetMenuButtonSplitLayer(MENU_BUTTON_SPLIT_LAYER_FOREGROUND);
+}
+
+void FullscreenUI::DrawMenuButtonFrameAtOnCurrentLayer(const ImVec2& frame_min, const ImVec2& frame_max, u32 col,
+                                                       bool border)
+{
   const float rounding = LayoutScale(LAYOUT_MENU_ITEM_BORDER_ROUNDING);
   if (border && UIStyle.MenuBorders)
   {
@@ -1841,8 +1850,6 @@ void FullscreenUI::DrawMenuButtonFrameAt(const ImVec2& frame_min, const ImVec2& 
   {
     ImGui::RenderFrame(frame_min, frame_max, col, false, rounding);
   }
-
-  SetMenuButtonSplitLayer(MENU_BUTTON_SPLIT_LAYER_FOREGROUND);
 }
 
 void FullscreenUI::PostDrawMenuButtonFrame()
@@ -2477,7 +2484,10 @@ bool FullscreenUI::FloatingButton(std::string_view text, float x, float y, float
   {
     pressed = ImGui::ButtonBehavior(bb, id, &hovered, &held);
     if (hovered)
-      DrawMenuButtonFrame(bb.Min, bb.Max, held);
+    {
+      const ImU32 col = ImGui::GetColorU32(held ? ImGuiCol_ButtonActive : ImGuiCol_ButtonHovered);
+      DrawMenuButtonFrameAtOnCurrentLayer(bb.Min, bb.Max, col, true);
+    }
   }
   else
   {
