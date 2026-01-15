@@ -78,7 +78,6 @@ constexpr const char* const RA_LOGO_ICON_NAME = "images/ra-icon.webp";
 static constexpr float LOGIN_NOTIFICATION_TIME = 5.0f;
 static constexpr float ACHIEVEMENT_SUMMARY_NOTIFICATION_TIME = 5.0f;
 static constexpr float ACHIEVEMENT_SUMMARY_NOTIFICATION_TIME_HC = 10.0f;
-static constexpr float ACHIEVEMENT_SUMMARY_UNSUPPORTED_TIME = 12.0f;
 static constexpr float GAME_COMPLETE_NOTIFICATION_TIME = 20.0f;
 static constexpr float CHALLENGE_STARTED_NOTIFICATION_TIME = 5.0f;
 static constexpr float CHALLENGE_FAILED_NOTIFICATION_TIME = 5.0f;
@@ -1307,11 +1306,11 @@ void Achievements::DisplayAchievementSummary()
 
     if (s_state.game_summary.num_unsupported_achievements > 0)
     {
-      FullscreenUI::AddAchievementNotification(
-        "UnsupportedAchievements", ACHIEVEMENT_SUMMARY_UNSUPPORTED_TIME, "images/warning.svg",
-        TRANSLATE_STR("Achievements", "Unsupported Achievements"),
-        TRANSLATE_PLURAL_STR("Achievements", "%n achievements are not supported by DuckStation.", "Achievement popup",
-                             s_state.game_summary.num_unsupported_achievements));
+      Host::AddIconOSDMessage(OSDMessageType::Error, "UnsupportedAchievements", ICON_EMOJI_WARNING,
+                              TRANSLATE_STR("Achievements", "Unsupported Achievements"),
+                              TRANSLATE_PLURAL_STR("Achievements", "%n achievements are not supported by DuckStation.",
+                                                   "Achievement popup",
+                                                   s_state.game_summary.num_unsupported_achievements));
     }
   }
 
@@ -2080,8 +2079,8 @@ void Achievements::ClientLoginWithTokenCallback(int result, const char* error_me
     // only display user error if they've started a game
     if (System::IsValid())
     {
-      FullscreenUI::AddAchievementNotification(
-        "AchievementsLoginFailed", 15.0f, "images/warning.svg",
+      Host::AddIconOSDMessage(
+        OSDMessageType::Error, "AchievementsLoginFailed", ICON_EMOJI_NO_ENTRY_SIGN,
         TRANSLATE_STR("Achievements", "RetroAchievements Login Failed"),
         fmt::format(
           TRANSLATE_FS("Achievements", "Achievement unlocks will not be submitted for this session.\nError: {}"),
