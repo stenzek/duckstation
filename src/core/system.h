@@ -121,6 +121,7 @@ enum class Taint : u8
   RAM8MB,
   Cheats,
   Patches,
+  MemoryCardMismatch,
   MaxCount,
 };
 

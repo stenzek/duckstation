@@ -703,6 +703,7 @@ std::string_view System::GetTaintDisplayName(Taint taint)
     TRANSLATE_DISAMBIG_NOOP("System", "8MB RAM", "Taint"),
     TRANSLATE_DISAMBIG_NOOP("System", "Cheats", "Taint"),
     TRANSLATE_DISAMBIG_NOOP("System", "Game Patches", "Taint"),
+    TRANSLATE_DISAMBIG_NOOP("System", "Memory Card Mismatch", "Taint"),
   }};
 
   return Host::TranslateToStringView("System", names[static_cast<size_t>(taint)], "Taint");
@@ -718,6 +719,7 @@ const char* System::GetTaintName(Taint taint)
     "RAM8MB",
     "Cheats",
     "Patches",
+    "MemoryCardMismatch",
   }};
 
   return names[static_cast<size_t>(taint)];
@@ -4933,8 +4935,8 @@ void System::WarnAboutStateTaints(u32 state_taints)
 
   Host::AddIconOSDMessage(
     OSDMessageType::Error, "SystemTaintsFromState", ICON_EMOJI_WARNING,
-    TRANSLATE_STR("System", "This save state was created with the following tainted options, and may be unstable. You "
-                            "will need to reset the system to clear any effects."),
+    TRANSLATE_STR("System", "This save state was created with the following tainted options, and may be unstable.\n"
+                            "You must save to a memory card and reset the game to clear any effects."),
     std::string(messages.view()));
 }
 

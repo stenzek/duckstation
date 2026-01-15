@@ -289,6 +289,7 @@ bool Pad::DoStateMemcard(StateWrapper& sw, u32 i, bool is_memory_state)
           TRANSLATE_STR("Pad", "Simulating replugging. The game may not be able to handle this."));
 
         WARNING_LOG("Memory card {} data mismatch. Using current data via instant-replugging.", i + 1u);
+        System::SetTaint(System::Taint::MemoryCardMismatch);
         s_state.memory_cards[i]->Reset();
       }
     }
