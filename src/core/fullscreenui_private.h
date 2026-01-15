@@ -131,7 +131,7 @@ void DrawAchievementsPauseMenuOverlays(float start_pos_y);
 
 /// Updates the stored most-recent and closest-to-completion achievements.
 /// Call before calling DrawPauseMenuOverlays() for the first time.
-void UpdateAchievementsRecentUnlockAndAlmostThere();
+void UpdateAchievementsPauseScreenInfo();
 
 /// Switches to the achievements window.
 void SwitchToAchievements();

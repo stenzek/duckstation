@@ -1440,25 +1440,36 @@ void Achievements::HandleLeaderboardFailedEvent(const rc_client_event_t* event)
   }
 }
 
+std::string_view Achievements::GetLeaderboardFormatIcon(u32 format)
+{
+  static const char* value_strings[NUM_RC_CLIENT_LEADERBOARD_FORMATS] = {
+    ICON_EMOJI_CLOCK_FIVE_OCLOCK,
+    ICON_EMOJI_DIRECT_HIT,
+    ICON_EMOJI_CLIPBOARD,
+  };
+
+  return value_strings[std::min<u32>(format, std::size(value_strings) - 1)];
+}
+
 void Achievements::HandleLeaderboardSubmittedEvent(const rc_client_event_t* event)
 {
   DEV_LOG("Leaderboard {} ({}) submitted", event->leaderboard->id, event->leaderboard->title);
 
   if (g_settings.achievements_leaderboard_notifications)
   {
-    static const char* value_strings[NUM_RC_CLIENT_LEADERBOARD_FORMATS][2] = {
-      {ICON_EMOJI_CLOCK_FIVE_OCLOCK, TRANSLATE_NOOP("Achievements", "Your Time: {}")},
-      {ICON_EMOJI_DIRECT_HIT, TRANSLATE_NOOP("Achievements", "Your Score: {}")},
-      {ICON_EMOJI_CLIPBOARD, TRANSLATE_NOOP("Achievements", "Your Value: {}")},
+    static const char* value_strings[NUM_RC_CLIENT_LEADERBOARD_FORMATS] = {
+      TRANSLATE_NOOP("Achievements", "Your Time: {}"),
+      TRANSLATE_NOOP("Achievements", "Your Score: {}"),
+      TRANSLATE_NOOP("Achievements", "Your Value: {}"),
     };
 
-    std::string message = fmt::format(
-      "{} {}", value_strings[std::min<u8>(event->leaderboard->format, NUM_RC_CLIENT_LEADERBOARD_FORMATS - 1)][0],
-      TinyString::from_format(
-        fmt::runtime(Host::TranslateToStringView(
-          "Achievements",
-          value_strings[std::min<u8>(event->leaderboard->format, NUM_RC_CLIENT_LEADERBOARD_FORMATS - 1)][1])),
-        event->leaderboard->tracker_value ? event->leaderboard->tracker_value : "Unknown"));
+    std::string message =
+      fmt::format("{} {}", GetLeaderboardFormatIcon(event->leaderboard->format),
+                  TinyString::from_format(
+                    fmt::runtime(Host::TranslateToStringView(
+                      "Achievements",
+                      value_strings[std::min<u8>(event->leaderboard->format, NUM_RC_CLIENT_LEADERBOARD_FORMATS - 1)])),
+                    event->leaderboard->tracker_value ? event->leaderboard->tracker_value : "Unknown"));
 
     FullscreenUI::AddAchievementNotification(
       fmt::format("leaderboard_{}", event->leaderboard->id),
@@ -1479,21 +1490,20 @@ void Achievements::HandleLeaderboardScoreboardEvent(const rc_client_event_t* eve
 
   if (g_settings.achievements_leaderboard_notifications)
   {
-    static const char* value_strings[NUM_RC_CLIENT_LEADERBOARD_FORMATS][2] = {
-      {ICON_EMOJI_CLOCK_FIVE_OCLOCK, TRANSLATE_NOOP("Achievements", "Your Time: {0} (Best: {1})")},
-      {ICON_EMOJI_DIRECT_HIT, TRANSLATE_NOOP("Achievements", "Your Score: {0} (Best: {1})")},
-      {ICON_EMOJI_CLIPBOARD, TRANSLATE_NOOP("Achievements", "Your Value: {0} (Best: {1})")},
+    static const char* value_strings[NUM_RC_CLIENT_LEADERBOARD_FORMATS] = {
+      TRANSLATE_NOOP("Achievements", "Your Time: {0} (Best: {1})"),
+      TRANSLATE_NOOP("Achievements", "Your Score: {0} (Best: {1})"),
+      TRANSLATE_NOOP("Achievements", "Your Value: {0} (Best: {1})"),
     };
 
     std::string message = fmt::format(
-      "{} {}\n" ICON_EMOJI_BAR_CHART " {}",
-      value_strings[std::min<u8>(event->leaderboard->format, NUM_RC_CLIENT_LEADERBOARD_FORMATS - 1)][0],
+      "{} {}\n" ICON_EMOJI_BAR_CHART " {}", GetLeaderboardFormatIcon(event->leaderboard->format),
       TinyString::from_format(
         fmt::runtime(Host::TranslateToStringView(
           "Achievements",
-          value_strings[std::min<u8>(event->leaderboard->format, NUM_RC_CLIENT_LEADERBOARD_FORMATS - 1)][1])),
+          value_strings[std::min<u8>(event->leaderboard->format, NUM_RC_CLIENT_LEADERBOARD_FORMATS - 1)])),
         event->leaderboard_scoreboard->submitted_score, event->leaderboard_scoreboard->best_score),
-      TinyString::from_format(TRANSLATE_FS("Achievements", "Your Position: {0} of {1}"),
+      TinyString::from_format(TRANSLATE_FS("Achievements", "Leaderboard Position: {0} of {1}"),
                               event->leaderboard_scoreboard->new_rank, event->leaderboard_scoreboard->num_entries));
 
     FullscreenUI::AddAchievementNotification(fmt::format("leaderboard_{}", event->leaderboard->id),

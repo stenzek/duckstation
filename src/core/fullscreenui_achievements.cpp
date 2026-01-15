@@ -87,6 +87,15 @@ struct PauseMenuTimedMeasuredAchievementInfo : PauseMenuMeasuredAchievementInfo
   Timer::Value show_time;
 };
 
+struct PauseMenuLeaderboardInfo
+{
+  std::string title;
+  std::string description;
+  std::string tracker_value;
+  u32 leaderboard_id;
+  u32 format;
+};
+
 } // namespace
 
 static void DrawNotifications(NotificationLayout& layout);
@@ -150,6 +159,7 @@ struct AchievementsLocals
   std::optional<PauseMenuAchievementInfoWithPoints> most_recent_unlock;
   std::optional<PauseMenuMeasuredAchievementInfo> achievement_nearest_completion;
   std::optional<PauseMenuTimedMeasuredAchievementInfo> most_recent_progress_update;
+  std::vector<PauseMenuLeaderboardInfo> active_leaderboards;
 
   rc_client_leaderboard_list_t* leaderboard_list = nullptr;
   const rc_client_leaderboard_t* open_leaderboard = nullptr;
@@ -715,59 +725,111 @@ void FullscreenUI::CachePauseMenuAchievementInfo(const rc_client_achievement_t* 
     value->show_time = Timer::GetCurrentValue();
 }
 
-void FullscreenUI::UpdateAchievementsRecentUnlockAndAlmostThere()
+void FullscreenUI::UpdateAchievementsPauseScreenInfo()
 {
   const auto lock = Achievements::GetLock();
   if (!Achievements::HasActiveGame())
   {
     s_achievements_locals.most_recent_unlock.reset();
     s_achievements_locals.achievement_nearest_completion.reset();
+    s_achievements_locals.active_leaderboards.clear();
     return;
   }
 
   rc_client_achievement_list_t* const achievements =
-    rc_client_create_achievement_list(Achievements::GetClient(), RC_CLIENT_ACHIEVEMENT_CATEGORY_CORE_AND_UNOFFICIAL,
-                                      RC_CLIENT_ACHIEVEMENT_LIST_GROUPING_PROGRESS);
-  if (!achievements)
+    Achievements::HasAchievements() ?
+      rc_client_create_achievement_list(Achievements::GetClient(), RC_CLIENT_ACHIEVEMENT_CATEGORY_CORE_AND_UNOFFICIAL,
+                                        RC_CLIENT_ACHIEVEMENT_LIST_GROUPING_PROGRESS) :
+      nullptr;
+  if (achievements)
   {
-    s_achievements_locals.most_recent_unlock.reset();
-    s_achievements_locals.achievement_nearest_completion.reset();
-    return;
-  }
+    const rc_client_achievement_t* most_recent_unlock = nullptr;
+    const rc_client_achievement_t* nearest_completion = nullptr;
 
-  const rc_client_achievement_t* most_recent_unlock = nullptr;
-  const rc_client_achievement_t* nearest_completion = nullptr;
-
-  for (u32 i = 0; i < achievements->num_buckets; i++)
-  {
-    const rc_client_achievement_bucket_t& bucket = achievements->buckets[i];
-    for (u32 j = 0; j < bucket.num_achievements; j++)
+    for (u32 i = 0; i < achievements->num_buckets; i++)
     {
-      const rc_client_achievement_t* achievement = bucket.achievements[j];
+      const rc_client_achievement_bucket_t& bucket = achievements->buckets[i];
+      for (u32 j = 0; j < bucket.num_achievements; j++)
+      {
+        const rc_client_achievement_t* achievement = bucket.achievements[j];
 
-      if (achievement->state == RC_CLIENT_ACHIEVEMENT_STATE_UNLOCKED)
-      {
-        if (!most_recent_unlock || achievement->unlock_time > most_recent_unlock->unlock_time)
-          most_recent_unlock = achievement;
-      }
-      else
-      {
-        // find the achievement with the greatest normalized progress, but skip anything below 80%,
-        // matching the rc_client definition of "almost there"
-        const float percent_cutoff = 80.0f;
-        if (achievement->measured_percent >= percent_cutoff &&
-            (!nearest_completion || achievement->measured_percent > nearest_completion->measured_percent))
+        if (achievement->state == RC_CLIENT_ACHIEVEMENT_STATE_UNLOCKED)
         {
-          nearest_completion = achievement;
+          if (!most_recent_unlock || achievement->unlock_time > most_recent_unlock->unlock_time)
+            most_recent_unlock = achievement;
+        }
+        else
+        {
+          // find the achievement with the greatest normalized progress, but skip anything below 80%,
+          // matching the rc_client definition of "almost there"
+          const float percent_cutoff = 80.0f;
+          if (achievement->measured_percent >= percent_cutoff &&
+              (!nearest_completion || achievement->measured_percent > nearest_completion->measured_percent))
+          {
+            nearest_completion = achievement;
+          }
         }
       }
     }
+
+    CachePauseMenuAchievementInfo(most_recent_unlock, s_achievements_locals.most_recent_unlock);
+    CachePauseMenuAchievementInfo(nearest_completion, s_achievements_locals.achievement_nearest_completion);
+
+    rc_client_destroy_achievement_list(achievements);
+  }
+  else
+  {
+    s_achievements_locals.most_recent_unlock.reset();
+    s_achievements_locals.achievement_nearest_completion.reset();
   }
 
-  CachePauseMenuAchievementInfo(most_recent_unlock, s_achievements_locals.most_recent_unlock);
-  CachePauseMenuAchievementInfo(nearest_completion, s_achievements_locals.achievement_nearest_completion);
+  rc_client_leaderboard_list_t* const leaderboards =
+    Achievements::HasLeaderboards() ?
+      rc_client_create_leaderboard_list(Achievements::GetClient(), RC_CLIENT_LEADERBOARD_LIST_GROUPING_NONE) :
+      nullptr;
+  if (leaderboards)
+  {
+    std::vector<PauseMenuLeaderboardInfo>& active_lbs = s_achievements_locals.active_leaderboards;
+    size_t num_active_lbs = 0;
 
-  rc_client_destroy_achievement_list(achievements);
+    for (u32 i = 0; i < leaderboards->num_buckets; i++)
+    {
+      const rc_client_leaderboard_bucket_t& bucket = leaderboards->buckets[i];
+      for (u32 j = 0; j < bucket.num_leaderboards; j++)
+      {
+        const rc_client_leaderboard_t* leaderboard = bucket.leaderboards[j];
+        if (leaderboard->state != RC_CLIENT_LEADERBOARD_STATE_TRACKING)
+          continue;
+
+        // avoid alloc if unnecessary
+        if (num_active_lbs >= active_lbs.size() || active_lbs[num_active_lbs].leaderboard_id != leaderboard->id)
+        {
+          if (num_active_lbs < active_lbs.size())
+            active_lbs.erase(active_lbs.begin() + num_active_lbs, active_lbs.end());
+
+          PauseMenuLeaderboardInfo& lbinfo = active_lbs.emplace_back();
+          lbinfo.title = leaderboard->title;
+          if (leaderboard->description)
+            lbinfo.description = leaderboard->description;
+        }
+
+        if (leaderboard->tracker_value)
+          active_lbs[num_active_lbs].tracker_value = leaderboard->tracker_value;
+
+        num_active_lbs++;
+      }
+    }
+
+    // remove extras
+    if (num_active_lbs < active_lbs.size())
+      active_lbs.erase(active_lbs.begin() + num_active_lbs, active_lbs.end());
+
+    rc_client_destroy_leaderboard_list(leaderboards);
+  }
+  else
+  {
+    s_achievements_locals.active_leaderboards.clear();
+  }
 }
 
 void FullscreenUI::UpdateAchievementsLastProgressUpdate(const rc_client_achievement_t* achievement)
@@ -971,10 +1033,11 @@ void FullscreenUI::DrawAchievementsPauseMenuOverlays(float start_pos_y)
 
   const auto get_achievement_height = [&badge_size, &badge_text_width, &text_spacing](std::string_view description) {
     const ImVec2 description_size =
-      description.empty() ? ImVec2(0.0f, 0.0f) :
+      description.empty() ? ImVec2() :
                             UIStyle.Font->CalcTextSizeA(UIStyle.MediumSmallFontSize, UIStyle.NormalFontWeight, FLT_MAX,
                                                         badge_text_width, IMSTR_START_END(description));
-    const float text_height = UIStyle.MediumSmallFontSize + text_spacing + description_size.y;
+    const float text_height =
+      UIStyle.MediumSmallFontSize + (description.empty() ? 0.0f : (text_spacing + description_size.y));
     return std::max(text_height, badge_size);
   };
 
@@ -986,7 +1049,7 @@ void FullscreenUI::DrawAchievementsPauseMenuOverlays(float start_pos_y)
     ImVec2 badge_text_pos = ImVec2(image_max.x + (text_spacing * 3.0f), text_pos.y);
     const ImVec4 clip_rect = ImVec4(badge_text_pos.x, badge_text_pos.y, badge_text_pos.x + badge_text_width, box_max.y);
     ImVec2 text_size = description.empty() ?
-                         ImVec2(0.0f, 0.0f) :
+                         ImVec2() :
                          UIStyle.Font->CalcTextSizeA(UIStyle.MediumSmallFontSize, UIStyle.NormalFontWeight, FLT_MAX,
                                                      badge_text_width, IMSTR_START_END(description));
 
@@ -997,11 +1060,12 @@ void FullscreenUI::DrawAchievementsPauseMenuOverlays(float start_pos_y)
     {
       dl->AddText(UIStyle.Font, UIStyle.MediumSmallFontSize, UIStyle.BoldFontWeight, badge_text_pos, title_text_color,
                   IMSTR_START_END(title), 0.0f, &clip_rect);
-      badge_text_pos.y += UIStyle.MediumSmallFontSize + text_spacing;
+      badge_text_pos.y += UIStyle.MediumSmallFontSize;
     }
 
     if (!description.empty())
     {
+      badge_text_pos.y += text_spacing;
       dl->AddText(UIStyle.Font, UIStyle.MediumSmallFontSize, UIStyle.NormalFontWeight, badge_text_pos, text_color,
                   IMSTR_START_END(description), badge_text_width, &clip_rect);
       badge_text_pos.y += text_size.y;
@@ -1088,6 +1152,107 @@ void FullscreenUI::DrawAchievementsPauseMenuOverlays(float start_pos_y)
       text_pos.y += paragraph_spacing;
       draw_achievement_with_summary(indicator.achievement->title, indicator.achievement->description,
                                     indicator.badge_path);
+      text_pos.y += paragraph_spacing;
+    }
+  }
+
+  // Leaderboards
+  if (!s_achievements_locals.active_leaderboards.empty())
+  {
+    box_height = box_padding + box_padding + UIStyle.MediumFontSize;
+
+    const std::string_view icon_template = Achievements::GetLeaderboardFormatIcon(RC_CLIENT_LEADERBOARD_FORMAT_TIME);
+    const float leaderboard_icon_size =
+      UIStyle.Font
+        ->CalcTextSizeA(UIStyle.LargeFontSize, UIStyle.NormalFontWeight, FLT_MAX, 0.0f, IMSTR_START_END(icon_template))
+        .x;
+    const float leaderboard_icon_reserve = leaderboard_icon_size + (text_spacing * 3.0f);
+    const float avail_text_width = box_content_width - leaderboard_icon_reserve;
+
+    for (size_t i = 0; i < s_achievements_locals.active_leaderboards.size(); i++)
+    {
+      const PauseMenuLeaderboardInfo& lbinfo = s_achievements_locals.active_leaderboards[i];
+      box_height += paragraph_spacing;
+
+      const ImVec2 tracker_size = lbinfo.tracker_value.empty() ?
+                                    ImVec2() :
+                                    UIStyle.Font->CalcTextSizeA(UIStyle.MediumSmallFontSize, UIStyle.BoldFontWeight,
+                                                                FLT_MAX, 0.0f, IMSTR_START_END(lbinfo.tracker_value));
+      const float avail_title_width =
+        avail_text_width - ((tracker_size.x > 0.0f) ? (tracker_size.x + text_spacing) : 0.0f);
+      const ImVec2 title_size = UIStyle.Font->CalcTextSizeA(UIStyle.MediumSmallFontSize, UIStyle.BoldFontWeight,
+                                                            FLT_MAX, avail_title_width, IMSTR_START_END(lbinfo.title));
+      box_height += title_size.y;
+
+      if (!lbinfo.description.empty())
+      {
+        const ImVec2 description_size =
+          UIStyle.Font->CalcTextSizeA(UIStyle.MediumSmallFontSize, UIStyle.NormalFontWeight, FLT_MAX, avail_text_width,
+                                      IMSTR_START_END(lbinfo.description));
+        box_height += text_spacing + description_size.y;
+      }
+
+      box_height += ((i == (s_achievements_locals.active_leaderboards.size() - 1)) ? 0.0f : paragraph_spacing);
+    }
+
+    box_min = ImVec2(box_min.x, box_max.y + box_margin);
+    box_max = ImVec2(box_min.x + box_width, box_min.y + box_height);
+    text_pos = ImVec2(box_min.x + box_padding, box_min.y + box_padding);
+
+    dl->AddRectFilled(box_min, box_max, box_background_color, box_rounding);
+
+    buffer.format(ICON_FA_STOPWATCH " {}",
+                  TRANSLATE_DISAMBIG_SV("Achievements", "Active Leaderboard Attempts", "Pause Menu"));
+    dl->AddText(UIStyle.Font, UIStyle.MediumFontSize, UIStyle.BoldFontWeight, text_pos, box_title_text_color,
+                IMSTR_START_END(buffer));
+    text_pos.y += UIStyle.MediumFontSize;
+
+    const ImVec4 clip_rect = ImVec4(text_pos.x, text_pos.y, text_pos.x + box_content_width, text_pos.y + box_height);
+
+    for (const PauseMenuLeaderboardInfo& lbinfo : s_achievements_locals.active_leaderboards)
+    {
+      text_pos.y += paragraph_spacing;
+
+      const std::string_view icon = Achievements::GetLeaderboardFormatIcon(lbinfo.format);
+      dl->AddText(UIStyle.Font, UIStyle.LargeFontSize, UIStyle.NormalFontWeight, text_pos, title_text_color,
+                  IMSTR_START_END(icon), 0.0f, &clip_rect);
+
+      const ImVec2 tracker_size = lbinfo.tracker_value.empty() ?
+                                    ImVec2() :
+                                    UIStyle.Font->CalcTextSizeA(UIStyle.MediumSmallFontSize, UIStyle.BoldFontWeight,
+                                                                FLT_MAX, 0.0f, IMSTR_START_END(lbinfo.tracker_value));
+      const float avail_title_width =
+        avail_text_width - ((tracker_size.x > 0.0f) ? (tracker_size.x + text_spacing) : 0.0f);
+      const ImVec2 title_size = UIStyle.Font->CalcTextSizeA(UIStyle.MediumSmallFontSize, UIStyle.BoldFontWeight,
+                                                            FLT_MAX, avail_title_width, IMSTR_START_END(lbinfo.title));
+
+      dl->AddText(UIStyle.Font, UIStyle.MediumSmallFontSize, UIStyle.BoldFontWeight,
+                  ImVec2(text_pos.x + leaderboard_icon_reserve, text_pos.y), title_text_color,
+                  IMSTR_START_END(lbinfo.title), avail_title_width, &clip_rect);
+
+      if (!lbinfo.tracker_value.empty())
+      {
+        dl->AddText(UIStyle.Font, UIStyle.MediumSmallFontSize, UIStyle.BoldFontWeight,
+                    ImVec2(box_max.x - box_padding - tracker_size.x, text_pos.y), title_text_color,
+                    IMSTR_START_END(lbinfo.tracker_value), 0.0f, &clip_rect);
+      }
+
+      text_pos.y += title_size.y;
+
+      if (!lbinfo.description.empty())
+      {
+        text_pos.y += text_spacing;
+
+        const ImVec2 description_size =
+          UIStyle.Font->CalcTextSizeA(UIStyle.MediumSmallFontSize, UIStyle.NormalFontWeight, FLT_MAX, avail_text_width,
+                                      IMSTR_START_END(lbinfo.description));
+        dl->AddText(UIStyle.Font, UIStyle.MediumSmallFontSize, UIStyle.NormalFontWeight,
+                    ImVec2(text_pos.x + leaderboard_icon_reserve, text_pos.y), text_color,
+                    IMSTR_START_END(lbinfo.description), avail_text_width, &clip_rect);
+
+        text_pos.y += description_size.y;
+      }
+
       text_pos.y += paragraph_spacing;
     }
   }

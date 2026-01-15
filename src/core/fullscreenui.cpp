@@ -312,7 +312,7 @@ void FullscreenUI::OpenPauseMenu()
     ForceKeyNavEnabled();
     EnqueueSoundEffect(SFX_NAV_ACTIVATE);
 
-    UpdateAchievementsRecentUnlockAndAlmostThere();
+    UpdateAchievementsPauseScreenInfo();
     BeginTransition(SHORT_TRANSITION_TIME, []() {
       s_locals.current_pause_submenu = PauseSubMenu::None;
       SwitchToMainWindow(MainWindowType::PauseMenu);

@@ -55,6 +55,7 @@ std::optional<AchievementProgressIndicator>& GetActiveProgressIndicator();
 std::string GetAchievementBadgePath(const rc_client_achievement_t* achievement, bool locked,
                                     bool download_if_missing = true);
 std::string GetLeaderboardUserBadgePath(const rc_client_leaderboard_entry_t* entry);
+std::string_view GetLeaderboardFormatIcon(u32 format);
 
 std::string GetSubsetBadgePath(const rc_client_subset_t* subset);
 
