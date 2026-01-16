@@ -28,10 +28,10 @@ ControllerGlobalSettingsWidget::ControllerGlobalSettingsWidget(QWidget* parent, 
 
   SettingsInterface* sif = dialog->getEditingSettingsInterface();
 
-  // editing game profile or input profile
   bool remove_sources = false;
   if (sif)
   {
+    // Editing game profile or input profile.
     m_ui.useProfileHotkeyBindings->setChecked(sif->GetBoolValue("ControllerPorts", "UseProfileHotkeyBindings", false));
     connect(m_ui.useProfileHotkeyBindings, &QCheckBox::checkStateChanged, this, [this](int new_state) {
       m_dialog->setBoolValue("ControllerPorts", "UseProfileHotkeyBindings", (new_state == Qt::Checked));
@@ -46,7 +46,7 @@ ControllerGlobalSettingsWidget::ControllerGlobalSettingsWidget(QWidget* parent, 
   }
   else
   {
-    // remove profile options from the UI.
+    // Editing base settings, remove profile options from the UI.
     m_ui.mainLayout->removeWidget(m_ui.profileSettings);
     QtUtils::SafeDeleteWidget(m_ui.profileSettings);
     m_ui.profileSettingsLayout = nullptr;

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>977</width>
-    <height>743</height>
+    <width>900</width>
+    <height>658</height>
    </rect>
   </property>
   <layout class="QGridLayout" name="mainLayout" columnstretch="1,0">
@@ -102,6 +102,31 @@
         </property>
         <property name="text">
          <string>Enable Touchpad</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item row="0" column="1" rowspan="7">
+    <widget class="QGroupBox" name="deviceListGroup">
+     <property name="title">
+      <string>Detected Devices</string>
+     </property>
+     <layout class="QGridLayout" name="deviceListLayout">
+      <item row="0" column="0" colspan="2">
+       <widget class="QListView" name="deviceList">
+        <property name="minimumSize">
+         <size>
+          <width>200</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>200</width>
+          <height>16777215</height>
+         </size>
         </property>
        </widget>
       </item>
@@ -342,7 +367,7 @@
      </layout>
     </widget>
    </item>
-   <item row="0" column="0">
+   <item row="5" column="0">
     <widget class="QGroupBox" name="profileSettings">
      <property name="title">
       <string>Profile Settings</string>
@@ -380,38 +405,7 @@
      <property name="orientation">
       <enum>Qt::Orientation::Vertical</enum>
      </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>0</width>
-       <height>0</height>
-      </size>
-     </property>
     </spacer>
-   </item>
-   <item row="0" column="1" rowspan="7">
-    <widget class="QGroupBox" name="deviceListGroup">
-     <property name="title">
-      <string>Detected Devices</string>
-     </property>
-     <layout class="QGridLayout" name="deviceListLayout">
-      <item row="0" column="0" colspan="2">
-       <widget class="QListView" name="deviceList">
-        <property name="minimumSize">
-         <size>
-          <width>200</width>
-          <height>0</height>
-         </size>
-        </property>
-        <property name="maximumSize">
-         <size>
-          <width>200</width>
-          <height>16777215</height>
-         </size>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
    </item>
   </layout>
  </widget>
