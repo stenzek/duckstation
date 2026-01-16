@@ -108,31 +108,6 @@
      </layout>
     </widget>
    </item>
-   <item row="0" column="1" rowspan="7">
-    <widget class="QGroupBox" name="deviceListGroup">
-     <property name="title">
-      <string>Detected Devices</string>
-     </property>
-     <layout class="QGridLayout" name="deviceListLayout">
-      <item row="0" column="0" colspan="2">
-       <widget class="QListView" name="deviceList">
-        <property name="minimumSize">
-         <size>
-          <width>200</width>
-          <height>0</height>
-         </size>
-        </property>
-        <property name="maximumSize">
-         <size>
-          <width>200</width>
-          <height>16777215</height>
-         </size>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-   </item>
    <item row="1" column="0">
     <widget class="QGroupBox" name="xinputGroup">
      <property name="title">
@@ -406,6 +381,31 @@
       <enum>Qt::Orientation::Vertical</enum>
      </property>
     </spacer>
+   </item>
+   <item row="0" column="1" rowspan="7">
+    <widget class="QGroupBox" name="deviceListGroup">
+     <property name="title">
+      <string>Detected Devices</string>
+     </property>
+     <layout class="QGridLayout" name="deviceListLayout">
+      <item row="0" column="0" colspan="2">
+       <widget class="QListView" name="deviceList">
+        <property name="minimumSize">
+         <size>
+          <width>200</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>200</width>
+          <height>16777215</height>
+         </size>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
    </item>
   </layout>
  </widget>
