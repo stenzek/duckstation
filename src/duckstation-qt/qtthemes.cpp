@@ -187,7 +187,7 @@ void QtHost::SetStyleFromSettings()
     static constexpr QColor base_color(43, 43, 43);
     static constexpr QColor button_color(40, 40, 40); // qt makes this lighter
     static constexpr QColor text(255, 255, 255);
-    static constexpr QColor highlight_background(65, 65, 65);
+    static constexpr QColor highlight_background(90, 90, 90);
     static constexpr QColor highlight_text(255, 255, 255);
     static constexpr QColor disabled_text(200, 200, 200);
     static constexpr QColor placeholder_text(200, 200, 200);
