@@ -153,8 +153,6 @@ ControllerGlobalSettingsWidget::ControllerGlobalSettingsWidget(QWidget* parent, 
     &Settings::GetMultitapModeName, &Settings::GetMultitapModeDisplayName, Settings::DEFAULT_MULTITAP_MODE,
     MultitapMode::Count);
   connect(m_ui.multitapMode, &QComboBox::currentIndexChanged, this, [this]() { emit bindingSetupChanged(); });
-
-  QtUtils::RemoveEmptyRowsAndColumns(m_ui.mainLayout);
 }
 
 ControllerGlobalSettingsWidget::~ControllerGlobalSettingsWidget() = default;
