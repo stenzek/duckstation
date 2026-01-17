@@ -502,6 +502,7 @@ protected:
   bool m_allow_present_throttle = false;
 
   u64 m_last_frame_displayed_time = 0;
+  u64 m_next_throttle_time = 0;
 };
 
 class GPUDevice

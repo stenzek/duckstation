@@ -3581,7 +3581,7 @@ static void DemoWindowWidgetsText()
             static float custom_size = 16.0f;
             ImGui::SliderFloat("custom_size", &custom_size, 10.0f, 100.0f, "%.0f");
             ImGui::Text("ImGui::PushFont(nullptr, custom_size);");
-            ImGui::PushFont(NULL, custom_size);
+            ImGui::PushFont(NULL, custom_size, -1.0f);
             ImGui::Text("FontSize = %.2f (== %.2f * global_scale)", ImGui::GetFontSize(), custom_size);
             ImGui::PopFont();
 
@@ -3589,14 +3589,14 @@ static void DemoWindowWidgetsText()
             static float custom_scale = 1.0f;
             ImGui::SliderFloat("custom_scale", &custom_scale, 0.5f, 4.0f, "%.2f");
             ImGui::Text("ImGui::PushFont(nullptr, style.FontSizeBase * custom_scale);");
-            ImGui::PushFont(NULL, style.FontSizeBase * custom_scale);
+            ImGui::PushFont(NULL, style.FontSizeBase * custom_scale, -1.0f);
             ImGui::Text("FontSize = %.2f (== style.FontSizeBase * %.2f * global_scale)", ImGui::GetFontSize(), custom_scale);
             ImGui::PopFont();
 
             ImGui::SeparatorText("");
             for (float scaling = 0.5f; scaling <= 4.0f; scaling += 0.5f)
             {
-                ImGui::PushFont(NULL, style.FontSizeBase * scaling);
+                ImGui::PushFont(NULL, style.FontSizeBase * scaling, -1.0f);
                 ImGui::Text("FontSize = %.2f (== style.FontSizeBase * %.2f * global_scale)", ImGui::GetFontSize(), scaling);
                 ImGui::PopFont();
             }

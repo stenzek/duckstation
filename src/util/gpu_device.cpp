@@ -319,12 +319,12 @@ void GPUSwapChain::ThrottlePresentation()
   // Allow it to fall behind/run ahead up to 2*period. Sleep isn't that precise, plus we need to
   // allow time for the actual rendering.
   const u64 max_variance = sleep_period * 2;
-  if (static_cast<u64>(std::abs(static_cast<s64>(current_ts - m_last_frame_displayed_time))) > max_variance)
-    m_last_frame_displayed_time = current_ts + sleep_period;
+  if (static_cast<u64>(std::abs(static_cast<s64>(current_ts - m_next_throttle_time))) > max_variance)
+    m_next_throttle_time = current_ts + sleep_period;
   else
-    m_last_frame_displayed_time += sleep_period;
+    m_next_throttle_time += sleep_period;
 
-  Timer::SleepUntil(m_last_frame_displayed_time, false);
+  Timer::SleepUntil(m_next_throttle_time, false);
 }
 
 GPUDevice::GPUDevice()
