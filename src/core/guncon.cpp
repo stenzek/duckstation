@@ -211,10 +211,13 @@ void GunCon::UpdatePosition()
 
   // are we within the active display area?
   u32 tick, line;
+  s32 offset_tick, offset_line;
   if ((display_pos < GSVector2::zero()).anytrue() ||
-      !g_gpu.ConvertDisplayCoordinatesToBeamTicksAndLines(display_pos, m_x_scale, &tick, &line) || m_shoot_offscreen)
+      !g_gpu.ConvertDisplayCoordinatesToBeamTicksAndLines(display_pos, m_x_scale, &tick, &line) ||
+      (offset_tick = static_cast<s32>(tick) + m_tick_offset) < 0 ||
+      (offset_line = static_cast<s32>(line) + m_line_offset) < 0 || m_shoot_offscreen)
   {
-    DEBUG_LOG("Lightgun out of range for window coordinates {:.0f},{:.0f}", window_x, window_y);
+    DEV_LOG("Lightgun out of range for window coordinates {:.0f},{:.0f}", window_x, window_y);
     m_position_x = 0x01;
     m_position_y = 0x0A;
     return;
@@ -222,9 +225,10 @@ void GunCon::UpdatePosition()
 
   // 8MHz units for X = 44100*768*11/7 = 53222400 / 8000000 = 6.6528
   const double divider = static_cast<double>(g_gpu.GetCRTCFrequency()) / 8000000.0;
-  m_position_x = static_cast<u16>(static_cast<float>(tick) / static_cast<float>(divider));
-  m_position_y = static_cast<u16>(line);
-  DEBUG_LOG("Lightgun window coordinates {} -> tick {} line {} 8mhz ticks {}", display_pos, tick, line, m_position_x);
+  m_position_x = static_cast<u16>(static_cast<float>(offset_tick) / static_cast<float>(divider));
+  m_position_y = static_cast<u16>(offset_line);
+  DEV_LOG("Lightgun window coordinates {} -> tick {} line {} 8mhz ticks {}", display_pos, offset_tick, offset_line,
+          m_position_x);
 }
 
 std::pair<float, float> GunCon::GetAbsolutePositionFromRelativeAxes() const
@@ -299,7 +303,14 @@ static const SettingInfo s_settings[] = {
    "#ffffff", nullptr, nullptr, nullptr, nullptr, nullptr, 0.0f},
   {SettingInfo::Type::Float, "XScale", TRANSLATE_NOOP("GunCon", "X Scale"),
    TRANSLATE_NOOP("GunCon", "Scales X coordinates relative to the center of the screen."), "1.0", "0.01", "2.0", "0.01",
-   "%.0f%%", nullptr, 100.0f}};
+   "%.0f%%", nullptr, 100.0f},
+  {SettingInfo::Type::Integer, "GunConLineOffset", TRANSLATE_NOOP("GunCon", "Line Offset"),
+   TRANSLATE_NOOP("GunCon", "Offset applied to lightgun vertical position."), "0", "-128", "127", "1", "%u", nullptr,
+   0.0f},
+  {SettingInfo::Type::Integer, "GunConTickOffset", TRANSLATE_NOOP("GunCon", "Tick Offset"),
+   TRANSLATE_NOOP("GunCon", "Offset applied to lightgun horizontal position."), "140", "-1000", "1000", "1", "%u",
+   nullptr, 0.0f},
+};
 
 const Controller::ControllerInfo GunCon::INFO = {
   ControllerType::GunCon, "GunCon",       TRANSLATE_NOOP("ControllerType", "GunCon"),
@@ -374,4 +385,11 @@ void GunCon::LoadSettings(const SettingsInterface& si, const char* section, bool
       }
     }
   }
+
+  // NOTE: Settings are prefixed to avoid conflicting with Justifier, since stupid me in 2020 thought it was a good idea
+  // to have all controllers sharing the same configuration section.
+  m_line_offset = static_cast<s8>(std::clamp<int>(si.GetIntValue(section, "GunConLineOffset", DEFAULT_LINE_OFFSET),
+                                                  std::numeric_limits<s8>::min(), std::numeric_limits<s8>::max()));
+  m_tick_offset = static_cast<s16>(std::clamp<int>(si.GetIntValue(section, "GunConTickOffset", DEFAULT_TICK_OFFSET),
+                                                   std::numeric_limits<s16>::min(), std::numeric_limits<s16>::max()));
 }
