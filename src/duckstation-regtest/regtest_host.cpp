@@ -323,6 +323,12 @@ void Host::OnGPUThreadRunIdleChanged(bool is_active)
   //
 }
 
+bool Host::SetScreensaverInhibit(bool inhibit, Error* error)
+{
+  Error::SetStringView(error, "Not implemented");
+  return false;
+}
+
 void Host::OnPerformanceCountersUpdated(const GPUBackend* gpu_backend)
 {
   //

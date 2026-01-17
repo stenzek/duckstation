@@ -132,4 +132,7 @@ bool CanChangeFullscreenMode(bool new_fullscreen_state);
 /// Called when the pause state changes, or fullscreen UI opens.
 void OnGPUThreadRunIdleChanged(bool is_active);
 
+/// Changes the screensaver inhibit state.
+bool SetScreensaverInhibit(bool inhibit, Error* error);
+
 } // namespace Host

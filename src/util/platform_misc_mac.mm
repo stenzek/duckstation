@@ -3,7 +3,6 @@
 
 // Normally, system includes come last. But apparently some of our macro names are redefined...
 #include <Cocoa/Cocoa.h>
-#include <IOKit/pwr_mgt/IOPMLib.h>
 #include <QuartzCore/QuartzCore.h>
 #include <cinttypes>
 #include <optional>
@@ -23,60 +22,9 @@ LOG_CHANNEL(PlatformMisc);
 #error ARC should not be enabled.
 #endif
 
-static IOPMAssertionID s_prevent_idle_assertion = kIOPMNullAssertionID;
-
 bool PlatformMisc::InitializeSocketSupport(Error* error)
 {
   return true;
-}
-
-static bool SetScreensaverInhibitMacOS(bool inhibit)
-{
-  if (inhibit)
-  {
-    const CFStringRef reason = CFSTR("DuckStation System Running");
-    if (IOPMAssertionCreateWithName(kIOPMAssertionTypePreventUserIdleDisplaySleep, kIOPMAssertionLevelOn, reason,
-                                    &s_prevent_idle_assertion) != kIOReturnSuccess)
-    {
-      ERROR_LOG("IOPMAssertionCreateWithName() failed");
-      return false;
-    }
-
-    return true;
-  }
-  else
-  {
-    IOPMAssertionRelease(s_prevent_idle_assertion);
-    s_prevent_idle_assertion = kIOPMNullAssertionID;
-    return true;
-  }
-}
-
-static bool s_screensaver_suspended = false;
-
-void PlatformMisc::SuspendScreensaver()
-{
-  if (s_screensaver_suspended)
-    return;
-
-  if (!SetScreensaverInhibitMacOS(true))
-  {
-    ERROR_LOG("Failed to suspend screensaver.");
-    return;
-  }
-
-  s_screensaver_suspended = true;
-}
-
-void PlatformMisc::ResumeScreensaver()
-{
-  if (!s_screensaver_suspended)
-    return;
-
-  if (!SetScreensaverInhibitMacOS(false))
-    ERROR_LOG("Failed to resume screensaver.");
-
-  s_screensaver_suspended = false;
 }
 
 bool PlatformMisc::SetWindowRoundedCornerState(void* window_handle, bool enabled, Error* error /* = nullptr */)

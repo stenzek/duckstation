@@ -23,4 +23,7 @@ std::optional<WindowInfo> GetWindowInfoForWidget(QWidget* widget, RenderAPI rend
 /// Also sets the "real" DPR scale for the widget, ignoring any operating-system level downsampling.
 void UpdateSurfaceSize(QWidget* widget, WindowInfo* wi);
 
+/// Changes the screensaver inhibit state.
+bool SetScreensaverInhibit(bool inhibit, Error* error);
+
 } // namespace QtUtils

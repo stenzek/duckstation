@@ -45,42 +45,6 @@ bool PlatformMisc::InitializeSocketSupport(Error* error)
   return s_winsock_initialized;
 }
 
-static bool SetScreensaverInhibitWin32(bool inhibit)
-{
-  if (SetThreadExecutionState(ES_CONTINUOUS | (inhibit ? (ES_DISPLAY_REQUIRED | ES_SYSTEM_REQUIRED) : 0)) == NULL)
-  {
-    ERROR_LOG("SetThreadExecutionState() failed: {}", GetLastError());
-    return false;
-  }
-
-  return true;
-}
-
-void PlatformMisc::SuspendScreensaver()
-{
-  if (s_screensaver_suspended)
-    return;
-
-  if (!SetScreensaverInhibitWin32(true))
-  {
-    ERROR_LOG("Failed to suspend screensaver.");
-    return;
-  }
-
-  s_screensaver_suspended = true;
-}
-
-void PlatformMisc::ResumeScreensaver()
-{
-  if (!s_screensaver_suspended)
-    return;
-
-  if (!SetScreensaverInhibitWin32(false))
-    ERROR_LOG("Failed to resume screensaver.");
-
-  s_screensaver_suspended = false;
-}
-
 bool PlatformMisc::SetWindowRoundedCornerState(void* window_handle, bool enabled, Error* error)
 {
   const DWM_WINDOW_CORNER_PREFERENCE value = enabled ? DWMWCP_DEFAULT : DWMWCP_DONOTROUND;

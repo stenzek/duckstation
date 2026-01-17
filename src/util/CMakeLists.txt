@@ -283,8 +283,6 @@ elseif(NOT ANDROID)
   target_sources(util PRIVATE
     platform_misc_unix.cpp
   )
-  pkg_check_modules(DBUS REQUIRED dbus-1)
-  target_include_directories(util PRIVATE ${DBUS_INCLUDE_DIRS})
 
   if(LINUX)
     target_link_libraries(util PRIVATE UDEV::UDEV)

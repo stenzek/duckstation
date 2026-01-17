@@ -1082,6 +1082,30 @@ void Host::OnGPUThreadRunIdleChanged(bool is_active)
 {
 }
 
+bool Host::SetScreensaverInhibit(bool inhibit, Error* error)
+{
+  if (inhibit)
+  {
+    if (SDL_DisableScreenSaver())
+    {
+      Error::SetStringFmt(error, "SDL_DisableScreenSaver() failed: {}", SDL_GetError());
+      return false;
+    }
+
+    return true;
+  }
+  else
+  {
+    if (SDL_EnableScreenSaver())
+    {
+      Error::SetStringFmt(error, "SDL_EnableScreenSaver() failed: {}", SDL_GetError());
+      return false;
+    }
+
+    return true;
+  }
+}
+
 void Host::FrameDoneOnGPUThread(GPUBackend* gpu_backend, u32 frame_number)
 {
 }

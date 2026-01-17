@@ -1,12 +1,14 @@
-// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "qtwindowinfo.h"
 #include "qtutils.h"
 
 #include "core/core.h"
+#include "core/gpu_thread.h"
 
 #include "util/gpu_device.h"
+#include "util/platform_misc.h"
 
 #include "common/error.h"
 #include "common/log.h"
@@ -16,14 +18,49 @@
 #include <QtWidgets/QWidget>
 
 #if defined(_WIN32)
+
 #include "common/windows_headers.h"
+#include <dwmapi.h>
+
 #elif defined(__APPLE__)
+
 #include "common/cocoa_tools.h"
-#else
+#include <CoreFoundation/CFString.h>
+#include <IOKit/pwr_mgt/IOPMLib.h>
+
+#elif defined(__linux__)
+
+#include <QtDBus/QDBusConnection>
+#include <QtDBus/QDBusInterface>
+#include <QtDBus/QDBusMessage>
+#include <QtDBus/QDBusReply>
 #include <qpa/qplatformnativeinterface.h>
+
+#else
+
+#include <qpa/qplatformnativeinterface.h>
+
 #endif
 
 LOG_CHANNEL(Host);
+
+namespace {
+
+struct WindowInfoLocals
+{
+  bool screensaver_inhibited;
+
+#if defined(__APPLE__)
+  IOPMAssertionID screensaver_inhibit_assertion;
+#elif defined(__linux__)
+  u32 screensaver_inhibit_cookie;
+  std::optional<QDBusInterface> screensaver_inhibit_interface;
+#endif
+};
+
+} // namespace
+
+static WindowInfoLocals s_window_info_locals;
 
 WindowInfoType QtUtils::GetWindowInfoType()
 {
@@ -158,4 +195,118 @@ void QtUtils::UpdateSurfaceSize(QWidget* widget, WindowInfo* wi)
   wi->surface_width = static_cast<u16>(scaled_size.width());
   wi->surface_height = static_cast<u16>(scaled_size.height());
   wi->surface_scale = static_cast<float>(device_pixel_ratio);
+}
+
+#ifdef __linux__
+
+static void FormatQDBusReplyError(Error* error, const char* prefix, const QDBusError& qerror)
+{
+  Error::SetStringFmt(error, "{}{}: {}", prefix, qerror.name().toStdString(), qerror.message().toStdString());
+}
+
+#endif
+
+bool Host::SetScreensaverInhibit(bool inhibit, Error* error)
+{
+  if (s_window_info_locals.screensaver_inhibited == inhibit)
+    return true;
+
+#if defined(_WIN32)
+
+  if (SetThreadExecutionState(ES_CONTINUOUS | (inhibit ? (ES_DISPLAY_REQUIRED | ES_SYSTEM_REQUIRED) : 0)) == NULL)
+  {
+    Error::SetWin32(error, "SetThreadExecutionState() failed: ", GetLastError());
+    return false;
+  }
+
+  s_window_info_locals.screensaver_inhibited = inhibit;
+  return true;
+
+#elif defined(__APPLE__)
+
+  if (inhibit)
+  {
+    const CFStringRef reason = CFSTR("DuckStation VM is running.");
+    const IOReturn ret =
+      IOPMAssertionCreateWithName(kIOPMAssertionTypePreventUserIdleDisplaySleep, kIOPMAssertionLevelOn, reason,
+                                  &s_window_info_locals.screensaver_inhibit_assertion);
+    if (ret != kIOReturnSuccess)
+    {
+      Error::SetStringFmt(error, "IOPMAssertionCreateWithName() failed: {}", static_cast<s32>(ret));
+      return false;
+    }
+
+    s_window_info_locals.screensaver_inhibited = true;
+    return true;
+  }
+  else
+  {
+    const IOReturn ret = IOPMAssertionRelease(s_window_info_locals.screensaver_inhibit_assertion);
+    if (ret != kIOReturnSuccess)
+    {
+      Error::SetStringFmt(error, "IOPMAssertionRelease() failed: {}", static_cast<s32>(ret));
+      return false;
+    }
+
+    s_window_info_locals.screensaver_inhibit_assertion = kIOPMNullAssertionID;
+    s_window_info_locals.screensaver_inhibited = false;
+    return true;
+  }
+
+#elif defined(__linux__)
+
+  if (!s_window_info_locals.screensaver_inhibit_interface.has_value())
+  {
+    const QDBusConnection connection = QDBusConnection::sessionBus();
+    if (!connection.isConnected())
+    {
+      Error::SetStringView(error, "Failed to connect to the D-Bus session bus");
+      return false;
+    }
+
+    s_window_info_locals.screensaver_inhibit_interface.emplace(
+      "org.freedesktop.ScreenSaver", "/org/freedesktop/ScreenSaver", "org.freedesktop.ScreenSaver", connection);
+    if (!s_window_info_locals.screensaver_inhibit_interface->isValid())
+    {
+      s_window_info_locals.screensaver_inhibit_interface.reset();
+      Error::SetStringView(error, "org.freedesktop.ScreenSaver interface is invalid");
+      return false;
+    }
+  }
+
+  if (inhibit)
+  {
+    const QDBusReply<quint32> msg = s_window_info_locals.screensaver_inhibit_interface->call(
+      "Inhibit", QStringLiteral("DuckStation"), QStringLiteral("DuckStation VM is running."));
+    if (!msg.isValid())
+    {
+      FormatQDBusReplyError(error, "Inhibit message call failed: ", msg.error());
+      return false;
+    }
+
+    s_window_info_locals.screensaver_inhibit_cookie = msg.value();
+    s_window_info_locals.screensaver_inhibited = true;
+    return true;
+  }
+  else
+  {
+    const QDBusReply<void> msg = s_window_info_locals.screensaver_inhibit_interface->call(
+      "UnInhibit", s_window_info_locals.screensaver_inhibit_cookie);
+    if (!msg.isValid())
+    {
+      FormatQDBusReplyError(error, "UnInhibit message call failed: ", msg.error());
+      return false;
+    }
+
+    s_window_info_locals.screensaver_inhibit_cookie = 0;
+    s_window_info_locals.screensaver_inhibited = false;
+    return true;
+  }
+
+#else
+
+  Error::SetStringView(error, "Not implemented.");
+  return false;
+
+#endif
 }

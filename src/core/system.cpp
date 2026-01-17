@@ -53,7 +53,6 @@
 #include "util/input_manager.h"
 #include "util/iso_reader.h"
 #include "util/media_capture.h"
-#include "util/platform_misc.h"
 #include "util/postprocessing.h"
 #include "util/sockets.h"
 #include "util/state_wrapper.h"
@@ -197,6 +196,7 @@ static void ResetThrottler();
 static void Throttle(Timer::Value current_time, Timer::Value sleep_until);
 static void AccumulatePreFrameSleepTime(Timer::Value current_time);
 static void UpdateDisplayVSync();
+static void InhibitScreensaver(bool inhibit);
 
 static bool UpdateGameSettingsLayer();
 static void UpdateInputSettingsLayer(std::string input_profile_name, std::unique_lock<std::mutex>& lock);
@@ -1688,7 +1688,7 @@ void System::PauseSystem(bool paused)
     InputManager::UpdateHostMouseMode();
 
     if (g_settings.inhibit_screensaver)
-      PlatformMisc::ResumeScreensaver();
+      InhibitScreensaver(false);
 
 #ifdef ENABLE_GDB_SERVER
     GDBServer::OnSystemPaused();
@@ -1705,7 +1705,7 @@ void System::PauseSystem(bool paused)
     InputManager::UpdateHostMouseMode();
 
     if (g_settings.inhibit_screensaver)
-      PlatformMisc::SuspendScreensaver();
+      InhibitScreensaver(true);
 
 #ifdef ENABLE_GDB_SERVER
     GDBServer::OnSystemResumed();
@@ -1968,7 +1968,7 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
   InputManager::SynchronizeBindingHandlerState();
 
   if (g_settings.inhibit_screensaver)
-    PlatformMisc::SuspendScreensaver();
+    InhibitScreensaver(true);
 
 #ifdef ENABLE_GDB_SERVER
   if (g_settings.enable_gdb_server)
@@ -2102,7 +2102,7 @@ void System::DestroySystem()
   InputManager::UpdateHostMouseMode();
 
   if (g_settings.inhibit_screensaver)
-    PlatformMisc::ResumeScreensaver();
+    InhibitScreensaver(false);
 
   FreeMemoryStateStorage(true, true, false);
 
@@ -3846,6 +3846,22 @@ bool System::ShouldAllowPresentThrottle()
   return !valid_vm || IsRunningAtNonStandardSpeed();
 }
 
+void System::InhibitScreensaver(bool inhibit)
+{
+  Error error;
+  if (!Host::SetScreensaverInhibit(inhibit, &error))
+  {
+    ERROR_LOG("Set screensaver {} failed: {}", inhibit ? "inhibit" : "allow", error.GetDescription());
+    if (IsValid())
+    {
+      Host::AddIconOSDMessage(OSDMessageType::Error, "ScreensaverInhibit", ICON_EMOJI_WARNING,
+                              inhibit ? TRANSLATE_STR("System", "Failed to inhibit screensaver") :
+                                        TRANSLATE_STR("System", "Failed to allow screensaver"),
+                              error.TakeDescription());
+    }
+  }
+}
+
 bool System::IsFastForwardEnabled()
 {
   return s_state.fast_forward_enabled;
@@ -4839,12 +4855,7 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
     }
 
     if (g_settings.inhibit_screensaver != old_settings.inhibit_screensaver)
-    {
-      if (g_settings.inhibit_screensaver)
-        PlatformMisc::SuspendScreensaver();
-      else
-        PlatformMisc::ResumeScreensaver();
-    }
+      InhibitScreensaver(g_settings.inhibit_screensaver);
 
 #ifdef ENABLE_GDB_SERVER
     if (g_settings.enable_gdb_server != old_settings.enable_gdb_server ||
