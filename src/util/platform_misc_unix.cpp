@@ -29,9 +29,3 @@ bool PlatformMisc::InitializeSocketSupport(Error* error)
 
   return true;
 }
-
-bool PlatformMisc::SetWindowRoundedCornerState(void* window_handle, bool enabled, Error* error /* = nullptr */)
-{
-  Error::SetStringView(error, "Unsupported on this platform.");
-  return false;
-}

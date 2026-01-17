@@ -310,3 +310,21 @@ bool Host::SetScreensaverInhibit(bool inhibit, Error* error)
 
 #endif
 }
+
+#ifdef _WIN32
+
+bool QtUtils::SetWindowRoundedCornerState(QWidget* widget, bool enabled)
+{
+  const HWND window_handle = reinterpret_cast<HWND>(widget->winId());
+  const DWM_WINDOW_CORNER_PREFERENCE value = enabled ? DWMWCP_DEFAULT : DWMWCP_DONOTROUND;
+  const HRESULT hr = DwmSetWindowAttribute(window_handle, DWMWA_WINDOW_CORNER_PREFERENCE, &value, sizeof(value));
+  if (FAILED(hr))
+  {
+    ERROR_LOG("DwmSetWindowAttribute(DWMWA_WINDOW_CORNER_PREFERENCE) failed: ",
+              Error::CreateHResult(hr).GetDescription());
+  }
+
+  return SUCCEEDED(hr);
+}
+
+#endif // _WIN32

@@ -390,7 +390,7 @@ void MainWindow::createDisplayWidget(bool fullscreen, bool render_to_main)
 
 #ifdef _WIN32
     if (s_locals.disable_window_rounded_corners)
-      PlatformMisc::SetWindowRoundedCornerState(reinterpret_cast<void*>(container->winId()), false);
+      QtUtils::SetWindowRoundedCornerState(container, false);
 #endif
   }
   else
@@ -1898,7 +1898,7 @@ void MainWindow::setupAdditionalUi()
 #ifdef _WIN32
   s_locals.disable_window_rounded_corners = Core::GetBaseBoolSettingValue("Main", "DisableWindowRoundedCorners", false);
   if (s_locals.disable_window_rounded_corners)
-    PlatformMisc::SetWindowRoundedCornerState(reinterpret_cast<void*>(winId()), false);
+    QtUtils::SetWindowRoundedCornerState(this, false);
 #endif
 
   QtUtils::StyleChildMenus(this);
@@ -3074,14 +3074,10 @@ void MainWindow::checkForSettingChanges()
       disable_window_rounded_corners != s_locals.disable_window_rounded_corners)
   {
     s_locals.disable_window_rounded_corners = disable_window_rounded_corners;
-    PlatformMisc::SetWindowRoundedCornerState(reinterpret_cast<void*>(winId()),
-                                              !s_locals.disable_window_rounded_corners);
+    QtUtils::SetWindowRoundedCornerState(this, !s_locals.disable_window_rounded_corners);
 
     if (QWidget* container = getDisplayContainer(); container && !container->parent() && !container->isFullScreen())
-    {
-      PlatformMisc::SetWindowRoundedCornerState(reinterpret_cast<void*>(container->winId()),
-                                                !s_locals.disable_window_rounded_corners);
-    }
+      QtUtils::SetWindowRoundedCornerState(container, !s_locals.disable_window_rounded_corners);
   }
 #endif
 
@@ -3244,7 +3240,7 @@ bool MainWindow::onCreateAuxiliaryRenderWindow(RenderAPI render_api, qint32 x, q
 
 #ifdef _WIN32
   if (s_locals.disable_window_rounded_corners)
-    PlatformMisc::SetWindowRoundedCornerState(reinterpret_cast<void*>(widget->winId()), false);
+    QtUtils::SetWindowRoundedCornerState(widget, false);
 #endif
 
   const std::optional<WindowInfo>& owi = widget->getWindowInfo(render_api, error);

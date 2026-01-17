@@ -11,10 +11,6 @@ namespace PlatformMisc {
 
 bool InitializeSocketSupport(Error* error);
 
-/// Sets the rounded corner state for a window.
-/// Currently only supported on Windows.
-bool SetWindowRoundedCornerState(void* window_handle, bool enabled, Error* error = nullptr);
-
 } // namespace PlatformMisc
 
 namespace Host {

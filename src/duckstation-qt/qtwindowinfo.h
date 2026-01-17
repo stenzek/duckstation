@@ -26,4 +26,12 @@ void UpdateSurfaceSize(QWidget* widget, WindowInfo* wi);
 /// Changes the screensaver inhibit state.
 bool SetScreensaverInhibit(bool inhibit, Error* error);
 
+#ifdef _WIN32
+
+/// Sets the rounded corner state for a window.
+/// Currently only supported on Windows.
+bool SetWindowRoundedCornerState(QWidget* widget, bool enabled);
+
+#endif
+
 } // namespace QtUtils

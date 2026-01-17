@@ -16,7 +16,6 @@
 #include "common/windows_headers.h"
 #include <Psapi.h>
 #include <WinSock2.h>
-#include <dwmapi.h>
 
 LOG_CHANNEL(PlatformMisc);
 
@@ -45,13 +44,3 @@ bool PlatformMisc::InitializeSocketSupport(Error* error)
   return s_winsock_initialized;
 }
 
-bool PlatformMisc::SetWindowRoundedCornerState(void* window_handle, bool enabled, Error* error)
-{
-  const DWM_WINDOW_CORNER_PREFERENCE value = enabled ? DWMWCP_DEFAULT : DWMWCP_DONOTROUND;
-  const HRESULT hr =
-    DwmSetWindowAttribute(static_cast<HWND>(window_handle), DWMWA_WINDOW_CORNER_PREFERENCE, &value, sizeof(value));
-  if (FAILED(hr))
-    Error::SetHResult(error, "DwmSetWindowAttribute(DWMWA_WINDOW_CORNER_PREFERENCE) failed: ", hr);
-
-  return SUCCEEDED(hr);
-}
