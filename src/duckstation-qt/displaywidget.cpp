@@ -56,11 +56,13 @@ const std::optional<WindowInfo>& DisplayWidget::getWindowInfo(RenderAPI render_a
   if (!m_window_info.has_value())
     m_window_info = QtUtils::GetWindowInfoForWidget(this, render_api, error);
 
+  m_render_api = m_window_info.has_value() ? render_api : RenderAPI::None;
   return m_window_info;
 }
 
 void DisplayWidget::clearWindowInfo()
 {
+  m_render_api = RenderAPI::None;
   m_window_info.reset();
 }
 
@@ -73,7 +75,7 @@ void DisplayWidget::checkForSizeChange()
   const u16 prev_width = m_window_info->surface_width;
   const u16 prev_height = m_window_info->surface_height;
   const float prev_scale = m_window_info->surface_scale;
-  QtUtils::UpdateSurfaceSize(this, &m_window_info.value());
+  QtUtils::UpdateSurfaceSize(this, m_render_api, &m_window_info.value());
   if (prev_width != m_window_info->surface_width || prev_height != m_window_info->surface_height ||
       prev_scale != m_window_info->surface_scale)
   {
@@ -517,6 +519,7 @@ const std::optional<WindowInfo>& AuxiliaryDisplayWidget::getWindowInfo(RenderAPI
   if (!m_window_info.has_value())
     m_window_info = QtUtils::GetWindowInfoForWidget(this, render_api, error);
 
+  m_render_api = m_window_info.has_value() ? render_api : RenderAPI::None;
   return m_window_info;
 }
 
@@ -529,7 +532,7 @@ void AuxiliaryDisplayWidget::checkForSizeChange()
   const u16 prev_width = m_window_info->surface_width;
   const u16 prev_height = m_window_info->surface_height;
   const float prev_scale = m_window_info->surface_scale;
-  QtUtils::UpdateSurfaceSize(this, &m_window_info.value());
+  QtUtils::UpdateSurfaceSize(this, m_render_api, &m_window_info.value());
   if (prev_width != m_window_info->surface_width || prev_height != m_window_info->surface_height ||
       prev_scale != m_window_info->surface_scale)
   {

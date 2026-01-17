@@ -132,7 +132,7 @@ std::optional<WindowInfo> QtUtils::GetWindowInfoForWidget(QWidget* widget, Rende
   }
 #endif
 
-  UpdateSurfaceSize(widget, &wi);
+  UpdateSurfaceSize(widget, render_api, &wi);
 
   // Query refresh rate, we need it for sync.
   Error refresh_rate_error;
@@ -156,7 +156,7 @@ std::optional<WindowInfo> QtUtils::GetWindowInfoForWidget(QWidget* widget, Rende
   return wi;
 }
 
-void QtUtils::UpdateSurfaceSize(QWidget* widget, WindowInfo* wi)
+void QtUtils::UpdateSurfaceSize(QWidget* widget, RenderAPI render_api, WindowInfo* wi)
 {
   // Why this nonsense? Qt's device independent sizes are integer, and fractional scaling is lossy.
   // We can't get back the "real" size of the window. So we have to platform natively query the actual client size.
@@ -176,7 +176,10 @@ void QtUtils::UpdateSurfaceSize(QWidget* widget, WindowInfo* wi)
     wi->surface_width = static_cast<u16>(size->first);
     wi->surface_height = static_cast<u16>(size->second);
     wi->surface_scale = static_cast<float>(widget->devicePixelRatio());
-    if (Core::GetBaseBoolSettingValue("Main", "UseFractionalWindowScale", true))
+
+    // Only use "real" fractional window scale for Metal renderer.
+    // Vulkan returns suboptimal constantly, triggering swap chain recreations.
+    if (render_api == RenderAPI::Metal && Core::GetBaseBoolSettingValue("Main", "UseFractionalWindowScale", true))
     {
       if (const std::optional<double> real_device_pixel_ratio = CocoaTools::GetViewRealScalingFactor(wi->window_handle))
       {

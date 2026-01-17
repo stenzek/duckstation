@@ -4,6 +4,7 @@
 #pragma once
 
 #include "util/window_info.h"
+#include "util/gpu_types.h"
 
 #include "common/types.h"
 
@@ -55,6 +56,8 @@ private:
   bool isActuallyFullscreen() const;
   void updateCenterPos();
 
+  std::vector<int> m_keys_pressed_with_modifiers;
+
   QPoint m_relative_mouse_start_pos{};
   QPoint m_relative_mouse_center_pos{};
   bool m_relative_mouse_enabled = false;
@@ -64,8 +67,7 @@ private:
   bool m_cursor_hidden = false;
   bool m_destroying = false;
 
-  std::vector<int> m_keys_pressed_with_modifiers;
-
+  RenderAPI m_render_api = RenderAPI::None;
   std::optional<WindowInfo> m_window_info;
 
   const char* m_window_position_key = nullptr;
@@ -109,5 +111,6 @@ private:
 
   void* m_userdata = nullptr;
   std::optional<WindowInfo> m_window_info;
+  RenderAPI m_render_api = RenderAPI::None;
   bool m_destroying = false;
 };
