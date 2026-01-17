@@ -77,12 +77,12 @@ ControllerGlobalSettingsWidget::ControllerGlobalSettingsWidget(QWidget* parent, 
     ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.enableRawInput, "InputSources", "RawInput",
                                                                 false);
 #else
-    m_ui.mainLayout->removeWidget(m_ui.xinputGroup);
+    m_ui.groupsLayout->removeWidget(m_ui.xinputGroup);
     QtUtils::SafeDeleteWidget(m_ui.xinputGroup);
     m_ui.xinputLayout = nullptr;
     m_ui.enableXInputSource = nullptr;
     m_ui.xinputDescription = nullptr;
-    m_ui.mainLayout->removeWidget(m_ui.dinputGroup);
+    m_ui.groupsLayout->removeWidget(m_ui.dinputGroup);
     QtUtils::SafeDeleteWidget(m_ui.dinputGroup);
     m_ui.dinputLayout = nullptr;
     m_ui.enableDInputSource = nullptr;
@@ -109,7 +109,7 @@ ControllerGlobalSettingsWidget::ControllerGlobalSettingsWidget(QWidget* parent, 
   }
   else
   {
-    m_ui.mainLayout->removeWidget(m_ui.sdlGroup);
+    m_ui.groupsLayout->removeWidget(m_ui.sdlGroup);
     QtUtils::SafeDeleteWidget(m_ui.sdlGroup);
     m_ui.sdlGridLayout = nullptr;
     m_ui.sdlLEDLayout = nullptr;
@@ -119,17 +119,17 @@ ControllerGlobalSettingsWidget::ControllerGlobalSettingsWidget(QWidget* parent, 
     m_ui.enableSDLEnhancedMode = nullptr;
     m_ui.sdlHelpText = nullptr;
     m_ui.enableTouchPadAsPointer = nullptr;
-    m_ui.mainLayout->removeWidget(m_ui.xinputGroup);
+    m_ui.groupsLayout->removeWidget(m_ui.xinputGroup);
     QtUtils::SafeDeleteWidget(m_ui.xinputGroup);
     m_ui.xinputLayout = nullptr;
     m_ui.enableXInputSource = nullptr;
     m_ui.xinputDescription = nullptr;
-    m_ui.mainLayout->removeWidget(m_ui.dinputGroup);
+    m_ui.groupsLayout->removeWidget(m_ui.dinputGroup);
     QtUtils::SafeDeleteWidget(m_ui.dinputGroup);
     m_ui.dinputLayout = nullptr;
     m_ui.enableDInputSource = nullptr;
     m_ui.dinputDescription = nullptr;
-    m_ui.mainLayout->removeWidget(m_ui.pointerGroup);
+    m_ui.groupsLayout->removeWidget(m_ui.pointerGroup);
     QtUtils::SafeDeleteWidget(m_ui.pointerGroup);
     m_ui.pointerLayout = nullptr;
     m_ui.pointerDescription = nullptr;
