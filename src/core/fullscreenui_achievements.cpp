@@ -1619,10 +1619,7 @@ void FullscreenUI::DrawAchievementsWindow()
     close_window = (FloatingButton(ICON_FA_XMARK, 10.0f, 10.0f, 1.0f, 0.0f, true) || WantsToCloseMenu());
 
     const ImRect title_bb(ImVec2(left, top), ImVec2(right, top + UIStyle.LargeFontSize));
-    if (s_achievements_locals.open_subset)
-      text.assign(s_achievements_locals.open_subset->full_name);
-    else
-      text.assign(Achievements::GetGameTitle());
+    text.assign(Achievements::GetGameTitle());
 
     if (rc_client_get_hardcore_enabled(Achievements::GetClient()))
       text.append(TRANSLATE_SV("Achievements", " (Hardcore Mode)"));
@@ -1636,18 +1633,39 @@ void FullscreenUI::DrawAchievementsWindow()
     if (summary.num_core_achievements > 0)
     {
       text.assign(ICON_EMOJI_UNLOCKED " ");
-      if (summary.num_unlocked_achievements == summary.num_core_achievements)
+      if (IsCoreSubsetOpen())
       {
-        text.append(TRANSLATE_PLURAL_SSTR("Achievements", "You have unlocked all achievements and earned %n points!",
-                                          "Point count", summary.points_unlocked));
+        if (summary.num_unlocked_achievements == summary.num_core_achievements)
+        {
+          text.append(TRANSLATE_PLURAL_SSTR("Achievements", "You have unlocked all achievements and earned %n points!",
+                                            "Point count", summary.points_unlocked));
+        }
+        else
+        {
+          text.append_format(
+            TRANSLATE_FS("Achievements",
+                         "You have unlocked {0} of {1} achievements, earning {2} of {3} possible points."),
+            summary.num_unlocked_achievements, summary.num_core_achievements, summary.points_unlocked,
+            summary.points_core);
+        }
       }
       else
       {
-        text.append_format(
-          TRANSLATE_FS("Achievements",
-                       "You have unlocked {0} of {1} achievements, earning {2} of {3} possible points."),
-          summary.num_unlocked_achievements, summary.num_core_achievements, summary.points_unlocked,
-          summary.points_core);
+        if (summary.num_unlocked_achievements == summary.num_core_achievements)
+        {
+          text.append(TRANSLATE_PLURAL_SSTR("Achievements",
+                                            "You have unlocked all achievements in this subset and earned %n points!",
+                                            "Point count", summary.points_unlocked));
+        }
+        else
+        {
+          text.append_format(
+            TRANSLATE_FS(
+              "Achievements",
+              "You have unlocked {0} of {1} achievements in this subset, earning {2} of {3} possible points."),
+            summary.num_unlocked_achievements, summary.num_core_achievements, summary.points_unlocked,
+            summary.points_core);
+        }
       }
     }
     else
