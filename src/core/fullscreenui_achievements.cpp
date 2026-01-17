@@ -1908,7 +1908,8 @@ void FullscreenUI::DrawAchievement(const rc_client_achievement_t* cheevo)
   const float spacing = LayoutScale(4.0f);
   const ImVec2 right_side_size = UIStyle.Font->CalcTextSizeA(UIStyle.MediumFontSize, UIStyle.NormalFontWeight, FLT_MAX,
                                                              0.0f, TRANSLATE("Achievements", "XXX points"));
-  const float max_text_width = avail_width - (image_size.x + image_right_padding + spacing + right_side_size.x);
+  const float max_text_width =
+    avail_width - (image_size.x + image_right_padding + (spacing * 2.0f) + right_side_size.x);
   const float max_title_width =
     max_text_width - (type_badge_text.empty() ? 0.0f : type_badge_size.x + type_badge_spacing);
   const ImVec2 title_size = UIStyle.Font->CalcTextSizeA(UIStyle.LargeFontSize, UIStyle.BoldFontWeight, FLT_MAX,
@@ -2005,8 +2006,8 @@ void FullscreenUI::DrawAchievement(const rc_client_achievement_t* cheevo)
   if (is_measured)
   {
     const float progress_rounding = LayoutScale(progress_rounding_unscaled);
-    const ImRect progress_bb(current_pos,
-                             ImVec2(max_text_width, current_pos.y + LayoutScale(progress_height_unscaled)));
+    const ImRect progress_bb(
+      current_pos, ImVec2(current_pos.x + max_text_width, current_pos.y + LayoutScale(progress_height_unscaled)));
     const float fraction = cheevo->measured_percent * 0.01f;
     dl->AddRectFilled(progress_bb.Min, progress_bb.Max, ImGui::GetColorU32(UIStyle.PrimaryDarkColor),
                       progress_rounding);
