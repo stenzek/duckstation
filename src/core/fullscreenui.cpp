@@ -127,7 +127,6 @@ static constexpr std::string_view ABOUT_DIALOG_NAME = "##about_duckstation";
 const char* SFX_NAV_ACTIVATE = "sounds/nav_activate.wav";
 const char* SFX_NAV_BACK = "sounds/nav_back.wav";
 const char* SFX_NAV_MOVE = "sounds/nav_move.wav";
-const char* SFX_CONTENT_START = "sounds/content_start.wav";
 
 //////////////////////////////////////////////////////////////////////////
 // State
@@ -617,8 +616,6 @@ void FullscreenUI::DoStartPath(std::string path, std::string state, std::optiona
 {
   if (GPUThread::HasGPUBackend())
     return;
-
-  EnqueueSoundEffect(SFX_CONTENT_START);
 
   // Stop running idle to prevent game list from being redrawn until we know if startup succeeded.
   GPUThread::SetRunIdleReason(GPUThread::RunIdleReason::FullscreenUIActive, false);
