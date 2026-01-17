@@ -3202,7 +3202,19 @@ bool FullscreenUI::FloatingNavBarIcon(std::string_view title, ImTextureID image,
     if (hovered || is_active)
     {
       // Intentionally no animation here.
-      const ImU32 col = ImGui::GetColorU32((hovered && !held) ? ImGuiCol_ButtonHovered : ImGuiCol_ButtonActive, 1.0f);
+      ImU32 col;
+      if (is_active)
+      {
+        if (hovered && !held)
+          col = ImGui::GetColorU32(DarkerColor(UIStyle.SecondaryColor, 1.2f));
+        else
+          col = ImGui::GetColorU32(UIStyle.SecondaryColor);
+      }
+      else
+      {
+        col = ImGui::GetColorU32((hovered && !held) ? ImGuiCol_ButtonHovered : ImGuiCol_ButtonActive, 1.0f);
+      }
+
       ImGui::RenderFrame(bb.Min, bb.Max, col, false, LayoutScale(LAYOUT_MENU_ITEM_BORDER_ROUNDING));
     }
   }
@@ -3221,14 +3233,15 @@ bool FullscreenUI::FloatingNavBarIcon(std::string_view title, ImTextureID image,
     const ImVec2& image_min = bb.Min;
     const ImVec2 image_max = image_min + ImVec2(image_size, image_size);
     ImGui::GetWindowDrawList()->AddImage(image, image_min, image_max, uv0, uv1,
-                                         ImGui::GetColorU32(enabled ? ImGuiCol_Text : ImGuiCol_TextDisabled));
+                                         enabled ? IM_COL32_WHITE : ImGui::GetColorU32(ImGuiCol_TextDisabled));
     bb.Min.x = image_max.x + text_space_size;
   }
 
-  RenderShadowedTextClipped(
-    UIStyle.Font, font_size, font_weight, bb.Min, bb.Max,
-    ImGui::GetColorU32(enabled ? (is_active ? ImGuiCol_Text : ImGuiCol_TextDisabled) : ImGuiCol_ButtonHovered), title,
-    &text_size, ImVec2(0.0f, 0.0f), 0.0f, &bb);
+  RenderShadowedTextClipped(UIStyle.Font, font_size, font_weight, bb.Min, bb.Max,
+                            enabled ?
+                              ImGui::GetColorU32(is_active ? UIStyle.SecondaryTextColor : UIStyle.PrimaryTextColor) :
+                              ImGui::GetColorU32(ImGuiCol_TextDisabled),
+                            title, &text_size, ImVec2(0.0f, 0.0f), 0.0f, &bb);
 
   return pressed;
 }
