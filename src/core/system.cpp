@@ -4855,7 +4855,7 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
     }
 
     if (g_settings.inhibit_screensaver != old_settings.inhibit_screensaver)
-      InhibitScreensaver(g_settings.inhibit_screensaver);
+      InhibitScreensaver(!IsPaused() && g_settings.inhibit_screensaver);
 
 #ifdef ENABLE_GDB_SERVER
     if (g_settings.enable_gdb_server != old_settings.enable_gdb_server ||
