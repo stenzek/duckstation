@@ -657,7 +657,7 @@ RC_EXPORT void RC_CCONV rc_client_destroy_leaderboard_list(rc_client_leaderboard
 /**
  * Returns non-zero if the current game has any leaderboards.
  */
-RC_EXPORT int RC_CCONV rc_client_has_leaderboards(rc_client_t* client, int include_hidden);
+RC_EXPORT int RC_CCONV rc_client_has_leaderboards(rc_client_t* client);
 
 typedef struct rc_client_leaderboard_entry_t {
   const char* user;
@@ -748,12 +748,6 @@ RC_EXPORT int RC_CCONV rc_client_has_rich_presence(rc_client_t* client);
  * Returns the number of characters written to buffer.
  */
 RC_EXPORT size_t RC_CCONV rc_client_get_rich_presence_message(rc_client_t* client, char buffer[], size_t buffer_size);
-
-/**
- * Returns a list of all possible rich presence strings.
- * The list is terminated by NULL.
- */
-RC_EXPORT int RC_CCONV rc_client_get_rich_presence_strings(rc_client_t* client, const char** buffer, size_t buffer_size, size_t* count);
 
 /*****************************************************************************\
 | Processing                                                                  |

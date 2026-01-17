@@ -4886,10 +4886,10 @@ void rc_client_destroy_leaderboard_list(rc_client_leaderboard_list_t* list)
     free(list);
 }
 
-int rc_client_has_leaderboards(rc_client_t* client, int include_hidden)
+int rc_client_has_leaderboards(rc_client_t* client)
 {
   rc_client_subset_info_t* subset;
-  int i, result;
+  int result;
 
   if (!client)
     return 0;
@@ -4912,20 +4912,8 @@ int rc_client_has_leaderboards(rc_client_t* client, int include_hidden)
       continue;
 
     if (subset->public_.num_leaderboards > 0) {
-      if (!include_hidden) {
-        for (i = 0; i < subset->public_.num_leaderboards; i++) {
-          if (subset->leaderboards[i].hidden)
-            continue;
-
-          result = 1;
-          break;
-        }
-        if (result)
-          break;
-      } else {
-        result = 1;
-        break;
-      }
+      result = 1;
+      break;
     }
   }
 
@@ -5546,18 +5534,6 @@ size_t rc_client_get_rich_presence_message(rc_client_t* client, char buffer[], s
       return (buffer_size - 1);
   }
 
-  return result;
-}
-
-int rc_client_get_rich_presence_strings(rc_client_t* client, const char** buffer, size_t buffer_size, size_t* count) {
-  int result;
-
-  if (!client || !client->game || !buffer)
-    return RC_INVALID_STATE;
-
-  rc_mutex_lock(&client->state.mutex);
-  result = rc_runtime_get_richpresence_strings(&client->game->runtime, buffer, buffer_size, count);
-  rc_mutex_unlock(&client->state.mutex);
   return result;
 }
 

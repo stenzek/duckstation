@@ -1201,7 +1201,7 @@ void Achievements::ClientLoadGameCallback(int result, const char* error_message,
   const bool has_achievements = rc_client_has_achievements(client);
 
   // Check for any non-hidden leaderboards. rc_client_create_leaderboard_list() filters hidden leaderboards.
-  const bool has_leaderboards_including_hidden = rc_client_has_leaderboards(client, true);
+  const bool has_leaderboards_including_hidden = rc_client_has_leaderboards(client);
   bool has_leaderboards = false;
   if (rc_client_leaderboard_list_t* lblist;
       has_leaderboards_including_hidden &&
