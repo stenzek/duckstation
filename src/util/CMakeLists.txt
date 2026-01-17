@@ -52,7 +52,6 @@ add_library(util
   media_capture.h
   page_fault_handler.cpp
   page_fault_handler.h
-  platform_misc.h
   postprocessing.cpp
   postprocessing.h
   postprocessing_shader.cpp
@@ -246,7 +245,6 @@ if(WIN32)
     dinput_source.cpp
     dinput_source.h
     http_downloader_winhttp.cpp
-    platform_misc_win32.cpp
     win32_raw_input_source.cpp
     win32_raw_input_source.h
     xinput_source.cpp
@@ -266,7 +264,6 @@ elseif(APPLE)
     metal_device.mm
     metal_stream_buffer.h
     metal_stream_buffer.mm
-    platform_misc_mac.mm
   )
   set(METAL_SOURCES
     "${CMAKE_CURRENT_SOURCE_DIR}/metal_shaders.metal"
@@ -279,10 +276,6 @@ elseif(APPLE)
   target_link_libraries(util PRIVATE ${METAL_LIBRARY} ${QUARTZCORE_LIBRARY} ${IOK_LIBRARY})
   set_source_files_properties(${MAC_SOURCES} PROPERTIES SKIP_PRECOMPILE_HEADERS TRUE)
 elseif(NOT ANDROID)
-  target_sources(util PRIVATE
-    platform_misc_unix.cpp
-  )
-
   if(LINUX)
     target_link_libraries(util PRIVATE UDEV::UDEV)
   endif()

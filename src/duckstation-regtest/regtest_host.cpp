@@ -24,7 +24,6 @@
 #include "util/gpu_device.h"
 #include "util/imgui_manager.h"
 #include "util/input_manager.h"
-#include "util/platform_misc.h"
 #include "util/translation.h"
 
 #include "common/assert.h"

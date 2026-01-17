@@ -100,6 +100,9 @@ public:
 public:
   ~SocketMultiplexer();
 
+  // Process-wide setup. Can be called to use sockets in other libraries, otherwise will be called automatically.
+  static bool GlobalInitialize(Error* error);
+
   // Factory method.
   static std::unique_ptr<SocketMultiplexer> Create(Error* error);
 

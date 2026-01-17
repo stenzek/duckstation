@@ -106,7 +106,6 @@
     <ClCompile Include="imgui_manager.cpp" />
     <ClCompile Include="postprocessing.cpp" />
     <ClCompile Include="postprocessing_shader.cpp" />
-    <ClCompile Include="platform_misc_win32.cpp" />
     <ClCompile Include="sdl_input_source.cpp" />
     <ClCompile Include="win32_raw_input_source.cpp" />
     <ClCompile Include="xinput_source.cpp" />

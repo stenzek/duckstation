@@ -8,7 +8,6 @@
 #include "core/gpu_thread.h"
 
 #include "util/gpu_device.h"
-#include "util/platform_misc.h"
 
 #include "common/error.h"
 #include "common/log.h"

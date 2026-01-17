@@ -3,7 +3,6 @@
 
 #include "win32_raw_input_source.h"
 #include "input_manager.h"
-#include "platform_misc.h"
 
 #include "core/gpu_thread.h"
 

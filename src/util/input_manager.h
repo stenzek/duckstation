@@ -427,4 +427,7 @@ void OnInputDeviceDisconnected(InputBindingKey key, std::string_view identifier)
 /// Enables "relative" mouse mode, locking the cursor position and returning relative coordinates.
 void SetMouseMode(bool relative, bool hide_cursor);
 
+/// Return the current window handle. Needed for DInput.
+std::optional<WindowInfo> GetTopLevelWindowInfo();
+
 } // namespace Host

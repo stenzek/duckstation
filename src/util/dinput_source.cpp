@@ -5,7 +5,6 @@
 
 #include "dinput_source.h"
 #include "input_manager.h"
-#include "platform_misc.h"
 
 #include "common/assert.h"
 #include "common/bitutils.h"

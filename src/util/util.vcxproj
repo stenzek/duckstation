@@ -197,7 +197,6 @@
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="platform_misc_win32.cpp" />
     <ClCompile Include="postprocessing.cpp" />
     <ClCompile Include="postprocessing_shader.cpp" />
     <ClCompile Include="postprocessing_shader_fx.cpp" />

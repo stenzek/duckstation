@@ -41,7 +41,6 @@
 #include "util/cd_image.h"
 #include "util/http_downloader.h"
 #include "util/imgui_manager.h"
-#include "util/platform_misc.h"
 #include "util/state_wrapper.h"
 
 #include "IconsEmoji.h"
@@ -3273,6 +3272,8 @@ const Achievements::ProgressDatabase::Entry* Achievements::ProgressDatabase::Loo
 }
 
 #ifdef RC_CLIENT_SUPPORTS_RAINTEGRATION
+
+#include "util/input_manager.h" // Host::GetTopLevelWindowInfo()
 
 #include "common/windows_headers.h"
 

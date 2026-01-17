@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "sockets.h"
-#include "platform_misc.h"
 
 #include "common/assert.h"
 #include "common/log.h"
@@ -60,6 +59,76 @@ using nfds_t = ULONG;
 #endif
 
 LOG_CHANNEL(Sockets);
+
+#ifdef _WIN32
+
+namespace {
+class WinsockInitializer
+{
+public:
+  ~WinsockInitializer();
+
+  bool Initialize(Error* error);
+
+private:
+  bool m_initialized = false;
+  std::once_flag m_init_flag;
+};
+
+WinsockInitializer::~WinsockInitializer()
+{
+  if (m_initialized)
+    WSACleanup();
+}
+
+bool WinsockInitializer::Initialize(Error* error)
+{
+  std::call_once(
+    m_init_flag,
+    [this](Error* error) {
+      WSADATA wsa = {};
+      if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
+        Error::SetSocket(error, "WSAStartup() failed: ", WSAGetLastError());
+
+      m_initialized = true;
+    },
+    error);
+
+  if (error && !error->IsValid())
+    error->SetStringView("Previous initialization failed.");
+
+  return m_initialized;
+}
+
+static WinsockInitializer s_winsock_initializer;
+
+}; // namespace
+
+#endif // _WIN32
+
+bool SocketMultiplexer::GlobalInitialize(Error* error)
+{
+#if defined(_WIN32)
+
+  return s_winsock_initializer.Initialize(error);
+
+#elif defined(__linux__)
+
+  // Ignore SIGPIPE, we handle errors ourselves.
+  if (signal(SIGPIPE, SIG_IGN) == SIG_ERR)
+  {
+    Error::SetErrno(error, "signal(SIGPIPE, SIG_IGN) failed: ", errno);
+    return false;
+  }
+
+  return true;
+
+#else
+
+  return true;
+
+#endif
+}
 
 static bool SetNonBlocking(SocketDescriptor sd, Error* error)
 {
@@ -244,7 +313,7 @@ SocketMultiplexer::~SocketMultiplexer()
 std::unique_ptr<SocketMultiplexer> SocketMultiplexer::Create(Error* error)
 {
   std::unique_ptr<SocketMultiplexer> ret;
-  if (PlatformMisc::InitializeSocketSupport(error))
+  if (GlobalInitialize(error))
   {
     ret = std::unique_ptr<SocketMultiplexer>(new SocketMultiplexer());
     if (!ret->Initialize(error))

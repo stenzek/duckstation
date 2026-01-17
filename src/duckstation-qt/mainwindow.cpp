@@ -36,7 +36,6 @@
 
 #include "util/cd_image.h"
 #include "util/gpu_device.h"
-#include "util/platform_misc.h"
 #include "util/translation.h"
 
 #include "common/assert.h"
