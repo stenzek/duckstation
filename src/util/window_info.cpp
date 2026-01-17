@@ -209,12 +209,12 @@ std::optional<float> WindowInfo::QueryRefreshRateForWindow(const WindowInfo& wi,
 
 #elif defined(__APPLE__)
 
-#include "util/platform_misc.h"
+#include "common/cocoa_tools.h"
 
 std::optional<float> WindowInfo::QueryRefreshRateForWindow(const WindowInfo& wi, Error* error)
 {
   if (wi.type == WindowInfoType::MacOS)
-    return CocoaTools::GetViewRefreshRate(wi, error);
+    return CocoaTools::GetViewRefreshRate(wi.window_handle, error);
 
   Error::SetStringView(error, "Invalid window type.");
   return std::nullopt;

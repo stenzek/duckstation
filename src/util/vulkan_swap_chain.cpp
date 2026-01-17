@@ -10,13 +10,13 @@
 #include "common/error.h"
 #include "common/log.h"
 
+#ifdef __APPLE__
+#include "common/cocoa_tools.h"
+#endif
+
 #include <algorithm>
 #include <array>
 #include <cmath>
-
-#if defined(VK_USE_PLATFORM_METAL_EXT)
-#include "util/metal_layer.h"
-#endif
 
 #ifdef ENABLE_SDL
 #include <SDL3/SDL_vulkan.h>
@@ -108,7 +108,7 @@ bool VulkanSwapChain::CreateSurface(VkPhysicalDevice physical_device, Error* err
 #if defined(VK_USE_PLATFORM_METAL_EXT)
   if (m_window_info.type == WindowInfoType::MacOS)
   {
-    m_metal_layer = CocoaTools::CreateMetalLayer(m_window_info, error);
+    m_metal_layer = CocoaTools::CreateMetalLayer(m_window_info.window_handle, error);
     if (!m_metal_layer)
       return false;
 
@@ -219,7 +219,7 @@ void VulkanSwapChain::DestroySurface()
 #if defined(__APPLE__)
   if (m_metal_layer)
   {
-    CocoaTools::DestroyMetalLayer(m_window_info, m_metal_layer);
+    CocoaTools::DestroyMetalLayer(m_window_info.window_handle, m_metal_layer);
     m_metal_layer = nullptr;
   }
 #endif

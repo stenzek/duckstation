@@ -11,6 +11,7 @@
 
 #include <AppKit/AppKit.h>
 #include <Cocoa/Cocoa.h>
+#include <QuartzCore/QuartzCore.h>
 #include <cinttypes>
 #include <dlfcn.h>
 #include <mach/mach_time.h>
@@ -207,6 +208,75 @@ std::optional<double> CocoaTools::GetViewRealScalingFactor(const void* view)
     return std::nullopt;
 
   return static_cast<double>(scale);
+}
+
+std::optional<float> CocoaTools::GetViewRefreshRate(const void* view, Error* error)
+{
+  if (!view)
+    return std::nullopt;
+
+  if (![NSThread isMainThread])
+  {
+    std::optional<float> ret;
+    dispatch_sync(dispatch_get_main_queue(), [&ret, view, error] { ret = GetViewRefreshRate(view, error); });
+    return ret;
+  }
+
+  std::optional<float> ret;
+  NSView* const nsview = (__bridge NSView*)view;
+  const u32 did = [[[[[nsview window] screen] deviceDescription] valueForKey:@"NSScreenNumber"] unsignedIntValue];
+  if (CGDisplayModeRef mode = CGDisplayCopyDisplayMode(did))
+  {
+    ret = CGDisplayModeGetRefreshRate(mode);
+    CGDisplayModeRelease(mode);
+  }
+  else
+  {
+    Error::SetStringView(error, "CGDisplayCopyDisplayMode() failed");
+  }
+
+  return ret;
+}
+
+void* CocoaTools::CreateMetalLayer(void* view, Error* error)
+{
+  // Punt off to main thread if we're not calling from it already.
+  if (![NSThread isMainThread])
+  {
+    void* ret;
+    dispatch_sync(dispatch_get_main_queue(), [&ret, view, error]() { ret = CreateMetalLayer(view, error); });
+    return ret;
+  }
+
+  CAMetalLayer* layer = [[CAMetalLayer layer] retain];
+  if (layer == nil)
+  {
+    Error::SetStringView(error, "Failed to create CAMetalLayer");
+    return nullptr;
+  }
+
+  NSView* nsview = (__bridge NSView*)view;
+  [nsview setWantsLayer:TRUE];
+  [nsview setLayer:layer];
+  [layer setContentsScale:[[[nsview window] screen] backingScaleFactor]];
+
+  return layer;
+}
+
+void CocoaTools::DestroyMetalLayer(void* view, void* layer)
+{
+  // Punt off to main thread if we're not calling from it already.
+  if (![NSThread isMainThread])
+  {
+    dispatch_sync(dispatch_get_main_queue(), [view, layer]() { DestroyMetalLayer(view, layer); });
+    return;
+  }
+
+  NSView* nsview = (__bridge NSView*)view;
+  CAMetalLayer* clayer = (CAMetalLayer*)layer;
+  [nsview setLayer:nil];
+  [nsview setWantsLayer:NO];
+  [clayer release];
 }
 
 void Y_OnAssertFailed(const char* szMessage, const char* szFunction, const char* szFile, unsigned uLine)

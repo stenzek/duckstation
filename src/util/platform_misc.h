@@ -19,11 +19,3 @@ namespace Host {
 std::optional<WindowInfo> GetTopLevelWindowInfo();
 
 } // namespace Host
-
-// TODO: Move all the other Cocoa stuff in here.
-namespace CocoaTools {
-
-/// Returns the refresh rate of the display the window is placed on.
-std::optional<float> GetViewRefreshRate(const WindowInfo& wi, Error* error);
-
-} // namespace CocoaTools

@@ -20,16 +20,19 @@ class Error;
 #import <Cocoa/Cocoa.h>
 
 namespace CocoaTools {
+
 NSString* StringViewToNSString(std::string_view str);
 void NSErrorToErrorObject(Error* errptr, std::string_view message, NSError* error);
 
 /// Converts NSError to a human-readable string.
 std::string NSErrorToString(NSError* error);
+
 } // namespace CocoaTools
 
 #endif
 
 namespace CocoaTools {
+
 // Converts to Mach timebase.
 u64 ConvertMachTimeBaseToNanoseconds(u64 ns);
 u64 ConvertNanosecondsToMachTimeBase(u64 ns);
@@ -51,4 +54,14 @@ std::optional<std::pair<int, int>> GetViewSizeInPixels(const void* view);
 
 /// Returns the "real" scaling factor for a given view, on its current display.
 std::optional<double> GetViewRealScalingFactor(const void* view);
+
+/// Returns the refresh rate of the display the window is placed on.
+std::optional<float> GetViewRefreshRate(const void* view, Error* error);
+
+/// Creates metal layer on specified window surface.
+void* CreateMetalLayer(void* view, Error* error);
+
+/// Destroys metal layer on specified window surface.
+void DestroyMetalLayer(void* view, void* layer);
+
 } // namespace CocoaTools
