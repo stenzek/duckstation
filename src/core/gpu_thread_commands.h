@@ -75,7 +75,7 @@ struct GPUThreadReconfigureCommand : public GPUThreadCommand
   std::optional<GPURenderer> renderer;
   std::optional<bool> start_fullscreen_ui;
   GPUVSyncMode vsync_mode;
-  bool allow_present_throttle;
+  PresentSkipMode present_skip_mode;
   bool fullscreen;
   bool force_recreate_device;
   bool upload_vram;
@@ -145,9 +145,8 @@ struct GPUBackendFramePresentationParameters
   {
     u8 bits;
 
-    BitField<u16, bool, 0, 1> allow_present_skip;
-    BitField<u16, bool, 1, 1> present_frame;
-    BitField<u16, bool, 2, 1> update_performance_counters;
+    BitField<u16, bool, 0, 1> present_frame;
+    BitField<u16, bool, 1, 1> update_performance_counters;
   };
 };
 

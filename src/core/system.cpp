@@ -2371,10 +2371,8 @@ bool System::GetFramePresentationParameters(GPUBackendFramePresentationParameter
     ((is_duplicate_frame || (!s_state.optimal_frame_pacing && current_time > s_state.next_frame_time &&
                              s_state.skipped_frame_count < MAX_SKIPPED_TIMEOUT_FRAME_COUNT)) &&
      !IsExecutionInterrupted());
-  const bool should_allow_present_skip = IsRunningAtNonStandardSpeed();
   frame->update_performance_counters = !is_duplicate_frame;
   frame->present_frame = !skip_this_frame;
-  frame->allow_present_skip = should_allow_present_skip;
   frame->present_time = (s_state.optimal_frame_pacing && s_state.throttler_enabled && !IsExecutionInterrupted()) ?
                           s_state.next_frame_time :
                           0;
@@ -3827,12 +3825,14 @@ void System::UpdateDisplayVSync()
 {
   // Avoid flipping vsync on and off by manually throttling when vsync is on.
   const GPUVSyncMode vsync_mode = GetEffectiveVSyncMode();
-  const bool allow_present_throttle = ShouldAllowPresentThrottle();
+  const PresentSkipMode present_skip_mode = GetEffectivePresentSkipMode();
 
-  VERBOSE_LOG("VSync: {}{}", GPUDevice::VSyncModeToString(vsync_mode),
-              allow_present_throttle ? " (present throttle allowed)" : "");
+  static constexpr std::array<const char*, 3> present_throttle_names = {"Disabled", "WhenVSyncBlocks", "Always"};
 
-  GPUThread::SetVSync(vsync_mode, allow_present_throttle);
+  VERBOSE_LOG("VSync: {}", GPUDevice::VSyncModeToString(vsync_mode));
+  VERBOSE_LOG("Present Skip: {}", present_throttle_names[static_cast<size_t>(present_skip_mode)]);
+
+  GPUThread::SetVSync(vsync_mode, present_skip_mode);
 }
 
 GPUVSyncMode System::GetEffectiveVSyncMode()
@@ -3856,10 +3856,32 @@ GPUVSyncMode System::GetEffectiveVSyncMode()
   return GPUVSyncMode::Mailbox;
 }
 
-bool System::ShouldAllowPresentThrottle()
+PresentSkipMode System::GetEffectivePresentSkipMode()
 {
+  // Always present throttle in BPM.
   const bool valid_vm = (s_state.state != State::Shutdown && s_state.state != State::Stopping);
-  return !valid_vm || IsRunningAtNonStandardSpeed();
+  if (!valid_vm)
+    return PresentSkipMode::Disabled;
+
+  // Never present throttle when running at 100% speed.
+  if (!IsRunningAtNonStandardSpeed())
+    return PresentSkipMode::Disabled;
+
+  // Always present throttle when running uncapped.
+  if (!s_state.throttler_enabled)
+    return PresentSkipMode::Always;
+
+  // Must present skip if the refresh rate is below the system frame rate.
+  const float host_refresh_rate = GPUThread::GetRenderWindowInfo().surface_refresh_rate;
+  if (host_refresh_rate < s_state.video_frame_rate)
+    return PresentSkipMode::Always;
+
+  // Present throttle when running above 3x the system refresh rate, for systems with slow WSI.
+  // This gives a good mix of better frame pacing when fast-forwarding, but works around WSI throttling
+  // when running at faster speeds.
+  const float target_present_rate = std::max(s_state.video_frame_rate * s_state.target_speed, 1.0f);
+  const float ratio = target_present_rate / host_refresh_rate;
+  return (ratio > 3.0f) ? PresentSkipMode::Always : PresentSkipMode::WhenVSyncBlocks;
 }
 
 void System::InhibitScreensaver(bool inhibit)

@@ -574,13 +574,27 @@ void GPUBackend::HandleSubmitFrameCommand(const GPUBackendFramePresentationParam
   // For regtest.
   Host::FrameDoneOnGPUThread(this, cmd->frame_number);
 
+  bool needs_restore = false;
   if (cmd->media_capture)
+  {
     m_presenter.SendDisplayToMediaCapture(cmd->media_capture);
+    needs_restore = true;
+  }
 
   // If this returns false, our backend object is deleted and replaced with null, so bail out.
   if (cmd->present_frame)
   {
-    const bool result = m_presenter.PresentFrame(&m_presenter, this, cmd->allow_present_skip, cmd->present_time);
+    bool result;
+    if (GPUThread::ShouldPresentVideoFrame(cmd->present_time))
+    {
+      result = m_presenter.PresentFrame(&m_presenter, this, cmd->present_time);
+      needs_restore = true;
+    }
+    else
+    {
+      result = true;
+    }
+
     ReleaseQueuedFrame();
     if (!result)
       return;
@@ -592,7 +606,8 @@ void GPUBackend::HandleSubmitFrameCommand(const GPUBackendFramePresentationParam
   if (cmd->update_performance_counters)
     PerformanceCounters::Update(this, cmd->frame_number, cmd->internal_frame_number);
 
-  RestoreDeviceContext();
+  if (needs_restore)
+    RestoreDeviceContext();
 }
 
 #define BOLD(text) "\x02" text "\x01"

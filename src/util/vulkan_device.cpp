@@ -1254,7 +1254,6 @@ void VulkanDevice::QueuePresent(VulkanSwapChain* present_swap_chain)
   // submission. Don't care if it fails, we'll deal with that at the presentation call site.
   // Credit to dxvk for the idea.
   present_swap_chain->AcquireNextImage(false);
-  present_swap_chain->UpdateLastFramePresentedTime();
 }
 
 void VulkanDevice::BeginCommandBuffer(u32 index)
@@ -1547,7 +1546,6 @@ void VulkanDevice::DestroyFramebuffer(VkFramebuffer fbo)
 
 bool VulkanDevice::CreateDeviceAndMainSwapChain(std::string_view adapter, CreateFlags create_flags,
                                                 const WindowInfo& wi, GPUVSyncMode vsync_mode,
-                                                bool allow_present_throttle,
                                                 const ExclusiveFullscreenMode* exclusive_fullscreen_mode,
                                                 std::optional<bool> exclusive_fullscreen_control, Error* error)
 {
@@ -1594,8 +1592,7 @@ bool VulkanDevice::CreateDeviceAndMainSwapChain(std::string_view adapter, Create
   std::unique_ptr<VulkanSwapChain> swap_chain;
   if (!wi.IsSurfaceless())
   {
-    swap_chain =
-      std::make_unique<VulkanSwapChain>(wi, vsync_mode, allow_present_throttle, exclusive_fullscreen_control);
+    swap_chain = std::make_unique<VulkanSwapChain>(wi, vsync_mode, exclusive_fullscreen_control);
     if (!swap_chain->CreateSurface(physical_device, error))
     {
       swap_chain->Destroy(*this, false);
@@ -1796,13 +1793,12 @@ bool VulkanDevice::GetPipelineCacheData(DynamicHeapArray<u8>* data, Error* error
 }
 
 std::unique_ptr<GPUSwapChain> VulkanDevice::CreateSwapChain(const WindowInfo& wi, GPUVSyncMode vsync_mode,
-                                                            bool allow_present_throttle,
                                                             const ExclusiveFullscreenMode* exclusive_fullscreen_mode,
                                                             std::optional<bool> exclusive_fullscreen_control,
                                                             Error* error)
 {
   std::unique_ptr<VulkanSwapChain> swap_chain =
-    std::make_unique<VulkanSwapChain>(wi, vsync_mode, allow_present_throttle, exclusive_fullscreen_control);
+    std::make_unique<VulkanSwapChain>(wi, vsync_mode, exclusive_fullscreen_control);
   if (swap_chain->CreateSurface(m_physical_device, error) && swap_chain->CreateSwapChain(*this, error) &&
       swap_chain->CreateSwapChainImages(*this, error))
   {

@@ -113,7 +113,7 @@ void WindowResized(GPUTextureFormat format, float width, float height);
 void RequestScaleUpdate();
 
 /// Call at the beginning of the frame to set up ImGui state.
-void NewFrame();
+void NewFrame(u64 current_time);
 
 /// Creates the draw list for the frame, akin to ImGui::Render().
 void CreateDrawLists();

@@ -4916,7 +4916,7 @@ void FullscreenUI::RenderLoadingScreen(std::string_view image, std::string_view 
     g_gpu_device->EndPresent(swap_chain, false);
   }
 
-  ImGuiManager::NewFrame();
+  ImGuiManager::NewFrame(Timer::GetCurrentValue());
 }
 
 void FullscreenUI::UpdateLoadingScreenRunIdle()

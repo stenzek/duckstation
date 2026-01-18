@@ -144,7 +144,7 @@ D3D12Device::ComPtr<ID3D12RootSignature> D3D12Device::CreateRootSignature(const 
 }
 
 bool D3D12Device::CreateDeviceAndMainSwapChain(std::string_view adapter, CreateFlags create_flags, const WindowInfo& wi,
-                                               GPUVSyncMode vsync_mode, bool allow_present_throttle,
+                                               GPUVSyncMode vsync_mode,
                                                const ExclusiveFullscreenMode* exclusive_fullscreen_mode,
                                                std::optional<bool> exclusive_fullscreen_control, Error* error)
 {
@@ -283,8 +283,7 @@ bool D3D12Device::CreateDeviceAndMainSwapChain(std::string_view adapter, CreateF
 
   if (!wi.IsSurfaceless())
   {
-    m_main_swap_chain = CreateSwapChain(wi, vsync_mode, allow_present_throttle, exclusive_fullscreen_mode,
-                                        exclusive_fullscreen_control, error);
+    m_main_swap_chain = CreateSwapChain(wi, vsync_mode, exclusive_fullscreen_mode, exclusive_fullscreen_control, error);
     if (!m_main_swap_chain)
       return false;
   }
@@ -849,9 +848,9 @@ void D3D12Device::DestroyDeferredObjects(u64 fence_value)
   }
 }
 
-D3D12SwapChain::D3D12SwapChain(const WindowInfo& wi, GPUVSyncMode vsync_mode, bool allow_present_throttle,
+D3D12SwapChain::D3D12SwapChain(const WindowInfo& wi, GPUVSyncMode vsync_mode,
                                const GPUDevice::ExclusiveFullscreenMode* fullscreen_mode)
-  : GPUSwapChain(wi, vsync_mode, allow_present_throttle)
+  : GPUSwapChain(wi, vsync_mode)
 {
   if (fullscreen_mode)
     InitializeExclusiveFullscreenMode(fullscreen_mode);
@@ -1044,10 +1043,8 @@ void D3D12SwapChain::DestroySwapChain()
   m_swap_chain.Reset();
 }
 
-bool D3D12SwapChain::SetVSyncMode(GPUVSyncMode mode, bool allow_present_throttle, Error* error)
+bool D3D12SwapChain::SetVSyncMode(GPUVSyncMode mode, Error* error)
 {
-  m_allow_present_throttle = allow_present_throttle;
-
   // Using mailbox-style no-allow-tearing causes tearing in exclusive fullscreen.
   if (mode == GPUVSyncMode::Mailbox && IsExclusiveFullscreen())
   {
@@ -1093,7 +1090,6 @@ bool D3D12SwapChain::ResizeBuffers(u32 new_width, u32 new_height, Error* error)
 }
 
 std::unique_ptr<GPUSwapChain> D3D12Device::CreateSwapChain(const WindowInfo& wi, GPUVSyncMode vsync_mode,
-                                                           bool allow_present_throttle,
                                                            const ExclusiveFullscreenMode* exclusive_fullscreen_mode,
                                                            std::optional<bool> exclusive_fullscreen_control,
                                                            Error* error)
@@ -1105,7 +1101,7 @@ std::unique_ptr<GPUSwapChain> D3D12Device::CreateSwapChain(const WindowInfo& wi,
     return ret;
   }
 
-  ret = std::make_unique<D3D12SwapChain>(wi, vsync_mode, allow_present_throttle, exclusive_fullscreen_mode);
+  ret = std::make_unique<D3D12SwapChain>(wi, vsync_mode, exclusive_fullscreen_mode);
   if (ret->CreateSwapChain(*this, error) && ret->CreateRTV(*this, error))
   {
     // Render a frame as soon as possible to clear out whatever was previously being displayed.
@@ -1265,7 +1261,6 @@ void D3D12Device::SubmitPresent(GPUSwapChain* swap_chain)
   const UINT flags =
     (SC->GetVSyncMode() == GPUVSyncMode::Disabled && SC->IsUsingAllowTearing()) ? DXGI_PRESENT_ALLOW_TEARING : 0;
   SC->GetSwapChain()->Present(sync_interval, flags);
-  SC->UpdateLastFramePresentedTime();
 }
 
 #ifdef ENABLE_GPU_OBJECT_NAMES

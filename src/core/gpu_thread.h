@@ -85,7 +85,10 @@ void RunOnThread(AsyncCallType func);
 void RunOnBackend(AsyncBackendCallType func, bool sync, bool spin_or_wake);
 std::pair<GPUThreadCommand*, void*> BeginASyncBufferCall(AsyncBufferCallType func, u32 buffer_size);
 void EndASyncBufferCall(GPUThreadCommand* cmd);
-void SetVSync(GPUVSyncMode mode, bool allow_present_throttle);
+void SetVSync(GPUVSyncMode mode, PresentSkipMode present_throttle_mode);
+bool ShouldPresentVideoFrame(u64 present_time);
+u64 GetLastPresentTime();
+void SetLastPresentTime(u64 time);
 
 // Should only be called on the GPU thread.
 bool GetRunIdleReason(RunIdleReason reason);

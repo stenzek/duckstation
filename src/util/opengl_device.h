@@ -48,7 +48,6 @@ public:
   void WaitForGPUIdle() override;
 
   std::unique_ptr<GPUSwapChain> CreateSwapChain(const WindowInfo& wi, GPUVSyncMode vsync_mode,
-                                                bool allow_present_throttle,
                                                 const ExclusiveFullscreenMode* exclusive_fullscreen_mode,
                                                 std::optional<bool> exclusive_fullscreen_control,
                                                 Error* error) override;
@@ -148,8 +147,7 @@ public:
 
 protected:
   bool CreateDeviceAndMainSwapChain(std::string_view adapter, CreateFlags create_flags, const WindowInfo& wi,
-                                    GPUVSyncMode vsync_mode, bool allow_present_throttle,
-                                    const ExclusiveFullscreenMode* exclusive_fullscreen_mode,
+                                    GPUVSyncMode vsync_mode, const ExclusiveFullscreenMode* exclusive_fullscreen_mode,
                                     std::optional<bool> exclusive_fullscreen_control, Error* error) override;
   void DestroyDevice() override;
 
@@ -255,14 +253,13 @@ private:
 class OpenGLSwapChain : public GPUSwapChain
 {
 public:
-  OpenGLSwapChain(const WindowInfo& wi, GPUVSyncMode vsync_mode, bool allow_present_throttle,
-                  OpenGLContext::SurfaceHandle surface_handle);
+  OpenGLSwapChain(const WindowInfo& wi, GPUVSyncMode vsync_mode, OpenGLContext::SurfaceHandle surface_handle);
   ~OpenGLSwapChain() override;
 
   ALWAYS_INLINE OpenGLContext::SurfaceHandle GetSurfaceHandle() const { return m_surface_handle; }
 
   bool ResizeBuffers(u32 new_width, u32 new_height, Error* error) override;
-  bool SetVSyncMode(GPUVSyncMode mode, bool allow_present_throttle, Error* error) override;
+  bool SetVSyncMode(GPUVSyncMode mode, Error* error) override;
 
   static bool SetSwapInterval(OpenGLContext* ctx, GPUVSyncMode mode, Error* error);
 

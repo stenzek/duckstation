@@ -457,7 +457,7 @@ protected:
 class GPUSwapChain
 {
 public:
-  GPUSwapChain(const WindowInfo& wi, GPUVSyncMode vsync_mode, bool allow_present_throttle);
+  GPUSwapChain(const WindowInfo& wi, GPUVSyncMode vsync_mode);
   virtual ~GPUSwapChain();
 
   ALWAYS_INLINE const WindowInfo& GetWindowInfo() const { return m_window_info; }
@@ -482,17 +482,12 @@ public:
 
   ALWAYS_INLINE GPUVSyncMode GetVSyncMode() const { return m_vsync_mode; }
   ALWAYS_INLINE bool IsVSyncModeBlocking() const { return (m_vsync_mode == GPUVSyncMode::FIFO); }
-  ALWAYS_INLINE bool IsPresentThrottleAllowed() const { return m_allow_present_throttle; }
 
   virtual bool ResizeBuffers(u32 new_width, u32 new_height, Error* error) = 0;
-  virtual bool SetVSyncMode(GPUVSyncMode mode, bool allow_present_throttle, Error* error) = 0;
+  virtual bool SetVSyncMode(GPUVSyncMode mode, Error* error) = 0;
 
   /// Returns true if exclusive fullscreen is currently active on this swap chain.
   virtual bool IsExclusiveFullscreen() const;
-
-  bool ShouldSkipPresentingFrame(u64 present_time);
-  void UpdateLastFramePresentedTime(u64 presented_time = 0);
-  void ThrottlePresentation();
 
   static GSVector4i PreRotateClipRect(WindowInfo::PreRotation prerotation, const GSVector2i surface_size,
                                       const GSVector4i& v);
@@ -502,10 +497,6 @@ protected:
   WindowInfo m_window_info;
 
   GPUVSyncMode m_vsync_mode = GPUVSyncMode::Disabled;
-  bool m_allow_present_throttle = false;
-
-  u64 m_last_frame_displayed_time = 0;
-  u64 m_next_throttle_time = 0;
 };
 
 class GPUDevice
@@ -711,18 +702,17 @@ public:
 
   bool Create(std::string_view adapter, CreateFlags create_flags, std::string_view shader_dump_path,
               std::string_view shader_cache_path, u32 shader_cache_version, const WindowInfo& wi, GPUVSyncMode vsync,
-              bool allow_present_throttle, const ExclusiveFullscreenMode* exclusive_fullscreen_mode,
+              const ExclusiveFullscreenMode* exclusive_fullscreen_mode,
               std::optional<bool> exclusive_fullscreen_control, Error* error);
   void Destroy();
 
   virtual std::unique_ptr<GPUSwapChain> CreateSwapChain(const WindowInfo& wi, GPUVSyncMode vsync_mode,
-                                                        bool allow_present_throttle,
                                                         const ExclusiveFullscreenMode* exclusive_fullscreen_mode,
                                                         std::optional<bool> exclusive_fullscreen_control,
                                                         Error* error) = 0;
   virtual bool SwitchToSurfacelessRendering(Error* error);
 
-  bool RecreateMainSwapChain(const WindowInfo& wi, GPUVSyncMode vsync_mode, bool allow_present_throttle,
+  bool RecreateMainSwapChain(const WindowInfo& wi, GPUVSyncMode vsync_mode,
                              const ExclusiveFullscreenMode* exclusive_fullscreen_mode,
                              std::optional<bool> exclusive_fullscreen_control, Error* error);
   void DestroyMainSwapChain();
@@ -878,7 +868,7 @@ public:
 
 protected:
   virtual bool CreateDeviceAndMainSwapChain(std::string_view adapter, CreateFlags create_flags, const WindowInfo& wi,
-                                            GPUVSyncMode vsync_mode, bool allow_present_throttle,
+                                            GPUVSyncMode vsync_mode,
                                             const ExclusiveFullscreenMode* exclusive_fullscreen_mode,
                                             std::optional<bool> exclusive_fullscreen_control, Error* error) = 0;
   virtual void DestroyDevice() = 0;

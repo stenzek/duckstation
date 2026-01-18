@@ -56,6 +56,8 @@ static constexpr u32 THREAD_SPIN_TIME_US = 50;
 static constexpr u32 THREAD_SPIN_TIME_US = 200;
 #endif
 
+static constexpr u32 MAX_SKIPPED_PRESENT_COUNT = 50;
+
 static bool Reconfigure(std::optional<GPURenderer> renderer, bool upload_vram, std::optional<bool> fullscreen,
                         std::optional<bool> start_fullscreen_ui, bool recreate_device, Error* error);
 
@@ -78,6 +80,7 @@ static void ResizeDisplayWindowOnThread(u32 width, u32 height, float scale, floa
 static void UpdateDisplayWindowOnThread(bool fullscreen, bool allow_exclusive_fullscreen);
 static void DisplayWindowResizedOnThread();
 static bool CheckExclusiveFullscreenOnThread();
+static void ThrottlePresentation();
 
 static void ReconfigureOnThread(GPUThreadReconfigureCommand* cmd);
 static bool CreateGPUBackendOnThread(GPURenderer renderer, bool upload_vram, Error* error);
@@ -118,8 +121,11 @@ struct ALIGN_TO_CACHE_LINE State
   u8 run_idle_reasons = 0;
   bool run_idle_flag = false;
   GPUVSyncMode requested_vsync = GPUVSyncMode::Disabled;
-  bool requested_allow_present_throttle = false;
+  PresentSkipMode requested_present_skip = PresentSkipMode::Disabled;
   bool requested_fullscreen_ui = false;
+  u8 skipped_present_count = 0;
+  u64 last_present_time = 0;
+  u64 next_throttle_time = 0;
   std::string game_title;
   std::string game_serial;
   std::string game_path;
@@ -532,7 +538,7 @@ void GPUThread::Internal::DoRunIdle()
     return;
 
   if (g_gpu_device->HasMainSwapChain() && !g_gpu_device->GetMainSwapChain()->IsVSyncModeBlocking())
-    g_gpu_device->GetMainSwapChain()->ThrottlePresentation();
+    ThrottlePresentation();
 }
 
 bool GPUThread::Reconfigure(std::optional<GPURenderer> renderer, bool upload_vram, std::optional<bool> fullscreen,
@@ -549,7 +555,7 @@ bool GPUThread::Reconfigure(std::optional<GPURenderer> renderer, bool upload_vra
   cmd->fullscreen = s_state.requested_fullscreen;
   cmd->start_fullscreen_ui = start_fullscreen_ui;
   cmd->vsync_mode = System::GetEffectiveVSyncMode();
-  cmd->allow_present_throttle = System::ShouldAllowPresentThrottle();
+  cmd->present_skip_mode = System::GetEffectivePresentSkipMode();
   cmd->force_recreate_device = recreate_device;
   cmd->upload_vram = upload_vram;
   cmd->error_ptr = error;
@@ -682,10 +688,10 @@ bool GPUThread::CreateDeviceOnThread(RenderAPI api, bool fullscreen, bool preser
   std::optional<WindowInfo> wi;
   if (!g_gpu_device ||
       !(wi = Host::AcquireRenderWindow(api, fullscreen, fullscreen_mode.has_value(), &create_error)).has_value() ||
-      !g_gpu_device->Create(
-        Core::GetStringSettingValue("GPU", "Adapter"), create_flags, shader_dump_directory, EmuFolders::Cache,
-        SHADER_CACHE_VERSION, wi.value(), s_state.requested_vsync, s_state.requested_allow_present_throttle,
-        fullscreen_mode.has_value() ? &fullscreen_mode.value() : nullptr, exclusive_fullscreen_control, &create_error))
+      !g_gpu_device->Create(Core::GetStringSettingValue("GPU", "Adapter"), create_flags, shader_dump_directory,
+                            EmuFolders::Cache, SHADER_CACHE_VERSION, wi.value(), s_state.requested_vsync,
+                            fullscreen_mode.has_value() ? &fullscreen_mode.value() : nullptr,
+                            exclusive_fullscreen_control, &create_error))
   {
     ERROR_LOG("Failed to create GPU device: {}", create_error.GetDescription());
     if (g_gpu_device)
@@ -822,7 +828,7 @@ void GPUThread::ReconfigureOnThread(GPUThreadReconfigureCommand* cmd)
 {
   // Store state.
   s_state.requested_vsync = cmd->vsync_mode;
-  s_state.requested_allow_present_throttle = cmd->allow_present_throttle;
+  s_state.requested_present_skip = cmd->present_skip_mode;
   s_state.requested_fullscreen_ui = cmd->start_fullscreen_ui.value_or(s_state.requested_fullscreen_ui);
 
   // Are we shutting down everything?
@@ -973,7 +979,7 @@ bool GPUThread::Internal::PresentFrameAndRestoreContext()
   if (s_state.gpu_backend)
     s_state.gpu_backend->FlushRender();
 
-  if (!GPUPresenter::PresentFrame(s_state.gpu_presenter.get(), s_state.gpu_backend.get(), false, 0))
+  if (!GPUPresenter::PresentFrame(s_state.gpu_presenter.get(), s_state.gpu_backend.get(), 0))
     return false;
 
   if (s_state.gpu_backend)
@@ -1367,9 +1373,9 @@ void GPUThread::UpdateDisplayWindowOnThread(bool fullscreen, bool allow_exclusiv
   // if surfaceless, just leave it
   if (!wi->IsSurfaceless())
   {
-    if (!g_gpu_device->RecreateMainSwapChain(
-          wi.value(), s_state.requested_vsync, s_state.requested_allow_present_throttle,
-          fullscreen_mode.has_value() ? &fullscreen_mode.value() : nullptr, exclusive_fullscreen_control, &error))
+    if (!g_gpu_device->RecreateMainSwapChain(wi.value(), s_state.requested_vsync,
+                                             fullscreen_mode.has_value() ? &fullscreen_mode.value() : nullptr,
+                                             exclusive_fullscreen_control, &error))
     {
       Host::ReportFatalError("Failed to change window after update", error.GetDescription());
       return;
@@ -1430,24 +1436,21 @@ const WindowInfo& GPUThread::GetRenderWindowInfo()
   return s_state.render_window_info;
 }
 
-void GPUThread::SetVSync(GPUVSyncMode mode, bool allow_present_throttle)
+void GPUThread::SetVSync(GPUVSyncMode mode, PresentSkipMode present_skip_mode)
 {
-  RunOnThread([mode, allow_present_throttle]() {
-    if (s_state.requested_vsync == mode && s_state.requested_allow_present_throttle == allow_present_throttle)
+  RunOnThread([mode, present_skip_mode]() {
+    if (s_state.requested_vsync == mode && s_state.requested_present_skip == present_skip_mode)
       return;
 
     s_state.requested_vsync = mode;
-    s_state.requested_allow_present_throttle = allow_present_throttle;
+    s_state.requested_present_skip = present_skip_mode;
 
     if (!g_gpu_device->HasMainSwapChain())
       return;
 
     Error error;
-    if (!g_gpu_device->GetMainSwapChain()->SetVSyncMode(s_state.requested_vsync,
-                                                        s_state.requested_allow_present_throttle, &error))
-    {
+    if (!g_gpu_device->GetMainSwapChain()->SetVSyncMode(s_state.requested_vsync, &error))
       ERROR_LOG("Failed to update vsync mode: {}", error.GetDescription());
-    }
   });
 
   // If we're turning on vsync or turning off present throttle, we want to drain the GPU thread.
@@ -1510,6 +1513,66 @@ bool GPUThread::IsRunningIdle()
 bool GPUThread::IsSystemPaused()
 {
   return ((s_state.run_idle_reasons & static_cast<u8>(RunIdleReason::SystemPaused)) != 0);
+}
+
+bool GPUThread::ShouldPresentVideoFrame(u64 present_time)
+{
+  // TODO: Move to VideoPresenter once it's turned into a namespace.
+  if (!g_gpu_device->HasMainSwapChain())
+    return false;
+
+  if (s_state.requested_present_skip == PresentSkipMode::Disabled ||
+      (s_state.requested_present_skip == PresentSkipMode::WhenVSyncBlocks &&
+       !g_gpu_device->GetMainSwapChain()->IsVSyncModeBlocking()))
+  {
+    return true;
+  }
+
+  const WindowInfo& swap_chain_wi = g_gpu_device->GetMainSwapChain()->GetWindowInfo();
+  const float throttle_rate = (swap_chain_wi.surface_refresh_rate > 0.0f) ? swap_chain_wi.surface_refresh_rate : 60.0f;
+  const float throttle_period = 1.0f / throttle_rate;
+
+  const u64 wanted_time = (present_time == 0) ? Timer::GetCurrentValue() : present_time;
+  const double diff = Timer::ConvertValueToSeconds(wanted_time - s_state.last_present_time);
+  if (diff >= throttle_period || s_state.skipped_present_count >= MAX_SKIPPED_PRESENT_COUNT)
+  {
+    s_state.skipped_present_count = 0;
+    return true;
+  }
+
+  s_state.skipped_present_count++;
+  return false;
+}
+
+u64 GPUThread::GetLastPresentTime()
+{
+  return s_state.last_present_time;
+}
+
+void GPUThread::SetLastPresentTime(u64 time)
+{
+  s_state.last_present_time = time;
+}
+
+void GPUThread::ThrottlePresentation()
+{
+  const float throttle_rate = (g_gpu_device && g_gpu_device->HasMainSwapChain() &&
+                               g_gpu_device->GetMainSwapChain()->GetWindowInfo().surface_refresh_rate > 0.0f) ?
+                                g_gpu_device->GetMainSwapChain()->GetWindowInfo().surface_refresh_rate :
+                                60.0f;
+
+  const u64 sleep_period = Timer::ConvertNanosecondsToValue(1e+9f / static_cast<double>(throttle_rate));
+  const u64 current_ts = Timer::GetCurrentValue();
+
+  // Allow it to fall behind/run ahead up to 2*period. Sleep isn't that precise, plus we need to
+  // allow time for the actual rendering.
+  const u64 max_variance = sleep_period * 2;
+  if (static_cast<u64>(std::abs(static_cast<s64>(current_ts - s_state.next_throttle_time))) > max_variance)
+    s_state.next_throttle_time = current_ts + sleep_period;
+  else
+    s_state.next_throttle_time += sleep_period;
+
+  Timer::SleepUntil(s_state.next_throttle_time, false);
 }
 
 void GPUThread::UpdateRunIdle()

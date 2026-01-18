@@ -69,7 +69,7 @@ public:
   void SendDisplayToMediaCapture(MediaCapture* cap);
 
   /// Main frame presenter - used both when a game is and is not running.
-  static bool PresentFrame(GPUPresenter* presenter, GPUBackend* backend, bool allow_skip_present, u64 present_time);
+  static bool PresentFrame(GPUPresenter* presenter, GPUBackend* backend, u64 present_time);
 
   /// Returns a list of border overlay presets.
   static std::vector<std::string> EnumerateBorderOverlayPresets();
@@ -93,7 +93,6 @@ private:
   enum : u32
   {
     DEINTERLACE_BUFFER_COUNT = 4,
-    MAX_SKIPPED_PRESENT_COUNT = 50,
   };
 
   static void SleepUntilPresentTime(u64 present_time);
@@ -143,7 +142,6 @@ private:
   GPUTexture* m_display_texture = nullptr;
   GSVector4i m_display_texture_rect = GSVector4i::cxpr(0);
 
-  u32 m_skipped_present_count = 0;
   GPUTextureFormat m_present_format = GPUTextureFormat::Unknown;
   bool m_display_texture_24bit = false;
   bool m_border_overlay_alpha_blend = false;

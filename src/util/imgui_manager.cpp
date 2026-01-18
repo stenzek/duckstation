@@ -239,7 +239,7 @@ bool ImGuiManager::Initialize(bool preserve_fsui_state, Error* error)
     return false;
   }
 
-  NewFrame();
+  NewFrame(Timer::GetCurrentValue());
 
   CreateSoftwareCursorTextures();
   return true;
@@ -346,10 +346,8 @@ void ImGuiManager::UpdateScale()
   ImGui::GetIO().Fonts->CompactCache();
 }
 
-void ImGuiManager::NewFrame()
+void ImGuiManager::NewFrame(u64 current_time)
 {
-  const Timer::Value current_time = Timer::GetCurrentValue();
-
   ImGuiIO& io = ImGui::GetIO();
   io.DeltaTime = static_cast<float>(Timer::ConvertValueToSeconds(current_time - s_state.last_render_time));
   s_state.last_render_time = current_time;
@@ -832,7 +830,7 @@ void ImGuiManager::ReloadFontDataIfActive()
     return;
   }
 
-  NewFrame();
+  NewFrame(Timer::GetCurrentValue());
 }
 
 float ImGuiManager::GetOSDMessageDuration(OSDMessageType type)
@@ -1817,7 +1815,7 @@ bool ImGuiManager::CreateAuxiliaryRenderWindow(AuxiliaryRenderWindowState* state
     return false;
   }
 
-  state->swap_chain = g_gpu_device->CreateSwapChain(wi, GPUVSyncMode::Disabled, false, nullptr, std::nullopt, error);
+  state->swap_chain = g_gpu_device->CreateSwapChain(wi, GPUVSyncMode::Disabled, nullptr, std::nullopt, error);
   if (!state->swap_chain)
   {
     Host::DestroyAuxiliaryRenderWindow(state->window_handle);

@@ -225,6 +225,13 @@ enum class DisplayScreenshotFormat : u8
   Count
 };
 
+enum class PresentSkipMode : u8
+{
+  Disabled,
+  WhenVSyncBlocks,
+  Always,
+};
+
 enum class NotificationLocation : u8
 {
   TopLeft,

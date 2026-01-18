@@ -1186,68 +1186,55 @@ void GPUPresenter::CalculateDrawRect(const GSVector2i& window_size, bool apply_a
                          g_gpu_settings.display_fine_crop_amount, source_rect, display_rect, draw_rect);
 }
 
-bool GPUPresenter::PresentFrame(GPUPresenter* presenter, GPUBackend* backend, bool allow_skip_present, u64 present_time)
+bool GPUPresenter::PresentFrame(GPUPresenter* presenter, GPUBackend* backend, u64 present_time)
 {
-  const bool skip_present =
-    (!g_gpu_device->HasMainSwapChain() ||
-     (allow_skip_present && g_gpu_device->GetMainSwapChain()->ShouldSkipPresentingFrame(present_time) && presenter &&
-      presenter->m_skipped_present_count < MAX_SKIPPED_PRESENT_COUNT));
+  // acquire for IO.MousePos and system state.
+  std::atomic_thread_fence(std::memory_order_acquire);
 
-  if (!skip_present)
+  FullscreenUI::UploadAsyncTextures();
+
+  ImGuiManager::RenderDebugWindows();
+
+  FullscreenUI::DrawAchievementsOverlays();
+
+  if (backend)
+    ImGuiManager::RenderTextOverlays(backend);
+
+  ImGuiManager::RenderOverlayWindows();
+
+  FullscreenUI::Render();
+
+  FullscreenUI::RenderOverlays();
+
+  ImGuiManager::RenderOSDMessages();
+
+  if (backend && !GPUThread::IsSystemPaused())
+    ImGuiManager::RenderSoftwareCursors();
+
+  ImGuiManager::CreateDrawLists();
+
+  // render offscreen for transitions
+  if (FullscreenUI::IsTransitionActive())
   {
-    // acquire for IO.MousePos and system state.
-    std::atomic_thread_fence(std::memory_order_acquire);
-
-    FullscreenUI::UploadAsyncTextures();
-
-    ImGuiManager::RenderDebugWindows();
-
-    FullscreenUI::DrawAchievementsOverlays();
-
-    if (backend)
-      ImGuiManager::RenderTextOverlays(backend);
-
-    ImGuiManager::RenderOverlayWindows();
-
-    FullscreenUI::Render();
-
-    FullscreenUI::RenderOverlays();
-
-    ImGuiManager::RenderOSDMessages();
-
-    if (backend && !GPUThread::IsSystemPaused())
-      ImGuiManager::RenderSoftwareCursors();
-
-    ImGuiManager::CreateDrawLists();
-
-    // render offscreen for transitions
-    if (FullscreenUI::IsTransitionActive())
+    GPUTexture* const rtex = FullscreenUI::GetTransitionRenderTexture(g_gpu_device->GetMainSwapChain());
+    if (rtex)
     {
-      GPUTexture* const rtex = FullscreenUI::GetTransitionRenderTexture(g_gpu_device->GetMainSwapChain());
-      if (rtex)
-      {
-        if (presenter)
-          presenter->RenderDisplay(rtex, rtex->GetSizeVec(), true, true);
-        else
-          g_gpu_device->ClearRenderTarget(rtex, GPUDevice::DEFAULT_CLEAR_COLOR);
+      if (presenter)
+        presenter->RenderDisplay(rtex, rtex->GetSizeVec(), true, true);
+      else
+        g_gpu_device->ClearRenderTarget(rtex, GPUDevice::DEFAULT_CLEAR_COLOR);
 
-        g_gpu_device->SetRenderTarget(rtex);
-        ImGuiManager::RenderDrawLists(rtex);
-      }
+      g_gpu_device->SetRenderTarget(rtex);
+      ImGuiManager::RenderDrawLists(rtex);
     }
   }
 
   GPUSwapChain* const swap_chain = g_gpu_device->GetMainSwapChain();
-  const GPUDevice::PresentResult pres = skip_present ?
-                                          GPUDevice::PresentResult::SkipPresent :
-                                          ((presenter && !FullscreenUI::IsTransitionActive()) ?
-                                             presenter->RenderDisplay(nullptr, swap_chain->GetSizeVec(), true, true) :
-                                             g_gpu_device->BeginPresent(swap_chain));
+  const GPUDevice::PresentResult pres = ((presenter && !FullscreenUI::IsTransitionActive()) ?
+                                           presenter->RenderDisplay(nullptr, swap_chain->GetSizeVec(), true, true) :
+                                           g_gpu_device->BeginPresent(swap_chain));
   if (pres == GPUDevice::PresentResult::OK)
   {
-    if (presenter)
-      presenter->m_skipped_present_count = 0;
-
     if (FullscreenUI::IsTransitionActive())
       FullscreenUI::RenderTransitionBlend(swap_chain);
     else
@@ -1276,14 +1263,12 @@ bool GPUPresenter::PresentFrame(GPUPresenter* presenter, GPUBackend* backend, bo
       g_gpu_device->SubmitPresent(swap_chain);
     }
 
-    swap_chain->UpdateLastFramePresentedTime();
-    ImGuiManager::NewFrame();
+    const Timer::Value current_time = Timer::GetCurrentValue();
+    GPUThread::SetLastPresentTime(scheduled_present ? std::max(current_time, present_time) : current_time);
+    ImGuiManager::NewFrame(current_time);
   }
   else
   {
-    if (presenter)
-      presenter->m_skipped_present_count++;
-
     if (pres == GPUDevice::PresentResult::DeviceLost) [[unlikely]]
     {
       ERROR_LOG("GPU device lost during present.");
@@ -1297,15 +1282,11 @@ bool GPUPresenter::PresentFrame(GPUPresenter* presenter, GPUBackend* backend, bo
       GPUThread::SetFullscreen(false);
     }
 
-    if (!skip_present)
-      g_gpu_device->FlushCommands();
+    g_gpu_device->FlushCommands();
 
     // Still need to kick ImGui or it gets cranky.
-    if (!skip_present)
-    {
-      ImGui::EndFrame();
-      ImGuiManager::NewFrame();
-    }
+    ImGui::EndFrame();
+    ImGuiManager::NewFrame(Timer::GetCurrentValue());
   }
 
   return true;

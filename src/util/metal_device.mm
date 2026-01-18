@@ -157,9 +157,8 @@ MetalDevice::~MetalDevice()
   Assert(m_layer_drawable == nil && m_device == nil);
 }
 
-MetalSwapChain::MetalSwapChain(const WindowInfo& wi, GPUVSyncMode vsync_mode, bool allow_present_throttle,
-                               CAMetalLayer* layer)
-  : GPUSwapChain(wi, vsync_mode, allow_present_throttle), m_layer(layer)
+MetalSwapChain::MetalSwapChain(const WindowInfo& wi, GPUVSyncMode vsync_mode, CAMetalLayer* layer)
+  : GPUSwapChain(wi, vsync_mode), m_layer(layer)
 {
 }
 
@@ -200,11 +199,10 @@ bool MetalSwapChain::ResizeBuffers(u32 new_width, u32 new_height, Error* error)
   }
 }
 
-bool MetalSwapChain::SetVSyncMode(GPUVSyncMode mode, bool allow_present_throttle, Error* error)
+bool MetalSwapChain::SetVSyncMode(GPUVSyncMode mode, Error* error)
 {
   // Metal does not support mailbox mode.
   mode = (mode == GPUVSyncMode::Mailbox) ? GPUVSyncMode::FIFO : mode;
-  m_allow_present_throttle = allow_present_throttle;
 
   if (m_vsync_mode == mode)
     return true;
@@ -217,7 +215,6 @@ bool MetalSwapChain::SetVSyncMode(GPUVSyncMode mode, bool allow_present_throttle
 }
 
 std::unique_ptr<GPUSwapChain> MetalDevice::CreateSwapChain(const WindowInfo& wi, GPUVSyncMode vsync_mode,
-                                                           bool allow_present_throttle,
                                                            const ExclusiveFullscreenMode* exclusive_fullscreen_mode,
                                                            std::optional<bool> exclusive_fullscreen_control,
                                                            Error* error)
@@ -267,8 +264,7 @@ std::unique_ptr<GPUSwapChain> MetalDevice::CreateSwapChain(const WindowInfo& wi,
     [layer setDisplaySyncEnabled:vsync_mode == GPUVSyncMode::FIFO];
 
     // Clear it out ASAP.
-    std::unique_ptr<MetalSwapChain> swap_chain =
-      std::make_unique<MetalSwapChain>(wi_copy, vsync_mode, allow_present_throttle, layer);
+    std::unique_ptr<MetalSwapChain> swap_chain = std::make_unique<MetalSwapChain>(wi_copy, vsync_mode, layer);
     RenderBlankFrame(swap_chain.get());
     return swap_chain;
   }
@@ -296,7 +292,7 @@ void MetalDevice::RenderBlankFrame(MetalSwapChain* swap_chain)
 }
 
 bool MetalDevice::CreateDeviceAndMainSwapChain(std::string_view adapter, CreateFlags create_flags, const WindowInfo& wi,
-                                               GPUVSyncMode vsync_mode, bool allow_present_throttle,
+                                               GPUVSyncMode vsync_mode,
                                                const ExclusiveFullscreenMode* exclusive_fullscreen_mode,
                                                std::optional<bool> exclusive_fullscreen_control, Error* error)
 {
@@ -349,7 +345,7 @@ bool MetalDevice::CreateDeviceAndMainSwapChain(std::string_view adapter, CreateF
 
     if (!wi.IsSurfaceless())
     {
-      m_main_swap_chain = CreateSwapChain(wi, vsync_mode, allow_present_throttle, exclusive_fullscreen_mode,
+      m_main_swap_chain = CreateSwapChain(wi, vsync_mode, exclusive_fullscreen_mode,
                                           exclusive_fullscreen_control, error);
       if (!m_main_swap_chain)
       {
@@ -2589,19 +2585,16 @@ void MetalDevice::EndPresent(GPUSwapChain* swap_chain, bool explicit_present, u6
   EndAnyEncoding();
 
   Timer::Value current_time;
-  Timer::Value presented_time;
   if (present_time != 0 && (current_time = Timer::GetCurrentValue()) < present_time)
   {
     // Need to convert to mach absolute time. Time values should already be in nanoseconds.
     const u64 mach_time_nanoseconds = CocoaTools::ConvertMachTimeBaseToNanoseconds(mach_absolute_time());
     const double mach_present_time = static_cast<double>(mach_time_nanoseconds + (present_time - current_time)) / 1e+9;
     [m_render_cmdbuf presentDrawable:m_layer_drawable atTime:mach_present_time];
-    presented_time = present_time;
   }
   else
   {
     [m_render_cmdbuf presentDrawable:m_layer_drawable];
-    presented_time = 0;
   }
 
   DeferRelease(m_layer_drawable);
@@ -2609,8 +2602,6 @@ void MetalDevice::EndPresent(GPUSwapChain* swap_chain, bool explicit_present, u6
 
   SubmitCommandBuffer();
   TrimTexturePool();
-
-  swap_chain->UpdateLastFramePresentedTime(presented_time);
 }
 
 void MetalDevice::SubmitPresent(GPUSwapChain* swap_chainwel)

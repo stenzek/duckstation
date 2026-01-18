@@ -18,8 +18,7 @@
 class VulkanSwapChain final : public GPUSwapChain
 {
 public:
-  VulkanSwapChain(const WindowInfo& wi, GPUVSyncMode vsync_mode, bool allow_present_throttle,
-                  std::optional<bool> exclusive_fullscreen_control);
+  VulkanSwapChain(const WindowInfo& wi, GPUVSyncMode vsync_mode, std::optional<bool> exclusive_fullscreen_control);
   ~VulkanSwapChain() override;
 
   ALWAYS_INLINE VkSurfaceKHR GetSurface() const { return m_surface; }
@@ -56,7 +55,7 @@ public:
   bool HandleAcquireOrPresentError(VkResult& res, bool is_present_error);
 
   bool ResizeBuffers(u32 new_width, u32 new_height, Error* error) override;
-  bool SetVSyncMode(GPUVSyncMode mode, bool allow_present_throttle, Error* error) override;
+  bool SetVSyncMode(GPUVSyncMode mode, Error* error) override;
 
 private:
   // We don't actually need +1 semaphores, or, more than one really.

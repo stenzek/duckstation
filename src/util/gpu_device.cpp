@@ -232,8 +232,7 @@ size_t GPUFramebufferManagerBase::KeyHash::operator()(const Key& key) const
     return XXH32(&key, sizeof(key), 0x1337);
 }
 
-GPUSwapChain::GPUSwapChain(const WindowInfo& wi, GPUVSyncMode vsync_mode, bool allow_present_throttle)
-  : m_window_info(wi), m_vsync_mode(vsync_mode), m_allow_present_throttle(allow_present_throttle)
+GPUSwapChain::GPUSwapChain(const WindowInfo& wi, GPUVSyncMode vsync_mode) : m_window_info(wi), m_vsync_mode(vsync_mode)
 {
 }
 
@@ -284,47 +283,6 @@ GSVector4i GPUSwapChain::PreRotateClipRect(WindowInfo::PreRotation prerotation, 
 bool GPUSwapChain::IsExclusiveFullscreen() const
 {
   return false;
-}
-
-bool GPUSwapChain::ShouldSkipPresentingFrame(u64 present_time)
-{
-  // Only needed with FIFO. But since we're so fast, we allow it always.
-  if (!m_allow_present_throttle)
-    return false;
-
-  const float throttle_rate = (m_window_info.surface_refresh_rate > 0.0f) ? m_window_info.surface_refresh_rate : 60.0f;
-  const float throttle_period = 1.0f / throttle_rate;
-
-  const u64 wanted_time = (present_time == 0) ? Timer::GetCurrentValue() : present_time;
-  const double diff = Timer::ConvertValueToSeconds(wanted_time - m_last_frame_displayed_time);
-  if (diff < throttle_period)
-    return true;
-
-  return false;
-}
-
-void GPUSwapChain::UpdateLastFramePresentedTime(u64 presented_time)
-{
-  if (m_allow_present_throttle)
-    m_last_frame_displayed_time = (presented_time != 0) ? presented_time : Timer::GetCurrentValue();
-}
-
-void GPUSwapChain::ThrottlePresentation()
-{
-  const float throttle_rate = (m_window_info.surface_refresh_rate > 0.0f) ? m_window_info.surface_refresh_rate : 60.0f;
-
-  const u64 sleep_period = Timer::ConvertNanosecondsToValue(1e+9f / static_cast<double>(throttle_rate));
-  const u64 current_ts = Timer::GetCurrentValue();
-
-  // Allow it to fall behind/run ahead up to 2*period. Sleep isn't that precise, plus we need to
-  // allow time for the actual rendering.
-  const u64 max_variance = sleep_period * 2;
-  if (static_cast<u64>(std::abs(static_cast<s64>(current_ts - m_next_throttle_time))) > max_variance)
-    m_next_throttle_time = current_ts + sleep_period;
-  else
-    m_next_throttle_time += sleep_period;
-
-  Timer::SleepUntil(m_next_throttle_time, false);
 }
 
 GPUDevice::GPUDevice()
@@ -462,8 +420,7 @@ std::optional<GPUDevice::AdapterInfoList> GPUDevice::GetAdapterListForAPI(Render
 
 bool GPUDevice::Create(std::string_view adapter, CreateFlags create_flags, std::string_view shader_dump_path,
                        std::string_view shader_cache_path, u32 shader_cache_version, const WindowInfo& wi,
-                       GPUVSyncMode vsync, bool allow_present_throttle,
-                       const ExclusiveFullscreenMode* exclusive_fullscreen_mode,
+                       GPUVSyncMode vsync, const ExclusiveFullscreenMode* exclusive_fullscreen_mode,
                        std::optional<bool> exclusive_fullscreen_control, Error* error)
 {
   m_debug_device = HasCreateFlag(create_flags, CreateFlags::EnableDebugDevice);
@@ -504,7 +461,7 @@ bool GPUDevice::Create(std::string_view adapter, CreateFlags create_flags, std::
 #undef FLAG_MSG
   }
 
-  if (!CreateDeviceAndMainSwapChain(adapter, create_flags, wi, vsync, allow_present_throttle, exclusive_fullscreen_mode,
+  if (!CreateDeviceAndMainSwapChain(adapter, create_flags, wi, vsync, exclusive_fullscreen_mode,
                                     exclusive_fullscreen_control, error))
   {
     if (error && !error->IsValid())
@@ -543,14 +500,13 @@ bool GPUDevice::SwitchToSurfacelessRendering(Error* error)
   return true;
 }
 
-bool GPUDevice::RecreateMainSwapChain(const WindowInfo& wi, GPUVSyncMode vsync_mode, bool allow_present_throttle,
+bool GPUDevice::RecreateMainSwapChain(const WindowInfo& wi, GPUVSyncMode vsync_mode,
                                       const ExclusiveFullscreenMode* exclusive_fullscreen_mode,
                                       std::optional<bool> exclusive_fullscreen_control, Error* error)
 {
 
   m_main_swap_chain.reset();
-  m_main_swap_chain = CreateSwapChain(wi, vsync_mode, allow_present_throttle, exclusive_fullscreen_mode,
-                                      exclusive_fullscreen_control, error);
+  m_main_swap_chain = CreateSwapChain(wi, vsync_mode, exclusive_fullscreen_mode, exclusive_fullscreen_control, error);
   return static_cast<bool>(m_main_swap_chain);
 }
 

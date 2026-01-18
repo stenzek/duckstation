@@ -72,9 +72,9 @@ static const char* PresentModeToString(VkPresentModeKHR mode)
   }
 }
 
-VulkanSwapChain::VulkanSwapChain(const WindowInfo& wi, GPUVSyncMode vsync_mode, bool allow_present_throttle,
+VulkanSwapChain::VulkanSwapChain(const WindowInfo& wi, GPUVSyncMode vsync_mode,
                                  std::optional<bool> exclusive_fullscreen_control)
-  : GPUSwapChain(wi, vsync_mode, allow_present_throttle), m_exclusive_fullscreen_control(exclusive_fullscreen_control)
+  : GPUSwapChain(wi, vsync_mode), m_exclusive_fullscreen_control(exclusive_fullscreen_control)
 {
 }
 
@@ -902,10 +902,8 @@ bool VulkanSwapChain::RecreateSwapChain(VulkanDevice& dev, Error* error)
   return true;
 }
 
-bool VulkanSwapChain::SetVSyncMode(GPUVSyncMode mode, bool allow_present_throttle, Error* error)
+bool VulkanSwapChain::SetVSyncMode(GPUVSyncMode mode, Error* error)
 {
-  m_allow_present_throttle = allow_present_throttle;
-
   VulkanDevice& dev = VulkanDevice::GetInstance();
   const std::optional<VkPresentModeKHR> new_present_mode =
     SelectPresentMode(dev.GetVulkanPhysicalDevice(), mode, error);

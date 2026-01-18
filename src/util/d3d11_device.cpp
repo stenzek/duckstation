@@ -59,7 +59,7 @@ D3D11Device::~D3D11Device()
 }
 
 bool D3D11Device::CreateDeviceAndMainSwapChain(std::string_view adapter, CreateFlags create_flags, const WindowInfo& wi,
-                                               GPUVSyncMode vsync_mode, bool allow_present_throttle,
+                                               GPUVSyncMode vsync_mode,
                                                const ExclusiveFullscreenMode* exclusive_fullscreen_mode,
                                                std::optional<bool> exclusive_fullscreen_control, Error* error)
 {
@@ -133,8 +133,7 @@ bool D3D11Device::CreateDeviceAndMainSwapChain(std::string_view adapter, CreateF
 
   if (!wi.IsSurfaceless())
   {
-    m_main_swap_chain = CreateSwapChain(wi, vsync_mode, allow_present_throttle, exclusive_fullscreen_mode,
-                                        exclusive_fullscreen_control, error);
+    m_main_swap_chain = CreateSwapChain(wi, vsync_mode, exclusive_fullscreen_mode, exclusive_fullscreen_control, error);
     if (!m_main_swap_chain)
       return false;
   }
@@ -210,9 +209,9 @@ void D3D11Device::SetFeatures(CreateFlags create_flags)
                               SupportsTextureFormat(GPUTextureFormat::BC7));
 }
 
-D3D11SwapChain::D3D11SwapChain(const WindowInfo& wi, GPUVSyncMode vsync_mode, bool allow_present_throttle,
+D3D11SwapChain::D3D11SwapChain(const WindowInfo& wi, GPUVSyncMode vsync_mode,
                                const GPUDevice::ExclusiveFullscreenMode* fullscreen_mode)
-  : GPUSwapChain(wi, vsync_mode, allow_present_throttle)
+  : GPUSwapChain(wi, vsync_mode)
 {
   if (fullscreen_mode)
     InitializeExclusiveFullscreenMode(fullscreen_mode);
@@ -431,10 +430,8 @@ bool D3D11SwapChain::ResizeBuffers(u32 new_width, u32 new_height, Error* error)
   return CreateRTV(error);
 }
 
-bool D3D11SwapChain::SetVSyncMode(GPUVSyncMode mode, bool allow_present_throttle, Error* error)
+bool D3D11SwapChain::SetVSyncMode(GPUVSyncMode mode, Error* error)
 {
-  m_allow_present_throttle = allow_present_throttle;
-
   // Using mailbox-style no-allow-tearing causes tearing in exclusive fullscreen.
   if (mode == GPUVSyncMode::Mailbox && IsExclusiveFullscreen())
   {
@@ -463,7 +460,6 @@ bool D3D11SwapChain::IsExclusiveFullscreen() const
 }
 
 std::unique_ptr<GPUSwapChain> D3D11Device::CreateSwapChain(const WindowInfo& wi, GPUVSyncMode vsync_mode,
-                                                           bool allow_present_throttle,
                                                            const ExclusiveFullscreenMode* exclusive_fullscreen_mode,
                                                            std::optional<bool> exclusive_fullscreen_control,
                                                            Error* error)
@@ -475,7 +471,7 @@ std::unique_ptr<GPUSwapChain> D3D11Device::CreateSwapChain(const WindowInfo& wi,
     return ret;
   }
 
-  ret = std::make_unique<D3D11SwapChain>(wi, vsync_mode, allow_present_throttle, exclusive_fullscreen_mode);
+  ret = std::make_unique<D3D11SwapChain>(wi, vsync_mode, exclusive_fullscreen_mode);
   if (ret->CreateSwapChain(error) && ret->CreateRTV(error))
   {
     // Render a frame as soon as possible to clear out whatever was previously being displayed.
@@ -733,7 +729,6 @@ void D3D11Device::EndPresent(GPUSwapChain* swap_chain, bool explicit_present, u6
   const UINT flags =
     (SC->GetVSyncMode() == GPUVSyncMode::Disabled && SC->IsUsingAllowTearing()) ? DXGI_PRESENT_ALLOW_TEARING : 0;
   SC->GetSwapChain()->Present(sync_interval, flags);
-  SC->UpdateLastFramePresentedTime();
 
   if (m_gpu_timing_enabled)
     StartTimestampQuery();

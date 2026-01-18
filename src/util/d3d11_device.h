@@ -43,7 +43,6 @@ public:
   void WaitForGPUIdle() override;
 
   std::unique_ptr<GPUSwapChain> CreateSwapChain(const WindowInfo& wi, GPUVSyncMode vsync_mode,
-                                                bool allow_present_throttle,
                                                 const ExclusiveFullscreenMode* exclusive_fullscreen_mode,
                                                 std::optional<bool> exclusive_fullscreen_control,
                                                 Error* error) override;
@@ -121,8 +120,7 @@ public:
 
 protected:
   bool CreateDeviceAndMainSwapChain(std::string_view adapter, CreateFlags create_flags, const WindowInfo& wi,
-                                    GPUVSyncMode vsync_mode, bool allow_present_throttle,
-                                    const ExclusiveFullscreenMode* exclusive_fullscreen_mode,
+                                    GPUVSyncMode vsync_mode, const ExclusiveFullscreenMode* exclusive_fullscreen_mode,
                                     std::optional<bool> exclusive_fullscreen_control, Error* error) override;
   void DestroyDevice() override;
 
@@ -223,7 +221,7 @@ public:
 
   friend D3D11Device;
 
-  D3D11SwapChain(const WindowInfo& wi, GPUVSyncMode vsync_mode, bool allow_present_throttle,
+  D3D11SwapChain(const WindowInfo& wi, GPUVSyncMode vsync_mode,
                  const GPUDevice::ExclusiveFullscreenMode* fullscreen_mode);
   ~D3D11SwapChain() override;
 
@@ -233,7 +231,8 @@ public:
   ALWAYS_INLINE bool IsUsingAllowTearing() const { return m_using_allow_tearing; }
 
   bool ResizeBuffers(u32 new_width, u32 new_height, Error* error) override;
-  bool SetVSyncMode(GPUVSyncMode mode, bool allow_present_throttle, Error* error) override;
+  bool SetVSyncMode(GPUVSyncMode mode, Error* error) override;
+
   bool IsExclusiveFullscreen() const override;
 
 private:

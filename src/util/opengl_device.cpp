@@ -268,7 +268,6 @@ static void GLAD_API_PTR GLDebugCallback(GLenum source, GLenum type, GLuint id, 
 
 bool OpenGLDevice::CreateDeviceAndMainSwapChain(std::string_view adapter, CreateFlags create_flags,
                                                 const WindowInfo& wi, GPUVSyncMode vsync_mode,
-                                                bool allow_present_throttle,
                                                 const ExclusiveFullscreenMode* exclusive_fullscreen_mode,
                                                 std::optional<bool> exclusive_fullscreen_control, Error* error)
 {
@@ -315,8 +314,7 @@ bool OpenGLDevice::CreateDeviceAndMainSwapChain(std::string_view adapter, Create
   {
     // OpenGL does not support mailbox.
     m_main_swap_chain = std::make_unique<OpenGLSwapChain>(
-      wi_copy, (vsync_mode == GPUVSyncMode::Mailbox) ? GPUVSyncMode::FIFO : vsync_mode, allow_present_throttle,
-      wi_surface);
+      wi_copy, (vsync_mode == GPUVSyncMode::Mailbox) ? GPUVSyncMode::FIFO : vsync_mode, wi_surface);
 
     Error swap_interval_error;
     if (!OpenGLSwapChain::SetSwapInterval(m_gl_context.get(), m_main_swap_chain->GetVSyncMode(), &swap_interval_error))
@@ -514,9 +512,9 @@ void OpenGLDevice::DestroyDevice()
   m_gl_context.reset();
 }
 
-OpenGLSwapChain::OpenGLSwapChain(const WindowInfo& wi, GPUVSyncMode vsync_mode, bool allow_present_throttle,
+OpenGLSwapChain::OpenGLSwapChain(const WindowInfo& wi, GPUVSyncMode vsync_mode,
                                  OpenGLContext::SurfaceHandle surface_handle)
-  : GPUSwapChain(wi, vsync_mode, allow_present_throttle), m_surface_handle(surface_handle)
+  : GPUSwapChain(wi, vsync_mode), m_surface_handle(surface_handle)
 {
 }
 
@@ -537,11 +535,10 @@ bool OpenGLSwapChain::ResizeBuffers(u32 new_width, u32 new_height, Error* error)
   return true;
 }
 
-bool OpenGLSwapChain::SetVSyncMode(GPUVSyncMode mode, bool allow_present_throttle, Error* error)
+bool OpenGLSwapChain::SetVSyncMode(GPUVSyncMode mode, Error* error)
 {
   // OpenGL does not support Mailbox.
   mode = (mode == GPUVSyncMode::Mailbox) ? GPUVSyncMode::FIFO : mode;
-  m_allow_present_throttle = allow_present_throttle;
 
   if (m_vsync_mode == mode)
     return true;
@@ -579,7 +576,6 @@ bool OpenGLSwapChain::SetSwapInterval(OpenGLContext* ctx, GPUVSyncMode mode, Err
 }
 
 std::unique_ptr<GPUSwapChain> OpenGLDevice::CreateSwapChain(const WindowInfo& wi, GPUVSyncMode vsync_mode,
-                                                            bool allow_present_throttle,
                                                             const ExclusiveFullscreenMode* exclusive_fullscreen_mode,
                                                             std::optional<bool> exclusive_fullscreen_control,
                                                             Error* error)
@@ -606,7 +602,7 @@ std::unique_ptr<GPUSwapChain> OpenGLDevice::CreateSwapChain(const WindowInfo& wi
   if (m_main_swap_chain)
     m_gl_context->MakeCurrent(static_cast<OpenGLSwapChain*>(m_main_swap_chain.get())->GetSurfaceHandle());
 
-  return std::make_unique<OpenGLSwapChain>(wi_copy, vsync_mode, allow_present_throttle, surface_handle);
+  return std::make_unique<OpenGLSwapChain>(wi_copy, vsync_mode, surface_handle);
 }
 
 bool OpenGLDevice::SwitchToSurfacelessRendering(Error* error)
@@ -802,7 +798,6 @@ void OpenGLDevice::EndPresent(GPUSwapChain* swap_chain, bool explicit_present, u
   }
 
   m_gl_context->SwapBuffers();
-  swap_chain->UpdateLastFramePresentedTime();
 
   if (swap_chain == m_main_swap_chain.get() && m_gpu_timing_enabled)
     StartTimestampQuery();

@@ -38,7 +38,7 @@ void FrameDone();
 
 /// Returns true if vsync should be used.
 GPUVSyncMode GetEffectiveVSyncMode();
-bool ShouldAllowPresentThrottle();
+PresentSkipMode GetEffectivePresentSkipMode();
 
 /// Retrieves timing information for frame presentation on the GPU thread.
 /// Returns false if this frame should not be presented or the command buffer flushed.
