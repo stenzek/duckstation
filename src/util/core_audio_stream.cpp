@@ -137,6 +137,7 @@ bool CoreAudioStream::Initialize(AudioBackend backend, u32 sample_rate, const Au
 void CoreAudioStream::UpdateParameters(const AudioStreamParameters& params)
 {
   constexpr auto copy_stretch_params = [](AudioStreamParameters& dest, const AudioStreamParameters& src) {
+    dest.stretch_mode = src.stretch_mode;
     dest.stretch_sequence_length_ms = src.stretch_sequence_length_ms;
     dest.stretch_seekwindow_ms = src.stretch_seekwindow_ms;
     dest.stretch_overlap_ms = src.stretch_overlap_ms;
