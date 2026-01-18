@@ -42,7 +42,7 @@ public:
   void destroy();
 
 Q_SIGNALS:
-  void windowResizedEvent(int width, int height, float scale);
+  void windowResizedEvent(int width, int height, float scale, float refresh_rate);
   void windowRestoredEvent();
   void windowKeyEvent(int key_code, bool pressed);
   void windowTextEntered(const QString& text);

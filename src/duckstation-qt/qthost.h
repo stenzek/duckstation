@@ -192,7 +192,7 @@ private:
   void stopInThread();
   void onDisplayWindowMouseButtonEvent(int button, bool pressed);
   void onDisplayWindowMouseWheelEvent(float dx, float dy);
-  void onDisplayWindowResized(int width, int height, float scale);
+  void onDisplayWindowResized(int width, int height, float scale, float refresh_rate);
   void onDisplayWindowKeyEvent(int key, bool pressed);
   void onDisplayWindowTextEntered(const QString& text);
   void doBackgroundControllerPoll();

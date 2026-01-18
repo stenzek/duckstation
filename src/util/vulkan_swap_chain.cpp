@@ -838,9 +838,8 @@ void VulkanSwapChain::ResetImageAcquireResult()
   m_image_acquire_result.reset();
 }
 
-bool VulkanSwapChain::ResizeBuffers(u32 new_width, u32 new_height, float new_scale, Error* error)
+bool VulkanSwapChain::ResizeBuffers(u32 new_width, u32 new_height, Error* error)
 {
-  m_window_info.surface_scale = new_scale;
   if (m_window_info.surface_width == new_width && m_window_info.surface_height == new_height)
     return true;
 

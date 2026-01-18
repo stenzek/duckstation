@@ -261,7 +261,7 @@ public:
 
   ALWAYS_INLINE OpenGLContext::SurfaceHandle GetSurfaceHandle() const { return m_surface_handle; }
 
-  bool ResizeBuffers(u32 new_width, u32 new_height, float new_scale, Error* error) override;
+  bool ResizeBuffers(u32 new_width, u32 new_height, Error* error) override;
   bool SetVSyncMode(GPUVSyncMode mode, bool allow_present_throttle, Error* error) override;
 
   static bool SetSwapInterval(OpenGLContext* ctx, GPUVSyncMode mode, Error* error);

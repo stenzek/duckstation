@@ -185,15 +185,12 @@ void MetalSwapChain::Destroy(bool wait_for_gpu)
   });
 }
 
-bool MetalSwapChain::ResizeBuffers(u32 new_width, u32 new_height, float new_scale, Error* error)
+bool MetalSwapChain::ResizeBuffers(u32 new_width, u32 new_height, Error* error)
 {
   @autoreleasepool
   {
-    m_window_info.surface_scale = new_scale;
     if (new_width == m_window_info.surface_width && new_height == m_window_info.surface_height)
-    {
       return true;
-    }
 
     m_window_info.surface_width = new_width;
     m_window_info.surface_height = new_height;

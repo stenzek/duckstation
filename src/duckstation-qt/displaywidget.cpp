@@ -71,6 +71,7 @@ void DisplayWidget::checkForSizeChange()
   if (!m_window_info.has_value())
     return;
 
+  // TODO: Handle refresh rate changes
   // avoid spamming resize events for paint events (sent on move on windows)
   const u16 prev_width = m_window_info->surface_width;
   const u16 prev_height = m_window_info->surface_height;
@@ -81,7 +82,8 @@ void DisplayWidget::checkForSizeChange()
   {
     DEV_LOG("Display widget resized to {}x{} (Qt {}x{}) DPR={}", m_window_info->surface_width,
             m_window_info->surface_height, width(), height(), m_window_info->surface_scale);
-    emit windowResizedEvent(m_window_info->surface_width, m_window_info->surface_height, m_window_info->surface_scale);
+    emit windowResizedEvent(m_window_info->surface_width, m_window_info->surface_height, m_window_info->surface_scale,
+                            m_window_info->surface_refresh_rate);
   }
 
   updateCenterPos();

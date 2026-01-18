@@ -297,7 +297,6 @@ bool GPUSwapChain::ShouldSkipPresentingFrame(u64 present_time)
 
   const u64 wanted_time = (present_time == 0) ? Timer::GetCurrentValue() : present_time;
   const double diff = Timer::ConvertValueToSeconds(wanted_time - m_last_frame_displayed_time);
-  m_last_frame_displayed_time = present_time;
   if (diff < throttle_period)
     return true;
 

@@ -963,9 +963,9 @@ void CoreThread::onDisplayWindowMouseWheelEvent(float dx, float dy)
     InputManager::UpdatePointerRelativeDelta(0, InputPointerAxis::WheelY, dy);
 }
 
-void CoreThread::onDisplayWindowResized(int width, int height, float scale)
+void CoreThread::onDisplayWindowResized(int width, int height, float scale, float refresh_rate)
 {
-  GPUThread::ResizeDisplayWindow(width, height, scale);
+  GPUThread::ResizeDisplayWindow(width, height, scale, refresh_rate);
 }
 
 void CoreThread::redrawDisplayWindow()

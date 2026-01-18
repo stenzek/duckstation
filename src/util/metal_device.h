@@ -218,7 +218,7 @@ public:
 
   CAMetalLayer* GetLayer() const { return m_layer; }
 
-  bool ResizeBuffers(u32 new_width, u32 new_height, float new_scale, Error* error) override;
+  bool ResizeBuffers(u32 new_width, u32 new_height, Error* error) override;
   bool SetVSyncMode(GPUVSyncMode mode, bool allow_present_throttle, Error* error) override;
 
 private:

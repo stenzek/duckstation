@@ -74,7 +74,7 @@ static bool SleepGPUThread(bool allow_sleep);
 
 static bool CreateDeviceOnThread(RenderAPI api, bool fullscreen, bool preserve_fsui_state, Error* error);
 static void DestroyDeviceOnThread(bool preserve_fsui_state);
-static void ResizeDisplayWindowOnThread(u32 width, u32 height, float scale);
+static void ResizeDisplayWindowOnThread(u32 width, u32 height, float scale, float refresh_rate);
 static void UpdateDisplayWindowOnThread(bool fullscreen, bool allow_exclusive_fullscreen);
 static void DisplayWindowResizedOnThread();
 static bool CheckExclusiveFullscreenOnThread();
@@ -411,7 +411,6 @@ bool GPUThread::SleepGPUThread(bool allow_sleep)
 void GPUThread::Internal::GPUThreadEntryPoint()
 {
   s_state.gpu_thread = Threading::ThreadHandle::GetForCallingThread();
-  std::atomic_thread_fence(std::memory_order_release);
 
   // Take a local copy of the FIFO, that way it's not ping-ponging between the threads.
   u8* const command_fifo_data = s_state.command_fifo_data.get();
@@ -725,6 +724,8 @@ bool GPUThread::CreateDeviceOnThread(RenderAPI api, bool fullscreen, bool preser
     s_state.render_window_info = swap_chain->GetWindowInfo();
   else
     s_state.render_window_info = WindowInfo();
+  s_state.render_window_info.surface_width = std::max<u16>(s_state.render_window_info.surface_width, 1);
+  s_state.render_window_info.surface_height = std::max<u16>(s_state.render_window_info.surface_height, 1);
 
   std::atomic_thread_fence(std::memory_order_release);
   UpdateRunIdle();
@@ -1263,27 +1264,39 @@ bool GPUThread::IsUsingThread()
   return s_state.use_gpu_thread;
 }
 
-void GPUThread::ResizeDisplayWindow(s32 width, s32 height, float scale)
+void GPUThread::ResizeDisplayWindow(s32 width, s32 height, float scale, float refresh_rate)
 {
-  RunOnThread([width, height, scale]() { ResizeDisplayWindowOnThread(width, height, scale); });
+  s_state.render_window_info.surface_width =
+    static_cast<u16>(std::clamp<s32>(width, 1, std::numeric_limits<u16>::max()));
+  s_state.render_window_info.surface_height =
+    static_cast<u16>(std::clamp<s32>(height, 1, std::numeric_limits<u16>::max()));
+  s_state.render_window_info.surface_scale = scale;
+  s_state.render_window_info.surface_refresh_rate = refresh_rate;
+  RunOnThread(
+    [width, height, scale, refresh_rate]() { ResizeDisplayWindowOnThread(width, height, scale, refresh_rate); });
+  System::DisplayWindowResized();
 }
 
-void GPUThread::ResizeDisplayWindowOnThread(u32 width, u32 height, float scale)
+void GPUThread::ResizeDisplayWindowOnThread(u32 width, u32 height, float scale, float refresh_rate)
 {
   // We should _not_ be getting this without a device, since we should have shut down.
   if (!g_gpu_device || !g_gpu_device->HasMainSwapChain())
     return;
 
-  DEV_LOG("Display window resized to {}x{}", width, height);
+  DEV_LOG("Display window resized to {}x{} @ {}x/{}hz", width, height, scale, refresh_rate);
 
   Error error;
-  if (!g_gpu_device->GetMainSwapChain()->ResizeBuffers(width, height, scale, &error))
+  GPUSwapChain* const swap_chain = g_gpu_device->GetMainSwapChain();
+  if (!swap_chain->ResizeBuffers(width, height, &error))
   {
     // ick, CPU thread read, but this is unlikely to happen in the first place
     ERROR_LOG("Failed to resize main swap chain: {}", error.GetDescription());
     UpdateDisplayWindowOnThread(s_state.requested_fullscreen, true);
     return;
   }
+
+  swap_chain->SetScale(scale);
+  swap_chain->SetRefreshRate(refresh_rate);
 
   DisplayWindowResizedOnThread();
 }
@@ -1394,14 +1407,8 @@ bool GPUThread::CheckExclusiveFullscreenOnThread()
 
 void GPUThread::DisplayWindowResizedOnThread()
 {
-  const GPUSwapChain* swap_chain = g_gpu_device->GetMainSwapChain();
-  if (swap_chain)
-    s_state.render_window_info = swap_chain->GetWindowInfo();
-  else
-    s_state.render_window_info = WindowInfo();
-  std::atomic_thread_fence(std::memory_order_release);
-
   // surfaceless is usually temporary, so just ignore it
+  const GPUSwapChain* const swap_chain = g_gpu_device->GetMainSwapChain();
   if (!swap_chain)
     return;
 
@@ -1411,25 +1418,18 @@ void GPUThread::DisplayWindowResizedOnThread()
   ImGuiManager::WindowResized(swap_chain->GetFormat(), f_width, f_height);
   InputManager::SetDisplayWindowSize(f_width, f_height);
 
-  if (s_state.gpu_backend)
+  // If we're paused, re-present the current frame at the new window size.
+  if (s_state.gpu_backend && IsSystemPaused())
   {
-    Host::RunOnCoreThread(&System::DisplayWindowResized);
-
-    // If we're paused, re-present the current frame at the new window size.
-    if (IsSystemPaused())
-    {
-      // Hackity hack, on some systems, presenting a single frame isn't enough to actually get it
-      // displayed. Two seems to be good enough. Maybe something to do with direct scanout.
-      Internal::PresentFrameAndRestoreContext();
-      Internal::PresentFrameAndRestoreContext();
-    }
+    // Hackity hack, on some systems, presenting a single frame isn't enough to actually get it
+    // displayed. Two seems to be good enough. Maybe something to do with direct scanout.
+    Internal::PresentFrameAndRestoreContext();
+    Internal::PresentFrameAndRestoreContext();
   }
 }
 
 const WindowInfo& GPUThread::GetRenderWindowInfo()
 {
-  // This is infrequently used, so we can get away with a full barrier.
-  std::atomic_thread_fence(std::memory_order_acquire);
   return s_state.render_window_info;
 }
 

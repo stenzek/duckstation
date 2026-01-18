@@ -466,6 +466,9 @@ public:
   ALWAYS_INLINE u32 GetPostRotatedWidth() const { return m_window_info.GetPostRotatedWidth(); }
   ALWAYS_INLINE u32 GetPostRotatedHeight() const { return m_window_info.GetPostRotatedHeight(); }
   ALWAYS_INLINE float GetScale() const { return m_window_info.surface_scale; }
+  ALWAYS_INLINE float GetRefreshRate() const { return m_window_info.surface_refresh_rate; }
+  ALWAYS_INLINE void SetScale(float scale) { m_window_info.surface_scale = scale; }
+  ALWAYS_INLINE void SetRefreshRate(float refresh_rate) { m_window_info.surface_refresh_rate = refresh_rate; }
   ALWAYS_INLINE WindowInfo::PreRotation GetPreRotation() const { return m_window_info.surface_prerotation; }
   ALWAYS_INLINE GPUTextureFormat GetFormat() const { return m_window_info.surface_format; }
   ALWAYS_INLINE GSVector2i GetSizeVec() const
@@ -481,7 +484,7 @@ public:
   ALWAYS_INLINE bool IsVSyncModeBlocking() const { return (m_vsync_mode == GPUVSyncMode::FIFO); }
   ALWAYS_INLINE bool IsPresentThrottleAllowed() const { return m_allow_present_throttle; }
 
-  virtual bool ResizeBuffers(u32 new_width, u32 new_height, float new_scale, Error* error) = 0;
+  virtual bool ResizeBuffers(u32 new_width, u32 new_height, Error* error) = 0;
   virtual bool SetVSyncMode(GPUVSyncMode mode, bool allow_present_throttle, Error* error) = 0;
 
   /// Returns true if exclusive fullscreen is currently active on this swap chain.

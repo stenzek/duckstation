@@ -113,6 +113,7 @@ struct SDLHostState
 
   SDL_Window* sdl_window = nullptr;
   float sdl_window_scale = 0.0f;
+  float sdl_window_refresh_rate = 0.0f;
   WindowInfo::PreRotation force_prerotation = WindowInfo::PreRotation::Identity;
 
   Threading::Thread core_thread;
@@ -496,6 +497,11 @@ std::optional<WindowInfo> MiniHost::TranslateSDLWindowInfo(SDL_Window* win, Erro
   {
     INFO_LOG("Display mode refresh rate: {} hz", dispmode->refresh_rate);
     wi.surface_refresh_rate = dispmode->refresh_rate;
+    s_state.sdl_window_refresh_rate = dispmode->refresh_rate;
+  }
+  else
+  {
+    s_state.sdl_window_refresh_rate = 0.0f;
   }
 
   // SDL's opengl window flag tends to make a mess of pixel formats...
@@ -748,10 +754,11 @@ void MiniHost::ProcessSDLEvent(const SDL_Event* ev)
   {
     case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED:
     {
-      Host::RunOnCoreThread(
-        [window_width = ev->window.data1, window_height = ev->window.data2, window_scale = s_state.sdl_window_scale]() {
-          GPUThread::ResizeDisplayWindow(window_width, window_height, window_scale);
-        });
+      Host::RunOnCoreThread([window_width = ev->window.data1, window_height = ev->window.data2,
+                             window_scale = s_state.sdl_window_scale,
+                             window_refresh_rate = s_state.sdl_window_refresh_rate]() {
+        GPUThread::ResizeDisplayWindow(window_width, window_height, window_scale, window_refresh_rate);
+      });
     }
     break;
 
@@ -765,8 +772,9 @@ void MiniHost::ProcessSDLEvent(const SDL_Event* ev)
 
         int window_width = 1, window_height = 1;
         SDL_GetWindowSizeInPixels(s_state.sdl_window, &window_width, &window_height);
-        Host::RunOnCoreThread([window_width, window_height, window_scale = s_state.sdl_window_scale]() {
-          GPUThread::ResizeDisplayWindow(window_width, window_height, window_scale);
+        Host::RunOnCoreThread([window_width, window_height, window_scale = s_state.sdl_window_scale,
+                               window_refresh_rate = s_state.sdl_window_refresh_rate]() {
+          GPUThread::ResizeDisplayWindow(window_width, window_height, window_scale, window_refresh_rate);
         });
       }
     }

@@ -413,9 +413,8 @@ bool D3D11SwapChain::CreateRTV(Error* error)
   return true;
 }
 
-bool D3D11SwapChain::ResizeBuffers(u32 new_width, u32 new_height, float new_scale, Error* error)
+bool D3D11SwapChain::ResizeBuffers(u32 new_width, u32 new_height, Error* error)
 {
-  m_window_info.surface_scale = new_scale;
   if (m_window_info.surface_width == new_width && m_window_info.surface_height == new_height)
     return true;
 

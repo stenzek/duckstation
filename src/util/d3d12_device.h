@@ -390,7 +390,7 @@ public:
   {
     m_current_swap_chain_buffer = ((m_current_swap_chain_buffer + 1) % static_cast<u32>(m_swap_chain_buffers.size()));
   }
-  bool ResizeBuffers(u32 new_width, u32 new_height, float new_scale, Error* error) override;
+  bool ResizeBuffers(u32 new_width, u32 new_height, Error* error) override;
   bool SetVSyncMode(GPUVSyncMode mode, bool allow_present_throttle, Error* error) override;
   bool IsExclusiveFullscreen() const override;
 

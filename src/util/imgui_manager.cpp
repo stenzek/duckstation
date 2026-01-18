@@ -1942,12 +1942,14 @@ void ImGuiManager::ProcessAuxiliaryRenderWindowInputEvent(Host::AuxiliaryRenderW
     case Host::AuxiliaryRenderWindowEvent::Resized:
     {
       Error error;
-      if (!state->swap_chain->ResizeBuffers(param1.uint_param, param2.uint_param, param3.float_param, &error))
+      if (!state->swap_chain->ResizeBuffers(param1.uint_param, param2.uint_param, &error))
       {
         ERROR_LOG("Failed to resize aux window swap chain to {}x{}: {}", param1.uint_param, param2.uint_param,
                   error.GetDescription());
         return;
       }
+
+      state->swap_chain->SetScale(param3.float_param);
 
       state->imgui_context->Viewports[0]->Size = state->imgui_context->IO.DisplaySize =
         ImVec2(static_cast<float>(param1.uint_param), static_cast<float>(param2.uint_param));
