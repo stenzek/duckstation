@@ -3798,22 +3798,27 @@ void System::UpdateSpeedLimiterState()
 #ifdef __APPLE__
   // To get any resemblence of consistent frame times on MacOS, we need to tell the scheduler how often we need to run.
   // Assume a maximum of 7ms for running a frame. It'll be much lower than that, Apple Silicon is fast.
-  constexpr u64 MAX_FRAME_TIME_NS = 7000000;
+  constexpr u64 TYPICAL_FRAME_TIME_NS = 7000000;
+  constexpr u64 MIN_FRAME_TIME_NS = 1000000;
   static u64 last_scheduler_period = 0;
   const u64 new_scheduler_period = s_state.optimal_frame_pacing ? s_state.frame_period : 0;
   if (new_scheduler_period != last_scheduler_period)
   {
+    const u64 typical_time =
+      std::min(std::max<u64>((new_scheduler_period / 1000000) * 1000000, MIN_FRAME_TIME_NS), TYPICAL_FRAME_TIME_NS);
     if (s_state.core_thread_handle)
     {
-      s_state.core_thread_handle.SetTimeConstraints(s_state.optimal_frame_pacing, new_scheduler_period,
-                                                    MAX_FRAME_TIME_NS, new_scheduler_period);
+      s_state.core_thread_handle.SetTimeConstraints(s_state.optimal_frame_pacing, new_scheduler_period, typical_time,
+                                                    new_scheduler_period);
     }
     const Threading::ThreadHandle& gpu_thread = GPUThread::Internal::GetThreadHandle();
     if (gpu_thread)
     {
-      gpu_thread.SetTimeConstraints(s_state.optimal_frame_pacing, new_scheduler_period, MAX_FRAME_TIME_NS,
+      gpu_thread.SetTimeConstraints(s_state.optimal_frame_pacing, new_scheduler_period, typical_time,
                                     new_scheduler_period);
     }
+
+    last_scheduler_period = new_scheduler_period;
   }
 #endif
 }
