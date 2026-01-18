@@ -288,7 +288,7 @@ bool DisplayWidget::event(QEvent* event)
         const QPoint mouse_pos = static_cast<QMouseEvent*>(event)->pos();
         const float scaled_x = static_cast<float>(mouse_pos.x()) * surface_scale;
         const float scaled_y = static_cast<float>(mouse_pos.y()) * surface_scale;
-        InputManager::UpdatePointerAbsolutePosition(0, scaled_x, scaled_y);
+        emit windowMouseMoveAbsoluteEvent(scaled_x, scaled_y);
       }
       else
       {
@@ -314,13 +314,8 @@ bool DisplayWidget::event(QEvent* event)
         }
 #endif
 
-        if (!InputManager::IsUsingRawInput())
-        {
-          if (dx != 0.0f)
-            InputManager::UpdatePointerRelativeDelta(0, InputPointerAxis::X, dx);
-          if (dy != 0.0f)
-            InputManager::UpdatePointerRelativeDelta(0, InputPointerAxis::Y, dy);
-        }
+        if ((dx != 0.0f || dy != 0.0f) && !InputManager::IsUsingRawInput())
+          emit windowMouseMoveRelativeEvent(dx, dy);
       }
 
       return true;

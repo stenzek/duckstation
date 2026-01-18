@@ -46,6 +46,8 @@ Q_SIGNALS:
   void windowRestoredEvent();
   void windowKeyEvent(int key_code, bool pressed);
   void windowTextEntered(const QString& text);
+  void windowMouseMoveAbsoluteEvent(float x, float y);
+  void windowMouseMoveRelativeEvent(float dx, float dy);
   void windowMouseButtonEvent(int button, bool pressed);
   void windowMouseWheelEvent(float dx, float dy);
 

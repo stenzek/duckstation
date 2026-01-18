@@ -190,6 +190,8 @@ protected:
 private:
   int getBackgroundControllerPollInterval() const;
   void stopInThread();
+  void onDisplayWindowMouseMoveAbsoluteEvent(float x, float y);
+  void onDisplayWindowMouseMoveRelativeEvent(float dx, float dy);
   void onDisplayWindowMouseButtonEvent(int button, bool pressed);
   void onDisplayWindowMouseWheelEvent(float dx, float dy);
   void onDisplayWindowResized(int width, int height, float scale, float refresh_rate);

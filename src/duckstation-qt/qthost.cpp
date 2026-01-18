@@ -944,6 +944,19 @@ void CoreThread::onDisplayWindowTextEntered(const QString& text)
   ImGuiManager::AddTextInput(text.toStdString());
 }
 
+void CoreThread::onDisplayWindowMouseMoveAbsoluteEvent(float x, float y)
+{
+  InputManager::UpdatePointerAbsolutePosition(0, x, y);
+}
+
+void CoreThread::onDisplayWindowMouseMoveRelativeEvent(float dx, float dy)
+{
+  if (dx != 0.0f)
+    InputManager::UpdatePointerRelativeDelta(0, InputPointerAxis::X, dx);
+  if (dy != 0.0f)
+    InputManager::UpdatePointerRelativeDelta(0, InputPointerAxis::Y, dy);
+}
+
 void CoreThread::onDisplayWindowMouseButtonEvent(int button, bool pressed)
 {
   DebugAssert(isCurrentThread());
@@ -1063,6 +1076,12 @@ void CoreThread::connectDisplaySignals(DisplayWidget* widget)
   connect(widget, &DisplayWidget::windowRestoredEvent, this, &CoreThread::redrawDisplayWindow);
   connect(widget, &DisplayWidget::windowKeyEvent, this, &CoreThread::onDisplayWindowKeyEvent);
   connect(widget, &DisplayWidget::windowTextEntered, this, &CoreThread::onDisplayWindowTextEntered);
+  connect(widget, &DisplayWidget::windowMouseMoveAbsoluteEvent, this,
+          &CoreThread::onDisplayWindowMouseMoveAbsoluteEvent);
+  connect(widget, &DisplayWidget::windowMouseMoveRelativeEvent, this,
+          &CoreThread::onDisplayWindowMouseMoveRelativeEvent);
+  connect(widget, &DisplayWidget::windowMouseButtonEvent, this, &CoreThread::onDisplayWindowMouseButtonEvent);
+  connect(widget, &DisplayWidget::windowMouseWheelEvent, this, &CoreThread::onDisplayWindowMouseWheelEvent);
   connect(widget, &DisplayWidget::windowMouseButtonEvent, this, &CoreThread::onDisplayWindowMouseButtonEvent);
   connect(widget, &DisplayWidget::windowMouseWheelEvent, this, &CoreThread::onDisplayWindowMouseWheelEvent);
 }
