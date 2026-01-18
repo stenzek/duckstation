@@ -1188,9 +1188,10 @@ void GPUPresenter::CalculateDrawRect(const GSVector2i& window_size, bool apply_a
 
 bool GPUPresenter::PresentFrame(GPUPresenter* presenter, GPUBackend* backend, bool allow_skip_present, u64 present_time)
 {
-  const bool skip_present = (!g_gpu_device->HasMainSwapChain() ||
-                             (allow_skip_present && g_gpu_device->GetMainSwapChain()->ShouldSkipPresentingFrame() &&
-                              presenter && presenter->m_skipped_present_count < MAX_SKIPPED_PRESENT_COUNT));
+  const bool skip_present =
+    (!g_gpu_device->HasMainSwapChain() ||
+     (allow_skip_present && g_gpu_device->GetMainSwapChain()->ShouldSkipPresentingFrame(present_time) && presenter &&
+      presenter->m_skipped_present_count < MAX_SKIPPED_PRESENT_COUNT));
 
   if (!skip_present)
   {

@@ -487,7 +487,7 @@ public:
   /// Returns true if exclusive fullscreen is currently active on this swap chain.
   virtual bool IsExclusiveFullscreen() const;
 
-  bool ShouldSkipPresentingFrame();
+  bool ShouldSkipPresentingFrame(u64 present_time);
   void UpdateLastFramePresentedTime(u64 presented_time = 0);
   void ThrottlePresentation();
 

@@ -286,7 +286,7 @@ bool GPUSwapChain::IsExclusiveFullscreen() const
   return false;
 }
 
-bool GPUSwapChain::ShouldSkipPresentingFrame()
+bool GPUSwapChain::ShouldSkipPresentingFrame(u64 present_time)
 {
   // Only needed with FIFO. But since we're so fast, we allow it always.
   if (!m_allow_present_throttle)
@@ -295,8 +295,9 @@ bool GPUSwapChain::ShouldSkipPresentingFrame()
   const float throttle_rate = (m_window_info.surface_refresh_rate > 0.0f) ? m_window_info.surface_refresh_rate : 60.0f;
   const float throttle_period = 1.0f / throttle_rate;
 
-  const u64 now = Timer::GetCurrentValue();
-  const double diff = Timer::ConvertValueToSeconds(now - m_last_frame_displayed_time);
+  const u64 wanted_time = (present_time == 0) ? Timer::GetCurrentValue() : present_time;
+  const double diff = Timer::ConvertValueToSeconds(wanted_time - m_last_frame_displayed_time);
+  m_last_frame_displayed_time = present_time;
   if (diff < throttle_period)
     return true;
 
