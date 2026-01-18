@@ -1541,21 +1541,6 @@ bool MediaCaptureMF::ProcessVideoEvents(Error* error)
       return false;
     }
 
-    UINT32 stream_id = 0;
-    if (type == METransformNeedInput || type == METransformHaveOutput)
-    {
-      if (FAILED(hr = event->GetUINT32(MF_EVENT_MFT_INPUT_STREAM_ID, &stream_id)))
-      {
-        Error::SetHResult(error, "Get stream ID failed: ", hr);
-        return false;
-      }
-      else if (stream_id != 0)
-      {
-        Error::SetStringFmt(error, "Unexpected stream ID {}", stream_id);
-        return false;
-      }
-    }
-
     switch (type)
     {
       case METransformNeedInput:
