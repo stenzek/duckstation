@@ -167,7 +167,7 @@ Vill du aktivera hardcore-läget?</translation>
     </message>
     <message>
         <source>Account</source>
-        <translation>Konto</translation>
+        <translation type="vanished">Konto</translation>
     </message>
     <message>
         <source>Login...</source>
@@ -204,12 +204,12 @@ Vill du aktivera hardcore-läget?</translation>
     <message>
         <source>Username:
 Login token generated at:</source>
-        <translation>Användarnamn:
+        <translation type="vanished">Användarnamn:
 Inloggningstoken genererades:</translation>
     </message>
     <message>
         <source>Game Info</source>
-        <translation>Spelinformation</translation>
+        <translation type="vanished">Spelinformation</translation>
     </message>
     <message>
         <source>Unchecked</source>
@@ -273,7 +273,7 @@ Inloggningstoken genererades:</translation>
     <message>
         <source>Username: %1
 Login token generated on %2.</source>
-        <translation>Användarnamn: %1
+        <translation type="vanished">Användarnamn: %1
 Inloggningstoken genererades %2.</translation>
     </message>
     <message>
@@ -294,7 +294,7 @@ Inloggningstoken genererades %2.</translation>
     </message>
     <message>
         <source>Refresh Progress</source>
-        <translation>Uppdatera framsteg</translation>
+        <translation type="vanished">Uppdatera framsteg</translation>
     </message>
     <message>
         <source>Show Leaderboard Trackers</source>
@@ -314,7 +314,7 @@ Inloggningstoken genererades %2.</translation>
     </message>
     <message>
         <source>Shows a timer in the bottom-right corner of the screen when leaderboard challenges are active.</source>
-        <translation>Visar en timer i det nedre högra hörnet av skärmen när ledartavlans-utmaningar är aktiva.</translation>
+        <translation type="vanished">Visar en timer i det nedre högra hörnet av skärmen när ledartavlans-utmaningar är aktiva.</translation>
     </message>
     <message>
         <source>Challenge Indicators</source>
@@ -326,15 +326,69 @@ Inloggningstoken genererades %2.</translation>
     </message>
     <message>
         <source>Shows a notification or icons in the lower-right corner of the screen when a challenge/primed achievement is active.</source>
-        <translation>Visar en avisering eller ikoner i det nedre högra hörnet av skärmen när en utmaning/förberedd prestation är aktiv.</translation>
+        <translation type="vanished">Visar en avisering eller ikoner i det nedre högra hörnet av skärmen när en utmaning/förberedd prestation är aktiv.</translation>
     </message>
     <message>
         <source>Shows a popup in the lower-right corner of the screen when progress towards a measured achievement changes.</source>
-        <translation>Visar ett popup-fönster i det nedre högra hörnet av skärmen när framstegen mot en uppmätt prestation förändras.</translation>
+        <translation type="vanished">Visar ett popup-fönster i det nedre högra hörnet av skärmen när framstegen mot en uppmätt prestation förändras.</translation>
     </message>
     <message>
         <source>Show Notifications</source>
-        <translation>Visa notifieringar</translation>
+        <translation>Visa aviseringar</translation>
+    </message>
+    <message>
+        <source>Notification Location:</source>
+        <translation>Aviseringsplats:</translation>
+    </message>
+    <message>
+        <source>Indicator Location:</source>
+        <translation>Indikatorplats:</translation>
+    </message>
+    <message>
+        <source>Change Sounds</source>
+        <translation>Ändra ljud</translation>
+    </message>
+    <message>
+        <source>Shows a timer in the selected location when leaderboard challenges are active.</source>
+        <translation>Visar en timer på vald plats när ledartavlans-utmaningar är aktiva.</translation>
+    </message>
+    <message>
+        <source>Notification Location</source>
+        <translation>Aviseringsplats</translation>
+    </message>
+    <message>
+        <source>Top Left</source>
+        <translation>Överst till vänster</translation>
+    </message>
+    <message>
+        <source>Selects the screen location for achievement and leaderboard notifications.</source>
+        <translation>Väljer skärmplatsen för aviseringar om prestationer och ledartavlor.</translation>
+    </message>
+    <message>
+        <source>Shows a notification or icons in the selected location when a challenge/primed achievement is active.</source>
+        <translation>Visar en avisering eller ikoner på vald plats när en utmatning/förberedd prestation är aktiv.</translation>
+    </message>
+    <message>
+        <source>Indicator Location</source>
+        <translation>Indikatorplats</translation>
+    </message>
+    <message>
+        <source>Bottom Right</source>
+        <translation>Nederst till höger</translation>
+    </message>
+    <message>
+        <source>Selects the screen location for challenge/progress indicators, and leaderboard trackers.</source>
+        <translation>Väljer skärmplatsen för utmaning/framstegsindikatorer samt följa ledartavlan.</translation>
+    </message>
+    <message>
+        <source>Shows a popup in the selected location when progress towards a measured achievement changes.</source>
+        <translation>Visar ett popup-fönster på vald plats när framstegen mot en uppmätt prestation förändras.</translation>
+    </message>
+    <message>
+        <source>Logged in as %1
+Token generated at %2</source>
+        <translation>Inloggad som: %1
+Token genererades %2</translation>
     </message>
 </context>
 <context>
@@ -413,7 +467,7 @@ Inloggningstoken genererades %2.</translation>
     </message>
     <message>
         <source> (Submitting)</source>
-        <translation> (Skickar in)</translation>
+        <translation type="vanished"> (Skickar in)</translation>
     </message>
     <message>
         <source>Your Time: {0} (Best: {1})</source>
@@ -576,11 +630,11 @@ Olästa meddelanden: {}</translation>
     </message>
     <message>
         <source>Your Time: {}{}</source>
-        <translation>Din tid: {}{}</translation>
+        <translation type="vanished">Din tid: {}{}</translation>
     </message>
     <message>
         <source>Your Value: {}{}</source>
-        <translation>Ditt värde: {}{}</translation>
+        <translation type="vanished">Ditt värde: {}{}</translation>
     </message>
     <message>
         <source>Unknown</source>
@@ -709,13 +763,13 @@ Olästa meddelanden: {}</translation>
     <message>
         <source>Game complete.
 {0}, {1}.</source>
-        <translation>Spelet är färdigställt.
+        <translation type="vanished">Spelet är färdigställt.
 {0}, {1}.</translation>
     </message>
     <message>
         <source>Subset complete.
 {0}, {1}.</source>
-        <translation>Delmängd färdigställt.
+        <translation type="vanished">Delmängd färdigställt.
 {0}, {1}.</translation>
     </message>
     <message>
@@ -913,6 +967,103 @@ Vi kommer att fortsätta försöka skicka in begäran.</translation>
     <message>
         <source>Failed to create game titles request.</source>
         <translation>Misslyckades med att skapa begäran för speltitlar.</translation>
+    </message>
+    <message>
+        <source>Game complete.
+{0} and {1}.</source>
+        <translation>Spelet är färdigställt.
+{0} och {1}.</translation>
+    </message>
+    <message>
+        <source>Subset complete.
+{0} and {1}.</source>
+        <translation>Deluppsättning färdigställt.
+{0} och {1}.</translation>
+    </message>
+    <message>
+        <source>Your Time: {}</source>
+        <translation>Din tid: {}</translation>
+    </message>
+    <message>
+        <source>Your Value: {}</source>
+        <translation>Ditt värde: {}</translation>
+    </message>
+    <message>
+        <source>Active Leaderboard Attempts</source>
+        <comment>Pause Menu</comment>
+        <translation>Aktiva försök för ledartavlor</translation>
+    </message>
+    <message numerus="yes">
+        <source>You have unlocked all achievements in this subset and earned %n points!</source>
+        <comment>Point count</comment>
+        <translation>
+            <numerusform>Du har låst upp alla prestationer i denna deluppsättning och tjänat %n poäng!</numerusform>
+            <numerusform>Du har låst upp alla prestationer i denna deluppsättning och tjänat %n poäng!</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>You have unlocked {0} of {1} achievements in this subset, earning {2} of {3} possible points.</source>
+        <translation>Du har låst upp {0} av {1} prestationer i denna deluppsättning och tjänat {2} av {3} möjliga poäng.</translation>
+    </message>
+    <message>
+        <source>Just now</source>
+        <translation>Precis nu</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n minutes ago</source>
+        <comment>Relative time</comment>
+        <translation>
+            <numerusform>%n minut sedan</numerusform>
+            <numerusform>%n minuter sedan</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n hours ago</source>
+        <comment>Relative time</comment>
+        <translation>
+            <numerusform>%n timma sedan</numerusform>
+            <numerusform>%n timmar sedan</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Today</source>
+        <translation>Idag</translation>
+    </message>
+    <message>
+        <source>Yesterday</source>
+        <translation>Igår</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n days ago</source>
+        <comment>Relative time</comment>
+        <translation>
+            <numerusform>%n dag sedan</numerusform>
+            <numerusform>%n dagar sedan</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n weeks ago</source>
+        <comment>Relative time</comment>
+        <translation>
+            <numerusform>%n vecka sedan</numerusform>
+            <numerusform>%n veckor sedan</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n months ago</source>
+        <comment>Relative time</comment>
+        <translation>
+            <numerusform>%n månad sedan</numerusform>
+            <numerusform>%n månader sedan</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n years ago</source>
+        <comment>Relative time</comment>
+        <translation>
+            <numerusform>%n år sedan</numerusform>
+            <numerusform>%n år sedan</numerusform>
+        </translation>
     </message>
 </context>
 <context>
@@ -1176,6 +1327,10 @@ Vi kommer att fortsätta försöka skicka in begäran.</translation>
     <message>
         <source>Use Fractional Window Scale</source>
         <translation type="vanished">Använd fraktionell fönsterskalning</translation>
+    </message>
+    <message>
+        <source>Pause On Start</source>
+        <translation>Pausa vid start</translation>
     </message>
 </context>
 <context>
@@ -1655,11 +1810,11 @@ Vi kommer att fortsätta försöka skicka in begäran.</translation>
     </message>
     <message>
         <source>Driver:</source>
-        <translation>Drivrutin:</translation>
+        <translation type="vanished">Drivrutin:</translation>
     </message>
     <message>
         <source>Stretch Settings</source>
-        <translation>Sträckinställningar</translation>
+        <translation type="vanished">Sträckinställningar</translation>
     </message>
     <message>
         <source>Buffer Size:</source>
@@ -1667,7 +1822,7 @@ Vi kommer att fortsätta försöka skicka in begäran.</translation>
     </message>
     <message>
         <source>Maximum latency: 0 frames (0.00ms)</source>
-        <translation>Maximal latens: 0 frames (0.00ms)</translation>
+        <translation type="vanished">Maximal latens: 0 frames (0.00ms)</translation>
     </message>
     <message>
         <source>Backend:</source>
@@ -1803,7 +1958,7 @@ Vi kommer att fortsätta försöka skicka in begäran.</translation>
     </message>
     <message>
         <source>These settings fine-tune the behavior of the SoundTouch audio time stretcher when running outside of 100% speed.</source>
-        <translation>Dessa inställningar finjusterar beteendet för SoundTouch-ljudtidssträckare när den inte körs på 100% hastighet.</translation>
+        <translation type="vanished">Dessa inställningar finjusterar beteendet för SoundTouch-ljudtidssträckare när den inte körs på 100% hastighet.</translation>
     </message>
     <message>
         <source>Reset Volume</source>
@@ -1853,6 +2008,98 @@ Vi kommer att fortsätta försöka skicka in begäran.</translation>
         <source>Maximum Latency: %1 ms (%2 ms stretch + %3 ms buffer, minimum output latency unknown)</source>
         <translation>Maximal latens: %1 ms (%2 ms utsträckning + %3 ms buffert, minsta utgångslatens okänd)</translation>
     </message>
+    <message>
+        <source>Reset Buffer Size</source>
+        <translation>Återställ buffertstorlek</translation>
+    </message>
+    <message>
+        <source>Maximum Latency: 0 ms (0 ms stretch + 0 ms buffer + 0 ms output)</source>
+        <translation>Maximal latens: 0 ms (0 ms utsträckning + 0 ms buffert + 0 ms utmatning)</translation>
+    </message>
+    <message>
+        <source>Sequence Length:</source>
+        <translation>Sekvenslängd:</translation>
+    </message>
+    <message>
+        <source>Reset Sequence Length</source>
+        <translation>Återställ sekvenslängd</translation>
+    </message>
+    <message>
+        <source>Seek Window:</source>
+        <translation>Spolningsfönster:</translation>
+    </message>
+    <message>
+        <source>Reset Seek Window</source>
+        <translation>Återställ spolningsfönster</translation>
+    </message>
+    <message>
+        <source>Overlap:</source>
+        <translation>Överlappning:</translation>
+    </message>
+    <message>
+        <source>Reset Overlap</source>
+        <translation>Återställ överlappning</translation>
+    </message>
+    <message>
+        <source>Use Quick Seek</source>
+        <translation>Använd snabbspolning</translation>
+    </message>
+    <message>
+        <source>Use Anti-Aliasing Filter</source>
+        <translation>Använd kantutjämningsfilter</translation>
+    </message>
+    <message>
+        <source>Stretch Sequence Length</source>
+        <translation>Sträck ut sekvenslängd</translation>
+    </message>
+    <message>
+        <source>Determines how long individual sequences are when the time-stretch algorithm chops the audio. Longer sequences can improve quality but increase latency.</source>
+        <translation>Bestämmer hur långa enskilda sekvenser är när tidssträckningsalgoritmen delar upp ljudet. Längre sekvenser kan förbättra kvaliteten men öka latensen.</translation>
+    </message>
+    <message>
+        <source>Stretch Seek Window</source>
+        <translation>Sträck ut spolningsfönster</translation>
+    </message>
+    <message>
+        <source>Controls how wide a window the algorithm searches for the best overlap position when joining consecutive sequences. Larger windows may yield better joins at the cost of increased CPU work.</source>
+        <translation>Styr hur stort ett fönster är som algoritmen söker efter den bästa överlappningspositionen när den sammanfogar på varandra följande sekvenser. Större fönster kan ge bättre sammanfogningar, men kräver mer CPU-kraft.</translation>
+    </message>
+    <message>
+        <source>Stretch Overlap Length</source>
+        <translation>Sträck ut överlappningslängd</translation>
+    </message>
+    <message>
+        <source>Specifies how long two consecutive sequences are overlapped when mixed back together. Greater overlap can make transitions smoother but increases latency.</source>
+        <translation>Anger hur länge två på varandra följande sekvenser överlappar varandra när de blandas ihop igen. Större överlappning kan göra övergångarna mjukare men ökar latensen.</translation>
+    </message>
+    <message>
+        <source>Enable Quick Seek</source>
+        <translation>Aktivera snabbspolning</translation>
+    </message>
+    <message>
+        <source>Checked</source>
+        <translation>Markerat</translation>
+    </message>
+    <message>
+        <source>Enables the quick seeking algorithm in the time-stretch routine. Reduces CPU usage at a minor cost to audio quality.</source>
+        <translation>Aktiverar algoritmen för snabb sökning i tidssträckningsrutinen. Minskar CPU-användningen till en mindre kostnad för ljudkvaliteten.</translation>
+    </message>
+    <message>
+        <source>Enable Anti-Alias Filter</source>
+        <translation>Använd kantutjämningsfilter</translation>
+    </message>
+    <message>
+        <source>Enables an anti-aliasing filter used by the pitch transposer. Disabling it may reduce quality when pitch shifting but can slightly reduce CPU usage.</source>
+        <translation>Aktiverar ett kantutjämningsfilter som används av tonhöjdstransponeraren. Om du inaktiverar det kan kvaliteten försämras vid tonhöjdsförskjutning, men CPU-användningen kan minska något.</translation>
+    </message>
+    <message>
+        <source>Resets value back to the global/inherited setting.</source>
+        <translation>Återställer värdet till den globala/ärvda inställningen.</translation>
+    </message>
+    <message>
+        <source>Resets value back to the default.</source>
+        <translation>Återställer värdet tillbaka till standard.</translation>
+    </message>
 </context>
 <context>
     <name>AudioStream</name>
@@ -1865,31 +2112,31 @@ Vi kommer att fortsätta försöka skicka in begäran.</translation>
     <name>AudioStretchSettingsDialog</name>
     <message>
         <source>Audio Stretch Settings</source>
-        <translation>Inställningar för ljudsträckning</translation>
+        <translation type="vanished">Inställningar för ljudsträckning</translation>
     </message>
     <message>
         <source>Sequence Length:</source>
-        <translation>Sekvenslängd:</translation>
+        <translation type="vanished">Sekvenslängd:</translation>
     </message>
     <message>
         <source>30</source>
-        <translation>30</translation>
+        <translation type="vanished">30</translation>
     </message>
     <message>
         <source>Seekwindow Size:</source>
-        <translation>Storlek för seekwindow:</translation>
+        <translation type="vanished">Storlek för seekwindow:</translation>
     </message>
     <message>
         <source>20</source>
-        <translation>20</translation>
+        <translation type="vanished">20</translation>
     </message>
     <message>
         <source>Overlap:</source>
-        <translation>Överlapp:</translation>
+        <translation type="vanished">Överlapp:</translation>
     </message>
     <message>
         <source>10</source>
-        <translation>10</translation>
+        <translation type="vanished">10</translation>
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Audio Stretch Settings&lt;/span&gt;&lt;br/&gt;These settings fine-tune the behavior of the SoundTouch audio time stretcher when running outside of 100% speed.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
@@ -1897,15 +2144,15 @@ Vi kommer att fortsätta försöka skicka in begäran.</translation>
     </message>
     <message>
         <source>Use Quickseek</source>
-        <translation>Använd Quickseek</translation>
+        <translation type="vanished">Använd Quickseek</translation>
     </message>
     <message>
         <source>Use Anti-Aliasing Filter</source>
-        <translation>Använd antialiasingfilter</translation>
+        <translation type="vanished">Använd antialiasingfilter</translation>
     </message>
     <message>
         <source>These settings fine-tune the behavior of the SoundTouch audio time stretcher when running outside of 100% speed.</source>
-        <translation>Dessa inställningar finjusterar beteendet för SoundTouch-ljudtidssträckare när den inte körs på 100% hastighet.</translation>
+        <translation type="vanished">Dessa inställningar finjusterar beteendet för SoundTouch-ljudtidssträckare när den inte körs på 100% hastighet.</translation>
     </message>
 </context>
 <context>
@@ -2473,7 +2720,7 @@ Om du försöker använda denna fuskkod kommer den inte att fungera som förvän
     </message>
     <message>
         <source>100% (effective 33.3mhz)</source>
-        <translation>100% (effektivt 33.3mhz)</translation>
+        <translation type="vanished">100% (effektivt 33.3mhz)</translation>
     </message>
     <message>
         <source>Enable Recompiler ICache</source>
@@ -2778,6 +3025,10 @@ Den här varningen visas bara en gång.</translation>
     <message>
         <source>Maximum (Safer)</source>
         <translation>Maximalt (Säkrare)</translation>
+    </message>
+    <message>
+        <source>100% (33.87MHz)</source>
+        <translation>100% (33.87MHz)</translation>
     </message>
 </context>
 <context>
@@ -3511,11 +3762,11 @@ Den här varningen visas bara en gång.</translation>
     </message>
     <message>
         <source>When this option is enabled, hotkeys can be set in this input profile, and will be used instead of the global hotkeys. By default, hotkeys are always shared between all profiles.</source>
-        <translation>När detta alternativ är aktiverat kan snabbtangenter ställas in i denna inmatningsprofil och sedan användas istället för de globala snabbtangenterna. Snabbtangenter är som standard alltid delade mellan alla profiler.</translation>
+        <translation type="vanished">När detta alternativ är aktiverat kan snabbtangenter ställas in i denna inmatningsprofil och sedan användas istället för de globala snabbtangenterna. Snabbtangenter är som standard alltid delade mellan alla profiler.</translation>
     </message>
     <message>
         <source>Use Per-Profile Hotkeys</source>
-        <translation>Använd snabbtangenter per-profil</translation>
+        <translation type="vanished">Använd snabbtangenter per-profil</translation>
     </message>
     <message>
         <source>Controller LED Settings</source>
@@ -3635,6 +3886,18 @@ Den ”alternativa” färgen används när analogt läge är aktivt.</translati
         <source>Uses raw input for mice input. Enable if you wish to use multiple mice/lightguns.</source>
         <translation>Använder rå inmatning för musinmatning. Aktivera om du vill använda flera möss/ljuspistoler.</translation>
     </message>
+    <message>
+        <source>When these options are enabled, input sources and hotkeys can be set in this input profile, and will be used instead of the global source/hotkey configuration. By default, sources and hotkeys are always shared between all profiles.</source>
+        <translation>När dessa alternativ är aktiverade kan inmatningskällor och snabbtangenter ställas in i denna inmatningsprofil och kommer att användas istället för den globala käll-/snabbtangentkonfigurationen. Som standard delas källor och snabbtangenter alltid mellan alla profiler.</translation>
+    </message>
+    <message>
+        <source>Use Profile Input Sources</source>
+        <translation>Använd profilens inmatningskällor</translation>
+    </message>
+    <message>
+        <source>Use Profile Hotkeys</source>
+        <translation>Använd profilens snabbtangenter</translation>
+    </message>
 </context>
 <context>
     <name>ControllerLEDSettingsDialog</name>
@@ -3731,7 +3994,14 @@ Den ”alternativa” färgen används när analogt läge är aktivt.</translati
     </message>
     <message>
         <source>Macro will toggle buttons every %1 frames.</source>
-        <translation>Makrot kommer växla knappar var %1 bildruta.</translation>
+        <translation type="vanished">Makrot kommer växla knappar var %1 bildruta.</translation>
+    </message>
+    <message numerus="yes">
+        <source>Macro will toggle buttons every %n frame(s).</source>
+        <translation>
+            <numerusform>Makrot kommer att växla knappar var %n bildruta.</numerusform>
+            <numerusform>Makrot kommer att växla knappar var %n bildrutor.</numerusform>
+        </translation>
     </message>
 </context>
 <context>
@@ -3940,16 +4210,16 @@ Alla bindningar och konfigurationen kommer att förloras . Du kan inte ångra de
     <message>
         <source>Game: %1 (%2)
 </source>
-        <translation>Spel: %1 (%2)
+        <translation type="vanished">Spel: %1 (%2)
 </translation>
     </message>
     <message>
         <source>Rich presence inactive or unsupported.</source>
-        <translation>Rich presence inaktivt eller stöds inte.</translation>
+        <translation type="vanished">Rich presence inaktivt eller stöds inte.</translation>
     </message>
     <message>
         <source>Game not loaded or no RetroAchievements available.</source>
-        <translation>Inget spel är inläst eller så är inte RetroAchievements tillgängligt.</translation>
+        <translation type="vanished">Inget spel är inläst eller så är inte RetroAchievements tillgängligt.</translation>
     </message>
     <message>
         <source>Error</source>
@@ -6092,15 +6362,15 @@ Alla bindningar och konfigurationen kommer att förloras . Du kan inte ångra de
     </message>
     <message>
         <source>Controller Port {} Bindings</source>
-        <translation>Bindningar för kontrollerport {}</translation>
+        <translation type="vanished">Bindningar för kontrollerport {}</translation>
     </message>
     <message>
         <source>Controller Port {} Macros</source>
-        <translation>Makron för kontrollerport {}</translation>
+        <translation type="vanished">Makron för kontrollerport {}</translation>
     </message>
     <message>
         <source>Controller Port {} Settings</source>
-        <translation>Inställningar för kontrollerport {}</translation>
+        <translation type="vanished">Inställningar för kontrollerport {}</translation>
     </message>
     <message>
         <source>Controller Settings</source>
@@ -6742,7 +7012,7 @@ Felet var:</translation>
     </message>
     <message>
         <source>Hotkey Settings</source>
-        <translation>Inställningar för snabbtangenter</translation>
+        <translation type="vanished">Inställningar för snabbtangenter</translation>
     </message>
     <message>
         <source>How many saves will be kept for rewinding. Higher values have greater memory requirements.</source>
@@ -6906,7 +7176,7 @@ Kontrollera ditt användarnamn och lösenord. Försök igen.</translation>
     </message>
     <message>
         <source>Macro Button {}</source>
-        <translation>Makroknapp {}</translation>
+        <translation type="vanished">Makroknapp {}</translation>
     </message>
     <message>
         <source>Makes games run closer to their console framerate, at a small cost to performance.</source>
@@ -7006,7 +7276,7 @@ Kontrollera ditt användarnamn och lösenord. Försök igen.</translation>
     </message>
     <message>
         <source>No input profiles available.</source>
-        <translation>Inga inmatningsprofiler tillgängliga.</translation>
+        <translation type="vanished">Inga inmatningsprofiler tillgängliga.</translation>
     </message>
     <message>
         <source>No patches are available for this game.</source>
@@ -8479,15 +8749,15 @@ ${serial}: Serienumret för spelet.</translation>
     </message>
     <message>
         <source>Shows a notification or icons in the lower-right corner of the screen when a challenge/primed achievement is active.</source>
-        <translation>Visar en avisering eller ikoner i det nedre högra hörnet av skärmen när en utmaning/förberedd prestation är aktiv.</translation>
+        <translation type="vanished">Visar en avisering eller ikoner i det nedre högra hörnet av skärmen när en utmaning/förberedd prestation är aktiv.</translation>
     </message>
     <message>
         <source>Shows a popup in the lower-right corner of the screen when progress towards a measured achievement changes.</source>
-        <translation>Visar ett popup-fönster i det nedre högra hörnet av skärmen när framstegen mot en uppmätt prestation förändras.</translation>
+        <translation type="vanished">Visar ett popup-fönster i det nedre högra hörnet av skärmen när framstegen mot en uppmätt prestation förändras.</translation>
     </message>
     <message>
         <source>Shows a timer in the bottom-right corner of the screen when leaderboard challenges are active.</source>
-        <translation>Visar en timer i det nedre högra hörnet av skärmen när ledartavlans-utmaningar är aktiva.</translation>
+        <translation type="vanished">Visar en timer i det nedre högra hörnet av skärmen när ledartavlans-utmaningar är aktiva.</translation>
     </message>
     <message>
         <source>Shows titles underneath the images in the game grid view.</source>
@@ -8736,6 +9006,94 @@ ${serial}: Serienumret för spelet.</translation>
     <message>
         <source>Texture Modulation Cropping (&quot;Old/v0&quot; GPU)</source>
         <translation>Beskäring av texturmodulation (&quot;Old/v0&quot; GPU)</translation>
+    </message>
+    <message>
+        <source>Bindings</source>
+        <translation>Bindningar</translation>
+    </message>
+    <message>
+        <source>Disable Background Input</source>
+        <translation>Inaktivera bakgrundsinmatning</translation>
+    </message>
+    <message>
+        <source>Global Settings</source>
+        <translation>Globala inställningar</translation>
+    </message>
+    <message>
+        <source>Hotkeys</source>
+        <translation>Snabbtangenter</translation>
+    </message>
+    <message>
+        <source>Indicator Location</source>
+        <translation>Indikatorplats</translation>
+    </message>
+    <message>
+        <source>Macro {}</source>
+        <translation>Makro {}</translation>
+    </message>
+    <message>
+        <source>Message Location</source>
+        <translation>Meddelandeplats</translation>
+    </message>
+    <message>
+        <source>No controller presets available.</source>
+        <translation>Inga kontrollerförval tillgängliga.</translation>
+    </message>
+    <message>
+        <source>Notification Location</source>
+        <translation>Aviseringsplats</translation>
+    </message>
+    <message>
+        <source>Notifications</source>
+        <translation>Aviseringar</translation>
+    </message>
+    <message>
+        <source>Prevents inputs from being processed when another application is active.</source>
+        <translation>Förhindrar att inmatningar behandlas när en annan applikation är aktiv.</translation>
+    </message>
+    <message>
+        <source>Progress Tracking</source>
+        <translation>Framstegsspårning</translation>
+    </message>
+    <message>
+        <source>Selects the screen location for achievement and leaderboard notifications.</source>
+        <translation>Väljer skärmplatsen för aviseringar om prestationer och ledartavlor.</translation>
+    </message>
+    <message>
+        <source>Selects the screen location for challenge/progress indicators, and leaderboard trackers.</source>
+        <translation>Väljer skärmplats för utmanings-/framstegsindikatorer och följa ledartavlan.</translation>
+    </message>
+    <message>
+        <source>Selects which location on the screen messages are displayed.</source>
+        <translation>Väljer vilken plats på skärmen som meddelanden ska visas.</translation>
+    </message>
+    <message>
+        <source>Shows a notification or icons in the selected location when a challenge/primed achievement is active.</source>
+        <translation>Visar en avisering eller ikoner på den valda platsen när en utmaning/förberedd prestation är aktiv.</translation>
+    </message>
+    <message>
+        <source>Shows a popup in the selected location when progress towards a measured achievement changes.</source>
+        <translation>Visar ett popup-fönster på den valda platsen när framstegen mot ett uppmätt mål förändras.</translation>
+    </message>
+    <message>
+        <source>Shows a timer in the selected location when leaderboard challenges are active.</source>
+        <translation>Visar en timer på den valda platsen när utmaningar för ledartavlan är aktiva.</translation>
+    </message>
+    <message>
+        <source>Use Per-Game Hotkeys</source>
+        <translation>Använd snabbtangenter per spel</translation>
+    </message>
+    <message>
+        <source>Use Per-Game Input Sources</source>
+        <translation>Använd inmatningskällor per spel</translation>
+    </message>
+    <message>
+        <source>Uses game-specific configuration for hotkeys. If disabled, global hotkeys will be used.</source>
+        <translation>Använder spelspecifik konfiguration för snabbtangenter. Om den är inaktiverad används globala snabbtangenter.</translation>
+    </message>
+    <message>
+        <source>Uses game-specific configuration for input sources. If disabled, the global configuration will be used.</source>
+        <translation>Använder spelspecifik konfiguration för inmatningskällor. Om den är inaktiverad kommer den globala konfigurationen att användas.</translation>
     </message>
 </context>
 <context>
@@ -10200,7 +10558,7 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
     </message>
     <message>
         <source>%1 players</source>
-        <translation>%1 spelare</translation>
+        <translation type="vanished">%1 spelare</translation>
     </message>
     <message>
         <source>%1-%2 memory card blocks</source>
@@ -10208,7 +10566,7 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
     </message>
     <message>
         <source>%1 memory card blocks</source>
-        <translation>%1 minneskortsblock</translation>
+        <translation type="vanished">%1 minneskortsblock</translation>
     </message>
     <message>
         <source>Use Global Settings</source>
@@ -10220,7 +10578,7 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
     </message>
     <message>
         <source>%1 tracks covering %2 MB (%3 MB on disk)</source>
-        <translation>%1 spår som tar upp %2 MB (%3 MB på disk)</translation>
+        <translation type="vanished">%1 spår som tar upp %2 MB (%3 MB på disk)</translation>
     </message>
     <message>
         <source>Track %1</source>
@@ -10281,6 +10639,35 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
     <message>
         <source>This game was not scanned by DuckStation. Some functionality is not available.</source>
         <translation>Detta spel har inte sökts igenom av DuckStation. Viss funktionalitet är inte tillgänglig.</translation>
+    </message>
+    <message>
+        <source>Disc Set Title:</source>
+        <translation>Titel för skivuppsättning:</translation>
+    </message>
+    <message>
+        <source>Restore Disc Set Title</source>
+        <translation>Återställ titel för skivuppsättning</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n player(s)</source>
+        <translation>
+            <numerusform>%n spelare</numerusform>
+            <numerusform>%n spelare</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n memory card block(s)</source>
+        <translation>
+            <numerusform>%n minneskortsblock</numerusform>
+            <numerusform>%n minneskortsblock</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n track(s) covering %1 MB (%2 MB on disk)</source>
+        <translation>
+            <numerusform>%n spår som täcker %1 MB (%2 MB på disk)</numerusform>
+            <numerusform>%n spår som täcker %1 MB (%2 MB på disk)</numerusform>
+        </translation>
     </message>
 </context>
 <context>
@@ -10872,7 +11259,7 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
     </message>
     <message>
         <source>100%</source>
-        <translation>100%</translation>
+        <translation type="vanished">100%</translation>
     </message>
     <message>
         <source>Fullscreen Mode</source>
@@ -10892,7 +11279,7 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
     </message>
     <message>
         <source>OSD Scale</source>
-        <translation>OSD-skala</translation>
+        <translation type="vanished">OSD-skala</translation>
     </message>
     <message>
         <source>Shows on-screen-display messages when events occur such as save states being created/loaded, screenshots being taken, etc.</source>
@@ -11570,6 +11957,30 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
         <source>Crops vertex colours to 5:5:5 before modulating with the texture colour, which typically results in more visible banding. This is a characteristic of the &quot;old&quot; GPUs found in early model consoles.</source>
         <translation>Beskär vertexfärgerna till 5:5:5 innan de moduleras med texturfärgen, vilket vanligtvis resulterar i mer synliga band. Detta är ett kännetecken för de ”gamla” GPU:erna som finns i tidiga konsolmodeller.</translation>
     </message>
+    <message>
+        <source>Message Location:</source>
+        <translation>Meddelandeplats:</translation>
+    </message>
+    <message>
+        <source>Display Scale</source>
+        <translation>Visningsskala</translation>
+    </message>
+    <message>
+        <source>Display Margins</source>
+        <translation>Visningsmarginaler</translation>
+    </message>
+    <message>
+        <source>Determines the margin between the edge of the screen and on-screen messages.</source>
+        <translation>Bestämmer marginalen mellan kanten av skärmen och skärmmeddelanden.</translation>
+    </message>
+    <message>
+        <source>Message Location</source>
+        <translation>Meddelandeplats</translation>
+    </message>
+    <message>
+        <source>Selects which location on the screen messages are displayed.</source>
+        <translation>Väljer vilken plats på skärmen som meddelanden ska visas.</translation>
+    </message>
 </context>
 <context>
     <name>GunCon</name>
@@ -11640,6 +12051,22 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
     <message>
         <source>Scales X coordinates relative to the center of the screen.</source>
         <translation>Skalar X-koordinater relativt till centrum av skärmen.</translation>
+    </message>
+    <message>
+        <source>Line Offset</source>
+        <translation>Linjeförskjutning</translation>
+    </message>
+    <message>
+        <source>Offset applied to lightgun vertical position.</source>
+        <translation>Förskjutning som tillämpas på ljuspistolens vertikala position.</translation>
+    </message>
+    <message>
+        <source>Tick Offset</source>
+        <translation>Tick-förskjutning</translation>
+    </message>
+    <message>
+        <source>Offset applied to lightgun horizontal position.</source>
+        <translation>Förskjutning som tillämpas på ljuspistolens horisontella position.</translation>
     </message>
 </context>
 <context>
@@ -12356,6 +12783,14 @@ Skift-klicka för att ställa in flera bindningar.</translation>
         <source>Mouse</source>
         <translation>Mus</translation>
     </message>
+    <message>
+        <source>Controller {} connected.</source>
+        <translation>Handkontroller {} ansluten.</translation>
+    </message>
+    <message>
+        <source>System paused because controller {} was disconnected.</source>
+        <translation>Systemet pausade därför att kontroller {} kopplades från.</translation>
+    </message>
 </context>
 <context>
     <name>InputVibrationBindingWidget</name>
@@ -12400,7 +12835,7 @@ Skift-klicka för att ställa in flera bindningar.</translation>
     </message>
     <message>
         <source>Pause On Start</source>
-        <translation>Pausa vid start</translation>
+        <translation type="vanished">Pausa vid start</translation>
     </message>
     <message>
         <source>Enable Discord Presence</source>
@@ -12520,7 +12955,7 @@ Skift-klicka för att ställa in flera bindningar.</translation>
     </message>
     <message>
         <source>Pauses the emulator when a game is started.</source>
-        <translation>Pausar emulatorn när ett spel startas.</translation>
+        <translation type="vanished">Pausar emulatorn när ett spel startas.</translation>
     </message>
     <message>
         <source>Pauses the emulator when you minimize the window or switch to another application, and unpauses when you switch back.</source>
@@ -12625,6 +13060,14 @@ Skift-klicka för att ställa in flera bindningar.</translation>
     <message>
         <source>Calculates the true scaling factor for your display, avoiding the downsampling applied by MacOS.</source>
         <translation>Beräknar den verkliga skalningsfaktorn för din skärm och undviker den nedsampling som tillämpas av MacOS.</translation>
+    </message>
+    <message>
+        <source>Disable Background Input</source>
+        <translation>Inaktivera bakgrundsinmatning</translation>
+    </message>
+    <message>
+        <source>Prevents inputs from being processed when another application is active.</source>
+        <translation>Förhindrar att inmatningar behandlas när en annan applikation är aktiv.</translation>
     </message>
 </context>
 <context>
@@ -16397,11 +16840,11 @@ URLen var: %1</translation>
     </message>
     <message>
         <source>Controller {} connected.</source>
-        <translation>Handkontroller {} ansluten.</translation>
+        <translation type="vanished">Handkontroller {} ansluten.</translation>
     </message>
     <message>
         <source>System paused because controller {} was disconnected.</source>
-        <translation>Systemet pausade därför att kontroller {} kopplades från.</translation>
+        <translation type="vanished">Systemet pausade därför att kontroller {} kopplades från.</translation>
     </message>
     <message>
         <source>Controller {} disconnected.</source>
@@ -17400,7 +17843,7 @@ Vill du skapa denna katalog?</translation>
     <message>
         <source>Show Notifications</source>
         <comment>AchievementChallengeIndicatorMode</comment>
-        <translation>Visa notifieringar</translation>
+        <translation>Visa aviseringar</translation>
     </message>
     <message>
         <source>XZ (Low)</source>
@@ -17446,6 +17889,36 @@ Vill du skapa denna katalog?</translation>
         <source>Window Resolution</source>
         <comment>DisplayFineCropMode</comment>
         <translation>Fönsterupplösning</translation>
+    </message>
+    <message>
+        <source>Top Left</source>
+        <comment>NotificationLocation</comment>
+        <translation>Överst till vänster</translation>
+    </message>
+    <message>
+        <source>Top Center</source>
+        <comment>NotificationLocation</comment>
+        <translation>Överst i mitten</translation>
+    </message>
+    <message>
+        <source>Top Right</source>
+        <comment>NotificationLocation</comment>
+        <translation>Överst till höger</translation>
+    </message>
+    <message>
+        <source>Bottom Left</source>
+        <comment>NotificationLocation</comment>
+        <translation>Nederst till vänster</translation>
+    </message>
+    <message>
+        <source>Bottom Center</source>
+        <comment>NotificationLocation</comment>
+        <translation>Nederst i mitten</translation>
+    </message>
+    <message>
+        <source>Bottom Right</source>
+        <comment>NotificationLocation</comment>
+        <translation>Nederst till höger</translation>
     </message>
 </context>
 <context>
@@ -18558,7 +19031,7 @@ Om du använder den aktuella CD-avbildningen kan detta leda till instabilitet.</
     </message>
     <message>
         <source>This save state was created with the following tainted options, and may be unstable. You will need to reset the system to clear any effects.</source>
-        <translation>Detta sparningstillstånd skapades med följande felaktiga alternativ och kan vara instabil. Du måste starta om systemet för att rensa eventuella effekter.</translation>
+        <translation type="vanished">Detta sparningstillstånd skapades med följande felaktiga alternativ och kan vara instabil. Du måste starta om systemet för att rensa eventuella effekter.</translation>
     </message>
     <message>
         <source>One or more unsafe settings is enabled.</source>
@@ -18611,6 +19084,25 @@ Använder istället ett delat kort.</translation>
     <message>
         <source>Texture modulation cropping disabled.</source>
         <translation>Beskäring av texturmodulation inaktiverad.</translation>
+    </message>
+    <message>
+        <source>Memory Card Mismatch</source>
+        <comment>Taint</comment>
+        <translation>Minneskortet stämmer inte</translation>
+    </message>
+    <message>
+        <source>Failed to inhibit screensaver</source>
+        <translation>Misslyckades med att förhindra skärmsläckaren</translation>
+    </message>
+    <message>
+        <source>Failed to allow screensaver</source>
+        <translation>Misslyckades med att tillåta skärmsläckaren</translation>
+    </message>
+    <message>
+        <source>This save state was created with the following tainted options, and may be unstable.
+You must save to a memory card and reset the game to clear any effects.</source>
+        <translation>Detta sparade tillståndet skapades med följande felaktiga alternativ och kan vara instabilt.
+Du måste spara till ett minneskort och starta om spelet för att ta bort eventuella effekter.</translation>
     </message>
 </context>
 <context>
