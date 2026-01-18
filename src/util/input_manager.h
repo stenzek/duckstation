@@ -353,7 +353,8 @@ void ResetPointerRelativeDelta(u32 index);
 
 /// Updates relative pointer position. Can call from the UI thread, use when host supports relative coordinate
 /// reporting.
-void UpdatePointerRelativeDelta(u32 index, InputPointerAxis axis, float d, bool raw_input = false);
+void UpdatePointerPositionRelativeDelta(u32 index, InputPointerAxis axis, float d);
+void UpdatePointerWheelRelativeDelta(u32 index, InputPointerAxis axis, float d);
 
 /// Updates host mouse mode (relative/cursor hiding).
 void UpdateRelativeMouseMode();
@@ -365,10 +366,6 @@ void SetMacroButtonState(u32 pad, u32 index, bool state);
 
 /// Returns true if the raw input source is being used.
 bool IsUsingRawInput();
-
-/// Updates InputManager's view of the window size, used for clamping raw input coordinates.
-void SetDisplayWindowSize(float width, float height);
-std::pair<float, float> GetDisplayWindowSize();
 
 /// Called when the application window gains or loses focus.
 void OnApplicationBackgroundStateChanged(bool in_background);

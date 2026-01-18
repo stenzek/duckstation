@@ -858,9 +858,9 @@ void MiniHost::ProcessSDLEvent(const SDL_Event* ev)
     {
       Host::RunOnCoreThread([x = ev->wheel.x, y = ev->wheel.y]() {
         if (x != 0.0f)
-          InputManager::UpdatePointerRelativeDelta(0, InputPointerAxis::WheelX, x);
+          InputManager::UpdatePointerWheelRelativeDelta(0, InputPointerAxis::WheelX, x);
         if (y != 0.0f)
-          InputManager::UpdatePointerRelativeDelta(0, InputPointerAxis::WheelY, y);
+          InputManager::UpdatePointerWheelRelativeDelta(0, InputPointerAxis::WheelY, y);
       });
     }
     break;

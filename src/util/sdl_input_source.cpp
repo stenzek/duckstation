@@ -5,8 +5,10 @@
 #include "input_manager.h"
 
 #include "core/settings.h"
+#include "core/gpu_thread.h"
 
 #include "util/translation.h"
+#include "util/window_info.h"
 
 #include "common/assert.h"
 #include "common/bitutils.h"
@@ -1195,9 +1197,9 @@ bool SDLInputSource::HandleGamepadTouchpadEvent(const SDL_GamepadTouchpadEvent* 
       it->last_touch_y = ev->y;
     }
 
-    const auto& [win_width, win_height] = InputManager::GetDisplayWindowSize();
-    const float rel_x = (ev->x - std::exchange(it->last_touch_x, ev->x)) * win_width;
-    const float rel_y = (ev->y - std::exchange(it->last_touch_y, ev->y)) * win_height;
+    const WindowInfo& wi = GPUThread::GetRenderWindowInfo();
+    const float rel_x = (ev->x - std::exchange(it->last_touch_x, ev->x)) * static_cast<float>(wi.surface_width);
+    const float rel_y = (ev->y - std::exchange(it->last_touch_y, ev->y)) * static_cast<float>(wi.surface_height);
     if (!InputManager::IsRelativeMouseModeActive())
     {
       const auto& [current_x, current_y] = InputManager::GetPointerAbsolutePosition(pointer_index);
@@ -1206,9 +1208,9 @@ bool SDLInputSource::HandleGamepadTouchpadEvent(const SDL_GamepadTouchpadEvent* 
     else
     {
       if (rel_x != 0.0f)
-        InputManager::UpdatePointerRelativeDelta(pointer_index, InputPointerAxis::X, rel_x);
+        InputManager::UpdatePointerPositionRelativeDelta(pointer_index, InputPointerAxis::X, rel_x);
       if (rel_y != 0.0f)
-        InputManager::UpdatePointerRelativeDelta(pointer_index, InputPointerAxis::Y, rel_y);
+        InputManager::UpdatePointerPositionRelativeDelta(pointer_index, InputPointerAxis::Y, rel_y);
     }
   }
 

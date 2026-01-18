@@ -122,7 +122,7 @@ struct MacroButton
 
 struct PointerAxisState
 {
-  std::atomic<s32> delta;
+  float delta;
   float last_value;
 };
 
@@ -250,9 +250,6 @@ struct ALIGN_TO_CACHE_LINE State
     pointer_state;
   u32 pointer_count = 0;
   std::array<float, static_cast<u8>(InputPointerAxis::Count)> pointer_axis_scale;
-
-  // Window size, used for clamping the mouse position in raw input modes.
-  std::array<float, 2> window_size = {};
 };
 
 } // namespace
@@ -1446,9 +1443,7 @@ void InputManager::GenerateRelativeMouseEvents()
     for (u32 axis = 0; axis < static_cast<u32>(static_cast<u8>(InputPointerAxis::Count)); axis++)
     {
       PointerAxisState& state = s_state.pointer_state[device][axis];
-      const int deltai = state.delta.load(std::memory_order_acquire);
-      state.delta.fetch_sub(deltai, std::memory_order_release);
-      const float delta = static_cast<float>(deltai) / 65536.0f;
+      const float delta = static_cast<float>(std::exchange(state.delta, 0.0f));
       const float unclamped_value = delta * s_state.pointer_axis_scale[axis];
       const float value = std::clamp(unclamped_value, -1.0f, 1.0f);
 
@@ -1521,16 +1516,8 @@ void InputManager::UpdatePointerAbsolutePosition(u32 index, float x, float y, bo
   const float dx = x - std::exchange(s_state.host_pointer_positions[index][static_cast<u8>(InputPointerAxis::X)], x);
   const float dy = y - std::exchange(s_state.host_pointer_positions[index][static_cast<u8>(InputPointerAxis::Y)], y);
 
-  if (dx != 0.0f)
-  {
-    s_state.pointer_state[index][static_cast<u8>(InputPointerAxis::X)].delta.fetch_add(static_cast<s32>(dx * 65536.0f),
-                                                                                       std::memory_order_acq_rel);
-  }
-  if (dy != 0.0f)
-  {
-    s_state.pointer_state[index][static_cast<u8>(InputPointerAxis::Y)].delta.fetch_add(static_cast<s32>(dy * 65536.0f),
-                                                                                       std::memory_order_acq_rel);
-  }
+  s_state.pointer_state[index][static_cast<u8>(InputPointerAxis::X)].delta += dx;
+  s_state.pointer_state[index][static_cast<u8>(InputPointerAxis::Y)].delta += dy;
 
   if (index == 0)
     ImGuiManager::UpdateMousePosition(x, y);
@@ -1541,29 +1528,37 @@ void InputManager::ResetPointerRelativeDelta(u32 index)
   if (index >= MAX_POINTER_DEVICES || s_state.relative_mouse_mode_active) [[unlikely]]
     return;
 
-  s_state.pointer_state[index][static_cast<u8>(InputPointerAxis::X)].delta.store(0, std::memory_order_release);
-  s_state.pointer_state[index][static_cast<u8>(InputPointerAxis::Y)].delta.store(0, std::memory_order_release);
+  s_state.pointer_state[index][static_cast<u8>(InputPointerAxis::X)].delta = 0.0f;
+  s_state.pointer_state[index][static_cast<u8>(InputPointerAxis::Y)].delta = 0.0f;
 }
 
-void InputManager::UpdatePointerRelativeDelta(u32 index, InputPointerAxis axis, float d, bool raw_input)
+void InputManager::UpdatePointerPositionRelativeDelta(u32 index, InputPointerAxis axis, float d)
 {
-  if (index >= MAX_POINTER_DEVICES || (axis < InputPointerAxis::WheelX && !s_state.relative_mouse_mode_active))
+  DebugAssert(axis <= InputPointerAxis::Y);
+  if (index >= MAX_POINTER_DEVICES || !s_state.relative_mouse_mode_active)
+    return;
+
+  s_state.pointer_state[index][static_cast<u8>(axis)].delta += d;
+
+  // We need to clamp the position ourselves in relative mode.
+  const WindowInfo& wi = GPUThread::GetRenderWindowInfo();
+  const float max_dim = static_cast<float>((axis == InputPointerAxis::X) ? wi.surface_width : wi.surface_height);
+  s_state.host_pointer_positions[index][static_cast<u8>(axis)] =
+    std::clamp(s_state.host_pointer_positions[index][static_cast<u8>(axis)] + d, 0.0f, max_dim);
+
+  // Imgui also needs to be updated, since the absolute position won't be set above.
+  if (index == 0)
+    ImGuiManager::UpdateMousePosition(s_state.host_pointer_positions[0][0], s_state.host_pointer_positions[0][1]);
+}
+
+void InputManager::UpdatePointerWheelRelativeDelta(u32 index, InputPointerAxis axis, float d)
+{
+  DebugAssert(axis >= InputPointerAxis::WheelX && axis <= InputPointerAxis::WheelY);
+  if (index >= MAX_POINTER_DEVICES)
     return;
 
   s_state.host_pointer_positions[index][static_cast<u8>(axis)] += d;
-  s_state.pointer_state[index][static_cast<u8>(axis)].delta.fetch_add(static_cast<s32>(d * 65536.0f),
-                                                                      std::memory_order_acq_rel);
-
-  // We need to clamp the position ourselves in relative mode.
-  if (axis <= InputPointerAxis::Y)
-  {
-    s_state.host_pointer_positions[index][static_cast<u8>(axis)] = std::clamp(
-      s_state.host_pointer_positions[index][static_cast<u8>(axis)], 0.0f, s_state.window_size[static_cast<u8>(axis)]);
-
-    // Imgui also needs to be updated, since the absolute position won't be set above.
-    if (index == 0)
-      ImGuiManager::UpdateMousePosition(s_state.host_pointer_positions[0][0], s_state.host_pointer_positions[0][1]);
-  }
+  s_state.pointer_state[index][static_cast<u8>(axis)].delta += d;
 }
 
 void InputManager::UpdateRelativeMouseMode()
@@ -1626,17 +1621,6 @@ bool InputManager::IsUsingRawInput()
 #else
   return false;
 #endif
-}
-
-void InputManager::SetDisplayWindowSize(float width, float height)
-{
-  s_state.window_size[0] = width;
-  s_state.window_size[1] = height;
-}
-
-std::pair<float, float> InputManager::GetDisplayWindowSize()
-{
-  return std::make_pair(s_state.window_size[0], s_state.window_size[1]);
 }
 
 void InputManager::OnApplicationBackgroundStateChanged(bool in_background)

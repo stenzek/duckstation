@@ -469,14 +469,14 @@ bool Win32RawInputSource::ProcessRawInputEvent(const RAWINPUT* event)
         // relative is easy
         if (rm.lLastX != 0)
         {
-          InputManager::UpdatePointerRelativeDelta(pointer_index, InputPointerAxis::X, static_cast<float>(rm.lLastX),
-                                                   true);
+          InputManager::UpdatePointerPositionRelativeDelta(pointer_index, InputPointerAxis::X,
+                                                           static_cast<float>(rm.lLastX));
         }
 
         if (rm.lLastY != 0)
         {
-          InputManager::UpdatePointerRelativeDelta(pointer_index, InputPointerAxis::Y, static_cast<float>(rm.lLastY),
-                                                   true);
+          InputManager::UpdatePointerPositionRelativeDelta(pointer_index, InputPointerAxis::Y,
+                                                           static_cast<float>(rm.lLastY));
         }
       }
 

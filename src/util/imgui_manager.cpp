@@ -1306,8 +1306,13 @@ void ImGuiManager::UpdateMousePosition(float x, float y)
   if (!s_state.imgui_context)
     return;
 
-  s_state.imgui_context->IO.MousePos = ImVec2(x, y);
-  std::atomic_thread_fence(std::memory_order_release);
+  GPUThread::RunOnThread([x, y]() {
+    if (!s_state.imgui_context) [[unlikely]]
+      return;
+
+    s_state.imgui_context->IO.MousePos.x = x;
+    s_state.imgui_context->IO.MousePos.y = y;
+  });
 }
 
 void ImGuiManager::SetCommonIOOptions(ImGuiIO& io, ImGuiPlatformIO& pio)

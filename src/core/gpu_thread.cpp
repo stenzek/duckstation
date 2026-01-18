@@ -718,8 +718,6 @@ bool GPUThread::CreateDeviceOnThread(RenderAPI api, bool fullscreen, bool preser
   if (s_state.requested_fullscreen_ui)
     FullscreenUI::Initialize(preserve_fsui_state);
 
-  InputManager::SetDisplayWindowSize(ImGuiManager::GetWindowWidth(), ImGuiManager::GetWindowHeight());
-
   if (const GPUSwapChain* swap_chain = g_gpu_device->GetMainSwapChain())
     s_state.render_window_info = swap_chain->GetWindowInfo();
   else
@@ -1416,7 +1414,6 @@ void GPUThread::DisplayWindowResizedOnThread()
   const float f_width = static_cast<float>(std::max(swap_chain->GetWidth(), 1u));
   const float f_height = static_cast<float>(std::max(swap_chain->GetHeight(), 1u));
   ImGuiManager::WindowResized(swap_chain->GetFormat(), f_width, f_height);
-  InputManager::SetDisplayWindowSize(f_width, f_height);
 
   // If we're paused, re-present the current frame at the new window size.
   if (s_state.gpu_backend && IsSystemPaused())

@@ -952,9 +952,9 @@ void CoreThread::onDisplayWindowMouseMoveAbsoluteEvent(float x, float y)
 void CoreThread::onDisplayWindowMouseMoveRelativeEvent(float dx, float dy)
 {
   if (dx != 0.0f)
-    InputManager::UpdatePointerRelativeDelta(0, InputPointerAxis::X, dx);
+    InputManager::UpdatePointerPositionRelativeDelta(0, InputPointerAxis::X, dx);
   if (dy != 0.0f)
-    InputManager::UpdatePointerRelativeDelta(0, InputPointerAxis::Y, dy);
+    InputManager::UpdatePointerPositionRelativeDelta(0, InputPointerAxis::Y, dy);
 }
 
 void CoreThread::onDisplayWindowMouseButtonEvent(int button, bool pressed)
@@ -970,10 +970,10 @@ void CoreThread::onDisplayWindowMouseWheelEvent(float dx, float dy)
   DebugAssert(isCurrentThread());
 
   if (dx != 0.0f)
-    InputManager::UpdatePointerRelativeDelta(0, InputPointerAxis::WheelX, dx);
+    InputManager::UpdatePointerWheelRelativeDelta(0, InputPointerAxis::WheelX, dx);
 
   if (dy != 0.0f)
-    InputManager::UpdatePointerRelativeDelta(0, InputPointerAxis::WheelY, dy);
+    InputManager::UpdatePointerWheelRelativeDelta(0, InputPointerAxis::WheelY, dy);
 }
 
 void CoreThread::onDisplayWindowResized(int width, int height, float scale, float refresh_rate)
