@@ -17,54 +17,44 @@
 
 LOG_CHANNEL(GPUDevice);
 
-#pragma pack(push, 1)
 struct CacheFileHeader
 {
   u32 signature;
   u32 render_api_version;
   u32 cache_version;
 };
-struct CacheIndexEntry
-{
-  u8 shader_type;
-  u8 shader_language;
-  u8 unused[2];
-  u32 source_length;
-  u64 source_hash_low;
-  u64 source_hash_high;
-  u64 entry_point_low;
-  u64 entry_point_high;
-  u32 file_offset;
-  u32 compressed_size;
-  u32 uncompressed_size;
-};
-#pragma pack(pop)
+static_assert(sizeof(CacheFileHeader) == 12, "Cache file header has no padding");
 
 static constexpr u32 EXPECTED_SIGNATURE = 0x434B5544; // DUKC
 
-GPUShaderCache::GPUShaderCache() = default;
+static constexpr size_t KEY_COPY_SIZE = offsetof(GPUShaderCache::CacheIndexKey, unused);
+
+template<typename A, typename B>
+ALWAYS_INLINE static int CompareEntries(const A& a, const B& b)
+{
+  // don't compare file fields when looking up
+  return std::memcmp(&a, &b, KEY_COPY_SIZE);
+}
+
+GPUShaderCache::GPUShaderCache()
+{
+  static_assert(std::is_standard_layout_v<CacheIndexKey> && std::is_trivially_copyable_v<CacheIndexKey>,
+                "Cache key must be trivially copyable");
+  static_assert(std::is_standard_layout_v<CacheIndexEntry> && std::is_trivially_copyable_v<CacheIndexEntry>,
+                "Cache entry must be trivially copyable");
+  static_assert(offsetof(CacheIndexKey, shader_type) == offsetof(CacheIndexEntry, shader_type) &&
+                  offsetof(CacheIndexKey, shader_language) == offsetof(CacheIndexEntry, shader_language) &&
+                  offsetof(CacheIndexKey, source_hash_low) == offsetof(CacheIndexEntry, source_hash_low) &&
+                  offsetof(CacheIndexKey, source_hash_high) == offsetof(CacheIndexEntry, source_hash_high) &&
+                  offsetof(CacheIndexKey, entry_point_low) == offsetof(CacheIndexEntry, entry_point_low) &&
+                  offsetof(CacheIndexKey, entry_point_high) == offsetof(CacheIndexEntry, entry_point_high) &&
+                  offsetof(CacheIndexKey, source_length) == offsetof(CacheIndexEntry, source_length),
+                "Cache key and entry must have matching layout");
+}
 
 GPUShaderCache::~GPUShaderCache()
 {
   Close();
-}
-
-bool GPUShaderCache::CacheIndexKey::operator==(const CacheIndexKey& key) const
-{
-  return (std::memcmp(this, &key, sizeof(*this)) == 0);
-}
-
-bool GPUShaderCache::CacheIndexKey::operator!=(const CacheIndexKey& key) const
-{
-  return (std::memcmp(this, &key, sizeof(*this)) != 0);
-}
-
-std::size_t GPUShaderCache::CacheIndexEntryHash::operator()(const CacheIndexKey& e) const noexcept
-{
-  std::size_t h = 0;
-  hash_combine(h, e.entry_point_low, e.entry_point_high, e.source_hash_low, e.source_hash_high, e.source_length,
-               e.shader_type);
-  return h;
 }
 
 bool GPUShaderCache::Open(std::string_view base_filename, u32 render_api_version, u32 cache_version)
@@ -196,36 +186,41 @@ bool GPUShaderCache::ReadExisting(const std::string& index_filename, const std::
     return false;
   }
 
-  std::fseek(m_blob_file, 0, SEEK_END);
-  const u32 blob_file_size = static_cast<u32>(std::ftell(m_blob_file));
-
-  for (;;)
+  const s64 start_pos = FileSystem::FTell64(m_index_file);
+  s64 end_pos;
+  if (start_pos < 0 || !FileSystem::FSeek64(m_index_file, 0, SEEK_END, nullptr) ||
+      (end_pos = FileSystem::FTell64(m_index_file)) < 0 ||
+      !FileSystem::FSeek64(m_index_file, start_pos, SEEK_SET, nullptr) ||
+      ((end_pos - start_pos) % sizeof(CacheIndexEntry)) != 0) [[unlikely]]
   {
-    CacheIndexEntry entry;
-    if (std::fread(&entry, sizeof(entry), 1, m_index_file) != 1 ||
-        (entry.file_offset + entry.compressed_size) > blob_file_size) [[unlikely]]
-    {
-      if (std::feof(m_index_file))
-        break;
+    ERROR_LOG("Failed to seek in index file '{}'", Path::GetFileName(index_filename));
+    std::fclose(m_blob_file);
+    m_blob_file = nullptr;
+    std::fclose(m_index_file);
+    m_index_file = nullptr;
+    return false;
+  }
 
-      ERROR_LOG("Failed to read entry from '{}', corrupt file?", Path::GetFileName(index_filename));
-      m_index.clear();
-      std::fclose(m_blob_file);
-      m_blob_file = nullptr;
-      std::fclose(m_index_file);
-      m_index_file = nullptr;
-      return false;
-    }
+  const size_t num_entries = static_cast<size_t>((end_pos - start_pos) / sizeof(CacheIndexEntry));
+  m_index.resize(num_entries);
 
-    const CacheIndexKey key{entry.shader_type,     entry.shader_language, {},
-                            entry.source_length,   entry.source_hash_low, entry.source_hash_high,
-                            entry.entry_point_low, entry.entry_point_high};
-    const CacheIndexData data{entry.file_offset, entry.compressed_size, entry.uncompressed_size};
-    m_index.emplace(key, data);
+  if (std::fread(m_index.data(), sizeof(CacheIndexEntry), num_entries, m_index_file) != num_entries) [[unlikely]]
+  {
+    ERROR_LOG("Failed to read entries from index file '{}'", Path::GetFileName(index_filename));
+    m_index.clear();
+    std::fclose(m_blob_file);
+    m_blob_file = nullptr;
+    std::fclose(m_index_file);
+    m_index_file = nullptr;
+    return false;
   }
 
   // ensure we don't write before seeking
-  std::fseek(m_index_file, 0, SEEK_END);
+  FileSystem::FSeek64(m_index_file, 0, SEEK_END);
+
+  // the index won't be sorted initially, since the file is append only
+  std::ranges::sort(m_index,
+                    [](const CacheIndexEntry& a, const CacheIndexEntry& b) { return (CompareEntries(a, b) < 0); });
 
   DEV_LOG("Read {} entries from '{}'", m_index.size(), Path::GetFileName(index_filename));
   return true;
@@ -244,9 +239,9 @@ GPUShaderCache::CacheIndexKey GPUShaderCache::GetCacheKey(GPUShaderStage stage, 
     u8 hash[16];
   } h;
 
-  CacheIndexKey key = {};
-  key.shader_type = static_cast<u8>(stage);
-  key.shader_language = static_cast<u8>(language);
+  CacheIndexKey key;
+  key.shader_type = static_cast<u32>(stage);
+  key.shader_language = static_cast<u32>(language);
 
   MD5Digest digest;
   digest.Update(shader_code.data(), static_cast<u32>(shader_code.length()));
@@ -268,15 +263,17 @@ std::optional<GPUShaderCache::ShaderBinary> GPUShaderCache::Lookup(const CacheIn
 {
   std::optional<ShaderBinary> ret;
 
-  auto iter = m_index.find(key);
-  if (iter != m_index.end())
+  const auto iter =
+    std::lower_bound(m_index.begin(), m_index.end(), key,
+                     [](const CacheIndexEntry& a, const CacheIndexKey& b) { return (CompareEntries(a, b) < 0); });
+  if (iter != m_index.end() && CompareEntries(*iter, key) == 0)
   {
-    DynamicHeapArray<u8> compressed_data(iter->second.compressed_size);
+    DynamicHeapArray<u8> compressed_data(iter->compressed_size);
 
-    if (std::fseek(m_blob_file, iter->second.file_offset, SEEK_SET) != 0 ||
-        std::fread(compressed_data.data(), iter->second.compressed_size, 1, m_blob_file) != 1) [[unlikely]]
+    if (std::fseek(m_blob_file, iter->file_offset, SEEK_SET) != 0 ||
+        std::fread(compressed_data.data(), iter->compressed_size, 1, m_blob_file) != 1) [[unlikely]]
     {
-      ERROR_LOG("Read {} byte {} shader from file failed", iter->second.compressed_size,
+      ERROR_LOG("Read {} byte {} shader from file failed", iter->compressed_size,
                 GPUShader::GetStageName(static_cast<GPUShaderStage>(key.shader_type)));
     }
     else
@@ -284,7 +281,7 @@ std::optional<GPUShaderCache::ShaderBinary> GPUShaderCache::Lookup(const CacheIn
       Error error;
       ret = CompressHelpers::DecompressBuffer(CompressHelpers::CompressType::Zstandard,
                                               CompressHelpers::OptionalByteBuffer(std::move(compressed_data)),
-                                              iter->second.uncompressed_size, &error);
+                                              iter->uncompressed_size, &error);
       if (!ret.has_value()) [[unlikely]]
         ERROR_LOG("Failed to decompress shader: {}", error.GetDescription());
     }
@@ -307,34 +304,27 @@ bool GPUShaderCache::Insert(const CacheIndexKey& key, const void* data, u32 data
   if (!m_blob_file || std::fseek(m_blob_file, 0, SEEK_END) != 0)
     return false;
 
-  CacheIndexData idata;
-  idata.file_offset = static_cast<u32>(std::ftell(m_blob_file));
-  idata.compressed_size = static_cast<u32>(compress_buffer->size());
-  idata.uncompressed_size = data_size;
-
-  CacheIndexEntry entry = {};
-  entry.shader_type = static_cast<u8>(key.shader_type);
-  entry.shader_language = static_cast<u8>(key.shader_language);
-  entry.source_length = key.source_length;
-  entry.source_hash_low = key.source_hash_low;
-  entry.source_hash_high = key.source_hash_high;
-  entry.entry_point_low = key.entry_point_low;
-  entry.entry_point_high = key.entry_point_high;
-  entry.file_offset = idata.file_offset;
-  entry.compressed_size = idata.compressed_size;
-  entry.uncompressed_size = idata.uncompressed_size;
+  auto iter =
+    std::lower_bound(m_index.begin(), m_index.end(), key,
+                     [](const CacheIndexEntry& a, const CacheIndexKey& b) { return (CompareEntries(a, b) < 0); });
+  iter = m_index.emplace(iter);
+  std::memcpy(&(*iter), &key, KEY_COPY_SIZE);
+  iter->file_offset = static_cast<u32>(std::ftell(m_blob_file));
+  iter->compressed_size = static_cast<u32>(compress_buffer->size());
+  iter->uncompressed_size = data_size;
 
   if (std::fwrite(compress_buffer->data(), compress_buffer->size(), 1, m_blob_file) != 1 ||
-      std::fflush(m_blob_file) != 0 || std::fwrite(&entry, sizeof(entry), 1, m_index_file) != 1 ||
+      std::fflush(m_blob_file) != 0 || std::fwrite(&(*iter), sizeof(CacheIndexEntry), 1, m_index_file) != 1 ||
       std::fflush(m_index_file) != 0) [[unlikely]]
   {
     ERROR_LOG("Failed to write {} byte {} shader blob to file", data_size,
               GPUShader::GetStageName(static_cast<GPUShaderStage>(key.shader_type)));
+    m_index.erase(iter);
     return false;
   }
 
   DEV_LOG("Cached compressed {} shader: {} -> {} bytes",
           GPUShader::GetStageName(static_cast<GPUShaderStage>(key.shader_type)), data_size, compress_buffer->size());
-  m_index.emplace(key, idata);
+
   return true;
 }

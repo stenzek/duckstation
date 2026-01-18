@@ -3,14 +3,12 @@
 
 #pragma once
 
-#include "common/hash_combine.h"
 #include "common/heap_array.h"
 #include "common/types.h"
 
 #include <optional>
 #include <string>
 #include <string_view>
-#include <unordered_map>
 #include <vector>
 
 enum class GPUShaderStage : u8;
@@ -21,26 +19,18 @@ class GPUShaderCache
 public:
   using ShaderBinary = DynamicHeapArray<u8>;
 
-  struct alignas(8) CacheIndexKey
+  struct CacheIndexKey
   {
-    u8 shader_type;
-    u8 shader_language;
-    u8 unused[2];
-    u32 source_length;
+    u32 shader_type;
+    u32 shader_language;
     u64 source_hash_low;
     u64 source_hash_high;
     u64 entry_point_low;
     u64 entry_point_high;
-
-    bool operator==(const CacheIndexKey& key) const;
-    bool operator!=(const CacheIndexKey& key) const;
+    u32 source_length;
+    u32 unused;
   };
-  static_assert(sizeof(CacheIndexKey) == 40, "Cache key has no padding");
-
-  struct CacheIndexEntryHash
-  {
-    std::size_t operator()(const CacheIndexKey& e) const noexcept;
-  };
+  static_assert(sizeof(CacheIndexKey) == 48, "Cache index key has no padding");
 
   GPUShaderCache();
   ~GPUShaderCache();
@@ -62,14 +52,22 @@ public:
   void Clear();
 
 private:
-  struct CacheIndexData
+  struct CacheIndexEntry
   {
+    u32 shader_type;
+    u32 shader_language;
+    u64 source_hash_low;
+    u64 source_hash_high;
+    u64 entry_point_low;
+    u64 entry_point_high;
+    u32 source_length;
     u32 file_offset;
     u32 compressed_size;
     u32 uncompressed_size;
   };
+  static_assert(sizeof(CacheIndexEntry) == 56, "Cache index entry has no padding");
 
-  using CacheIndex = std::unordered_map<CacheIndexKey, CacheIndexData, CacheIndexEntryHash>;
+  using CacheIndex = std::vector<CacheIndexEntry>;
 
   bool CreateNew(const std::string& index_filename, const std::string& blob_filename);
   bool ReadExisting(const std::string& index_filename, const std::string& blob_filename);

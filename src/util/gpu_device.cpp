@@ -14,6 +14,7 @@
 #include "common/dynamic_library.h"
 #include "common/error.h"
 #include "common/file_system.h"
+#include "common/hash_combine.h"
 #include "common/log.h"
 #include "common/path.h"
 #include "common/scoped_guard.h"
