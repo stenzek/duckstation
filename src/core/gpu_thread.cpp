@@ -1270,15 +1270,27 @@ bool GPUThread::IsUsingThread()
 
 void GPUThread::ResizeDisplayWindow(s32 width, s32 height, float scale, float refresh_rate)
 {
-  s_state.render_window_info.surface_width =
-    static_cast<u16>(std::clamp<s32>(width, 1, std::numeric_limits<u16>::max()));
-  s_state.render_window_info.surface_height =
-    static_cast<u16>(std::clamp<s32>(height, 1, std::numeric_limits<u16>::max()));
+  const u16 clamped_width = static_cast<u16>(std::clamp<s32>(width, 1, std::numeric_limits<u16>::max()));
+  const u16 clamped_height = static_cast<u16>(std::clamp<s32>(height, 1, std::numeric_limits<u16>::max()));
+  const bool size_changed = (s_state.render_window_info.surface_width != clamped_width ||
+                             s_state.render_window_info.surface_height != clamped_height);
+  const bool refresh_rate_changed = (s_state.render_window_info.surface_refresh_rate != refresh_rate);
+
+  s_state.render_window_info.surface_width = clamped_width;
+  s_state.render_window_info.surface_height = clamped_height;
   s_state.render_window_info.surface_scale = scale;
   s_state.render_window_info.surface_refresh_rate = refresh_rate;
+
   RunOnThread(
     [width, height, scale, refresh_rate]() { ResizeDisplayWindowOnThread(width, height, scale, refresh_rate); });
-  System::DisplayWindowResized();
+
+  if (System::IsValid())
+  {
+    if (size_changed)
+      System::DisplayWindowResized();
+    if (refresh_rate_changed)
+      System::UpdateSpeedLimiterState();
+  }
 }
 
 void GPUThread::ResizeDisplayWindowOnThread(u32 width, u32 height, float scale, float refresh_rate)

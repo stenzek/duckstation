@@ -6214,9 +6214,7 @@ void System::RequestDisplaySize(float scale /*= 0.0f*/)
 
 void System::DisplayWindowResized()
 {
-  if (!IsValid())
-    return;
-
+  DebugAssert(IsValid());
   UpdateGTEAspectRatio();
   UpdateAutomaticResolutionScale();
 }

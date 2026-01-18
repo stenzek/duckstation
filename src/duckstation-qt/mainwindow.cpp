@@ -2386,7 +2386,7 @@ void MainWindow::switchToEmulationView()
     m_ui.actionViewSystemDisplay->setChecked(true);
 
     // size of the widget might have changed, let it check itself
-    m_display_widget->checkForSizeChange();
+    m_display_widget->checkForSizeChange(false);
     m_display_widget->setFocus();
   }
   else

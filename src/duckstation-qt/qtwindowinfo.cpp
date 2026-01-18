@@ -133,22 +133,7 @@ std::optional<WindowInfo> QtUtils::GetWindowInfoForWidget(QWidget* widget, Rende
 #endif
 
   UpdateSurfaceSize(widget, render_api, &wi);
-
-  // Query refresh rate, we need it for sync.
-  Error refresh_rate_error;
-  std::optional<float> surface_refresh_rate = WindowInfo::QueryRefreshRateForWindow(wi, &refresh_rate_error);
-  if (!surface_refresh_rate.has_value())
-  {
-    WARNING_LOG("Failed to get refresh rate for window, falling back to Qt: {}", refresh_rate_error.GetDescription());
-
-    // Fallback to using the screen, getting the rate for Wayland is an utter mess otherwise.
-    const QScreen* widget_screen = widget->screen();
-    if (!widget_screen)
-      widget_screen = QGuiApplication::primaryScreen();
-    surface_refresh_rate = widget_screen ? static_cast<float>(widget_screen->refreshRate()) : 0.0f;
-  }
-
-  wi.surface_refresh_rate = surface_refresh_rate.value();
+  UpdateSurfaceRefreshRate(widget, &wi);
 
   INFO_LOG("Window size: {}x{} (Qt {}x{}), scale: {}, refresh rate {} hz", wi.surface_width, wi.surface_height,
            widget->width(), widget->height(), wi.surface_scale, wi.surface_refresh_rate);
@@ -202,6 +187,26 @@ void QtUtils::UpdateSurfaceSize(QWidget* widget, RenderAPI render_api, WindowInf
   wi->surface_width = static_cast<u16>(scaled_size.width());
   wi->surface_height = static_cast<u16>(scaled_size.height());
   wi->surface_scale = static_cast<float>(device_pixel_ratio);
+}
+
+void QtUtils::UpdateSurfaceRefreshRate(QWidget* widget, WindowInfo* wi)
+{
+  // Query refresh rate, we need it for sync.
+  Error refresh_rate_error;
+  std::optional<float> surface_refresh_rate = WindowInfo::QueryRefreshRateForWindow(*wi, &refresh_rate_error);
+  if (surface_refresh_rate.has_value())
+  {
+    wi->surface_refresh_rate = surface_refresh_rate.value();
+    return;
+  }
+
+  WARNING_LOG("Failed to get refresh rate for window, falling back to Qt: {}", refresh_rate_error.GetDescription());
+
+  // Fallback to using the screen, getting the rate for Wayland is an utter mess otherwise.
+  const QScreen* widget_screen = widget->screen();
+  if (!widget_screen)
+    widget_screen = QGuiApplication::primaryScreen();
+  wi->surface_refresh_rate = widget_screen ? static_cast<float>(widget_screen->refreshRate()) : 0.0f;
 }
 
 #ifdef __linux__

@@ -23,8 +23,8 @@ std::optional<WindowInfo> GetWindowInfoForWidget(QWidget* widget, RenderAPI rend
 /// Also sets the "real" DPR scale for the widget, ignoring any operating-system level downsampling.
 void UpdateSurfaceSize(QWidget* widget, RenderAPI render_api, WindowInfo* wi);
 
-/// Changes the screensaver inhibit state.
-bool SetScreensaverInhibit(bool inhibit, Error* error);
+/// Updates the window's refresh rate.
+void UpdateSurfaceRefreshRate(QWidget* widget, WindowInfo* wi);
 
 #ifdef _WIN32
 

@@ -51,10 +51,29 @@ DisplayWidget::DisplayWidget(QWidget* parent) : QWidget(parent)
 
 DisplayWidget::~DisplayWidget() = default;
 
+void DisplayWidget::registerScreenChangeEvent()
+{
+  DebugAssert(!m_screen_change_registered);
+
+  QWidget* parent_widget = qobject_cast<QWidget*>(parent());
+  if (!parent_widget)
+    parent_widget = this;
+  QWindow* parent_window_handle = parent_widget->windowHandle();
+  if (parent_window_handle)
+    connect(parent_window_handle, &QWindow::screenChanged, this, [this]() { checkForSizeChange(true); });
+
+  m_screen_change_registered = true;
+}
+
 const std::optional<WindowInfo>& DisplayWidget::getWindowInfo(RenderAPI render_api, Error* error)
 {
   if (!m_window_info.has_value())
+  {
     m_window_info = QtUtils::GetWindowInfoForWidget(this, render_api, error);
+
+    if (m_window_info.has_value() && !m_screen_change_registered)
+      registerScreenChangeEvent();
+  }
 
   m_render_api = m_window_info.has_value() ? render_api : RenderAPI::None;
   return m_window_info;
@@ -66,19 +85,24 @@ void DisplayWidget::clearWindowInfo()
   m_window_info.reset();
 }
 
-void DisplayWidget::checkForSizeChange()
+void DisplayWidget::checkForSizeChange(bool update_refresh_rate)
 {
   if (!m_window_info.has_value())
     return;
 
-  // TODO: Handle refresh rate changes
   // avoid spamming resize events for paint events (sent on move on windows)
   const u16 prev_width = m_window_info->surface_width;
   const u16 prev_height = m_window_info->surface_height;
   const float prev_scale = m_window_info->surface_scale;
+  const float prev_refresh_rate = m_window_info->surface_refresh_rate;
+
   QtUtils::UpdateSurfaceSize(this, m_render_api, &m_window_info.value());
+
+  if (update_refresh_rate)
+    QtUtils::UpdateSurfaceRefreshRate(this, &m_window_info.value());
+
   if (prev_width != m_window_info->surface_width || prev_height != m_window_info->surface_height ||
-      prev_scale != m_window_info->surface_scale)
+      prev_scale != m_window_info->surface_scale || prev_refresh_rate != m_window_info->surface_refresh_rate)
   {
     DEV_LOG("Display widget resized to {}x{} (Qt {}x{}) DPR={}", m_window_info->surface_width,
             m_window_info->surface_height, width(), height(), m_window_info->surface_scale);
@@ -378,7 +402,7 @@ bool DisplayWidget::event(QEvent* event)
     {
       QWidget::event(event);
 
-      checkForSizeChange();
+      checkForSizeChange(false);
       return true;
     }
 

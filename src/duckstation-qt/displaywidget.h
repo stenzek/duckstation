@@ -37,7 +37,7 @@ public:
   void updateRelativeMode(bool enabled);
   void updateCursor(bool hidden);
 
-  void checkForSizeChange();
+  void checkForSizeChange(bool update_refresh_rate);
   void handleCloseEvent(QCloseEvent* event);
   void destroy();
 
@@ -55,6 +55,7 @@ protected:
   bool event(QEvent* event) override;
 
 private:
+  void registerScreenChangeEvent();
   bool isActuallyFullscreen() const;
   void updateCenterPos();
 
@@ -68,6 +69,7 @@ private:
 #endif
   bool m_cursor_hidden = false;
   bool m_destroying = false;
+  bool m_screen_change_registered = false;
 
   RenderAPI m_render_api = RenderAPI::None;
   std::optional<WindowInfo> m_window_info;
