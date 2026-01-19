@@ -228,6 +228,34 @@ std::optional<float> CocoaTools::GetViewRefreshRate(const void* view, Error* err
   if (CGDisplayModeRef mode = CGDisplayCopyDisplayMode(did))
   {
     ret = CGDisplayModeGetRefreshRate(mode);
+    if (ret.value() <= 0.0f)
+    {
+      ret.reset();
+
+      // Ignore deprecration warnings here. The new APIs don't seem to have something that matches the semantics.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+
+      CVDisplayLinkRef link = nullptr;
+      if (CVDisplayLinkCreateWithCGDisplay(did, &link) == 0)
+      {
+        const CVTime time = CVDisplayLinkGetNominalOutputVideoRefreshPeriod(link);
+        if (!(time.flags & kCVTimeIsIndefinite) && time.timeValue != 0)
+        {
+          ret = static_cast<float>(static_cast<double>(time.timeScale) / static_cast<double>(time.timeValue));
+        }
+        else
+        {
+          Error::SetStringFmt(error, "Refresh period is invalid (flags=0x{:X}, timeValue={}, timeScale={})",
+                              static_cast<u32>(time.flags), time.timeValue, time.timeScale);
+        }
+      }
+      else
+      {
+        Error::SetStringView(error, "CVDisplayLinkCreateWithCGDisplay() failed");
+      }
+#pragma clang diagnostic pop
+    }
     CGDisplayModeRelease(mode);
   }
   else
