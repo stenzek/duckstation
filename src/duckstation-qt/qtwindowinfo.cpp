@@ -194,7 +194,7 @@ void QtUtils::UpdateSurfaceRefreshRate(QWidget* widget, WindowInfo* wi)
   // Query refresh rate, we need it for sync.
   Error refresh_rate_error;
   std::optional<float> surface_refresh_rate = WindowInfo::QueryRefreshRateForWindow(*wi, &refresh_rate_error);
-  if (surface_refresh_rate.has_value())
+  if (surface_refresh_rate.value_or(0.0f) > 0.0f)
   {
     wi->surface_refresh_rate = surface_refresh_rate.value();
     return;
