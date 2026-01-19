@@ -1996,10 +1996,12 @@ bool PostProcessing::SlangShader::ResizeTargets(u32 source_width, u32 source_hei
     if (pass.output_texture_id < 0)
       continue;
 
-    const u32 tex_width =
-      apply_scale(pass.output_scale[0].first, pass.output_scale[0].second, prev_width, viewport_width, source_width);
-    const u32 tex_height =
-      apply_scale(pass.output_scale[1].first, pass.output_scale[1].second, prev_height, viewport_height, source_height);
+    const u32 tex_width = std::max<u32>(
+      apply_scale(pass.output_scale[0].first, pass.output_scale[0].second, prev_width, viewport_width, source_width),
+      1);
+    const u32 tex_height = std::max<u32>(
+      apply_scale(pass.output_scale[1].first, pass.output_scale[1].second, prev_height, viewport_height, source_height),
+      1);
 
     // Source for the next pass is the previous pass's output.
     prev_width = tex_width;

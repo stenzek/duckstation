@@ -1586,8 +1586,8 @@ bool PostProcessing::ReShadeFXShader::ResizeTargets(u32 source_width, u32 source
     if (!tex.render_target)
       continue;
 
-    const u32 t_width = (tex.render_target_width > 0) ? tex.render_target_width : target_width;
-    const u32 t_height = (tex.render_target_height > 0) ? tex.render_target_height : target_height;
+    const u32 t_width = (tex.render_target_width > 0) ? tex.render_target_width : std::max<u32>(target_width, 1);
+    const u32 t_height = (tex.render_target_height > 0) ? tex.render_target_height : std::max<u32>(target_height, 1);
     if (!g_gpu_device->ResizeTexture(&tex.texture, t_width, t_height, GPUTexture::Type::RenderTarget, tex.format,
                                      tex.storage_access ? GPUTexture::Flags::AllowBindAsImage : GPUTexture::Flags::None,
                                      false, error))
