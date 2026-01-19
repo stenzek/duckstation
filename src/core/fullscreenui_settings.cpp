@@ -4932,7 +4932,7 @@ void FullscreenUI::DrawAchievementsSettingsPage(std::unique_lock<std::mutex>& se
   DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_LIST_OL, "Leaderboard Notifications"),
                     FSUI_VSTR("Displays popup messages when starting, submitting, or failing a leaderboard challenge."),
                     "Cheevos", "LeaderboardNotifications", true, enabled);
-  DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_CLOCK, "Leaderboard Trackers"),
+  DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_STOPWATCH, "Leaderboard Trackers"),
                     FSUI_VSTR("Shows a timer in the selected location when leaderboard challenges are active."),
                     "Cheevos", "LeaderboardTrackers", true, enabled);
   DrawToggleSetting(

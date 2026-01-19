@@ -262,7 +262,7 @@ DEFINE_HOTKEY("IncreaseEmulationSpeed", TRANSLATE_NOOP("Hotkeys", "System"),
                   g_settings.emulation_speed += 0.1f;
                   System::UpdateSpeedLimiterState();
                   Host::AddIconOSDMessage(
-                    OSDMessageType::Quick, "EmulationSpeedChange", ICON_FA_GAUGE_SIMPLE_HIGH,
+                    OSDMessageType::Quick, "EmulationSpeedChange", ICON_FA_GAUGE,
                     fmt::format(TRANSLATE_FS("OSDMessage", "Emulation speed set to {}%."),
                                 static_cast<u32>(std::lround(g_settings.emulation_speed * 100.0f))));
                 }
@@ -276,7 +276,7 @@ DEFINE_HOTKEY("DecreaseEmulationSpeed", TRANSLATE_NOOP("Hotkeys", "System"),
                     std::max(g_settings.emulation_speed - 0.1f, Achievements::IsHardcoreModeActive() ? 1.0f : 0.1f);
                   System::UpdateSpeedLimiterState();
                   Host::AddIconOSDMessage(
-                    OSDMessageType::Quick, "EmulationSpeedChange", ICON_FA_GAUGE_SIMPLE_HIGH,
+                    OSDMessageType::Quick, "EmulationSpeedChange", ICON_FA_GAUGE,
                     fmt::format(TRANSLATE_FS("OSDMessage", "Emulation speed set to {}%."),
                                 static_cast<u32>(std::lround(g_settings.emulation_speed * 100.0f))));
                 }
@@ -290,7 +290,7 @@ DEFINE_HOTKEY("ResetEmulationSpeed", TRANSLATE_NOOP("Hotkeys", "System"),
                                                         Achievements::IsHardcoreModeActive() ? 1.0f : 0.1f);
                   System::UpdateSpeedLimiterState();
                   Host::AddIconOSDMessage(
-                    OSDMessageType::Quick, "EmulationSpeedChange", ICON_FA_GAUGE_SIMPLE_HIGH,
+                    OSDMessageType::Quick, "EmulationSpeedChange", ICON_FA_GAUGE,
                     fmt::format(TRANSLATE_FS("OSDMessage", "Emulation speed set to {}%."),
                                 static_cast<u32>(std::lround(g_settings.emulation_speed * 100.0f))));
                 }
