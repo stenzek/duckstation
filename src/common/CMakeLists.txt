@@ -37,8 +37,6 @@ add_library(common
   memmap.h
   md5_digest.cpp
   md5_digest.h
-  memory_settings_interface.cpp
-  memory_settings_interface.h
   minizip_helpers.h
   path.h
   perf_scope.cpp

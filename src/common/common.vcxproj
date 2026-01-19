@@ -29,7 +29,6 @@
     <ClInclude Include="log_channels.h" />
     <ClInclude Include="lru_cache.h" />
     <ClInclude Include="memmap.h" />
-    <ClInclude Include="memory_settings_interface.h" />
     <ClInclude Include="md5_digest.h" />
     <ClInclude Include="path.h" />
     <ClInclude Include="perf_scope.h" />
@@ -66,7 +65,6 @@
     <ClCompile Include="layered_settings_interface.cpp" />
     <ClCompile Include="log.cpp" />
     <ClCompile Include="memmap.cpp" />
-    <ClCompile Include="memory_settings_interface.cpp" />
     <ClCompile Include="md5_digest.cpp" />
     <ClCompile Include="perf_scope.cpp" />
     <ClCompile Include="progress_callback.cpp" />

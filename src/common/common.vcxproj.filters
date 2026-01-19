@@ -30,7 +30,6 @@
     <ClInclude Include="settings_interface.h" />
     <ClInclude Include="layered_settings_interface.h" />
     <ClInclude Include="heterogeneous_containers.h" />
-    <ClInclude Include="memory_settings_interface.h" />
     <ClInclude Include="threading.h" />
     <ClInclude Include="scoped_guard.h" />
     <ClInclude Include="sha1_digest.h" />
@@ -75,7 +74,6 @@
     <ClCompile Include="crash_handler.cpp" />
     <ClCompile Include="error.cpp" />
     <ClCompile Include="layered_settings_interface.cpp" />
-    <ClCompile Include="memory_settings_interface.cpp" />
     <ClCompile Include="threading.cpp" />
     <ClCompile Include="sha1_digest.cpp" />
     <ClCompile Include="fastjmp.cpp" />
