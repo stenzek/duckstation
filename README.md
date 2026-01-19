@@ -82,9 +82,10 @@ DuckStation **requires** Windows 10/11, specifically version 1809 or newer. If y
 If you must use an older operating system, [v0.1-5624](https://github.com/duckstation/old-releases/releases/tag/v0.1-5624) is the last version which will run. But do not expect to recieve any assistance, these builds are no longer supported.
 
 To download:
- - Go to https://github.com/stenzek/duckstation/releases/tag/latest, and download the Windows x64 build. This is a zip archive containing the prebuilt binary. If you have an ARM64 Windows machine such as Snapdragon, download the Windows ARM64 build.
- - Alternatively, direct download link: https://github.com/stenzek/duckstation/releases/download/latest/duckstation-windows-x64-release.zip
- - Extract the archive **to a subdirectory**. The archive has no root subdirectory, so extracting to the current directory will drop a bunch of files in your download directory if you do not extract to a subdirectory.
+
+1. Go to https://github.com/stenzek/duckstation/releases/tag/latest, and download the Windows x64 build. This is a zip archive containing the prebuilt binary. If you have an ARM64 Windows machine such as Snapdragon, download the Windows ARM64 build.
+2. Alternatively, direct download link: https://github.com/stenzek/duckstation/releases/download/latest/duckstation-windows-x64-release.zip
+3. Extract the archive **to a subdirectory**. The archive has no root subdirectory, so extracting to the current directory will drop a bunch of files in your download directory if you do not extract to a subdirectory.
 
 Once downloaded and extracted, you can launch the emulator with `duckstation-qt-x64-ReleaseLTCG.exe`. Follow the Setup Wizard to get started.
 
@@ -98,8 +99,8 @@ DuckStation is provided for x86_64/ARM32/ARM64 Linux in AppImage formats.
 
 The AppImages require a distribution equivalent to Ubuntu 22.04 or newer to run.
 
- - Go to https://github.com/stenzek/duckstation/releases/tag/latest, and download `duckstation-x64.AppImage`.
- - Run `chmod a+x` on the downloaded AppImage -- following this step, the AppImage can be run like a typical executable.
+1. Go to https://github.com/stenzek/duckstation/releases/tag/latest, and download `duckstation-x64.AppImage`.
+2. Run `chmod a+x` on the downloaded AppImage -- following this step, the AppImage can be run like a typical executable.
 
 If you were previously using the Flatpak package, to migrate your data from the Flatpak to the AppImage, you can run the following command:
 ```bash
@@ -115,10 +116,17 @@ Universal macOS builds are provided for both x86_64 (Intel) and ARM64 (Apple Sil
 macOS Ventura (13.3) is required, as this is also the minimum requirement for Qt.
 
 To download:
- - Go to https://github.com/stenzek/duckstation/releases/tag/latest, and download `duckstation-mac-release.zip`.
- - Extract the zip by double-clicking it.
- - Open `DuckStation.app`, optionally moving it to your desired location first.
- - Depending on GateKeeper configuration, you may need to right click -> Open the first time you run it, as code signing certificates are out of the question for a project which brings in zero revenue.
+
+1. Go to https://github.com/stenzek/duckstation/releases/tag/latest, and download `duckstation-mac-release.zip`.
+2. Extract the zip by double-clicking it.
+3. Open `DuckStation.app`, optionally moving it to your desired location first.
+
+If you receive a message about the app being from an unidentified developer:
+
+1. Open System Settings -> Privacy & Security, or enter "Gatekeeper" in the search bar.
+2. Under the "Security" section, there should be a message about DuckStation being blocked. Click "Open Anyway".
+
+Unfortunately this is required as Apple requires code signing for apps to be run without warnings, and I do not have a code signing certificate since a yearly cost is out of the question for a project which brings in zero revenue.
 
 ### Android
 
