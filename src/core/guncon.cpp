@@ -1,8 +1,9 @@
-// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "guncon.h"
 #include "gpu.h"
+#include "gpu_thread.h"
 #include "system.h"
 
 #include "util/imgui_manager.h"
@@ -235,7 +236,9 @@ std::pair<float, float> GunCon::GetAbsolutePositionFromRelativeAxes() const
 {
   const float screen_rel_x = (((m_relative_pos[1] > 0.0f) ? m_relative_pos[1] : -m_relative_pos[0]) + 1.0f) * 0.5f;
   const float screen_rel_y = (((m_relative_pos[3] > 0.0f) ? m_relative_pos[3] : -m_relative_pos[2]) + 1.0f) * 0.5f;
-  return std::make_pair(screen_rel_x * ImGuiManager::GetWindowWidth(), screen_rel_y * ImGuiManager::GetWindowHeight());
+  const WindowInfo& wi = GPUThread::GetRenderWindowInfo();
+  return std::make_pair(screen_rel_x * static_cast<float>(wi.surface_width),
+                        screen_rel_y * static_cast<float>(wi.surface_height));
 }
 
 bool GunCon::CanUseSoftwareCursor() const
