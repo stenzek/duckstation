@@ -763,6 +763,8 @@ TRANSLATE_NOOP("FullscreenUI", "Stores the current settings to a controller pres
 TRANSLATE_NOOP("FullscreenUI", "Stretch Mode");
 TRANSLATE_NOOP("FullscreenUI", "Summary");
 TRANSLATE_NOOP("FullscreenUI", "Support for controllers that use the XInput protocol. XInput should only be used if you are using a XInput wrapper library.");
+TRANSLATE_NOOP("FullscreenUI", "Swap Gamepad Confirm/Cancel Buttons");
+TRANSLATE_NOOP("FullscreenUI", "Swaps the confirm/cancel buttons on the gamepad, using {0} for confirming and {1} for cancelling.");
 TRANSLATE_NOOP("FullscreenUI", "Switch to Next Disc on Stop");
 TRANSLATE_NOOP("FullscreenUI", "Switches back to 4:3 display aspect ratio when displaying 24-bit content, usually FMVs.");
 TRANSLATE_NOOP("FullscreenUI", "Switches between full screen and windowed when the window is double-clicked.");

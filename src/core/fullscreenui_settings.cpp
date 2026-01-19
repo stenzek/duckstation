@@ -2225,7 +2225,29 @@ void FullscreenUI::DrawInterfaceSettingsPage()
     FSUI_VSTR("When Big Picture mode is started, the game list will be displayed instead of the main menu."), "Main",
     "FullscreenUIOpenToGameList", false);
 
-  bool widgets_settings_changed = DrawToggleSetting(
+  const bool use_ps_icons = GetEffectiveBoolSetting(bsi, "Main", "FullscreenUIDisplayPSIcons", false);
+  bool widgets_settings_changed = false;
+
+  if (DrawToggleSetting(
+        bsi, FSUI_ICONVSTR(ICON_FA_SHUFFLE, "Swap Gamepad Confirm/Cancel Buttons"),
+        SmallString::from_format(
+          FSUI_FSTR(
+            "Swaps the confirm/cancel buttons on the gamepad, using {0} for confirming and {1} for cancelling."),
+          use_ps_icons ? ICON_PF_BUTTON_CIRCLE : ICON_PF_BUTTON_B,
+          use_ps_icons ? ICON_PF_BUTTON_CROSS : ICON_PF_BUTTON_A),
+        "Main", "FullscreenUISwapGamepadFaceButtons", false))
+  {
+    if (IsGamepadInputSource())
+    {
+      // deactivate the current button so the input state doesn't get stuck
+      ImGui::GetIO().AddKeyAnalogEvent(ImGuiKey_GamepadFaceDown, false, 0.0f);
+      ImGui::GetIO().AddKeyAnalogEvent(ImGuiKey_GamepadFaceRight, false, 0.0f);
+    }
+
+    widgets_settings_changed = true;
+  }
+
+  widgets_settings_changed |= DrawToggleSetting(
     bsi, FSUI_ICONVSTR(ICON_PF_GAMEPAD, "Use DualShock/DualSense Button Icons"),
     FSUI_VSTR("Displays DualShock/DualSense button icons in the footer and input binding, instead of Xbox buttons."),
     "Main", "FullscreenUIDisplayPSIcons", false);

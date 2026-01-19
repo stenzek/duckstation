@@ -154,6 +154,7 @@ struct ALIGN_TO_CACHE_LINE State
 
   // we maintain a second copy of the stick state here so we can map it to the dpad
   std::array<s8, 2> left_stick_axis_state = {};
+  bool swap_gamepad_face_buttons = false;
 
   std::unique_ptr<GPUPipeline> imgui_pipeline;
 
@@ -1263,6 +1264,16 @@ float ImGuiManager::OSDScale(float size)
   return std::ceil(size * s_state.global_scale);
 }
 
+bool ImGuiManager::AreGamepadFaceButtonsSwapped()
+{
+  return s_state.swap_gamepad_face_buttons;
+}
+
+void ImGuiManager::SetGamepadFaceButtonsSwapped(bool enabled)
+{
+  s_state.swap_gamepad_face_buttons = enabled;
+}
+
 bool ImGuiManager::WantsTextInput()
 {
   return s_state.imgui_wants_keyboard.load(std::memory_order_acquire);
@@ -1437,13 +1448,17 @@ bool ImGuiManager::ProcessGenericInputEvent(GenericInputBinding key, float value
           s_state.imgui_context->IO.AddKeyAnalogEvent(map_to_key(axis, new_state), true, 1.0f);
       }
     }
-    else if (imkey == ImGuiKey_GamepadL2 || imkey == ImGuiKey_GamepadR2)
-    {
-      s_state.imgui_context->IO.AddKeyAnalogEvent(imkey, (value > 0.0f), value);
-    }
     else
     {
-      s_state.imgui_context->IO.AddKeyAnalogEvent(imkey, (value > 0.0f), value);
+      ImGuiKey mapkey = imkey;
+      if (s_state.swap_gamepad_face_buttons)
+      {
+        mapkey = (mapkey == ImGuiKey_GamepadFaceRight) ?
+                   ImGuiKey_GamepadFaceDown :
+                   ((mapkey == ImGuiKey_GamepadFaceDown) ? ImGuiKey_GamepadFaceRight : mapkey);
+      }
+
+      s_state.imgui_context->IO.AddKeyAnalogEvent(mapkey, (value > 0.0f), value);
     }
   });
 

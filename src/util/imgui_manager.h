@@ -143,6 +143,10 @@ float GetOSDFontSize();
 /// Multiplies an arbitrary size by the OSD scale.
 float OSDScale(float size);
 
+/// Returns true if the south and east controller face buttons are swapped.
+bool AreGamepadFaceButtonsSwapped();
+void SetGamepadFaceButtonsSwapped(bool enabled);
+
 /// Returns true if imgui wants to intercept text input.
 bool WantsTextInput();
 

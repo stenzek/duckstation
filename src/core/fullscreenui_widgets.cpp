@@ -109,36 +109,52 @@ static constexpr std::array s_theme_names = {
   "", "Dark", "Light", "AMOLED", "CobaltSky", "GreyMatter", "GreenGiant", "PinkyPals", "DarkRuby", "PurpleRain",
 };
 
-static constexpr const std::array s_ps_button_mapping{
-  std::make_pair(ICON_PF_LEFT_TRIGGER_LT, ICON_PF_LEFT_TRIGGER_L2),
-  std::make_pair(ICON_PF_RIGHT_TRIGGER_RT, ICON_PF_RIGHT_TRIGGER_R2),
-  std::make_pair(ICON_PF_LEFT_SHOULDER_LB, ICON_PF_LEFT_SHOULDER_L1),
-  std::make_pair(ICON_PF_RIGHT_SHOULDER_RB, ICON_PF_RIGHT_SHOULDER_R1),
-  std::make_pair(ICON_PF_BUTTON_X, ICON_PF_BUTTON_SQUARE),
-  std::make_pair(ICON_PF_BUTTON_Y, ICON_PF_BUTTON_TRIANGLE),
-  std::make_pair(ICON_PF_BUTTON_B, ICON_PF_BUTTON_CIRCLE),
-  std::make_pair(ICON_PF_BUTTON_A, ICON_PF_BUTTON_CROSS),
-  std::make_pair(ICON_PF_SHARE_CAPTURE, ICON_PF_DUALSHOCK_SHARE),
-  std::make_pair(ICON_PF_BURGER_MENU, ICON_PF_DUALSHOCK_OPTIONS),
-  std::make_pair(ICON_PF_XBOX_DPAD_LEFT, ICON_PF_DPAD_LEFT),
-  std::make_pair(ICON_PF_XBOX_DPAD_UP, ICON_PF_DPAD_UP),
-  std::make_pair(ICON_PF_XBOX_DPAD_RIGHT, ICON_PF_DPAD_RIGHT),
-  std::make_pair(ICON_PF_XBOX_DPAD_DOWN, ICON_PF_DPAD_DOWN),
-  std::make_pair(ICON_PF_XBOX_DPAD_LEFT_RIGHT, ICON_PF_DPAD_LEFT_RIGHT),
-  std::make_pair(ICON_PF_XBOX_DPAD_UP_DOWN, ICON_PF_DPAD_UP_DOWN),
-  std::make_pair(ICON_PF_XBOX, ICON_PF_PLAYSTATION),
-};
+// [0] = Mapping from Xbox button icons to PlayStation button icons.
+// [1] = Swapped south/east face buttons.
+using ControllerButtonMappingTable = std::array<std::pair<const char*, const char*>, 17>;
+static constexpr ControllerButtonMappingTable GetButtonMapping(bool ps_buttons, bool swap_south_east)
+{
+  return ControllerButtonMappingTable{{
+    {ICON_PF_LEFT_TRIGGER_LT, ps_buttons ? ICON_PF_LEFT_TRIGGER_L2 : ICON_PF_LEFT_TRIGGER_LT},
+    {ICON_PF_RIGHT_TRIGGER_RT, ps_buttons ? ICON_PF_RIGHT_TRIGGER_R2 : ICON_PF_RIGHT_TRIGGER_RT},
+    {ICON_PF_LEFT_SHOULDER_LB, ps_buttons ? ICON_PF_LEFT_SHOULDER_L1 : ICON_PF_LEFT_SHOULDER_LB},
+    {ICON_PF_RIGHT_SHOULDER_RB, ps_buttons ? ICON_PF_RIGHT_SHOULDER_R1 : ICON_PF_RIGHT_SHOULDER_RB},
+    {ICON_PF_BUTTON_X, ps_buttons ? ICON_PF_BUTTON_SQUARE : ICON_PF_BUTTON_X},
+    {ICON_PF_BUTTON_Y, ps_buttons ? ICON_PF_BUTTON_TRIANGLE : ICON_PF_BUTTON_Y},
+    {ICON_PF_BUTTON_B, ps_buttons ? (swap_south_east ? ICON_PF_BUTTON_CROSS : ICON_PF_BUTTON_CIRCLE) :
+                                    (swap_south_east ? ICON_PF_BUTTON_A : ICON_PF_BUTTON_B)},
+    {ICON_PF_BUTTON_A, ps_buttons ? (swap_south_east ? ICON_PF_BUTTON_CIRCLE : ICON_PF_BUTTON_CROSS) :
+                                    (swap_south_east ? ICON_PF_BUTTON_B : ICON_PF_BUTTON_A)},
+    {ICON_PF_SHARE_CAPTURE, ps_buttons ? ICON_PF_DUALSHOCK_SHARE : ICON_PF_SHARE_CAPTURE},
+    {ICON_PF_BURGER_MENU, ps_buttons ? ICON_PF_DUALSHOCK_OPTIONS : ICON_PF_BURGER_MENU},
+    {ICON_PF_XBOX_DPAD_LEFT, ps_buttons ? ICON_PF_DPAD_LEFT : ICON_PF_XBOX_DPAD_LEFT},
+    {ICON_PF_XBOX_DPAD_UP, ps_buttons ? ICON_PF_DPAD_UP : ICON_PF_XBOX_DPAD_UP},
+    {ICON_PF_XBOX_DPAD_RIGHT, ps_buttons ? ICON_PF_DPAD_RIGHT : ICON_PF_XBOX_DPAD_RIGHT},
+    {ICON_PF_XBOX_DPAD_DOWN, ps_buttons ? ICON_PF_DPAD_DOWN : ICON_PF_XBOX_DPAD_DOWN},
+    {ICON_PF_XBOX_DPAD_LEFT_RIGHT, ps_buttons ? ICON_PF_DPAD_LEFT_RIGHT : ICON_PF_XBOX_DPAD_LEFT_RIGHT},
+    {ICON_PF_XBOX_DPAD_UP_DOWN, ps_buttons ? ICON_PF_DPAD_UP_DOWN : ICON_PF_XBOX_DPAD_UP_DOWN},
+    {ICON_PF_XBOX, ps_buttons ? ICON_PF_PLAYSTATION : ICON_PF_XBOX},
+  }};
+}
+static constexpr const ControllerButtonMappingTable s_button_mapping[2][2] = {
+  {GetButtonMapping(false, false), GetButtonMapping(false, true)},
+  {GetButtonMapping(true, false), GetButtonMapping(true, true)}};
 static_assert(
   []() {
-    for (size_t i = 1; i < s_ps_button_mapping.size(); i++)
+    for (size_t i = 0; i < std::size(s_button_mapping); i++)
     {
-      if (StringUtil::ConstexprCompare(s_ps_button_mapping[i - 1].first, s_ps_button_mapping[i].first) >= 0)
-        return false;
+      for (size_t j = 0; j < std::size(s_button_mapping[0]); j++)
+      {
+        for (size_t k = 1; k < std::size(s_button_mapping[0][0]); k++)
+        {
+          if (StringUtil::ConstexprCompare(s_button_mapping[i][j][k - 1].first, s_button_mapping[i][j][k].first) >= 0)
+            return false;
+        }
+      }
     }
-
     return true;
   }(),
-  "PS button mapping is not sorted");
+  "Button mapping is not sorted");
 
 namespace {
 
@@ -476,9 +492,21 @@ void FullscreenUI::UpdateWidgetsSettings()
   UIStyle.MenuBorders = Core::GetBaseBoolSettingValue("Main", "FullscreenUIMenuBorders", false);
   s_state.sound_effects_enabled = Core::GetBaseBoolSettingValue("Main", "FullscreenUISoundEffects", true);
 
-  s_state.fullscreen_footer_icon_mapping = Core::GetBaseBoolSettingValue("Main", "FullscreenUIDisplayPSIcons", false) ?
-                                             s_ps_button_mapping :
-                                             std::span<const std::pair<const char*, const char*>>{};
+  const bool display_ps_icons = Core::GetBaseBoolSettingValue("Main", "FullscreenUIDisplayPSIcons", false);
+  const bool swap_face_buttons = Core::GetBaseBoolSettingValue("Main", "FullscreenUISwapGamepadFaceButtons", false);
+
+  // Don't bother setting a mapping if there's nothing to map.
+  if (display_ps_icons || swap_face_buttons)
+  {
+    s_state.fullscreen_footer_icon_mapping =
+      s_button_mapping[BoolToUInt8(display_ps_icons)][BoolToUInt8(swap_face_buttons)];
+  }
+  else
+  {
+    s_state.fullscreen_footer_icon_mapping = {};
+  }
+
+  ImGuiManager::SetGamepadFaceButtonsSwapped(swap_face_buttons);
 }
 
 const std::shared_ptr<GPUTexture>& FullscreenUI::GetPlaceholderTexture()
