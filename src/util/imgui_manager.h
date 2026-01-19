@@ -102,10 +102,6 @@ ImGuiContext* GetMainContext();
 /// Returns true if there is currently a context created.
 bool IsInitialized();
 
-/// Returns the size of the display window. Can be safely called from any thread.
-float GetWindowWidth();
-float GetWindowHeight();
-
 /// Updates internal state when the window is size.
 void WindowResized(GPUTextureFormat format, float width, float height);
 

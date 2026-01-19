@@ -149,8 +149,6 @@ struct ALIGN_TO_CACHE_LINE State
   ALIGN_TO_CACHE_LINE Timer::Value last_render_time = 0;
 
   float global_scale = 0.0f;
-  float window_width = 0.0f;
-  float window_height = 0.0f;
   GPUTextureFormat window_format = GPUTextureFormat::Unknown;
   bool scale_changed = false;
 
@@ -224,10 +222,10 @@ bool ImGuiManager::Initialize(bool preserve_fsui_state, Error* error)
 
   s_state.last_render_time = Timer::GetCurrentValue();
   s_state.window_format = main_swap_chain ? main_swap_chain->GetFormat() : GPUTextureFormat::RGBA8;
-  s_state.window_width = main_swap_chain ? static_cast<float>(main_swap_chain->GetWidth()) : 0.0f;
-  s_state.window_height = main_swap_chain ? static_cast<float>(main_swap_chain->GetHeight()) : 0.0f;
+  io.DisplaySize = main_swap_chain ? ImVec2(static_cast<float>(main_swap_chain->GetWidth()),
+                                            static_cast<float>(main_swap_chain->GetHeight())) :
+                                     ImVec2();
   io.DisplayFramebufferScale = ImVec2(1, 1); // We already scale things ourselves, this would double-apply scaling
-  io.DisplaySize = ImVec2(s_state.window_width, s_state.window_height);
 
   SetStyle(s_state.imgui_context->Style, s_state.global_scale);
   FullscreenUI::UpdateTheme();
@@ -283,16 +281,6 @@ bool ImGuiManager::IsInitialized()
   return (s_state.imgui_context != nullptr);
 }
 
-float ImGuiManager::GetWindowWidth()
-{
-  return s_state.window_width;
-}
-
-float ImGuiManager::GetWindowHeight()
-{
-  return s_state.window_height;
-}
-
 void ImGuiManager::WindowResized(GPUTextureFormat format, float width, float height)
 {
   if (s_state.window_format != format) [[unlikely]]
@@ -307,8 +295,6 @@ void ImGuiManager::WindowResized(GPUTextureFormat format, float width, float hei
     }
   }
 
-  s_state.window_width = width;
-  s_state.window_height = height;
   ImGui::GetMainViewport()->Size = ImGui::GetIO().DisplaySize = ImVec2(width, height);
 
   // Scale might have changed as a result of window resize.
@@ -1008,8 +994,9 @@ void ImGuiManager::DrawOSDMessages(Timer::Value current_time)
 
   static constexpr float MOVE_DURATION = 0.5f;
 
+  const ImGuiIO& io = ImGui::GetIO();
   s_state.osd_messages_end_y =
-    (g_gpu_settings.display_osd_message_location >= NotificationLocation::BottomLeft) ? s_state.window_height : 0.0f;
+    (g_gpu_settings.display_osd_message_location >= NotificationLocation::BottomLeft) ? io.DisplaySize.y : 0.0f;
 
   if (s_state.osd_active_messages.empty())
     return;
@@ -1028,7 +1015,7 @@ void ImGuiManager::DrawOSDMessages(Timer::Value current_time)
   const float rounding = std::ceil(10.0f * scale);
   const float normal_icon_margin = std::ceil(4.0f * scale);
   const float large_icon_margin = std::ceil(8.0f * scale);
-  const float max_width = (s_state.window_width * 0.6f) - (margin + padding) * 2.0f;
+  const float max_width = (io.DisplaySize.x * 0.6f) - (margin + padding) * 2.0f;
   const float max_width_for_color = std::ceil(400.0f * scale);
   const float min_rounded_width = rounding * 2.0f;
   const bool show_messages = g_gpu_settings.display_show_messages;
