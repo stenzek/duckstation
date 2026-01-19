@@ -387,7 +387,7 @@ struct SettingAccessor<QSlider>
       widget->setContextMenuPolicy(Qt::CustomContextMenu);
       widget->connect(widget, &QSlider::customContextMenuRequested, widget, [widget, func](const QPoint& pt) {
         QMenu* const menu = QtUtils::NewPopupMenu(widget);
-        menu->addAction(qApp->translate("SettingWidgetBinder", "Reset"), [widget, func = std::move(func)]() {
+        menu->addAction(qApp->translate("QPlatformTheme", "Reset"), [widget, func = std::move(func)]() {
           const bool old = widget->blockSignals(true);
           setNullableIntValue(widget, std::nullopt);
           widget->blockSignals(old);
@@ -519,7 +519,7 @@ struct SettingAccessor<QSpinBox>
       widget->setContextMenuPolicy(Qt::CustomContextMenu);
       widget->connect(widget, &QSpinBox::customContextMenuRequested, widget, [widget, func](const QPoint& pt) mutable {
         QMenu* const menu = QtUtils::NewPopupMenu(widget);
-        menu->addAction(qApp->translate("SettingWidgetBinder", "Reset"), [widget, func = std::move(func)]() {
+        menu->addAction(qApp->translate("QPlatformTheme", "Reset"), [widget, func = std::move(func)]() {
           const bool old = widget->blockSignals(true);
           setNullableIntValue(widget, std::nullopt);
           widget->blockSignals(old);
@@ -655,7 +655,7 @@ struct SettingAccessor<QDoubleSpinBox>
       widget->setContextMenuPolicy(Qt::CustomContextMenu);
       widget->connect(widget, &QDoubleSpinBox::customContextMenuRequested, widget, [widget, func](const QPoint& pt) {
         QMenu* const menu = QtUtils::NewPopupMenu(widget);
-        menu->addAction(qApp->translate("SettingWidgetBinder", "Reset"), [widget, func = std::move(func)]() {
+        menu->addAction(qApp->translate("QPlatformTheme", "Reset"), [widget, func = std::move(func)]() {
           const bool old = widget->blockSignals(true);
           setNullableFloatValue(widget, std::nullopt);
           widget->blockSignals(old);

@@ -57,7 +57,7 @@ void MemoryCardSettingsWidget::createUi(SettingsWindow* dialog)
     QVBoxLayout* box_layout = new QVBoxLayout(box);
     QPushButton* browse = new QPushButton(tr("Browse..."), box);
     QPushButton* open_memcards = new QPushButton(tr("Open..."), box);
-    QPushButton* reset = new QPushButton(tr("Reset"), box);
+    QPushButton* reset = new QPushButton(qApp->translate("QPlatformTheme", "Reset"), box);
 
     {
       QLabel* label = new QLabel(tr("Memory Card Directory:"), box);
@@ -148,7 +148,7 @@ void MemoryCardSettingsWidget::createPortSettingsUi(SettingsWindow* dialog, int 
           [this, index]() { onBrowseMemoryCardPathClicked(index); });
   memory_card_layout->addWidget(ui->memory_card_path_browse);
 
-  ui->memory_card_path_reset = new QPushButton(tr("Reset"), ui->container);
+  ui->memory_card_path_reset = new QPushButton(qApp->translate("QPlatformTheme", "Reset"), ui->container);
   connect(ui->memory_card_path_reset, &QPushButton::clicked, this,
           [this, index]() { onResetMemoryCardPathClicked(index); });
   memory_card_layout->addWidget(ui->memory_card_path_reset);

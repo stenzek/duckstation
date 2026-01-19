@@ -1234,7 +1234,8 @@ void MainWindow::promptForDiscChange(const QString& path)
 
   /*const QAbstractButton* const swap_button = */ mb->addButton(tr("Swap Disc"), QMessageBox::YesRole);
   const QAbstractButton* const reset_button = mb->addButton(tr("Reset"), QMessageBox::NoRole);
-  const QAbstractButton* const cancel_button = mb->addButton(tr("Cancel"), QMessageBox::RejectRole);
+  const QAbstractButton* const cancel_button =
+    mb->addButton(qApp->translate("QPlatformTheme", "Cancel"), QMessageBox::RejectRole);
 
   connect(mb, &QMessageBox::finished, this, [this, mb, reset_button, cancel_button, path, lock = std::move(lock)]() {
     const QAbstractButton* const clicked_button = mb->clickedButton();
