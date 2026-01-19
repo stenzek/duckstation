@@ -380,12 +380,9 @@ void LogWindow::setLogLevel(Log::Level level)
 
 void LogWindow::populateFilterMenu(QMenu* filter_menu)
 {
-  const auto settings_Lock = Core::GetSettingsLock();
-  const INISettingsInterface* si = QtHost::GetBaseSettingsInterface();
-
   for (const char* channel_name : Log::GetChannelNames())
   {
-    const bool enabled = si->GetBoolValue("Logging", channel_name, true);
+    const bool enabled = Core::GetBaseBoolSettingValue("Logging", channel_name, true);
     QAction* const action = filter_menu->addAction(QString::fromUtf8(channel_name), [channel_name](bool checked) {
       Core::SetBaseBoolSettingValue("Logging", channel_name, checked);
       Host::CommitBaseSettingChanges();

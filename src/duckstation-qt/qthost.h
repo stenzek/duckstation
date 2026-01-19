@@ -105,7 +105,7 @@ public:
 Q_SIGNALS:
   void errorReported(const QString& title, const QString& message);
   void statusMessage(const QString& message);
-  void settingsResetToDefault(bool system, bool controller);
+  void settingsResetToDefault(bool host, bool system, bool controller);
   void systemStarting();
   void systemStarted();
   void systemStopping();
@@ -136,7 +136,7 @@ Q_SIGNALS:
   void onDestroyAuxiliaryRenderWindow(Host::AuxiliaryRenderWindowHandle handle, QPoint* pos, QSize* size);
 
 public:
-  void setDefaultSettings(bool system = true, bool controller = true);
+  void setDefaultSettings(bool host, bool system, bool controller);
   void applySettings(bool display_osd_messages = false);
   void reloadGameSettings(bool display_osd_messages = false);
   void reloadInputProfile(bool display_osd_messages = false);
@@ -353,9 +353,6 @@ const QStringList& GetRobotoFontFamilies();
 
 /// Returns the font for the bundled fixed-width font.
 const QFont& GetFixedFont();
-
-/// Returns the base settings interface. Should lock before manipulating.
-INISettingsInterface* GetBaseSettingsInterface();
 
 /// Saves a game settings interface.
 bool SaveGameSettings(SettingsInterface* sif, bool delete_if_empty);

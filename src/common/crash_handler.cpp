@@ -439,7 +439,7 @@ void CrashHandler::CrashSignalHandler(int signal, siginfo_t* siginfo, void* ctx)
 
 bool CrashHandler::Install(CleanupHandler cleanup_handler)
 {
-  const std::string progpath = FileSystem::GetProgramPath();
+  const std::string progpath = FileSystem::GetProgramPath(nullptr);
   s_backtrace_state = backtrace_create_state(progpath.empty() ? nullptr : progpath.c_str(), 0, nullptr, nullptr);
   if (!s_backtrace_state)
     return false;

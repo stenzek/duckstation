@@ -1373,16 +1373,6 @@ void System::SetDefaultSettings(SettingsInterface& si)
 {
   Settings temp;
 
-  // we don't want to reset some things (e.g. OSD)
-  temp.display_show_messages = g_settings.display_show_messages;
-  temp.display_show_fps = g_settings.display_show_fps;
-  temp.display_show_speed = g_settings.display_show_speed;
-  temp.display_show_gpu_stats = g_settings.display_show_gpu_stats;
-  temp.display_show_resolution = g_settings.display_show_resolution;
-  temp.display_show_cpu_usage = g_settings.display_show_cpu_usage;
-  temp.display_show_gpu_usage = g_settings.display_show_gpu_usage;
-  temp.display_show_frame_times = g_settings.display_show_frame_times;
-
   // keep controller, we reset it elsewhere
   for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
     temp.controller_types[i] = g_settings.controller_types[i];
@@ -1393,6 +1383,10 @@ void System::SetDefaultSettings(SettingsInterface& si)
   si.SetBoolValue("Main", "StartFullscreen", false);
 
   Settings::SetDefaultLogConfig(si);
+
+  PostProcessing::Config::ClearStages(si, PostProcessing::Config::DISPLAY_CHAIN_SECTION);
+  PostProcessing::Config::ClearStages(si, PostProcessing::Config::INTERNAL_CHAIN_SECTION);
+  si.ClearSection("BorderOverlay");
 
 #ifndef __ANDROID__
   si.SetStringValue("MediaCapture", "Backend", MediaCapture::GetBackendName(Settings::DEFAULT_MEDIA_CAPTURE_BACKEND));

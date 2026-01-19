@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "achievements.h"
@@ -6,6 +6,7 @@
 #include "cheats.h"
 #include "controller.h"
 #include "core.h"
+#include "core_private.h"
 #include "fullscreenui_private.h"
 #include "game_database.h"
 #include "game_list.h"
@@ -1752,7 +1753,7 @@ void FullscreenUI::BeginResetSettings()
                              if (!result)
                                return;
 
-                             Host::RequestResetSettings(true, false);
+                             Core::SetDefaultSettings(true, true, false);
                              ShowToast(OSDMessageType::Quick, {}, FSUI_STR("Settings reset to default."));
                            });
 }
@@ -3151,7 +3152,7 @@ void FullscreenUI::BeginResetControllerSettings()
                              if (!result)
                                return;
 
-                             Host::RequestResetSettings(false, true);
+                             Core::SetDefaultSettings(false, false, true);
                              ShowToast(OSDMessageType::Quick, {}, FSUI_STR("Controller settings reset to default."));
                            });
 }

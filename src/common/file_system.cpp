@@ -2388,7 +2388,7 @@ bool FileSystem::DeleteDirectory(const char* path, Error* error)
   return true;
 }
 
-std::string FileSystem::GetProgramPath()
+std::string FileSystem::GetProgramPath(Error* error)
 {
   std::wstring buffer;
   buffer.resize(MAX_PATH);
@@ -2405,6 +2405,12 @@ std::string FileSystem::GetProgramPath()
     {
       buffer.resize(buffer.size() * 2);
       continue;
+    }
+
+    if (nChars == 0)
+    {
+      Error::SetWin32(error, "GetModuleFileNameW() failed: ", GetLastError());
+      return {};
     }
 
     buffer.resize(nChars);
@@ -2905,7 +2911,7 @@ bool FileSystem::DeleteDirectory(const char* path, Error* error)
   return true;
 }
 
-std::string FileSystem::GetProgramPath()
+std::string FileSystem::GetProgramPath(Error* error)
 {
 #if defined(__linux__)
   static const char* exe_path = "/proc/self/exe";
@@ -2917,6 +2923,7 @@ std::string FileSystem::GetProgramPath()
     int len = readlink(exe_path, buffer, curSize);
     if (len < 0)
     {
+      Error::SetErrno(error, "readlink() failed: ", errno);
       std::free(buffer);
       return {};
     }
@@ -2945,8 +2952,9 @@ std::string FileSystem::GetProgramPath()
       buffer[nChars] = 0;
 
       char* resolvedBuffer = realpath(buffer, nullptr);
-      if (resolvedBuffer == nullptr)
+      if (!resolvedBuffer)
       {
+        Error::SetErrno(error, "realpath() failed: ", errno);
         std::free(buffer);
         return {};
       }
@@ -2966,11 +2974,15 @@ std::string FileSystem::GetProgramPath()
   size_t cb = sizeof(buffer) - 1;
   int res = sysctl(mib, std::size(mib), buffer, &cb, nullptr, 0);
   if (res != 0)
+  {
+    Error::SetErrno(error, "readlink() failed: ", errno);
     return {};
+  }
 
   buffer[cb] = '\0';
   return buffer;
 #else
+#error Not implemented.
   return {};
 #endif
 }

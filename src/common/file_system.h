@@ -244,7 +244,7 @@ bool RecursiveDeleteDirectory(const char* path, Error* error = nullptr);
 bool CopyFilePath(const char* source, const char* destination, bool replace, Error* error = nullptr);
 
 /// Returns the path to the current executable.
-std::string GetProgramPath();
+std::string GetProgramPath(Error* error);
 
 /// Retrieves the current working directory.
 std::string GetWorkingDirectory();

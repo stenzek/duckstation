@@ -23,7 +23,6 @@
 #include "util/cd_image.h"
 #include "util/gpu_device.h"
 #include "util/imgui_manager.h"
-#include "util/ini_settings_interface.h"
 #include "util/input_manager.h"
 #include "util/sdl_input_source.h"
 #include "util/translation.h"
@@ -54,6 +53,10 @@
 #include <ctime>
 #include <thread>
 
+#ifdef _WIN32
+#include "common/windows_headers.h"
+#endif
+
 LOG_CHANNEL(Host);
 
 namespace MiniHost {
@@ -66,7 +69,6 @@ static constexpr u32 NUM_ASYNC_WORKER_THREADS = 2;
 static constexpr u32 DEFAULT_WINDOW_WIDTH = 1920;
 static constexpr u32 DEFAULT_WINDOW_HEIGHT = 1080;
 
-static constexpr u32 SETTINGS_VERSION = 3;
 static constexpr auto CORE_THREAD_POLL_INTERVAL =
   std::chrono::milliseconds(8); // how often we'll poll controllers when paused
 
@@ -74,14 +76,9 @@ static bool ParseCommandLineParametersAndInitializeConfig(int argc, char* argv[]
                                                           std::optional<SystemBootParameters>& autoboot);
 static void PrintCommandLineVersion();
 static void PrintCommandLineHelp(const char* progname);
-static bool InitializeConfig();
+static bool InitializeFoldersAndConfig(Error* error);
 static void InitializeEarlyConsole();
 static void HookSignals();
-static void SetAppRoot();
-static void SetResourcesDirectory();
-static bool SetDataDirectory();
-static bool SetCriticalFolders();
-static void SetDefaultSettings(SettingsInterface& si, bool system, bool controller);
 static std::string GetResourcePath(std::string_view name, bool allow_override);
 static bool PerformEarlyHardwareChecks();
 static bool EarlyProcessStartup();
@@ -103,8 +100,7 @@ static void SavePlatformWindowGeometry(s32 x, s32 y, s32 width, s32 height);
 struct SDLHostState
 {
   // UI thread state
-  ALIGN_TO_CACHE_LINE INISettingsInterface base_settings_interface;
-  bool batch_mode = false;
+  ALIGN_TO_CACHE_LINE bool batch_mode = false;
   bool start_fullscreen_ui_fullscreen = false;
   bool was_paused_by_focus_loss = false;
   bool ui_thread_running = false;
@@ -197,139 +193,34 @@ bool MiniHost::EarlyProcessStartup()
   return true;
 }
 
-bool MiniHost::SetCriticalFolders()
+bool MiniHost::InitializeFoldersAndConfig(Error* error)
 {
-  SetAppRoot();
-  SetResourcesDirectory();
-  if (!SetDataDirectory())
-    return false;
-
-  // logging of directories in case something goes wrong super early
-  DEV_LOG("AppRoot Directory: {}", EmuFolders::AppRoot);
-  DEV_LOG("DataRoot Directory: {}", EmuFolders::DataRoot);
-  DEV_LOG("Resources Directory: {}", EmuFolders::Resources);
-
-  // Write crash dumps to the data directory, since that'll be accessible for certain.
-  CrashHandler::SetWriteDirectory(EmuFolders::DataRoot);
-
-  // the resources directory should exist, bail out if not
-  if (!FileSystem::DirectoryExists(EmuFolders::Resources.c_str()))
-  {
-    Host::ReportFatalError("Error", "Resources directory is missing, your installation is incomplete.");
-    return false;
-  }
-
-  return true;
-}
-
-void MiniHost::SetAppRoot()
-{
-  const std::string program_path = FileSystem::GetProgramPath();
-  INFO_LOG("Program Path: {}", program_path);
-
-  EmuFolders::AppRoot = Path::Canonicalize(Path::GetDirectory(program_path));
-}
-
-void MiniHost::SetResourcesDirectory()
-{
+  // Path to the resources directory relative to the application binary.
+// On Windows/Linux, these are in the binary directory.
+// On macOS, this is in the bundle resources directory.
 #ifndef __APPLE__
-  // On Windows/Linux, these are in the binary directory.
-  EmuFolders::Resources = Path::Combine(EmuFolders::AppRoot, "resources");
+  static constexpr const char* RESOURCES_RELATIVE_PATH = "resources";
 #else
-  // On macOS, this is in the bundle resources directory.
-  EmuFolders::Resources = Path::Canonicalize(Path::Combine(EmuFolders::AppRoot, "../Resources"));
+  static constexpr const char* RESOURCES_RELATIVE_PATH = "../Resources";
 #endif
-}
 
-bool MiniHost::SetDataDirectory()
-{
-  EmuFolders::DataRoot = Core::ComputeDataDirectory();
-
-  // make sure it exists
-  if (!EmuFolders::DataRoot.empty() && !FileSystem::DirectoryExists(EmuFolders::DataRoot.c_str()))
-  {
-    // we're in trouble if we fail to create this directory... but try to hobble on with portable
-    Error error;
-    if (!FileSystem::EnsureDirectoryExists(EmuFolders::DataRoot.c_str(), false, &error))
-    {
-      Host::ReportFatalError("Error",
-                             TinyString::from_format("Failed to create data directory: {}", error.GetDescription()));
-      return false;
-    }
-  }
-
-  // couldn't determine the data directory? fallback to portable.
-  if (EmuFolders::DataRoot.empty())
-    EmuFolders::DataRoot = EmuFolders::AppRoot;
-
-  return true;
-}
-
-bool MiniHost::InitializeConfig()
-{
-  if (!SetCriticalFolders())
+  if (!Core::SetCriticalFolders(RESOURCES_RELATIVE_PATH, error))
     return false;
 
-  std::string settings_path = Path::Combine(EmuFolders::DataRoot, "settings.ini");
-  const bool settings_exists = FileSystem::FileExists(settings_path.c_str());
-  INFO_LOG("Loading config from {}.", settings_path);
-  s_state.base_settings_interface.SetPath(std::move(settings_path));
-  Core::SetBaseSettingsLayer(&s_state.base_settings_interface);
-
-  u32 settings_version;
-  if (!settings_exists || !s_state.base_settings_interface.Load() ||
-      !s_state.base_settings_interface.GetUIntValue("Main", "SettingsVersion", &settings_version) ||
-      settings_version != SETTINGS_VERSION)
-  {
-    if (s_state.base_settings_interface.ContainsValue("Main", "SettingsVersion"))
-    {
-      // NOTE: No point translating this, because there's no config loaded, so no language loaded.
-      Host::ReportErrorAsync("Error", fmt::format("Settings version {} does not match expected version {}, resetting.",
-                                                  settings_version, SETTINGS_VERSION));
-    }
-
-    s_state.base_settings_interface.SetUIntValue("Main", "SettingsVersion", SETTINGS_VERSION);
-    SetDefaultSettings(s_state.base_settings_interface, true, true);
-
-    // Make sure we can actually save the config, and the user doesn't have some permission issue.
-    Error error;
-    if (!s_state.base_settings_interface.Save(&error))
-    {
-      Host::ReportFatalError(
-        "Error",
-        fmt::format(
-          "Failed to save configuration to\n\n{}\n\nThe error was: {}\n\nPlease ensure this directory is writable. You "
-          "can also try portable mode by creating portable.txt in the same directory you installed DuckStation into.",
-          s_state.base_settings_interface.GetPath(), error.GetDescription()));
-      return false;
-    }
-  }
-
-  EmuFolders::LoadConfig(s_state.base_settings_interface);
-  EmuFolders::EnsureFoldersExist();
-
-  // We need to create the console window early, otherwise it appears in front of the main window.
-  if (!Log::IsConsoleOutputEnabled() && s_state.base_settings_interface.GetBoolValue("Logging", "LogToConsole", false))
-    Log::SetConsoleOutputParams(true, s_state.base_settings_interface.GetBoolValue("Logging", "LogTimestamps", true));
+  Error config_error;
+  if (!Core::InitializeBaseSettingsLayer(Core::GetBaseSettingsPath(), &config_error))
+    return false;
 
   return true;
 }
 
-void MiniHost::SetDefaultSettings(SettingsInterface& si, bool system, bool controller)
+void Host::SetDefaultSettings(SettingsInterface& si)
 {
-  if (system)
-  {
-    System::SetDefaultSettings(si);
-    EmuFolders::SetDefaults();
-    EmuFolders::Save(si);
-  }
+}
 
-  if (controller)
-  {
-    InputManager::SetDefaultSourceConfig(si);
-    Settings::SetDefaultControllerConfig(si);
-    Settings::SetDefaultHotkeyConfig(si);
-  }
+void Host::OnSettingsResetToDefault(bool host, bool system, bool controller)
+{
+  Host::RunOnCoreThread([]() { System::ApplySettings(false); });
 }
 
 void Host::ReportDebuggerEvent(CPU::DebuggerEvent event, std::string_view message)
@@ -450,7 +341,7 @@ void Host::CommitBaseSettingChanges()
 {
   const auto lock = Core::GetSettingsLock();
   Error error;
-  if (!MiniHost::s_state.base_settings_interface.Save(&error))
+  if (!Core::SaveBaseSettingsLayer(&error))
     ERROR_LOG("Failed to save settings: {}", error.GetDescription());
 }
 
@@ -720,20 +611,22 @@ bool MiniHost::GetSavedPlatformWindowGeometry(s32* x, s32* y, s32* width, s32* h
 {
   const auto lock = Core::GetSettingsLock();
 
-  bool result = s_state.base_settings_interface.GetIntValue("UI", "MainWindowX", x);
-  result = result && s_state.base_settings_interface.GetIntValue("UI", "MainWindowY", y);
-  result = result && s_state.base_settings_interface.GetIntValue("UI", "MainWindowWidth", width);
-  result = result && s_state.base_settings_interface.GetIntValue("UI", "MainWindowHeight", height);
+  SettingsInterface* si = Core::GetBaseSettingsLayer();
+  bool result = si->GetIntValue("UI", "MainWindowX", x);
+  result = result && si->GetIntValue("UI", "MainWindowY", y);
+  result = result && si->GetIntValue("UI", "MainWindowWidth", width);
+  result = result && si->GetIntValue("UI", "MainWindowHeight", height);
   return result;
 }
 
 void MiniHost::SavePlatformWindowGeometry(s32 x, s32 y, s32 width, s32 height)
 {
   const auto lock = Core::GetSettingsLock();
-  s_state.base_settings_interface.SetIntValue("UI", "MainWindowX", x);
-  s_state.base_settings_interface.SetIntValue("UI", "MainWindowY", y);
-  s_state.base_settings_interface.SetIntValue("UI", "MainWindowWidth", width);
-  s_state.base_settings_interface.SetIntValue("UI", "MainWindowHeight", height);
+  SettingsInterface* si = Core::GetBaseSettingsLayer();
+  si->SetIntValue("UI", "MainWindowX", x);
+  si->SetIntValue("UI", "MainWindowY", y);
+  si->SetIntValue("UI", "MainWindowWidth", width);
+  si->SetIntValue("UI", "MainWindowHeight", height);
 }
 
 void MiniHost::UIThreadMainLoop()
@@ -1293,32 +1186,6 @@ std::optional<WindowInfo> Host::GetTopLevelWindowInfo()
   return MiniHost::TranslateSDLWindowInfo(MiniHost::s_state.sdl_window, nullptr);
 }
 
-void Host::RequestResetSettings(bool system, bool controller)
-{
-  using namespace MiniHost;
-
-  const auto lock = Core::GetSettingsLock();
-  {
-    SettingsInterface& si = s_state.base_settings_interface;
-
-    if (system)
-    {
-      System::SetDefaultSettings(si);
-      EmuFolders::SetDefaults();
-      EmuFolders::Save(si);
-    }
-
-    if (controller)
-    {
-      InputManager::SetDefaultSourceConfig(si);
-      Settings::SetDefaultControllerConfig(si);
-      Settings::SetDefaultHotkeyConfig(si);
-    }
-  }
-
-  System::ApplySettings(false);
-}
-
 void Host::RequestExitApplication(bool allow_confirm)
 {
   Host::RunOnCoreThread([]() {
@@ -1348,6 +1215,7 @@ void Host::ReportFatalError(std::string_view title, std::string_view message)
   // Depending on the platform, this may not be available.
   std::fputs(SmallString::from_format("Fatal error: {}: {}\n", title, message).c_str(), stderr);
   SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, TinyString(title).c_str(), SmallString(message).c_str(), nullptr);
+  std::abort();
 }
 
 void Host::ReportErrorAsync(std::string_view title, std::string_view message)
@@ -1760,10 +1628,11 @@ bool MiniHost::ParseCommandLineParametersAndInitializeConfig(int argc, char* arg
   }
 
   // To do anything useful, we need the config initialized.
-  if (!InitializeConfig())
+  Error error;
+  if (!InitializeFoldersAndConfig(&error))
   {
     // NOTE: No point translating this, because no config means the language won't be loaded anyway.
-    Host::ReportFatalError("Error", "Failed to initialize config.");
+    Host::ReportFatalError("DuckStation", error.GetDescription());
     return EXIT_FAILURE;
   }
 
@@ -1772,7 +1641,7 @@ bool MiniHost::ParseCommandLineParametersAndInitializeConfig(int argc, char* arg
   if (autoboot && !autoboot->path.empty() && !FileSystem::FileExists(autoboot->path.c_str()) &&
       !CDImage::IsDeviceName(autoboot->path.c_str()))
   {
-    Host::ReportFatalError("Error", fmt::format("File '{}' does not exist.", autoboot->path));
+    Host::ReportFatalError("DuckStation", fmt::format("File '{}' does not exist.", autoboot->path));
     return false;
   }
 
@@ -1797,7 +1666,7 @@ bool MiniHost::ParseCommandLineParametersAndInitializeConfig(int argc, char* arg
 
     if (autoboot->save_state.empty() || !FileSystem::FileExists(autoboot->save_state.c_str()))
     {
-      Host::ReportFatalError("Error", "The specified save state does not exist.");
+      Host::ReportFatalError("DuckStation", "The specified save state does not exist.");
       return false;
     }
   }
@@ -1813,7 +1682,7 @@ bool MiniHost::ParseCommandLineParametersAndInitializeConfig(int argc, char* arg
   {
     if (!autoboot)
     {
-      Host::ReportFatalError("Error", "Cannot use batch mode, because no boot filename was specified.");
+      Host::ReportFatalError("DuckStation", "Cannot use batch mode, because no boot filename was specified.");
       return false;
     }
 
@@ -1884,8 +1753,7 @@ int main(int argc, char* argv[])
   // Ensure log is flushed.
   Log::SetFileOutputParams(false, nullptr);
 
-  if (s_state.base_settings_interface.IsDirty())
-    s_state.base_settings_interface.Save();
+  Core::SaveBaseSettingsLayer(nullptr);
 
   SDL_QuitSubSystem(SDL_INIT_VIDEO | SDL_INIT_EVENTS);
 

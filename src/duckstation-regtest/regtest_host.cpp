@@ -53,10 +53,9 @@ namespace RegTestHost {
 static bool ParseCommandLineParameters(int argc, char* argv[], std::optional<SystemBootParameters>& autoboot);
 static void PrintCommandLineVersion();
 static void PrintCommandLineHelp(const char* progname);
-static bool InitializeConfig();
+static bool InitializeFoldersAndConfig(Error* error);
 static void InitializeEarlyConsole();
 static void HookSignals();
-static bool SetFolders();
 static bool SetNewDataRoot(const std::string& filename);
 static void DumpSystemStateHashes();
 static std::string GetFrameDumpPath(u32 frame);
@@ -76,7 +75,6 @@ ALIGN_TO_CACHE_LINE static TaskQueue s_async_task_queue;
 
 } // namespace RegTestHost
 
-static MemorySettingsInterface s_base_settings_interface;
 static Threading::Thread s_gpu_thread;
 
 static u32 s_frames_to_run = 60 * 60;
@@ -84,48 +82,17 @@ static u32 s_frames_remaining = 0;
 static u32 s_frame_dump_interval = 0;
 static std::string s_dump_base_directory;
 
-bool RegTestHost::SetFolders()
+bool RegTestHost::InitializeFoldersAndConfig(Error* error)
 {
-  std::string program_path(FileSystem::GetProgramPath());
-  DEV_LOG("Program Path: {}", program_path);
-
-  EmuFolders::AppRoot = Path::Canonicalize(Path::GetDirectory(program_path));
-  EmuFolders::DataRoot = Core::ComputeDataDirectory();
-  EmuFolders::Resources = Path::Combine(EmuFolders::AppRoot, "resources");
-
-  DEV_LOG("AppRoot Directory: {}", EmuFolders::AppRoot);
-  DEV_LOG("DataRoot Directory: {}", EmuFolders::DataRoot);
-  DEV_LOG("Resources Directory: {}", EmuFolders::Resources);
-
-  // Write crash dumps to the data directory, since that'll be accessible for certain.
-  CrashHandler::SetWriteDirectory(EmuFolders::DataRoot);
-
-  // the resources directory should exist, bail out if not
-  if (!FileSystem::DirectoryExists(EmuFolders::Resources.c_str()))
-  {
-    ERROR_LOG("Resources directory is missing, your installation is incomplete.");
+  if (!Core::SetCriticalFolders("resources", error))
     return false;
-  }
 
-  if (EmuFolders::DataRoot.empty() || !FileSystem::EnsureDirectoryExists(EmuFolders::DataRoot.c_str(), false))
-  {
-    ERROR_LOG("Failed to create data directory '{}'", EmuFolders::DataRoot);
+  if (!Core::InitializeBaseSettingsLayer({}, error))
     return false;
-  }
-
-  return true;
-}
-
-bool RegTestHost::InitializeConfig()
-{
-  SetFolders();
-
-  Core::SetBaseSettingsLayer(&s_base_settings_interface);
 
   // default settings for runner
-  SettingsInterface& si = s_base_settings_interface;
-  g_settings.Load(si, si);
-  g_settings.Save(si, false);
+  const auto lock = Core::GetSettingsLock();
+  SettingsInterface& si = *Core::GetBaseSettingsLayer();
   si.SetStringValue("GPU", "Renderer", Settings::GetRendererName(GPURenderer::Software));
   si.SetBoolValue("GPU", "DisableShaderCache", true);
   si.SetStringValue("Pad1", "Type", Controller::GetControllerInfo(ControllerType::AnalogController).name);
@@ -144,9 +111,6 @@ bool RegTestHost::InitializeConfig()
   // disable all sources
   for (u32 i = 0; i < static_cast<u32>(InputSourceType::Count); i++)
     si.SetBoolValue("InputSources", InputManager::InputSourceToString(static_cast<InputSourceType>(i)), false);
-
-  EmuFolders::LoadConfig(s_base_settings_interface);
-  EmuFolders::EnsureFoldersExist();
 
   return true;
 }
@@ -422,7 +386,12 @@ void Host::RequestResizeHostDisplay(s32 width, s32 height)
   //
 }
 
-void Host::RequestResetSettings(bool system, bool controller)
+void Host::SetDefaultSettings(SettingsInterface& si)
+{
+  //
+}
+
+void Host::OnSettingsResetToDefault(bool host, bool system, bool controller)
 {
   //
 }
@@ -898,13 +867,13 @@ bool RegTestHost::ParseCommandLineParameters(int argc, char* argv[], std::option
         }
 
         Log::SetLogLevel(level.value());
-        s_base_settings_interface.SetStringValue("Logging", "LogLevel", Settings::GetLogLevelName(level.value()));
+        Core::SetBaseStringSettingValue("Logging", "LogLevel", Settings::GetLogLevelName(level.value()));
         continue;
       }
       else if (CHECK_ARG("-console"))
       {
         Log::SetConsoleOutputParams(true);
-        s_base_settings_interface.SetBoolValue("Logging", "LogToConsole", true);
+        Core::SetBaseBoolSettingValue("Logging", "LogToConsole", true);
         continue;
       }
       else if (CHECK_ARG_PARAM("-renderer"))
@@ -916,7 +885,7 @@ bool RegTestHost::ParseCommandLineParameters(int argc, char* argv[], std::option
           return false;
         }
 
-        s_base_settings_interface.SetStringValue("GPU", "Renderer", Settings::GetRendererName(renderer.value()));
+        Core::SetBaseStringSettingValue("GPU", "Renderer", Settings::GetRendererName(renderer.value()));
         continue;
       }
       else if (CHECK_ARG_PARAM("-upscale"))
@@ -929,7 +898,7 @@ bool RegTestHost::ParseCommandLineParameters(int argc, char* argv[], std::option
         }
 
         INFO_LOG("Setting upscale to {}.", upscale);
-        s_base_settings_interface.SetIntValue("GPU", "ResolutionScale", static_cast<s32>(upscale));
+        Core::SetBaseIntSettingValue("GPU", "ResolutionScale", static_cast<s32>(upscale));
         continue;
       }
       else if (CHECK_ARG_PARAM("-cpu"))
@@ -942,21 +911,20 @@ bool RegTestHost::ParseCommandLineParameters(int argc, char* argv[], std::option
         }
 
         INFO_LOG("Setting CPU execution mode to {}.", Settings::GetCPUExecutionModeName(cpu.value()));
-        s_base_settings_interface.SetStringValue("CPU", "ExecutionMode",
-                                                 Settings::GetCPUExecutionModeName(cpu.value()));
+        Core::SetBaseStringSettingValue("CPU", "ExecutionMode", Settings::GetCPUExecutionModeName(cpu.value()));
         continue;
       }
       else if (CHECK_ARG("-pgxp"))
       {
         INFO_LOG("Enabling PGXP.");
-        s_base_settings_interface.SetBoolValue("GPU", "PGXPEnable", true);
+        Core::SetBaseBoolSettingValue("GPU", "PGXPEnable", true);
         continue;
       }
       else if (CHECK_ARG("-pgxp-cpu"))
       {
         INFO_LOG("Enabling PGXP CPU mode.");
-        s_base_settings_interface.SetBoolValue("GPU", "PGXPEnable", true);
-        s_base_settings_interface.SetBoolValue("GPU", "PGXPCPU", true);
+        Core::SetBaseBoolSettingValue("GPU", "PGXPEnable", true);
+        Core::SetBaseBoolSettingValue("GPU", "PGXPCPU", true);
         continue;
       }
       else if (CHECK_ARG("--"))
@@ -999,10 +967,13 @@ bool RegTestHost::SetNewDataRoot(const std::string& filename)
 
     // Switch to file logging.
     INFO_LOG("Dumping frames to '{}'...", dump_directory);
+
+    const auto lock = Core::GetSettingsLock();
     EmuFolders::DataRoot = std::move(dump_directory);
-    s_base_settings_interface.SetBoolValue("Logging", "LogToFile", true);
-    s_base_settings_interface.SetStringValue("Logging", "LogLevel", Settings::GetLogLevelName(Log::Level::Dev));
-    Settings::UpdateLogConfig(s_base_settings_interface);
+    SettingsInterface& si = *Core::GetBaseSettingsLayer();
+    si.SetBoolValue("Logging", "LogToFile", true);
+    si.SetStringValue("Logging", "LogLevel", Settings::GetLogLevelName(Log::Level::Dev));
+    Settings::UpdateLogConfig(si);
   }
 
   return true;
@@ -1017,17 +988,18 @@ int main(int argc, char* argv[])
 {
   CrashHandler::Install(&Bus::CleanupMemoryMap);
 
-  Error startup_error;
-  if (!System::PerformEarlyHardwareChecks(&startup_error) || !System::ProcessStartup(&startup_error))
+  Error error;
+  if (!System::PerformEarlyHardwareChecks(&error) || !System::ProcessStartup(&error))
   {
-    ERROR_LOG("ProcessStartup() failed: {}", startup_error.GetDescription());
+    std::fprintf(stderr, "ERROR: ProcessStartup() failed: %s\n", error.GetDescription().c_str());
     return EXIT_FAILURE;
   }
 
-  RegTestHost::InitializeEarlyConsole();
-
-  if (!RegTestHost::InitializeConfig())
+  if (!RegTestHost::InitializeFoldersAndConfig(&error))
+  {
+    std::fprintf(stderr, "ERROR: Failed to initialize config: %s\n", error.GetDescription().c_str());
     return EXIT_FAILURE;
+  }
 
   std::optional<SystemBootParameters> autoboot;
   if (!RegTestHost::ParseCommandLineParameters(argc, argv, autoboot))
@@ -1042,9 +1014,9 @@ int main(int argc, char* argv[])
   if (!RegTestHost::SetNewDataRoot(autoboot->path))
     return EXIT_FAILURE;
 
-  if (!System::CoreThreadInitialize(&startup_error))
+  if (!System::CoreThreadInitialize(&error))
   {
-    ERROR_LOG("CoreThreadInitialize() failed: {}", startup_error.GetDescription());
+    ERROR_LOG("CoreThreadInitialize() failed: {}", error.GetDescription());
     return EXIT_FAILURE;
   }
 
@@ -1054,7 +1026,6 @@ int main(int argc, char* argv[])
   RegTestHost::HookSignals();
   s_gpu_thread.Start(&RegTestHost::GPUThreadEntryPoint);
 
-  Error error;
   int result = -1;
   INFO_LOG("Trying to boot '{}'...", autoboot->path);
   if (!System::BootSystem(std::move(autoboot.value()), &error))

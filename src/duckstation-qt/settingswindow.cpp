@@ -301,7 +301,7 @@ void SettingsWindow::onRestoreDefaultsClicked()
     return;
   }
 
-  g_core_thread->setDefaultSettings(true, false);
+  g_core_thread->setDefaultSettings(true, true, false);
 }
 
 void SettingsWindow::onCopyGlobalSettingsClicked()

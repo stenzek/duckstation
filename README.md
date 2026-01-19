@@ -205,7 +205,7 @@ An optional [SDL game controller database file](#sdl-game-controller-database) c
 
 This is located in the following places depending on the platform you're using:
 
-- Windows: My Documents\DuckStation
+- Windows: `AppData\Local\DuckStation`
 - Linux: `$XDG_DATA_HOME/duckstation`, or `~/.local/share/duckstation`.
 - macOS: `~/Library/Application Support/DuckStation`.
 

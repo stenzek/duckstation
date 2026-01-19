@@ -86,6 +86,8 @@
 
 #include "moc_qthost.cpp"
 
+using namespace Qt::Literals::StringLiterals;
+
 LOG_CHANNEL(Host);
 
 #if 0
@@ -99,7 +101,6 @@ QT_TRANSLATE_NOOP("MAC_APPLICATION_MENU", "Quit %1")
 QT_TRANSLATE_NOOP("MAC_APPLICATION_MENU", "About %1")
 #endif
 
-static constexpr u32 SETTINGS_VERSION = 3;
 static constexpr u32 SETTINGS_SAVE_DELAY = 1000;
 
 /// Use two async worker threads, should be enough for most tasks.
@@ -125,13 +126,8 @@ static bool EarlyProcessStartup();
 static void ProcessShutdown();
 static void MessageOutputHandler(QtMsgType type, const QMessageLogContext& context, const QString& msg);
 static void RegisterTypes();
-static bool InitializeConfig();
-static void SetAppRoot();
-static void SetResourcesDirectory();
-static bool SetDataDirectory();
-static bool SetCriticalFolders();
-static void LoadResources();
-static void SetDefaultSettings(SettingsInterface& si, bool system, bool controller);
+static bool InitializeFoldersAndConfig(Error* error);
+static bool LoadResources(Error* error);
 static void SaveSettings();
 static bool RunSetupWizard();
 static void UpdateFontOrder(std::string_view language);
@@ -153,7 +149,6 @@ static void ApplyWaylandWorkarounds();
 namespace {
 struct State
 {
-  INISettingsInterface base_settings_interface;
   std::unique_ptr<QTimer> settings_save_timer;
   std::vector<QTranslator*> translators;
   QIcon app_icon;
@@ -420,11 +415,6 @@ QString QtHost::GetResourcesBasePath()
   return QString::fromStdString(EmuFolders::Resources);
 }
 
-INISettingsInterface* QtHost::GetBaseSettingsInterface()
-{
-  return &s_state.base_settings_interface;
-}
-
 bool QtHost::SaveGameSettings(SettingsInterface* sif, bool delete_if_empty)
 {
   INISettingsInterface* ini = static_cast<INISettingsInterface*>(sif);
@@ -537,141 +527,81 @@ void QtHost::DownloadFile(QWidget* parent, std::string url, std::string path,
     });
 }
 
-bool QtHost::InitializeConfig()
+bool QtHost::InitializeFoldersAndConfig(Error* error)
 {
-  if (!SetCriticalFolders())
+  // Path to the resources directory relative to the application binary.
+// On Windows/Linux, these are in the binary directory.
+// On macOS, this is in the bundle resources directory.
+#ifndef __APPLE__
+  static constexpr const char* RESOURCES_RELATIVE_PATH = "resources";
+#else
+  static constexpr const char* RESOURCES_RELATIVE_PATH = "../Resources";
+#endif
+
+  if (!Core::SetCriticalFolders(RESOURCES_RELATIVE_PATH, error))
     return false;
 
-  std::string settings_path = Path::Combine(EmuFolders::DataRoot, "settings.ini");
-  const bool settings_exists = FileSystem::FileExists(settings_path.c_str());
-  INFO_LOG("Loading config from {}.", settings_path);
-  s_state.base_settings_interface.SetPath(std::move(settings_path));
-  Core::SetBaseSettingsLayer(&s_state.base_settings_interface);
-
-  uint settings_version;
-  if (!settings_exists || !s_state.base_settings_interface.Load() ||
-      !s_state.base_settings_interface.GetUIntValue("Main", "SettingsVersion", &settings_version) ||
-      settings_version != SETTINGS_VERSION)
+  Error config_error;
+  if (!Core::InitializeBaseSettingsLayer(Core::GetBaseSettingsPath(), &config_error))
   {
-    if (s_state.base_settings_interface.ContainsValue("Main", "SettingsVersion"))
+    if (QMessageBox::question(
+          nullptr, "DuckStation"_L1,
+          "Failed to load configuration. The error was:\n\n%1\n\nThe settings file may be corrupted. Do you want to "
+          "delete the settings file and try again? Note that any currently-configured settings will be lost."_L1.arg(
+            QString::fromStdString(config_error.GetDescription()))) == QMessageBox::Yes)
     {
-      // NOTE: No point translating this, because there's no config loaded, so no language loaded.
-      Host::ReportErrorAsync("Error", fmt::format("Settings version {} does not match expected version {}, resetting.",
-                                                  settings_version, SETTINGS_VERSION));
+      if (!FileSystem::DeleteFile(Core::GetBaseSettingsPath().c_str(), &config_error))
+      {
+        QMessageBox::critical(nullptr, QStringLiteral("DuckStation"),
+                              QStringLiteral("Failed to delete settings file:\n\n%1")
+                                .arg(QString::fromStdString(config_error.GetDescription())));
+      }
     }
 
-    s_state.base_settings_interface.SetUIntValue("Main", "SettingsVersion", SETTINGS_VERSION);
-    SetDefaultSettings(s_state.base_settings_interface, true, true);
-
-    // Flag for running the setup wizard if this is our first run. We want to run it next time if they don't finish it.
-    s_state.base_settings_interface.SetBoolValue("Main", "SetupWizardIncomplete", true);
-
-    // Make sure we can actually save the config, and the user doesn't have some permission issue.
-    Error error;
-    if (!s_state.base_settings_interface.Save(&error))
+    // Try again after deleting.
+    if (!Core::InitializeBaseSettingsLayer(Core::GetBaseSettingsPath(), &config_error))
     {
-      QMessageBox::critical(
-        nullptr, QStringLiteral("DuckStation"),
-        QStringLiteral(
-          "Failed to save configuration to\n\n%1\n\nThe error was: %2\n\nPlease ensure this directory is writable. You "
-          "can also try portable mode by creating portable.txt in the same directory you installed DuckStation into.")
-          .arg(QString::fromStdString(s_state.base_settings_interface.GetPath()))
-          .arg(QString::fromStdString(error.GetDescription())));
+      Error::SetStringFmt(error,
+                          "Failed to load configuration. The error was:\n\n{}\n\nPlease ensure that the data directory "
+                          "is writable. The data directory is located at:\n\n{}\n\nYou can also try portable mode by "
+                          "creating portable.txt in the same directory you installed DuckStation into.",
+                          config_error.GetDescription(), EmuFolders::DataRoot);
       return false;
     }
   }
 
+  // Very old installations pre-setup-wizard won't have the "SetupWizardIncomplete" key.
+  // Instead, we rely on "SettingsVersion" there as a signal that setup has been completed.
+  if (!Core::ContainsBaseSettingValue("Main", "SetupWizardIncomplete") &&
+      !Core::ContainsBaseSettingValue("Main", "SettingsVersion"))
+  {
+    // Flag for running the setup wizard if this is our first run. We want to run it next time if they don't finish it.
+    Core::SetBaseBoolSettingValue("Main", "SetupWizardIncomplete", true);
+  }
+
   // Setup wizard was incomplete last time?
   s_state.run_setup_wizard =
-    s_state.run_setup_wizard || s_state.base_settings_interface.GetBoolValue("Main", "SetupWizardIncomplete", false);
-
-  EmuFolders::LoadConfig(s_state.base_settings_interface);
-  EmuFolders::EnsureFoldersExist();
-
-  // We need to create the console window early, otherwise it appears in front of the main window.
-  if (!Log::IsConsoleOutputEnabled() && s_state.base_settings_interface.GetBoolValue("Logging", "LogToConsole", false))
-    Log::SetConsoleOutputParams(true, s_state.base_settings_interface.GetBoolValue("Logging", "LogTimestamps", true));
+    s_state.run_setup_wizard || Core::GetBaseBoolSettingValue("Main", "SetupWizardIncomplete", false);
 
   UpdateApplicationLanguage(nullptr);
   return true;
 }
 
-bool QtHost::SetCriticalFolders()
+bool QtHost::LoadResources(Error* error)
 {
-  SetAppRoot();
-  SetResourcesDirectory();
-  if (!SetDataDirectory())
-    return false;
-
-  // logging of directories in case something goes wrong super early
-  DEV_LOG("AppRoot Directory: {}", EmuFolders::AppRoot);
-  DEV_LOG("DataRoot Directory: {}", EmuFolders::DataRoot);
-  DEV_LOG("Resources Directory: {}", EmuFolders::Resources);
-
-  // Write crash dumps to the data directory, since that'll be accessible for certain.
-  CrashHandler::SetWriteDirectory(EmuFolders::DataRoot);
-
   // the resources directory should exist, bail out if not
   const std::string rcc_path = Path::Combine(EmuFolders::Resources, "duckstation-qt.rcc");
-  if (!FileSystem::FileExists(rcc_path.c_str()) || !QResource::registerResource(QString::fromStdString(rcc_path)) ||
-      !FileSystem::DirectoryExists(EmuFolders::Resources.c_str()))
+  if (!FileSystem::FileExists(rcc_path.c_str()) || !QResource::registerResource(QString::fromStdString(rcc_path)))
   {
-    QMessageBox::critical(nullptr, QStringLiteral("Error"),
-                          QStringLiteral("Resources are missing, your installation is incomplete."));
+    Error::SetStringFmt(error,
+                        "{} could not be loaded. Your installation is not complete. Please delete and re-download the "
+                        "application from https://www.duckstation.org/.",
+                        Path::GetFileName(rcc_path));
     return false;
   }
 
-  return true;
-}
-
-void QtHost::SetAppRoot()
-{
-  const std::string program_path = FileSystem::GetProgramPath();
-  INFO_LOG("Program Path: {}", program_path);
-
-  EmuFolders::AppRoot = Path::Canonicalize(Path::GetDirectory(program_path));
-}
-
-void QtHost::SetResourcesDirectory()
-{
-#ifndef __APPLE__
-  // On Windows/Linux, these are in the binary directory.
-  EmuFolders::Resources = Path::Combine(EmuFolders::AppRoot, "resources");
-#else
-  // On macOS, this is in the bundle resources directory.
-  EmuFolders::Resources = Path::Canonicalize(Path::Combine(EmuFolders::AppRoot, "../Resources"));
-#endif
-}
-
-bool QtHost::SetDataDirectory()
-{
-  EmuFolders::DataRoot = Core::ComputeDataDirectory();
-
-  // make sure it exists
-  if (!FileSystem::DirectoryExists(EmuFolders::DataRoot.c_str()))
-  {
-    // we're in trouble if we fail to create this directory... but try to hobble on with portable
-    Error error;
-    if (!FileSystem::EnsureDirectoryExists(EmuFolders::DataRoot.c_str(), false, &error))
-    {
-      // no point translating, config isn't loaded
-      QMessageBox::critical(
-        nullptr, QStringLiteral("DuckStation"),
-        QStringLiteral("Failed to create data directory at path\n\n%1\n\nThe error was: %2\nPlease ensure this "
-                       "directory is writable. You can also try portable mode by creating portable.txt in the same "
-                       "directory you installed DuckStation into.")
-          .arg(QString::fromStdString(EmuFolders::DataRoot))
-          .arg(QString::fromStdString(error.GetDescription())));
-      return false;
-    }
-  }
-
-  return true;
-}
-
-void QtHost::LoadResources()
-{
   s_state.app_icon = QIcon(GetResourceQPath("images/duck.png", true));
+  return true;
 }
 
 void Host::LoadSettings(const SettingsInterface& si, std::unique_lock<std::mutex>& lock)
@@ -685,41 +615,37 @@ void Host::CheckForSettingsChanges(const Settings& old_settings)
     QMetaObject::invokeMethod(g_main_window, &MainWindow::checkForSettingChanges, Qt::QueuedConnection);
 }
 
-void CoreThread::setDefaultSettings(bool system /* = true */, bool controller /* = true */)
+void CoreThread::setDefaultSettings(bool host, bool system, bool controller)
 {
   if (!isCurrentThread())
   {
-    QMetaObject::invokeMethod(this, &CoreThread::setDefaultSettings, Qt::QueuedConnection, system, controller);
+    QMetaObject::invokeMethod(this, &CoreThread::setDefaultSettings, Qt::QueuedConnection, host, system, controller);
     return;
   }
 
-  {
-    const auto lock = Core::GetSettingsLock();
-    QtHost::SetDefaultSettings(s_state.base_settings_interface, system, controller);
-    QtHost::QueueSettingsSave();
-  }
-
-  applySettings(false);
-
-  if (system)
-    emit settingsResetToDefault(system, controller);
+  Core::SetDefaultSettings(host, system, controller);
 }
 
-void QtHost::SetDefaultSettings(SettingsInterface& si, bool system, bool controller)
+void Host::SetDefaultSettings(SettingsInterface& si)
 {
-  if (system)
-  {
-    System::SetDefaultSettings(si);
-    EmuFolders::SetDefaults();
-    EmuFolders::Save(si);
-  }
+#ifdef _WIN32
+  si.SetBoolValue("Main", "DisableWindowRoundedCorners", false);
+#endif
 
-  if (controller)
-  {
-    InputManager::SetDefaultSourceConfig(si);
-    Settings::SetDefaultControllerConfig(si);
-    Settings::SetDefaultHotkeyConfig(si);
-  }
+  si.SetBoolValue("Main", "DisableWindowResize", false);
+  si.SetBoolValue("Main", "HideCursorInFullscreen", false);
+  si.SetBoolValue("Main", "RenderToSeparateWindow", false);
+  si.SetBoolValue("Main", "HideMainWindowWhenRunning", false);
+
+  // TODO: We could include stuff like game list here, but meh...
+}
+
+void Host::OnSettingsResetToDefault(bool host, bool system, bool controller)
+{
+  g_core_thread->applySettings(false);
+
+  if (system)
+    emit g_core_thread->settingsResetToDefault(host, system, controller);
 }
 
 void Host::RequestResizeHostDisplay(s32 new_window_width, s32 new_window_height)
@@ -3016,8 +2942,13 @@ void QtHost::SaveSettings()
   {
     Error error;
     const auto lock = Core::GetSettingsLock();
-    if (s_state.base_settings_interface.IsDirty() && !s_state.base_settings_interface.Save(&error))
+    if (!Core::SaveBaseSettingsLayer(&error))
+    {
       ERROR_LOG("Failed to save settings: {}", error.GetDescription());
+      QtUtils::AsyncMessageBox(
+        g_main_window, QMessageBox::Critical, QStringLiteral("DuckStation"),
+        QStringLiteral("Failed to save settings: %1").arg(QString::fromStdString(error.GetDescription())));
+    }
   }
 
   if (s_state.settings_save_timer)
@@ -3056,11 +2987,6 @@ void Host::RequestSystemShutdown(bool allow_confirm, bool save_state, bool check
 
   QMetaObject::invokeMethod(g_main_window, &MainWindow::requestShutdown, Qt::QueuedConnection, allow_confirm, true,
                             save_state, check_memcard_busy, true, false, false);
-}
-
-void Host::RequestResetSettings(bool system, bool controller)
-{
-  g_core_thread->setDefaultSettings(system, controller);
 }
 
 void Host::RequestExitApplication(bool allow_confirm)
@@ -3193,8 +3119,8 @@ bool QtHost::ParseCommandLineParametersAndInitializeConfig(QApplication& app,
   {
     if (!no_more_args)
     {
-#define CHECK_ARG(str) (args[i] == QStringLiteral(str))
-#define CHECK_ARG_PARAM(str) (args[i] == QStringLiteral(str) && ((i + 1) < args.size()))
+#define CHECK_ARG(str) (args[i] == str##_L1)
+#define CHECK_ARG_PARAM(str) (args[i] == str##_L1 && ((i + 1) < args.size()))
 
       if (CHECK_ARG("-help"))
       {
@@ -3302,7 +3228,7 @@ bool QtHost::ParseCommandLineParametersAndInitializeConfig(QApplication& app,
       }
       else if (args[i][0] == QChar('-'))
       {
-        QMessageBox::critical(nullptr, QStringLiteral("Error"), QStringLiteral("Unknown parameter: %1").arg(args[i]));
+        QMessageBox::critical(nullptr, "DuckStation"_L1, QString("Unknown parameter: %1"_L1).arg(args[i]));
         return false;
       }
 
@@ -3316,15 +3242,13 @@ bool QtHost::ParseCommandLineParametersAndInitializeConfig(QApplication& app,
   }
 
   // To do anything useful, we need the config initialized.
-  if (!InitializeConfig())
+  Error error;
+  if (!InitializeFoldersAndConfig(&error) || !LoadResources(&error))
   {
     // NOTE: No point translating this, because no config means the language won't be loaded anyway.
-    QMessageBox::critical(nullptr, QStringLiteral("Error"), QStringLiteral("Failed to initialize config."));
+    QMessageBox::critical(nullptr, "DuckStation"_L1, QString::fromStdString(error.GetDescription()));
     return false;
   }
-
-  // Not the best location for this, but early enough.
-  LoadResources();
 
   // Check the file we're starting actually exists.
   if (autoboot && !autoboot->path.empty() && !CDImage::IsDeviceName(autoboot->path.c_str()))

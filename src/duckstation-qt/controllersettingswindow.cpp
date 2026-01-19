@@ -298,7 +298,7 @@ void ControllerSettingsWindow::onRestoreDefaultsClicked()
   }
 
   // actually restore it
-  g_core_thread->setDefaultSettings(false, true);
+  g_core_thread->setDefaultSettings(false, false, true);
 
   // reload all settings
   createWidgets();
