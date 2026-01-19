@@ -27,6 +27,7 @@ std::string BuildRelativePath(std::string_view filename, std::string_view new_fi
 
 /// Joins path components together, producing a new path.
 std::string Combine(std::string_view base, std::string_view next);
+std::string Combine(std::string_view base, std::string_view subdir, std::string_view next);
 
 /// Removes all .. and . components from a path.
 std::string Canonicalize(std::string_view path);

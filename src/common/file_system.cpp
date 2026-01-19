@@ -891,6 +891,28 @@ std::string Path::Combine(std::string_view base, std::string_view next)
   return ret;
 }
 
+std::string Path::Combine(std::string_view base, std::string_view subdir, std::string_view next)
+{
+  std::string ret;
+  ret.reserve(base.length() + subdir.length() + next.length() + 2);
+
+  PathAppendString(ret, base);
+  while (!ret.empty() && ret.back() == FS_OSPATH_SEPARATOR_CHARACTER)
+    ret.pop_back();
+
+  ret += FS_OSPATH_SEPARATOR_CHARACTER;
+  PathAppendString(ret, subdir);
+  while (!ret.empty() && ret.back() == FS_OSPATH_SEPARATOR_CHARACTER)
+    ret.pop_back();
+
+  ret += FS_OSPATH_SEPARATOR_CHARACTER;
+  PathAppendString(ret, next);
+  while (!ret.empty() && ret.back() == FS_OSPATH_SEPARATOR_CHARACTER)
+    ret.pop_back();
+
+  return ret;
+}
+
 std::FILE* FileSystem::OpenCFile(const char* path, const char* mode, Error* error)
 {
 #ifdef _WIN32
