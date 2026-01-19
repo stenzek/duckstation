@@ -456,20 +456,42 @@ GPUDevice::PresentResult GPUPresenter::RenderDisplay(GPUTexture* target, const G
     overlay_display_rect =
       GSVector4i(GSVector4(m_border_overlay_display_rect) * GSVector4::xyxy(scale)).add32(overlay_rect.xyxy());
 
-    // Draw to the overlay area instead of the whole screen. Always align in center, we align the overlay instead.
-    CalculateDrawRect(overlay_display_rect.rsize(), apply_aspect_ratio, integer_scale, !is_vram_view, false,
-                      &source_rect, &display_rect_without_overlay, &draw_rect_without_overlay);
+    if (HasDisplayTexture())
+    {
+      // Draw to the overlay area instead of the whole screen. Always align in center, we align the overlay instead.
+      CalculateDrawRect(overlay_display_rect.rsize(), apply_aspect_ratio, integer_scale, !is_vram_view, false,
+                        &source_rect, &display_rect_without_overlay, &draw_rect_without_overlay);
 
-    // Apply overlay area offset.
-    display_rect = display_rect_without_overlay.add32(overlay_display_rect.xyxy());
-    draw_rect = draw_rect_without_overlay.add32(overlay_display_rect.xyxy());
+      // Apply overlay area offset.
+      display_rect = display_rect_without_overlay.add32(overlay_display_rect.xyxy());
+      draw_rect = draw_rect_without_overlay.add32(overlay_display_rect.xyxy());
+    }
+    else
+    {
+      source_rect = GSVector4i::zero();
+      display_rect_without_overlay = GSVector4i::zero();
+      draw_rect_without_overlay = GSVector4i::zero();
+      display_rect = GSVector4i::zero();
+      draw_rect = GSVector4i::zero();
+    }
   }
   else
   {
-    CalculateDrawRect(target_size, apply_aspect_ratio, integer_scale, !is_vram_view, true, &source_rect,
-                      &display_rect_without_overlay, &draw_rect_without_overlay);
-    display_rect = display_rect_without_overlay;
-    draw_rect = draw_rect_without_overlay;
+    if (HasDisplayTexture())
+    {
+      CalculateDrawRect(target_size, apply_aspect_ratio, integer_scale, !is_vram_view, true, &source_rect,
+                        &display_rect_without_overlay, &draw_rect_without_overlay);
+      display_rect = display_rect_without_overlay;
+      draw_rect = draw_rect_without_overlay;
+    }
+    else
+    {
+      source_rect = GSVector4i::zero();
+      display_rect_without_overlay = GSVector4i::zero();
+      draw_rect_without_overlay = GSVector4i::zero();
+      display_rect = GSVector4i::zero();
+      draw_rect = GSVector4i::zero();
+    }
   }
 
   // There's a bunch of scenarios where we need to use intermediate buffers.
@@ -834,7 +856,7 @@ GSVector2i GPUPresenter::CalculateDisplayPostProcessSourceSize() const
 
   // Unscaled is easy.
   const GSVector2i input_size = m_display_texture_rect.rsize();
-  if (!m_display_postfx->WantsUnscaledInput())
+  if (!m_display_postfx->WantsUnscaledInput() || m_display_texture_rect.rempty())
   {
     // Render to an input texture that's viewport sized. Source is the "real" input texture.
     return input_size;
