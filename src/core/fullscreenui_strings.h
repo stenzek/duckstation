@@ -404,7 +404,7 @@ TRANSLATE_NOOP("FullscreenUI", "Graphics Settings");
 TRANSLATE_NOOP("FullscreenUI", "Green Giant");
 TRANSLATE_NOOP("FullscreenUI", "Grey Matter");
 TRANSLATE_NOOP("FullscreenUI", "Hardcore Mode");
-TRANSLATE_NOOP("FullscreenUI", "Hardcore mode will not be enabled until the system is reset. Do you want to reset the system now?");
+TRANSLATE_NOOP("FullscreenUI", "Hardcore mode will not be enabled until the game is restarted. Do you want to restart the game now?");
 TRANSLATE_NOOP("FullscreenUI", "Hide Cursor In Fullscreen");
 TRANSLATE_NOOP("FullscreenUI", "Hides the mouse pointer/cursor when the emulator is in fullscreen mode.");
 TRANSLATE_NOOP("FullscreenUI", "Hotkeys");

@@ -4923,7 +4923,8 @@ void FullscreenUI::DrawAchievementsSettingsPage(std::unique_lock<std::mutex>& se
       {
         OpenConfirmMessageDialog(
           ICON_EMOJI_INFORMATION, FSUI_ICONVSTR(ICON_FA_HAT_COWBOY, "Hardcore Mode"),
-          FSUI_STR("Hardcore mode will not be enabled until the system is reset. Do you want to reset the system now?"),
+          FSUI_STR(
+            "Hardcore mode will not be enabled until the game is restarted. Do you want to restart the game now?"),
           [](bool result) {
             if (result)
               Host::RunOnCoreThread(&System::ResetSystem);

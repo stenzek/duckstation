@@ -1668,8 +1668,8 @@ void System::ResetSystem()
   if (IsFastForwardingBoot())
     UpdateSpeedLimiterState();
 
-  Host::AddIconOSDMessage(OSDMessageType::Quick, "SystemReset", ICON_FA_POWER_OFF,
-                          TRANSLATE_STR("OSDMessage", "System reset."));
+  Host::AddIconOSDMessage(OSDMessageType::Quick, "GameRestarted", ICON_FA_POWER_OFF,
+                          TRANSLATE_STR("OSDMessage", "Game restarted."));
 
   PerformanceCounters::Reset();
   ResetThrottler();
@@ -5484,7 +5484,7 @@ void System::UndoLoadState()
   {
     Host::AddIconOSDMessage(
       OSDMessageType::Error, std::move(osd_key), ICON_EMOJI_WARNING, std::move(osd_title),
-      fmt::format(TRANSLATE_FS("System", "Failed to load undo state, resetting system.\n{}"), error.GetDescription()));
+      fmt::format(TRANSLATE_FS("System", "Failed to load undo state, restarting game.\n{}"), error.GetDescription()));
     s_state.undo_load_state.reset();
     Host::OnSystemUndoStateAvailabilityChanged(false, 0);
     ResetSystem();

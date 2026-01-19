@@ -813,8 +813,8 @@ static constexpr const char* s_shoulder_settings[] = {
   TRANSLATE_NOOP("AnalogController", "Analog and Digital Modes"), nullptr};
 
 static const SettingInfo s_settings[] = {
-  {SettingInfo::Type::Boolean, "ForceAnalogOnReset", TRANSLATE_NOOP("AnalogController", "Force Analog Mode on Reset"),
-   TRANSLATE_NOOP("AnalogController", "Forces the controller to analog mode when the console is reset/powered on."),
+  {SettingInfo::Type::Boolean, "ForceAnalogOnReset", TRANSLATE_NOOP("AnalogController", "Automatically Enable Analog Mode"),
+   TRANSLATE_NOOP("AnalogController", "Forces the controller to analog mode when the game is started/restarted."),
    "true", nullptr, nullptr, nullptr, nullptr, nullptr, 0.0f},
   {SettingInfo::Type::Boolean, "AnalogDPadInDigitalMode",
    TRANSLATE_NOOP("AnalogController", "Use Left Analog for D-Pad in Digital Mode"),

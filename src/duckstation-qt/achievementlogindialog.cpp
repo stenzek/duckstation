@@ -147,8 +147,8 @@ void AchievementLoginDialog::askToResetGameAndAccept()
   }
 
   QMessageBox* const msgbox = QtUtils::NewMessageBox(
-    this, QMessageBox::Question, tr("Reset System"),
-    tr("Hardcore mode will not be enabled until the system is reset. Do you want to reset the system now?"),
+    this, QMessageBox::Question, tr("Restart Game"),
+    tr("Hardcore mode will not be enabled until the game is restarted. Do you want to restart the game now?"),
     QMessageBox::Yes | QMessageBox::No, QMessageBox::NoButton);
   msgbox->connect(msgbox, &QMessageBox::accepted, this, [this]() {
     g_core_thread->resetSystem(true);

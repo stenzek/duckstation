@@ -173,7 +173,7 @@ DEFINE_NON_ANDROID_HOTKEY("PowerOff", TRANSLATE_NOOP("Hotkeys", "System"),
                               Host::RequestSystemShutdown(true, g_settings.save_state_on_exit, true);
                           })
 
-DEFINE_HOTKEY("Reset", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_NOOP("Hotkeys", "Reset System"), [](s32 pressed) {
+DEFINE_HOTKEY("Reset", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_NOOP("Hotkeys", "Restart Game"), [](s32 pressed) {
   if (!pressed)
     Host::RunOnCoreThread(System::ResetSystem);
 })

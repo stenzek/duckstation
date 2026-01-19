@@ -93,8 +93,9 @@ AchievementSettingsWidget::AchievementSettingsWidget(SettingsWindow* dialog, QWi
   dialog->registerWidgetHelp(
     m_ui.challengeIndicatorMode, tr("Challenge Indicators"), tr("Show Notifications"),
     tr("Shows a notification or icons in the selected location when a challenge/primed achievement is active."));
-  dialog->registerWidgetHelp(m_ui.indicatorLocation, tr("Indicator Location"), tr("Bottom Right"),
-                             tr("Selects the screen location for challenge/progress indicators, and leaderboard trackers."));
+  dialog->registerWidgetHelp(
+    m_ui.indicatorLocation, tr("Indicator Location"), tr("Bottom Right"),
+    tr("Selects the screen location for challenge/progress indicators, and leaderboard trackers."));
   dialog->registerWidgetHelp(
     m_ui.progressIndicators, tr("Show Progress Indicators"), tr("Checked"),
     tr("Shows a popup in the selected location when progress towards a measured achievement changes."));
@@ -194,8 +195,8 @@ void AchievementSettingsWidget::onHardcoreModeStateChanged()
   }
 
   QMessageBox* const msgbox = QtUtils::NewMessageBox(
-    this, QMessageBox::Question, tr("Reset System"),
-    tr("Hardcore mode will not be enabled until the system is reset. Do you want to reset the system now?"),
+    this, QMessageBox::Question, tr("Restart Game"),
+    tr("Hardcore mode will not be enabled until the game is restarted. Do you want to restart the game now?"),
     QMessageBox::Yes | QMessageBox::No, QMessageBox::NoButton);
   msgbox->connect(msgbox, &QMessageBox::accepted, this, []() { g_core_thread->resetSystem(true); });
   msgbox->open();

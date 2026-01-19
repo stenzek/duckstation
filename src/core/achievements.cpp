@@ -1350,12 +1350,12 @@ void Achievements::DisplayHardcoreDeferredMessage()
       if (FullscreenUI::HasActiveWindow())
       {
         FullscreenUI::ShowToast(OSDMessageType::Info, {},
-                                TRANSLATE_STR("Achievements", "Hardcore mode will be enabled on system reset."));
+                                TRANSLATE_STR("Achievements", "Hardcore mode will be enabled on game restart."));
       }
       else
       {
         Host::AddIconOSDMessage(OSDMessageType::Info, "AchievementsHardcoreDeferred", ICON_EMOJI_TROPHY,
-                                TRANSLATE_STR("Achievements", "Hardcore mode will be enabled on system reset."));
+                                TRANSLATE_STR("Achievements", "Hardcore mode will be enabled on game restart."));
       }
     });
   }
