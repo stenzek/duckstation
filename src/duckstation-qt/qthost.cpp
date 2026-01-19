@@ -1082,8 +1082,6 @@ void CoreThread::connectDisplaySignals(DisplayWidget* widget)
           &CoreThread::onDisplayWindowMouseMoveRelativeEvent);
   connect(widget, &DisplayWidget::windowMouseButtonEvent, this, &CoreThread::onDisplayWindowMouseButtonEvent);
   connect(widget, &DisplayWidget::windowMouseWheelEvent, this, &CoreThread::onDisplayWindowMouseWheelEvent);
-  connect(widget, &DisplayWidget::windowMouseButtonEvent, this, &CoreThread::onDisplayWindowMouseButtonEvent);
-  connect(widget, &DisplayWidget::windowMouseWheelEvent, this, &CoreThread::onDisplayWindowMouseWheelEvent);
 }
 
 void Host::OnSystemStarting()
