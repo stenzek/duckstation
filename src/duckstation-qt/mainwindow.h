@@ -88,6 +88,9 @@ public:
   /// Performs update check if enabled in settings.
   void startupUpdateCheck();
 
+  /// Queues an update check, with the window parented to the specified window.
+  AutoUpdaterDialog* createAutoUpdaterDialog(QWidget* parent, bool display_message);
+
   /// Opens memory card editor with the specified paths.
   void openMemoryCardEditor(const QString& card_a_path, const QString& card_b_path);
 
@@ -134,7 +137,6 @@ public:
   void checkForSettingChanges();
   std::optional<WindowInfo> getWindowInfo();
 
-  void checkForUpdates(bool display_message);
   void recreate();
 
   void* getNativeWindowId();
@@ -208,6 +210,8 @@ private:
   void clearGameListEntryPlayTime(const GameList::Entry* entry);
   void onSettingsThemeChanged();
   void destroySubWindows();
+
+  void checkForUpdates(bool display_message);
   void showAutoUpdaterWindow();
 
   void notifyRAIntegrationOfWindowChange();

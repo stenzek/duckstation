@@ -265,15 +265,18 @@ void AutoUpdaterDialog::setDownloadSectionVisibility(bool visible)
 
 void AutoUpdaterDialog::reportError(const std::string_view msg)
 {
+  emit updateCheckAboutToComplete();
+
   // if we're visible, use ourselves.
-  QWidget* const parent = (isVisible() ? static_cast<QWidget*>(this) : g_main_window);
+  QWidget* const parent_widget = (isVisible() ? static_cast<QWidget*>(this) : parentWidget());
   const QString full_msg = tr("Failed to retrieve or download update:\n\n%1\n\nYou can manually update DuckStation by "
                               "re-downloading the latest release. Do you want to open the download page now?")
                              .arg(QtUtils::StringViewToQString(msg));
-  QMessageBox* const msgbox = QtUtils::NewMessageBox(parent, QMessageBox::Critical, tr("Updater Error"), full_msg,
-                                                     QMessageBox::Yes | QMessageBox::No);
-  msgbox->connect(msgbox, &QMessageBox::accepted, parent,
-                  [parent]() { QtUtils::OpenURL(parent, fmt::format(DOWNLOAD_PAGE_URL, UPDATER_RELEASE_CHANNEL)); });
+  QMessageBox* const msgbox = QtUtils::NewMessageBox(parent_widget, QMessageBox::Critical, tr("Updater Error"),
+                                                     full_msg, QMessageBox::Yes | QMessageBox::No);
+  msgbox->connect(msgbox, &QMessageBox::accepted, parent_widget, [parent_widget]() {
+    QtUtils::OpenURL(parent_widget, fmt::format(DOWNLOAD_PAGE_URL, UPDATER_RELEASE_CHANNEL));
+  });
   msgbox->open();
 }
 
@@ -298,6 +301,24 @@ void AutoUpdaterDialog::httpPollTimerPoll()
   }
 }
 
+void AutoUpdaterDialog::cancel()
+{
+  if (m_updates_available)
+    return;
+
+  m_http->CancelAllRequests();
+}
+
+bool AutoUpdaterDialog::handleCancelledRequest(s32 status_code)
+{
+  if (status_code != HTTPDownloader::HTTP_STATUS_CANCELLED)
+    return false;
+
+  emit updateCheckAboutToComplete();
+  emit updateCheckCompleted(false);
+  return true;
+}
+
 void AutoUpdaterDialog::queueUpdateCheck(bool display_errors)
 {
   ensureHttpPollingActive();
@@ -319,6 +340,9 @@ void AutoUpdaterDialog::queueGetLatestRelease()
 void AutoUpdaterDialog::getLatestTagComplete(s32 status_code, const Error& error, std::vector<u8> response,
                                              bool display_errors)
 {
+  if (handleCancelledRequest(status_code))
+    return;
+
   const std::string selected_tag(getCurrentUpdateTag());
   const QString selected_tag_qstr = QString::fromStdString(selected_tag);
 
@@ -349,9 +373,11 @@ void AutoUpdaterDialog::getLatestTagComplete(s32 status_code, const Error& error
         }
         else
         {
+          emit updateCheckAboutToComplete();
+
           if (display_errors)
           {
-            QtUtils::AsyncMessageBox(g_main_window, QMessageBox::Information, tr("Automatic Updater"),
+            QtUtils::AsyncMessageBox(parentWidget(), QMessageBox::Information, tr("Automatic Updater"),
                                      tr("No updates are currently available. Please try again later."));
           }
 
@@ -380,6 +406,9 @@ void AutoUpdaterDialog::getLatestTagComplete(s32 status_code, const Error& error
 
 void AutoUpdaterDialog::getLatestReleaseComplete(s32 status_code, const Error& error, std::vector<u8> response)
 {
+  if (handleCancelledRequest(status_code))
+    return;
+
   if (status_code == HTTPDownloader::HTTP_STATUS_OK)
   {
     QJsonParseError parse_error;
@@ -408,6 +437,8 @@ void AutoUpdaterDialog::getLatestReleaseComplete(s32 status_code, const Error& e
 
       if (asset_found)
       {
+        emit updateCheckAboutToComplete();
+
         const QString current_date = QtHost::FormatNumber(
           Host::NumberFormatType::ShortDateTime,
           static_cast<s64>(
@@ -427,6 +458,7 @@ void AutoUpdaterDialog::getLatestReleaseComplete(s32 status_code, const Error& e
         m_ui.downloadAndInstall->setEnabled(true);
         m_ui.updateNotes->setText(tr("Loading..."));
         queueGetChanges();
+        m_updates_available = true;
         emit updateCheckCompleted(true);
         return;
       }

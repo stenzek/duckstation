@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "interfacesettingswidget.h"
@@ -10,8 +10,10 @@
 
 #include "scmversion/scmversion.h"
 
+#include "common/error.h"
 #include "common/string_util.h"
 
+#include <QtWidgets/QProgressDialog>
 #include <ranges>
 
 #include "moc_interfacesettingswidget.cpp"
@@ -124,7 +126,7 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* dialog, QWidget
       m_ui.autoUpdateTag->addItem(desc, name);
     SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.autoUpdateTag, "AutoUpdater", "UpdateTag",
                                                    AutoUpdaterDialog::getDefaultTag());
-    connect(m_ui.checkForUpdates, &QPushButton::clicked, this, []() { g_main_window->checkForUpdates(true); });
+    connect(m_ui.checkForUpdates, &QPushButton::clicked, this, &InterfaceSettingsWidget::checkForUpdates);
 
     m_ui.autoUpdateCurrentVersion->setText(tr("%1 (%2)").arg(g_scm_version_str).arg(g_scm_date_str));
   }
@@ -273,4 +275,24 @@ void InterfaceSettingsWidget::onLanguageChanged()
 {
   QtHost::UpdateApplicationLanguage(QtUtils::GetRootWidget(this));
   g_main_window->recreate();
+}
+
+void InterfaceSettingsWidget::checkForUpdates()
+{
+  // this will return null if there's already a check in progress
+  AutoUpdaterDialog* const dlg = g_main_window->createAutoUpdaterDialog(this, true);
+  if (!dlg)
+    return;
+
+  QProgressDialog* const pdlg = new QProgressDialog(qApp->translate("MainWindow", "Checking for updates..."),
+                                                    qApp->translate("QPlatformTheme", "Cancel"), 0, 0, this);
+  pdlg->setWindowTitle(m_dialog->windowTitle());
+  pdlg->setAttribute(Qt::WA_DeleteOnClose);
+  pdlg->setMinimumWidth(400);
+  pdlg->open();
+
+  connect(pdlg, &QProgressDialog::canceled, dlg, &AutoUpdaterDialog::cancel);
+  connect(dlg, &AutoUpdaterDialog::updateCheckAboutToComplete, pdlg, &QProgressDialog::close);
+
+  dlg->queueUpdateCheck(true);
 }

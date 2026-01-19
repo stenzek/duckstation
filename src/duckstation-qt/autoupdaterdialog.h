@@ -27,8 +27,12 @@ public:
 
   static AutoUpdaterDialog* create(QWidget* const parent, Error* const error);
 
+  ALWAYS_INLINE bool areUpdatesAvailable() const { return m_updates_available; }
+
   void queueUpdateCheck(bool display_errors);
   void queueGetLatestRelease();
+
+  void cancel();
 
   // (channel name, channel display name)
   static std::vector<std::pair<QString, QString>> getChannelList();
@@ -39,6 +43,9 @@ public:
   static void warnAboutUnofficialBuild();
 
 Q_SIGNALS:
+  /// Emitted just before the update check finishes, before any messages are displayed.
+  void updateCheckAboutToComplete();
+
   /// Update check completed, might have an update available.
   void updateCheckCompleted(bool update_available);
 
@@ -56,6 +63,7 @@ private:
   void reportError(const std::string_view msg);
   void ensureHttpPollingActive();
   void httpPollTimerPoll();
+  bool handleCancelledRequest(s32 status_code);
 
   void downloadUpdateClicked();
   void skipThisUpdateClicked();
@@ -88,5 +96,6 @@ private:
   QString m_download_url;
   int m_download_size = 0;
 
-  bool m_update_will_break_save_states = false;
+  bool m_cancelled = true;
+  bool m_updates_available = false;
 };

@@ -25,6 +25,7 @@ Q_SIGNALS:
 private:
   void updateRenderToSeparateWindowOptions();
   void onLanguageChanged();
+  void checkForUpdates();
 
   Ui::InterfaceSettingsWidget m_ui;
 

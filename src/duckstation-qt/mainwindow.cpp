@@ -3412,34 +3412,39 @@ void MainWindow::onToolsOpenTextureDirectoryTriggered()
   QtUtils::OpenURL(this, QUrl::fromLocalFile(dir));
 }
 
-void MainWindow::checkForUpdates(bool display_message)
+AutoUpdaterDialog* MainWindow::createAutoUpdaterDialog(QWidget* parent, bool display_message)
 {
+  DebugAssert(parent);
+
   // The user could click Check for Updates while an update check is in progress.
   // Don't show an incomplete dialog in this case.
   if (m_auto_updater_dialog)
   {
-    showAutoUpdaterWindow();
-    return;
+    // Only raise it if it is waiting.
+    if (m_auto_updater_dialog && m_auto_updater_dialog->areUpdatesAvailable())
+      showAutoUpdaterWindow();
+
+    return nullptr;
   }
 
   Error error;
-  m_auto_updater_dialog = AutoUpdaterDialog::create(this, &error);
+  m_auto_updater_dialog = AutoUpdaterDialog::create(parent, &error);
   if (!m_auto_updater_dialog)
   {
     if (display_message)
     {
       QtUtils::AsyncMessageBox(
-        this, QMessageBox::Critical, tr("Error"),
+        parent, QMessageBox::Critical, tr("Error"),
         tr("Failed to create auto updater: %1").arg(QString::fromStdString(error.GetDescription())));
     }
 
-    return;
+    return nullptr;
   }
 
   // display status message indicating check is in progress
   // technically this could conflict with the game list refresh, but this is only for manual update checks.
   // by that point the game list refresh should have completed anyway
-  if (display_message)
+  if (display_message && parent == this)
   {
     setProgressBar(0, 0);
     m_ui.statusBar->showMessage(tr("Checking for updates..."));
@@ -3457,6 +3462,7 @@ void MainWindow::checkForUpdates(bool display_message)
     m_auto_updater_dialog->deleteLater();
     m_auto_updater_dialog = nullptr;
   });
+
   connect(m_auto_updater_dialog, &AutoUpdaterDialog::updateCheckCompleted, this, [this](bool update_available) {
     if (!m_auto_updater_dialog)
       return;
@@ -3467,10 +3473,21 @@ void MainWindow::checkForUpdates(bool display_message)
     }
     else
     {
+      // NOTE: Looks terrifying, but it uses deleteLater() so it's okay.
       m_auto_updater_dialog->disconnect(m_auto_updater_dialog, &AutoUpdaterDialog::closed, this, nullptr);
       QtUtils::CloseAndDeleteWindow(m_auto_updater_dialog);
     }
   });
+
+  return m_auto_updater_dialog;
+}
+
+void MainWindow::checkForUpdates(bool display_message)
+{
+  AutoUpdaterDialog* const dialog = createAutoUpdaterDialog(this, display_message);
+  if (!dialog)
+    return;
+
   m_auto_updater_dialog->queueUpdateCheck(display_message);
 }
 
