@@ -70,7 +70,7 @@
     <addaction name="separator"/>
     <addaction name="actionCloseGame"/>
     <addaction name="actionCloseGameWithoutSaving"/>
-    <addaction name="actionResetGame"/>
+    <addaction name="actionRestartGame"/>
     <addaction name="actionPause"/>
     <addaction name="menuChangeDisc"/>
     <addaction name="separator"/>
@@ -359,15 +359,15 @@
     <string>Ends the current session.</string>
    </property>
   </action>
-  <action name="actionResetGame">
+  <action name="actionRestartGame">
    <property name="icon">
     <iconset theme="restart-line"/>
    </property>
    <property name="text">
-    <string>&amp;Reset Game</string>
+    <string>&amp;Restart Game</string>
    </property>
    <property name="iconText">
-    <string>Reset</string>
+    <string>Restart</string>
    </property>
    <property name="toolTip">
     <string>Restarts the emulated system.</string>

@@ -273,7 +273,7 @@ private:
   void onStartFullscreenUITriggered();
   void onCloseGameActionTriggered();
   void onCloseGameWithoutSavingActionTriggered();
-  void onResetGameActionTriggered();
+  void onRestartGameActionTriggered();
   void onPauseActionTriggered(bool checked);
   void onFullscreenUIStartedOrStopped(bool running);
   void onRemoveDiscActionTriggered();

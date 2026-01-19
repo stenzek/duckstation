@@ -84,7 +84,7 @@ static void DoStartDisc();
 static void DoToggleFastForward();
 static void ConfirmIfSavingMemoryCards(std::string action, std::function<void(bool)> callback);
 static void RequestShutdown(bool save_state);
-static void RequestReset();
+static void RequestRestart();
 static void BeginChangeDiscOnCoreThread(bool needs_pause);
 static void StartChangeDiscFromFile();
 static void DoRequestExit();
@@ -754,11 +754,11 @@ void FullscreenUI::RequestShutdown(bool save_state)
   });
 }
 
-void FullscreenUI::RequestReset()
+void FullscreenUI::RequestRestart()
 {
   SwitchToMainWindow(MainWindowType::None);
 
-  ConfirmIfSavingMemoryCards(FSUI_STR("reset"), [](bool result) {
+  ConfirmIfSavingMemoryCards(FSUI_STR("restart"), [](bool result) {
     if (result)
       Host::RunOnCoreThread(System::ResetSystem);
 
@@ -1667,8 +1667,8 @@ void FullscreenUI::DrawPauseMenu()
         else
           ImGui::SetItemDefaultFocus();
 
-        if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_FA_ARROWS_ROTATE, "Reset Game")))
-          RequestReset();
+        if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_FA_ARROWS_ROTATE, "Restart Game")))
+          RequestRestart();
 
         if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_FA_FLOPPY_DISK, "Close and Save State")))
           BeginTransition(LONG_TRANSITION_TIME, []() { RequestShutdown(true); });

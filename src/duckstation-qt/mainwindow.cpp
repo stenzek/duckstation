@@ -79,7 +79,7 @@ static constexpr std::pair<const char*, QAction * Ui::MainWindow::*> s_toolbar_a
   {nullptr, nullptr},
   {"PowerOff", &Ui::MainWindow::actionCloseGame},
   {"PowerOffWithoutSaving", &Ui::MainWindow::actionCloseGameWithoutSaving},
-  {"Reset", &Ui::MainWindow::actionResetGame},
+  {"Reset", &Ui::MainWindow::actionRestartGame},
   {"Pause", &Ui::MainWindow::actionPause},
   {"ChangeDisc", &Ui::MainWindow::actionChangeDisc},
   {"Cheats", &Ui::MainWindow::actionCheatsToolbar},
@@ -1229,23 +1229,23 @@ void MainWindow::promptForDiscChange(const QString& path)
 
   QMessageBox* const mb =
     QtUtils::NewMessageBox(lock.getDialogParent(), QMessageBox::Question, tr("Confirm Disc Change"),
-                           tr("Do you want to swap discs or boot the new image (via system reset)?"),
+                           tr("Do you want to swap discs or boot the new image via system restart?"),
                            QMessageBox::NoButton, QMessageBox::NoButton);
 
   /*const QAbstractButton* const swap_button = */ mb->addButton(tr("Swap Disc"), QMessageBox::YesRole);
-  const QAbstractButton* const reset_button = mb->addButton(tr("Reset"), QMessageBox::NoRole);
+  const QAbstractButton* const restart_button = mb->addButton(tr("Restart"), QMessageBox::NoRole);
   const QAbstractButton* const cancel_button =
     mb->addButton(qApp->translate("QPlatformTheme", "Cancel"), QMessageBox::RejectRole);
 
-  connect(mb, &QMessageBox::finished, this, [this, mb, reset_button, cancel_button, path, lock = std::move(lock)]() {
+  connect(mb, &QMessageBox::finished, this, [this, mb, restart_button, cancel_button, path, lock = std::move(lock)]() {
     const QAbstractButton* const clicked_button = mb->clickedButton();
     if (!clicked_button || clicked_button == cancel_button)
       return;
 
-    const bool reset_system = (clicked_button == reset_button);
+    const bool restart_system = (clicked_button == restart_button);
     switchToEmulationView();
 
-    g_core_thread->changeDisc(path, reset_system, true);
+    g_core_thread->changeDisc(path, restart_system, true);
   });
 
   mb->open();
@@ -1363,7 +1363,7 @@ void MainWindow::onCloseGameWithoutSavingActionTriggered()
   requestShutdown(false, false, false, true, false, false, false);
 }
 
-void MainWindow::onResetGameActionTriggered()
+void MainWindow::onRestartGameActionTriggered()
 {
   g_core_thread->resetSystem(true);
 }
@@ -2144,7 +2144,7 @@ void MainWindow::updateEmulationActions()
 
   m_ui.actionCloseGame->setDisabled(starting_or_not_running);
   m_ui.actionCloseGameWithoutSaving->setDisabled(starting_or_not_running);
-  m_ui.actionResetGame->setDisabled(starting_or_not_running);
+  m_ui.actionRestartGame->setDisabled(starting_or_not_running);
   m_ui.actionPause->setDisabled(starting_or_not_running);
   m_ui.actionChangeDisc->setDisabled(starting_or_not_running);
   m_ui.actionCheatsToolbar->setDisabled(starting_or_not_running || achievements_hardcore_mode);
@@ -2436,7 +2436,7 @@ void MainWindow::connectSignals()
   connect(m_ui.actionCloseGame, &QAction::triggered, this, &MainWindow::onCloseGameActionTriggered);
   connect(m_ui.actionCloseGameWithoutSaving, &QAction::triggered, this,
           &MainWindow::onCloseGameWithoutSavingActionTriggered);
-  connect(m_ui.actionResetGame, &QAction::triggered, this, &MainWindow::onResetGameActionTriggered);
+  connect(m_ui.actionRestartGame, &QAction::triggered, this, &MainWindow::onRestartGameActionTriggered);
   connect(m_ui.actionPause, &QAction::triggered, this, &MainWindow::onPauseActionTriggered);
   connect(m_ui.actionScreenshot, &QAction::triggered, g_core_thread, &CoreThread::saveScreenshot);
   connect(m_ui.actionScanForNewGames, &QAction::triggered, this, &MainWindow::onScanForNewGamesTriggered);
