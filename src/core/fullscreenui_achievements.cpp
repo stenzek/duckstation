@@ -1143,7 +1143,7 @@ void FullscreenUI::DrawAchievementsPauseMenuOverlays(float start_pos_y)
        s_achievements_locals.most_recent_progress_update->achievement_id !=
          s_achievements_locals.achievement_nearest_completion->achievement_id))
   {
-    buffer.format(ICON_FA_GAUGE_HIGH " {}", TRANSLATE_DISAMBIG_SV("Achievements", "Nearest Completion", "Pause Menu"));
+    buffer.format(ICON_FA_FLAG_CHECKERED " {}", TRANSLATE_DISAMBIG_SV("Achievements", "Nearest Completion", "Pause Menu"));
     draw_achievement_in_box(buffer, s_achievements_locals.achievement_nearest_completion->title,
                             s_achievements_locals.achievement_nearest_completion->description,
                             s_achievements_locals.achievement_nearest_completion->badge_path,
@@ -1193,7 +1193,7 @@ void FullscreenUI::DrawAchievementsPauseMenuOverlays(float start_pos_y)
 
     dl->AddRectFilled(box_min, box_max, box_background_color, box_rounding);
 
-    buffer.format(ICON_FA_STOPWATCH " {}",
+    buffer.format(ICON_FA_HAND_FIST " {}",
                   TRANSLATE_DISAMBIG_SV("Achievements", "Active Challenge Achievements", "Pause Menu"));
     dl->AddText(UIStyle.Font, UIStyle.MediumFontSize, UIStyle.BoldFontWeight, text_pos, box_title_text_color,
                 IMSTR_START_END(buffer));
@@ -1784,14 +1784,14 @@ void FullscreenUI::DrawAchievementsWindow()
   {
     static bool buckets_collapsed[NUM_RC_CLIENT_ACHIEVEMENT_BUCKETS] = {};
     static constexpr std::pair<const char*, const char*> bucket_names[NUM_RC_CLIENT_ACHIEVEMENT_BUCKETS] = {
-      {ICON_FA_TRIANGLE_EXCLAMATION, TRANSLATE_NOOP("Achievements", "Unknown")},
+      {ICON_FA_CIRCLE_QUESTION, TRANSLATE_NOOP("Achievements", "Unknown")},
       {ICON_FA_LOCK, TRANSLATE_NOOP("Achievements", "Locked")},
       {ICON_FA_UNLOCK, TRANSLATE_NOOP("Achievements", "Unlocked")},
       {ICON_FA_TRIANGLE_EXCLAMATION, TRANSLATE_NOOP("Achievements", "Unsupported")},
-      {ICON_FA_CIRCLE_QUESTION, TRANSLATE_NOOP("Achievements", "Unofficial")},
-      {ICON_FA_UNLOCK, TRANSLATE_NOOP("Achievements", "Recently Unlocked")},
-      {ICON_FA_STOPWATCH, TRANSLATE_NOOP("Achievements", "Active Challenges")},
-      {ICON_FA_RULER_HORIZONTAL, TRANSLATE_NOOP("Achievements", "Almost There")},
+      {ICON_FA_FLASK_VIAL, TRANSLATE_NOOP("Achievements", "Unofficial")},
+      {ICON_FA_LOCK_OPEN, TRANSLATE_NOOP("Achievements", "Recently Unlocked")},
+      {ICON_FA_HAND_FIST, TRANSLATE_NOOP("Achievements", "Active Challenges")},
+      {ICON_FA_FLAG_CHECKERED, TRANSLATE_NOOP("Achievements", "Almost There")},
       {ICON_FA_TRIANGLE_EXCLAMATION, TRANSLATE_NOOP("Achievements", "Unsynchronized")},
     };
 

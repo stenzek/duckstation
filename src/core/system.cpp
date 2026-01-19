@@ -1743,7 +1743,7 @@ bool System::CanPauseSystem(bool display_message)
   {
     const float time_until_pause_allowed = static_cast<float>(frames_until_pause_allowed) / System::GetVideoFrameRate();
     const int seconds_until_pause_allowed = static_cast<int>(std::ceil(time_until_pause_allowed));
-    Host::AddIconOSDMessage(OSDMessageType::Quick, "PauseCooldown", ICON_FA_CLOCK,
+    Host::AddIconOSDMessage(OSDMessageType::Quick, "PauseCooldown", ICON_FA_HOURGLASS_HALF,
                             TRANSLATE_PLURAL_STR("System", "You cannot pause until another %n second(s) have passed.",
                                                  "", seconds_until_pause_allowed));
   }

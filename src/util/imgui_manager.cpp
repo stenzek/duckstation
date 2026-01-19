@@ -848,9 +848,9 @@ void ImGuiManager::AddOSDMessage(OSDMessageType type, std::string key, std::stri
                                  std::string message)
 {
   if (!key.empty())
-    INFO_LOG("OSD [{}]: {}{}{}", key, title.empty() ? "" : "\n", title, message);
+    INFO_LOG("OSD [{}]: {}{}{}", key, title, title.empty() ? "" : "\n", message);
   else
-    INFO_LOG("OSD: {}{}{}", title.empty() ? "" : "\n", title, message);
+    INFO_LOG("OSD: {}{}{}", title, title.empty() ? "" : "\n", message);
 
   static constexpr const std::array<const char*, static_cast<size_t>(OSDMessageType::MaxCount)> default_icons = {
     ICON_EMOJI_NO_ENTRY_SIGN, // Error
