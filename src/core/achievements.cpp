@@ -219,6 +219,8 @@ struct State
   bool has_achievements = false;
   bool has_leaderboards = false;
   bool has_rich_presence = false;
+  bool reload_game_on_reset = false;
+  bool hashdb_loaded = false;
 
   std::recursive_mutex mutex; // large
 
@@ -245,7 +247,6 @@ struct State
   rc_client_async_handle_t* login_request = nullptr;
   rc_client_async_handle_t* load_game_request = nullptr;
 
-  bool hashdb_loaded = false;
   std::vector<HashDatabaseEntry> hashdb_entries;
 
   rc_client_async_handle_t* fetch_hash_library_request = nullptr;
@@ -1056,6 +1057,15 @@ void Achievements::OnSystemReset()
 
   DEV_LOG("Reset client");
   rc_client_reset(s_state.client);
+
+  // Was there a pending disc change?
+  // Ensure the new game is fully loaded after the reset, and not just treated as a disc swap.
+  if (s_state.reload_game_on_reset)
+  {
+    DEV_LOG("Reloading game after reset due to disc change");
+    ClearGameInfo();
+    BeginLoadGame();
+  }
 }
 
 void Achievements::GameChanged(CDImage* image)
@@ -1079,6 +1089,9 @@ void Achievements::GameChanged(CDImage* image)
   s_state.load_game_request =
     rc_client_begin_change_media_from_hash(s_state.client, GameHashToString(s_state.game_hash).c_str(),
                                            ClientLoadGameCallback, reinterpret_cast<void*>(static_cast<uintptr_t>(1)));
+
+  // Flag the disc change. That way we reload the game on reset instead of treating it as a swap.
+  s_state.reload_game_on_reset = true;
 }
 
 bool Achievements::IdentifyGame(CDImage* image)
@@ -1276,6 +1289,7 @@ void Achievements::ClearGameInfo()
   s_state.game_title = {};
   s_state.game_icon = {};
   s_state.game_icon_url = {};
+  s_state.reload_game_on_reset = false;
   s_state.has_achievements = false;
   s_state.has_leaderboards = false;
   s_state.has_rich_presence = false;
