@@ -648,18 +648,6 @@ const char* Host::GetDefaultFullscreenUITheme()
   return "";
 }
 
-bool Host::ShouldPreferHostFileSelector()
-{
-  return false;
-}
-
-void Host::OpenHostFileSelectorAsync(std::string_view title, bool select_directory, FileSelectorCallback callback,
-                                     FileSelectorFilters filters /* = FileSelectorFilters() */,
-                                     std::string_view initial_directory /* = std::string_view() */)
-{
-  callback(std::string());
-}
-
 void Host::AddFixedInputBindings(const SettingsInterface& si)
 {
   // noop

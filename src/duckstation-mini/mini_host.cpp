@@ -1368,22 +1368,9 @@ void Host::ConfirmMessageAsync(std::string_view title, std::string_view message,
   });
 }
 
-void Host::OpenHostFileSelectorAsync(std::string_view title, bool select_directory, FileSelectorCallback callback,
-                                     FileSelectorFilters filters /* = FileSelectorFilters() */,
-                                     std::string_view initial_directory /* = std::string_view() */)
-{
-  // TODO: Use SDL FileDialog API
-  callback(std::string());
-}
-
 const char* Host::GetDefaultFullscreenUITheme()
 {
   return "";
-}
-
-bool Host::ShouldPreferHostFileSelector()
-{
-  return false;
 }
 
 static void SignalHandler(int signal)

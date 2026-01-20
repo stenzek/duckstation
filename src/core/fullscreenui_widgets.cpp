@@ -3805,13 +3805,6 @@ void FullscreenUI::FileSelectorDialog::Open(std::string_view title, FileSelector
   if (initial_directory.empty() || !FileSystem::DirectoryExists(initial_directory.c_str()))
     initial_directory = FileSystem::GetWorkingDirectory();
 
-  if (Host::ShouldPreferHostFileSelector())
-  {
-    Host::OpenHostFileSelectorAsync(ImGuiManager::StripIconCharacters(title), select_directory, std::move(callback),
-                                    std::move(filters), initial_directory);
-    return;
-  }
-
   SetTitleAndOpen(fmt::format("{}##file_selector_dialog", title));
   m_callback = std::move(callback);
   m_filters = std::move(filters);

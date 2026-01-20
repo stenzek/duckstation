@@ -1667,59 +1667,6 @@ void Host::OnAchievementsHardcoreModeChanged(bool enabled)
   emit g_core_thread->achievementsHardcoreModeChanged(enabled);
 }
 
-bool Host::ShouldPreferHostFileSelector()
-{
-#ifdef __linux__
-  // If running inside a flatpak, we want to use native selectors/portals.
-  return (std::getenv("container") != nullptr);
-#else
-  return false;
-#endif
-}
-
-void Host::OpenHostFileSelectorAsync(std::string_view title, bool select_directory, FileSelectorCallback callback,
-                                     FileSelectorFilters filters /* = FileSelectorFilters() */,
-                                     std::string_view initial_directory /* = std::string_view() */)
-{
-  const bool from_cpu_thread = g_core_thread->isCurrentThread();
-
-  QString filters_str;
-  if (!filters.empty())
-  {
-    filters_str.append(QStringLiteral("All File Types (%1)")
-                         .arg(QString::fromStdString(StringUtil::JoinString(filters.begin(), filters.end(), " "))));
-    for (const std::string& filter : filters)
-    {
-      filters_str.append(
-        QStringLiteral(";;%1 Files (%2)")
-          .arg(
-            QtUtils::StringViewToQString(std::string_view(filter).substr(filter.starts_with("*.") ? 2 : 0)).toUpper())
-          .arg(QString::fromStdString(filter)));
-    }
-  }
-
-  Host::RunOnUIThread([title = QtUtils::StringViewToQString(title), select_directory, callback = std::move(callback),
-                       filters_str = std::move(filters_str),
-                       initial_directory = QtUtils::StringViewToQString(initial_directory), from_cpu_thread]() mutable {
-    auto lock = g_main_window->pauseAndLockSystem();
-
-    QString path;
-
-    if (select_directory)
-      path = QFileDialog::getExistingDirectory(lock.getDialogParent(), title, initial_directory);
-    else
-      path = QFileDialog::getOpenFileName(lock.getDialogParent(), title, initial_directory, filters_str);
-
-    if (!path.isEmpty())
-      path = QDir::toNativeSeparators(path);
-
-    if (from_cpu_thread)
-      Host::RunOnCoreThread([callback = std::move(callback), path = path.toStdString()]() { callback(path); });
-    else
-      callback(path.toStdString());
-  });
-}
-
 void Host::BeginTextInput()
 {
   DEV_LOG("Host::BeginTextInput()");
