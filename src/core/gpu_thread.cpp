@@ -1407,6 +1407,9 @@ void GPUThread::UpdateDisplayWindowOnThread(bool fullscreen, bool allow_exclusiv
     return;
   }
 
+  // Need to notify the core thread of the change, since it won't necessarily get a resize event.
+  Host::RunOnCoreThread([wi = std::move(wi.value())]() mutable { s_state.render_window_info = std::move(wi); });
+
   DisplayWindowResizedOnThread();
 }
 
