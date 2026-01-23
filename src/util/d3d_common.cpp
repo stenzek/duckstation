@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "d3d_common.h"
@@ -14,6 +14,7 @@
 
 #include "fmt/format.h"
 
+#include <algorithm>
 #include <d3d11.h>
 #include <d3d12.h>
 #include <d3dcompiler.h>
@@ -344,12 +345,16 @@ std::optional<GPUDevice::AdapterInfoList> D3DCommon::GetAdapterInfoList(Error* e
         {
           for (const DXGI_MODE_DESC& mode : dmodes)
           {
-            ai.fullscreen_modes.push_back(
-              GPUDevice::ExclusiveFullscreenMode{.width = mode.Width,
-                                                 .height = mode.Height,
-                                                 .refresh_rate = static_cast<float>(mode.RefreshRate.Numerator) /
-                                                                 static_cast<float>(mode.RefreshRate.Denominator)});
+            const GPUDevice::ExclusiveFullscreenMode efm{.width = mode.Width,
+                                                         .height = mode.Height,
+                                                         .refresh_rate =
+                                                           static_cast<float>(mode.RefreshRate.Numerator) /
+                                                           static_cast<float>(mode.RefreshRate.Denominator)};
+            if (std::ranges::find(ai.fullscreen_modes, efm) == ai.fullscreen_modes.end())
+              ai.fullscreen_modes.push_back(efm);
           }
+
+          std::sort(ai.fullscreen_modes.begin(), ai.fullscreen_modes.end());
         }
         else
         {

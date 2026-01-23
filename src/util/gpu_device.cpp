@@ -848,6 +848,25 @@ TinyString GPUDevice::ExclusiveFullscreenMode::ToString() const
   return TinyString::from_format("{} x {} @ {} hz", width, height, refresh_rate);
 }
 
+bool GPUDevice::ExclusiveFullscreenMode::operator==(const ExclusiveFullscreenMode& rhs) const
+{
+  return (width == rhs.width && height == rhs.height && refresh_rate == rhs.refresh_rate);
+}
+
+bool GPUDevice::ExclusiveFullscreenMode::operator!=(const ExclusiveFullscreenMode& rhs) const
+{
+  return (width != rhs.width || height != rhs.height || refresh_rate != rhs.refresh_rate);
+}
+
+bool GPUDevice::ExclusiveFullscreenMode::operator<(const ExclusiveFullscreenMode& rhs) const
+{
+  if (width != rhs.width)
+    return width < rhs.width;
+  if (height != rhs.height)
+    return height < rhs.height;
+  return refresh_rate < rhs.refresh_rate;
+}
+
 void GPUDevice::DumpBadShader(std::string_view code, std::string_view errors)
 {
   static u32 next_bad_shader_id = 0;

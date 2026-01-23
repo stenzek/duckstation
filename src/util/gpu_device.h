@@ -586,6 +586,10 @@ public:
 
     TinyString ToString() const;
 
+    bool operator==(const ExclusiveFullscreenMode& rhs) const;
+    bool operator!=(const ExclusiveFullscreenMode& rhs) const;
+    bool operator<(const ExclusiveFullscreenMode& rhs) const;
+
     static std::optional<ExclusiveFullscreenMode> Parse(std::string_view str);
   };
 
