@@ -134,10 +134,12 @@ static int rc_find_next_classification(const char* memaddr) {
         break;
 
       default:
+        rc_destroy_parse_state(&parse);
         return classification;
     }
   } while (*memaddr++ == '_');
 
+  rc_destroy_parse_state(&parse);
   return RC_CONDITION_CLASSIFICATION_OTHER;
 }
 
