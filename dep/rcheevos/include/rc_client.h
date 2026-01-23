@@ -550,7 +550,8 @@ typedef struct rc_client_achievement_list_t {
 
 enum {
   RC_CLIENT_ACHIEVEMENT_LIST_GROUPING_LOCK_STATE = 0,
-  RC_CLIENT_ACHIEVEMENT_LIST_GROUPING_PROGRESS = 1
+  RC_CLIENT_ACHIEVEMENT_LIST_GROUPING_PROGRESS = 1,
+  RC_CLIENT_ACHIEVEMENT_LIST_GROUPING_SUBSET_BUCKETS = 2, /* Same as progress, but does not share any subset buckets */
 };
 
 /**

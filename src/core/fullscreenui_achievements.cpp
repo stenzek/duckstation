@@ -1537,9 +1537,9 @@ void FullscreenUI::SwitchToAchievements()
 
   if (s_achievements_locals.achievement_list)
     rc_client_destroy_achievement_list(s_achievements_locals.achievement_list);
-  s_achievements_locals.achievement_list = rc_client_create_achievement_list(
-    Achievements::GetClient(), RC_CLIENT_ACHIEVEMENT_CATEGORY_CORE_AND_UNOFFICIAL,
-    RC_CLIENT_ACHIEVEMENT_LIST_GROUPING_PROGRESS /*RC_CLIENT_ACHIEVEMENT_LIST_GROUPING_LOCK_STATE*/);
+  s_achievements_locals.achievement_list =
+    rc_client_create_achievement_list(Achievements::GetClient(), RC_CLIENT_ACHIEVEMENT_CATEGORY_CORE_AND_UNOFFICIAL,
+                                      RC_CLIENT_ACHIEVEMENT_LIST_GROUPING_SUBSET_BUCKETS);
   if (!s_achievements_locals.achievement_list)
   {
     ERROR_LOG("rc_client_create_achievement_list() returned null");

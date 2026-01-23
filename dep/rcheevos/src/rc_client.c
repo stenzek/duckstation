@@ -4041,18 +4041,34 @@ rc_client_achievement_list_t* rc_client_create_achievement_list(rc_client_t* cli
   uint8_t bucket_type;
   uint32_t num_subsets = 0;
   uint32_t i, j;
-  const uint8_t shared_bucket_order[] = {
+  static const uint8_t shared_bucket_order[] = {
     RC_CLIENT_ACHIEVEMENT_BUCKET_ACTIVE_CHALLENGE,
     RC_CLIENT_ACHIEVEMENT_BUCKET_RECENTLY_UNLOCKED,
     RC_CLIENT_ACHIEVEMENT_BUCKET_ALMOST_THERE,
     RC_CLIENT_ACHIEVEMENT_BUCKET_UNSYNCED,
   };
-  const uint8_t subset_bucket_order[] = {
+  static const uint8_t shared_subset_bucket_order[] = {
     RC_CLIENT_ACHIEVEMENT_BUCKET_LOCKED,
     RC_CLIENT_ACHIEVEMENT_BUCKET_UNOFFICIAL,
     RC_CLIENT_ACHIEVEMENT_BUCKET_UNSUPPORTED,
     RC_CLIENT_ACHIEVEMENT_BUCKET_UNLOCKED
   };
+  static const uint8_t no_shared_subset_buckets_order[] = {
+    RC_CLIENT_ACHIEVEMENT_BUCKET_ACTIVE_CHALLENGE,
+    RC_CLIENT_ACHIEVEMENT_BUCKET_RECENTLY_UNLOCKED,
+    RC_CLIENT_ACHIEVEMENT_BUCKET_ALMOST_THERE,
+    RC_CLIENT_ACHIEVEMENT_BUCKET_UNSYNCED,
+    RC_CLIENT_ACHIEVEMENT_BUCKET_LOCKED,
+    RC_CLIENT_ACHIEVEMENT_BUCKET_UNOFFICIAL,
+    RC_CLIENT_ACHIEVEMENT_BUCKET_UNSUPPORTED,
+    RC_CLIENT_ACHIEVEMENT_BUCKET_UNLOCKED
+  };
+  const uint8_t* subset_bucket_order = (grouping == RC_CLIENT_ACHIEVEMENT_LIST_GROUPING_PROGRESS) ?
+                                         shared_subset_bucket_order :
+                                         no_shared_subset_buckets_order;
+  const int num_subset_buckets = (grouping == RC_CLIENT_ACHIEVEMENT_LIST_GROUPING_PROGRESS) ?
+                                   sizeof(shared_subset_bucket_order) / sizeof(shared_subset_bucket_order[0]) :
+                                   sizeof(no_shared_subset_buckets_order) / sizeof(no_shared_subset_buckets_order[0]);
   const time_t recent_unlock_time = time(NULL) - RC_CLIENT_RECENT_UNLOCK_DELAY_SECONDS;
 
   if (!client)
@@ -4060,6 +4076,10 @@ rc_client_achievement_list_t* rc_client_create_achievement_list(rc_client_t* cli
 
 #ifdef RC_CLIENT_SUPPORTS_EXTERNAL
   if (client->state.external_client) {
+    /* not supported by external client */
+    if (grouping == RC_CLIENT_ACHIEVEMENT_LIST_GROUPING_SUBSET_BUCKETS)
+      grouping = RC_CLIENT_ACHIEVEMENT_LIST_GROUPING_PROGRESS;
+
     if (client->state.external_client->create_achievement_list_v3)
       return (rc_client_achievement_list_t*)client->state.external_client->create_achievement_list_v3(category, grouping);
 
@@ -4101,7 +4121,7 @@ rc_client_achievement_list_t* rc_client_create_achievement_list(rc_client_t* cli
       num_achievements += bucket_counts[i];
 
       if (num_subsets > 1) {
-        for (j = 0; j < sizeof(subset_bucket_order) / sizeof(subset_bucket_order[0]); ++j) {
+        for (j = 0; j < num_subset_buckets; ++j) {
           if (subset_bucket_order[j] == i) {
             needs_split = 1;
             break;
@@ -4181,7 +4201,7 @@ rc_client_achievement_list_t* rc_client_create_achievement_list(rc_client_t* cli
     if (!subset->active)
       continue;
 
-    for (i = 0; i < sizeof(subset_bucket_order) / sizeof(subset_bucket_order[0]); ++i) {
+    for (i = 0; i < num_subset_buckets; ++i) {
       bucket_type = subset_bucket_order[i];
       if (!bucket_counts[bucket_type])
         continue;
