@@ -2640,17 +2640,17 @@ void FullscreenUI::DrawLeaderboardLoadingIndicator(float pos_y, float avail_heig
 
   // position in right side of screen if short text, center otherwise
   const ImVec2 pos = short_text ?
-                       ImVec2((display_width - total_width) - LayoutScale(25.0f),
-                              pos_y + avail_height - font_size - LayoutScale(10.0f)) :
+                       ImVec2((display_width - total_width) - LayoutScale(40.0f),
+                              pos_y + avail_height - font_size - LayoutScale(25.0f)) :
                        ImVec2((display_width - total_width) * 0.5f, pos_y + (avail_height - font_size) * 0.5f);
 
   // for short text, draw a background box
   if (short_text)
   {
-    const ImVec2 padding = ImVec2(LayoutScale(10.0f), LayoutScale(6.0f));
+    const ImVec2 padding = ImVec2(LayoutScale(16.0f), LayoutScale(12.0f));
     ImGui::GetWindowDrawList()->AddRectFilled(ImVec2(pos.x - padding.x, pos.y - padding.y),
                                               ImVec2(pos.x + total_width + padding.x, pos.y + font_size + padding.y),
-                                              ImGui::GetColorU32(ModAlpha(UIStyle.PopupBackgroundColor, 0.8f)),
+                                              ImGui::GetColorU32(ModAlpha(UIStyle.PopupBackgroundColor, 0.5f)),
                                               LayoutScale(LAYOUT_MENU_ITEM_BORDER_ROUNDING));
   }
 
