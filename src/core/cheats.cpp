@@ -214,12 +214,12 @@ static bool ExtractCodeInfo(CodeInfoList* dst, const std::string_view file_data,
 static void AppendCheatToList(CodeInfoList* dst, CodeInfo code);
 
 static bool ShouldLoadDatabaseCheats();
-static bool WantsWidescreenPatch();
+static std::optional<DisplayAspectRatio> GetWantedAspectRatio();
 static bool AreAnyPatchesEnabled();
 static void ReloadEnabledLists();
 static u32 EnablePatches(const CheatCodeList& patches, const EnableCodeList& enable_list, const char* section,
                          bool hc_mode_active);
-static bool EnableWidescreenPatch(const CheatCodeList& patches, bool hc_mode_active);
+static bool EnableWidescreenPatch(const CheatCodeList& patches, bool hc_mode_active, const DisplayAspectRatio& ar);
 static void UpdateActiveCodes(bool reload_enabled_list, bool verbose, bool verbose_if_changed,
                               bool show_disabled_codes);
 
@@ -850,10 +850,13 @@ bool Cheats::ShouldLoadDatabaseCheats()
   return (sif && sif->GetBoolValue("Cheats", "LoadCheatsFromDatabase", true));
 }
 
-bool Cheats::WantsWidescreenPatch()
+std::optional<DisplayAspectRatio> Cheats::GetWantedAspectRatio()
 {
-  return (g_settings.gpu_widescreen_rendering && g_settings.display_aspect_ratio.IsValid() &&
-          g_settings.display_aspect_ratio != DisplayAspectRatio{4, 3});
+  if (!g_settings.gpu_widescreen_rendering)
+    return std::nullopt;
+
+  const DisplayAspectRatio ar = System::GetConfigurationAspectRatio();
+  return (ar.IsValid() && ar != DisplayAspectRatio{4, 3}) ? std::optional<DisplayAspectRatio>(ar) : std::nullopt;
 }
 
 bool Cheats::AreAnyPatchesEnabled()
@@ -862,7 +865,7 @@ bool Cheats::AreAnyPatchesEnabled()
     return false;
 
   // Look for widescreen patches.
-  if (WantsWidescreenPatch())
+  if (GetWantedAspectRatio().has_value())
     return true;
 
   // Only in the gameini.
@@ -938,17 +941,17 @@ u32 Cheats::EnablePatches(const CheatCodeList& patches, const EnableCodeList& en
   return count;
 }
 
-bool Cheats::EnableWidescreenPatch(const CheatCodeList& patches, bool hc_mode_active)
+bool Cheats::EnableWidescreenPatch(const CheatCodeList& patches, bool hc_mode_active,
+                                   const DisplayAspectRatio& wanted_ar)
 {
-  const DisplayAspectRatio ar = g_settings.display_aspect_ratio;
-  if (ar.numerator <= 0 || ar.denominator <= 0)
-    return false;
-
   for (const std::unique_ptr<CheatCode>& p : patches)
   {
     // don't rely on the name, use the attribute instead
-    if (!p->GetMetadata().override_aspect_ratio.has_value() || p->GetMetadata().override_aspect_ratio.value() != ar)
+    if (!p->GetMetadata().override_aspect_ratio.has_value() ||
+        p->GetMetadata().override_aspect_ratio.value() != wanted_ar)
+    {
       continue;
+    }
 
     // don't load banned patches
     if (p->GetMetadata().disallow_for_achievements && hc_mode_active)
@@ -966,7 +969,7 @@ bool Cheats::EnableWidescreenPatch(const CheatCodeList& patches, bool hc_mode_ac
     return true;
   }
 
-  WARNING_LOG("No widescreen patch found for aspect ratio {}.", Settings::GetDisplayAspectRatioName(ar));
+  WARNING_LOG("No widescreen patch found for aspect ratio {}.", Settings::GetDisplayAspectRatioName(wanted_ar));
   return false;
 }
 
@@ -1097,8 +1100,9 @@ void Cheats::UpdateActiveCodes(bool reload_enabled_list, bool verbose, bool verb
 
   if (!g_settings.disable_all_enhancements)
   {
+    const std::optional<DisplayAspectRatio> wanted_ar = GetWantedAspectRatio();
     s_locals.has_widescreen_patch =
-      WantsWidescreenPatch() && EnableWidescreenPatch(s_locals.patch_codes, hc_mode_active);
+      wanted_ar.has_value() && EnableWidescreenPatch(s_locals.patch_codes, hc_mode_active, wanted_ar.value());
     s_locals.active_patch_count =
       EnablePatches(s_locals.patch_codes, s_locals.enabled_patches, "Patches", hc_mode_active);
     s_locals.active_cheat_count =

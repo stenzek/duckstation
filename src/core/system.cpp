@@ -1430,26 +1430,29 @@ void System::ApplySettings(bool display_osd_messages)
     LoadSettings(display_osd_messages);
   }
 
-  // If safe mode is changed, patches need to be disabled and settings potentially reloaded.
-  if (g_settings.disable_all_enhancements != old_settings.disable_all_enhancements)
+  if (IsValid())
   {
-    const bool had_setting_overrides = Cheats::HasAnySettingOverrides();
-    Cheats::ReloadCheats(false, true, false, true, true);
-    if (had_setting_overrides != Cheats::HasAnySettingOverrides())
-      LoadSettings(false);
-  }
-
-  // Reload patches if widescreen rendering setting changed.
-  if (IsValid() &&
-      (g_settings.gpu_widescreen_rendering != old_settings.gpu_widescreen_rendering ||
-       (g_settings.gpu_widescreen_rendering && g_settings.display_aspect_ratio != old_settings.display_aspect_ratio)))
-  {
-    const bool prev_widescreen_patch = Cheats::IsWidescreenPatchActive();
-    Cheats::ReloadCheats(false, true, false, true, true);
-    if (prev_widescreen_patch != Cheats::IsWidescreenPatchActive() ||
-        g_settings.display_aspect_ratio != old_settings.display_aspect_ratio)
+    // If safe mode is changed, patches need to be disabled and settings potentially reloaded.
+    if (g_settings.disable_all_enhancements != old_settings.disable_all_enhancements)
     {
-      LoadSettings(false);
+      const bool had_setting_overrides = Cheats::HasAnySettingOverrides();
+      Cheats::ReloadCheats(false, true, false, true, true);
+      if (had_setting_overrides != Cheats::HasAnySettingOverrides())
+        LoadSettings(false);
+    }
+
+    // Reload patches if widescreen rendering setting changed.
+    if (g_settings.gpu_widescreen_rendering != old_settings.gpu_widescreen_rendering ||
+        (g_settings.gpu_widescreen_rendering && g_settings.display_aspect_ratio != old_settings.display_aspect_ratio) ||
+        (Cheats::IsWidescreenPatchActive() && GetConfigurationAspectRatio() != g_settings.display_aspect_ratio))
+    {
+      const bool prev_widescreen_patch = Cheats::IsWidescreenPatchActive();
+      Cheats::ReloadCheats(false, true, false, true, true);
+      if (prev_widescreen_patch != Cheats::IsWidescreenPatchActive() ||
+          g_settings.display_aspect_ratio != old_settings.display_aspect_ratio)
+      {
+        LoadSettings(false);
+      }
     }
   }
 
@@ -6204,6 +6207,12 @@ void System::RequestDisplaySize(float scale /*= 0.0f*/)
 
   const GSVector2i requested_sizei = GSVector2i(requested_size.ceil());
   Host::RequestResizeHostDisplay(requested_sizei.x, requested_sizei.y);
+}
+
+DisplayAspectRatio System::GetConfigurationAspectRatio()
+{
+  return Settings::ParseDisplayAspectRatio(Core::GetTinyStringSettingValue("Display", "AspectRatio"))
+    .value_or(Settings::DEFAULT_DISPLAY_ASPECT_RATIO);
 }
 
 void System::DisplayWindowResized()

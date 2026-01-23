@@ -444,6 +444,9 @@ void ToggleSoftwareRendering();
 /// If the scale is set to 0, the internal resolution will be used, otherwise it is treated as a multiplier to 1x.
 void RequestDisplaySize(float scale = 0.0f);
 
+/// Returns the configured aspect ratio (not necessarily the active aspect ratio).
+DisplayAspectRatio GetConfigurationAspectRatio();
+
 /// Returns the path to a possible cover image for the current serial.
 std::string GetImageForLoadingScreen(const std::string& game_path);
 
