@@ -4051,7 +4051,10 @@ void GPU_HW::UpdateDisplay(const GPUBackendUpdateDisplayCommand* cmd)
   {
     m_presenter.ClearDisplayTexture();
     if (interlaced)
+    {
       m_presenter.Deinterlace(interlaced_field);
+      RestoreDeviceContext();
+    }
 
     return;
   }
