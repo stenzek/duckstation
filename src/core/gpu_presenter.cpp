@@ -1027,25 +1027,33 @@ bool GPUPresenter::Deinterlace(u32 field)
     {
       GL_SCOPE_FMT("DeinterlaceWeave({{{},{}}}, {}x{}, field={})", x, y, width, height, field);
 
-      const u32 full_height = height * 2;
-      if (!DeinterlaceSetTargetSize(width, full_height, true)) [[unlikely]]
+      if (src)
       {
-        ClearDisplayTexture();
-        return false;
-      }
+        const u32 full_height = height * 2;
+        if (!DeinterlaceSetTargetSize(width, full_height, true)) [[unlikely]]
+        {
+          ClearDisplayTexture();
+          return false;
+        }
 
-      src->MakeReadyForSampling();
+        src->MakeReadyForSampling();
+      }
+      else
+      {
+        if (!m_deinterlace_texture)
+          return false;
+      }
 
       g_gpu_device->SetRenderTarget(m_deinterlace_texture.get());
       g_gpu_device->SetPipeline(m_deinterlace_pipeline.get());
       g_gpu_device->SetTextureSampler(0, src, g_gpu_device->GetNearestSampler());
-      g_gpu_device->SetViewportAndScissor(0, 0, width, full_height);
+      g_gpu_device->SetViewportAndScissor(m_deinterlace_texture->GetRect());
 
       const u32 uniforms[4] = {x, y, field, 0};
       g_gpu_device->DrawWithPushConstants(3, 0, uniforms, sizeof(uniforms));
 
       m_deinterlace_texture->MakeReadyForSampling();
-      SetDisplayTexture(m_deinterlace_texture.get(), GSVector4i::loadh(GSVector2i(width, full_height)));
+      SetDisplayTexture(m_deinterlace_texture.get(), m_deinterlace_texture->GetRect());
       return true;
     }
 
@@ -1071,10 +1079,7 @@ bool GPUPresenter::Deinterlace(u32 field)
       else
       {
         if (!m_deinterlace_texture)
-        {
-          DebugAssert(!m_display_texture);
           return false;
-        }
 
         // Clear the buffer, make it sample black.
         GL_INS("No source texture, clearing deinterlace buffer");
@@ -1088,11 +1093,11 @@ bool GPUPresenter::Deinterlace(u32 field)
       g_gpu_device->SetTextureSampler(0, m_deinterlace_buffers[this_buffer].get(), g_gpu_device->GetNearestSampler());
       g_gpu_device->SetTextureSampler(1, m_deinterlace_buffers[(this_buffer - 1) % NUM_BLEND_BUFFERS].get(),
                                       g_gpu_device->GetNearestSampler());
-      g_gpu_device->SetViewportAndScissor(0, 0, width, height);
+      g_gpu_device->SetViewportAndScissor(m_deinterlace_texture->GetRect());
       g_gpu_device->Draw(3, 0);
 
       m_deinterlace_texture->MakeReadyForSampling();
-      SetDisplayTexture(m_deinterlace_texture.get(), GSVector4i::loadh(GSVector2i(width, height)));
+      SetDisplayTexture(m_deinterlace_texture.get(), m_deinterlace_texture->GetRect());
       return true;
     }
 
@@ -1101,14 +1106,12 @@ bool GPUPresenter::Deinterlace(u32 field)
       GL_SCOPE_FMT("DeinterlaceAdaptive({{{},{}}}, {}x{}, field={})", x, y, width, height, field);
 
       const u32 this_buffer = m_current_deinterlace_buffer;
-      const u32 full_height = height * 2;
       m_current_deinterlace_buffer = (m_current_deinterlace_buffer + 1u) % DEINTERLACE_BUFFER_COUNT;
       GL_INS_FMT("Current buffer: {}", this_buffer);
 
       if (src)
       {
-        src->MakeReadyForSampling();
-
+        const u32 full_height = height * 2;
         if (!DeinterlaceSetTargetSize(width, full_height, false) || !copy_to_field_buffer(this_buffer)) [[unlikely]]
         {
           ClearDisplayTexture();
@@ -1118,10 +1121,7 @@ bool GPUPresenter::Deinterlace(u32 field)
       else
       {
         if (!m_deinterlace_texture)
-        {
-          DebugAssert(!m_display_texture);
           return false;
-        }
 
         // Clear the buffer, make it sample black.
         GL_INS("No source texture, clearing deinterlace buffer");
@@ -1137,13 +1137,13 @@ bool GPUPresenter::Deinterlace(u32 field)
                                       g_gpu_device->GetNearestSampler());
       g_gpu_device->SetTextureSampler(3, m_deinterlace_buffers[(this_buffer - 3) % DEINTERLACE_BUFFER_COUNT].get(),
                                       g_gpu_device->GetNearestSampler());
-      g_gpu_device->SetViewportAndScissor(0, 0, width, full_height);
+      g_gpu_device->SetViewportAndScissor(m_deinterlace_texture->GetRect());
 
-      const u32 uniforms[] = {field, full_height};
+      const u32 uniforms[] = {field, m_deinterlace_texture->GetHeight()};
       g_gpu_device->DrawWithPushConstants(3, 0, uniforms, sizeof(uniforms));
 
       m_deinterlace_texture->MakeReadyForSampling();
-      SetDisplayTexture(m_deinterlace_texture.get(), GSVector4i::loadh(GSVector2i(width, full_height)));
+      SetDisplayTexture(m_deinterlace_texture.get(), m_deinterlace_texture->GetRect());
       return true;
     }
 
