@@ -1158,7 +1158,8 @@ void VulkanDevice::WaitForCommandBufferCompletion(u32 index)
   }
 }
 
-void VulkanDevice::EndAndSubmitCommandBuffer(VulkanSwapChain* present_swap_chain, bool explicit_present)
+void VulkanDevice::EndAndSubmitCommandBuffer(bool wait_for_completion, VulkanSwapChain* present_swap_chain,
+                                             bool explicit_present)
 {
   if (m_device_was_lost) [[unlikely]]
     return;
@@ -1220,10 +1221,31 @@ void VulkanDevice::EndAndSubmitCommandBuffer(VulkanSwapChain* present_swap_chain
     return;
   }
 
-  BeginCommandBuffer((m_current_frame + 1) % NUM_COMMAND_BUFFERS);
-
   if (present_swap_chain && !explicit_present)
     QueuePresent(present_swap_chain);
+
+  // Wait before if the next command buffer has not already been waited for.
+  // Waiting afterwards ends up slightly faster because we can do the resets and such before blocking on the
+  // fence wait, but only if the next buffer is definitely not in use. Otherwise we'll do 2 fence waits.
+  const u32 next_command_buffer_index = (m_current_frame + 1) % NUM_COMMAND_BUFFERS;
+  if (wait_for_completion)
+  {
+    const u32 current_command_buffer_index = m_current_frame;
+    if (m_completed_fence_counter >= m_frame_resources[next_command_buffer_index].fence_counter)
+    {
+      BeginCommandBuffer(next_command_buffer_index);
+      WaitForCommandBufferCompletion(current_command_buffer_index);
+    }
+    else
+    {
+      WaitForCommandBufferCompletion(current_command_buffer_index);
+      BeginCommandBuffer(next_command_buffer_index);
+    }
+  }
+  else
+  {
+    BeginCommandBuffer(next_command_buffer_index);
+  }
 }
 
 void VulkanDevice::QueuePresent(VulkanSwapChain* present_swap_chain)
@@ -1312,11 +1334,7 @@ void VulkanDevice::SubmitCommandBuffer(bool wait_for_completion)
 {
   DebugAssert(!InRenderPass());
 
-  const u32 current_frame = m_current_frame;
-  EndAndSubmitCommandBuffer(nullptr, false);
-
-  if (wait_for_completion)
-    WaitForCommandBufferCompletion(current_frame);
+  EndAndSubmitCommandBuffer(wait_for_completion, nullptr, false);
 
   InvalidateCachedState();
 }
@@ -1901,7 +1919,7 @@ void VulkanDevice::EndPresent(GPUSwapChain* swap_chain, bool explicit_present, u
   VulkanTexture::TransitionSubresourcesToLayout(
     m_current_command_buffer, SC->GetCurrentImage(), GPUTexture::Type::RenderTarget, 0, 1, 0, 1,
     VulkanTexture::Layout::ColorAttachment, VulkanTexture::Layout::PresentSrc);
-  EndAndSubmitCommandBuffer(SC, explicit_present);
+  EndAndSubmitCommandBuffer(false, SC, explicit_present);
   InvalidateCachedState();
   TrimTexturePool();
 }
@@ -2605,7 +2623,7 @@ void VulkanDevice::RenderBlankFrame(VulkanSwapChain* swap_chain)
                                                 0, 1, VulkanTexture::Layout::TransferDst,
                                                 VulkanTexture::Layout::PresentSrc);
 
-  EndAndSubmitCommandBuffer(swap_chain, false);
+  EndAndSubmitCommandBuffer(false, swap_chain, false);
 
   InvalidateCachedState();
 }

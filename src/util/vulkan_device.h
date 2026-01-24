@@ -367,7 +367,7 @@ private:
 
   void BeginCommandBuffer(u32 index);
   void WaitForCommandBufferCompletion(u32 index);
-  void EndAndSubmitCommandBuffer(VulkanSwapChain* present_swap_chain, bool explicit_present);
+  void EndAndSubmitCommandBuffer(bool wait_for_completion, VulkanSwapChain* present_swap_chain, bool explicit_present);
   void QueuePresent(VulkanSwapChain* present_swap_chain);
 
   VkDevice m_device = VK_NULL_HANDLE;
