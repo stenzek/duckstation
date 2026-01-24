@@ -1809,9 +1809,6 @@ void D3D12Device::SetRenderTargets(GPUTexture* const* rts, u32 num_rts, GPUTextu
   bool needs_ds_clear = (ds && ds->IsClearedOrInvalidated());
   bool needs_rt_clear = false;
 
-  if (InRenderPass())
-    EndRenderPass();
-
   m_current_depth_target = static_cast<D3D12Texture*>(ds);
   for (u32 i = 0; i < num_rts; i++)
   {
