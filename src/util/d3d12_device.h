@@ -263,7 +263,7 @@ private:
   void DestroyDeferredObjects(u64 fence_value);
 
   void RenderBlankFrame(D3D12SwapChain* swap_chain);
-  void MoveToNextCommandList();
+  void BeginCommandList(u32 index);
 
   bool CreateSRVDescriptor(ID3D12Resource* resource, u32 layers, u32 levels, u32 samples, DXGI_FORMAT format,
                            D3D12DescriptorHandle* dh, Error* error);

@@ -453,17 +453,17 @@ bool D3D12Device::CreateCommandLists(Error* error)
     }
   }
 
-  MoveToNextCommandList();
+  BeginCommandList(0);
   return true;
 }
 
-void D3D12Device::MoveToNextCommandList()
+void D3D12Device::BeginCommandList(u32 index)
 {
-  m_current_command_list = (m_current_command_list + 1) % NUM_COMMAND_LISTS;
+  m_current_command_list = index;
   m_current_fence_value++;
 
   // We may have to wait if this command list hasn't finished on the GPU.
-  CommandList& res = m_command_lists[m_current_command_list];
+  CommandList& res = m_command_lists[index];
   WaitForFence(res.fence_counter);
   res.fence_counter = m_current_fence_value;
   res.init_list_used = false;
@@ -503,7 +503,7 @@ void D3D12Device::MoveToNextCommandList()
   if (m_gpu_timing_enabled)
   {
     res.command_lists[1]->EndQuery(m_timestamp_query_heap.Get(), D3D12_QUERY_TYPE_TIMESTAMP,
-                                   m_current_command_list * NUM_TIMESTAMP_QUERIES_PER_CMDLIST);
+                                   index * NUM_TIMESTAMP_QUERIES_PER_CMDLIST);
   }
 
   ID3D12DescriptorHeap* heaps[2] = {res.descriptor_allocator.GetDescriptorHeap(),
@@ -658,10 +658,28 @@ void D3D12Device::SubmitCommandList(bool wait_for_completion)
     return;
   }
 
-  MoveToNextCommandList();
-
+  // Wait before if the next command buffer has not already been waited for.
+  // Waiting afterwards ends up slightly faster because we can do the resets and such before blocking on the
+  // fence wait, but only if the next buffer is definitely not in use. Otherwise we'll do 2 fence waits.
+  const u32 next_command_list_index = (m_current_command_list + 1) % NUM_COMMAND_LISTS;
   if (wait_for_completion)
-    WaitForFence(res.fence_counter);
+  {
+    const u64 fence_counter = res.fence_counter;
+    if (m_completed_fence_value >= m_command_lists[next_command_list_index].fence_counter)
+    {
+      BeginCommandList(next_command_list_index);
+      WaitForFence(fence_counter);
+    }
+    else
+    {
+      WaitForFence(fence_counter);
+      BeginCommandList(next_command_list_index);
+    }
+  }
+  else
+  {
+    BeginCommandList(next_command_list_index);
+  }
 }
 
 void D3D12Device::SubmitCommandList(bool wait_for_completion, const std::string_view reason)
