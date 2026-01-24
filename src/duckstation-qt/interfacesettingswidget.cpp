@@ -101,7 +101,7 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* dialog, QWidget
 #endif
 #ifdef __APPLE__
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.useFractionalWindowScale, "Main", "UseFractionalWindowScale",
-                                               true);
+                                               false);
 #else
   QtUtils::SafeDeleteWidget(m_ui.useFractionalWindowScale);
 #endif

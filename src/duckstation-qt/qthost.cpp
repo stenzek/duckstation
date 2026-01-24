@@ -628,8 +628,10 @@ void CoreThread::setDefaultSettings(bool host, bool system, bool controller)
 
 void Host::SetDefaultSettings(SettingsInterface& si)
 {
-#ifdef _WIN32
+#if defined(_WIN32)
   si.SetBoolValue("Main", "DisableWindowRoundedCorners", false);
+#elif defined(__APPLE__)
+  si.SetBoolValue("Main", "UseFractionalWindowScale", false);
 #endif
 
   si.SetBoolValue("Main", "DisableWindowResize", false);

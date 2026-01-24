@@ -164,7 +164,7 @@ void QtUtils::UpdateSurfaceSize(QWidget* widget, RenderAPI render_api, WindowInf
 
     // Only use "real" fractional window scale for Metal renderer.
     // Vulkan returns suboptimal constantly, triggering swap chain recreations.
-    if (render_api == RenderAPI::Metal && Core::GetBaseBoolSettingValue("Main", "UseFractionalWindowScale", true))
+    if (render_api == RenderAPI::Metal && Core::GetBaseBoolSettingValue("Main", "UseFractionalWindowScale", false))
     {
       if (const std::optional<double> real_device_pixel_ratio = CocoaTools::GetViewRealScalingFactor(wi->window_handle))
       {
