@@ -248,6 +248,7 @@ private:
 
   bool m_disable_pbo = false;
   bool m_disable_async_download = false;
+  bool m_use_get_texture_sub_image = false;
 };
 
 class OpenGLSwapChain : public GPUSwapChain

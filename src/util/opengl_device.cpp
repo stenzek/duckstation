@@ -497,6 +497,13 @@ bool OpenGLDevice::CheckFeatures(CreateFlags create_flags)
     m_disable_async_download = true;
   }
 
+  m_use_get_texture_sub_image = GLAD_GL_VERSION_4_5 || GLAD_GL_ARB_get_texture_sub_image;
+  if (m_driver_type == GPUDriverType::NVIDIAProprietary)
+  {
+    // glReadPixels() is about 2x as fast as glGetTextureSubImage() on NVIDIA drivers.
+    m_use_get_texture_sub_image = false;
+  }
+
   return true;
 }
 

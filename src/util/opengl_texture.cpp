@@ -981,7 +981,7 @@ void OpenGLDownloadTexture::CopyFromTexture(u32 dst_x, u32 dst_y, GPUTexture* sr
 
   const auto [gl_internal_format, gl_format, gl_type] =
     OpenGLTexture::GetPixelFormatMapping(srcgl->GetFormat(), dev.IsGLES());
-  if (GLAD_GL_VERSION_4_5 || GLAD_GL_ARB_get_texture_sub_image)
+  if (dev.m_use_get_texture_sub_image)
   {
     glGetTextureSubImage(srcgl->GetGLId(), src_level, src_x, src_y, 0, width, height, 1, gl_format, gl_type,
                          m_current_pitch * height, m_cpu_buffer + copy_offset);
