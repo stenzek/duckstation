@@ -83,7 +83,8 @@ static bool CheckExclusiveFullscreenOnThread();
 static void ThrottlePresentation();
 
 static void ReconfigureOnThread(GPUThreadReconfigureCommand* cmd);
-static bool CreateGPUBackendOnThread(GPURenderer renderer, bool upload_vram, Error* error);
+static bool CreateGPUBackendOnThread(GPURenderer renderer, bool upload_vram, const GPUSettings* old_settings,
+                                     Error* error);
 static void DestroyGPUBackendOnThread();
 static void DestroyGPUPresenterOnThread();
 
@@ -765,7 +766,8 @@ void GPUThread::DestroyDeviceOnThread(bool preserve_fsui_state)
   std::atomic_thread_fence(std::memory_order_release);
 }
 
-bool GPUThread::CreateGPUBackendOnThread(GPURenderer renderer, bool upload_vram, Error* error)
+bool GPUThread::CreateGPUBackendOnThread(GPURenderer renderer, bool upload_vram, const GPUSettings* old_settings,
+                                         Error* error)
 {
   Error local_error;
 
@@ -780,9 +782,21 @@ bool GPUThread::CreateGPUBackendOnThread(GPURenderer renderer, bool upload_vram,
       s_state.gpu_presenter.reset();
       return false;
     }
-
-    ImGuiManager::UpdateDebugWindowConfig();
   }
+  else if (old_settings)
+  {
+    // Settings may have still changed.
+    if (!s_state.gpu_presenter->UpdateSettings(*old_settings, &local_error))
+    {
+      ERROR_LOG("Failed to update presenter settings: {}", local_error.GetDescription());
+      Error::SetStringFmt(error, "Failed to update presenter settings: {}", local_error.GetDescription());
+      return false;
+    }
+  }
+
+#ifndef __ANDROID__
+  ImGuiManager::UpdateDebugWindowConfig();
+#endif
 
   const bool is_hardware = (renderer != GPURenderer::Software);
 
@@ -842,6 +856,7 @@ void GPUThread::ReconfigureOnThread(GPUThreadReconfigureCommand* cmd)
     return;
   }
 
+  const GPUSettings old_settings = std::move(g_gpu_settings);
   g_gpu_settings = std::move(cmd->settings);
 
   // Readback old VRAM for hardware renderers.
@@ -906,7 +921,8 @@ void GPUThread::ReconfigureOnThread(GPUThreadReconfigureCommand* cmd)
     Timer timer;
 
     // Do we want a renderer?
-    if (!(*cmd->out_result = CreateGPUBackendOnThread(cmd->renderer.value(), cmd->upload_vram, cmd->error_ptr)))
+    if (!(*cmd->out_result =
+            CreateGPUBackendOnThread(cmd->renderer.value(), cmd->upload_vram, &old_settings, cmd->error_ptr)))
     {
       // If we had a renderer, it means it was a switch, and we need to bail out the thread.
       if (had_renderer)
