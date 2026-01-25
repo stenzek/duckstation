@@ -193,7 +193,7 @@ void ImGuiManager::SetTextFontOrder(const TextFontOrder& order)
   ReloadFontDataIfActive();
 }
 
-bool ImGuiManager::Initialize(bool preserve_fsui_state, Error* error)
+bool ImGuiManager::Initialize(Error* error)
 {
   if (!LoadFontData(error))
   {
@@ -232,11 +232,8 @@ bool ImGuiManager::Initialize(bool preserve_fsui_state, Error* error)
   FullscreenUI::UpdateTheme();
   FullscreenUI::UpdateLayoutScale();
 
-  if (!CreateFontAtlas(error) || !CompilePipelines(error) ||
-      !FullscreenUI::InitializeWidgets(preserve_fsui_state, error))
-  {
+  if (!CreateFontAtlas(error) || !CompilePipelines(error) || !FullscreenUI::InitializeWidgets(error))
     return false;
-  }
 
   NewFrame(Timer::GetCurrentValue());
 
@@ -244,11 +241,12 @@ bool ImGuiManager::Initialize(bool preserve_fsui_state, Error* error)
   return true;
 }
 
-void ImGuiManager::Shutdown(bool preserve_fsui_state)
+void ImGuiManager::Shutdown()
 {
   DestroySoftwareCursorTextures();
 
-  FullscreenUI::ShutdownWidgets(preserve_fsui_state);
+  FullscreenUI::Shutdown();
+  FullscreenUI::ShutdownWidgets();
 
   s_state.text_font = nullptr;
   s_state.fixed_font = nullptr;
@@ -269,6 +267,46 @@ void ImGuiManager::Shutdown(bool preserve_fsui_state)
 
     ImGui::DestroyContext(s_state.imgui_context);
     s_state.imgui_context = nullptr;
+  }
+}
+
+bool ImGuiManager::CreateGPUResources(Error* error)
+{
+  if (!CompilePipelines(error))
+    return false;
+
+  if (!FullscreenUI::CreateWidgetsGPUResources(error))
+    return false;
+
+  CreateSoftwareCursorTextures();
+
+  // Font textures get created on render.
+  return true;
+}
+
+void ImGuiManager::DestroyGPUResources()
+{
+  DestroySoftwareCursorTextures();
+
+  FullscreenUI::DestroyGPUResources();
+  FullscreenUI::DestroyWidgetsGPUResources();
+
+  s_state.imgui_pipeline.reset();
+
+  if (s_state.imgui_context)
+  {
+    for (ImTextureData* tex : s_state.imgui_context->IO.Fonts->TexList)
+    {
+      if (tex->Status == ImTextureStatus_Destroyed)
+        continue;
+
+      delete std::exchange(tex->TexID, nullptr);
+
+      if (tex->Status == ImTextureStatus_WantDestroy)
+        tex->Status = ImTextureStatus_Destroyed;
+      else
+        tex->Status = ImTextureStatus_WantCreate;
+    }
   }
 }
 

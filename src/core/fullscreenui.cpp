@@ -67,7 +67,6 @@ static void DrawShaderBackgroundCallback(const ImDrawList* parent_list, const Im
 //////////////////////////////////////////////////////////////////////////
 // Resources
 //////////////////////////////////////////////////////////////////////////
-static void DestroyResources();
 static GPUTexture* GetUserThemeableTexture(
   const std::string_view png_name, const std::string_view svg_name, bool* is_colorable = nullptr,
   const ImVec2& svg_size = LayoutScale(LAYOUT_HORIZONTAL_MENU_ITEM_IMAGE_SIZE, LAYOUT_HORIZONTAL_MENU_ITEM_IMAGE_SIZE));
@@ -169,7 +168,7 @@ ALIGN_TO_CACHE_LINE static Locals s_locals;
 // Main
 //////////////////////////////////////////////////////////////////////////
 
-void FullscreenUI::Initialize(bool preserve_state /*= false */)
+void FullscreenUI::Initialize()
 {
   // some achievement callbacks fire early while e.g. there is a load state popup blocking system init
   if (s_locals.initialized || !ImGuiManager::IsInitialized())
@@ -178,7 +177,7 @@ void FullscreenUI::Initialize(bool preserve_state /*= false */)
   s_locals.initialized = true;
 
   // in case we open the pause menu while the game is running
-  if (!preserve_state && s_locals.current_main_window == MainWindowType::None && !GPUThread::HasGPUBackend() &&
+  if (s_locals.current_main_window == MainWindowType::None && !GPUThread::HasGPUBackend() &&
       !GPUThread::IsGPUBackendRequested())
   {
     ReturnToMainWindow();
@@ -455,29 +454,35 @@ void FullscreenUI::ReturnToMainWindow(float transition_time)
   });
 }
 
-void FullscreenUI::Shutdown(bool preserve_fsui_state)
+void FullscreenUI::Shutdown()
 {
-  if (!preserve_fsui_state)
-  {
-    SoundEffectManager::Shutdown();
+  DestroyGPUResources();
 
-    s_locals.current_main_window = MainWindowType::None;
-    s_locals.current_pause_submenu = PauseSubMenu::None;
-    s_locals.pause_menu_was_open = false;
-    s_locals.was_paused_on_quick_menu_open = false;
+  SoundEffectManager::Shutdown();
 
-    ClearAchievementsState();
-    ClearSaveStateEntryList();
-    ClearSettingsState();
-    ClearGameListState();
-    s_locals.current_time_string = {};
-    s_locals.current_time = 0;
-  }
+  s_locals.current_main_window = MainWindowType::None;
+  s_locals.current_pause_submenu = PauseSubMenu::None;
+  s_locals.pause_menu_was_open = false;
+  s_locals.was_paused_on_quick_menu_open = false;
 
-  DestroyResources();
+  ClearAchievementsState();
+  ClearSettingsState();
+  ClearGameListState();
+  s_locals.current_time_string = {};
+  s_locals.current_time = 0;
 
   s_locals.initialized = false;
   UpdateRunIdleState();
+}
+
+void FullscreenUI::DestroyGPUResources()
+{
+  // has textures...
+  ClearSaveStateEntryList();
+
+  s_locals.app_background_texture.reset();
+  s_locals.app_background_shader.reset();
+  s_locals.background_loaded = false;
 }
 
 void FullscreenUI::Render()
@@ -533,13 +538,6 @@ void FullscreenUI::Render()
 
   ResetCloseMenuIfNeeded();
   UpdateTransitionState();
-}
-
-void FullscreenUI::DestroyResources()
-{
-  s_locals.app_background_texture.reset();
-  s_locals.app_background_shader.reset();
-  s_locals.background_loaded = false;
 }
 
 GPUTexture* FullscreenUI::GetUserThemeableTexture(const std::string_view png_name, const std::string_view svg_name,

@@ -401,8 +401,6 @@ struct WidgetsState
   u32 loading_screen_valid_samples = 0;
   bool loading_screen_open = false;
 
-  ImGuiInputSource resource_input_source = ImGuiInputSource_None;
-
   std::array<std::pair<Timer::Value, s32>, LOADING_PROGRESS_SAMPLE_COUNT> loading_screen_samples;
 };
 
@@ -418,30 +416,14 @@ void FullscreenUI::SetFont(ImFont* ui_font)
   UIStyle.Font = ui_font;
 }
 
-bool FullscreenUI::InitializeWidgets(bool preserve_fsui_state, Error* error)
+bool FullscreenUI::InitializeWidgets(Error* error)
 {
-  {
-    std::unique_lock lock(s_state.shared_state_mutex);
-
-    if (!(s_state.placeholder_texture = LoadTexture("images/placeholder.png")))
-    {
-      Error::SetStringView(error, "Failed to load placeholder.png");
-      return false;
-    }
-  }
-
-  if (!CompileTransitionPipelines(error))
-  {
-    ShutdownWidgets(preserve_fsui_state);
+  if (!CreateWidgetsGPUResources(error))
     return false;
-  }
 
-  if (!preserve_fsui_state)
-  {
-    s_state.focus_reset_queued = FocusResetType::ViewChanged;
-    s_state.close_button_state = CloseButtonState::None;
-    ResetMenuButtonFrame();
-  }
+  s_state.focus_reset_queued = FocusResetType::ViewChanged;
+  s_state.close_button_state = CloseButtonState::None;
+  ResetMenuButtonFrame();
 
   UpdateWidgetsSettings();
 
@@ -449,24 +431,14 @@ bool FullscreenUI::InitializeWidgets(bool preserve_fsui_state, Error* error)
   return true;
 }
 
-void FullscreenUI::ShutdownWidgets(bool preserve_fsui_state)
+void FullscreenUI::ShutdownWidgets()
 {
-  std::unique_lock lock(s_state.shared_state_mutex);
+  DestroyWidgetsGPUResources();
 
-  s_state.transition_blend_pipeline.reset();
-  g_gpu_device->RecycleTexture(std::move(s_state.transition_prev_texture));
-  g_gpu_device->RecycleTexture(std::move(s_state.transition_current_texture));
-
-  s_state.texture_upload_queue.clear();
-  s_state.placeholder_texture.reset();
-  UIStyle.Font = nullptr;
-
-  s_state.texture_cache.Clear();
-
-  s_state.has_initialized = false;
-
-  if (!preserve_fsui_state)
   {
+    std::unique_lock lock(s_state.shared_state_mutex);
+    s_state.texture_upload_queue.clear();
+
     s_state.transition_state = TransitionState::Inactive;
     if (s_state.transition_start_callback) [[unlikely]]
       WARNING_LOG("Shutting down FullscreenUI while a transition callback is still set.");
@@ -483,6 +455,10 @@ void FullscreenUI::ShutdownWidgets(bool preserve_fsui_state)
     s_state.choice_dialog.ClearState();
     s_state.file_selector_dialog.ClearState();
   }
+
+  s_state.has_initialized = false;
+
+  UIStyle.Font = nullptr;
 
   UpdateLoadingScreenRunIdle();
   UpdateNotificationsRunIdle();
@@ -510,6 +486,31 @@ void FullscreenUI::UpdateWidgetsSettings()
   }
 
   ImGuiManager::SetGamepadFaceButtonsSwapped(swap_face_buttons);
+}
+
+bool FullscreenUI::CreateWidgetsGPUResources(Error* error)
+{
+  if (!(s_state.placeholder_texture = LoadTexture("images/placeholder.png")))
+  {
+    Error::SetStringView(error, "Failed to load placeholder.png");
+    return false;
+  }
+
+  if (!CompileTransitionPipelines(error))
+    return false;
+
+  return true;
+}
+
+void FullscreenUI::DestroyWidgetsGPUResources()
+{
+  s_state.transition_blend_pipeline.reset();
+  g_gpu_device->RecycleTexture(std::move(s_state.transition_prev_texture));
+  g_gpu_device->RecycleTexture(std::move(s_state.transition_current_texture));
+
+  s_state.placeholder_texture.reset();
+
+  s_state.texture_cache.Clear();
 }
 
 const std::shared_ptr<GPUTexture>& FullscreenUI::GetPlaceholderTexture()

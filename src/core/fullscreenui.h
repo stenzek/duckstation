@@ -14,12 +14,13 @@
 #include <string_view>
 #include <vector>
 
+class Error;
 class SmallStringBase;
 
 struct GPUSettings;
 
 namespace FullscreenUI {
-void Initialize(bool preserve_state = false);
+void Initialize();
 bool IsInitialized();
 bool HasActiveWindow();
 void CheckForConfigChanges(const GPUSettings& old_settings);
@@ -28,7 +29,10 @@ void OnSystemPaused();
 void OnSystemResumed();
 void OnSystemDestroyed();
 
-void Shutdown(bool preserve_state);
+void Shutdown();
+
+void DestroyGPUResources();
+
 void Render();
 void InvalidateCoverCache(std::string path = {});
 
