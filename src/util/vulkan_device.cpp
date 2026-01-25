@@ -1164,12 +1164,30 @@ void VulkanDevice::EndAndSubmitCommandBuffer(bool wait_for_completion, VulkanSwa
   if (m_device_was_lost) [[unlikely]]
     return;
 
+  VkCommandBuffer buffers[2];
+  VkSubmitInfo submit_info = {
+    .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
+    .pNext = nullptr,
+    .waitSemaphoreCount = 0u,
+    .pWaitSemaphores = nullptr,
+    .pWaitDstStageMask = nullptr,
+    .commandBufferCount = 0,
+    .pCommandBuffers = buffers,
+    .signalSemaphoreCount = 0u,
+    .pSignalSemaphores = nullptr,
+  };
+
   CommandBuffer& resources = m_frame_resources[m_current_frame];
 
   // End the current command buffer.
   VkResult res;
   if (resources.init_buffer_used)
   {
+    resources.init_buffer_used = false;
+
+    buffers[0] = resources.command_buffers[0];
+    submit_info.commandBufferCount = 1;
+
     res = vkEndCommandBuffer(resources.command_buffers[0]);
     if (res != VK_SUCCESS)
     {
@@ -1191,20 +1209,13 @@ void VulkanDevice::EndAndSubmitCommandBuffer(bool wait_for_completion, VulkanSwa
     Panic("Failed to end command buffer");
   }
 
-  uint32_t wait_bits = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-  VkSubmitInfo submit_info = {VK_STRUCTURE_TYPE_SUBMIT_INFO,
-                              nullptr,
-                              0u,
-                              nullptr,
-                              nullptr,
-                              resources.init_buffer_used ? 2u : 1u,
-                              resources.init_buffer_used ? resources.command_buffers.data() :
-                                                           &resources.command_buffers[1],
-                              0u,
-                              nullptr};
+  buffers[submit_info.commandBufferCount++] = resources.command_buffers[1];
 
+  uint32_t wait_bits;
   if (present_swap_chain)
   {
+    wait_bits = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+
     submit_info.pWaitSemaphores = present_swap_chain->GetImageAcquireSemaphorePtr();
     submit_info.waitSemaphoreCount = 1;
     submit_info.pWaitDstStageMask = &wait_bits;
@@ -1319,8 +1330,8 @@ void VulkanDevice::BeginCommandBuffer(u32 index)
                         index * 2);
   }
 
+  DebugAssert(!resources.init_buffer_used);
   resources.fence_counter = m_next_fence_counter++;
-  resources.init_buffer_used = false;
   resources.timestamp_written = m_gpu_timing_enabled;
 
   m_current_frame = index;
@@ -1332,7 +1343,8 @@ void VulkanDevice::BeginCommandBuffer(u32 index)
 
 void VulkanDevice::SubmitCommandBuffer(bool wait_for_completion)
 {
-  DebugAssert(!InRenderPass());
+  if (InRenderPass())
+    EndRenderPass();
 
   EndAndSubmitCommandBuffer(wait_for_completion, nullptr, false);
 
@@ -1342,18 +1354,14 @@ void VulkanDevice::SubmitCommandBuffer(bool wait_for_completion)
 void VulkanDevice::SubmitCommandBuffer(bool wait_for_completion, const std::string_view reason)
 {
   WARNING_LOG("Executing command buffer due to '{}'", reason);
+
   SubmitCommandBuffer(wait_for_completion);
 }
 
 void VulkanDevice::SubmitCommandBufferAndRestartRenderPass(const std::string_view reason)
 {
-  if (InRenderPass())
-    EndRenderPass();
-
-  VulkanPipeline* pl = m_current_pipeline;
   SubmitCommandBuffer(false, reason);
 
-  SetPipeline(pl);
   BeginRenderPass();
 }
 
@@ -1865,18 +1873,12 @@ std::string VulkanDevice::GetDriverInfo() const
 
 void VulkanDevice::FlushCommands()
 {
-  if (InRenderPass())
-    EndRenderPass();
-
   SubmitCommandBuffer(false);
   TrimTexturePool();
 }
 
 void VulkanDevice::WaitForGPUIdle()
 {
-  if (InRenderPass())
-    EndRenderPass();
-
   SubmitCommandBuffer(true);
 }
 

@@ -844,8 +844,6 @@ bool VulkanSwapChain::ResizeBuffers(u32 new_width, u32 new_height, Error* error)
     return true;
 
   VulkanDevice& dev = VulkanDevice::GetInstance();
-  if (dev.InRenderPass())
-    dev.EndRenderPass();
   dev.SubmitCommandBuffer(true);
 
   if (new_width != 0 && new_height != 0)
@@ -915,8 +913,6 @@ bool VulkanSwapChain::SetVSyncMode(GPUVSyncMode mode, Error* error)
   if (m_present_mode == new_present_mode.value())
     return true;
 
-  if (dev.InRenderPass())
-    dev.EndRenderPass();
   dev.SubmitCommandBuffer(true);
 
   // TODO: Use the maintenance extension to change it without recreating...
