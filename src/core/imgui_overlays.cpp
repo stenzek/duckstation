@@ -649,7 +649,7 @@ void ImGuiManager::DrawEnhancementsOverlay(const GPUBackend* gpu)
   const float margin = ImGuiManager::GetScreenMargin() * scale;
   ImFont* const font = ImGuiManager::GetFixedFont();
   const float font_size = ImGuiManager::GetFixedFontSize();
-  const float font_weight = 0.0f;
+  const float font_weight = 600.0f;
   const float position_y = ImGui::GetIO().DisplaySize.y - margin - font_size;
 
   ImDrawList* dl = ImGui::GetBackgroundDrawList();
