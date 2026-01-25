@@ -87,6 +87,7 @@ struct OSDMessage
 static_assert(std::is_same_v<WCharType, ImWchar>);
 
 static float GetGlobalPrescale();
+static float GetFixedFontWeight();
 static void UpdateScale();
 static void SetStyle(ImGuiStyle& style, float scale);
 static bool LoadFontData(Error* error);
@@ -125,6 +126,10 @@ static constexpr const char* FIXED_FONT_NAME = "JetBrainsMono-VariableFont_wght.
 static constexpr const char* FA_FONT_NAME = FONT_ICON_FILE_NAME_FAS;
 static constexpr const char* PF_FONT_NAME = "promptfont.otf";
 static constexpr const char* EMOJI_FONT_NAME = "TwitterColorEmoji-SVGinOT.ttf";
+
+static constexpr float DEFAULT_TEXT_FONT_WEIGHT = 400.0f;
+static constexpr float DEFAULT_FIXED_FONT_WEIGHT_LODPI = 500.0f;
+static constexpr float DEFAULT_FIXED_FONT_WEIGHT_HIDPI = 400.0f;
 
 namespace {
 
@@ -351,6 +356,11 @@ float ImGuiManager::GetGlobalPrescale()
   return g_gpu_settings.display_osd_scale / 100.0f;
 }
 
+float ImGuiManager::GetFixedFontWeight()
+{
+  return (s_state.global_scale >= 1.5f) ? DEFAULT_FIXED_FONT_WEIGHT_HIDPI : DEFAULT_FIXED_FONT_WEIGHT_LODPI;
+}
+
 void ImGuiManager::UpdateScale()
 {
   const float window_scale =
@@ -366,6 +376,9 @@ void ImGuiManager::UpdateScale()
     s_state.global_scale = scale;
     SetStyle(s_state.imgui_context->Style, s_state.global_scale);
   }
+
+  // update default fixed font weight
+  s_state.fixed_font->DefaultWeight = GetFixedFontWeight();
 
   // force font GC
   ImGui::GetIO().Fonts->CompactCache();
@@ -744,8 +757,6 @@ bool ImGuiManager::CreateFontAtlas(Error* error)
   io.Fonts->Clear();
 
   const float default_text_size = GetOSDFontSize();
-  const float default_text_weight = 400.0f;
-  const float default_fixed_weight = 500.0f;
 
   ImFontConfig text_cfg;
   text_cfg.FontDataOwnedByAtlas = false;
@@ -758,7 +769,7 @@ bool ImGuiManager::CreateFontAtlas(Error* error)
   Assert(!first_font_data.empty());
   s_state.text_font =
     ImGui::GetIO().Fonts->AddFontFromMemoryTTF(first_font_data.data(), static_cast<int>(first_font_data.size()),
-                                               default_text_size, default_text_weight, &text_cfg);
+                                               default_text_size, DEFAULT_TEXT_FONT_WEIGHT, &text_cfg);
   if (!s_state.text_font)
   {
     Error::SetStringFmt(error, "Failed to add primary text font {}", static_cast<u32>(s_state.text_font_order.front()));
@@ -815,7 +826,7 @@ bool ImGuiManager::CreateFontAtlas(Error* error)
     Assert(!font_data.empty());
     StringUtil::Strlcpy(text_cfg.Name, "TextFont-", std::size(text_cfg.Name));
     if (!ImGui::GetIO().Fonts->AddFontFromMemoryTTF(font_data.data(), static_cast<int>(font_data.size()),
-                                                    default_text_size, default_text_weight, &text_cfg))
+                                                    default_text_size, DEFAULT_TEXT_FONT_WEIGHT, &text_cfg))
     {
       Error::SetStringFmt(error, "Failed to add text font {}", static_cast<u32>(text_font_idx));
       return false;
@@ -828,7 +839,7 @@ bool ImGuiManager::CreateFontAtlas(Error* error)
   fixed_cfg.FontDataOwnedByAtlas = false;
   s_state.fixed_font = ImGui::GetIO().Fonts->AddFontFromMemoryTTF(s_state.fixed_font_data.data(),
                                                                   static_cast<int>(s_state.fixed_font_data.size()),
-                                                                  GetFixedFontSize(), default_fixed_weight, &fixed_cfg);
+                                                                  GetFixedFontSize(), GetFixedFontWeight(), &fixed_cfg);
   if (!s_state.fixed_font)
   {
     Error::SetStringView(error, "Failed to add fixed-width font");

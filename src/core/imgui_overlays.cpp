@@ -57,7 +57,7 @@ LOG_CHANNEL(ImGuiManager);
 
 namespace ImGuiManager {
 
-static constexpr float FIXED_BOLD_WEIGHT = 800.0f;
+static constexpr float FIXED_BOLD_WEIGHT = 700.0f;
 
 namespace {
 
