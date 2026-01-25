@@ -261,9 +261,9 @@ void ImGuiManager::Shutdown(bool preserve_fsui_state)
     for (ImTextureData* tex : s_state.imgui_context->IO.Fonts->TexList)
     {
       if (tex->Status == ImTextureStatus_Destroyed)
-        return;
+        continue;
 
-      std::unique_ptr<GPUTexture> gtex(reinterpret_cast<GPUTexture*>(tex->GetTexID()));
+      delete std::exchange(tex->TexID, nullptr);
       tex->Status = ImTextureStatus_Destroyed;
     }
 
