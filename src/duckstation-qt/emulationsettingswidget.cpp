@@ -121,7 +121,8 @@ EmulationSettingsWidget::EmulationSettingsWidget(SettingsWindow* dialog, QWidget
       "speed by less than 1%. Sync To Host Refresh Rate will not take effect if the console's refresh rate is too far "
       "from the host's refresh rate. Users with variable refresh rate displays should disable this option."));
   dialog->registerWidgetHelp(
-    m_ui.optimalFramePacing, tr("Optimal Frame Pacing"), tr("Unchecked"),
+    m_ui.optimalFramePacing, tr("Optimal Frame Pacing"),
+    Settings::DEFAULT_OPTIMAL_FRAME_PACING ? tr("Checked") : tr("Unchecked"),
     tr("Enabling this option will ensure every frame the console renders is displayed to the screen, at a consistent "
        "rate, for optimal frame pacing. If you have a GSync/FreeSync display, enable this option. If you are having "
        "difficulties maintaining full speed, or are getting audio glitches, try disabling this option."));
