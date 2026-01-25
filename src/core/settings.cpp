@@ -366,7 +366,7 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
       .value_or(DEFAULT_DISPLAY_SCREENSHOT_FORMAT);
   display_screenshot_quality = static_cast<u8>(
     std::clamp<u32>(si.GetUIntValue("Display", "ScreenshotQuality", DEFAULT_DISPLAY_SCREENSHOT_QUALITY), 1, 100));
-  display_optimal_frame_pacing = si.GetBoolValue("Display", "OptimalFramePacing", false);
+  display_optimal_frame_pacing = si.GetBoolValue("Display", "OptimalFramePacing", DEFAULT_OPTIMAL_FRAME_PACING);
   display_pre_frame_sleep = si.GetBoolValue("Display", "PreFrameSleep", false);
   display_pre_frame_sleep_buffer =
     si.GetFloatValue("Display", "PreFrameSleepBuffer", DEFAULT_DISPLAY_PRE_FRAME_SLEEP_BUFFER);

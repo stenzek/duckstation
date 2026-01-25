@@ -98,7 +98,7 @@ struct GPUSettings
   bool gpu_pgxp_disable_2d : 1 = false;
   bool gpu_pgxp_transparent_depth : 1 = false;
 
-  bool display_optimal_frame_pacing : 1 = false;
+  bool display_optimal_frame_pacing : 1 = DEFAULT_OPTIMAL_FRAME_PACING;
   bool display_pre_frame_sleep : 1 = false;
   bool display_skip_presenting_duplicate_frames : 1 = false;
   bool display_vsync : 1 = false;
@@ -245,6 +245,13 @@ struct GPUSettings
 #else
   static constexpr u8 DEFAULT_GPU_MAX_QUEUED_FRAMES = 3;
   static constexpr bool DEFAULT_GPU_PREFER_GLES_CONTEXT = true;
+#endif
+
+  // Prefer optimal frame pacing everywhere except ARM64 Linux because potatoes.
+#if defined(__ANDROID__) || (defined(__linux__) && defined(__aarch64__))
+  static constexpr bool DEFAULT_OPTIMAL_FRAME_PACING = false;
+#else
+  static constexpr bool DEFAULT_OPTIMAL_FRAME_PACING = true;
 #endif
 };
 
