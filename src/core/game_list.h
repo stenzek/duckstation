@@ -36,9 +36,11 @@ struct Entry
 
   s8 disc_set_index = -1;
   bool disc_set_member = false;
-  bool has_custom_title = false;
-  bool has_custom_region = false;
-  bool is_runtime_populated = false;
+
+  bool has_custom_title : 1 = false;
+  bool has_custom_serial : 1 = false;
+  bool has_custom_region : 1 = false;
+  bool is_runtime_populated : 1 = false;
   GameDatabase::Language custom_language = GameDatabase::Language::MaxCount;
 
   std::string path;
@@ -163,9 +165,9 @@ bool DownloadCovers(const std::vector<std::string>& url_templates, bool use_seri
 
 // Custom properties support
 bool SaveCustomTitleForPath(const std::string& path, const std::string& custom_title);
+bool SaveCustomSerialForPath(const std::string& path, const std::string& custom_serial);
 bool SaveCustomRegionForPath(const std::string& path, const std::optional<DiscRegion> custom_region);
 bool SaveCustomLanguageForPath(const std::string& path, const std::optional<GameDatabase::Language> custom_language);
-std::string GetCustomTitleForPath(const std::string_view path);
 std::optional<DiscRegion> GetCustomRegionForPath(const std::string_view path);
 
 /// The purpose of this cache is to stop us trying to constantly extract memory card icons, when we know a game

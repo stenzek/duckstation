@@ -29,6 +29,7 @@
 #include <QtWidgets/QTextBrowser>
 
 #include "moc_gamesummarywidget.cpp"
+#include "ui_editgameserialdialog.h"
 
 GameSummaryWidget::GameSummaryWidget(const GameList::Entry* entry, SettingsWindow* dialog, QWidget* parent)
   : m_dialog(dialog)
@@ -92,6 +93,7 @@ GameSummaryWidget::GameSummaryWidget(const GameList::Entry* entry, SettingsWindo
     });
     connect(m_ui.restoreDiscSetTitle, &QAbstractButton::clicked, this, [this]() { setCustomDiscSetTitle({}); });
   }
+  connect(m_ui.changeSerial, &QAbstractButton::clicked, this, &GameSummaryWidget::onChangeSerialClicked);
   connect(m_ui.region, &QComboBox::currentIndexChanged, this, [this](int index) { setCustomRegion(index); });
   connect(m_ui.restoreRegion, &QAbstractButton::clicked, this, [this]() { setCustomRegion(-1); });
   connect(m_ui.customLanguage, &QComboBox::currentIndexChanged, this, &GameSummaryWidget::onCustomLanguageChanged);
@@ -133,8 +135,8 @@ void GameSummaryWidget::populateUi(const GameList::Entry* entry)
   m_path = entry->path;
 
   m_ui.path->setText(QString::fromStdString(entry->path));
-  m_ui.serial->setText(
-    QtUtils::StringViewToQString(TinyString::from_format("{} ({:016X})", entry->serial, entry->hash)));
+  m_ui.serial->setText(QtUtils::StringViewToQString(TinyString::from_format(
+    "{}{} ({:016X})", entry->serial, entry->has_custom_serial ? " [Custom]" : "", entry->hash)));
   m_ui.title->setText(QtUtils::StringViewToQString(entry->GetDisplayTitle(GameList::ShouldShowLocalizedTitles())));
   m_ui.region->setCurrentIndex(static_cast<int>(entry->region));
   m_ui.entryType->setCurrentIndex(static_cast<int>(entry->type));
@@ -284,6 +286,63 @@ void GameSummaryWidget::onSeparateDiscSettingsChanged(Qt::CheckState state)
     m_dialog->setBoolSettingValue("Main", "UseSeparateConfigForDiscSet", true);
   else
     m_dialog->removeSettingValue("Main", "UseSeparateConfigForDiscSet");
+}
+
+void GameSummaryWidget::onChangeSerialClicked()
+{
+  const auto lock = GameList::GetLock();
+  const GameList::Entry* entry = GameList::GetEntryForPath(m_path);
+  if (!entry)
+    return;
+
+  QDialog* const dialog = new QDialog(this);
+  Ui::EditGameSerialDialog dialog_ui;
+  dialog_ui.setupUi(dialog);
+  dialog_ui.icon->setPixmap(QIcon::fromTheme(QStringLiteral("disc-line")).pixmap(32));
+  dialog_ui.path->setText(QString::fromStdString(m_path));
+  dialog_ui.serial->setText(QString::fromStdString(entry->serial));
+  dialog_ui.serial->setFocus();
+
+  if (entry->has_custom_serial)
+  {
+    QFont font(dialog_ui.serial->font());
+    font.setBold(true);
+    dialog_ui.serial->setFont(font);
+  }
+  else
+  {
+    dialog_ui.layout->removeWidget(dialog_ui.customState);
+    delete dialog_ui.customState;
+  }
+
+  connect(dialog_ui.serial, &QLineEdit::textChanged, dialog, [bbox = dialog_ui.buttonBox](const QString& text) {
+    const QString trimmed = text.trimmed();
+    bbox->button(QDialogButtonBox::Ok)->setEnabled(!trimmed.isEmpty());
+  });
+
+  connect(dialog_ui.buttonBox, &QDialogButtonBox::rejected, dialog, &QDialog::reject);
+  connect(dialog_ui.buttonBox, &QDialogButtonBox::accepted, dialog, &QDialog::accept);
+  connect(dialog_ui.buttonBox->button(QDialogButtonBox::Reset), &QPushButton::clicked, dialog,
+          [dialog, serial = dialog_ui.serial]() {
+            serial->setText(QString());
+            dialog->accept();
+          });
+
+  connect(dialog, &QDialog::accepted, dialog, [this, serial = dialog_ui.serial, path = m_path]() {
+    GameList::SaveCustomSerialForPath(m_path, serial->text().trimmed().toStdString());
+
+    // Changing the serial changes the gamesettings ini and basically everything else.
+    // Easiest way to deal with this is to just close the dialog and reopen it.
+    // Seems to get deleted later, thankfully.
+    m_dialog->close();
+
+    const auto lock = GameList::GetLock();
+    const GameList::Entry* entry = GameList::GetEntryForPath(m_path);
+    if (entry)
+      SettingsWindow::openGamePropertiesDialog(entry);
+  });
+
+  dialog->open();
 }
 
 void GameSummaryWidget::setCustomTitle(const std::string& text)

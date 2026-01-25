@@ -101,7 +101,9 @@ static void MakeInvalidEntry(Entry* entry);
 
 static void ApplyCustomAttributes(const std::string& path, Entry* entry,
                                   const INISettingsInterface& custom_attributes_ini);
+static void SetCustomSerialOnEntry(Entry* entry, std::string serial, bool update_played_time);
 static bool RescanCustomAttributesForPath(const std::string& path, const INISettingsInterface& custom_attributes_ini);
+static void NotifyHostOfEntryChange(const Entry* entry);
 static void PopulateEntryAchievements(Entry* entry, const Achievements::ProgressDatabase& achievements_progress);
 static bool GetGameListEntryFromCache(const std::string& path, Entry* entry,
                                       const INISettingsInterface& custom_attributes_ini,
@@ -416,6 +418,7 @@ void GameList::MakeInvalidEntry(Entry* entry)
   entry->disc_set_index = -1;
   entry->disc_set_member = false;
   entry->has_custom_title = false;
+  entry->has_custom_serial = false;
   entry->has_custom_region = false;
   entry->is_runtime_populated = false;
   entry->custom_language = GameDatabase::Language::MaxCount;
@@ -671,17 +674,17 @@ void GameList::ScanFile(std::string path, std::time_t timestamp, std::unique_loc
   Entry entry;
   if (PopulateEntryFromPath(path, &entry))
   {
+    ApplyCustomAttributes(path_for_cache.empty() ? path : path_for_cache, &entry, custom_attributes_ini);
+
+    if (entry.IsDisc())
+      PopulateEntryAchievements(&entry, achievements_progress);
+
     const auto iter = played_time_map.find(entry.serial);
     if (iter != played_time_map.end())
     {
       entry.last_played_time = iter->second.last_played_time;
       entry.total_played_time = iter->second.total_played_time;
     }
-
-    ApplyCustomAttributes(path_for_cache.empty() ? path : path_for_cache, &entry, custom_attributes_ini);
-
-    if (entry.IsDisc())
-      PopulateEntryAchievements(&entry, achievements_progress);
   }
   else
   {
@@ -751,9 +754,16 @@ bool GameList::RescanCustomAttributesForPath(const std::string& path, const INIS
   if (it != s_state.entries.end())
     *it = std::move(entry);
   else
-    s_state.entries.push_back(std::move(entry));
+    it = s_state.entries.insert(s_state.entries.end(), std::move(entry));
 
+  NotifyHostOfEntryChange(&(*it));
   return true;
+}
+
+void GameList::NotifyHostOfEntryChange(const Entry* entry)
+{
+  const u32 index = static_cast<u32>(std::distance(const_cast<const Entry*>(s_state.entries.data()), entry));
+  Host::OnGameListEntriesChanged(std::span<const u32>(&index, 1));
 }
 
 void GameList::ApplyCustomAttributes(const std::string& path, Entry* entry,
@@ -768,6 +778,11 @@ void GameList::ApplyCustomAttributes(const std::string& path, Entry* entry,
     entry->title = std::move(custom_title.value());
     entry->has_custom_title = true;
   }
+
+  std::optional<std::string> custom_serial = custom_attributes_ini.GetOptionalStringValue(section.c_str(), "Serial");
+  if (custom_serial.has_value())
+    SetCustomSerialOnEntry(entry, std::move(custom_serial.value()), false);
+
   const std::optional<SmallString> custom_region_str =
     custom_attributes_ini.GetOptionalSmallStringValue(section.c_str(), "Region");
   if (custom_region_str.has_value())
@@ -796,6 +811,37 @@ void GameList::ApplyCustomAttributes(const std::string& path, Entry* entry,
     else
     {
       WARNING_LOG("Invalid language '{}' in custom attributes for '{}'", custom_language_str.value(), path);
+    }
+  }
+}
+
+void GameList::SetCustomSerialOnEntry(Entry* entry, std::string serial, bool update_played_time)
+{
+  entry->serial = std::move(serial);
+  entry->has_custom_serial = true;
+
+  // Need to get new database entry.
+  entry->dbentry = GameDatabase::GetEntryForSerial(entry->serial);
+  if (!entry->dbentry && entry->title.empty())
+  {
+    // if we have a custom serial but no database entry, and no custom title, fall back to filename
+    entry->title = Path::GetFileTitle(FileSystem::GetDisplayNameFromPath(entry->path));
+  }
+
+  if (update_played_time)
+  {
+    // Annoyingly, we need to recompute the played time as well.
+    const PlayedTimeMap played_time_map = LoadPlayedTimeMap();
+    const auto it = played_time_map.find(entry->serial);
+    if (it != played_time_map.end())
+    {
+      entry->last_played_time = it->second.last_played_time;
+      entry->total_played_time = it->second.total_played_time;
+    }
+    else
+    {
+      entry->last_played_time = 0;
+      entry->total_played_time = 0;
     }
   }
 }
@@ -1909,6 +1955,7 @@ bool GameList::SaveCustomTitleForPath(const std::string& path, const std::string
     {
       entry->title = custom_title;
       entry->has_custom_title = true;
+      NotifyHostOfEntryChange(entry);
       return true;
     }
     else
@@ -1918,9 +1965,35 @@ bool GameList::SaveCustomTitleForPath(const std::string& path, const std::string
       {
         entry->title = {};
         entry->has_custom_title = false;
+        NotifyHostOfEntryChange(entry);
         return true;
       }
     }
+  }
+
+  // Let the cache update by rescanning. Only need to do this on deletion, to get the original value.
+  RescanCustomAttributesForPath(path, custom_attributes_ini);
+  return true;
+}
+
+bool GameList::SaveCustomSerialForPath(const std::string& path, const std::string& custom_serial)
+{
+  INISettingsInterface custom_attributes_ini(GetCustomPropertiesFile());
+  if (!PutCustomPropertiesField(custom_attributes_ini, path, "Serial", custom_serial.c_str()))
+    return false;
+
+  // Can skip the rescan and just update the value directly.
+  if (!custom_serial.empty())
+  {
+    auto lock = GetLock();
+    Entry* entry = GetMutableEntryForPath(path);
+    if (entry)
+    {
+      SetCustomSerialOnEntry(entry, custom_serial, true);
+      NotifyHostOfEntryChange(entry);
+    }
+
+    return true;
   }
 
   // Let the cache update by rescanning. Only need to do this on deletion, to get the original value.
@@ -1947,6 +2020,7 @@ bool GameList::SaveCustomRegionForPath(const std::string& path, const std::optio
     {
       entry->region = custom_region.value();
       entry->has_custom_region = true;
+      NotifyHostOfEntryChange(entry);
     }
   }
   else
@@ -1973,21 +2047,12 @@ bool GameList::SaveCustomLanguageForPath(const std::string& path,
   auto lock = GetLock();
   Entry* entry = GetMutableEntryForPath(path);
   if (entry)
+  {
     entry->custom_language = custom_language.value_or(GameDatabase::Language::MaxCount);
+    NotifyHostOfEntryChange(entry);
+  }
 
   return true;
-}
-
-std::string GameList::GetCustomTitleForPath(const std::string_view path)
-{
-  std::string ret;
-
-  std::unique_lock lock(s_state.mutex);
-  const GameList::Entry* entry = GetEntryForPath(path);
-  if (entry && entry->has_custom_title)
-    ret = entry->title;
-
-  return ret;
 }
 
 std::optional<DiscRegion> GameList::GetCustomRegionForPath(const std::string_view path)

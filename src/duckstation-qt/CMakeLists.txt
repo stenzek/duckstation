@@ -63,6 +63,7 @@ set(SRCS
   debuggerwindow.ui
   displaywidget.cpp
   displaywidget.h
+  editgameserialdialog.ui
   emptygamelistwidget.ui
   emulationsettingswidget.cpp
   emulationsettingswidget.h

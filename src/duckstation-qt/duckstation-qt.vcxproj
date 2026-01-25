@@ -316,6 +316,9 @@
     <QtUi Include="postprocessingselectshaderdialog.ui">
       <FileType>Document</FileType>
     </QtUi>
+    <QtUi Include="editgameserialdialog.ui">
+      <FileType>Document</FileType>
+    </QtUi>
     <None Include="translations\duckstation-qt_es-es.ts" />
     <None Include="translations\duckstation-qt_sv.ts" />
     <None Include="translations\duckstation-qt_tr.ts" />

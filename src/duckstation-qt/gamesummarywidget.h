@@ -40,6 +40,7 @@ private:
   void disableWidgetsForRuntimeScannedEntry();
 
   void onSeparateDiscSettingsChanged(Qt::CheckState state);
+  void onChangeSerialClicked();
   void onCustomLanguageChanged(int language);
   void onCompatibilityCommentsClicked();
   void onInputProfileChanged(int index);

@@ -4247,8 +4247,17 @@ void System::UpdateRunningGame(const std::string& path, CDImage* image, bool boo
   if (!path.empty())
   {
     s_state.running_game_path = path;
-    s_state.running_game_title = GameList::GetCustomTitleForPath(s_state.running_game_path);
-    s_state.running_game_custom_title = !s_state.running_game_title.empty();
+
+    {
+      const auto lock = GameList::GetLock();
+      if (const GameList::Entry* entry = GameList::GetEntryForPath(path))
+      {
+        if ((s_state.running_game_custom_title = entry->has_custom_title))
+          s_state.running_game_title = entry->title;
+        if (entry->has_custom_serial)
+          s_state.running_game_serial = entry->serial;
+      }
+    }
 
     if (IsExePath(path))
     {
@@ -4256,7 +4265,7 @@ void System::UpdateRunningGame(const std::string& path, CDImage* image, bool boo
         s_state.running_game_title = Path::GetFileTitle(FileSystem::GetDisplayNameFromPath(path));
 
       s_state.running_game_hash = GetGameHashFromFile(s_state.running_game_path.c_str());
-      if (s_state.running_game_hash != 0)
+      if (s_state.running_game_hash != 0 && s_state.running_game_serial.empty())
         s_state.running_game_serial = GetGameHashId(s_state.running_game_hash);
     }
     else if (IsPsfPath(path))
@@ -4270,7 +4279,9 @@ void System::UpdateRunningGame(const std::string& path, CDImage* image, bool boo
       DebugAssert(s_state.gpu_dump_player);
       if (s_state.gpu_dump_player)
       {
-        s_state.running_game_serial = s_state.gpu_dump_player->GetSerial();
+        if (s_state.running_game_serial.empty())
+          s_state.running_game_serial = s_state.gpu_dump_player->GetSerial();
+
         if (!s_state.running_game_serial.empty())
         {
           s_state.running_game_entry = GameDatabase::GetEntryForSerial(s_state.running_game_serial);
@@ -4294,10 +4305,15 @@ void System::UpdateRunningGame(const std::string& path, CDImage* image, bool boo
         std::string id;
         GetGameDetailsFromImage(image, &id, &s_state.running_game_hash);
 
-        s_state.running_game_entry = GameDatabase::GetEntryForGameDetails(id, s_state.running_game_hash);
+        // Custom serial?
+        s_state.running_game_entry = s_state.running_game_serial.empty() ?
+                                       GameDatabase::GetEntryForGameDetails(id, s_state.running_game_hash) :
+                                       GameDatabase::GetEntryForSerial(s_state.running_game_serial);
         if (s_state.running_game_entry)
         {
-          s_state.running_game_serial = s_state.running_game_entry->serial;
+          if (s_state.running_game_serial.empty())
+            s_state.running_game_serial = s_state.running_game_entry->serial;
+
           if (s_state.running_game_title.empty())
           {
             s_state.running_game_title =
@@ -4306,7 +4322,8 @@ void System::UpdateRunningGame(const std::string& path, CDImage* image, bool boo
         }
         else
         {
-          s_state.running_game_serial = std::move(id);
+          if (s_state.running_game_serial.empty())
+            s_state.running_game_serial = std::move(id);
 
           // Don't display device names for unknown physical discs.
           if (s_state.running_game_title.empty() && !CDImage::IsDeviceName(path.c_str()))
@@ -6317,7 +6334,7 @@ std::string System::GetImageForLoadingScreen(const std::string& game_path)
 void System::UpdateSessionTime(const std::string& prev_serial)
 {
   const Timer::Value ctime = Timer::GetCurrentValue();
-  if (!prev_serial.empty() && GameList::IsGameListLoaded())
+  if (!prev_serial.empty())
   {
     // round up to seconds
     const std::time_t etime =
