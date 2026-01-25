@@ -294,5 +294,5 @@ void InterfaceSettingsWidget::checkForUpdates()
   connect(pdlg, &QProgressDialog::canceled, dlg, &AutoUpdaterDialog::cancel);
   connect(dlg, &AutoUpdaterDialog::updateCheckAboutToComplete, pdlg, &QProgressDialog::close);
 
-  dlg->queueUpdateCheck(true);
+  dlg->queueUpdateCheck(true, true);
 }

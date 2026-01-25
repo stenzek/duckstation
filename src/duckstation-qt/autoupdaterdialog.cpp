@@ -319,8 +319,15 @@ bool AutoUpdaterDialog::handleCancelledRequest(s32 status_code)
   return true;
 }
 
-void AutoUpdaterDialog::queueUpdateCheck(bool display_errors)
+void AutoUpdaterDialog::queueUpdateCheck(bool display_errors, bool ignore_skipped_updates)
 {
+  if (ignore_skipped_updates)
+  {
+    // Wipe out the last version, that way it displays the update if we've previously skipped it.
+    Core::DeleteBaseSettingValue("AutoUpdater", "LastVersion");
+    Host::CommitBaseSettingChanges();
+  }
+
   ensureHttpPollingActive();
   m_http->CreateRequest(LATEST_TAG_URL,
                         [this, display_errors](s32 status_code, const Error& error, const std::string& content_type,

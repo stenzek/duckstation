@@ -29,7 +29,7 @@ public:
 
   ALWAYS_INLINE bool areUpdatesAvailable() const { return m_updates_available; }
 
-  void queueUpdateCheck(bool display_errors);
+  void queueUpdateCheck(bool display_errors, bool ignore_skipped_updates);
   void queueGetLatestRelease();
 
   void cancel();

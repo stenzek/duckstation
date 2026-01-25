@@ -2483,7 +2483,7 @@ void MainWindow::connectSignals()
           [this]() { AboutDialog::openThirdPartyNotices(this); });
   connect(m_ui.actionAboutQt, &QAction::triggered, qApp, &QApplication::aboutQt);
   connect(m_ui.actionAbout, &QAction::triggered, this, &MainWindow::onAboutActionTriggered);
-  connect(m_ui.actionCheckForUpdates, &QAction::triggered, this, &MainWindow::onCheckForUpdatesActionTriggered);
+  connect(m_ui.actionCheckForUpdates, &QAction::triggered, this, [this]() { checkForUpdates(true, true); });
   connect(m_ui.actionMemoryCardEditor, &QAction::triggered, this, &MainWindow::onToolsMemoryCardEditorTriggered);
   connect(m_ui.actionMemoryEditor, &QAction::triggered, this, &MainWindow::onToolsMemoryEditorTriggered);
   connect(m_ui.actionMemoryScanner, &QAction::triggered, this, &MainWindow::onToolsMemoryScannerTriggered);
@@ -2942,7 +2942,7 @@ void MainWindow::startupUpdateCheck()
   if (!Core::GetBaseBoolSettingValue("AutoUpdater", "CheckAtStartup", true))
     return;
 
-  checkForUpdates(false);
+  checkForUpdates(false, false);
 }
 
 void MainWindow::updateDebugMenuVisibility()
@@ -3110,14 +3110,6 @@ std::optional<WindowInfo> MainWindow::getWindowInfo()
     return QtUtils::GetWindowInfoForWidget(widget, RenderAPI::None);
   else
     return std::nullopt;
-}
-
-void MainWindow::onCheckForUpdatesActionTriggered()
-{
-  // Wipe out the last version, that way it displays the update if we've previously skipped it.
-  Core::DeleteBaseSettingValue("AutoUpdater", "LastVersion");
-  Host::CommitBaseSettingChanges();
-  checkForUpdates(true);
 }
 
 void MainWindow::openMemoryCardEditor(const QString& card_a_path, const QString& card_b_path)
@@ -3483,13 +3475,13 @@ AutoUpdaterDialog* MainWindow::createAutoUpdaterDialog(QWidget* parent, bool dis
   return m_auto_updater_dialog;
 }
 
-void MainWindow::checkForUpdates(bool display_message)
+void MainWindow::checkForUpdates(bool display_message, bool ignore_skipped_updates)
 {
   AutoUpdaterDialog* const dialog = createAutoUpdaterDialog(this, display_message);
   if (!dialog)
     return;
 
-  m_auto_updater_dialog->queueUpdateCheck(display_message);
+  m_auto_updater_dialog->queueUpdateCheck(display_message, ignore_skipped_updates);
 }
 
 void MainWindow::showAutoUpdaterWindow()

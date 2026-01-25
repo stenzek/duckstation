@@ -211,7 +211,7 @@ private:
   void onSettingsThemeChanged();
   void destroySubWindows();
 
-  void checkForUpdates(bool display_message);
+  void checkForUpdates(bool display_message, bool ignore_skipped_updates);
   void showAutoUpdaterWindow();
 
   void notifyRAIntegrationOfWindowChange();
@@ -296,7 +296,6 @@ private:
   void onGitHubRepositoryActionTriggered();
   void onDiscordServerActionTriggered();
   void onAboutActionTriggered();
-  void onCheckForUpdatesActionTriggered();
   void onToolsMemoryCardEditorTriggered();
   void onToolsMemoryEditorTriggered();
   void onToolsMemoryScannerTriggered();
