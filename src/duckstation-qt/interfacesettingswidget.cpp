@@ -204,7 +204,7 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* dialog, QWidget
       "Disables the rounding of windows automatically applied in Windows 11, which may obscure parts of the content."));
 #elif defined(__APPLE__)
   dialog->registerWidgetHelp(
-    m_ui.useFractionalWindowScale, tr("Use Fractional Window Scale"), tr("Checked"),
+    m_ui.useFractionalWindowScale, tr("Use Fractional Window Scale"), tr("Unchecked"),
     tr("Calculates the true scaling factor for your display, avoiding the downsampling applied by MacOS."));
 #endif
 
