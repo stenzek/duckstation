@@ -396,11 +396,14 @@ struct WidgetsState
   s32 loading_screen_min = 0;
   s32 loading_screen_max = 0;
   s32 loading_screen_value = 0;
+
+  u32 loading_screen_sample_index = 0;
+  u32 loading_screen_valid_samples = 0;
   bool loading_screen_open = false;
 
+  ImGuiInputSource resource_input_source = ImGuiInputSource_None;
+
   std::array<std::pair<Timer::Value, s32>, LOADING_PROGRESS_SAMPLE_COUNT> loading_screen_samples;
-  u32 loading_screen_sample_index;
-  u32 loading_screen_valid_samples;
 };
 
 } // namespace
