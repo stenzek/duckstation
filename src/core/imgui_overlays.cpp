@@ -709,9 +709,9 @@ void ImGuiManager::DrawFrameTimeOverlay(float& position_y, float scale, float ma
   constexpr ImU32 text_color = IM_COL32(240, 240, 240, 255);
   constexpr ImU32 line_color = IM_COL32(240, 240, 240, 255);
   const float shadow_offset = OSDScale(1.0f);
-  ImFont* const fixed_font = GetFixedFont();
-  const float fixed_font_size = OSDScale(13.0f);
-  constexpr float fixed_font_weight = FIXED_BOLD_WEIGHT;
+  const float font_size = OSDScale(13.0f);
+  static constexpr ImFont*& font = FullscreenUI::UIStyle.Font;
+  static constexpr const float& font_weight = FullscreenUI::UIStyle.BoldFontWeight;
 
   const ImVec2 window_padding = ImVec2(OSDScale(8.0f), OSDScale(4.0f));
   const ImVec2 window_size = ImVec2(OSDScale(200.0f), OSDScale(40.0f));
@@ -769,14 +769,14 @@ void ImGuiManager::DrawFrameTimeOverlay(float& position_y, float scale, float ma
 
     TinyString text;
     text.format("{:.0f} ms", max);
-    ImVec2 text_size = fixed_font->CalcTextSizeA(fixed_font_size, -1.0f, FLT_MAX, 0.0f, IMSTR_START_END(text));
-    FullscreenUI::RenderShadowedTextClipped(win_dl, fixed_font, fixed_font_size, fixed_font_weight, win->WorkRect.Min,
+    ImVec2 text_size = font->CalcTextSizeA(font_size, -1.0f, FLT_MAX, 0.0f, IMSTR_START_END(text));
+    FullscreenUI::RenderShadowedTextClipped(win_dl, font, font_size, font_weight, win->WorkRect.Min,
                                             win->WorkRect.Max, text_color, text, &text_size, ImVec2(1.0f, 0.0f), 0.0f,
                                             &win->WorkRect, shadow_offset);
 
     text.format("{:.0f} ms", min);
-    text_size = fixed_font->CalcTextSizeA(fixed_font_size, -1.0f, FLT_MAX, 0.0f, text.c_str(), text.end_ptr());
-    FullscreenUI::RenderShadowedTextClipped(win_dl, fixed_font, fixed_font_size, fixed_font_weight, win->WorkRect.Min,
+    text_size = font->CalcTextSizeA(font_size, -1.0f, FLT_MAX, 0.0f, text.c_str(), text.end_ptr());
+    FullscreenUI::RenderShadowedTextClipped(win_dl, font, font_size, font_weight, win->WorkRect.Min,
                                             win->WorkRect.Max, text_color, text, &text_size, ImVec2(1.0f, 1.0f), 0.0f,
                                             &win->WorkRect, shadow_offset);
   }
