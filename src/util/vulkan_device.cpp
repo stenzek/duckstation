@@ -1276,7 +1276,7 @@ void VulkanDevice::QueuePresent(VulkanSwapChain* present_swap_chain)
   if (res != VK_SUCCESS)
   {
     VkResult handled_res = res;
-    if (!present_swap_chain->HandleAcquireOrPresentError(handled_res, true))
+    if (!present_swap_chain->HandleAcquireOrPresentError(handled_res))
     {
       LOG_VULKAN_ERROR(res, "vkQueuePresentKHR failed: ");
       return;

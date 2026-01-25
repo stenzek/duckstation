@@ -52,7 +52,7 @@ public:
   VkResult AcquireNextImage(bool handle_errors);
   void ReleaseCurrentImage();
   void ResetImageAcquireResult();
-  bool HandleAcquireOrPresentError(VkResult& res, bool is_present_error);
+  bool HandleAcquireOrPresentError(VkResult& res);
 
   bool ResizeBuffers(u32 new_width, u32 new_height, Error* error) override;
   bool SetVSyncMode(GPUVSyncMode mode, Error* error) override;
