@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "settingswindow.h"
@@ -6,6 +6,7 @@
 #include "advancedsettingswidget.h"
 #include "audiosettingswidget.h"
 #include "biossettingswidget.h"
+#include "capturesettingswidget.h"
 #include "consolesettingswidget.h"
 #include "emulationsettingswidget.h"
 #include "foldersettingswidget.h"
@@ -17,6 +18,7 @@
 #include "interfacesettingswidget.h"
 #include "mainwindow.h"
 #include "memorycardsettingswidget.h"
+#include "osdsettingswidget.h"
 #include "postprocessingsettingswidget.h"
 #include "qthost.h"
 #include "settingwidgetbinder.h"
@@ -144,6 +146,11 @@ void SettingsWindow::addPages()
             tr("<strong>Graphics Settings</strong><hr>These options control how the graphics of the emulated console "
                "are rendered. Not all options are available for the software renderer. Mouse over each option for "
                "additional information, and Shift+Wheel to scroll this panel."));
+  //: Translators may want to shorten On-Screen Display to "OSD".
+  addWidget(m_osd_settings = new OSDSettingsWidget(this, m_ui.settingsContainer), tr("On-Screen Display"),
+            QStringLiteral("numbers-fill"),
+            tr("<strong>On-Screen Display Settings</strong><hr>These options determine the behavior of the messages "
+               "that are displayed while content is running."));
   addWidget(
     m_post_processing_settings = new PostProcessingSettingsWidget(this, m_ui.settingsContainer), tr("Post-Processing"),
     QStringLiteral("sun-fill"),
@@ -165,6 +172,10 @@ void SettingsWindow::addPages()
        "<strong>Achievements</strong> from the menu. Mouse over an option for additional information, and "
        "Shift+Wheel to scroll this panel.")
       .arg("https://retroachievements.org/"));
+  addWidget(m_capture_settings = new CaptureSettingsWidget(this, m_ui.settingsContainer), tr("Capture"),
+            QStringLiteral("vidicon-line"),
+            tr("<strong>Capture Settings</strong><hr>These options determine how screenshots and videos are captured "
+               "by the application."));
 
   if (!isPerGameSettings())
   {

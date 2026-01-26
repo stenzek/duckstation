@@ -95,9 +95,11 @@
     <addaction name="actionEmulationSettings"/>
     <addaction name="actionMemoryCardSettings"/>
     <addaction name="actionGraphicsSettings"/>
+    <addaction name="actionOSDSettings"/>
     <addaction name="actionPostProcessingSettings"/>
     <addaction name="actionAudioSettings"/>
     <addaction name="actionAchievementSettings"/>
+    <addaction name="actionCaptureSettings"/>
     <addaction name="actionFolderSettings"/>
     <addaction name="actionAdvancedSettings"/>
     <addaction name="separator"/>
@@ -495,6 +497,28 @@
    </property>
    <property name="toolTip">
     <string>Configures post-processing effects applied after rendering the content.</string>
+   </property>
+  </action>
+  <action name="actionOSDSettings">
+   <property name="icon">
+    <iconset theme="numbers-fill"/>
+   </property>
+   <property name="text">
+    <string>&amp;On-Screen Display</string>
+   </property>
+   <property name="toolTip">
+    <string>These options determine the behavior of the messages that are displayed while content is running.</string>
+   </property>
+  </action>
+  <action name="actionCaptureSettings">
+   <property name="icon">
+    <iconset theme="vidicon-line"/>
+   </property>
+   <property name="text">
+    <string>C&amp;apture</string>
+   </property>
+   <property name="toolTip">
+    <string>These options determine how screenshots and videos are captured by the application.</string>
    </property>
   </action>
   <action name="actionFullscreen">

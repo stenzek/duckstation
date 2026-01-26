@@ -55,14 +55,6 @@ private:
   void onFineCropModeChanged();
   void onFineCropResetClicked();
 
-  void onOSDShowMessagesChanged();
-
-  void onMediaCaptureBackendChanged();
-  void onMediaCaptureContainerChanged();
-  void onMediaCaptureVideoEnabledChanged();
-  void onMediaCaptureVideoAutoResolutionChanged();
-  void onMediaCaptureAudioEnabledChanged();
-
   void onEnableTextureCacheChanged();
   void onEnableAnyTextureDumpingChanged();
   void onEnableAnyTextureReplacementsChanged();
@@ -70,7 +62,6 @@ private:
 
   void onGPUThreadChanged();
 
-  void setupAdditionalUi();
   void removePlatformSpecificUi();
 
   GPURenderer getEffectiveRenderer() const;

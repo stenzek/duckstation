@@ -2458,10 +2458,12 @@ void MainWindow::connectSignals()
           [this]() { doControllerSettings(ControllerSettingsWindow::CATEGORY_GLOBAL_SETTINGS); });
   connect(m_ui.actionMemoryCardSettings, &QAction::triggered, [this]() { doSettings("Memory Cards"); });
   connect(m_ui.actionGraphicsSettings, &QAction::triggered, [this]() { doSettings("Graphics"); });
+  connect(m_ui.actionOSDSettings, &QAction::triggered, [this]() { doSettings("OSD"); });
   connect(m_ui.actionPostProcessingSettings, &QAction::triggered, [this]() { doSettings("Post-Processing"); });
   connect(m_ui.actionAudioSettings, &QAction::triggered, [this]() { doSettings("Audio"); });
   connect(m_ui.actionAchievementSettings, &QAction::triggered, [this]() { doSettings("Achievements"); });
   connect(m_ui.actionFolderSettings, &QAction::triggered, [this]() { doSettings("Folders"); });
+  connect(m_ui.actionCaptureSettings, &QAction::triggered, [this]() { doSettings("Capture"); });
   connect(m_ui.actionAdvancedSettings, &QAction::triggered, [this]() { doSettings("Advanced"); });
   connect(m_ui.actionControllerProfiles, &QAction::triggered, this, &MainWindow::onSettingsControllerProfilesTriggered);
   connect(m_ui.actionViewToolbar, &QAction::triggered, this, &MainWindow::onViewToolbarActionTriggered);

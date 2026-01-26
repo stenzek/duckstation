@@ -37,7 +37,9 @@ class ConsoleSettingsWidget;
 class EmulationSettingsWidget;
 class MemoryCardSettingsWidget;
 class GraphicsSettingsWidget;
+class OSDSettingsWidget;
 class PostProcessingSettingsWidget;
+class CaptureSettingsWidget;
 class AudioSettingsWidget;
 class AchievementSettingsWidget;
 class FolderSettingsWidget;
@@ -121,7 +123,7 @@ protected:
 private:
   enum : u32
   {
-    MAX_SETTINGS_WIDGETS = 13
+    MAX_SETTINGS_WIDGETS = 15
   };
 
   // Private constructor used by openGamePropertiesDialog()
@@ -154,7 +156,9 @@ private:
   GameCheatSettingsWidget* m_game_cheat_settings_widget = nullptr;
   MemoryCardSettingsWidget* m_memory_card_settings = nullptr;
   GraphicsSettingsWidget* m_graphics_settings = nullptr;
+  OSDSettingsWidget* m_osd_settings = nullptr;
   PostProcessingSettingsWidget* m_post_processing_settings = nullptr;
+  CaptureSettingsWidget* m_capture_settings = nullptr;
   AudioSettingsWidget* m_audio_settings = nullptr;
   AchievementSettingsWidget* m_achievement_settings = nullptr;
   FolderSettingsWidget* m_folder_settings = nullptr;

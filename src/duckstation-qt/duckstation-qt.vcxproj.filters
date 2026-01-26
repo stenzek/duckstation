@@ -51,6 +51,8 @@
     <ClCompile Include="togglebutton.cpp" />
     <ClCompile Include="memoryeditorwindow.cpp" />
     <ClCompile Include="qtwindowinfo.cpp" />
+    <ClCompile Include="osdsettingswidget.cpp" />
+    <ClCompile Include="capturesettingswidget.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="qtutils.h" />
@@ -114,6 +116,8 @@
     <QtMoc Include="togglebutton.h" />
     <QtMoc Include="memoryeditorwindow.h" />
     <QtMoc Include="memoryviewwidget.h" />
+    <QtMoc Include="osdsettingswidget.h" />
+    <QtMoc Include="capturesettingswidget.h" />
   </ItemGroup>
   <ItemGroup>
     <QtUi Include="consolesettingswidget.ui" />
@@ -189,6 +193,8 @@
     <None Include="translations\duckstation-qt_sv.ts">
       <Filter>translations</Filter>
     </None>
+    <None Include="osdsettingswidget.ui" />
+    <None Include="capturesettingswidget.ui" />
   </ItemGroup>
   <ItemGroup>
     <QtTs Include="translations\duckstation-qt_de.ts">

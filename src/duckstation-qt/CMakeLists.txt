@@ -28,6 +28,9 @@ set(SRCS
   biossettingswidget.ui
   colorpickerbutton.cpp
   colorpickerbutton.h
+  capturesettingswidget.cpp
+  capturesettingswidget.h
+  capturesettingswidget.ui
   consolesettingswidget.cpp
   consolesettingswidget.h
   consolesettingswidget.ui
@@ -126,6 +129,9 @@ set(SRCS
   memoryscannerwindow.ui
   memoryviewwidget.cpp
   memoryviewwidget.h
+  osdsettingswidget.cpp
+  osdsettingswidget.h
+  osdsettingswidget.ui
   postprocessingsettingswidget.cpp
   postprocessingsettingswidget.h
   postprocessingchainconfigwidget.ui

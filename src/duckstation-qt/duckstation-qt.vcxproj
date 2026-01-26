@@ -9,6 +9,7 @@
     <ClCompile Include="audiosettingswidget.cpp" />
     <ClCompile Include="autoupdaterdialog.cpp" />
     <ClCompile Include="biossettingswidget.cpp" />
+    <ClCompile Include="capturesettingswidget.cpp" />
     <ClCompile Include="colorpickerbutton.cpp" />
     <ClCompile Include="consolesettingswidget.cpp" />
     <ClCompile Include="controllerbindingwidgets.cpp" />
@@ -40,6 +41,7 @@
     <ClCompile Include="mainwindow.cpp" />
     <ClCompile Include="memorycardsettingswidget.cpp" />
     <ClCompile Include="memorycardeditorwindow.cpp" />
+    <ClCompile Include="osdsettingswidget.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
@@ -80,6 +82,7 @@
     <QtMoc Include="controllerglobalsettingswidget.h" />
     <QtMoc Include="controllersettingswindow.h" />
     <QtMoc Include="colorpickerbutton.h" />
+    <QtMoc Include="capturesettingswidget.h" />
     <ClInclude Include="controllersettingwidgetbinder.h" />
     <QtMoc Include="memoryeditorwindow.h" />
     <QtMoc Include="memoryviewwidget.h" />
@@ -90,6 +93,7 @@
     <QtMoc Include="gamepatchsettingswidget.h" />
     <QtMoc Include="isobrowserwindow.h" />
     <QtMoc Include="debuggercodeview.h" />
+    <QtMoc Include="osdsettingswidget.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="qtwindowinfo.h" />
     <ClInclude Include="resource.h" />
@@ -319,6 +323,8 @@
     <QtUi Include="editgameserialdialog.ui">
       <FileType>Document</FileType>
     </QtUi>
+    <None Include="capturesettingswidget.ui" />
+    <None Include="osdsettingswidget.ui" />
     <None Include="translations\duckstation-qt_es-es.ts" />
     <None Include="translations\duckstation-qt_sv.ts" />
     <None Include="translations\duckstation-qt_tr.ts" />
