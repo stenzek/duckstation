@@ -1143,7 +1143,8 @@ void FullscreenUI::DrawAchievementsPauseMenuOverlays(float start_pos_y)
        s_achievements_locals.most_recent_progress_update->achievement_id !=
          s_achievements_locals.achievement_nearest_completion->achievement_id))
   {
-    buffer.format(ICON_FA_FLAG_CHECKERED " {}", TRANSLATE_DISAMBIG_SV("Achievements", "Nearest Completion", "Pause Menu"));
+    buffer.format(ICON_FA_FLAG_CHECKERED " {}",
+                  TRANSLATE_DISAMBIG_SV("Achievements", "Nearest Completion", "Pause Menu"));
     draw_achievement_in_box(buffer, s_achievements_locals.achievement_nearest_completion->title,
                             s_achievements_locals.achievement_nearest_completion->description,
                             s_achievements_locals.achievement_nearest_completion->badge_path,
@@ -1792,13 +1793,13 @@ void FullscreenUI::DrawAchievementsWindow()
       {ICON_FA_LOCK_OPEN, TRANSLATE_NOOP("Achievements", "Recently Unlocked")},
       {ICON_FA_HAND_FIST, TRANSLATE_NOOP("Achievements", "Active Challenges")},
       {ICON_FA_FLAG_CHECKERED, TRANSLATE_NOOP("Achievements", "Almost There")},
-      {ICON_FA_TRIANGLE_EXCLAMATION, TRANSLATE_NOOP("Achievements", "Unsynchronized")},
+      {ICON_EMOJI_WARNING, TRANSLATE_NOOP("Achievements", "Not Confirmed")},
     };
 
     ResetFocusHere();
     BeginMenuButtons();
 
-    for (u32 bucket_type : {RC_CLIENT_ACHIEVEMENT_BUCKET_ACTIVE_CHALLENGE,
+    for (u32 bucket_type : {RC_CLIENT_ACHIEVEMENT_BUCKET_UNSYNCED, RC_CLIENT_ACHIEVEMENT_BUCKET_ACTIVE_CHALLENGE,
                             RC_CLIENT_ACHIEVEMENT_BUCKET_RECENTLY_UNLOCKED, RC_CLIENT_ACHIEVEMENT_BUCKET_ALMOST_THERE,
                             RC_CLIENT_ACHIEVEMENT_BUCKET_UNLOCKED, RC_CLIENT_ACHIEVEMENT_BUCKET_LOCKED,
                             RC_CLIENT_ACHIEVEMENT_BUCKET_UNOFFICIAL, RC_CLIENT_ACHIEVEMENT_BUCKET_UNSUPPORTED})
