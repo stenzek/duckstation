@@ -330,7 +330,7 @@
     <iconset theme="file-search-line"/>
    </property>
    <property name="text">
-    <string>&amp;Scan For New Games</string>
+    <string>Scan For &amp;New Games</string>
    </property>
    <property name="toolTip">
     <string>Searches for new games added since the last refresh.</string>
@@ -427,7 +427,7 @@
     <iconset theme="chip-line"/>
    </property>
    <property name="text">
-    <string>B&amp;IOS</string>
+    <string>&amp;BIOS</string>
    </property>
    <property name="toolTip">
     <string>Configures where the system firmware is located.</string>
@@ -449,7 +449,7 @@
     <iconset theme="chip-2-line"/>
    </property>
    <property name="text">
-    <string>E&amp;mulation</string>
+    <string>&amp;Emulation</string>
    </property>
    <property name="toolTip">
     <string>Configures options related to the simulation.</string>
@@ -471,7 +471,7 @@
     <iconset theme="keyboard-line"/>
    </property>
    <property name="text">
-    <string>&amp;Hotkeys</string>
+    <string>Hot&amp;keys</string>
    </property>
    <property name="toolTip">
     <string>Configures shortcut keys for actions related to the session.</string>
@@ -504,7 +504,7 @@
     <iconset theme="numbers-fill"/>
    </property>
    <property name="text">
-    <string>&amp;On-Screen Display</string>
+    <string>On-&amp;Screen Display</string>
    </property>
    <property name="toolTip">
     <string>These options determine the behavior of the messages that are displayed while content is running.</string>
@@ -515,7 +515,7 @@
     <iconset theme="vidicon-line"/>
    </property>
    <property name="text">
-    <string>C&amp;apture</string>
+    <string>Capt&amp;ure</string>
    </property>
    <property name="toolTip">
     <string>These options determine how screenshots and videos are captured by the application.</string>
@@ -631,7 +631,7 @@
     <iconset theme="volume-up-line"/>
    </property>
    <property name="text">
-    <string>Audio</string>
+    <string>&amp;Audio</string>
    </property>
    <property name="toolTip">
     <string>Configures options related to how audio from the content is played.</string>
@@ -642,7 +642,7 @@
     <iconset theme="trophy-line"/>
    </property>
    <property name="text">
-    <string>Achievements</string>
+    <string>Ac&amp;hievements</string>
    </property>
    <property name="toolTip">
     <string>Configures options related to RetroAchievements.</string>
@@ -653,7 +653,7 @@
     <iconset theme="folder-open-line"/>
    </property>
    <property name="text">
-    <string>Folders</string>
+    <string>&amp;Folders</string>
    </property>
    <property name="toolTip">
     <string>Configures the locations where various types of data are saved.</string>
@@ -664,7 +664,7 @@
     <iconset theme="folder-open-line"/>
    </property>
    <property name="text">
-    <string>Game List</string>
+    <string>Game &amp;List</string>
    </property>
    <property name="toolTip">
     <string>Configures the locations where the application will search for game files.</string>
@@ -686,7 +686,7 @@
     <iconset theme="alert-line"/>
    </property>
    <property name="text">
-    <string>Advanced</string>
+    <string>A&amp;dvanced</string>
    </property>
    <property name="toolTip">
     <string>Configures advanced options for the application.</string>
@@ -697,7 +697,7 @@
     <iconset theme="folder-add-line"/>
    </property>
    <property name="text">
-    <string>Add Game Directory...</string>
+    <string>Add Game Director&amp;y...</string>
    </property>
    <property name="toolTip">
     <string>Adds a new directory that will be searched for game files.</string>
@@ -1334,7 +1334,7 @@
     <iconset theme="controllers-line"/>
    </property>
    <property name="text">
-    <string>Controller Presets</string>
+    <string>Controller Prese&amp;ts</string>
    </property>
    <property name="toolTip">
     <string>Creates or edits controller presets that can be applied to games.</string>

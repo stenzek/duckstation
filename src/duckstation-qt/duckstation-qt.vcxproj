@@ -323,8 +323,12 @@
     <QtUi Include="editgameserialdialog.ui">
       <FileType>Document</FileType>
     </QtUi>
-    <None Include="capturesettingswidget.ui" />
-    <None Include="osdsettingswidget.ui" />
+    <QtUi Include="capturesettingswidget.ui">
+      <FileType>Document</FileType>
+    </QtUi>
+    <QtUi Include="osdsettingswidget.ui">
+      <FileType>Document</FileType>
+    </QtUi>
     <None Include="translations\duckstation-qt_es-es.ts" />
     <None Include="translations\duckstation-qt_sv.ts" />
     <None Include="translations\duckstation-qt_tr.ts" />

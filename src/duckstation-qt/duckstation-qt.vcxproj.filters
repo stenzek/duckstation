@@ -171,6 +171,8 @@
     <QtUi Include="memoryeditorwindow.ui" />
     <QtUi Include="postprocessingselectshaderdialog.ui" />
     <QtUi Include="editgameserialdialog.ui" />
+    <QtUi Include="osdsettingswidget.ui" />
+    <QtUi Include="capturesettingswidget.ui" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="duckstation-qt.rc" />
@@ -193,8 +195,6 @@
     <None Include="translations\duckstation-qt_sv.ts">
       <Filter>translations</Filter>
     </None>
-    <None Include="osdsettingswidget.ui" />
-    <None Include="capturesettingswidget.ui" />
   </ItemGroup>
   <ItemGroup>
     <QtTs Include="translations\duckstation-qt_de.ts">
