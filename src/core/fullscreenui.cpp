@@ -81,7 +81,7 @@ static void DoStartFile();
 static void DoStartBIOS();
 static void DoStartDisc();
 static void DoToggleFastForward();
-static void ConfirmIfSavingMemoryCards(std::string action, std::function<void(bool)> callback);
+static void ConfirmWithSafetyCheck(std::string action, bool check_achievements, std::function<void(bool)> callback);
 static void RequestShutdown(bool save_state);
 static void RequestRestart();
 static void BeginChangeDiscOnCoreThread(bool needs_pause);
@@ -713,29 +713,45 @@ void FullscreenUI::DoStartDisc()
                    });
 }
 
-void FullscreenUI::ConfirmIfSavingMemoryCards(std::string action, std::function<void(bool)> callback)
+void FullscreenUI::ConfirmWithSafetyCheck(std::string action, bool check_achievements,
+                                          std::function<void(bool)> callback)
 {
-  Host::RunOnCoreThread([action = std::move(action), callback = std::move(callback)]() mutable {
+  Host::RunOnCoreThread([action = std::move(action), callback = std::move(callback), check_achievements]() mutable {
+    const u32 pending_unlock_count = check_achievements ? Achievements::GetPendingUnlockCount() : 0;
     const bool was_saving = System::IsSavingMemoryCards();
-    GPUThread::RunOnThread([action = std::move(action), callback = std::move(callback), was_saving]() mutable {
-      if (!was_saving)
+    GPUThread::RunOnThread([action = std::move(action), callback = std::move(callback), pending_unlock_count,
+                            was_saving]() mutable {
+      if (!was_saving && pending_unlock_count == 0)
       {
         callback(true);
         return;
       }
 
-      OpenConfirmMessageDialog(
-        ICON_EMOJI_WARNING, FSUI_ICONVSTR(ICON_PF_MEMORY_CARD, "Memory Card Busy"),
-        fmt::format(
-          FSUI_FSTR("WARNING: Your game is still saving to the memory card. Continuing to {0} may IRREVERSIBLY "
-                    "DESTROY YOUR MEMORY CARD. We recommend resuming your game and waiting 5 seconds for it to "
-                    "finish saving.\n\nDo you want to {0} anyway?"),
-          action),
-        std::move(callback),
-        fmt::format(
-          fmt::runtime(FSUI_ICONVSTR(ICON_FA_TRIANGLE_EXCLAMATION, "Yes, {} now and risk memory card corruption.")),
-          action),
-        FSUI_ICONSTR(ICON_FA_PLAY, "No, resume the game."));
+      if (was_saving)
+      {
+        OpenConfirmMessageDialog(
+          ICON_EMOJI_WARNING, FSUI_ICONVSTR(ICON_PF_MEMORY_CARD, "Memory Card Busy"),
+          fmt::format(
+            FSUI_FSTR("WARNING: Your game is still saving to the memory card. Continuing to {0} may IRREVERSIBLY "
+                      "DESTROY YOUR MEMORY CARD. We recommend resuming your game and waiting 5 seconds for it to "
+                      "finish saving.\n\nDo you want to {0} anyway?"),
+            action),
+          std::move(callback),
+          fmt::format(
+            fmt::runtime(FSUI_ICONVSTR(ICON_FA_TRIANGLE_EXCLAMATION, "Yes, {} now and risk memory card corruption.")),
+            action),
+          FSUI_ICONSTR(ICON_FA_PLAY, "No, resume the game."));
+      }
+      else
+      {
+        OpenConfirmMessageDialog(
+          ICON_EMOJI_WARNING, FSUI_ICONVSTR(ICON_FA_TROPHY, "Achievement Unlocks Unconfirmed"),
+          fmt::format(FSUI_FSTR("{0} achievement unlocks have not been confirmed by the server. Continuing to {1} will "
+                                "result in loss of these unlocks. Once network connectivity has been re-established, "
+                                "these unlocks will be confirmed automatically.\n\nDo you want to {1} anyway?"),
+                      pending_unlock_count, action),
+          std::move(callback));
+      }
     });
   });
 }
@@ -744,7 +760,7 @@ void FullscreenUI::RequestShutdown(bool save_state)
 {
   SwitchToMainWindow(MainWindowType::None);
 
-  ConfirmIfSavingMemoryCards(FSUI_STR("shut down"), [save_state](bool result) {
+  ConfirmWithSafetyCheck(FSUI_STR("shut down"), true, [save_state](bool result) {
     if (result)
       Host::RunOnCoreThread([save_state]() { Host::RequestSystemShutdown(false, save_state, false); });
     else
@@ -756,7 +772,7 @@ void FullscreenUI::RequestRestart()
 {
   SwitchToMainWindow(MainWindowType::None);
 
-  ConfirmIfSavingMemoryCards(FSUI_STR("restart"), [](bool result) {
+  ConfirmWithSafetyCheck(FSUI_STR("restart"), false, [](bool result) {
     if (result)
       Host::RunOnCoreThread(System::ResetSystem);
 
@@ -783,7 +799,7 @@ void FullscreenUI::StartChangeDiscFromFile()
       return;
     }
 
-    ConfirmIfSavingMemoryCards(FSUI_STR("change disc"), [path](bool result) {
+    ConfirmWithSafetyCheck(FSUI_STR("change disc"), false, [path](bool result) {
       if (result)
       {
         if (!GameList::IsScannableFilename(path))
@@ -839,7 +855,7 @@ void FullscreenUI::BeginChangeDiscOnCoreThread(bool needs_pause)
         }
         else if (index > 0)
         {
-          ConfirmIfSavingMemoryCards(FSUI_STR("change disc"), [index](bool result) {
+          ConfirmWithSafetyCheck(FSUI_STR("change disc"), false, [index](bool result) {
             if (result)
               System::SwitchMediaSubImage(static_cast<u32>(index - 1));
 
@@ -890,7 +906,7 @@ void FullscreenUI::BeginChangeDiscOnCoreThread(bool needs_pause)
           }
           else if (index > 0)
           {
-            ConfirmIfSavingMemoryCards(FSUI_STR("change disc"), [paths = std::move(paths), index](bool result) {
+            ConfirmWithSafetyCheck(FSUI_STR("change disc"), false, [paths = std::move(paths), index](bool result) {
               if (result)
                 Host::RunOnCoreThread([path = std::move(paths[index - 1])]() { System::InsertMedia(path.c_str()); });
 

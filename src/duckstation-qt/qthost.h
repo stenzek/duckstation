@@ -149,7 +149,7 @@ public:
   void exitFullscreenUI();
   void bootSystem(std::shared_ptr<SystemBootParameters> params);
   void resumeSystemFromMostRecentState();
-  void shutdownSystem(bool save_state, bool check_memcard_busy);
+  void shutdownSystem(bool save_state, bool check_safety);
   void resetSystem(bool check_memcard_busy);
   void setSystemPaused(bool paused);
   void changeDisc(const QString& new_disc_path, bool reset_system, bool check_memcard_busy);
@@ -203,8 +203,8 @@ private:
 
   void createBackgroundControllerPollTimer();
   void destroyBackgroundControllerPollTimer();
-  void confirmActionIfMemoryCardBusy(const QString& action, bool cancel_resume_on_accept,
-                                     std::function<void(bool)> callback) const;
+  void confirmActionWithSafetyCheck(const QString& action, bool check_achievements, bool cancel_resume_on_accept,
+                                    std::function<void(bool)> callback) const;
 
   static void gpuThreadEntryPoint();
 

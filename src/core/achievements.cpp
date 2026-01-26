@@ -2327,6 +2327,15 @@ u32 Achievements::GetPauseThrottleFrames()
   return rc_client_can_pause(s_state.client, &frames_remaining) ? 0 : frames_remaining;
 }
 
+u32 Achievements::GetPendingUnlockCount()
+{
+  if (!IsActive())
+    return 0;
+
+  const auto lock = GetLock();
+  return rc_client_get_award_achievement_pending_count(s_state.client);
+}
+
 void Achievements::Logout()
 {
   if (IsActive())

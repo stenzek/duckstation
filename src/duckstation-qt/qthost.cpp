@@ -1079,46 +1079,70 @@ void CoreThread::reloadInputBindings()
   System::ReloadInputBindings();
 }
 
-void CoreThread::confirmActionIfMemoryCardBusy(const QString& action, bool cancel_resume_on_accept,
-                                               std::function<void(bool)> callback) const
+void CoreThread::confirmActionWithSafetyCheck(const QString& action, bool check_achievements,
+                                              bool cancel_resume_on_accept, std::function<void(bool)> callback) const
 {
   DebugAssert(isCurrentThread());
-
-  if (!System::IsValid() || !System::IsSavingMemoryCards())
+  if (!System::IsValid())
   {
     callback(true);
     return;
   }
 
-  Host::RunOnUIThread([action, cancel_resume_on_accept, callback = std::move(callback)]() mutable {
-    auto lock = g_main_window->pauseAndLockSystem();
+  const bool saving = System::IsSavingMemoryCards();
+  const u32 pending_unlock_count = Achievements::GetPendingUnlockCount();
+  if (!saving && pending_unlock_count == 0)
+  {
+    callback(true);
+    return;
+  }
 
-    const bool result = (QtUtils::MessageBoxQuestion(
-                           lock.getDialogParent(), tr("Memory Card Busy"),
-                           tr("WARNING: Your game is still saving to the memory card. Continuing to %1 may "
-                              "IRREVERSIBLY DESTROY YOUR MEMORY CARD. We recommend resuming your game and waiting 5 "
-                              "seconds for it to finish saving.\n\nDo you want to %1 anyway?")
-                             .arg(action)) != QMessageBox::No);
+  Host::RunOnUIThread(
+    [callback = std::move(callback), action, saving, pending_unlock_count, cancel_resume_on_accept]() mutable {
+      auto lock = g_main_window->pauseAndLockSystem();
 
-    if (cancel_resume_on_accept && !QtHost::IsFullscreenUIStarted())
-      lock.cancelResume();
+      bool result;
+      if (saving)
+      {
+        result = (QtUtils::MessageBoxIcon(
+                    lock.getDialogParent(), QMessageBox::Warning, tr("Memory Card Busy"),
+                    tr("WARNING: Your game is still saving to the memory card. Continuing to %1 may "
+                       "IRREVERSIBLY DESTROY YOUR MEMORY CARD. We recommend resuming your game and waiting 5 "
+                       "seconds for it to finish saving.\n\nDo you want to %1 anyway?")
+                      .arg(action),
+                    QMessageBox::Yes | QMessageBox::No, QMessageBox::No) != QMessageBox::No);
+      }
+      else
+      {
+        result = (QtUtils::MessageBoxIcon(
+                    lock.getDialogParent(), QMessageBox::Warning, tr("Achievement Unlocks Unconfirmed"),
+                    tr("%1 achievement unlocks have not been confirmed by the server. Continuing to %2 will result in "
+                       "loss of these unlocks. Once network connectivity has been re-established, these unlocks will "
+                       "be confirmed automatically.\n\nDo you want to %2 anyway?")
+                      .arg(pending_unlock_count)
+                      .arg(action),
+                    QMessageBox::Yes | QMessageBox::No, QMessageBox::No) != QMessageBox::No);
+      }
 
-    Host::RunOnCoreThread([result, callback = std::move(callback)]() { callback(result); });
-  });
+      if (cancel_resume_on_accept && !QtHost::IsFullscreenUIStarted())
+        lock.cancelResume();
+
+      Host::RunOnCoreThread([result, callback = std::move(callback)]() { callback(result); });
+    });
 }
 
-void CoreThread::shutdownSystem(bool save_state, bool check_memcard_busy)
+void CoreThread::shutdownSystem(bool save_state, bool check_safety)
 {
   if (!isCurrentThread())
   {
     System::CancelPendingStartup();
-    QMetaObject::invokeMethod(this, &CoreThread::shutdownSystem, Qt::QueuedConnection, save_state, check_memcard_busy);
+    QMetaObject::invokeMethod(this, &CoreThread::shutdownSystem, Qt::QueuedConnection, save_state, check_safety);
     return;
   }
 
-  if (check_memcard_busy && System::IsSavingMemoryCards())
+  if (check_safety && (System::IsSavingMemoryCards() || Achievements::GetPendingUnlockCount() > 0))
   {
-    confirmActionIfMemoryCardBusy(tr("shut down"), true, [save_state](bool result) {
+    confirmActionWithSafetyCheck(tr("shut down"), true, true, [save_state](bool result) {
       if (result)
         g_core_thread->shutdownSystem(save_state, false);
       else
@@ -1140,7 +1164,7 @@ void CoreThread::resetSystem(bool check_memcard_busy)
 
   if (check_memcard_busy && System::IsSavingMemoryCards())
   {
-    confirmActionIfMemoryCardBusy(tr("reset"), false, [](bool result) {
+    confirmActionWithSafetyCheck(tr("reset"), false, false, [](bool result) {
       if (result)
         g_core_thread->resetSystem(false);
     });
@@ -1172,7 +1196,7 @@ void CoreThread::changeDisc(const QString& new_disc_filename, bool reset_system,
 
   if (check_memcard_busy && System::IsSavingMemoryCards())
   {
-    confirmActionIfMemoryCardBusy(tr("change disc"), false, [new_disc_filename, reset_system](bool result) {
+    confirmActionWithSafetyCheck(tr("change disc"), false, false, [new_disc_filename, reset_system](bool result) {
       if (result)
         g_core_thread->changeDisc(new_disc_filename, reset_system, false);
     });

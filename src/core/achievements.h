@@ -192,6 +192,9 @@ bool DownloadGameIcons(ProgressCallback* progress, Error* error);
 /// Returns 0 if pausing is allowed, otherwise the number of frames until pausing is allowed.
 u32 GetPauseThrottleFrames();
 
+/// Returns the number of unlocks that have not been synchronized with the server.
+u32 GetPendingUnlockCount();
+
 /// The name of the RetroAchievements icon, which can be used in notifications.
 extern const char* const RA_LOGO_ICON_NAME;
 
