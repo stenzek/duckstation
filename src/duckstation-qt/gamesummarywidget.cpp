@@ -320,8 +320,6 @@ void GameSummaryWidget::onChangeSerialClicked()
     bbox->button(QDialogButtonBox::Ok)->setEnabled(!trimmed.isEmpty());
   });
 
-  connect(dialog_ui.buttonBox, &QDialogButtonBox::rejected, dialog, &QDialog::reject);
-  connect(dialog_ui.buttonBox, &QDialogButtonBox::accepted, dialog, &QDialog::accept);
   connect(dialog_ui.buttonBox->button(QDialogButtonBox::Reset), &QPushButton::clicked, dialog,
           [dialog, serial = dialog_ui.serial]() {
             serial->setText(QString());
