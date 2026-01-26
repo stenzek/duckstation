@@ -3895,14 +3895,12 @@ static void rc_client_update_achievement_display_information(rc_client_t* client
 
   if (achievement->public_.state == RC_CLIENT_ACHIEVEMENT_STATE_UNLOCKED) {
     /* achievement unlocked */
-    if (achievement->public_.unlock_time >= recent_unlock_time) {
+    if (client->state.disconnect && rc_client_is_award_achievement_pending(client, achievement->public_.id))
+      new_bucket = RC_CLIENT_ACHIEVEMENT_BUCKET_UNSYNCED;
+    else if (achievement->public_.unlock_time >= recent_unlock_time)
       new_bucket = RC_CLIENT_ACHIEVEMENT_BUCKET_RECENTLY_UNLOCKED;
-    } else {
+    else
       new_bucket = RC_CLIENT_ACHIEVEMENT_BUCKET_UNLOCKED;
-
-      if (client->state.disconnect && rc_client_is_award_achievement_pending(client, achievement->public_.id))
-        new_bucket = RC_CLIENT_ACHIEVEMENT_BUCKET_UNSYNCED;
-    }
   }
   else {
     /* active achievement */
