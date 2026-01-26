@@ -57,12 +57,12 @@ private:
   void adjustContent();
   void notifySelectedAddressChanged();
 
-  void* m_data;
-  size_t m_data_size;
-  size_t m_address_offset;
+  void* m_data = nullptr;
+  size_t m_data_size = 0;
+  size_t m_address_offset = 0;
 
-  size_t m_start_offset;
-  size_t m_end_offset;
+  size_t m_start_offset = 0;
+  size_t m_end_offset = 0;
 
   size_t m_highlight_start = 0;
   size_t m_highlight_end = 0;
@@ -72,12 +72,12 @@ private:
   bool m_selection_was_ascii = false;
   bool m_data_editable = false;
 
-  u32 m_bytes_per_line;
+  u32 m_bytes_per_line = 0;
 
-  int m_char_width;
-  int m_char_height;
+  int m_char_width = 0;
+  int m_char_height = 0;
 
-  int m_rows_visible;
+  int m_rows_visible = 0;
 
   EditCallback m_edit_callback = nullptr;
   std::vector<u8> m_last_data;
