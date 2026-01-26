@@ -90,8 +90,7 @@ void SettingsWindow::closeEvent(QCloseEvent* event)
 void SettingsWindow::addPages()
 {
   addWidget(
-    m_interface_settings = new InterfaceSettingsWidget(this, m_ui.settingsContainer), tr("Interface"),
-    QStringLiteral("settings-3-line"),
+    new InterfaceSettingsWidget(this, m_ui.settingsContainer), tr("Interface"), QStringLiteral("settings-3-line"),
     tr("<strong>Interface Settings</strong><hr>These options control how the emulator looks and "
        "behaves.<br><br>Mouse over an option for additional information, and Shift+Wheel to scroll this panel."));
 
@@ -105,31 +104,27 @@ void SettingsWindow::addPages()
          "recursive/non-recursive."));
   }
 
-  addWidget(m_bios_settings = new BIOSSettingsWidget(this, m_ui.settingsContainer), tr("BIOS"),
-            QStringLiteral("chip-line"),
+  addWidget(new BIOSSettingsWidget(this, m_ui.settingsContainer), tr("BIOS"), QStringLiteral("chip-line"),
             tr("<strong>BIOS Settings</strong><hr>These options control which BIOS and expansion port is "
                "used.<br><br>Mouse over an option for additional information, and Shift+Wheel to scroll this panel."));
   addWidget(
-    m_console_settings = new ConsoleSettingsWidget(this, m_ui.settingsContainer), tr("Console"),
-    QStringLiteral("emulation-line"),
+    new ConsoleSettingsWidget(this, m_ui.settingsContainer), tr("Console"), QStringLiteral("emulation-line"),
     tr("<strong>Console Settings</strong><hr>These options determine the configuration of the simulated "
        "console.<br><br>Mouse over an option for additional information, and Shift+Wheel to scroll this panel."));
   addWidget(
-    m_emulation_settings = new EmulationSettingsWidget(this, m_ui.settingsContainer), tr("Emulation"),
-    QStringLiteral("chip-2-line"),
+    new EmulationSettingsWidget(this, m_ui.settingsContainer), tr("Emulation"), QStringLiteral("chip-2-line"),
     tr("<strong>Emulation Settings</strong><hr>These options determine the speed and runahead behavior of the "
        "system.<br><br>Mouse over an option for additional information, and Shift+Wheel to scroll this panel."));
 
   if (isPerGameSettings())
   {
-    addWidget(m_game_patch_settings_widget = new GamePatchSettingsWidget(this, m_ui.settingsContainer), tr("Patches"),
+    addWidget(new GamePatchSettingsWidget(this, m_ui.settingsContainer), tr("Patches"),
               QStringLiteral("sparkling-line"),
               tr("<strong>Patches</strong><hr>This section allows you to select optional patches to apply to the game, "
                  "which may provide performance, visual, or gameplay improvements. Activating game patches can cause "
                  "unpredictable behavior, crashing, soft-locks, or broken saved games. Use patches at your own risk, "
                  "no support will be provided to users who have enabled game patches."));
-    addWidget(m_game_cheat_settings_widget = new GameCheatSettingsWidget(this, m_ui.settingsContainer), tr("Cheats"),
-              QStringLiteral("cheats-line"),
+    addWidget(new GameCheatSettingsWidget(this, m_ui.settingsContainer), tr("Cheats"), QStringLiteral("cheats-line"),
               tr("<strong>Cheats</strong><hr>This section allows you to select which cheats you wish to enable. "
                  "<strong>Using cheats can have unpredictable effects on games, causing crashes, graphical glitches, "
                  "and corrupted saves.</strong> Cheats also persist through save states even after being disabled, "
@@ -137,60 +132,56 @@ void SettingsWindow::addPages()
   }
 
   addWidget(
-    m_memory_card_settings = new MemoryCardSettingsWidget(this, m_ui.settingsContainer), tr("Memory Cards"),
-    QStringLiteral("memcard-line"),
+    new MemoryCardSettingsWidget(this, m_ui.settingsContainer), tr("Memory Cards"), QStringLiteral("memcard-line"),
     tr("<strong>Memory Card Settings</strong><hr>This page lets you control what mode the memory card emulation will "
        "function in, and where the images for these cards will be stored on disk."));
-  addWidget(m_graphics_settings = new GraphicsSettingsWidget(this, m_ui.settingsContainer), tr("Graphics"),
+  GraphicsSettingsWidget* graphics_settings;
+  addWidget(graphics_settings = new GraphicsSettingsWidget(this, m_ui.settingsContainer), tr("Graphics"),
             QStringLiteral("image-fill"),
             tr("<strong>Graphics Settings</strong><hr>These options control how the graphics of the emulated console "
                "are rendered. Not all options are available for the software renderer. Mouse over each option for "
                "additional information, and Shift+Wheel to scroll this panel."));
   //: Translators may want to shorten On-Screen Display to "OSD".
-  addWidget(m_osd_settings = new OSDSettingsWidget(this, m_ui.settingsContainer), tr("On-Screen Display"),
+  addWidget(new OSDSettingsWidget(this, m_ui.settingsContainer), tr("On-Screen Display"),
             QStringLiteral("numbers-fill"),
             tr("<strong>On-Screen Display Settings</strong><hr>These options determine the behavior of the messages "
                "that are displayed while content is running."));
   addWidget(
-    m_post_processing_settings = new PostProcessingSettingsWidget(this, m_ui.settingsContainer), tr("Post-Processing"),
-    QStringLiteral("sun-fill"),
+    new PostProcessingSettingsWidget(this, m_ui.settingsContainer), tr("Post-Processing"), QStringLiteral("sun-fill"),
     tr("<strong>Post-Processing Settings</strong><hr>Post processing allows you to alter the appearance of the image "
        "displayed on the screen with various filters. Shaders will be executed in sequence. Additional shaders can be "
        "downloaded from <a href=\"%1\">%1</a>.")
       .arg("https://github.com/stenzek/emu-shaders"));
   addWidget(
-    m_audio_settings = new AudioSettingsWidget(this, m_ui.settingsContainer), tr("Audio"),
-    QStringLiteral("volume-up-line"),
+    new AudioSettingsWidget(this, m_ui.settingsContainer), tr("Audio"), QStringLiteral("volume-up-line"),
     tr("<strong>Audio Settings</strong><hr>These options control the audio output of the console. Mouse over an option "
        "for additional information."));
   addWidget(
-    m_achievement_settings = new AchievementSettingsWidget(this, m_ui.settingsContainer), tr("Achievements"),
-    QStringLiteral("trophy-line"),
+    new AchievementSettingsWidget(this, m_ui.settingsContainer), tr("Achievements"), QStringLiteral("trophy-line"),
     tr("<strong>Achievement Settings</strong><hr>DuckStation uses RetroAchievements as an achievement database and "
        "for tracking progress. To use achievements, please sign up for an account at <a href=\"%1\">%1</a>. To view "
        "the achievement list in-game, press the hotkey for <strong>Open Pause Menu</strong> and select "
        "<strong>Achievements</strong> from the menu. Mouse over an option for additional information, and "
        "Shift+Wheel to scroll this panel.")
       .arg("https://retroachievements.org/"));
-  addWidget(m_capture_settings = new CaptureSettingsWidget(this, m_ui.settingsContainer), tr("Capture"),
-            QStringLiteral("vidicon-line"),
+  addWidget(new CaptureSettingsWidget(this, m_ui.settingsContainer), tr("Capture"), QStringLiteral("vidicon-line"),
             tr("<strong>Capture Settings</strong><hr>These options determine how screenshots and videos are captured "
                "by the application."));
 
   if (!isPerGameSettings())
   {
     addWidget(
-      m_folder_settings = new FolderSettingsWidget(this, m_ui.settingsContainer), tr("Folders"),
-      QStringLiteral("folder-settings-line"),
+      new FolderSettingsWidget(this, m_ui.settingsContainer), tr("Folders"), QStringLiteral("folder-settings-line"),
       tr("<strong>Folder Settings</strong><hr>These options control where DuckStation will save runtime data files."));
   }
 
-  addWidget(m_advanced_settings = new AdvancedSettingsWidget(this, m_ui.settingsContainer), tr("Advanced"),
+  AdvancedSettingsWidget* advanced_settings;
+  addWidget(advanced_settings = new AdvancedSettingsWidget(this, m_ui.settingsContainer), tr("Advanced"),
             QStringLiteral("alert-line"),
             tr("<strong>Advanced Settings</strong><hr>These options control logging and internal behavior of the "
                "emulator. Mouse over an option for additional information, and Shift+Wheel to scroll this panel."));
 
-  connect(m_advanced_settings, &AdvancedSettingsWidget::onShowDebugOptionsChanged, m_graphics_settings,
+  connect(advanced_settings, &AdvancedSettingsWidget::onShowDebugOptionsChanged, graphics_settings,
           &GraphicsSettingsWidget::onShowDebugSettingsChanged);
 
   SettingWidgetBinder::BindWidgetToBoolSetting(m_sif.get(), m_ui.safeMode, "Main", "DisableAllEnhancements", false);
