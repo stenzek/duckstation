@@ -50,7 +50,6 @@ private:
   void nextPage();
   void confirmCancel();
 
-  void themeChanged();
   void languageChanged();
 
   void refreshBiosList();

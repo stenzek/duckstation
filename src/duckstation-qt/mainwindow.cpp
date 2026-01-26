@@ -2642,22 +2642,6 @@ void MainWindow::connectSignals()
   }
 }
 
-void MainWindow::onSettingsThemeChanged()
-{
-#ifdef _WIN32
-  const QString old_style_name = qApp->style()->name();
-#endif
-
-  QtHost::UpdateApplicationTheme();
-
-#ifdef _WIN32
-  // Work around a bug where the background colour of menus is broken when changing to/from the windowsvista theme.
-  const QString new_style_name = qApp->style()->name();
-  if ((old_style_name == QStringLiteral("windowsvista")) != (new_style_name == QStringLiteral("windowsvista")))
-    recreate();
-#endif
-}
-
 void MainWindow::onSettingsResetToDefault(bool system, bool controller)
 {
   if (system && m_settings_window)
@@ -2726,11 +2710,7 @@ void MainWindow::restoreDisplayWindowGeometryFromConfig()
 SettingsWindow* MainWindow::getSettingsWindow()
 {
   if (!m_settings_window)
-  {
     m_settings_window = new SettingsWindow();
-    connect(m_settings_window->getInterfaceSettingsWidget(), &InterfaceSettingsWidget::themeChanged, this,
-            &MainWindow::onSettingsThemeChanged);
-  }
 
   return m_settings_window;
 }

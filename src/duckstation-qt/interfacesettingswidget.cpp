@@ -110,7 +110,7 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* dialog, QWidget
   {
     SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.theme, "UI", "Theme", THEME_NAMES, THEME_VALUES,
                                                  QtHost::GetDefaultThemeName(), "MainWindow");
-    connect(m_ui.theme, QOverload<int>::of(&QComboBox::currentIndexChanged), [this]() { emit themeChanged(); });
+    connect(m_ui.theme, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &QtHost::UpdateApplicationTheme);
 
     populateLanguageDropdown(m_ui.language);
     SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.language, "Main", "Language", {});

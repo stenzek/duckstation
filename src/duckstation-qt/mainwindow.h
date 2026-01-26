@@ -208,7 +208,6 @@ private:
   void openSelectDiscDialog(const QString& title, std::function<void(std::string)> callback);
   void setGameListEntryCoverImage(const GameList::Entry* entry);
   void clearGameListEntryPlayTime(const GameList::Entry* entry);
-  void onSettingsThemeChanged();
   void destroySubWindows();
 
   void checkForUpdates(bool display_message, bool ignore_skipped_updates);

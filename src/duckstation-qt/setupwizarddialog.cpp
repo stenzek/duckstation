@@ -181,7 +181,7 @@ void SetupWizardDialog::setupLanguagePage(bool initial)
   SettingWidgetBinder::BindWidgetToEnumSetting(nullptr, m_ui.theme, "UI", "Theme", InterfaceSettingsWidget::THEME_NAMES,
                                                InterfaceSettingsWidget::THEME_VALUES, QtHost::GetDefaultThemeName(),
                                                "MainWindow");
-  connect(m_ui.theme, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SetupWizardDialog::themeChanged);
+  connect(m_ui.theme, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &QtHost::UpdateApplicationTheme);
 
   SettingWidgetBinder::DisconnectWidget(m_ui.language);
   m_ui.language->clear();
@@ -195,12 +195,6 @@ void SetupWizardDialog::setupLanguagePage(bool initial)
     SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.autoUpdateEnabled, "AutoUpdater", "CheckAtStartup",
                                                  true);
   }
-}
-
-void SetupWizardDialog::themeChanged()
-{
-  // Main window gets recreated at the end here anyway, so it's fine to just yolo it.
-  QtHost::UpdateApplicationTheme();
 }
 
 void SetupWizardDialog::languageChanged()

@@ -19,9 +19,6 @@ public:
 
   static void populateLanguageDropdown(QComboBox* cb);
 
-Q_SIGNALS:
-  void themeChanged();
-
 private:
   void updateRenderToSeparateWindowOptions();
   void onLanguageChanged();
