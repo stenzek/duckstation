@@ -42,10 +42,8 @@ private:
   static constexpr int TAB_INDEX_RENDERING = 0;
   static constexpr int TAB_INDEX_ADVANCED = 1;
   static constexpr int TAB_INDEX_PGXP = 2;
-  static constexpr int TAB_INDEX_OSD = 3;
-  static constexpr int TAB_INDEX_CAPTURE = 4;
-  static constexpr int TAB_INDEX_TEXTURE_REPLACEMENTS = 5;
-  static constexpr int TAB_INDEX_DEBUGGING = 6;
+  static constexpr int TAB_INDEX_TEXTURE_REPLACEMENTS = 3;
+  static constexpr int TAB_INDEX_DEBUGGING = 4;
 
   void updateRendererDependentOptions();
   void updatePGXPSettingsEnabled();
