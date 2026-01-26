@@ -29,9 +29,9 @@
    <item>
     <widget class="QGroupBox" name="groupBox">
      <property name="title">
-      <string>Display Options</string>
+      <string>Display</string>
      </property>
-     <layout class="QGridLayout" name="gridLayout" columnstretch="0,1" columnminimumwidth="120,0">
+     <layout class="QGridLayout" name="gridLayout" columnstretch="0,1" columnminimumwidth="150,0">
       <item row="0" column="0">
        <widget class="QLabel" name="label_29">
         <property name="text">
@@ -85,69 +85,31 @@
    <item>
     <widget class="QGroupBox" name="osdMessageDurations">
      <property name="title">
-      <string>Message Durations</string>
+      <string>Messages</string>
      </property>
-     <layout class="QGridLayout" name="gridLayout_21" columnstretch="0,0,0,0" columnminimumwidth="120,0,0,0">
-      <item row="0" column="2">
-       <widget class="QLabel" name="osdWarningDurationLabel">
+     <layout class="QGridLayout" name="gridLayout_21" columnstretch="0,0,0,0" columnminimumwidth="150,0,150,0">
+      <item row="0" column="2" colspan="2">
+       <widget class="QCheckBox" name="showStatusIndicators">
         <property name="text">
-         <string>Warning:</string>
+         <string>Show Status Indicators</string>
         </property>
        </widget>
       </item>
-      <item row="1" column="3">
-       <widget class="QDoubleSpinBox" name="osdQuickDuration">
-        <property name="suffix">
-         <string> seconds</string>
-        </property>
-        <property name="decimals">
-         <number>1</number>
-        </property>
-        <property name="minimum">
-         <double>0.500000000000000</double>
-        </property>
-        <property name="maximum">
-         <double>60.000000000000000</double>
-        </property>
-        <property name="singleStep">
-         <double>0.500000000000000</double>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="0">
-       <widget class="QLabel" name="osdErrorDurationLabel">
+      <item row="0" column="0" colspan="2">
+       <widget class="QCheckBox" name="showMessages">
         <property name="text">
-         <string>Error:</string>
+         <string>Show Messages</string>
         </property>
        </widget>
       </item>
       <item row="1" column="0">
-       <widget class="QLabel" name="osdInformationDurationLabel">
+       <widget class="QLabel" name="osdErrorDurationLabel">
         <property name="text">
-         <string>Informational:</string>
+         <string>Error Duration:</string>
         </property>
        </widget>
       </item>
-      <item row="0" column="3">
-       <widget class="QDoubleSpinBox" name="osdWarningDuration">
-        <property name="suffix">
-         <string> seconds</string>
-        </property>
-        <property name="decimals">
-         <number>1</number>
-        </property>
-        <property name="minimum">
-         <double>0.500000000000000</double>
-        </property>
-        <property name="maximum">
-         <double>60.000000000000000</double>
-        </property>
-        <property name="singleStep">
-         <double>0.500000000000000</double>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1">
+      <item row="1" column="1">
        <widget class="QDoubleSpinBox" name="osdErrorDuration">
         <property name="suffix">
          <string> seconds</string>
@@ -167,13 +129,39 @@
        </widget>
       </item>
       <item row="1" column="2">
-       <widget class="QLabel" name="osdQuickDurationLabel">
+       <widget class="QLabel" name="osdWarningDurationLabel">
         <property name="text">
-         <string>Quick:</string>
+         <string>Warning Duration:</string>
         </property>
        </widget>
       </item>
-      <item row="1" column="1">
+      <item row="1" column="3">
+       <widget class="QDoubleSpinBox" name="osdWarningDuration">
+        <property name="suffix">
+         <string> seconds</string>
+        </property>
+        <property name="decimals">
+         <number>1</number>
+        </property>
+        <property name="minimum">
+         <double>0.500000000000000</double>
+        </property>
+        <property name="maximum">
+         <double>60.000000000000000</double>
+        </property>
+        <property name="singleStep">
+         <double>0.500000000000000</double>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="osdInformationDurationLabel">
+        <property name="text">
+         <string>Information Duration:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
        <widget class="QDoubleSpinBox" name="osdInformationDuration">
         <property name="suffix">
          <string> seconds</string>
@@ -192,13 +180,49 @@
         </property>
        </widget>
       </item>
+      <item row="2" column="2">
+       <widget class="QLabel" name="osdQuickDurationLabel">
+        <property name="text">
+         <string>Action Duration:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="3">
+       <widget class="QDoubleSpinBox" name="osdQuickDuration">
+        <property name="suffix">
+         <string> seconds</string>
+        </property>
+        <property name="decimals">
+         <number>1</number>
+        </property>
+        <property name="minimum">
+         <double>0.500000000000000</double>
+        </property>
+        <property name="maximum">
+         <double>60.000000000000000</double>
+        </property>
+        <property name="singleStep">
+         <double>0.500000000000000</double>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0">
+       <widget class="QLabel" name="label_5">
+        <property name="text">
+         <string>Display Location:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1" colspan="3">
+       <widget class="QComboBox" name="osdMessageLocation"/>
+      </item>
      </layout>
     </widget>
    </item>
    <item>
     <widget class="QGroupBox" name="groupBox_8">
      <property name="title">
-      <string>Overlay Selection</string>
+      <string>Overlays</string>
      </property>
      <layout class="QGridLayout" name="gridLayout_14" columnstretch="0,0" columnminimumwidth="120,0">
       <property name="topMargin">
@@ -207,83 +231,69 @@
       <item row="1" column="0" colspan="2">
        <layout class="QGridLayout" name="gridLayout_3">
         <item row="0" column="0">
-         <widget class="QCheckBox" name="showMessages">
-          <property name="text">
-           <string>Show Messages</string>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="1">
-         <widget class="QCheckBox" name="showStatusIndicators">
-          <property name="text">
-           <string>Show Status Indicators</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="0">
-         <widget class="QCheckBox" name="showSpeed">
-          <property name="text">
-           <string>Show Emulation Speed</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="1">
          <widget class="QCheckBox" name="showFPS">
           <property name="text">
            <string>Show FPS</string>
           </property>
          </widget>
         </item>
-        <item row="2" column="0">
+        <item row="0" column="1">
+         <widget class="QCheckBox" name="showSpeed">
+          <property name="text">
+           <string>Show Emulation Speed</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0">
          <widget class="QCheckBox" name="showCPU">
           <property name="text">
            <string>Show CPU Usage</string>
           </property>
          </widget>
         </item>
-        <item row="2" column="1">
+        <item row="1" column="1">
          <widget class="QCheckBox" name="showGPU">
           <property name="text">
            <string>Show GPU Usage</string>
           </property>
          </widget>
         </item>
-        <item row="3" column="0">
-         <widget class="QCheckBox" name="showGPUStatistics">
-          <property name="text">
-           <string>Show GPU Statistics</string>
-          </property>
-         </widget>
-        </item>
-        <item row="3" column="1">
+        <item row="2" column="0">
          <widget class="QCheckBox" name="showResolution">
           <property name="text">
            <string>Show Resolution</string>
           </property>
          </widget>
         </item>
-        <item row="4" column="0">
+        <item row="2" column="1">
+         <widget class="QCheckBox" name="showGPUStatistics">
+          <property name="text">
+           <string>Show GPU Statistics</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="0">
          <widget class="QCheckBox" name="showFrameTimes">
           <property name="text">
            <string>Show Frame Times</string>
           </property>
          </widget>
         </item>
-        <item row="4" column="1">
+        <item row="3" column="1">
          <widget class="QCheckBox" name="showLatencyStatistics">
           <property name="text">
            <string>Show Latency Statistics</string>
           </property>
          </widget>
         </item>
-        <item row="5" column="0">
+        <item row="4" column="0">
          <widget class="QCheckBox" name="showInput">
           <property name="text">
            <string>Show Controller Input</string>
           </property>
          </widget>
         </item>
-        <item row="5" column="1">
+        <item row="4" column="1">
          <widget class="QCheckBox" name="showSettings">
           <property name="text">
            <string>Show Settings</string>
@@ -291,16 +301,6 @@
          </widget>
         </item>
        </layout>
-      </item>
-      <item row="0" column="0">
-       <widget class="QLabel" name="label_5">
-        <property name="text">
-         <string>Message Location:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1">
-       <widget class="QComboBox" name="osdMessageLocation"/>
       </item>
      </layout>
     </widget>
@@ -312,8 +312,8 @@
      </property>
      <property name="sizeHint" stdset="0">
       <size>
-       <width>13</width>
-       <height>23</height>
+       <width>0</width>
+       <height>0</height>
       </size>
      </property>
     </spacer>
