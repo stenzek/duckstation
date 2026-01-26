@@ -2316,7 +2316,11 @@ bool Achievements::DownloadGameIcons(ProgressCallback* progress, Error* error)
 
 u32 Achievements::GetPauseThrottleFrames()
 {
-  if (!IsActive() || !IsHardcoreModeActive())
+  if (!IsActive())
+    return 0;
+
+  const auto lock = GetLock();
+  if (!IsHardcoreModeActive())
     return 0;
 
   u32 frames_remaining = 0;
