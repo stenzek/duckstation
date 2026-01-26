@@ -196,6 +196,9 @@ struct DiscSetEntry
 
   /// Returns the first serial in the set.
   std::string_view GetFirstSerial() const;
+
+  /// Returns the index of the specified serial.
+  std::optional<size_t> GetDiscIndex(std::string_view serial) const;
 };
 
 const Entry* GetEntryForDisc(CDImage* image);

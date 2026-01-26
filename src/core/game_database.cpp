@@ -426,6 +426,17 @@ std::string_view GameDatabase::DiscSetEntry::GetFirstSerial() const
   return serials[0];
 }
 
+std::optional<size_t> GameDatabase::DiscSetEntry::GetDiscIndex(std::string_view serial) const
+{
+  for (size_t i = 0; i < serials.size(); i++)
+  {
+    if (serials[i] == serial)
+      return i;
+  }
+
+  return std::nullopt;
+}
+
 void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_messages) const
 {
   if (display_active_start_offset.has_value())

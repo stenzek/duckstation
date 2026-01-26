@@ -127,6 +127,7 @@ static bool LoadEntriesFromCache(BinaryFileReader& reader);
 static bool WriteEntryToCache(const Entry* entry, const std::string& entry_path, BinaryFileWriter& writer);
 static void CreateDiscSetEntries(const std::vector<std::string>& excluded_paths, const PlayedTimeMap& played_time_map,
                                  const INISettingsInterface& custom_attributes_ini);
+static void RefreshDiscSetEntries();
 
 static std::string GetPlayedTimePath();
 static bool ParsePlayedTimeLine(char* line, std::string_view& serial, PlayedTimeEntry& entry);
@@ -369,14 +370,8 @@ bool GameList::GetDiscListEntry(const std::string& path, Entry* entry)
 
     if (!cdi->HasSubImages() && dentry->disc_set)
     {
-      for (size_t i = 0; i < dentry->disc_set->serials.size(); i++)
-      {
-        if (dentry->disc_set->serials[i] == entry->serial)
-        {
-          entry->disc_set_index = static_cast<s8>(i);
-          break;
-        }
-      }
+      if (const std::optional<size_t> index = dentry->disc_set->GetDiscIndex(entry->serial); index.has_value())
+        entry->disc_set_index = static_cast<s8>(index.value());
     }
   }
   else
@@ -757,6 +752,7 @@ bool GameList::RescanCustomAttributesForPath(const std::string& path, const INIS
     it = s_state.entries.insert(s_state.entries.end(), std::move(entry));
 
   NotifyHostOfEntryChange(&(*it));
+  RefreshDiscSetEntries();
   return true;
 }
 
@@ -820,9 +816,24 @@ void GameList::SetCustomSerialOnEntry(Entry* entry, std::string serial, bool upd
   entry->serial = std::move(serial);
   entry->has_custom_serial = true;
 
+  // Toss away any previous title.
+  if (!entry->has_custom_title)
+    entry->title.clear();
+
+  // Disc sets need to be reinitialized.
+  entry->disc_set_index = -1;
+
   // Need to get new database entry.
   entry->dbentry = GameDatabase::GetEntryForSerial(entry->serial);
-  if (!entry->dbentry && entry->title.empty())
+  if (entry->dbentry)
+  {
+    if (entry->dbentry->disc_set)
+    {
+      if (const std::optional<size_t> index = entry->dbentry->disc_set->GetDiscIndex(entry->serial); index.has_value())
+        entry->disc_set_index = static_cast<s8>(index.value());
+    }
+  }
+  else if (entry->title.empty())
   {
     // if we have a custom serial but no database entry, and no custom title, fall back to filename
     entry->title = Path::GetFileTitle(FileSystem::GetDisplayNameFromPath(entry->path));
@@ -1166,6 +1177,48 @@ void GameList::Refresh(bool invalidate_cache, bool only_cache, ProgressCallback*
 
   // merge multi-disc games
   CreateDiscSetEntries(excluded_paths, played_time, custom_attributes_ini);
+}
+
+void GameList::RefreshDiscSetEntries()
+{
+  // disc sets should be at the end and all contiguous
+  std::vector<u32> changed_indices;
+  for (s32 i = static_cast<s32>(s_state.entries.size()) - 1; i >= 0; i--)
+  {
+    Entry& entry = s_state.entries[static_cast<size_t>(i)];
+    if (entry.IsDiscSet())
+    {
+      changed_indices.push_back(static_cast<u32>(i));
+      s_state.entries.erase(s_state.entries.begin() + static_cast<size_t>(i));
+    }
+    else
+    {
+      if (entry.disc_set_member)
+      {
+        entry.disc_set_member = false;
+        changed_indices.push_back(static_cast<u32>(i));
+      }
+    }
+  }
+
+  const std::vector<std::string> excluded_paths(Core::GetBaseStringListSetting("GameList", "ExcludedPaths"));
+  const PlayedTimeMap played_time = LoadPlayedTimeMap();
+  INISettingsInterface custom_attributes_ini(GetCustomPropertiesFile());
+  custom_attributes_ini.Load();
+
+  CreateDiscSetEntries(excluded_paths, played_time, custom_attributes_ini);
+
+  for (size_t i = 0; i < s_state.entries.size(); i++)
+  {
+    Entry& entry = s_state.entries[i];
+    if (entry.IsDiscSet())
+    {
+      if (std::ranges::find(changed_indices, static_cast<u32>(i)) == changed_indices.end())
+        changed_indices.push_back(static_cast<u32>(i));
+    }
+  }
+
+  Host::OnGameListEntriesChanged(changed_indices);
 }
 
 GameList::EntryList GameList::TakeEntryList()
@@ -1991,6 +2044,7 @@ bool GameList::SaveCustomSerialForPath(const std::string& path, const std::strin
     {
       SetCustomSerialOnEntry(entry, custom_serial, true);
       NotifyHostOfEntryChange(entry);
+      RefreshDiscSetEntries();
     }
 
     return true;
