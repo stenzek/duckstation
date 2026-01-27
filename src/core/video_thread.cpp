@@ -56,8 +56,6 @@ static constexpr u32 THREAD_SPIN_TIME_US = 50;
 static constexpr u32 THREAD_SPIN_TIME_US = 200;
 #endif
 
-static constexpr u32 MAX_SKIPPED_PRESENT_COUNT = 50;
-
 static bool Reconfigure(std::optional<GPURenderer> renderer, bool upload_vram, std::optional<bool> fullscreen,
                         std::optional<bool> start_fullscreen_ui, bool recreate_device, Error* error);
 
@@ -80,7 +78,6 @@ static void ResizeRenderWindowOnThread(u32 width, u32 height, float scale, float
 static void RecreateRenderWindowOnThread(bool fullscreen, bool allow_exclusive_fullscreen);
 static void RenderWindowResizedOnThread();
 static bool CheckExclusiveFullscreenOnThread();
-static void ThrottlePresentation();
 
 static void ReconfigureOnThread(VideoThreadReconfigureCommand* cmd);
 static bool CreateGPUBackendOnThread(GPURenderer renderer, bool upload_vram, const GPUSettings* old_settings,
@@ -121,11 +118,7 @@ struct ALIGN_TO_CACHE_LINE State
   u8 run_idle_reasons = 0;
   bool run_idle_flag = false;
   GPUVSyncMode requested_vsync = GPUVSyncMode::Disabled;
-  PresentSkipMode requested_present_skip = PresentSkipMode::Disabled;
   bool requested_fullscreen_ui = false;
-  u8 skipped_present_count = 0;
-  u64 last_present_time = 0;
-  u64 next_throttle_time = 0;
   std::string game_title;
   std::string game_serial;
   std::string game_path;
@@ -539,7 +532,7 @@ void VideoThread::Internal::DoRunIdle()
     return;
 
   if (g_gpu_device->HasMainSwapChain() && !g_gpu_device->GetMainSwapChain()->IsVSyncModeBlocking())
-    ThrottlePresentation();
+    VideoPresenter::ThrottlePresentation();
 }
 
 bool VideoThread::Reconfigure(std::optional<GPURenderer> renderer, bool upload_vram, std::optional<bool> fullscreen,
@@ -863,9 +856,9 @@ bool VideoThread::CreateGPUBackendOnThread(GPURenderer renderer, bool upload_vra
 void VideoThread::ReconfigureOnThread(VideoThreadReconfigureCommand* cmd)
 {
   // Store state.
-  s_state.requested_vsync = cmd->vsync_mode;
-  s_state.requested_present_skip = cmd->present_skip_mode;
   s_state.requested_fullscreen_ui = cmd->start_fullscreen_ui.value_or(s_state.requested_fullscreen_ui);
+  s_state.requested_vsync = cmd->vsync_mode;
+  VideoPresenter::SetPresentSkipMode(cmd->present_skip_mode);
 
   // Are we shutting down everything?
   if (!cmd->renderer.has_value() && !s_state.requested_fullscreen_ui)
@@ -1492,13 +1485,13 @@ const WindowInfo& VideoThread::GetRenderWindowInfo()
 void VideoThread::SetVSync(GPUVSyncMode mode, PresentSkipMode present_skip_mode)
 {
   RunOnThread([mode, present_skip_mode]() {
-    if (s_state.requested_vsync == mode && s_state.requested_present_skip == present_skip_mode)
+    VideoPresenter::SetPresentSkipMode(present_skip_mode);
+    if (s_state.requested_vsync == mode)
       return;
 
     s_state.requested_vsync = mode;
-    s_state.requested_present_skip = present_skip_mode;
 
-    if (!g_gpu_device->HasMainSwapChain())
+    if (!g_gpu_device || !g_gpu_device->HasMainSwapChain())
       return;
 
     Error error;
@@ -1566,66 +1559,6 @@ bool VideoThread::IsRunningIdle()
 bool VideoThread::IsSystemPaused()
 {
   return ((s_state.run_idle_reasons & static_cast<u8>(RunIdleReason::SystemPaused)) != 0);
-}
-
-bool VideoThread::ShouldPresentVideoFrame(u64 present_time)
-{
-  // TODO: Move to VideoPresenter once it's turned into a namespace.
-  if (!g_gpu_device->HasMainSwapChain())
-    return false;
-
-  if (s_state.requested_present_skip == PresentSkipMode::Disabled ||
-      (s_state.requested_present_skip == PresentSkipMode::WhenVSyncBlocks &&
-       !g_gpu_device->GetMainSwapChain()->IsVSyncModeBlocking()))
-  {
-    return true;
-  }
-
-  const WindowInfo& swap_chain_wi = g_gpu_device->GetMainSwapChain()->GetWindowInfo();
-  const float throttle_rate = (swap_chain_wi.surface_refresh_rate > 0.0f) ? swap_chain_wi.surface_refresh_rate : 60.0f;
-  const float throttle_period = 1.0f / throttle_rate;
-
-  const u64 wanted_time = (present_time == 0) ? Timer::GetCurrentValue() : present_time;
-  const double diff = Timer::ConvertValueToSeconds(wanted_time - s_state.last_present_time);
-  if (diff >= throttle_period || s_state.skipped_present_count >= MAX_SKIPPED_PRESENT_COUNT)
-  {
-    s_state.skipped_present_count = 0;
-    return true;
-  }
-
-  s_state.skipped_present_count++;
-  return false;
-}
-
-u64 VideoThread::GetLastPresentTime()
-{
-  return s_state.last_present_time;
-}
-
-void VideoThread::SetLastPresentTime(u64 time)
-{
-  s_state.last_present_time = time;
-}
-
-void VideoThread::ThrottlePresentation()
-{
-  const float throttle_rate = (g_gpu_device && g_gpu_device->HasMainSwapChain() &&
-                               g_gpu_device->GetMainSwapChain()->GetWindowInfo().surface_refresh_rate > 0.0f) ?
-                                g_gpu_device->GetMainSwapChain()->GetWindowInfo().surface_refresh_rate :
-                                60.0f;
-
-  const u64 sleep_period = Timer::ConvertNanosecondsToValue(1e+9f / static_cast<double>(throttle_rate));
-  const u64 current_ts = Timer::GetCurrentValue();
-
-  // Allow it to fall behind/run ahead up to 2*period. Sleep isn't that precise, plus we need to
-  // allow time for the actual rendering.
-  const u64 max_variance = sleep_period * 2;
-  if (static_cast<u64>(std::abs(static_cast<s64>(current_ts - s_state.next_throttle_time))) > max_variance)
-    s_state.next_throttle_time = current_ts + sleep_period;
-  else
-    s_state.next_throttle_time += sleep_period;
-
-  Timer::SleepUntil(s_state.next_throttle_time, false);
 }
 
 void VideoThread::UpdateRunIdle()

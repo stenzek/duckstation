@@ -61,6 +61,15 @@ bool RenderScreenshotToBuffer(u32 width, u32 height, bool postfx, bool apply_asp
 /// Sends the current frame to media capture.
 void SendDisplayToMediaCapture(MediaCapture* cap);
 
+/// Returns true if the frame scheduled for presentation at the specified time should be presented.
+bool ShouldPresentFrame(u64 present_time);
+
+/// Sets the present skip mode.
+void SetPresentSkipMode(PresentSkipMode mode);
+
+/// Limits presentation speed when running with no fixed rate, e.g. FullscreenUI open.
+void ThrottlePresentation();
+
 /// Main frame presenter - used both when a game is and is not running.
 bool PresentFrame(GPUBackend* backend, u64 present_time);
 

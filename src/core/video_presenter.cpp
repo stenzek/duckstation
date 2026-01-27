@@ -44,6 +44,7 @@
 LOG_CHANNEL(GPU);
 
 static constexpr u32 DEINTERLACE_BUFFER_COUNT = 4;
+static constexpr u32 MAX_SKIPPED_PRESENT_COUNT = 50;
 
 namespace VideoPresenter {
 
@@ -99,6 +100,11 @@ struct Locals
   std::unique_ptr<GPUPipeline> display_24bit_pipeline;
   GPUTexture* display_texture = nullptr;
   GSVector4i display_texture_rect = GSVector4i::cxpr(0);
+
+  u64 last_present_time = 0;
+  u64 next_throttle_time = 0;
+  u8 skipped_present_count = 0;
+  PresentSkipMode present_skip_mode = PresentSkipMode::Disabled;
 
   GPUTextureFormat present_format = GPUTextureFormat::Unknown;
   bool display_texture_24bit = false;
@@ -1395,6 +1401,61 @@ void VideoPresenter::CalculateDrawRect(const GSVector2i& window_size, bool apply
                          g_gpu_settings.display_fine_crop_amount, source_rect, display_rect, draw_rect);
 }
 
+bool VideoPresenter::ShouldPresentFrame(u64 present_time)
+{
+  // TODO: Move to VideoPresenter once it's turned into a namespace.
+  if (!g_gpu_device->HasMainSwapChain())
+    return false;
+
+  if (s_locals.present_skip_mode == PresentSkipMode::Disabled ||
+      (s_locals.present_skip_mode == PresentSkipMode::WhenVSyncBlocks &&
+       !g_gpu_device->GetMainSwapChain()->IsVSyncModeBlocking()))
+  {
+    return true;
+  }
+
+  const WindowInfo& swap_chain_wi = g_gpu_device->GetMainSwapChain()->GetWindowInfo();
+  const float throttle_rate = (swap_chain_wi.surface_refresh_rate > 0.0f) ? swap_chain_wi.surface_refresh_rate : 60.0f;
+  const float throttle_period = 1.0f / throttle_rate;
+
+  const u64 wanted_time = (present_time == 0) ? Timer::GetCurrentValue() : present_time;
+  const double diff = Timer::ConvertValueToSeconds(wanted_time - s_locals.last_present_time);
+  if (diff >= throttle_period || s_locals.skipped_present_count >= MAX_SKIPPED_PRESENT_COUNT)
+  {
+    s_locals.skipped_present_count = 0;
+    return true;
+  }
+
+  s_locals.skipped_present_count++;
+  return false;
+}
+
+void VideoPresenter::SetPresentSkipMode(PresentSkipMode mode)
+{
+  s_locals.present_skip_mode = mode;
+}
+
+void VideoPresenter::ThrottlePresentation()
+{
+  const float throttle_rate = (g_gpu_device && g_gpu_device->HasMainSwapChain() &&
+                               g_gpu_device->GetMainSwapChain()->GetWindowInfo().surface_refresh_rate > 0.0f) ?
+                                g_gpu_device->GetMainSwapChain()->GetWindowInfo().surface_refresh_rate :
+                                60.0f;
+
+  const u64 sleep_period = Timer::ConvertNanosecondsToValue(1e+9f / static_cast<double>(throttle_rate));
+  const u64 current_ts = Timer::GetCurrentValue();
+
+  // Allow it to fall behind/run ahead up to 2*period. Sleep isn't that precise, plus we need to
+  // allow time for the actual rendering.
+  const u64 max_variance = sleep_period * 2;
+  if (static_cast<u64>(std::abs(static_cast<s64>(current_ts - s_locals.next_throttle_time))) > max_variance)
+    s_locals.next_throttle_time = current_ts + sleep_period;
+  else
+    s_locals.next_throttle_time += sleep_period;
+
+  Timer::SleepUntil(s_locals.next_throttle_time, false);
+}
+
 bool VideoPresenter::PresentFrame(GPUBackend* backend, u64 present_time)
 {
   // acquire for IO.MousePos and system state.
@@ -1475,8 +1536,8 @@ bool VideoPresenter::PresentFrame(GPUBackend* backend, u64 present_time)
     }
 
     const Timer::Value current_time = Timer::GetCurrentValue();
-    VideoThread::SetLastPresentTime(scheduled_present ? std::max(current_time, present_time) : current_time);
-    ImGuiManager::NewFrame(current_time);
+    s_locals.last_present_time = scheduled_present ? std::max(current_time, present_time) : current_time;
+    ImGuiManager::NewFrame(s_locals.last_present_time);
   }
   else
   {

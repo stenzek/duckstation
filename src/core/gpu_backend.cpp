@@ -580,7 +580,7 @@ void GPUBackend::HandleSubmitFrameCommand(const GPUBackendFramePresentationParam
   if (cmd->present_frame)
   {
     bool result;
-    if (VideoThread::ShouldPresentVideoFrame(cmd->present_time))
+    if (VideoPresenter::ShouldPresentFrame(cmd->present_time))
     {
       result = VideoPresenter::PresentFrame(this, cmd->present_time);
       needs_restore = true;
