@@ -119,7 +119,7 @@ bool IsInputBindingDialogOpen();
 // Achievements
 //////////////////////////////////////////////////////////////////////////
 
-enum class AchievementNotificationNoteType
+enum class AchievementNotificationNoteType : u8
 {
   None,
   Text,

@@ -660,7 +660,7 @@ void FullscreenUI::DrawIndicators(NotificationLayout& layout)
                                 ImVec2(box.Min.x + padding, box.Min.y + padding), box.Max, text_col, tstr, nullptr,
                                 ImVec2(0.0f, 0.0f), 0.0f, &box);
 
-      return size.x;
+      return box_width;
     };
 
     // animations are not currently handled for more than one tracker... but this should be rare
@@ -681,7 +681,7 @@ void FullscreenUI::DrawIndicators(NotificationLayout& layout)
         Achievements::LeaderboardTrackerIndicator& indicator = *it;
         indicator.time += indicator.active ? io.DeltaTime : -io.DeltaTime;
 
-        current_pos.x += draw_tracker(indicator, current_pos, 1.0f);
+        current_pos.x += draw_tracker(indicator, current_pos, 1.0f) + spacing;
 
         if (!indicator.active)
         {
