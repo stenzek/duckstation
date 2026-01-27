@@ -1439,6 +1439,8 @@ bool VideoPresenter::PresentFrame(GPUBackend* backend, u64 present_time)
   }
 
   GPUSwapChain* const swap_chain = g_gpu_device->GetMainSwapChain();
+  DebugAssert(swap_chain);
+
   const GPUDevice::PresentResult pres =
     ((backend && !FullscreenUI::IsTransitionActive()) ? RenderDisplay(nullptr, swap_chain->GetSizeVec(), true, true) :
                                                         g_gpu_device->BeginPresent(swap_chain));

@@ -1014,11 +1014,14 @@ bool VideoThread::Internal::PresentFrameAndRestoreContext()
   if (s_state.gpu_backend)
     s_state.gpu_backend->FlushRender();
 
-  if (!VideoPresenter::PresentFrame(s_state.gpu_backend.get(), 0))
-    return false;
+  if (g_gpu_device->HasMainSwapChain())
+  {
+    if (!VideoPresenter::PresentFrame(s_state.gpu_backend.get(), 0))
+      return false;
 
-  if (s_state.gpu_backend)
-    s_state.gpu_backend->RestoreDeviceContext();
+    if (s_state.gpu_backend)
+      s_state.gpu_backend->RestoreDeviceContext();
+  }
 
   return true;
 }
