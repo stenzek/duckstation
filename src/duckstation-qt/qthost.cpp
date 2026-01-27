@@ -1928,7 +1928,7 @@ void CoreThread::run()
   startBackgroundControllerPollTimer();
 
   // kick off GPU thread
-  Threading::Thread gpu_thread(&CoreThread::videoThreadEntryPoint);
+  Threading::Thread video_thread(&CoreThread::videoThreadEntryPoint);
 
   // main loop
   while (!m_shutdown_flag)
@@ -1958,7 +1958,7 @@ void CoreThread::run()
 
   // tell GPU thread to exit
   VideoThread::Internal::RequestShutdown();
-  gpu_thread.Join();
+  video_thread.Join();
 
   // join worker threads
   s_async_task_queue.SetWorkerCount(0);

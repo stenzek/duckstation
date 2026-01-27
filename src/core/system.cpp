@@ -2752,13 +2752,13 @@ void System::FreeMemoryStateStorage(bool release_memory, bool release_textures, 
   {
     // TODO: use non-copyable function, that way we don't need to store raw pointers
     std::vector<GPUTexture*> textures;
-    bool gpu_thread_synced = false;
+    bool video_thread_synced = false;
 
     for (MemorySaveState& mss : s_state.memory_save_states)
     {
-      if ((mss.vram_texture || !mss.gpu_state_data.empty()) && !gpu_thread_synced)
+      if ((mss.vram_texture || !mss.gpu_state_data.empty()) && !video_thread_synced)
       {
-        gpu_thread_synced = true;
+        video_thread_synced = true;
         VideoThread::SyncThread(true);
       }
 
@@ -3808,11 +3808,11 @@ void System::UpdateSpeedLimiterState()
       s_state.core_thread_handle.SetTimeConstraints(s_state.optimal_frame_pacing, new_scheduler_period, typical_time,
                                                     new_scheduler_period);
     }
-    const Threading::ThreadHandle& gpu_thread = VideoThread::Internal::GetThreadHandle();
-    if (gpu_thread)
+    const Threading::ThreadHandle& video_thread = VideoThread::Internal::GetThreadHandle();
+    if (video_thread)
     {
-      gpu_thread.SetTimeConstraints(s_state.optimal_frame_pacing, new_scheduler_period, typical_time,
-                                    new_scheduler_period);
+      video_thread.SetTimeConstraints(s_state.optimal_frame_pacing, new_scheduler_period, typical_time,
+                                      new_scheduler_period);
     }
 
     last_scheduler_period = new_scheduler_period;

@@ -96,7 +96,7 @@ private:
   u64 m_open_time = 0;
   float m_open_delay = 1.0f;
   s32 m_last_progress_percent = -1;
-  bool m_on_gpu_thread = false;
+  bool m_on_video_thread = false;
   std::string m_image;
   std::string m_title;
 };

@@ -107,7 +107,7 @@ struct ALIGN_TO_CACHE_LINE State
   WindowInfo render_window_info;
   std::optional<GPURenderer> requested_renderer; // TODO: Non thread safe accessof this
   bool use_thread = false;
-  bool requested_fullscreen = false;
+  bool fullscreen_state = false;
 
   // Hot variables between both threads.
   ALIGN_TO_CACHE_LINE std::atomic<u32> command_fifo_write_ptr{0};
@@ -547,13 +547,13 @@ bool VideoThread::Reconfigure(std::optional<GPURenderer> renderer, bool upload_v
   INFO_LOG("Reconfiguring video thread.");
 
   s_state.requested_renderer = renderer;
-  s_state.requested_fullscreen = fullscreen.value_or(s_state.requested_fullscreen);
+  s_state.fullscreen_state = fullscreen.value_or(s_state.fullscreen_state);
 
   bool result = false;
   VideoThreadReconfigureCommand* cmd =
     AllocateCommand<VideoThreadReconfigureCommand>(VideoThreadCommandType::Reconfigure);
   cmd->renderer = s_state.requested_renderer;
-  cmd->fullscreen = s_state.requested_fullscreen;
+  cmd->fullscreen = s_state.fullscreen_state;
   cmd->start_fullscreen_ui = start_fullscreen_ui;
   cmd->vsync_mode = System::GetEffectiveVSyncMode();
   cmd->present_skip_mode = System::GetEffectivePresentSkipMode();
@@ -629,7 +629,7 @@ bool VideoThread::IsGPUBackendRequested()
 
 bool VideoThread::IsFullscreen()
 {
-  return s_state.requested_fullscreen;
+  return s_state.fullscreen_state;
 }
 
 bool VideoThread::CreateDeviceOnThread(RenderAPI api, bool fullscreen, bool preserve_imgui_on_failure, Error* error)
@@ -1042,7 +1042,7 @@ void VideoThread::SetThreadEnabled(bool enabled)
     return;
   }
 
-  const bool requested_fullscreen = s_state.requested_fullscreen;
+  const bool fullscreen_state = s_state.fullscreen_state;
   const bool requested_fullscreen_ui = s_state.requested_fullscreen_ui;
   const std::optional<GPURenderer> requested_renderer = s_state.requested_renderer;
 
@@ -1067,8 +1067,8 @@ void VideoThread::SetThreadEnabled(bool enabled)
   s_state.use_thread = enabled;
 
   Error error;
-  if (!Reconfigure(requested_renderer, requested_renderer.has_value(), requested_fullscreen, requested_fullscreen_ui,
-                   true, &error))
+  if (!Reconfigure(requested_renderer, requested_renderer.has_value(), fullscreen_state, requested_fullscreen_ui, true,
+                   &error))
   {
     ERROR_LOG("Reconfigure failed: {}", error.GetDescription());
     ReportFatalErrorAndShutdown(fmt::format("Reconfigure failed: {}", error.GetDescription()));
@@ -1341,7 +1341,7 @@ void VideoThread::ResizeDisplayWindowOnThread(u32 width, u32 height, float scale
   {
     // ick, CPU thread read, but this is unlikely to happen in the first place
     ERROR_LOG("Failed to resize main swap chain: {}", error.GetDescription());
-    UpdateDisplayWindowOnThread(s_state.requested_fullscreen, true);
+    UpdateDisplayWindowOnThread(s_state.fullscreen_state, true);
     return;
   }
 
@@ -1353,22 +1353,22 @@ void VideoThread::ResizeDisplayWindowOnThread(u32 width, u32 height, float scale
 
 void VideoThread::UpdateDisplayWindow()
 {
-  RunOnThread([fullscreen = s_state.requested_fullscreen]() { UpdateDisplayWindowOnThread(fullscreen, true); });
+  RunOnThread([fullscreen = s_state.fullscreen_state]() { UpdateDisplayWindowOnThread(fullscreen, true); });
 }
 
 void VideoThread::SetFullscreen(bool fullscreen)
 {
   // Technically not safe to read g_gpu_device here on the CPU thread, but we do sync on create/destroy.
-  if (s_state.requested_fullscreen == fullscreen || !Host::CanChangeFullscreenMode(fullscreen) || !g_gpu_device)
+  if (s_state.fullscreen_state == fullscreen || !Host::CanChangeFullscreenMode(fullscreen) || !g_gpu_device)
     return;
 
-  s_state.requested_fullscreen = fullscreen;
+  s_state.fullscreen_state = fullscreen;
   RunOnThread([fullscreen]() { UpdateDisplayWindowOnThread(fullscreen, true); });
 }
 
 void VideoThread::SetFullscreenWithCompletionHandler(bool fullscreen, AsyncCallType completion_handler)
 {
-  if (s_state.requested_fullscreen == fullscreen || !Host::CanChangeFullscreenMode(fullscreen) || !g_gpu_device)
+  if (s_state.fullscreen_state == fullscreen || !Host::CanChangeFullscreenMode(fullscreen) || !g_gpu_device)
   {
     if (completion_handler)
       completion_handler();
@@ -1376,7 +1376,7 @@ void VideoThread::SetFullscreenWithCompletionHandler(bool fullscreen, AsyncCallT
     return;
   }
 
-  s_state.requested_fullscreen = fullscreen;
+  s_state.fullscreen_state = fullscreen;
   RunOnThread([fullscreen, completion_handler = std::move(completion_handler)]() {
     UpdateDisplayWindowOnThread(fullscreen, true);
     if (completion_handler)

@@ -5205,9 +5205,9 @@ void FullscreenUI::DrawLoadingScreen(std::string_view image, std::string_view ti
 }
 
 FullscreenUI::LoadingScreenProgressCallback::LoadingScreenProgressCallback()
-  : ProgressCallback(), m_open_time(Timer::GetCurrentValue()), m_on_gpu_thread(VideoThread::IsOnThread())
+  : ProgressCallback(), m_open_time(Timer::GetCurrentValue()), m_on_video_thread(VideoThread::IsOnThread())
 {
-  m_image = System::GetImageForLoadingScreen(m_on_gpu_thread ? VideoThread::GetGamePath() : System::GetGamePath());
+  m_image = System::GetImageForLoadingScreen(m_on_video_thread ? VideoThread::GetGamePath() : System::GetGamePath());
 }
 
 FullscreenUI::LoadingScreenProgressCallback::~LoadingScreenProgressCallback()
@@ -5221,7 +5221,7 @@ void FullscreenUI::LoadingScreenProgressCallback::Close()
   if (m_last_progress_percent < 0)
     return;
 
-  if (!m_on_gpu_thread)
+  if (!m_on_video_thread)
   {
     VideoThread::RunOnThread(&FullscreenUI::CloseLoadingScreen);
   }
@@ -5298,7 +5298,7 @@ void FullscreenUI::LoadingScreenProgressCallback::Redraw(bool force)
   if (percent == m_last_progress_percent && !force)
     return;
 
-  if (m_on_gpu_thread)
+  if (m_on_video_thread)
   {
     FullscreenUI::RenderLoadingScreen(m_image, m_title, m_status_text, 0, static_cast<s32>(m_progress_range),
                                       static_cast<s32>(m_progress_value));
@@ -5306,7 +5306,7 @@ void FullscreenUI::LoadingScreenProgressCallback::Redraw(bool force)
   else
   {
     // activation? use default image if unspecified
-    const std::string_view image = (m_image.empty() && m_last_progress_percent < 0 && !m_on_gpu_thread) ?
+    const std::string_view image = (m_image.empty() && m_last_progress_percent < 0 && !m_on_video_thread) ?
                                      std::string_view(ImGuiManager::LOGO_IMAGE_NAME) :
                                      std::string_view(m_image);
     FullscreenUI::OpenOrUpdateLoadingScreen(image, m_title, m_status_text, 0, static_cast<s32>(m_progress_range),

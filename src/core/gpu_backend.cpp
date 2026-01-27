@@ -36,12 +36,12 @@ struct ALIGN_TO_CACHE_LINE CoreThreadState
 {
   static constexpr u32 WAIT_NONE = 0;
   static constexpr u32 WAIT_CORE_THREAD_WAITING = 1;
-  static constexpr u32 WAIT_GPU_THREAD_SIGNALING = 2;
-  static constexpr u32 WAIT_GPU_THREAD_POSTED = 3;
+  static constexpr u32 WAIT_VIDEO_THREAD_SIGNALING = 2;
+  static constexpr u32 WAIT_VIDEO_THREAD_POSTED = 3;
 
   std::atomic<u32> queued_frames;
   std::atomic<u32> wait_state;
-  Threading::KernelSemaphore gpu_thread_wait;
+  Threading::KernelSemaphore video_thread_wait;
 };
 
 } // namespace
@@ -293,7 +293,7 @@ void GPUBackend::WaitForOneQueuedFrame()
     }
   }
 
-  s_core_thread_state.gpu_thread_wait.Wait();
+  s_core_thread_state.video_thread_wait.Wait();
 
   // Depending on where the GPU thread is, now we can either be in WAIT_GPU_THREAD_SIGNALING or WAIT_GPU_THREAD_POSTED
   // state. We want to clear the flag here regardless, so a store-release is fine. Because the GPU thread has a
@@ -322,17 +322,17 @@ void GPUBackend::ReleaseQueuedFrame()
   // This means that we will only release the semaphore once the CPU is guaranteed to be in a waiting state,
   // and ensure that we don't post twice if the CPU thread lags and we process 2 frames before it wakes up.
   u32 expected = CoreThreadState::WAIT_CORE_THREAD_WAITING;
-  if (s_core_thread_state.wait_state.compare_exchange_strong(expected, CoreThreadState::WAIT_GPU_THREAD_SIGNALING,
+  if (s_core_thread_state.wait_state.compare_exchange_strong(expected, CoreThreadState::WAIT_VIDEO_THREAD_SIGNALING,
                                                              std::memory_order_acq_rel, std::memory_order_acquire))
   {
     if (g_gpu_settings.gpu_max_queued_frames > 0)
       DEV_LOG("--> Unblocking core thread");
 
-    s_core_thread_state.gpu_thread_wait.Post();
+    s_core_thread_state.video_thread_wait.Post();
 
     // This needs to be a compare_exchange, because the core thread can clear the flag before we execute this line.
-    expected = CoreThreadState::WAIT_GPU_THREAD_SIGNALING;
-    s_core_thread_state.wait_state.compare_exchange_strong(expected, CoreThreadState::WAIT_GPU_THREAD_POSTED,
+    expected = CoreThreadState::WAIT_VIDEO_THREAD_SIGNALING;
+    s_core_thread_state.wait_state.compare_exchange_strong(expected, CoreThreadState::WAIT_VIDEO_THREAD_POSTED,
                                                            std::memory_order_acq_rel, std::memory_order_acquire);
   }
 }
