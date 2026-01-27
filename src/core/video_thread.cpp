@@ -180,7 +180,7 @@ VideoThreadCommand* VideoThread::AllocateCommand(VideoThreadCommandType command,
     if (read_ptr > write_ptr) [[unlikely]]
     {
       u32 available_size = read_ptr - write_ptr;
-      while (available_size < (size + sizeof(VideoThreadCommandType)))
+      while (available_size < size)
       {
         WakeThreadIfSleeping();
         read_ptr = s_state.command_fifo_read_ptr.load(std::memory_order_acquire);
@@ -190,7 +190,7 @@ VideoThreadCommand* VideoThread::AllocateCommand(VideoThreadCommandType command,
     else
     {
       const u32 available_size = COMMAND_QUEUE_SIZE - write_ptr;
-      if ((size + sizeof(VideoThreadCommand)) > available_size) [[unlikely]]
+      if (size > available_size) [[unlikely]]
       {
         // Can't wrap around until the video thread has at least started processing commands...
         if (read_ptr == 0) [[unlikely]]
@@ -222,9 +222,8 @@ VideoThreadCommand* VideoThread::AllocateCommand(VideoThreadCommandType command,
 template<class T, typename... Args>
 T* VideoThread::AllocateCommand(u32 size, VideoThreadCommandType type, Args... args)
 {
-  const u32 alloc_size = VideoThreadCommand::AlignCommandSize(size);
-  VideoThreadCommand* cmd = AllocateCommand(type, alloc_size);
-  DebugAssert(cmd->size == alloc_size);
+  VideoThreadCommand* cmd = AllocateCommand(type, size);
+  const u32 alloc_size = cmd->size;
 
   new (cmd) T(std::forward<Args>(args)...);
 
@@ -264,9 +263,9 @@ void VideoThread::PushCommand(VideoThreadCommand* cmd)
     return;
   }
 
-  const u32 new_write_ptr = s_state.command_fifo_write_ptr.fetch_add(cmd->size, std::memory_order_release) + cmd->size;
+  const u32 new_write_ptr = s_state.command_fifo_write_ptr.load(std::memory_order_relaxed) + cmd->size;
   DebugAssert(new_write_ptr <= COMMAND_QUEUE_SIZE);
-  UNREFERENCED_VARIABLE(new_write_ptr);
+  s_state.command_fifo_write_ptr.store(new_write_ptr % COMMAND_QUEUE_SIZE, std::memory_order_release);
   if (GetPendingCommandSize() >= THRESHOLD_TO_WAKE_GPU) // TODO:FIXME: maybe purge this?
     WakeThread();
 }
@@ -280,9 +279,9 @@ void VideoThread::PushCommandAndWakeThread(VideoThreadCommand* cmd)
     return;
   }
 
-  const u32 new_write_ptr = s_state.command_fifo_write_ptr.fetch_add(cmd->size, std::memory_order_release) + cmd->size;
+  const u32 new_write_ptr = s_state.command_fifo_write_ptr.load(std::memory_order_relaxed) + cmd->size;
   DebugAssert(new_write_ptr <= COMMAND_QUEUE_SIZE);
-  UNREFERENCED_VARIABLE(new_write_ptr);
+  s_state.command_fifo_write_ptr.store(new_write_ptr % COMMAND_QUEUE_SIZE, std::memory_order_release);
   WakeThread();
 }
 
@@ -295,9 +294,9 @@ void VideoThread::PushCommandAndSync(VideoThreadCommand* cmd, bool spin)
     return;
   }
 
-  const u32 new_write_ptr = s_state.command_fifo_write_ptr.fetch_add(cmd->size, std::memory_order_release) + cmd->size;
+  const u32 new_write_ptr = s_state.command_fifo_write_ptr.load(std::memory_order_relaxed) + cmd->size;
   DebugAssert(new_write_ptr <= COMMAND_QUEUE_SIZE);
-  UNREFERENCED_VARIABLE(new_write_ptr);
+  s_state.command_fifo_write_ptr.store(new_write_ptr % COMMAND_QUEUE_SIZE, std::memory_order_release);
   WakeThread();
   SyncThread(spin);
 }
@@ -519,7 +518,9 @@ void VideoThread::Internal::VideoThreadEntryPoint()
       }
     }
 
-    s_state.command_fifo_read_ptr.store(read_ptr, std::memory_order_release);
+    // if the command was aligned to the end of the buffer, read_ptr will be COMMAND_QUEUE_SIZE.
+    DebugAssert(read_ptr <= COMMAND_QUEUE_SIZE);
+    s_state.command_fifo_read_ptr.store(read_ptr % COMMAND_QUEUE_SIZE, std::memory_order_release);
   }
 
   s_state.thread_handle = {};
