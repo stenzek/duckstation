@@ -110,7 +110,7 @@ struct SDLHostState
   SDL_Window* sdl_window = nullptr;
   float sdl_window_scale = 0.0f;
   float sdl_window_refresh_rate = 0.0f;
-  WindowInfo::PreRotation force_prerotation = WindowInfo::PreRotation::Identity;
+  WindowInfoPrerotation force_prerotation = WindowInfoPrerotation::Identity;
 
   Threading::Thread core_thread;
   Threading::Thread gpu_thread;
@@ -1569,22 +1569,22 @@ bool MiniHost::ParseCommandLineParametersAndInitializeConfig(int argc, char* arg
         if (std::strcmp(prerotation_str, "0") == 0 || StringUtil::EqualNoCase(prerotation_str, "identity"))
         {
           INFO_LOG("Command Line: Forcing surface pre-rotation to identity.");
-          s_state.force_prerotation = WindowInfo::PreRotation::Identity;
+          s_state.force_prerotation = WindowInfoPrerotation::Identity;
         }
         else if (std::strcmp(prerotation_str, "90") == 0)
         {
           INFO_LOG("Command Line: Forcing surface pre-rotation to 90 degrees clockwise.");
-          s_state.force_prerotation = WindowInfo::PreRotation::Rotate90Clockwise;
+          s_state.force_prerotation = WindowInfoPrerotation::Rotate90Clockwise;
         }
         else if (std::strcmp(prerotation_str, "180") == 0)
         {
           INFO_LOG("Command Line: Forcing surface pre-rotation to 180 degrees clockwise.");
-          s_state.force_prerotation = WindowInfo::PreRotation::Rotate180Clockwise;
+          s_state.force_prerotation = WindowInfoPrerotation::Rotate180Clockwise;
         }
         else if (std::strcmp(prerotation_str, "270") == 0)
         {
           INFO_LOG("Command Line: Forcing surface pre-rotation to 270 degrees clockwise.");
-          s_state.force_prerotation = WindowInfo::PreRotation::Rotate270Clockwise;
+          s_state.force_prerotation = WindowInfoPrerotation::Rotate270Clockwise;
         }
         else
         {

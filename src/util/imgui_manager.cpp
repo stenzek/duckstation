@@ -94,7 +94,7 @@ static bool LoadFontData(Error* error);
 static void ReloadFontDataIfActive();
 static bool CreateFontAtlas(Error* error);
 static bool CompilePipelines(Error* error);
-static void RenderDrawLists(u32 window_width, u32 window_height, WindowInfo::PreRotation prerotation);
+static void RenderDrawLists(u32 window_width, u32 window_height, WindowInfoPrerotation prerotation);
 static void UpdateTextures();
 static void SetCommonIOOptions(ImGuiIO& io, ImGuiPlatformIO& pio);
 static void SetImKeyState(ImGuiIO& io, ImGuiKey imkey, bool pressed);
@@ -476,7 +476,7 @@ void ImGuiManager::CreateDrawLists()
   UpdateTextures();
 }
 
-void ImGuiManager::RenderDrawLists(u32 window_width, u32 window_height, WindowInfo::PreRotation prerotation)
+void ImGuiManager::RenderDrawLists(u32 window_width, u32 window_height, WindowInfoPrerotation prerotation)
 {
   const ImDrawData* draw_data = ImGui::GetDrawData();
   if (draw_data->CmdListsCount == 0)
@@ -491,7 +491,7 @@ void ImGuiManager::RenderDrawLists(u32 window_width, u32 window_height, WindowIn
   g_gpu_device->SetViewport(0, 0, static_cast<s32>(post_rotated_width), static_cast<s32>(post_rotated_height));
   g_gpu_device->SetPipeline(s_state.imgui_pipeline.get());
 
-  const bool prerotated = (prerotation != WindowInfo::PreRotation::Identity);
+  const bool prerotated = (prerotation != WindowInfoPrerotation::Identity);
   GSMatrix4x4 mproj = GSMatrix4x4::OffCenterOrthographicProjection(0.0f, 0.0f, static_cast<float>(window_width),
                                                                    static_cast<float>(window_height), 0.0f, 1.0f);
   if (prerotated)
@@ -552,7 +552,7 @@ void ImGuiManager::RenderDrawLists(GPUSwapChain* swap_chain)
 
 void ImGuiManager::RenderDrawLists(GPUTexture* texture)
 {
-  RenderDrawLists(texture->GetWidth(), texture->GetHeight(), WindowInfo::PreRotation::Identity);
+  RenderDrawLists(texture->GetWidth(), texture->GetHeight(), WindowInfoPrerotation::Identity);
 }
 
 void ImGuiManager::UpdateTextures()

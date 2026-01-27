@@ -408,7 +408,7 @@ bool VulkanSwapChain::CreateSwapChain(VulkanDevice& dev, Error* error)
 
   // Prefer identity transform if possible
   VkExtent2D window_size = size;
-  WindowInfo::PreRotation window_prerotation = WindowInfo::PreRotation::Identity;
+  WindowInfoPrerotation window_prerotation = WindowInfoPrerotation::Identity;
   VkSurfaceTransformFlagBitsKHR transform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
   switch (surface_caps.surfaceCapabilities.currentTransform)
   {
@@ -417,20 +417,20 @@ bool VulkanSwapChain::CreateSwapChain(VulkanDevice& dev, Error* error)
 
     case VK_SURFACE_TRANSFORM_ROTATE_90_BIT_KHR:
       transform = VK_SURFACE_TRANSFORM_ROTATE_90_BIT_KHR;
-      window_prerotation = WindowInfo::PreRotation::Rotate90Clockwise;
+      window_prerotation = WindowInfoPrerotation::Rotate90Clockwise;
       std::swap(size.width, size.height);
       DEV_LOG("Using VK_SURFACE_TRANSFORM_ROTATE_90_BIT_KHR pretransform.");
       break;
 
     case VK_SURFACE_TRANSFORM_ROTATE_180_BIT_KHR:
       transform = VK_SURFACE_TRANSFORM_ROTATE_180_BIT_KHR;
-      window_prerotation = WindowInfo::PreRotation::Rotate180Clockwise;
+      window_prerotation = WindowInfoPrerotation::Rotate180Clockwise;
       DEV_LOG("Using VK_SURFACE_TRANSFORM_ROTATE_180_BIT_KHR pretransform.");
       break;
 
     case VK_SURFACE_TRANSFORM_ROTATE_270_BIT_KHR:
       transform = VK_SURFACE_TRANSFORM_ROTATE_270_BIT_KHR;
-      window_prerotation = WindowInfo::PreRotation::Rotate270Clockwise;
+      window_prerotation = WindowInfoPrerotation::Rotate270Clockwise;
       std::swap(size.width, size.height);
       DEV_LOG("Using VK_SURFACE_TRANSFORM_ROTATE_270_BIT_KHR pretransform.");
       break;

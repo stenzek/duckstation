@@ -23,22 +23,22 @@ enum class WindowInfoType : u8
   SDL,
 };
 
+enum class WindowInfoPrerotation : u8
+{
+  Identity,
+  Rotate90Clockwise,
+  Rotate180Clockwise,
+  Rotate270Clockwise,
+};
+
 // Contains the information required to create a graphics context in a window.
 struct WindowInfo
 {
-  enum class PreRotation : u8
-  {
-    Identity,
-    Rotate90Clockwise,
-    Rotate180Clockwise,
-    Rotate270Clockwise,
-  };
-
   WindowInfo();
 
   WindowInfoType type;
   GPUTextureFormat surface_format;
-  PreRotation surface_prerotation;
+  WindowInfoPrerotation surface_prerotation;
   u16 surface_width;
   u16 surface_height;
   float surface_refresh_rate;
@@ -57,15 +57,16 @@ struct WindowInfo
     return ShouldSwapDimensionsForPreRotation(surface_prerotation) ? surface_width : surface_height;
   }
 
-  ALWAYS_INLINE static bool ShouldSwapDimensionsForPreRotation(PreRotation prerotation)
+  ALWAYS_INLINE static bool ShouldSwapDimensionsForPreRotation(WindowInfoPrerotation prerotation)
   {
-    return (prerotation == PreRotation::Rotate90Clockwise || prerotation == PreRotation::Rotate270Clockwise);
+    return (prerotation == WindowInfoPrerotation::Rotate90Clockwise ||
+            prerotation == WindowInfoPrerotation::Rotate270Clockwise);
   }
 
   /// Sets a new pre-rotation, adjusting the virtual width/height to suit.
-  void SetPreRotated(PreRotation prerotation);
+  void SetPreRotated(WindowInfoPrerotation prerotation);
 
-  static float GetZRotationForPreRotation(PreRotation prerotation);
+  static float GetZRotationForPreRotation(WindowInfoPrerotation prerotation);
 
   static std::optional<float> QueryRefreshRateForWindow(const WindowInfo& wi, Error* error = nullptr);
 };

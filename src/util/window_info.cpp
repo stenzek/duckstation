@@ -17,12 +17,12 @@ LOG_CHANNEL(WindowInfo);
 
 WindowInfo::WindowInfo()
   : type(WindowInfoType::Surfaceless), surface_format(GPUTextureFormat::Unknown),
-    surface_prerotation(PreRotation::Identity), surface_width(0), surface_height(0), surface_refresh_rate(0.0f),
+    surface_prerotation(WindowInfoPrerotation::Identity), surface_width(0), surface_height(0), surface_refresh_rate(0.0f),
     surface_scale(1.0f), display_connection(nullptr), window_handle(nullptr)
 {
 }
 
-void WindowInfo::SetPreRotated(PreRotation prerotation)
+void WindowInfo::SetPreRotated(WindowInfoPrerotation prerotation)
 {
   if (ShouldSwapDimensionsForPreRotation(prerotation) != ShouldSwapDimensionsForPreRotation(surface_prerotation))
     std::swap(surface_width, surface_height);
@@ -30,7 +30,7 @@ void WindowInfo::SetPreRotated(PreRotation prerotation)
   surface_prerotation = prerotation;
 }
 
-float WindowInfo::GetZRotationForPreRotation(PreRotation prerotation)
+float WindowInfo::GetZRotationForPreRotation(WindowInfoPrerotation prerotation)
 {
   static constexpr const std::array<float, 4> rotation_radians = {{
     0.0f,                                        // Identity

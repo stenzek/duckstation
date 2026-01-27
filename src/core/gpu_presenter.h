@@ -17,6 +17,7 @@ class MediaCapture;
 class SettingsInterface;
 
 enum class DisplayScreenshotMode : u8;
+enum class WindowInfoPrerotation : u8;
 
 class GPUBackend;
 
@@ -87,7 +88,7 @@ public:
   // Draws the specified bounding box with display rotation and pre-rotation.
   static void DrawScreenQuad(const GSVector4i rect, const GSVector4 uv_rect, const GSVector2i target_size,
                              const GSVector2i final_target_size, DisplayRotation uv_rotation,
-                             WindowInfo::PreRotation prerotation, const void* push_constants, u32 push_constants_size);
+                             WindowInfoPrerotation prerotation, const void* push_constants, u32 push_constants_size);
 
 private:
   enum : u32
@@ -103,10 +104,10 @@ private:
                                          bool apply_aspect_ratio) const;
   void DrawOverlayBorders(const GSVector2i target_size, const GSVector2i final_target_size,
                           const GSVector4i overlay_display_rect, const GSVector4i draw_rect,
-                          const WindowInfo::PreRotation prerotation) const;
+                          const WindowInfoPrerotation prerotation) const;
   void DrawDisplay(const GSVector2i target_size, const GSVector2i final_target_size, const GSVector4i source_rect,
                    const GSVector4i display_rect, bool dst_alpha_blend, DisplayRotation rotation,
-                   WindowInfo::PreRotation prerotation) const;
+                   WindowInfoPrerotation prerotation) const;
 
   GSVector2i CalculateDisplayPostProcessSourceSize() const;
   GPUTexture* GetDisplayPostProcessInputTexture(const GSVector4i source_rect,

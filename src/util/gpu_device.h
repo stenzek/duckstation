@@ -469,7 +469,7 @@ public:
   ALWAYS_INLINE float GetRefreshRate() const { return m_window_info.surface_refresh_rate; }
   ALWAYS_INLINE void SetScale(float scale) { m_window_info.surface_scale = scale; }
   ALWAYS_INLINE void SetRefreshRate(float refresh_rate) { m_window_info.surface_refresh_rate = refresh_rate; }
-  ALWAYS_INLINE WindowInfo::PreRotation GetPreRotation() const { return m_window_info.surface_prerotation; }
+  ALWAYS_INLINE WindowInfoPrerotation GetPreRotation() const { return m_window_info.surface_prerotation; }
   ALWAYS_INLINE GPUTextureFormat GetFormat() const { return m_window_info.surface_format; }
   ALWAYS_INLINE GSVector2i GetSizeVec() const
   {
@@ -489,7 +489,7 @@ public:
   /// Returns true if exclusive fullscreen is currently active on this swap chain.
   virtual bool IsExclusiveFullscreen() const;
 
-  static GSVector4i PreRotateClipRect(WindowInfo::PreRotation prerotation, const GSVector2i surface_size,
+  static GSVector4i PreRotateClipRect(WindowInfoPrerotation prerotation, const GSVector2i surface_size,
                                       const GSVector4i& v);
 
 protected:

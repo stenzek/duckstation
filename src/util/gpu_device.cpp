@@ -239,17 +239,17 @@ GPUSwapChain::GPUSwapChain(const WindowInfo& wi, GPUVSyncMode vsync_mode) : m_wi
 
 GPUSwapChain::~GPUSwapChain() = default;
 
-GSVector4i GPUSwapChain::PreRotateClipRect(WindowInfo::PreRotation prerotation, const GSVector2i surface_size,
+GSVector4i GPUSwapChain::PreRotateClipRect(WindowInfoPrerotation prerotation, const GSVector2i surface_size,
                                            const GSVector4i& v)
 {
   GSVector4i new_clip;
   switch (prerotation)
   {
-    case WindowInfo::PreRotation::Identity:
+    case WindowInfoPrerotation::Identity:
       new_clip = v;
       break;
 
-    case WindowInfo::PreRotation::Rotate90Clockwise:
+    case WindowInfoPrerotation::Rotate90Clockwise:
     {
       const s32 height = (v.w - v.y);
       const s32 y = surface_size.y - v.y - height;
@@ -257,7 +257,7 @@ GSVector4i GPUSwapChain::PreRotateClipRect(WindowInfo::PreRotation prerotation, 
     }
     break;
 
-    case WindowInfo::PreRotation::Rotate180Clockwise:
+    case WindowInfoPrerotation::Rotate180Clockwise:
     {
       const s32 width = (v.z - v.x);
       const s32 height = (v.w - v.y);
@@ -267,7 +267,7 @@ GSVector4i GPUSwapChain::PreRotateClipRect(WindowInfo::PreRotation prerotation, 
     }
     break;
 
-    case WindowInfo::PreRotation::Rotate270Clockwise:
+    case WindowInfoPrerotation::Rotate270Clockwise:
     {
       const s32 width = (v.z - v.x);
       const s32 x = surface_size.x - v.x - width;
