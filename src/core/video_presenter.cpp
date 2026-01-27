@@ -70,8 +70,7 @@ static GPUDevice::PresentResult ApplyDisplayPostProcess(GPUTexture* target, GPUT
 static bool DeinterlaceSetTargetSize(u32 width, u32 height, bool preserve);
 static void DestroyDeinterlaceTextures();
 
-static void LoadPostProcessingSettings(bool force_load);
-static bool UpdatePostProcessingSettings(bool force_reload, Error* error);
+static void UpdatePostProcessingSettings(bool force_load);
 
 /// Returns true if the image path or alpha blend option has changed.
 static bool LoadOverlaySettings();
@@ -202,7 +201,7 @@ bool VideoPresenter::Initialize(Error* error)
     return false;
   }
 
-  LoadPostProcessingSettings(false);
+  UpdatePostProcessingSettings(false);
 
   return true;
 }
@@ -1601,62 +1600,40 @@ GSVector2i VideoPresenter::CalculateScreenshotSize(DisplayScreenshotMode mode)
   return window_size;
 }
 
-void VideoPresenter::LoadPostProcessingSettings(bool force_load)
+void VideoPresenter::UpdatePostProcessingSettings(bool force_load)
 {
   static constexpr const char* section = PostProcessing::Config::DISPLAY_CHAIN_SECTION;
 
   auto lock = Core::GetSettingsLock();
   const SettingsInterface& si = GetPostProcessingSettingsInterface(section);
+  const bool enabled = PostProcessing::Config::IsEnabled(si, section);
+  const u32 stage_count = PostProcessing::Config::GetStageCount(si, section);
 
-  // This is the initial load, defer creating the chain until it's actually enabled if disabled.
-  if (!force_load &&
-      (!PostProcessing::Config::IsEnabled(si, section) || PostProcessing::Config::GetStageCount(si, section) == 0))
+  // Don't delete the chain if we're just temporarily disabling.
+  if (stage_count == 0)
   {
+    s_locals.display_postfx.reset();
     return;
   }
 
-  s_locals.display_postfx = std::make_unique<PostProcessing::Chain>(section);
-  s_locals.display_postfx->LoadStages(lock, si, true);
-}
-
-bool VideoPresenter::UpdatePostProcessingSettings(bool force_reload, Error* error)
-{
-  if (LoadOverlaySettings())
+  // But lazy initialize the chain - if it's disabled and we're loading, don't create it yet.
+  if (!enabled && !s_locals.display_postfx && !force_load)
   {
-    // something changed, need to recompile pipelines, the needed pipelines are based on alpha blend
-    LoadOverlayTexture();
-    if (!CompileDisplayPipelines(true, false, false, error))
-      return false;
+    DEV_LOG("Deferring initialization of display post-processing chain until enabled.");
+    return;
   }
 
-  // Update postfx settings
+  if (!s_locals.display_postfx)
   {
-    static constexpr const char* section = PostProcessing::Config::DISPLAY_CHAIN_SECTION;
-
-    auto lock = Core::GetSettingsLock();
-    const SettingsInterface& si = GetPostProcessingSettingsInterface(section);
-
-    // Don't delete the chain if we're just temporarily disabling.
-    if (PostProcessing::Config::GetStageCount(si, section) == 0)
-    {
-      s_locals.display_postfx.reset();
-    }
-    else
-    {
-      if (!s_locals.display_postfx || force_reload)
-      {
-        if (!s_locals.display_postfx)
-          s_locals.display_postfx = std::make_unique<PostProcessing::Chain>(section);
-        s_locals.display_postfx->LoadStages(lock, si, true);
-      }
-      else if (!force_reload)
-      {
-        s_locals.display_postfx->UpdateSettings(lock, si);
-      }
-    }
+    DEV_LOG("Creating display post-processing chain with {} stages.", stage_count);
+    s_locals.display_postfx = std::make_unique<PostProcessing::Chain>(section);
+    s_locals.display_postfx->LoadStages(lock, si, true);
   }
-
-  return true;
+  else
+  {
+    DEV_LOG("Updating display post-processing chain settings.");
+    s_locals.display_postfx->UpdateSettings(lock, si);
+  }
 }
 
 SettingsInterface& VideoPresenter::GetPostProcessingSettingsInterface(const char* section)
@@ -1682,11 +1659,8 @@ void VideoPresenter::TogglePostProcessing()
 
       // if it is being lazy loaded, we have to load it here
       if (!s_locals.display_postfx)
-      {
-        LoadPostProcessingSettings(true);
-        if (s_locals.display_postfx && s_locals.display_postfx->IsActive())
-          return;
-      }
+        UpdatePostProcessingSettings(true);
+
       if (s_locals.display_postfx)
         s_locals.display_postfx->Toggle();
     },
@@ -1712,12 +1686,19 @@ void VideoPresenter::ReloadPostProcessingSettings(bool display, bool internal, b
       if (display)
       {
         Error error;
-        if (!UpdatePostProcessingSettings(reload_shaders, &error))
+        if (LoadOverlaySettings())
         {
-          VideoThread::ReportFatalErrorAndShutdown(
-            fmt::format("Failed to update settings: {}", error.GetDescription()));
-          return;
+          // something changed, need to recompile pipelines, the needed pipelines are based on alpha blend
+          LoadOverlayTexture();
+          if (!CompileDisplayPipelines(true, false, false, &error))
+          {
+            VideoThread::ReportFatalErrorAndShutdown(
+              fmt::format("Failed to update settings: {}", error.GetDescription()));
+            return;
+          }
         }
+
+        UpdatePostProcessingSettings(false);
       }
       if (internal)
         backend->UpdatePostProcessingSettings(reload_shaders);
