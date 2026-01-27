@@ -536,7 +536,7 @@ void PostProcessing::Chain::LoadStages(std::unique_lock<std::mutex>& settings_lo
   }
   m_needs_depth_buffer = m_enabled && m_wants_depth_buffer;
   if (m_wants_depth_buffer)
-    DEV_LOG("Depth buffer is needed.");
+    DEV_COLOR_LOG(StrongOrange, "Depth buffer is needed.");
 
   // can't close/redraw with settings lock held because big picture
   settings_lock.unlock();
@@ -766,7 +766,7 @@ bool PostProcessing::Chain::CheckTargets(u32 source_width, u32 source_height, GP
   }
   else
   {
-    m_wants_depth_buffer = true;
+    m_wants_depth_buffer = false;
 
     for (std::unique_ptr<Shader>& shader : m_stages)
     {
