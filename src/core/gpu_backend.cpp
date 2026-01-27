@@ -51,7 +51,7 @@ GPUBackend::Stats GPUBackend::s_stats = {};
 
 static CoreThreadState s_core_thread_state = {};
 
-GPUBackend::GPUBackend(GPUPresenter& presenter) : m_presenter(presenter)
+GPUBackend::GPUBackend()
 {
   GPU_SW_Rasterizer::SelectImplementation();
   ResetStatistics();
@@ -59,7 +59,7 @@ GPUBackend::GPUBackend(GPUPresenter& presenter) : m_presenter(presenter)
 
 GPUBackend::~GPUBackend()
 {
-  m_presenter.ClearDisplayTexture();
+  GPUPresenter::ClearDisplayTexture();
 }
 
 void GPUBackend::SetScreenQuadInputLayout(GPUPipeline::GraphicsConfig& config)
@@ -418,7 +418,7 @@ void GPUBackend::HandleCommand(const GPUThreadCommand* cmd)
 
     case GPUBackendCommandType::ClearDisplay:
     {
-      m_presenter.ClearDisplay();
+      GPUPresenter::ClearDisplay();
     }
     break;
 
@@ -562,7 +562,7 @@ void GPUBackend::HandleUpdateDisplayCommand(const GPUBackendUpdateDisplayCommand
   const GSVector2i active_size =
     GSVector2i(cmd->display_vram_width, cmd->display_vram_height << BoolToUInt32(cmd->interlaced_display_enabled));
   const GSVector4i active_rect = GSVector4i::xyxy(active_origin, active_origin.add32(active_size));
-  m_presenter.SetDisplayParameters(display_size, active_rect, cmd->display_pixel_aspect_ratio, cmd->display_24bit);
+  GPUPresenter::SetDisplayParameters(display_size, active_rect, cmd->display_pixel_aspect_ratio, cmd->display_24bit);
 
   UpdateDisplay(cmd);
   if (cmd->submit_frame)
@@ -577,7 +577,7 @@ void GPUBackend::HandleSubmitFrameCommand(const GPUBackendFramePresentationParam
   bool needs_restore = false;
   if (cmd->media_capture)
   {
-    m_presenter.SendDisplayToMediaCapture(cmd->media_capture);
+    GPUPresenter::SendDisplayToMediaCapture(cmd->media_capture);
     needs_restore = true;
   }
 
@@ -587,7 +587,7 @@ void GPUBackend::HandleSubmitFrameCommand(const GPUBackendFramePresentationParam
     bool result;
     if (GPUThread::ShouldPresentVideoFrame(cmd->present_time))
     {
-      result = m_presenter.PresentFrame(&m_presenter, this, cmd->present_time);
+      result = GPUPresenter::PresentFrame(this, cmd->present_time);
       needs_restore = true;
     }
     else
@@ -718,15 +718,15 @@ bool GPUBackend::RenderScreenshotToBuffer(u32 width, u32 height, bool postfx, bo
       {
         // Crop it if border overlay isn't enabled.
         GSVector4i source_rect, draw_rect, display_rect;
-        backend->GetPresenter().CalculateDrawRect(GSVector2i(static_cast<s32>(width), static_cast<s32>(height)),
-                                                  apply_aspect_ratio, false, true, false, &source_rect, &display_rect,
-                                                  &draw_rect);
+        GPUPresenter::CalculateDrawRect(GSVector2i(static_cast<s32>(width), static_cast<s32>(height)),
+                                        apply_aspect_ratio, false, true, false, &source_rect, &display_rect,
+                                        &draw_rect);
         image_width = static_cast<u32>(display_rect.width());
         image_height = static_cast<u32>(display_rect.height());
       }
 
-      result = backend->GetPresenter().RenderScreenshotToBuffer(image_width, image_height, really_postfx,
-                                                                apply_aspect_ratio, out_image, error);
+      result = GPUPresenter::RenderScreenshotToBuffer(image_width, image_height, really_postfx, apply_aspect_ratio,
+                                                      out_image, error);
       backend->RestoreDeviceContext();
     },
     true, false);
@@ -742,7 +742,7 @@ void GPUBackend::RenderScreenshotToFile(const std::string_view path, DisplayScre
       if (!backend)
         return;
 
-      const GSVector2i size = backend->GetPresenter().CalculateScreenshotSize(mode);
+      const GSVector2i size = GPUPresenter::CalculateScreenshotSize(mode);
       if (size.x == 0 || size.y == 0)
         return;
 
@@ -754,8 +754,8 @@ void GPUBackend::RenderScreenshotToFile(const std::string_view path, DisplayScre
       const bool apply_aspect_ratio = (mode != DisplayScreenshotMode::UncorrectedInternalResolution);
       Error error;
       Image image;
-      if (!backend->m_presenter.RenderScreenshotToBuffer(size.x, size.y, !internal_resolution, apply_aspect_ratio,
-                                                         &image, &error))
+      if (!GPUPresenter::RenderScreenshotToBuffer(size.x, size.y, !internal_resolution, apply_aspect_ratio, &image,
+                                                  &error))
       {
         ERROR_LOG("Failed to render {}x{} screenshot: {}", size.x, size.y, error.GetDescription());
         if (show_osd_message)
@@ -847,7 +847,7 @@ namespace {
 class GPUNullBackend final : public GPUBackend
 {
 public:
-  GPUNullBackend(GPUPresenter& presenter);
+  GPUNullBackend();
   ~GPUNullBackend() override;
 
   bool Initialize(bool upload_vram, Error* error) override;
@@ -886,9 +886,7 @@ public:
 
 } // namespace
 
-GPUNullBackend::GPUNullBackend(GPUPresenter& presenter) : GPUBackend(presenter)
-{
-}
+GPUNullBackend::GPUNullBackend() = default;
 
 GPUNullBackend::~GPUNullBackend() = default;
 
@@ -986,7 +984,7 @@ void GPUNullBackend::DoMemoryState(StateWrapper& sw, System::MemorySaveState& ms
 {
 }
 
-Common::unique_aligned_ptr<GPUBackend> GPUBackend::CreateNullBackend(GPUPresenter& presenter)
+Common::unique_aligned_ptr<GPUBackend> GPUBackend::CreateNullBackend()
 {
-  return Common::make_unique_aligned<GPUNullBackend>(HOST_CACHE_LINE_SIZE, presenter);
+  return Common::make_unique_aligned<GPUNullBackend>(HOST_CACHE_LINE_SIZE);
 }

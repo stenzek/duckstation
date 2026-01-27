@@ -117,7 +117,6 @@ struct ALIGN_TO_CACHE_LINE State
 
   // Owned by GPU thread.
   ALIGN_TO_CACHE_LINE Common::unique_aligned_ptr<GPUBackend> gpu_backend;
-  std::unique_ptr<GPUPresenter> gpu_presenter;
   std::atomic<u32> command_fifo_read_ptr{0};
   u8 run_idle_reasons = 0;
   bool run_idle_flag = false;
@@ -766,7 +765,7 @@ void GPUThread::DestroyDeviceOnThread(bool preserve_imgui_state)
     return;
 
   // Presenter should be gone by this point
-  Assert(!s_state.gpu_presenter);
+  Assert(!GPUPresenter::HasDisplayTexture());
 
   if (preserve_imgui_state)
   {
@@ -794,24 +793,23 @@ bool GPUThread::CreateGPUBackendOnThread(GPURenderer renderer, bool upload_vram,
   Error local_error;
 
   // Create presenter if we don't already have one.
-  if (!s_state.gpu_presenter)
+  if (!GPUPresenter::IsInitialized())
   {
-    s_state.gpu_presenter = std::make_unique<GPUPresenter>();
-    if (!s_state.gpu_presenter->Initialize(&local_error))
+    if (!GPUPresenter::Initialize(&local_error))
     {
       ERROR_LOG("Failed to create presenter: {}", local_error.GetDescription());
       Error::SetStringFmt(error, "Failed to create presenter: {}", local_error.GetDescription());
-      s_state.gpu_presenter.reset();
       return false;
     }
   }
   else if (old_settings)
   {
     // Settings may have still changed.
-    if (!s_state.gpu_presenter->UpdateSettings(*old_settings, &local_error))
+    if (!GPUPresenter::UpdateSettings(*old_settings, &local_error))
     {
       ERROR_LOG("Failed to update presenter settings: {}", local_error.GetDescription());
       Error::SetStringFmt(error, "Failed to update presenter settings: {}", local_error.GetDescription());
+      GPUPresenter::Shutdown();
       return false;
     }
   }
@@ -823,9 +821,9 @@ bool GPUThread::CreateGPUBackendOnThread(GPURenderer renderer, bool upload_vram,
   const bool is_hardware = (renderer != GPURenderer::Software);
 
   if (is_hardware)
-    s_state.gpu_backend = GPUBackend::CreateHardwareBackend(*s_state.gpu_presenter);
+    s_state.gpu_backend = GPUBackend::CreateHardwareBackend();
   else
-    s_state.gpu_backend = GPUBackend::CreateSoftwareBackend(*s_state.gpu_presenter);
+    s_state.gpu_backend = GPUBackend::CreateSoftwareBackend();
 
   bool okay = s_state.gpu_backend->Initialize(upload_vram, &local_error);
   if (!okay)
@@ -840,7 +838,7 @@ bool GPUThread::CreateGPUBackendOnThread(GPURenderer renderer, bool upload_vram,
                     Settings::GetRendererName(s_state.requested_renderer.value())));
 
       s_state.requested_renderer = GPURenderer::Software;
-      s_state.gpu_backend = GPUBackend::CreateSoftwareBackend(*s_state.gpu_presenter);
+      s_state.gpu_backend = GPUBackend::CreateSoftwareBackend();
       if (!s_state.gpu_backend->Initialize(upload_vram, &local_error))
         Panic("Failed to initialize fallback software renderer");
     }
@@ -989,7 +987,7 @@ void GPUThread::DestroyGPUBackendOnThread()
 
 void GPUThread::DestroyGPUPresenterOnThread()
 {
-  if (!s_state.gpu_presenter)
+  if (!GPUPresenter::IsInitialized())
     return;
 
   VERBOSE_LOG("Shutting down GPU presenter...");
@@ -1004,7 +1002,7 @@ void GPUThread::DestroyGPUPresenterOnThread()
   // Don't need timing anymore.
   g_gpu_device->SetGPUTimingEnabled(false);
 
-  s_state.gpu_presenter.reset();
+  GPUPresenter::Shutdown();
 }
 
 bool GPUThread::Internal::PresentFrameAndRestoreContext()
@@ -1014,7 +1012,7 @@ bool GPUThread::Internal::PresentFrameAndRestoreContext()
   if (s_state.gpu_backend)
     s_state.gpu_backend->FlushRender();
 
-  if (!GPUPresenter::PresentFrame(s_state.gpu_presenter.get(), s_state.gpu_backend.get(), 0))
+  if (!GPUPresenter::PresentFrame(s_state.gpu_backend.get(), 0))
     return false;
 
   if (s_state.gpu_backend)
@@ -1097,7 +1095,7 @@ void GPUThread::UpdateSettingsOnThread(GPUSettings&& new_settings)
       g_gpu_device->SetGPUTimingEnabled(g_gpu_settings.display_show_gpu_usage);
 
     Error error;
-    if (!s_state.gpu_presenter->UpdateSettings(old_settings, &error) ||
+    if (!GPUPresenter::UpdateSettings(old_settings, &error) ||
         !s_state.gpu_backend->UpdateSettings(old_settings, &error)) [[unlikely]]
     {
       ReportFatalErrorAndShutdown(fmt::format("Failed to update settings: {}", error.GetDescription()));
@@ -1286,9 +1284,9 @@ void GPUThread::ReportFatalErrorAndShutdown(std::string_view reason)
 
   // replace the renderer with a dummy/null backend, so that all commands get dropped
   ERROR_LOG("Switching to null renderer: {}", reason);
-  s_state.gpu_presenter->ClearDisplayTexture();
+  GPUPresenter::ClearDisplayTexture();
   s_state.gpu_backend.reset();
-  s_state.gpu_backend = GPUBackend::CreateNullBackend(*s_state.gpu_presenter);
+  s_state.gpu_backend = GPUBackend::CreateNullBackend();
   if (!s_state.gpu_backend->Initialize(false, nullptr)) [[unlikely]]
     Panic("Failed to initialize null GPU backend");
 }

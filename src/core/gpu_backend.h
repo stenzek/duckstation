@@ -20,8 +20,6 @@ class GPUPipeline;
 struct GPUSettings;
 class StateWrapper;
 
-class GPUPresenter;
-
 namespace System {
 struct MemorySaveState;
 }
@@ -56,9 +54,9 @@ public:
 
   static bool IsUsingHardwareBackend();
 
-  static Common::unique_aligned_ptr<GPUBackend> CreateHardwareBackend(GPUPresenter& presenter);
-  static Common::unique_aligned_ptr<GPUBackend> CreateSoftwareBackend(GPUPresenter& presenter);
-  static Common::unique_aligned_ptr<GPUBackend> CreateNullBackend(GPUPresenter& presenter);
+  static Common::unique_aligned_ptr<GPUBackend> CreateHardwareBackend();
+  static Common::unique_aligned_ptr<GPUBackend> CreateSoftwareBackend();
+  static Common::unique_aligned_ptr<GPUBackend> CreateNullBackend();
 
   static bool RenderScreenshotToBuffer(u32 width, u32 height, bool postfx, bool apply_aspect_ratio, Image* out_image,
                                        Error* error);
@@ -72,11 +70,8 @@ public:
   static bool AllocateMemorySaveStates(std::span<System::MemorySaveState> states, Error* error);
 
 public:
-  GPUBackend(GPUPresenter& presenter);
+  GPUBackend();
   virtual ~GPUBackend();
-
-  ALWAYS_INLINE const GPUPresenter& GetPresenter() const { return m_presenter; }
-  ALWAYS_INLINE GPUPresenter& GetPresenter() { return m_presenter; }
 
   virtual bool Initialize(bool upload_vram, Error* error);
 
@@ -179,7 +174,6 @@ protected:
   void HandleUpdateDisplayCommand(const GPUBackendUpdateDisplayCommand* cmd);
   void HandleSubmitFrameCommand(const GPUBackendFramePresentationParameters* cmd);
 
-  GPUPresenter& m_presenter;
   GSVector4i m_clamped_drawing_area = {};
 
   static Counters s_counters;

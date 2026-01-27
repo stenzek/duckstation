@@ -5670,7 +5670,7 @@ bool System::StartMediaCapture(std::string path)
           return;
 
         // Prefer aligning for non-window size.
-        const GSVector2i video_size = backend->GetPresenter().CalculateScreenshotSize(mode);
+        const GSVector2i video_size = GPUPresenter::CalculateScreenshotSize(mode);
         u32 video_width = static_cast<u32>(video_size.x);
         u32 video_height = static_cast<u32>(video_size.y);
         MediaCapture::AdjustVideoSize(&video_width, &video_height);

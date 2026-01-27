@@ -246,7 +246,7 @@ private:
 };
 } // namespace
 
-GPU_HW::GPU_HW(GPUPresenter& presenter) : GPUBackend(presenter)
+GPU_HW::GPU_HW() : GPUBackend()
 {
 #if defined(_DEBUG) || defined(_DEVEL)
   s_draw_number = 0;
@@ -554,10 +554,11 @@ bool GPU_HW::UpdateSettings(const GPUSettings& old_settings, Error* error)
 
   if (m_resolution_scale != resolution_scale)
   {
+    const GSVector2i& video_size = GPUPresenter::GetVideoSize();
     Host::AddIconOSDMessage(OSDMessageType::Info, "ResolutionScaleChanged", ICON_FA_PAINTBRUSH,
                             fmt::format(TRANSLATE_FS("GPU_HW", "Internal resolution set to {0}x ({1}x{2})."),
-                                        resolution_scale, m_presenter.GetVideoSize().x * resolution_scale,
-                                        m_presenter.GetVideoSize().y * resolution_scale));
+                                        resolution_scale, video_size.x * resolution_scale,
+                                        video_size.y * resolution_scale));
   }
 
   if (m_multisamples != multisamples || g_gpu_settings.gpu_per_sample_shading != old_settings.gpu_per_sample_shading)
@@ -1058,7 +1059,7 @@ void GPU_HW::DeactivateROV()
 
 void GPU_HW::DestroyBuffers()
 {
-  m_presenter.ClearDisplayTexture();
+  GPUPresenter::ClearDisplayTexture();
 
   DebugAssert((m_batch_vertex_ptr != nullptr) == (m_batch_index_ptr != nullptr));
   if (m_batch_vertex_ptr)
@@ -4025,11 +4026,11 @@ void GPU_HW::UpdateDisplay(const GPUBackendUpdateDisplayCommand* cmd)
     if (IsUsingMultisampling())
     {
       UpdateVRAMReadTexture(!m_vram_dirty_draw_rect.eq(INVALID_RECT), !m_vram_dirty_write_rect.eq(INVALID_RECT));
-      m_presenter.SetDisplayTexture(m_vram_read_texture.get(), m_vram_read_texture->GetRect());
+      GPUPresenter::SetDisplayTexture(m_vram_read_texture.get(), m_vram_read_texture->GetRect());
     }
     else
     {
-      m_presenter.SetDisplayTexture(m_vram_texture.get(), m_vram_texture->GetRect());
+      GPUPresenter::SetDisplayTexture(m_vram_texture.get(), m_vram_texture->GetRect());
     }
 
     return;
@@ -4049,10 +4050,10 @@ void GPU_HW::UpdateDisplay(const GPUBackendUpdateDisplayCommand* cmd)
 
   if (cmd->display_disabled)
   {
-    m_presenter.ClearDisplayTexture();
+    GPUPresenter::ClearDisplayTexture();
     if (interlaced)
     {
-      m_presenter.Deinterlace(interlaced_field);
+      GPUPresenter::Deinterlace(interlaced_field);
       RestoreDeviceContext();
     }
 
@@ -4063,16 +4064,16 @@ void GPU_HW::UpdateDisplay(const GPUBackendUpdateDisplayCommand* cmd)
            (scaled_vram_offset_y + scaled_display_height) <= m_vram_texture->GetHeight() &&
            (!m_internal_postfx || !m_internal_postfx->IsActive()))
   {
-    m_presenter.SetDisplayTexture(m_vram_texture.get(), GSVector4i(scaled_vram_offset_x, scaled_vram_offset_y,
-                                                                   scaled_vram_offset_x + scaled_display_width,
-                                                                   scaled_vram_offset_y + scaled_display_height));
+    GPUPresenter::SetDisplayTexture(m_vram_texture.get(), GSVector4i(scaled_vram_offset_x, scaled_vram_offset_y,
+                                                                     scaled_vram_offset_x + scaled_display_width,
+                                                                     scaled_vram_offset_y + scaled_display_height));
 
     // Fast path if no copies are needed.
     if (interlaced)
     {
       GL_INS("Deinterlace fast path");
       drew_anything = true;
-      m_presenter.Deinterlace(interlaced_field);
+      GPUPresenter::Deinterlace(interlaced_field);
     }
     else
     {
@@ -4085,7 +4086,7 @@ void GPU_HW::UpdateDisplay(const GPUBackendUpdateDisplayCommand* cmd)
                                      GPUTexture::Type::RenderTarget, GPUTextureFormat::RGBA8, GPUTexture::Flags::None))
       [[unlikely]]
     {
-      m_presenter.ClearDisplayTexture();
+      GPUPresenter::ClearDisplayTexture();
       return;
     }
 
@@ -4149,8 +4150,8 @@ void GPU_HW::UpdateDisplay(const GPUBackendUpdateDisplayCommand* cmd)
 
     drew_anything = true;
 
-    m_presenter.SetDisplayTexture(m_vram_extract_texture.get(),
-                                  GSVector4i(0, 0, scaled_display_width, scaled_display_height));
+    GPUPresenter::SetDisplayTexture(m_vram_extract_texture.get(),
+                                    GSVector4i(0, 0, scaled_display_width, scaled_display_height));
 
     // Apply internal postfx if enabled.
     if (m_internal_postfx && m_internal_postfx->IsActive() &&
@@ -4158,32 +4159,33 @@ void GPU_HW::UpdateDisplay(const GPUBackendUpdateDisplayCommand* cmd)
                                         scaled_display_width, scaled_display_height, scaled_display_width,
                                         scaled_display_height))
     {
+      const GSVector2i& video_size = GPUPresenter::GetVideoSize();
       GPUTexture* const postfx_output = m_internal_postfx->GetOutputTexture();
       m_internal_postfx->Apply(
         m_vram_extract_texture.get(), depth_source ? m_vram_extract_depth_texture.get() : nullptr,
         m_internal_postfx->GetOutputTexture(), GSVector4i(0, 0, scaled_display_width, scaled_display_height),
-        m_presenter.GetVideoSize().x, m_presenter.GetVideoSize().y, cmd->display_vram_width, cmd->display_vram_height);
-      m_presenter.SetDisplayTexture(postfx_output, postfx_output->GetRect());
+        video_size.x, video_size.y, cmd->display_vram_width, cmd->display_vram_height);
+      GPUPresenter::SetDisplayTexture(postfx_output, postfx_output->GetRect());
     }
 
     if (g_gpu_settings.display_24bit_chroma_smoothing)
     {
-      if (m_presenter.ApplyChromaSmoothing())
+      if (GPUPresenter::ApplyChromaSmoothing())
       {
         if (interlaced)
-          m_presenter.Deinterlace(interlaced_field);
+          GPUPresenter::Deinterlace(interlaced_field);
       }
     }
     else
     {
       if (interlaced)
-        m_presenter.Deinterlace(interlaced_field);
+        GPUPresenter::Deinterlace(interlaced_field);
     }
   }
 
   if (m_downsample_mode != GPUDownsampleMode::Disabled && !cmd->display_24bit)
   {
-    DebugAssert(m_presenter.HasDisplayTexture());
+    DebugAssert(GPUPresenter::HasDisplayTexture());
     DownsampleFramebuffer();
   }
 
@@ -4224,8 +4226,8 @@ void GPU_HW::OnBufferSwapped()
 
 void GPU_HW::DownsampleFramebuffer()
 {
-  GPUTexture* source = m_presenter.GetDisplayTexture();
-  const GSVector4i& source_rect = m_presenter.GetDisplayTextureRect();
+  GPUTexture* source = GPUPresenter::GetDisplayTexture();
+  const GSVector4i& source_rect = GPUPresenter::GetDisplayTextureRect();
 
   if (m_downsample_mode == GPUDownsampleMode::Adaptive)
     DownsampleFramebufferAdaptive(source, source_rect);
@@ -4348,7 +4350,7 @@ void GPU_HW::DownsampleFramebufferAdaptive(GPUTexture* source, const GSVector4i&
 
   RestoreDeviceContext();
 
-  m_presenter.SetDisplayTexture(m_downsample_texture.get(), GSVector4i(0, 0, width, height));
+  GPUPresenter::SetDisplayTexture(m_downsample_texture.get(), GSVector4i(0, 0, width, height));
 }
 
 void GPU_HW::DownsampleFramebufferBoxFilter(GPUTexture* source, const GSVector4i& source_rect)
@@ -4382,7 +4384,7 @@ void GPU_HW::DownsampleFramebufferBoxFilter(GPUTexture* source, const GSVector4i
 
   RestoreDeviceContext();
 
-  m_presenter.SetDisplayTexture(m_downsample_texture.get(), GSVector4i(0, 0, ds_width, ds_height));
+  GPUPresenter::SetDisplayTexture(m_downsample_texture.get(), GSVector4i(0, 0, ds_width, ds_height));
 }
 
 void GPU_HW::LoadInternalPostProcessing()
@@ -4426,7 +4428,7 @@ void GPU_HW::UpdatePostProcessingSettings(bool force_reload)
   }
 }
 
-Common::unique_aligned_ptr<GPUBackend> GPUBackend::CreateHardwareBackend(GPUPresenter& presenter)
+Common::unique_aligned_ptr<GPUBackend> GPUBackend::CreateHardwareBackend()
 {
-  return Common::make_unique_aligned<GPU_HW>(HOST_CACHE_LINE_SIZE, presenter);
+  return Common::make_unique_aligned<GPU_HW>(HOST_CACHE_LINE_SIZE);
 }

@@ -456,13 +456,12 @@ void Host::DestroyAuxiliaryRenderWindow(AuxiliaryRenderWindowHandle handle, s32*
 
 void Host::FrameDoneOnGPUThread(GPUBackend* gpu_backend, u32 frame_number)
 {
-  const GPUPresenter& presenter = gpu_backend->GetPresenter();
-  if (s_frame_dump_interval == 0 || (frame_number % s_frame_dump_interval) != 0 || !presenter.HasDisplayTexture())
+  if (s_frame_dump_interval == 0 || (frame_number % s_frame_dump_interval) != 0 || !GPUPresenter::HasDisplayTexture())
     return;
 
   // Need to take a copy of the display texture.
-  GPUTexture* const read_texture = presenter.GetDisplayTexture();
-  const GSVector4i read_rect = presenter.GetDisplayTextureRect();
+  GPUTexture* const read_texture = GPUPresenter::GetDisplayTexture();
+  const GSVector4i read_rect = GPUPresenter::GetDisplayTextureRect();
   const u32 read_x = static_cast<u32>(read_rect.x);
   const u32 read_y = static_cast<u32>(read_rect.y);
   const u32 read_width = static_cast<u32>(read_rect.width());

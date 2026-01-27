@@ -17,7 +17,7 @@
 class GPU_SW final : public GPUBackend
 {
 public:
-  explicit GPU_SW(GPUPresenter& presenter);
+  GPU_SW();
   ~GPU_SW() override;
 
   bool Initialize(bool upload_vram, Error* error) override;

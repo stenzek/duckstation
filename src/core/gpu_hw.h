@@ -61,7 +61,7 @@ public:
     GSVector4i::cxpr(std::numeric_limits<s32>::max(), std::numeric_limits<s32>::max(), std::numeric_limits<s32>::min(),
                      std::numeric_limits<s32>::min());
 
-  GPU_HW(GPUPresenter& presenter);
+  GPU_HW();
   ~GPU_HW() override;
 
   bool Initialize(bool upload_vram, Error* error) override;
