@@ -2050,9 +2050,6 @@ void Host::ConfirmMessageAsync(std::string_view title, std::string_view message,
 {
   INFO_LOG("ConfirmMessageAsync({}, {})", title, message);
 
-  // This is a racey read, but whether FSUI is started should be visible on all threads.
-  std::atomic_thread_fence(std::memory_order_acquire);
-
   // Default button titles.
   if (yes_text.empty())
     yes_text = TRANSLATE_SV("QtHost", "Yes");
@@ -2074,7 +2071,7 @@ void Host::ConfirmMessageAsync(std::string_view title, std::string_view message,
   if (needs_pause)
     System::PauseSystem(true);
 
-  // Use FSUI to display the confirmation if it is active.
+  // This is a racey read, but whether FSUI is started should be visible on all threads.
   if (FullscreenUI::IsInitialized())
   {
     VideoThread::RunOnThread([title = std::string(title), message = std::string(message),

@@ -1458,9 +1458,6 @@ void VideoPresenter::ThrottlePresentation()
 
 bool VideoPresenter::PresentFrame(GPUBackend* backend, u64 present_time)
 {
-  // acquire for IO.MousePos and system state.
-  std::atomic_thread_fence(std::memory_order_acquire);
-
   FullscreenUI::UploadAsyncTextures();
 
   ImGuiManager::RenderDebugWindows();

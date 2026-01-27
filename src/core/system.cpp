@@ -1845,7 +1845,6 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
   s_state.region = auto_console_region;
   s_state.startup_cancelled.store(false, std::memory_order_relaxed);
   s_state.gpu_dump_player = std::move(gpu_dump);
-  std::atomic_thread_fence(std::memory_order_release);
   Host::OnSystemStarting();
   FullscreenUI::OnSystemStarting();
 
@@ -1956,7 +1955,6 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
 
   // Good to go.
   s_state.state = State::Running;
-  std::atomic_thread_fence(std::memory_order_release);
   SPU::GetOutputStream().SetPaused(false);
 
   // Immediately pausing?
@@ -2147,7 +2145,6 @@ void System::DestroySystem()
   s_state.boot_mode = BootMode::None;
 
   s_state.state = State::Shutdown;
-  std::atomic_thread_fence(std::memory_order_release);
 
   // NOTE: Must come after DestroyGPUBackend(), otherwise landing page will display.
   FullscreenUI::OnSystemDestroyed();
@@ -2166,7 +2163,6 @@ void System::AbnormalShutdown(const std::string_view reason)
 
   // Immediately switch to destroying and exit execution to get out of here.
   s_state.state = State::Stopping;
-  std::atomic_thread_fence(std::memory_order_release);
   Host::OnSystemStopping();
   if (s_state.system_executing)
     InterruptExecution();
@@ -5458,7 +5454,6 @@ void System::ShutdownSystem(bool save_resume_state)
 
   Host::OnSystemStopping();
   s_state.state = State::Stopping;
-  std::atomic_thread_fence(std::memory_order_release);
   if (!s_state.system_executing)
     DestroySystem();
 }

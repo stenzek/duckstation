@@ -144,21 +144,22 @@ void PerformanceCounters::Clear()
 
 void PerformanceCounters::Reset()
 {
-  const Timer::Value now_ticks = Timer::GetCurrentValue();
+  VideoThread::RunOnThread(
+    [frame_number = System::GetFrameNumber(), internal_frame_number = System::GetInternalFrameNumber()]() {
+      const Timer::Value now_ticks = Timer::GetCurrentValue();
 
-  s_state.last_frame_time = now_ticks;
-  s_state.last_update_time = now_ticks;
+      s_state.last_frame_time = now_ticks;
+      s_state.last_update_time = now_ticks;
 
-  s_state.last_frame_number = System::GetFrameNumber();
-  s_state.last_internal_frame_number = System::GetInternalFrameNumber();
-  s_state.last_core_thread_time = System::GetCoreThreadHandle().GetCPUTime();
-  s_state.last_video_thread_time = VideoThread::Internal::GetThreadHandle().GetCPUTime();
+      s_state.last_frame_number = frame_number;
+      s_state.last_internal_frame_number = internal_frame_number;
+      s_state.last_core_thread_time = System::GetCoreThreadHandle().GetCPUTime();
+      s_state.last_video_thread_time = VideoThread::Internal::GetThreadHandle().GetCPUTime();
 
-  s_state.average_frame_time_accumulator = 0.0f;
-  s_state.minimum_frame_time_accumulator = 0.0f;
-  s_state.maximum_frame_time_accumulator = 0.0f;
-
-  std::atomic_thread_fence(std::memory_order_release);
+      s_state.average_frame_time_accumulator = 0.0f;
+      s_state.minimum_frame_time_accumulator = 0.0f;
+      s_state.maximum_frame_time_accumulator = 0.0f;
+    });
 }
 
 void PerformanceCounters::Update(GPUBackend* gpu, u32 frame_number, u32 internal_frame_number)

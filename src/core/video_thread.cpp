@@ -741,7 +741,6 @@ bool VideoThread::CreateDeviceOnThread(RenderAPI api, bool fullscreen, bool pres
   s_state.render_window_info.surface_width = std::max<u16>(s_state.render_window_info.surface_width, 1);
   s_state.render_window_info.surface_height = std::max<u16>(s_state.render_window_info.surface_height, 1);
 
-  std::atomic_thread_fence(std::memory_order_release);
   UpdateRunIdle();
 
   // Switch to borderless if exclusive failed.
@@ -779,7 +778,6 @@ void VideoThread::DestroyDeviceOnThread(bool preserve_imgui_state)
 
   UpdateRunIdle();
   s_state.render_window_info = WindowInfo();
-  std::atomic_thread_fence(std::memory_order_release);
 }
 
 bool VideoThread::CreateGPUBackendOnThread(GPURenderer renderer, bool upload_vram, const GPUSettings* old_settings,
@@ -849,7 +847,6 @@ bool VideoThread::CreateGPUBackendOnThread(GPURenderer renderer, bool upload_vra
   g_gpu_device->SetGPUTimingEnabled(g_gpu_settings.display_show_gpu_usage);
   s_state.gpu_backend->RestoreDeviceContext();
   SetRunIdleReason(RunIdleReason::NoGPUBackend, false);
-  std::atomic_thread_fence(std::memory_order_release);
   return true;
 }
 
@@ -1025,10 +1022,7 @@ void VideoThread::SetThreadEnabled(bool enabled)
     return;
 
   if (s_state.use_thread)
-  {
     SyncThread(false);
-    std::atomic_thread_fence(std::memory_order_acquire);
-  }
 
   // Was anything active?
   if (!g_gpu_device)
