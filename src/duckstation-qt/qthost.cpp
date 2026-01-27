@@ -2071,8 +2071,8 @@ void Host::ConfirmMessageAsync(std::string_view title, std::string_view message,
   if (needs_pause)
     System::PauseSystem(true);
 
-  // This is a racey read, but whether FSUI is started should be visible on all threads.
-  if (FullscreenUI::IsInitialized())
+  // Use FSUI if we're ingame.
+  if (System::IsValid() || g_core_thread->isFullscreenUIStarted())
   {
     VideoThread::RunOnThread([title = std::string(title), message = std::string(message),
                               callback = std::move(callback), yes_text = std::string(yes_text),

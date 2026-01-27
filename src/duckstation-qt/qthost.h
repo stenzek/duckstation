@@ -79,6 +79,7 @@ public:
   ALWAYS_INLINE QEventLoop* getEventLoop() const { return m_event_loop; }
 
   ALWAYS_INLINE InputDeviceListModel* getInputDeviceListModel() const { return m_input_device_list_model.get(); }
+  ALWAYS_INLINE bool isFullscreenUIStarted() const { return m_is_fullscreen_ui_started; }
 
   std::optional<WindowInfo> acquireRenderWindow(RenderAPI render_api, bool fullscreen, bool exclusive_fullscreen,
                                                 Error* error);
