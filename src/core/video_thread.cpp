@@ -6,7 +6,6 @@
 #include "fullscreenui.h"
 #include "gpu_backend.h"
 #include "gpu_hw_texture_cache.h"
-#include "gpu_presenter.h"
 #include "gpu_types.h"
 #include "host.h"
 #include "imgui_overlays.h"
@@ -15,6 +14,7 @@
 #include "shader_cache_version.h"
 #include "system.h"
 #include "system_private.h"
+#include "video_presenter.h"
 #include "video_thread_commands.h"
 
 #include "util/gpu_device.h"
@@ -766,7 +766,7 @@ void VideoThread::DestroyDeviceOnThread(bool preserve_imgui_state)
     return;
 
   // Presenter should be gone by this point
-  Assert(!GPUPresenter::HasDisplayTexture());
+  Assert(!VideoPresenter::HasDisplayTexture());
 
   if (preserve_imgui_state)
   {
@@ -794,9 +794,9 @@ bool VideoThread::CreateGPUBackendOnThread(GPURenderer renderer, bool upload_vra
   Error local_error;
 
   // Create presenter if we don't already have one.
-  if (!GPUPresenter::IsInitialized())
+  if (!VideoPresenter::IsInitialized())
   {
-    if (!GPUPresenter::Initialize(&local_error))
+    if (!VideoPresenter::Initialize(&local_error))
     {
       ERROR_LOG("Failed to create presenter: {}", local_error.GetDescription());
       Error::SetStringFmt(error, "Failed to create presenter: {}", local_error.GetDescription());
@@ -806,11 +806,11 @@ bool VideoThread::CreateGPUBackendOnThread(GPURenderer renderer, bool upload_vra
   else if (old_settings)
   {
     // Settings may have still changed.
-    if (!GPUPresenter::UpdateSettings(*old_settings, &local_error))
+    if (!VideoPresenter::UpdateSettings(*old_settings, &local_error))
     {
       ERROR_LOG("Failed to update presenter settings: {}", local_error.GetDescription());
       Error::SetStringFmt(error, "Failed to update presenter settings: {}", local_error.GetDescription());
-      GPUPresenter::Shutdown();
+      VideoPresenter::Shutdown();
       return false;
     }
   }
@@ -988,7 +988,7 @@ void VideoThread::DestroyGPUBackendOnThread()
 
 void VideoThread::DestroyGPUPresenterOnThread()
 {
-  if (!GPUPresenter::IsInitialized())
+  if (!VideoPresenter::IsInitialized())
     return;
 
   VERBOSE_LOG("Shutting down GPU presenter...");
@@ -1003,7 +1003,7 @@ void VideoThread::DestroyGPUPresenterOnThread()
   // Don't need timing anymore.
   g_gpu_device->SetGPUTimingEnabled(false);
 
-  GPUPresenter::Shutdown();
+  VideoPresenter::Shutdown();
 }
 
 bool VideoThread::Internal::PresentFrameAndRestoreContext()
@@ -1013,7 +1013,7 @@ bool VideoThread::Internal::PresentFrameAndRestoreContext()
   if (s_state.gpu_backend)
     s_state.gpu_backend->FlushRender();
 
-  if (!GPUPresenter::PresentFrame(s_state.gpu_backend.get(), 0))
+  if (!VideoPresenter::PresentFrame(s_state.gpu_backend.get(), 0))
     return false;
 
   if (s_state.gpu_backend)
@@ -1096,7 +1096,7 @@ void VideoThread::UpdateSettingsOnThread(GPUSettings&& new_settings)
       g_gpu_device->SetGPUTimingEnabled(g_gpu_settings.display_show_gpu_usage);
 
     Error error;
-    if (!GPUPresenter::UpdateSettings(old_settings, &error) ||
+    if (!VideoPresenter::UpdateSettings(old_settings, &error) ||
         !s_state.gpu_backend->UpdateSettings(old_settings, &error)) [[unlikely]]
     {
       ReportFatalErrorAndShutdown(fmt::format("Failed to update settings: {}", error.GetDescription()));
@@ -1285,7 +1285,7 @@ void VideoThread::ReportFatalErrorAndShutdown(std::string_view reason)
 
   // replace the renderer with a dummy/null backend, so that all commands get dropped
   ERROR_LOG("Switching to null renderer: {}", reason);
-  GPUPresenter::ClearDisplayTexture();
+  VideoPresenter::ClearDisplayTexture();
   s_state.gpu_backend.reset();
   s_state.gpu_backend = GPUBackend::CreateNullBackend();
   if (!s_state.gpu_backend->Initialize(false, nullptr)) [[unlikely]]

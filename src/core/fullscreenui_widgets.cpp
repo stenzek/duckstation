@@ -5,11 +5,11 @@
 #include "core.h"
 #include "fullscreenui.h"
 #include "gpu_backend.h"
-#include "gpu_presenter.h"
 #include "host.h"
 #include "imgui_overlays.h"
 #include "sound_effect_manager.h"
 #include "system.h"
+#include "video_presenter.h"
 #include "video_thread.h"
 
 #include "util/gpu_device.h"
@@ -889,8 +889,8 @@ void FullscreenUI::RenderTransitionBlend(GPUSwapChain* swap_chain)
   const GSVector2i postrotated_size = swap_chain->GetPostRotatedSizeVec();
   const GSVector4 uv_rect = g_gpu_device->UsesLowerLeftOrigin() ? GSVector4::cxpr(0.0f, 1.0f, 1.0f, 0.0f) :
                                                                   GSVector4::cxpr(0.0f, 0.0f, 1.0f, 1.0f);
-  GPUPresenter::DrawScreenQuad(GSVector4i::loadh(size), uv_rect, size, postrotated_size, DisplayRotation::Normal,
-                               swap_chain->GetPreRotation(), uniforms, sizeof(uniforms));
+  VideoPresenter::DrawScreenQuad(GSVector4i::loadh(size), uv_rect, size, postrotated_size, DisplayRotation::Normal,
+                                 swap_chain->GetPreRotation(), uniforms, sizeof(uniforms));
 }
 
 void FullscreenUI::UpdateTransitionState()

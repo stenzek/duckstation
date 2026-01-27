@@ -68,10 +68,6 @@ add_library(core
   gpu_hw_shadergen.h
   gpu_hw_texture_cache.cpp
   gpu_hw_texture_cache.h
-  gpu_presenter.cpp
-  gpu_presenter.h
-  gpu_shadergen.cpp
-  gpu_shadergen.h
   gpu_sw.cpp
   gpu_sw.h
   gpu_sw_rasterizer.cpp
@@ -138,6 +134,10 @@ add_library(core
   timing_event.cpp
   timing_event.h
   types.h
+  video_presenter.cpp
+  video_presenter.h
+  video_shadergen.cpp
+  video_shadergen.h
   video_thread.cpp
   video_thread.h
   video_thread_commands.h

@@ -11,12 +11,12 @@
 #include "game_database.h"
 #include "game_list.h"
 #include "gpu.h"
-#include "gpu_presenter.h"
 #include "gte.h"
 #include "host.h"
 #include "input_types.h"
 #include "settings.h"
 #include "system.h"
+#include "video_presenter.h"
 #include "video_thread.h"
 
 #include "util/imgui_manager.h"
@@ -4283,7 +4283,7 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
     {
       Host::RunOnCoreThread([]() {
         if (System::IsValid())
-          GPUPresenter::ReloadPostProcessingSettings(true, false, false);
+          VideoPresenter::ReloadPostProcessingSettings(true, false, false);
       });
     }
   };
@@ -4307,7 +4307,7 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
     // Have to defer because of the settings lock.
     if (VideoThread::HasGPUBackend())
     {
-      Host::RunOnCoreThread([]() { GPUPresenter::ReloadPostProcessingSettings(true, true, true); });
+      Host::RunOnCoreThread([]() { VideoPresenter::ReloadPostProcessingSettings(true, true, true); });
       ShowToast(OSDMessageType::Quick, {}, FSUI_STR("Post-processing shaders reloaded."));
     }
   }
@@ -4636,7 +4636,7 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
           FSUI_VSTR("Select from the list of preset borders, or manually specify a custom configuration."),
           visible_value))
     {
-      std::vector<std::string> preset_names = GPUPresenter::EnumerateBorderOverlayPresets();
+      std::vector<std::string> preset_names = VideoPresenter::EnumerateBorderOverlayPresets();
       ChoiceDialogOptions options;
       options.reserve(preset_names.size() + 2 + BoolToUInt32(IsEditingGameSettings(bsi)));
       if (IsEditingGameSettings(bsi))

@@ -26,7 +26,6 @@
 #include "core/gpu.h"
 #include "core/gpu_backend.h"
 #include "core/gpu_hw_texture_cache.h"
-#include "core/gpu_presenter.h"
 #include "core/host.h"
 #include "core/imgui_overlays.h"
 #include "core/memory_card.h"
@@ -34,6 +33,7 @@
 #include "core/spu.h"
 #include "core/system.h"
 #include "core/system_private.h"
+#include "core/video_presenter.h"
 #include "core/video_thread.h"
 
 #include "common/assert.h"
@@ -1260,7 +1260,7 @@ void CoreThread::reloadPostProcessingShaders()
   }
 
   if (System::IsValid())
-    GPUPresenter::ReloadPostProcessingSettings(true, true, true);
+    VideoPresenter::ReloadPostProcessingSettings(true, true, true);
 }
 
 void CoreThread::updatePostProcessingSettings(bool display, bool internal, bool force_reload)
@@ -1273,7 +1273,7 @@ void CoreThread::updatePostProcessingSettings(bool display, bool internal, bool 
   }
 
   if (System::IsValid())
-    GPUPresenter::ReloadPostProcessingSettings(display, internal, force_reload);
+    VideoPresenter::ReloadPostProcessingSettings(display, internal, force_reload);
 }
 
 void CoreThread::reloadTextureReplacements()

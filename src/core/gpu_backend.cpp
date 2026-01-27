@@ -3,7 +3,6 @@
 
 #include "gpu_backend.h"
 #include "gpu.h"
-#include "gpu_presenter.h"
 #include "gpu_sw_rasterizer.h"
 #include "host.h"
 #include "performance_counters.h"
@@ -11,6 +10,7 @@
 #include "settings.h"
 #include "system.h"
 #include "system_private.h"
+#include "video_presenter.h"
 #include "video_thread.h"
 
 #include "util/gpu_device.h"
@@ -59,7 +59,7 @@ GPUBackend::GPUBackend()
 
 GPUBackend::~GPUBackend()
 {
-  GPUPresenter::ClearDisplayTexture();
+  VideoPresenter::ClearDisplayTexture();
 }
 
 void GPUBackend::SetScreenQuadInputLayout(GPUPipeline::GraphicsConfig& config)
@@ -413,7 +413,7 @@ void GPUBackend::HandleCommand(const VideoThreadCommand* cmd)
 
     case VideoThreadCommandType::ClearDisplay:
     {
-      GPUPresenter::ClearDisplay();
+      VideoPresenter::ClearDisplay();
     }
     break;
 
@@ -557,7 +557,7 @@ void GPUBackend::HandleUpdateDisplayCommand(const GPUBackendUpdateDisplayCommand
   const GSVector2i active_size =
     GSVector2i(cmd->display_vram_width, cmd->display_vram_height << BoolToUInt32(cmd->interlaced_display_enabled));
   const GSVector4i active_rect = GSVector4i::xyxy(active_origin, active_origin.add32(active_size));
-  GPUPresenter::SetDisplayParameters(display_size, active_rect, cmd->display_pixel_aspect_ratio, cmd->display_24bit);
+  VideoPresenter::SetDisplayParameters(display_size, active_rect, cmd->display_pixel_aspect_ratio, cmd->display_24bit);
 
   UpdateDisplay(cmd);
   if (cmd->submit_frame)
@@ -572,7 +572,7 @@ void GPUBackend::HandleSubmitFrameCommand(const GPUBackendFramePresentationParam
   bool needs_restore = false;
   if (cmd->media_capture)
   {
-    GPUPresenter::SendDisplayToMediaCapture(cmd->media_capture);
+    VideoPresenter::SendDisplayToMediaCapture(cmd->media_capture);
     needs_restore = true;
   }
 
@@ -582,7 +582,7 @@ void GPUBackend::HandleSubmitFrameCommand(const GPUBackendFramePresentationParam
     bool result;
     if (VideoThread::ShouldPresentVideoFrame(cmd->present_time))
     {
-      result = GPUPresenter::PresentFrame(this, cmd->present_time);
+      result = VideoPresenter::PresentFrame(this, cmd->present_time);
       needs_restore = true;
     }
     else
@@ -713,15 +713,15 @@ bool GPUBackend::RenderScreenshotToBuffer(u32 width, u32 height, bool postfx, bo
       {
         // Crop it if border overlay isn't enabled.
         GSVector4i source_rect, draw_rect, display_rect;
-        GPUPresenter::CalculateDrawRect(GSVector2i(static_cast<s32>(width), static_cast<s32>(height)),
-                                        apply_aspect_ratio, false, true, false, &source_rect, &display_rect,
-                                        &draw_rect);
+        VideoPresenter::CalculateDrawRect(GSVector2i(static_cast<s32>(width), static_cast<s32>(height)),
+                                          apply_aspect_ratio, false, true, false, &source_rect, &display_rect,
+                                          &draw_rect);
         image_width = static_cast<u32>(display_rect.width());
         image_height = static_cast<u32>(display_rect.height());
       }
 
-      result = GPUPresenter::RenderScreenshotToBuffer(image_width, image_height, really_postfx, apply_aspect_ratio,
-                                                      out_image, error);
+      result = VideoPresenter::RenderScreenshotToBuffer(image_width, image_height, really_postfx, apply_aspect_ratio,
+                                                        out_image, error);
       backend->RestoreDeviceContext();
     },
     true, false);
@@ -737,7 +737,7 @@ void GPUBackend::RenderScreenshotToFile(const std::string_view path, DisplayScre
       if (!backend)
         return;
 
-      const GSVector2i size = GPUPresenter::CalculateScreenshotSize(mode);
+      const GSVector2i size = VideoPresenter::CalculateScreenshotSize(mode);
       if (size.x == 0 || size.y == 0)
         return;
 
@@ -749,8 +749,8 @@ void GPUBackend::RenderScreenshotToFile(const std::string_view path, DisplayScre
       const bool apply_aspect_ratio = (mode != DisplayScreenshotMode::UncorrectedInternalResolution);
       Error error;
       Image image;
-      if (!GPUPresenter::RenderScreenshotToBuffer(size.x, size.y, !internal_resolution, apply_aspect_ratio, &image,
-                                                  &error))
+      if (!VideoPresenter::RenderScreenshotToBuffer(size.x, size.y, !internal_resolution, apply_aspect_ratio, &image,
+                                                    &error))
       {
         ERROR_LOG("Failed to render {}x{} screenshot: {}", size.x, size.y, error.GetDescription());
         if (show_osd_message)

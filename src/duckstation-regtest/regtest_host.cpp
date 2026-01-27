@@ -11,11 +11,11 @@
 #include "core/game_list.h"
 #include "core/gpu.h"
 #include "core/gpu_backend.h"
-#include "core/gpu_presenter.h"
 #include "core/host.h"
 #include "core/spu.h"
 #include "core/system.h"
 #include "core/system_private.h"
+#include "core/video_presenter.h"
 #include "core/video_thread.h"
 
 #include "scmversion/scmversion.h"
@@ -456,12 +456,12 @@ void Host::DestroyAuxiliaryRenderWindow(AuxiliaryRenderWindowHandle handle, s32*
 
 void Host::FrameDoneOnVideoThread(GPUBackend* gpu_backend, u32 frame_number)
 {
-  if (s_frame_dump_interval == 0 || (frame_number % s_frame_dump_interval) != 0 || !GPUPresenter::HasDisplayTexture())
+  if (s_frame_dump_interval == 0 || (frame_number % s_frame_dump_interval) != 0 || !VideoPresenter::HasDisplayTexture())
     return;
 
   // Need to take a copy of the display texture.
-  GPUTexture* const read_texture = GPUPresenter::GetDisplayTexture();
-  const GSVector4i read_rect = GPUPresenter::GetDisplayTextureRect();
+  GPUTexture* const read_texture = VideoPresenter::GetDisplayTexture();
+  const GSVector4i read_rect = VideoPresenter::GetDisplayTextureRect();
   const u32 read_x = static_cast<u32>(read_rect.x);
   const u32 read_y = static_cast<u32>(read_rect.y);
   const u32 read_width = static_cast<u32>(read_rect.width());

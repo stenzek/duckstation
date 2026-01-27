@@ -9,13 +9,13 @@
 #include "fullscreenui.h"
 #include "gpu.h"
 #include "gpu_hw_texture_cache.h"
-#include "gpu_presenter.h"
 #include "gte.h"
 #include "host.h"
 #include "imgui_overlays.h"
 #include "settings.h"
 #include "spu.h"
 #include "system.h"
+#include "video_presenter.h"
 #include "video_thread.h"
 
 #include "util/gpu_device.h"
@@ -409,13 +409,13 @@ DEFINE_HOTKEY("ToggleModulationCrop", TRANSLATE_NOOP("Hotkeys", "Graphics"),
 DEFINE_HOTKEY("TogglePostProcessing", TRANSLATE_NOOP("Hotkeys", "Graphics"),
               TRANSLATE_NOOP("Hotkeys", "Toggle Post-Processing"), [](s32 pressed) {
                 if (!pressed && System::IsValid())
-                  GPUPresenter::TogglePostProcessing();
+                  VideoPresenter::TogglePostProcessing();
               })
 
 DEFINE_HOTKEY("ReloadPostProcessingShaders", TRANSLATE_NOOP("Hotkeys", "Graphics"),
               TRANSLATE_NOOP("Hotkeys", "Reload Post Processing Shaders"), [](s32 pressed) {
                 if (!pressed && System::IsValid())
-                  GPUPresenter::ReloadPostProcessingSettings(true, true, true);
+                  VideoPresenter::ReloadPostProcessingSettings(true, true, true);
               })
 
 DEFINE_HOTKEY("ReloadTextureReplacements", TRANSLATE_NOOP("Hotkeys", "Graphics"),

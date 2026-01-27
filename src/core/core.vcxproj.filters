@@ -47,7 +47,7 @@
     <ClCompile Include="fullscreenui.cpp" />
     <ClCompile Include="achievements.cpp" />
     <ClCompile Include="hotkeys.cpp" />
-    <ClCompile Include="gpu_shadergen.cpp" />
+    <ClCompile Include="video_shadergen.cpp" />
     <ClCompile Include="pch.cpp" />
     <ClCompile Include="cpu_recompiler.cpp" />
     <ClCompile Include="cpu_recompiler_x64.cpp" />
@@ -65,7 +65,7 @@
     <ClCompile Include="jogcon.cpp" />
     <ClCompile Include="pio.cpp" />
     <ClCompile Include="video_thread.cpp" />
-    <ClCompile Include="gpu_presenter.cpp" />
+    <ClCompile Include="video_presenter.cpp" />
     <ClCompile Include="ddgo_controller.cpp" />
     <ClCompile Include="fullscreenui_widgets.cpp" />
     <ClCompile Include="fullscreenui_settings.cpp" />
@@ -127,7 +127,7 @@
     <ClInclude Include="imgui_overlays.h" />
     <ClInclude Include="fullscreenui.h" />
     <ClInclude Include="shader_cache_version.h" />
-    <ClInclude Include="gpu_shadergen.h" />
+    <ClInclude Include="video_shadergen.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="cpu_code_cache_private.h" />
     <ClInclude Include="cpu_recompiler.h" />
@@ -149,7 +149,7 @@
     <ClInclude Include="pio.h" />
     <ClInclude Include="video_thread.h" />
     <ClInclude Include="video_thread_commands.h" />
-    <ClInclude Include="gpu_presenter.h" />
+    <ClInclude Include="video_presenter.h" />
     <ClInclude Include="ddgo_controller.h" />
     <ClInclude Include="fullscreenui_widgets.h" />
     <ClInclude Include="fullscreenui_private.h" />

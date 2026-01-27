@@ -44,8 +44,8 @@
     <ClCompile Include="gpu_dump.cpp" />
     <ClCompile Include="gpu_hw_shadergen.cpp" />
     <ClCompile Include="gpu_hw_texture_cache.cpp" />
-    <ClCompile Include="gpu_presenter.cpp" />
-    <ClCompile Include="gpu_shadergen.cpp" />
+    <ClCompile Include="video_presenter.cpp" />
+    <ClCompile Include="video_shadergen.cpp" />
     <ClCompile Include="gpu_sw.cpp" />
     <ClCompile Include="gpu_sw_rasterizer.cpp" />
     <ClCompile Include="video_thread.cpp" />
@@ -130,8 +130,8 @@
     <ClInclude Include="gpu_helpers.h" />
     <ClInclude Include="gpu_hw_shadergen.h" />
     <ClInclude Include="gpu_hw_texture_cache.h" />
-    <ClInclude Include="gpu_presenter.h" />
-    <ClInclude Include="gpu_shadergen.h" />
+    <ClInclude Include="video_presenter.h" />
+    <ClInclude Include="video_shadergen.h" />
     <ClInclude Include="gpu_sw.h" />
     <ClInclude Include="gpu_sw_rasterizer.h" />
     <ClInclude Include="video_thread.h" />

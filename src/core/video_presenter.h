@@ -26,7 +26,7 @@ class GPUBackend;
 
 struct GPUSettings;
 
-namespace GPUPresenter {
+namespace VideoPresenter {
 
 const GSVector2i& GetVideoSize();
 GPUTexture* GetDisplayTexture();
@@ -82,7 +82,7 @@ void DrawScreenQuad(const GSVector4i rect, const GSVector4 uv_rect, const GSVect
                     const GSVector2i final_target_size, DisplayRotation uv_rotation, WindowInfoPrerotation prerotation,
                     const void* push_constants, u32 push_constants_size);
 
-} // namespace GPUPresenter
+} // namespace VideoPresenter
 
 namespace Host {
 

@@ -21,7 +21,6 @@
 #include "gpu_backend.h"
 #include "gpu_dump.h"
 #include "gpu_hw_texture_cache.h"
-#include "gpu_presenter.h"
 #include "gte.h"
 #include "host.h"
 #include "imgui_overlays.h"
@@ -40,6 +39,7 @@
 #include "spu.h"
 #include "system_private.h"
 #include "timers.h"
+#include "video_presenter.h"
 #include "video_thread.h"
 
 #include "scmversion/scmversion.h"
@@ -5672,7 +5672,7 @@ bool System::StartMediaCapture(std::string path)
           return;
 
         // Prefer aligning for non-window size.
-        const GSVector2i video_size = GPUPresenter::CalculateScreenshotSize(mode);
+        const GSVector2i video_size = VideoPresenter::CalculateScreenshotSize(mode);
         u32 video_width = static_cast<u32>(video_size.x);
         u32 video_height = static_cast<u32>(video_size.y);
         MediaCapture::AdjustVideoSize(&video_width, &video_height);

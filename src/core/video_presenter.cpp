@@ -1,20 +1,20 @@
 // SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
-#include "gpu_presenter.h"
+#include "video_presenter.h"
 #include "core.h"
 #include "fullscreenui.h"
 #include "fullscreenui_private.h"
 #include "fullscreenui_widgets.h"
 #include "gpu.h"
 #include "gpu_backend.h"
-#include "gpu_shadergen.h"
 #include "host.h"
 #include "imgui_overlays.h"
 #include "performance_counters.h"
 #include "save_state_version.h"
 #include "settings.h"
 #include "system.h"
+#include "video_shadergen.h"
 #include "video_thread.h"
 #include "video_thread_commands.h"
 
@@ -45,7 +45,7 @@ LOG_CHANNEL(GPU);
 
 static constexpr u32 DEINTERLACE_BUFFER_COUNT = 4;
 
-namespace GPUPresenter {
+namespace VideoPresenter {
 
 static bool HasBorderOverlay();
 
@@ -131,11 +131,11 @@ struct Locals
 
 ALIGN_TO_CACHE_LINE static Locals s_locals;
 
-} // namespace GPUPresenter
+} // namespace VideoPresenter
 
 #ifdef _DEBUG
 
-GPUPresenter::Locals::~Locals()
+VideoPresenter::Locals::~Locals()
 {
   DebugAssert(!deinterlace_pipeline);
   for (std::unique_ptr<GPUTexture>& texture : deinterlace_buffers)
@@ -158,34 +158,34 @@ GPUPresenter::Locals::~Locals()
 
 #endif
 
-const GSVector2i& GPUPresenter::GetVideoSize()
+const GSVector2i& VideoPresenter::GetVideoSize()
 {
   return s_locals.video_size;
 }
-GPUTexture* GPUPresenter::GetDisplayTexture()
+GPUTexture* VideoPresenter::GetDisplayTexture()
 {
   return s_locals.display_texture;
 }
-const GSVector4i& GPUPresenter::GetDisplayTextureRect()
+const GSVector4i& VideoPresenter::GetDisplayTextureRect()
 {
   return s_locals.display_texture_rect;
 }
-bool GPUPresenter::HasDisplayTexture()
+bool VideoPresenter::HasDisplayTexture()
 {
   return s_locals.display_texture;
 }
 
-bool GPUPresenter::HasBorderOverlay()
+bool VideoPresenter::HasBorderOverlay()
 {
   return static_cast<bool>(s_locals.border_overlay_texture);
 }
 
-bool GPUPresenter::IsInitialized()
+bool VideoPresenter::IsInitialized()
 {
   return static_cast<bool>(s_locals.display_pipeline);
 }
 
-bool GPUPresenter::Initialize(Error* error)
+bool VideoPresenter::Initialize(Error* error)
 {
   // we can't change the format after compiling shaders
   s_locals.present_format =
@@ -207,7 +207,7 @@ bool GPUPresenter::Initialize(Error* error)
   return true;
 }
 
-void GPUPresenter::Shutdown()
+void VideoPresenter::Shutdown()
 {
   DestroyDeinterlaceTextures();
   g_gpu_device->RecycleTexture(std::move(s_locals.chroma_smoothing_texture));
@@ -246,7 +246,7 @@ void GPUPresenter::Shutdown()
   s_locals.border_overlay_image_path = {};
 }
 
-bool GPUPresenter::UpdateSettings(const GPUSettings& old_settings, Error* error)
+bool VideoPresenter::UpdateSettings(const GPUSettings& old_settings, Error* error)
 {
   if (g_gpu_settings.display_scaling != old_settings.display_scaling ||
       g_gpu_settings.display_scaling_24bit != old_settings.display_scaling_24bit ||
@@ -271,10 +271,10 @@ bool GPUPresenter::UpdateSettings(const GPUSettings& old_settings, Error* error)
   return true;
 }
 
-bool GPUPresenter::CompileDisplayPipelines(bool display, bool deinterlace, bool chroma_smoothing, Error* error)
+bool VideoPresenter::CompileDisplayPipelines(bool display, bool deinterlace, bool chroma_smoothing, Error* error)
 {
-  const GPUShaderGen shadergen(g_gpu_device->GetRenderAPI(), g_gpu_device->GetFeatures().dual_source_blend,
-                               g_gpu_device->GetFeatures().framebuffer_fetch);
+  const VideoShaderGen shadergen(g_gpu_device->GetRenderAPI(), g_gpu_device->GetFeatures().dual_source_blend,
+                                 g_gpu_device->GetFeatures().framebuffer_fetch);
 
   GPUPipeline::GraphicsConfig plconfig;
   plconfig.primitive = GPUPipeline::Primitive::Triangles;
@@ -299,7 +299,7 @@ bool GPUPresenter::CompileDisplayPipelines(bool display, bool deinterlace, bool 
     GL_OBJECT_NAME(vso, "Display Vertex Shader");
 
     std::string fs;
-    static constexpr auto compile_display_shader = [](const GPUShaderGen& shadergen, std::string& fs,
+    static constexpr auto compile_display_shader = [](const VideoShaderGen& shadergen, std::string& fs,
                                                       DisplayScalingMode mode, Error* error) {
       switch (mode)
       {
@@ -555,7 +555,7 @@ bool GPUPresenter::CompileDisplayPipelines(bool display, bool deinterlace, bool 
   return true;
 }
 
-void GPUPresenter::ClearDisplay()
+void VideoPresenter::ClearDisplay()
 {
   ClearDisplayTexture();
 
@@ -563,14 +563,14 @@ void GPUPresenter::ClearDisplay()
   DestroyDeinterlaceTextures();
 }
 
-void GPUPresenter::ClearDisplayTexture()
+void VideoPresenter::ClearDisplayTexture()
 {
   s_locals.display_texture = nullptr;
   s_locals.display_texture_rect = GSVector4i::zero();
 }
 
-void GPUPresenter::SetDisplayParameters(const GSVector2i& video_size, const GSVector4i& video_active_rect,
-                                        float display_pixel_aspect_ratio, bool display_24bit)
+void VideoPresenter::SetDisplayParameters(const GSVector2i& video_size, const GSVector4i& video_active_rect,
+                                          float display_pixel_aspect_ratio, bool display_24bit)
 {
   s_locals.video_size = video_size;
   s_locals.video_active_rect = video_active_rect;
@@ -578,7 +578,7 @@ void GPUPresenter::SetDisplayParameters(const GSVector2i& video_size, const GSVe
   s_locals.display_texture_24bit = display_24bit;
 }
 
-void GPUPresenter::SetDisplayTexture(GPUTexture* texture, const GSVector4i& source_rect)
+void VideoPresenter::SetDisplayTexture(GPUTexture* texture, const GSVector4i& source_rect)
 {
   DebugAssert(texture);
 
@@ -589,8 +589,8 @@ void GPUPresenter::SetDisplayTexture(GPUTexture* texture, const GSVector4i& sour
   s_locals.display_texture_rect = source_rect;
 }
 
-GPUDevice::PresentResult GPUPresenter::RenderDisplay(GPUTexture* target, const GSVector2i target_size, bool postfx,
-                                                     bool apply_aspect_ratio)
+GPUDevice::PresentResult VideoPresenter::RenderDisplay(GPUTexture* target, const GSVector2i target_size, bool postfx,
+                                                       bool apply_aspect_ratio)
 {
   GL_SCOPE_FMT("RenderDisplay: {}x{}", target_size.x, target_size.y);
 
@@ -822,9 +822,9 @@ GPUDevice::PresentResult GPUPresenter::RenderDisplay(GPUTexture* target, const G
   }
 }
 
-void GPUPresenter::DrawOverlayBorders(const GSVector2i target_size, const GSVector2i final_target_size,
-                                      const GSVector4i overlay_display_rect, const GSVector4i draw_rect,
-                                      const WindowInfoPrerotation prerotation)
+void VideoPresenter::DrawOverlayBorders(const GSVector2i target_size, const GSVector2i final_target_size,
+                                        const GSVector4i overlay_display_rect, const GSVector4i draw_rect,
+                                        const WindowInfoPrerotation prerotation)
 {
   GL_SCOPE_FMT("Fill in overlay borders - odisplay={}, draw={}", overlay_display_rect, draw_rect);
 
@@ -894,9 +894,9 @@ void GPUPresenter::DrawOverlayBorders(const GSVector2i target_size, const GSVect
   }
 }
 
-void GPUPresenter::DrawDisplay(const GSVector2i target_size, const GSVector2i final_target_size,
-                               const GSVector4i source_rect, const GSVector4i display_rect, bool dst_alpha_blend,
-                               DisplayRotation rotation, WindowInfoPrerotation prerotation)
+void VideoPresenter::DrawDisplay(const GSVector2i target_size, const GSVector2i final_target_size,
+                                 const GSVector4i source_rect, const GSVector4i display_rect, bool dst_alpha_blend,
+                                 DisplayRotation rotation, WindowInfoPrerotation prerotation)
 {
   bool texture_filter_linear = false;
 
@@ -970,10 +970,10 @@ void GPUPresenter::DrawDisplay(const GSVector2i target_size, const GSVector2i fi
                  sizeof(uniforms));
 }
 
-void GPUPresenter::DrawScreenQuad(const GSVector4i rect, const GSVector4 uv_rect, const GSVector2i target_size,
-                                  const GSVector2i final_target_size, DisplayRotation rotation,
-                                  WindowInfoPrerotation prerotation, const void* push_constants,
-                                  u32 push_constants_size)
+void VideoPresenter::DrawScreenQuad(const GSVector4i rect, const GSVector4 uv_rect, const GSVector2i target_size,
+                                    const GSVector2i final_target_size, DisplayRotation rotation,
+                                    WindowInfoPrerotation prerotation, const void* push_constants,
+                                    u32 push_constants_size)
 {
   const GSVector4i real_rect = GPUSwapChain::PreRotateClipRect(prerotation, target_size, rect);
   g_gpu_device->SetScissor(
@@ -1029,7 +1029,7 @@ void GPUPresenter::DrawScreenQuad(const GSVector4i rect, const GSVector4 uv_rect
     g_gpu_device->Draw(4, base_vertex);
 }
 
-GSVector2i GPUPresenter::CalculateDisplayPostProcessSourceSize()
+GSVector2i VideoPresenter::CalculateDisplayPostProcessSourceSize()
 {
   DebugAssert(s_locals.display_postfx);
 
@@ -1050,9 +1050,9 @@ GSVector2i GPUPresenter::CalculateDisplayPostProcessSourceSize()
   }
 }
 
-GPUTexture* GPUPresenter::GetDisplayPostProcessInputTexture(const GSVector4i source_rect,
-                                                            const GSVector4i draw_rect_without_overlay,
-                                                            DisplayRotation rotation)
+GPUTexture* VideoPresenter::GetDisplayPostProcessInputTexture(const GSVector4i source_rect,
+                                                              const GSVector4i draw_rect_without_overlay,
+                                                              DisplayRotation rotation)
 {
   DebugAssert(s_locals.display_postfx);
 
@@ -1121,9 +1121,9 @@ GPUTexture* GPUPresenter::GetDisplayPostProcessInputTexture(const GSVector4i sou
   return postfx_input;
 }
 
-GPUDevice::PresentResult GPUPresenter::ApplyDisplayPostProcess(GPUTexture* target, GPUTexture* input,
-                                                               const GSVector4i display_rect,
-                                                               const GSVector2i postfx_size)
+GPUDevice::PresentResult VideoPresenter::ApplyDisplayPostProcess(GPUTexture* target, GPUTexture* input,
+                                                                 const GSVector4i display_rect,
+                                                                 const GSVector2i postfx_size)
 {
   DebugAssert(!g_gpu_settings.gpu_show_vram);
 
@@ -1142,7 +1142,7 @@ GPUDevice::PresentResult GPUPresenter::ApplyDisplayPostProcess(GPUTexture* targe
                                         s_locals.video_size.y);
 }
 
-void GPUPresenter::SendDisplayToMediaCapture(MediaCapture* cap)
+void VideoPresenter::SendDisplayToMediaCapture(MediaCapture* cap)
 {
   GPUTexture* target = cap->GetRenderTexture();
   if (!target) [[unlikely]]
@@ -1167,7 +1167,7 @@ void GPUPresenter::SendDisplayToMediaCapture(MediaCapture* cap)
   }
 }
 
-void GPUPresenter::DestroyDeinterlaceTextures()
+void VideoPresenter::DestroyDeinterlaceTextures()
 {
   for (std::unique_ptr<GPUTexture>& tex : s_locals.deinterlace_buffers)
     g_gpu_device->RecycleTexture(std::move(tex));
@@ -1175,7 +1175,7 @@ void GPUPresenter::DestroyDeinterlaceTextures()
   s_locals.current_deinterlace_buffer = 0;
 }
 
-bool GPUPresenter::Deinterlace(u32 field)
+bool VideoPresenter::Deinterlace(u32 field)
 {
   GPUTexture* const src = s_locals.display_texture;
   const u32 x = static_cast<u32>(s_locals.display_texture_rect.x);
@@ -1340,7 +1340,7 @@ bool GPUPresenter::Deinterlace(u32 field)
   }
 }
 
-bool GPUPresenter::DeinterlaceSetTargetSize(u32 width, u32 height, bool preserve)
+bool VideoPresenter::DeinterlaceSetTargetSize(u32 width, u32 height, bool preserve)
 {
   if (!g_gpu_device->ResizeTexture(&s_locals.deinterlace_texture, width, height, GPUTexture::Type::RenderTarget,
                                    GPUTextureFormat::RGBA8, GPUTexture::Flags::None, preserve)) [[unlikely]]
@@ -1352,7 +1352,7 @@ bool GPUPresenter::DeinterlaceSetTargetSize(u32 width, u32 height, bool preserve
   return true;
 }
 
-bool GPUPresenter::ApplyChromaSmoothing()
+bool VideoPresenter::ApplyChromaSmoothing()
 {
   const u32 x = static_cast<u32>(s_locals.display_texture_rect.x);
   const u32 y = static_cast<u32>(s_locals.display_texture_rect.y);
@@ -1384,9 +1384,9 @@ bool GPUPresenter::ApplyChromaSmoothing()
   return true;
 }
 
-void GPUPresenter::CalculateDrawRect(const GSVector2i& window_size, bool apply_aspect_ratio, bool integer_scale,
-                                     bool apply_crop, bool apply_alignment, GSVector4i* source_rect,
-                                     GSVector4i* display_rect, GSVector4i* draw_rect)
+void VideoPresenter::CalculateDrawRect(const GSVector2i& window_size, bool apply_aspect_ratio, bool integer_scale,
+                                       bool apply_crop, bool apply_alignment, GSVector4i* source_rect,
+                                       GSVector4i* display_rect, GSVector4i* draw_rect)
 {
   GPU::CalculateDrawRect(window_size, s_locals.video_size, s_locals.video_active_rect, s_locals.display_texture_rect,
                          g_gpu_settings.display_rotation,
@@ -1396,7 +1396,7 @@ void GPUPresenter::CalculateDrawRect(const GSVector2i& window_size, bool apply_a
                          g_gpu_settings.display_fine_crop_amount, source_rect, display_rect, draw_rect);
 }
 
-bool GPUPresenter::PresentFrame(GPUBackend* backend, u64 present_time)
+bool VideoPresenter::PresentFrame(GPUBackend* backend, u64 present_time)
 {
   // acquire for IO.MousePos and system state.
   std::atomic_thread_fence(std::memory_order_acquire);
@@ -1502,7 +1502,7 @@ bool GPUPresenter::PresentFrame(GPUBackend* backend, u64 present_time)
   return true;
 }
 
-void GPUPresenter::SleepUntilPresentTime(u64 present_time)
+void VideoPresenter::SleepUntilPresentTime(u64 present_time)
 {
   // Use a spinwait if we undersleep for all platforms except android.. don't want to burn battery.
   // Linux also seems to do a much better job of waking up at the requested time.
@@ -1514,8 +1514,8 @@ void GPUPresenter::SleepUntilPresentTime(u64 present_time)
 #endif
 }
 
-bool GPUPresenter::RenderScreenshotToBuffer(u32 width, u32 height, bool postfx, bool apply_aspect_ratio,
-                                            Image* out_image, Error* error)
+bool VideoPresenter::RenderScreenshotToBuffer(u32 width, u32 height, bool postfx, bool apply_aspect_ratio,
+                                              Image* out_image, Error* error)
 {
   const ImageFormat image_format = GPUTexture::GetImageFormatForTextureFormat(s_locals.present_format);
   if (image_format == ImageFormat::None)
@@ -1559,7 +1559,7 @@ bool GPUPresenter::RenderScreenshotToBuffer(u32 width, u32 height, bool postfx, 
   return true;
 }
 
-GSVector2i GPUPresenter::CalculateScreenshotSize(DisplayScreenshotMode mode)
+GSVector2i VideoPresenter::CalculateScreenshotSize(DisplayScreenshotMode mode)
 {
   const GSVector2i window_size =
     g_gpu_device->HasMainSwapChain() ? g_gpu_device->GetMainSwapChain()->GetSizeVec() : GSVector2i::cxpr(1, 1);
@@ -1601,7 +1601,7 @@ GSVector2i GPUPresenter::CalculateScreenshotSize(DisplayScreenshotMode mode)
   return window_size;
 }
 
-void GPUPresenter::LoadPostProcessingSettings(bool force_load)
+void VideoPresenter::LoadPostProcessingSettings(bool force_load)
 {
   static constexpr const char* section = PostProcessing::Config::DISPLAY_CHAIN_SECTION;
 
@@ -1619,7 +1619,7 @@ void GPUPresenter::LoadPostProcessingSettings(bool force_load)
   s_locals.display_postfx->LoadStages(lock, si, true);
 }
 
-bool GPUPresenter::UpdatePostProcessingSettings(bool force_reload, Error* error)
+bool VideoPresenter::UpdatePostProcessingSettings(bool force_reload, Error* error)
 {
   if (LoadOverlaySettings())
   {
@@ -1659,7 +1659,7 @@ bool GPUPresenter::UpdatePostProcessingSettings(bool force_reload, Error* error)
   return true;
 }
 
-SettingsInterface& GPUPresenter::GetPostProcessingSettingsInterface(const char* section)
+SettingsInterface& VideoPresenter::GetPostProcessingSettingsInterface(const char* section)
 {
   // If PostProcessing/Enable is set in the game settings interface, use that.
   // Otherwise, use the base settings.
@@ -1671,7 +1671,7 @@ SettingsInterface& GPUPresenter::GetPostProcessingSettingsInterface(const char* 
     return *Core::GetBaseSettingsLayer();
 }
 
-void GPUPresenter::TogglePostProcessing()
+void VideoPresenter::TogglePostProcessing()
 {
   DebugAssert(!VideoThread::IsOnThread());
 
@@ -1693,7 +1693,7 @@ void GPUPresenter::TogglePostProcessing()
     false, true);
 }
 
-void GPUPresenter::ReloadPostProcessingSettings(bool display, bool internal, bool reload_shaders)
+void VideoPresenter::ReloadPostProcessingSettings(bool display, bool internal, bool reload_shaders)
 {
   DebugAssert(!VideoThread::IsOnThread());
 
@@ -1729,7 +1729,7 @@ void GPUPresenter::ReloadPostProcessingSettings(bool display, bool internal, boo
     false, true);
 }
 
-bool GPUPresenter::LoadOverlaySettings()
+bool VideoPresenter::LoadOverlaySettings()
 {
   std::string preset_name = Core::GetStringSettingValue("BorderOverlay", "PresetName");
   std::string image_path;
@@ -1786,7 +1786,7 @@ bool GPUPresenter::LoadOverlaySettings()
   return changed;
 }
 
-bool GPUPresenter::LoadOverlayTexture()
+bool VideoPresenter::LoadOverlayTexture()
 {
   g_gpu_device->RecycleTexture(std::move(s_locals.border_overlay_texture));
   if (s_locals.border_overlay_image_path.empty())
@@ -1821,7 +1821,7 @@ bool GPUPresenter::LoadOverlayTexture()
   return true;
 }
 
-std::vector<std::string> GPUPresenter::EnumerateBorderOverlayPresets()
+std::vector<std::string> VideoPresenter::EnumerateBorderOverlayPresets()
 {
   static constexpr const char* pattern = "*.yml";
 
@@ -1847,7 +1847,7 @@ std::vector<std::string> GPUPresenter::EnumerateBorderOverlayPresets()
   return ret;
 }
 
-bool GPUPresenter::LoadOverlayPreset(Error* error, Image* image)
+bool VideoPresenter::LoadOverlayPreset(Error* error, Image* image)
 {
   SmallString path = SmallString::from_format("overlays/{}.yml", s_locals.border_overlay_image_path);
   std::optional<std::string> yaml_data = Host::ReadResourceFileToString(path, true, error);

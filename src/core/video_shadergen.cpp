@@ -1,16 +1,16 @@
 // SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
-#include "gpu_shadergen.h"
+#include "video_shadergen.h"
 
-GPUShaderGen::GPUShaderGen(RenderAPI render_api, bool supports_dual_source_blend, bool supports_framebuffer_fetch)
+VideoShaderGen::VideoShaderGen(RenderAPI render_api, bool supports_dual_source_blend, bool supports_framebuffer_fetch)
   : ShaderGen(render_api, GetShaderLanguageForAPI(render_api), supports_dual_source_blend, supports_framebuffer_fetch)
 {
 }
 
-GPUShaderGen::~GPUShaderGen() = default;
+VideoShaderGen::~VideoShaderGen() = default;
 
-void GPUShaderGen::WriteDisplayUniformBuffer(std::stringstream& ss) const
+void VideoShaderGen::WriteDisplayUniformBuffer(std::stringstream& ss) const
 {
   DeclareUniformBuffer(ss, {"float4 u_src_size", "float4 u_clamp_rect", "float4 u_params"}, true);
 
@@ -20,7 +20,7 @@ float2 ClampUV(float2 uv) {
 })";
 }
 
-std::string GPUShaderGen::GenerateDisplayFragmentShader(bool clamp_uv, bool nearest) const
+std::string VideoShaderGen::GenerateDisplayFragmentShader(bool clamp_uv, bool nearest) const
 {
   std::stringstream ss;
   WriteHeader(ss);
@@ -45,7 +45,7 @@ std::string GPUShaderGen::GenerateDisplayFragmentShader(bool clamp_uv, bool near
   return std::move(ss).str();
 }
 
-std::string GPUShaderGen::GenerateDisplaySharpBilinearFragmentShader() const
+std::string VideoShaderGen::GenerateDisplaySharpBilinearFragmentShader() const
 {
   std::stringstream ss;
   WriteHeader(ss);
@@ -74,7 +74,7 @@ std::string GPUShaderGen::GenerateDisplaySharpBilinearFragmentShader() const
   return std::move(ss).str();
 }
 
-std::string GPUShaderGen::GenerateDisplayHybridBilinearFragmentShader() const
+std::string VideoShaderGen::GenerateDisplayHybridBilinearFragmentShader() const
 {
   std::stringstream ss;
   WriteHeader(ss);
@@ -109,7 +109,7 @@ std::string GPUShaderGen::GenerateDisplayHybridBilinearFragmentShader() const
   return std::move(ss).str();
 }
 
-std::string GPUShaderGen::GenerateDisplayLanczosFragmentShader() const
+std::string VideoShaderGen::GenerateDisplayLanczosFragmentShader() const
 {
   std::stringstream ss;
   WriteHeader(ss);
@@ -163,7 +163,7 @@ float lanczos(float x)
   return std::move(ss).str();
 }
 
-std::string GPUShaderGen::GenerateDeinterlaceWeaveFragmentShader() const
+std::string VideoShaderGen::GenerateDeinterlaceWeaveFragmentShader() const
 {
   std::stringstream ss;
   WriteHeader(ss);
@@ -184,7 +184,7 @@ std::string GPUShaderGen::GenerateDeinterlaceWeaveFragmentShader() const
   return std::move(ss).str();
 }
 
-std::string GPUShaderGen::GenerateDeinterlaceBlendFragmentShader() const
+std::string VideoShaderGen::GenerateDeinterlaceBlendFragmentShader() const
 {
   std::stringstream ss;
   WriteHeader(ss);
@@ -204,7 +204,7 @@ std::string GPUShaderGen::GenerateDeinterlaceBlendFragmentShader() const
   return std::move(ss).str();
 }
 
-std::string GPUShaderGen::GenerateFastMADReconstructFragmentShader() const
+std::string VideoShaderGen::GenerateFastMADReconstructFragmentShader() const
 {
   std::stringstream ss;
   WriteHeader(ss);
@@ -263,7 +263,7 @@ CONSTANT float3 SENSITIVITY = float3(0.08f, 0.08f, 0.08f);
   return std::move(ss).str();
 }
 
-std::string GPUShaderGen::GenerateChromaSmoothingFragmentShader() const
+std::string VideoShaderGen::GenerateChromaSmoothingFragmentShader() const
 {
   std::stringstream ss;
   WriteHeader(ss);

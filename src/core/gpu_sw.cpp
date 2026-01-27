@@ -4,10 +4,10 @@
 #include "gpu_sw.h"
 #include "gpu.h"
 #include "gpu_helpers.h"
-#include "gpu_presenter.h"
 #include "gpu_sw_rasterizer.h"
 #include "settings.h"
 #include "system_private.h"
+#include "video_presenter.h"
 
 #include "util/gpu_device.h"
 #include "util/state_wrapper.h"
@@ -215,7 +215,7 @@ GPUTexture* GPU_SW::GetDisplayTexture(u32 width, u32 height, GPUTextureFormat fo
   if (!m_upload_texture || m_upload_texture->GetWidth() != width || m_upload_texture->GetHeight() != height ||
       m_upload_texture->GetFormat() != format)
   {
-    GPUPresenter::ClearDisplayTexture();
+    VideoPresenter::ClearDisplayTexture();
     g_gpu_device->RecycleTexture(std::move(m_upload_texture));
     m_upload_texture = g_gpu_device->FetchTexture(width, height, 1, 1, 1, GPUTexture::Type::Texture, format,
                                                   GPUTexture::Flags::AllowMap, nullptr, 0);
@@ -396,9 +396,9 @@ void GPU_SW::UpdateDisplay(const GPUBackendUpdateDisplayCommand* cmd)
 
     if (cmd->display_disabled)
     {
-      GPUPresenter::ClearDisplayTexture();
+      VideoPresenter::ClearDisplayTexture();
       if (cmd->interlaced_display_enabled)
-        GPUPresenter::Deinterlace(field);
+        VideoPresenter::Deinterlace(field);
 
       return;
     }
@@ -418,15 +418,15 @@ void GPU_SW::UpdateDisplay(const GPUBackendUpdateDisplayCommand* cmd)
     {
       if (CopyOut(src_x, src_y, skip_x, width, height, line_skip, is_24bit))
       {
-        GPUPresenter::SetDisplayTexture(m_upload_texture.get(), GSVector4i::loadh(GSVector2i(width, height)));
+        VideoPresenter::SetDisplayTexture(m_upload_texture.get(), GSVector4i::loadh(GSVector2i(width, height)));
         if (is_24bit && g_gpu_settings.display_24bit_chroma_smoothing)
         {
-          if (GPUPresenter::ApplyChromaSmoothing())
-            GPUPresenter::Deinterlace(field);
+          if (VideoPresenter::ApplyChromaSmoothing())
+            VideoPresenter::Deinterlace(field);
         }
         else
         {
-          GPUPresenter::Deinterlace(field);
+          VideoPresenter::Deinterlace(field);
         }
       }
     }
@@ -434,16 +434,16 @@ void GPU_SW::UpdateDisplay(const GPUBackendUpdateDisplayCommand* cmd)
     {
       if (CopyOut(src_x, src_y, skip_x, width, height, 0, is_24bit))
       {
-        GPUPresenter::SetDisplayTexture(m_upload_texture.get(), GSVector4i::loadh(GSVector2i(width, height)));
+        VideoPresenter::SetDisplayTexture(m_upload_texture.get(), GSVector4i::loadh(GSVector2i(width, height)));
         if (is_24bit && g_gpu_settings.display_24bit_chroma_smoothing)
-          GPUPresenter::ApplyChromaSmoothing();
+          VideoPresenter::ApplyChromaSmoothing();
       }
     }
   }
   else
   {
     if (CopyOut(0, 0, 0, VRAM_WIDTH, VRAM_HEIGHT, 0, false))
-      GPUPresenter::SetDisplayTexture(m_upload_texture.get(), GSVector4i::cxpr(0, 0, VRAM_WIDTH, VRAM_HEIGHT));
+      VideoPresenter::SetDisplayTexture(m_upload_texture.get(), GSVector4i::cxpr(0, 0, VRAM_WIDTH, VRAM_HEIGHT));
   }
 }
 

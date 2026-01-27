@@ -8,7 +8,6 @@
 #include "gpu_dump.h"
 #include "gpu_helpers.h"
 #include "gpu_hw_texture_cache.h"
-#include "gpu_shadergen.h"
 #include "gpu_sw_rasterizer.h"
 #include "host.h"
 #include "interrupt_controller.h"
@@ -18,6 +17,7 @@
 #include "system_private.h"
 #include "timers.h"
 #include "timing_event.h"
+#include "video_shadergen.h"
 #include "video_thread.h"
 
 #include "util/gpu_device.h"

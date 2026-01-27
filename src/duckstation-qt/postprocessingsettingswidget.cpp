@@ -8,7 +8,7 @@
 #include "settingwidgetbinder.h"
 
 #include "core/core.h"
-#include "core/gpu_presenter.h"
+#include "core/video_presenter.h"
 
 #include "util/postprocessing.h"
 
@@ -77,7 +77,7 @@ void PostProcessingChainConfigWidget::commitSettingsUpdate()
 void PostProcessingChainConfigWidget::triggerSettingsReload()
 {
   g_core_thread->updatePostProcessingSettings(m_section == PostProcessing::Config::DISPLAY_CHAIN_SECTION,
-                                             m_section == PostProcessing::Config::INTERNAL_CHAIN_SECTION, false);
+                                              m_section == PostProcessing::Config::INTERNAL_CHAIN_SECTION, false);
 }
 
 void PostProcessingChainConfigWidget::connectUi()
@@ -542,7 +542,7 @@ PostProcessingOverlayConfigWidget::PostProcessingOverlayConfigWidget(SettingsWin
 
   m_ui.overlayName->addItem(tr("None"), QString());
   m_ui.overlayName->addItem(tr("Custom..."), QStringLiteral("Custom"));
-  for (const std::string& name : GPUPresenter::EnumerateBorderOverlayPresets())
+  for (const std::string& name : VideoPresenter::EnumerateBorderOverlayPresets())
   {
     const QString qname = QString::fromStdString(name);
     m_ui.overlayName->addItem(qname, qname);
