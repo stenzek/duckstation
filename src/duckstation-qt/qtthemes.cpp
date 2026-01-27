@@ -31,6 +31,12 @@ struct State
   bool is_variable_color_theme = false;
   bool is_dark_theme = false;
   bool unthemed_style_name_set = false;
+
+#ifdef __linux__
+  bool use_system_font = false;
+  bool system_font_set = false;
+  QFont system_font;
+#endif
 };
 } // namespace
 
@@ -56,6 +62,33 @@ void QtHost::UpdateApplicationTheme()
     s_state.unthemed_palette = QApplication::palette();
   }
 
+#ifdef __linux__
+  // Fonts on Linux are ugly and too large. Override it by default.
+  const bool use_system_font = Core::GetBoolSettingValue("Main", "UseSystemFont", false);
+  bool update_font = (use_system_font != s_state.use_system_font);
+  s_state.use_system_font = use_system_font;
+  if (!s_state.system_font_set)
+  {
+    update_font = true;
+    s_state.system_font_set = true;
+    s_state.system_font = QGuiApplication::font();
+  }
+  if (update_font)
+  {
+    if (!use_system_font)
+    {
+      QFont application_font = s_state.system_font;
+      application_font.setFamilies(GetRobotoFontFamilies());
+      application_font.setPixelSize(12);
+      QApplication::setFont(application_font);
+    }
+    else
+    {
+      QApplication::setFont(s_state.system_font);
+    }
+  }
+#endif
+
   SetStyleFromSettings();
   UpdateThemeOnStyleChange();
 }
@@ -77,7 +110,10 @@ void QtHost::SetStyleSheet(const QString& stylesheet)
 #ifdef __linux__
   // Fonts on Linux are ugly and too large. Unfortunately QApplication::setFont() doesn't seem to apply to
   // all widgets, so instead we have to jankily prefix it to all stylesheets.
-  qApp->setStyleSheet(QStringLiteral("QMenu, QMenuBar { font-family: \"Roboto\"; font-size: 12px; }\n") + stylesheet);
+  if (!s_state.use_system_font)
+    qApp->setStyleSheet(QStringLiteral("QMenu, QMenuBar { font-family: \"Roboto\"; font-size: 12px; }\n") + stylesheet);
+  else
+    qApp->setStyleSheet(stylesheet);
 #else
   qApp->setStyleSheet(stylesheet);
 #endif

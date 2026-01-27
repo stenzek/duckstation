@@ -93,17 +93,22 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* dialog, QWidget
   connect(m_ui.hideMainWindow, &QCheckBox::checkStateChanged, this,
           &InterfaceSettingsWidget::updateRenderToSeparateWindowOptions);
 
-#ifdef _WIN32
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.disableWindowRoundedCorners, "Main",
+#if defined(_WIN32)
+  QCheckBox* const disable_window_rounded_corners =
+    new QCheckBox(tr("Disable Window Rounded Corners"), m_ui.appearanceGroup);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, disable_window_rounded_corners, "Main",
                                                "DisableWindowRoundedCorners", false);
-#else
-  QtUtils::SafeDeleteWidget(m_ui.disableWindowRoundedCorners);
-#endif
-#ifdef __APPLE__
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.useFractionalWindowScale, "Main", "UseFractionalWindowScale",
+  m_ui.appearanceLayout->addWidget(disable_window_rounded_corners, m_ui.appearanceLayout->rowCount(), 0, 1, 4);
+#elif defined(__APPLE__)
+  QCheckBox* const use_fractional_window_scale = new QCheckBox(tr("Use Fractional Window Scale"), m_ui.appearanceGroup);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, use_fractional_window_scale, "Main", "UseFractionalWindowScale",
                                                false);
-#else
-  QtUtils::SafeDeleteWidget(m_ui.useFractionalWindowScale);
+  m_ui.appearanceLayout->addWidget(use_fractional_window_scale, m_ui.appearanceLayout->rowCount(), 0, 1, 4);
+#elif defined(__linux__)
+  QCheckBox* const use_system_font = new QCheckBox(tr("Use System Font"), m_ui.appearanceGroup);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, use_system_font, "Main", "UseSystemFont", false);
+  m_ui.appearanceLayout->addWidget(use_system_font, m_ui.appearanceLayout->rowCount(), 0, 1, 4);
+  connect(use_system_font, &QCheckBox::checkStateChanged, this, &QtHost::UpdateApplicationTheme, Qt::QueuedConnection);
 #endif
 
   if (!m_dialog->isPerGameSettings())
@@ -199,13 +204,17 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* dialog, QWidget
 
 #if defined(_WIN32)
   dialog->registerWidgetHelp(
-    m_ui.disableWindowRoundedCorners, tr("Disable Window Rounded Corners"), tr("Unchecked"),
+    disable_window_rounded_corners, tr("Disable Window Rounded Corners"), tr("Unchecked"),
     tr(
       "Disables the rounding of windows automatically applied in Windows 11, which may obscure parts of the content."));
 #elif defined(__APPLE__)
   dialog->registerWidgetHelp(
-    m_ui.useFractionalWindowScale, tr("Use Fractional Window Scale"), tr("Unchecked"),
+    use_fractional_window_scale, tr("Use Fractional Window Scale"), tr("Unchecked"),
     tr("Calculates the true scaling factor for your display, avoiding the downsampling applied by MacOS."));
+#elif defined(__linux__)
+  dialog->registerWidgetHelp(use_system_font, tr("Use System Font"), tr("Unchecked"),
+                             tr("Uses the system font for the interface, instead of the bundled Roboto font. Enabling "
+                                "this option may cause some UI elements to not fit within windows."));
 #endif
 
   if (!m_dialog->isPerGameSettings())

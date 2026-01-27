@@ -158,7 +158,7 @@
      <property name="title">
       <string>Appearance</string>
      </property>
-     <layout class="QGridLayout" name="gridLayout_3" columnstretch="0,1,0,1">
+     <layout class="QGridLayout" name="appearanceLayout" columnstretch="0,1,0,1">
       <item row="0" column="0">
        <widget class="QLabel" name="languageLabel">
         <property name="text">
@@ -178,20 +178,6 @@
       </item>
       <item row="0" column="3">
        <widget class="QComboBox" name="theme"/>
-      </item>
-      <item row="1" column="0" colspan="4">
-       <widget class="QCheckBox" name="disableWindowRoundedCorners">
-        <property name="text">
-         <string>Disable Window Rounded Corners</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="0" colspan="4">
-       <widget class="QCheckBox" name="useFractionalWindowScale">
-        <property name="text">
-         <string>Use Fractional Window Scale</string>
-        </property>
-       </widget>
       </item>
      </layout>
     </widget>

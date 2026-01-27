@@ -263,15 +263,6 @@ bool QtHost::EarlyProcessStartup()
     icon_theme_search_paths.push_back(QStringLiteral(":/icons"));
   icon_theme_search_paths.push_back(QStringLiteral(":/standard-icons"));
   QIcon::setThemeSearchPaths(icon_theme_search_paths);
-
-#ifdef __linux__
-  // Fonts on Linux are ugly and too large. This is only part of where we apply it, see qtthemes.cpp for the rest.
-  QFont application_font = QGuiApplication::font();
-  application_font.setFamilies(GetRobotoFontFamilies());
-  application_font.setPixelSize(12);
-  QApplication::setFont(application_font);
-#endif
-
   return true;
 }
 
