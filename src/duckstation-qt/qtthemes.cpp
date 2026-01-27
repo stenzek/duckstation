@@ -23,7 +23,7 @@ static void SetStyleSheet(const QString& stylesheet);
 static QString GetNativeThemeStylesheet();
 
 namespace {
-struct State
+struct ThemesLocals
 {
   QString unthemed_style_name;
   QPalette unthemed_palette;
@@ -40,7 +40,7 @@ struct State
 };
 } // namespace
 
-static State s_state;
+static ThemesLocals s_themes_locals;
 
 } // namespace QtHost
 
@@ -55,36 +55,36 @@ const char* QtHost::GetDefaultThemeName()
 
 void QtHost::UpdateApplicationTheme()
 {
-  if (!s_state.unthemed_style_name_set)
+  if (!s_themes_locals.unthemed_style_name_set)
   {
-    s_state.unthemed_style_name_set = true;
-    s_state.unthemed_style_name = QApplication::style()->objectName();
-    s_state.unthemed_palette = QApplication::palette();
+    s_themes_locals.unthemed_style_name_set = true;
+    s_themes_locals.unthemed_style_name = QApplication::style()->objectName();
+    s_themes_locals.unthemed_palette = QApplication::palette();
   }
 
 #ifdef __linux__
   // Fonts on Linux are ugly and too large. Override it by default.
   const bool use_system_font = Core::GetBoolSettingValue("Main", "UseSystemFont", false);
-  bool update_font = (use_system_font != s_state.use_system_font);
-  s_state.use_system_font = use_system_font;
-  if (!s_state.system_font_set)
+  bool update_font = (use_system_font != s_themes_locals.use_system_font);
+  s_themes_locals.use_system_font = use_system_font;
+  if (!s_themes_locals.system_font_set)
   {
     update_font = true;
-    s_state.system_font_set = true;
-    s_state.system_font = QGuiApplication::font();
+    s_themes_locals.system_font_set = true;
+    s_themes_locals.system_font = QGuiApplication::font();
   }
   if (update_font)
   {
     if (!use_system_font)
     {
-      QFont application_font = s_state.system_font;
+      QFont application_font = s_themes_locals.system_font;
       application_font.setFamilies(GetRobotoFontFamilies());
       application_font.setPixelSize(12);
       QApplication::setFont(application_font);
     }
     else
     {
-      QApplication::setFont(s_state.system_font);
+      QApplication::setFont(s_themes_locals.system_font);
     }
   }
 #endif
@@ -95,9 +95,9 @@ void QtHost::UpdateApplicationTheme()
 
 void QtHost::SetThemeAttributes(bool is_stylesheet_theme, bool is_variable_color_theme, bool is_dark_theme)
 {
-  s_state.is_stylesheet_theme = is_stylesheet_theme;
-  s_state.is_variable_color_theme = is_variable_color_theme;
-  s_state.is_dark_theme = is_dark_theme;
+  s_themes_locals.is_stylesheet_theme = is_stylesheet_theme;
+  s_themes_locals.is_variable_color_theme = is_variable_color_theme;
+  s_themes_locals.is_dark_theme = is_dark_theme;
 
   if (is_variable_color_theme)
     qApp->styleHints()->unsetColorScheme();
@@ -110,7 +110,7 @@ void QtHost::SetStyleSheet(const QString& stylesheet)
 #ifdef __linux__
   // Fonts on Linux are ugly and too large. Unfortunately QApplication::setFont() doesn't seem to apply to
   // all widgets, so instead we have to jankily prefix it to all stylesheets.
-  if (!s_state.use_system_font)
+  if (!s_themes_locals.use_system_font)
     qApp->setStyleSheet(QStringLiteral("QMenu, QMenuBar { font-family: \"Roboto\"; font-size: 12px; }\n") + stylesheet);
   else
     qApp->setStyleSheet(stylesheet);
@@ -124,14 +124,14 @@ void QtHost::SetStyleFromSettings()
   const TinyString theme = Core::GetBaseTinyStringSettingValue("UI", "Theme", QtHost::GetDefaultThemeName());
 
   // Clear any existing stylesheet before applying new. Avoids half-painted windows when changing themes.
-  if (s_state.is_stylesheet_theme)
+  if (s_themes_locals.is_stylesheet_theme)
     SetStyleSheet(QString());
 
   if (theme == "qdarkstyle")
   {
     SetThemeAttributes(true, false, true);
-    qApp->setStyle(s_state.unthemed_style_name);
-    qApp->setPalette(s_state.unthemed_palette);
+    qApp->setStyle(s_themes_locals.unthemed_style_name);
+    qApp->setPalette(s_themes_locals.unthemed_palette);
 
     QFile f(QStringLiteral(":qdarkstyle/style.qss"));
     if (f.open(QFile::ReadOnly | QFile::Text))
@@ -141,7 +141,7 @@ void QtHost::SetStyleFromSettings()
   {
     SetThemeAttributes(false, true, false);
     qApp->setStyle(QStyleFactory::create("Fusion"));
-    qApp->setPalette(s_state.unthemed_palette);
+    qApp->setPalette(s_themes_locals.unthemed_palette);
   }
   else if (theme == "darkfusion")
   {
@@ -876,15 +876,15 @@ QTextBrowser {
   {
     SetThemeAttributes(false, false, false);
     qApp->setStyle(QStyleFactory::create("windowsvista"));
-    qApp->setPalette(s_state.unthemed_palette);
+    qApp->setPalette(s_themes_locals.unthemed_palette);
   }
 #endif
   else
   {
     const QString stylesheet = GetNativeThemeStylesheet();
     SetThemeAttributes(!stylesheet.isEmpty(), true, false);
-    qApp->setStyle(s_state.unthemed_style_name);
-    qApp->setPalette(s_state.unthemed_palette);
+    qApp->setStyle(s_themes_locals.unthemed_style_name);
+    qApp->setPalette(s_themes_locals.unthemed_palette);
 
     // Cleared above.
     if (!stylesheet.isEmpty())
@@ -894,8 +894,8 @@ QTextBrowser {
 
 bool QtHost::IsDarkApplicationTheme()
 {
-  if (!s_state.is_variable_color_theme)
-    return s_state.is_dark_theme;
+  if (!s_themes_locals.is_variable_color_theme)
+    return s_themes_locals.is_dark_theme;
 
   const Qt::ColorScheme system_color_scheme = qApp->styleHints()->colorScheme();
   if (system_color_scheme != Qt::ColorScheme::Unknown) [[likely]]
@@ -907,7 +907,7 @@ bool QtHost::IsDarkApplicationTheme()
 
 bool QtHost::HasGlobalStylesheet()
 {
-  return s_state.is_stylesheet_theme;
+  return s_themes_locals.is_stylesheet_theme;
 }
 
 void QtHost::UpdateThemeOnStyleChange()
@@ -953,7 +953,7 @@ bool QtHost::NativeThemeStylesheetNeedsUpdate()
 #ifdef __APPLE__
   // See below, only used on MacOS.
   // objectName() is empty after applying stylesheet.
-  return (s_state.is_variable_color_theme && QApplication::style()->objectName().isEmpty());
+  return (s_themes_locals.is_variable_color_theme && QApplication::style()->objectName().isEmpty());
 #else
   return false;
 #endif
