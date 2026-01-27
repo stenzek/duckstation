@@ -193,9 +193,9 @@ public:
   float ComputeAspectRatioCorrection() const;
 
   /// Applies the pixel aspect ratio to a given size, preserving the larger dimension.
-  static GSVector2 CalculateDisplayWindowSize(DisplayFineCropMode mode, std::span<const s16, 4> amount,
-                                              float pixel_aspect_ratio, const GSVector2 video_size,
-                                              const GSVector2 source_size, const GSVector2 window_size);
+  static GSVector2 CalculateRenderWindowSize(DisplayFineCropMode mode, std::span<const s16, 4> amount,
+                                             float pixel_aspect_ratio, const GSVector2 video_size,
+                                             const GSVector2 source_size, const GSVector2 window_size);
 
   // Converts window coordinates into horizontal ticks and scanlines. Returns -1 if out of range. Used for lightguns.
   GSVector2 ConvertScreenCoordinatesToDisplayCoordinates(GSVector2 window_pos) const;

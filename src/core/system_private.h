@@ -45,7 +45,7 @@ PresentSkipMode GetEffectivePresentSkipMode();
 bool GetFramePresentationParameters(GPUBackendFramePresentationParameters* frame);
 
 /// Call when host display size changes.
-void DisplayWindowResized();
+void RenderWindowResized();
 
 /// Updates the internal GTE aspect ratio. Use with "match display" aspect ratio setting.
 void UpdateGTEAspectRatio();

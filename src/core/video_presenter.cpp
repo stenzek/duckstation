@@ -1574,7 +1574,7 @@ GSVector2i VideoPresenter::CalculateScreenshotSize(DisplayScreenshotMode mode)
       const GSVector2 fsource_size = GSVector2(s_locals.display_texture_rect.rsize());
       const GSVector2 factive_size = GSVector2(s_locals.video_active_rect.rsize());
       const GSVector2 fscale = (fsource_size / factive_size);
-      GSVector2 f_size = GPU::CalculateDisplayWindowSize(
+      GSVector2 f_size = GPU::CalculateRenderWindowSize(
         g_gpu_settings.display_fine_crop_mode, g_gpu_settings.display_fine_crop_amount,
         (mode != DisplayScreenshotMode::UncorrectedInternalResolution) ? s_locals.display_pixel_aspect_ratio : 1.0f,
         fvideo_size, fsource_size, GSVector2(window_size));

@@ -650,7 +650,7 @@ void MiniHost::ProcessSDLEvent(const SDL_Event* ev)
       Host::RunOnCoreThread([window_width = ev->window.data1, window_height = ev->window.data2,
                              window_scale = s_state.sdl_window_scale,
                              window_refresh_rate = s_state.sdl_window_refresh_rate]() {
-        VideoThread::ResizeDisplayWindow(window_width, window_height, window_scale, window_refresh_rate);
+        VideoThread::ResizeRenderWindow(window_width, window_height, window_scale, window_refresh_rate);
       });
     }
     break;
@@ -667,7 +667,7 @@ void MiniHost::ProcessSDLEvent(const SDL_Event* ev)
         SDL_GetWindowSizeInPixels(s_state.sdl_window, &window_width, &window_height);
         Host::RunOnCoreThread([window_width, window_height, window_scale = s_state.sdl_window_scale,
                                window_refresh_rate = s_state.sdl_window_refresh_rate]() {
-          VideoThread::ResizeDisplayWindow(window_width, window_height, window_scale, window_refresh_rate);
+          VideoThread::ResizeRenderWindow(window_width, window_height, window_scale, window_refresh_rate);
         });
       }
     }

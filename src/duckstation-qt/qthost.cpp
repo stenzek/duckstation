@@ -848,7 +848,7 @@ void CoreThread::resumeSystemFromMostRecentState()
   bootOrLoadState(std::move(state_filename));
 }
 
-void CoreThread::onDisplayWindowKeyEvent(int key, bool pressed)
+void CoreThread::onRenderWindowKeyEvent(int key, bool pressed)
 {
   DebugAssert(isCurrentThread());
 
@@ -856,19 +856,19 @@ void CoreThread::onDisplayWindowKeyEvent(int key, bool pressed)
                              GenericInputBinding::Unknown);
 }
 
-void CoreThread::onDisplayWindowTextEntered(const QString& text)
+void CoreThread::onRenderWindowTextEntered(const QString& text)
 {
   DebugAssert(isCurrentThread());
 
   ImGuiManager::AddTextInput(text.toStdString());
 }
 
-void CoreThread::onDisplayWindowMouseMoveAbsoluteEvent(float x, float y)
+void CoreThread::onRenderWindowMouseMoveAbsoluteEvent(float x, float y)
 {
   InputManager::UpdatePointerAbsolutePosition(0, x, y);
 }
 
-void CoreThread::onDisplayWindowMouseMoveRelativeEvent(float dx, float dy)
+void CoreThread::onRenderWindowMouseMoveRelativeEvent(float dx, float dy)
 {
   if (dx != 0.0f)
     InputManager::UpdatePointerPositionRelativeDelta(0, InputPointerAxis::X, dx);
@@ -876,7 +876,7 @@ void CoreThread::onDisplayWindowMouseMoveRelativeEvent(float dx, float dy)
     InputManager::UpdatePointerPositionRelativeDelta(0, InputPointerAxis::Y, dy);
 }
 
-void CoreThread::onDisplayWindowMouseButtonEvent(int button, bool pressed)
+void CoreThread::onRenderWindowMouseButtonEvent(int button, bool pressed)
 {
   DebugAssert(isCurrentThread());
 
@@ -884,7 +884,7 @@ void CoreThread::onDisplayWindowMouseButtonEvent(int button, bool pressed)
                              GenericInputBinding::Unknown);
 }
 
-void CoreThread::onDisplayWindowMouseWheelEvent(float dx, float dy)
+void CoreThread::onRenderWindowMouseWheelEvent(float dx, float dy)
 {
   DebugAssert(isCurrentThread());
 
@@ -895,16 +895,16 @@ void CoreThread::onDisplayWindowMouseWheelEvent(float dx, float dy)
     InputManager::UpdatePointerWheelRelativeDelta(0, InputPointerAxis::WheelY, dy);
 }
 
-void CoreThread::onDisplayWindowResized(int width, int height, float scale, float refresh_rate)
+void CoreThread::onRenderWindowResized(int width, int height, float scale, float refresh_rate)
 {
-  VideoThread::ResizeDisplayWindow(width, height, scale, refresh_rate);
+  VideoThread::ResizeRenderWindow(width, height, scale, refresh_rate);
 }
 
-void CoreThread::redrawDisplayWindow()
+void CoreThread::redrawRenderWindow()
 {
   if (!isCurrentThread())
   {
-    QMetaObject::invokeMethod(this, &CoreThread::redrawDisplayWindow, Qt::QueuedConnection);
+    QMetaObject::invokeMethod(this, &CoreThread::redrawRenderWindow, Qt::QueuedConnection);
     return;
   }
 
@@ -951,15 +951,15 @@ void CoreThread::setFullscreenWithCompletionHandler(bool fullscreen, std::functi
   VideoThread::SetFullscreenWithCompletionHandler(fullscreen, std::move(completion_handler));
 }
 
-void CoreThread::updateDisplayWindow()
+void CoreThread::recreateRenderWindow()
 {
   if (!isCurrentThread())
   {
-    QMetaObject::invokeMethod(this, &CoreThread::updateDisplayWindow, Qt::QueuedConnection);
+    QMetaObject::invokeMethod(this, &CoreThread::recreateRenderWindow, Qt::QueuedConnection);
     return;
   }
 
-  VideoThread::UpdateDisplayWindow();
+  VideoThread::RecreateRenderWindow();
 }
 
 void CoreThread::requestDisplaySize(float scale)
@@ -987,20 +987,20 @@ void CoreThread::releaseRenderWindow()
   emit onReleaseRenderWindowRequested();
 }
 
-void CoreThread::connectDisplaySignals(DisplayWidget* widget)
+void CoreThread::connectRenderWindowSignals(DisplayWidget* widget)
 {
   widget->disconnect(this);
 
-  connect(widget, &DisplayWidget::windowResizedEvent, this, &CoreThread::onDisplayWindowResized);
-  connect(widget, &DisplayWidget::windowRestoredEvent, this, &CoreThread::redrawDisplayWindow);
-  connect(widget, &DisplayWidget::windowKeyEvent, this, &CoreThread::onDisplayWindowKeyEvent);
-  connect(widget, &DisplayWidget::windowTextEntered, this, &CoreThread::onDisplayWindowTextEntered);
+  connect(widget, &DisplayWidget::windowResizedEvent, this, &CoreThread::onRenderWindowResized);
+  connect(widget, &DisplayWidget::windowRestoredEvent, this, &CoreThread::redrawRenderWindow);
+  connect(widget, &DisplayWidget::windowKeyEvent, this, &CoreThread::onRenderWindowKeyEvent);
+  connect(widget, &DisplayWidget::windowTextEntered, this, &CoreThread::onRenderWindowTextEntered);
   connect(widget, &DisplayWidget::windowMouseMoveAbsoluteEvent, this,
-          &CoreThread::onDisplayWindowMouseMoveAbsoluteEvent);
+          &CoreThread::onRenderWindowMouseMoveAbsoluteEvent);
   connect(widget, &DisplayWidget::windowMouseMoveRelativeEvent, this,
-          &CoreThread::onDisplayWindowMouseMoveRelativeEvent);
-  connect(widget, &DisplayWidget::windowMouseButtonEvent, this, &CoreThread::onDisplayWindowMouseButtonEvent);
-  connect(widget, &DisplayWidget::windowMouseWheelEvent, this, &CoreThread::onDisplayWindowMouseWheelEvent);
+          &CoreThread::onRenderWindowMouseMoveRelativeEvent);
+  connect(widget, &DisplayWidget::windowMouseButtonEvent, this, &CoreThread::onRenderWindowMouseButtonEvent);
+  connect(widget, &DisplayWidget::windowMouseWheelEvent, this, &CoreThread::onRenderWindowMouseWheelEvent);
 }
 
 void Host::OnSystemStarting()

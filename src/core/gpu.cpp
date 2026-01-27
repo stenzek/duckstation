@@ -738,9 +738,9 @@ float GPU::ComputeAspectRatioCorrection() const
   return (relative_width / relative_height);
 }
 
-GSVector2 GPU::CalculateDisplayWindowSize(DisplayFineCropMode mode, std::span<const s16, 4> amount,
-                                          float pixel_aspect_ratio, const GSVector2 video_size,
-                                          const GSVector2 source_size, const GSVector2 window_size)
+GSVector2 GPU::CalculateRenderWindowSize(DisplayFineCropMode mode, std::span<const s16, 4> amount,
+                                         float pixel_aspect_ratio, const GSVector2 video_size,
+                                         const GSVector2 source_size, const GSVector2 window_size)
 {
   GSVector2 size = video_size;
   if (pixel_aspect_ratio < 1.0f)

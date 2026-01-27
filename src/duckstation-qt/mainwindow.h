@@ -185,11 +185,11 @@ private:
 
   void switchToGameListView(bool pause_system = true);
   void switchToEmulationView();
-  void saveDisplayWindowGeometryToConfig();
-  void restoreDisplayWindowGeometryFromConfig();
+  void saveRenderWindowGeometryToConfig();
+  void restoreRenderWindowGeometryFromConfig();
 
   /// Returns true if the separate-window display widget should use the main window coordinates.
-  bool useMainWindowGeometryForDisplayWindow() const;
+  bool useMainWindowGeometryForRenderWindow() const;
 
   bool wantsLogWidget() const;
   bool wantsDisplayWidget() const;

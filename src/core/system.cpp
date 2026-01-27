@@ -6210,7 +6210,7 @@ void System::RequestDisplaySize(float scale /*= 0.0f*/)
   else
   {
     const WindowInfo& wi = VideoThread::GetRenderWindowInfo();
-    requested_size = GPU::CalculateDisplayWindowSize(
+    requested_size = GPU::CalculateRenderWindowSize(
       g_settings.display_fine_crop_mode, g_settings.display_fine_crop_amount, g_gpu.ComputePixelAspectRatio(),
       GSVector2(g_gpu.GetCRTCVideoSize()), GSVector2(g_gpu.GetCRTCVRAMSourceRect().rsize()) * scale,
       GSVector2(GSVector2i(wi.surface_width, wi.surface_height)));
@@ -6234,7 +6234,7 @@ DisplayAspectRatio System::GetConfigurationAspectRatio()
     .value_or(Settings::DEFAULT_DISPLAY_ASPECT_RATIO);
 }
 
-void System::DisplayWindowResized()
+void System::RenderWindowResized()
 {
   DebugAssert(IsValid());
   UpdateGTEAspectRatio();

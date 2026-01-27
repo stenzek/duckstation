@@ -258,7 +258,7 @@ std::optional<WindowInfo> MainWindow::acquireRenderWindow(RenderAPI render_api, 
 
     // since we don't destroy the display widget, we need to save it here
     if (!is_fullscreen && !is_rendering_to_main)
-      saveDisplayWindowGeometryToConfig();
+      saveRenderWindowGeometryToConfig();
 
     if (fullscreen)
     {
@@ -267,7 +267,7 @@ std::optional<WindowInfo> MainWindow::acquireRenderWindow(RenderAPI render_api, 
     else
     {
       container->showNormal();
-      restoreDisplayWindowGeometryFromConfig();
+      restoreRenderWindowGeometryFromConfig();
     }
 
 // See note below.
@@ -308,7 +308,7 @@ std::optional<WindowInfo> MainWindow::acquireRenderWindow(RenderAPI render_api, 
     return std::nullopt;
   }
 
-  g_core_thread->connectDisplaySignals(m_display_widget);
+  g_core_thread->connectRenderWindowSignals(m_display_widget);
 
   updateWindowTitle();
   updateWindowState();
@@ -322,7 +322,7 @@ bool MainWindow::canRenderToMainWindow() const
   return !Core::GetBoolSettingValue("Main", "RenderToSeparateWindow", false) && !QtHost::InNoGUIMode();
 }
 
-bool MainWindow::useMainWindowGeometryForDisplayWindow() const
+bool MainWindow::useMainWindowGeometryForRenderWindow() const
 {
   // nogui _or_ main window mode, since we want to use it for temporary unfullscreens
   return !Core::GetBoolSettingValue("Main", "RenderToSeparateWindow", false) || QtHost::InNoGUIMode();
@@ -378,13 +378,13 @@ void MainWindow::createDisplayWidget(bool fullscreen, bool render_to_main)
     if (isVisible() && canRenderToMainWindow())
       container->move(pos());
     else
-      restoreDisplayWindowGeometryFromConfig();
+      restoreRenderWindowGeometryFromConfig();
 
     container->showFullScreen();
   }
   else if (!render_to_main)
   {
-    restoreDisplayWindowGeometryFromConfig();
+    restoreRenderWindowGeometryFromConfig();
     container->showNormal();
 
 #ifdef _WIN32
@@ -447,7 +447,7 @@ void MainWindow::destroyDisplayWidget()
     m_display_widget->clearWindowInfo();
 
     if (!isRenderingFullscreen() && !isRenderingToMain())
-      saveDisplayWindowGeometryToConfig();
+      saveRenderWindowGeometryToConfig();
 
     if (m_display_container)
       m_display_container->removeDisplayWidget();
@@ -799,7 +799,7 @@ void MainWindow::recreate()
 
   if (was_display_created)
   {
-    g_core_thread->updateDisplayWindow();
+    g_core_thread->recreateRenderWindow();
     QtUtils::ProcessEventsWithSleep(QEventLoop::ExcludeUserInputEvents,
                                     []() { return !g_main_window->hasDisplayWidget(); });
     g_main_window->updateEmulationActions();
@@ -2669,7 +2669,7 @@ void MainWindow::onSettingsResetToDefault(bool system, bool controller)
   updateDebugMenuVisibility();
 }
 
-void MainWindow::saveDisplayWindowGeometryToConfig()
+void MainWindow::saveRenderWindowGeometryToConfig()
 {
   QWidget* const container = getDisplayContainer();
   if (container->windowState() & Qt::WindowFullScreen)
@@ -2683,7 +2683,7 @@ void MainWindow::saveDisplayWindowGeometryToConfig()
     QtUtils::SaveWindowGeometry(key, container);
 }
 
-void MainWindow::restoreDisplayWindowGeometryFromConfig()
+void MainWindow::restoreRenderWindowGeometryFromConfig()
 {
   QWidget* const container = getDisplayContainer();
   DebugAssert(m_display_widget);
@@ -2697,7 +2697,7 @@ void MainWindow::restoreDisplayWindowGeometryFromConfig()
 
   // we don't want the temporary windowed window to be positioned on a different monitor, so use the main window
   // coordinates... unless you're on wayland, too fucking bad, broken by design.
-  const bool use_main_window_pos = useMainWindowGeometryForDisplayWindow();
+  const bool use_main_window_pos = useMainWindowGeometryForRenderWindow();
   m_display_widget->setWindowPositionKey(use_main_window_pos ? "MainWindow" : "DisplayWindow");
 
   if (!QtUtils::RestoreWindowGeometry(m_display_widget->windowPositionKey(), container))
@@ -2846,7 +2846,7 @@ void MainWindow::changeEvent(QEvent* event)
   {
     // TODO: This should check the render-to-main option.
     if (isRenderingToMain())
-      g_core_thread->redrawDisplayWindow();
+      g_core_thread->redrawRenderWindow();
   }
 
   if (event->type() == QEvent::StyleChange)
@@ -3067,13 +3067,13 @@ void MainWindow::checkForSettingChanges()
   if (m_display_widget && !QtHost::IsSystemLocked() && !isRenderingFullscreen())
   {
     if (canRenderToMainWindow() != isRenderingToMain())
-      g_core_thread->updateDisplayWindow();
+      g_core_thread->recreateRenderWindow();
     else
       updateLogWidget();
   }
   else
   {
-    // log widget update must be deferred because updateDisplayWindow() is asynchronous
+    // log widget update must be deferred because updateRenderWindow() is asynchronous
     updateLogWidget();
   }
 

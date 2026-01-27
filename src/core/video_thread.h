@@ -60,12 +60,12 @@ bool IsFullscreen();
 void PresentCurrentFrame();
 
 /// Handles fullscreen transitions and such.
-void UpdateDisplayWindow();
+void RecreateRenderWindow();
 void SetFullscreen(bool fullscreen);
 void SetFullscreenWithCompletionHandler(bool fullscreen, AsyncCallType completion_handler);
 
 /// Called when the window is resized.
-void ResizeDisplayWindow(s32 width, s32 height, float scale, float refresh_rate);
+void ResizeRenderWindow(s32 width, s32 height, float scale, float refresh_rate);
 
 /// Access to main window size from CPU thread.
 const WindowInfo& GetRenderWindowInfo();

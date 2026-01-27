@@ -82,7 +82,7 @@ public:
 
   std::optional<WindowInfo> acquireRenderWindow(RenderAPI render_api, bool fullscreen, bool exclusive_fullscreen,
                                                 Error* error);
-  void connectDisplaySignals(DisplayWidget* widget);
+  void connectRenderWindowSignals(DisplayWidget* widget);
   void releaseRenderWindow();
 
   void startBackgroundControllerPollTimer();
@@ -167,11 +167,11 @@ public:
   void dumpSPURAM(const QString& path);
   void saveScreenshot();
   void applicationStateChanged(Qt::ApplicationState state);
-  void redrawDisplayWindow();
+  void redrawRenderWindow();
   void toggleFullscreen();
   void setFullscreen(bool fullscreen);
   void setFullscreenWithCompletionHandler(bool fullscreen, std::function<void()> completion_handler);
-  void updateDisplayWindow();
+  void recreateRenderWindow();
   void requestDisplaySize(float scale);
   void applyCheat(const QString& name);
   void reloadPostProcessingShaders();
@@ -190,13 +190,13 @@ protected:
 private:
   int getBackgroundControllerPollInterval() const;
   void stopInThread();
-  void onDisplayWindowMouseMoveAbsoluteEvent(float x, float y);
-  void onDisplayWindowMouseMoveRelativeEvent(float dx, float dy);
-  void onDisplayWindowMouseButtonEvent(int button, bool pressed);
-  void onDisplayWindowMouseWheelEvent(float dx, float dy);
-  void onDisplayWindowResized(int width, int height, float scale, float refresh_rate);
-  void onDisplayWindowKeyEvent(int key, bool pressed);
-  void onDisplayWindowTextEntered(const QString& text);
+  void onRenderWindowMouseMoveAbsoluteEvent(float x, float y);
+  void onRenderWindowMouseMoveRelativeEvent(float dx, float dy);
+  void onRenderWindowMouseButtonEvent(int button, bool pressed);
+  void onRenderWindowMouseWheelEvent(float dx, float dy);
+  void onRenderWindowResized(int width, int height, float scale, float refresh_rate);
+  void onRenderWindowKeyEvent(int key, bool pressed);
+  void onRenderWindowTextEntered(const QString& text);
   void doBackgroundControllerPoll();
   void processAuxiliaryRenderWindowInputEvent(void* userdata, quint32 event, quint32 param1, quint32 param2,
                                               quint32 param3);
