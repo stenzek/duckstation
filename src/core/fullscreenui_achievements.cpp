@@ -62,6 +62,7 @@ struct Notification
   float last_y;
   u16 min_width;
   AchievementNotificationNoteType note_type;
+  bool small_font;
 };
 
 struct PauseMenuAchievementInfo
@@ -241,7 +242,7 @@ void FullscreenUI::DrawAchievementsOverlays()
 
 void FullscreenUI::AddAchievementNotification(std::string key, float duration, std::string image_path,
                                               std::string title, std::string text, std::string note,
-                                              AchievementNotificationNoteType note_type, u16 min_width)
+                                              AchievementNotificationNoteType note_type, u16 min_width, bool small_font)
 {
   const bool prev_had_notifications = s_achievements_locals.notifications.empty();
   const Timer::Value current_time = Timer::GetCurrentValue();
@@ -259,6 +260,7 @@ void FullscreenUI::AddAchievementNotification(std::string key, float duration, s
         it->badge_path = std::move(image_path);
         it->min_width = min_width;
         it->note_type = note_type;
+        it->small_font = small_font;
 
         // Don't fade it in again
         const float time_passed = static_cast<float>(Timer::ConvertValueToSeconds(current_time - it->start_time));
@@ -282,6 +284,7 @@ void FullscreenUI::AddAchievementNotification(std::string key, float duration, s
   notif.last_y = -1.0f;
   notif.min_width = min_width;
   notif.note_type = note_type;
+  notif.small_font = small_font;
   s_achievements_locals.notifications.push_back(std::move(notif));
 
   if (!prev_had_notifications)
@@ -296,24 +299,28 @@ void FullscreenUI::DrawNotifications(NotificationLayout& layout)
   static constexpr float MOVE_DURATION = 0.5f;
   const Timer::Value current_time = Timer::GetCurrentValue();
 
-  const float horizontal_padding = FullscreenUI::LayoutScale(20.0f);
-  const float vertical_padding = FullscreenUI::LayoutScale(15.0f);
+  const float normal_horizontal_padding = FullscreenUI::LayoutScale(20.0f);
+  const float normal_vertical_padding = FullscreenUI::LayoutScale(15.0f);
+  const float small_horizontal_padding = FullscreenUI::LayoutScale(10.0f);
+  const float small_vertical_padding = small_horizontal_padding;
   const float horizontal_spacing = FullscreenUI::LayoutScale(10.0f);
   const float larger_horizontal_spacing = FullscreenUI::LayoutScale(18.0f);
   const float vertical_spacing = FullscreenUI::LayoutScale(4.0f);
-  const float badge_size = FullscreenUI::LayoutScale(48.0f);
+  const float normal_badge_size = FullscreenUI::LayoutScale(48.0f);
+  const float small_badge_size = FullscreenUI::LayoutScale(32.0f);
   const float min_width = FullscreenUI::LayoutScale(200.0f);
   const float max_width = FullscreenUI::LayoutScale(600.0f);
-  const float max_text_width = max_width - badge_size - (horizontal_padding * 2.0f) - horizontal_spacing;
-  const float min_height = (vertical_padding * 2.0f) + badge_size;
-  const float rounding = FullscreenUI::LayoutScale(20.0f);
-  const float min_rounded_width = rounding * 2.0f;
+  const float max_text_width = max_width - normal_badge_size - (normal_horizontal_padding * 2.0f) - horizontal_spacing;
+  const float normal_min_height = (normal_vertical_padding * 2.0f) + normal_badge_size;
+  const float small_min_height = (small_vertical_padding * 2.0f) + small_badge_size;
   const float note_icon_padding = LayoutScale(30.0f);
 
   ImFont*& font = UIStyle.Font;
-  const float& title_font_size = UIStyle.LargeFontSize;
+  const float& normal_title_font_size = UIStyle.LargeFontSize;
+  const float& small_title_font_size = UIStyle.MediumFontSize;
   const float& title_font_weight = UIStyle.BoldFontWeight;
-  const float& text_font_size = UIStyle.MediumFontSize;
+  const float& normal_text_font_size = UIStyle.MediumFontSize;
+  const float& small_text_font_size = UIStyle.MediumSmallFontSize;
   const float& text_font_weight = UIStyle.NormalFontWeight;
   const float& note_text_size = UIStyle.MediumFontSize;
   const float& note_text_weight = UIStyle.BoldFontWeight;
@@ -387,16 +394,22 @@ void FullscreenUI::DrawNotifications(NotificationLayout& layout)
         break;
     }
 
+    const float title_font_size = notif.small_font ? small_title_font_size : normal_title_font_size;
+    const float text_font_size = notif.small_font ? small_text_font_size : normal_text_font_size;
     const ImVec2 title_size = font->CalcTextSizeA(title_font_size, title_font_weight, max_text_width - note_size.x,
                                                   max_text_width - note_size.x, IMSTR_START_END(notif.title));
     const ImVec2 text_size = font->CalcTextSizeA(text_font_size, text_font_weight, max_text_width, max_text_width,
                                                  IMSTR_START_END(notif.text));
 
+    const float badge_size = notif.small_font ? small_badge_size : normal_badge_size;
+    const float horizontal_padding = notif.small_font ? small_horizontal_padding : normal_horizontal_padding;
+    const float vertical_padding = notif.small_font ? small_vertical_padding : normal_vertical_padding;
     const float box_width = std::max((horizontal_padding * 2.0f) + badge_size + horizontal_spacing +
                                        ImCeil(std::max(title_size.x + note_spacing + note_size.x, text_size.x)),
                                      std::max(static_cast<float>(LayoutScale(notif.min_width)), min_width));
     const float box_height =
-      std::max((vertical_padding * 2.0f) + ImCeil(title_size.y) + vertical_spacing + ImCeil(text_size.y), min_height);
+      std::max((vertical_padding * 2.0f) + ImCeil(title_size.y) + vertical_spacing + ImCeil(text_size.y),
+               notif.small_font ? small_min_height : normal_min_height);
 
     const auto& [expected_pos, opacity] =
       layout.GetNextPosition(box_width, box_height, time_passed, notif.duration, NOTIFICATION_APPEAR_ANIMATION_TIME,
@@ -437,13 +450,14 @@ void FullscreenUI::DrawNotifications(NotificationLayout& layout)
     const ImVec2 box_min(expected_pos.x, actual_y);
     const ImVec2 box_max(box_min.x + box_width, box_min.y + box_height);
     const float background_opacity = opacity * 0.95f;
+    const float min_rounded_width = horizontal_padding * 2.0f;
 
     DrawRoundedGradientRect(
       dl, box_min, box_max, ImGui::GetColorU32(ModAlpha(left_background_color, background_opacity)),
       ImGui::GetColorU32(ModAlpha(ImLerp(left_background_color, right_background_color,
                                          (box_width - min_rounded_width) / (max_width - min_rounded_width)),
                                   background_opacity)),
-      rounding);
+      horizontal_padding);
 
     const ImVec2 badge_min(box_min.x + horizontal_padding, box_min.y + vertical_padding);
     const ImVec2 badge_max(badge_min.x + badge_size, badge_min.y + badge_size);

@@ -132,7 +132,7 @@ enum class AchievementNotificationNoteType : u8
 void AddAchievementNotification(std::string key, float duration, std::string image_path, std::string title,
                                 std::string text, std::string note = {},
                                 AchievementNotificationNoteType note_type = AchievementNotificationNoteType::None,
-                                u16 min_width = 0);
+                                u16 min_width = 0, bool small_font = false);
 
 /// Draws ImGui overlays when ingame.
 void DrawAchievementsOverlays();

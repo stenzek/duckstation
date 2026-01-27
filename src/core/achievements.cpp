@@ -1629,7 +1629,8 @@ void Achievements::HandleAchievementChallengeIndicatorShowEvent(const rc_client_
       fmt::format("AchievementChallenge{}", event->achievement->id), CHALLENGE_STARTED_NOTIFICATION_TIME, badge_path,
       fmt::format(TRANSLATE_FS("Achievements", "Challenge Started: {}"),
                   event->achievement->title ? event->achievement->title : ""),
-      fmt::format(ICON_EMOJI_DIRECT_HIT " {}", event->achievement->description ? event->achievement->description : ""));
+      fmt::format(ICON_EMOJI_DIRECT_HIT " {}", event->achievement->description ? event->achievement->description : ""),
+      {}, FullscreenUI::AchievementNotificationNoteType::None, 0, true);
   }
 
   s_state.active_challenge_indicators.push_back(
@@ -1659,7 +1660,8 @@ void Achievements::HandleAchievementChallengeIndicatorHideEvent(const rc_client_
       fmt::format(TRANSLATE_FS("Achievements", "Challenge Failed: {}"),
                   event->achievement->title ? event->achievement->title : ""),
       fmt::format(ICON_EMOJI_CROSS_MARK_BUTTON " {}",
-                  event->achievement->description ? event->achievement->description : ""));
+                  event->achievement->description ? event->achievement->description : ""),
+      {}, FullscreenUI::AchievementNotificationNoteType::None, 0, true);
   }
   if (g_settings.achievements_challenge_indicator_mode == AchievementChallengeIndicatorMode::Notification ||
       g_settings.achievements_challenge_indicator_mode == AchievementChallengeIndicatorMode::Disabled)
