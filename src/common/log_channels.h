@@ -26,7 +26,6 @@
   X(GPU)                                                                                                               \
   X(GPUDevice)                                                                                                         \
   X(GPUDump)                                                                                                           \
-  X(GPUThread)                                                                                                         \
   X(GPU_SW)                                                                                                            \
   X(GPU_HW)                                                                                                            \
   X(GameDatabase)                                                                                                      \
@@ -65,6 +64,7 @@
   X(Timers)                                                                                                            \
   X(TimingEvents)                                                                                                      \
   X(Ungrouped)                                                                                                         \
+  X(VideoThread)                                                                                                       \
   X(Win32RawInputSource)                                                                                               \
   X(WindowInfo)                                                                                                        \
   X(XInputSource)

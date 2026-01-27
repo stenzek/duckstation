@@ -10,7 +10,6 @@
 #include "gpu_hw_texture_cache.h"
 #include "gpu_shadergen.h"
 #include "gpu_sw_rasterizer.h"
-#include "gpu_thread.h"
 #include "host.h"
 #include "interrupt_controller.h"
 #include "performance_counters.h"
@@ -19,6 +18,7 @@
 #include "system_private.h"
 #include "timers.h"
 #include "timing_event.h"
+#include "video_thread.h"
 
 #include "util/gpu_device.h"
 #include "util/image.h"
@@ -362,15 +362,15 @@ bool GPU::DoState(StateWrapper& sw)
       return false;
 
     // Now we can actually allocate FIFO storage, and push it to the GPU thread.
-    GPUBackendLoadStateCommand* cmd = static_cast<GPUBackendLoadStateCommand*>(
-      GPUThread::AllocateCommand(GPUBackendCommandType::LoadState, sizeof(GPUBackendLoadStateCommand) + tc_data_size));
+    GPUBackendLoadStateCommand* cmd = static_cast<GPUBackendLoadStateCommand*>(VideoThread::AllocateCommand(
+      VideoThreadCommandType::LoadState, sizeof(GPUBackendLoadStateCommand) + tc_data_size));
     std::memcpy(cmd->clut_data, load_clut_data, sizeof(cmd->clut_data));
     std::memcpy(cmd->vram_data, sw.GetData() + vram_start_pos, VRAM_SIZE);
     cmd->texture_cache_state_version = sw.GetVersion();
     cmd->texture_cache_state_size = tc_data_size;
     if (tc_data_size > 0)
       std::memcpy(cmd->texture_cache_state, sw.GetData() + vram_start_pos + VRAM_SIZE, tc_data_size);
-    GPUThread::PushCommand(cmd);
+    VideoThread::PushCommand(cmd);
 
     m_drawing_area_changed = true;
     SetClampedDrawingArea();
@@ -428,11 +428,11 @@ void GPU::DoMemoryState(StateWrapper& sw, System::MemorySaveState& mss)
   }
 
   // Push to thread.
-  GPUBackendDoMemoryStateCommand* cmd = static_cast<GPUBackendDoMemoryStateCommand*>(GPUThread::AllocateCommand(
-    sw.IsReading() ? GPUBackendCommandType::LoadMemoryState : GPUBackendCommandType::SaveMemoryState,
+  GPUBackendDoMemoryStateCommand* cmd = static_cast<GPUBackendDoMemoryStateCommand*>(VideoThread::AllocateCommand(
+    sw.IsReading() ? VideoThreadCommandType::LoadMemoryState : VideoThreadCommandType::SaveMemoryState,
     sizeof(GPUBackendDoMemoryStateCommand)));
   cmd->memory_save_state = &mss;
-  GPUThread::PushCommandAndWakeThread(cmd);
+  VideoThread::PushCommandAndWakeThread(cmd);
 }
 
 void GPU::UpdateDMARequest()
@@ -665,7 +665,7 @@ float GPU::ComputePixelAspectRatio() const
   }
   else if (dar_type == DisplayAspectRatio::Stretch())
   {
-    const WindowInfo& wi = GPUThread::GetRenderWindowInfo();
+    const WindowInfo& wi = VideoThread::GetRenderWindowInfo();
     if (!wi.IsSurfaceless() && wi.surface_width > 0 && wi.surface_height > 0)
     {
       // Correction is applied to the GTE for stretch to fit, that way it fills the window.
@@ -1373,7 +1373,7 @@ u8 GPU::UpdateOrGetGPUBusyPct()
 
 GSVector2 GPU::ConvertScreenCoordinatesToDisplayCoordinates(GSVector2 window_pos) const
 {
-  const WindowInfo& wi = GPUThread::GetRenderWindowInfo();
+  const WindowInfo& wi = VideoThread::GetRenderWindowInfo();
   if (wi.IsSurfaceless())
     return GSVector2::cxpr(-1.0f);
 
@@ -1988,7 +1988,7 @@ void GPU::ReadVRAM(u16 x, u16 y, u16 width, u16 height)
   if ((!GPUBackend::IsUsingHardwareBackend() || g_settings.gpu_use_software_renderer_for_readbacks) &&
       !g_settings.display_show_gpu_stats)
   {
-    GPUBackend::SyncGPUThread(true);
+    VideoThread::SyncThread(true);
     return;
   }
 
@@ -2075,13 +2075,13 @@ void GPU::UpdateDisplay(bool submit_frame)
     std::memcpy(&cmd->frame, &frame, sizeof(frame));
 
     const bool drain_one = cmd->frame.present_frame && GPUBackend::BeginQueueFrame();
-    GPUThread::PushCommandAndWakeThread(cmd);
+    VideoThread::PushCommandAndWakeThread(cmd);
     if (drain_one)
       GPUBackend::WaitForOneQueuedFrame();
   }
   else
   {
-    GPUThread::PushCommand(cmd);
+    VideoThread::PushCommand(cmd);
   }
 }
 
@@ -2100,7 +2100,7 @@ void GPU::QueuePresentCurrentFrame()
   std::memcpy(&cmd->frame, &frame, sizeof(frame));
 
   const bool drain_one = cmd->frame.present_frame && GPUBackend::BeginQueueFrame();
-  GPUThread::PushCommandAndWakeThread(cmd);
+  VideoThread::PushCommandAndWakeThread(cmd);
   if (drain_one)
     GPUBackend::WaitForOneQueuedFrame();
 }
@@ -2111,7 +2111,7 @@ u8 GPU::CalculateAutomaticResolutionScale() const
   // When the system is starting and all borders crop is enabled, the registers are zero, and
   // display_height therefore is also zero. Keep the existing resolution until it updates.
   u32 scale = 1;
-  if (const WindowInfo& main_window_info = GPUThread::GetRenderWindowInfo();
+  if (const WindowInfo& main_window_info = VideoThread::GetRenderWindowInfo();
       !main_window_info.IsSurfaceless() && m_crtc_state.display_width > 0 && m_crtc_state.display_height > 0 &&
       m_crtc_state.display_vram_width > 0 && m_crtc_state.display_vram_height > 0)
   {

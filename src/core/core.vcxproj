@@ -48,7 +48,7 @@
     <ClCompile Include="gpu_shadergen.cpp" />
     <ClCompile Include="gpu_sw.cpp" />
     <ClCompile Include="gpu_sw_rasterizer.cpp" />
-    <ClCompile Include="gpu_thread.cpp" />
+    <ClCompile Include="video_thread.cpp" />
     <ClCompile Include="gte.cpp" />
     <ClCompile Include="dma.cpp" />
     <ClCompile Include="gpu.cpp" />
@@ -134,8 +134,8 @@
     <ClInclude Include="gpu_shadergen.h" />
     <ClInclude Include="gpu_sw.h" />
     <ClInclude Include="gpu_sw_rasterizer.h" />
-    <ClInclude Include="gpu_thread.h" />
-    <ClInclude Include="gpu_thread_commands.h" />
+    <ClInclude Include="video_thread.h" />
+    <ClInclude Include="video_thread_commands.h" />
     <ClInclude Include="gpu_types.h" />
     <ClInclude Include="gte.h" />
     <ClInclude Include="cpu_types.h" />

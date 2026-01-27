@@ -12,10 +12,10 @@
 #include "core/core.h"
 #include "core/fullscreenui.h"
 #include "core/fullscreenui_widgets.h"
-#include "core/gpu_thread.h"
 #include "core/host.h"
 #include "core/settings.h"
 #include "core/system_private.h"
+#include "core/video_thread.h"
 
 #include "common/assert.h"
 #include "common/bitutils.h"
@@ -334,7 +334,7 @@ void ImGuiManager::WindowResized(GPUTextureFormat format, float width, float hei
     if (!CompilePipelines(&error))
     {
       error.AddPrefix("Failed to compile pipelines after window format change:\n");
-      GPUThread::ReportFatalErrorAndShutdown(error.GetDescription());
+      VideoThread::ReportFatalErrorAndShutdown(error.GetDescription());
       return;
     }
   }
@@ -862,7 +862,7 @@ void ImGuiManager::ReloadFontDataIfActive()
   Error error;
   if (!CreateFontAtlas(&error)) [[unlikely]]
   {
-    GPUThread::ReportFatalErrorAndShutdown(fmt::format("Failed to recreate font atlas:\n{}", error.GetDescription()));
+    VideoThread::ReportFatalErrorAndShutdown(fmt::format("Failed to recreate font atlas:\n{}", error.GetDescription()));
     return;
   }
 
@@ -914,11 +914,11 @@ void ImGuiManager::AddOSDMessage(OSDMessageType type, std::string key, std::stri
 void ImGuiManager::UpdateOSDMessageRunIdle(const std::unique_lock<std::mutex>& lock)
 {
   static constexpr auto cb = []() {
-    GPUThread::SetRunIdleReason(GPUThread::RunIdleReason::OSDMessagesActive,
-                                (!s_state.osd_active_messages.empty() || !s_state.osd_posted_messages.empty()));
+    VideoThread::SetRunIdleReason(VideoThread::RunIdleReason::OSDMessagesActive,
+                                  (!s_state.osd_active_messages.empty() || !s_state.osd_posted_messages.empty()));
   };
 
-  if (GPUThread::IsOnThread())
+  if (VideoThread::IsOnThread())
   {
     cb();
     return;
@@ -926,7 +926,7 @@ void ImGuiManager::UpdateOSDMessageRunIdle(const std::unique_lock<std::mutex>& l
 
   if (System::GetCoreThreadHandle().IsCallingThread())
   {
-    GPUThread::RunOnThread([]() {
+    VideoThread::RunOnThread([]() {
       const std::unique_lock lock(s_state.osd_messages_lock);
       cb();
     });
@@ -934,7 +934,7 @@ void ImGuiManager::UpdateOSDMessageRunIdle(const std::unique_lock<std::mutex>& l
   else
   {
     Host::RunOnCoreThread([]() {
-      GPUThread::RunOnThread([]() {
+      VideoThread::RunOnThread([]() {
         const std::unique_lock lock(s_state.osd_messages_lock);
         cb();
       });
@@ -1233,7 +1233,7 @@ void ImGuiManager::RenderOSDMessages()
 
   // last one displayed?
   if (s_state.osd_active_messages.empty())
-    GPUThread::SetRunIdleReason(GPUThread::RunIdleReason::OSDMessagesActive, false);
+    VideoThread::SetRunIdleReason(VideoThread::RunIdleReason::OSDMessagesActive, false);
 }
 
 void Host::AddOSDMessage(OSDMessageType type, std::string message)
@@ -1338,7 +1338,7 @@ void ImGuiManager::AddTextInput(std::string str)
   if (!s_state.imgui_context || !s_state.imgui_wants_keyboard.load(std::memory_order_acquire))
     return;
 
-  GPUThread::RunOnThread([str = std::move(str)]() {
+  VideoThread::RunOnThread([str = std::move(str)]() {
     if (!s_state.imgui_context)
       return;
 
@@ -1351,7 +1351,7 @@ void ImGuiManager::UpdateMousePosition(float x, float y)
   if (!s_state.imgui_context)
     return;
 
-  GPUThread::RunOnThread([x, y]() {
+  VideoThread::RunOnThread([x, y]() {
     if (!s_state.imgui_context) [[unlikely]]
       return;
 
@@ -1375,7 +1375,7 @@ bool ImGuiManager::ProcessPointerButtonEvent(InputBindingKey key, float value)
   // still update state anyway
   const int button = static_cast<int>(key.data);
   const bool pressed = (value != 0.0f);
-  GPUThread::RunOnThread([button, pressed]() {
+  VideoThread::RunOnThread([button, pressed]() {
     if (!s_state.imgui_context)
       return;
 
@@ -1392,7 +1392,7 @@ bool ImGuiManager::ProcessPointerAxisEvent(InputBindingKey key, float value)
 
   // still update state anyway
   const bool horizontal = (key.data == static_cast<u32>(InputPointerAxis::WheelX));
-  GPUThread::RunOnThread([value, horizontal]() {
+  VideoThread::RunOnThread([value, horizontal]() {
     if (!s_state.imgui_context)
       return;
 
@@ -1409,7 +1409,7 @@ bool ImGuiManager::ProcessHostKeyEvent(InputBindingKey key, float value)
 
   if (const std::optional<ImGuiKey> imkey = MapHostKeyEventToImGuiKey(key.data))
   {
-    GPUThread::RunOnThread([imkey = imkey.value(), pressed = (value != 0.0f)]() {
+    VideoThread::RunOnThread([imkey = imkey.value(), pressed = (value != 0.0f)]() {
       if (!s_state.imgui_context)
         return;
 
@@ -1472,7 +1472,7 @@ bool ImGuiManager::ProcessGenericInputEvent(GenericInputBinding key, float value
   if (!s_state.imgui_context)
     return false;
 
-  GPUThread::RunOnThread([imkey, value]() {
+  VideoThread::RunOnThread([imkey, value]() {
     if (!s_state.imgui_context)
       return;
 
@@ -1519,7 +1519,7 @@ void ImGuiManager::ClearMouseButtonState()
   if (!s_state.imgui_context)
     return;
 
-  GPUThread::RunOnThread([]() {
+  VideoThread::RunOnThread([]() {
     if (!s_state.imgui_context)
       return;
 
@@ -1653,10 +1653,10 @@ void ImGuiManager::SetSoftwareCursor(u32 index, std::string image_path, float im
   const bool is_hiding_or_showing = (image_path.empty() != sc.image_path.empty());
   sc.image_path = std::move(image_path);
   sc.scale = image_scale;
-  if (GPUThread::IsGPUBackendRequested())
+  if (VideoThread::IsGPUBackendRequested())
   {
-    GPUThread::RunOnThread([index, image_path = sc.image_path]() {
-      if (GPUThread::HasGPUBackend())
+    VideoThread::RunOnThread([index, image_path = sc.image_path]() {
+      if (VideoThread::HasGPUBackend())
         UpdateSoftwareCursorTexture(s_state.software_cursors[index], image_path);
     });
   }

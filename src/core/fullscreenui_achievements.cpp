@@ -3,9 +3,9 @@
 
 #include "achievements_private.h"
 #include "fullscreenui_private.h"
-#include "gpu_thread.h"
 #include "host.h"
 #include "system.h"
+#include "video_thread.h"
 
 #include "util/gpu_texture.h"
 #include "util/imgui_manager.h"
@@ -523,7 +523,7 @@ void FullscreenUI::DrawNotifications(NotificationLayout& layout)
 
   // cleared?
   if (s_achievements_locals.notifications.empty())
-    GPUThread::SetRunIdleReason(GPUThread::RunIdleReason::AchievementOverlaysActive, false);
+    VideoThread::SetRunIdleReason(VideoThread::RunIdleReason::AchievementOverlaysActive, false);
 }
 
 void FullscreenUI::DrawIndicators(NotificationLayout& layout)
@@ -734,21 +734,21 @@ void FullscreenUI::DrawIndicators(NotificationLayout& layout)
 void FullscreenUI::UpdateAchievementOverlaysRunIdle()
 {
   // early out if we're already on the GPU thread
-  if (GPUThread::IsOnThread())
+  if (VideoThread::IsOnThread())
   {
-    GPUThread::SetRunIdleReason(GPUThread::RunIdleReason::AchievementOverlaysActive,
-                                !s_achievements_locals.notifications.empty());
+    VideoThread::SetRunIdleReason(VideoThread::RunIdleReason::AchievementOverlaysActive,
+                                  !s_achievements_locals.notifications.empty());
     return;
   }
 
   // need to check it again once we're executing on the gpu thread, it could've changed since
-  GPUThread::RunOnThread([]() {
+  VideoThread::RunOnThread([]() {
     bool is_active;
     {
       const auto lock = Achievements::GetLock();
       is_active = !s_achievements_locals.notifications.empty();
     }
-    GPUThread::SetRunIdleReason(GPUThread::RunIdleReason::AchievementOverlaysActive, is_active);
+    VideoThread::SetRunIdleReason(VideoThread::RunIdleReason::AchievementOverlaysActive, is_active);
   });
 }
 
@@ -1342,7 +1342,7 @@ void FullscreenUI::OpenAchievementsWindow()
     return;
   }
 
-  GPUThread::RunOnThread([]() {
+  VideoThread::RunOnThread([]() {
     Initialize();
 
     PauseForMenuOpen(false);
@@ -2099,7 +2099,7 @@ void FullscreenUI::OpenLeaderboardsWindow()
     return;
   }
 
-  GPUThread::RunOnThread([]() {
+  VideoThread::RunOnThread([]() {
     Initialize();
 
     PauseForMenuOpen(false);

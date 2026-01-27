@@ -22,7 +22,6 @@
 #include "gpu_dump.h"
 #include "gpu_hw_texture_cache.h"
 #include "gpu_presenter.h"
-#include "gpu_thread.h"
 #include "gte.h"
 #include "host.h"
 #include "imgui_overlays.h"
@@ -41,6 +40,7 @@
 #include "spu.h"
 #include "system_private.h"
 #include "timers.h"
+#include "video_thread.h"
 
 #include "scmversion/scmversion.h"
 
@@ -558,7 +558,7 @@ bool System::CoreThreadInitialize(Error* error)
 
   LogStartupInformation();
 
-  GPUThread::Internal::ProcessStartup();
+  VideoThread::Internal::ProcessStartup();
 
   if (g_settings.achievements_enabled)
     Achievements::Initialize();
@@ -1242,7 +1242,7 @@ void System::RecreateGPU(GPURenderer renderer)
   StopMediaCapture();
 
   Error error;
-  if (!GPUThread::CreateGPUBackend(renderer, true, std::nullopt, &error))
+  if (!VideoThread::CreateGPUBackend(renderer, true, std::nullopt, &error))
   {
     ERROR_LOG("Failed to switch to {} renderer: {}", Settings::GetRendererName(renderer), error.GetDescription());
     Panic("Failed to switch renderer.");
@@ -1252,7 +1252,7 @@ void System::RecreateGPU(GPURenderer renderer)
 
   g_gpu.UpdateDisplay(false);
   if (IsPaused())
-    GPUThread::PresentCurrentFrame();
+    VideoThread::PresentCurrentFrame();
 }
 
 void System::LoadSettings(bool display_osd_messages)
@@ -1686,7 +1686,8 @@ void System::PauseSystem(bool paused)
 
   s_state.state = (paused ? State::Paused : State::Running);
   SPU::GetOutputStream().SetPaused(paused);
-  GPUThread::RunOnThread([paused]() { GPUThread::SetRunIdleReason(GPUThread::RunIdleReason::SystemPaused, paused); });
+  VideoThread::RunOnThread(
+    [paused]() { VideoThread::SetRunIdleReason(VideoThread::RunIdleReason::SystemPaused, paused); });
 
   if (paused)
   {
@@ -1704,7 +1705,7 @@ void System::PauseSystem(bool paused)
 
     Host::OnSystemPaused();
     UpdateDisplayVSync();
-    GPUThread::PresentCurrentFrame();
+    VideoThread::PresentCurrentFrame();
   }
   else
   {
@@ -2051,15 +2052,15 @@ bool System::Initialize(std::unique_ptr<CDImage> disc, DiscRegion disc_region, b
 
   // Game info must be set prior to backend creation because of texture replacements.
   // We don't do it in UpdateRunningGame() when booting because it can fail in a number of locations.
-  GPUThread::UpdateGameInfo(s_state.running_game_title, s_state.running_game_serial, s_state.running_game_path,
-                            s_state.running_game_hash, false);
+  VideoThread::UpdateGameInfo(s_state.running_game_title, s_state.running_game_serial, s_state.running_game_path,
+                              s_state.running_game_hash, false);
 
   // This can fail due to the application being closed during startup.
-  if (!GPUThread::CreateGPUBackend(force_software_renderer ? GPURenderer::Software : g_settings.gpu_renderer, false,
-                                   fullscreen, error))
+  if (!VideoThread::CreateGPUBackend(force_software_renderer ? GPURenderer::Software : g_settings.gpu_renderer, false,
+                                     fullscreen, error))
   {
     // Game info has to be manually cleared since the backend won't shutdown naturally.
-    GPUThread::ClearGameInfo();
+    VideoThread::ClearGameInfo();
     return false;
   }
 
@@ -2101,8 +2102,8 @@ void System::DestroySystem()
   GDBServer::Shutdown();
 #endif
 
-  GPUThread::RunOnThread([]() {
-    GPUThread::SetRunIdleReason(GPUThread::RunIdleReason::SystemPaused, false);
+  VideoThread::RunOnThread([]() {
+    VideoThread::SetRunIdleReason(VideoThread::RunIdleReason::SystemPaused, false);
     Host::ClearOSDMessages();
   });
 
@@ -2115,10 +2116,10 @@ void System::DestroySystem()
   FreeMemoryStateStorage(true, true, false);
 
   // unless fsui is running, we don't need sound effects anymore
-  if (!GPUThread::IsFullscreenUIRequested())
+  if (!VideoThread::IsFullscreenUIRequested())
     SoundEffectManager::Shutdown();
 
-  GPUThread::DestroyGPUBackend();
+  VideoThread::DestroyGPUBackend();
 
   Cheats::UnloadAll();
   PCDrv::Shutdown();
@@ -2758,7 +2759,7 @@ void System::FreeMemoryStateStorage(bool release_memory, bool release_textures, 
       if ((mss.vram_texture || !mss.gpu_state_data.empty()) && !gpu_thread_synced)
       {
         gpu_thread_synced = true;
-        GPUThread::SyncGPUThread(true);
+        VideoThread::SyncThread(true);
       }
 
       if (mss.vram_texture)
@@ -2777,7 +2778,7 @@ void System::FreeMemoryStateStorage(bool release_memory, bool release_textures, 
 
     if (!textures.empty())
     {
-      GPUThread::RunOnThread([textures = std::move(textures), recycle_textures]() mutable {
+      VideoThread::RunOnThread([textures = std::move(textures), recycle_textures]() mutable {
         for (GPUTexture* texture : textures)
         {
           if (recycle_textures)
@@ -3760,7 +3761,8 @@ void System::UpdateSpeedLimiterState()
 
   if (g_settings.sync_to_host_refresh_rate)
   {
-    if (const float host_refresh_rate = GPUThread::GetRenderWindowInfo().surface_refresh_rate; host_refresh_rate > 0.0f)
+    if (const float host_refresh_rate = VideoThread::GetRenderWindowInfo().surface_refresh_rate;
+        host_refresh_rate > 0.0f)
     {
       const float ratio = host_refresh_rate / s_state.video_frame_rate;
       s_state.can_sync_to_host = (ratio >= 0.95f && ratio <= 1.05f);
@@ -3806,7 +3808,7 @@ void System::UpdateSpeedLimiterState()
       s_state.core_thread_handle.SetTimeConstraints(s_state.optimal_frame_pacing, new_scheduler_period, typical_time,
                                                     new_scheduler_period);
     }
-    const Threading::ThreadHandle& gpu_thread = GPUThread::Internal::GetThreadHandle();
+    const Threading::ThreadHandle& gpu_thread = VideoThread::Internal::GetThreadHandle();
     if (gpu_thread)
     {
       gpu_thread.SetTimeConstraints(s_state.optimal_frame_pacing, new_scheduler_period, typical_time,
@@ -3829,7 +3831,7 @@ void System::UpdateDisplayVSync()
   VERBOSE_LOG("VSync: {}", GPUDevice::VSyncModeToString(vsync_mode));
   VERBOSE_LOG("Present Skip: {}", present_throttle_names[static_cast<size_t>(present_skip_mode)]);
 
-  GPUThread::SetVSync(vsync_mode, present_skip_mode);
+  VideoThread::SetVSync(vsync_mode, present_skip_mode);
 }
 
 GPUVSyncMode System::GetEffectiveVSyncMode()
@@ -3869,7 +3871,7 @@ PresentSkipMode System::GetEffectivePresentSkipMode()
     return PresentSkipMode::Always;
 
   // Must present skip if the refresh rate is below the system frame rate.
-  const float host_refresh_rate = GPUThread::GetRenderWindowInfo().surface_refresh_rate;
+  const float host_refresh_rate = VideoThread::GetRenderWindowInfo().surface_refresh_rate;
   if (host_refresh_rate < s_state.video_frame_rate)
     return PresentSkipMode::Always;
 
@@ -4366,8 +4368,8 @@ void System::UpdateRunningGame(const std::string& path, CDImage* image, bool boo
 
   if (!booting)
   {
-    GPUThread::UpdateGameInfo(s_state.running_game_title, s_state.running_game_serial, s_state.running_game_path,
-                              s_state.running_game_hash);
+    VideoThread::UpdateGameInfo(s_state.running_game_title, s_state.running_game_serial, s_state.running_game_path,
+                                s_state.running_game_hash);
   }
 
   Host::OnSystemGameChanged(s_state.running_game_path, s_state.running_game_serial, s_state.running_game_title,
@@ -4750,7 +4752,7 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
              g_settings.runahead_frames != old_settings.runahead_frames ||
              g_settings.texture_replacements != old_settings.texture_replacements)
     {
-      GPUThread::UpdateSettings(true, false, false);
+      VideoThread::UpdateSettings(true, false, false);
 
       // NOTE: Must come after the GPU thread settings update, otherwise it allocs the wrong size textures.
       const bool use_existing_textures = (g_settings.gpu_resolution_scale == old_settings.gpu_resolution_scale &&
@@ -4771,7 +4773,7 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
       {
         // resolution change needs display updated
         g_gpu.UpdateDisplay(false);
-        GPUThread::PresentCurrentFrame();
+        VideoThread::PresentCurrentFrame();
       }
     }
     else if (const bool device_settings_changed = g_settings.AreGPUDeviceSettingsChanged(old_settings);
@@ -4799,7 +4801,7 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
         // device changes are super icky, we need to purge and recreate any rewind states
         FreeMemoryStateStorage(false, true, false);
         StopMediaCapture();
-        GPUThread::UpdateSettings(true, true, g_settings.gpu_use_thread != old_settings.gpu_use_thread);
+        VideoThread::UpdateSettings(true, true, g_settings.gpu_use_thread != old_settings.gpu_use_thread);
 
         if (g_settings.rewind_enable == old_settings.rewind_enable &&
             g_settings.rewind_save_frequency == old_settings.rewind_save_frequency &&
@@ -4814,19 +4816,19 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
         {
           // and display the current frame on the new device
           g_gpu.UpdateDisplay(false);
-          GPUThread::PresentCurrentFrame();
+          VideoThread::PresentCurrentFrame();
         }
       }
       else
       {
         // don't need to represent here, because the OSD isn't visible while paused anyway
-        GPUThread::UpdateSettings(true, false, false);
+        VideoThread::UpdateSettings(true, false, false);
       }
     }
     else
     {
       // still need to update debug windows
-      GPUThread::UpdateSettings(false, false, false);
+      VideoThread::UpdateSettings(false, false, false);
     }
 
     if (g_settings.gpu_widescreen_hack != old_settings.gpu_widescreen_hack ||
@@ -4925,11 +4927,11 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
   else
   {
     const bool thread_changed = (g_settings.gpu_use_thread != old_settings.gpu_use_thread);
-    if (GPUThread::IsFullscreenUIRequested() || thread_changed)
+    if (VideoThread::IsFullscreenUIRequested() || thread_changed)
     {
       // handle device setting updates as well
       if (g_settings.gpu_renderer != old_settings.gpu_renderer || g_settings.AreGPUDeviceSettingsChanged(old_settings))
-        GPUThread::UpdateSettings(false, true, thread_changed);
+        VideoThread::UpdateSettings(false, true, thread_changed);
 
       if (g_settings.display_vsync != old_settings.display_vsync ||
           g_settings.display_disable_mailbox_presentation != old_settings.display_disable_mailbox_presentation)
@@ -4979,7 +4981,7 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
   if (IsValid() && g_settings.gpu_use_thread && g_settings.gpu_max_queued_frames != old_settings.gpu_max_queued_frames)
     [[unlikely]]
   {
-    GPUThread::SyncGPUThread(false);
+    VideoThread::SyncThread(false);
   }
 }
 
@@ -5281,7 +5283,7 @@ bool System::LoadOneRewindState()
   LoadMemoryState((s_state.memory_save_state_count > 1) ? PopMemoryState() : GetFirstMemoryState(), true);
 
   // back in time, need to reset perf counters
-  GPUThread::RunOnThread(&PerformanceCounters::Reset);
+  VideoThread::RunOnThread(&PerformanceCounters::Reset);
 
   return true;
 }
@@ -5319,7 +5321,7 @@ void System::SetRewinding(bool enabled)
     if (was_enabled)
     {
       // reset perf counters to avoid the spike
-      GPUThread::RunOnThread(&PerformanceCounters::Reset);
+      VideoThread::RunOnThread(&PerformanceCounters::Reset);
 
       // and wait the full frequency before filling a new rewind slot
       s_state.rewind_save_counter = s_state.rewind_save_frequency;
@@ -5339,7 +5341,7 @@ void System::DoRewind()
     s_state.rewind_load_counter--;
   }
 
-  GPUThread::PresentCurrentFrame();
+  VideoThread::PresentCurrentFrame();
 
   Host::PumpMessagesOnCoreThread();
   IdlePollUpdate();
@@ -5664,7 +5666,7 @@ bool System::StartMediaCapture(std::string path)
   if (capture_video && Core::GetBoolSettingValue("MediaCapture", "VideoAutoSize", false))
   {
     // need to query this on the GPU thread
-    GPUThread::RunOnBackend(
+    VideoThread::RunOnBackend(
       [path = std::move(path), capture_audio, mode = g_settings.display_screenshot_mode](GPUBackend* backend) mutable {
         if (!backend)
           return;
@@ -5702,7 +5704,7 @@ bool System::StartMediaCapture(std::string path, bool capture_video, bool captur
   if (s_state.media_capture)
     StopMediaCapture();
 
-  const WindowInfo& main_window_info = GPUThread::GetRenderWindowInfo();
+  const WindowInfo& main_window_info = VideoThread::GetRenderWindowInfo();
   const GPUTextureFormat capture_format =
     main_window_info.IsSurfaceless() ? GPUTextureFormat::RGBA8 : main_window_info.surface_format;
 
@@ -5765,7 +5767,7 @@ void System::StopMediaCapture()
   {
     // If we're capturing video, we need to finish the capture on the GPU thread.
     // This is because it owns texture objects, and OpenGL is not thread-safe.
-    GPUThread::RunOnThread(
+    VideoThread::RunOnThread(
       [cap = s_state.media_capture.release()]() mutable { StopMediaCapture(std::unique_ptr<MediaCapture>(cap)); });
   }
   else
@@ -6207,7 +6209,7 @@ void System::RequestDisplaySize(float scale /*= 0.0f*/)
   }
   else
   {
-    const WindowInfo& wi = GPUThread::GetRenderWindowInfo();
+    const WindowInfo& wi = VideoThread::GetRenderWindowInfo();
     requested_size = GPU::CalculateDisplayWindowSize(
       g_settings.display_fine_crop_mode, g_settings.display_fine_crop_amount, g_gpu.ComputePixelAspectRatio(),
       GSVector2(g_gpu.GetCRTCVideoSize()), GSVector2(g_gpu.GetCRTCVRAMSourceRect().rsize()) * scale,
@@ -6254,7 +6256,7 @@ void System::UpdateGTEAspectRatio()
   }
   else if (gte_ar == DisplayAspectRatio::Stretch())
   {
-    if (const WindowInfo& main_window_info = GPUThread::GetRenderWindowInfo(); !main_window_info.IsSurfaceless())
+    if (const WindowInfo& main_window_info = VideoThread::GetRenderWindowInfo(); !main_window_info.IsSurfaceless())
     {
       // Pre-apply the native aspect ratio correction to the window size.
       // MatchWindow does not correct the display aspect ratio, so we need to apply it here.
@@ -6284,7 +6286,7 @@ void System::UpdateAutomaticResolutionScale()
     return;
 
   g_settings.gpu_resolution_scale = Truncate8(new_scale);
-  GPUThread::UpdateSettings(true, false, false);
+  VideoThread::UpdateSettings(true, false, false);
   FreeMemoryStateStorage(false, true, false);
   ClearMemorySaveStates(true, false);
 
@@ -6292,7 +6294,7 @@ void System::UpdateAutomaticResolutionScale()
   {
     // resolution change needs display updated
     g_gpu.UpdateDisplay(false);
-    GPUThread::PresentCurrentFrame();
+    VideoThread::PresentCurrentFrame();
   }
 }
 

@@ -13,11 +13,11 @@
 #include "fullscreenui.h"
 #include "fullscreenui_private.h"
 #include "game_list.h"
-#include "gpu_thread.h"
 #include "host.h"
 #include "imgui_overlays.h"
 #include "sound_effect_manager.h"
 #include "system.h"
+#include "video_thread.h"
 
 #include "scmversion/scmversion.h"
 
@@ -452,7 +452,7 @@ void Achievements::DownloadImage(std::string url, std::string cache_path)
       return;
     }
 
-    GPUThread::RunOnThread(
+    VideoThread::RunOnThread(
       [cache_path = std::move(cache_path)]() { FullscreenUI::InvalidateCachedTexture(cache_path); });
   };
 
@@ -1360,7 +1360,7 @@ void Achievements::DisplayHardcoreDeferredMessage()
 {
   if (g_settings.achievements_hardcore_mode && System::IsValid())
   {
-    GPUThread::RunOnThread([]() {
+    VideoThread::RunOnThread([]() {
       if (FullscreenUI::HasActiveWindow())
       {
         FullscreenUI::ShowToast(OSDMessageType::Info, {},

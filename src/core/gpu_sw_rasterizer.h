@@ -4,7 +4,7 @@
 #pragma once
 
 #include "gpu.h"
-#include "gpu_thread_commands.h"
+#include "video_thread_commands.h"
 #include "gpu_types.h"
 
 #include "common/intrin.h"

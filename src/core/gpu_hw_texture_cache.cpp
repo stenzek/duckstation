@@ -8,11 +8,11 @@
 #include "gpu_hw.h"
 #include "gpu_hw_shadergen.h"
 #include "gpu_sw_rasterizer.h"
-#include "gpu_thread.h"
 #include "host.h"
 #include "imgui_overlays.h"
 #include "settings.h"
 #include "system.h"
+#include "video_thread.h"
 
 #include "util/gpu_device.h"
 #include "util/imgui_manager.h"
@@ -3096,7 +3096,7 @@ bool GPUTextureCache::HasValidReplacementExtension(const std::string_view path)
 void GPUTextureCache::FindTextureReplacements(bool load_vram_write_replacements, bool load_texture_replacements,
                                               bool prefill_dumped_texture_list, bool prefill_dumped_vram_list)
 {
-  if (GPUThread::GetGameSerial().empty())
+  if (VideoThread::GetGameSerial().empty())
     return;
 
   FileSystem::FindResultsArray files;
@@ -3189,13 +3189,13 @@ void GPUTextureCache::FindTextureReplacements(bool load_vram_write_replacements,
   if (g_gpu_settings.texture_replacements.enable_texture_replacements)
   {
     INFO_LOG("Found {} replacement upload textures for '{}'", s_state.vram_write_texture_replacements.size(),
-             GPUThread::GetGameSerial());
+             VideoThread::GetGameSerial());
     INFO_LOG("Found {} replacement page textures for '{}'", s_state.texture_page_texture_replacements.size(),
-             GPUThread::GetGameSerial());
+             VideoThread::GetGameSerial());
   }
 
   if (g_gpu_settings.texture_replacements.enable_vram_write_replacements)
-    INFO_LOG("Found {} replacement VRAM for '{}'", s_state.vram_replacements.size(), GPUThread::GetGameSerial());
+    INFO_LOG("Found {} replacement VRAM for '{}'", s_state.vram_replacements.size(), VideoThread::GetGameSerial());
 
   // if we're dumping, need to prefill the dumped list with those in the dumps directory as well
   if (prefill_dumped_texture_list || prefill_dumped_vram_list)
@@ -3248,7 +3248,7 @@ void GPUTextureCache::LoadTextureReplacementAliases(const ryml::ConstNodeRef& ro
                                                     bool load_vram_write_replacement_aliases,
                                                     bool load_texture_replacement_aliases)
 {
-  if (GPUThread::GetGameSerial().empty())
+  if (VideoThread::GetGameSerial().empty())
     return;
 
   const std::string source_dir = GetTextureReplacementDirectory();
@@ -3327,15 +3327,15 @@ void GPUTextureCache::LoadTextureReplacementAliases(const ryml::ConstNodeRef& ro
   if (g_gpu_settings.texture_replacements.enable_texture_replacements)
   {
     INFO_LOG("Found {} replacement upload textures after applying aliases for '{}'",
-             s_state.vram_write_texture_replacements.size(), GPUThread::GetGameSerial());
+             s_state.vram_write_texture_replacements.size(), VideoThread::GetGameSerial());
     INFO_LOG("Found {} replacement page textures after applying aliases for '{}'",
-             s_state.texture_page_texture_replacements.size(), GPUThread::GetGameSerial());
+             s_state.texture_page_texture_replacements.size(), VideoThread::GetGameSerial());
   }
 
   if (g_gpu_settings.texture_replacements.enable_vram_write_replacements)
   {
     INFO_LOG("Found {} replacement VRAM after applying aliases for '{}'", s_state.vram_replacements.size(),
-             GPUThread::GetGameSerial());
+             VideoThread::GetGameSerial());
   }
 }
 
@@ -3456,7 +3456,7 @@ void GPUTextureCache::PreloadReplacementTextures()
   u32 num_textures_loaded = 0;
   const size_t total_textures = s_state.vram_replacements.size() + s_state.vram_write_texture_replacements.size() +
                                 s_state.texture_page_texture_replacements.size();
-  std::string image_path = System::GetImageForLoadingScreen(GPUThread::GetGamePath());
+  std::string image_path = System::GetImageForLoadingScreen(VideoThread::GetGamePath());
 
 #define UPDATE_PROGRESS()                                                                                              \
   if (last_update_time.GetTimeSeconds() >= UPDATE_INTERVAL)                                                            \
@@ -3491,10 +3491,10 @@ void GPUTextureCache::PreloadReplacementTextures()
 
 bool GPUTextureCache::EnsureGameDirectoryExists()
 {
-  if (GPUThread::GetGameSerial().empty())
+  if (VideoThread::GetGameSerial().empty())
     return false;
 
-  const std::string game_directory = Path::Combine(EmuFolders::Textures, GPUThread::GetGameSerial());
+  const std::string game_directory = Path::Combine(EmuFolders::Textures, VideoThread::GetGameSerial());
   if (FileSystem::DirectoryExists(game_directory.c_str()))
     return true;
 
@@ -3531,7 +3531,7 @@ bool GPUTextureCache::EnsureGameDirectoryExists()
 
 std::string GPUTextureCache::GetTextureReplacementDirectory()
 {
-  const std::string& serial = GPUThread::GetGameSerial();
+  const std::string& serial = VideoThread::GetGameSerial();
   std::string dir =
     Path::Combine(EmuFolders::Textures, SmallString::from_format("{}" FS_OSPATH_SEPARATOR_STR "replacements", serial));
   if (!FileSystem::DirectoryExists(dir.c_str()))
@@ -3567,7 +3567,7 @@ std::string GPUTextureCache::GetTextureReplacementDirectory()
 std::string GPUTextureCache::GetTextureDumpDirectory()
 {
   return Path::Combine(EmuFolders::Textures,
-                       SmallString::from_format("{}" FS_OSPATH_SEPARATOR_STR "dumps", GPUThread::GetGameSerial()));
+                       SmallString::from_format("{}" FS_OSPATH_SEPARATOR_STR "dumps", VideoThread::GetGameSerial()));
 }
 
 GPUTextureCache::VRAMReplacementName GPUTextureCache::GetVRAMWriteHash(u32 width, u32 height, const void* pixels)
@@ -3597,7 +3597,7 @@ bool GPUTextureCache::LoadLocalConfiguration(bool load_vram_write_replacement_al
   // load settings from ini
   s_state.config = g_gpu_settings.texture_replacements.config;
 
-  const std::string& game_serial = GPUThread::GetGameSerial();
+  const std::string& game_serial = VideoThread::GetGameSerial();
   if (game_serial.empty())
     return (s_state.config != old_config);
 

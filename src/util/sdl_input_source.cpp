@@ -5,7 +5,7 @@
 #include "input_manager.h"
 
 #include "core/settings.h"
-#include "core/gpu_thread.h"
+#include "core/video_thread.h"
 
 #include "util/translation.h"
 #include "util/window_info.h"
@@ -1197,7 +1197,7 @@ bool SDLInputSource::HandleGamepadTouchpadEvent(const SDL_GamepadTouchpadEvent* 
       it->last_touch_y = ev->y;
     }
 
-    const WindowInfo& wi = GPUThread::GetRenderWindowInfo();
+    const WindowInfo& wi = VideoThread::GetRenderWindowInfo();
     const float rel_x = (ev->x - std::exchange(it->last_touch_x, ev->x)) * static_cast<float>(wi.surface_width);
     const float rel_y = (ev->y - std::exchange(it->last_touch_y, ev->y)) * static_cast<float>(wi.surface_height);
     if (!InputManager::IsRelativeMouseModeActive())

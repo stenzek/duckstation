@@ -5,8 +5,8 @@
 #include "core.h"
 #include "fullscreenui_private.h"
 #include "game_list.h"
-#include "gpu_thread.h"
 #include "system.h"
+#include "video_thread.h"
 
 #include "util/gpu_texture.h"
 #include "util/imgui_manager.h"
@@ -1148,10 +1148,10 @@ void FullscreenUI::RemoveCoverCacheEntry(const std::string& path)
 
 void FullscreenUI::InvalidateCoverCache(std::string path)
 {
-  if (!GPUThread::IsFullscreenUIRequested())
+  if (!VideoThread::IsFullscreenUIRequested())
     return;
 
-  GPUThread::RunOnThread([path = std::move(path)]() { RemoveCoverCacheEntry(path); });
+  VideoThread::RunOnThread([path = std::move(path)]() { RemoveCoverCacheEntry(path); });
 }
 
 void FullscreenUI::DrawGameListCover(const GameList::Entry* entry, bool fallback_to_achievements_icon,

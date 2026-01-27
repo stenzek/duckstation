@@ -4,7 +4,7 @@
 #include "win32_raw_input_source.h"
 #include "input_manager.h"
 
-#include "core/gpu_thread.h"
+#include "core/video_thread.h"
 
 #include "util/translation.h"
 
@@ -454,7 +454,7 @@ bool Win32RawInputSource::ProcessRawInputEvent(const RAWINPUT* event)
         int absolute_y = MulDiv(rm.lLastY, rect.bottom, USHRT_MAX) + rect.top;
 
         // This is truely awful. But for something that isn't used much, it's the easiest way to get the render rect...
-        const WindowInfo& render_wi = GPUThread::GetRenderWindowInfo();
+        const WindowInfo& render_wi = VideoThread::GetRenderWindowInfo();
         if (render_wi.type == WindowInfoType::Win32 && GetWindowRect(static_cast<HWND>(render_wi.window_handle), &rect))
         {
           absolute_x -= rect.left;

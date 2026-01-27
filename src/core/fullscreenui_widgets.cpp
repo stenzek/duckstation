@@ -6,11 +6,11 @@
 #include "fullscreenui.h"
 #include "gpu_backend.h"
 #include "gpu_presenter.h"
-#include "gpu_thread.h"
 #include "host.h"
 #include "imgui_overlays.h"
 #include "sound_effect_manager.h"
 #include "system.h"
+#include "video_thread.h"
 
 #include "util/gpu_device.h"
 #include "util/image.h"
@@ -1196,7 +1196,7 @@ void FullscreenUI::RenderOverlays()
 
   // cleared?
   if (!AreAnyNotificationsActive())
-    GPUThread::SetRunIdleReason(GPUThread::RunIdleReason::NotificationsActive, false);
+    VideoThread::SetRunIdleReason(VideoThread::RunIdleReason::NotificationsActive, false);
 }
 
 void FullscreenUI::PushResetLayout()
@@ -4535,19 +4535,19 @@ FullscreenUI::ProgressDialog::ProgressCallbackImpl::~ProgressCallbackImpl()
       return;
     s_state.progress_dialog.StartClose();
   };
-  if (GPUThread::IsOnThread())
+  if (VideoThread::IsOnThread())
   {
     close_cb();
     return;
   }
 
-  Host::RunOnCoreThread([]() { GPUThread::RunOnThread(close_cb); });
+  Host::RunOnCoreThread([]() { VideoThread::RunOnThread(close_cb); });
 }
 
 void FullscreenUI::ProgressDialog::ProgressCallbackImpl::SetStatusText(std::string_view text)
 {
   Host::RunOnCoreThread([text = std::string(text)]() mutable {
-    GPUThread::RunOnThread([text = std::move(text)]() mutable {
+    VideoThread::RunOnThread([text = std::move(text)]() mutable {
       if (!s_state.progress_dialog.IsOpen())
         return;
 
@@ -4561,7 +4561,7 @@ void FullscreenUI::ProgressDialog::ProgressCallbackImpl::SetProgressRange(u32 ra
   ProgressCallback::SetProgressRange(range);
 
   Host::RunOnCoreThread([range]() {
-    GPUThread::RunOnThread([range]() {
+    VideoThread::RunOnThread([range]() {
       if (!s_state.progress_dialog.IsOpen())
         return;
 
@@ -4575,7 +4575,7 @@ void FullscreenUI::ProgressDialog::ProgressCallbackImpl::SetProgressValue(u32 va
   ProgressCallback::SetProgressValue(value);
 
   Host::RunOnCoreThread([value]() {
-    GPUThread::RunOnThread([value]() {
+    VideoThread::RunOnThread([value]() {
       if (!s_state.progress_dialog.IsOpen())
         return;
 
@@ -4589,7 +4589,7 @@ void FullscreenUI::ProgressDialog::ProgressCallbackImpl::SetCancellable(bool can
   ProgressCallback::SetCancellable(cancellable);
 
   Host::RunOnCoreThread([cancellable]() {
-    GPUThread::RunOnThread([cancellable]() {
+    VideoThread::RunOnThread([cancellable]() {
       if (!s_state.progress_dialog.IsOpen())
         return;
 
@@ -4608,7 +4608,7 @@ void FullscreenUI::ProgressDialog::ProgressCallbackImpl::AlertPrompt(PromptIcon 
   s_state.progress_dialog.m_prompt_waiting.test_and_set(std::memory_order_release);
 
   Host::RunOnCoreThread([message = std::string(message), icon]() mutable {
-    GPUThread::RunOnThread([message = std::move(message), icon]() mutable {
+    VideoThread::RunOnThread([message = std::move(message), icon]() mutable {
       if (!s_state.progress_dialog.IsOpen())
       {
         s_state.progress_dialog.m_prompt_waiting.clear(std::memory_order_release);
@@ -4668,7 +4668,7 @@ bool FullscreenUI::ProgressDialog::ProgressCallbackImpl::ConfirmPrompt(PromptIco
 
   Host::RunOnCoreThread(
     [message = std::string(message), yes_text = std::string(yes_text), no_text = std::string(no_text)]() mutable {
-      GPUThread::RunOnThread(
+      VideoThread::RunOnThread(
         [message = std::move(message), yes_text = std::move(yes_text), no_text = std::move(no_text)]() mutable {
           if (!s_state.progress_dialog.IsOpen())
           {
@@ -4947,17 +4947,17 @@ void FullscreenUI::RenderLoadingScreen(std::string_view image, std::string_view 
 void FullscreenUI::UpdateLoadingScreenRunIdle()
 {
   // early out if we're already on the GPU thread
-  if (GPUThread::IsOnThread())
+  if (VideoThread::IsOnThread())
   {
-    GPUThread::SetRunIdleReason(GPUThread::RunIdleReason::LoadingScreenActive, s_state.loading_screen_open);
-    GPUThread::SetRunIdleReason(GPUThread::RunIdleReason::NotificationsActive, AreAnyNotificationsActive());
+    VideoThread::SetRunIdleReason(VideoThread::RunIdleReason::LoadingScreenActive, s_state.loading_screen_open);
+    VideoThread::SetRunIdleReason(VideoThread::RunIdleReason::NotificationsActive, AreAnyNotificationsActive());
     return;
   }
 
   // need to check it again once we're executing on the gpu thread, it could've changed since
-  GPUThread::RunOnThread([]() {
-    GPUThread::SetRunIdleReason(GPUThread::RunIdleReason::LoadingScreenActive, s_state.loading_screen_open);
-    GPUThread::SetRunIdleReason(GPUThread::RunIdleReason::NotificationsActive, AreAnyNotificationsActive());
+  VideoThread::RunOnThread([]() {
+    VideoThread::SetRunIdleReason(VideoThread::RunIdleReason::LoadingScreenActive, s_state.loading_screen_open);
+    VideoThread::SetRunIdleReason(VideoThread::RunIdleReason::NotificationsActive, AreAnyNotificationsActive());
   });
 }
 
@@ -5205,9 +5205,9 @@ void FullscreenUI::DrawLoadingScreen(std::string_view image, std::string_view ti
 }
 
 FullscreenUI::LoadingScreenProgressCallback::LoadingScreenProgressCallback()
-  : ProgressCallback(), m_open_time(Timer::GetCurrentValue()), m_on_gpu_thread(GPUThread::IsOnThread())
+  : ProgressCallback(), m_open_time(Timer::GetCurrentValue()), m_on_gpu_thread(VideoThread::IsOnThread())
 {
-  m_image = System::GetImageForLoadingScreen(m_on_gpu_thread ? GPUThread::GetGamePath() : System::GetGamePath());
+  m_image = System::GetImageForLoadingScreen(m_on_gpu_thread ? VideoThread::GetGamePath() : System::GetGamePath());
 }
 
 FullscreenUI::LoadingScreenProgressCallback::~LoadingScreenProgressCallback()
@@ -5223,12 +5223,12 @@ void FullscreenUI::LoadingScreenProgressCallback::Close()
 
   if (!m_on_gpu_thread)
   {
-    GPUThread::RunOnThread(&FullscreenUI::CloseLoadingScreen);
+    VideoThread::RunOnThread(&FullscreenUI::CloseLoadingScreen);
   }
   else
   {
     // since this was pushing frames, we need to restore the context. do that by pushing a frame ourselves
-    GPUThread::Internal::PresentFrameAndRestoreContext();
+    VideoThread::Internal::PresentFrameAndRestoreContext();
   }
 
   m_last_progress_percent = -1;
@@ -5330,15 +5330,16 @@ bool FullscreenUI::AreAnyNotificationsActive()
 void FullscreenUI::UpdateNotificationsRunIdle()
 {
   // early out if we're already on the GPU thread
-  if (GPUThread::IsOnThread())
+  if (VideoThread::IsOnThread())
   {
-    GPUThread::SetRunIdleReason(GPUThread::RunIdleReason::NotificationsActive, AreAnyNotificationsActive());
+    VideoThread::SetRunIdleReason(VideoThread::RunIdleReason::NotificationsActive, AreAnyNotificationsActive());
     return;
   }
 
   // need to check it again once we're executing on the gpu thread, it could've changed since
-  GPUThread::RunOnThread(
-    []() { GPUThread::SetRunIdleReason(GPUThread::RunIdleReason::NotificationsActive, AreAnyNotificationsActive()); });
+  VideoThread::RunOnThread([]() {
+    VideoThread::SetRunIdleReason(VideoThread::RunIdleReason::NotificationsActive, AreAnyNotificationsActive());
+  });
 }
 
 FullscreenUI::NotificationLayout::NotificationLayout(NotificationLocation location)

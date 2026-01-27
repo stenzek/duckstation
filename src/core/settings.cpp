@@ -5,10 +5,10 @@
 #include "achievements.h"
 #include "controller.h"
 #include "core.h"
-#include "gpu_thread.h"
 #include "gte_types.h"
 #include "imgui_overlays.h"
 #include "system.h"
+#include "video_thread.h"
 
 #include "util/gpu_device.h"
 #include "util/imgui_manager.h"

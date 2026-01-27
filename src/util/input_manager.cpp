@@ -8,10 +8,10 @@
 
 #include "core/controller.h"
 #include "core/core.h"
-#include "core/gpu_thread.h"
 #include "core/host.h"
 #include "core/system.h"
 #include "core/system_private.h"
+#include "core/video_thread.h"
 
 #include "common/assert.h"
 #include "common/bitutils.h"
@@ -1541,7 +1541,7 @@ void InputManager::UpdatePointerPositionRelativeDelta(u32 index, InputPointerAxi
   s_state.pointer_state[index][static_cast<u8>(axis)].delta += d;
 
   // We need to clamp the position ourselves in relative mode.
-  const WindowInfo& wi = GPUThread::GetRenderWindowInfo();
+  const WindowInfo& wi = VideoThread::GetRenderWindowInfo();
   const float max_dim = static_cast<float>((axis == InputPointerAxis::X) ? wi.surface_width : wi.surface_height);
   s_state.host_pointer_positions[index][static_cast<u8>(axis)] =
     std::clamp(s_state.host_pointer_positions[index][static_cast<u8>(axis)] + d, 0.0f, max_dim);
@@ -1877,7 +1877,7 @@ void InputManager::OnInputDeviceConnected(InputBindingKey key, std::string_view 
   SynchronizePadEffectBindings(key);
   Host::OnInputDeviceConnected(key, identifier, device_name);
 
-  if ((System::IsValid() || GPUThread::IsFullscreenUIRequested()) &&
+  if ((System::IsValid() || VideoThread::IsFullscreenUIRequested()) &&
       System::GetProcessUptime() >= DEVICE_CONNECTED_NOTIFICATION_DELAY)
   {
     Host::AddIconOSDMessage(OSDMessageType::Info, fmt::format("ControllerConnected{}", identifier), ICON_FA_GAMEPAD,
@@ -1890,7 +1890,7 @@ void InputManager::OnInputDeviceDisconnected(InputBindingKey key, std::string_vi
   INFO_LOG("Device '{}' disconnected", identifier);
   Host::OnInputDeviceDisconnected(key, identifier);
 
-  if (System::IsValid() || GPUThread::IsFullscreenUIRequested())
+  if (System::IsValid() || VideoThread::IsFullscreenUIRequested())
   {
     Host::AddIconOSDMessage(OSDMessageType::Info, fmt::format("ControllerConnected{}", identifier), ICON_FA_GAMEPAD,
                             fmt::format(TRANSLATE_FS("QtHost", "Controller {} disconnected."), identifier));

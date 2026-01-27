@@ -7,7 +7,7 @@
 
 #include "common/align.h"
 
-#include "gpu_thread_commands.h"
+#include "video_thread_commands.h"
 
 #include <memory>
 
@@ -30,12 +30,12 @@ struct MemorySaveState;
 class GPUBackend
 {
 public:
-  static GPUThreadCommand* NewClearVRAMCommand();
-  static GPUThreadCommand* NewClearDisplayCommand();
+  static VideoThreadCommand* NewClearVRAMCommand();
+  static VideoThreadCommand* NewClearDisplayCommand();
   static GPUBackendUpdateDisplayCommand* NewUpdateDisplayCommand();
   static GPUBackendSubmitFrameCommand* NewSubmitFrameCommand();
-  static GPUThreadCommand* NewClearCacheCommand();
-  static GPUThreadCommand* NewBufferSwappedCommand();
+  static VideoThreadCommand* NewClearCacheCommand();
+  static VideoThreadCommand* NewBufferSwappedCommand();
   static GPUBackendReadVRAMCommand* NewReadVRAMCommand();
   static GPUBackendFillVRAMCommand* NewFillVRAMCommand();
   static GPUBackendUpdateVRAMCommand* NewUpdateVRAMCommand(u32 num_words);
@@ -47,10 +47,9 @@ public:
   static GPUBackendDrawRectangleCommand* NewDrawRectangleCommand();
   static GPUBackendDrawLineCommand* NewDrawLineCommand(u32 num_vertices);
   static GPUBackendDrawPreciseLineCommand* NewDrawPreciseLineCommand(u32 num_vertices);
-  static void PushCommand(GPUThreadCommand* cmd);
-  static void PushCommandAndWakeThread(GPUThreadCommand* cmd);
-  static void PushCommandAndSync(GPUThreadCommand* cmd, bool spin);
-  static void SyncGPUThread(bool spin);
+  static void PushCommand(VideoThreadCommand* cmd);
+  static void PushCommandAndWakeThread(VideoThreadCommand* cmd);
+  static void PushCommandAndSync(VideoThreadCommand* cmd, bool spin);
 
   static bool IsUsingHardwareBackend();
 
@@ -89,7 +88,7 @@ public:
   virtual void FlushRender() = 0;
 
   /// Main command handler for GPU thread.
-  void HandleCommand(const GPUThreadCommand* cmd);
+  void HandleCommand(const VideoThreadCommand* cmd);
 
   void GetStatsString(SmallStringBase& str) const;
   void GetMemoryStatsString(SmallStringBase& str) const;
@@ -186,6 +185,6 @@ private:
 namespace Host {
 
 /// Called at the end of the frame, before presentation.
-void FrameDoneOnGPUThread(GPUBackend* gpu_backend, u32 frame_number);
+void FrameDoneOnVideoThread(GPUBackend* gpu_backend, u32 frame_number);
 
 } // namespace Host

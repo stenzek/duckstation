@@ -7,9 +7,9 @@
 #include "shadergen.h"
 
 // TODO: Remove me
-#include "core/gpu_thread.h"
 #include "core/host.h"
 #include "core/settings.h"
+#include "core/video_thread.h"
 
 #include "common/assert.h"
 #include "common/bitutils.h"
@@ -74,7 +74,7 @@ static std::tuple<std::unique_ptr<reshadefx::codegen>, GPUShaderLanguage> Create
   }
 
   // Should have a GPU device and be on the GPU thread.
-  Assert(GPUThread::IsOnThread() && g_gpu_device);
+  Assert(VideoThread::IsOnThread() && g_gpu_device);
 
   const bool debug_info = g_gpu_device->IsDebugDevice();
   const RenderAPI rapi = g_gpu_device->GetRenderAPI();

@@ -11,12 +11,12 @@
 #include "gpu_hw_shadergen.h"
 #include "gpu_presenter.h"
 #include "gpu_sw_rasterizer.h"
-#include "gpu_thread.h"
 #include "gte_types.h"
 #include "host.h"
 #include "imgui_overlays.h"
 #include "settings.h"
 #include "system_private.h"
+#include "video_thread.h"
 
 #include "util/imgui_manager.h"
 #include "util/postprocessing.h"
@@ -199,7 +199,7 @@ class ShaderCompileProgressTracker
 {
 public:
   ShaderCompileProgressTracker(u32 total)
-    : m_image(System::GetImageForLoadingScreen(GPUThread::GetGamePath())),
+    : m_image(System::GetImageForLoadingScreen(VideoThread::GetGamePath())),
       m_min_time(Timer::ConvertSecondsToValue(1.0)), m_update_interval(Timer::ConvertSecondsToValue(0.1)),
       m_start_time(Timer::GetCurrentValue()), m_last_update_time(0), m_progress(0), m_total(total)
   {
@@ -3316,17 +3316,17 @@ void GPU_HW::EnsureVertexBufferSpaceForCommand(const GPUBackendDrawCommand* cmd)
   u32 required_indices;
   switch (cmd->type)
   {
-    case GPUBackendCommandType::DrawPolygon:
-    case GPUBackendCommandType::DrawPrecisePolygon:
+    case VideoThreadCommandType::DrawPolygon:
+    case VideoThreadCommandType::DrawPrecisePolygon:
       required_vertices = 4; // assume quad, in case of expansion
       required_indices = 6;
       break;
-    case GPUBackendCommandType::DrawRectangle:
+    case VideoThreadCommandType::DrawRectangle:
       required_vertices = MAX_VERTICES_FOR_RECTANGLE; // TODO: WRong
       required_indices = MAX_VERTICES_FOR_RECTANGLE;
       break;
-    case GPUBackendCommandType::DrawLine:
-    case GPUBackendCommandType::DrawPreciseLine:
+    case VideoThreadCommandType::DrawLine:
+    case VideoThreadCommandType::DrawPreciseLine:
     {
       // assume expansion
       const GPUBackendDrawLineCommand* lcmd = static_cast<const GPUBackendDrawLineCommand*>(cmd);

@@ -27,7 +27,6 @@
 #include "core/gpu_backend.h"
 #include "core/gpu_hw_texture_cache.h"
 #include "core/gpu_presenter.h"
-#include "core/gpu_thread.h"
 #include "core/host.h"
 #include "core/imgui_overlays.h"
 #include "core/memory_card.h"
@@ -35,6 +34,7 @@
 #include "core/spu.h"
 #include "core/system.h"
 #include "core/system_private.h"
+#include "core/video_thread.h"
 
 #include "common/assert.h"
 #include "common/crash_handler.h"
@@ -712,7 +712,7 @@ void CoreThread::startFullscreenUI()
     return;
   }
 
-  if (System::IsValid() || GPUThread::IsFullscreenUIRequested())
+  if (System::IsValid() || VideoThread::IsFullscreenUIRequested())
     return;
 
   // we want settings loaded so we choose the correct renderer
@@ -727,7 +727,7 @@ void CoreThread::startFullscreenUI()
   emit fullscreenUIStartedOrStopped(true);
 
   Error error;
-  if (!GPUThread::StartFullscreenUI(start_fullscreen, &error))
+  if (!VideoThread::StartFullscreenUI(start_fullscreen, &error))
   {
     Host::ReportErrorAsync("Error", error.GetDescription());
     m_is_fullscreen_ui_started = false;
@@ -757,7 +757,7 @@ void CoreThread::stopFullscreenUI()
   {
     m_is_fullscreen_ui_started = false;
     emit fullscreenUIStartedOrStopped(false);
-    GPUThread::StopFullscreenUI();
+    VideoThread::StopFullscreenUI();
   }
 }
 
@@ -897,7 +897,7 @@ void CoreThread::onDisplayWindowMouseWheelEvent(float dx, float dy)
 
 void CoreThread::onDisplayWindowResized(int width, int height, float scale, float refresh_rate)
 {
-  GPUThread::ResizeDisplayWindow(width, height, scale, refresh_rate);
+  VideoThread::ResizeDisplayWindow(width, height, scale, refresh_rate);
 }
 
 void CoreThread::redrawDisplayWindow()
@@ -911,7 +911,7 @@ void CoreThread::redrawDisplayWindow()
   if (System::IsShutdown())
     return;
 
-  GPUThread::PresentCurrentFrame();
+  VideoThread::PresentCurrentFrame();
 }
 
 void CoreThread::toggleFullscreen()
@@ -922,7 +922,7 @@ void CoreThread::toggleFullscreen()
     return;
   }
 
-  GPUThread::SetFullscreen(!GPUThread::IsFullscreen());
+  VideoThread::SetFullscreen(!VideoThread::IsFullscreen());
 }
 
 void CoreThread::setFullscreen(bool fullscreen)
@@ -933,7 +933,7 @@ void CoreThread::setFullscreen(bool fullscreen)
     return;
   }
 
-  GPUThread::SetFullscreen(fullscreen);
+  VideoThread::SetFullscreen(fullscreen);
 }
 
 void CoreThread::setFullscreenWithCompletionHandler(bool fullscreen, std::function<void()> completion_handler)
@@ -948,7 +948,7 @@ void CoreThread::setFullscreenWithCompletionHandler(bool fullscreen, std::functi
     return;
   }
 
-  GPUThread::SetFullscreenWithCompletionHandler(fullscreen, std::move(completion_handler));
+  VideoThread::SetFullscreenWithCompletionHandler(fullscreen, std::move(completion_handler));
 }
 
 void CoreThread::updateDisplayWindow()
@@ -959,7 +959,7 @@ void CoreThread::updateDisplayWindow()
     return;
   }
 
-  GPUThread::UpdateDisplayWindow();
+  VideoThread::UpdateDisplayWindow();
 }
 
 void CoreThread::requestDisplaySize(float scale)
@@ -1054,9 +1054,9 @@ void Host::OnSystemAbnormalShutdown(const std::string_view reason)
       reason));
 }
 
-void Host::OnGPUThreadRunIdleChanged(bool is_active)
+void Host::OnVideoThreadRunIdleChanged(bool is_active)
 {
-  g_core_thread->setGPUThreadRunIdle(is_active);
+  g_core_thread->setVideoThreadRunIdle(is_active);
 }
 
 void CoreThread::reloadInputBindings()
@@ -1285,7 +1285,7 @@ void CoreThread::reloadTextureReplacements()
   }
 
   if (System::IsValid())
-    GPUThread::RunOnThread([]() { GPUTextureCache::ReloadTextureReplacements(true, true); });
+    VideoThread::RunOnThread([]() { GPUTextureCache::ReloadTextureReplacements(true, true); });
 }
 
 void CoreThread::captureGPUFrameDump()
@@ -1749,7 +1749,7 @@ void CoreThread::processAuxiliaryRenderWindowInputEvent(void* userdata, quint32 
                                                         quint32 param3)
 {
   DebugAssert(isCurrentThread());
-  GPUThread::RunOnThread([userdata, event, param1, param2, param3]() {
+  VideoThread::RunOnThread([userdata, event, param1, param2, param3]() {
     ImGuiManager::ProcessAuxiliaryRenderWindowInputEvent(userdata, static_cast<Host::AuxiliaryRenderWindowEvent>(event),
                                                          Host::AuxiliaryRenderWindowEventParam{.uint_param = param1},
                                                          Host::AuxiliaryRenderWindowEventParam{.uint_param = param2},
@@ -1823,7 +1823,7 @@ int CoreThread::getBackgroundControllerPollInterval() const
 {
   if (GDBServer::HasAnyClients())
     return GDB_SERVER_POLLING_INTERVAL;
-  else if (m_gpu_thread_run_idle)
+  else if (m_video_thread_run_idle)
     return FULLSCREEN_UI_CONTROLLER_POLLING_INTERVAL;
   else if (InputManager::GetPollableDeviceCount() > 0)
     return BACKGROUND_CONTROLLER_POLLING_INTERVAL_WITH_DEVICES;
@@ -1831,15 +1831,15 @@ int CoreThread::getBackgroundControllerPollInterval() const
     return BACKGROUND_CONTROLLER_POLLING_INTERVAL_WITHOUT_DEVICES;
 }
 
-void CoreThread::setGPUThreadRunIdle(bool active)
+void CoreThread::setVideoThreadRunIdle(bool active)
 {
   if (!isCurrentThread())
   {
-    QMetaObject::invokeMethod(this, &CoreThread::setGPUThreadRunIdle, Qt::QueuedConnection, active);
+    QMetaObject::invokeMethod(this, &CoreThread::setVideoThreadRunIdle, Qt::QueuedConnection, active);
     return;
   }
 
-  m_gpu_thread_run_idle = active;
+  m_video_thread_run_idle = active;
 
   // break out of the event loop if we're not executing a system
   if (active && !g_settings.gpu_use_thread && !System::IsRunning())
@@ -1861,8 +1861,8 @@ void CoreThread::updateFullscreenUITheme()
   }
 
   // don't bother if nothing is running
-  if (GPUThread::IsFullscreenUIRequested() || GPUThread::IsGPUBackendRequested())
-    GPUThread::RunOnThread(&FullscreenUI::UpdateTheme);
+  if (VideoThread::IsFullscreenUIRequested() || VideoThread::IsGPUBackendRequested())
+    VideoThread::RunOnThread(&FullscreenUI::UpdateTheme);
 }
 
 void CoreThread::start()
@@ -1928,7 +1928,7 @@ void CoreThread::run()
   startBackgroundControllerPollTimer();
 
   // kick off GPU thread
-  Threading::Thread gpu_thread(&CoreThread::gpuThreadEntryPoint);
+  Threading::Thread gpu_thread(&CoreThread::videoThreadEntryPoint);
 
   // main loop
   while (!m_shutdown_flag)
@@ -1937,13 +1937,13 @@ void CoreThread::run()
     {
       System::Execute();
     }
-    else if (!GPUThread::IsUsingThread() && GPUThread::IsRunningIdle())
+    else if (!VideoThread::IsUsingThread() && VideoThread::IsRunningIdle())
     {
       m_event_loop->processEvents(QEventLoop::AllEvents);
 
       // have to double-check the condition after processing events, because the events could shut us down
-      if (!GPUThread::IsUsingThread() && GPUThread::IsRunningIdle())
-        GPUThread::Internal::DoRunIdle();
+      if (!VideoThread::IsUsingThread() && VideoThread::IsRunningIdle())
+        VideoThread::Internal::DoRunIdle();
     }
     else
     {
@@ -1957,7 +1957,7 @@ void CoreThread::run()
   destroyBackgroundControllerPollTimer();
 
   // tell GPU thread to exit
-  GPUThread::Internal::RequestShutdown();
+  VideoThread::Internal::RequestShutdown();
   gpu_thread.Join();
 
   // join worker threads
@@ -1972,13 +1972,13 @@ void CoreThread::run()
   m_event_loop = nullptr;
 }
 
-void CoreThread::gpuThreadEntryPoint()
+void CoreThread::videoThreadEntryPoint()
 {
-  Threading::SetNameOfCurrentThread("GPU Thread");
-  GPUThread::Internal::GPUThreadEntryPoint();
+  Threading::SetNameOfCurrentThread("Video Thread");
+  VideoThread::Internal::VideoThreadEntryPoint();
 }
 
-void Host::FrameDoneOnGPUThread(GPUBackend* gpu_backend, u32 frame_number)
+void Host::FrameDoneOnVideoThread(GPUBackend* gpu_backend, u32 frame_number)
 {
 }
 
@@ -2077,8 +2077,9 @@ void Host::ConfirmMessageAsync(std::string_view title, std::string_view message,
   // Use FSUI to display the confirmation if it is active.
   if (FullscreenUI::IsInitialized())
   {
-    GPUThread::RunOnThread([title = std::string(title), message = std::string(message), callback = std::move(callback),
-                            yes_text = std::string(yes_text), no_text = std::string(no_text), needs_pause]() mutable {
+    VideoThread::RunOnThread([title = std::string(title), message = std::string(message),
+                              callback = std::move(callback), yes_text = std::string(yes_text),
+                              no_text = std::string(no_text), needs_pause]() mutable {
       // Need to reset run idle state _again_ after displaying.
       auto final_callback = [callback = std::move(callback), needs_pause](bool result) {
         FullscreenUI::UpdateRunIdleState();
@@ -2447,7 +2448,7 @@ void QtHost::UpdateFontOrder(std::string_view language)
   if (g_core_thread)
   {
     Host::RunOnCoreThread([font_order]() mutable {
-      GPUThread::RunOnThread([font_order]() mutable { ImGuiManager::SetTextFontOrder(font_order); });
+      VideoThread::RunOnThread([font_order]() mutable { ImGuiManager::SetTextFontOrder(font_order); });
       Host::ClearTranslationCache();
     });
   }

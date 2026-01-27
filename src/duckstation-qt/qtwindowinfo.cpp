@@ -5,7 +5,7 @@
 #include "qtutils.h"
 
 #include "core/core.h"
-#include "core/gpu_thread.h"
+#include "core/video_thread.h"
 
 #include "util/gpu_device.h"
 

@@ -76,9 +76,6 @@ add_library(core
   gpu_sw.h
   gpu_sw_rasterizer.cpp
   gpu_sw_rasterizer.h
-  gpu_thread.cpp
-  gpu_thread.h
-  gpu_thread_commands.h
   gpu_types.h
   guncon.cpp
   guncon.h
@@ -141,6 +138,9 @@ add_library(core
   timing_event.cpp
   timing_event.h
   types.h
+  video_thread.cpp
+  video_thread.h
+  video_thread_commands.h
 )
 
 set(RECOMPILER_SRCS

@@ -3,8 +3,8 @@
 
 #include "guncon.h"
 #include "gpu.h"
-#include "gpu_thread.h"
 #include "system.h"
+#include "video_thread.h"
 
 #include "util/imgui_manager.h"
 #include "util/input_manager.h"
@@ -236,7 +236,7 @@ std::pair<float, float> GunCon::GetAbsolutePositionFromRelativeAxes() const
 {
   const float screen_rel_x = (((m_relative_pos[1] > 0.0f) ? m_relative_pos[1] : -m_relative_pos[0]) + 1.0f) * 0.5f;
   const float screen_rel_y = (((m_relative_pos[3] > 0.0f) ? m_relative_pos[3] : -m_relative_pos[2]) + 1.0f) * 0.5f;
-  const WindowInfo& wi = GPUThread::GetRenderWindowInfo();
+  const WindowInfo& wi = VideoThread::GetRenderWindowInfo();
   return std::make_pair(screen_rel_x * static_cast<float>(wi.surface_width),
                         screen_rel_y * static_cast<float>(wi.surface_height));
 }

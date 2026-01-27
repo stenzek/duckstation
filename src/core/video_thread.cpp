@@ -1,13 +1,12 @@
 // SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
-#include "gpu_thread.h"
+#include "video_thread.h"
 #include "core.h"
 #include "fullscreenui.h"
 #include "gpu_backend.h"
 #include "gpu_hw_texture_cache.h"
 #include "gpu_presenter.h"
-#include "gpu_thread_commands.h"
 #include "gpu_types.h"
 #include "host.h"
 #include "imgui_overlays.h"
@@ -16,6 +15,7 @@
 #include "shader_cache_version.h"
 #include "system.h"
 #include "system_private.h"
+#include "video_thread_commands.h"
 
 #include "util/gpu_device.h"
 #include "util/imgui_manager.h"
@@ -37,9 +37,9 @@
 
 #include <optional>
 
-LOG_CHANNEL(GPUThread);
+LOG_CHANNEL(VideoThread);
 
-namespace GPUThread {
+namespace VideoThread {
 enum : u32
 {
   COMMAND_QUEUE_SIZE = 16 * 1024 * 1024,
@@ -63,16 +63,16 @@ static bool Reconfigure(std::optional<GPURenderer> renderer, bool upload_vram, s
 
 // NOTE: Use with care! The handler needs to manually run the destructor.
 template<class T, typename... Args>
-T* AllocateCommand(u32 size, GPUBackendCommandType type, Args... args);
+T* AllocateCommand(u32 size, VideoThreadCommandType type, Args... args);
 template<class T, typename... Args>
-T* AllocateCommand(GPUBackendCommandType type, Args... args);
+T* AllocateCommand(VideoThreadCommandType type, Args... args);
 
 static u32 GetPendingCommandSize();
 static void ResetCommandFIFO();
 static bool IsCommandFIFOEmpty();
-static void WakeGPUThread();
-static void WakeGPUThreadIfSleeping();
-static bool SleepGPUThread(bool allow_sleep);
+static void WakeThread();
+static void WakeThreadIfSleeping();
+static bool SleepThread(bool allow_sleep);
 
 static bool CreateDeviceOnThread(RenderAPI api, bool fullscreen, bool preserve_imgui_on_failure, Error* error);
 static void DestroyDeviceOnThread(bool preserve_imgui_state);
@@ -82,7 +82,7 @@ static void DisplayWindowResizedOnThread();
 static bool CheckExclusiveFullscreenOnThread();
 static void ThrottlePresentation();
 
-static void ReconfigureOnThread(GPUThreadReconfigureCommand* cmd);
+static void ReconfigureOnThread(VideoThreadReconfigureCommand* cmd);
 static bool CreateGPUBackendOnThread(GPURenderer renderer, bool upload_vram, const GPUSettings* old_settings,
                                      Error* error);
 static void DestroyGPUBackendOnThread();
@@ -90,7 +90,7 @@ static void DestroyGPUPresenterOnThread();
 
 static void SetThreadEnabled(bool enabled);
 static void UpdateSettingsOnThread(GPUSettings&& new_settings);
-static void UpdateGameInfoOnThread(GPUThreadUpdateGameInfoCommand* cmd);
+static void UpdateGameInfoOnThread(VideoThreadUpdateGameInfoCommand* cmd);
 static void GameInfoChanged(bool serial_changed);
 static void ClearGameInfoOnThread();
 
@@ -102,11 +102,11 @@ struct ALIGN_TO_CACHE_LINE State
 {
   // Owned by CPU thread.
   Timer::Value thread_spin_time = 0;
-  Threading::ThreadHandle gpu_thread;
+  Threading::ThreadHandle thread_handle;
   Common::unique_aligned_ptr<u8[]> command_fifo_data;
   WindowInfo render_window_info;
   std::optional<GPURenderer> requested_renderer; // TODO: Non thread safe accessof this
-  bool use_gpu_thread = false;
+  bool use_thread = false;
   bool requested_fullscreen = false;
 
   // Hot variables between both threads.
@@ -136,14 +136,14 @@ struct ALIGN_TO_CACHE_LINE State
 
 static State s_state;
 
-} // namespace GPUThread
+} // namespace VideoThread
 
-const Threading::ThreadHandle& GPUThread::Internal::GetThreadHandle()
+const Threading::ThreadHandle& VideoThread::Internal::GetThreadHandle()
 {
-  return s_state.gpu_thread;
+  return s_state.thread_handle;
 }
 
-void GPUThread::ResetCommandFIFO()
+void VideoThread::ResetCommandFIFO()
 {
   Assert(!s_state.run_idle_flag && s_state.command_fifo_read_ptr.load(std::memory_order_acquire) ==
                                      s_state.command_fifo_write_ptr.load(std::memory_order_relaxed));
@@ -151,27 +151,27 @@ void GPUThread::ResetCommandFIFO()
   s_state.command_fifo_read_ptr.store(0, std::memory_order_release);
 }
 
-void GPUThread::Internal::ProcessStartup()
+void VideoThread::Internal::ProcessStartup()
 {
   s_state.thread_spin_time = Timer::ConvertNanosecondsToValue(THREAD_SPIN_TIME_US * 1000.0);
   s_state.command_fifo_data = Common::make_unique_aligned_for_overwrite<u8[]>(HOST_CACHE_LINE_SIZE, COMMAND_QUEUE_SIZE);
-  s_state.use_gpu_thread = g_settings.gpu_use_thread;
+  s_state.use_thread = g_settings.gpu_use_thread;
   s_state.run_idle_reasons = static_cast<u8>(RunIdleReason::NoGPUBackend);
 }
 
-void GPUThread::Internal::RequestShutdown()
+void VideoThread::Internal::RequestShutdown()
 {
-  INFO_LOG("Shutting down GPU thread...");
-  SyncGPUThread(false);
+  INFO_LOG("Shutting down video thread...");
+  SyncThread(false);
 
   // Thread must be enabled to shut it down.
   SetThreadEnabled(true);
-  PushCommandAndWakeThread(AllocateCommand(GPUBackendCommandType::Shutdown, sizeof(GPUThreadCommand)));
+  PushCommandAndWakeThread(AllocateCommand(VideoThreadCommandType::Shutdown, sizeof(VideoThreadCommand)));
 }
 
-GPUThreadCommand* GPUThread::AllocateCommand(GPUBackendCommandType command, u32 size)
+VideoThreadCommand* VideoThread::AllocateCommand(VideoThreadCommandType command, u32 size)
 {
-  size = GPUThreadCommand::AlignCommandSize(size);
+  size = VideoThreadCommand::AlignCommandSize(size);
 
   for (;;)
   {
@@ -180,9 +180,9 @@ GPUThreadCommand* GPUThread::AllocateCommand(GPUBackendCommandType command, u32 
     if (read_ptr > write_ptr) [[unlikely]]
     {
       u32 available_size = read_ptr - write_ptr;
-      while (available_size < (size + sizeof(GPUBackendCommandType)))
+      while (available_size < (size + sizeof(VideoThreadCommandType)))
       {
-        WakeGPUThreadIfSleeping();
+        WakeThreadIfSleeping();
         read_ptr = s_state.command_fifo_read_ptr.load(std::memory_order_acquire);
         available_size = (read_ptr > write_ptr) ? (read_ptr - write_ptr) : (COMMAND_QUEUE_SIZE - write_ptr);
       }
@@ -190,7 +190,7 @@ GPUThreadCommand* GPUThread::AllocateCommand(GPUBackendCommandType command, u32 
     else
     {
       const u32 available_size = COMMAND_QUEUE_SIZE - write_ptr;
-      if ((size + sizeof(GPUThreadCommand)) > available_size) [[unlikely]]
+      if ((size + sizeof(VideoThreadCommand)) > available_size) [[unlikely]]
       {
         // Can't wrap around until the video thread has at least started processing commands...
         if (read_ptr == 0) [[unlikely]]
@@ -198,21 +198,21 @@ GPUThreadCommand* GPUThread::AllocateCommand(GPUBackendCommandType command, u32 
           DEV_LOG("Buffer full and unprocessed, spinning");
           do
           {
-            WakeGPUThreadIfSleeping();
+            WakeThreadIfSleeping();
             read_ptr = s_state.command_fifo_read_ptr.load(std::memory_order_acquire);
           } while (read_ptr == 0);
         }
 
         // allocate a dummy command to wrap the buffer around
-        GPUThreadCommand* dummy_cmd = reinterpret_cast<GPUThreadCommand*>(&s_state.command_fifo_data[write_ptr]);
-        dummy_cmd->type = GPUBackendCommandType::Wraparound;
+        VideoThreadCommand* dummy_cmd = reinterpret_cast<VideoThreadCommand*>(&s_state.command_fifo_data[write_ptr]);
+        dummy_cmd->type = VideoThreadCommandType::Wraparound;
         dummy_cmd->size = available_size;
         s_state.command_fifo_write_ptr.store(0, std::memory_order_release);
         continue;
       }
     }
 
-    GPUThreadCommand* cmd = reinterpret_cast<GPUThreadCommand*>(&s_state.command_fifo_data[write_ptr]);
+    VideoThreadCommand* cmd = reinterpret_cast<VideoThreadCommand*>(&s_state.command_fifo_data[write_ptr]);
     cmd->type = command;
     cmd->size = size;
     return cmd;
@@ -220,10 +220,10 @@ GPUThreadCommand* GPUThread::AllocateCommand(GPUBackendCommandType command, u32 
 }
 
 template<class T, typename... Args>
-T* GPUThread::AllocateCommand(u32 size, GPUBackendCommandType type, Args... args)
+T* VideoThread::AllocateCommand(u32 size, VideoThreadCommandType type, Args... args)
 {
-  const u32 alloc_size = GPUThreadCommand::AlignCommandSize(size);
-  GPUThreadCommand* cmd = AllocateCommand(type, alloc_size);
+  const u32 alloc_size = VideoThreadCommand::AlignCommandSize(size);
+  VideoThreadCommand* cmd = AllocateCommand(type, alloc_size);
   DebugAssert(cmd->size == alloc_size);
 
   new (cmd) T(std::forward<Args>(args)...);
@@ -236,28 +236,28 @@ T* GPUThread::AllocateCommand(u32 size, GPUBackendCommandType type, Args... args
 }
 
 template<class T, typename... Args>
-T* GPUThread::AllocateCommand(GPUBackendCommandType type, Args... args)
+T* VideoThread::AllocateCommand(VideoThreadCommandType type, Args... args)
 {
   return AllocateCommand<T>(sizeof(T), type, std::forward<Args>(args)...);
 }
 
-u32 GPUThread::GetPendingCommandSize()
+u32 VideoThread::GetPendingCommandSize()
 {
   const u32 read_ptr = s_state.command_fifo_read_ptr.load(std::memory_order_acquire);
   const u32 write_ptr = s_state.command_fifo_write_ptr.load(std::memory_order_relaxed);
   return (write_ptr >= read_ptr) ? (write_ptr - read_ptr) : (COMMAND_QUEUE_SIZE - read_ptr + write_ptr);
 }
 
-bool GPUThread::IsCommandFIFOEmpty()
+bool VideoThread::IsCommandFIFOEmpty()
 {
   const u32 read_ptr = s_state.command_fifo_read_ptr.load(std::memory_order_acquire);
   const u32 write_ptr = s_state.command_fifo_write_ptr.load(std::memory_order_relaxed);
   return (read_ptr == write_ptr);
 }
 
-void GPUThread::PushCommand(GPUThreadCommand* cmd)
+void VideoThread::PushCommand(VideoThreadCommand* cmd)
 {
-  if (!s_state.use_gpu_thread) [[unlikely]]
+  if (!s_state.use_thread) [[unlikely]]
   {
     DebugAssert(s_state.gpu_backend);
     s_state.gpu_backend->HandleCommand(cmd);
@@ -268,12 +268,12 @@ void GPUThread::PushCommand(GPUThreadCommand* cmd)
   DebugAssert(new_write_ptr <= COMMAND_QUEUE_SIZE);
   UNREFERENCED_VARIABLE(new_write_ptr);
   if (GetPendingCommandSize() >= THRESHOLD_TO_WAKE_GPU) // TODO:FIXME: maybe purge this?
-    WakeGPUThread();
+    WakeThread();
 }
 
-void GPUThread::PushCommandAndWakeThread(GPUThreadCommand* cmd)
+void VideoThread::PushCommandAndWakeThread(VideoThreadCommand* cmd)
 {
-  if (!s_state.use_gpu_thread) [[unlikely]]
+  if (!s_state.use_thread) [[unlikely]]
   {
     DebugAssert(s_state.gpu_backend);
     s_state.gpu_backend->HandleCommand(cmd);
@@ -283,12 +283,12 @@ void GPUThread::PushCommandAndWakeThread(GPUThreadCommand* cmd)
   const u32 new_write_ptr = s_state.command_fifo_write_ptr.fetch_add(cmd->size, std::memory_order_release) + cmd->size;
   DebugAssert(new_write_ptr <= COMMAND_QUEUE_SIZE);
   UNREFERENCED_VARIABLE(new_write_ptr);
-  WakeGPUThread();
+  WakeThread();
 }
 
-void GPUThread::PushCommandAndSync(GPUThreadCommand* cmd, bool spin)
+void VideoThread::PushCommandAndSync(VideoThreadCommand* cmd, bool spin)
 {
-  if (!s_state.use_gpu_thread) [[unlikely]]
+  if (!s_state.use_thread) [[unlikely]]
   {
     DebugAssert(s_state.gpu_backend);
     s_state.gpu_backend->HandleCommand(cmd);
@@ -298,16 +298,16 @@ void GPUThread::PushCommandAndSync(GPUThreadCommand* cmd, bool spin)
   const u32 new_write_ptr = s_state.command_fifo_write_ptr.fetch_add(cmd->size, std::memory_order_release) + cmd->size;
   DebugAssert(new_write_ptr <= COMMAND_QUEUE_SIZE);
   UNREFERENCED_VARIABLE(new_write_ptr);
-  WakeGPUThread();
-  SyncGPUThread(spin);
+  WakeThread();
+  SyncThread(spin);
 }
 
 ALWAYS_INLINE s32 GetThreadWakeCount(s32 state)
 {
-  return (state & ~GPUThread::THREAD_WAKE_COUNT_CPU_THREAD_IS_WAITING);
+  return (state & ~VideoThread::THREAD_WAKE_COUNT_CPU_THREAD_IS_WAITING);
 }
 
-void GPUThread::WakeGPUThread()
+void VideoThread::WakeThread()
 {
   // If sleeping, state will be <0, otherwise this will increment the pending work count.
   // We add 2 so that there's a positive work count if we were sleeping, otherwise the thread would go to sleep.
@@ -315,44 +315,44 @@ void GPUThread::WakeGPUThread()
     s_state.thread_wake_semaphore.Post();
 }
 
-ALWAYS_INLINE_RELEASE void GPUThread::WakeGPUThreadIfSleeping()
+ALWAYS_INLINE_RELEASE void VideoThread::WakeThreadIfSleeping()
 {
   if (GetThreadWakeCount(s_state.thread_wake_count.load(std::memory_order_acquire)) < 0)
   {
     if (IsCommandFIFOEmpty())
       return;
 
-    WakeGPUThread();
+    WakeThread();
   }
 }
 
-void GPUThread::SyncGPUThread(bool spin)
+void VideoThread::SyncThread(bool spin)
 {
-  if (!s_state.use_gpu_thread)
+  if (!s_state.use_thread)
     return;
 
   if (spin)
   {
-    // Check if the GPU thread is done/sleeping.
+    // Check if the video thread is done/sleeping.
     if (GetThreadWakeCount(s_state.thread_wake_count.load(std::memory_order_acquire)) < 0)
     {
       if (IsCommandFIFOEmpty())
         return;
 
-      WakeGPUThread();
+      WakeThread();
     }
 
     const Timer::Value start_time = Timer::GetCurrentValue();
     Timer::Value current_time = start_time;
     do
     {
-      // Check if the GPU thread is done/sleeping.
+      // Check if the video thread is done/sleeping.
       if (GetThreadWakeCount(s_state.thread_wake_count.load(std::memory_order_acquire)) < 0)
       {
         if (IsCommandFIFOEmpty())
           return;
 
-        WakeGPUThread();
+        WakeThread();
         continue;
       }
 
@@ -367,14 +367,14 @@ void GPUThread::SyncGPUThread(bool spin)
   s32 value;
   do
   {
-    // Check if the GPU thread is done/sleeping.
+    // Check if the video thread is done/sleeping.
     value = s_state.thread_wake_count.load(std::memory_order_acquire);
     if (GetThreadWakeCount(value) < 0)
     {
       if (IsCommandFIFOEmpty())
         return;
 
-      WakeGPUThread();
+      WakeThread();
       continue;
     }
   } while (!s_state.thread_wake_count.compare_exchange_weak(value, value | THREAD_WAKE_COUNT_CPU_THREAD_IS_WAITING,
@@ -382,7 +382,7 @@ void GPUThread::SyncGPUThread(bool spin)
   s_state.thread_is_done_semaphore.Wait();
 }
 
-bool GPUThread::SleepGPUThread(bool allow_sleep)
+bool VideoThread::SleepThread(bool allow_sleep)
 {
   DebugAssert(!allow_sleep || s_state.thread_wake_count.load(std::memory_order_relaxed) >= 0);
   for (;;)
@@ -414,9 +414,9 @@ bool GPUThread::SleepGPUThread(bool allow_sleep)
   }
 }
 
-void GPUThread::Internal::GPUThreadEntryPoint()
+void VideoThread::Internal::VideoThreadEntryPoint()
 {
-  s_state.gpu_thread = Threading::ThreadHandle::GetForCallingThread();
+  s_state.thread_handle = Threading::ThreadHandle::GetForCallingThread();
 
   // Take a local copy of the FIFO, that way it's not ping-ponging between the threads.
   u8* const command_fifo_data = s_state.command_fifo_data.get();
@@ -427,7 +427,7 @@ void GPUThread::Internal::GPUThreadEntryPoint()
     u32 read_ptr = s_state.command_fifo_read_ptr.load(std::memory_order_relaxed);
     if (read_ptr == write_ptr)
     {
-      if (SleepGPUThread(!s_state.run_idle_flag))
+      if (SleepThread(!s_state.run_idle_flag))
       {
         // sleep => wake, need to reload pointers
         continue;
@@ -442,11 +442,11 @@ void GPUThread::Internal::GPUThreadEntryPoint()
     write_ptr = (write_ptr < read_ptr) ? COMMAND_QUEUE_SIZE : write_ptr;
     while (read_ptr < write_ptr)
     {
-      GPUThreadCommand* cmd = reinterpret_cast<GPUThreadCommand*>(&command_fifo_data[read_ptr]);
+      VideoThreadCommand* cmd = reinterpret_cast<VideoThreadCommand*>(&command_fifo_data[read_ptr]);
       DebugAssert((read_ptr + cmd->size) <= COMMAND_QUEUE_SIZE);
       read_ptr += cmd->size;
 
-      if (cmd->type > GPUBackendCommandType::Shutdown) [[likely]]
+      if (cmd->type > VideoThreadCommandType::Shutdown) [[likely]]
       {
         DebugAssert(s_state.gpu_backend);
         s_state.gpu_backend->HandleCommand(cmd);
@@ -455,7 +455,7 @@ void GPUThread::Internal::GPUThreadEntryPoint()
 
       switch (cmd->type)
       {
-        case GPUBackendCommandType::Wraparound:
+        case VideoThreadCommandType::Wraparound:
         {
           DebugAssert(read_ptr == COMMAND_QUEUE_SIZE);
           write_ptr = s_state.command_fifo_write_ptr.load(std::memory_order_acquire);
@@ -466,47 +466,47 @@ void GPUThread::Internal::GPUThreadEntryPoint()
         }
         break;
 
-        case GPUBackendCommandType::AsyncCall:
+        case VideoThreadCommandType::AsyncCall:
         {
-          GPUThreadAsyncCallCommand* acmd = static_cast<GPUThreadAsyncCallCommand*>(cmd);
+          VideoThreadAsyncCallCommand* acmd = static_cast<VideoThreadAsyncCallCommand*>(cmd);
           acmd->func();
-          acmd->~GPUThreadAsyncCallCommand();
+          acmd->~VideoThreadAsyncCallCommand();
         }
         break;
 
-        case GPUBackendCommandType::AsyncBackendCall:
+        case VideoThreadCommandType::AsyncBackendCall:
         {
-          GPUThreadAsyncBackendCallCommand* acmd = static_cast<GPUThreadAsyncBackendCallCommand*>(cmd);
+          VideoThreadAsyncBackendCallCommand* acmd = static_cast<VideoThreadAsyncBackendCallCommand*>(cmd);
           acmd->func(s_state.gpu_backend.get());
-          acmd->~GPUThreadAsyncBackendCallCommand();
+          acmd->~VideoThreadAsyncBackendCallCommand();
         }
         break;
 
-        case GPUBackendCommandType::Reconfigure:
+        case VideoThreadCommandType::Reconfigure:
         {
-          GPUThreadReconfigureCommand* ccmd = static_cast<GPUThreadReconfigureCommand*>(cmd);
+          VideoThreadReconfigureCommand* ccmd = static_cast<VideoThreadReconfigureCommand*>(cmd);
           ReconfigureOnThread(ccmd);
-          ccmd->~GPUThreadReconfigureCommand();
+          ccmd->~VideoThreadReconfigureCommand();
         }
         break;
 
-        case GPUBackendCommandType::UpdateSettings:
+        case VideoThreadCommandType::UpdateSettings:
         {
-          GPUThreadUpdateSettingsCommand* ccmd = static_cast<GPUThreadUpdateSettingsCommand*>(cmd);
+          VideoThreadUpdateSettingsCommand* ccmd = static_cast<VideoThreadUpdateSettingsCommand*>(cmd);
           UpdateSettingsOnThread(std::move(ccmd->settings));
-          ccmd->~GPUThreadUpdateSettingsCommand();
+          ccmd->~VideoThreadUpdateSettingsCommand();
         }
         break;
 
-        case GPUBackendCommandType::UpdateGameInfo:
+        case VideoThreadCommandType::UpdateGameInfo:
         {
-          GPUThreadUpdateGameInfoCommand* ccmd = static_cast<GPUThreadUpdateGameInfoCommand*>(cmd);
+          VideoThreadUpdateGameInfoCommand* ccmd = static_cast<VideoThreadUpdateGameInfoCommand*>(cmd);
           UpdateGameInfoOnThread(ccmd);
-          ccmd->~GPUThreadUpdateGameInfoCommand();
+          ccmd->~VideoThreadUpdateGameInfoCommand();
         }
         break;
 
-        case GPUBackendCommandType::Shutdown:
+        case VideoThreadCommandType::Shutdown:
         {
           // Should have consumed everything, and be shutdown.
           DebugAssert(read_ptr == write_ptr);
@@ -522,10 +522,10 @@ void GPUThread::Internal::GPUThreadEntryPoint()
     s_state.command_fifo_read_ptr.store(read_ptr, std::memory_order_release);
   }
 
-  s_state.gpu_thread = {};
+  s_state.thread_handle = {};
 }
 
-void GPUThread::Internal::DoRunIdle()
+void VideoThread::Internal::DoRunIdle()
 {
   if (!g_gpu_device->HasMainSwapChain()) [[unlikely]]
   {
@@ -541,16 +541,17 @@ void GPUThread::Internal::DoRunIdle()
     ThrottlePresentation();
 }
 
-bool GPUThread::Reconfigure(std::optional<GPURenderer> renderer, bool upload_vram, std::optional<bool> fullscreen,
-                            std::optional<bool> start_fullscreen_ui, bool recreate_device, Error* error)
+bool VideoThread::Reconfigure(std::optional<GPURenderer> renderer, bool upload_vram, std::optional<bool> fullscreen,
+                              std::optional<bool> start_fullscreen_ui, bool recreate_device, Error* error)
 {
-  INFO_LOG("Reconfiguring GPU thread.");
+  INFO_LOG("Reconfiguring video thread.");
 
   s_state.requested_renderer = renderer;
   s_state.requested_fullscreen = fullscreen.value_or(s_state.requested_fullscreen);
 
   bool result = false;
-  GPUThreadReconfigureCommand* cmd = AllocateCommand<GPUThreadReconfigureCommand>(GPUBackendCommandType::Reconfigure);
+  VideoThreadReconfigureCommand* cmd =
+    AllocateCommand<VideoThreadReconfigureCommand>(VideoThreadCommandType::Reconfigure);
   cmd->renderer = s_state.requested_renderer;
   cmd->fullscreen = s_state.requested_fullscreen;
   cmd->start_fullscreen_ui = start_fullscreen_ui;
@@ -562,7 +563,7 @@ bool GPUThread::Reconfigure(std::optional<GPURenderer> renderer, bool upload_vra
   cmd->out_result = &result;
   cmd->settings = g_settings;
 
-  if (!s_state.use_gpu_thread) [[unlikely]]
+  if (!s_state.use_thread) [[unlikely]]
     ReconfigureOnThread(cmd);
   else
     PushCommandAndSync(cmd, false);
@@ -570,7 +571,7 @@ bool GPUThread::Reconfigure(std::optional<GPURenderer> renderer, bool upload_vra
   return result;
 }
 
-bool GPUThread::StartFullscreenUI(bool fullscreen, Error* error)
+bool VideoThread::StartFullscreenUI(bool fullscreen, Error* error)
 {
   // Don't need to reconfigure if we already have a system.
   if (System::IsValid())
@@ -582,12 +583,12 @@ bool GPUThread::StartFullscreenUI(bool fullscreen, Error* error)
   return Reconfigure(std::nullopt, false, fullscreen, true, false, error);
 }
 
-bool GPUThread::IsFullscreenUIRequested()
+bool VideoThread::IsFullscreenUIRequested()
 {
   return s_state.requested_fullscreen_ui;
 }
 
-void GPUThread::StopFullscreenUI()
+void VideoThread::StopFullscreenUI()
 {
   // Don't need to reconfigure if we already have a system.
   if (System::IsValid())
@@ -599,39 +600,39 @@ void GPUThread::StopFullscreenUI()
   Reconfigure(std::nullopt, false, std::nullopt, false, false, nullptr);
 }
 
-std::optional<GPURenderer> GPUThread::GetRequestedRenderer()
+std::optional<GPURenderer> VideoThread::GetRequestedRenderer()
 {
   return s_state.requested_renderer;
 }
 
-bool GPUThread::CreateGPUBackend(GPURenderer renderer, bool upload_vram, std::optional<bool> fullscreen, Error* error)
+bool VideoThread::CreateGPUBackend(GPURenderer renderer, bool upload_vram, std::optional<bool> fullscreen, Error* error)
 {
   return Reconfigure(renderer, upload_vram, fullscreen, std::nullopt, false, error);
 }
 
-void GPUThread::DestroyGPUBackend()
+void VideoThread::DestroyGPUBackend()
 {
   Reconfigure(std::nullopt, false, std::nullopt, std::nullopt, false, nullptr);
   s_state.requested_renderer.reset();
 }
 
-bool GPUThread::HasGPUBackend()
+bool VideoThread::HasGPUBackend()
 {
   DebugAssert(IsOnThread());
   return (s_state.gpu_backend != nullptr);
 }
 
-bool GPUThread::IsGPUBackendRequested()
+bool VideoThread::IsGPUBackendRequested()
 {
   return s_state.requested_renderer.has_value();
 }
 
-bool GPUThread::IsFullscreen()
+bool VideoThread::IsFullscreen()
 {
   return s_state.requested_fullscreen;
 }
 
-bool GPUThread::CreateDeviceOnThread(RenderAPI api, bool fullscreen, bool preserve_imgui_on_failure, Error* error)
+bool VideoThread::CreateDeviceOnThread(RenderAPI api, bool fullscreen, bool preserve_imgui_on_failure, Error* error)
 {
   DebugAssert(!g_gpu_device);
 
@@ -759,7 +760,7 @@ bool GPUThread::CreateDeviceOnThread(RenderAPI api, bool fullscreen, bool preser
   return true;
 }
 
-void GPUThread::DestroyDeviceOnThread(bool preserve_imgui_state)
+void VideoThread::DestroyDeviceOnThread(bool preserve_imgui_state)
 {
   if (!g_gpu_device)
     return;
@@ -787,8 +788,8 @@ void GPUThread::DestroyDeviceOnThread(bool preserve_imgui_state)
   std::atomic_thread_fence(std::memory_order_release);
 }
 
-bool GPUThread::CreateGPUBackendOnThread(GPURenderer renderer, bool upload_vram, const GPUSettings* old_settings,
-                                         Error* error)
+bool VideoThread::CreateGPUBackendOnThread(GPURenderer renderer, bool upload_vram, const GPUSettings* old_settings,
+                                           Error* error)
 {
   Error local_error;
 
@@ -858,7 +859,7 @@ bool GPUThread::CreateGPUBackendOnThread(GPURenderer renderer, bool upload_vram,
   return true;
 }
 
-void GPUThread::ReconfigureOnThread(GPUThreadReconfigureCommand* cmd)
+void VideoThread::ReconfigureOnThread(VideoThreadReconfigureCommand* cmd)
 {
   // Store state.
   s_state.requested_vsync = cmd->vsync_mode;
@@ -884,7 +885,7 @@ void GPUThread::ReconfigureOnThread(GPUThreadReconfigureCommand* cmd)
   if (had_renderer && cmd->renderer.has_value() && cmd->upload_vram)
   {
     GPUBackendReadVRAMCommand read_cmd;
-    read_cmd.type = GPUBackendCommandType::ReadVRAM;
+    read_cmd.type = VideoThreadCommandType::ReadVRAM;
     read_cmd.size = sizeof(cmd);
     read_cmd.x = 0;
     read_cmd.y = 0;
@@ -944,7 +945,7 @@ void GPUThread::ReconfigureOnThread(GPUThreadReconfigureCommand* cmd)
       // If we had a renderer, it means it was a switch, and we need to bail out the thread.
       if (had_renderer)
       {
-        GPUThread::ReportFatalErrorAndShutdown("Failed to switch GPU backend.");
+        VideoThread::ReportFatalErrorAndShutdown("Failed to switch GPU backend.");
         *cmd->out_result = true;
       }
       else
@@ -973,7 +974,7 @@ void GPUThread::ReconfigureOnThread(GPUThreadReconfigureCommand* cmd)
   }
 }
 
-void GPUThread::DestroyGPUBackendOnThread()
+void VideoThread::DestroyGPUBackendOnThread()
 {
   if (!s_state.gpu_backend)
     return;
@@ -985,7 +986,7 @@ void GPUThread::DestroyGPUBackendOnThread()
   s_state.gpu_backend.reset();
 }
 
-void GPUThread::DestroyGPUPresenterOnThread()
+void VideoThread::DestroyGPUPresenterOnThread()
 {
   if (!GPUPresenter::IsInitialized())
     return;
@@ -1005,7 +1006,7 @@ void GPUThread::DestroyGPUPresenterOnThread()
   GPUPresenter::Shutdown();
 }
 
-bool GPUThread::Internal::PresentFrameAndRestoreContext()
+bool VideoThread::Internal::PresentFrameAndRestoreContext()
 {
   DebugAssert(IsOnThread());
 
@@ -1021,14 +1022,14 @@ bool GPUThread::Internal::PresentFrameAndRestoreContext()
   return true;
 }
 
-void GPUThread::SetThreadEnabled(bool enabled)
+void VideoThread::SetThreadEnabled(bool enabled)
 {
-  if (s_state.use_gpu_thread == enabled)
+  if (s_state.use_thread == enabled)
     return;
 
-  if (s_state.use_gpu_thread)
+  if (s_state.use_thread)
   {
-    SyncGPUThread(false);
+    SyncThread(false);
     std::atomic_thread_fence(std::memory_order_acquire);
   }
 
@@ -1036,7 +1037,7 @@ void GPUThread::SetThreadEnabled(bool enabled)
   if (!g_gpu_device)
   {
     // Thread should be idle. Just reset the FIFO.
-    s_state.use_gpu_thread = enabled;
+    s_state.use_thread = enabled;
     ResetCommandFIFO();
     return;
   }
@@ -1063,7 +1064,7 @@ void GPUThread::SetThreadEnabled(bool enabled)
   ResetCommandFIFO();
 
   // Update state and reconfigure again.
-  s_state.use_gpu_thread = enabled;
+  s_state.use_thread = enabled;
 
   Error error;
   if (!Reconfigure(requested_renderer, requested_renderer.has_value(), requested_fullscreen, requested_fullscreen_ui,
@@ -1074,7 +1075,7 @@ void GPUThread::SetThreadEnabled(bool enabled)
   }
 }
 
-void GPUThread::UpdateSettingsOnThread(GPUSettings&& new_settings)
+void VideoThread::UpdateSettingsOnThread(GPUSettings&& new_settings)
 {
   VERBOSE_LOG("Updating GPU settings on thread...");
 
@@ -1109,29 +1110,29 @@ void GPUThread::UpdateSettingsOnThread(GPUSettings&& new_settings)
   }
 }
 
-void GPUThread::RunOnThread(AsyncCallType func)
+void VideoThread::RunOnThread(AsyncCallType func)
 {
-  if (!s_state.use_gpu_thread) [[unlikely]]
+  if (!s_state.use_thread) [[unlikely]]
   {
     func();
     return;
   }
 
-  GPUThreadAsyncCallCommand* cmd =
-    AllocateCommand<GPUThreadAsyncCallCommand>(GPUBackendCommandType::AsyncCall, std::move(func));
+  VideoThreadAsyncCallCommand* cmd =
+    AllocateCommand<VideoThreadAsyncCallCommand>(VideoThreadCommandType::AsyncCall, std::move(func));
   PushCommandAndWakeThread(cmd);
 }
 
-void GPUThread::RunOnBackend(AsyncBackendCallType func, bool sync, bool spin_or_wake)
+void VideoThread::RunOnBackend(AsyncBackendCallType func, bool sync, bool spin_or_wake)
 {
-  if (!s_state.use_gpu_thread) [[unlikely]]
+  if (!s_state.use_thread) [[unlikely]]
   {
     func(s_state.gpu_backend.get());
     return;
   }
 
-  GPUThreadAsyncBackendCallCommand* cmd =
-    AllocateCommand<GPUThreadAsyncBackendCallCommand>(GPUBackendCommandType::AsyncBackendCall, std::move(func));
+  VideoThreadAsyncBackendCallCommand* cmd =
+    AllocateCommand<VideoThreadAsyncBackendCallCommand>(VideoThreadCommandType::AsyncBackendCall, std::move(func));
   if (sync)
     PushCommandAndSync(cmd, spin_or_wake);
   else if (spin_or_wake)
@@ -1140,30 +1141,30 @@ void GPUThread::RunOnBackend(AsyncBackendCallType func, bool sync, bool spin_or_
     PushCommand(cmd);
 }
 
-std::pair<GPUThreadCommand*, void*> GPUThread::BeginASyncBufferCall(AsyncBufferCallType func, u32 buffer_size)
+std::pair<VideoThreadCommand*, void*> VideoThread::BeginASyncBufferCall(AsyncBufferCallType func, u32 buffer_size)
 {
   // this is less than optimal, but it's only used for input osd updates currently, so whatever
-  GPUThreadAsyncCallCommand* const cmd = AllocateCommand<GPUThreadAsyncCallCommand>(
-    sizeof(GPUThreadAsyncCallCommand) + buffer_size, GPUBackendCommandType::AsyncCall);
+  VideoThreadAsyncCallCommand* const cmd = AllocateCommand<VideoThreadAsyncCallCommand>(
+    sizeof(VideoThreadAsyncCallCommand) + buffer_size, VideoThreadCommandType::AsyncCall);
   void* const buffer = static_cast<void*>(cmd + 1);
   cmd->func = [func, buffer]() { func(buffer); };
-  return std::make_pair(static_cast<GPUThreadCommand*>(cmd), buffer);
+  return std::make_pair(static_cast<VideoThreadCommand*>(cmd), buffer);
 }
 
-void GPUThread::EndASyncBufferCall(GPUThreadCommand* cmd)
+void VideoThread::EndASyncBufferCall(VideoThreadCommand* cmd)
 {
-  if (!s_state.use_gpu_thread) [[unlikely]]
+  if (!s_state.use_thread) [[unlikely]]
   {
-    GPUThreadAsyncCallCommand* const acmd = static_cast<GPUThreadAsyncCallCommand*>(cmd);
+    VideoThreadAsyncCallCommand* const acmd = static_cast<VideoThreadAsyncCallCommand*>(cmd);
     acmd->func();
-    acmd->~GPUThreadAsyncCallCommand();
+    acmd->~VideoThreadAsyncCallCommand();
     return;
   }
 
   PushCommand(cmd);
 }
 
-void GPUThread::UpdateSettings(bool gpu_settings_changed, bool device_settings_changed, bool thread_changed)
+void VideoThread::UpdateSettings(bool gpu_settings_changed, bool device_settings_changed, bool thread_changed)
 {
   // thread should be a device setting
   if (thread_changed)
@@ -1184,10 +1185,10 @@ void GPUThread::UpdateSettings(bool gpu_settings_changed, bool device_settings_c
   }
   else if (gpu_settings_changed)
   {
-    if (s_state.use_gpu_thread) [[likely]]
+    if (s_state.use_thread) [[likely]]
     {
-      GPUThreadUpdateSettingsCommand* cmd =
-        AllocateCommand<GPUThreadUpdateSettingsCommand>(GPUBackendCommandType::UpdateSettings, g_settings);
+      VideoThreadUpdateSettingsCommand* cmd =
+        AllocateCommand<VideoThreadUpdateSettingsCommand>(VideoThreadCommandType::UpdateSettings, g_settings);
       PushCommandAndWakeThread(cmd);
     }
     else
@@ -1210,10 +1211,10 @@ void GPUThread::UpdateSettings(bool gpu_settings_changed, bool device_settings_c
   }
 }
 
-void GPUThread::UpdateGameInfo(const std::string& title, const std::string& serial, const std::string& path,
-                               GameHash hash, bool wake_thread /*= true*/)
+void VideoThread::UpdateGameInfo(const std::string& title, const std::string& serial, const std::string& path,
+                                 GameHash hash, bool wake_thread /*= true*/)
 {
-  if (!s_state.use_gpu_thread)
+  if (!s_state.use_thread)
   {
     const bool serial_changed = (s_state.game_serial != serial);
     s_state.game_title = title;
@@ -1224,8 +1225,8 @@ void GPUThread::UpdateGameInfo(const std::string& title, const std::string& seri
     return;
   }
 
-  GPUThreadUpdateGameInfoCommand* cmd =
-    AllocateCommand<GPUThreadUpdateGameInfoCommand>(GPUBackendCommandType::UpdateGameInfo, title, serial, path, hash);
+  VideoThreadUpdateGameInfoCommand* cmd = AllocateCommand<VideoThreadUpdateGameInfoCommand>(
+    VideoThreadCommandType::UpdateGameInfo, title, serial, path, hash);
 
   if (wake_thread)
     PushCommandAndWakeThread(cmd);
@@ -1233,18 +1234,18 @@ void GPUThread::UpdateGameInfo(const std::string& title, const std::string& seri
     PushCommand(cmd);
 }
 
-void GPUThread::ClearGameInfo()
+void VideoThread::ClearGameInfo()
 {
-  if (!s_state.use_gpu_thread)
+  if (!s_state.use_thread)
   {
     ClearGameInfoOnThread();
     return;
   }
 
-  PushCommandAndWakeThread(AllocateCommand<GPUThreadUpdateGameInfoCommand>(GPUBackendCommandType::UpdateGameInfo));
+  PushCommandAndWakeThread(AllocateCommand<VideoThreadUpdateGameInfoCommand>(VideoThreadCommandType::UpdateGameInfo));
 }
 
-void GPUThread::UpdateGameInfoOnThread(GPUThreadUpdateGameInfoCommand* cmd)
+void VideoThread::UpdateGameInfoOnThread(VideoThreadUpdateGameInfoCommand* cmd)
 {
   DEV_LOG("Updating game info on GPU thread: {}/{}", cmd->game_serial, cmd->game_title);
   const bool serial_changed = (s_state.game_serial != cmd->game_serial);
@@ -1255,7 +1256,7 @@ void GPUThread::UpdateGameInfoOnThread(GPUThreadUpdateGameInfoCommand* cmd)
   GameInfoChanged(serial_changed);
 }
 
-void GPUThread::GameInfoChanged(bool serial_changed)
+void VideoThread::GameInfoChanged(bool serial_changed)
 {
   if (!serial_changed)
     return;
@@ -1266,7 +1267,7 @@ void GPUThread::GameInfoChanged(bool serial_changed)
     SaveStateSelectorUI::RefreshList();
 }
 
-void GPUThread::ClearGameInfoOnThread()
+void VideoThread::ClearGameInfoOnThread()
 {
   DEV_LOG("Clearing game info on GPU thread.");
   s_state.game_hash = 0;
@@ -1275,7 +1276,7 @@ void GPUThread::ClearGameInfoOnThread()
   s_state.game_title = {};
 }
 
-void GPUThread::ReportFatalErrorAndShutdown(std::string_view reason)
+void VideoThread::ReportFatalErrorAndShutdown(std::string_view reason)
 {
   DebugAssert(IsOnThread());
 
@@ -1291,17 +1292,17 @@ void GPUThread::ReportFatalErrorAndShutdown(std::string_view reason)
     Panic("Failed to initialize null GPU backend");
 }
 
-bool GPUThread::IsOnThread()
+bool VideoThread::IsOnThread()
 {
-  return (!s_state.use_gpu_thread || s_state.gpu_thread.IsCallingThread());
+  return (!s_state.use_thread || s_state.thread_handle.IsCallingThread());
 }
 
-bool GPUThread::IsUsingThread()
+bool VideoThread::IsUsingThread()
 {
-  return s_state.use_gpu_thread;
+  return s_state.use_thread;
 }
 
-void GPUThread::ResizeDisplayWindow(s32 width, s32 height, float scale, float refresh_rate)
+void VideoThread::ResizeDisplayWindow(s32 width, s32 height, float scale, float refresh_rate)
 {
   const u16 clamped_width = static_cast<u16>(std::clamp<s32>(width, 1, std::numeric_limits<u16>::max()));
   const u16 clamped_height = static_cast<u16>(std::clamp<s32>(height, 1, std::numeric_limits<u16>::max()));
@@ -1326,7 +1327,7 @@ void GPUThread::ResizeDisplayWindow(s32 width, s32 height, float scale, float re
   }
 }
 
-void GPUThread::ResizeDisplayWindowOnThread(u32 width, u32 height, float scale, float refresh_rate)
+void VideoThread::ResizeDisplayWindowOnThread(u32 width, u32 height, float scale, float refresh_rate)
 {
   // We should _not_ be getting this without a device, since we should have shut down.
   if (!g_gpu_device || !g_gpu_device->HasMainSwapChain())
@@ -1350,12 +1351,12 @@ void GPUThread::ResizeDisplayWindowOnThread(u32 width, u32 height, float scale, 
   DisplayWindowResizedOnThread();
 }
 
-void GPUThread::UpdateDisplayWindow()
+void VideoThread::UpdateDisplayWindow()
 {
   RunOnThread([fullscreen = s_state.requested_fullscreen]() { UpdateDisplayWindowOnThread(fullscreen, true); });
 }
 
-void GPUThread::SetFullscreen(bool fullscreen)
+void VideoThread::SetFullscreen(bool fullscreen)
 {
   // Technically not safe to read g_gpu_device here on the CPU thread, but we do sync on create/destroy.
   if (s_state.requested_fullscreen == fullscreen || !Host::CanChangeFullscreenMode(fullscreen) || !g_gpu_device)
@@ -1365,7 +1366,7 @@ void GPUThread::SetFullscreen(bool fullscreen)
   RunOnThread([fullscreen]() { UpdateDisplayWindowOnThread(fullscreen, true); });
 }
 
-void GPUThread::SetFullscreenWithCompletionHandler(bool fullscreen, AsyncCallType completion_handler)
+void VideoThread::SetFullscreenWithCompletionHandler(bool fullscreen, AsyncCallType completion_handler)
 {
   if (s_state.requested_fullscreen == fullscreen || !Host::CanChangeFullscreenMode(fullscreen) || !g_gpu_device)
   {
@@ -1383,7 +1384,7 @@ void GPUThread::SetFullscreenWithCompletionHandler(bool fullscreen, AsyncCallTyp
   });
 }
 
-void GPUThread::UpdateDisplayWindowOnThread(bool fullscreen, bool allow_exclusive_fullscreen)
+void VideoThread::UpdateDisplayWindowOnThread(bool fullscreen, bool allow_exclusive_fullscreen)
 {
   // In case we get the event late.
   if (!g_gpu_device)
@@ -1446,7 +1447,7 @@ void GPUThread::UpdateDisplayWindowOnThread(bool fullscreen, bool allow_exclusiv
   DisplayWindowResizedOnThread();
 }
 
-bool GPUThread::CheckExclusiveFullscreenOnThread()
+bool VideoThread::CheckExclusiveFullscreenOnThread()
 {
   if (g_gpu_device->HasMainSwapChain() && g_gpu_device->GetMainSwapChain()->IsExclusiveFullscreen())
     return true;
@@ -1457,7 +1458,7 @@ bool GPUThread::CheckExclusiveFullscreenOnThread()
   return false;
 }
 
-void GPUThread::DisplayWindowResizedOnThread()
+void VideoThread::DisplayWindowResizedOnThread()
 {
   // surfaceless is usually temporary, so just ignore it
   const GPUSwapChain* const swap_chain = g_gpu_device->GetMainSwapChain();
@@ -1479,12 +1480,12 @@ void GPUThread::DisplayWindowResizedOnThread()
   }
 }
 
-const WindowInfo& GPUThread::GetRenderWindowInfo()
+const WindowInfo& VideoThread::GetRenderWindowInfo()
 {
   return s_state.render_window_info;
 }
 
-void GPUThread::SetVSync(GPUVSyncMode mode, PresentSkipMode present_skip_mode)
+void VideoThread::SetVSync(GPUVSyncMode mode, PresentSkipMode present_skip_mode)
 {
   RunOnThread([mode, present_skip_mode]() {
     if (s_state.requested_vsync == mode && s_state.requested_present_skip == present_skip_mode)
@@ -1504,10 +1505,10 @@ void GPUThread::SetVSync(GPUVSyncMode mode, PresentSkipMode present_skip_mode)
   // If we're turning on vsync or turning off present throttle, we want to drain the GPU thread.
   // Otherwise if it is currently behind, it'll be permanently stuck behind.
   if (mode != GPUVSyncMode::Disabled)
-    SyncGPUThread(false);
+    SyncThread(false);
 }
 
-void GPUThread::PresentCurrentFrame()
+void VideoThread::PresentCurrentFrame()
 {
   RunOnThread([]() {
     if (s_state.run_idle_flag)
@@ -1522,18 +1523,18 @@ void GPUThread::PresentCurrentFrame()
   });
 }
 
-bool GPUThread::GetRunIdleReason(RunIdleReason reason)
+bool VideoThread::GetRunIdleReason(RunIdleReason reason)
 {
   return (s_state.run_idle_reasons & static_cast<u8>(reason)) != 0;
 }
 
-void GPUThread::SetRunIdleReason(RunIdleReason reason, bool enabled)
+void VideoThread::SetRunIdleReason(RunIdleReason reason, bool enabled)
 {
   const u8 bit = static_cast<u8>(reason);
   if (((s_state.run_idle_reasons & bit) != 0) == enabled)
     return;
 
-  if (Log::IsLogVisible(Log::Level::Dev, Log::Channel::GPUThread))
+  if (Log::IsLogVisible(Log::Level::Dev, Log::Channel::VideoThread))
   {
     static constexpr const std::array reason_strings = {
       "NoGPUBackend",        "SystemPaused",        "OSDMessagesActive",         "FullscreenUIActive",
@@ -1553,17 +1554,17 @@ void GPUThread::SetRunIdleReason(RunIdleReason reason, bool enabled)
   UpdateRunIdle();
 }
 
-bool GPUThread::IsRunningIdle()
+bool VideoThread::IsRunningIdle()
 {
   return s_state.run_idle_flag;
 }
 
-bool GPUThread::IsSystemPaused()
+bool VideoThread::IsSystemPaused()
 {
   return ((s_state.run_idle_reasons & static_cast<u8>(RunIdleReason::SystemPaused)) != 0);
 }
 
-bool GPUThread::ShouldPresentVideoFrame(u64 present_time)
+bool VideoThread::ShouldPresentVideoFrame(u64 present_time)
 {
   // TODO: Move to VideoPresenter once it's turned into a namespace.
   if (!g_gpu_device->HasMainSwapChain())
@@ -1592,17 +1593,17 @@ bool GPUThread::ShouldPresentVideoFrame(u64 present_time)
   return false;
 }
 
-u64 GPUThread::GetLastPresentTime()
+u64 VideoThread::GetLastPresentTime()
 {
   return s_state.last_present_time;
 }
 
-void GPUThread::SetLastPresentTime(u64 time)
+void VideoThread::SetLastPresentTime(u64 time)
 {
   s_state.last_present_time = time;
 }
 
-void GPUThread::ThrottlePresentation()
+void VideoThread::ThrottlePresentation()
 {
   const float throttle_rate = (g_gpu_device && g_gpu_device->HasMainSwapChain() &&
                                g_gpu_device->GetMainSwapChain()->GetWindowInfo().surface_refresh_rate > 0.0f) ?
@@ -1623,7 +1624,7 @@ void GPUThread::ThrottlePresentation()
   Timer::SleepUntil(s_state.next_throttle_time, false);
 }
 
-void GPUThread::UpdateRunIdle()
+void VideoThread::UpdateRunIdle()
 {
   DebugAssert(IsOnThread());
 
@@ -1647,28 +1648,28 @@ void GPUThread::UpdateRunIdle()
   else
     DEV_COLOR_LOG(StrongOrange, "GPU thread now NOT running idle");
 
-  Host::OnGPUThreadRunIdleChanged(new_flag);
+  Host::OnVideoThreadRunIdleChanged(new_flag);
 }
 
-const std::string& GPUThread::GetGameTitle()
+const std::string& VideoThread::GetGameTitle()
 {
   DebugAssert(IsOnThread());
   return s_state.game_title;
 }
 
-const std::string& GPUThread::GetGameSerial()
+const std::string& VideoThread::GetGameSerial()
 {
   DebugAssert(IsOnThread());
   return s_state.game_serial;
 }
 
-const std::string& GPUThread::GetGamePath()
+const std::string& VideoThread::GetGamePath()
 {
   DebugAssert(IsOnThread());
   return s_state.game_path;
 }
 
-GameHash GPUThread::GetGameHash()
+GameHash VideoThread::GetGameHash()
 {
   DebugAssert(IsOnThread());
   return s_state.game_hash;

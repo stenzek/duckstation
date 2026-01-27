@@ -8,10 +8,10 @@
 #include "fullscreenui_private.h"
 #include "fullscreenui_widgets.h"
 #include "game_list.h"
-#include "gpu_thread.h"
 #include "host.h"
 #include "sound_effect_manager.h"
 #include "system.h"
+#include "video_thread.h"
 
 #include "scmversion/scmversion.h"
 
@@ -177,8 +177,8 @@ void FullscreenUI::Initialize()
   s_locals.initialized = true;
 
   // in case we open the pause menu while the game is running
-  if (s_locals.current_main_window == MainWindowType::None && !GPUThread::HasGPUBackend() &&
-      !GPUThread::IsGPUBackendRequested())
+  if (s_locals.current_main_window == MainWindowType::None && !VideoThread::HasGPUBackend() &&
+      !VideoThread::IsGPUBackendRequested())
   {
     ReturnToMainWindow();
     ForceKeyNavEnabled();
@@ -216,7 +216,7 @@ void FullscreenUI::CheckForConfigChanges(const GPUSettings& old_settings)
 
 void FullscreenUI::UpdateRunIdleState()
 {
-  GPUThread::SetRunIdleReason(GPUThread::RunIdleReason::FullscreenUIActive, HasActiveWindow());
+  VideoThread::SetRunIdleReason(VideoThread::RunIdleReason::FullscreenUIActive, HasActiveWindow());
 }
 
 void FullscreenUI::OnSystemStarting()
@@ -225,7 +225,7 @@ void FullscreenUI::OnSystemStarting()
   if (!IsInitialized())
     return;
 
-  GPUThread::RunOnThread([]() {
+  VideoThread::RunOnThread([]() {
     if (!IsInitialized())
       return;
 
@@ -244,7 +244,7 @@ void FullscreenUI::OnSystemPaused()
   if (!IsInitialized())
     return;
 
-  GPUThread::RunOnThread([]() {
+  VideoThread::RunOnThread([]() {
     if (!IsInitialized())
       return;
 
@@ -258,7 +258,7 @@ void FullscreenUI::OnSystemResumed()
   if (!IsInitialized())
     return;
 
-  GPUThread::RunOnThread([]() {
+  VideoThread::RunOnThread([]() {
     if (!IsInitialized())
       return;
 
@@ -276,7 +276,7 @@ void FullscreenUI::OnSystemDestroyed()
   if (!IsInitialized())
     return;
 
-  GPUThread::RunOnThread([]() {
+  VideoThread::RunOnThread([]() {
     if (!IsInitialized())
       return;
 
@@ -289,7 +289,7 @@ void FullscreenUI::OnSystemDestroyed()
 
 void FullscreenUI::PauseForMenuOpen(bool set_pause_menu_open)
 {
-  s_locals.was_paused_on_quick_menu_open = GPUThread::IsSystemPaused();
+  s_locals.was_paused_on_quick_menu_open = VideoThread::IsSystemPaused();
   if (!s_locals.was_paused_on_quick_menu_open)
     Host::RunOnCoreThread([]() { System::PauseSystem(true); });
 
@@ -301,7 +301,7 @@ void FullscreenUI::OpenPauseMenu()
   if (!System::IsValid())
     return;
 
-  GPUThread::RunOnThread([]() {
+  VideoThread::RunOnThread([]() {
     Initialize();
     if (s_locals.current_main_window != MainWindowType::None)
       return;
@@ -323,7 +323,7 @@ void FullscreenUI::OpenCheatsMenu()
   if (!System::IsValid())
     return;
 
-  GPUThread::RunOnThread([]() {
+  VideoThread::RunOnThread([]() {
     Initialize();
     if (s_locals.current_main_window != MainWindowType::None)
       return;
@@ -344,13 +344,13 @@ void FullscreenUI::OpenDiscChangeMenu()
   if (!System::IsValid())
     return;
 
-  DebugAssert(!GPUThread::IsOnThread());
+  DebugAssert(!VideoThread::IsOnThread());
   BeginChangeDiscOnCoreThread(true);
 }
 
 void FullscreenUI::FixStateIfPaused()
 {
-  if (!GPUThread::HasGPUBackend() || System::IsRunning())
+  if (!VideoThread::HasGPUBackend() || System::IsRunning())
     return;
 
   // When we're paused, we won't have trickled the key up event for escape yet. Do it now.
@@ -359,10 +359,10 @@ void FullscreenUI::FixStateIfPaused()
 
 void FullscreenUI::ClosePauseMenu()
 {
-  if (!GPUThread::HasGPUBackend())
+  if (!VideoThread::HasGPUBackend())
     return;
 
-  if (GPUThread::IsSystemPaused() && !s_locals.was_paused_on_quick_menu_open)
+  if (VideoThread::IsSystemPaused() && !s_locals.was_paused_on_quick_menu_open)
     Host::RunOnCoreThread([]() { System::PauseSystem(false); });
 
   BeginTransition(SHORT_TRANSITION_TIME, []() {
@@ -374,12 +374,12 @@ void FullscreenUI::ClosePauseMenu()
 
 void FullscreenUI::ClosePauseMenuImmediately()
 {
-  if (!GPUThread::HasGPUBackend())
+  if (!VideoThread::HasGPUBackend())
     return;
 
   CancelTransition();
 
-  if (GPUThread::IsSystemPaused() && !s_locals.was_paused_on_quick_menu_open)
+  if (VideoThread::IsSystemPaused() && !s_locals.was_paused_on_quick_menu_open)
     Host::RunOnCoreThread([]() { System::PauseSystem(false); });
 
   s_locals.current_pause_submenu = PauseSubMenu::None;
@@ -387,8 +387,8 @@ void FullscreenUI::ClosePauseMenuImmediately()
   SwitchToMainWindow(MainWindowType::None);
 
   // Present frame with menu closed. We have to defer this for a frame so imgui loses keyboard focus.
-  if (GPUThread::IsSystemPaused())
-    GPUThread::PresentCurrentFrame();
+  if (VideoThread::IsSystemPaused())
+    VideoThread::PresentCurrentFrame();
 }
 
 void FullscreenUI::SwitchToMainWindow(MainWindowType type)
@@ -427,12 +427,12 @@ void FullscreenUI::ReturnToPreviousWindow()
 
 void FullscreenUI::ReturnToMainWindow()
 {
-  ReturnToMainWindow(GPUThread::HasGPUBackend() ? SHORT_TRANSITION_TIME : DEFAULT_TRANSITION_TIME);
+  ReturnToMainWindow(VideoThread::HasGPUBackend() ? SHORT_TRANSITION_TIME : DEFAULT_TRANSITION_TIME);
 }
 
 void FullscreenUI::ReturnToMainWindow(float transition_time)
 {
-  if (GPUThread::IsSystemPaused() && !s_locals.was_paused_on_quick_menu_open)
+  if (VideoThread::IsSystemPaused() && !s_locals.was_paused_on_quick_menu_open)
     Host::RunOnCoreThread([]() { System::PauseSystem(false); });
 
   BeginTransition(transition_time, []() {
@@ -440,7 +440,7 @@ void FullscreenUI::ReturnToMainWindow(float transition_time)
     s_locals.current_pause_submenu = PauseSubMenu::None;
     s_locals.pause_menu_was_open = false;
 
-    if (GPUThread::HasGPUBackend())
+    if (VideoThread::HasGPUBackend())
     {
       SwitchToMainWindow(MainWindowType::None);
     }
@@ -491,7 +491,7 @@ void FullscreenUI::Render()
     return;
 
   // draw background before any overlays
-  if (!GPUThread::HasGPUBackend() && s_locals.current_main_window != MainWindowType::None)
+  if (!VideoThread::HasGPUBackend() && s_locals.current_main_window != MainWindowType::None)
     DrawBackground();
 
   BeginLayout();
@@ -612,11 +612,11 @@ void FullscreenUI::UpdateCurrentTimeString()
 
 void FullscreenUI::DoStartPath(std::string path, std::string state, std::optional<bool> fast_boot)
 {
-  if (GPUThread::HasGPUBackend())
+  if (VideoThread::HasGPUBackend())
     return;
 
   // Stop running idle to prevent game list from being redrawn until we know if startup succeeded.
-  GPUThread::SetRunIdleReason(GPUThread::RunIdleReason::FullscreenUIActive, false);
+  VideoThread::SetRunIdleReason(VideoThread::RunIdleReason::FullscreenUIActive, false);
 
   SystemBootParameters params;
   params.path = std::move(path);
@@ -630,7 +630,7 @@ void FullscreenUI::DoStartPath(std::string path, std::string state, std::optiona
     Error error;
     if (!System::BootSystem(std::move(params), &error))
     {
-      GPUThread::RunOnThread([error_desc = error.TakeDescription()]() {
+      VideoThread::RunOnThread([error_desc = error.TakeDescription()]() {
         if (!IsInitialized())
           return;
 
@@ -719,8 +719,8 @@ void FullscreenUI::ConfirmWithSafetyCheck(std::string action, bool check_achieve
   Host::RunOnCoreThread([action = std::move(action), callback = std::move(callback), check_achievements]() mutable {
     const u32 pending_unlock_count = check_achievements ? Achievements::GetPendingUnlockCount() : 0;
     const bool was_saving = System::IsSavingMemoryCards();
-    GPUThread::RunOnThread([action = std::move(action), callback = std::move(callback), pending_unlock_count,
-                            was_saving]() mutable {
+    VideoThread::RunOnThread([action = std::move(action), callback = std::move(callback), pending_unlock_count,
+                              was_saving]() mutable {
       if (!was_saving && pending_unlock_count == 0)
       {
         callback(true);
@@ -818,7 +818,7 @@ void FullscreenUI::StartChangeDiscFromFile()
   };
 
   OpenFileSelector(FSUI_ICONVSTR(ICON_FA_COMPACT_DISC, "Select Disc Image"), false, std::move(callback),
-                   GetDiscImageFilters(), std::string(Path::GetDirectory(GPUThread::GetGamePath())));
+                   GetDiscImageFilters(), std::string(Path::GetDirectory(VideoThread::GetGamePath())));
 }
 
 void FullscreenUI::BeginChangeDiscOnCoreThread(bool needs_pause)
@@ -845,7 +845,7 @@ void FullscreenUI::BeginChangeDiscOnCoreThread(bool needs_pause)
     for (u32 i = 0; i < count; i++)
       options.emplace_back(System::GetMediaSubImageTitle(i), i == current_index);
 
-    GPUThread::RunOnThread([options = std::move(options), pause_if_needed = std::move(pause_if_needed)]() mutable {
+    VideoThread::RunOnThread([options = std::move(options), pause_if_needed = std::move(pause_if_needed)]() mutable {
       Initialize();
 
       auto callback = [](s32 index, const std::string& title, bool checked) {
@@ -895,8 +895,8 @@ void FullscreenUI::BeginChangeDiscOnCoreThread(bool needs_pause)
         paths.push_back(glentry->path);
       }
 
-      GPUThread::RunOnThread([options = std::move(options), paths = std::move(paths),
-                              pause_if_needed = std::move(pause_if_needed)]() mutable {
+      VideoThread::RunOnThread([options = std::move(options), paths = std::move(paths),
+                                pause_if_needed = std::move(pause_if_needed)]() mutable {
         Initialize();
 
         auto callback = [paths = std::move(paths)](s32 index, const std::string& title, bool checked) mutable {
@@ -928,7 +928,7 @@ void FullscreenUI::BeginChangeDiscOnCoreThread(bool needs_pause)
     }
   }
 
-  GPUThread::RunOnThread([pause_if_needed = std::move(pause_if_needed)]() {
+  VideoThread::RunOnThread([pause_if_needed = std::move(pause_if_needed)]() {
     Initialize();
     StartChangeDiscFromFile();
     pause_if_needed();
@@ -970,7 +970,7 @@ void FullscreenUI::DoDesktopMode()
 
 void FullscreenUI::DoToggleFullscreen()
 {
-  Host::RunOnCoreThread([]() { GPUThread::SetFullscreen(!GPUThread::IsFullscreen()); });
+  Host::RunOnCoreThread([]() { VideoThread::SetFullscreen(!VideoThread::IsFullscreen()); });
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1456,7 +1456,7 @@ void FullscreenUI::DrawExitWindow()
 
 float FullscreenUI::GetBackgroundAlpha()
 {
-  if (GPUThread::HasGPUBackend())
+  if (VideoThread::HasGPUBackend())
   {
     // reduce background opacity when changing postfx settings
     if (s_locals.current_main_window == MainWindowType::Settings &&
@@ -1501,9 +1501,9 @@ void FullscreenUI::DrawPauseMenu()
     dl->AddRectFilled(ImVec2(0.0f, 0.0f), ImVec2(display_size.x, scaled_top_bar_height),
                       ImGui::GetColorU32(ModAlpha(UIStyle.BackgroundColor, 0.95f)), 0.0f);
 
-    const std::string& game_title = GPUThread::GetGameTitle();
-    const std::string& game_serial = GPUThread::GetGameSerial();
-    const std::string& game_path = GPUThread::GetGamePath();
+    const std::string& game_title = VideoThread::GetGameTitle();
+    const std::string& game_serial = VideoThread::GetGameSerial();
+    const std::string& game_path = VideoThread::GetGamePath();
     GPUTexture* const cover = GetCoverForCurrentGame(game_path);
     const float image_padding = LayoutScale(5.0f); // compensate for font baseline
     const float image_size = scaled_top_bar_height - scaled_top_bar_padding - scaled_top_bar_padding - image_padding;
@@ -1602,7 +1602,7 @@ void FullscreenUI::DrawPauseMenu()
       case PauseSubMenu::None:
       {
         // NOTE: Menu close must come first, because otherwise VM destruction options will race.
-        const bool has_game = GPUThread::HasGPUBackend();
+        const bool has_game = VideoThread::HasGPUBackend();
 
         if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_FA_PLAY, "Resume Game")) || WantsToCloseMenu())
           ClosePauseMenu();
@@ -1616,12 +1616,14 @@ void FullscreenUI::DrawPauseMenu()
 
         if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_PF_DOWNLOAD, "Load State"), has_game))
         {
-          BeginTransition([]() { OpenSaveStateSelector(GPUThread::GetGameSerial(), GPUThread::GetGamePath(), true); });
+          BeginTransition(
+            []() { OpenSaveStateSelector(VideoThread::GetGameSerial(), VideoThread::GetGamePath(), true); });
         }
 
         if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_PF_DISKETTE, "Save State"), has_game))
         {
-          BeginTransition([]() { OpenSaveStateSelector(GPUThread::GetGameSerial(), GPUThread::GetGamePath(), false); });
+          BeginTransition(
+            []() { OpenSaveStateSelector(VideoThread::GetGameSerial(), VideoThread::GetGamePath(), false); });
         }
 
         if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_PF_GAMEPAD_ALT, "Toggle Analog")))
@@ -1630,9 +1632,9 @@ void FullscreenUI::DrawPauseMenu()
           DoToggleAnalogMode();
         }
 
-        if (MenuButtonWithoutSummary(
-              FSUI_ICONVSTR(ICON_FA_WRENCH, "Game Properties"),
-              has_game && GameList::CanEditGameSettingsForPath(GPUThread::GetGameSerial(), GPUThread::GetGamePath())))
+        if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_FA_WRENCH, "Game Properties"),
+                                     has_game && GameList::CanEditGameSettingsForPath(VideoThread::GetGameSerial(),
+                                                                                      VideoThread::GetGamePath())))
         {
           BeginTransition([]() { SwitchToGameSettings(); });
         }
@@ -1831,14 +1833,14 @@ u32 FullscreenUI::PopulateSaveStateListEntries(const std::string& serial,
 
 void FullscreenUI::OpenSaveStateSelector(const std::string& serial, const std::string& path, bool is_loading)
 {
-  if (GPUThread::HasGPUBackend())
+  if (VideoThread::HasGPUBackend())
   {
     // need to get the undo state, if any
     Host::RunOnCoreThread([serial = serial, is_loading]() {
       std::optional<ExtendedSaveStateInfo> undo_state;
       if (is_loading)
         undo_state = System::GetUndoSaveStateInfo();
-      GPUThread::RunOnThread([serial = std::move(serial), undo_state = std::move(undo_state), is_loading]() mutable {
+      VideoThread::RunOnThread([serial = std::move(serial), undo_state = std::move(undo_state), is_loading]() mutable {
         if (PopulateSaveStateListEntries(serial, std::move(undo_state), is_loading) > 0)
         {
           s_locals.save_state_selector_loading = is_loading;
@@ -1868,7 +1870,7 @@ void FullscreenUI::OpenSaveStateSelector(const std::string& serial, const std::s
 void FullscreenUI::DrawSaveStateSelector()
 {
   static constexpr auto do_load_state = [](const SaveStateListEntry& entry) {
-    if (GPUThread::HasGPUBackend())
+    if (VideoThread::HasGPUBackend())
     {
       const s32 slot = entry.slot;
       const bool global = entry.global;
@@ -2226,7 +2228,7 @@ void FullscreenUI::DrawResumeStateSelector()
 void FullscreenUI::ExitFullscreenAndOpenURL(std::string_view url)
 {
   Host::RunOnCoreThread([url = std::string(url)]() {
-    GPUThread::SetFullscreen(false);
+    VideoThread::SetFullscreen(false);
     Host::OpenURL(url);
   });
 }

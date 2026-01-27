@@ -24,7 +24,7 @@ namespace System {
 struct MemorySaveState;
 }
 
-enum class GPUBackendCommandType : u8
+enum class VideoThreadCommandType : u8
 {
   Wraparound,
   AsyncCall,
@@ -55,10 +55,10 @@ enum class GPUBackendCommandType : u8
   DrawPreciseLine,
 };
 
-struct GPUThreadCommand
+struct VideoThreadCommand
 {
   u32 size;
-  GPUBackendCommandType type;
+  VideoThreadCommandType type;
 
   static constexpr u32 AlignCommandSize(u32 size)
   {
@@ -68,7 +68,7 @@ struct GPUThreadCommand
   }
 };
 
-struct GPUThreadReconfigureCommand : public GPUThreadCommand
+struct VideoThreadReconfigureCommand : public VideoThreadCommand
 {
   Error* error_ptr;
   bool* out_result;
@@ -82,18 +82,18 @@ struct GPUThreadReconfigureCommand : public GPUThreadCommand
   GPUSettings settings;
 };
 
-struct GPUThreadUpdateSettingsCommand : public GPUThreadCommand
+struct VideoThreadUpdateSettingsCommand : public VideoThreadCommand
 {
-  GPUThreadUpdateSettingsCommand(const GPUSettings& settings_) : settings(settings_) {}
+  VideoThreadUpdateSettingsCommand(const GPUSettings& settings_) : settings(settings_) {}
 
   GPUSettings settings;
 };
 
-struct GPUThreadUpdateGameInfoCommand : public GPUThreadCommand
+struct VideoThreadUpdateGameInfoCommand : public VideoThreadCommand
 {
-  GPUThreadUpdateGameInfoCommand() = default;
-  GPUThreadUpdateGameInfoCommand(const std::string& game_title_, const std::string& game_serial_,
-                                 const std::string& game_path_, const GameHash& game_hash_)
+  VideoThreadUpdateGameInfoCommand() = default;
+  VideoThreadUpdateGameInfoCommand(const std::string& game_title_, const std::string& game_serial_,
+                                   const std::string& game_path_, const GameHash& game_hash_)
     : game_title(game_title_), game_serial(game_serial_), game_path(game_path_), game_hash(game_hash_)
   {
   }
@@ -104,22 +104,22 @@ struct GPUThreadUpdateGameInfoCommand : public GPUThreadCommand
   GameHash game_hash;
 };
 
-struct GPUThreadAsyncCallCommand : public GPUThreadCommand
+struct VideoThreadAsyncCallCommand : public VideoThreadCommand
 {
-  GPUThreadAsyncCallCommand() = default;
-  GPUThreadAsyncCallCommand(std::function<void()> func_) : func(std::move(func_)) {}
+  VideoThreadAsyncCallCommand() = default;
+  VideoThreadAsyncCallCommand(std::function<void()> func_) : func(std::move(func_)) {}
 
   std::function<void()> func;
 };
 
-struct GPUThreadAsyncBackendCallCommand : public GPUThreadCommand
+struct VideoThreadAsyncBackendCallCommand : public VideoThreadCommand
 {
-  GPUThreadAsyncBackendCallCommand(std::function<void(GPUBackend*)> func_) : func(std::move(func_)) {}
+  VideoThreadAsyncBackendCallCommand(std::function<void(GPUBackend*)> func_) : func(std::move(func_)) {}
 
   std::function<void(GPUBackend*)> func;
 };
 
-struct GPUBackendLoadStateCommand : public GPUThreadCommand
+struct GPUBackendLoadStateCommand : public VideoThreadCommand
 {
   u16 vram_data[VRAM_WIDTH * VRAM_HEIGHT];
   u16 clut_data[GPU_CLUT_SIZE];
@@ -128,7 +128,7 @@ struct GPUBackendLoadStateCommand : public GPUThreadCommand
   u8 texture_cache_state[0]; // texture_cache_state_size
 };
 
-struct GPUBackendDoMemoryStateCommand : public GPUThreadCommand
+struct GPUBackendDoMemoryStateCommand : public VideoThreadCommand
 {
   System::MemorySaveState* memory_save_state;
 };
@@ -150,7 +150,7 @@ struct GPUBackendFramePresentationParameters
   };
 };
 
-struct GPUBackendUpdateDisplayCommand : public GPUThreadCommand
+struct GPUBackendUpdateDisplayCommand : public VideoThreadCommand
 {
   u16 display_width;
   u16 display_height;
@@ -179,12 +179,12 @@ struct GPUBackendUpdateDisplayCommand : public GPUThreadCommand
 };
 
 // Only used for runahead.
-struct GPUBackendSubmitFrameCommand : public GPUThreadCommand
+struct GPUBackendSubmitFrameCommand : public VideoThreadCommand
 {
   GPUBackendFramePresentationParameters frame;
 };
 
-struct GPUBackendReadVRAMCommand : public GPUThreadCommand
+struct GPUBackendReadVRAMCommand : public VideoThreadCommand
 {
   u16 x;
   u16 y;
@@ -192,7 +192,7 @@ struct GPUBackendReadVRAMCommand : public GPUThreadCommand
   u16 height;
 };
 
-struct GPUBackendFillVRAMCommand : public GPUThreadCommand
+struct GPUBackendFillVRAMCommand : public VideoThreadCommand
 {
   u16 x;
   u16 y;
@@ -203,7 +203,7 @@ struct GPUBackendFillVRAMCommand : public GPUThreadCommand
   u8 active_line_lsb;
 };
 
-struct GPUBackendUpdateVRAMCommand : public GPUThreadCommand
+struct GPUBackendUpdateVRAMCommand : public VideoThreadCommand
 {
   u16 x;
   u16 y;
@@ -214,7 +214,7 @@ struct GPUBackendUpdateVRAMCommand : public GPUThreadCommand
   u16 data[0];
 };
 
-struct GPUBackendCopyVRAMCommand : public GPUThreadCommand
+struct GPUBackendCopyVRAMCommand : public VideoThreadCommand
 {
   u16 src_x;
   u16 src_y;
@@ -226,18 +226,18 @@ struct GPUBackendCopyVRAMCommand : public GPUThreadCommand
   bool check_mask_before_draw;
 };
 
-struct GPUBackendSetDrawingAreaCommand : public GPUThreadCommand
+struct GPUBackendSetDrawingAreaCommand : public VideoThreadCommand
 {
   GPUDrawingArea new_area;
 };
 
-struct GPUBackendUpdateCLUTCommand : public GPUThreadCommand
+struct GPUBackendUpdateCLUTCommand : public VideoThreadCommand
 {
   GPUTexturePaletteReg reg;
   bool clut_is_8bit;
 };
 
-struct GPUBackendDrawCommand : public GPUThreadCommand
+struct GPUBackendDrawCommand : public VideoThreadCommand
 {
   bool interlaced_rendering : 1;
 

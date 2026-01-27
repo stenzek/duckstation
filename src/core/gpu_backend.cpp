@@ -5,13 +5,13 @@
 #include "gpu.h"
 #include "gpu_presenter.h"
 #include "gpu_sw_rasterizer.h"
-#include "gpu_thread.h"
 #include "host.h"
 #include "performance_counters.h"
 #include "save_state_version.h"
 #include "settings.h"
 #include "system.h"
 #include "system_private.h"
+#include "video_thread.h"
 
 #include "util/gpu_device.h"
 #include "util/imgui_manager.h"
@@ -127,85 +127,85 @@ void GPUBackend::UpdatePostProcessingSettings(bool force_reload)
 {
 }
 
-GPUThreadCommand* GPUBackend::NewClearVRAMCommand()
+VideoThreadCommand* GPUBackend::NewClearVRAMCommand()
 {
-  return static_cast<GPUThreadCommand*>(
-    GPUThread::AllocateCommand(GPUBackendCommandType::ClearVRAM, sizeof(GPUThreadCommand)));
+  return static_cast<VideoThreadCommand*>(
+    VideoThread::AllocateCommand(VideoThreadCommandType::ClearVRAM, sizeof(VideoThreadCommand)));
 }
 
-GPUThreadCommand* GPUBackend::NewClearDisplayCommand()
+VideoThreadCommand* GPUBackend::NewClearDisplayCommand()
 {
-  return static_cast<GPUThreadCommand*>(
-    GPUThread::AllocateCommand(GPUBackendCommandType::ClearDisplay, sizeof(GPUThreadCommand)));
+  return static_cast<VideoThreadCommand*>(
+    VideoThread::AllocateCommand(VideoThreadCommandType::ClearDisplay, sizeof(VideoThreadCommand)));
 }
 
 GPUBackendUpdateDisplayCommand* GPUBackend::NewUpdateDisplayCommand()
 {
   return static_cast<GPUBackendUpdateDisplayCommand*>(
-    GPUThread::AllocateCommand(GPUBackendCommandType::UpdateDisplay, sizeof(GPUBackendUpdateDisplayCommand)));
+    VideoThread::AllocateCommand(VideoThreadCommandType::UpdateDisplay, sizeof(GPUBackendUpdateDisplayCommand)));
 }
 
 GPUBackendSubmitFrameCommand* GPUBackend::NewSubmitFrameCommand()
 {
   return static_cast<GPUBackendSubmitFrameCommand*>(
-    GPUThread::AllocateCommand(GPUBackendCommandType::SubmitFrame, sizeof(GPUBackendUpdateDisplayCommand)));
+    VideoThread::AllocateCommand(VideoThreadCommandType::SubmitFrame, sizeof(GPUBackendUpdateDisplayCommand)));
 }
 
-GPUThreadCommand* GPUBackend::NewClearCacheCommand()
+VideoThreadCommand* GPUBackend::NewClearCacheCommand()
 {
-  return static_cast<GPUThreadCommand*>(
-    GPUThread::AllocateCommand(GPUBackendCommandType::ClearCache, sizeof(GPUThreadCommand)));
+  return static_cast<VideoThreadCommand*>(
+    VideoThread::AllocateCommand(VideoThreadCommandType::ClearCache, sizeof(VideoThreadCommand)));
 }
 
-GPUThreadCommand* GPUBackend::NewBufferSwappedCommand()
+VideoThreadCommand* GPUBackend::NewBufferSwappedCommand()
 {
-  return static_cast<GPUThreadCommand*>(
-    GPUThread::AllocateCommand(GPUBackendCommandType::BufferSwapped, sizeof(GPUThreadCommand)));
+  return static_cast<VideoThreadCommand*>(
+    VideoThread::AllocateCommand(VideoThreadCommandType::BufferSwapped, sizeof(VideoThreadCommand)));
 }
 
 GPUBackendReadVRAMCommand* GPUBackend::NewReadVRAMCommand()
 {
   return static_cast<GPUBackendReadVRAMCommand*>(
-    GPUThread::AllocateCommand(GPUBackendCommandType::ReadVRAM, sizeof(GPUBackendReadVRAMCommand)));
+    VideoThread::AllocateCommand(VideoThreadCommandType::ReadVRAM, sizeof(GPUBackendReadVRAMCommand)));
 }
 
 GPUBackendFillVRAMCommand* GPUBackend::NewFillVRAMCommand()
 {
   return static_cast<GPUBackendFillVRAMCommand*>(
-    GPUThread::AllocateCommand(GPUBackendCommandType::FillVRAM, sizeof(GPUBackendFillVRAMCommand)));
+    VideoThread::AllocateCommand(VideoThreadCommandType::FillVRAM, sizeof(GPUBackendFillVRAMCommand)));
 }
 
 GPUBackendUpdateVRAMCommand* GPUBackend::NewUpdateVRAMCommand(u32 num_words)
 {
   const u32 size = sizeof(GPUBackendUpdateVRAMCommand) + (num_words * sizeof(u16));
   GPUBackendUpdateVRAMCommand* cmd =
-    static_cast<GPUBackendUpdateVRAMCommand*>(GPUThread::AllocateCommand(GPUBackendCommandType::UpdateVRAM, size));
+    static_cast<GPUBackendUpdateVRAMCommand*>(VideoThread::AllocateCommand(VideoThreadCommandType::UpdateVRAM, size));
   return cmd;
 }
 
 GPUBackendCopyVRAMCommand* GPUBackend::NewCopyVRAMCommand()
 {
   return static_cast<GPUBackendCopyVRAMCommand*>(
-    GPUThread::AllocateCommand(GPUBackendCommandType::CopyVRAM, sizeof(GPUBackendCopyVRAMCommand)));
+    VideoThread::AllocateCommand(VideoThreadCommandType::CopyVRAM, sizeof(GPUBackendCopyVRAMCommand)));
 }
 
 GPUBackendSetDrawingAreaCommand* GPUBackend::NewSetDrawingAreaCommand()
 {
   return static_cast<GPUBackendSetDrawingAreaCommand*>(
-    GPUThread::AllocateCommand(GPUBackendCommandType::SetDrawingArea, sizeof(GPUBackendSetDrawingAreaCommand)));
+    VideoThread::AllocateCommand(VideoThreadCommandType::SetDrawingArea, sizeof(GPUBackendSetDrawingAreaCommand)));
 }
 
 GPUBackendUpdateCLUTCommand* GPUBackend::NewUpdateCLUTCommand()
 {
   return static_cast<GPUBackendUpdateCLUTCommand*>(
-    GPUThread::AllocateCommand(GPUBackendCommandType::UpdateCLUT, sizeof(GPUBackendUpdateCLUTCommand)));
+    VideoThread::AllocateCommand(VideoThreadCommandType::UpdateCLUT, sizeof(GPUBackendUpdateCLUTCommand)));
 }
 
 GPUBackendDrawPolygonCommand* GPUBackend::NewDrawPolygonCommand(u32 num_vertices)
 {
   const u32 size = sizeof(GPUBackendDrawPolygonCommand) + (num_vertices * sizeof(GPUBackendDrawPolygonCommand::Vertex));
   GPUBackendDrawPolygonCommand* cmd =
-    static_cast<GPUBackendDrawPolygonCommand*>(GPUThread::AllocateCommand(GPUBackendCommandType::DrawPolygon, size));
+    static_cast<GPUBackendDrawPolygonCommand*>(VideoThread::AllocateCommand(VideoThreadCommandType::DrawPolygon, size));
   cmd->num_vertices = Truncate16(num_vertices);
   return cmd;
 }
@@ -215,7 +215,7 @@ GPUBackendDrawPrecisePolygonCommand* GPUBackend::NewDrawPrecisePolygonCommand(u3
   const u32 size =
     sizeof(GPUBackendDrawPrecisePolygonCommand) + (num_vertices * sizeof(GPUBackendDrawPrecisePolygonCommand::Vertex));
   GPUBackendDrawPrecisePolygonCommand* cmd = static_cast<GPUBackendDrawPrecisePolygonCommand*>(
-    GPUThread::AllocateCommand(GPUBackendCommandType::DrawPrecisePolygon, size));
+    VideoThread::AllocateCommand(VideoThreadCommandType::DrawPrecisePolygon, size));
   cmd->num_vertices = Truncate16(num_vertices);
   return cmd;
 }
@@ -223,14 +223,14 @@ GPUBackendDrawPrecisePolygonCommand* GPUBackend::NewDrawPrecisePolygonCommand(u3
 GPUBackendDrawRectangleCommand* GPUBackend::NewDrawRectangleCommand()
 {
   return static_cast<GPUBackendDrawRectangleCommand*>(
-    GPUThread::AllocateCommand(GPUBackendCommandType::DrawRectangle, sizeof(GPUBackendDrawRectangleCommand)));
+    VideoThread::AllocateCommand(VideoThreadCommandType::DrawRectangle, sizeof(GPUBackendDrawRectangleCommand)));
 }
 
 GPUBackendDrawLineCommand* GPUBackend::NewDrawLineCommand(u32 num_vertices)
 {
   const u32 size = sizeof(GPUBackendDrawLineCommand) + (num_vertices * sizeof(GPUBackendDrawLineCommand::Vertex));
   GPUBackendDrawLineCommand* cmd =
-    static_cast<GPUBackendDrawLineCommand*>(GPUThread::AllocateCommand(GPUBackendCommandType::DrawLine, size));
+    static_cast<GPUBackendDrawLineCommand*>(VideoThread::AllocateCommand(VideoThreadCommandType::DrawLine, size));
   cmd->num_vertices = Truncate16(num_vertices);
   return cmd;
 }
@@ -240,34 +240,29 @@ GPUBackendDrawPreciseLineCommand* GPUBackend::NewDrawPreciseLineCommand(u32 num_
   const u32 size =
     sizeof(GPUBackendDrawPreciseLineCommand) + (num_vertices * sizeof(GPUBackendDrawPreciseLineCommand::Vertex));
   GPUBackendDrawPreciseLineCommand* cmd = static_cast<GPUBackendDrawPreciseLineCommand*>(
-    GPUThread::AllocateCommand(GPUBackendCommandType::DrawPreciseLine, size));
+    VideoThread::AllocateCommand(VideoThreadCommandType::DrawPreciseLine, size));
   cmd->num_vertices = Truncate16(num_vertices);
   return cmd;
 }
 
-void GPUBackend::PushCommand(GPUThreadCommand* cmd)
+void GPUBackend::PushCommand(VideoThreadCommand* cmd)
 {
-  GPUThread::PushCommand(cmd);
+  VideoThread::PushCommand(cmd);
 }
 
-void GPUBackend::PushCommandAndWakeThread(GPUThreadCommand* cmd)
+void GPUBackend::PushCommandAndWakeThread(VideoThreadCommand* cmd)
 {
-  GPUThread::PushCommandAndWakeThread(cmd);
+  VideoThread::PushCommandAndWakeThread(cmd);
 }
 
-void GPUBackend::PushCommandAndSync(GPUThreadCommand* cmd, bool spin)
+void GPUBackend::PushCommandAndSync(VideoThreadCommand* cmd, bool spin)
 {
-  GPUThread::PushCommandAndSync(cmd, spin);
-}
-
-void GPUBackend::SyncGPUThread(bool spin)
-{
-  GPUThread::SyncGPUThread(spin);
+  VideoThread::PushCommandAndSync(cmd, spin);
 }
 
 bool GPUBackend::IsUsingHardwareBackend()
 {
-  return (GPUThread::GetRequestedRenderer().value_or(GPURenderer::Software) != GPURenderer::Software);
+  return (VideoThread::GetRequestedRenderer().value_or(GPURenderer::Software) != GPURenderer::Software);
 }
 
 bool GPUBackend::BeginQueueFrame()
@@ -345,7 +340,7 @@ void GPUBackend::ReleaseQueuedFrame()
 bool GPUBackend::AllocateMemorySaveStates(std::span<System::MemorySaveState> states, Error* error)
 {
   bool result;
-  GPUThread::RunOnBackend(
+  VideoThread::RunOnBackend(
     [states, error, &result](GPUBackend* backend) {
       // Free old textures first.
       for (size_t i = 0; i < states.size(); i++)
@@ -383,23 +378,23 @@ bool GPUBackend::AllocateMemorySaveStates(std::span<System::MemorySaveState> sta
   return result;
 }
 
-void GPUBackend::HandleCommand(const GPUThreadCommand* cmd)
+void GPUBackend::HandleCommand(const VideoThreadCommand* cmd)
 {
   switch (cmd->type)
   {
-    case GPUBackendCommandType::ClearVRAM:
+    case VideoThreadCommandType::ClearVRAM:
     {
       ClearVRAM();
     }
     break;
 
-    case GPUBackendCommandType::LoadState:
+    case VideoThreadCommandType::LoadState:
     {
       LoadState(static_cast<const GPUBackendLoadStateCommand*>(cmd));
     }
     break;
 
-    case GPUBackendCommandType::LoadMemoryState:
+    case VideoThreadCommandType::LoadMemoryState:
     {
       System::MemorySaveState& mss = *static_cast<const GPUBackendDoMemoryStateCommand*>(cmd)->memory_save_state;
       StateWrapper sw(mss.gpu_state_data.span(0, mss.gpu_state_size), StateWrapper::Mode::Read, SAVE_STATE_VERSION);
@@ -407,7 +402,7 @@ void GPUBackend::HandleCommand(const GPUThreadCommand* cmd)
     }
     break;
 
-    case GPUBackendCommandType::SaveMemoryState:
+    case VideoThreadCommandType::SaveMemoryState:
     {
       System::MemorySaveState& mss = *static_cast<const GPUBackendDoMemoryStateCommand*>(cmd)->memory_save_state;
       StateWrapper sw(mss.gpu_state_data.span(), StateWrapper::Mode::Write, SAVE_STATE_VERSION);
@@ -416,37 +411,37 @@ void GPUBackend::HandleCommand(const GPUThreadCommand* cmd)
     }
     break;
 
-    case GPUBackendCommandType::ClearDisplay:
+    case VideoThreadCommandType::ClearDisplay:
     {
       GPUPresenter::ClearDisplay();
     }
     break;
 
-    case GPUBackendCommandType::UpdateDisplay:
+    case VideoThreadCommandType::UpdateDisplay:
     {
       HandleUpdateDisplayCommand(static_cast<const GPUBackendUpdateDisplayCommand*>(cmd));
     }
     break;
 
-    case GPUBackendCommandType::SubmitFrame:
+    case VideoThreadCommandType::SubmitFrame:
     {
       HandleSubmitFrameCommand(&static_cast<const GPUBackendSubmitFrameCommand*>(cmd)->frame);
     }
     break;
 
-    case GPUBackendCommandType::ClearCache:
+    case VideoThreadCommandType::ClearCache:
     {
       ClearCache();
     }
     break;
 
-    case GPUBackendCommandType::BufferSwapped:
+    case VideoThreadCommandType::BufferSwapped:
     {
       OnBufferSwapped();
     }
     break;
 
-    case GPUBackendCommandType::ReadVRAM:
+    case VideoThreadCommandType::ReadVRAM:
     {
       const GPUBackendReadVRAMCommand* ccmd = static_cast<const GPUBackendReadVRAMCommand*>(cmd);
       s_counters.num_reads++;
@@ -454,7 +449,7 @@ void GPUBackend::HandleCommand(const GPUThreadCommand* cmd)
     }
     break;
 
-    case GPUBackendCommandType::FillVRAM:
+    case VideoThreadCommandType::FillVRAM:
     {
       const GPUBackendFillVRAMCommand* ccmd = static_cast<const GPUBackendFillVRAMCommand*>(cmd);
       FillVRAM(ZeroExtend32(ccmd->x), ZeroExtend32(ccmd->y), ZeroExtend32(ccmd->width), ZeroExtend32(ccmd->height),
@@ -462,7 +457,7 @@ void GPUBackend::HandleCommand(const GPUThreadCommand* cmd)
     }
     break;
 
-    case GPUBackendCommandType::UpdateVRAM:
+    case VideoThreadCommandType::UpdateVRAM:
     {
       const GPUBackendUpdateVRAMCommand* ccmd = static_cast<const GPUBackendUpdateVRAMCommand*>(cmd);
       s_counters.num_writes++;
@@ -471,7 +466,7 @@ void GPUBackend::HandleCommand(const GPUThreadCommand* cmd)
     }
     break;
 
-    case GPUBackendCommandType::CopyVRAM:
+    case VideoThreadCommandType::CopyVRAM:
     {
       const GPUBackendCopyVRAMCommand* ccmd = static_cast<const GPUBackendCopyVRAMCommand*>(cmd);
       s_counters.num_copies++;
@@ -481,7 +476,7 @@ void GPUBackend::HandleCommand(const GPUThreadCommand* cmd)
     }
     break;
 
-    case GPUBackendCommandType::SetDrawingArea:
+    case VideoThreadCommandType::SetDrawingArea:
     {
       const GPUBackendSetDrawingAreaCommand* ccmd = static_cast<const GPUBackendSetDrawingAreaCommand*>(cmd);
       GPU_SW_Rasterizer::g_drawing_area = ccmd->new_area;
@@ -490,14 +485,14 @@ void GPUBackend::HandleCommand(const GPUThreadCommand* cmd)
     }
     break;
 
-    case GPUBackendCommandType::UpdateCLUT:
+    case VideoThreadCommandType::UpdateCLUT:
     {
       const GPUBackendUpdateCLUTCommand* ccmd = static_cast<const GPUBackendUpdateCLUTCommand*>(cmd);
       GPU_SW_Rasterizer::UpdateCLUT(ccmd->reg, ccmd->clut_is_8bit);
     }
     break;
 
-    case GPUBackendCommandType::DrawPolygon:
+    case VideoThreadCommandType::DrawPolygon:
     {
       const GPUBackendDrawPolygonCommand* ccmd = static_cast<const GPUBackendDrawPolygonCommand*>(cmd);
       s_counters.num_vertices += ccmd->num_vertices;
@@ -506,7 +501,7 @@ void GPUBackend::HandleCommand(const GPUThreadCommand* cmd)
     }
     break;
 
-    case GPUBackendCommandType::DrawPrecisePolygon:
+    case VideoThreadCommandType::DrawPrecisePolygon:
     {
       const GPUBackendDrawPolygonCommand* ccmd = static_cast<const GPUBackendDrawPolygonCommand*>(cmd);
       s_counters.num_vertices += ccmd->num_vertices;
@@ -515,7 +510,7 @@ void GPUBackend::HandleCommand(const GPUThreadCommand* cmd)
     }
     break;
 
-    case GPUBackendCommandType::DrawRectangle:
+    case VideoThreadCommandType::DrawRectangle:
     {
       const GPUBackendDrawRectangleCommand* ccmd = static_cast<const GPUBackendDrawRectangleCommand*>(cmd);
       s_counters.num_vertices++;
@@ -524,7 +519,7 @@ void GPUBackend::HandleCommand(const GPUThreadCommand* cmd)
     }
     break;
 
-    case GPUBackendCommandType::DrawLine:
+    case VideoThreadCommandType::DrawLine:
     {
       const GPUBackendDrawLineCommand* ccmd = static_cast<const GPUBackendDrawLineCommand*>(cmd);
       s_counters.num_vertices += ccmd->num_vertices;
@@ -533,7 +528,7 @@ void GPUBackend::HandleCommand(const GPUThreadCommand* cmd)
     }
     break;
 
-    case GPUBackendCommandType::DrawPreciseLine:
+    case VideoThreadCommandType::DrawPreciseLine:
     {
       const GPUBackendDrawPreciseLineCommand* ccmd = static_cast<const GPUBackendDrawPreciseLineCommand*>(cmd);
       s_counters.num_vertices += ccmd->num_vertices;
@@ -572,7 +567,7 @@ void GPUBackend::HandleUpdateDisplayCommand(const GPUBackendUpdateDisplayCommand
 void GPUBackend::HandleSubmitFrameCommand(const GPUBackendFramePresentationParameters* cmd)
 {
   // For regtest.
-  Host::FrameDoneOnGPUThread(this, cmd->frame_number);
+  Host::FrameDoneOnVideoThread(this, cmd->frame_number);
 
   bool needs_restore = false;
   if (cmd->media_capture)
@@ -585,7 +580,7 @@ void GPUBackend::HandleSubmitFrameCommand(const GPUBackendFramePresentationParam
   if (cmd->present_frame)
   {
     bool result;
-    if (GPUThread::ShouldPresentVideoFrame(cmd->present_time))
+    if (VideoThread::ShouldPresentVideoFrame(cmd->present_time))
     {
       result = GPUPresenter::PresentFrame(this, cmd->present_time);
       needs_restore = true;
@@ -697,7 +692,7 @@ bool GPUBackend::RenderScreenshotToBuffer(u32 width, u32 height, bool postfx, bo
                                           Error* error)
 {
   bool result;
-  GPUThread::RunOnBackend(
+  VideoThread::RunOnBackend(
     [width, height, postfx, apply_aspect_ratio, out_image, error, &result](GPUBackend* backend) {
       if (!backend)
       {
@@ -737,7 +732,7 @@ bool GPUBackend::RenderScreenshotToBuffer(u32 width, u32 height, bool postfx, bo
 void GPUBackend::RenderScreenshotToFile(const std::string_view path, DisplayScreenshotMode mode, u8 quality,
                                         bool show_osd_message)
 {
-  GPUThread::RunOnBackend(
+  VideoThread::RunOnBackend(
     [path = std::string(path), mode, quality, show_osd_message](GPUBackend* backend) mutable {
       if (!backend)
         return;

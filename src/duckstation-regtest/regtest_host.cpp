@@ -12,11 +12,11 @@
 #include "core/gpu.h"
 #include "core/gpu_backend.h"
 #include "core/gpu_presenter.h"
-#include "core/gpu_thread.h"
 #include "core/host.h"
 #include "core/spu.h"
 #include "core/system.h"
 #include "core/system_private.h"
+#include "core/video_thread.h"
 
 #include "scmversion/scmversion.h"
 
@@ -59,7 +59,7 @@ static bool SetNewDataRoot(const std::string& filename);
 static void DumpSystemStateHashes();
 static std::string GetFrameDumpPath(u32 frame);
 static void ProcessCoreThreadEvents();
-static void GPUThreadEntryPoint();
+static void VideoThreadEntryPoint();
 
 struct RegTestHostState
 {
@@ -74,7 +74,7 @@ ALIGN_TO_CACHE_LINE static TaskQueue s_async_task_queue;
 
 } // namespace RegTestHost
 
-static Threading::Thread s_gpu_thread;
+static Threading::Thread s_video_thread;
 
 static u32 s_frames_to_run = 60 * 60;
 static u32 s_frames_remaining = 0;
@@ -280,7 +280,7 @@ void Host::OnSystemAbnormalShutdown(const std::string_view reason)
   // Already logged in core.
 }
 
-void Host::OnGPUThreadRunIdleChanged(bool is_active)
+void Host::OnVideoThreadRunIdleChanged(bool is_active)
 {
   //
 }
@@ -454,7 +454,7 @@ void Host::DestroyAuxiliaryRenderWindow(AuxiliaryRenderWindowHandle handle, s32*
 {
 }
 
-void Host::FrameDoneOnGPUThread(GPUBackend* gpu_backend, u32 frame_number)
+void Host::FrameDoneOnVideoThread(GPUBackend* gpu_backend, u32 frame_number)
 {
   if (s_frame_dump_interval == 0 || (frame_number % s_frame_dump_interval) != 0 || !GPUPresenter::HasDisplayTexture())
     return;
@@ -709,10 +709,10 @@ void RegTestHost::HookSignals()
 #endif
 }
 
-void RegTestHost::GPUThreadEntryPoint()
+void RegTestHost::VideoThreadEntryPoint()
 {
-  Threading::SetNameOfCurrentThread("CPU Thread");
-  GPUThread::Internal::GPUThreadEntryPoint();
+  Threading::SetNameOfCurrentThread("Video Thread");
+  VideoThread::Internal::VideoThreadEntryPoint();
 }
 
 void RegTestHost::DumpSystemStateHashes()
@@ -1010,7 +1010,7 @@ int main(int argc, char* argv[])
   RegTestHost::s_async_task_queue.SetWorkerCount(1);
 
   RegTestHost::HookSignals();
-  s_gpu_thread.Start(&RegTestHost::GPUThreadEntryPoint);
+  s_video_thread.Start(&RegTestHost::VideoThreadEntryPoint);
 
   int result = -1;
   INFO_LOG("Trying to boot '{}'...", autoboot->path);
@@ -1057,10 +1057,10 @@ int main(int argc, char* argv[])
   result = 0;
 
 cleanup:
-  if (s_gpu_thread.Joinable())
+  if (s_video_thread.Joinable())
   {
-    GPUThread::Internal::RequestShutdown();
-    s_gpu_thread.Join();
+    VideoThread::Internal::RequestShutdown();
+    s_video_thread.Join();
   }
 
   RegTestHost::s_async_task_queue.SetWorkerCount(0);

@@ -9,14 +9,14 @@
 #include "gpu.h"
 #include "gpu_backend.h"
 #include "gpu_shadergen.h"
-#include "gpu_thread.h"
-#include "gpu_thread_commands.h"
 #include "host.h"
 #include "imgui_overlays.h"
 #include "performance_counters.h"
 #include "save_state_version.h"
 #include "settings.h"
 #include "system.h"
+#include "video_thread.h"
+#include "video_thread_commands.h"
 
 #include "util/gpu_device.h"
 #include "util/image.h"
@@ -1418,7 +1418,7 @@ bool GPUPresenter::PresentFrame(GPUBackend* backend, u64 present_time)
 
   ImGuiManager::RenderOSDMessages();
 
-  if (backend && !GPUThread::IsSystemPaused())
+  if (backend && !VideoThread::IsSystemPaused())
     ImGuiManager::RenderSoftwareCursors();
 
   ImGuiManager::CreateDrawLists();
@@ -1474,7 +1474,7 @@ bool GPUPresenter::PresentFrame(GPUBackend* backend, u64 present_time)
     }
 
     const Timer::Value current_time = Timer::GetCurrentValue();
-    GPUThread::SetLastPresentTime(scheduled_present ? std::max(current_time, present_time) : current_time);
+    VideoThread::SetLastPresentTime(scheduled_present ? std::max(current_time, present_time) : current_time);
     ImGuiManager::NewFrame(current_time);
   }
   else
@@ -1482,14 +1482,14 @@ bool GPUPresenter::PresentFrame(GPUBackend* backend, u64 present_time)
     if (pres == GPUDevice::PresentResult::DeviceLost) [[unlikely]]
     {
       ERROR_LOG("GPU device lost during present.");
-      GPUThread::ReportFatalErrorAndShutdown("GPU device lost. The log may contain more information.");
+      VideoThread::ReportFatalErrorAndShutdown("GPU device lost. The log may contain more information.");
       return false;
     }
 
     if (pres == GPUDevice::PresentResult::ExclusiveFullscreenLost) [[unlikely]]
     {
       WARNING_LOG("Lost exclusive fullscreen.");
-      GPUThread::SetFullscreen(false);
+      VideoThread::SetFullscreen(false);
     }
 
     g_gpu_device->FlushCommands();
@@ -1673,9 +1673,9 @@ SettingsInterface& GPUPresenter::GetPostProcessingSettingsInterface(const char* 
 
 void GPUPresenter::TogglePostProcessing()
 {
-  DebugAssert(!GPUThread::IsOnThread());
+  DebugAssert(!VideoThread::IsOnThread());
 
-  GPUThread::RunOnBackend(
+  VideoThread::RunOnBackend(
     [](GPUBackend* backend) {
       if (!backend)
         return;
@@ -1695,9 +1695,9 @@ void GPUPresenter::TogglePostProcessing()
 
 void GPUPresenter::ReloadPostProcessingSettings(bool display, bool internal, bool reload_shaders)
 {
-  DebugAssert(!GPUThread::IsOnThread());
+  DebugAssert(!VideoThread::IsOnThread());
 
-  GPUThread::RunOnBackend(
+  VideoThread::RunOnBackend(
     [display, internal, reload_shaders](GPUBackend* backend) {
       if (!backend)
         return;
@@ -1714,7 +1714,8 @@ void GPUPresenter::ReloadPostProcessingSettings(bool display, bool internal, boo
         Error error;
         if (!UpdatePostProcessingSettings(reload_shaders, &error))
         {
-          GPUThread::ReportFatalErrorAndShutdown(fmt::format("Failed to update settings: {}", error.GetDescription()));
+          VideoThread::ReportFatalErrorAndShutdown(
+            fmt::format("Failed to update settings: {}", error.GetDescription()));
           return;
         }
       }
@@ -1722,8 +1723,8 @@ void GPUPresenter::ReloadPostProcessingSettings(bool display, bool internal, boo
         backend->UpdatePostProcessingSettings(reload_shaders);
 
       // trigger represent of frame
-      if (GPUThread::IsSystemPaused())
-        GPUThread::Internal::PresentFrameAndRestoreContext();
+      if (VideoThread::IsSystemPaused())
+        VideoThread::Internal::PresentFrameAndRestoreContext();
     },
     false, true);
 }

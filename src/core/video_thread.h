@@ -21,13 +21,12 @@ enum class GPUVSyncMode : u8;
 enum class WindowInfoType : u8;
 
 enum class GPURenderer : u8;
-enum class GPUBackendCommandType : u8;
+enum class VideoThreadCommandType : u8;
 
 class GPUBackend;
-struct GPUThreadCommand;
-struct GPUBackendUpdateDisplayCommand;
+struct VideoThreadCommand;
 
-namespace GPUThread {
+namespace VideoThread {
 using AsyncCallType = std::function<void()>;
 using AsyncBackendCallType = std::function<void(GPUBackend*)>;
 using AsyncBufferCallType = void (*)(void*);
@@ -83,8 +82,8 @@ bool IsOnThread();
 bool IsUsingThread();
 void RunOnThread(AsyncCallType func);
 void RunOnBackend(AsyncBackendCallType func, bool sync, bool spin_or_wake);
-std::pair<GPUThreadCommand*, void*> BeginASyncBufferCall(AsyncBufferCallType func, u32 buffer_size);
-void EndASyncBufferCall(GPUThreadCommand* cmd);
+std::pair<VideoThreadCommand*, void*> BeginASyncBufferCall(AsyncBufferCallType func, u32 buffer_size);
+void EndASyncBufferCall(VideoThreadCommand* cmd);
 void SetVSync(GPUVSyncMode mode, PresentSkipMode present_throttle_mode);
 bool ShouldPresentVideoFrame(u64 present_time);
 u64 GetLastPresentTime();
@@ -100,21 +99,21 @@ const std::string& GetGameSerial();
 const std::string& GetGamePath();
 GameHash GetGameHash();
 
-GPUThreadCommand* AllocateCommand(GPUBackendCommandType command, u32 size);
-void PushCommand(GPUThreadCommand* cmd);
-void PushCommandAndWakeThread(GPUThreadCommand* cmd);
-void PushCommandAndSync(GPUThreadCommand* cmd, bool spin);
-void SyncGPUThread(bool spin);
+VideoThreadCommand* AllocateCommand(VideoThreadCommandType command, u32 size);
+void PushCommand(VideoThreadCommand* cmd);
+void PushCommandAndWakeThread(VideoThreadCommand* cmd);
+void PushCommandAndSync(VideoThreadCommand* cmd, bool spin);
+void SyncThread(bool spin);
 
 namespace Internal {
 const Threading::ThreadHandle& GetThreadHandle();
 void ProcessStartup();
 void DoRunIdle();
 void RequestShutdown();
-void GPUThreadEntryPoint();
+void VideoThreadEntryPoint();
 bool PresentFrameAndRestoreContext();
 } // namespace Internal
-} // namespace GPUThread
+} // namespace VideoThread
 
 namespace Host {
 
@@ -133,7 +132,7 @@ void ReleaseRenderWindow();
 bool CanChangeFullscreenMode(bool new_fullscreen_state);
 
 /// Called when the pause state changes, or fullscreen UI opens.
-void OnGPUThreadRunIdleChanged(bool is_active);
+void OnVideoThreadRunIdleChanged(bool is_active);
 
 /// Changes the screensaver inhibit state.
 bool SetScreensaverInhibit(bool inhibit, Error* error);

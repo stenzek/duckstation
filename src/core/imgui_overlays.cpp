@@ -12,7 +12,6 @@
 #include "fullscreenui_widgets.h"
 #include "gpu.h"
 #include "gpu_backend.h"
-#include "gpu_thread.h"
 #include "gte.h"
 #include "host.h"
 #include "mdec.h"
@@ -21,6 +20,7 @@
 #include "spu.h"
 #include "system.h"
 #include "timers.h"
+#include "video_thread.h"
 
 #include "util/gpu_device.h"
 #include "util/imgui_animated.h"
@@ -240,7 +240,7 @@ void ImGuiManager::RenderTextOverlays(const GPUBackend* gpu)
   if (FullscreenUI::IsLoadingScreenOpen())
     return;
 
-  const bool paused = GPUThread::IsSystemPaused();
+  const bool paused = VideoThread::IsSystemPaused();
 
   const float scale = ImGuiManager::GetGlobalScale();
   const float f_margin = ImGuiManager::GetScreenMargin() * scale;
@@ -378,7 +378,7 @@ void ImGuiManager::DrawPerformanceOverlay(const GPUBackend* gpu, float& position
         g_gpu_settings.display_show_cpu_usage || g_gpu_settings.display_show_gpu_usage ||
         g_gpu_settings.display_show_frame_times ||
         (g_gpu_settings.display_show_status_indicators &&
-         (GPUThread::IsSystemPaused() || System::IsFastForwardEnabled() || System::IsTurboEnabled()))))
+         (VideoThread::IsSystemPaused() || System::IsFastForwardEnabled() || System::IsTurboEnabled()))))
   {
     return;
   }
@@ -392,7 +392,7 @@ void ImGuiManager::DrawPerformanceOverlay(const GPUBackend* gpu, float& position
   ImDrawList* dl = ImGui::GetBackgroundDrawList();
   SmallString text;
 
-  if (!GPUThread::IsSystemPaused())
+  if (!VideoThread::IsSystemPaused())
   {
     const float speed = PerformanceCounters::GetEmulationSpeed();
     if (g_gpu_settings.display_show_fps)
@@ -525,8 +525,8 @@ void ImGuiManager::DrawPerformanceOverlay(const GPUBackend* gpu, float& position
       if (g_gpu_settings.gpu_use_thread)
       {
         text.assign(BOLD("RNDR:") " ");
-        FormatProcessorStat(text, PerformanceCounters::GetGPUThreadUsage(),
-                            PerformanceCounters::GetGPUThreadAverageTime());
+        FormatProcessorStat(text, PerformanceCounters::GetVideoThreadUsage(),
+                            PerformanceCounters::GetVideoThreadAverageTime());
         DrawPerformanceStat(dl, position_y, fixed_font, fixed_font_size, FIXED_BOLD_WEIGHT, 0, shadow_offset, rbound,
                             text);
         position_y += spacing;
@@ -801,7 +801,7 @@ void ImGuiManager::UpdateInputOverlay()
 
   const u32 buffer_size =
     sizeof(InputOverlayStateUpdateBuffer) + (static_cast<u32>(sizeof(InputOverlayState)) * num_active_pads);
-  const auto& [cmd, buffer] = GPUThread::BeginASyncBufferCall(&ImGuiManager::UpdateInputOverlay, buffer_size);
+  const auto& [cmd, buffer] = VideoThread::BeginASyncBufferCall(&ImGuiManager::UpdateInputOverlay, buffer_size);
 
   InputOverlayStateUpdateBuffer* const ubuffer = static_cast<InputOverlayStateUpdateBuffer*>(buffer);
   ubuffer->num_active_pads = num_active_pads;
@@ -845,7 +845,7 @@ void ImGuiManager::UpdateInputOverlay()
     }
   }
 
-  GPUThread::EndASyncBufferCall(cmd);
+  VideoThread::EndASyncBufferCall(cmd);
 }
 
 void ImGuiManager::UpdateInputOverlay(void* buffer)
@@ -1032,7 +1032,7 @@ void SaveStateSelectorUI::RefreshList()
   }
   s_state.slots.clear();
 
-  const std::string& serial = GPUThread::GetGameSerial();
+  const std::string& serial = VideoThread::GetGameSerial();
   if (!serial.empty())
   {
     for (s32 i = 1; i <= System::PER_GAME_SAVE_STATE_SLOTS; i++)
@@ -1088,7 +1088,7 @@ void SaveStateSelectorUI::Clear()
 
 void SaveStateSelectorUI::ClearList()
 {
-  DebugAssert(GPUThread::IsOnThread());
+  DebugAssert(VideoThread::IsOnThread());
   for (ListEntry& li : s_state.slots)
   {
     if (li.preview_texture)
@@ -1134,7 +1134,7 @@ void SaveStateSelectorUI::SelectNextSlot(bool open_selector)
   s_state.current_slot++;
   if (s_state.current_slot >= total_slots)
   {
-    if (!GPUThread::GetGameSerial().empty())
+    if (!VideoThread::GetGameSerial().empty())
       s_state.current_slot_global ^= true;
     s_state.current_slot -= total_slots;
   }
@@ -1157,7 +1157,7 @@ void SaveStateSelectorUI::SelectPreviousSlot(bool open_selector)
   s_state.current_slot--;
   if (s_state.current_slot < 0)
   {
-    if (!GPUThread::GetGameSerial().empty())
+    if (!VideoThread::GetGameSerial().empty())
       s_state.current_slot_global ^= true;
     s_state.current_slot +=
       s_state.current_slot_global ? System::GLOBAL_SAVE_STATE_SLOTS : System::PER_GAME_SAVE_STATE_SLOTS;
@@ -1411,7 +1411,7 @@ bool SaveStateSelectorUI::IsCurrentSlotGlobal()
 
 void SaveStateSelectorUI::LoadCurrentSlot()
 {
-  DebugAssert(GPUThread::IsOnThread());
+  DebugAssert(VideoThread::IsOnThread());
 
   Host::RunOnCoreThread(
     [global = IsCurrentSlotGlobal(), slot = GetCurrentSlot()]() { System::LoadStateFromSlot(global, slot); });
@@ -1431,7 +1431,7 @@ void SaveStateSelectorUI::ShowSlotOSDMessage()
 {
   const std::string path = IsCurrentSlotGlobal() ?
                              System::GetGlobalSaveStatePath(GetCurrentSlot()) :
-                             System::GetGameSaveStatePath(GPUThread::GetGameSerial(), GetCurrentSlot());
+                             System::GetGameSaveStatePath(VideoThread::GetGameSerial(), GetCurrentSlot());
   FILESYSTEM_STAT_DATA sd;
   std::string date;
   if (!path.empty() && FileSystem::StatFile(path.c_str(), &sd))

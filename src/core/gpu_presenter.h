@@ -87,6 +87,6 @@ void DrawScreenQuad(const GSVector4i rect, const GSVector4 uv_rect, const GSVect
 namespace Host {
 
 /// Called at the end of the frame, before presentation.
-void FrameDoneOnGPUThread(u32 frame_number);
+void FrameDoneOnVideoThread(u32 frame_number);
 
 } // namespace Host

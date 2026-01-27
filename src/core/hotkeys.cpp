@@ -10,13 +10,13 @@
 #include "gpu.h"
 #include "gpu_hw_texture_cache.h"
 #include "gpu_presenter.h"
-#include "gpu_thread.h"
 #include "gte.h"
 #include "host.h"
 #include "imgui_overlays.h"
 #include "settings.h"
 #include "spu.h"
 #include "system.h"
+#include "video_thread.h"
 
 #include "util/gpu_device.h"
 #include "util/input_manager.h"
@@ -63,7 +63,7 @@ static void HotkeyModifyResolutionScale(s32 increment)
 
   if (System::IsValid())
   {
-    GPUThread::UpdateSettings(true, false, false);
+    VideoThread::UpdateSettings(true, false, false);
     System::ClearMemorySaveStates(true, false);
   }
 }
@@ -82,7 +82,7 @@ static void HotkeyToggleOSD()
   g_settings.display_show_inputs ^= Core::GetBoolSettingValue("Display", "ShowInputs", false);
   g_settings.display_show_enhancements ^= Core::GetBoolSettingValue("Display", "ShowEnhancements", false);
 
-  GPUThread::UpdateSettings(true, false, false);
+  VideoThread::UpdateSettings(true, false, false);
 }
 
 #define DEFINE_HOTKEY(name, category, display_name, handler) {(name), (category), (display_name), (handler)},
@@ -139,7 +139,7 @@ DEFINE_NON_ANDROID_HOTKEY("TogglePause", TRANSLATE_NOOP("Hotkeys", "Interface"),
 DEFINE_NON_ANDROID_HOTKEY("ToggleFullscreen", TRANSLATE_NOOP("Hotkeys", "Interface"),
                           TRANSLATE_NOOP("Hotkeys", "Toggle Fullscreen"), [](s32 pressed) {
                             if (!pressed)
-                              GPUThread::SetFullscreen(!GPUThread::IsFullscreen());
+                              VideoThread::SetFullscreen(!VideoThread::IsFullscreen());
                           })
 
 DEFINE_HOTKEY("FastForward", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_NOOP("Hotkeys", "Fast Forward (Hold)"),
@@ -302,7 +302,7 @@ DEFINE_HOTKEY("RotateClockwise", TRANSLATE_NOOP("Hotkeys", "Graphics"),
                 {
                   g_settings.display_rotation = static_cast<DisplayRotation>(
                     (static_cast<u8>(g_settings.display_rotation) + 1) % static_cast<u8>(DisplayRotation::Count));
-                  GPUThread::UpdateSettings(true, false, false);
+                  VideoThread::UpdateSettings(true, false, false);
                 }
               })
 
@@ -315,7 +315,7 @@ DEFINE_HOTKEY("RotateCounterclockwise", TRANSLATE_NOOP("Hotkeys", "Graphics"),
                       static_cast<DisplayRotation>((static_cast<u8>(g_settings.display_rotation) - 1) %
                                                    static_cast<u8>(DisplayRotation::Count)) :
                       static_cast<DisplayRotation>(static_cast<u8>(DisplayRotation::Count) - 1);
-                  GPUThread::UpdateSettings(true, false, false);
+                  VideoThread::UpdateSettings(true, false, false);
                 }
               })
 
@@ -347,7 +347,7 @@ DEFINE_HOTKEY("TogglePGXP", TRANSLATE_NOOP("Hotkeys", "Graphics"), TRANSLATE_NOO
                     g_settings.FixIncompatibleSettings(si, false);
                   }
 
-                  GPUThread::UpdateSettings(true, false, false);
+                  VideoThread::UpdateSettings(true, false, false);
 
                   Host::AddKeyedOSDMessage(OSDMessageType::Quick, "TogglePGXP",
                                            g_settings.gpu_pgxp_enable ?
@@ -377,7 +377,7 @@ DEFINE_HOTKEY("TogglePGXPDepth", TRANSLATE_NOOP("Hotkeys", "Graphics"),
                   System::ClearMemorySaveStates(true, true);
 
                   g_settings.gpu_pgxp_depth_buffer = !g_settings.gpu_pgxp_depth_buffer;
-                  GPUThread::UpdateSettings(true, false, false);
+                  VideoThread::UpdateSettings(true, false, false);
 
                   Host::AddIconOSDMessage(OSDMessageType::Quick, "TogglePGXPDepth", ICON_FA_SITEMAP,
                                           g_settings.gpu_pgxp_depth_buffer ?
@@ -397,7 +397,7 @@ DEFINE_HOTKEY("ToggleModulationCrop", TRANSLATE_NOOP("Hotkeys", "Graphics"),
                 if (!pressed && System::IsValid())
                 {
                   g_settings.gpu_modulation_crop = !g_settings.gpu_modulation_crop;
-                  GPUThread::UpdateSettings(true, false, false);
+                  VideoThread::UpdateSettings(true, false, false);
                   Host::AddIconOSDMessage(
                     OSDMessageType::Quick, "ToggleModulationCrop", ICON_FA_SWATCHBOOK,
                     g_settings.gpu_modulation_crop ?
@@ -421,7 +421,7 @@ DEFINE_HOTKEY("ReloadPostProcessingShaders", TRANSLATE_NOOP("Hotkeys", "Graphics
 DEFINE_HOTKEY("ReloadTextureReplacements", TRANSLATE_NOOP("Hotkeys", "Graphics"),
               TRANSLATE_NOOP("Hotkeys", "Reload Texture Replacements"), [](s32 pressed) {
                 if (!pressed && System::IsValid())
-                  GPUThread::RunOnThread([]() { GPUTextureCache::ReloadTextureReplacements(true, true); });
+                  VideoThread::RunOnThread([]() { GPUTextureCache::ReloadTextureReplacements(true, true); });
               })
 
 DEFINE_HOTKEY("IncreaseResolutionScale", TRANSLATE_NOOP("Hotkeys", "Graphics"),
@@ -616,28 +616,28 @@ DEFINE_HOTKEY("AudioVolumeDown", TRANSLATE_NOOP("Hotkeys", "Audio"), TRANSLATE_N
 DEFINE_HOTKEY("LoadSelectedSaveState", TRANSLATE_NOOP("Hotkeys", "Save States"),
               TRANSLATE_NOOP("Hotkeys", "Load From Selected Slot"), [](s32 pressed) {
                 if (!pressed)
-                  GPUThread::RunOnThread(SaveStateSelectorUI::LoadCurrentSlot);
+                  VideoThread::RunOnThread(SaveStateSelectorUI::LoadCurrentSlot);
               })
 DEFINE_HOTKEY("SaveSelectedSaveState", TRANSLATE_NOOP("Hotkeys", "Save States"),
               TRANSLATE_NOOP("Hotkeys", "Save To Selected Slot"), [](s32 pressed) {
                 if (!pressed)
-                  GPUThread::RunOnThread(SaveStateSelectorUI::SaveCurrentSlot);
+                  VideoThread::RunOnThread(SaveStateSelectorUI::SaveCurrentSlot);
               })
 DEFINE_HOTKEY("SelectPreviousSaveStateSlot", TRANSLATE_NOOP("Hotkeys", "Save States"),
               TRANSLATE_NOOP("Hotkeys", "Select Previous Save Slot"), [](s32 pressed) {
                 if (!pressed)
-                  GPUThread::RunOnThread([]() { SaveStateSelectorUI::SelectPreviousSlot(true); });
+                  VideoThread::RunOnThread([]() { SaveStateSelectorUI::SelectPreviousSlot(true); });
               })
 DEFINE_HOTKEY("SelectNextSaveStateSlot", TRANSLATE_NOOP("Hotkeys", "Save States"),
               TRANSLATE_NOOP("Hotkeys", "Select Next Save Slot"), [](s32 pressed) {
                 if (!pressed)
-                  GPUThread::RunOnThread([]() { SaveStateSelectorUI::SelectNextSlot(true); });
+                  VideoThread::RunOnThread([]() { SaveStateSelectorUI::SelectNextSlot(true); });
               })
 DEFINE_HOTKEY("SaveStateAndSelectNextSlot", TRANSLATE_NOOP("Hotkeys", "Save States"),
               TRANSLATE_NOOP("Hotkeys", "Save State and Select Next Slot"), [](s32 pressed) {
                 if (!pressed && System::IsValid())
                 {
-                  GPUThread::RunOnThread([]() {
+                  VideoThread::RunOnThread([]() {
                     SaveStateSelectorUI::SaveCurrentSlot();
                     SaveStateSelectorUI::SelectNextSlot(false);
                   });
@@ -762,7 +762,7 @@ DEFINE_HOTKEY("ToggleVRAMView", TRANSLATE_NOOP("Hotkeys", "Debugging"), TRANSLAT
                     return;
 
                   g_settings.gpu_show_vram = !g_settings.gpu_show_vram;
-                  GPUThread::UpdateSettings(true, false, false);
+                  VideoThread::UpdateSettings(true, false, false);
 
                   Host::AddIconOSDMessage(OSDMessageType::Quick, "ToggleVRAMView", ICON_FA_FILE,
                                           g_settings.gpu_show_vram ?

@@ -6,7 +6,7 @@
 #include "gpu_backend.h"
 #include "gpu_dump.h"
 #include "gpu_helpers.h"
-#include "gpu_thread_commands.h"
+#include "video_thread_commands.h"
 #include "interrupt_controller.h"
 #include "system.h"
 
@@ -584,7 +584,7 @@ bool GPU::HandleRenderPolygonCommand()
         }
 
         // Remove second part of quad.
-        cmd->size = GPUThreadCommand::AlignCommandSize(sizeof(GPUBackendDrawPrecisePolygonCommand) +
+        cmd->size = VideoThreadCommand::AlignCommandSize(sizeof(GPUBackendDrawPrecisePolygonCommand) +
                                                        3 * sizeof(GPUBackendDrawPrecisePolygonCommand::Vertex));
         cmd->num_vertices = 3;
       }
@@ -600,7 +600,7 @@ bool GPU::HandleRenderPolygonCommand()
         {
           std::memcpy(&cmd->vertices[0], &cmd->vertices[2], sizeof(GPUBackendDrawPrecisePolygonCommand::Vertex));
           std::memcpy(&cmd->vertices[2], &cmd->vertices[3], sizeof(GPUBackendDrawPrecisePolygonCommand::Vertex));
-          cmd->size = GPUThreadCommand::AlignCommandSize(sizeof(GPUBackendDrawPrecisePolygonCommand) +
+          cmd->size = VideoThreadCommand::AlignCommandSize(sizeof(GPUBackendDrawPrecisePolygonCommand) +
                                                          3 * sizeof(GPUBackendDrawPrecisePolygonCommand::Vertex));
           cmd->num_vertices = 3;
         }
@@ -678,7 +678,7 @@ bool GPU::HandleRenderPolygonCommand()
         }
 
         // Remove second part of quad.
-        cmd->size = GPUThreadCommand::AlignCommandSize(sizeof(GPUBackendDrawPolygonCommand) +
+        cmd->size = VideoThreadCommand::AlignCommandSize(sizeof(GPUBackendDrawPolygonCommand) +
                                                        3 * sizeof(GPUBackendDrawPolygonCommand::Vertex));
         cmd->num_vertices = 3;
       }
@@ -691,7 +691,7 @@ bool GPU::HandleRenderPolygonCommand()
         {
           std::memcpy(&cmd->vertices[0], &cmd->vertices[2], sizeof(GPUBackendDrawPolygonCommand::Vertex));
           std::memcpy(&cmd->vertices[2], &cmd->vertices[3], sizeof(GPUBackendDrawPolygonCommand::Vertex));
-          cmd->size = GPUThreadCommand::AlignCommandSize(sizeof(GPUBackendDrawPolygonCommand) +
+          cmd->size = VideoThreadCommand::AlignCommandSize(sizeof(GPUBackendDrawPolygonCommand) +
                                                          3 * sizeof(GPUBackendDrawPolygonCommand::Vertex));
           cmd->num_vertices = 3;
         }

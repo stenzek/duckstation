@@ -13,12 +13,12 @@
 #include "core/game_list.h"
 #include "core/gpu.h"
 #include "core/gpu_backend.h"
-#include "core/gpu_thread.h"
 #include "core/host.h"
 #include "core/imgui_overlays.h"
 #include "core/settings.h"
 #include "core/system.h"
 #include "core/system_private.h"
+#include "core/video_thread.h"
 
 #include "util/cd_image.h"
 #include "util/gpu_device.h"
@@ -89,7 +89,7 @@ static void ProcessCoreThreadEvents(bool block);
 static void ProcessCoreThreadPlatformMessages();
 static void CoreThreadEntryPoint();
 static void CoreThreadMainLoop();
-static void GPUThreadEntryPoint();
+static void VideoThreadEntryPoint();
 static void UIThreadMainLoop();
 static void ProcessSDLEvent(const SDL_Event* ev);
 static std::string GetWindowTitle(const std::string& game_title);
@@ -113,7 +113,7 @@ struct SDLHostState
   WindowInfoPrerotation force_prerotation = WindowInfoPrerotation::Identity;
 
   Threading::Thread core_thread;
-  Threading::Thread gpu_thread;
+  Threading::Thread video_thread;
   Threading::KernelSemaphore platform_window_updated;
 
   std::mutex state_mutex;
@@ -650,7 +650,7 @@ void MiniHost::ProcessSDLEvent(const SDL_Event* ev)
       Host::RunOnCoreThread([window_width = ev->window.data1, window_height = ev->window.data2,
                              window_scale = s_state.sdl_window_scale,
                              window_refresh_rate = s_state.sdl_window_refresh_rate]() {
-        GPUThread::ResizeDisplayWindow(window_width, window_height, window_scale, window_refresh_rate);
+        VideoThread::ResizeDisplayWindow(window_width, window_height, window_scale, window_refresh_rate);
       });
     }
     break;
@@ -667,7 +667,7 @@ void MiniHost::ProcessSDLEvent(const SDL_Event* ev)
         SDL_GetWindowSizeInPixels(s_state.sdl_window, &window_width, &window_height);
         Host::RunOnCoreThread([window_width, window_height, window_scale = s_state.sdl_window_scale,
                                window_refresh_rate = s_state.sdl_window_refresh_rate]() {
-          GPUThread::ResizeDisplayWindow(window_width, window_height, window_scale, window_refresh_rate);
+          VideoThread::ResizeDisplayWindow(window_width, window_height, window_scale, window_refresh_rate);
         });
       }
     }
@@ -877,10 +877,10 @@ void MiniHost::CoreThreadEntryPoint()
   s_async_task_queue.SetWorkerCount(NUM_ASYNC_WORKER_THREADS);
 
   // start up GPU thread
-  s_state.gpu_thread.Start(&GPUThreadEntryPoint);
+  s_state.video_thread.Start(&VideoThreadEntryPoint);
 
   // start the fullscreen UI and get it going
-  if (GPUThread::StartFullscreenUI(s_state.start_fullscreen_ui_fullscreen, &error))
+  if (VideoThread::StartFullscreenUI(s_state.start_fullscreen_ui_fullscreen, &error))
   {
     WarnAboutInterface();
 
@@ -903,9 +903,9 @@ void MiniHost::CoreThreadEntryPoint()
   if (System::IsValid())
     System::ShutdownSystem(false);
 
-  GPUThread::StopFullscreenUI();
-  GPUThread::Internal::RequestShutdown();
-  s_state.gpu_thread.Join();
+  VideoThread::StopFullscreenUI();
+  VideoThread::Internal::RequestShutdown();
+  s_state.video_thread.Join();
 
   // join worker threads
   s_async_task_queue.SetWorkerCount(0);
@@ -925,21 +925,21 @@ void MiniHost::CoreThreadMainLoop()
       System::Execute();
       continue;
     }
-    else if (!GPUThread::IsUsingThread() && GPUThread::IsRunningIdle())
+    else if (!VideoThread::IsUsingThread() && VideoThread::IsRunningIdle())
     {
       ProcessCoreThreadEvents(false);
-      if (!GPUThread::IsUsingThread() && GPUThread::IsRunningIdle())
-        GPUThread::Internal::DoRunIdle();
+      if (!VideoThread::IsUsingThread() && VideoThread::IsRunningIdle())
+        VideoThread::Internal::DoRunIdle();
     }
 
     ProcessCoreThreadEvents(true);
   }
 }
 
-void MiniHost::GPUThreadEntryPoint()
+void MiniHost::VideoThreadEntryPoint()
 {
-  Threading::SetNameOfCurrentThread("GPU Thread");
-  GPUThread::Internal::GPUThreadEntryPoint();
+  Threading::SetNameOfCurrentThread("Video Thread");
+  VideoThread::Internal::VideoThreadEntryPoint();
 }
 
 void Host::OnSystemStarting()
@@ -969,7 +969,7 @@ void Host::OnSystemDestroyed()
 
 void Host::OnSystemAbnormalShutdown(const std::string_view reason)
 {
-  GPUThread::RunOnThread([reason = std::string(reason)]() {
+  VideoThread::RunOnThread([reason = std::string(reason)]() {
     FullscreenUI::OpenInfoMessageDialog(
       ICON_EMOJI_NO_ENTRY_SIGN, "Abnormal System Shutdown",
       fmt::format("Unfortunately, the virtual machine has abnormally shut down and cannot "
@@ -978,7 +978,7 @@ void Host::OnSystemAbnormalShutdown(const std::string_view reason)
   });
 }
 
-void Host::OnGPUThreadRunIdleChanged(bool is_active)
+void Host::OnVideoThreadRunIdleChanged(bool is_active)
 {
 }
 
@@ -1006,7 +1006,7 @@ bool Host::SetScreensaverInhibit(bool inhibit, Error* error)
   }
 }
 
-void Host::FrameDoneOnGPUThread(GPUBackend* gpu_backend, u32 frame_number)
+void Host::FrameDoneOnVideoThread(GPUBackend* gpu_backend, u32 frame_number)
 {
 }
 
@@ -1341,8 +1341,9 @@ void Host::ConfirmMessageAsync(std::string_view title, std::string_view message,
     if (needs_pause)
       System::PauseSystem(true);
 
-    GPUThread::RunOnThread([title = std::string(title), message = std::string(message), callback = std::move(callback),
-                            yes_text = std::string(yes_text), no_text = std::string(no_text), needs_pause]() mutable {
+    VideoThread::RunOnThread([title = std::string(title), message = std::string(message),
+                              callback = std::move(callback), yes_text = std::string(yes_text),
+                              no_text = std::string(no_text), needs_pause]() mutable {
       FullscreenUI::Initialize();
 
       // Need to reset run idle state _again_ after displaying.

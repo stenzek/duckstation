@@ -64,7 +64,7 @@
     <ClCompile Include="performance_counters.cpp" />
     <ClCompile Include="jogcon.cpp" />
     <ClCompile Include="pio.cpp" />
-    <ClCompile Include="gpu_thread.cpp" />
+    <ClCompile Include="video_thread.cpp" />
     <ClCompile Include="gpu_presenter.cpp" />
     <ClCompile Include="ddgo_controller.cpp" />
     <ClCompile Include="fullscreenui_widgets.cpp" />
@@ -147,8 +147,8 @@
     <ClInclude Include="system_private.h" />
     <ClInclude Include="jogcon.h" />
     <ClInclude Include="pio.h" />
-    <ClInclude Include="gpu_thread.h" />
-    <ClInclude Include="gpu_thread_commands.h" />
+    <ClInclude Include="video_thread.h" />
+    <ClInclude Include="video_thread_commands.h" />
     <ClInclude Include="gpu_presenter.h" />
     <ClInclude Include="ddgo_controller.h" />
     <ClInclude Include="fullscreenui_widgets.h" />
