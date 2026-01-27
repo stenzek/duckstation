@@ -88,17 +88,17 @@
       <string>Messages</string>
      </property>
      <layout class="QGridLayout" name="gridLayout_21" columnstretch="0,0,0,0" columnminimumwidth="150,0,150,0">
-      <item row="0" column="2" colspan="2">
-       <widget class="QCheckBox" name="showStatusIndicators">
-        <property name="text">
-         <string>Show Status Indicators</string>
-        </property>
-       </widget>
-      </item>
       <item row="0" column="0" colspan="2">
        <widget class="QCheckBox" name="showMessages">
         <property name="text">
          <string>Show Messages</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="2" colspan="2">
+       <widget class="QCheckBox" name="showStatusIndicators">
+        <property name="text">
+         <string>Show Status Indicators</string>
         </property>
        </widget>
       </item>
