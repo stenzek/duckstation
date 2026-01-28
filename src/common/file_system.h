@@ -257,9 +257,16 @@ bool SetWorkingDirectory(const char* path);
 /// Does nothing and returns false on non-Windows platforms.
 bool SetPathCompression(const char* path, bool enable);
 
-#ifdef _WIN32
+#if defined(_WIN32)
+
 // Path limit remover, but also converts to a wide string at the same time.
 bool GetWin32Path(std::wstring* dest, std::string_view str);
 std::wstring GetWin32Path(std::string_view str);
+
+#elif defined(__linux__)
+
+bool SetPathExecutable(const char* path, bool executable, Error* error);
+
 #endif
+
 }; // namespace FileSystem

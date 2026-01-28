@@ -3106,3 +3106,34 @@ FileSystem::POSIXLock& FileSystem::POSIXLock::operator=(POSIXLock&& move)
 }
 
 #endif
+
+#ifdef __linux__
+
+bool FileSystem::SetPathExecutable(const char* path, bool executable, Error* error)
+{
+  struct stat st;
+  if (stat(path, &st) != 0)
+  {
+    Error::SetErrno(error, "stat() failed: ", errno);
+    return false;
+  }
+
+  mode_t new_mode;
+  if (executable)
+    new_mode = st.st_mode | S_IXUSR | S_IXGRP | S_IXOTH;
+  else
+    new_mode = st.st_mode & ~static_cast<mode_t>(S_IXUSR | S_IXGRP | S_IXOTH);
+
+  if (st.st_mode == new_mode)
+    return true;
+
+  if (chmod(path, new_mode) != 0)
+  {
+    Error::SetErrno(error, "chmod() failed: ", errno);
+    return false;
+  }
+
+  return true;
+}
+
+#endif // __linux__
