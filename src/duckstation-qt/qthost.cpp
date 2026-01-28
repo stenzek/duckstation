@@ -127,6 +127,7 @@ static void ProcessShutdown();
 static void MessageOutputHandler(QtMsgType type, const QMessageLogContext& context, const QString& msg);
 static void RegisterTypes();
 static bool InitializeFoldersAndConfig(Error* error);
+static QString GetAppIconPath();
 static bool LoadResources(Error* error);
 static void SaveSettings();
 static bool RunSetupWizard();
@@ -143,6 +144,9 @@ static bool ParseCommandLineParametersAndInitializeConfig(QApplication& app,
 #ifdef __linux__
 static void AdjustQtEnvironmentVariables();
 static void ApplyWaylandWorkarounds();
+static bool ParseDesktopFileExecPath(const std::string& desktop_file_path, std::string* out_exec_path);
+static bool CreateDesktopFile(const std::string& app_path, const std::string& desktop_file_path, Error* error);
+static void CheckDesktopFile();
 #endif
 } // namespace QtHost
 
@@ -381,7 +385,245 @@ void QtHost::ApplyWaylandWorkarounds()
   }
 }
 
-#endif
+bool QtHost::ParseDesktopFileExecPath(const std::string& desktop_file_path, std::string* out_exec_path)
+{
+  std::optional<std::string> contents = FileSystem::ReadFileToString(desktop_file_path.c_str(), nullptr);
+  if (!contents.has_value())
+    return false;
+
+  // Parse line by line looking for Exec=
+  std::istringstream stream(contents.value());
+  std::string line_str;
+
+  while (std::getline(stream, line_str))
+  {
+    const std::string_view line = StringUtil::StripWhitespace(line_str);
+    if (StringUtil::StartsWithNoCase(line, "Exec="))
+    {
+      std::string_view exec_value = line.substr(5); // Skip "Exec="
+
+      // The Exec line may have arguments after the path, extract just the path.
+      // Handle quoted paths.
+      if (!exec_value.empty() && exec_value[0] == '"')
+      {
+        const size_t end_quote = exec_value.find('"', 1);
+        if (end_quote != std::string::npos)
+          *out_exec_path = exec_value.substr(1, end_quote - 1);
+        else
+          *out_exec_path = exec_value.substr(1);
+      }
+      else
+      {
+        // Unquoted path - take until first space or end
+        const size_t space_pos = exec_value.find(' ');
+        if (space_pos != std::string::npos)
+          *out_exec_path = exec_value.substr(0, space_pos);
+        else
+          *out_exec_path = exec_value;
+      }
+
+      return true;
+    }
+  }
+
+  return false;
+}
+
+bool QtHost::CreateDesktopFile(const std::string& app_path, const std::string& desktop_file_path, Error* error)
+{
+  // Ensure the applications directory exists.
+  const std::string applications_directory = std::string(Path::GetDirectory(desktop_file_path));
+  if (!FileSystem::EnsureDirectoryExists(applications_directory.c_str(), false, error))
+    return false;
+
+  // Because the icon is inside the AppImage, we have to copy it as well.
+  // This should resolve to $XDG_DATA_DIR/icons or ~/.local/share/icons.
+  const std::string icon_file_name = Path::ReplaceExtension(Path::GetFileName(desktop_file_path), "png");
+  const std::string icons_directory = Path::Canonicalize(Path::BuildRelativePath(desktop_file_path, "../icons"));
+  const std::string icon_path = Path::Combine(icons_directory, icon_file_name);
+  if (!FileSystem::FileExists(icon_path.c_str()))
+  {
+    if (!FileSystem::EnsureDirectoryExists(icons_directory.c_str(), false, error) ||
+        !FileSystem::CopyFilePath(GetAppIconPath().toUtf8().constData(), icon_path.c_str(), false, error))
+    {
+      Error::AddPrefix(error, "Failed to copy application icon: ");
+      return false;
+    }
+  }
+
+  // Create the .desktop file content.
+  std::string desktop_content = fmt::format(R"([Desktop Entry]
+Type=Application
+Name=DuckStation
+GenericName=PlayStation 1 Emulator
+Comment=Fast PlayStation 1 emulator
+Icon={}
+Exec="{}" %f
+Terminal=false
+Categories=Game;Emulator;Qt
+StartupNotify=true
+StartupWMClass=AppRun.wrapped
+)",
+                                            icon_path, app_path, desktop_file_path);
+
+  if (!FileSystem::WriteStringToFile(desktop_file_path.c_str(), desktop_content, error))
+    return false;
+
+  // Make the desktop file executable (required by some desktop environments).
+  if (!FileSystem::SetPathExecutable(desktop_file_path.c_str(), true, error))
+  {
+    FileSystem::DeleteFile(desktop_file_path.c_str());
+    return false;
+  }
+
+  INFO_LOG("Created desktop file at: {}", desktop_file_path);
+  return true;
+}
+
+void QtHost::CheckDesktopFile()
+{
+  static constexpr const char* DESKTOP_FILE_NAME = "applications/org.duckstation.DuckStation.desktop";
+  static constexpr const char* CONFIG_SECTION = "Main";
+  static constexpr const char* CONFIG_KEY = "NoDesktopFile";
+
+  // AppImage sets the APPIMAGE environment variable to the actual executable path.
+  // Without this, we'd get the path to the mounted filesystem, which changes on each run.
+  const char* appimage_path = std::getenv("APPIMAGE");
+  if (!appimage_path || !FileSystem::FileExists(appimage_path))
+  {
+    ERROR_LOG("Not running from AppImage, skipping desktop file check.");
+    return;
+  }
+
+  std::string application_path = Path::RealPath(appimage_path);
+  if (application_path.empty())
+    return;
+
+  std::string desktop_file_path;
+  if (const char* xdg_data_home = std::getenv("XDG_DATA_HOME"); xdg_data_home && xdg_data_home[0] != '\0')
+  {
+    desktop_file_path = Path::Combine(xdg_data_home, DESKTOP_FILE_NAME);
+  }
+  else
+  {
+    const char* home = std::getenv("HOME");
+    if (!home)
+      return;
+
+    desktop_file_path = fmt::format("{}/.local/share/{}", home, DESKTOP_FILE_NAME);
+  }
+
+  const auto msgbox_title = "DuckStation"_L1;
+
+  if (!FileSystem::FileExists(desktop_file_path.c_str()))
+  {
+    // Desktop file doesn't exist - ask if user wants to create it.
+    // Only prompt once per installation by storing a flag in settings.
+    if (Core::GetBaseBoolSettingValue(CONFIG_SECTION, CONFIG_KEY, false))
+      return;
+
+    bool accepted, ignore_future;
+    {
+      const std::unique_ptr<QMessageBox> msgbox(QtUtils::NewMessageBox(
+        nullptr, QMessageBox::Question, msgbox_title,
+        qApp
+          ->translate("QtHost",
+                      "Would you like to create a launcher shortcut for DuckStation?\n\n"
+                      "This will add DuckStation to your application menu, allowing you to launch it more easily.\n\n"
+                      "The shortcut will be created at:\n%1")
+          .arg(QString::fromStdString(desktop_file_path)),
+        QMessageBox::Yes | QMessageBox::No, QMessageBox::NoButton, false));
+      QCheckBox* const ignore_cb = new QCheckBox(qApp->translate("QtHost", "Don't ask again"), msgbox.get());
+      msgbox->setCheckBox(ignore_cb);
+      msgbox->setWindowIcon(GetAppIcon());
+
+      accepted = (msgbox->exec() == QMessageBox::Yes);
+      ignore_future = ignore_cb->isChecked();
+    }
+
+    if (!accepted)
+    {
+      if (ignore_future)
+      {
+        Core::SetBaseBoolSettingValue(CONFIG_SECTION, CONFIG_KEY, true);
+        QtHost::SaveSettings();
+      }
+
+      return;
+    }
+
+    Error error;
+    if (!CreateDesktopFile(application_path, desktop_file_path, &error))
+    {
+      QMessageBox::critical(g_main_window, msgbox_title,
+                            qApp->translate("QtHost", "Failed to create launcher shortcut shortcut:\n%1")
+                              .arg(QString::fromStdString(error.GetDescription())));
+    }
+    else
+    {
+      QMessageBox::information(g_main_window, msgbox_title,
+                               qApp->translate("QtHost", "Launcher shortcut created successfully.\n\n"
+                                                         "You can find DuckStation in your application menu."));
+    }
+  }
+  else
+  {
+    // Desktop file exists - check if the path matches.
+    std::string existing_exec_path;
+    if (!ParseDesktopFileExecPath(desktop_file_path, &existing_exec_path))
+    {
+      WARNING_LOG("Failed to parse existing desktop file: {}", desktop_file_path);
+      return;
+    }
+
+    // Normalize paths for comparison.
+    const std::string normalized_existing = Path::RealPath(existing_exec_path);
+    if (application_path == normalized_existing)
+      return;
+
+    INFO_LOG("Desktop file path mismatch: current='{}', existing='{}'", application_path, normalized_existing);
+
+    const QMessageBox::StandardButton result = QMessageBox::question(
+      g_main_window, "DuckStation"_L1,
+      qApp
+        ->translate("QtHost", "The existing launcher shortcut points to a different location:\n\n"
+                              "Current: %1\n"
+                              "Shortcut: %2\n\n"
+                              "Would you like to update the shortcut to point to the current location?")
+        .arg(QString::fromStdString(application_path))
+        .arg(QString::fromStdString(existing_exec_path)),
+      QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes);
+
+    if (result == QMessageBox::Yes)
+    {
+      Error error;
+
+      // Delete the old desktop file first.
+      if (!FileSystem::DeleteFile(desktop_file_path.c_str(), &error))
+      {
+        QMessageBox::critical(g_main_window, msgbox_title,
+                              qApp->translate("QtHost", "Failed to remove old launcher shortcut:\n%1")
+                                .arg(QString::fromStdString(error.GetDescription())));
+        return;
+      }
+
+      // Create the new desktop file.
+      if (!CreateDesktopFile(application_path, desktop_file_path, &error))
+      {
+        QMessageBox::critical(g_main_window, msgbox_title,
+                              qApp->translate("QtHost", "Failed to create updated launcher shortcut:\n%1")
+                                .arg(QString::fromStdString(error.GetDescription())));
+      }
+      else
+      {
+        QMessageBox::information(g_main_window, msgbox_title,
+                                 qApp->translate("QtHost", "Launcher shortcut updated successfully."));
+      }
+    }
+  }
+}
+
+#endif // __linux__
 
 QString QtHost::GetAppNameAndVersion()
 {
@@ -454,9 +696,14 @@ const QIcon& QtHost::GetAppIcon()
   return s_state.app_icon;
 }
 
+QString QtHost::GetAppIconPath()
+{
+  return GetResourceQPath("images/duck.png", true);
+}
+
 QPixmap QtHost::GetAppLogo()
 {
-  QPixmap pm(GetResourceQPath("images/duck.png", true));
+  QPixmap pm(GetAppIconPath());
   pm.setDevicePixelRatio(qApp->devicePixelRatio());
   return pm;
 }
@@ -591,7 +838,7 @@ bool QtHost::LoadResources(Error* error)
     return false;
   }
 
-  s_state.app_icon = QIcon(GetResourceQPath("images/duck.png", true));
+  s_state.app_icon = QIcon(GetAppIconPath());
   return true;
 }
 
@@ -3353,6 +3600,9 @@ int main(int argc, char* argv[])
     g_main_window->refreshGameList(false);
 
 #ifdef __linux__
+  // Create desktop file if it does not exist.
+  QtHost::CheckDesktopFile();
+
   // I hate this so much. Because GNOME are arrogant uncooperative assholes who refuse to let applications
   // raise their own windows, we have to show the log window before the main window, otherwise the main
   // window will appear behind the log window. And it'll block it, because we're not allowed to attach it
