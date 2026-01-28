@@ -423,6 +423,15 @@ u16 AnalogController::GetExtraButtonMask() const
               (static_cast<u16>(right) << static_cast<u8>(Button::R1)));
   }
 
+  if (m_analog_trigger_buttons == 2 || (m_analog_trigger_buttons == 1 && !m_analog_mode && !m_configuration_mode))
+  {
+    const bool left = (m_axis_state[static_cast<u8>(Axis::RightX)] <= NEG_THRESHOLD);
+    const bool right = (m_axis_state[static_cast<u8>(Axis::RightX)] >= POS_THRESHOLD);
+
+    mask &= ~((static_cast<u16>(left) << static_cast<u8>(Button::L2)) |
+              (static_cast<u16>(right) << static_cast<u8>(Button::R2)));
+  }
+
   return mask;
 }
 
@@ -825,7 +834,12 @@ static const SettingInfo s_settings[] = {
   {SettingInfo::Type::IntegerList, "AnalogShoulderButtons",
    TRANSLATE_NOOP("AnalogController", "Use Right Analog for Shoulder Buttons"),
    TRANSLATE_NOOP("AnalogController",
-                  "Allows you to use the right analog stick to control the shoulder buttons, as well as the buttons."),
+                  "Allows you to use the right analog stick to control the shoulder buttons (L1/R1), as well as the buttons."),
+   "0", "0", "2", nullptr, nullptr, s_shoulder_settings, 0.0f},
+  {SettingInfo::Type::IntegerList, "AnalogTriggerButtons",
+   TRANSLATE_NOOP("AnalogController", "Use Right Analog for Trigger Buttons"),
+   TRANSLATE_NOOP("AnalogController",
+                  "Allows you to use the right analog stick to control the trigger buttons (L2/R2), as well as the buttons."),
    "0", "0", "2", nullptr, nullptr, s_shoulder_settings, 0.0f},
   {SettingInfo::Type::Float, "AnalogDeadzone", TRANSLATE_NOOP("AnalogController", "Analog Deadzone"),
    TRANSLATE_NOOP("AnalogController",
@@ -874,6 +888,7 @@ void AnalogController::LoadSettings(const SettingsInterface& si, const char* sec
   m_force_analog_on_reset = si.GetBoolValue(section, "ForceAnalogOnReset", true);
   m_analog_dpad_in_digital_mode = si.GetBoolValue(section, "AnalogDPadInDigitalMode", true);
   m_analog_shoulder_buttons = static_cast<u8>(si.GetUIntValue(section, "AnalogShoulderButtons", 0u));
+  m_analog_trigger_buttons = static_cast<u8>(si.GetUIntValue(section, "AnalogTriggerButtons", 0u));
   m_analog_deadzone = std::clamp(si.GetFloatValue(section, "AnalogDeadzone", DEFAULT_STICK_DEADZONE), 0.0f, 1.0f);
   m_analog_sensitivity =
     std::clamp(si.GetFloatValue(section, "AnalogSensitivity", DEFAULT_STICK_SENSITIVITY), 0.01f, 3.0f);
