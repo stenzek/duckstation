@@ -139,6 +139,7 @@ private:
   bool m_force_analog_on_reset = false;
   bool m_analog_dpad_in_digital_mode = false;
   u8 m_analog_shoulder_buttons = 0;
+  u8 m_analog_trigger_buttons = 0;
 
   bool m_analog_mode = false;
   bool m_analog_locked = false;
