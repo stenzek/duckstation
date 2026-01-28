@@ -143,6 +143,7 @@ static bool ParseCommandLineParametersAndInitializeConfig(QApplication& app,
 
 #ifdef __linux__
 static void AdjustQtEnvironmentVariables();
+static bool IsRunningOnWayland();
 static void ApplyWaylandWorkarounds();
 static bool ParseDesktopFileExecPath(const std::string& desktop_file_path, std::string* out_exec_path);
 static bool CreateDesktopFile(const std::string& app_path, const std::string& desktop_file_path, Error* error);
@@ -354,10 +355,15 @@ void QtHost::AdjustQtEnvironmentVariables()
   }
 }
 
-void QtHost::ApplyWaylandWorkarounds()
+bool QtHost::IsRunningOnWayland()
 {
   const QString platform_name = QGuiApplication::platformName();
-  if (platform_name != QStringLiteral("wayland"))
+  return (platform_name == QStringLiteral("wayland"));
+}
+
+void QtHost::ApplyWaylandWorkarounds()
+{
+  if (!IsRunningOnWayland())
   {
     std::fputs("Wayland not detected, not applying workarounds.\n", stderr);
     return;
@@ -3595,10 +3601,6 @@ int main(int argc, char* argv[])
     goto shutdown_and_exit;
   }
 
-  // When running in batch mode, ensure game list is loaded, but don't scan for any new files.
-  if (!s_state.batch_mode)
-    g_main_window->refreshGameList(false);
-
 #ifdef __linux__
   // Create desktop file if it does not exist.
   QtHost::CheckDesktopFile();
@@ -3618,6 +3620,10 @@ int main(int argc, char* argv[])
   }
 #endif
 
+  // When running in batch mode, ensure game list is loaded, but don't scan for any new files.
+  if (!s_state.batch_mode)
+    g_main_window->refreshGameList(false);
+
   // Don't bother showing the window in no-gui mode.
   if (!s_state.nogui_mode)
     QtUtils::ShowOrRaiseWindow(g_main_window, nullptr, true);
@@ -3636,7 +3642,18 @@ int main(int argc, char* argv[])
 
   // Bring the log window up last, so that its icon does not take precedence.
   if (LogWindow::deferredShow())
+  {
+#ifdef __linux__
+    // On KDE it's broken too - the log window appears in front of the main window even if it's shown second.
+    if (QtHost::IsRunningOnWayland() && !s_state.wayland_workarounds)
+    {
+      QApplication::sync();
+      QApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
+    }
+#endif
+
     QtUtils::RaiseWindow(g_main_window);
+  }
 
   // This doesn't return until we exit.
   result = app.exec();
