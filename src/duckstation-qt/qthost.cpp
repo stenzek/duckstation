@@ -252,8 +252,17 @@ bool QtHost::VeryEarlyProcessStartup()
 
 bool QtHost::EarlyProcessStartup()
 {
-  // redirect qt errors
+  // Redirect Qt errors.
   qInstallMessageHandler(MessageOutputHandler);
+
+  // Set application details.
+  // This is critical for Linux to show the correct application name in the task switcher, since it appears
+  // to uses the application name to search for desktop files with the corresponding StartupWMClass.
+  QApplication::setApplicationName("duckstation-qt"_L1);
+  QApplication::setApplicationVersion(QString::fromUtf8(g_scm_version_str));
+  QApplication::setOrganizationName("Stenzek"_L1);
+  QApplication::setOrganizationDomain("duckstation.org"_L1);
+  QApplication::setDesktopFileName("org.duckstation.DuckStation"_L1);
 
   Error error;
   if (!System::ProcessStartup(&error)) [[unlikely]]
@@ -469,7 +478,7 @@ Exec="{}" %f
 Terminal=false
 Categories=Game;Emulator;Qt
 StartupNotify=true
-StartupWMClass=AppRun.wrapped
+StartupWMClass=duckstation-qt
 )",
                                             icon_path, app_path, desktop_file_path);
 
@@ -3568,7 +3577,7 @@ int main(int argc, char* argv[])
   if (!QtHost::EarlyProcessStartup())
     return EXIT_FAILURE;
 
-  // Remove any previous-version remanants.
+  // Remove any previous-version remnants.
   if (QtHost::s_state.cleanup_after_update)
     AutoUpdaterDialog::cleanupAfterUpdate();
 
