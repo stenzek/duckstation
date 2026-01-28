@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "qtutils.h"
@@ -61,24 +61,6 @@ QFrame* QtUtils::CreateHorizontalLine(QWidget* parent)
   line->setFrameShape(QFrame::HLine);
   line->setFrameShadow(QFrame::Sunken);
   return line;
-}
-
-QWidget* QtUtils::GetRootWidget(QWidget* widget, bool stop_at_window_or_dialog)
-{
-  QWidget* next_parent = widget->parentWidget();
-  while (next_parent)
-  {
-    if (stop_at_window_or_dialog && (widget->metaObject()->inherits(&QMainWindow::staticMetaObject) ||
-                                     widget->metaObject()->inherits(&QDialog::staticMetaObject)))
-    {
-      break;
-    }
-
-    widget = next_parent;
-    next_parent = widget->parentWidget();
-  }
-
-  return widget;
 }
 
 void QtUtils::ShowOrRaiseWindow(QWidget* window, const QWidget* parent_window, bool restore_geometry)
@@ -276,9 +258,9 @@ QMessageBox::StandardButton QtUtils::MessageBoxIcon(QWidget* parent, QMessageBox
                                                     QMessageBox::StandardButton defaultButton)
 {
 #ifndef __APPLE__
-  QMessageBox msgbox(icon, title, text, buttons, parent ? QtUtils::GetRootWidget(parent) : nullptr);
+  QMessageBox msgbox(icon, title, text, buttons, parent);
 #else
-  QMessageBox msgbox(icon, QString(), title, buttons, parent ? QtUtils::GetRootWidget(parent) : nullptr);
+  QMessageBox msgbox(icon, QString(), title, buttons, parent);
   msgbox.setInformativeText(text);
 #endif
 
@@ -294,10 +276,9 @@ QMessageBox* QtUtils::NewMessageBox(QWidget* parent, QMessageBox::Icon icon, con
                                     bool delete_on_close)
 {
 #ifndef __APPLE__
-  QMessageBox* msgbox = new QMessageBox(icon, title, text, buttons, parent ? QtUtils::GetRootWidget(parent) : nullptr);
+  QMessageBox* msgbox = new QMessageBox(icon, title, text, buttons, parent);
 #else
-  QMessageBox* msgbox =
-    new QMessageBox(icon, QString(), title, buttons, parent ? QtUtils::GetRootWidget(parent) : nullptr);
+  QMessageBox* msgbox = new QMessageBox(icon, QString(), title, buttons, parent);
   msgbox->setInformativeText(text);
 #endif
   if (delete_on_close)

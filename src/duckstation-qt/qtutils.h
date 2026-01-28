@@ -47,9 +47,6 @@ namespace QtUtils {
 /// Creates a horizontal line widget.
 QFrame* CreateHorizontalLine(QWidget* parent);
 
-/// Returns the greatest parent of a widget, i.e. its dialog/window.
-QWidget* GetRootWidget(QWidget* widget, bool stop_at_window_or_dialog = true);
-
 /// Shows or raises a window (brings it to the front).
 /// If the window was hidden and parent_window is provided, the window is centered on parent_window.
 void ShowOrRaiseWindow(QWidget* window, const QWidget* parent_window = nullptr, bool restore_geometry = false);

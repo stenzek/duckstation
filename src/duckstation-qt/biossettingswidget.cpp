@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "biossettingswidget.h"
@@ -204,8 +204,8 @@ void BIOSSettingsWidget::onPIODeviceTypeChanged()
 
 void BIOSSettingsWidget::onPIOImagePathBrowseClicked()
 {
-  const QString path = QDir::toNativeSeparators(
-    QFileDialog::getOpenFileName(QtUtils::GetRootWidget(this), tr("Select PIO Image"), m_ui.pioImagePath->text()));
+  const QString path =
+    QDir::toNativeSeparators(QFileDialog::getOpenFileName(this, tr("Select PIO Image"), m_ui.pioImagePath->text()));
   if (path.isEmpty())
     return;
 

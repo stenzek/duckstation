@@ -1,8 +1,7 @@
-// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "colorpickerbutton.h"
-#include "qtutils.h"
 
 #include <QtGui/QPainter>
 #include <QtWidgets/QColorDialog>
@@ -72,7 +71,7 @@ void ColorPickerButton::onClicked()
   const u32 blue = m_color & 0xff;
 
   const QColor initial(QColor::fromRgb(red, green, blue));
-  const QColor selected(QColorDialog::getColor(initial, QtUtils::GetRootWidget(this), tr("Select LED Color")));
+  const QColor selected(QColorDialog::getColor(initial, this, tr("Select LED Color")));
 
   // QColorDialog returns Invalid on cancel, and apparently initial == Invalid is true...
   if (!selected.isValid() || initial == selected)

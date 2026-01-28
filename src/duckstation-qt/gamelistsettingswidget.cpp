@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "gamelistsettingswidget.h"
@@ -214,8 +214,7 @@ void GameListSettingsWidget::onRemoveSearchDirectoryButtonClicked()
 
 void GameListSettingsWidget::onAddExcludedFileButtonClicked()
 {
-  QString path =
-    QDir::toNativeSeparators(QFileDialog::getOpenFileName(QtUtils::GetRootWidget(this), tr("Select Path")));
+  QString path = QDir::toNativeSeparators(QFileDialog::getOpenFileName(this, tr("Select Path")));
   if (path.isEmpty())
     return;
 
@@ -224,8 +223,7 @@ void GameListSettingsWidget::onAddExcludedFileButtonClicked()
 
 void GameListSettingsWidget::onAddExcludedFolderButtonClicked()
 {
-  QString path =
-    QDir::toNativeSeparators(QFileDialog::getExistingDirectory(QtUtils::GetRootWidget(this), tr("Select Directory")));
+  QString path = QDir::toNativeSeparators(QFileDialog::getExistingDirectory(this, tr("Select Directory")));
   if (path.isEmpty())
     return;
 

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "postprocessingsettingswidget.h"
@@ -622,9 +622,9 @@ void PostProcessingOverlayConfigWidget::onOverlayNameCurrentIndexChanged(int ind
 
 void PostProcessingOverlayConfigWidget::onImagePathBrowseClicked()
 {
-  const QString path = QFileDialog::getOpenFileName(QtUtils::GetRootWidget(this), tr("Select Image"),
-                                                    QFileInfo(m_ui.imagePath->text()).dir().path(),
-                                                    tr("All Cover Image Types (*.jpg *.jpeg *.png *.webp)"));
+  const QString path =
+    QFileDialog::getOpenFileName(this, tr("Select Image"), QFileInfo(m_ui.imagePath->text()).dir().path(),
+                                 tr("All Cover Image Types (*.jpg *.jpeg *.png *.webp)"));
   if (path.isEmpty())
     return;
 
@@ -633,9 +633,8 @@ void PostProcessingOverlayConfigWidget::onImagePathBrowseClicked()
 
 void PostProcessingOverlayConfigWidget::onExportCustomConfigClicked()
 {
-  const QString path =
-    QFileDialog::getSaveFileName(QtUtils::GetRootWidget(this), tr("Export to YAML"),
-                                 QFileInfo(m_ui.imagePath->text()).dir().path(), tr("YAML Files (*.yml)"));
+  const QString path = QFileDialog::getSaveFileName(
+    this, tr("Export to YAML"), QFileInfo(m_ui.imagePath->text()).dir().path(), tr("YAML Files (*.yml)"));
   if (path.isEmpty())
     return;
 

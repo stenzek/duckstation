@@ -282,7 +282,7 @@ void InterfaceSettingsWidget::updateRenderToSeparateWindowOptions()
 
 void InterfaceSettingsWidget::onLanguageChanged()
 {
-  QtHost::UpdateApplicationLanguage(QtUtils::GetRootWidget(this));
+  QtHost::UpdateApplicationLanguage(this);
   g_main_window->recreate();
 }
 

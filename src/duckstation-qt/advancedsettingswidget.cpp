@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "advancedsettingswidget.h"
@@ -147,8 +147,7 @@ static void addDirectoryOption(SettingsWindow* dialog, QTableWidget* table, cons
   browse->setMaximumWidth(32);
   QObject::connect(browse, &QPushButton::clicked, browse, [browse, value, name]() {
     const QString path(QDir::toNativeSeparators(QFileDialog::getExistingDirectory(
-      QtUtils::GetRootWidget(browse), qApp->translate("AdvancedSettingsWidget", "Select folder for %1").arg(name),
-      value->text())));
+      browse, qApp->translate("AdvancedSettingsWidget", "Select folder for %1").arg(name), value->text())));
     if (!path.isEmpty())
       value->setText(path);
   });
@@ -259,8 +258,7 @@ void AdvancedSettingsWidget::addTweakOptions()
                         "ApplyCompatibilitySettings", true);
   addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Load Devices From Save States"), "Main",
                         "LoadDevicesFromSaveStates", false);
-  addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Pause On Start"), "Main", "StartPaused",
-                        false);
+  addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Pause On Start"), "Main", "StartPaused", false);
   addChoiceTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Save State Compression"), "Main", "SaveStateCompression",
                        &Settings::ParseSaveStateCompressionModeName, &Settings::GetSaveStateCompressionModeName,
                        &Settings::GetSaveStateCompressionModeDisplayName,

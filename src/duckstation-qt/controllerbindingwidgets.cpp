@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "controllerbindingwidgets.h"
@@ -844,7 +844,7 @@ static void createSettingWidgets(SettingsInterface* const sif, QWidget* parent_w
           new QPushButton(qApp->translate("ControllerCustomSettingsWidget", "Browse..."), parent_widget);
         ControllerSettingWidgetBinder::BindWidgetToInputProfileString(sif, le, section, std::move(key_name),
                                                                       si.StringDefaultValue());
-        QObject::connect(browse_button, &QPushButton::clicked, [le, root = QtUtils::GetRootWidget(parent_widget)]() {
+        QObject::connect(browse_button, &QPushButton::clicked, [le, root = parent_widget]() {
           QString path = QDir::toNativeSeparators(
             QFileDialog::getOpenFileName(root, qApp->translate("ControllerCustomSettingsWidget", "Select File")));
           if (!path.isEmpty())

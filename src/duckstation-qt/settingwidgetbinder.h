@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #pragma once
@@ -1412,7 +1412,7 @@ inline void BindWidgetToFolderSetting(SettingsInterface* sif, QLineEdit* widget,
     QObject::connect(open_button, &QAbstractButton::clicked, open_button, [widget]() {
       QString path(Accessor::getStringValue(widget));
       if (!path.isEmpty())
-        QtUtils::OpenURL(QtUtils::GetRootWidget(widget), QUrl::fromLocalFile(path));
+        QtUtils::OpenURL(widget, QUrl::fromLocalFile(path));
     });
   }
 
@@ -1433,7 +1433,7 @@ inline void BindWidgetToFolderSetting(SettingsInterface* sif, QLineEdit* widget,
     {
       if (FileSystem::DirectoryExists(new_value.c_str()) ||
           QtUtils::MessageBoxQuestion(
-            QtUtils::GetRootWidget(widget), qApp->translate("SettingWidgetBinder", "Confirm Folder"),
+            widget, qApp->translate("SettingWidgetBinder", "Confirm Folder"),
             qApp
               ->translate(
                 "SettingWidgetBinder",
@@ -1475,8 +1475,8 @@ inline void BindWidgetToFolderSetting(SettingsInterface* sif, QLineEdit* widget,
   {
     QObject::connect(browse_button, &QAbstractButton::clicked, browse_button,
                      [widget, browse_title = std::move(browse_title), value_changed]() {
-                       const QString path = QDir::toNativeSeparators(
-                         QFileDialog::getExistingDirectory(QtUtils::GetRootWidget(widget), browse_title));
+                       const QString path =
+                         QDir::toNativeSeparators(QFileDialog::getExistingDirectory(widget, browse_title));
                        if (path.isEmpty())
                          return;
 

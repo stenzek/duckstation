@@ -1213,7 +1213,7 @@ void TextureReplacementSettingsDialog::onExportClicked()
 
 void GraphicsSettingsWidget::onTextureReplacementOptionsClicked()
 {
-  QDialog* const dlg = new TextureReplacementSettingsDialog(m_dialog, QtUtils::GetRootWidget(this));
+  QDialog* const dlg = new TextureReplacementSettingsDialog(m_dialog, this);
   dlg->setAttribute(Qt::WA_DeleteOnClose);
   dlg->open();
 }

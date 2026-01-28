@@ -405,7 +405,7 @@ void MainWindow::createDisplayWidget(bool fullscreen, bool render_to_main)
   updateDisplayWidgetCursor();
 
   if (!render_to_main)
-    QtUtils::ShowOrRaiseWindow(QtUtils::GetRootWidget(m_display_widget));
+    QtUtils::ShowOrRaiseWindow(m_display_widget->window());
   m_display_widget->setFocus();
 }
 

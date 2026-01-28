@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "inputbindingwidgets.h"
@@ -436,7 +436,7 @@ void InputBindingWidget::unhookInputManager()
 void InputBindingWidget::openDialog()
 {
   InputBindingDialog* const dlg =
-    new InputBindingDialog(m_sif, m_bind_type, m_section_name, m_key_name, m_bindings, QtUtils::GetRootWidget(this));
+    new InputBindingDialog(m_sif, m_bind_type, m_section_name, m_key_name, m_bindings, this);
   dlg->setAttribute(Qt::WA_DeleteOnClose);
   connect(dlg, &QDialog::finished, this, &InputBindingWidget::reloadBinding);
   dlg->open();

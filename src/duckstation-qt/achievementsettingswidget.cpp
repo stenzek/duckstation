@@ -298,6 +298,5 @@ void AchievementSettingsWidget::onViewProfilePressed()
 
   const QByteArray encoded_username(QUrl::toPercentEncoding(QString::fromStdString(username)));
   QtUtils::OpenURL(
-    QtUtils::GetRootWidget(this),
-    QUrl(QStringLiteral("https://retroachievements.org/user/%1").arg(QString::fromUtf8(encoded_username))));
+    this, QUrl(QStringLiteral("https://retroachievements.org/user/%1").arg(QString::fromUtf8(encoded_username))));
 }

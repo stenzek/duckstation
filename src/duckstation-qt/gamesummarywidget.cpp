@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "gamesummarywidget.h"
@@ -478,7 +478,7 @@ void GameSummaryWidget::disableWidgetsForRuntimeScannedEntry()
 
 void GameSummaryWidget::onCompatibilityCommentsClicked()
 {
-  QDialog* const dlg = new QDialog(QtUtils::GetRootWidget(this));
+  QDialog* const dlg = new QDialog(this);
   dlg->setAttribute(Qt::WA_DeleteOnClose);
   dlg->resize(QSize(700, 400));
   dlg->setWindowTitle(tr("Compatibility Report"));
@@ -521,7 +521,7 @@ void GameSummaryWidget::onInputProfileChanged(int index)
         SettingsInterface* base_sif = Core::GetBaseSettingsLayer();
         InputManager::CopyConfiguration(sif, *base_sif, true, false, true, false);
 
-        QtUtils::AsyncMessageBox(this, QMessageBox::Information, QtUtils::GetRootWidget(this)->windowTitle(),
+        QtUtils::AsyncMessageBox(this, QMessageBox::Information, window()->windowTitle(),
                                  tr("Per-game controller configuration initialized with global settings."));
       }
     }
@@ -542,8 +542,7 @@ void GameSummaryWidget::onEditInputProfileClicked()
   if (m_dialog->getBoolValue("ControllerPorts", "UseGameSettingsForController", std::nullopt).value_or(false))
   {
     // Edit game configuration.
-    ControllerSettingsWindow::editControllerSettingsForGame(QtUtils::GetRootWidget(this),
-                                                            m_dialog->getSettingsInterface());
+    ControllerSettingsWindow::editControllerSettingsForGame(this, m_dialog->getSettingsInterface());
   }
   else if (const std::optional<std::string> profile_name =
              m_dialog->getStringValue("ControllerPorts", "InputProfileName", std::nullopt);
