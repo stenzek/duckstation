@@ -5345,7 +5345,7 @@ void FullscreenUI::UpdateNotificationsRunIdle()
 FullscreenUI::NotificationLayout::NotificationLayout(NotificationLocation location)
   : m_spacing(LayoutScale(10.0f)), m_location(location)
 {
-  const float screen_margin = std::max(ImGuiManager::GetScreenMargin(), LayoutScale(10.0f));
+  const float screen_margin = ImGuiManager::GetScreenMargin();
 
   // android goes a little lower due to on-screen buttons
 #ifndef __ANDROID__

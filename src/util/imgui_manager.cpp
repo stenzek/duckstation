@@ -1060,7 +1060,7 @@ void ImGuiManager::DrawOSDMessages(Timer::Value current_time)
   const ImVec4 subtext_color = DarkerColor(text_color, 0.85f);
   const float scale = s_state.global_scale;
   const float spacing = std::ceil(6.0f * scale);
-  const float margin = std::ceil(GetScreenMargin() * scale);
+  const float margin = GetScreenMargin();
   const float padding = std::ceil(10.0f * scale);
   const float rounding = std::ceil(10.0f * scale);
   const float normal_icon_margin = std::ceil(4.0f * scale);
@@ -1280,7 +1280,7 @@ float ImGuiManager::GetGlobalScale()
 
 float ImGuiManager::GetScreenMargin()
 {
-  return g_gpu_settings.display_osd_margin;
+  return std::ceil(g_gpu_settings.display_osd_margin * s_state.global_scale);
 }
 
 ImFont* ImGuiManager::GetTextFont()

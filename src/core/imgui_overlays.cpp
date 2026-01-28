@@ -243,10 +243,9 @@ void ImGuiManager::RenderTextOverlays(const GPUBackend* gpu)
   const bool paused = VideoThread::IsSystemPaused();
 
   const float scale = ImGuiManager::GetGlobalScale();
-  const float f_margin = ImGuiManager::GetScreenMargin() * scale;
-  const float margin = ImCeil(ImGuiManager::GetScreenMargin() * scale);
+  const float margin = ImGuiManager::GetScreenMargin();
   const float spacing = ImCeil(5.0f * scale);
-  float position_y = ImFloor(f_margin);
+  float position_y = margin;
   DrawPerformanceOverlay(gpu, position_y, scale, margin, spacing);
   DrawMediaCaptureOverlay(position_y, scale, margin, spacing);
 
@@ -646,7 +645,7 @@ void ImGuiManager::DrawEnhancementsOverlay(const GPUBackend* gpu)
 
   const float scale = ImGuiManager::GetGlobalScale();
   const float shadow_offset = 1.0f * scale;
-  const float margin = ImGuiManager::GetScreenMargin() * scale;
+  const float margin = ImGuiManager::GetScreenMargin();
   ImFont* const font = ImGuiManager::GetFixedFont();
   const float font_size = ImGuiManager::GetFixedFontSize();
   const float font_weight = 600.0f;
@@ -861,7 +860,7 @@ void ImGuiManager::DrawInputsOverlay()
 {
   const float scale = ImGuiManager::GetGlobalScale();
   const float shadow_offset = ImCeil(1.0f * scale);
-  const float margin = ImGuiManager::GetScreenMargin() * scale;
+  const float margin = ImGuiManager::GetScreenMargin();
   const float spacing = ImCeil(5.0f * scale);
   ImFont* const font = ImGuiManager::GetTextFont();
   const float font_size = ImGuiManager::GetOSDFontSize();
