@@ -149,7 +149,6 @@ static bool ParseDesktopFileExecPath(const std::string& desktop_file_path, std::
 static bool CreateDesktopFile(const std::string& app_path, const std::string& desktop_file_path, Error* error);
 static void CheckDesktopFile();
 #endif
-} // namespace QtHost
 
 namespace {
 struct State
@@ -178,6 +177,8 @@ struct State
 
 ALIGN_TO_CACHE_LINE static State s_state;
 ALIGN_TO_CACHE_LINE static TaskQueue s_async_task_queue;
+
+} // namespace QtHost
 
 CoreThread* g_core_thread;
 
@@ -974,7 +975,7 @@ void CoreThread::startFullscreenUI()
 
   // borrow the game start fullscreen flag
   const bool start_fullscreen =
-    (s_state.start_fullscreen_ui_fullscreen || Core::GetBaseBoolSettingValue("Main", "StartFullscreen", false));
+    (QtHost::s_state.start_fullscreen_ui_fullscreen || Core::GetBaseBoolSettingValue("Main", "StartFullscreen", false));
 
   m_is_fullscreen_ui_started = true;
   emit fullscreenUIStartedOrStopped(true);
@@ -1022,7 +1023,7 @@ void CoreThread::exitFullscreenUI()
     return;
   }
 
-  const bool was_in_nogui_mode = std::exchange(s_state.nogui_mode, false);
+  const bool was_in_nogui_mode = std::exchange(QtHost::s_state.nogui_mode, false);
 
   stopFullscreenUI();
 
@@ -1647,12 +1648,12 @@ void Host::RunOnUIThread(std::function<void()> function, bool block /* = false*/
 
 void Host::QueueAsyncTask(std::function<void()> function)
 {
-  s_async_task_queue.SubmitTask(std::move(function));
+  QtHost::s_async_task_queue.SubmitTask(std::move(function));
 }
 
 void Host::WaitForAllAsyncTasks()
 {
-  s_async_task_queue.WaitForAll();
+  QtHost::s_async_task_queue.WaitForAll();
 }
 
 QtAsyncTask::QtAsyncTask(WorkCallback callback)
@@ -2135,9 +2136,9 @@ void CoreThread::stop()
   QtUtils::ProcessEventsWithSleep(QEventLoop::ExcludeUserInputEvents, []() { return (g_core_thread->isRunning()); });
 
   // Ensure settings are saved.
-  if (s_state.settings_save_timer)
+  if (QtHost::s_state.settings_save_timer)
   {
-    s_state.settings_save_timer.reset();
+    QtHost::s_state.settings_save_timer.reset();
     QtHost::SaveSettings();
   }
 }
@@ -2168,7 +2169,7 @@ void CoreThread::run()
 
   // start up worker threads
   // TODO: Replace this with QThreads
-  s_async_task_queue.SetWorkerCount(NUM_ASYNC_WORKER_THREADS);
+  QtHost::s_async_task_queue.SetWorkerCount(NUM_ASYNC_WORKER_THREADS);
 
   // connections
   connect(qApp, &QGuiApplication::applicationStateChanged, this, &CoreThread::applicationStateChanged);
@@ -2214,7 +2215,7 @@ void CoreThread::run()
   video_thread.Join();
 
   // join worker threads
-  s_async_task_queue.SetWorkerCount(0);
+  QtHost::s_async_task_queue.SetWorkerCount(0);
 
   // and tidy up everything left
   System::CoreThreadShutdown();
@@ -3568,7 +3569,7 @@ int main(int argc, char* argv[])
     return EXIT_FAILURE;
 
   // Remove any previous-version remanants.
-  if (s_state.cleanup_after_update)
+  if (QtHost::s_state.cleanup_after_update)
     AutoUpdaterDialog::cleanupAfterUpdate();
 
   // Set theme before creating any windows.
@@ -3595,7 +3596,7 @@ int main(int argc, char* argv[])
 
   // Optionally run setup wizard.
   int result;
-  if (s_state.run_setup_wizard && !QtHost::RunSetupWizard())
+  if (QtHost::s_state.run_setup_wizard && !QtHost::RunSetupWizard())
   {
     result = EXIT_FAILURE;
     goto shutdown_and_exit;
@@ -3609,7 +3610,7 @@ int main(int argc, char* argv[])
   // raise their own windows, we have to show the log window before the main window, otherwise the main
   // window will appear behind the log window. And it'll block it, because we're not allowed to attach it
   // to the main window by setting its position either.
-  if (s_state.wayland_workarounds)
+  if (QtHost::s_state.wayland_workarounds)
   {
     LogWindow::deferredShow();
 
@@ -3621,18 +3622,18 @@ int main(int argc, char* argv[])
 #endif
 
   // When running in batch mode, ensure game list is loaded, but don't scan for any new files.
-  if (!s_state.batch_mode)
+  if (!QtHost::s_state.batch_mode)
     g_main_window->refreshGameList(false);
 
   // Don't bother showing the window in no-gui mode.
-  if (!s_state.nogui_mode)
+  if (!QtHost::s_state.nogui_mode)
     QtUtils::ShowOrRaiseWindow(g_main_window, nullptr, true);
 
   // Initialize big picture mode if requested.
-  if (s_state.start_fullscreen_ui)
+  if (QtHost::s_state.start_fullscreen_ui)
     g_core_thread->startFullscreenUI();
   else
-    s_state.start_fullscreen_ui_fullscreen = false;
+    QtHost::s_state.start_fullscreen_ui_fullscreen = false;
 
   // Always kick off update check. It'll take over if the user is booting a game fullscreen.
   g_main_window->startupUpdateCheck();
@@ -3645,7 +3646,7 @@ int main(int argc, char* argv[])
   {
 #ifdef __linux__
     // On KDE it's broken too - the log window appears in front of the main window even if it's shown second.
-    if (QtHost::IsRunningOnWayland() && !s_state.wayland_workarounds)
+    if (QtHost::IsRunningOnWayland() && !QtHost::s_state.wayland_workarounds)
     {
       QApplication::sync();
       QApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
