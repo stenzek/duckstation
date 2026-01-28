@@ -88,6 +88,16 @@ void QtUtils::ShowOrRaiseWindow(QWidget* window, const QWidget* parent_window, b
   }
 }
 
+void QtUtils::RaiseWindow(QWidget* window)
+{
+  if (!window->isVisible())
+    return;
+
+  window->raise();
+  window->activateWindow();
+  window->setFocus();
+}
+
 template<class T>
 static void SetColumnWidthForView(T* const view, QHeaderView* const header, const std::initializer_list<int>& widths)
 {

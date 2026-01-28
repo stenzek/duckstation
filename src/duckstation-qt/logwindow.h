@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #pragma once
@@ -48,7 +48,8 @@ public:
   LogWindow(bool attach_to_main);
   ~LogWindow();
 
-  static void updateSettings();
+  static void updateSettings(bool defer_show);
+  static bool deferredShow();
   static void destroy();
 
   ALWAYS_INLINE bool isAttachedToMainWindow() const { return m_attached_to_main_window; }

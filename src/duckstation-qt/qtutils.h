@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #pragma once
@@ -50,6 +50,10 @@ QFrame* CreateHorizontalLine(QWidget* parent);
 /// Shows or raises a window (brings it to the front).
 /// If the window was hidden and parent_window is provided, the window is centered on parent_window.
 void ShowOrRaiseWindow(QWidget* window, const QWidget* parent_window = nullptr, bool restore_geometry = false);
+
+/// Raises a window (brings it to the front) iff the window is already visible.
+/// Does not work on GNOME because they're fucking stupid.
+void RaiseWindow(QWidget* window);
 
 /// Closes and deletes a window later, outside of this event pump.
 template<typename T>

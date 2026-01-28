@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "qthost.h"
@@ -166,7 +166,7 @@ struct State
   bool cleanup_after_update = false;
 
 #ifdef __linux__
-  bool display_container_needed = false;
+  bool wayland_workarounds = false;
 #endif
 };
 } // namespace
@@ -319,7 +319,7 @@ bool QtHost::InNoGUIMode()
 bool QtHost::IsDisplayWidgetContainerNeeded()
 {
 #ifdef __linux__
-  return s_state.display_container_needed;
+  return s_state.wayland_workarounds;
 #else
   return false;
 #endif
@@ -372,7 +372,7 @@ void QtHost::ApplyWaylandWorkarounds()
     // When rendering fullscreen or to a separate window on Wayland, because we take over the surface we need
     // to wrap the widget in a container because GNOME is stupid and refuses to ever support server-side
     // decorations. There's no sign of this ever changing. Fuck Wayland.
-    s_state.display_container_needed = true;
+    s_state.wayland_workarounds = true;
 
     // On Wayland, turning any window into a native window causes DPI scaling to break, as well as window
     // updates, creating a complete mess of a window. Setting this attribute isn't ideal, since you'd think
@@ -3324,13 +3324,17 @@ int main(int argc, char* argv[])
   // Build warning.
   AutoUpdaterDialog::warnAboutUnofficialBuild();
 
-  // Start logging early.
-  LogWindow::updateSettings();
-
   // Create core thread object, but don't start it yet. That way the main window can connect to it,
   // and ensures that no signals are lost. Then we create and connect the main window.
   g_core_thread = new CoreThread();
+
+  // Make sure the main window is the first window created.
   new MainWindow();
+
+  // Start logging early, but don't show the window yet.
+  // We want to catch the early messages, but if the window is shown the Windows taskbar will use
+  // the log window icon as the application icon because it's the first window shown.
+  LogWindow::updateSettings(true);
 
   // Now we can actually start the CPU thread.
   QtHost::HookSignals();
@@ -3348,6 +3352,22 @@ int main(int argc, char* argv[])
   if (!s_state.batch_mode)
     g_main_window->refreshGameList(false);
 
+#ifdef __linux__
+  // I hate this so much. Because GNOME are arrogant uncooperative assholes who refuse to let applications
+  // raise their own windows, we have to show the log window before the main window, otherwise the main
+  // window will appear behind the log window. And it'll block it, because we're not allowed to attach it
+  // to the main window by setting its position either.
+  if (s_state.wayland_workarounds)
+  {
+    LogWindow::deferredShow();
+
+    // And of course this turd of a desktop environment can't even open windows in order.
+    // Force it to be displayed. This is completely fucking ridiculous.
+    QApplication::sync();
+    QApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
+  }
+#endif
+
   // Don't bother showing the window in no-gui mode.
   if (!s_state.nogui_mode)
     QtUtils::ShowOrRaiseWindow(g_main_window, nullptr, true);
@@ -3363,6 +3383,10 @@ int main(int argc, char* argv[])
 
   if (autoboot)
     g_core_thread->bootSystem(std::move(autoboot));
+
+  // Bring the log window up last, so that its icon does not take precedence.
+  if (LogWindow::deferredShow())
+    QtUtils::RaiseWindow(g_main_window);
 
   // This doesn't return until we exit.
   result = app.exec();

@@ -788,7 +788,7 @@ void MainWindow::recreate()
   new_main_window->setGeometry(geometry());
 
   // Recreate log window as well. Then make sure we're still on top.
-  LogWindow::updateSettings();
+  LogWindow::updateSettings(true);
 
   // Qt+XCB will ignore the raise request of the settings window if we raise the main window.
   // So skip that if we're going to be re-opening the settings window.
@@ -796,6 +796,8 @@ void MainWindow::recreate()
     QtUtils::ShowOrRaiseWindow(new_main_window);
   else
     new_main_window->show();
+
+  LogWindow::deferredShow();
 
   if (was_display_created)
   {
@@ -827,6 +829,10 @@ void MainWindow::recreate()
     dlg->move(settings_window_pos.value());
     dlg->setCategoryRow(settings_window_row);
     QtUtils::ShowOrRaiseWindow(dlg);
+  }
+  else
+  {
+    QtUtils::RaiseWindow(new_main_window);
   }
 
   notifyRAIntegrationOfWindowChange();
@@ -3077,7 +3083,7 @@ void MainWindow::checkForSettingChanges()
     updateLogWidget();
   }
 
-  LogWindow::updateSettings();
+  LogWindow::updateSettings(false);
 
   // don't refresh window state while setup wizard is running, i.e. no game and hidden
   if (isVisible() || s_locals.system_valid || s_locals.system_starting)

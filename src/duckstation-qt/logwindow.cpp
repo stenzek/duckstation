@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "logwindow.h"
@@ -216,7 +216,7 @@ LogWindow::LogWindow(bool attach_to_main) : QMainWindow(), m_attached_to_main_wi
 
 LogWindow::~LogWindow() = default;
 
-void LogWindow::updateSettings()
+void LogWindow::updateSettings(bool defer_show)
 {
   const bool new_enabled = Core::GetBoolSettingValue("Logging", "LogToWindow", false);
   const bool attach_to_main = Core::GetBoolSettingValue("Logging", "AttachLogWindowToMainWindow", true);
@@ -236,10 +236,8 @@ void LogWindow::updateSettings()
   if (new_enabled)
   {
     g_log_window = new LogWindow(attach_to_main);
-    if (attach_to_main && g_main_window && g_main_window->isVisible())
-      g_log_window->reattachToMainWindow();
-
-    g_log_window->show();
+    if (!defer_show)
+      g_log_window->deferredShow();
   }
   else if (g_log_window)
   {
@@ -272,6 +270,21 @@ void LogWindow::reattachToMainWindow()
   const QPoint new_pos = g_main_window->pos() + QPoint(g_main_window->width() + 10, 0);
   if (pos() != new_pos)
     move(new_pos);
+}
+
+bool LogWindow::deferredShow()
+{
+  if (!g_log_window)
+    return false;
+  
+  if (g_log_window->isVisible())
+    return true;
+
+  if (g_log_window->m_attached_to_main_window && g_main_window->isVisible())
+    g_log_window->reattachToMainWindow();
+
+  g_log_window->show();
+  return true;
 }
 
 void LogWindow::updateWindowTitle()
