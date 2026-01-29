@@ -1411,6 +1411,7 @@ bool VideoPresenter::ShouldPresentFrame(u64 present_time)
       (s_locals.present_skip_mode == PresentSkipMode::WhenVSyncBlocks &&
        !g_gpu_device->GetMainSwapChain()->IsVSyncModeBlocking()))
   {
+    s_locals.skipped_present_count = 0;
     return true;
   }
 
