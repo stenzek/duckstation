@@ -235,8 +235,6 @@ static void DoRewind();
 
 static bool DoRunahead();
 
-static bool ChangeGPUDump(std::string new_path);
-
 static void UpdateSessionTime(const std::string& prev_serial);
 
 #ifdef ENABLE_DISCORD_PRESENCE
@@ -827,6 +825,36 @@ bool System::IsRunningUnknownGame()
 System::BootMode System::GetBootMode()
 {
   return s_state.boot_mode;
+}
+
+void System::ChangeExeOverrideAndReset(std::string path)
+{
+  Assert(IsValid());
+
+  // Clearing exe override?
+  if (path.empty())
+  {
+    s_state.exe_override = {};
+    s_state.boot_mode = BootMode::FullBoot;
+    ResetSystem();
+    return;
+  }
+
+  // Did we boot the executable, or override it?
+  if (!s_state.exe_override.empty() && s_state.running_game_path == s_state.exe_override)
+  {
+    // Update the running game too.
+    UpdateRunningGame(path, nullptr, false);
+  }
+
+  // Achievements hardcode mode should be disabled.
+  Achievements::DisableHardcoreMode(true, false);
+
+  // Boot mode also needs to be changed if we're now overridding.
+  s_state.boot_mode = IsPsfPath(path) ? BootMode::BootPSF : BootMode::BootEXE;
+  s_state.exe_override = std::move(path);
+
+  ResetSystem();
 }
 
 std::string System::GetGameIconPath(bool allow_achievements_badge)
@@ -4194,9 +4222,6 @@ bool System::DumpSPURAM(std::string path, Error* error)
 
 bool System::InsertMedia(const char* path)
 {
-  if (IsGPUDumpPath(path)) [[unlikely]]
-    return ChangeGPUDump(path);
-
   ClearMemorySaveStates(true, true);
 
   Error error;

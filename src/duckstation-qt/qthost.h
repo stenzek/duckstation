@@ -91,8 +91,6 @@ public:
   void updateBackgroundControllerPollInterval();
   void wakeThread();
 
-  void bootOrLoadState(std::string path);
-
   void updatePerformanceCounters(const GPUBackend* gpu_backend);
   void resetPerformanceCounters();
 
@@ -149,6 +147,7 @@ public:
   void stopFullscreenUI();
   void exitFullscreenUI();
   void bootSystem(std::shared_ptr<SystemBootParameters> params);
+  void bootOrSwitchNonDisc(const QString& path);
   void resumeSystemFromMostRecentState();
   void shutdownSystem(bool save_state, bool check_safety);
   void resetSystem(bool check_memcard_busy);
@@ -204,6 +203,9 @@ private:
 
   void createBackgroundControllerPollTimer();
   void destroyBackgroundControllerPollTimer();
+
+  void bootOrLoadState(std::string path);
+
   void confirmActionWithSafetyCheck(const QString& action, bool check_achievements, bool cancel_resume_on_accept,
                                     std::function<void(bool)> callback) const;
 

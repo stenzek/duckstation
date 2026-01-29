@@ -1224,7 +1224,7 @@ void MainWindow::startFileOrChangeDisc(const QString& qpath)
 
 void MainWindow::promptForDiscChange(const QString& path)
 {
-  if (m_was_disc_change_request || System::IsGPUDumpPath(path.toStdString()))
+  if (m_was_disc_change_request)
   {
     switchToEmulationView();
     g_core_thread->changeDisc(path, false, true);
@@ -2865,24 +2865,24 @@ void MainWindow::changeEvent(QEvent* event)
   QMainWindow::changeEvent(event);
 }
 
-static QString getFilenameFromMimeData(const QMimeData* md)
+static QString getPathFromMimeData(const QMimeData* md)
 {
-  QString filename;
+  QString path;
   if (md->hasUrls())
   {
     // only one url accepted
     const QList<QUrl> urls(md->urls());
     if (urls.size() == 1)
-      filename = QDir::toNativeSeparators(urls.front().toLocalFile());
+      path = QDir::toNativeSeparators(urls.front().toLocalFile());
   }
 
-  return filename;
+  return path;
 }
 
 void MainWindow::dragEnterEvent(QDragEnterEvent* event)
 {
-  const std::string filename(getFilenameFromMimeData(event->mimeData()).toStdString());
-  if (!System::IsLoadablePath(filename) && !System::IsSaveStatePath(filename))
+  const std::string path = getPathFromMimeData(event->mimeData()).toStdString();
+  if (!System::IsLoadablePath(path) && !System::IsSaveStatePath(path))
     return;
 
   event->acceptProposedAction();
@@ -2890,23 +2890,28 @@ void MainWindow::dragEnterEvent(QDragEnterEvent* event)
 
 void MainWindow::dropEvent(QDropEvent* event)
 {
-  const QString qfilename(getFilenameFromMimeData(event->mimeData()));
-  const std::string filename(qfilename.toStdString());
-  if (!System::IsLoadablePath(filename) && !System::IsSaveStatePath(filename))
+  const QString qpath(getPathFromMimeData(event->mimeData()));
+  const std::string path(qpath.toStdString());
+  if (!System::IsLoadablePath(path) && !System::IsSaveStatePath(path))
     return;
 
   event->acceptProposedAction();
 
-  if (System::IsSaveStatePath(filename))
+  if (System::IsSaveStatePath(path))
   {
-    g_core_thread->loadState(qfilename);
+    g_core_thread->loadState(qpath);
+    return;
+  }
+  else if (System::IsExePath(path) || System::IsPsfPath(path) || System::IsGPUDumpPath(path))
+  {
+    g_core_thread->bootOrSwitchNonDisc(qpath);
     return;
   }
 
   if (s_locals.system_valid)
-    promptForDiscChange(qfilename);
+    promptForDiscChange(qpath);
   else
-    startFileOrChangeDisc(qfilename);
+    startFileOrChangeDisc(qpath);
 }
 
 void MainWindow::moveEvent(QMoveEvent* event)

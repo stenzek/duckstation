@@ -237,6 +237,8 @@ GameHash GetGameHash();
 bool IsRunningUnknownGame();
 bool IsUsingKnownPS1BIOS();
 BootMode GetBootMode();
+void ChangeExeOverrideAndReset(std::string path);
+bool ChangeGPUDump(std::string new_path);
 
 /// Returns a path to the game icon, if any.
 std::string GetGameIconPath(bool allow_achievements_badge);

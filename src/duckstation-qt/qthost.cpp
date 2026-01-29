@@ -1068,6 +1068,42 @@ void CoreThread::bootSystem(std::shared_ptr<SystemBootParameters> params)
   }
 }
 
+void CoreThread::bootOrSwitchNonDisc(const QString& path)
+{
+  if (!isCurrentThread())
+  {
+    QMetaObject::invokeMethod(this, &CoreThread::bootOrSwitchNonDisc, Qt::QueuedConnection, path);
+    return;
+  }
+
+  std::string path_str = path.toStdString();
+
+  // No system -> just boot it.
+  if (!System::IsValid())
+  {
+    bootSystem(std::make_shared<SystemBootParameters>(std::move(path_str)));
+    return;
+  }
+
+  const bool is_gpu_dump = System::IsGPUDumpPath(path_str);
+  if (is_gpu_dump != System::IsReplayingGPUDump())
+  {
+    emit errorReported(tr("Error"), tr("Cannot change GPU dump state without restarting the system."));
+    return;
+  }
+
+  if (is_gpu_dump)
+  {
+    System::ChangeGPUDump(std::move(path_str));
+  }
+  else
+  {
+    // Change override and reset.
+    System::ChangeExeOverrideAndReset(std::move(path_str));
+    System::ResetSystem();
+  }
+}
+
 void CoreThread::bootOrLoadState(std::string path)
 {
   DebugAssert(isCurrentThread());
