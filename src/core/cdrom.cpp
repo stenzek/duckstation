@@ -790,7 +790,7 @@ bool CDROM::DoState(StateWrapper& sw)
     sw.Do(&s_state.current_write_sector_buffer);
     for (SectorBuffer& sb : s_state.sector_buffers)
     {
-      sw.Do(&sb.data);
+      sw.DoArray(sb.data.data(), sb.data.size());
       sw.Do(&sb.size);
       sb.position = 0;
     }

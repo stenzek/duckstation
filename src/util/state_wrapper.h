@@ -4,11 +4,9 @@
 #pragma once
 
 #include "common/fifo_queue.h"
-#include "common/heap_array.h"
 #include "common/types.h"
 
 #include <cstring>
-#include <deque>
 #include <span>
 #include <string>
 #include <type_traits>
@@ -117,12 +115,6 @@ public:
     DoArray(data->data(), data->size());
   }
 
-  template<typename T, size_t N>
-  void Do(FixedHeapArray<T, N>* data)
-  {
-    DoArray(data->data(), data->size());
-  }
-
   template<typename T>
   void Do(std::vector<T>* data)
   {
@@ -131,28 +123,6 @@ public:
     if (m_mode == Mode::Read)
       data->resize(length);
     DoArray(data->data(), data->size());
-  }
-
-  template<typename T>
-  void Do(std::deque<T>* data)
-  {
-    u32 length = static_cast<u32>(data->size());
-    Do(&length);
-    if (m_mode == Mode::Read)
-    {
-      data->clear();
-      for (u32 i = 0; i < length; i++)
-      {
-        T value;
-        Do(&value);
-        data->push_back(value);
-      }
-    }
-    else
-    {
-      for (u32 i = 0; i < length; i++)
-        Do(&data[i]);
-    }
   }
 
   template<typename T, u32 CAPACITY>
