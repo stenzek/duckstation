@@ -394,7 +394,7 @@ std::optional<bool> StringUtil::FromChars(const std::string_view str, int base)
 }
 
 template<>
-inline std::string StringUtil::ToChars(bool value, int base)
+std::string StringUtil::ToChars(bool value, int base)
 {
   return std::string(value ? "true" : "false");
 }

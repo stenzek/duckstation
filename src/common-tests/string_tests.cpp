@@ -389,8 +389,8 @@ TEST(StringUtil, ToCharsFloatingPoint)
 
 TEST(StringUtil, ToCharsBool)
 {
-  ASSERT_EQ(StringUtil::ToChars(true, 10), "true");
-  ASSERT_EQ(StringUtil::ToChars(false, 10), "false");
+  ASSERT_EQ(StringUtil::ToChars(true), "true");
+  ASSERT_EQ(StringUtil::ToChars(false), "false");
 }
 
 TEST(StringUtil, IsWhitespace)
