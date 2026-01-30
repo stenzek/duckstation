@@ -141,11 +141,8 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* dialog, QWidget
     QtUtils::SafeDeleteWidget(m_ui.language);
     QtUtils::SafeDeleteWidget(m_ui.themeLabel);
     QtUtils::SafeDeleteWidget(m_ui.theme);
-
-    // On Linux, we don't have any rounded corner or fractional scaling options.
-#if !defined(_WIN32) && !defined(__APPLE__)
-    QtUtils::SafeDeleteWidget(m_ui.appearanceGroup);
-#endif
+    if (m_ui.appearanceLayout->isEmpty())
+      QtUtils::SafeDeleteWidget(m_ui.appearanceGroup);
 
     delete m_ui.updatesGroup;
     m_ui.autoUpdateTagLabel = nullptr;
