@@ -454,6 +454,7 @@ void FullscreenUI::InputBindingDialog::Start(SettingsInterface* bsi, InputBindin
     }
 
     const float abs_value = std::abs(value);
+    const float delta_from_initial = std::abs(std::abs(initial_value) - abs_value);
     const bool reverse_threshold = (key.source_subtype == InputSubclass::ControllerAxis &&
                                     std::abs(initial_value) > 0.5f && std::abs(initial_value - min_value) > 0.1f);
 
@@ -462,8 +463,7 @@ void FullscreenUI::InputBindingDialog::Start(SettingsInterface* bsi, InputBindin
       // if this key is in our new binding list, it's a "release", and we're done
       if (other_key.MaskDirection() == key.MaskDirection())
       {
-        // for pedals, we wait for it to go back to near its starting point to commit the binding
-        if ((reverse_threshold ? ((initial_value - value) <= 0.25f) : (abs_value < 0.5f)))
+        if (delta_from_initial <= 0.25f)
         {
           // did we go the full range?
           if (reverse_threshold && initial_value > 0.5f && min_value <= -0.5f)
@@ -488,7 +488,7 @@ void FullscreenUI::InputBindingDialog::Start(SettingsInterface* bsi, InputBindin
     }
 
     // new binding, add it to the list, but wait for a decent distance first, and then wait for release
-    if ((reverse_threshold ? (abs_value < 0.5f) : (abs_value >= 0.5f)))
+    if (delta_from_initial >= 0.5f)
     {
       InputBindingKey key_to_add = key;
       key_to_add.modifier = (value < 0.0f) ? InputModifier::Negate : InputModifier::None;
