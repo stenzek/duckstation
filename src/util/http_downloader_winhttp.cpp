@@ -309,7 +309,7 @@ bool HTTPDownloaderWinHttp::StartRequest(HTTPDownloader::Request* request)
   {
     const DWORD err = GetLastError();
     ERROR_LOG("WinHttpOpenRequest() failed: {}", err);
-    req->error.SetWin32("WinHttpSendRequest() failed: ", err);
+    req->error.SetWin32("WinHttpOpenRequest() failed: ", err);
     WinHttpCloseHandle(req->hConnection);
     return false;
   }
