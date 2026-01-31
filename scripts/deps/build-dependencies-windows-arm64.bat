@@ -107,7 +107,7 @@ echo Building libpng...
 rmdir /S /Q "libpng-%LIBPNG%"
 tar -xf "libpng-%LIBPNG%.tar.gz" || goto error
 cd "libpng-%LIBPNG%" || goto error
-%PATCH% -p1 < "%SCRIPTDIR%\libpng-1.6.50-apng.patch" || goto error
+%PATCH% -p1 < "%SCRIPTDIR%\libpng-1.6.54-apng.patch" || goto error
 cmake %ARM64TOOLCHAIN% -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="%INSTALLDIR%" -DCMAKE_INSTALL_PREFIX="%INSTALLDIR%" -DBUILD_SHARED_LIBS=ON -DBUILD_SHARED_LIBS=ON -DPNG_TESTS=OFF -DPNG_STATIC=OFF -DPNG_SHARED=ON -DPNG_TOOLS=OFF -B build -G Ninja || goto error
 cmake --build build --parallel || goto error
 ninja -C build install || goto error

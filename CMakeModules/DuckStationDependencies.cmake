@@ -39,7 +39,7 @@ endif()
 # Bundled dependencies.
 find_package(zstd 1.5.7 REQUIRED)
 find_package(WebP REQUIRED) # v1.4.0, spews an error on Linux because no pkg-config.
-find_package(PNG 1.6.53 REQUIRED)
+find_package(PNG 1.6.54 REQUIRED)
 find_package(JPEG REQUIRED)
 find_package(SDL3 3.4.0 REQUIRED)
 find_package(Freetype 2.14.1 REQUIRED)
@@ -77,9 +77,9 @@ if(BUILD_QT_FRONTEND)
   set(QT_NO_PRIVATE_MODULE_WARNING ON)
 
   if(LINUX)
-    find_package(Qt6 6.10.1 COMPONENTS Core Gui GuiPrivate Widgets LinguistTools DBus REQUIRED)
+    find_package(Qt6 6.10.2 COMPONENTS Core Gui GuiPrivate Widgets LinguistTools DBus REQUIRED)
   else()
-    find_package(Qt6 6.10.1 COMPONENTS Core Gui GuiPrivate Widgets LinguistTools REQUIRED)
+    find_package(Qt6 6.10.2 COMPONENTS Core Gui GuiPrivate Widgets LinguistTools REQUIRED)
   endif()
 
   # Have to verify it down here, don't want users using unpatched Qt.
