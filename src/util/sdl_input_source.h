@@ -73,12 +73,15 @@ private:
     int player_id;
     float last_touch_x;
     float last_touch_y;
+    float last_accel_turn;
+    float last_accel_tilt;
     float rgb_led_intensity;
     bool use_gamepad_rumble : 1;
     bool has_led : 1;
     bool has_rgb_led : 1;
     bool has_mode_led : 1;
     bool mode_led_state : 1;
+    bool has_accel : 1;
 
     // Used to disable Joystick controls that are used in GameController inputs so we don't get double events
     std::vector<bool> joy_button_used_in_gc;
@@ -108,6 +111,7 @@ private:
   bool HandleJoystickAxisEvent(const SDL_JoyAxisEvent* ev);
   bool HandleJoystickButtonEvent(const SDL_JoyButtonEvent* ev);
   bool HandleJoystickHatEvent(const SDL_JoyHatEvent* ev);
+  bool HandleGamepadSensorEvent(const SDL_GamepadSensorEvent* ev);
   void SendRumbleUpdate(ControllerData* cd);
 
   static bool ControllerHasMicLED(SDL_Gamepad* gp);

@@ -95,6 +95,9 @@ public:
   static InputBindingKey MakeGenericControllerHatKey(InputSourceType clazz, u32 controller_index, s32 hat_index,
                                                      u8 hat_direction, u32 num_directions);
 
+  /// Creates a key for a generic controller sensor event.
+  static InputBindingKey MakeGenericControllerSensorKey(InputSourceType clazz, u32 controller_index, u32 sensor_index);
+
   /// Creates a key for a generic controller motor event.
   static InputBindingKey MakeGenericControllerMotorKey(InputSourceType clazz, u32 controller_index, s32 motor_index);
 

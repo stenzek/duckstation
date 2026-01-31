@@ -159,6 +159,11 @@ static constexpr std::array<std::array<u32, 2>, 4> s_sdl_default_led_colors = {{
   {0xffff00, 0x707000}, // SDL-3
 }};
 
+static constexpr std::array<const char*, 2> s_sdl_sensor_names = {{
+  "Turn", // Tilt left/right (roll)
+  "Tilt", // Tilt forward/back (pitch)
+}};
+
 #ifdef _WIN32
 static constexpr bool SDL_DEFAULT_XBOX_HIDAPI = false;
 #else
@@ -620,6 +625,8 @@ std::optional<InputBindingKey> SDLInputSource::ParseKeyString(std::string_view d
     // likely an axis
     std::string_view axis_name(binding.substr(1));
 
+    key.modifier = (binding[0] == '-') ? InputModifier::Negate : InputModifier::None;
+
     if (axis_name.starts_with("Axis"))
     {
       std::string_view end;
@@ -646,7 +653,16 @@ std::optional<InputBindingKey> SDLInputSource::ParseKeyString(std::string_view d
         // found an axis!
         key.source_subtype = InputSubclass::ControllerAxis;
         key.data = i;
-        key.modifier = (binding[0] == '-') ? InputModifier::Negate : InputModifier::None;
+        return key;
+      }
+    }
+
+    for (u32 i = 0; i < std::size(s_sdl_sensor_names); i++)
+    {
+      if (axis_name == s_sdl_sensor_names[i])
+      {
+        key.source_subtype = InputSubclass::ControllerSensor;
+        key.data = i;
         return key;
       }
     }
@@ -770,6 +786,16 @@ TinyString SDLInputSource::ConvertKeyToString(InputBindingKey key)
     {
       ret.format("SDL-{}/{}", static_cast<u32>(key.source_index), (key.data != 0) ? "MuteLED" : "RGBLED");
     }
+    else if (key.source_subtype == InputSubclass::ControllerSensor)
+    {
+      if (key.data < std::size(s_sdl_sensor_names))
+      {
+        const char* modifier =
+          (key.modifier == InputModifier::FullAxis ? "Full" : (key.modifier == InputModifier::Negate ? "-" : "+"));
+        ret.format("SDL-{}/{}{}{}", static_cast<u32>(key.source_index), modifier, s_sdl_sensor_names[key.data],
+                   key.invert ? "~" : "");
+      }
+    }
   }
 
   return ret;
@@ -811,6 +837,7 @@ bool SDLInputSource::IsHandledInputEvent(const SDL_Event* ev)
     case SDL_EVENT_GAMEPAD_TOUCHPAD_DOWN:
     case SDL_EVENT_GAMEPAD_TOUCHPAD_UP:
     case SDL_EVENT_GAMEPAD_TOUCHPAD_MOTION:
+    case SDL_EVENT_GAMEPAD_SENSOR_UPDATE:
     case SDL_EVENT_JOYSTICK_ADDED:
     case SDL_EVENT_JOYSTICK_REMOVED:
     case SDL_EVENT_JOYSTICK_AXIS_MOTION:
@@ -875,6 +902,9 @@ bool SDLInputSource::ProcessSDLEvent(const SDL_Event* event)
     case SDL_EVENT_GAMEPAD_TOUCHPAD_UP:
     case SDL_EVENT_GAMEPAD_TOUCHPAD_MOTION:
       return HandleGamepadTouchpadEvent(&event->gtouchpad);
+
+    case SDL_EVENT_GAMEPAD_SENSOR_UPDATE:
+      return HandleGamepadSensorEvent(&event->gsensor);
 
     case SDL_EVENT_JOYSTICK_AXIS_MOTION:
       return HandleJoystickAxisEvent(&event->jaxis);
@@ -1109,6 +1139,22 @@ bool SDLInputSource::OpenDevice(int index, bool is_gamecontroller)
   if (cd.has_led && player_id >= 0 && static_cast<u32>(player_id) < MAX_LED_COLORS)
     SetControllerRGBLED(gamepad, cd.has_rgb_led, m_led_colors[player_id], 0.0f);
 
+  // Check for accelerometer support and enable it
+  // TODO: Make dependent on bindings
+  cd.has_accel = (gamepad && SDL_GamepadHasSensor(gamepad, SDL_SENSOR_ACCEL));
+  if (cd.has_accel)
+  {
+    if (!SDL_SetGamepadSensorEnabled(gamepad, SDL_SENSOR_ACCEL, true))
+    {
+      WARNING_LOG("Failed to enable accelerometer on '{}': {}", name, SDL_GetError());
+      cd.has_accel = false;
+    }
+    else
+    {
+      VERBOSE_LOG("Accelerometer is supported and enabled on '{}'", name);
+    }
+  }
+
   m_controllers.push_back(std::move(cd));
 
   InputManager::OnInputDeviceConnected(MakeGenericControllerDeviceKey(InputSourceType::SDL, player_id),
@@ -1224,6 +1270,35 @@ bool SDLInputSource::HandleGamepadTouchpadEvent(const SDL_GamepadTouchpadEvent* 
   return true;
 }
 
+bool SDLInputSource::HandleGamepadSensorEvent(const SDL_GamepadSensorEvent* ev)
+{
+  if (ev->sensor != SDL_SENSOR_ACCEL)
+    return false;
+
+  auto it = GetControllerDataForJoystickId(ev->which);
+  if (it == m_controllers.end() || !it->has_accel)
+    return false;
+
+  // Accelerometer data is in m/s^2, normalize by gravity to get [-1, 1] range
+  // ev->data[0] = X (left/right tilt), ev->data[1] = Y (forward/back tilt), ev->data[2] = Z (up/down)
+
+  const float turn = std::clamp(-ev->data[0] / SDL_STANDARD_GRAVITY, -1.0f, 1.0f);
+  if (turn != it->last_accel_turn)
+  {
+    it->last_accel_turn = turn;
+    InputManager::InvokeEvents(MakeGenericControllerSensorKey(InputSourceType::SDL, it->player_id, 0), turn);
+  }
+
+  const float tilt = std::clamp(-ev->data[1] / SDL_STANDARD_GRAVITY, -1.0f, 1.0f);
+  if (tilt != it->last_accel_tilt)
+  {
+    it->last_accel_tilt = tilt;
+    InputManager::InvokeEvents(MakeGenericControllerSensorKey(InputSourceType::SDL, it->player_id, 1), tilt);
+  }
+
+  return true;
+}
+
 bool SDLInputSource::HandleJoystickAxisEvent(const SDL_JoyAxisEvent* ev)
 {
   auto it = GetControllerDataForJoystickId(ev->which);
@@ -1314,6 +1389,17 @@ std::optional<float> SDLInputSource::GetCurrentValue(InputBindingKey key)
     const u8 hat_direction = Truncate8(key.data % static_cast<u32>(std::size(s_sdl_hat_direction_names)));
     const u8 hat_value = SDL_GetJoystickHat(cd->joystick, static_cast<int>(hat_index));
     ret = BoolToFloat((hat_value & (1u << hat_direction)) != 0);
+  }
+  else if (key.source_subtype == InputSubclass::ControllerSensor)
+  {
+    if (cd->has_accel)
+    {
+      // can just use the cached values, they still get updated
+      if (key.data == 0)
+        return cd->last_accel_turn;
+      else if (key.data == 1)
+        return cd->last_accel_tilt;
+    }
   }
 
   return ret;
