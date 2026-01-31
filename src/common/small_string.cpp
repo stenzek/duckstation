@@ -86,7 +86,7 @@ void SmallStringBase::reserve(u32 new_reserve)
     m_on_heap = true;
   }
 
-  m_buffer_size = new_reserve;
+  m_buffer_size = real_reserve;
 }
 
 void SmallStringBase::shrink_to_fit()
@@ -100,6 +100,7 @@ void SmallStringBase::shrink_to_fit()
     std::free(m_buffer);
     m_buffer = nullptr;
     m_buffer_size = 0;
+    m_on_heap = false;
     return;
   }
 
@@ -130,7 +131,7 @@ std::string_view SmallStringBase::view() const
 
 SmallStringBase& SmallStringBase::operator=(SmallStringBase&& move)
 {
-  assign(move);
+  assign(std::move(move));
   return *this;
 }
 
@@ -160,15 +161,16 @@ SmallStringBase& SmallStringBase::operator=(const SmallStringBase& copy)
 
 void SmallStringBase::make_room_for(u32 space)
 {
-  const u32 required_size = m_length + space + 1;
-  if (m_buffer_size >= required_size)
+  const u32 required_length = m_length + space;
+  if (m_buffer_size > required_length)
     return;
 
-  reserve(std::max(required_size, m_buffer_size * 2));
+  reserve(std::max(required_length, m_buffer_size * 2));
 }
 
 void SmallStringBase::append(const char* str, u32 length)
 {
+  DebugAssert(str != m_buffer); // appending self is not allowed
   if (length == 0)
     return;
 
@@ -215,6 +217,8 @@ void SmallStringBase::append_hex(const void* data, size_t len, bool comma_separa
       m_buffer[m_length++] = hex_char(bytes[i] & 0xF);
     }
   }
+
+  m_buffer[m_length] = '\0';
 }
 
 void SmallStringBase::prepend(const char* str, u32 length)
@@ -222,6 +226,7 @@ void SmallStringBase::prepend(const char* str, u32 length)
   if (length == 0)
     return;
 
+  DebugAssert(str != m_buffer); // appending self is not allowed
   make_room_for(length);
 
   DebugAssert((length + m_length) < m_buffer_size);
@@ -239,11 +244,13 @@ void SmallStringBase::append(char c)
 
 void SmallStringBase::append(const SmallStringBase& str)
 {
+  DebugAssert(&str != this); // appending self is not allowed
   append(str.m_buffer, str.m_length);
 }
 
 void SmallStringBase::append(const char* str)
 {
+  DebugAssert(str != m_buffer); // appending self is not allowed
   append(str, static_cast<u32>(std::strlen(str)));
 }
 
@@ -254,6 +261,7 @@ void SmallStringBase::append(const std::string& str)
 
 void SmallStringBase::append(const std::string_view str)
 {
+  DebugAssert(str.data() != m_buffer); // appending self is not allowed
   append(str.data(), static_cast<u32>(str.length()));
 }
 
@@ -307,11 +315,13 @@ void SmallStringBase::prepend(char c)
 
 void SmallStringBase::prepend(const SmallStringBase& str)
 {
+  DebugAssert(&str != this); // prepending self is not allowed
   prepend(str.m_buffer, str.m_length);
 }
 
 void SmallStringBase::prepend(const char* str)
 {
+  DebugAssert(str != m_buffer); // prepending self is not allowed
   prepend(str, static_cast<u32>(std::strlen(str)));
 }
 
@@ -322,6 +332,7 @@ void SmallStringBase::prepend(const std::string& str)
 
 void SmallStringBase::prepend(const std::string_view str)
 {
+  DebugAssert(str.data() != m_buffer); // prepending self is not allowed
   prepend(str.data(), static_cast<u32>(str.length()));
 }
 
@@ -345,7 +356,10 @@ void SmallStringBase::prepend_vsprintf(const char* format, va_list ArgPtr)
 
   for (;;)
   {
-    int ret = std::vsnprintf(buffer, buffer_size, format, ArgPtr);
+    std::va_list ap_copy;
+    va_copy(ap_copy, ArgPtr);
+    int ret = std::vsnprintf(buffer, buffer_size, format, ap_copy);
+    va_end(ap_copy);
     if (ret < 0 || (static_cast<u32>(ret) >= (buffer_size - 1)))
     {
       buffer_size *= 2;
@@ -367,11 +381,13 @@ void SmallStringBase::prepend_vsprintf(const char* format, va_list ArgPtr)
 
 void SmallStringBase::insert(s32 offset, const char* str)
 {
+  DebugAssert(str != m_buffer); // inserting self is not allowed
   insert(offset, str, static_cast<u32>(std::strlen(str)));
 }
 
 void SmallStringBase::insert(s32 offset, const SmallStringBase& str)
 {
+  DebugAssert(&str != this); // inserting self is not allowed
   insert(offset, str, str.m_length);
 }
 
@@ -393,7 +409,7 @@ void SmallStringBase::insert(s32 offset, const char* str, u32 length)
   DebugAssert(real_offset <= m_length);
   const u32 chars_after_offset = m_length - real_offset;
   if (chars_after_offset > 0)
-    std::memmove(m_buffer + offset + length, m_buffer + offset, chars_after_offset);
+    std::memmove(m_buffer + real_offset + length, m_buffer + real_offset, chars_after_offset);
 
   // insert the string
   std::memcpy(m_buffer + real_offset, str, length);
@@ -410,6 +426,7 @@ void SmallStringBase::insert(s32 offset, const std::string& str)
 
 void SmallStringBase::insert(s32 offset, const std::string_view str)
 {
+  DebugAssert(str.data() != m_buffer); // inserting self is not allowed
   insert(offset, str.data(), static_cast<u32>(str.size()));
 }
 
@@ -497,6 +514,7 @@ void SmallStringBase::assign(const std::wstring_view wstr)
   }
 
   m_length = static_cast<u32>(mblen);
+  m_buffer[m_length] = '\0';
 }
 
 std::wstring SmallStringBase::wstring() const
@@ -572,7 +590,8 @@ bool SmallStringBase::iequals(const char* otherText) const
 
 bool SmallStringBase::iequals(const SmallStringBase& str) const
 {
-  return (m_length == str.m_length && (m_length == 0 || std::strcmp(m_buffer, str.m_buffer) == 0));
+  return (m_length == str.m_length &&
+          (m_length == 0 || StringUtil::Strncasecmp(m_buffer, str.m_buffer, m_length) == 0));
 }
 
 bool SmallStringBase::iequals(const std::string_view str) const
@@ -771,6 +790,9 @@ bool SmallStringBase::ends_with(const std::string& str, bool case_sensitive) con
 
 void SmallStringBase::clear()
 {
+  if (m_buffer_size == 0)
+    return;
+
   // in debug, zero whole string, in release, zero only the first character
 #if _DEBUG
   std::memset(m_buffer, 0, m_buffer_size);
@@ -823,6 +845,9 @@ u32 SmallStringBase::count(char ch) const
 u32 SmallStringBase::replace(const char* search, const char* replacement)
 {
   const u32 search_length = static_cast<u32>(std::strlen(search));
+  if (search_length == 0)
+    return 0;
+
   const u32 replacement_length = static_cast<u32>(std::strlen(replacement));
 
   s32 offset = 0;
@@ -833,17 +858,19 @@ u32 SmallStringBase::replace(const char* search, const char* replacement)
     if (offset < 0)
       break;
 
+    const u32 chars_after_offset = (m_length - static_cast<u32>(offset));
+    DebugAssert(chars_after_offset >= search_length);
+
     const u32 new_length = m_length - search_length + replacement_length;
     reserve(new_length);
     m_length = new_length;
 
-    const u32 chars_after_offset = (m_length - static_cast<u32>(offset));
-    DebugAssert(chars_after_offset >= search_length);
     if (chars_after_offset > search_length)
     {
       std::memmove(&m_buffer[static_cast<u32>(offset) + replacement_length],
                    &m_buffer[static_cast<u32>(offset) + search_length], chars_after_offset - search_length);
       std::memcpy(&m_buffer[static_cast<u32>(offset)], replacement, replacement_length);
+      m_buffer[m_length] = '\0';
     }
     else
     {
@@ -861,22 +888,26 @@ u32 SmallStringBase::replace(const char* search, const char* replacement)
 
 void SmallStringBase::resize(u32 new_size, char fill, bool shrink_if_smaller)
 {
-  // if going larger, or we don't own the buffer, realloc
-  if (new_size >= m_buffer_size)
+  if (new_size > m_length)
   {
+    // expanding - ensure we have space
     reserve(new_size);
 
-    if (m_length < new_size)
-    {
-      std::memset(m_buffer + m_length, fill, m_buffer_size - m_length - 1);
-    }
-
+    // fill the expanded area with the fill character
+    std::memset(m_buffer + m_length, fill, new_size - m_length);
     m_length = new_size;
+
+#ifdef _DEBUG
+    // zero remaining unused buffer in debug
+    std::memset(m_buffer + m_length, 0, m_buffer_size - new_size);
+#else
+    m_buffer[m_length] = 0;
+#endif
   }
   else
   {
-    // update length and terminator
-#if _DEBUG
+    // shrinking or same size - update length and terminator
+#ifdef _DEBUG
     std::memset(m_buffer + new_size, 0, m_buffer_size - new_size);
 #else
     m_buffer[new_size] = 0;
@@ -975,7 +1006,7 @@ void SmallStringBase::erase(s32 offset, s32 count)
     const u32 after_erase_block = m_length - real_offset - real_count;
     DebugAssert(after_erase_block > 0);
 
-    std::memmove(m_buffer + offset, m_buffer + real_offset + real_count, after_erase_block);
+    std::memmove(m_buffer + real_offset, m_buffer + real_offset + real_count, after_erase_block);
     m_length = m_length - real_count;
 
 #ifdef _DEBUG

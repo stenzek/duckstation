@@ -184,6 +184,9 @@ public:
   // returns the end of the string (pointer is past the last character)
   ALWAYS_INLINE const char* end_ptr() const { return m_buffer + m_length; }
 
+  // returns true if the string is heap-allocated
+  ALWAYS_INLINE bool is_heap_allocated() const { return m_on_heap; }
+
   // STL adapters
   ALWAYS_INLINE char& front() { return m_buffer[0]; }
   ALWAYS_INLINE const char& front() const { return m_buffer[0]; }
@@ -287,7 +290,7 @@ public:
   ALWAYS_INLINE SmallStackString(SmallStringBase&& move)
   {
     init();
-    assign(move);
+    move_assign(std::move(move));
   }
 
   ALWAYS_INLINE explicit SmallStackString(const SmallStackString& copy)
@@ -299,7 +302,7 @@ public:
   ALWAYS_INLINE explicit SmallStackString(SmallStackString&& move)
   {
     init();
-    assign(move);
+    move_assign(std::move(move));
   }
 
   ALWAYS_INLINE explicit SmallStackString(const std::string& str)
@@ -322,7 +325,7 @@ public:
 
   ALWAYS_INLINE SmallStackString& operator=(SmallStringBase&& move)
   {
-    assign(move);
+    move_assign(std::move(move));
     return *this;
   }
 
@@ -334,7 +337,7 @@ public:
 
   ALWAYS_INLINE SmallStackString& operator=(SmallStackString&& move)
   {
-    assign(move);
+    move_assign(std::move(move));
     return *this;
   }
 
@@ -377,6 +380,15 @@ private:
 #else
     m_stack_buffer[0] = '\0';
 #endif
+  }
+
+  ALWAYS_INLINE void move_assign(SmallStringBase&& move)
+  {
+    // only move if on the heap, otherwise copy
+    if (move.is_heap_allocated())
+      SmallStringBase::assign(std::move(move));
+    else
+      assign(move.data(), move.length());
   }
 };
 

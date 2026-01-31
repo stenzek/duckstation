@@ -26,12 +26,22 @@ if(BUILD_TESTS)
   message(STATUS "Building unit tests.")
 endif()
 
-# Refuse to build in Arch package environments. My license does not allow for packages, and I'm sick of
-# dealing with people complaining about things broken by packagers. This is why we can't have nice things.
-if(DEFINED ENV{DEBUGINFOD_URLS})
-  if($ENV{DEBUGINFOD_URLS} MATCHES ".*archlinux.*")
+# Refuse to build in hostile package environments. The code and build script licenses do not allow for
+# packages, and I'm sick of dealing with people complaining about things broken by packagers, and then
+# being attacked by package maintainers who violate their distribution's codes of conduct. Attempts to
+# request removal of these packages have been unsuccessful, so we have to resort to this.
+# NOTE: You do NOT have permission to distribute build scripts or patches that modify the build system
+# without explicit permission from the copyright holder.
+# DuckStation's code is public so it can be audited and learned from. Not to repackage.
+# This is why we can't have nice things.
+if(EXISTS /etc/os-release)
+  file(READ /etc/os-release OS_RELEASE_CONTENT)
+  if(OS_RELEASE_CONTENT MATCHES "ID=arch" OR OS_RELEASE_CONTENT MATCHES "ID_LIKE=arch" OR OS_RELEASE_CONTENT MATCHES "ID=nixos")
     message(FATAL_ERROR "Unsupported environment.")
   endif()
+endif()
+if(DEFINED ENV{NIX_BUILD_TOP} OR DEFINED ENV{NIX_STORE} OR DEFINED ENV{IN_NIX_SHELL} OR EXISTS "/etc/NIXOS")
+  message(FATAL_ERROR "Unsupported environment.")
 endif()
 
 if(DEFINED HOST_MIN_PAGE_SIZE AND DEFINED HOST_MAX_PAGE_SIZE)

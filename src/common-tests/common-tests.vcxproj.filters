@@ -10,5 +10,8 @@
     <ClCompile Include="gsvector_yuvtorgb_test.cpp" />
     <ClCompile Include="hash_tests.cpp" />
     <ClCompile Include="gsvector_tests.cpp" />
+    <ClCompile Include="small_string_tests.cpp" />
+    <ClCompile Include="binary_reader_writer_tests.cpp" />
+    <ClCompile Include="heap_array_tests.cpp" />
   </ItemGroup>
 </Project>

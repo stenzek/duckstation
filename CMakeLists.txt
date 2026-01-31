@@ -1,3 +1,13 @@
+# SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com>
+# SPDX-License-Identifier: CC-BY-NC-ND-4.0 + Packaging Restriction
+#
+# NOTE: In addition to the terms of CC-BY-NC-ND-4.0, you may not use this file to create
+# packages or build recipes without explicit permission from the copyright holder.
+#
+# Unless otherwise specified, other files supporting the build system are covered under
+# the same terms.
+#
+
 cmake_minimum_required(VERSION 3.19)
 project(duckstation C CXX)
 

@@ -13,6 +13,9 @@
 template<typename T, std::size_t SIZE, std::size_t ALIGNMENT = 0>
 class FixedHeapArray
 {
+  static_assert(std::is_trivially_copyable_v<T>, "T is trivially copyable");
+  static_assert(std::is_standard_layout_v<T>, "T is standard layout");
+
 public:
   using value_type = T;
   using size_type = std::size_t;
@@ -73,12 +76,12 @@ public:
 
   void swap(this_type& move) { std::swap(m_data, move.m_data); }
 
-  std::span<T, SIZE> span() { return std::span<T, SIZE>(m_data); }
-  std::span<const T, SIZE> cspan() const { return std::span<const T, SIZE>(m_data); }
+  std::span<T, SIZE> span() { return std::span<T, SIZE>(m_data, m_data + SIZE); }
+  std::span<const T, SIZE> cspan() const { return std::span<const T, SIZE>(m_data, m_data + SIZE); }
 
   this_type& operator=(const this_type& rhs)
   {
-    std::copy(begin(), end(), rhs.cbegin());
+    std::copy(rhs.cbegin(), rhs.cend(), begin());
     return *this;
   }
 
@@ -90,24 +93,12 @@ public:
     return *this;
   }
 
-#define RELATIONAL_OPERATOR(op)                                                                                        \
-  bool operator op(const this_type& rhs) const                                                                         \
-  {                                                                                                                    \
-    for (size_type i = 0; i < SIZE; i++)                                                                               \
-    {                                                                                                                  \
-      if (!(m_data[i] op rhs.m_data[i]))                                                                               \
-        return false;                                                                                                  \
-    }                                                                                                                  \
-  }
-
-  RELATIONAL_OPERATOR(==);
-  RELATIONAL_OPERATOR(!=);
-  RELATIONAL_OPERATOR(<);
-  RELATIONAL_OPERATOR(<=);
-  RELATIONAL_OPERATOR(>);
-  RELATIONAL_OPERATOR(>=);
-
-#undef RELATIONAL_OPERATOR
+  bool operator==(const this_type& rhs) const { return (std::memcmp(m_data, rhs.m_data, SIZE * sizeof(T)) == 0); }
+  bool operator!=(const this_type& rhs) const { return (std::memcmp(m_data, rhs.m_data, SIZE * sizeof(T)) != 0); }
+  bool operator<(const this_type& rhs) const { return (std::memcmp(m_data, rhs.m_data, SIZE * sizeof(T)) < 0); }
+  bool operator<=(const this_type& rhs) const { return (std::memcmp(m_data, rhs.m_data, SIZE * sizeof(T)) <= 0); }
+  bool operator>(const this_type& rhs) const { return (std::memcmp(m_data, rhs.m_data, SIZE * sizeof(T)) < 0); }
+  bool operator>=(const this_type& rhs) const { return (std::memcmp(m_data, rhs.m_data, SIZE * sizeof(T)) >= 0); }
 
 private:
   void allocate()
@@ -372,26 +363,87 @@ public:
     return *this;
   }
 
-#define RELATIONAL_OPERATOR(op, size_op)                                                                               \
-  bool operator op(const this_type& rhs) const                                                                         \
-  {                                                                                                                    \
-    if (m_size != rhs.m_size)                                                                                          \
-      return m_size size_op rhs.m_size;                                                                                \
-    for (size_type i = 0; i < m_size; i++)                                                                             \
-    {                                                                                                                  \
-      if (!(m_data[i] op rhs.m_data[i]))                                                                               \
-        return false;                                                                                                  \
-    }                                                                                                                  \
+  bool operator==(const this_type& rhs) const
+  {
+    if (m_size != rhs.m_size)
+      return false;
+
+    if (m_size == 0)
+      return true;
+
+    return (std::memcmp(m_data, rhs.m_data, m_size * sizeof(T)) == 0);
   }
 
-  RELATIONAL_OPERATOR(==, !=);
-  RELATIONAL_OPERATOR(!=, ==);
-  RELATIONAL_OPERATOR(<, <);
-  RELATIONAL_OPERATOR(<=, <=);
-  RELATIONAL_OPERATOR(>, >);
-  RELATIONAL_OPERATOR(>=, >=);
+  bool operator!=(const this_type& rhs) const
+  {
+    if (m_size != rhs.m_size)
+      return true;
 
-#undef RELATIONAL_OPERATOR
+    if (m_size == 0)
+      return false;
+
+    return (std::memcmp(m_data, rhs.m_data, m_size * sizeof(T)) != 0);
+  }
+
+  bool operator<(const this_type& rhs) const
+  {
+    const size_type min_size = std::min(m_size, rhs.m_size);
+    for (size_type i = 0; i < min_size; i++)
+    {
+      if (!(m_data[i] < rhs.m_data[i]))
+        return false;
+    }
+
+    if (m_size != rhs.m_size)
+      return m_size < rhs.m_size;
+
+    return true;
+  }
+
+  bool operator<=(const this_type& rhs) const
+  {
+    const size_type min_size = std::min(m_size, rhs.m_size);
+    for (size_type i = 0; i < min_size; i++)
+    {
+      if (!(m_data[i] <= rhs.m_data[i]))
+        return false;
+    }
+
+    if (m_size != rhs.m_size)
+      return m_size <= rhs.m_size;
+
+    return true;
+  }
+
+  bool operator>(const this_type& rhs) const
+  {
+    const size_type min_size = std::min(m_size, rhs.m_size);
+    for (size_type i = 0; i < min_size; i++)
+    {
+      if (!(m_data[i] > rhs.m_data[i]))
+        return false;
+    }
+
+    if (m_size != rhs.m_size)
+      return m_size > rhs.m_size;
+
+    return true;
+  }
+
+  bool operator>=(const this_type& rhs) const
+  {
+    const size_type min_size = std::min(m_size, rhs.m_size);
+    for (size_type i = 0; i < min_size; i++)
+    {
+      if (!(m_data[i] >= rhs.m_data[i]))
+        return false;
+    }
+
+    if (m_size != rhs.m_size)
+      return m_size >= rhs.m_size;
+
+    return true;
+  }
 
 private:
   void internal_resize(size_t size, T* prev_ptr, [[maybe_unused]] size_t prev_size)
