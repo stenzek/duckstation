@@ -23,6 +23,11 @@
 
 LOG_CHANNEL(GPUDevice);
 
+// Can't include settings.h, nasty...
+namespace EmuFolders {
+extern std::string Resources;
+}
+
 // TODO: Disable hazard tracking and issue barriers explicitly.
 
 // Used for shader "binaries".
@@ -356,11 +361,8 @@ bool MetalDevice::CreateDeviceAndMainSwapChain(std::string_view adapter, CreateF
       RenderBlankFrame(static_cast<MetalSwapChain*>(m_main_swap_chain.get()));
     }
 
-    if (!LoadShaders())
-    {
-      Error::SetStringView(error, "Failed to load shaders.");
+    if (!LoadShaders(error))
       return false;
-    }
 
     if (!CreateBuffers(error))
       return false;
@@ -415,35 +417,29 @@ void MetalDevice::SetFeatures(CreateFlags create_flags)
     !HasCreateFlag(create_flags, CreateFlags::DisableCompressedTextures) && m_device.supportsBCTextureCompression;
 }
 
-bool MetalDevice::LoadShaders()
+bool MetalDevice::LoadShaders(Error* error)
 {
   @autoreleasepool
   {
-    auto try_lib = [this](NSString* name) -> id<MTLLibrary> {
-      NSBundle* bundle = [NSBundle mainBundle];
-      NSString* path = [bundle pathForResource:name ofType:@"metallib"];
-      if (path == nil)
-      {
-        // Xcode places it alongside the binary.
-        path = [NSString stringWithFormat:@"%@/%@.metallib", [bundle bundlePath], name];
-        if (![[NSFileManager defaultManager] fileExistsAtPath:path])
-          return nil;
-      }
+    static constexpr const char* shader_lib_filename = "metal_shaders.metallib";
 
-      NSURL* url = [NSURL fileURLWithPath:path];
-      id<MTLLibrary> lib = [m_device newLibraryWithURL:url error:nil];
-      if (lib == nil)
-        return nil;
-
-      return [lib retain];
-    };
-
-    if (!(m_shaders = try_lib(@"Metal23")) && !(m_shaders = try_lib(@"Metal22")) &&
-        !(m_shaders = try_lib(@"Metal21")) && !(m_shaders = try_lib(@"default")))
+    std::string path = Path::Combine(EmuFolders::Resources, shader_lib_filename);
+    if (!FileSystem::FileExists(path.c_str()))
     {
+      Error::SetStringFmt(error, "{} was not found", shader_lib_filename);
       return false;
     }
 
+    NSError* nserror = nil;
+    NSURL* url = [NSURL fileURLWithPath:CocoaTools::StringViewToNSString(path)];
+    id<MTLLibrary> lib = [m_device newLibraryWithURL:url error:&nserror];
+    if (lib == nil)
+    {
+      CocoaTools::NSErrorToErrorObject(error, "newLibraryWithURL failed: ", nserror);
+      return false;
+    }
+
+    m_shaders = [lib retain];
     return true;
   }
 }

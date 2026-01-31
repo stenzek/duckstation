@@ -293,7 +293,7 @@ endif()
 function(add_util_resources target)
   if(APPLE)
     get_property(UTIL_METAL_SOURCES GLOBAL PROPERTY UTIL_METAL_SOURCES)
-    add_metal_sources(${target} ${UTIL_METAL_SOURCES})
+    add_metal_sources(${target} ${UTIL_METAL_SOURCES} metal_shaders macos-metal2.3)
 
     # Copy MoltenVK into the bundle
     unset(MOLTENVK_PATH CACHE)

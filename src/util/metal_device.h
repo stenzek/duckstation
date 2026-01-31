@@ -374,7 +374,7 @@ private:
   static_assert(sizeof(ClearPipelineConfig) == 8);
 
   void SetFeatures(CreateFlags create_flags);
-  bool LoadShaders();
+  bool LoadShaders(Error* error);
 
   std::unique_ptr<GPUShader> CreateShaderFromMSL(GPUShaderStage stage, std::string_view source,
                                                  std::string_view entry_point, Error* error);
