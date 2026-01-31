@@ -274,6 +274,7 @@ void HTTPDownloaderCurl::ReadMultiResults()
     {
       ERROR_LOG("Request for '{}' returned error {}", req->url, static_cast<int>(msg->data.result));
       req->error.SetStringFmt("Request failed: {}", curl_easy_strerror(msg->data.result));
+      req->status_code = HTTP_STATUS_ERROR;
     }
 
     req->state.store(Request::State::Complete, std::memory_order_release);
