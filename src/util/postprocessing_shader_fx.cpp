@@ -176,7 +176,7 @@ static GPUSampler::Config MapSampler(const reshadefx::sampler_desc& si)
       break;
 
     case reshadefx::filter_mode::min_point_mag_linear_mip_point:
-      config.min_filter = GPUSampler::Filter::Linear;
+      config.min_filter = GPUSampler::Filter::Nearest;
       config.mag_filter = GPUSampler::Filter::Linear;
       config.mip_filter = GPUSampler::Filter::Nearest;
       break;
