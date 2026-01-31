@@ -112,7 +112,7 @@ if(NOT WIN32)
 endif()
 
 if(NOT WIN32)
-  find_package(FFMPEG 8.0.0 COMPONENTS avcodec avformat avutil swresample swscale)
+  find_package(FFMPEG 8.0.1 COMPONENTS avcodec avformat avutil swresample swscale)
   if(NOT FFMPEG_FOUND)
     message(WARNING "FFmpeg not found, using bundled headers.")
   endif()
