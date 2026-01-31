@@ -668,6 +668,8 @@ s32 OpenGLDevice::IsRenderTargetBound(const GPUTexture* tex) const
 
 GLuint OpenGLDevice::CreateFramebuffer(GPUTexture* const* rts, u32 num_rts, GPUTexture* ds, u32 flags)
 {
+  UNREFERENCED_VARIABLE(flags);
+
   glGetError();
 
   GLuint fbo_id;
@@ -688,9 +690,10 @@ GLuint OpenGLDevice::CreateFramebuffer(GPUTexture* const* rts, u32 num_rts, GPUT
 
   glDrawBuffers(num_rts, s_draw_buffers.data());
 
-  if (glGetError() != GL_NO_ERROR || glCheckFramebufferStatus(GL_DRAW_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+  const GLenum err = glGetError();
+  if (err != GL_NO_ERROR || glCheckFramebufferStatus(GL_DRAW_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) [[unlikely]]
   {
-    ERROR_LOG("Failed to create GL framebuffer: {}", static_cast<s32>(glGetError()));
+    ERROR_LOG("Failed to create GL framebuffer: {}", static_cast<s32>(err));
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, OpenGLDevice::GetInstance().m_current_fbo);
     glDeleteFramebuffers(1, &fbo_id);
     return {};
