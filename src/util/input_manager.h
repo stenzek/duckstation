@@ -25,7 +25,6 @@ enum class InputSourceType : u32
 {
   Keyboard,
   Pointer,
-  Sensor,
 #ifdef _WIN32
   DInput,
   XInput,
@@ -54,8 +53,6 @@ enum class InputSubclass : u32
   ControllerMotor = 3,
   ControllerHaptic = 4,
   ControllerLED = 5,
-
-  SensorAccelerometer = 0,
 };
 
 enum class InputModifier : u32
@@ -238,9 +235,6 @@ InputBindingKey MakePointerButtonKey(u32 index, u32 button_index);
 /// Creates a key for a host-specific mouse relative event
 /// (axis 0 = horizontal, 1 = vertical, 2 = wheel horizontal, 3 = wheel vertical).
 InputBindingKey MakePointerAxisKey(u32 index, InputPointerAxis axis);
-
-/// Creates a key for a host-specific sensor.
-InputBindingKey MakeSensorAxisKey(InputSubclass sensor, u32 axis);
 
 /// Parses an input binding key string.
 std::optional<InputBindingKey> ParseInputBindingKey(std::string_view binding);

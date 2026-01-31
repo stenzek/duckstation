@@ -141,7 +141,6 @@ struct KeyCodeData
 // ------------------------------------------------------------------------
 static std::optional<InputBindingKey> ParseHostKeyboardKey(std::string_view source, std::string_view sub_binding);
 static std::optional<InputBindingKey> ParsePointerKey(std::string_view source, std::string_view sub_binding);
-static std::optional<InputBindingKey> ParseSensorKey(std::string_view source, std::string_view sub_binding);
 
 static std::vector<std::string_view> SplitChord(std::string_view binding);
 static bool SplitBinding(std::string_view binding, std::string_view* source, std::string_view* sub_binding);
@@ -194,7 +193,6 @@ static constexpr const std::array<const char*, static_cast<u8>(InputPointerAxis:
   {"X", "Y", "WheelX", "WheelY"}};
 static constexpr const std::array<const char*, 3> s_pointer_button_names = {
   {"LeftButton", "RightButton", "MiddleButton"}};
-static constexpr const std::array<const char*, 3> s_sensor_accelerometer_names = {{"Turn", "Tilt", "Rotate"}};
 
 // ------------------------------------------------------------------------
 // Local Variables
@@ -358,10 +356,6 @@ std::optional<InputBindingKey> InputManager::ParseInputBindingKey(std::string_vi
   else if (source.starts_with("Pointer"))
   {
     return ParsePointerKey(source, sub_binding);
-  }
-  else if (source.starts_with("Sensor"))
-  {
-    return ParseSensorKey(source, sub_binding);
   }
   else
   {
@@ -692,16 +686,6 @@ InputBindingKey InputManager::MakePointerAxisKey(u32 index, InputPointerAxis axi
   return key;
 }
 
-InputBindingKey InputManager::MakeSensorAxisKey(InputSubclass sensor, u32 axis)
-{
-  InputBindingKey key = {};
-  key.data = static_cast<u32>(axis);
-  key.source_index = 0;
-  key.source_type = InputSourceType::Sensor;
-  key.source_subtype = sensor;
-  return key;
-}
-
 std::optional<u32> InputManager::ConvertHostKeyboardStringToCode(std::string_view str)
 {
   // Check legacy names first
@@ -759,7 +743,6 @@ std::optional<u32> InputManager::ConvertHostNativeKeyCodeToKeyCode(u32 native_co
 static std::array<const char*, static_cast<u32>(InputSourceType::Count)> s_input_class_names = {{
   "Keyboard",
   "Pointer",
-  "Sensor",
 #ifdef _WIN32
   "DInput",
   "XInput",
@@ -911,37 +894,6 @@ std::optional<u32> InputManager::GetIndexFromPointerBinding(std::string_view sou
 TinyString InputManager::GetPointerDeviceName(u32 pointer_index)
 {
   return TinyString::from_format("Pointer-{}", pointer_index);
-}
-
-std::optional<InputBindingKey> InputManager::ParseSensorKey(std::string_view source, std::string_view sub_binding)
-{
-  if (source != "Sensor")
-    return std::nullopt;
-
-  InputBindingKey key = {};
-  key.source_type = InputSourceType::Sensor;
-  key.source_index = 0;
-
-  for (u32 i = 0; i < s_sensor_accelerometer_names.size(); i++)
-  {
-    if (sub_binding.starts_with(s_sensor_accelerometer_names[i]))
-    {
-      key.source_subtype = InputSubclass::SensorAccelerometer;
-      key.data = i;
-
-      const std::string_view dir_part(sub_binding.substr(std::strlen(s_sensor_accelerometer_names[i])));
-      if (dir_part == "+")
-        key.modifier = InputModifier::None;
-      else if (dir_part == "-")
-        key.modifier = InputModifier::Negate;
-      else
-        return std::nullopt;
-
-      return key;
-    }
-  }
-
-  return std::nullopt;
 }
 
 // ------------------------------------------------------------------------
@@ -1162,9 +1114,8 @@ bool InputManager::ShouldMaskBackgroundInput(InputBindingKey key)
 {
   // Keyboard events won't get sent to us if we're in the background.
   // We want to still update our mouse pointer state.
-  // Sensors are probably fine, but not used on desktop.
   // Everything else should be ignored.
-  return (key.source_type > InputSourceType::Sensor && s_state.ignore_input_events);
+  return (key.source_type > InputSourceType::Pointer && s_state.ignore_input_events);
 }
 
 void InputManager::InvokeEvents(InputBindingKey key, float value, GenericInputBinding generic_key)
