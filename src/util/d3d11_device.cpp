@@ -561,6 +561,7 @@ bool D3D11Device::CreateBuffers(Error* error)
 
 void D3D11Device::DestroyBuffers()
 {
+  m_push_constant_buffer.Reset();
   m_uniform_buffer.Destroy();
   m_vertex_buffer.Destroy();
   m_index_buffer.Destroy();
