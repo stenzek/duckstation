@@ -2117,7 +2117,7 @@ public:
 
   ALWAYS_INLINE GSVector2 rsize() const { return (zwzw() - xyxy()).xy(); }
   ALWAYS_INLINE bool rempty() const { return ((*this < zwzw()).mask() != 0x3); }
-  ALWAYS_INLINE bool rvalid() const { return (((*this >= zwzw()).mask()) == 0); }
+  ALWAYS_INLINE bool rvalid() const { return ((((*this >= zwzw()).mask()) & 0x03) == 0); }
 
   ALWAYS_INLINE GSVector4 runion(const GSVector4 v) const { return min(v).blend32<0xc>(max(v)); }
 

@@ -1867,7 +1867,7 @@ public:
 
   ALWAYS_INLINE GSVector2 rsize() const { return GSVector2(width(), height()); }
   ALWAYS_INLINE bool rempty() const { return ((*this < zwzw()).mask() != 0x3); }
-  ALWAYS_INLINE bool rvalid() const { return (((*this >= zwzw()).mask()) == 0); }
+  ALWAYS_INLINE bool rvalid() const { return ((((*this >= zwzw()).mask()) & 0x03) == 0); }
 
   GSVector4 runion(const GSVector4& v) const
   {
