@@ -774,7 +774,7 @@ void D3D11Device::DestroyTimestampQueries()
   m_read_timestamp_query = 0;
   m_write_timestamp_query = 0;
   m_waiting_timestamp_queries = 0;
-  m_timestamp_query_started = 0;
+  m_timestamp_query_started = false;
 }
 
 void D3D11Device::PopTimestampQuery()
@@ -793,7 +793,7 @@ void D3D11Device::PopTimestampQuery()
       m_read_timestamp_query = 0;
       m_write_timestamp_query = 0;
       m_waiting_timestamp_queries = 0;
-      m_timestamp_query_started = 0;
+      m_timestamp_query_started = false;
     }
     else
     {
