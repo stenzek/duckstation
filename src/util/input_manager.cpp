@@ -212,7 +212,7 @@ using PointerMoveCallback = std::function<void(InputBindingKey key, float value)
 
 namespace {
 
-struct ALIGN_TO_CACHE_LINE State
+struct State
 {
   BindingMap binding_map;
   VibrationBindingArray pad_vibration_array;
@@ -227,6 +227,13 @@ struct ALIGN_TO_CACHE_LINE State
   // Input sources. Keyboard/mouse don't exist here.
   std::array<std::unique_ptr<InputSource>, static_cast<u32>(InputSourceType::Count)> input_sources;
 
+  std::array<std::array<float, static_cast<u8>(InputPointerAxis::Count)>, InputManager::MAX_POINTER_DEVICES>
+    host_pointer_positions;
+  std::array<std::array<PointerAxisState, static_cast<u8>(InputPointerAxis::Count)>, InputManager::MAX_POINTER_DEVICES>
+    pointer_state;
+  u32 pointer_count = 0;
+  std::array<float, static_cast<u8>(InputPointerAxis::Count)> pointer_axis_scale;
+
   bool application_in_background = false;
   bool ignore_input_events = false;
   bool has_pointer_device_bindings = false;
@@ -240,19 +247,11 @@ struct ALIGN_TO_CACHE_LINE State
   HCMNOTIFICATION device_notification_handle = nullptr;
   std::atomic_flag device_notification_reload_pending = ATOMIC_FLAG_INIT;
 #endif
-
-  ALIGN_TO_CACHE_LINE
-  std::array<std::array<float, static_cast<u8>(InputPointerAxis::Count)>, InputManager::MAX_POINTER_DEVICES>
-    host_pointer_positions;
-  std::array<std::array<PointerAxisState, static_cast<u8>(InputPointerAxis::Count)>, InputManager::MAX_POINTER_DEVICES>
-    pointer_state;
-  u32 pointer_count = 0;
-  std::array<float, static_cast<u8>(InputPointerAxis::Count)> pointer_axis_scale;
 };
 
 } // namespace
 
-static State s_state;
+ALIGN_TO_CACHE_LINE static State s_state;
 
 static constexpr const std::array s_key_code_data = {
 #if defined(_WIN32)
