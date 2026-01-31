@@ -52,9 +52,6 @@ endif()
 if(MSVC)
   add_compile_definitions("_UNICODE" "UNICODE" "_CRT_NONSTDC_NO_DEPRECATE" "_CRT_SECURE_NO_WARNINGS")
   foreach(config CMAKE_C_FLAGS CMAKE_CXX_FLAGS)
-    # Set warning level 3 instead of 4.
-    string(REPLACE "/W3" "/W4" ${config} "${${config}}")
-
     # Enable intrinsic functions, disable minimal rebuild, UTF-8 source, set __cplusplus version.
     set(${config} "${${config}} /Oi /Gm- /utf-8 /Zc:__cplusplus")
   endforeach()
