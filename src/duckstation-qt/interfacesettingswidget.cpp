@@ -104,27 +104,33 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* dialog, QWidget
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, use_fractional_window_scale, "Main", "UseFractionalWindowScale",
                                                false);
   m_ui.appearanceLayout->addWidget(use_fractional_window_scale, m_ui.appearanceLayout->rowCount(), 0, 1, 4);
-#elif defined(__linux__)
-  QCheckBox* const use_system_font = new QCheckBox(tr("Use System Font"), m_ui.appearanceGroup);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, use_system_font, "Main", "UseSystemFont", false);
-  m_ui.appearanceLayout->addWidget(use_system_font, m_ui.appearanceLayout->rowCount(), 0, 1, 4);
-  connect(use_system_font, &QCheckBox::checkStateChanged, this, &QtHost::UpdateApplicationTheme, Qt::QueuedConnection);
 #endif
 
   if (!m_dialog->isPerGameSettings())
   {
     SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.theme, "UI", "Theme", THEME_NAMES, THEME_VALUES,
                                                  QtHost::GetDefaultThemeName(), "MainWindow");
-    connect(m_ui.theme, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &QtHost::UpdateApplicationTheme);
+    connect(m_ui.theme, &QComboBox::currentIndexChanged, this, &QtHost::UpdateApplicationTheme);
 
     populateLanguageDropdown(m_ui.language);
     SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.language, "Main", "Language", {});
-    connect(m_ui.language, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
-            &InterfaceSettingsWidget::onLanguageChanged);
+    connect(m_ui.language, &QComboBox::currentIndexChanged, this, &InterfaceSettingsWidget::onLanguageChanged);
 
     // Annoyingly, have to match theme and language properties otherwise the sizes do not match.
     m_ui.theme->setMinimumContentsLength(m_ui.language->minimumContentsLength());
     m_ui.theme->setSizeAdjustPolicy(m_ui.language->sizeAdjustPolicy());
+
+#ifdef __linux__
+    QCheckBox* const use_system_font = new QCheckBox(tr("Use System Font"), m_ui.appearanceGroup);
+    SettingWidgetBinder::BindWidgetToBoolSetting(sif, use_system_font, "Main", "UseSystemFont", false);
+    m_ui.appearanceLayout->addWidget(use_system_font, m_ui.appearanceLayout->rowCount(), 0, 1, 4);
+    connect(use_system_font, &QCheckBox::checkStateChanged, this, &QtHost::UpdateApplicationTheme,
+            Qt::QueuedConnection);
+    dialog->registerWidgetHelp(
+      use_system_font, tr("Use System Font"), tr("Unchecked"),
+      tr("Uses the system font for the interface, instead of the bundled Roboto font. Enabling "
+         "this option may cause some UI elements to not fit within windows."));
+#endif
 
     SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.autoUpdateEnabled, "AutoUpdater", "CheckAtStartup", true);
     for (const auto& [name, desc] : AutoUpdaterDialog::getChannelList())
@@ -141,11 +147,8 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* dialog, QWidget
     QtUtils::SafeDeleteWidget(m_ui.language);
     QtUtils::SafeDeleteWidget(m_ui.themeLabel);
     QtUtils::SafeDeleteWidget(m_ui.theme);
-
-    // On Linux, we don't have any rounded corner or fractional scaling options.
-#if !defined(_WIN32) && !defined(__APPLE__)
-    QtUtils::SafeDeleteWidget(m_ui.appearanceGroup);
-#endif
+    if (m_ui.appearanceLayout->isEmpty())
+      QtUtils::SafeDeleteWidget(m_ui.appearanceGroup);
 
     delete m_ui.updatesGroup;
     m_ui.autoUpdateTagLabel = nullptr;
@@ -211,10 +214,6 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* dialog, QWidget
   dialog->registerWidgetHelp(
     use_fractional_window_scale, tr("Use Fractional Window Scale"), tr("Unchecked"),
     tr("Calculates the true scaling factor for your display, avoiding the downsampling applied by MacOS."));
-#elif defined(__linux__)
-  dialog->registerWidgetHelp(use_system_font, tr("Use System Font"), tr("Unchecked"),
-                             tr("Uses the system font for the interface, instead of the bundled Roboto font. Enabling "
-                                "this option may cause some UI elements to not fit within windows."));
 #endif
 
   if (!m_dialog->isPerGameSettings())
