@@ -155,7 +155,7 @@ size_t HTTPDownloaderCurl::WriteCallback(char* ptr, size_t size, size_t nmemb, v
       req->content_length = static_cast<u32>(length);
   }
 
-  return nmemb;
+  return transfer_size;
 }
 
 HTTPDownloader::Request* HTTPDownloaderCurl::InternalCreateRequest()
