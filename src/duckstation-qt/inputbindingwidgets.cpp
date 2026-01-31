@@ -11,6 +11,7 @@
 #include "core/host.h"
 
 #include "common/bitutils.h"
+#include "common/log.h"
 #include "common/string_util.h"
 
 #include <QtCore/QTimer>
@@ -22,6 +23,8 @@
 #include <cmath>
 
 #include "moc_inputbindingwidgets.cpp"
+
+LOG_CHANNEL(Host);
 
 InputBindingWidget::InputBindingWidget(QWidget* parent) : QPushButton(parent)
 {
@@ -44,11 +47,27 @@ InputBindingWidget::~InputBindingWidget()
   Q_ASSERT(!isListeningForInput());
 }
 
-bool InputBindingWidget::isMouseMappingEnabled(SettingsInterface* sif)
+bool InputBindingWidget::isMouseMappingEnabled()
 {
-  return (sif ? sif->GetBoolValue("UI", "EnableMouseMapping", false) :
-                Core::GetBaseBoolSettingValue("UI", "EnableMouseMapping", false)) &&
-         !InputManager::IsUsingRawInput();
+  return Core::GetBaseBoolSettingValue("UI", "EnableMouseMapping", false) && !InputManager::IsUsingRawInput();
+}
+
+bool InputBindingWidget::isSensorMappingEnabled()
+{
+  return Core::GetBaseBoolSettingValue("UI", "EnableSensorMapping", false);
+}
+
+bool InputBindingWidget::isSensorBinding(InputBindingKey key)
+{
+  return (key.source_subtype == InputSubclass::ControllerSensor);
+}
+
+void InputBindingWidget::logInputEvent(InputBindingInfo::Type bind_type, InputBindingKey key, float value,
+                                       float initial_value, float min_value)
+{
+  const TinyString key_str = InputManager::ConvertInputBindingKeyToString(bind_type, key);
+  DEV_LOG("Binding input event: key={} value={:.2f} initial_value={:.2f} min_value={:.2f}", key_str, value,
+          initial_value, min_value);
 }
 
 void InputBindingWidget::initialize(SettingsInterface* sif, InputBindingInfo::Type bind_type, std::string section_name,
@@ -331,7 +350,8 @@ void InputBindingWidget::startListeningForInput(u32 timeout_in_seconds)
 {
   m_value_ranges.clear();
   m_new_bindings.clear();
-  m_mouse_mapping_enabled = isMouseMappingEnabled(m_sif);
+  m_mouse_mapping_enabled = isMouseMappingEnabled();
+  m_sensor_mapping_enabled = isSensorMappingEnabled();
   m_input_listen_start_position = QCursor::pos();
   m_input_listen_timer = new QTimer(this);
   m_input_listen_timer->setSingleShot(false);
@@ -365,7 +385,7 @@ void InputBindingWidget::stopListeningForInput()
 
 void InputBindingWidget::inputManagerHookCallback(InputBindingKey key, float value)
 {
-  if (!isListeningForInput())
+  if (!isListeningForInput() || (!m_sensor_mapping_enabled && isSensorBinding(key)))
     return;
 
   float initial_value = value;
@@ -382,7 +402,7 @@ void InputBindingWidget::inputManagerHookCallback(InputBindingKey key, float val
     m_value_ranges.emplace_back(key, std::make_pair(initial_value, min_value));
   }
 
-  InputBindingDialog::logInputEvent(m_bind_type, key, value, initial_value, min_value);
+  logInputEvent(m_bind_type, key, value, initial_value, min_value);
 
   const float abs_value = std::abs(value);
   const float delta_from_initial = std::abs(std::abs(initial_value) - abs_value);

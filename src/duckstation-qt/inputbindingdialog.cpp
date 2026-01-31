@@ -10,7 +10,6 @@
 #include "core/core.h"
 
 #include "common/bitutils.h"
-#include "common/log.h"
 
 #include "fmt/format.h"
 
@@ -20,8 +19,6 @@
 #include <QtGui/QWheelEvent>
 
 #include "moc_inputbindingdialog.cpp"
-
-LOG_CHANNEL(Host);
 
 InputBindingDialog::InputBindingDialog(SettingsInterface* sif, InputBindingInfo::Type bind_type,
                                        std::string section_name, std::string key_name,
@@ -75,14 +72,6 @@ InputBindingDialog::InputBindingDialog(SettingsInterface* sif, InputBindingInfo:
 InputBindingDialog::~InputBindingDialog()
 {
   Q_ASSERT(!isListeningForInput());
-}
-
-void InputBindingDialog::logInputEvent(InputBindingInfo::Type bind_type, InputBindingKey key, float value,
-                                       float initial_value, float min_value)
-{
-  const TinyString key_str = InputManager::ConvertInputBindingKeyToString(bind_type, key);
-  DEV_LOG("Binding input event: key={} value={:.2f} initial_value={:.2f} min_value={:.2f}", key_str, value,
-          initial_value, min_value);
 }
 
 bool InputBindingDialog::eventFilter(QObject* watched, QEvent* event)
@@ -189,7 +178,8 @@ void InputBindingDialog::startListeningForInput(u32 timeout_in_seconds)
 {
   m_value_ranges.clear();
   m_new_bindings.clear();
-  m_mouse_mapping_enabled = InputBindingWidget::isMouseMappingEnabled(m_sif);
+  m_mouse_mapping_enabled = InputBindingWidget::isMouseMappingEnabled();
+  m_sensor_mapping_enabled = InputBindingWidget::isSensorMappingEnabled();
   m_input_listen_start_position = QCursor::pos();
   m_input_listen_timer = new QTimer(this);
   m_input_listen_timer->setSingleShot(false);
@@ -306,7 +296,7 @@ void InputBindingDialog::saveListToSettings()
 
 void InputBindingDialog::inputManagerHookCallback(InputBindingKey key, float value)
 {
-  if (!isListeningForInput())
+  if (!isListeningForInput() || (!m_sensor_mapping_enabled && InputBindingWidget::isSensorBinding(key)))
     return;
 
   float initial_value = value;
@@ -323,7 +313,7 @@ void InputBindingDialog::inputManagerHookCallback(InputBindingKey key, float val
     m_value_ranges.emplace_back(key, std::make_pair(initial_value, min_value));
   }
 
-  logInputEvent(m_bind_type, key, value, initial_value, min_value);
+  InputBindingWidget::logInputEvent(m_bind_type, key, value, initial_value, min_value);
 
   const float abs_value = std::abs(value);
   const float delta_from_initial = std::abs(std::abs(initial_value) - abs_value);

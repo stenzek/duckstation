@@ -87,12 +87,12 @@ ControllerGlobalSettingsWidget::ControllerGlobalSettingsWidget(QWidget* parent, 
     m_ui.dinputLayout = nullptr;
     m_ui.enableDInputSource = nullptr;
     m_ui.dinputDescription = nullptr;
-    m_ui.pointerOptionsLayout->removeWidget(m_ui.enableRawInput);
+    m_ui.pointerLayout->removeWidget(m_ui.enableRawInput);
+    m_ui.pointerLayout->removeWidget(m_ui.rawInputDescription);
     QtUtils::SafeDeleteWidget(m_ui.enableRawInput);
+    QtUtils::SafeDeleteWidget(m_ui.rawInputDescription);
 #endif
 
-    ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.enableMouseMapping, "UI",
-                                                                "EnableMouseMapping", false);
     ControllerSettingWidgetBinder::BindWidgetToInputProfileFloat(sif, m_ui.pointerXScale, "ControllerPorts",
                                                                  "PointerXScale", 8.0f);
     ControllerSettingWidgetBinder::BindWidgetToInputProfileFloat(sif, m_ui.pointerYScale, "ControllerPorts",
@@ -132,7 +132,6 @@ ControllerGlobalSettingsWidget::ControllerGlobalSettingsWidget(QWidget* parent, 
     m_ui.groupsLayout->removeWidget(m_ui.pointerGroup);
     QtUtils::SafeDeleteWidget(m_ui.pointerGroup);
     m_ui.pointerLayout = nullptr;
-    m_ui.pointerDescription = nullptr;
     m_ui.pointerXScaleDescription = nullptr;
     m_ui.pointerXScaleLayout = nullptr;
     m_ui.pointerXScale = nullptr;
@@ -141,9 +140,25 @@ ControllerGlobalSettingsWidget::ControllerGlobalSettingsWidget(QWidget* parent, 
     m_ui.pointerYScaleLayout = nullptr;
     m_ui.pointerYScale = nullptr;
     m_ui.pointerYScaleLabel = nullptr;
-    m_ui.pointerOptionsLayout = nullptr;
-    m_ui.enableMouseMapping = nullptr;
     m_ui.enableRawInput = nullptr;
+    m_ui.rawInputDescription = nullptr;
+  }
+
+  // Mapping options are only shown in global settings.
+  if (m_dialog->isEditingGlobalSettings())
+  {
+    ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.enableMouseMapping, "UI",
+                                                                "EnableMouseMapping", false);
+    ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.enableSensorMapping, "UI",
+                                                                "EnableSensorMapping", false);
+  }
+  else
+  {
+    QtUtils::SafeDeleteWidget(m_ui.mappingGroup);
+    m_ui.mappingLayout = nullptr;
+    m_ui.mappingDescription = nullptr;
+    m_ui.enableMouseMapping = nullptr;
+    m_ui.enableSensorMapping = nullptr;
   }
 
   m_ui.deviceList->setModel(g_core_thread->getInputDeviceListModel());

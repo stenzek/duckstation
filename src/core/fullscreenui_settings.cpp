@@ -432,6 +432,10 @@ void FullscreenUI::InputBindingDialog::Start(SettingsInterface* bsi, InputBindin
     if (m_binding_type == InputBindingInfo::Type::Unknown)
       return InputInterceptHook::CallbackResult::RemoveHookAndContinueProcessingEvent;
 
+    // ignore sensors for now
+    if (key.source_subtype == InputSubclass::ControllerSensor)
+      return InputInterceptHook::CallbackResult::StopProcessingEvent;
+
     float initial_value = value;
     float min_value = value;
     InputInterceptHook::CallbackResult default_action = InputInterceptHook::CallbackResult::StopProcessingEvent;

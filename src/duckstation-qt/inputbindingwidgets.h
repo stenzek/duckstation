@@ -22,7 +22,11 @@ public:
                      std::string section_name, std::string key_name);
   ~InputBindingWidget();
 
-  static bool isMouseMappingEnabled(SettingsInterface* sif);
+  static bool isMouseMappingEnabled();
+  static bool isSensorMappingEnabled();
+  static bool isSensorBinding(InputBindingKey key);
+  static void logInputEvent(InputBindingInfo::Type bind_type, InputBindingKey key, float value, float initial_value,
+                            float min_value);
 
   void initialize(SettingsInterface* sif, InputBindingInfo::Type bind_type, std::string section_name,
                   std::string key_name);
@@ -72,4 +76,5 @@ protected:
   u32 m_input_listen_remaining_seconds = 0;
   QPoint m_input_listen_start_position{};
   bool m_mouse_mapping_enabled = false;
+  bool m_sensor_mapping_enabled = false;
 };

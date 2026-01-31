@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>900</width>
-    <height>658</height>
+    <height>696</height>
    </rect>
   </property>
   <layout class="QHBoxLayout" name="mainLayout" stretch="1,0">
@@ -167,25 +167,15 @@
        <property name="title">
         <string>Mouse/Pointer Source</string>
        </property>
-       <layout class="QGridLayout" name="pointerLayout" columnstretch="0,1">
-        <item row="0" column="0" colspan="2">
-         <widget class="QLabel" name="pointerDescription">
-          <property name="text">
-           <string>Using raw input improves precision when you bind controller sticks to the mouse pointer. Also enables multiple mice to be used.</string>
-          </property>
-          <property name="wordWrap">
-           <bool>true</bool>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="0">
+       <layout class="QGridLayout" name="pointerLayout">
+        <item row="0" column="0">
          <widget class="QLabel" name="pointerXScaleDescription">
           <property name="text">
            <string>Horizontal Sensitivity:</string>
           </property>
          </widget>
         </item>
-        <item row="1" column="1">
+        <item row="0" column="1">
          <layout class="QHBoxLayout" name="pointerXScaleLayout">
           <item>
            <widget class="QSlider" name="pointerXScale">
@@ -233,14 +223,14 @@
           </item>
          </layout>
         </item>
-        <item row="2" column="0">
+        <item row="1" column="0">
          <widget class="QLabel" name="pointerYScaleDescription">
           <property name="text">
            <string>Vertical Sensitivity:</string>
           </property>
          </widget>
         </item>
-        <item row="2" column="1">
+        <item row="1" column="1">
          <layout class="QHBoxLayout" name="pointerYScaleLayout">
           <item>
            <widget class="QSlider" name="pointerYScale">
@@ -288,29 +278,67 @@
           </item>
          </layout>
         </item>
-        <item row="3" column="0" colspan="2">
-         <layout class="QHBoxLayout" name="pointerOptionsLayout">
-          <item>
-           <widget class="QCheckBox" name="enableMouseMapping">
-            <property name="toolTip">
-             <string>Allows the mouse to be mapped to emulated controls. By default movement of the mouse will be ignored.</string>
-            </property>
-            <property name="text">
-             <string>Enable Mouse Mapping</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QCheckBox" name="enableRawInput">
-            <property name="toolTip">
-             <string>Uses raw input for mice input. Enable if you wish to use multiple mice/lightguns.</string>
-            </property>
-            <property name="text">
-             <string>Use Raw Input</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
+        <item row="2" column="0">
+         <widget class="QCheckBox" name="enableRawInput">
+          <property name="toolTip">
+           <string>Uses raw input for mice input. Enable if you wish to use multiple mice/lightguns.</string>
+          </property>
+          <property name="text">
+           <string>Use Raw Input</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="1">
+         <widget class="QLabel" name="rawInputDescription">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="text">
+           <string>Using raw input improves precision when you bind controller sticks to the mouse pointer. Also enables multiple mice to be used.</string>
+          </property>
+          <property name="wordWrap">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </item>
+     <item>
+      <widget class="QGroupBox" name="mappingGroup">
+       <property name="title">
+        <string>Mapping Settings</string>
+       </property>
+       <layout class="QGridLayout" name="mappingLayout">
+        <item row="0" column="0" colspan="2">
+         <widget class="QLabel" name="mappingDescription">
+          <property name="text">
+           <string>By default, mapping mouse movement and device sensors is disabled to avoid accidential bindings when manually mapping.</string>
+          </property>
+          <property name="wordWrap">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QCheckBox" name="enableMouseMapping">
+          <property name="toolTip">
+           <string>Allows the mouse to be mapped to emulated controls. By default movement of the mouse will be ignored.</string>
+          </property>
+          <property name="text">
+           <string>Enable Mouse Mapping</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="QCheckBox" name="enableSensorMapping">
+          <property name="toolTip">
+           <string>Allows sensors such as accelerometers to be mapped to emulated controls. By default movement of the mouse will be ignored.</string>
+          </property>
+          <property name="text">
+           <string>Enable Sensor Mapping</string>
+          </property>
+         </widget>
         </item>
        </layout>
       </widget>

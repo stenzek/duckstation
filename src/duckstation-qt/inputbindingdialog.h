@@ -25,9 +25,6 @@ public:
                      std::string key_name, std::vector<std::string> bindings, QWidget* parent);
   ~InputBindingDialog();
 
-  static void logInputEvent(InputBindingInfo::Type bind_type, InputBindingKey key, float value, float initial_value,
-                            float min_value);
-
 protected:
   enum : u32
   {
@@ -73,4 +70,5 @@ protected:
   u32 m_input_listen_remaining_seconds = 0;
   QPoint m_input_listen_start_position{};
   bool m_mouse_mapping_enabled = false;
+  bool m_sensor_mapping_enabled = false;
 };
