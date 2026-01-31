@@ -553,13 +553,16 @@ bool OpenGLSwapChain::SetVSyncMode(GPUVSyncMode mode, Error* error)
   const bool is_main_swap_chain = (g_gpu_device->GetMainSwapChain() == this);
 
   OpenGLContext* ctx = OpenGLDevice::GetContext();
-  if (!is_main_swap_chain && !ctx->MakeCurrent(m_surface_handle))
+  if (!is_main_swap_chain && !ctx->MakeCurrent(m_surface_handle, error))
     return false;
 
   const bool result = SetSwapInterval(ctx, mode, error);
 
-  if (!is_main_swap_chain)
-    ctx->MakeCurrent(static_cast<OpenGLSwapChain*>(g_gpu_device->GetMainSwapChain())->m_surface_handle);
+  if (!is_main_swap_chain &&
+      !ctx->MakeCurrent(static_cast<OpenGLSwapChain*>(g_gpu_device->GetMainSwapChain())->m_surface_handle, error))
+  {
+    return false;
+  }
 
   if (!result)
     return false;
@@ -576,7 +579,7 @@ bool OpenGLSwapChain::SetSwapInterval(OpenGLContext* ctx, GPUVSyncMode mode, Err
   glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &current_fbo);
   glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 
-  const bool result = ctx->SetSwapInterval(interval);
+  const bool result = ctx->SetSwapInterval(interval, error);
 
   glBindFramebuffer(GL_DRAW_FRAMEBUFFER, current_fbo);
   return result;
