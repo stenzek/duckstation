@@ -257,8 +257,6 @@ if(WIN32)
     target_link_libraries(util PRIVATE WinPixEventRuntime::WinPixEventRuntime)
   endif()
 elseif(APPLE)
-  include(AddMetalSources)
-
   set(MAC_SOURCES
     metal_device.h
     metal_device.mm

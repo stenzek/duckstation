@@ -299,3 +299,79 @@ function(check_cpp20_attribute ATTRIBUTE MINIMUM_VALUE)
     message(FATAL_ERROR "${ATTRIBUTE} is not supported by your compiler, at least ${MINIMUM_VALUE} is required.")
   endif()
 endfunction()
+
+if(APPLE)
+  function(add_metal_sources target sources library_name metal_std)
+    set(air_files)
+    set(compile_flags -std=${metal_std} -ffast-math)
+
+    foreach(source IN LISTS sources)
+      get_filename_component(source_name ${source} NAME)
+      set(air_file ${CMAKE_CURRENT_BINARY_DIR}/${library_name}/${source_name}.air)
+      list(APPEND air_files ${air_file})
+
+      add_custom_command(
+        OUTPUT ${air_file}
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/${library_name}
+        COMMAND xcrun metal ${compile_flags} -o ${air_file} -c ${source}
+        DEPENDS ${source}
+        COMMENT "Compiling Metal shader ${source_name}"
+      )
+    endforeach()
+
+    set(metallib_file ${CMAKE_CURRENT_BINARY_DIR}/${library_name}.metallib)
+
+    add_custom_command(
+      OUTPUT ${metallib_file}
+      COMMAND xcrun metallib -o ${metallib_file} ${air_files}
+      DEPENDS ${air_files}
+      COMMENT "Linking Metal library ${library_name}.metallib"
+    )
+
+    target_sources(${target} PRIVATE ${metallib_file})
+    set_source_files_properties(${metallib_file} PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
+  endfunction()
+endif()
+
+function(add_resources TARGET DEST_SUBDIR SOURCE_DIR)
+  # Recursively find all files in the source directory
+  file(GLOB_RECURSE SOURCE_FILES CONFIGURE_DEPENDS "${SOURCE_DIR}/*")
+
+  foreach(SOURCE_FILE IN LISTS SOURCE_FILES)
+    # Skip directories
+    if(IS_DIRECTORY "${SOURCE_FILE}")
+      continue()
+    endif()
+
+    # Get the path relative to SOURCE_DIR
+    file(RELATIVE_PATH REL_PATH "${SOURCE_DIR}" "${SOURCE_FILE}")
+
+    # Get the subdirectory portion (if any)
+    get_filename_component(REL_SUBDIR "${REL_PATH}" DIRECTORY)
+
+    if(APPLE)
+      # On macOS, add as source with MACOSX_PACKAGE_LOCATION
+      target_sources(${TARGET} PRIVATE "${SOURCE_FILE}")
+      if(REL_SUBDIR)
+        set_source_files_properties("${SOURCE_FILE}" PROPERTIES
+          MACOSX_PACKAGE_LOCATION "Resources/${REL_SUBDIR}")
+      else()
+        set_source_files_properties("${SOURCE_FILE}" PROPERTIES
+          MACOSX_PACKAGE_LOCATION "Resources")
+      endif()
+    else()
+      # On other platforms, use custom command to copy files
+      if(REL_SUBDIR)
+        set(DEST_PATH "$<TARGET_FILE_DIR:${TARGET}>/${DEST_SUBDIR}/${REL_SUBDIR}")
+      else()
+        set(DEST_PATH "$<TARGET_FILE_DIR:${TARGET}>/${DEST_SUBDIR}")
+      endif()
+
+      add_custom_command(TARGET ${TARGET} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E make_directory "${DEST_PATH}"
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different "${SOURCE_FILE}" "${DEST_PATH}/"
+        COMMENT "Copying ${REL_PATH} to ${DEST_SUBDIR}"
+      )
+    endif()
+  endforeach()
+endfunction()
