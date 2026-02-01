@@ -638,6 +638,20 @@ bool Installer::CreateUninstallerEntry()
     return false;
   }
 
+  // Estimate the installed size of the application.
+  s64 install_size = 0;
+  if (FileSystem::FindResultsArray results; FileSystem::FindFiles(
+        m_destination_directory.c_str(), "*",
+        FILESYSTEM_FIND_RECURSIVE | FILESYSTEM_FIND_RELATIVE_PATHS | FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_FOLDERS,
+        &results))
+  {
+    for (const FILESYSTEM_FIND_DATA& fd : results)
+    {
+      if (!(fd.Attributes & (FILESYSTEM_FILE_ATTRIBUTE_DIRECTORY | FILESYSTEM_FILE_ATTRIBUTE_LINK)))
+        install_size += fd.Size;
+    }
+  }
+
   const std::string display_name = "DuckStation";
   const std::string uninstall_path = Path::Combine(m_destination_directory, INSTALLER_UNINSTALLER_FILENAME);
   const std::string install_location = m_destination_directory;
@@ -664,6 +678,12 @@ bool Installer::CreateUninstallerEntry()
                  static_cast<DWORD>((publisher_w.length() + 1) * sizeof(wchar_t)));
   RegSetValueExW(key, L"NoModify", 0, REG_DWORD, reinterpret_cast<const BYTE*>(&no_modify), sizeof(no_modify));
   RegSetValueExW(key, L"NoRepair", 0, REG_DWORD, reinterpret_cast<const BYTE*>(&no_repair), sizeof(no_repair));
+
+  if (const DWORD install_size_kb = static_cast<DWORD>(install_size / 1024); install_size_kb > 0)
+  {
+    RegSetValueExW(key, L"EstimatedSize", 0, REG_DWORD, reinterpret_cast<const BYTE*>(&install_size_kb),
+                   sizeof(install_size_kb));
+  }
 
   RegCloseKey(key);
 
