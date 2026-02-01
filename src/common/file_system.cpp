@@ -1733,6 +1733,12 @@ bool FileSystem::WriteBinaryFile(const char* path, const void* data, size_t data
     return false;
   }
 
+  if (std::fclose(fp.release()) != 0)
+  {
+    Error::SetErrno(error, "fclose() failed: ", errno);
+    return false;
+  }
+
   return true;
 }
 
@@ -1750,6 +1756,12 @@ bool FileSystem::WriteStringToFile(const char* path, std::string_view sv, Error*
   if (sv.length() > 0 && std::fwrite(sv.data(), 1u, sv.length(), fp.get()) != sv.length())
   {
     Error::SetErrno(error, "fwrite() failed: ", errno);
+    return false;
+  }
+
+  if (std::fclose(fp.release()) != 0)
+  {
+    Error::SetErrno(error, "fclose() failed: ", errno);
     return false;
   }
 
