@@ -7,6 +7,10 @@ if(WIN32 OR APPLE)
   add_subdirectory(updater)
 endif()
 
+if(WIN32)
+  add_subdirectory(installer)
+endif()
+
 if(BUILD_QT_FRONTEND)
   add_subdirectory(duckstation-qt)
 endif()
