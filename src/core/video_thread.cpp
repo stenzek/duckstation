@@ -1433,7 +1433,9 @@ void VideoThread::RecreateRenderWindowOnThread(bool fullscreen, bool allow_exclu
   }
 
   // Need to notify the core thread of the change, since it won't necessarily get a resize event.
-  Host::RunOnCoreThread([wi = std::move(wi.value())]() mutable { s_state.render_window_info = std::move(wi); });
+  Host::RunOnCoreThread([wi = g_gpu_device->HasMainSwapChain() ?
+                                g_gpu_device->GetMainSwapChain()->GetWindowInfo() :
+                                WindowInfo()]() { s_state.render_window_info = std::move(wi); });
 
   RenderWindowResizedOnThread();
 }
