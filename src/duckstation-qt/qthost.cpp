@@ -3651,16 +3651,13 @@ int main(int argc, char* argv[])
   // Create desktop file if it does not exist.
   QtHost::CheckDesktopFile();
 
-  // I hate this so much. Because GNOME are arrogant uncooperative assholes who refuse to let applications
-  // raise their own windows, we have to show the log window before the main window, otherwise the main
-  // window will appear behind the log window. And it'll block it, because we're not allowed to attach it
-  // to the main window by setting its position either.
-  if (QtHost::s_state.wayland_workarounds)
+  // I hate this so much. Turns out not only is window raising non-functional on GNOME for what I'm guessing
+  // is purely political reasons, it's also very unreliable on KDE too. Sometimes raising works, other times
+  // it doesn't. Deferring the request doesn't seem to help either. Can't be arsed to debug, just force all
+  // Wayland down the reverse path of showing the log window first.
+  if (QtHost::IsRunningOnWayland())
   {
     LogWindow::deferredShow();
-
-    // And of course this turd of a desktop environment can't even open windows in order.
-    // Force it to be displayed. This is completely fucking ridiculous.
     QApplication::sync();
     QApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
   }
@@ -3689,15 +3686,7 @@ int main(int argc, char* argv[])
   // Bring the log window up last, so that its icon does not take precedence.
   if (LogWindow::deferredShow())
   {
-#ifdef __linux__
-    // On KDE it's broken too - the log window appears in front of the main window even if it's shown second.
-    if (QtHost::IsRunningOnWayland() && !QtHost::s_state.wayland_workarounds)
-    {
-      QApplication::sync();
-      QApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
-    }
-#endif
-
+    // But ensure the main window still has focus.
     QtUtils::RaiseWindow(g_main_window);
   }
 
