@@ -4,8 +4,9 @@
 #include "installer_ui.h"
 #include "installer.h"
 #include "resource.h"
-#include "win32_progress_callback.h"
-#include "win32_window_util.h"
+
+#include "updater/win32_progress_callback.h"
+#include "updater/win32_window_util.h"
 
 #include "common/error.h"
 #include "common/scoped_guard.h"

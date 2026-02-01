@@ -6,6 +6,7 @@
     <ClCompile Include="win32_main.cpp" />
     <ClCompile Include="updater.cpp" />
     <ClCompile Include="win32_progress_callback.cpp" />
+    <ClCompile Include="win32_window_util.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="updater.manifest" />
@@ -15,6 +16,7 @@
     <ClInclude Include="updater.h" />
     <ClInclude Include="updater_progress_callback.h" />
     <ClInclude Include="win32_progress_callback.h" />
+    <ClInclude Include="win32_window_util.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\dep\minizip\minizip.vcxproj">

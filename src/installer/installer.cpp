@@ -113,7 +113,7 @@ static bool FindSignature(CSzFile* stream, s64* start_offset)
   }
 }
 
-Installer::Installer(UpdaterProgressCallback* progress, std::string destination_directory)
+Installer::Installer(Win32ProgressCallback* progress, std::string destination_directory)
   : m_destination_directory(std::move(destination_directory)), m_progress(progress)
 {
   m_staging_directory = Path::Combine(m_destination_directory, "staging");

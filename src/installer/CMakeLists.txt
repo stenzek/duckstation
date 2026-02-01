@@ -7,10 +7,12 @@ add_executable(installer
   installer_ui.cpp
   installer_ui.h
   resource.h
-  updater_progress_callback.h
-  win32_progress_callback.cpp
-  win32_progress_callback.h
-  win32_window_util.h
+  ../updater/updater_progress_callback.h
+  ../updater/win32_progress_callback.cpp
+  ../updater/win32_progress_callback.h
+  ../updater/win32_window_util.cpp
+  ../updater/win32_window_util.h
+  ../duckstation-qt/vcruntimecheck.cpp
 )
 
 target_include_directories(installer PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/..")

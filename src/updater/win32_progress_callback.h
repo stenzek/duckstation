@@ -10,7 +10,7 @@
 class Win32ProgressCallback final : public UpdaterProgressCallback
 {
 public:
-  Win32ProgressCallback();
+  Win32ProgressCallback(HWND parent_hwnd = nullptr);
   ~Win32ProgressCallback() override;
 
   void PushState() override;
@@ -54,6 +54,7 @@ private:
 
   int Scale(int value) const;
 
+  HWND m_parent_hwnd = nullptr;
   HWND m_window_hwnd = nullptr;
   HWND m_text_hwnd = nullptr;
   HWND m_progress_hwnd = nullptr;

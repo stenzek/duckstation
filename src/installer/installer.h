@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "updater_progress_callback.h"
+#include "updater/win32_progress_callback.h"
 
 #include "common/windows_headers.h"
 
@@ -18,7 +18,7 @@ class Error;
 class Installer
 {
 public:
-  Installer(UpdaterProgressCallback* progress, std::string destination_directory);
+  Installer(Win32ProgressCallback* progress, std::string destination_directory);
   ~Installer();
 
   static bool CheckForEmptyDirectory(const std::string& directory);
@@ -55,7 +55,7 @@ private:
   std::vector<FileToUpdate> m_update_paths;
   std::vector<std::string> m_update_directories;
 
-  UpdaterProgressCallback* m_progress;
+  Win32ProgressCallback* m_progress;
   CFileInStream m_archive_stream = {};
   CLookToRead2 m_look_stream = {};
   CSzArEx m_archive = {};

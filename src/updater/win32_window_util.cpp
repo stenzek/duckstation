@@ -1,15 +1,9 @@
-// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
-#pragma once
+#include "win32_window_util.h"
 
-#include "common/windows_headers.h"
-
-namespace Win32WindowUtil {
-
-/// Centers a window on the monitor where the mouse cursor is currently located.
-/// Should be called before ShowWindow().
-inline void CenterWindowOnMonitorAtCursorPosition(HWND hwnd)
+void Win32WindowUtil::CenterWindowOnMonitorAtCursorPosition(HWND hwnd)
 {
   // Get the current cursor position
   POINT cursor_pos = {};
@@ -38,5 +32,3 @@ inline void CenterWindowOnMonitorAtCursorPosition(HWND hwnd)
   // Move the window
   SetWindowPos(hwnd, nullptr, window_x, window_y, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE);
 }
-
-} // namespace Win32WindowUtil

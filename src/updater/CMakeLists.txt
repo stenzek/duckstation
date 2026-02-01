@@ -15,6 +15,8 @@ if(WIN32)
     win32_main.cpp
     win32_progress_callback.cpp
     win32_progress_callback.h
+    win32_window_util.cpp
+    win32_window_util.h
     ../duckstation-qt/vcruntimecheck.cpp
   )
   target_link_libraries(updater PRIVATE "Comctl32.lib")

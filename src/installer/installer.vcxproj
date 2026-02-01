@@ -3,21 +3,22 @@
   <Import Project="..\..\dep\msvc\vsprops\Configurations.props" />
   <ItemGroup>
     <ClCompile Include="..\duckstation-qt\vcruntimecheck.cpp" />
+    <ClCompile Include="..\updater\win32_progress_callback.cpp" />
+    <ClCompile Include="..\updater\win32_window_util.cpp" />
     <ClCompile Include="installer_ui.cpp" />
     <ClCompile Include="installer.cpp" />
-    <ClCompile Include="win32_progress_callback.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="installer.manifest" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\updater\updater_progress_callback.h" />
+    <ClInclude Include="..\updater\win32_progress_callback.h" />
+    <ClInclude Include="..\updater\win32_window_util.h" />
     <ClInclude Include="installer_params.h" />
     <ClInclude Include="installer_ui.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="installer.h" />
-    <ClInclude Include="updater_progress_callback.h" />
-    <ClInclude Include="win32_progress_callback.h" />
-    <ClInclude Include="win32_window_util.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\dep\lzma\lzma.vcxproj">

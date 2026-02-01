@@ -3,6 +3,7 @@
 
 #include "win32_progress_callback.h"
 #include "resource.h"
+#include "win32_window_util.h"
 
 #include "common/log.h"
 #include "common/string_util.h"
@@ -12,7 +13,7 @@
 
 LOG_CHANNEL(Host);
 
-Win32ProgressCallback::Win32ProgressCallback() : UpdaterProgressCallback()
+Win32ProgressCallback::Win32ProgressCallback(HWND parent_hwnd) : UpdaterProgressCallback(), m_parent_hwnd(parent_hwnd)
 {
   Create();
 }
@@ -94,17 +95,24 @@ bool Win32ProgressCallback::Create()
   RECT adjusted_rect = {0, 0, Scale(WINDOW_WIDTH), Scale(WINDOW_HEIGHT)};
   AdjustWindowRectExForDpi(&adjusted_rect, WS_OVERLAPPEDWINDOW, FALSE, WS_EX_CLIENTEDGE, m_dpi);
 
+  const int window_width = adjusted_rect.right - adjusted_rect.left;
+  const int window_height = adjusted_rect.bottom - adjusted_rect.top;
+
   m_window_hwnd =
     CreateWindowEx(WS_EX_CLIENTEDGE, CLASS_NAME, L"DuckStation Update Installer", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT,
-                   CW_USEDEFAULT, adjusted_rect.right - adjusted_rect.left, adjusted_rect.bottom - adjusted_rect.top,
-                   nullptr, nullptr, GetModuleHandle(nullptr), this);
+                   CW_USEDEFAULT, window_width, window_height, m_parent_hwnd, nullptr, GetModuleHandle(nullptr), this);
   if (!m_window_hwnd)
   {
     ERROR_LOG("Failed to create window");
     return false;
   }
 
+  // Disable parent window to make this modal
+  if (m_parent_hwnd)
+    EnableWindow(m_parent_hwnd, FALSE);
+
   SetWindowLongPtr(m_window_hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(this));
+  Win32WindowUtil::CenterWindowOnMonitorAtCursorPosition(m_window_hwnd);
   ShowWindow(m_window_hwnd, SW_SHOW);
   PumpMessages();
   return true;
@@ -125,6 +133,13 @@ void Win32ProgressCallback::Destroy()
   m_window_hwnd = {};
   m_text_hwnd = {};
   m_progress_hwnd = {};
+
+  // Re-enable and restore focus to parent window
+  if (m_parent_hwnd)
+  {
+    EnableWindow(m_parent_hwnd, TRUE);
+    SetForegroundWindow(m_parent_hwnd);
+  }
 }
 
 void Win32ProgressCallback::PumpMessages()

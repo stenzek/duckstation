@@ -2,21 +2,22 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="installer.cpp" />
-    <ClCompile Include="win32_progress_callback.cpp" />
     <ClCompile Include="..\duckstation-qt\vcruntimecheck.cpp" />
     <ClCompile Include="installer_ui.cpp" />
+    <ClCompile Include="..\updater\win32_progress_callback.cpp" />
+    <ClCompile Include="..\updater\win32_window_util.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="installer.manifest" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="installer.h" />
-    <ClInclude Include="win32_progress_callback.h" />
     <ClInclude Include="resource.h" />
-    <ClInclude Include="updater_progress_callback.h" />
     <ClInclude Include="installer_ui.h" />
-    <ClInclude Include="win32_window_util.h" />
     <ClInclude Include="installer_params.h" />
+    <ClInclude Include="..\updater\updater_progress_callback.h" />
+    <ClInclude Include="..\updater\win32_progress_callback.h" />
+    <ClInclude Include="..\updater\win32_window_util.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="installer.rc" />
