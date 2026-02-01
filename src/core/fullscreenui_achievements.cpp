@@ -508,7 +508,8 @@ void FullscreenUI::DrawNotifications(NotificationLayout& layout)
         if (note_image)
         {
           const ImRect image_rect = CenterImage(note_size, note_image);
-          dl->AddImage(note_image, note_pos + image_rect.Min, note_pos + image_rect.Max);
+          dl->AddImage(note_image, note_pos + image_rect.Min, note_pos + image_rect.Max, ImVec2(0.0f, 0.0f),
+                       ImVec2(1.0f, 1.0f), ImGui::GetColorU32(ImVec4(1.0f, 1.0f, 1.0f, opacity)));
         }
       }
       break;
