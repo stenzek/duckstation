@@ -59,10 +59,13 @@ jobs:
           prerelease: true
           title: "Latest Preview Build"
           files: |
+            ./artifacts/duckstation-windows-x64-installer.exe
             ./artifacts/duckstation-windows-x64-release.zip
             ./artifacts/duckstation-windows-x64-release-symbols.zip
+            ./artifacts/duckstation-windows-x64-sse2-installer.exe
             ./artifacts/duckstation-windows-x64-sse2-release.zip
             ./artifacts/duckstation-windows-x64-sse2-release-symbols.zip
+            ./artifacts/duckstation-windows-arm64-installer.exe
             ./artifacts/duckstation-windows-arm64-release.zip
             ./artifacts/duckstation-windows-arm64-release-symbols.zip
             ./artifacts/DuckStation-x64.AppImage
@@ -82,10 +85,13 @@ jobs:
           prerelease: false
           title: "Latest Rolling Release"
           files: |
+            ./artifacts/duckstation-windows-x64-installer.exe
             ./artifacts/duckstation-windows-x64-release.zip
             ./artifacts/duckstation-windows-x64-release-symbols.zip
+            ./artifacts/duckstation-windows-x64-sse2-installer.exe
             ./artifacts/duckstation-windows-x64-sse2-release.zip
             ./artifacts/duckstation-windows-x64-sse2-release-symbols.zip
+            ./artifacts/duckstation-windows-arm64-installer.exe
             ./artifacts/duckstation-windows-arm64-release.zip
             ./artifacts/duckstation-windows-arm64-release-symbols.zip
             ./artifacts/DuckStation-x64.AppImage
