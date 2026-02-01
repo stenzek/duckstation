@@ -1211,35 +1211,15 @@ void Achievements::ClientLoadGameCallback(int result, const char* error_message,
   }
 
   const bool has_achievements = rc_client_has_achievements(client);
-
-  // Check for any non-hidden leaderboards. rc_client_create_leaderboard_list() filters hidden leaderboards.
-  const bool has_leaderboards_including_hidden = rc_client_has_leaderboards(client);
-  bool has_leaderboards = false;
-  if (rc_client_leaderboard_list_t* lblist;
-      has_leaderboards_including_hidden &&
-      (lblist = rc_client_create_leaderboard_list(client, RC_CLIENT_LEADERBOARD_LIST_GROUPING_NONE)))
-  {
-    for (u32 i = 0; i < lblist->num_buckets; ++i)
-    {
-      if (lblist->buckets[i].num_leaderboards > 0)
-      {
-        has_leaderboards = true;
-        break;
-      }
-    }
-
-    rc_client_destroy_leaderboard_list(lblist);
-  }
-
+  bool has_leaderboards = rc_client_has_leaderboards(client);
   INFO_LOG("Game loaded: '{}' (ID: {}, Achievements: {}, Leaderboards: {})", info->title, info->id,
            has_achievements ? "Yes" : "No", has_leaderboards ? "Yes" : "No");
 
   // Only display summary if the game title has changed across discs.
   const bool display_summary = (s_state.game_id != info->id || s_state.game_title != info->title);
 
-  // If the game has a RetroAchievements entry but no achievements or leaderboards, enforcing hardcore mode
-  // is pointless. Have to re-query leaderboards because hidden should still trip HC.
-  if (!has_achievements && !has_leaderboards_including_hidden)
+  // If the game has an RA entry but no achievements or leaderboards, we should not enforce hardcore mode.
+  if (!has_achievements && !has_leaderboards)
   {
     WARNING_LOG("Game '{}' has no achievements or leaderboards, disabling hardcore mode.", info->title);
     DisableHardcoreMode(false, false);
