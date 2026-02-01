@@ -1125,7 +1125,7 @@ void VulkanDevice::WaitForCommandBufferCompletion(u32 index)
     {
       std::array<u64, 2> timestamps;
       VkResult res =
-        vkGetQueryPoolResults(m_device, m_timestamp_query_pool, index * 2, static_cast<u32>(timestamps.size()),
+        vkGetQueryPoolResults(m_device, m_timestamp_query_pool, cleanup_index * 2, static_cast<u32>(timestamps.size()),
                               sizeof(u64) * timestamps.size(), timestamps.data(), sizeof(u64), VK_QUERY_RESULT_64_BIT);
       if (res == VK_SUCCESS)
       {
