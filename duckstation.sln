@@ -59,6 +59,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "util-tests", "src\util-test
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "installer", "src\installer\installer.vcxproj", "{CD6D0C84-042E-4C9A-AAB5-D3BDC80273DA}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "uninstaller", "src\uninstaller\uninstaller.vcxproj", "{91C19063-A8D7-421C-A0E3-A1A3ECFC5EE5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|ARM64 = Debug|ARM64
@@ -1004,6 +1006,31 @@ Global
 		{CD6D0C84-042E-4C9A-AAB5-D3BDC80273DA}.ReleaseLTCG-Clang-SSE2|ARM64.ActiveCfg = ReleaseLTCG-Clang|ARM64
 		{CD6D0C84-042E-4C9A-AAB5-D3BDC80273DA}.ReleaseLTCG-Clang-SSE2|x64.ActiveCfg = ReleaseLTCG-Clang-SSE2|x64
 		{CD6D0C84-042E-4C9A-AAB5-D3BDC80273DA}.ReleaseLTCG-Clang-SSE2|x64.Build.0 = ReleaseLTCG-Clang-SSE2|x64
+		{91C19063-A8D7-421C-A0E3-A1A3ECFC5EE5}.Debug|ARM64.ActiveCfg = Debug-Clang|ARM64
+		{91C19063-A8D7-421C-A0E3-A1A3ECFC5EE5}.Debug|x64.ActiveCfg = Debug|x64
+		{91C19063-A8D7-421C-A0E3-A1A3ECFC5EE5}.Debug-Clang|ARM64.ActiveCfg = Debug-Clang|ARM64
+		{91C19063-A8D7-421C-A0E3-A1A3ECFC5EE5}.Debug-Clang|x64.ActiveCfg = Debug-Clang|x64
+		{91C19063-A8D7-421C-A0E3-A1A3ECFC5EE5}.Debug-Clang-SSE2|ARM64.ActiveCfg = Debug-Clang|ARM64
+		{91C19063-A8D7-421C-A0E3-A1A3ECFC5EE5}.Debug-Clang-SSE2|x64.ActiveCfg = Debug-Clang-SSE2|x64
+		{91C19063-A8D7-421C-A0E3-A1A3ECFC5EE5}.DebugFast|ARM64.ActiveCfg = DebugFast-Clang|ARM64
+		{91C19063-A8D7-421C-A0E3-A1A3ECFC5EE5}.DebugFast|x64.ActiveCfg = DebugFast|x64
+		{91C19063-A8D7-421C-A0E3-A1A3ECFC5EE5}.DebugFast-Clang|ARM64.ActiveCfg = DebugFast-Clang|ARM64
+		{91C19063-A8D7-421C-A0E3-A1A3ECFC5EE5}.DebugFast-Clang|x64.ActiveCfg = DebugFast-Clang|x64
+		{91C19063-A8D7-421C-A0E3-A1A3ECFC5EE5}.Devel-Clang|ARM64.ActiveCfg = Devel-Clang|ARM64
+		{91C19063-A8D7-421C-A0E3-A1A3ECFC5EE5}.Devel-Clang|x64.ActiveCfg = Devel-Clang|x64
+		{91C19063-A8D7-421C-A0E3-A1A3ECFC5EE5}.Release|ARM64.ActiveCfg = Release-Clang|ARM64
+		{91C19063-A8D7-421C-A0E3-A1A3ECFC5EE5}.Release|x64.ActiveCfg = Release|x64
+		{91C19063-A8D7-421C-A0E3-A1A3ECFC5EE5}.Release-Clang|ARM64.ActiveCfg = Release-Clang|ARM64
+		{91C19063-A8D7-421C-A0E3-A1A3ECFC5EE5}.Release-Clang|x64.ActiveCfg = Release-Clang|x64
+		{91C19063-A8D7-421C-A0E3-A1A3ECFC5EE5}.ReleaseLTCG|ARM64.ActiveCfg = ReleaseLTCG-Clang|ARM64
+		{91C19063-A8D7-421C-A0E3-A1A3ECFC5EE5}.ReleaseLTCG|x64.ActiveCfg = ReleaseLTCG|x64
+		{91C19063-A8D7-421C-A0E3-A1A3ECFC5EE5}.ReleaseLTCG-Clang|ARM64.ActiveCfg = ReleaseLTCG-Clang|ARM64
+		{91C19063-A8D7-421C-A0E3-A1A3ECFC5EE5}.ReleaseLTCG-Clang|ARM64.Build.0 = ReleaseLTCG-Clang|ARM64
+		{91C19063-A8D7-421C-A0E3-A1A3ECFC5EE5}.ReleaseLTCG-Clang|x64.ActiveCfg = ReleaseLTCG-Clang|x64
+		{91C19063-A8D7-421C-A0E3-A1A3ECFC5EE5}.ReleaseLTCG-Clang|x64.Build.0 = ReleaseLTCG-Clang|x64
+		{91C19063-A8D7-421C-A0E3-A1A3ECFC5EE5}.ReleaseLTCG-Clang-SSE2|ARM64.ActiveCfg = ReleaseLTCG-Clang|ARM64
+		{91C19063-A8D7-421C-A0E3-A1A3ECFC5EE5}.ReleaseLTCG-Clang-SSE2|x64.ActiveCfg = ReleaseLTCG-Clang-SSE2|x64
+		{91C19063-A8D7-421C-A0E3-A1A3ECFC5EE5}.ReleaseLTCG-Clang-SSE2|x64.Build.0 = ReleaseLTCG-Clang-SSE2|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

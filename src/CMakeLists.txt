@@ -9,6 +9,7 @@ endif()
 
 if(WIN32)
   add_subdirectory(installer)
+  add_subdirectory(uninstaller)
 endif()
 
 if(BUILD_QT_FRONTEND)

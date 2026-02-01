@@ -1,0 +1,35 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\..\dep\msvc\vsprops\Configurations.props" />
+  <ItemGroup>
+    <ClCompile Include="main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Manifest Include="uninstaller.manifest" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="resource.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\common\common.vcxproj">
+      <Project>{ee054e08-3799-4a59-a422-18259c105ffd}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="uninstaller.rc" />
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{91C19063-A8D7-421C-A0E3-A1A3ECFC5EE5}</ProjectGuid>
+  </PropertyGroup>
+  <Import Project="..\..\dep\msvc\vsprops\Win32Application.props" />
+  <Import Project="..\common\common.props" />
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)dep\minizip\include;$(SolutionDir)src</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>%(AdditionalDependencies);Comctl32.lib;zlibstatic.lib</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <Import Project="..\..\dep\msvc\vsprops\Targets.props" />
+</Project>
