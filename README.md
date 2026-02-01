@@ -213,7 +213,7 @@ An optional [SDL game controller database file](#sdl-game-controller-database) c
 
 This is located in the following places depending on the platform you're using:
 
-- Windows: `AppData\Local\DuckStation`
+- Windows: `AppData\Local\DuckStation` (old installs will use `Documents\DuckStation`).
 - Linux: `$XDG_DATA_HOME/duckstation`, or `~/.local/share/duckstation`.
 - macOS: `~/Library/Application Support/DuckStation`.
 
@@ -223,21 +223,7 @@ If you wish to use a "portable" build, where the user directory is the same as w
 
 A shortcut to open the user directory is available by selecting `Open Data Directory` from the `Tools` menu.
 
-## Resource Overrides
-
-DuckStation allows you to override certain resources by placing files in the `resources` subdirectory of the user directory. This includes images and sound effects (e.g. menu navigation/achievement unlock).
-
-Sound effects must be in WAV format with a sample rate of 44100Hz, 16-bit, and stereo.
-
-The directory structure for the overrides should follow the same structure as the `resources` directory in the program directory. For example, to override the achievement unlock sound:
-1. Select `Open Data Directory` from the `Tools` menu.
-2. Open the `resources` directory, then the `sounds` directory. You will likely have to create the `sounds` directory as the application does not create resource override subdirectories automatically.
-3. Name your replacement file `unlock.wav`.
-4. Relaunch the game (and Big Picture Mode) if it is running, as sound effects are cached.
-
-**Do not place resource override files in the program directory**, as these will be overwritten when updating DuckStation.
-
-Please note that not all resources are overridable for reliability reasons. This feature also will not work if DuckStation is configured in portable mode, as the user and program resources directory overlaps.
+DuckStation allows you to override certain resources by placing files in the `resources` subdirectory of the user directory. This includes images and sound effects (e.g. menu navigation/achievement unlock). Please refer to https://github.com/stenzek/duckstation/wiki/Resource-Overrides for more information.
 
 ## Bindings for Qt frontend
 Your keyboard or game controller can be used to simulate a variety of PlayStation controllers. Controller input is supported through DInput, XInput, and SDL backends and can be changed through `Settings -> Controllers`.
