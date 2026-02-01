@@ -2324,8 +2324,8 @@ void VulkanDevice::PushUniformBuffer(bool is_compute, const void* data, u32 data
   DebugAssert(data_size <= UNIFORM_PUSH_CONSTANTS_SIZE);
   s_stats.buffer_streamed += data_size;
   vkCmdPushConstants(m_current_command_buffer, GetCurrentVkPipelineLayout(is_compute),
-                     is_compute ? VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT :
-                                  static_cast<VkPipelineStageFlags>(UNIFORM_PUSH_CONSTANTS_STAGES),
+                     is_compute ? VK_SHADER_STAGE_COMPUTE_BIT :
+                                  static_cast<VkShaderStageFlagBits>(UNIFORM_PUSH_CONSTANTS_STAGES),
                      0, data_size, data);
 }
 
