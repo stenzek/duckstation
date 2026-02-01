@@ -3168,8 +3168,9 @@ void VulkanDevice::SetInitialPipelineState()
                          1.0f};
   vkCmdSetViewport(m_current_command_buffer, 0, 1, &vp);
 
-  const VkRect2D vrc = {{m_current_scissor.left, m_current_scissor.top},
-                        {static_cast<u32>(m_current_scissor.width()), static_cast<u32>(m_current_scissor.height())}};
+  const GSVector4i clamped_rc = m_current_scissor.max_s32(GSVector4i::zero());
+  const VkRect2D vrc = {{clamped_rc.x, clamped_rc.y},
+                        {static_cast<u32>(clamped_rc.width()), static_cast<u32>(clamped_rc.height())}};
   vkCmdSetScissor(m_current_command_buffer, 0, 1, &vrc);
 }
 
