@@ -77,4 +77,6 @@ protected:
   QPoint m_input_listen_start_position{};
   bool m_mouse_mapping_enabled = false;
   bool m_sensor_mapping_enabled = false;
+
+  static InputBindingWidget* s_current_hook_widget;
 };

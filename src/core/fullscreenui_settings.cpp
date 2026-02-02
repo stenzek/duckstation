@@ -424,7 +424,7 @@ void FullscreenUI::InputBindingDialog::Start(SettingsInterface* bsi, InputBindin
 
   const bool game_settings = IsEditingGameSettings(bsi);
 
-  InputManager::SetHook([this, game_settings](InputBindingKey key, float value) -> InputInterceptHook::CallbackResult {
+  auto input_hook = [this, game_settings](InputBindingKey key, float value) -> InputInterceptHook::CallbackResult {
     // holding the settings lock here will protect the input binding list
     const auto lock = Core::GetSettingsLock();
 
@@ -501,7 +501,10 @@ void FullscreenUI::InputBindingDialog::Start(SettingsInterface* bsi, InputBindin
     }
 
     return default_action;
-  });
+  };
+
+  Host::RunOnCoreThread(
+    [input_hook = std::move(input_hook)]() mutable { InputManager::SetHook(std::move(input_hook)); });
 }
 
 void FullscreenUI::InputBindingDialog::ClearState()
@@ -509,7 +512,7 @@ void FullscreenUI::InputBindingDialog::ClearState()
   PopupDialog::ClearState();
 
   if (m_binding_type != InputBindingInfo::Type::Unknown)
-    InputManager::RemoveHook();
+    Host::RunOnCoreThread(&InputManager::RemoveHook);
 
   m_binding_type = InputBindingInfo::Type::Unknown;
   m_binding_section = {};

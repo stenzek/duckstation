@@ -9,6 +9,7 @@
 
 #include "core/core.h"
 
+#include "common/assert.h"
 #include "common/bitutils.h"
 
 #include "fmt/format.h"
@@ -19,6 +20,8 @@
 #include <QtGui/QWheelEvent>
 
 #include "moc_inputbindingdialog.cpp"
+
+InputBindingDialog* InputBindingDialog::s_current_hook_dialog = nullptr;
 
 InputBindingDialog::InputBindingDialog(SettingsInterface* sif, InputBindingInfo::Type bind_type,
                                        std::string section_name, std::string key_name,
@@ -403,13 +406,21 @@ void InputBindingDialog::onResetSensitivityClicked()
 
 void InputBindingDialog::hookInputManager()
 {
-  InputManager::SetHook([this](InputBindingKey key, float value) {
-    QMetaObject::invokeMethod(this, &InputBindingDialog::inputManagerHookCallback, Qt::QueuedConnection, key, value);
-    return InputInterceptHook::CallbackResult::StopProcessingEvent;
+  DebugAssert(!s_current_hook_dialog);
+  s_current_hook_dialog = this;
+  Host::RunOnCoreThread([]() {
+    InputManager::SetHook([](InputBindingKey key, float value) {
+      Host::RunOnUIThread([key, value]() {
+        if (s_current_hook_dialog)
+          s_current_hook_dialog->inputManagerHookCallback(key, value);
+      });
+      return InputInterceptHook::CallbackResult::StopProcessingEvent;
+    });
   });
 }
 
 void InputBindingDialog::unhookInputManager()
 {
-  InputManager::RemoveHook();
+  s_current_hook_dialog = nullptr;
+  Host::RunOnCoreThread(&InputManager::RemoveHook);
 }

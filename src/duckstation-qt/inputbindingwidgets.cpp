@@ -10,6 +10,7 @@
 #include "core/core.h"
 #include "core/host.h"
 
+#include "common/assert.h"
 #include "common/bitutils.h"
 #include "common/log.h"
 #include "common/string_util.h"
@@ -25,6 +26,8 @@
 #include "moc_inputbindingwidgets.cpp"
 
 LOG_CHANNEL(Host);
+
+InputBindingWidget* InputBindingWidget::s_current_hook_widget = nullptr;
 
 InputBindingWidget::InputBindingWidget(QWidget* parent) : QPushButton(parent)
 {
@@ -442,15 +445,23 @@ void InputBindingWidget::inputManagerHookCallback(InputBindingKey key, float val
 
 void InputBindingWidget::hookInputManager()
 {
-  InputManager::SetHook([this](InputBindingKey key, float value) {
-    QMetaObject::invokeMethod(this, &InputBindingWidget::inputManagerHookCallback, Qt::QueuedConnection, key, value);
-    return InputInterceptHook::CallbackResult::StopProcessingEvent;
+  DebugAssert(!s_current_hook_widget);
+  s_current_hook_widget = this;
+  Host::RunOnCoreThread([]() {
+    InputManager::SetHook([](InputBindingKey key, float value) {
+      Host::RunOnUIThread([key, value]() {
+        if (s_current_hook_widget)
+          s_current_hook_widget->inputManagerHookCallback(key, value);
+      });
+      return InputInterceptHook::CallbackResult::StopProcessingEvent;
+    });
   });
 }
 
 void InputBindingWidget::unhookInputManager()
 {
-  InputManager::RemoveHook();
+  s_current_hook_widget = nullptr;
+  Host::RunOnCoreThread(&InputManager::RemoveHook);
 }
 
 void InputBindingWidget::openDialog()
