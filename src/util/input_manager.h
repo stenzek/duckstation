@@ -294,6 +294,10 @@ bool HasAnyBindingsForKey(InputBindingKey key);
 /// Can be safely called on another thread.
 bool HasAnyBindingsForSource(InputBindingKey key);
 
+/// Returns true if any bindings exist for the specified subclass.
+/// Can be safely called on another thread.
+bool HasAnyBindingsForSubclass(InputBindingKey key);
+
 /// Parses a string binding into its components. Use with external AddBinding().
 bool ParseBindingAndGetSource(std::string_view binding, InputBindingKey* key, InputSource** source);
 

@@ -79,6 +79,9 @@ public:
   /// Adjusts intensities of LEDs or other indicators on the device.
   virtual void UpdateLEDState(InputBindingKey key, float intensity) = 0;
 
+  /// Toggles whether updates for the specified subtype are enabled. If devices is null, all devices are enabled.
+  virtual void SetSubclassPollDeviceList(InputSubclass subclass, const std::span<const InputBindingKey>* devices) = 0;
+
   /// Creates a force-feedback device from this source.
   virtual std::unique_ptr<ForceFeedbackDevice> CreateForceFeedbackDevice(std::string_view device, Error* error) = 0;
 

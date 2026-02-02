@@ -373,6 +373,10 @@ TinyString XInputSource::ConvertKeyToIcon(InputBindingKey key, InputManager::Bin
   return ret;
 }
 
+void XInputSource::SetSubclassPollDeviceList(InputSubclass subclass, const std::span<const InputBindingKey>* devices)
+{
+}
+
 std::unique_ptr<ForceFeedbackDevice> XInputSource::CreateForceFeedbackDevice(std::string_view device, Error* error)
 {
   Error::SetStringView(error, "Not supported on this input source.");

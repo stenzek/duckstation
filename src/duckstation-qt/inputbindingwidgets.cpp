@@ -388,7 +388,7 @@ void InputBindingWidget::stopListeningForInput()
 
 void InputBindingWidget::inputManagerHookCallback(InputBindingKey key, float value)
 {
-  if (!isListeningForInput() || (!m_sensor_mapping_enabled && isSensorBinding(key)))
+  if (!isListeningForInput())
     return;
 
   float initial_value = value;
@@ -447,12 +447,17 @@ void InputBindingWidget::hookInputManager()
 {
   DebugAssert(!s_current_hook_widget);
   s_current_hook_widget = this;
-  Host::RunOnCoreThread([]() {
-    InputManager::SetHook([](InputBindingKey key, float value) {
+  Host::RunOnCoreThread([sensor_enabled = m_sensor_mapping_enabled]() {
+    InputManager::SetHook([sensor_enabled](InputBindingKey key, float value) {
+      // if sensor mapping is disabled, avoid wasting time forwarding to UI thread
+      if (!sensor_enabled && isSensorBinding(key))
+        return InputInterceptHook::CallbackResult::StopProcessingEvent;
+
       Host::RunOnUIThread([key, value]() {
         if (s_current_hook_widget)
           s_current_hook_widget->inputManagerHookCallback(key, value);
       });
+
       return InputInterceptHook::CallbackResult::StopProcessingEvent;
     });
   });

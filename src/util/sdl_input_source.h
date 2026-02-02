@@ -45,7 +45,7 @@ public:
   std::optional<InputBindingKey> ParseKeyString(std::string_view device, std::string_view binding) override;
   TinyString ConvertKeyToString(InputBindingKey key) override;
   TinyString ConvertKeyToIcon(InputBindingKey key, InputManager::BindingIconMappingFunction mapper) override;
-
+  void SetSubclassPollDeviceList(InputSubclass subclass, const std::span<const InputBindingKey>* devices) override;
   std::unique_ptr<ForceFeedbackDevice> CreateForceFeedbackDevice(std::string_view device, Error* error) override;
 
   bool ProcessSDLEvent(const SDL_Event* event);
@@ -76,6 +76,7 @@ private:
     float last_accel_turn;
     float last_accel_tilt;
     float rgb_led_intensity;
+    bool accel_enabled;
     bool use_gamepad_rumble : 1;
     bool has_led : 1;
     bool has_rgb_led : 1;

@@ -173,6 +173,7 @@ static void LoadMacroButtonConfig(const SettingsInterface& si, const std::string
 static void ApplyMacroButton(const MacroButton& mb);
 static void UpdateMacroButtons();
 
+static size_t UpdateInputSubclassPolling(InputSubclass subclass, bool enable_all);
 static void UpdateInputSourceState(const SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock,
                                    InputSourceType type, std::unique_ptr<InputSource> (*factory_function)());
 
@@ -1098,6 +1099,21 @@ bool InputManager::HasAnyBindingsForSource(InputBindingKey key)
       return true;
   }
 
+  return false;
+}
+
+bool InputManager::HasAnyBindingsForSubclass(InputBindingKey key)
+{
+  std::unique_lock lock(s_state.mutex);
+  for (const auto& it : s_state.binding_map)
+  {
+    const InputBindingKey& okey = it.first;
+    if (okey.source_type == key.source_type && okey.source_index == key.source_index &&
+        okey.source_subtype == key.source_subtype)
+    {
+      return true;
+    }
+  }
   return false;
 }
 
@@ -2131,6 +2147,9 @@ void InputManager::SetHook(InputInterceptHook::Callback callback)
   std::unique_lock lock(s_state.mutex);
   DebugAssert(!s_state.event_intercept_callback);
   s_state.event_intercept_callback = std::move(callback);
+
+  // enable sensor updates for all devices
+  UpdateInputSubclassPolling(InputSubclass::ControllerSensor, true);
 }
 
 void InputManager::RemoveHook()
@@ -2138,6 +2157,9 @@ void InputManager::RemoveHook()
   std::unique_lock lock(s_state.mutex);
   if (s_state.event_intercept_callback)
     s_state.event_intercept_callback = {};
+
+  // disable sensor updates if the device has no bindings
+  UpdateInputSubclassPolling(InputSubclass::ControllerSensor, false);
 }
 
 bool InputManager::HasHook()
@@ -2202,6 +2224,9 @@ void InputManager::InternalReloadBindings(const SettingsInterface& binding_si,
                         TinyString::from_format("Pointer{}Scale", s_pointer_axis_names[axis]).c_str(), default_scale),
                       1.0f);
   }
+
+  // Update whether sensor polling is enabled.
+  UpdateInputSubclassPolling(InputSubclass::ControllerSensor, false);
 }
 
 void InputManager::ReloadBindings(const SettingsInterface& binding_si, const SettingsInterface& hotkey_binding_si)
@@ -2489,6 +2514,47 @@ void InputManager::ReloadSourcesAndBindings(const SettingsInterface& sources_si,
 
   InternalReloadBindings(binding_si, hotkey_binding_si);
   UpdateRelativeMouseMode();
+}
+
+size_t InputManager::UpdateInputSubclassPolling(InputSubclass subclass, bool enable_all)
+{
+  if (enable_all)
+  {
+    // enable all -> null devices
+    for (std::unique_ptr<InputSource>& source : s_state.input_sources)
+    {
+      if (source)
+        source->SetSubclassPollDeviceList(subclass, nullptr);
+    }
+
+    return 0;
+  }
+
+  std::vector<InputBindingKey> devices;
+  for (const auto& it : s_state.binding_map)
+  {
+    if (it.first.source_subtype != subclass)
+      continue;
+
+    // avoid duplicates
+    const InputBindingKey& itk = it.first;
+    if (std::ranges::none_of(devices, [&itk, &subclass](const InputBindingKey& dk) {
+          return (dk.source_type == itk.source_type && dk.source_index == itk.source_index &&
+                  dk.source_subtype == subclass);
+        }))
+    {
+      devices.push_back(itk);
+    }
+  }
+
+  const std::span<const InputBindingKey> devices_span = devices;
+  for (std::unique_ptr<InputSource>& source : s_state.input_sources)
+  {
+    if (source)
+      source->SetSubclassPollDeviceList(subclass, &devices_span);
+  }
+
+  return devices.size();
 }
 
 #ifdef _WIN32

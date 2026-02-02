@@ -128,6 +128,11 @@ TinyString Win32RawInputSource::ConvertKeyToIcon(InputBindingKey key, InputManag
   return {};
 }
 
+void Win32RawInputSource::SetSubclassPollDeviceList(InputSubclass subclass,
+                                                    const std::span<const InputBindingKey>* devices)
+{
+}
+
 std::unique_ptr<ForceFeedbackDevice> Win32RawInputSource::CreateForceFeedbackDevice(std::string_view device,
                                                                                     Error* error)
 {
