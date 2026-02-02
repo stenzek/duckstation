@@ -1094,11 +1094,8 @@ bool InputManager::HasAnyBindingsForSource(InputBindingKey key)
   for (const auto& it : s_state.binding_map)
   {
     const InputBindingKey& okey = it.first;
-    if (okey.source_type == key.source_type && okey.source_index == key.source_index &&
-        okey.source_subtype == key.source_subtype)
-    {
+    if (okey.source_type == key.source_type && okey.source_index == key.source_index)
       return true;
-    }
   }
 
   return false;
