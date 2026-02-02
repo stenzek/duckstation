@@ -76,18 +76,35 @@ For x86 machines (most systems), you will need a CPU that supports the SSE4.1 in
 
 The main releases page is limited to the last 30 releases due to automatic updater limitations. Older releases can be downloaded from https://github.com/duckstation/old-releases/releases.
 
+### Update Channels
+
+The automatic updater in DuckStation has two channels: "Stable" and "Preview".
+ - "Stable Releases": Less frequent updates, and tracks the "latest" release on GitHub. Releases in this channel have had more testing.
+ - "Preview Releases": Built whenever a commit is pushed to the repository, and tracks the pre-release on GitHub. This channel contains builds which have had minimal testing, and may contain bugs or issues.
+
+By default, the updater will track the channel you downloaded from. You can change the channel in `Settings -> Interface -> Updates`.
+
 ### Windows
 
-DuckStation **requires** Windows 10/11, specifically version 1809 or newer. If you are still using Windows 7/8/8.1, DuckStation **will not run** on your operating system. Running these operating systems in 2023 should be considered a security risk, and I would recommend updating to something which receives vendor support.
-If you must use an older operating system, [v0.1-5624](https://github.com/duckstation/old-releases/releases/tag/v0.1-5624) is the last version which will run. But do not expect to recieve any assistance, these builds are no longer supported.
+DuckStation **requires** Windows 10/11, specifically version 1809 or newer. If you are still using Windows 7/8/8.1, DuckStation **will not run** on your operating system. Running these operating systems in 2026 should be considered a security risk, and I would recommend updating to something which receives vendor support.
+If you must use an older operating system, [v0.1-5624](https://github.com/duckstation/old-releases/releases/tag/v0.1-5624) is the last version which will run. But do not expect to receive any assistance, these builds are no longer supported.
 
-To download:
+Windows builds are provided in two formats:
+ - **Installer (.exe, recommended):** An installer which extracts DuckStation to your user-local programs directory, and optionally creates Start Menu/Desktop shortcuts.
+ - **Archive (.zip):** A zip archive containing the prebuilt binary. Choose this option if you want a "portable" installation, or do not want to run an installer.
 
-1. Go to https://github.com/stenzek/duckstation/releases/tag/latest, and download the Windows x64 build. This is a zip archive containing the prebuilt binary. If you have an ARM64 Windows machine such as Snapdragon, download the Windows ARM64 build.
-2. Alternatively, direct download link: https://github.com/stenzek/duckstation/releases/download/latest/duckstation-windows-x64-release.zip
-3. Extract the archive **to a subdirectory**. The archive has no root subdirectory, so extracting to the current directory will drop a bunch of files in your download directory if you do not extract to a subdirectory.
+To use the installer, simply download the installer from the releases page, run it, and follow the prompts.
+ - Direct download link: https://github.com/stenzek/duckstation/releases/download/latest/duckstation-windows-x64-installer.exe
+ - ARM64 download link (Snapdragon laptops): https://github.com/stenzek/duckstation/releases/download/latest/duckstation-windows-arm64-installer.exe
+ - Legacy SSE2 installer (for pre-2008 CPUs): https://github.com/stenzek/duckstation/releases/download/latest/duckstation-windows-x64-sse2-installer.exe
 
-Once downloaded and extracted, you can launch the emulator with `duckstation-qt-x64-ReleaseLTCG.exe`. Follow the Setup Wizard to get started.
+The installer is still a new addition, so if you encounter issues please let us know via Discord.
+
+To use the archive or portable installation, follow these steps:
+1. Download https://github.com/stenzek/duckstation/releases/download/latest/duckstation-windows-x64-release.zip. If you have an ARM64 Windows machine such as Snapdragon, download `duckstation-windows-arm64-release.zip` instead.
+2. Extract the archive **to a subdirectory**. The archive has no root subdirectory, so extracting to the current directory will drop a bunch of files in your download directory if you do not extract to a subdirectory.
+3. If you want a portable installation (see [User Directories](#user-directories)), create an empty file named `portable.txt` in the same directory as the executable.
+4. Once downloaded and extracted, you can launch the emulator with `duckstation-qt-x64-ReleaseLTCG.exe`. Follow the Setup Wizard to get started.
 
 **If you get an error about `vcruntime140_1.dll` being missing, you will need to update your Visual C++ runtime.** You can do that from this page: https://support.microsoft.com/en-au/help/2977003/the-latest-supported-visual-c-downloads. Specifically, you want the x64 runtime, which can be downloaded from https://aka.ms/vs/17/release/vc_redist.x64.exe.
 
@@ -99,8 +116,9 @@ DuckStation is provided for x86_64/ARM32/ARM64 Linux in AppImage formats.
 
 The AppImages require a distribution equivalent to Ubuntu 22.04 or newer to run.
 
-1. Go to https://github.com/stenzek/duckstation/releases/tag/latest, and download `duckstation-x64.AppImage`.
-2. Run `chmod a+x` on the downloaded AppImage -- following this step, the AppImage can be run like a typical executable.
+1. Download https://github.com/stenzek/duckstation/releases/download/latest/DuckStation-x64.AppImage. If you have an ARM64 Linux machine, you should download `DuckStation-arm64.AppImage`.
+2. Run `chmod a+x` on the downloaded AppImage -- following this step, the AppImage can be run like a typical executable. Alternatively, in your file manager of choice, enable execute permissions via the file properties dialog.
+3. When running the AppImage for the first time, it will prompt to create a launcher shortcut.
 
 If you were previously using the Flatpak package, to migrate your data from the Flatpak to the AppImage, you can run the following command:
 ```bash
@@ -117,7 +135,7 @@ macOS Ventura (13.3) is required, as this is also the minimum requirement for Qt
 
 To download:
 
-1. Go to https://github.com/stenzek/duckstation/releases/tag/latest, and download `duckstation-mac-release.zip`.
+1. Download https://github.com/stenzek/duckstation/releases/download/latest/duckstation-mac-release.zip.
 2. Extract the zip by double-clicking it.
 3. Open `DuckStation.app`, optionally moving it to your desired location first.
 
