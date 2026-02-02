@@ -2443,6 +2443,8 @@ void System::SetVideoFrameRate(float frequency)
   if (s_state.video_frame_rate == frequency)
     return;
 
+  VERBOSE_COLOR_LOG(StrongOrange, "Video frame rate changed from {:.2f} to {:.2f} fps", s_state.video_frame_rate,
+                    frequency);
   s_state.video_frame_rate = frequency;
   UpdateThrottlePeriod();
 }
@@ -2989,6 +2991,16 @@ bool System::SetBootMode(BootMode new_boot_mode, DiscRegion disc_region, Error* 
       ERROR_LOG("Cannot fast boot, BIOS is incompatible.");
       s_state.boot_mode = BootMode::FullBoot;
     }
+  }
+
+  // If we're not starting a game and we're using auto console region, change the region to match.
+  if (new_boot_mode == BootMode::FullBoot && disc_region == DiscRegion::NonPS1 && s_state.bios_image_info &&
+      g_settings.region == ConsoleRegion::Auto && s_state.region != s_state.bios_image_info->region)
+  {
+    WARNING_LOG("Changing console region from {} to {} to match BIOS for full boot without game",
+                Settings::GetConsoleRegionName(s_state.region),
+                Settings::GetConsoleRegionName(s_state.bios_image_info->region));
+    s_state.region = s_state.bios_image_info->region;
   }
 
   return true;
