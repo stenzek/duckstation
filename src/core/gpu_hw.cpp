@@ -2766,6 +2766,16 @@ void GPU_HW::DrawLine(const GPUBackendDrawCommand* cmd, const GSVector4 bounds, 
 
 void GPU_HW::DrawSprite(const GPUBackendDrawRectangleCommand* cmd)
 {
+  const GSVector2i pos = GSVector2i::load<true>(&cmd->x);
+  const GSVector2i size = GSVector2i::load<true>(&cmd->width).u16to32();
+  const GSVector4i rect = GSVector4i::xyxy(pos, pos.add32(size));
+  const GSVector4i clamped_rect = m_clamped_drawing_area.rintersect(rect);
+  if (clamped_rect.rempty())
+  {
+    GL_INS_FMT("Culling off-screen sprite {}", rect);
+    return;
+  }
+
   // Treat non-textured sprite draws as fills, so we don't break the TC on framebuffer clears.
   bool draw_with_software_renderer = m_draw_with_software_renderer;
   if (m_use_texture_cache && !cmd->transparency_enable && !cmd->shading_enable && !cmd->texture_enable &&
@@ -2783,21 +2793,13 @@ void GPU_HW::DrawSprite(const GPUBackendDrawRectangleCommand* cmd)
     }
     else
     {
-      GL_INS_FMT("Treating non-textured sprite as VRAM fill at {},{} size {}x{}", cmd->x, cmd->y, cmd->width,
-                 cmd->height);
-      FillVRAM(cmd->x, cmd->y, cmd->width, cmd->height, cmd->color, cmd->interlaced_rendering, cmd->active_line_lsb);
+      const GSVector2i clamped_size = clamped_rect.rsize();
+      GL_INS_FMT("Treating non-textured sprite as VRAM fill at {},{} size {}x{} (clamped {})", cmd->x, cmd->y,
+                 cmd->width, cmd->height, clamped_rect);
+      FillVRAM(clamped_rect.left, clamped_rect.top, clamped_size.x, clamped_size.y, cmd->color,
+               cmd->interlaced_rendering, cmd->active_line_lsb);
       return;
     }
-  }
-
-  const GSVector2i pos = GSVector2i::load<true>(&cmd->x);
-  const GSVector2i size = GSVector2i::load<true>(&cmd->width).u16to32();
-  const GSVector4i rect = GSVector4i::xyxy(pos, pos.add32(size));
-  const GSVector4i clamped_rect = m_clamped_drawing_area.rintersect(rect);
-  if (clamped_rect.rempty())
-  {
-    GL_INS_FMT("Culling off-screen sprite {}", rect);
-    return;
   }
 
   PrepareDraw(cmd);
