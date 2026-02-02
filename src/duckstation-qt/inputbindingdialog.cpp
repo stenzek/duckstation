@@ -302,8 +302,8 @@ void InputBindingDialog::inputManagerHookCallback(InputBindingKey key, float val
   if (!isListeningForInput())
     return;
 
-  float initial_value = value;
-  float min_value = value;
+  float initial_value;
+  float min_value;
   auto it = std::find_if(m_value_ranges.begin(), m_value_ranges.end(),
                          [key](const auto& it) { return it.first.bits == key.bits; });
   if (it != m_value_ranges.end())
@@ -313,6 +313,8 @@ void InputBindingDialog::inputManagerHookCallback(InputBindingKey key, float val
   }
   else
   {
+    // if this is a button, set an initial value of zero, since we won't get any event for the initial state
+    initial_value = min_value = (key.source_subtype == InputSubclass::ControllerButton) ? 0.0f : value;
     m_value_ranges.emplace_back(key, std::make_pair(initial_value, min_value));
   }
 

@@ -436,8 +436,8 @@ void FullscreenUI::InputBindingDialog::Start(SettingsInterface* bsi, InputBindin
     if (key.source_subtype == InputSubclass::ControllerSensor)
       return InputInterceptHook::CallbackResult::StopProcessingEvent;
 
-    float initial_value = value;
-    float min_value = value;
+    float initial_value;
+    float min_value;
     InputInterceptHook::CallbackResult default_action = InputInterceptHook::CallbackResult::StopProcessingEvent;
     const auto it = std::find_if(m_value_ranges.begin(), m_value_ranges.end(),
                                  [key](const auto& it) { return it.first.bits == key.bits; });
@@ -449,6 +449,8 @@ void FullscreenUI::InputBindingDialog::Start(SettingsInterface* bsi, InputBindin
     }
     else
     {
+      // if this is a button, set an initial value of zero, since we won't get any event for the initial state
+      initial_value = min_value = (key.source_subtype == InputSubclass::ControllerButton) ? 0.0f : value;
       m_value_ranges.emplace_back(key, std::make_pair(initial_value, min_value));
 
       // forward the event to imgui if it's a new key and a release, because this is what triggered the binding to
@@ -456,6 +458,9 @@ void FullscreenUI::InputBindingDialog::Start(SettingsInterface* bsi, InputBindin
       default_action = (value == 0.0f) ? InputInterceptHook::CallbackResult::ContinueProcessingEvent :
                                          InputInterceptHook::CallbackResult::StopProcessingEvent;
     }
+
+    DEV_LOG("Binding input event: key={} value={:.2f} initial_value={:.2f} min_value={:.2f}",
+            InputManager::ConvertInputBindingKeyToString(m_binding_type, key), value, initial_value, min_value);
 
     const float abs_value = std::abs(value);
     const float delta_from_initial = std::abs(std::abs(initial_value) - abs_value);
