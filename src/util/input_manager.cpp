@@ -240,7 +240,7 @@ struct State
   bool relative_mouse_mode = false;
   bool relative_mouse_mode_active = false;
   bool hide_host_mouse_cursor = false;
-  bool hide_host_mouse_cusor_active = false;
+  bool hide_host_mouse_cursor_active = false;
 
 #ifdef _WIN32
   // Device notification handle for Windows.
@@ -1549,13 +1549,13 @@ void InputManager::UpdateHostMouseMode()
   const bool wanted_relative_mouse_mode = (s_state.relative_mouse_mode && can_change);
   const bool wanted_hide_host_mouse_cursor = (s_state.hide_host_mouse_cursor && can_change);
   if (wanted_relative_mouse_mode == s_state.relative_mouse_mode_active &&
-      wanted_hide_host_mouse_cursor == s_state.hide_host_mouse_cusor_active)
+      wanted_hide_host_mouse_cursor == s_state.hide_host_mouse_cursor_active)
   {
     return;
   }
 
   s_state.relative_mouse_mode_active = wanted_relative_mouse_mode;
-  s_state.hide_host_mouse_cusor_active = wanted_hide_host_mouse_cursor;
+  s_state.hide_host_mouse_cursor_active = wanted_hide_host_mouse_cursor;
   Host::SetMouseMode(wanted_relative_mouse_mode, wanted_hide_host_mouse_cursor);
 }
 
