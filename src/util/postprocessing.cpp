@@ -367,8 +367,8 @@ void PostProcessing::Config::RemoveStage(SettingsInterface& si, const char* sect
   const u32 new_stage_count = stage_count - 1;
   si.ClearSection(GetStageConfigSection(section, new_stage_count));
 
-  // if game settings, wipe the field out so we can potentially remove the file
-  if (&si != Core::GetBaseSettingsLayer())
+  // if game settings and no stages left, wipe the field out so we can potentially remove the file
+  if (&si != Core::GetBaseSettingsLayer() && new_stage_count == 0)
     si.DeleteValue(section, "StageCount");
   else
     si.SetUIntValue(section, "StageCount", new_stage_count);
@@ -414,9 +414,9 @@ void PostProcessing::Config::ClearStages(SettingsInterface& si, const char* sect
 
   // if game settings, wipe the field out so we can potentially remove the file
   if (&si != Core::GetBaseSettingsLayer())
-    si.SetUIntValue(section, "StageCount", 0);
-  else
     si.DeleteValue(section, "StageCount");
+  else
+    si.SetUIntValue(section, "StageCount", 0);
 }
 
 PostProcessing::Chain::Chain(const char* section) : m_section(section)
