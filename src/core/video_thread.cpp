@@ -72,7 +72,8 @@ static void WakeThread();
 static void WakeThreadIfSleeping();
 static bool SleepThread(bool allow_sleep);
 
-static bool CreateDeviceOnThread(RenderAPI api, bool fullscreen, bool preserve_imgui_on_failure, Error* error);
+static bool CreateDeviceOnThread(RenderAPI api, bool fullscreen, bool start_fullscreen_ui,
+                                 bool preserve_imgui_on_failure, Error* error);
 static void DestroyDeviceOnThread(bool preserve_imgui_state);
 static void ResizeRenderWindowOnThread(u32 width, u32 height, float scale, float refresh_rate);
 static void RecreateRenderWindowOnThread(bool fullscreen, bool allow_exclusive_fullscreen);
@@ -80,8 +81,8 @@ static void RenderWindowResizedOnThread();
 static bool CheckExclusiveFullscreenOnThread();
 
 static void ReconfigureOnThread(VideoThreadReconfigureCommand* cmd);
-static bool CreateGPUBackendOnThread(GPURenderer renderer, bool upload_vram, const GPUSettings* old_settings,
-                                     Error* error);
+static bool CreateGPUBackendOnThread(bool hardware_renderer, bool upload_vram, const GPUSettings* old_settings,
+                                     GPURenderer* out_renderer, Error* error);
 static void DestroyGPUBackendOnThread();
 static void DestroyGPUPresenterOnThread();
 
@@ -102,7 +103,8 @@ struct ALIGN_TO_CACHE_LINE State
   Threading::ThreadHandle thread_handle;
   Common::unique_aligned_ptr<u8[]> command_fifo_data;
   WindowInfo render_window_info;
-  std::optional<GPURenderer> requested_renderer; // TODO: Non thread safe accessof this
+  std::optional<GPURenderer> requested_renderer;
+  bool requested_fullscreen_ui = false;
   bool use_thread = false;
   bool fullscreen_state = false;
 
@@ -118,7 +120,6 @@ struct ALIGN_TO_CACHE_LINE State
   u8 run_idle_reasons = 0;
   bool run_idle_flag = false;
   GPUVSyncMode requested_vsync = GPUVSyncMode::Disabled;
-  bool requested_fullscreen_ui = false;
   std::string game_title;
   std::string game_serial;
   std::string game_path;
@@ -540,21 +541,24 @@ bool VideoThread::Reconfigure(std::optional<GPURenderer> renderer, bool upload_v
 {
   INFO_LOG("Reconfiguring video thread.");
 
-  s_state.requested_renderer = renderer;
-  s_state.fullscreen_state = fullscreen.value_or(s_state.fullscreen_state);
+  const bool new_requested_fullscreen_ui = start_fullscreen_ui.value_or(s_state.requested_fullscreen_ui);
+  const bool new_fullscreen_state = fullscreen.value_or(s_state.fullscreen_state);
 
-  bool result = false;
+  GPURenderer created_renderer = GPURenderer::Count;
+  VideoThreadReconfigureCommand::Result result = VideoThreadReconfigureCommand::Result::Failed;
+
   VideoThreadReconfigureCommand* cmd =
     AllocateCommand<VideoThreadReconfigureCommand>(VideoThreadCommandType::Reconfigure);
-  cmd->renderer = s_state.requested_renderer;
-  cmd->fullscreen = s_state.fullscreen_state;
-  cmd->start_fullscreen_ui = start_fullscreen_ui;
+  cmd->renderer = renderer;
+  cmd->fullscreen = new_fullscreen_state;
+  cmd->start_fullscreen_ui = new_requested_fullscreen_ui;
   cmd->vsync_mode = System::GetEffectiveVSyncMode();
   cmd->present_skip_mode = System::GetEffectivePresentSkipMode();
   cmd->force_recreate_device = recreate_device;
   cmd->upload_vram = upload_vram;
   cmd->error_ptr = error;
   cmd->out_result = &result;
+  cmd->out_created_renderer = &created_renderer;
   cmd->settings = g_settings;
 
   if (!s_state.use_thread) [[unlikely]]
@@ -562,7 +566,23 @@ bool VideoThread::Reconfigure(std::optional<GPURenderer> renderer, bool upload_v
   else
     PushCommandAndSync(cmd, false);
 
-  return result;
+  // Update CPU thread state.
+  if (result == VideoThreadReconfigureCommand::Result::FailedWithDeviceLoss)
+  {
+    s_state.requested_renderer.reset();
+    s_state.requested_fullscreen_ui = false;
+    s_state.fullscreen_state = false;
+    return false;
+  }
+
+  // But the renderer may not have been successfully switched. Keep our CPU thread state in sync.
+  if (created_renderer == GPURenderer::Count)
+    s_state.requested_renderer.reset();
+  else
+    s_state.requested_renderer = renderer;
+  s_state.requested_fullscreen_ui = new_requested_fullscreen_ui;
+  s_state.fullscreen_state = new_fullscreen_state;
+  return (result == VideoThreadReconfigureCommand::Result::Success);
 }
 
 bool VideoThread::StartFullscreenUI(bool fullscreen, Error* error)
@@ -570,7 +590,7 @@ bool VideoThread::StartFullscreenUI(bool fullscreen, Error* error)
   // Don't need to reconfigure if we already have a system.
   if (System::IsValid())
   {
-    RunOnThread([]() { s_state.requested_fullscreen_ui = true; });
+    s_state.requested_fullscreen_ui = true;
     return true;
   }
 
@@ -584,10 +604,10 @@ bool VideoThread::IsFullscreenUIRequested()
 
 void VideoThread::StopFullscreenUI()
 {
-  // Don't need to reconfigure if we already have a system.
+  // shouldn't be changing this while we have a system
   if (System::IsValid())
   {
-    RunOnThread([]() { s_state.requested_fullscreen_ui = false; });
+    s_state.requested_fullscreen_ui = false;
     return;
   }
 
@@ -607,7 +627,6 @@ bool VideoThread::CreateGPUBackend(GPURenderer renderer, bool upload_vram, std::
 void VideoThread::DestroyGPUBackend()
 {
   Reconfigure(std::nullopt, false, std::nullopt, std::nullopt, false, nullptr);
-  s_state.requested_renderer.reset();
 }
 
 bool VideoThread::HasGPUBackend()
@@ -626,7 +645,8 @@ bool VideoThread::IsFullscreen()
   return s_state.fullscreen_state;
 }
 
-bool VideoThread::CreateDeviceOnThread(RenderAPI api, bool fullscreen, bool preserve_imgui_on_failure, Error* error)
+bool VideoThread::CreateDeviceOnThread(RenderAPI api, bool fullscreen, bool start_fullscreen_ui,
+                                       bool preserve_imgui_on_failure, Error* error)
 {
   DebugAssert(!g_gpu_device);
 
@@ -731,7 +751,7 @@ bool VideoThread::CreateDeviceOnThread(RenderAPI api, bool fullscreen, bool pres
                                 static_cast<float>(sc->GetHeight()));
   }
 
-  if (s_state.requested_fullscreen_ui)
+  if (start_fullscreen_ui)
     FullscreenUI::Initialize();
 
   if (const GPUSwapChain* swap_chain = g_gpu_device->GetMainSwapChain())
@@ -780,8 +800,8 @@ void VideoThread::DestroyDeviceOnThread(bool preserve_imgui_state)
   s_state.render_window_info = WindowInfo();
 }
 
-bool VideoThread::CreateGPUBackendOnThread(GPURenderer renderer, bool upload_vram, const GPUSettings* old_settings,
-                                           Error* error)
+bool VideoThread::CreateGPUBackendOnThread(bool hardware_renderer, bool upload_vram, const GPUSettings* old_settings,
+                                           GPURenderer* out_renderer, Error* error)
 {
   Error local_error;
 
@@ -811,9 +831,7 @@ bool VideoThread::CreateGPUBackendOnThread(GPURenderer renderer, bool upload_vra
   ImGuiManager::UpdateDebugWindowConfig();
 #endif
 
-  const bool is_hardware = (renderer != GPURenderer::Software);
-
-  if (is_hardware)
+  if (hardware_renderer)
     s_state.gpu_backend = GPUBackend::CreateHardwareBackend();
   else
     s_state.gpu_backend = GPUBackend::CreateSoftwareBackend();
@@ -821,16 +839,19 @@ bool VideoThread::CreateGPUBackendOnThread(GPURenderer renderer, bool upload_vra
   bool okay = s_state.gpu_backend->Initialize(upload_vram, &local_error);
   if (!okay)
   {
-    ERROR_LOG("Failed to create {} renderer: {}", Settings::GetRendererName(renderer), local_error.GetDescription());
+    ERROR_LOG("Failed to create {} renderer: {}", hardware_renderer ? "hardware" : "software",
+              local_error.GetDescription());
 
-    if (is_hardware && !System::IsStartupCancelled())
+    if (hardware_renderer && !System::IsStartupCancelled())
     {
       Host::AddIconOSDMessage(
         OSDMessageType::Error, "GPUBackendCreationFailed", ICON_FA_PAINT_ROLLER,
-        fmt::format(TRANSLATE_FS("OSDMessage", "Failed to initialize {} renderer, falling back to software renderer."),
-                    Settings::GetRendererName(s_state.requested_renderer.value())));
+        fmt::format(
+          "{}\n{}",
+          TRANSLATE_SV("OSDMessage", "Failed to initialize hardware renderer, falling back to software renderer."),
+          local_error.GetDescription()));
 
-      s_state.requested_renderer = GPURenderer::Software;
+      hardware_renderer = false;
       s_state.gpu_backend = GPUBackend::CreateSoftwareBackend();
       if (!s_state.gpu_backend->Initialize(upload_vram, &local_error))
         Panic("Failed to initialize fallback software renderer");
@@ -844,6 +865,9 @@ bool VideoThread::CreateGPUBackendOnThread(GPURenderer renderer, bool upload_vra
     }
   }
 
+  *out_renderer =
+    hardware_renderer ? Settings::GetRendererForRenderAPI(g_gpu_device->GetRenderAPI()) : GPURenderer::Software;
+
   g_gpu_device->SetGPUTimingEnabled(g_gpu_settings.display_show_gpu_usage);
   s_state.gpu_backend->RestoreDeviceContext();
   SetRunIdleReason(RunIdleReason::NoGPUBackend, false);
@@ -853,18 +877,19 @@ bool VideoThread::CreateGPUBackendOnThread(GPURenderer renderer, bool upload_vra
 void VideoThread::ReconfigureOnThread(VideoThreadReconfigureCommand* cmd)
 {
   // Store state.
-  s_state.requested_fullscreen_ui = cmd->start_fullscreen_ui.value_or(s_state.requested_fullscreen_ui);
   s_state.requested_vsync = cmd->vsync_mode;
   VideoPresenter::SetPresentSkipMode(cmd->present_skip_mode);
 
   // Are we shutting down everything?
-  if (!cmd->renderer.has_value() && !s_state.requested_fullscreen_ui)
+  if (!cmd->renderer.has_value() && !cmd->start_fullscreen_ui)
   {
     // Serial clear must be after backend destroy, otherwise textures won't dump.
     DestroyGPUBackendOnThread();
     DestroyGPUPresenterOnThread();
     DestroyDeviceOnThread(false);
     ClearGameInfoOnThread();
+    *cmd->out_result = VideoThreadReconfigureCommand::Result::Success;
+    *cmd->out_created_renderer = GPURenderer::Count;
     return;
   }
 
@@ -891,9 +916,10 @@ void VideoThread::ReconfigureOnThread(VideoThreadReconfigureCommand* cmd)
   // Device recreation?
   const RenderAPI current_api = g_gpu_device ? g_gpu_device->GetRenderAPI() : RenderAPI::None;
   const RenderAPI expected_api =
-    (cmd->renderer.has_value() && cmd->renderer.value() == GPURenderer::Software && current_api != RenderAPI::None) ?
+    (!cmd->force_recreate_device && current_api != RenderAPI::None &&
+     (!cmd->renderer.has_value() || cmd->renderer.value() == GPURenderer::Software)) ?
       current_api :
-      Settings::GetRenderAPIForRenderer(s_state.requested_renderer.value_or(g_gpu_settings.gpu_renderer));
+      Settings::GetRenderAPIForRenderer(cmd->renderer.value_or(g_gpu_settings.gpu_renderer));
   if (cmd->force_recreate_device || !GPUDevice::IsSameRenderAPI(current_api, expected_api))
   {
     Timer timer;
@@ -901,7 +927,8 @@ void VideoThread::ReconfigureOnThread(VideoThreadReconfigureCommand* cmd)
     DestroyDeviceOnThread(true);
 
     Error local_error;
-    if (!CreateDeviceOnThread(expected_api, cmd->fullscreen, current_api != RenderAPI::None, &local_error))
+    if (!CreateDeviceOnThread(expected_api, cmd->fullscreen, cmd->start_fullscreen_ui, current_api != RenderAPI::None,
+                              &local_error))
     {
       Host::AddIconOSDMessage(
         OSDMessageType::Error, "DeviceSwitchFailed", ICON_FA_PAINT_ROLLER,
@@ -909,59 +936,66 @@ void VideoThread::ReconfigureOnThread(VideoThreadReconfigureCommand* cmd)
                     GPUDevice::RenderAPIToString(expected_api), GPUDevice::RenderAPIToString(current_api),
                     local_error.GetDescription()));
 
-      Host::ReleaseRenderWindow();
-      if (current_api == RenderAPI::None || !CreateDeviceOnThread(current_api, cmd->fullscreen, false, &local_error))
+      if (current_api == RenderAPI::None ||
+          !CreateDeviceOnThread(current_api, cmd->fullscreen, cmd->start_fullscreen_ui, false, &local_error))
       {
         if (cmd->error_ptr)
           *cmd->error_ptr = local_error;
 
-        *cmd->out_result = false;
+        *cmd->out_result = VideoThreadReconfigureCommand::Result::FailedWithDeviceLoss;
+        *cmd->out_created_renderer = GPURenderer::Count;
         return;
       }
     }
 
-    INFO_LOG("GPU device recreated in {:.2f}ms", timer.GetTimeMilliseconds());
+    INFO_LOG("GPU device created in {:.2f}ms", timer.GetTimeMilliseconds());
   }
 
-  // Full shutdown case handled above.
-  Assert(cmd->renderer.has_value() || s_state.requested_fullscreen_ui);
   if (cmd->renderer.has_value())
   {
     Timer timer;
 
     // Do we want a renderer?
-    if (!(*cmd->out_result =
-            CreateGPUBackendOnThread(cmd->renderer.value(), cmd->upload_vram, &old_settings, cmd->error_ptr)))
+    if (CreateGPUBackendOnThread(cmd->renderer.value() != GPURenderer::Software, cmd->upload_vram, &old_settings,
+                                 cmd->out_created_renderer, cmd->error_ptr))
     {
+      *cmd->out_result = VideoThreadReconfigureCommand::Result::Success;
+      INFO_LOG("GPU backend created in {:.2f}ms", timer.GetTimeMilliseconds());
+    }
+    else
+    {
+      // No renderer created.
+      *cmd->out_result = VideoThreadReconfigureCommand::Result::Failed;
+      *cmd->out_created_renderer = GPURenderer::Count;
+
       // If we had a renderer, it means it was a switch, and we need to bail out the thread.
       if (had_renderer)
       {
         VideoThread::ReportFatalErrorAndShutdown("Failed to switch GPU backend.");
-        *cmd->out_result = true;
       }
       else
       {
         // No point keeping the presenter around.
-        DestroyGPUBackendOnThread();
         DestroyGPUPresenterOnThread();
         ClearGameInfoOnThread();
+
+        // Drop device if we're not running FSUI.
+        if (!cmd->start_fullscreen_ui)
+          DestroyDeviceOnThread(false);
       }
     }
-
-    INFO_LOG("GPU device recreated in {:.2f}ms", timer.GetTimeMilliseconds());
   }
-  else if (s_state.requested_fullscreen_ui)
+  else
   {
-    // s_state.requested_fullscreen_ui starts FullscreenUI in CreateDeviceOnThread().
-    if (!(*cmd->out_result =
-            g_gpu_device || CreateDeviceOnThread(expected_api, cmd->fullscreen, false, cmd->error_ptr)))
-    {
-      return;
-    }
+    // Full shutdown case handled above. This is just for running FSUI.
+    DebugAssert(cmd->start_fullscreen_ui);
+    DebugAssert(g_gpu_device);
 
     // Don't need to present game frames anymore.
     DestroyGPUPresenterOnThread();
     ClearGameInfoOnThread();
+
+    *cmd->out_result = VideoThreadReconfigureCommand::Result::Success;
   }
 }
 

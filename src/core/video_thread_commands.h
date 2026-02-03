@@ -70,13 +70,21 @@ struct VideoThreadCommand
 
 struct VideoThreadReconfigureCommand : public VideoThreadCommand
 {
+  enum class Result : u8
+  {
+    Success,
+    Failed,
+    FailedWithDeviceLoss,
+  };
+
   Error* error_ptr;
-  bool* out_result;
+  Result* out_result;
+  GPURenderer* out_created_renderer;
   std::optional<GPURenderer> renderer;
-  std::optional<bool> start_fullscreen_ui;
   GPUVSyncMode vsync_mode;
   PresentSkipMode present_skip_mode;
   bool fullscreen;
+  bool start_fullscreen_ui;
   bool force_recreate_device;
   bool upload_vram;
   GPUSettings settings;
