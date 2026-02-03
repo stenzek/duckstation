@@ -2178,6 +2178,10 @@ void System::DestroySystem()
   FullscreenUI::OnSystemDestroyed();
 
   Host::OnSystemDestroyed();
+
+  // Revert to global settings.
+  UpdateGameSettingsLayer();
+  ApplySettings(true);
 }
 
 void System::AbnormalShutdown(const std::string_view reason)
