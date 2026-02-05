@@ -429,8 +429,10 @@ PostProcessing::Chain::~Chain() = default;
 
 GPUTexture* PostProcessing::Chain::GetTextureUnusedAtEndOfChain() const
 {
-  return (m_stages.size() % 2) ? m_output_texture.get() :
-                                 (m_intermediate_texture ? m_intermediate_texture.get() : m_input_texture.get());
+  const size_t num_active_stages = std::ranges::count_if(
+    m_stages, [](const std::unique_ptr<Shader>& shader) { return (shader && shader->IsEnabled()); });
+  return (num_active_stages % 2) ? m_output_texture.get() :
+                                   (m_intermediate_texture ? m_intermediate_texture.get() : m_input_texture.get());
 }
 
 bool PostProcessing::Chain::IsActive() const
