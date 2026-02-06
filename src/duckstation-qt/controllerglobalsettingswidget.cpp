@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "controllerglobalsettingswidget.h"
@@ -20,6 +20,8 @@
 #include <QtWidgets/QVBoxLayout>
 
 #include "moc_controllerglobalsettingswidget.cpp"
+
+using namespace Qt::StringLiterals;
 
 ControllerGlobalSettingsWidget::ControllerGlobalSettingsWidget(QWidget* parent, ControllerSettingsWindow* dialog)
   : QWidget(parent), m_dialog(dialog)
@@ -174,7 +176,7 @@ ControllerGlobalSettingsWidget::~ControllerGlobalSettingsWidget() = default;
 
 void ControllerGlobalSettingsWidget::sdlHelpTextLinkClicked(const QString& link)
 {
-  if (link == QStringLiteral("ADVANCED_SDL_OPTIONS"))
+  if (link == "ADVANCED_SDL_OPTIONS"_L1)
   {
     QDialog* const dlg = new ControllerCustomSettingsDialog(m_dialog, m_dialog->getEditingSettingsInterface(),
                                                             "InputSources", SDLInputSource::GetAdvancedSettingsInfo(),
@@ -221,7 +223,7 @@ void ControllerGlobalSettingsWidget::ledSettingsClicked()
 
   QHBoxLayout* const heading_layout = new QHBoxLayout;
   QLabel* const icon = new QLabel;
-  icon->setPixmap(QIcon::fromTheme(QStringLiteral("lightbulb-line")).pixmap(32));
+  icon->setPixmap(QIcon::fromTheme("lightbulb-line"_L1).pixmap(32));
   QLabel* const heading = new QLabel(
     tr("<strong>Controller LED Settings</strong><br>\nThe \"alternate\" color is used when analog mode is active."));
   heading->setWordWrap(true);

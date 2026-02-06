@@ -35,6 +35,9 @@
 #include <type_traits>
 
 namespace SettingWidgetBinder {
+
+using namespace Qt::StringLiterals;
+
 inline constexpr const char* NULLABLE_PROPERTY = "SettingWidgetBinder_isNullable";
 inline constexpr const char* IS_NULL_PROPERTY = "SettingWidgetBinder_isNull";
 inline constexpr const char* GLOBAL_VALUE_PROPERTY = "SettingWidgetBinder_globalValue";
@@ -79,10 +82,7 @@ template<>
 struct SettingAccessor<QLineEdit>
 {
   static bool getBoolValue(const QLineEdit* widget) { return widget->text().toInt() != 0; }
-  static void setBoolValue(QLineEdit* widget, bool value)
-  {
-    widget->setText(value ? QStringLiteral("1") : QStringLiteral("0"));
-  }
+  static void setBoolValue(QLineEdit* widget, bool value) { widget->setText(value ? "1"_L1 : "0"_L1); }
   static void makeNullableBool(QLineEdit* widget, bool globalValue) { widget->setEnabled(false); }
   static std::optional<bool> getNullableBoolValue(const QLineEdit* widget) { return getBoolValue(widget); }
   static void setNullableBoolValue(QLineEdit* widget, std::optional<bool> value)
@@ -268,17 +268,14 @@ struct SettingAccessor<QCheckBox>
                                               Qt::PartiallyChecked);
   }
 
-  static QString getStringValue(const QCheckBox* widget)
-  {
-    return widget->isChecked() ? QStringLiteral("1") : QStringLiteral("0");
-  }
+  static QString getStringValue(const QCheckBox* widget) { return widget->isChecked() ? "1"_L1 : "0"_L1; }
   static void setStringValue(QCheckBox* widget, const QString& value) { widget->setChecked(value.toInt() != 0); }
   static void makeNullableString(QCheckBox* widget, const QString& globalValue) { widget->setTristate(true); }
   static std::optional<QString> getNullableStringValue(const QCheckBox* widget)
   {
     return (widget->checkState() == Qt::PartiallyChecked) ?
              std::nullopt :
-             std::optional<QString>(widget->isChecked() ? QStringLiteral("1") : QStringLiteral("0"));
+             std::optional<QString>(widget->isChecked() ? "1"_L1 : "0"_L1);
   }
   static void setNullableStringValue(QCheckBox* widget, std::optional<QString> value)
   {
@@ -419,7 +416,7 @@ struct SettingAccessor<QSpinBox>
   static void updateFont(QSpinBox* widget, bool isNull)
   {
     // We should be able to use QFont here.. but it doesn't update on change.
-    widget->setStyleSheet(isNull ? QStringLiteral("font-style: italic;") : QString());
+    widget->setStyleSheet(isNull ? QString("font-style: italic;"_L1) : QString());
     widget->setPrefix(isNull ? qApp->translate("SettingWidgetBinder", "Default: ") : QString());
   }
 
@@ -711,10 +708,7 @@ struct SettingAccessor<QAction>
     setFloatValue(widget, value.value_or(0.0f));
   }
 
-  static QString getStringValue(const QAction* widget)
-  {
-    return widget->isChecked() ? QStringLiteral("1") : QStringLiteral("0");
-  }
+  static QString getStringValue(const QAction* widget) { return widget->isChecked() ? "1"_L1 : "0"_L1; }
   static void setStringValue(QAction* widget, const QString& value) { widget->setChecked(value.toInt() != 0); }
   static void makeNullableString(QAction* widget, const QString& globalValue) { widget->setEnabled(false); }
   static std::optional<QString> getNullableStringValue(const QAction* widget) { return getStringValue(widget); }

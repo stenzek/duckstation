@@ -15,6 +15,8 @@
 
 #include "moc_advancedsettingswidget.cpp"
 
+using namespace Qt::StringLiterals;
+
 static QCheckBox* addBooleanTweakOption(SettingsWindow* dialog, QTableWidget* table, QString name, std::string section,
                                         std::string key, bool default_value)
 {
@@ -137,13 +139,13 @@ static void addDirectoryOption(SettingsWindow* dialog, QTableWidget* table, cons
   layout->setContentsMargins(0, 0, 0, 0);
 
   QLineEdit* value = new QLineEdit(container);
-  value->setObjectName(QStringLiteral("value"));
+  value->setObjectName("value"_L1);
   SettingWidgetBinder::BindWidgetToStringSetting(dialog->getSettingsInterface(), value, std::move(section),
                                                  std::move(key));
   layout->addWidget(value, 1);
 
   QPushButton* browse = new QPushButton(container);
-  browse->setText(QStringLiteral("..."));
+  browse->setText("..."_L1);
   browse->setMaximumWidth(32);
   QObject::connect(browse, &QPushButton::clicked, browse, [browse, value, name]() {
     const QString path(QDir::toNativeSeparators(QFileDialog::getExistingDirectory(
@@ -160,7 +162,7 @@ static void setDirectoryOption(QTableWidget* table, int row, const char* value)
 {
   QWidget* widget = table->cellWidget(row, 1);
   Assert(widget);
-  QLineEdit* valuew = widget->findChild<QLineEdit*>(QStringLiteral("value"));
+  QLineEdit* valuew = widget->findChild<QLineEdit*>("value"_L1);
   Assert(valuew);
   valuew->setText(QString::fromUtf8(value));
 }

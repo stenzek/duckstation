@@ -41,6 +41,8 @@
 
 #include "moc_autoupdaterdialog.cpp"
 
+using namespace Qt::StringLiterals;
+
 // Interval at which HTTP requests are polled.
 static constexpr u32 HTTP_POLL_INTERVAL = 10;
 
@@ -427,7 +429,7 @@ void AutoUpdaterDialog::getLatestReleaseComplete(s32 status_code, const Error& e
 
       // search for the correct file
       const QJsonArray assets(doc_object["assets"].toArray());
-      const QString asset_filename = QStringLiteral(UPDATER_ASSET_FILENAME);
+      const QLatin1StringView asset_filename = UPDATER_ASSET_FILENAME ""_L1;
       bool asset_found = false;
       for (const QJsonValue& asset : assets)
       {
@@ -509,7 +511,7 @@ void AutoUpdaterDialog::getChangesComplete(s32 status_code, const Error& error, 
       const QJsonObject doc_object(doc.object());
 
       QString changes_html = tr("<h2>Changes:</h2>");
-      changes_html += QStringLiteral("<ul>");
+      changes_html += "<ul>"_L1;
 
       const QJsonArray commits(doc_object["commits"].toArray());
       bool update_will_break_save_states = false;
@@ -529,7 +531,7 @@ void AutoUpdaterDialog::getChangesComplete(s32 status_code, const Error& error, 
             QStringLiteral("<li>%1 <i>(%2)</i></li>").arg(message.toHtmlEscaped()).arg(author.toHtmlEscaped());
         }
 
-        if (message.contains(QStringLiteral("[SAVEVERSION+]")))
+        if (message.contains("[SAVEVERSION+]"_L1))
           update_will_break_save_states = true;
       }
 
@@ -852,7 +854,7 @@ bool AutoUpdaterDialog::processUpdate(const std::vector<u8>& update_data)
     reportError(fmt::format("Application {} isn't a bundle.", bundle_path.value()));
     return false;
   }
-  if (info.suffix() != QStringLiteral("app"))
+  if (info.suffix() != "app"_L1)
   {
     reportError(
       fmt::format("Unexpected application suffix {} on {}.", info.suffix().toStdString(), bundle_path.value()));
@@ -1012,7 +1014,7 @@ bool AutoUpdaterDialog::processUpdate(const std::vector<u8>& update_data)
   // Execute new appimage.
   QProcess* new_process = new QProcess();
   new_process->setProgram(QString::fromUtf8(appimage_path));
-  new_process->setArguments(QStringList{QStringLiteral("-updatecleanup")});
+  new_process->setArguments(QStringList{"-updatecleanup"_L1});
   if (!new_process->startDetached())
   {
     reportError("Failed to execute new AppImage.");

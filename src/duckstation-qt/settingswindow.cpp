@@ -40,6 +40,8 @@
 
 LOG_CHANNEL(Host);
 
+using namespace Qt::StringLiterals;
+
 static QList<SettingsWindow*> s_open_game_properties_dialogs;
 
 SettingsWindow::SettingsWindow() : QWidget()
@@ -64,7 +66,7 @@ SettingsWindow::SettingsWindow(const GameList::Entry* entry, std::unique_ptr<INI
   setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
   addWidget(m_game_summary = new GameSummaryWidget(entry, this, m_ui.settingsContainer), tr("Summary"),
-            QStringLiteral("file-list-line"),
+            "file-list-line"_L1,
             tr("<strong>Summary</strong><hr>This page shows information about the selected game, and allows you to "
                "validate your disc was dumped correctly."));
   addPages();
@@ -90,7 +92,7 @@ void SettingsWindow::closeEvent(QCloseEvent* event)
 void SettingsWindow::addPages()
 {
   addWidget(
-    new InterfaceSettingsWidget(this, m_ui.settingsContainer), tr("Interface"), QStringLiteral("settings-3-line"),
+    new InterfaceSettingsWidget(this, m_ui.settingsContainer), tr("Interface"), "settings-3-line"_L1,
     tr("<strong>Interface Settings</strong><hr>These options control how the emulator looks and "
        "behaves.<br><br>Mouse over an option for additional information, and Shift+Wheel to scroll this panel."));
 
@@ -98,33 +100,33 @@ void SettingsWindow::addPages()
   {
     addWidget(
       m_game_list_settings = new GameListSettingsWidget(this, m_ui.settingsContainer), tr("Game List"),
-      QStringLiteral("folder-open-line"),
+      "folder-open-line"_L1,
       tr("<strong>Game List Settings</strong><hr>The list above shows the directories which will be searched by "
          "DuckStation to populate the game list. Search directories can be added, removed, and switched to "
          "recursive/non-recursive."));
   }
 
-  addWidget(new BIOSSettingsWidget(this, m_ui.settingsContainer), tr("BIOS"), QStringLiteral("chip-line"),
+  addWidget(new BIOSSettingsWidget(this, m_ui.settingsContainer), tr("BIOS"), "chip-line"_L1,
             tr("<strong>BIOS Settings</strong><hr>These options control which BIOS and expansion port is "
                "used.<br><br>Mouse over an option for additional information, and Shift+Wheel to scroll this panel."));
   addWidget(
-    new ConsoleSettingsWidget(this, m_ui.settingsContainer), tr("Console"), QStringLiteral("emulation-line"),
+    new ConsoleSettingsWidget(this, m_ui.settingsContainer), tr("Console"), "emulation-line"_L1,
     tr("<strong>Console Settings</strong><hr>These options determine the configuration of the simulated "
        "console.<br><br>Mouse over an option for additional information, and Shift+Wheel to scroll this panel."));
   addWidget(
-    new EmulationSettingsWidget(this, m_ui.settingsContainer), tr("Emulation"), QStringLiteral("chip-2-line"),
+    new EmulationSettingsWidget(this, m_ui.settingsContainer), tr("Emulation"), "chip-2-line"_L1,
     tr("<strong>Emulation Settings</strong><hr>These options determine the speed and runahead behavior of the "
        "system.<br><br>Mouse over an option for additional information, and Shift+Wheel to scroll this panel."));
 
   if (isPerGameSettings())
   {
     addWidget(new GamePatchSettingsWidget(this, m_ui.settingsContainer), tr("Patches"),
-              QStringLiteral("sparkling-line"),
+              "sparkling-line"_L1,
               tr("<strong>Patches</strong><hr>This section allows you to select optional patches to apply to the game, "
                  "which may provide performance, visual, or gameplay improvements. Activating game patches can cause "
                  "unpredictable behavior, crashing, soft-locks, or broken saved games. Use patches at your own risk, "
                  "no support will be provided to users who have enabled game patches."));
-    addWidget(new GameCheatSettingsWidget(this, m_ui.settingsContainer), tr("Cheats"), QStringLiteral("cheats-line"),
+    addWidget(new GameCheatSettingsWidget(this, m_ui.settingsContainer), tr("Cheats"), "cheats-line"_L1,
               tr("<strong>Cheats</strong><hr>This section allows you to select which cheats you wish to enable. "
                  "<strong>Using cheats can have unpredictable effects on games, causing crashes, graphical glitches, "
                  "and corrupted saves.</strong> Cheats also persist through save states even after being disabled, "
@@ -132,52 +134,52 @@ void SettingsWindow::addPages()
   }
 
   addWidget(
-    new MemoryCardSettingsWidget(this, m_ui.settingsContainer), tr("Memory Cards"), QStringLiteral("memcard-line"),
+    new MemoryCardSettingsWidget(this, m_ui.settingsContainer), tr("Memory Cards"), "memcard-line"_L1,
     tr("<strong>Memory Card Settings</strong><hr>This page lets you control what mode the memory card emulation will "
        "function in, and where the images for these cards will be stored on disk."));
   GraphicsSettingsWidget* graphics_settings;
   addWidget(graphics_settings = new GraphicsSettingsWidget(this, m_ui.settingsContainer), tr("Graphics"),
-            QStringLiteral("image-fill"),
+            "image-fill"_L1,
             tr("<strong>Graphics Settings</strong><hr>These options control how the graphics of the emulated console "
                "are rendered. Not all options are available for the software renderer. Mouse over each option for "
                "additional information, and Shift+Wheel to scroll this panel."));
   //: Translators may want to shorten On-Screen Display to "OSD".
   addWidget(new OSDSettingsWidget(this, m_ui.settingsContainer), tr("On-Screen Display"),
-            QStringLiteral("numbers-fill"),
+            "numbers-fill"_L1,
             tr("<strong>On-Screen Display Settings</strong><hr>These options determine the behavior of the messages "
                "that are displayed while content is running."));
   addWidget(
-    new PostProcessingSettingsWidget(this, m_ui.settingsContainer), tr("Post-Processing"), QStringLiteral("sun-fill"),
+    new PostProcessingSettingsWidget(this, m_ui.settingsContainer), tr("Post-Processing"), "sun-fill"_L1,
     tr("<strong>Post-Processing Settings</strong><hr>Post processing allows you to alter the appearance of the image "
        "displayed on the screen with various filters. Shaders will be executed in sequence. Additional shaders can be "
        "downloaded from <a href=\"%1\">%1</a>.")
       .arg("https://github.com/stenzek/emu-shaders"));
   addWidget(
-    new AudioSettingsWidget(this, m_ui.settingsContainer), tr("Audio"), QStringLiteral("volume-up-line"),
+    new AudioSettingsWidget(this, m_ui.settingsContainer), tr("Audio"), "volume-up-line"_L1,
     tr("<strong>Audio Settings</strong><hr>These options control the audio output of the console. Mouse over an option "
        "for additional information."));
   addWidget(
-    new AchievementSettingsWidget(this, m_ui.settingsContainer), tr("Achievements"), QStringLiteral("trophy-line"),
+    new AchievementSettingsWidget(this, m_ui.settingsContainer), tr("Achievements"), "trophy-line"_L1,
     tr("<strong>Achievement Settings</strong><hr>DuckStation uses RetroAchievements as an achievement database and "
        "for tracking progress. To use achievements, please sign up for an account at <a href=\"%1\">%1</a>. To view "
        "the achievement list in-game, press the hotkey for <strong>Open Pause Menu</strong> and select "
        "<strong>Achievements</strong> from the menu. Mouse over an option for additional information, and "
        "Shift+Wheel to scroll this panel.")
       .arg("https://retroachievements.org/"));
-  addWidget(new CaptureSettingsWidget(this, m_ui.settingsContainer), tr("Capture"), QStringLiteral("vidicon-line"),
+  addWidget(new CaptureSettingsWidget(this, m_ui.settingsContainer), tr("Capture"), "vidicon-line"_L1,
             tr("<strong>Capture Settings</strong><hr>These options determine how screenshots and videos are captured "
                "by the application."));
 
   if (!isPerGameSettings())
   {
     addWidget(
-      new FolderSettingsWidget(this, m_ui.settingsContainer), tr("Folders"), QStringLiteral("folder-settings-line"),
+      new FolderSettingsWidget(this, m_ui.settingsContainer), tr("Folders"), "folder-settings-line"_L1,
       tr("<strong>Folder Settings</strong><hr>These options control where DuckStation will save runtime data files."));
   }
 
   AdvancedSettingsWidget* advanced_settings;
   addWidget(advanced_settings = new AdvancedSettingsWidget(this, m_ui.settingsContainer), tr("Advanced"),
-            QStringLiteral("alert-line"),
+            "alert-line"_L1,
             tr("<strong>Advanced Settings</strong><hr>These options control logging and internal behavior of the "
                "emulator. Mouse over an option for additional information, and Shift+Wheel to scroll this panel."));
 
@@ -247,7 +249,7 @@ void SettingsWindow::connectUi()
     connect(m_ui.clearGameSettings, &QPushButton::clicked, this, &SettingsWindow::onClearSettingsClicked);
 }
 
-void SettingsWindow::addWidget(QWidget* widget, QString title, QString icon, QString help_text)
+void SettingsWindow::addWidget(QWidget* widget, QString title, QLatin1StringView icon, QString help_text)
 {
   const int index = m_ui.settingsCategory->count();
 

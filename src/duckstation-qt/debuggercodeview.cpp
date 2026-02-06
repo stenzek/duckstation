@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "debuggercodeview.h"
@@ -29,6 +29,8 @@
 
 LOG_CHANNEL(Host);
 
+using namespace Qt::StringLiterals;
+
 DebuggerCodeView::DebuggerCodeView(QWidget* parent) : QAbstractScrollArea(parent)
 {
   setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
@@ -37,8 +39,8 @@ DebuggerCodeView::DebuggerCodeView(QWidget* parent) : QAbstractScrollArea(parent
   updateRowHeight();
 
   // Load icons
-  m_pc_pixmap = QIcon(QStringLiteral(":/icons/debug-pc.png")).pixmap(12);
-  m_breakpoint_pixmap = QIcon(QStringLiteral(":/icons/media-record.png")).pixmap(12);
+  m_pc_pixmap = QIcon(":/icons/debug-pc.png"_L1).pixmap(12);
+  m_breakpoint_pixmap = QIcon(":/icons/media-record.png"_L1).pixmap(12);
 
   // Connect scroll bar
   connect(verticalScrollBar(), &QScrollBar::valueChanged, this, [this](int value) {

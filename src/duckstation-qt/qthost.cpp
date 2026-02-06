@@ -274,9 +274,9 @@ bool QtHost::EarlyProcessStartup()
 
   // allow us to override standard qt icons as well
   QStringList icon_theme_search_paths = QIcon::themeSearchPaths();
-  if (!icon_theme_search_paths.contains(QStringLiteral(":/icons")))
-    icon_theme_search_paths.push_back(QStringLiteral(":/icons"));
-  icon_theme_search_paths.push_back(QStringLiteral(":/standard-icons"));
+  if (!icon_theme_search_paths.contains(":/icons"_L1))
+    icon_theme_search_paths.emplace_back(":/icons"_L1);
+  icon_theme_search_paths.emplace_back(":/standard-icons"_L1);
   QIcon::setThemeSearchPaths(icon_theme_search_paths);
   return true;
 }
@@ -368,7 +368,7 @@ void QtHost::AdjustQtEnvironmentVariables()
 bool QtHost::IsRunningOnWayland()
 {
   const QString platform_name = QGuiApplication::platformName();
-  return (platform_name == QStringLiteral("wayland"));
+  return (platform_name == "wayland"_L1);
 }
 
 void QtHost::ApplyWaylandWorkarounds()
@@ -2798,11 +2798,11 @@ InputDeviceListModel::~InputDeviceListModel() = default;
 QIcon InputDeviceListModel::getIconForKey(const InputBindingKey& key)
 {
   if (key.source_type == InputSourceType::Keyboard)
-    return QIcon::fromTheme(QStringLiteral("keyboard-line"));
+    return QIcon::fromTheme("keyboard-line"_L1);
   else if (key.source_type == InputSourceType::Pointer)
-    return QIcon::fromTheme(QStringLiteral("mouse-line"));
+    return QIcon::fromTheme("mouse-line"_L1);
   else
-    return QIcon::fromTheme(QStringLiteral("controller-line"));
+    return QIcon::fromTheme("controller-line"_L1);
 }
 
 QString InputDeviceListModel::getDeviceName(const InputBindingKey& key)

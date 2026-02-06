@@ -46,6 +46,8 @@
 
 LOG_CHANNEL(Host);
 
+using namespace Qt::StringLiterals;
+
 namespace QtUtils {
 
 static bool TryMigrateWindowGeometry(SettingsInterface* si, std::string_view window_name, QWidget* widget);
@@ -410,10 +412,10 @@ QIcon QtUtils::GetIconForRegion(ConsoleRegion region)
       return QIcon(QtHost::GetResourceQPath("images/flags/PAL.svg", true));
 
     case ConsoleRegion::Auto:
-      return QIcon(QStringLiteral(":/icons/system-search.png"));
+      return QIcon(":/icons/system-search.png"_L1);
 
     default:
-      return QIcon::fromTheme(QStringLiteral("file-unknow-line"));
+      return QIcon::fromTheme("file-unknow-line"_L1);
   }
 }
 
@@ -433,7 +435,7 @@ QIcon QtUtils::GetIconForRegion(DiscRegion region)
     case DiscRegion::Other:
     case DiscRegion::NonPS1:
     default:
-      return QIcon::fromTheme(QStringLiteral("file-unknow-line"));
+      return QIcon::fromTheme("file-unknow-line"_L1);
   }
 }
 
@@ -442,16 +444,16 @@ QIcon QtUtils::GetIconForEntryType(GameList::EntryType type)
   switch (type)
   {
     case GameList::EntryType::Disc:
-      return QIcon::fromTheme(QStringLiteral("disc-line"));
+      return QIcon::fromTheme("disc-line"_L1);
     case GameList::EntryType::Playlist:
-      return QIcon::fromTheme(QStringLiteral("play-list-2-line"));
+      return QIcon::fromTheme("play-list-2-line"_L1);
     case GameList::EntryType::DiscSet:
-      return QIcon::fromTheme(QStringLiteral("multi-discs"));
+      return QIcon::fromTheme("multi-discs"_L1);
     case GameList::EntryType::PSF:
-      return QIcon::fromTheme(QStringLiteral("file-music-line"));
+      return QIcon::fromTheme("file-music-line"_L1);
     case GameList::EntryType::PSExe:
     default:
-      return QIcon::fromTheme(QStringLiteral("settings-3-line"));
+      return QIcon::fromTheme("settings-3-line"_L1);
   }
 }
 

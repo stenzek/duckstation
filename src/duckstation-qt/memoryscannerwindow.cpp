@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com> and contributors.
+// SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com> and contributors.
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "memoryscannerwindow.h"
@@ -30,6 +30,8 @@
 #include <utility>
 
 #include "moc_memoryscannerwindow.cpp"
+
+using namespace Qt::StringLiterals;
 
 static constexpr std::array<const char*, 6> s_size_strings = {
   {TRANSLATE_NOOP("MemoryScannerWindow", "Byte"), TRANSLATE_NOOP("MemoryScannerWindow", "Halfword"),
@@ -129,7 +131,7 @@ void MemoryScannerWindow::connectUi()
           [this](int index) { m_scanner.SetOperator(static_cast<MemoryScan::Operator>(index)); });
   connect(m_ui.scanStartAddress, &QLineEdit::textChanged, [this](const QString& value) {
     uint address;
-    if (value.startsWith(QStringLiteral("0x")) && value.length() > 2)
+    if (value.startsWith("0x"_L1) && value.length() > 2)
       address = value.mid(2).toUInt(nullptr, 16);
     else
       address = value.toUInt(nullptr, 16);
@@ -137,7 +139,7 @@ void MemoryScannerWindow::connectUi()
   });
   connect(m_ui.scanEndAddress, &QLineEdit::textChanged, [this](const QString& value) {
     uint address;
-    if (value.startsWith(QStringLiteral("0x")) && value.length() > 2)
+    if (value.startsWith("0x"_L1) && value.length() > 2)
       address = value.mid(2).toUInt(nullptr, 16);
     else
       address = value.toUInt(nullptr, 16);
@@ -500,7 +502,7 @@ void MemoryScannerWindow::watchItemDoubleClicked(QTableWidgetItem* item)
 void MemoryScannerWindow::updateScanValue()
 {
   QString value = m_ui.scanValue->text();
-  if (value.startsWith(QStringLiteral("0x")))
+  if (value.startsWith("0x"_L1))
     value.remove(0, 2);
 
   bool ok = false;

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "controllersettingswindow.h"
@@ -22,6 +22,8 @@
 #include <array>
 
 #include "moc_controllersettingswindow.cpp"
+
+using namespace Qt::StringLiterals;
 
 ControllerSettingsWindow::ControllerSettingsWindow(INISettingsInterface* game_sif /* = nullptr */,
                                                    bool edit_profiles /* = false */, QWidget* parent /* = nullptr */)
@@ -439,7 +441,7 @@ void ControllerSettingsWindow::createWidgets()
     // global settings
     QListWidgetItem* item = new QListWidgetItem();
     item->setText(tr("Global Settings"));
-    item->setIcon(QIcon::fromTheme(QStringLiteral("settings-3-line")));
+    item->setIcon(QIcon::fromTheme("settings-3-line"_L1));
     m_ui.settingsCategory->addItem(item);
     m_ui.settingsCategory->setCurrentRow(0);
     m_global_settings = new ControllerGlobalSettingsWidget(m_ui.settingsContainer, this);
@@ -478,7 +480,7 @@ void ControllerSettingsWindow::createWidgets()
   {
     QListWidgetItem* item = new QListWidgetItem();
     item->setText(tr("Hotkeys"));
-    item->setIcon(QIcon::fromTheme(QStringLiteral("keyboard-line")));
+    item->setIcon(QIcon::fromTheme("keyboard-line"_L1));
     m_ui.settingsCategory->addItem(item);
     m_hotkey_settings = new HotkeySettingsWidget(m_ui.settingsContainer, this);
     m_ui.settingsContainer->addWidget(m_hotkey_settings);

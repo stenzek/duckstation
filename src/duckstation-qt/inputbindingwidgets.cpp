@@ -27,6 +27,8 @@
 
 LOG_CHANNEL(Host);
 
+using namespace Qt::StringLiterals;
+
 InputBindingWidget* InputBindingWidget::s_current_hook_widget = nullptr;
 
 InputBindingWidget::InputBindingWidget(QWidget* parent) : QPushButton(parent)
@@ -101,7 +103,7 @@ void InputBindingWidget::updateElidedText()
 
   // fix up accelerators
   if (elided.contains('&'))
-    elided = elided.replace(QStringLiteral("&"), QStringLiteral("&&"));
+    elided = elided.replace("&"_L1, "&&"_L1);
 
   setText(elided);
 }
@@ -502,7 +504,7 @@ void InputBindingWidget::showEffectBindingDialog()
 
   QHBoxLayout* const heading_layout = new QHBoxLayout();
   QLabel* const icon = new QLabel(&dlg);
-  icon->setPixmap(QIcon::fromTheme(QStringLiteral("pushpin-line")).pixmap(32, 32));
+  icon->setPixmap(QIcon::fromTheme("pushpin-line"_L1).pixmap(32, 32));
   QLabel* const heading =
     new QLabel(tr("<strong>%1</strong><br>Select the device and effect to map this bind to.").arg(full_key), &dlg);
   heading->setWordWrap(true);

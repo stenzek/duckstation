@@ -43,6 +43,8 @@
 
 LOG_CHANNEL(Host);
 
+using namespace Qt::StringLiterals;
+
 namespace {
 
 struct WindowInfoLocals
@@ -70,13 +72,13 @@ WindowInfoType QtUtils::GetWindowInfoType()
   return WindowInfoType::MacOS;
 #else
   const QString platform_name = QGuiApplication::platformName();
-  if (platform_name == QStringLiteral("xcb"))
+  if (platform_name == "xcb"_L1)
   {
     // This is only used for determining the automatic Vulkan renderer, therefore XCB/XLib doesn't matter here.
     // See the comment below for information about this bullshit.
     return WindowInfoType::XCB;
   }
-  else if (platform_name == QStringLiteral("wayland"))
+  else if (platform_name == "wayland"_L1)
   {
     return WindowInfoType::Wayland;
   }
@@ -289,7 +291,7 @@ bool Host::SetScreensaverInhibit(bool inhibit, Error* error)
   if (inhibit)
   {
     const QDBusReply<quint32> msg = s_window_info_locals.screensaver_inhibit_interface->call(
-      "Inhibit", QStringLiteral("DuckStation"), QStringLiteral("DuckStation VM is running."));
+      "Inhibit", "DuckStation"_L1, "DuckStation VM is running."_L1);
     if (!msg.isValid())
     {
       FormatQDBusReplyError(error, "Inhibit message call failed: ", msg.error());

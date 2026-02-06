@@ -107,7 +107,7 @@ private:
   void addPages();
   void reloadPages();
 
-  void addWidget(QWidget* widget, QString title, QString icon, QString help_text);
+  void addWidget(QWidget* widget, QString title, QLatin1StringView icon, QString help_text);
   bool handleWheelEvent(QWheelEvent* event);
 
   void onCategoryCurrentRowChanged(int row);

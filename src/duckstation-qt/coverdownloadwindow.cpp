@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "coverdownloadwindow.h"
@@ -13,10 +13,12 @@
 
 #include "moc_coverdownloadwindow.cpp"
 
+using namespace Qt::StringLiterals;
+
 CoverDownloadWindow::CoverDownloadWindow() : QWidget()
 {
   m_ui.setupUi(this);
-  m_ui.coverIcon->setPixmap(QIcon::fromTheme(QStringLiteral("artboard-2-line")).pixmap(32));
+  m_ui.coverIcon->setPixmap(QIcon::fromTheme("artboard-2-line"_L1).pixmap(32));
   updateEnabled();
 
   connect(m_ui.start, &QPushButton::clicked, this, &CoverDownloadWindow::onStartClicked);

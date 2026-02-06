@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "gamepatchsettingswidget.h"
@@ -14,6 +14,8 @@
 #include <algorithm>
 
 #include "moc_gamepatchsettingswidget.cpp"
+
+using namespace Qt::StringLiterals;
 
 GamePatchDetailsWidget::GamePatchDetailsWidget(std::string name, const std::string& author,
                                                const std::string& description, bool disallowed_for_achievements,
@@ -89,7 +91,7 @@ void GamePatchSettingsWidget::reloadList()
     m_dialog->getSettingsInterface()->GetStringList(Cheats::PATCHES_CONFIG_SECTION, Cheats::PATCH_ENABLE_CONFIG_KEY);
 
   QWidget* container = new QWidget(m_ui.scrollArea);
-  container->setObjectName(QStringLiteral("patches_container"));
+  container->setObjectName("patches_container"_L1);
   QVBoxLayout* layout = new QVBoxLayout(container);
   m_ui.scrollArea->setWidget(container);
 

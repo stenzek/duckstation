@@ -41,6 +41,8 @@
 
 #include "moc_controllerbindingwidgets.cpp"
 
+using namespace Qt::StringLiterals;
+
 LOG_CHANNEL(Host);
 
 ControllerBindingWidget::ControllerBindingWidget(QWidget* parent, ControllerSettingsWindow* dialog, u32 port)
@@ -116,7 +118,7 @@ void ControllerBindingWidget::populateWidgets()
       Ui::ControllerBindingWidget_AnalogController ui;
       ui.setupUi(m_bindings_widget);
       bindBindingWidgets(m_bindings_widget);
-      m_icon = QIcon::fromTheme(QStringLiteral("controller-line"));
+      m_icon = QIcon::fromTheme("controller-line"_L1);
     }
     break;
 
@@ -125,7 +127,7 @@ void ControllerBindingWidget::populateWidgets()
       Ui::ControllerBindingWidget_AnalogJoystick ui;
       ui.setupUi(m_bindings_widget);
       bindBindingWidgets(m_bindings_widget);
-      m_icon = QIcon::fromTheme(QStringLiteral("joystick-line"));
+      m_icon = QIcon::fromTheme("joystick-line"_L1);
     }
     break;
 
@@ -134,7 +136,7 @@ void ControllerBindingWidget::populateWidgets()
       Ui::ControllerBindingWidget_DigitalController ui;
       ui.setupUi(m_bindings_widget);
       bindBindingWidgets(m_bindings_widget);
-      m_icon = QIcon::fromTheme(QStringLiteral("controller-digital-line"));
+      m_icon = QIcon::fromTheme("controller-digital-line"_L1);
     }
     break;
 
@@ -143,7 +145,7 @@ void ControllerBindingWidget::populateWidgets()
       Ui::ControllerBindingWidget_GunCon ui;
       ui.setupUi(m_bindings_widget);
       bindBindingWidgets(m_bindings_widget);
-      m_icon = QIcon::fromTheme(QStringLiteral("guncon-line"));
+      m_icon = QIcon::fromTheme("guncon-line"_L1);
     }
     break;
 
@@ -152,7 +154,7 @@ void ControllerBindingWidget::populateWidgets()
       Ui::ControllerBindingWidget_NeGcon ui;
       ui.setupUi(m_bindings_widget);
       bindBindingWidgets(m_bindings_widget);
-      m_icon = QIcon::fromTheme(QStringLiteral("negcon-line"));
+      m_icon = QIcon::fromTheme("negcon-line"_L1);
     }
     break;
 
@@ -161,7 +163,7 @@ void ControllerBindingWidget::populateWidgets()
       Ui::ControllerBindingWidget_NeGconRumble ui;
       ui.setupUi(m_bindings_widget);
       bindBindingWidgets(m_bindings_widget);
-      m_icon = QIcon::fromTheme(QStringLiteral("negcon-line"));
+      m_icon = QIcon::fromTheme("negcon-line"_L1);
     }
     break;
 
@@ -170,7 +172,7 @@ void ControllerBindingWidget::populateWidgets()
       Ui::ControllerBindingWidget_Mouse ui;
       ui.setupUi(m_bindings_widget);
       bindBindingWidgets(m_bindings_widget);
-      m_icon = QIcon::fromTheme(QStringLiteral("mouse-line"));
+      m_icon = QIcon::fromTheme("mouse-line"_L1);
     }
     break;
 
@@ -179,20 +181,20 @@ void ControllerBindingWidget::populateWidgets()
       Ui::ControllerBindingWidget_Justifier ui;
       ui.setupUi(m_bindings_widget);
       bindBindingWidgets(m_bindings_widget);
-      m_icon = QIcon::fromTheme(QStringLiteral("guncon-line"));
+      m_icon = QIcon::fromTheme("guncon-line"_L1);
     }
     break;
 
     case ControllerType::None:
     {
-      m_icon = QIcon::fromTheme(QStringLiteral("controller-strike-line"));
+      m_icon = QIcon::fromTheme("controller-strike-line"_L1);
     }
     break;
 
     default:
     {
       createBindingWidgets(m_bindings_widget);
-      m_icon = QIcon::fromTheme(QStringLiteral("controller-line"));
+      m_icon = QIcon::fromTheme("controller-line"_L1);
     }
     break;
   }
@@ -545,7 +547,7 @@ void ControllerMacroWidget::createWidgets(ControllerBindingWidget* bwidget)
     m_container->addWidget(m_macros[i]);
 
     QListWidgetItem* item = new QListWidgetItem();
-    item->setIcon(QIcon::fromTheme(QStringLiteral("flashlight-line")));
+    item->setIcon(QIcon::fromTheme("flashlight-line"_L1));
     m_macroList->addItem(item);
     updateListItem(i);
   }
@@ -753,7 +755,7 @@ static void createSettingWidgets(SettingsInterface* const sif, QWidget* parent_w
       case SettingInfo::Type::Boolean:
       {
         QCheckBox* cb = new QCheckBox(qApp->translate(tr_context, si.display_name), parent_widget);
-        cb->setObjectName(QString::fromUtf8(si.name));
+        cb->setObjectName(si.name);
         ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, cb, section, std::move(key_name),
                                                                     si.BooleanDefaultValue());
         layout->addWidget(cb, current_row, 0, 1, 4);
@@ -764,7 +766,7 @@ static void createSettingWidgets(SettingsInterface* const sif, QWidget* parent_w
       case SettingInfo::Type::Integer:
       {
         QSpinBox* sb = new QSpinBox(parent_widget);
-        sb->setObjectName(QString::fromUtf8(si.name));
+        sb->setObjectName(si.name);
         sb->setMinimum(si.IntegerMinValue());
         sb->setMaximum(si.IntegerMaxValue());
         sb->setSingleStep(si.IntegerStepValue());
@@ -779,7 +781,7 @@ static void createSettingWidgets(SettingsInterface* const sif, QWidget* parent_w
       case SettingInfo::Type::IntegerList:
       {
         QComboBox* cb = new QComboBox(parent_widget);
-        cb->setObjectName(QString::fromUtf8(si.name));
+        cb->setObjectName(si.name);
         for (u32 j = 0; si.options[j] != nullptr; j++)
           cb->addItem(qApp->translate(tr_context, si.options[j]));
         ControllerSettingWidgetBinder::BindWidgetToInputProfileInt(sif, cb, section, std::move(key_name),
@@ -793,7 +795,7 @@ static void createSettingWidgets(SettingsInterface* const sif, QWidget* parent_w
       case SettingInfo::Type::Float:
       {
         QDoubleSpinBox* sb = new QDoubleSpinBox(parent_widget);
-        sb->setObjectName(QString::fromUtf8(si.name));
+        sb->setObjectName(si.name);
         if (si.multiplier != 0.0f && si.multiplier != 1.0f)
         {
           const float multiplier = si.multiplier;
@@ -803,7 +805,7 @@ static void createSettingWidgets(SettingsInterface* const sif, QWidget* parent_w
           if (std::abs(si.multiplier - 100.0f) < 0.01f)
           {
             sb->setDecimals(0);
-            sb->setSuffix(QStringLiteral("%"));
+            sb->setSuffix("%"_L1);
           }
 
           ControllerSettingWidgetBinder::BindWidgetToInputProfileNormalized(sif, sb, section, std::move(key_name),
@@ -827,7 +829,7 @@ static void createSettingWidgets(SettingsInterface* const sif, QWidget* parent_w
       case SettingInfo::Type::String:
       {
         QLineEdit* le = new QLineEdit(parent_widget);
-        le->setObjectName(QString::fromUtf8(si.name));
+        le->setObjectName(si.name);
         ControllerSettingWidgetBinder::BindWidgetToInputProfileString(sif, le, section, std::move(key_name),
                                                                       si.StringDefaultValue());
         layout->addWidget(new QLabel(qApp->translate(tr_context, si.display_name), parent_widget), current_row, 0);
@@ -839,7 +841,7 @@ static void createSettingWidgets(SettingsInterface* const sif, QWidget* parent_w
       case SettingInfo::Type::Path:
       {
         QLineEdit* le = new QLineEdit(parent_widget);
-        le->setObjectName(QString::fromUtf8(si.name));
+        le->setObjectName(si.name);
         QPushButton* browse_button =
           new QPushButton(qApp->translate("ControllerCustomSettingsWidget", "Browse..."), parent_widget);
         ControllerSettingWidgetBinder::BindWidgetToInputProfileString(sif, le, section, std::move(key_name),
@@ -874,13 +876,11 @@ static void restoreDefaultSettingWidgets(QWidget* parent_widget, std::span<const
 {
   for (const SettingInfo& si : settings)
   {
-    const QString key(QString::fromStdString(si.name));
-
     switch (si.type)
     {
       case SettingInfo::Type::Boolean:
       {
-        QCheckBox* widget = parent_widget->findChild<QCheckBox*>(QString::fromStdString(si.name));
+        QCheckBox* widget = parent_widget->findChild<QCheckBox*>(si.name);
         if (widget)
           widget->setChecked(si.BooleanDefaultValue());
       }
@@ -888,7 +888,7 @@ static void restoreDefaultSettingWidgets(QWidget* parent_widget, std::span<const
 
       case SettingInfo::Type::Integer:
       {
-        QSpinBox* widget = parent_widget->findChild<QSpinBox*>(QString::fromStdString(si.name));
+        QSpinBox* widget = parent_widget->findChild<QSpinBox*>(si.name);
         if (widget)
           widget->setValue(si.IntegerDefaultValue());
       }
@@ -896,7 +896,7 @@ static void restoreDefaultSettingWidgets(QWidget* parent_widget, std::span<const
 
       case SettingInfo::Type::IntegerList:
       {
-        QComboBox* widget = parent_widget->findChild<QComboBox*>(QString::fromStdString(si.name));
+        QComboBox* widget = parent_widget->findChild<QComboBox*>(si.name);
         if (widget)
           widget->setCurrentIndex(si.IntegerDefaultValue() - si.IntegerMinValue());
       }
@@ -904,7 +904,7 @@ static void restoreDefaultSettingWidgets(QWidget* parent_widget, std::span<const
 
       case SettingInfo::Type::Float:
       {
-        QDoubleSpinBox* widget = parent_widget->findChild<QDoubleSpinBox*>(QString::fromStdString(si.name));
+        QDoubleSpinBox* widget = parent_widget->findChild<QDoubleSpinBox*>(si.name);
         if (widget)
         {
           if (si.multiplier != 0.0f && si.multiplier != 1.0f)
@@ -917,7 +917,7 @@ static void restoreDefaultSettingWidgets(QWidget* parent_widget, std::span<const
 
       case SettingInfo::Type::String:
       {
-        QLineEdit* widget = parent_widget->findChild<QLineEdit*>(QString::fromStdString(si.name));
+        QLineEdit* widget = parent_widget->findChild<QLineEdit*>(si.name);
         if (widget)
           widget->setText(QString::fromUtf8(si.StringDefaultValue()));
       }
@@ -925,7 +925,7 @@ static void restoreDefaultSettingWidgets(QWidget* parent_widget, std::span<const
 
       case SettingInfo::Type::Path:
       {
-        QLineEdit* widget = parent_widget->findChild<QLineEdit*>(QString::fromStdString(si.name));
+        QLineEdit* widget = parent_widget->findChild<QLineEdit*>(si.name);
         if (widget)
           widget->setText(QString::fromUtf8(si.StringDefaultValue()));
       }
@@ -957,7 +957,7 @@ ControllerCustomSettingsWidget::ControllerCustomSettingsWidget(ControllerBinding
 
   QHBoxLayout* bottom_hlayout = new QHBoxLayout();
   QPushButton* restore_defaults = new QPushButton(tr("Restore Default Settings"), swidget);
-  restore_defaults->setIcon(QIcon::fromTheme(QStringLiteral("restart-line")));
+  restore_defaults->setIcon(QIcon::fromTheme("restart-line"_L1));
   bottom_hlayout->addStretch(1);
   bottom_hlayout->addWidget(restore_defaults);
   swidget_layout->addLayout(bottom_hlayout, current_row++, 0, 1, 4);

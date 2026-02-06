@@ -62,6 +62,8 @@
 
 #include "moc_mainwindow.cpp"
 
+using namespace Qt::StringLiterals;
+
 LOG_CHANNEL(Host);
 
 static constexpr std::array<std::pair<Qt::ToolBarArea, const char*>, 4> s_toolbar_areas = {{
@@ -1866,7 +1868,7 @@ void MainWindow::setupAdditionalUi()
     ascending_action->setIcon(QIcon::fromTheme(QIcon::ThemeIcon::GoUp));
     ascending_action->setCheckable(true);
     ascending_action->setChecked(current_sort_order == Qt::AscendingOrder);
-    ascending_action->setObjectName(QStringLiteral("SortAscending"));
+    ascending_action->setObjectName("SortAscending"_L1);
     m_ui.menuSortBy->addAction(ascending_action);
     connect(ascending_action, &QAction::triggered, this, &MainWindow::onViewSortOrderActionTriggered);
 
@@ -1874,7 +1876,7 @@ void MainWindow::setupAdditionalUi()
     descending_action->setIcon(QIcon::fromTheme(QIcon::ThemeIcon::GoDown));
     descending_action->setCheckable(true);
     descending_action->setChecked(current_sort_order == Qt::DescendingOrder);
-    descending_action->setObjectName(QStringLiteral("SortDescending"));
+    descending_action->setObjectName("SortDescending"_L1);
     m_ui.menuSortBy->addAction(descending_action);
     connect(descending_action, &QAction::triggered, this, &MainWindow::onViewSortOrderActionTriggered);
   }
@@ -1917,9 +1919,9 @@ void MainWindow::onGameListSortIndicatorOrderChanged(int column, Qt::SortOrder o
   {
     bool activate = false;
 
-    if (action->objectName() == QStringLiteral("SortAscending"))
+    if (action->objectName() == "SortAscending"_L1)
       activate = (order == Qt::AscendingOrder);
-    else if (action->objectName() == QStringLiteral("SortDescending"))
+    else if (action->objectName() == "SortDescending"_L1)
       activate = (order == Qt::DescendingOrder);
     else
       activate = (action->data() == column);

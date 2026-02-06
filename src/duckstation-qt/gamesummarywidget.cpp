@@ -31,6 +31,8 @@
 #include "moc_gamesummarywidget.cpp"
 #include "ui_editgameserialdialog.h"
 
+using namespace Qt::StringLiterals;
+
 GameSummaryWidget::GameSummaryWidget(const GameList::Entry* entry, SettingsWindow* dialog, QWidget* parent)
   : m_dialog(dialog)
 {
@@ -267,9 +269,8 @@ void GameSummaryWidget::populateUi(const GameList::Entry* entry)
 
   m_ui.compatibilityComments->setEnabled(!m_compatibility_comments.isEmpty());
 
-  m_ui.inputProfile->addItem(QIcon::fromTheme(QStringLiteral("global-line")), tr("Use Global Settings"));
-  m_ui.inputProfile->addItem(QIcon::fromTheme(QStringLiteral("controller-digital-line")),
-                             tr("Game Specific Configuration"));
+  m_ui.inputProfile->addItem(QIcon::fromTheme("global-line"_L1), tr("Use Global Settings"));
+  m_ui.inputProfile->addItem(QIcon::fromTheme("controller-digital-line"_L1), tr("Game Specific Configuration"));
   for (const std::string& name : InputManager::GetInputProfileNames())
     m_ui.inputProfile->addItem(QString::fromStdString(name));
 
@@ -298,7 +299,7 @@ void GameSummaryWidget::onChangeSerialClicked()
   QDialog* const dialog = new QDialog(this);
   Ui::EditGameSerialDialog dialog_ui;
   dialog_ui.setupUi(dialog);
-  dialog_ui.icon->setPixmap(QIcon::fromTheme(QStringLiteral("disc-line")).pixmap(32));
+  dialog_ui.icon->setPixmap(QIcon::fromTheme("disc-line"_L1).pixmap(32));
   dialog_ui.path->setText(QString::fromStdString(m_path));
   dialog_ui.serial->setText(QString::fromStdString(entry->serial));
   dialog_ui.serial->setFocus();
@@ -451,8 +452,7 @@ void GameSummaryWidget::populateTracksInfo()
     const CDImage::TrackMode mode = image->GetTrackMode(static_cast<u8>(track));
 
     QTreeWidgetItem* row = new QTreeWidgetItem(m_ui.tracks);
-    row->setIcon(0, QIcon::fromTheme((mode == CDImage::TrackMode::Audio) ? QStringLiteral("file-music-line") :
-                                                                           QStringLiteral("disc-line")));
+    row->setIcon(0, QIcon::fromTheme((mode == CDImage::TrackMode::Audio) ? "file-music-line"_L1 : "disc-line"_L1));
     row->setText(0, tr("Track %1").arg(track));
     row->setText(1, QString::fromUtf8(track_mode_strings[static_cast<u32>(mode)]));
     row->setText(2, MSFToString(position));

@@ -23,6 +23,8 @@
 
 #include "moc_isobrowserwindow.cpp"
 
+using namespace Qt::StringLiterals;
+
 LOG_CHANNEL(Host);
 
 ISOBrowserWindow::ISOBrowserWindow(QWidget* parent) : QWidget(parent)
@@ -272,7 +274,7 @@ void ISOBrowserWindow::populateDirectories()
   enableExtractButtons(false);
 
   QTreeWidgetItem* root = new QTreeWidgetItem;
-  root->setIcon(0, QIcon::fromTheme(QStringLiteral("disc-line")));
+  root->setIcon(0, QIcon::fromTheme("disc-line"_L1));
   root->setText(0, QtUtils::StringViewToQString(Path::GetFileTitle(m_image->GetPath())));
   root->setData(0, Qt::UserRole, QString());
   m_ui.directoryView->addTopLevelItem(root);
@@ -301,7 +303,7 @@ void ISOBrowserWindow::populateSubdirectories(std::string_view dir, QTreeWidgetI
       continue;
 
     QTreeWidgetItem* item = new QTreeWidgetItem(parent);
-    item->setIcon(0, QIcon::fromTheme(QStringLiteral("folder-open-line")));
+    item->setIcon(0, QIcon::fromTheme("folder-open-line"_L1));
     item->setText(0, QtUtils::StringViewToQString(Path::GetFileName(full_path)));
     item->setData(0, Qt::UserRole, QString::fromStdString(full_path));
     populateSubdirectories(full_path, item);
@@ -326,7 +328,7 @@ void ISOBrowserWindow::populateFiles(const QString& path)
   const auto add_entry = [this](const std::string& full_path, const IsoReader::ISODirectoryEntry& entry) {
     QTreeWidgetItem* item = new QTreeWidgetItem;
     item->setIcon(
-      0, QIcon::fromTheme(entry.IsDirectory() ? QStringLiteral("folder-open-line") : QStringLiteral("file-line")));
+      0, QIcon::fromTheme(entry.IsDirectory() ? "folder-open-line"_L1 : "file-line"_L1));
     item->setText(0, QtUtils::StringViewToQString(Path::GetFileName(full_path)));
     item->setData(0, Qt::UserRole, QString::fromStdString(full_path));
     item->setData(0, Qt::UserRole + 1, entry.IsDirectory());
@@ -339,7 +341,7 @@ void ISOBrowserWindow::populateFiles(const QString& path)
   if (!path.isEmpty())
   {
     QTreeWidgetItem* item = new QTreeWidgetItem;
-    item->setIcon(0, QIcon::fromTheme(QStringLiteral("folder-open-line")));
+    item->setIcon(0, QIcon::fromTheme("folder-open-line"_L1));
     item->setText(0, tr("<Parent Directory>"));
     item->setData(0, Qt::UserRole, QtUtils::StringViewToQString(Path::GetDirectory(spath)));
     item->setData(0, Qt::UserRole + 1, true);

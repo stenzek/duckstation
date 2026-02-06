@@ -16,6 +16,8 @@
 
 #include "moc_biossettingswidget.cpp"
 
+using namespace Qt::StringLiterals;
+
 BIOSSettingsWidget::BIOSSettingsWidget(SettingsWindow* dialog, QWidget* parent) : QWidget(parent), m_dialog(dialog)
 {
   SettingsInterface* sif = dialog->getSettingsInterface();
@@ -134,9 +136,9 @@ void BIOSSettingsWidget::populateDropDownForRegion(ConsoleRegion region, QComboB
   cb->clear();
 
   if (per_game)
-    cb->addItem(QIcon(QStringLiteral(":/icons/system-search.png")), tr("Use Global Setting"));
+    cb->addItem(QIcon(":/icons/system-search.png"_L1), tr("Use Global Setting"));
 
-  cb->addItem(QIcon(QStringLiteral(":/icons/system-search.png")), tr("Auto-Detect"));
+  cb->addItem(QIcon(":/icons/system-search.png"_L1), tr("Auto-Detect"));
 
   std::sort(images.begin(), images.end(), [region](const auto& left, const auto& right) {
     const bool left_region_match = (left.second && left.second->region == region);

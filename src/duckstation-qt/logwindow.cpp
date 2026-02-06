@@ -16,6 +16,8 @@
 
 #include "moc_logwindow.cpp"
 
+using namespace Qt::StringLiterals;
+
 // TODO: Since log callbacks are synchronized, no mutex is needed here.
 // But once I get rid of that, there will be.
 LogWindow* g_log_window;
@@ -308,7 +310,7 @@ void LogWindow::updateWindowTitle()
 
 void LogWindow::createUi()
 {
-  setWindowIcon(QIcon::fromTheme(QStringLiteral("file-list-line")));
+  setWindowIcon(QIcon::fromTheme("file-list-line"_L1));
   setWindowFlag(Qt::CustomizeWindowHint, true);
   setWindowFlag(Qt::WindowCloseButtonHint, false);
   updateWindowTitle();

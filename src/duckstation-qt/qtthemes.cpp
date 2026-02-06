@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com> and contributors.
+// SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com> and contributors.
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "qthost.h"
@@ -14,6 +14,8 @@
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QStyle>
 #include <QtWidgets/QStyleFactory>
+
+using namespace Qt::StringLiterals;
 
 namespace QtHost {
 static void SetThemeAttributes(bool is_stylesheet_theme, bool is_variable_color_theme, bool is_dark_theme);
@@ -133,21 +135,21 @@ void QtHost::SetStyleFromSettings()
     qApp->setStyle(s_themes_locals.unthemed_style_name);
     qApp->setPalette(s_themes_locals.unthemed_palette);
 
-    QFile f(QStringLiteral(":qdarkstyle/style.qss"));
+    QFile f(":qdarkstyle/style.qss"_L1);
     if (f.open(QFile::ReadOnly | QFile::Text))
       SetStyleSheet(f.readAll());
   }
   else if (theme == "fusion")
   {
     SetThemeAttributes(false, true, false);
-    qApp->setStyle(QStyleFactory::create("Fusion"));
+    qApp->setStyle(QStyleFactory::create("Fusion"_L1));
     qApp->setPalette(s_themes_locals.unthemed_palette);
   }
   else if (theme == "darkfusion")
   {
     // adapted from https://gist.github.com/QuantumCD/6245215
     SetThemeAttributes(false, false, true);
-    qApp->setStyle(QStyleFactory::create("Fusion"));
+    qApp->setStyle(QStyleFactory::create("Fusion"_L1));
 
     static constexpr QColor lighterGray(75, 75, 75);
     static constexpr QColor darkGray(53, 53, 53);
@@ -182,7 +184,7 @@ void QtHost::SetStyleFromSettings()
   {
     // adapted from https://gist.github.com/QuantumCD/6245215
     SetThemeAttributes(false, false, true);
-    qApp->setStyle(QStyleFactory::create("Fusion"));
+    qApp->setStyle(QStyleFactory::create("Fusion"_L1));
 
     // static constexpr QColor lighterGray(75, 75, 75);
     static constexpr QColor darkGray(53, 53, 53);
@@ -217,7 +219,7 @@ void QtHost::SetStyleFromSettings()
   else if (theme == "darkerfusion")
   {
     SetThemeAttributes(true, false, true);
-    qApp->setStyle(QStyleFactory::create("Fusion"));
+    qApp->setStyle(QStyleFactory::create("Fusion"_L1));
 
     static constexpr QColor window_color(36, 36, 36);
     static constexpr QColor base_color(43, 43, 43);
@@ -253,7 +255,7 @@ void QtHost::SetStyleFromSettings()
     qApp->setPalette(darkPalette);
 
     // menus are by far the ugliest part of fusion, so we style them manually
-    const QString stylesheet = QStringLiteral(R"(
+    const QLatin1StringView stylesheet = R"(
 QMenu {
   border: 1px solid #444;
   border-radius: 8px;
@@ -631,7 +633,7 @@ QTextBrowser {
   border-bottom: 1px solid #414141;
   margin: 0px 8px;
 }
-    )");
+    )"_L1;
 
     SetStyleSheet(stylesheet);
   }
@@ -641,7 +643,7 @@ QTextBrowser {
     // that are meant to be easy on the eyes as the main color.
     // Alternative dark theme.
     SetThemeAttributes(false, false, true);
-    qApp->setStyle(QStyleFactory::create("Fusion"));
+    qApp->setStyle(QStyleFactory::create("Fusion"_L1));
 
     static constexpr QColor gray(150, 150, 150);
     static constexpr QColor royalBlue(29, 41, 81);
@@ -675,7 +677,7 @@ QTextBrowser {
   else if (theme == "greymatter")
   {
     SetThemeAttributes(false, false, true);
-    qApp->setStyle(QStyleFactory::create("Fusion"));
+    qApp->setStyle(QStyleFactory::create("Fusion"_L1));
 
     static constexpr QColor darkGray(46, 52, 64);
     static constexpr QColor lighterGray(59, 66, 82);
@@ -710,7 +712,7 @@ QTextBrowser {
     // Custom palette by RedDevilus, Tame (Light/Washed out) Green as main color and Grayish Blue as complimentary.
     // Alternative white theme.
     SetThemeAttributes(false, false, false);
-    qApp->setStyle(QStyleFactory::create("Fusion"));
+    qApp->setStyle(QStyleFactory::create("Fusion"_L1));
 
     static constexpr QColor black(25, 25, 25);
     static constexpr QColor gray(111, 111, 111);
@@ -742,7 +744,7 @@ QTextBrowser {
   else if (theme == "pinkypals")
   {
     SetThemeAttributes(false, false, false);
-    qApp->setStyle(QStyleFactory::create("Fusion"));
+    qApp->setStyle(QStyleFactory::create("Fusion"_L1));
 
     static constexpr QColor black(25, 25, 25);
     static constexpr QColor pink(255, 174, 201);
@@ -778,7 +780,7 @@ QTextBrowser {
     // of a theme designed for maximum eye comfort and benefits
     // OLED screens.
     SetThemeAttributes(false, false, true);
-    qApp->setStyle(QStyleFactory::create("Fusion"));
+    qApp->setStyle(QStyleFactory::create("Fusion"_L1));
 
     static constexpr QColor black(0, 0, 0);
     static constexpr QColor gray(25, 25, 25);
@@ -811,7 +813,7 @@ QTextBrowser {
   else if (theme == "darkruby")
   {
     SetThemeAttributes(false, false, true);
-    qApp->setStyle(QStyleFactory::create("Fusion"));
+    qApp->setStyle(QStyleFactory::create("Fusion"_L1));
 
     static constexpr QColor gray(128, 128, 128);
     static constexpr QColor slate(18, 18, 18);
@@ -842,7 +844,7 @@ QTextBrowser {
   else if (theme == "purplerain")
   {
     SetThemeAttributes(false, false, true);
-    qApp->setStyle(QStyleFactory::create("Fusion"));
+    qApp->setStyle(QStyleFactory::create("Fusion"_L1));
 
     static constexpr QColor darkPurple(73, 41, 121);
     static constexpr QColor darkerPurple(53, 29, 87);
@@ -875,7 +877,7 @@ QTextBrowser {
   else if (theme == "windowsvista")
   {
     SetThemeAttributes(false, false, false);
-    qApp->setStyle(QStyleFactory::create("windowsvista"));
+    qApp->setStyle(QStyleFactory::create("windowsvista"_L1));
     qApp->setPalette(s_themes_locals.unthemed_palette);
   }
 #endif
@@ -912,7 +914,7 @@ bool QtHost::HasGlobalStylesheet()
 
 void QtHost::UpdateThemeOnStyleChange()
 {
-  const QString new_theme_name = IsDarkApplicationTheme() ? QStringLiteral("white") : QStringLiteral("black");
+  const QLatin1StringView new_theme_name = IsDarkApplicationTheme() ? "white"_L1 : "black"_L1;
   if (QIcon::themeName() != new_theme_name)
     QIcon::setThemeName(new_theme_name);
 
@@ -965,7 +967,7 @@ QString QtHost::GetNativeThemeStylesheet()
 #ifdef __APPLE__
   // Qt's native style on MacOS is... not great.
   // We re-theme the tool buttons to look like Cocoa tool buttons, and fix up popup menus.
-  ret = QStringLiteral(R"(
+  ret = R"(
 QMenu {
     border-radius: 10px;
     padding: 4px 0;
@@ -999,10 +1001,10 @@ QToolButton {
 .settings-window GamePatchSettingsWidget #patches_container > QFrame {
   border: none;
   margin: 0px 8px;
-})");
+})"_L1;
   if (IsDarkApplicationTheme())
   {
-    ret += QStringLiteral(R"(
+    ret += R"(
 QMenu {
     background-color: #161616;
     border: 1px solid #2c2c2c;
@@ -1039,11 +1041,11 @@ QToolButton:pressed {
 }
 .settings-window GamePatchSettingsWidget #patches_container > QFrame {
   border-bottom: 1px solid #414141;
-})");
+})"_L1;
   }
   else
   {
-    ret += QStringLiteral(R"(
+    ret += R"(
 QMenu {
     background-color: #bdbdbd;
     border: 1px solid #d5d5d4;
@@ -1080,7 +1082,7 @@ QToolButton:pressed {
 }
 .settings-window GamePatchSettingsWidget #patches_container > QFrame {
   border-bottom: 1px solid #414141;
-})");
+})"_L1;
   }
 #endif
   return ret;
