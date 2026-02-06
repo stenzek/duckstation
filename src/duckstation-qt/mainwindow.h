@@ -225,6 +225,7 @@ private:
                                              std::unique_lock<std::recursive_mutex>& lock);
   std::shared_ptr<SystemBootParameters> getSystemBootParameters(std::string file);
   bool openResumeStateDialog(const std::string& path, const std::string& serial);
+  bool openResumeStateDialog(std::string state_path);
   void startFile(std::string path, std::optional<std::string> save_path, std::optional<bool> fast_boot);
   void startFileOrChangeDisc(const QString& qpath);
   void promptForDiscChange(const QString& path);
@@ -262,6 +263,7 @@ private:
   void onStartFileActionTriggered();
   void onStartDiscActionTriggered();
   void onStartBIOSActionTriggered();
+  void onResumeLastStateActionTriggered();
   void onChangeDiscFromFileActionTriggered();
   void onChangeDiscFromGameListActionTriggered();
   void onChangeDiscFromDeviceActionTriggered();

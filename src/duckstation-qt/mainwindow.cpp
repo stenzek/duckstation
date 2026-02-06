@@ -1108,6 +1108,14 @@ bool MainWindow::openResumeStateDialog(const std::string& path, const std::strin
   if (save_state_path.empty() || !FileSystem::FileExists(save_state_path.c_str()))
     return false;
 
+  return openResumeStateDialog(std::move(save_state_path));
+}
+
+bool MainWindow::openResumeStateDialog(std::string save_state_path)
+{
+  if (s_locals.system_valid)
+    return false;
+
   std::optional<ExtendedSaveStateInfo> ssi = System::GetExtendedSaveStateInfo(save_state_path.c_str());
   if (!ssi.has_value())
     return false;
@@ -1169,23 +1177,25 @@ bool MainWindow::openResumeStateDialog(const std::string& path, const std::strin
   QPushButton* const cancel = bbox->addButton(QDialogButtonBox::Cancel);
   load->setDefault(true);
 
-  connect(load, &QPushButton::clicked, [this, dlg, path, save_state_path]() mutable {
+  connect(load, &QPushButton::clicked, [this, dlg, path = ssi->media_path, save_state_path]() mutable {
     startFile(std::move(path), std::move(save_state_path), std::nullopt);
     dlg->accept();
   });
-  connect(boot, &QPushButton::clicked, [this, dlg, path]() mutable {
+  connect(boot, &QPushButton::clicked, [this, dlg, path = ssi->media_path]() mutable {
     startFile(std::move(path), std::nullopt, std::nullopt);
     dlg->accept();
   });
-  connect(delboot, &QPushButton::clicked, [this, dlg, path, save_state_path]() mutable {
-    if (!FileSystem::DeleteFile(save_state_path.c_str()))
-    {
-      QtUtils::MessageBoxCritical(
-        this, tr("Error"), tr("Failed to delete save state file '%1'.").arg(QString::fromStdString(save_state_path)));
-    }
-    startFile(std::move(path), std::nullopt, std::nullopt);
-    dlg->accept();
-  });
+  connect(delboot, &QPushButton::clicked,
+          [this, dlg, path = ssi->media_path, save_state_path = std::move(save_state_path)]() mutable {
+            if (!FileSystem::DeleteFile(save_state_path.c_str()))
+            {
+              QtUtils::MessageBoxCritical(
+                this, tr("Error"),
+                tr("Failed to delete save state file '%1'.").arg(QString::fromStdString(save_state_path)));
+            }
+            startFile(std::move(path), std::nullopt, std::nullopt);
+            dlg->accept();
+          });
   connect(cancel, &QPushButton::clicked, dlg, &QDialog::reject);
 
   main_layout->addWidget(bbox);
@@ -1269,6 +1279,18 @@ void MainWindow::onStartDiscActionTriggered()
 void MainWindow::onStartBIOSActionTriggered()
 {
   g_core_thread->bootSystem(getSystemBootParameters(std::string()));
+}
+
+void MainWindow::onResumeLastStateActionTriggered()
+{
+  std::string state_path = System::GetMostRecentResumeSaveStatePath();
+  if (state_path.empty())
+  {
+    reportError(tr("Error"), tr("No resume save state found."));
+    return;
+  }
+
+  openResumeStateDialog(std::move(state_path));
 }
 
 void MainWindow::onChangeDiscFromFileActionTriggered()
@@ -2424,7 +2446,7 @@ void MainWindow::connectSignals()
   connect(m_ui.actionStartFile, &QAction::triggered, this, &MainWindow::onStartFileActionTriggered);
   connect(m_ui.actionStartDisc, &QAction::triggered, this, &MainWindow::onStartDiscActionTriggered);
   connect(m_ui.actionStartBios, &QAction::triggered, this, &MainWindow::onStartBIOSActionTriggered);
-  connect(m_ui.actionResumeLastState, &QAction::triggered, g_core_thread, &CoreThread::resumeSystemFromMostRecentState);
+  connect(m_ui.actionResumeLastState, &QAction::triggered, this, &MainWindow::onResumeLastStateActionTriggered);
   connect(m_ui.actionChangeDisc, &QAction::triggered, [this] { m_ui.menuChangeDisc->popup(QCursor::pos()); });
   connect(m_ui.actionChangeDiscFromFile, &QAction::triggered, this, &MainWindow::onChangeDiscFromFileActionTriggered);
   connect(m_ui.actionChangeDiscFromDevice, &QAction::triggered, this,

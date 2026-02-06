@@ -1125,28 +1125,6 @@ void CoreThread::bootOrLoadState(std::string path)
   }
 }
 
-void CoreThread::resumeSystemFromMostRecentState()
-{
-  if (!isCurrentThread())
-  {
-    QMetaObject::invokeMethod(this, &CoreThread::resumeSystemFromMostRecentState, Qt::QueuedConnection);
-    return;
-  }
-
-  // shouldn't be doing this with a system running
-  if (System::IsValid())
-    return;
-
-  std::string state_filename(System::GetMostRecentResumeSaveStatePath());
-  if (state_filename.empty())
-  {
-    emit errorReported(tr("Error"), tr("No resume save state found."));
-    return;
-  }
-
-  bootOrLoadState(std::move(state_filename));
-}
-
 void CoreThread::onRenderWindowKeyEvent(int key, bool pressed)
 {
   DebugAssert(isCurrentThread());
