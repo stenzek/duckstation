@@ -534,7 +534,7 @@ std::optional<Image> FullscreenUI::LoadTextureImage(std::string_view path, u32 s
     if (svg_data.has_value())
     {
       image = Image();
-      if (!image->RasterizeSVG(svg_data->cspan(), svg_width, svg_height))
+      if (!image->RasterizeSVG(svg_data->cspan(), svg_width, svg_height, &error))
       {
         ERROR_LOG("Failed to rasterize SVG texture file '{}': {}", path, error.GetDescription());
         image.reset();
