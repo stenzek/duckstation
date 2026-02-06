@@ -110,8 +110,6 @@ struct FetchGameTitlesParameters
 
 } // namespace
 
-static TinyString GameHashToString(const std::optional<GameHash>& hash);
-
 static void ReportError(std::string_view sv);
 template<typename... T>
 static void ReportFmtError(fmt::format_string<T...> fmt, T&&... args);

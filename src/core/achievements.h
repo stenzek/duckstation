@@ -71,6 +71,9 @@ std::optional<GameHash> GetGameHash(const std::string_view executable_name, std:
 /// Returns the number of achievements for a given hash.
 const HashDatabaseEntry* LookupGameHash(const GameHash& hash);
 
+/// Converts a game hash to a string for display. If the hash is nullopt, returns "[NO HASH]".
+TinyString GameHashToString(const std::optional<GameHash>& hash);
+
 /// Initializes the RetroAchievments client.
 bool Initialize();
 
