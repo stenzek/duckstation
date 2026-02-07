@@ -753,7 +753,7 @@ void Settings::Save(SettingsInterface& si, bool ignore_base) const
     si.SetFloatValue("Display", "OSDScale", display_osd_scale);
     si.SetFloatValue("Display", "OSDMargin", display_osd_margin);
 
-    for (size_t i = 0; i < static_cast<size_t>(OSDMessageType::MaxCount); i++)
+    for (size_t i = 0; i < static_cast<size_t>(OSDMessageType::Persistent); i++)
     {
       si.SetFloatValue(
         "Display",
