@@ -96,7 +96,7 @@ GameSummaryWidget::GameSummaryWidget(const GameList::Entry* entry, SettingsWindo
     connect(m_ui.restoreDiscSetTitle, &QAbstractButton::clicked, this, [this]() { setCustomDiscSetTitle({}); });
   }
   connect(m_ui.changeSerial, &QAbstractButton::clicked, this, &GameSummaryWidget::onChangeSerialClicked);
-  connect(m_ui.region, &QComboBox::currentIndexChanged, this, [this](int index) { setCustomRegion(index); });
+  connect(m_ui.region, &QComboBox::currentIndexChanged, this, &GameSummaryWidget::setCustomRegion);
   connect(m_ui.restoreRegion, &QAbstractButton::clicked, this, [this]() { setCustomRegion(-1); });
   connect(m_ui.customLanguage, &QComboBox::currentIndexChanged, this, &GameSummaryWidget::onCustomLanguageChanged);
 }
