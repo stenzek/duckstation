@@ -172,7 +172,7 @@ static void WarnAboutUnsafeSettings();
 static void LogUnsafeSettingsToConsole(const SmallStringBase& messages);
 
 static bool Initialize(std::unique_ptr<CDImage> disc, DiscRegion disc_region, bool force_software_renderer,
-                       bool fullscreen, Error* error);
+                       std::optional<bool> start_fullscreen, Error* error);
 static bool LoadBIOS(Error* error);
 static bool SetBootMode(BootMode new_boot_mode, DiscRegion disc_region, Error* error);
 static void InternalReset();
@@ -1933,9 +1933,11 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
   }
 
   // Load BIOS image, component setup, check for subchannel in games that need it.
+  const std::optional<bool> start_fullscreen = parameters.override_fullscreen.has_value() ?
+                                                 std::optional<bool>(parameters.override_fullscreen.value()) :
+                                                 (ShouldStartFullscreen() ? std::optional<bool>(true) : std::nullopt);
   if (!SetBootMode(boot_mode, disc_region, error) ||
-      !Initialize(std::move(disc), disc_region, parameters.force_software_renderer,
-                  parameters.override_fullscreen.value_or(ShouldStartFullscreen()), error))
+      !Initialize(std::move(disc), disc_region, parameters.force_software_renderer, start_fullscreen, error))
   {
     Host::OnSystemStopping();
     DestroySystem();
@@ -2030,7 +2032,7 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
 }
 
 bool System::Initialize(std::unique_ptr<CDImage> disc, DiscRegion disc_region, bool force_software_renderer,
-                        bool fullscreen, Error* error)
+                        std::optional<bool> start_fullscreen, Error* error)
 {
   // Cheats have to be loaded first, otherwise we don't apply settings that are used below.
   if (!IsReplayingGPUDump())
@@ -2083,7 +2085,7 @@ bool System::Initialize(std::unique_ptr<CDImage> disc, DiscRegion disc_region, b
 
   // This can fail due to the application being closed during startup.
   if (!VideoThread::CreateGPUBackend(force_software_renderer ? GPURenderer::Software : g_settings.gpu_renderer, false,
-                                     fullscreen, error))
+                                     start_fullscreen, error))
   {
     // Game info has to be manually cleared since the backend won't shutdown naturally.
     VideoThread::ClearGameInfo();

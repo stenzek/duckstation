@@ -542,7 +542,8 @@ bool VideoThread::Reconfigure(std::optional<GPURenderer> renderer, bool upload_v
   INFO_LOG("Reconfiguring video thread.");
 
   const bool new_requested_fullscreen_ui = start_fullscreen_ui.value_or(s_state.requested_fullscreen_ui);
-  const bool new_fullscreen_state = fullscreen.value_or(s_state.fullscreen_state);
+  const bool new_fullscreen_state =
+    ((renderer.has_value() || new_requested_fullscreen_ui) && fullscreen.value_or(s_state.fullscreen_state));
 
   GPURenderer created_renderer = GPURenderer::Count;
   VideoThreadReconfigureCommand::Result result = VideoThreadReconfigureCommand::Result::Failed;
