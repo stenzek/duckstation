@@ -913,12 +913,13 @@ void FullscreenUI::DrawAchievementsPauseMenuOverlays(float start_pos_y)
   rc_client_t* const client = Achievements::GetClient();
 
   const ImVec2& display_size = ImGui::GetIO().DisplaySize;
+  const ImVec2 display_margin = LayoutScale(16.0f, 16.0f);
   const float box_margin = LayoutScale(10.0f);
   const float box_width = LayoutScale(450.0f);
   const float box_padding = LayoutScale(15.0f);
   const float box_content_width = box_width - box_padding - box_padding;
   const float box_rounding = LayoutScale(20.0f);
-  const u32 box_background_color = ImGui::GetColorU32(ModAlpha(UIStyle.BackgroundColor, 0.8f));
+  const u32 box_background_color = ImGui::GetColorU32(ModAlpha(UIStyle.PopupBackgroundColor, 0.8f));
   const ImU32 box_title_text_color =
     ImGui::GetColorU32(DarkerColor(UIStyle.BackgroundTextColor, 0.9f)) | IM_COL32_A_MASK;
   const ImU32 title_text_color = ImGui::GetColorU32(UIStyle.BackgroundTextColor) | IM_COL32_A_MASK;
@@ -939,7 +940,7 @@ void FullscreenUI::DrawAchievementsPauseMenuOverlays(float start_pos_y)
   float box_height = box_padding + box_padding + UIStyle.MediumFontSize + paragraph_spacing + progress_height +
                      ((pending_count > 0) ? (paragraph_spacing + UIStyle.MediumFontSize) : 0.0f);
 
-  ImVec2 box_min = ImVec2(display_size.x - box_width - box_margin, start_pos_y + box_margin);
+  ImVec2 box_min = ImVec2(display_size.x - box_width - display_margin.x, start_pos_y + display_margin.y);
   ImVec2 box_max = ImVec2(box_min.x + box_width, box_min.y + box_height);
   ImVec2 text_pos = ImVec2(box_min.x + box_padding, box_min.y + box_padding);
   ImVec2 text_size;
