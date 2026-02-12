@@ -9,6 +9,7 @@
 #include "qtprogresscallback.h"
 #include "settingswindow.h"
 
+#include "core/achievements.h"
 #include "core/controller.h"
 #include "core/core.h"
 #include "core/game_database.h"
@@ -137,8 +138,18 @@ void GameSummaryWidget::populateUi(const GameList::Entry* entry)
   m_path = entry->path;
 
   m_ui.path->setText(QString::fromStdString(entry->path));
-  m_ui.serial->setText(QtUtils::StringViewToQString(TinyString::from_format(
-    "{}{} ({:016X})", entry->serial, entry->has_custom_serial ? " [Custom]" : "", entry->hash)));
+  m_ui.serial->setText(entry->has_custom_serial ?
+                         tr("%1 (Custom)").arg(QtUtils::StringViewToQStringView(entry->serial)) :
+                         (entry->serial.empty() ? tr("Unknown") : QtUtils::StringViewToQString(entry->serial)));
+  if (entry->IsDiscOrDiscSet())
+  {
+    m_ui.hashes->setText(QtUtils::StringViewToQString(SmallString::from_format(
+      "HASH-{:016X} | RA: {}", entry->hash, Achievements::GameHashToString(entry->achievements_hash))));
+  }
+  else
+  {
+    m_ui.hashes->setText(tr("N/A"));
+  }
   m_ui.title->setText(QtUtils::StringViewToQString(entry->GetDisplayTitle(GameList::ShouldShowLocalizedTitles())));
   m_ui.region->setCurrentIndex(static_cast<int>(entry->region));
   m_ui.entryType->setCurrentIndex(static_cast<int>(entry->type));
