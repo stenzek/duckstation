@@ -1,9 +1,10 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "assert.h"
 #include "cd_image.h"
 
+#include "common/bcdutils.h"
 #include "common/error.h"
 #include "common/file_system.h"
 #include "common/log.h"

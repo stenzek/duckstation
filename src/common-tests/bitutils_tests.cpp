@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "common/align.h"
+#include "common/bcdutils.h"
 #include "common/bitfield.h"
 #include "common/bitutils.h"
 

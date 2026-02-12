@@ -14,6 +14,7 @@
 
 #include "util/translation.h"
 
+#include "common/bitutils.h"
 #include "common/string_util.h"
 
 #include <QtCore/QDateTime>

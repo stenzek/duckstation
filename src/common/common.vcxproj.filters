@@ -58,6 +58,7 @@
     </ClInclude>
     <ClInclude Include="time_helpers.h" />
     <ClInclude Include="string_pool.h" />
+    <ClInclude Include="bcdutils.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="small_string.cpp" />

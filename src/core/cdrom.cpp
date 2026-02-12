@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "cdrom.h"
@@ -21,7 +21,9 @@
 #include "util/translation.h"
 
 #include "common/align.h"
+#include "common/bcdutils.h"
 #include "common/bitfield.h"
+#include "common/bitutils.h"
 #include "common/error.h"
 #include "common/fifo_queue.h"
 #include "common/file_system.h"

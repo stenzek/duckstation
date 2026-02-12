@@ -4,6 +4,7 @@
   <ItemGroup>
     <ClInclude Include="align.h" />
     <ClInclude Include="assert.h" />
+    <ClInclude Include="bcdutils.h" />
     <ClInclude Include="bitfield.h" />
     <ClInclude Include="bitutils.h" />
     <ClInclude Include="crash_handler.h" />

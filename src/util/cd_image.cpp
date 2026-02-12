@@ -1,9 +1,10 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "cd_image.h"
 
 #include "common/assert.h"
+#include "common/bcdutils.h"
 #include "common/bitutils.h"
 #include "common/error.h"
 #include "common/file_system.h"
@@ -511,4 +512,73 @@ u16 CDImage::SubChannelQ::ComputeCRC(const Data& data)
 bool CDImage::SubChannelQ::IsCRCValid() const
 {
   return crc == ComputeCRC(data);
+}
+
+CDImage::Position CDImage::Position::FromBCD(u8 minute, u8 second, u8 frame)
+{
+  return Position{PackedBCDToBinary(minute), PackedBCDToBinary(second), PackedBCDToBinary(frame)};
+}
+
+CDImage::Position CDImage::Position::FromLBA(LBA lba)
+{
+  const u8 frame = Truncate8(lba % FRAMES_PER_SECOND);
+  lba /= FRAMES_PER_SECOND;
+
+  const u8 second = Truncate8(lba % SECONDS_PER_MINUTE);
+  lba /= SECONDS_PER_MINUTE;
+
+  const u8 minute = Truncate8(lba);
+
+  return Position{minute, second, frame};
+}
+
+CDImage::LBA CDImage::Position::ToLBA() const
+{
+  return ZeroExtend32(minute) * FRAMES_PER_MINUTE + ZeroExtend32(second) * FRAMES_PER_SECOND + ZeroExtend32(frame);
+}
+
+std::tuple<u8, u8, u8> CDImage::Position::ToBCD() const
+{
+  return std::make_tuple<u8, u8, u8>(BinaryToBCD(minute), BinaryToBCD(second), BinaryToBCD(frame));
+}
+
+CDImage::Position CDImage::Position::operator+(const Position& rhs)
+{
+  return FromLBA(ToLBA() + rhs.ToLBA());
+}
+
+CDImage::CDImage::Position& CDImage::Position::operator+=(const Position& pos)
+{
+  *this = *this + pos;
+  return *this;
+}
+
+bool CDImage::Position::operator<(const Position& rhs) const
+{
+  return std::tie(minute, second, frame) < std::tie(rhs.minute, rhs.second, rhs.frame);
+}
+
+bool CDImage::Position::operator<=(const Position& rhs) const
+{
+  return std::tie(minute, second, frame) <= std::tie(rhs.minute, rhs.second, rhs.frame);
+}
+
+bool CDImage::Position::operator>(const Position& rhs) const
+{
+  return std::tie(minute, second, frame) > std::tie(rhs.minute, rhs.second, rhs.frame);
+}
+
+bool CDImage::Position::operator>=(const Position& rhs) const
+{
+  return std::tie(minute, second, frame) >= std::tie(rhs.minute, rhs.second, rhs.frame);
+}
+
+bool CDImage::Position::operator!=(const Position& rhs) const
+{
+  return std::tie(minute, second, frame) != std::tie(rhs.minute, rhs.second, rhs.frame);
+}
+
+bool CDImage::Position::operator==(const Position& rhs) const
+{
+  return std::tie(minute, second, frame) == std::tie(rhs.minute, rhs.second, rhs.frame);
 }

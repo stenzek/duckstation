@@ -1,10 +1,11 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "cue_parser.h"
 
 #include "common/error.h"
 #include "common/log.h"
+#include "common/small_string.h"
 #include "common/string_util.h"
 
 #include <cstdarg>
