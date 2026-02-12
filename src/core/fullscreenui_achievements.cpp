@@ -227,14 +227,14 @@ void FullscreenUI::DrawAchievementsOverlays()
 
   const auto lock = Achievements::GetLock();
 
-  NotificationLayout layout(g_settings.achievements_notification_location);
+  NotificationLayout layout(g_gpu_settings.achievements_notification_location);
   DrawNotifications(layout);
 
   if (Achievements::HasActiveGame())
   {
     // need to group them together if they're in the same location
-    if (g_settings.achievements_indicator_location != layout.GetLocation())
-      layout = NotificationLayout(g_settings.achievements_indicator_location);
+    if (g_gpu_settings.achievements_indicator_location != layout.GetLocation())
+      layout = NotificationLayout(g_gpu_settings.achievements_indicator_location);
 
     DrawIndicators(layout);
   }
@@ -545,11 +545,11 @@ void FullscreenUI::DrawIndicators(NotificationLayout& layout)
 
   if (std::vector<Achievements::ActiveChallengeIndicator>& indicators = Achievements::GetActiveChallengeIndicators();
       !indicators.empty() &&
-      (g_settings.achievements_challenge_indicator_mode == AchievementChallengeIndicatorMode::PersistentIcon ||
-       g_settings.achievements_challenge_indicator_mode == AchievementChallengeIndicatorMode::TemporaryIcon))
+      (g_gpu_settings.achievements_challenge_indicator_mode == AchievementChallengeIndicatorMode::PersistentIcon ||
+       g_gpu_settings.achievements_challenge_indicator_mode == AchievementChallengeIndicatorMode::TemporaryIcon))
   {
     const bool use_time_remaining =
-      (g_settings.achievements_challenge_indicator_mode == AchievementChallengeIndicatorMode::TemporaryIcon);
+      (g_gpu_settings.achievements_challenge_indicator_mode == AchievementChallengeIndicatorMode::TemporaryIcon);
     const float x_advance = image_size.x + spacing;
     const float total_width = image_size.x + (static_cast<float>(indicators.size() - 1) * x_advance);
     ImVec2 current_position = layout.GetFixedPosition(total_width, image_size.y);

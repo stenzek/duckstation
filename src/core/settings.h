@@ -130,6 +130,12 @@ struct GPUSettings
   std::array<float, 4> display_osd_message_duration = DEFAULT_DISPLAY_OSD_MESSAGE_DURATIONS;
   NotificationLocation display_osd_message_location = DEFAULT_OSD_MESSAGE_LOCATION;
 
+  // achievements
+  NotificationLocation achievements_notification_location = DEFAULT_ACHIEVEMENT_NOTIFICATION_LOCATION;
+  NotificationLocation achievements_indicator_location = DEFAULT_ACHIEVEMENT_INDICATOR_LOCATION;
+  AchievementChallengeIndicatorMode achievements_challenge_indicator_mode =
+    DEFAULT_ACHIEVEMENT_CHALLENGE_INDICATOR_MODE;
+
   // texture replacements
   struct TextureReplacementSettings
   {
@@ -238,6 +244,11 @@ struct GPUSettings
   static constexpr NotificationLocation DEFAULT_OSD_MESSAGE_LOCATION = NotificationLocation::TopLeft;
 
   static const std::array<float, 4> DEFAULT_DISPLAY_OSD_MESSAGE_DURATIONS;
+
+  static constexpr AchievementChallengeIndicatorMode DEFAULT_ACHIEVEMENT_CHALLENGE_INDICATOR_MODE =
+    AchievementChallengeIndicatorMode::Notification;
+  static constexpr NotificationLocation DEFAULT_ACHIEVEMENT_NOTIFICATION_LOCATION = NotificationLocation::TopLeft;
+  static constexpr NotificationLocation DEFAULT_ACHIEVEMENT_INDICATOR_LOCATION = NotificationLocation::BottomRight;
 
 #ifndef __ANDROID__
   static constexpr u8 DEFAULT_GPU_MAX_QUEUED_FRAMES = 2;
@@ -354,10 +365,6 @@ struct Settings : public GPUSettings
   bool achievements_leaderboard_trackers : 1 = true;
   bool achievements_sound_effects : 1 = true;
   bool achievements_progress_indicators : 1 = true;
-  NotificationLocation achievements_notification_location = DEFAULT_ACHIEVEMENT_NOTIFICATION_LOCATION;
-  NotificationLocation achievements_indicator_location = DEFAULT_ACHIEVEMENT_INDICATOR_LOCATION;
-  AchievementChallengeIndicatorMode achievements_challenge_indicator_mode =
-    DEFAULT_ACHIEVEMENT_CHALLENGE_INDICATOR_MODE;
   u8 achievements_notification_duration = DEFAULT_ACHIEVEMENT_NOTIFICATION_TIME;
   u8 achievements_leaderboard_duration = DEFAULT_LEADERBOARD_NOTIFICATION_TIME;
 
@@ -622,10 +629,6 @@ struct Settings : public GPUSettings
   static constexpr MultitapMode DEFAULT_MULTITAP_MODE = MultitapMode::Disabled;
   static constexpr PIODeviceType DEFAULT_PIO_DEVICE_TYPE = PIODeviceType::None;
 
-  static constexpr AchievementChallengeIndicatorMode DEFAULT_ACHIEVEMENT_CHALLENGE_INDICATOR_MODE =
-    AchievementChallengeIndicatorMode::Notification;
-  static constexpr NotificationLocation DEFAULT_ACHIEVEMENT_NOTIFICATION_LOCATION = NotificationLocation::TopLeft;
-  static constexpr NotificationLocation DEFAULT_ACHIEVEMENT_INDICATOR_LOCATION = NotificationLocation::BottomRight;
   static constexpr u8 DEFAULT_ACHIEVEMENT_NOTIFICATION_TIME = 5;
   static constexpr u8 DEFAULT_LEADERBOARD_NOTIFICATION_TIME = 10;
 

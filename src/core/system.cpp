@@ -4773,15 +4773,12 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
              g_settings.display_alignment != old_settings.display_alignment ||
              g_settings.display_rotation != old_settings.display_rotation ||
              g_settings.display_deinterlacing_mode != old_settings.display_deinterlacing_mode ||
-             g_settings.display_osd_scale != old_settings.display_osd_scale ||
-             g_settings.display_osd_margin != old_settings.display_osd_margin ||
-             g_settings.display_osd_message_duration != old_settings.display_osd_message_duration ||
-             g_settings.display_osd_message_location != old_settings.display_osd_message_location ||
              g_settings.gpu_pgxp_enable != old_settings.gpu_pgxp_enable ||
              g_settings.gpu_pgxp_texture_correction != old_settings.gpu_pgxp_texture_correction ||
              g_settings.gpu_pgxp_color_correction != old_settings.gpu_pgxp_color_correction ||
              g_settings.gpu_pgxp_depth_buffer != old_settings.gpu_pgxp_depth_buffer ||
              g_settings.gpu_pgxp_vertex_cache != old_settings.gpu_pgxp_vertex_cache ||
+             g_settings.gpu_pgxp_depth_clear_threshold != old_settings.gpu_pgxp_depth_clear_threshold ||
              g_settings.display_active_start_offset != old_settings.display_active_start_offset ||
              g_settings.display_active_end_offset != old_settings.display_active_end_offset ||
              g_settings.display_line_start_offset != old_settings.display_line_start_offset ||
@@ -4833,7 +4830,13 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
              g_settings.display_screenshot_mode != old_settings.display_screenshot_mode ||
              g_settings.display_screenshot_format != old_settings.display_screenshot_format ||
              g_settings.display_screenshot_quality != old_settings.display_screenshot_quality ||
-             g_settings.gpu_pgxp_depth_clear_threshold != old_settings.gpu_pgxp_depth_clear_threshold)
+             g_settings.display_osd_scale != old_settings.display_osd_scale ||
+             g_settings.display_osd_margin != old_settings.display_osd_margin ||
+             g_settings.display_osd_message_duration != old_settings.display_osd_message_duration ||
+             g_settings.display_osd_message_location != old_settings.display_osd_message_location ||
+             g_settings.achievements_notification_location != old_settings.achievements_notification_location ||
+             g_settings.achievements_indicator_location != old_settings.achievements_indicator_location ||
+             g_settings.achievements_challenge_indicator_mode != old_settings.achievements_challenge_indicator_mode)
     {
       if (device_settings_changed)
       {
