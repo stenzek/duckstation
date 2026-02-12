@@ -6,6 +6,7 @@
 #include "small_string.h"
 #include "types.h"
 
+#include <limits>
 #include <optional>
 #include <string>
 #include <vector>
@@ -58,6 +59,20 @@ public:
   {
     u32 value;
     return GetUIntValue(section, key, &value) ? value : default_value;
+  }
+
+  template<typename T>
+    requires std::is_integral_v<T>
+  ALWAYS_INLINE T GetSaturatedIntValue(const char* section, const char* key, T default_value = 0) const
+  {
+    s32 value;
+    if (!GetIntValue(section, key, &value))
+      return default_value;
+    if (value < static_cast<s32>(std::numeric_limits<T>::min()))
+      return std::numeric_limits<T>::min();
+    if (value > static_cast<s32>(std::numeric_limits<T>::max()))
+      return std::numeric_limits<T>::max();
+    return static_cast<T>(value);
   }
 
   ALWAYS_INLINE float GetFloatValue(const char* section, const char* key, float default_value = 0.0f) const

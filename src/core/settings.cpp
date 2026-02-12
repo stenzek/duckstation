@@ -324,14 +324,10 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
     ParseDisplayAspectRatio(si.GetStringValue("Display", "AspectRatio")).value_or(DEFAULT_DISPLAY_ASPECT_RATIO);
   display_fine_crop_mode = ParseDisplayFineCropMode(si.GetStringValue("Display", "FineCropMode").c_str())
                              .value_or(DEFAULT_DISPLAY_FINE_CROP_MODE);
-  display_fine_crop_amount[0] = static_cast<s16>(std::clamp<s32>(
-    si.GetIntValue("Display", "FineCropLeft", 0), std::numeric_limits<s16>::min(), std::numeric_limits<s16>::max()));
-  display_fine_crop_amount[1] = static_cast<s16>(std::clamp<s32>(
-    si.GetIntValue("Display", "FineCropTop", 0), std::numeric_limits<s16>::min(), std::numeric_limits<s16>::max()));
-  display_fine_crop_amount[2] = static_cast<s16>(std::clamp<s32>(
-    si.GetIntValue("Display", "FineCropRight", 0), std::numeric_limits<s16>::min(), std::numeric_limits<s16>::max()));
-  display_fine_crop_amount[3] = static_cast<s16>(std::clamp<s32>(
-    si.GetIntValue("Display", "FineCropBottom", 0), std::numeric_limits<s16>::min(), std::numeric_limits<s16>::max()));
+  display_fine_crop_amount[0] = si.GetSaturatedIntValue<s16>("Display", "FineCropLeft", 0);
+  display_fine_crop_amount[1] = si.GetSaturatedIntValue<s16>("Display", "FineCropTop", 0);
+  display_fine_crop_amount[2] = si.GetSaturatedIntValue<s16>("Display", "FineCropRight", 0);
+  display_fine_crop_amount[3] = si.GetSaturatedIntValue<s16>("Display", "FineCropBottom", 0);
   display_alignment =
     ParseDisplayAlignment(
       si.GetStringValue("Display", "Alignment", GetDisplayAlignmentName(DEFAULT_DISPLAY_ALIGNMENT)).c_str())
@@ -421,10 +417,8 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
   cdrom_ignore_host_subcode = si.GetBoolValue("CDROM", "IgnoreHostSubcode", false);
   cdrom_mute_cd_audio = si.GetBoolValue("CDROM", "MuteCDAudio", false);
   cdrom_auto_disc_change = si.GetBoolValue("CDROM", "AutoDiscChange", false);
-  cdrom_read_speedup =
-    Truncate8(std::min<u32>(si.GetUIntValue("CDROM", "ReadSpeedup", 1u), std::numeric_limits<u8>::max()));
-  cdrom_seek_speedup =
-    Truncate8(std::min<u32>(si.GetUIntValue("CDROM", "SeekSpeedup", 1u), std::numeric_limits<u8>::max()));
+  cdrom_read_speedup = si.GetSaturatedIntValue<u8>("CDROM", "ReadSpeedup", 1);
+  cdrom_seek_speedup = si.GetSaturatedIntValue<u8>("CDROM", "SeekSpeedup", 1);
   cdrom_max_seek_speedup_cycles =
     std::max(si.GetUIntValue("CDROM", "MaxSeekSpeedupCycles", DEFAULT_CDROM_MAX_SEEK_SPEEDUP_CYCLES), 1u);
   cdrom_max_read_speedup_cycles =
@@ -438,10 +432,8 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
   audio_driver = si.GetStringValue("Audio", "Driver");
   audio_output_device = si.GetStringValue("Audio", "OutputDevice");
   audio_stream_parameters.Load(si, "Audio");
-  audio_output_volume =
-    Truncate8(std::min<u32>(si.GetUIntValue("Audio", "OutputVolume", 100), std::numeric_limits<u8>::max()));
-  audio_fast_forward_volume =
-    Truncate8(std::min<u32>(si.GetUIntValue("Audio", "FastForwardVolume", 100), std::numeric_limits<u8>::max()));
+  audio_output_volume = si.GetSaturatedIntValue<u8>("Audio", "OutputVolume", 100);
+  audio_fast_forward_volume = si.GetSaturatedIntValue<u8>("Audio", "FastForwardVolume", 100);
 
   audio_output_muted = si.GetBoolValue("Audio", "OutputMuted", false);
 
@@ -513,17 +505,13 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
     ParseAchievementChallengeIndicatorMode(si.GetStringValue("Cheevos", "ChallengeIndicatorMode").c_str())
       .value_or(DEFAULT_ACHIEVEMENT_CHALLENGE_INDICATOR_MODE);
   achievements_notification_duration =
-    Truncate8(std::min<u32>(si.GetUIntValue("Cheevos", "NotificationsDuration", DEFAULT_ACHIEVEMENT_NOTIFICATION_TIME),
-                            std::numeric_limits<u8>::max()));
+    si.GetSaturatedIntValue<u8>("Cheevos", "NotificationsDuration", DEFAULT_ACHIEVEMENT_NOTIFICATION_TIME);
   achievements_leaderboard_duration =
-    Truncate8(std::min<u32>(si.GetUIntValue("Cheevos", "LeaderboardsDuration", DEFAULT_LEADERBOARD_NOTIFICATION_TIME),
-                            std::numeric_limits<u8>::max()));
+    si.GetSaturatedIntValue<u8>("Cheevos", "LeaderboardsDuration", DEFAULT_LEADERBOARD_NOTIFICATION_TIME);
   achievements_notification_scale =
-    Truncate16(std::clamp<s32>(si.GetIntValue("Cheevos", "NotificationScale", ACHIEVEMENT_NOTIFICATION_SCALE_AUTO),
-                               std::numeric_limits<s16>::min(), std::numeric_limits<s16>::max()));
+    si.GetSaturatedIntValue<s16>("Cheevos", "NotificationScale", ACHIEVEMENT_NOTIFICATION_SCALE_AUTO);
   achievements_indicator_scale =
-    Truncate16(std::clamp<s32>(si.GetIntValue("Cheevos", "IndicatorScale", ACHIEVEMENT_NOTIFICATION_SCALE_AUTO),
-                               std::numeric_limits<s16>::min(), std::numeric_limits<s16>::max()));
+    si.GetSaturatedIntValue<s16>("Cheevos", "IndicatorScale", ACHIEVEMENT_NOTIFICATION_SCALE_AUTO);
 
 #ifndef __ANDROID__
   enable_gdb_server = si.GetBoolValue("Debug", "EnableGDBServer");
@@ -564,21 +552,21 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
     si.GetUIntValue("TextureReplacements", "MaxReplacementCacheVRAMUsage",
                     TextureReplacementSettings::Configuration::DEFAULT_MAX_REPLACEMENT_CACHE_VRAM_USAGE_MB);
 
-  texture_replacements.config.max_vram_write_splits = Truncate16(
-    std::min<u32>(si.GetUIntValue("TextureReplacements", "MaxVRAMWriteSplits", 0u), std::numeric_limits<u16>::max()));
-  texture_replacements.config.max_vram_write_coalesce_width = Truncate16(std::min<u32>(
-    si.GetUIntValue("TextureReplacements", "MaxVRAMWriteCoalesceWidth", 0u), std::numeric_limits<u16>::max()));
-  texture_replacements.config.max_vram_write_coalesce_height = Truncate16(std::min<u32>(
-    si.GetUIntValue("TextureReplacements", "MaxVRAMWriteCoalesceHeight", 0u), std::numeric_limits<u16>::max()));
+  texture_replacements.config.max_vram_write_splits =
+    si.GetSaturatedIntValue<u16>("TextureReplacements", "MaxVRAMWriteSplits", 0);
+  texture_replacements.config.max_vram_write_coalesce_width =
+    si.GetSaturatedIntValue<u16>("TextureReplacements", "MaxVRAMWriteCoalesceWidth", 0);
+  texture_replacements.config.max_vram_write_coalesce_height =
+    si.GetSaturatedIntValue<u16>("TextureReplacements", "MaxVRAMWriteCoalesceHeight", 0);
 
-  texture_replacements.config.texture_dump_width_threshold = Truncate16(std::min<u32>(
-    si.GetUIntValue("TextureReplacements", "DumpTextureWidthThreshold", 16), std::numeric_limits<u16>::max()));
-  texture_replacements.config.texture_dump_height_threshold = Truncate16(std::min<u32>(
-    si.GetUIntValue("TextureReplacements", "DumpTextureHeightThreshold", 16), std::numeric_limits<u16>::max()));
-  texture_replacements.config.vram_write_dump_width_threshold = Truncate16(std::min<u32>(
-    si.GetUIntValue("TextureReplacements", "DumpVRAMWriteWidthThreshold", 128), std::numeric_limits<u16>::max()));
-  texture_replacements.config.vram_write_dump_height_threshold = Truncate16(std::min<u32>(
-    si.GetUIntValue("TextureReplacements", "DumpVRAMWriteHeightThreshold", 128), std::numeric_limits<u16>::max()));
+  texture_replacements.config.texture_dump_width_threshold =
+    si.GetSaturatedIntValue<u16>("TextureReplacements", "DumpTextureWidthThreshold", 16);
+  texture_replacements.config.texture_dump_height_threshold =
+    si.GetSaturatedIntValue<u16>("TextureReplacements", "DumpTextureHeightThreshold", 16);
+  texture_replacements.config.vram_write_dump_width_threshold =
+    si.GetSaturatedIntValue<u16>("TextureReplacements", "DumpVRAMWriteWidthThreshold", 128);
+  texture_replacements.config.vram_write_dump_height_threshold =
+    si.GetSaturatedIntValue<u16>("TextureReplacements", "DumpVRAMWriteHeightThreshold", 128);
 
   pio_device_type = ParsePIODeviceTypeName(
                       si.GetTinyStringValue("PIO", "DeviceType", GetPIODeviceTypeModeName(DEFAULT_PIO_DEVICE_TYPE)))
