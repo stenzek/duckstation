@@ -239,33 +239,19 @@ void AchievementSettingsWidget::setupAdditionalUi()
 void AchievementSettingsWidget::updateEnableState()
 {
   const bool enabled = m_dialog->getEffectiveBoolValue("Cheevos", "Enabled", false);
+  m_ui.hardcoreMode->setEnabled(enabled);
+  m_ui.encoreMode->setEnabled(enabled);
+  m_ui.spectatorMode->setEnabled(enabled);
+  m_ui.unofficialAchievements->setEnabled(enabled);
+  m_ui.notificationsGroup->setEnabled(enabled);
+  m_ui.progressTrackingGroup->setEnabled(enabled);
+
   const bool notifications = enabled && m_dialog->getEffectiveBoolValue("Cheevos", "Notifications", true);
   const bool lb_notifications = enabled && m_dialog->getEffectiveBoolValue("Cheevos", "LeaderboardNotifications", true);
-  m_ui.hardcoreMode->setEnabled(enabled);
-  m_ui.achievementNotifications->setEnabled(enabled);
-  m_ui.leaderboardNotifications->setEnabled(enabled);
   m_ui.achievementNotificationsDuration->setEnabled(notifications);
   m_ui.achievementNotificationsDurationLabel->setEnabled(notifications);
   m_ui.leaderboardNotificationsDuration->setEnabled(lb_notifications);
   m_ui.leaderboardNotificationsDurationLabel->setEnabled(lb_notifications);
-  m_ui.notificationLocationLabel->setEnabled(enabled);
-  m_ui.notificationLocation->setEnabled(enabled);
-  m_ui.notificationScaleLabel->setEnabled(enabled);
-  m_ui.notificationScale->setEnabled(enabled);
-  m_ui.notificationScaleCustom->setEnabled(enabled);
-  m_ui.soundEffects->setEnabled(enabled);
-  m_ui.challengeIndicatorMode->setEnabled(enabled);
-  m_ui.challengeIndicatorModeLabel->setEnabled(enabled);
-  m_ui.indicatorLocationLabel->setEnabled(enabled);
-  m_ui.indicatorLocation->setEnabled(enabled);
-  m_ui.indicatorScaleLabel->setEnabled(enabled);
-  m_ui.indicatorScale->setEnabled(enabled);
-  m_ui.indicatorScaleCustom->setEnabled(enabled);
-  m_ui.progressIndicators->setEnabled(enabled);
-  m_ui.leaderboardTrackers->setEnabled(enabled);
-  m_ui.encoreMode->setEnabled(enabled);
-  m_ui.spectatorMode->setEnabled(enabled);
-  m_ui.unofficialAchievements->setEnabled(enabled);
 }
 
 void AchievementSettingsWidget::onHardcoreModeStateChanged()

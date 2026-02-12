@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>598</width>
-    <height>512</height>
+    <height>548</height>
    </rect>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
@@ -79,7 +79,7 @@
     </widget>
    </item>
    <item>
-    <widget class="QGroupBox" name="settingsGroupBox">
+    <widget class="QGroupBox" name="settingsGroup">
      <property name="title">
       <string>Settings</string>
      </property>
@@ -130,7 +130,7 @@
     </widget>
    </item>
    <item>
-    <widget class="QGroupBox" name="notificationBox">
+    <widget class="QGroupBox" name="notificationsGroup">
      <property name="title">
       <string>Notifications</string>
      </property>
@@ -288,7 +288,7 @@
     </widget>
    </item>
    <item>
-    <widget class="QGroupBox" name="groupBox">
+    <widget class="QGroupBox" name="progressTrackingGroup">
      <property name="title">
       <string>Progress Tracking</string>
      </property>
