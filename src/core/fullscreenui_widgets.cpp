@@ -3538,7 +3538,8 @@ bool FullscreenUI::SplitWindowSidebarItem(std::string_view title, std::string_vi
 
 bool FullscreenUI::BeginSplitWindowContent(bool background)
 {
-  ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(LAYOUT_MENU_WINDOW_X_PADDING, 0.0f));
+  ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding,
+                      LayoutScale(LAYOUT_MENU_WINDOW_X_PADDING, LAYOUT_MENU_WINDOW_Y_PADDING));
   ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, LayoutScale(LAYOUT_ITEM_X_SPACING, LAYOUT_ITEM_Y_SPACING));
   ImGui::PushStyleColor(ImGuiCol_ChildBg,
                         ModAlpha(DarkerColor(ImGui::GetStyle().Colors[ImGuiCol_WindowBg], 1.5f), 0.25f));
