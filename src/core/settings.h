@@ -127,7 +127,7 @@ struct GPUSettings
   float display_osd_scale = DEFAULT_OSD_SCALE;
   float display_osd_margin = 0.0f;
 
-  std::array<float, 5> display_osd_message_duration = DEFAULT_DISPLAY_OSD_MESSAGE_DURATIONS;
+  std::array<float, 4> display_osd_message_duration = DEFAULT_DISPLAY_OSD_MESSAGE_DURATIONS;
   NotificationLocation display_osd_message_location = DEFAULT_OSD_MESSAGE_LOCATION;
 
   // texture replacements
@@ -237,7 +237,7 @@ struct GPUSettings
   static constexpr float DEFAULT_OSD_SCALE = 100.0f;
   static constexpr NotificationLocation DEFAULT_OSD_MESSAGE_LOCATION = NotificationLocation::TopLeft;
 
-  static const std::array<float, 5> DEFAULT_DISPLAY_OSD_MESSAGE_DURATIONS;
+  static const std::array<float, 4> DEFAULT_DISPLAY_OSD_MESSAGE_DURATIONS;
 
 #ifndef __ANDROID__
   static constexpr u8 DEFAULT_GPU_MAX_QUEUED_FRAMES = 2;

@@ -117,14 +117,13 @@ void SettingInfo::CopyValue(SettingsInterface* dest_si, const SettingsInterface&
   }
 }
 
-const std::array<float, 5> GPUSettings::DEFAULT_DISPLAY_OSD_MESSAGE_DURATIONS = {{
-  15.0f,                             // Error
-  10.0f,                             // Warning
-  5.0f,                              // Info
-  2.5f,                              // Quick
-  std::numeric_limits<float>::max(), // Persistent
+const std::array<float, 4> GPUSettings::DEFAULT_DISPLAY_OSD_MESSAGE_DURATIONS = {{
+  15.0f, // Error
+  10.0f, // Warning
+  5.0f,  // Info
+  2.5f,  // Quick
 }};
-static_assert(static_cast<size_t>(OSDMessageType::MaxCount) ==
+static_assert(static_cast<size_t>(OSDMessageType::Persistent) ==
               GPUSettings::DEFAULT_DISPLAY_OSD_MESSAGE_DURATIONS.size());
 
 GPUSettings::GPUSettings()
@@ -394,13 +393,12 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
   display_osd_scale = si.GetFloatValue("Display", "OSDScale", DEFAULT_OSD_SCALE);
   display_osd_margin = std::max(si.GetFloatValue("Display", "OSDMargin", ImGuiManager::DEFAULT_SCREEN_MARGIN), 0.0f);
 
-  for (size_t i = 0; i < static_cast<size_t>(OSDMessageType::Persistent); i++)
+  for (size_t i = 0; i < display_osd_message_duration.size(); i++)
   {
     display_osd_message_duration[i] = si.GetFloatValue(
       "Display", TinyString::from_format("OSD{}Duration", GetDisplayOSDMessageTypeName(static_cast<OSDMessageType>(i))),
       DEFAULT_DISPLAY_OSD_MESSAGE_DURATIONS[i]);
   }
-  display_osd_message_duration[static_cast<size_t>(OSDMessageType::Persistent)] = std::numeric_limits<float>::max();
   display_osd_message_location = ParseNotificationLocation(si.GetStringValue("Display", "OSDMessageLocation").c_str())
                                    .value_or(DEFAULT_OSD_MESSAGE_LOCATION);
 
@@ -753,7 +751,7 @@ void Settings::Save(SettingsInterface& si, bool ignore_base) const
     si.SetFloatValue("Display", "OSDScale", display_osd_scale);
     si.SetFloatValue("Display", "OSDMargin", display_osd_margin);
 
-    for (size_t i = 0; i < static_cast<size_t>(OSDMessageType::Persistent); i++)
+    for (size_t i = 0; i < display_osd_message_duration.size(); i++)
     {
       si.SetFloatValue(
         "Display",
