@@ -1826,18 +1826,19 @@ bool FullscreenUI::MenuButtonFrame(std::string_view str_id, bool enabled, const 
 
   *visible = true;
 
-  bool held;
   bool pressed;
   if (enabled)
   {
+    bool held;
     pressed = ImGui::ButtonBehavior(bb, id, hovered, &held, flags);
+    *hovered |= (GImGui->NavInitResult.ID == id);
     if (*hovered)
       DrawMenuButtonFrame(bb.Min, bb.Max, held);
   }
   else
   {
     pressed = false;
-    held = false;
+    *hovered = false;
   }
 
   return pressed;
@@ -2538,11 +2539,12 @@ bool FullscreenUI::FloatingButton(std::string_view text, float x, float y, float
   }
 
   bool hovered;
-  bool held;
   bool pressed;
   if (enabled)
   {
+    bool held;
     pressed = ImGui::ButtonBehavior(bb, id, &hovered, &held);
+    hovered |= (GImGui->NavInitResult.ID == id);
     if (hovered)
     {
       const ImU32 col = ImGui::GetColorU32(held ? ImGuiCol_ButtonActive : ImGuiCol_ButtonHovered);
@@ -2553,7 +2555,6 @@ bool FullscreenUI::FloatingButton(std::string_view text, float x, float y, float
   {
     hovered = false;
     pressed = false;
-    held = false;
   }
 
   bb.Min += padding;
@@ -2897,19 +2898,18 @@ bool FullscreenUI::HorizontalMenuButton(std::string_view title, bool enabled /* 
   ImGui::RenderFrame(bb.Min, bb.Max, frame_background, false, LayoutScale(LAYOUT_MENU_ITEM_BORDER_ROUNDING));
   SetMenuButtonSplitLayer(MENU_BUTTON_SPLIT_LAYER_FOREGROUND);
 
-  bool hovered;
-  bool held;
   bool pressed;
   if (enabled)
   {
+    bool hovered, held;
     pressed = ImGui::ButtonBehavior(bb, id, &hovered, &held, flags);
+    hovered |= (GImGui->NavInitResult.ID == id);
     if (hovered)
       DrawMenuButtonFrame(bb.Min, bb.Max, held);
   }
   else
   {
     pressed = false;
-    held = false;
   }
 
   const ImGuiStyle& style = ImGui::GetStyle();
@@ -3018,20 +3018,17 @@ bool FullscreenUI::NavButton(std::string_view title, bool is_active, bool enable
       return false;
   }
 
-  bool held;
   bool pressed;
-  bool hovered;
   if (enabled)
   {
+    bool hovered, held;
     pressed = ImGui::ButtonBehavior(bb, id, &hovered, &held, ImGuiButtonFlags_NoNavFocus);
-    if (hovered)
+    if (hovered || GImGui->NavInitResult.ID == id)
       DrawMenuButtonFrame(bb.Min, bb.Max, held);
   }
   else
   {
     pressed = false;
-    held = false;
-    hovered = false;
   }
 
   bb.Min += style.FramePadding;
@@ -3084,6 +3081,7 @@ bool FullscreenUI::NavTab(std::string_view title, bool is_active, bool enabled, 
   if (enabled)
   {
     pressed = ImGui::ButtonBehavior(bb, id, &hovered, &held, ImGuiButtonFlags_NoNavFocus);
+    hovered = (hovered || GImGui->NavInitResult.ID == id);
   }
   else
   {
@@ -3241,6 +3239,7 @@ bool FullscreenUI::FloatingNavBarIcon(std::string_view title, ImTextureID image,
   if (enabled)
   {
     pressed = ImGui::ButtonBehavior(bb, id, &hovered, &held, ImGuiButtonFlags_NoNavFocus);
+    hovered = (hovered || GImGui->NavInitResult.ID == id);
     if (hovered || is_active)
     {
       // Intentionally no animation here.
@@ -3338,7 +3337,7 @@ bool FullscreenUI::HorizontalMenuItem(GPUTexture* icon, std::string_view title, 
   bool held;
   bool hovered;
   const bool pressed = ImGui::ButtonBehavior(bb, id, &hovered, &held, 0);
-  if (hovered)
+  if (hovered || GImGui->NavInitResult.ID == id)
     DrawMenuButtonFrame(bb.Min, bb.Max, held);
 
   const ImGuiStyle& style = ImGui::GetStyle();
