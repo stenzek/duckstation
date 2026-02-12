@@ -394,6 +394,7 @@ std::optional<BIOS::Image> BIOS::GetBIOSImage(ConsoleRegion region, Error* error
 std::optional<BIOS::Image> BIOS::FindBIOSImageInDirectory(ConsoleRegion region, const char* directory, Error* error)
 {
   INFO_LOG("Searching for a {} BIOS in '{}'...", Settings::GetConsoleRegionName(region), directory);
+  Error::Clear(error);
 
   FileSystem::FindResultsArray results;
   FileSystem::FindFiles(
@@ -412,7 +413,7 @@ std::optional<BIOS::Image> BIOS::FindBIOSImageInDirectory(ConsoleRegion region, 
     }
 
     std::string full_path(Path::Combine(directory, fd.FileName));
-    std::optional<Image> found_image = LoadImageFromFile(full_path.c_str(), nullptr);
+    std::optional<Image> found_image = LoadImageFromFile(full_path.c_str(), error);
     if (!found_image.has_value())
       continue;
 
@@ -432,8 +433,11 @@ std::optional<BIOS::Image> BIOS::FindBIOSImageInDirectory(ConsoleRegion region, 
 
   if (!image.has_value())
   {
+    if (Error::IsValid(error))
+      Error::AddSuffix(error, "\n\n");
+
 #ifndef __ANDROID__
-    Error::SetStringFmt(
+    Error::AddSuffixFmt(
       error,
       TRANSLATE_FS("System", "No BIOS image found for {} region.\n\nDuckStation requires a PS1 or PS2 BIOS in order to "
                              "run.\n\nFor legal reasons, you *must* obtain a BIOS from an actual PS1 unit that you own "
@@ -441,7 +445,7 @@ std::optional<BIOS::Image> BIOS::FindBIOSImageInDirectory(ConsoleRegion region, 
                              "folder within the data directory (Tools Menu -> Open Data Directory)."),
       Settings::GetConsoleRegionName(region));
 #else
-    Error::SetStringFmt(error, TRANSLATE_FS("System", "No BIOS image found for {} region."),
+    Error::AddSuffixFmt(error, TRANSLATE_FS("System", "No BIOS image found for {} region."),
                         Settings::GetConsoleRegionName(region));
 #endif
     return image;

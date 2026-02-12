@@ -24,6 +24,11 @@ Error::Error(Error&& e) = default;
 
 Error::~Error() = default;
 
+bool Error::IsValid(Error* errptr)
+{
+  return (errptr && errptr->IsValid());
+}
+
 void Error::Clear()
 {
   m_description = {};

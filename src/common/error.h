@@ -68,6 +68,7 @@ public:
 #endif
 
   // helpers for setting
+  static bool IsValid(Error* errptr);
   static void Clear(Error* errptr);
   static void SetErrno(Error* errptr, int err);
   static void SetErrno(Error* errptr, std::string_view prefix, int err);

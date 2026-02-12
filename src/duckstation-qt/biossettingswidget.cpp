@@ -182,7 +182,7 @@ void BIOSSettingsWidget::setDropDownValue(QComboBox* cb, const std::optional<std
     }
   }
 
-  cb->addItem(qname, QVariant(qname));
+  cb->addItem(QIcon::fromTheme("close-line"_L1), tr("%1 (Missing)").arg(qname), QVariant(qname));
   cb->setCurrentIndex(cb->count() - 1);
 }
 
