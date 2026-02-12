@@ -174,23 +174,40 @@ void GameSummaryWidget::populateUi(const GameList::Entry* entry)
   if (const GameDatabase::Entry* dbentry = entry->dbentry)
   {
     m_ui.compatibility->setCurrentIndex(static_cast<int>(dbentry->compatibility));
-    m_ui.genre->setText(dbentry->genre.empty() ? tr("Unknown") : QtUtils::StringViewToQString(dbentry->genre));
+
+    QString metadata;
+    if (!dbentry->genre.empty())
+      metadata = QtUtils::StringViewToQString(dbentry->genre);
     if (!dbentry->developer.empty() && !dbentry->publisher.empty() && dbentry->developer != dbentry->publisher)
-      m_ui.developer->setText(tr("%1 (Published by %2)")
-                                .arg(QtUtils::StringViewToQString(dbentry->developer))
-                                .arg(QtUtils::StringViewToQString(dbentry->publisher)));
+    {
+      if (!metadata.isEmpty())
+        metadata.append(tr(" by "));
+      metadata.append(tr("%1 (published by %2)")
+                        .arg(QtUtils::StringViewToQStringView(dbentry->developer))
+                        .arg(QtUtils::StringViewToQStringView(dbentry->publisher)));
+    }
     else if (!dbentry->developer.empty())
-      m_ui.developer->setText(QtUtils::StringViewToQString(dbentry->developer));
+    {
+      if (!metadata.isEmpty())
+        metadata.append(" by ");
+      metadata.append(QtUtils::StringViewToQStringView(dbentry->developer));
+    }
     else if (!dbentry->publisher.empty())
-      m_ui.developer->setText(tr("Published by %1").arg(QtUtils::StringViewToQString(dbentry->publisher)));
+    {
+      if (!metadata.isEmpty())
+        metadata.append(", ");
+      metadata.append(tr("published by %1").arg(QtUtils::StringViewToQStringView(dbentry->publisher)));
+    }
+    if (!metadata.isEmpty())
+      m_ui.metadata->setText(metadata);
     else
-      m_ui.developer->setText(tr("Unknown"));
+      m_ui.metadata->setText(tr("Unknown"));
 
     QString release_info;
     if (dbentry->release_date != 0)
     {
       const QString date = QDateTime::fromSecsSinceEpoch(static_cast<qint64>(dbentry->release_date), QTimeZone::utc())
-                             .toString(QtHost::GetApplicationLocale().dateFormat());
+                             .toString(QtHost::GetApplicationLocale().dateFormat(QLocale::ShortFormat));
       release_info = tr("Released %1").arg(date);
     }
     if (dbentry->min_players != 0)
@@ -239,8 +256,7 @@ void GameSummaryWidget::populateUi(const GameList::Entry* entry)
   }
   else
   {
-    m_ui.genre->setText(tr("Unknown"));
-    m_ui.developer->setText(tr("Unknown"));
+    m_ui.metadata->setText(tr("Unknown"));
     m_ui.releaseInfo->setText(tr("Unknown"));
     m_ui.controllers->setText(tr("Unknown"));
   }

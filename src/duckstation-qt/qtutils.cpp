@@ -179,6 +179,11 @@ QString QtUtils::StringViewToQString(std::string_view str)
   return str.empty() ? QString() : QString::fromUtf8(str.data(), str.size());
 }
 
+QUtf8StringView QtUtils::StringViewToQStringView(std::string_view str)
+{
+  return str.empty() ? QUtf8StringView() : QUtf8StringView(str.data(), static_cast<qsizetype>(str.size()));
+}
+
 QString QtUtils::NormalizeLineEndings(QString str)
 {
   str.replace(QStringLiteral("\r\n"), QStringLiteral("\n"));

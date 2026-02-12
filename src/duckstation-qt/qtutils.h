@@ -103,6 +103,9 @@ std::optional<unsigned> PromptForAddress(QWidget* parent, const QString& title, 
 /// Converts a std::string_view to a QString safely.
 QString StringViewToQString(std::string_view str);
 
+/// Creates a QUtf8StringView from a std::string_view.
+QUtf8StringView StringViewToQStringView(std::string_view str);
+
 /// Ensures line endings are normalized in \n format.
 QString NormalizeLineEndings(QString str);
 

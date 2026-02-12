@@ -210,67 +210,53 @@
    <item row="8" column="0">
     <widget class="QLabel" name="label_11">
      <property name="text">
-      <string>Genre:</string>
+      <string>Metadata:</string>
      </property>
     </widget>
    </item>
    <item row="8" column="1" colspan="2">
-    <widget class="QLineEdit" name="genre">
+    <widget class="QLineEdit" name="metadata">
      <property name="readOnly">
       <bool>true</bool>
      </property>
     </widget>
    </item>
    <item row="9" column="0">
-    <widget class="QLabel" name="label_12">
-     <property name="text">
-      <string>Developer:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="9" column="1" colspan="2">
-    <widget class="QLineEdit" name="developer">
-     <property name="readOnly">
-      <bool>true</bool>
-     </property>
-    </widget>
-   </item>
-   <item row="10" column="0">
     <widget class="QLabel" name="label_14">
      <property name="text">
       <string>Release Info:</string>
      </property>
     </widget>
    </item>
-   <item row="10" column="1" colspan="2">
+   <item row="9" column="1" colspan="2">
     <widget class="QLineEdit" name="releaseInfo">
      <property name="readOnly">
       <bool>true</bool>
      </property>
     </widget>
    </item>
-   <item row="11" column="0">
+   <item row="10" column="0">
     <widget class="QLabel" name="label_15">
      <property name="text">
       <string>Controllers:</string>
      </property>
     </widget>
    </item>
-   <item row="11" column="1" colspan="2">
+   <item row="10" column="1" colspan="2">
     <widget class="QLineEdit" name="controllers">
      <property name="readOnly">
       <bool>true</bool>
      </property>
     </widget>
    </item>
-   <item row="12" column="0">
+   <item row="11" column="0">
     <widget class="QLabel" name="label_9">
      <property name="text">
       <string>Controller Preset:</string>
      </property>
     </widget>
    </item>
-   <item row="12" column="1" colspan="2">
+   <item row="11" column="1" colspan="2">
     <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="1,0">
      <item>
       <widget class="QComboBox" name="inputProfile"/>
@@ -284,14 +270,14 @@
      </item>
     </layout>
    </item>
-   <item row="13" column="0">
+   <item row="12" column="0">
     <widget class="QLabel" name="label_8">
      <property name="text">
       <string>Tracks:</string>
      </property>
     </widget>
    </item>
-   <item row="13" column="1" colspan="2">
+   <item row="12" column="1" colspan="2">
     <layout class="QHBoxLayout" name="verifyLayout" stretch="1,0">
      <item>
       <widget class="QLineEdit" name="revision">
@@ -315,7 +301,7 @@
      </item>
     </layout>
    </item>
-   <item row="14" column="0" colspan="3">
+   <item row="13" column="0" colspan="3">
     <widget class="QTreeWidget" name="tracks">
      <property name="editTriggers">
       <set>QAbstractItemView::EditTrigger::NoEditTriggers</set>
@@ -361,7 +347,7 @@
      </column>
     </widget>
    </item>
-   <item row="15" column="0" colspan="3">
+   <item row="14" column="0" colspan="3">
     <spacer name="verticalSpacer">
      <property name="orientation">
       <enum>Qt::Orientation::Vertical</enum>
