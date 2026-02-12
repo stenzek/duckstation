@@ -62,7 +62,7 @@ for token in ["FSUI_STR", "FSUI_CSTR", "FSUI_FSTR", "FSUI_NSTR", "FSUI_VSTR", "F
                     pos = s.find('"', pos + 1)
             assert len(new_s) > 0
 
-            assert (end_pos - start_pos) < 300
+            assert (end_pos - start_pos) < 350
             strings.add(new_s)
         last_pos += len(token)
 

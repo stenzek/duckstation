@@ -93,6 +93,7 @@ TRANSLATE_NOOP("FullscreenUI", "AMOLED");
 TRANSLATE_NOOP("FullscreenUI", "About");
 TRANSLATE_NOOP("FullscreenUI", "Achievement Notifications");
 TRANSLATE_NOOP("FullscreenUI", "Achievement Unlock/Count");
+TRANSLATE_NOOP("FullscreenUI", "Achievement Unlocks Unconfirmed");
 TRANSLATE_NOOP("FullscreenUI", "Achievements");
 TRANSLATE_NOOP("FullscreenUI", "Achievements Settings");
 TRANSLATE_NOOP("FullscreenUI", "Achievements: ");
@@ -862,6 +863,7 @@ TRANSLATE_NOOP("FullscreenUI", "\"PlayStation\" and \"PSX\" are registered trade
 TRANSLATE_NOOP("FullscreenUI", "change disc");
 TRANSLATE_NOOP("FullscreenUI", "restart");
 TRANSLATE_NOOP("FullscreenUI", "shut down");
+TRANSLATE_NOOP("FullscreenUI", "{0} achievement unlocks have not been confirmed by the server. Continuing to {1} will result in loss of these unlocks. Once network connectivity has been re-established, these unlocks will be confirmed automatically.\n\nDo you want to {1} anyway?");
 TRANSLATE_NOOP("FullscreenUI", "{} Frames");
 TRANSLATE_NOOP("FullscreenUI", "{} deleted.");
 TRANSLATE_NOOP("FullscreenUI", "{} does not exist.");
