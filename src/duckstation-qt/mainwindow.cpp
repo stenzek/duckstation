@@ -1100,7 +1100,7 @@ std::shared_ptr<SystemBootParameters> MainWindow::getSystemBootParameters(std::s
   return ret;
 }
 
-bool MainWindow::openResumeStateDialog(const std::string& path, const std::string& serial)
+bool MainWindow::openResumeStateDialogForSerial(const std::string& path, const std::string& serial)
 {
   System::FlushSaveStates();
 
@@ -1108,10 +1108,10 @@ bool MainWindow::openResumeStateDialog(const std::string& path, const std::strin
   if (save_state_path.empty() || !FileSystem::FileExists(save_state_path.c_str()))
     return false;
 
-  return openResumeStateDialog(std::move(save_state_path));
+  return openResumeStateDialog(path, std::move(save_state_path));
 }
 
-bool MainWindow::openResumeStateDialog(std::string save_state_path)
+bool MainWindow::openResumeStateDialog(const std::string& path, std::string save_state_path)
 {
   if (s_locals.system_valid)
     return false;
@@ -1169,6 +1169,9 @@ bool MainWindow::openResumeStateDialog(std::string save_state_path)
     }
   }
 
+  // Prefer using the supplied path in case it's been moved.
+  std::string media_path = path.empty() ? std::string(std::move(ssi->media_path)) : std::string(path);
+
   QDialogButtonBox* const bbox = new QDialogButtonBox(Qt::Horizontal, dlg);
 
   QPushButton* const load = bbox->addButton(tr("Load State"), QDialogButtonBox::AcceptRole);
@@ -1177,16 +1180,16 @@ bool MainWindow::openResumeStateDialog(std::string save_state_path)
   QPushButton* const cancel = bbox->addButton(QDialogButtonBox::Cancel);
   load->setDefault(true);
 
-  connect(load, &QPushButton::clicked, [this, dlg, path = ssi->media_path, save_state_path]() mutable {
+  connect(load, &QPushButton::clicked, [this, dlg, path = media_path, save_state_path]() mutable {
     startFile(std::move(path), std::move(save_state_path), std::nullopt);
     dlg->accept();
   });
-  connect(boot, &QPushButton::clicked, [this, dlg, path = ssi->media_path]() mutable {
+  connect(boot, &QPushButton::clicked, [this, dlg, path = media_path]() mutable {
     startFile(std::move(path), std::nullopt, std::nullopt);
     dlg->accept();
   });
   connect(delboot, &QPushButton::clicked,
-          [this, dlg, path = ssi->media_path, save_state_path = std::move(save_state_path)]() mutable {
+          [this, dlg, path = std::move(media_path), save_state_path = std::move(save_state_path)]() mutable {
             if (!FileSystem::DeleteFile(save_state_path.c_str()))
             {
               QtUtils::MessageBoxCritical(
@@ -1227,7 +1230,7 @@ void MainWindow::startFileOrChangeDisc(const QString& qpath)
   {
     const auto lock = GameList::GetLock();
     const GameList::Entry* entry = GameList::GetEntryForPath(path);
-    if (entry && !entry->serial.empty() && openResumeStateDialog(entry->path, entry->serial))
+    if (entry && !entry->serial.empty() && openResumeStateDialogForSerial(entry->path, entry->serial))
       return;
   }
 
@@ -1290,7 +1293,7 @@ void MainWindow::onResumeLastStateActionTriggered()
     return;
   }
 
-  openResumeStateDialog(std::move(state_path));
+  openResumeStateDialog({}, std::move(state_path));
 }
 
 void MainWindow::onChangeDiscFromFileActionTriggered()
@@ -1583,7 +1586,7 @@ void MainWindow::onGameListEntryActivated()
     return;
   }
 
-  if (!entry->serial.empty() && openResumeStateDialog(entry->path, entry->serial))
+  if (!entry->serial.empty() && openResumeStateDialogForSerial(entry->path, entry->serial))
     return;
 
   // only resume if the option is enabled, and we have one for this game

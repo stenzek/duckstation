@@ -224,8 +224,8 @@ private:
   const GameList::Entry* resolveDiscSetEntry(const GameList::Entry* entry,
                                              std::unique_lock<std::recursive_mutex>& lock);
   std::shared_ptr<SystemBootParameters> getSystemBootParameters(std::string file);
-  bool openResumeStateDialog(const std::string& path, const std::string& serial);
-  bool openResumeStateDialog(std::string state_path);
+  bool openResumeStateDialogForSerial(const std::string& path, const std::string& serial);
+  bool openResumeStateDialog(const std::string& path, std::string save_state_path);
   void startFile(std::string path, std::optional<std::string> save_path, std::optional<bool> fast_boot);
   void startFileOrChangeDisc(const QString& qpath);
   void promptForDiscChange(const QString& path);
