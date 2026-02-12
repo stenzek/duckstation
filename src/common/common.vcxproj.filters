@@ -90,6 +90,7 @@
     <ClCompile Include="thirdparty\aes.cpp" />
     <ClCompile Include="task_queue.cpp" />
     <ClCompile Include="string_pool.cpp" />
+    <ClCompile Include="settings_interface.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="bitfield.natvis" />

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #pragma once
@@ -16,7 +16,7 @@ class Error;
 class SettingsInterface
 {
 public:
-  virtual ~SettingsInterface() = default;
+  virtual ~SettingsInterface();
 
   virtual bool IsEmpty() = 0;
 
@@ -49,244 +49,52 @@ public:
   virtual void RemoveSection(const char* section) = 0;
   virtual void RemoveEmptySections() = 0;
 
-  ALWAYS_INLINE s32 GetIntValue(const char* section, const char* key, s32 default_value = 0) const
-  {
-    s32 value;
-    return GetIntValue(section, key, &value) ? value : default_value;
-  }
-
-  ALWAYS_INLINE u32 GetUIntValue(const char* section, const char* key, u32 default_value = 0) const
-  {
-    u32 value;
-    return GetUIntValue(section, key, &value) ? value : default_value;
-  }
+  s32 GetIntValue(const char* section, const char* key, s32 default_value = 0) const;
+  u32 GetUIntValue(const char* section, const char* key, u32 default_value = 0) const;
+  float GetFloatValue(const char* section, const char* key, float default_value = 0.0f) const;
+  double GetDoubleValue(const char* section, const char* key, double default_value = 0.0) const;
+  bool GetBoolValue(const char* section, const char* key, bool default_value = false) const;
+  std::string GetStringValue(const char* section, const char* key, const char* default_value = "") const;
+  SmallString GetSmallStringValue(const char* section, const char* key, const char* default_value = "") const;
+  TinyString GetTinyStringValue(const char* section, const char* key, const char* default_value = "") const;
 
   template<typename T>
     requires std::is_integral_v<T>
-  ALWAYS_INLINE T GetSaturatedIntValue(const char* section, const char* key, T default_value = 0) const
-  {
-    s32 value;
-    if (!GetIntValue(section, key, &value))
-      return default_value;
-    if (value < static_cast<s32>(std::numeric_limits<T>::min()))
-      return std::numeric_limits<T>::min();
-    if (value > static_cast<s32>(std::numeric_limits<T>::max()))
-      return std::numeric_limits<T>::max();
-    return static_cast<T>(value);
-  }
+  T GetSaturatedIntValue(const char* section, const char* key, T default_value = 0) const;
 
-  ALWAYS_INLINE float GetFloatValue(const char* section, const char* key, float default_value = 0.0f) const
-  {
-    float value;
-    return GetFloatValue(section, key, &value) ? value : default_value;
-  }
+  std::optional<s32> GetOptionalIntValue(const char* section, const char* key,
+                                         std::optional<s32> default_value = std::nullopt) const;
+  std::optional<u32> GetOptionalUIntValue(const char* section, const char* key,
+                                          std::optional<u32> default_value = std::nullopt) const;
+  std::optional<float> GetOptionalFloatValue(const char* section, const char* key,
+                                             std::optional<float> default_value = std::nullopt) const;
+  std::optional<double> GetOptionalDoubleValue(const char* section, const char* key,
+                                               std::optional<double> default_value = std::nullopt) const;
+  std::optional<bool> GetOptionalBoolValue(const char* section, const char* key,
+                                           std::optional<bool> default_value = std::nullopt) const;
 
-  ALWAYS_INLINE double GetDoubleValue(const char* section, const char* key, double default_value = 0.0) const
-  {
-    double value;
-    return GetDoubleValue(section, key, &value) ? value : default_value;
-  }
+  std::optional<std::string> GetOptionalStringValue(const char* section, const char* key,
+                                                    std::optional<const char*> default_value = std::nullopt) const;
+  std::optional<SmallString> GetOptionalSmallStringValue(const char* section, const char* key,
+                                                         std::optional<const char*> default_value = std::nullopt) const;
+  std::optional<TinyString> GetOptionalTinyStringValue(const char* section, const char* key,
+                                                       std::optional<const char*> default_value = std::nullopt) const;
 
-  ALWAYS_INLINE bool GetBoolValue(const char* section, const char* key, bool default_value = false) const
-  {
-    bool value;
-    return GetBoolValue(section, key, &value) ? value : default_value;
-  }
+  void SetOptionalIntValue(const char* section, const char* key, const std::optional<s32>& value);
+  void SetOptionalUIntValue(const char* section, const char* key, const std::optional<u32>& value);
+  void SetOptionalFloatValue(const char* section, const char* key, const std::optional<float>& value);
+  void SetOptionalDoubleValue(const char* section, const char* key, const std::optional<double>& value);
+  void SetOptionalBoolValue(const char* section, const char* key, const std::optional<bool>& value);
+  void SetOptionalStringValue(const char* section, const char* key, const std::optional<const char*>& value);
 
-  ALWAYS_INLINE std::string GetStringValue(const char* section, const char* key, const char* default_value = "") const
-  {
-    std::string value;
-    if (!GetStringValue(section, key, &value))
-      value.assign(default_value);
-    return value;
-  }
-
-  ALWAYS_INLINE SmallString GetSmallStringValue(const char* section, const char* key,
-                                                const char* default_value = "") const
-  {
-    SmallString value;
-    if (!GetStringValue(section, key, &value))
-      value.assign(default_value);
-    return value;
-  }
-
-  ALWAYS_INLINE TinyString GetTinyStringValue(const char* section, const char* key,
-                                              const char* default_value = "") const
-  {
-    TinyString value;
-    if (!GetStringValue(section, key, &value))
-      value.assign(default_value);
-    return value;
-  }
-
-  ALWAYS_INLINE std::optional<s32> GetOptionalIntValue(const char* section, const char* key,
-                                                       std::optional<s32> default_value = std::nullopt) const
-  {
-    s32 ret;
-    return GetIntValue(section, key, &ret) ? std::optional<s32>(ret) : default_value;
-  }
-
-  ALWAYS_INLINE std::optional<u32> GetOptionalUIntValue(const char* section, const char* key,
-                                                        std::optional<u32> default_value = std::nullopt) const
-  {
-    u32 ret;
-    return GetUIntValue(section, key, &ret) ? std::optional<u32>(ret) : default_value;
-  }
-
-  ALWAYS_INLINE std::optional<float> GetOptionalFloatValue(const char* section, const char* key,
-                                                           std::optional<float> default_value = std::nullopt) const
-  {
-    float ret;
-    return GetFloatValue(section, key, &ret) ? std::optional<float>(ret) : default_value;
-  }
-
-  ALWAYS_INLINE std::optional<double> GetOptionalDoubleValue(const char* section, const char* key,
-                                                             std::optional<double> default_value = std::nullopt) const
-  {
-    double ret;
-    return GetDoubleValue(section, key, &ret) ? std::optional<double>(ret) : default_value;
-  }
-
-  ALWAYS_INLINE std::optional<bool> GetOptionalBoolValue(const char* section, const char* key,
-                                                         std::optional<bool> default_value = std::nullopt) const
-  {
-    bool ret;
-    return GetBoolValue(section, key, &ret) ? std::optional<bool>(ret) : default_value;
-  }
-
-  ALWAYS_INLINE std::optional<std::string>
-  GetOptionalStringValue(const char* section, const char* key,
-                         std::optional<const char*> default_value = std::nullopt) const
-  {
-    std::string ret;
-    return GetStringValue(section, key, &ret) ?
-             std::optional<std::string>(ret) :
-             (default_value.has_value() ? std::optional<std::string>(default_value.value()) :
-                                          std::optional<std::string>());
-  }
-
-  ALWAYS_INLINE std::optional<SmallString>
-  GetOptionalSmallStringValue(const char* section, const char* key,
-                              std::optional<const char*> default_value = std::nullopt) const
-  {
-    SmallString ret;
-    return GetStringValue(section, key, &ret) ?
-             std::optional<SmallString>(ret) :
-             (default_value.has_value() ? std::optional<SmallString>(default_value.value()) :
-                                          std::optional<SmallString>());
-  }
-
-  ALWAYS_INLINE std::optional<TinyString>
-  GetOptionalTinyStringValue(const char* section, const char* key,
-                             std::optional<const char*> default_value = std::nullopt) const
-  {
-    TinyString ret;
-    return GetStringValue(section, key, &ret) ?
-             std::optional<TinyString>(ret) :
-             (default_value.has_value() ? std::optional<TinyString>(default_value.value()) :
-                                          std::optional<TinyString>());
-  }
-
-  ALWAYS_INLINE void SetOptionalIntValue(const char* section, const char* key, const std::optional<s32>& value)
-  {
-    value.has_value() ? SetIntValue(section, key, value.value()) : DeleteValue(section, key);
-  }
-
-  ALWAYS_INLINE void SetOptionalUIntValue(const char* section, const char* key, const std::optional<u32>& value)
-  {
-    value.has_value() ? SetUIntValue(section, key, value.value()) : DeleteValue(section, key);
-  }
-
-  ALWAYS_INLINE void SetOptionalFloatValue(const char* section, const char* key, const std::optional<float>& value)
-  {
-    value.has_value() ? SetFloatValue(section, key, value.value()) : DeleteValue(section, key);
-  }
-
-  ALWAYS_INLINE void SetOptionalDoubleValue(const char* section, const char* key, const std::optional<double>& value)
-  {
-    value.has_value() ? SetDoubleValue(section, key, value.value()) : DeleteValue(section, key);
-  }
-
-  ALWAYS_INLINE void SetOptionalBoolValue(const char* section, const char* key, const std::optional<bool>& value)
-  {
-    value.has_value() ? SetBoolValue(section, key, value.value()) : DeleteValue(section, key);
-  }
-
-  ALWAYS_INLINE void SetOptionalStringValue(const char* section, const char* key,
-                                            const std::optional<const char*>& value)
-  {
-    value.has_value() ? SetStringValue(section, key, value.value()) : DeleteValue(section, key);
-  }
-
-  ALWAYS_INLINE void CopyBoolValue(const SettingsInterface& si, const char* section, const char* key)
-  {
-    bool value;
-    if (si.GetBoolValue(section, key, &value))
-      SetBoolValue(section, key, value);
-    else
-      DeleteValue(section, key);
-  }
-
-  ALWAYS_INLINE void CopyIntValue(const SettingsInterface& si, const char* section, const char* key)
-  {
-    s32 value;
-    if (si.GetIntValue(section, key, &value))
-      SetIntValue(section, key, value);
-    else
-      DeleteValue(section, key);
-  }
-
-  ALWAYS_INLINE void CopyUIntValue(const SettingsInterface& si, const char* section, const char* key)
-  {
-    u32 value;
-    if (si.GetUIntValue(section, key, &value))
-      SetUIntValue(section, key, value);
-    else
-      DeleteValue(section, key);
-  }
-
-  ALWAYS_INLINE void CopyFloatValue(const SettingsInterface& si, const char* section, const char* key)
-  {
-    float value;
-    if (si.GetFloatValue(section, key, &value))
-      SetFloatValue(section, key, value);
-    else
-      DeleteValue(section, key);
-  }
-
-  ALWAYS_INLINE void CopyDoubleValue(const SettingsInterface& si, const char* section, const char* key)
-  {
-    double value;
-    if (si.GetDoubleValue(section, key, &value))
-      SetDoubleValue(section, key, value);
-    else
-      DeleteValue(section, key);
-  }
-
-  ALWAYS_INLINE void CopyStringValue(const SettingsInterface& si, const char* section, const char* key)
-  {
-    std::string value;
-    if (si.GetStringValue(section, key, &value))
-      SetStringValue(section, key, value.c_str());
-    else
-      DeleteValue(section, key);
-  }
-
-  ALWAYS_INLINE void CopyStringListValue(const SettingsInterface& si, const char* section, const char* key)
-  {
-    std::vector<std::string> value(si.GetStringList(section, key));
-    if (!value.empty())
-      SetStringList(section, key, value);
-    else
-      DeleteValue(section, key);
-  }
+  void CopyBoolValue(const SettingsInterface& si, const char* section, const char* key);
+  void CopyIntValue(const SettingsInterface& si, const char* section, const char* key);
+  void CopyUIntValue(const SettingsInterface& si, const char* section, const char* key);
+  void CopyFloatValue(const SettingsInterface& si, const char* section, const char* key);
+  void CopyDoubleValue(const SettingsInterface& si, const char* section, const char* key);
+  void CopyStringValue(const SettingsInterface& si, const char* section, const char* key);
+  void CopyStringListValue(const SettingsInterface& si, const char* section, const char* key);
 
   // NOTE: Writes values as strings.
-  ALWAYS_INLINE void CopySection(const SettingsInterface& si, const char* section)
-  {
-    ClearSection(section);
-
-    for (const auto& [key, value] : si.GetKeyValueList(section))
-      SetStringValue(section, key.c_str(), value.c_str());
-  }
+  void CopySection(const SettingsInterface& si, const char* section);
 };

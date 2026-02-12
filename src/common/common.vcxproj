@@ -69,6 +69,7 @@
     <ClCompile Include="md5_digest.cpp" />
     <ClCompile Include="perf_scope.cpp" />
     <ClCompile Include="progress_callback.cpp" />
+    <ClCompile Include="settings_interface.cpp" />
     <ClCompile Include="sha1_digest.cpp" />
     <ClCompile Include="sha256_digest.cpp" />
     <ClCompile Include="small_string.cpp" />
