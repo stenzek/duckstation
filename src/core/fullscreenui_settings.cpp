@@ -4992,9 +4992,9 @@ void FullscreenUI::DrawAchievementsSettingsPage(std::unique_lock<std::mutex>& se
     std::string_view mode_text;
     if (!value.has_value())
       mode_text = FSUI_VSTR("Use Global Setting");
-    else if (value.value() == -1)
+    else if (value.value() < 0)
       mode_text = FSUI_VSTR("Use OSD Scale");
-    else if (value.value() == 0)
+    else if (value.value() == Settings::ACHIEVEMENT_NOTIFICATION_SCALE_AUTO)
       mode_text = FSUI_VSTR("Automatic");
     else
       mode_text = FSUI_VSTR("Custom");
@@ -5004,8 +5004,9 @@ void FullscreenUI::DrawAchievementsSettingsPage(std::unique_lock<std::mutex>& se
       ChoiceDialogOptions options;
       if (game_settings)
         options.emplace_back(FSUI_STR("Use Global Setting"), !value.has_value());
-      options.emplace_back(FSUI_STR("Use OSD Scale"), value.has_value() && value.value() == -1);
-      options.emplace_back(FSUI_STR("Automatic"), value.has_value() && value.value() == 0);
+      options.emplace_back(FSUI_STR("Automatic"),
+                           value.has_value() && value.value() == Settings::ACHIEVEMENT_NOTIFICATION_SCALE_AUTO);
+      options.emplace_back(FSUI_STR("Use OSD Scale"), value.has_value() && value.value() < 0);
       options.emplace_back(FSUI_STR("Custom"), is_custom);
 
       OpenChoiceDialog(title, false, std::move(options),
@@ -5020,9 +5021,9 @@ void FullscreenUI::DrawAchievementsSettingsPage(std::unique_lock<std::mutex>& se
                          if (game_settings && index == 0)
                            bsi->DeleteValue("Cheevos", key);
                          else if (index == offset + 0)
-                           bsi->SetIntValue("Cheevos", key, -1);
-                         else if (index == offset + 1)
                            bsi->SetIntValue("Cheevos", key, 0);
+                         else if (index == offset + 1)
+                           bsi->SetIntValue("Cheevos", key, -1);
                          else if (index == offset + 2)
                            bsi->SetIntValue("Cheevos", key, 100);
 

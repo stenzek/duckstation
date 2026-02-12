@@ -93,10 +93,10 @@ AchievementSettingsWidget::AchievementSettingsWidget(SettingsWindow* dialog, QWi
   dialog->registerWidgetHelp(m_ui.notificationLocation, tr("Notification Location"), tr("Top Left"),
                              tr("Selects the screen location for achievement and leaderboard notifications."));
   dialog->registerWidgetHelp(m_ui.notificationScale, tr("Notification Scale"), tr("Automatic"),
-                             tr("Determines the size of achievement notification popups."));
+                             tr("Determines the size of achievement notification popups. Automatic will use the same "
+                                "scaling as the Big Picture UI."));
   dialog->registerWidgetHelp(m_ui.notificationScaleCustom, tr("Custom Notification Scale"), tr("100%"),
-                             tr("Sets the custom scale percentage for achievement notifications. Automatic will use "
-                                "the same scaling as the Big Picture UI."));
+                             tr("Sets the custom scale percentage for achievement notifications."));
   dialog->registerWidgetHelp(
     m_ui.challengeIndicatorMode, tr("Challenge Indicators"), tr("Show Notifications"),
     tr("Shows a notification or icons in the selected location when a challenge/primed achievement is active."));
@@ -174,8 +174,8 @@ void AchievementSettingsWidget::setupAdditionalUi()
           .arg((global_value < 0) ? tr("Use OSD Scale") : ((global_value == 0) ? tr("Automatic") : tr("Custom"))));
     }
 
-    cb->addItem(tr("Use OSD Scale"));
     cb->addItem(tr("Automatic"));
+    cb->addItem(tr("Use OSD Scale"));
     cb->addItem(tr("Custom"));
 
     const int option_offset = static_cast<int>(BoolToUInt32(m_dialog->isPerGameSettings()));
@@ -187,7 +187,7 @@ void AchievementSettingsWidget::setupAdditionalUi()
     {
       if (custom_scale.value() <= 0.0f)
       {
-        cb->setCurrentIndex(((custom_scale.value() < 0.0f) ? 0 : 1) + option_offset);
+        cb->setCurrentIndex(((custom_scale.value() < 0.0f) ? 1 : 0) + option_offset);
         sb->setVisible(false);
         sb->setValue(100); // good initial value for custom scale if the user switches to it
       }
@@ -206,14 +206,14 @@ void AchievementSettingsWidget::setupAdditionalUi()
     }
 
     connect(cb, &QComboBox::currentIndexChanged, this, [this, key, sb, option_offset](int index) {
-      if (index == 0 + option_offset)
+      if (index == option_offset + 0)
       {
-        m_dialog->setIntSettingValue("Cheevos", key, Settings::ACHIEVEMENT_NOTIFICATION_SCALE_OSD_SCALE);
+        m_dialog->setIntSettingValue("Cheevos", key, Settings::ACHIEVEMENT_NOTIFICATION_SCALE_AUTO);
         sb->setVisible(false);
       }
       else if (index == option_offset + 1)
       {
-        m_dialog->setIntSettingValue("Cheevos", key, Settings::ACHIEVEMENT_NOTIFICATION_SCALE_AUTO);
+        m_dialog->setIntSettingValue("Cheevos", key, Settings::ACHIEVEMENT_NOTIFICATION_SCALE_OSD_SCALE);
         sb->setVisible(false);
       }
       else if (index == option_offset + 2)
