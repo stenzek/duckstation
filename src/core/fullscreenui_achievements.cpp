@@ -7,6 +7,7 @@
 #include "system.h"
 #include "video_thread.h"
 
+#include "util/gpu_device.h"
 #include "util/gpu_texture.h"
 #include "util/imgui_manager.h"
 #include "util/translation.h"
@@ -101,6 +102,7 @@ struct PauseMenuLeaderboardInfo
 
 } // namespace
 
+static float EffectiveNotificationScale(s16 scale);
 static void DrawNotifications(NotificationLayout& layout);
 static void DrawIndicators(NotificationLayout& layout);
 static void UpdateAchievementOverlaysRunIdle();
@@ -291,6 +293,20 @@ void FullscreenUI::AddAchievementNotification(std::string key, float duration, s
     UpdateAchievementOverlaysRunIdle();
 }
 
+float FullscreenUI::EffectiveNotificationScale(s16 scale)
+{
+  // <0 = osd scale, 0 = layout scale, >0 = custom scale
+  if (scale < 0)
+    return ImGuiManager::GetGlobalScale();
+
+  if (scale == Settings::ACHIEVEMENT_NOTIFICATION_SCALE_AUTO)
+    return UIStyle.LayoutScale;
+
+  // apply window scale as well so it's independent of displays
+  const float window_scale = g_gpu_device->HasMainSwapChain() ? g_gpu_device->GetMainSwapChain()->GetScale() : 1.0f;
+  return static_cast<float>(scale) * window_scale * 0.01f;
+}
+
 void FullscreenUI::DrawNotifications(NotificationLayout& layout)
 {
   if (s_achievements_locals.notifications.empty())
@@ -299,33 +315,32 @@ void FullscreenUI::DrawNotifications(NotificationLayout& layout)
   static constexpr float MOVE_DURATION = 0.5f;
   const Timer::Value current_time = Timer::GetCurrentValue();
 
-  const float normal_horizontal_padding = FullscreenUI::LayoutScale(20.0f);
-  const float normal_vertical_padding = FullscreenUI::LayoutScale(15.0f);
-  const float small_horizontal_padding = FullscreenUI::LayoutScale(10.0f);
+  const float scale = EffectiveNotificationScale(g_gpu_settings.achievements_notification_scale);
+  const float normal_horizontal_padding = ImCeil(20.0f * scale);
+  const float normal_vertical_padding = ImCeil(15.0f * scale);
+  const float small_horizontal_padding = ImCeil(10.0f * scale);
   const float small_vertical_padding = small_horizontal_padding;
-  const float horizontal_spacing = FullscreenUI::LayoutScale(10.0f);
-  const float larger_horizontal_spacing = FullscreenUI::LayoutScale(18.0f);
-  const float vertical_spacing = FullscreenUI::LayoutScale(4.0f);
-  const float normal_badge_size = FullscreenUI::LayoutScale(48.0f);
-  const float small_badge_size = FullscreenUI::LayoutScale(32.0f);
-  const float min_width = FullscreenUI::LayoutScale(200.0f);
-  const float max_width = FullscreenUI::LayoutScale(600.0f);
+  const float horizontal_spacing = ImCeil(10.0f * scale);
+  const float larger_horizontal_spacing = ImCeil(18.0f * scale);
+  const float vertical_spacing = ImCeil(4.0f * scale);
+  const float normal_badge_size = ImCeil(48.0f * scale);
+  const float small_badge_size = ImCeil(32.0f * scale);
+  const float min_width = ImCeil(200.0f * scale);
+  const float max_width = ImCeil(600.0f * scale);
   const float max_text_width = max_width - normal_badge_size - (normal_horizontal_padding * 2.0f) - horizontal_spacing;
   const float normal_min_height = (normal_vertical_padding * 2.0f) + normal_badge_size;
   const float small_min_height = (small_vertical_padding * 2.0f) + small_badge_size;
-  const float note_icon_padding = LayoutScale(30.0f);
-
+  const float note_icon_padding = ImCeil(30.0f * scale);
   ImFont*& font = UIStyle.Font;
-  const float& normal_title_font_size = UIStyle.LargeFontSize;
-  const float& small_title_font_size = UIStyle.MediumFontSize;
-  const float& title_font_weight = UIStyle.BoldFontWeight;
-  const float& normal_text_font_size = UIStyle.MediumFontSize;
-  const float& small_text_font_size = UIStyle.MediumSmallFontSize;
-  const float& text_font_weight = UIStyle.NormalFontWeight;
-  const float& note_text_size = UIStyle.MediumFontSize;
-  const float& note_text_weight = UIStyle.BoldFontWeight;
-  const float& note_icon_size = UIStyle.LargeFontSize;
-
+  const float normal_title_font_size = ImCeil(LAYOUT_LARGE_FONT_SIZE * scale);
+  const float small_title_font_size = ImCeil(LAYOUT_MEDIUM_FONT_SIZE * scale);
+  static constexpr const float& title_font_weight = UIStyle.BoldFontWeight;
+  const float normal_text_font_size = ImCeil(LAYOUT_MEDIUM_FONT_SIZE * scale);
+  const float small_text_font_size = ImCeil(LAYOUT_MEDIUM_SMALL_FONT_SIZE * scale);
+  static constexpr const float& text_font_weight = UIStyle.NormalFontWeight;
+  const float note_text_size = ImCeil(LAYOUT_MEDIUM_FONT_SIZE * scale);
+  static constexpr const float& note_text_weight = UIStyle.BoldFontWeight;
+  const float note_icon_size = ImCeil(LAYOUT_LARGE_FONT_SIZE * scale);
   const ImVec4 left_background_color = DarkerColor(UIStyle.ToastBackgroundColor, 1.3f);
   const ImVec4 right_background_color = DarkerColor(UIStyle.ToastBackgroundColor, 0.8f);
   ImDrawList* const dl = ImGui::GetForegroundDrawList();
@@ -406,7 +421,7 @@ void FullscreenUI::DrawNotifications(NotificationLayout& layout)
     const float vertical_padding = notif.small_font ? small_vertical_padding : normal_vertical_padding;
     const float box_width = std::max((horizontal_padding * 2.0f) + badge_size + horizontal_spacing +
                                        ImCeil(std::max(title_size.x + note_spacing + note_size.x, text_size.x)),
-                                     std::max(static_cast<float>(LayoutScale(notif.min_width)), min_width));
+                                     std::max(static_cast<float>(ImCeil(notif.min_width * scale)), min_width));
     const float box_height =
       std::max((vertical_padding * 2.0f) + ImCeil(title_size.y) + vertical_spacing + ImCeil(text_size.y),
                notif.small_font ? small_min_height : normal_min_height);
@@ -499,7 +514,7 @@ void FullscreenUI::DrawNotifications(NotificationLayout& layout)
 
       case AchievementNotificationNoteType::Spinner:
       {
-        DrawSpinner(dl, note_pos, title_col, note_size.x, LayoutScale(4.0f));
+        DrawSpinner(dl, note_pos, title_col, note_size.x, ImCeil(4.0f * scale));
       }
       break;
 
@@ -536,10 +551,11 @@ void FullscreenUI::DrawIndicators(NotificationLayout& layout)
 
   static constexpr float bg_opacity = 0.8f;
 
-  const float spacing = LayoutScale(10.0f);
-  const float padding = LayoutScale(10.0f);
-  const float rounding = LayoutScale(10.0f);
-  const ImVec2 image_size = LayoutScale(50.0f, 50.0f);
+  const float scale = EffectiveNotificationScale(g_gpu_settings.achievements_indicator_scale);
+  const float spacing = ImCeil(10.0f * scale);
+  const float padding = ImCeil(10.0f * scale);
+  const float rounding = ImCeil(10.0f * scale);
+  const float image_size = ImCeil(50.0f * scale);
   const ImGuiIO& io = ImGui::GetIO();
   ImDrawList* dl = ImGui::GetBackgroundDrawList();
 
@@ -550,9 +566,9 @@ void FullscreenUI::DrawIndicators(NotificationLayout& layout)
   {
     const bool use_time_remaining =
       (g_gpu_settings.achievements_challenge_indicator_mode == AchievementChallengeIndicatorMode::TemporaryIcon);
-    const float x_advance = image_size.x + spacing;
-    const float total_width = image_size.x + (static_cast<float>(indicators.size() - 1) * x_advance);
-    ImVec2 current_position = layout.GetFixedPosition(total_width, image_size.y);
+    const float x_advance = image_size + spacing;
+    const float total_width = image_size + (static_cast<float>(indicators.size() - 1) * x_advance);
+    ImVec2 current_position = layout.GetFixedPosition(total_width, image_size);
 
     for (auto it = indicators.begin(); it != indicators.end();)
     {
@@ -572,8 +588,8 @@ void FullscreenUI::DrawIndicators(NotificationLayout& layout)
       GPUTexture* badge = FullscreenUI::GetCachedTextureAsync(indicator.badge_path);
       if (badge)
       {
-        dl->AddImage(badge, current_position, current_position + image_size, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f),
-                     ImGui::GetColorU32(ImVec4(1.0f, 1.0f, 1.0f, indicator.opacity)));
+        dl->AddImage(badge, current_position, current_position + ImVec2(image_size, image_size), ImVec2(0.0f, 0.0f),
+                     ImVec2(1.0f, 1.0f), ImGui::GetColorU32(ImVec4(1.0f, 1.0f, 1.0f, indicator.opacity)));
       }
 
       current_position.x += x_advance;
@@ -597,11 +613,11 @@ void FullscreenUI::DrawIndicators(NotificationLayout& layout)
 
     const ImVec4 left_background_color = DarkerColor(UIStyle.ToastBackgroundColor, 1.3f);
     const ImVec4 right_background_color = DarkerColor(UIStyle.ToastBackgroundColor, 0.8f);
-    const ImVec2 progress_image_size = LayoutScale(32.0f, 32.0f);
+    const float progress_image_size = ImCeil(32.0f * scale);
     const std::string_view text = indicator->achievement->measured_progress;
     const ImVec2 text_size = UIStyle.Font->CalcTextSizeA(font_size, font_weight, FLT_MAX, 0.0f, IMSTR_START_END(text));
-    const float box_width = progress_image_size.x + text_size.x + spacing + padding * 2.0f;
-    const float box_height = progress_image_size.y + padding * 2.0f;
+    const float box_width = progress_image_size + text_size.x + spacing + padding * 2.0f;
+    const float box_height = progress_image_size + padding * 2.0f;
 
     const auto& [box_min, opacity] = layout.GetNextPosition(
       box_width, box_height, indicator->active, indicator->time, Achievements::INDICATOR_FADE_IN_TIME,
@@ -616,12 +632,12 @@ void FullscreenUI::DrawIndicators(NotificationLayout& layout)
     if (badge)
     {
       const ImVec2 badge_pos = box_min + ImVec2(padding, padding);
-      dl->AddImage(badge, badge_pos, badge_pos + progress_image_size, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f),
-                   ImGui::GetColorU32(ImVec4(1.0f, 1.0f, 1.0f, opacity)));
+      dl->AddImage(badge, badge_pos, badge_pos + ImVec2(progress_image_size, progress_image_size), ImVec2(0.0f, 0.0f),
+                   ImVec2(1.0f, 1.0f), ImGui::GetColorU32(ImVec4(1.0f, 1.0f, 1.0f, opacity)));
     }
 
     const ImVec2 text_pos =
-      box_min + ImVec2(padding + progress_image_size.x + spacing, (box_max.y - box_min.y - text_size.y) * 0.5f);
+      box_min + ImVec2(padding + progress_image_size + spacing, (box_max.y - box_min.y - text_size.y) * 0.5f);
     const ImRect text_clip_rect(text_pos, box_max);
     RenderShadowedTextClipped(dl, UIStyle.Font, font_size, font_weight, text_pos, box_max,
                               ImGui::GetColorU32(ModAlpha(UIStyle.ToastTextColor, opacity)), text, &text_size,

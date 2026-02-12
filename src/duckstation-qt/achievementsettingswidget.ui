@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>600</width>
-    <height>488</height>
+    <width>598</width>
+    <height>512</height>
    </rect>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
@@ -174,6 +174,9 @@
           <property name="text">
            <string>5 seconds</string>
           </property>
+          <property name="alignment">
+           <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+          </property>
          </widget>
         </item>
        </layout>
@@ -217,33 +220,32 @@
           <property name="text">
            <string>5 seconds</string>
           </property>
+          <property name="alignment">
+           <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+          </property>
          </widget>
         </item>
        </layout>
       </item>
-      <item row="2" column="0" colspan="2">
-       <layout class="QHBoxLayout" name="horizontalLayout_4" stretch="1,1">
-        <item>
-         <widget class="QCheckBox" name="soundEffects">
-          <property name="text">
-           <string>Enable Sound Effects</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QLabel" name="changeSoundsLink">
-          <property name="alignment">
-           <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
-          </property>
-          <property name="openExternalLinks">
-           <bool>true</bool>
-          </property>
-          <property name="textInteractionFlags">
-           <set>Qt::TextInteractionFlag::LinksAccessibleByKeyboard|Qt::TextInteractionFlag::LinksAccessibleByMouse</set>
-          </property>
-         </widget>
-        </item>
-       </layout>
+      <item row="2" column="0">
+       <widget class="QCheckBox" name="soundEffects">
+        <property name="text">
+         <string>Enable Sound Effects</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QLabel" name="changeSoundsLink">
+        <property name="alignment">
+         <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+        </property>
+        <property name="openExternalLinks">
+         <bool>true</bool>
+        </property>
+        <property name="textInteractionFlags">
+         <set>Qt::TextInteractionFlag::LinksAccessibleByKeyboard|Qt::TextInteractionFlag::LinksAccessibleByMouse</set>
+        </property>
+       </widget>
       </item>
       <item row="3" column="0">
        <widget class="QLabel" name="notificationLocationLabel">
@@ -254,6 +256,33 @@
       </item>
       <item row="3" column="1">
        <widget class="QComboBox" name="notificationLocation"/>
+      </item>
+      <item row="4" column="0">
+       <widget class="QLabel" name="notificationScaleLabel">
+        <property name="text">
+         <string>Notification Scale:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="1">
+       <layout class="QHBoxLayout" name="notificationScaleLayout">
+        <item>
+         <widget class="QComboBox" name="notificationScale"/>
+        </item>
+        <item>
+         <widget class="QSpinBox" name="notificationScaleCustom">
+          <property name="suffix">
+           <string>%</string>
+          </property>
+          <property name="minimum">
+           <number>1</number>
+          </property>
+          <property name="maximum">
+           <number>1000</number>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </item>
      </layout>
     </widget>
@@ -285,13 +314,40 @@
        <widget class="QComboBox" name="indicatorLocation"/>
       </item>
       <item row="2" column="0">
+       <widget class="QLabel" name="indicatorScaleLabel">
+        <property name="text">
+         <string>Indicator Scale:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <layout class="QHBoxLayout" name="indicatorScaleLayout">
+        <item>
+         <widget class="QComboBox" name="indicatorScale"/>
+        </item>
+        <item>
+         <widget class="QSpinBox" name="indicatorScaleCustom">
+          <property name="suffix">
+           <string>%</string>
+          </property>
+          <property name="minimum">
+           <number>1</number>
+          </property>
+          <property name="maximum">
+           <number>1000</number>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item row="3" column="0">
        <widget class="QCheckBox" name="progressIndicators">
         <property name="text">
          <string>Show Progress Indicators</string>
         </property>
        </widget>
       </item>
-      <item row="2" column="1">
+      <item row="3" column="1">
        <widget class="QCheckBox" name="leaderboardTrackers">
         <property name="text">
          <string>Show Leaderboard Trackers</string>

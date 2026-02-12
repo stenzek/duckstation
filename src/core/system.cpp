@@ -4836,7 +4836,9 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
              g_settings.display_osd_message_location != old_settings.display_osd_message_location ||
              g_settings.achievements_notification_location != old_settings.achievements_notification_location ||
              g_settings.achievements_indicator_location != old_settings.achievements_indicator_location ||
-             g_settings.achievements_challenge_indicator_mode != old_settings.achievements_challenge_indicator_mode)
+             g_settings.achievements_challenge_indicator_mode != old_settings.achievements_challenge_indicator_mode ||
+             g_settings.achievements_notification_scale != old_settings.achievements_notification_scale ||
+             g_settings.achievements_indicator_scale != old_settings.achievements_indicator_scale)
     {
       if (device_settings_changed)
       {

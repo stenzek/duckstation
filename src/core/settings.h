@@ -135,6 +135,8 @@ struct GPUSettings
   NotificationLocation achievements_indicator_location = DEFAULT_ACHIEVEMENT_INDICATOR_LOCATION;
   AchievementChallengeIndicatorMode achievements_challenge_indicator_mode =
     DEFAULT_ACHIEVEMENT_CHALLENGE_INDICATOR_MODE;
+  s16 achievements_notification_scale = ACHIEVEMENT_NOTIFICATION_SCALE_AUTO;
+  s16 achievements_indicator_scale = ACHIEVEMENT_NOTIFICATION_SCALE_AUTO;
 
   // texture replacements
   struct TextureReplacementSettings
@@ -249,6 +251,8 @@ struct GPUSettings
     AchievementChallengeIndicatorMode::Notification;
   static constexpr NotificationLocation DEFAULT_ACHIEVEMENT_NOTIFICATION_LOCATION = NotificationLocation::TopLeft;
   static constexpr NotificationLocation DEFAULT_ACHIEVEMENT_INDICATOR_LOCATION = NotificationLocation::BottomRight;
+  static constexpr s16 ACHIEVEMENT_NOTIFICATION_SCALE_OSD_SCALE = -1;
+  static constexpr s16 ACHIEVEMENT_NOTIFICATION_SCALE_AUTO = 0;
 
 #ifndef __ANDROID__
   static constexpr u8 DEFAULT_GPU_MAX_QUEUED_FRAMES = 2;

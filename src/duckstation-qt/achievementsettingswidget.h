@@ -18,6 +18,8 @@ public:
   ~AchievementSettingsWidget();
 
 private:
+  void setupAdditionalUi();
+
   void updateLoginState();
 
   void updateEnableState();

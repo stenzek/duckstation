@@ -26,6 +26,7 @@ AchievementSettingsWidget::AchievementSettingsWidget(SettingsWindow* dialog, QWi
   SettingsInterface* sif = dialog->getSettingsInterface();
 
   m_ui.setupUi(this);
+  setupAdditionalUi();
 
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enable, "Cheevos", "Enabled", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.hardcoreMode, "Cheevos", "ChallengeMode", false);
@@ -90,12 +91,22 @@ AchievementSettingsWidget::AchievementSettingsWidget(SettingsWindow* dialog, QWi
     tr("Plays sound effects for events such as achievement unlocks and leaderboard submissions."));
   dialog->registerWidgetHelp(m_ui.notificationLocation, tr("Notification Location"), tr("Top Left"),
                              tr("Selects the screen location for achievement and leaderboard notifications."));
+  dialog->registerWidgetHelp(m_ui.notificationScale, tr("Notification Scale"), tr("Automatic"),
+                             tr("Determines the size of achievement notification popups."));
+  dialog->registerWidgetHelp(m_ui.notificationScaleCustom, tr("Custom Notification Scale"), tr("100%"),
+                             tr("Sets the custom scale percentage for achievement notifications. Automatic will use "
+                                "the same scaling as the Big Picture UI."));
   dialog->registerWidgetHelp(
     m_ui.challengeIndicatorMode, tr("Challenge Indicators"), tr("Show Notifications"),
     tr("Shows a notification or icons in the selected location when a challenge/primed achievement is active."));
   dialog->registerWidgetHelp(
     m_ui.indicatorLocation, tr("Indicator Location"), tr("Bottom Right"),
     tr("Selects the screen location for challenge/progress indicators, and leaderboard trackers."));
+  dialog->registerWidgetHelp(m_ui.indicatorScale, tr("Indicator Scale"), tr("Automatic"),
+                             tr("Determines the size of challenge/progress indicators. Automatic will use the same "
+                                "scaling as the Big Picture UI."));
+  dialog->registerWidgetHelp(m_ui.indicatorScaleCustom, tr("Custom Indicator Scale"), tr("100%"),
+                             tr("Sets the custom scale percentage for challenge/progress indicators."));
   dialog->registerWidgetHelp(
     m_ui.progressIndicators, tr("Show Progress Indicators"), tr("Checked"),
     tr("Shows a popup in the selected location when progress towards a measured achievement changes."));
@@ -151,6 +162,79 @@ AchievementSettingsWidget::AchievementSettingsWidget(SettingsWindow* dialog, QWi
 
 AchievementSettingsWidget::~AchievementSettingsWidget() = default;
 
+void AchievementSettingsWidget::setupAdditionalUi()
+{
+  const auto setup_scale_option = [this](const char* key, QComboBox* cb, QSpinBox* sb) {
+    if (m_dialog->isPerGameSettings())
+    {
+      const int global_value = Core::GetIntSettingValue("Cheevos", key, Settings::ACHIEVEMENT_NOTIFICATION_SCALE_AUTO);
+      cb->addItem(
+        qApp->translate("SettingsDialog", "Use Global Setting [%1]")
+          .arg((global_value < 0) ? tr("Use OSD Scale") : ((global_value == 0) ? tr("Automatic") : tr("Custom"))));
+    }
+
+    cb->addItem(tr("Use OSD Scale"));
+    cb->addItem(tr("Automatic"));
+    cb->addItem(tr("Custom"));
+
+    const int option_offset = static_cast<int>(BoolToUInt32(m_dialog->isPerGameSettings()));
+    if (const std::optional<int> custom_scale = m_dialog->getIntValue(
+          "Cheevos", key,
+          m_dialog->isPerGameSettings() ? std::nullopt :
+                                          std::optional<int>(Settings::ACHIEVEMENT_NOTIFICATION_SCALE_AUTO));
+        custom_scale.has_value())
+    {
+      if (custom_scale.value() <= 0.0f)
+      {
+        cb->setCurrentIndex(((custom_scale.value() < 0.0f) ? 0 : 1) + option_offset);
+        sb->setVisible(false);
+        sb->setValue(100); // good initial value for custom scale if the user switches to it
+      }
+      else
+      {
+        cb->setCurrentIndex(2 + option_offset);
+        sb->setVisible(true);
+        sb->setValue(custom_scale.value());
+      }
+    }
+    else
+    {
+      cb->setCurrentIndex(0);
+      sb->setVisible(false);
+      sb->setValue(100);
+    }
+
+    connect(cb, &QComboBox::currentIndexChanged, this, [this, key, sb, option_offset](int index) {
+      if (index == 0 + option_offset)
+      {
+        m_dialog->setIntSettingValue("Cheevos", key, Settings::ACHIEVEMENT_NOTIFICATION_SCALE_OSD_SCALE);
+        sb->setVisible(false);
+      }
+      else if (index == option_offset + 1)
+      {
+        m_dialog->setIntSettingValue("Cheevos", key, Settings::ACHIEVEMENT_NOTIFICATION_SCALE_AUTO);
+        sb->setVisible(false);
+      }
+      else if (index == option_offset + 2)
+      {
+        m_dialog->setIntSettingValue("Cheevos", key, sb->value());
+        sb->setVisible(true);
+      }
+      else
+      {
+        m_dialog->removeSettingValue("Cheevos", key);
+        sb->setVisible(false);
+      }
+    });
+
+    connect(sb, &QSpinBox::valueChanged, this,
+            [this, key](int value) { m_dialog->setIntSettingValue("Cheevos", key, value); });
+  };
+
+  setup_scale_option("NotificationScale", m_ui.notificationScale, m_ui.notificationScaleCustom);
+  setup_scale_option("IndicatorScale", m_ui.indicatorScale, m_ui.indicatorScaleCustom);
+}
+
 void AchievementSettingsWidget::updateEnableState()
 {
   const bool enabled = m_dialog->getEffectiveBoolValue("Cheevos", "Enabled", false);
@@ -165,11 +249,17 @@ void AchievementSettingsWidget::updateEnableState()
   m_ui.leaderboardNotificationsDurationLabel->setEnabled(lb_notifications);
   m_ui.notificationLocationLabel->setEnabled(enabled);
   m_ui.notificationLocation->setEnabled(enabled);
+  m_ui.notificationScaleLabel->setEnabled(enabled);
+  m_ui.notificationScale->setEnabled(enabled);
+  m_ui.notificationScaleCustom->setEnabled(enabled);
   m_ui.soundEffects->setEnabled(enabled);
   m_ui.challengeIndicatorMode->setEnabled(enabled);
   m_ui.challengeIndicatorModeLabel->setEnabled(enabled);
   m_ui.indicatorLocationLabel->setEnabled(enabled);
   m_ui.indicatorLocation->setEnabled(enabled);
+  m_ui.indicatorScaleLabel->setEnabled(enabled);
+  m_ui.indicatorScale->setEnabled(enabled);
+  m_ui.indicatorScaleCustom->setEnabled(enabled);
   m_ui.progressIndicators->setEnabled(enabled);
   m_ui.leaderboardTrackers->setEnabled(enabled);
   m_ui.encoreMode->setEnabled(enabled);

@@ -4982,6 +4982,62 @@ void FullscreenUI::DrawAchievementsSettingsPage(std::unique_lock<std::mutex>& se
                   &Settings::ParseNotificationLocation, &Settings::GetNotificationLocationName,
                   &Settings::GetNotificationLocationDisplayName, NotificationLocation::MaxCount, enabled);
 
+  const auto draw_scale_setting = [&bsi, &enabled](const char* key, std::string_view title, std::string_view summary,
+                                                   std::string_view custom_title, std::string_view custom_summary) {
+    const bool game_settings = IsEditingGameSettings(bsi);
+    const std::optional<int> value =
+      bsi->GetOptionalIntValue("Cheevos", key, game_settings ? std::nullopt : std::optional<int>(-1));
+    const bool is_custom = (value.has_value() && value.value() > 0);
+
+    std::string_view mode_text;
+    if (!value.has_value())
+      mode_text = FSUI_VSTR("Use Global Setting");
+    else if (value.value() == -1)
+      mode_text = FSUI_VSTR("Use OSD Scale");
+    else if (value.value() == 0)
+      mode_text = FSUI_VSTR("Automatic");
+    else
+      mode_text = FSUI_VSTR("Custom");
+
+    if (MenuButtonWithValue(title, summary, mode_text, enabled))
+    {
+      ChoiceDialogOptions options;
+      if (game_settings)
+        options.emplace_back(FSUI_STR("Use Global Setting"), !value.has_value());
+      options.emplace_back(FSUI_STR("Use OSD Scale"), value.has_value() && value.value() == -1);
+      options.emplace_back(FSUI_STR("Automatic"), value.has_value() && value.value() == 0);
+      options.emplace_back(FSUI_STR("Custom"), is_custom);
+
+      OpenChoiceDialog(title, false, std::move(options),
+                       [key, game_settings](s32 index, const std::string& title, bool checked) {
+                         if (index < 0)
+                           return;
+
+                         const auto lock = Core::GetSettingsLock();
+                         SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
+                         const s32 offset = static_cast<s32>(BoolToUInt32(game_settings));
+
+                         if (game_settings && index == 0)
+                           bsi->DeleteValue("Cheevos", key);
+                         else if (index == offset + 0)
+                           bsi->SetIntValue("Cheevos", key, -1);
+                         else if (index == offset + 1)
+                           bsi->SetIntValue("Cheevos", key, 0);
+                         else if (index == offset + 2)
+                           bsi->SetIntValue("Cheevos", key, 100);
+
+                         SetSettingsChanged(bsi);
+                       });
+    }
+
+    if (is_custom)
+      DrawIntSpinBoxSetting(bsi, custom_title, custom_summary, "Cheevos", key, 100, 1, 500, 1, "%d%%", enabled);
+  };
+  draw_scale_setting("NotificationScale", FSUI_ICONVSTR(ICON_FA_MAGNIFYING_GLASS, "Notification Scale"),
+                     FSUI_VSTR("Determines the size of achievement notification popups."),
+                     FSUI_ICONVSTR(ICON_FA_EXPAND, "Custom Notification Scale"),
+                     FSUI_VSTR("Sets the custom scale percentage for achievement notifications."));
+
   MenuHeading(FSUI_VSTR("Progress Tracking"));
 
   DrawEnumSetting(
@@ -4996,6 +5052,10 @@ void FullscreenUI::DrawAchievementsSettingsPage(std::unique_lock<std::mutex>& se
                   "Cheevos", "IndicatorLocation", Settings::DEFAULT_ACHIEVEMENT_INDICATOR_LOCATION,
                   &Settings::ParseNotificationLocation, &Settings::GetNotificationLocationName,
                   &Settings::GetNotificationLocationDisplayName, NotificationLocation::MaxCount, enabled);
+  draw_scale_setting("IndicatorScale", FSUI_ICONVSTR(ICON_FA_MAGNIFYING_GLASS, "Indicator Scale"),
+                     FSUI_VSTR("Determines the size of challenge/progress indicators."),
+                     FSUI_ICONVSTR(ICON_FA_EXPAND, "Custom Indicator Scale"),
+                     FSUI_VSTR("Sets the custom scale percentage for challenge/progress indicators."));
 
   DrawToggleSetting(
     bsi, FSUI_ICONVSTR(ICON_FA_BARS_PROGRESS, "Progress Indicators"),

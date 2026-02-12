@@ -518,6 +518,12 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
   achievements_leaderboard_duration =
     Truncate8(std::min<u32>(si.GetUIntValue("Cheevos", "LeaderboardsDuration", DEFAULT_LEADERBOARD_NOTIFICATION_TIME),
                             std::numeric_limits<u8>::max()));
+  achievements_notification_scale =
+    Truncate16(std::clamp<s32>(si.GetIntValue("Cheevos", "NotificationScale", ACHIEVEMENT_NOTIFICATION_SCALE_AUTO),
+                               std::numeric_limits<s16>::min(), std::numeric_limits<s16>::max()));
+  achievements_indicator_scale =
+    Truncate16(std::clamp<s32>(si.GetIntValue("Cheevos", "IndicatorScale", ACHIEVEMENT_NOTIFICATION_SCALE_AUTO),
+                               std::numeric_limits<s16>::min(), std::numeric_limits<s16>::max()));
 
 #ifndef __ANDROID__
   enable_gdb_server = si.GetBoolValue("Debug", "EnableGDBServer");
@@ -842,6 +848,8 @@ void Settings::Save(SettingsInterface& si, bool ignore_base) const
                     GetAchievementChallengeIndicatorModeName(achievements_challenge_indicator_mode));
   si.SetUIntValue("Cheevos", "NotificationsDuration", achievements_notification_duration);
   si.SetUIntValue("Cheevos", "LeaderboardsDuration", achievements_leaderboard_duration);
+  si.SetIntValue("Cheevos", "NotificationScale", achievements_notification_scale);
+  si.SetIntValue("Cheevos", "IndicatorScale", achievements_indicator_scale);
 
 #ifndef __ANDROID__
   si.SetBoolValue("Debug", "EnableGDBServer", enable_gdb_server);
