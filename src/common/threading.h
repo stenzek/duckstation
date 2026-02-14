@@ -1,7 +1,8 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #pragma once
+
 #include "types.h"
 
 #if defined(__APPLE__)
@@ -45,6 +46,9 @@ public:
 
   operator void*() const { return m_native_handle; }
   operator bool() const { return (m_native_handle != nullptr); }
+
+  bool operator==(const ThreadHandle& other) const;
+  bool operator!=(const ThreadHandle& other) const;
 
   /// Returns the amount of CPU time consumed by the thread, at the GetThreadTicksPerSecond() frequency.
   u64 GetCPUTime() const;

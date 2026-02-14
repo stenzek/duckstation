@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "threading.h"
@@ -122,6 +122,7 @@ Threading::ThreadHandle::ThreadHandle(const ThreadHandle& handle)
                         THREAD_QUERY_INFORMATION | THREAD_SET_LIMITED_INFORMATION, FALSE, 0))
     {
       m_native_handle = (void*)new_handle;
+      m_native_id = handle.m_native_id;
     }
   }
 }
@@ -137,9 +138,11 @@ Threading::ThreadHandle::ThreadHandle(const ThreadHandle& handle)
 #endif
 
 #ifdef _WIN32
-Threading::ThreadHandle::ThreadHandle(ThreadHandle&& handle) : m_native_handle(handle.m_native_handle)
+Threading::ThreadHandle::ThreadHandle(ThreadHandle&& handle)
+  : m_native_handle(handle.m_native_handle), m_native_id(handle.m_native_id)
 {
   handle.m_native_handle = nullptr;
+  handle.m_native_id = 0;
 }
 #else
 Threading::ThreadHandle::ThreadHandle(ThreadHandle&& handle)
@@ -229,6 +232,24 @@ Threading::ThreadHandle& Threading::ThreadHandle::operator=(const ThreadHandle& 
 #endif
 
   return *this;
+}
+
+bool Threading::ThreadHandle::operator==(const ThreadHandle& other) const
+{
+#ifdef _WIN32
+  return m_native_id == other.m_native_id;
+#else
+  return pthread_equal((pthread_t)m_native_handle, (pthread_t)other.m_native_handle);
+#endif
+}
+
+bool Threading::ThreadHandle::operator!=(const ThreadHandle& other) const
+{
+#ifdef _WIN32
+  return m_native_id != other.m_native_id;
+#else
+  return !pthread_equal((pthread_t)m_native_handle, (pthread_t)other.m_native_handle);
+#endif
 }
 
 u64 Threading::ThreadHandle::GetCPUTime() const
@@ -375,9 +396,8 @@ bool Threading::Thread::Start(EntryPoint func)
   AssertMsg(!m_native_handle, "Can't start an already-started thread");
 
   std::unique_ptr<EntryPoint> func_clone(std::make_unique<EntryPoint>(std::move(func)));
-  unsigned thread_id;
   m_native_handle =
-    reinterpret_cast<void*>(_beginthreadex(nullptr, m_stack_size, ThreadProc, func_clone.get(), 0, &thread_id));
+    reinterpret_cast<void*>(_beginthreadex(nullptr, m_stack_size, ThreadProc, func_clone.get(), 0, &m_native_id));
   if (!m_native_handle)
     return false;
 
