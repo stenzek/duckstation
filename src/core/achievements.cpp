@@ -128,6 +128,7 @@ static bool IdentifyGame(CDImage* image);
 static bool IdentifyCurrentGame();
 static void BeginLoadGame();
 static void UpdateGameSummary(bool update_progress_database);
+static void UpdateModeSettings(const Settings& old_config);
 static DynamicHeapArray<u8> SaveStateToBuffer();
 static void LoadStateFromBuffer(std::span<const u8> data, std::unique_lock<std::recursive_mutex>& lock);
 static bool SaveStateToBuffer(std::span<u8> data);
@@ -701,29 +702,25 @@ void Achievements::UpdateSettings(const Settings& old_config)
   }
 
   auto lock = GetLock();
-  const bool encore_mode_changed = (g_settings.achievements_encore_mode != old_config.achievements_encore_mode);
-  const bool spectator_mode_changed =
-    (g_settings.achievements_spectator_mode != old_config.achievements_spectator_mode);
-  const bool unofficial_test_mode_changed =
-    (g_settings.achievements_unofficial_test_mode != old_config.achievements_unofficial_test_mode);
-
-  if (encore_mode_changed)
-    rc_client_set_encore_mode_enabled(s_state.client, g_settings.achievements_encore_mode);
-  if (spectator_mode_changed)
-    rc_client_set_spectator_mode_enabled(s_state.client, g_settings.achievements_spectator_mode);
-  if (unofficial_test_mode_changed)
-    rc_client_set_unofficial_enabled(s_state.client, g_settings.achievements_unofficial_test_mode);
 
   // If a game is active and these settings changed, reload the game to apply them.
   // Just unload and reload without destroying the client to preserve hardcore mode.
-  if (HasActiveGame() && (encore_mode_changed || spectator_mode_changed || unofficial_test_mode_changed))
+  // NOTE: Can't change spectator mode while game is loaded.
+  if (HasActiveGame() && (g_settings.achievements_encore_mode != old_config.achievements_encore_mode ||
+                          g_settings.achievements_spectator_mode != old_config.achievements_spectator_mode ||
+                          g_settings.achievements_unofficial_test_mode != old_config.achievements_unofficial_test_mode))
   {
     // Save and restore state to preserve progress.
     const DynamicHeapArray<u8> state_data = SaveStateToBuffer();
     ClearGameInfo();
+    UpdateModeSettings(old_config);
     BeginLoadGame();
     LoadStateFromBuffer(state_data.cspan(), lock);
     return;
+  }
+  else
+  {
+    UpdateModeSettings(old_config);
   }
 
   if (!g_settings.achievements_leaderboard_trackers)
@@ -731,6 +728,16 @@ void Achievements::UpdateSettings(const Settings& old_config)
 
   if (!g_settings.achievements_progress_indicators)
     s_state.active_progress_indicator.reset();
+}
+
+void Achievements::UpdateModeSettings(const Settings& old_config)
+{
+  if (g_settings.achievements_encore_mode != old_config.achievements_encore_mode)
+    rc_client_set_encore_mode_enabled(s_state.client, g_settings.achievements_encore_mode);
+  if (g_settings.achievements_spectator_mode != old_config.achievements_spectator_mode)
+    rc_client_set_spectator_mode_enabled(s_state.client, g_settings.achievements_spectator_mode);
+  if (g_settings.achievements_unofficial_test_mode != old_config.achievements_unofficial_test_mode)
+    rc_client_set_unofficial_enabled(s_state.client, g_settings.achievements_unofficial_test_mode);
 }
 
 void Achievements::Shutdown()
