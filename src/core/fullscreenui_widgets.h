@@ -309,7 +309,7 @@ enum class FocusResetType : u8
 };
 void QueueResetFocus(FocusResetType type);
 void CancelResetFocus();
-bool ResetFocusHere();
+void ResetFocusHere();
 bool IsFocusResetQueued();
 bool IsFocusResetFromWindowChange();
 FocusResetType GetQueuedFocusResetType();

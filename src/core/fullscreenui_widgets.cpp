@@ -1258,15 +1258,15 @@ void FullscreenUI::CancelResetFocus()
   s_state.focus_reset_queued = FocusResetType::None;
 }
 
-bool FullscreenUI::ResetFocusHere()
+void FullscreenUI::ResetFocusHere()
 {
   if (s_state.focus_reset_queued == FocusResetType::None)
-    return false;
+    return;
 
   // don't take focus from dialogs
   ImGuiWindow* window = ImGui::GetCurrentWindow();
   if (ImGui::FindBlockingModal(window))
-    return false;
+    return;
 
   // Set the flag that we drew an active/hovered item active for a frame, because otherwise there's one frame where
   // there'll be no frame drawn, which will cancel the animation. Also set the appearing flag, so that the default
@@ -1295,9 +1295,6 @@ bool FullscreenUI::ResetFocusHere()
 
   s_state.focus_reset_queued = FocusResetType::None;
   ResetMenuButtonFrame();
-
-  // only do the active selection magic when we're using keyboard/gamepad
-  return (GImGui->NavInputSource == ImGuiInputSource_Keyboard || GImGui->NavInputSource == ImGuiInputSource_Gamepad);
 }
 
 bool FullscreenUI::IsFocusResetQueued()
