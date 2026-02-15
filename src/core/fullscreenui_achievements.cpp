@@ -22,6 +22,8 @@
 #include "IconsEmoji.h"
 #include "IconsPromptFont.h"
 
+#include <bitset>
+
 LOG_CHANNEL(FullscreenUI);
 
 #ifndef __ANDROID__
@@ -159,13 +161,15 @@ struct AchievementsLocals
   std::vector<SubsetInfo> subset_info_list;
   const SubsetInfo* open_subset = nullptr;
 
-  rc_client_achievement_list_t* achievement_list = nullptr;
   std::vector<std::tuple<const void*, std::string, bool>> achievement_badge_paths;
 
   std::optional<PauseMenuAchievementInfoWithPoints> most_recent_unlock;
   std::optional<PauseMenuMeasuredAchievementInfo> achievement_nearest_completion;
   std::optional<PauseMenuTimedMeasuredAchievementInfo> most_recent_progress_update;
   std::vector<PauseMenuLeaderboardInfo> active_leaderboards;
+
+  rc_client_achievement_list_t* achievement_list = nullptr;
+  std::bitset<NUM_RC_CLIENT_ACHIEVEMENT_BUCKETS> achievement_buckets_collapsed = {};
 
   rc_client_leaderboard_list_t* leaderboard_list = nullptr;
   const rc_client_leaderboard_t* open_leaderboard = nullptr;
@@ -1581,6 +1585,9 @@ void FullscreenUI::SwitchToAchievements()
     return;
   }
 
+  // reset collapsed buckets
+  s_achievements_locals.achievement_buckets_collapsed.reset();
+
   // sort unlocked achievements by unlock time
   for (size_t i = 0; i < s_achievements_locals.achievement_list->num_buckets; i++)
   {
@@ -1816,7 +1823,6 @@ void FullscreenUI::DrawAchievementsWindow()
                             "achievements", background, 0.0f,
                             ImVec2(LAYOUT_MENU_WINDOW_X_PADDING, LAYOUT_MENU_WINDOW_Y_PADDING), 0))
   {
-    static bool buckets_collapsed[NUM_RC_CLIENT_ACHIEVEMENT_BUCKETS] = {};
     static constexpr std::pair<const char*, const char*> bucket_names[] = {
       {ICON_FA_CIRCLE_QUESTION, TRANSLATE_NOOP("Achievements", "Unknown")},
       {ICON_FA_LOCK, TRANSLATE_NOOP("Achievements", "Locked")},
@@ -1848,12 +1854,17 @@ void FullscreenUI::DrawAchievementsWindow()
 
         DebugAssert(bucket.bucket_type < NUM_RC_CLIENT_ACHIEVEMENT_BUCKETS);
 
-        bool& bucket_collapsed = buckets_collapsed[bucket.bucket_type];
-        bucket_collapsed ^= MenuHeadingButton(
-          TinyString::from_format("{} {}", bucket_names[bucket.bucket_type].first,
-                                  Host::TranslateToStringView("Achievements", bucket_names[bucket.bucket_type].second)),
-          bucket_collapsed ? ICON_FA_CHEVRON_DOWN : ICON_FA_CHEVRON_UP, UIStyle.MediumLargeFontSize);
-        if (!bucket_collapsed)
+        if (MenuHeadingButton(TinyString::from_format(
+                                "{} {}", bucket_names[bucket.bucket_type].first,
+                                Host::TranslateToStringView("Achievements", bucket_names[bucket.bucket_type].second)),
+                              s_achievements_locals.achievement_buckets_collapsed[bucket.bucket_type] ?
+                                ICON_FA_CHEVRON_DOWN :
+                                ICON_FA_CHEVRON_UP,
+                              UIStyle.MediumLargeFontSize))
+        {
+          s_achievements_locals.achievement_buckets_collapsed.flip(bucket.bucket_type);
+        }
+        if (!s_achievements_locals.achievement_buckets_collapsed[bucket.bucket_type])
         {
           for (u32 i = 0; i < bucket.num_achievements; i++)
             DrawAchievement(bucket.achievements[i]);
