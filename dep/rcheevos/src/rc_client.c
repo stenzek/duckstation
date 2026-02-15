@@ -3942,6 +3942,10 @@ static void rc_client_update_achievement_display_information(rc_client_t* client
       else if (achievement->public_.measured_percent >= 80.0)
         new_bucket = RC_CLIENT_ACHIEVEMENT_BUCKET_ALMOST_THERE;
     }
+
+    /* map to unlocked in softcore bucket if hardcore is enabled but achievement is unlocked in softcore */
+    if (client->state.hardcore && achievement->public_.unlocked & RC_CLIENT_ACHIEVEMENT_UNLOCKED_SOFTCORE)
+      new_bucket = RC_CLIENT_ACHIEVEMENT_BUCKET_UNLOCKED_SOFTCORE;
   }
 
   achievement->public_.bucket = new_bucket;
@@ -3957,6 +3961,7 @@ static const char* rc_client_get_achievement_bucket_label(uint8_t bucket_type)
     case RC_CLIENT_ACHIEVEMENT_BUCKET_RECENTLY_UNLOCKED: return "Recently Unlocked";
     case RC_CLIENT_ACHIEVEMENT_BUCKET_ACTIVE_CHALLENGE: return "Active Challenges";
     case RC_CLIENT_ACHIEVEMENT_BUCKET_ALMOST_THERE: return "Almost There";
+    case RC_CLIENT_ACHIEVEMENT_BUCKET_UNLOCKED_SOFTCORE: return "Unlocked in Softcore";
     case RC_CLIENT_ACHIEVEMENT_BUCKET_UNSYNCED: return "Unlocks Not Synced to Server";
     default: return "Unknown";
   }
@@ -3974,6 +3979,7 @@ static const char* rc_client_get_subset_achievement_bucket_label(uint8_t bucket_
     case RC_CLIENT_ACHIEVEMENT_BUCKET_UNLOCKED: ptr = &subset->unlocked_label; break;
     case RC_CLIENT_ACHIEVEMENT_BUCKET_UNSUPPORTED: ptr = &subset->unsupported_label; break;
     case RC_CLIENT_ACHIEVEMENT_BUCKET_UNOFFICIAL: ptr = &subset->unofficial_label; break;
+    case RC_CLIENT_ACHIEVEMENT_BUCKET_UNLOCKED_SOFTCORE: ptr = &subset->unlocked_softcore_label; break;
     default: return rc_client_get_achievement_bucket_label(bucket_type);
   }
 
@@ -4020,6 +4026,7 @@ static uint8_t rc_client_map_bucket(uint8_t bucket, int grouping)
 
       case RC_CLIENT_ACHIEVEMENT_BUCKET_ACTIVE_CHALLENGE:
       case RC_CLIENT_ACHIEVEMENT_BUCKET_ALMOST_THERE:
+      case RC_CLIENT_ACHIEVEMENT_BUCKET_UNLOCKED_SOFTCORE:
         return RC_CLIENT_ACHIEVEMENT_BUCKET_LOCKED;
 
       default:
@@ -4057,7 +4064,8 @@ rc_client_achievement_list_t* rc_client_create_achievement_list(rc_client_t* cli
     RC_CLIENT_ACHIEVEMENT_BUCKET_LOCKED,
     RC_CLIENT_ACHIEVEMENT_BUCKET_UNOFFICIAL,
     RC_CLIENT_ACHIEVEMENT_BUCKET_UNSUPPORTED,
-    RC_CLIENT_ACHIEVEMENT_BUCKET_UNLOCKED
+    RC_CLIENT_ACHIEVEMENT_BUCKET_UNLOCKED_SOFTCORE,
+    RC_CLIENT_ACHIEVEMENT_BUCKET_UNLOCKED,
   };
   static const uint8_t no_shared_subset_buckets_order[] = {
     RC_CLIENT_ACHIEVEMENT_BUCKET_ACTIVE_CHALLENGE,
@@ -4067,6 +4075,7 @@ rc_client_achievement_list_t* rc_client_create_achievement_list(rc_client_t* cli
     RC_CLIENT_ACHIEVEMENT_BUCKET_LOCKED,
     RC_CLIENT_ACHIEVEMENT_BUCKET_UNOFFICIAL,
     RC_CLIENT_ACHIEVEMENT_BUCKET_UNSUPPORTED,
+    RC_CLIENT_ACHIEVEMENT_BUCKET_UNLOCKED_SOFTCORE,
     RC_CLIENT_ACHIEVEMENT_BUCKET_UNLOCKED
   };
   const uint8_t* subset_bucket_order = (grouping == RC_CLIENT_ACHIEVEMENT_LIST_GROUPING_PROGRESS) ?

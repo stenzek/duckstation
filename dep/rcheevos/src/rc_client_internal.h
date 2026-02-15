@@ -214,6 +214,7 @@ typedef struct rc_client_subset_info_t {
   const char* inactive_label;
   const char* locked_label;
   const char* unlocked_label;
+  const char* unlocked_softcore_label;
   const char* unofficial_label;
   const char* unsupported_label;
 

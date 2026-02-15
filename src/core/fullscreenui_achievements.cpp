@@ -1816,7 +1816,7 @@ void FullscreenUI::DrawAchievementsWindow()
                             ImVec2(LAYOUT_MENU_WINDOW_X_PADDING, LAYOUT_MENU_WINDOW_Y_PADDING), 0))
   {
     static bool buckets_collapsed[NUM_RC_CLIENT_ACHIEVEMENT_BUCKETS] = {};
-    static constexpr std::pair<const char*, const char*> bucket_names[NUM_RC_CLIENT_ACHIEVEMENT_BUCKETS] = {
+    static constexpr std::pair<const char*, const char*> bucket_names[] = {
       {ICON_FA_CIRCLE_QUESTION, TRANSLATE_NOOP("Achievements", "Unknown")},
       {ICON_FA_LOCK, TRANSLATE_NOOP("Achievements", "Locked")},
       {ICON_FA_UNLOCK, TRANSLATE_NOOP("Achievements", "Unlocked")},
@@ -1826,15 +1826,18 @@ void FullscreenUI::DrawAchievementsWindow()
       {ICON_FA_HAND_FIST, TRANSLATE_NOOP("Achievements", "Active Challenges")},
       {ICON_FA_FLAG_CHECKERED, TRANSLATE_NOOP("Achievements", "Almost There")},
       {ICON_EMOJI_WARNING, TRANSLATE_NOOP("Achievements", "Not Confirmed")},
+      {ICON_FA_UNLOCK, TRANSLATE_NOOP("Achievements", "Unlocked in Softcore")},
     };
+    static_assert(std::size(bucket_names) == NUM_RC_CLIENT_ACHIEVEMENT_BUCKETS);
 
     ResetFocusHere();
     BeginMenuButtons();
 
     for (u32 bucket_type : {RC_CLIENT_ACHIEVEMENT_BUCKET_UNSYNCED, RC_CLIENT_ACHIEVEMENT_BUCKET_ACTIVE_CHALLENGE,
                             RC_CLIENT_ACHIEVEMENT_BUCKET_RECENTLY_UNLOCKED, RC_CLIENT_ACHIEVEMENT_BUCKET_ALMOST_THERE,
-                            RC_CLIENT_ACHIEVEMENT_BUCKET_UNLOCKED, RC_CLIENT_ACHIEVEMENT_BUCKET_LOCKED,
-                            RC_CLIENT_ACHIEVEMENT_BUCKET_UNOFFICIAL, RC_CLIENT_ACHIEVEMENT_BUCKET_UNSUPPORTED})
+                            RC_CLIENT_ACHIEVEMENT_BUCKET_UNLOCKED, RC_CLIENT_ACHIEVEMENT_BUCKET_UNLOCKED_SOFTCORE,
+                            RC_CLIENT_ACHIEVEMENT_BUCKET_LOCKED, RC_CLIENT_ACHIEVEMENT_BUCKET_UNOFFICIAL,
+                            RC_CLIENT_ACHIEVEMENT_BUCKET_UNSUPPORTED})
     {
       for (u32 bucket_idx = 0; bucket_idx < s_achievements_locals.achievement_list->num_buckets; bucket_idx++)
       {
