@@ -155,7 +155,7 @@ struct AchievementsLocals
 {
   std::vector<Notification> notifications;
 
-  // Shared by both achievements and leaderboards, TODO: add all filter
+  // Shared by both achievements and leaderboards
   std::vector<SubsetInfo> subset_info_list;
   const SubsetInfo* open_subset = nullptr;
 
@@ -1499,16 +1499,17 @@ void FullscreenUI::CollectSubsetsFromList(const T* list, bool include_achievemen
   if (subset_list && subset_list->num_subsets > 0)
   {
     // If there is only a single subset, we don't want to show a selector.
-    if (subset_list->num_subsets > 1)
+    const auto subset_active = [&include_achievements, &include_leaderboards](const rc_client_subset_t* subset) {
+      return ((include_achievements && subset->num_achievements > 0) ||
+              (include_leaderboards && subset->num_leaderboards > 0));
+    };
+    if (std::count_if(subset_list->subsets, subset_list->subsets + subset_list->num_subsets, subset_active) > 1)
     {
       for (u32 i = 0; i < subset_list->num_subsets; i++)
       {
         const rc_client_subset_t* subset = subset_list->subsets[i];
-        if ((include_achievements && subset->num_achievements > 0) ||
-            (include_leaderboards && subset->num_leaderboards > 0))
-        {
+        if (subset_active(subset))
           AddSubsetInfo(subset);
-        }
       }
     }
   }
