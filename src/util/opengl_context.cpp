@@ -210,3 +210,13 @@ std::unique_ptr<OpenGLContext> OpenGLContext::Create(WindowInfo& wi, SurfaceHand
 
   return context;
 }
+
+GPUDevice::AdapterInfoList OpenGLContext::GetAdapterList(WindowInfoType window_type, Error* error)
+{
+#ifdef ENABLE_SDL
+  if (window_type == WindowInfoType::SDL)
+    return OpenGLContextSDL::GetAdapterList(window_type, error);
+#endif
+
+  return {};
+}

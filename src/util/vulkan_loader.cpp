@@ -16,6 +16,7 @@
 #include "common/log.h"
 
 #ifdef ENABLE_SDL
+#include "sdl_video_helpers.h"
 #include <SDL3/SDL_vulkan.h>
 #endif
 
@@ -57,6 +58,8 @@ static void LockedDestroyVulkanInstance();
 
 static bool SelectInstanceExtensions(VulkanDevice::ExtensionList* extension_list, WindowInfoType wtype,
                                      bool debug_instance, Error* error);
+
+static std::vector<GPUDevice::ExclusiveFullscreenMode> EnumerateFullscreenModes(WindowInfoType wtype);
 
 VKAPI_ATTR static VkBool32 VKAPI_CALL DebugMessengerCallback(VkDebugUtilsMessageSeverityFlagBitsEXT severity,
                                                              VkDebugUtilsMessageTypeFlagsEXT messageType,
@@ -735,6 +738,16 @@ VulkanLoader::GPUList VulkanLoader::EnumerateGPUs(Error* error)
   return gpus;
 }
 
+std::vector<GPUDevice::ExclusiveFullscreenMode> VulkanLoader::EnumerateFullscreenModes(WindowInfoType wtype)
+{
+#ifdef ENABLE_SDL
+  if (wtype == WindowInfoType::SDL)
+    return SDLVideoHelpers::GetFullscreenModeList();
+#endif
+
+  return {};
+}
+
 bool VulkanLoader::IsSuitableDefaultRenderer(WindowInfoType window_type)
 {
 #ifdef __ANDROID__
@@ -834,6 +847,7 @@ GPUDriverType VulkanLoader::GuessDriverType(const VkPhysicalDeviceProperties& de
 std::optional<GPUDevice::AdapterInfoList> VulkanLoader::GetAdapterList(WindowInfoType window_type, Error* error)
 {
   std::optional<GPUDevice::AdapterInfoList> ret;
+  std::vector<GPUDevice::ExclusiveFullscreenMode> fullscreen_modes;
   GPUList gpus;
   {
     const std::lock_guard lock(s_locals.mutex);
@@ -842,6 +856,7 @@ std::optional<GPUDevice::AdapterInfoList> VulkanLoader::GetAdapterList(WindowInf
     if (s_locals.instance != VK_NULL_HANDLE)
     {
       gpus = EnumerateGPUs(error);
+      fullscreen_modes = EnumerateFullscreenModes(window_type);
     }
     else
     {
@@ -851,6 +866,7 @@ std::optional<GPUDevice::AdapterInfoList> VulkanLoader::GetAdapterList(WindowInf
         return ret;
 
       gpus = EnumerateGPUs(error);
+      fullscreen_modes = EnumerateFullscreenModes(window_type);
 
       LockedReleaseVulkanInstance();
     }
@@ -858,8 +874,18 @@ std::optional<GPUDevice::AdapterInfoList> VulkanLoader::GetAdapterList(WindowInf
 
   ret.emplace();
   ret->reserve(gpus.size());
-  for (auto& [physical_device, adapter_info] : gpus)
-    ret->push_back(std::move(adapter_info));
+  for (size_t i = 0; i < gpus.size(); i++)
+  {
+    GPUDevice::AdapterInfo& ai = gpus[i].second;
+
+    // splat fullscreen modes across gpus
+    if (i == (gpus.size() - 1))
+      ai.fullscreen_modes = std::move(fullscreen_modes);
+    else
+      ai.fullscreen_modes = fullscreen_modes;
+
+    ret->push_back(std::move(ai));
+  }
 
   return ret;
 }

@@ -683,6 +683,9 @@ void GraphicsSettingsWidget::populateGPUAdaptersAndResolutions(RenderAPI render_
     const std::string current_adapter_name = m_dialog->getEffectiveStringValue("GPU", "Adapter", "");
     for (const GPUDevice::AdapterInfo& adapter : m_adapters)
     {
+      if (adapter.name.empty())
+        continue;
+
       const QString qadaptername = QString::fromStdString(adapter.name);
       m_ui.adapter->addItem(qadaptername, QVariant(qadaptername));
       if (adapter.name == current_adapter_name)
