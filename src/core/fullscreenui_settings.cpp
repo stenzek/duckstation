@@ -4020,7 +4020,7 @@ void FullscreenUI::DrawGraphicsSettingsPage()
                             FSUI_VSTR("Use Global Setting")))
   {
     const GPUDevice::AdapterInfo* selected_adapter = nullptr;
-    if (current_adapter.has_value())
+    if (current_adapter.has_value() && !current_adapter->empty())
     {
       for (const GPUDevice::AdapterInfo& ai : s_settings_locals.graphics_adapter_list_cache)
       {
