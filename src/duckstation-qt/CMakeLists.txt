@@ -299,6 +299,10 @@ if(NOT APPLE)
   set(RCC_FILE "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/duckstation-qt.rcc")
   qt_add_binary_resources(duckstation-qt-rcc resources/duckstation-qt.qrc DESTINATION ${RCC_FILE} OPTIONS -no-compress)
   add_dependencies(duckstation-qt duckstation-qt-rcc)
+
+  # Need to ensure the resources directory exists, it might not. Happens when low CPU count and parallel builds.
+  add_custom_target(duckstation-qt-rcc-mkdir COMMAND ${CMAKE_COMMAND} -E create_directory "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources")
+  add_dependencies(duckstation-qt-rcc duckstation-qt-rcc-mkdir)
 else()
   set(RCC_FILE "${CMAKE_CURRENT_BINARY_DIR}/duckstation-qt.rcc")
   qt_add_binary_resources(duckstation-qt-rcc resources/duckstation-qt.qrc DESTINATION ${RCC_FILE} OPTIONS -no-compress)
