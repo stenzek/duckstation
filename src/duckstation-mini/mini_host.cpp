@@ -64,10 +64,9 @@ namespace MiniHost {
 /// Use two async worker threads, should be enough for most tasks.
 static constexpr u32 NUM_ASYNC_WORKER_THREADS = 2;
 
-// static constexpr u32 DEFAULT_WINDOW_WIDTH = 1280;
-// static constexpr u32 DEFAULT_WINDOW_HEIGHT = 720;
 static constexpr u32 DEFAULT_WINDOW_WIDTH = 1920;
 static constexpr u32 DEFAULT_WINDOW_HEIGHT = 1080;
+static constexpr float DEFAULT_WINDOW_REFRESH_RATE = 60.0f;
 
 static constexpr auto CORE_THREAD_POLL_INTERVAL =
   std::chrono::milliseconds(8); // how often we'll poll controllers when paused
@@ -111,6 +110,7 @@ struct SDLHostState
   float sdl_window_scale = 0.0f;
   float sdl_window_refresh_rate = 0.0f;
   WindowInfoPrerotation force_prerotation = WindowInfoPrerotation::Identity;
+  bool use_window_fullscreen_mode = false;
 
   Threading::Thread core_thread;
   Threading::Thread video_thread;
@@ -160,6 +160,23 @@ bool MiniHost::EarlyProcessStartup()
     Host::ReportFatalError("Process Startup Failed", error.GetDescription());
     return false;
   }
+
+  s_state.func_event_id = SDL_RegisterEvents(1);
+  if (s_state.func_event_id == static_cast<u32>(-1))
+  {
+    Host::ReportFatalError("Error", TinyString::from_format("SDL_RegisterEvents() failed: {}", SDL_GetError()));
+    return false;
+  }
+
+#ifdef __linux__
+  // If we're running without a windowing system, force fullscreen.
+  if (const char* video_driver = SDL_GetCurrentVideoDriver(); video_driver && std::strcmp(video_driver, "kmsdrm") == 0)
+  {
+    fprintf(stderr, "kmsdrm video driver detected, using fullscreen display mode for windows.\n");
+    s_state.use_window_fullscreen_mode = true;
+    s_state.start_fullscreen_ui_fullscreen = true;
+  }
+#endif
 
 #if !__has_include("scmversion/tag.h")
   //
@@ -358,7 +375,19 @@ std::optional<WindowInfo> MiniHost::TranslateSDLWindowInfo(SDL_Window* win, Erro
   int window_px_width = 1, window_px_height = 1;
   SDL_GetWindowSize(win, &window_width, &window_height);
   SDL_GetWindowSizeInPixels(win, &window_px_width, &window_px_height);
-  s_state.sdl_window_scale = SDL_GetWindowDisplayScale(win);
+
+  // For kmsdrm, assume 720p is 100% scale. Jank, but no other way to do it outside of querying the display size..
+  if (s_state.use_window_fullscreen_mode)
+  {
+    s_state.sdl_window_scale = std::clamp(std::min(window_px_width / 1280.0f, window_px_height / 720.0f), 1.0f, 4.0f);
+    INFO_LOG("Using window fullscreen display mode, setting scale to {}", s_state.sdl_window_scale);
+  }
+  else
+  {
+    s_state.sdl_window_scale = SDL_GetWindowDisplayScale(win);
+    INFO_LOG("Using window scale of {} (window size {}x{}, pixel size {}x{})", s_state.sdl_window_scale, window_width,
+             window_height, window_px_width, window_px_height);
+  }
 
   const SDL_DisplayMode* dispmode = nullptr;
 
@@ -494,24 +523,61 @@ std::optional<WindowInfo> Host::AcquireRenderWindow(RenderAPI render_api, bool f
     else if (render_api == RenderAPI::Vulkan)
       SDL_SetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_VULKAN_BOOLEAN, true);
 
-    if (fullscreen)
-    {
-      SDL_SetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_BORDERLESS_BOOLEAN, true);
-      SDL_SetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_FULLSCREEN_BOOLEAN, true);
-    }
+    std::optional<SDL_DisplayMode> window_fullscreen_mode;
 
-    if (s32 window_x, window_y, window_width, window_height;
-        MiniHost::GetSavedPlatformWindowGeometry(&window_x, &window_y, &window_width, &window_height))
+    if (!s_state.use_window_fullscreen_mode)
     {
-      SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_X_NUMBER, window_x);
-      SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_Y_NUMBER, window_y);
-      SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_WIDTH_NUMBER, window_width);
-      SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_HEIGHT_NUMBER, window_height);
+      if (fullscreen)
+      {
+        SDL_SetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_BORDERLESS_BOOLEAN, true);
+        SDL_SetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_FULLSCREEN_BOOLEAN, true);
+      }
+
+      if (s32 window_x, window_y, window_width, window_height;
+          MiniHost::GetSavedPlatformWindowGeometry(&window_x, &window_y, &window_width, &window_height))
+      {
+        SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_X_NUMBER, window_x);
+        SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_Y_NUMBER, window_y);
+        SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_WIDTH_NUMBER, window_width);
+        SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_HEIGHT_NUMBER, window_height);
+      }
+      else
+      {
+        SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_WIDTH_NUMBER, DEFAULT_WINDOW_WIDTH);
+        SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_HEIGHT_NUMBER, DEFAULT_WINDOW_HEIGHT);
+      }
     }
     else
     {
-      SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_WIDTH_NUMBER, DEFAULT_WINDOW_WIDTH);
-      SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_HEIGHT_NUMBER, DEFAULT_WINDOW_HEIGHT);
+      std::optional<GPUDevice::ExclusiveFullscreenMode> fullscreen_mode =
+        GPUDevice::ExclusiveFullscreenMode::Parse(Core::GetTinyStringSettingValue("GPU", "FullscreenMode"));
+      if (!fullscreen_mode.has_value())
+      {
+        INFO_LOG("Using default fullscreen mode ({}x{})", DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT);
+        fullscreen_mode =
+          GPUDevice::ExclusiveFullscreenMode{DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT, DEFAULT_WINDOW_REFRESH_RATE};
+      }
+
+      window_fullscreen_mode.emplace();
+      if (SDL_GetClosestFullscreenDisplayMode(SDL_GetPrimaryDisplay(), fullscreen_mode->width, fullscreen_mode->height,
+                                              fullscreen_mode->refresh_rate, true, &window_fullscreen_mode.value()))
+      {
+        INFO_LOG("Requesting window fullscreen display mode {}x{} @ {} hz (closest match: {}x{} @ {} hz)",
+                 fullscreen_mode->width, fullscreen_mode->height, fullscreen_mode->refresh_rate,
+                 window_fullscreen_mode->w, window_fullscreen_mode->h, window_fullscreen_mode->refresh_rate);
+
+        // For GL we need to set the window size to the display mode. Annoyingly can't set the refresh rate...
+        SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_WIDTH_NUMBER, window_fullscreen_mode->w);
+        SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_HEIGHT_NUMBER, window_fullscreen_mode->h);
+      }
+      else
+      {
+        ERROR_LOG("SDL_GetClosestFullscreenDisplayMode() failed: {}", SDL_GetError());
+        window_fullscreen_mode.reset();
+      }
+
+      // Force fullscreen.
+      SDL_SetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_FULLSCREEN_BOOLEAN, true);
     }
 
     s_state.sdl_window = SDL_CreateWindowWithProperties(props);
@@ -519,6 +585,12 @@ std::optional<WindowInfo> Host::AcquireRenderWindow(RenderAPI render_api, bool f
 
     if (s_state.sdl_window)
     {
+      if (window_fullscreen_mode.has_value() &&
+          !SDL_SetWindowFullscreenMode(s_state.sdl_window, &window_fullscreen_mode.value()))
+      {
+        ERROR_LOG("SDL_SetWindowFullscreenMode() failed: {}", SDL_GetError());
+      }
+
       wi = TranslateSDLWindowInfo(s_state.sdl_window, error);
       if (!wi.has_value())
       {
@@ -1695,13 +1767,6 @@ int main(int argc, char* argv[])
   if (!SDL_InitSubSystem(SDL_INIT_VIDEO | SDL_INIT_EVENTS))
   {
     Host::ReportFatalError("Error", TinyString::from_format("SDL_InitSubSystem() failed: {}", SDL_GetError()));
-    return EXIT_FAILURE;
-  }
-
-  s_state.func_event_id = SDL_RegisterEvents(1);
-  if (s_state.func_event_id == static_cast<u32>(-1))
-  {
-    Host::ReportFatalError("Error", TinyString::from_format("SDL_RegisterEvents() failed: {}", SDL_GetError()));
     return EXIT_FAILURE;
   }
 
