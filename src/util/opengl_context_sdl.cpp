@@ -124,7 +124,10 @@ OpenGLContext::SurfaceHandle OpenGLContextSDL::CreateSurface(WindowInfo& wi, Err
 
 void OpenGLContextSDL::DestroySurface(SurfaceHandle handle)
 {
-  // cleaned up on window destruction?
+  // cleaned up on window destruction? but we still need to clear current
+  SDL_Window* const window = static_cast<SDL_Window*>(handle);
+  if (m_current_window == window)
+    DoneCurrent();
 }
 
 void OpenGLContextSDL::ResizeSurface(WindowInfo& wi, SurfaceHandle handle)
@@ -159,7 +162,7 @@ bool OpenGLContextSDL::MakeCurrent(SurfaceHandle surface, Error* error /* = null
   if (m_current_window == window)
     return true;
 
-  if (SDL_GL_MakeCurrent(window, m_context) != 0)
+  if (!SDL_GL_MakeCurrent(window, m_context))
   {
     ERROR_LOG("SDL_GL_MakeCurrent() failed: {}", SDL_GetError());
     return false;
@@ -171,7 +174,7 @@ bool OpenGLContextSDL::MakeCurrent(SurfaceHandle surface, Error* error /* = null
 
 bool OpenGLContextSDL::DoneCurrent()
 {
-  if (SDL_GL_MakeCurrent(nullptr, nullptr) != 0)
+  if (!SDL_GL_MakeCurrent(nullptr, nullptr))
     return false;
 
   m_current_window = nullptr;
