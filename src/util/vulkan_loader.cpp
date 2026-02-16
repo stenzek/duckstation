@@ -600,6 +600,12 @@ void VulkanLoader::LockedReleaseVulkanInstance()
   // We specifically keep the instance around even after releasing it.
   // Both AMD on Windows and Mesa leak a few tens of megabytes for every instance...
   DEV_LOG("Released Vulkan instance, reference count {}", s_locals.reference_count);
+
+#ifdef ENABLE_SDL
+  // SDL Vulkan kinda breaks OpenGL contexts if the instance isn't destroyed...
+  if (s_locals.window_type == WindowInfoType::SDL && s_locals.reference_count == 0)
+    LockedDestroyVulkanInstance();
+#endif
 }
 
 void VulkanLoader::LockedDestroyVulkanInstance()
