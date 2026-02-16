@@ -200,6 +200,7 @@ if(NOT ANDROID)
     sdl_audio_stream.cpp
     sdl_input_source.cpp
     sdl_input_source.h
+    sdl_video_helpers.h
   )
   if(ENABLE_OPENGL)
     target_sources(util PRIVATE

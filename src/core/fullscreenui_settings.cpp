@@ -3816,6 +3816,9 @@ void FullscreenUI::DrawGraphicsSettingsPage()
     options.emplace_back(FSUI_STR("Default"), current_adapter.has_value() && current_adapter->empty());
     for (const GPUDevice::AdapterInfo& adapter : s_settings_locals.graphics_adapter_list_cache)
     {
+      if (adapter.name.empty())
+        continue;
+
       const bool checked = (current_adapter.has_value() && current_adapter.value() == adapter.name);
       options.emplace_back(adapter.name, checked);
     }

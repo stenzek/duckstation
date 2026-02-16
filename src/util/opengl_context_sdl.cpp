@@ -1,16 +1,17 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "opengl_context_sdl.h"
 #include "gpu_texture.h"
 #include "opengl_loader.h"
+#include "sdl_video_helpers.h"
 
 #include "common/assert.h"
 #include "common/error.h"
 #include "common/log.h"
 #include "common/scoped_guard.h"
 
-#include "SDL3/SDL.h"
+#include <SDL3/SDL.h>
 
 LOG_CHANNEL(GPUDevice);
 
@@ -33,6 +34,26 @@ std::unique_ptr<OpenGLContext> OpenGLContextSDL::Create(WindowInfo& wi, SurfaceH
     context.reset();
 
   return context;
+}
+
+GPUDevice::AdapterInfoList OpenGLContextSDL::GetAdapterList(WindowInfoType window_type, Error* error)
+{
+  std::vector<GPUDevice::ExclusiveFullscreenMode> fullscreen_modes = SDLVideoHelpers::GetFullscreenModeList();
+  if (fullscreen_modes.empty())
+  {
+    // no point adding anything if no modes
+    return {};
+  }
+
+  // Set some reasonable defaults, since we don't know this until we actually create the context.
+  GPUDevice::AdapterInfoList ret;
+  GPUDevice::AdapterInfo& ai = ret.emplace_back();
+  ai.driver_type = GPUDriverType::Unknown;
+  ai.max_multisamples = 8;
+  ai.supports_sample_shading = true;
+  ai.max_texture_size = 16384;
+  ai.fullscreen_modes = std::move(fullscreen_modes);
+  return ret;
 }
 
 bool OpenGLContextSDL::Initialize(WindowInfo& wi, SurfaceHandle* surface, std::span<const Version> versions_to_try,

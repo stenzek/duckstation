@@ -37,6 +37,7 @@ LOG_CHANNEL(GPUDevice);
 #endif
 
 #ifdef ENABLE_OPENGL
+#include "opengl_context.h"
 #include "opengl_device.h"
 #endif
 
@@ -394,8 +395,7 @@ std::optional<GPUDevice::AdapterInfoList> GPUDevice::GetAdapterListForAPI(Render
 #ifdef ENABLE_OPENGL
     case RenderAPI::OpenGL:
     case RenderAPI::OpenGLES:
-      // No way of querying.
-      ret = AdapterInfoList();
+      ret = OpenGLContext::GetAdapterList(window_type, error);
       break;
 #endif
 
