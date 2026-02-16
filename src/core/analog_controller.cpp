@@ -802,7 +802,7 @@ constinit const Controller::ControllerBindingInfo AnalogController::s_binding_in
   MOTOR("LargeMotor", TRANSLATE_NOOP("AnalogController", "Large Motor"), ICON_PF_VIBRATION_L, LargeMotor, GenericInputBinding::LargeMotor),
   MOTOR("SmallMotor", TRANSLATE_NOOP("AnalogController", "Small Motor"), ICON_PF_VIBRATION, SmallMotor, GenericInputBinding::SmallMotor),
 
-  MODE_LED("AnalogLED", TRANSLATE_NOOP("AnalogController", "Analog LED"), ICON_PF_ANALOG_LEFT_RIGHT, 0, GenericInputBinding::ModeLED),
+  MODE_LED("AnalogLED", TRANSLATE_NOOP("AnalogController", "Analog LED"), ICON_PF_LED, 0, GenericInputBinding::ModeLED),
 
 // clang-format on
 
@@ -822,7 +822,8 @@ static constexpr const char* s_shoulder_settings[] = {
   TRANSLATE_NOOP("AnalogController", "Analog and Digital Modes"), nullptr};
 
 static const SettingInfo s_settings[] = {
-  {SettingInfo::Type::Boolean, "ForceAnalogOnReset", TRANSLATE_NOOP("AnalogController", "Automatically Enable Analog Mode"),
+  {SettingInfo::Type::Boolean, "ForceAnalogOnReset",
+   TRANSLATE_NOOP("AnalogController", "Automatically Enable Analog Mode"),
    TRANSLATE_NOOP("AnalogController", "Forces the controller to analog mode when the game is started/restarted."),
    "true", nullptr, nullptr, nullptr, nullptr, nullptr, 0.0f},
   {SettingInfo::Type::Boolean, "AnalogDPadInDigitalMode",
@@ -833,13 +834,15 @@ static const SettingInfo s_settings[] = {
    "true", nullptr, nullptr, nullptr, nullptr, nullptr, 0.0f},
   {SettingInfo::Type::IntegerList, "AnalogShoulderButtons",
    TRANSLATE_NOOP("AnalogController", "Use Right Analog for Shoulder Buttons"),
-   TRANSLATE_NOOP("AnalogController",
-                  "Allows you to use the right analog stick to control the shoulder buttons (L1/R1), as well as the buttons."),
+   TRANSLATE_NOOP(
+     "AnalogController",
+     "Allows you to use the right analog stick to control the shoulder buttons (L1/R1), as well as the buttons."),
    "0", "0", "2", nullptr, nullptr, s_shoulder_settings, 0.0f},
   {SettingInfo::Type::IntegerList, "AnalogTriggerButtons",
    TRANSLATE_NOOP("AnalogController", "Use Right Analog for Trigger Buttons"),
-   TRANSLATE_NOOP("AnalogController",
-                  "Allows you to use the right analog stick to control the trigger buttons (L2/R2), as well as the buttons."),
+   TRANSLATE_NOOP(
+     "AnalogController",
+     "Allows you to use the right analog stick to control the trigger buttons (L2/R2), as well as the buttons."),
    "0", "0", "2", nullptr, nullptr, s_shoulder_settings, 0.0f},
   {SettingInfo::Type::Float, "AnalogDeadzone", TRANSLATE_NOOP("AnalogController", "Analog Deadzone"),
    TRANSLATE_NOOP("AnalogController",

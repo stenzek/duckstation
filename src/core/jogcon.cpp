@@ -636,8 +636,8 @@ constinit const Controller::ControllerBindingInfo JogCon::s_binding_info[] = {
 
   // clang-format on
 
-  {"ModeLED", TRANSLATE_NOOP("JogCon", "Mode LED"), ICON_PF_ANALOG_LEFT_RIGHT, LED_BIND_START_INDEX,
-   InputBindingInfo::Type::LED, GenericInputBinding::ModeLED},
+  {"ModeLED", TRANSLATE_NOOP("JogCon", "Mode LED"), ICON_PF_LED, LED_BIND_START_INDEX, InputBindingInfo::Type::LED,
+   GenericInputBinding::ModeLED},
 
   {"Motor", TRANSLATE_NOOP("JogCon", "Vibration Motor"), ICON_PF_VIBRATION, MOTOR_BIND_START_INDEX,
    InputBindingInfo::Type::Motor, GenericInputBinding::LargeMotor},

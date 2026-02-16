@@ -743,7 +743,7 @@ constinit const Controller::ControllerBindingInfo NeGconRumble::s_binding_info[]
   MOTOR("LargeMotor", TRANSLATE_NOOP("AnalogController", "Large Motor"), ICON_PF_VIBRATION_L, LargeMotor, GenericInputBinding::LargeMotor),
   MOTOR("SmallMotor", TRANSLATE_NOOP("AnalogController", "Small Motor"), ICON_PF_VIBRATION, SmallMotor, GenericInputBinding::SmallMotor),
 
-  MODE_LED("ModeLED", TRANSLATE_NOOP("AnalogController", "Mode LED"), ICON_PF_ANALOG_LEFT_RIGHT, 0, GenericInputBinding::ModeLED),
+  MODE_LED("ModeLED", TRANSLATE_NOOP("AnalogController", "Mode LED"), ICON_PF_LED, 0, GenericInputBinding::ModeLED),
 // clang-format on
 
 #undef MOTOR
