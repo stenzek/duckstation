@@ -611,7 +611,6 @@ TRANSLATE_NOOP("FullscreenUI", "Reset Settings");
 TRANSLATE_NOOP("FullscreenUI", "Resets all configuration to defaults (including bindings).");
 TRANSLATE_NOOP("FullscreenUI", "Resets all settings to the defaults.");
 TRANSLATE_NOOP("FullscreenUI", "Resets memory card directory to default (user directory).");
-TRANSLATE_NOOP("FullscreenUI", "Resolution change will be applied after restarting.");
 TRANSLATE_NOOP("FullscreenUI", "Restart Game");
 TRANSLATE_NOOP("FullscreenUI", "Restore Defaults");
 TRANSLATE_NOOP("FullscreenUI", "Resume Game");

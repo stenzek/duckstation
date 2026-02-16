@@ -4070,7 +4070,10 @@ void FullscreenUI::DrawGraphicsSettingsPage()
       else
         bsi->SetStringValue("GPU", "FullscreenMode", value);
       SetSettingsChanged(bsi);
-      ShowToast(OSDMessageType::Info, std::string(), FSUI_STR("Resolution change will be applied after restarting."));
+      Host::RunOnCoreThread([]() {
+        if (VideoThread::IsFullscreen())
+          VideoThread::RecreateRenderWindow();
+      });
     };
     OpenChoiceDialog(FSUI_ICONVSTR(ICON_FA_TV, "Fullscreen Resolution"), false, std::move(options),
                      std::move(callback));
