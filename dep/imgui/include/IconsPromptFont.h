@@ -295,8 +295,6 @@
 #define ICON_PF_KEY_TILDE "\xF0\x9F\xB3\x99"
 #define ICON_PF_KEY_DASH "\xF0\x9F\xB3\x9A"
 #define ICON_PF_KEY_EQUAL "\xF0\x9F\xB3\x9B"
-#define ICON_PF_KEY_LEFT_ALT "\xF0\x9F\xB3\x9C"
-#define ICON_PF_KEY_RIGHT_ALT "\xF0\x9F\xB3\x9D"
 #define ICON_PF_KEY_LEFT_CTRL "\xF0\x9F\xB3\x9E"
 #define ICON_PF_KEY_RIGHT_CTRL "\xF0\x9F\xB3\x9F"
 #define ICON_PF_KEY_LEFT_SHIFT "\xF0\x9F\xB3\xA0"
@@ -379,7 +377,6 @@
 #define ICON_PF_DUALSHOCK_CONTROLLER "\xF0\x9F\xB3\xA4"
 #define ICON_PF_PLAYSTATION "\xF0\x9F\xB3\xA5"
 #define ICON_PF_XBOX "\xF0\x9F\xB3\xA6"
-#define ICON_PF_KEY_SUPER "\xF0\x9F\xB3\xA7"
 #define ICON_PF_KEY_NUMPAD_1 "\xF0\x9F\xB3\xA8"
 #define ICON_PF_KEY_NUMPAD_2 "\xF0\x9F\xB3\xA9"
 #define ICON_PF_KEY_NUMPAD_3 "\xF0\x9F\xB3\xAA"
@@ -397,7 +394,20 @@
 #define ICON_PF_KEY_NUMPAD_DIVIDE "\xF0\x9F\xB3\xB6"
 #define ICON_PF_KEY_NUMPAD_MULTIPLY "\xF0\x9F\xB3\xB7"
 #define ICON_PF_KEY_NUMPAD_EQUAL "\xF0\x9F\xB3\xB8"
-#define ICON_PF_KEY_OPTION "\xF0\x9F\xB3\xB9"
-#define ICON_PF_KEY_COMMAND "\xF0\x9F\xB3\xBA"
 #define ICON_PF_MENU "\xF0\x9F\xB3\xBB"
 #define ICON_PF_KEY_MINUS "\xF0\x9F\xB3\xBC"
+
+// Platform specific keys.
+#if defined(_WIN32)
+#define ICON_PF_KEY_SUPER "\xE2\x90\xAA"
+#define ICON_PF_KEY_LEFT_ALT "\xF0\x9F\xB3\x9C"
+#define ICON_PF_KEY_RIGHT_ALT "\xF0\x9F\xB3\x9D"
+#elif defined(__APPLE__)
+#define ICON_PF_KEY_SUPER "\xF0\x9F\xB3\xBA"
+#define ICON_PF_KEY_LEFT_ALT "\xF0\x9F\xB3\xB9"
+#define ICON_PF_KEY_RIGHT_ALT "\xF0\x9F\xB3\xB9"
+#else
+#define ICON_PF_KEY_SUPER "\xF0\x9F\xB3\xA7"
+#define ICON_PF_KEY_LEFT_ALT "\xF0\x9F\xB3\x9C"
+#define ICON_PF_KEY_RIGHT_ALT "\xF0\x9F\xB3\x9D"
+#endif
