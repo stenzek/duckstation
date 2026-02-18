@@ -576,6 +576,7 @@ void ImGuiManager::UpdateTextures()
           continue;
         }
 
+        gtex->MakeReadyForSampling();
         tex->SetTexID(reinterpret_cast<ImTextureID>(gtex.release()));
         tex->Status = ImTextureStatus_OK;
       }
@@ -594,6 +595,8 @@ void ImGuiManager::UpdateTextures()
             continue;
           }
         }
+
+        gtex->MakeReadyForSampling();
 
         // Updates is cleared by ImGui NewFrame.
         tex->Status = ImTextureStatus_OK;
