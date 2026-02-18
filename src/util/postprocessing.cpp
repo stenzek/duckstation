@@ -818,10 +818,9 @@ void PostProcessing::Chain::DestroyTextures()
   g_gpu_device->RecycleTexture(std::move(m_input_texture));
 }
 
-GPUDevice::PresentResult PostProcessing::Chain::Apply(GPUTexture* input_color, GPUTexture* input_depth,
-                                                      GPUTexture* final_target, const GSVector4i final_rect,
-                                                      s32 orig_width, s32 orig_height, s32 native_width,
-                                                      s32 native_height)
+GPUPresentResult PostProcessing::Chain::Apply(GPUTexture* input_color, GPUTexture* input_depth,
+                                              GPUTexture* final_target, const GSVector4i& final_rect, s32 orig_width,
+                                              s32 orig_height, s32 native_width, s32 native_height)
 {
   GL_SCOPE_FMT("{} Apply", m_section);
 
@@ -837,10 +836,10 @@ GPUDevice::PresentResult PostProcessing::Chain::Apply(GPUTexture* input_color, G
     if (!stage->IsEnabled())
       continue;
 
-    if (const GPUDevice::PresentResult pres = stage->Apply(
+    if (const GPUPresentResult pres = stage->Apply(
           original_color, input_color, input_depth, stage->IsFinalStage() ? final_target : output, final_rect,
           orig_width, orig_height, native_width, native_height, m_target_width, m_target_height, time);
-        pres != GPUDevice::PresentResult::OK)
+        pres != GPUPresentResult::OK)
     {
       return pres;
     }
@@ -855,7 +854,7 @@ GPUDevice::PresentResult PostProcessing::Chain::Apply(GPUTexture* input_color, G
     }
   }
 
-  return GPUDevice::PresentResult::OK;
+  return GPUPresentResult::OK;
 }
 
 std::unique_ptr<PostProcessing::Shader> PostProcessing::TryLoadingShader(const std::string& shader_name,

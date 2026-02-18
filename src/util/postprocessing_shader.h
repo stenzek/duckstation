@@ -3,10 +3,8 @@
 
 #pragma once
 
-#include "gpu_device.h"
 #include "postprocessing.h"
 
-#include "common/gsvector.h"
 #include "common/settings_interface.h"
 #include "common/timer.h"
 #include "common/types.h"
@@ -18,6 +16,9 @@
 
 class GPUPipeline;
 class GPUTexture;
+enum class GPUPresentResult : u8;
+class GSVector4i;
+
 class ProgressCallback;
 
 namespace PostProcessing {
@@ -53,10 +54,10 @@ public:
   virtual bool CompilePipeline(GPUTextureFormat format, u32 width, u32 height, Error* error,
                                ProgressCallback* progress) = 0;
 
-  virtual GPUDevice::PresentResult Apply(GPUTexture* original_color, GPUTexture* input_color, GPUTexture* input_depth,
-                                         GPUTexture* final_target, GSVector4i final_rect, s32 orig_width,
-                                         s32 orig_height, s32 native_width, s32 native_height, u32 target_width,
-                                         u32 target_height, float time) = 0;
+  virtual GPUPresentResult Apply(GPUTexture* original_color, GPUTexture* input_color, GPUTexture* input_depth,
+                                 GPUTexture* final_target, const GSVector4i& final_rect, s32 orig_width,
+                                 s32 orig_height, s32 native_width, s32 native_height, u32 target_width,
+                                 u32 target_height, float time) = 0;
 
 protected:
   using OptionList = std::vector<ShaderOption>;

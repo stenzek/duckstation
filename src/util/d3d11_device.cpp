@@ -679,7 +679,7 @@ void D3D11Device::InvalidateRenderTarget(GPUTexture* t)
     T->CommitClear(m_context.Get());
 }
 
-GPUDevice::PresentResult D3D11Device::BeginPresent(GPUSwapChain* swap_chain, u32 clear_color)
+GPUPresentResult D3D11Device::BeginPresent(GPUSwapChain* swap_chain, u32 clear_color)
 {
   D3D11SwapChain* const SC = static_cast<D3D11SwapChain*>(swap_chain);
 
@@ -690,7 +690,7 @@ GPUDevice::PresentResult D3D11Device::BeginPresent(GPUSwapChain* swap_chain, u32
       (FAILED(SC->GetSwapChain()->GetFullscreenState(&is_fullscreen, nullptr)) || !is_fullscreen))
   {
     TrimTexturePool();
-    return PresentResult::ExclusiveFullscreenLost;
+    return GPUPresentResult::ExclusiveFullscreenLost;
   }
 
   // The time here seems to include the time for the buffer to become available.
@@ -717,7 +717,7 @@ GPUDevice::PresentResult D3D11Device::BeginPresent(GPUSwapChain* swap_chain, u32
   m_current_render_pass_flags = GPUPipeline::NoRenderPassFlags;
   std::memset(m_current_render_targets.data(), 0, sizeof(m_current_render_targets));
   m_current_depth_target = nullptr;
-  return PresentResult::OK;
+  return GPUPresentResult::OK;
 }
 
 void D3D11Device::EndPresent(GPUSwapChain* swap_chain, bool explicit_present, u64 present_time)

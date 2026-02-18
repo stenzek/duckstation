@@ -19,6 +19,7 @@
 #include "video_presenter.h"
 #include "video_thread.h"
 
+#include "util/gpu_device.h"
 #include "util/imgui_manager.h"
 #include "util/ini_settings_interface.h"
 #include "util/input_manager.h"

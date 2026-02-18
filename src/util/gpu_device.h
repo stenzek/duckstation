@@ -532,14 +532,6 @@ public:
     Full
   };
 
-  enum class PresentResult : u32
-  {
-    OK,
-    SkipPresent,
-    ExclusiveFullscreenLost,
-    DeviceLost,
-  };
-
   struct Features
   {
     bool dual_source_blend : 1;
@@ -841,7 +833,7 @@ public:
                                          u32 push_constants_size) = 0;
 
   /// Returns false if the window was completely occluded.
-  virtual PresentResult BeginPresent(GPUSwapChain* swap_chain, u32 clear_color = DEFAULT_CLEAR_COLOR) = 0;
+  virtual GPUPresentResult BeginPresent(GPUSwapChain* swap_chain, u32 clear_color = DEFAULT_CLEAR_COLOR) = 0;
   virtual void EndPresent(GPUSwapChain* swap_chain, bool explicit_submit, u64 submit_time = 0) = 0;
   virtual void SubmitPresent(GPUSwapChain* swap_chain) = 0;
 

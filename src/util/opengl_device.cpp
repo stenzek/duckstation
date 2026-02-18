@@ -773,7 +773,7 @@ void OpenGLDevice::DestroyBuffers()
   m_vertex_buffer.reset();
 }
 
-GPUDevice::PresentResult OpenGLDevice::BeginPresent(GPUSwapChain* swap_chain, u32 clear_color)
+GPUPresentResult OpenGLDevice::BeginPresent(GPUSwapChain* swap_chain, u32 clear_color)
 {
   m_gl_context->MakeCurrent(static_cast<OpenGLSwapChain*>(swap_chain)->GetSurfaceHandle());
 
@@ -796,7 +796,7 @@ GPUDevice::PresentResult OpenGLDevice::BeginPresent(GPUSwapChain* swap_chain, u3
   m_last_scissor = window_rc;
   UpdateViewport();
   UpdateScissor();
-  return PresentResult::OK;
+  return GPUPresentResult::OK;
 }
 
 void OpenGLDevice::EndPresent(GPUSwapChain* swap_chain, bool explicit_present, u64 present_time)

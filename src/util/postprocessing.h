@@ -1,9 +1,9 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #pragma once
 
-#include "gpu_device.h"
+#include "gpu_types.h"
 
 #include "common/timer.h"
 
@@ -16,6 +16,7 @@
 class GPUPipeline;
 class GPUSampler;
 class GPUTexture;
+class GSVector4i;
 
 class Error;
 class SettingsInterface;
@@ -149,9 +150,9 @@ public:
   bool CheckTargets(u32 source_width, u32 source_height, GPUTextureFormat target_format, u32 target_width,
                     u32 target_height, u32 viewport_width, u32 viewport_height, ProgressCallback* progress = nullptr);
 
-  GPUDevice::PresentResult Apply(GPUTexture* input_color, GPUTexture* input_depth, GPUTexture* final_target,
-                                 const GSVector4i final_rect, s32 orig_width, s32 orig_height, s32 native_width,
-                                 s32 native_height);
+  GPUPresentResult Apply(GPUTexture* input_color, GPUTexture* input_depth, GPUTexture* final_target,
+                         const GSVector4i& final_rect, s32 orig_width, s32 orig_height, s32 native_width,
+                         s32 native_height);
 
 private:
   void ClearStagesWithError(const Error& error);

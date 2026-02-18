@@ -159,19 +159,19 @@ bool PostProcessing::GLSLShader::CompilePipeline(GPUTextureFormat format, u32 wi
   return true;
 }
 
-GPUDevice::PresentResult PostProcessing::GLSLShader::Apply(GPUTexture* original_color, GPUTexture* input_color,
-                                                           GPUTexture* input_depth, GPUTexture* final_target,
-                                                           GSVector4i final_rect, s32 orig_width, s32 orig_height,
-                                                           s32 native_width, s32 native_height, u32 target_width,
-                                                           u32 target_height, float time)
+GPUPresentResult PostProcessing::GLSLShader::Apply(GPUTexture* original_color, GPUTexture* input_color,
+                                                   GPUTexture* input_depth, GPUTexture* final_target,
+                                                   const GSVector4i& final_rect, s32 orig_width, s32 orig_height,
+                                                   s32 native_width, s32 native_height, u32 target_width,
+                                                   u32 target_height, float time)
 {
   GL_SCOPE_FMT("GLSL Shader {}", m_name);
 
   // Assumes final stage has been cleared already.
   if (!final_target)
   {
-    const GPUDevice::PresentResult pres = g_gpu_device->BeginPresent(g_gpu_device->GetMainSwapChain());
-    if (pres != GPUDevice::PresentResult::OK)
+    const GPUPresentResult pres = g_gpu_device->BeginPresent(g_gpu_device->GetMainSwapChain());
+    if (pres != GPUPresentResult::OK)
       return pres;
   }
   else
@@ -196,7 +196,7 @@ GPUDevice::PresentResult PostProcessing::GLSLShader::Apply(GPUTexture* original_
                     native_height, time);
   g_gpu_device->UnmapUniformBuffer(uniforms_size);
   g_gpu_device->Draw(3, 0);
-  return GPUDevice::PresentResult::OK;
+  return GPUPresentResult::OK;
 }
 
 void PostProcessing::GLSLShader::LoadOptions()

@@ -111,3 +111,11 @@ enum class GPUDriverType : u16
   SwiftShader = SoftwareFlag | 2,
   WARP = SoftwareFlag | 3,
 };
+
+enum class GPUPresentResult : u8
+{
+  OK,
+  SkipPresent,
+  ExclusiveFullscreenLost,
+  DeviceLost,
+};

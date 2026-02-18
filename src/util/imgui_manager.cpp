@@ -1963,8 +1963,8 @@ bool ImGuiManager::RenderAuxiliaryRenderWindow(AuxiliaryRenderWindowState* state
 
   CreateDrawLists();
 
-  const GPUDevice::PresentResult pres = g_gpu_device->BeginPresent(state->swap_chain.get());
-  if (pres == GPUDevice::PresentResult::OK)
+  const GPUPresentResult pres = g_gpu_device->BeginPresent(state->swap_chain.get());
+  if (pres == GPUPresentResult::OK)
   {
     RenderDrawLists(state->swap_chain.get());
     g_gpu_device->EndPresent(state->swap_chain.get(), false);

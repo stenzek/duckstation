@@ -2533,7 +2533,7 @@ id<MTLBlitCommandEncoder> MetalDevice::GetBlitEncoder(bool is_inline)
   }
 }
 
-GPUDevice::PresentResult MetalDevice::BeginPresent(GPUSwapChain* swap_chain, u32 clear_color)
+GPUPresentResult MetalDevice::BeginPresent(GPUSwapChain* swap_chain, u32 clear_color)
 {
   @autoreleasepool
   {
@@ -2545,7 +2545,7 @@ GPUDevice::PresentResult MetalDevice::BeginPresent(GPUSwapChain* swap_chain, u32
       WARNING_LOG("Failed to get drawable from layer.");
       SubmitCommandBuffer();
       TrimTexturePool();
-      return PresentResult::SkipPresent;
+      return GPUPresentResult::SkipPresent;
     }
 
     m_current_framebuffer_size = GSVector4i(0, 0, swap_chain->GetWidth(), swap_chain->GetHeight());
@@ -2570,7 +2570,7 @@ GPUDevice::PresentResult MetalDevice::BeginPresent(GPUSwapChain* swap_chain, u32
     m_current_pipeline = nullptr;
     m_current_depth_state = nil;
     SetInitialEncoderState();
-    return PresentResult::OK;
+    return GPUPresentResult::OK;
   }
 }
 

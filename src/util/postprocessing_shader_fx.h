@@ -1,8 +1,9 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #pragma once
 
+#include "gpu_device.h"
 #include "postprocessing_shader.h"
 
 #include "common/thirdparty/SmallVector.h"
@@ -36,10 +37,9 @@ public:
   bool CompilePipeline(GPUTextureFormat format, u32 width, u32 height, Error* error,
                        ProgressCallback* progress) override;
 
-  GPUDevice::PresentResult Apply(GPUTexture* original_color, GPUTexture* input_color, GPUTexture* input_depth,
-                                 GPUTexture* final_target, GSVector4i final_rect, s32 orig_width, s32 orig_height,
-                                 s32 native_width, s32 native_height, u32 target_width, u32 target_height,
-                                 float time) override;
+  GPUPresentResult Apply(GPUTexture* original_color, GPUTexture* input_color, GPUTexture* input_depth,
+                         GPUTexture* final_target, const GSVector4i& final_rect, s32 orig_width, s32 orig_height,
+                         s32 native_width, s32 native_height, u32 target_width, u32 target_height, float time) override;
 
 private:
   using TextureID = s32;

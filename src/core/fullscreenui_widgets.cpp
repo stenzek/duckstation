@@ -4939,7 +4939,7 @@ void FullscreenUI::RenderLoadingScreen(std::string_view image, std::string_view 
   ImGuiManager::CreateDrawLists();
 
   GPUSwapChain* swap_chain = g_gpu_device->GetMainSwapChain();
-  if (g_gpu_device->BeginPresent(swap_chain) == GPUDevice::PresentResult::OK)
+  if (g_gpu_device->BeginPresent(swap_chain) == GPUPresentResult::OK)
   {
     ImGuiManager::RenderDrawLists(swap_chain);
     g_gpu_device->EndPresent(swap_chain, false);

@@ -1186,14 +1186,14 @@ std::string D3D12Device::GetDriverInfo() const
   return ret;
 }
 
-GPUDevice::PresentResult D3D12Device::BeginPresent(GPUSwapChain* swap_chain, u32 clear_color)
+GPUPresentResult D3D12Device::BeginPresent(GPUSwapChain* swap_chain, u32 clear_color)
 {
   D3D12SwapChain* const SC = static_cast<D3D12SwapChain*>(swap_chain);
   if (InRenderPass())
     EndRenderPass();
 
   if (m_device_was_lost) [[unlikely]]
-    return PresentResult::DeviceLost;
+    return GPUPresentResult::DeviceLost;
 
   // TODO: Check if the device was lost.
 
@@ -1205,7 +1205,7 @@ GPUDevice::PresentResult D3D12Device::BeginPresent(GPUSwapChain* swap_chain, u32
   {
     FlushCommands();
     TrimTexturePool();
-    return PresentResult::ExclusiveFullscreenLost;
+    return GPUPresentResult::ExclusiveFullscreenLost;
   }
 
   m_current_swap_chain = SC;
@@ -1242,7 +1242,7 @@ GPUDevice::PresentResult D3D12Device::BeginPresent(GPUSwapChain* swap_chain, u32
   // Clear pipeline, it's likely incompatible.
   m_current_pipeline = nullptr;
 
-  return PresentResult::OK;
+  return GPUPresentResult::OK;
 }
 
 void D3D12Device::EndPresent(GPUSwapChain* swap_chain, bool explicit_present, u64 present_time)

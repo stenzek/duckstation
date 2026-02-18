@@ -1882,13 +1882,13 @@ void VulkanDevice::WaitForGPUIdle()
   SubmitCommandBuffer(true);
 }
 
-GPUDevice::PresentResult VulkanDevice::BeginPresent(GPUSwapChain* swap_chain, u32 clear_color)
+GPUPresentResult VulkanDevice::BeginPresent(GPUSwapChain* swap_chain, u32 clear_color)
 {
   if (InRenderPass())
     EndRenderPass();
 
   if (m_device_was_lost) [[unlikely]]
-    return PresentResult::DeviceLost;
+    return GPUPresentResult::DeviceLost;
 
   VulkanSwapChain* const SC = static_cast<VulkanSwapChain*>(swap_chain);
   VkResult res = SC->AcquireNextImage(true);
@@ -1900,11 +1900,11 @@ GPUDevice::PresentResult VulkanDevice::BeginPresent(GPUSwapChain* swap_chain, u3
     // Still submit the command buffer, otherwise we'll end up with several frames waiting.
     SubmitCommandBuffer(false);
     TrimTexturePool();
-    return PresentResult::SkipPresent;
+    return GPUPresentResult::SkipPresent;
   }
 
   BeginSwapChainRenderPass(SC, clear_color);
-  return PresentResult::OK;
+  return GPUPresentResult::OK;
 }
 
 void VulkanDevice::EndPresent(GPUSwapChain* swap_chain, bool explicit_present, u64 present_time)

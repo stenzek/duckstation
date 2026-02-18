@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "postprocessing_shader_slang.h"
@@ -1786,11 +1786,11 @@ std::unique_ptr<GPUPipeline> PostProcessing::SlangShader::CreateBlitPipeline(GPU
   return g_gpu_device->CreatePipeline(plconfig, error);
 }
 
-GPUDevice::PresentResult PostProcessing::SlangShader::Apply(GPUTexture* original_color, GPUTexture* input_color,
-                                                            GPUTexture* input_depth, GPUTexture* final_target,
-                                                            GSVector4i final_rect, s32 orig_width, s32 orig_height,
-                                                            s32 native_width, s32 native_height, u32 target_width,
-                                                            u32 target_height, float time)
+GPUPresentResult PostProcessing::SlangShader::Apply(GPUTexture* original_color, GPUTexture* input_color,
+                                                    GPUTexture* input_depth, GPUTexture* final_target,
+                                                    const GSVector4i& final_rect, s32 orig_width, s32 orig_height,
+                                                    s32 native_width, s32 native_height, u32 target_width,
+                                                    u32 target_height, float time)
 {
   const auto bind_final_target = [](GPUTexture* final_target, const GSVector4i& final_rect) {
     if (!final_target)
@@ -1811,7 +1811,7 @@ GPUDevice::PresentResult PostProcessing::SlangShader::Apply(GPUTexture* original
         g_gpu_device->ClearRenderTarget(final_target, GPUDevice::DEFAULT_CLEAR_COLOR);
       }
 
-      return GPUDevice::PresentResult::OK;
+      return GPUPresentResult::OK;
     }
   };
 
@@ -1902,11 +1902,8 @@ GPUDevice::PresentResult PostProcessing::SlangShader::Apply(GPUTexture* original
       GL_INS("Last pass writing directly to final target");
 
       last_framebuffer = final_target;
-      if (const GPUDevice::PresentResult pres = bind_final_target(final_target, final_rect);
-          pres != GPUDevice::PresentResult::OK)
-      {
+      if (const GPUPresentResult pres = bind_final_target(final_target, final_rect); pres != GPUPresentResult::OK)
         return pres;
-      }
     }
     else
     {
@@ -1945,11 +1942,8 @@ GPUDevice::PresentResult PostProcessing::SlangShader::Apply(GPUTexture* original
     GL_SCOPE_FMT("Blit {} to target: {}", last_framebuffer->GetSizeVec(), final_rect);
 
     last_framebuffer->MakeReadyForSampling();
-    if (const GPUDevice::PresentResult pres = bind_final_target(final_target, final_rect);
-        pres != GPUDevice::PresentResult::OK)
-    {
+    if (const GPUPresentResult pres = bind_final_target(final_target, final_rect); pres != GPUPresentResult::OK)
       return pres;
-    }
 
     g_gpu_device->SetViewportAndScissor(final_rect);
     g_gpu_device->SetPipeline(m_output_blit_pipeline.get());
@@ -1964,7 +1958,7 @@ GPUDevice::PresentResult PostProcessing::SlangShader::Apply(GPUTexture* original
                 m_original_history_textures.rend());
   }
 
-  return GPUDevice::PresentResult::OK;
+  return GPUPresentResult::OK;
 }
 
 bool PostProcessing::SlangShader::ResizeTargets(u32 source_width, u32 source_height, GPUTextureFormat target_format,

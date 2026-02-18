@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "postprocessing_shader_fx.h"
@@ -1599,11 +1599,11 @@ bool PostProcessing::ReShadeFXShader::ResizeTargets(u32 source_width, u32 source
   return true;
 }
 
-GPUDevice::PresentResult PostProcessing::ReShadeFXShader::Apply(GPUTexture* original_color, GPUTexture* input_color,
-                                                                GPUTexture* input_depth, GPUTexture* final_target,
-                                                                GSVector4i final_rect, s32 orig_width, s32 orig_height,
-                                                                s32 native_width, s32 native_height, u32 target_width,
-                                                                u32 target_height, float time)
+GPUPresentResult PostProcessing::ReShadeFXShader::Apply(GPUTexture* original_color, GPUTexture* input_color,
+                                                        GPUTexture* input_depth, GPUTexture* final_target,
+                                                        const GSVector4i& final_rect, s32 orig_width, s32 orig_height,
+                                                        s32 native_width, s32 native_height, u32 target_width,
+                                                        u32 target_height, float time)
 {
   GL_SCOPE_FMT("PostProcessingShaderFX {}", m_name);
 
@@ -1893,8 +1893,8 @@ GPUDevice::PresentResult PostProcessing::ReShadeFXShader::Apply(GPUTexture* orig
     {
       // Special case: drawing to final buffer.
       GPUSwapChain* swap_chain = g_gpu_device->GetMainSwapChain();
-      const GPUDevice::PresentResult pres = g_gpu_device->BeginPresent(swap_chain);
-      if (pres != GPUDevice::PresentResult::OK)
+      const GPUPresentResult pres = g_gpu_device->BeginPresent(swap_chain);
+      if (pres != GPUPresentResult::OK)
         return pres;
 
       g_gpu_device->SetViewportAndScissor(GSVector4i::loadh(swap_chain->GetSizeVec()));
@@ -1968,5 +1968,5 @@ GPUDevice::PresentResult PostProcessing::ReShadeFXShader::Apply(GPUTexture* orig
     g_gpu_device->SetTextureSampler(i, nullptr, nullptr);
 
   m_frame_timer.Reset();
-  return GPUDevice::PresentResult::OK;
+  return GPUPresentResult::OK;
 }

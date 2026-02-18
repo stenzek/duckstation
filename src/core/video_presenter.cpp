@@ -52,8 +52,8 @@ static bool HasBorderOverlay();
 
 static bool CompileDisplayPipelines(bool display, bool deinterlace, bool chroma_smoothing, Error* error);
 
-static GPUDevice::PresentResult RenderDisplay(GPUTexture* target, const GSVector2i target_size, bool postfx,
-                                              bool apply_aspect_ratio);
+static GPUPresentResult RenderDisplay(GPUTexture* target, const GSVector2i target_size, bool postfx,
+                                      bool apply_aspect_ratio);
 static void DrawOverlayBorders(const GSVector2i target_size, const GSVector2i final_target_size,
                                const GSVector4i overlay_display_rect, const GSVector4i draw_rect,
                                const WindowInfoPrerotation prerotation);
@@ -65,8 +65,8 @@ static GSVector2i CalculateDisplayPostProcessSourceSize();
 static GPUTexture* GetDisplayPostProcessInputTexture(const GSVector4i source_rect,
                                                      const GSVector4i draw_rect_without_overlay,
                                                      DisplayRotation rotation);
-static GPUDevice::PresentResult ApplyDisplayPostProcess(GPUTexture* target, GPUTexture* input,
-                                                        const GSVector4i display_rect, const GSVector2i postfx_size);
+static GPUPresentResult ApplyDisplayPostProcess(GPUTexture* target, GPUTexture* input, const GSVector4i display_rect,
+                                                const GSVector2i postfx_size);
 
 static bool DeinterlaceSetTargetSize(u32 width, u32 height, bool preserve);
 static void DestroyDeinterlaceTextures();
@@ -594,8 +594,8 @@ void VideoPresenter::SetDisplayTexture(GPUTexture* texture, const GSVector4i& so
   s_locals.display_texture_rect = source_rect;
 }
 
-GPUDevice::PresentResult VideoPresenter::RenderDisplay(GPUTexture* target, const GSVector2i target_size, bool postfx,
-                                                       bool apply_aspect_ratio)
+GPUPresentResult VideoPresenter::RenderDisplay(GPUTexture* target, const GSVector2i target_size, bool postfx,
+                                               bool apply_aspect_ratio)
 {
   GL_SCOPE_FMT("RenderDisplay: {}x{}", target_size.x, target_size.y);
 
@@ -723,13 +723,12 @@ GPUDevice::PresentResult VideoPresenter::RenderDisplay(GPUTexture* target, const
     }
     else
     {
-      const GPUDevice::PresentResult res = g_gpu_device->BeginPresent(swap_chain);
-      if (res != GPUDevice::PresentResult::OK)
+      if (const GPUPresentResult res = g_gpu_device->BeginPresent(swap_chain); res != GPUPresentResult::OK)
         return res;
     }
 
     g_gpu_device->SetViewport(GSVector4i::loadh(final_target_size));
-    return GPUDevice::PresentResult::OK;
+    return GPUPresentResult::OK;
   };
 
   // If postfx is enabled, we need to draw to an intermediate buffer first.
@@ -751,7 +750,7 @@ GPUDevice::PresentResult VideoPresenter::RenderDisplay(GPUTexture* target, const
       postfx_output->MakeReadyForSampling();
 
       // Start draw to final buffer.
-      if (const GPUDevice::PresentResult pres = bind_final_target(have_overlay); pres != GPUDevice::PresentResult::OK)
+      if (const GPUPresentResult pres = bind_final_target(have_overlay); pres != GPUPresentResult::OK)
         return pres;
 
       // UVs of post-processed/prerotated output are flipped in OpenGL.
@@ -785,7 +784,7 @@ GPUDevice::PresentResult VideoPresenter::RenderDisplay(GPUTexture* target, const
       }
 
       // All done
-      return GPUDevice::PresentResult::OK;
+      return GPUPresentResult::OK;
     }
     else
     {
@@ -797,7 +796,7 @@ GPUDevice::PresentResult VideoPresenter::RenderDisplay(GPUTexture* target, const
   {
     // The non-postprocessing cases are much simpler. We always optionally draw the overlay, then draw the display.
     // The only tricky bit is we have to combine the display rotation and prerotation for the latter.
-    if (const GPUDevice::PresentResult pres = bind_final_target(true); pres != GPUDevice::PresentResult::OK)
+    if (const GPUPresentResult pres = bind_final_target(true); pres != GPUPresentResult::OK)
       return pres;
 
     if (have_overlay)
@@ -823,7 +822,7 @@ GPUDevice::PresentResult VideoPresenter::RenderDisplay(GPUTexture* target, const
                   prerotation);
     }
 
-    return GPUDevice::PresentResult::OK;
+    return GPUPresentResult::OK;
   }
 }
 
@@ -1126,9 +1125,8 @@ GPUTexture* VideoPresenter::GetDisplayPostProcessInputTexture(const GSVector4i s
   return postfx_input;
 }
 
-GPUDevice::PresentResult VideoPresenter::ApplyDisplayPostProcess(GPUTexture* target, GPUTexture* input,
-                                                                 const GSVector4i display_rect,
-                                                                 const GSVector2i postfx_size)
+GPUPresentResult VideoPresenter::ApplyDisplayPostProcess(GPUTexture* target, GPUTexture* input,
+                                                         const GSVector4i display_rect, const GSVector2i postfx_size)
 {
   DebugAssert(!g_gpu_settings.gpu_show_vram);
 
@@ -1163,7 +1161,7 @@ void VideoPresenter::SendDisplayToMediaCapture(MediaCapture* cap)
     (g_gpu_settings.display_screenshot_mode == DisplayScreenshotMode::ScreenResolution &&
      g_gpu_device->HasMainSwapChain() && target->GetSizeVec().eq(g_gpu_device->GetMainSwapChain()->GetSizeVec()));
 
-  if (RenderDisplay(target, target->GetSizeVec(), postfx, apply_aspect_ratio) != GPUDevice::PresentResult::OK ||
+  if (RenderDisplay(target, target->GetSizeVec(), postfx, apply_aspect_ratio) != GPUPresentResult::OK ||
       !cap->DeliverVideoFrame(target)) [[unlikely]]
   {
     WARNING_LOG("Failed to render/deliver video capture frame.");
@@ -1500,10 +1498,10 @@ bool VideoPresenter::PresentFrame(GPUBackend* backend, u64 present_time)
   GPUSwapChain* const swap_chain = g_gpu_device->GetMainSwapChain();
   DebugAssert(swap_chain);
 
-  const GPUDevice::PresentResult pres =
+  const GPUPresentResult pres =
     ((backend && !FullscreenUI::IsTransitionActive()) ? RenderDisplay(nullptr, swap_chain->GetSizeVec(), true, true) :
                                                         g_gpu_device->BeginPresent(swap_chain));
-  if (pres == GPUDevice::PresentResult::OK)
+  if (pres == GPUPresentResult::OK)
   {
     if (FullscreenUI::IsTransitionActive())
       FullscreenUI::RenderTransitionBlend(swap_chain);
@@ -1539,14 +1537,14 @@ bool VideoPresenter::PresentFrame(GPUBackend* backend, u64 present_time)
   }
   else
   {
-    if (pres == GPUDevice::PresentResult::DeviceLost) [[unlikely]]
+    if (pres == GPUPresentResult::DeviceLost) [[unlikely]]
     {
       ERROR_LOG("GPU device lost during present.");
       VideoThread::ReportFatalErrorAndShutdown("GPU device lost. The log may contain more information.");
       return false;
     }
 
-    if (pres == GPUDevice::PresentResult::ExclusiveFullscreenLost) [[unlikely]]
+    if (pres == GPUPresentResult::ExclusiveFullscreenLost) [[unlikely]]
     {
       WARNING_LOG("Lost exclusive fullscreen.");
       VideoThread::SetFullscreen(false);
@@ -1588,7 +1586,7 @@ bool VideoPresenter::RenderScreenshotToBuffer(u32 width, u32 height, bool postfx
 
   g_gpu_device->ClearRenderTarget(render_texture.get(), GPUDevice::DEFAULT_CLEAR_COLOR);
   if (RenderDisplay(render_texture.get(), render_texture->GetSizeVec(), postfx, apply_aspect_ratio) !=
-      GPUDevice::PresentResult::OK)
+      GPUPresentResult::OK)
   {
     Error::SetStringView(error, "RenderDisplay() failed");
     return false;
