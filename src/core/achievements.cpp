@@ -135,6 +135,8 @@ static bool SaveStateToBuffer(std::span<u8> data);
 static std::string GetImageURL(const char* image_name, u32 type);
 static std::string GetLocalImagePath(const std::string_view image_name, u32 type);
 static void DownloadImage(std::string url, std::string cache_path);
+static void PrefetchNextAchievementBadge();
+static void PrefetchNextAchievementBadge(const rc_client_achievement_t* const last_cheevo);
 
 static TinyString DecryptLoginToken(std::string_view encrypted_token, std::string_view username);
 static TinyString EncryptLoginToken(std::string_view token, std::string_view username);
@@ -456,6 +458,50 @@ void Achievements::DownloadImage(std::string url, std::string cache_path)
   };
 
   s_state.http_downloader->CreateRequest(std::move(url), std::move(callback));
+}
+
+void Achievements::PrefetchNextAchievementBadge()
+{
+  if (!HasAchievements())
+    return;
+
+  // Find most recent unlock.
+  rc_client_achievement_list_t* const achievements =
+    rc_client_create_achievement_list(Achievements::GetClient(), RC_CLIENT_ACHIEVEMENT_CATEGORY_CORE_AND_UNOFFICIAL,
+                                      RC_CLIENT_ACHIEVEMENT_LIST_GROUPING_PROGRESS);
+  const rc_client_achievement_t* most_recent_unlock = nullptr;
+  for (u32 i = 0; i < achievements->num_buckets; i++)
+  {
+    const rc_client_achievement_bucket_t& bucket = achievements->buckets[i];
+    if (bucket.bucket_type != RC_CLIENT_ACHIEVEMENT_BUCKET_UNLOCKED &&
+        bucket.bucket_type != RC_CLIENT_ACHIEVEMENT_BUCKET_RECENTLY_UNLOCKED)
+    {
+      continue;
+    }
+
+    for (u32 j = 0; j < bucket.num_achievements; j++)
+    {
+      const rc_client_achievement_t* const cheevo = bucket.achievements[j];
+      if (!most_recent_unlock || cheevo->unlock_time > most_recent_unlock->unlock_time)
+        most_recent_unlock = cheevo;
+    }
+  }
+  rc_client_destroy_achievement_list(achievements);
+
+  if (most_recent_unlock)
+    PrefetchNextAchievementBadge(most_recent_unlock);
+}
+
+void Achievements::PrefetchNextAchievementBadge(const rc_client_achievement_t* const last_cheevo)
+{
+  // Precache badge for the likely next achievement to avoid the badge load time.
+  const rc_client_achievement_t* const next_cheevo =
+    rc_client_get_next_achievement_info(s_state.client, last_cheevo, RC_CLIENT_ACHIEVEMENT_BUCKET_LOCKED);
+  if (!next_cheevo)
+    return;
+
+  VERBOSE_LOG("Prefetching badge for likely next achievement '{}' ({})", next_cheevo->title, next_cheevo->badge_url);
+  GetAchievementBadgePath(next_cheevo, false);
 }
 
 bool Achievements::IsActive()
@@ -1248,6 +1294,7 @@ void Achievements::ClientLoadGameCallback(int result, const char* error_message,
 
   // update progress database on first load, in case it was played on another PC
   UpdateGameSummary(true);
+  PrefetchNextAchievementBadge();
 
   // needed for notifications
   SoundEffectManager::EnsureInitialized();
@@ -1367,7 +1414,7 @@ void Achievements::HandleResetEvent(const rc_client_event_t* event)
 
 void Achievements::HandleUnlockEvent(const rc_client_event_t* event)
 {
-  const rc_client_achievement_t* cheevo = event->achievement;
+  const rc_client_achievement_t* const cheevo = event->achievement;
   DebugAssert(cheevo);
 
   INFO_LOG("Achievement {} ({}) for game {} unlocked", cheevo->id, cheevo->title, s_state.game_id);
@@ -1391,6 +1438,8 @@ void Achievements::HandleUnlockEvent(const rc_client_event_t* event)
       std::move(title), std::string(cheevo->description), std::move(note),
       (cheevo->points > 0) ? FullscreenUI::AchievementNotificationNoteType::Text :
                              FullscreenUI::AchievementNotificationNoteType::None);
+
+    PrefetchNextAchievementBadge(cheevo);
   }
 
   if (g_settings.achievements_sound_effects)
@@ -1926,9 +1975,14 @@ std::string Achievements::GetAchievementBadgePath(const rc_client_achievement_t*
       url = std::string(url_ptr);
 
     if (url.empty()) [[unlikely]]
-      ReportFmtError("Acheivement {} with badge name {} has no badge URL", achievement->id, achievement->badge_name);
+    {
+      ReportFmtError("Achievement {} with badge name {} has no badge URL", achievement->id, achievement->badge_name);
+    }
     else
+    {
+      DEV_LOG("Downloading badge for achievement {} from URL: {}", achievement->id, url);
       DownloadImage(std::string(url), path);
+    }
   }
 
   return path;
