@@ -105,12 +105,12 @@ static constexpr const char* DEFAULT_TOOLBAR_ACTIONS =
   "ControllerSettings";
 
 static constexpr char DISC_IMAGE_FILTER[] = QT_TRANSLATE_NOOP(
-  "MainWindow",
-  "All File Types (*.bin *.img *.iso *.cue *.chd *.cpe *.ecm *.mds *.pbp *.elf *.exe *.psexe *.ps-exe *.psx *.psf "
-  "*.minipsf *.m3u *.psxgpu);;Single-Track Raw Images (*.bin *.img *.iso);;Cue Sheets (*.cue);;MAME CHD Images "
-  "(*.chd);;Error Code Modeler Images (*.ecm);;Media Descriptor Sidecar Images (*.mds);;PlayStation EBOOTs (*.pbp "
-  "*.PBP);;PlayStation Executables (*.cpe *.elf *.exe *.psexe *.ps-exe, *.psx);;Portable Sound Format Files (*.psf "
-  "*.minipsf);;Playlists (*.m3u);;PSX GPU Dumps (*.psxgpu *.psxgpu.zst *.psxgpu.xz)");
+  "MainWindow", "All File Types (*.bin *.img *.iso *.cue *.chd *.cpe *.ecm *.mds *.pbp *.ccd *.elf *.exe *.psexe "
+                "*.ps-exe *.psx *.psf *.minipsf *.m3u *.psxgpu);;Single-Track Raw Images (*.bin *.img *.iso);;Cue "
+                "Sheets (*.cue);;MAME CHD Images (*.chd);;Error Code Modeler Images (*.ecm);;Media Descriptor Sidecar "
+                "Images (*.mds);;CloneCD Images (*.ccd);;PlayStation EBOOTs (*.pbp *.PBP);;PlayStation Executables "
+                "(*.cpe *.elf *.exe *.psexe *.ps-exe, *.psx);;Portable Sound Format Files (*.psf *.minipsf);;Playlists "
+                "(*.m3u);;PSX GPU Dumps (*.psxgpu *.psxgpu.zst *.psxgpu.xz)");
 
 static constexpr char IMAGE_FILTER[] = QT_TRANSLATE_NOOP("MainWindow", "Images (*.jpg *.jpeg *.png *.webp)");
 

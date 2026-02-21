@@ -72,9 +72,10 @@ static constexpr QSize COMPATIBILITY_PIXMAP_SIZE(96, 24);
 
 static const char* SUPPORTED_FORMATS_STRING =
   QT_TRANSLATE_NOOP(GameListWidget, ".cue (Cue Sheets)\n"
-                                    ".iso/.img (Single Track Image)\n"
+                                    ".iso (Single Track Image)\n"
                                     ".ecm (Error Code Modeling Image)\n"
                                     ".mds (Media Descriptor Sidecar)\n"
+                                    ".ccd (CloneCD Image)\n"
                                     ".chd (Compressed Hunks of Data)\n"
                                     ".pbp (PlayStation Portable, Only Decrypted)");
 

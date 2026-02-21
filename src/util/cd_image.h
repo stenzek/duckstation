@@ -196,6 +196,7 @@ public:
   static std::unique_ptr<CDImage> OpenCHDImage(const char* path, Error* error);
   static std::unique_ptr<CDImage> OpenMdsImage(const char* path, Error* error);
   static std::unique_ptr<CDImage> OpenPBPImage(const char* path, Error* error);
+  static std::unique_ptr<CDImage> OpenCCDImage(const char* path, Error* error);
   static std::unique_ptr<CDImage> OpenM3uImage(const char* path, bool apply_patches, Error* error);
   static std::unique_ptr<CDImage> OpenDeviceImage(const char* path, Error* error);
   static std::unique_ptr<CDImage> CreateMemoryImage(CDImage* image, ProgressCallback* progress, Error* error);

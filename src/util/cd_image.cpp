@@ -96,6 +96,10 @@ std::unique_ptr<CDImage> CDImage::Open(const char* path, bool allow_patches, Err
   {
     image = OpenPBPImage(path, error);
   }
+  else if (StringUtil::EqualNoCase(extension, "ccd"))
+  {
+    image = OpenCCDImage(path, error);
+  }
   else if (StringUtil::EqualNoCase(extension, "m3u"))
   {
     // skip applying patches to the main path, which isn't a real disc

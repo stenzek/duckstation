@@ -213,8 +213,8 @@ bool GameList::PreferAchievementGameBadgesForIcons()
 
 bool GameList::IsScannableFilename(std::string_view path)
 {
-  // we don't scan bin files because they'll duplicate
-  if (StringUtil::EndsWithNoCase(path, ".bin"))
+  // we don't scan bin files because they'll duplicate with cue, same with img for ccd
+  if (StringUtil::EndsWithNoCase(path, ".bin") || StringUtil::EndsWithNoCase(path, ".img"))
     return false;
 
   return (System::IsDiscPath(path) || System::IsExePath(path) || System::IsPsfPath(path));

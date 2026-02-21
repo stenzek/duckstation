@@ -121,6 +121,7 @@
     <ClCompile Include="animated_image.cpp" />
     <ClCompile Include="audio_stream.cpp" />
     <ClCompile Include="cd_image.cpp" />
+    <ClCompile Include="cd_image_ccd.cpp" />
     <ClCompile Include="cd_image_chd.cpp" />
     <ClCompile Include="cd_image_cue.cpp" />
     <ClCompile Include="cd_image_device.cpp" />

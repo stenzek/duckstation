@@ -168,6 +168,7 @@
     <ClCompile Include="postprocessing_shader_slang.cpp" />
     <ClCompile Include="translation.cpp" />
     <ClCompile Include="core_audio_stream.cpp" />
+    <ClCompile Include="cd_image_ccd.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="metal_shaders.metal" />

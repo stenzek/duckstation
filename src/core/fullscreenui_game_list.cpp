@@ -67,8 +67,8 @@ ALIGN_TO_CACHE_LINE static GameListLocals s_game_list_locals;
 
 FullscreenUI::FileSelectorFilters FullscreenUI::GetDiscImageFilters()
 {
-  return {"*.bin",   "*.cue",    "*.iso", "*.img", "*.chd", "*.ecm",     "*.mds", "*.cpe", "*.elf",
-          "*.psexe", "*.ps-exe", "*.exe", "*.psx", "*.psf", "*.minipsf", "*.m3u", "*.pbp"};
+  return {"*.bin", "*.cue", "*.iso",   "*.img",    "*.chd", "*.ecm", "*.mds", "*.pbp",     "*.ccd",
+          "*.cpe", "*.elf", "*.psexe", "*.ps-exe", "*.exe", "*.psx", "*.psf", "*.minipsf", "*.m3u"};
 }
 
 FullscreenUI::FileSelectorFilters FullscreenUI::GetImageFilters()

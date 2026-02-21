@@ -5,6 +5,7 @@ add_library(util
   audio_stream.h
   cd_image.cpp
   cd_image.h
+  cd_image_ccd.cpp
   cd_image_cue.cpp
   cd_image_chd.cpp
   cd_image_device.cpp

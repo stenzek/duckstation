@@ -884,7 +884,7 @@ bool System::IsDiscPath(std::string_view path)
           StringUtil::EndsWithNoCase(path, ".img") || StringUtil::EndsWithNoCase(path, ".iso") ||
           StringUtil::EndsWithNoCase(path, ".chd") || StringUtil::EndsWithNoCase(path, ".ecm") ||
           StringUtil::EndsWithNoCase(path, ".mds") || StringUtil::EndsWithNoCase(path, ".pbp") ||
-          StringUtil::EndsWithNoCase(path, ".m3u"));
+          StringUtil::EndsWithNoCase(path, ".ccd") || StringUtil::EndsWithNoCase(path, ".m3u"));
 }
 
 bool System::IsExePath(std::string_view path)
