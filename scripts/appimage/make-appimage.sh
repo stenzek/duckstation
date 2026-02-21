@@ -125,8 +125,8 @@ DEPLOY_PLATFORM_THEMES="1" \
 QMAKE="$DEPSDIR/bin/qmake" \
 NO_STRIP="1" \
 $LINUXDEPLOY --plugin qt --appdir="$OUTDIR" --executable="$BUILDDIR/bin/duckstation-qt" ${EXTRA_LIBS_ARGS[@]} \
---desktop-file="$ROOTDIR/scripts/packaging/org.duckstation.DuckStation.desktop" \
---icon-file="$ROOTDIR/scripts/packaging/org.duckstation.DuckStation.png" \
+--desktop-file="$ROOTDIR/scripts/appimage/org.duckstation.DuckStation.desktop" \
+--icon-file="$ROOTDIR/scripts/appimage/org.duckstation.DuckStation.png" \
 
 echo "Copying resources into AppDir..."
 cp -a "$BUILDDIR/bin/resources" "$OUTDIR/usr/bin"
@@ -171,7 +171,7 @@ cp -a "$BUILDDIR/bin/translations" "$OUTDIR/usr/bin"
 # Generate AppStream meta-info.
 echo "Generating AppStream metainfo..."
 mkdir -p "$OUTDIR/usr/share/metainfo"
-"$SCRIPTDIR/../generate-metainfo.sh" "$OUTDIR/usr/share/metainfo"
+"$SCRIPTDIR/generate-metainfo.sh" "$OUTDIR/usr/share/metainfo"
 
 echo "Generating AppImage..."
 rm -f "$ASSETNAME"

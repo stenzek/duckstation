@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop">
+  <id>org.duckstation.DuckStation</id>
+  <launchable type="desktop-id">org.duckstation.DuckStation.desktop</launchable>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>CC-BY-NC-ND-4.0</project_license>
+  <name>DuckStation</name>
+  <developer_name>Stenzek</developer_name>
+  <summary>PlayStation Emulator</summary>
+  <description>
+    <p>DuckStation is an simulator/emulator of the Sony PlayStation(TM) console, focusing on playability, speed, and long-term maintainability. The goal is to be as accurate as possible while maintaining performance suitable for low-end devices.</p>
+    <p>"Hack" options are discouraged, the default configuration should support all playable games with only some of the enhancements having compatibility issues.</p>
+    <p>DuckStation features a fully-featured frontend built using Qt, as well as a fullscreen/TV UI based on Dear ImGui. Other features include:</p>
+    <p>"PlayStation" and "PSX" are registered trademarks of Sony Interactive Entertainment Europe Limited. This project is not affiliated in any way with Sony Interactive Entertainment.</p>
+  </description>
+  <content_rating type="oars-1.1"/>
+  <update_contact>stenzek_AT_gmail.com</update_contact>
+  <url type="homepage">https://www.duckstation.org/</url>
+  <url type="help">https://github.com/stenzek/duckstation</url>
+  <url type="vcs-browser">https://github.com/stenzek/duckstation</url>
+  <releases>
+    <release version="@GIT_VERSION@" date="@GIT_DATE@" />
+  </releases>
+</component>
