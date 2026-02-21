@@ -145,3 +145,5 @@ jobs:
       with:
         name: "windows-${{ matrix.arch }}"
         path: "duckstation-windows-${{ matrix.arch }}-*.*"
+        compression-level: 0
+        if-no-files-found: error

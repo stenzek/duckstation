@@ -98,3 +98,5 @@ jobs:
       with:
         name: "linux-${{ matrix.arch }}-appimage"
         path: "DuckStation-*.AppImage"
+        compression-level: 0
+        if-no-files-found: error

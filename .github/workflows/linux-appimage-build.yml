@@ -82,3 +82,5 @@ jobs:
       with:
         name: "${{ matrix.artifact }}"
         path: "${{ matrix.asset }}"
+        compression-level: 0
+        if-no-files-found: error
