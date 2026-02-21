@@ -38,11 +38,11 @@ struct TrackEntry
 static_assert(sizeof(TrackEntry) == 0x50, "TrackEntry is 0x50 bytes");
 #pragma pack(pop)
 
-class CDImageMds : public CDImage
+class CDImageMDS : public CDImage
 {
 public:
-  CDImageMds();
-  ~CDImageMds() override;
+  CDImageMDS();
+  ~CDImageMDS() override;
 
   bool OpenAndParse(const char* filename, Error* error);
 
@@ -58,15 +58,15 @@ private:
 
 } // namespace
 
-CDImageMds::CDImageMds() = default;
+CDImageMDS::CDImageMDS() = default;
 
-CDImageMds::~CDImageMds()
+CDImageMDS::~CDImageMDS()
 {
   if (m_mdf_file)
     std::fclose(m_mdf_file);
 }
 
-bool CDImageMds::OpenAndParse(const char* filename, Error* error)
+bool CDImageMDS::OpenAndParse(const char* filename, Error* error)
 {
   std::FILE* mds_fp = FileSystem::OpenSharedCFile(filename, "rb", FileSystem::FileShareMode::DenyWrite, error);
   if (!mds_fp)
@@ -243,7 +243,7 @@ bool CDImageMds::OpenAndParse(const char* filename, Error* error)
   return Seek(1, Position{0, 0, 0});
 }
 
-bool CDImageMds::ReadSectorFromIndex(void* buffer, const Index& index, LBA lba_in_index)
+bool CDImageMDS::ReadSectorFromIndex(void* buffer, const Index& index, LBA lba_in_index)
 {
   const u64 file_position = index.file_offset + (static_cast<u64>(lba_in_index) * index.file_sector_size);
   if (m_mdf_file_position != file_position)
@@ -266,14 +266,14 @@ bool CDImageMds::ReadSectorFromIndex(void* buffer, const Index& index, LBA lba_i
   return true;
 }
 
-s64 CDImageMds::GetSizeOnDisk() const
+s64 CDImageMDS::GetSizeOnDisk() const
 {
   return FileSystem::FSize64(m_mdf_file);
 }
 
 std::unique_ptr<CDImage> CDImage::OpenMdsImage(const char* path, Error* error)
 {
-  std::unique_ptr<CDImageMds> image = std::make_unique<CDImageMds>();
+  std::unique_ptr<CDImageMDS> image = std::make_unique<CDImageMDS>();
   if (!image->OpenAndParse(path, error))
     return {};
 
