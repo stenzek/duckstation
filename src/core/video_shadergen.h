@@ -22,6 +22,8 @@ public:
 
   std::string GenerateChromaSmoothingFragmentShader() const;
 
+  std::string GenerateGaussianBlurFragmentShader() const;
+
 private:
   void WriteDisplayUniformBuffer(std::stringstream& ss) const;
 };

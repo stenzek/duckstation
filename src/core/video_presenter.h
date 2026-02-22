@@ -73,6 +73,12 @@ void ThrottlePresentation();
 /// Main frame presenter - used both when a game is and is not running.
 bool PresentFrame(GPUBackend* backend, u64 present_time);
 
+/// Includes a region for the blur texture, activating it if necessary.
+bool AddDisplayBlurRect(const GSVector4i& bounds);
+
+/// Returns the blurred display texture, this is set up before it's actually drawn to.
+GPUTexture* GetDisplayBlurTexture();
+
 /// Returns a list of border overlay presets.
 std::vector<std::string> EnumerateBorderOverlayPresets();
 

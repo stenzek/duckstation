@@ -4814,6 +4814,8 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
     }
     else if (const bool device_settings_changed = g_settings.AreGPUDeviceSettingsChanged(old_settings);
              device_settings_changed || g_settings.display_show_messages != old_settings.display_show_messages ||
+             g_settings.display_animate_messages != old_settings.display_animate_messages ||
+             g_settings.display_blur_message_backgrounds != old_settings.display_blur_message_backgrounds ||
              g_settings.display_show_fps != old_settings.display_show_fps ||
              g_settings.display_show_speed != old_settings.display_show_speed ||
              g_settings.display_show_gpu_stats != old_settings.display_show_gpu_stats ||

@@ -35,7 +35,7 @@ public:
   std::string GenerateCopyFragmentShader(bool offset = true) const;
 
   std::string GenerateImGuiVertexShader() const;
-  std::string GenerateImGuiFragmentShader() const;
+  std::string GenerateImGuiFragmentShader(bool fb_coords) const;
   std::string GenerateFadeFragmentShader() const;
 
   const char* GetInterpolationQualifier(bool interface_block, bool centroid_interpolation, bool sample_interpolation,

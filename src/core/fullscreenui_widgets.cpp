@@ -69,7 +69,7 @@ enum class SplitWindowFocusChange : u8
 static std::optional<Image> LoadTextureImage(std::string_view path, u32 svg_width, u32 svg_height);
 static std::shared_ptr<GPUTexture> UploadTexture(std::string_view path, const Image& image);
 
-static bool CompileTransitionPipelines(Error* error);
+static bool CompilePipelines(Error* error);
 
 static void CreateFooterTextString(SmallStringBase& dest,
                                    std::span<const std::pair<const char*, std::string_view>> items);
@@ -369,8 +369,8 @@ struct WidgetsState
   bool has_hovered_menu_item = false;
   bool rendered_menu_item_border = false;
   bool had_focus_reset = false;
-  bool sound_effects_enabled = false;
   bool had_sound_effect = false;
+  bool fullscreen_footer_blur_allowed = false;
 
   ImAnimatedVec2 menu_button_frame_min_animated;
   ImAnimatedVec2 menu_button_frame_max_animated;
@@ -465,7 +465,8 @@ void FullscreenUI::UpdateWidgetsSettings()
   UIStyle.Animations = Core::GetBaseBoolSettingValue("Main", "FullscreenUIAnimations", true);
   UIStyle.SmoothScrolling = Core::GetBaseBoolSettingValue("Main", "FullscreenUISmoothScrolling", true);
   UIStyle.MenuBorders = Core::GetBaseBoolSettingValue("Main", "FullscreenUIMenuBorders", false);
-  s_state.sound_effects_enabled = Core::GetBaseBoolSettingValue("Main", "FullscreenUISoundEffects", true);
+  UIStyle.BlurMenuBackground = Core::GetBaseBoolSettingValue("Main", "FullscreenUIBlurMenuBackground", true);
+  UIStyle.SoundEffects = Core::GetBaseBoolSettingValue("Main", "FullscreenUISoundEffects", true);
 
   const bool display_ps_icons = Core::GetBaseBoolSettingValue("Main", "FullscreenUIDisplayPSIcons", false);
   const bool swap_face_buttons = Core::GetBaseBoolSettingValue("Main", "FullscreenUISwapGamepadFaceButtons", false);
@@ -492,7 +493,7 @@ bool FullscreenUI::CreateWidgetsGPUResources(Error* error)
     return false;
   }
 
-  if (!CompileTransitionPipelines(error))
+  if (!CompilePipelines(error))
     return false;
 
   return true;
@@ -812,7 +813,7 @@ GPUTexture* FullscreenUI::GetTransitionRenderTexture(GPUSwapChain* swap_chain)
   return s_state.transition_current_texture.get();
 }
 
-bool FullscreenUI::CompileTransitionPipelines(Error* error)
+bool FullscreenUI::CompilePipelines(Error* error)
 {
   const RenderAPI render_api = g_gpu_device->GetRenderAPI();
   const ShaderGen shadergen(render_api, ShaderGen::GetShaderLanguageForAPI(render_api), false, false);
@@ -910,6 +911,31 @@ void FullscreenUI::UpdateTransitionState()
     s_state.transition_state = TransitionState::Inactive;
     UpdateRunIdleState();
   }
+}
+
+bool FullscreenUI::CanBlurBackground()
+{
+  // If there's no video presenter, we have no way to get the current backbuffer for blurring, so don't even try.
+  return VideoPresenter::HasDisplayTexture();
+}
+
+bool FullscreenUI::BeginBlurBackground(ImDrawList* const dl, const ImVec2& bb_min, const ImVec2& bb_max)
+{
+  if (!CanBlurBackground())
+    return false;
+
+  const GSVector4i bounds =
+    GSVector4i(GSVector4::xyxy(GSVector2::load<false>(&bb_min.x).floor(), GSVector2::load<false>(&bb_max.x).ceil()));
+  if (!VideoPresenter::AddDisplayBlurRect(bounds))
+    return false;
+
+  ImGuiManager::PushBlurBackgroundTexture(dl, VideoPresenter::GetDisplayBlurTexture());
+  return true;
+}
+
+void FullscreenUI::EndBlurBackground(ImDrawList* const dl)
+{
+  ImGuiManager::PopBlurBackgroundTexture(dl);
 }
 
 bool FullscreenUI::UpdateLayoutScale()
@@ -1056,6 +1082,7 @@ void FullscreenUI::BeginLayout()
   // we evict from the texture cache at the start of the frame, in case we go over mid-frame,
   // we need to keep all those textures alive until the end of the frame
   s_state.texture_cache.ManualEvict();
+  s_state.fullscreen_footer_blur_allowed = true;
   PushResetLayout();
 }
 
@@ -1102,7 +1129,7 @@ void FullscreenUI::EndLayout()
 
 void FullscreenUI::EnqueueSoundEffect(std::string_view sound_effect)
 {
-  if (s_state.had_sound_effect || !s_state.sound_effects_enabled)
+  if (s_state.had_sound_effect || !UIStyle.SoundEffects)
     return;
 
   SoundEffectManager::EnqueueSoundEffect(sound_effect);
@@ -1488,7 +1515,7 @@ bool FullscreenUI::BeginFullscreenWindow(float left, float top, float width, flo
 bool FullscreenUI::BeginFullscreenWindow(const ImVec2& position, const ImVec2& size, const char* name,
                                          const ImVec4& background /* = HEX_TO_IMVEC4(0x212121, 0xFF) */,
                                          float rounding /*= 0.0f*/, const ImVec2& padding /*= 0.0f*/,
-                                         ImGuiWindowFlags flags /*= 0*/)
+                                         ImGuiWindowFlags flags /*= 0*/, bool blur /*= false*/)
 {
   ImGui::SetNextWindowPos(position);
   ImGui::SetNextWindowSize(size);
@@ -1498,10 +1525,33 @@ bool FullscreenUI::BeginFullscreenWindow(const ImVec2& position, const ImVec2& s
   ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
   ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
 
-  return ImGui::Begin(name, nullptr,
-                      ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize |
-                        ImGuiWindowFlags_NoBringToFrontOnFocus |
-                        ((background.w == 0.0f) ? ImGuiWindowFlags_NoBackground : 0) | flags);
+  const bool actually_blur = (blur && UIStyle.BlurMenuBackground && CanBlurBackground());
+  const bool has_background = (background.w != 0.0f);
+  const bool res = ImGui::Begin(name, nullptr,
+                                ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize |
+                                  ImGuiWindowFlags_NoBringToFrontOnFocus |
+                                  ((!has_background || actually_blur) ? ImGuiWindowFlags_NoBackground : 0) | flags);
+
+  if (res && actually_blur)
+  {
+    ImDrawList* const dl = ImGui::GetWindowDrawList();
+    const ImVec2 bg_min = position;
+    const ImVec2 bg_max = position + size;
+    if (BeginBlurBackground(dl, bg_min, bg_max))
+    {
+      if (has_background)
+        dl->AddRectFilled(bg_min, bg_max,
+                          ImGui::GetColorU32(ImVec4(background.x * background.w, background.y * background.w,
+                                                    background.z * background.w, 1.0f)));
+      EndBlurBackground(dl);
+    }
+    else if (has_background)
+    {
+      dl->AddRectFilled(bg_min, bg_max, ImGui::GetColorU32(background));
+    }
+  }
+
+  return res;
 }
 
 void FullscreenUI::EndFullscreenWindow(bool allow_wrap_x, bool allow_wrap_y)
@@ -1592,6 +1642,11 @@ void FullscreenUI::SetStandardSelectionFooterText(bool back_instead_of_cancel)
   }
 }
 
+void FullscreenUI::SetFullscreenFooterBlur(bool allowed)
+{
+  s_state.fullscreen_footer_blur_allowed = allowed;
+}
+
 void FullscreenUI::DrawFullscreenFooter()
 {
   const ImGuiIO& io = ImGui::GetIO();
@@ -1610,9 +1665,20 @@ void FullscreenUI::DrawFullscreenFooter()
   const u32 text_color = ImGui::GetColorU32(UIStyle.PrimaryTextColor);
   const float bg_alpha = GetBackgroundAlpha();
 
-  ImDrawList* dl = ImGui::GetForegroundDrawList();
-  dl->AddRectFilled(ImVec2(0.0f, io.DisplaySize.y - height), io.DisplaySize,
-                    ImGui::GetColorU32(ModAlpha(UIStyle.PrimaryColor, bg_alpha)), 0.0f);
+  ImDrawList* const dl = ImGui::GetForegroundDrawList();
+  const ImVec2 bb_min = ImVec2(0.0f, io.DisplaySize.y - height);
+  const ImVec2& bb_max = io.DisplaySize;
+  if (UIStyle.BlurMenuBackground && s_state.fullscreen_footer_blur_allowed && BeginBlurBackground(dl, bb_min, bb_max))
+  {
+    dl->AddRectFilled(ImVec2(0.0f, io.DisplaySize.y - height), io.DisplaySize,
+                      ImGui::GetColorU32(ModAlpha(UIStyle.PrimaryColor, 1.0f)), 0.0f);
+    EndBlurBackground(dl);
+  }
+  else
+  {
+    dl->AddRectFilled(ImVec2(0.0f, io.DisplaySize.y - height), io.DisplaySize,
+                      ImGui::GetColorU32(ModAlpha(UIStyle.PrimaryColor, bg_alpha)), 0.0f);
+  }
 
   ImFont* const font = UIStyle.Font;
   const float font_size = UIStyle.MediumFontSize;
@@ -5494,7 +5560,7 @@ std::pair<ImVec2, float> FullscreenUI::NotificationLayout::GetNextPosition(float
       ImVec2 pos;
       if (m_location == NotificationLocation::TopLeft || m_location == NotificationLocation::BottomLeft)
       {
-        if (anim_coeff != 1.0f)
+        if (anim_coeff != 1.0f && g_gpu_settings.display_animate_messages)
         {
           if (active)
           {
@@ -5518,7 +5584,7 @@ std::pair<ImVec2, float> FullscreenUI::NotificationLayout::GetNextPosition(float
       else
       {
         pos.x = m_current_position.x - width;
-        if (anim_coeff != 1.0f)
+        if (anim_coeff != 1.0f && g_gpu_settings.display_animate_messages)
         {
           if (active)
           {
@@ -5560,7 +5626,7 @@ std::pair<ImVec2, float> FullscreenUI::NotificationLayout::GetNextPosition(float
 
       pos.x = ImFloor((ImGui::GetIO().DisplaySize.x - width) * 0.5f);
       pos.y = m_current_position.y;
-      if (anim_coeff != 1.0f)
+      if (anim_coeff != 1.0f && g_gpu_settings.display_animate_messages)
       {
         if (active)
         {
@@ -5594,7 +5660,7 @@ std::pair<ImVec2, float> FullscreenUI::NotificationLayout::GetNextPosition(float
 
       pos.x = ImFloor((ImGui::GetIO().DisplaySize.x - width) * 0.5f);
       pos.y = m_current_position.y - height;
-      if (anim_coeff != 1.0f)
+      if (anim_coeff != 1.0f && g_gpu_settings.display_animate_messages)
       {
         if (active)
         {
@@ -5778,6 +5844,7 @@ void FullscreenUI::UpdateTheme()
     UIStyle.ToastBackgroundColor = HEX_TO_IMVEC4(0x282828, 0xff);
     UIStyle.ToastTextColor = HEX_TO_IMVEC4(0xffffff, 0xff);
     UIStyle.ShadowColor = IM_COL32(0, 0, 0, 100);
+    UIStyle.BlurBackgroundWeight = 0.25f;
     UIStyle.IsDarkTheme = true;
   }
   else if (theme == "CobaltSky")
@@ -5802,6 +5869,7 @@ void FullscreenUI::UpdateTheme()
     UIStyle.ToastBackgroundColor = HEX_TO_IMVEC4(0x2d4183, 0xff);
     UIStyle.ToastTextColor = HEX_TO_IMVEC4(0xffffff, 0xff);
     UIStyle.ShadowColor = IM_COL32(0, 0, 0, 100);
+    UIStyle.BlurBackgroundWeight = 0.25f;
     UIStyle.IsDarkTheme = true;
   }
   else if (theme == "GreyMatter")
@@ -5826,6 +5894,7 @@ void FullscreenUI::UpdateTheme()
     UIStyle.ToastBackgroundColor = HEX_TO_IMVEC4(0x282828, 0xff);
     UIStyle.ToastTextColor = HEX_TO_IMVEC4(0xffffff, 0xff);
     UIStyle.ShadowColor = IM_COL32(0, 0, 0, 100);
+    UIStyle.BlurBackgroundWeight = 0.25f;
     UIStyle.IsDarkTheme = true;
   }
   else if (theme == "PinkyPals")
@@ -5850,6 +5919,7 @@ void FullscreenUI::UpdateTheme()
     UIStyle.ToastBackgroundColor = HEX_TO_IMVEC4(0xd86a66, 0xff);
     UIStyle.ToastTextColor = HEX_TO_IMVEC4(0xffffff, 0xff);
     UIStyle.ShadowColor = IM_COL32(100, 100, 100, 50);
+    UIStyle.BlurBackgroundWeight = 0.5f;
     UIStyle.IsDarkTheme = false;
   }
   else if (theme == "GreenGiant")
@@ -5873,6 +5943,7 @@ void FullscreenUI::UpdateTheme()
     UIStyle.ToastBackgroundColor = HEX_TO_IMVEC4(0xD5DE2E, 0xff);
     UIStyle.ToastTextColor = HEX_TO_IMVEC4(0x000000, 0xff);
     UIStyle.ShadowColor = IM_COL32(100, 100, 100, 50);
+    UIStyle.BlurBackgroundWeight = 0.25f;
     UIStyle.IsDarkTheme = false;
   }
   else if (theme == "DarkRuby")
@@ -5897,6 +5968,7 @@ void FullscreenUI::UpdateTheme()
     UIStyle.ToastBackgroundColor = HEX_TO_IMVEC4(0x282828, 0xff);
     UIStyle.ToastTextColor = HEX_TO_IMVEC4(0xffffff, 0xff);
     UIStyle.ShadowColor = IM_COL32(0, 0, 0, 100);
+    UIStyle.BlurBackgroundWeight = 0.25f;
     UIStyle.IsDarkTheme = true;
   }
   else if (theme == "PurpleRain")
@@ -5921,6 +5993,7 @@ void FullscreenUI::UpdateTheme()
     UIStyle.ToastBackgroundColor = HEX_TO_IMVEC4(0x8e65cb, 0xff);
     UIStyle.ToastTextColor = HEX_TO_IMVEC4(0xffffff, 0xff);
     UIStyle.ShadowColor = IM_COL32(100, 100, 100, 50);
+    UIStyle.BlurBackgroundWeight = 0.25f;
     UIStyle.IsDarkTheme = true;
   }
   else if (theme == "Light")
@@ -5946,6 +6019,7 @@ void FullscreenUI::UpdateTheme()
     UIStyle.ToastBackgroundColor = HEX_TO_IMVEC4(0xf1f1f1, 0xff);
     UIStyle.ToastTextColor = HEX_TO_IMVEC4(0x000000, 0xff);
     UIStyle.ShadowColor = IM_COL32(100, 100, 100, 50);
+    UIStyle.BlurBackgroundWeight = 0.5f;
     UIStyle.IsDarkTheme = false;
   }
   else
@@ -5971,6 +6045,7 @@ void FullscreenUI::UpdateTheme()
     UIStyle.ToastBackgroundColor = HEX_TO_IMVEC4(0x282828, 0xff);
     UIStyle.ToastTextColor = HEX_TO_IMVEC4(0xffffff, 0xff);
     UIStyle.ShadowColor = IM_COL32(0, 0, 0, 100);
+    UIStyle.BlurBackgroundWeight = 0.25f;
     UIStyle.IsDarkTheme = true;
   }
 }

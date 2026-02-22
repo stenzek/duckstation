@@ -18,6 +18,7 @@ class GPUSwapChain;
 class GPUTexture;
 enum class GPUTextureFormat : u8;
 
+struct ImDrawList;
 struct ImGuiContext;
 struct ImFont;
 
@@ -120,6 +121,11 @@ void CreateDrawLists();
 /// Renders ImGui screen elements. Call before EndPresent().
 void RenderDrawLists(GPUSwapChain* swap_chain);
 void RenderDrawLists(GPUTexture* texture);
+
+/// Inserts a command to change pipelines/texture in the draw list.
+void PushBlurBackgroundTexture(ImDrawList* const dl, GPUTexture* const texture);
+void PopBlurBackgroundTexture(ImDrawList* const dl);
+void ResetDrawListRenderPipeline();
 
 /// Renders any on-screen display elements.
 void RenderOSDMessages();

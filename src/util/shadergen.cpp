@@ -950,7 +950,8 @@ std::string ShaderGen::GenerateImGuiVertexShader() const
 {
   std::stringstream ss;
   WriteHeader(ss);
-  DeclareUniformBuffer(ss, {"float4x4 ProjectionMatrix"}, false);
+  DeclareUniformBuffer(ss, {"float4x4 ProjectionMatrix", "float BlurBackgroundWeight", "float InvBlurBackgroundWeight"},
+                       false);
   DeclareVertexEntryPoint(ss, {"float2 a_pos", "float2 a_tex0", "float4 a_col0"}, 1, 1, {}, false);
   ss << R"(
 {
@@ -966,19 +967,31 @@ std::string ShaderGen::GenerateImGuiVertexShader() const
   return std::move(ss).str();
 }
 
-std::string ShaderGen::GenerateImGuiFragmentShader() const
+std::string ShaderGen::GenerateImGuiFragmentShader(bool fb_coords) const
 {
   std::stringstream ss;
   WriteHeader(ss);
-  DeclareUniformBuffer(ss, {"float4x4 ProjectionMatrix"}, false); // needs the descriptor set defined
+  DeclareUniformBuffer(ss, {"float4x4 ProjectionMatrix", "float BlurBackgroundWeight", "float InvBlurBackgroundWeight"},
+                       false); // needs the descriptor set defined
   DeclareTexture(ss, "samp0", 0);
-  DeclareFragmentEntryPoint(ss, 1, 1);
+  DeclareFragmentEntryPoint(ss, 1, 1, {}, fb_coords);
 
-  ss << R"(
+  if (fb_coords)
+  {
+    ss << R"(
+{
+  o_col0 = float4(LOAD_TEXTURE(samp0, int2(v_pos.xy), 0).rgb * BlurBackgroundWeight + v_col0.rgb * InvBlurBackgroundWeight, v_col0.a);
+}
+)";
+  }
+  else
+  {
+    ss << R"(
 {
   o_col0 = v_col0 * SAMPLE_TEXTURE(samp0, v_tex0);
 }
-)";
+  )";
+  }
 
   return std::move(ss).str();
 }

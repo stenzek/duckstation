@@ -162,6 +162,7 @@ struct ALIGN_TO_CACHE_LINE State
   bool swap_gamepad_face_buttons = false;
 
   std::unique_ptr<GPUPipeline> imgui_pipeline;
+  std::unique_ptr<GPUPipeline> imgui_fbcoords_pipeline;
 
   ImFont* text_font = nullptr;
   ImFont* fixed_font = nullptr;
@@ -257,6 +258,7 @@ void ImGuiManager::Shutdown()
   s_state.fixed_font = nullptr;
   FullscreenUI::SetFont(nullptr);
 
+  s_state.imgui_fbcoords_pipeline.reset();
   s_state.imgui_pipeline.reset();
 
   if (s_state.imgui_context)
@@ -297,6 +299,7 @@ void ImGuiManager::DestroyGPUResources()
   FullscreenUI::DestroyWidgetsGPUResources();
 
   s_state.imgui_pipeline.reset();
+  s_state.imgui_fbcoords_pipeline.reset();
 
   if (s_state.imgui_context)
   {
@@ -425,14 +428,17 @@ bool ImGuiManager::CompilePipelines(Error* error)
   std::unique_ptr<GPUShader> imgui_vs = g_gpu_device->CreateShader(GPUShaderStage::Vertex, shadergen.GetLanguage(),
                                                                    shadergen.GenerateImGuiVertexShader(), error);
   std::unique_ptr<GPUShader> imgui_fs = g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GetLanguage(),
-                                                                   shadergen.GenerateImGuiFragmentShader(), error);
-  if (!imgui_vs || !imgui_fs)
+                                                                   shadergen.GenerateImGuiFragmentShader(false), error);
+  std::unique_ptr<GPUShader> imgui_fbc_fs = g_gpu_device->CreateShader(
+    GPUShaderStage::Fragment, shadergen.GetLanguage(), shadergen.GenerateImGuiFragmentShader(true), error);
+  if (!imgui_vs || !imgui_fs || !imgui_fbc_fs)
   {
     Error::AddPrefix(error, "Failed to compile ImGui shaders: ");
     return false;
   }
   GL_OBJECT_NAME(imgui_vs, "ImGui Vertex Shader");
   GL_OBJECT_NAME(imgui_fs, "ImGui Fragment Shader");
+  GL_OBJECT_NAME(imgui_fbc_fs, "ImGui Fragment Shader (Framebuffer Coords)");
 
   static constexpr GPUPipeline::VertexAttribute imgui_attributes[] = {
     GPUPipeline::VertexAttribute::Make(0, GPUPipeline::VertexAttribute::Semantic::Position, 0,
@@ -459,13 +465,19 @@ bool ImGuiManager::CompilePipelines(Error* error)
   plconfig.fragment_shader = imgui_fs.get();
 
   s_state.imgui_pipeline = g_gpu_device->CreatePipeline(plconfig, error);
-  if (!s_state.imgui_pipeline)
+
+  plconfig.fragment_shader = imgui_fbc_fs.get();
+  if (s_state.imgui_pipeline)
+    s_state.imgui_fbcoords_pipeline = g_gpu_device->CreatePipeline(plconfig, error);
+
+  if (!s_state.imgui_pipeline || !s_state.imgui_fbcoords_pipeline)
   {
     Error::AddPrefix(error, "Failed to compile ImGui pipeline: ");
     return false;
   }
 
   GL_OBJECT_NAME(s_state.imgui_pipeline, "ImGui Pipeline");
+  GL_OBJECT_NAME(s_state.imgui_fbcoords_pipeline, "ImGui Pipeline (Framebuffer Coords)");
   return true;
 }
 
@@ -492,11 +504,22 @@ void ImGuiManager::RenderDrawLists(u32 window_width, u32 window_height, WindowIn
   g_gpu_device->SetPipeline(s_state.imgui_pipeline.get());
 
   const bool prerotated = (prerotation != WindowInfoPrerotation::Identity);
-  GSMatrix4x4 mproj = GSMatrix4x4::OffCenterOrthographicProjection(0.0f, 0.0f, static_cast<float>(window_width),
-                                                                   static_cast<float>(window_height), 0.0f, 1.0f);
+  struct Uniforms
+  {
+    GSMatrix4x4 projection;
+    float blur_background_weight;
+    float inv_blur_background_weight;
+    float padding[2];
+  };
+  Uniforms uniforms = {GSMatrix4x4::OffCenterOrthographicProjection(0.0f, 0.0f, static_cast<float>(window_width),
+                                                                    static_cast<float>(window_height), 0.0f, 1.0f),
+                       FullscreenUI::UIStyle.BlurBackgroundWeight, 1.0f - FullscreenUI::UIStyle.BlurBackgroundWeight};
   if (prerotated)
-    mproj = GSMatrix4x4::RotationZ(WindowInfo::GetZRotationForPreRotation(prerotation)) * mproj;
-  g_gpu_device->UploadUniformBuffer(&mproj, sizeof(mproj));
+  {
+    uniforms.projection =
+      GSMatrix4x4::RotationZ(WindowInfo::GetZRotationForPreRotation(prerotation)) * uniforms.projection;
+  }
+  g_gpu_device->UploadUniformBuffer(&uniforms, sizeof(uniforms));
 
   // Render command lists
   const bool flip = g_gpu_device->UsesLowerLeftOrigin();
@@ -534,8 +557,6 @@ void ImGuiManager::RenderDrawLists(u32 window_width, u32 window_height, WindowIn
       if (pcmd->UserCallback) [[unlikely]]
       {
         pcmd->UserCallback(cmd_list, pcmd);
-        g_gpu_device->UploadUniformBuffer(&mproj, sizeof(mproj));
-        g_gpu_device->SetPipeline(s_state.imgui_pipeline.get());
       }
       else
       {
@@ -543,6 +564,25 @@ void ImGuiManager::RenderDrawLists(u32 window_width, u32 window_height, WindowIn
       }
     }
   }
+}
+
+void ImGuiManager::PushBlurBackgroundTexture(ImDrawList* const dl, GPUTexture* const texture)
+{
+  dl->AddCallback([](const ImDrawList* parent_list,
+                     const ImDrawCmd* cmd) { g_gpu_device->SetPipeline(s_state.imgui_fbcoords_pipeline.get()); },
+                  nullptr);
+  dl->PushTexture(texture);
+}
+
+void ImGuiManager::PopBlurBackgroundTexture(ImDrawList* const dl)
+{
+  dl->PopTexture();
+  dl->AddCallback([](const ImDrawList* parent_list, const ImDrawCmd* cmd) { ResetDrawListRenderPipeline(); }, nullptr);
+}
+
+void ImGuiManager::ResetDrawListRenderPipeline()
+{
+  g_gpu_device->SetPipeline(s_state.imgui_pipeline.get());
 }
 
 void ImGuiManager::RenderDrawLists(GPUSwapChain* swap_chain)
@@ -1074,6 +1114,8 @@ void ImGuiManager::DrawOSDMessages(Timer::Value current_time)
   const float max_width_for_color = std::ceil(400.0f * scale);
   const float min_rounded_width = rounding * 2.0f;
   const bool show_messages = g_gpu_settings.display_show_messages;
+  const bool blur_background = g_gpu_settings.display_blur_message_backgrounds && !FullscreenUI::HasActiveWindow() &&
+                               FullscreenUI::CanBlurBackground();
 
   const ImVec4 left_background_color = DarkerColor(UIStyle.ToastBackgroundColor, 1.3f);
   const ImVec4 right_background_color = DarkerColor(UIStyle.ToastBackgroundColor, 0.8f);
@@ -1177,14 +1219,22 @@ void ImGuiManager::DrawOSDMessages(Timer::Value current_time)
 
     ImDrawList* const dl = ImGui::GetForegroundDrawList();
 
-    const float background_opacity = opacity * 0.95f;
-    DrawRoundedGradientRect(
-      dl, pos, pos_max, ImGui::GetColorU32(ModAlpha(left_background_color, background_opacity)),
-      ImGui::GetColorU32(
-        ModAlpha(ImLerp(left_background_color, right_background_color,
-                        std::min((box_width - min_rounded_width) / (max_width_for_color - min_rounded_width), 1.0f)),
-                 background_opacity)),
-      rounding);
+    if (blur_background && FullscreenUI::BeginBlurBackground(dl, pos, pos_max))
+    {
+      dl->AddRectFilled(pos, pos_max, ImGui::GetColorU32(ModAlpha(left_background_color, opacity)), rounding);
+      FullscreenUI::EndBlurBackground(dl);
+    }
+    else
+    {
+      const float background_opacity = opacity * 0.95f;
+      DrawRoundedGradientRect(
+        dl, pos, pos_max, ImGui::GetColorU32(ModAlpha(left_background_color, background_opacity)),
+        ImGui::GetColorU32(
+          ModAlpha(ImLerp(left_background_color, right_background_color,
+                          std::min((box_width - min_rounded_width) / (max_width_for_color - min_rounded_width), 1.0f)),
+                   background_opacity)),
+        rounding);
+    }
 
     const ImVec2 base_pos = ImVec2(pos.x + padding, pos.y + padding);
     const ImU32 color = ImGui::GetColorU32(ModAlpha(text_color, opacity));

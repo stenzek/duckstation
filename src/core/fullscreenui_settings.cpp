@@ -194,7 +194,6 @@ static constexpr std::string_view COVER_DOWNLOADER_DIALOG_NAME = "##cover_downlo
 namespace {
 struct SettingsLocals
 {
-  float settings_last_bg_alpha = 1.0f;
   SettingsPage settings_page = SettingsPage::Interface;
   std::unique_ptr<INISettingsInterface> game_settings_interface;
   std::unique_ptr<GameList::Entry> game_settings_entry;
@@ -1654,7 +1653,6 @@ void FullscreenUI::SwitchToSettings()
 
   SwitchToMainWindow(MainWindowType::Settings);
   s_settings_locals.settings_page = SettingsPage::Interface;
-  s_settings_locals.settings_last_bg_alpha = GetBackgroundAlpha();
 }
 
 bool FullscreenUI::SwitchToGameSettings(SettingsPage page)
@@ -1818,12 +1816,8 @@ void FullscreenUI::DrawSettingsWindow()
   const ImVec2 heading_size = ImVec2(
     io.DisplaySize.x, UIStyle.LargeFontSize + (LayoutScale(LAYOUT_MENU_BUTTON_Y_PADDING) * 2.0f) + LayoutScale(2.0f));
 
-  const float target_bg_alpha = GetBackgroundAlpha();
-  s_settings_locals.settings_last_bg_alpha =
-    (target_bg_alpha < s_settings_locals.settings_last_bg_alpha) ?
-      std::max(s_settings_locals.settings_last_bg_alpha - io.DeltaTime * 2.0f, target_bg_alpha) :
-      std::min(s_settings_locals.settings_last_bg_alpha + io.DeltaTime * 2.0f, target_bg_alpha);
-
+  const float bg_alpha = GetBackgroundAlpha();
+  const bool blur_background = CanBlurBackground() && s_settings_locals.settings_page != SettingsPage::PostProcessing;
   const bool show_localized_titles = GameList::ShouldShowLocalizedTitles();
 
   static constexpr const SettingsPage global_pages[] = {
@@ -1867,8 +1861,8 @@ void FullscreenUI::DrawSettingsWindow()
   }
 
   if (BeginFullscreenWindow(ImVec2(0.0f, 0.0f), heading_size, "settings_category",
-                            ImVec4(UIStyle.PrimaryColor.x, UIStyle.PrimaryColor.y, UIStyle.PrimaryColor.z,
-                                   s_settings_locals.settings_last_bg_alpha)))
+                            ModAlpha(UIStyle.PrimaryColor, bg_alpha),
+                            0.0f, ImVec2(), 0, blur_background))
   {
     BeginNavBar();
 
@@ -1910,9 +1904,8 @@ void FullscreenUI::DrawSettingsWindow()
       ImVec2(0.0f, heading_size.y),
       ImVec2(io.DisplaySize.x, io.DisplaySize.y - heading_size.y - LayoutScale(LAYOUT_FOOTER_HEIGHT)),
       TinyString::from_format("settings_page_{}", static_cast<u32>(s_settings_locals.settings_page)).c_str(),
-      ImVec4(UIStyle.BackgroundColor.x, UIStyle.BackgroundColor.y, UIStyle.BackgroundColor.z,
-             s_settings_locals.settings_last_bg_alpha),
-      0.0f, ImVec2(LAYOUT_MENU_WINDOW_X_PADDING, 0.0f));
+      ModAlpha(UIStyle.BackgroundColor, bg_alpha), 0.0f, ImVec2(LAYOUT_MENU_WINDOW_X_PADDING, 0.0f), 0,
+      blur_background);
 
     if (ImGui::IsWindowFocused() && WantsToCloseMenu())
       ReturnToPreviousWindow();
@@ -1924,8 +1917,7 @@ void FullscreenUI::DrawSettingsWindow()
       ImVec2(0.0f, heading_size.y),
       ImVec2(io.DisplaySize.x, io.DisplaySize.y - heading_size.y - LayoutScale(LAYOUT_FOOTER_HEIGHT)),
       TinyString::from_format("settings_page_{}", static_cast<u32>(s_settings_locals.settings_page)).c_str(),
-      ImVec4(UIStyle.BackgroundColor.x, UIStyle.BackgroundColor.y, UIStyle.BackgroundColor.z,
-             s_settings_locals.settings_last_bg_alpha));
+      ModAlpha(UIStyle.BackgroundColor, bg_alpha), 0.0f, ImVec2(), 0, true);
 
     if (SplitWindowIsNavWindow() && WantsToCloseMenu())
       ReturnToPreviousWindow();
@@ -2283,6 +2275,15 @@ void FullscreenUI::DrawInterfaceSettingsPage()
                                                 FSUI_VSTR("Plays sound effects when navigating and activating menus."),
                                                 "Main", "FullscreenUISoundEffects", true);
 
+  if (DrawToggleSetting(
+        bsi, FSUI_ICONVSTR(ICON_FA_GLASS_WATER, "Blur Backgrounds"),
+        FSUI_VSTR("Applies a blur effect to the background when a menu is open to improve readability."), "Main",
+        "FullscreenUIBlurMenuBackground", true))
+  {
+    widgets_settings_changed = true;
+    BeginTransition({});
+  }
+
   // have to queue because we're holding the settings lock, and UpdateWidgetsSettings() reads it
   if (widgets_settings_changed)
   {
@@ -2355,6 +2356,13 @@ void FullscreenUI::DrawInterfaceSettingsPage()
                     FSUI_VSTR("Shows on-screen-display messages when events occur. Errors and warnings are still "
                               "displayed regardless of this setting."),
                     "Display", "ShowOSDMessages", true);
+  DrawToggleSetting(
+    bsi, FSUI_ICONVSTR(ICON_FA_GLASS_WATER, "Blur Message Backgrounds"),
+    FSUI_VSTR("Applies a blur effect to the background behind on-screen messages to improve readability."), "Display",
+    "BlurOSDMessageBackgrounds", true);
+  DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_WINDOW_MAXIMIZE, "Animate Messages"),
+                    FSUI_VSTR("Enables animation for on-screen messages when they appear and disappear."), "Display",
+                    "AnimateOSDMessages", true);
   DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_PLAY, "Show Status Indicators"),
                     FSUI_VSTR("Shows persistent icons when turbo is active or when paused."), "Display",
                     "ShowStatusIndicators", true);

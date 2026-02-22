@@ -80,6 +80,9 @@ static bool LoadOverlayPreset(Error* error, Image* image);
 
 static void SleepUntilPresentTime(u64 present_time);
 
+static void RenderDisplayBlur();
+static GPUPresentResult CopyDisplayBlurSource(GPUTexture* const target, GPUSwapChain* const swap_chain);
+
 namespace {
 
 struct Locals
@@ -111,6 +114,13 @@ struct Locals
   bool border_overlay_alpha_blend = false;
   bool border_overlay_destination_alpha_blend = false;
 
+  bool blur_active = false;
+  GSVector4i blur_rect = GSVector4i::cxpr(0);
+  std::unique_ptr<GPUTexture> blur_source_texture;
+  std::unique_ptr<GPUTexture> blur_intermediate_texture;
+  std::unique_ptr<GPUTexture> blur_output_texture;
+  std::unique_ptr<GPUPipeline> blur_render_pipeline;
+
   std::unique_ptr<GPUPipeline> present_copy_pipeline;
 
   std::unique_ptr<PostProcessing::Chain> display_postfx;
@@ -134,7 +144,12 @@ struct Locals
 
 } // namespace
 
+// Can't use constinit in msvc debug because of the std::string.
+#if defined(_DEBUG) && defined(_MSC_VER)
 ALIGN_TO_CACHE_LINE static Locals s_locals;
+#else
+ALIGN_TO_CACHE_LINE static constinit Locals s_locals;
+#endif
 
 } // namespace VideoPresenter
 
@@ -151,7 +166,11 @@ VideoPresenter::Locals::~Locals()
   DebugAssert(!display_pipeline);
   DebugAssert(!display_24bit_pipeline);
   DebugAssert(!display_texture);
-  DebugAssert(!present_copy_blend_pipeline);
+  DebugAssert(!blur_source_texture);
+  DebugAssert(!blur_intermediate_texture);
+  DebugAssert(!blur_output_texture);
+  DebugAssert(!blur_render_pipeline);
+  DebugAssert(!present_copy_pipeline);
   DebugAssert(!display_postfx);
   DebugAssert(!border_overlay_texture);
   DebugAssert(!border_overlay_pipeline);
@@ -167,14 +186,17 @@ const GSVector2i& VideoPresenter::GetVideoSize()
 {
   return s_locals.video_size;
 }
+
 GPUTexture* VideoPresenter::GetDisplayTexture()
 {
   return s_locals.display_texture;
 }
+
 const GSVector4i& VideoPresenter::GetDisplayTextureRect()
 {
   return s_locals.display_texture_rect;
 }
+
 bool VideoPresenter::HasDisplayTexture()
 {
   return s_locals.display_texture;
@@ -235,6 +257,11 @@ void VideoPresenter::Shutdown()
   s_locals.display_texture_24bit = false;
   s_locals.border_overlay_alpha_blend = false;
   s_locals.border_overlay_destination_alpha_blend = false;
+
+  g_gpu_device->RecycleTexture(std::move(s_locals.blur_source_texture));
+  g_gpu_device->RecycleTexture(std::move(s_locals.blur_intermediate_texture));
+  g_gpu_device->RecycleTexture(std::move(s_locals.blur_output_texture));
+  s_locals.blur_render_pipeline.reset();
 
   s_locals.present_copy_pipeline.reset();
 
@@ -377,6 +404,16 @@ bool VideoPresenter::CompileDisplayPipelines(bool display, bool deinterlace, boo
     if (!(s_locals.present_copy_pipeline = g_gpu_device->CreatePipeline(plconfig, error)))
       return false;
     GL_OBJECT_NAME(s_locals.present_copy_pipeline, "Display Copy Pipeline");
+
+    std::unique_ptr<GPUShader> blur_fso = g_gpu_device->CreateShader(
+      GPUShaderStage::Fragment, shadergen.GetLanguage(), shadergen.GenerateGaussianBlurFragmentShader(), error);
+    if (!blur_fso)
+      return false;
+    GL_OBJECT_NAME(blur_fso, "Blur Fragment Shader");
+    plconfig.fragment_shader = blur_fso.get();
+    if (!(s_locals.blur_render_pipeline = g_gpu_device->CreatePipeline(plconfig, error)))
+      return false;
+    GL_OBJECT_NAME(s_locals.blur_render_pipeline, "Blur Render Pipeline");
 
     // blended variants
     if (s_locals.border_overlay_texture)
@@ -1479,35 +1516,50 @@ bool VideoPresenter::PresentFrame(GPUBackend* backend, u64 present_time)
 
   ImGuiManager::CreateDrawLists();
 
-  // render offscreen for transitions
-  if (FullscreenUI::IsTransitionActive())
-  {
-    GPUTexture* const rtex = FullscreenUI::GetTransitionRenderTexture(g_gpu_device->GetMainSwapChain());
-    if (rtex)
-    {
-      if (backend)
-        RenderDisplay(rtex, rtex->GetSizeVec(), true, true);
-      else
-        g_gpu_device->ClearRenderTarget(rtex, GPUDevice::DEFAULT_CLEAR_COLOR);
-
-      g_gpu_device->SetRenderTarget(rtex);
-      ImGuiManager::RenderDrawLists(rtex);
-    }
-  }
-
   GPUSwapChain* const swap_chain = g_gpu_device->GetMainSwapChain();
   DebugAssert(swap_chain);
 
-  const GPUPresentResult pres =
-    ((backend && !FullscreenUI::IsTransitionActive()) ? RenderDisplay(nullptr, swap_chain->GetSizeVec(), true, true) :
-                                                        g_gpu_device->BeginPresent(swap_chain));
+  const bool blur = s_locals.blur_active;
+  if (blur)
+  {
+    DebugAssert(s_locals.blur_source_texture);
+    GL_INS("Render display to blur source texture");
+    RenderDisplay(s_locals.blur_source_texture.get(), s_locals.blur_source_texture->GetSizeVec(), true, true);
+    RenderDisplayBlur();
+    s_locals.blur_active = false;
+    s_locals.blur_rect = GSVector4i();
+  }
+
+  GPUTexture* const transition_target = FullscreenUI::IsTransitionActive() ?
+                                          FullscreenUI::GetTransitionRenderTexture(g_gpu_device->GetMainSwapChain()) :
+                                          nullptr;
+  GPUPresentResult pres;
+  if (transition_target)
+  {
+    if (blur)
+      CopyDisplayBlurSource(transition_target, swap_chain);
+    else if (backend)
+      RenderDisplay(transition_target, transition_target->GetSizeVec(), true, true);
+    else
+      g_gpu_device->ClearRenderTarget(transition_target, GPUDevice::DEFAULT_CLEAR_COLOR);
+
+    g_gpu_device->SetRenderTarget(transition_target);
+    ImGuiManager::RenderDrawLists(transition_target);
+
+    if ((pres = g_gpu_device->BeginPresent(swap_chain)) == GPUPresentResult::OK)
+      FullscreenUI::RenderTransitionBlend(swap_chain);
+  }
+  else
+  {
+    if ((pres = blur ? CopyDisplayBlurSource(nullptr, swap_chain) :
+                       RenderDisplay(nullptr, swap_chain->GetSizeVec(), true, true)) == GPUPresentResult::OK)
+    {
+      ImGuiManager::RenderDrawLists(swap_chain);
+    }
+  }
+
   if (pres == GPUPresentResult::OK)
   {
-    if (FullscreenUI::IsTransitionActive())
-      FullscreenUI::RenderTransitionBlend(swap_chain);
-    else
-      ImGuiManager::RenderDrawLists(swap_chain);
-
     const GPUDevice::Features features = g_gpu_device->GetFeatures();
     const bool scheduled_present = (present_time != 0);
     const bool explicit_present = (scheduled_present && (features.explicit_present && !features.timed_present));
@@ -1570,6 +1622,147 @@ void VideoPresenter::SleepUntilPresentTime(u64 present_time)
 #else
   Timer::SleepUntil(present_time, false);
 #endif
+}
+
+bool VideoPresenter::AddDisplayBlurRect(const GSVector4i& bounds)
+{
+  if (!s_locals.blur_active)
+  {
+    const GPUSwapChain* const swap_chain = g_gpu_device->GetMainSwapChain();
+    if (!swap_chain)
+      return false;
+
+    if (!s_locals.blur_source_texture || s_locals.blur_source_texture->GetWidth() != swap_chain->GetWidth() ||
+        s_locals.blur_source_texture->GetHeight() != swap_chain->GetHeight())
+    {
+      if (!g_gpu_device->ResizeTexture(&s_locals.blur_source_texture, swap_chain->GetWidth(), swap_chain->GetHeight(),
+                                       GPUTexture::Type::RenderTarget, swap_chain->GetFormat(), GPUTexture::Flags::None,
+                                       false) ||
+          !g_gpu_device->ResizeTexture(&s_locals.blur_intermediate_texture, swap_chain->GetWidth(),
+                                       swap_chain->GetHeight(), GPUTexture::Type::RenderTarget, swap_chain->GetFormat(),
+                                       GPUTexture::Flags::None, false) ||
+          !g_gpu_device->ResizeTexture(&s_locals.blur_output_texture, swap_chain->GetWidth(), swap_chain->GetHeight(),
+                                       GPUTexture::Type::RenderTarget, swap_chain->GetFormat(), GPUTexture::Flags::None,
+                                       false))
+      {
+        ERROR_LOG("Failed to allocate {}x{} blur source texture.", swap_chain->GetWidth(), swap_chain->GetHeight());
+        g_gpu_device->RecycleTexture(std::move(s_locals.blur_source_texture));
+        g_gpu_device->RecycleTexture(std::move(s_locals.blur_intermediate_texture));
+        g_gpu_device->RecycleTexture(std::move(s_locals.blur_output_texture));
+        return false;
+      }
+    }
+
+    s_locals.blur_active = true;
+    s_locals.blur_rect = bounds;
+    return true;
+  }
+  else
+  {
+    s_locals.blur_rect = s_locals.blur_rect.runion(bounds);
+    return true;
+  }
+}
+
+GPUTexture* VideoPresenter::GetDisplayBlurTexture()
+{
+  DebugAssert(s_locals.blur_active);
+  return s_locals.blur_output_texture.get();
+}
+
+void VideoPresenter::RenderDisplayBlur()
+{
+  DebugAssert(s_locals.blur_source_texture);
+  DebugAssert(s_locals.blur_intermediate_texture);
+  DebugAssert(s_locals.blur_output_texture);
+  DebugAssert(s_locals.blur_render_pipeline);
+
+  // We run the blur at a reduced number of taps but multiple passes for a stronger effect.
+  // Two full passes (H+V, H+V) gives a visually pleasing result.
+  static constexpr u32 NUM_BLUR_PASSES = 2;
+
+  // We only blur the area of the screen where we need it for a background to save GPU cycles.
+  // But because the blur is over a wide range of pixels, we need to expand the are on the first pass.
+  static constexpr s32 BLUR_RADIUS = 50 + 1;
+
+  GL_SCOPE_FMT("RenderDisplayBlur() Rect={}", s_locals.blur_rect);
+
+  const GSVector2i size_vec = s_locals.blur_source_texture->GetSizeVec();
+  const GSVector4i viewport = GSVector4i::loadh(size_vec);
+  g_gpu_device->SetViewport(viewport);
+  g_gpu_device->SetPipeline(s_locals.blur_render_pipeline.get());
+
+  const GSVector2 texel_size = GSVector2::cxpr(1.0f) / GSVector2(size_vec);
+
+  {
+    GL_SCOPE("Horizontal Blur");
+
+    // First pass needs to sample a wider range, since we'll be pulling from this for the vertical pass.
+    const GSVector4i draw_rect =
+      s_locals.blur_rect.add32(GSVector4i::cxpr(-BLUR_RADIUS, -BLUR_RADIUS, BLUR_RADIUS, BLUR_RADIUS))
+        .rintersect(viewport);
+    GSVector4 uv_rect = GSVector4(draw_rect) * GSVector4::xyxy(texel_size);
+    if (g_gpu_device->UsesLowerLeftOrigin())
+      uv_rect = uv_rect.blend32<10>(GSVector4::cxpr(1.0f) - uv_rect);
+
+    s_locals.blur_source_texture->MakeReadyForSampling();
+    g_gpu_device->InvalidateRenderTarget(s_locals.blur_intermediate_texture.get());
+    g_gpu_device->SetRenderTarget(s_locals.blur_intermediate_texture.get());
+    g_gpu_device->SetTextureSampler(0, s_locals.blur_source_texture.get(), g_gpu_device->GetLinearSampler());
+
+    const GSVector2 uniforms = texel_size.insert32<1, 1>(GSVector2::zero());
+    DrawScreenQuad(draw_rect, uv_rect, size_vec, size_vec, DisplayRotation::Normal, WindowInfoPrerotation::Identity,
+                   &uniforms, sizeof(uniforms));
+  }
+
+  {
+    GL_SCOPE("Vertical Blur");
+
+    // Second pass can be clamped to the actual sampled area. Add one for bilinear filtering.
+    const GSVector4i draw_rect = s_locals.blur_rect.add32(GSVector4i::cxpr(-1, -1, 1, 1)).rintersect(viewport);
+    GSVector4 uv_rect = GSVector4(draw_rect) * GSVector4::xyxy(texel_size);
+    if (g_gpu_device->UsesLowerLeftOrigin())
+      uv_rect = uv_rect.blend32<10>(GSVector4::cxpr(1.0f) - uv_rect);
+
+    s_locals.blur_intermediate_texture->MakeReadyForSampling();
+    g_gpu_device->InvalidateRenderTarget(s_locals.blur_output_texture.get());
+    g_gpu_device->SetRenderTarget(s_locals.blur_output_texture.get());
+    g_gpu_device->SetTextureSampler(0, s_locals.blur_intermediate_texture.get(), g_gpu_device->GetLinearSampler());
+
+    const GSVector2 uniforms = texel_size.insert32<0, 0>(GSVector2::zero());
+    DrawScreenQuad(draw_rect, uv_rect, size_vec, size_vec, DisplayRotation::Normal, WindowInfoPrerotation::Identity,
+                   &uniforms, sizeof(uniforms));
+  }
+
+  s_locals.blur_output_texture->MakeReadyForSampling();
+}
+
+GPUPresentResult VideoPresenter::CopyDisplayBlurSource(GPUTexture* const target, GPUSwapChain* const swap_chain)
+{
+  // write direct to final target
+  if (target)
+  {
+    g_gpu_device->InvalidateRenderTarget(target);
+    g_gpu_device->SetRenderTarget(target);
+  }
+  else
+  {
+    if (const GPUPresentResult pres = g_gpu_device->BeginPresent(swap_chain); pres != GPUPresentResult::OK)
+      return pres;
+  }
+
+  const WindowInfoPrerotation prerotation = target ? WindowInfoPrerotation::Identity : swap_chain->GetPreRotation();
+  const GSVector2i final_target_size = target ? target->GetSizeVec() : swap_chain->GetPostRotatedSizeVec();
+  const GSVector2i target_size = target ? target->GetSizeVec() : swap_chain->GetSizeVec();
+  const GSVector4i rect = GSVector4i::loadh(target_size);
+  const GSVector4 uv_rect = g_gpu_device->UsesLowerLeftOrigin() ? GSVector4::cxpr(0.0f, 1.0f, 1.0f, 0.0f) :
+                                                                  GSVector4::cxpr(0.0f, 0.0f, 1.0f, 1.0f);
+  g_gpu_device->SetViewportAndScissor(rect);
+  g_gpu_device->SetTextureSampler(0, s_locals.blur_source_texture.get(), g_gpu_device->GetNearestSampler());
+  g_gpu_device->SetPipeline(s_locals.present_copy_pipeline.get());
+  DrawScreenQuad(rect, uv_rect, target_size, final_target_size, DisplayRotation::Normal, prerotation, nullptr, 0);
+
+  return GPUPresentResult::OK;
 }
 
 bool VideoPresenter::RenderScreenshotToBuffer(u32 width, u32 height, bool postfx, bool apply_aspect_ratio,
