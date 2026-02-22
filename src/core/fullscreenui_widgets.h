@@ -28,9 +28,12 @@
 
 class Error;
 class Image;
+class ProgressCallbackWithPrompt;
+
+enum class GPUPresentResult : u8;
+class GPUPipeline;
 class GPUTexture;
 class GPUSwapChain;
-class ProgressCallbackWithPrompt;
 
 enum class OSDMessageType : u8;
 
@@ -108,14 +111,17 @@ struct ALIGN_TO_CACHE_LINE UIStyles
   float MediumFontSize;
   float MediumLargeFontSize;
   float MediumSmallFontSize;
+  float BlurBackgroundWeight;
 
   static constexpr float NormalFontWeight = 0.0f;
   static constexpr float BoldFontWeight = 500.0f;
 
-  bool Animations;
-  bool SmoothScrolling;
-  bool MenuBorders;
-  bool IsDarkTheme;
+  bool Animations : 1;
+  bool SmoothScrolling : 1;
+  bool MenuBorders : 1;
+  bool BlurMenuBackground : 1;
+  bool SoundEffects : 1;
+  bool IsDarkTheme : 1;
 };
 
 extern UIStyles UIStyle;
@@ -229,6 +235,7 @@ void UpdateWidgetsSettings();
 
 bool CreateWidgetsGPUResources(Error* error);
 void DestroyWidgetsGPUResources();
+GPUPipeline* GetPresentCopyPipeline();
 
 std::span<const char* const> GetThemeNames();
 std::span<const char* const> GetThemeDisplayNames();
@@ -272,6 +279,14 @@ TransitionState GetTransitionState();
 GPUTexture* GetTransitionRenderTexture(GPUSwapChain* swap_chain);
 void RenderTransitionBlend(GPUSwapChain* swap_chain);
 void UpdateTransitionState();
+
+/// Screen blurring.
+bool CanBlurBackground();
+void InvalidateBlurBackground();
+GPUTexture* GetBlurRenderTexture();
+void RenderBlur(GPUTexture* const blur_render_texture);
+bool BeginBlurBackground(ImDrawList* const dl, const ImVec2& bb_min, const ImVec2& bb_max);
+void EndBlurBackground(ImDrawList* const dl);
 
 /// Layout helpers.
 void BeginLayout();
@@ -341,7 +356,7 @@ bool BeginFullscreenWindow(float left, float top, float width, float height, con
                            const ImVec2& padding = ImVec2(), ImGuiWindowFlags flags = 0);
 bool BeginFullscreenWindow(const ImVec2& position, const ImVec2& size, const char* name,
                            const ImVec4& background = HEX_TO_IMVEC4(0x212121, 0xFF), float rounding = 0.0f,
-                           const ImVec2& padding = ImVec2(), ImGuiWindowFlags flags = 0);
+                           const ImVec2& padding = ImVec2(), ImGuiWindowFlags flags = 0, bool blur = false);
 void EndFullscreenWindow(bool allow_wrap_x = false, bool allow_wrap_y = true);
 void SetWindowNavWrapping(bool allow_wrap_x = false, bool allow_wrap_y = true);
 
@@ -350,6 +365,7 @@ std::string_view GetControllerIconMapping(std::string_view icon);
 void SetFullscreenFooterText(std::string_view text);
 void SetFullscreenFooterText(std::span<const std::pair<const char*, std::string_view>> items);
 void SetStandardSelectionFooterText(bool back_instead_of_cancel);
+void SetFullscreenFooterBlur(bool allowed);
 void SetFullscreenStatusText(std::string_view text);
 void SetFullscreenStatusText(std::span<const std::pair<const char*, std::string_view>> items);
 void DrawFullscreenFooter();

@@ -67,6 +67,8 @@ static GPUTexture* GetDisplayPostProcessInputTexture(const GSVector4i source_rec
                                                      DisplayRotation rotation);
 static GPUPresentResult ApplyDisplayPostProcess(GPUTexture* target, GPUTexture* input, const GSVector4i display_rect,
                                                 const GSVector2i postfx_size);
+static GPUPresentResult DrawDisplayCopy(GPUTexture* const source, GPUTexture* const target,
+                                        GPUSwapChain* const swap_chain);
 
 static bool DeinterlaceSetTargetSize(u32 width, u32 height, bool preserve);
 static void DestroyDeinterlaceTextures();
@@ -111,8 +113,6 @@ struct Locals
   bool border_overlay_alpha_blend = false;
   bool border_overlay_destination_alpha_blend = false;
 
-  std::unique_ptr<GPUPipeline> present_copy_pipeline;
-
   std::unique_ptr<PostProcessing::Chain> display_postfx;
   std::unique_ptr<GPUTexture> border_overlay_texture;
 
@@ -151,7 +151,6 @@ VideoPresenter::Locals::~Locals()
   DebugAssert(!display_pipeline);
   DebugAssert(!display_24bit_pipeline);
   DebugAssert(!display_texture);
-  DebugAssert(!present_copy_blend_pipeline);
   DebugAssert(!display_postfx);
   DebugAssert(!border_overlay_texture);
   DebugAssert(!border_overlay_pipeline);
@@ -167,14 +166,17 @@ const GSVector2i& VideoPresenter::GetVideoSize()
 {
   return s_locals.video_size;
 }
+
 GPUTexture* VideoPresenter::GetDisplayTexture()
 {
   return s_locals.display_texture;
 }
+
 const GSVector4i& VideoPresenter::GetDisplayTextureRect()
 {
   return s_locals.display_texture_rect;
 }
+
 bool VideoPresenter::HasDisplayTexture()
 {
   return s_locals.display_texture;
@@ -214,6 +216,8 @@ bool VideoPresenter::Initialize(Error* error)
 
 void VideoPresenter::Shutdown()
 {
+  FullscreenUI::InvalidateBlurBackground();
+
   DestroyDeinterlaceTextures();
   g_gpu_device->RecycleTexture(std::move(s_locals.chroma_smoothing_texture));
   g_gpu_device->RecycleTexture(std::move(s_locals.border_overlay_texture));
@@ -235,8 +239,6 @@ void VideoPresenter::Shutdown()
   s_locals.display_texture_24bit = false;
   s_locals.border_overlay_alpha_blend = false;
   s_locals.border_overlay_destination_alpha_blend = false;
-
-  s_locals.present_copy_pipeline.reset();
 
   s_locals.display_postfx.reset();
 
@@ -367,27 +369,21 @@ bool VideoPresenter::CompileDisplayPipelines(bool display, bool deinterlace, boo
       s_locals.display_24bit_pipeline.reset();
     }
 
-    std::unique_ptr<GPUShader> copy_fso = g_gpu_device->CreateShader(
-      GPUShaderStage::Fragment, shadergen.GetLanguage(), shadergen.GenerateCopyFragmentShader(false), error);
-    if (!copy_fso)
-      return false;
-    GL_OBJECT_NAME(copy_fso, "Display Copy Fragment Shader");
-
-    plconfig.fragment_shader = copy_fso.get();
-    if (!(s_locals.present_copy_pipeline = g_gpu_device->CreatePipeline(plconfig, error)))
-      return false;
-    GL_OBJECT_NAME(s_locals.present_copy_pipeline, "Display Copy Pipeline");
-
     // blended variants
     if (s_locals.border_overlay_texture)
     {
-      std::unique_ptr<GPUShader> clear_fso = g_gpu_device->CreateShader(
+      const std::unique_ptr<GPUShader> clear_fso = g_gpu_device->CreateShader(
         GPUShaderStage::Fragment, shadergen.GetLanguage(),
         shadergen.GenerateFillFragmentShader(GSVector4::cxpr(0.0f, 0.0f, 0.0f, 1.0f)), error);
       if (!clear_fso)
         return false;
       GL_OBJECT_NAME(clear_fso, "Display Clear Fragment Shader");
 
+      const std::unique_ptr<GPUShader> copy_fso = g_gpu_device->CreateShader(
+        GPUShaderStage::Fragment, shadergen.GetLanguage(), shadergen.GenerateCopyFragmentShader(false), error);
+      if (!copy_fso)
+        return false;
+      GL_OBJECT_NAME(copy_fso, "Display Copy Fragment Shader");
       plconfig.fragment_shader = copy_fso.get();
       plconfig.blend = s_locals.border_overlay_alpha_blend ? GPUPipeline::BlendState::GetAlphaBlendingState() :
                                                              GPUPipeline::BlendState::GetNoBlendingState();
@@ -572,6 +568,7 @@ void VideoPresenter::ClearDisplayTexture()
 {
   s_locals.display_texture = nullptr;
   s_locals.display_texture_rect = GSVector4i::zero();
+  FullscreenUI::InvalidateBlurBackground();
 }
 
 void VideoPresenter::SetDisplayParameters(const GSVector2i& video_size, const GSVector4i& video_active_rect,
@@ -581,6 +578,7 @@ void VideoPresenter::SetDisplayParameters(const GSVector2i& video_size, const GS
   s_locals.video_active_rect = video_active_rect;
   s_locals.display_pixel_aspect_ratio = display_pixel_aspect_ratio;
   s_locals.display_texture_24bit = display_24bit;
+  FullscreenUI::InvalidateBlurBackground();
 }
 
 void VideoPresenter::SetDisplayTexture(GPUTexture* texture, const GSVector4i& source_rect)
@@ -592,6 +590,7 @@ void VideoPresenter::SetDisplayTexture(GPUTexture* texture, const GSVector4i& so
 
   s_locals.display_texture = texture;
   s_locals.display_texture_rect = source_rect;
+  FullscreenUI::InvalidateBlurBackground();
 }
 
 GPUPresentResult VideoPresenter::RenderDisplay(GPUTexture* target, const GSVector2i target_size, bool postfx,
@@ -777,7 +776,7 @@ GPUPresentResult VideoPresenter::RenderDisplay(GPUTexture* target, const GSVecto
       {
         // Otherwise, just copy the framebuffer.
         GL_SCOPE_FMT("Copy framebuffer for prerotation");
-        g_gpu_device->SetPipeline(s_locals.present_copy_pipeline.get());
+        g_gpu_device->SetPipeline(FullscreenUI::GetPresentCopyPipeline());
         g_gpu_device->SetTextureSampler(0, postfx_output, g_gpu_device->GetNearestSampler());
         DrawScreenQuad(GSVector4i::loadh(target_size), src_uv_rect, target_size, final_target_size, present_rotation,
                        prerotation, nullptr, 0);
@@ -1104,7 +1103,7 @@ GPUTexture* VideoPresenter::GetDisplayPostProcessInputTexture(const GSVector4i s
       g_gpu_device->ClearRenderTarget(postfx_input, GPUDevice::DEFAULT_CLEAR_COLOR);
       g_gpu_device->SetRenderTarget(postfx_input);
       g_gpu_device->SetViewportAndScissor(GSVector4i::loadh(postfx_input_size));
-      g_gpu_device->SetPipeline(s_locals.present_copy_pipeline.get());
+      g_gpu_device->SetPipeline(FullscreenUI::GetPresentCopyPipeline());
       g_gpu_device->SetTextureSampler(0, s_locals.display_texture, g_gpu_device->GetNearestSampler());
       DrawScreenQuad(input_draw_rect, src_uv_rect, postfx_input_size, postfx_input_size, rotation,
                      WindowInfoPrerotation::Identity, nullptr, 0);
@@ -1143,6 +1142,35 @@ GPUPresentResult VideoPresenter::ApplyDisplayPostProcess(GPUTexture* target, GPU
   const GSVector2i orig = GSVector2i((GSVector2(s_locals.video_size) * upscale).ceil());
   return s_locals.display_postfx->Apply(input, nullptr, target, display_rect, orig.x, orig.y, s_locals.video_size.x,
                                         s_locals.video_size.y);
+}
+
+GPUPresentResult VideoPresenter::DrawDisplayCopy(GPUTexture* const source, GPUTexture* const target,
+                                                 GPUSwapChain* const swap_chain)
+{
+  // write direct to final target
+  if (target)
+  {
+    g_gpu_device->InvalidateRenderTarget(target);
+    g_gpu_device->SetRenderTarget(target);
+  }
+  else
+  {
+    if (const GPUPresentResult pres = g_gpu_device->BeginPresent(swap_chain); pres != GPUPresentResult::OK)
+      return pres;
+  }
+
+  const WindowInfoPrerotation prerotation = target ? WindowInfoPrerotation::Identity : swap_chain->GetPreRotation();
+  const GSVector2i final_target_size = target ? target->GetSizeVec() : swap_chain->GetPostRotatedSizeVec();
+  const GSVector2i target_size = target ? target->GetSizeVec() : swap_chain->GetSizeVec();
+  const GSVector4i rect = GSVector4i::loadh(target_size);
+  const GSVector4 uv_rect = g_gpu_device->UsesLowerLeftOrigin() ? GSVector4::cxpr(0.0f, 1.0f, 1.0f, 0.0f) :
+                                                                  GSVector4::cxpr(0.0f, 0.0f, 1.0f, 1.0f);
+  g_gpu_device->SetViewportAndScissor(rect);
+  g_gpu_device->SetTextureSampler(0, source, g_gpu_device->GetNearestSampler());
+  g_gpu_device->SetPipeline(FullscreenUI::GetPresentCopyPipeline());
+  DrawScreenQuad(rect, uv_rect, target_size, final_target_size, DisplayRotation::Normal, prerotation, nullptr, 0);
+
+  return GPUPresentResult::OK;
 }
 
 void VideoPresenter::SendDisplayToMediaCapture(MediaCapture* cap)
@@ -1479,35 +1507,46 @@ bool VideoPresenter::PresentFrame(GPUBackend* backend, u64 present_time)
 
   ImGuiManager::CreateDrawLists();
 
-  // render offscreen for transitions
-  if (FullscreenUI::IsTransitionActive())
-  {
-    GPUTexture* const rtex = FullscreenUI::GetTransitionRenderTexture(g_gpu_device->GetMainSwapChain());
-    if (rtex)
-    {
-      if (backend)
-        RenderDisplay(rtex, rtex->GetSizeVec(), true, true);
-      else
-        g_gpu_device->ClearRenderTarget(rtex, GPUDevice::DEFAULT_CLEAR_COLOR);
-
-      g_gpu_device->SetRenderTarget(rtex);
-      ImGuiManager::RenderDrawLists(rtex);
-    }
-  }
-
   GPUSwapChain* const swap_chain = g_gpu_device->GetMainSwapChain();
   DebugAssert(swap_chain);
 
-  const GPUPresentResult pres =
-    ((backend && !FullscreenUI::IsTransitionActive()) ? RenderDisplay(nullptr, swap_chain->GetSizeVec(), true, true) :
-                                                        g_gpu_device->BeginPresent(swap_chain));
+  GPUTexture* const blur_target = FullscreenUI::GetBlurRenderTexture();
+  if (blur_target)
+  {
+    RenderDisplay(blur_target, blur_target->GetSizeVec(), true, true);
+    FullscreenUI::RenderBlur(blur_target);
+  }
+
+  GPUTexture* const transition_target = FullscreenUI::IsTransitionActive() ?
+                                          FullscreenUI::GetTransitionRenderTexture(g_gpu_device->GetMainSwapChain()) :
+                                          nullptr;
+  GPUPresentResult pres;
+  if (transition_target)
+  {
+    if (blur_target)
+      DrawDisplayCopy(blur_target, transition_target, swap_chain);
+    else if (backend)
+      RenderDisplay(transition_target, transition_target->GetSizeVec(), true, true);
+    else
+      g_gpu_device->ClearRenderTarget(transition_target, GPUDevice::DEFAULT_CLEAR_COLOR);
+
+    g_gpu_device->SetRenderTarget(transition_target);
+    ImGuiManager::RenderDrawLists(transition_target);
+
+    if ((pres = g_gpu_device->BeginPresent(swap_chain)) == GPUPresentResult::OK)
+      FullscreenUI::RenderTransitionBlend(swap_chain);
+  }
+  else
+  {
+    if ((pres = blur_target ? DrawDisplayCopy(blur_target, nullptr, swap_chain) :
+                              RenderDisplay(nullptr, swap_chain->GetSizeVec(), true, true)) == GPUPresentResult::OK)
+    {
+      ImGuiManager::RenderDrawLists(swap_chain);
+    }
+  }
+
   if (pres == GPUPresentResult::OK)
   {
-    if (FullscreenUI::IsTransitionActive())
-      FullscreenUI::RenderTransitionBlend(swap_chain);
-    else
-      ImGuiManager::RenderDrawLists(swap_chain);
-
     const GPUDevice::Features features = g_gpu_device->GetFeatures();
     const bool scheduled_present = (present_time != 0);
     const bool explicit_present = (scheduled_present && (features.explicit_present && !features.timed_present));

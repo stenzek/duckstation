@@ -347,6 +347,8 @@ void FullscreenUI::DrawNotifications(NotificationLayout& layout)
   const float note_icon_size = ImCeil(LAYOUT_LARGE_FONT_SIZE * scale);
   const ImVec4 left_background_color = DarkerColor(UIStyle.ToastBackgroundColor, 1.3f);
   const ImVec4 right_background_color = DarkerColor(UIStyle.ToastBackgroundColor, 0.8f);
+  const bool blur_background = g_gpu_settings.display_blur_message_backgrounds && !FullscreenUI::HasActiveWindow() &&
+                               FullscreenUI::CanBlurBackground();
   ImDrawList* const dl = ImGui::GetForegroundDrawList();
 
   for (auto iter = s_achievements_locals.notifications.begin(); iter != s_achievements_locals.notifications.end();)
@@ -468,15 +470,24 @@ void FullscreenUI::DrawNotifications(NotificationLayout& layout)
 
     const ImVec2 box_min(expected_pos.x, actual_y);
     const ImVec2 box_max(box_min.x + box_width, box_min.y + box_height);
-    const float background_opacity = opacity * 0.95f;
-    const float min_rounded_width = horizontal_padding * 2.0f;
 
-    DrawRoundedGradientRect(
-      dl, box_min, box_max, ImGui::GetColorU32(ModAlpha(left_background_color, background_opacity)),
-      ImGui::GetColorU32(ModAlpha(ImLerp(left_background_color, right_background_color,
-                                         (box_width - min_rounded_width) / (max_width - min_rounded_width)),
-                                  background_opacity)),
-      horizontal_padding);
+    if (blur_background && BeginBlurBackground(dl, box_min, box_max))
+    {
+      dl->AddRectFilled(box_min, box_max, ImGui::GetColorU32(ModAlpha(left_background_color, opacity)),
+                        horizontal_padding);
+      EndBlurBackground(dl);
+    }
+    else
+    {
+      const float background_opacity = opacity * 0.95f;
+      const float min_rounded_width = horizontal_padding * 2.0f;
+      DrawRoundedGradientRect(
+        dl, box_min, box_max, ImGui::GetColorU32(ModAlpha(left_background_color, background_opacity)),
+        ImGui::GetColorU32(ModAlpha(ImLerp(left_background_color, right_background_color,
+                                           (box_width - min_rounded_width) / (max_width - min_rounded_width)),
+                                    background_opacity)),
+        horizontal_padding);
+    }
 
     const ImVec2 badge_min(box_min.x + horizontal_padding, box_min.y + vertical_padding);
     const ImVec2 badge_max(badge_min.x + badge_size, badge_min.y + badge_size);
@@ -561,7 +572,9 @@ void FullscreenUI::DrawIndicators(NotificationLayout& layout)
   const float image_size = ImCeil(50.0f * scale);
   const float font_size = ImCeil(LAYOUT_MEDIUM_FONT_SIZE * scale);
   const ImGuiIO& io = ImGui::GetIO();
-  ImDrawList* dl = ImGui::GetBackgroundDrawList();
+  const bool blur_background = g_gpu_settings.display_blur_message_backgrounds && !FullscreenUI::HasActiveWindow() &&
+                               FullscreenUI::CanBlurBackground();
+  ImDrawList* const dl = ImGui::GetBackgroundDrawList();
 
   if (std::vector<Achievements::ActiveChallengeIndicator>& indicators = Achievements::GetActiveChallengeIndicators();
       !indicators.empty() &&
@@ -628,9 +641,17 @@ void FullscreenUI::DrawIndicators(NotificationLayout& layout)
       Achievements::INDICATOR_FADE_OUT_TIME, INDICATOR_WIDTH_COEFF);
     const ImVec2 box_max = box_min + ImVec2(box_width, box_height);
 
-    DrawRoundedGradientRect(dl, box_min, box_max,
-                            ImGui::GetColorU32(ModAlpha(left_background_color, opacity * bg_opacity)),
-                            ImGui::GetColorU32(ModAlpha(right_background_color, opacity * bg_opacity)), rounding);
+    if (blur_background && BeginBlurBackground(dl, box_min, box_max))
+    {
+      dl->AddRectFilled(box_min, box_max, ImGui::GetColorU32(ModAlpha(left_background_color, opacity)), rounding);
+      EndBlurBackground(dl);
+    }
+    else
+    {
+      DrawRoundedGradientRect(dl, box_min, box_max,
+                              ImGui::GetColorU32(ModAlpha(left_background_color, opacity * bg_opacity)),
+                              ImGui::GetColorU32(ModAlpha(right_background_color, opacity * bg_opacity)), rounding);
+    }
 
     GPUTexture* const badge = FullscreenUI::GetCachedTextureAsync(indicator->badge_path);
     if (badge)
@@ -676,26 +697,34 @@ void FullscreenUI::DrawIndicators(NotificationLayout& layout)
       return UIStyle.Font->CalcTextSizeA(font_size, font_weight, FLT_MAX, 0.0f, IMSTR_START_END(tstr));
     };
 
-    const auto draw_tracker = [&padding, &rounding, &font_size, &dl, &left_background_color, &right_background_color,
-                               &tstr, &measure_tracker](Achievements::LeaderboardTrackerIndicator& indicator,
-                                                        const ImVec2& pos, float opacity) {
-      const ImVec2 size = measure_tracker(indicator);
-      const float box_width = size.x + padding.x * 2.0f;
-      const float box_height = size.y + padding.y * 2.0f;
-      const ImRect box(pos, ImVec2(pos.x + box_width, pos.y + box_height));
+    const auto draw_tracker =
+      [&padding, &rounding, &font_size, &blur_background, &dl, &left_background_color, &right_background_color, &tstr,
+       &measure_tracker](Achievements::LeaderboardTrackerIndicator& indicator, const ImVec2& pos, float opacity) {
+        const ImVec2 size = measure_tracker(indicator);
+        const float box_width = size.x + padding.x * 2.0f;
+        const float box_height = size.y + padding.y * 2.0f;
+        const ImRect box(pos, ImVec2(pos.x + box_width, pos.y + box_height));
 
-      DrawRoundedGradientRect(dl, box.Min, box.Max,
-                              ImGui::GetColorU32(ModAlpha(left_background_color, opacity * bg_opacity)),
-                              ImGui::GetColorU32(ModAlpha(right_background_color, opacity * bg_opacity)), rounding);
+        if (blur_background && BeginBlurBackground(dl, box.Min, box.Max))
+        {
+          dl->AddRectFilled(box.Min, box.Max, ImGui::GetColorU32(ModAlpha(left_background_color, opacity)), rounding);
+          EndBlurBackground(dl);
+        }
+        else
+        {
+          DrawRoundedGradientRect(dl, box.Min, box.Max,
+                                  ImGui::GetColorU32(ModAlpha(left_background_color, opacity * bg_opacity)),
+                                  ImGui::GetColorU32(ModAlpha(right_background_color, opacity * bg_opacity)), rounding);
+        }
 
-      tstr.format(ICON_FA_STOPWATCH " {}", indicator.text);
+        tstr.format(ICON_FA_STOPWATCH " {}", indicator.text);
 
-      const u32 text_col = ImGui::GetColorU32(ModAlpha(UIStyle.ToastTextColor, opacity));
-      RenderShadowedTextClipped(dl, UIStyle.Font, font_size, font_weight, box.Min + padding, box.Max, text_col, tstr,
-                                nullptr, ImVec2(0.0f, 0.0f), 0.0f, &box);
+        const u32 text_col = ImGui::GetColorU32(ModAlpha(UIStyle.ToastTextColor, opacity));
+        RenderShadowedTextClipped(dl, UIStyle.Font, font_size, font_weight, box.Min + padding, box.Max, text_col, tstr,
+                                  nullptr, ImVec2(0.0f, 0.0f), 0.0f, &box);
 
-      return box_width;
-    };
+        return box_width;
+      };
 
     // animations are not currently handled for more than one tracker... but this should be rare
     if (trackers.size() > 1)
@@ -938,7 +967,8 @@ void FullscreenUI::DrawAchievementsPauseMenuOverlays(float start_pos_y)
   const float box_padding = LayoutScale(15.0f);
   const float box_content_width = box_width - box_padding - box_padding;
   const float box_rounding = LayoutScale(20.0f);
-  const u32 box_background_color = ImGui::GetColorU32(ModAlpha(UIStyle.PopupBackgroundColor, 0.8f));
+  const u32 box_background_color =
+    ImGui::GetColorU32(ModAlpha(UIStyle.PopupBackgroundColor, UIStyle.BlurMenuBackground ? 1.0f : 0.8f));
   const ImU32 box_title_text_color =
     ImGui::GetColorU32(DarkerColor(UIStyle.BackgroundTextColor, 0.9f)) | IM_COL32_A_MASK;
   const ImU32 title_text_color = ImGui::GetColorU32(UIStyle.BackgroundTextColor) | IM_COL32_A_MASK;
@@ -965,7 +995,15 @@ void FullscreenUI::DrawAchievementsPauseMenuOverlays(float start_pos_y)
   ImVec2 text_size;
   TinyString buffer;
 
-  dl->AddRectFilled(box_min, box_max, box_background_color, box_rounding);
+  if (UIStyle.BlurMenuBackground && BeginBlurBackground(dl, box_min, box_max))
+  {
+    dl->AddRectFilled(box_min, box_max, box_background_color, box_rounding);
+    EndBlurBackground(dl);
+  }
+  else
+  {
+    dl->AddRectFilled(box_min, box_max, box_background_color, box_rounding);
+  }
 
   // title
   {
@@ -1037,7 +1075,15 @@ void FullscreenUI::DrawAchievementsPauseMenuOverlays(float start_pos_y)
     box_max = ImVec2(box_min.x + box_width, box_min.y + box_height);
     text_pos = ImVec2(box_min.x + box_padding, box_min.y + box_padding);
 
-    dl->AddRectFilled(box_min, box_max, box_background_color, box_rounding);
+    if (UIStyle.BlurMenuBackground && BeginBlurBackground(dl, box_min, box_max))
+    {
+      dl->AddRectFilled(box_min, box_max, box_background_color, box_rounding);
+      EndBlurBackground(dl);
+    }
+    else
+    {
+      dl->AddRectFilled(box_min, box_max, box_background_color, box_rounding);
+    }
 
     ImVec4 clip_rect = ImVec4(text_pos.x, text_pos.y, text_pos.x + box_content_width, box_max.y);
     dl->AddText(UIStyle.Font, UIStyle.MediumFontSize, UIStyle.BoldFontWeight, text_pos, box_title_text_color,
@@ -1227,7 +1273,15 @@ void FullscreenUI::DrawAchievementsPauseMenuOverlays(float start_pos_y)
     box_max = ImVec2(box_min.x + box_width, box_min.y + box_height);
     text_pos = ImVec2(box_min.x + box_padding, box_min.y + box_padding);
 
-    dl->AddRectFilled(box_min, box_max, box_background_color, box_rounding);
+    if (UIStyle.BlurMenuBackground && BeginBlurBackground(dl, box_min, box_max))
+    {
+      dl->AddRectFilled(box_min, box_max, box_background_color, box_rounding);
+      EndBlurBackground(dl);
+    }
+    else
+    {
+      dl->AddRectFilled(box_min, box_max, box_background_color, box_rounding);
+    }
 
     buffer.format(ICON_FA_HAND_FIST " {}",
                   TRANSLATE_DISAMBIG_SV("Achievements", "Active Challenge Achievements", "Pause Menu"));
@@ -1287,7 +1341,15 @@ void FullscreenUI::DrawAchievementsPauseMenuOverlays(float start_pos_y)
     box_max = ImVec2(box_min.x + box_width, box_min.y + box_height);
     text_pos = ImVec2(box_min.x + box_padding, box_min.y + box_padding);
 
-    dl->AddRectFilled(box_min, box_max, box_background_color, box_rounding);
+    if (UIStyle.BlurMenuBackground && BeginBlurBackground(dl, box_min, box_max))
+    {
+      dl->AddRectFilled(box_min, box_max, box_background_color, box_rounding);
+      EndBlurBackground(dl);
+    }
+    else
+    {
+      dl->AddRectFilled(box_min, box_max, box_background_color, box_rounding);
+    }
 
     buffer.format(ICON_FA_STOPWATCH " {}",
                   TRANSLATE_DISAMBIG_SV("Achievements", "Active Leaderboard Attempts", "Pause Menu"));
@@ -1627,15 +1689,15 @@ void FullscreenUI::DrawAchievementsWindow()
                                         ((summary.num_unsupported_achievements > 0) ? 20.0f : 0.0f);
 
   const ImVec4 background = ModAlpha(UIStyle.BackgroundColor, WINDOW_ALPHA);
-  const ImVec4 heading_background = ModAlpha(UIStyle.BackgroundColor, WINDOW_HEADING_ALPHA);
+  const ImVec4 heading_background = ModAlpha(DarkerColor(UIStyle.BackgroundColor, 1.5f), WINDOW_HEADING_ALPHA);
   const ImVec2 display_size = ImGui::GetIO().DisplaySize;
   const float heading_height = LayoutScale(heading_height_unscaled);
   bool close_window = false;
 
   if (BeginFullscreenWindow(ImVec2(), ImVec2(display_size.x, heading_height), "achievements_heading",
                             heading_background, 0.0f, ImVec2(10.0f, 10.0f),
-                            ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoDecoration |
-                              ImGuiWindowFlags_NoScrollWithMouse))
+                            ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoScrollWithMouse,
+                            true))
   {
     const ImVec2 pos = ImGui::GetCursorScreenPos() + ImGui::GetStyle().FramePadding;
     const float spacing = LayoutScale(LAYOUT_MENU_ITEM_TITLE_SUMMARY_SPACING);
@@ -1825,7 +1887,7 @@ void FullscreenUI::DrawAchievementsWindow()
   if (BeginFullscreenWindow(ImVec2(0.0f, heading_height),
                             ImVec2(display_size.x, display_size.y - heading_height - LayoutScale(LAYOUT_FOOTER_HEIGHT)),
                             "achievements", background, 0.0f,
-                            ImVec2(LAYOUT_MENU_WINDOW_X_PADDING, LAYOUT_MENU_WINDOW_Y_PADDING), 0))
+                            ImVec2(LAYOUT_MENU_WINDOW_X_PADDING, LAYOUT_MENU_WINDOW_Y_PADDING), 0, true))
   {
     static constexpr std::pair<const char*, const char*> bucket_names[] = {
       {ICON_FA_CIRCLE_QUESTION, TRANSLATE_NOOP("Achievements", "Unknown")},
@@ -2207,7 +2269,7 @@ void FullscreenUI::DrawLeaderboardsWindow()
   SmallString text;
 
   const ImVec4 background = ModAlpha(UIStyle.BackgroundColor, WINDOW_ALPHA);
-  const ImVec4 heading_background = ModAlpha(UIStyle.BackgroundColor, WINDOW_HEADING_ALPHA);
+  const ImVec4 heading_background = ModAlpha(DarkerColor(UIStyle.BackgroundColor, 1.5f), WINDOW_HEADING_ALPHA);
   const ImVec2 display_size = ImGui::GetIO().DisplaySize;
   const u32 text_color = ImGui::GetColorU32(ImGuiCol_Text);
   const float spacing = LayoutScale(10.0f);
@@ -2216,8 +2278,8 @@ void FullscreenUI::DrawLeaderboardsWindow()
 
   if (BeginFullscreenWindow(ImVec2(), ImVec2(display_size.x, heading_height), "leaderboards_heading",
                             heading_background, 0.0f, ImVec2(10.0f, 10.0f),
-                            ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoDecoration |
-                              ImGuiWindowFlags_NoScrollWithMouse))
+                            ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoScrollWithMouse,
+                            true))
   {
     const ImVec2 heading_pos = ImGui::GetCursorScreenPos() + ImGui::GetStyle().FramePadding;
     const float image_size = LayoutScale(75.0f);
@@ -2369,7 +2431,7 @@ void FullscreenUI::DrawLeaderboardsWindow()
     if (BeginFullscreenWindow(
           ImVec2(0.0f, heading_height),
           ImVec2(display_size.x, display_size.y - heading_height - LayoutScale(LAYOUT_FOOTER_HEIGHT)), "leaderboards",
-          background, 0.0f, ImVec2(LAYOUT_MENU_WINDOW_X_PADDING, LAYOUT_MENU_WINDOW_Y_PADDING), 0))
+          background, 0.0f, ImVec2(LAYOUT_MENU_WINDOW_X_PADDING, LAYOUT_MENU_WINDOW_Y_PADDING), 0, true))
     {
       ResetFocusHere();
       BeginMenuButtons();
@@ -2430,7 +2492,7 @@ void FullscreenUI::DrawLeaderboardsWindow()
     if (BeginFullscreenWindow(
           ImVec2(0.0f, heading_height),
           ImVec2(display_size.x, display_size.y - heading_height - LayoutScale(LAYOUT_FOOTER_HEIGHT)), "leaderboard",
-          background, 0.0f, ImVec2(LAYOUT_MENU_WINDOW_X_PADDING, LAYOUT_MENU_WINDOW_Y_PADDING), 0))
+          background, 0.0f, ImVec2(LAYOUT_MENU_WINDOW_X_PADDING, LAYOUT_MENU_WINDOW_Y_PADDING), 0, true))
     {
       const ImVec2 heading_start_pos = ImGui::GetCursorScreenPos();
       ImVec2 column_heading_pos = heading_start_pos;

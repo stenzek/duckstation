@@ -30,6 +30,9 @@ OSDSettingsWidget::OSDSettingsWidget(SettingsWindow* dialog, QWidget* parent) : 
     &Settings::GetNotificationLocationName, &Settings::GetNotificationLocationDisplayName,
     Settings::DEFAULT_OSD_MESSAGE_LOCATION, NotificationLocation::MaxCount);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showMessages, "Display", "ShowOSDMessages", true);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.animateMessages, "Display", "AnimateOSDMessages", true);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.blurMessageBackgrounds, "Display", "BlurOSDMessageBackgrounds",
+                                               true);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showFPS, "Display", "ShowFPS", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showSpeed, "Display", "ShowSpeed", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showResolution, "Display", "ShowResolution", false);
@@ -77,6 +80,11 @@ OSDSettingsWidget::OSDSettingsWidget(SettingsWindow* dialog, QWidget* parent) : 
     m_ui.showMessages, tr("Show Messages"), tr("Checked"),
     tr("Shows on-screen-display messages when events occur such as save states being created/loaded, screenshots being "
        "taken, etc. Errors and warnings are still displayed regardless of this setting."));
+  dialog->registerWidgetHelp(m_ui.animateMessages, tr("Animate Messages"), tr("Checked"),
+                             tr("Enables animation for on-screen messages when they appear and disappear."));
+  dialog->registerWidgetHelp(
+    m_ui.blurMessageBackgrounds, tr("Blur Message Backgrounds"), tr("Checked"),
+    tr("Enables a blur effect on the background behind on-screen messages to improve readability."));
   dialog->registerWidgetHelp(m_ui.showResolution, tr("Show Resolution"), tr("Unchecked"),
                              tr("Shows the resolution of the game in the top-right corner of the display."));
   dialog->registerWidgetHelp(

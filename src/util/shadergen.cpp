@@ -978,6 +978,47 @@ std::string ShaderGen::GenerateImGuiFragmentShader() const
 {
   o_col0 = v_col0 * SAMPLE_TEXTURE(samp0, v_tex0);
 }
+  )";
+
+  return std::move(ss).str();
+}
+
+std::string ShaderGen::GenerateImGuiBlurVertexShader() const
+{
+  std::stringstream ss;
+  WriteHeader(ss);
+  DeclareUniformBuffer(ss, {"float4x4 ProjectionMatrix"}, false);
+  DeclareUniformBuffer(ss, {"float2 BlurTextureScale", "float BlurBackgroundWeight", "float InvBlurBackgroundWeight"},
+                       true);
+  DeclareVertexEntryPoint(ss, {"float2 a_pos", "float4 a_col0"}, 1, 0, {}, false);
+  ss << R"(
+{
+  v_pos = mul(ProjectionMatrix, float4(a_pos, 0.f, 1.f));
+  v_col0 = a_col0;
+  #if API_VULKAN
+    v_pos.y = -v_pos.y;
+  #endif
+}
+)";
+
+  return std::move(ss).str();
+}
+
+std::string ShaderGen::GenerateImGuiBlurFragmentShader() const
+{
+  std::stringstream ss;
+  WriteHeader(ss);
+  DeclareUniformBuffer(ss, {"float4x4 ProjectionMatrix"}, false); // needs the descriptor set defined
+  DeclareUniformBuffer(ss, {"float2 BlurTextureScale", "float BlurBackgroundWeight", "float InvBlurBackgroundWeight"},
+                       true);
+  DeclareTexture(ss, "samp0", 0);
+  DeclareFragmentEntryPoint(ss, 1, 0, {}, true);
+
+  ss << R"(
+{
+  int2 blur_pos = int2(floor(v_pos.xy) * BlurTextureScale);
+  o_col0 = float4(LOAD_TEXTURE(samp0, blur_pos, 0).rgb * BlurBackgroundWeight + v_col0.rgb * InvBlurBackgroundWeight, v_col0.a);
+}
 )";
 
   return std::move(ss).str();
@@ -999,6 +1040,106 @@ std::string ShaderGen::GenerateFadeFragmentShader() const
   o_col0.a = 1.0f;
 }
 )";
+
+  return std::move(ss).str();
+}
+
+std::string ShaderGen::GenerateGaussianBlurFragmentShader() const
+{
+  std::stringstream ss;
+  WriteHeader(ss);
+
+  // Push constants: blur direction scaled by texel size (x_dir/width, y_dir/height)
+  DeclareUniformBuffer(ss, {"float2 u_blur_direction"}, true);
+  DeclareTexture(ss, "samp0", 0);
+
+  // https://lisyarus.github.io/blog/posts/blur-coefficients-generator.html
+  // Radius: 30, sigma: 20
+  ss << R"(
+#define SAMPLE_COUNT 31
+
+CONSTANT float OFFSETS[SAMPLE_COUNT] = BEGIN_ARRAY(float, SAMPLE_COUNT)
+-29.481574788498758,
+-27.482822966811984,
+-25.48407133476425,
+-23.48531987689748,
+-21.4865685814993,
+-19.487817441187733,
+-17.4890664530808,
+-15.49031561813869,
+-13.491564939014534,
+-11.492814415362423,
+-9.49406403495946,
+-7.495313758095638,
+-5.496563491310285,
+-3.4978130444607514,
+-1.4990620619239194,
+0.4996866407382734,
+2.498437651462263,
+4.497188307705211,
+6.4959386324091755,
+8.494688887763292,
+10.493439208848661,
+12.492189658097768,
+14.490940258972138,
+16.48969101629867,
+18.48844192812288,
+20.487192992240907,
+22.485944209457497,
+24.484695584886197,
+26.48344712812872,
+28.482198852858183,
+30
+END_ARRAY;
+
+CONSTANT float WEIGHTS[SAMPLE_COUNT] = BEGIN_ARRAY(float, SAMPLE_COUNT)
+0.01541016258836947,
+0.017768151535171497,
+0.020283267106540014,
+0.022924205290094233,
+0.025651423266747478,
+0.02841773778937317,
+0.03116939833169751,
+0.03384762398431486,
+0.03639055836034262,
+0.03873556231203028,
+0.040821733313367456,
+0.042592516137640944,
+0.043998254731464806,
+0.0449985319608136,
+0.04556415312900511,
+0.04567825324468065,
+0.04533701597951506,
+0.04455118394212641,
+0.043343783883772295,
+0.04174984227341022,
+0.03981466909233367,
+0.03759167925377385,
+0.03513992790902628,
+0.032521509921346885,
+0.029798976743363043,
+0.027032914767164073,
+0.024279809433072556,
+0.02159029141425853,
+0.019007828077837678,
+0.016567888438120362,
+0.007421145789225499
+END_ARRAY;
+)";
+
+  DeclareFragmentEntryPoint(ss, 0, 1);
+  ss << R"(
+{
+  float3 result = float3(0.0f, 0.0f, 0.0f);
+  for (int i = 0; i < SAMPLE_COUNT; i++)
+  {
+    float2 offset = u_blur_direction * OFFSETS[i];
+    float3 color = SAMPLE_TEXTURE(samp0, v_tex0 + offset).rgb;
+    result += color * WEIGHTS[i];
+  }
+
+  o_col0 = float4(result, 1.0);
+})";
 
   return std::move(ss).str();
 }

@@ -149,3 +149,10 @@ namespace ImGui
 // Use our texture type
 class GPUTexture;
 #define ImTextureID GPUTexture*
+
+// Add base vertex/offset to draw callback
+struct ImDrawList;
+struct ImDrawCmd;
+typedef void (*ImDrawWithOffsetCallback)(const ImDrawList* draw_list, const ImDrawCmd* cmd, unsigned int vertex_offset,
+                                         unsigned int index_offset);
+#define ImDrawCallback ImDrawWithOffsetCallback

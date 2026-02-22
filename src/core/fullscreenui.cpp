@@ -63,7 +63,8 @@ static bool HasBackground();
 static bool LoadBackgroundShader(const std::string& path, Error* error);
 static bool LoadBackgroundImage(const std::string& path, Error* error);
 static void DrawBackground();
-static void DrawShaderBackgroundCallback(const ImDrawList* parent_list, const ImDrawCmd* cmd);
+static void DrawShaderBackgroundCallback(const ImDrawList* parent_list, const ImDrawCmd* cmd, u32 base_vertex,
+                                         u32 base_index);
 
 //////////////////////////////////////////////////////////////////////////
 // Resources
@@ -1151,7 +1152,8 @@ bool FullscreenUI::LoadBackgroundShader(const std::string& path, Error* error)
   return true;
 }
 
-void FullscreenUI::DrawShaderBackgroundCallback(const ImDrawList* parent_list, const ImDrawCmd* cmd)
+void FullscreenUI::DrawShaderBackgroundCallback(const ImDrawList* parent_list, const ImDrawCmd* cmd, u32 base_vertex,
+                                                u32 base_index)
 {
   if (!g_gpu_device->HasMainSwapChain())
     return;
@@ -1515,7 +1517,7 @@ void FullscreenUI::DrawPauseMenu()
 
   SmallString buffer;
 
-  ImDrawList* dl = ImGui::GetBackgroundDrawList();
+  ImDrawList* const dl = ImGui::GetBackgroundDrawList();
   const ImVec2 display_size(ImGui::GetIO().DisplaySize);
   const ImU32 title_text_color = ImGui::GetColorU32(UIStyle.BackgroundTextColor);
   const ImU32 text_color = ImGui::GetColorU32(DarkerColor(UIStyle.BackgroundTextColor, 0.85f));
@@ -1526,8 +1528,17 @@ void FullscreenUI::DrawPauseMenu()
   {
     const float scaled_text_spacing = LayoutScale(4.0f);
     const float scaled_top_bar_padding = LayoutScale(top_bar_padding);
-    dl->AddRectFilled(ImVec2(0.0f, 0.0f), ImVec2(display_size.x, scaled_top_bar_height),
-                      ImGui::GetColorU32(ModAlpha(UIStyle.BackgroundColor, 0.95f)), 0.0f);
+    const ImVec2 top_bar_min = ImVec2(0.0f, 0.0f);
+    const ImVec2 top_bar_max = ImVec2(display_size.x, scaled_top_bar_height);
+    if (UIStyle.BlurMenuBackground && BeginBlurBackground(dl, top_bar_min, top_bar_max))
+    {
+      dl->AddRectFilled(top_bar_min, top_bar_max, ImGui::GetColorU32(ModAlpha(UIStyle.BackgroundColor, 1.0f)), 0.0f);
+      EndBlurBackground(dl);
+    }
+    else
+    {
+      dl->AddRectFilled(top_bar_min, top_bar_max, ImGui::GetColorU32(ModAlpha(UIStyle.BackgroundColor, 0.95f)), 0.0f);
+    }
 
     const std::string& game_title = VideoThread::GetGameTitle();
     const std::string& game_serial = VideoThread::GetGameSerial();
@@ -1744,6 +1755,8 @@ void FullscreenUI::DrawPauseMenu()
 
   EndFullscreenWindow();
 
+  SetFullscreenFooterBlur(false);
+
   if (IsGamepadInputSource())
   {
     SetFullscreenFooterText(std::array{std::make_pair(ICON_PF_XBOX_DPAD_UP_DOWN, FSUI_VSTR("Change Selection")),
@@ -1949,7 +1962,7 @@ void FullscreenUI::DrawSaveStateSelector()
     closed = true;
 
   if (BeginFullscreenWindow(ImVec2(0.0f, 0.0f), heading_size, "##save_state_selector_title",
-                            ModAlpha(UIStyle.PrimaryColor, GetBackgroundAlpha())))
+                            ModAlpha(UIStyle.PrimaryColor, GetBackgroundAlpha()), 0.0f, ImVec2(), 0, true))
   {
     BeginNavBar();
     if (NavButton(ICON_PF_NAVIGATION_BACK, true, true))
@@ -1968,7 +1981,7 @@ void FullscreenUI::DrawSaveStateSelector()
         ImVec2(0.0f, heading_size.y),
         ImVec2(io.DisplaySize.x, io.DisplaySize.y - heading_size.y - LayoutScale(LAYOUT_FOOTER_HEIGHT)),
         "##save_state_selector_list", ModAlpha(UIStyle.BackgroundColor, GetBackgroundAlpha()), 0.0f,
-        ImVec2(LAYOUT_MENU_WINDOW_X_PADDING, LAYOUT_MENU_WINDOW_Y_PADDING)))
+        ImVec2(LAYOUT_MENU_WINDOW_X_PADDING, LAYOUT_MENU_WINDOW_Y_PADDING), 0, true))
   {
     ResetFocusHere();
     BeginMenuButtons();

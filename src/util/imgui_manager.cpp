@@ -532,8 +532,7 @@ void ImGuiManager::RenderDrawLists(u32 window_width, u32 window_height, WindowIn
 
       if (pcmd->UserCallback) [[unlikely]]
       {
-        pcmd->UserCallback(cmd_list, pcmd);
-        g_gpu_device->UploadUniformBuffer(&mproj, sizeof(mproj));
+        pcmd->UserCallback(cmd_list, pcmd, base_vertex, base_index);
         g_gpu_device->SetPipeline(s_state.imgui_pipeline.get());
       }
       else
@@ -1073,6 +1072,8 @@ void ImGuiManager::DrawOSDMessages(Timer::Value current_time)
   const float max_width_for_color = std::ceil(400.0f * scale);
   const float min_rounded_width = rounding * 2.0f;
   const bool show_messages = g_gpu_settings.display_show_messages;
+  const bool blur_background = g_gpu_settings.display_blur_message_backgrounds && !FullscreenUI::HasActiveWindow() &&
+                               FullscreenUI::CanBlurBackground();
 
   const ImVec4 left_background_color = DarkerColor(UIStyle.ToastBackgroundColor, 1.3f);
   const ImVec4 right_background_color = DarkerColor(UIStyle.ToastBackgroundColor, 0.8f);
@@ -1176,14 +1177,22 @@ void ImGuiManager::DrawOSDMessages(Timer::Value current_time)
 
     ImDrawList* const dl = ImGui::GetForegroundDrawList();
 
-    const float background_opacity = opacity * 0.95f;
-    DrawRoundedGradientRect(
-      dl, pos, pos_max, ImGui::GetColorU32(ModAlpha(left_background_color, background_opacity)),
-      ImGui::GetColorU32(
-        ModAlpha(ImLerp(left_background_color, right_background_color,
-                        std::min((box_width - min_rounded_width) / (max_width_for_color - min_rounded_width), 1.0f)),
-                 background_opacity)),
-      rounding);
+    if (blur_background && FullscreenUI::BeginBlurBackground(dl, pos, pos_max))
+    {
+      dl->AddRectFilled(pos, pos_max, ImGui::GetColorU32(ModAlpha(left_background_color, opacity)), rounding);
+      FullscreenUI::EndBlurBackground(dl);
+    }
+    else
+    {
+      const float background_opacity = opacity * 0.95f;
+      DrawRoundedGradientRect(
+        dl, pos, pos_max, ImGui::GetColorU32(ModAlpha(left_background_color, background_opacity)),
+        ImGui::GetColorU32(
+          ModAlpha(ImLerp(left_background_color, right_background_color,
+                          std::min((box_width - min_rounded_width) / (max_width_for_color - min_rounded_width), 1.0f)),
+                   background_opacity)),
+        rounding);
+    }
 
     const ImVec2 base_pos = ImVec2(pos.x + padding, pos.y + padding);
     const ImU32 color = ImGui::GetColorU32(ModAlpha(text_color, opacity));

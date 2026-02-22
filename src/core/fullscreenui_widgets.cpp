@@ -21,6 +21,7 @@
 #include "common/assert.h"
 #include "common/error.h"
 #include "common/file_system.h"
+#include "common/gsvector_formatter.h"
 #include "common/log.h"
 #include "common/lru_cache.h"
 #include "common/path.h"
@@ -59,6 +60,10 @@ static constexpr int MENU_BUTTON_SPLIT_LAYER_HIGHLIGHT = 1;
 static constexpr int MENU_BUTTON_SPLIT_LAYER_FOREGROUND = 2;
 static constexpr int NUM_MENU_BUTTON_SPLIT_LAYERS = 3;
 
+// Render to a 720p-sized texture for consistent blur across all resolutions.
+static constexpr u32 BLUR_TARGET_WIDTH = 1280;
+static constexpr u32 BLUR_TARGET_HEIGHT = 720;
+
 enum class SplitWindowFocusChange : u8
 {
   None,
@@ -69,7 +74,9 @@ enum class SplitWindowFocusChange : u8
 static std::optional<Image> LoadTextureImage(std::string_view path, u32 svg_width, u32 svg_height);
 static std::shared_ptr<GPUTexture> UploadTexture(std::string_view path, const Image& image);
 
-static bool CompileTransitionPipelines(Error* error);
+static bool CompilePipelines(Error* error);
+
+static void DrawWithBlurTexture(const ImDrawList* parent_list, const ImDrawCmd* cmd, u32 base_vertex, u32 base_index);
 
 static void CreateFooterTextString(SmallStringBase& dest,
                                    std::span<const std::pair<const char*, std::string_view>> items);
@@ -338,6 +345,8 @@ struct WidgetsState
   FocusResetType focus_reset_queued = FocusResetType::None;
   TransitionState transition_state = TransitionState::Inactive;
   s8 has_pending_nav_move = static_cast<s8>(ImGuiDir_None);
+  bool blur_active = false;
+  bool blur_valid = false;
 
   ImVec2 horizontal_menu_button_size = {};
 
@@ -352,6 +361,16 @@ struct WidgetsState
   std::unique_ptr<GPUPipeline> transition_blend_pipeline;
   float transition_total_time = 0.0f;
   float transition_remaining_time = 0.0f;
+
+  // Blur resources
+  GSVector2 blur_texture_scale = GSVector2::cxpr(0);
+  GSVector4i blur_rect = GSVector4i::cxpr(0);
+  std::unique_ptr<GPUTexture> blur_source_texture;
+  std::unique_ptr<GPUTexture> blur_intermediate_texture;
+  std::unique_ptr<GPUTexture> blur_output_texture;
+  std::unique_ptr<GPUPipeline> blur_render_pipeline;
+  std::unique_ptr<GPUPipeline> blur_apply_pipeline;
+  std::unique_ptr<GPUPipeline> present_copy_pipeline;
 
   SmallString fullscreen_footer_text;
   SmallString last_fullscreen_footer_text;
@@ -369,8 +388,8 @@ struct WidgetsState
   bool has_hovered_menu_item = false;
   bool rendered_menu_item_border = false;
   bool had_focus_reset = false;
-  bool sound_effects_enabled = false;
   bool had_sound_effect = false;
+  bool fullscreen_footer_blur_allowed = false;
 
   ImAnimatedVec2 menu_button_frame_min_animated;
   ImAnimatedVec2 menu_button_frame_max_animated;
@@ -414,12 +433,22 @@ ALIGN_TO_CACHE_LINE static WidgetsState s_state;
 
 } // namespace FullscreenUI
 
+#if defined(_DEBUG) || defined(_DEVEL)
+
 FullscreenUI::WidgetsState::~WidgetsState()
 {
   DebugAssert(!transition_prev_texture);
   DebugAssert(!transition_current_texture);
   DebugAssert(!transition_blend_pipeline);
+  DebugAssert(!blur_source_texture);
+  DebugAssert(!blur_intermediate_texture);
+  DebugAssert(!blur_output_texture);
+  DebugAssert(!blur_render_pipeline);
+  DebugAssert(!blur_apply_pipeline);
+  DebugAssert(!present_copy_pipeline);
 }
+
+#endif
 
 void FullscreenUI::SetFont(ImFont* ui_font)
 {
@@ -476,7 +505,8 @@ void FullscreenUI::UpdateWidgetsSettings()
   UIStyle.Animations = Core::GetBaseBoolSettingValue("Main", "FullscreenUIAnimations", true);
   UIStyle.SmoothScrolling = Core::GetBaseBoolSettingValue("Main", "FullscreenUISmoothScrolling", true);
   UIStyle.MenuBorders = Core::GetBaseBoolSettingValue("Main", "FullscreenUIMenuBorders", false);
-  s_state.sound_effects_enabled = Core::GetBaseBoolSettingValue("Main", "FullscreenUISoundEffects", true);
+  UIStyle.BlurMenuBackground = Core::GetBaseBoolSettingValue("Main", "FullscreenUIBlurMenuBackground", true);
+  UIStyle.SoundEffects = Core::GetBaseBoolSettingValue("Main", "FullscreenUISoundEffects", true);
 
   const bool display_ps_icons = Core::GetBaseBoolSettingValue("Main", "FullscreenUIDisplayPSIcons", false);
   const bool swap_face_buttons = Core::GetBaseBoolSettingValue("Main", "FullscreenUISwapGamepadFaceButtons", false);
@@ -503,7 +533,7 @@ bool FullscreenUI::CreateWidgetsGPUResources(Error* error)
     return false;
   }
 
-  if (!CompileTransitionPipelines(error))
+  if (!CompilePipelines(error))
     return false;
 
   return true;
@@ -511,6 +541,15 @@ bool FullscreenUI::CreateWidgetsGPUResources(Error* error)
 
 void FullscreenUI::DestroyWidgetsGPUResources()
 {
+  g_gpu_device->RecycleTexture(std::move(s_state.blur_source_texture));
+  g_gpu_device->RecycleTexture(std::move(s_state.blur_intermediate_texture));
+  g_gpu_device->RecycleTexture(std::move(s_state.blur_output_texture));
+  s_state.blur_render_pipeline.reset();
+  s_state.blur_apply_pipeline.reset();
+  s_state.present_copy_pipeline.reset();
+  s_state.blur_active = false;
+  s_state.blur_valid = false;
+
   s_state.transition_blend_pipeline.reset();
   g_gpu_device->RecycleTexture(std::move(s_state.transition_prev_texture));
   g_gpu_device->RecycleTexture(std::move(s_state.transition_current_texture));
@@ -518,6 +557,11 @@ void FullscreenUI::DestroyWidgetsGPUResources()
   s_state.placeholder_texture.reset();
 
   s_state.texture_cache.Clear();
+}
+
+GPUPipeline* FullscreenUI::GetPresentCopyPipeline()
+{
+  return s_state.present_copy_pipeline.get();
 }
 
 const std::shared_ptr<GPUTexture>& FullscreenUI::GetPlaceholderTexture()
@@ -823,7 +867,7 @@ GPUTexture* FullscreenUI::GetTransitionRenderTexture(GPUSwapChain* swap_chain)
   return s_state.transition_current_texture.get();
 }
 
-bool FullscreenUI::CompileTransitionPipelines(Error* error)
+bool FullscreenUI::CompilePipelines(Error* error)
 {
   const RenderAPI render_api = g_gpu_device->GetRenderAPI();
   const ShaderGen shadergen(render_api, ShaderGen::GetShaderLanguageForAPI(render_api), false, false);
@@ -860,6 +904,60 @@ bool FullscreenUI::CompileTransitionPipelines(Error* error)
     return false;
   }
 
+  fs = g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GetLanguage(),
+                                  shadergen.GenerateCopyFragmentShader(false), error);
+  if (!fs)
+    return false;
+  GL_OBJECT_NAME(fs, "Copy Fragment Shader");
+
+  plconfig.layout = GPUPipeline::Layout::SingleTextureAndPushConstants;
+  plconfig.fragment_shader = fs.get();
+  if (!(s_state.present_copy_pipeline = g_gpu_device->CreatePipeline(plconfig, error)))
+    return false;
+  GL_OBJECT_NAME(s_state.present_copy_pipeline, "Present Copy Pipeline");
+
+  fs = g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GetLanguage(),
+                                  shadergen.GenerateGaussianBlurFragmentShader(), error);
+  if (!fs)
+    return false;
+  GL_OBJECT_NAME(fs, "Blur Fragment Shader");
+  plconfig.fragment_shader = fs.get();
+  if (!(s_state.blur_render_pipeline = g_gpu_device->CreatePipeline(plconfig, error)))
+    return false;
+  GL_OBJECT_NAME(s_state.blur_render_pipeline, "Blur Render Pipeline");
+
+  vs = g_gpu_device->CreateShader(GPUShaderStage::Vertex, shadergen.GetLanguage(),
+                                  shadergen.GenerateImGuiBlurVertexShader(), error);
+  if (!vs)
+    return false;
+  GL_OBJECT_NAME(vs, "Blur Apply Vertex Shader");
+
+  fs = g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GetLanguage(),
+                                  shadergen.GenerateImGuiBlurFragmentShader(), error);
+  if (!fs)
+    return false;
+  GL_OBJECT_NAME(fs, "Blur Apply Fragment Shader");
+
+  // Don't need texture coordinates, only pos+color.
+  static constexpr GPUPipeline::VertexAttribute imgui_attributes[] = {
+    GPUPipeline::VertexAttribute::Make(0, GPUPipeline::VertexAttribute::Semantic::Position, 0,
+                                       GPUPipeline::VertexAttribute::Type::Float, 2, OFFSETOF(ImDrawVert, pos)),
+    GPUPipeline::VertexAttribute::Make(1, GPUPipeline::VertexAttribute::Semantic::Color, 0,
+                                       GPUPipeline::VertexAttribute::Type::UNorm8, 4, OFFSETOF(ImDrawVert, col)),
+  };
+
+  plconfig.layout = GPUPipeline::Layout::MultiTextureAndUBOAndPushConstants; // SingleTextureAndUBOAndPushConstants
+  plconfig.input_layout.vertex_attributes = imgui_attributes;
+  plconfig.input_layout.vertex_stride = sizeof(ImDrawVert);
+  plconfig.blend = GPUPipeline::BlendState::GetAlphaBlendingState();
+  plconfig.blend.write_mask = 0x7;
+  plconfig.vertex_shader = vs.get();
+  plconfig.fragment_shader = fs.get();
+  s_state.blur_apply_pipeline = g_gpu_device->CreatePipeline(plconfig, error);
+  if (!s_state.blur_apply_pipeline)
+    return false;
+
+  GL_OBJECT_NAME(s_state.blur_apply_pipeline, "Blur Apply Pipeline");
   return true;
 }
 
@@ -921,6 +1019,237 @@ void FullscreenUI::UpdateTransitionState()
     s_state.transition_state = TransitionState::Inactive;
     UpdateRunIdleState();
   }
+}
+
+bool FullscreenUI::CanBlurBackground()
+{
+  // If there's no video presenter, we have no way to get the current backbuffer for blurring, so don't even try.
+  return VideoPresenter::HasDisplayTexture();
+}
+
+void FullscreenUI::InvalidateBlurBackground()
+{
+  s_state.blur_valid = false;
+}
+
+GPUTexture* FullscreenUI::GetBlurRenderTexture()
+{
+  if (!s_state.blur_active)
+    return nullptr;
+
+  // clear for next frame
+  s_state.blur_active = false;
+
+  const GPUSwapChain* const swap_chain = g_gpu_device->GetMainSwapChain();
+  if (!swap_chain)
+    return nullptr;
+
+  const u32 swap_chain_width = swap_chain->GetPostRotatedWidth();
+  const u32 swap_chain_height = swap_chain->GetPostRotatedHeight();
+  u32 blur_width, blur_height;
+  if ((static_cast<float>(swap_chain_width) / static_cast<float>(swap_chain_height)) >
+      (static_cast<float>(BLUR_TARGET_WIDTH) / static_cast<float>(BLUR_TARGET_HEIGHT)))
+  {
+    blur_width = BLUR_TARGET_WIDTH;
+    blur_height = static_cast<u32>(BLUR_TARGET_WIDTH * swap_chain_height / swap_chain_width);
+  }
+  else
+  {
+    blur_height = BLUR_TARGET_HEIGHT;
+    blur_width = static_cast<u32>(BLUR_TARGET_HEIGHT * swap_chain_width / swap_chain_height);
+  }
+
+  if (!s_state.blur_source_texture || s_state.blur_source_texture->GetWidth() != swap_chain_width ||
+      s_state.blur_source_texture->GetHeight() != swap_chain_height)
+  {
+    if (!g_gpu_device->ResizeTexture(&s_state.blur_source_texture, swap_chain_width, swap_chain_height,
+                                     GPUTexture::Type::RenderTarget, swap_chain->GetFormat(), GPUTexture::Flags::None,
+                                     false) ||
+        !g_gpu_device->ResizeTexture(&s_state.blur_intermediate_texture, blur_width, blur_height,
+                                     GPUTexture::Type::RenderTarget, swap_chain->GetFormat(), GPUTexture::Flags::None,
+                                     false) ||
+        !g_gpu_device->ResizeTexture(&s_state.blur_output_texture, blur_width, blur_height,
+                                     GPUTexture::Type::RenderTarget, swap_chain->GetFormat(), GPUTexture::Flags::None,
+                                     false))
+    {
+      ERROR_LOG("Failed to allocate {}x{}/{}x{} blur source texture.", swap_chain_width, swap_chain_height, blur_width,
+                blur_height);
+      g_gpu_device->RecycleTexture(std::move(s_state.blur_source_texture));
+      g_gpu_device->RecycleTexture(std::move(s_state.blur_intermediate_texture));
+      g_gpu_device->RecycleTexture(std::move(s_state.blur_output_texture));
+      return nullptr;
+    }
+
+    s_state.blur_texture_scale =
+      GSVector2(s_state.blur_output_texture->GetSizeVec()) / GSVector2(swap_chain->GetSizeVec());
+    s_state.blur_valid = false;
+  }
+
+  // skip rendering blur if it's unchanged
+  GL_INS_FMT("Blur active, needs render: {}, scale: {}", !s_state.blur_valid, s_state.blur_texture_scale);
+  return s_state.blur_valid ? nullptr : s_state.blur_source_texture.get();
+}
+
+void FullscreenUI::RenderBlur(GPUTexture* const blur_render_texture)
+{
+  DebugAssert(s_state.blur_source_texture && s_state.blur_source_texture.get() == blur_render_texture);
+  DebugAssert(s_state.blur_intermediate_texture);
+  DebugAssert(s_state.blur_output_texture);
+  DebugAssert(s_state.blur_render_pipeline);
+
+  // We only blur the area of the screen where we need it for a background to save GPU cycles.
+  // But because the blur is over a wide range of pixels, we need to expand the are on the first pass.
+  static constexpr s32 BLUR_RADIUS = 30 + 1;
+
+  // Scale the active area to the downsampled texture.
+  const GSVector2i source_size_vec = s_state.blur_source_texture->GetSizeVec();
+  const GSVector2i size_vec = s_state.blur_output_texture->GetSizeVec();
+  const GSVector4i viewport = GSVector4i::loadh(size_vec);
+  const GSVector4 scaled_blur_rectf = GSVector4(s_state.blur_rect) * GSVector4::xyxy(s_state.blur_texture_scale);
+  const GSVector4i scaled_blur_rect = GSVector4i(scaled_blur_rectf.floor().blend32<12>(scaled_blur_rectf.ceil()));
+  const GSVector2 texel_size = GSVector2::cxpr(1.0f) / GSVector2(size_vec);
+
+  GL_SCOPE_FMT("RenderDisplayBlur() Rect={}, ScaledRect={}", s_state.blur_rect, scaled_blur_rect);
+  blur_render_texture->MakeReadyForSampling();
+  g_gpu_device->SetViewport(viewport);
+
+  GPUTexture* source_texture = s_state.blur_source_texture.get();
+  if (!source_size_vec.eq(size_vec))
+  {
+    // Downsample is pulling more pixels than the first blur.
+    const GSVector4i draw_rect =
+      scaled_blur_rect.add32(GSVector4i::cxpr(-BLUR_RADIUS * 2, -BLUR_RADIUS * 2, BLUR_RADIUS * 2, BLUR_RADIUS * 2))
+        .rintersect(viewport);
+
+    GSVector4 uv_rect = GSVector4(draw_rect) * GSVector4::xyxy(texel_size);
+    if (g_gpu_device->UsesLowerLeftOrigin())
+      uv_rect = uv_rect.blend32<10>(GSVector4::cxpr(1.0f) - uv_rect);
+
+    GL_SCOPE_FMT("Downsample Framebuffer: Rect={}", draw_rect);
+    g_gpu_device->InvalidateRenderTarget(s_state.blur_output_texture.get());
+    g_gpu_device->SetRenderTarget(s_state.blur_output_texture.get());
+    g_gpu_device->SetPipeline(s_state.present_copy_pipeline.get());
+    g_gpu_device->SetTextureSampler(0, blur_render_texture, g_gpu_device->GetLinearSampler());
+    VideoPresenter::DrawScreenQuad(draw_rect, uv_rect, size_vec, size_vec, DisplayRotation::Normal,
+                                   WindowInfoPrerotation::Identity, nullptr, 0);
+    s_state.blur_output_texture->MakeReadyForSampling();
+    source_texture = s_state.blur_output_texture.get();
+  }
+
+  g_gpu_device->SetPipeline(s_state.blur_render_pipeline.get());
+
+  // We run the blur at a reduced number of taps but multiple passes for a stronger effect.
+  // Two full passes (H+V, H+V) gives a visually pleasing result.
+  {
+    // First pass needs to sample a wider range, since we'll be pulling from this for the vertical pass.
+    const GSVector4i draw_rect =
+      scaled_blur_rect.add32(GSVector4i::cxpr(-BLUR_RADIUS, -BLUR_RADIUS, BLUR_RADIUS, BLUR_RADIUS))
+        .rintersect(viewport);
+    GSVector4 uv_rect = GSVector4(draw_rect) * GSVector4::xyxy(texel_size);
+    if (g_gpu_device->UsesLowerLeftOrigin())
+      uv_rect = uv_rect.blend32<10>(GSVector4::cxpr(1.0f) - uv_rect);
+
+    GL_SCOPE_FMT("Horizontal Blur: Rect={}", draw_rect);
+    s_state.blur_source_texture->MakeReadyForSampling();
+    g_gpu_device->InvalidateRenderTarget(s_state.blur_intermediate_texture.get());
+    g_gpu_device->SetRenderTarget(s_state.blur_intermediate_texture.get());
+    g_gpu_device->SetTextureSampler(0, source_texture, g_gpu_device->GetLinearSampler());
+
+    const GSVector2 uniforms = texel_size.insert32<1, 1>(GSVector2::zero());
+    VideoPresenter::DrawScreenQuad(draw_rect, uv_rect, size_vec, size_vec, DisplayRotation::Normal,
+                                   WindowInfoPrerotation::Identity, &uniforms, sizeof(uniforms));
+  }
+
+  {
+    // Second pass can be clamped to the actual sampled area. Add one for bilinear filtering.
+    const GSVector4i draw_rect = scaled_blur_rect.add32(GSVector4i::cxpr(-1, -1, 1, 1)).rintersect(viewport);
+    GSVector4 uv_rect = GSVector4(draw_rect) * GSVector4::xyxy(texel_size);
+    if (g_gpu_device->UsesLowerLeftOrigin())
+      uv_rect = uv_rect.blend32<10>(GSVector4::cxpr(1.0f) - uv_rect);
+
+    GL_SCOPE_FMT("Vertical Blur: Rect={}", draw_rect);
+    s_state.blur_intermediate_texture->MakeReadyForSampling();
+    g_gpu_device->InvalidateRenderTarget(s_state.blur_output_texture.get());
+    g_gpu_device->SetRenderTarget(s_state.blur_output_texture.get());
+    g_gpu_device->SetTextureSampler(0, s_state.blur_intermediate_texture.get(), g_gpu_device->GetLinearSampler());
+
+    const GSVector2 uniforms = texel_size.insert32<0, 0>(GSVector2::zero());
+    VideoPresenter::DrawScreenQuad(draw_rect, uv_rect, size_vec, size_vec, DisplayRotation::Normal,
+                                   WindowInfoPrerotation::Identity, &uniforms, sizeof(uniforms));
+  }
+
+  s_state.blur_output_texture->MakeReadyForSampling();
+  s_state.blur_valid = true;
+}
+
+bool FullscreenUI::BeginBlurBackground(ImDrawList* const dl, const ImVec2& bb_min, const ImVec2& bb_max)
+{
+  if (!CanBlurBackground())
+    return false;
+
+  const GSVector4i bounds =
+    GSVector4i(GSVector4::xyxy(GSVector2::load<false>(&bb_min.x).floor(), GSVector2::load<false>(&bb_max.x).ceil()));
+
+  if (s_state.blur_valid)
+  {
+    // If the rectangle gets larger, invalidate it.
+    const GSVector4i prev_rect = s_state.blur_rect;
+    s_state.blur_rect = s_state.blur_rect.runion(bounds);
+    s_state.blur_valid &= s_state.blur_rect.eq(prev_rect);
+  }
+
+  s_state.blur_rect = (s_state.blur_active || s_state.blur_valid) ? s_state.blur_rect.runion(bounds) : bounds;
+  s_state.blur_active = true;
+
+  // should flush the current draw, if any
+  ImDrawCmd* curr_cmd = &dl->CmdBuffer.Data[dl->CmdBuffer.Size - 1];
+  if (curr_cmd->ElemCount > 0)
+  {
+    dl->AddDrawCmd();
+    curr_cmd = &dl->CmdBuffer.Data[dl->CmdBuffer.Size - 1];
+  }
+
+  // mark it so we can check in EndPopBackgroundTexture
+  DebugAssert(curr_cmd->ElemCount == 0);
+  curr_cmd->UserCallback = &DrawWithBlurTexture;
+  return true;
+}
+
+void FullscreenUI::EndBlurBackground(ImDrawList* const dl)
+{
+  ImDrawCmd* const curr_cmd = &dl->CmdBuffer.Data[dl->CmdBuffer.Size - 1];
+  DebugAssert(curr_cmd->UserCallback == &DrawWithBlurTexture);
+
+  // allow imgui to clear empty draw commands
+  if (curr_cmd->ElemCount == 0)
+  {
+    GL_INS("No vertices drawn with blur background, skipping.");
+    curr_cmd->UserCallback = nullptr;
+  }
+  else
+  {
+    // flush the blurred draw
+    dl->AddDrawCmd();
+  }
+}
+
+void FullscreenUI::DrawWithBlurTexture(const ImDrawList* parent_list, const ImDrawCmd* cmd, u32 base_vertex,
+                                       u32 base_index)
+{
+  struct Uniforms
+  {
+    float blur_texture_scale[2];
+    float blur_background_weight;
+    float inv_blur_background_weight;
+  } uniforms;
+  uniforms.blur_background_weight = FullscreenUI::UIStyle.BlurBackgroundWeight;
+  uniforms.inv_blur_background_weight = 1.0f - FullscreenUI::UIStyle.BlurBackgroundWeight;
+  GSVector2::store<true>(uniforms.blur_texture_scale, s_state.blur_texture_scale);
+
+  g_gpu_device->SetPipeline(s_state.blur_apply_pipeline.get());
+  g_gpu_device->SetTextureSampler(0, s_state.blur_output_texture.get(), g_gpu_device->GetLinearSampler());
+  g_gpu_device->DrawIndexedWithPushConstants(cmd->ElemCount, base_index + cmd->IdxOffset, base_vertex + cmd->VtxOffset,
+                                             &uniforms, sizeof(uniforms));
 }
 
 bool FullscreenUI::UpdateLayoutScale()
@@ -1067,6 +1396,7 @@ void FullscreenUI::BeginLayout()
   // we evict from the texture cache at the start of the frame, in case we go over mid-frame,
   // we need to keep all those textures alive until the end of the frame
   s_state.texture_cache.ManualEvict();
+  s_state.fullscreen_footer_blur_allowed = true;
   PushResetLayout();
 }
 
@@ -1113,7 +1443,7 @@ void FullscreenUI::EndLayout()
 
 void FullscreenUI::EnqueueSoundEffect(std::string_view sound_effect)
 {
-  if (s_state.had_sound_effect || !s_state.sound_effects_enabled)
+  if (s_state.had_sound_effect || !UIStyle.SoundEffects)
     return;
 
   SoundEffectManager::EnqueueSoundEffect(sound_effect);
@@ -1499,7 +1829,7 @@ bool FullscreenUI::BeginFullscreenWindow(float left, float top, float width, flo
 bool FullscreenUI::BeginFullscreenWindow(const ImVec2& position, const ImVec2& size, const char* name,
                                          const ImVec4& background /* = HEX_TO_IMVEC4(0x212121, 0xFF) */,
                                          float rounding /*= 0.0f*/, const ImVec2& padding /*= 0.0f*/,
-                                         ImGuiWindowFlags flags /*= 0*/)
+                                         ImGuiWindowFlags flags /*= 0*/, bool blur /*= false*/)
 {
   ImGui::SetNextWindowPos(position);
   ImGui::SetNextWindowSize(size);
@@ -1509,10 +1839,33 @@ bool FullscreenUI::BeginFullscreenWindow(const ImVec2& position, const ImVec2& s
   ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
   ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
 
-  return ImGui::Begin(name, nullptr,
-                      ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize |
-                        ImGuiWindowFlags_NoBringToFrontOnFocus |
-                        ((background.w == 0.0f) ? ImGuiWindowFlags_NoBackground : 0) | flags);
+  const bool actually_blur = (blur && UIStyle.BlurMenuBackground && CanBlurBackground());
+  const bool has_background = (background.w != 0.0f);
+  const bool res = ImGui::Begin(name, nullptr,
+                                ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize |
+                                  ImGuiWindowFlags_NoBringToFrontOnFocus |
+                                  ((!has_background || actually_blur) ? ImGuiWindowFlags_NoBackground : 0) | flags);
+
+  if (res && actually_blur)
+  {
+    ImDrawList* const dl = ImGui::GetWindowDrawList();
+    const ImVec2 bg_min = position;
+    const ImVec2 bg_max = position + size;
+    if (BeginBlurBackground(dl, bg_min, bg_max))
+    {
+      if (has_background)
+        dl->AddRectFilled(bg_min, bg_max,
+                          ImGui::GetColorU32(ImVec4(background.x * background.w, background.y * background.w,
+                                                    background.z * background.w, 1.0f)));
+      EndBlurBackground(dl);
+    }
+    else if (has_background)
+    {
+      dl->AddRectFilled(bg_min, bg_max, ImGui::GetColorU32(background));
+    }
+  }
+
+  return res;
 }
 
 void FullscreenUI::EndFullscreenWindow(bool allow_wrap_x, bool allow_wrap_y)
@@ -1603,6 +1956,11 @@ void FullscreenUI::SetStandardSelectionFooterText(bool back_instead_of_cancel)
   }
 }
 
+void FullscreenUI::SetFullscreenFooterBlur(bool allowed)
+{
+  s_state.fullscreen_footer_blur_allowed = allowed;
+}
+
 void FullscreenUI::DrawFullscreenFooter()
 {
   const ImGuiIO& io = ImGui::GetIO();
@@ -1621,9 +1979,20 @@ void FullscreenUI::DrawFullscreenFooter()
   const u32 text_color = ImGui::GetColorU32(UIStyle.PrimaryTextColor);
   const float bg_alpha = GetBackgroundAlpha();
 
-  ImDrawList* dl = ImGui::GetForegroundDrawList();
-  dl->AddRectFilled(ImVec2(0.0f, io.DisplaySize.y - height), io.DisplaySize,
-                    ImGui::GetColorU32(ModAlpha(UIStyle.PrimaryColor, bg_alpha)), 0.0f);
+  ImDrawList* const dl = ImGui::GetForegroundDrawList();
+  const ImVec2 bb_min = ImVec2(0.0f, io.DisplaySize.y - height);
+  const ImVec2& bb_max = io.DisplaySize;
+  if (UIStyle.BlurMenuBackground && s_state.fullscreen_footer_blur_allowed && BeginBlurBackground(dl, bb_min, bb_max))
+  {
+    dl->AddRectFilled(ImVec2(0.0f, io.DisplaySize.y - height), io.DisplaySize,
+                      ImGui::GetColorU32(ModAlpha(UIStyle.PrimaryColor, 1.0f)), 0.0f);
+    EndBlurBackground(dl);
+  }
+  else
+  {
+    dl->AddRectFilled(ImVec2(0.0f, io.DisplaySize.y - height), io.DisplaySize,
+                      ImGui::GetColorU32(ModAlpha(UIStyle.PrimaryColor, bg_alpha)), 0.0f);
+  }
 
   ImFont* const font = UIStyle.Font;
   const float font_size = UIStyle.MediumFontSize;
@@ -5152,6 +5521,17 @@ void FullscreenUI::DrawLoadingScreen(std::string_view image, std::string_view ti
   const ImVec2 image_pos =
     ImVec2(ImCeil((io.DisplaySize.x - image_width) * 0.5f), ImCeil(((io.DisplaySize.y - total_height) * 0.5f)));
   ImDrawList* const dl = ImGui::GetBackgroundDrawList();
+
+  if (UIStyle.BlurMenuBackground && BeginBlurBackground(dl, ImVec2(), io.DisplaySize))
+  {
+    dl->AddRectFilled(ImVec2(), io.DisplaySize, ImGui::GetColorU32(ModAlpha(UIStyle.BackgroundColor, 0.9f)));
+    EndBlurBackground(dl);
+  }
+  else if (VideoPresenter::HasDisplayTexture())
+  {
+    dl->AddRectFilled(ImVec2(), io.DisplaySize, ImGui::GetColorU32(ModAlpha(UIStyle.BackgroundColor, 0.9f)));
+  }
+
   GPUTexture* tex = GetCachedTexture(image);
   if (tex)
   {
@@ -5502,7 +5882,7 @@ std::pair<ImVec2, float> FullscreenUI::NotificationLayout::GetNextPosition(float
       ImVec2 pos;
       if (m_location == NotificationLocation::TopLeft || m_location == NotificationLocation::BottomLeft)
       {
-        if (anim_coeff != 1.0f)
+        if (anim_coeff != 1.0f && g_gpu_settings.display_animate_messages)
         {
           if (active)
           {
@@ -5526,7 +5906,7 @@ std::pair<ImVec2, float> FullscreenUI::NotificationLayout::GetNextPosition(float
       else
       {
         pos.x = m_current_position.x - width;
-        if (anim_coeff != 1.0f)
+        if (anim_coeff != 1.0f && g_gpu_settings.display_animate_messages)
         {
           if (active)
           {
@@ -5568,7 +5948,7 @@ std::pair<ImVec2, float> FullscreenUI::NotificationLayout::GetNextPosition(float
 
       pos.x = ImFloor((ImGui::GetIO().DisplaySize.x - width) * 0.5f);
       pos.y = m_current_position.y;
-      if (anim_coeff != 1.0f)
+      if (anim_coeff != 1.0f && g_gpu_settings.display_animate_messages)
       {
         if (active)
         {
@@ -5602,7 +5982,7 @@ std::pair<ImVec2, float> FullscreenUI::NotificationLayout::GetNextPosition(float
 
       pos.x = ImFloor((ImGui::GetIO().DisplaySize.x - width) * 0.5f);
       pos.y = m_current_position.y - height;
-      if (anim_coeff != 1.0f)
+      if (anim_coeff != 1.0f && g_gpu_settings.display_animate_messages)
       {
         if (active)
         {
@@ -5786,6 +6166,7 @@ void FullscreenUI::UpdateTheme()
     UIStyle.ToastBackgroundColor = HEX_TO_IMVEC4(0x282828, 0xff);
     UIStyle.ToastTextColor = HEX_TO_IMVEC4(0xffffff, 0xff);
     UIStyle.ShadowColor = IM_COL32(0, 0, 0, 100);
+    UIStyle.BlurBackgroundWeight = 0.25f;
     UIStyle.IsDarkTheme = true;
   }
   else if (theme == "CobaltSky")
@@ -5810,6 +6191,7 @@ void FullscreenUI::UpdateTheme()
     UIStyle.ToastBackgroundColor = HEX_TO_IMVEC4(0x2d4183, 0xff);
     UIStyle.ToastTextColor = HEX_TO_IMVEC4(0xffffff, 0xff);
     UIStyle.ShadowColor = IM_COL32(0, 0, 0, 100);
+    UIStyle.BlurBackgroundWeight = 0.25f;
     UIStyle.IsDarkTheme = true;
   }
   else if (theme == "GreyMatter")
@@ -5834,6 +6216,7 @@ void FullscreenUI::UpdateTheme()
     UIStyle.ToastBackgroundColor = HEX_TO_IMVEC4(0x282828, 0xff);
     UIStyle.ToastTextColor = HEX_TO_IMVEC4(0xffffff, 0xff);
     UIStyle.ShadowColor = IM_COL32(0, 0, 0, 100);
+    UIStyle.BlurBackgroundWeight = 0.25f;
     UIStyle.IsDarkTheme = true;
   }
   else if (theme == "PinkyPals")
@@ -5858,6 +6241,7 @@ void FullscreenUI::UpdateTheme()
     UIStyle.ToastBackgroundColor = HEX_TO_IMVEC4(0xd86a66, 0xff);
     UIStyle.ToastTextColor = HEX_TO_IMVEC4(0xffffff, 0xff);
     UIStyle.ShadowColor = IM_COL32(100, 100, 100, 50);
+    UIStyle.BlurBackgroundWeight = 0.5f;
     UIStyle.IsDarkTheme = false;
   }
   else if (theme == "GreenGiant")
@@ -5881,6 +6265,7 @@ void FullscreenUI::UpdateTheme()
     UIStyle.ToastBackgroundColor = HEX_TO_IMVEC4(0xD5DE2E, 0xff);
     UIStyle.ToastTextColor = HEX_TO_IMVEC4(0x000000, 0xff);
     UIStyle.ShadowColor = IM_COL32(100, 100, 100, 50);
+    UIStyle.BlurBackgroundWeight = 0.25f;
     UIStyle.IsDarkTheme = false;
   }
   else if (theme == "DarkRuby")
@@ -5905,6 +6290,7 @@ void FullscreenUI::UpdateTheme()
     UIStyle.ToastBackgroundColor = HEX_TO_IMVEC4(0x282828, 0xff);
     UIStyle.ToastTextColor = HEX_TO_IMVEC4(0xffffff, 0xff);
     UIStyle.ShadowColor = IM_COL32(0, 0, 0, 100);
+    UIStyle.BlurBackgroundWeight = 0.25f;
     UIStyle.IsDarkTheme = true;
   }
   else if (theme == "PurpleRain")
@@ -5929,6 +6315,7 @@ void FullscreenUI::UpdateTheme()
     UIStyle.ToastBackgroundColor = HEX_TO_IMVEC4(0x8e65cb, 0xff);
     UIStyle.ToastTextColor = HEX_TO_IMVEC4(0xffffff, 0xff);
     UIStyle.ShadowColor = IM_COL32(100, 100, 100, 50);
+    UIStyle.BlurBackgroundWeight = 0.25f;
     UIStyle.IsDarkTheme = true;
   }
   else if (theme == "Light")
@@ -5954,6 +6341,7 @@ void FullscreenUI::UpdateTheme()
     UIStyle.ToastBackgroundColor = HEX_TO_IMVEC4(0xf1f1f1, 0xff);
     UIStyle.ToastTextColor = HEX_TO_IMVEC4(0x000000, 0xff);
     UIStyle.ShadowColor = IM_COL32(100, 100, 100, 50);
+    UIStyle.BlurBackgroundWeight = 0.5f;
     UIStyle.IsDarkTheme = false;
   }
   else
@@ -5979,6 +6367,7 @@ void FullscreenUI::UpdateTheme()
     UIStyle.ToastBackgroundColor = HEX_TO_IMVEC4(0x282828, 0xff);
     UIStyle.ToastTextColor = HEX_TO_IMVEC4(0xffffff, 0xff);
     UIStyle.ShadowColor = IM_COL32(0, 0, 0, 100);
+    UIStyle.BlurBackgroundWeight = 0.25f;
     UIStyle.IsDarkTheme = true;
   }
 }
