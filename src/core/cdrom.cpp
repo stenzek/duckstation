@@ -2279,8 +2279,9 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
           return;
         }
 
-        if (CanReadMedia())
-          StartMotor();
+        // ensure bit is set, Armored Core - Master of Arena relies on it
+        s_state.secondary_status.motor_on = true;
+        StartMotor();
 
         QueueCommandSecondResponse(Command::MotorOn, MOTOR_ON_RESPONSE_TICKS);
       }
