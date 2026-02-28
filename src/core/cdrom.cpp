@@ -2264,6 +2264,10 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
       {
         SendErrorResponse(STAT_ERROR, ERROR_REASON_INCORRECT_NUMBER_OF_PARAMETERS);
       }
+      else if (!CanReadMedia())
+      {
+        SendErrorResponse(STAT_ERROR, ERROR_REASON_NOT_READY);
+      }
       else
       {
         SendACKAndStat();
