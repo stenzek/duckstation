@@ -1211,7 +1211,7 @@ void SaveStateSelectorUI::InitializeListEntry(ListEntry* li, ExtendedSaveStateIn
 void SaveStateSelectorUI::InitializePlaceholderListEntry(ListEntry* li, const std::string& path, s32 slot, bool global,
                                                          bool exists, Error&& error)
 {
-  if (exists)
+  if (!exists)
     li->summary = TRANSLATE_STR("SaveStateSelectorUI", "No save present in this slot.");
   else if (error.IsValid())
     li->summary = error.TakeDescription();
