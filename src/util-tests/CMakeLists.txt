@@ -3,6 +3,7 @@ add_executable(util-tests
   elf_parser_tests.cpp
   cue_parser_tests.cpp
   image_tests.cpp
+  ini_settings_interface_tests.cpp
   stub_host.cpp
 )
 

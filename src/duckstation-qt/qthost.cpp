@@ -81,6 +81,7 @@
 #include <memory>
 
 #ifdef _WIN32
+#include "common/windows_headers.h"
 #include <objbase.h> // CoInitializeEx
 #endif
 

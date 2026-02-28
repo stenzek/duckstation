@@ -7,5 +7,6 @@
     <ClCompile Include="cue_parser_tests.cpp" />
     <ClCompile Include="elf_parser_tests.cpp" />
     <ClCompile Include="stub_host.cpp" />
+    <ClCompile Include="ini_settings_interface_tests.cpp" />
   </ItemGroup>
 </Project>
