@@ -26,6 +26,7 @@ public:
 
   // Retrieves a string view from the pool using an offset
   [[nodiscard]] std::string_view GetString(Offset offset) const;
+  [[nodiscard]] std::string_view GetString(Offset offset, size_t length) const;
 
   // Clears all strings from the pool
   void Clear();
@@ -43,6 +44,50 @@ private:
   std::vector<char> m_buffer;
 };
 
+class BumpUniqueStringPool
+{
+public:
+  using Offset = size_t;
+  static constexpr Offset InvalidOffset = static_cast<Offset>(-1);
+
+  BumpUniqueStringPool();
+  ~BumpUniqueStringPool();
+
+  // Adds a string to the pool and returns its offset. If the string already exists, returns the existing offset.
+  [[nodiscard]] Offset AddString(std::string_view str);
+
+  // Retrieves a string view from the pool using an offset
+  [[nodiscard]] std::string_view GetString(Offset offset) const;
+  [[nodiscard]] std::string_view GetString(Offset offset, size_t length) const;
+
+  // Clears all strings from the pool
+  void Clear();
+
+  // Returns the total size of the pool in bytes
+  [[nodiscard]] size_t GetSize() const;
+
+  // Returns whether the pool is empty
+  [[nodiscard]] bool IsEmpty() const;
+
+  // Returns the number of unique strings in the pool
+  [[nodiscard]] size_t GetCount() const;
+
+  // Reserves space in the buffer and lookup list to avoid frequent reallocations
+  void Reserve(size_t num_strings, size_t storage_size);
+
+private:
+  struct StringRef
+  {
+    Offset offset;
+    size_t length;
+  };
+
+  [[nodiscard]] std::string_view GetStringRefView(const StringRef& ref) const;
+
+  std::vector<char> m_buffer;
+  std::vector<StringRef> m_sorted_refs;
+};
+
 class StringPool
 {
 public:
@@ -57,6 +102,7 @@ public:
 
   // Retrieves a string view from the pool using an offset
   [[nodiscard]] std::string_view GetString(Offset offset) const;
+  [[nodiscard]] std::string_view GetString(Offset offset, size_t length) const;
 
   // Clears all strings from the pool
   void Clear();

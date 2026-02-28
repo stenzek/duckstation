@@ -12,6 +12,7 @@
     <ClCompile Include="rectangle_tests.cpp" />
     <ClCompile Include="hash_tests.cpp" />
     <ClCompile Include="small_string_tests.cpp" />
+    <ClCompile Include="string_pool_tests.cpp" />
     <ClCompile Include="string_tests.cpp" />
     <ClCompile Include="gsvector_yuvtorgb_test.cpp" />
   </ItemGroup>

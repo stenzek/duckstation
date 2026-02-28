@@ -13,5 +13,6 @@
     <ClCompile Include="small_string_tests.cpp" />
     <ClCompile Include="binary_reader_writer_tests.cpp" />
     <ClCompile Include="heap_array_tests.cpp" />
+    <ClCompile Include="string_pool_tests.cpp" />
   </ItemGroup>
 </Project>

@@ -9,6 +9,7 @@ add_executable(common-tests
   path_tests.cpp
   rectangle_tests.cpp
   small_string_tests.cpp
+  string_pool_tests.cpp
   string_tests.cpp
 )
 
