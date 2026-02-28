@@ -404,7 +404,8 @@ std::vector<SaveStateInfo> GetAvailableSaveStates(std::string_view serial);
 std::optional<SaveStateInfo> GetSaveStateInfo(std::string_view serial, s32 slot);
 
 /// Returns save state info from opened save state stream.
-std::optional<ExtendedSaveStateInfo> GetExtendedSaveStateInfo(const char* path);
+std::optional<ExtendedSaveStateInfo> GetExtendedSaveStateInfo(const char* path, Error* error,
+                                                              bool* out_exists = nullptr);
 
 /// Deletes save states for the specified game code. If resume is set, the resume state is deleted too.
 void DeleteSaveStates(std::string_view serial, bool resume);

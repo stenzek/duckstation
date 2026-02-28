@@ -950,7 +950,8 @@ struct ListEntry
 };
 } // namespace
 
-static void InitializePlaceholderListEntry(ListEntry* li, const std::string& path, s32 slot, bool global);
+static void InitializePlaceholderListEntry(ListEntry* li, const std::string& path, s32 slot, bool global, bool exists,
+                                           Error&& error);
 static void InitializeListEntry(ListEntry* li, ExtendedSaveStateInfo* ssi, const std::string& path, s32 slot,
                                 bool global);
 
@@ -1036,14 +1037,16 @@ void SaveStateSelectorUI::RefreshList()
   {
     for (s32 i = 1; i <= System::PER_GAME_SAVE_STATE_SLOTS; i++)
     {
-      std::string path(System::GetGameSaveStatePath(serial, i));
-      std::optional<ExtendedSaveStateInfo> ssi = System::GetExtendedSaveStateInfo(path.c_str());
+      Error error;
+      bool exists;
+      std::string path = System::GetGameSaveStatePath(serial, i);
+      std::optional<ExtendedSaveStateInfo> ssi = System::GetExtendedSaveStateInfo(path.c_str(), &error, &exists);
 
       ListEntry li;
       if (ssi)
         InitializeListEntry(&li, &ssi.value(), std::move(path), i, false);
       else
-        InitializePlaceholderListEntry(&li, std::move(path), i, false);
+        InitializePlaceholderListEntry(&li, std::move(path), i, false, exists, std::move(error));
 
       s_state.slots.push_back(std::move(li));
     }
@@ -1060,14 +1063,16 @@ void SaveStateSelectorUI::RefreshList()
 
   for (s32 i = 1; i <= System::GLOBAL_SAVE_STATE_SLOTS; i++)
   {
-    std::string path(System::GetGlobalSaveStatePath(i));
-    std::optional<ExtendedSaveStateInfo> ssi = System::GetExtendedSaveStateInfo(path.c_str());
+    Error error;
+    bool exists;
+    std::string path = System::GetGlobalSaveStatePath(i);
+    std::optional<ExtendedSaveStateInfo> ssi = System::GetExtendedSaveStateInfo(path.c_str(), &error, &exists);
 
     ListEntry li;
     if (ssi)
       InitializeListEntry(&li, &ssi.value(), std::move(path), i, true);
     else
-      InitializePlaceholderListEntry(&li, std::move(path), i, true);
+      InitializePlaceholderListEntry(&li, std::move(path), i, true, exists, std::move(error));
 
     s_state.slots.push_back(std::move(li));
   }
@@ -1203,9 +1208,15 @@ void SaveStateSelectorUI::InitializeListEntry(ListEntry* li, ExtendedSaveStateIn
   }
 }
 
-void SaveStateSelectorUI::InitializePlaceholderListEntry(ListEntry* li, const std::string& path, s32 slot, bool global)
+void SaveStateSelectorUI::InitializePlaceholderListEntry(ListEntry* li, const std::string& path, s32 slot, bool global,
+                                                         bool exists, Error&& error)
 {
-  li->summary = TRANSLATE_STR("SaveStateSelectorUI", "No save present in this slot.");
+  if (exists)
+    li->summary = TRANSLATE_STR("SaveStateSelectorUI", "No save present in this slot.");
+  else if (error.IsValid())
+    li->summary = error.TakeDescription();
+  else
+    li->summary = TRANSLATE_STR("SaveStateSelectorUI", "Unknown error.");
   li->slot = slot;
   li->global = global;
 }

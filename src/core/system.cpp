@@ -3256,6 +3256,7 @@ bool System::LoadStateBufferFromFile(SaveStateBuffer* buffer, std::FILE* fp, Err
     if (!ReadAndDecompressStateData(fp, buffer->screenshot.GetPixelsSpan(), header.offset_to_screenshot,
                                     compressed_size, compression_type, error)) [[unlikely]]
     {
+      Error::AddPrefix(error, "Failed to read screenshot: ");
       return false;
     }
   }
@@ -3269,6 +3270,7 @@ bool System::LoadStateBufferFromFile(SaveStateBuffer* buffer, std::FILE* fp, Err
                                     static_cast<SAVE_STATE_HEADER::CompressionType>(header.data_compression_type),
                                     error)) [[unlikely]]
     {
+      Error::AddPrefix(error, "Failed to read state data: ");
       return false;
     }
   }
@@ -5903,21 +5905,22 @@ std::optional<SaveStateInfo> System::GetSaveStateInfo(std::string_view serial, s
   return SaveStateInfo{std::move(path), sd.ModificationTime, slot, global};
 }
 
-std::optional<ExtendedSaveStateInfo> System::GetExtendedSaveStateInfo(const char* path)
+std::optional<ExtendedSaveStateInfo> System::GetExtendedSaveStateInfo(const char* path, Error* error,
+                                                                      bool* out_exists /*= nullptr*/)
 {
   std::optional<ExtendedSaveStateInfo> ssi;
 
   FlushSaveStates();
 
-  Error error;
-  auto fp = FileSystem::OpenManagedCFile(path, "rb", &error);
+  const auto fp = FileSystem::OpenManagedCFile(path, "rb", error);
+  if (out_exists)
+    *out_exists = static_cast<bool>(fp);
   if (fp)
   {
-    ssi.emplace();
-
     SaveStateBuffer buffer;
-    if (LoadStateBufferFromFile(&buffer, fp.get(), &error, true, true, true, false)) [[likely]]
+    if (LoadStateBufferFromFile(&buffer, fp.get(), error, true, true, true, false)) [[likely]]
     {
+      ssi.emplace();
       ssi->title = std::move(buffer.title);
       ssi->serial = std::move(buffer.serial);
       ssi->media_path = std::move(buffer.media_path);
@@ -5925,11 +5928,6 @@ std::optional<ExtendedSaveStateInfo> System::GetExtendedSaveStateInfo(const char
 
       FILESYSTEM_STAT_DATA sd;
       ssi->timestamp = FileSystem::StatFile(fp.get(), &sd) ? sd.ModificationTime : 0;
-    }
-    else
-    {
-      ssi->title = error.GetDescription();
-      ssi->timestamp = 0;
     }
   }
 

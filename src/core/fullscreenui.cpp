@@ -110,7 +110,8 @@ struct SaveStateListEntry
 static void InitializePlaceholderSaveStateListEntry(SaveStateListEntry* li, s32 slot, bool global);
 static bool InitializeSaveStateListEntryFromSerial(SaveStateListEntry* li, const std::string& serial, s32 slot,
                                                    bool global);
-static bool InitializeSaveStateListEntryFromPath(SaveStateListEntry* li, std::string path, s32 slot, bool global);
+static bool InitializeSaveStateListEntryFromPath(SaveStateListEntry* li, std::string path, s32 slot, bool global,
+                                                 Error* error, bool* exists);
 static void ClearSaveStateEntryList();
 static u32 PopulateSaveStateListEntries(const std::string& serial, std::optional<ExtendedSaveStateInfo> undo_save_state,
                                         bool is_loading);
@@ -674,9 +675,14 @@ void FullscreenUI::DoResume()
     return;
   }
 
+  Error error;
+  bool exists;
   SaveStateListEntry slentry;
-  if (!InitializeSaveStateListEntryFromPath(&slentry, std::move(path), -1, false))
+  if (!InitializeSaveStateListEntryFromPath(&slentry, std::move(path), -1, false, &error, &exists))
+  {
+    ShowToast(OSDMessageType::Error, FSUI_STR("Failed to load resume save state info."), error.TakeDescription());
     return;
+  }
 
   ClearSaveStateEntryList();
   s_locals.save_state_selector_slots.push_back(std::move(slentry));
@@ -1759,7 +1765,6 @@ void FullscreenUI::InitializePlaceholderSaveStateListEntry(SaveStateListEntry* l
                                                  slot) :
                                      FSUI_STR("Quick Save");
   li->summary = FSUI_STR("No save present in this slot.");
-  li->state_path = {};
   li->timestamp = 0;
   li->slot = slot;
   li->preview_texture = {};
@@ -1769,19 +1774,32 @@ void FullscreenUI::InitializePlaceholderSaveStateListEntry(SaveStateListEntry* l
 bool FullscreenUI::InitializeSaveStateListEntryFromSerial(SaveStateListEntry* li, const std::string& serial, s32 slot,
                                                           bool global)
 {
-  const std::string path = (global ? System::GetGlobalSaveStatePath(slot) : System::GetGameSaveStatePath(serial, slot));
-  if (!InitializeSaveStateListEntryFromPath(li, path.c_str(), slot, global))
+  Error error;
+  bool exists;
+  std::string path = (global ? System::GetGlobalSaveStatePath(slot) : System::GetGameSaveStatePath(serial, slot));
+  if (!InitializeSaveStateListEntryFromPath(li, std::move(path), slot, global, &error, &exists))
   {
     InitializePlaceholderSaveStateListEntry(li, slot, global);
+
+    if (exists)
+    {
+      // Show error instead.
+      li->summary = error.TakeDescription();
+      return true;
+    }
+
     return false;
   }
 
   return true;
 }
 
-bool FullscreenUI::InitializeSaveStateListEntryFromPath(SaveStateListEntry* li, std::string path, s32 slot, bool global)
+bool FullscreenUI::InitializeSaveStateListEntryFromPath(SaveStateListEntry* li, std::string path, s32 slot, bool global,
+                                                        Error* error, bool* exists)
 {
-  std::optional<ExtendedSaveStateInfo> ssi(System::GetExtendedSaveStateInfo(path.c_str()));
+  li->state_path = std::move(path);
+
+  std::optional<ExtendedSaveStateInfo> ssi = System::GetExtendedSaveStateInfo(li->state_path.c_str(), error, exists);
   if (!ssi.has_value())
     return false;
 
@@ -1798,7 +1816,6 @@ bool FullscreenUI::InitializeSaveStateListEntryFromPath(SaveStateListEntry* li, 
     FSUI_FSTR("Saved {}"), Host::FormatNumber(Host::NumberFormatType::ShortDateTime, static_cast<s64>(ssi->timestamp)));
   li->timestamp = ssi->timestamp;
   li->slot = slot;
-  li->state_path = std::move(path);
   li->game_path = std::move(ssi->media_path);
   li->global = global;
   if (ssi->screenshot.IsValid())
@@ -2082,9 +2099,14 @@ void FullscreenUI::DrawSaveStateSelector()
                   g_gpu_device->RecycleTexture(std::move(entry.preview_texture));
 
                   if (s_locals.save_state_selector_loading)
+                  {
                     s_locals.save_state_selector_slots.erase(s_locals.save_state_selector_slots.begin() + i);
+                  }
                   else
+                  {
+                    entry.state_path = {};
                     InitializePlaceholderSaveStateListEntry(&entry, entry.slot, entry.global);
+                  }
                 }
                 else
                 {
@@ -2156,9 +2178,37 @@ void FullscreenUI::DrawSaveStateSelector()
 
 bool FullscreenUI::OpenLoadStateSelectorForGameResume(const GameList::Entry* entry)
 {
+  Error error;
+  bool exists;
   SaveStateListEntry slentry;
-  if (!InitializeSaveStateListEntryFromSerial(&slentry, entry->serial, -1, false))
-    return false;
+  if (!InitializeSaveStateListEntryFromPath(&slentry, System::GetGameSaveStatePath(entry->serial, -1), -1, false,
+                                            &error, &exists))
+  {
+    if (!exists)
+      return false;
+
+    OpenConfirmMessageDialog(
+      ICON_EMOJI_NO_ENTRY_SIGN, FSUI_ICONVSTR(ICON_FA_FOLDER_OPEN, "Load Resume State"),
+      fmt::format(
+        FSUI_FSTR("A resume save state was found for this game, but it is corrupted and cannot be loaded:\n\n{}\n\n"
+                  "Do you want to delete the save state and boot the game anyway?"),
+        error.GetDescription()),
+      [path = System::GetGameSaveStatePath(entry->serial, -1), game_path = entry->path](bool accepted) {
+        if (accepted)
+        {
+          Error error;
+          if (FileSystem::DeleteFile(path.c_str(), &error))
+            ShowToast(OSDMessageType::Info, {}, FSUI_STR("Save state deleted."));
+          else
+            ShowToast(OSDMessageType::Error, FSUI_STR("Failed to delete save state."), error.TakeDescription());
+
+          DoStartPath(std::move(game_path));
+        }
+      },
+      FSUI_ICONSTR(ICON_FA_FOLDER_MINUS, "Delete And Boot"), FSUI_ICONSTR(ICON_FA_XMARK, "Cancel"));
+    ClearSaveStateEntryList();
+    return true;
+  }
 
   slentry.game_path = entry->path;
   s_locals.save_state_selector_slots.push_back(std::move(slentry));
@@ -2222,6 +2272,8 @@ void FullscreenUI::DrawResumeStateSelector()
     Error error;
     if (FileSystem::DeleteFile(entry.state_path.c_str(), &error))
     {
+      ShowToast(OSDMessageType::Info, {}, FSUI_STR("Save state deleted."));
+
       std::string game_path = std::move(entry.game_path);
       ClearSaveStateEntryList();
       CloseFixedPopupDialogImmediately();
