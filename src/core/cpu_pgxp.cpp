@@ -36,8 +36,8 @@ enum : u32
   VERTEX_CACHE_WIDTH = 2048,
   VERTEX_CACHE_HEIGHT = 2048,
   VERTEX_CACHE_SIZE = VERTEX_CACHE_WIDTH * VERTEX_CACHE_HEIGHT,
-  PGXP_MEM_SIZE = (static_cast<u32>(Bus::RAM_8MB_SIZE) + static_cast<u32>(CPU::SCRATCHPAD_SIZE)) / 4,
-  PGXP_MEM_SCRATCH_OFFSET = Bus::RAM_8MB_SIZE / 4,
+  PGXP_SCRATCH_VALUE_COUNT = (CPU::SCRATCHPAD_SIZE / 4u),
+  PGXP_MEM_RAM_OFFSET = PGXP_SCRATCH_VALUE_COUNT,
 };
 
 enum : u32
@@ -62,6 +62,8 @@ enum : u32
 #define SET_HIWORD(val, hiword) ((static_cast<u32>(val) & 0x0000FFFFu) | (static_cast<u32>(hiword) << 16))
 
 #define PGXP_GTE_REGISTER(field) g_state.pgxp_gte[offsetof(GTE::Regs, field) / sizeof(u32)]
+
+static size_t GetMemoryValueCount();
 
 static double f16Sign(double val);
 static double f16Unsign(double val);
@@ -128,6 +130,11 @@ static std::FILE* s_log;
 #endif
 } // namespace CPU::PGXP
 
+size_t CPU::PGXP::GetMemoryValueCount()
+{
+  return (PGXP_SCRATCH_VALUE_COUNT + (Bus::g_ram_size / 4u));
+}
+
 void CPU::PGXP::Initialize()
 {
   // Just in case due to memory layout...
@@ -142,7 +149,7 @@ void CPU::PGXP::Initialize()
 
   if (!s_mem)
   {
-    s_mem = static_cast<PGXPValue*>(std::calloc(PGXP_MEM_SIZE, sizeof(PGXPValue)));
+    s_mem = static_cast<PGXPValue*>(std::calloc(GetMemoryValueCount(), sizeof(PGXPValue)));
     if (!s_mem)
       Panic("Failed to allocate PGXP memory");
   }
@@ -168,7 +175,7 @@ void CPU::PGXP::Reset()
   std::memset(g_state.pgxp_gte, 0, sizeof(g_state.pgxp_gte));
 
   if (s_mem)
-    std::memset(s_mem, 0, sizeof(PGXPValue) * PGXP_MEM_SIZE);
+    std::memset(s_mem, 0, sizeof(PGXPValue) * GetMemoryValueCount());
 
   if (g_settings.gpu_pgxp_vertex_cache && s_vertex_cache)
     std::memset(s_vertex_cache, 0, sizeof(PGXPValue) * VERTEX_CACHE_SIZE);
@@ -199,10 +206,12 @@ bool CPU::PGXP::ShouldSavePGXPState()
   return (g_settings.gpu_pgxp_enable && g_settings.IsRunaheadEnabled());
 }
 
-size_t CPU::PGXP::GetStateSize()
+size_t CPU::PGXP::GetStateSize(bool enable_8mb_memory)
 {
+  static constexpr u32 value_count_2mb = (PGXP_SCRATCH_VALUE_COUNT + (Bus::RAM_2MB_SIZE / 4u));
+  static constexpr u32 value_count_8mb = (PGXP_SCRATCH_VALUE_COUNT + (Bus::RAM_8MB_SIZE / 4u));
   const size_t base_size = sizeof(g_state.pgxp_gpr) + sizeof(g_state.pgxp_cop0) + sizeof(g_state.pgxp_gte) +
-                           (sizeof(PGXPValue) * PGXP_MEM_SIZE);
+                           (sizeof(PGXPValue) * (enable_8mb_memory ? value_count_8mb : value_count_2mb));
   const size_t vertex_cache_size = sizeof(PGXPValue) * VERTEX_CACHE_SIZE;
   return base_size + (g_settings.gpu_pgxp_vertex_cache ? vertex_cache_size : 0);
 }
@@ -219,7 +228,7 @@ void CPU::PGXP::DoState(StateWrapper& sw)
   sw.DoBytes(g_state.pgxp_cop0, sizeof(g_state.pgxp_cop0));
   sw.DoBytes(g_state.pgxp_gte, sizeof(g_state.pgxp_gte));
 
-  sw.DoBytes(s_mem, sizeof(PGXPValue) * PGXP_MEM_SIZE);
+  sw.DoBytes(s_mem, sizeof(PGXPValue) * GetMemoryValueCount());
 
   if (s_vertex_cache)
     sw.DoBytes(s_vertex_cache, sizeof(PGXPValue) * VERTEX_CACHE_SIZE);
@@ -293,12 +302,12 @@ ALWAYS_INLINE_RELEASE CPU::PGXPValue* CPU::PGXP::GetPtr(u32 addr)
 #endif
 
   if ((addr & SCRATCHPAD_ADDR_MASK) == SCRATCHPAD_ADDR)
-    return &s_mem[PGXP_MEM_SCRATCH_OFFSET + ((addr & SCRATCHPAD_OFFSET_MASK) >> 2)];
+    return &s_mem[((addr & SCRATCHPAD_OFFSET_MASK) >> 2)];
 
   // Don't worry about >512MB here for performance reasons.
   const u32 paddr = (addr & KSEG_MASK);
   if (paddr < Bus::RAM_MIRROR_END)
-    return &s_mem[(paddr & Bus::g_ram_mask) >> 2];
+    return &s_mem[PGXP_MEM_RAM_OFFSET + ((paddr & Bus::g_ram_mask) >> 2)];
   else
     return nullptr;
 }

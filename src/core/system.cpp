@@ -3022,7 +3022,7 @@ size_t System::GetMaxSaveStateSize(bool enable_8mb_ram)
 
 size_t System::GetMaxMemorySaveStateSize(bool enable_8mb_ram, bool pgxp)
 {
-  return GetMaxSaveStateSize(enable_8mb_ram) + (pgxp ? CPU::PGXP::GetStateSize() : 0);
+  return GetMaxSaveStateSize(enable_8mb_ram) + (pgxp ? CPU::PGXP::GetStateSize(enable_8mb_ram) : 0);
 }
 
 std::string System::GetMediaPathFromSaveState(const char* path)

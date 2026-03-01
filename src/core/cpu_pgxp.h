@@ -15,7 +15,7 @@ void Shutdown();
 bool ShouldSavePGXPState();
 
 /// Returns memory usage to serialize additional PGXP state.
-size_t GetStateSize();
+size_t GetStateSize(bool enable_8mb_memory);
 
 /// Save/load additional PGXP state.
 void DoState(StateWrapper& sw);
