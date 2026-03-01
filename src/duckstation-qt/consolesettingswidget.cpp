@@ -16,7 +16,7 @@
 
 #include "moc_consolesettingswidget.cpp"
 
-static constexpr const int CDROM_SPEEDUP_VALUES[] = {1, 2, 3, 4, 5, 6, 0};
+static constexpr const u8 CDROM_SPEEDUP_VALUES[] = {1, 2, 3, 4, 5, 6, 0};
 
 ConsoleSettingsWidget::ConsoleSettingsWidget(SettingsWindow* dialog, QWidget* parent)
   : QWidget(parent), m_dialog(dialog)
@@ -40,7 +40,9 @@ ConsoleSettingsWidget::ConsoleSettingsWidget(SettingsWindow* dialog, QWidget* pa
     });
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.fastBoot, "BIOS", "PatchFastBoot", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.fastForwardBoot, "BIOS", "FastForwardBoot", false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enable8MBRAM, "Console", "Enable8MBRAM", false);
+  for (const u8& size : Settings::GetCPURAMSizeOptions())
+    m_ui.ramSize->addItem(Settings::GetCPURAMSizeDisplayName(size), QVariant(static_cast<uint>(size)));
+  SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.ramSize, "CPU", "RAMSize", Settings::DEFAULT_CPU_RAM_SIZE, Settings::GetCPURAMSizeOptions());
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.fastForwardMemoryCardAccess, "MemoryCards",
                                                "FastForwardAccess", false);
   connect(m_ui.fastBoot, &QCheckBox::checkStateChanged, this, &ConsoleSettingsWidget::onFastBootChanged);
@@ -72,9 +74,9 @@ ConsoleSettingsWidget::ConsoleSettingsWidget(SettingsWindow* dialog, QWidget* pa
   }
 
   SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.cdromSeekSpeedup, "CDROM", "SeekSpeedup", 1,
-                                              CDROM_SPEEDUP_VALUES);
+                                              std::span<const u8>(CDROM_SPEEDUP_VALUES));
   SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.cdromReadSpeedup, "CDROM", "ReadSpeedup", 1,
-                                              CDROM_SPEEDUP_VALUES);
+                                              std::span<const u8>(CDROM_SPEEDUP_VALUES));
 
   dialog->registerWidgetHelp(m_ui.region, tr("Region"), tr("Auto-Detect"),
                              tr("Determines the emulated hardware type."));
@@ -93,7 +95,7 @@ ConsoleSettingsWidget::ConsoleSettingsWidget(SettingsWindow* dialog, QWidget* pa
                                tr("Fast forwards through memory card access, both loading and saving. Can reduce "
                                   "waiting times in games that frequently access memory cards."));
   dialog->registerWidgetHelp(
-    m_ui.enable8MBRAM, tr("Enable 8MB RAM (Dev Console)"), tr("Unchecked"),
+    m_ui.ramSize, tr("Enable 8MB RAM (Dev Console)"), tr("Unchecked"),
     tr("Enables an additional 6MB of RAM to obtain a total of 2+6 = 8MB, usually present on dev consoles. Games have "
        "to use a larger heap size for "
        "this additional RAM to be usable. Titles which rely on memory mirrors may break, so it should only be used "

@@ -292,7 +292,6 @@ struct Settings : public GPUSettings
   bool cpu_recompiler_memory_exceptions : 1 = false;
   bool cpu_recompiler_block_linking : 1 = true;
   bool cpu_recompiler_icache : 1 = false;
-  bool cpu_enable_8mb_ram : 1 = false;
 
   bool mdec_use_old_routines : 1 = false;
   bool mdec_disable_cdrom_speedup : 1 = false;
@@ -339,6 +338,8 @@ struct Settings : public GPUSettings
   u8 cdrom_seek_speedup = 1;
   u32 cdrom_max_seek_speedup_cycles = DEFAULT_CDROM_MAX_SEEK_SPEEDUP_CYCLES;
   u32 cdrom_max_read_speedup_cycles = DEFAULT_CDROM_MAX_READ_SPEEDUP_CYCLES;
+
+  u8 cpu_ram_size = DEFAULT_CPU_RAM_SIZE; // TODO: Move me up
 
   u8 audio_output_volume = 100;
   u8 audio_fast_forward_volume = 100;
@@ -488,6 +489,9 @@ struct Settings : public GPUSettings
   static const char* GetDiscRegionName(DiscRegion region);
   static const char* GetDiscRegionDisplayName(DiscRegion region);
 
+  static std::span<const u8> GetCPURAMSizeOptions();
+  static const char* GetCPURAMSizeDisplayName(u8 size);
+
   static std::optional<CPUExecutionMode> ParseCPUExecutionMode(const char* str);
   static const char* GetCPUExecutionModeName(CPUExecutionMode mode);
   static const char* GetCPUExecutionModeDisplayName(CPUExecutionMode mode);
@@ -621,6 +625,9 @@ struct Settings : public GPUSettings
 #else
   static constexpr CPUFastmemMode DEFAULT_CPU_FASTMEM_MODE = CPUFastmemMode::LUT;
 #endif
+  static constexpr u8 DEFAULT_CPU_RAM_SIZE = 2;
+  static constexpr u8 MIN_CPU_RAM_SIZE = 2;
+  static constexpr u8 MAX_CPU_RAM_SIZE = 16;
 
   static constexpr u8 DEFAULT_CDROM_READAHEAD_SECTORS = 8;
   static constexpr u32 DEFAULT_CDROM_MAX_SEEK_SPEEDUP_CYCLES = 30000;

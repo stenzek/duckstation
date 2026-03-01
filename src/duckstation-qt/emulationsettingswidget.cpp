@@ -265,14 +265,16 @@ void EmulationSettingsWidget::updateRewind()
     const u32 multisamples = m_dialog->getEffectiveIntValue("GPU", "Multisamples", 1);
     const bool use_software_renderer =
       m_dialog->getEffectiveBoolValue("GPU", "UseSoftwareRendererForMemoryStates", false);
-    const bool enable_8mb_ram = m_dialog->getEffectiveBoolValue("Console", "Enable8MBRAM", false);
+    const u8 ram_size =
+      static_cast<u8>(std::clamp<s32>(m_dialog->getEffectiveIntValue("CPU", "RAMSize", Settings::DEFAULT_CPU_RAM_SIZE),
+                                      Settings::MIN_CPU_RAM_SIZE, Settings::MAX_CPU_RAM_SIZE));
     const u32 frames = static_cast<u32>(m_ui.rewindSaveSlots->value());
     const float frequency = static_cast<float>(m_ui.rewindSaveFrequency->value());
     const float duration =
       ((frequency <= std::numeric_limits<float>::epsilon()) ? (1.0f / 60.0f) : frequency) * static_cast<float>(frames);
 
     u64 ram_usage, vram_usage;
-    System::CalculateRewindMemoryUsage(frames, resolution_scale, multisamples, use_software_renderer, enable_8mb_ram,
+    System::CalculateRewindMemoryUsage(frames, resolution_scale, multisamples, use_software_renderer, ram_size,
                                        &ram_usage, &vram_usage);
 
     m_ui.rewindSummary->setText(

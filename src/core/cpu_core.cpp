@@ -514,26 +514,22 @@ ALWAYS_INLINE_RELEASE void CPU::WriteRegDelayed(Reg rd, u32 value)
 
 ALWAYS_INLINE_RELEASE bool CPU::IsCop0ExecutionBreakpointUnmasked()
 {
-  static constexpr const u32 code_address_ranges[][2] = {
-    // KUSEG
-    {Bus::RAM_BASE, Bus::RAM_BASE | Bus::RAM_8MB_MASK},
-    {Bus::BIOS_BASE, Bus::BIOS_BASE | Bus::BIOS_MASK},
-
-    // KSEG0
-    {0x80000000u | Bus::RAM_BASE, 0x80000000u | Bus::RAM_BASE | Bus::RAM_8MB_MASK},
-    {0x80000000u | Bus::BIOS_BASE, 0x80000000u | Bus::BIOS_BASE | Bus::BIOS_MASK},
-
-    // KSEG1
-    {0xA0000000u | Bus::RAM_BASE, 0xA0000000u | Bus::RAM_BASE | Bus::RAM_8MB_MASK},
-    {0xA0000000u | Bus::BIOS_BASE, 0xA0000000u | Bus::BIOS_BASE | Bus::BIOS_MASK},
-  };
-
+  // TODO: Needs testing
+  const u32 ram_mapped_mask = Bus::g_ram_mapped_size - 1;
   const u32 bpc = g_state.cop0_regs.BPC;
   const u32 bpcm = g_state.cop0_regs.BPCM;
   const u32 masked_bpc = bpc & bpcm;
-  for (const auto& [range_start, range_end] : code_address_ranges)
+  for (const u32 region : {0x00000000u /* KUSEG*/, 0x80000000u /* KSEG0 */, 0xA0000000u /* KSEG1 */})
   {
-    if (masked_bpc >= (range_start & bpcm) && masked_bpc <= (range_end & bpcm))
+    const u32 ram_start = region | Bus::RAM_BASE;
+    const u32 ram_end = ram_start | ram_mapped_mask;
+
+    if (masked_bpc >= (ram_start & bpcm) && masked_bpc <= (ram_end & bpcm))
+      return true;
+
+    const u32 bios_start = region | Bus::BIOS_BASE;
+    const u32 bios_end = bios_start | Bus::BIOS_MASK;
+    if (masked_bpc >= (bios_start & bpcm) && masked_bpc <= (bios_end & bpcm))
       return true;
   }
 
@@ -2798,7 +2794,7 @@ ALWAYS_INLINE_RELEASE bool CPU::DoInstructionRead(PhysicalMemoryAddress address,
   DebugAssert(VirtualAddressToPhysical(address) == (address & KSEG_MASK));
   address &= KSEG_MASK;
 
-  if (address < RAM_MIRROR_END)
+  if (address < g_ram_mapped_size)
   {
     std::memcpy(data, &g_ram[address & g_ram_mask], sizeof(u32) * word_count);
     if constexpr (add_ticks)
@@ -2842,7 +2838,7 @@ TickCount CPU::GetInstructionReadTicks(VirtualMemoryAddress address)
   DebugAssert(VirtualAddressToPhysical(address) == (address & KSEG_MASK));
   address &= KSEG_MASK;
 
-  if (address < RAM_MIRROR_END)
+  if (address < RAM_MAX_SIZE)
   {
     return RAM_READ_TICKS;
   }
@@ -2863,7 +2859,7 @@ TickCount CPU::GetICacheFillTicks(VirtualMemoryAddress address)
   DebugAssert(VirtualAddressToPhysical(address) == (address & KSEG_MASK));
   address &= KSEG_MASK;
 
-  if (address < RAM_MIRROR_END)
+  if (address < RAM_MAX_SIZE)
   {
     return 1 * ((ICACHE_LINE_SIZE - (address & (ICACHE_LINE_SIZE - 1))) / sizeof(u32));
   }
@@ -3128,7 +3124,7 @@ ALWAYS_INLINE bool CPU::DoSafeMemoryAccess(VirtualMemoryAddress address, u32& va
     break;
   }
 
-  if (address < RAM_MIRROR_END)
+  if (address < g_ram_mapped_size)
   {
     const u32 offset = address & g_ram_mask;
     if constexpr (type == MemoryAccessType::Read)
@@ -3308,7 +3304,7 @@ bool CPU::SafeReadMemoryBytes(VirtualMemoryAddress addr, void* data, u32 length)
   using namespace Bus;
 
   const u32 seg = (addr >> 29);
-  if ((seg != 0 && seg != 4 && seg != 5) || (((addr + length) & KSEG_MASK) >= RAM_MIRROR_END) ||
+  if ((seg != 0 && seg != 4 && seg != 5) || (((addr + length) & KSEG_MASK) >= g_ram_mapped_size) ||
       (((addr & g_ram_mask) + length) > g_ram_size))
   {
     u8* ptr = static_cast<u8*>(data);
@@ -3332,7 +3328,7 @@ bool CPU::SafeWriteMemoryBytes(VirtualMemoryAddress addr, const void* data, u32 
   using namespace Bus;
 
   const u32 seg = (addr >> 29);
-  if ((seg != 0 && seg != 4 && seg != 5) || (((addr + length) & KSEG_MASK) >= RAM_MIRROR_END) ||
+  if ((seg != 0 && seg != 4 && seg != 5) || (((addr + length) & KSEG_MASK) >= g_ram_mapped_size) ||
       (((addr & g_ram_mask) + length) > g_ram_size))
   {
     const u8* ptr = static_cast<const u8*>(data);
@@ -3361,7 +3357,7 @@ bool CPU::SafeZeroMemoryBytes(VirtualMemoryAddress addr, u32 length)
   using namespace Bus;
 
   const u32 seg = (addr >> 29);
-  if ((seg != 0 && seg != 4 && seg != 5) || (((addr + length) & KSEG_MASK) >= RAM_MIRROR_END) ||
+  if ((seg != 0 && seg != 4 && seg != 5) || (((addr + length) & KSEG_MASK) >= g_ram_mapped_size) ||
       (((addr & g_ram_mask) + length) > g_ram_size))
   {
     while ((addr & 3u) != 0 && length > 0)
@@ -3406,7 +3402,7 @@ void* CPU::GetDirectReadMemoryPointer(VirtualMemoryAddress address, MemoryAccess
     return nullptr;
 
   const PhysicalMemoryAddress paddr = VirtualAddressToPhysical(address);
-  if (paddr < RAM_MIRROR_END)
+  if (paddr < g_ram_mapped_size)
   {
     if (read_ticks)
       *read_ticks = RAM_READ_TICKS;
@@ -3443,7 +3439,7 @@ void* CPU::GetDirectWriteMemoryPointer(VirtualMemoryAddress address, MemoryAcces
 
   const PhysicalMemoryAddress paddr = address & KSEG_MASK;
 
-  if (paddr < RAM_MIRROR_END)
+  if (paddr < g_ram_mapped_size)
     return &g_ram[paddr & g_ram_mask];
 
   if ((paddr & SCRATCHPAD_ADDR_MASK) == SCRATCHPAD_ADDR)

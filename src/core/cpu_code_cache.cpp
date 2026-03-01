@@ -39,7 +39,7 @@ LOG_CHANNEL(CodeCache);
 namespace CPU::CodeCache {
 
 using LUTRangeList = std::array<std::pair<VirtualMemoryAddress, VirtualMemoryAddress>, 9>;
-using PageProtectionArray = std::array<PageProtectionInfo, Bus::RAM_8MB_CODE_PAGE_COUNT>;
+using PageProtectionArray = std::array<PageProtectionInfo, Bus::RAM_MAX_CODE_PAGE_COUNT>;
 using BlockInstructionInfoPair = std::pair<Instruction, InstructionInfo>;
 using BlockInstructionList = std::vector<BlockInstructionInfoPair>;
 
@@ -565,7 +565,7 @@ void CPU::CodeCache::RemoveBlockFromPageList(Block* block)
 
 void CPU::CodeCache::InvalidateBlocksWithPageIndex(u32 index)
 {
-  DebugAssert(index < Bus::RAM_8MB_CODE_PAGE_COUNT);
+  DebugAssert(index < Bus::RAM_MAX_CODE_PAGE_COUNT);
   Bus::ClearRAMCodePage(index);
 
   BlockState new_block_state = BlockState::Invalidated;
@@ -662,7 +662,8 @@ void CPU::CodeCache::InvalidateAllRAMBlocks()
 
 void CPU::CodeCache::ClearBlocks()
 {
-  for (u32 i = 0; i < Bus::RAM_8MB_CODE_PAGE_COUNT; i++)
+  const u32 page_count = Bus::GetRAMCodePageCount();
+  for (u32 i = 0; i < page_count; i++)
   {
     PageProtectionInfo& ppi = s_page_protection[i];
     if (ppi.mode == PageProtectionMode::WriteProtected && ppi.first_block_in_page)
@@ -689,7 +690,7 @@ PageFaultHandler::HandlerResult PageFaultHandler::HandlePageFault(void* exceptio
                                                                   bool is_write)
 {
   if (Bus::g_ram && static_cast<const u8*>(fault_address) >= Bus::g_ram &&
-      static_cast<const u8*>(fault_address) < (Bus::g_ram + Bus::RAM_8MB_SIZE))
+      static_cast<const u8*>(fault_address) < (Bus::g_ram + Bus::g_ram_size))
   {
     // Writing to protected RAM.
     DebugAssert(is_write);

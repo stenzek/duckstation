@@ -36,8 +36,8 @@ enum : u32
   VERTEX_CACHE_WIDTH = 2048,
   VERTEX_CACHE_HEIGHT = 2048,
   VERTEX_CACHE_SIZE = VERTEX_CACHE_WIDTH * VERTEX_CACHE_HEIGHT,
-  PGXP_MEM_SIZE = (static_cast<u32>(Bus::RAM_8MB_SIZE) + static_cast<u32>(CPU::SCRATCHPAD_SIZE)) / 4,
-  PGXP_MEM_SCRATCH_OFFSET = Bus::RAM_8MB_SIZE / 4,
+  PGXP_MEM_SIZE = (static_cast<u32>(Bus::RAM_MAX_SIZE) + static_cast<u32>(CPU::SCRATCHPAD_SIZE)) / 4,
+  PGXP_MEM_SCRATCH_OFFSET = Bus::RAM_MAX_SIZE / 4,
 };
 
 enum : u32
@@ -140,6 +140,7 @@ void CPU::PGXP::Initialize()
   std::memset(g_state.pgxp_cop0, 0, sizeof(g_state.pgxp_cop0));
   std::memset(g_state.pgxp_gte, 0, sizeof(g_state.pgxp_gte));
 
+  // TODO: Needs to be moved into the memory map
   if (!s_mem)
   {
     s_mem = static_cast<PGXPValue*>(std::calloc(PGXP_MEM_SIZE, sizeof(PGXPValue)));
@@ -297,7 +298,7 @@ ALWAYS_INLINE_RELEASE CPU::PGXPValue* CPU::PGXP::GetPtr(u32 addr)
 
   // Don't worry about >512MB here for performance reasons.
   const u32 paddr = (addr & KSEG_MASK);
-  if (paddr < Bus::RAM_MIRROR_END)
+  if (paddr < Bus::g_ram_size)
     return &s_mem[(paddr & Bus::g_ram_mask) >> 2];
   else
     return nullptr;

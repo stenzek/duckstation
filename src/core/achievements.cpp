@@ -920,8 +920,8 @@ uint32_t Achievements::ClientReadMemory(uint32_t address, uint8_t* buffer, uint3
   if ((address + num_bytes) > 0x200400U) [[unlikely]]
     return 0;
 
-  const u8* src = (address >= 0x200000U) ? CPU::g_state.scratchpad.data() : Bus::g_ram;
-  const u32 offset = (address & Bus::RAM_2MB_MASK); // size guarded by check above
+  const u8* src = (address >= Bus::RAM_DEFAULT_SIZE) ? CPU::g_state.scratchpad.data() : Bus::g_ram;
+  const u32 offset = (address & Bus::RAM_DEFAULT_MASK); // size guarded by check above
 
   switch (num_bytes)
   {
@@ -3626,8 +3626,8 @@ void Achievements::RAIntegrationWriteMemoryCallback(uint32_t address, uint8_t* b
   // This can be called on the UI thread, so always queue it.
   llvm::SmallVector<u8, 16> data(buffer, buffer + num_bytes);
   Host::RunOnCoreThread([address, data = std::move(data)]() {
-    u8* src = (address >= 0x200000U) ? CPU::g_state.scratchpad.data() : Bus::g_ram;
-    const u32 offset = (address & Bus::RAM_2MB_MASK); // size guarded by check above
+    u8* src = (address >= Bus::RAM_DEFAULT_SIZE) ? CPU::g_state.scratchpad.data() : Bus::g_ram;
+    const u32 offset = (address & Bus::RAM_DEFAULT_MASK); // size guarded by check above
 
     switch (data.size())
     {

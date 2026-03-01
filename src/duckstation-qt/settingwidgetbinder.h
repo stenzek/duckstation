@@ -813,16 +813,16 @@ inline void BindWidgetToIntSetting(SettingsInterface* sif, WidgetType* widget, s
   }
 }
 
-template<typename WidgetType>
+template<typename WidgetType, typename SpanT>
 inline void BindWidgetToIntSetting(SettingsInterface* sif, WidgetType* widget, std::string section, std::string key,
-                                   int default_value, std::span<const int> values)
+                                   int default_value, std::span<const SpanT> values)
 {
   using Accessor = SettingAccessor<WidgetType>;
 
-  static constexpr auto value_to_index = [](s32 value, const std::span<const int> values) {
+  static constexpr auto value_to_index = [](s32 value, const std::span<const SpanT> values) {
     for (size_t i = 0; i < values.size(); i++)
     {
-      if (values[i] == value)
+      if (static_cast<s32>(values[i]) == value)
         return static_cast<int>(i);
     }
 

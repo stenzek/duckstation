@@ -25,7 +25,7 @@ static bool IsValidScanAddress(VirtualMemoryAddress address)
   }
 
   const PhysicalMemoryAddress phys_address = CPU::VirtualAddressToPhysical(address);
-  if (phys_address < Bus::RAM_MIRROR_END)
+  if (phys_address < Bus::g_ram_mapped_size)
     return true;
 
   if (phys_address >= Bus::BIOS_BASE && phys_address < (Bus::BIOS_BASE + Bus::BIOS_SIZE))

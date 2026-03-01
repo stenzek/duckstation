@@ -122,7 +122,10 @@ union RAM_SIZE_REG
 static void* s_shmem_handle = nullptr;
 static std::string s_shmem_name;
 
-std::bitset<RAM_8MB_CODE_PAGE_COUNT> g_ram_code_bits{};
+// Sanity checks.
+static_assert((Bus::RAM_MAX_SIZE % MIN_HOST_PAGE_SIZE) == 0, "RAM max size must be a multiple of host page size");
+
+std::bitset<RAM_MAX_CODE_PAGE_COUNT> g_ram_code_bits{};
 u8* g_ram = nullptr;
 u8* g_unprotected_ram = nullptr;
 u32 g_ram_size = 0;
@@ -154,7 +157,7 @@ static bool s_kernel_initialize_hook_run = false;
 
 static bool AllocateMemoryMap(bool export_shared_memory, Error* error);
 static void ReleaseMemoryMap();
-static void SetRAMSize(bool enable_8mb_ram);
+static void SetRAMSize(u8 size);
 
 static std::tuple<TickCount, TickCount, TickCount> CalculateMemoryTiming(MEMDELAY mem_delay, COMDELAY common_delay);
 static void RecalculateMemoryTimings();
@@ -177,7 +180,7 @@ static void UpdateMappedRAMSize();
 
 namespace MemoryMap {
 static constexpr size_t RAM_OFFSET = 0;
-static constexpr size_t RAM_SIZE = Bus::RAM_8MB_SIZE;
+static constexpr size_t RAM_SIZE = Bus::RAM_MAX_SIZE;
 static constexpr size_t BIOS_OFFSET = RAM_OFFSET + RAM_SIZE;
 static constexpr size_t BIOS_SIZE = Bus::BIOS_SIZE;
 static constexpr size_t LUT_OFFSET = BIOS_OFFSET + BIOS_SIZE;
@@ -199,6 +202,8 @@ static constexpr size_t TOTAL_SIZE = LUT_OFFSET + LUT_SIZE;
 
 bool Bus::AllocateMemoryMap(bool export_shared_memory, Error* error)
 {
+  AssertMsg((RAM_MAX_SIZE % HOST_PAGE_SIZE) == 0, "Page size alignment is required for memory mapping");
+
   INFO_LOG("Allocating{} shared memory map.", export_shared_memory ? " EXPORTED" : "");
   if (export_shared_memory)
   {
@@ -252,7 +257,7 @@ bool Bus::AllocateMemoryMap(bool export_shared_memory, Error* error)
 
   VERBOSE_LOG("LUTs are mapped at {}.", static_cast<void*>(g_memory_handlers));
   g_memory_handlers_isc = g_memory_handlers + MEMORY_LUT_SLOTS;
-  g_ram_mapped_size = RAM_8MB_SIZE;
+  g_ram_mapped_size = RAM_DEFAULT_SIZE;
   SetHandlers();
 
 #ifndef __ANDROID__
@@ -351,8 +356,8 @@ bool Bus::ReallocateMemoryMap(bool export_shared_memory, Error* error)
     CPU::CodeCache::InvalidateAllRAMBlocks();
     UnmapFastmemViews();
 
-    ram_backup.resize(RAM_8MB_SIZE);
-    std::memcpy(ram_backup.data(), g_unprotected_ram, RAM_8MB_SIZE);
+    ram_backup.resize(RAM_MAX_SIZE);
+    std::memcpy(ram_backup.data(), g_unprotected_ram, RAM_MAX_SIZE);
     bios_backup.resize(BIOS_SIZE);
     std::memcpy(bios_backup.data(), g_bios, BIOS_SIZE);
   }
@@ -364,7 +369,7 @@ bool Bus::ReallocateMemoryMap(bool export_shared_memory, Error* error)
   if (System::IsValid())
   {
     UpdateMappedRAMSize();
-    std::memcpy(g_unprotected_ram, ram_backup.data(), RAM_8MB_SIZE);
+    std::memcpy(g_unprotected_ram, ram_backup.data(), RAM_MAX_SIZE);
     std::memcpy(g_bios, bios_backup.data(), BIOS_SIZE);
     MapFastmemViews();
   }
@@ -383,14 +388,29 @@ void Bus::CleanupMemoryMap()
 
 void Bus::Initialize()
 {
-  SetRAMSize(g_settings.cpu_enable_8mb_ram);
+  SetRAMSize(g_settings.cpu_ram_size);
   MapFastmemViews();
 }
 
-void Bus::SetRAMSize(bool enable_8mb_ram)
+void Bus::SetRAMSize(u8 size)
 {
-  g_ram_size = enable_8mb_ram ? RAM_8MB_SIZE : RAM_2MB_SIZE;
-  g_ram_mask = enable_8mb_ram ? RAM_8MB_MASK : RAM_2MB_MASK;
+  static constexpr u32 one_mb = 1048576;
+
+  if (size != 2 && size != 4 && size != 8 && size != 16)
+  {
+    ERROR_LOG("Invalid RAM size: {} MB. Defaulting to {} MB.", size, RAM_DEFAULT_SIZE / one_mb);
+    size = RAM_DEFAULT_SIZE / one_mb;
+  }
+
+  const u32 new_size = size * one_mb;
+  DebugAssert(Common::IsPow2(new_size));
+
+  // Ensure no old protection was left.
+  if (new_size > g_ram_size)
+    MemMap::MemProtect(g_ram + g_ram_size, new_size - g_ram_size, PageProtect::ReadWrite);
+
+  g_ram_size = size * one_mb;
+  g_ram_mask = g_ram_size - 1;
 
 #ifndef __ANDROID__
   Exports::RAM_SIZE = g_ram_size;
@@ -434,11 +454,10 @@ void Bus::Reset()
 bool Bus::DoState(StateWrapper& sw)
 {
   u32 ram_size = g_ram_size;
-  sw.DoEx(&ram_size, 52, static_cast<u32>(RAM_2MB_SIZE));
+  sw.DoEx(&ram_size, 52, static_cast<u32>(RAM_DEFAULT_SIZE));
   if (ram_size != g_ram_size)
   {
-    const bool using_8mb_ram = (ram_size == RAM_8MB_SIZE);
-    SetRAMSize(using_8mb_ram);
+    SetRAMSize(static_cast<u8>(ram_size / 1048576));
     RemapFastmemViews();
   }
 
@@ -595,7 +614,7 @@ void Bus::MapFastmemViews()
     MapRAM(0xA0000000);
 
     // Mirrors of 2MB
-    if (g_ram_size == RAM_2MB_SIZE)
+    if (g_ram_size == RAM_DEFAULT_SIZE)
     {
       // Instead of mapping all the RAM mirrors, we only map the KSEG0 uppermost mirror.
       // This is where some games place their stack, so we avoid the backpatching overhead/slowdown,
@@ -621,7 +640,37 @@ void Bus::MapFastmemViews()
     for (u32 i = 0; i < FASTMEM_LUT_SLOTS; i++)
       s_fastmem_lut[i] = GetLUTFastmemPointer(i << FASTMEM_LUT_PAGE_SHIFT, nullptr);
 
-    auto MapRAM = [](u32 base_address) {
+    static constexpr const std::array ranges = {
+      // KUSEG - cached
+      0x00000000u,
+      0x00200000u,
+      0x00400000u,
+      0x00600000u,
+      0x00800000u,
+      0x00A00000u,
+
+      // KSEG0 - cached
+      0x80000000u,
+      0x80200000u,
+      0x80400000u,
+      0x80600000u,
+      0x80800000u,
+      0x80A00000u,
+      0x80C00000u,
+      0x80E00000u,
+
+      // KSEG1 - uncached
+      0xA0000000u,
+      0xA0200000u,
+      0xA0400000u,
+      0xA0600000u,
+      0xA0800000u,
+      0xA0A00000u,
+      0xA0C00000u,
+      0xA0E00000u,
+    };
+    for (const u32 base_address : ranges)
+    {
       // Don't map RAM that isn't accessible.
       if (CPU::VirtualAddressToPhysical(base_address) >= g_ram_mapped_size)
         return;
@@ -633,25 +682,7 @@ void Bus::MapFastmemViews()
         s_fastmem_lut[lut_index] = GetLUTFastmemPointer(base_address + address, ram_ptr);
         ram_ptr += FASTMEM_LUT_PAGE_SIZE;
       }
-    };
-
-    // KUSEG - cached
-    MapRAM(0x00000000);
-    MapRAM(0x00200000);
-    MapRAM(0x00400000);
-    MapRAM(0x00600000);
-
-    // KSEG0 - cached
-    MapRAM(0x80000000);
-    MapRAM(0x80200000);
-    MapRAM(0x80400000);
-    MapRAM(0x80600000);
-
-    // KSEG1 - uncached
-    MapRAM(0xA0000000);
-    MapRAM(0xA0200000);
-    MapRAM(0xA0400000);
-    MapRAM(0xA0600000);
+    }
   }
 
   CPU::UpdateMemoryPointers();
@@ -689,7 +720,7 @@ bool Bus::CanUseFastmemForAddress(VirtualMemoryAddress address)
 #endif
 
     case CPUFastmemMode::LUT:
-      return (paddr < RAM_MIRROR_END);
+      return (paddr < g_ram_size);
 
     case CPUFastmemMode::Disabled:
     default:
@@ -752,7 +783,7 @@ void Bus::ClearRAMCodePageFlags()
 {
   g_ram_code_bits.reset();
 
-  if (!MemMap::MemProtect(g_ram, RAM_8MB_SIZE, PageProtect::ReadWrite))
+  if (!MemMap::MemProtect(g_ram, g_ram_size, PageProtect::ReadWrite))
     ERROR_LOG("Failed to restore RAM protection to read-write.");
 
 #ifdef ENABLE_MMAP_FASTMEM
@@ -806,10 +837,8 @@ const TickCount* Bus::GetMemoryAccessTimePtr(PhysicalMemoryAddress address, Memo
 
 std::optional<Bus::MemoryRegion> Bus::GetMemoryRegionForAddress(PhysicalMemoryAddress address)
 {
-  if (address < RAM_2MB_SIZE)
+  if (address < g_ram_size)
     return MemoryRegion::RAM;
-  else if (address < RAM_MIRROR_END)
-    return static_cast<MemoryRegion>(static_cast<u32>(MemoryRegion::RAM) + (address / RAM_2MB_SIZE));
   else if (address >= EXP1_BASE && address < (EXP1_BASE + EXP1_SIZE))
     return MemoryRegion::EXP1;
   else if (address >= CPU::SCRATCHPAD_ADDR && address < (CPU::SCRATCHPAD_ADDR + CPU::SCRATCHPAD_SIZE))
@@ -823,10 +852,7 @@ std::optional<Bus::MemoryRegion> Bus::GetMemoryRegionForAddress(PhysicalMemoryAd
 static constexpr std::array<std::tuple<PhysicalMemoryAddress, PhysicalMemoryAddress, bool>,
                             static_cast<u32>(Bus::MemoryRegion::Count)>
   s_code_region_ranges = {{
-    {0, Bus::RAM_2MB_SIZE, true},
-    {Bus::RAM_2MB_SIZE, Bus::RAM_2MB_SIZE * 2, true},
-    {Bus::RAM_2MB_SIZE * 2, Bus::RAM_2MB_SIZE * 3, true},
-    {Bus::RAM_2MB_SIZE * 3, Bus::RAM_MIRROR_END, true},
+    {0, Bus::RAM_DEFAULT_SIZE, true},
     {Bus::EXP1_BASE, Bus::EXP1_BASE + Bus::EXP1_SIZE, false},
     {CPU::SCRATCHPAD_ADDR, CPU::SCRATCHPAD_ADDR + CPU::SCRATCHPAD_SIZE, true},
     {Bus::BIOS_BASE, Bus::BIOS_BASE + Bus::BIOS_SIZE, false},
@@ -839,6 +865,9 @@ PhysicalMemoryAddress Bus::GetMemoryRegionStart(MemoryRegion region)
 
 PhysicalMemoryAddress Bus::GetMemoryRegionEnd(MemoryRegion region)
 {
+  if (region == MemoryRegion::RAM)
+    return g_ram_mask + 1;
+
   return std::get<1>(s_code_region_ranges[static_cast<u32>(region)]);
 }
 
@@ -853,15 +882,6 @@ u8* Bus::GetMemoryRegionPointer(MemoryRegion region)
   {
     case MemoryRegion::RAM:
       return g_unprotected_ram;
-
-    case MemoryRegion::RAMMirror1:
-      return (g_unprotected_ram + (RAM_2MB_SIZE & g_ram_mask));
-
-    case MemoryRegion::RAMMirror2:
-      return (g_unprotected_ram + ((RAM_2MB_SIZE * 2) & g_ram_mask));
-
-    case MemoryRegion::RAMMirror3:
-      return (g_unprotected_ram + ((RAM_8MB_SIZE * 3) & g_ram_mask));
 
     case MemoryRegion::EXP1:
       return nullptr;
@@ -2135,7 +2155,7 @@ void Bus::SetHandlers()
 
   // KUSEG - Cached
   // Cache isolated appears to affect KUSEG+KSEG0.
-  SET(g_memory_handlers, KUSEG | RAM_BASE, RAM_MIRROR_SIZE, RAMReadHandler, RAMWriteHandler);
+  SET(g_memory_handlers, KUSEG | RAM_BASE, g_ram_mapped_size, RAMReadHandler, RAMWriteHandler);
   SET(g_memory_handlers, KUSEG | CPU::SCRATCHPAD_ADDR, 0x1000, ScratchpadReadHandler, ScratchpadWriteHandler);
   SET(g_memory_handlers, KUSEG | BIOS_BASE, BIOS_MIRROR_SIZE, BIOSReadHandler, IgnoreWriteHandler);
   SET(g_memory_handlers, KUSEG | EXP1_BASE, EXP1_SIZE, EXP1ReadHandler, EXP1WriteHandler);
@@ -2146,7 +2166,7 @@ void Bus::SetHandlers()
   SET(g_memory_handlers_isc, KUSEG, 0x80000000, ICacheReadHandler, ICacheWriteHandler);
 
   // KSEG0 - Cached
-  SET(g_memory_handlers, KSEG0 | RAM_BASE, RAM_MIRROR_SIZE, RAMReadHandler, RAMWriteHandler);
+  SET(g_memory_handlers, KSEG0 | RAM_BASE, g_ram_mapped_size, RAMReadHandler, RAMWriteHandler);
   SET(g_memory_handlers, KSEG0 | CPU::SCRATCHPAD_ADDR, 0x1000, ScratchpadReadHandler, ScratchpadWriteHandler);
   SET(g_memory_handlers, KSEG0 | BIOS_BASE, BIOS_MIRROR_SIZE, BIOSReadHandler, IgnoreWriteHandler);
   SET(g_memory_handlers, KSEG0 | EXP1_BASE, EXP1_SIZE, EXP1ReadHandler, EXP1WriteHandler);
@@ -2157,7 +2177,7 @@ void Bus::SetHandlers()
   SET(g_memory_handlers_isc, KSEG0, 0x20000000, ICacheReadHandler, ICacheWriteHandler);
 
   // KSEG1 - Uncached
-  SETUC(KSEG1 | RAM_BASE, RAM_MIRROR_SIZE, RAMReadHandler, RAMWriteHandler);
+  SETUC(KSEG1 | RAM_BASE, g_ram_mapped_size, RAMReadHandler, RAMWriteHandler);
   SETUC(KSEG1 | BIOS_BASE, BIOS_MIRROR_SIZE, BIOSReadHandler, IgnoreWriteHandler);
   SETUC(KSEG1 | EXP1_BASE, EXP1_SIZE, EXP1ReadHandler, EXP1WriteHandler);
   SETUC(KSEG1 | HW_BASE, HW_SIZE, HardwareReadHandler, HardwareWriteHandler);
@@ -2173,52 +2193,42 @@ void Bus::UpdateMappedRAMSize()
 {
   const u32 prev_mapped_size = g_ram_mapped_size;
 
-  switch (s_RAM_SIZE.memory_window)
+  // https://psx-spx.consoledev.net/memorycontrol/#1f801060h-ram_size-rw-usually-00000b88h-or-00000888h
+  static constexpr const u32 one_mb = 1024 * 1024;
+  static constexpr const u32 ram_mapped_sizes[] = {
+    1 * one_mb,  // 000 = 1MB bank on /RAS0 + 15MB unmapped
+    4 * one_mb,  // 001 = 4MB bank on /RAS0 + 12MB unmapped
+    2 * one_mb,  // 010 = 1MB bank on /RAS0 + 1MB bank on /RAS1 (?) + 14MB unmapped
+    8 * one_mb,  // 011 = 4MB bank on /RAS0 + 4MB bank on /RAS1 (?) + 8MB unmapped
+    2 * one_mb,  // 100 = 2MB bank on /RAS0 + 14MB unmapped
+    16 * one_mb, // 101 = 8MB bank on /RAS0 + 8MB unmapped
+    4 * one_mb,  // 110 = 2MB bank on /RAS0 + 2MB bank on /RAS1 (?) + 12MB unmapped
+    16 * one_mb, // 111 = 8MB bank on /RAS0 + 8MB bank on /RAS1 (?)
+  };
+
+  const u32 mapped_size = ram_mapped_sizes[s_RAM_SIZE.memory_window];
+  if (mapped_size == prev_mapped_size)
+    return;
+
+  WARNING_LOG("RAM mapped size changed to {} MB", mapped_size / one_mb);
+
+  SET(g_memory_handlers, KUSEG | RAM_BASE, mapped_size, RAMReadHandler, RAMWriteHandler);
+  SET(g_memory_handlers, KSEG0 | RAM_BASE, mapped_size, RAMReadHandler, RAMWriteHandler);
+  SET(g_memory_handlers, KSEG1 | RAM_BASE, mapped_size, RAMReadHandler, RAMWriteHandler);
+
+  const u32 unmapped_size = RAM_MAX_SIZE - mapped_size;
+  if (unmapped_size > 0)
   {
-    case 4: // 2MB memory + 6MB unmapped
-    {
-      // Used by Rock-Climbing - Mitouhou e no Chousen - Alps Hen (Japan).
-      // By default, all 8MB is mapped, so we only need to remap the high 6MB.
-      constexpr u32 MAPPED_SIZE = RAM_2MB_SIZE;
-      constexpr u32 UNMAPPED_START = RAM_BASE + MAPPED_SIZE;
-      constexpr u32 UNMAPPED_SIZE = RAM_MIRROR_SIZE - MAPPED_SIZE;
-      SET(g_memory_handlers, KUSEG | UNMAPPED_START, UNMAPPED_SIZE, UnmappedReadHandler, UnmappedWriteHandler);
-      SET(g_memory_handlers, KSEG0 | UNMAPPED_START, UNMAPPED_SIZE, UnmappedReadHandler, UnmappedWriteHandler);
-      SET(g_memory_handlers, KSEG1 | UNMAPPED_START, UNMAPPED_SIZE, UnmappedReadHandler, UnmappedWriteHandler);
-      g_ram_mapped_size = MAPPED_SIZE;
-    }
-    break;
-
-    case 0: // 1MB memory + 7MB unmapped
-    case 1: // 4MB memory + 4MB unmapped
-    case 2: // 1MB memory + 1MB HighZ + 6MB unmapped
-    case 3: // 4MB memory + 4MB HighZ
-    case 6: // 2MB memory + 2MB HighZ + 4MB unmapped
-    case 7: // 8MB memory
-    {
-      // These aren't implemented because nothing is known to use them, so it can't be tested.
-      // If you find something that does, please let us know.
-      WARNING_LOG("Unhandled memory window 0x{} (register 0x{:08X}). Please report this game to developers.",
-                  s_RAM_SIZE.memory_window.GetValue(), s_RAM_SIZE.bits);
-    }
-      [[fallthrough]];
-
-    case 5: // 8MB memory
-    {
-      // We only unmap the upper 6MB above, so we only need to remap this as well.
-      constexpr u32 REMAP_START = RAM_BASE + RAM_2MB_SIZE;
-      constexpr u32 REMAP_SIZE = RAM_MIRROR_SIZE - RAM_2MB_SIZE;
-      SET(g_memory_handlers, KUSEG | REMAP_START, REMAP_SIZE, RAMReadHandler, RAMWriteHandler);
-      SET(g_memory_handlers, KSEG0 | REMAP_START, REMAP_SIZE, RAMReadHandler, RAMWriteHandler);
-      SET(g_memory_handlers, KSEG1 | REMAP_START, REMAP_SIZE, RAMReadHandler, RAMWriteHandler);
-      g_ram_mapped_size = RAM_8MB_SIZE;
-    }
-    break;
+    const u32 unmapped_base = RAM_BASE + mapped_size;
+    SET(g_memory_handlers, KUSEG | unmapped_base, unmapped_size, UnmappedReadHandler, UnmappedWriteHandler);
+    SET(g_memory_handlers, KSEG0 | unmapped_base, unmapped_size, UnmappedReadHandler, UnmappedWriteHandler);
+    SET(g_memory_handlers, KSEG1 | unmapped_base, unmapped_size, UnmappedReadHandler, UnmappedWriteHandler);
   }
 
+  g_ram_mapped_size = mapped_size;
+
   // Fastmem needs to be remapped.
-  if (prev_mapped_size != g_ram_mapped_size)
-    RemapFastmemViews();
+  RemapFastmemViews();
 }
 
 #undef SET

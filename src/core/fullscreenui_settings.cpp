@@ -3027,7 +3027,9 @@ void FullscreenUI::DrawEmulationSettingsPage()
     const u32 resolution_scale = GetEffectiveUIntSetting(bsi, "GPU", "ResolutionScale", 1);
     const u32 multisamples = GetEffectiveUIntSetting(bsi, "GPU", "Multisamples", 1);
     const bool use_software_renderer = GetEffectiveBoolSetting(bsi, "GPU", "UseSoftwareRendererForMemoryStates", false);
-    const bool enable_8mb_ram = GetEffectiveBoolSetting(bsi, "Console", "Enable8MBRAM", false);
+    const u8 ram_size =
+      static_cast<u8>(std::clamp<u32>(GetEffectiveUIntSetting(bsi, "CPU", "RAMSize", Settings::DEFAULT_CPU_RAM_SIZE),
+                                      Settings::MIN_CPU_RAM_SIZE, Settings::MAX_CPU_RAM_SIZE));
     const float rewind_frequency = GetEffectiveFloatSetting(bsi, "Main", "RewindFrequency", 10.0f);
     const s32 rewind_save_slots = GetEffectiveIntSetting(bsi, "Main", "RewindSaveSlots", 10);
     const float duration =
@@ -3036,7 +3038,7 @@ void FullscreenUI::DrawEmulationSettingsPage()
 
     u64 ram_usage, vram_usage;
     System::CalculateRewindMemoryUsage(rewind_save_slots, resolution_scale, multisamples, use_software_renderer,
-                                       enable_8mb_ram, &ram_usage, &vram_usage);
+                                       ram_size, &ram_usage, &vram_usage);
     if (vram_usage > 0)
     {
       rewind_summary.format(

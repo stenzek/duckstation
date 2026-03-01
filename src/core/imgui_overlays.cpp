@@ -587,8 +587,8 @@ void ImGuiManager::DrawEnhancementsOverlay(const GPUBackend* gpu)
 
   if (g_settings.cpu_overclock_active)
     text.append_format(" CPU={}%", g_settings.GetCPUOverclockPercent());
-  if (g_settings.cpu_enable_8mb_ram)
-    text.append(" 8MB");
+  if (g_settings.cpu_ram_size != Settings::DEFAULT_CPU_RAM_SIZE)
+    text.append_format(" {}MB", g_settings.cpu_ram_size);
   if (g_settings.cdrom_read_speedup != 1)
     text.append_format(" CDR={}x", g_settings.cdrom_read_speedup);
   if (g_settings.cdrom_seek_speedup != 1)

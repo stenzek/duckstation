@@ -207,7 +207,6 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
     ParseConsoleRegionName(
       si.GetStringValue("Console", "Region", Settings::GetConsoleRegionName(Settings::DEFAULT_CONSOLE_REGION)).c_str())
       .value_or(DEFAULT_CONSOLE_REGION);
-  cpu_enable_8mb_ram = si.GetBoolValue("Console", "Enable8MBRAM", false);
 
   emulation_speed = si.GetFloatValue("Main", "EmulationSpeed", 1.0f);
   fast_forward_speed = si.GetFloatValue("Main", "FastForwardSpeed", 0.0f);
@@ -245,6 +244,7 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
   cpu_fastmem_mode = ParseCPUFastmemMode(
                        si.GetStringValue("CPU", "FastmemMode", GetCPUFastmemModeName(DEFAULT_CPU_FASTMEM_MODE)).c_str())
                        .value_or(DEFAULT_CPU_FASTMEM_MODE);
+  cpu_ram_size = static_cast<u8>(std::clamp<u32>(si.GetUIntValue("CPU", "RAMSize", DEFAULT_CPU_RAM_SIZE), 2u, 16u));
 
   gpu_renderer = ParseRendererName(si.GetStringValue("GPU", "Renderer", GetRendererName(DEFAULT_GPU_RENDERER)).c_str())
                    .value_or(DEFAULT_GPU_RENDERER);
@@ -606,7 +606,6 @@ void Settings::LoadPGXPSettings(const SettingsInterface& si)
 void Settings::Save(SettingsInterface& si, bool ignore_base) const
 {
   si.SetStringValue("Console", "Region", GetConsoleRegionName(region));
-  si.SetBoolValue("Console", "Enable8MBRAM", cpu_enable_8mb_ram);
 
   si.SetFloatValue("Main", "EmulationSpeed", emulation_speed);
   si.SetFloatValue("Main", "FastForwardSpeed", fast_forward_speed);
@@ -643,6 +642,7 @@ void Settings::Save(SettingsInterface& si, bool ignore_base) const
   si.SetBoolValue("CPU", "RecompilerBlockLinking", cpu_recompiler_block_linking);
   si.SetBoolValue("CPU", "RecompilerICache", cpu_recompiler_icache);
   si.SetStringValue("CPU", "FastmemMode", GetCPUFastmemModeName(cpu_fastmem_mode));
+  si.SetBoolValue("CPU", "RAMSize", cpu_ram_size);
 
   si.SetStringValue("GPU", "Renderer", GetRendererName(gpu_renderer));
   si.SetStringValue("GPU", "Adapter", gpu_adapter.c_str());
@@ -1068,7 +1068,7 @@ void Settings::ApplySettingRestrictions()
     region = ConsoleRegion::Auto;
     cpu_overclock_enable = false;
     cpu_overclock_active = false;
-    cpu_enable_8mb_ram = false;
+    cpu_ram_size = DEFAULT_CPU_RAM_SIZE;
     gpu_resolution_scale = 1;
     gpu_multisamples = 1;
     gpu_automatic_resolution_scale = false;
@@ -1419,6 +1419,26 @@ const char* Settings::GetDiscRegionName(DiscRegion region)
 const char* Settings::GetDiscRegionDisplayName(DiscRegion region)
 {
   return Host::TranslateToCString("Settings", s_disc_region_display_names[static_cast<size_t>(region)], "DiscRegion");
+}
+
+std::span<const u8> Settings::GetCPURAMSizeOptions()
+{
+  static constexpr const u8 options[] = {2, 4, 8, 16};
+  return options;
+}
+
+const char* Settings::GetCPURAMSizeDisplayName(u8 size)
+{
+  if (size == 2)
+    return TRANSLATE("Settings", "2 MB (Retail Console)", "CPURAMSize");
+  else if (size == 4)
+    return TRANSLATE("Settings", "4 MB (Arcade Boards)", "CPURAMSize");
+  else if (size == 8)
+    return TRANSLATE("Settings", "8 MB (Dev Console)", "CPURAMSize");
+  else if (size == 16)
+    return TRANSLATE("Settings", "16 MB (Mods/Arcade Boards)", "CPURAMSize");
+  else
+    return "Unknown";
 }
 
 static constexpr const std::array s_cpu_execution_mode_names = {
