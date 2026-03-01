@@ -23,7 +23,16 @@
 		<file>icons/black/svg/chat-history-line.svg</file>
 		<file>icons/black/svg/chat-off-line.svg</file>
 		<file>icons/black/svg/cheats-line.svg</file>
+		<file>icons/black/svg/checkbox-checked-disabled.svg</file>
+		<file>icons/black/svg/checkbox-checked-pressed.svg</file>
+		<file>icons/black/svg/checkbox-checked.svg</file>
+		<file>icons/black/svg/checkbox-indeterminate-disabled.svg</file>
+		<file>icons/black/svg/checkbox-indeterminate-pressed.svg</file>
+		<file>icons/black/svg/checkbox-indeterminate.svg</file>
 		<file>icons/black/svg/checkbox-multiple-blank-line.svg</file>
+		<file>icons/black/svg/checkbox-unchecked-disabled.svg</file>
+		<file>icons/black/svg/checkbox-unchecked-pressed.svg</file>
+		<file>icons/black/svg/checkbox-unchecked.svg</file>
 		<file>icons/black/svg/chip-2-line.svg</file>
 		<file>icons/black/svg/chip-line.svg</file>
 		<file>icons/black/svg/close-line.svg</file>
@@ -527,5 +536,15 @@
 		<file>standard-icons/white/svg/view-list-icons.svg</file>
 		<file>standard-icons/white/svg/view-refresh.svg</file>
 		<file>standard-icons/white/svg/window-close.svg</file>
+		<file>themes/AMOLED.qss</file>
+		<file>themes/cobaltsky.qss</file>
+		<file>themes/darkerfusion.qss</file>
+		<file>themes/darkfusion.qss</file>
+		<file>themes/darkfusionblue.qss</file>
+		<file>themes/darkruby.qss</file>
+		<file>themes/greengiant.qss</file>
+		<file>themes/greymatter.qss</file>
+		<file>themes/pinkypals.qss</file>
+		<file>themes/purplerain.qss</file>
 	</qresource>
 </RCC>

@@ -2955,6 +2955,42 @@ QString QtHost::GetResourceQPath(std::string_view name, bool allow_override)
   return QString::fromStdString(GetResourcePath(name, allow_override));
 }
 
+std::optional<std::string> QtHost::ReadResourceFileToString(std::string_view name, bool allow_override, Error* error)
+{
+  if (allow_override)
+  {
+    const std::string respath = Path::Combine(EmuFolders::UserResources, name.starts_with(":") ? name.substr(1) : name);
+    if (std::optional<std::string> ret = FileSystem::ReadFileToString(respath.c_str(), error))
+      return ret;
+  }
+
+  if (!name.starts_with(":"))
+  {
+    Error::SetStringFmt(error, "Failed to find resource file '{}'", name);
+    return std::nullopt;
+  }
+
+  QFile file(QtUtils::StringViewToQString(name));
+  s64 size;
+  if (!file.open(QIODevice::ReadOnly) || (size = file.size()) <= 0)
+  {
+    Error::SetStringFmt(error, "Failed to open resource file '{}': {}", name, file.errorString().toStdString());
+    return std::nullopt;
+  }
+
+  std::string ret;
+  ret.resize(static_cast<size_t>(size));
+
+  const s64 read_size = static_cast<s64>(ret.size());
+  if (read_size > 0 && file.read(ret.data(), read_size) != read_size)
+  {
+    Error::SetStringFmt(error, "Failed to read resource file '{}': {}", name, file.errorString().toStdString());
+    return std::nullopt;
+  }
+
+  return ret;
+}
+
 const QStringList& QtHost::GetRobotoFontFamilies()
 {
   std::call_once(s_state.roboto_font_once_flag, []() {

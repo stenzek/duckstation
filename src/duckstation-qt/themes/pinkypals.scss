@@ -1,0 +1,62 @@
+/*! SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com> and contributors. */
+/*! SPDX-License-Identifier: CC-BY-NC-ND-4.0 */
+//
+// pinkypals.scss - Bright pink light theme
+//
+
+@use 'template' with (
+  // --------------------------------------------------------------------------
+  // QPalette colors
+  // --------------------------------------------------------------------------
+  $palette-window:              #ffaec9,
+  $palette-base:                #d691a8,
+  $palette-button:              #ffaec9,
+  $palette-text:                #191919,
+  $palette-highlight:           #ff7f79,
+  $palette-highlight-text:      #191919,
+  $palette-disabled-text:       #808080,
+  $palette-placeholder-text:    #808080,
+  $palette-link:                #191919,
+  $palette-alternate-base:      #e05885,
+  $palette-tooltip-base:        #ffaec9,
+  $palette-tooltip-text:        #d691a8,
+  $palette-active-button:       #ffaec9,
+  $palette-disabled-light:      #808080,
+
+  // --------------------------------------------------------------------------
+  // Stylesheet colors
+  // --------------------------------------------------------------------------
+
+  // Background hierarchy
+  $bg-disabled:       #f0c0d0,
+  $bg-menu:           #f5a0be,
+  $bg-control:        #e89ab2,
+  $bg-surface:        #ffaec9,
+  $bg-hover:          #f0a0b8,
+  $bg-active:         #ff7f79,
+  $bg-button-hover:   #f89ab0,
+  $bg-pressed:        #e06860,
+
+  // Borders
+  $border-color:      #d08898,
+  $border-subtle:     #d890a0,
+
+  // Text
+  $text-color:        #191919,
+  $text-active:       #191919,
+  $text-disabled:     #808080,
+
+  // Accent
+  $accent-color:      #ff7f79,
+
+  // Slider handle
+  $slider-handle:         #ff7f79,
+  $slider-handle-hover:   #ff9590,
+  $slider-handle-pressed: #e06860,
+
+  // Checkbox icons
+  $checkbox-icon-style: "black",
+
+  // Theme mode
+  $theme-mode: "light",
+);

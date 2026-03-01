@@ -1,0 +1,56 @@
+/*! SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com> and contributors. */
+/*! SPDX-License-Identifier: CC-BY-NC-ND-4.0 */
+//
+// greymatter.scss - Cool blue-grey dark theme
+//
+
+@use 'template' with (
+  // --------------------------------------------------------------------------
+  // QPalette colors
+  // --------------------------------------------------------------------------
+  $palette-window:              #2e3440,
+  $palette-base:                #3b4252,
+  $palette-button:              #3b4252,
+  $palette-text:                #ffffff,
+  $palette-highlight:           #59637b,
+  $palette-highlight-text:      #ffffff,
+  $palette-disabled-text:       #a6a6a6,
+  $palette-placeholder-text:    #808080,
+  $palette-link:                #c6eeff,
+  $palette-alternate-base:      #2e3440,
+  $palette-active-button:       #3b4252,
+  $palette-disabled-light:      #2e3440,
+
+  // --------------------------------------------------------------------------
+  // Stylesheet colors
+  // --------------------------------------------------------------------------
+
+  // Background hierarchy
+  $bg-disabled:       #222830,
+  $bg-menu:           #272d38,
+  $bg-control:        #333a48,
+  $bg-surface:        #3b4252,
+  $bg-hover:          #4a5268,
+  $bg-active:         #59637b,
+  $bg-button-hover:   #505a70,
+  $bg-pressed:        #4e5870,
+
+  // Borders
+  $border-color:      #4a5060,
+  $border-subtle:     #3f4555,
+
+  // Text
+  $text-color:        #ffffff,
+  $text-disabled:     #a6a6a6,
+
+  // Accent
+  $accent-color:      #59637b,
+
+  // Slider handle
+  $slider-handle:         #59637b,
+  $slider-handle-hover:   #687590,
+  $slider-handle-pressed: #7888a0,
+
+  // Checkbox icons
+  $checkbox-icon-style: "white",
+);

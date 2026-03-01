@@ -1,0 +1,55 @@
+/*! SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com> */
+/*! SPDX-License-Identifier: CC-BY-NC-ND-4.0 */
+//
+// darkfusion.scss - Classic dark Fusion theme
+//
+
+@use 'template' with (
+  // --------------------------------------------------------------------------
+  // QPalette colors
+  // --------------------------------------------------------------------------
+  $palette-window:              #353535,
+  $palette-base:                #191919,
+  $palette-button:              #353535,
+  $palette-text:                #ffffff,
+  $palette-highlight:           #4b4b4b,
+  $palette-highlight-text:      #ffffff,
+  $palette-disabled-text:       #808080,
+  $palette-placeholder-text:    #808080,
+  $palette-link:                #c6eeff,
+  $palette-alternate-base:      #353535,
+  $palette-disabled-light:      #353535,
+
+  // --------------------------------------------------------------------------
+  // Stylesheet colors
+  // --------------------------------------------------------------------------
+
+  // Background hierarchy
+  $bg-disabled:       #151515,
+  $bg-menu:           #1c1c1c,
+  $bg-control:        #282828,
+  $bg-surface:        #303030,
+  $bg-hover:          #3c3c3c,
+  $bg-active:         #4b4b4b,
+  $bg-button-hover:   #525252,
+  $bg-pressed:        #5a5a5a,
+
+  // Borders
+  $border-color:      #444444,
+  $border-subtle:     #3a3a3a,
+
+  // Text
+  $text-color:        #ffffff,
+  $text-disabled:     #808080,
+
+  // Accent
+  $accent-color:      #4b4b4b,
+
+  // Slider handle
+  $slider-handle:         #4b4b4b,
+  $slider-handle-hover:   #5a5a5a,
+  $slider-handle-pressed: #6a6a6a,
+
+  // Checkbox icons
+  $checkbox-icon-style: "white",
+);

@@ -1,0 +1,500 @@
+// SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-License-Identifier: CC-BY-NC-ND-4.0
+//
+// _template.scss - SASS template for DuckStation Qt themes
+//
+// This partial defines all color variables with sensible defaults matching
+// the "darkerfusion" theme. Theme files override these variables and @use
+// this template to generate a complete stylesheet.
+//
+// The compiled CSS output contains two parts:
+//   1. A structured comment block with QPalette color values for C++ to parse.
+//   2. The full Qt stylesheet rules using the configured colors.
+//
+// Usage:
+//   // mytheme.scss
+//   @use 'template' with (
+//     $palette-window: #121212,
+//     $accent-color: #ac151f,
+//     // ... other overrides
+//   );
+
+// ============================================================================
+// QPalette Colors
+// ============================================================================
+// These map directly to QPalette color roles set in C++.
+
+$palette-window: #242424 !default;
+$palette-base: #2b2b2b !default;
+$palette-button: #282828 !default;
+$palette-text: #ffffff !default;
+$palette-highlight: #5a5a5a !default;
+$palette-highlight-text: #ffffff !default;
+$palette-disabled-text: #c8c8c8 !default;
+$palette-placeholder-text: #c8c8c8 !default;
+$palette-link: #c6eeff !default;
+
+// These palette roles default to sharing values with the primary variables
+// above. Override them only when a theme needs distinct values.
+$palette-window-text: $palette-text !default;
+$palette-alternate-base: $palette-window !default;
+$palette-tooltip-base: $palette-window !default;
+$palette-tooltip-text: $palette-text !default;
+$palette-button-text: $palette-text !default;
+$palette-active-button: $palette-button !default;
+$palette-disabled-button-text: $palette-disabled-text !default;
+$palette-disabled-window-text: $palette-disabled-text !default;
+$palette-disabled-text-role: $palette-disabled-text !default;
+$palette-disabled-light: $palette-window !default;
+
+// ============================================================================
+// Stylesheet Colors
+// ============================================================================
+
+// Background hierarchy (darkest to lightest)
+$bg-disabled: #1e1e1e !default;           // disabled control backgrounds
+$bg-menu: #232323 !default;               // menu / tooltip backgrounds
+$bg-control: #2d2d2d !default;            // input fields, scrollbars, sliders, headers
+$bg-surface: #303030 !default;            // buttons, tabs, header sections
+$bg-hover: #3a3a3a !default;              // hover state for inputs and list items
+$bg-active: #414141 !default;             // selected / checked / active state
+$bg-button-hover: #484848 !default;       // push button hover
+$bg-pressed: #515151 !default;            // pressed state
+
+// Borders
+$border-color: #444444 !default;          // menu and tooltip border
+$border-subtle: #3d3d3d !default;         // header section divider
+
+// Text
+$text-color: #ffffff !default;            // primary text in stylesheet widgets
+$text-active: $text-color !default;       // text on active / selected backgrounds
+$text-disabled: #777777 !default;         // disabled text in controls, icon borders
+
+// Accent
+$accent-color: #1464a0 !default;          // progress bar chunk
+
+// Slider handle
+$slider-handle: #808080 !default;
+$slider-handle-hover: #909090 !default;
+$slider-handle-pressed: #a0a0a0 !default;
+
+// Checkbox icon style — "white" or "black" icon set
+$checkbox-icon-style: "white" !default;
+
+// Theme brightness — "dark" or "light"
+$theme-mode: "dark" !default;
+
+// ============================================================================
+// QPalette Output (parsed by C++ at load time)
+// ============================================================================
+// The /*!PALETTE ... */ block is preserved in all SCSS output modes.
+// C++ reads these key-value pairs to configure QPalette before applying
+// the remainder of the file as a Qt stylesheet.
+
+/*!PALETTE
+ * dark: #{$theme-mode}
+ * window: #{$palette-window}
+ * window-text: #{$palette-window-text}
+ * base: #{$palette-base}
+ * alternate-base: #{$palette-alternate-base}
+ * tooltip-base: #{$palette-tooltip-base}
+ * tooltip-text: #{$palette-tooltip-text}
+ * text: #{$palette-text}
+ * button: #{$palette-button}
+ * button-text: #{$palette-button-text}
+ * link: #{$palette-link}
+ * highlight: #{$palette-highlight}
+ * highlight-text: #{$palette-highlight-text}
+ * placeholder-text: #{$palette-placeholder-text}
+ * active-button: #{$palette-active-button}
+ * disabled-button-text: #{$palette-disabled-button-text}
+ * disabled-window-text: #{$palette-disabled-window-text}
+ * disabled-text: #{$palette-disabled-text-role}
+ * disabled-light: #{$palette-disabled-light}
+ */
+
+// ============================================================================
+// Stylesheet Rules
+// ============================================================================
+
+QMenu {
+  border: 1px solid $border-color;
+  border-radius: 8px;
+  padding: 6px 10px;
+  background-color: $bg-menu;
+}
+
+QMenu::icon,
+QMenu::indicator {
+  left: 8px;
+}
+QMenu::item {
+  padding: 6px 18px;
+  border-radius: 8px;
+}
+QMenu::item:selected {
+  background-color: $bg-active;
+  color: $text-active;
+}
+QMenu::icon:checked {
+  background: $bg-active;
+  border: 1px solid $text-disabled;
+  border-radius: 4px;
+}
+
+QMenuBar::item {
+  padding: 4px 6px;
+  border-radius: 6px;
+}
+QMenuBar::item:selected, QMenuBar::item:pressed {
+  background: $bg-active;
+  border-radius: 4px;
+}
+
+QToolTip {
+  color: $text-color;
+  background-color: $bg-menu;
+  border: 1px solid $border-color;
+  border-radius: 6px;
+  padding: 2px;
+}
+
+QToolBar {
+  border: none;
+}
+QToolButton {
+  border: none;
+  background: transparent;
+  padding: 3px;
+  border-radius: 8px;
+}
+QToolButton:checked {
+  background-color: $bg-surface;
+}
+QToolButton:hover {
+  background-color: $bg-active;
+}
+QToolButton:pressed {
+  background-color: $bg-pressed;
+}
+
+QPushButton {
+  border: none;
+  background-color: $bg-surface;
+  padding: 5px 10px;
+  border-radius: 8px;
+  color: $text-color;
+}
+QPushButton:checked {
+  background-color: $bg-active;
+  color: $text-active;
+}
+QPushButton:hover {
+  background-color: $bg-button-hover;
+}
+QPushButton:pressed {
+  background-color: $bg-pressed;
+}
+QPushButton:disabled {
+  background-color: $bg-control;
+  color: $text-disabled;
+}
+QDialog QPushButton {
+  min-width: 50px;
+  padding: 6px 12px;
+}
+
+QLineEdit {
+  border: none;
+  border-radius: 8px;
+  padding: 4px 8px;
+  background-color: $bg-control;
+  selection-background-color: $bg-active;
+  selection-color: $text-active;
+  color: $text-color;
+}
+QLineEdit::hover {
+  background-color: $bg-hover;
+}
+QLineEdit:disabled {
+  background-color: $bg-disabled;
+  color: $text-disabled;
+}
+
+QCheckBox {
+  spacing: 4px;
+  padding: 2px 0;
+}
+
+QCheckBox::indicator {
+  width: 14px;
+  height: 14px;
+}
+QCheckBox::indicator::unchecked {
+  image: url(":/icons/#{$checkbox-icon-style}/svg/checkbox-unchecked.svg");
+}
+QCheckBox::indicator::unchecked:pressed {
+  image: url(":/icons/#{$checkbox-icon-style}/svg/checkbox-unchecked-pressed.svg");
+}
+QCheckBox::indicator::unchecked:disabled {
+  image: url(":/icons/#{$checkbox-icon-style}/svg/checkbox-unchecked-disabled.svg");
+}
+QCheckBox::indicator::checked {
+  image: url(":/icons/#{$checkbox-icon-style}/svg/checkbox-checked.svg");
+}
+QCheckBox::indicator::checked:pressed {
+  image: url(":/icons/#{$checkbox-icon-style}/svg/checkbox-checked-pressed.svg");
+}
+QCheckBox::indicator::checked:disabled {
+  image: url(":/icons/#{$checkbox-icon-style}/svg/checkbox-checked-disabled.svg");
+}
+QCheckBox::indicator::indeterminate {
+  image: url(":/icons/#{$checkbox-icon-style}/svg/checkbox-indeterminate.svg");
+}
+QCheckBox::indicator::indeterminate:pressed {
+  image: url(":/icons/#{$checkbox-icon-style}/svg/checkbox-indeterminate-pressed.svg");
+}
+QCheckBox::indicator::indeterminate:disabled {
+  image: url(":/icons/#{$checkbox-icon-style}/svg/checkbox-indeterminate-disabled.svg");
+}
+
+QAbstractSpinBox {
+  border: none;
+  border-radius: 8px;
+  padding: 3px 8px;
+  background-color: $bg-control;
+  selection-background-color: $bg-active;
+  selection-color: $text-active;
+  color: $text-color;
+}
+QAbstractSpinBox::hover {
+  background-color: $bg-hover;
+}
+QAbstractSpinBox:disabled {
+  background-color: $bg-disabled;
+  color: $text-disabled;
+}
+QAbstractSpinBox::up-button,
+QAbstractSpinBox::down-button {
+  subcontrol-origin: border;
+  width: 8px;
+  border: none;
+  padding: 0 8px;
+}
+QAbstractSpinBox::up-button {
+  subcontrol-position: top right; /* position at the top right corner */
+}
+QAbstractSpinBox::up-arrow {
+  width: 8px;
+  height: 8px;
+  image: url(":/qdarkstyle/arrow_up.png");
+}
+QAbstractSpinBox::up-arrow:disabled {
+  image: url(":/qdarkstyle/arrow_up_disabled.png");
+}
+QAbstractSpinBox::down-button {
+  subcontrol-position: bottom right; /* position at the top right corner */
+}
+QAbstractSpinBox::down-arrow {
+  width: 8px;
+  height: 8px;
+  image: url(":/qdarkstyle/arrow_down.png");
+}
+QAbstractSpinBox::down-arrow:disabled {
+  image: url(":/qdarkstyle/arrow_down_disabled.png");
+}
+
+QComboBox {
+  border: none;
+  border-radius: 8px;
+  padding: 4px 10px 4px 8px; /* leave space for drop-down */
+  background-color: $bg-control;
+  color: $text-color;
+  selection-background-color: $bg-active;
+  selection-color: $text-active;
+}
+QComboBox:hover {
+  background-color: $bg-hover;
+}
+QComboBox:disabled {
+  background-color: $bg-disabled;
+  color: $text-disabled;
+}
+QComboBox::drop-down {
+  subcontrol-origin: padding;
+  subcontrol-position: top right;
+  width: 16px;
+  border: none;
+  padding: 0 6px;
+  background: transparent;
+}
+QComboBox::down-arrow {
+  width: 10px;
+  height: 10px;
+  image: url(":/qdarkstyle/arrow_down.png");
+}
+QComboBox::down-arrow:disabled {
+  image: url(":/qdarkstyle/arrow_down_disabled.png");
+}
+QScrollBar {
+  background: $bg-control;
+  width: 12px;
+  margin: 0px;
+  border-radius: 6px;
+}
+QScrollBar::handle {
+  background-color: $bg-active;
+  min-height: 20px;
+  border-radius: 6px;
+}
+QScrollBar::handle:hover {
+  background: $bg-pressed;
+}
+QScrollBar::add-line:vertical,
+QScrollBar::sub-line:vertical,
+QScrollBar::add-line:horizontal,
+QScrollBar::sub-line:horizontal {
+  height: 0;
+}
+QHeaderView {
+  background-color: $bg-control;
+}
+QHeaderView::section {
+  background-color: $bg-surface;
+  padding: 2px 4px;
+  color: $text-color;
+  border: none;
+}
+QHeaderView::section:middle,
+QHeaderView::section:last {
+  border-left: 1px solid $border-subtle;
+}
+QHeaderView::section:hover {
+  background-color: $bg-active;
+  color: $text-active;
+}
+QHeaderView::section:pressed {
+  background-color: $bg-pressed;
+}
+QTabBar::tab {
+  background: $bg-surface;
+  padding: 6px 12px;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+  border-right: 1px solid transparent;
+  color: $text-color;
+}
+QTabBar::tab:selected {
+  background: $bg-active;
+  color: $text-active;
+}
+QTabBar::tab:hover {
+  background: $bg-hover;
+}
+
+QProgressBar {
+  border: none;
+  border-radius: 8px;
+  background-color: $bg-control;
+  color: $text-color;
+  text-align: center;
+}
+QProgressBar::chunk {
+  background-color: $accent-color;
+  border-radius: 8px;
+}
+
+QSlider {
+  margin: 2px 0; /* to make room for the handle */
+}
+QSlider::groove {
+  border: none;
+  height: 8px;
+  background-color: $bg-control;
+  border-radius: 4px;
+}
+QSlider::handle {
+  background-color: $slider-handle;
+  border: none;
+  width: 16px;
+  margin: -4px 0; /* handle is placed by default on the groove, so we need to offset it */
+  border-radius: 8px;
+}
+QSlider::handle:hover {
+  background-color: $slider-handle-hover;
+}
+QSlider::handle:pressed {
+  background-color: $slider-handle-pressed;
+}
+
+QTextBrowser {
+  border: none;
+  border-radius: 8px;
+  padding: 2px 4px;
+  background-color: $bg-control;
+  selection-background-color: $bg-active;
+  selection-color: $text-active;
+  color: $text-color;
+}
+
+.settings-window QListView {
+  border: none;
+  border-radius: 8px;
+  background-color: $bg-control;
+  color: $text-color;
+  selection-background-color: $bg-active;
+  selection-color: $text-active;
+  padding: 4px;
+}
+.settings-window QListView::item {
+  border: none;
+  padding: 2px 4px;
+  border-radius: 8px;
+}
+.settings-window QListView::item:hover {
+  background-color: $bg-hover;
+}
+.settings-window QListView::item:selected {
+  background-color: $bg-active;
+  color: $text-active;
+}
+/* Remove dotted focus rectangle / outline around QListView items when focused/selected */
+.settings-window QListView:focus,
+.settings-window QListView::item:focus,
+.settings-window QListView::item:selected:focus {
+  outline: none;
+  border: none;
+}
+
+.settings-window QTreeView {
+  border: none;
+  border-radius: 8px;
+  background-color: $bg-control;
+  color: $text-color;
+  selection-background-color: $bg-active;
+  selection-color: $text-active;
+  padding: 4px;
+}
+.settings-window QTreeView::item {
+  border: none;
+  padding: 2px 4px;
+}
+.settings-window QTreeView::item:hover {
+  background-color: $bg-hover;
+}
+.settings-window QTreeView::item:selected {
+  background-color: $bg-active;
+  color: $text-active;
+}
+
+.settings-window GamePatchSettingsWidget QScrollArea,
+.settings-window GamePatchSettingsWidget #patches_container {
+  border: none;
+  border-radius: 8px;
+  background: $bg-control;
+}
+.settings-window GamePatchSettingsWidget #patches_container > QFrame {
+  border: none;
+  border-bottom: 1px solid $bg-active;
+  margin: 0px 8px;
+}

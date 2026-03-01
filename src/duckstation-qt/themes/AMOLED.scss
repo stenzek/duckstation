@@ -1,0 +1,56 @@
+/*! SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com> and contributors. */
+/*! SPDX-License-Identifier: CC-BY-NC-ND-4.0 */
+//
+// AMOLED.scss - Pure black theme for OLED screens by KamFretoZ
+//
+
+@use 'template' with (
+  // --------------------------------------------------------------------------
+  // QPalette colors
+  // --------------------------------------------------------------------------
+  $palette-window:              #000000,
+  $palette-base:                #191919,
+  $palette-button:              #191919,
+  $palette-text:                #ffffff,
+  $palette-highlight:           #4b4b4b,
+  $palette-highlight-text:      #ffffff,
+  $palette-disabled-text:       #808080,
+  $palette-placeholder-text:    #808080,
+  $palette-link:                #c6eeff,
+  $palette-alternate-base:      #000000,
+  $palette-active-button:       #191919,
+  $palette-disabled-light:      #808080,
+
+  // --------------------------------------------------------------------------
+  // Stylesheet colors
+  // --------------------------------------------------------------------------
+
+  // Background hierarchy
+  $bg-disabled:       #050505,
+  $bg-menu:           #0a0a0a,
+  $bg-control:        #141414,
+  $bg-surface:        #1a1a1a,
+  $bg-hover:          #303030,
+  $bg-active:         #4b4b4b,
+  $bg-button-hover:   #383838,
+  $bg-pressed:        #555555,
+
+  // Borders
+  $border-color:      #2a2a2a,
+  $border-subtle:     #222222,
+
+  // Text
+  $text-color:        #ffffff,
+  $text-disabled:     #808080,
+
+  // Accent
+  $accent-color:      #4b4b4b,
+
+  // Slider handle
+  $slider-handle:         #4b4b4b,
+  $slider-handle-hover:   #5a5a5a,
+  $slider-handle-pressed: #6a6a6a,
+
+  // Checkbox icons
+  $checkbox-icon-style: "white",
+);

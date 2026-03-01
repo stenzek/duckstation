@@ -319,6 +319,9 @@ bool HasGlobalStylesheet();
 /// Sets the icon theme, based on the current style (light/dark).
 void UpdateThemeOnStyleChange();
 
+/// Returns true if the specified theme name uses style sheets.
+bool IsStylesheetTheme(std::string_view theme_name);
+
 /// Sets batch mode (exit after game shutdown).
 bool InBatchMode();
 
@@ -349,6 +352,9 @@ QString GetResourcesBasePath();
 /// Returns the path to the specified resource.
 std::string GetResourcePath(std::string_view name, bool allow_override);
 QString GetResourceQPath(std::string_view name, bool allow_override);
+
+/// Reads an embedded resource file to a string.
+std::optional<std::string> ReadResourceFileToString(std::string_view name, bool allow_override, Error* error);
 
 /// Returns the font family for the bundled Roboto font.
 const QStringList& GetRobotoFontFamilies();

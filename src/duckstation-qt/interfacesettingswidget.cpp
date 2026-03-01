@@ -93,17 +93,21 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* dialog, QWidget
   connect(m_ui.hideMainWindow, &QCheckBox::checkStateChanged, this,
           &InterfaceSettingsWidget::updateRenderToSeparateWindowOptions);
 
+  int next_appearance_row = m_ui.appearanceLayout->rowCount();
+  int next_appearance_col = 0;
+
 #if defined(_WIN32)
   QCheckBox* const disable_window_rounded_corners =
     new QCheckBox(tr("Disable Window Rounded Corners"), m_ui.appearanceGroup);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, disable_window_rounded_corners, "Main",
                                                "DisableWindowRoundedCorners", false);
-  m_ui.appearanceLayout->addWidget(disable_window_rounded_corners, m_ui.appearanceLayout->rowCount(), 0, 1, 4);
+  m_ui.appearanceLayout->addWidget(disable_window_rounded_corners, next_appearance_row, next_appearance_col++ * 2, 1,
+                                   2);
 #elif defined(__APPLE__)
   QCheckBox* const use_fractional_window_scale = new QCheckBox(tr("Use Fractional Window Scale"), m_ui.appearanceGroup);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, use_fractional_window_scale, "Main", "UseFractionalWindowScale",
                                                false);
-  m_ui.appearanceLayout->addWidget(use_fractional_window_scale, m_ui.appearanceLayout->rowCount(), 0, 1, 4);
+  m_ui.appearanceLayout->addWidget(use_fractional_window_scale, next_appearance_row, next_appearance_col++ * 2, 1, 2);
 #endif
 
   if (!m_dialog->isPerGameSettings())
@@ -123,7 +127,7 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* dialog, QWidget
 #ifdef __linux__
     QCheckBox* const use_system_font = new QCheckBox(tr("Use System Font"), m_ui.appearanceGroup);
     SettingWidgetBinder::BindWidgetToBoolSetting(sif, use_system_font, "Main", "UseSystemFont", false);
-    m_ui.appearanceLayout->addWidget(use_system_font, m_ui.appearanceLayout->rowCount(), 0, 1, 4);
+    m_ui.appearanceLayout->addWidget(use_system_font, next_appearance_row, next_appearance_col++ * 2, 1, 2);
     connect(use_system_font, &QCheckBox::checkStateChanged, this, &QtHost::UpdateApplicationTheme,
             Qt::QueuedConnection);
     dialog->registerWidgetHelp(
@@ -131,6 +135,14 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* dialog, QWidget
       tr("Uses the system font for the interface, instead of the bundled Roboto font. Enabling "
          "this option may cause some UI elements to not fit within windows."));
 #endif
+
+    QCheckBox* const disable_stylesheet = new QCheckBox(tr("Disable Style Sheets"), m_ui.appearanceGroup);
+    SettingWidgetBinder::BindWidgetToBoolSetting(sif, disable_stylesheet, "Main", "DisableStylesheet", false);
+    connect(disable_stylesheet, &QCheckBox::checkStateChanged, this, &QtHost::UpdateApplicationTheme);
+    m_ui.appearanceLayout->addWidget(disable_stylesheet, next_appearance_row, next_appearance_col++ * 2, 1, 2);
+    dialog->registerWidgetHelp(disable_stylesheet, tr("Disable Style Sheets"), tr("Unchecked"),
+                               tr("Disables the use of style sheets in the application, reverting to the original "
+                                  "'Fusion' style but retaining the color scheme."));
 
     SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.autoUpdateEnabled, "AutoUpdater", "CheckAtStartup", true);
     for (const auto& [name, desc] : AutoUpdaterDialog::getChannelList())

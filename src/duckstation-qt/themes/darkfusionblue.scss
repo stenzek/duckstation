@@ -1,0 +1,57 @@
+/*! SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com> */
+/*! SPDX-License-Identifier: CC-BY-NC-ND-4.0 */
+//
+// darkfusionblue.scss - Dark Fusion theme with blue accents
+//
+
+@use 'template' with (
+  // --------------------------------------------------------------------------
+  // QPalette colors
+  // --------------------------------------------------------------------------
+  $palette-window:              #353535,
+  $palette-base:                #191919,
+  $palette-button:              #353535,
+  $palette-text:                #ffffff,
+  $palette-highlight:           #0058d0,
+  $palette-highlight-text:      #ffffff,
+  $palette-disabled-text:       #808080,
+  $palette-placeholder-text:    #808080,
+  $palette-link:                #c6eeff,
+  $palette-tooltip-base:        #0058d0,
+  $palette-alternate-base:      #353535,
+  $palette-active-button:       #404040,
+  $palette-disabled-light:      #353535,
+
+  // --------------------------------------------------------------------------
+  // Stylesheet colors
+  // --------------------------------------------------------------------------
+
+  // Background hierarchy
+  $bg-disabled:       #151515,
+  $bg-menu:           #1c1c1c,
+  $bg-control:        #282828,
+  $bg-surface:        #303030,
+  $bg-hover:          #1a3058,
+  $bg-active:         #0058d0,
+  $bg-button-hover:   #1a3a62,
+  $bg-pressed:        #004ab0,
+
+  // Borders
+  $border-color:      #444444,
+  $border-subtle:     #3a3a3a,
+
+  // Text
+  $text-color:        #ffffff,
+  $text-disabled:     #808080,
+
+  // Accent
+  $accent-color:      #0058d0,
+
+  // Slider handle
+  $slider-handle:         #0058d0,
+  $slider-handle-hover:   #1a6ae0,
+  $slider-handle-pressed: #3080f0,
+
+  // Checkbox icons
+  $checkbox-icon-style: "white",
+);

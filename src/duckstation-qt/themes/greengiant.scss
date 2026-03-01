@@ -1,0 +1,64 @@
+/*! SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com> and contributors. */
+/*! SPDX-License-Identifier: CC-BY-NC-ND-4.0 */
+//
+// greengiant.scss - Tame green & brown light theme by RedDevilus
+//
+
+@use 'template' with (
+  // --------------------------------------------------------------------------
+  // QPalette colors
+  // --------------------------------------------------------------------------
+  $palette-window:              #d5de2e,
+  $palette-base:                #b0c400,
+  $palette-button:              #ca964b,
+  $palette-text:                #191919,
+  $palette-highlight:           #876432,
+  $palette-highlight-text:      #ffffff,
+  $palette-disabled-text:       #6f6f6f,
+  $palette-placeholder-text:    #808080,
+  $palette-link:                #ca964b,
+  $palette-alternate-base:      #ca964b,
+  $palette-tooltip-base:        #876432,
+  $palette-tooltip-text:        #ffffff,
+  $palette-button-text:         #262626,
+  $palette-disabled-window-text: #383838,
+  $palette-disabled-text-role:  #383838,
+  $palette-disabled-light:      #6f6f6f,
+
+  // --------------------------------------------------------------------------
+  // Stylesheet colors
+  // --------------------------------------------------------------------------
+
+  // Background hierarchy
+  $bg-disabled:       #e0e8a0,
+  $bg-menu:           #c8d420,
+  $bg-control:        #b8c810,
+  $bg-surface:        #ca964b,
+  $bg-hover:          #d4a55e,
+  $bg-active:         #876432,
+  $bg-button-hover:   #b88840,
+  $bg-pressed:        #755628,
+
+  // Borders
+  $border-color:      #a08030,
+  $border-subtle:     #b89040,
+
+  // Text
+  $text-color:        #191919,
+  $text-active:       #ffffff,
+  $text-disabled:     #6f6f6f,
+
+  // Accent
+  $accent-color:      #876432,
+
+  // Slider handle
+  $slider-handle:         #876432,
+  $slider-handle-hover:   #9a7540,
+  $slider-handle-pressed: #755628,
+
+  // Checkbox icons
+  $checkbox-icon-style: "black",
+
+  // Theme mode
+  $theme-mode: "light",
+);

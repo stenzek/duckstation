@@ -1,0 +1,57 @@
+/*! SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com> and contributors. */
+/*! SPDX-License-Identifier: CC-BY-NC-ND-4.0 */
+//
+// cobaltsky.scss - Soothing deep royal blue theme by KamFretoZ
+//
+
+@use 'template' with (
+  // --------------------------------------------------------------------------
+  // QPalette colors
+  // --------------------------------------------------------------------------
+  $palette-window:              #1d2951,
+  $palette-base:                #2b3d79,
+  $palette-button:              #192082,
+  $palette-text:                #ffffff,
+  $palette-highlight:           #245dda,
+  $palette-highlight-text:      #ffffff,
+  $palette-disabled-text:       #969696,
+  $palette-placeholder-text:    #969696,
+  $palette-link:                #00caff,
+  $palette-alternate-base:      #111e6c,
+  $palette-tooltip-base:        #111e6c,
+  $palette-active-button:       #192082,
+  $palette-disabled-light:      #969696,
+
+  // --------------------------------------------------------------------------
+  // Stylesheet colors
+  // --------------------------------------------------------------------------
+
+  // Background hierarchy
+  $bg-disabled:       #0e1428,
+  $bg-menu:           #141d38,
+  $bg-control:        #1a2548,
+  $bg-surface:        #1d2951,
+  $bg-hover:          #223362,
+  $bg-active:         #245dda,
+  $bg-button-hover:   #253a70,
+  $bg-pressed:        #1e4cb8,
+
+  // Borders
+  $border-color:      #2a3a6a,
+  $border-subtle:     #232f58,
+
+  // Text
+  $text-color:        #ffffff,
+  $text-disabled:     #969696,
+
+  // Accent
+  $accent-color:      #245dda,
+
+  // Slider handle
+  $slider-handle:         #245dda,
+  $slider-handle-hover:   #3070e8,
+  $slider-handle-pressed: #4080f0,
+
+  // Checkbox icons
+  $checkbox-icon-style: "white",
+);

@@ -1,0 +1,10 @@
+/*! SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com> */
+/*! SPDX-License-Identifier: CC-BY-NC-ND-4.0 */
+//
+// darkerfusion.scss - DuckStation default dark theme
+//
+// All color variables default to the darkerfusion palette in _template.scss,
+// so this file only needs to forward the template without overrides.
+//
+
+@use 'template';
