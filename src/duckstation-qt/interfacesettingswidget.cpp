@@ -111,13 +111,16 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* dialog, QWidget
          "this option may cause some UI elements to not fit within windows."));
 #endif
 
-    QCheckBox* const disable_stylesheet = new QCheckBox(tr("Disable Style Sheets"), m_ui.appearanceGroup);
-    SettingWidgetBinder::BindWidgetToBoolSetting(sif, disable_stylesheet, "Main", "DisableStylesheet", false);
-    connect(disable_stylesheet, &QCheckBox::checkStateChanged, this, &QtHost::UpdateApplicationTheme);
-    m_ui.appearanceLayout->addWidget(disable_stylesheet, next_appearance_row, next_appearance_col++ * 2, 1, 2);
-    dialog->registerWidgetHelp(disable_stylesheet, tr("Disable Style Sheets"), tr("Unchecked"),
+    m_disable_style_sheets = new QCheckBox(tr("Disable Style Sheets"), m_ui.appearanceGroup);
+    SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_disable_style_sheets, "Main", "DisableStylesheet", false);
+    connect(m_disable_style_sheets, &QCheckBox::checkStateChanged, this, &QtHost::UpdateApplicationTheme);
+    m_ui.appearanceLayout->addWidget(m_disable_style_sheets, next_appearance_row, next_appearance_col++ * 2, 1, 2);
+    dialog->registerWidgetHelp(m_disable_style_sheets, tr("Disable Style Sheets"), tr("Unchecked"),
                                tr("Disables the use of style sheets in the application, reverting to the original "
                                   "'Fusion' style but retaining the color scheme."));
+    connect(m_ui.theme, &QComboBox::currentIndexChanged, this,
+            &InterfaceSettingsWidget::updateDisableStyleSheetsEnabled);
+    updateDisableStyleSheetsEnabled();
 
     SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.autoUpdateEnabled, "AutoUpdater", "CheckAtStartup", true);
     for (const auto& [name, desc] : AutoUpdaterDialog::getChannelList())
@@ -286,6 +289,11 @@ void InterfaceSettingsWidget::onLanguageChanged()
 {
   QtHost::UpdateApplicationLanguage(this);
   g_main_window->recreate();
+}
+
+void InterfaceSettingsWidget::updateDisableStyleSheetsEnabled()
+{
+  m_disable_style_sheets->setEnabled(QtHost::IsStylesheetTheme(m_ui.theme->currentData().toString().toStdString()));
 }
 
 void InterfaceSettingsWidget::checkForUpdates()

@@ -23,9 +23,11 @@ public:
 private:
   void updateRenderToSeparateWindowOptions();
   void onLanguageChanged();
+  void updateDisableStyleSheetsEnabled();
   void checkForUpdates();
 
   Ui::InterfaceSettingsWidget m_ui;
 
   SettingsWindow* m_dialog;
+  QCheckBox* m_disable_style_sheets = nullptr;
 };
