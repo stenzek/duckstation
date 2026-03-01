@@ -322,6 +322,9 @@ void UpdateThemeOnStyleChange();
 /// Returns true if the specified theme name uses style sheets.
 bool IsStylesheetTheme(std::string_view theme_name);
 
+/// Returns a list of custom themes available on the system.
+QStringList GetCustomThemeList();
+
 /// Sets batch mode (exit after game shutdown).
 bool InBatchMode();
 

@@ -178,15 +178,11 @@ void SetupWizardDialog::setupLanguagePage(bool initial)
 {
   SettingWidgetBinder::DisconnectWidget(m_ui.theme);
   m_ui.theme->clear();
-  SettingWidgetBinder::BindWidgetToEnumSetting(nullptr, m_ui.theme, "UI", "Theme", InterfaceSettingsWidget::THEME_NAMES,
-                                               InterfaceSettingsWidget::THEME_VALUES, QtHost::GetDefaultThemeName(),
-                                               "MainWindow");
-  connect(m_ui.theme, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &QtHost::UpdateApplicationTheme);
+  InterfaceSettingsWidget::setupThemeCombo(m_ui.theme);
 
   SettingWidgetBinder::DisconnectWidget(m_ui.language);
   m_ui.language->clear();
-  InterfaceSettingsWidget::populateLanguageDropdown(m_ui.language);
-  SettingWidgetBinder::BindWidgetToStringSetting(nullptr, m_ui.language, "Main", "Language", {});
+  InterfaceSettingsWidget::setupLanguageCombo(m_ui.language);
   connect(m_ui.language, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
           &SetupWizardDialog::languageChanged);
 

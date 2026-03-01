@@ -18,44 +18,23 @@
 
 #include "moc_interfacesettingswidget.cpp"
 
-const char* InterfaceSettingsWidget::THEME_NAMES[] = {
-  QT_TRANSLATE_NOOP("MainWindow", "Native"),
+static constexpr const std::pair<const char*, const char*> BUILTIN_THEMES[] = {
+  {"", QT_TRANSLATE_NOOP("MainWindow", "Native")},
 #ifdef _WIN32
-  QT_TRANSLATE_NOOP("MainWindow", "Classic Windows"),
+  {"windowsvista", QT_TRANSLATE_NOOP("MainWindow", "Classic Windows")},
 #endif
-  QT_TRANSLATE_NOOP("MainWindow", "Fusion"),
-  QT_TRANSLATE_NOOP("MainWindow", "Dark Fusion (Gray)"),
-  QT_TRANSLATE_NOOP("MainWindow", "Dark Fusion (Blue)"),
-  QT_TRANSLATE_NOOP("MainWindow", "Darker Fusion"),
-  QT_TRANSLATE_NOOP("MainWindow", "AMOLED"),
-  QT_TRANSLATE_NOOP("MainWindow", "Cobalt Sky"),
-  QT_TRANSLATE_NOOP("MainWindow", "Grey Matter"),
-  QT_TRANSLATE_NOOP("MainWindow", "Green Giant"),
-  QT_TRANSLATE_NOOP("MainWindow", "Pinky Pals"),
-  QT_TRANSLATE_NOOP("MainWindow", "Dark Ruby"),
-  QT_TRANSLATE_NOOP("MainWindow", "Purple Rain"),
-  QT_TRANSLATE_NOOP("MainWindow", "QDarkStyle"),
-  nullptr,
-};
-
-const char* InterfaceSettingsWidget::THEME_VALUES[] = {
-  "",
-#ifdef _WIN32
-  "windowsvista",
-#endif
-  "fusion",
-  "darkfusion",
-  "darkfusionblue",
-  "darkerfusion",
-  "AMOLED",
-  "cobaltsky",
-  "greymatter",
-  "greengiant",
-  "pinkypals",
-  "darkruby",
-  "purplerain",
-  "qdarkstyle",
-  nullptr,
+  {"fusion", QT_TRANSLATE_NOOP("MainWindow", "Fusion")},
+  {"darkfusion", QT_TRANSLATE_NOOP("MainWindow", "Dark Fusion (Gray)")},
+  {"darkfusionblue", QT_TRANSLATE_NOOP("MainWindow", "Dark Fusion (Blue)")},
+  {"darkerfusion", QT_TRANSLATE_NOOP("MainWindow", "Darker Fusion")},
+  {"AMOLED", QT_TRANSLATE_NOOP("MainWindow", "AMOLED")},
+  {"cobaltsky", QT_TRANSLATE_NOOP("MainWindow", "Cobalt Sky")},
+  {"greymatter", QT_TRANSLATE_NOOP("MainWindow", "Grey Matter")},
+  {"greengiant", QT_TRANSLATE_NOOP("MainWindow", "Green Giant")},
+  {"pinkypals", QT_TRANSLATE_NOOP("MainWindow", "Pinky Pals")},
+  {"darkruby", QT_TRANSLATE_NOOP("MainWindow", "Dark Ruby")},
+  {"purplerain", QT_TRANSLATE_NOOP("MainWindow", "Purple Rain")},
+  {"qdarkstyle", QT_TRANSLATE_NOOP("MainWindow", "QDarkStyle")},
 };
 
 InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* dialog, QWidget* parent)
@@ -112,12 +91,8 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* dialog, QWidget
 
   if (!m_dialog->isPerGameSettings())
   {
-    SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.theme, "UI", "Theme", THEME_NAMES, THEME_VALUES,
-                                                 QtHost::GetDefaultThemeName(), "MainWindow");
-    connect(m_ui.theme, &QComboBox::currentIndexChanged, this, &QtHost::UpdateApplicationTheme);
-
-    populateLanguageDropdown(m_ui.language);
-    SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.language, "Main", "Language", {});
+    setupThemeCombo(m_ui.theme);
+    setupLanguageCombo(m_ui.language);
     connect(m_ui.language, &QComboBox::currentIndexChanged, this, &InterfaceSettingsWidget::onLanguageChanged);
 
     // Annoyingly, have to match theme and language properties otherwise the sizes do not match.
@@ -236,11 +211,11 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* dialog, QWidget
 
     const char* default_theme_cname = QtHost::GetDefaultThemeName();
     QString default_theme_name;
-    for (size_t i = 0; THEME_VALUES[i] != nullptr; ++i)
+    for (const auto& [name, display_name] : BUILTIN_THEMES)
     {
-      if (std::strcmp(THEME_VALUES[i], default_theme_cname) == 0)
+      if (std::strcmp(name, default_theme_cname) == 0)
       {
-        default_theme_name = tr(THEME_NAMES[i]);
+        default_theme_name = qApp->translate("MainWindow", display_name);
         break;
       }
     }
@@ -260,7 +235,7 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* dialog, QWidget
 
 InterfaceSettingsWidget::~InterfaceSettingsWidget() = default;
 
-void InterfaceSettingsWidget::populateLanguageDropdown(QComboBox* cb)
+void InterfaceSettingsWidget::setupLanguageCombo(QComboBox* const cb)
 {
   const auto language_list = Host::GetAvailableLanguageList();
 
@@ -281,6 +256,22 @@ void InterfaceSettingsWidget::populateLanguageDropdown(QComboBox* cb)
     cb->addItem(QtUtils::GetIconForTranslationLanguage(code), QString::fromUtf8(Host::GetLanguageName(code)),
                 QString::fromLatin1(code));
   }
+
+  SettingWidgetBinder::BindWidgetToStringSetting(nullptr, cb, "Main", "Language", {});
+}
+
+void InterfaceSettingsWidget::setupThemeCombo(QComboBox* const cb)
+{
+  for (const auto& [name, display_name] : BUILTIN_THEMES)
+    cb->addItem(qApp->translate("MainWindow", display_name), QString::fromLatin1(name));
+  for (const QString& name : QtHost::GetCustomThemeList())
+  {
+    if (cb->findData(name) < 0)
+      cb->addItem(name, name);
+  }
+
+  SettingWidgetBinder::BindWidgetToStringSetting(nullptr, cb, "UI", "Theme", QtHost::GetDefaultThemeName());
+  connect(cb, QOverload<int>::of(&QComboBox::currentIndexChanged), cb, &QtHost::UpdateApplicationTheme);
 }
 
 void InterfaceSettingsWidget::updateRenderToSeparateWindowOptions()

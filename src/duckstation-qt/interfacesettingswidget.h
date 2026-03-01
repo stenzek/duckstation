@@ -17,7 +17,8 @@ public:
   explicit InterfaceSettingsWidget(SettingsWindow* dialog, QWidget* parent);
   ~InterfaceSettingsWidget();
 
-  static void populateLanguageDropdown(QComboBox* cb);
+  static void setupLanguageCombo(QComboBox* const cb);
+  static void setupThemeCombo(QComboBox* const cb);
 
 private:
   void updateRenderToSeparateWindowOptions();
@@ -27,8 +28,4 @@ private:
   Ui::InterfaceSettingsWidget m_ui;
 
   SettingsWindow* m_dialog;
-
-public:
-  static const char* THEME_NAMES[];
-  static const char* THEME_VALUES[];
 };

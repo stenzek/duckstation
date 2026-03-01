@@ -7,6 +7,7 @@
 #include "core/fullscreenui_widgets.h"
 
 #include "common/error.h"
+#include "common/file_system.h"
 #include "common/log.h"
 #include "common/path.h"
 #include "common/string_util.h"
@@ -335,6 +336,29 @@ void QtHost::UpdateThemeOnStyleChange()
     if (qApp->styleSheet() != stylesheet)
       qApp->setStyleSheet(stylesheet);
   }
+}
+
+QStringList QtHost::GetCustomThemeList()
+{
+  const std::string directory = Path::Combine(EmuFolders::UserResources, "themes");
+  if (!FileSystem::DirectoryExists(directory.c_str()))
+    return {};
+
+  FileSystem::FindResultsArray results;
+  FileSystem::FindFiles(directory.c_str(), "*.qss",
+                        FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_HIDDEN_FILES | FILESYSTEM_FIND_RELATIVE_PATHS |
+                          FILESYSTEM_FIND_SORT_BY_NAME,
+                        &results);
+
+  QStringList ret;
+  for (const FILESYSTEM_FIND_DATA& fd : results)
+  {
+    const std::string_view theme_name = Path::GetFileTitle(fd.FileName);
+    if (!theme_name.empty())
+      ret.append(QtUtils::StringViewToQString(theme_name));
+  }
+
+  return ret;
 }
 
 const char* Host::GetDefaultFullscreenUITheme()
