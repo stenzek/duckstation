@@ -4,6 +4,11 @@
 *.hpp text
 *.hlsl text
 *.xml text
+*.qrc text
+*.css text
+*.scss text
+*.qss text
+*.html text
 
 *.sln text eol=crlf
 *.vcxproj text eol=crlf
