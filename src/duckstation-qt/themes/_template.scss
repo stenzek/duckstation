@@ -148,6 +148,7 @@ QMenuBar::item {
 }
 QMenuBar::item:selected, QMenuBar::item:pressed {
   background: $bg-active;
+  color: $text-active;
   border-radius: 4px;
 }
 
@@ -390,6 +391,7 @@ QTabBar::tab:selected {
 }
 QTabBar::tab:hover {
   background: $bg-hover;
+  color: $text-color;
 }
 
 QProgressBar {
