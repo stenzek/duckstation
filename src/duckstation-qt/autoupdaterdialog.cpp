@@ -89,6 +89,8 @@ static constexpr u32 HTTP_POLL_INTERVAL = 10;
     #define UPDATER_ASSET_FILENAME "DuckStation-armhf.AppImage"
   #elif defined(CPU_ARCH_RISCV64)
     #define UPDATER_ASSET_FILENAME "DuckStation-riscv64.AppImage"
+  #elif defined(CPU_ARCH_LOONGARCH64)
+    #define UPDATER_ASSET_FILENAME "DuckStation-loongarch64.AppImage"
   #endif
 #endif
 #ifndef UPDATER_ASSET_FILENAME
