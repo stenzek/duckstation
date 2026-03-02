@@ -1566,3 +1566,63 @@ TEST(GSVectorTest, Runion_IsCommutative)
 
   EXPECT_TRUE(result1.eq(result2));
 }
+
+TEST(GSVector2Test, Blend32AllMasks)
+{
+  GSVector2 a(1.0f, 2.0f);
+  GSVector2 b(3.0f, 4.0f);
+
+  // mask=0b00: select all from a
+  auto r0 = a.blend32<0>(b);
+  EXPECT_FLOAT_EQ(r0.x, 1.0f);
+  EXPECT_FLOAT_EQ(r0.y, 2.0f);
+
+  // mask=0b01: select x from b, y from a
+  auto r1 = a.blend32<1>(b);
+  EXPECT_FLOAT_EQ(r1.x, 3.0f);
+  EXPECT_FLOAT_EQ(r1.y, 2.0f);
+
+  // mask=0b10: select x from a, y from b
+  auto r2 = a.blend32<2>(b);
+  EXPECT_FLOAT_EQ(r2.x, 1.0f);
+  EXPECT_FLOAT_EQ(r2.y, 4.0f);
+
+  // mask=0b11: select all from b
+  auto r3 = a.blend32<3>(b);
+  EXPECT_FLOAT_EQ(r3.x, 3.0f);
+  EXPECT_FLOAT_EQ(r3.y, 4.0f);
+}
+
+TEST(GSVector4Test, Blend32AllMasks)
+{
+  GSVector4 a(1.0f, 2.0f, 3.0f, 4.0f);
+  GSVector4 b(5.0f, 6.0f, 7.0f, 8.0f);
+
+  // mask=0b0000: select all from a
+  auto r0 = a.blend32<0>(b);
+  EXPECT_FLOAT_EQ(r0.x, 1.0f);
+  EXPECT_FLOAT_EQ(r0.y, 2.0f);
+  EXPECT_FLOAT_EQ(r0.z, 3.0f);
+  EXPECT_FLOAT_EQ(r0.w, 4.0f);
+
+  // mask=0b1111: select all from b
+  auto r15 = a.blend32<15>(b);
+  EXPECT_FLOAT_EQ(r15.x, 5.0f);
+  EXPECT_FLOAT_EQ(r15.y, 6.0f);
+  EXPECT_FLOAT_EQ(r15.z, 7.0f);
+  EXPECT_FLOAT_EQ(r15.w, 8.0f);
+
+  // mask=0b0101: select x,z from b; y,w from a
+  auto r5 = a.blend32<5>(b);
+  EXPECT_FLOAT_EQ(r5.x, 5.0f); // bit0=1 -> b
+  EXPECT_FLOAT_EQ(r5.y, 2.0f); // bit1=0 -> a
+  EXPECT_FLOAT_EQ(r5.z, 7.0f); // bit2=1 -> b
+  EXPECT_FLOAT_EQ(r5.w, 4.0f); // bit3=0 -> a
+
+  // mask=0b1010: select x,z from a; y,w from b
+  auto r10 = a.blend32<10>(b);
+  EXPECT_FLOAT_EQ(r10.x, 1.0f); // bit0=0 -> a
+  EXPECT_FLOAT_EQ(r10.y, 6.0f); // bit1=1 -> b
+  EXPECT_FLOAT_EQ(r10.z, 3.0f); // bit2=0 -> a
+  EXPECT_FLOAT_EQ(r10.w, 8.0f); // bit3=1 -> b
+}
