@@ -164,7 +164,7 @@ void MemMap::ReleaseJITMemory(void* ptr, size_t size)
     ERROR_LOG("Failed to free code pointer {}", static_cast<void*>(ptr));
 }
 
-#if defined(CPU_ARCH_ARM32) || defined(CPU_ARCH_ARM64) || defined(CPU_ARCH_RISCV64)
+#if defined(CPU_ARCH_ARM32) || defined(CPU_ARCH_ARM64) || defined(CPU_ARCH_RISCV64) || defined(CPU_ARCH_LOONGARCH64)
 
 void MemMap::FlushInstructionCache(void* address, size_t size)
 {
@@ -532,7 +532,7 @@ void MemMap::ReleaseJITMemory(void* ptr, size_t size)
 #endif
 }
 
-#if defined(CPU_ARCH_ARM32) || defined(CPU_ARCH_ARM64) || defined(CPU_ARCH_RISCV64)
+#if defined(CPU_ARCH_ARM32) || defined(CPU_ARCH_ARM64) || defined(CPU_ARCH_RISCV64) || defined(CPU_ARCH_LOONGARCH64)
 
 void MemMap::FlushInstructionCache(void* address, size_t size)
 {
@@ -820,7 +820,7 @@ void MemMap::ReleaseJITMemory(void* ptr, size_t size)
     ERROR_LOG("Failed to free code pointer {}", static_cast<void*>(ptr));
 }
 
-#if defined(CPU_ARCH_ARM32) || defined(CPU_ARCH_ARM64) || defined(CPU_ARCH_RISCV64)
+#if defined(CPU_ARCH_ARM32) || defined(CPU_ARCH_ARM64) || defined(CPU_ARCH_RISCV64) || defined(CPU_ARCH_LOONGARCH64)
 
 void MemMap::FlushInstructionCache(void* address, size_t size)
 {
@@ -905,7 +905,7 @@ void* MemMap::AllocateJITMemory(size_t size)
   static constexpr size_t assume_binary_size = 64 * 1024 * 1024;
   static constexpr size_t step = 64 * 1024 * 1024;
   static constexpr size_t max_displacement = 0x80000000u;
-#elif defined(CPU_ARCH_ARM64) || defined(CPU_ARCH_RISCV64)
+#elif defined(CPU_ARCH_ARM64) || defined(CPU_ARCH_RISCV64) || defined(CPU_ARCH_LOONGARCH64)
   static constexpr size_t assume_binary_size = 16 * 1024 * 1024;
   static constexpr size_t step = 8 * 1024 * 1024;
   static constexpr size_t max_displacement =

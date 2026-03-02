@@ -73,6 +73,16 @@
 
   return ((bits & 0x7Fu) == 0b0100011u);
 }
+#elif defined(CPU_ARCH_LOONGARCH64)
+extern "C" {
+#include "lagoon.h"
+}
+[[maybe_unused]] static bool IsStoreInstruction(const void* ptr)
+{
+  u32 bits;
+  std::memcpy(&bits, ptr, sizeof(bits));
+  return la_is_store_instruction(bits);
+}
 #endif
 
 #if defined(_WIN32)
@@ -160,6 +170,9 @@ void PageFaultHandler::SignalHandler(int sig, siginfo_t* info, void* ctx)
   const bool is_write = IsStoreInstruction(exception_pc);
 #elif defined(CPU_ARCH_RISCV64)
   void* const exception_pc = reinterpret_cast<void*>(static_cast<ucontext_t*>(ctx)->uc_mcontext.__gregs[REG_PC]);
+  const bool is_write = IsStoreInstruction(exception_pc);
+#elif defined(CPU_ARCH_LOONGARCH64)
+  void* const exception_pc = reinterpret_cast<void*>(static_cast<ucontext_t*>(ctx)->uc_mcontext.__pc);
   const bool is_write = IsStoreInstruction(exception_pc);
 #else
   void* const exception_pc = nullptr;
