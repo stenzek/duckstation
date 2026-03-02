@@ -56,6 +56,11 @@ if(CPU_ARCH_RISCV64)
   disable_compiler_warnings_for_target(riscv-disas)
 endif()
 
+if(CPU_ARCH_LOONGARCH64)
+  add_subdirectory(lagoon EXCLUDE_FROM_ALL)
+  disable_compiler_warnings_for_target(lagoon)
+endif()
+
 if(WIN32)
   add_subdirectory(d3d12ma EXCLUDE_FROM_ALL)
   disable_compiler_warnings_for_target(d3d12ma)
