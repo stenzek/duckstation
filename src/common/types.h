@@ -162,6 +162,8 @@ struct dependent_int_false : std::false_type
 #define CPU_ARCH_ARM32 1
 #elif defined(__riscv) && __riscv_xlen == 64
 #define CPU_ARCH_RISCV64 1
+#elif defined(__loongarch64)
+#define CPU_ARCH_LOONGARCH64 1
 #else
 #error Unknown architecture.
 #endif
@@ -182,6 +184,8 @@ struct dependent_int_false : std::false_type
 #define CPU_ARCH_STR "arm64"
 #elif defined(CPU_ARCH_RISCV64)
 #define CPU_ARCH_STR "riscv64"
+#elif defined(CPU_ARCH_LOONGARCH64)
+#define CPU_ARCH_STR "loongarch64"
 #else
 #define CPU_ARCH_STR "Unknown"
 #endif

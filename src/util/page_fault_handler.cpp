@@ -73,6 +73,109 @@
 
   return ((bits & 0x7Fu) == 0b0100011u);
 }
+#elif defined(CPU_ARCH_LOONGARCH64)
+[[maybe_unused]] static bool IsStoreInstruction(const void* ptr)
+{
+  u32 bits;
+  std::memcpy(&bits, ptr, sizeof(bits));
+
+  u32 opcode = bits >> 24;
+  u16 bits31_16 = bits >> 16;
+
+  // st.{b,h,w,d} and stptr.{b,h,w,d}
+  if (opcode == 0x27 || opcode == 0x29 || opcode == 0x2D)
+  {
+    return true;
+  }
+
+  // stx.{b,h,w,d}
+  if ((bits31_16 & 0xFFF0) == 0x3810)
+  {
+    return true;
+  }
+
+  // fst.{s,d}
+  if (opcode == 0x2B && (bits & (1 << 22)))
+  {
+    return true;
+  }
+
+  // fstx.{s,d} - bit 3 distinguishes from fldx
+  if ((bits31_16 & 0xFFF8) == 0x3838)
+  {
+    return true;
+  }
+
+  // vst, vstx - vst has bit 22 set; vstx has bit 2 set
+  if (opcode == 0x2C && (bits & (1 << 22)))
+  {
+    return true;
+  }
+  if ((bits31_16 & 0xFFFC) == 0x3844)
+  {
+    return true;
+  }
+
+  // xvst, xvstx - xvst has bits 23,22 set; xvstx has bit 2 set
+  if (opcode == 0x2C && (bits & (1 << 23)) && (bits & (1 << 22)))
+  {
+    return true;
+  }
+  if ((bits31_16 & 0xFFFC) == 0x384C)
+  {
+    return true;
+  }
+
+  // stgt.{b,h,w,d}, stle.{b,h,w,d}
+  if ((bits31_16 & 0xFFFC) >= 0x387C && (bits31_16 & 0xFFFC) <= 0x387F)
+  {
+    return true;
+  }
+
+  // fstgt.{s,d}, fstle.{s,d}
+  if ((bits31_16 & 0xFFFC) >= 0x3874 && (bits31_16 & 0xFFFC) <= 0x3877)
+  {
+    return true;
+  }
+
+  // sc.w, sc.d
+  if (opcode == 0x21 || opcode == 0x23)
+  {
+    return true;
+  }
+
+  // amswap, amadd, amand, amor, amxor, ammax, ammin, amcas, etc.
+  if (bits31_16 >= 0x3858 && bits31_16 <= 0x3871)
+  {
+    return true;
+  }
+
+  // stl.w, str.w, stl.d, str.d
+  if (opcode == 0x2F)
+  {
+    return true;
+  }
+
+  // sc.q, screl.w, screl.d
+  if (bits31_16 == 0x3857)
+  {
+    return true;
+  }
+
+  // vstelm.*, xvstelm.*
+  uint16_t bits31_24 = bits >> 24;
+  if (bits31_24 == 0x31 || bits31_24 == 0x33)
+  {
+    uint32_t bits23_20 = (bits >> 20) & 0xF;
+    // vstelm has sub-opcodes: .b=0x8, .h=0x4, .w=0x2, .d=0x1
+    if (bits23_20 == 0x1 || bits23_20 == 0x2 || bits23_20 == 0x4 || bits23_20 == 0x8)
+    {
+      return true;
+    }
+  }
+
+  return false;
+}
 #endif
 
 #if defined(_WIN32)
@@ -160,6 +263,9 @@ void PageFaultHandler::SignalHandler(int sig, siginfo_t* info, void* ctx)
   const bool is_write = IsStoreInstruction(exception_pc);
 #elif defined(CPU_ARCH_RISCV64)
   void* const exception_pc = reinterpret_cast<void*>(static_cast<ucontext_t*>(ctx)->uc_mcontext.__gregs[REG_PC]);
+  const bool is_write = IsStoreInstruction(exception_pc);
+#elif defined(CPU_ARCH_LOONGARCH64)
+  void* const exception_pc = reinterpret_cast<void*>(static_cast<ucontext_t*>(ctx)->uc_mcontext.__pc);
   const bool is_write = IsStoreInstruction(exception_pc);
 #else
   void* const exception_pc = nullptr;

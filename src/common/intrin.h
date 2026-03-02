@@ -140,6 +140,15 @@ ALWAYS_INLINE static void MultiPause()
 #elif defined(CPU_ARCH_RISCV64)
   // Probably wrong... pause is optional :/
   asm volatile("fence" ::: "memory");
+#elif defined(CPU_ARCH_LOONGARCH64)
+  asm volatile("ibar 0" ::: "memory");
+  asm volatile("ibar 0" ::: "memory");
+  asm volatile("ibar 0" ::: "memory");
+  asm volatile("ibar 0" ::: "memory");
+  asm volatile("ibar 0" ::: "memory");
+  asm volatile("ibar 0" ::: "memory");
+  asm volatile("ibar 0" ::: "memory");
+  asm volatile("ibar 0" ::: "memory");
 #else
 #pragma warning("Missing implementation")
 #endif
