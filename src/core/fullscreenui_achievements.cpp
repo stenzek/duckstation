@@ -556,7 +556,7 @@ void FullscreenUI::DrawIndicators(NotificationLayout& layout)
 
   const float scale = EffectiveNotificationScale(g_gpu_settings.achievements_indicator_scale);
   const float spacing = ImCeil(10.0f * scale);
-  const float padding = ImCeil(10.0f * scale);
+  const ImVec2 padding = ImVec2(ImCeil(16.0f * scale), ImCeil(10.0f * scale));
   const float rounding = ImCeil(10.0f * scale);
   const float image_size = ImCeil(50.0f * scale);
   const float font_size = ImCeil(LAYOUT_MEDIUM_FONT_SIZE * scale);
@@ -620,8 +620,8 @@ void FullscreenUI::DrawIndicators(NotificationLayout& layout)
     const float progress_image_size = ImCeil(32.0f * scale);
     const std::string_view text = indicator->achievement->measured_progress;
     const ImVec2 text_size = UIStyle.Font->CalcTextSizeA(font_size, font_weight, FLT_MAX, 0.0f, IMSTR_START_END(text));
-    const float box_width = progress_image_size + text_size.x + spacing + padding * 2.0f;
-    const float box_height = progress_image_size + padding * 2.0f;
+    const float box_width = progress_image_size + text_size.x + spacing + padding.x * 2.0f;
+    const float box_height = progress_image_size + padding.y * 2.0f;
 
     const auto& [box_min, opacity] = layout.GetNextPosition(
       box_width, box_height, indicator->active, indicator->time, Achievements::INDICATOR_FADE_IN_TIME,
@@ -635,13 +635,13 @@ void FullscreenUI::DrawIndicators(NotificationLayout& layout)
     GPUTexture* const badge = FullscreenUI::GetCachedTextureAsync(indicator->badge_path);
     if (badge)
     {
-      const ImVec2 badge_pos = box_min + ImVec2(padding, padding);
+      const ImVec2 badge_pos = box_min + padding;
       dl->AddImage(badge, badge_pos, badge_pos + ImVec2(progress_image_size, progress_image_size), ImVec2(0.0f, 0.0f),
                    ImVec2(1.0f, 1.0f), ImGui::GetColorU32(ImVec4(1.0f, 1.0f, 1.0f, opacity)));
     }
 
     const ImVec2 text_pos =
-      box_min + ImVec2(padding + progress_image_size + spacing, (box_max.y - box_min.y - text_size.y) * 0.5f);
+      box_min + ImVec2(padding.x + progress_image_size + spacing, (box_max.y - box_min.y - text_size.y) * 0.5f);
     const ImRect text_clip_rect(text_pos, box_max);
     RenderShadowedTextClipped(dl, UIStyle.Font, font_size, font_weight, text_pos, box_max,
                               ImGui::GetColorU32(ModAlpha(UIStyle.ToastTextColor, opacity)), text, &text_size,
@@ -680,8 +680,8 @@ void FullscreenUI::DrawIndicators(NotificationLayout& layout)
                                &tstr, &measure_tracker](Achievements::LeaderboardTrackerIndicator& indicator,
                                                         const ImVec2& pos, float opacity) {
       const ImVec2 size = measure_tracker(indicator);
-      const float box_width = size.x + padding * 2.0f;
-      const float box_height = size.y + padding * 2.0f;
+      const float box_width = size.x + padding.x * 2.0f;
+      const float box_height = size.y + padding.y * 2.0f;
       const ImRect box(pos, ImVec2(pos.x + box_width, pos.y + box_height));
 
       DrawRoundedGradientRect(dl, box.Min, box.Max,
@@ -691,9 +691,8 @@ void FullscreenUI::DrawIndicators(NotificationLayout& layout)
       tstr.format(ICON_FA_STOPWATCH " {}", indicator.text);
 
       const u32 text_col = ImGui::GetColorU32(ModAlpha(UIStyle.ToastTextColor, opacity));
-      RenderShadowedTextClipped(dl, UIStyle.Font, font_size, font_weight,
-                                ImVec2(box.Min.x + padding, box.Min.y + padding), box.Max, text_col, tstr, nullptr,
-                                ImVec2(0.0f, 0.0f), 0.0f, &box);
+      RenderShadowedTextClipped(dl, UIStyle.Font, font_size, font_weight, box.Min + padding, box.Max, text_col, tstr,
+                                nullptr, ImVec2(0.0f, 0.0f), 0.0f, &box);
 
       return box_width;
     };
@@ -706,11 +705,11 @@ void FullscreenUI::DrawIndicators(NotificationLayout& layout)
       for (const Achievements::LeaderboardTrackerIndicator& indicator : trackers)
       {
         const ImVec2 size = measure_tracker(indicator);
-        total_width += ((total_width > 0.0f) ? spacing : 0.0f) + size.x + padding * 2.0f;
+        total_width += ((total_width > 0.0f) ? spacing : 0.0f) + size.x + padding.x * 2.0f;
         max_height = std::max(max_height, size.y);
       }
 
-      ImVec2 current_pos = layout.GetFixedPosition(total_width, max_height + padding * 2.0f);
+      ImVec2 current_pos = layout.GetFixedPosition(total_width, max_height + padding.y * 2.0f);
       for (auto it = trackers.begin(); it != trackers.end();)
       {
         Achievements::LeaderboardTrackerIndicator& indicator = *it;
@@ -736,8 +735,8 @@ void FullscreenUI::DrawIndicators(NotificationLayout& layout)
       indicator.time += indicator.active ? io.DeltaTime : -io.DeltaTime;
 
       const ImVec2 size = measure_tracker(indicator);
-      const float box_width = size.x + padding * 2.0f;
-      const float box_height = size.y + padding * 2.0f;
+      const float box_width = size.x + padding.x * 2.0f;
+      const float box_height = size.y + padding.y * 2.0f;
       const auto& [box_pos, opacity] = layout.GetNextPosition(
         box_width, box_height, indicator.active, indicator.time, Achievements::INDICATOR_FADE_IN_TIME,
         Achievements::INDICATOR_FADE_OUT_TIME, INDICATOR_WIDTH_COEFF);
