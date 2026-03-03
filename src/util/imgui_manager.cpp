@@ -528,8 +528,7 @@ void ImGuiManager::RenderDrawLists(u32 window_width, u32 window_height, WindowIn
         clip = g_gpu_device->FlipToLowerLeft(clip, post_rotated_height);
 
       g_gpu_device->SetScissor(clip);
-      g_gpu_device->SetTextureSampler(0, reinterpret_cast<GPUTexture*>(pcmd->GetTexID()),
-                                      g_gpu_device->GetLinearSampler());
+      g_gpu_device->SetTextureSampler(0, pcmd->GetTexID(), g_gpu_device->GetLinearSampler());
 
       if (pcmd->UserCallback) [[unlikely]]
       {
