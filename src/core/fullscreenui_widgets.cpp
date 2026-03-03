@@ -337,7 +337,7 @@ struct WidgetsState
   CloseButtonState close_button_state = CloseButtonState::None;
   FocusResetType focus_reset_queued = FocusResetType::None;
   TransitionState transition_state = TransitionState::Inactive;
-  ImGuiDir has_pending_nav_move = ImGuiDir_None;
+  s8 has_pending_nav_move = static_cast<s8>(ImGuiDir_None);
 
   ImVec2 horizontal_menu_button_size = {};
 
@@ -1696,23 +1696,20 @@ void FullscreenUI::BeginMenuButtons(u32 num_items /* = 0 */, float y_align /* = 
   // If so, track when the scroll happens, and if we moved to a new ID. If not, scroll the parent window.
   if (GImGui->NavMoveDir != ImGuiDir_None)
   {
-    s_state.has_pending_nav_move = GImGui->NavMoveDir;
+    s_state.has_pending_nav_move = static_cast<s8>(GImGui->NavMoveDir);
   }
   else if (s_state.has_pending_nav_move != ImGuiDir_None)
   {
     if (GImGui->NavJustMovedToId == 0)
     {
-      switch (s_state.has_pending_nav_move)
+      if (s_state.has_pending_nav_move == ImGuiDir_Up)
       {
-        case ImGuiDir_Up:
-          ImGui::SetScrollY(std::max(ImGui::GetScrollY() - MenuButtonBounds::GetSingleLineHeight(y_padding), 0.0f));
-          break;
-        case ImGuiDir_Down:
-          ImGui::SetScrollY(
-            std::min(ImGui::GetScrollY() + MenuButtonBounds::GetSingleLineHeight(y_padding), ImGui::GetScrollMaxY()));
-          break;
-        default:
-          break;
+        ImGui::SetScrollY(std::max(ImGui::GetScrollY() - MenuButtonBounds::GetSingleLineHeight(y_padding), 0.0f));
+      }
+      else if (s_state.has_pending_nav_move == ImGuiDir_Down)
+      {
+        ImGui::SetScrollY(
+          std::min(ImGui::GetScrollY() + MenuButtonBounds::GetSingleLineHeight(y_padding), ImGui::GetScrollMaxY()));
       }
     }
 
