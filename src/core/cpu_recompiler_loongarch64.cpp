@@ -705,8 +705,8 @@ void CPU::LoongArch64Recompiler::EndAndLinkBlock(const std::optional<u32>& newpc
   }
   if (m_gte_done_cycle > cycles)
   {
-    SafeADDIW(RARG2, RARG1, m_gte_done_cycle - cycles);
-    la_st_w(laAsm, RARG2, RSTATE, OFFS(&g_state.gte_completion_tick));
+    SafeADDIW(RARG3, RARG1, m_gte_done_cycle - cycles);
+    la_st_w(laAsm, RARG3, RSTATE, OFFS(&g_state.gte_completion_tick));
   }
 
   if (do_event_test)
