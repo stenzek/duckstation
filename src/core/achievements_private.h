@@ -42,6 +42,12 @@ struct AchievementProgressIndicator
   bool active;
 };
 
+struct PinnedAchievementIndicator
+{
+  u32 achievement_id;
+  std::string badge_path;
+};
+
 /// Returns the rc_client instance. Should have the lock held.
 rc_client_t* GetClient();
 
@@ -50,6 +56,10 @@ const rc_client_user_game_summary_t& GetGameSummary();
 std::vector<LeaderboardTrackerIndicator>& GetLeaderboardTrackerIndicators();
 std::vector<ActiveChallengeIndicator>& GetActiveChallengeIndicators();
 std::optional<AchievementProgressIndicator>& GetActiveProgressIndicator();
+std::vector<PinnedAchievementIndicator>& GetPinnedAchievementIndicators();
+
+bool IsAchievementPinned(u32 achievement_id);
+void SetAchievementPinned(u32 achievement_id, bool pinned);
 
 std::string GetAchievementBadgePath(const rc_client_achievement_t* achievement, bool locked,
                                     bool download_if_missing = true);

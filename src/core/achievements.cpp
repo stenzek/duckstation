@@ -41,6 +41,7 @@
 #include "util/cd_image.h"
 #include "util/http_downloader.h"
 #include "util/imgui_manager.h"
+#include "util/ini_settings_interface.h"
 #include "util/state_wrapper.h"
 
 #include "IconsEmoji.h"
@@ -209,6 +210,10 @@ static void BuildProgressDatabase(const rc_client_all_user_progress_t* allprog);
 static void UpdateProgressDatabase();
 static void ClearProgressDatabase();
 
+static std::string GetPinnedAchievementsPath(u32 game_id);
+static void LoadPinnedAchievements();
+static void SavePinnedAchievements();
+
 #ifdef RC_CLIENT_SUPPORTS_RAINTEGRATION
 
 static void BeginLoadRAIntegration();
@@ -237,6 +242,7 @@ struct State
   std::vector<LeaderboardTrackerIndicator> active_leaderboard_trackers;
   std::vector<ActiveChallengeIndicator> active_challenge_indicators;
   std::optional<AchievementProgressIndicator> active_progress_indicator;
+  std::vector<PinnedAchievementIndicator> pinned_achievement_indicators;
 
   rc_client_user_game_summary_t game_summary = {};
   u32 game_id = 0;
@@ -323,6 +329,11 @@ std::vector<Achievements::ActiveChallengeIndicator>& Achievements::GetActiveChal
 std::optional<Achievements::AchievementProgressIndicator>& Achievements::GetActiveProgressIndicator()
 {
   return s_state.active_progress_indicator;
+}
+
+std::vector<Achievements::PinnedAchievementIndicator>& Achievements::GetPinnedAchievementIndicators()
+{
+  return s_state.pinned_achievement_indicators;
 }
 
 void Achievements::ReportError(std::string_view sv)
@@ -1404,6 +1415,8 @@ void Achievements::ClientLoadGameCallback(int result, const char* error_message,
 
   if (display_summary)
     DisplayAchievementSummary();
+
+  LoadPinnedAchievements();
 }
 
 void Achievements::ClearGameInfo()
@@ -1422,6 +1435,7 @@ void Achievements::ClearGameInfo()
   s_state.active_leaderboard_trackers = {};
   s_state.active_challenge_indicators = {};
   s_state.active_progress_indicator.reset();
+  s_state.pinned_achievement_indicators = {};
   s_state.game_id = 0;
   s_state.game_title = {};
   s_state.game_icon = {};
@@ -1524,6 +1538,7 @@ void Achievements::HandleUnlockEvent(const rc_client_event_t* event)
 
   INFO_LOG("Achievement {} ({}) for game {} unlocked", cheevo->id, cheevo->title, s_state.game_id);
   UpdateGameSummary(true);
+  SetAchievementPinned(cheevo->id, false);
 
   if (g_settings.achievements_notifications)
   {
@@ -1820,6 +1835,13 @@ void Achievements::HandleAchievementProgressIndicatorShowEvent(const rc_client_e
 
   if (!g_settings.achievements_progress_indicators)
     return;
+
+  // Don't show pinned achievements.
+  if (IsAchievementPinned(event->achievement->id))
+  {
+    DEV_COLOR_LOG(StrongYellow, "Not showing progress indicator for pinned achievement {}", event->achievement->id);
+    return;
+  }
 
   if (!s_state.active_progress_indicator.has_value())
     s_state.active_progress_indicator.emplace();
@@ -3454,6 +3476,141 @@ const Achievements::ProgressDatabase::Entry* Achievements::ProgressDatabase::Loo
   const auto iter = std::lower_bound(m_entries.begin(), m_entries.end(), game_id,
                                      [](const Entry& entry, u32 search) { return (entry.game_id < search); });
   return (iter != m_entries.end() && iter->game_id == game_id) ? &(*iter) : nullptr;
+}
+
+std::string Achievements::GetPinnedAchievementsPath(u32 game_id)
+{
+  return Path::Combine(EmuFolders::GameSettings, fmt::format("{}_achievements.ini", game_id));
+}
+
+void Achievements::LoadPinnedAchievements()
+{
+  s_state.pinned_achievement_indicators = {};
+  if (!HasAchievements())
+    return;
+
+  const std::string path = GetPinnedAchievementsPath(s_state.game_id);
+  INISettingsInterface ini(path);
+  if (!ini.Load())
+    return;
+
+  const std::vector<std::string> ids = ini.GetStringList("PinnedAchievements", "AchievementID");
+  for (const std::string& id_str : ids)
+  {
+    const std::optional<u32> id = StringUtil::FromChars<u32>(id_str);
+    if (!id.has_value())
+    {
+      WARNING_LOG("Invalid pinned achievement ID '{}'", id_str);
+      continue;
+    }
+
+    const rc_client_achievement_t* achievement = rc_client_get_achievement_info(s_state.client, id.value());
+    if (!achievement)
+    {
+      WARNING_LOG("Pinned achievement {} not found in game", id.value());
+      continue;
+    }
+
+    if (achievement->state != RC_CLIENT_ACHIEVEMENT_STATE_ACTIVE)
+    {
+      WARNING_LOG("Pinned achievement {} is not unlocked, skipping", id.value());
+      continue;
+    }
+
+    PinnedAchievementIndicator indicator;
+    indicator.achievement_id = id.value();
+    indicator.badge_path = GetAchievementBadgePath(achievement, false);
+    s_state.pinned_achievement_indicators.push_back(std::move(indicator));
+  }
+
+  DEV_LOG("Loaded {} pinned achievements for game {}", s_state.pinned_achievement_indicators.size(), s_state.game_id);
+
+  // If there's nothing, clear out the file.
+  if (ids.size() != s_state.pinned_achievement_indicators.size())
+    SavePinnedAchievements();
+}
+
+void Achievements::SavePinnedAchievements()
+{
+  if (!HasAchievements())
+    return;
+
+  std::string path = GetPinnedAchievementsPath(s_state.game_id);
+
+  if (s_state.pinned_achievement_indicators.empty())
+  {
+    // Remove the file if there are no pinned achievements.
+    if (FileSystem::FileExists(path.c_str()))
+    {
+      Error error;
+      if (!FileSystem::DeleteFile(path.c_str(), &error))
+        ERROR_LOG("Failed to remove pinned achievements file: {}", error.GetDescription());
+    }
+
+    return;
+  }
+
+  INISettingsInterface ini(std::move(path));
+  ini.Load();
+
+  std::vector<std::string> ids;
+  ids.reserve(s_state.pinned_achievement_indicators.size());
+  for (const PinnedAchievementIndicator& indicator : s_state.pinned_achievement_indicators)
+    ids.push_back(StringUtil::ToChars(indicator.achievement_id));
+
+  ini.SetStringList("PinnedAchievements", "AchievementID", ids);
+
+  Error error;
+  if (!ini.Save(&error))
+    ERROR_LOG("Failed to save pinned achievements: {}", error.GetDescription());
+}
+
+bool Achievements::IsAchievementPinned(u32 achievement_id)
+{
+  return std::any_of(
+    s_state.pinned_achievement_indicators.begin(), s_state.pinned_achievement_indicators.end(),
+    [achievement_id](const PinnedAchievementIndicator& ind) { return ind.achievement_id == achievement_id; });
+}
+
+void Achievements::SetAchievementPinned(u32 achievement_id, bool pinned)
+{
+  const auto it = std::find_if(
+    s_state.pinned_achievement_indicators.begin(), s_state.pinned_achievement_indicators.end(),
+    [achievement_id](const PinnedAchievementIndicator& ind) { return ind.achievement_id == achievement_id; });
+
+  if ((it != s_state.pinned_achievement_indicators.end()) == pinned)
+    return;
+
+  if (it != s_state.pinned_achievement_indicators.end())
+  {
+    DEV_LOG("Unpinning achievement {}", achievement_id);
+    s_state.pinned_achievement_indicators.erase(it);
+  }
+  else
+  {
+    const rc_client_achievement_t* achievement = rc_client_get_achievement_info(s_state.client, achievement_id);
+    if (!achievement)
+    {
+      WARNING_LOG("Achievement {} not found", achievement_id);
+      return;
+    }
+
+    DEV_LOG("Pinning achievement {}", achievement_id);
+    PinnedAchievementIndicator indicator;
+    indicator.achievement_id = achievement_id;
+    indicator.badge_path = GetAchievementBadgePath(achievement, false);
+    s_state.pinned_achievement_indicators.push_back(std::move(indicator));
+
+    // Hide progress indicator if it was set
+    if (s_state.active_progress_indicator.has_value() &&
+        s_state.active_progress_indicator->achievement->id == achievement_id)
+    {
+      DEV_COLOR_LOG(StrongYellow, "Clearing progress indicator for achievement {} due to pin", achievement_id);
+      s_state.active_progress_indicator.reset();
+    }
+  }
+
+  SavePinnedAchievements();
 }
 
 #ifdef RC_CLIENT_SUPPORTS_RAINTEGRATION
