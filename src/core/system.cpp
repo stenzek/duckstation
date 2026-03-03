@@ -6358,20 +6358,27 @@ bool System::ChangeGPUDump(std::string new_path)
   return true;
 }
 
-std::string System::GetImageForLoadingScreen(const std::string& game_path)
+std::string System::GetImageForLoadingScreen(const std::string& game_path,
+                                             bool fallback_to_achievement_game_icon /*= true*/)
 {
-  std::string ret;
-
   const auto lock = GameList::GetLock();
   const GameList::Entry* entry = GameList::GetEntryForPath(game_path);
 
   if (entry)
-    ret = GameList::GetCoverImagePathForEntry(entry);
+  {
+    std::string path = GameList::GetCoverImagePathForEntry(entry);
+    if (!path.empty())
+      return path;
 
-  if (ret.empty())
-    ret = ImGuiManager::LOGO_IMAGE_NAME;
+    if (fallback_to_achievement_game_icon && entry->achievements_game_id != 0)
+    {
+      path = GameList::GetAchievementGameBadgePath(entry->achievements_game_id);
+      if (!path.empty())
+        return path;
+    }
+  }
 
-  return ret;
+  return ImGuiManager::LOGO_IMAGE_NAME;
 }
 
 void System::UpdateSessionTime(const std::string& prev_serial)

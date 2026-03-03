@@ -1961,7 +1961,9 @@ void Achievements::LoadStateFromBuffer(std::span<const u8> data, std::unique_loc
   // before deserializing, otherwise that state's going to get lost.
   if (s_state.load_game_request)
   {
-    FullscreenUI::OpenOrUpdateLoadingScreen(System::GetImageForLoadingScreen(System::GetGamePath()),
+    // Fallback to game icon if we don't have a cover.
+    std::string image = System::GetImageForLoadingScreen(System::GetGamePath());
+    FullscreenUI::OpenOrUpdateLoadingScreen(image.empty() ? GetGameIconPath() : image,
                                             TRANSLATE_SV("Achievements", "Downloading achievements data..."));
 
     WaitForHTTPRequestsWithYield(lock);
