@@ -471,10 +471,7 @@ public:
   ALWAYS_INLINE void SetRefreshRate(float refresh_rate) { m_window_info.surface_refresh_rate = refresh_rate; }
   ALWAYS_INLINE WindowInfoPrerotation GetPreRotation() const { return m_window_info.surface_prerotation; }
   ALWAYS_INLINE GPUTextureFormat GetFormat() const { return m_window_info.surface_format; }
-  ALWAYS_INLINE GSVector2i GetSizeVec() const
-  {
-    return GSVector2i(m_window_info.surface_width, m_window_info.surface_height);
-  }
+  ALWAYS_INLINE GSVector2i GetSizeVec() const { return GSVector2i::load32(&m_window_info.surface_width).u16to32(); }
   ALWAYS_INLINE GSVector2i GetPostRotatedSizeVec() const
   {
     return GSVector2i(m_window_info.GetPostRotatedWidth(), m_window_info.GetPostRotatedHeight());

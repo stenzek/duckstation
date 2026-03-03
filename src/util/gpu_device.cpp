@@ -236,6 +236,9 @@ size_t GPUFramebufferManagerBase::KeyHash::operator()(const Key& key) const
 
 GPUSwapChain::GPUSwapChain(const WindowInfo& wi, GPUVSyncMode vsync_mode) : m_window_info(wi), m_vsync_mode(vsync_mode)
 {
+  // Needed for the GetSizeVec() function to work.
+  static_assert(OFFSETOF(GPUSwapChain, m_window_info.surface_height) ==
+                OFFSETOF(GPUSwapChain, m_window_info.surface_width) + sizeof(u16));
 }
 
 GPUSwapChain::~GPUSwapChain() = default;

@@ -16,6 +16,8 @@ GPUTexture::GPUTexture(u16 width, u16 height, u8 layers, u8 levels, u8 samples, 
   : m_width(width), m_height(height), m_layers(layers), m_levels(levels), m_samples(samples), m_type(type),
     m_format(format), m_flags(flags)
 {
+  // Needed for the GPUTexture::GetSizeVec() and GPUTexture::GetRect() functions to work correctly.
+  static_assert(OFFSETOF(GPUTexture, m_height) == OFFSETOF(GPUTexture, m_width) + sizeof(u16));
   GPUDevice::s_total_vram_usage += GetVRAMUsage();
 }
 

@@ -92,11 +92,8 @@ public:
   ALWAYS_INLINE GPUTextureFormat GetFormat() const { return m_format; }
   ALWAYS_INLINE Flags GetFlags() const { return m_flags; }
   ALWAYS_INLINE bool HasFlag(Flags flag) const { return ((static_cast<u8>(m_flags) & static_cast<u8>(flag)) != 0); }
-  ALWAYS_INLINE GSVector2i GetSizeVec() const { return GSVector2i(m_width, m_height); }
-  ALWAYS_INLINE GSVector4i GetRect() const
-  {
-    return GSVector4i(0, 0, static_cast<s32>(m_width), static_cast<s32>(m_height));
-  }
+  ALWAYS_INLINE GSVector2i GetSizeVec() const { return GSVector2i::load32(&m_width).u16to32(); }
+  ALWAYS_INLINE GSVector4i GetRect() const { return GSVector4i::loadh(GetSizeVec()); }
 
   ALWAYS_INLINE bool IsTextureArray() const { return m_layers > 1; }
   ALWAYS_INLINE bool IsMultisampled() const { return m_samples > 1; }
