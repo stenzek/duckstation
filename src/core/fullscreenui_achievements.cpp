@@ -550,7 +550,6 @@ void FullscreenUI::DrawIndicators(NotificationLayout& layout)
 {
   static constexpr float INDICATOR_WIDTH_COEFF = 0.3f;
 
-  static constexpr const float& font_size = UIStyle.MediumFontSize;
   static constexpr const float& font_weight = UIStyle.BoldFontWeight;
 
   static constexpr float bg_opacity = 0.8f;
@@ -560,6 +559,7 @@ void FullscreenUI::DrawIndicators(NotificationLayout& layout)
   const float padding = ImCeil(10.0f * scale);
   const float rounding = ImCeil(10.0f * scale);
   const float image_size = ImCeil(50.0f * scale);
+  const float font_size = ImCeil(LAYOUT_MEDIUM_FONT_SIZE * scale);
   const ImGuiIO& io = ImGui::GetIO();
   ImDrawList* dl = ImGui::GetBackgroundDrawList();
 
@@ -662,7 +662,7 @@ void FullscreenUI::DrawIndicators(NotificationLayout& layout)
     const ImVec4 right_background_color = DarkerColor(UIStyle.ToastBackgroundColor, 0.8f);
     TinyString tstr;
 
-    const auto measure_tracker = [&tstr](const Achievements::LeaderboardTrackerIndicator& indicator) {
+    const auto measure_tracker = [&font_size, &tstr](const Achievements::LeaderboardTrackerIndicator& indicator) {
       tstr.assign(ICON_FA_STOPWATCH " ");
       for (u32 i = 0; i < indicator.text.length(); i++)
       {
@@ -676,9 +676,9 @@ void FullscreenUI::DrawIndicators(NotificationLayout& layout)
       return UIStyle.Font->CalcTextSizeA(font_size, font_weight, FLT_MAX, 0.0f, IMSTR_START_END(tstr));
     };
 
-    const auto draw_tracker = [&padding, &rounding, &dl, &left_background_color, &right_background_color, &tstr,
-                               &measure_tracker](Achievements::LeaderboardTrackerIndicator& indicator,
-                                                 const ImVec2& pos, float opacity) {
+    const auto draw_tracker = [&padding, &rounding, &font_size, &dl, &left_background_color, &right_background_color,
+                               &tstr, &measure_tracker](Achievements::LeaderboardTrackerIndicator& indicator,
+                                                        const ImVec2& pos, float opacity) {
       const ImVec2 size = measure_tracker(indicator);
       const float box_width = size.x + padding * 2.0f;
       const float box_height = size.y + padding * 2.0f;
