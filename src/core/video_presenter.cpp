@@ -127,7 +127,7 @@ struct Locals
   // Low-traffic variables down here.
   std::string border_overlay_image_path;
 
-#ifdef _DEBUG
+#if defined(_DEBUG) || defined(_DEVEL)
   ~Locals();
 #endif
 };
@@ -138,7 +138,7 @@ ALIGN_TO_CACHE_LINE static Locals s_locals;
 
 } // namespace VideoPresenter
 
-#ifdef _DEBUG
+#if defined(_DEBUG) || defined(_DEVEL)
 
 VideoPresenter::Locals::~Locals()
 {

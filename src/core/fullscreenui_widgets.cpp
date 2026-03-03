@@ -401,6 +401,10 @@ struct WidgetsState
   bool loading_screen_open = false;
 
   std::array<std::pair<Timer::Value, s32>, LOADING_PROGRESS_SAMPLE_COUNT> loading_screen_samples;
+
+#if defined(_DEBUG) || defined(_DEVEL)
+  ~WidgetsState();
+#endif
 };
 
 } // namespace
@@ -409,6 +413,13 @@ ALIGN_TO_CACHE_LINE UIStyles UIStyle = {};
 ALIGN_TO_CACHE_LINE static WidgetsState s_state;
 
 } // namespace FullscreenUI
+
+FullscreenUI::WidgetsState::~WidgetsState()
+{
+  DebugAssert(!transition_prev_texture);
+  DebugAssert(!transition_current_texture);
+  DebugAssert(!transition_blend_pipeline);
+}
 
 void FullscreenUI::SetFont(ImFont* ui_font)
 {
