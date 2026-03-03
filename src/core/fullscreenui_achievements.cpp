@@ -640,8 +640,8 @@ void FullscreenUI::DrawIndicators(NotificationLayout& layout)
                    ImVec2(1.0f, 1.0f), ImGui::GetColorU32(ImVec4(1.0f, 1.0f, 1.0f, opacity)));
     }
 
-    const ImVec2 text_pos =
-      box_min + ImVec2(padding.x + progress_image_size + spacing, (box_max.y - box_min.y - text_size.y) * 0.5f);
+    const ImVec2 text_pos = box_min + ImVec2(padding.x + progress_image_size + spacing,
+                                             ImFloor((box_max.y - box_min.y - text_size.y) * 0.5f));
     const ImRect text_clip_rect(text_pos, box_max);
     RenderShadowedTextClipped(dl, UIStyle.Font, font_size, font_weight, text_pos, box_max,
                               ImGui::GetColorU32(ModAlpha(UIStyle.ToastTextColor, opacity)), text, &text_size,
@@ -2708,10 +2708,10 @@ void FullscreenUI::DrawLeaderboardLoadingIndicator(float pos_y, float avail_heig
   const float display_width = ImGui::GetIO().DisplaySize.x;
 
   // position in right side of screen if short text, center otherwise
-  const ImVec2 pos = short_text ?
-                       ImVec2((display_width - total_width) - LayoutScale(40.0f),
-                              pos_y + avail_height - font_size - LayoutScale(25.0f)) :
-                       ImVec2((display_width - total_width) * 0.5f, pos_y + (avail_height - font_size) * 0.5f);
+  const ImVec2 pos = short_text ? ImVec2((display_width - total_width) - LayoutScale(40.0f),
+                                         pos_y + avail_height - font_size - LayoutScale(25.0f)) :
+                                  ImVec2(ImFloor((display_width - total_width) * 0.5f),
+                                         ImFloor(pos_y + (avail_height - font_size) * 0.5f));
 
   // for short text, draw a background box
   if (short_text)
