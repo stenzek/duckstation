@@ -741,8 +741,8 @@ void CPU::ARM32Recompiler::EndAndLinkBlock(const std::optional<u32>& newpc, bool
     armAsm->add(RARG1, RARG1, armCheckAddSubConstant(cycles));
   if (m_gte_done_cycle > cycles)
   {
-    armAsm->add(RARG2, RARG1, armCheckAddSubConstant(m_gte_done_cycle - cycles));
-    armAsm->str(RARG2, PTR(&g_state.gte_completion_tick));
+    armAsm->add(RARG3, RARG1, armCheckAddSubConstant(m_gte_done_cycle - cycles));
+    armAsm->str(RARG3, PTR(&g_state.gte_completion_tick));
   }
   if (do_event_test)
     armAsm->cmp(RARG1, RARG2);

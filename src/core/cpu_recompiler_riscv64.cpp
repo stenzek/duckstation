@@ -707,8 +707,8 @@ void CPU::RISCV64Recompiler::EndAndLinkBlock(const std::optional<u32>& newpc, bo
   }
   if (m_gte_done_cycle > cycles)
   {
-    SafeADDIW(RARG2, RARG1, m_gte_done_cycle - cycles);
-    rvAsm->SW(RARG2, PTR(&g_state.gte_completion_tick));
+    SafeADDIW(RARG3, RARG1, m_gte_done_cycle - cycles);
+    rvAsm->SW(RARG3, PTR(&g_state.gte_completion_tick));
   }
 
   if (do_event_test)
