@@ -5514,6 +5514,7 @@ void FullscreenUI::DrawPatchesOrCheatsSettingsPage(bool cheats)
           if (range_value < static_cast<s32>(ci.option_range_start))
           {
             bsi->RemoveFromStringList(section, Cheats::PATCH_ENABLE_CONFIG_KEY, ci.name.c_str());
+            bsi->DeleteValue(section, ci.name.c_str());
             if (it != enable_list.end())
               enable_list.erase(it);
           }
