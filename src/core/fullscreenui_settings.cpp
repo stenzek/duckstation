@@ -5480,8 +5480,6 @@ void FullscreenUI::DrawPatchesOrCheatsSettingsPage(bool cheats)
           BeginFixedPopupDialog(LayoutScale(LAYOUT_SMALL_POPUP_PADDING), LayoutScale(LAYOUT_SMALL_POPUP_PADDING),
                                 LayoutScale(600.0f, 0.0f)))
       {
-        BeginMenuButtons();
-
         bool range_value_changed = false;
 
         BeginHorizontalMenuButtons(4);
@@ -5529,6 +5527,8 @@ void FullscreenUI::DrawPatchesOrCheatsSettingsPage(bool cheats)
 
           SetSettingsChanged(bsi);
         }
+
+        BeginMenuButtons();
 
         if (MenuButtonWithoutSummary(FSUI_VSTR("OK"), true, LAYOUT_CENTER_ALIGN_TEXT))
           CloseFixedPopupDialog();
