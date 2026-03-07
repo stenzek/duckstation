@@ -53,6 +53,8 @@ enum class SettingsPage : u8
 // Utility
 //////////////////////////////////////////////////////////////////////////
 
+bool SetPendingMainWindowSwitch();
+bool CanCurrentMainWindowStack();
 void SwitchToMainWindow(MainWindowType type);
 void ReturnToMainWindow();
 void ReturnToMainWindow(float transition_time);

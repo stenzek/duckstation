@@ -1506,6 +1506,9 @@ void FullscreenUI::OpenAchievementsWindow()
   VideoThread::RunOnThread([was_paused]() {
     Initialize();
 
+    if (!CanCurrentMainWindowStack() || !SetPendingMainWindowSwitch())
+      return;
+
     PauseForMenuOpen(was_paused, false);
     ForceKeyNavEnabled();
     EnqueueSoundEffect(SFX_NAV_ACTIVATE);
@@ -2372,6 +2375,9 @@ void FullscreenUI::OpenLeaderboardsWindow()
 
   VideoThread::RunOnThread([was_paused]() {
     Initialize();
+
+    if (!CanCurrentMainWindowStack() || !SetPendingMainWindowSwitch())
+      return;
 
     PauseForMenuOpen(was_paused, false);
     ForceKeyNavEnabled();

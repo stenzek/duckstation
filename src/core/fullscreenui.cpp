@@ -146,6 +146,7 @@ struct Locals
   bool background_loaded = false;
   bool pause_menu_was_open = false;
   bool was_paused_on_quick_menu_open = false;
+  bool has_pending_window_switch = false;
 
   // Background
   std::unique_ptr<GPUTexture> app_background_texture;
@@ -397,6 +398,7 @@ void FullscreenUI::ClosePauseMenuImmediately()
 
   s_locals.current_pause_submenu = PauseSubMenu::None;
   s_locals.pause_menu_was_open = false;
+  s_locals.has_pending_window_switch = false;
   SwitchToMainWindow(MainWindowType::None);
 
   // Present frame with menu closed. We have to defer this for a frame so imgui loses keyboard focus.
@@ -404,13 +406,42 @@ void FullscreenUI::ClosePauseMenuImmediately()
     VideoThread::PresentCurrentFrame();
 }
 
+bool FullscreenUI::CanCurrentMainWindowStack()
+{
+  // windows that are actually stackable
+  return (s_locals.current_main_window < MainWindowType::SaveStateSelector);
+}
+
+bool FullscreenUI::SetPendingMainWindowSwitch()
+{
+  // Needed because otherwise we could switch two windows within the same frame.
+  if (s_locals.has_pending_window_switch)
+    return false;
+
+  s_locals.has_pending_window_switch = true;
+  return true;
+}
+
 void FullscreenUI::SwitchToMainWindow(MainWindowType type)
 {
   if (s_locals.current_main_window == type)
     return;
 
-  s_locals.previous_main_window = (type == MainWindowType::None) ? MainWindowType::None : s_locals.current_main_window;
+  // windows that are actually stacked
+  if (type != MainWindowType::None && !CanCurrentMainWindowStack())
+  {
+    WARNING_LOG("Trying to stack incompatible window type {} on {}, ignoring", static_cast<u32>(type),
+                static_cast<u32>(s_locals.current_main_window));
+    s_locals.previous_main_window = MainWindowType::None;
+  }
+  else
+  {
+    s_locals.previous_main_window =
+      (type == MainWindowType::None) ? MainWindowType::None : s_locals.current_main_window;
+  }
+
   s_locals.current_main_window = type;
+  s_locals.has_pending_window_switch = false;
   if (!AreAnyDialogsOpen())
   {
     ImGui::SetWindowFocus(nullptr);
@@ -451,6 +482,7 @@ void FullscreenUI::ReturnToMainWindow(float transition_time)
     s_locals.previous_main_window = MainWindowType::None;
     s_locals.current_pause_submenu = PauseSubMenu::None;
     s_locals.pause_menu_was_open = false;
+    s_locals.has_pending_window_switch = false;
 
     if (VideoThread::HasGPUBackend())
     {
@@ -471,6 +503,8 @@ void FullscreenUI::UnpauseForMenuClose()
   if (!VideoThread::IsSystemPaused())
     return;
 
+  s_locals.has_pending_window_switch = false;
+
   // Represent the frame if we're not running idle, so that the pause indicator is displayed.
   if (!s_locals.was_paused_on_quick_menu_open)
     Host::RunOnCoreThread([]() { System::PauseSystem(false); });
@@ -489,6 +523,7 @@ void FullscreenUI::Shutdown()
   s_locals.previous_main_window = MainWindowType::None;
   s_locals.pause_menu_was_open = false;
   s_locals.was_paused_on_quick_menu_open = false;
+  s_locals.has_pending_window_switch = false;
 
   ClearAchievementsState();
   ClearSettingsState();
