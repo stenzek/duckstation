@@ -276,8 +276,8 @@ void BeginTransition(float time, TransitionStartCallback func);
 void CancelTransition();
 bool IsTransitionActive();
 TransitionState GetTransitionState();
-GPUTexture* GetTransitionRenderTexture(GPUSwapChain* swap_chain);
-void RenderTransitionBlend(GPUSwapChain* swap_chain);
+GPUTexture* GetTransitionRenderTexture(GPUSwapChain* const swap_chain);
+void RenderTransitionBlend(GPUSwapChain* const swap_chain, GPUTexture* const transition_texture);
 void UpdateTransitionState();
 
 /// Screen blurring.

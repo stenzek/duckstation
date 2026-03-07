@@ -852,7 +852,7 @@ FullscreenUI::TransitionState FullscreenUI::GetTransitionState()
   return s_state.transition_state;
 }
 
-GPUTexture* FullscreenUI::GetTransitionRenderTexture(GPUSwapChain* swap_chain)
+GPUTexture* FullscreenUI::GetTransitionRenderTexture(GPUSwapChain* const swap_chain)
 {
   if (!g_gpu_device->ResizeTexture(&s_state.transition_current_texture, swap_chain->GetWidth(), swap_chain->GetHeight(),
                                    GPUTexture::Type::RenderTarget, swap_chain->GetFormat(), GPUTexture::Flags::None,
@@ -961,24 +961,23 @@ bool FullscreenUI::CompilePipelines(Error* error)
   return true;
 }
 
-void FullscreenUI::RenderTransitionBlend(GPUSwapChain* swap_chain)
+void FullscreenUI::RenderTransitionBlend(GPUSwapChain* swap_chain, GPUTexture* const transition_texture)
 {
-  GPUTexture* const curr = s_state.transition_current_texture.get();
-  DebugAssert(curr);
-
   if (s_state.transition_state == TransitionState::Starting)
   {
     // copy current frame
-    if (!g_gpu_device->ResizeTexture(&s_state.transition_prev_texture, curr->GetWidth(), curr->GetHeight(),
-                                     GPUTexture::Type::RenderTarget, curr->GetFormat(), GPUTexture::Flags::None, false))
+    if (!g_gpu_device->ResizeTexture(&s_state.transition_prev_texture, transition_texture->GetWidth(),
+                                     transition_texture->GetHeight(), GPUTexture::Type::RenderTarget,
+                                     transition_texture->GetFormat(), GPUTexture::Flags::None, false))
     {
-      ERROR_LOG("Failed to allocate {}x{} texture for transition, cancelling.", curr->GetWidth(), curr->GetHeight());
+      ERROR_LOG("Failed to allocate {}x{} texture for transition, cancelling.", transition_texture->GetWidth(),
+                transition_texture->GetHeight());
       s_state.transition_state = TransitionState::Inactive;
       return;
     }
 
-    g_gpu_device->CopyTextureRegion(s_state.transition_prev_texture.get(), 0, 0, 0, 0, curr, 0, 0, 0, 0,
-                                    curr->GetWidth(), curr->GetHeight());
+    g_gpu_device->CopyTextureRegion(s_state.transition_prev_texture.get(), 0, 0, 0, 0, transition_texture, 0, 0, 0, 0,
+                                    transition_texture->GetWidth(), transition_texture->GetHeight());
 
     s_state.transition_state = TransitionState::Active;
   }
@@ -987,7 +986,7 @@ void FullscreenUI::RenderTransitionBlend(GPUSwapChain* swap_chain)
   const float uniforms[2] = {1.0f - transition_alpha, transition_alpha};
   g_gpu_device->SetPipeline(s_state.transition_blend_pipeline.get());
   g_gpu_device->SetViewportAndScissor(0, 0, swap_chain->GetPostRotatedWidth(), swap_chain->GetPostRotatedHeight());
-  g_gpu_device->SetTextureSampler(0, curr, g_gpu_device->GetNearestSampler());
+  g_gpu_device->SetTextureSampler(0, transition_texture, g_gpu_device->GetNearestSampler());
   g_gpu_device->SetTextureSampler(1, s_state.transition_prev_texture.get(), g_gpu_device->GetNearestSampler());
 
   const GSVector2i size = swap_chain->GetSizeVec();

@@ -1517,24 +1517,31 @@ bool VideoPresenter::PresentFrame(GPUBackend* backend, u64 present_time)
     FullscreenUI::RenderBlur(blur_target);
   }
 
-  GPUTexture* const transition_target = FullscreenUI::IsTransitionActive() ?
-                                          FullscreenUI::GetTransitionRenderTexture(g_gpu_device->GetMainSwapChain()) :
-                                          nullptr;
   GPUPresentResult pres;
-  if (transition_target)
+  if (GPUTexture* transition_target = FullscreenUI::IsTransitionActive() ?
+                                        FullscreenUI::GetTransitionRenderTexture(g_gpu_device->GetMainSwapChain()) :
+                                        nullptr)
   {
     if (blur_target)
-      DrawDisplayCopy(blur_target, transition_target, swap_chain);
-    else if (backend)
-      RenderDisplay(transition_target, transition_target->GetSizeVec(), true, true);
+    {
+      // Avoid a copy by drawing on top of the blur source, since it's already been consumed.
+      GL_INS("Using blur target as transition target");
+      transition_target = blur_target;
+    }
     else
-      g_gpu_device->ClearRenderTarget(transition_target, GPUDevice::DEFAULT_CLEAR_COLOR);
+    {
+      // Display still needs rendering.
+      if (backend)
+        RenderDisplay(transition_target, transition_target->GetSizeVec(), true, true);
+      else
+        g_gpu_device->ClearRenderTarget(transition_target, GPUDevice::DEFAULT_CLEAR_COLOR);
+    }
 
     g_gpu_device->SetRenderTarget(transition_target);
     ImGuiManager::RenderDrawLists(transition_target);
 
     if ((pres = g_gpu_device->BeginPresent(swap_chain)) == GPUPresentResult::OK)
-      FullscreenUI::RenderTransitionBlend(swap_chain);
+      FullscreenUI::RenderTransitionBlend(swap_chain, transition_target);
   }
   else
   {
