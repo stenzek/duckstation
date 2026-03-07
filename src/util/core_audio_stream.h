@@ -78,7 +78,7 @@ public:
 
   static const char* GetStretchModeName(AudioStretchMode mode);
   static const char* GetStretchModeDisplayName(AudioStretchMode mode);
-  static std::optional<AudioStretchMode> ParseStretchMode(const char* name);
+  static std::optional<AudioStretchMode> ParseStretchMode(std::string_view name);
 
   ALWAYS_INLINE u32 GetSampleRate() const { return m_sample_rate; }
   ALWAYS_INLINE u32 GetBufferSize() const { return m_buffer_size; }

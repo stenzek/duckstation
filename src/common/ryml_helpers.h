@@ -181,7 +181,7 @@ inline std::optional<T> GetOptionalTFromObject(const ryml::ConstNodeRef& object,
 
 template<typename T>
 inline std::optional<T> ParseOptionalTFromObject(const ryml::ConstNodeRef& object, std::string_view key,
-                                                 std::optional<T> (*from_string_function)(const char* str))
+                                                 std::optional<T> (*from_string_function)(std::string_view str))
 {
   std::optional<T> ret;
 

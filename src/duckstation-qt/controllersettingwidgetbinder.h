@@ -196,7 +196,7 @@ inline void BindWidgetToInputProfileString(SettingsInterface* sif, WidgetType* w
 template<typename WidgetType, typename DataType, typename ValueCountType>
 inline void BindWidgetToInputProfileEnumSetting(SettingsInterface* sif, WidgetType* widget, std::string section,
                                                 std::string key,
-                                                std::optional<DataType> (*from_string_function)(const char* str),
+                                                std::optional<DataType> (*from_string_function)(std::string_view str),
                                                 const char* (*to_string_function)(DataType value),
                                                 const char* (*to_display_name_function)(DataType value),
                                                 DataType default_value, ValueCountType value_count)
@@ -210,7 +210,7 @@ inline void BindWidgetToInputProfileEnumSetting(SettingsInterface* sif, WidgetTy
   const std::string value =
     sif ? sif->GetStringValue(section.c_str(), key.c_str(), to_string_function(default_value)) :
           Core::GetBaseStringSettingValue(section.c_str(), key.c_str(), to_string_function(default_value));
-  const std::optional<DataType> typed_value = from_string_function(value.c_str());
+  const std::optional<DataType> typed_value = from_string_function(value);
   if (typed_value.has_value())
     Accessor::setIntValue(widget, static_cast<int>(static_cast<UnderlyingType>(typed_value.value())));
   else

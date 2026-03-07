@@ -35,7 +35,7 @@ public:
   using CodecName = std::pair<std::string, std::string>; // configname,longname
   using CodecList = std::vector<CodecName>;
 
-  static std::optional<MediaCaptureBackend> ParseBackendName(const char* str);
+  static std::optional<MediaCaptureBackend> ParseBackendName(std::string_view str);
   static const char* GetBackendName(MediaCaptureBackend backend);
   static const char* GetBackendDisplayName(MediaCaptureBackend backend);
 

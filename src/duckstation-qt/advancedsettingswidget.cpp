@@ -87,7 +87,7 @@ static QSpinBox* setIntRangeTweakOption(QTableWidget* table, int row, int value)
 
 template<typename T>
 static QComboBox* addChoiceTweakOption(SettingsWindow* dialog, QTableWidget* table, QString name, std::string section,
-                                       std::string key, std::optional<T> (*parse_callback)(const char*),
+                                       std::string key, std::optional<T> (*parse_callback)(std::string_view),
                                        const char* (*get_value_callback)(T), const char* (*get_display_callback)(T),
                                        u32 num_values, T default_value)
 {

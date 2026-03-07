@@ -478,65 +478,65 @@ struct Settings : public GPUSettings
   static void SetDefaultControllerConfig(SettingsInterface& si);
   static void SetDefaultHotkeyConfig(SettingsInterface& si);
 
-  static std::optional<Log::Level> ParseLogLevelName(const char* str);
+  static std::optional<Log::Level> ParseLogLevelName(std::string_view str);
   static const char* GetLogLevelName(Log::Level level);
   static const char* GetLogLevelDisplayName(Log::Level level);
 
-  static std::optional<ConsoleRegion> ParseConsoleRegionName(const char* str);
+  static std::optional<ConsoleRegion> ParseConsoleRegionName(std::string_view str);
   static const char* GetConsoleRegionName(ConsoleRegion region);
   static const char* GetConsoleRegionDisplayName(ConsoleRegion region);
 
-  static std::optional<DiscRegion> ParseDiscRegionName(const char* str);
+  static std::optional<DiscRegion> ParseDiscRegionName(std::string_view str);
   static const char* GetDiscRegionName(DiscRegion region);
   static const char* GetDiscRegionDisplayName(DiscRegion region);
 
-  static std::optional<CPUExecutionMode> ParseCPUExecutionMode(const char* str);
+  static std::optional<CPUExecutionMode> ParseCPUExecutionMode(std::string_view str);
   static const char* GetCPUExecutionModeName(CPUExecutionMode mode);
   static const char* GetCPUExecutionModeDisplayName(CPUExecutionMode mode);
 
-  static std::optional<CPUFastmemMode> ParseCPUFastmemMode(const char* str);
+  static std::optional<CPUFastmemMode> ParseCPUFastmemMode(std::string_view str);
   static const char* GetCPUFastmemModeName(CPUFastmemMode mode);
   static const char* GetCPUFastmemModeDisplayName(CPUFastmemMode mode);
 
-  static std::optional<GPURenderer> ParseRendererName(const char* str);
+  static std::optional<GPURenderer> ParseRendererName(std::string_view str);
   static const char* GetRendererName(GPURenderer renderer);
   static const char* GetRendererDisplayName(GPURenderer renderer);
   static RenderAPI GetRenderAPIForRenderer(GPURenderer renderer);
   static GPURenderer GetRendererForRenderAPI(RenderAPI api);
 
-  static std::optional<GPUTextureFilter> ParseTextureFilterName(const char* str);
+  static std::optional<GPUTextureFilter> ParseTextureFilterName(std::string_view str);
   static const char* GetTextureFilterName(GPUTextureFilter filter);
   static const char* GetTextureFilterDisplayName(GPUTextureFilter filter);
 
-  static std::optional<GPUDitheringMode> ParseGPUDitheringModeName(const char* str);
+  static std::optional<GPUDitheringMode> ParseGPUDitheringModeName(std::string_view str);
   static const char* GetGPUDitheringModeName(GPUDitheringMode mode);
   static const char* GetGPUDitheringModeDisplayName(GPUDitheringMode mode);
 
-  static std::optional<GPULineDetectMode> ParseLineDetectModeName(const char* str);
+  static std::optional<GPULineDetectMode> ParseLineDetectModeName(std::string_view str);
   static const char* GetLineDetectModeName(GPULineDetectMode filter);
   static const char* GetLineDetectModeDisplayName(GPULineDetectMode filter);
 
-  static std::optional<GPUDownsampleMode> ParseDownsampleModeName(const char* str);
+  static std::optional<GPUDownsampleMode> ParseDownsampleModeName(std::string_view str);
   static const char* GetDownsampleModeName(GPUDownsampleMode mode);
   static const char* GetDownsampleModeDisplayName(GPUDownsampleMode mode);
 
-  static std::optional<GPUWireframeMode> ParseGPUWireframeMode(const char* str);
+  static std::optional<GPUWireframeMode> ParseGPUWireframeMode(std::string_view str);
   static const char* GetGPUWireframeModeName(GPUWireframeMode mode);
   static const char* GetGPUWireframeModeDisplayName(GPUWireframeMode mode);
 
-  static std::optional<GPUDumpCompressionMode> ParseGPUDumpCompressionMode(const char* str);
+  static std::optional<GPUDumpCompressionMode> ParseGPUDumpCompressionMode(std::string_view str);
   static const char* GetGPUDumpCompressionModeName(GPUDumpCompressionMode mode);
   static const char* GetGPUDumpCompressionModeDisplayName(GPUDumpCompressionMode mode);
 
-  static std::optional<DisplayDeinterlacingMode> ParseDisplayDeinterlacingMode(const char* str);
+  static std::optional<DisplayDeinterlacingMode> ParseDisplayDeinterlacingMode(std::string_view str);
   static const char* GetDisplayDeinterlacingModeName(DisplayDeinterlacingMode mode);
   static const char* GetDisplayDeinterlacingModeDisplayName(DisplayDeinterlacingMode mode);
 
-  static std::optional<DisplayCropMode> ParseDisplayCropMode(const char* str);
+  static std::optional<DisplayCropMode> ParseDisplayCropMode(std::string_view str);
   static const char* GetDisplayCropModeName(DisplayCropMode crop_mode);
   static const char* GetDisplayCropModeDisplayName(DisplayCropMode crop_mode);
 
-  static std::optional<DisplayFineCropMode> ParseDisplayFineCropMode(const char* str);
+  static std::optional<DisplayFineCropMode> ParseDisplayFineCropMode(std::string_view str);
   static const char* GetDisplayFineCropModeName(DisplayFineCropMode mode);
   static const char* GetDisplayFineCropModeDisplayName(DisplayFineCropMode mode);
 
@@ -545,39 +545,39 @@ struct Settings : public GPUSettings
   static TinyString GetDisplayAspectRatioDisplayName(DisplayAspectRatio ar);
   static std::span<const DisplayAspectRatio> GetPredefinedDisplayAspectRatios();
 
-  static std::optional<DisplayAlignment> ParseDisplayAlignment(const char* str);
+  static std::optional<DisplayAlignment> ParseDisplayAlignment(std::string_view str);
   static const char* GetDisplayAlignmentName(DisplayAlignment alignment);
   static const char* GetDisplayAlignmentDisplayName(DisplayAlignment alignment);
 
-  static std::optional<DisplayRotation> ParseDisplayRotation(const char* str);
+  static std::optional<DisplayRotation> ParseDisplayRotation(std::string_view str);
   static const char* GetDisplayRotationName(DisplayRotation alignment);
   static const char* GetDisplayRotationDisplayName(DisplayRotation alignment);
 
-  static std::optional<DisplayScalingMode> ParseDisplayScaling(const char* str);
+  static std::optional<DisplayScalingMode> ParseDisplayScaling(std::string_view str);
   static const char* GetDisplayScalingName(DisplayScalingMode mode);
   static const char* GetDisplayScalingDisplayName(DisplayScalingMode mode);
 
-  static std::optional<ForceVideoTimingMode> ParseForceVideoTimingName(const char* str);
+  static std::optional<ForceVideoTimingMode> ParseForceVideoTimingName(std::string_view str);
   static const char* GetForceVideoTimingName(ForceVideoTimingMode mode);
   static const char* GetForceVideoTimingDisplayName(ForceVideoTimingMode mode);
 
-  static std::optional<DisplayExclusiveFullscreenControl> ParseDisplayExclusiveFullscreenControl(const char* str);
+  static std::optional<DisplayExclusiveFullscreenControl> ParseDisplayExclusiveFullscreenControl(std::string_view str);
   static const char* GetDisplayExclusiveFullscreenControlName(DisplayExclusiveFullscreenControl mode);
   static const char* GetDisplayExclusiveFullscreenControlDisplayName(DisplayExclusiveFullscreenControl mode);
 
-  static std::optional<DisplayScreenshotMode> ParseDisplayScreenshotMode(const char* str);
+  static std::optional<DisplayScreenshotMode> ParseDisplayScreenshotMode(std::string_view str);
   static const char* GetDisplayScreenshotModeName(DisplayScreenshotMode mode);
   static const char* GetDisplayScreenshotModeDisplayName(DisplayScreenshotMode mode);
 
-  static std::optional<NotificationLocation> ParseNotificationLocation(const char* str);
+  static std::optional<NotificationLocation> ParseNotificationLocation(std::string_view str);
   static const char* GetNotificationLocationName(NotificationLocation location);
   static const char* GetNotificationLocationDisplayName(NotificationLocation location);
 
-  static std::optional<AchievementChallengeIndicatorMode> ParseAchievementChallengeIndicatorMode(const char* str);
+  static std::optional<AchievementChallengeIndicatorMode> ParseAchievementChallengeIndicatorMode(std::string_view str);
   static const char* GetAchievementChallengeIndicatorModeName(AchievementChallengeIndicatorMode mode);
   static const char* GetAchievementChallengeIndicatorModeDisplayName(AchievementChallengeIndicatorMode mode);
 
-  static std::optional<DisplayScreenshotFormat> ParseDisplayScreenshotFormat(const char* str);
+  static std::optional<DisplayScreenshotFormat> ParseDisplayScreenshotFormat(std::string_view str);
   static const char* GetDisplayScreenshotFormatName(DisplayScreenshotFormat mode);
   static const char* GetDisplayScreenshotFormatDisplayName(DisplayScreenshotFormat mode);
   static const char* GetDisplayScreenshotFormatExtension(DisplayScreenshotFormat mode);
@@ -585,23 +585,23 @@ struct Settings : public GPUSettings
 
   static const char* GetDisplayOSDMessageTypeName(OSDMessageType type);
 
-  static std::optional<MemoryCardType> ParseMemoryCardTypeName(const char* str);
+  static std::optional<MemoryCardType> ParseMemoryCardTypeName(std::string_view str);
   static const char* GetMemoryCardTypeName(MemoryCardType type);
   static const char* GetMemoryCardTypeDisplayName(MemoryCardType type);
 
-  static std::optional<MultitapMode> ParseMultitapModeName(const char* str);
+  static std::optional<MultitapMode> ParseMultitapModeName(std::string_view str);
   static const char* GetMultitapModeName(MultitapMode mode);
   static const char* GetMultitapModeDisplayName(MultitapMode mode);
 
-  static std::optional<CDROMMechaconVersion> ParseCDROMMechVersionName(const char* str);
+  static std::optional<CDROMMechaconVersion> ParseCDROMMechVersionName(std::string_view str);
   static const char* GetCDROMMechVersionName(CDROMMechaconVersion mode);
   static const char* GetCDROMMechVersionDisplayName(CDROMMechaconVersion mode);
 
-  static std::optional<SaveStateCompressionMode> ParseSaveStateCompressionModeName(const char* str);
+  static std::optional<SaveStateCompressionMode> ParseSaveStateCompressionModeName(std::string_view str);
   static const char* GetSaveStateCompressionModeName(SaveStateCompressionMode mode);
   static const char* GetSaveStateCompressionModeDisplayName(SaveStateCompressionMode mode);
 
-  static std::optional<PIODeviceType> ParsePIODeviceTypeName(const char* str);
+  static std::optional<PIODeviceType> ParsePIODeviceTypeName(std::string_view str);
   static const char* GetPIODeviceTypeModeName(PIODeviceType type);
   static const char* GetPIODeviceTypeModeDisplayName(PIODeviceType type);
 

@@ -38,12 +38,12 @@ static constexpr const std::array s_backend_display_names = {
 #endif
 };
 
-std::optional<AudioBackend> AudioStream::ParseBackendName(const char* str)
+std::optional<AudioBackend> AudioStream::ParseBackendName(std::string_view str)
 {
   int index = 0;
   for (const char* name : s_backend_names)
   {
-    if (std::strcmp(name, str) == 0)
+    if (str == name)
       return static_cast<AudioBackend>(index);
 
     index++;
