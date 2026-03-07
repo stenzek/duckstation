@@ -1322,7 +1322,7 @@ std::optional<Log::Level> Settings::ParseLogLevelName(std::string_view str)
   int index = 0;
   for (const char* name : s_log_level_names)
   {
-    if (StringUtil::EqualNoCase(name, str))
+    if (str == name)
       return static_cast<Log::Level>(index);
 
     index++;
@@ -1359,7 +1359,7 @@ std::optional<ConsoleRegion> Settings::ParseConsoleRegionName(std::string_view s
   int index = 0;
   for (const char* name : s_console_region_names)
   {
-    if (StringUtil::EqualNoCase(name, str))
+    if (str == name)
       return static_cast<ConsoleRegion>(index);
 
     index++;
@@ -1395,7 +1395,7 @@ std::optional<DiscRegion> Settings::ParseDiscRegionName(std::string_view str)
   int index = 0;
   for (const char* name : s_disc_region_names)
   {
-    if (StringUtil::EqualNoCase(name, str))
+    if (str == name)
       return static_cast<DiscRegion>(index);
 
     index++;
@@ -1430,7 +1430,7 @@ std::optional<CPUExecutionMode> Settings::ParseCPUExecutionMode(std::string_view
   u8 index = 0;
   for (const char* name : s_cpu_execution_mode_names)
   {
-    if (StringUtil::EqualNoCase(name, str))
+    if (str == name)
       return static_cast<CPUExecutionMode>(index);
 
     index++;
@@ -1466,7 +1466,7 @@ std::optional<CPUFastmemMode> Settings::ParseCPUFastmemMode(std::string_view str
   u8 index = 0;
   for (const char* name : s_cpu_fastmem_mode_names)
   {
-    if (StringUtil::EqualNoCase(name, str))
+    if (str == name)
       return static_cast<CPUFastmemMode>(index);
 
     index++;
@@ -1525,7 +1525,7 @@ std::optional<GPURenderer> Settings::ParseRendererName(std::string_view str)
   int index = 0;
   for (const char* name : s_gpu_renderer_names)
   {
-    if (StringUtil::EqualNoCase(name, str))
+    if (str == name)
       return static_cast<GPURenderer>(index);
 
     index++;
@@ -1632,7 +1632,7 @@ std::optional<GPUTextureFilter> Settings::ParseTextureFilterName(std::string_vie
   int index = 0;
   for (const char* name : s_texture_filter_names)
   {
-    if (StringUtil::EqualNoCase(name, str))
+    if (str == name)
       return static_cast<GPUTextureFilter>(index);
 
     index++;
@@ -1671,7 +1671,7 @@ std::optional<GPUDitheringMode> Settings::ParseGPUDitheringModeName(std::string_
   int index = 0;
   for (const char* name : s_gpu_dithering_mode_names)
   {
-    if (StringUtil::EqualNoCase(name, str))
+    if (str == name)
       return static_cast<GPUDitheringMode>(index);
 
     index++;
@@ -1709,7 +1709,7 @@ std::optional<GPULineDetectMode> Settings::ParseLineDetectModeName(std::string_v
   int index = 0;
   for (const char* name : s_line_detect_mode_names)
   {
-    if (StringUtil::EqualNoCase(name, str))
+    if (str == name)
       return static_cast<GPULineDetectMode>(index);
 
     index++;
@@ -1740,7 +1740,7 @@ std::optional<GPUDownsampleMode> Settings::ParseDownsampleModeName(std::string_v
   int index = 0;
   for (const char* name : s_downsample_mode_names)
   {
-    if (StringUtil::EqualNoCase(name, str))
+    if (str == name)
       return static_cast<GPUDownsampleMode>(index);
 
     index++;
@@ -1771,7 +1771,7 @@ std::optional<GPUWireframeMode> Settings::ParseGPUWireframeMode(std::string_view
   int index = 0;
   for (const char* name : s_wireframe_mode_names)
   {
-    if (StringUtil::EqualNoCase(name, str))
+    if (str == name)
       return static_cast<GPUWireframeMode>(index);
 
     index++;
@@ -1811,7 +1811,7 @@ std::optional<GPUDumpCompressionMode> Settings::ParseGPUDumpCompressionMode(std:
   int index = 0;
   for (const char* name : s_gpu_dump_compression_mode_names)
   {
-    if (StringUtil::EqualNoCase(name, str))
+    if (str == name)
       return static_cast<GPUDumpCompressionMode>(index);
 
     index++;
@@ -1847,7 +1847,7 @@ std::optional<DisplayDeinterlacingMode> Settings::ParseDisplayDeinterlacingMode(
   int index = 0;
   for (const char* name : s_display_deinterlacing_mode_names)
   {
-    if (StringUtil::EqualNoCase(name, str))
+    if (str == name)
       return static_cast<DisplayDeinterlacingMode>(index);
 
     index++;
@@ -1883,7 +1883,7 @@ std::optional<DisplayCropMode> Settings::ParseDisplayCropMode(std::string_view s
   int index = 0;
   for (const char* name : s_display_crop_mode_names)
   {
-    if (StringUtil::EqualNoCase(name, str))
+    if (str == name)
       return static_cast<DisplayCropMode>(index);
 
     index++;
@@ -1923,7 +1923,7 @@ std::optional<DisplayFineCropMode> Settings::ParseDisplayFineCropMode(std::strin
   int index = 0;
   for (const char* name : s_display_fine_crop_mode_names)
   {
-    if (StringUtil::EqualNoCase(name, str))
+    if (str == name)
       return static_cast<DisplayFineCropMode>(index);
 
     index++;
@@ -2042,7 +2042,7 @@ std::optional<DisplayAlignment> Settings::ParseDisplayAlignment(std::string_view
   int index = 0;
   for (const char* name : s_display_alignment_names)
   {
-    if (StringUtil::EqualNoCase(name, str))
+    if (str == name)
       return static_cast<DisplayAlignment>(index);
 
     index++;
@@ -2075,7 +2075,7 @@ std::optional<DisplayRotation> Settings::ParseDisplayRotation(std::string_view s
   int index = 0;
   for (const char* name : s_display_rotation_names)
   {
-    if (StringUtil::EqualNoCase(name, str))
+    if (str == name)
       return static_cast<DisplayRotation>(index);
 
     index++;
@@ -2112,7 +2112,7 @@ std::optional<ForceVideoTimingMode> Settings::ParseForceVideoTimingName(std::str
   int index = 0;
   for (const char* name : s_display_force_video_timing_names)
   {
-    if (StringUtil::EqualNoCase(name, str))
+    if (str == name)
       return static_cast<ForceVideoTimingMode>(index);
 
     index++;
@@ -2150,7 +2150,7 @@ std::optional<DisplayScalingMode> Settings::ParseDisplayScaling(std::string_view
   int index = 0;
   for (const char* name : s_display_scaling_names)
   {
-    if (StringUtil::EqualNoCase(name, str))
+    if (str == name)
       return static_cast<DisplayScalingMode>(index);
 
     index++;
@@ -2186,7 +2186,7 @@ std::optional<DisplayExclusiveFullscreenControl> Settings::ParseDisplayExclusive
   int index = 0;
   for (const char* name : s_display_exclusive_fullscreen_mode_names)
   {
-    if (StringUtil::EqualNoCase(name, str))
+    if (str == name)
       return static_cast<DisplayExclusiveFullscreenControl>(index);
 
     index++;
@@ -2223,7 +2223,7 @@ std::optional<DisplayScreenshotMode> Settings::ParseDisplayScreenshotMode(std::s
   int index = 0;
   for (const char* name : s_display_screenshot_mode_names)
   {
-    if (StringUtil::EqualNoCase(name, str))
+    if (str == name)
       return static_cast<DisplayScreenshotMode>(index);
 
     index++;
@@ -2264,7 +2264,7 @@ std::optional<DisplayScreenshotFormat> Settings::ParseDisplayScreenshotFormat(st
   int index = 0;
   for (const char* name : s_display_screenshot_format_names)
   {
-    if (StringUtil::EqualNoCase(name, str))
+    if (str == name)
       return static_cast<DisplayScreenshotFormat>(index);
 
     index++;
@@ -2333,7 +2333,7 @@ std::optional<NotificationLocation> Settings::ParseNotificationLocation(std::str
   int index = 0;
   for (const char* name : s_notification_location_names)
   {
-    if (StringUtil::EqualNoCase(name, str))
+    if (str == name)
       return static_cast<NotificationLocation>(index);
 
     index++;
@@ -2375,7 +2375,7 @@ std::optional<AchievementChallengeIndicatorMode> Settings::ParseAchievementChall
   int index = 0;
   for (const char* name : s_achievement_challenge_indicator_mode_names)
   {
-    if (StringUtil::EqualNoCase(name, str))
+    if (str == name)
       return static_cast<AchievementChallengeIndicatorMode>(index);
 
     index++;
@@ -2413,7 +2413,7 @@ std::optional<MemoryCardType> Settings::ParseMemoryCardTypeName(std::string_view
   int index = 0;
   for (const char* name : s_memory_card_type_names)
   {
-    if (StringUtil::EqualNoCase(name, str))
+    if (str == name)
       return static_cast<MemoryCardType>(index);
 
     index++;
@@ -2475,7 +2475,7 @@ std::optional<MultitapMode> Settings::ParseMultitapModeName(std::string_view str
   u32 index = 0;
   for (const char* name : s_multitap_enable_mode_names)
   {
-    if (StringUtil::EqualNoCase(name, str))
+    if (str == name)
       return static_cast<MultitapMode>(index);
 
     index++;
@@ -2507,7 +2507,7 @@ std::optional<CDROMMechaconVersion> Settings::ParseCDROMMechVersionName(std::str
   u32 index = 0;
   for (const char* name : s_mechacon_version_names)
   {
-    if (StringUtil::EqualNoCase(name, str))
+    if (str == name)
       return static_cast<CDROMMechaconVersion>(index);
 
     index++;
@@ -2551,7 +2551,7 @@ std::optional<SaveStateCompressionMode> Settings::ParseSaveStateCompressionModeN
   u32 index = 0;
   for (const char* name : s_save_state_compression_mode_names)
   {
-    if (StringUtil::EqualNoCase(name, str))
+    if (str == name)
       return static_cast<SaveStateCompressionMode>(index);
 
     index++;
@@ -2587,7 +2587,7 @@ std::optional<PIODeviceType> Settings::ParsePIODeviceTypeName(std::string_view s
   u32 index = 0;
   for (const char* name : s_pio_device_type_names)
   {
-    if (StringUtil::EqualNoCase(name, str))
+    if (str == name)
       return static_cast<PIODeviceType>(index);
 
     index++;
