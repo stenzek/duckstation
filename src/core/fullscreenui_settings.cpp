@@ -165,7 +165,7 @@ static void DrawStringListSetting(SettingsInterface* bsi, std::string_view title
 template<typename DataType, typename SizeType>
 static void DrawEnumSetting(SettingsInterface* bsi, std::string_view title, std::string_view summary,
                             const char* section, const char* key, DataType default_value,
-                            std::optional<DataType> (*from_string_function)(const char* str),
+                            std::optional<DataType> (*from_string_function)(std::string_view str),
                             const char* (*to_string_function)(DataType value),
                             const char* (*to_display_string_function)(DataType value), SizeType option_count,
                             bool enabled = true);
@@ -1381,7 +1381,7 @@ void FullscreenUI::DrawStringListSetting(SettingsInterface* bsi, std::string_vie
 template<typename DataType, typename SizeType>
 void FullscreenUI::DrawEnumSetting(SettingsInterface* bsi, std::string_view title, std::string_view summary,
                                    const char* section, const char* key, DataType default_value,
-                                   std::optional<DataType> (*from_string_function)(const char* str),
+                                   std::optional<DataType> (*from_string_function)(std::string_view str),
                                    const char* (*to_string_function)(DataType value),
                                    const char* (*to_display_string_function)(DataType value), SizeType option_count,
                                    bool enabled /* = true */)
@@ -1390,7 +1390,7 @@ void FullscreenUI::DrawEnumSetting(SettingsInterface* bsi, std::string_view titl
 
   std::optional<DataType> typed_value;
   if (std::string_view value; bsi->FindStringValue(section, key, &value))
-    typed_value = from_string_function(TinyString(value));
+    typed_value = from_string_function(value);
   if (!typed_value.has_value() && !game_settings)
     typed_value = default_value;
 

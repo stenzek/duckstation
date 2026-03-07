@@ -28,7 +28,7 @@ void AudioStreamParameters::Load(const SettingsInterface& si, const char* sectio
 {
   stretch_mode =
     CoreAudioStream::ParseStretchMode(
-      si.GetStringValue(section, "StretchMode", CoreAudioStream::GetStretchModeName(DEFAULT_STRETCH_MODE)).c_str())
+      si.GetStringViewValue(section, "StretchMode", CoreAudioStream::GetStretchModeName(DEFAULT_STRETCH_MODE)))
       .value_or(DEFAULT_STRETCH_MODE);
   output_latency_ms = static_cast<u16>(std::min<u32>(
     si.GetUIntValue(section, "OutputLatencyMS", DEFAULT_OUTPUT_LATENCY_MS), std::numeric_limits<u16>::max()));
@@ -247,11 +247,11 @@ const char* CoreAudioStream::GetStretchModeDisplayName(AudioStretchMode mode)
            "";
 }
 
-std::optional<AudioStretchMode> CoreAudioStream::ParseStretchMode(const char* name)
+std::optional<AudioStretchMode> CoreAudioStream::ParseStretchMode(std::string_view name)
 {
   for (size_t i = 0; i < static_cast<u8>(AudioStretchMode::Count); i++)
   {
-    if (std::strcmp(name, s_stretch_mode_names[i]) == 0)
+    if (name == s_stretch_mode_names[i])
       return static_cast<AudioStretchMode>(i);
   }
 

@@ -2938,12 +2938,12 @@ static_assert(s_backend_display_names.size() == static_cast<size_t>(MediaCapture
 
 MediaCapture::~MediaCapture() = default;
 
-std::optional<MediaCaptureBackend> MediaCapture::ParseBackendName(const char* str)
+std::optional<MediaCaptureBackend> MediaCapture::ParseBackendName(std::string_view str)
 {
   int index = 0;
   for (const char* name : s_backend_names)
   {
-    if (std::strcmp(name, str) == 0)
+    if (str == name)
       return static_cast<MediaCaptureBackend>(index);
 
     index++;

@@ -1071,7 +1071,7 @@ inline void BindWidgetToStringSetting(SettingsInterface* sif, WidgetType* widget
 
 template<typename WidgetType, typename DataType>
 inline void BindWidgetToEnumSetting(SettingsInterface* sif, WidgetType* widget, std::string section, std::string key,
-                                    std::optional<DataType> (*from_string_function)(const char* str),
+                                    std::optional<DataType> (*from_string_function)(std::string_view str),
                                     const char* (*to_string_function)(DataType value), DataType default_value)
 {
   using Accessor = SettingAccessor<WidgetType>;
@@ -1089,7 +1089,7 @@ inline void BindWidgetToEnumSetting(SettingsInterface* sif, WidgetType* widget, 
     std::string_view sif_value;
     if (sif->FindStringValue(section.c_str(), key.c_str(), &sif_value))
     {
-      const std::optional<DataType> old_setting_value = from_string_function(TinyString(sif_value));
+      const std::optional<DataType> old_setting_value = from_string_function(sif_value);
       if (old_setting_value.has_value())
         Accessor::setNullableIntValue(widget, static_cast<int>(static_cast<UnderlyingType>(old_setting_value.value())));
       else
@@ -1137,7 +1137,7 @@ inline void BindWidgetToEnumSetting(SettingsInterface* sif, WidgetType* widget, 
 
 template<typename WidgetType, typename DataType, typename ValueCountType>
 inline void BindWidgetToEnumSetting(SettingsInterface* sif, WidgetType* widget, std::string section, std::string key,
-                                    std::optional<DataType> (*from_string_function)(const char* str),
+                                    std::optional<DataType> (*from_string_function)(std::string_view str),
                                     const char* (*to_string_function)(DataType value),
                                     const char* (*to_display_name_function)(DataType value), DataType default_value,
                                     ValueCountType value_count, QIcon (*item_icon_function)(DataType value) = nullptr)
@@ -1171,7 +1171,7 @@ inline void BindWidgetToEnumSetting(SettingsInterface* sif, WidgetType* widget, 
     std::string_view sif_value;
     if (sif->FindStringValue(section.c_str(), key.c_str(), &sif_value))
     {
-      const std::optional<DataType> old_setting_value = from_string_function(TinyString(sif_value));
+      const std::optional<DataType> old_setting_value = from_string_function(sif_value);
       if (old_setting_value.has_value())
         Accessor::setNullableIntValue(widget, static_cast<int>(static_cast<UnderlyingType>(old_setting_value.value())));
       else
@@ -1219,7 +1219,7 @@ inline void BindWidgetToEnumSetting(SettingsInterface* sif, WidgetType* widget, 
 
 template<typename DataType, typename ValueCountType>
 inline void BindMenuToEnumSetting(QMenu* menu, std::string section, std::string key,
-                                  std::optional<DataType> (*from_string_function)(const char* str),
+                                  std::optional<DataType> (*from_string_function)(std::string_view str),
                                   const char* (*to_string_function)(DataType value),
                                   const char* (*to_display_name_function)(DataType value), DataType default_value,
                                   ValueCountType value_count)
@@ -1227,7 +1227,7 @@ inline void BindMenuToEnumSetting(QMenu* menu, std::string section, std::string 
   QActionGroup* group = new QActionGroup(menu);
 
   const std::optional<DataType> typed_value = from_string_function(
-    Core::GetBaseSmallStringSettingValue(section.c_str(), key.c_str(), to_string_function(default_value)).c_str());
+    Core::GetBaseSmallStringSettingValue(section.c_str(), key.c_str(), to_string_function(default_value)));
 
   // need a shared pointer, otherwise we dupe it a ton...
   struct CallbackData

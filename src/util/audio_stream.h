@@ -56,7 +56,7 @@ public:
 
   virtual ~AudioStream();
 
-  static std::optional<AudioBackend> ParseBackendName(const char* str);
+  static std::optional<AudioBackend> ParseBackendName(std::string_view str);
   static const char* GetBackendName(AudioBackend backend);
   static const char* GetBackendDisplayName(AudioBackend backend);
 
