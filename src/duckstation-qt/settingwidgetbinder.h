@@ -741,7 +741,7 @@ inline void BindWidgetToBoolSetting(SettingsInterface* sif, WidgetType* widget, 
     Accessor::makeNullableBool(widget, value);
 
     bool sif_value;
-    if (sif->GetBoolValue(section.c_str(), key.c_str(), &sif_value))
+    if (sif->FindBoolValue(section.c_str(), key.c_str(), &sif_value))
       Accessor::setNullableBoolValue(widget, sif_value);
     else
       Accessor::setNullableBoolValue(widget, std::nullopt);
@@ -783,7 +783,7 @@ inline void BindWidgetToIntSetting(SettingsInterface* sif, WidgetType* widget, s
     Accessor::makeNullableInt(widget, value);
 
     int sif_value;
-    if (sif->GetIntValue(section.c_str(), key.c_str(), &sif_value))
+    if (sif->FindIntValue(section.c_str(), key.c_str(), &sif_value))
       Accessor::setNullableIntValue(widget, sif_value - option_offset);
     else
       Accessor::setNullableIntValue(widget, std::nullopt);
@@ -836,7 +836,7 @@ inline void BindWidgetToIntSetting(SettingsInterface* sif, WidgetType* widget, s
     Accessor::makeNullableInt(widget, value_to_index(value, values));
 
     int sif_value;
-    if (sif->GetIntValue(section.c_str(), key.c_str(), &sif_value))
+    if (sif->FindIntValue(section.c_str(), key.c_str(), &sif_value))
       Accessor::setNullableIntValue(widget, value_to_index(sif_value, values));
     else
       Accessor::setNullableIntValue(widget, std::nullopt);
@@ -883,7 +883,7 @@ inline void BindWidgetAndLabelToIntSetting(SettingsInterface* sif, WidgetType* w
     Accessor::makeNullableInt(widget, global_value);
 
     int sif_value;
-    if (sif->GetIntValue(section.c_str(), key.c_str(), &sif_value))
+    if (sif->FindIntValue(section.c_str(), key.c_str(), &sif_value))
     {
       Accessor::setNullableIntValue(widget, sif_value - option_offset);
       if (label)
@@ -958,7 +958,7 @@ inline void BindWidgetToFloatSetting(SettingsInterface* sif, WidgetType* widget,
     Accessor::makeNullableFloat(widget, value);
 
     float sif_value;
-    if (sif->GetFloatValue(section.c_str(), key.c_str(), &sif_value))
+    if (sif->FindFloatValue(section.c_str(), key.c_str(), &sif_value))
       Accessor::setNullableFloatValue(widget, sif_value);
     else
       Accessor::setNullableFloatValue(widget, std::nullopt);
@@ -999,7 +999,7 @@ inline void BindWidgetToNormalizedSetting(SettingsInterface* sif, WidgetType* wi
     Accessor::makeNullableInt(widget, static_cast<int>(value * range));
 
     float sif_value;
-    if (sif->GetFloatValue(section.c_str(), key.c_str(), &sif_value))
+    if (sif->FindFloatValue(section.c_str(), key.c_str(), &sif_value))
       Accessor::setNullableIntValue(widget, static_cast<int>(sif_value * range));
     else
       Accessor::setNullableIntValue(widget, std::nullopt);
@@ -1040,9 +1040,9 @@ inline void BindWidgetToStringSetting(SettingsInterface* sif, WidgetType* widget
   {
     Accessor::makeNullableString(widget, value);
 
-    std::string sif_value;
-    if (sif->GetStringValue(section.c_str(), key.c_str(), &sif_value))
-      Accessor::setNullableStringValue(widget, QString::fromStdString(sif_value));
+    std::string_view sif_value;
+    if (sif->FindStringValue(section.c_str(), key.c_str(), &sif_value))
+      Accessor::setNullableStringValue(widget, QtUtils::StringViewToQString(sif_value));
     else
       Accessor::setNullableStringValue(widget, std::nullopt);
 
@@ -1086,10 +1086,10 @@ inline void BindWidgetToEnumSetting(SettingsInterface* sif, WidgetType* widget, 
     Accessor::makeNullableInt(
       widget, typed_value.has_value() ? static_cast<int>(static_cast<UnderlyingType>(typed_value.value())) : 0);
 
-    std::string sif_value;
-    if (sif->GetStringValue(section.c_str(), key.c_str(), &sif_value))
+    std::string_view sif_value;
+    if (sif->FindStringValue(section.c_str(), key.c_str(), &sif_value))
     {
-      const std::optional<DataType> old_setting_value = from_string_function(sif_value.c_str());
+      const std::optional<DataType> old_setting_value = from_string_function(TinyString(sif_value));
       if (old_setting_value.has_value())
         Accessor::setNullableIntValue(widget, static_cast<int>(static_cast<UnderlyingType>(old_setting_value.value())));
       else
@@ -1168,10 +1168,10 @@ inline void BindWidgetToEnumSetting(SettingsInterface* sif, WidgetType* widget, 
     Accessor::makeNullableInt(
       widget, typed_value.has_value() ? static_cast<int>(static_cast<UnderlyingType>(typed_value.value())) : 0);
 
-    std::string sif_value;
-    if (sif->GetStringValue(section.c_str(), key.c_str(), &sif_value))
+    std::string_view sif_value;
+    if (sif->FindStringValue(section.c_str(), key.c_str(), &sif_value))
     {
-      const std::optional<DataType> old_setting_value = from_string_function(sif_value.c_str());
+      const std::optional<DataType> old_setting_value = from_string_function(TinyString(sif_value));
       if (old_setting_value.has_value())
         Accessor::setNullableIntValue(widget, static_cast<int>(static_cast<UnderlyingType>(old_setting_value.value())));
       else

@@ -62,7 +62,7 @@ public:
   bool getEffectiveBoolValue(const char* section, const char* key, bool default_value) const;
   int getEffectiveIntValue(const char* section, const char* key, int default_value) const;
   float getEffectiveFloatValue(const char* section, const char* key, float default_value) const;
-  std::string getEffectiveStringValue(const char* section, const char* key, const char* default_value = "") const;
+  std::string getEffectiveStringValue(const char* section, const char* key, std::string_view default_value = {}) const;
   Qt::CheckState getCheckState(const char* section, const char* key, bool default_value);
 
   // Helper functions for reading setting values for this layer (game settings or global).

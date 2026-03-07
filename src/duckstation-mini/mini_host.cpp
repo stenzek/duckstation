@@ -695,10 +695,10 @@ bool MiniHost::GetSavedPlatformWindowGeometry(s32* x, s32* y, s32* width, s32* h
   const auto lock = Core::GetSettingsLock();
 
   SettingsInterface* si = Core::GetBaseSettingsLayer();
-  bool result = si->GetIntValue("UI", "MainWindowX", x);
-  result = result && si->GetIntValue("UI", "MainWindowY", y);
-  result = result && si->GetIntValue("UI", "MainWindowWidth", width);
-  result = result && si->GetIntValue("UI", "MainWindowHeight", height);
+  bool result = si->FindIntValue("UI", "MainWindowX", x);
+  result = result && si->FindIntValue("UI", "MainWindowY", y);
+  result = result && si->FindIntValue("UI", "MainWindowWidth", width);
+  result = result && si->FindIntValue("UI", "MainWindowHeight", height);
   return result;
 }
 

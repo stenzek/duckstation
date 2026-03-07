@@ -23,8 +23,8 @@ TEST(INISettingsInterface, LoadHashComments)
                     "[Section]\n"
                     "key = value\n"
                     "# Another comment\n");
-  std::string val;
-  EXPECT_TRUE(si.GetStringValue("Section", "key", &val));
+  std::string_view val;
+  EXPECT_TRUE(si.FindStringValue("Section", "key", &val));
   EXPECT_EQ(val, "value");
 }
 
@@ -34,8 +34,8 @@ TEST(INISettingsInterface, LoadSemicolonComments)
   si.LoadFromString("; Semicolon comment\n"
                     "[Section]\n"
                     "key = hello\n");
-  std::string val;
-  EXPECT_TRUE(si.GetStringValue("Section", "key", &val));
+  std::string_view val;
+  EXPECT_TRUE(si.FindStringValue("Section", "key", &val));
   EXPECT_EQ(val, "hello");
 }
 
@@ -44,8 +44,8 @@ TEST(INISettingsInterface, InlineCommentHash)
   INISettingsInterface si;
   si.LoadFromString("[Section]\n"
                     "key = value # inline comment\n");
-  std::string val;
-  EXPECT_TRUE(si.GetStringValue("Section", "key", &val));
+  std::string_view val;
+  EXPECT_TRUE(si.FindStringValue("Section", "key", &val));
   EXPECT_EQ(val, "value");
 }
 
@@ -54,8 +54,8 @@ TEST(INISettingsInterface, InlineCommentSemicolon)
   INISettingsInterface si;
   si.LoadFromString("[Section]\n"
                     "key = value ; inline comment\n");
-  std::string val;
-  EXPECT_TRUE(si.GetStringValue("Section", "key", &val));
+  std::string_view val;
+  EXPECT_TRUE(si.FindStringValue("Section", "key", &val));
   EXPECT_EQ(val, "value");
 }
 
@@ -64,8 +64,8 @@ TEST(INISettingsInterface, QuotedValuePreservesCommentChars)
   INISettingsInterface si;
   si.LoadFromString("[Section]\n"
                     "key = \"value ; with # chars\"\n");
-  std::string val;
-  EXPECT_TRUE(si.GetStringValue("Section", "key", &val));
+  std::string_view val;
+  EXPECT_TRUE(si.FindStringValue("Section", "key", &val));
   EXPECT_EQ(val, "value ; with # chars");
 }
 
@@ -74,8 +74,8 @@ TEST(INISettingsInterface, WhitespaceTrimming)
   INISettingsInterface si;
   si.LoadFromString("  [  Section  ]  \n"
                     "  key  =  value  \n");
-  std::string val;
-  EXPECT_TRUE(si.GetStringValue("Section", "key", &val));
+  std::string_view val;
+  EXPECT_TRUE(si.FindStringValue("Section", "key", &val));
   EXPECT_EQ(val, "value");
 }
 
@@ -112,10 +112,10 @@ TEST(INISettingsInterface, CaseInsensitiveSectionLookup)
   INISettingsInterface si;
   si.LoadFromString("[MySection]\n"
                     "key = value\n");
-  std::string val;
-  EXPECT_TRUE(si.GetStringValue("mysection", "key", &val));
+  std::string_view val;
+  EXPECT_TRUE(si.FindStringValue("mysection", "key", &val));
   EXPECT_EQ(val, "value");
-  EXPECT_TRUE(si.GetStringValue("MYSECTION", "key", &val));
+  EXPECT_TRUE(si.FindStringValue("MYSECTION", "key", &val));
   EXPECT_EQ(val, "value");
 }
 
@@ -124,10 +124,10 @@ TEST(INISettingsInterface, CaseInsensitiveKeyLookup)
   INISettingsInterface si;
   si.LoadFromString("[Section]\n"
                     "MyKey = value\n");
-  std::string val;
-  EXPECT_TRUE(si.GetStringValue("Section", "mykey", &val));
+  std::string_view val;
+  EXPECT_TRUE(si.FindStringValue("Section", "mykey", &val));
   EXPECT_EQ(val, "value");
-  EXPECT_TRUE(si.GetStringValue("Section", "MYKEY", &val));
+  EXPECT_TRUE(si.FindStringValue("Section", "MYKEY", &val));
   EXPECT_EQ(val, "value");
 }
 
@@ -137,8 +137,8 @@ TEST(INISettingsInterface, LineWithoutEquals)
   si.LoadFromString("[Section]\n"
                     "not_a_key_value\n"
                     "key = value\n");
-  std::string val;
-  EXPECT_TRUE(si.GetStringValue("Section", "key", &val));
+  std::string_view val;
+  EXPECT_TRUE(si.FindStringValue("Section", "key", &val));
   EXPECT_EQ(val, "value");
   EXPECT_FALSE(si.ContainsValue("Section", "not_a_key_value"));
 }
@@ -149,8 +149,8 @@ TEST(INISettingsInterface, EmptyKeysSkipped)
   si.LoadFromString("[Section]\n"
                     " = value\n"
                     "key = value\n");
-  std::string val;
-  EXPECT_TRUE(si.GetStringValue("Section", "key", &val));
+  std::string_view val;
+  EXPECT_TRUE(si.FindStringValue("Section", "key", &val));
   auto kvlist = si.GetKeyValueList("Section");
   EXPECT_EQ(kvlist.size(), 1u);
 }
@@ -160,8 +160,8 @@ TEST(INISettingsInterface, EmptyValue)
   INISettingsInterface si;
   si.LoadFromString("[Section]\n"
                     "key =\n");
-  std::string val;
-  EXPECT_TRUE(si.GetStringValue("Section", "key", &val));
+  std::string_view val;
+  EXPECT_TRUE(si.FindStringValue("Section", "key", &val));
   EXPECT_EQ(val, "");
 }
 
@@ -170,8 +170,8 @@ TEST(INISettingsInterface, NoTrailingNewline)
   INISettingsInterface si;
   si.LoadFromString("[Section]\n"
                     "key = value");
-  std::string val;
-  EXPECT_TRUE(si.GetStringValue("Section", "key", &val));
+  std::string_view val;
+  EXPECT_TRUE(si.FindStringValue("Section", "key", &val));
   EXPECT_EQ(val, "value");
 }
 
@@ -180,8 +180,8 @@ TEST(INISettingsInterface, WindowsLineEndings)
   INISettingsInterface si;
   si.LoadFromString("[Section]\r\n"
                     "key = value\r\n");
-  std::string val;
-  EXPECT_TRUE(si.GetStringValue("Section", "key", &val));
+  std::string_view val;
+  EXPECT_TRUE(si.FindStringValue("Section", "key", &val));
   EXPECT_EQ(val, "value");
 }
 
@@ -192,8 +192,8 @@ TEST(INISettingsInterface, UnicodeSectionName)
   INISettingsInterface si;
   si.LoadFromString("[ゲーム設定]\n"
                     "key = value\n");
-  std::string val;
-  EXPECT_TRUE(si.GetStringValue("ゲーム設定", "key", &val));
+  std::string_view val;
+  EXPECT_TRUE(si.FindStringValue("ゲーム設定", "key", &val));
   EXPECT_EQ(val, "value");
 }
 
@@ -202,8 +202,8 @@ TEST(INISettingsInterface, UnicodeKeyAndValue)
   INISettingsInterface si;
   si.LoadFromString("[Section]\n"
                     "名前 = ダックステーション\n");
-  std::string val;
-  EXPECT_TRUE(si.GetStringValue("Section", "名前", &val));
+  std::string_view val;
+  EXPECT_TRUE(si.FindStringValue("Section", "名前", &val));
   EXPECT_EQ(val, "ダックステーション");
 }
 
@@ -212,15 +212,15 @@ TEST(INISettingsInterface, UnicodeRoundTrip)
   INISettingsInterface si;
   si.LoadFromString("");
   si.SetStringValue("Einstellungen", "Sprache", "Deutsch üöä");
-  std::string val;
-  EXPECT_TRUE(si.GetStringValue("Einstellungen", "Sprache", &val));
+  std::string_view val;
+  EXPECT_TRUE(si.FindStringValue("Einstellungen", "Sprache", &val));
   EXPECT_EQ(val, "Deutsch üöä");
 
   const std::string output = si.SaveToString();
   INISettingsInterface si2;
   si2.LoadFromString(output);
-  std::string val2;
-  EXPECT_TRUE(si2.GetStringValue("Einstellungen", "Sprache", &val2));
+  std::string_view val2;
+  EXPECT_TRUE(si2.FindStringValue("Einstellungen", "Sprache", &val2));
   EXPECT_EQ(val2, "Deutsch üöä");
 }
 
@@ -228,8 +228,8 @@ TEST(INISettingsInterface, EmojiValue)
 {
   INISettingsInterface si;
   si.LoadFromString("[S]\nicon = 🎮\n");
-  std::string val;
-  EXPECT_TRUE(si.GetStringValue("S", "icon", &val));
+  std::string_view val;
+  EXPECT_TRUE(si.FindStringValue("S", "icon", &val));
   EXPECT_EQ(val, "🎮");
 }
 
@@ -237,8 +237,8 @@ TEST(INISettingsInterface, MultipleEmojis)
 {
   INISettingsInterface si;
   si.LoadFromString("[S]\nstatus = 🎮🕹️🏆✅\n");
-  std::string val;
-  EXPECT_TRUE(si.GetStringValue("S", "status", &val));
+  std::string_view val;
+  EXPECT_TRUE(si.FindStringValue("S", "status", &val));
   EXPECT_EQ(val, "🎮🕹️🏆✅");
 }
 
@@ -251,8 +251,8 @@ TEST(INISettingsInterface, EmojiRoundTrip)
 
   INISettingsInterface si2;
   si2.LoadFromString(output);
-  std::string val;
-  EXPECT_TRUE(si2.GetStringValue("S", "face", &val));
+  std::string_view val;
+  EXPECT_TRUE(si2.FindStringValue("S", "face", &val));
   EXPECT_EQ(val, "😀🤖👾");
 }
 
@@ -261,8 +261,8 @@ TEST(INISettingsInterface, ChineseCharacters)
   INISettingsInterface si;
   si.LoadFromString("[设置]\n"
                     "语言 = 中文\n");
-  std::string val;
-  EXPECT_TRUE(si.GetStringValue("设置", "语言", &val));
+  std::string_view val;
+  EXPECT_TRUE(si.FindStringValue("设置", "语言", &val));
   EXPECT_EQ(val, "中文");
 }
 
@@ -271,8 +271,8 @@ TEST(INISettingsInterface, MixedAsciiAndUnicode)
   INISettingsInterface si;
   si.LoadFromString("[Display]\n"
                     "title = DuckStation — ダックステーション\n");
-  std::string val;
-  EXPECT_TRUE(si.GetStringValue("Display", "title", &val));
+  std::string_view val;
+  EXPECT_TRUE(si.FindStringValue("Display", "title", &val));
   EXPECT_EQ(val, "DuckStation — ダックステーション");
 }
 
@@ -340,7 +340,7 @@ TEST(INISettingsInterface, GetIntValuePositive)
   INISettingsInterface si;
   si.LoadFromString("[S]\nkey = 42\n");
   s32 val = 0;
-  EXPECT_TRUE(si.GetIntValue("S", "key", &val));
+  EXPECT_TRUE(si.FindIntValue("S", "key", &val));
   EXPECT_EQ(val, 42);
 }
 
@@ -349,7 +349,7 @@ TEST(INISettingsInterface, GetIntValueNegative)
   INISettingsInterface si;
   si.LoadFromString("[S]\nkey = -100\n");
   s32 val = 0;
-  EXPECT_TRUE(si.GetIntValue("S", "key", &val));
+  EXPECT_TRUE(si.FindIntValue("S", "key", &val));
   EXPECT_EQ(val, -100);
 }
 
@@ -358,7 +358,7 @@ TEST(INISettingsInterface, GetIntValueInvalid)
   INISettingsInterface si;
   si.LoadFromString("[S]\nkey = notanumber\n");
   s32 val = 0;
-  EXPECT_FALSE(si.GetIntValue("S", "key", &val));
+  EXPECT_FALSE(si.FindIntValue("S", "key", &val));
 }
 
 TEST(INISettingsInterface, GetIntValueMissing)
@@ -366,7 +366,7 @@ TEST(INISettingsInterface, GetIntValueMissing)
   INISettingsInterface si;
   si.LoadFromString("[S]\n");
   s32 val = 0;
-  EXPECT_FALSE(si.GetIntValue("S", "nokey", &val));
+  EXPECT_FALSE(si.FindIntValue("S", "nokey", &val));
 }
 
 TEST(INISettingsInterface, GetIntValueDefault)
@@ -376,83 +376,75 @@ TEST(INISettingsInterface, GetIntValueDefault)
   EXPECT_EQ(si.GetIntValue("S", "nokey", 99), 99);
 }
 
-TEST(INISettingsInterface, GetUIntValue)
+TEST(INISettingsInterface, FindUIntValue)
 {
   INISettingsInterface si;
   si.LoadFromString("[S]\nkey = 4294967295\n");
   u32 val = 0;
-  EXPECT_TRUE(si.GetUIntValue("S", "key", &val));
+  EXPECT_TRUE(si.FindUIntValue("S", "key", &val));
   EXPECT_EQ(val, 4294967295u);
 }
 
-TEST(INISettingsInterface, GetFloatValue)
+TEST(INISettingsInterface, FindFloatValue)
 {
   INISettingsInterface si;
   si.LoadFromString("[S]\nkey = 3.14\n");
   float val = 0.0f;
-  EXPECT_TRUE(si.GetFloatValue("S", "key", &val));
+  EXPECT_TRUE(si.FindFloatValue("S", "key", &val));
   EXPECT_FLOAT_EQ(val, 3.14f);
 }
 
-TEST(INISettingsInterface, GetDoubleValue)
+TEST(INISettingsInterface, FindDoubleValue)
 {
   INISettingsInterface si;
   si.LoadFromString("[S]\nkey = 2.718281828\n");
   double val = 0.0;
-  EXPECT_TRUE(si.GetDoubleValue("S", "key", &val));
+  EXPECT_TRUE(si.FindDoubleValue("S", "key", &val));
   EXPECT_DOUBLE_EQ(val, 2.718281828);
 }
 
-TEST(INISettingsInterface, GetBoolValueTrue)
+TEST(INISettingsInterface, FindBoolValueTrue)
 {
   INISettingsInterface si;
   si.LoadFromString("[S]\nkey = true\n");
   bool val = false;
-  EXPECT_TRUE(si.GetBoolValue("S", "key", &val));
+  EXPECT_TRUE(si.FindBoolValue("S", "key", &val));
   EXPECT_TRUE(val);
 }
 
-TEST(INISettingsInterface, GetBoolValueFalse)
+TEST(INISettingsInterface, FindBoolValueFalse)
 {
   INISettingsInterface si;
   si.LoadFromString("[S]\nkey = false\n");
   bool val = true;
-  EXPECT_TRUE(si.GetBoolValue("S", "key", &val));
+  EXPECT_TRUE(si.FindBoolValue("S", "key", &val));
   EXPECT_FALSE(val);
 }
 
-TEST(INISettingsInterface, GetBoolValueInvalid)
+TEST(INISettingsInterface, FindBoolValueInvalid)
 {
   INISettingsInterface si;
   si.LoadFromString("[S]\nkey = maybe\n");
   bool val = false;
-  EXPECT_FALSE(si.GetBoolValue("S", "key", &val));
+  EXPECT_FALSE(si.FindBoolValue("S", "key", &val));
 }
 
-TEST(INISettingsInterface, GetStringValueStdString)
+TEST(INISettingsInterface, FindStringValue)
 {
   INISettingsInterface si;
   si.LoadFromString("[S]\nkey = hello world\n");
-  std::string val;
-  EXPECT_TRUE(si.GetStringValue("S", "key", &val));
+  std::string_view val;
+  EXPECT_TRUE(si.FindStringValue("S", "key", &val));
   EXPECT_EQ(val, "hello world");
 }
 
-TEST(INISettingsInterface, GetStringValueSmallString)
-{
-  INISettingsInterface si;
-  si.LoadFromString("[S]\nkey = hello\n");
-  SmallString val;
-  EXPECT_TRUE(si.GetStringValue("S", "key", &val));
-  EXPECT_EQ(val.view(), "hello");
-}
-
-TEST(INISettingsInterface, GetStringValueMissingSection)
+TEST(INISettingsInterface, FindStringValueMissingSection)
 {
   INISettingsInterface si;
   si.LoadFromString("[S]\nkey = value\n");
-  std::string val;
-  EXPECT_FALSE(si.GetStringValue("Missing", "key", &val));
+  std::string_view val;
+  EXPECT_FALSE(si.FindStringValue("Missing", "key", &val));
+  EXPECT_TRUE(val.empty());
 }
 
 // ---- Data type setters ----
@@ -505,8 +497,8 @@ TEST(INISettingsInterface, SetStringValueNewKey)
   INISettingsInterface si;
   si.LoadFromString("[S]\n");
   si.SetStringValue("S", "newkey", "newvalue");
-  std::string val;
-  EXPECT_TRUE(si.GetStringValue("S", "newkey", &val));
+  std::string_view val;
+  EXPECT_TRUE(si.FindStringValue("S", "newkey", &val));
   EXPECT_EQ(val, "newvalue");
   EXPECT_TRUE(si.IsDirty());
 }
@@ -516,8 +508,8 @@ TEST(INISettingsInterface, SetStringValueUpdate)
   INISettingsInterface si;
   si.LoadFromString("[S]\nkey = old\n");
   si.SetStringValue("S", "key", "new");
-  std::string val;
-  EXPECT_TRUE(si.GetStringValue("S", "key", &val));
+  std::string_view val;
+  EXPECT_TRUE(si.FindStringValue("S", "key", &val));
   EXPECT_EQ(val, "new");
 }
 
@@ -535,8 +527,8 @@ TEST(INISettingsInterface, SetStringValueCreatesSection)
   INISettingsInterface si;
   si.LoadFromString("");
   si.SetStringValue("NewSection", "key", "value");
-  std::string val;
-  EXPECT_TRUE(si.GetStringValue("NewSection", "key", &val));
+  std::string_view val;
+  EXPECT_TRUE(si.FindStringValue("NewSection", "key", &val));
   EXPECT_EQ(val, "value");
 }
 
@@ -769,8 +761,8 @@ TEST(INISettingsInterface, CompactStrings)
 
   si.CompactStrings();
 
-  std::string val;
-  EXPECT_TRUE(si.GetStringValue("S", "key", &val));
+  std::string_view val;
+  EXPECT_TRUE(si.FindStringValue("S", "key", &val));
   EXPECT_EQ(val, "final");
 
   const std::string output = si.SaveToString();
@@ -825,8 +817,8 @@ TEST(INISettingsInterface, ValueWithEqualsSign)
 {
   INISettingsInterface si;
   si.LoadFromString("[S]\nkey = a=b=c\n");
-  std::string val;
-  EXPECT_TRUE(si.GetStringValue("S", "key", &val));
+  std::string_view val;
+  EXPECT_TRUE(si.FindStringValue("S", "key", &val));
   EXPECT_EQ(val, "a=b=c");
 }
 

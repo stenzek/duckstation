@@ -419,123 +419,29 @@ void INISettingsInterface::CompactStrings()
   m_string_pool = std::move(new_pool);
 }
 
-bool INISettingsInterface::GetIntValue(const char* section, const char* key, s32* value) const
+bool INISettingsInterface::LookupValue(const char* section, const char* key, std::string_view* value) const
 {
   const KeyValuePair* kv = FindFirstKeyValue(section, key);
   if (!kv)
     return false;
-  std::optional<s32> parsed = StringUtil::FromChars<s32>(GetPoolStringView(kv->value), 10);
-  if (!parsed.has_value())
-    return false;
-  *value = parsed.value();
+  
+  *value = GetPoolStringView(kv->value);
   return true;
 }
 
-bool INISettingsInterface::GetUIntValue(const char* section, const char* key, u32* value) const
-{
-  const KeyValuePair* kv = FindFirstKeyValue(section, key);
-  if (!kv)
-    return false;
-  std::optional<u32> parsed = StringUtil::FromChars<u32>(GetPoolStringView(kv->value), 10);
-  if (!parsed.has_value())
-    return false;
-  *value = parsed.value();
-  return true;
-}
-
-bool INISettingsInterface::GetFloatValue(const char* section, const char* key, float* value) const
-{
-  const KeyValuePair* kv = FindFirstKeyValue(section, key);
-  if (!kv)
-    return false;
-  std::optional<float> parsed = StringUtil::FromChars<float>(GetPoolStringView(kv->value));
-  if (!parsed.has_value())
-    return false;
-  *value = parsed.value();
-  return true;
-}
-
-bool INISettingsInterface::GetDoubleValue(const char* section, const char* key, double* value) const
-{
-  const KeyValuePair* kv = FindFirstKeyValue(section, key);
-  if (!kv)
-    return false;
-  std::optional<double> parsed = StringUtil::FromChars<double>(GetPoolStringView(kv->value));
-  if (!parsed.has_value())
-    return false;
-  *value = parsed.value();
-  return true;
-}
-
-bool INISettingsInterface::GetBoolValue(const char* section, const char* key, bool* value) const
-{
-  const KeyValuePair* kv = FindFirstKeyValue(section, key);
-  if (!kv)
-    return false;
-  std::optional<bool> parsed = StringUtil::FromChars<bool>(GetPoolStringView(kv->value));
-  if (!parsed.has_value())
-    return false;
-  *value = parsed.value();
-  return true;
-}
-
-bool INISettingsInterface::GetStringValue(const char* section, const char* key, std::string* value) const
-{
-  const KeyValuePair* kv = FindFirstKeyValue(section, key);
-  if (!kv)
-    return false;
-  value->assign(GetPoolStringView(kv->value));
-  return true;
-}
-
-bool INISettingsInterface::GetStringValue(const char* section, const char* key, SmallStringBase* value) const
-{
-  const KeyValuePair* kv = FindFirstKeyValue(section, key);
-  if (!kv)
-    return false;
-  value->assign(GetPoolStringView(kv->value));
-  return true;
-}
-
-void INISettingsInterface::SetIntValue(const char* section, const char* key, s32 value)
-{
-  SetStringValue(section, key, StringUtil::ToChars(value).c_str());
-}
-
-void INISettingsInterface::SetUIntValue(const char* section, const char* key, u32 value)
-{
-  SetStringValue(section, key, StringUtil::ToChars(value).c_str());
-}
-
-void INISettingsInterface::SetFloatValue(const char* section, const char* key, float value)
-{
-  SetStringValue(section, key, StringUtil::ToChars(value).c_str());
-}
-
-void INISettingsInterface::SetDoubleValue(const char* section, const char* key, double value)
-{
-  SetStringValue(section, key, StringUtil::ToChars(value).c_str());
-}
-
-void INISettingsInterface::SetBoolValue(const char* section, const char* key, bool value)
-{
-  SetStringValue(section, key, value ? "true" : "false");
-}
-
-void INISettingsInterface::SetStringValue(const char* section, const char* key, const char* value)
+void INISettingsInterface::StoreValue(const char* section, const char* key, std::string_view value)
 {
   const std::string_view key_sv(key);
-  const std::string_view value_sv(value);
 
   Section& sec = GetOrCreateSection(section);
   auto it = FindKey(sec, key_sv);
   if (it != sec.entries.end())
   {
-    if (GetPoolStringView(it->value) == value_sv)
+    if (GetPoolStringView(it->value) == value)
       return;
 
     // Update existing entry (old value string becomes waste in pool).
-    it->value = AddPoolString(value_sv);
+    it->value = AddPoolString(value);
 
     // Remove any duplicate keys beyond the first.
     auto end_it = FindKeyEnd(sec, key_sv);
@@ -544,7 +450,7 @@ void INISettingsInterface::SetStringValue(const char* section, const char* key, 
   }
   else
   {
-    InsertKeyValue(sec, key_sv, value_sv);
+    InsertKeyValue(sec, key_sv, value);
   }
 
   m_dirty = true;

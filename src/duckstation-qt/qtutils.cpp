@@ -584,10 +584,10 @@ bool QtUtils::RestoreWindowGeometry(std::string_view window_name, QWidget* widge
   s32 x = 0, y = 0, w = 0, h = 0;
   const bool maximized = si->GetBoolValue(WINDOW_GEOMETRY_CONFIG_SECTION,
                                           TinyString::from_format("{}Maximized", window_name).c_str(), false);
-  if (!si->GetIntValue(WINDOW_GEOMETRY_CONFIG_SECTION, TinyString::from_format("{}X", window_name).c_str(), &x) ||
-      !si->GetIntValue(WINDOW_GEOMETRY_CONFIG_SECTION, TinyString::from_format("{}Y", window_name).c_str(), &y) ||
-      !si->GetIntValue(WINDOW_GEOMETRY_CONFIG_SECTION, TinyString::from_format("{}Width", window_name).c_str(), &w) ||
-      !si->GetIntValue(WINDOW_GEOMETRY_CONFIG_SECTION, TinyString::from_format("{}Height", window_name).c_str(), &h))
+  if (!si->FindIntValue(WINDOW_GEOMETRY_CONFIG_SECTION, TinyString::from_format("{}X", window_name).c_str(), &x) ||
+      !si->FindIntValue(WINDOW_GEOMETRY_CONFIG_SECTION, TinyString::from_format("{}Y", window_name).c_str(), &y) ||
+      !si->FindIntValue(WINDOW_GEOMETRY_CONFIG_SECTION, TinyString::from_format("{}Width", window_name).c_str(), &w) ||
+      !si->FindIntValue(WINDOW_GEOMETRY_CONFIG_SECTION, TinyString::from_format("{}Height", window_name).c_str(), &h))
   {
     return TryMigrateWindowGeometry(si, window_name, widget);
   }
@@ -654,11 +654,11 @@ bool QtUtils::TryMigrateWindowGeometry(SettingsInterface* si, std::string_view w
 {
   // can we migrate old configuration?
   const TinyString config_key = TinyString::from_format("{}Geometry", window_name);
-  std::string config_value;
-  if (!si->GetStringValue(WINDOW_GEOMETRY_CONFIG_SECTION, config_key.c_str(), &config_value))
+  std::string_view config_value;
+  if (!si->FindStringValue(WINDOW_GEOMETRY_CONFIG_SECTION, config_key.c_str(), &config_value))
     return false;
 
-  widget->restoreGeometry(QByteArray::fromBase64(QByteArray::fromStdString(config_value)));
+  widget->restoreGeometry(QByteArray::fromBase64(QByteArray::fromRawData(config_value.data(), config_value.size())));
 
   // make sure we're not loading a dodgy config which had fullscreen set...
   widget->setWindowState(widget->windowState() & ~(Qt::WindowFullScreen | Qt::WindowActive));

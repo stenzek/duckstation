@@ -14,13 +14,13 @@ bool LayeredSettingsInterface::IsEmpty()
   return false;
 }
 
-bool LayeredSettingsInterface::GetIntValue(const char* section, const char* key, s32* value) const
+bool LayeredSettingsInterface::LookupValue(const char* section, const char* key, std::string_view* value) const
 {
   for (u32 layer = FIRST_LAYER; layer <= LAST_LAYER; layer++)
   {
     if (SettingsInterface* sif = m_layers[layer]; sif != nullptr)
     {
-      if (sif->GetIntValue(section, key, value))
+      if (sif->LookupValue(section, key, value))
         return true;
     }
   }
@@ -28,118 +28,9 @@ bool LayeredSettingsInterface::GetIntValue(const char* section, const char* key,
   return false;
 }
 
-bool LayeredSettingsInterface::GetUIntValue(const char* section, const char* key, u32* value) const
+void LayeredSettingsInterface::StoreValue(const char* section, const char* key, std::string_view value)
 {
-  for (u32 layer = FIRST_LAYER; layer <= LAST_LAYER; layer++)
-  {
-    if (SettingsInterface* sif = m_layers[layer]; sif != nullptr)
-    {
-      if (sif->GetUIntValue(section, key, value))
-        return true;
-    }
-  }
-
-  return false;
-}
-
-bool LayeredSettingsInterface::GetFloatValue(const char* section, const char* key, float* value) const
-{
-  for (u32 layer = FIRST_LAYER; layer <= LAST_LAYER; layer++)
-  {
-    if (SettingsInterface* sif = m_layers[layer]; sif != nullptr)
-    {
-      if (sif->GetFloatValue(section, key, value))
-        return true;
-    }
-  }
-
-  return false;
-}
-
-bool LayeredSettingsInterface::GetDoubleValue(const char* section, const char* key, double* value) const
-{
-  for (u32 layer = FIRST_LAYER; layer <= LAST_LAYER; layer++)
-  {
-    if (SettingsInterface* sif = m_layers[layer]; sif != nullptr)
-    {
-      if (sif->GetDoubleValue(section, key, value))
-        return true;
-    }
-  }
-
-  return false;
-}
-
-bool LayeredSettingsInterface::GetBoolValue(const char* section, const char* key, bool* value) const
-{
-  for (u32 layer = FIRST_LAYER; layer <= LAST_LAYER; layer++)
-  {
-    if (SettingsInterface* sif = m_layers[layer]; sif != nullptr)
-    {
-      if (sif->GetBoolValue(section, key, value))
-        return true;
-    }
-  }
-
-  return false;
-}
-
-bool LayeredSettingsInterface::GetStringValue(const char* section, const char* key, std::string* value) const
-{
-  for (u32 layer = FIRST_LAYER; layer <= LAST_LAYER; layer++)
-  {
-    if (SettingsInterface* sif = m_layers[layer]; sif != nullptr)
-    {
-      if (sif->GetStringValue(section, key, value))
-        return true;
-    }
-  }
-
-  return false;
-}
-
-bool LayeredSettingsInterface::GetStringValue(const char* section, const char* key, SmallStringBase* value) const
-{
-  for (u32 layer = FIRST_LAYER; layer <= LAST_LAYER; layer++)
-  {
-    if (SettingsInterface* sif = m_layers[layer]; sif != nullptr)
-    {
-      if (sif->GetStringValue(section, key, value))
-        return true;
-    }
-  }
-
-  return false;
-}
-
-void LayeredSettingsInterface::SetIntValue(const char* section, const char* key, int value)
-{
-  Panic("Attempt to call SetIntValue() on layered settings interface");
-}
-
-void LayeredSettingsInterface::SetUIntValue(const char* section, const char* key, u32 value)
-{
-  Panic("Attempt to call SetUIntValue() on layered settings interface");
-}
-
-void LayeredSettingsInterface::SetFloatValue(const char* section, const char* key, float value)
-{
-  Panic("Attempt to call SetFloatValue() on layered settings interface");
-}
-
-void LayeredSettingsInterface::SetDoubleValue(const char* section, const char* key, double value)
-{
-  Panic("Attempt to call SetDoubleValue() on layered settings interface");
-}
-
-void LayeredSettingsInterface::SetBoolValue(const char* section, const char* key, bool value)
-{
-  Panic("Attempt to call SetBoolValue() on layered settings interface");
-}
-
-void LayeredSettingsInterface::SetStringValue(const char* section, const char* key, const char* value)
-{
-  Panic("Attempt to call SetStringValue() on layered settings interface");
+  Panic("Attempt to call StoreValue() on layered settings interface");
 }
 
 bool LayeredSettingsInterface::ContainsValue(const char* section, const char* key) const

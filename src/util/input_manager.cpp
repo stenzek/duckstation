@@ -2039,8 +2039,8 @@ void InputManager::LoadMacroButtonConfig(const SettingsInterface& si, const std:
 
   for (u32 i = 0; i < NUM_MACRO_BUTTONS_PER_CONTROLLER; i++)
   {
-    std::string binds_string;
-    if (!si.GetStringValue(section.c_str(), TinyString::from_format("Macro{}Binds", i + 1u), &binds_string))
+    std::string_view binds_string;
+    if (!si.FindStringValue(section.c_str(), TinyString::from_format("Macro{}Binds", i + 1u), &binds_string))
       continue;
 
     const u32 frequency =
