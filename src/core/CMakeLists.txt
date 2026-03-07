@@ -196,6 +196,16 @@ if(CPU_ARCH_RISCV64)
   target_link_libraries(core PUBLIC biscuit::biscuit riscv-disas)
   message(STATUS "Building RISC-V-64 recompiler.")
 endif()
+if(CPU_ARCH_LOONGARCH64)
+  target_compile_definitions(core PUBLIC "ENABLE_RECOMPILER=1" "ENABLE_MMAP_FASTMEM=1")
+  target_sources(core PRIVATE
+    ${RECOMPILER_SRCS}
+    cpu_recompiler_loongarch64.cpp
+    cpu_recompiler_loongarch64.h
+  )
+  target_link_libraries(core PUBLIC lagoon)
+  message(STATUS "Building LoongArch64 recompiler.")
+endif()
 
 function(add_core_resources target)
   add_util_resources(${target})

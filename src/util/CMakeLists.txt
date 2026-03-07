@@ -290,6 +290,12 @@ if(NOT WIN32 AND NOT ANDROID)
   )
 endif()
 
+if(CPU_ARCH_LOONGARCH64)
+  target_link_libraries(util PRIVATE
+    lagoon # for la_is_store_instruction
+  )
+endif()
+
 function(add_util_resources target)
   if(APPLE)
     get_property(UTIL_METAL_SOURCES GLOBAL PROPERTY UTIL_METAL_SOURCES)

@@ -619,7 +619,7 @@ public:
   template<int mask>
   GSVector2 blend32(const GSVector2& v) const
   {
-    return GSVector2(v.F32[mask & 1], v.F32[(mask >> 1) & 1]);
+    return GSVector2((mask & 1) ? v.x : x, (mask & 2) ? v.y : y);
   }
 
   ALWAYS_INLINE GSVector2 blend32(const GSVector2& v, const GSVector2& mask) const
@@ -1907,7 +1907,7 @@ public:
   template<int mask>
   GSVector4 blend32(const GSVector4& v) const
   {
-    return GSVector4(v.F32[mask & 1], v.F32[(mask >> 1) & 1], v.F32[(mask >> 2) & 1], v.F32[(mask >> 3) & 1]);
+    return GSVector4((mask & 1) ? v.x : x, (mask & 2) ? v.y : y, (mask & 4) ? v.z : z, (mask & 8) ? v.w : w);
   }
 
   ALWAYS_INLINE GSVector4 blend32(const GSVector4& v, const GSVector4& mask) const
