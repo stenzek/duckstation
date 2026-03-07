@@ -268,6 +268,13 @@ TEST(GSVector2iTest, ArithmeticWith16BitElements)
   EXPECT_EQ(mul16_result.S16[1], 12000);
   EXPECT_EQ(mul16_result.S16[2], 21000);
   EXPECT_EQ(mul16_result.S16[3], 32000);
+
+  // Test mul32l - low 32 bits of 32-bit multiplication
+  GSVector2i v3(100, -200);
+  GSVector2i v4(5, -10);
+  auto mul32l_result = v3.mul32l(v4);
+  EXPECT_EQ(mul32l_result.S32[0], 500);
+  EXPECT_EQ(mul32l_result.S32[1], 2000);
 }
 
 TEST(GSVector2iTest, ArithmeticWith8BitElements)
@@ -763,6 +770,17 @@ TEST(GSVector4iTest, Type64BitConversions)
   EXPECT_EQ(s8to64_result.S64[0], 0x12);
   EXPECT_EQ(s8to64_result.S64[1], 0x34);
 
+  // Test s16to64
+  auto s16to64_result = v1.s16to64();
+  EXPECT_EQ(s16to64_result.S64[0], 0x3412);
+  EXPECT_EQ(s16to64_result.S64[1], 0x7856);
+
+  // Test s16to64 with negative values
+  GSVector4i v_neg(s16t(0xFFFE), s16t(0x8000), 0, 0, 0, 0, 0, 0);
+  auto s16to64_neg = v_neg.s16to64();
+  EXPECT_EQ(s16to64_neg.S64[0], -2LL);
+  EXPECT_EQ(s16to64_neg.S64[1], -32768LL);
+
   // Test u16to64
   auto u16to64_result = v1.u16to64();
   EXPECT_EQ(u16to64_result.U64[0], 0x3412u); // Little endian 16-bit
@@ -772,6 +790,36 @@ TEST(GSVector4iTest, Type64BitConversions)
   auto s32to64_result = v1.s32to64();
   EXPECT_EQ(s32to64_result.S64[0], static_cast<s64>(0x0000000078563412LL));
   EXPECT_EQ(s32to64_result.S64[1], static_cast<s64>(0xFFFFFFFFF0DEBC9ALL));
+
+  // Test u8to64
+  auto u8to64_result = v1.u8to64();
+  EXPECT_EQ(u8to64_result.U64[0], 0x12u);
+  EXPECT_EQ(u8to64_result.U64[1], 0x34u);
+
+  // Test u32to64
+  auto u32to64_result = v1.u32to64();
+  EXPECT_EQ(u32to64_result.U64[0], 0x78563412u);
+  EXPECT_EQ(u32to64_result.U64[1], 0xF0DEBC9Au);
+}
+
+TEST(GSVector4iTest, Type32BitConversions)
+{
+  GSVector4i v1(s8t(0x12), s8t(0x34), s8t(0x56), s8t(0x78), s8t(0x9A), s8t(0xBC), s8t(0xDE), s8t(0xF0), s8t(0x11),
+                s8t(0x22), s8t(0x33), s8t(0x44), s8t(0x55), s8t(0x66), s8t(0x77), s8t(0x88));
+
+  // Test u8to32
+  auto u8to32_result = v1.u8to32();
+  EXPECT_EQ(u8to32_result.U32[0], 0x12u);
+  EXPECT_EQ(u8to32_result.U32[1], 0x34u);
+  EXPECT_EQ(u8to32_result.U32[2], 0x56u);
+  EXPECT_EQ(u8to32_result.U32[3], 0x78u);
+
+  // Test u16to32
+  auto u16to32_result = v1.u16to32();
+  EXPECT_EQ(u16to32_result.U32[0], 0x3412u);
+  EXPECT_EQ(u16to32_result.U32[1], 0x7856u);
+  EXPECT_EQ(u16to32_result.U32[2], 0xBC9Au);
+  EXPECT_EQ(u16to32_result.U32[3], 0xF0DEu);
 }
 
 TEST(GSVector4iTest, Shift64BitOperations)
@@ -840,6 +888,15 @@ TEST(GSVector4iTest, MultiplicationOperations)
     const s16 expected = static_cast<s16>((((v1.S16[i] * v2.S16[i]) >> 14) + 1) >> 1);
     EXPECT_EQ(mul16hrs_result.S16[i], expected);
   }
+
+  // Test mul32l - low 32 bits of 32-bit multiplication
+  GSVector4i v3(100, 200, -300, 400);
+  GSVector4i v4(5, -10, 15, -20);
+  auto mul32l_result = v3.mul32l(v4);
+  EXPECT_EQ(mul32l_result.S32[0], 500);
+  EXPECT_EQ(mul32l_result.S32[1], -2000);
+  EXPECT_EQ(mul32l_result.S32[2], -4500);
+  EXPECT_EQ(mul32l_result.S32[3], -8000);
 }
 
 TEST(GSVector4iTest, Eq64Operations)
