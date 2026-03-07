@@ -19,11 +19,6 @@ LOG_CHANNEL(Settings);
 // we only allow one ini to be parsed at any point in time.
 static std::mutex s_ini_load_save_mutex;
 
-static bool CaseInsensitiveLess(std::string_view a, std::string_view b)
-{
-  return StringUtil::CompareNoCase(a, b) < 0;
-}
-
 INISettingsInterface::INISettingsInterface() = default;
 
 INISettingsInterface::INISettingsInterface(std::string path) : m_path(std::move(path))
@@ -58,10 +53,9 @@ INISettingsInterface::PoolString INISettingsInterface::AddPoolString(std::string
 INISettingsInterface::SectionList::const_iterator INISettingsInterface::FindSection(std::string_view name) const
 {
   auto it =
-    std::lower_bound(m_sections.begin(), m_sections.end(), name, [this](const Section& s, const std::string_view& n) {
-      return CaseInsensitiveLess(GetPoolStringView(s.name), n);
-    });
-  if (it != m_sections.end() && StringUtil::EqualNoCase(GetPoolStringView(it->name), name))
+    std::lower_bound(m_sections.begin(), m_sections.end(), name,
+                     [this](const Section& s, const std::string_view& n) { return (GetPoolStringView(s.name) < n); });
+  if (it != m_sections.end() && GetPoolStringView(it->name) == name)
     return it;
   return m_sections.end();
 }
@@ -69,10 +63,9 @@ INISettingsInterface::SectionList::const_iterator INISettingsInterface::FindSect
 INISettingsInterface::SectionList::iterator INISettingsInterface::FindSection(std::string_view name)
 {
   auto it =
-    std::lower_bound(m_sections.begin(), m_sections.end(), name, [this](const Section& s, const std::string_view& n) {
-      return CaseInsensitiveLess(GetPoolStringView(s.name), n);
-    });
-  if (it != m_sections.end() && StringUtil::EqualNoCase(GetPoolStringView(it->name), name))
+    std::lower_bound(m_sections.begin(), m_sections.end(), name,
+                     [this](const Section& s, const std::string_view& n) { return (GetPoolStringView(s.name) < n); });
+  if (it != m_sections.end() && GetPoolStringView(it->name) == name)
     return it;
   return m_sections.end();
 }
@@ -80,10 +73,9 @@ INISettingsInterface::SectionList::iterator INISettingsInterface::FindSection(st
 INISettingsInterface::Section& INISettingsInterface::GetOrCreateSection(std::string_view name)
 {
   auto it =
-    std::lower_bound(m_sections.begin(), m_sections.end(), name, [this](const Section& s, const std::string_view& n) {
-      return CaseInsensitiveLess(GetPoolStringView(s.name), n);
-    });
-  if (it != m_sections.end() && StringUtil::EqualNoCase(GetPoolStringView(it->name), name))
+    std::lower_bound(m_sections.begin(), m_sections.end(), name,
+                     [this](const Section& s, const std::string_view& n) { return (GetPoolStringView(s.name) < n); });
+  if (it != m_sections.end() && GetPoolStringView(it->name) == name)
     return *it;
   Section sec;
   sec.name = AddPoolString(name);
@@ -93,22 +85,20 @@ INISettingsInterface::Section& INISettingsInterface::GetOrCreateSection(std::str
 INISettingsInterface::KeyValueList::const_iterator INISettingsInterface::FindKey(const Section& section,
                                                                                  std::string_view key) const
 {
-  auto it = std::lower_bound(section.entries.begin(), section.entries.end(), key,
-                             [this](const KeyValuePair& kv, const std::string_view& k) {
-                               return CaseInsensitiveLess(GetPoolStringView(kv.key), k);
-                             });
-  if (it != section.entries.end() && StringUtil::EqualNoCase(GetPoolStringView(it->key), key))
+  auto it = std::lower_bound(
+    section.entries.begin(), section.entries.end(), key,
+    [this](const KeyValuePair& kv, const std::string_view& k) { return (GetPoolStringView(kv.key) < k); });
+  if (it != section.entries.end() && GetPoolStringView(it->key) == key)
     return it;
   return section.entries.end();
 }
 
 INISettingsInterface::KeyValueList::iterator INISettingsInterface::FindKey(Section& section, std::string_view key)
 {
-  auto it = std::lower_bound(section.entries.begin(), section.entries.end(), key,
-                             [this](const KeyValuePair& kv, const std::string_view& k) {
-                               return CaseInsensitiveLess(GetPoolStringView(kv.key), k);
-                             });
-  if (it != section.entries.end() && StringUtil::EqualNoCase(GetPoolStringView(it->key), key))
+  auto it = std::lower_bound(
+    section.entries.begin(), section.entries.end(), key,
+    [this](const KeyValuePair& kv, const std::string_view& k) { return (GetPoolStringView(kv.key) < k); });
+  if (it != section.entries.end() && GetPoolStringView(it->key) == key)
     return it;
   return section.entries.end();
 }
@@ -116,28 +106,25 @@ INISettingsInterface::KeyValueList::iterator INISettingsInterface::FindKey(Secti
 INISettingsInterface::KeyValueList::const_iterator INISettingsInterface::FindKeyEnd(const Section& section,
                                                                                     std::string_view key) const
 {
-  return std::upper_bound(section.entries.begin(), section.entries.end(), key,
-                          [this](const std::string_view& k, const KeyValuePair& kv) {
-                            return CaseInsensitiveLess(k, GetPoolStringView(kv.key));
-                          });
+  return std::upper_bound(
+    section.entries.begin(), section.entries.end(), key,
+    [this](const std::string_view& k, const KeyValuePair& kv) { return (k < GetPoolStringView(kv.key)); });
 }
 
 INISettingsInterface::KeyValueList::iterator INISettingsInterface::FindKeyEnd(Section& section, std::string_view key)
 {
-  return std::upper_bound(section.entries.begin(), section.entries.end(), key,
-                          [this](const std::string_view& k, const KeyValuePair& kv) {
-                            return CaseInsensitiveLess(k, GetPoolStringView(kv.key));
-                          });
+  return std::upper_bound(
+    section.entries.begin(), section.entries.end(), key,
+    [this](const std::string_view& k, const KeyValuePair& kv) { return (k < GetPoolStringView(kv.key)); });
 }
 
 void INISettingsInterface::InsertKeyValue(Section& section, std::string_view key, std::string_view value)
 {
-  auto it = std::lower_bound(section.entries.begin(), section.entries.end(), key,
-                             [this](const KeyValuePair& kv, const std::string_view& k) {
-                               return CaseInsensitiveLess(GetPoolStringView(kv.key), k);
-                             });
+  auto it = std::lower_bound(
+    section.entries.begin(), section.entries.end(), key,
+    [this](const KeyValuePair& kv, const std::string_view& k) { return (GetPoolStringView(kv.key) < k); });
   // Skip past existing entries with the same key to append at end of group.
-  while (it != section.entries.end() && StringUtil::EqualNoCase(GetPoolStringView(it->key), key))
+  while (it != section.entries.end() && GetPoolStringView(it->key) == key)
     ++it;
   KeyValuePair kvp;
   kvp.key = AddPoolString(key);
@@ -424,7 +411,7 @@ bool INISettingsInterface::LookupValue(const char* section, const char* key, std
   const KeyValuePair* kv = FindFirstKeyValue(section, key);
   if (!kv)
     return false;
-  
+
   *value = GetPoolStringView(kv->value);
   return true;
 }

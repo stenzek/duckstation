@@ -113,10 +113,14 @@ TEST(INISettingsInterface, CaseInsensitiveSectionLookup)
   si.LoadFromString("[MySection]\n"
                     "key = value\n");
   std::string_view val;
-  EXPECT_TRUE(si.FindStringValue("mysection", "key", &val));
+  EXPECT_TRUE(si.FindStringValue("MySection", "key", &val));
   EXPECT_EQ(val, "value");
-  EXPECT_TRUE(si.FindStringValue("MYSECTION", "key", &val));
-  EXPECT_EQ(val, "value");
+  val = {};
+  EXPECT_FALSE(si.FindStringValue("mysection", "key", &val));
+  EXPECT_TRUE(val.empty());
+  val = {};
+  EXPECT_FALSE(si.FindStringValue("MYSECTION", "key", &val));
+  EXPECT_TRUE(val.empty());
 }
 
 TEST(INISettingsInterface, CaseInsensitiveKeyLookup)
@@ -125,10 +129,14 @@ TEST(INISettingsInterface, CaseInsensitiveKeyLookup)
   si.LoadFromString("[Section]\n"
                     "MyKey = value\n");
   std::string_view val;
-  EXPECT_TRUE(si.FindStringValue("Section", "mykey", &val));
+  EXPECT_TRUE(si.FindStringValue("Section", "MyKey", &val));
   EXPECT_EQ(val, "value");
-  EXPECT_TRUE(si.FindStringValue("Section", "MYKEY", &val));
-  EXPECT_EQ(val, "value");
+  val = {};
+  EXPECT_FALSE(si.FindStringValue("Section", "mykey", &val));
+  EXPECT_TRUE(val.empty());
+  val = {};
+  EXPECT_FALSE(si.FindStringValue("Section", "MYKEY", &val));
+  EXPECT_TRUE(val.empty());
 }
 
 TEST(INISettingsInterface, LineWithoutEquals)
