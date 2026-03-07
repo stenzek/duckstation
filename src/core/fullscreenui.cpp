@@ -486,6 +486,7 @@ void FullscreenUI::Shutdown()
 
   s_locals.current_main_window = MainWindowType::None;
   s_locals.current_pause_submenu = PauseSubMenu::None;
+  s_locals.previous_main_window = MainWindowType::None;
   s_locals.pause_menu_was_open = false;
   s_locals.was_paused_on_quick_menu_open = false;
 
