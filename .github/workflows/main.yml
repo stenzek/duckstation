@@ -70,6 +70,8 @@ jobs:
             ./artifacts/duckstation-windows-arm64-release-symbols.zip
             ./artifacts/DuckStation-x64.AppImage
             ./artifacts/DuckStation-x64-SSE2.AppImage
+            ./artifacts/DuckStation-Mini-x64.AppImage
+            ./artifacts/DuckStation-Mini-x64-SSE2.AppImage
             ./artifacts/DuckStation-arm64.AppImage
             ./artifacts/DuckStation-Mini-arm64.AppImage
             ./artifacts/DuckStation-armhf.AppImage
@@ -96,6 +98,8 @@ jobs:
             ./artifacts/duckstation-windows-arm64-release-symbols.zip
             ./artifacts/DuckStation-x64.AppImage
             ./artifacts/DuckStation-x64-SSE2.AppImage
+            ./artifacts/DuckStation-Mini-x64.AppImage
+            ./artifacts/DuckStation-Mini-x64-SSE2.AppImage
             ./artifacts/DuckStation-arm64.AppImage
             ./artifacts/DuckStation-Mini-arm64.AppImage
             ./artifacts/DuckStation-armhf.AppImage

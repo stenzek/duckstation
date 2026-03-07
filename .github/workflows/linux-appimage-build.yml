@@ -19,10 +19,22 @@ jobs:
             asset: "DuckStation-x64.AppImage"
             artifact: "linux-x64-appimage"
             cmakeoptions: ""
+            packagescript: "scripts/appimage/make-appimage.sh"
           - name: "x64 SSE2"
             asset: "DuckStation-x64-SSE2.AppImage"
             artifact: "linux-x64-sse2-appimage"
             cmakeoptions: "-DDISABLE_SSE4=ON"
+            packagescript: "scripts/appimage/make-appimage.sh"
+          - name: "x64 Mini"
+            asset: "DuckStation-Mini-x64.AppImage"
+            artifact: "linux-x64-mini-appimage"
+            cmakeoptions: "-DBUILD_QT_FRONTEND=OFF -DBUILD_MINI_FRONTEND=ON"
+            packagescript: "scripts/appimage/make-appimage-mini.sh"
+          - name: "x64 Mini SSE2"
+            asset: "DuckStation-Mini-x64-SSE2.AppImage"
+            artifact: "linux-x64-mini-sse2-appimage"
+            cmakeoptions: "-DBUILD_QT_FRONTEND=OFF -DBUILD_MINI_FRONTEND=ON -DDISABLE_SSE4=ON"
+            packagescript: "scripts/appimage/make-appimage-mini.sh"
     steps:
     - uses: actions/checkout@v6
       with:
@@ -68,7 +80,7 @@ jobs:
         cmake -G Ninja -DCMAKE_BUILD_TYPE=Release ${{ matrix.cmakeoptions }} -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON -DCMAKE_C_COMPILER=clang-19 -DCMAKE_CXX_COMPILER=clang++-19 -DCMAKE_EXE_LINKER_FLAGS_INIT="-fuse-ld=lld" -DCMAKE_MODULE_LINKER_FLAGS_INIT="-fuse-ld=lld" -DCMAKE_SHARED_LINKER_FLAGS_INIT="-fuse-ld=lld" ..
         cmake --build . --parallel
         cd ..
-        scripts/appimage/make-appimage.sh $(realpath .) $(realpath ./build) "${{ matrix.asset }}"
+        ${{ matrix.packagescript }} $(realpath .) $(realpath ./build) "${{ matrix.asset }}"
 
     - name: Upload AppImage
       uses: actions/upload-artifact@v6
