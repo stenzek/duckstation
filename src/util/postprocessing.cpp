@@ -533,8 +533,8 @@ void PostProcessing::Chain::LoadStages(std::unique_lock<std::mutex>& settings_lo
   // must be down here, because we need to compile first, triggered by CheckTargets()
   for (std::unique_ptr<Shader>& shader : m_stages)
   {
-    m_wants_depth_buffer |= shader->WantsDepthBuffer();
-    m_wants_unscaled_input |= shader->WantsUnscaledInput();
+    m_wants_depth_buffer |= (shader->IsEnabled() && shader->WantsDepthBuffer());
+    m_wants_unscaled_input |= (shader->IsEnabled() && shader->WantsUnscaledInput());
   }
   m_needs_depth_buffer = m_enabled && m_wants_depth_buffer;
   if (m_wants_depth_buffer)
@@ -567,6 +567,7 @@ void PostProcessing::Chain::UpdateSettings(std::unique_lock<std::mutex>& setting
 
   const GPUTextureFormat prev_format = m_target_format;
   m_wants_depth_buffer = false;
+  m_wants_unscaled_input = false;
 
   const u32 prev_enabled_stage_count = static_cast<u32>(std::ranges::count_if(
     m_stages, [](const std::unique_ptr<Shader>& shader) { return (shader && shader->IsEnabled()); }));
@@ -646,7 +647,11 @@ void PostProcessing::Chain::UpdateSettings(std::unique_lock<std::mutex>& setting
 
   // must be down here, because we need to compile first, triggered by CheckTargets()
   for (std::unique_ptr<Shader>& shader : m_stages)
-    m_wants_depth_buffer |= shader->WantsDepthBuffer();
+  {
+    m_wants_depth_buffer |= (shader->IsEnabled() && shader->WantsDepthBuffer());
+    m_wants_unscaled_input |= (shader->IsEnabled() && shader->WantsUnscaledInput());
+  }
+
   m_needs_depth_buffer = m_enabled && m_wants_depth_buffer;
   if (m_wants_depth_buffer)
     DEV_LOG("Depth buffer is needed.");
@@ -731,6 +736,7 @@ bool PostProcessing::Chain::CheckTargets(u32 source_width, u32 source_height, GP
     progress->SetProgressValue(0);
 
     m_wants_depth_buffer = false;
+    m_wants_unscaled_input = false;
 
     for (size_t i = 0; i < m_stages.size(); i++)
     {
@@ -753,11 +759,13 @@ bool PostProcessing::Chain::CheckTargets(u32 source_width, u32 source_height, GP
       }
 
       progress->SetProgressValue(static_cast<u32>(i + 1));
-      m_wants_depth_buffer |= shader->IsEnabled() && shader->WantsDepthBuffer();
 
       // Don't adjust target size until first enabled shader.
       if (!shader->IsEnabled())
         continue;
+
+      m_wants_depth_buffer |= shader->WantsDepthBuffer();
+      m_wants_unscaled_input |= shader->WantsUnscaledInput();
 
       // First shader outputs at target size, so the input is now target size.
       source_width = target_width;
