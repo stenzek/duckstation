@@ -52,8 +52,9 @@ public:
   /// Converts a key to a string representation. The string should be suitable for parsing with ParseKeyString().
   virtual TinyString ConvertKeyToString(InputBindingKey key) = 0;
 
-  /// Converts a key to an icon representation. The icon is suitable for display in the UI.
-  virtual TinyString ConvertKeyToIcon(InputBindingKey key, InputManager::BindingIconMappingFunction mapper) = 0;
+  /// Converts a key to an diaply or icon representation. The icon is suitable for display in the UI.
+  virtual TinyString ConvertKeyToDisplayString(InputBindingKey key, bool allow_icon,
+                                               InputManager::BindingIconMappingFunction mapper) = 0;
 
   /// Enumerates available devices. Returns a pair of the prefix (e.g. SDL-0) and the device name.
   virtual InputManager::DeviceList EnumerateDevices() = 0;

@@ -234,8 +234,9 @@ void InputBindingDialog::addNewBinding()
     if (std::find(m_bindings.begin(), m_bindings.end(), new_binding.view()) != m_bindings.end())
       return;
 
-    m_ui.bindingList->addItem(QtUtils::StringViewToQString(new_binding));
     m_bindings.emplace_back(new_binding);
+    InputManager::PrettifyInputBinding(new_binding, false);
+    m_ui.bindingList->addItem(QtUtils::StringViewToQString(new_binding));
     saveListToSettings();
   }
 }
@@ -270,7 +271,11 @@ void InputBindingDialog::updateList()
 {
   m_ui.bindingList->clear();
   for (const std::string& binding : m_bindings)
-    m_ui.bindingList->addItem(QString::fromStdString(binding));
+  {
+    SmallString pretty_binding(binding);
+    InputManager::PrettifyInputBinding(pretty_binding, false);
+    m_ui.bindingList->addItem(QtUtils::StringViewToQString(pretty_binding));
+  }
 }
 
 void InputBindingDialog::saveListToSettings()

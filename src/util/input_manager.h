@@ -250,7 +250,7 @@ SmallString ConvertInputBindingKeysToString(InputBindingInfo::Type binding_type,
 /// Represents a binding with icon fonts, if available.
 /// Optionally maps icon fonts to a different style, e.g. xbox icons -> PS buttons.
 using BindingIconMappingFunction = std::string_view (*)(std::string_view);
-bool PrettifyInputBinding(SmallStringBase& binding, BindingIconMappingFunction mapper = nullptr);
+bool PrettifyInputBinding(SmallStringBase& binding, bool allow_icon, BindingIconMappingFunction mapper = nullptr);
 
 /// Enumerates available devices. Returns a pair of the prefix (e.g. SDL-0) and the device name.
 using DeviceList = std::vector<std::tuple<InputBindingKey, std::string, std::string>>;

@@ -1117,7 +1117,7 @@ void SaveStateSelectorUI::DestroyTextures()
 void SaveStateSelectorUI::RefreshHotkeyLegend()
 {
   auto format_legend_entry = [](SmallString binding, std::string_view caption) {
-    InputManager::PrettifyInputBinding(binding, &FullscreenUI::GetControllerIconMapping);
+    InputManager::PrettifyInputBinding(binding, true, &FullscreenUI::GetControllerIconMapping);
     return fmt::format("{} {}", binding, caption);
   };
 

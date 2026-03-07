@@ -330,7 +330,7 @@ void FullscreenUI::DrawInputBindingButton(SettingsInterface* bsi, InputBindingIn
   SmallString value = bsi->GetSmallStringValue(section, name);
   const bool oneline = value.count('&') <= 1;
   if (oneline && type != InputBindingInfo::Type::Pointer && type != InputBindingInfo::Type::Device)
-    InputManager::PrettifyInputBinding(value, &GetControllerIconMapping);
+    InputManager::PrettifyInputBinding(value, true, &GetControllerIconMapping);
 
   if (show_type)
   {

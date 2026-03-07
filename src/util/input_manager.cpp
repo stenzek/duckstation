@@ -144,8 +144,8 @@ static std::optional<InputBindingKey> ParsePointerKey(std::string_view source, s
 
 static std::vector<std::string_view> SplitChord(std::string_view binding);
 static bool SplitBinding(std::string_view binding, std::string_view* source, std::string_view* sub_binding);
-static void PrettifyInputBindingPart(std::string_view binding, BindingIconMappingFunction mapper, SmallString& ret,
-                                     bool& changed);
+static void PrettifyInputBindingPart(std::string_view binding, bool allow_icon, BindingIconMappingFunction mapper,
+                                     SmallString& ret, bool& changed);
 static void AddBindings(const std::vector<std::string>& bindings, const InputEventHandler& handler);
 static void UpdatePointerCount();
 
@@ -190,10 +190,17 @@ static void UnregisterDeviceNotificationHandle();
 // Tracking host mouse movement and turning into relative events
 // 4 axes: pointer left/right, wheel vertical/horizontal. Last/Next/Normalized.
 // ------------------------------------------------------------------------
-static constexpr const std::array<const char*, static_cast<u8>(InputPointerAxis::Count)> s_pointer_axis_names = {
-  {"X", "Y", "WheelX", "WheelY"}};
-static constexpr const std::array<const char*, 3> s_pointer_button_names = {
-  {"LeftButton", "RightButton", "MiddleButton"}};
+static constexpr const std::array<const char*, static_cast<u8>(InputPointerAxis::Count)> s_pointer_axis_names = {{
+  TRANSLATE_NOOP("InputManager", "X"),
+  TRANSLATE_NOOP("InputManager", "Y"),
+  TRANSLATE_NOOP("InputManager", "WheelX"),
+  TRANSLATE_NOOP("InputManager", "WheelY"),
+}};
+static constexpr const std::array<const char*, 3> s_pointer_button_names = {{
+  TRANSLATE_NOOP("InputManager", "LeftButton"),
+  TRANSLATE_NOOP("InputManager", "RightButton"),
+  TRANSLATE_NOOP("InputManager", "MiddleButton"),
+}};
 
 // ------------------------------------------------------------------------
 // Local Variables
@@ -483,7 +490,8 @@ SmallString InputManager::ConvertInputBindingKeysToString(InputBindingInfo::Type
   return ret;
 }
 
-bool InputManager::PrettifyInputBinding(SmallStringBase& binding, BindingIconMappingFunction mapper /*= nullptr*/)
+bool InputManager::PrettifyInputBinding(SmallStringBase& binding, bool allow_icon,
+                                        BindingIconMappingFunction mapper /*= nullptr*/)
 {
   if (binding.empty())
     return false;
@@ -506,7 +514,7 @@ bool InputManager::PrettifyInputBinding(SmallStringBase& binding, BindingIconMap
       {
         if (!ret.empty())
           ret.append(" + ");
-        PrettifyInputBindingPart(part, mapper, ret, changed);
+        PrettifyInputBindingPart(part, allow_icon, mapper, ret, changed);
       }
     }
     last = next + 1;
@@ -518,7 +526,7 @@ bool InputManager::PrettifyInputBinding(SmallStringBase& binding, BindingIconMap
     {
       if (!ret.empty())
         ret.append(" + ");
-      PrettifyInputBindingPart(part, mapper, ret, changed);
+      PrettifyInputBindingPart(part, allow_icon, mapper, ret, changed);
     }
   }
 
@@ -528,8 +536,8 @@ bool InputManager::PrettifyInputBinding(SmallStringBase& binding, BindingIconMap
   return changed;
 }
 
-void InputManager::PrettifyInputBindingPart(const std::string_view binding, BindingIconMappingFunction mapper,
-                                            SmallString& ret, bool& changed)
+void InputManager::PrettifyInputBindingPart(const std::string_view binding, bool allow_icon,
+                                            BindingIconMappingFunction mapper, SmallString& ret, bool& changed)
 {
   std::string_view source, sub_binding;
   if (!SplitBinding(binding, &source, &sub_binding))
@@ -539,12 +547,24 @@ void InputManager::PrettifyInputBindingPart(const std::string_view binding, Bind
   if (source.starts_with("Keyboard"))
   {
     std::optional<InputBindingKey> key = ParseHostKeyboardKey(source, sub_binding);
-    const char* icon = key.has_value() ? ConvertHostKeyboardCodeToIcon(key->data) : nullptr;
-    if (icon)
+    if (key.has_value())
     {
-      ret.append(icon);
-      changed = true;
-      return;
+      const char* icon = ConvertHostKeyboardCodeToIcon(key->data);
+      if (icon && allow_icon)
+      {
+        ret.append(icon);
+        changed = true;
+        return;
+      }
+      else
+      {
+        if (const char* key_code_string = ConvertHostKeyboardCodeToString(key->data))
+        {
+          ret.append_format(TRANSLATE_FS("InputManager", "Keyboard/{}"), key_code_string);
+          changed = true;
+          return;
+        }
+      }
     }
   }
   else if (source.starts_with("Pointer"))
@@ -558,9 +578,26 @@ void InputManager::PrettifyInputBindingPart(const std::string_view binding, Bind
           ICON_PF_MOUSE_BUTTON_1, ICON_PF_MOUSE_BUTTON_2, ICON_PF_MOUSE_BUTTON_3,
           ICON_PF_MOUSE_BUTTON_4, ICON_PF_MOUSE_BUTTON_5,
         };
-        if (key->data < std::size(button_icons))
+        if (allow_icon && key->data < std::size(button_icons))
         {
           ret.append(button_icons[key->data]);
+          changed = true;
+          return;
+        }
+        else if (key->data < s_pointer_button_names.size())
+        {
+          ret.append_format(TRANSLATE_FS("InputManager", "Pointer-{0}/{1}"), key->source_index,
+                            Host::TranslateToStringView("InputManager", s_pointer_button_names[key->data]));
+          changed = true;
+          return;
+        }
+      }
+      else if (key->source_subtype == InputSubclass::PointerAxis)
+      {
+        if (key->data < s_pointer_axis_names.size())
+        {
+          ret.append_format(TRANSLATE_FS("InputManager", "Pointer-{0}/{1}"), key->source_index,
+                            Host::TranslateToStringView("InputManager", s_pointer_axis_names[key->data]));
           changed = true;
           return;
         }
@@ -579,10 +616,11 @@ void InputManager::PrettifyInputBindingPart(const std::string_view binding, Bind
         std::optional<InputBindingKey> key = s_state.input_sources[i]->ParseKeyString(source, sub_binding);
         if (key.has_value())
         {
-          const TinyString icon = s_state.input_sources[i]->ConvertKeyToIcon(key.value(), mapper);
-          if (!icon.empty())
+          const TinyString display_str =
+            s_state.input_sources[i]->ConvertKeyToDisplayString(key.value(), allow_icon, mapper);
+          if (!display_str.empty())
           {
-            ret.append(icon);
+            ret.append(display_str);
             changed = true;
             return;
           }

@@ -449,7 +449,8 @@ TinyString DInputSource::ConvertKeyToString(InputBindingKey key)
   return ret;
 }
 
-TinyString DInputSource::ConvertKeyToIcon(InputBindingKey key, InputManager::BindingIconMappingFunction mapper)
+TinyString DInputSource::ConvertKeyToDisplayString(InputBindingKey key, bool allow_icon,
+                                                   InputManager::BindingIconMappingFunction mapper)
 {
   return {};
 }

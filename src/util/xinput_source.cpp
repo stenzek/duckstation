@@ -1,8 +1,9 @@
-// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "xinput_source.h"
 #include "input_manager.h"
+#include "translation.h"
 
 #include "common/assert.h"
 #include "common/bitutils.h"
@@ -18,12 +19,12 @@
 LOG_CHANNEL(XInputSource);
 
 static constexpr std::array<const char*, XInputSource::NUM_AXES> s_axis_names = {{
-  "LeftX",        // AXIS_LEFTX
-  "LeftY",        // AXIS_LEFTY
-  "RightX",       // AXIS_RIGHTX
-  "RightY",       // AXIS_RIGHTY
-  "LeftTrigger",  // AXIS_TRIGGERLEFT
-  "RightTrigger", // AXIS_TRIGGERRIGHT
+  TRANSLATE_NOOP("XInputSource", "LeftX"),        // AXIS_LEFTX
+  TRANSLATE_NOOP("XInputSource", "LeftY"),        // AXIS_LEFTY
+  TRANSLATE_NOOP("XInputSource", "RightX"),       // AXIS_RIGHTX
+  TRANSLATE_NOOP("XInputSource", "RightY"),       // AXIS_RIGHTY
+  TRANSLATE_NOOP("XInputSource", "LeftTrigger"),  // AXIS_TRIGGERLEFT
+  TRANSLATE_NOOP("XInputSource", "RightTrigger"), // AXIS_TRIGGERRIGHT
 }};
 static constexpr std::array<std::array<const char*, 2>, XInputSource::NUM_AXES> s_axis_icons = {{
   {{ICON_PF_LEFT_ANALOG_LEFT, ICON_PF_LEFT_ANALOG_RIGHT}},   // AXIS_LEFTX
@@ -44,21 +45,21 @@ static constexpr std::array<std::array<GenericInputBinding, 2>, XInputSource::NU
   }};
 
 static constexpr std::array<const char*, XInputSource::NUM_BUTTONS> s_button_names = {{
-  "DPadUp",        // XINPUT_GAMEPAD_DPAD_UP
-  "DPadDown",      // XINPUT_GAMEPAD_DPAD_DOWN
-  "DPadLeft",      // XINPUT_GAMEPAD_DPAD_LEFT
-  "DPadRight",     // XINPUT_GAMEPAD_DPAD_RIGHT
-  "Start",         // XINPUT_GAMEPAD_START
-  "Back",          // XINPUT_GAMEPAD_BACK
-  "LeftStick",     // XINPUT_GAMEPAD_LEFT_THUMB
-  "RightStick",    // XINPUT_GAMEPAD_RIGHT_THUMB
-  "LeftShoulder",  // XINPUT_GAMEPAD_LEFT_SHOULDER
-  "RightShoulder", // XINPUT_GAMEPAD_RIGHT_SHOULDER
-  "A",             // XINPUT_GAMEPAD_A
-  "B",             // XINPUT_GAMEPAD_B
-  "X",             // XINPUT_GAMEPAD_X
-  "Y",             // XINPUT_GAMEPAD_Y
-  "Guide",         // XINPUT_GAMEPAD_GUIDE
+  TRANSLATE_NOOP("XInputSource", "DPadUp"),        // XINPUT_GAMEPAD_DPAD_UP
+  TRANSLATE_NOOP("XInputSource", "DPadDown"),      // XINPUT_GAMEPAD_DPAD_DOWN
+  TRANSLATE_NOOP("XInputSource", "DPadLeft"),      // XINPUT_GAMEPAD_DPAD_LEFT
+  TRANSLATE_NOOP("XInputSource", "DPadRight"),     // XINPUT_GAMEPAD_DPAD_RIGHT
+  TRANSLATE_NOOP("XInputSource", "Start"),         // XINPUT_GAMEPAD_START
+  TRANSLATE_NOOP("XInputSource", "Back"),          // XINPUT_GAMEPAD_BACK
+  TRANSLATE_NOOP("XInputSource", "LeftStick"),     // XINPUT_GAMEPAD_LEFT_THUMB
+  TRANSLATE_NOOP("XInputSource", "RightStick"),    // XINPUT_GAMEPAD_RIGHT_THUMB
+  TRANSLATE_NOOP("XInputSource", "LeftShoulder"),  // XINPUT_GAMEPAD_LEFT_SHOULDER
+  TRANSLATE_NOOP("XInputSource", "RightShoulder"), // XINPUT_GAMEPAD_RIGHT_SHOULDER
+  TRANSLATE_NOOP("XInputSource", "A"),             // XINPUT_GAMEPAD_A
+  TRANSLATE_NOOP("XInputSource", "B"),             // XINPUT_GAMEPAD_B
+  TRANSLATE_NOOP("XInputSource", "X"),             // XINPUT_GAMEPAD_X
+  TRANSLATE_NOOP("XInputSource", "Y"),             // XINPUT_GAMEPAD_Y
+  TRANSLATE_NOOP("XInputSource", "Guide"),         // XINPUT_GAMEPAD_GUIDE
 }};
 static constexpr std::array<u16, XInputSource::NUM_BUTTONS> s_button_masks = {{
   XINPUT_GAMEPAD_DPAD_UP, XINPUT_GAMEPAD_DPAD_DOWN, XINPUT_GAMEPAD_DPAD_LEFT, XINPUT_GAMEPAD_DPAD_RIGHT,
@@ -382,24 +383,49 @@ TinyString XInputSource::ConvertKeyToString(InputBindingKey key)
   return ret;
 }
 
-TinyString XInputSource::ConvertKeyToIcon(InputBindingKey key, InputManager::BindingIconMappingFunction mapper)
+TinyString XInputSource::ConvertKeyToDisplayString(InputBindingKey key, bool allow_icon,
+                                                   InputManager::BindingIconMappingFunction mapper)
 {
   TinyString ret;
 
   if (key.source_type == InputSourceType::XInput)
   {
-    if (key.source_subtype == InputSubclass::ControllerAxis)
+    if (allow_icon)
     {
-      if (key.data < std::size(s_axis_icons) && key.modifier != InputModifier::FullAxis)
+      if (key.source_subtype == InputSubclass::ControllerAxis)
       {
-        ret.format("XInput-{}  {}", static_cast<u32>(key.source_index),
-                   mapper(s_axis_icons[key.data][key.modifier == InputModifier::None]));
+        if (key.data < std::size(s_axis_icons) && key.modifier != InputModifier::FullAxis)
+        {
+          ret.format(TRANSLATE_FS("XInputSource", "XInput-{0}  {1}"), static_cast<u32>(key.source_index),
+                     mapper(s_axis_icons[key.data][key.modifier == InputModifier::None]));
+        }
+      }
+      else if (key.source_subtype == InputSubclass::ControllerButton)
+      {
+        if (key.data < std::size(s_button_icons))
+          ret.format(TRANSLATE_FS("XInputSource", "XInput-{0}  {1}"), static_cast<u32>(key.source_index),
+                     mapper(s_button_icons[key.data]));
       }
     }
-    else if (key.source_subtype == InputSubclass::ControllerButton)
+    else
     {
-      if (key.data < std::size(s_button_icons))
-        ret.format("XInput-{}  {}", static_cast<u32>(key.source_index), mapper(s_button_icons[key.data]));
+      if (key.source_subtype == InputSubclass::ControllerAxis && key.data < std::size(s_axis_names))
+      {
+        const char modifier = key.modifier == InputModifier::Negate ? '-' : '+';
+        ret.format(TRANSLATE_FS("XInputSource", "XInput-{0}/{1}{2}"), static_cast<u32>(key.source_index), modifier,
+                   Host::TranslateToStringView("XInputSource", s_axis_names[key.data]));
+      }
+      else if (key.source_subtype == InputSubclass::ControllerButton && key.data < std::size(s_button_names))
+      {
+        ret.format(TRANSLATE_FS("XInputSource", "XInput-{0}/{1}"), static_cast<u32>(key.source_index),
+                   Host::TranslateToStringView("XInputSource", s_button_names[key.data]));
+      }
+      else if (key.source_subtype == InputSubclass::ControllerMotor)
+      {
+        ret.format(TRANSLATE_FS("XInputSource", "XInput-{0}/{1}"), static_cast<u32>(key.source_index),
+                   (key.data == 0) ? TRANSLATE_SV("XInputSource", "LargeMotor") :
+                                     TRANSLATE_SV("XInputSource", "SmallMotor"));
+      }
     }
   }
 
