@@ -173,7 +173,7 @@ if(CPU_ARCH_ARM32)
     cpu_recompiler_arm32.cpp
     cpu_recompiler_arm32.h
   )
-  target_link_libraries(core PUBLIC vixl)
+  target_link_libraries(core PRIVATE vixl)
   message(STATUS "Building ARM32 recompiler.")
 endif()
 if(CPU_ARCH_ARM64)
@@ -183,7 +183,7 @@ if(CPU_ARCH_ARM64)
     cpu_recompiler_arm64.cpp
     cpu_recompiler_arm64.h
   )
-  target_link_libraries(core PUBLIC vixl)
+  target_link_libraries(core PRIVATE vixl)
   message(STATUS "Building ARM64 recompiler.")
 endif()
 if(CPU_ARCH_RISCV64)
@@ -193,7 +193,7 @@ if(CPU_ARCH_RISCV64)
     cpu_recompiler_riscv64.cpp
     cpu_recompiler_riscv64.h
   )
-  target_link_libraries(core PUBLIC biscuit::biscuit riscv-disas)
+  target_link_libraries(core PRIVATE biscuit::biscuit riscv-disas)
   message(STATUS "Building RISC-V-64 recompiler.")
 endif()
 
