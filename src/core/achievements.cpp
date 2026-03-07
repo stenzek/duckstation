@@ -1425,6 +1425,11 @@ void Achievements::ClearGameInfo()
 
   ClearPrefetchBadgeRequests();
 
+  s_state.active_leaderboard_trackers = {};
+  s_state.active_challenge_indicators = {};
+  s_state.active_progress_indicator.reset();
+  s_state.pinned_achievement_indicators = {};
+
   if (s_state.load_game_request)
   {
     rc_client_abort_async(s_state.client, s_state.load_game_request);
@@ -1432,10 +1437,6 @@ void Achievements::ClearGameInfo()
   }
   rc_client_unload_game(s_state.client);
 
-  s_state.active_leaderboard_trackers = {};
-  s_state.active_challenge_indicators = {};
-  s_state.active_progress_indicator.reset();
-  s_state.pinned_achievement_indicators = {};
   s_state.game_id = 0;
   s_state.game_title = {};
   s_state.game_icon = {};
