@@ -139,7 +139,7 @@ static PlayedTimeEntry UpdatePlayedTimeFile(std::string_view serial, std::time_t
 static std::string GetCustomPropertiesFile();
 static const std::string& GetCustomPropertiesSection(const std::string& path, std::string* temp_path);
 static bool PutCustomPropertiesField(INISettingsInterface& ini, const std::string& path, const char* field,
-                                     const char* value);
+                                     std::string_view value);
 
 static std::string GetMemcardTimestampCachePath();
 static bool UpdateMemcardTimestampCache(const MemcardTimestampCacheEntry& entry);
@@ -1967,14 +1967,14 @@ const std::string& GameList::GetCustomPropertiesSection(const std::string& path,
 }
 
 bool GameList::PutCustomPropertiesField(INISettingsInterface& ini, const std::string& path, const char* field,
-                                        const char* value)
+                                        std::string_view value)
 {
   ini.Load();
 
   std::string temp_path;
   const std::string& section = GetCustomPropertiesSection(path, &temp_path);
 
-  if (value && *value != '\0')
+  if (!value.empty())
   {
     ini.SetStringValue(section.c_str(), field, value);
   }

@@ -325,22 +325,21 @@ SettingsInterface* Core::GetSettingsInterface()
   return &s_locals.layered_settings_interface;
 }
 
-std::string Core::GetBaseStringSettingValue(const char* section, const char* key, const char* default_value /*= ""*/)
+std::string Core::GetBaseStringSettingValue(const char* section, const char* key, std::string_view default_value)
 {
   std::unique_lock lock(s_locals.settings_mutex);
   return s_locals.layered_settings_interface.GetLayer(LayeredSettingsInterface::LAYER_BASE)
     ->GetStringValue(section, key, default_value);
 }
 
-SmallString Core::GetBaseSmallStringSettingValue(const char* section, const char* key,
-                                                 const char* default_value /*= ""*/)
+SmallString Core::GetBaseSmallStringSettingValue(const char* section, const char* key, std::string_view default_value)
 {
   std::unique_lock lock(s_locals.settings_mutex);
   return s_locals.layered_settings_interface.GetLayer(LayeredSettingsInterface::LAYER_BASE)
     ->GetSmallStringValue(section, key, default_value);
 }
 
-TinyString Core::GetBaseTinyStringSettingValue(const char* section, const char* key, const char* default_value /*= ""*/)
+TinyString Core::GetBaseTinyStringSettingValue(const char* section, const char* key, std::string_view default_value)
 {
   std::unique_lock lock(s_locals.settings_mutex);
   return s_locals.layered_settings_interface.GetLayer(LayeredSettingsInterface::LAYER_BASE)
@@ -389,19 +388,19 @@ std::vector<std::string> Core::GetBaseStringListSetting(const char* section, con
     ->GetStringList(section, key);
 }
 
-std::string Core::GetStringSettingValue(const char* section, const char* key, const char* default_value /*= ""*/)
+std::string Core::GetStringSettingValue(const char* section, const char* key, std::string_view default_value)
 {
   std::unique_lock lock(s_locals.settings_mutex);
   return s_locals.layered_settings_interface.GetStringValue(section, key, default_value);
 }
 
-SmallString Core::GetSmallStringSettingValue(const char* section, const char* key, const char* default_value /*= ""*/)
+SmallString Core::GetSmallStringSettingValue(const char* section, const char* key, std::string_view default_value)
 {
   std::unique_lock lock(s_locals.settings_mutex);
   return s_locals.layered_settings_interface.GetSmallStringValue(section, key, default_value);
 }
 
-TinyString Core::GetTinyStringSettingValue(const char* section, const char* key, const char* default_value /*= ""*/)
+TinyString Core::GetTinyStringSettingValue(const char* section, const char* key, std::string_view default_value)
 {
   std::unique_lock lock(s_locals.settings_mutex);
   return s_locals.layered_settings_interface.GetTinyStringValue(section, key, default_value);

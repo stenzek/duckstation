@@ -180,7 +180,7 @@ static void ClearRunningGame();
 static void DestroySystem();
 
 static void RecreateGPU(GPURenderer new_renderer);
-static std::string GetScreenshotPath(const char* extension);
+static std::string GetScreenshotPath(std::string_view extension);
 static bool StartMediaCapture(std::string path, bool capture_video, bool capture_audio, u32 video_width,
                               u32 video_height);
 static void StopMediaCapture(std::unique_ptr<MediaCapture> cap);
@@ -1636,7 +1636,7 @@ bool System::UpdateGameSettingsLayer()
   if (new_interface)
   {
     if (!new_interface->GetBoolValue("ControllerPorts", "UseGameSettingsForController", false))
-      new_interface->GetStringValue("ControllerPorts", "InputProfileName", &input_profile_name);
+      input_profile_name = new_interface->GetStringValue("ControllerPorts", "InputProfileName");
   }
 
   if (!s_state.game_settings_interface && !new_interface && s_state.input_profile_name == input_profile_name)
@@ -5620,7 +5620,7 @@ void System::UpdateVolume()
   SPU::GetOutputStream().SetOutputVolume(GetAudioOutputVolume());
 }
 
-std::string System::GetScreenshotPath(const char* extension)
+std::string System::GetScreenshotPath(std::string_view extension)
 {
   const std::string sanitized_name = Path::SanitizeFileName(System::GetGameTitle());
   std::string basename;

@@ -114,7 +114,7 @@ static u32 GetEffectiveUIntSetting(SettingsInterface* bsi, const char* section, 
 static float GetEffectiveFloatSetting(SettingsInterface* bsi, const char* section, const char* key,
                                       float default_value);
 static TinyString GetEffectiveTinyStringSetting(SettingsInterface* bsi, const char* section, const char* key,
-                                                const char* default_value = "");
+                                                std::string_view default_value = {});
 static void BeginResetSettings();
 static void DoCopyGameSettings();
 static void DoClearGameSettings();
@@ -303,7 +303,7 @@ float FullscreenUI::GetEffectiveFloatSetting(SettingsInterface* bsi, const char*
 }
 
 TinyString FullscreenUI::GetEffectiveTinyStringSetting(SettingsInterface* bsi, const char* section, const char* key,
-                                                       const char* default_value)
+                                                       std::string_view default_value)
 {
   TinyString ret;
   std::optional<TinyString> value;
@@ -626,7 +626,7 @@ bool FullscreenUI::DrawToggleSetting(SettingsInterface* bsi, std::string_view ti
   else
   {
     std::optional<bool> value(false);
-    if (!bsi->GetBoolValue(section, key, &value.value()))
+    if (!bsi->FindBoolValue(section, key, &value.value()))
       value.reset();
     if (!ThreeWayToggleButton(title, summary, &value, enabled))
       return false;
@@ -1387,10 +1387,12 @@ void FullscreenUI::DrawEnumSetting(SettingsInterface* bsi, std::string_view titl
                                    bool enabled /* = true */)
 {
   const bool game_settings = IsEditingGameSettings(bsi);
-  const std::optional<SmallString> value(bsi->GetOptionalSmallStringValue(
-    section, key, game_settings ? std::nullopt : std::optional<const char*>(to_string_function(default_value))));
 
-  const std::optional<DataType> typed_value(value.has_value() ? from_string_function(value->c_str()) : std::nullopt);
+  std::optional<DataType> typed_value;
+  if (std::string_view value; bsi->FindStringValue(section, key, &value))
+    typed_value = from_string_function(TinyString(value));
+  if (!typed_value.has_value() && !game_settings)
+    typed_value = default_value;
 
   if (MenuButtonWithValue(title, summary,
                           typed_value.has_value() ? to_display_string_function(typed_value.value()) :
@@ -1400,7 +1402,7 @@ void FullscreenUI::DrawEnumSetting(SettingsInterface* bsi, std::string_view titl
     ChoiceDialogOptions cd_options;
     cd_options.reserve(static_cast<u32>(option_count) + 1);
     if (game_settings)
-      cd_options.emplace_back(FSUI_STR("Use Global Setting"), !value.has_value());
+      cd_options.emplace_back(FSUI_STR("Use Global Setting"), !typed_value.has_value());
     for (u32 i = 0; i < static_cast<u32>(option_count); i++)
       cd_options.emplace_back(to_display_string_function(static_cast<DataType>(i)),
                               (typed_value.has_value() && i == static_cast<u32>(typed_value.value())));
@@ -3911,7 +3913,7 @@ void FullscreenUI::DrawGraphicsSettingsPage()
                             TinyString(FSUI_VSTR("Use Global Setting")) :
                             Settings::GetDisplayAspectRatioDisplayName(
                               Settings::ParseDisplayAspectRatio(
-                                GetEffectiveTinyStringSetting(bsi, ASPECT_RATIO_SECTION, ASPECT_RATIO_KEY, ""))
+                                GetEffectiveTinyStringSetting(bsi, ASPECT_RATIO_SECTION, ASPECT_RATIO_KEY))
                                 .value_or(Settings::DEFAULT_DISPLAY_ASPECT_RATIO))))
   {
     static constexpr const DisplayAspectRatio INHERIT_ASPECT_RATIO = {0, -1};

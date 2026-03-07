@@ -78,8 +78,8 @@ void PostProcessing::Shader::LoadOptions(const SettingsInterface& si, const char
     {
       ShaderOption::ValueVector value = option.default_value;
 
-      std::string config_value;
-      if (si.GetStringValue(section, option.name.c_str(), &config_value))
+      std::string_view config_value;
+      if (si.FindStringValue(section, option.name.c_str(), &config_value))
       {
         const u32 value_vector_size = (option.type == ShaderOption::Type::Int) ?
                                         ShaderOption::ParseIntVector(config_value, &value) :

@@ -20,20 +20,8 @@ public:
 
   virtual bool IsEmpty() = 0;
 
-  virtual bool GetIntValue(const char* section, const char* key, s32* value) const = 0;
-  virtual bool GetUIntValue(const char* section, const char* key, u32* value) const = 0;
-  virtual bool GetFloatValue(const char* section, const char* key, float* value) const = 0;
-  virtual bool GetDoubleValue(const char* section, const char* key, double* value) const = 0;
-  virtual bool GetBoolValue(const char* section, const char* key, bool* value) const = 0;
-  virtual bool GetStringValue(const char* section, const char* key, std::string* value) const = 0;
-  virtual bool GetStringValue(const char* section, const char* key, SmallStringBase* value) const = 0;
-
-  virtual void SetIntValue(const char* section, const char* key, s32 value) = 0;
-  virtual void SetUIntValue(const char* section, const char* key, u32 value) = 0;
-  virtual void SetFloatValue(const char* section, const char* key, float value) = 0;
-  virtual void SetDoubleValue(const char* section, const char* key, double value) = 0;
-  virtual void SetBoolValue(const char* section, const char* key, bool value) = 0;
-  virtual void SetStringValue(const char* section, const char* key, const char* value) = 0;
+  virtual bool LookupValue(const char* section, const char* key, std::string_view* value) const = 0;
+  virtual void StoreValue(const char* section, const char* key, std::string_view value) = 0;
 
   virtual std::vector<std::string> GetStringList(const char* section, const char* key) const = 0;
   virtual void SetStringList(const char* section, const char* key, const std::vector<std::string>& items) = 0;
@@ -49,14 +37,22 @@ public:
   virtual void RemoveSection(const char* section) = 0;
   virtual void RemoveEmptySections() = 0;
 
+  bool FindIntValue(const char* section, const char* key, s32* value) const;
+  bool FindUIntValue(const char* section, const char* key, u32* value) const;
+  bool FindFloatValue(const char* section, const char* key, float* value) const;
+  bool FindDoubleValue(const char* section, const char* key, double* value) const;
+  bool FindBoolValue(const char* section, const char* key, bool* value) const;
+  bool FindStringValue(const char* section, const char* key, std::string_view* value) const;
+
   s32 GetIntValue(const char* section, const char* key, s32 default_value = 0) const;
   u32 GetUIntValue(const char* section, const char* key, u32 default_value = 0) const;
   float GetFloatValue(const char* section, const char* key, float default_value = 0.0f) const;
   double GetDoubleValue(const char* section, const char* key, double default_value = 0.0) const;
   bool GetBoolValue(const char* section, const char* key, bool default_value = false) const;
-  std::string GetStringValue(const char* section, const char* key, const char* default_value = "") const;
-  SmallString GetSmallStringValue(const char* section, const char* key, const char* default_value = "") const;
-  TinyString GetTinyStringValue(const char* section, const char* key, const char* default_value = "") const;
+  std::string_view GetStringViewValue(const char* section, const char* key, std::string_view default_value = {}) const;
+  std::string GetStringValue(const char* section, const char* key, std::string_view default_value = {}) const;
+  SmallString GetSmallStringValue(const char* section, const char* key, std::string_view default_value = {}) const;
+  TinyString GetTinyStringValue(const char* section, const char* key, std::string_view default_value = {}) const;
 
   template<typename T>
     requires std::is_integral_v<T>
@@ -79,6 +75,13 @@ public:
                                                          std::optional<const char*> default_value = std::nullopt) const;
   std::optional<TinyString> GetOptionalTinyStringValue(const char* section, const char* key,
                                                        std::optional<const char*> default_value = std::nullopt) const;
+
+  void SetIntValue(const char* section, const char* key, s32 value);
+  void SetUIntValue(const char* section, const char* key, u32 value);
+  void SetFloatValue(const char* section, const char* key, float value);
+  void SetDoubleValue(const char* section, const char* key, double value);
+  void SetBoolValue(const char* section, const char* key, bool value);
+  void SetStringValue(const char* section, const char* key, std::string_view value);
 
   void SetOptionalIntValue(const char* section, const char* key, const std::optional<s32>& value);
   void SetOptionalUIntValue(const char* section, const char* key, const std::optional<u32>& value);

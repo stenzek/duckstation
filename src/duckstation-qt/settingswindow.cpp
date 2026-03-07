@@ -431,7 +431,7 @@ void SettingsWindow::wheelEvent(QWheelEvent* event)
 bool SettingsWindow::getEffectiveBoolValue(const char* section, const char* key, bool default_value) const
 {
   bool value;
-  if (m_sif && m_sif->GetBoolValue(section, key, &value))
+  if (m_sif && m_sif->FindBoolValue(section, key, &value))
     return value;
   else
     return Core::GetBaseBoolSettingValue(section, key, default_value);
@@ -440,7 +440,7 @@ bool SettingsWindow::getEffectiveBoolValue(const char* section, const char* key,
 int SettingsWindow::getEffectiveIntValue(const char* section, const char* key, int default_value) const
 {
   int value;
-  if (m_sif && m_sif->GetIntValue(section, key, &value))
+  if (m_sif && m_sif->FindIntValue(section, key, &value))
     return value;
   else
     return Core::GetBaseIntSettingValue(section, key, default_value);
@@ -449,19 +449,20 @@ int SettingsWindow::getEffectiveIntValue(const char* section, const char* key, i
 float SettingsWindow::getEffectiveFloatValue(const char* section, const char* key, float default_value) const
 {
   float value;
-  if (m_sif && m_sif->GetFloatValue(section, key, &value))
+  if (m_sif && m_sif->FindFloatValue(section, key, &value))
     return value;
   else
     return Core::GetBaseFloatSettingValue(section, key, default_value);
 }
 
 std::string SettingsWindow::getEffectiveStringValue(const char* section, const char* key,
-                                                    const char* default_value) const
+                                                    std::string_view default_value) const
 {
-  std::string value;
-  if (!m_sif || !m_sif->GetStringValue(section, key, &value))
-    value = Core::GetBaseStringSettingValue(section, key, default_value);
-  return value;
+  std::string_view value;
+  if (!m_sif || !m_sif->FindStringValue(section, key, &value))
+    return Core::GetBaseStringSettingValue(section, key, default_value);
+
+  return std::string(value);
 }
 
 Qt::CheckState SettingsWindow::getCheckState(const char* section, const char* key, bool default_value)
@@ -469,7 +470,7 @@ Qt::CheckState SettingsWindow::getCheckState(const char* section, const char* ke
   bool value;
   if (m_sif)
   {
-    if (!m_sif->GetBoolValue(section, key, &value))
+    if (!m_sif->FindBoolValue(section, key, &value))
       return Qt::PartiallyChecked;
   }
   else
@@ -487,7 +488,7 @@ std::optional<bool> SettingsWindow::getBoolValue(const char* section, const char
   if (m_sif)
   {
     bool bvalue;
-    if (m_sif->GetBoolValue(section, key, &bvalue))
+    if (m_sif->FindBoolValue(section, key, &bvalue))
       value = bvalue;
     else
       value = default_value;
@@ -507,7 +508,7 @@ std::optional<int> SettingsWindow::getIntValue(const char* section, const char* 
   if (m_sif)
   {
     int ivalue;
-    if (m_sif->GetIntValue(section, key, &ivalue))
+    if (m_sif->FindIntValue(section, key, &ivalue))
       value = ivalue;
     else
       value = default_value;
@@ -527,7 +528,7 @@ std::optional<float> SettingsWindow::getFloatValue(const char* section, const ch
   if (m_sif)
   {
     float fvalue;
-    if (m_sif->GetFloatValue(section, key, &fvalue))
+    if (m_sif->FindFloatValue(section, key, &fvalue))
       value = fvalue;
     else
       value = default_value;
@@ -546,9 +547,9 @@ std::optional<std::string> SettingsWindow::getStringValue(const char* section, c
   std::optional<std::string> value;
   if (m_sif)
   {
-    std::string svalue;
-    if (m_sif->GetStringValue(section, key, &svalue))
-      value = std::move(svalue);
+    std::string_view svalue;
+    if (m_sif->FindStringValue(section, key, &svalue))
+      value = svalue;
     else if (default_value.has_value())
       value = default_value.value();
   }
