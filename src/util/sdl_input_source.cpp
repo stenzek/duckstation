@@ -52,6 +52,14 @@ static constexpr const std::array<AxisInfo, SDL_GAMEPAD_AXIS_COUNT> s_axis_info 
   {TRANSLATE_NOOP("SDLInputSource", "LeftTrigger"), nullptr, ICON_PF_LEFT_TRIGGER_LT, GenericInputBinding::Unknown, GenericInputBinding::L2}, // SDL_GAMEPAD_AXIS_LEFT_TRIGGER
   {TRANSLATE_NOOP("SDLInputSource", "RightTrigger"), nullptr, ICON_PF_RIGHT_TRIGGER_RT, GenericInputBinding::Unknown, GenericInputBinding::R2}, // SDL_GAMEPAD_AXIS_RIGHT_TRIGGER
 }};
+static constexpr const std::array<AxisInfo, SDL_GAMEPAD_AXIS_COUNT> s_ps_axis_info = {{
+  {TRANSLATE_NOOP("SDLInputSource", "LeftX"), ICON_PF_LEFT_ANALOG_LEFT, ICON_PF_LEFT_ANALOG_RIGHT, GenericInputBinding::LeftStickLeft, GenericInputBinding::LeftStickRight}, // SDL_GAMEPAD_AXIS_LEFTX
+  {TRANSLATE_NOOP("SDLInputSource", "LeftY"), ICON_PF_LEFT_ANALOG_UP, ICON_PF_LEFT_ANALOG_DOWN, GenericInputBinding::LeftStickUp, GenericInputBinding::LeftStickDown}, // SDL_GAMEPAD_AXIS_LEFTY
+  {TRANSLATE_NOOP("SDLInputSource", "RightX"), ICON_PF_RIGHT_ANALOG_LEFT, ICON_PF_RIGHT_ANALOG_RIGHT, GenericInputBinding::RightStickLeft, GenericInputBinding::RightStickRight}, // SDL_GAMEPAD_AXIS_RIGHTX
+  {TRANSLATE_NOOP("SDLInputSource", "RightY"), ICON_PF_RIGHT_ANALOG_UP, ICON_PF_RIGHT_ANALOG_DOWN, GenericInputBinding::RightStickUp, GenericInputBinding::RightStickDown}, // SDL_GAMEPAD_AXIS_RIGHTY
+  {TRANSLATE_NOOP("SDLInputSource", "L2"), nullptr, ICON_PF_LEFT_TRIGGER_L2, GenericInputBinding::Unknown, GenericInputBinding::L2}, // SDL_GAMEPAD_AXIS_LEFT_TRIGGER
+  {TRANSLATE_NOOP("SDLInputSource", "R2"), nullptr, ICON_PF_RIGHT_TRIGGER_R2, GenericInputBinding::Unknown, GenericInputBinding::R2}, // SDL_GAMEPAD_AXIS_RIGHT_TRIGGER
+}};
 // clang-format on
 
 struct ButtonInfo
@@ -90,6 +98,35 @@ static constexpr const std::array<ButtonInfo, SDL_GAMEPAD_BUTTON_COUNT> s_button
   {TRANSLATE_NOOP("SDLInputSource", "Misc5"), nullptr, GenericInputBinding::Unknown}, // SDL_GAMEPAD_BUTTON_MISC5
   {TRANSLATE_NOOP("SDLInputSource", "Misc6"), nullptr, GenericInputBinding::Unknown}, // SDL_GAMEPAD_BUTTON_MISC6
 }};
+
+static constexpr const std::array<ButtonInfo, SDL_GAMEPAD_BUTTON_COUNT> s_ps_button_info = {{
+  {TRANSLATE_NOOP("SDLInputSource", "Cross"), ICON_PF_BUTTON_CROSS, GenericInputBinding::Cross}, // SDL_GAMEPAD_BUTTON_SOUTH
+  {TRANSLATE_NOOP("SDLInputSource", "Circle"), ICON_PF_BUTTON_CIRCLE, GenericInputBinding::Circle}, // SDL_GAMEPAD_BUTTON_EAST
+  {TRANSLATE_NOOP("SDLInputSource", "Square"), ICON_PF_BUTTON_SQUARE, GenericInputBinding::Square}, // SDL_GAMEPAD_BUTTON_WEST
+  {TRANSLATE_NOOP("SDLInputSource", "Triangle"), ICON_PF_BUTTON_TRIANGLE, GenericInputBinding::Triangle}, // SDL_GAMEPAD_BUTTON_NORTH
+  {TRANSLATE_NOOP("SDLInputSource", "Create"), ICON_PF_DUALSHOCK_SHARE, GenericInputBinding::Select}, // SDL_GAMEPAD_BUTTON_BACK
+  {TRANSLATE_NOOP("SDLInputSource", "PS"), ICON_PF_PLAYSTATION, GenericInputBinding::System}, // SDL_GAMEPAD_BUTTON_GUIDE
+  {TRANSLATE_NOOP("SDLInputSource", "Options"), ICON_PF_DUALSHOCK_OPTIONS, GenericInputBinding::Start}, // SDL_GAMEPAD_BUTTON_START
+  {TRANSLATE_NOOP("SDLInputSource", "L3"), ICON_PF_LEFT_ANALOG_CLICK, GenericInputBinding::L3}, // SDL_GAMEPAD_BUTTON_LEFT_STICK
+  {TRANSLATE_NOOP("SDLInputSource", "R3"), ICON_PF_RIGHT_ANALOG_CLICK, GenericInputBinding::R3}, // SDL_GAMEPAD_BUTTON_RIGHT_STICK
+  {TRANSLATE_NOOP("SDLInputSource", "L1"), ICON_PF_LEFT_SHOULDER_L1, GenericInputBinding::L1}, // SDL_GAMEPAD_BUTTON_LEFT_SHOULDER
+  {TRANSLATE_NOOP("SDLInputSource", "R1"), ICON_PF_RIGHT_SHOULDER_R1, GenericInputBinding::R1}, // SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER
+  {TRANSLATE_NOOP("SDLInputSource", "DPadUp"), ICON_PF_DPAD_UP, GenericInputBinding::DPadUp}, // SDL_GAMEPAD_BUTTON_DPAD_UP
+  {TRANSLATE_NOOP("SDLInputSource", "DPadDown"), ICON_PF_DPAD_DOWN, GenericInputBinding::DPadDown}, // SDL_GAMEPAD_BUTTON_DPAD_DOWN
+  {TRANSLATE_NOOP("SDLInputSource", "DPadLeft"), ICON_PF_DPAD_LEFT, GenericInputBinding::DPadLeft}, // SDL_GAMEPAD_BUTTON_DPAD_LEFT
+  {TRANSLATE_NOOP("SDLInputSource", "DPadRight"), ICON_PF_DPAD_RIGHT, GenericInputBinding::DPadRight}, // SDL_GAMEPAD_BUTTON_DPAD_RIGHT
+  {TRANSLATE_NOOP("SDLInputSource", "Misc1"), nullptr, GenericInputBinding::Unknown}, // SDL_GAMEPAD_BUTTON_MISC1
+  {TRANSLATE_NOOP("SDLInputSource", "RightPaddle1"), nullptr, GenericInputBinding::Unknown}, // SDL_GAMEPAD_BUTTON_RIGHT_PADDLE1
+  {TRANSLATE_NOOP("SDLInputSource", "LeftPaddle1"), nullptr, GenericInputBinding::Unknown}, // SDL_GAMEPAD_BUTTON_LEFT_PADDLE1
+  {TRANSLATE_NOOP("SDLInputSource", "RightPaddle2"), nullptr, GenericInputBinding::Unknown}, // SDL_GAMEPAD_BUTTON_RIGHT_PADDLE2
+  {TRANSLATE_NOOP("SDLInputSource", "LeftPaddle2"), nullptr, GenericInputBinding::Unknown}, // SDL_GAMEPAD_BUTTON_LEFT_PADDLE2
+  {TRANSLATE_NOOP("SDLInputSource", "Touchpad"), ICON_PF_DUALSHOCK_TOUCHPAD, GenericInputBinding::Unknown}, // SDL_GAMEPAD_BUTTON_TOUCHPAD
+  {TRANSLATE_NOOP("SDLInputSource", "Misc2"), nullptr, GenericInputBinding::Unknown}, // SDL_GAMEPAD_BUTTON_MISC2
+  {TRANSLATE_NOOP("SDLInputSource", "Misc3"), nullptr, GenericInputBinding::Unknown}, // SDL_GAMEPAD_BUTTON_MISC3
+  {TRANSLATE_NOOP("SDLInputSource", "Misc4"), nullptr, GenericInputBinding::Unknown}, // SDL_GAMEPAD_BUTTON_MISC4
+  {TRANSLATE_NOOP("SDLInputSource", "Misc5"), nullptr, GenericInputBinding::Unknown}, // SDL_GAMEPAD_BUTTON_MISC5
+  {TRANSLATE_NOOP("SDLInputSource", "Misc6"), nullptr, GenericInputBinding::Unknown}, // SDL_GAMEPAD_BUTTON_MISC6
+}};
 // clang-format on
 
 } // namespace
@@ -114,6 +151,22 @@ static constexpr std::array<const char*, 2> s_sdl_sensor_names = {{
   TRANSLATE_NOOP("SDLInputSource", "Turn"), // Tilt left/right (roll)
   TRANSLATE_NOOP("SDLInputSource", "Tilt"), // Tilt forward/back (pitch)
 }};
+
+static constexpr const std::array s_sdl_gamepad_type_names = {
+  "SDL_GAMEPAD_TYPE_UNKNOWN",
+  "SDL_GAMEPAD_TYPE_STANDARD",
+  "SDL_GAMEPAD_TYPE_XBOX360",
+  "SDL_GAMEPAD_TYPE_XBOXONE",
+  "SDL_GAMEPAD_TYPE_PS3",
+  "SDL_GAMEPAD_TYPE_PS4",
+  "SDL_GAMEPAD_TYPE_PS5",
+  "SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_PRO",
+  "SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_LEFT",
+  "SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_RIGHT",
+  "SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_PAIR",
+  "SDL_GAMEPAD_TYPE_GAMECUBE",
+};
+static_assert(s_sdl_gamepad_type_names.size() == SDL_GAMEPAD_TYPE_COUNT);
 
 #ifdef _WIN32
 static constexpr bool SDL_DEFAULT_XBOX_HIDAPI = false;
@@ -158,16 +211,63 @@ static constexpr const SettingInfo s_sdl_advanced_settings_info[] = {
 #endif
 };
 
-static const AxisInfo& GetAxisInfo(u8 type, u32 axis)
+static bool IsPSControllerType(u8 type)
 {
-  DebugAssert(axis < SDL_GAMEPAD_AXIS_COUNT);
-  return s_axis_info[axis];
+  return (type >= SDL_GAMEPAD_TYPE_PS3 && type <= SDL_GAMEPAD_TYPE_PS5);
 }
 
-static const ButtonInfo& GetButtonInfo(u8 type, u32 button)
+static const AxisInfo& GetAxisInfo(u8 type, u32 axis)
 {
-  DebugAssert(button < SDL_GAMEPAD_BUTTON_COUNT);
-  return s_button_info[button];
+  DebugAssert(type < SDL_GAMEPAD_TYPE_COUNT && axis < SDL_GAMEPAD_AXIS_COUNT);
+  return IsPSControllerType(type) ? s_ps_axis_info[axis] : s_axis_info[axis];
+}
+
+static std::string_view GetButtonLabel(u8 type, u32 button)
+{
+  const SDL_GamepadButtonLabel label =
+    SDL_GetGamepadButtonLabelForType(static_cast<SDL_GamepadType>(type), static_cast<SDL_GamepadButton>(button));
+
+  static constexpr const std::array lut = {
+    static_cast<const char*>(nullptr),            // SDL_GAMEPAD_BUTTON_LABEL_UNKNOWN
+    TRANSLATE_NOOP("SDLInputSource", "A"),        // SDL_GAMEPAD_BUTTON_LABEL_A
+    TRANSLATE_NOOP("SDLInputSource", "B"),        // SDL_GAMEPAD_BUTTON_LABEL_B
+    TRANSLATE_NOOP("SDLInputSource", "X"),        // SDL_GAMEPAD_BUTTON_LABEL_X
+    TRANSLATE_NOOP("SDLInputSource", "Y"),        // SDL_GAMEPAD_BUTTON_LABEL_Y
+    TRANSLATE_NOOP("SDLInputSource", "Cross"),    // SDL_GAMEPAD_BUTTON_LABEL_CROSS
+    TRANSLATE_NOOP("SDLInputSource", "Circle"),   // SDL_GAMEPAD_BUTTON_LABEL_CIRCLE
+    TRANSLATE_NOOP("SDLInputSource", "Square"),   // SDL_GAMEPAD_BUTTON_LABEL_SQUARE
+    TRANSLATE_NOOP("SDLInputSource", "Triangle"), // SDL_GAMEPAD_BUTTON_LABEL_TRIANGLE
+  };
+
+  const char* str = (static_cast<u32>(label) < lut.size()) ? lut[static_cast<u32>(label)] : nullptr;
+  if (!str)
+    str = IsPSControllerType(type) ? s_ps_button_info[button].name : s_button_info[button].name;
+
+  return Host::TranslateToStringView("SDLInputSource", str);
+}
+
+static const char* GetButtonIcon(u8 type, u32 button)
+{
+  const SDL_GamepadButtonLabel label =
+    SDL_GetGamepadButtonLabelForType(static_cast<SDL_GamepadType>(type), static_cast<SDL_GamepadButton>(button));
+
+  static constexpr const std::array lut = {
+    static_cast<const char*>(nullptr), // SDL_GAMEPAD_BUTTON_LABEL_UNKNOWN
+    ICON_PF_BUTTON_A,                  // SDL_GAMEPAD_BUTTON_LABEL_A
+    ICON_PF_BUTTON_B,                  // SDL_GAMEPAD_BUTTON_LABEL_B
+    ICON_PF_BUTTON_X,                  // SDL_GAMEPAD_BUTTON_LABEL_X
+    ICON_PF_BUTTON_Y,                  // SDL_GAMEPAD_BUTTON_LABEL_Y
+    ICON_PF_BUTTON_CROSS,              // SDL_GAMEPAD_BUTTON_LABEL_CROSS
+    ICON_PF_BUTTON_CIRCLE,             // SDL_GAMEPAD_BUTTON_LABEL_CIRCLE
+    ICON_PF_BUTTON_SQUARE,             // SDL_GAMEPAD_BUTTON_LABEL_SQUARE
+    ICON_PF_BUTTON_TRIANGLE,           // SDL_GAMEPAD_BUTTON_LABEL_TRIANGLE
+  };
+
+  const char* str = (static_cast<u32>(label) < lut.size()) ? lut[static_cast<u32>(label)] : nullptr;
+  if (!str)
+    str = IsPSControllerType(type) ? s_ps_button_info[button].icon : s_button_info[button].icon;
+
+  return str;
 }
 
 static void SDLLogCallback(void* userdata, int category, SDL_LogPriority priority, const char* message)
@@ -795,17 +895,17 @@ TinyString SDLInputSource::ConvertKeyToDisplayString(InputBindingKey key, bool a
       if (key.data < static_cast<u32>(s_button_info.size()))
       {
         const auto it = GetControllerDataForPlayerId(key.source_index);
-        const ButtonInfo& bi =
-          GetButtonInfo((it != m_controllers.end()) ? it->gamepad_type : SDL_GAMEPAD_TYPE_UNKNOWN, key.data);
-        if (bi.icon && allow_icon)
+        const char* icon =
+          GetButtonIcon((it != m_controllers.end()) ? it->gamepad_type : SDL_GAMEPAD_TYPE_UNKNOWN, key.data);
+        if (icon && allow_icon)
         {
-          ret.format(TRANSLATE_FS("SDLInputSource", "SDL-{0}  {1}"), static_cast<u32>(key.source_index),
-                     mapper(bi.icon));
+          ret.format(TRANSLATE_FS("SDLInputSource", "SDL-{0}  {1}"), static_cast<u32>(key.source_index), mapper(icon));
         }
         else
         {
-          ret.format(TRANSLATE_FS("SDLInputSource", "SDL-{0}/{1}"), static_cast<u32>(key.source_index),
-                     Host::TranslateToStringView("SDLInputSource", bi.name));
+          ret.format(
+            TRANSLATE_FS("SDLInputSource", "SDL-{0}/{1}"), static_cast<u32>(key.source_index),
+            GetButtonLabel((it != m_controllers.end()) ? it->gamepad_type : SDL_GAMEPAD_TYPE_UNKNOWN, key.data));
         }
       }
     }
@@ -1082,7 +1182,8 @@ bool SDLInputSource::OpenDevice(int index, bool is_gamecontroller)
   const u32 num_buttons = static_cast<u32>(std::max(SDL_GetNumJoystickButtons(joystick), 0));
   const u32 num_hats = static_cast<u32>(std::max(SDL_GetNumJoystickHats(joystick), 0));
 
-  VERBOSE_LOG("Controller {} has {} axes, {} buttons and {} hats", player_id, num_axes, num_buttons, num_hats);
+  VERBOSE_LOG("Controller {} is a {} with {} axes, {} buttons and {} hats", player_id,
+              s_sdl_gamepad_type_names[cd.gamepad_type], num_axes, num_buttons, num_hats);
 
   cd.last_hat_state.resize(static_cast<size_t>(num_hats), u8(0));
 
