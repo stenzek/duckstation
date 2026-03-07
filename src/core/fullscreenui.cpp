@@ -424,6 +424,12 @@ bool FullscreenUI::SetPendingMainWindowSwitch()
 
 void FullscreenUI::SwitchToMainWindow(MainWindowType type)
 {
+  if (!AreAnyDialogsOpen())
+  {
+    ImGui::SetWindowFocus(nullptr);
+    QueueResetFocus(FocusResetType::ViewChanged);
+  }
+
   if (s_locals.current_main_window == type)
     return;
 
@@ -442,11 +448,6 @@ void FullscreenUI::SwitchToMainWindow(MainWindowType type)
 
   s_locals.current_main_window = type;
   s_locals.has_pending_window_switch = false;
-  if (!AreAnyDialogsOpen())
-  {
-    ImGui::SetWindowFocus(nullptr);
-    QueueResetFocus(FocusResetType::ViewChanged);
-  }
 
   UpdateRunIdleState();
   FixStateIfPaused();
