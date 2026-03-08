@@ -234,7 +234,7 @@ private:
                                                 Error* error);
   void displayResizeRequested(qint32 width, qint32 height);
   void releaseRenderWindow();
-  void onMouseModeRequested(bool relative_mode, bool hide_cursor);
+  void onMouseModeRequested(bool relative_mode, bool hide_cursor, bool ignore_double_click);
 
   void onSettingsResetToDefault(bool system, bool controller);
   void onSystemStarting();
@@ -359,6 +359,7 @@ private:
 
   bool m_relative_mouse_mode = false;
   bool m_hide_mouse_cursor = false;
+  bool m_ignore_double_click = false;
 
   bool m_exclusive_fullscreen_requested = false;
   bool m_was_paused_on_game_list_switch = false;

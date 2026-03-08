@@ -3214,7 +3214,9 @@ void Host::OnMediaCaptureStopped()
 
 void Host::SetMouseMode(bool relative, bool hide_cursor)
 {
-  emit g_core_thread->mouseModeRequested(relative, hide_cursor);
+  // Disable double-click handling when mouse is bound.
+  const bool ignore_double_click = InputManager::HasAnyBindingsForKey(InputManager::MakePointerButtonKey(0, 0));
+  emit g_core_thread->mouseModeRequested(relative, hide_cursor, ignore_double_click);
 }
 
 void Host::PumpMessagesOnCoreThread()

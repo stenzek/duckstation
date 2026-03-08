@@ -493,6 +493,7 @@ void MainWindow::updateDisplayWidgetCursor()
 
   m_display_widget->updateRelativeMode(s_locals.system_valid && !s_locals.system_paused && m_relative_mouse_mode);
   m_display_widget->updateCursor(s_locals.system_valid && !s_locals.system_paused && shouldHideMouseCursor());
+  m_display_widget->setIgnoreDoubleClick(m_ignore_double_click);
 }
 
 void MainWindow::updateDisplayRelatedActions()
@@ -567,10 +568,11 @@ QWidget* MainWindow::getDisplayContainer() const
   return (m_display_container ? static_cast<QWidget*>(m_display_container) : static_cast<QWidget*>(m_display_widget));
 }
 
-void MainWindow::onMouseModeRequested(bool relative_mode, bool hide_cursor)
+void MainWindow::onMouseModeRequested(bool relative_mode, bool hide_cursor, bool ignore_double_click)
 {
   m_relative_mouse_mode = relative_mode;
   m_hide_mouse_cursor = hide_cursor;
+  m_ignore_double_click = ignore_double_click;
   updateDisplayWidgetCursor();
 }
 

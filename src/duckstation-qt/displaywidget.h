@@ -36,6 +36,7 @@ public:
 
   void updateRelativeMode(bool enabled);
   void updateCursor(bool hidden);
+  void setIgnoreDoubleClick(bool enabled);
 
   void checkForSizeChange(bool update_refresh_rate);
   void handleCloseEvent(QCloseEvent* event);
@@ -69,6 +70,7 @@ private:
 #endif
   bool m_cursor_hidden = false;
   bool m_destroying = false;
+  bool m_ignore_double_click = false;
   bool m_screen_change_registered = false;
 
   RenderAPI m_render_api = RenderAPI::None;

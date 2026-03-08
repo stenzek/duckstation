@@ -85,6 +85,11 @@ void DisplayWidget::clearWindowInfo()
   m_window_info.reset();
 }
 
+void DisplayWidget::setIgnoreDoubleClick(bool enabled)
+{
+  m_ignore_double_click = enabled;
+}
+
 void DisplayWidget::checkForSizeChange(bool update_refresh_rate)
 {
   if (!m_window_info.has_value())
@@ -368,8 +373,7 @@ bool DisplayWidget::event(QEvent* event)
 
       // don't toggle fullscreen when we're bound.. that wouldn't end well.
       if (static_cast<const QMouseEvent*>(event)->button() == Qt::LeftButton && QtHost::IsSystemValid() &&
-          ((!QtHost::IsSystemPaused() && !m_relative_mouse_enabled &&
-            !InputManager::HasAnyBindingsForKey(InputManager::MakePointerButtonKey(0, 0))) ||
+          ((!QtHost::IsSystemPaused() && !m_relative_mouse_enabled && !m_ignore_double_click) ||
            (QtHost::IsSystemPaused() && !ImGuiManager::WantsMouseInput())) &&
           Core::GetBoolSettingValue("Main", "DoubleClickTogglesFullscreen", true))
       {

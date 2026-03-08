@@ -1123,7 +1123,7 @@ void InputManager::SynchronizePadEffectBindings(InputBindingKey key)
 
 bool InputManager::HasAnyBindingsForKey(InputBindingKey key)
 {
-  // DebugAssert(Host::IsOnCoreThread());
+  DebugAssert(Host::IsOnCoreThread());
 
   std::unique_lock lock(s_state.mutex);
   return (s_state.binding_map.find(key.MaskDirection()) != s_state.binding_map.end());

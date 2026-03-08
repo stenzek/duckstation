@@ -119,7 +119,7 @@ Q_SIGNALS:
   void onResizeRenderWindowRequested(qint32 width, qint32 height);
   void onReleaseRenderWindowRequested();
   void inputProfileLoaded();
-  void mouseModeRequested(bool relative, bool hide_cursor);
+  void mouseModeRequested(bool relative, bool hide_cursor, bool ignore_double_click);
   void fullscreenUIStartedOrStopped(bool running);
   void achievementsLoginRequested(Achievements::LoginRequestReason reason);
   void achievementsLoginSuccess(const QString& username, quint32 points, quint32 sc_points, quint32 unread_messages);
