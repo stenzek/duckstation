@@ -18,6 +18,9 @@
 
 LOG_CHANNEL(XInputSource);
 
+static constexpr u32 MOTOR_INDEX_LARGE = 0;
+static constexpr u32 MOTOR_INDEX_SMALL = 1;
+
 static constexpr std::array<const char*, XInputSource::NUM_AXES> s_axis_names = {{
   TRANSLATE_NOOP("XInputSource", "LeftX"),        // AXIS_LEFTX
   TRANSLATE_NOOP("XInputSource", "LeftY"),        // AXIS_LEFTY
@@ -312,12 +315,12 @@ std::optional<InputBindingKey> XInputSource::ParseKeyString(std::string_view dev
     key.source_subtype = InputSubclass::ControllerMotor;
     if (binding == "LargeMotor")
     {
-      key.data = 0;
+      key.data = MOTOR_INDEX_LARGE;
       return key;
     }
     else if (binding == "SmallMotor")
     {
-      key.data = 1;
+      key.data = MOTOR_INDEX_SMALL;
       return key;
     }
     else
@@ -376,7 +379,8 @@ TinyString XInputSource::ConvertKeyToString(InputBindingKey key)
     }
     else if (key.source_subtype == InputSubclass::ControllerMotor)
     {
-      ret.format("XInput-{}/{}Motor", static_cast<u32>(key.source_index), (key.data == 0) ? "Large" : "Small");
+      ret.format("XInput-{}/{}Motor", static_cast<u32>(key.source_index),
+                 (key.data == MOTOR_INDEX_SMALL) ? "Small" : "Large");
     }
   }
 
@@ -406,6 +410,11 @@ TinyString XInputSource::ConvertKeyToDisplayString(InputBindingKey key, bool all
           ret.format(TRANSLATE_FS("XInputSource", "XInput-{0}  {1}"), static_cast<u32>(key.source_index),
                      mapper(s_button_icons[key.data]));
       }
+      else if (key.source_subtype == InputSubclass::ControllerMotor)
+      {
+        ret.format(TRANSLATE_FS("XInputSource", "XInput-{0}/{1}"), static_cast<u32>(key.source_index),
+                   (key.data == MOTOR_INDEX_SMALL) ? ICON_PF_VIBRATION : ICON_PF_VIBRATION_L);
+      }
     }
     else
     {
@@ -423,8 +432,8 @@ TinyString XInputSource::ConvertKeyToDisplayString(InputBindingKey key, bool all
       else if (key.source_subtype == InputSubclass::ControllerMotor)
       {
         ret.format(TRANSLATE_FS("XInputSource", "XInput-{0}/{1}"), static_cast<u32>(key.source_index),
-                   (key.data == 0) ? TRANSLATE_SV("XInputSource", "LargeMotor") :
-                                     TRANSLATE_SV("XInputSource", "SmallMotor"));
+                   (key.data == MOTOR_INDEX_SMALL) ? TRANSLATE_SV("XInputSource", "SmallMotor") :
+                                                     TRANSLATE_SV("XInputSource", "LargeMotor"));
       }
     }
   }
@@ -463,10 +472,16 @@ InputManager::DeviceEffectList XInputSource::EnumerateEffects(std::optional<Inpu
       continue;
 
     if (cd.has_large_motor)
-      ret.emplace_back(InputBindingInfo::Type::Motor, MakeGenericControllerMotorKey(InputSourceType::XInput, i, 0));
+    {
+      ret.emplace_back(InputBindingInfo::Type::Motor,
+                       MakeGenericControllerMotorKey(InputSourceType::XInput, i, MOTOR_INDEX_LARGE));
+    }
 
     if (cd.has_small_motor)
-      ret.emplace_back(InputBindingInfo::Type::Motor, MakeGenericControllerMotorKey(InputSourceType::XInput, i, 1));
+    {
+      ret.emplace_back(InputBindingInfo::Type::Motor,
+                       MakeGenericControllerMotorKey(InputSourceType::XInput, i, MOTOR_INDEX_SMALL));
+    }
   }
 
   return ret;
