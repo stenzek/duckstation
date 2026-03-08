@@ -31,6 +31,8 @@
 LOG_CHANNEL(SDL);
 
 static constexpr const char* CONTROLLER_DB_FILENAME = "gamecontrollerdb.txt";
+static constexpr u32 MOTOR_INDEX_LARGE = 0;
+static constexpr u32 MOTOR_INDEX_SMALL = 1;
 
 namespace {
 
@@ -664,12 +666,12 @@ std::optional<InputBindingKey> SDLInputSource::ParseKeyString(std::string_view d
     key.source_subtype = InputSubclass::ControllerMotor;
     if (binding == "LargeMotor")
     {
-      key.data = 0;
+      key.data = MOTOR_INDEX_LARGE;
       return key;
     }
     else if (binding == "SmallMotor")
     {
-      key.data = 1;
+      key.data = MOTOR_INDEX_SMALL;
       return key;
     }
     else
@@ -839,7 +841,8 @@ TinyString SDLInputSource::ConvertKeyToString(InputBindingKey key)
     }
     else if (key.source_subtype == InputSubclass::ControllerMotor)
     {
-      ret.format("SDL-{}/{}Motor", static_cast<u32>(key.source_index), key.data ? "Large" : "Small");
+      ret.format("SDL-{}/{}Motor", static_cast<u32>(key.source_index),
+                 (key.data == MOTOR_INDEX_SMALL) ? "Small" : "Large");
     }
     else if (key.source_subtype == InputSubclass::ControllerHaptic)
     {
@@ -918,10 +921,17 @@ TinyString SDLInputSource::ConvertKeyToDisplayString(InputBindingKey key, bool a
     }
     else if (key.source_subtype == InputSubclass::ControllerMotor)
     {
-      ret.format(TRANSLATE_FS("SDLInputSource", "SDL-{0}/{1}"), static_cast<u32>(key.source_index),
-                 allow_icon ? (key.data ? ICON_PF_VIBRATION_L : ICON_PF_VIBRATION) :
-                              (key.data ? TRANSLATE_SV("SDLInputSource", "LargeMotor") :
-                                          TRANSLATE_SV("SDLInputSource", "SmallMotor")));
+      if (allow_icon)
+      {
+        ret.format(TRANSLATE_FS("SDLInputSource", "SDL-{0}/{1}"), static_cast<u32>(key.source_index),
+                   (key.data == MOTOR_INDEX_SMALL) ? ICON_PF_VIBRATION : ICON_PF_VIBRATION_L);
+      }
+      else
+      {
+        ret.format(TRANSLATE_FS("SDLInputSource", "SDL-{0}/{1}"), static_cast<u32>(key.source_index),
+                   (key.data == MOTOR_INDEX_SMALL) ? TRANSLATE_SV("SDLInputSource", "SmallMotor") :
+                                                     TRANSLATE_SV("SDLInputSource", "LargeMotor"));
+      }
     }
     else if (key.source_subtype == InputSubclass::ControllerHaptic)
     {
@@ -1602,9 +1612,9 @@ InputManager::DeviceEffectList SDLInputSource::EnumerateEffects(std::optional<In
       {
         // two motors
         key.source_subtype = InputSubclass::ControllerMotor;
-        key.data = 0;
+        key.data = MOTOR_INDEX_LARGE;
         ret.emplace_back(InputBindingInfo::Type::Motor, key);
-        key.data = 1;
+        key.data = MOTOR_INDEX_SMALL;
         ret.emplace_back(InputBindingInfo::Type::Motor, key);
       }
       else if (cd.haptic)
