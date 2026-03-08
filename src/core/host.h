@@ -64,6 +64,9 @@ const char* GetLanguageName(std::string_view language_code);
 /// Refreshes the UI when the language is changed.
 bool ChangeLanguage(const char* new_language);
 
+/// Returns true if the currently executing thread is the core thread.
+bool IsOnCoreThread();
+
 /// Safely executes a function on the VM thread.
 void RunOnCoreThread(std::function<void()> function, bool block = false);
 

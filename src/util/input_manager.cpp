@@ -1123,12 +1123,16 @@ void InputManager::SynchronizePadEffectBindings(InputBindingKey key)
 
 bool InputManager::HasAnyBindingsForKey(InputBindingKey key)
 {
+  // DebugAssert(Host::IsOnCoreThread());
+
   std::unique_lock lock(s_state.mutex);
   return (s_state.binding_map.find(key.MaskDirection()) != s_state.binding_map.end());
 }
 
 bool InputManager::HasAnyBindingsForSource(InputBindingKey key)
 {
+  DebugAssert(Host::IsOnCoreThread());
+
   std::unique_lock lock(s_state.mutex);
   for (const auto& it : s_state.binding_map)
   {
@@ -1142,6 +1146,8 @@ bool InputManager::HasAnyBindingsForSource(InputBindingKey key)
 
 bool InputManager::HasAnyBindingsForSubclass(InputBindingKey key)
 {
+  DebugAssert(Host::IsOnCoreThread());
+
   std::unique_lock lock(s_state.mutex);
   for (const auto& it : s_state.binding_map)
   {
@@ -2182,6 +2188,8 @@ void InputManager::UpdateMacroButtons()
 
 void InputManager::SetHook(InputInterceptHook::Callback callback)
 {
+  DebugAssert(Host::IsOnCoreThread());
+
   std::unique_lock lock(s_state.mutex);
   DebugAssert(!s_state.event_intercept_callback);
   s_state.event_intercept_callback = std::move(callback);
@@ -2192,6 +2200,8 @@ void InputManager::SetHook(InputInterceptHook::Callback callback)
 
 void InputManager::RemoveHook()
 {
+  DebugAssert(Host::IsOnCoreThread());
+
   std::unique_lock lock(s_state.mutex);
   if (s_state.event_intercept_callback)
     s_state.event_intercept_callback = {};
@@ -2202,6 +2212,8 @@ void InputManager::RemoveHook()
 
 bool InputManager::HasHook()
 {
+  DebugAssert(Host::IsOnCoreThread());
+
   std::unique_lock lock(s_state.mutex);
   return (bool)s_state.event_intercept_callback;
 }
@@ -2269,6 +2281,8 @@ void InputManager::InternalReloadBindings(const SettingsInterface& binding_si,
 
 void InputManager::ReloadBindings(const SettingsInterface& binding_si, const SettingsInterface& hotkey_binding_si)
 {
+  DebugAssert(Host::IsOnCoreThread());
+
   std::unique_lock lock(s_state.mutex);
   InternalPauseVibration();
   InternalClearEffects();
@@ -2283,6 +2297,7 @@ void InputManager::ReloadBindings(const SettingsInterface& binding_si, const Set
 
 void InputManager::ClearEffects()
 {
+  DebugAssert(Host::IsOnCoreThread());
   std::unique_lock lock(s_state.mutex);
   InternalPauseVibration();
   InternalClearEffects();
@@ -2290,12 +2305,15 @@ void InputManager::ClearEffects()
 
 void InputManager::PauseVibration()
 {
+  DebugAssert(Host::IsOnCoreThread());
   std::unique_lock lock(s_state.mutex);
   InternalPauseVibration();
 }
 
 void InputManager::ReloadDevices()
 {
+  DebugAssert(Host::IsOnCoreThread());
+
   bool changed = false;
   std::unique_lock lock(s_state.mutex);
   for (u32 i = FIRST_EXTERNAL_INPUT_SOURCE; i < LAST_EXTERNAL_INPUT_SOURCE; i++)
@@ -2315,6 +2333,8 @@ void InputManager::ReloadDevices()
 
 void InputManager::CloseSources()
 {
+  DebugAssert(Host::IsOnCoreThread());
+
   std::unique_lock lock(s_state.mutex);
 
   for (u32 i = FIRST_EXTERNAL_INPUT_SOURCE; i < LAST_EXTERNAL_INPUT_SOURCE; i++)
@@ -2333,6 +2353,8 @@ void InputManager::CloseSources()
 
 void InputManager::PollSources()
 {
+  DebugAssert(Host::IsOnCoreThread());
+
   for (u32 i = FIRST_EXTERNAL_INPUT_SOURCE; i < LAST_EXTERNAL_INPUT_SOURCE; i++)
   {
     if (s_state.input_sources[i])
@@ -2351,6 +2373,8 @@ void InputManager::PollSources()
 
 InputManager::DeviceList InputManager::EnumerateDevices()
 {
+  DebugAssert(Host::IsOnCoreThread());
+
   std::unique_lock lock(s_state.mutex);
 
   DeviceList ret;
@@ -2382,6 +2406,8 @@ InputManager::DeviceList InputManager::EnumerateDevices()
 InputManager::DeviceEffectList InputManager::EnumerateDeviceEffects(std::optional<InputBindingInfo::Type> type,
                                                                     std::optional<InputBindingKey> for_device)
 {
+  DebugAssert(Host::IsOnCoreThread());
+
   std::unique_lock lock(s_state.mutex);
 
   DeviceEffectList ret;
@@ -2403,6 +2429,8 @@ InputManager::DeviceEffectList InputManager::EnumerateDeviceEffects(std::optiona
 
 u32 InputManager::GetPollableDeviceCount()
 {
+  DebugAssert(Host::IsOnCoreThread());
+
   std::unique_lock lock(s_state.mutex);
 
   u32 count = 0;

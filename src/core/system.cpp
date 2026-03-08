@@ -598,6 +598,12 @@ void System::SetCoreThreadHandle(Threading::ThreadHandle handle)
   s_state.core_thread_handle = std::move(handle);
 }
 
+bool Host::IsOnCoreThread()
+{
+  // This really doesn't belong here...
+  return System::GetCoreThreadHandle().IsCallingThread();
+}
+
 void System::IdlePollUpdate()
 {
   InputManager::PollSources();
