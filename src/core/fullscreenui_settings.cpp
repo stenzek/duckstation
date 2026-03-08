@@ -1553,39 +1553,43 @@ void FullscreenUI::DrawFolderSetting(SettingsInterface* bsi, std::string_view ti
 
 void FullscreenUI::StartAutomaticBindingForPort(u32 port)
 {
-  InputManager::DeviceList devices = InputManager::EnumerateDevices();
-  if (devices.empty())
-  {
-    ShowToast(OSDMessageType::Info, {}, FSUI_STR("Automatic mapping failed, no devices are available."));
-    return;
-  }
+  Host::RunOnCoreThread([port]() {
+    InputManager::DeviceList devices = InputManager::EnumerateDevices();
+    VideoThread::RunOnThread([port, devices = std::move(devices)]() mutable {
+      if (devices.empty())
+      {
+        ShowToast(OSDMessageType::Info, {}, FSUI_STR("Automatic mapping failed, no devices are available."));
+        return;
+      }
 
-  std::vector<std::string> names;
-  ChoiceDialogOptions options;
-  options.reserve(devices.size());
-  names.reserve(devices.size());
-  for (auto& [key, name, display_name] : devices)
-  {
-    names.push_back(std::move(name));
-    options.emplace_back(std::move(display_name), false);
-  }
-  OpenChoiceDialog(FSUI_STR("Select Device"), false, std::move(options),
-                   [port, names = std::move(names)](s32 index, const std::string& title, bool checked) {
-                     if (index < 0)
-                       return;
+      std::vector<std::string> names;
+      ChoiceDialogOptions options;
+      options.reserve(devices.size());
+      names.reserve(devices.size());
+      for (auto& [key, name, display_name] : devices)
+      {
+        names.push_back(std::move(name));
+        options.emplace_back(std::move(display_name), false);
+      }
+      OpenChoiceDialog(FSUI_STR("Select Device"), false, std::move(options),
+                       [port, names = std::move(names)](s32 index, const std::string& title, bool checked) {
+                         if (index < 0)
+                           return;
 
-                     const std::string& name = names[index];
-                     const auto lock = Core::GetSettingsLock();
-                     SettingsInterface* bsi = GetEditingSettingsInterface();
-                     const bool result =
-                       InputManager::MapController(*bsi, port, InputManager::GetGenericBindingMapping(name), true);
-                     SetSettingsChanged(bsi);
+                         const std::string& name = names[index];
+                         const auto lock = Core::GetSettingsLock();
+                         SettingsInterface* bsi = GetEditingSettingsInterface();
+                         const bool result =
+                           InputManager::MapController(*bsi, port, InputManager::GetGenericBindingMapping(name), true);
+                         SetSettingsChanged(bsi);
 
-                     // and the toast needs to happen on the UI thread.
-                     ShowToast(result ? OSDMessageType::Quick : OSDMessageType::Info, {},
-                               result ? fmt::format(FSUI_FSTR("Automatic mapping completed for {}."), name) :
-                                        fmt::format(FSUI_FSTR("Automatic mapping failed for {}."), name));
-                   });
+                         // and the toast needs to happen on the UI thread.
+                         ShowToast(result ? OSDMessageType::Quick : OSDMessageType::Info, {},
+                                   result ? fmt::format(FSUI_FSTR("Automatic mapping completed for {}."), name) :
+                                            fmt::format(FSUI_FSTR("Automatic mapping failed for {}."), name));
+                       });
+    });
+  });
 }
 
 void FullscreenUI::StartClearBindingsForPort(u32 port)
