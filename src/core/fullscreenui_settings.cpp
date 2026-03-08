@@ -566,49 +566,73 @@ void FullscreenUI::BeginEffectBinding(SettingsInterface* bsi, InputBindingInfo::
 {
   // vibration motors use a list to select
   const bool game_settings = IsEditingGameSettings(bsi);
-  InputManager::DeviceEffectList effects = InputManager::EnumerateDeviceEffects(type);
-  if (effects.empty())
-  {
-    ShowToast(OSDMessageType::Info, {}, FSUI_STR("No devices with vibration motors were detected."));
-    return;
-  }
+  Host::RunOnCoreThread([type, section = std::string(section), key = std::string(key),
+                         display_name = std::string(display_name), game_settings]() mutable {
+    const InputManager::DeviceEffectList effects = InputManager::EnumerateDeviceEffects(type);
+    std::vector<std::pair<std::string, std::string>> effect_names;
+    for (const auto& [eff_type, eff_key] : effects)
+    {
+      SmallString binding = InputManager::ConvertInputBindingKeyToString(eff_type, eff_key);
+      std::string name(binding);
+      InputManager::PrettifyInputBinding(binding, false);
+      effect_names.emplace_back(std::move(name), std::string(binding));
+    }
 
-  const TinyString current_binding = bsi->GetTinyStringValue(section, key);
-  size_t current_index = effects.size();
-  ChoiceDialogOptions options;
-  options.reserve(effects.size() + 1);
-  for (size_t i = 0; i < effects.size(); i++)
-  {
-    const TinyString text = InputManager::ConvertInputBindingKeyToString(effects[i].first, effects[i].second);
-    const bool this_index = (current_binding.view() == text);
-    current_index = this_index ? i : current_index;
-    options.emplace_back(text, this_index);
-  }
+    VideoThread::RunOnThread([type, section = std::move(section), key = std::move(key),
+                              display_name = std::move(display_name), effect_names = std::move(effect_names),
+                              game_settings]() mutable {
+      if (effect_names.empty())
+      {
+        ShowToast(OSDMessageType::Info, {},
+                  (type == InputBindingInfo::Type::Motor) ?
+                    FSUI_STR("No devices with vibration motors were detected.") :
+                    FSUI_STR("No devices with LEDs were detected."));
+        return;
+      }
 
-  // empty/no mapping value
-  if (type == InputBindingInfo::Type::Motor)
-    options.emplace_back(FSUI_STR("No Vibration"), current_binding.empty());
-  else if (type == InputBindingInfo::Type::LED)
-    options.emplace_back(FSUI_STR("No LED"), current_binding.empty());
+      SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
+      const TinyString current_binding = bsi->GetTinyStringValue(section.c_str(), key.c_str());
+      size_t current_index = effect_names.size();
+      ChoiceDialogOptions options;
+      options.reserve(effect_names.size() + 1);
+      for (size_t i = 0; i < effect_names.size(); i++)
+      {
+        const bool this_index = (current_binding.view() == effect_names[i].first);
+        current_index = this_index ? i : current_index;
+        options.emplace_back(std::move(effect_names[i].second), this_index);
+      }
 
-  // add current value to list if it's not currently available
-  if (!current_binding.empty() && current_index == effects.size())
-    options.emplace_back(std::make_pair(std::string(current_binding.view()), true));
+      // empty/no mapping value
+      if (type == InputBindingInfo::Type::Motor)
+        options.emplace_back(FSUI_STR("No Vibration"), current_binding.empty());
+      else if (type == InputBindingInfo::Type::LED)
+        options.emplace_back(FSUI_STR("No LED"), current_binding.empty());
 
-  OpenChoiceDialog(display_name, false, std::move(options),
-                   [game_settings, section = std::string(section), key = std::string(key),
-                    effects = std::move(effects)](s32 index, const std::string& title, bool checked) {
-                     if (index < 0)
-                       return;
+      // add current value to list if it's not currently available
+      if (!current_binding.empty() && current_index == effect_names.size())
+        options.emplace_back(std::make_pair(std::string(current_binding.view()), true));
 
-                     const auto lock = Core::GetSettingsLock();
-                     SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
-                     if (static_cast<size_t>(index) == effects.size())
-                       bsi->DeleteValue(section.c_str(), key.c_str());
-                     else
-                       bsi->SetStringValue(section.c_str(), key.c_str(), title.c_str());
-                     SetSettingsChanged(bsi);
-                   });
+      OpenChoiceDialog(display_name, false, std::move(options),
+                       [game_settings, section = std::string(section), key = std::string(key),
+                        effect_names = std::move(effect_names)](s32 index, const std::string& title, bool checked) {
+                         if (index < 0)
+                           return;
+
+                         const auto lock = Core::GetSettingsLock();
+                         SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
+                         if (static_cast<size_t>(index) == effect_names.size())
+                         {
+                           bsi->DeleteValue(section.c_str(), key.c_str());
+                         }
+                         else
+                         {
+                           bsi->SetStringValue(section.c_str(), key.c_str(),
+                                               effect_names[static_cast<size_t>(index)].first.c_str());
+                         }
+                         SetSettingsChanged(bsi);
+                       });
+    });
+  });
 }
 
 bool FullscreenUI::DrawToggleSetting(SettingsInterface* bsi, std::string_view title, std::string_view summary,
@@ -1863,8 +1887,7 @@ void FullscreenUI::DrawSettingsWindow()
   }
 
   if (BeginFullscreenWindow(ImVec2(0.0f, 0.0f), heading_size, "settings_category",
-                            ModAlpha(UIStyle.PrimaryColor, bg_alpha),
-                            0.0f, ImVec2(), 0, blur_background))
+                            ModAlpha(UIStyle.PrimaryColor, bg_alpha), 0.0f, ImVec2(), 0, blur_background))
   {
     BeginNavBar();
 

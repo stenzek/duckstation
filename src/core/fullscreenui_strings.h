@@ -518,6 +518,7 @@ TRANSLATE_NOOP("FullscreenUI", "No LED");
 TRANSLATE_NOOP("FullscreenUI", "No Vibration");
 TRANSLATE_NOOP("FullscreenUI", "No cheats are available for this game.");
 TRANSLATE_NOOP("FullscreenUI", "No controller presets available.");
+TRANSLATE_NOOP("FullscreenUI", "No devices with LEDs were detected.");
 TRANSLATE_NOOP("FullscreenUI", "No devices with vibration motors were detected.");
 TRANSLATE_NOOP("FullscreenUI", "No patches are available for this game.");
 TRANSLATE_NOOP("FullscreenUI", "No resume save state found.");
