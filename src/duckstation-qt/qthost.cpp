@@ -2802,7 +2802,7 @@ QString InputDeviceListModel::getDeviceName(const InputBindingKey& key)
 
 bool InputDeviceListModel::hasEffectsOfType(InputBindingInfo::Type type)
 {
-  return std::ranges::any_of(m_effects, [type](const auto& eff) { return eff.first == type; });
+  return std::ranges::any_of(m_effects, [type](const auto& eff) { return (eff.type == type); });
 }
 
 int InputDeviceListModel::rowCount(const QModelIndex& parent /*= QModelIndex()*/) const
@@ -2858,7 +2858,12 @@ void InputDeviceListModel::enumerateDevices()
   EffectList new_effects;
   new_effects.reserve(effects.size());
   for (const auto& [type, key] : effects)
-    new_effects.emplace_back(type, key);
+  {
+    TinyString name = InputManager::ConvertInputBindingKeyToString(type, key);
+    SmallString pretty_name(name);
+    InputManager::PrettifyInputBinding(pretty_name, false);
+    new_effects.emplace_back(type, key, std::string(name), std::string(pretty_name));
+  }
 
   QMetaObject::invokeMethod(this, &InputDeviceListModel::resetLists, Qt::QueuedConnection, new_devices, new_effects);
 }
@@ -2905,7 +2910,7 @@ void InputDeviceListModel::onDeviceDisconnected(const InputBindingKey& key, cons
       const QString effect_prefix = QStringLiteral("%1/").arg(identifier);
       for (qsizetype j = 0; j < m_effects.size();)
       {
-        if (m_effects[j].second.source_type == key.source_type && m_effects[j].second.source_index == key.source_index)
+        if (m_effects[j].key.source_type == key.source_type && m_effects[j].key.source_index == key.source_index)
           m_effects.remove(j);
         else
           j++;
@@ -2925,7 +2930,12 @@ void Host::OnInputDeviceConnected(InputBindingKey key, std::string_view identifi
   {
     qeffect_list.reserve(effect_list.size());
     for (const auto& [eff_type, eff_key] : effect_list)
-      qeffect_list.emplace_back(eff_type, eff_key);
+    {
+      TinyString name = InputManager::ConvertInputBindingKeyToString(eff_type, eff_key);
+      SmallString pretty_name(name);
+      InputManager::PrettifyInputBinding(pretty_name, false);
+      qeffect_list.emplace_back(eff_type, eff_key, std::string(name), std::string(pretty_name));
+    }
   }
 
   QMetaObject::invokeMethod(g_core_thread->getInputDeviceListModel(), &InputDeviceListModel::onDeviceConnected,

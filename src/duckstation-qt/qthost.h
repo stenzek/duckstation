@@ -242,8 +242,16 @@ public:
     QString display_name;
   };
 
+  struct Effect
+  {
+    InputBindingInfo::Type type;
+    InputBindingKey key;
+    std::string name;
+    std::string display_name;
+  };
+
   using DeviceList = QList<Device>;
-  using EffectList = QList<QPair<InputBindingInfo::Type, InputBindingKey>>;
+  using EffectList = QList<Effect>;
 
   explicit InputDeviceListModel(QObject* parent = nullptr);
   ~InputDeviceListModel() override;
