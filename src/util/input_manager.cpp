@@ -176,6 +176,7 @@ static void UpdateMacroButtons();
 static size_t UpdateInputSubclassPolling(InputSubclass subclass, bool enable_all);
 static void UpdateInputSourceState(const SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock,
                                    InputSourceType type, std::unique_ptr<InputSource> (*factory_function)());
+static void ReloadSources(const SettingsInterface& sources_si, std::unique_lock<std::mutex>& settings_lock);
 
 static const KeyCodeData* FindKeyCodeData(u32 usb_code);
 
@@ -227,7 +228,6 @@ struct State
   PadLEDBindingArray pad_led_array;
   std::vector<MacroButton> macro_buttons;
   std::vector<std::pair<u32, PointerMoveCallback>> pointer_move_callbacks;
-  std::recursive_mutex mutex;
 
   // Hooks/intercepting (for setting bindings)
   InputInterceptHook::Callback event_intercept_callback;
@@ -249,6 +249,8 @@ struct State
   bool relative_mouse_mode_active = false;
   bool hide_host_mouse_cursor = false;
   bool hide_host_mouse_cursor_active = false;
+
+  std::recursive_mutex sources_mutex;
 
 #ifdef _WIN32
   // Device notification handle for Windows.
@@ -408,7 +410,7 @@ TinyString InputManager::ConvertInputBindingKeyToString(InputBindingInfo::Type b
   TinyString ret;
 
   // in case the source disappears, very unlikely
-  const auto lock = std::unique_lock(s_state.mutex);
+  const auto lock = std::unique_lock(s_state.sources_mutex);
 
   if (binding_type == InputBindingInfo::Type::Pointer || binding_type == InputBindingInfo::Type::RelativePointer ||
       binding_type == InputBindingInfo::Type::Device)
@@ -1125,7 +1127,6 @@ bool InputManager::HasAnyBindingsForKey(InputBindingKey key)
 {
   DebugAssert(Host::IsOnCoreThread());
 
-  std::unique_lock lock(s_state.mutex);
   return (s_state.binding_map.find(key.MaskDirection()) != s_state.binding_map.end());
 }
 
@@ -1133,7 +1134,6 @@ bool InputManager::HasAnyBindingsForSource(InputBindingKey key)
 {
   DebugAssert(Host::IsOnCoreThread());
 
-  std::unique_lock lock(s_state.mutex);
   for (const auto& it : s_state.binding_map)
   {
     const InputBindingKey& okey = it.first;
@@ -1148,7 +1148,6 @@ bool InputManager::HasAnyBindingsForSubclass(InputBindingKey key)
 {
   DebugAssert(Host::IsOnCoreThread());
 
-  std::unique_lock lock(s_state.mutex);
   for (const auto& it : s_state.binding_map)
   {
     const InputBindingKey& okey = it.first;
@@ -2189,8 +2188,6 @@ void InputManager::UpdateMacroButtons()
 void InputManager::SetHook(InputInterceptHook::Callback callback)
 {
   DebugAssert(Host::IsOnCoreThread());
-
-  std::unique_lock lock(s_state.mutex);
   DebugAssert(!s_state.event_intercept_callback);
   s_state.event_intercept_callback = std::move(callback);
 
@@ -2201,8 +2198,6 @@ void InputManager::SetHook(InputInterceptHook::Callback callback)
 void InputManager::RemoveHook()
 {
   DebugAssert(Host::IsOnCoreThread());
-
-  std::unique_lock lock(s_state.mutex);
   if (s_state.event_intercept_callback)
     s_state.event_intercept_callback = {};
 
@@ -2213,14 +2208,11 @@ void InputManager::RemoveHook()
 bool InputManager::HasHook()
 {
   DebugAssert(Host::IsOnCoreThread());
-
-  std::unique_lock lock(s_state.mutex);
-  return (bool)s_state.event_intercept_callback;
+  return static_cast<bool>(s_state.event_intercept_callback);
 }
 
 bool InputManager::DoEventHook(InputBindingKey key, float value)
 {
-  std::unique_lock lock(s_state.mutex);
   if (!s_state.event_intercept_callback)
     return false;
 
@@ -2283,9 +2275,9 @@ void InputManager::ReloadBindings(const SettingsInterface& binding_si, const Set
 {
   DebugAssert(Host::IsOnCoreThread());
 
-  std::unique_lock lock(s_state.mutex);
   InternalPauseVibration();
   InternalClearEffects();
+
   InternalReloadBindings(binding_si, hotkey_binding_si);
 
   UpdateRelativeMouseMode();
@@ -2298,7 +2290,6 @@ void InputManager::ReloadBindings(const SettingsInterface& binding_si, const Set
 void InputManager::ClearEffects()
 {
   DebugAssert(Host::IsOnCoreThread());
-  std::unique_lock lock(s_state.mutex);
   InternalPauseVibration();
   InternalClearEffects();
 }
@@ -2306,7 +2297,6 @@ void InputManager::ClearEffects()
 void InputManager::PauseVibration()
 {
   DebugAssert(Host::IsOnCoreThread());
-  std::unique_lock lock(s_state.mutex);
   InternalPauseVibration();
 }
 
@@ -2315,19 +2305,21 @@ void InputManager::ReloadDevices()
   DebugAssert(Host::IsOnCoreThread());
 
   bool changed = false;
-  std::unique_lock lock(s_state.mutex);
-  for (u32 i = FIRST_EXTERNAL_INPUT_SOURCE; i < LAST_EXTERNAL_INPUT_SOURCE; i++)
   {
-    if (s_state.input_sources[i])
-      changed |= s_state.input_sources[i]->ReloadDevices();
+    const std::unique_lock lock(s_state.sources_mutex);
+    for (u32 i = FIRST_EXTERNAL_INPUT_SOURCE; i < LAST_EXTERNAL_INPUT_SOURCE; i++)
+    {
+      if (s_state.input_sources[i])
+        changed |= s_state.input_sources[i]->ReloadDevices();
+    }
+
+    UpdatePointerCount();
   }
 
-  UpdatePointerCount();
   if (!changed)
     return;
 
   // need to release the lock, since otherwise we would risk a lock ordering issue
-  lock.unlock();
   System::ReloadInputBindings();
 }
 
@@ -2335,7 +2327,7 @@ void InputManager::CloseSources()
 {
   DebugAssert(Host::IsOnCoreThread());
 
-  std::unique_lock lock(s_state.mutex);
+  const std::unique_lock lock(s_state.sources_mutex);
 
   for (u32 i = FIRST_EXTERNAL_INPUT_SOURCE; i < LAST_EXTERNAL_INPUT_SOURCE; i++)
   {
@@ -2355,27 +2347,30 @@ void InputManager::PollSources()
 {
   DebugAssert(Host::IsOnCoreThread());
 
-  for (u32 i = FIRST_EXTERNAL_INPUT_SOURCE; i < LAST_EXTERNAL_INPUT_SOURCE; i++)
+  const bool system_running = (System::GetState() == System::State::Running);
+
   {
-    if (s_state.input_sources[i])
-      s_state.input_sources[i]->PollEvents();
+    const std::unique_lock lock(s_state.sources_mutex);
+
+    for (u32 i = FIRST_EXTERNAL_INPUT_SOURCE; i < LAST_EXTERNAL_INPUT_SOURCE; i++)
+    {
+      if (s_state.input_sources[i])
+        s_state.input_sources[i]->PollEvents();
+    }
+
+    if (system_running && !s_state.pad_vibration_array.empty())
+      UpdateContinuedVibration();
   }
 
   GenerateRelativeMouseEvents();
 
-  if (System::GetState() == System::State::Running)
-  {
+  if (system_running)
     UpdateMacroButtons();
-    if (!s_state.pad_vibration_array.empty())
-      UpdateContinuedVibration();
-  }
 }
 
 InputManager::DeviceList InputManager::EnumerateDevices()
 {
   DebugAssert(Host::IsOnCoreThread());
-
-  std::unique_lock lock(s_state.mutex);
 
   DeviceList ret;
 
@@ -2388,6 +2383,7 @@ InputManager::DeviceList InputManager::EnumerateDevices()
   if (!IsUsingRawInput())
     ret.emplace_back(mouse_key, GetPointerDeviceName(0), TRANSLATE_STR("InputManager", "Mouse"));
 
+  // NOTE: No lock needed here since we're always on the core thread and not modifying anything.
   for (u32 i = FIRST_EXTERNAL_INPUT_SOURCE; i < LAST_EXTERNAL_INPUT_SOURCE; i++)
   {
     if (s_state.input_sources[i])
@@ -2408,10 +2404,9 @@ InputManager::DeviceEffectList InputManager::EnumerateDeviceEffects(std::optiona
 {
   DebugAssert(Host::IsOnCoreThread());
 
-  std::unique_lock lock(s_state.mutex);
-
   DeviceEffectList ret;
 
+  // NOTE: No lock needed here since we're always on the core thread and not modifying anything.
   for (u32 i = FIRST_EXTERNAL_INPUT_SOURCE; i < LAST_EXTERNAL_INPUT_SOURCE; i++)
   {
     if (s_state.input_sources[i])
@@ -2431,10 +2426,9 @@ u32 InputManager::GetPollableDeviceCount()
 {
   DebugAssert(Host::IsOnCoreThread());
 
-  std::unique_lock lock(s_state.mutex);
-
   u32 count = 0;
 
+  // NOTE: No lock needed here since we're always on the core thread and not modifying anything.
   for (u32 i = FIRST_EXTERNAL_INPUT_SOURCE; i < LAST_EXTERNAL_INPUT_SOURCE; i++)
   {
     if (s_state.input_sources[i])
@@ -2489,6 +2483,9 @@ GenericInputBindingMapping InputManager::GetGenericBindingMapping(std::string_vi
 
   if (!GetInternalGenericBindingMapping(device, &mapping))
   {
+    // Must lock, this gets called off thread.
+    const std::unique_lock lock(s_state.sources_mutex);
+
     for (u32 i = FIRST_EXTERNAL_INPUT_SOURCE; i < LAST_EXTERNAL_INPUT_SOURCE; i++)
     {
       if (s_state.input_sources[i] && s_state.input_sources[i]->GetGenericBindingMapping(device, &mapping))
@@ -2544,11 +2541,9 @@ void InputManager::UpdateInputSourceState(const SettingsInterface& si, std::uniq
   }
 }
 
-void InputManager::ReloadSourcesAndBindings(const SettingsInterface& sources_si, const SettingsInterface& binding_si,
-                                            const SettingsInterface& hotkey_binding_si,
-                                            std::unique_lock<std::mutex>& settings_lock)
+void InputManager::ReloadSources(const SettingsInterface& sources_si, std::unique_lock<std::mutex>& settings_lock)
 {
-  std::unique_lock lock(s_state.mutex);
+  const std::unique_lock lock(s_state.sources_mutex);
 
 #ifdef _WIN32
   UpdateInputSourceState(sources_si, settings_lock, InputSourceType::DInput, &InputSource::CreateDInputSource);
@@ -2577,7 +2572,14 @@ void InputManager::ReloadSourcesAndBindings(const SettingsInterface& sources_si,
 #endif
 
   UpdatePointerCount();
+}
 
+void InputManager::ReloadSourcesAndBindings(const SettingsInterface& sources_si, const SettingsInterface& binding_si,
+                                            const SettingsInterface& hotkey_binding_si,
+                                            std::unique_lock<std::mutex>& settings_lock)
+{
+  DebugAssert(Host::IsOnCoreThread());
+  ReloadSources(sources_si, settings_lock);
   InternalReloadBindings(binding_si, hotkey_binding_si);
   UpdateRelativeMouseMode();
 }
