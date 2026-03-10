@@ -32,6 +32,7 @@ static constexpr const std::pair<const char*, const char*> BUILTIN_THEMES[] = {
   {"greymatter", QT_TRANSLATE_NOOP("MainWindow", "Grey Matter")},
   {"greengiant", QT_TRANSLATE_NOOP("MainWindow", "Green Giant")},
   {"pinkypals", QT_TRANSLATE_NOOP("MainWindow", "Pinky Pals")},
+  {"darkocean", QT_TRANSLATE_NOOP("MainWindow", "Dark Ocean")},
   {"darkruby", QT_TRANSLATE_NOOP("MainWindow", "Dark Ruby")},
   {"purplerain", QT_TRANSLATE_NOOP("MainWindow", "Purple Rain")},
   {"qdarkstyle", QT_TRANSLATE_NOOP("MainWindow", "QDarkStyle")},

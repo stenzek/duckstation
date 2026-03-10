@@ -226,6 +226,7 @@ TRANSLATE_NOOP("FullscreenUI", "Custom");
 TRANSLATE_NOOP("FullscreenUI", "Custom Indicator Scale");
 TRANSLATE_NOOP("FullscreenUI", "Custom Notification Scale");
 TRANSLATE_NOOP("FullscreenUI", "Dark");
+TRANSLATE_NOOP("FullscreenUI", "Dark Ocean");
 TRANSLATE_NOOP("FullscreenUI", "Dark Ruby");
 TRANSLATE_NOOP("FullscreenUI", "Deadzone");
 TRANSLATE_NOOP("FullscreenUI", "Debugging Settings");
