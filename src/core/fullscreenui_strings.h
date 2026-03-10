@@ -675,6 +675,7 @@ TRANSLATE_NOOP("FullscreenUI", "Screen Rotation");
 TRANSLATE_NOOP("FullscreenUI", "Screenshot Format");
 TRANSLATE_NOOP("FullscreenUI", "Screenshot Quality");
 TRANSLATE_NOOP("FullscreenUI", "Screenshot Size");
+TRANSLATE_NOOP("FullscreenUI", "Scroll Page");
 TRANSLATE_NOOP("FullscreenUI", "Search Directories");
 TRANSLATE_NOOP("FullscreenUI", "Seek Speedup");
 TRANSLATE_NOOP("FullscreenUI", "Select");

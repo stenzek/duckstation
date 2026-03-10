@@ -2049,14 +2049,16 @@ void FullscreenUI::DrawSettingsWindow()
 
   if (IsGamepadInputSource())
   {
-    SetFullscreenFooterText(std::array{std::make_pair(ICON_PF_XBOX_DPAD_LEFT_RIGHT, FSUI_VSTR("Change Page")),
-                                       std::make_pair(ICON_PF_XBOX_DPAD_UP_DOWN, FSUI_VSTR("Navigate")),
-                                       std::make_pair(ICON_PF_BUTTON_A, FSUI_VSTR("Select")),
-                                       std::make_pair(ICON_PF_BUTTON_B, FSUI_VSTR("Back"))});
+    SetFullscreenFooterText(std::array{
+      std::make_pair(ICON_PF_LEFT_TRIGGER_LT ICON_PF_RIGHT_TRIGGER_RT, FSUI_VSTR("Scroll Page")),
+      std::make_pair(ICON_PF_XBOX_DPAD_LEFT_RIGHT, FSUI_VSTR("Change Page")),
+      std::make_pair(ICON_PF_XBOX_DPAD_UP_DOWN, FSUI_VSTR("Navigate")),
+      std::make_pair(ICON_PF_BUTTON_A, FSUI_VSTR("Select")), std::make_pair(ICON_PF_BUTTON_B, FSUI_VSTR("Back"))});
   }
   else
   {
-    SetFullscreenFooterText(std::array{std::make_pair(ICON_PF_ARROW_LEFT ICON_PF_ARROW_RIGHT, FSUI_VSTR("Change Page")),
+    SetFullscreenFooterText(std::array{std::make_pair(ICON_PF_PAGE_UP ICON_PF_PAGE_DOWN, FSUI_VSTR("Scroll Page")),
+                                       std::make_pair(ICON_PF_ARROW_LEFT ICON_PF_ARROW_RIGHT, FSUI_VSTR("Change Page")),
                                        std::make_pair(ICON_PF_ARROW_UP ICON_PF_ARROW_DOWN, FSUI_VSTR("Navigate")),
                                        std::make_pair(ICON_PF_ENTER, FSUI_VSTR("Select")),
                                        std::make_pair(ICON_PF_ESC, FSUI_VSTR("Back"))});
