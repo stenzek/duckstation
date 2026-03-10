@@ -16,7 +16,7 @@ def is_game_path(path:str):
 
 def run_regression_test(runner, destdir, dump_interval, frames, renderer, cargs, gamepath):
     args = [runner,
-            "-log", "error",
+            "-log", "Error",
             "-dumpdir", destdir,
             "-dumpinterval", str(dump_interval),
             "-frames", str(frames),
@@ -87,6 +87,20 @@ if __name__ == "__main__":
         cargs += ["-pgxp-cpu"]
     if (args.cpu is not None):
         cargs += ["-cpu", args.cpu]
+
+    renderer_map = {
+        "d3d11": "D3D11",
+        "d3d12": "D3D12",
+        "opengl": "OpenGL",
+        "vulkan": "Vulkan",
+        "metal": "Metal",
+        "software": "Software",
+    }
+    if args.renderer.lower() in renderer_map:
+        args.renderer = renderer_map[args.renderer.lower()]
+    else:
+        print("Unknown renderer '%s'" % args.renderer)
+        sys.exit(1)
 
     if not run_regression_tests(args.runner, args.gamedir, os.path.realpath(args.destdir), args.dumpinterval, args.frames, args.parallel, args.renderer, cargs):
         sys.exit(1)
