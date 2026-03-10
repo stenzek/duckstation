@@ -177,6 +177,15 @@ public:
 
 namespace InputManager {
 
+/// Used to determine the icons for controller buttons.
+enum class GamepadButtonType : u8
+{
+  Unknown,
+  Xbox,
+  PlayStation,
+  MaxCount
+};
+
 /// Maximum number of buttons that can be part of a chord.
 inline constexpr u32 MAX_KEYS_PER_BINDING = 4;
 
@@ -360,6 +369,9 @@ void UpdateRelativeMouseMode();
 void UpdateHostMouseMode();
 bool IsRelativeMouseModeActive();
 
+/// Returns the type of the last gamepad that was connected.
+GamepadButtonType GetLastGamepadButtonType();
+
 /// Sets the state of the specified macro button.
 void SetMacroButtonState(u32 pad, u32 index, bool state);
 
@@ -392,7 +404,8 @@ std::string GetPhysicalDeviceForController(SettingsInterface& si, u32 controller
 std::vector<std::string> GetInputProfileNames();
 
 /// Called when a new input device is connected.
-void OnInputDeviceConnected(InputBindingKey key, std::string_view identifier, std::string_view device_name);
+void OnInputDeviceConnected(InputBindingKey key, std::string_view identifier, std::string_view device_name,
+                            std::optional<GamepadButtonType> gamepad_button_type);
 
 /// Called when an input device is disconnected.
 void OnInputDeviceDisconnected(InputBindingKey key, std::string_view identifier);

@@ -122,6 +122,7 @@ struct ALIGN_TO_CACHE_LINE UIStyles
   bool BlurMenuBackground : 1;
   bool SoundEffects : 1;
   bool IsDarkTheme : 1;
+  bool UsingPSIcons : 1;
 };
 
 extern UIStyles UIStyle;

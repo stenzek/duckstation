@@ -154,7 +154,7 @@ bool DInputSource::ReloadDevices()
       const u32 index = static_cast<u32>(m_controllers.size());
       m_controllers.push_back(std::move(cd));
       InputManager::OnInputDeviceConnected(MakeGenericControllerDeviceKey(InputSourceType::DInput, index),
-                                           GetDeviceIdentifier(index), name);
+                                           GetDeviceIdentifier(index), name, std::nullopt);
       changed = true;
     }
   }

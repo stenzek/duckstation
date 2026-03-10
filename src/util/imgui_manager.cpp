@@ -159,6 +159,7 @@ struct ALIGN_TO_CACHE_LINE State
 
   // we maintain a second copy of the stick state here so we can map it to the dpad
   std::array<s8, 2> left_stick_axis_state = {};
+  InputManager::GamepadButtonType gamepad_button_type = InputManager::GamepadButtonType::Unknown;
   bool swap_gamepad_face_buttons = false;
 
   std::unique_ptr<GPUPipeline> imgui_pipeline;
@@ -210,6 +211,7 @@ bool ImGuiManager::Initialize(Error* error)
 
   s_state.global_scale = std::max((main_swap_chain ? main_swap_chain->GetScale() : 1.0f) * GetGlobalPrescale(), 1.0f);
   s_state.scale_changed = false;
+  s_state.gamepad_button_type = InputManager::GetLastGamepadButtonType();
 
   s_state.imgui_context = ImGui::CreateContext();
 
@@ -1334,6 +1336,22 @@ bool ImGuiManager::AreGamepadFaceButtonsSwapped()
 void ImGuiManager::SetGamepadFaceButtonsSwapped(bool enabled)
 {
   s_state.swap_gamepad_face_buttons = enabled;
+}
+
+InputManager::GamepadButtonType ImGuiManager::GetGamepadButtonType()
+{
+  return s_state.gamepad_button_type;
+}
+
+void ImGuiManager::SetGamepadButtonType(InputManager::GamepadButtonType type)
+{
+  VideoThread::RunOnThread([type]() {
+    if (type == s_state.gamepad_button_type)
+      return;
+
+    s_state.gamepad_button_type = type;
+    FullscreenUI::UpdateWidgetsSettings();
+  });
 }
 
 bool ImGuiManager::WantsTextInput()

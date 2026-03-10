@@ -24,6 +24,10 @@ struct ImFont;
 union InputBindingKey;
 enum class GenericInputBinding : u8;
 
+namespace InputManager {
+enum class GamepadButtonType : u8;
+}
+
 enum class OSDMessageType : u8
 {
   Error,
@@ -149,6 +153,10 @@ float OSDScale(float size);
 /// Returns true if the south and east controller face buttons are swapped.
 bool AreGamepadFaceButtonsSwapped();
 void SetGamepadFaceButtonsSwapped(bool enabled);
+
+/// Changes the gamepad button icon type, which is used to determine which icons to show for controller buttons.
+InputManager::GamepadButtonType GetGamepadButtonType();
+void SetGamepadButtonType(InputManager::GamepadButtonType type);
 
 /// Returns true if imgui wants to intercept text input.
 bool WantsTextInput();

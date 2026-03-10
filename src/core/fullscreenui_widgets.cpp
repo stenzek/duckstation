@@ -16,6 +16,7 @@
 #include "util/image.h"
 #include "util/imgui_animated.h"
 #include "util/imgui_manager.h"
+#include "util/input_manager.h"
 #include "util/shadergen.h"
 
 #include "common/assert.h"
@@ -509,8 +510,17 @@ void FullscreenUI::UpdateWidgetsSettings()
   UIStyle.BlurMenuBackground = Core::GetBaseBoolSettingValue("Main", "FullscreenUIBlurMenuBackground", true);
   UIStyle.SoundEffects = Core::GetBaseBoolSettingValue("Main", "FullscreenUISoundEffects", true);
 
-  const bool display_ps_icons = Core::GetBaseBoolSettingValue("Main", "FullscreenUIDisplayPSIcons", false);
   const bool swap_face_buttons = Core::GetBaseBoolSettingValue("Main", "FullscreenUISwapGamepadFaceButtons", false);
+
+  bool display_ps_icons = false;
+  const TinyString gamepad_button_type =
+    Core::GetBaseTinyStringSettingValue("Main", "FullscreenUIGamepadButtonType", "Automatic");
+  if (gamepad_button_type == "Automatic")
+    display_ps_icons = (ImGuiManager::GetGamepadButtonType() == InputManager::GamepadButtonType::PlayStation);
+  else if (gamepad_button_type == "PlayStation")
+    display_ps_icons = true;
+  else
+    display_ps_icons = false;
 
   // Don't bother setting a mapping if there's nothing to map.
   if (display_ps_icons || swap_face_buttons)
@@ -522,6 +532,8 @@ void FullscreenUI::UpdateWidgetsSettings()
   {
     s_state.fullscreen_footer_icon_mapping = {};
   }
+
+  UIStyle.UsingPSIcons = display_ps_icons;
 
   ImGuiManager::SetGamepadFaceButtonsSwapped(swap_face_buttons);
 }

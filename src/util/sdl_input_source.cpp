@@ -218,6 +218,24 @@ static bool IsPSControllerType(u8 type)
   return (type >= SDL_GAMEPAD_TYPE_PS3 && type <= SDL_GAMEPAD_TYPE_PS5);
 }
 
+static std::optional<InputManager::GamepadButtonType> GetGamepadButtonType(u8 type)
+{
+  switch (static_cast<SDL_GamepadType>(type))
+  {
+    case SDL_GAMEPAD_TYPE_XBOX360:
+    case SDL_GAMEPAD_TYPE_XBOXONE:
+      return InputManager::GamepadButtonType::Xbox;
+
+    case SDL_GAMEPAD_TYPE_PS3:
+    case SDL_GAMEPAD_TYPE_PS4:
+    case SDL_GAMEPAD_TYPE_PS5:
+      return InputManager::GamepadButtonType::PlayStation;
+
+    default:
+      return InputManager::GamepadButtonType::Unknown;
+  }
+}
+
 static const AxisInfo& GetAxisInfo(u8 type, u32 axis)
 {
   DebugAssert(type < SDL_GAMEPAD_TYPE_COUNT && axis < SDL_GAMEPAD_AXIS_COUNT);
@@ -1335,9 +1353,13 @@ bool SDLInputSource::OpenDevice(int index, bool is_gamecontroller)
     }
   }
 
+  std::optional<InputManager::GamepadButtonType> gamepad_button_type;
+  if (gamepad)
+    gamepad_button_type = GetGamepadButtonType(cd.gamepad_type);
+
   m_controllers.push_back(std::move(cd));
 
-  InputManager::OnInputDeviceConnected(device_key, fmt::format("SDL-{}", player_id), name);
+  InputManager::OnInputDeviceConnected(device_key, fmt::format("SDL-{}", player_id), name, gamepad_button_type);
   return true;
 }
 

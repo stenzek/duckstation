@@ -545,8 +545,16 @@ void XInputSource::HandleControllerConnection(u32 index, const ControllerState& 
   cd.has_small_motor = caps.Vibration.wRightMotorSpeed != 0;
   cd.last_state = state;
 
+  // try to detect xbox-like pads...
+  std::optional<InputManager::GamepadButtonType> gamepad_button_type;
+  if (caps.Type == XINPUT_DEVTYPE_GAMEPAD && caps.SubType == XINPUT_DEVSUBTYPE_GAMEPAD &&
+      !(caps.Flags & XINPUT_CAPS_NO_NAVIGATION))
+  {
+    gamepad_button_type = InputManager::GamepadButtonType::Xbox;
+  }
+
   InputManager::OnInputDeviceConnected(MakeGenericControllerDeviceKey(InputSourceType::XInput, index),
-                                       GetDeviceIdentifier(index), GetDeviceName(index));
+                                       GetDeviceIdentifier(index), GetDeviceName(index), gamepad_button_type);
 }
 
 void XInputSource::HandleControllerDisconnection(u32 index)

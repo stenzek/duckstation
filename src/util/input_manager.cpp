@@ -249,6 +249,7 @@ struct State
   bool relative_mouse_mode_active = false;
   bool hide_host_mouse_cursor = false;
   bool hide_host_mouse_cursor_active = false;
+  GamepadButtonType last_gamepad_button_type = GamepadButtonType::Unknown;
 
   std::recursive_mutex sources_mutex;
 
@@ -1876,18 +1877,49 @@ std::vector<std::string> InputManager::GetInputProfileNames()
   return ret;
 }
 
+InputManager::GamepadButtonType InputManager::GetLastGamepadButtonType()
+{
+  return s_state.last_gamepad_button_type;
+}
+
 void InputManager::OnInputDeviceConnected(InputBindingKey key, std::string_view identifier,
-                                          std::string_view device_name)
+                                          std::string_view device_name,
+                                          std::optional<GamepadButtonType> gamepad_button_type)
 {
   INFO_LOG("Device '{}' connected: '{}'", identifier, device_name);
   SynchronizePadEffectBindings(key);
   Host::OnInputDeviceConnected(key, identifier, device_name);
 
-  if ((System::IsValid() || VideoThread::IsFullscreenUIRequested()) &&
-      System::GetProcessUptime() >= DEVICE_CONNECTED_NOTIFICATION_DELAY)
+  const bool has_fsui = (System::IsValid() || VideoThread::IsFullscreenUIRequested());
+  if (has_fsui && System::GetProcessUptime() >= DEVICE_CONNECTED_NOTIFICATION_DELAY)
   {
     Host::AddIconOSDMessage(OSDMessageType::Info, fmt::format("ControllerConnected{}", identifier), ICON_FA_GAMEPAD,
                             fmt::format(TRANSLATE_FS("InputManager", "Controller {} connected."), identifier));
+  }
+
+  if (gamepad_button_type.has_value() && s_state.last_gamepad_button_type != gamepad_button_type.value())
+  {
+    s_state.last_gamepad_button_type = gamepad_button_type.value();
+
+    const char* gamepad_type_str;
+    switch (s_state.last_gamepad_button_type)
+    {
+      case GamepadButtonType::Xbox:
+        gamepad_type_str = "Xbox";
+        break;
+      case GamepadButtonType::PlayStation:
+        gamepad_type_str = "PlayStation";
+        break;
+      case GamepadButtonType::Unknown:
+      default:
+        gamepad_type_str = "Unknown";
+        break;
+    }
+    INFO_LOG("Gamepad button type set to {}", gamepad_type_str);
+
+    // Skip updating gamepad type if FSUI isn't running, it'll read it again when starting.
+    if (has_fsui)
+      ImGuiManager::SetGamepadButtonType(s_state.last_gamepad_button_type);
   }
 }
 
