@@ -537,6 +537,7 @@ TRANSLATE_NOOP("FullscreenUI", "OK");
 TRANSLATE_NOOP("FullscreenUI", "OSD Scale");
 TRANSLATE_NOOP("FullscreenUI", "On-Screen Display");
 TRANSLATE_NOOP("FullscreenUI", "On-Screen Display Message Durations");
+TRANSLATE_NOOP("FullscreenUI", "Only measured achievements can be pinned.");
 TRANSLATE_NOOP("FullscreenUI", "Open Containing Directory");
 TRANSLATE_NOOP("FullscreenUI", "Open To Game List");
 TRANSLATE_NOOP("FullscreenUI", "Open in File Browser");
@@ -895,5 +896,7 @@ TRANSLATE_NOOP("FullscreenUI", "{} deleted.");
 TRANSLATE_NOOP("FullscreenUI", "{} does not exist.");
 TRANSLATE_NOOP("FullscreenUI", "{} is not a valid disc image.");
 TRANSLATE_NOOP("FullscreenUI", "{} of {}");
+TRANSLATE_NOOP("FullscreenUI", "{} pinned.");
+TRANSLATE_NOOP("FullscreenUI", "{} unpinned.");
 // TRANSLATION-STRING-AREA-END
 #endif

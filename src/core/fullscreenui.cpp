@@ -406,6 +406,11 @@ void FullscreenUI::ClosePauseMenuImmediately()
     VideoThread::PresentCurrentFrame();
 }
 
+FullscreenUI::MainWindowType FullscreenUI::GetCurrentMainWindow()
+{
+  return s_locals.current_main_window;
+}
+
 bool FullscreenUI::CanCurrentMainWindowStack()
 {
   // windows that are actually stackable

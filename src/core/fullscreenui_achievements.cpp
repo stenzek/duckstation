@@ -126,6 +126,7 @@ static void CachePauseMenuAchievementInfo(const rc_client_achievement_t* achieve
 
 static void DrawAchievement(const rc_client_achievement_t* cheevo, const ImVec2& prefetch_range);
 static void OpenAchievementDetails(u32 achievement_id);
+static void SetAchievementPinned(u32 achievement_id, bool pinned);
 
 static void LeaderboardFetchNearbyCallback(int result, const char* error_message,
                                            rc_client_leaderboard_entry_list_t* list, rc_client_t* client,
@@ -172,6 +173,7 @@ struct AchievementsLocals
 
   rc_client_achievement_list_t* achievement_list = nullptr;
   std::bitset<NUM_RC_CLIENT_ACHIEVEMENT_BUCKETS> achievement_buckets_collapsed = {};
+  u32 scroll_to_achievement_id = 0;
 
   rc_client_leaderboard_list_t* leaderboard_list = nullptr;
   const rc_client_leaderboard_t* open_leaderboard = nullptr;
@@ -217,6 +219,7 @@ void FullscreenUI::ClearAchievementsState()
     rc_client_destroy_achievement_list(s_achievements_locals.achievement_list);
     s_achievements_locals.achievement_list = nullptr;
   }
+  s_achievements_locals.scroll_to_achievement_id = 0;
 
   s_achievements_locals.open_subset = nullptr;
   s_achievements_locals.subset_info_list.clear();
@@ -1755,6 +1758,7 @@ void FullscreenUI::SwitchToAchievements()
 
   // reset collapsed buckets
   s_achievements_locals.achievement_buckets_collapsed.reset();
+  s_achievements_locals.scroll_to_achievement_id = 0;
 
   // sort unlocked achievements by unlock time
   for (size_t i = 0; i < s_achievements_locals.achievement_list->num_buckets; i++)
@@ -2058,14 +2062,16 @@ void FullscreenUI::DrawAchievementsWindow()
       SetFullscreenFooterText(
         std::array{std::make_pair(ICON_PF_XBOX_DPAD_LEFT_RIGHT, TRANSLATE_SV("Achievements", "Change Subset")),
                    std::make_pair(ICON_PF_XBOX_DPAD_UP_DOWN, TRANSLATE_SV("Achievements", "Change Selection")),
-                   std::make_pair(ICON_PF_BUTTON_A, TRANSLATE_SV("Achievements", "View Details / Pin")),
+                   std::make_pair(ICON_PF_BUTTON_X, TRANSLATE_SV("Achievements", "Pin Achievement")),
+                   std::make_pair(ICON_PF_BUTTON_A, TRANSLATE_SV("Achievements", "View Details")),
                    std::make_pair(ICON_PF_BUTTON_B, TRANSLATE_SV("Achievements", "Back"))});
     }
     else
     {
       SetFullscreenFooterText(
         std::array{std::make_pair(ICON_PF_XBOX_DPAD_UP_DOWN, TRANSLATE_SV("Achievements", "Change Selection")),
-                   std::make_pair(ICON_PF_BUTTON_A, TRANSLATE_SV("Achievements", "View Details / Pin")),
+                   std::make_pair(ICON_PF_BUTTON_X, TRANSLATE_SV("Achievements", "Pin Achievement")),
+                   std::make_pair(ICON_PF_BUTTON_A, TRANSLATE_SV("Achievements", "View Details")),
                    std::make_pair(ICON_PF_BUTTON_B, TRANSLATE_SV("Achievements", "Back"))});
     }
   }
@@ -2076,14 +2082,15 @@ void FullscreenUI::DrawAchievementsWindow()
       SetFullscreenFooterText(std::array{
         std::make_pair(ICON_PF_ARROW_LEFT ICON_PF_ARROW_RIGHT, TRANSLATE_SV("Achievements", "Change Subset")),
         std::make_pair(ICON_PF_ARROW_UP ICON_PF_ARROW_DOWN, TRANSLATE_SV("Achievements", "Change Selection")),
-        std::make_pair(ICON_PF_ENTER, TRANSLATE_SV("Achievements", "View Details / Pin")),
+        std::make_pair(ICON_PF_F4, TRANSLATE_SV("Achievements", "View Details")),
         std::make_pair(ICON_PF_ESC, TRANSLATE_SV("Achievements", "Back"))});
     }
     else
     {
       SetFullscreenFooterText(std::array{
         std::make_pair(ICON_PF_ARROW_UP ICON_PF_ARROW_DOWN, TRANSLATE_SV("Achievements", "Change Selection")),
-        std::make_pair(ICON_PF_ENTER, TRANSLATE_SV("Achievements", "View Details / Pin")),
+        std::make_pair(ICON_PF_F4, TRANSLATE_SV("Achievements", "Pin Achievement")),
+        std::make_pair(ICON_PF_ENTER, TRANSLATE_SV("Achievements", "View Details")),
         std::make_pair(ICON_PF_ESC, TRANSLATE_SV("Achievements", "Back"))});
     }
   }
@@ -2188,6 +2195,12 @@ void FullscreenUI::DrawAchievement(const rc_client_achievement_t* cheevo, const 
       GetCachedAchievementBadgePath(cheevo, !is_unlocked);
 
     return;
+  }
+
+  if (s_achievements_locals.scroll_to_achievement_id == cheevo->id)
+  {
+    s_achievements_locals.scroll_to_achievement_id = 0;
+    ImGui::ScrollToItem(ImGuiScrollFlags_KeepVisibleEdgeY);
   }
 
   ImDrawList* const dl = ImGui::GetWindowDrawList();
@@ -2333,8 +2346,7 @@ void FullscreenUI::DrawAchievement(const rc_client_achievement_t* cheevo, const 
                              OpenAchievementDetails(achievement_id);
                              break;
                            case 1: // Pin/Unpin
-                             Achievements::SetAchievementPinned(achievement_id, !pinned);
-                             SortLockedAchievements();
+                             SetAchievementPinned(achievement_id, !pinned);
                              break;
                            default:
                              break;
@@ -2346,6 +2358,16 @@ void FullscreenUI::DrawAchievement(const rc_client_achievement_t* cheevo, const 
       OpenAchievementDetails(cheevo->id);
     }
   }
+  else if (hovered)
+  {
+    if (ImGui::IsKeyPressed(ImGuiKey_F4, false) || ImGui::IsKeyPressed(ImGuiKey_NavGamepadMenu, false))
+    {
+      if (is_measured)
+        SetAchievementPinned(cheevo->id, !Achievements::IsAchievementPinned(cheevo->id));
+      else
+        ShowToast(OSDMessageType::Error, {}, FSUI_STR("Only measured achievements can be pinned."));
+    }
+  }
 }
 
 void FullscreenUI::OpenAchievementDetails(u32 achievement_id)
@@ -2353,6 +2375,27 @@ void FullscreenUI::OpenAchievementDetails(u32 achievement_id)
   const std::string url = fmt::format(fmt::runtime(ACHEIVEMENT_DETAILS_URL_TEMPLATE), achievement_id);
   INFO_LOG("Opening achievement details: {}", url);
   Host::OpenURL(url);
+}
+
+void FullscreenUI::SetAchievementPinned(u32 achievement_id, bool pinned)
+{
+  DebugAssert(VideoThread::IsOnThread());
+
+  BeginTransition(DEFAULT_TRANSITION_TIME, [achievement_id, pinned]() {
+    const rc_client_achievement_t* achievement =
+      rc_client_get_achievement_info(Achievements::GetClient(), achievement_id);
+    if (!achievement)
+      return;
+
+    ShowToast(
+      OSDMessageType::Info, {},
+      pinned ?
+        FSUI_ICONSTR(ICON_FA_THUMBTACK, SmallString::from_format(FSUI_FSTR("{} pinned."), achievement->title)) :
+        FSUI_ICONSTR(ICON_FA_THUMBTACK_SLASH, SmallString::from_format(FSUI_FSTR("{} unpinned."), achievement->title)));
+    Achievements::SetAchievementPinned(achievement_id, pinned);
+    SortLockedAchievements();
+    s_achievements_locals.scroll_to_achievement_id = achievement_id;
+  });
 }
 
 void FullscreenUI::OpenLeaderboardsWindow()
