@@ -3050,6 +3050,9 @@ ALWAYS_INLINE_RELEASE bool GPU_HW::BeginPolygonDraw(const GPUBackendDrawCommand*
       v2f = tv2f;
       min_pos_12 = tmin_pos_12;
       max_pos_12 = tmax_pos_12;
+      draw_rect_012 = GSVector4i(GSVector4(min_pos_12.min(v0f)).upld(GSVector4(max_pos_12.max(v0f))))
+                        .add32(GSVector4i::cxpr(0, 0, 1, 1));
+      clamped_draw_rect_012 = draw_rect_012.rintersect(m_clamped_drawing_area);
     }
     else
     {
