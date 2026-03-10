@@ -1082,7 +1082,8 @@ void GPUTextureCache::AddWrittenRectangle(const GSVector4i rect, bool update_vra
           // reorder it
           const u32 remaining_rects = page.num_draw_rects - i;
           if (remaining_rects > 0)
-            std::memmove(&page.draw_rects[i], &page.draw_rects[i + 1], sizeof(GSVector4i) * remaining_rects);
+            for (GSVector4i *it = &page.draw_rects[i], *end = &page.draw_rects[i + remaining_rects]; it != end; it++)
+              *it = *(it + 1);
         }
       }
 
@@ -1584,7 +1585,7 @@ void GPUTextureCache::Invalidate()
     PageEntry& page = s_state.pages[i];
     page.num_draw_rects = 0;
     page.total_draw_rect = GSVector4i::zero();
-    std::memset(page.draw_rects.data(), 0, sizeof(page.draw_rects));
+    page.draw_rects = {};
 
     while (page.writes.tail)
       RemoveVRAMWrite(page.writes.tail->ref);
