@@ -220,7 +220,7 @@ APPIMAGERUNTIME=./runtime-${RUNTIMEARCH}
 PATCHELF=patchelf
 
 if [ ! -f "$APPIMAGETOOL" ]; then
-	retry_command wget -O "$APPIMAGETOOL" https://github.com/stenzek/duckstation-ext-qt-minimal/releases/download/linux/appimagetool-x86_64.AppImage
+	retry_command wget -O "$APPIMAGETOOL" https://github.com/duckstation/dependencies/releases/download/appimage-tools/appimagetool-x86_64.AppImage
 	chmod +x "$APPIMAGETOOL"
 fi
 
