@@ -1201,7 +1201,7 @@ void CPU::Recompiler::Recompiler::CompileInstruction()
   const auto& cht_reg = Cheats::GetChtRegister();
   if (cht_reg[1024] > 0)
   {
-    for (int i = 0; i < cht_register[1024]; i++)
+    for (unsigned int i = 0; i < cht_reg[1024]; i++)
     {
       if (m_current_instruction_pc == cht_reg[i + 256] && inst->bits == cht_reg[i + 512])
       {
