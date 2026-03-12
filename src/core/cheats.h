@@ -7,6 +7,7 @@
 
 #include "types.h"
 
+#include <array>
 #include <functional>
 #include <memory>
 #include <optional>
@@ -170,5 +171,7 @@ extern bool IsWidescreenPatchActive();
 extern const char* PATCHES_CONFIG_SECTION;
 extern const char* CHEATS_CONFIG_SECTION;
 extern const char* PATCH_ENABLE_CONFIG_KEY;
+
+const std::array<u32, 1025>& GetChtRegister();
 
 } // namespace Cheats
