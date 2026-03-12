@@ -325,10 +325,8 @@ echo "Generating AppStream metainfo..."
 mkdir -p "$OUTDIR/usr/share/metainfo"
 "$SCRIPTDIR/generate-metainfo.sh" "$OUTDIR/usr/share/metainfo"
 
-# Copy AppRun
-cp "$SCRIPTDIR/apprun-cross.sh" "$OUTDIR/AppRun"
-chmod +x "$OUTDIR/AppRun"
-ln -s "usr/bin/$BINARY" "$OUTDIR/AppRun.wrapped"
+# Link AppRun to main binary.
+ln -s "usr/bin/$BINARY" "$OUTDIR/AppRun"
 
 echo "Generating AppImage..."
 rm -f "$APPIMAGENAME.AppImage"
