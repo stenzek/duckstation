@@ -19,14 +19,8 @@ function retry_command {
   done
 }
 
-if [ "$1" == "-inject-libc" ]; then
-	echo "Injecting libc/libstdc++"
-	INJECT_LIBC=true
-	shift
-fi
-
 if [ "$#" -ne 4 ]; then
-    echo "Syntax: $0 [-inject-libc] <duckstation-qt|duckstation-mini> <target arch> <path to build directory> <chroot dir>"
+    echo "Syntax: $0 <duckstation-qt|duckstation-mini> <target arch> <path to build directory> <chroot dir>"
     exit 1
 fi
 
@@ -335,12 +329,6 @@ mkdir -p "$OUTDIR/usr/share/metainfo"
 cp "$SCRIPTDIR/apprun-cross.sh" "$OUTDIR/AppRun"
 chmod +x "$OUTDIR/AppRun"
 ln -s "usr/bin/$BINARY" "$OUTDIR/AppRun.wrapped"
-
-# Optionally inject libc
-if [ "$INJECT_LIBC" == true ]; then
-	echo "Injecting libc/libc++..."
-	"$SCRIPTDIR/inject-libc.sh" "$OUTDIR" "$DEBARCH" "$TRIPLE" "$BINARY"
-fi
 
 echo "Generating AppImage..."
 rm -f "$APPIMAGENAME.AppImage"

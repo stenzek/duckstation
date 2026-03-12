@@ -91,7 +91,7 @@ jobs:
       run: |
         cmake --build build --parallel
         scripts/appimage/make-cross-appimage.sh duckstation-qt ${{ matrix.arch }} "$(realpath build)" "/${{ matrix.arch }}-chroot"
-        scripts/appimage/make-cross-appimage.sh -inject-libc duckstation-mini ${{ matrix.arch }} "$(realpath build)" "/${{ matrix.arch }}-chroot"
+        scripts/appimage/make-cross-appimage.sh duckstation-mini ${{ matrix.arch }} "$(realpath build)" "/${{ matrix.arch }}-chroot"
 
     - name: Upload AppImages
       uses: actions/upload-artifact@v6
