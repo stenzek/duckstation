@@ -95,25 +95,23 @@ foreach(dep zstd WebP PNG libjpeg-turbo freetype harfbuzz plutosvg cpuinfo
   endif()
 endforeach()
 
-if(BUILD_QT_FRONTEND)
-  # All our builds include Qt, so this is not a problem.
-  set(QT_NO_PRIVATE_MODULE_WARNING ON)
+# All our builds include Qt, so this is not a problem.
+set(QT_NO_PRIVATE_MODULE_WARNING ON)
 
-  # Should be prebuilt.
-  if(LINUX)
-    find_package(Qt6 6.10.2 REQUIRED
-                 NO_DEFAULT_PATH PATHS "${DEPS_PATH}/lib/cmake/Qt6"
-                 COMPONENTS Core Gui GuiPrivate Widgets LinguistTools DBus)
-  else()
-    find_package(Qt6 6.10.2 REQUIRED
-                 NO_DEFAULT_PATH PATHS "${DEPS_PATH}/lib/cmake/Qt6"
-                 COMPONENTS Core Gui GuiPrivate Widgets LinguistTools)
-  endif()
+# Should be prebuilt.
+if(LINUX)
+find_package(Qt6 6.10.2 REQUIRED
+                NO_DEFAULT_PATH PATHS "${DEPS_PATH}/lib/cmake/Qt6"
+                COMPONENTS Core Gui GuiPrivate Widgets LinguistTools DBus)
+else()
+find_package(Qt6 6.10.2 REQUIRED
+                NO_DEFAULT_PATH PATHS "${DEPS_PATH}/lib/cmake/Qt6"
+                COMPONENTS Core Gui GuiPrivate Widgets LinguistTools)
+endif()
 
-  # Have to verify it down here, don't want users using unpatched Qt.
-  if(NOT Qt6_DIR MATCHES "^${DEPS_PATH}")
-    message(FATAL_ERROR "Using incorrect Qt library. Check your dependencies.")
-  endif()
+# Have to verify it down here, don't want users using unpatched Qt.
+if(NOT Qt6_DIR MATCHES "^${DEPS_PATH}")
+message(FATAL_ERROR "Using incorrect Qt library. Check your dependencies.")
 endif()
 
 # Libraries that are pulled in from host.
