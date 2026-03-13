@@ -84,14 +84,13 @@ jobs:
     - name: Generate CMake
       shell: bash
       run: |
-        cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON -DCMAKE_TOOLCHAIN_FILE="$HOME/toolchain.cmake" -DHOST_MIN_PAGE_SIZE=4096 -DHOST_MAX_PAGE_SIZE=16384 -DHOST_CACHE_LINE_SIZE=64 -DBUILD_QT_FRONTEND=ON -DBUILD_MINI_FRONTEND=ON
+        cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON -DCMAKE_TOOLCHAIN_FILE="$HOME/toolchain.cmake" -DHOST_MIN_PAGE_SIZE=4096 -DHOST_MAX_PAGE_SIZE=16384 -DHOST_CACHE_LINE_SIZE=64
 
     - name: Compile Build
       shell: bash
       run: |
         cmake --build build --parallel
-        scripts/appimage/make-cross-appimage.sh duckstation-qt ${{ matrix.arch }} "$(realpath build)" "/${{ matrix.arch }}-chroot"
-        scripts/appimage/make-cross-appimage.sh duckstation-mini ${{ matrix.arch }} "$(realpath build)" "/${{ matrix.arch }}-chroot"
+        scripts/appimage/make-cross-appimage.sh "${{ matrix.arch }}" "$(realpath build)" "/${{ matrix.arch }}-chroot"
 
     - name: Upload AppImages
       uses: actions/upload-artifact@v6

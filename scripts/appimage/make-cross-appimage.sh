@@ -19,15 +19,14 @@ function retry_command {
   done
 }
 
-if [ "$#" -ne 4 ]; then
-    echo "Syntax: $0 <duckstation-qt|duckstation-mini> <target arch> <path to build directory> <chroot dir>"
+if [ "$#" -ne 3 ]; then
+    echo "Syntax: $0 <target arch> <path to build directory> <chroot dir>"
     exit 1
 fi
 
-BINARY=$1
-ARCH=$2
-BUILDDIR=$3
-CHROOTDIR=$4
+ARCH=$1
+BUILDDIR=$2
+CHROOTDIR=$3
 
 STRIP=llvm-strip
 
@@ -44,19 +43,7 @@ else
 	exit 1
 fi
 
-if [ "$BINARY" == "duckstation-qt" ]; then
-	echo "Building Qt AppImage."
-	ADD_QT_LIBS=true
-	APPIMAGENAME="DuckStation-${ARCH}"
-elif [ "$BINARY" == "duckstation-mini" ]; then
-	echo "Building Mini AppImage."
-	ADD_QT_LIBS=false
-	APPIMAGENAME="DuckStation-Mini-${ARCH}"
-else
-	echo "Unknown binary $BINARY"
-	exit 1
-fi
-
+APPIMAGENAME="DuckStation-${ARCH}"
 APPDIRNAME="${APPIMAGENAME}.AppDir"
 
 declare -a SYSLIBS=(
@@ -120,95 +107,93 @@ declare -a DEPLIBS=(
 	#"libva.so.2"
 )
 
-if [ "${ADD_QT_LIBS}" == true ]; then
-	SYSLIBS+=(
-		"libatk-1.0.so.0"
-		"libatk-bridge-2.0.so.0"
-		"libatspi.so.0"
-		"libblkid.so.1"
-		"libcairo-gobject.so.2"
-		"libcairo.so.2"
-		"libcap.so.2"
-		"libdatrie.so.1"
-		"libdeflate.so.0"
-		"libdbus-1.so.3"
-		"libepoxy.so.0"
-		"libgcrypt.so.20"
-		"libgdk-3.so.0"
-		"libgdk_pixbuf-2.0.so.0"
-		"libgio-2.0.so.0"
-		"libglib-2.0.so.0"
-		"libgmodule-2.0.so.0"
-		"libgobject-2.0.so.0"
-		"libgraphite2.so.3"
-		"libgtk-3.so.0"
-		"libjbig.so.0"
-		"liblz4.so.1"
-		"liblzma.so.5"
-		"libmd.so.0"
-		"libmount.so.1"
-		"libpango-1.0.so.0"
-		"libpangocairo-1.0.so.0"
-		"libpangoft2-1.0.so.0"
-		"libpcre2-16.so.0"
-		"libpcre2-8.so.0"
-		"libpcre.so.3"
-		"libpixman-1.so.0"
-		"libselinux.so.1"
-		"libsystemd.so.0"
-		"libtiff.so.5"
-		"libXau.so.6"
-		"libxcb-cursor.so.0"
-		"libxcb-glx.so.0"
-		"libxcb-icccm.so.4"
-		"libxcb-image.so.0"
-		"libxcb-keysyms.so.1"
-		"libxcb-randr.so.0"
-		"libxcb-render.so.0"
-		"libxcb-render-util.so.0"
-		"libxcb-shape.so.0"
-		"libxcb-shm.so.0"
-		"libxcb-sync.so.1"
-		"libxcb-util.so.1"
-		"libxcb-xfixes.so.0"
-		"libxcb-xkb.so.1"
-		"libXcomposite.so.1"
-		"libXcursor.so.1"
-		"libXdamage.so.1"
-		"libXdmcp.so.6"
-		"libXext.so.6"
-		"libXfixes.so.3"
-		"libXinerama.so.1"
-		"libXi.so.6"
-		"libxkbcommon.so.0"
-		"libxkbcommon-x11.so.0"
-		"libXrandr.so.2"
-		"libXrender.so.1"
-	)
+SYSLIBS+=(
+	"libatk-1.0.so.0"
+	"libatk-bridge-2.0.so.0"
+	"libatspi.so.0"
+	"libblkid.so.1"
+	"libcairo-gobject.so.2"
+	"libcairo.so.2"
+	"libcap.so.2"
+	"libdatrie.so.1"
+	"libdeflate.so.0"
+	"libdbus-1.so.3"
+	"libepoxy.so.0"
+	"libgcrypt.so.20"
+	"libgdk-3.so.0"
+	"libgdk_pixbuf-2.0.so.0"
+	"libgio-2.0.so.0"
+	"libglib-2.0.so.0"
+	"libgmodule-2.0.so.0"
+	"libgobject-2.0.so.0"
+	"libgraphite2.so.3"
+	"libgtk-3.so.0"
+	"libjbig.so.0"
+	"liblz4.so.1"
+	"liblzma.so.5"
+	"libmd.so.0"
+	"libmount.so.1"
+	"libpango-1.0.so.0"
+	"libpangocairo-1.0.so.0"
+	"libpangoft2-1.0.so.0"
+	"libpcre2-16.so.0"
+	"libpcre2-8.so.0"
+	"libpcre.so.3"
+	"libpixman-1.so.0"
+	"libselinux.so.1"
+	"libsystemd.so.0"
+	"libtiff.so.5"
+	"libXau.so.6"
+	"libxcb-cursor.so.0"
+	"libxcb-glx.so.0"
+	"libxcb-icccm.so.4"
+	"libxcb-image.so.0"
+	"libxcb-keysyms.so.1"
+	"libxcb-randr.so.0"
+	"libxcb-render.so.0"
+	"libxcb-render-util.so.0"
+	"libxcb-shape.so.0"
+	"libxcb-shm.so.0"
+	"libxcb-sync.so.1"
+	"libxcb-util.so.1"
+	"libxcb-xfixes.so.0"
+	"libxcb-xkb.so.1"
+	"libXcomposite.so.1"
+	"libXcursor.so.1"
+	"libXdamage.so.1"
+	"libXdmcp.so.6"
+	"libXext.so.6"
+	"libXfixes.so.3"
+	"libXinerama.so.1"
+	"libXi.so.6"
+	"libxkbcommon.so.0"
+	"libxkbcommon-x11.so.0"
+	"libXrandr.so.2"
+	"libXrender.so.1"
+)
 
-	declare -a QTLIBS=(
-		"libQt6Core.so.6"
-		"libQt6DBus.so.6"
-		"libQt6Gui.so.6"
-		"libQt6OpenGL.so.6"
-		"libQt6Svg.so.6"
-		"libQt6WaylandClient.so.6"
-		"libQt6Widgets.so.6"
-		"libQt6XcbQpa.so.6"
-	)
+declare -a QTLIBS=(
+	"libQt6Core.so.6"
+	"libQt6DBus.so.6"
+	"libQt6Gui.so.6"
+	"libQt6OpenGL.so.6"
+	"libQt6Svg.so.6"
+	"libQt6WaylandClient.so.6"
+	"libQt6Widgets.so.6"
+	"libQt6XcbQpa.so.6"
+)
 
-	declare -a QTPLUGINS=(
-		"plugins/iconengines"
-		"plugins/imageformats"
-		"plugins/platforminputcontexts"
-		"plugins/platforms"
-		"plugins/platformthemes"
-		"plugins/wayland-decoration-client"
-		"plugins/wayland-graphics-integration-client"
-		"plugins/wayland-shell-integration"
-		"plugins/xcbglintegrations"
-	)
-fi
+declare -a QTPLUGINS=(
+	"plugins/iconengines"
+	"plugins/imageformats"
+	"plugins/platforminputcontexts"
+	"plugins/platforms"
+	"plugins/platformthemes"
+	"plugins/wayland-decoration-client"
+	"plugins/wayland-graphics-integration-client"
+	"plugins/wayland-shell-integration"
+	"plugins/xcbglintegrations"
+)
 
 set -e
 IFS="
@@ -234,11 +219,11 @@ mkdir "$OUTDIR"
 mkdir -p "$OUTDIR/usr/bin" "$OUTDIR/usr/lib"
 
 echo "Copying binary and resources..."
-cp -a "$BUILDDIR/bin/$BINARY" "$BUILDDIR/bin/resources" "$BUILDDIR/bin/translations" "$OUTDIR/usr/bin"
+cp -a "$BUILDDIR/bin/duckstation-qt" "$BUILDDIR/bin/resources" "$BUILDDIR/bin/translations" "$OUTDIR/usr/bin"
 
 # Patch RPATH so the binary goes hunting for shared libraries in the AppDir instead of system.
-echo "Patching RPATH in ${BINARY}..."
-patchelf --set-rpath '$ORIGIN/../lib' "$OUTDIR/usr/bin/$BINARY"
+echo "Patching RPATH in duckstation-qt..."
+patchelf --set-rpath '$ORIGIN/../lib' "$OUTDIR/usr/bin/duckstation-qt"
 
 # Libraries we pull in from the system.
 echo "Copying system libraries..."
@@ -275,34 +260,32 @@ for lib in "${DEPLIBS[@]}"; do
 	"$STRIP" "$OUTDIR/usr/lib/$blib"
 done
 
-if [ "${ADD_QT_LIBS}" == true ]; then
-	echo "Copying Qt libraries..."
-	for lib in "${QTLIBS[@]}"; do
-		cp -avL "$DEPSDIR/lib/$lib" "$OUTDIR/usr/lib"
-		"$STRIP" "$OUTDIR/usr/lib/$lib"
-	done
+echo "Copying Qt libraries..."
+for lib in "${QTLIBS[@]}"; do
+	cp -avL "$DEPSDIR/lib/$lib" "$OUTDIR/usr/lib"
+	"$STRIP" "$OUTDIR/usr/lib/$lib"
+done
 
-	echo "Copying Qt plugins..."
-	mkdir -p $OUTDIR/usr/lib/plugins
-	for plugin in "${QTPLUGINS[@]}"; do
-		mkdir -p "$OUTDIR/usr/lib/$plugin"
-		cp -avL "$DEPSDIR/$plugin/"*.so "$OUTDIR/usr/lib/$plugin/"
-	done
+echo "Copying Qt plugins..."
+mkdir -p $OUTDIR/usr/lib/plugins
+for plugin in "${QTPLUGINS[@]}"; do
+	mkdir -p "$OUTDIR/usr/lib/$plugin"
+	cp -avL "$DEPSDIR/$plugin/"*.so "$OUTDIR/usr/lib/$plugin/"
+done
 
-	for so in $(find $OUTDIR/usr/lib/plugins -iname '*.so'); do
-		# This is ../../ because it's usually plugins/group/name.so
-		echo "Patching RPATH in ${so}..."
-		patchelf --set-rpath '$ORIGIN/../..' "$so"
-		"$STRIP" "$so"
-	done
+for so in $(find $OUTDIR/usr/lib/plugins -iname '*.so'); do
+	# This is ../../ because it's usually plugins/group/name.so
+	echo "Patching RPATH in ${so}..."
+	patchelf --set-rpath '$ORIGIN/../..' "$so"
+	"$STRIP" "$so"
+done
 
-	echo "Creating qt.conf..."
+echo "Creating qt.conf..."
 cat > "$OUTDIR/usr/bin/qt.conf" << EOF
 [Paths]
 Plugins = ../lib/plugins
 EOF
 
-fi
 
 for so in $(find $OUTDIR/usr/lib -maxdepth 1); do
 	if [ -f "$so" ]; then
@@ -326,7 +309,7 @@ mkdir -p "$OUTDIR/usr/share/metainfo"
 "$SCRIPTDIR/generate-metainfo.sh" "$OUTDIR/usr/share/metainfo"
 
 # Link AppRun to main binary.
-ln -s "usr/bin/$BINARY" "$OUTDIR/AppRun"
+ln -s "usr/bin/duckstation-qt" "$OUTDIR/AppRun"
 
 echo "Generating AppImage..."
 rm -f "$APPIMAGENAME.AppImage"
