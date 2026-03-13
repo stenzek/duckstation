@@ -471,6 +471,8 @@ struct Settings : public GPUSettings
 
   bool AreGPUDeviceSettingsChanged(const Settings& old_settings) const;
 
+  static std::span<const char* const> GetSectionSaveOrder();
+
   /// Initializes configuration.
   static void SetDefaultLogConfig(SettingsInterface& si);
   static void UpdateLogConfig(const SettingsInterface& si);

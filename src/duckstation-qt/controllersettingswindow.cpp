@@ -15,6 +15,7 @@
 #include "util/input_manager.h"
 
 #include "common/assert.h"
+#include "common/error.h"
 #include "common/file_system.h"
 
 #include <QtWidgets/QInputDialog>
@@ -227,11 +228,13 @@ void ControllerSettingsWindow::onNewProfileClicked()
     }
   }
 
-  if (!temp_si.Save())
+  Error error;
+  if (!temp_si.Save(&error, Settings::GetSectionSaveOrder()))
   {
-    QtUtils::AsyncMessageBox(
-      this, QMessageBox::Critical, tr("Error"),
-      tr("Failed to save the new preset to '%1'.").arg(QString::fromStdString(temp_si.GetPath())));
+    QtUtils::AsyncMessageBox(this, QMessageBox::Critical, tr("Error"),
+                             tr("Failed to save the new preset to '%1':\n%2")
+                               .arg(QString::fromStdString(temp_si.GetPath()))
+                               .arg(QString::fromStdString(error.GetDescription())));
     return;
   }
 
@@ -316,7 +319,14 @@ void ControllerSettingsWindow::onCopyGlobalSettingsClicked()
                                     false);
   }
 
-  m_editing_settings_interface->Save();
+  Error error;
+  if (!m_editing_settings_interface->Save(&error, Settings::GetSectionSaveOrder()))
+  {
+    QtUtils::AsyncMessageBox(this, QMessageBox::Critical, tr("Error"),
+                             tr("Failed to save the preset:\n%1").arg(QString::fromStdString(error.GetDescription())));
+    return;
+  }
+
   g_core_thread->reloadGameSettings();
   createWidgets();
 
@@ -409,7 +419,7 @@ void ControllerSettingsWindow::clearSettingValue(const char* section, const char
   if (m_editing_settings_interface)
   {
     m_editing_settings_interface->DeleteValue(section, key);
-    m_editing_settings_interface->Save();
+    m_editing_settings_interface->Save(nullptr, Settings::GetSectionSaveOrder());
     g_core_thread->reloadGameSettings();
   }
   else

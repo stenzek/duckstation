@@ -250,7 +250,7 @@ static bool ValueNeedsQuoting(std::string_view value)
   return value.find_first_of("#;") != std::string_view::npos;
 }
 
-std::string INISettingsInterface::SaveToString() const
+std::string INISettingsInterface::SaveToString(SectionSaveOrder save_order /* = {} */) const
 {
   // Calculate the exact output size to preallocate.
   size_t total_size = 0;
@@ -280,46 +280,97 @@ std::string INISettingsInterface::SaveToString() const
   output.reserve(total_size);
 
   first_section = true;
-  for (const Section& section : m_sections)
+
+  // No save order is easier.
+  if (save_order.empty())
   {
-    const std::string_view section_name = GetPoolStringView(section.name);
-
-    if (!first_section)
-      output += '\n';
-    first_section = false;
-
-    if (!section_name.empty())
+    for (const Section& section : m_sections)
     {
-      output += '[';
-      output += section_name;
-      output += "]\n";
+      if (!first_section)
+        output += '\n';
+      first_section = false;
+
+      SaveSection(output, section);
+    }
+  }
+  else
+  {
+    // Save ordered sections first.
+    std::vector<bool> saved_sections(m_sections.size(), false);
+    for (const char* ordered_section : save_order)
+    {
+      const std::string_view ordered_section_v = ordered_section;
+      for (size_t i = 0; i < m_sections.size(); i++)
+      {
+        if (saved_sections[i])
+          continue;
+
+        const Section& section = m_sections[i];
+        const std::string_view section_name = GetPoolStringView(section.name);
+
+        // Save this section if it matches the ordered section name, or if it starts with it (for prefix matching).
+        if (section_name == ordered_section_v ||
+            (section_name.length() > ordered_section_v.size() && section_name[ordered_section_v.size()] == '/' &&
+             section_name.starts_with(ordered_section_v)))
+        {
+          if (!first_section)
+            output += '\n';
+          first_section = false;
+          saved_sections[i] = true;
+          SaveSection(output, section);
+        }
+      }
     }
 
-    for (const KeyValuePair& kv : section.entries)
+    // And then anything remaining.
+    for (size_t i = 0; i < m_sections.size(); i++)
     {
-      const std::string_view key = GetPoolStringView(kv.key);
-      const std::string_view value = GetPoolStringView(kv.value);
+      if (saved_sections[i])
+        continue;
 
-      output += key;
-      output += " = ";
-      if (ValueNeedsQuoting(value))
-      {
-        output += '"';
-        output += value;
-        output += '"';
-      }
-      else
-      {
-        output += value;
-      }
-      output += '\n';
+      if (!first_section)
+        output += '\n';
+      first_section = false;
+
+      SaveSection(output, m_sections[i]);
     }
   }
 
   return output;
 }
 
-bool INISettingsInterface::Save(Error* error)
+void INISettingsInterface::SaveSection(std::string& output, const Section& section) const
+{
+  const std::string_view section_name = GetPoolStringView(section.name);
+  if (!section_name.empty())
+  {
+    output += '[';
+    output += section_name;
+    output += "]\n";
+  }
+
+  for (const KeyValuePair& kv : section.entries)
+  {
+    const std::string_view key = GetPoolStringView(kv.key);
+    const std::string_view value = GetPoolStringView(kv.value);
+
+    output += key;
+    output += " = ";
+    if (ValueNeedsQuoting(value))
+    {
+      output += '"';
+      output += value;
+      output += '"';
+    }
+    else
+    {
+      output += value;
+    }
+    output += '\n';
+  }
+}
+
+bool INISettingsInterface::Save(Error* error /* = nullptr */, SectionSaveOrder save_order /* = {} */)
 {
   if (m_path.empty())
   {
@@ -335,7 +386,7 @@ bool INISettingsInterface::Save(Error* error)
     return false;
   }
 
-  const std::string data = SaveToString();
+  const std::string data = SaveToString(save_order);
   const bool write_ok = (std::fwrite(data.data(), 1, data.size(), fp.get()) == data.size());
 
   if (!write_ok)

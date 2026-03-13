@@ -1,10 +1,12 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #pragma once
+
 #include "common/settings_interface.h"
 #include "common/string_pool.h"
 
+#include <span>
 #include <string_view>
 #include <vector>
 
@@ -31,6 +33,8 @@ public:
   };
   using SectionList = std::vector<Section>;
 
+  using SectionSaveOrder = std::span<const char* const>;
+
   INISettingsInterface();
   INISettingsInterface(std::string path);
   ~INISettingsInterface() override;
@@ -42,8 +46,8 @@ public:
   bool Load(Error* error = nullptr);
   bool Load(std::string new_path, Error* error = nullptr);
   bool LoadFromString(std::string_view data);
-  bool Save(Error* error = nullptr);
-  std::string SaveToString() const;
+  bool Save(Error* error = nullptr, SectionSaveOrder save_order = {});
+  std::string SaveToString(SectionSaveOrder save_order = {}) const;
 
   void Clear();
   void ClearPathAndContents();
@@ -84,6 +88,8 @@ private:
 
   // Returns a pointer to the raw value string for the first match, or nullptr.
   const KeyValuePair* FindFirstKeyValue(std::string_view section, std::string_view key) const;
+
+  void SaveSection(std::string& output, const Section& section) const;
 
   std::string m_path;
   BumpUniqueStringPool m_string_pool;

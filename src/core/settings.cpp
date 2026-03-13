@@ -155,6 +155,59 @@ const MediaCaptureBackend Settings::DEFAULT_MEDIA_CAPTURE_BACKEND = MediaCapture
 const MediaCaptureBackend Settings::DEFAULT_MEDIA_CAPTURE_BACKEND = MediaCaptureBackend::MaxCount;
 #endif
 
+std::span<const char* const> Settings::GetSectionSaveOrder()
+{
+  static constexpr std::array order = {
+    // clang-format off
+    "Patches",
+    "Cheats",
+    "Main",
+    "UI",
+    "GameListTableView",
+    "AutoUpdater",
+    "Folders",
+    "GameList",
+    "Cheevos",
+    "Logging",
+    "BIOS",
+    "Console",
+    "CPU",
+    "GPU",
+    "Display",
+    "CDROM",
+    "Audio",
+    "MemoryCards",
+    "TextureReplacements",
+    "MediaCapture",
+    "InternalPostProcessing",
+    "PostProcessing",
+    "BorderOverlay",
+    "InputSources",
+#ifdef ENABLE_SDL
+    "SDLExtra",
+#endif
+    "ControllerPorts",
+    "Pad1",
+    "Pad2",
+    "Pad3",
+    "Pad4",
+    "Pad5",
+    "Pad6",
+    "Pad7",
+    "Pad8",
+    "Hotkeys",
+    "PIO",
+    "SIO",
+    "PCDrv",
+    "Debug",
+    "DebugWindows",
+    "Hacks",
+    // clang-format on
+  };
+
+  return order;
+}
+
 Settings::Settings()
 {
   display_osd_margin = ImGuiManager::DEFAULT_SCREEN_MARGIN;

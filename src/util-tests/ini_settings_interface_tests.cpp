@@ -846,3 +846,198 @@ TEST(INISettingsInterface, SetPathDirtyFlag)
   si.SetPath("/tmp/new_path.ini");
   EXPECT_TRUE(si.IsDirty());
 }
+
+// ---- Ordered Save ----
+
+TEST(INISettingsInterface, OrderedSaveEmptyOrder)
+{
+  INISettingsInterface si;
+  si.LoadFromString("[B]\nb = 2\n\n[A]\na = 1\n");
+
+  const std::string without_order = si.SaveToString();
+  const std::string with_empty_order = si.SaveToString({});
+  EXPECT_EQ(without_order, with_empty_order);
+}
+
+TEST(INISettingsInterface, OrderedSaveBasic)
+{
+  INISettingsInterface si;
+  si.LoadFromString("[Alpha]\na = 1\n\n[Beta]\nb = 2\n\n[Gamma]\ng = 3\n");
+
+  // Request Gamma first, then Alpha.
+  const char* const order[] = {"Gamma", "Alpha"};
+  const std::string output = si.SaveToString(order);
+  EXPECT_EQ(output,
+            "[Gamma]\ng = 3\n\n"
+            "[Alpha]\na = 1\n\n"
+            "[Beta]\nb = 2\n");
+}
+
+TEST(INISettingsInterface, OrderedSaveAllSections)
+{
+  INISettingsInterface si;
+  si.LoadFromString("[A]\na = 1\n\n[B]\nb = 2\n\n[C]\nc = 3\n");
+
+  // Reverse the natural alphabetical order.
+  const char* const order[] = {"C", "B", "A"};
+  const std::string output = si.SaveToString(order);
+  EXPECT_EQ(output,
+            "[C]\nc = 3\n\n"
+            "[B]\nb = 2\n\n"
+            "[A]\na = 1\n");
+}
+
+TEST(INISettingsInterface, OrderedSaveNonExistentSections)
+{
+  INISettingsInterface si;
+  si.LoadFromString("[A]\na = 1\n\n[B]\nb = 2\n");
+
+  // "Missing" doesn't exist; should be silently skipped.
+  const char* const order[] = {"Missing", "B"};
+  const std::string output = si.SaveToString(order);
+  EXPECT_EQ(output,
+            "[B]\nb = 2\n\n"
+            "[A]\na = 1\n");
+}
+
+TEST(INISettingsInterface, OrderedSaveRemainingInAlphabeticalOrder)
+{
+  INISettingsInterface si;
+  si.LoadFromString("[Delta]\nd = 4\n\n[Alpha]\na = 1\n\n[Charlie]\nc = 3\n\n[Bravo]\nb = 2\n");
+
+  // Only specify Charlie; rest should come after in alphabetical order.
+  const char* const order[] = {"Charlie"};
+  const std::string output = si.SaveToString(order);
+  EXPECT_EQ(output,
+            "[Charlie]\nc = 3\n\n"
+            "[Alpha]\na = 1\n\n"
+            "[Bravo]\nb = 2\n\n"
+            "[Delta]\nd = 4\n");
+}
+
+TEST(INISettingsInterface, OrderedSaveSingleSection)
+{
+  INISettingsInterface si;
+  si.LoadFromString("[Only]\nkey = val\n");
+
+  const char* const order[] = {"Only"};
+  const std::string output = si.SaveToString(order);
+  EXPECT_EQ(output, "[Only]\nkey = val\n");
+}
+
+TEST(INISettingsInterface, OrderedSaveEmptyINI)
+{
+  INISettingsInterface si;
+  si.LoadFromString("");
+
+  const char* const order[] = {"A", "B"};
+  const std::string output = si.SaveToString(order);
+  EXPECT_TRUE(output.empty());
+}
+
+TEST(INISettingsInterface, OrderedSaveDuplicateOrderEntries)
+{
+  INISettingsInterface si;
+  si.LoadFromString("[A]\na = 1\n\n[B]\nb = 2\n");
+
+  // "A" appears twice; section A should only be written once.
+  const char* const order[] = {"A", "B", "A"};
+  const std::string output = si.SaveToString(order);
+  EXPECT_EQ(output,
+            "[A]\na = 1\n\n"
+            "[B]\nb = 2\n");
+}
+
+TEST(INISettingsInterface, OrderedSaveContentPreserved)
+{
+  INISettingsInterface si;
+  si.LoadFromString("[Z]\n"
+                    "plain = hello\n"
+                    "quoted = \"value ; with # chars\"\n\n"
+                    "[A]\n"
+                    "num = 42\n");
+
+  const char* const order[] = {"Z"};
+  const std::string output = si.SaveToString(order);
+
+  // Z comes first (as ordered), A follows. Quoting is preserved on save.
+  EXPECT_EQ(output,
+            "[Z]\nplain = hello\nquoted = \"value ; with # chars\"\n\n"
+            "[A]\nnum = 42\n");
+}
+
+TEST(INISettingsInterface, OrderedSavePrefixMatching)
+{
+  INISettingsInterface si;
+  si.LoadFromString("[Other]\no = 0\n\n"
+                    "[Pad]\np = 1\n\n"
+                    "[Pad/1]\np1 = 2\n\n"
+                    "[Pad/2]\np2 = 3\n");
+
+  // "Pad" should match "Pad" (exact) and "Pad/1", "Pad/2" (prefix with /).
+  const char* const order[] = {"Pad"};
+  const std::string output = si.SaveToString(order);
+  EXPECT_EQ(output,
+            "[Pad]\np = 1\n\n"
+            "[Pad/1]\np1 = 2\n\n"
+            "[Pad/2]\np2 = 3\n\n"
+            "[Other]\no = 0\n");
+}
+
+TEST(INISettingsInterface, OrderedSavePrefixBoundary)
+{
+  INISettingsInterface si;
+  si.LoadFromString("[Pad]\np = 1\n\n"
+                    "[Pad/1]\np1 = 2\n\n"
+                    "[Pad2]\np2 = 3\n\n"
+                    "[Padding]\npd = 4\n");
+
+  // "Pad" should match "Pad" and "Pad/1", but NOT "Pad2" or "Padding".
+  const char* const order[] = {"Pad"};
+  const std::string output = si.SaveToString(order);
+  EXPECT_EQ(output,
+            "[Pad]\np = 1\n\n"
+            "[Pad/1]\np1 = 2\n\n"
+            "[Pad2]\np2 = 3\n\n"
+            "[Padding]\npd = 4\n");
+}
+
+TEST(INISettingsInterface, OrderedSavePrefixGroupsPreserveOrder)
+{
+  INISettingsInterface si;
+  si.LoadFromString("[Pad/3]\np3 = 3\n\n"
+                    "[Pad/1]\np1 = 1\n\n"
+                    "[Pad/2]\np2 = 2\n\n"
+                    "[Other]\no = 0\n");
+
+  // Sub-sections should appear in their natural (alphabetical) order within the prefix group.
+  const char* const order[] = {"Pad"};
+  const std::string output = si.SaveToString(order);
+  EXPECT_EQ(output,
+            "[Pad/1]\np1 = 1\n\n"
+            "[Pad/2]\np2 = 2\n\n"
+            "[Pad/3]\np3 = 3\n\n"
+            "[Other]\no = 0\n");
+}
+
+TEST(INISettingsInterface, OrderedSaveMultiplePrefixes)
+{
+  INISettingsInterface si;
+  si.LoadFromString("[Hotkey]\nh = 0\n\n"
+                    "[Hotkey/1]\nh1 = 1\n\n"
+                    "[Other]\no = 0\n\n"
+                    "[Pad]\np = 0\n\n"
+                    "[Pad/1]\np1 = 1\n\n"
+                    "[Pad/2]\np2 = 2\n");
+
+  // Pad group first, then Hotkey group, then remaining.
+  const char* const order[] = {"Pad", "Hotkey"};
+  const std::string output = si.SaveToString(order);
+  EXPECT_EQ(output,
+            "[Pad]\np = 0\n\n"
+            "[Pad/1]\np1 = 1\n\n"
+            "[Pad/2]\np2 = 2\n\n"
+            "[Hotkey]\nh = 0\n\n"
+            "[Hotkey/1]\nh1 = 1\n\n"
+            "[Other]\no = 0\n");
+}

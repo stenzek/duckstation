@@ -3159,7 +3159,7 @@ void FullscreenUI::DoSaveInputProfile(const std::string& name)
   const auto lock = Core::GetSettingsLock();
   SettingsInterface* ssi = GetEditingSettingsInterface();
   InputManager::CopyConfiguration(&dsi, *ssi, true, false, true, false);
-  if (dsi.Save())
+  if (dsi.Save(nullptr, Settings::GetSectionSaveOrder()))
     ShowToast(OSDMessageType::Quick, {}, fmt::format(FSUI_FSTR("Controller preset '{}' saved."), name));
   else
     ShowToast(OSDMessageType::Info, {}, fmt::format(FSUI_FSTR("Failed to save controller preset '{}'."), name));
