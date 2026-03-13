@@ -418,7 +418,8 @@ bool VulkanDevice::EnableOptionalDeviceExtensions(VkPhysicalDevice physical_devi
 
 #ifdef _WIN32
   m_optional_extensions.vk_ext_full_screen_exclusive =
-    enable_surface && SupportsAndAddExtension(VK_EXT_FULL_SCREEN_EXCLUSIVE_EXTENSION_NAME);
+    (enable_surface && VulkanLoader::GetOptionalExtensions().vk_khr_get_surface_capabilities2 &&
+     SupportsAndAddExtension(VK_EXT_FULL_SCREEN_EXCLUSIVE_EXTENSION_NAME));
   LOG_EXT("VK_EXT_full_screen_exclusive", vk_ext_full_screen_exclusive);
 #endif
 

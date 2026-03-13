@@ -447,9 +447,6 @@ bool VulkanLoader::SelectInstanceExtensions(VulkanDevice::ExtensionList* extensi
   if (debug_instance && !SupportsExtension(VK_EXT_DEBUG_UTILS_EXTENSION_NAME, false))
     WARNING_LOG("Vulkan: Debug report requested, but extension is not available.");
 
-  // Needed for exclusive fullscreen control.
-  SupportsExtension(VK_KHR_GET_SURFACE_CAPABILITIES_2_EXTENSION_NAME, false);
-
   s_locals.optional_extensions.vk_khr_get_surface_capabilities2 =
     (wtype != WindowInfoType::Surfaceless &&
      SupportsExtension(VK_KHR_GET_SURFACE_CAPABILITIES_2_EXTENSION_NAME, false));
