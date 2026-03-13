@@ -58,7 +58,9 @@ jobs:
       run: |
         set /p DEPS_VERSION=<dep\PREBUILT-VERSION
         curl --retry 5 --retry-all-errors -LO "https://github.com/duckstation/dependencies/releases/download/%DEPS_VERSION%/deps-windows-x64.7z"
+        sha256sum --check --ignore-missing dep\PREBUILT-SHA256SUMS
         "C:\Program Files\7-Zip\7z.exe" x -odep\prebuilt deps-windows-x64.7z
+        del /Q deps-windows-x64.7z
 
     - name: Download ARM64 Dependencies
       shell: cmd
@@ -66,7 +68,9 @@ jobs:
       run: |
         set /p DEPS_VERSION=<dep\PREBUILT-VERSION
         curl --retry 5 --retry-all-errors -LO "https://github.com/duckstation/dependencies/releases/download/%DEPS_VERSION%/deps-windows-arm64.7z"
+        sha256sum --check --ignore-missing dep\PREBUILT-SHA256SUMS
         "C:\Program Files\7-Zip\7z.exe" x -odep\prebuilt deps-windows-arm64.7z
+        del /Q deps-windows-arm64.7z
 
     - name: Download Patch Archives
       shell: cmd

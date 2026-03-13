@@ -28,6 +28,7 @@ jobs:
         DEPS_VERSION=$(cat dep/PREBUILT-VERSION)
         cd dep/prebuilt
         curl --retry 5 --retry-all-errors -LO "https://github.com/duckstation/dependencies/releases/download/$DEPS_VERSION/deps-macos-universal.tar.xz"
+        sha256sum --check --ignore-missing ../PREBUILT-SHA256SUMS
         tar -xf "deps-macos-universal.tar.xz"
         rm "deps-macos-universal.tar.xz"
 
