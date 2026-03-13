@@ -53,8 +53,6 @@ public:
   static std::unique_ptr<OpenGLContext> Create(WindowInfo& wi, SurfaceHandle* surface, bool prefer_gles_context,
                                                Error* error);
 
-  static GPUDevice::AdapterInfoList GetAdapterList(WindowInfoType window_type, Error* error);
-
 protected:
   Version m_version = {};
 };

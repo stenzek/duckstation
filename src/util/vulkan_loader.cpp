@@ -15,11 +15,6 @@
 #include "common/error.h"
 #include "common/log.h"
 
-#ifdef ENABLE_SDL
-#include "sdl_video_helpers.h"
-#include <SDL3/SDL_vulkan.h>
-#endif
-
 #include <cstdarg>
 #include <cstdio>
 #include <cstdlib>
@@ -47,19 +42,12 @@ static bool LoadInstanceFunctions(VkInstance instance, Error* error);
 static void ResetInstanceFunctions();
 static void UnloadVulkanLibrary();
 
-#ifdef ENABLE_SDL
-static bool LoadVulkanLibraryFromSDL(Error* error);
-static void UnloadVulkanLibraryFromSDL();
-#endif
-
 static bool LockedCreateVulkanInstance(WindowInfoType wtype, bool* request_debug_instance, Error* error);
 static void LockedReleaseVulkanInstance();
 static void LockedDestroyVulkanInstance();
 
 static bool SelectInstanceExtensions(VulkanDevice::ExtensionList* extension_list, WindowInfoType wtype,
                                      bool debug_instance, Error* error);
-
-static std::vector<GPUDevice::ExclusiveFullscreenMode> EnumerateFullscreenModes(WindowInfoType wtype);
 
 VKAPI_ATTR static VkBool32 VKAPI_CALL DebugMessengerCallback(VkDebugUtilsMessageSeverityFlagBitsEXT severity,
                                                              VkDebugUtilsMessageTypeFlagsEXT messageType,
@@ -76,9 +64,6 @@ struct Locals
   OptionalExtensions optional_extensions{};
   WindowInfoType window_type = WindowInfoType::Surfaceless;
   bool is_debug_instance = false;
-#ifdef ENABLE_SDL
-  bool library_loaded_from_sdl = false;
-#endif
 
   std::mutex mutex;
 };
@@ -91,25 +76,6 @@ ALIGN_TO_CACHE_LINE static Locals s_locals;
 
 bool VulkanLoader::LoadVulkanLibrary(WindowInfoType wtype, Error* error)
 {
-#ifdef ENABLE_SDL
-  // Switching to/from SDL?
-  if (wtype == WindowInfoType::SDL)
-  {
-    if (s_locals.library_loaded_from_sdl)
-      return true;
-
-    UnloadVulkanLibrary();
-    if (!LoadVulkanLibraryFromSDL(error))
-      return false;
-  }
-  else
-  {
-    // Unload from SDL if we were previously using it.. unlikely.
-    if (s_locals.library_loaded_from_sdl)
-      UnloadVulkanLibraryFromSDL();
-  }
-#endif
-
   if (s_locals.library.IsOpen())
     return true;
 
@@ -159,14 +125,6 @@ bool VulkanLoader::LoadVulkanLibrary(WindowInfoType wtype, Error* error)
 
 void VulkanLoader::UnloadVulkanLibrary()
 {
-#ifdef ENABLE_SDL
-  if (s_locals.library_loaded_from_sdl)
-  {
-    UnloadVulkanLibraryFromSDL();
-    return;
-  }
-#endif
-
   ResetModuleFunctions();
   s_locals.library.Close();
 }
@@ -177,64 +135,6 @@ void VulkanLoader::ResetModuleFunctions()
 #include "vulkan_entry_points.inl"
 #undef VULKAN_MODULE_ENTRY_POINT
 }
-
-#ifdef ENABLE_SDL
-
-bool VulkanLoader::LoadVulkanLibraryFromSDL(Error* error)
-{
-  if (!SDL_Vulkan_LoadLibrary(nullptr))
-  {
-    Error::SetStringFmt(error, "SDL_Vulkan_LoadLibrary() failed: {}", SDL_GetError());
-    return false;
-  }
-
-  vkGetInstanceProcAddr = reinterpret_cast<PFN_vkGetInstanceProcAddr>(SDL_Vulkan_GetVkGetInstanceProcAddr());
-  if (!vkGetInstanceProcAddr)
-  {
-    Error::SetStringFmt(error, "SDL_Vulkan_GetVkGetInstanceProcAddr() failed: {}", SDL_GetError());
-    SDL_Vulkan_UnloadLibrary();
-    return false;
-  }
-
-  bool required_functions_missing = false;
-  const auto load_function = [&error, &required_functions_missing](PFN_vkVoidFunction* func_ptr, const char* name,
-                                                                   bool is_required) {
-    // vkGetInstanceProcAddr() can't resolve itself until Vulkan 1.2.
-    if (func_ptr == reinterpret_cast<PFN_vkVoidFunction*>(&vkGetInstanceProcAddr))
-      return;
-
-    *func_ptr = vkGetInstanceProcAddr(nullptr, name);
-    if (!(*func_ptr) && is_required && !required_functions_missing)
-    {
-      Error::SetStringFmt(error, "Failed to load required module function {}", name);
-      required_functions_missing = true;
-    }
-  };
-
-#define VULKAN_MODULE_ENTRY_POINT(name, required)                                                                      \
-  load_function(reinterpret_cast<PFN_vkVoidFunction*>(&name), #name, required);
-#include "vulkan_entry_points.inl"
-#undef VULKAN_MODULE_ENTRY_POINT
-
-  if (required_functions_missing)
-  {
-    ResetModuleFunctions();
-    SDL_Vulkan_UnloadLibrary();
-    return false;
-  }
-
-  s_locals.library_loaded_from_sdl = true;
-  return true;
-}
-
-void VulkanLoader::UnloadVulkanLibraryFromSDL()
-{
-  ResetModuleFunctions();
-  s_locals.library_loaded_from_sdl = false;
-  SDL_Vulkan_UnloadLibrary();
-}
-
-#endif // ENABLE_SDL
 
 bool VulkanLoader::LoadInstanceFunctions(VkInstance instance, Error* error)
 {
@@ -543,25 +443,6 @@ bool VulkanLoader::SelectInstanceExtensions(VulkanDevice::ExtensionList* extensi
   }
 #endif
 
-#if defined(ENABLE_SDL)
-  if (wtype == WindowInfoType::SDL)
-  {
-    Uint32 sdl_extension_count = 0;
-    const char* const* sdl_extensions = SDL_Vulkan_GetInstanceExtensions(&sdl_extension_count);
-    if (!sdl_extensions)
-    {
-      ERROR_LOG("SDL_Vulkan_GetInstanceExtensions() failed: {}", SDL_GetError());
-      return false;
-    }
-
-    for (unsigned int i = 0; i < sdl_extension_count; i++)
-    {
-      if (!SupportsExtension(sdl_extensions[i], true))
-        return false;
-    }
-  }
-#endif
-
   // VK_EXT_debug_utils
   if (debug_instance && !SupportsExtension(VK_EXT_DEBUG_UTILS_EXTENSION_NAME, false))
     WARNING_LOG("Vulkan: Debug report requested, but extension is not available.");
@@ -600,12 +481,6 @@ void VulkanLoader::LockedReleaseVulkanInstance()
   // We specifically keep the instance around even after releasing it.
   // Both AMD on Windows and Mesa leak a few tens of megabytes for every instance...
   DEV_LOG("Released Vulkan instance, reference count {}", s_locals.reference_count);
-
-#ifdef ENABLE_SDL
-  // SDL Vulkan kinda breaks OpenGL contexts if the instance isn't destroyed...
-  if (s_locals.window_type == WindowInfoType::SDL && s_locals.reference_count == 0)
-    LockedDestroyVulkanInstance();
-#endif
 }
 
 void VulkanLoader::LockedDestroyVulkanInstance()
@@ -744,16 +619,6 @@ VulkanLoader::GPUList VulkanLoader::EnumerateGPUs(Error* error)
   return gpus;
 }
 
-std::vector<GPUDevice::ExclusiveFullscreenMode> VulkanLoader::EnumerateFullscreenModes(WindowInfoType wtype)
-{
-#ifdef ENABLE_SDL
-  if (wtype == WindowInfoType::SDL)
-    return SDLVideoHelpers::GetFullscreenModeList();
-#endif
-
-  return {};
-}
-
 bool VulkanLoader::IsSuitableDefaultRenderer(WindowInfoType window_type)
 {
 #ifdef __ANDROID__
@@ -852,8 +717,6 @@ GPUDriverType VulkanLoader::GuessDriverType(const VkPhysicalDeviceProperties& de
 
 std::optional<GPUDevice::AdapterInfoList> VulkanLoader::GetAdapterList(WindowInfoType window_type, Error* error)
 {
-  std::optional<GPUDevice::AdapterInfoList> ret;
-  std::vector<GPUDevice::ExclusiveFullscreenMode> fullscreen_modes;
   GPUList gpus;
   {
     const std::lock_guard lock(s_locals.mutex);
@@ -862,36 +725,27 @@ std::optional<GPUDevice::AdapterInfoList> VulkanLoader::GetAdapterList(WindowInf
     if (s_locals.instance != VK_NULL_HANDLE)
     {
       gpus = EnumerateGPUs(error);
-      fullscreen_modes = EnumerateFullscreenModes(window_type);
     }
     else
     {
       // Otherwise we need to create a temporary instance.
       // Hold the lock for both creation and querying, otherwise the UI thread could race creation.
       if (!LockedCreateVulkanInstance(window_type, nullptr, error))
-        return ret;
+        return std::nullopt;
 
       gpus = EnumerateGPUs(error);
-      fullscreen_modes = EnumerateFullscreenModes(window_type);
 
       LockedReleaseVulkanInstance();
     }
   }
 
-  ret.emplace();
-  ret->reserve(gpus.size());
+  if (gpus.empty())
+    return std::nullopt;
+
+  GPUDevice::AdapterInfoList ret;
+  ret.reserve(gpus.size());
   for (size_t i = 0; i < gpus.size(); i++)
-  {
-    GPUDevice::AdapterInfo& ai = gpus[i].second;
-
-    // splat fullscreen modes across gpus
-    if (i == (gpus.size() - 1))
-      ai.fullscreen_modes = std::move(fullscreen_modes);
-    else
-      ai.fullscreen_modes = fullscreen_modes;
-
-    ret->push_back(std::move(ai));
-  }
+    ret.push_back(std::move(gpus[i].second));
 
   return ret;
 }

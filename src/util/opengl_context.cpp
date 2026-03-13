@@ -33,10 +33,6 @@
 #endif
 #endif
 
-#ifdef ENABLE_SDL
-#include "opengl_context_sdl.h"
-#endif
-
 LOG_CHANNEL(GPUDevice);
 
 static void DisableBrokenExtensions(const char* gl_vendor, const char* gl_renderer, const char* gl_version)
@@ -165,10 +161,6 @@ std::unique_ptr<OpenGLContext> OpenGLContext::Create(WindowInfo& wi, SurfaceHand
   if (wi.type == WindowInfoType::Surfaceless)
     context = OpenGLContextEGL::Create(wi, surface, versions_to_try, error);
 #endif
-#ifdef ENABLE_SDL
-  if (wi.type == WindowInfoType::SDL)
-    context = OpenGLContextSDL::Create(wi, surface, versions_to_try, error);
-#endif
 
   if (!context)
     return nullptr;
@@ -209,14 +201,4 @@ std::unique_ptr<OpenGLContext> OpenGLContext::Create(WindowInfo& wi, SurfaceHand
   DisableBrokenExtensions(gl_vendor, gl_renderer, gl_version);
 
   return context;
-}
-
-GPUDevice::AdapterInfoList OpenGLContext::GetAdapterList(WindowInfoType window_type, Error* error)
-{
-#ifdef ENABLE_SDL
-  if (window_type == WindowInfoType::SDL)
-    return OpenGLContextSDL::GetAdapterList(window_type, error);
-#endif
-
-  return {};
 }

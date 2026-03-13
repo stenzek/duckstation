@@ -18,10 +18,6 @@
 #include <array>
 #include <cmath>
 
-#ifdef ENABLE_SDL
-#include <SDL3/SDL_vulkan.h>
-#endif
-
 LOG_CHANNEL(GPUDevice);
 
 static VkFormat GetLinearFormat(VkFormat format)
@@ -183,20 +179,6 @@ bool VulkanSwapChain::CreateSurface(VkPhysicalDevice physical_device, Error* err
     if (res != VK_SUCCESS)
     {
       Vulkan::SetErrorObject(error, "vkCreateWaylandSurfaceEXT failed: ", res);
-      return false;
-    }
-
-    return true;
-  }
-#endif
-
-#if defined(ENABLE_SDL)
-  if (m_window_info.type == WindowInfoType::SDL)
-  {
-    if (!SDL_Vulkan_CreateSurface(static_cast<SDL_Window*>(m_window_info.window_handle),
-                                  VulkanLoader::GetVulkanInstance(), nullptr, &m_surface))
-    {
-      Error::SetStringFmt(error, "SDL_Vulkan_CreateSurface() failed: {}", SDL_GetError());
       return false;
     }
 

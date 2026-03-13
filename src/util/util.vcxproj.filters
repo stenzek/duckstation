@@ -71,7 +71,6 @@
     <ClInclude Include="x11_tools.h" />
     <ClInclude Include="opengl_context_egl_xlib.h" />
     <ClInclude Include="texture_decompress.h" />
-    <ClInclude Include="opengl_context_sdl.h" />
     <ClInclude Include="animated_image.h" />
     <ClInclude Include="dyn_shaderc.h" />
     <ClInclude Include="dyn_spirv_cross.h" />
@@ -162,7 +161,6 @@
     <ClCompile Include="x11_tools.cpp" />
     <ClCompile Include="opengl_context_egl_xlib.cpp" />
     <ClCompile Include="texture_decompress.cpp" />
-    <ClCompile Include="opengl_context_sdl.cpp" />
     <ClCompile Include="animated_image.cpp" />
     <ClCompile Include="spirv_module.cpp" />
     <ClCompile Include="postprocessing_shader_slang.cpp" />

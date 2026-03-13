@@ -20,7 +20,6 @@ enum class WindowInfoType : u8
   Wayland,
   MacOS,
   Android,
-  SDL,
 };
 
 enum class WindowInfoPrerotation : u8
