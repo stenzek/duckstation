@@ -22,14 +22,6 @@ WindowInfo::WindowInfo()
 {
 }
 
-void WindowInfo::SetPreRotated(WindowInfoPrerotation prerotation)
-{
-  if (ShouldSwapDimensionsForPreRotation(prerotation) != ShouldSwapDimensionsForPreRotation(surface_prerotation))
-    std::swap(surface_width, surface_height);
-
-  surface_prerotation = prerotation;
-}
-
 float WindowInfo::GetZRotationForPreRotation(WindowInfoPrerotation prerotation)
 {
   static constexpr const std::array<float, 4> rotation_radians = {{

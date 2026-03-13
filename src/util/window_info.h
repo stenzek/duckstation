@@ -62,9 +62,6 @@ struct WindowInfo
             prerotation == WindowInfoPrerotation::Rotate270Clockwise);
   }
 
-  /// Sets a new pre-rotation, adjusting the virtual width/height to suit.
-  void SetPreRotated(WindowInfoPrerotation prerotation);
-
   static float GetZRotationForPreRotation(WindowInfoPrerotation prerotation);
 
   static std::optional<float> QueryRefreshRateForWindow(const WindowInfo& wi, Error* error = nullptr);
