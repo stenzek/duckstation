@@ -319,15 +319,7 @@ void ControllerSettingsWindow::onCopyGlobalSettingsClicked()
                                     false);
   }
 
-  Error error;
-  if (!m_editing_settings_interface->Save(&error, Settings::GetSectionSaveOrder()))
-  {
-    QtUtils::AsyncMessageBox(this, QMessageBox::Critical, tr("Error"),
-                             tr("Failed to save the preset:\n%1").arg(QString::fromStdString(error.GetDescription())));
-    return;
-  }
-
-  g_core_thread->reloadGameSettings();
+  saveAndReloadGameSettings();
   createWidgets();
 
   QtUtils::AsyncMessageBox(this, QMessageBox::Information, tr("DuckStation Controller Settings"),
@@ -419,8 +411,7 @@ void ControllerSettingsWindow::clearSettingValue(const char* section, const char
   if (m_editing_settings_interface)
   {
     m_editing_settings_interface->DeleteValue(section, key);
-    m_editing_settings_interface->Save(nullptr, Settings::GetSectionSaveOrder());
-    g_core_thread->reloadGameSettings();
+    saveAndReloadGameSettings();
   }
   else
   {
