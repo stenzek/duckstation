@@ -1,7 +1,7 @@
 /*! SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com> and contributors. */
 /*! SPDX-License-Identifier: CC-BY-NC-ND-4.0 */
 //
-// darkruby.scss - Deep dark theme with ruby accent
+// darkocean.scss - Deep dark theme with blue accent
 //
 
 @use 'template' with (
@@ -46,9 +46,9 @@
   $accent-color:      #25447d,
 
   // Slider handle
-  $slider-handle:         #25447d,
-  $slider-handle-hover:   #1a6ae0,
-  $slider-handle-pressed: #3080f0,
+  $slider-handle:         #3766ba,
+  $slider-handle-hover:   #4078db,
+  $slider-handle-pressed: #4b8bff,
 
   // Checkbox icons
   $checkbox-icon-style: "white",
