@@ -2105,7 +2105,7 @@ void FullscreenUI::DrawSaveStateSelector()
         }
         else if (hovered &&
                  (ImGui::IsItemClicked(ImGuiMouseButton_Right) ||
-                  ImGui::IsKeyPressed(ImGuiKey_NavGamepadInput, false) || ImGui::IsKeyPressed(ImGuiKey_F1, false)))
+                  ImGui::IsKeyPressed(ImGuiKey_NavGamepadContextMenu, false) || ImGui::IsKeyPressed(ImGuiKey_F1, false)))
         {
           CancelPendingMenuClose();
 

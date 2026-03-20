@@ -226,7 +226,32 @@ void AutoUpdaterDialog::warnAboutUnofficialBuild()
   });
   timer->start(1000);
 
-  if (mbox.exec() == QMessageBox::Yes)
+  class EventFilterObj final : public QObject
+  {
+  public:
+    EventFilterObj(int& remaining_time) : m_remaining_time(remaining_time) {}
+
+    bool eventFilter(QObject* watched, QEvent* event) override
+    {
+      if (event->type() == QEvent::Close && m_remaining_time > 0)
+      {
+        event->ignore();
+        return true;
+      }
+
+      return QObject::eventFilter(watched, event);
+    }
+
+  private:
+    int& m_remaining_time;
+  };
+
+  EventFilterObj event_filter(remaining_time);
+  mbox.installEventFilter(&event_filter);
+  const int res = mbox.exec();
+  mbox.removeEventFilter(&event_filter);
+
+  if (res == QMessageBox::Yes)
   {
     QtUtils::OpenURL(nullptr, "https://duckstation.org/");
     QMetaObject::invokeMethod(qApp, &QApplication::quit, Qt::QueuedConnection);
