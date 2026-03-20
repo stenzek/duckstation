@@ -75,6 +75,7 @@ inline constexpr float LAYOUT_SMALL_POPUP_PADDING = 20.0f;
 inline constexpr float LAYOUT_LARGE_POPUP_PADDING = 30.0f;
 inline constexpr float LAYOUT_LARGE_POPUP_ROUNDING = 40.0f;
 inline constexpr float LAYOUT_WIDGET_FRAME_ROUNDING = 20.0f;
+inline constexpr float LAYOUT_FRAME_BORDER_SIZE = 1.0f;
 inline constexpr ImVec2 LAYOUT_CENTER_ALIGN_TEXT = ImVec2(0.5f, 0.0f);
 
 struct ALIGN_TO_CACHE_LINE UIStyles
