@@ -56,7 +56,10 @@ protected:
   bool event(QEvent* event) override;
 
 private:
-  void registerScreenChangeEvent();
+  void connectScreenChangedEvent();
+  void connectScreenRefreshRateChangedEvent();
+  void onScreenChanged();
+  void onScreenRefreshRateChanged();
   bool isActuallyFullscreen() const;
   void updateCenterPos();
 
@@ -76,6 +79,7 @@ private:
   RenderAPI m_render_api = RenderAPI::None;
   std::optional<WindowInfo> m_window_info;
 
+  QMetaObject::Connection m_screen_refresh_rate_changed_connection;
   const char* m_window_position_key = nullptr;
 };
 
