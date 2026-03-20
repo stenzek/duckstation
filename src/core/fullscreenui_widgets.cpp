@@ -1575,7 +1575,7 @@ void FullscreenUI::PushResetLayout()
   ImGui::PushStyleColor(ImGuiCol_Button, UIStyle.SecondaryColor);
   ImGui::PushStyleColor(ImGuiCol_ButtonActive, DarkerColor(UIStyle.BackgroundHighlight, 1.2f));
   ImGui::PushStyleColor(ImGuiCol_ButtonHovered, UIStyle.BackgroundHighlight);
-  ImGui::PushStyleColor(ImGuiCol_Border, UIStyle.BackgroundLineColor);
+  ImGui::PushStyleColor(ImGuiCol_Border, DarkerColor(UIStyle.BackgroundHighlight, 2.0f));
   ImGui::PushStyleColor(ImGuiCol_ScrollbarBg, UIStyle.BackgroundColor);
   ImGui::PushStyleColor(ImGuiCol_ScrollbarGrab, UIStyle.PrimaryColor);
   ImGui::PushStyleColor(ImGuiCol_ScrollbarGrabHovered, UIStyle.PrimaryLightColor);
@@ -1723,7 +1723,7 @@ void FullscreenUI::PushPrimaryColor()
   ImGui::PushStyleColor(ImGuiCol_Button, UIStyle.PrimaryDarkColor);
   ImGui::PushStyleColor(ImGuiCol_ButtonActive, DarkerColor(UIStyle.PrimaryLightColor, 1.2f));
   ImGui::PushStyleColor(ImGuiCol_ButtonHovered, UIStyle.PrimaryLightColor);
-  ImGui::PushStyleColor(ImGuiCol_Border, UIStyle.PrimaryLightColor);
+  ImGui::PushStyleColor(ImGuiCol_Border, DarkerColor(UIStyle.PrimaryLightColor, 2.0f));
 }
 
 void FullscreenUI::PopPrimaryColor()
@@ -2112,7 +2112,8 @@ void FullscreenUI::BeginMenuButtons(u32 num_items /* = 0 */, float y_align /* = 
 
   ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, LayoutScale(x_padding, y_padding));
   ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 0.0f);
-  ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, LayoutScale(UIStyle.MenuBorders ? 1.0f : 0.0f));
+  ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize,
+                      LayoutScale(UIStyle.MenuBorders ? LAYOUT_FRAME_BORDER_SIZE : 0.0f));
   ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, LayoutScale(x_spacing, y_spacing));
 
   if (y_align != 0.0f)
@@ -2286,7 +2287,7 @@ void FullscreenUI::DrawMenuButtonFrameAtOnCurrentLayer(const ImVec2& frame_min, 
   const float rounding = LayoutScale(LAYOUT_MENU_ITEM_BORDER_ROUNDING);
   if (border && UIStyle.MenuBorders)
   {
-    const float t = static_cast<float>(std::min(std::abs(std::sin(ImGui::GetTime() * 0.75) * 1.1), 1.0));
+    const float t = std::min(std::abs(static_cast<float>(std::sin(ImGui::GetTime() * 0.75)) * 0.75f), 0.7f) + 0.3f;
     ImGui::PushStyleColor(ImGuiCol_Border, ImGui::GetColorU32(ImGuiCol_Border, t));
     ImGui::RenderFrame(frame_min, frame_max, col, true, rounding);
     ImGui::PopStyleColor();
@@ -3392,7 +3393,8 @@ void FullscreenUI::BeginHorizontalMenuButtons(u32 num_items, float max_item_widt
 {
   ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, LayoutScale(x_padding, y_padding));
   ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 0.0f);
-  ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, LayoutScale(UIStyle.MenuBorders ? 1.0f : 0.0f));
+  ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize,
+                      LayoutScale(UIStyle.MenuBorders ? LAYOUT_FRAME_BORDER_SIZE : 0.0f));
   ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, LayoutScale(x_spacing, 0.0f));
 
   ImGuiWindow* const window = ImGui::GetCurrentWindow();
@@ -3496,7 +3498,7 @@ void FullscreenUI::BeginNavBar(float x_padding /*= LAYOUT_MENU_BUTTON_X_PADDING*
 {
   ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, LayoutScale(x_padding, y_padding));
   ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 0.0f);
-  ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, LayoutScale(1.0f));
+  ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, LayoutScale(LAYOUT_FRAME_BORDER_SIZE));
   ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, LayoutScale(1.0f, 0.0f));
   PushPrimaryColor();
   BeginMenuButtonDrawSplit();
@@ -3866,7 +3868,8 @@ bool FullscreenUI::BeginHorizontalMenu(const char* name, const ImVec2& position,
 
   ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(item_padding, item_padding));
   ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 0.0f);
-  ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, LayoutScale(UIStyle.MenuBorders ? 1.0f : 0.0f));
+  ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize,
+                      LayoutScale(UIStyle.MenuBorders ? LAYOUT_FRAME_BORDER_SIZE : 0.0f));
   ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(item_spacing, 0.0f));
 
   if (!BeginFullscreenWindow(position, size, name, bg_color, 0.0f, ImVec2()))
