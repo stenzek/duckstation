@@ -210,62 +210,6 @@ std::optional<double> CocoaTools::GetViewRealScalingFactor(const void* view)
   return static_cast<double>(scale);
 }
 
-std::optional<float> CocoaTools::GetViewRefreshRate(const void* view, Error* error)
-{
-  if (!view)
-    return std::nullopt;
-
-  if (![NSThread isMainThread])
-  {
-    std::optional<float> ret;
-    dispatch_sync(dispatch_get_main_queue(), [&ret, view, error] { ret = GetViewRefreshRate(view, error); });
-    return ret;
-  }
-
-  std::optional<float> ret;
-  NSView* const nsview = (__bridge NSView*)view;
-  const u32 did = [[[[[nsview window] screen] deviceDescription] valueForKey:@"NSScreenNumber"] unsignedIntValue];
-  if (CGDisplayModeRef mode = CGDisplayCopyDisplayMode(did))
-  {
-    ret = CGDisplayModeGetRefreshRate(mode);
-    if (ret.value() <= 0.0f)
-    {
-      ret.reset();
-
-      // Ignore deprecration warnings here. The new APIs don't seem to have something that matches the semantics.
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-
-      CVDisplayLinkRef link = nullptr;
-      if (CVDisplayLinkCreateWithCGDisplay(did, &link) == 0)
-      {
-        const CVTime time = CVDisplayLinkGetNominalOutputVideoRefreshPeriod(link);
-        if (!(time.flags & kCVTimeIsIndefinite) && time.timeValue != 0)
-        {
-          ret = static_cast<float>(static_cast<double>(time.timeScale) / static_cast<double>(time.timeValue));
-        }
-        else
-        {
-          Error::SetStringFmt(error, "Refresh period is invalid (flags=0x{:X}, timeValue={}, timeScale={})",
-                              static_cast<u32>(time.flags), time.timeValue, time.timeScale);
-        }
-      }
-      else
-      {
-        Error::SetStringView(error, "CVDisplayLinkCreateWithCGDisplay() failed");
-      }
-#pragma clang diagnostic pop
-    }
-    CGDisplayModeRelease(mode);
-  }
-  else
-  {
-    Error::SetStringView(error, "CGDisplayCopyDisplayMode() failed");
-  }
-
-  return ret;
-}
-
 void* CocoaTools::CreateMetalLayer(void* view, Error* error)
 {
   // Punt off to main thread if we're not calling from it already.

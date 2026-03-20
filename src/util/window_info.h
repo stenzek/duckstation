@@ -5,10 +5,6 @@
 
 #include "common/types.h"
 
-#include <optional>
-
-class Error;
-
 enum class GPUTextureFormat : u8;
 
 enum class WindowInfoType : u8
@@ -63,6 +59,4 @@ struct WindowInfo
   }
 
   static float GetZRotationForPreRotation(WindowInfoPrerotation prerotation);
-
-  static std::optional<float> QueryRefreshRateForWindow(const WindowInfo& wi, Error* error = nullptr);
 };
