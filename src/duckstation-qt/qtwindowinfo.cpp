@@ -193,17 +193,6 @@ void QtUtils::UpdateSurfaceSize(QWidget* widget, RenderAPI render_api, WindowInf
 
 void QtUtils::UpdateSurfaceRefreshRate(QWidget* widget, WindowInfo* wi)
 {
-  // Query refresh rate, we need it for sync.
-  Error refresh_rate_error;
-  std::optional<float> surface_refresh_rate = WindowInfo::QueryRefreshRateForWindow(*wi, &refresh_rate_error);
-  if (surface_refresh_rate.value_or(0.0f) > 0.0f)
-  {
-    wi->surface_refresh_rate = surface_refresh_rate.value();
-    return;
-  }
-
-  WARNING_LOG("Failed to get refresh rate for window, falling back to Qt: {}", refresh_rate_error.GetDescription());
-
   // Fallback to using the screen, getting the rate for Wayland is an utter mess otherwise.
   const QScreen* widget_screen = widget->screen();
   if (!widget_screen)
