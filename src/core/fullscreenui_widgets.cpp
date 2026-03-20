@@ -2564,6 +2564,261 @@ void FullscreenUI::RenderMultiLineShadowedTextClipped(ImDrawList* draw_list, ImF
   }
 }
 
+ImVec2 FullscreenUI::RenderOutlinedText(ImDrawList* draw_list, ImFont* font, float size, float weight, const ImVec2& pos,
+                                      ImU32 col, const ImVec4* cpu_clip_rect, std::string_view text, float wrap_width,
+                                      ImDrawTextFlags flags)
+{
+  if (text.empty())
+    return ImVec2();
+
+  if (!font)
+    font = draw_list->_Data->Font;
+  if (size == 0.0f)
+    size = draw_list->_Data->FontSize;
+  if (weight == 0.0f)
+    weight = draw_list->_Data->FontWeight;
+
+  ImVec4 clip_rect = draw_list->_CmdHeader.ClipRect;
+  if (cpu_clip_rect)
+  {
+    clip_rect.x = ImMax(clip_rect.x, cpu_clip_rect->x);
+    clip_rect.y = ImMax(clip_rect.y, cpu_clip_rect->y);
+    clip_rect.z = ImMin(clip_rect.z, cpu_clip_rect->z);
+    clip_rect.w = ImMin(clip_rect.w, cpu_clip_rect->w);
+  }
+
+  // Align to be pixel perfect
+begin:
+  float x = IM_TRUNC(pos.x);
+  float y = IM_TRUNC(pos.y);
+  if (y > clip_rect.w)
+    return ImVec2(x - pos.x, y - pos.y);
+
+  const float line_height = size;
+  ImFontBaked* baked = font->GetFontBaked(size, weight);
+
+  const float scale = size / baked->Size;
+  const float origin_x = x;
+  const bool word_wrap_enabled = (wrap_width > 0.0f);
+
+  // Fast-forward to first visible line
+  const char* s = text.data();
+  const char* text_end = text.data() + text.size();
+  if (y + line_height < clip_rect.y)
+  {
+    while (y + line_height < clip_rect.y && s < text_end)
+    {
+      const char* line_end = (const char*)ImMemchr(s, '\n', text_end - s);
+      if (word_wrap_enabled)
+      {
+        // FIXME-OPT: This is not optimal as do first do a search for \n before calling CalcWordWrapPosition().
+        // If the specs for CalcWordWrapPosition() were reworked to optionally return on \n we could combine both.
+        // However it is still better than nothing performing the fast-forward!
+        s = ImFontCalcWordWrapPositionEx(font, size, weight, s, line_end ? line_end : text_end, wrap_width, flags);
+        s = ImTextCalcWordWrapNextLineStart(s, text_end, flags);
+      }
+      else
+      {
+        s = line_end ? line_end + 1 : text_end;
+      }
+      y += line_height;
+    }
+  }
+
+  // For large text, scan for the last visible line in order to avoid over-reserving in the call to PrimReserve()
+  // Note that very large horizontal line will still be affected by the issue (e.g. a one megabyte string buffer without
+  // a newline will likely crash atm)
+  if (text_end - s > 10000 && !word_wrap_enabled)
+  {
+    const char* s_end = s;
+    float y_end = y;
+    while (y_end < clip_rect.w && s_end < text_end)
+    {
+      s_end = (const char*)ImMemchr(s_end, '\n', text_end - s_end);
+      s_end = s_end ? s_end + 1 : text_end;
+      y_end += line_height;
+    }
+    text_end = s_end;
+  }
+  if (s == text_end)
+    return ImVec2(x - pos.x, y - pos.y);
+
+  // Reserve vertices for remaining worse case (over-reserving is useful and easily amortized)
+  const int vtx_count_max = (int)(text_end - s) * 4 * 25;
+  const int idx_count_max = (int)(text_end - s) * 6 * 25;
+  const int idx_expected_size = draw_list->IdxBuffer.Size + idx_count_max;
+  draw_list->PrimReserve(idx_count_max, vtx_count_max);
+  ImDrawVert* vtx_write = draw_list->_VtxWritePtr;
+  ImDrawIdx* idx_write = draw_list->_IdxWritePtr;
+  unsigned int vtx_index = draw_list->_VtxCurrentIdx;
+  const int cmd_count = draw_list->CmdBuffer.Size;
+  const bool cpu_fine_clip = (cpu_clip_rect != nullptr);
+
+  const ImU32 col_untinted = col | ~IM_COL32_A_MASK;
+  const char* word_wrap_eol = nullptr;
+
+  while (s < text_end)
+  {
+    if (word_wrap_enabled)
+    {
+      // Calculate how far we can render. Requires two passes on the string data but keeps the code simple and not
+      // intrusive for what's essentially an uncommon feature.
+      if (!word_wrap_eol)
+        word_wrap_eol =
+          ImFontCalcWordWrapPositionEx(font, size, weight, s, text_end, wrap_width - (x - origin_x), flags);
+
+      if (s >= word_wrap_eol)
+      {
+        x = origin_x;
+        y += line_height;
+        if (y > clip_rect.w)
+          break; // break out of main loop
+        word_wrap_eol = nullptr;
+        s = ImTextCalcWordWrapNextLineStart(s, text_end, flags); // Wrapping skips upcoming blanks
+        continue;
+      }
+    }
+
+    // Decode and advance source
+    unsigned int c = (unsigned int)*s;
+    if (c < 0x80)
+      s += 1;
+    else
+      s += ImTextCharFromUtf8(&c, s, text_end);
+
+    if (c < 32)
+    {
+      if (c == '\n')
+      {
+        x = origin_x;
+        y += line_height;
+        if (y > clip_rect.w)
+          break; // break out of main loop
+        continue;
+      }
+      if (c == '\r')
+        continue;
+    }
+
+    const ImFontGlyph* glyph = baked->FindGlyph((ImWchar)c);
+    float char_width = glyph->AdvanceX * scale;
+    if (glyph->Visible)
+    {
+      // We don't do a second finer clipping test on the Y axis as we've already skipped anything before clip_rect.y and
+      // exit once we pass clip_rect.w
+      float x1 = x + glyph->X0 * scale;
+      float x2 = x + glyph->X1 * scale;
+      float y1 = y + glyph->Y0 * scale;
+      float y2 = y + glyph->Y1 * scale;
+      if (x1 <= clip_rect.z && x2 >= clip_rect.x)
+      {
+        // Render a character
+        float u1 = glyph->U0;
+        float v1 = glyph->V0;
+        float u2 = glyph->U1;
+        float v2 = glyph->V1;
+
+        // CPU side clipping used to fit text in their frame when the frame is too small. Only does clipping for axis
+        // aligned quads.
+        if (cpu_fine_clip)
+        {
+          if (x1 < clip_rect.x)
+          {
+            u1 = u1 + (1.0f - (x2 - clip_rect.x) / (x2 - x1)) * (u2 - u1);
+            x1 = clip_rect.x;
+          }
+          if (y1 < clip_rect.y)
+          {
+            v1 = v1 + (1.0f - (y2 - clip_rect.y) / (y2 - y1)) * (v2 - v1);
+            y1 = clip_rect.y;
+          }
+          if (x2 > clip_rect.z)
+          {
+            u2 = u1 + ((clip_rect.z - x1) / (x2 - x1)) * (u2 - u1);
+            x2 = clip_rect.z;
+          }
+          if (y2 > clip_rect.w)
+          {
+            v2 = v1 + ((clip_rect.w - y1) / (y2 - y1)) * (v2 - v1);
+            y2 = clip_rect.w;
+          }
+          if (y1 >= y2)
+          {
+            x += char_width;
+            continue;
+          }
+        }
+
+        // Support for untinted glyphs
+        ImU32 glyph_col = glyph->Colored ? col_untinted : col;
+        constexpr ImU32 outline_col = IM_COL32(0, 0, 0, 40);
+
+#define VTX(x_, y_, col_, u_, v_)                                                                                      \
+  vtx_write->pos.x = (x_);                                                                                             \
+  vtx_write->pos.y = (y_);                                                                                             \
+  vtx_write->col = (col_);                                                                                             \
+  vtx_write->uv.x = (u_);                                                                                              \
+  vtx_write->uv.y = (v_);                                                                                              \
+  vtx_write++;
+#define IDX()                                                                                                          \
+  (*idx_write++) = (ImDrawIdx)(vtx_index);                                                                             \
+  (*idx_write++) = (ImDrawIdx)(vtx_index + 1);                                                                         \
+  (*idx_write++) = (ImDrawIdx)(vtx_index + 2);                                                                         \
+  (*idx_write++) = (ImDrawIdx)(vtx_index);                                                                             \
+  (*idx_write++) = (ImDrawIdx)(vtx_index + 2);                                                                         \
+  (*idx_write++) = (ImDrawIdx)(vtx_index + 3);                                                                         \
+  vtx_index += 4;
+
+        for (int ofy = -2; ofy <= 2; ofy++)
+        {
+          for (int ofx = -2; ofx <= 2; ofx++)
+          {
+            if (ofx == 0 && ofy == 0)
+              continue;
+
+            VTX(x1 + ofx, y1 + ofy, outline_col, u1, v1);
+            VTX(x2 + ofx, y1 + ofy, outline_col, u2, v1);
+            VTX(x2 + ofx, y2 + ofy, outline_col, u2, v2);
+            VTX(x1 + ofx, y2 + ofy, outline_col, u1, v2);
+            IDX();
+          }
+        }
+
+        VTX(x1, y1, glyph_col, u1, v1);
+        VTX(x2, y1, glyph_col, u2, v1);
+        VTX(x2, y2, glyph_col, u2, v2);
+        VTX(x1, y2, glyph_col, u1, v2);
+        IDX();
+      }
+    }
+    x += char_width;
+  }
+
+  // Edge case: calling RenderText() with unloaded glyphs triggering texture change. It doesn't happen via ImGui:: calls
+  // because CalcTextSize() is always used.
+  if (cmd_count != draw_list->CmdBuffer.Size) //-V547
+  {
+    IM_ASSERT(draw_list->CmdBuffer[draw_list->CmdBuffer.Size - 1].ElemCount == 0);
+    draw_list->CmdBuffer.pop_back();
+    draw_list->PrimUnreserve(idx_count_max, vtx_count_max);
+    draw_list->AddDrawCmd();
+    // IMGUI_DEBUG_LOG("RenderText: cancel and retry to missing glyphs.\n"); // [DEBUG]
+    // draw_list->AddRectFilled(pos, pos + ImVec2(10, 10), IM_COL32(255, 0, 0, 255)); // [DEBUG]
+    goto begin;
+    // RenderText(draw_list, size, pos, col, clip_rect, text_begin, text_end, wrap_width, cpu_fine_clip); // FIXME-OPT:
+    // Would a 'goto begin' be better for code-gen? return;
+  }
+
+  // Give back unused vertices (clipped ones, blanks) ~ this is essentially a PrimUnreserve() action.
+  draw_list->VtxBuffer.Size = (int)(vtx_write - draw_list->VtxBuffer.Data); // Same as calling shrink()
+  draw_list->IdxBuffer.Size = (int)(idx_write - draw_list->IdxBuffer.Data);
+  draw_list->CmdBuffer[draw_list->CmdBuffer.Size - 1].ElemCount -= (idx_expected_size - draw_list->IdxBuffer.Size);
+  draw_list->_VtxWritePtr = vtx_write;
+  draw_list->_IdxWritePtr = idx_write;
+  draw_list->_VtxCurrentIdx = vtx_index;
+  return ImVec2(x - pos.x, y - pos.y);
+}
+
 void FullscreenUI::RenderAutoLabelText(ImDrawList* draw_list, ImFont* font, float font_size, float font_weight,
                                        float label_weight, const ImVec2& pos_min, const ImVec2& pos_max, u32 color,
                                        std::string_view text, char separator, float shadow_offset)
