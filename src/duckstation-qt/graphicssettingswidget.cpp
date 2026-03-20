@@ -61,6 +61,9 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 
   // Rendering Tab
 
+  if (!m_dialog->isPerGameSettings())
+    connect(m_ui.renderer, &QComboBox::currentIndexChanged, this, &GraphicsSettingsWidget::warnAboutRendererChange);
+
   SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.renderer, "GPU", "Renderer", &Settings::ParseRendererName,
                                                &Settings::GetRendererName, &Settings::GetRendererDisplayName,
                                                Settings::DEFAULT_GPU_RENDERER, GPURenderer::Count);
@@ -997,6 +1000,38 @@ void GraphicsSettingsWidget::updateResolutionDependentOptions()
     is_hardware && scale != 1 &&
     (texture_filtering == GPUTextureFilter::Nearest || sprite_texture_filtering == GPUTextureFilter::Nearest) &&
     !m_dialog->hasGameTrait(GameDatabase::Trait::ForceRoundUpscaledTextureCoordinates));
+}
+
+void GraphicsSettingsWidget::warnAboutRendererChange()
+{
+  if (m_ui.renderer->currentIndex() == 0 || Core::GetBaseBoolSettingValue("UI", "RendererWarningShown", false) ||
+      !isVisible())
+  {
+    updateResolutionDependentOptions();
+    return;
+  }
+
+  // Revert the setting back to automatic. Need to do this before the normal handler executes.
+  const int user_selected_index = m_ui.renderer->currentIndex();
+  {
+    const QSignalBlocker sb(m_ui.renderer);
+    m_ui.renderer->setCurrentIndex(0);
+  }
+
+  QMessageBox* const msgbox = QtUtils::NewMessageBox(
+    this, QMessageBox::Warning, m_dialog->windowTitle(),
+    tr("<h3>Changing the renderer is not recommended!</h3><p>The <strong>Automatic</strong> option provides the best "
+       "experience, selecting the optimal renderer for your graphics adapter. There is <strong>no visual or "
+       "performance advantage</strong> to using a different renderer, and you risk the application breaking due to "
+       "driver bugs.<br><br>If you continue with changing the renderer, <strong>do not ask for "
+       "support</strong>.<br><br>Are you sure you want to change the renderer?</p>"),
+    QMessageBox::Yes | QMessageBox::No);
+  msgbox->setDefaultButton(QMessageBox::No);
+  msgbox->connect(msgbox, &QMessageBox::accepted, this, [this, user_selected_index]() {
+    Core::SetBaseBoolSettingValue("UI", "RendererWarningShown", true);
+    m_ui.renderer->setCurrentIndex(user_selected_index);
+  });
+  msgbox->open();
 }
 
 void GraphicsSettingsWidget::onDownsampleModeChanged()

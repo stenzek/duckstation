@@ -47,8 +47,9 @@ private:
 
   void updateRendererDependentOptions();
   void updatePGXPSettingsEnabled();
-
   void updateResolutionDependentOptions();
+  
+  void warnAboutRendererChange();
   void onDownsampleModeChanged();
   void onFineCropModeChanged();
   void onFineCropResetClicked();
