@@ -60,9 +60,23 @@ void DisplayWidget::registerScreenChangeEvent()
     parent_widget = this;
   QWindow* parent_window_handle = parent_widget->windowHandle();
   if (parent_window_handle)
-    connect(parent_window_handle, &QWindow::screenChanged, this, [this]() { checkForSizeChange(true); });
+    connect(parent_window_handle, &QWindow::screenChanged, this, &DisplayWidget::onScreenChanged);
 
   m_screen_change_registered = true;
+}
+
+void DisplayWidget::onScreenChanged()
+{
+  disconnect(nullptr, &QScreen::refreshRateChanged, this, &DisplayWidget::onScreenRefreshRateChanged);
+  checkForSizeChange(true);
+
+  if (QScreen* const widget_screen = screen())
+    connect(widget_screen, &QScreen::refreshRateChanged, this, &DisplayWidget::onScreenRefreshRateChanged);
+}
+
+void DisplayWidget::onScreenRefreshRateChanged()
+{
+  checkForSizeChange(true);
 }
 
 const std::optional<WindowInfo>& DisplayWidget::getWindowInfo(RenderAPI render_api, Error* error)

@@ -57,6 +57,8 @@ protected:
 
 private:
   void registerScreenChangeEvent();
+  void onScreenChanged();
+  void onScreenRefreshRateChanged();
   bool isActuallyFullscreen() const;
   void updateCenterPos();
 
