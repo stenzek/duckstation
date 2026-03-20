@@ -193,11 +193,10 @@ void QtUtils::UpdateSurfaceSize(QWidget* widget, RenderAPI render_api, WindowInf
 
 void QtUtils::UpdateSurfaceRefreshRate(QWidget* widget, WindowInfo* wi)
 {
-  // Fallback to using the screen, getting the rate for Wayland is an utter mess otherwise.
   const QScreen* widget_screen = widget->screen();
   if (!widget_screen)
     widget_screen = QGuiApplication::primaryScreen();
-  wi->surface_refresh_rate = widget_screen ? static_cast<float>(widget_screen->refreshRate()) : 0.0f;
+  wi->surface_refresh_rate = widget_screen ? std::max(static_cast<float>(widget_screen->refreshRate()), 0.0f) : 0.0f;
 }
 
 #ifdef __linux__

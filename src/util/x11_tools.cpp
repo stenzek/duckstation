@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "x11_tools.h"
@@ -8,10 +8,7 @@
 #include "common/dynamic_library.h"
 #include "common/error.h"
 #include "common/log.h"
-#include "common/scoped_guard.h"
 
-#include <X11/Xlib-xcb.h>
-#include <xcb/randr.h>
 #include <xcb/xcb.h>
 
 #include <memory>
@@ -42,39 +39,16 @@ namespace dyn_libs {
   X(xcb_free_colormap_checked)                                                                                         \
   X(xcb_configure_window_checked)
 
-#define XCB_RANDR_FUNCTIONS(X)                                                                                         \
-  X(xcb_randr_get_screen_resources_reply)                                                                              \
-  X(xcb_randr_get_screen_resources)                                                                                    \
-  X(xcb_randr_get_monitors_reply)                                                                                      \
-  X(xcb_randr_get_monitors)                                                                                            \
-  X(xcb_randr_get_monitors_monitors_iterator)                                                                          \
-  X(xcb_randr_monitor_info_outputs)                                                                                    \
-  X(xcb_randr_get_output_info_reply)                                                                                   \
-  X(xcb_randr_get_output_info)                                                                                         \
-  X(xcb_randr_get_crtc_info_reply)                                                                                     \
-  X(xcb_randr_get_crtc_info)                                                                                           \
-  X(xcb_randr_get_screen_resources_modes_iterator)                                                                     \
-  X(xcb_randr_mode_info_next)
-
-#define X11XCB_FUNCTIONS(X) X(XGetXCBConnection)
-
 static bool OpenXcb(Error* error);
 static void CloseXcb();
-static bool OpenXcbRandR(Error* error);
-static void CloseXcbRandR();
-static bool OpenX11Xcb(Error* error);
-static void CloseX11Xcb();
 static void CloseAll();
 
 static DynamicLibrary s_xcb_library;
-static DynamicLibrary s_xcb_randr_library;
 static DynamicLibrary s_x11xcb_library;
 static bool s_close_registered = false;
 
 #define ADD_FUNC(F) static decltype(&::F) F;
 XCB_FUNCTIONS(ADD_FUNC);
-XCB_RANDR_FUNCTIONS(ADD_FUNC);
-X11XCB_FUNCTIONS(ADD_FUNC);
 #undef ADD_FUNC
 
 } // namespace dyn_libs
@@ -131,92 +105,8 @@ void dyn_libs::CloseXcb()
   s_xcb_library.Close();
 }
 
-bool dyn_libs::OpenXcbRandR(Error* error)
-{
-  if (s_xcb_randr_library.IsOpen())
-    return true;
-
-  const std::string libname = DynamicLibrary::GetVersionedFilename("xcb-randr", 0);
-  if (!s_xcb_randr_library.Open(libname.c_str(), error))
-  {
-    Error::AddPrefix(error, "Failed to load xcb-randr: ");
-    return false;
-  }
-
-#define LOAD_FUNC(F)                                                                                                   \
-  if (!s_xcb_randr_library.GetSymbol(#F, &F))                                                                          \
-  {                                                                                                                    \
-    Error::SetStringFmt(error, "Failed to find function {}", #F);                                                      \
-    CloseXcb();                                                                                                        \
-    return false;                                                                                                      \
-  }
-
-  XCB_RANDR_FUNCTIONS(LOAD_FUNC)
-#undef LOAD_FUNC
-
-  if (!s_close_registered)
-  {
-    s_close_registered = true;
-    std::atexit(&dyn_libs::CloseAll);
-  }
-
-  return true;
-}
-
-void dyn_libs::CloseXcbRandR()
-{
-#define UNLOAD_FUNC(F) F = nullptr;
-  XCB_RANDR_FUNCTIONS(UNLOAD_FUNC)
-#undef UNLOAD_FUNC
-
-  s_xcb_randr_library.Close();
-}
-
-bool dyn_libs::OpenX11Xcb(Error* error)
-{
-  if (s_x11xcb_library.IsOpen())
-    return true;
-
-  const std::string libname = DynamicLibrary::GetVersionedFilename("X11-xcb", 1);
-  if (!s_x11xcb_library.Open(libname.c_str(), error))
-  {
-    Error::AddPrefix(error, "Failed to load X11-xcb: ");
-    return false;
-  }
-
-#define LOAD_FUNC(F)                                                                                                   \
-  if (!s_x11xcb_library.GetSymbol(#F, &F))                                                                             \
-  {                                                                                                                    \
-    Error::SetStringFmt(error, "Failed to find function {}", #F);                                                      \
-    CloseXcb();                                                                                                        \
-    return false;                                                                                                      \
-  }
-
-  X11XCB_FUNCTIONS(LOAD_FUNC)
-#undef LOAD_FUNC
-
-  if (!s_close_registered)
-  {
-    s_close_registered = true;
-    std::atexit(&dyn_libs::CloseAll);
-  }
-
-  return true;
-}
-
-void dyn_libs::CloseX11Xcb()
-{
-#define UNLOAD_FUNC(F) F = nullptr;
-  X11XCB_FUNCTIONS(UNLOAD_FUNC)
-#undef UNLOAD_FUNC
-
-  s_x11xcb_library.Close();
-}
-
 void dyn_libs::CloseAll()
 {
-  CloseX11Xcb();
-  CloseXcbRandR();
   CloseXcb();
 }
 
@@ -426,107 +316,4 @@ void X11Window::Resize(u16 width, u16 height)
     SetErrorObject(&error, "xcb_configure_window_checked() failed: ", xerror);
     ERROR_LOG(error.GetDescription());
   }
-}
-
-std::optional<float> GetRefreshRateFromXRandR(const WindowInfo& wi, Error* error)
-{
-  xcb_connection_t* connection = nullptr;
-  if (wi.type == WindowInfoType::Xlib)
-  {
-    if (!dyn_libs::OpenX11Xcb(error))
-      return std::nullopt;
-
-    connection = dyn_libs::XGetXCBConnection(static_cast<Display*>(wi.display_connection));
-  }
-  else if (wi.type == WindowInfoType::XCB)
-  {
-    connection = static_cast<xcb_connection_t*>(wi.display_connection);
-  }
-
-  xcb_window_t window = static_cast<xcb_window_t>(reinterpret_cast<uintptr_t>(wi.window_handle));
-  if (!connection || window == XCB_NONE)
-  {
-    Error::SetStringView(error, "Invalid window handle.");
-    return std::nullopt;
-  }
-
-  if (!dyn_libs::OpenXcb(error) || !dyn_libs::OpenXcbRandR(error))
-    return std::nullopt;
-
-  xcb_generic_error_t* xerror;
-  XCBPointer<xcb_randr_get_screen_resources_reply_t> gsr(dyn_libs::xcb_randr_get_screen_resources_reply(
-    connection, dyn_libs::xcb_randr_get_screen_resources(connection, window), &xerror));
-  if (xerror)
-  {
-    SetErrorObject(error, "xcb_randr_get_screen_resources() failed: ", xerror);
-    return std::nullopt;
-  }
-
-  XCBPointer<xcb_randr_get_monitors_reply_t> gm(dyn_libs::xcb_randr_get_monitors_reply(
-    connection, dyn_libs::xcb_randr_get_monitors(connection, window, true), &xerror));
-  if (xerror || gm->nMonitors < 0)
-  {
-    SetErrorObject(error, "xcb_randr_get_screen_resources() failed: ", xerror);
-    return std::nullopt;
-  }
-
-  if (gm->nMonitors > 1)
-    WARNING_LOG("xcb_randr_get_monitors() returned {} monitors, using first", gm->nMonitors);
-
-  if (gm->nOutputs <= 0)
-  {
-    Error::SetStringView(error, "Monitor has no outputs");
-    return std::nullopt;
-  }
-  else if (gm->nOutputs > 1)
-  {
-    WARNING_LOG("Monitor has {} outputs, using first", gm->nOutputs);
-  }
-
-  xcb_randr_monitor_info_t* monitor_info = dyn_libs::xcb_randr_get_monitors_monitors_iterator(gm.get()).data;
-  DebugAssert(monitor_info);
-
-  xcb_randr_output_t* monitor_outputs = dyn_libs::xcb_randr_monitor_info_outputs(monitor_info);
-  DebugAssert(monitor_outputs);
-
-  XCBPointer<xcb_randr_get_output_info_reply_t> goi(dyn_libs::xcb_randr_get_output_info_reply(
-    connection, dyn_libs::xcb_randr_get_output_info(connection, monitor_outputs[0], 0), &xerror));
-  if (xerror)
-  {
-    SetErrorObject(error, "xcb_randr_get_output_info() failed: ", xerror);
-    return std::nullopt;
-  }
-
-  XCBPointer<xcb_randr_get_crtc_info_reply_t> gci(dyn_libs::xcb_randr_get_crtc_info_reply(
-    connection, dyn_libs::xcb_randr_get_crtc_info(connection, goi->crtc, 0), &xerror));
-  if (xerror)
-  {
-    SetErrorObject(error, "xcb_randr_get_crtc_info_reply() failed: ", xerror);
-    return std::nullopt;
-  }
-
-  xcb_randr_mode_info_t* mode = nullptr;
-  for (xcb_randr_mode_info_iterator_t it = dyn_libs::xcb_randr_get_screen_resources_modes_iterator(gsr.get());
-       it.rem != 0; dyn_libs::xcb_randr_mode_info_next(&it))
-  {
-    if (it.data->id == gci->mode)
-    {
-      mode = it.data;
-      break;
-    }
-  }
-  if (!mode)
-  {
-    Error::SetStringFmt(error, "Failed to look up mode ID {}", static_cast<int>(gci->mode));
-    return std::nullopt;
-  }
-
-  if (mode->dot_clock == 0 || mode->htotal == 0 || mode->vtotal == 0)
-  {
-    ERROR_LOG("Modeline is invalid: {}/{}/{}", mode->dot_clock, mode->htotal, mode->vtotal);
-    return std::nullopt;
-  }
-
-  return static_cast<float>(static_cast<double>(mode->dot_clock) /
-                            (static_cast<double>(mode->htotal) * static_cast<double>(mode->vtotal)));
 }

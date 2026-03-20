@@ -1422,7 +1422,7 @@ void FullscreenUI::EndLayout()
   s_state.progress_dialog.Draw();
   s_state.message_dialog.Draw();
 
-#if 0
+#if 1
   if (HasActiveWindow())
   {
     s_state.left_fullscreen_footer_text.append_format("FPS: {:.2f} ({:.3f} ms)", GImGui->IO.Framerate,

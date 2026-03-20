@@ -55,9 +55,6 @@ std::optional<std::pair<int, int>> GetViewSizeInPixels(const void* view);
 /// Returns the "real" scaling factor for a given view, on its current display.
 std::optional<double> GetViewRealScalingFactor(const void* view);
 
-/// Returns the refresh rate of the display the window is placed on.
-std::optional<float> GetViewRefreshRate(const void* view, Error* error);
-
 /// Creates metal layer on specified window surface.
 void* CreateMetalLayer(void* view, Error* error);
 

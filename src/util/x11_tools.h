@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #pragma once
@@ -41,5 +41,3 @@ private:
   u16 m_width = 0;
   u16 m_height = 0;
 };
-
-std::optional<float> GetRefreshRateFromXRandR(const WindowInfo& wi, Error* error);
