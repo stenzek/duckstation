@@ -2564,6 +2564,190 @@ void FullscreenUI::RenderMultiLineShadowedTextClipped(ImDrawList* draw_list, ImF
   }
 }
 
+ImVec2 FullscreenUI::RenderOutlinedText(ImDrawList* draw_list, ImFont* font, float size, float weight,
+                                        const ImVec2& pos, ImU32 col, std::string_view text)
+{
+  if (text.empty())
+    return ImVec2();
+
+  if (!font)
+    font = draw_list->_Data->Font;
+  if (size == 0.0f)
+    size = draw_list->_Data->FontSize;
+  if (weight == 0.0f)
+    weight = draw_list->_Data->FontWeight;
+
+  // Align to be pixel perfect
+begin:
+  float x = IM_TRUNC(pos.x);
+  float y = IM_TRUNC(pos.y);
+
+  const float line_height = size;
+  ImFontBaked* baked = font->GetFontBaked(size, weight);
+
+  const float scale = size / baked->Size;
+  const float origin_x = x;
+
+  // Reserve vertices for remaining worse case (over-reserving is useful and easily amortized)
+  const int vtx_count_max = (int)(text.length()) * 4 * 25;
+  const int idx_count_max = (int)(text.length()) * 6 * 25;
+  const int idx_expected_size = draw_list->IdxBuffer.Size + idx_count_max;
+  draw_list->PrimReserve(idx_count_max, vtx_count_max);
+  ImDrawVert* vtx_write = draw_list->_VtxWritePtr;
+  ImDrawIdx* idx_write = draw_list->_IdxWritePtr;
+  unsigned int vtx_index = draw_list->_VtxCurrentIdx;
+  const int cmd_count = draw_list->CmdBuffer.Size;
+
+  const ImU32 col_untinted = col | ~IM_COL32_A_MASK;
+
+  const char* s = text.data();
+  const char* text_end = text.data() + text.length();
+
+#define VTX(x_, y_, col_, u_, v_)                                                                                      \
+  vtx_write->pos.x = (x_);                                                                                             \
+  vtx_write->pos.y = (y_);                                                                                             \
+  vtx_write->col = (col_);                                                                                             \
+  vtx_write->uv.x = (u_);                                                                                              \
+  vtx_write->uv.y = (v_);                                                                                              \
+  vtx_write++;
+#define IDX()                                                                                                          \
+  (*idx_write++) = (ImDrawIdx)(vtx_index);                                                                             \
+  (*idx_write++) = (ImDrawIdx)(vtx_index + 1);                                                                         \
+  (*idx_write++) = (ImDrawIdx)(vtx_index + 2);                                                                         \
+  (*idx_write++) = (ImDrawIdx)(vtx_index);                                                                             \
+  (*idx_write++) = (ImDrawIdx)(vtx_index + 2);                                                                         \
+  (*idx_write++) = (ImDrawIdx)(vtx_index + 3);                                                                         \
+  vtx_index += 4;
+
+  // outline pass
+  while (s < text_end)
+  {
+    // Decode and advance source
+    unsigned int c = (unsigned int)*s;
+    if (c < 0x80)
+      s += 1;
+    else
+      s += ImTextCharFromUtf8(&c, s, text_end);
+
+    if (c < 32)
+    {
+      if (c == '\n')
+      {
+        x = origin_x;
+        y += line_height;
+        continue;
+      }
+      if (c == '\r')
+        continue;
+    }
+
+    const ImFontGlyph* glyph = baked->FindGlyph((ImWchar)c);
+    const float char_width = glyph->AdvanceX * scale;
+    if (glyph->Visible)
+    {
+      const float x1 = x + glyph->X0 * scale;
+      const float x2 = x + glyph->X1 * scale;
+      const float y1 = y + glyph->Y0 * scale;
+      const float y2 = y + glyph->Y1 * scale;
+      constexpr ImU32 outline_col = IM_COL32(0, 0, 0, 35);
+      const float u1 = glyph->U0;
+      const float v1 = glyph->V0;
+      const float u2 = glyph->U1;
+      const float v2 = glyph->V1;
+
+      for (int ofy = -2; ofy <= 2; ofy++)
+      {
+        for (int ofx = -2; ofx <= 2; ofx++)
+        {
+          if (ofx == 0 && ofy == 0)
+            continue;
+
+          VTX(x1 + ofx, y1 + ofy, outline_col, u1, v1);
+          VTX(x2 + ofx, y1 + ofy, outline_col, u2, v1);
+          VTX(x2 + ofx, y2 + ofy, outline_col, u2, v2);
+          VTX(x1 + ofx, y2 + ofy, outline_col, u1, v2);
+          IDX();
+        }
+      }
+    }
+    x += char_width;
+  }
+
+  x = IM_TRUNC(pos.x);
+  y = IM_TRUNC(pos.y);
+  s = text.data();
+
+  while (s < text_end)
+  {
+    // Decode and advance source
+    unsigned int c = (unsigned int)*s;
+    if (c < 0x80)
+      s += 1;
+    else
+      s += ImTextCharFromUtf8(&c, s, text_end);
+
+    if (c < 32)
+    {
+      if (c == '\n')
+      {
+        x = origin_x;
+        y += line_height;
+        continue;
+      }
+      if (c == '\r')
+        continue;
+    }
+
+    const ImFontGlyph* glyph = baked->FindGlyph((ImWchar)c);
+    const float char_width = glyph->AdvanceX * scale;
+    if (glyph->Visible)
+    {
+      const float x1 = x + glyph->X0 * scale;
+      const float x2 = x + glyph->X1 * scale;
+      const float y1 = y + glyph->Y0 * scale;
+      const float y2 = y + glyph->Y1 * scale;
+      const float u1 = glyph->U0;
+      const float v1 = glyph->V0;
+      const float u2 = glyph->U1;
+      const float v2 = glyph->V1;
+      const ImU32 glyph_col = glyph->Colored ? col_untinted : col;
+      VTX(x1, y1, glyph_col, u1, v1);
+      VTX(x2, y1, glyph_col, u2, v1);
+      VTX(x2, y2, glyph_col, u2, v2);
+      VTX(x1, y2, glyph_col, u1, v2);
+      IDX();
+    }
+    x += char_width;
+  }
+
+#undef IDX
+#undef VTX
+
+  // Edge case: calling RenderText() with unloaded glyphs triggering texture change. It doesn't happen via ImGui:: calls
+  // because CalcTextSize() is always used.
+  if (cmd_count != draw_list->CmdBuffer.Size) //-V547
+  {
+    IM_ASSERT(draw_list->CmdBuffer[draw_list->CmdBuffer.Size - 1].ElemCount == 0);
+    draw_list->CmdBuffer.pop_back();
+    draw_list->PrimUnreserve(idx_count_max, vtx_count_max);
+    draw_list->AddDrawCmd();
+    // IMGUI_DEBUG_LOG("RenderText: cancel and retry to missing glyphs.\n"); // [DEBUG]
+    // draw_list->AddRectFilled(pos, pos + ImVec2(10, 10), IM_COL32(255, 0, 0, 255)); // [DEBUG]
+    goto begin;
+    // RenderText(draw_list, size, pos, col, clip_rect, text_begin, text_end, wrap_width, cpu_fine_clip); // FIXME-OPT:
+    // Would a 'goto begin' be better for code-gen? return;
+  }
+
+  // Give back unused vertices (clipped ones, blanks) ~ this is essentially a PrimUnreserve() action.
+  draw_list->VtxBuffer.Size = (int)(vtx_write - draw_list->VtxBuffer.Data); // Same as calling shrink()
+  draw_list->IdxBuffer.Size = (int)(idx_write - draw_list->IdxBuffer.Data);
+  draw_list->CmdBuffer[draw_list->CmdBuffer.Size - 1].ElemCount -= (idx_expected_size - draw_list->IdxBuffer.Size);
+  draw_list->_VtxWritePtr = vtx_write;
+  draw_list->_IdxWritePtr = idx_write;
+  draw_list->_VtxCurrentIdx = vtx_index;
+  return ImVec2(x - pos.x, y - pos.y);
+}
+
 void FullscreenUI::RenderAutoLabelText(ImDrawList* draw_list, ImFont* font, float font_size, float font_weight,
                                        float label_weight, const ImVec2& pos_min, const ImVec2& pos_max, u32 color,
                                        std::string_view text, char separator, float shadow_offset)
