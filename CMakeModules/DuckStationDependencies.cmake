@@ -61,11 +61,11 @@ find_package(zstd 1.5.7 REQUIRED
              NO_DEFAULT_PATH PATHS "${DEPS_PATH}/lib/cmake/zstd")
 find_package(WebP 1.6.0 REQUIRED
              NO_DEFAULT_PATH PATHS "${DEPS_PATH}/share/WebP/cmake")
-find_package(PNG 1.6.55 REQUIRED
+find_package(PNG 1.6.56 REQUIRED
              NO_DEFAULT_PATH PATHS "${DEPS_PATH}/lib/cmake/PNG")
-find_package(libjpeg-turbo 3.1.3 REQUIRED
+find_package(libjpeg-turbo 3.1.4.1 REQUIRED
              NO_DEFAULT_PATH PATHS "${DEPS_PATH}/lib/cmake/libjpeg-turbo")
-find_package(freetype 2.14.1 REQUIRED
+find_package(freetype 2.14.3 REQUIRED
              NO_DEFAULT_PATH PATHS "${DEPS_PATH}/lib/cmake/freetype")
 find_package(harfbuzz REQUIRED
              NO_DEFAULT_PATH PATHS "${DEPS_PATH}/lib/cmake/harfbuzz")
@@ -100,11 +100,11 @@ set(QT_NO_PRIVATE_MODULE_WARNING ON)
 
 # Should be prebuilt.
 if(LINUX)
-find_package(Qt6 6.10.2 REQUIRED
+  find_package(Qt6 6.11.0 REQUIRED
                 NO_DEFAULT_PATH PATHS "${DEPS_PATH}/lib/cmake/Qt6"
                 COMPONENTS Core Gui GuiPrivate Widgets LinguistTools DBus)
 else()
-find_package(Qt6 6.10.2 REQUIRED
+  find_package(Qt6 6.11.0 REQUIRED
                 NO_DEFAULT_PATH PATHS "${DEPS_PATH}/lib/cmake/Qt6"
                 COMPONENTS Core Gui GuiPrivate Widgets LinguistTools)
 endif()
@@ -138,7 +138,7 @@ if(NOT WIN32)
 endif()
 
 if(NOT WIN32)
-  find_package(FFMPEG 8.0.1 COMPONENTS avcodec avformat avutil swresample swscale)
+  find_package(FFMPEG 8.1.0 COMPONENTS avcodec avformat avutil swresample swscale)
   if(NOT FFMPEG_FOUND)
     message(WARNING "FFmpeg not found, using bundled headers.")
   endif()
