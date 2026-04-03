@@ -1225,9 +1225,10 @@ void SaveStateSelectorUI::Draw()
   ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f), ImGuiCond_Always,
                           ImVec2(0.5f, 0.5f));
 
-  if (ImGui::Begin("##save_state_selector", nullptr,
-                   ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoTitleBar |
-                     ImGuiWindowFlags_NoScrollbar))
+  if (FullscreenUI::BeginBlurWindow("##save_state_selector", nullptr,
+                                    ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoInputs |
+                                      ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoScrollbar,
+                                    UIStyle.BlurMenuBackground))
   {
     // Leave 2 lines for the legend
     const ImGuiStyle& style = ImGui::GetStyle();

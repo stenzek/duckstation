@@ -1902,6 +1902,42 @@ void FullscreenUI::SetWindowNavWrapping(bool allow_wrap_x /*= false*/, bool allo
   }
 }
 
+bool FullscreenUI::BeginBlurWindow(const char* name, bool* p_open /* = nullptr */, ImGuiWindowFlags flags /* = 0 */,
+                                   bool blur /* = true */)
+{
+  const ImVec4& background = GImGui->Style.Colors[ImGuiCol_WindowBg];
+  const bool actually_blur = (blur && UIStyle.BlurMenuBackground && CanBlurBackground());
+  const bool has_background = (background.w != 0.0f);
+  const bool res = ImGui::Begin(name, nullptr,
+                                ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize |
+                                  ImGuiWindowFlags_NoBringToFrontOnFocus |
+                                  ((!has_background || actually_blur) ? ImGuiWindowFlags_NoBackground : 0) | flags);
+
+  if (res && actually_blur)
+  {
+    ImDrawList* const dl = ImGui::GetWindowDrawList();
+    ImGuiWindow* const win = ImGui::GetCurrentWindow();
+    const ImVec2& bg_min = win->Pos;
+    const ImVec2& bg_max = win->Pos + win->Size;
+    if (BeginBlurBackground(dl, bg_min, bg_max))
+    {
+      if (has_background)
+      {
+        dl->AddRectFilled(bg_min, bg_max,
+                          ImGui::GetColorU32(ImVec4(background.x * background.w, background.y * background.w,
+                                                    background.z * background.w, 1.0f)), win->WindowRounding);
+      }
+      EndBlurBackground(dl);
+    }
+    else if (has_background)
+    {
+      dl->AddRectFilled(bg_min, bg_max, ImGui::GetColorU32(background), win->WindowRounding);
+    }
+  }
+
+  return res;
+}
+
 bool FullscreenUI::IsGamepadInputSource()
 {
   return (ImGui::GetCurrentContext()->NavInputSource == ImGuiInputSource_Gamepad);
