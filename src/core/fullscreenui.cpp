@@ -1433,26 +1433,29 @@ void FullscreenUI::DrawStartGameWindow()
   {
     ResetFocusHere();
 
-    if (HorizontalMenuItem(GetUserThemeableTexture("fullscreenui/start-file.png", "fullscreenui/start-file.svg"),
-                           FSUI_VSTR("Start File"), FSUI_VSTR("Launch a game by selecting a file/disc image.")))
+    if (UserThemeableHorizontalButton("fullscreenui/start-file.png", "fullscreenui/start-file.svg",
+                                      FSUI_VSTR("Start File"),
+                                      FSUI_VSTR("Launch a game by selecting a file/disc image.")))
     {
       DoStartFile();
     }
 
-    if (HorizontalMenuItem(GetUserThemeableTexture("fullscreenui/start-disc.png", "fullscreenui/start-disc.svg"),
-                           FSUI_VSTR("Start Disc"), FSUI_VSTR("Start a game from a disc in your PC's DVD drive.")))
+    if (UserThemeableHorizontalButton("fullscreenui/start-disc.png", "fullscreenui/start-disc.svg",
+                                      FSUI_VSTR("Start Disc"),
+                                      FSUI_VSTR("Start a game from a disc in your PC's DVD drive.")))
     {
       DoStartDisc();
     }
 
-    if (HorizontalMenuItem(GetUserThemeableTexture("fullscreenui/start-bios.png", "fullscreenui/start-bios.svg"),
-                           FSUI_VSTR("Start BIOS"), FSUI_VSTR("Start the console without any disc inserted.")))
+    if (UserThemeableHorizontalButton("fullscreenui/start-bios.png", "fullscreenui/start-bios.svg",
+                                      FSUI_VSTR("Start BIOS"),
+                                      FSUI_VSTR("Start the console without any disc inserted.")))
     {
       DoStartBIOS();
     }
 
-    if (HorizontalMenuItem(GetUserThemeableTexture("fullscreenui/back-icon.png", "fullscreenui/back-icon.svg"),
-                           FSUI_VSTR("Back"), FSUI_VSTR("Return to the previous menu.")) ||
+    if (UserThemeableHorizontalButton("fullscreenui/back-icon.png", "fullscreenui/back-icon.svg", FSUI_VSTR("Back"),
+                                      FSUI_VSTR("Return to the previous menu.")) ||
         (!AreAnyDialogsOpen() && WantsToCloseMenu()))
     {
       BeginTransition([]() { SwitchToMainWindow(MainWindowType::Landing); });
@@ -1498,23 +1501,22 @@ void FullscreenUI::DrawExitWindow()
   {
     ResetFocusHere();
 
-    if (HorizontalMenuItem(GetUserThemeableTexture("fullscreenui/back-icon.png", "fullscreenui/back-icon.svg"),
-                           FSUI_VSTR("Back"), FSUI_VSTR("Return to the previous menu.")) ||
+    if (UserThemeableHorizontalButton("fullscreenui/back-icon.png", "fullscreenui/back-icon.svg", FSUI_VSTR("Back"),
+                                      FSUI_VSTR("Return to the previous menu.")) ||
         WantsToCloseMenu())
     {
       BeginTransition([]() { SwitchToMainWindow(MainWindowType::Landing); });
     }
 
-    if (HorizontalMenuItem(GetUserThemeableTexture("fullscreenui/exit.png", "fullscreenui/exit.svg"),
-                           FSUI_VSTR("Exit DuckStation"),
-                           FSUI_VSTR("Completely exits the application, returning you to your desktop.")))
+    if (UserThemeableHorizontalButton("fullscreenui/exit.png", "fullscreenui/exit.svg", FSUI_VSTR("Exit DuckStation"),
+                                      FSUI_VSTR("Completely exits the application, returning you to your desktop.")))
     {
       DoRequestExit();
     }
 
-    if (HorizontalMenuItem(GetUserThemeableTexture("fullscreenui/desktop-mode.png", "fullscreenui/desktop-mode.svg"),
-                           FSUI_VSTR("Desktop Mode"),
-                           FSUI_VSTR("Exits Big Picture mode, returning to the desktop interface.")))
+    if (UserThemeableHorizontalButton("fullscreenui/desktop-mode.png", "fullscreenui/desktop-mode.svg",
+                                      FSUI_VSTR("Desktop Mode"),
+                                      FSUI_VSTR("Exits Big Picture mode, returning to the desktop interface.")))
     {
       DoDesktopMode();
     }
@@ -2103,9 +2105,9 @@ void FullscreenUI::DrawSaveStateSelector()
           // avoid closing while drawing
           pressed_entry = &entry;
         }
-        else if (hovered &&
-                 (ImGui::IsItemClicked(ImGuiMouseButton_Right) ||
-                  ImGui::IsKeyPressed(ImGuiKey_NavGamepadContextMenu, false) || ImGui::IsKeyPressed(ImGuiKey_F1, false)))
+        else if (hovered && (ImGui::IsItemClicked(ImGuiMouseButton_Right) ||
+                             ImGui::IsKeyPressed(ImGuiKey_NavGamepadContextMenu, false) ||
+                             ImGui::IsKeyPressed(ImGuiKey_F1, false)))
         {
           CancelPendingMenuClose();
 
