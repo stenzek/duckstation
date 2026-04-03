@@ -86,6 +86,7 @@ struct ALIGN_TO_CACHE_LINE UIStyles
   ImVec4 BackgroundHighlight;
   ImVec4 PopupBackgroundColor;
   ImVec4 PopupFrameBackgroundColor;
+  ImVec4 PopupHighlight;
   ImVec4 DisabledColor;
   ImVec4 PrimaryColor;
   ImVec4 PrimaryLightColor;

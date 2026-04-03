@@ -1925,7 +1925,8 @@ bool FullscreenUI::BeginBlurWindow(const char* name, bool* p_open /* = nullptr *
       {
         dl->AddRectFilled(bg_min, bg_max,
                           ImGui::GetColorU32(ImVec4(background.x * background.w, background.y * background.w,
-                                                    background.z * background.w, 1.0f)), win->WindowRounding);
+                                                    background.z * background.w, 1.0f)),
+                          win->WindowRounding);
       }
       EndBlurBackground(dl);
     }
@@ -4096,9 +4097,9 @@ bool FullscreenUI::SplitWindowSidebarItem(std::string_view title, bool active /*
     SetMenuButtonSplitLayer(MENU_BUTTON_SPLIT_LAYER_BACKGROUND);
 
     const MenuButtonBounds bb(title, std::string_view(), std::string_view());
-    ImGui::GetWindowDrawList()->AddRectFilled(bb.frame_bb.Min, bb.frame_bb.Max,
-                                              ImGui::GetColorU32(DarkerColor(UIStyle.BackgroundColor, 0.6f)),
-                                              LayoutScale(LAYOUT_MENU_ITEM_BORDER_ROUNDING));
+    ImGui::GetWindowDrawList()->AddRectFilled(
+      bb.frame_bb.Min, bb.frame_bb.Max, ImGui::GetColorU32(DarkerColor(GImGui->Style.Colors[ImGuiCol_WindowBg], 0.6f)),
+      LayoutScale(LAYOUT_MENU_ITEM_BORDER_ROUNDING));
 
     SetMenuButtonSplitLayer(MENU_BUTTON_SPLIT_LAYER_FOREGROUND);
   }
@@ -4132,8 +4133,7 @@ bool FullscreenUI::SplitWindowSidebarItem(std::string_view title, std::string_vi
 
     const MenuButtonBounds bb(title, std::string_view(), summary);
     ImGui::GetWindowDrawList()->AddRectFilled(
-      bb.frame_bb.Min, bb.frame_bb.Max,
-      ImGui::GetColorU32(DarkerColor(ImGui::GetStyle().Colors[ImGuiCol_WindowBg], 0.6f)),
+      bb.frame_bb.Min, bb.frame_bb.Max, ImGui::GetColorU32(DarkerColor(GImGui->Style.Colors[ImGuiCol_WindowBg], 0.6f)),
       LayoutScale(LAYOUT_MENU_ITEM_BORDER_ROUNDING));
 
     SetMenuButtonSplitLayer(MENU_BUTTON_SPLIT_LAYER_FOREGROUND);
@@ -4350,8 +4350,8 @@ bool FullscreenUI::PopupDialog::BeginRender(float scaled_window_padding /* = Lay
                       LayoutScale(LAYOUT_MENU_BUTTON_X_PADDING, LAYOUT_MENU_BUTTON_Y_PADDING));
   ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
   ImGui::PushStyleColor(ImGuiCol_PopupBg, ModAlpha(UIStyle.PopupBackgroundColor, 1.0f));
-  ImGui::PushStyleColor(ImGuiCol_ButtonActive, ModAlpha(DarkerColor(UIStyle.PopupBackgroundColor, 1.8f), 1.0f));
-  ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ModAlpha(DarkerColor(UIStyle.BackgroundHighlight, 1.1f), 1.0f));
+  ImGui::PushStyleColor(ImGuiCol_ButtonActive, DarkerColor(UIStyle.PopupHighlight, 1.2f));
+  ImGui::PushStyleColor(ImGuiCol_ButtonHovered, UIStyle.PopupHighlight);
   ImGui::PushStyleColor(ImGuiCol_FrameBg, UIStyle.PopupFrameBackgroundColor);
   ImGui::PushStyleColor(ImGuiCol_TitleBg, UIStyle.PrimaryDarkColor);
   ImGui::PushStyleColor(ImGuiCol_TitleBgActive, UIStyle.PrimaryColor);
@@ -6389,6 +6389,7 @@ void FullscreenUI::UpdateTheme()
     UIStyle.BackgroundHighlight = HEX_TO_IMVEC4(0x0c0c0c, 0xff);
     UIStyle.PopupBackgroundColor = HEX_TO_IMVEC4(0x212121, 0xf2);
     UIStyle.PopupFrameBackgroundColor = HEX_TO_IMVEC4(0x313131, 0xf2);
+    UIStyle.PopupHighlight = HEX_TO_IMVEC4(0x313131, 0xff);
     UIStyle.PrimaryColor = HEX_TO_IMVEC4(0x0a0a0a, 0xff);
     UIStyle.PrimaryLightColor = HEX_TO_IMVEC4(0xb5b5b5, 0xff);
     UIStyle.PrimaryDarkColor = HEX_TO_IMVEC4(0x000000, 0xff);
@@ -6414,6 +6415,7 @@ void FullscreenUI::UpdateTheme()
     UIStyle.BackgroundHighlight = HEX_TO_IMVEC4(0x3b54ac, 0xff);
     UIStyle.PopupBackgroundColor = HEX_TO_IMVEC4(0x2b3760, 0xf2);
     UIStyle.PopupFrameBackgroundColor = HEX_TO_IMVEC4(0x3b54ac, 0xf2);
+    UIStyle.PopupHighlight = HEX_TO_IMVEC4(0x3b54ac, 0xff);
     UIStyle.PrimaryColor = HEX_TO_IMVEC4(0x202e5a, 0xff);
     UIStyle.PrimaryLightColor = HEX_TO_IMVEC4(0xb5b5b5, 0xff);
     UIStyle.PrimaryDarkColor = HEX_TO_IMVEC4(0x000000, 0xff);
@@ -6439,6 +6441,7 @@ void FullscreenUI::UpdateTheme()
     UIStyle.BackgroundHighlight = HEX_TO_IMVEC4(0x484d57, 0xff);
     UIStyle.PopupFrameBackgroundColor = HEX_TO_IMVEC4(0x313131, 0xf2);
     UIStyle.PopupBackgroundColor = HEX_TO_IMVEC4(0x212121, 0xf2);
+    UIStyle.PopupHighlight = HEX_TO_IMVEC4(0x484d57, 0xff);
     UIStyle.PrimaryColor = HEX_TO_IMVEC4(0x292d35, 0xff);
     UIStyle.PrimaryLightColor = HEX_TO_IMVEC4(0xb5b5b5, 0xff);
     UIStyle.PrimaryDarkColor = HEX_TO_IMVEC4(0x000000, 0xff);
@@ -6464,6 +6467,7 @@ void FullscreenUI::UpdateTheme()
     UIStyle.BackgroundHighlight = HEX_TO_IMVEC4(0xdc6c68, 0xff);
     UIStyle.PopupFrameBackgroundColor = HEX_TO_IMVEC4(0xe05885, 0xf2);
     UIStyle.PopupBackgroundColor = HEX_TO_IMVEC4(0xeba0b9, 0xf2);
+    UIStyle.PopupHighlight = HEX_TO_IMVEC4(0xdc6c68, 0xff);
     UIStyle.PrimaryColor = HEX_TO_IMVEC4(0xffaec9, 0xff);
     UIStyle.PrimaryLightColor = HEX_TO_IMVEC4(0xe05885, 0xff);
     UIStyle.PrimaryDarkColor = HEX_TO_IMVEC4(0xeba0b9, 0xff);
@@ -6487,7 +6491,9 @@ void FullscreenUI::UpdateTheme()
     UIStyle.BackgroundTextColor = HEX_TO_IMVEC4(0x000000, 0xff);
     UIStyle.BackgroundLineColor = HEX_TO_IMVEC4(0xf0f0f0, 0xff);
     UIStyle.BackgroundHighlight = HEX_TO_IMVEC4(0x876433, 0xff);
+    UIStyle.PopupFrameBackgroundColor = HEX_TO_IMVEC4(0x795A2D, 0xf2);
     UIStyle.PopupBackgroundColor = HEX_TO_IMVEC4(0xB0C400, 0xf2);
+    UIStyle.PopupHighlight = HEX_TO_IMVEC4(0x876433, 0xff);
     UIStyle.PrimaryColor = HEX_TO_IMVEC4(0xD5DE2E, 0xff);
     UIStyle.PrimaryLightColor = HEX_TO_IMVEC4(0x795A2D, 0xff);
     UIStyle.PrimaryDarkColor = HEX_TO_IMVEC4(0x523213, 0xff);
@@ -6513,6 +6519,7 @@ void FullscreenUI::UpdateTheme()
     UIStyle.BackgroundHighlight = HEX_TO_IMVEC4(0x2a4e8f, 0xff);
     UIStyle.PopupFrameBackgroundColor = HEX_TO_IMVEC4(0x313131, 0xf2);
     UIStyle.PopupBackgroundColor = HEX_TO_IMVEC4(0x212121, 0xf2);
+    UIStyle.PopupHighlight = HEX_TO_IMVEC4(0x2a4e8f, 0xff);
     UIStyle.PrimaryColor = HEX_TO_IMVEC4(0x121212, 0xff);
     UIStyle.PrimaryLightColor = HEX_TO_IMVEC4(0x315ba6, 0xff);
     UIStyle.PrimaryDarkColor = HEX_TO_IMVEC4(0x121212, 0xff);
@@ -6538,6 +6545,7 @@ void FullscreenUI::UpdateTheme()
     UIStyle.BackgroundHighlight = HEX_TO_IMVEC4(0xab2720, 0xff);
     UIStyle.PopupFrameBackgroundColor = HEX_TO_IMVEC4(0x313131, 0xf2);
     UIStyle.PopupBackgroundColor = HEX_TO_IMVEC4(0x212121, 0xf2);
+    UIStyle.PopupHighlight = HEX_TO_IMVEC4(0xab2720, 0xff);
     UIStyle.PrimaryColor = HEX_TO_IMVEC4(0x121212, 0xff);
     UIStyle.PrimaryLightColor = HEX_TO_IMVEC4(0xb52922, 0xff);
     UIStyle.PrimaryDarkColor = HEX_TO_IMVEC4(0x000000, 0xff);
@@ -6563,6 +6571,7 @@ void FullscreenUI::UpdateTheme()
     UIStyle.BackgroundHighlight = HEX_TO_IMVEC4(0xa78936, 0xff);
     UIStyle.PopupFrameBackgroundColor = HEX_TO_IMVEC4(0x341d56, 0xf2);
     UIStyle.PopupBackgroundColor = HEX_TO_IMVEC4(0x532f8a, 0xf2);
+    UIStyle.PopupHighlight = HEX_TO_IMVEC4(0xa78936, 0xff);
     UIStyle.PrimaryColor = HEX_TO_IMVEC4(0x49297a, 0xff);
     UIStyle.PrimaryLightColor = HEX_TO_IMVEC4(0x653aab, 0xff);
     UIStyle.PrimaryDarkColor = HEX_TO_IMVEC4(0x462876, 0xff);
@@ -6589,6 +6598,7 @@ void FullscreenUI::UpdateTheme()
     UIStyle.BackgroundHighlight = HEX_TO_IMVEC4(0xe1e2e1, 0xc0);
     UIStyle.PopupBackgroundColor = HEX_TO_IMVEC4(0xd8d8d8, 0xf2);
     UIStyle.PopupFrameBackgroundColor = HEX_TO_IMVEC4(0xc8c8c8, 0xf2);
+    UIStyle.PopupHighlight = HEX_TO_IMVEC4(0xf1f2f1, 0xc0);
     UIStyle.PrimaryColor = HEX_TO_IMVEC4(0x2a3e78, 0xff);
     UIStyle.PrimaryLightColor = HEX_TO_IMVEC4(0x235cd9, 0xff);
     UIStyle.PrimaryDarkColor = HEX_TO_IMVEC4(0x1d2953, 0xff);
@@ -6615,6 +6625,7 @@ void FullscreenUI::UpdateTheme()
     UIStyle.BackgroundHighlight = HEX_TO_IMVEC4(0x4b4b4b, 0xc0);
     UIStyle.PopupBackgroundColor = HEX_TO_IMVEC4(0x212121, 0xf2);
     UIStyle.PopupFrameBackgroundColor = HEX_TO_IMVEC4(0x313131, 0xf2);
+    UIStyle.PopupHighlight = HEX_TO_IMVEC4(0x4b4b4b, 0xf2);
     UIStyle.PrimaryColor = HEX_TO_IMVEC4(0x2e2e2e, 0xff);
     UIStyle.PrimaryLightColor = HEX_TO_IMVEC4(0x484848, 0xff);
     UIStyle.PrimaryDarkColor = HEX_TO_IMVEC4(0x000000, 0xff);
