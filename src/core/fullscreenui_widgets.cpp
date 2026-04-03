@@ -1256,8 +1256,8 @@ void FullscreenUI::DrawWithBlurTexture(const ImDrawList* parent_list, const ImDr
     float blur_background_weight;
     float inv_blur_background_weight;
   } uniforms;
-  uniforms.blur_background_weight = FullscreenUI::UIStyle.BlurBackgroundWeight;
-  uniforms.inv_blur_background_weight = 1.0f - FullscreenUI::UIStyle.BlurBackgroundWeight;
+  uniforms.blur_background_weight = UIStyle.BlurBackgroundWeight;
+  uniforms.inv_blur_background_weight = 1.0f - UIStyle.BlurBackgroundWeight;
   GSVector2::store<true>(uniforms.blur_texture_scale, s_state.blur_texture_scale);
 
   g_gpu_device->SetPipeline(s_state.blur_apply_pipeline.get());
@@ -6505,7 +6505,7 @@ void FullscreenUI::UpdateTheme()
     UIStyle.ToastBackgroundColor = HEX_TO_IMVEC4(0xd86a66, 0xff);
     UIStyle.ToastTextColor = HEX_TO_IMVEC4(0xffffff, 0xff);
     UIStyle.ShadowColor = IM_COL32(0, 0, 0, 0);
-    UIStyle.BlurBackgroundWeight = 0.5f;
+    UIStyle.BlurBackgroundWeight = 0.25f;
     UIStyle.IsDarkTheme = false;
   }
   else if (theme == "GreenGiant")
@@ -6636,7 +6636,7 @@ void FullscreenUI::UpdateTheme()
     UIStyle.ToastBackgroundColor = HEX_TO_IMVEC4(0xf1f1f1, 0xff);
     UIStyle.ToastTextColor = HEX_TO_IMVEC4(0x000000, 0xff);
     UIStyle.ShadowColor = IM_COL32(0, 0, 0, 0);
-    UIStyle.BlurBackgroundWeight = 0.5f;
+    UIStyle.BlurBackgroundWeight = 0.25f;
     UIStyle.IsDarkTheme = false;
   }
   else

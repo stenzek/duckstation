@@ -1540,7 +1540,7 @@ float FullscreenUI::GetBackgroundAlpha()
     }
     else
     {
-      return 0.90f;
+      return UIStyle.IsDarkTheme ? 0.90f : 0.92f;
     }
   }
   else
