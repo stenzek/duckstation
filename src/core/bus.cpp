@@ -1218,15 +1218,13 @@ bool Bus::SideloadEXE(const std::string& path, Error* error)
     return false;
   }
 
-  // Stupid Android...
-  std::string filename = FileSystem::GetDisplayNameFromPath(path);
-
+  const std::string_view extension = Path::GetExtension(path);
   bool okay = true;
-  if (StringUtil::EndsWithNoCase(filename, ".cpe"))
+  if (StringUtil::EqualNoCase(extension, "cpe"))
   {
     okay = InjectCPE(exe_data->cspan(), true, error);
   }
-  else if (StringUtil::EndsWithNoCase(filename, ".elf"))
+  else if (StringUtil::EqualNoCase(extension, "elf"))
   {
     ELFFile elf;
     if (!elf.Open(std::move(exe_data.value()), error))

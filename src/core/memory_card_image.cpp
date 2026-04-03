@@ -761,7 +761,6 @@ bool MemoryCardImage::ImportSaveWithDirectoryFrame(DataArray* data, const char* 
 
 bool MemoryCardImage::ImportRawSave(DataArray* data, const char* filename, const FILESYSTEM_STAT_DATA& sd, Error* error)
 {
-  const std::string display_name = FileSystem::GetDisplayNameFromPath(filename);
   std::string save_name(Path::GetFileTitle(filename));
   if (save_name.length() == 0)
   {

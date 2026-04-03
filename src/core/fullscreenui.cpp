@@ -876,7 +876,7 @@ void FullscreenUI::StartChangeDiscFromFile()
         if (!GameList::IsScannableFilename(path))
         {
           ShowToast(OSDMessageType::Error, {},
-                    fmt::format(FSUI_FSTR("{} is not a valid disc image."), FileSystem::GetDisplayNameFromPath(path)));
+                    fmt::format(FSUI_FSTR("{} is not a valid disc image."), Path::GetFileName(path)));
         }
         else
         {

@@ -358,21 +358,18 @@ bool MemoryCard::SaveIfChanged(bool display_osd_message)
   if (m_path.empty())
     return false;
 
-  std::string display_name;
-  if (display_osd_message)
-    display_name = FileSystem::GetDisplayNameFromPath(m_path);
-
-  INFO_LOG("Saving memory card to {}...", Path::GetFileTitle(m_path));
+  const std::string_view filename = Path::GetFileName(m_path);
+  INFO_LOG("Saving memory card to {}...", filename);
 
   Error error;
   if (!MemoryCardImage::SaveToFile(m_data, m_path.c_str(), &error))
   {
     if (display_osd_message)
     {
-      Host::AddIconOSDMessage(OSDMessageType::Error, GetOSDMessageKey(m_index), ICON_EMOJI_WARNING,
-                              fmt::format(TRANSLATE_FS("MemoryCard", "Failed to save memory card {}."), m_index + 1),
-                              fmt::format(TRANSLATE_FS("MemoryCard", "File: {0}:\nError: {1}"),
-                                          Path::GetFileName(display_name), error.GetDescription()));
+      Host::AddIconOSDMessage(
+        OSDMessageType::Error, GetOSDMessageKey(m_index), ICON_EMOJI_WARNING,
+        fmt::format(TRANSLATE_FS("MemoryCard", "Failed to save memory card {}."), m_index + 1),
+        fmt::format(TRANSLATE_FS("MemoryCard", "File: {0}:\nError: {1}"), filename, error.GetDescription()));
     }
 
     return false;
@@ -384,10 +381,9 @@ bool MemoryCard::SaveIfChanged(bool display_osd_message)
     if (icon_path.empty())
       icon_path = ICON_PF_MEMORY_CARD;
 
-    Host::AddIconOSDMessage(
-      OSDMessageType::Quick, GetOSDMessageKey(m_index), std::move(icon_path),
-      fmt::format(TRANSLATE_FS("MemoryCard", "Memory Card Slot {}"), m_index + 1),
-      fmt::format(TRANSLATE_FS("MemoryCard", "Saved card to '{}'."), Path::GetFileName(display_name)));
+    Host::AddIconOSDMessage(OSDMessageType::Quick, GetOSDMessageKey(m_index), std::move(icon_path),
+                            fmt::format(TRANSLATE_FS("MemoryCard", "Memory Card Slot {}"), m_index + 1),
+                            fmt::format(TRANSLATE_FS("MemoryCard", "Saved card to '{}'."), filename));
   }
 
   return true;

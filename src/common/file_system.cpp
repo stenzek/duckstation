@@ -646,11 +646,6 @@ static std::string_view::size_type GetLastSeperatorPosition(std::string_view pat
   return last_separator;
 }
 
-std::string FileSystem::GetDisplayNameFromPath(std::string_view path)
-{
-  return std::string(Path::GetFileName(path));
-}
-
 std::string_view Path::GetDirectory(std::string_view path)
 {
   const std::string::size_type pos = GetLastSeperatorPosition(path, false);

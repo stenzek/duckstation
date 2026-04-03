@@ -134,7 +134,6 @@ bool CDROMSubQReplacement::LoadForImage(std::unique_ptr<CDROMSubQReplacement>* r
   };
 
   const std::string& image_path = image->GetPath();
-  std::string display_name;
   std::string path;
   bool result = true;
 
@@ -168,12 +167,11 @@ bool CDROMSubQReplacement::LoadForImage(std::unique_ptr<CDROMSubQReplacement>* r
   // Try sbi/lsd in the directory first.
   if (!CDImage::IsDeviceName(image_path.c_str()))
   {
-    display_name = FileSystem::GetDisplayNameFromPath(image_path);
+    const std::string_view file_title = Path::GetFileTitle(image_path);
 
     for (const FileLoader& loader : loaders)
     {
-      path = Path::BuildRelativePath(
-        image_path, SmallString::from_format("{}.{}", Path::GetFileTitle(display_name), loader.extension));
+      path = Path::BuildRelativePath(image_path, SmallString::from_format("{}.{}", file_title, loader.extension));
       if (try_path(loader))
         return result;
     }
@@ -183,16 +181,16 @@ bool CDROMSubQReplacement::LoadForImage(std::unique_ptr<CDROMSubQReplacement>* r
     {
       for (const FileLoader& loader : loaders)
       {
-        path = Path::BuildRelativePath(image_path,
-                                       SmallString::from_format("{}_{}.{}", Path::GetFileTitle(display_name),
-                                                                image->GetCurrentSubImage() + 1, loader.extension));
+        path = Path::BuildRelativePath(
+          image_path,
+          SmallString::from_format("{}_{}.{}", file_title, image->GetCurrentSubImage() + 1, loader.extension));
         if (try_path(loader))
           return result;
       }
     }
 
     // Try the file title first inside subchannels (most specific).
-    if (!display_name.empty() && search_in_subchannels(Path::GetFileTitle(display_name)))
+    if (!file_title.empty() && search_in_subchannels(file_title))
       return result;
   }
 

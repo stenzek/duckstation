@@ -212,7 +212,7 @@ std::optional<BIOS::Image> BIOS::LoadImageFromFile(const char* filename, Error* 
   ret->data.resize(BIOS_SIZE);
   ret->info = GetInfoForHash(ret->data, ret->hash);
 
-  DEV_LOG("Hash for BIOS '{}': {}", FileSystem::GetDisplayNameFromPath(filename), ImageInfo::GetHashString(ret->hash));
+  DEV_LOG("Hash for BIOS '{}': {}", Path::GetFileName(filename), ImageInfo::GetHashString(ret->hash));
   return ret;
 }
 

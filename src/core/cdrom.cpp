@@ -30,6 +30,7 @@
 #include "common/gsvector.h"
 #include "common/heap_array.h"
 #include "common/log.h"
+#include "common/path.h"
 #include "common/xorshift_prng.h"
 
 #include "IconsEmoji.h"
@@ -1023,7 +1024,7 @@ bool CDROM::PrecacheMedia()
     Host::AddOSDMessage(
       OSDMessageType::Error,
       fmt::format(TRANSLATE_FS("OSDMessage", "CD image preloading not available for multi-disc image '{}'"),
-                  FileSystem::GetDisplayNameFromPath(s_reader.GetMedia()->GetPath())));
+                  Path::GetFileName(s_reader.GetMedia()->GetPath())));
     return false;
   }
 

@@ -1020,7 +1020,7 @@ GameHash System::GetGameHashFromFile(const char* path)
   if (!data)
     return 0;
 
-  return GetGameHashFromBuffer(FileSystem::GetDisplayNameFromPath(path), data->cspan());
+  return GetGameHashFromBuffer(Path::GetFileName(path), data->cspan());
 }
 
 GameHash System::GetGameHashFromBuffer(const std::string_view path, const std::span<const u8> data)
@@ -4311,7 +4311,7 @@ void System::UpdateRunningGame(const std::string& path, CDImage* image, bool boo
     if (IsExePath(path))
     {
       if (s_state.running_game_title.empty())
-        s_state.running_game_title = Path::GetFileTitle(FileSystem::GetDisplayNameFromPath(path));
+        s_state.running_game_title = Path::GetFileTitle(path);
 
       s_state.running_game_hash = GetGameHashFromFile(s_state.running_game_path.c_str());
       if (s_state.running_game_hash != 0 && s_state.running_game_serial.empty())
@@ -4376,14 +4376,14 @@ void System::UpdateRunningGame(const std::string& path, CDImage* image, bool boo
 
           // Don't display device names for unknown physical discs.
           if (s_state.running_game_title.empty() && !CDImage::IsDeviceName(path.c_str()))
-            s_state.running_game_title = Path::GetFileTitle(FileSystem::GetDisplayNameFromPath(path));
+            s_state.running_game_title = Path::GetFileTitle(path);
         }
       }
       else
       {
         // Audio CDs can get the path from the filename, assuming it's not a physical disc.
         if (!CDImage::IsDeviceName(path.c_str()))
-          s_state.running_game_title = Path::GetFileTitle(FileSystem::GetDisplayNameFromPath(path));
+          s_state.running_game_title = Path::GetFileTitle(path);
       }
     }
   }
@@ -4523,7 +4523,7 @@ bool System::SwitchMediaSubImage(u32 index)
     const DiscRegion region =
       GameList::GetCustomRegionForPath(image->GetPath()).value_or(GetRegionForImage(image.get()));
     subimage_title = image->GetSubImageTitle(index);
-    title = FileSystem::GetDisplayNameFromPath(image->GetPath());
+    title = Path::GetFileName(image->GetPath());
     UpdateRunningGame(image->GetPath(), image.get(), false);
     okay = CDROM::InsertMedia(image, region, s_state.running_game_serial, s_state.running_game_title,
                               GetCurrentGameSaveTitle(), &error);
@@ -4532,8 +4532,7 @@ bool System::SwitchMediaSubImage(u32 index)
   {
     Host::AddIconOSDMessage(OSDMessageType::Error, "MediaSwitchSubImage", ICON_FA_COMPACT_DISC,
                             fmt::format(TRANSLATE_FS("System", "Failed to switch to subimage {} in '{}': {}."),
-                                        index + 1u, FileSystem::GetDisplayNameFromPath(image->GetPath()),
-                                        error.GetDescription()));
+                                        index + 1u, Path::GetFileName(image->GetPath()), error.GetDescription()));
 
     // restore old disc
     const DiscRegion region =
@@ -6040,8 +6039,7 @@ std::string System::GetGameMemoryCardPath(std::string_view custom_title, std::st
 
     case MemoryCardType::PerGameFileTitle:
     {
-      ret = g_settings.GetGameMemoryCardPath(
-        Path::SanitizeFileName(Path::GetFileTitle(FileSystem::GetDisplayNameFromPath(path))), slot);
+      ret = g_settings.GetGameMemoryCardPath(Path::SanitizeFileName(Path::GetFileTitle(path)), slot);
     }
     break;
     default:
@@ -6131,8 +6129,7 @@ std::string System::GetMemoryCardPathForSlot(u32 slot, MemoryCardType type)
 
     case MemoryCardType::PerGameFileTitle:
     {
-      const std::string display_name(FileSystem::GetDisplayNameFromPath(s_state.running_game_path));
-      const std::string_view file_title(Path::GetFileTitle(display_name));
+      const std::string_view file_title(Path::GetFileTitle(s_state.running_game_path));
       if (file_title.empty())
       {
         Host::AddIconOSDMessage(OSDMessageType::Info, std::move(message_key), ICON_PF_MEMORY_CARD,

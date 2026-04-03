@@ -56,9 +56,6 @@ struct FILESYSTEM_FIND_DATA
 namespace FileSystem {
 using FindResultsArray = std::vector<FILESYSTEM_FIND_DATA>;
 
-/// Returns the display name of a filename. Usually this is the same as the path.
-std::string GetDisplayNameFromPath(std::string_view path);
-
 /// Returns a list of "root directories" (i.e. root/home directories on Linux, drive letters on Windows).
 std::vector<std::string> GetRootDirectoryList();
 

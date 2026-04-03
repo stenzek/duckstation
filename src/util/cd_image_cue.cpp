@@ -179,12 +179,12 @@ std::unique_ptr<TrackFileInterface> TrackFileInterface::OpenBinaryFile(const std
     FileSystem::OpenManagedSharedCFile(path.c_str(), "rb", FileSystem::FileShareMode::DenyWrite, error);
   if (!file)
   {
-    Error::AddPrefixFmt(error, "Failed to open '{}': ", FileSystem::GetDisplayNameFromPath(path));
+    Error::AddPrefixFmt(error, "Failed to open '{}': ", Path::GetFileName(path));
     return fi;
   }
 
   // Check for ECM format.
-  if (StringUtil::EndsWithNoCase(FileSystem::GetDisplayNameFromPath(path), ".ecm"))
+  if (StringUtil::EqualNoCase(Path::GetExtension(path), "ecm"))
     fi = ECMTrackFileInterface::Create(std::string(filename), std::move(file), error);
   else
     fi = std::make_unique<BinaryTrackFileInterface>(std::string(filename), std::move(file));
