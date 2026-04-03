@@ -1038,7 +1038,7 @@ void FullscreenUI::UpdateTransitionState()
 bool FullscreenUI::CanBlurBackground()
 {
   // If there's no video presenter, we have no way to get the current backbuffer for blurring, so don't even try.
-  return VideoPresenter::HasDisplayTexture();
+  return VideoThread::HasGPUBackend();
 }
 
 void FullscreenUI::InvalidateBlurBackground()
