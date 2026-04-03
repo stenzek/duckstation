@@ -75,96 +75,96 @@ struct CodeInfo
 using CodeInfoList = std::vector<CodeInfo>;
 
 /// Returns the internal identifier for a code type.
-extern const char* GetTypeName(CodeType type);
+const char* GetTypeName(CodeType type);
 
 /// Returns the human-readable name for a code type.
-extern const char* GetTypeDisplayName(CodeType type);
+const char* GetTypeDisplayName(CodeType type);
 
 /// Parses an internal identifier, returning the code type.
-extern std::optional<CodeType> ParseTypeName(const std::string_view str);
+std::optional<CodeType> ParseTypeName(const std::string_view str);
 
 /// Returns the internal identifier for a code activation.
-extern const char* GetActivationName(CodeActivation activation);
+const char* GetActivationName(CodeActivation activation);
 
 /// Returns the human-readable name for a code activation.
-extern const char* GetActivationDisplayName(CodeActivation activation);
+const char* GetActivationDisplayName(CodeActivation activation);
 
 /// Parses an internal identifier, returning the activation type.
-extern std::optional<CodeActivation> ParseActivationName(const std::string_view str);
+std::optional<CodeActivation> ParseActivationName(const std::string_view str);
 
 /// Returns a list of all available cheats/patches for a given game.
-extern CodeInfoList GetCodeInfoList(const std::string_view serial, std::optional<GameHash> hash, bool cheats,
-                                    bool load_from_database, bool sort_by_name);
+CodeInfoList GetCodeInfoList(const std::string_view serial, std::optional<GameHash> hash, bool cheats,
+                             bool load_from_database, bool sort_by_name);
 
 /// Returns a list of all unique prefixes/groups for a cheat list.
-extern std::vector<std::string_view> GetCodeListUniquePrefixes(const CodeInfoList& list, bool include_empty);
+std::vector<std::string_view> GetCodeListUniquePrefixes(const CodeInfoList& list, bool include_empty);
 
 /// Searches for a given code by name.
-extern const CodeInfo* FindCodeInInfoList(const CodeInfoList& list, const std::string_view name);
+const CodeInfo* FindCodeInInfoList(const CodeInfoList& list, const std::string_view name);
 
 /// Searches for a given code by name.
-extern CodeInfo* FindCodeInInfoList(CodeInfoList& list, const std::string_view name);
+CodeInfo* FindCodeInInfoList(CodeInfoList& list, const std::string_view name);
 
 /// Formats the given cheat code in the format that it would be saved to a file.
-extern std::string FormatCodeForFile(const CodeInfo& code);
+std::string FormatCodeForFile(const CodeInfo& code);
 
 /// Imports all codes from the provided string.
-extern bool ImportCodesFromString(CodeInfoList* dst, const std::string_view file_contents, FileFormat file_format,
-                                  bool stop_on_error, Error* error);
+bool ImportCodesFromString(CodeInfoList* dst, const std::string_view file_contents, FileFormat file_format,
+                           bool stop_on_error, Error* error);
 
 /// Exports codes to the given file, in DuckStation format.
-extern bool ExportCodesToFile(std::string path, const CodeInfoList& codes, Error* error);
+bool ExportCodesToFile(std::string path, const CodeInfoList& codes, Error* error);
 
 /// Adds, updates, or removes the specified code from the file, rewriting it. If code is null, it will be removed.
-extern bool UpdateCodeInFile(const char* path, const std::string_view name, const CodeInfo* code, Error* error);
+bool UpdateCodeInFile(const char* path, const std::string_view name, const CodeInfo* code, Error* error);
 
 /// Updates or adds multiple codes to the file, rewriting it.
-extern bool SaveCodesToFile(const char* path, const CodeInfoList& codes, Error* error);
+bool SaveCodesToFile(const char* path, const CodeInfoList& codes, Error* error);
 
 /// Removes any .cht files for the specified game.
-extern void RemoveAllCodes(const std::string_view serial, const std::string_view title, std::optional<GameHash> hash);
+void RemoveAllCodes(const std::string_view serial, const std::string_view title, std::optional<GameHash> hash);
 
 /// Validates whether a cheat code is properly formatted.
-extern bool ValidateCodeBody(std::string_view name, CodeType type, CodeActivation activation, std::string_view body,
-                             Error* error);
-extern bool ValidateCodeBody(const CodeInfo& code, Error* error);
+bool ValidateCodeBody(std::string_view name, CodeType type, CodeActivation activation, std::string_view body,
+                      Error* error);
+bool ValidateCodeBody(const CodeInfo& code, Error* error);
 
 /// Returns the path to a new cheat/patch cht for the specified serial and hash.
-extern std::string GetChtFilename(const std::string_view serial, std::optional<GameHash> hash, bool cheats);
+std::string GetChtFilename(const std::string_view serial, std::optional<GameHash> hash, bool cheats);
 
 /// Reloads cheats and game patches. The parameters control the degree to which data is reloaded.
-extern void ReloadCheats(bool reload_files, bool reload_enabled_list, bool verbose, bool verbose_if_changed,
-                         bool show_disabled_codes);
+void ReloadCheats(bool reload_files, bool reload_enabled_list, bool verbose, bool verbose_if_changed,
+                  bool show_disabled_codes);
 
 /// Releases all cheat-related state.
-extern void UnloadAll();
+void UnloadAll();
 
 /// Returns true if any patches have setting overrides specified.
-extern bool HasAnySettingOverrides();
+bool HasAnySettingOverrides();
 
 /// Applies setting changes based on patches.
-extern void ApplySettingOverrides();
+void ApplySettingOverrides();
 
 /// Applies all currently-registered frame end cheat codes.
-extern void ApplyFrameEndCodes();
+void ApplyFrameEndCodes();
 
 /// Returns true if cheats are enabled in the current game's configuration.
-extern bool AreCheatsEnabled();
+bool AreCheatsEnabled();
 
 /// Enumerates the names of all manually-activated codes.
-extern bool EnumerateManualCodes(std::function<bool(const std::string& name)> callback);
+bool EnumerateManualCodes(std::function<bool(const std::string& name)> callback);
 
 /// Invokes/applies the specified manually-activated code.
-extern bool ApplyManualCode(const std::string_view name);
+bool ApplyManualCode(const std::string_view name);
 
 /// Returns the number of active patches.
-extern u32 GetActivePatchCount();
+u32 GetActivePatchCount();
 
 /// Returns the number of active cheats.
-extern u32 GetActiveCheatCount();
+u32 GetActiveCheatCount();
 
 /// Returns true if the widescreen patch is active.
-extern bool IsWidescreenPatchActive();
+bool IsWidescreenPatchActive();
 
 // Config sections/keys to use to enable patches.
 extern const char* PATCHES_CONFIG_SECTION;
