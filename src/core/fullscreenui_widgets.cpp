@@ -2065,14 +2065,19 @@ void FullscreenUI::DrawFullscreenFooter()
     prev_opacity = s_state.fullscreen_text_change_time * (1.0f / TRANSITION_TIME);
     if (prev_opacity > 0.0f)
     {
+      const u32 shadow_color = MulAlpha(UIStyle.ShadowColor, prev_opacity);
       if (!s_state.last_fullscreen_footer_text.empty())
       {
         const ImVec2 text_size = font->CalcTextSizeA(font_size, font_weight, max_width, 0.0f,
                                                      IMSTR_START_END(s_state.last_fullscreen_footer_text));
         const ImVec2 text_pos =
           ImVec2(io.DisplaySize.x - padding.x - text_size.x, io.DisplaySize.y - font_size - padding.y);
-        dl->AddText(font, font_size, font_weight, text_pos + shadow_offset, MulAlpha(UIStyle.ShadowColor, prev_opacity),
-                    IMSTR_START_END(s_state.last_fullscreen_footer_text));
+        if ((shadow_color >> IM_COL32_A_SHIFT) > 0)
+        {
+          dl->AddText(font, font_size, font_weight, text_pos + shadow_offset,
+                      MulAlpha(UIStyle.ShadowColor, prev_opacity),
+                      IMSTR_START_END(s_state.last_fullscreen_footer_text));
+        }
         dl->AddText(font, font_size, font_weight, text_pos, ModAlpha(text_color, prev_opacity),
                     IMSTR_START_END(s_state.last_fullscreen_footer_text));
       }
@@ -2080,8 +2085,12 @@ void FullscreenUI::DrawFullscreenFooter()
       if (!s_state.last_left_fullscreen_footer_text.empty())
       {
         const ImVec2 text_pos = ImVec2(padding.x, io.DisplaySize.y - font_size - padding.y);
-        dl->AddText(font, font_size, font_weight, text_pos + shadow_offset, MulAlpha(UIStyle.ShadowColor, prev_opacity),
-                    IMSTR_START_END(s_state.last_left_fullscreen_footer_text));
+        if ((shadow_color >> IM_COL32_A_SHIFT) > 0)
+        {
+          dl->AddText(font, font_size, font_weight, text_pos + shadow_offset,
+                      MulAlpha(UIStyle.ShadowColor, prev_opacity),
+                      IMSTR_START_END(s_state.last_left_fullscreen_footer_text));
+        }
         dl->AddText(font, font_size, font_weight, text_pos, ModAlpha(text_color, prev_opacity),
                     IMSTR_START_END(s_state.last_left_fullscreen_footer_text));
       }
@@ -2095,14 +2104,18 @@ void FullscreenUI::DrawFullscreenFooter()
   if (prev_opacity < 1.0f)
   {
     const float opacity = 1.0f - prev_opacity;
+    const u32 shadow_color = MulAlpha(UIStyle.ShadowColor, opacity);
     if (!s_state.fullscreen_footer_text.empty())
     {
       const ImVec2 text_size =
         font->CalcTextSizeA(font_size, font_weight, max_width, 0.0f, IMSTR_START_END(s_state.fullscreen_footer_text));
       const ImVec2 text_pos =
         ImVec2(io.DisplaySize.x - padding.x - text_size.x, io.DisplaySize.y - font_size - padding.y);
-      dl->AddText(font, font_size, font_weight, text_pos + shadow_offset, MulAlpha(UIStyle.ShadowColor, opacity),
-                  IMSTR_START_END(s_state.fullscreen_footer_text));
+      if ((shadow_color >> IM_COL32_A_SHIFT) > 0)
+      {
+        dl->AddText(font, font_size, font_weight, text_pos + shadow_offset, MulAlpha(UIStyle.ShadowColor, opacity),
+                    IMSTR_START_END(s_state.fullscreen_footer_text));
+      }
       dl->AddText(font, font_size, font_weight, text_pos, ModAlpha(text_color, opacity),
                   IMSTR_START_END(s_state.fullscreen_footer_text));
     }
@@ -2110,8 +2123,11 @@ void FullscreenUI::DrawFullscreenFooter()
     if (!s_state.left_fullscreen_footer_text.empty())
     {
       const ImVec2 text_pos = ImVec2(padding.x, io.DisplaySize.y - font_size - padding.y);
-      dl->AddText(font, font_size, font_weight, text_pos + shadow_offset, MulAlpha(UIStyle.ShadowColor, opacity),
-                  IMSTR_START_END(s_state.left_fullscreen_footer_text));
+      if ((shadow_color >> IM_COL32_A_SHIFT) > 0)
+      {
+        dl->AddText(font, font_size, font_weight, text_pos + shadow_offset, MulAlpha(UIStyle.ShadowColor, opacity),
+                    IMSTR_START_END(s_state.left_fullscreen_footer_text));
+      }
       dl->AddText(font, font_size, font_weight, text_pos, ModAlpha(text_color, opacity),
                   IMSTR_START_END(s_state.left_fullscreen_footer_text));
     }
@@ -2539,14 +2555,21 @@ void FullscreenUI::RenderShadowedTextClipped(ImDrawList* draw_list, ImFont* font
   if (need_clipping)
   {
     ImVec4 fine_clip_rect(clip_min->x, clip_min->y, clip_max->x, clip_max->y);
-    draw_list->AddText(font, font_size, font_weight, ImVec2(pos.x + shadow_offset, pos.y + shadow_offset), shadow_color,
-                       IMSTR_START_END(text), wrap_width, &fine_clip_rect);
+    if ((shadow_color >> IM_COL32_A_SHIFT) > 0)
+    {
+      draw_list->AddText(font, font_size, font_weight, ImVec2(pos.x + shadow_offset, pos.y + shadow_offset),
+                         shadow_color, IMSTR_START_END(text), wrap_width, &fine_clip_rect);
+    }
     draw_list->AddText(font, font_size, font_weight, pos, color, IMSTR_START_END(text), wrap_width, &fine_clip_rect);
   }
   else
   {
-    draw_list->AddText(font, font_size, font_weight, ImVec2(pos.x + shadow_offset, pos.y + shadow_offset), shadow_color,
-                       IMSTR_START_END(text), wrap_width, nullptr);
+    if ((shadow_color >> IM_COL32_A_SHIFT) > 0)
+    {
+      draw_list->AddText(font, font_size, font_weight, ImVec2(pos.x + shadow_offset, pos.y + shadow_offset),
+                         shadow_color, IMSTR_START_END(text), wrap_width, nullptr);
+    }
+
     draw_list->AddText(font, font_size, font_weight, pos, color, IMSTR_START_END(text), wrap_width, nullptr);
   }
 }
@@ -6481,7 +6504,7 @@ void FullscreenUI::UpdateTheme()
     UIStyle.SecondaryTextColor = HEX_TO_IMVEC4(0x000000, 0xff);
     UIStyle.ToastBackgroundColor = HEX_TO_IMVEC4(0xd86a66, 0xff);
     UIStyle.ToastTextColor = HEX_TO_IMVEC4(0xffffff, 0xff);
-    UIStyle.ShadowColor = IM_COL32(100, 100, 100, 50);
+    UIStyle.ShadowColor = IM_COL32(0, 0, 0, 0);
     UIStyle.BlurBackgroundWeight = 0.5f;
     UIStyle.IsDarkTheme = false;
   }
@@ -6507,7 +6530,7 @@ void FullscreenUI::UpdateTheme()
     UIStyle.SecondaryTextColor = HEX_TO_IMVEC4(0x000000, 0xff);
     UIStyle.ToastBackgroundColor = HEX_TO_IMVEC4(0xD5DE2E, 0xff);
     UIStyle.ToastTextColor = HEX_TO_IMVEC4(0x000000, 0xff);
-    UIStyle.ShadowColor = IM_COL32(100, 100, 100, 50);
+    UIStyle.ShadowColor = IM_COL32(0, 0, 0, 0);
     UIStyle.BlurBackgroundWeight = 0.25f;
     UIStyle.IsDarkTheme = false;
   }
@@ -6585,7 +6608,7 @@ void FullscreenUI::UpdateTheme()
     UIStyle.SecondaryTextColor = HEX_TO_IMVEC4(0xffffff, 0xff);
     UIStyle.ToastBackgroundColor = HEX_TO_IMVEC4(0x8e65cb, 0xff);
     UIStyle.ToastTextColor = HEX_TO_IMVEC4(0xffffff, 0xff);
-    UIStyle.ShadowColor = IM_COL32(100, 100, 100, 50);
+    UIStyle.ShadowColor = IM_COL32(0, 0, 0, 100);
     UIStyle.BlurBackgroundWeight = 0.25f;
     UIStyle.IsDarkTheme = true;
   }
@@ -6612,7 +6635,7 @@ void FullscreenUI::UpdateTheme()
     UIStyle.SecondaryTextColor = HEX_TO_IMVEC4(0x000000, 0xff);
     UIStyle.ToastBackgroundColor = HEX_TO_IMVEC4(0xf1f1f1, 0xff);
     UIStyle.ToastTextColor = HEX_TO_IMVEC4(0x000000, 0xff);
-    UIStyle.ShadowColor = IM_COL32(100, 100, 100, 50);
+    UIStyle.ShadowColor = IM_COL32(0, 0, 0, 0);
     UIStyle.BlurBackgroundWeight = 0.5f;
     UIStyle.IsDarkTheme = false;
   }
