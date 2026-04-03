@@ -481,6 +481,15 @@ QTextBrowser {
   border: none;
   padding: 2px 4px;
 }
+.settings-window QTreeView::item:first {
+  border-top-left-radius: 8px;
+  border-bottom-left-radius: 8px;
+}
+.settings-window QTreeView::item:last {
+  border-top-right-radius: 8px;
+  border-bottom-right-radius: 8px;
+}
+
 .settings-window QTreeView::item:hover {
   background-color: $bg-hover;
 }
@@ -499,4 +508,8 @@ QTextBrowser {
   border: none;
   border-bottom: 1px solid $bg-active;
   margin: 0px 8px;
+}
+.settings-window GameCheatSettingsWidget QTreeView::item:first,
+.settings-window GameCheatSettingsWidget QTreeView::item:last {
+  border-radius: 0;
 }
