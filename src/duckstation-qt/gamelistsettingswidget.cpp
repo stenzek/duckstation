@@ -25,6 +25,8 @@
 
 #include "moc_gamelistsettingswidget.cpp"
 
+using namespace Qt::StringLiterals;
+
 GameListSettingsWidget::GameListSettingsWidget(SettingsWindow* dialog, QWidget* parent) : QWidget(parent)
 {
   m_ui.setupUi(this);
@@ -74,7 +76,11 @@ void GameListSettingsWidget::refreshExclusionList()
 
   const std::vector<std::string> paths(Core::GetBaseStringListSetting("GameList", "ExcludedPaths"));
   for (const std::string& path : paths)
-    m_ui.excludedPaths->addItem(QString::fromStdString(path));
+  {
+    QListWidgetItem* const it = new QListWidgetItem(QString::fromStdString(path));
+    it->setIcon(QIcon::fromTheme("file-forbid-line"_L1));
+    m_ui.excludedPaths->addItem(it);
+  }
 
   m_ui.removeExcludedPath->setEnabled(false);
 }
@@ -83,6 +89,7 @@ void GameListSettingsWidget::addPathToTable(const std::string& path, bool recurs
 {
   QTreeWidgetItem* const item = new QTreeWidgetItem();
   item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
+  item->setIcon(0, QIcon::fromTheme(recursive ? "folder-open-line"_L1 : "folder-line"_L1));
   item->setText(0, QString::fromStdString(path));
   item->setCheckState(1, recursive ? Qt::Checked : Qt::Unchecked);
   m_ui.searchDirectoryList->addTopLevelItem(item);
@@ -140,8 +147,11 @@ void GameListSettingsWidget::onDirectoryListItemChanged(QTreeWidgetItem* item, i
     return;
 
   const std::string path = item->text(0).toStdString();
+  const bool recursive = (item->checkState(1) == Qt::Checked);
 
-  if (item->checkState(1) == Qt::Checked)
+  item->setIcon(0, QIcon::fromTheme(recursive ? "folder-open-line"_L1 : "folder-line"_L1));
+
+  if (recursive)
   {
     Core::RemoveValueFromBaseStringListSetting("GameList", "Paths", path.c_str());
     Core::AddValueToBaseStringListSetting("GameList", "RecursivePaths", path.c_str());

@@ -87,6 +87,12 @@
      <property name="alternatingRowColors">
       <bool>true</bool>
      </property>
+     <property name="iconSize">
+      <size>
+       <width>20</width>
+       <height>20</height>
+      </size>
+     </property>
      <property name="rootIsDecorated">
       <bool>false</bool>
      </property>
@@ -178,7 +184,14 @@
     </layout>
    </item>
    <item>
-    <widget class="QListWidget" name="excludedPaths"/>
+    <widget class="QListWidget" name="excludedPaths">
+     <property name="iconSize">
+      <size>
+       <width>20</width>
+       <height>20</height>
+      </size>
+     </property>
+    </widget>
    </item>
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
@@ -232,7 +245,7 @@
   </layout>
  </widget>
  <resources>
-  <include location="resources/resources.qrc"/>
+  <include location="resources/duckstation-qt.qrc"/>
  </resources>
  <connections/>
 </ui>
