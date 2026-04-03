@@ -3664,10 +3664,21 @@ bool FullscreenUI::NavButton(std::string_view title, bool is_active, bool enable
   bb.Min += style.FramePadding;
   bb.Max -= style.FramePadding;
 
-  RenderShadowedTextClipped(
-    UIStyle.Font, UIStyle.LargeFontSize, UIStyle.BoldFontWeight, bb.Min, bb.Max,
-    ImGui::GetColorU32(enabled ? (is_active ? ImGuiCol_Text : ImGuiCol_TextDisabled) : ImGuiCol_ButtonHovered), title,
-    &text_size, ImVec2(0.0f, 0.0f), 0.0f, &bb);
+  u32 color;
+  if (enabled)
+  {
+    if (is_active)
+      color = ImGui::GetColorU32(ImGuiCol_Text);
+    else
+      color = ImGui::GetColorU32(DarkerColor(GImGui->Style.Colors[ImGuiCol_Text], UIStyle.IsDarkTheme ? 0.6f : 1.7f));
+  }
+  else
+  {
+    color = ImGui::GetColorU32(ImGuiCol_TextDisabled);
+  }
+
+  RenderShadowedTextClipped(UIStyle.Font, UIStyle.LargeFontSize, UIStyle.BoldFontWeight, bb.Min, bb.Max, color, title,
+                            &text_size, ImVec2(0.0f, 0.0f), 0.0f, &bb);
 
   return pressed;
 }
