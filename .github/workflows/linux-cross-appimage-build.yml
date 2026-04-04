@@ -94,7 +94,7 @@ jobs:
         scripts/appimage/make-cross-appimage.sh "${{ matrix.arch }}" "$(realpath build)" "/${{ matrix.arch }}-chroot"
 
     - name: Upload AppImages
-      uses: actions/upload-artifact@v6
+      uses: actions/upload-artifact@v7
       with:
         name: "linux-${{ matrix.arch }}-appimage"
         path: "DuckStation-*.AppImage"
