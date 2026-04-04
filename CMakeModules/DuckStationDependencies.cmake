@@ -83,7 +83,7 @@ find_package(Shaderc 2026.1 REQUIRED
              NO_DEFAULT_PATH PATHS "${DEPS_PATH}/lib/cmake/Shaderc")
 find_package(spirv_cross_c_shared REQUIRED
              NO_DEFAULT_PATH PATHS "${DEPS_PATH}/share/spirv_cross_c_shared/cmake")
-find_package(SDL3 3.4.2 REQUIRED
+find_package(SDL3 3.4.4 REQUIRED
              NO_DEFAULT_PATH PATHS "${DEPS_PATH}/lib/cmake/SDL3")
 
 # Verify dependency paths.
