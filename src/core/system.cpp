@@ -2615,8 +2615,20 @@ bool System::DoState(StateWrapper& sw, bool update_display)
       CPU::PGXP::Reset();
   }
 
-  if (!sw.DoMarker("Bus") || !Bus::DoState(sw))
-    return false;
+  // back up and restore memory affected by cheats when saving state
+  if (sw.IsReading())
+  {
+    if (!sw.DoMarker("Bus") || !Bus::DoState(sw))
+      return false;
+  }
+  else if (sw.IsWriting())
+  {
+    const Cheats::RollbackLog cheat_rollback_log = Cheats::ApplyOnDisableCodes();
+    const bool result = (sw.DoMarker("Bus") && Bus::DoState(sw));
+    Cheats::ReapplyOnDisableCodes(cheat_rollback_log);
+    if (!result)
+      return result;
+  }
 
   if (!sw.DoMarker("DMA") || !DMA::DoState(sw))
     return false;

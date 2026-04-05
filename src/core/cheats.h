@@ -3,8 +3,6 @@
 
 #pragma once
 
-#include "common/bitfield.h"
-
 #include "types.h"
 
 #include <functional>
@@ -71,6 +69,15 @@ struct CodeInfo
   std::string_view MapOptionValueToName(const std::string_view value) const;
   u32 MapOptionNameToValue(const std::string_view opt_name) const;
 };
+
+/// Logged memory access for later reverting.
+struct RollbackEntry
+{
+  MemoryAccessSize size : 8;
+  u32 address : 24;
+  u32 value;
+};
+using RollbackLog = std::vector<RollbackEntry>;
 
 using CodeInfoList = std::vector<CodeInfo>;
 
@@ -147,6 +154,12 @@ void ApplySettingOverrides();
 
 /// Applies all currently-registered frame end cheat codes.
 void ApplyFrameEndCodes();
+
+/// Reverses all reversible codes before creating a save state.
+RollbackLog ApplyOnDisableCodes();
+
+/// Reapplies any codes reversed by ApplyOnDisableCodes() after saving a save state.
+void ReapplyOnDisableCodes(const RollbackLog& rollback_list);
 
 /// Returns true if cheats are enabled in the current game's configuration.
 bool AreCheatsEnabled();
