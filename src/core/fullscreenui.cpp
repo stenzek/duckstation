@@ -1222,6 +1222,7 @@ void FullscreenUI::DrawShaderBackgroundCallback(const ImDrawList* parent_list, c
     static_cast<float>(Timer::ConvertValueToSeconds(Timer::GetCurrentValue() - s_locals.app_background_load_time));
 
   g_gpu_device->SetPipeline(s_locals.app_background_shader.get());
+  g_gpu_device->SetTextureSampler(0, nullptr, nullptr);
   g_gpu_device->DrawWithPushConstants(3, 0, &uniforms, sizeof(uniforms));
 }
 
