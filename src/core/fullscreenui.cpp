@@ -438,8 +438,15 @@ void FullscreenUI::SwitchToMainWindow(MainWindowType type)
   if (s_locals.current_main_window == type)
     return;
 
+  // avoid a race where if we shutdown with achievements up, we end up back at the pause menu
+  if (!VideoThread::HasGPUBackend() && (type == MainWindowType::PauseMenu || type >= MainWindowType::Achievements))
+  {
+    WARNING_LOG("Trying to switch to main window requiring system without one");
+    s_locals.current_main_window = MainWindowType::None;
+    type = MainWindowType::Landing;
+  }
   // windows that are actually stacked
-  if (type != MainWindowType::None && !CanCurrentMainWindowStack())
+  else if (type != MainWindowType::None && !CanCurrentMainWindowStack())
   {
     WARNING_LOG("Trying to stack incompatible window type {} on {}, ignoring", static_cast<u32>(type),
                 static_cast<u32>(s_locals.current_main_window));
