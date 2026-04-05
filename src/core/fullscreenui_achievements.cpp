@@ -2118,6 +2118,7 @@ void FullscreenUI::DrawAchievement(const rc_client_achievement_t* cheevo, const 
   const std::string_view description = cheevo->description ? std::string_view(cheevo->description) : std::string_view();
   const std::string_view measured_progress(cheevo->measured_progress);
   const bool is_unlocked = (cheevo->state == RC_CLIENT_ACHIEVEMENT_STATE_UNLOCKED);
+  const bool is_pinned = (!is_unlocked && Achievements::IsAchievementPinned(cheevo->id));
   const bool is_measured = (!is_unlocked && !measured_progress.empty());
 
   ImVec2 type_badge_padding;
@@ -2145,9 +2146,7 @@ void FullscreenUI::DrawAchievement(const rc_client_achievement_t* cheevo, const 
   }
 
   static constexpr const float& pin_font_size = UIStyle.MediumLargeFontSize;
-  const std::string_view pin_text = (is_measured && Achievements::IsAchievementPinned(cheevo->id)) ?
-                                      std::string_view(ICON_FA_THUMBTACK) :
-                                      std::string_view();
+  const std::string_view pin_text = is_pinned ? std::string_view(ICON_FA_THUMBTACK) : std::string_view();
   const ImVec2 pin_size = pin_text.empty() ?
                             ImVec2() :
                             UIStyle.Font->CalcTextSizeA(pin_font_size, 0.0f, FLT_MAX, 0.0f, IMSTR_START_END(pin_text));
@@ -2331,25 +2330,23 @@ void FullscreenUI::DrawAchievement(const rc_client_achievement_t* cheevo, const 
   if (clicked)
   {
     // Open non-measured achievements directly.
-    if (is_measured)
+    if (is_measured || is_pinned)
     {
-      const bool pinned = Achievements::IsAchievementPinned(cheevo->id);
-
       ChoiceDialogOptions options;
       options.emplace_back(FSUI_ICONSTR(ICON_FA_LINK, "Open on RetroAchievements"), false);
-      options.emplace_back(pinned ? FSUI_ICONSTR(ICON_FA_THUMBTACK_SLASH, "Unpin from OSD") :
-                                    FSUI_ICONSTR(ICON_FA_THUMBTACK, "Pin to OSD"),
+      options.emplace_back(is_pinned ? FSUI_ICONSTR(ICON_FA_THUMBTACK_SLASH, "Unpin from OSD") :
+                                       FSUI_ICONSTR(ICON_FA_THUMBTACK, "Pin to OSD"),
                            false);
 
       OpenChoiceDialog(cheevo->title, false, std::move(options),
-                       [achievement_id = cheevo->id, pinned](s32 index, const std::string& title, bool checked) {
+                       [achievement_id = cheevo->id, is_pinned](s32 index, const std::string& title, bool checked) {
                          switch (index)
                          {
                            case 0: // Open on RetroAchievements
                              OpenAchievementDetails(achievement_id);
                              break;
                            case 1: // Pin/Unpin
-                             SetAchievementPinned(achievement_id, !pinned);
+                             SetAchievementPinned(achievement_id, !is_pinned);
                              break;
                            default:
                              break;
