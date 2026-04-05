@@ -4995,13 +4995,14 @@ void FullscreenUI::DrawAchievementsSettingsPage(std::unique_lock<std::mutex>& se
     }
   }
 
-  DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_ARROW_ROTATE_RIGHT, "Encore Mode"),
-                    FSUI_VSTR("When enabled, each session will behave as if no achievements have been unlocked."),
-                    "Cheevos", "EncoreMode", false, enabled);
   DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_USER_LOCK, "Spectator Mode"),
                     FSUI_VSTR("When enabled, DuckStation will assume all achievements are locked and not send any "
                               "unlock notifications to the server."),
                     "Cheevos", "SpectatorMode", false, enabled);
+  DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_ARROW_ROTATE_RIGHT, "Encore Mode"),
+                    FSUI_VSTR("When enabled, each session will behave as if no achievements have been unlocked."),
+                    "Cheevos", "EncoreMode", false,
+                    enabled && !GetEffectiveBoolSetting(bsi, "Cheevos", "SpectatorMode", false));
   DrawToggleSetting(
     bsi, FSUI_ICONVSTR(ICON_FA_FLASK_VIAL, "Test Unofficial Achievements"),
     FSUI_VSTR("When enabled, DuckStation will list achievements from unofficial sets. These achievements are not "

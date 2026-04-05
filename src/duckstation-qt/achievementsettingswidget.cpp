@@ -120,6 +120,7 @@ AchievementSettingsWidget::AchievementSettingsWidget(SettingsWindow* dialog, QWi
   connect(m_ui.enable, &QCheckBox::checkStateChanged, this, &AchievementSettingsWidget::updateEnableState);
   connect(m_ui.hardcoreMode, &QCheckBox::checkStateChanged, this,
           &AchievementSettingsWidget::onHardcoreModeStateChanged);
+  connect(m_ui.spectatorMode, &QCheckBox::checkStateChanged, this, &AchievementSettingsWidget::updateEnableState);
   connect(m_ui.achievementNotifications, &QCheckBox::checkStateChanged, this,
           &AchievementSettingsWidget::updateEnableState);
   connect(m_ui.leaderboardNotifications, &QCheckBox::checkStateChanged, this,
@@ -244,9 +245,10 @@ void AchievementSettingsWidget::setupAdditionalUi()
 void AchievementSettingsWidget::updateEnableState()
 {
   const bool enabled = m_dialog->getEffectiveBoolValue("Cheevos", "Enabled", false);
+  const bool spectator_enabled = m_dialog->getEffectiveBoolValue("Cheevos", "SpectatorMode", false);
   m_ui.hardcoreMode->setEnabled(enabled);
-  m_ui.encoreMode->setEnabled(enabled);
   m_ui.spectatorMode->setEnabled(enabled);
+  m_ui.encoreMode->setEnabled(enabled && !spectator_enabled);
   m_ui.unofficialAchievements->setEnabled(enabled);
   m_ui.notificationsGroup->setEnabled(enabled);
   m_ui.progressTrackingGroup->setEnabled(enabled);

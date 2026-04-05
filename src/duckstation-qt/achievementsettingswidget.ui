@@ -99,16 +99,16 @@
        </widget>
       </item>
       <item row="1" column="0">
-       <widget class="QCheckBox" name="encoreMode">
+       <widget class="QCheckBox" name="spectatorMode">
         <property name="text">
-         <string>Enable Encore Mode</string>
+         <string>Enable Spectator Mode</string>
         </property>
        </widget>
       </item>
       <item row="1" column="1">
-       <widget class="QCheckBox" name="spectatorMode">
+       <widget class="QCheckBox" name="encoreMode">
         <property name="text">
-         <string>Enable Spectator Mode</string>
+         <string>Enable Encore Mode</string>
         </property>
        </widget>
       </item>

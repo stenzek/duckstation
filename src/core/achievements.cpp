@@ -696,9 +696,10 @@ bool Achievements::Initialize()
 
   // Hardcore starts off. We enable it on first boot.
   rc_client_set_hardcore_enabled(s_state.client, false);
-  rc_client_set_encore_mode_enabled(s_state.client, g_settings.achievements_encore_mode);
   rc_client_set_unofficial_enabled(s_state.client, g_settings.achievements_unofficial_test_mode);
   rc_client_set_spectator_mode_enabled(s_state.client, g_settings.achievements_spectator_mode);
+  rc_client_set_encore_mode_enabled(s_state.client,
+                                    !g_settings.achievements_spectator_mode && g_settings.achievements_encore_mode);
 
   // We can't do an internal client login while using RAIntegration, since the two will conflict.
   if (!IsRAIntegrationInitializing())
@@ -882,10 +883,13 @@ void Achievements::UpdateSettings(const Settings& old_config)
 
 void Achievements::UpdateModeSettings(const Settings& old_config)
 {
-  if (g_settings.achievements_encore_mode != old_config.achievements_encore_mode)
-    rc_client_set_encore_mode_enabled(s_state.client, g_settings.achievements_encore_mode);
-  if (g_settings.achievements_spectator_mode != old_config.achievements_spectator_mode)
+  if (g_settings.achievements_encore_mode != old_config.achievements_encore_mode ||
+      g_settings.achievements_spectator_mode != old_config.achievements_spectator_mode)
+  {
+    rc_client_set_encore_mode_enabled(s_state.client,
+                                      !g_settings.achievements_spectator_mode && g_settings.achievements_encore_mode);
     rc_client_set_spectator_mode_enabled(s_state.client, g_settings.achievements_spectator_mode);
+  }
   if (g_settings.achievements_unofficial_test_mode != old_config.achievements_unofficial_test_mode)
     rc_client_set_unofficial_enabled(s_state.client, g_settings.achievements_unofficial_test_mode);
 }
