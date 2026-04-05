@@ -1506,6 +1506,23 @@ void Achievements::DisplayAchievementSummary()
   // Technically not going through the resource API, but since we're passing this to something else, we can't.
   if (g_settings.achievements_sound_effects)
     SoundEffectManager::EnqueueSoundEffect(INFO_SOUND_NAME);
+
+  // Warn when spectator mode is enabled.
+  if (rc_client_get_spectator_mode_enabled(s_state.client))
+  {
+    Host::AddIconOSDMessage(
+      OSDMessageType::Warning, "SpectatorOrEncoreMode", RA_LOGO_ICON_NAME,
+      TRANSLATE_STR("Achievements", "Spectator mode enabled."),
+      TRANSLATE_STR("Achievements", "All achievements are locked, and unlocks will not be recorded in your account."));
+  }
+  else if (rc_client_get_encore_mode_enabled(s_state.client))
+  {
+    Host::AddIconOSDMessage(
+      OSDMessageType::Warning, "SpectatorOrEncoreMode", RA_LOGO_ICON_NAME,
+      TRANSLATE_STR("Achievements", "Encore mode enabled."),
+      TRANSLATE_STR("Achievements",
+                    "All achievements are locked, but unlocks will still be recorded in your account."));
+  }
 }
 
 void Achievements::DisplayHardcoreDeferredMessage()
