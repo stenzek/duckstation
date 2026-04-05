@@ -964,6 +964,7 @@ bool FullscreenUI::CompilePipelines(Error* error)
   plconfig.layout = GPUPipeline::Layout::MultiTextureAndUBOAndPushConstants; // SingleTextureAndUBOAndPushConstants
   plconfig.input_layout.vertex_attributes = imgui_attributes;
   plconfig.input_layout.vertex_stride = sizeof(ImDrawVert);
+  plconfig.primitive = GPUPipeline::Primitive::Triangles;
   plconfig.blend = GPUPipeline::BlendState::GetAlphaBlendingState();
   plconfig.blend.write_mask = 0x7;
   plconfig.vertex_shader = vs.get();
@@ -1860,17 +1861,16 @@ bool FullscreenUI::BeginFullscreenWindow(const ImVec2& position, const ImVec2& s
                                   ImGuiWindowFlags_NoBringToFrontOnFocus |
                                   ((!has_background || actually_blur) ? ImGuiWindowFlags_NoBackground : 0) | flags);
 
-  if (res && actually_blur)
+  if (res && actually_blur && has_background)
   {
     ImDrawList* const dl = ImGui::GetWindowDrawList();
     const ImVec2 bg_min = position;
     const ImVec2 bg_max = position + size;
     if (BeginBlurBackground(dl, bg_min, bg_max))
     {
-      if (has_background)
-        dl->AddRectFilled(bg_min, bg_max,
-                          ImGui::GetColorU32(ImVec4(background.x * background.w, background.y * background.w,
-                                                    background.z * background.w, 1.0f)));
+      dl->AddRectFilled(bg_min, bg_max,
+                        ImGui::GetColorU32(ImVec4(background.x * background.w, background.y * background.w,
+                                                  background.z * background.w, 1.0f)));
       EndBlurBackground(dl);
     }
     else if (has_background)
@@ -1913,7 +1913,7 @@ bool FullscreenUI::BeginBlurWindow(const char* name, bool* p_open /* = nullptr *
                                   ImGuiWindowFlags_NoBringToFrontOnFocus |
                                   ((!has_background || actually_blur) ? ImGuiWindowFlags_NoBackground : 0) | flags);
 
-  if (res && actually_blur)
+  if (res && actually_blur && has_background)
   {
     ImDrawList* const dl = ImGui::GetWindowDrawList();
     ImGuiWindow* const win = ImGui::GetCurrentWindow();
@@ -5795,7 +5795,7 @@ void FullscreenUI::DrawLoadingScreen(std::string_view image, std::string_view ti
 
   if (UIStyle.BlurMenuBackground && BeginBlurBackground(dl, ImVec2(), io.DisplaySize))
   {
-    dl->AddRectFilled(ImVec2(), io.DisplaySize, ImGui::GetColorU32(ModAlpha(UIStyle.BackgroundColor, 0.9f)));
+    dl->AddRectFilled(ImVec2(), io.DisplaySize, ImGui::GetColorU32(ModAlpha(UIStyle.BackgroundColor, 1.0f)));
     EndBlurBackground(dl);
   }
   else if (VideoPresenter::HasDisplayTexture())
