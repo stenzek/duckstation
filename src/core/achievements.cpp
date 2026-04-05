@@ -3522,6 +3522,10 @@ void Achievements::LoadPinnedAchievements()
     indicator.achievement_id = id.value();
     indicator.badge_path = GetAchievementBadgePath(achievement, false);
     s_state.pinned_achievement_indicators.push_back(std::move(indicator));
+    std::sort(s_state.pinned_achievement_indicators.begin(), s_state.pinned_achievement_indicators.end(),
+              [](const PinnedAchievementIndicator& lhs, const PinnedAchievementIndicator& rhs) {
+                return (lhs.achievement_id < rhs.achievement_id);
+              });
   }
 
   DEV_LOG("Loaded {} pinned achievements for game {}", s_state.pinned_achievement_indicators.size(), s_state.game_id);
@@ -3568,21 +3572,22 @@ void Achievements::SavePinnedAchievements()
 
 bool Achievements::IsAchievementPinned(u32 achievement_id)
 {
-  return std::any_of(
-    s_state.pinned_achievement_indicators.begin(), s_state.pinned_achievement_indicators.end(),
-    [achievement_id](const PinnedAchievementIndicator& ind) { return ind.achievement_id == achievement_id; });
+  const auto it = std::lower_bound(
+    s_state.pinned_achievement_indicators.begin(), s_state.pinned_achievement_indicators.end(), achievement_id,
+    [](const PinnedAchievementIndicator& ind, u32 search) { return ind.achievement_id < search; });
+  return (it != s_state.pinned_achievement_indicators.end() && it->achievement_id == achievement_id);
 }
 
 void Achievements::SetAchievementPinned(u32 achievement_id, bool pinned)
 {
-  const auto it = std::find_if(
-    s_state.pinned_achievement_indicators.begin(), s_state.pinned_achievement_indicators.end(),
-    [achievement_id](const PinnedAchievementIndicator& ind) { return ind.achievement_id == achievement_id; });
-
-  if ((it != s_state.pinned_achievement_indicators.end()) == pinned)
+  const auto it = std::lower_bound(
+    s_state.pinned_achievement_indicators.begin(), s_state.pinned_achievement_indicators.end(), achievement_id,
+    [](const PinnedAchievementIndicator& ind, u32 search) { return ind.achievement_id < search; });
+  const bool is_pinned = (it != s_state.pinned_achievement_indicators.end() && it->achievement_id == achievement_id);
+  if (is_pinned == pinned)
     return;
 
-  if (it != s_state.pinned_achievement_indicators.end())
+  if (is_pinned)
   {
     DEV_LOG("Unpinning achievement {}", achievement_id);
     s_state.pinned_achievement_indicators.erase(it);
@@ -3600,7 +3605,7 @@ void Achievements::SetAchievementPinned(u32 achievement_id, bool pinned)
     PinnedAchievementIndicator indicator;
     indicator.achievement_id = achievement_id;
     indicator.badge_path = GetAchievementBadgePath(achievement, false);
-    s_state.pinned_achievement_indicators.push_back(std::move(indicator));
+    s_state.pinned_achievement_indicators.insert(it, std::move(indicator));
 
     // Hide progress indicator if it was set
     if (s_state.active_progress_indicator.has_value() &&
