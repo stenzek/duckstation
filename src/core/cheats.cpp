@@ -197,6 +197,8 @@ public:
   virtual void Apply() const = 0;
   virtual void ApplyOnDisable(RollbackLog* rollback_list) const = 0;
 
+  virtual bool HasRestorableOnDisableEffects() const = 0;
+
 protected:
   Metadata m_metadata;
 };
@@ -1203,6 +1205,15 @@ void Cheats::ReapplyOnDisableCodes(const RollbackLog& rollback_list)
   }
 }
 
+void Cheats::ApplyAllOnDisableCodes()
+{
+  for (const CheatCode* code : s_locals.frame_end_codes)
+  {
+    if (code->HasRestorableOnDisableEffects())
+      code->Apply();
+  }
+}
+
 bool Cheats::EnumerateManualCodes(std::function<bool(const std::string& name)> callback)
 {
   for (const std::unique_ptr<CheatCode>& code : s_locals.cheat_codes)
@@ -2175,6 +2186,8 @@ public:
 
   void Apply() const override;
   void ApplyOnDisable(RollbackLog* rollback_list) const override;
+
+  bool HasRestorableOnDisableEffects() const override;
 
 private:
   enum class InstructionCode : u8
@@ -4521,6 +4534,20 @@ void Cheats::GamesharkCheatCode::SetOptionValue(u32 value)
     const u32 fixed_mask = ~(value_mask << bitpos_start);
     inst.second = (inst.second & fixed_mask) | ((value & value_mask) << bitpos_start);
   }
+}
+
+bool Cheats::GamesharkCheatCode::HasRestorableOnDisableEffects() const
+{
+  for (const Instruction& inst : instructions)
+  {
+    if (inst.code == InstructionCode::ExtConstantWriteIfMatchWithRestore16 ||
+        inst.code == InstructionCode::ExtConstantWriteIfMatchWithRestore8)
+    {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 std::unique_ptr<Cheats::CheatCode> Cheats::ParseCode(CheatCode::Metadata metadata, const std::string_view data,

@@ -2615,20 +2615,8 @@ bool System::DoState(StateWrapper& sw, bool update_display)
       CPU::PGXP::Reset();
   }
 
-  // back up and restore memory affected by cheats when saving state
-  if (sw.IsReading())
-  {
-    if (!sw.DoMarker("Bus") || !Bus::DoState(sw))
-      return false;
-  }
-  else if (sw.IsWriting())
-  {
-    const Cheats::RollbackLog cheat_rollback_log = Cheats::ApplyOnDisableCodes();
-    const bool result = (sw.DoMarker("Bus") && Bus::DoState(sw));
-    Cheats::ReapplyOnDisableCodes(cheat_rollback_log);
-    if (!result)
-      return result;
-  }
+  if (!sw.DoMarker("Bus") || !Bus::DoState(sw))
+    return false;
 
   if (!sw.DoMarker("DMA") || !DMA::DoState(sw))
     return false;
@@ -3182,6 +3170,8 @@ bool System::LoadStateDataFromBuffer(std::span<const u8> data, u32 version, Erro
     return false;
   }
 
+  Cheats::ApplyAllOnDisableCodes();
+
   InterruptExecution();
 
   PerformanceCounters::Reset();
@@ -3591,8 +3581,13 @@ bool System::SaveStateDataToBuffer(std::span<u8> data, size_t* data_size, Error*
     return 0;
   }
 
+  // back up and restore memory affected by cheats when saving state
+  const Cheats::RollbackLog cheat_rollback_log = Cheats::ApplyOnDisableCodes();
   StateWrapper sw(data, StateWrapper::Mode::Write, SAVE_STATE_VERSION);
-  if (!DoState(sw, false))
+  const bool result = DoState(sw, false);
+  Cheats::ReapplyOnDisableCodes(cheat_rollback_log);
+
+  if (!result)
   {
     Error::SetStringView(error, "DoState() failed");
     return false;

@@ -161,6 +161,9 @@ RollbackLog ApplyOnDisableCodes();
 /// Reapplies any codes reversed by ApplyOnDisableCodes() after saving a save state.
 void ReapplyOnDisableCodes(const RollbackLog& rollback_list);
 
+/// Reapplies any any codes that have restorable effects after loading a save state.
+void ApplyAllOnDisableCodes();
+
 /// Returns true if cheats are enabled in the current game's configuration.
 bool AreCheatsEnabled();
 
