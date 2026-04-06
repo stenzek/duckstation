@@ -2143,21 +2143,12 @@ void CoreThread::updateFullscreenUITheme()
     VideoThread::RunOnThread(&FullscreenUI::UpdateTheme);
 }
 
-void CoreThread::start()
-{
-  AssertMsg(!g_core_thread->isRunning(), "Emu thread is not started");
-
-  g_core_thread->QThread::start();
-  g_core_thread->m_started_semaphore.acquire();
-}
-
 void CoreThread::stop()
 {
-  AssertMsg(g_core_thread, "Emu thread exists");
-  AssertMsg(!g_core_thread->isCurrentThread(), "Not called on the emu thread");
+  Assert(isRunning() && !isCurrentThread() && g_core_thread == this);
 
-  QMetaObject::invokeMethod(g_core_thread, &CoreThread::stopInThread, Qt::QueuedConnection);
-  QtUtils::ProcessEventsWithSleep(QEventLoop::ExcludeUserInputEvents, []() { return (g_core_thread->isRunning()); });
+  QMetaObject::invokeMethod(this, &CoreThread::stopInThread, Qt::QueuedConnection);
+  QtUtils::ProcessEventsWithSleep(QEventLoop::ExcludeUserInputEvents, [this]() { return isRunning(); });
 
   // Ensure settings are saved.
   if (QtHost::s_state.settings_save_timer)
@@ -2178,7 +2169,6 @@ void CoreThread::stopInThread()
 void CoreThread::run()
 {
   m_event_loop = new QEventLoop();
-  m_started_semaphore.release();
 
   // input source setup must happen on emu thread
   {

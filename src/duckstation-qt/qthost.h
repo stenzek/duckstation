@@ -73,7 +73,6 @@ public:
   CoreThread();
   ~CoreThread();
 
-  void start();
   void stop();
 
   ALWAYS_INLINE QEventLoop* getEventLoop() const { return m_event_loop; }
@@ -211,7 +210,6 @@ private:
   static void videoThreadEntryPoint();
 
   QThread* m_ui_thread;
-  QSemaphore m_started_semaphore;
   QEventLoop* m_event_loop = nullptr;
   QTimer* m_background_controller_polling_timer = nullptr;
   std::unique_ptr<InputDeviceListModel> m_input_device_list_model;
