@@ -72,7 +72,7 @@ jobs:
         scripts/appimage/make-appimage.sh $(realpath .) $(realpath ./build) "${{ matrix.asset }}"
 
     - name: Upload AppImage
-      uses: actions/upload-artifact@v6
+      uses: actions/upload-artifact@v7
       with:
         name: "${{ matrix.artifact }}"
         path: "${{ matrix.asset }}"

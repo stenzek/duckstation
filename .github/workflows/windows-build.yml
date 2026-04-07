@@ -139,7 +139,7 @@ jobs:
         del /Q ${{ matrix.installerassetname }}.tmp
 
     - name: Upload ${{ matrix.name }} Artifacts
-      uses: actions/upload-artifact@v6
+      uses: actions/upload-artifact@v7
       with:
         name: "windows-${{ matrix.arch }}"
         path: "duckstation-windows-${{ matrix.arch }}-*.*"
