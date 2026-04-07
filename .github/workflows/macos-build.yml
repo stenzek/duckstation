@@ -70,5 +70,5 @@ jobs:
       with:
         name: "macos"
         path: "build/duckstation-mac-release.zip"
-        compression-level: 0
+        archive: false
         if-no-files-found: error

@@ -97,6 +97,6 @@ jobs:
       uses: actions/upload-artifact@v7
       with:
         name: "linux-${{ matrix.arch }}-appimage"
-        path: "DuckStation-*.AppImage"
-        compression-level: 0
+        path: "DuckStation-${{ matrix.arch }}.AppImage"
+        archive: false
         if-no-files-found: error

@@ -114,6 +114,14 @@ jobs:
       run: |
         "C:\Program Files\7-Zip\7z.exe" a -mx9 -r duckstation-windows-${{ matrix.arch }}-release-symbols.zip ./bin/${{ matrix.bindir }}/*.pdb
 
+    - name: Upload ${{ matrix.name }} Symbols Archive
+      uses: actions/upload-artifact@v7
+      with:
+        name: "windows-${{ matrix.arch }}"
+        path: "duckstation-windows-${{ matrix.arch }}-release-symbols.zip"
+        archive: false
+        if-no-files-found: error
+
     - name: Remove Extra Bloat Before Archiving
       shell: cmd
       run: |
@@ -131,6 +139,14 @@ jobs:
       run: |
         "C:\Program Files\7-Zip\7z.exe" a -mx9 -r ${{ matrix.assetname }} ./bin/${{ matrix.bindir }}/*
 
+    - name: Upload ${{ matrix.name }} Release Archive
+      uses: actions/upload-artifact@v7
+      with:
+        name: "windows-${{ matrix.arch }}"
+        path: "${{ matrix.assetname }}"
+        archive: false
+        if-no-files-found: error
+
     - name: Create ${{ matrix.name }} Installer Archive
       shell: cmd
       run: |
@@ -138,10 +154,10 @@ jobs:
         copy /B ${{ matrix.installerassetname }}.tmp + installer.7z ${{ matrix.installerassetname }}
         del /Q ${{ matrix.installerassetname }}.tmp
 
-    - name: Upload ${{ matrix.name }} Artifacts
+    - name: Upload ${{ matrix.name }} Installer Archive
       uses: actions/upload-artifact@v7
       with:
         name: "windows-${{ matrix.arch }}"
-        path: "duckstation-windows-${{ matrix.arch }}-*.*"
-        compression-level: 0
+        path: "${{ matrix.installerassetname }}"
+        archive: false
         if-no-files-found: error

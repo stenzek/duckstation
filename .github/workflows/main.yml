@@ -42,10 +42,11 @@ jobs:
     if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev'
     steps:
       - name: Download Artifacts
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           path: ./artifacts/
           merge-multiple: true
+          skip-decompress: true
 
       - name: Display Downloaded Artifacts
         run: find ./artifacts/ -type f | sort
