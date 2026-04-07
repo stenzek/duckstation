@@ -7,9 +7,11 @@
 #include "qthost.h"
 #include "qtprogresscallback.h"
 
+#include "core/core.h"
 #include "core/game_list.h"
 
 #include "common/error.h"
+#include "common/string_util.h"
 
 #include "moc_coverdownloadwindow.cpp"
 
@@ -24,12 +26,27 @@ CoverDownloadWindow::CoverDownloadWindow() : QWidget()
   connect(m_ui.start, &QPushButton::clicked, this, &CoverDownloadWindow::onStartClicked);
   connect(m_ui.close, &QPushButton::clicked, this, &CoverDownloadWindow::close);
   connect(m_ui.urls, &QTextEdit::textChanged, this, &CoverDownloadWindow::updateEnabled);
+
+  const std::vector<std::string> urls = Core::GetBaseStringListSetting("UI", "CoverDownloaderURL");
+  if (!urls.empty())
+    m_ui.urls->setPlainText(QString::fromStdString(StringUtil::JoinString(urls, "\n")));
 }
 
 CoverDownloadWindow::~CoverDownloadWindow() = default;
 
 void CoverDownloadWindow::closeEvent(QCloseEvent* ev)
 {
+  std::vector<std::string> urls;
+  for (const QString& str : m_ui.urls->toPlainText().split(QChar('\n')))
+  {
+    std::string url = str.toStdString();
+    StringUtil::StripWhitespace(&url);
+    if (!url.empty())
+      urls.push_back(std::move(url));
+  }
+  if (urls != Core::GetBaseStringListSetting("UI", "CoverDownloaderURL"))
+    Core::SetBaseStringListSettingValue("UI", "CoverDownloaderURL", urls);
+
   QtUtils::SaveWindowGeometry(this);
   QWidget::closeEvent(ev);
   if (m_task)

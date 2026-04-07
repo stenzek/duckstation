@@ -22,14 +22,7 @@ public:
   CocoaProgressCallback();
   ~CocoaProgressCallback();
 
-  void PushState() override;
-  void PopState() override;
-
-  void SetCancellable(bool cancellable) override;
   void SetTitle(const std::string_view title) override;
-  void SetStatusText(const std::string_view text) override;
-  void SetProgressRange(u32 range) override;
-  void SetProgressValue(u32 value) override;
 
   void DisplayError(const std::string_view message) override;
   void DisplayWarning(const std::string_view message) override;
@@ -39,7 +32,10 @@ public:
   void ModalError(const std::string_view message) override;
   bool ModalConfirmation(const std::string_view message) override;
   void ModalInformation(const std::string_view message) override;
-  
+
+protected:
+  void StateChanged(StateChange changed) override;
+
 private:
   enum : int
   {
@@ -52,7 +48,6 @@ private:
 
   bool Create();
   void Destroy();
-  void UpdateProgress();
   void AppendMessage(const std::string_view message);
 
   NSWindow* m_window = nil;

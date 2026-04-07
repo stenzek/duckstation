@@ -13,14 +13,7 @@ public:
   Win32ProgressCallback(HWND parent_hwnd = nullptr);
   ~Win32ProgressCallback() override;
 
-  void PushState() override;
-  void PopState() override;
-
-  void SetCancellable(bool cancellable) override;
   void SetTitle(const std::string_view title) override;
-  void SetStatusText(const std::string_view text) override;
-  void SetProgressRange(u32 range) override;
-  void SetProgressValue(u32 value) override;
 
   void DisplayError(const std::string_view message) override;
   void DisplayWarning(const std::string_view message) override;
@@ -30,6 +23,9 @@ public:
   void ModalError(const std::string_view message) override;
   bool ModalConfirmation(const std::string_view message) override;
   void ModalInformation(const std::string_view message) override;
+
+protected:
+  void StateChanged(StateChange changed) override;
 
 private:
   enum : int
@@ -46,7 +42,6 @@ private:
 
   bool Create();
   void Destroy();
-  void Redraw(bool force);
   void PumpMessages();
 
   static LRESULT CALLBACK WndProcThunk(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);

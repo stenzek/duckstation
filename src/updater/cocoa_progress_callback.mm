@@ -18,22 +18,6 @@ CocoaProgressCallback::~CocoaProgressCallback()
   Destroy();
 }
 
-void CocoaProgressCallback::PushState()
-{
-  UpdaterProgressCallback::PushState();
-}
-
-void CocoaProgressCallback::PopState()
-{
-  UpdaterProgressCallback::PopState();
-  UpdateProgress();
-}
-
-void CocoaProgressCallback::SetCancellable(bool cancellable)
-{
-  UpdaterProgressCallback::SetCancellable(cancellable);
-}
-
 void CocoaProgressCallback::SetTitle(const std::string_view title)
 {
   @autoreleasepool {
@@ -42,29 +26,6 @@ void CocoaProgressCallback::SetTitle(const std::string_view title)
       [title release];
     });
   }
-}
-
-void CocoaProgressCallback::SetStatusText(const std::string_view text)
-{
-  UpdaterProgressCallback::SetStatusText(text);
-  @autoreleasepool {
-    dispatch_async(dispatch_get_main_queue(), [this, text = [CocoaTools::StringViewToNSString(text) retain]]() {
-      [m_status setStringValue:text];
-      [text release];
-    });
-  }
-}
-
-void CocoaProgressCallback::SetProgressRange(u32 range)
-{
-  UpdaterProgressCallback::SetProgressRange(range);
-  UpdateProgress();
-}
-
-void CocoaProgressCallback::SetProgressValue(u32 value)
-{
-  UpdaterProgressCallback::SetProgressValue(value);
-  UpdateProgress();
 }
 
 bool CocoaProgressCallback::Create()
@@ -145,12 +106,25 @@ void CocoaProgressCallback::Destroy()
   m_window = nil;
 }
 
-void CocoaProgressCallback::UpdateProgress()
+void CocoaProgressCallback::StateChanged(StateChange changed)
 {
-  const float percent = (static_cast<float>(m_progress_value) / static_cast<float>(m_progress_range)) * 100.0f;
-  dispatch_async(dispatch_get_main_queue(), [this, percent]() {
-    [m_progress setDoubleValue:percent];
-  });
+  if (changed & STATE_CHANGE_STATUS_TEXT)
+  {
+    @autoreleasepool {
+      dispatch_async(dispatch_get_main_queue(), [this, text = [CocoaTools::StringViewToNSString(m_status_text) retain]]() {
+        [m_status setStringValue:text];
+        [text release];
+      });
+    }
+  }
+
+  if (changed & STATE_CHANGE_PROGRESS)
+  {
+    const float percent = (static_cast<float>(m_progress_value) / static_cast<float>(m_progress_range)) * 100.0f;
+    dispatch_async(dispatch_get_main_queue(), [this, percent]() {
+      [m_progress setDoubleValue:percent];
+    });
+  }
 }
 
 void CocoaProgressCallback::DisplayError(const std::string_view message)

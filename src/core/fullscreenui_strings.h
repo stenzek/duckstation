@@ -240,6 +240,7 @@ TRANSLATE_NOOP("FullscreenUI", "Deinterlacing Mode");
 TRANSLATE_NOOP("FullscreenUI", "Delete And Boot");
 TRANSLATE_NOOP("FullscreenUI", "Delete Save");
 TRANSLATE_NOOP("FullscreenUI", "Delete State");
+TRANSLATE_NOOP("FullscreenUI", "Depending on your jurisdiction, game covers may be copyrighted. You are only authorized to use this tool with your own servers and images.");
 TRANSLATE_NOOP("FullscreenUI", "Depth Clear Threshold");
 TRANSLATE_NOOP("FullscreenUI", "Depth Test Transparent Polygons");
 TRANSLATE_NOOP("FullscreenUI", "Desktop Mode");

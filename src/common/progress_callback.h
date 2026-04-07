@@ -25,23 +25,38 @@ class ProgressCallback
 public:
   virtual ~ProgressCallback();
 
-  virtual void PushState();
-  virtual void PopState();
-
+  bool IsCancellable() const;
+  void SetCancellable(bool cancellable);
   virtual bool IsCancelled() const;
-  virtual bool IsCancellable() const;
-
-  virtual void SetCancellable(bool cancellable);
 
   virtual void SetTitle(const std::string_view title);
-  virtual void SetStatusText(const std::string_view text);
-  virtual void SetProgressRange(u32 range);
-  virtual void SetProgressValue(u32 value);
-  virtual void IncrementProgressValue();
+
+  void SetStatusText(const std::string_view text);
+
+  void PushState();
+  void PopState();
+
+  void SetState(u32 value, u32 range);
+  void SetState(std::string_view status_text, u32 value, u32 range);
+  void SetState(std::string_view status_text, u32 value, u32 range, bool cancellable);
+  void SetProgressRange(u32 range);
+  void SetProgressValue(u32 value);
+  void IncrementProgressValue();
 
   MAKE_PROGRESS_CALLBACK_FORWARDER(FormatStatusText, SetStatusText);
 
 protected:
+  enum StateChange : u32
+  {
+    STATE_CHANGE_NONE = 0,
+    STATE_CHANGE_PROGRESS = 1 << 0,
+    STATE_CHANGE_STATUS_TEXT = 1 << 1,
+    STATE_CHANGE_CANCELLABLE = 1 << 2,
+  };
+
+  virtual void StateChanged(StateChange changed);
+  virtual void CancellableChanged();
+
   struct State
   {
     std::unique_ptr<State> next_saved_state;

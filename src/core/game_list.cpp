@@ -579,8 +579,7 @@ void GameList::ScanDirectory(const std::string& path, bool recursive, bool only_
     return;
 
   progress->PushState();
-  progress->SetProgressRange(static_cast<u32>(files.size()));
-  progress->SetProgressValue(0);
+  progress->SetState(0, static_cast<u32>(files.size()));
 
   u32 files_scanned = 0;
   for (FILESYSTEM_FIND_DATA& ffd : files)
@@ -1141,8 +1140,7 @@ void GameList::Refresh(bool invalidate_cache, bool only_cache, ProgressCallback*
 
   if (!dirs.empty() || !recursive_dirs.empty())
   {
-    progress->SetProgressRange(static_cast<u32>(dirs.size() + recursive_dirs.size()));
-    progress->SetProgressValue(0);
+    progress->SetState(0, static_cast<u32>(dirs.size() + recursive_dirs.size()));
 
     // we manually count it here, because otherwise pop state updates it itself
     int directory_counter = 0;
@@ -1875,7 +1873,7 @@ bool GameList::DownloadCovers(const std::vector<std::string>& url_templates, boo
   }
 
   progress->SetCancellable(true);
-  progress->SetProgressRange(static_cast<u32>(download_urls.size()));
+  progress->SetState(0, static_cast<u32>(download_urls.size()));
 
   for (auto& [entry_path, url] : download_urls)
   {

@@ -32,55 +32,13 @@ void GameListRefreshThread::run()
   emit refreshComplete();
 }
 
-void GameListRefreshThread::PushState()
+void GameListRefreshThread::StateChanged(StateChange changed)
 {
-  ProgressCallback::PushState();
-}
-
-void GameListRefreshThread::PopState()
-{
-  ProgressCallback::PopState();
-
-  if (static_cast<int>(m_progress_range) == m_last_range && static_cast<int>(m_progress_value) == m_last_value)
+  if (changed & STATE_CHANGE_STATUS_TEXT)
+    m_qstatus_text = QtUtils::StringViewToQString(m_status_text);
+  else if (!(changed & (STATE_CHANGE_PROGRESS | STATE_CHANGE_STATUS_TEXT)))
     return;
 
-  m_last_range = static_cast<int>(m_progress_range);
-  m_last_value = static_cast<int>(m_progress_value);
-  fireUpdate();
-}
-
-void GameListRefreshThread::SetStatusText(const std::string_view text)
-{
-  const QString new_text = QtUtils::StringViewToQString(text);
-  if (new_text == m_status_text)
-    return;
-
-  m_status_text = new_text;
-  fireUpdate();
-}
-
-void GameListRefreshThread::SetProgressRange(u32 range)
-{
-  ProgressCallback::SetProgressRange(range);
-  if (static_cast<int>(m_progress_range) == m_last_range)
-    return;
-
-  m_last_range = static_cast<int>(m_progress_range);
-  fireUpdate();
-}
-
-void GameListRefreshThread::SetProgressValue(u32 value)
-{
-  ProgressCallback::SetProgressValue(value);
-  if (static_cast<int>(m_progress_value) == m_last_value)
-    return;
-
-  m_last_value = static_cast<int>(m_progress_value);
-  fireUpdate();
-}
-
-void GameListRefreshThread::fireUpdate()
-{
-  emit refreshProgress(m_status_text, m_last_value, m_last_range, static_cast<int>(GameList::GetEntryCount()),
-                       static_cast<float>(m_start_time.GetTimeSeconds()));
+  emit refreshProgress(m_qstatus_text, static_cast<int>(m_progress_value), static_cast<int>(m_progress_range),
+                       static_cast<int>(GameList::GetEntryCount()), static_cast<float>(m_start_time.GetTimeSeconds()));
 }

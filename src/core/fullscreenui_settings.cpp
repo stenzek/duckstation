@@ -99,6 +99,7 @@ static void DrawAdvancedSettingsPage();
 static void DrawPatchesOrCheatsSettingsPage(bool cheats);
 
 static void DrawCoverDownloaderWindow();
+static void SaveCoverDownloaderURLs();
 static void DrawAchievementsLoginWindow();
 static void StartAchievementsProgressRefresh();
 static void StartAchievementsGameIconDownload();
@@ -210,12 +211,15 @@ struct SettingsLocals
   s8 selected_controller_port = -1;
   bool settings_changed = false;
   bool game_settings_changed = false;
+  bool cover_downloader_urls_loaded = false;
+  bool cover_downloader_use_serial_names = false;
   InputBindingDialog input_binding_dialog;
 };
 
 } // namespace
 
 ALIGN_TO_CACHE_LINE static SettingsLocals s_settings_locals;
+static char s_cover_downloader_template_urls[512];
 
 } // namespace FullscreenUI
 
@@ -2636,13 +2640,22 @@ void FullscreenUI::DrawGameListSettingsPage()
 
 void FullscreenUI::DrawCoverDownloaderWindow()
 {
-  static char template_urls[512];
-  static bool use_serial_names;
-
   if (!BeginFixedPopupDialog(LayoutScale(LAYOUT_LARGE_POPUP_PADDING), LayoutScale(LAYOUT_LARGE_POPUP_ROUNDING),
                              LayoutScale(1000.0f, 0.0f)))
   {
     return;
+  }
+
+  if (!s_settings_locals.cover_downloader_urls_loaded)
+  {
+    s_settings_locals.cover_downloader_urls_loaded = true;
+
+    const std::vector<std::string> urls = Core::GetBaseStringListSetting("UI", "CoverDownloaderURL");
+    if (!urls.empty())
+    {
+      StringUtil::Strlcpy(s_cover_downloader_template_urls, StringUtil::JoinString(urls, '\n'),
+                          sizeof(s_cover_downloader_template_urls));
+    }
   }
 
   ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
@@ -2654,6 +2667,9 @@ void FullscreenUI::DrawCoverDownloaderWindow()
     FSUI_CSTR("DuckStation can automatically download covers for games which do not currently have a cover set. We "
               "do not host any cover images, the user must provide their own source for images."));
   ImGui::NewLine();
+  ImGui::TextWrapped("%s", FSUI_CSTR("Depending on your jurisdiction, game covers may be copyrighted. You are only "
+                                     "authorized to use this tool with your own servers and images."));
+  ImGui::NewLine();
   ImGui::TextWrapped("%s",
                      FSUI_CSTR("In the form below, specify the URLs to download covers from, with one template URL "
                                "per line. The following variables are available:"));
@@ -2664,18 +2680,18 @@ void FullscreenUI::DrawCoverDownloaderWindow()
   ImGui::TextWrapped("%s", FSUI_CSTR("Example: https://www.example-not-a-real-domain.com/covers/${serial}.jpg"));
   ImGui::NewLine();
 
-  ImGui::InputTextMultiline("##templates", template_urls, sizeof(template_urls),
+  ImGui::InputTextMultiline("##templates", s_cover_downloader_template_urls, sizeof(s_cover_downloader_template_urls),
                             ImVec2(ImGui::GetCurrentWindow()->WorkRect.GetWidth(), LayoutScale(175.0f)));
 
   ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(5.0f));
 
   ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, LayoutScale(2.0f, 2.0f));
-  ImGui::Checkbox(FSUI_CSTR("Save as Serial File Names"), &use_serial_names);
+  ImGui::Checkbox(FSUI_CSTR("Save as Serial File Names"), &s_settings_locals.cover_downloader_use_serial_names);
   ImGui::PopStyleVar(1);
 
   ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(10.0f));
 
-  const bool download_enabled = (std::strlen(template_urls) > 0);
+  const bool download_enabled = (std::strlen(s_cover_downloader_template_urls) > 0);
 
   BeginHorizontalMenuButtons(2, 200.0f);
   ResetFocusHere();
@@ -2684,8 +2700,9 @@ void FullscreenUI::DrawCoverDownloaderWindow()
   {
     // TODO: Remove release once using move_only_function
     std::unique_ptr<ProgressCallback> progress = OpenModalProgressDialog(FSUI_STR("Cover Downloader"), 1000.0f);
-    Host::QueueAsyncTask([progress = progress.release(), urls = StringUtil::SplitNewString(template_urls, '\n'),
-                          use_serial_names = use_serial_names]() {
+    Host::QueueAsyncTask([progress = progress.release(),
+                          urls = StringUtil::SplitNewString(s_cover_downloader_template_urls, '\n'),
+                          use_serial_names = s_settings_locals.cover_downloader_use_serial_names]() {
       Error error;
       if (!GameList::DownloadCovers(
             urls, use_serial_names, progress, &error, [](const GameList::Entry* entry, std::string save_path) {
@@ -2706,7 +2723,10 @@ void FullscreenUI::DrawCoverDownloaderWindow()
         Host::RunOnCoreThread([]() {
           VideoThread::RunOnThread([]() {
             if (IsFixedPopupDialogOpen(COVER_DOWNLOADER_DIALOG_NAME))
+            {
+              SaveCoverDownloaderURLs();
               CloseFixedPopupDialog();
+            }
           });
         });
       }
@@ -2716,7 +2736,10 @@ void FullscreenUI::DrawCoverDownloaderWindow()
   }
 
   if (HorizontalMenuButton(FSUI_ICONSTR(ICON_FA_XMARK, "Close")))
+  {
+    SaveCoverDownloaderURLs();
     CloseFixedPopupDialog();
+  }
 
   EndHorizontalMenuButtons();
 
@@ -2724,6 +2747,13 @@ void FullscreenUI::DrawCoverDownloaderWindow()
   ImGui::PopStyleVar(2);
 
   EndFixedPopupDialog();
+}
+
+void FullscreenUI::SaveCoverDownloaderURLs()
+{
+  const std::vector<std::string> urls = StringUtil::SplitNewString(s_cover_downloader_template_urls, '\n');
+  if (urls != Core::GetBaseStringListSetting("UI", "CoverDownloaderURL"))
+    Core::SetBaseStringListSettingValue("UI", "CoverDownloaderURL", urls);
 }
 
 void FullscreenUI::DrawBIOSSettingsPage()

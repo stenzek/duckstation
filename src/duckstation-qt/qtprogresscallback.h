@@ -27,18 +27,17 @@ public:
 
   bool IsCancelled() const override;
   void SetTitle(const std::string_view title) override;
-  void SetStatusText(const std::string_view text) override;
-  void SetProgressRange(u32 range) override;
-  void SetProgressValue(u32 value) override;
 
   void connectWidgets(QLabel* const status_label, QProgressBar* const progress_bar,
                       QAbstractButton* const cancel_button);
 
+protected:
+  void StateChanged(StateChange changed) override;
+
 Q_SIGNALS:
   void titleUpdated(const QString& title);
   void statusTextUpdated(const QString& status);
-  void progressRangeUpdated(int min, int max);
-  void progressValueUpdated(int value);
+  void progressUpdated(int value, int range);
 
 private:
   std::atomic_bool m_ts_cancelled{false};
@@ -72,16 +71,13 @@ public:
 Q_SIGNALS:
   void titleUpdated(const QString& title);
   void statusTextUpdated(const QString& status);
-  void progressRangeUpdated(int min, int max);
-  void progressValueUpdated(int value);
+  void progressUpdated(int value, int range);
   void completed();
 
 protected:
   bool IsCancelled() const override;
   void SetTitle(const std::string_view title) override;
-  void SetStatusText(const std::string_view text) override;
-  void SetProgressRange(u32 range) override;
-  void SetProgressValue(u32 value) override;
+  void StateChanged(StateChange changed) override;
 
 private:
   QtAsyncTaskWithProgress();
@@ -158,11 +154,8 @@ private:
 
   // progress callback overrides
   bool IsCancelled() const override;
-  void SetCancellable(bool cancellable) override;
   void SetTitle(const std::string_view title) override;
-  void SetStatusText(const std::string_view text) override;
-  void SetProgressRange(u32 range) override;
-  void SetProgressValue(u32 value) override;
+  void StateChanged(StateChange changed) override;
 
   void AlertPrompt(PromptIcon icon, std::string_view message) override;
   bool ConfirmPrompt(PromptIcon icon, std::string_view message, std::string_view yes_text = {},

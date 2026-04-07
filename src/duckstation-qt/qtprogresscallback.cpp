@@ -6,8 +6,8 @@
 #include "qtutils.h"
 
 #include "common/assert.h"
-#include "common/log.h"
 #include "common/small_string.h"
+#include "common/log.h"
 
 #include <QtWidgets/QDialogButtonBox>
 #include <QtWidgets/QLabel>
@@ -19,8 +19,6 @@
 #include <array>
 
 #include "moc_qtprogresscallback.cpp"
-
-LOG_CHANNEL(Host);
 
 QtProgressCallback::QtProgressCallback(QObject* parent /* = nullptr */) : QObject(parent)
 {
@@ -38,32 +36,12 @@ void QtProgressCallback::SetTitle(const std::string_view title)
   emit titleUpdated(QtUtils::StringViewToQString(title));
 }
 
-void QtProgressCallback::SetStatusText(const std::string_view text)
+void QtProgressCallback::StateChanged(StateChange changed)
 {
-  ProgressCallback::SetStatusText(text);
-  emit statusTextUpdated(QtUtils::StringViewToQString(text));
-  if (!text.empty())
-    INFO_LOG(text);
-}
-
-void QtProgressCallback::SetProgressRange(u32 range)
-{
-  const u32 prev_range = m_progress_range;
-  ProgressCallback::SetProgressRange(range);
-  if (m_progress_range == prev_range)
-    return;
-
-  emit progressRangeUpdated(0, static_cast<int>(m_progress_range));
-}
-
-void QtProgressCallback::SetProgressValue(u32 value)
-{
-  const u32 prev_value = m_progress_value;
-  ProgressCallback::SetProgressValue(value);
-  if (m_progress_value == prev_value)
-    return;
-
-  emit progressValueUpdated(static_cast<int>(m_progress_value));
+  if (changed & STATE_CHANGE_STATUS_TEXT)
+    emit statusTextUpdated(QtUtils::StringViewToQString(m_status_text));
+  if (changed & STATE_CHANGE_PROGRESS)
+    emit progressUpdated(static_cast<int>(m_progress_value), static_cast<int>(m_progress_range));
 }
 
 void QtProgressCallback::connectWidgets(QLabel* const status_label, QProgressBar* const progress_bar,
@@ -73,8 +51,11 @@ void QtProgressCallback::connectWidgets(QLabel* const status_label, QProgressBar
     connect(this, &QtProgressCallback::statusTextUpdated, status_label, &QLabel::setText);
   if (progress_bar)
   {
-    connect(this, &QtProgressCallback::progressRangeUpdated, progress_bar, &QProgressBar::setRange);
-    connect(this, &QtProgressCallback::progressValueUpdated, progress_bar, &QProgressBar::setValue);
+    connect(this, &QtProgressCallback::progressUpdated, progress_bar, [progress_bar](int value, int range) {
+      // qt checks if the value has changed
+      progress_bar->setMaximum(range);
+      progress_bar->setValue(value);
+    });
   }
   if (cancel_button)
   {
@@ -101,32 +82,12 @@ void QtAsyncTaskWithProgress::SetTitle(const std::string_view title)
   emit titleUpdated(QtUtils::StringViewToQString(title));
 }
 
-void QtAsyncTaskWithProgress::SetStatusText(const std::string_view text)
+void QtAsyncTaskWithProgress::StateChanged(StateChange changed)
 {
-  ProgressCallback::SetStatusText(text);
-  emit statusTextUpdated(QtUtils::StringViewToQString(text));
-  if (!text.empty())
-    INFO_LOG(text);
-}
-
-void QtAsyncTaskWithProgress::SetProgressRange(u32 range)
-{
-  const u32 prev_range = m_progress_range;
-  ProgressCallback::SetProgressRange(range);
-  if (m_progress_range == prev_range)
-    return;
-
-  emit progressRangeUpdated(0, static_cast<int>(m_progress_range));
-}
-
-void QtAsyncTaskWithProgress::SetProgressValue(u32 value)
-{
-  const u32 prev_value = m_progress_value;
-  ProgressCallback::SetProgressValue(value);
-  if (m_progress_value == prev_value)
-    return;
-
-  emit progressValueUpdated(static_cast<int>(m_progress_value));
+  if (changed & STATE_CHANGE_STATUS_TEXT)
+    emit statusTextUpdated(QtUtils::StringViewToQString(m_status_text));
+  if (changed & STATE_CHANGE_PROGRESS)
+    emit progressUpdated(static_cast<int>(m_progress_value), static_cast<int>(m_progress_range));
 }
 
 void QtAsyncTaskWithProgress::connectWidgets(QLabel* const status_label, QProgressBar* const progress_bar,
@@ -136,8 +97,11 @@ void QtAsyncTaskWithProgress::connectWidgets(QLabel* const status_label, QProgre
     connect(this, &QtAsyncTaskWithProgress::statusTextUpdated, status_label, &QLabel::setText);
   if (progress_bar)
   {
-    connect(this, &QtAsyncTaskWithProgress::progressRangeUpdated, progress_bar, &QProgressBar::setRange);
-    connect(this, &QtAsyncTaskWithProgress::progressValueUpdated, progress_bar, &QProgressBar::setValue);
+    connect(this, &QtAsyncTaskWithProgress::progressUpdated, progress_bar, [progress_bar](int value, int range) {
+      // qt checks if the value has changed
+      progress_bar->setMaximum(range);
+      progress_bar->setValue(value);
+    });
   }
   if (cancel_button)
   {
@@ -374,19 +338,6 @@ bool QtAsyncTaskWithProgressDialog::IsCancelled() const
   return m_ts_cancelled.load(std::memory_order_acquire);
 }
 
-void QtAsyncTaskWithProgressDialog::SetCancellable(bool cancellable)
-{
-  if (m_cancellable == cancellable)
-    return;
-
-  ProgressCallback::SetCancellable(cancellable);
-
-  Host::RunOnUIThread([this, cancellable]() {
-    if (m_dialog)
-      m_dialog->setCancellable(cancellable);
-  });
-}
-
 void QtAsyncTaskWithProgressDialog::SetTitle(const std::string_view title)
 {
   Host::RunOnUIThread([this, title = QtUtils::StringViewToQString(title)]() {
@@ -395,65 +346,41 @@ void QtAsyncTaskWithProgressDialog::SetTitle(const std::string_view title)
   });
 }
 
-void QtAsyncTaskWithProgressDialog::SetStatusText(const std::string_view text)
+void QtAsyncTaskWithProgressDialog::StateChanged(StateChange changed)
 {
-  if (m_status_text == text)
-    return;
-
-  ProgressCallback::SetStatusText(text);
-  if (m_shown)
+  if (changed & (STATE_CHANGE_STATUS_TEXT | STATE_CHANGE_PROGRESS))
   {
-    Host::RunOnUIThread([this, text = QtUtils::StringViewToQString(text)]() {
+    if (m_shown)
+    {
+      if (changed & STATE_CHANGE_STATUS_TEXT)
+      {
+        Host::RunOnUIThread([this, text = QtUtils::StringViewToQString(m_status_text)]() {
+          if (m_dialog)
+            m_dialog->m_status_label->setText(text);
+        });
+      }
+      if (changed & STATE_CHANGE_PROGRESS)
+      {
+        Host::RunOnUIThread(
+          [this, value = static_cast<int>(m_progress_value), range = static_cast<int>(m_progress_range)]() {
+            if (m_dialog)
+              m_dialog->m_progress_bar->setRange(0, range);
+            if (m_dialog)
+              m_dialog->m_progress_bar->setValue(value);
+          });
+      }
+    }
+    else
+    {
+      CheckForDelayedShow();
+    }
+  }
+  if (changed & STATE_CHANGE_CANCELLABLE)
+  {
+    Host::RunOnUIThread([this, cancellable = m_cancellable]() {
       if (m_dialog)
-        m_dialog->m_status_label->setText(text);
+        m_dialog->setCancellable(cancellable);
     });
-  }
-  else
-  {
-    CheckForDelayedShow();
-  }
-
-  if (!text.empty())
-    INFO_LOG(text);
-}
-
-void QtAsyncTaskWithProgressDialog::SetProgressRange(u32 range)
-{
-  const u32 prev_range = m_progress_range;
-  ProgressCallback::SetProgressRange(range);
-  if (m_progress_range == prev_range)
-    return;
-
-  if (m_shown)
-  {
-    Host::RunOnUIThread([this, range = static_cast<int>(m_progress_range)]() {
-      if (m_dialog)
-        m_dialog->m_progress_bar->setRange(0, range);
-    });
-  }
-  else
-  {
-    CheckForDelayedShow();
-  }
-}
-
-void QtAsyncTaskWithProgressDialog::SetProgressValue(u32 value)
-{
-  const u32 prev_value = m_progress_value;
-  ProgressCallback::SetProgressValue(value);
-  if (m_progress_value == prev_value)
-    return;
-
-  if (m_shown)
-  {
-    Host::RunOnUIThread([this, value = static_cast<int>(m_progress_value)]() {
-      if (m_dialog)
-        m_dialog->m_progress_bar->setValue(value);
-    });
-  }
-  else
-  {
-    CheckForDelayedShow();
   }
 }
 

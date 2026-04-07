@@ -23,44 +23,9 @@ Win32ProgressCallback::~Win32ProgressCallback()
   Destroy();
 }
 
-void Win32ProgressCallback::PushState()
-{
-  UpdaterProgressCallback::PushState();
-}
-
-void Win32ProgressCallback::PopState()
-{
-  UpdaterProgressCallback::PopState();
-  Redraw(true);
-}
-
-void Win32ProgressCallback::SetCancellable(bool cancellable)
-{
-  UpdaterProgressCallback::SetCancellable(cancellable);
-  Redraw(true);
-}
-
 void Win32ProgressCallback::SetTitle(const std::string_view title)
 {
   SetWindowText(m_window_hwnd, StringUtil::UTF8StringToWideString(title).c_str());
-}
-
-void Win32ProgressCallback::SetStatusText(const std::string_view text)
-{
-  UpdaterProgressCallback::SetStatusText(text);
-  Redraw(true);
-}
-
-void Win32ProgressCallback::SetProgressRange(u32 range)
-{
-  UpdaterProgressCallback::SetProgressRange(range);
-  Redraw(false);
-}
-
-void Win32ProgressCallback::SetProgressValue(u32 value)
-{
-  UpdaterProgressCallback::SetProgressValue(value);
-  Redraw(false);
 }
 
 bool Win32ProgressCallback::Create()
@@ -152,11 +117,11 @@ void Win32ProgressCallback::PumpMessages()
   }
 }
 
-void Win32ProgressCallback::Redraw(bool force)
+void Win32ProgressCallback::StateChanged(StateChange changed)
 {
   const int percent =
     static_cast<int>((static_cast<float>(m_progress_value) / static_cast<float>(m_progress_range)) * 100.0f);
-  if (percent == m_last_progress_percent && !force)
+  if (percent == m_last_progress_percent && !(changed & STATE_CHANGE_STATUS_TEXT))
   {
     PumpMessages();
     return;

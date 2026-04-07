@@ -452,15 +452,13 @@ CDImage::PrecacheResult CDImageCHD::Precache(ProgressCallback* progress, Error* 
     return CDImage::PrecacheResult::Success;
 
   progress->SetTitle("Precaching CHD...");
-  progress->SetProgressRange(100);
+  progress->SetState({}, 0, 100);
 
   auto callback = [](size_t pos, size_t total, void* param) {
     constexpr size_t one_mb = 1048576;
     const u32 total_mb = static_cast<u32>((total + (one_mb - 1)) / one_mb);
     const u32 pos_mb = static_cast<u32>((pos + (one_mb - 1)) / one_mb);
-    static_cast<ProgressCallback*>(param)->SetProgressRange(total_mb);
-    static_cast<ProgressCallback*>(param)->SetProgressValue(pos_mb);
-    static_cast<ProgressCallback*>(param)->SetStatusText(TinyString::from_format("{}MB of {}MB", pos_mb, total_mb));
+    static_cast<ProgressCallback*>(param)->SetState(TinyString::from_format("{}MB of {}MB", pos_mb, total_mb), pos_mb, total_mb);
   };
 
   if (const chd_error err = chd_precache_progress(m_chd, callback, progress); err != CHDERR_NONE)

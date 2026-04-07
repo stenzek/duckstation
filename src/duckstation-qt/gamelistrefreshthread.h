@@ -24,20 +24,10 @@ Q_SIGNALS:
 
 protected:
   void run() final;
+  void StateChanged(StateChange changed) override;
 
 private:
-  void PushState() override;
-  void PopState() override;
-
-  void SetStatusText(const std::string_view text) override;
-  void SetProgressRange(u32 range) override;
-  void SetProgressValue(u32 value) override;
-
-  void fireUpdate();
-
   Timer m_start_time;
-  QString m_status_text;
-  int m_last_range = 1;
-  int m_last_value = 0;
+  QString m_qstatus_text;
   bool m_invalidate_cache;
 };

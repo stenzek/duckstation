@@ -9,6 +9,8 @@
 #include <cstdio>
 #include <limits>
 
+LOG_CHANNEL(Host);
+
 static ProgressCallback s_nullProgressCallbacks;
 ProgressCallback* ProgressCallback::NullProgressCallback = &s_nullProgressCallbacks;
 
@@ -41,13 +43,69 @@ void ProgressCallback::PopState()
       static_cast<u32>(((float)m_progress_value / (float)m_progress_range) * (float)m_saved_state->progress_range) :
       m_saved_state->progress_value;
 
+  const StateChange state_change = static_cast<StateChange>(
+    ((m_status_text != m_saved_state->status_text) ? STATE_CHANGE_STATUS_TEXT : STATE_CHANGE_NONE) |
+    ((m_progress_range != m_saved_state->progress_range || m_progress_value != new_progress_value) ?
+       STATE_CHANGE_PROGRESS :
+       STATE_CHANGE_NONE) |
+    ((m_cancellable != m_saved_state->cancellable) ? STATE_CHANGE_CANCELLABLE : STATE_CHANGE_NONE));
+
   m_cancellable = m_saved_state->cancellable;
   m_status_text = std::move(m_saved_state->status_text);
+  m_base_progress_value = m_saved_state->base_progress_value;
   m_progress_range = m_saved_state->progress_range;
   m_progress_value = new_progress_value;
-
-  m_base_progress_value = m_saved_state->base_progress_value;
   m_saved_state = std::move(m_saved_state->next_saved_state);
+
+  if (state_change != STATE_CHANGE_NONE)
+    StateChanged(state_change);
+}
+
+void ProgressCallback::SetState(u32 value, u32 range)
+{
+  SetState(m_status_text, value, range, m_cancellable);
+}
+
+void ProgressCallback::SetState(std::string_view status_text, u32 value, u32 range)
+{
+  SetState(status_text, value, range, m_cancellable);
+}
+
+void ProgressCallback::SetState(std::string_view status_text, u32 value, u32 range, bool cancellable)
+{
+  StateChange state_change = STATE_CHANGE_NONE;
+  if (m_cancellable != cancellable)
+  {
+    m_cancellable = cancellable;
+    state_change = static_cast<StateChange>(state_change | STATE_CHANGE_CANCELLABLE);
+  }
+  if (m_status_text != status_text)
+  {
+    m_status_text = status_text;
+    state_change = static_cast<StateChange>(state_change | STATE_CHANGE_STATUS_TEXT);
+  }
+
+  const u32 prev_range = m_progress_range;
+  const u32 prev_value = m_progress_value;
+
+  if (m_saved_state)
+  {
+    // impose the previous range on this range
+    m_progress_range = m_saved_state->progress_range * range;
+    m_base_progress_value = m_progress_value = m_saved_state->progress_value * range;
+  }
+  else
+  {
+    m_progress_range = range;
+    m_progress_value = value;
+    m_base_progress_value = 0;
+  }
+
+  if (range != prev_range || value != prev_value)
+    state_change = static_cast<StateChange>(state_change | STATE_CHANGE_PROGRESS);
+
+  if (state_change != STATE_CHANGE_NONE)
+    StateChanged(state_change);
 }
 
 bool ProgressCallback::IsCancellable() const
@@ -66,21 +124,39 @@ void ProgressCallback::SetTitle(const std::string_view title)
 
 void ProgressCallback::SetStatusText(const std::string_view text)
 {
+  if (m_status_text == text)
+    return;
+
+  INFO_LOG("Status: {}", text);
+
   m_status_text.assign(text);
+  StateChanged(STATE_CHANGE_STATUS_TEXT);
 }
 
 void ProgressCallback::SetCancellable(bool cancellable)
 {
+  if (m_cancellable == cancellable)
+    return;
+
   m_cancellable = cancellable;
+  CancellableChanged();
 }
 
 void ProgressCallback::SetProgressValue(u32 value)
 {
-  m_progress_value = m_base_progress_value + value;
+  const u32 new_value = m_base_progress_value + value;
+  if (m_progress_value != new_value)
+  {
+    m_progress_value = new_value;
+    StateChanged(STATE_CHANGE_PROGRESS);
+  }
 }
 
 void ProgressCallback::SetProgressRange(u32 range)
 {
+  const u32 prev_range = m_progress_range;
+  const u32 prev_value = m_progress_value;
+
   if (m_saved_state)
   {
     // impose the previous range on this range
@@ -93,11 +169,22 @@ void ProgressCallback::SetProgressRange(u32 range)
     m_progress_value = 0;
     m_base_progress_value = 0;
   }
+
+  if (m_progress_range != prev_range || m_progress_value != prev_value)
+    StateChanged(STATE_CHANGE_PROGRESS);
 }
 
 void ProgressCallback::IncrementProgressValue()
 {
   SetProgressValue((m_progress_value - m_base_progress_value) + 1);
+}
+
+void ProgressCallback::StateChanged(StateChange changed)
+{
+}
+
+void ProgressCallback::CancellableChanged()
+{
 }
 
 ProgressCallbackWithPrompt::~ProgressCallbackWithPrompt() = default;

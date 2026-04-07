@@ -307,15 +307,14 @@ private:
     ProgressCallbackImpl();
     ~ProgressCallbackImpl() override;
 
-    void SetStatusText(std::string_view text) override;
-    void SetProgressRange(u32 range) override;
-    void SetProgressValue(u32 value) override;
-    void SetCancellable(bool cancellable) override;
     bool IsCancelled() const override;
 
     void AlertPrompt(PromptIcon icon, std::string_view message) override;
     bool ConfirmPrompt(PromptIcon icon, std::string_view message, std::string_view yes_text = {},
                        std::string_view no_text = {}) override;
+
+  protected:
+    void StateChanged(StateChange changed) override;
   };
 
   std::string m_status_text;
@@ -5192,58 +5191,45 @@ FullscreenUI::ProgressDialog::ProgressCallbackImpl::~ProgressCallbackImpl()
   Host::RunOnCoreThread([]() { VideoThread::RunOnThread(close_cb); });
 }
 
-void FullscreenUI::ProgressDialog::ProgressCallbackImpl::SetStatusText(std::string_view text)
+void FullscreenUI::ProgressDialog::ProgressCallbackImpl::StateChanged(StateChange changed)
 {
-  Host::RunOnCoreThread([text = std::string(text)]() mutable {
-    VideoThread::RunOnThread([text = std::move(text)]() mutable {
-      if (!s_state.progress_dialog.IsOpen())
-        return;
+  if (changed & STATE_CHANGE_STATUS_TEXT)
+  {
+    Host::RunOnCoreThread([text = m_status_text, range = m_progress_range, value = m_progress_value]() mutable {
+      VideoThread::RunOnThread([text = std::move(text), range, value]() mutable {
+        if (!s_state.progress_dialog.IsOpen())
+          return;
 
-      s_state.progress_dialog.m_status_text = std::move(text);
+        s_state.progress_dialog.m_progress_range = range;
+        s_state.progress_dialog.m_progress_value = value;
+        s_state.progress_dialog.m_status_text = std::move(text);
+      });
     });
-  });
-}
+  }
+  else if (changed & STATE_CHANGE_PROGRESS)
+  {
+    Host::RunOnCoreThread([range = m_progress_range, value = m_progress_value]() {
+      VideoThread::RunOnThread([range, value]() {
+        if (!s_state.progress_dialog.IsOpen())
+          return;
 
-void FullscreenUI::ProgressDialog::ProgressCallbackImpl::SetProgressRange(u32 range)
-{
-  ProgressCallback::SetProgressRange(range);
-
-  Host::RunOnCoreThread([range]() {
-    VideoThread::RunOnThread([range]() {
-      if (!s_state.progress_dialog.IsOpen())
-        return;
-
-      s_state.progress_dialog.m_progress_range = range;
+        s_state.progress_dialog.m_progress_range = range;
+        s_state.progress_dialog.m_progress_value = value;
+      });
     });
-  });
-}
+  }
 
-void FullscreenUI::ProgressDialog::ProgressCallbackImpl::SetProgressValue(u32 value)
-{
-  ProgressCallback::SetProgressValue(value);
+  if (changed & STATE_CHANGE_CANCELLABLE)
+  {
+    Host::RunOnCoreThread([cancellable = m_cancellable]() {
+      VideoThread::RunOnThread([cancellable]() {
+        if (!s_state.progress_dialog.IsOpen())
+          return;
 
-  Host::RunOnCoreThread([value]() {
-    VideoThread::RunOnThread([value]() {
-      if (!s_state.progress_dialog.IsOpen())
-        return;
-
-      s_state.progress_dialog.m_progress_value = value;
+        s_state.progress_dialog.m_user_closeable = cancellable;
+      });
     });
-  });
-}
-
-void FullscreenUI::ProgressDialog::ProgressCallbackImpl::SetCancellable(bool cancellable)
-{
-  ProgressCallback::SetCancellable(cancellable);
-
-  Host::RunOnCoreThread([cancellable]() {
-    VideoThread::RunOnThread([cancellable]() {
-      if (!s_state.progress_dialog.IsOpen())
-        return;
-
-      s_state.progress_dialog.m_user_closeable = cancellable;
-    });
-  });
+  }
 }
 
 bool FullscreenUI::ProgressDialog::ProgressCallbackImpl::IsCancelled() const
@@ -5518,37 +5504,11 @@ FullscreenUI::BackgroundProgressCallback::~BackgroundProgressCallback()
   CloseBackgroundProgressDialog(m_name.c_str());
 }
 
-void FullscreenUI::BackgroundProgressCallback::SetStatusText(const std::string_view text)
-{
-  ProgressCallback::SetStatusText(text);
-  Redraw(true);
-}
-
-void FullscreenUI::BackgroundProgressCallback::SetProgressRange(u32 range)
-{
-  const u32 last_range = m_progress_range;
-
-  ProgressCallback::SetProgressRange(range);
-
-  if (m_progress_range != last_range)
-    Redraw(false);
-}
-
-void FullscreenUI::BackgroundProgressCallback::SetProgressValue(u32 value)
-{
-  const u32 last_value = m_progress_value;
-
-  ProgressCallback::SetProgressValue(value);
-
-  if (m_progress_value != last_value)
-    Redraw(false);
-}
-
-void FullscreenUI::BackgroundProgressCallback::Redraw(bool force)
+void FullscreenUI::BackgroundProgressCallback::StateChanged(StateChange changed)
 {
   const int percent =
     static_cast<int>((static_cast<float>(m_progress_value) / static_cast<float>(m_progress_range)) * 100.0f);
-  if (percent == m_last_progress_percent && !force)
+  if (percent == m_last_progress_percent && !(changed & STATE_CHANGE_STATUS_TEXT))
     return;
 
   m_last_progress_percent = percent;
@@ -5893,23 +5853,6 @@ void FullscreenUI::LoadingScreenProgressCallback::Close()
   m_last_progress_percent = -1;
 }
 
-void FullscreenUI::LoadingScreenProgressCallback::PushState()
-{
-  ProgressCallback::PushState();
-}
-
-void FullscreenUI::LoadingScreenProgressCallback::PopState()
-{
-  ProgressCallback::PopState();
-  Redraw(true);
-}
-
-void FullscreenUI::LoadingScreenProgressCallback::SetCancellable(bool cancellable)
-{
-  ProgressCallback::SetCancellable(cancellable);
-  Redraw(true);
-}
-
 void FullscreenUI::LoadingScreenProgressCallback::SetTitle(const std::string_view title)
 {
   ProgressCallback::SetTitle(title);
@@ -5917,30 +5860,9 @@ void FullscreenUI::LoadingScreenProgressCallback::SetTitle(const std::string_vie
   Redraw(true);
 }
 
-void FullscreenUI::LoadingScreenProgressCallback::SetStatusText(const std::string_view text)
+void FullscreenUI::LoadingScreenProgressCallback::StateChanged(StateChange changed)
 {
-  ProgressCallback::SetStatusText(text);
-  Redraw(true);
-}
-
-void FullscreenUI::LoadingScreenProgressCallback::SetProgressRange(u32 range)
-{
-  u32 last_range = m_progress_range;
-
-  ProgressCallback::SetProgressRange(range);
-
-  if (m_progress_range != last_range)
-    Redraw(false);
-}
-
-void FullscreenUI::LoadingScreenProgressCallback::SetProgressValue(u32 value)
-{
-  u32 lastValue = m_progress_value;
-
-  ProgressCallback::SetProgressValue(value);
-
-  if (m_progress_value != lastValue)
-    Redraw(false);
+  Redraw((changed & (STATE_CHANGE_STATUS_TEXT | STATE_CHANGE_CANCELLABLE)) != 0);
 }
 
 void FullscreenUI::LoadingScreenProgressCallback::Redraw(bool force)
