@@ -31,7 +31,6 @@
     <ClCompile Include="controllerglobalsettingswidget.cpp" />
     <ClCompile Include="controllersettingswindow.cpp" />
     <ClCompile Include="controllerbindingwidgets.cpp" />
-    <ClCompile Include="gamelistrefreshthread.cpp" />
     <ClCompile Include="foldersettingswidget.cpp" />
     <ClCompile Include="gamesummarywidget.cpp" />
     <ClCompile Include="coverdownloadwindow.cpp" />
@@ -99,7 +98,6 @@
     <QtMoc Include="controllerbindingwidgets.h" />
     <QtMoc Include="controllerglobalsettingswidget.h" />
     <QtMoc Include="controllersettingswindow.h" />
-    <QtMoc Include="gamelistrefreshthread.h" />
     <QtMoc Include="gamesummarywidget.h" />
     <QtMoc Include="foldersettingswidget.h" />
     <QtMoc Include="coverdownloadwindow.h" />

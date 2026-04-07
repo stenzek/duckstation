@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #pragma once
@@ -12,8 +12,10 @@
 
 #include "common/heterogeneous_containers.h"
 #include "common/lru_cache.h"
+#include "common/progress_callback.h"
 
 #include <QtCore/QAbstractTableModel>
+#include <QtCore/QThread>
 #include <QtGui/QImage>
 #include <QtGui/QPixmap>
 #include <QtWidgets/QListView>
@@ -338,4 +340,28 @@ private:
 
   GameListRefreshThread* m_refresh_thread = nullptr;
   int m_refresh_last_entry_count = 0;
+};
+
+class GameListRefreshThread final : public QThread, public ProgressCallback
+{
+  Q_OBJECT
+
+public:
+  explicit GameListRefreshThread(bool invalidate_cache);
+  ~GameListRefreshThread();
+
+  void cancel();
+
+Q_SIGNALS:
+  void refreshProgress(const QString& status, int current, int total, int entry_count, float time);
+  void refreshComplete();
+
+protected:
+  void run() final;
+  void StateChanged(StateChange changed) override;
+
+private:
+  u64 m_start_time;
+  QString m_qstatus_text;
+  bool m_invalidate_cache;
 };

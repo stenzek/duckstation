@@ -35,7 +35,6 @@
     <ClCompile Include="memoryviewwidget.cpp" />
     <ClCompile Include="displaywidget.cpp" />
     <ClCompile Include="gamelistsettingswidget.cpp" />
-    <ClCompile Include="gamelistrefreshthread.cpp" />
     <ClCompile Include="gamelistwidget.cpp" />
     <ClCompile Include="gamesummarywidget.cpp" />
     <ClCompile Include="mainwindow.cpp" />
@@ -102,7 +101,6 @@
     <QtMoc Include="consolesettingswidget.h" />
     <QtMoc Include="emulationsettingswidget.h" />
     <QtMoc Include="gamelistsettingswidget.h" />
-    <QtMoc Include="gamelistrefreshthread.h" />
     <QtMoc Include="gamelistwidget.h" />
     <QtMoc Include="gamesummarywidget.h" />
     <QtMoc Include="postprocessingsettingswidget.h" />
