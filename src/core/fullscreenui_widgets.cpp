@@ -5753,14 +5753,17 @@ void FullscreenUI::DrawLoadingScreen(std::string_view image, std::string_view ti
     ImVec2(ImCeil((io.DisplaySize.x - image_width) * 0.5f), ImCeil(((io.DisplaySize.y - total_height) * 0.5f)));
   ImDrawList* const dl = ImGui::GetBackgroundDrawList();
 
-  if (UIStyle.BlurMenuBackground && BeginBlurBackground(dl, ImVec2(), io.DisplaySize))
+  if (VideoPresenter::HasDisplayTexture())
   {
-    dl->AddRectFilled(ImVec2(), io.DisplaySize, ImGui::GetColorU32(ModAlpha(UIStyle.BackgroundColor, 1.0f)));
-    EndBlurBackground(dl);
-  }
-  else if (VideoPresenter::HasDisplayTexture())
-  {
-    dl->AddRectFilled(ImVec2(), io.DisplaySize, ImGui::GetColorU32(ModAlpha(UIStyle.BackgroundColor, 0.9f)));
+    if (UIStyle.BlurMenuBackground && BeginBlurBackground(dl, ImVec2(), io.DisplaySize))
+    {
+      dl->AddRectFilled(ImVec2(), io.DisplaySize, ImGui::GetColorU32(ModAlpha(UIStyle.BackgroundColor, 1.0f)));
+      EndBlurBackground(dl);
+    }
+    else
+    {
+      dl->AddRectFilled(ImVec2(), io.DisplaySize, ImGui::GetColorU32(ModAlpha(UIStyle.BackgroundColor, 0.9f)));
+    }
   }
 
   GPUTexture* tex = GetCachedTexture(image);
