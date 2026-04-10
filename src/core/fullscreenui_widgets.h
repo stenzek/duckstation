@@ -261,9 +261,12 @@ std::shared_ptr<GPUTexture> LoadTexture(std::string_view path, u32 svg_width = 0
 GPUTexture* FindCachedTexture(std::string_view name);
 GPUTexture* FindCachedTexture(std::string_view name, u32 svg_width, u32 svg_height);
 GPUTexture* GetCachedTexture(std::string_view name);
+GPUTexture* GetCachedTexture(std::string_view path, std::string_view name);
 GPUTexture* GetCachedTexture(std::string_view name, u32 svg_width, u32 svg_height);
 GPUTexture* GetCachedTextureAsync(std::string_view name);
+GPUTexture* GetCachedTextureAsync(std::string_view path, std::string_view name);
 GPUTexture* GetCachedTextureAsync(std::string_view name, u32 svg_width, u32 svg_height);
+void PrecacheURLTexture(std::string_view url);
 bool InvalidateCachedTexture(std::string_view path);
 bool TextureNeedsSVGDimensions(std::string_view path);
 void UploadAsyncTextures();

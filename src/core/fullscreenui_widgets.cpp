@@ -13,10 +13,12 @@
 #include "video_thread.h"
 
 #include "util/gpu_device.h"
+#include "util/http_downloader.h"
 #include "util/image.h"
 #include "util/imgui_animated.h"
 #include "util/imgui_manager.h"
 #include "util/input_manager.h"
+#include "util/object_archive.h"
 #include "util/shadergen.h"
 
 #include "common/assert.h"
@@ -72,7 +74,15 @@ enum class SplitWindowFocusChange : u8
   FocusContent,
 };
 
+static bool IsHTTPURL(std::string_view url);
+static bool InitializeCacheArchive();
+static bool InitializeCacheHTTPDownloader();
+static std::string_view GetURLFilename(std::string_view url);
 static std::optional<Image> LoadTextureImage(std::string_view path, u32 svg_width, u32 svg_height);
+static std::optional<Image> LoadTextureImage(std::string_view filename, std::span<const u8> buffer, u32 svg_width,
+                                             u32 svg_height);
+static void QueueLoadTextureAsync(std::string path, std::string name, u32 svg_width, u32 svg_height);
+static void QueueDownloadTextureAsync(std::string path, std::string name, u32 svg_width, u32 svg_height);
 static std::shared_ptr<GPUTexture> UploadTexture(std::string_view path, const Image& image);
 
 static bool CompilePipelines(Error* error);
@@ -424,6 +434,12 @@ struct WidgetsState
 
   std::array<std::pair<Timer::Value, s32>, LOADING_PROGRESS_SAMPLE_COUNT> loading_screen_samples;
 
+  std::mutex http_cache_mutex;
+  ObjectArchive http_cache;
+  std::unique_ptr<HTTPDownloader> http_cache_downloader;
+  bool http_cache_tried_initialize_cache = false;
+  bool http_cache_tried_initialize_downloader = false;
+
 #if defined(_DEBUG) || defined(_DEVEL)
   ~WidgetsState();
 #endif
@@ -440,6 +456,9 @@ ALIGN_TO_CACHE_LINE static WidgetsState s_state;
 
 FullscreenUI::WidgetsState::~WidgetsState()
 {
+  DebugAssert(!http_cache.IsOpen());
+  DebugAssert(!http_cache_downloader);
+
   DebugAssert(!transition_prev_texture);
   DebugAssert(!transition_current_texture);
   DebugAssert(!transition_blend_pipeline);
@@ -475,6 +494,15 @@ bool FullscreenUI::InitializeWidgets(Error* error)
 void FullscreenUI::ShutdownWidgets()
 {
   DestroyWidgetsGPUResources();
+
+  {
+    // NOTE: close cache after the downloader, because it might finish+write
+    std::unique_lock lock(s_state.http_cache_mutex);
+    s_state.http_cache_downloader.reset();
+    s_state.http_cache.Close();
+    s_state.http_cache_tried_initialize_cache = false;
+    s_state.http_cache_tried_initialize_downloader = false;
+  }
 
   {
     std::unique_lock lock(s_state.shared_state_mutex);
@@ -583,6 +611,30 @@ const std::shared_ptr<GPUTexture>& FullscreenUI::GetPlaceholderTexture()
   return s_state.placeholder_texture;
 }
 
+bool FullscreenUI::IsHTTPURL(std::string_view url)
+{
+  // Download HTTP/HTTPS URLs on demand.
+  static constexpr const std::array HTTP_DOWNLOAD_URL_PREFIXES = {
+    "http://"sv,
+    "https://"sv,
+  };
+
+  return std::ranges::any_of(HTTP_DOWNLOAD_URL_PREFIXES, [url](const std::string_view& prefix) {
+    return StringUtil::StartsWithNoCase(url, prefix);
+  });
+}
+
+std::string_view FullscreenUI::GetURLFilename(std::string_view url)
+{
+  // Remove any query string or fragment from the URL before extracting the filename.
+  const std::string_view::size_type query_pos = url.find_first_of("?#");
+  if (query_pos != std::string_view::npos)
+    url = url.substr(0, query_pos);
+
+  const std::string_view::size_type pos = url.rfind('/');
+  return (pos != std::string_view::npos) ? url.substr(pos + 1) : url;
+}
+
 std::optional<Image> FullscreenUI::LoadTextureImage(std::string_view path, u32 svg_width, u32 svg_height)
 {
   std::optional<Image> image;
@@ -649,6 +701,34 @@ std::optional<Image> FullscreenUI::LoadTextureImage(std::string_view path, u32 s
   return image;
 }
 
+std::optional<Image> FullscreenUI::LoadTextureImage(std::string_view filename, std::span<const u8> buffer,
+                                                    u32 svg_width, u32 svg_height)
+{
+  std::optional<Image> image;
+  Error error;
+
+  if (StringUtil::EqualNoCase(Path::GetExtension(filename), "svg"))
+  {
+    image = Image();
+    if (!image->RasterizeSVG(buffer, svg_width, svg_height, &error))
+    {
+      ERROR_LOG("Failed to rasterize SVG texture file '{}': {}", filename, error.GetDescription());
+      image.reset();
+    }
+  }
+  else
+  {
+    image = Image();
+    if (!image->LoadFromBuffer(filename, buffer, &error))
+    {
+      ERROR_LOG("Failed to read texture resource '{}': {}", filename, error.GetDescription());
+      image.reset();
+    }
+  }
+
+  return image;
+}
+
 std::shared_ptr<GPUTexture> FullscreenUI::UploadTexture(std::string_view path, const Image& image)
 {
   Error error;
@@ -666,6 +746,12 @@ std::shared_ptr<GPUTexture> FullscreenUI::UploadTexture(std::string_view path, c
 
 std::shared_ptr<GPUTexture> FullscreenUI::LoadTexture(std::string_view path, u32 width_hint, u32 height_hint)
 {
+  if (IsHTTPURL(path)) [[unlikely]]
+  {
+    ERROR_LOG("Trying to synchronously load texture from URL '{}'.", path);
+    return s_state.placeholder_texture;
+  }
+
   std::optional<Image> image(LoadTextureImage(path, width_hint, height_hint));
   if (image.has_value())
   {
@@ -709,6 +795,18 @@ GPUTexture* FullscreenUI::GetCachedTexture(std::string_view name)
   return tex_ptr->get();
 }
 
+GPUTexture* FullscreenUI::GetCachedTexture(std::string_view path, std::string_view name)
+{
+  std::shared_ptr<GPUTexture>* tex_ptr = s_state.texture_cache.Lookup(name);
+  if (!tex_ptr)
+  {
+    std::shared_ptr<GPUTexture> tex = LoadTexture(path);
+    tex_ptr = s_state.texture_cache.Insert(std::string(name), std::move(tex));
+  }
+
+  return tex_ptr->get();
+}
+
 GPUTexture* FullscreenUI::GetCachedTexture(std::string_view name, u32 svg_width, u32 svg_height)
 {
   // ignore size hints if it's not needed, don't duplicate
@@ -729,6 +827,197 @@ GPUTexture* FullscreenUI::GetCachedTexture(std::string_view name, u32 svg_width,
   return tex_ptr->get();
 }
 
+void FullscreenUI::QueueLoadTextureAsync(std::string path, std::string name, u32 svg_width, u32 svg_height)
+{
+  Host::QueueAsyncTask([path = std::move(path), name = std::move(name), svg_width, svg_height]() mutable {
+    // Handle HTTP downloads
+    std::optional<Image> image;
+    if (IsHTTPURL(path))
+    {
+      // Check the cache first
+      std::optional<ObjectArchive::ObjectData> image_data;
+      Error error;
+
+      // release the lock after reading to memory
+      {
+        const std::lock_guard lock(s_state.http_cache_mutex);
+        if (!InitializeCacheArchive())
+          return;
+
+        image_data = s_state.http_cache.Lookup(path, &error);
+      }
+      if (!image_data.has_value())
+      {
+        if (error.GetDescription() != ObjectArchive::ERROR_DESCRIPTION_DOES_NOT_EXIST)
+        {
+          ERROR_LOG("Failed to read cached texture data for URL '{}': {}", path, error.GetDescription());
+          return;
+        }
+
+        // not ready yet
+        QueueDownloadTextureAsync(std::move(path), std::move(name), svg_width, svg_height);
+        return;
+      }
+
+      DEV_LOG("Loading texture from cache for URL '{}' ({} bytes)", path, image_data->size());
+      image = LoadTextureImage(GetURLFilename(path), image_data->cspan(), svg_width, svg_height);
+    }
+    else
+    {
+      image = LoadTextureImage(path, svg_width, svg_height);
+    }
+
+    // don't bother queuing back if it doesn't exist
+    if (!image.has_value())
+      return;
+
+    const std::lock_guard lock(s_state.shared_state_mutex);
+    s_state.texture_upload_queue.emplace_back(name.empty() ? std::move(path) : std::move(name),
+                                              std::move(image.value()));
+  });
+}
+
+bool FullscreenUI::InitializeCacheArchive()
+{
+  static constexpr u32 CACHE_VERSION = 1;
+
+  if (s_state.http_cache.IsOpen())
+    return true;
+
+  if (s_state.http_cache_tried_initialize_cache)
+    return false;
+
+  s_state.http_cache_tried_initialize_cache = true;
+
+  Error error;
+  std::string cache_path = Path::Combine(EmuFolders::Cache, "http_cache");
+  if (!s_state.http_cache.OpenPath(cache_path, CACHE_VERSION, &error))
+  {
+    ERROR_LOG("Failed to initialize HTTP cache: {}", error.GetDescription());
+    return false;
+  }
+
+  return true;
+}
+
+bool FullscreenUI::InitializeCacheHTTPDownloader()
+{
+  if (s_state.http_cache_downloader)
+    return true;
+
+  if (s_state.http_cache_tried_initialize_downloader)
+    return false;
+
+  s_state.http_cache_tried_initialize_downloader = true;
+
+  Error error;
+  s_state.http_cache_downloader = HTTPDownloader::Create(Core::GetHTTPUserAgent(), &error);
+  if (!s_state.http_cache_downloader)
+  {
+    ERROR_LOG("Failed to create HTTP downloader: {}", error.GetDescription());
+    return false;
+  }
+
+  return true;
+}
+
+void FullscreenUI::QueueDownloadTextureAsync(std::string path, std::string name, u32 svg_width, u32 svg_height)
+{
+  // not in cache, will need to download
+  const std::lock_guard lock(s_state.http_cache_mutex);
+  if (!InitializeCacheHTTPDownloader())
+    return;
+
+  std::string url = path;
+  s_state.http_cache_downloader->CreateRequest(
+    std::move(url), [path = std::move(path), name = std::move(name), svg_width,
+                     svg_height](s32 status_code, const Error& error, const std::string& content_type,
+                                 HTTPDownloader::Request::Data data) mutable {
+      if (status_code != HTTPDownloader::HTTP_STATUS_OK)
+      {
+        ERROR_LOG("Failed to download texture from URL '{}': {}: {}", path, status_code, error.GetDescription());
+        return;
+      }
+
+      VERBOSE_LOG("Adding downloaded texture from URL '{}' to cache ({} bytes)", path, data.size());
+
+      // we should be running this callback with the lock held.
+      // images are already compressed, store uncompressed
+      Error insert_error;
+      if (!s_state.http_cache.Insert(path, data, ObjectArchive::CompressType::Uncompressed, &insert_error))
+      {
+        // we _could_ end up in a situation where we raced and another thread inserted the same URL
+        if (insert_error.GetDescription() != ObjectArchive::ERROR_DESCRIPTION_ALREADY_EXISTS)
+        {
+          ERROR_LOG("Failed to write into cache for URL '{}': {}", path, insert_error.GetDescription());
+          return;
+        }
+      }
+
+      // this is running on the video thread, so we don't want to decode the image here.
+      Host::QueueAsyncTask(
+        [path = std::move(path), name = std::move(name), data = std::move(data), svg_width, svg_height]() mutable {
+          // don't bother queuing back if it doesn't exist
+          std::optional<Image> image = LoadTextureImage(GetURLFilename(path), data, svg_width, svg_height);
+          if (!image.has_value())
+            return;
+
+          std::unique_lock lock(s_state.shared_state_mutex);
+          s_state.texture_upload_queue.emplace_back(name.empty() ? std::move(path) : std::move(name),
+                                                    std::move(image.value()));
+        });
+    });
+}
+
+void FullscreenUI::PrecacheURLTexture(std::string_view url)
+{
+  if (!IsHTTPURL(url))
+  {
+    ERROR_LOG("Trying to precache non-URL texture '{}'.", url);
+    return;
+  }
+
+  // we want to check the texture cache, because it might have already been cached _or_ queued
+  if (FindCachedTexture(url))
+    return;
+
+  // check the archive cache
+  const std::lock_guard lock(s_state.http_cache_mutex);
+  if (!InitializeCacheArchive() || s_state.http_cache.Contains(url))
+    return;
+
+  // not in cache, need to download
+  if (!InitializeCacheHTTPDownloader())
+    return;
+
+  DEV_LOG("Precaching texture from URL '{}'", url);
+
+  s_state.http_cache_downloader->CreateRequest(
+    std::string(url), [url = std::string(url)](s32 status_code, const Error& error, const std::string& content_type,
+                                               HTTPDownloader::Request::Data data) mutable {
+      if (status_code != HTTPDownloader::HTTP_STATUS_OK)
+      {
+        ERROR_LOG("Failed to download texture from URL '{}': {}: {}", url, status_code, error.GetDescription());
+        return;
+      }
+
+      VERBOSE_LOG("Precached downloaded texture from URL '{}' to cache ({} bytes)", url, data.size());
+
+      // we should be running this callback with the lock held.
+      // images are already compressed, store uncompressed
+      Error insert_error;
+      if (!s_state.http_cache.Insert(url, data, ObjectArchive::CompressType::Uncompressed, &insert_error))
+      {
+        // we _could_ end up in a situation where we raced and another thread inserted the same URL
+        if (insert_error.GetDescription() != ObjectArchive::ERROR_DESCRIPTION_ALREADY_EXISTS)
+        {
+          ERROR_LOG("Failed to write into cache for URL '{}': {}", url, insert_error.GetDescription());
+          return;
+        }
+      }
+    });
+}
+
 GPUTexture* FullscreenUI::GetCachedTextureAsync(std::string_view name)
 {
   std::shared_ptr<GPUTexture>* tex_ptr = s_state.texture_cache.Lookup(name);
@@ -738,16 +1027,22 @@ GPUTexture* FullscreenUI::GetCachedTextureAsync(std::string_view name)
     tex_ptr = s_state.texture_cache.Insert(std::string(name), s_state.placeholder_texture);
 
     // queue the actual load
-    Host::QueueAsyncTask([path = std::string(name)]() mutable {
-      std::optional<Image> image(LoadTextureImage(path.c_str(), 0, 0));
+    QueueLoadTextureAsync(std::string(name), {}, 0, 0);
+  }
 
-      // don't bother queuing back if it doesn't exist
-      if (!image.has_value())
-        return;
+  return tex_ptr->get();
+}
 
-      std::unique_lock lock(s_state.shared_state_mutex);
-      s_state.texture_upload_queue.emplace_back(std::move(path), std::move(image.value()));
-    });
+GPUTexture* FullscreenUI::GetCachedTextureAsync(std::string_view path, std::string_view name)
+{
+  std::shared_ptr<GPUTexture>* tex_ptr = s_state.texture_cache.Lookup(name);
+  if (!tex_ptr)
+  {
+    // insert the placeholder
+    tex_ptr = s_state.texture_cache.Insert(std::string(name), s_state.placeholder_texture);
+
+    // queue the actual load
+    QueueLoadTextureAsync(std::string(path), std::string(name), 0, 0);
   }
 
   return tex_ptr->get();
@@ -770,16 +1065,7 @@ GPUTexture* FullscreenUI::GetCachedTextureAsync(std::string_view name, u32 svg_w
     tex_ptr = s_state.texture_cache.Insert(std::string(wh_name), s_state.placeholder_texture);
 
     // queue the actual load
-    Host::QueueAsyncTask([path = std::string(name), wh_name = std::string(wh_name), svg_width, svg_height]() mutable {
-      std::optional<Image> image(LoadTextureImage(path.c_str(), svg_width, svg_height));
-
-      // don't bother queuing back if it doesn't exist
-      if (!image.has_value())
-        return;
-
-      std::unique_lock lock(s_state.shared_state_mutex);
-      s_state.texture_upload_queue.emplace_back(std::move(wh_name), std::move(image.value()));
-    });
+    QueueLoadTextureAsync(std::string(name), std::string(wh_name), svg_width, svg_height);
   }
 
   return tex_ptr->get();
@@ -799,6 +1085,14 @@ bool FullscreenUI::TextureNeedsSVGDimensions(std::string_view path)
 
 void FullscreenUI::UploadAsyncTextures()
 {
+  // pull in any new downloaded images
+  // note: racey read, but that's fine, worst case we do it a frame late
+  if (s_state.http_cache_downloader)
+  {
+    std::lock_guard lock(s_state.http_cache_mutex);
+    s_state.http_cache_downloader->PollRequests();
+  }
+
   std::unique_lock lock(s_state.shared_state_mutex);
   while (!s_state.texture_upload_queue.empty())
   {
@@ -1269,7 +1563,6 @@ void FullscreenUI::DrawWithBlurTexture(const ImDrawList* parent_list, const ImDr
 bool FullscreenUI::UpdateLayoutScale()
 {
 #ifndef __ANDROID__
-
   static constexpr float LAYOUT_RATIO = LAYOUT_SCREEN_WIDTH / LAYOUT_SCREEN_HEIGHT;
   const ImGuiIO& io = ImGui::GetIO();
 
@@ -1302,7 +1595,6 @@ bool FullscreenUI::UpdateLayoutScale()
   return (UIStyle.LayoutScale != old_scale);
 
 #else
-
   // On Android, treat a rotated display as always being in landscape mode for FSUI scaling.
   // Makes achievement popups readable regardless of the device's orientation, and avoids layout changes.
   const ImGuiIO& io = ImGui::GetIO();
@@ -2783,8 +3075,8 @@ begin:
 #undef IDX
 #undef VTX
 
-  // Edge case: calling RenderText() with unloaded glyphs triggering texture change. It doesn't happen via ImGui:: calls
-  // because CalcTextSize() is always used.
+  // Edge case: calling RenderText() with unloaded glyphs triggering texture change. It doesn't happen via ImGui::
+  // calls because CalcTextSize() is always used.
   if (cmd_count != draw_list->CmdBuffer.Size) //-V547
   {
     IM_ASSERT(draw_list->CmdBuffer[draw_list->CmdBuffer.Size - 1].ElemCount == 0);
@@ -2794,8 +3086,8 @@ begin:
     // IMGUI_DEBUG_LOG("RenderText: cancel and retry to missing glyphs.\n"); // [DEBUG]
     // draw_list->AddRectFilled(pos, pos + ImVec2(10, 10), IM_COL32(255, 0, 0, 255)); // [DEBUG]
     goto begin;
-    // RenderText(draw_list, size, pos, col, clip_rect, text_begin, text_end, wrap_width, cpu_fine_clip); // FIXME-OPT:
-    // Would a 'goto begin' be better for code-gen? return;
+    // RenderText(draw_list, size, pos, col, clip_rect, text_begin, text_end, wrap_width, cpu_fine_clip); //
+    // FIXME-OPT: Would a 'goto begin' be better for code-gen? return;
   }
 
   // Give back unused vertices (clipped ones, blanks) ~ this is essentially a PrimUnreserve() action.
