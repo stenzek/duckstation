@@ -51,6 +51,8 @@ add_library(util
   iso_reader.h
   media_capture.cpp
   media_capture.h
+  object_archive.cpp
+  object_archive.h
   page_fault_handler.cpp
   page_fault_handler.h
   postprocessing.cpp

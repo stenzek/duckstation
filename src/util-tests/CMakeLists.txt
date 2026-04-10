@@ -4,6 +4,7 @@ add_executable(util-tests
   cue_parser_tests.cpp
   image_tests.cpp
   ini_settings_interface_tests.cpp
+  object_archive_tests.cpp
   stub_host.cpp
 )
 
