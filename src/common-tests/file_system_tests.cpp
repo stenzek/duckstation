@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "common/file_system.h"
+#include "common/path.h"
+#include "common/scoped_guard.h"
 
 #include <gtest/gtest.h>
 
@@ -27,3 +29,56 @@ TEST(FileSystem, GetWin32Path)
 }
 
 #endif
+
+static std::string GetTestTempBasePath(const char* name)
+{
+  return Path::Combine(FileSystem::GetWorkingDirectory(), name);
+}
+
+TEST(FileSystem, OpenTemporaryCFile)
+{
+  const std::string base_path = GetTestTempBasePath("duckstation_test_temp");
+  std::string temp_path;
+  std::FILE* fp = FileSystem::OpenTemporaryCFile(base_path, &temp_path);
+  ASSERT_NE(fp, nullptr);
+
+  ScopedGuard cleanup([&temp_path, fp]() {
+    std::fclose(fp);
+    FileSystem::DeleteFile(temp_path.c_str());
+  });
+
+  EXPECT_FALSE(temp_path.empty());
+  EXPECT_TRUE(temp_path.starts_with(base_path + "."));
+  EXPECT_FALSE(temp_path.ends_with("XXXXXX"));
+  EXPECT_TRUE(FileSystem::FileExists(temp_path.c_str()));
+
+  const char test_data[] = "hello";
+  EXPECT_EQ(std::fwrite(test_data, 1, sizeof(test_data), fp), sizeof(test_data));
+}
+
+TEST(FileSystem, OpenTemporaryManagedCFile)
+{
+  const std::string base_path = GetTestTempBasePath("duckstation_test_temp_managed");
+  std::string temp_path;
+  auto fp = FileSystem::OpenTemporaryManagedCFile(base_path, &temp_path);
+  ASSERT_NE(fp, nullptr);
+
+  ScopedGuard cleanup([&temp_path]() {
+    FileSystem::DeleteFile(temp_path.c_str());
+  });
+
+  EXPECT_FALSE(temp_path.empty());
+  EXPECT_TRUE(temp_path.starts_with(base_path + "."));
+  EXPECT_FALSE(temp_path.ends_with("XXXXXX"));
+  EXPECT_TRUE(FileSystem::FileExists(temp_path.c_str()));
+}
+
+TEST(FileSystem, OpenTemporaryCFileNullOutPath)
+{
+  const std::string base_path = GetTestTempBasePath("duckstation_test_temp_null");
+  std::FILE* fp = FileSystem::OpenTemporaryCFile(base_path, nullptr);
+  ASSERT_NE(fp, nullptr);
+
+  // Without out_path we can't reliably clean up the file, so just close it.
+  std::fclose(fp);
+}
