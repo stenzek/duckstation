@@ -57,7 +57,7 @@ struct Notification
   std::string title;
   std::string text;
   std::string note;
-  std::string badge_path;
+  std::string image_url;
   u64 start_time;
   u64 move_time;
   float duration;
@@ -72,7 +72,7 @@ struct PauseMenuAchievementInfo
 {
   std::string title;
   std::string description;
-  std::string badge_path;
+  std::string badge_url;
   u32 achievement_id;
   float measured_percent;
 };
@@ -119,8 +119,6 @@ template<typename T>
 static bool IsBucketVisibleInCurrentSubset(const T& bucket);
 static void SortLockedAchievements();
 
-static const std::string& GetCachedAchievementBadgePath(const rc_client_achievement_t* achievement, bool locked);
-
 template<typename T>
 static void CachePauseMenuAchievementInfo(const rc_client_achievement_t* achievement, std::optional<T>& value);
 
@@ -164,8 +162,6 @@ struct AchievementsLocals
   std::vector<SubsetInfo> subset_info_list;
   const SubsetInfo* open_subset = nullptr;
 
-  std::vector<std::tuple<const void*, std::string, bool>> achievement_badge_paths;
-
   std::optional<PauseMenuAchievementInfoWithPoints> most_recent_unlock;
   std::optional<PauseMenuMeasuredAchievementInfo> achievement_nearest_completion;
   std::optional<PauseMenuTimedMeasuredAchievementInfo> most_recent_progress_update;
@@ -179,7 +175,6 @@ struct AchievementsLocals
   const rc_client_leaderboard_t* open_leaderboard = nullptr;
   rc_client_async_handle_t* leaderboard_fetch_handle = nullptr;
   std::vector<rc_client_leaderboard_entry_list_t*> leaderboard_entry_lists;
-  std::vector<std::pair<const rc_client_leaderboard_entry_t*, std::string>> leaderboard_user_icon_paths;
   rc_client_leaderboard_entry_list_t* leaderboard_nearby_entries;
   bool is_showing_all_leaderboard_entries = false;
   bool has_fetched_all_leaderboard_entries = false;
@@ -204,9 +199,6 @@ void FullscreenUI::ClearAchievementsState()
 
   s_achievements_locals.notifications = {};
 
-  s_achievements_locals.achievement_badge_paths = {};
-
-  s_achievements_locals.leaderboard_user_icon_paths = {};
   s_achievements_locals.leaderboard_entry_lists = {};
   if (s_achievements_locals.leaderboard_list)
   {
@@ -251,8 +243,8 @@ void FullscreenUI::DrawAchievementsOverlays()
   }
 }
 
-void FullscreenUI::AddAchievementNotification(std::string key, float duration, std::string image_path,
-                                              std::string title, std::string text, std::string note,
+void FullscreenUI::AddAchievementNotification(std::string key, float duration, std::string image_url, std::string title,
+                                              std::string text, std::string note,
                                               AchievementNotificationNoteType note_type, u16 min_width, bool small_font)
 {
   const bool prev_had_notifications = s_achievements_locals.notifications.empty();
@@ -268,7 +260,7 @@ void FullscreenUI::AddAchievementNotification(std::string key, float duration, s
         it->title = std::move(title);
         it->text = std::move(text);
         it->note = std::move(note);
-        it->badge_path = std::move(image_path);
+        it->image_url = std::move(image_url);
         it->min_width = min_width;
         it->note_type = note_type;
         it->small_font = small_font;
@@ -288,7 +280,7 @@ void FullscreenUI::AddAchievementNotification(std::string key, float duration, s
   notif.title = std::move(title);
   notif.text = std::move(text);
   notif.note = std::move(note);
-  notif.badge_path = std::move(image_path);
+  notif.image_url = std::move(image_url);
   notif.start_time = current_time;
   notif.move_time = current_time;
   notif.target_y = -1.0f;
@@ -496,9 +488,9 @@ void FullscreenUI::DrawNotifications(NotificationLayout& layout)
 
     const ImVec2 badge_min(box_min.x + horizontal_padding, box_min.y + vertical_padding);
     const ImVec2 badge_max(badge_min.x + badge_size, badge_min.y + badge_size);
-    if (!notif.badge_path.empty())
+    if (!notif.image_url.empty())
     {
-      GPUTexture* tex = GetCachedTexture(notif.badge_path, static_cast<u32>(badge_size), static_cast<u32>(badge_size));
+      GPUTexture* tex = GetCachedTexture(notif.image_url, static_cast<u32>(badge_size), static_cast<u32>(badge_size));
       if (tex)
       {
         dl->AddImage(tex, badge_min, badge_max, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f),
@@ -607,7 +599,7 @@ void FullscreenUI::DrawIndicators(NotificationLayout& layout)
       indicator.opacity =
         (indicator.opacity != target_opacity) ? ImSaturate(indicator.opacity + (io.DeltaTime / rate)) : target_opacity;
 
-      GPUTexture* badge = FullscreenUI::GetCachedTextureAsync(indicator.badge_path);
+      GPUTexture* badge = FullscreenUI::GetCachedTextureAsync(indicator.badge_url);
       if (badge)
       {
         dl->AddImage(badge, current_position, current_position + ImVec2(image_size, image_size), ImVec2(0.0f, 0.0f),
@@ -658,7 +650,7 @@ void FullscreenUI::DrawIndicators(NotificationLayout& layout)
                               ImGui::GetColorU32(ModAlpha(right_background_color, opacity * bg_opacity)), rounding);
     }
 
-    GPUTexture* const badge = FullscreenUI::GetCachedTextureAsync(indicator->badge_path);
+    GPUTexture* const badge = FullscreenUI::GetCachedTextureAsync(indicator->badge_url);
     if (badge)
     {
       const ImVec2 badge_pos = box_min + padding;
@@ -843,7 +835,7 @@ void FullscreenUI::DrawIndicators(NotificationLayout& layout)
         const float total_width = (pinned_image_size + spacing + text_size.x);
         const float start_x = pos.x + ImFloor((box_width - total_width) * 0.5f);
 
-        GPUTexture* const badge = FullscreenUI::GetCachedTextureAsync(indicator.badge_path);
+        GPUTexture* const badge = FullscreenUI::GetCachedTextureAsync(indicator.badge_url);
         if (badge)
         {
           const ImVec2 badge_pos = ImVec2(start_x, pos.y);
@@ -884,18 +876,6 @@ void FullscreenUI::UpdateAchievementOverlaysRunIdle()
   });
 }
 
-const std::string& FullscreenUI::GetCachedAchievementBadgePath(const rc_client_achievement_t* achievement, bool locked)
-{
-  for (const auto& [l_cheevo, l_path, l_state] : s_achievements_locals.achievement_badge_paths)
-  {
-    if (l_cheevo == achievement && l_state == locked)
-      return l_path;
-  }
-
-  std::string path = Achievements::GetAchievementBadgePath(achievement, locked);
-  return std::get<1>(s_achievements_locals.achievement_badge_paths.emplace_back(achievement, std::move(path), locked));
-}
-
 template<typename T>
 void FullscreenUI::CachePauseMenuAchievementInfo(const rc_client_achievement_t* achievement, std::optional<T>& value)
 {
@@ -911,7 +891,7 @@ void FullscreenUI::CachePauseMenuAchievementInfo(const rc_client_achievement_t* 
   // have to take a copy because with RAIntegration the achievement pointer does not persist
   value->title = achievement->title;
   value->description = achievement->description;
-  value->badge_path = Achievements::GetAchievementBadgePath(achievement, false);
+  value->badge_url = Achievements::GetAchievementBadgeURL(achievement, false);
   value->measured_percent = achievement->measured_percent;
   value->achievement_id = achievement->id;
 
@@ -1295,7 +1275,7 @@ void FullscreenUI::DrawAchievementsPauseMenuOverlays(float start_pos_y)
     buffer.format(ICON_FA_LOCK_OPEN " {}", TRANSLATE_DISAMBIG_SV("Achievements", "Most Recent", "Pause Menu"));
     draw_achievement_in_box(
       buffer, s_achievements_locals.most_recent_unlock->title, s_achievements_locals.most_recent_unlock->description,
-      s_achievements_locals.most_recent_unlock->badge_path, {}, 0.0f, s_achievements_locals.most_recent_unlock->points);
+      s_achievements_locals.most_recent_unlock->badge_url, {}, 0.0f, s_achievements_locals.most_recent_unlock->points);
 
     // extra spacing if we have two
     text_pos.y += s_achievements_locals.achievement_nearest_completion ? (paragraph_spacing + paragraph_spacing) : 0.0f;
@@ -1311,7 +1291,7 @@ void FullscreenUI::DrawAchievementsPauseMenuOverlays(float start_pos_y)
                   TRANSLATE_DISAMBIG_SV("Achievements", "Nearest Completion", "Pause Menu"));
     draw_achievement_in_box(buffer, s_achievements_locals.achievement_nearest_completion->title,
                             s_achievements_locals.achievement_nearest_completion->description,
-                            s_achievements_locals.achievement_nearest_completion->badge_path,
+                            s_achievements_locals.achievement_nearest_completion->badge_url,
                             s_achievements_locals.achievement_nearest_completion->measured_progress,
                             s_achievements_locals.achievement_nearest_completion->measured_percent, 0);
     text_pos.y += paragraph_spacing;
@@ -1327,7 +1307,7 @@ void FullscreenUI::DrawAchievementsPauseMenuOverlays(float start_pos_y)
                     TRANSLATE_DISAMBIG_SV("Achievements", "Last Progress Update", "Pause Menu"));
       draw_achievement_in_box(buffer, s_achievements_locals.most_recent_progress_update->title,
                               s_achievements_locals.most_recent_progress_update->description,
-                              s_achievements_locals.most_recent_progress_update->badge_path,
+                              s_achievements_locals.most_recent_progress_update->badge_url,
                               s_achievements_locals.most_recent_progress_update->measured_progress,
                               s_achievements_locals.most_recent_progress_update->measured_percent, 0);
       text_pos.y += paragraph_spacing;
@@ -1376,7 +1356,7 @@ void FullscreenUI::DrawAchievementsPauseMenuOverlays(float start_pos_y)
     {
       text_pos.y += paragraph_spacing;
       draw_achievement_with_summary(indicator.achievement->title, indicator.achievement->description,
-                                    indicator.badge_path);
+                                    indicator.badge_url);
       text_pos.y += paragraph_spacing;
     }
   }
@@ -1555,7 +1535,7 @@ void FullscreenUI::AddSubsetInfo(const rc_client_subset_t* subset)
     info.short_name = subset_title;
   }
 
-  info.badge_path = Achievements::GetSubsetBadgePath(subset);
+  info.badge_path = Achievements::GetSubsetBadgeURL(subset);
   info.num_leaderboards = subset->num_leaderboards;
 
   info.summary = {};
@@ -1744,8 +1724,6 @@ void FullscreenUI::SwitchToAchievements()
     ClosePauseMenuImmediately();
     return;
   }
-
-  s_achievements_locals.achievement_badge_paths = {};
 
   if (s_achievements_locals.achievement_list)
     rc_client_destroy_achievement_list(s_achievements_locals.achievement_list);
@@ -2194,7 +2172,13 @@ void FullscreenUI::DrawAchievement(const rc_client_achievement_t* cheevo, const 
   if (!visible)
   {
     if (pos_y >= prefetch_range.x && pos_y <= prefetch_range.y)
-      GetCachedAchievementBadgePath(cheevo, !is_unlocked);
+    {
+      if (const std::string_view badge_url = Achievements::GetAchievementBadgeURL(cheevo, !is_unlocked);
+          !badge_url.empty())
+      {
+        PrecacheURLTexture(badge_url);
+      }
+    }
 
     return;
   }
@@ -2207,9 +2191,9 @@ void FullscreenUI::DrawAchievement(const rc_client_achievement_t* cheevo, const 
 
   ImDrawList* const dl = ImGui::GetWindowDrawList();
 
-  if (const std::string& badge_path = GetCachedAchievementBadgePath(cheevo, !is_unlocked); !badge_path.empty())
+  if (const std::string_view badge_url = Achievements::GetAchievementBadgeURL(cheevo, !is_unlocked); !badge_url.empty())
   {
-    GPUTexture* badge = GetCachedTextureAsync(badge_path);
+    GPUTexture* badge = GetCachedTextureAsync(badge_url);
     if (badge)
     {
       const ImRect image_bb = CenterImage(ImRect(bb.Min, bb.Min + image_size), badge);
@@ -2441,7 +2425,6 @@ void FullscreenUI::SwitchToLeaderboards()
     return;
   }
 
-  s_achievements_locals.achievement_badge_paths = {};
   CloseLeaderboard();
   if (s_achievements_locals.leaderboard_list)
     rc_client_destroy_leaderboard_list(s_achievements_locals.leaderboard_list);
@@ -2899,23 +2882,15 @@ bool FullscreenUI::DrawLeaderboardEntry(const rc_client_leaderboard_entry_t& ent
 
   const float icon_size = bb.Max.y - bb.Min.y;
   const ImRect icon_bb(ImVec2(text_start_x, bb.Min.y), ImVec2(bb.Max.x, midpoint));
-  GPUTexture* icon_tex = nullptr;
-  if (auto it = std::find_if(s_achievements_locals.leaderboard_user_icon_paths.begin(),
-                             s_achievements_locals.leaderboard_user_icon_paths.end(),
-                             [&entry](const auto& it) { return it.first == &entry; });
-      it != s_achievements_locals.leaderboard_user_icon_paths.end())
+
+  // Use an alias to avoid allocating a string for the URL every time.
+  text.format("__lb_user_{}", entry.user);
+  GPUTexture* icon_tex = FindCachedTexture(text);
+  if (!icon_tex)
   {
-    if (!it->second.empty())
-      icon_tex = GetCachedTextureAsync(it->second);
-  }
-  else
-  {
-    std::string path = Achievements::GetLeaderboardUserBadgePath(&entry);
-    if (!path.empty())
-    {
-      icon_tex = GetCachedTextureAsync(path);
-      s_achievements_locals.leaderboard_user_icon_paths.emplace_back(&entry, std::move(path));
-    }
+    std::string url = Achievements::GetUserBadgeURL(entry.user);
+    if (!url.empty())
+      icon_tex = GetCachedTextureAsync(std::move(url), text);
   }
   if (icon_tex)
   {
@@ -3177,8 +3152,6 @@ void FullscreenUI::FetchNextLeaderboardEntries()
 
 void FullscreenUI::CloseLeaderboard()
 {
-  s_achievements_locals.leaderboard_user_icon_paths.clear();
-
   for (auto iter = s_achievements_locals.leaderboard_entry_lists.rbegin();
        iter != s_achievements_locals.leaderboard_entry_lists.rend(); ++iter)
   {
