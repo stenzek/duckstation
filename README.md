@@ -106,7 +106,7 @@ To use the archive or portable installation, follow these steps:
 3. If you want a portable installation (see [User Directories](#user-directories)), create an empty file named `portable.txt` in the same directory as the executable.
 4. Once downloaded and extracted, you can launch the emulator with `duckstation-qt-x64-ReleaseLTCG.exe`. Follow the Setup Wizard to get started.
 
-**If you get an error about `vcruntime140_1.dll` being missing, you will need to update your Visual C++ runtime.** You can do that from this page: https://support.microsoft.com/en-au/help/2977003/the-latest-supported-visual-c-downloads. Specifically, you want the x64 runtime, which can be downloaded from https://aka.ms/vs/17/release/vc_redist.x64.exe.
+**If you get an error about `vcruntime140_1.dll` being missing, you will need to update your Visual C++ runtime.** You can do that from this page: https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist. Specifically, you want the x64 runtime, which can be downloaded from https://aka.ms/vs/17/release/vc_redist.x64.exe.
 
 ### Linux
 
