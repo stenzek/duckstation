@@ -8,6 +8,7 @@
     <ClCompile Include="elf_parser_tests.cpp" />
     <ClCompile Include="image_tests.cpp" />
     <ClCompile Include="ini_settings_interface_tests.cpp" />
+    <ClCompile Include="object_archive_tests.cpp" />
     <ClCompile Include="stub_host.cpp" />
   </ItemGroup>
   <ItemGroup>
