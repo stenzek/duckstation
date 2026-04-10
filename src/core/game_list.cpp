@@ -2166,7 +2166,7 @@ std::string GameList::GetGameIconPath(std::string_view custom_title, std::string
   std::string fallback_path;
   if (achievements_game_id != 0)
   {
-    fallback_path = GetAchievementGameBadgePath(achievements_game_id);
+    fallback_path = GetAchievementGameBadgeURL(achievements_game_id);
     if (!fallback_path.empty() && PreferAchievementGameBadgesForIcons())
       return (ret = std::move(fallback_path));
   }
@@ -2312,11 +2312,9 @@ std::string GameList::GetAchievementGameBadgeCachePath()
   return Path::Combine(EmuFolders::Cache, "achievement_game_badges.cache");
 }
 
-std::string GameList::GetAchievementGameBadgePath(u32 game_id)
+std::string GameList::GetAchievementGameBadgeURL(u32 game_id)
 {
   LoadAchievementGameBadges();
-
-  std::string ret;
 
   const auto iter =
     std::lower_bound(s_state.achievement_game_id_badges.begin(), s_state.achievement_game_id_badges.end(), game_id,
@@ -2325,14 +2323,10 @@ std::string GameList::GetAchievementGameBadgePath(u32 game_id)
   {
     const std::string_view badge_name = s_state.achievement_game_badge_names.GetString(iter->second);
     if (!badge_name.empty())
-    {
-      ret = Achievements::GetGameBadgePath(badge_name);
-      if (!FileSystem::FileExists(ret.c_str()))
-        ret.clear();
-    }
+      return Achievements::GetGameIconURL(TinyString(badge_name).c_str());
   }
 
-  return ret;
+  return {};
 }
 
 void GameList::LoadAchievementGameBadges()

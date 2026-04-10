@@ -1324,17 +1324,16 @@ void FullscreenUI::DrawLandingTemplate(ImVec2* menu_pos, ImVec2* menu_size)
     if (Achievements::IsActive())
     {
       const auto lock = Achievements::GetLock();
-      const char* username = Achievements::GetLoggedInUserName();
-      if (username)
+      if (const std::string& username = Achievements::GetLoggedInUserName(); !username.empty())
       {
         const ImVec2 name_size =
-          heading_font->CalcTextSizeA(heading_font_size, heading_font_weight, FLT_MAX, 0.0f, username);
+          heading_font->CalcTextSizeA(heading_font_size, heading_font_weight, FLT_MAX, 0.0f, IMSTR_START_END(username));
         const ImVec2 name_pos =
           ImVec2(time_pos.x - name_size.x - LayoutScale(LAYOUT_MENU_BUTTON_X_PADDING), time_pos.y);
         RenderShadowedTextClipped(heading_font, heading_font_size, heading_font_weight, name_pos, name_pos + name_size,
                                   text_color, username, &name_size);
 
-        if (const std::string& badge_path = Achievements::GetLoggedInUserBadgePath(); !badge_path.empty())
+        if (const std::string& badge_path = Achievements::GetLoggedInUserIconURL(); !badge_path.empty())
         {
           const ImVec2 badge_size = ImVec2(UIStyle.LargeFontSize, UIStyle.LargeFontSize);
           const ImVec2 badge_pos =
