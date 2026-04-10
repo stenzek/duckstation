@@ -2730,7 +2730,7 @@ void GameListRefreshThread::StateChanged(StateChange changed)
   else if (!(changed & (STATE_CHANGE_PROGRESS | STATE_CHANGE_STATUS_TEXT)))
     return;
 
-  const float time_elapsed = Timer::ConvertValueToSeconds(Timer::GetCurrentValue() - m_start_time);
+  const float time_elapsed = static_cast<float>(Timer::ConvertValueToSeconds(Timer::GetCurrentValue() - m_start_time));
   emit refreshProgress(m_qstatus_text, static_cast<int>(m_progress_value), static_cast<int>(m_progress_range),
                        static_cast<int>(GameList::GetEntryCount()), time_elapsed);
 }
