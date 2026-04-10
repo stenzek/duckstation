@@ -1265,40 +1265,8 @@ FileSystem::AtomicRenamedFile FileSystem::CreateAtomicRenamedFile(std::string pa
   std::FILE* fp = nullptr;
   if (!path.empty())
   {
-    // this is disgusting, but we need null termination, and std::string::data() does not guarantee it.
-    const size_t path_length = path.length();
-    const size_t name_buf_size = path_length + 8;
-    std::unique_ptr<char[]> name_buf = std::make_unique<char[]>(name_buf_size);
-    std::memcpy(name_buf.get(), path.c_str(), path_length);
-    StringUtil::Strlcpy(name_buf.get() + path_length, ".XXXXXX", name_buf_size);
-
-#ifdef _WIN32
-    const errno_t err = _mktemp_s(name_buf.get(), name_buf_size);
-    if (err == 0)
-      fp = OpenCFile(name_buf.get(), "w+b", error);
-    else
-      Error::SetErrno(error, "_mktemp_s() failed: ", err);
-
-#elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__) || defined(__FreeBSD__)
-    const int fd = mkstemp(name_buf.get());
-    if (fd >= 0)
-    {
-      fp = fdopen(fd, "w+b");
-      if (!fp)
-        Error::SetErrno(error, "fdopen() failed: ", errno);
-    }
-    else
-    {
-      Error::SetErrno(error, "mkstemp() failed: ", errno);
-    }
-#else
-    mktemp(name_buf.get());
-    fp = OpenCFile(name_buf.get(), "w+b", error);
-#endif
-
-    if (fp)
-      temp_path.assign(name_buf.get(), name_buf_size - 1);
-    else
+    fp = OpenTemporaryCFile(path, &temp_path, error);
+    if (!fp)
       path.clear();
   }
 
@@ -1344,6 +1312,66 @@ bool FileSystem::CommitAtomicRenamedFile(AtomicRenamedFile& file, Error* error)
 FileSystem::ManagedCFilePtr FileSystem::OpenManagedCFile(const char* path, const char* mode, Error* error)
 {
   return ManagedCFilePtr(OpenCFile(path, mode, error));
+}
+
+std::FILE* FileSystem::OpenTemporaryCFile(std::string_view base_path, std::string* out_path,
+                                          Error* error /*= nullptr*/)
+{
+  if (base_path.empty())
+  {
+    Error::SetStringView(error, "Base path is empty.");
+    return nullptr;
+  }
+
+  // this is disgusting, but we need null termination, and std::string::data() does not guarantee it.
+  const size_t path_length = base_path.length();
+  const size_t name_buf_size = path_length + 8;
+  std::unique_ptr<char[]> name_buf = std::make_unique<char[]>(name_buf_size);
+  std::memcpy(name_buf.get(), base_path.data(), path_length);
+  StringUtil::Strlcpy(name_buf.get() + path_length, ".XXXXXX", name_buf_size);
+
+  std::FILE* fp = nullptr;
+
+#ifdef _WIN32
+  const errno_t err = _mktemp_s(name_buf.get(), name_buf_size);
+  if (err == 0)
+    fp = OpenCFile(name_buf.get(), "w+b", error);
+  else
+    Error::SetErrno(error, "_mktemp_s() failed: ", err);
+
+#elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__) || defined(__FreeBSD__)
+  const int fd = mkstemp(name_buf.get());
+  if (fd >= 0)
+  {
+    fp = fdopen(fd, "w+b");
+    if (!fp)
+    {
+      Error::SetErrno(error, "fdopen() failed: ", errno);
+      close(fd);
+    }
+  }
+  else
+  {
+    Error::SetErrno(error, "mkstemp() failed: ", errno);
+  }
+#else
+  mktemp(name_buf.get());
+  fp = OpenCFile(name_buf.get(), "w+b", error);
+#endif
+
+  if (fp)
+  {
+    if (out_path)
+      out_path->assign(name_buf.get(), name_buf_size - 1);
+  }
+
+  return fp;
+}
+
+FileSystem::ManagedCFilePtr FileSystem::OpenTemporaryManagedCFile(std::string_view base_path, std::string* out_path,
+                                                                  Error* error /*= nullptr*/)
+{
+  return ManagedCFilePtr(OpenTemporaryCFile(base_path, out_path, error));
 }
 
 FileSystem::ManagedCFilePtr FileSystem::OpenExistingOrCreateManagedCFile(const char* path, s32 retry_ms, Error* error)
