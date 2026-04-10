@@ -4,9 +4,11 @@
 #pragma once
 
 #include "common/heap_array.h"
+#include "common/types.h"
 
 #include <optional>
 #include <span>
+#include <string_view>
 
 class Error;
 
