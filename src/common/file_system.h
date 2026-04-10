@@ -100,6 +100,12 @@ using ManagedCFilePtr = std::unique_ptr<std::FILE, FileDeleter>;
 ManagedCFilePtr OpenManagedCFile(const char* path, const char* mode, Error* error = nullptr);
 std::FILE* OpenCFile(const char* path, const char* mode, Error* error = nullptr);
 
+/// Opens a new temporary file for read/write in binary mode. The temporary path is generated
+/// by appending a unique suffix to base_path. If out_path is non-null, the generated path is
+/// written to it.
+std::FILE* OpenTemporaryCFile(std::string_view base_path, std::string* out_path, Error* error = nullptr);
+ManagedCFilePtr OpenTemporaryManagedCFile(std::string_view base_path, std::string* out_path, Error* error = nullptr);
+
 /// Atomically opens a file in read/write mode, and if the file does not exist, creates it.
 /// On Windows, if retry_ms is positive, this function will retry opening the file for this
 /// number of milliseconds. NOTE: The file is opened in binary mode.
