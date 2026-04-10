@@ -1,6 +1,10 @@
 // SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
+#if !defined(_WIN32) && !defined(_GNU_SOURCE)
+#define _GNU_SOURCE
+#endif
+
 #include "error.h"
 #include "small_string.h"
 #include "string_util.h"
@@ -14,6 +18,10 @@
 
 #if defined(_WIN32)
 #include "windows_headers.h"
+
+static constexpr DWORD ENGLISH_LANG_ID = MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US);
+#else
+#include <string.h>
 #endif
 
 Error::Error() = default;
@@ -53,6 +61,15 @@ void Error::SetErrno(std::string_view prefix, int err)
   char buf[128];
   if (strerror_s(buf, sizeof(buf), err) == 0)
     m_description = fmt::format("{}errno {}: {}", prefix, err, buf);
+  else
+    m_description = fmt::format("{}errno {}: <Could not get error message>", prefix, err);
+#elif defined(__GLIBC__) && (__GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ >= 32))
+  const char* desc = strerrordesc_np(err);
+  const char* name = strerrorname_np(err);
+  if (desc && name)
+    m_description = fmt::format("{}errno {} ({}): {}", prefix, err, name, desc);
+  else if (desc)
+    m_description = fmt::format("{}errno {}: {}", prefix, err, desc);
   else
     m_description = fmt::format("{}errno {}: <Could not get error message>", prefix, err);
 #else
@@ -112,7 +129,7 @@ void Error::SetWin32(std::string_view prefix, unsigned long err)
   m_type = Type::Win32;
 
   WCHAR buf[128];
-  DWORD r = FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM, nullptr, err, LANG_USER_DEFAULT, buf,
+  DWORD r = FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM, nullptr, err, ENGLISH_LANG_ID, buf,
                            static_cast<DWORD>(std::size(buf)), nullptr);
   while (r > 0 && std::iswspace(buf[r - 1]))
     r--;
@@ -150,7 +167,7 @@ void Error::SetHResult(std::string_view prefix, long err)
   m_type = Type::HResult;
 
   WCHAR buf[128];
-  DWORD r = FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM, nullptr, err, LANG_USER_DEFAULT, buf,
+  DWORD r = FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM, nullptr, err, ENGLISH_LANG_ID, buf,
                            static_cast<DWORD>(std::size(buf)), nullptr);
   while (r > 0 && std::iswspace(buf[r - 1]))
     r--;
