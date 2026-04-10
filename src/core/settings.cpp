@@ -2808,7 +2808,6 @@ void EmuFolders::EnsureFoldersExist()
 {
   EnsureFolderExists(Bios);
   EnsureFolderExists(Cache);
-  EnsureFolderExists(Path::Combine(Cache, "achievement_images"));
   EnsureFolderExists(Cheats);
   EnsureFolderExists(Covers);
   EnsureFolderExists(GameIcons);

@@ -302,30 +302,25 @@ void AchievementSettingsWidget::onLeaderboardsNotificationDurationSliderChanged(
 
 void AchievementSettingsWidget::updateLoginState()
 {
-  std::string username;
-  std::string badge_path;
+  m_ui.userBadge->setPixmap(QPixmap(QtHost::GetResourceQPath("images/ra-generic-user.png", true)));
+
+  QString qusername;
+  QString qbadge_path;
 
   {
     const auto lock = Achievements::GetLock();
     if (Achievements::IsLoggedIn())
     {
-      if (const char* username_ptr = Achievements::GetLoggedInUserName())
-        username = username_ptr;
-
-      badge_path = Achievements::GetLoggedInUserBadgePath();
+      qusername = QString::fromStdString(Achievements::GetLoggedInUserName());
+      QtUtils::SetLabelPixmapPathOrURL(m_ui.userBadge, Achievements::GetLoggedInUserIconURL(), true);
     }
     else
     {
-      username = Core::GetBaseStringSettingValue("Cheevos", "Username");
+      qusername = QString::fromStdString(Core::GetBaseStringSettingValue("Cheevos", "Username"));
     }
   }
 
-  if (badge_path.empty())
-    badge_path = QtHost::GetResourcePath("images/ra-generic-user.png", true);
-
-  m_ui.userBadge->setPixmap(QPixmap(QString::fromStdString(badge_path)));
-
-  const bool logged_in = !username.empty();
+  const bool logged_in = !qusername.isEmpty();
 
   if (logged_in)
   {
@@ -333,8 +328,7 @@ void AchievementSettingsWidget::updateLoginState()
       StringUtil::FromChars<u64>(Core::GetBaseStringSettingValue("Cheevos", "LoginTimestamp", "0")).value_or(0);
     const QString login_timestamp =
       QtHost::FormatNumber(Host::NumberFormatType::ShortDateTime, static_cast<s64>(login_unix_timestamp));
-    m_ui.loginStatus->setText(
-      tr("Logged in as %1\nToken generated at %2").arg(QString::fromStdString(username)).arg(login_timestamp));
+    m_ui.loginStatus->setText(tr("Logged in as %1\nToken generated at %2").arg(qusername).arg(login_timestamp));
     m_ui.loginButton->setText(tr("Logout"));
   }
   else

@@ -4924,15 +4924,15 @@ void FullscreenUI::DrawAchievementsSettingsHeader(SettingsInterface* bsi, std::u
     settings_lock.unlock();
     {
       const auto lock = Achievements::GetLock();
-      std::string_view badge_path = Achievements::GetLoggedInUserBadgePath();
+      std::string_view badge_path = Achievements::GetLoggedInUserIconURL();
       if (badge_path.empty())
         badge_path = "images/ra-generic-user.png";
 
       if (Achievements::IsLoggedIn())
       {
-        const char* username_ptr = Achievements::GetLoggedInUserName();
-        if (username_ptr)
-          tstr = username_ptr;
+        std::string_view username_sv = Achievements::GetLoggedInUserName();
+        if (!username_sv.empty())
+          tstr = username_sv;
       }
       else if (Achievements::IsLoggedInOrLoggingIn())
       {

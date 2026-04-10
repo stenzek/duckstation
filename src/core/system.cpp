@@ -6391,7 +6391,7 @@ std::string System::GetImageForLoadingScreen(const std::string& game_path,
 
     if (fallback_to_achievement_game_icon && entry->achievements_game_id != 0)
     {
-      path = GameList::GetAchievementGameBadgePath(entry->achievements_game_id);
+      path = GameList::GetAchievementGameBadgeURL(entry->achievements_game_id);
       if (!path.empty())
         return path;
     }
@@ -6580,7 +6580,7 @@ void System::UpdateRichPresence(bool update_session_time)
   if (Achievements::HasRichPresence())
     rp.state = (state_string = StringUtil::Ellipsise(Achievements::GetRichPresenceString(), 128)).c_str();
 
-  if (const std::string& icon_url = Achievements::GetGameIconURL(); !icon_url.empty())
+  if (const std::string& icon_url = Achievements::GetCurrentGameIconURL(); !icon_url.empty())
     rp.largeImageKey = icon_url.c_str();
 
   dyn_libs::Discord_UpdatePresence(&rp);
