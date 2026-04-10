@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "fullscreenui_widgets.h"
@@ -13,10 +13,12 @@
 #include "video_thread.h"
 
 #include "util/gpu_device.h"
+#include "util/http_cache.h"
 #include "util/image.h"
 #include "util/imgui_animated.h"
 #include "util/imgui_manager.h"
 #include "util/input_manager.h"
+#include "util/object_archive.h"
 #include "util/shadergen.h"
 
 #include "common/assert.h"
@@ -73,7 +75,16 @@ enum class SplitWindowFocusChange : u8
 };
 
 static std::optional<Image> LoadTextureImage(std::string_view path, u32 svg_width, u32 svg_height);
+static std::optional<Image> LoadTextureImage(std::string_view filename, std::span<const u8> buffer, u32 svg_width,
+                                             u32 svg_height);
 static std::shared_ptr<GPUTexture> UploadTexture(std::string_view path, const Image& image);
+static void QueueTextureUploadFromBuffer(std::string_view filename, const std::span<const u8>& buffer,
+                                         std::string&& insert_name, u32 svg_width, u32 svg_height,
+                                         bool use_task_for_decode);
+static std::shared_ptr<GPUTexture> LoadTexture(std::string_view path, std::string_view name, u32 svg_width,
+                                               u32 svg_height);
+static GPUTexture* LookupCachedTextureAsync(std::string_view path, std::string_view name, u32 svg_width,
+                                            u32 svg_height);
 
 static bool CompilePipelines(Error* error);
 
@@ -673,6 +684,34 @@ std::optional<Image> FullscreenUI::LoadTextureImage(std::string_view path, u32 s
   return image;
 }
 
+std::optional<Image> FullscreenUI::LoadTextureImage(std::string_view filename, std::span<const u8> buffer,
+                                                    u32 svg_width, u32 svg_height)
+{
+  std::optional<Image> image;
+  Error error;
+
+  if (StringUtil::EqualNoCase(Path::GetExtension(filename), "svg"))
+  {
+    image = Image();
+    if (!image->RasterizeSVG(buffer, svg_width, svg_height, &error))
+    {
+      ERROR_LOG("Failed to rasterize SVG texture file '{}': {}", filename, error.GetDescription());
+      image.reset();
+    }
+  }
+  else
+  {
+    image = Image();
+    if (!image->LoadFromBuffer(filename, buffer, &error))
+    {
+      ERROR_LOG("Failed to read texture resource '{}': {}", filename, error.GetDescription());
+      image.reset();
+    }
+  }
+
+  return image;
+}
+
 std::shared_ptr<GPUTexture> FullscreenUI::UploadTexture(std::string_view path, const Image& image)
 {
   Error error;
@@ -688,9 +727,87 @@ std::shared_ptr<GPUTexture> FullscreenUI::UploadTexture(std::string_view path, c
   return std::shared_ptr<GPUTexture>(texture.release(), GPUDevice::PooledTextureDeleter());
 }
 
-std::shared_ptr<GPUTexture> FullscreenUI::LoadTexture(std::string_view path, u32 width_hint, u32 height_hint)
+void FullscreenUI::QueueTextureUploadFromBuffer(std::string_view filename, const std::span<const u8>& buffer,
+                                                std::string&& insert_name, u32 svg_width, u32 svg_height,
+                                                bool use_task_for_decode)
 {
-  std::optional<Image> image(LoadTextureImage(path, width_hint, height_hint));
+  if (buffer.empty())
+  {
+    ERROR_LOG("No data returned for {}", insert_name);
+    return;
+  }
+
+  if (use_task_for_decode)
+  {
+    Host::QueueAsyncTask([filename = std::string(filename), buffer = DynamicHeapArray<u8>(buffer),
+                          insert_name = std::move(insert_name), svg_width, svg_height]() mutable {
+      QueueTextureUploadFromBuffer(filename, buffer, std::move(insert_name), svg_width, svg_height, false);
+    });
+    return;
+  }
+
+  std::optional<Image> image = LoadTextureImage(filename, buffer, svg_width, svg_height);
+  if (!image.has_value())
+    return;
+
+  const std::lock_guard lock(s_state.shared_state_mutex);
+  s_state.texture_upload_queue.emplace_back(std::move(insert_name), std::move(image.value()));
+}
+
+std::shared_ptr<GPUTexture> FullscreenUI::LoadTexture(std::string_view path, std::string_view name, u32 svg_width,
+                                                      u32 svg_height)
+{
+  if (HTTPCache::IsHTTPURL(path))
+  {
+    const std::string_view filename = HTTPCache::GetURLFilename(path);
+    const std::string_view& insert_name = name.empty() ? path : name;
+
+    // avoid constructing callback until it's needed
+    Error error;
+    HTTPCache::LookupResult result = HTTPCache::Lookup(path, &error);
+    if (result.status() == HTTPCache::LookupStatus::Miss)
+    {
+      result = HTTPCache::LookupOrFetch(path, &error,
+                                        [filename = std::string(filename), insert_name = std::string(insert_name),
+                                         svg_width, svg_height](std::span<const u8> data) mutable {
+                                          QueueTextureUploadFromBuffer(filename, data, std::move(insert_name),
+                                                                       svg_width, svg_height, true);
+                                        });
+    }
+
+    switch (result.status())
+    {
+      case HTTPCache::LookupStatus::Hit:
+      {
+        const std::optional<Image> image = LoadTextureImage(filename, result.value().cspan(), svg_width, svg_height);
+        if (image.has_value())
+        {
+          std::shared_ptr<GPUTexture> ret = UploadTexture(path, image.value());
+          if (ret)
+            return ret;
+        }
+      }
+      break;
+
+      case HTTPCache::LookupStatus::Miss:
+      {
+        WARNING_LOG("Cache miss when trying to synchronously load texture from URL '{}'.", path);
+      }
+      break;
+
+      case HTTPCache::LookupStatus::Error:
+      {
+        ERROR_LOG("Failed to load URL from cache '{}': {}", path, error.GetDescription());
+      }
+      break;
+
+        DefaultCaseIsUnreachable();
+    }
+
+    return s_state.placeholder_texture;
+  }
+
+  std::optional<Image> image(LoadTextureImage(path, svg_width, svg_height));
   if (image.has_value())
   {
     std::shared_ptr<GPUTexture> ret(UploadTexture(path, image.value()));
@@ -699,6 +816,29 @@ std::shared_ptr<GPUTexture> FullscreenUI::LoadTexture(std::string_view path, u32
   }
 
   return s_state.placeholder_texture;
+}
+
+std::shared_ptr<GPUTexture> FullscreenUI::LoadTexture(std::string_view name)
+{
+  return LoadTexture(name, {}, 0, 0);
+}
+
+std::shared_ptr<GPUTexture> FullscreenUI::LoadTexture(std::string_view path, std::string_view name)
+{
+  return LoadTexture(path, name, 0, 0);
+}
+
+std::shared_ptr<GPUTexture> FullscreenUI::LoadTexture(std::string_view name, u32 svg_width, u32 svg_height)
+{
+  // ignore size hints if it's not needed, don't duplicate
+  if (!TextureNeedsSVGDimensions(name))
+    return LoadTexture(name, name, 0, 0);
+
+  svg_width = static_cast<u32>(std::ceil(LayoutScale(static_cast<float>(svg_width))));
+  svg_height = static_cast<u32>(std::ceil(LayoutScale(static_cast<float>(svg_height))));
+
+  const SmallString wh_name = SmallString::from_format("{}#{}x{}", name, svg_width, svg_height);
+  return LoadTexture(name, wh_name, svg_width, svg_height);
 }
 
 GPUTexture* FullscreenUI::FindCachedTexture(std::string_view name)
@@ -723,10 +863,15 @@ GPUTexture* FullscreenUI::FindCachedTexture(std::string_view name, u32 svg_width
 
 GPUTexture* FullscreenUI::GetCachedTexture(std::string_view name)
 {
+  return GetCachedTexture(name, name);
+}
+
+GPUTexture* FullscreenUI::GetCachedTexture(std::string_view path, std::string_view name)
+{
   std::shared_ptr<GPUTexture>* tex_ptr = s_state.texture_cache.Lookup(name);
   if (!tex_ptr)
   {
-    std::shared_ptr<GPUTexture> tex = LoadTexture(name);
+    std::shared_ptr<GPUTexture> tex = LoadTexture(path);
     tex_ptr = s_state.texture_cache.Insert(std::string(name), std::move(tex));
   }
 
@@ -753,60 +898,85 @@ GPUTexture* FullscreenUI::GetCachedTexture(std::string_view name, u32 svg_width,
   return tex_ptr->get();
 }
 
-GPUTexture* FullscreenUI::GetCachedTextureAsync(std::string_view name)
+GPUTexture* FullscreenUI::LookupCachedTextureAsync(std::string_view path, std::string_view name, u32 svg_width,
+                                                   u32 svg_height)
 {
-  std::shared_ptr<GPUTexture>* tex_ptr = s_state.texture_cache.Lookup(name);
-  if (!tex_ptr)
-  {
-    // insert the placeholder
-    tex_ptr = s_state.texture_cache.Insert(std::string(name), s_state.placeholder_texture);
+  const std::string_view lookup_name = name.empty() ? path : name;
+  std::shared_ptr<GPUTexture>* tex_ptr = s_state.texture_cache.Lookup(lookup_name);
+  if (tex_ptr)
+    return tex_ptr->get();
 
-    // queue the actual load
-    Host::QueueAsyncTask([path = std::string(name)]() mutable {
-      std::optional<Image> image(LoadTextureImage(path.c_str(), 0, 0));
+  // insert the placeholder
+  tex_ptr = s_state.texture_cache.Insert(std::string(lookup_name), s_state.placeholder_texture);
+
+  // queue load
+  Host::QueueAsyncTask([path = std::string(path), name = std::string(name), svg_width, svg_height]() mutable {
+    std::string& insert_name = name.empty() ? path : name;
+    if (HTTPCache::IsHTTPURL(path))
+    {
+      const std::string_view filename = HTTPCache::GetURLFilename(path);
+
+      // avoid constructing callback until it's needed
+      Error error;
+      const HTTPCache::LookupResult result = HTTPCache::Lookup(path, &error);
+      if (result.status() == HTTPCache::LookupStatus::Miss)
+      {
+        HTTPCache::LookupOrFetch(path, &error,
+                                 [filename = std::string(filename), insert_name, svg_width,
+                                  svg_height](const std::span<const u8>& data) mutable {
+                                   QueueTextureUploadFromBuffer(filename, data, std::move(insert_name), svg_width,
+                                                                svg_height, true);
+                                 });
+      }
+
+      // callback won't be executed on hit
+      if (result.status() == HTTPCache::LookupStatus::Hit)
+      {
+        QueueTextureUploadFromBuffer(filename, result.value().cspan(), std::move(insert_name), svg_width, svg_height,
+                                     false);
+      }
+      else if (result.status() == HTTPCache::LookupStatus::Error)
+      {
+        ERROR_LOG("Failed to lookup texture for URL '{}': {}", path, error.GetDescription());
+      }
+    }
+    else
+    {
+      std::optional<Image> image = LoadTextureImage(path, svg_width, svg_height);
 
       // don't bother queuing back if it doesn't exist
       if (!image.has_value())
         return;
 
-      std::unique_lock lock(s_state.shared_state_mutex);
-      s_state.texture_upload_queue.emplace_back(std::move(path), std::move(image.value()));
-    });
-  }
+      const std::lock_guard lock(s_state.shared_state_mutex);
+      s_state.texture_upload_queue.emplace_back(std::move(insert_name), std::move(image.value()));
+    }
+  });
 
   return tex_ptr->get();
+}
+
+GPUTexture* FullscreenUI::GetCachedTextureAsync(std::string_view name)
+{
+  return LookupCachedTextureAsync(name, {}, 0, 0);
+}
+
+GPUTexture* FullscreenUI::GetCachedTextureAsync(std::string_view path, std::string_view name)
+{
+  return LookupCachedTextureAsync(path, name, 0, 0);
 }
 
 GPUTexture* FullscreenUI::GetCachedTextureAsync(std::string_view name, u32 svg_width, u32 svg_height)
 {
   // ignore size hints if it's not needed, don't duplicate
   if (!TextureNeedsSVGDimensions(name))
-    return GetCachedTextureAsync(name);
+    return LookupCachedTextureAsync(name, {}, 0, 0);
 
   svg_width = static_cast<u32>(std::ceil(LayoutScale(static_cast<float>(svg_width))));
   svg_height = static_cast<u32>(std::ceil(LayoutScale(static_cast<float>(svg_height))));
 
   const SmallString wh_name = SmallString::from_format("{}#{}x{}", name, svg_width, svg_height);
-  std::shared_ptr<GPUTexture>* tex_ptr = s_state.texture_cache.Lookup(wh_name.view());
-  if (!tex_ptr)
-  {
-    // insert the placeholder
-    tex_ptr = s_state.texture_cache.Insert(std::string(wh_name), s_state.placeholder_texture);
-
-    // queue the actual load
-    Host::QueueAsyncTask([path = std::string(name), wh_name = std::string(wh_name), svg_width, svg_height]() mutable {
-      std::optional<Image> image(LoadTextureImage(path.c_str(), svg_width, svg_height));
-
-      // don't bother queuing back if it doesn't exist
-      if (!image.has_value())
-        return;
-
-      std::unique_lock lock(s_state.shared_state_mutex);
-      s_state.texture_upload_queue.emplace_back(std::move(wh_name), std::move(image.value()));
-    });
-  }
-
-  return tex_ptr->get();
+  return LookupCachedTextureAsync(name, wh_name.view(), svg_width, svg_height);
 }
 
 bool FullscreenUI::InvalidateCachedTexture(std::string_view path)
@@ -1293,7 +1463,6 @@ void FullscreenUI::DrawWithBlurTexture(const ImDrawList* parent_list, const ImDr
 bool FullscreenUI::UpdateLayoutScale()
 {
 #ifndef __ANDROID__
-
   static constexpr float LAYOUT_RATIO = LAYOUT_SCREEN_WIDTH / LAYOUT_SCREEN_HEIGHT;
   const ImGuiIO& io = ImGui::GetIO();
 
@@ -1326,7 +1495,6 @@ bool FullscreenUI::UpdateLayoutScale()
   return (UIStyle.LayoutScale != old_scale);
 
 #else
-
   // On Android, treat a rotated display as always being in landscape mode for FSUI scaling.
   // Makes achievement popups readable regardless of the device's orientation, and avoids layout changes.
   const ImGuiIO& io = ImGui::GetIO();
@@ -2823,8 +2991,8 @@ begin:
 #undef IDX
 #undef VTX
 
-  // Edge case: calling RenderText() with unloaded glyphs triggering texture change. It doesn't happen via ImGui:: calls
-  // because CalcTextSize() is always used.
+  // Edge case: calling RenderText() with unloaded glyphs triggering texture change. It doesn't happen via ImGui::
+  // calls because CalcTextSize() is always used.
   if (cmd_count != draw_list->CmdBuffer.Size) //-V547
   {
     IM_ASSERT(draw_list->CmdBuffer[draw_list->CmdBuffer.Size - 1].ElemCount == 0);
@@ -2834,8 +3002,8 @@ begin:
     // IMGUI_DEBUG_LOG("RenderText: cancel and retry to missing glyphs.\n"); // [DEBUG]
     // draw_list->AddRectFilled(pos, pos + ImVec2(10, 10), IM_COL32(255, 0, 0, 255)); // [DEBUG]
     goto begin;
-    // RenderText(draw_list, size, pos, col, clip_rect, text_begin, text_end, wrap_width, cpu_fine_clip); // FIXME-OPT:
-    // Would a 'goto begin' be better for code-gen? return;
+    // RenderText(draw_list, size, pos, col, clip_rect, text_begin, text_end, wrap_width, cpu_fine_clip); //
+    // FIXME-OPT: Would a 'goto begin' be better for code-gen? return;
   }
 
   // Give back unused vertices (clipped ones, blanks) ~ this is essentially a PrimUnreserve() action.
