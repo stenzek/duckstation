@@ -987,14 +987,36 @@ void Achievements::ClientServerCall(const rc_api_request_t* request, rc_client_s
 
 rc_api_server_response_t Achievements::MakeRCAPIServerResponse(s32 status_code, const std::vector<u8>& data)
 {
-  return rc_api_server_response_t{
-    .body = data.empty() ? nullptr : reinterpret_cast<const char*>(data.data()),
-    .body_length = data.size(),
-    .http_status_code = (status_code <= 0) ? (status_code == HTTPDownloader::HTTP_STATUS_CANCELLED ?
-                                                RC_API_SERVER_RESPONSE_CLIENT_ERROR :
-                                                RC_API_SERVER_RESPONSE_RETRYABLE_CLIENT_ERROR) :
-                                             status_code,
-  };
+  if (status_code < 0)
+  {
+    // assume all errors are retryable, except when it's cancelled
+    const int rc_http_status_code = (status_code == HTTPDownloader::HTTP_STATUS_CANCELLED) ?
+                                      RC_API_SERVER_RESPONSE_CLIENT_ERROR :
+                                      RC_API_SERVER_RESPONSE_RETRYABLE_CLIENT_ERROR;
+
+    // rc_client assumes client provides the error message as replacement to the body when the request is cancelled
+    // see rc_json_parse_server_response() around RC_API_SERVER_RESPONSE_CLIENT_ERROR.
+    const char* error_message;
+    if (status_code == HTTPDownloader::HTTP_STATUS_CANCELLED)
+      error_message = "Request cancelled";
+    else if (status_code == HTTPDownloader::HTTP_STATUS_TIMEOUT)
+      error_message = "Request timed out";
+    else
+      error_message = "Request failed";
+    return rc_api_server_response_t{
+      .body = error_message,
+      .body_length = std::strlen(error_message),
+      .http_status_code = rc_http_status_code,
+    };
+  }
+  else
+  {
+    return rc_api_server_response_t{
+      .body = data.empty() ? nullptr : reinterpret_cast<const char*>(data.data()),
+      .body_length = data.size(),
+      .http_status_code = status_code,
+    };
+  }
 }
 
 void Achievements::WaitForHTTPRequestsWithYield(std::unique_lock<std::recursive_mutex>& lock)
