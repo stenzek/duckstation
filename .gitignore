@@ -10,7 +10,8 @@
 deps-build/
 /deps/
 
-# vs stuff
+# IDE stuff:
+# Visual Studio
 .vs
 ipch
 ipch/*
@@ -21,6 +22,8 @@ ipch/*
 *.VC.opendb
 *.VC.db
 /.vscode/
+# CLion
+/.idea/
 
 # cmake stuff
 CMakeCache.txt
