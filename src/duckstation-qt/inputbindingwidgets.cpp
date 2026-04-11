@@ -120,33 +120,30 @@ void InputBindingWidget::updateTextAndToolTip()
     setText(QString());
     setToolTip(QStringLiteral("%1\n\n%2").arg(tr("No binding set.")).arg(tr(help_text)));
   }
-  else if (m_bindings.size() > 1)
+  else
   {
-    m_full_text.clear();
-    setText(tr("%n bindings", nullptr, static_cast<int>(m_bindings.size())));
-
-    // keep the full thing for the tooltip
-    QString tooltip = tr(help_text);
-    tooltip.append("\n\n"_L1);
+    QString bindings_qstr;
     for (const std::string& binding : m_bindings)
     {
       if (SmallString pretty_binding(binding); InputManager::PrettifyInputBinding(pretty_binding, false))
-        tooltip += QtUtils::StringViewToQString(pretty_binding);
+        bindings_qstr += QtUtils::StringViewToQString(pretty_binding);
       else
-        tooltip += QString::fromStdString(binding);
-      tooltip += '\n';
+        bindings_qstr += QString::fromStdString(binding);
+      bindings_qstr += '\n';
     }
-    tooltip.append(tr(help_clear_text));
-    setToolTip(tooltip);
-  }
-  else
-  {
-    if (SmallString pretty_binding(m_bindings[0]); InputManager::PrettifyInputBinding(pretty_binding, false))
-      m_full_text = QtUtils::StringViewToQString(pretty_binding);
+
+    if (m_bindings.size() == 1)
+    {
+      m_full_text = bindings_qstr.trimmed();
+      updateElidedText();
+    }
     else
-      m_full_text = QString::fromStdString(m_bindings[0]);
-    updateElidedText();
-    setToolTip(QStringLiteral("%1\n\n%2\n%3").arg(m_full_text).arg(tr(help_text)).arg(tr(help_clear_text)));
+    {
+      m_full_text.clear();
+      setText(tr("%n bindings", nullptr, static_cast<int>(m_bindings.size())));
+    }
+    // keep the full thing for the tooltip
+    setToolTip(QStringLiteral("%1\n%2\n%3").arg(bindings_qstr).arg(tr(help_text)).arg(tr(help_clear_text)));
   }
 }
 
