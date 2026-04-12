@@ -24,14 +24,18 @@ public:
   bool Initialize(std::string user_agent, Error* error);
 
 protected:
-  Request* InternalCreateRequest() override;
+  Request* InternalCreateRequest(Request::Type type, std::string url, std::string post_data, Request::Callback callback,
+                                 ProgressCallback* progress, HeaderList additional_headers) override;
   bool StartRequest(HTTPDownloader::Request* request) override;
   void CloseRequest(HTTPDownloader::Request* request) override;
 
 private:
   struct Request : HTTPDownloader::Request
   {
+    using HTTPDownloader::Request::Request;
+
     std::wstring object_name;
+    std::wstring additional_headers;
     HINTERNET hConnection = NULL;
     HINTERNET hRequest = NULL;
     u32 io_position = 0;
@@ -255,9 +259,28 @@ void CALLBACK HTTPDownloaderWinHttp::HTTPStatusCallback(HINTERNET hRequest, DWOR
   }
 }
 
-HTTPDownloader::Request* HTTPDownloaderWinHttp::InternalCreateRequest()
+HTTPDownloader::Request* HTTPDownloaderWinHttp::InternalCreateRequest(Request::Type type, std::string url,
+                                                                      std::string post_data, Request::Callback callback,
+                                                                      ProgressCallback* progress,
+                                                                      HeaderList additional_headers)
 {
-  Request* req = new Request();
+  Request* req = new Request(this, type, std::move(url), std::move(post_data), std::move(callback), progress);
+
+  if (!additional_headers.empty())
+  {
+    // Pre-reserve assuming 1 wchar per UTF-8 byte, plus 2 per header for \r\n.
+    size_t total_length = 0;
+    for (const char* header : additional_headers)
+      total_length += std::strlen(header) + 2;
+    req->additional_headers.reserve(total_length);
+
+    for (const char* header : additional_headers)
+    {
+      StringUtil::AppendUTF8ToWideString(req->additional_headers, header);
+      req->additional_headers += L"\r\n";
+    }
+  }
+
   return req;
 }
 
@@ -310,7 +333,24 @@ bool HTTPDownloaderWinHttp::StartRequest(HTTPDownloader::Request* request)
     const DWORD err = GetLastError();
     ERROR_LOG("WinHttpOpenRequest() failed: {}", err);
     req->error.SetWin32("WinHttpOpenRequest() failed: ", err);
+    req->callback(HTTP_STATUS_ERROR, req->error, std::string(), req->data);
     WinHttpCloseHandle(req->hConnection);
+    delete req;
+    return false;
+  }
+
+  if (!req->additional_headers.empty() &&
+      !WinHttpAddRequestHeaders(req->hRequest, req->additional_headers.data(),
+                                static_cast<DWORD>(req->additional_headers.size()),
+                                WINHTTP_ADDREQ_FLAG_ADD | WINHTTP_ADDREQ_FLAG_REPLACE))
+  {
+    const DWORD err = GetLastError();
+    ERROR_LOG("WinHttpAddRequestHeaders() failed: {}", err);
+    req->error.SetWin32("WinHttpAddRequestHeaders() failed: ", err);
+    req->callback(HTTP_STATUS_ERROR, req->error, std::string(), req->data);
+    WinHttpCloseHandle(req->hRequest);
+    WinHttpCloseHandle(req->hConnection);
+    delete req;
     return false;
   }
 

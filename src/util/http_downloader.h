@@ -10,6 +10,7 @@
 #include <functional>
 #include <memory>
 #include <mutex>
+#include <span>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -19,6 +20,8 @@ class ProgressCallback;
 class HTTPDownloader
 {
 public:
+  using HeaderList = std::span<const char* const>;
+
   enum : s32
   {
     HTTP_STATUS_CANCELLED = -3,
@@ -48,6 +51,10 @@ public:
       Complete,
     };
 
+    Request(HTTPDownloader* parent, Type type, std::string url, std::string post_data, Callback callback,
+            ProgressCallback* progress);
+    virtual ~Request();
+
     HTTPDownloader* parent;
     Callback callback;
     ProgressCallback* progress;
@@ -74,9 +81,10 @@ public:
   void SetTimeout(float timeout);
   void SetMaxActiveRequests(u32 max_active_requests);
 
-  void CreateRequest(std::string url, Request::Callback callback, ProgressCallback* progress = nullptr);
+  void CreateRequest(std::string url, Request::Callback callback, ProgressCallback* progress = nullptr,
+                     HeaderList additional_headers = {});
   void CreatePostRequest(std::string url, std::string post_data, Request::Callback callback,
-                         ProgressCallback* progress = nullptr);
+                         ProgressCallback* progress = nullptr, HeaderList additional_headers = {});
   void PollRequests();
   void WaitForAllRequests();
   void WaitForAllRequestsWithYield(std::function<void()> before_sleep_cb, std::function<void()> after_sleep_cb);
@@ -84,12 +92,15 @@ public:
   void CancelAllRequests();
 
 protected:
-  virtual Request* InternalCreateRequest() = 0;
+  virtual Request* InternalCreateRequest(Request::Type type, std::string url, std::string post_data,
+                                         Request::Callback callback, ProgressCallback* progress,
+                                         HeaderList additional_headers) = 0;
 
   virtual bool StartRequest(Request* request) = 0;
   virtual void CloseRequest(Request* request) = 0;
 
   void LockedAddRequest(Request* request);
+  void StartOrAddRequest(Request* request);
   u32 LockedGetActiveRequestCount();
   void LockedPollRequests(std::unique_lock<std::mutex>& lock);
 

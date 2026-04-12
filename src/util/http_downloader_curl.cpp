@@ -30,7 +30,8 @@ public:
   bool Initialize(std::string user_agent, Error* error);
 
 protected:
-  Request* InternalCreateRequest() override;
+  Request* InternalCreateRequest(Request::Type type, std::string url, std::string post_data, Request::Callback callback,
+                                 ProgressCallback* progress, HeaderList additional_headers) override;
   bool StartRequest(HTTPDownloader::Request* request) override;
   void CloseRequest(HTTPDownloader::Request* request) override;
 
@@ -43,7 +44,11 @@ private:
 
   struct Request : HTTPDownloader::Request
   {
+    using HTTPDownloader::Request::Request;
+    ~Request() override;
+
     CURL* handle = nullptr;
+    curl_slist* header_list = nullptr;
   };
 
   static size_t WriteCallback(char* ptr, size_t size, size_t nmemb, void* userdata);
@@ -158,15 +163,21 @@ size_t HTTPDownloaderCurl::WriteCallback(char* ptr, size_t size, size_t nmemb, v
   return transfer_size;
 }
 
-HTTPDownloader::Request* HTTPDownloaderCurl::InternalCreateRequest()
+HTTPDownloaderCurl::Request::~Request()
 {
-  Request* req = new Request();
-  req->handle = curl_easy_init();
-  if (!req->handle)
-  {
-    delete req;
-    return nullptr;
-  }
+  if (header_list)
+    curl_slist_free_all(header_list);
+}
+
+HTTPDownloader::Request* HTTPDownloaderCurl::InternalCreateRequest(Request::Type type, std::string url,
+                                                                   std::string post_data, Request::Callback callback,
+                                                                   ProgressCallback* progress,
+                                                                   HeaderList additional_headers)
+{
+  Request* req = new Request(this, type, std::move(url), std::move(post_data), std::move(callback), progress);
+
+  for (const char* header : additional_headers)
+    req->header_list = curl_slist_append(req->header_list, header);
 
   return req;
 }
@@ -284,13 +295,46 @@ void HTTPDownloaderCurl::ReadMultiResults()
 bool HTTPDownloaderCurl::StartRequest(HTTPDownloader::Request* request)
 {
   Request* req = static_cast<Request*>(request);
+
+  req->handle = curl_easy_init();
+  if (!req->handle)
+  {
+    ERROR_LOG("curl_easy_init() failed");
+    req->error.SetStringView("curl_easy_init() failed");
+    req->callback(HTTP_STATUS_ERROR, req->error, std::string(), req->data);
+    delete req;
+    return false;
+  }
+
   curl_easy_setopt(req->handle, CURLOPT_URL, request->url.c_str());
-  curl_easy_setopt(req->handle, CURLOPT_USERAGENT, m_user_agent.c_str());
   curl_easy_setopt(req->handle, CURLOPT_WRITEFUNCTION, &HTTPDownloaderCurl::WriteCallback);
   curl_easy_setopt(req->handle, CURLOPT_WRITEDATA, req);
   curl_easy_setopt(req->handle, CURLOPT_NOSIGNAL, 1L);
   curl_easy_setopt(req->handle, CURLOPT_PRIVATE, req);
   curl_easy_setopt(req->handle, CURLOPT_FOLLOWLOCATION, 1L);
+
+  if (req->header_list)
+  {
+    curl_easy_setopt(req->handle, CURLOPT_HTTPHEADER, req->header_list);
+
+    // Only set the default user agent if the header list doesn't contain a User-Agent override.
+    bool has_user_agent = false;
+    for (const curl_slist* p = req->header_list; p; p = p->next)
+    {
+      if (StringUtil::Strncasecmp(p->data, "User-Agent:", 11) == 0)
+      {
+        has_user_agent = true;
+        break;
+      }
+    }
+
+    if (!has_user_agent)
+      curl_easy_setopt(req->handle, CURLOPT_USERAGENT, m_user_agent.c_str());
+  }
+  else
+  {
+    curl_easy_setopt(req->handle, CURLOPT_USERAGENT, m_user_agent.c_str());
+  }
 
   if (request->type == Request::Type::Post)
   {
