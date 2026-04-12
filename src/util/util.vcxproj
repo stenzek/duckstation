@@ -3,6 +3,7 @@
   <Import Project="..\..\dep\vsprops\Configurations.props" />
   <ItemGroup>
     <ClInclude Include="animated_image.h" />
+    <ClInclude Include="http_cache.h" />
     <ClInclude Include="object_archive.h" />
     <ClInclude Include="compress_helpers.h" />
     <ClInclude Include="core_audio_stream.h" />
@@ -118,6 +119,7 @@
   <ItemGroup>
     <ClCompile Include="animated_image.cpp" />
     <ClCompile Include="audio_stream.cpp" />
+    <ClCompile Include="http_cache.cpp" />
     <ClCompile Include="object_archive.cpp" />
     <ClCompile Include="cd_image.cpp" />
     <ClCompile Include="cd_image_ccd.cpp" />

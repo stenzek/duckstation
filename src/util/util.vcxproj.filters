@@ -83,6 +83,7 @@
     <ClInclude Include="gpu_types.h" />
     <ClInclude Include="sdl_video_helpers.h" />
     <ClInclude Include="object_archive.h" />
+    <ClInclude Include="http_cache.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="state_wrapper.cpp" />
@@ -169,6 +170,7 @@
     <ClCompile Include="core_audio_stream.cpp" />
     <ClCompile Include="cd_image_ccd.cpp" />
     <ClCompile Include="object_archive.cpp" />
+    <ClCompile Include="http_cache.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="metal_shaders.metal" />

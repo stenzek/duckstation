@@ -48,6 +48,7 @@
 #include "util/cd_image.h"
 #include "util/compress_helpers.h"
 #include "util/gpu_device.h"
+#include "util/http_cache.h"
 #include "util/imgui_manager.h"
 #include "util/ini_settings_interface.h"
 #include "util/input_manager.h"
@@ -581,6 +582,8 @@ void System::CoreThreadShutdown()
 
   InputManager::CloseSources();
 
+  HTTPCache::Shutdown();
+
   s_state.core_thread_handle = {};
 
 #ifdef _WIN32
@@ -611,6 +614,8 @@ void System::IdlePollUpdate()
 #ifdef ENABLE_DISCORD_PRESENCE
   PollDiscordPresence();
 #endif
+
+  HTTPCache::PollRequests();
 
   Achievements::IdleUpdate();
 
@@ -2273,6 +2278,8 @@ void System::FrameDone()
     SPU::GeneratePendingSamples();
 
     Cheats::ApplyFrameEndCodes();
+
+    HTTPCache::PollRequests();
 
     if (Achievements::IsActive())
       Achievements::FrameUpdate();
