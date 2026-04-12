@@ -34,6 +34,8 @@ add_library(util
   gpu_texture.cpp
   gpu_texture.h
   gpu_types.h
+  http_cache.cpp
+  http_cache.h
   http_downloader.cpp
   http_downloader.h
   image.cpp

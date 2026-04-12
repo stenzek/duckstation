@@ -30,6 +30,7 @@
   X(GPU_HW)                                                                                                            \
   X(GameDatabase)                                                                                                      \
   X(GameList)                                                                                                          \
+  X(HTTPCache)                                                                                                         \
   X(HTTPDownloader)                                                                                                    \
   X(Host)                                                                                                              \
   X(ImGuiManager)                                                                                                      \
