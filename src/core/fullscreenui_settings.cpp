@@ -2256,7 +2256,7 @@ void FullscreenUI::DrawInterfaceSettingsPage()
       ChoiceDialogOptions options;
       for (const auto& [language, code] : language_list)
         options.emplace_back(Host::GetLanguageName(code), (current_language == code));
-      OpenChoiceDialog(FSUI_ICONVSTR(ICON_FA_LANGUAGE, "UI Language"), false, std::move(options),
+      OpenChoiceDialog(FSUI_ICONVSTR(ICON_FA_LANGUAGE, "Language"), false, std::move(options),
                        [language_list](s32 index, const std::string& title, bool checked) {
                          if (static_cast<u32>(index) >= language_list.size())
                            return;

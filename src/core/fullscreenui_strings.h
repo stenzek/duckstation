@@ -828,7 +828,6 @@ TRANSLATE_NOOP("FullscreenUI", "Tries to detect FMVs and disable read speedup du
 TRANSLATE_NOOP("FullscreenUI", "Trigger");
 TRANSLATE_NOOP("FullscreenUI", "Turbo Speed");
 TRANSLATE_NOOP("FullscreenUI", "Type");
-TRANSLATE_NOOP("FullscreenUI", "UI Language");
 TRANSLATE_NOOP("FullscreenUI", "Uncompressed Size");
 TRANSLATE_NOOP("FullscreenUI", "Undo Load State");
 TRANSLATE_NOOP("FullscreenUI", "Ungrouped");
