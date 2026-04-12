@@ -5184,13 +5184,13 @@ void FullscreenUI::DrawAchievementsSettingsPage(std::unique_lock<std::mutex>& se
     MenuHeading(FSUI_VSTR("Operations"));
 
     if (MenuButton(FSUI_ICONVSTR(ICON_FA_ARROWS_ROTATE, "Refresh Achievement Progress"),
-                   FSUI_VSTR("Updates the progress database for achievements shown in the game list.")))
+                   FSUI_VSTR("Updates the progress database for achievements shown in the game list."), enabled))
     {
       StartAchievementsProgressRefresh();
     }
 
     if (MenuButton(FSUI_ICONVSTR(ICON_FA_DOWNLOAD, "Download Game Icons"),
-                   FSUI_VSTR("Downloads icons for all games from RetroAchievements.")))
+                   FSUI_VSTR("Downloads icons for all games from RetroAchievements."), enabled))
     {
       StartAchievementsGameIconDownload();
     }
