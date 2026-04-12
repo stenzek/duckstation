@@ -36,13 +36,13 @@ public:
     using Callback =
       std::function<void(s32 status_code, const Error& error, const std::string& content_type, Data data)>;
 
-    enum class Type
+    enum class Type : u8
     {
       Get,
       Post,
     };
 
-    enum class State
+    enum class State : u8
     {
       Pending,
       Cancelled,
@@ -52,7 +52,7 @@ public:
     };
 
     Request(HTTPDownloader* parent, Type type, std::string url, std::string post_data, Callback callback,
-            ProgressCallback* progress);
+            ProgressCallback* progress, u16 timeout_seconds);
     virtual ~Request();
 
     HTTPDownloader* parent;
@@ -70,6 +70,7 @@ public:
     u32 last_progress_update = 0;
     Type type = Type::Get;
     std::atomic<State> state{State::Pending};
+    u16 timeout_seconds = 0;
   };
 
   HTTPDownloader();
@@ -78,13 +79,14 @@ public:
   static std::unique_ptr<HTTPDownloader> Create(std::string user_agent, Error* error = nullptr);
   static std::string GetExtensionForContentType(const std::string& content_type);
 
-  void SetTimeout(float timeout);
+  void SetDefaultTimeout(u16 timeout_seconds);
   void SetMaxActiveRequests(u32 max_active_requests);
 
   void CreateRequest(std::string url, Request::Callback callback, ProgressCallback* progress = nullptr,
-                     HeaderList additional_headers = {});
+                     HeaderList additional_headers = {}, std::optional<u16> timeout_seconds = {});
   void CreatePostRequest(std::string url, std::string post_data, Request::Callback callback,
-                         ProgressCallback* progress = nullptr, HeaderList additional_headers = {});
+                         ProgressCallback* progress = nullptr, HeaderList additional_headers = {},
+                         std::optional<u16> timeout_seconds = {});
   void PollRequests();
   void WaitForAllRequests();
   void WaitForAllRequestsWithYield(std::function<void()> before_sleep_cb, std::function<void()> after_sleep_cb);
@@ -93,7 +95,7 @@ public:
 
 protected:
   virtual Request* InternalCreateRequest(Request::Type type, std::string url, std::string post_data,
-                                         Request::Callback callback, ProgressCallback* progress,
+                                         Request::Callback callback, ProgressCallback* progress, u16 timeout_seconds,
                                          HeaderList additional_headers) = 0;
 
   virtual bool StartRequest(Request* request) = 0;
@@ -104,7 +106,7 @@ protected:
   u32 LockedGetActiveRequestCount();
   void LockedPollRequests(std::unique_lock<std::mutex>& lock);
 
-  float m_timeout;
+  u16 m_default_timeout;
   u32 m_max_active_requests;
 
   std::mutex m_pending_http_request_lock;
