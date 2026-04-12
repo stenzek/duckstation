@@ -59,6 +59,7 @@
     <ClInclude Include="time_helpers.h" />
     <ClInclude Include="string_pool.h" />
     <ClInclude Include="bcdutils.h" />
+    <ClInclude Include="locked_ptr.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="small_string.cpp" />

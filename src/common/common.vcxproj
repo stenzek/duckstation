@@ -24,6 +24,7 @@
     <ClInclude Include="heap_array.h" />
     <ClInclude Include="intrin.h" />
     <ClInclude Include="layered_settings_interface.h" />
+    <ClInclude Include="locked_ptr.h" />
     <ClInclude Include="string_pool.h" />
     <ClInclude Include="time_helpers.h" />
     <ClInclude Include="log.h" />
