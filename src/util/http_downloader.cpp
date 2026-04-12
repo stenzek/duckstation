@@ -21,6 +21,18 @@ HTTPDownloader::HTTPDownloader()
 
 HTTPDownloader::~HTTPDownloader() = default;
 
+HTTPDownloader::Request::Request(HTTPDownloader* parent, Type type, std::string url, std::string post_data,
+                                 Callback callback, ProgressCallback* progress)
+  : parent(parent), callback(std::move(callback)), progress(progress), url(std::move(url)),
+    post_data(std::move(post_data)), type(type)
+{
+  // set progress state to indeterminate until we know the size
+  if (progress)
+    progress->SetState(0, 0);
+}
+
+HTTPDownloader::Request::~Request() = default;
+
 void HTTPDownloader::SetTimeout(float timeout)
 {
   m_timeout = timeout;
@@ -32,51 +44,34 @@ void HTTPDownloader::SetMaxActiveRequests(u32 max_active_requests)
   m_max_active_requests = max_active_requests;
 }
 
-void HTTPDownloader::CreateRequest(std::string url, Request::Callback callback, ProgressCallback* progress)
+void HTTPDownloader::CreateRequest(std::string url, Request::Callback callback, ProgressCallback* progress,
+                                   HeaderList additional_headers)
 {
-  Request* req = InternalCreateRequest();
-  req->parent = this;
-  req->type = Request::Type::Get;
-  req->url = std::move(url);
-  req->callback = std::move(callback);
-  req->progress = progress;
-
-  // set progress state to indeterminate until we know the size
-  if (req->progress)
-  {
-    req->progress->SetProgressRange(0);
-    req->progress->SetProgressValue(0);
-  }
-
-  std::unique_lock lock(m_pending_http_request_lock);
-  if (LockedGetActiveRequestCount() < m_max_active_requests)
-  {
-    if (!StartRequest(req))
-      return;
-  }
-
-  LockedAddRequest(req);
+  Request* req =
+    InternalCreateRequest(Request::Type::Get, std::move(url), {}, std::move(callback), progress, additional_headers);
+  DebugAssert(req);
+  StartOrAddRequest(req);
 }
 
 void HTTPDownloader::CreatePostRequest(std::string url, std::string post_data, Request::Callback callback,
-                                       ProgressCallback* progress)
+                                       ProgressCallback* progress, HeaderList additional_headers)
 {
-  Request* req = InternalCreateRequest();
-  req->parent = this;
-  req->type = Request::Type::Post;
-  req->url = std::move(url);
-  req->post_data = std::move(post_data);
-  req->callback = std::move(callback);
-  req->progress = progress;
+  Request* req = InternalCreateRequest(Request::Type::Post, std::move(url), std::move(post_data), std::move(callback),
+                                       progress, additional_headers);
+  DebugAssert(req);
+  StartOrAddRequest(req);
+}
 
+void HTTPDownloader::StartOrAddRequest(Request* request)
+{
   std::unique_lock lock(m_pending_http_request_lock);
   if (LockedGetActiveRequestCount() < m_max_active_requests)
   {
-    if (!StartRequest(req))
+    if (!StartRequest(request))
       return;
   }
 
-  LockedAddRequest(req);
+  LockedAddRequest(request);
 }
 
 void HTTPDownloader::LockedPollRequests(std::unique_lock<std::mutex>& lock)
