@@ -161,7 +161,8 @@ static bool DrawIntRectSetting(SettingsInterface* bsi, std::string_view title, s
 static void DrawStringListSetting(SettingsInterface* bsi, std::string_view title, std::string_view summary,
                                   const char* section, const char* key, const char* default_value,
                                   std::span<const char* const> options, std::span<const char* const> option_values,
-                                  bool enabled = true, void (*changed_callback)(std::string_view) = nullptr,
+                                  bool enabled = true, bool use_dropdown = false,
+                                  void (*changed_callback)(std::string_view) = nullptr,
                                   std::string_view tr_context = FSUI_TR_CONTEXT);
 template<typename DataType, typename SizeType>
 static void DrawEnumSetting(SettingsInterface* bsi, std::string_view title, std::string_view summary,
@@ -687,9 +688,9 @@ void FullscreenUI::DrawIntListSetting(SettingsInterface* bsi, std::string_view t
          (translate_options ? Host::TranslateToStringView(tr_context, options[index]) : options[index])) :
       FSUI_VSTR("Use Global Setting");
 
-  if (MenuButtonWithValue(title, summary, value_text, enabled))
+  if (MenuActionButton(title, summary, value_text, true, enabled))
   {
-    ChoiceDialogOptions cd_options;
+    DropdownDialogOptions cd_options;
     cd_options.reserve(options.size() + 1);
     if (game_settings)
       cd_options.emplace_back(FSUI_STR("Use Global Setting"), !value.has_value());
@@ -699,28 +700,27 @@ void FullscreenUI::DrawIntListSetting(SettingsInterface* bsi, std::string_view t
                                                   std::string(options[i]),
                               (i == static_cast<size_t>(index)));
     }
-    OpenChoiceDialog(title, false, std::move(cd_options),
-                     [game_settings, section = TinyString(section), key = TinyString(key),
-                      option_offset](s32 index, const std::string& title, bool checked) {
-                       if (index < 0)
-                         return;
+    OpenDropdownDialog(std::move(cd_options), [game_settings, section = TinyString(section), key = TinyString(key),
+                                               option_offset](s32 index, const std::string& title) {
+      if (index < 0)
+        return;
 
-                       const auto lock = Core::GetSettingsLock();
-                       SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
-                       if (game_settings)
-                       {
-                         if (index == 0)
-                           bsi->DeleteValue(section, key);
-                         else
-                           bsi->SetIntValue(section, key, index - 1 + option_offset);
-                       }
-                       else
-                       {
-                         bsi->SetIntValue(section, key, index + option_offset);
-                       }
+      const auto lock = Core::GetSettingsLock();
+      SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
+      if (game_settings)
+      {
+        if (index == 0)
+          bsi->DeleteValue(section, key);
+        else
+          bsi->SetIntValue(section, key, index - 1 + option_offset);
+      }
+      else
+      {
+        bsi->SetIntValue(section, key, index + option_offset);
+      }
 
-                       SetSettingsChanged(bsi);
-                     });
+      SetSettingsChanged(bsi);
+    });
   }
 }
 
@@ -754,7 +754,7 @@ void FullscreenUI::DrawIntListSetting(SettingsInterface* bsi, std::string_view t
          (translate_options ? Host::TranslateToStringView(tr_context, options[index]) : options[index])) :
       FSUI_VSTR("Use Global Setting");
 
-  if (MenuButtonWithValue(title, summary, value_text, enabled))
+  if (MenuActionButton(title, summary, value_text, false, enabled))
   {
     ChoiceDialogOptions cd_options;
     cd_options.reserve(options.size() + 1);
@@ -801,7 +801,7 @@ void FullscreenUI::DrawIntRangeSetting(SettingsInterface* bsi, std::string_view 
   SmallString sstr =
     value.has_value() ? SmallString::from_sprintf(format, value.value()) : SmallString(FSUI_VSTR("Use Global Setting"));
 
-  const bool pressed = MenuButtonWithValue(title, summary, sstr, enabled);
+  const bool pressed = MenuActionButton(title, summary, sstr, false, enabled);
 
   // use setting key to avoid id conflicts
   sstr.format("{}##{}-intrange", title, key);
@@ -875,7 +875,7 @@ void FullscreenUI::DrawFloatRangeSetting(SettingsInterface* bsi, std::string_vie
   SmallString sstr = value.has_value() ? SmallString::from_sprintf(format, value.value() * multiplier) :
                                          SmallString(FSUI_VSTR("Use Global Setting"));
 
-  const bool pressed = MenuButtonWithValue(title, summary, sstr, enabled);
+  const bool pressed = MenuActionButton(title, summary, sstr, false, enabled);
 
   // use setting key to avoid id conflicts
   sstr.format("{}##{}-floatrange", title, key);
@@ -955,7 +955,7 @@ void FullscreenUI::DrawFloatSpinBoxSetting(SettingsInterface* bsi, std::string_v
 
   static bool manual_input = false;
 
-  const bool pressed = MenuButtonWithValue(title, summary, sstr, enabled);
+  const bool pressed = MenuActionButton(title, summary, sstr, false, enabled);
 
   // use setting key to avoid id conflicts
   sstr.format("{}##{}-floatspin", title, key);
@@ -1098,7 +1098,7 @@ bool FullscreenUI::DrawIntRectSetting(SettingsInterface* bsi, std::string_view t
     bottom_value.has_value() ? TinyString::from_sprintf(format, bottom_value.value()) :
                                TinyString(FSUI_VSTR("Default")));
 
-  const bool pressed = MenuButtonWithValue(title, summary, sstr, enabled);
+  const bool pressed = MenuActionButton(title, summary, sstr, false, enabled);
 
   // use setting key to avoid id conflicts
   sstr.format("{}##{}-intrect", title, left_key);
@@ -1220,7 +1220,7 @@ void FullscreenUI::DrawIntSpinBoxSetting(SettingsInterface* bsi, std::string_vie
 
   static bool manual_input = false;
 
-  const bool pressed = MenuButtonWithValue(title, summary, sstr, enabled);
+  const bool pressed = MenuActionButton(title, summary, sstr, false, enabled);
 
   // use setting key to avoid id conflicts
   sstr.format("{}##{}-intspin", title, key);
@@ -1338,6 +1338,7 @@ void FullscreenUI::DrawStringListSetting(SettingsInterface* bsi, std::string_vie
                                          const char* section, const char* key, const char* default_value,
                                          std::span<const char* const> options,
                                          std::span<const char* const> option_values, bool enabled /* = true */,
+                                         bool use_dropdown /* = false */,
                                          void (*changed_callback)(std::string_view) /* = nullptr */,
                                          std::string_view tr_context /* = TR_CONTEXT */)
 {
@@ -1360,11 +1361,11 @@ void FullscreenUI::DrawStringListSetting(SettingsInterface* bsi, std::string_vie
     }
   }
 
-  if (MenuButtonWithValue(title, summary,
-                          value.has_value() ? ((index < options.size()) ? TRANSLATE_SV(tr_context, options[index]) :
-                                                                          FSUI_VSTR("Unknown")) :
-                                              FSUI_VSTR("Use Global Setting"),
-                          enabled))
+  if (MenuActionButton(title, summary,
+                       value.has_value() ?
+                         ((index < options.size()) ? TRANSLATE_SV(tr_context, options[index]) : FSUI_VSTR("Unknown")) :
+                         FSUI_VSTR("Use Global Setting"),
+                       use_dropdown, enabled))
   {
     ChoiceDialogOptions cd_options;
     cd_options.reserve(options.size() + 1);
@@ -1375,34 +1376,68 @@ void FullscreenUI::DrawStringListSetting(SettingsInterface* bsi, std::string_vie
       cd_options.emplace_back(TRANSLATE_STR(tr_context, options[i]),
                               (value.has_value() && i == static_cast<size_t>(index)));
     }
-    OpenChoiceDialog(title, false, std::move(cd_options),
-                     [game_settings, section, key, default_value, option_values,
-                      changed_callback](s32 index, const std::string& title, bool checked) {
-                       if (index < 0)
-                         return;
 
-                       const auto lock = Core::GetSettingsLock();
-                       SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
-                       if (game_settings)
-                       {
-                         if (index == 0)
-                           bsi->DeleteValue(section, key);
+    if (use_dropdown)
+    {
+      OpenDropdownDialog(std::move(cd_options), [game_settings, section, key, default_value, option_values,
+                                                 changed_callback](s32 index, const std::string& title) {
+        if (index < 0)
+          return;
+
+        const auto lock = Core::GetSettingsLock();
+        SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
+        if (game_settings)
+        {
+          if (index == 0)
+            bsi->DeleteValue(section, key);
+          else
+            bsi->SetStringValue(section, key, option_values[index - 1]);
+
+          if (changed_callback)
+            changed_callback(Core::GetStringSettingValue(section, key, default_value));
+        }
+        else
+        {
+          bsi->SetStringValue(section, key, option_values[index]);
+
+          if (changed_callback)
+            changed_callback(option_values[index]);
+        }
+
+        SetSettingsChanged(bsi);
+      });
+    }
+    else
+    {
+      OpenChoiceDialog(title, false, std::move(cd_options),
+                       [game_settings, section, key, default_value, option_values,
+                        changed_callback](s32 index, const std::string& title, bool checked) {
+                         if (index < 0)
+                           return;
+
+                         const auto lock = Core::GetSettingsLock();
+                         SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
+                         if (game_settings)
+                         {
+                           if (index == 0)
+                             bsi->DeleteValue(section, key);
+                           else
+                             bsi->SetStringValue(section, key, option_values[index - 1]);
+
+                           if (changed_callback)
+                             changed_callback(Core::GetStringSettingValue(section, key, default_value));
+                         }
                          else
-                           bsi->SetStringValue(section, key, option_values[index - 1]);
+                         {
+                           bsi->SetStringValue(section, key, option_values[index]);
 
-                         if (changed_callback)
-                           changed_callback(Core::GetStringSettingValue(section, key, default_value));
-                       }
-                       else
-                       {
-                         bsi->SetStringValue(section, key, option_values[index]);
+                           if (changed_callback)
+                             changed_callback(option_values[index]);
+                         }
 
-                         if (changed_callback)
-                           changed_callback(option_values[index]);
-                       }
-
-                       SetSettingsChanged(bsi);
-                     });
+                         SetSettingsChanged(bsi);
+                       });
+    }
   }
 }
 
@@ -1422,42 +1457,42 @@ void FullscreenUI::DrawEnumSetting(SettingsInterface* bsi, std::string_view titl
   if (!typed_value.has_value() && !game_settings)
     typed_value = default_value;
 
-  if (MenuButtonWithValue(title, summary,
-                          typed_value.has_value() ? to_display_string_function(typed_value.value()) :
-                                                    FSUI_CSTR("Use Global Setting"),
-                          enabled))
+  if (MenuActionButton(title, summary,
+                       typed_value.has_value() ? to_display_string_function(typed_value.value()) :
+                                                 FSUI_CSTR("Use Global Setting"),
+                       true, enabled))
   {
-    ChoiceDialogOptions cd_options;
+    DropdownDialogOptions cd_options;
     cd_options.reserve(static_cast<u32>(option_count) + 1);
     if (game_settings)
       cd_options.emplace_back(FSUI_STR("Use Global Setting"), !typed_value.has_value());
     for (u32 i = 0; i < static_cast<u32>(option_count); i++)
       cd_options.emplace_back(to_display_string_function(static_cast<DataType>(i)),
                               (typed_value.has_value() && i == static_cast<u32>(typed_value.value())));
-    OpenChoiceDialog(title, false, std::move(cd_options),
-                     [section = TinyString(section), key = TinyString(key), to_string_function,
-                      game_settings](s32 index, const std::string& title, bool checked) {
-                       if (index < 0)
-                         return;
+    OpenDropdownDialog(std::move(cd_options), [section = TinyString(section), key = TinyString(key), to_string_function,
+                                               game_settings](s32 index, const std::string& title) {
+      if (index < 0)
+        return;
 
-                       const auto lock = Core::GetSettingsLock();
-                       SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
-                       if (game_settings)
-                       {
-                         if (index == 0)
-                           bsi->DeleteValue(section, key);
-                         else
-                           bsi->SetStringValue(section, key, to_string_function(static_cast<DataType>(index - 1)));
-                       }
-                       else
-                       {
-                         bsi->SetStringValue(section, key, to_string_function(static_cast<DataType>(index)));
-                       }
+      const auto lock = Core::GetSettingsLock();
+      SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
+      if (game_settings)
+      {
+        if (index == 0)
+          bsi->DeleteValue(section, key);
+        else
+          bsi->SetStringValue(section, key, to_string_function(static_cast<DataType>(index - 1)));
+      }
+      else
+      {
+        bsi->SetStringValue(section, key, to_string_function(static_cast<DataType>(index)));
+      }
 
-                       SetSettingsChanged(bsi);
-                     });
+      SetSettingsChanged(bsi);
+    });
   }
 }
+
 void FullscreenUI::DrawFloatListSetting(SettingsInterface* bsi, std::string_view title, std::string_view summary,
                                         const char* section, const char* key, float default_value,
                                         const char* const* options, const float* option_values, size_t option_count,
@@ -1487,14 +1522,14 @@ void FullscreenUI::DrawFloatListSetting(SettingsInterface* bsi, std::string_view
     }
   }
 
-  if (MenuButtonWithValue(
+  if (MenuActionButton(
         title, summary,
         value.has_value() ?
           ((index < option_count) ?
              (translate_options ? Host::TranslateToStringView(FSUI_TR_CONTEXT, options[index]) : options[index]) :
              FSUI_VSTR("Unknown")) :
           FSUI_VSTR("Use Global Setting"),
-        enabled))
+        false, enabled))
   {
     ChoiceDialogOptions cd_options;
     cd_options.reserve(option_count + 1);
@@ -2214,9 +2249,9 @@ void FullscreenUI::DrawInterfaceSettingsPage()
     // Have to do this the annoying way, because it's host-derived.
     const auto language_list = Host::GetAvailableLanguageList();
     TinyString current_language = bsi->GetTinyStringValue("Main", "Language", "");
-    if (MenuButtonWithValue(FSUI_ICONVSTR(ICON_FA_LANGUAGE, "Language"),
-                            FSUI_VSTR("Chooses the language used for UI elements."),
-                            Host::GetLanguageName(current_language)))
+    if (MenuActionButton(FSUI_ICONVSTR(ICON_FA_LANGUAGE, "Language"),
+                         FSUI_VSTR("Chooses the language used for UI elements."),
+                         Host::GetLanguageName(current_language)))
     {
       ChoiceDialogOptions options;
       for (const auto& [language, code] : language_list)
@@ -2234,15 +2269,15 @@ void FullscreenUI::DrawInterfaceSettingsPage()
 
   DrawStringListSetting(bsi, FSUI_ICONVSTR(ICON_FA_PALETTE, "Theme"),
                         FSUI_VSTR("Selects the color style to be used for Big Picture UI."), "UI", "FullscreenUITheme",
-                        "", FullscreenUI::GetThemeDisplayNames(), FullscreenUI::GetThemeNames(), true,
+                        "", FullscreenUI::GetThemeDisplayNames(), FullscreenUI::GetThemeNames(), true, false,
                         [](std::string_view) { BeginTransition(LONG_TRANSITION_TIME, &FullscreenUI::UpdateTheme); });
 
   if (const TinyString current_value =
         bsi->GetTinyStringValue("Main", "FullscreenUIBackground", DEFAULT_BACKGROUND_NAME);
-      MenuButtonWithValue(FSUI_ICONVSTR(ICON_FA_IMAGE, "Menu Background"),
-                          FSUI_VSTR("Shows a background image or shader when a game isn't running. Backgrounds are "
-                                    "located in resources/fullscreenui/backgrounds in the data directory."),
-                          (current_value == NONE_BACKGROUND_NAME) ? FSUI_VSTR("None") : current_value.view()))
+      MenuActionButton(FSUI_ICONVSTR(ICON_FA_IMAGE, "Menu Background"),
+                       FSUI_VSTR("Shows a background image or shader when a game isn't running. Backgrounds are "
+                                 "located in resources/fullscreenui/backgrounds in the data directory."),
+                       (current_value == NONE_BACKGROUND_NAME) ? FSUI_VSTR("None") : current_value.view()))
   {
     ChoiceDialogOptions options = GetBackgroundOptions(current_value);
     OpenChoiceDialog(FSUI_ICONVSTR(ICON_FA_IMAGE, "Menu Background"), false, std::move(options),
@@ -2269,7 +2304,7 @@ void FullscreenUI::DrawInterfaceSettingsPage()
   DrawStringListSetting(bsi, FSUI_ICONVSTR(ICON_FA_GAMEPAD, "Gamepad Button Type"),
                         FSUI_VSTR("Selects between Xbox/PlayStation button icons in the footer and input binding."),
                         "Main", "FullscreenUIGamepadButtonType", "Automatic", gamepad_button_type_display_names,
-                        gamepad_button_type_names, true, [](std::string_view) {
+                        gamepad_button_type_names, true, true, [](std::string_view) {
                           // have to use transition because of the settings lock
                           BeginTransition(&FullscreenUI::UpdateWidgetsSettings);
                         });
@@ -2781,11 +2816,11 @@ void FullscreenUI::DrawBIOSSettingsPage()
     const std::optional<SmallString> filename(bsi->GetOptionalSmallStringValue(
       "BIOS", config_keys[i], game_settings ? std::nullopt : std::optional<const char*>("")));
 
-    if (MenuButtonWithValue(title,
-                            TinyString::from_format(FSUI_FSTR("BIOS to use when emulating {} consoles."),
-                                                    Settings::GetConsoleRegionDisplayName(region)),
-                            filename.has_value() ? (filename->empty() ? FSUI_VSTR("Auto-Detect") : filename->view()) :
-                                                   FSUI_VSTR("Use Global Setting")))
+    if (MenuActionButton(title,
+                         TinyString::from_format(FSUI_FSTR("BIOS to use when emulating {} consoles."),
+                                                 Settings::GetConsoleRegionDisplayName(region)),
+                         filename.has_value() ? (filename->empty() ? FSUI_VSTR("Auto-Detect") : filename->view()) :
+                                                FSUI_VSTR("Use Global Setting")))
     {
       ChoiceDialogOptions options;
       auto images = BIOS::FindBIOSImagesInDirectory(EmuFolders::Bios.c_str());
@@ -3467,7 +3502,7 @@ void FullscreenUI::DrawControllerSettingsPage()
     else
       value = FSUI_VSTR("Unknown");
 
-    if (MenuButtonWithValue(
+    if (MenuActionButton(
           TinyString::from_format("{}##type{}", FSUI_ICONVSTR(ICON_FA_GAMEPAD, "Controller Type"), global_slot),
           FSUI_VSTR("Selects the type of emulated controller for this port."), value))
     {
@@ -3677,11 +3712,11 @@ void FullscreenUI::DrawControllerSettingsPage()
       s32 frequency = bsi->GetIntValue(section.c_str(), freq_key.c_str(), 0);
       const TinyString freq_summary = ((frequency == 0) ? TinyString(FSUI_VSTR("Disabled")) :
                                                           TinyString::from_format(FSUI_FSTR("{} Frames"), frequency));
-      if (MenuButtonWithValue(
+      if (MenuActionButton(
             freq_label,
             FSUI_VSTR(
               "Determines the frequency at which the macro will toggle the buttons on and off (aka auto fire)."),
-            freq_summary, true))
+            freq_summary))
       {
         OpenFixedPopupDialog(freq_label);
       }
@@ -3784,9 +3819,8 @@ void FullscreenUI::DrawMemoryCardSettingsPage()
 
     TinyString title;
     title.format("{}##card_name_{}", FSUI_ICONVSTR(ICON_FA_FILE, "Shared Card Name"), i);
-    if (MenuButtonWithValue(title,
-                            FSUI_VSTR("The selected memory card image will be used in shared mode for this slot."),
-                            path_value.has_value() ? path_value->view() : FSUI_VSTR("Use Global Setting"), is_shared))
+    if (MenuActionButton(title, FSUI_VSTR("The selected memory card image will be used in shared mode for this slot."),
+                         path_value.has_value() ? path_value->view() : FSUI_VSTR("Use Global Setting"), is_shared))
     {
       ChoiceDialogOptions options;
       std::vector<std::string> names;
@@ -3880,12 +3914,13 @@ void FullscreenUI::DrawGraphicsSettingsPage()
   std::optional<SmallString> current_adapter =
     bsi->GetOptionalSmallStringValue("GPU", "Adapter", game_settings ? std::nullopt : std::optional<const char*>(""));
 
-  if (MenuButtonWithValue(
+  if (MenuActionButton(
         FSUI_ICONVSTR(ICON_PF_GPU_GRAPHICS_CARD, "GPU Adapter"), FSUI_VSTR("Selects the GPU to use for rendering."),
         current_adapter.has_value() ? (current_adapter->empty() ? FSUI_VSTR("Default") : current_adapter->view()) :
-                                      FSUI_VSTR("Use Global Setting")))
+                                      FSUI_VSTR("Use Global Setting"),
+        true))
   {
-    ChoiceDialogOptions options;
+    DropdownDialogOptions options;
     options.reserve(s_settings_locals.graphics_adapter_list_cache.size() + 2);
     if (game_settings)
       options.emplace_back(FSUI_STR("Use Global Setting"), !current_adapter.has_value());
@@ -3899,7 +3934,7 @@ void FullscreenUI::DrawGraphicsSettingsPage()
       options.emplace_back(adapter.name, checked);
     }
 
-    auto callback = [game_settings](s32 index, const std::string& title, bool checked) {
+    OpenDropdownDialog(std::move(options), [game_settings](s32 index, const std::string& title) {
       if (index < 0)
         return;
 
@@ -3917,9 +3952,7 @@ void FullscreenUI::DrawGraphicsSettingsPage()
       else
         bsi->SetStringValue("GPU", "Adapter", value);
       SetSettingsChanged(bsi);
-    };
-    OpenChoiceDialog(FSUI_ICONVSTR(ICON_PF_GPU_GRAPHICS_CARD, "GPU Adapter"), false, std::move(options),
-                     std::move(callback));
+    });
   }
 
   const bool pgxp_enabled = (is_hardware && GetEffectiveBoolSetting(bsi, "GPU", "PGXPEnable", false));
@@ -3972,14 +4005,14 @@ void FullscreenUI::DrawGraphicsSettingsPage()
 
   static constexpr const char* ASPECT_RATIO_SECTION = "Display";
   static constexpr const char* ASPECT_RATIO_KEY = "AspectRatio";
-  if (MenuButtonWithValue(FSUI_ICONVSTR(ICON_FA_SHAPES, "Aspect Ratio"),
-                          FSUI_VSTR("Changes the aspect ratio used to display the console's output to the screen."),
-                          (game_settings && !bsi->ContainsValue(ASPECT_RATIO_SECTION, ASPECT_RATIO_KEY)) ?
-                            TinyString(FSUI_VSTR("Use Global Setting")) :
-                            Settings::GetDisplayAspectRatioDisplayName(
-                              Settings::ParseDisplayAspectRatio(
-                                GetEffectiveTinyStringSetting(bsi, ASPECT_RATIO_SECTION, ASPECT_RATIO_KEY))
-                                .value_or(Settings::DEFAULT_DISPLAY_ASPECT_RATIO))))
+  if (MenuActionButton(FSUI_ICONVSTR(ICON_FA_SHAPES, "Aspect Ratio"),
+                       FSUI_VSTR("Changes the aspect ratio used to display the console's output to the screen."),
+                       (game_settings && !bsi->ContainsValue(ASPECT_RATIO_SECTION, ASPECT_RATIO_KEY)) ?
+                         TinyString(FSUI_VSTR("Use Global Setting")) :
+                         Settings::GetDisplayAspectRatioDisplayName(
+                           Settings::ParseDisplayAspectRatio(
+                             GetEffectiveTinyStringSetting(bsi, ASPECT_RATIO_SECTION, ASPECT_RATIO_KEY))
+                             .value_or(Settings::DEFAULT_DISPLAY_ASPECT_RATIO))))
   {
     static constexpr const DisplayAspectRatio INHERIT_ASPECT_RATIO = {0, -1};
     ChoiceDialogOptions options;
@@ -4089,11 +4122,11 @@ void FullscreenUI::DrawGraphicsSettingsPage()
   std::optional<SmallString> strvalue = bsi->GetOptionalSmallStringValue(
     "GPU", "FullscreenMode", game_settings ? std::nullopt : std::optional<const char*>(""));
 
-  if (MenuButtonWithValue(FSUI_ICONVSTR(ICON_FA_TV, "Fullscreen Resolution"),
-                          FSUI_VSTR("Selects the resolution to use in fullscreen modes."),
-                          strvalue.has_value() ?
-                            (strvalue->empty() ? FSUI_VSTR("Borderless Fullscreen") : strvalue->view()) :
-                            FSUI_VSTR("Use Global Setting")))
+  if (MenuActionButton(FSUI_ICONVSTR(ICON_FA_TV, "Fullscreen Resolution"),
+                       FSUI_VSTR("Selects the resolution to use in fullscreen modes."),
+                       strvalue.has_value() ?
+                         (strvalue->empty() ? FSUI_VSTR("Borderless Fullscreen") : strvalue->view()) :
+                         FSUI_VSTR("Use Global Setting")))
   {
     const GPUDevice::AdapterInfo* selected_adapter = nullptr;
     if (current_adapter.has_value() && !current_adapter->empty())
@@ -4722,7 +4755,7 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
     const std::string_view visible_value =
       is_null ? FSUI_VSTR("Use Global Setting") :
                 (is_none ? FSUI_VSTR("None") : (is_custom ? FSUI_VSTR("Custom") : preset_name->view()));
-    if (MenuButtonWithValue(
+    if (MenuActionButton(
           FSUI_ICONVSTR(ICON_FA_BORDER_ALL, "Selected Preset"),
           FSUI_VSTR("Select from the list of preset borders, or manually specify a custom configuration."),
           visible_value))
@@ -5083,9 +5116,9 @@ void FullscreenUI::DrawAchievementsSettingsPage(std::unique_lock<std::mutex>& se
     else
       mode_text = FSUI_VSTR("Custom");
 
-    if (MenuButtonWithValue(title, summary, mode_text, enabled))
+    if (MenuActionButton(title, summary, mode_text, true, enabled))
     {
-      ChoiceDialogOptions options;
+      DropdownDialogOptions options;
       if (game_settings)
         options.emplace_back(FSUI_STR("Use Global Setting"), !value.has_value());
       options.emplace_back(FSUI_STR("Automatic"),
@@ -5093,26 +5126,25 @@ void FullscreenUI::DrawAchievementsSettingsPage(std::unique_lock<std::mutex>& se
       options.emplace_back(FSUI_STR("Use OSD Scale"), value.has_value() && value.value() < 0);
       options.emplace_back(FSUI_STR("Custom"), is_custom);
 
-      OpenChoiceDialog(title, false, std::move(options),
-                       [key, game_settings](s32 index, const std::string& title, bool checked) {
-                         if (index < 0)
-                           return;
+      OpenDropdownDialog(std::move(options), [key, game_settings](s32 index, const std::string& title) {
+        if (index < 0)
+          return;
 
-                         const auto lock = Core::GetSettingsLock();
-                         SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
-                         const s32 offset = static_cast<s32>(BoolToUInt32(game_settings));
+        const auto lock = Core::GetSettingsLock();
+        SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
+        const s32 offset = static_cast<s32>(BoolToUInt32(game_settings));
 
-                         if (game_settings && index == 0)
-                           bsi->DeleteValue("Cheevos", key);
-                         else if (index == offset + 0)
-                           bsi->SetIntValue("Cheevos", key, 0);
-                         else if (index == offset + 1)
-                           bsi->SetIntValue("Cheevos", key, -1);
-                         else if (index == offset + 2)
-                           bsi->SetIntValue("Cheevos", key, 100);
+        if (game_settings && index == 0)
+          bsi->DeleteValue("Cheevos", key);
+        else if (index == offset + 0)
+          bsi->SetIntValue("Cheevos", key, 0);
+        else if (index == offset + 1)
+          bsi->SetIntValue("Cheevos", key, -1);
+        else if (index == offset + 2)
+          bsi->SetIntValue("Cheevos", key, 100);
 
-                         SetSettingsChanged(bsi);
-                       });
+        SetSettingsChanged(bsi);
+      });
     }
 
     if (is_custom)

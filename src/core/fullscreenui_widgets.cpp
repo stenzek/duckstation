@@ -3369,7 +3369,7 @@ bool FullscreenUI::RangeButton(std::string_view title, std::string_view summary,
                                std::string_view ok_text /* = "OK" */)
 {
   const SmallString value_text = SmallString::from_sprintf(format, *value);
-  if (MenuButtonWithValue(title, summary, value_text, enabled))
+  if (MenuActionButton(title, summary, value_text, false, enabled))
     OpenFixedPopupDialog(title);
 
   bool changed = false;
@@ -3513,8 +3513,9 @@ bool FullscreenUI::MenuActionButton(std::string_view title, std::string_view sum
   // Draw lighter background box behind the value text.
   if (!display_value.empty())
   {
-    const ImVec4 box_color = UIStyle.IsDarkTheme ? ImVec4(1.0f, 1.0f, 1.0f, hovered ? 0.05f : 0.025f) : ImVec4(0.0f, 0.0f, 0.0f, 0.075f);
-      
+    const ImVec4 box_color =
+      UIStyle.IsDarkTheme ? ImVec4(1.0f, 1.0f, 1.0f, hovered ? 0.05f : 0.025f) : ImVec4(0.0f, 0.0f, 0.0f, 0.075f);
+
     ImGui::RenderFrame(bb.value_bb.Min, bb.value_bb.Max, ImGui::GetColorU32(box_color), false,
                        LayoutScale(LAYOUT_MENU_ITEM_BORDER_ROUNDING));
 
