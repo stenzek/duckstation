@@ -87,7 +87,7 @@ static constexpr float LEADERBOARD_FAILED_NOTIFICATION_TIME = 3.0f;
 static constexpr u16 LEADERBOARD_NOTIFICATION_MIN_WIDTH = 380;
 
 // Some API calls are really slow. Set a longer timeout.
-static constexpr float SERVER_CALL_TIMEOUT = 60.0f;
+static constexpr u16 SERVER_CALL_TIMEOUT = 60;
 
 // Chrome uses 10 server calls per domain, seems reasonable.
 static constexpr u32 MAX_CONCURRENT_SERVER_CALLS = 10;
@@ -751,7 +751,7 @@ bool Achievements::CreateClient(rc_client_t** client, std::unique_ptr<HTTPDownlo
     return false;
   }
 
-  (*http)->SetTimeout(SERVER_CALL_TIMEOUT);
+  (*http)->SetDefaultTimeout(SERVER_CALL_TIMEOUT);
   (*http)->SetMaxActiveRequests(MAX_CONCURRENT_SERVER_CALLS);
 
   rc_client_set_userdata(new_client, http->get());

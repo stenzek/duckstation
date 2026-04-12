@@ -31,7 +31,8 @@ public:
 
 protected:
   Request* InternalCreateRequest(Request::Type type, std::string url, std::string post_data, Request::Callback callback,
-                                 ProgressCallback* progress, HeaderList additional_headers) override;
+                                 ProgressCallback* progress, u16 timeout_seconds,
+                                 HeaderList additional_headers) override;
   bool StartRequest(HTTPDownloader::Request* request) override;
   void CloseRequest(HTTPDownloader::Request* request) override;
 
@@ -171,10 +172,11 @@ HTTPDownloaderCurl::Request::~Request()
 
 HTTPDownloader::Request* HTTPDownloaderCurl::InternalCreateRequest(Request::Type type, std::string url,
                                                                    std::string post_data, Request::Callback callback,
-                                                                   ProgressCallback* progress,
+                                                                   ProgressCallback* progress, u16 timeout_seconds,
                                                                    HeaderList additional_headers)
 {
-  Request* req = new Request(this, type, std::move(url), std::move(post_data), std::move(callback), progress);
+  Request* req =
+    new Request(this, type, std::move(url), std::move(post_data), std::move(callback), progress, timeout_seconds);
 
   for (const char* header : additional_headers)
     req->header_list = curl_slist_append(req->header_list, header);

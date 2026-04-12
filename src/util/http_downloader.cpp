@@ -11,20 +11,23 @@
 
 LOG_CHANNEL(HTTPDownloader);
 
-static constexpr float DEFAULT_TIMEOUT_IN_SECONDS = 30;
-static constexpr u32 DEFAULT_MAX_ACTIVE_REQUESTS = 4;
+static constexpr u16 DEFAULT_TIMEOUT_IN_SECONDS = 30;
+
+// Chrome uses 10 server calls per domain, seems reasonable.
+// TODO: Check this per domain when polling...
+static constexpr u32 DEFAULT_MAX_ACTIVE_REQUESTS = 10;
 
 HTTPDownloader::HTTPDownloader()
-  : m_timeout(DEFAULT_TIMEOUT_IN_SECONDS), m_max_active_requests(DEFAULT_MAX_ACTIVE_REQUESTS)
+  : m_default_timeout(DEFAULT_TIMEOUT_IN_SECONDS), m_max_active_requests(DEFAULT_MAX_ACTIVE_REQUESTS)
 {
 }
 
 HTTPDownloader::~HTTPDownloader() = default;
 
 HTTPDownloader::Request::Request(HTTPDownloader* parent, Type type, std::string url, std::string post_data,
-                                 Callback callback, ProgressCallback* progress)
+                                 Callback callback, ProgressCallback* progress, u16 timeout_seconds)
   : parent(parent), callback(std::move(callback)), progress(progress), url(std::move(url)),
-    post_data(std::move(post_data)), type(type)
+    post_data(std::move(post_data)), type(type), timeout_seconds(timeout_seconds)
 {
   // set progress state to indeterminate until we know the size
   if (progress)
@@ -33,9 +36,9 @@ HTTPDownloader::Request::Request(HTTPDownloader* parent, Type type, std::string 
 
 HTTPDownloader::Request::~Request() = default;
 
-void HTTPDownloader::SetTimeout(float timeout)
+void HTTPDownloader::SetDefaultTimeout(u16 timeout_seconds)
 {
-  m_timeout = timeout;
+  m_default_timeout = timeout_seconds;
 }
 
 void HTTPDownloader::SetMaxActiveRequests(u32 max_active_requests)
@@ -44,20 +47,23 @@ void HTTPDownloader::SetMaxActiveRequests(u32 max_active_requests)
   m_max_active_requests = max_active_requests;
 }
 
-void HTTPDownloader::CreateRequest(std::string url, Request::Callback callback, ProgressCallback* progress,
-                                   HeaderList additional_headers)
+void HTTPDownloader::CreateRequest(std::string url, Request::Callback callback,
+                                   ProgressCallback* progress /* = nullptr */, HeaderList additional_headers /* =  */,
+                                   std::optional<u16> timeout_seconds /* = */)
 {
-  Request* req =
-    InternalCreateRequest(Request::Type::Get, std::move(url), {}, std::move(callback), progress, additional_headers);
+  Request* req = InternalCreateRequest(Request::Type::Get, std::move(url), {}, std::move(callback), progress,
+                                       timeout_seconds.value_or(m_default_timeout), additional_headers);
   DebugAssert(req);
   StartOrAddRequest(req);
 }
 
 void HTTPDownloader::CreatePostRequest(std::string url, std::string post_data, Request::Callback callback,
-                                       ProgressCallback* progress, HeaderList additional_headers)
+                                       ProgressCallback* progress /* = nullptr */,
+                                       HeaderList additional_headers /* =  */,
+                                       std::optional<u16> timeout_seconds /* = */)
 {
   Request* req = InternalCreateRequest(Request::Type::Post, std::move(url), std::move(post_data), std::move(callback),
-                                       progress, additional_headers);
+                                       progress, timeout_seconds.value_or(m_default_timeout), additional_headers);
   DebugAssert(req);
   StartOrAddRequest(req);
 }
@@ -96,7 +102,7 @@ void HTTPDownloader::LockedPollRequests(std::unique_lock<std::mutex>& lock)
 
     if ((req_state == Request::State::Started || req_state == Request::State::Receiving) &&
         current_time >= req->last_update_time &&
-        Timer::ConvertValueToSeconds(current_time - req->last_update_time) >= m_timeout)
+        Timer::ConvertValueToSeconds(current_time - req->last_update_time) >= static_cast<float>(req->timeout_seconds))
     {
       // request timed out
       ERROR_LOG("Request for '{}' timed out", req->url);
@@ -105,7 +111,7 @@ void HTTPDownloader::LockedPollRequests(std::unique_lock<std::mutex>& lock)
       m_pending_http_requests.erase(m_pending_http_requests.begin() + index);
       lock.unlock();
 
-      req->error.SetStringFmt("Request timed out after {} seconds.", m_timeout);
+      req->error.SetStringFmt("Request timed out after {} seconds.", req->timeout_seconds);
       req->callback(HTTP_STATUS_TIMEOUT, req->error, std::string(), Request::Data());
 
       CloseRequest(req);
