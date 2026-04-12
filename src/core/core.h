@@ -64,7 +64,4 @@ SettingsInterface* GetGameSettingsLayer();
 /// Retrieves the input settings layer, if present. Must call with lock held.
 SettingsInterface* GetInputSettingsLayer();
 
-/// Returns the user agent to use for HTTP requests.
-std::string GetHTTPUserAgent();
-
 } // namespace Core
