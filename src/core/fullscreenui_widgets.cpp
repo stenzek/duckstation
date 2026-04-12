@@ -228,6 +228,28 @@ private:
   bool m_checkable = false;
 };
 
+class DropdownDialog : public PopupDialog
+{
+public:
+  DropdownDialog();
+  ~DropdownDialog();
+
+  void Open(DropdownDialogOptions options, DropdownDialogCallback callback, float min_width);
+  void ClearState();
+  void SetAnchorBounds(const ImRect& value_bb, const ImRect& frame_bb);
+
+  void Draw();
+
+private:
+  DropdownDialogOptions m_options;
+  DropdownDialogCallback m_callback;
+  ImRect m_value_bb;
+  ImRect m_frame_bb;
+  ImVec2 m_anchor_pos = ImVec2(0.0f, 0.0f);
+  ImVec2 m_anchor_pivot = ImVec2(0.0f, 0.0f);
+  ImVec2 m_popup_size = ImVec2(0.0f, 0.0f);
+};
+
 class FileSelectorDialog : public PopupDialog
 {
 public:
@@ -398,6 +420,7 @@ struct WidgetsState
   ImAnimatedVec2 menu_button_frame_max_animated;
 
   ChoiceDialog choice_dialog;
+  DropdownDialog dropdown_dialog;
   FileSelectorDialog file_selector_dialog;
   InputStringDialog input_string_dialog;
   FixedPopupDialog fixed_popup_dialog;
@@ -494,6 +517,7 @@ void FullscreenUI::ShutdownWidgets()
     s_state.input_string_dialog.ClearState();
     s_state.message_dialog.ClearState();
     s_state.choice_dialog.ClearState();
+    s_state.dropdown_dialog.ClearState();
     s_state.file_selector_dialog.ClearState();
   }
 
@@ -1417,6 +1441,7 @@ void FullscreenUI::BeginLayout()
 void FullscreenUI::EndLayout()
 {
   s_state.choice_dialog.Draw();
+  s_state.dropdown_dialog.Draw();
   s_state.file_selector_dialog.Draw();
   s_state.input_string_dialog.Draw();
   s_state.progress_dialog.Draw();
@@ -2422,6 +2447,21 @@ FullscreenUI::MenuButtonBounds::MenuButtonBounds(const std::string_view& title, 
                                                  const std::string_view& summary)
 {
   CalcValueSize(value, UIStyle.LargeFontSize);
+  CalcTitleSize(title, UIStyle.LargeFontSize);
+  CalcSummarySize(summary, UIStyle.MediumFontSize);
+  CalcBB();
+}
+
+FullscreenUI::MenuButtonBounds::MenuButtonBounds(const std::string_view& title, const std::string_view& value,
+                                                 float value_x_padding, const std::string_view& summary)
+{
+  CalcValueSize(value, UIStyle.LargeFontSize);
+  if (value_size.x > 0.0f)
+  {
+    const float total_padding = value_x_padding * 2.0f;
+    value_size.x += total_padding;
+    available_non_value_width -= total_padding;
+  }
   CalcTitleSize(title, UIStyle.LargeFontSize);
   CalcSummarySize(summary, UIStyle.MediumFontSize);
   CalcBB();
@@ -3444,6 +3484,53 @@ bool FullscreenUI::EnumChoiceButtonImpl(std::string_view title, std::string_view
   return changed;
 }
 
+bool FullscreenUI::MenuActionButton(std::string_view title, std::string_view summary, std::string_view value,
+                                    bool dropdown_icon /* = false */, bool enabled /* = true */)
+{
+  const SmallString display_value =
+    SmallString::from_format("{}  {}", value, dropdown_icon ? ICON_FA_CHEVRON_DOWN : ICON_FA_CHEVRON_RIGHT);
+  const float box_padding_x = LayoutScale(10.0f);
+  const MenuButtonBounds bb(title, display_value, box_padding_x, summary);
+
+  bool visible, hovered;
+  bool pressed = MenuButtonFrame(title, enabled, bb.frame_bb, &visible, &hovered);
+  if (!visible)
+    return false;
+
+  const ImVec4& color = ImGui::GetStyle().Colors[enabled ? ImGuiCol_Text : ImGuiCol_TextDisabled];
+
+  RenderShadowedTextClipped(UIStyle.Font, UIStyle.LargeFontSize, UIStyle.BoldFontWeight, bb.title_bb.Min,
+                            bb.title_bb.Max, ImGui::GetColorU32(color), title, &bb.title_size, ImVec2(0.0f, 0.0f),
+                            bb.title_size.x, &bb.title_bb);
+
+  if (!summary.empty())
+  {
+    RenderShadowedTextClipped(UIStyle.Font, UIStyle.MediumFontSize, UIStyle.NormalFontWeight, bb.summary_bb.Min,
+                              bb.summary_bb.Max, ImGui::GetColorU32(DarkerColor(color)), summary, &bb.summary_size,
+                              ImVec2(0.0f, 0.0f), bb.summary_size.x, &bb.summary_bb);
+  }
+
+  // Draw lighter background box behind the value text.
+  if (!display_value.empty())
+  {
+    const ImVec4 box_color = UIStyle.IsDarkTheme ? ImVec4(1.0f, 1.0f, 1.0f, hovered ? 0.05f : 0.025f) : ImVec4(0.0f, 0.0f, 0.0f, 0.075f);
+      
+    ImGui::RenderFrame(bb.value_bb.Min, bb.value_bb.Max, ImGui::GetColorU32(box_color), false,
+                       LayoutScale(LAYOUT_MENU_ITEM_BORDER_ROUNDING));
+
+    RenderShadowedTextClipped(UIStyle.Font, UIStyle.LargeFontSize, UIStyle.BoldFontWeight,
+                              ImVec2(bb.value_bb.Min.x + box_padding_x, bb.value_bb.Min.y),
+                              ImVec2(bb.value_bb.Max.x - box_padding_x, bb.value_bb.Max.y), ImGui::GetColorU32(color),
+                              display_value, &bb.value_size, ImVec2(1.0f, 0.5f), bb.value_size.x, &bb.value_bb);
+  }
+
+  // Store bounding boxes on the dropdown dialog for position calculations when opening.
+  if (pressed)
+    s_state.dropdown_dialog.SetAnchorBounds(bb.value_bb, bb.frame_bb);
+
+  return pressed;
+}
+
 void FullscreenUI::BeginHorizontalMenuButtons(u32 num_items, float max_item_width /* = 0.0f */,
                                               float x_padding /* = LAYOUT_MENU_BUTTON_Y_PADDING */,
                                               float y_padding /* = LAYOUT_MENU_BUTTON_Y_PADDING */,
@@ -4309,7 +4396,8 @@ void FullscreenUI::PopupDialog::CloseImmediately()
 
 bool FullscreenUI::PopupDialog::BeginRender(float scaled_window_padding /* = LayoutScale(20.0f) */,
                                             float scaled_window_rounding /* = LayoutScale(20.0f) */,
-                                            const ImVec2& scaled_window_size /* = ImVec2(0.0f, 0.0f) */)
+                                            const ImVec2& scaled_window_size /* = ImVec2(0.0f, 0.0f) */,
+                                            const ImVec2* position /* = nullptr */, const ImVec2* pivot /* = nullptr */)
 {
   DebugAssert(IsOpen());
 
@@ -4363,13 +4451,13 @@ bool FullscreenUI::PopupDialog::BeginRender(float scaled_window_padding /* = Lay
       {
         const float fract = m_animation_time_remaining / OPEN_TIME;
         alpha = 1.0f - fract;
-        pos_offset.y = LayoutScale(50.0f) * Easing::InExpo(fract);
+        pos_offset.y = LayoutScale(50.0f) * Easing::InExpo(fract) * (m_reverse_animation ? -1.0f : 1.0f);
       }
       else
       {
         const float fract = m_animation_time_remaining / CLOSE_TIME;
         alpha = fract;
-        pos_offset.y = LayoutScale(20.0f) * (1.0f - fract);
+        pos_offset.y = LayoutScale(20.0f) * (1.0f - fract) * (m_reverse_animation ? -1.0f : 1.0f);
       }
     }
   }
@@ -4390,8 +4478,11 @@ bool FullscreenUI::PopupDialog::BeginRender(float scaled_window_padding /* = Lay
   ImGui::PushStyleColor(ImGuiCol_TitleBgActive, UIStyle.PrimaryColor);
   ImGui::PushStyleColor(ImGuiCol_Text, UIStyle.PrimaryTextColor);
 
-  ImGui::SetNextWindowPos((ImGui::GetIO().DisplaySize - LayoutScale(0.0f, LAYOUT_FOOTER_HEIGHT)) * 0.5f + pos_offset,
-                          ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+  if (position)
+    ImGui::SetNextWindowPos(*position + pos_offset, ImGuiCond_Always, pivot ? *pivot : ImVec2(0.0f, 0.0f));
+  else
+    ImGui::SetNextWindowPos((ImGui::GetIO().DisplaySize - LayoutScale(0.0f, LAYOUT_FOOTER_HEIGHT)) * 0.5f + pos_offset,
+                            ImGuiCond_Always, ImVec2(0.5f, 0.5f));
   ImGui::SetNextWindowSize(scaled_window_size);
 
   // Based on BeginPopupModal(), because we need to control is_open smooth closing.
@@ -4817,6 +4908,184 @@ void FullscreenUI::OpenChoiceDialog(std::string_view title, bool checkable, Choi
 void FullscreenUI::CloseChoiceDialog()
 {
   s_state.choice_dialog.StartClose();
+}
+
+FullscreenUI::DropdownDialog::DropdownDialog() = default;
+
+FullscreenUI::DropdownDialog::~DropdownDialog() = default;
+
+void FullscreenUI::DropdownDialog::Open(DropdownDialogOptions options, DropdownDialogCallback callback, float min_width)
+{
+  m_options = std::move(options);
+  m_callback = std::move(callback);
+
+  // Measure the widest option label to determine popup width.
+  const float box_padding_x = LayoutScale(20.0f);
+  const float item_x_padding = LayoutScale(LAYOUT_MENU_BUTTON_X_PADDING);
+  float max_label_width = 0.0f;
+  for (const auto& [option, checked] : m_options)
+  {
+    const float label_width =
+      UIStyle.Font->CalcTextSizeA(UIStyle.LargeFontSize, UIStyle.BoldFontWeight, FLT_MAX, 0.0f, IMSTR_START_END(option))
+        .x;
+    if (checked)
+    {
+      const float check_icon_width =
+        UIStyle.Font->CalcTextSizeA(UIStyle.LargeFontSize, UIStyle.BoldFontWeight, FLT_MAX, 0.0f, ICON_FA_CHECK).x;
+      const float value_gap = LayoutScale(16.0f);
+      max_label_width = std::max(max_label_width, label_width + value_gap + check_icon_width);
+    }
+    else
+    {
+      max_label_width = std::max(max_label_width, label_width);
+    }
+  }
+
+  const ImVec2 display_size = ImGui::GetIO().DisplaySize;
+  const float content_width = max_label_width + (item_x_padding * 2.0f) + (box_padding_x * 2.0f);
+  const float max_width = display_size.x * 0.5f;
+  const float popup_width = std::clamp(std::max(content_width, LayoutScale(min_width)),
+                                       m_value_bb.GetWidth() + (box_padding_x * 2.0f), max_width);
+
+  const float item_spacing = LayoutScale(LAYOUT_MENU_BUTTON_SPACING);
+  const float item_height = MenuButtonBounds::GetSingleLineHeight() + item_spacing;
+  const float popup_padding = LayoutScale(10.0f);
+  const u32 num_items = static_cast<u32>(m_options.size());
+  const float max_height = display_size.y * 0.5f;
+  const float popup_height =
+    std::min((item_height * static_cast<float>(std::min<u32>(num_items, 9))) - item_spacing + (popup_padding * 2.0f),
+             max_height);
+
+  m_popup_size = ImVec2(popup_width, popup_height);
+
+  // Clamp horizontal position so the popup stays on screen with edge padding.
+  const float screen_margin = LayoutScale(30.0f);
+  float pos_x = m_value_bb.Min.x - box_padding_x;
+  if (pos_x + popup_width > display_size.x - screen_margin)
+    pos_x = display_size.x - popup_width - screen_margin;
+  pos_x = std::max(pos_x, screen_margin);
+
+  // Position popup on top of the triggering menu button; flip above if insufficient space below.
+  const float space_below = display_size.y - LayoutScale(LAYOUT_FOOTER_HEIGHT) - m_frame_bb.Min.y;
+  if (space_below >= popup_height)
+  {
+    m_anchor_pos = ImVec2(pos_x, m_frame_bb.Min.y);
+    m_anchor_pivot = ImVec2(0.0f, 0.0f);
+    m_reverse_animation = true;
+  }
+  else
+  {
+    m_anchor_pos = ImVec2(pos_x, m_frame_bb.Max.y);
+    m_anchor_pivot = ImVec2(0.0f, 1.0f);
+    m_reverse_animation = false;
+  }
+
+  SetTitleAndOpen("##dropdown_dialog");
+}
+
+void FullscreenUI::DropdownDialog::ClearState()
+{
+  PopupDialog::ClearState();
+  m_options = {};
+  m_callback = {};
+  m_value_bb = ImRect();
+  m_frame_bb = ImRect();
+  m_anchor_pos = ImVec2(0.0f, 0.0f);
+  m_anchor_pivot = ImVec2(0.0f, 0.0f);
+  m_popup_size = ImVec2(0.0f, 0.0f);
+}
+
+void FullscreenUI::DropdownDialog::SetAnchorBounds(const ImRect& value_bb, const ImRect& frame_bb)
+{
+  m_value_bb = value_bb;
+  m_frame_bb = frame_bb;
+}
+
+void FullscreenUI::DropdownDialog::Draw()
+{
+  if (!IsOpen())
+    return;
+
+  const float window_y_padding = LayoutScale(10.0f);
+
+  if (!BeginRender(window_y_padding, LayoutScale(LAYOUT_MENU_ITEM_BORDER_ROUNDING), m_popup_size, &m_anchor_pos,
+                   &m_anchor_pivot))
+  {
+    const DropdownDialogCallback callback = std::move(m_callback);
+    ClearState();
+    if (callback)
+      callback(-1, std::string());
+    return;
+  }
+
+  s32 choice = -1;
+
+  BeginMenuButtons(0, 0.0f, LAYOUT_MENU_BUTTON_X_PADDING, LAYOUT_MENU_BUTTON_Y_PADDING, 0.0f,
+                   LAYOUT_MENU_BUTTON_SPACING);
+  ResetFocusHere();
+
+  const bool appearing = ImGui::IsWindowAppearing();
+
+  for (s32 i = 0; i < static_cast<s32>(m_options.size()); i++)
+  {
+    auto& option = m_options[i];
+
+    if (option.second)
+    {
+      SetMenuButtonSplitLayer(MENU_BUTTON_SPLIT_LAYER_BACKGROUND);
+
+      const MenuButtonBounds bb(option.first, ImVec2(), {});
+      const ImVec2 pos = ImGui::GetCursorScreenPos();
+      ImGui::RenderFrame(pos, pos + bb.frame_bb.GetSize(),
+                         ImGui::GetColorU32(DarkerColor(UIStyle.PopupBackgroundColor, 0.6f)), false,
+                         LayoutScale(LAYOUT_MENU_ITEM_BORDER_ROUNDING));
+
+      SetMenuButtonSplitLayer(MENU_BUTTON_SPLIT_LAYER_FOREGROUND);
+    }
+
+    bool visible;
+    if (MenuButtonWithVisibilityQuery(TinyString::from_format("item{}", i), option.first, {},
+                                      option.second ? ICON_FA_CHECK ""sv : std::string_view(), &visible))
+    {
+      choice = i;
+      for (s32 j = 0; j < static_cast<s32>(m_options.size()); j++)
+        m_options[j].second = (j == i);
+    }
+
+    if (option.second && appearing)
+    {
+      ImGui::SetItemDefaultFocus();
+      ImGui::SetScrollHereY(0.5f);
+    }
+  }
+
+  EndMenuButtons();
+  SetStandardSelectionFooterText(false);
+  EndRender();
+
+  if (choice >= 0)
+  {
+    const auto selected = m_options[choice];
+    const DropdownDialogCallback callback = std::exchange(m_callback, DropdownDialogCallback());
+    StartClose();
+    callback(choice, selected.first);
+  }
+}
+
+bool FullscreenUI::IsDropdownDialogOpen()
+{
+  return s_state.dropdown_dialog.IsOpen();
+}
+
+void FullscreenUI::OpenDropdownDialog(DropdownDialogOptions options, DropdownDialogCallback callback,
+                                      float min_width /* = 0.0f */)
+{
+  s_state.dropdown_dialog.Open(std::move(options), std::move(callback), min_width);
+}
+
+void FullscreenUI::CloseDropdownDialog()
+{
+  s_state.dropdown_dialog.StartClose();
 }
 
 bool FullscreenUI::IsInputDialogOpen()

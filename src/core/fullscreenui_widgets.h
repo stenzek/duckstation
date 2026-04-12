@@ -442,6 +442,8 @@ bool RangeButton(std::string_view title, std::string_view summary, float* value,
 bool EnumChoiceButtonImpl(std::string_view title, std::string_view summary, s32* value_pointer,
                           const char* (*to_display_name_function)(s32 value, void* opaque), void* opaque, u32 count,
                           bool enabled);
+bool MenuActionButton(std::string_view title, std::string_view summary, std::string_view value,
+                      bool dropdown_icon = false, bool enabled = true);
 
 template<typename DataType, typename CountType>
 ALWAYS_INLINE static bool EnumChoiceButton(std::string_view title, std::string_view summary, DataType* value_pointer,
@@ -534,6 +536,12 @@ bool IsChoiceDialogOpen();
 void OpenChoiceDialog(std::string_view title, bool checkable, ChoiceDialogOptions options,
                       ChoiceDialogCallback callback);
 void CloseChoiceDialog();
+
+using DropdownDialogCallback = std::function<void(s32 index, const std::string& title)>;
+using DropdownDialogOptions = std::vector<std::pair<std::string, bool>>;
+bool IsDropdownDialogOpen();
+void OpenDropdownDialog(DropdownDialogOptions options, DropdownDialogCallback callback, float min_width = 0.0f);
+void CloseDropdownDialog();
 
 using InputStringDialogCallback = std::function<void(std::string text)>;
 bool IsInputDialogOpen();
@@ -638,13 +646,15 @@ protected:
   void SetTitleAndOpen(std::string title);
 
   bool BeginRender(float scaled_window_padding = LayoutScale(20.0f), float scaled_window_rounding = LayoutScale(20.0f),
-                   const ImVec2& scaled_window_size = ImVec2(0.0f, 0.0f));
+                   const ImVec2& scaled_window_size = ImVec2(0.0f, 0.0f), const ImVec2* position = nullptr,
+                   const ImVec2* pivot = nullptr);
   void EndRender();
 
   std::string m_title;
   float m_animation_time_remaining = 0.0f;
   State m_state = State::Inactive;
   bool m_user_closeable = true;
+  bool m_reverse_animation = false;
 };
 
 // Wrapper for computing menu button bounds.
@@ -663,6 +673,8 @@ struct MenuButtonBounds
   float available_non_value_width;
 
   MenuButtonBounds(const std::string_view& title, const std::string_view& value, const std::string_view& summary);
+  MenuButtonBounds(const std::string_view& title, const std::string_view& value, float value_x_padding,
+                   const std::string_view& summary);
   MenuButtonBounds(const std::string_view& title, const std::string_view& value, const std::string_view& summary,
                    float left_margin, float title_value_size = UIStyle.LargeFontSize,
                    float summary_size = UIStyle.MediumFontSize);
