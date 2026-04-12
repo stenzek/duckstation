@@ -50,6 +50,7 @@
 
 #include "util/audio_stream.h"
 #include "util/cd_image.h"
+#include "util/http_cache.h"
 #include "util/http_downloader.h"
 #include "util/imgui_manager.h"
 #include "util/ini_settings_interface.h"
@@ -740,11 +741,11 @@ void QtHost::DownloadFile(QWidget* parent, std::string url, std::string path,
     [url = std::move(url), path = std::move(path),
      completion_callback = std::move(completion_callback)](ProgressCallback* const progress) mutable {
       Error error;
-      std::unique_ptr<HTTPDownloader> http = HTTPDownloader::Create(Core::GetHTTPUserAgent(), &error);
-      bool result;
-      if ((result = static_cast<bool>(http)))
+      bool result = false;
+      if (const auto downloader = HTTPCache::GetDownloader(&error))
       {
-        http->CreateRequest(
+        result = true;
+        downloader->CreateRequest(
           std::move(url),
           [&result, &error, &path](s32 status_code, const Error& http_error, const std::string&,
                                    std::vector<u8> hdata) {
@@ -762,10 +763,10 @@ void QtHost::DownloadFile(QWidget* parent, std::string url, std::string path,
             result = FileSystem::WriteBinaryFile(path.c_str(), hdata, &error);
           },
           progress);
-
-        // Block until completion.
-        http->WaitForAllRequests();
       }
+
+      // Block until completion.
+      HTTPCache::WaitForAllRequests();
 
       QtAsyncTaskWithProgressDialog::CompletionCallback ret;
       if (completion_callback)
