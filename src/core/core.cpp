@@ -6,8 +6,6 @@
 #include "settings.h"
 #include "system.h"
 
-#include "scmversion/scmversion.h"
-
 #include "util/ini_settings_interface.h"
 #include "util/input_manager.h"
 
@@ -543,9 +541,4 @@ void Core::SetGameSettingsLayer(SettingsInterface* sif, std::unique_lock<std::mu
 void Core::SetInputSettingsLayer(SettingsInterface* sif, std::unique_lock<std::mutex>& lock)
 {
   s_locals.layered_settings_interface.SetLayer(LayeredSettingsInterface::LAYER_INPUT, sif);
-}
-
-std::string Core::GetHTTPUserAgent()
-{
-  return fmt::format("DuckStation for {} ({}) {}", TARGET_OS_STR, CPU_ARCH_STR, g_scm_tag_str);
 }
