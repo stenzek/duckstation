@@ -15,7 +15,7 @@ AchievementLoginDialog::AchievementLoginDialog(QWidget* parent, Achievements::Lo
   : QDialog(parent), m_reason(reason)
 {
   m_ui.setupUi(this);
-  m_ui.iconLabel->setPixmap(QPixmap(QtHost::GetResourceQPath("images/ra-icon.webp", true)));
+  m_ui.iconLabel->setPixmap(QPixmap(QtHost::GetResourceQPath(Achievements::RA_LOGO_SVG_ICON_NAME, true)));
   QFont title_font(m_ui.titleLabel->font());
   title_font.setBold(true);
   title_font.setPixelSize(20);

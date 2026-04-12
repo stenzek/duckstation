@@ -1499,7 +1499,7 @@ void FullscreenUI::OpenAchievementsWindow()
 
   if (const auto lock = Achievements::GetLock(); !Achievements::IsActive() || !Achievements::HasAchievements())
   {
-    Host::AddIconOSDMessage(OSDMessageType::Info, "AchievementsUnavailable", Achievements::RA_LOGO_ICON_NAME,
+    Host::AddIconOSDMessage(OSDMessageType::Info, "AchievementsUnavailable", Achievements::RA_LOGO_SVG_ICON_NAME,
                             TRANSLATE_STR("Achievements", "Achievements are not available."),
                             Achievements::IsActive() ?
                               TRANSLATE_STR("Achievements", "This game has no achievements.") :
@@ -2405,7 +2405,7 @@ void FullscreenUI::OpenLeaderboardsWindow()
 
   if (const auto lock = Achievements::GetLock(); !Achievements::IsActive() || !Achievements::HasLeaderboards())
   {
-    Host::AddIconOSDMessage(OSDMessageType::Info, "LeaderboardsUnavailable", Achievements::RA_LOGO_ICON_NAME,
+    Host::AddIconOSDMessage(OSDMessageType::Info, "LeaderboardsUnavailable", Achievements::RA_LOGO_SVG_ICON_NAME,
                             TRANSLATE_STR("Achievements", "Leaderboards are not available."),
                             Achievements::IsActive() ?
                               TRANSLATE_STR("Achievements", "This game has no leaderboards.") :

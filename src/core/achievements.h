@@ -200,6 +200,7 @@ u32 GetPendingUnlockCount();
 
 /// The name of the RetroAchievements icon, which can be used in notifications.
 extern const char* const RA_LOGO_ICON_NAME;
+extern const char* const RA_LOGO_SVG_ICON_NAME;
 
 } // namespace Achievements
 

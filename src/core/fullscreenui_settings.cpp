@@ -5195,21 +5195,23 @@ void FullscreenUI::DrawAchievementsLoginWindow()
     return;
   }
 
-  const std::string_view ra_title = "RetroAchivements";
+  static constexpr std::string_view ra_title = "RetroAchivements";
   const ImVec2 ra_title_size = UIStyle.Font->CalcTextSizeA(UIStyle.LargeFontSize, UIStyle.BoldFontWeight, FLT_MAX, 0.0f,
                                                            IMSTR_START_END(ra_title));
   const float ra_title_spacing = LayoutScale(10.0f);
-  GPUTexture* ra_logo = GetCachedTexture("images/ra-icon.webp");
-  const ImVec2 ra_logo_size = ImVec2(UIStyle.LargeFontSize * 1.85f, UIStyle.LargeFontSize);
-  const ImVec2 ra_logo_imgsize = CenterImage(ra_logo_size, ra_logo).GetSize();
+  const ImVec2 ra_logo_size = ImVec2(UIStyle.LargeFontSize * 2.0f, UIStyle.LargeFontSize);
+  const ImRect ra_logo_rect = CenterImage(ra_logo_size, ImVec2(454.0f, 245.0f));
+  GPUTexture* const ra_logo =
+    GetCachedTexture(Achievements::RA_LOGO_SVG_ICON_NAME, static_cast<u32>(ra_logo_rect.GetWidth()),
+                     static_cast<u32>(ra_logo_rect.GetHeight()));
   const ImRect work_rect = ImGui::GetCurrentWindow()->WorkRect;
   const float indent = (work_rect.GetWidth() - (ra_logo_size.x + ra_title_spacing + ra_title_size.x)) * 0.5f;
   ImDrawList* const dl = ImGui::GetWindowDrawList();
   const ImVec2 ra_logo_pos = work_rect.Min + ImVec2(indent, 0.0f);
-  dl->AddImage(ra_logo, ra_logo_pos, ra_logo_pos + ra_logo_imgsize);
-  dl->AddText(UIStyle.Font, UIStyle.LargeFontSize, UIStyle.BoldFontWeight,
-              ra_logo_pos + ImVec2(ra_logo_size.x + ra_title_spacing, 0.0f), ImGui::GetColorU32(ImGuiCol_Text),
-              IMSTR_START_END(ra_title));
+  dl->AddImage(ra_logo, ra_logo_pos + ra_logo_rect.Min, ra_logo_pos + ra_logo_rect.Max);
+  const ImVec2 title_pos = ra_logo_pos + ImVec2(ra_logo_size.x + ra_title_spacing, 0.0f);
+  RenderShadowedTextClipped(dl, UIStyle.Font, UIStyle.LargeFontSize, UIStyle.BoldFontWeight, title_pos,
+                            title_pos + ra_title_size, ImGui::GetColorU32(ImGuiCol_Text), ra_title, &ra_title_size);
 
   ImGui::SetCursorPosY(ImGui::GetCursorPosY() + ra_logo_size.y + LayoutScale(15.0f));
 

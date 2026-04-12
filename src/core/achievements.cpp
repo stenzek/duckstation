@@ -74,6 +74,7 @@ static constexpr const char* UNLOCK_SOUND_NAME = "sounds/achievements/unlock.wav
 static constexpr const char* LBSUBMIT_SOUND_NAME = "sounds/achievements/lbsubmit.wav";
 static constexpr const char* CACHE_SUBDIRECTORY_NAME = "achievement_images";
 constexpr const char* const RA_LOGO_ICON_NAME = "images/ra-icon.webp";
+constexpr const char* const RA_LOGO_SVG_ICON_NAME = "images/ra-icon.svg";
 
 static constexpr float LOGIN_NOTIFICATION_TIME = 5.0f;
 static constexpr float ACHIEVEMENT_SUMMARY_NOTIFICATION_TIME = 5.0f;
@@ -1537,14 +1538,14 @@ void Achievements::DisplayAchievementSummary()
   if (rc_client_get_spectator_mode_enabled(s_state.client))
   {
     Host::AddIconOSDMessage(
-      OSDMessageType::Warning, "SpectatorOrEncoreMode", RA_LOGO_ICON_NAME,
+      OSDMessageType::Warning, "SpectatorOrEncoreMode", RA_LOGO_SVG_ICON_NAME,
       TRANSLATE_STR("Achievements", "Spectator mode enabled."),
       TRANSLATE_STR("Achievements", "All achievements are locked, and unlocks will not be recorded in your account."));
   }
   else if (rc_client_get_encore_mode_enabled(s_state.client))
   {
     Host::AddIconOSDMessage(
-      OSDMessageType::Warning, "SpectatorOrEncoreMode", RA_LOGO_ICON_NAME,
+      OSDMessageType::Warning, "SpectatorOrEncoreMode", RA_LOGO_SVG_ICON_NAME,
       TRANSLATE_STR("Achievements", "Encore mode enabled."),
       TRANSLATE_STR("Achievements",
                     "All achievements are locked, but unlocks will still be recorded in your account."));
@@ -1951,7 +1952,7 @@ void Achievements::HandleServerReconnectedEvent(const rc_client_event_t* event)
 {
   WARNING_LOG("Server reconnected.");
 
-  Host::AddIconOSDMessage(OSDMessageType::Warning, "AchievementsDisconnected", RA_LOGO_ICON_NAME,
+  Host::AddIconOSDMessage(OSDMessageType::Warning, "AchievementsDisconnected", RA_LOGO_SVG_ICON_NAME,
                           TRANSLATE_STR("Achievements", "Achievements Reconnected"),
                           TRANSLATE_STR("Achievements", "All pending unlock requests have completed."));
 }
@@ -1985,7 +1986,7 @@ void Achievements::OnHardcoreModeChanged(bool enabled, bool display_message, boo
 
   if (System::IsValid() && display_message)
   {
-    Host::AddIconOSDMessage(OSDMessageType::Info, "AchievementsHardcoreModeChanged", RA_LOGO_ICON_NAME,
+    Host::AddIconOSDMessage(OSDMessageType::Info, "AchievementsHardcoreModeChanged", RA_LOGO_SVG_ICON_NAME,
                             enabled ? TRANSLATE_STR("Achievements", "Hardcore mode enabled.") :
                                       TRANSLATE_STR("Achievements", "Hardcore mode disabled."),
                             enabled ? TRANSLATE_STR("Achievements", "Restrictions are now active.") :
