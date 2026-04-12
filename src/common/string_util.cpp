@@ -1239,6 +1239,26 @@ bool StringUtil::UTF8StringToWideString(std::wstring& dest, const std::string_vi
   return true;
 }
 
+bool StringUtil::AppendUTF8ToWideString(std::wstring& dest, const std::string_view str)
+{
+  int wlen = MultiByteToWideChar(CP_UTF8, 0, str.data(), static_cast<int>(str.length()), nullptr, 0);
+  if (wlen < 0)
+    return false;
+
+  if (wlen > 0)
+  {
+    const size_t prev_size = dest.size();
+    dest.resize(prev_size + static_cast<size_t>(wlen));
+    if (MultiByteToWideChar(CP_UTF8, 0, str.data(), static_cast<int>(str.length()), dest.data() + prev_size, wlen) < 0)
+    {
+      dest.resize(prev_size);
+      return false;
+    }
+  }
+
+  return true;
+}
+
 std::string StringUtil::WideStringToUTF8String(const std::wstring_view str)
 {
   std::string ret;

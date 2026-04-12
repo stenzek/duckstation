@@ -326,6 +326,9 @@ int StrideMemCmp(const void* p1, std::size_t p1_stride, const void* p2, std::siz
 std::wstring UTF8StringToWideString(const std::string_view str);
 bool UTF8StringToWideString(std::wstring& dest, const std::string_view str);
 
+/// Appends a UTF-8 string converted to wide characters to an existing wide string.
+bool AppendUTF8ToWideString(std::wstring& dest, const std::string_view str);
+
 /// Converts the specified wide string to a UTF-8 string.
 std::string WideStringToUTF8String(const std::wstring_view str);
 bool WideStringToUTF8String(std::string& dest, const std::wstring_view str);

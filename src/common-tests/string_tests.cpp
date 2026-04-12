@@ -1084,6 +1084,26 @@ TEST(StringUtil, UTF8StringToWideString)
   ASSERT_EQ(dest, L"Hello");
 }
 
+TEST(StringUtil, AppendUTF8ToWideString)
+{
+  // Appending to an empty string
+  std::wstring dest;
+  ASSERT_TRUE(StringUtil::AppendUTF8ToWideString(dest, "Hello"));
+  ASSERT_EQ(dest, L"Hello");
+
+  // Appending to an existing string
+  ASSERT_TRUE(StringUtil::AppendUTF8ToWideString(dest, " World"));
+  ASSERT_EQ(dest, L"Hello World");
+
+  // Appending an empty string
+  ASSERT_TRUE(StringUtil::AppendUTF8ToWideString(dest, ""));
+  ASSERT_EQ(dest, L"Hello World");
+
+  // Appending UTF-8 multibyte characters
+  ASSERT_TRUE(StringUtil::AppendUTF8ToWideString(dest, " \xc3\xa9"));
+  ASSERT_EQ(dest, L"Hello World \x00e9");
+}
+
 TEST(StringUtil, WideStringToUTF8String)
 {
   std::string result = StringUtil::WideStringToUTF8String(L"Hello");
