@@ -12,6 +12,7 @@
 #include "core/core.h"
 
 #include "util/http_downloader.h"
+#include "util/http_cache.h"
 #include "util/translation.h"
 
 #include "common/assert.h"
@@ -126,7 +127,7 @@ AutoUpdaterDialog::AutoUpdaterDialog(QWidget* const parent, Error* const error) 
   connect(m_ui.skipThisUpdate, &QPushButton::clicked, this, &AutoUpdaterDialog::skipThisUpdateClicked);
   connect(m_ui.remindMeLater, &QPushButton::clicked, this, &AutoUpdaterDialog::remindMeLaterClicked);
 
-  m_http = HTTPDownloader::Create(Core::GetHTTPUserAgent(), error);
+  m_http = HTTPDownloader::Create(HTTPCache::GetUserAgent(), error);
 
   m_http_poll_timer = new QTimer(this);
   m_http_poll_timer->connect(m_http_poll_timer, &QTimer::timeout, this, &AutoUpdaterDialog::httpPollTimerPoll);
