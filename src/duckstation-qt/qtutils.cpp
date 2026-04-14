@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "qtutils.h"
+#include "asyncpixmaploader.h"
 #include "qthost.h"
 
 #include "core/core.h"
@@ -348,6 +349,28 @@ QMenu* QtUtils::NewPopupMenu(QWidget* parent, bool delete_on_close /*= true*/)
     menu->setAttribute(Qt::WA_DeleteOnClose, true);
 
   return menu;
+}
+
+void QtUtils::SetLabelPixmapPathOrURL(QLabel* label, std::string_view path_or_url, bool ignore_if_invalid)
+{
+  if (!AsyncPixmapLoader::isQueueNeeded(path_or_url))
+  {
+    const QPixmap pm = AsyncPixmapLoader::load(path_or_url);
+    if (!pm.isNull() || !ignore_if_invalid)
+      label->setPixmap(pm);
+
+    return;
+  }
+
+  AsyncPixmapLoader* loader = new AsyncPixmapLoader();
+  QObject::connect(loader, &AsyncPixmapLoader::pixmapLoaded, label, [label, ignore_if_invalid](QPixmap& pm) {
+    if (pm.isNull() && ignore_if_invalid)
+      return;
+
+    pm.setDevicePixelRatio(label->devicePixelRatio());
+    label->setPixmap(pm);
+  });
+  loader->enqueue(path_or_url);
 }
 
 QMessageBox::StandardButton QtUtils::MessageBoxInformation(QWidget* parent, const QString& title, const QString& text,

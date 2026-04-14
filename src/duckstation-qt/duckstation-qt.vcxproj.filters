@@ -52,6 +52,7 @@
     <ClCompile Include="qtwindowinfo.cpp" />
     <ClCompile Include="osdsettingswidget.cpp" />
     <ClCompile Include="capturesettingswidget.cpp" />
+    <ClCompile Include="asyncpixmaploader.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="qtutils.h" />
@@ -116,6 +117,7 @@
     <QtMoc Include="memoryviewwidget.h" />
     <QtMoc Include="osdsettingswidget.h" />
     <QtMoc Include="capturesettingswidget.h" />
+    <QtMoc Include="asyncpixmaploader.h" />
   </ItemGroup>
   <ItemGroup>
     <QtUi Include="consolesettingswidget.ui" />

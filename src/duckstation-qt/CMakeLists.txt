@@ -17,6 +17,8 @@ set(SRCS
   advancedsettingswidget.cpp
   advancedsettingswidget.h
   advancedsettingswidget.ui
+  asyncpixmaploader.cpp
+  asyncpixmaploader.h
   audiosettingswidget.cpp
   audiosettingswidget.h
   audiosettingswidget.ui

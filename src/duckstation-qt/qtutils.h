@@ -152,6 +152,9 @@ void StyleChildMenus(QWidget* widget);
 /// Creates a new popup menu, styled for the current theme.
 QMenu* NewPopupMenu(QWidget* parent, bool delete_on_close = true);
 
+/// Helper function to load a QPixmap from a path or URL.
+void SetLabelPixmapPathOrURL(QLabel* label, std::string_view path_or_url, bool ignore_if_invalid);
+
 /// Returns icon for language.
 QIcon GetIconForTranslationLanguage(std::string_view language_name);
 
