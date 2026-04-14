@@ -39,6 +39,15 @@ enum class OSDMessageType : u8
   MaxCount
 };
 
+enum class OSDMessageIconType : u8
+{
+  Font,
+  Texture,
+  Spinner,
+
+  MaxCount
+};
+
 namespace Host {
 
 /// Handle representing an auxiliary render window in the host.
@@ -252,6 +261,8 @@ void AddKeyedOSDMessage(OSDMessageType type, std::string key, std::string messag
 void AddIconOSDMessage(OSDMessageType type, std::string key, const char* icon, std::string message);
 void AddIconOSDMessage(OSDMessageType type, std::string key, const char* icon, std::string title, std::string message);
 void AddIconOSDMessage(OSDMessageType type, std::string key, std::string icon, std::string title, std::string message);
+void AddIconOSDMessage(OSDMessageType type, std::string key, OSDMessageIconType icon_type, std::string icon,
+                       std::string title, std::string message);
 void RemoveKeyedOSDMessage(std::string key);
 void ClearOSDMessages();
 
