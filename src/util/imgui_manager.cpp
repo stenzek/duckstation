@@ -65,6 +65,7 @@ struct PostedOSDMessage
   std::string title;
   std::string text;
   OSDMessageType type;
+  OSDMessageIconType icon_type;
 };
 
 struct OSDMessage
@@ -79,7 +80,7 @@ struct OSDMessage
   float target_y;
   float last_y;
   OSDMessageType type;
-  bool is_texture_icon;
+  OSDMessageIconType icon_type;
 };
 
 } // namespace
@@ -100,8 +101,9 @@ static void SetCommonIOOptions(ImGuiIO& io, ImGuiPlatformIO& pio);
 static void SetImKeyState(ImGuiIO& io, ImGuiKey imkey, bool pressed);
 static const char* GetClipboardTextImpl(ImGuiContext* ctx);
 static void SetClipboardTextImpl(ImGuiContext* ctx, const char* text);
-static void AddOSDMessage(OSDMessageType type, std::string key, std::string icon, std::string title,
-                          std::string message);
+static OSDMessageIconType GetOSDMessageIconType(std::string_view icon);
+static void AddOSDMessage(OSDMessageType type, std::string key, OSDMessageIconType icon_type, std::string icon,
+                          std::string title, std::string message);
 static void RemoveKeyedOSDMessage(std::string key);
 static void ClearOSDMessages();
 static void UpdateOSDMessageRunIdle(const std::unique_lock<std::mutex>& lock);
@@ -885,22 +887,35 @@ float ImGuiManager::GetOSDMessageEndPosition()
   return s_state.osd_messages_end_y;
 }
 
-void ImGuiManager::AddOSDMessage(OSDMessageType type, std::string key, std::string icon, std::string title,
-                                 std::string message)
+OSDMessageIconType ImGuiManager::GetOSDMessageIconType(std::string_view icon)
+{
+  // Any filenames are going to have an extension of at least 4 bytes (e.g. ".png"), so we can use that
+  // to determine if it's a texture or not.
+  return (StringUtil::GetUTF8CharacterCount(icon) >= 4) ? OSDMessageIconType::Texture : OSDMessageIconType::Font;
+}
+
+void ImGuiManager::AddOSDMessage(OSDMessageType type, std::string key, OSDMessageIconType icon_type, std::string icon,
+                                 std::string title, std::string message)
 {
   if (!key.empty())
     INFO_LOG("OSD [{}]: {}{}{}", key, title, title.empty() ? "" : "\n", message);
   else
     INFO_LOG("OSD: {}{}{}", title, title.empty() ? "" : "\n", message);
 
-  static constexpr const std::array<const char*, static_cast<size_t>(OSDMessageType::MaxCount)> default_icons = {
+  static constexpr const std::array<const char*, static_cast<size_t>(OSDMessageType::Persistent)> default_icons = {
     ICON_EMOJI_NO_ENTRY_SIGN, // Error
     ICON_EMOJI_WARNING,       // Warning
     ICON_EMOJI_INFORMATION,   // Info
     ICON_EMOJI_INFORMATION,   // Quick
   };
   if (icon.empty())
-    icon = default_icons[static_cast<size_t>(type)];
+  {
+    // default to spinner for persistent messages, since those are typically used for background tasks
+    if (type == OSDMessageType::Persistent)
+      icon_type = OSDMessageIconType::Spinner;
+    else
+      icon = default_icons[static_cast<size_t>(type)];
+  }
 
   std::unique_lock lock(s_state.osd_messages_lock);
   s_state.osd_posted_messages.push_back(PostedOSDMessage{
@@ -909,6 +924,7 @@ void ImGuiManager::AddOSDMessage(OSDMessageType type, std::string key, std::stri
     .title = std::move(title),
     .text = std::move(message),
     .type = type,
+    .icon_type = icon_type,
   });
 
   // trigger run idle on first message
@@ -956,6 +972,7 @@ void ImGuiManager::RemoveKeyedOSDMessage(std::string key)
     .title = {},
     .text = {},
     .type = OSDMessageType::MaxCount,
+    .icon_type = OSDMessageIconType::Font,
   });
   if (s_state.osd_posted_messages.size() == 1)
     UpdateOSDMessageRunIdle(lock);
@@ -980,10 +997,6 @@ void ImGuiManager::AcquirePendingOSDMessages(Timer::Value current_time)
     // MaxCount is used to indicate removal of a message.
     const float duration = (new_msg.type < OSDMessageType::MaxCount) ? GetOSDMessageDuration(new_msg.type) : 0.0f;
 
-    // Any filenames are going to have an extension of at least 4 bytes (e.g. ".png"), so we can use that
-    // to determine if it's a texture or not.
-    const bool is_texture_icon = StringUtil::GetUTF8CharacterCount(new_msg.icon) >= 4;
-
     std::deque<OSDMessage>::iterator iter;
     if (!new_msg.key.empty() &&
         (iter = std::find_if(s_state.osd_active_messages.begin(), s_state.osd_active_messages.end(),
@@ -998,7 +1011,7 @@ void ImGuiManager::AcquirePendingOSDMessages(Timer::Value current_time)
         iter->text = std::move(new_msg.text);
         iter->duration = duration;
         iter->type = new_msg.type;
-        iter->is_texture_icon = is_texture_icon;
+        iter->icon_type = new_msg.icon_type;
 
         // Don't fade it in again
         const float time_passed = static_cast<float>(Timer::ConvertValueToSeconds(current_time - iter->start_time));
@@ -1026,7 +1039,7 @@ void ImGuiManager::AcquirePendingOSDMessages(Timer::Value current_time)
           .target_y = -1.0f,
           .last_y = -1.0f,
           .type = new_msg.type,
-          .is_texture_icon = is_texture_icon,
+          .icon_type = new_msg.icon_type,
         });
       }
     }
@@ -1098,20 +1111,39 @@ void ImGuiManager::DrawOSDMessages(Timer::Value current_time)
     // Use larger icon when we have multiple lines.
     const bool use_large_icon = !msg.title.empty() && !msg.text.empty();
     const float icon_font_size = use_large_icon ? large_icon_size : font_size;
-    GPUTexture* icon_texture =
-      msg.is_texture_icon ?
-        FullscreenUI::GetCachedTexture(msg.icon, static_cast<u32>(icon_font_size), static_cast<u32>(icon_font_size)) :
-        nullptr;
-    const ImVec2 icon_size =
-      msg.icon.empty() ?
-        ImVec2() :
-        (msg.is_texture_icon ?
-           ImVec2(icon_font_size *
-                    (static_cast<float>(icon_texture->GetWidth()) / static_cast<float>(icon_texture->GetHeight())),
-                  icon_font_size) :
-           font->CalcTextSizeA(icon_font_size, body_font_weight, FLT_MAX, 0.0f, IMSTR_START_END(msg.icon)));
+    GPUTexture* icon_texture = nullptr;
+    ImVec2 icon_size;
+    switch (msg.icon_type)
+    {
+      case OSDMessageIconType::Font:
+      {
+        icon_size = font->CalcTextSizeA(icon_font_size, body_font_weight, FLT_MAX, 0.0f, IMSTR_START_END(msg.icon));
+      }
+      break;
+
+      case OSDMessageIconType::Texture:
+      {
+        if ((icon_texture = FullscreenUI::GetCachedTextureAsync(msg.icon, static_cast<u32>(icon_font_size),
+                                                                static_cast<u32>(icon_font_size))))
+        {
+          icon_size = ImVec2(icon_font_size * (static_cast<float>(icon_texture->GetWidth()) /
+                                               static_cast<float>(icon_texture->GetHeight())),
+                             icon_font_size);
+        }
+      }
+      break;
+
+      case OSDMessageIconType::Spinner:
+      {
+        icon_size = ImVec2(icon_font_size + spacing, icon_font_size);
+      }
+      break;
+
+        DefaultCaseIsUnreachable();
+    }
+
     const float icon_size_with_margin =
-      msg.icon.empty() ? 0.0f : (icon_size.x + (use_large_icon ? large_icon_margin : normal_icon_margin));
+      (icon_size.x == 0.0f) ? 0.0f : (icon_size.x + (use_large_icon ? large_icon_margin : normal_icon_margin));
     const float max_text_width = max_width - icon_size_with_margin;
 
     // bold the message if there's no title
@@ -1198,16 +1230,33 @@ void ImGuiManager::DrawOSDMessages(Timer::Value current_time)
 
     const ImVec2 base_pos = ImVec2(pos.x + padding, pos.y + padding);
     const ImU32 color = ImGui::GetColorU32(ModAlpha(text_color, opacity));
-    if (icon_texture)
+    switch (msg.icon_type)
     {
-      dl->AddImage(icon_texture, base_pos, base_pos + icon_size, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f),
-                   ImGui::GetColorU32(ModAlpha(0xFFFFFFFFu, opacity)));
-    }
-    else if (!msg.icon.empty())
-    {
-      const ImRect icon_rect = ImRect(base_pos, base_pos + icon_size);
-      RenderShadowedTextClipped(dl, font, icon_font_size, body_font_weight, icon_rect.Min, icon_rect.Max, color,
-                                msg.icon, &icon_size, ImVec2(0.0f, 0.0f), 0.0f, &icon_rect, scale);
+      case OSDMessageIconType::Font:
+      {
+        const ImRect icon_rect = ImRect(base_pos, base_pos + icon_size);
+        RenderShadowedTextClipped(dl, font, icon_font_size, body_font_weight, icon_rect.Min, icon_rect.Max, color,
+                                  msg.icon, &icon_size, ImVec2(0.0f, 0.0f), 0.0f, &icon_rect, scale);
+      }
+      break;
+
+      case OSDMessageIconType::Texture:
+      {
+        if (icon_texture)
+        {
+          dl->AddImage(icon_texture, base_pos, base_pos + icon_size, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f),
+                       ImGui::GetColorU32(ModAlpha(0xFFFFFFFFu, opacity)));
+        }
+      }
+      break;
+      case OSDMessageIconType::Spinner:
+      {
+        const float spinner_thickness = std::ceil((use_large_icon ? 5.0f : 3.0f) * scale);
+        FullscreenUI::DrawSpinner(dl, base_pos, color, icon_font_size, spinner_thickness);
+      }
+      break;
+
+        DefaultCaseIsUnreachable();
     }
 
     if (!msg.title.empty())
@@ -1253,29 +1302,40 @@ void ImGuiManager::RenderOSDMessages()
 
 void Host::AddOSDMessage(OSDMessageType type, std::string message)
 {
-  ImGuiManager::AddOSDMessage(type, std::string(), {}, {}, std::move(message));
+  ImGuiManager::AddOSDMessage(type, std::string(), OSDMessageIconType::Font, {}, {}, std::move(message));
 }
 
 void Host::AddKeyedOSDMessage(OSDMessageType type, std::string key, std::string message)
 {
-  ImGuiManager::AddOSDMessage(type, std::move(key), {}, {}, std::move(message));
+  ImGuiManager::AddOSDMessage(type, std::move(key), OSDMessageIconType::Font, {}, {}, std::move(message));
 }
 
 void Host::AddIconOSDMessage(OSDMessageType type, std::string key, const char* icon, std::string message)
 {
-  ImGuiManager::AddOSDMessage(type, std::move(key), std::string(icon), {}, std::move(message));
+  const std::string_view icon_sv = icon;
+  const OSDMessageIconType icon_type = ImGuiManager::GetOSDMessageIconType(icon_sv);
+  ImGuiManager::AddOSDMessage(type, std::move(key), icon_type, std::string(icon_sv), {}, std::move(message));
 }
 
 void Host::AddIconOSDMessage(OSDMessageType type, std::string key, const char* icon, std::string title,
                              std::string message)
 {
-  ImGuiManager::AddOSDMessage(type, std::move(key), std::string(icon), std::move(title), std::move(message));
+  const std::string_view icon_sv = icon;
+  const OSDMessageIconType icon_type = ImGuiManager::GetOSDMessageIconType(icon_sv);
+  ImGuiManager::AddOSDMessage(type, std::move(key), icon_type, std::string(icon_sv), std::move(title), std::move(message));
 }
 
 void Host::AddIconOSDMessage(OSDMessageType type, std::string key, std::string icon, std::string title,
                              std::string message)
 {
-  ImGuiManager::AddOSDMessage(type, std::move(key), std::move(icon), std::move(title), std::move(message));
+  const OSDMessageIconType icon_type = ImGuiManager::GetOSDMessageIconType(icon);
+  ImGuiManager::AddOSDMessage(type, std::move(key), icon_type, std::move(icon), std::move(title), std::move(message));
+}
+
+void Host::AddIconOSDMessage(OSDMessageType type, std::string key, OSDMessageIconType icon_type, std::string icon,
+                             std::string title, std::string message)
+{
+  ImGuiManager::AddOSDMessage(type, std::move(key), icon_type, std::move(icon), std::move(title), std::move(message));
 }
 
 void Host::RemoveKeyedOSDMessage(std::string key)
