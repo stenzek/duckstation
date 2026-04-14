@@ -6,6 +6,7 @@
     <ClCompile Include="achievementsettingswidget.cpp" />
     <ClCompile Include="achievementlogindialog.cpp" />
     <ClCompile Include="advancedsettingswidget.cpp" />
+    <ClCompile Include="asyncpixmaploader.cpp" />
     <ClCompile Include="audiosettingswidget.cpp" />
     <ClCompile Include="autoupdaterdialog.cpp" />
     <ClCompile Include="biossettingswidget.cpp" />
@@ -82,6 +83,7 @@
     <QtMoc Include="controllersettingswindow.h" />
     <QtMoc Include="colorpickerbutton.h" />
     <QtMoc Include="capturesettingswidget.h" />
+    <QtMoc Include="asyncpixmaploader.h" />
     <ClInclude Include="controllersettingwidgetbinder.h" />
     <QtMoc Include="memoryeditorwindow.h" />
     <QtMoc Include="memoryviewwidget.h" />
