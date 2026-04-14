@@ -8,6 +8,7 @@
     <ClCompile Include="file_system_tests.cpp" />
     <ClCompile Include="gsvector_tests.cpp" />
     <ClCompile Include="heap_array_tests.cpp" />
+    <ClCompile Include="misc_tests.cpp" />
     <ClCompile Include="path_tests.cpp" />
     <ClCompile Include="rectangle_tests.cpp" />
     <ClCompile Include="hash_tests.cpp" />
