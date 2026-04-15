@@ -76,9 +76,6 @@ set(SRCS
   emulationsettingswidget.cpp
   emulationsettingswidget.h
   emulationsettingswidget.ui
-  foldersettingswidget.cpp
-  foldersettingswidget.h
-  foldersettingswidget.ui
   gamecheatcodechoiceeditordialog.ui
   gamecheatcodeeditordialog.ui
   gamecheatsettingswidget.cpp

@@ -22,7 +22,6 @@
     <ClCompile Include="emulationsettingswidget.cpp" />
     <ClCompile Include="debuggermodels.cpp" />
     <ClCompile Include="debuggerwindow.cpp" />
-    <ClCompile Include="foldersettingswidget.cpp" />
     <ClCompile Include="gamecheatsettingswidget.cpp" />
     <ClCompile Include="gamepatchsettingswidget.cpp" />
     <ClCompile Include="interfacesettingswidget.cpp" />
@@ -110,7 +109,6 @@
     <QtMoc Include="postprocessingsettingswidget.h" />
     <QtMoc Include="mainwindow.h" />
     <QtMoc Include="qthost.h" />
-    <QtMoc Include="foldersettingswidget.h" />
     <ClInclude Include="qtutils.h" />
     <QtMoc Include="settingswindow.h" />
   </ItemGroup>
@@ -206,9 +204,6 @@
       <FileType>Document</FileType>
     </QtUi>
     <QtUi Include="gamesummarywidget.ui">
-      <FileType>Document</FileType>
-    </QtUi>
-    <QtUi Include="foldersettingswidget.ui">
       <FileType>Document</FileType>
     </QtUi>
     <QtUi Include="coverdownloadwindow.ui">

@@ -10,7 +10,6 @@
 #include "consolesettingswidget.h"
 #include "debuggingsettingswidget.h"
 #include "emulationsettingswidget.h"
-#include "foldersettingswidget.h"
 #include "gamecheatsettingswidget.h"
 #include "gamelistsettingswidget.h"
 #include "gamepatchsettingswidget.h"
@@ -171,10 +170,6 @@ void SettingsWindow::addPages()
 
   if (!isPerGameSettings())
   {
-    addWidget(
-      new FolderSettingsWidget(this, m_ui.settingsContainer), tr("Folders"), "folder-settings-line"_L1,
-      tr("<strong>Folder Settings</strong><hr>These options control where DuckStation will save runtime data files."));
-
     addWidget(new AdvancedSettingsWidget(this, m_ui.settingsContainer), tr("Advanced"), "alert-line"_L1,
               tr("<strong>Advanced Settings</strong><hr>These options control logging and internal behavior of the "
                  "emulator. Mouse over an option for additional information, and Shift+Wheel to scroll this panel."));

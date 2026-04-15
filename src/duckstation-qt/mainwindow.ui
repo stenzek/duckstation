@@ -100,7 +100,6 @@
     <addaction name="actionAudioSettings"/>
     <addaction name="actionAchievementSettings"/>
     <addaction name="actionCaptureSettings"/>
-    <addaction name="actionFolderSettings"/>
     <addaction name="actionAdvancedSettings"/>
     <addaction name="actionDebuggingSettings"/>
     <addaction name="separator"/>
@@ -331,7 +330,7 @@
     <iconset theme="file-search-line"/>
    </property>
    <property name="text">
-    <string>Scan For &amp;New Games</string>
+    <string>Scan &amp;For New Games</string>
    </property>
    <property name="toolTip">
     <string>Searches for new games added since the last refresh.</string>
@@ -649,17 +648,6 @@
     <string>Configures options related to RetroAchievements.</string>
    </property>
   </action>
-  <action name="actionFolderSettings">
-   <property name="icon">
-    <iconset theme="folder-open-line"/>
-   </property>
-   <property name="text">
-    <string>&amp;Folders</string>
-   </property>
-   <property name="toolTip">
-    <string>Configures the locations where various types of data are saved.</string>
-   </property>
-  </action>
   <action name="actionGameListSettings">
    <property name="icon">
     <iconset theme="folder-open-line"/>
@@ -698,7 +686,7 @@
     <iconset theme="code-line"/>
    </property>
    <property name="text">
-    <string>Debugging</string>
+    <string>Debuggi&amp;ng</string>
    </property>
    <property name="toolTip">
     <string>Configures internal options for the application.</string>
