@@ -21,12 +21,6 @@ FolderSettingsWidget::FolderSettingsWidget(SettingsWindow* dialog, QWidget* pare
   SettingWidgetBinder::BindWidgetToFolderSetting(sif, m_ui.covers, m_ui.coversBrowse, tr("Select Covers Directory"),
                                                  m_ui.coversOpen, m_ui.coversReset, "Folders", "Covers",
                                                  Path::Combine(EmuFolders::DataRoot, "covers"));
-  SettingWidgetBinder::BindWidgetToFolderSetting(
-    sif, m_ui.screenshots, m_ui.screenshotsBrowse, tr("Select Screenshots Directory"), m_ui.screenshotsOpen,
-    m_ui.screenshotsReset, "Folders", "Screenshots", Path::Combine(EmuFolders::DataRoot, "screenshots"));
-  SettingWidgetBinder::BindWidgetToFolderSetting(sif, m_ui.videos, m_ui.videosBrowse, tr("Select Videos Directory"),
-                                                 m_ui.videosOpen, m_ui.videosReset, "Folders", "Videos",
-                                                 Path::Combine(EmuFolders::DataRoot, "videos"));
 }
 
 FolderSettingsWidget::~FolderSettingsWidget() = default;

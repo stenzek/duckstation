@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>710</width>
-    <height>364</height>
+    <width>633</width>
+    <height>500</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -27,13 +27,13 @@
     <number>0</number>
    </property>
    <item>
-    <widget class="QGroupBox" name="groupBox_10">
+    <widget class="QGroupBox" name="screenshotsGroup">
      <property name="title">
       <string>Screenshots</string>
      </property>
-     <layout class="QGridLayout" name="gridLayout_15" columnstretch="0,1">
+     <layout class="QGridLayout" name="screenshotsLayout" columnstretch="0,1">
       <item row="0" column="0">
-       <widget class="QLabel" name="label_21">
+       <widget class="QLabel" name="screenshotSizeLabel">
         <property name="text">
          <string>Screenshot Size:</string>
         </property>
@@ -69,17 +69,61 @@
         </item>
        </layout>
       </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="screenshotsDirectoryLabel">
+        <property name="text">
+         <string>Save Location:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <layout class="QHBoxLayout" name="screenshotsDirectoryLayout">
+        <item>
+         <widget class="QLineEdit" name="screenshotsDirectory"/>
+        </item>
+        <item>
+         <widget class="QPushButton" name="screenshotsDirectoryBrowse">
+          <property name="toolTip">
+           <string>Browse...</string>
+          </property>
+          <property name="icon">
+           <iconset theme="folder-open-line"/>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="screenshotsDirectoryOpen">
+          <property name="toolTip">
+           <string>Open...</string>
+          </property>
+          <property name="icon">
+           <iconset theme="open-folder-line"/>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="screenshotsDirectoryReset">
+          <property name="toolTip">
+           <string>Reset</string>
+          </property>
+          <property name="icon">
+           <iconset theme="delete-back-2-line"/>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
      </layout>
     </widget>
    </item>
    <item>
-    <widget class="QGroupBox" name="captureTabGroupBox">
+    <widget class="QGroupBox" name="captureGroup">
      <property name="title">
       <string>Media Capture</string>
      </property>
-     <layout class="QGridLayout" name="gridLayout_16" columnstretch="0,1">
+     <layout class="QGridLayout" name="captureLayout" columnstretch="0,1">
       <item row="0" column="0">
-       <widget class="QLabel" name="label_2">
+       <widget class="QLabel" name="mediaCaptureBackendLabel">
         <property name="text">
          <string>Backend:</string>
         </property>
@@ -98,7 +142,51 @@
       <item row="1" column="1">
        <widget class="QComboBox" name="captureContainer"/>
       </item>
-      <item row="2" column="0" colspan="2">
+      <item row="2" column="0">
+       <widget class="QLabel" name="videosDirectoryLabel">
+        <property name="text">
+         <string>Save Location:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <layout class="QHBoxLayout" name="videosDirectoryLayout">
+        <item>
+         <widget class="QLineEdit" name="videosDirectory"/>
+        </item>
+        <item>
+         <widget class="QPushButton" name="videosDirectoryBrowse">
+          <property name="toolTip">
+           <string>Browse...</string>
+          </property>
+          <property name="icon">
+           <iconset theme="folder-open-line"/>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="videosDirectoryOpen">
+          <property name="toolTip">
+           <string>Open...</string>
+          </property>
+          <property name="icon">
+           <iconset theme="open-folder-line"/>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="videosDirectoryReset">
+          <property name="toolTip">
+           <string>Reset</string>
+          </property>
+          <property name="icon">
+           <iconset theme="delete-back-2-line"/>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item row="3" column="0" colspan="2">
        <layout class="QGridLayout" name="captureOptionLayout">
         <property name="horizontalSpacing">
          <number>20</number>
@@ -106,81 +194,11 @@
         <property name="verticalSpacing">
          <number>10</number>
         </property>
-        <item row="1" column="1">
-         <widget class="QWidget" name="audioCaptureOptions" native="true">
-          <layout class="QGridLayout" name="gridLayout_20" columnstretch="0,1">
-           <property name="leftMargin">
-            <number>0</number>
-           </property>
-           <property name="topMargin">
-            <number>0</number>
-           </property>
-           <property name="rightMargin">
-            <number>0</number>
-           </property>
-           <property name="bottomMargin">
-            <number>0</number>
-           </property>
-           <item row="0" column="1">
-            <widget class="QComboBox" name="audioCaptureCodec"/>
-           </item>
-           <item row="1" column="0">
-            <widget class="QLabel" name="audioCaptureBitrateLabel">
-             <property name="text">
-              <string>Bitrate:</string>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="1">
-            <widget class="QSpinBox" name="audioCaptureBitrate">
-             <property name="suffix">
-              <string> kbps</string>
-             </property>
-             <property name="minimum">
-              <number>16</number>
-             </property>
-             <property name="maximum">
-              <number>2048</number>
-             </property>
-             <property name="singleStep">
-              <number>1</number>
-             </property>
-             <property name="value">
-              <number>128</number>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="0" colspan="2">
-            <widget class="QCheckBox" name="enableAudioCaptureArguments">
-             <property name="text">
-              <string>Extra Arguments</string>
-             </property>
-            </widget>
-           </item>
-           <item row="3" column="0" colspan="2">
-            <widget class="QLineEdit" name="audioCaptureArguments"/>
-           </item>
-           <item row="0" column="0">
-            <widget class="QLabel" name="audioCaptureCodecLabel">
-             <property name="text">
-              <string>Codec:</string>
-             </property>
-            </widget>
-           </item>
-           <item row="4" column="0" colspan="2">
-            <spacer name="verticalSpacer_8">
-             <property name="orientation">
-              <enum>Qt::Orientation::Vertical</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>0</width>
-               <height>0</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-          </layout>
+        <item row="0" column="0">
+         <widget class="QCheckBox" name="enableVideoCapture">
+          <property name="text">
+           <string>Capture Video</string>
+          </property>
          </widget>
         </item>
         <item row="0" column="1">
@@ -192,7 +210,7 @@
         </item>
         <item row="1" column="0">
          <widget class="QWidget" name="videoCaptureOptions" native="true">
-          <layout class="QGridLayout" name="gridLayout_19" columnstretch="0,1">
+          <layout class="QFormLayout" name="videoCaptureOptionsLayout">
            <property name="leftMargin">
             <number>0</number>
            </property>
@@ -298,6 +316,9 @@
              </item>
             </layout>
            </item>
+           <item row="4" column="0" colspan="2">
+            <widget class="QLineEdit" name="videoCaptureArguments"/>
+           </item>
            <item row="3" column="0" colspan="2">
             <widget class="QCheckBox" name="enableVideoCaptureArguments">
              <property name="text">
@@ -305,17 +326,71 @@
              </property>
             </widget>
            </item>
-           <item row="4" column="0" colspan="2">
-            <widget class="QLineEdit" name="videoCaptureArguments"/>
-           </item>
           </layout>
          </widget>
         </item>
-        <item row="0" column="0">
-         <widget class="QCheckBox" name="enableVideoCapture">
-          <property name="text">
-           <string>Capture Video</string>
-          </property>
+        <item row="1" column="1">
+         <widget class="QWidget" name="audioCaptureOptions" native="true">
+          <layout class="QFormLayout" name="audioCaptureOptionsLayout">
+           <property name="leftMargin">
+            <number>0</number>
+           </property>
+           <property name="topMargin">
+            <number>0</number>
+           </property>
+           <property name="rightMargin">
+            <number>0</number>
+           </property>
+           <property name="bottomMargin">
+            <number>0</number>
+           </property>
+           <item row="0" column="0">
+            <widget class="QLabel" name="audioCaptureCodecLabel">
+             <property name="text">
+              <string>Codec:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QComboBox" name="audioCaptureCodec"/>
+           </item>
+           <item row="1" column="0">
+            <widget class="QLabel" name="audioCaptureBitrateLabel">
+             <property name="text">
+              <string>Bitrate:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QSpinBox" name="audioCaptureBitrate">
+             <property name="suffix">
+              <string> kbps</string>
+             </property>
+             <property name="minimum">
+              <number>16</number>
+             </property>
+             <property name="maximum">
+              <number>2048</number>
+             </property>
+             <property name="singleStep">
+              <number>1</number>
+             </property>
+             <property name="value">
+              <number>128</number>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="0" colspan="2">
+            <widget class="QCheckBox" name="enableAudioCaptureArguments">
+             <property name="text">
+              <string>Extra Arguments</string>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="0" colspan="2">
+            <widget class="QLineEdit" name="audioCaptureArguments"/>
+           </item>
+          </layout>
          </widget>
         </item>
        </layout>
@@ -324,14 +399,14 @@
     </widget>
    </item>
    <item>
-    <spacer name="verticalSpacer_7">
+    <spacer name="verticalSpacer">
      <property name="orientation">
       <enum>Qt::Orientation::Vertical</enum>
      </property>
      <property name="sizeHint" stdset="0">
       <size>
-       <width>20</width>
-       <height>1</height>
+       <width>0</width>
+       <height>0</height>
       </size>
      </property>
     </spacer>
