@@ -50,5 +50,4 @@ private:
   void updateMemoryCardPath(int index);
 
   std::array<PortSettingsUI, 2> m_port_ui = {};
-  QLineEdit* m_memory_card_directory = nullptr;
 };

@@ -20,6 +20,7 @@
 #include <QtCore/QUrl>
 #include <QtWidgets/QComboBox>
 #include <QtWidgets/QFileDialog>
+#include <QtWidgets/QGridLayout>
 #include <QtWidgets/QGroupBox>
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QLineEdit>
@@ -42,7 +43,7 @@ MemoryCardSettingsWidget::~MemoryCardSettingsWidget() = default;
 
 void MemoryCardSettingsWidget::createUi(SettingsWindow* dialog)
 {
-  QVBoxLayout* layout = new QVBoxLayout(this);
+  QVBoxLayout* const layout = new QVBoxLayout(this);
   layout->setContentsMargins(0, 0, 0, 0);
 
   for (int i = 0; i < static_cast<int>(m_port_ui.size()); i++)
@@ -53,26 +54,71 @@ void MemoryCardSettingsWidget::createUi(SettingsWindow* dialog)
   }
 
   {
-    QGroupBox* box = new QGroupBox(tr("Game-Specific Card Settings"), this);
-    QVBoxLayout* box_layout = new QVBoxLayout(box);
-    QPushButton* browse = new QPushButton(tr("Browse..."), box);
-    QPushButton* open_memcards = new QPushButton(tr("Open..."), box);
-    QPushButton* reset = new QPushButton(qApp->translate("QPlatformTheme", "Reset"), box);
+    QGroupBox* const box = new QGroupBox(tr("Save Locations"), this);
+    QGridLayout* const box_layout = new QGridLayout(box);
+    layout->addWidget(box);
 
     {
-      QLabel* label = new QLabel(tr("Memory Card Directory:"), box);
-      box_layout->addWidget(label);
-
-      QHBoxLayout* hbox = new QHBoxLayout();
-      m_memory_card_directory = new QLineEdit(box);
-
-      hbox->addWidget(m_memory_card_directory);
+      QHBoxLayout* const hbox = new QHBoxLayout();
+      QLabel* const label = new QLabel(tr("Memory Cards:"), box);
+      box_layout->addWidget(label, 0, 0);
+      QLineEdit* const directory = new QLineEdit(box);
+      QPushButton* const browse = new QPushButton(box);
+      browse->setToolTip(tr("Browse..."));
+      browse->setIcon(QIcon::fromTheme("folder-open-line"));
+      QPushButton* const open = new QPushButton(box);
+      open->setToolTip(tr("Open..."));
+      open->setIcon(QIcon::fromTheme("open-folder-line"));
+      QPushButton* const reset = new QPushButton(box);
+      reset->setToolTip(qApp->translate("QPlatformTheme", "Reset"));
+      reset->setIcon(QIcon::fromTheme("delete-back-2-line"));
+      hbox->addWidget(directory);
       hbox->addWidget(browse);
-      hbox->addWidget(open_memcards);
+      hbox->addWidget(open);
       hbox->addWidget(reset);
+      box_layout->addLayout(hbox, 0, 1);
 
-      box_layout->addLayout(hbox);
+      SettingWidgetBinder::BindWidgetToFolderSetting(m_dialog->getSettingsInterface(), directory, browse,
+                                                     tr("Select Memory Card Directory"), open, reset, "MemoryCards",
+                                                     "Directory", Path::Combine(EmuFolders::DataRoot, "memcards"));
+
+      dialog->registerWidgetHelp(directory, tr("Memory Cards Location"), tr("Default"),
+                                 tr("Specifies the directory where memory cards will be saved."));
     }
+
+    {
+      QHBoxLayout* const hbox = new QHBoxLayout();
+      QLabel* const label = new QLabel(tr("Save States:"), box);
+      box_layout->addWidget(label, 1, 0);
+      QLineEdit* const directory = new QLineEdit(box);
+      QPushButton* const browse = new QPushButton(box);
+      browse->setToolTip(tr("Browse..."));
+      browse->setIcon(QIcon::fromTheme("folder-open-line"));
+      QPushButton* const open = new QPushButton(box);
+      open->setToolTip(tr("Open..."));
+      open->setIcon(QIcon::fromTheme("open-folder-line"));
+      QPushButton* const reset = new QPushButton(box);
+      reset->setToolTip(qApp->translate("QPlatformTheme", "Reset"));
+      reset->setIcon(QIcon::fromTheme("delete-back-2-line"));
+      hbox->addWidget(directory);
+      hbox->addWidget(browse);
+      hbox->addWidget(open);
+      hbox->addWidget(reset);
+      box_layout->addLayout(hbox, 1, 1);
+
+      SettingWidgetBinder::BindWidgetToFolderSetting(m_dialog->getSettingsInterface(), directory, browse,
+                                                     tr("Select Save States Directory"), open, reset, "Folders",
+                                                     "SaveStates", Path::Combine(EmuFolders::DataRoot, "savestates"));
+
+      dialog->registerWidgetHelp(directory, tr("Save States Location"), tr("Default"),
+                                 tr("Specifies the directory where save states will be saved."));
+    }
+  }
+
+  {
+    QGroupBox* const box = new QGroupBox(tr("Game-Specific Card Settings"), this);
+    QVBoxLayout* const box_layout = new QVBoxLayout(box);
+    layout->addWidget(box);
 
     QCheckBox* playlist_title_as_game_title = new QCheckBox(tr("Use Single Card For Multi-Disc Games"), box);
     SettingWidgetBinder::BindWidgetToBoolSetting(m_dialog->getSettingsInterface(), playlist_title_as_game_title,
@@ -86,24 +132,18 @@ void MemoryCardSettingsWidget::createUi(SettingsWindow* dialog)
     box_layout->addWidget(QtUtils::CreateHorizontalLine(box));
 
     {
-      QHBoxLayout* hbox = new QHBoxLayout();
-      QLabel* label = new QLabel(
+      QHBoxLayout* const hbox = new QHBoxLayout();
+      QLabel* const label = new QLabel(
         tr("The memory card editor enables you to move saves between cards, as well as import cards of other formats."),
         box);
       label->setWordWrap(true);
       hbox->addWidget(label, 1);
 
-      QPushButton* button = new QPushButton(tr("Memory Card Editor..."), box);
+      QPushButton* const button = new QPushButton(tr("Memory Card Editor..."), box);
       connect(button, &QPushButton::clicked, []() { g_main_window->openMemoryCardEditor(QString(), QString()); });
       hbox->addWidget(button);
       box_layout->addLayout(hbox);
     }
-
-    layout->addWidget(box);
-
-    SettingWidgetBinder::BindWidgetToFolderSetting(
-      m_dialog->getSettingsInterface(), m_memory_card_directory, browse, tr("Select Memory Card Directory"),
-      open_memcards, reset, "MemoryCards", "Directory", Path::Combine(EmuFolders::DataRoot, "memcards"));
   }
 
   layout->addStretch(1);
