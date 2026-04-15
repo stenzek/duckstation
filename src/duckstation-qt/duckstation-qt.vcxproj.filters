@@ -53,6 +53,7 @@
     <ClCompile Include="osdsettingswidget.cpp" />
     <ClCompile Include="capturesettingswidget.cpp" />
     <ClCompile Include="asyncpixmaploader.cpp" />
+    <ClCompile Include="debuggingsettingswidget.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="qtutils.h" />
@@ -118,6 +119,7 @@
     <QtMoc Include="osdsettingswidget.h" />
     <QtMoc Include="capturesettingswidget.h" />
     <QtMoc Include="asyncpixmaploader.h" />
+    <QtMoc Include="debuggingsettingswidget.h" />
   </ItemGroup>
   <ItemGroup>
     <QtUi Include="consolesettingswidget.ui" />
@@ -173,6 +175,7 @@
     <QtUi Include="editgameserialdialog.ui" />
     <QtUi Include="osdsettingswidget.ui" />
     <QtUi Include="capturesettingswidget.ui" />
+    <QtUi Include="debuggingsettingswidget.ui" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="duckstation-qt.rc" />

@@ -17,42 +17,7 @@ public:
   explicit AdvancedSettingsWidget(SettingsWindow* dialog, QWidget* parent);
   ~AdvancedSettingsWidget();
 
-Q_SIGNALS:
-  void onShowDebugOptionsChanged(bool enabled);
-
 private:
-  struct TweakOption
-  {
-    enum class Type
-    {
-      Boolean,
-      IntRange
-    };
-
-    Type type;
-    QString description;
-    std::string key;
-    std::string section;
-
-    union
-    {
-      struct
-      {
-        bool default_value;
-      } boolean;
-
-      struct
-      {
-        int min_value;
-        int max_value;
-        int default_value;
-      } int_range;
-    };
-  };
-
-  void addTweakOptions();
-  void onResetToDefaultClicked();
-
   void onLogChannelsButtonClicked();
   void onAnyLogSinksChanged();
   void onShowDebugOptionsStateChanged();
@@ -60,6 +25,4 @@ private:
   SettingsWindow* m_dialog;
 
   Ui::AdvancedSettingsWidget m_ui;
-
-  QVector<TweakOption> m_tweak_options;
 };

@@ -18,6 +18,7 @@
     <ClCompile Include="controllersettingswindow.cpp" />
     <ClCompile Include="coverdownloadwindow.cpp" />
     <ClCompile Include="debuggercodeview.cpp" />
+    <ClCompile Include="debuggingsettingswidget.cpp" />
     <ClCompile Include="emulationsettingswidget.cpp" />
     <ClCompile Include="debuggermodels.cpp" />
     <ClCompile Include="debuggerwindow.cpp" />
@@ -95,6 +96,7 @@
     <QtMoc Include="isobrowserwindow.h" />
     <QtMoc Include="debuggercodeview.h" />
     <QtMoc Include="osdsettingswidget.h" />
+    <QtMoc Include="debuggingsettingswidget.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="qtwindowinfo.h" />
     <ClInclude Include="resource.h" />
@@ -327,6 +329,9 @@
       <FileType>Document</FileType>
     </QtUi>
     <QtUi Include="osdsettingswidget.ui">
+      <FileType>Document</FileType>
+    </QtUi>
+    <QtUi Include="debuggingsettingswidget.ui">
       <FileType>Document</FileType>
     </QtUi>
     <None Include="translations\duckstation-qt_es-es.ts" />
