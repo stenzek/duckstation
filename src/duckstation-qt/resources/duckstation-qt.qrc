@@ -96,6 +96,7 @@
 		<file>icons/black/svg/multi-discs.svg</file>
 		<file>icons/black/svg/negcon-line.svg</file>
 		<file>icons/black/svg/numbers-fill.svg</file>
+		<file>icons/black/svg/open-folder-line.svg</file>
 		<file>icons/black/svg/paint-brush-line.svg</file>
 		<file>icons/black/svg/pause-line.svg</file>
 		<file>icons/black/svg/play-circle-line.svg</file>
@@ -262,6 +263,7 @@
 		<file>icons/white/svg/multi-discs.svg</file>
 		<file>icons/white/svg/negcon-line.svg</file>
 		<file>icons/white/svg/numbers-fill.svg</file>
+		<file>icons/white/svg/open-folder-line.svg</file>
 		<file>icons/white/svg/paint-brush-line.svg</file>
 		<file>icons/white/svg/pause-line.svg</file>
 		<file>icons/white/svg/play-circle-line.svg</file>
