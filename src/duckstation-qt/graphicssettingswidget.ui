@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>736</width>
+    <width>776</width>
     <height>551</height>
    </rect>
   </property>
@@ -883,22 +883,31 @@
           </item>
           <item row="1" column="1">
            <widget class="QPushButton" name="texturesDirectoryBrowse">
-            <property name="text">
+            <property name="toolTip">
              <string>Browse...</string>
+            </property>
+            <property name="icon">
+             <iconset theme="folder-open-line"/>
             </property>
            </widget>
           </item>
           <item row="1" column="2">
            <widget class="QPushButton" name="texturesDirectoryOpen">
-            <property name="text">
+            <property name="toolTip">
              <string>Open...</string>
+            </property>
+            <property name="icon">
+             <iconset theme="open-folder-line"/>
             </property>
            </widget>
           </item>
           <item row="1" column="3">
            <widget class="QPushButton" name="texturesDirectoryReset">
-            <property name="text">
+            <property name="toolTip">
              <string>Reset</string>
+            </property>
+            <property name="icon">
+             <iconset theme="delete-back-2-line"/>
             </property>
            </widget>
           </item>
