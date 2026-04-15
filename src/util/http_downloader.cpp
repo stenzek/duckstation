@@ -212,7 +212,7 @@ void HTTPDownloader::WaitForAllRequests()
   while (!m_pending_http_requests.empty())
   {
     // Don't burn too much CPU.
-    Timer::NanoSleep(1000000);
+    Timer::NanoSleep(WAIT_FOR_ALL_REQUESTS_POLL_INTERVAL_NS);
     LockedPollRequests(lock);
   }
 }
@@ -229,7 +229,7 @@ void HTTPDownloader::WaitForAllRequestsWithYield(std::function<void()> before_sl
       lock.unlock();
       before_sleep_cb();
     }
-    Timer::NanoSleep(1000000);
+    Timer::NanoSleep(WAIT_FOR_ALL_REQUESTS_POLL_INTERVAL_NS);
     if (after_sleep_cb)
     {
       after_sleep_cb();
