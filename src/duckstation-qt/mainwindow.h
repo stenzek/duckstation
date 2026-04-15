@@ -119,9 +119,6 @@ public:
   ControllerSettingsWindow* getControllerSettingsWindow();
   MemoryEditorWindow* getMemoryEditorWindow();
 
-  /// Updates debug menu visibility (hides if disabled).
-  void updateDebugMenuVisibility();
-
   /// Returns true if rendering to the main window should be allowed.
   bool canRenderToMainWindow() const;
 
@@ -237,6 +234,8 @@ private:
   void onMouseModeRequested(bool relative_mode, bool hide_cursor, bool ignore_double_click);
 
   void onSettingsResetToDefault(bool system, bool controller);
+  void updateDebugMenuVisibility();
+
   void onSystemStarting();
   void onSystemStarted();
   void onSystemStopping();

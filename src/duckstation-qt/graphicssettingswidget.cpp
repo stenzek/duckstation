@@ -61,6 +61,9 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 
   // Rendering Tab
 
+  connect(m_dialog, &SettingsWindow::debugOptionsVisibiltyChanged, this,
+          &GraphicsSettingsWidget::onShowDebugSettingsChanged);
+
   if (!m_dialog->isPerGameSettings())
     connect(m_ui.renderer, &QComboBox::currentIndexChanged, this, &GraphicsSettingsWidget::warnAboutRendererChange);
 

@@ -102,6 +102,7 @@
     <addaction name="actionCaptureSettings"/>
     <addaction name="actionFolderSettings"/>
     <addaction name="actionAdvancedSettings"/>
+    <addaction name="actionDebuggingSettings"/>
     <addaction name="separator"/>
     <addaction name="actionControllerSettings"/>
     <addaction name="actionControllerProfiles"/>
@@ -690,6 +691,17 @@
    </property>
    <property name="toolTip">
     <string>Configures advanced options for the application.</string>
+   </property>
+  </action>
+  <action name="actionDebuggingSettings">
+   <property name="icon">
+    <iconset theme="code-line"/>
+   </property>
+   <property name="text">
+    <string>Debugging</string>
+   </property>
+   <property name="toolTip">
+    <string>Configures internal options for the application.</string>
    </property>
   </action>
   <action name="actionAddGameDirectory">

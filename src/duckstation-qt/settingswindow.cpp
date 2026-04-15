@@ -8,6 +8,7 @@
 #include "biossettingswidget.h"
 #include "capturesettingswidget.h"
 #include "consolesettingswidget.h"
+#include "debuggingsettingswidget.h"
 #include "emulationsettingswidget.h"
 #include "foldersettingswidget.h"
 #include "gamecheatsettingswidget.h"
@@ -120,8 +121,7 @@ void SettingsWindow::addPages()
 
   if (isPerGameSettings())
   {
-    addWidget(new GamePatchSettingsWidget(this, m_ui.settingsContainer), tr("Patches"),
-              "sparkling-line"_L1,
+    addWidget(new GamePatchSettingsWidget(this, m_ui.settingsContainer), tr("Patches"), "sparkling-line"_L1,
               tr("<strong>Patches</strong><hr>This section allows you to select optional patches to apply to the game, "
                  "which may provide performance, visual, or gameplay improvements. Activating game patches can cause "
                  "unpredictable behavior, crashing, soft-locks, or broken saved games. Use patches at your own risk, "
@@ -144,8 +144,7 @@ void SettingsWindow::addPages()
                "are rendered. Not all options are available for the software renderer. Mouse over each option for "
                "additional information, and Shift+Wheel to scroll this panel."));
   //: Translators may want to shorten On-Screen Display to "OSD".
-  addWidget(new OSDSettingsWidget(this, m_ui.settingsContainer), tr("On-Screen Display"),
-            "numbers-fill"_L1,
+  addWidget(new OSDSettingsWidget(this, m_ui.settingsContainer), tr("On-Screen Display"), "numbers-fill"_L1,
             tr("<strong>On-Screen Display Settings</strong><hr>These options determine the behavior of the messages "
                "that are displayed while content is running."));
   addWidget(
@@ -175,16 +174,19 @@ void SettingsWindow::addPages()
     addWidget(
       new FolderSettingsWidget(this, m_ui.settingsContainer), tr("Folders"), "folder-settings-line"_L1,
       tr("<strong>Folder Settings</strong><hr>These options control where DuckStation will save runtime data files."));
+
+    addWidget(new AdvancedSettingsWidget(this, m_ui.settingsContainer), tr("Advanced"), "alert-line"_L1,
+              tr("<strong>Advanced Settings</strong><hr>These options control logging and internal behavior of the "
+                 "emulator. Mouse over an option for additional information, and Shift+Wheel to scroll this panel."));
   }
 
-  AdvancedSettingsWidget* advanced_settings;
-  addWidget(advanced_settings = new AdvancedSettingsWidget(this, m_ui.settingsContainer), tr("Advanced"),
-            "alert-line"_L1,
-            tr("<strong>Advanced Settings</strong><hr>These options control logging and internal behavior of the "
-               "emulator. Mouse over an option for additional information, and Shift+Wheel to scroll this panel."));
-
-  connect(advanced_settings, &AdvancedSettingsWidget::onShowDebugOptionsChanged, graphics_settings,
-          &GraphicsSettingsWidget::onShowDebugSettingsChanged);
+  if (QtHost::ShouldShowDebugOptions())
+  {
+    addWidget(
+      new DebuggingSettingsWidget(this, m_ui.settingsContainer), tr("Debugging"), "code-line"_L1,
+      tr("<strong>Debugging Settings</strong><hr>These options control internal behavior of the emulator. You should "
+         "not modify anything on this page without a good reason to do so."));
+  }
 
   SettingWidgetBinder::BindWidgetToBoolSetting(m_sif.get(), m_ui.safeMode, "Main", "DisableAllEnhancements", false);
 
@@ -195,6 +197,13 @@ void SettingsWindow::addPages()
 
 void SettingsWindow::reloadPages()
 {
+  // prevent any weird focusing to widgets
+  const int current_page = m_ui.settingsContainer->currentIndex();
+  m_ui.settingsContainer->setCurrentIndex(-1);
+  m_ui.settingsCategory->blockSignals(true);
+  m_ui.settingsCategory->setCurrentRow(-1);
+  m_ui.settingsCategory->blockSignals(false);
+
   const int min_count = isPerGameSettings() ? 1 : 0;
   while (m_ui.settingsContainer->count() > min_count)
   {
@@ -215,6 +224,8 @@ void SettingsWindow::reloadPages()
   m_widget_help_text_map.clear();
   m_current_help_widget = nullptr;
   addPages();
+
+  setCategoryRow(current_page);
 }
 
 void SettingsWindow::connectUi()
@@ -247,6 +258,14 @@ void SettingsWindow::connectUi()
     connect(m_ui.copyGlobalSettings, &QPushButton::clicked, this, &SettingsWindow::onCopyGlobalSettingsClicked);
   if (m_ui.clearGameSettings)
     connect(m_ui.clearGameSettings, &QPushButton::clicked, this, &SettingsWindow::onClearSettingsClicked);
+
+  // debug shouldn't be changed on non-root settings
+  if (!isPerGameSettings())
+  {
+    // must be a queued connection, since this comes from a control on the widget
+    connect(this, &SettingsWindow::debugOptionsVisibiltyChanged, this, &SettingsWindow::reloadPages,
+            Qt::QueuedConnection);
+  }
 }
 
 void SettingsWindow::addWidget(QWidget* widget, QString title, QLatin1StringView icon, QString help_text)
@@ -291,6 +310,10 @@ void SettingsWindow::setCategoryRow(int index)
 
 void SettingsWindow::onCategoryCurrentRowChanged(int row)
 {
+  // can happen when deleting
+  if (row < 0)
+    return;
+
   DebugAssert(row < static_cast<int>(MAX_SETTINGS_WIDGETS));
   m_ui.settingsContainer->setCurrentIndex(row);
   m_ui.helpText->setText(m_category_help_text[row]);
@@ -393,7 +416,9 @@ bool SettingsWindow::eventFilter(QObject* object, QEvent* event)
     if (m_current_help_widget)
     {
       m_current_help_widget = nullptr;
-      m_ui.helpText->setText(m_category_help_text[m_ui.settingsCategory->currentRow()]);
+      const int current_row = m_ui.settingsCategory->currentRow();
+      if (current_row >= 0)
+        m_ui.helpText->setText(m_category_help_text[current_row]);
     }
   }
   else if (event->type() == QEvent::Wheel)

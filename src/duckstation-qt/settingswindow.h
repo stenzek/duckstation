@@ -89,6 +89,7 @@ public:
 
 Q_SIGNALS:
   void settingsResetToDefaults();
+  void debugOptionsVisibiltyChanged(bool enabled);
 
 protected:
   void closeEvent(QCloseEvent* event) override;

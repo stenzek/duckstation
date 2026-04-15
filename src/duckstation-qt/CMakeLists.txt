@@ -66,6 +66,9 @@ set(SRCS
   debuggerwindow.cpp
   debuggerwindow.h
   debuggerwindow.ui
+  debuggingsettingswidget.cpp
+  debuggingsettingswidget.h
+  debuggingsettingswidget.ui
   displaywidget.cpp
   displaywidget.h
   editgameserialdialog.ui

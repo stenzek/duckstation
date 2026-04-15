@@ -36,14 +36,14 @@ public:
   static void createAspectRatioSetting(QComboBox* const cb, QSpinBox* const numerator, QLabel* const separator,
                                        QSpinBox* const denominator, SettingsInterface* const sif);
 
-  void onShowDebugSettingsChanged(bool enabled);
-
 private:
   static constexpr int TAB_INDEX_RENDERING = 0;
   static constexpr int TAB_INDEX_ADVANCED = 1;
   static constexpr int TAB_INDEX_PGXP = 2;
   static constexpr int TAB_INDEX_TEXTURE_REPLACEMENTS = 3;
   static constexpr int TAB_INDEX_DEBUGGING = 4;
+
+  void onShowDebugSettingsChanged(bool enabled);
 
   void updateRendererDependentOptions();
   void updatePGXPSettingsEnabled();
