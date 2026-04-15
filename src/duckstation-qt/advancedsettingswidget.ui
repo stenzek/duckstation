@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>560</width>
-    <height>240</height>
+    <width>634</width>
+    <height>406</height>
    </rect>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -122,14 +122,112 @@
     </widget>
    </item>
    <item>
+    <widget class="QGroupBox" name="groupBox_3">
+     <property name="title">
+      <string>Cache Directory</string>
+     </property>
+     <layout class="QGridLayout" name="gridLayout_4">
+      <item row="0" column="0" colspan="2">
+       <widget class="QLabel" name="label_3">
+        <property name="text">
+         <string>Used for storing compiled shaders and game list data.</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLineEdit" name="cacheDirectory"/>
+      </item>
+      <item row="1" column="1">
+       <widget class="QPushButton" name="cacheDirectoryBrowse">
+        <property name="toolTip">
+         <string>Browse...</string>
+        </property>
+        <property name="icon">
+         <iconset theme="folder-open-line"/>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="2">
+       <widget class="QPushButton" name="cacheDirectoryOpen">
+        <property name="toolTip">
+         <string>Open...</string>
+        </property>
+        <property name="icon">
+         <iconset theme="open-folder-line"/>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="3">
+       <widget class="QPushButton" name="cacheDirectoryReset">
+        <property name="toolTip">
+         <string>Reset</string>
+        </property>
+        <property name="icon">
+         <iconset theme="delete-back-2-line"/>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="groupBox_5">
+     <property name="title">
+      <string>Covers Directory</string>
+     </property>
+     <layout class="QGridLayout" name="gridLayout_5">
+      <item row="0" column="0" colspan="2">
+       <widget class="QLabel" name="label_4">
+        <property name="text">
+         <string>Used for storing covers in the game grid/Big Picture UIs.</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLineEdit" name="coversDirectory"/>
+      </item>
+      <item row="1" column="1">
+       <widget class="QPushButton" name="coversDirectoryBrowse">
+        <property name="toolTip">
+         <string>Browse...</string>
+        </property>
+        <property name="icon">
+         <iconset theme="folder-open-line"/>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="2">
+       <widget class="QPushButton" name="coversDirectoryOpen">
+        <property name="toolTip">
+         <string>Open...</string>
+        </property>
+        <property name="icon">
+         <iconset theme="open-folder-line"/>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="3">
+       <widget class="QPushButton" name="coversDirectoryReset">
+        <property name="toolTip">
+         <string>Reset</string>
+        </property>
+        <property name="icon">
+         <iconset theme="delete-back-2-line"/>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
     <spacer name="verticalSpacer">
      <property name="orientation">
       <enum>Qt::Orientation::Vertical</enum>
      </property>
      <property name="sizeHint" stdset="0">
       <size>
-       <width>20</width>
-       <height>40</height>
+       <width>0</width>
+       <height>0</height>
       </size>
      </property>
     </spacer>

@@ -42,6 +42,13 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(SettingsWindow* dialog, QWidget* 
   connect(m_ui.showDebugMenu, &QCheckBox::checkStateChanged, this,
           &AdvancedSettingsWidget::onShowDebugOptionsStateChanged);
 
+  SettingWidgetBinder::BindWidgetToFolderSetting(
+    sif, m_ui.cacheDirectory, m_ui.cacheDirectoryBrowse, tr("Select Cache Directory"), m_ui.cacheDirectoryOpen,
+    m_ui.cacheDirectoryReset, "Folders", "Cache", Path::Combine(EmuFolders::DataRoot, "cache"));
+  SettingWidgetBinder::BindWidgetToFolderSetting(
+    sif, m_ui.coversDirectory, m_ui.coversDirectoryBrowse, tr("Select Covers Directory"), m_ui.coversDirectoryOpen,
+    m_ui.coversDirectoryReset, "Folders", "Covers", Path::Combine(EmuFolders::DataRoot, "covers"));
+
   dialog->registerWidgetHelp(m_ui.logLevel, tr("Log Level"), tr("Information"),
                              tr("Sets the verbosity of messages logged. Higher levels will log more messages."));
   dialog->registerWidgetHelp(m_ui.logToConsole, tr("Log To System Console"), tr("User Preference"),
@@ -58,6 +65,12 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(SettingsWindow* dialog, QWidget* 
                              tr("Includes the elapsed time since the application start in file logs."));
   dialog->registerWidgetHelp(m_ui.showDebugMenu, tr("Show Debug Menu"), tr("Unchecked"),
                              tr("Shows a debug menu bar with additional statistics and quick settings."));
+
+  dialog->registerWidgetHelp(m_ui.cacheDirectory, tr("Cache Directory"), tr("Default"),
+                             tr("Specifies the directory where compiled shaders and game list data will be stored."));
+  dialog->registerWidgetHelp(m_ui.coversDirectory, tr("Covers Directory"), tr("Default"),
+                             tr("Specifies the directory where game cover images that are used in the game grid and "
+                                "Big Picture UI will be stored."));
 }
 
 AdvancedSettingsWidget::~AdvancedSettingsWidget() = default;
