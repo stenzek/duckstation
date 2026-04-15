@@ -22,6 +22,9 @@ class HTTPDownloader
 public:
   using HeaderList = std::span<const char* const>;
 
+  static constexpr u64 WAIT_FOR_ALL_REQUESTS_POLL_INTERVAL_MS = 16;
+  static constexpr u64 WAIT_FOR_ALL_REQUESTS_POLL_INTERVAL_NS = WAIT_FOR_ALL_REQUESTS_POLL_INTERVAL_MS * 1000000;
+
   enum : s32
   {
     HTTP_STATUS_CANCELLED = -3,
