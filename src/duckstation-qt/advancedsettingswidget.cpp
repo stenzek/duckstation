@@ -6,6 +6,11 @@
 #include "settingswindow.h"
 #include "settingwidgetbinder.h"
 
+#include "util/http_cache.h"
+#include "util/object_archive.h"
+
+#include "common/error.h"
+
 #include <QtGui/QCursor>
 #include <QtWidgets/QMenu>
 
@@ -48,6 +53,11 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(SettingsWindow* dialog, QWidget* 
   SettingWidgetBinder::BindWidgetToFolderSetting(
     sif, m_ui.coversDirectory, m_ui.coversDirectoryBrowse, tr("Select Covers Directory"), m_ui.coversDirectoryOpen,
     m_ui.coversDirectoryReset, "Folders", "Covers", Path::Combine(EmuFolders::DataRoot, "covers"));
+
+  connect(m_ui.refreshWebCache, &QAbstractButton::clicked, this, &AdvancedSettingsWidget::refreshWebCacheSize);
+  connect(m_ui.clearWebCache, &QAbstractButton::clicked, this, &AdvancedSettingsWidget::onClearWebCacheClicked);
+
+  refreshWebCacheSize();
 
   dialog->registerWidgetHelp(m_ui.logLevel, tr("Log Level"), tr("Information"),
                              tr("Sets the verbosity of messages logged. Higher levels will log more messages."));
@@ -96,4 +106,31 @@ void AdvancedSettingsWidget::onShowDebugOptionsStateChanged()
 {
   const bool enabled = QtHost::ShouldShowDebugOptions();
   emit m_dialog->debugOptionsVisibiltyChanged(enabled);
+}
+
+void AdvancedSettingsWidget::refreshWebCacheSize()
+{
+  const auto cache = HTTPCache::GetCacheArchive();
+
+  static constexpr auto to_mb = [](s64 size) { return static_cast<u32>((size + 1048575) / 1048576); };
+  const u64 cache_size = cache->GetTotalSize();
+  const u64 object_size = cache->GetTotalObjectSize();
+  const size_t num_objects = cache->GetSize();
+
+  m_ui.webCacheSize->setText(tr("Current Cache Size: %1 MB (%2 MB in %3 objects)")
+                               .arg(to_mb(cache_size))
+                               .arg(to_mb(object_size))
+                               .arg(num_objects));
+}
+
+void AdvancedSettingsWidget::onClearWebCacheClicked()
+{
+  Error error;
+  if (!HTTPCache::Clear(&error))
+  {
+    QtUtils::AsyncMessageBox(this, QMessageBox::Critical, "Failed to clear web cache"_L1,
+                             QString::fromStdString(error.GetDescription()));
+  }
+
+  refreshWebCacheSize();
 }

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>634</width>
-    <height>406</height>
+    <height>484</height>
    </rect>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -213,6 +213,42 @@
         </property>
         <property name="icon">
          <iconset theme="delete-back-2-line"/>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="webCacheGroup">
+     <property name="title">
+      <string>Web Cache</string>
+     </property>
+     <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,0,0">
+      <item>
+       <widget class="QLabel" name="webCacheSize">
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="refreshWebCache">
+        <property name="text">
+         <string>Refresh</string>
+        </property>
+        <property name="icon">
+         <iconset theme="refresh-line"/>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="clearWebCache">
+        <property name="text">
+         <string>Clear</string>
+        </property>
+        <property name="icon">
+         <iconset theme="trash-fill"/>
         </property>
        </widget>
       </item>

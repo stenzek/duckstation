@@ -21,6 +21,8 @@ private:
   void onLogChannelsButtonClicked();
   void onAnyLogSinksChanged();
   void onShowDebugOptionsStateChanged();
+  void refreshWebCacheSize();
+  void onClearWebCacheClicked();
 
   SettingsWindow* m_dialog;
 
