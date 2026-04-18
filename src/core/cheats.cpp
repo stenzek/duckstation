@@ -2409,7 +2409,12 @@ std::unique_ptr<Cheats::GamesharkCheatCode> Cheats::GamesharkCheatCode::Parse(Me
   return code;
 }
 
-static std::array<u32, 256> cht_register; // Used for D7 ,51 & 52 cheat types
+static std::array<u32, 1025> cht_register; // 0-255 Used for D7 ,51 & 52 cheat types. 256-1023 for stealth cheats
+
+const std::array<u32, 1025>& Cheats::GetChtRegister()
+{
+  return cht_register;
+}
 
 template<typename T>
 NEVER_INLINE static T DoMemoryRead(VirtualMemoryAddress address)
@@ -3099,7 +3104,7 @@ void Cheats::GamesharkCheatCode::Apply() const
             // set
             //                                     (safety valve)
             // cht_offset = the index of the individual array to change (so must be 0 to cht_register[cht_reg_no1+1])
-            if ((cht_reg_no1 <= (std::size(cht_register) - 4)) && cht_register[cht_reg_no1 + 3] == 0xD0D0 &&
+            if (cht_reg_no1 <= 252 && cht_register[cht_reg_no1 + 3] == 0xD0D0 &&
                 cht_register[cht_reg_no1 + 2] > 0 && cht_register[cht_reg_no1 + 1] >= cht_offset)
             {
               DoMemoryWrite<u8>((cht_register[cht_reg_no1] - cht_register[cht_reg_no1 + 1]) +
@@ -3143,7 +3148,7 @@ void Cheats::GamesharkCheatCode::Apply() const
             // set
             //                                     (safety valve)
             // cht_offset = the index of the individual array to change (so must be 0 to cht_register[cht_reg_no1+1])
-            if ((cht_reg_no1 <= (std::size(cht_register) - 4)) && cht_register[cht_reg_no1 + 3] == 0xD0D0 &&
+            if (cht_reg_no1 <= 252 && cht_register[cht_reg_no1 + 3] == 0xD0D0 &&
                 cht_register[cht_reg_no1 + 2] > 0 && cht_register[cht_reg_no1 + 1] >= cht_offset)
             {
               DoMemoryWrite<u16>((cht_register[cht_reg_no1] - cht_register[cht_reg_no1 + 1]) +
@@ -3216,6 +3221,17 @@ void Cheats::GamesharkCheatCode::Apply() const
             break;
           case 0xCA: // Reg3 = Reg1 >> X
             cht_register[cht_reg_no3] = cht_register[cht_reg_no1] >> cht_reg_no2;
+            break;
+          case 0xE1: // Stealth Cheat - PC Address - uses registers 256-511
+            cht_register[cht_reg_no1+256] = poke_value;
+            if (cht_register[1024] < (u32)(cht_reg_no1 + 1)) //Set to highest reg if any Stealth cheat is ever enabled for a game
+				      cht_register[1024] = cht_reg_no1 + 1;
+            break;
+          case 0xE2: // Stealth Cheat - Actual Contents of PC Address - uses registers 512-767
+            cht_register[cht_reg_no1+512] = poke_value;
+            break;
+          case 0xE3: // Stealth Cheat - Stealth Contents of PC Address - uses registers 768-1023
+            cht_register[cht_reg_no1+768] = poke_value;
             break;
             // Lots of options exist for expanding into this space
           default:
@@ -4435,10 +4451,21 @@ void Cheats::GamesharkCheatCode::ApplyOnDisable(RollbackLog* rollback_list) cons
       case InstructionCode::ExtConstantSwap16:
       case InstructionCode::DelayActivation: // C1
       case InstructionCode::ExtConstantWriteIfMatch16:
-      case InstructionCode::ExtCheatRegisters:
         index++;
         break;
-
+      case InstructionCode::ExtCheatRegisters: // 51
+      {
+        const u8 cht_reg_no = Truncate8(inst.first & 0xFFu);
+        const u8 sub_type = Truncate8((inst.first & 0xFF0000u) >> 16);
+        if (sub_type == 0xE1) //Stealth Cheat, clear all 3 registers on disable for all three parts
+        {
+          cht_register[cht_reg_no + 256] = 0;
+          cht_register[cht_reg_no + 512] = 0;
+          cht_register[cht_reg_no + 768] = 0;
+        }
+        index++;
+        break;
+      }
       case InstructionCode::ExtConstantForceRange16:
       case InstructionCode::Slide:
       case InstructionCode::ExtImprovedSlide:
