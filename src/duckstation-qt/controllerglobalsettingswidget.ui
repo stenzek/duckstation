@@ -100,7 +100,7 @@
         <item row="2" column="0">
          <widget class="QCheckBox" name="enableTouchPadAsPointer">
           <property name="toolTip">
-           <string>Allows use of the touchpad for DualShock 4 / DualSense controllers.</string>
+           <string>Allows use of the touchpad for DualShock 4 / DualSense controllers as a pointer, for use with lightguns.</string>
           </property>
           <property name="text">
            <string>Enable Touchpad</string>
