@@ -20,9 +20,11 @@
 #include "video_thread.h"
 
 #include "util/gpu_device.h"
+#include "util/http_cache.h"
 #include "util/imgui_manager.h"
 #include "util/ini_settings_interface.h"
 #include "util/input_manager.h"
+#include "util/object_archive.h"
 #include "util/postprocessing.h"
 
 #include "common/assert.h"
@@ -103,6 +105,7 @@ static void SaveCoverDownloaderURLs();
 static void DrawAchievementsLoginWindow();
 static void StartAchievementsProgressRefresh();
 static void StartAchievementsGameIconDownload();
+static void ClearWebCache();
 
 static bool ShouldShowAdvancedSettings();
 static bool IsEditingGameSettings(SettingsInterface* bsi);
@@ -3805,24 +3808,6 @@ void FullscreenUI::DrawMemoryCardSettingsPage()
 
   BeginMenuButtons();
 
-  MenuHeading(FSUI_VSTR("Settings and Operations"));
-  ResetFocusHere();
-
-  DrawFolderSetting(bsi, FSUI_ICONVSTR(ICON_FA_FOLDER_OPEN, "Memory Card Directory"), "MemoryCards", "Directory",
-                    EmuFolders::MemoryCards);
-
-  if (!game_settings && MenuButton(FSUI_ICONVSTR(ICON_FA_ARROW_ROTATE_LEFT, "Reset Memory Card Directory"),
-                                   FSUI_VSTR("Resets memory card directory to default (user directory).")))
-  {
-    bsi->SetStringValue("MemoryCards", "Directory", "memcards");
-    SetSettingsChanged(bsi);
-  }
-
-  DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_SHARE_NODES, "Use Single Card For Multi-Disc Games"),
-                    FSUI_VSTR("When playing a multi-disc game and using per-game (title) memory cards, "
-                              "use a single memory card for all discs."),
-                    "MemoryCards", "UsePlaylistTitle", true);
-
   for (u32 i = 0; i < 2; i++)
   {
     MenuHeading(TinyString::from_format(FSUI_FSTR("Memory Card Port {}"), i + 1));
@@ -3893,6 +3878,27 @@ void FullscreenUI::DrawMemoryCardSettingsPage()
         });
     }
   }
+
+  MenuHeading(FSUI_VSTR("Settings and Operations"));
+  ResetFocusHere();
+
+  DrawFolderSetting(bsi, FSUI_ICONVSTR(ICON_FA_FOLDER_OPEN, "Memory Card Directory"), "MemoryCards", "Directory",
+                    EmuFolders::MemoryCards);
+
+  DrawFolderSetting(bsi, FSUI_ICONVSTR(ICON_FA_FOLDER_OPEN, "Save State Directory"), "Folders", "SaveStates",
+                    EmuFolders::SaveStates);
+
+  if (!game_settings && MenuButton(FSUI_ICONVSTR(ICON_FA_ARROW_ROTATE_LEFT, "Reset Memory Card Directory"),
+                                   FSUI_VSTR("Resets memory card directory to default (user directory).")))
+  {
+    bsi->SetStringValue("MemoryCards", "Directory", "memcards");
+    SetSettingsChanged(bsi);
+  }
+
+  DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_SHARE_NODES, "Use Single Card For Multi-Disc Games"),
+                    FSUI_VSTR("When playing a multi-disc game and using per-game (title) memory cards, "
+                              "use a single memory card for all discs."),
+                    "MemoryCards", "UsePlaylistTitle", true);
 
   EndMenuButtons();
 }
@@ -5224,15 +5230,34 @@ void FullscreenUI::DrawAchievementsSettingsPage(std::unique_lock<std::mutex>& se
       StartAchievementsGameIconDownload();
     }
 
+    if (MenuButton(FSUI_ICONVSTR(ICON_FA_TRASH, "Clear Web Cache"),
+                   FSUI_VSTR("Clears all cached images in the web cache."), enabled))
+    {
+      ClearWebCache();
+    }
+
+    SmallString str;
+
     if (bsi->ContainsValue("Cheevos", "Token"))
     {
       const std::string ts_string = Host::FormatNumber(
         Host::NumberFormatType::LongDateTime,
         StringUtil::FromChars<s64>(bsi->GetTinyStringValue("Cheevos", "LoginTimestamp", "0")).value_or(0));
-      MenuButtonWithoutSummary(
-        SmallString::from_format(fmt::runtime(FSUI_ICONVSTR(ICON_FA_USER_CLOCK, "Login token generated on {}")),
-                                 ts_string),
-        false);
+      str.format(fmt::runtime(FSUI_ICONVSTR(ICON_FA_USER_CLOCK, "Login token generated on {}")), ts_string);
+      MenuButtonWithoutSummary(str, false);
+    }
+
+    if (const auto cache = HTTPCache::GetCacheArchive(); cache->IsOpen())
+    {
+      static constexpr auto to_mb = [](s64 size) { return static_cast<u32>((size + 1048575) / 1048576); };
+
+      const u64 size = cache->GetTotalSize();
+      const u64 object_size = cache->GetTotalObjectSize();
+      const size_t count = cache->GetSize();
+
+      str.format(fmt::runtime(FSUI_ICONVSTR(ICON_FA_GLOBE, "Web Cache Size: {0} MB ({1} MB in {2} objects)")),
+                 to_mb(size), to_mb(object_size), count);
+      MenuButtonWithoutSummary(str, false);
     }
   }
 
@@ -5398,6 +5423,15 @@ void FullscreenUI::StartAchievementsGameIconDownload()
       });
     });
   });
+}
+
+void FullscreenUI::ClearWebCache()
+{
+  Error error;
+  if (HTTPCache::Clear(&error))
+    ShowToast(OSDMessageType::Info, {}, FSUI_STR("Web cache cleared."));
+  else
+    FullscreenUI::OpenInfoMessageDialog(ICON_EMOJI_NO_ENTRY_SIGN, FSUI_STR("Clear Web Cache"), error.TakeDescription());
 }
 
 void FullscreenUI::DrawAdvancedSettingsPage()
