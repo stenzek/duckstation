@@ -540,7 +540,7 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
   achievements_leaderboard_trackers = si.GetBoolValue("Cheevos", "LeaderboardTrackers", true);
   achievements_sound_effects = si.GetBoolValue("Cheevos", "SoundEffects", true);
   achievements_progress_indicators = si.GetBoolValue("Cheevos", "ProgressIndicators", true);
-  achievements_prefetch_badges = si.GetBoolValue("Cheevos", "PrefetchBadges", false);
+  achievements_prefetch_badges = si.GetBoolValue("Cheevos", "PrefetchBadges", true);
   achievements_notification_location =
     ParseNotificationLocation(si.GetStringViewValue("Cheevos", "NotificationLocation"))
       .value_or(DEFAULT_ACHIEVEMENT_NOTIFICATION_LOCATION);
