@@ -333,7 +333,7 @@
         <item row="1" column="1">
          <widget class="QCheckBox" name="enableSensorMapping">
           <property name="toolTip">
-           <string>Allows sensors such as accelerometers to be mapped to emulated controls. By default movement of the mouse will be ignored.</string>
+           <string>Allows sensors such as accelerometers to be mapped to emulated controls. By default sensors will be ignored.</string>
           </property>
           <property name="text">
            <string>Enable Sensor Mapping</string>
