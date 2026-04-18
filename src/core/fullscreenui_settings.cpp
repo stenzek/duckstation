@@ -688,7 +688,8 @@ void FullscreenUI::DrawIntListSetting(SettingsInterface* bsi, std::string_view t
          (translate_options ? Host::TranslateToStringView(tr_context, options[index]) : options[index])) :
       FSUI_VSTR("Use Global Setting");
 
-  if (MenuActionButton(title, summary, value_text, true, enabled))
+  const bool use_dropdown = (options.size() <= 5);
+  if (MenuActionButton(title, summary, value_text, use_dropdown, enabled))
   {
     DropdownDialogOptions cd_options;
     cd_options.reserve(options.size() + 1);
@@ -700,27 +701,55 @@ void FullscreenUI::DrawIntListSetting(SettingsInterface* bsi, std::string_view t
                                                   std::string(options[i]),
                               (i == static_cast<size_t>(index)));
     }
-    OpenDropdownDialog(std::move(cd_options), [game_settings, section = TinyString(section), key = TinyString(key),
-                                               option_offset](s32 index, const std::string& title) {
-      if (index < 0)
-        return;
+    if (!use_dropdown)
+    {
+      OpenChoiceDialog(title, false, std::move(cd_options),
+                       [game_settings, section = TinyString(section), key = TinyString(key),
+                        option_offset](s32 index, const std::string& title, bool checked) {
+                         if (index < 0)
+                           return;
 
-      const auto lock = Core::GetSettingsLock();
-      SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
-      if (game_settings)
-      {
-        if (index == 0)
-          bsi->DeleteValue(section, key);
+                         const auto lock = Core::GetSettingsLock();
+                         SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
+                         if (game_settings)
+                         {
+                           if (index == 0)
+                             bsi->DeleteValue(section, key);
+                           else
+                             bsi->SetIntValue(section, key, index - 1 + option_offset);
+                         }
+                         else
+                         {
+                           bsi->SetIntValue(section, key, index + option_offset);
+                         }
+
+                         SetSettingsChanged(bsi);
+                       });
+    }
+    else
+    {
+      OpenDropdownDialog(std::move(cd_options), [game_settings, section = TinyString(section), key = TinyString(key),
+                                                 option_offset](s32 index, const std::string& title) {
+        if (index < 0)
+          return;
+
+        const auto lock = Core::GetSettingsLock();
+        SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
+        if (game_settings)
+        {
+          if (index == 0)
+            bsi->DeleteValue(section, key);
+          else
+            bsi->SetIntValue(section, key, index - 1 + option_offset);
+        }
         else
-          bsi->SetIntValue(section, key, index - 1 + option_offset);
-      }
-      else
-      {
-        bsi->SetIntValue(section, key, index + option_offset);
-      }
+        {
+          bsi->SetIntValue(section, key, index + option_offset);
+        }
 
-      SetSettingsChanged(bsi);
-    });
+        SetSettingsChanged(bsi);
+      });
+    }
   }
 }
 
