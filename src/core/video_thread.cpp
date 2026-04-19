@@ -475,6 +475,13 @@ void VideoThread::Internal::VideoThreadEntryPoint()
         }
         break;
 
+        case VideoThreadCommandType::AsyncBufferCall:
+        {
+          VideoThreadAsyncBufferCallCommand* acmd = static_cast<VideoThreadAsyncBufferCallCommand*>(cmd);
+          acmd->func(acmd + 1);
+        }
+        break;
+
         case VideoThreadCommandType::Reconfigure:
         {
           VideoThreadReconfigureCommand* ccmd = static_cast<VideoThreadReconfigureCommand*>(cmd);
@@ -1170,10 +1177,9 @@ void VideoThread::RunOnBackend(AsyncBackendCallType func, bool sync, bool spin_o
 std::pair<VideoThreadCommand*, void*> VideoThread::BeginASyncBufferCall(AsyncBufferCallType func, u32 buffer_size)
 {
   // this is less than optimal, but it's only used for input osd updates currently, so whatever
-  VideoThreadAsyncCallCommand* const cmd = AllocateCommand<VideoThreadAsyncCallCommand>(
-    sizeof(VideoThreadAsyncCallCommand) + buffer_size, VideoThreadCommandType::AsyncCall);
+  VideoThreadAsyncBufferCallCommand* const cmd = AllocateCommand<VideoThreadAsyncBufferCallCommand>(
+    sizeof(VideoThreadAsyncBufferCallCommand) + buffer_size, VideoThreadCommandType::AsyncBufferCall, func);
   void* const buffer = static_cast<void*>(cmd + 1);
-  cmd->func = [func, buffer]() { func(buffer); };
   return std::make_pair(static_cast<VideoThreadCommand*>(cmd), buffer);
 }
 
