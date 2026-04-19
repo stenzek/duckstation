@@ -55,7 +55,6 @@ protected:
   };
 
   virtual void StateChanged(StateChange changed);
-  virtual void CancellableChanged();
 
   struct State
   {

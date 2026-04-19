@@ -139,7 +139,7 @@ void ProgressCallback::SetCancellable(bool cancellable)
     return;
 
   m_cancellable = cancellable;
-  CancellableChanged();
+  StateChanged(STATE_CHANGE_CANCELLABLE);
 }
 
 void ProgressCallback::SetProgressValue(u32 value)
@@ -180,10 +180,6 @@ void ProgressCallback::IncrementProgressValue()
 }
 
 void ProgressCallback::StateChanged(StateChange changed)
-{
-}
-
-void ProgressCallback::CancellableChanged()
 {
 }
 
