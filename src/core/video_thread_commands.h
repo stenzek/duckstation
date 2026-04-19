@@ -29,6 +29,7 @@ enum class VideoThreadCommandType : u8
   Wraparound,
   AsyncCall,
   AsyncBackendCall,
+  AsyncBufferCall,
   Reconfigure,
   UpdateSettings,
   UpdateGameInfo,
@@ -126,6 +127,14 @@ struct VideoThreadAsyncBackendCallCommand : public VideoThreadCommand
 
   std::function<void(GPUBackend*)> func;
 };
+
+struct VideoThreadAsyncBufferCallCommand : public VideoThreadCommand
+{
+  VideoThreadAsyncBufferCallCommand(void (*func_)(void*)) : func(func_) {}
+
+  void (*func)(void*);
+};
+static_assert(std::is_trivially_destructible_v<VideoThreadAsyncBufferCallCommand>);
 
 struct GPUBackendLoadStateCommand : public VideoThreadCommand
 {
