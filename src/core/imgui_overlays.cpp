@@ -782,7 +782,7 @@ void ImGuiManager::UpdateInputOverlay()
   }
 
   const u32 buffer_size =
-    sizeof(InputOverlayStateUpdateBuffer) + (static_cast<u32>(sizeof(InputOverlayState)) * num_active_pads);
+    sizeof(InputOverlayStateUpdateBuffer) + (static_cast<u32>(sizeof(InputOverlayState::PadState)) * num_active_pads);
   const auto& [cmd, buffer] = VideoThread::BeginASyncBufferCall(&ImGuiManager::UpdateInputOverlay, buffer_size);
 
   InputOverlayStateUpdateBuffer* const ubuffer = static_cast<InputOverlayStateUpdateBuffer*>(buffer);
