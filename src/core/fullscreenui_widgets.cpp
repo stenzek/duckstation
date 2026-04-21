@@ -2331,28 +2331,31 @@ void FullscreenUI::BeginMenuButtons(u32 num_items /* = 0 */, float y_align /* = 
                                     float y_padding /* = LAYOUT_MENU_BUTTON_Y_PADDING */, float x_spacing /* = 0.0f */,
                                     float y_spacing /* = LAYOUT_MENU_BUTTON_SPACING */)
 {
-  // If we're scrolling up and down, it's possible that the first menu item won't be enabled.
-  // If so, track when the scroll happens, and if we moved to a new ID. If not, scroll the parent window.
-  if (GImGui->NavMoveDir != ImGuiDir_None)
+  if (ImGui::IsWindowFocused())
   {
-    s_state.has_pending_nav_move = static_cast<s8>(GImGui->NavMoveDir);
-  }
-  else if (s_state.has_pending_nav_move != ImGuiDir_None)
-  {
-    if (GImGui->NavJustMovedToId == 0)
+    // If we're scrolling up and down, it's possible that the first menu item won't be enabled.
+    // If so, track when the scroll happens, and if we moved to a new ID. If not, scroll the parent window.
+    if (GImGui->NavMoveDir != ImGuiDir_None)
     {
-      if (s_state.has_pending_nav_move == ImGuiDir_Up)
-      {
-        ImGui::SetScrollY(std::max(ImGui::GetScrollY() - MenuButtonBounds::GetSingleLineHeight(y_padding), 0.0f));
-      }
-      else if (s_state.has_pending_nav_move == ImGuiDir_Down)
-      {
-        ImGui::SetScrollY(
-          std::min(ImGui::GetScrollY() + MenuButtonBounds::GetSingleLineHeight(y_padding), ImGui::GetScrollMaxY()));
-      }
+      s_state.has_pending_nav_move = static_cast<s8>(GImGui->NavMoveDir);
     }
+    else if (s_state.has_pending_nav_move != ImGuiDir_None)
+    {
+      if (GImGui->NavJustMovedToId == 0)
+      {
+        if (s_state.has_pending_nav_move == ImGuiDir_Up)
+        {
+          ImGui::SetScrollY(std::max(ImGui::GetScrollY() - MenuButtonBounds::GetSingleLineHeight(y_padding), 0.0f));
+        }
+        else if (s_state.has_pending_nav_move == ImGuiDir_Down)
+        {
+          ImGui::SetScrollY(
+            std::min(ImGui::GetScrollY() + MenuButtonBounds::GetSingleLineHeight(y_padding), ImGui::GetScrollMaxY()));
+        }
+      }
 
-    s_state.has_pending_nav_move = ImGuiDir_None;
+      s_state.has_pending_nav_move = ImGuiDir_None;
+    }
   }
 
   ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, LayoutScale(x_padding, y_padding));
