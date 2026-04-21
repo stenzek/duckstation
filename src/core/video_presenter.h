@@ -73,6 +73,9 @@ void ThrottlePresentation();
 /// Main frame presenter - used both when a game is and is not running.
 bool PresentFrame(GPUBackend* backend, u64 present_time);
 
+/// Renders the display to the specified target. Use when you need to render it offscreen for another purpose.
+GPUPresentResult RenderDisplay(GPUTexture* target, const GSVector2i target_size, bool postfx, bool apply_aspect_ratio);
+
 /// Returns a list of border overlay presets.
 std::vector<std::string> EnumerateBorderOverlayPresets();
 

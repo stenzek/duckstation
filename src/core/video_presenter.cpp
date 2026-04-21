@@ -53,8 +53,6 @@ static bool HasBorderOverlay();
 
 static bool CompileDisplayPipelines(bool display, bool deinterlace, bool chroma_smoothing, Error* error);
 
-static GPUPresentResult RenderDisplay(GPUTexture* target, const GSVector2i target_size, bool postfx,
-                                      bool apply_aspect_ratio);
 static void DrawOverlayBorders(const GSVector2i target_size, const GSVector2i final_target_size,
                                const GSVector4i overlay_display_rect, const GSVector4i draw_rect,
                                const WindowInfoPrerotation prerotation);

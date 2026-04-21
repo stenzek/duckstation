@@ -6024,6 +6024,16 @@ void FullscreenUI::RenderLoadingScreen(std::string_view image, std::string_view 
 
   ImGuiManager::CreateDrawLists();
 
+  if (s_state.blur_active && !s_state.blur_valid)
+  {
+    GPUTexture* const blur_target = GetBlurRenderTexture();
+    if (blur_target)
+    {
+      VideoPresenter::RenderDisplay(blur_target, blur_target->GetSizeVec(), true, true);
+      RenderBlur(blur_target);
+    }
+  }
+
   GPUSwapChain* swap_chain = g_gpu_device->GetMainSwapChain();
   if (g_gpu_device->BeginPresent(swap_chain) == GPUPresentResult::OK)
   {
