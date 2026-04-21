@@ -526,6 +526,9 @@ bool WasSplitWindowChanged();
 void FocusSplitWindowContent();
 bool SplitWindowIsNavWindow();
 
+bool AreAnyWidgetsDialogOpen();
+bool AreAnyWidgetsDialogInteractable();
+
 using FileSelectorCallback = std::function<void(std::string path)>;
 using FileSelectorFilters = std::vector<std::string>;
 bool IsFileSelectorOpen();
@@ -627,6 +630,7 @@ public:
 
   ALWAYS_INLINE const std::string& GetTitle() const { return m_title; }
   ALWAYS_INLINE bool IsOpen() const { return (m_state != State::Inactive); }
+  ALWAYS_INLINE bool IsInteractable() const { return (m_state >= State::Open && m_state <= State::Opening); }
 
   void StartClose();
   void CloseImmediately();

@@ -61,6 +61,7 @@ void ReturnToMainWindow();
 void ReturnToMainWindow(float transition_time);
 void ReturnToPreviousWindow();
 bool AreAnyDialogsOpen();
+bool AreAnyDialogsInteractable();
 
 void PauseForMenuOpen(bool was_paused, bool set_pause_menu_open);
 void ClosePauseMenu();
@@ -117,6 +118,7 @@ bool SwitchToGameSettingsForPath(const std::string& path, SettingsPage page = Se
 void DrawSettingsWindow();
 SettingsPage GetCurrentSettingsPage();
 bool IsInputBindingDialogOpen();
+bool IsInputBindingDialogInteractable();
 
 //////////////////////////////////////////////////////////////////////////
 // Achievements

@@ -209,8 +209,12 @@ bool FullscreenUI::HasActiveWindow()
 
 bool FullscreenUI::AreAnyDialogsOpen()
 {
-  return (IsInputBindingDialogOpen() || IsAnyFixedPopupDialogOpen() || IsChoiceDialogOpen() || IsInputDialogOpen() ||
-          IsFileSelectorOpen() || IsMessageBoxDialogOpen());
+  return (IsInputBindingDialogOpen() || AreAnyWidgetsDialogOpen());
+}
+
+bool FullscreenUI::AreAnyDialogsInteractable()
+{
+  return (IsInputBindingDialogInteractable() || AreAnyWidgetsDialogInteractable());
 }
 
 void FullscreenUI::CheckForConfigChanges(const GPUSettings& old_settings)
@@ -429,7 +433,7 @@ bool FullscreenUI::SetPendingMainWindowSwitch()
 
 void FullscreenUI::SwitchToMainWindow(MainWindowType type)
 {
-  if (!AreAnyDialogsOpen())
+  if (!AreAnyDialogsInteractable())
   {
     ImGui::SetWindowFocus(nullptr);
     QueueResetFocus(FocusResetType::ViewChanged);

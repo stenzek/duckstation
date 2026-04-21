@@ -1911,6 +1911,11 @@ bool FullscreenUI::IsInputBindingDialogOpen()
   return s_settings_locals.input_binding_dialog.IsOpen();
 }
 
+bool FullscreenUI::IsInputBindingDialogInteractable()
+{
+  return s_settings_locals.input_binding_dialog.IsInteractable();
+}
+
 void FullscreenUI::DrawSettingsWindow()
 {
   ImGuiIO& io = ImGui::GetIO();
