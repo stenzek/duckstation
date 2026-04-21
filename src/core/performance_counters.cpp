@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "performance_counters.h"
@@ -139,11 +139,13 @@ u32 PerformanceCounters::GetFrameTimeHistoryPos()
 
 void PerformanceCounters::Clear()
 {
-  s_state = {};
+  DebugAssert(System::GetCoreThreadHandle().IsCallingThread());
+  VideoThread::RunOnThread([]() { s_state = {}; });
 }
 
 void PerformanceCounters::Reset()
 {
+  DebugAssert(System::GetCoreThreadHandle().IsCallingThread());
   VideoThread::RunOnThread(
     [frame_number = System::GetFrameNumber(), internal_frame_number = System::GetInternalFrameNumber()]() {
       const Timer::Value now_ticks = Timer::GetCurrentValue();

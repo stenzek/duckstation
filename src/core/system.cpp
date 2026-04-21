@@ -5349,7 +5349,7 @@ bool System::LoadOneRewindState()
   LoadMemoryState((s_state.memory_save_state_count > 1) ? PopMemoryState() : GetFirstMemoryState(), true);
 
   // back in time, need to reset perf counters
-  VideoThread::RunOnThread(&PerformanceCounters::Reset);
+  PerformanceCounters::Reset();
 
   return true;
 }
@@ -5387,7 +5387,7 @@ void System::SetRewinding(bool enabled)
     if (was_enabled)
     {
       // reset perf counters to avoid the spike
-      VideoThread::RunOnThread(&PerformanceCounters::Reset);
+      PerformanceCounters::Reset();
 
       // and wait the full frequency before filling a new rewind slot
       s_state.rewind_save_counter = s_state.rewind_save_frequency;
