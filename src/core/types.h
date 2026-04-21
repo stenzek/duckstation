@@ -101,6 +101,7 @@ enum class GPUTextureFilter : u8
   Scale3x,
   MMPX,
   MMPXEnhanced,
+  MMPXQuality,
   Count
 };
 
