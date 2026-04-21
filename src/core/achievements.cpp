@@ -9,6 +9,7 @@
 #include "bus.h"
 #include "cheats.h"
 #include "core.h"
+#include "core_private.h"
 #include "cpu_core.h"
 #include "fullscreenui.h"
 #include "fullscreenui_private.h"
@@ -116,7 +117,6 @@ template<typename... T>
 static void ReportRCError(int err, fmt::format_string<T...> fmt, T&&... args);
 static void ClearGameInfo();
 static void ClearGameHash();
-static bool HasSavedCredentials();
 static bool TryLoggingInWithToken();
 static void EnableHardcoreMode(bool display_message, bool display_game_summary);
 static void OnHardcoreModeChanged(bool enabled, bool display_message, bool display_game_summary);
@@ -682,9 +682,11 @@ void Achievements::DestroyClient(std::unique_lock<std::recursive_mutex>& lock)
 
 bool Achievements::HasSavedCredentials()
 {
-  const TinyString username = Core::GetTinyStringSettingValue("Cheevos", "Username");
-  const TinyString api_token = Core::GetTinyStringSettingValue("Cheevos", "Token");
-  return (!username.empty() && !api_token.empty());
+  const auto lock = Core::GetSettingsLock();
+  const SettingsInterface* si = Core::GetBaseSettingsLayer();
+  std::string_view username, token;
+  return (si->LookupValue("Cheevos", "Username", &username) && !username.empty() &&
+          si->LookupValue("Cheevos", "Token", &token) && !token.empty());
 }
 
 bool Achievements::TryLoggingInWithToken()

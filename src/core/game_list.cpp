@@ -2316,6 +2316,10 @@ std::string GameList::GetAchievementGameBadgeURL(u32 game_id)
 {
   LoadAchievementGameBadges();
 
+  // don't allow use of achievement badges if we're not logged in to achievements
+  if (!Achievements::HasSavedCredentials())
+    return {};
+
   const auto iter =
     std::lower_bound(s_state.achievement_game_id_badges.begin(), s_state.achievement_game_id_badges.end(), game_id,
                      [](const auto& entry, u32 search) { return entry.first < search; });
