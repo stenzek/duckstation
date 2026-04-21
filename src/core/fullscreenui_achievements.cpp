@@ -2164,8 +2164,6 @@ void FullscreenUI::DrawAchievement(const rc_client_achievement_t* cheevo, const 
                                (is_measured ? (spacing + LayoutScale(progress_height_unscaled)) : 0.0f) +
                                LayoutScale(LAYOUT_MENU_ITEM_EXTRA_HEIGHT);
 
-  const float pos_y = ImGui::GetCursorPosY();
-
   SmallString text;
   text.format("chv_{}", cheevo->id);
 
@@ -2174,6 +2172,7 @@ void FullscreenUI::DrawAchievement(const rc_client_achievement_t* cheevo, const 
   const bool clicked = MenuButtonFrame(text, content_height, true, &bb, &visible, &hovered);
   if (!visible)
   {
+    const float pos_y = ImGui::GetCursorPosY();
     if (pos_y >= prefetch_range.x && pos_y <= prefetch_range.y)
     {
       if (const std::string_view badge_url = Achievements::GetAchievementBadgeURL(cheevo, !is_unlocked);

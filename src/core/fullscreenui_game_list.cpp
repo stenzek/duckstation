@@ -775,6 +775,10 @@ void FullscreenUI::DrawGameGrid(const ImVec2& heading_size)
   if (!s_game_list_locals.game_list_sorted_entries.empty())
     ImGui::SetCursorPosX(ImGui::GetCursorPosX() + x_padding);
 
+  // Prefetch two rows worth of covers.
+  const ImVec2 prefetch_range =
+    ImVec2(window->Pos.y + window->Scroll.y, window->Pos.y + window->Scroll.y + (window->ClipRect.GetHeight() * 2.0f));
+
   for (size_t entry_index = 0; entry_index < s_game_list_locals.game_list_sorted_entries.size(); entry_index++)
   {
     if (window->SkipItems)
@@ -860,6 +864,11 @@ void FullscreenUI::DrawGameGrid(const ImVec2& heading_size)
         CancelPendingMenuClose();
         HandleGameListOptions(entry);
       }
+    }
+    else
+    {
+      if (pos.y >= prefetch_range.x && pos.y <= prefetch_range.y)
+        GetGameListCover(entry, false, false, false);
     }
 
     if (entry == s_game_list_locals.game_list_sorted_entries.front())
