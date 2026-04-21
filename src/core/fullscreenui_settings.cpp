@@ -731,27 +731,28 @@ void FullscreenUI::DrawIntListSetting(SettingsInterface* bsi, std::string_view t
     }
     else
     {
-      OpenDropdownDialog(std::move(cd_options), [game_settings, section = TinyString(section), key = TinyString(key),
-                                                 option_offset](s32 index, const std::string& title) {
-        if (index < 0)
-          return;
+      OpenDropdownDialog(title, std::move(cd_options),
+                         [game_settings, section = TinyString(section), key = TinyString(key),
+                          option_offset](s32 index, const std::string& title) {
+                           if (index < 0)
+                             return;
 
-        const auto lock = Core::GetSettingsLock();
-        SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
-        if (game_settings)
-        {
-          if (index == 0)
-            bsi->DeleteValue(section, key);
-          else
-            bsi->SetIntValue(section, key, index - 1 + option_offset);
-        }
-        else
-        {
-          bsi->SetIntValue(section, key, index + option_offset);
-        }
+                           const auto lock = Core::GetSettingsLock();
+                           SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
+                           if (game_settings)
+                           {
+                             if (index == 0)
+                               bsi->DeleteValue(section, key);
+                             else
+                               bsi->SetIntValue(section, key, index - 1 + option_offset);
+                           }
+                           else
+                           {
+                             bsi->SetIntValue(section, key, index + option_offset);
+                           }
 
-        SetSettingsChanged(bsi);
-      });
+                           SetSettingsChanged(bsi);
+                         });
     }
   }
 }
@@ -1411,33 +1412,34 @@ void FullscreenUI::DrawStringListSetting(SettingsInterface* bsi, std::string_vie
 
     if (use_dropdown)
     {
-      OpenDropdownDialog(std::move(cd_options), [game_settings, section, key, default_value, option_values,
-                                                 changed_callback](s32 index, const std::string& title) {
-        if (index < 0)
-          return;
+      OpenDropdownDialog(title, std::move(cd_options),
+                         [game_settings, section, key, default_value, option_values,
+                          changed_callback](s32 index, const std::string& title) {
+                           if (index < 0)
+                             return;
 
-        const auto lock = Core::GetSettingsLock();
-        SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
-        if (game_settings)
-        {
-          if (index == 0)
-            bsi->DeleteValue(section, key);
-          else
-            bsi->SetStringValue(section, key, option_values[index - 1]);
+                           const auto lock = Core::GetSettingsLock();
+                           SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
+                           if (game_settings)
+                           {
+                             if (index == 0)
+                               bsi->DeleteValue(section, key);
+                             else
+                               bsi->SetStringValue(section, key, option_values[index - 1]);
 
-          if (changed_callback)
-            changed_callback(Core::GetStringSettingValue(section, key, default_value));
-        }
-        else
-        {
-          bsi->SetStringValue(section, key, option_values[index]);
+                             if (changed_callback)
+                               changed_callback(Core::GetStringSettingValue(section, key, default_value));
+                           }
+                           else
+                           {
+                             bsi->SetStringValue(section, key, option_values[index]);
 
-          if (changed_callback)
-            changed_callback(option_values[index]);
-        }
+                             if (changed_callback)
+                               changed_callback(option_values[index]);
+                           }
 
-        SetSettingsChanged(bsi);
-      });
+                           SetSettingsChanged(bsi);
+                         });
     }
     else
     {
@@ -1501,27 +1503,28 @@ void FullscreenUI::DrawEnumSetting(SettingsInterface* bsi, std::string_view titl
     for (u32 i = 0; i < static_cast<u32>(option_count); i++)
       cd_options.emplace_back(to_display_string_function(static_cast<DataType>(i)),
                               (typed_value.has_value() && i == static_cast<u32>(typed_value.value())));
-    OpenDropdownDialog(std::move(cd_options), [section = TinyString(section), key = TinyString(key), to_string_function,
-                                               game_settings](s32 index, const std::string& title) {
-      if (index < 0)
-        return;
+    OpenDropdownDialog(title, std::move(cd_options),
+                       [section = TinyString(section), key = TinyString(key), to_string_function,
+                        game_settings](s32 index, const std::string& title) {
+                         if (index < 0)
+                           return;
 
-      const auto lock = Core::GetSettingsLock();
-      SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
-      if (game_settings)
-      {
-        if (index == 0)
-          bsi->DeleteValue(section, key);
-        else
-          bsi->SetStringValue(section, key, to_string_function(static_cast<DataType>(index - 1)));
-      }
-      else
-      {
-        bsi->SetStringValue(section, key, to_string_function(static_cast<DataType>(index)));
-      }
+                         const auto lock = Core::GetSettingsLock();
+                         SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
+                         if (game_settings)
+                         {
+                           if (index == 0)
+                             bsi->DeleteValue(section, key);
+                           else
+                             bsi->SetStringValue(section, key, to_string_function(static_cast<DataType>(index - 1)));
+                         }
+                         else
+                         {
+                           bsi->SetStringValue(section, key, to_string_function(static_cast<DataType>(index)));
+                         }
 
-      SetSettingsChanged(bsi);
-    });
+                         SetSettingsChanged(bsi);
+                       });
   }
 }
 
@@ -3974,25 +3977,26 @@ void FullscreenUI::DrawGraphicsSettingsPage()
       options.emplace_back(adapter.name, checked);
     }
 
-    OpenDropdownDialog(std::move(options), [game_settings](s32 index, const std::string& title) {
-      if (index < 0)
-        return;
+    OpenDropdownDialog(FSUI_ICONVSTR(ICON_PF_GPU_GRAPHICS_CARD, "GPU Adapter"), std::move(options),
+                       [game_settings](s32 index, const std::string& title) {
+                         if (index < 0)
+                           return;
 
-      const char* value;
-      if (game_settings && index == 0)
-        value = nullptr;
-      else if ((!game_settings && index == 0) || (game_settings && index == 1))
-        value = "";
-      else
-        value = title.c_str();
+                         const char* value;
+                         if (game_settings && index == 0)
+                           value = nullptr;
+                         else if ((!game_settings && index == 0) || (game_settings && index == 1))
+                           value = "";
+                         else
+                           value = title.c_str();
 
-      SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
-      if (!value)
-        bsi->DeleteValue("GPU", "Adapter");
-      else
-        bsi->SetStringValue("GPU", "Adapter", value);
-      SetSettingsChanged(bsi);
-    });
+                         SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
+                         if (!value)
+                           bsi->DeleteValue("GPU", "Adapter");
+                         else
+                           bsi->SetStringValue("GPU", "Adapter", value);
+                         SetSettingsChanged(bsi);
+                       });
   }
 
   const bool pgxp_enabled = (is_hardware && GetEffectiveBoolSetting(bsi, "GPU", "PGXPEnable", false));
@@ -5169,7 +5173,7 @@ void FullscreenUI::DrawAchievementsSettingsPage(std::unique_lock<std::mutex>& se
       options.emplace_back(FSUI_STR("Use OSD Scale"), value.has_value() && value.value() < 0);
       options.emplace_back(FSUI_STR("Custom"), is_custom);
 
-      OpenDropdownDialog(std::move(options), [key, game_settings](s32 index, const std::string& title) {
+      OpenDropdownDialog(title, std::move(options), [key, game_settings](s32 index, const std::string& title) {
         if (index < 0)
           return;
 

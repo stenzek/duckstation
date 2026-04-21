@@ -245,7 +245,10 @@ public:
   DropdownDialog();
   ~DropdownDialog();
 
-  void Open(DropdownDialogOptions options, DropdownDialogCallback callback, float min_width);
+  std::string_view GetHiddenTitle() const;
+
+  void Open(std::string_view hidden_title, DropdownDialogOptions options, DropdownDialogCallback callback,
+            float min_width);
   void ClearState();
   void SetAnchorBounds(const ImRect& value_bb, const ImRect& frame_bb);
 
@@ -3668,6 +3671,14 @@ bool FullscreenUI::MenuActionButton(std::string_view title, std::string_view sum
   if (!visible)
     return false;
 
+  if (!hovered && dropdown_icon && s_state.dropdown_dialog.IsOpen() &&
+      s_state.dropdown_dialog.GetHiddenTitle() == title)
+  {
+    ImGui::RenderFrame(bb.frame_bb.Min, bb.frame_bb.Max,
+                       ImGui::GetColorU32(DarkerColor(UIStyle.BackgroundColor, UIStyle.IsDarkTheme ? 1.4f : 0.2f)),
+                       false, LayoutScale(LAYOUT_MENU_ITEM_BORDER_ROUNDING));
+  }
+
   const ImVec4& color = ImGui::GetStyle().Colors[enabled ? ImGuiCol_Text : ImGuiCol_TextDisabled];
 
   RenderShadowedTextClipped(UIStyle.Font, UIStyle.LargeFontSize, UIStyle.BoldFontWeight, bb.title_bb.Min,
@@ -5086,7 +5097,17 @@ FullscreenUI::DropdownDialog::DropdownDialog() = default;
 
 FullscreenUI::DropdownDialog::~DropdownDialog() = default;
 
-void FullscreenUI::DropdownDialog::Open(DropdownDialogOptions options, DropdownDialogCallback callback, float min_width)
+std::string_view FullscreenUI::DropdownDialog::GetHiddenTitle() const
+{
+  const size_t chop_length = 18; // length of "##dropdown_dialog_"
+  if (m_title.length() < chop_length) [[unlikely]]
+    return {};
+
+  return std::string_view(m_title).substr(chop_length);
+}
+
+void FullscreenUI::DropdownDialog::Open(std::string_view hidden_title, DropdownDialogOptions options,
+                                        DropdownDialogCallback callback, float min_width)
 {
   m_options = std::move(options);
   m_callback = std::move(callback);
@@ -5152,7 +5173,7 @@ void FullscreenUI::DropdownDialog::Open(DropdownDialogOptions options, DropdownD
     m_reverse_animation = false;
   }
 
-  SetTitleAndOpen("##dropdown_dialog");
+  SetTitleAndOpen(fmt::format("##dropdown_dialog_{}", hidden_title));
 }
 
 void FullscreenUI::DropdownDialog::ClearState()
@@ -5249,10 +5270,15 @@ bool FullscreenUI::IsDropdownDialogOpen()
   return s_state.dropdown_dialog.IsOpen();
 }
 
-void FullscreenUI::OpenDropdownDialog(DropdownDialogOptions options, DropdownDialogCallback callback,
-                                      float min_width /* = 0.0f */)
+std::string_view FullscreenUI::GetDropdownDialogHiddenTitle()
 {
-  s_state.dropdown_dialog.Open(std::move(options), std::move(callback), min_width);
+  return s_state.dropdown_dialog.GetHiddenTitle();
+}
+
+void FullscreenUI::OpenDropdownDialog(std::string_view hidden_title, DropdownDialogOptions options,
+                                      DropdownDialogCallback callback, float min_width /* = 0.0f */)
+{
+  s_state.dropdown_dialog.Open(hidden_title, std::move(options), std::move(callback), min_width);
 }
 
 void FullscreenUI::CloseDropdownDialog()
