@@ -1319,7 +1319,6 @@ void System::LoadSettings(bool display_osd_messages)
   g_settings.ApplySettingRestrictions();
 
   Settings::UpdateLogConfig(si);
-  Host::LoadSettings(si, lock);
   InputManager::ReloadSourcesAndBindings(GetInputSourceSettingsLayer(lock), controller_si, GetHotkeySettingsLayer(lock),
                                          lock);
 

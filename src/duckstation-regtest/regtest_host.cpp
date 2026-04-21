@@ -201,10 +201,6 @@ SmallString Host::TranslatePluralToSmallString(const char* context, const char* 
   return ret;
 }
 
-void Host::LoadSettings(const SettingsInterface& si, std::unique_lock<std::mutex>& lock)
-{
-}
-
 void Host::OnSettingsReloaded()
 {
 }

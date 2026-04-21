@@ -861,10 +861,6 @@ bool QtHost::LoadResources(Error* error)
   return true;
 }
 
-void Host::LoadSettings(const SettingsInterface& si, std::unique_lock<std::mutex>& lock)
-{
-}
-
 void Host::OnSettingsReloaded()
 {
   emit g_core_thread->settingsReloaded();
