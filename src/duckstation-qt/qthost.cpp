@@ -928,8 +928,10 @@ void QtHost::ApplyMigrations()
       QMessageBox mb(
         QMessageBox::Question, "DuckStation"_L1,
         "DuckStation has migrated to using an archive for caching achievement icons, which is significantly more "
-        "efficient and does not create thousands of files.\n\nThe old directory of achievement icons is no "
-        "longer needed and can be deleted.\n\nDo you want to delete the old achievement icons cache now?"_L1,
+        "efficient and does not create thousands of files.\n\n"
+        "The old directory of achievement icons is no longer needed and can be deleted.\n\n"
+        "Do you want to delete the old achievement icons cache now?"
+        "\n\nNo save data or achievement progress will be lost."_L1,
         QMessageBox::Yes | QMessageBox::No);
       mb.setWindowIcon(GetAppIcon());
       if (mb.exec() == QMessageBox::Yes)
