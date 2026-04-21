@@ -137,6 +137,8 @@
 		<file>icons/debug-step-over.png</file>
 		<file>icons/debug-trace.png</file>
 		<file>icons/discord.png</file>
+		<file>icons/flags/az.png</file>
+		<file>icons/flags/az@2x.png</file>
 		<file>icons/flags/de.png</file>
 		<file>icons/flags/de@2x.png</file>
 		<file>icons/flags/en.png</file>

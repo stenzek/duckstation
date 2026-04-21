@@ -329,6 +329,7 @@
     <QtUi Include="debuggingsettingswidget.ui">
       <FileType>Document</FileType>
     </QtUi>
+    <None Include="translations\duckstation-qt_az.ts" />
     <None Include="translations\duckstation-qt_es-es.ts" />
     <None Include="translations\duckstation-qt_sv.ts" />
     <None Include="translations\duckstation-qt_tr.ts" />

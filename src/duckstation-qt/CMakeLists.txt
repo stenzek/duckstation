@@ -164,6 +164,7 @@ set(SRCS
 )
 
 set(TS_FILES
+  translations/duckstation-qt_az.ts
   translations/duckstation-qt_de.ts
   translations/duckstation-qt_en.ts
   translations/duckstation-qt_es.ts
