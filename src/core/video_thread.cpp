@@ -467,14 +467,6 @@ void VideoThread::Internal::VideoThreadEntryPoint()
         }
         break;
 
-        case VideoThreadCommandType::AsyncBackendCall:
-        {
-          VideoThreadAsyncBackendCallCommand* acmd = static_cast<VideoThreadAsyncBackendCallCommand*>(cmd);
-          acmd->func(s_state.gpu_backend.get());
-          acmd->~VideoThreadAsyncBackendCallCommand();
-        }
-        break;
-
         case VideoThreadCommandType::AsyncBufferCall:
         {
           VideoThreadAsyncBufferCallCommand* acmd = static_cast<VideoThreadAsyncBufferCallCommand*>(cmd);
@@ -625,6 +617,12 @@ void VideoThread::StopFullscreenUI()
 std::optional<GPURenderer> VideoThread::GetRequestedRenderer()
 {
   return s_state.requested_renderer;
+}
+
+GPUBackend* VideoThread::GetGPUBackend()
+{
+  DebugAssert(IsOnThread());
+  return s_state.gpu_backend.get();
 }
 
 bool VideoThread::CreateGPUBackend(GPURenderer renderer, bool upload_vram, std::optional<bool> fullscreen, Error* error)
@@ -1156,22 +1154,17 @@ void VideoThread::RunOnThread(AsyncCallType func)
   PushCommandAndWakeThread(cmd);
 }
 
-void VideoThread::RunOnBackend(AsyncBackendCallType func, bool sync, bool spin_or_wake)
+void VideoThread::RunOnThreadAndSync(AsyncCallType func)
 {
   if (!s_state.use_thread) [[unlikely]]
   {
-    func(s_state.gpu_backend.get());
+    func();
     return;
   }
 
-  VideoThreadAsyncBackendCallCommand* cmd =
-    AllocateCommand<VideoThreadAsyncBackendCallCommand>(VideoThreadCommandType::AsyncBackendCall, std::move(func));
-  if (sync)
-    PushCommandAndSync(cmd, spin_or_wake);
-  else if (spin_or_wake)
-    PushCommandAndWakeThread(cmd);
-  else
-    PushCommand(cmd);
+  VideoThreadAsyncCallCommand* cmd =
+    AllocateCommand<VideoThreadAsyncCallCommand>(VideoThreadCommandType::AsyncCall, std::move(func));
+  PushCommandAndSync(cmd, false);
 }
 
 std::pair<VideoThreadCommand*, void*> VideoThread::BeginASyncBufferCall(AsyncBufferCallType func, u32 buffer_size)

@@ -5731,9 +5731,10 @@ bool System::StartMediaCapture(std::string path)
   if (capture_video && Core::GetBoolSettingValue("MediaCapture", "VideoAutoSize", false))
   {
     // need to query this on the GPU thread
-    VideoThread::RunOnBackend(
-      [path = std::move(path), capture_audio, mode = g_settings.display_screenshot_mode](GPUBackend* backend) mutable {
-        if (!backend)
+    VideoThread::RunOnThread(
+      [path = std::move(path), capture_audio, mode = g_settings.display_screenshot_mode]() mutable {
+        GPUBackend* const backend = VideoThread::GetGPUBackend();
+        if (!backend) [[unlikely]]
           return;
 
         // Prefer aligning for non-window size.
@@ -5746,8 +5747,7 @@ bool System::StartMediaCapture(std::string path)
         Host::RunOnCoreThread([path = std::move(path), capture_audio, video_width, video_height]() mutable {
           StartMediaCapture(std::move(path), true, capture_audio, video_width, video_height);
         });
-      },
-      false, true);
+      });
     return true;
   }
 

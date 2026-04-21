@@ -340,41 +340,43 @@ void GPUBackend::ReleaseQueuedFrame()
 bool GPUBackend::AllocateMemorySaveStates(std::span<System::MemorySaveState> states, Error* error)
 {
   bool result;
-  VideoThread::RunOnBackend(
-    [states, error, &result](GPUBackend* backend) {
-      // Free old textures first.
-      for (size_t i = 0; i < states.size(); i++)
-        g_gpu_device->RecycleTexture(std::move(states[i].vram_texture));
+  VideoThread::RunOnThreadAndSync([states, error, &result]() {
+    GPUBackend* const backend = VideoThread::GetGPUBackend();
+    if (!backend) [[unlikely]]
+      return;
 
-      // Maximize potential for texture reuse by flushing the current command buffer.
-      g_gpu_device->WaitForGPUIdle();
+    // Free old textures first.
+    for (size_t i = 0; i < states.size(); i++)
+      g_gpu_device->RecycleTexture(std::move(states[i].vram_texture));
 
-      for (size_t i = 0; i < states.size(); i++)
+    // Maximize potential for texture reuse by flushing the current command buffer.
+    g_gpu_device->WaitForGPUIdle();
+
+    for (size_t i = 0; i < states.size(); i++)
+    {
+      if (!backend->AllocateMemorySaveState(states[i], error))
       {
+        // Try flushing the pool.
+        WARNING_LOG("Failed to allocate memory save state texture, trying flushing pool.");
+        g_gpu_device->PurgeTexturePool();
+        g_gpu_device->WaitForGPUIdle();
         if (!backend->AllocateMemorySaveState(states[i], error))
         {
-          // Try flushing the pool.
-          WARNING_LOG("Failed to allocate memory save state texture, trying flushing pool.");
-          g_gpu_device->PurgeTexturePool();
-          g_gpu_device->WaitForGPUIdle();
-          if (!backend->AllocateMemorySaveState(states[i], error))
+          // Free anything that was allocated.
+          for (size_t j = 0; j <= i; j++)
           {
-            // Free anything that was allocated.
-            for (size_t j = 0; j <= i; j++)
-            {
-              states[j].state_data.deallocate();
-              states[j].vram_texture.reset();
-              result = false;
-              return;
-            }
+            states[j].state_data.deallocate();
+            states[j].vram_texture.reset();
+            result = false;
+            return;
           }
         }
       }
+    }
 
-      backend->RestoreDeviceContext();
-      result = true;
-    },
-    true, false);
+    backend->RestoreDeviceContext();
+    result = true;
+  });
   return result;
 }
 
@@ -692,39 +694,38 @@ bool GPUBackend::RenderScreenshotToBuffer(u32 width, u32 height, bool postfx, bo
                                           Error* error)
 {
   bool result;
-  VideoThread::RunOnBackend(
-    [width, height, postfx, apply_aspect_ratio, out_image, error, &result](GPUBackend* backend) {
-      if (!backend)
-      {
-        Error::SetStringView(error, "No GPU backend.");
-        result = false;
-        return;
-      }
+  VideoThread::RunOnThreadAndSync([width, height, postfx, apply_aspect_ratio, out_image, error, &result]() {
+    GPUBackend* const backend = VideoThread::GetGPUBackend();
+    if (!backend) [[unlikely]]
+    {
+      Error::SetStringView(error, "No GPU backend.");
+      result = false;
+      return;
+    }
 
-      // Post-processing requires that the size match the window.
-      const bool really_postfx = postfx && g_gpu_device->HasMainSwapChain();
-      u32 image_width, image_height;
-      if (really_postfx)
-      {
-        image_width = g_gpu_device->GetMainSwapChain()->GetWidth();
-        image_height = g_gpu_device->GetMainSwapChain()->GetHeight();
-      }
-      else
-      {
-        // Crop it if border overlay isn't enabled.
-        GSVector4i source_rect, draw_rect, display_rect;
-        VideoPresenter::CalculateDrawRect(GSVector2i(static_cast<s32>(width), static_cast<s32>(height)),
-                                          apply_aspect_ratio, false, true, false, &source_rect, &display_rect,
-                                          &draw_rect);
-        image_width = static_cast<u32>(display_rect.width());
-        image_height = static_cast<u32>(display_rect.height());
-      }
+    // Post-processing requires that the size match the window.
+    const bool really_postfx = postfx && g_gpu_device->HasMainSwapChain();
+    u32 image_width, image_height;
+    if (really_postfx)
+    {
+      image_width = g_gpu_device->GetMainSwapChain()->GetWidth();
+      image_height = g_gpu_device->GetMainSwapChain()->GetHeight();
+    }
+    else
+    {
+      // Crop it if border overlay isn't enabled.
+      GSVector4i source_rect, draw_rect, display_rect;
+      VideoPresenter::CalculateDrawRect(GSVector2i(static_cast<s32>(width), static_cast<s32>(height)),
+                                        apply_aspect_ratio, false, true, false, &source_rect, &display_rect,
+                                        &draw_rect);
+      image_width = static_cast<u32>(display_rect.width());
+      image_height = static_cast<u32>(display_rect.height());
+    }
 
-      result = VideoPresenter::RenderScreenshotToBuffer(image_width, image_height, really_postfx, apply_aspect_ratio,
-                                                        out_image, error);
-      backend->RestoreDeviceContext();
-    },
-    true, false);
+    result = VideoPresenter::RenderScreenshotToBuffer(image_width, image_height, really_postfx, apply_aspect_ratio,
+                                                      out_image, error);
+    backend->RestoreDeviceContext();
+  });
 
   return result;
 }
@@ -732,109 +733,107 @@ bool GPUBackend::RenderScreenshotToBuffer(u32 width, u32 height, bool postfx, bo
 void GPUBackend::RenderScreenshotToFile(const std::string_view path, DisplayScreenshotMode mode, u8 quality,
                                         bool show_osd_message)
 {
-  VideoThread::RunOnBackend(
-    [path = std::string(path), mode, quality, show_osd_message](GPUBackend* backend) mutable {
-      if (!backend)
-        return;
+  VideoThread::RunOnThread([path = std::string(path), mode, quality, show_osd_message]() mutable {
+    GPUBackend* const backend = VideoThread::GetGPUBackend();
+    if (!backend) [[unlikely]]
+      return;
 
-      const GSVector2i size = VideoPresenter::CalculateScreenshotSize(mode);
-      if (size.x == 0 || size.y == 0)
-        return;
+    const GSVector2i size = VideoPresenter::CalculateScreenshotSize(mode);
+    if (size.x == 0 || size.y == 0)
+      return;
 
-      std::string osd_key;
-      if (show_osd_message)
-        osd_key = fmt::format("ScreenshotSaver_{}", path);
+    std::string osd_key;
+    if (show_osd_message)
+      osd_key = fmt::format("ScreenshotSaver_{}", path);
 
-      const bool internal_resolution = (mode != DisplayScreenshotMode::ScreenResolution);
-      const bool apply_aspect_ratio = (mode != DisplayScreenshotMode::UncorrectedInternalResolution);
-      Error error;
-      Image image;
-      if (!VideoPresenter::RenderScreenshotToBuffer(size.x, size.y, !internal_resolution, apply_aspect_ratio, &image,
-                                                    &error))
-      {
-        ERROR_LOG("Failed to render {}x{} screenshot: {}", size.x, size.y, error.GetDescription());
-        if (show_osd_message)
-        {
-          Host::AddIconOSDMessage(
-            OSDMessageType::Error, std::move(osd_key), ICON_EMOJI_WARNING,
-            fmt::format(TRANSLATE_FS("GPU", "Failed to save screenshot:\n{}"), error.GetDescription()));
-        }
-
-        backend->RestoreDeviceContext();
-        return;
-      }
-
-      // no more GPU calls
-      backend->RestoreDeviceContext();
-
-      auto fp = FileSystem::OpenManagedCFile(path.c_str(), "wb", &error);
-      if (!fp)
-      {
-        ERROR_LOG("Can't open file '{}': {}", Path::GetFileName(path), error.GetDescription());
-        if (show_osd_message)
-        {
-          Host::AddIconOSDMessage(
-            OSDMessageType::Error, std::move(osd_key), ICON_EMOJI_WARNING,
-            fmt::format(TRANSLATE_FS("GPU", "Failed to save screenshot:\n{}"), error.GetDescription()));
-        }
-
-        return;
-      }
-
+    const bool internal_resolution = (mode != DisplayScreenshotMode::ScreenResolution);
+    const bool apply_aspect_ratio = (mode != DisplayScreenshotMode::UncorrectedInternalResolution);
+    Error error;
+    Image image;
+    if (!VideoPresenter::RenderScreenshotToBuffer(size.x, size.y, !internal_resolution, apply_aspect_ratio, &image,
+                                                  &error))
+    {
+      ERROR_LOG("Failed to render {}x{} screenshot: {}", size.x, size.y, error.GetDescription());
       if (show_osd_message)
       {
         Host::AddIconOSDMessage(
-          OSDMessageType::Persistent, osd_key, ICON_EMOJI_CAMERA_WITH_FLASH,
-          fmt::format(TRANSLATE_FS("GPU", "Saving screenshot to '{}'."), Path::GetFileName(path)));
+          OSDMessageType::Error, std::move(osd_key), ICON_EMOJI_WARNING,
+          fmt::format(TRANSLATE_FS("GPU", "Failed to save screenshot:\n{}"), error.GetDescription()));
       }
 
-      Host::QueueAsyncTask([path = std::move(path), fp = fp.release(), quality,
-                            flip_y = g_gpu_device->UsesLowerLeftOrigin(), image = std::move(image),
-                            osd_key = std::move(osd_key)]() mutable {
-        Error error;
+      backend->RestoreDeviceContext();
+      return;
+    }
 
-        if (flip_y)
-          image.FlipY();
+    // no more GPU calls
+    backend->RestoreDeviceContext();
 
-        if (image.GetFormat() != ImageFormat::RGBA8)
+    auto fp = FileSystem::OpenManagedCFile(path.c_str(), "wb", &error);
+    if (!fp)
+    {
+      ERROR_LOG("Can't open file '{}': {}", Path::GetFileName(path), error.GetDescription());
+      if (show_osd_message)
+      {
+        Host::AddIconOSDMessage(
+          OSDMessageType::Error, std::move(osd_key), ICON_EMOJI_WARNING,
+          fmt::format(TRANSLATE_FS("GPU", "Failed to save screenshot:\n{}"), error.GetDescription()));
+      }
+
+      return;
+    }
+
+    if (show_osd_message)
+    {
+      Host::AddIconOSDMessage(OSDMessageType::Persistent, osd_key, ICON_EMOJI_CAMERA_WITH_FLASH,
+                              fmt::format(TRANSLATE_FS("GPU", "Saving screenshot to '{}'."), Path::GetFileName(path)));
+    }
+
+    Host::QueueAsyncTask([path = std::move(path), fp = fp.release(), quality,
+                          flip_y = g_gpu_device->UsesLowerLeftOrigin(), image = std::move(image),
+                          osd_key = std::move(osd_key)]() mutable {
+      Error error;
+
+      if (flip_y)
+        image.FlipY();
+
+      if (image.GetFormat() != ImageFormat::RGBA8)
+      {
+        std::optional<Image> convert_image = image.ConvertToRGBA8(&error);
+        if (!convert_image.has_value())
         {
-          std::optional<Image> convert_image = image.ConvertToRGBA8(&error);
-          if (!convert_image.has_value())
-          {
-            ERROR_LOG("Failed to convert {} screenshot to RGBA8: {}", Image::GetFormatName(image.GetFormat()),
-                      error.GetDescription());
-            image.Invalidate();
-          }
-          else
-          {
-            image = std::move(convert_image.value());
-          }
+          ERROR_LOG("Failed to convert {} screenshot to RGBA8: {}", Image::GetFormatName(image.GetFormat()),
+                    error.GetDescription());
+          image.Invalidate();
         }
-
-        bool result = false;
-        if (image.IsValid())
+        else
         {
-          image.SetAllPixelsOpaque();
-
-          result = image.SaveToFile(path.c_str(), fp, quality, &error);
-          if (!result)
-            ERROR_LOG("Failed to save screenshot to '{}': '{}'", Path::GetFileName(path), error.GetDescription());
+          image = std::move(convert_image.value());
         }
+      }
 
-        if (!osd_key.empty())
-        {
-          Host::AddIconOSDMessage(result ? OSDMessageType::Info : OSDMessageType::Error, std::move(osd_key),
-                                  ICON_EMOJI_CAMERA,
-                                  fmt::format(result ? TRANSLATE_FS("GPU", "Saved screenshot to '{}'.") :
-                                                       TRANSLATE_FS("GPU", "Failed to save screenshot to '{}'."),
-                                              Path::GetFileName(path)));
-        }
+      bool result = false;
+      if (image.IsValid())
+      {
+        image.SetAllPixelsOpaque();
 
-        std::fclose(fp);
-        return result;
-      });
-    },
-    false, false);
+        result = image.SaveToFile(path.c_str(), fp, quality, &error);
+        if (!result)
+          ERROR_LOG("Failed to save screenshot to '{}': '{}'", Path::GetFileName(path), error.GetDescription());
+      }
+
+      if (!osd_key.empty())
+      {
+        Host::AddIconOSDMessage(result ? OSDMessageType::Info : OSDMessageType::Error, std::move(osd_key),
+                                ICON_EMOJI_CAMERA,
+                                fmt::format(result ? TRANSLATE_FS("GPU", "Saved screenshot to '{}'.") :
+                                                     TRANSLATE_FS("GPU", "Failed to save screenshot to '{}'."),
+                                            Path::GetFileName(path)));
+      }
+
+      std::fclose(fp);
+      return result;
+    });
+  });
 }
 
 namespace {

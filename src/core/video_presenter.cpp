@@ -14,6 +14,7 @@
 #include "save_state_version.h"
 #include "settings.h"
 #include "system.h"
+#include "system_private.h"
 #include "video_shadergen.h"
 #include "video_thread.h"
 #include "video_thread_commands.h"
@@ -1755,64 +1756,62 @@ SettingsInterface& VideoPresenter::GetPostProcessingSettingsInterface(const char
 
 void VideoPresenter::TogglePostProcessing()
 {
-  DebugAssert(!VideoThread::IsOnThread());
+  DebugAssert(System::GetCoreThreadHandle().IsCallingThread());
 
-  VideoThread::RunOnBackend(
-    [](GPUBackend* backend) {
-      if (!backend)
-        return;
+  VideoThread::RunOnThread([]() {
+    GPUBackend* const backend = VideoThread::GetGPUBackend();
+    if (!backend) [[unlikely]]
+      return;
 
-      // if it is being lazy loaded, we have to load it here
-      if (!s_locals.display_postfx)
-        UpdatePostProcessingSettings(true);
+    // if it is being lazy loaded, we have to load it here
+    if (!s_locals.display_postfx)
+      UpdatePostProcessingSettings(true);
 
-      if (s_locals.display_postfx)
-        s_locals.display_postfx->Toggle();
-    },
-    false, true);
+    if (s_locals.display_postfx)
+      s_locals.display_postfx->Toggle();
+  });
 }
 
 void VideoPresenter::ReloadPostProcessingSettings(bool display, bool internal, bool reload_shaders)
 {
-  DebugAssert(!VideoThread::IsOnThread());
+  DebugAssert(System::GetCoreThreadHandle().IsCallingThread());
 
-  VideoThread::RunOnBackend(
-    [display, internal, reload_shaders](GPUBackend* backend) {
-      if (!backend)
-        return;
+  VideoThread::RunOnThread([display, internal, reload_shaders]() {
+    GPUBackend* const backend = VideoThread::GetGPUBackend();
+    if (!backend) [[unlikely]]
+      return;
 
-      // OSD message first in case any errors occur.
-      if (reload_shaders)
+    // OSD message first in case any errors occur.
+    if (reload_shaders)
+    {
+      Host::AddIconOSDMessage(OSDMessageType::Quick, "PostProcessing", ICON_FA_PAINT_ROLLER,
+                              TRANSLATE_STR("OSDMessage", "Post-processing shaders reloaded."));
+    }
+
+    if (display)
+    {
+      Error error;
+      if (LoadOverlaySettings())
       {
-        Host::AddIconOSDMessage(OSDMessageType::Quick, "PostProcessing", ICON_FA_PAINT_ROLLER,
-                                TRANSLATE_STR("OSDMessage", "Post-processing shaders reloaded."));
-      }
-
-      if (display)
-      {
-        Error error;
-        if (LoadOverlaySettings())
+        // something changed, need to recompile pipelines, the needed pipelines are based on alpha blend
+        LoadOverlayTexture();
+        if (!CompileDisplayPipelines(true, false, false, &error))
         {
-          // something changed, need to recompile pipelines, the needed pipelines are based on alpha blend
-          LoadOverlayTexture();
-          if (!CompileDisplayPipelines(true, false, false, &error))
-          {
-            VideoThread::ReportFatalErrorAndShutdown(
-              fmt::format("Failed to update settings: {}", error.GetDescription()));
-            return;
-          }
+          VideoThread::ReportFatalErrorAndShutdown(
+            fmt::format("Failed to update settings: {}", error.GetDescription()));
+          return;
         }
-
-        UpdatePostProcessingSettings(false);
       }
-      if (internal)
-        backend->UpdatePostProcessingSettings(reload_shaders);
 
-      // trigger represent of frame
-      if (VideoThread::IsSystemPaused())
-        VideoThread::Internal::PresentFrameAndRestoreContext();
-    },
-    false, true);
+      UpdatePostProcessingSettings(false);
+    }
+    if (internal)
+      backend->UpdatePostProcessingSettings(reload_shaders);
+
+    // trigger represent of frame
+    if (VideoThread::IsSystemPaused())
+      VideoThread::Internal::PresentFrameAndRestoreContext();
+  });
 }
 
 bool VideoPresenter::LoadOverlaySettings()

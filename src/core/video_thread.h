@@ -28,7 +28,6 @@ struct VideoThreadCommand;
 
 namespace VideoThread {
 using AsyncCallType = std::function<void()>;
-using AsyncBackendCallType = std::function<void(GPUBackend*)>;
 using AsyncBufferCallType = void (*)(void*);
 
 enum class RunIdleReason : u8
@@ -49,6 +48,7 @@ void StopFullscreenUI();
 
 /// Backend control.
 std::optional<GPURenderer> GetRequestedRenderer();
+GPUBackend* GetGPUBackend();
 bool CreateGPUBackend(GPURenderer renderer, bool upload_vram, std::optional<bool> fullscreen, Error* error);
 void DestroyGPUBackend();
 bool HasGPUBackend();
@@ -81,7 +81,7 @@ void ReportFatalErrorAndShutdown(std::string_view reason);
 bool IsOnThread();
 bool IsUsingThread();
 void RunOnThread(AsyncCallType func);
-void RunOnBackend(AsyncBackendCallType func, bool sync, bool spin_or_wake);
+void RunOnThreadAndSync(AsyncCallType func);
 std::pair<VideoThreadCommand*, void*> BeginASyncBufferCall(AsyncBufferCallType func, u32 buffer_size);
 void EndASyncBufferCall(VideoThreadCommand* cmd);
 void SetVSync(GPUVSyncMode mode, PresentSkipMode present_throttle_mode);
