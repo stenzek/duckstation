@@ -2698,7 +2698,7 @@ void FullscreenUI::MenuButtonBounds::CalcBB()
 
   if (summary_size.x > 0.0f)
   {
-    const float summary_start_y = pos.y + std::max(title_size.y, value_size.y) + summary_spacing;
+    const float summary_start_y = pos.y + title_size.y + summary_spacing;
     summary_bb =
       ImRect(ImVec2(pos.x, summary_start_y), ImVec2(pos.x + summary_size.x, summary_start_y + summary_size.y));
   }
