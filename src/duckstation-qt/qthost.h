@@ -104,6 +104,7 @@ Q_SIGNALS:
   void errorReported(const QString& title, const QString& message);
   void statusMessage(const QString& message);
   void settingsResetToDefault(bool host, bool system, bool controller);
+  void settingsReloaded();
   void systemStarting();
   void systemStarted();
   void systemStopping();

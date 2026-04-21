@@ -205,7 +205,7 @@ void Host::LoadSettings(const SettingsInterface& si, std::unique_lock<std::mutex
 {
 }
 
-void Host::CheckForSettingsChanges(const Settings& old_settings)
+void Host::OnSettingsReloaded()
 {
 }
 

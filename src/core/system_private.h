@@ -94,7 +94,7 @@ namespace Host {
 void LoadSettings(const SettingsInterface& si, std::unique_lock<std::mutex>& lock);
 
 /// Called after settings are updated.
-void CheckForSettingsChanges(const Settings& old_settings);
+void OnSettingsReloaded();
 
 /// Called when the VM is starting initialization, but has not been completed yet.
 void OnSystemStarting();

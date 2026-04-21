@@ -2606,6 +2606,7 @@ void MainWindow::connectSignals()
   connect(g_core_thread, &CoreThread::onReleaseRenderWindowRequested, this, &MainWindow::releaseRenderWindow);
   connect(g_core_thread, &CoreThread::onResizeRenderWindowRequested, this, &MainWindow::displayResizeRequested,
           Qt::BlockingQueuedConnection);
+  connect(g_core_thread, &CoreThread::settingsReloaded, this, &MainWindow::onSettingsReloaded);
   connect(g_core_thread, &CoreThread::systemStarting, this, &MainWindow::onSystemStarting);
   connect(g_core_thread, &CoreThread::systemStarted, this, &MainWindow::onSystemStarted);
   connect(g_core_thread, &CoreThread::systemStopping, this, &MainWindow::onSystemStopping);
@@ -2787,7 +2788,8 @@ SettingsWindow* MainWindow::getSettingsWindow()
   if (!m_settings_window)
   {
     m_settings_window = new SettingsWindow();
-    connect(m_settings_window, &SettingsWindow::debugOptionsVisibiltyChanged, this, &MainWindow::updateDebugMenuVisibility);
+    connect(m_settings_window, &SettingsWindow::debugOptionsVisibiltyChanged, this,
+            &MainWindow::updateDebugMenuVisibility);
   }
 
   return m_settings_window;
@@ -3132,7 +3134,7 @@ void MainWindow::requestExit(bool allow_confirm /* = true */)
   requestShutdown(allow_confirm, true, g_settings.save_state_on_exit, true, true, true, true);
 }
 
-void MainWindow::checkForSettingChanges()
+void MainWindow::onSettingsReloaded()
 {
 #ifdef _WIN32
   if (const bool disable_window_rounded_corners =

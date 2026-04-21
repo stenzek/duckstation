@@ -865,11 +865,9 @@ void Host::LoadSettings(const SettingsInterface& si, std::unique_lock<std::mutex
 {
 }
 
-void Host::CheckForSettingsChanges(const Settings& old_settings)
+void Host::OnSettingsReloaded()
 {
-  // NOTE: emu thread, push to UI thread
-  if (g_main_window)
-    QMetaObject::invokeMethod(g_main_window, &MainWindow::checkForSettingChanges, Qt::QueuedConnection);
+  emit g_core_thread->settingsReloaded();
 }
 
 void CoreThread::setDefaultSettings(bool host, bool system, bool controller)

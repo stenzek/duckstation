@@ -1496,7 +1496,7 @@ void System::ApplySettings(bool display_osd_messages)
   }
 
   CheckForSettingsChanges(old_settings);
-  Host::CheckForSettingsChanges(old_settings);
+  Host::OnSettingsReloaded();
 }
 
 void System::ReloadGameSettings(bool display_osd_messages)
