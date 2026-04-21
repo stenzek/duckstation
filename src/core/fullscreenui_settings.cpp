@@ -4157,29 +4157,31 @@ void FullscreenUI::DrawGraphicsSettingsPage()
   std::optional<SmallString> strvalue = bsi->GetOptionalSmallStringValue(
     "GPU", "FullscreenMode", game_settings ? std::nullopt : std::optional<const char*>(""));
 
-  if (MenuActionButton(FSUI_ICONVSTR(ICON_FA_TV, "Fullscreen Resolution"),
+  const GPUDevice::AdapterInfo* selected_adapter = nullptr;
+  if (current_adapter.has_value() && !current_adapter->empty())
+  {
+    for (const GPUDevice::AdapterInfo& ai : s_settings_locals.graphics_adapter_list_cache)
+    {
+      if (ai.name == current_adapter->view())
+      {
+        selected_adapter = &ai;
+        break;
+      }
+    }
+  }
+  else
+  {
+    if (!s_settings_locals.graphics_adapter_list_cache.empty())
+      selected_adapter = &s_settings_locals.graphics_adapter_list_cache.front();
+  }
+
+  if (selected_adapter && !selected_adapter->fullscreen_modes.empty() &&
+      MenuActionButton(FSUI_ICONVSTR(ICON_FA_TV, "Fullscreen Resolution"),
                        FSUI_VSTR("Selects the resolution to use in fullscreen modes."),
                        strvalue.has_value() ?
                          (strvalue->empty() ? FSUI_VSTR("Borderless Fullscreen") : strvalue->view()) :
                          FSUI_VSTR("Use Global Setting")))
   {
-    const GPUDevice::AdapterInfo* selected_adapter = nullptr;
-    if (current_adapter.has_value() && !current_adapter->empty())
-    {
-      for (const GPUDevice::AdapterInfo& ai : s_settings_locals.graphics_adapter_list_cache)
-      {
-        if (ai.name == current_adapter->view())
-        {
-          selected_adapter = &ai;
-          break;
-        }
-      }
-    }
-    else
-    {
-      if (!s_settings_locals.graphics_adapter_list_cache.empty())
-        selected_adapter = &s_settings_locals.graphics_adapter_list_cache.front();
-    }
 
     ChoiceDialogOptions options;
     options.reserve((selected_adapter ? selected_adapter->fullscreen_modes.size() : 0) + 2);
