@@ -3807,6 +3807,7 @@ void FullscreenUI::DrawMemoryCardSettingsPage()
   const bool game_settings = IsEditingGameSettings(bsi);
 
   BeginMenuButtons();
+  ResetFocusHere();
 
   for (u32 i = 0; i < 2; i++)
   {
@@ -3880,7 +3881,6 @@ void FullscreenUI::DrawMemoryCardSettingsPage()
   }
 
   MenuHeading(FSUI_VSTR("Settings and Operations"));
-  ResetFocusHere();
 
   DrawFolderSetting(bsi, FSUI_ICONVSTR(ICON_FA_FOLDER_OPEN, "Memory Card Directory"), "MemoryCards", "Directory",
                     EmuFolders::MemoryCards);
