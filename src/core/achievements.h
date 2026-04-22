@@ -75,7 +75,7 @@ const HashDatabaseEntry* LookupGameHash(const GameHash& hash);
 TinyString GameHashToString(const std::optional<GameHash>& hash);
 
 /// Initializes the RetroAchievments client.
-bool Initialize();
+void Initialize();
 
 /// Updates achievements settings.
 void UpdateSettings(const Settings& old_config);

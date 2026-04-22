@@ -9,7 +9,6 @@
 #include "bus.h"
 #include "cheats.h"
 #include "core.h"
-#include "core_private.h"
 #include "cpu_core.h"
 #include "fullscreenui.h"
 #include "fullscreenui_private.h"
@@ -140,7 +139,7 @@ static void UpdatePrefetchAchievementBadgesOSDMessage();
 static TinyString DecryptLoginToken(std::string_view encrypted_token, std::string_view username);
 static TinyString EncryptLoginToken(std::string_view token, std::string_view username);
 
-static bool CreateClient();
+static bool CreateClient(std::unique_lock<std::recursive_mutex>& lock, bool is_temporary_client);
 static void DestroyClient(std::unique_lock<std::recursive_mutex>& lock);
 static void ClientMessageCallback(const char* message, const rc_client_t* client);
 static uint32_t ClientReadMemory(uint32_t address, uint8_t* buffer, uint32_t num_bytes, rc_client_t* client);
@@ -225,6 +224,7 @@ struct State
   bool has_achievements : 1 = false;
   bool has_leaderboards : 1 = false;
   bool has_rich_presence : 1 = false;
+  bool has_saved_credentials : 1 = false;
   bool hashdb_loaded : 1 = false;
   bool reload_game_on_reset : 1 = false;
 
@@ -581,56 +581,27 @@ const std::string& Achievements::GetRichPresenceString()
   return s_state.rich_presence_string;
 }
 
-bool Achievements::Initialize()
+void Achievements::Initialize()
 {
-  auto lock = GetLock();
-  AssertMsg(g_settings.achievements_enabled, "Achievements are enabled");
-
-  if (!s_state.client && !CreateClient())
-    return false;
-
-  rc_client_set_event_handler(s_state.client, ClientEventHandler);
-  rc_client_set_allow_background_memory_reads(s_state.client, true);
-
-#ifdef RC_CLIENT_SUPPORTS_RAINTEGRATION
-  if (g_settings.achievements_use_raintegration)
-    BeginLoadRAIntegration();
-#endif
-
-  // Hardcore starts off. We enable it on first boot.
-  rc_client_set_hardcore_enabled(s_state.client, false);
-  rc_client_set_unofficial_enabled(s_state.client, g_settings.achievements_unofficial_test_mode);
-  rc_client_set_spectator_mode_enabled(s_state.client, g_settings.achievements_spectator_mode);
-  rc_client_set_encore_mode_enabled(s_state.client,
-                                    !g_settings.achievements_spectator_mode && g_settings.achievements_encore_mode);
-
-  // We can't do an internal client login while using RAIntegration, since the two will conflict.
-  if (!IsRAIntegrationInitializing())
-    FinishInitialize();
-
-  return true;
-}
-
-void Achievements::FinishInitialize()
-{
-  // Start logging in. This can take a while.
-  TryLoggingInWithToken();
-
-  // Are we running a game?
-  if (System::IsValid())
+  // Called on startup, no need to grab lock just to populate has saved credentials.
   {
-    IdentifyCurrentGame();
-    BeginLoadGame();
-
-    // Hardcore mode isn't enabled when achievements first starts, if a game is already running.
-    if (IsLoggedInOrLoggingIn() && g_settings.achievements_hardcore_mode)
-      DisplayHardcoreDeferredMessage();
+    const auto lock = Core::GetSettingsLock();
+    const SettingsInterface* si = Core::GetBaseSettingsLayer();
+    std::string_view username, token;
+    s_state.has_saved_credentials = (si->LookupValue("Cheevos", "Username", &username) && !username.empty() &&
+                                     si->LookupValue("Cheevos", "Token", &token) && !token.empty());
   }
 
-  Host::OnAchievementsActiveChanged(true);
+  // No need to do anything else if we're not enabled.
+  if (!g_settings.achievements_enabled)
+    return;
+
+  auto lock = GetLock();
+  Assert(!s_state.client);
+  CreateClient(lock, false);
 }
 
-bool Achievements::CreateClient()
+bool Achievements::CreateClient(std::unique_lock<std::recursive_mutex>& lock, bool is_temporary_client)
 {
   Assert(!s_state.client);
 
@@ -647,11 +618,14 @@ bool Achievements::CreateClient()
     return false;
   }
 
+  rc_client_set_event_handler(s_state.client, ClientEventHandler);
+  rc_client_set_allow_background_memory_reads(s_state.client, true);
   rc_client_enable_logging(s_state.client,
                            (Log::GetLogLevel() >= Log::Level::Verbose) ? RC_CLIENT_LOG_LEVEL_VERBOSE :
                                                                          RC_CLIENT_LOG_LEVEL_INFO,
                            ClientMessageCallback);
 
+  // Populate user-agent.
   char rc_client_user_agent[128];
   rc_client_get_user_agent_clause(s_state.client, rc_client_user_agent, std::size(rc_client_user_agent));
   s_state.http_user_agent_header = fmt::format("User-Agent: {} {}", HTTPCache::GetUserAgent(), rc_client_user_agent);
@@ -670,7 +644,44 @@ bool Achievements::CreateClient()
     }
   }
 
+#ifdef RC_CLIENT_SUPPORTS_RAINTEGRATION
+  if (g_settings.achievements_use_raintegration && !is_temporary_client)
+    BeginLoadRAIntegration();
+#endif
+
+  // Hardcore starts off. We enable it on first boot.
+  rc_client_set_hardcore_enabled(s_state.client, false);
+  rc_client_set_unofficial_enabled(s_state.client, g_settings.achievements_unofficial_test_mode);
+  rc_client_set_spectator_mode_enabled(s_state.client, g_settings.achievements_spectator_mode);
+  rc_client_set_encore_mode_enabled(s_state.client,
+                                    !g_settings.achievements_spectator_mode && g_settings.achievements_encore_mode);
+
+  // We can't do an internal client login while using RAIntegration, since the two will conflict.
+  // Temporary clients also don't fully login, since they themselves are used for login.
+  if (!IsRAIntegrationInitializing() && !is_temporary_client)
+    FinishInitialize();
+
   return true;
+}
+
+void Achievements::FinishInitialize()
+{
+  // Start logging in. This can take a while.
+  if (!IsLoggedInOrLoggingIn())
+    TryLoggingInWithToken();
+
+  // Are we running a game?
+  if (System::IsValid())
+  {
+    IdentifyCurrentGame();
+    BeginLoadGame();
+
+    // Hardcore mode isn't enabled when achievements first starts, if a game is already running.
+    if (IsLoggedInOrLoggingIn() && g_settings.achievements_hardcore_mode)
+      DisplayHardcoreDeferredMessage();
+  }
+
+  Host::OnAchievementsActiveChanged(true);
 }
 
 void Achievements::DestroyClient(std::unique_lock<std::recursive_mutex>& lock)
@@ -682,11 +693,8 @@ void Achievements::DestroyClient(std::unique_lock<std::recursive_mutex>& lock)
 
 bool Achievements::HasSavedCredentials()
 {
-  const auto lock = Core::GetSettingsLock();
-  const SettingsInterface* si = Core::GetBaseSettingsLayer();
-  std::string_view username, token;
-  return (si->LookupValue("Cheevos", "Username", &username) && !username.empty() &&
-          si->LookupValue("Cheevos", "Token", &token) && !token.empty());
+  const auto lock = GetLock();
+  return s_state.has_saved_credentials;
 }
 
 bool Achievements::TryLoggingInWithToken()
@@ -2070,7 +2078,7 @@ bool Achievements::Login(const char* username, const char* password, Error* erro
 
   // We need to use a temporary client if achievements aren't currently active.
   const bool needs_temporary_client = (s_state.client == nullptr);
-  if (needs_temporary_client && !CreateClient())
+  if (needs_temporary_client && !CreateClient(lock, true))
   {
     Error::SetString(error, "Failed to create client.");
     return false;
@@ -2099,20 +2107,12 @@ bool Achievements::Login(const char* username, const char* password, Error* erro
     // Did we get enabled? Leave the client if so
     if (!g_settings.achievements_enabled)
       DestroyClient(lock);
+    else
+      FinishInitialize();
   }
 
   // Success? Assume the callback set the error message.
-  if (!params.result)
-    return false;
-
-  // If we were't a temporary client, get the game loaded.
-  if (s_state.client && System::IsValid())
-  {
-    IdentifyCurrentGame();
-    BeginLoadGame();
-  }
-
-  return true;
+  return params.result;
 }
 
 void Achievements::ClientLoginWithPasswordCallback(int result, const char* error_message, rc_client_t* client,
@@ -2149,9 +2149,10 @@ void Achievements::ClientLoginWithPasswordCallback(int result, const char* error
   Core::SetBaseStringSettingValue("Cheevos", "Token", EncryptLoginToken(user->token, params->username));
   Core::SetBaseStringSettingValue("Cheevos", "LoginTimestamp", fmt::format("{}", std::time(nullptr)).c_str());
   Host::CommitBaseSettingChanges();
+  s_state.has_saved_credentials = true;
 
   // Will be using temporary client if achievements are not enabled.
-  if (client == s_state.client)
+  if (g_settings.achievements_enabled)
     FinishLogin();
 }
 
@@ -2380,10 +2381,10 @@ u32 Achievements::GetPendingUnlockCount()
 
 void Achievements::Logout()
 {
+  const auto lock = GetLock();
+
   if (IsActive())
   {
-    const auto lock = GetLock();
-
     if (HasActiveGame())
     {
       ClearGameInfo();
@@ -2399,10 +2400,12 @@ void Achievements::Logout()
   }
 
   INFO_LOG("Clearing credentials...");
+  s_state.has_saved_credentials = false;
   Core::DeleteBaseSettingValue("Cheevos", "Username");
   Core::DeleteBaseSettingValue("Cheevos", "Token");
   Core::DeleteBaseSettingValue("Cheevos", "LoginTimestamp");
   Host::CommitBaseSettingChanges();
+
   ClearProgressDatabase();
 }
 
