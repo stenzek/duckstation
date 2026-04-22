@@ -417,7 +417,7 @@ void LogWindow::onSaveTriggered()
   QFile file(path);
   if (!file.open(QFile::WriteOnly | QFile::Text))
   {
-    QtUtils::AsyncMessageBox(this, QMessageBox::Critical, tr("Error"), tr("Failed to open file for writing."));
+    QtUtils::AsyncMessageBox(this, QMessageBox::Critical, "Error"_L1, "Failed to open file for writing."_L1);
     return;
   }
 

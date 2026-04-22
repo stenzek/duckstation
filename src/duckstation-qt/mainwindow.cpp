@@ -3495,8 +3495,8 @@ AutoUpdaterDialog* MainWindow::createAutoUpdaterDialog(QWidget* parent, bool dis
     if (display_message)
     {
       QtUtils::AsyncMessageBox(
-        parent, QMessageBox::Critical, tr("Error"),
-        tr("Failed to create auto updater: %1").arg(QString::fromStdString(error.GetDescription())));
+        parent, QMessageBox::Critical, "Error"_L1,
+        QStringLiteral("Failed to create auto updater: %1").arg(QString::fromStdString(error.GetDescription())));
     }
 
     return nullptr;

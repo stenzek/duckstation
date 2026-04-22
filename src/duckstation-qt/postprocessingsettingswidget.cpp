@@ -202,8 +202,8 @@ void PostProcessingChainConfigWidget::onAddButtonClicked()
     Error error;
     if (!PostProcessing::Config::AddStage(si, m_section, selected_shader, &error))
     {
-      QtUtils::AsyncMessageBox(this, QMessageBox::Critical, tr("Error"),
-                               tr("Failed to add shader: %1").arg(QString::fromStdString(error.GetDescription())));
+      QtUtils::AsyncMessageBox(this, QMessageBox::Critical, "Error"_L1,
+                               QStringLiteral("Failed to add shader: %1").arg(QString::fromStdString(error.GetDescription())));
       return;
     }
 

@@ -349,8 +349,7 @@ void GameCheatSettingsWidget::onCheatListContextMenuRequested(const QPoint& pos)
 
   QMenu* const context_menu = QtUtils::NewPopupMenu(m_ui.cheatList);
 
-  context_menu->addAction(QIcon::fromTheme("add-line"_L1), tr("Add Cheat..."), this,
-                          &GameCheatSettingsWidget::newCode);
+  context_menu->addAction(QIcon::fromTheme("add-line"_L1), tr("Add Cheat..."), this, &GameCheatSettingsWidget::newCode);
   context_menu
     ->addAction(QIcon::fromTheme("mag-line"_L1), tr("Edit Cheat..."),
                 [this, selected_code]() { editCode(selected_code); })
@@ -600,15 +599,17 @@ void GameCheatSettingsWidget::importCodes(const std::string& file_contents)
   Cheats::CodeInfoList new_codes;
   if (!Cheats::ImportCodesFromString(&new_codes, file_contents, Cheats::FileFormat::Unknown, true, &error))
   {
-    QtUtils::AsyncMessageBox(this, QMessageBox::Critical, tr("Error"),
-                             tr("Failed to parse file:\n%1").arg(QString::fromStdString(error.GetDescription())));
+    QtUtils::AsyncMessageBox(
+      this, QMessageBox::Critical, "Error"_L1,
+      QStringLiteral("Failed to parse file:\n%1").arg(QString::fromStdString(error.GetDescription())));
     return;
   }
 
   if (!Cheats::SaveCodesToFile(getPathForSavingCheats().c_str(), new_codes, &error))
   {
-    QtUtils::AsyncMessageBox(this, QMessageBox::Critical, tr("Error"),
-                             tr("Failed to save file:\n%1").arg(QString::fromStdString(error.GetDescription())));
+    QtUtils::AsyncMessageBox(
+      this, QMessageBox::Critical, "Error"_L1,
+      QStringLiteral("Failed to save file:\n%1").arg(QString::fromStdString(error.GetDescription())));
   }
 
   reloadList();

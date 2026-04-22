@@ -231,8 +231,8 @@ void ControllerSettingsWindow::onNewProfileClicked()
   Error error;
   if (!temp_si.Save(&error, Settings::GetSectionSaveOrder()))
   {
-    QtUtils::AsyncMessageBox(this, QMessageBox::Critical, tr("Error"),
-                             tr("Failed to save the new preset to '%1':\n%2")
+    QtUtils::AsyncMessageBox(this, QMessageBox::Critical, "Error"_L1,
+                             QStringLiteral("Failed to save the new preset to '%1':\n%2")
                                .arg(QString::fromStdString(temp_si.GetPath()))
                                .arg(QString::fromStdString(error.GetDescription())));
     return;
@@ -282,8 +282,8 @@ void ControllerSettingsWindow::onDeleteProfileClicked()
   std::string profile_path(System::GetInputProfilePath(m_profile_name.toStdString()));
   if (!FileSystem::DeleteFile(profile_path.c_str()))
   {
-    QtUtils::AsyncMessageBox(this, QMessageBox::Critical, tr("Error"),
-                             tr("Failed to delete '%1'.").arg(QString::fromStdString(profile_path)));
+    QtUtils::AsyncMessageBox(this, QMessageBox::Critical, "Error"_L1,
+                             QStringLiteral("Failed to delete '%1'.").arg(QString::fromStdString(profile_path)));
     return;
   }
 

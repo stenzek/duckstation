@@ -677,7 +677,7 @@ std::string MemoryScannerWindow::getWatchSavePath(bool saving)
     {
       QtUtils::AsyncMessageBox(
         this, QMessageBox::Critical, windowTitle(),
-        tr("Failed to create watches directory: %1").arg(QString::fromStdString(error.GetDescription())));
+        QStringLiteral("Failed to create watches directory: %1").arg(QString::fromStdString(error.GetDescription())));
       return ret;
     }
   }
@@ -700,7 +700,7 @@ void MemoryScannerWindow::saveWatches()
   {
     QtUtils::AsyncMessageBox(
       this, QMessageBox::Critical, windowTitle(),
-      tr("Failed to save watches to file: %1").arg(QString::fromStdString(error.GetDescription())));
+      QStringLiteral("Failed to save watches to file: %1").arg(QString::fromStdString(error.GetDescription())));
   }
 }
 
@@ -718,7 +718,7 @@ void MemoryScannerWindow::reloadWatches()
     {
       QtUtils::AsyncMessageBox(
         this, QMessageBox::Critical, windowTitle(),
-        tr("Failed to load watches from file: %1").arg(QString::fromStdString(error.GetDescription())));
+        QStringLiteral("Failed to load watches from file: %1").arg(QString::fromStdString(error.GetDescription())));
     }
   }
 
