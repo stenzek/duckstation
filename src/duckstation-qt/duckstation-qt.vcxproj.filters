@@ -243,4 +243,7 @@
       <Filter>translations</Filter>
     </QtTs>
   </ItemGroup>
+  <ItemGroup>
+    <Manifest Include="duckstation-qt.manifest" />
+  </ItemGroup>
 </Project>
