@@ -1260,12 +1260,6 @@ void Achievements::ClientLoadGameCallback(int result, const char* error_message,
   {
     // We would've asked to re-authenticate, so leave HC on for now.
     // Once we've done so, we'll reload the game.
-    if (!HasSavedCredentials())
-    {
-      DisableHardcoreMode(false, false);
-      return;
-    }
-
     return;
   }
   else if (result == RC_HARDCORE_DISABLED)

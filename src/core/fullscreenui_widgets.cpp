@@ -6029,7 +6029,7 @@ void FullscreenUI::RenderLoadingScreen(std::string_view image, std::string_view 
     GPUTexture* const blur_target = GetBlurRenderTexture();
     if (blur_target)
     {
-      VideoPresenter::RenderDisplay(blur_target, blur_target->GetSizeVec(), true, true);
+      VideoPresenter::RenderDisplay(blur_target, blur_target->GetSizeVec(), false, true);
       RenderBlur(blur_target);
     }
   }
