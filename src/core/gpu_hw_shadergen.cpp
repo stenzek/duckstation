@@ -835,254 +835,222 @@ void FilteredSampleFromVRAM(TEXPAGE_VALUE texpage, float2 coords, float4 uv_limi
   }
   else if (texture_filter == GPUTextureFilter::MMPXEnhanced)
   {
-    ss << "#define src(xoffs, yoffs) packUnorm4x8(SampleFromVRAM(texpage, bcoords + float2((xoffs), (yoffs)), "
-          "uv_limits))\n";
-
-    /*
-     * This part of the shader is from MMPX.glc from https://casual-effects.com/research/McGuire2021PixelArt/index.html
-     * Copyright 2020 Morgan McGuire & Mara Gagiu.
-     * Provided under the Open Source MIT license https://opensource.org/licenses/MIT
-     */
     ss << R"(
-uint luma(uint C) {
-    uint alpha = (C & 0xFF000000u) >> 24;
-    return (((C & 0x00FF0000u) >> 16) + ((C & 0x0000FF00u) >> 8) + (C & 0x000000FFu) + 1u) * (256u - alpha);
+	#define srcf(xoffs,yoffs) SampleFromVRAM(texpage, bcoords + float2((xoffs), (yoffs)), uv_limits)
+	#define src(xoffs,yoffs) packUnorm4x8(srcf(xoffs,yoffs))
+	)";
+
+	/* MMPX Enhanced Lite
+	 * This shader is an optimized iteration of the original MMPX.glsl.
+	 * It eliminates most artifacts found in the original algorithm while remaining 
+	 * highly efficient and lightweight.
+	 * For the full visual experience, please use MMPX Enhanced Quality.
+	 * 
+	 * (C) 2025-2026 by crashGG.
+	 * Licensed under the same terms as MMPX.glsl.
+	 */
+
+
+    ss << R"(
+
+float luma(float4 col) {
+
+	//Use CRT-era BT.601 standard.
+    float rgbsum =dot(col.rgb, float3(0.299, 0.587, 0.114));
+
+    float alphafactor = 
+        (col.a > 0.998) ? 0.0 :
+        (col.a > 0.5) ? 2.0 :
+        (col.a > 0.002) ? 4.0 : 6.0;
+
+    return rgbsum + alphafactor;
 }
 
-bool all_eq2(uint B, uint A0, uint A1) {
-    return ((B ^ A0) | (B ^ A1)) == 0u;
+float mixGate(float4 col1, float4 col2) {
+
+	float4 diff = col1 - col2;
+
+	float delta_range = max(diff.r, max(diff.g, diff.b)) - min(diff.r, min(diff.g, diff.b));
+
+	float dot_diff = dot(diff, diff);
+
+	float factor = (delta_range * delta_range) * 2.618034;
+
+	return step(dot_diff, mix(0.75, 0.0, factor));
 }
 
-bool all_eq3(uint B, uint A0, uint A1, uint A2) {
-    return ((B ^ A0) | (B ^ A1) | (B ^ A2)) == 0u;
+#define all_eq2(a, b1, b2) (a == b1 && a == b2)
+#define all_eq4(a, b1, b2, b3, b4) (a == b1 && a == b2 && a == b3 && a == b4)
+#define any_eq2(a, b1, b2) (a == b1 || a == b2)
+#define none_eq2(a, b1, b2) !any_eq2(a, b1, b2)
+#define none_eq4(a, b1, b2, b3, b4) (a!=b1 && a!=b2 && a!=b3 && a!=b4)
+
+float4 admixC(float4 vX, float4 vE) {
+
+	float mixFactor = mixGate(vX, vE) * (-0.381966) + 1.0;
+
+	return mix(vX,vE,mixFactor);
 }
 
-bool all_eq4(uint B, uint A0, uint A1, uint A2, uint A3) {
-    return ((B ^ A0) | (B ^ A1) | (B ^ A2) | (B ^ A3)) == 0u;
+float4 admixK(float4 vX, float4 vE) {
+
+    float4 diff = vX - vE;
+
+	float mixFactor = dot(diff.rgb, diff.rgb) * 0.16666 + 0.5;
+
+	return mix(vX,vE,mixFactor);
 }
 
-bool any_eq3(uint B, uint A0, uint A1, uint A2) {
-    return B == A0 || B == A1 || B == A2;
-}
-
-bool none_eq2(uint B, uint A0, uint A1) {
-    return (B != A0) && (B != A1);
-}
-
-bool none_eq4(uint B, uint A0, uint A1, uint A2, uint A3) {
-    return B != A0 && B != A1 && B != A2 && B != A3;
-}
-
-
-// Two-stage weak blending, mix/none
-uint admix2d(uint a, uint b) {
-    float4 a_float = unpackUnorm4x8(a);
-    float4 b_float = unpackUnorm4x8(b);
-    float3 diff_rgb = a_float.rgb - b_float.rgb;
-    float rgbDist = dot(diff_rgb, diff_rgb);
-    
-    // Combine conditional judgments (reduce branches)
-    bool aIsBlack = dot(a_float.rgb, a_float.rgb) < 0.01;
-    //bool aIsTransparent = a_float.a < 0.01;
-    //bool bIsTransparent = b_float.a < 0.01;
-    
-    if (aIsBlack ) return b;
-
-    // Determine blending mode based on distance
-    float4 result;
-    if (rgbDist < 1.0) {
-        // Close distance: linearly blend RGB and Alpha
-        result = (a_float + b_float) * 0.5;
-    } else {
-        // Far distance: return b
-        result = b_float;
-    }
-    
-    // Repack as uint
-    return packUnorm4x8(result);
-}
-
-
-/*=============================================================================
-Auxiliary function for 4-pixel cross determination: scores the number of matches at specific positions of the pattern.
-Three pattern conditions are determined, requiring 6 points to be satisfied.
-                ┌───┬───┬───┐                ┌───┬───┬───┐
-                │ A │ B │ C │                │ A │ B │ 1 │
-                ├───┼───┼───┤                ├───┼───┼───┤
-                │ D │ E │ F │       =>   L   │ B │ A │ 2 │
-                ├───┼───┼───┤                ├───┼───┼───┤
-                │ G │ H │ I │                │ 5 │ 4 │ 3 │
-                └───┴───┴───┘                └───┴───┴───┘
-=============================================================================*/
-
-bool countPatternMatches(uint LA, uint LB, uint L1, uint L2, uint L3, uint L4, uint L5) {
-
-    int score1 = 0; // Diagonal pattern 1
-    int score2 = 0; // Diagonal pattern 2
-    int score3 = 0; // Horizontal/vertical line pattern
-    int scoreBonus = 0;
-    
-    // Replace Euclidean formula with dot product to save a square root calculation
-    float4 a_float = unpackUnorm4x8(LA);
-    float4 b_float = unpackUnorm4x8(LB);
-    float3 diff_rgb = a_float.rgb - b_float.rgb;
-    float rgbDist = dot(diff_rgb, diff_rgb);
- 
-    // Add details for very close colors, reduce details for highly different colors (font edges)
-    if (rgbDist < 0.06386) { // Point set after quadratic golden section, colors are quite close
-        scoreBonus += 1;
-    } else if (rgbDist > 2.18847) { // Point set after quadratic golden section, significant difference
-        scoreBonus -= 1;
-      } 
-
-    // Diagonals use a deduction system: deduct points for crosses, add back if conditions are met
-    // 1. Diagonal pattern ╲ (Condition: B = 2 or 4)
-    if (LB == L2 || LB == L4) {
-        score1 -= int(LB == L2 && LA == L1) * 1;    	// A-1 and B-2 form a cross, deduct points
-        score1 -= int(LB == L4 && LA == L5) * 1;   		// A-5 and B-4 form a cross, deduct points
-
-        // If the following triangular pattern is satisfied, offset the above cross deductions
-        score1 += int(LB == L1 && L1 == L2) * 1;   		// B-1-2 form a triangular pattern, add points
-        score1 += int(LB == L4 && L4 == L5) * 1;   		// B-4-5 form a triangular pattern, add points
-        score1 += int(L2 == L3 && L3 == L4) * 1;   		// 2-3-4 form a triangular pattern, add points
-        
-        score1 += scoreBonus + 6;
-    } 
-
-    // 2. Diagonal pattern ╱ (Condition: A = 1 or 5)
-    if (LA == L1 || LA == L5) {
-        score2 -= int(LB == L2 && LA == L1) * 1;    	// A-1 and B-2 form a cross, deduct points
-        score2 -= int(LB == L4 && LA == L5) * 1;   		// A-5 and B-4 form a cross, deduct points
-        score2 -= int(LA == L3) * 1;    					// A-3 forms a cross, deduct points				
-
-        // If the following triangular pattern is satisfied, offset the above cross deductions
-        score2 += int(LB == L1 && L1 == L2) * 1;   		// B-1-2 form a triangular pattern, add points
-        score2 += int(LB == L4 && L4 == L5) * 1;   		// B-4-5 form a triangular pattern, add points
-        score2 += int(L2 == L3 && L3 == L4) * 1;   		// 2-3-4 form a triangular pattern, add points
-    
-        score2 += scoreBonus + 6;
-    } 
-
-    // 3. Horizontal/vertical line pattern (Condition: horizontal continuity) uses a point addition system, passes only if conditions are met
-    if (LA == L2 || LB == L1 || LA == L4 || LB == L5 || (L1 == L2 && L2 == L3) || (L3 == L4 && L4 == L5)) {
-        score3 += int(LA == L2);    	// A equals 2, +1
-        score3 += int(LB == L1);    	// B equals 1, +1
-        score3 += int(L3 == L4);    	// 3 equals 4, +1
-        score3 += int(L4 == L5);    	// 4 equals 5, +1
-        score3 += int(L3 == L4 && L4 == L5); // 3-4-5 continuous
-
-        score3 += int(LB == L5);    	// B equals 5, +1
-        score3 += int(LA == L4);    	// A equals 4, +1
-        score3 += int(L2 == L3);    	// 2 equals 3, +1
-        score3 += int(L1 == L2);    	// 1 equals 2, +1
-        score3 += int(L1 == L2 && L2 == L3); // 1-2-3 continuous
-
-        // A x 4 square
-        score3 += int(LA == L2 && L2 == L3 && L3 == L4) * 2;
-
-        // Patch for the previous rule to avoid bubbles in large cross patterns. Some games use single-side patterns, 
-        // so it's best to expand for bilateral judgment (Work in Progress)
-        score3 -= int(LB == L1 && L1 == L5 && LA == L2 && L2 == L4)*3; 
-
-        score3 -= int(LA == L1 && LA == L5); // Deduct points if both L1 and L5 are A to avoid excessive scores 
-                                           // and prevent the pattern from becoming a diagonal pattern.
-        
-        // Extra points
-        score3 += scoreBonus; // Experience: Even with very close colors, do not add too many points, 
-                             // as some Z-shaped crosses may produce bubbles.
-    } 
-
-    // Take the maximum of the four scores
-    int score = max(max(score1, score2), score3);
-    
-    return score < 6; // Requires 6 points to be satisfied
-}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void FilteredSampleFromVRAM(TEXPAGE_VALUE texpage, float2 coords, float4 uv_limits, out float4 texcol, out float ialpha)
 {
 
-  float2 bcoords = floor(coords);
+	float2 bcoords = floor(coords);
 
-  uint A = src(-1, -1), B = src(+0, -1), C = src(+1, -1);
-  uint D = src(-1, +0), E = src(+0, +0), F = src(+1, +0);
-  uint G = src(-1, +1), H = src(+0, +1), I = src(+1, +1);
+	float4 vE = SampleFromVRAM(texpage, bcoords, uv_limits);
 
-  uint J = E, K = E, L = E, M = E;
+	float4 vB = srcf(0.0, -1.0);
+	float4 vD = srcf(-1.0, 0.0);
+	float4 vF = srcf(+1.0, 0.0);
+	float4 vH = srcf(0.0, +1.0);
 
-  // Explicitly initialize with the central pixel E by default
-  uint res = E;
-  ialpha = float(res != 0u);
-  texcol = unpackUnorm4x8(res);
-  
-  if (((A ^ E) | (B ^ E) | (C ^ E) | (D ^ E) | (F ^ E) | (G ^ E) | (H ^ E) | (I ^ E)) == 0u) return;
+    uint E = packUnorm4x8(vE);
+    uint B = packUnorm4x8(vB);
+    uint D = packUnorm4x8(vD);
+    uint F = packUnorm4x8(vF);
+    uint H = packUnorm4x8(vH);
 
-    uint P = src(+0, -2), S = src(+0, +2);
-    uint Q = src(-2, +0), R = src(+2, +0);
-    uint Bl = luma(B), Dl = luma(D), El = luma(E), Fl = luma(F), Hl = luma(H);
+	// default pixel
+	ialpha = float(E != 0u);
+	texcol = vE;
 
+bool skiprest = (E == D && E == F) || (E == B && E == H) || (B == H && D == F);
+if (!skiprest) {
+
+    // 5x5
+    uint A = src(-1.0, -1.0);
+    uint C = src(+1.0, -1.0);
+    uint G = src(-1.0, +1.0);
+    uint I = src(+1.0, +1.0);
+
+	uint P  = src( 0.0, -2.0);
+	uint Q  = src(-2.0,  0.0);
+	uint R  = src(+2.0,  0.0);
+	uint S  = src( 0.0, +2.0);
+
+	uint PA = src(-1.0, -2.0);
+	uint PC = src(+1.0, -2.0);
+	uint QA = src(-2.0, -1.0);
+	uint QG = src(-2.0, +1.0);
+	uint RC = src(+2.0, -1.0);
+	uint RI = src(+2.0, +1.0);
+	uint SG = src(-1.0, +2.0);
+	uint SI = src(+1.0, +2.0);
+
+
+    float4 J = vE;    float4 K = vE;    float4 L = vE;    float4 M = vE;
+
+
+    float Bl = luma(vB) + float(B==0u) *2.0;
+    float Dl = luma(vD) + float(D==0u) *2.0;
+    float El = luma(vE) + float(E==0u) *2.0;
+    float Fl = luma(vF) + float(F==0u) *2.0;
+    float Hl = luma(vH) + float(H==0u) *2.0;
+
+    bool slope1 = false;    bool slope2 = false;    bool slope3 = false;    bool slope4 = false;
+
+// B - D
+    if ( E!=B && (D == B && D != H && D != F) && (El >= Dl || E == A && B !=PA && D !=QA) && any_eq2(E, C, G) && ((El < Dl) || A != D || E != P || E != Q)
+		) {
+		J=vB;
+		slope1 = true;
+	}
+
+// B - F
+    if ( E!=B && (B == F && B != D && B != H) && (El >= Bl || E == C && B !=PC && F !=RC) && any_eq2(E, A, I) && ((El < Bl) || C != B || E != P || E != R)
+	 ) {
+		K=vB;
+		slope2 = true;
+	}
+
+// D - H
+    if ( E!=H && (H == D && H != F && H != B) && (El >= Hl || E == G && D !=QG && H !=SG) && any_eq2(E, A, I) && ((El < Hl) || G != H || E != S || E != Q)
+	 ) {
+		L=vH;
+		slope3 = true;
+	}
+// F - H
+    if ( E!=H && (F == H && F != B && F != D) && (El >= Fl || E == I && F !=RI && H !=SI) && any_eq2(E, C, G) && ((El < Fl) || I != H || E != R || E != S)
+	  ) {
+		M=vH;
+		slope4 = true;
+	}
+
+//  long gentle 2:1 slope
+
+if (slope4) { //zone4 long slope
+	if (all_eq2(R,F,G) && R != RC && Q != G) L=M;
+	// vertical
+	if (all_eq2(S,H,C) && S != SG && P != C) K=M;
+}
+
+if (slope3) { //zone3 long slope
+	// horizontal
+	if (all_eq2(Q,D,I) && Q != QA && R != I) M=L;
+	// vertical
+	if (all_eq2(S,H,A) && S != SI && A != P) J=L;
+}
+
+if (slope2) { //zone2 long slope
+	// horizontal
+	if (all_eq2(R,F,A) && R != RI && A != Q) J=K;
+	// vertical
+	if (all_eq2(P,B,I) && P != PA && I != S) M=K;
+}
+
+if (slope1) { //zone1 long slope
+	// horizontal
+	if (all_eq2(Q,D,C) && Q != QG && C != R) K=J;
+	// vertical
+	if (all_eq2(P,B,G) && P != PC && G != S) L=J;
+}
+
+skiprest = skiprest||slope1||slope2||slope3||slope4||E==0u||B==0u||D==0u||F==0u||H==0u;
+
+/* Concave + Cross type */
+
+    if (!skiprest && Bl < El && all_eq4(E, G, H, I, S) && none_eq4(E, A, D, C, F)) { J=admixC(vB,J);	K=J;    skiprest = true;}
+    if (!skiprest && Hl < El && all_eq4(E, A, B, C, P) && none_eq4(E, D, G, I, F)) { L=admixC(vH,L);	M=L;    skiprest = true;}
+    if (!skiprest && Fl < El && all_eq4(E, A, D, G, Q) && none_eq4(E, B, C, I, H)) { K=admixC(vF,K);	M=K;    skiprest = true;}
+    if (!skiprest && Dl < El && all_eq4(E, C, F, I, R) && none_eq4(E, B, A, G, H)) { J=admixC(vD,J);	L=J;    skiprest = true;}
+
+/* K type */
+
+    if (!skiprest && (E != F && all_eq4(E, C, I, D, Q) && all_eq2(F, B, H)) && (F != src(+3.0, +0.0))) {K=admixK(vF,K); M=K;skiprest=true;}	// RIGHT
+    if (!skiprest && (E != D && all_eq4(E, A, G, F, R) && all_eq2(D, B, H)) && (D != src(-3.0, +0.0))) {J=admixK(vD,J); L=J;skiprest=true;}	// LEFT
+    if (!skiprest && (E != H && all_eq4(E, G, I, B, P) && all_eq2(H, D, F)) && (H != src(+0.0, +3.0))) {L=admixK(vH,L); M=L;skiprest=true;}	// BOTTOM
+    if (!skiprest && (E != B && all_eq4(E, A, C, H, S) && all_eq2(B, D, F)) && (B != src(+0.0, -3.0))) {J=admixK(vB,J); K=J;}				// TOP
+
+	//final write
+	float2 fpart = frac(coords);
+
+	float4 res = (fpart.x < 0.5) ? ((fpart.y < 0.5) ? J : L) : ((fpart.y < 0.5) ? K : M);
+
+	ialpha = step(0.002, res.r+res.g+res.b+res.a);
+	texcol = res;
+}
 	
-    // Check the cross state of every 4 pixels in a "field" shape, and pass five surrounding pixels for pattern judgment
-    if (A == E && B == D && A != B && countPatternMatches(A, B, C, F, I, H, G)) return;
-    if (C == E && B == F && C != B && countPatternMatches(C, B, A, D, G, H, I)) return;
-    if (G == E && D == H && G != H && countPatternMatches(G, H, I, F, C, B, A)) return;
-    if (I == E && F == H && I != H && countPatternMatches(I, H, G, D, A, B, C)) return;
-
-
-    // main mmpx logic
-
-    // 1:1 slope rules
-    if ((D == B && D != H && D != F) && (El >= Dl || E == A) && any_eq3(E, A, C, G) && ((El < Dl) || A != D || E != P || E != Q)) J = D;
-    if ((B == F && B != D && B != H) && (El >= Bl || E == C) && any_eq3(E, A, C, I) && ((El < Bl) || C != B || E != P || E != R)) K = B;
-    if ((H == D && H != F && H != B) && (El >= Hl || E == G) && any_eq3(E, A, G, I) && ((El < Hl) || G != H || E != S || E != Q)) L = H;
-    if ((F == H && F != B && F != D) && (El >= Fl || E == I) && any_eq3(E, C, G, I) && ((El < Fl) || I != H || E != R || E != S)) M = F;
-
-    // Intersection rules
-    if ((E != F && all_eq4(E, C, I, D, Q) && all_eq2(F, B, H)) && (F != src(+3, +0))) K = M = F;
-    if ((E != D && all_eq4(E, A, G, F, R) && all_eq2(D, B, H)) && (D != src(-3, +0))) J = L = D;
-    if ((E != H && all_eq4(E, G, I, B, P) && all_eq2(H, D, F)) && (H != src(+0, +3))) L = M = H;
-    if ((E != B && all_eq4(E, A, C, H, S) && all_eq2(B, D, F)) && (B != src(+0, -3))) J = K = B;
-
-    // Use conditional weak blending instead of pixel copying to eliminate artifacts on straight lines
-    if (Bl < El && all_eq4(E, G, H, I, S) && none_eq4(E, A, D, C, F)) {J=admix2d(B,J); K=admix2d(B,K);}
-    if (Hl < El && all_eq4(E, A, B, C, P) && none_eq4(E, D, G, I, F)) {L=admix2d(H,L); M=admix2d(H,M);}
-    if (Fl < El && all_eq4(E, A, D, G, Q) && none_eq4(E, B, C, I, H)) {K=admix2d(F,K); M=admix2d(F,M);}
-    if (Dl < El && all_eq4(E, C, F, I, R) && none_eq4(E, B, A, G, H)) {J=admix2d(D,J); L=admix2d(D,L);}
-
-    // 2:1 slope rules
-    if (H != B) {
-      if (H != A && H != E && H != C) {
-        if (all_eq3(H, G, F, R) && none_eq2(H, D, src(+2, -1))) L = M;
-        if (all_eq3(H, I, D, Q) && none_eq2(H, F, src(-2, -1))) M = L;
-      }
-
-      if (B != I && B != G && B != E) {
-        if (all_eq3(B, A, F, R) && none_eq2(B, D, src(+2, +1))) J = K;
-        if (all_eq3(B, C, D, Q) && none_eq2(B, F, src(-2, +1))) K = J;
-      }
-    } // H !== B
-
-    if (F != D) {
-      if (D != I && D != E && D != C) {
-        if (all_eq3(D, A, H, S) && none_eq2(D, B, src(+1, +2))) J = L;
-        if (all_eq3(D, G, B, P) && none_eq2(D, H, src(+1, -2))) L = J;
-      }
-
-      if (F != E && F != A && F != G) {
-        if (all_eq3(F, C, H, S) && none_eq2(F, B, src(-1, +2))) K = M;
-        if (all_eq3(F, I, B, P) && none_eq2(F, H, src(-1, -2))) M = K;
-      }
-    } // F !== D
-
-
-  // select quadrant based on fractional part of texture coordinates
-  float2 fpart = frac(coords);
-  res = (fpart.x < 0.5f) ? ((fpart.y < 0.5f) ? J : L) : ((fpart.y < 0.5f) ? K : M);
-
-  ialpha = float(res != 0u);
-  texcol = unpackUnorm4x8(res);
 }
 
 #undef src
+#undef srcf
+#undef all_eq2
+#undef all_eq4
+#undef any_eq2
+#undef none_eq2
+#undef none_eq4
+
 )";
   }
   else if (texture_filter == GPUTextureFilter::MMPXQuality)
