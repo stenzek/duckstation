@@ -2377,6 +2377,27 @@ void SPU::ProcessReverb(s32 left_in, s32 right_in, s32* left_out, s32* right_out
 #endif
 }
 
+static constexpr const char* GetReverbModeName(const SPU::ReverbRegisters& reverb_registers)
+{
+  const u32 signature = (static_cast<u32>(reverb_registers.FB_SRC_A) << 16) |
+                        (static_cast<u16>(reverb_registers.IIR_COEF));
+
+  switch (signature)
+  {
+    case 0x0000'0000: return "Off";
+    case 0x007D'BA80: return "Room";
+    case 0x0033'9C00: return "Studio Small";
+    case 0x00B1'B4C0: return "Studio Medium";
+    case 0x00E3'A680: return "Studio Large";
+    case 0x01A5'C000: return "Hall";
+    case 0x033D'B000: return "Space Echo";
+    case 0x0001'8100: return "Chaos Echo";
+    case 0x0001'0000: return "Delay";
+    case 0x0017'8500: return "Half Echo";
+    default: return "Unknown";
+  }
+}
+
 void SPU::Execute(void* param, TickCount ticks, TickCount ticks_late)
 {
   u32 remaining_frames;
@@ -2761,6 +2782,7 @@ void SPU::DrawDebugStateWindow(float scale)
     ImGui::Text("Current Address: 0x%08X", s_state.reverb_current_address);
     ImGui::Text("Current Amplitude: Input (%d, %d) Output (%d, %d)", s_state.last_reverb_input[0],
                 s_state.last_reverb_input[1], s_state.last_reverb_output[0], s_state.last_reverb_output[1]);
+    ImGui::Text("Current Mode: %s", GetReverbModeName(s_state.reverb_registers));
     ImGui::Text("Output Volume: Left %d%% Right %d%%", ApplyVolume(100, s_state.reverb_registers.vLOUT),
                 ApplyVolume(100, s_state.reverb_registers.vROUT));
 #ifdef SPU_ENABLE_VU_METER
