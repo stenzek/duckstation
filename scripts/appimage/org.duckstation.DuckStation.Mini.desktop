@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=DuckStation
+GenericName=PlayStation 1 Emulator
+Comment=Fast PlayStation 1 emulator
+Icon=org.duckstation.DuckStation
+TryExec=duckstation-mini
+Exec=duckstation-mini %f
+Categories=Game;Emulator;
