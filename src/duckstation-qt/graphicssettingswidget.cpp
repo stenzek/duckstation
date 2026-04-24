@@ -28,6 +28,8 @@
 
 #include "moc_graphicssettingswidget.cpp"
 
+using namespace Qt::StringLiterals;
+
 LOG_CHANNEL(Host);
 
 static QVariant GetMSAAModeValue(uint multisamples, bool ssaa)
@@ -1149,7 +1151,7 @@ TextureReplacementSettingsDialog::TextureReplacementSettingsDialog(SettingsWindo
   : QDialog(parent)
 {
   m_ui.setupUi(this);
-  m_ui.icon->setPixmap(QIcon::fromTheme(QStringLiteral("image-fill")).pixmap(32));
+  m_ui.icon->setPixmap(QIcon::fromTheme("image-fill"_L1).pixmap(32));
 
   constexpr Settings::TextureReplacementSettings::Configuration default_replacement_config;
   SettingsInterface* const sif = settings_window->getSettingsInterface();

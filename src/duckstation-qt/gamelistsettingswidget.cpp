@@ -174,10 +174,10 @@ void GameListSettingsWidget::onDirectoryListContextMenuRequested(const QPoint& p
   const int row = selection[0].row();
 
   QMenu* const menu = QtUtils::NewPopupMenu(this);
-  menu->addAction(QIcon::fromTheme("folder-reduce-line"), tr("Remove"), this,
+  menu->addAction(QIcon::fromTheme("folder-reduce-line"_L1), tr("Remove"), this,
                   &GameListSettingsWidget::onRemoveSearchDirectoryButtonClicked);
   menu->addSeparator();
-  menu->addAction(QIcon::fromTheme("folder-open-line"), tr("Open Directory..."), [this, row]() {
+  menu->addAction(QIcon::fromTheme("folder-open-line"_L1), tr("Open Directory..."), [this, row]() {
     const QTreeWidgetItem* const item = m_ui.searchDirectoryList->topLevelItem(row);
     if (item)
       QtUtils::OpenURL(this, QUrl::fromLocalFile(item->text(0)));

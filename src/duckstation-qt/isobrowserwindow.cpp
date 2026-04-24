@@ -57,8 +57,8 @@ ISOBrowserWindow* ISOBrowserWindow::createAndOpenFile(QWidget* parent, const QSt
   if (!ib->tryOpenFile(path, &error))
   {
     QtUtils::AsyncMessageBox(
-      parent, QMessageBox::Critical, tr("Error"),
-      tr("Failed to open %1:\n%2").arg(path).arg(QString::fromStdString(error.GetDescription())));
+      parent, QMessageBox::Critical, "Error"_L1,
+      QStringLiteral("Failed to open %1:\n%2").arg(path).arg(QString::fromStdString(error.GetDescription())));
     delete ib;
     return nullptr;
   }
@@ -99,8 +99,8 @@ void ISOBrowserWindow::onOpenFileClicked()
   if (!tryOpenFile(path, &error))
   {
     QtUtils::AsyncMessageBox(
-      this, QMessageBox::Critical, tr("Error"),
-      tr("Failed to open %1:\n%2").arg(path).arg(QString::fromStdString(error.GetDescription())));
+      this, QMessageBox::Critical, "Error"_L1,
+      QStringLiteral("Failed to open %1:\n%2").arg(path).arg(QString::fromStdString(error.GetDescription())));
     return;
   }
 }
@@ -219,8 +219,8 @@ void ISOBrowserWindow::extractFile(const QString& path, IsoReader::ReadMode mode
       return [this, spath = std::move(spath), error = std::move(error), result]() mutable {
         if (!result)
         {
-          QtUtils::AsyncMessageBox(this, QMessageBox::Critical, tr("Error"),
-                                   tr("Failed to save %1:\n%2")
+          QtUtils::AsyncMessageBox(this, QMessageBox::Critical, "Error"_L1,
+                                   QStringLiteral("Failed to save %1:\n%2")
                                      .arg(QtUtils::StringViewToQString(Path::GetFileName(spath)))
                                      .arg(QString::fromStdString(error.GetDescription())));
         }
@@ -327,8 +327,7 @@ void ISOBrowserWindow::populateFiles(const QString& path)
 
   const auto add_entry = [this](const std::string& full_path, const IsoReader::ISODirectoryEntry& entry) {
     QTreeWidgetItem* item = new QTreeWidgetItem;
-    item->setIcon(
-      0, QIcon::fromTheme(entry.IsDirectory() ? "folder-open-line"_L1 : "file-line"_L1));
+    item->setIcon(0, QIcon::fromTheme(entry.IsDirectory() ? "folder-open-line"_L1 : "file-line"_L1));
     item->setText(0, QtUtils::StringViewToQString(Path::GetFileName(full_path)));
     item->setData(0, Qt::UserRole, QString::fromStdString(full_path));
     item->setData(0, Qt::UserRole + 1, entry.IsDirectory());

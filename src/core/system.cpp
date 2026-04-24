@@ -559,8 +559,7 @@ bool System::CoreThreadInitialize(Error* error)
 
   VideoThread::Internal::ProcessStartup();
 
-  if (g_settings.achievements_enabled)
-    Achievements::Initialize();
+  Achievements::Initialize();
 
 #ifdef ENABLE_DISCORD_PRESENCE
   if (g_settings.enable_discord_presence)

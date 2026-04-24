@@ -106,15 +106,16 @@ bool MemoryCardImage::LoadFromFile(DataArray* data, const char* filename, Error*
   const s64 size = FileSystem::FSize64(fp.get());
   if (size != static_cast<s64>(DATA_SIZE))
   {
-    ERROR_LOG("Memory card {} is incorrect size (expected {} got {})", Path::GetFileName(filename),
-              static_cast<u32>(DATA_SIZE), size);
+    Error::SetStringFmt(error, "Memory card {} is incorrect size (expected {} got {})", Path::GetFileName(filename),
+                        static_cast<u32>(DATA_SIZE), size);
     return false;
   }
 
   const size_t num_read = std::fread(data->data(), 1, DATA_SIZE, fp.get());
   if (num_read != DATA_SIZE)
   {
-    ERROR_LOG("Only read {} of {} sectors from '{}'", num_read / FRAME_SIZE, static_cast<u32>(NUM_FRAMES), filename);
+    Error::SetStringFmt(error, "Only read {} of {} sectors from '{}'", num_read / FRAME_SIZE,
+                        static_cast<u32>(NUM_FRAMES), filename);
     return false;
   }
 

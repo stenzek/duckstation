@@ -217,6 +217,7 @@ target_include_directories(duckstation-qt PRIVATE "$<BUILD_INTERFACE:${CMAKE_CUR
 
 if(WIN32)
   target_sources(duckstation-qt PRIVATE
+    duckstation-qt.manifest
     duckstation-qt.rc
     vcruntimecheck.cpp
   )

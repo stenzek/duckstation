@@ -30,6 +30,8 @@
 
 #include "moc_memorycardsettingswidget.cpp"
 
+using namespace Qt::StringLiterals;
+
 static constexpr char MEMORY_CARD_IMAGE_FILTER[] =
   QT_TRANSLATE_NOOP("MemoryCardSettingsWidget", "All Memory Card Types (*.mcd *.mcr *.mc)");
 
@@ -65,13 +67,13 @@ void MemoryCardSettingsWidget::createUi(SettingsWindow* dialog)
       QLineEdit* const directory = new QLineEdit(box);
       QPushButton* const browse = new QPushButton(box);
       browse->setToolTip(tr("Browse..."));
-      browse->setIcon(QIcon::fromTheme("folder-open-line"));
+      browse->setIcon(QIcon::fromTheme("folder-open-line"_L1));
       QPushButton* const open = new QPushButton(box);
       open->setToolTip(tr("Open..."));
-      open->setIcon(QIcon::fromTheme("open-folder-line"));
+      open->setIcon(QIcon::fromTheme("open-folder-line"_L1));
       QPushButton* const reset = new QPushButton(box);
       reset->setToolTip(qApp->translate("QPlatformTheme", "Reset"));
-      reset->setIcon(QIcon::fromTheme("delete-back-2-line"));
+      reset->setIcon(QIcon::fromTheme("delete-back-2-line"_L1));
       hbox->addWidget(directory);
       hbox->addWidget(browse);
       hbox->addWidget(open);
@@ -93,13 +95,13 @@ void MemoryCardSettingsWidget::createUi(SettingsWindow* dialog)
       QLineEdit* const directory = new QLineEdit(box);
       QPushButton* const browse = new QPushButton(box);
       browse->setToolTip(tr("Browse..."));
-      browse->setIcon(QIcon::fromTheme("folder-open-line"));
+      browse->setIcon(QIcon::fromTheme("folder-open-line"_L1));
       QPushButton* const open = new QPushButton(box);
       open->setToolTip(tr("Open..."));
-      open->setIcon(QIcon::fromTheme("open-folder-line"));
+      open->setIcon(QIcon::fromTheme("open-folder-line"_L1));
       QPushButton* const reset = new QPushButton(box);
       reset->setToolTip(qApp->translate("QPlatformTheme", "Reset"));
-      reset->setIcon(QIcon::fromTheme("delete-back-2-line"));
+      reset->setIcon(QIcon::fromTheme("delete-back-2-line"_L1));
       hbox->addWidget(directory);
       hbox->addWidget(browse);
       hbox->addWidget(open);
@@ -183,12 +185,16 @@ void MemoryCardSettingsWidget::createPortSettingsUi(SettingsWindow* dialog, int 
   }
   memory_card_layout->addWidget(ui->memory_card_path);
 
-  ui->memory_card_path_browse = new QPushButton(tr("Browse..."), ui->container);
+  ui->memory_card_path_browse = new QPushButton(ui->container);
+  ui->memory_card_path_browse->setIcon(QIcon::fromTheme("folder-open-line"_L1));
+  ui->memory_card_path_browse->setToolTip(tr("Browse..."));
   connect(ui->memory_card_path_browse, &QPushButton::clicked, this,
           [this, index]() { onBrowseMemoryCardPathClicked(index); });
   memory_card_layout->addWidget(ui->memory_card_path_browse);
 
-  ui->memory_card_path_reset = new QPushButton(qApp->translate("QPlatformTheme", "Reset"), ui->container);
+  ui->memory_card_path_reset = new QPushButton(ui->container);
+  ui->memory_card_path_reset->setIcon(QIcon::fromTheme("delete-back-2-line"_L1));
+  ui->memory_card_path_reset->setToolTip(qApp->translate("QPlatformTheme", "Reset"));
   connect(ui->memory_card_path_reset, &QPushButton::clicked, this,
           [this, index]() { onResetMemoryCardPathClicked(index); });
   memory_card_layout->addWidget(ui->memory_card_path_reset);

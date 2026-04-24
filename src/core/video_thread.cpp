@@ -867,6 +867,8 @@ bool VideoThread::CreateGPUBackendOnThread(bool hardware_renderer, bool upload_v
     {
       if (error)
         *error = local_error;
+
+      DestroyGPUBackendOnThread();
       return false;
     }
   }
