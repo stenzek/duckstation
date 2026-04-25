@@ -1060,7 +1060,7 @@ skiprest = skiprest||slope1||slope2||slope3||slope4||E==0u||B==0u||D==0u||F==0u|
 	#define src(xoffs,yoffs) packUnorm4x8(srcf(xoffs,yoffs))
 	)";
 
-    /* MMPXEnhanced v3.0
+    /* MMPXEnhanced v3.0.1
      * This shader is an enhanced iteration of MMPX.glc (see above).
      * It improves the visual quality while preserving the pixel-art aesthetic by
      * identifying and analyzing specific geometric shapes, effectively resolving
@@ -1353,6 +1353,8 @@ if (eq(E,A)) {
 		mixFactor += 0.236068;
 		return mixXEoff;
 	}
+
+	if (E==0u && !Xisblack) return vX;
 
     eq_B_PC = eq(B,PC);
     eq_B_PA = eq(B,PA);
@@ -1692,6 +1694,7 @@ if (!skiprest) {
     bool slope1 = false;    bool slope2 = false;    bool slope3 = false;    bool slope4 = false;
 
     bool slope1ok = false;  bool slope2ok = false;  bool slope3ok = false;  bool slope4ok = false;
+    bool slope1end = false;  bool slope2end = false;  bool slope3end = false;  bool slope4end = false;
 
 
 // B - D
@@ -1707,6 +1710,7 @@ if (!skiprest) {
 				);
 		slope1 = true;
 		slope1ok = (J.b < 1.1);
+		slope1end = (J.b < 3.1);
 		skiprest = (J.b > 7.1);
 		J = (J.b > 3.1) ? vE :	
 			(J.b > 1.1) ? (J - 2.0) :
@@ -1725,6 +1729,7 @@ if (!skiprest) {
 				);
 		slope2 = true;
 		slope2ok = (K.b < 1.1);
+		slope2end = (K.b < 3.1);
 		skiprest = (K.b > 7.1);
 		K = (K.b > 3.1) ? vE :	
 			(K.b > 1.1) ? (K - 2.0) :
@@ -1743,6 +1748,7 @@ if (!skiprest) {
 				);
 		slope3 = true;
 		slope3ok = (L.b < 1.1);
+		slope3end = (L.b < 3.1);
 		skiprest = (L.b > 7.1);
 		L = (L.b > 3.1) ? vE :	
 			(L.b > 1.1) ? (L - 2.0) :
@@ -1761,6 +1767,7 @@ if (!skiprest) {
 				);
 		slope4 = true;
 		slope4ok = (M.b < 1.1);
+		slope4end = (M.b < 3.1);
 		skiprest = (M.b > 7.1);
 		M = (M.b > 3.1) ? vE :	
 			(M.b > 1.1) ? (M - 2.0) :
@@ -1798,7 +1805,7 @@ if (!skiprest) {
 		if (all_eq2(P,B,G) && neq(P, PC) && (neq(G,S)||eq(S, SI))) {L=admixL(J,L,vD); skiprest = true;}
 	}
 
-if (!skiprest && !oppoPix && !slope1ok && !slope2ok && !slope3ok && !slope4ok) {
+if (!skiprest && !oppoPix) {
 
 
         // horizontal bottom
@@ -1808,7 +1815,7 @@ if (!skiprest && !oppoPix && !slope1ok && !slope2ok && !slope3ok && !slope4ok) {
         //                                  Q D e f r       Zone 4
         //					                g h I
         //					                  S
-        if ( (!slope2 && !eq_B_F) && (!slope3 && !eq_D_H) && !eq_F_H && F!=0u &&
+        if ( (!slope2 && !eq_B_F) && (!slope3 && !eq_D_H) && (!slope4end && !eq_F_H) && F!=0u &&
             !eq_E_F && eq(R,H) && eq(F,G) ) {
             M = admixS( A, B, C, D, E, F, G, H, I
                       , R, RC, RI, S, SG, SI, II, CC
@@ -1820,7 +1827,7 @@ if (!skiprest && !oppoPix && !slope1ok && !slope2ok && !slope3ok && !slope4ok) {
         //                                  q d e F R       Zone 3
         //                                     G h i
         //					                   S
-        if ( !skiprest && (!slope1 && !eq_B_D) && (!slope4 && !eq_F_H) && !eq_D_H && D!=0u &&
+        if ( !skiprest && (!slope1 && !eq_B_D) && (!slope4 && !eq_F_H) && (!slope3end && !eq_D_H) && D!=0u &&
              !eq_E_D && eq(Q,H) && eq(D,I) ) {
             L = admixS( C, B, A, F, E, D, I, H, G
                       , Q, QA, QG, S, SI, SG, GG, AA
@@ -1836,7 +1843,7 @@ if (!skiprest && !oppoPix && !slope1ok && !slope2ok && !slope3ok && !slope4ok) {
         //                                    a b C
         //                                  Q D e f r       Zone 2
         //                                    G H  I  .
-        if ( (!slope1 && !eq_B_D)  && (!slope4 && !eq_F_H) && !eq_B_F && F!=0u &&
+        if ( (!slope1 && !eq_B_D)  && (!slope4 && !eq_F_H) && (!slope2end && !eq_B_F) && F!=0u &&
               !eq_E_F && eq(B,R) && eq(A,F) ) {
             K = admixS( G, H, I, D, E, F, A, B, C
                       , R, RI, RC, P, PA, PC, CC, II
@@ -1848,7 +1855,7 @@ if (!skiprest && !oppoPix && !slope1ok && !slope2ok && !slope3ok && !slope4ok) {
         //                                    A B C
         //                                 Q D E F R        Zone 1
         //                                  . G H I
-        if ( !skiprest && (!slope2 && !eq_B_F) && (!slope3 && !eq_D_H) && !eq_B_D && D!=0u &&
+        if ( !skiprest && (!slope2 && !eq_B_F) && (!slope3 && !eq_D_H) && (!slope1end && !eq_B_D) && D!=0u &&
              !eq_E_D && eq(B,Q) && eq(C,D) ) {
             J = admixS( I, H, G, F, E, D, C, B, A
                       , Q, QG, QA, P, PC, PA, AA, GG
@@ -1865,7 +1872,7 @@ if (!skiprest && !oppoPix && !slope1ok && !slope2ok && !slope3ok && !slope4ok) {
         //                                  Q D E F R
         //                                    G H I        Zone 3
         //                                       S .
-        if ( (!slope1 && !eq_B_D) && (!slope4 && !eq_F_H) && !eq_D_H && H!=0u &&
+        if ( (!slope1 && !eq_B_D) && (!slope4 && !eq_F_H) && (!slope3end && !eq_D_H) && H!=0u &&
               !eq_E_H && eq(D,S) && eq(A,H) ) {
             L = admixS( C, F, I, B, E, H, A, D, G
                       , S, SI, SG, Q, QA, QG, GG, II
@@ -1877,7 +1884,7 @@ if (!skiprest && !oppoPix && !slope1ok && !slope2ok && !slope3ok && !slope4ok) {
         //                                    A B C
         //                                  Q D E F R       Zone 1
         //                                    G H I
-        if ( !skiprest && (!slope3 && !eq_D_H) && (!slope2 && !eq_B_F) && !eq_B_D && B!=0u &&
+        if ( !skiprest && (!slope3 && !eq_D_H) && (!slope2 && !eq_B_F) && (!slope1end && !eq_B_D) && B!=0u &&
               !eq_E_B && eq(P,D) && eq(B,G) ) {
             J = admixS( I, F, C, H, E, B, G, D, A
                       , P, PC, PA, Q, QG, QA, AA, CC
@@ -1894,7 +1901,7 @@ if (!skiprest && !oppoPix && !slope1ok && !slope2ok && !slope3ok && !slope4ok) {
         //                                  Q D E F R
         //                                    G H I        Zone 4
         //                                    . S
-        if ( (!slope2 && !eq_B_F) && (!slope3 && !eq_D_H) && !eq_F_H && H!=0u &&
+        if ( (!slope2 && !eq_B_F) && (!slope3 && !eq_D_H) && (!slope4end && !eq_F_H) && H!=0u &&
               !eq_E_H && eq(S,F) && eq(H,C) ) {
             M = admixS( A, D, G, B, E, H, C, F
                       , I, S, SG, SI, R, RC, RI, II, GG
@@ -1906,7 +1913,7 @@ if (!skiprest && !oppoPix && !slope1ok && !slope2ok && !slope3ok && !slope4ok) {
         //                                    A B C
         //                                  Q D E F R        Zone 2
         //                                    G H I
-        if ( !skiprest && (!slope1 && !eq_B_D) && (!slope4 && !eq_F_H) && !eq_B_F && B!=0u &&
+        if ( !skiprest && (!slope1 && !eq_B_D) && (!slope4 && !eq_F_H) && (!slope2end && !eq_B_F) && B!=0u &&
              !eq_E_B && eq(P,F) && eq(B,I) ) {
             K = admixS( G, D, A, H, E, B, I, F, C
                       , P, PA, PC, R, RI, RC, CC, AA
