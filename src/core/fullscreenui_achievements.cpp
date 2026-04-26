@@ -1794,9 +1794,9 @@ void FullscreenUI::DrawAchievementsWindow()
     const float spacing = LayoutScale(LAYOUT_MENU_ITEM_TITLE_SUMMARY_SPACING);
     const float image_size = LayoutScale(75.0f);
 
-    if (const std::string& icon = Achievements::GetCurrentGameIconURL(); !icon.empty())
+    if (const std::string& badge_url = Achievements::GetCurrentGameBadgeURL(); !badge_url.empty())
     {
-      GPUTexture* badge = GetCachedTextureAsync(icon);
+      GPUTexture* badge = GetCachedTextureAsync(badge_url);
       if (badge)
       {
         ImGui::GetWindowDrawList()->AddImage(badge, pos, pos + ImVec2(image_size, image_size), ImVec2(0.0f, 0.0f),
@@ -2476,9 +2476,9 @@ void FullscreenUI::DrawLeaderboardsWindow()
     const ImVec2 heading_pos = ImGui::GetCursorScreenPos() + ImGui::GetStyle().FramePadding;
     const float image_size = LayoutScale(75.0f);
 
-    if (const std::string& icon = Achievements::GetCurrentGameIconURL(); !icon.empty())
+    if (const std::string& badge_url = Achievements::GetCurrentGameBadgeURL(); !badge_url.empty())
     {
-      GPUTexture* badge = GetCachedTextureAsync(icon);
+      GPUTexture* badge = GetCachedTextureAsync(badge_url);
       if (badge)
       {
         ImGui::GetWindowDrawList()->AddImage(badge, heading_pos, heading_pos + ImVec2(image_size, image_size),

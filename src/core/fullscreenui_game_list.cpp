@@ -1067,7 +1067,7 @@ GPUTexture* FullscreenUI::GetGameListCover(const GameList::Entry* entry, bool fa
     {
       const auto lock = Achievements::GetLock();
       if (Achievements::GetCurrentGamePath() == entry->path)
-        cover_it->second = Achievements::GetCurrentGameIconURL();
+        cover_it->second = Achievements::GetCurrentGameBadgeURL();
     }
   }
 

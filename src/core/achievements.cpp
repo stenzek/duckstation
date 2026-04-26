@@ -35,6 +35,7 @@
 #include "common/scoped_guard.h"
 #include "common/sha256_digest.h"
 #include "common/small_string.h"
+#include "common/string_pool.h"
 #include "common/string_util.h"
 #include "common/timer.h"
 
@@ -203,6 +204,10 @@ static void BuildProgressDatabase(const rc_client_all_user_progress_t* allprog);
 static void UpdateProgressDatabase();
 static void ClearProgressDatabase();
 
+static std::string GetGameBadgeNamesCachePath();
+static void LoadGameBadgeNames();
+static void UpdateGameBadgeName(u32 game_id, std::string_view badge_name);
+
 static std::string GetPinnedAchievementsPath(u32 game_id);
 static void LoadPinnedAchievements();
 static void SavePinnedAchievements();
@@ -226,6 +231,7 @@ struct State
   bool has_rich_presence : 1 = false;
   bool has_saved_credentials : 1 = false;
   bool hashdb_loaded : 1 = false;
+  bool game_badge_names_loaded : 1 = false;
   bool reload_game_on_reset : 1 = false;
 
   std::recursive_mutex mutex; // large
@@ -248,13 +254,17 @@ struct State
 
   std::string game_path;
   std::string game_title;
-  std::string game_icon_url;
+  std::string game_badge_url;
   rc_client_user_game_summary_t game_summary = {};
 
   rc_client_async_handle_t* login_request = nullptr;
   rc_client_async_handle_t* load_game_request = nullptr;
 
   std::vector<HashDatabaseEntry> hashdb_entries;
+
+  // TODO: Turn this into a proper cache of achievement data, not just the badge names.
+  std::vector<std::pair<u32, u32>> game_badge_names; // game_id, string_pool_offset
+  BumpStringPool game_badge_name_strings;
 
   rc_client_async_handle_t* fetch_hash_library_request = nullptr;
   rc_client_hash_library_t* fetch_hash_library_result = nullptr;
@@ -571,9 +581,9 @@ const std::string& Achievements::GetCurrentGamePath()
   return s_state.game_path;
 }
 
-const std::string& Achievements::GetCurrentGameIconURL()
+const std::string& Achievements::GetCurrentGameBadgeURL()
 {
-  return s_state.game_icon_url;
+  return s_state.game_badge_url;
 }
 
 const std::string& Achievements::GetRichPresenceString()
@@ -1319,10 +1329,10 @@ void Achievements::ClientLoadGameCallback(int result, const char* error_message,
   s_state.has_achievements = has_achievements;
   s_state.has_leaderboards = has_leaderboards;
   s_state.has_rich_presence = rc_client_has_rich_presence(client);
-  s_state.game_icon_url =
+  s_state.game_badge_url =
     info->badge_url ? std::string(info->badge_url) : GetImageURL(info->badge_name, RC_IMAGE_TYPE_GAME);
   if (info->badge_name)
-    GameList::UpdateAchievementBadgeName(info->id, info->badge_name);
+    UpdateGameBadgeName(info->id, info->badge_name);
 
   // update progress database on first load, in case it was played on another PC
   UpdateGameSummary(true);
@@ -1361,7 +1371,7 @@ void Achievements::ClearGameInfo()
 
   s_state.game_id = 0;
   s_state.game_title = {};
-  s_state.game_icon_url = {};
+  s_state.game_badge_url = {};
   s_state.reload_game_on_reset = false;
   s_state.has_achievements = false;
   s_state.has_leaderboards = false;
@@ -1411,7 +1421,7 @@ void Achievements::DisplayAchievementSummary()
     FullscreenUI::AddAchievementNotification("AchievementsSummary",
                                              IsHardcoreModeActive() ? ACHIEVEMENT_SUMMARY_NOTIFICATION_TIME_HC :
                                                                       ACHIEVEMENT_SUMMARY_NOTIFICATION_TIME,
-                                             s_state.game_icon_url, s_state.game_title, std::string(summary),
+                                             s_state.game_badge_url, s_state.game_title, std::string(summary),
                                              RA_LOGO_ICON_NAME, FullscreenUI::AchievementNotificationNoteType::Image);
 
     if (s_state.game_summary.num_unsupported_achievements > 0)
@@ -1520,7 +1530,7 @@ void Achievements::HandleGameCompleteEvent(const rc_client_event_t* event)
       TRANSLATE_PLURAL_STR("Achievements", "%n points", "Achievement points", s_state.game_summary.points_unlocked));
 
     FullscreenUI::AddAchievementNotification(
-      "achievement_mastery", GAME_COMPLETE_NOTIFICATION_TIME, s_state.game_icon_url, s_state.game_title,
+      "achievement_mastery", GAME_COMPLETE_NOTIFICATION_TIME, s_state.game_badge_url, s_state.game_title,
       std::move(message), ICON_EMOJI_TROPHY, FullscreenUI::AchievementNotificationNoteType::IconText);
   }
 }
@@ -1555,7 +1565,7 @@ void Achievements::HandleLeaderboardStartedEvent(const rc_client_event_t* event)
   {
     FullscreenUI::AddAchievementNotification(
       fmt::format("leaderboard_{}", event->leaderboard->id), LEADERBOARD_STARTED_NOTIFICATION_TIME,
-      s_state.game_icon_url, std::string(event->leaderboard->title),
+      s_state.game_badge_url, std::string(event->leaderboard->title),
       TRANSLATE_STR("Achievements", "Leaderboard attempt started."), ICON_EMOJI_RED_FLAG,
       FullscreenUI::AchievementNotificationNoteType::IconText);
   }
@@ -1569,7 +1579,7 @@ void Achievements::HandleLeaderboardFailedEvent(const rc_client_event_t* event)
   {
     FullscreenUI::AddAchievementNotification(
       fmt::format("leaderboard_{}", event->leaderboard->id), LEADERBOARD_FAILED_NOTIFICATION_TIME,
-      s_state.game_icon_url, std::string(event->leaderboard->title),
+      s_state.game_badge_url, std::string(event->leaderboard->title),
       TRANSLATE_STR("Achievements", "Leaderboard attempt failed."), ICON_EMOJI_CROSS_MARK_BUTTON,
       FullscreenUI::AchievementNotificationNoteType::IconText);
   }
@@ -1608,7 +1618,7 @@ void Achievements::HandleLeaderboardSubmittedEvent(const rc_client_event_t* even
 
     FullscreenUI::AddAchievementNotification(
       fmt::format("leaderboard_{}", event->leaderboard->id),
-      static_cast<float>(g_settings.achievements_leaderboard_duration), s_state.game_icon_url,
+      static_cast<float>(g_settings.achievements_leaderboard_duration), s_state.game_badge_url,
       std::string(event->leaderboard->title), std::move(message),
       g_settings.achievements_spectator_mode ? std::string(ICON_EMOJI_CHART_UPWARDS_TREND) : std::string(),
       g_settings.achievements_spectator_mode ? FullscreenUI::AchievementNotificationNoteType::IconText :
@@ -1645,7 +1655,7 @@ void Achievements::HandleLeaderboardScoreboardEvent(const rc_client_event_t* eve
 
     FullscreenUI::AddAchievementNotification(
       fmt::format("leaderboard_{}", event->leaderboard->id),
-      static_cast<float>(g_settings.achievements_leaderboard_duration), s_state.game_icon_url,
+      static_cast<float>(g_settings.achievements_leaderboard_duration), s_state.game_badge_url,
       std::string(event->leaderboard->title), std::move(message), ICON_EMOJI_CHECKMARK_BUTTON,
       FullscreenUI::AchievementNotificationNoteType::IconText, LEADERBOARD_NOTIFICATION_MIN_WIDTH);
   }
@@ -1928,7 +1938,7 @@ void Achievements::LoadStateFromBuffer(std::span<const u8> data, std::unique_loc
   {
     // Fallback to game icon if we don't have a cover.
     std::string image = System::GetImageForLoadingScreen(System::GetGamePath());
-    FullscreenUI::OpenOrUpdateLoadingScreen(image.empty() ? s_state.game_icon_url : image,
+    FullscreenUI::OpenOrUpdateLoadingScreen(image.empty() ? s_state.game_badge_url : image,
                                             TRANSLATE_SV("Achievements", "Downloading achievements data..."));
 
     WaitForServerCallsWithYield(lock);
@@ -2261,11 +2271,6 @@ SmallString Achievements::GetLoggedInUserPointsSummary()
   return ret;
 }
 
-std::string Achievements::GetGameIconURL(const char* badge_name)
-{
-  return GetImageURL(badge_name, RC_IMAGE_TYPE_GAME);
-}
-
 bool Achievements::DownloadGameIcons(ProgressCallback* progress, Error* error)
 {
   // Collect all unique game IDs that don't have icons yet
@@ -2277,7 +2282,7 @@ bool Achievements::DownloadGameIcons(ProgressCallback* progress, Error* error)
       if (entry.achievements_game_id != 0)
       {
         // Check if we already have this badge
-        const std::string existing_badge = GameList::GetAchievementGameBadgeURL(entry.achievements_game_id);
+        const std::string existing_badge = GetGameBadgeURL(entry.achievements_game_id);
         if (existing_badge.empty() &&
             std::find(game_ids.begin(), game_ids.end(), entry.achievements_game_id) == game_ids.end())
         {
@@ -2333,7 +2338,7 @@ bool Achievements::DownloadGameIcons(ProgressCallback* progress, Error* error)
     if (badge_name.empty())
       continue;
 
-    GameList::UpdateAchievementBadgeName(entry.game_id, badge_name);
+    UpdateGameBadgeName(entry.game_id, badge_name);
 
     const std::string url =
       entry.badge_url ? std::string(entry.badge_url) : GetImageURL(entry.badge_name, RC_IMAGE_TYPE_GAME);
@@ -2694,7 +2699,7 @@ void Achievements::FinishRefreshHashDatabase()
   s_state.fetch_hash_library_result = nullptr;
 
   // update game list, we might have some new games that weren't in the seed database
-  GameList::UpdateAllAchievementData();
+  Host::RunOnCoreThread(&GameList::UpdateAllAchievementData);
 }
 
 bool Achievements::RefreshAllProgressDatabase(ProgressCallback* progress, Error* error)
@@ -2748,7 +2753,7 @@ void Achievements::RefreshAllProgressCallback(int result, const char* error_mess
   BuildProgressDatabase(list);
   rc_client_destroy_all_user_progress(list);
 
-  GameList::UpdateAllAchievementData();
+  Host::RunOnCoreThread(&GameList::UpdateAllAchievementData);
 
   if (result_ud)
     result_ud->first = true;
@@ -3160,8 +3165,11 @@ void Achievements::UpdateProgressDatabase()
   // update the game list, this should be fairly quick
   if (s_state.game_hash.has_value())
   {
-    GameList::UpdateAchievementData(s_state.game_hash.value(), s_state.game_id, num_achievements, achievements_unlocked,
-                                    achievements_unlocked_hardcore);
+    Host::RunOnCoreThread([game_hash = s_state.game_hash.value(), game_id = s_state.game_id, num_achievements,
+                           achievements_unlocked, achievements_unlocked_hardcore]() {
+      GameList::UpdateAchievementData(game_hash, game_id, num_achievements, achievements_unlocked,
+                                      achievements_unlocked_hardcore);
+    });
   }
 
   // done asynchronously so we don't hitch on disk I/O
@@ -3284,7 +3292,7 @@ void Achievements::ClearProgressDatabase()
       ERROR_LOG("Failed to delete progress database: {}", error.GetDescription());
   }
 
-  GameList::UpdateAllAchievementData();
+  Host::RunOnCoreThread(&GameList::UpdateAllAchievementData);
 }
 
 Achievements::ProgressDatabase::ProgressDatabase() = default;
@@ -3343,6 +3351,144 @@ const Achievements::ProgressDatabase::Entry* Achievements::ProgressDatabase::Loo
   const auto iter = std::lower_bound(m_entries.begin(), m_entries.end(), game_id,
                                      [](const Entry& entry, u32 search) { return (entry.game_id < search); });
   return (iter != m_entries.end() && iter->game_id == game_id) ? &(*iter) : nullptr;
+}
+
+std::string Achievements::GetGameBadgeNamesCachePath()
+{
+  return Path::Combine(EmuFolders::Cache, "achievement_game_badges.cache");
+}
+
+std::string Achievements::GetGameBadgeURL(u32 game_id)
+{
+  const auto lock = GetLock();
+
+  // don't allow use of achievement badges if we're not logged in to achievements
+  if (!s_state.has_saved_credentials)
+    return {};
+
+  LoadGameBadgeNames();
+
+  const auto iter = std::lower_bound(s_state.game_badge_names.begin(), s_state.game_badge_names.end(), game_id,
+                                     [](const auto& entry, u32 search) { return entry.first < search; });
+  if (iter != s_state.game_badge_names.end() && iter->first == game_id)
+  {
+    const std::string_view badge_name = s_state.game_badge_name_strings.GetString(iter->second);
+    if (!badge_name.empty())
+      return GetImageURL(TinyString(badge_name).c_str(), RC_IMAGE_TYPE_GAME);
+  }
+
+  return {};
+}
+
+void Achievements::LoadGameBadgeNames()
+{
+  if (s_state.game_badge_names_loaded)
+    return;
+
+  s_state.game_badge_names_loaded = true;
+
+  Error error;
+  FileSystem::LockedFile fp = FileSystem::OpenLockedFile(GetGameBadgeNamesCachePath().c_str(), false, &error);
+  if (!fp)
+  {
+    ERROR_LOG("Failed to load cache: {}", error.GetDescription());
+    return;
+  }
+
+  // avoid heap allocations by using the file size as a guide
+  static constexpr u32 MAX_RESERVE_SIZE = 1 * 1024 * 1024;
+  s_state.game_badge_name_strings.Reserve(
+    static_cast<size_t>(std::clamp<s64>(FileSystem::FSize64(fp.get()), 0, MAX_RESERVE_SIZE)));
+
+  char line[256];
+  while (std::fgets(line, sizeof(line), fp.get()))
+  {
+    const std::string_view line_sv = StringUtil::StripWhitespace(line);
+    if (line_sv.empty())
+      continue;
+
+    const std::string_view::size_type pos = line_sv.find(',');
+    if (pos != std::string_view::npos)
+    {
+      const std::optional<u32> game_id = StringUtil::FromChars<u32>(line_sv.substr(0, pos));
+      const std::string_view badge_name = StringUtil::StripWhitespace(line_sv.substr(pos + 1));
+      if (game_id.has_value() && !badge_name.empty())
+      {
+        s_state.game_badge_names.emplace_back(game_id.value(),
+                                              static_cast<u32>(s_state.game_badge_name_strings.AddString(badge_name)));
+        continue;
+      }
+    }
+
+    WARNING_LOG("Malformed line in cache: '{}'", line_sv);
+  }
+
+  DEV_LOG("Loaded {} achievement badge names", s_state.game_badge_names.size());
+
+  // the file may not be sorted, so sort it now.
+  std::sort(s_state.game_badge_names.begin(), s_state.game_badge_names.end(),
+            [](const auto& a, const auto& b) { return a.first < b.first; });
+}
+
+void Achievements::UpdateGameBadgeName(u32 game_id, std::string_view badge_name)
+{
+  if (game_id == 0)
+    return;
+
+  LoadGameBadgeNames();
+
+  const auto iter = std::lower_bound(s_state.game_badge_names.begin(), s_state.game_badge_names.end(), game_id,
+                                     [](const auto& entry, u32 search) { return entry.first < search; });
+  bool game_exists = false;
+  if (iter != s_state.game_badge_names.end() && iter->first == game_id)
+  {
+    if (s_state.game_badge_name_strings.GetString(iter->second) == badge_name)
+      return;
+
+    iter->second = static_cast<u32>(s_state.game_badge_name_strings.AddString(badge_name));
+    game_exists = true;
+  }
+  else
+  {
+    s_state.game_badge_names.insert(iter,
+                                    {game_id, static_cast<u32>(s_state.game_badge_name_strings.AddString(badge_name))});
+  }
+
+  Error error;
+  FileSystem::LockedFile fp = FileSystem::OpenLockedFile(GetGameBadgeNamesCachePath().c_str(), true, &error);
+  if (!fp)
+  {
+    ERROR_LOG("Failed to open cache for update: {}", error.GetDescription());
+    return;
+  }
+
+  // this is really terrible, but the case where a badge name changes is so rare that it's not worth handling well
+  if (game_exists)
+  {
+    if (!FileSystem::FTruncate64(fp.get(), 0, &error))
+    {
+      ERROR_LOG("Failed to truncate cache: {}", error.GetDescription());
+      return;
+    }
+
+    for (const auto& entry : s_state.game_badge_names)
+    {
+      const std::string_view entry_badge = s_state.game_badge_name_strings.GetString(entry.second);
+      if (std::fprintf(fp.get(), "%u,%.*s\n", entry.first, static_cast<int>(entry_badge.size()), entry_badge.data()) <
+          0)
+      {
+        ERROR_LOG("Failed to rewrite cache: errno {}", errno);
+      }
+    }
+  }
+  else
+  {
+    if (!FileSystem::FSeek64(fp.get(), 0, SEEK_END, &error) ||
+        std::fprintf(fp.get(), "%u,%.*s\n", game_id, static_cast<int>(badge_name.size()), badge_name.data()) < 0)
+    {
+      ERROR_LOG("Failed to append to cache: errno {}", errno);
+    }
+  }
 }
 
 std::string Achievements::GetPinnedAchievementsPath(u32 game_id)

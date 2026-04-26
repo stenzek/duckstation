@@ -3492,12 +3492,22 @@ void GPUTextureCache::PreloadReplacementTextures()
 
 bool GPUTextureCache::EnsureGameDirectoryExists()
 {
-  if (VideoThread::GetGameSerial().empty())
+  const std::string& serial = VideoThread::GetGameSerial();
+  if (serial.empty())
     return false;
 
-  const std::string game_directory = Path::Combine(EmuFolders::Textures, VideoThread::GetGameSerial());
+  const std::string game_directory = Path::Combine(EmuFolders::Textures, serial);
   if (FileSystem::DirectoryExists(game_directory.c_str()))
     return true;
+
+  // If this is a multi-disc game, try the first disc.
+  const GameDatabase::Entry* dbentry = GameDatabase::GetEntryForSerial(serial);
+  if (dbentry && dbentry->disc_set && serial != dbentry->disc_set->serials.front())
+  {
+    const std::string first_disc_directory = Path::Combine(EmuFolders::Textures, dbentry->disc_set->serials.front());
+    if (FileSystem::DirectoryExists(first_disc_directory.c_str()))
+      return true;
+  }
 
   Error error;
   if (!FileSystem::CreateDirectory(game_directory.c_str(), false, &error))
@@ -3542,7 +3552,7 @@ std::string GPUTextureCache::GetTextureReplacementDirectory()
     if (FileSystem::DirectoryExists(altdir.c_str()))
     {
       WARNING_LOG("Using deprecated texture replacement directory {}", altdir);
-      dir = std::move(altdir);
+      return altdir;
     }
     else
     {
@@ -3556,7 +3566,7 @@ std::string GPUTextureCache::GetTextureReplacementDirectory()
         if (FileSystem::DirectoryExists(altdir.c_str()))
         {
           WARNING_LOG("Using texture replacements from first disc {}", dbentry->disc_set->serials.front());
-          dir = std::move(altdir);
+          return altdir;
         }
       }
     }
@@ -3567,8 +3577,28 @@ std::string GPUTextureCache::GetTextureReplacementDirectory()
 
 std::string GPUTextureCache::GetTextureDumpDirectory()
 {
-  return Path::Combine(EmuFolders::Textures,
-                       SmallString::from_format("{}" FS_OSPATH_SEPARATOR_STR "dumps", VideoThread::GetGameSerial()));
+  const std::string& serial = VideoThread::GetGameSerial();
+
+  std::string dir =
+    Path::Combine(EmuFolders::Textures, SmallString::from_format("{}" FS_OSPATH_SEPARATOR_STR "dumps", serial));
+  if (!FileSystem::DirectoryExists(dir.c_str()))
+  {
+    // If this is a multi-disc game, try the first disc.
+    const GameDatabase::Entry* dbentry = GameDatabase::GetEntryForSerial(serial);
+    if (dbentry && dbentry->disc_set && serial != dbentry->disc_set->serials.front())
+    {
+      std::string altdir =
+        Path::Combine(EmuFolders::Textures, SmallString::from_format("{}" FS_OSPATH_SEPARATOR_STR "dumps",
+                                                                     dbentry->disc_set->serials.front()));
+      if (FileSystem::DirectoryExists(altdir.c_str()))
+      {
+        WARNING_LOG("Dumping textures to first disc {}", dbentry->disc_set->serials.front());
+        return altdir;
+      }
+    }
+  }
+
+  return dir;
 }
 
 GPUTextureCache::VRAMReplacementName GPUTextureCache::GetVRAMWriteHash(u32 width, u32 height, const void* pixels)

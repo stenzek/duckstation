@@ -112,13 +112,13 @@ jobs:
     - name: Create ${{ matrix.name }} Symbols Archive
       shell: cmd
       run: |
-        "C:\Program Files\7-Zip\7z.exe" a -mx9 -r duckstation-windows-${{ matrix.arch }}-release-symbols.zip ./bin/${{ matrix.bindir }}/*.pdb
+        "C:\Program Files\7-Zip\7z.exe" a -mx9 -r duckstation-windows-${{ matrix.arch }}-release-symbols.7z ./bin/${{ matrix.bindir }}/*.pdb
 
     - name: Upload ${{ matrix.name }} Symbols Archive
       uses: actions/upload-artifact@v7
       with:
         name: "windows-${{ matrix.arch }}"
-        path: "duckstation-windows-${{ matrix.arch }}-release-symbols.zip"
+        path: "duckstation-windows-${{ matrix.arch }}-release-symbols.7z"
         archive: false
         if-no-files-found: error
 

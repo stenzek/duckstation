@@ -153,7 +153,7 @@ bool HasRichPresence();
 const std::string& GetRichPresenceString();
 
 /// Returns the URL for the current icon of the game
-const std::string& GetCurrentGameIconURL();
+const std::string& GetCurrentGameBadgeURL();
 
 /// Returns the RetroAchievements title for the current game.
 /// Should be called with the lock held.
@@ -182,8 +182,8 @@ const std::string& GetLoggedInUserIconURL();
 /// Should be called with the lock held.
 SmallString GetLoggedInUserPointsSummary();
 
-/// Returns the URL for the specified game icon.
-std::string GetGameIconURL(const char* badge_name);
+/// Returns the URL for the specified game icon, using the game ID.
+std::string GetGameBadgeURL(u32 game_id);
 
 /// Downloads game icons from RetroAchievements for all games that have an achievements_game_id.
 /// This fetches the game badge images that are normally downloaded when a game is opened.
