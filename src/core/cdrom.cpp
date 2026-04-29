@@ -1589,7 +1589,7 @@ u32 CDROM::GetSectorsPerTrack(CDImage::LBA lba)
         table[mm] = 14;
       else if (mm <= 32) // 28-32 = 15
         table[mm] = 15;
-      else if (mm <= 39) // 32-39 = 16
+      else if (mm <= 39) // 33-39 = 16
         table[mm] = 16;
       else if (mm <= 44) // 40-44 = 17
         table[mm] = 17;
@@ -1597,9 +1597,9 @@ u32 CDROM::GetSectorsPerTrack(CDImage::LBA lba)
         table[mm] = 18;
       else if (mm <= 60) // 53-60 = 19
         table[mm] = 19;
-      else if (mm <= 67) // 61-66 = 20
+      else if (mm <= 67) // 61-67 = 20
         table[mm] = 20;
-      else if (mm <= 74) // 67-74 = 21
+      else if (mm <= 74) // 68-74 = 21
         table[mm] = 21;
       else // 75-80 = 22
         table[mm] = 22;
@@ -1608,7 +1608,7 @@ u32 CDROM::GetSectorsPerTrack(CDImage::LBA lba)
   }();
 
   const u32 mm = lba / CDImage::FRAMES_PER_MINUTE;
-  return spt_table[std::min(mm, static_cast<u32>(spt_table.size()))];
+  return spt_table[std::min(mm, static_cast<u32>(spt_table.size() - 1))];
 }
 
 TickCount CDROM::GetTicksForSeek(CDImage::LBA new_lba, bool ignore_speed_change)

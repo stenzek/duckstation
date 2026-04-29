@@ -87,10 +87,9 @@ bool WinsockInitializer::Initialize(Error* error)
     m_init_flag,
     [this](Error* error) {
       WSADATA wsa = {};
-      if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
+      m_initialized = WSAStartup(MAKEWORD(2, 2), &wsa);
+      if (!m_initialized)
         Error::SetSocket(error, "WSAStartup() failed: ", WSAGetLastError());
-
-      m_initialized = true;
     },
     error);
 
@@ -186,7 +185,7 @@ std::optional<SocketAddress> SocketAddress::Parse(Type type, const char* address
     {
       sockaddr_in6* sain6 = reinterpret_cast<sockaddr_in6*>(ret->m_data);
       std::memset(sain6, 0, sizeof(sockaddr_in6));
-      sain6->sin6_family = AF_INET;
+      sain6->sin6_family = AF_INET6;
       sain6->sin6_port = htons(static_cast<u16>(port));
       int res = inet_pton(AF_INET6, address, &sain6->sin6_addr);
       if (res == 1)
@@ -519,7 +518,7 @@ void SocketMultiplexer::SetNotificationMask(BaseSocket* socket, SocketDescriptor
     pollfd& pfd = m_poll_array[i];
     if (pfd.fd != descriptor)
     {
-      free_slot = (pfd.fd < 0 && free_slot != m_poll_array_active_size) ? i : free_slot;
+      free_slot = (pfd.fd < 0 && free_slot == m_poll_array_active_size) ? i : free_slot;
       continue;
     }
 
@@ -1034,14 +1033,20 @@ void BufferedStreamSocket::ReleaseWriteBuffer(size_t bytes_written, bool commit 
   {
     const ssize_t res = send(m_descriptor, reinterpret_cast<const char*>(m_send_buffer.data() + m_send_buffer_offset),
                              SIZE_CAST(m_send_buffer_size), 0);
-    if (res < 0 && WSAGetLastError() != WSAEWOULDBLOCK)
+    if (res < 0)
     {
-      CloseWithError();
-      return;
+      if (WSAGetLastError() != WSAEWOULDBLOCK)
+      {
+        CloseWithError();
+        return;
+      }
+    }
+    else
+    {
+      m_send_buffer_offset += static_cast<size_t>(res);
+      m_send_buffer_size -= static_cast<size_t>(res);
     }
 
-    m_send_buffer_offset += static_cast<size_t>(res);
-    m_send_buffer_size -= static_cast<size_t>(res);
     if (m_send_buffer_size == 0)
     {
       m_send_buffer_offset = 0;
@@ -1104,8 +1109,11 @@ size_t BufferedStreamSocket::WriteVector(const void** buffers, const size_t* buf
       break;
 
     std::memcpy(&wrbuf[written_bytes], buffers[i], bytes_to_write);
-    written_bytes += buffer_lengths[i];
+    written_bytes += bytes_to_write;
   }
+
+  if (written_bytes > 0)
+    ReleaseWriteBuffer(written_bytes);
 
   return written_bytes;
 }
@@ -1141,14 +1149,19 @@ void BufferedStreamSocket::OnReadEvent()
     const ssize_t res = recv(
       m_descriptor, reinterpret_cast<char*>(m_receive_buffer.data() + m_receive_buffer_offset + m_receive_buffer_size),
       SIZE_CAST(buffer_space), 0);
-    if (res <= 0 && WSAGetLastError() != WSAEWOULDBLOCK)
+    if (res <= 0)
     {
-      CloseWithError();
-      return;
+      if (WSAGetLastError() != WSAEWOULDBLOCK)
+      {
+        CloseWithError();
+        return;
+      }
     }
-
-    m_receive_buffer_size += static_cast<size_t>(res);
-    OnRead();
+    else
+    {
+      m_receive_buffer_size += static_cast<size_t>(res);
+      OnRead();
+    }
 
     // Are we at the end?
     if ((m_receive_buffer_offset + m_receive_buffer_size) == m_receive_buffer.size())
@@ -1177,14 +1190,20 @@ void BufferedStreamSocket::OnWriteEvent()
   {
     const ssize_t res = send(m_descriptor, reinterpret_cast<const char*>(m_send_buffer.data() + m_send_buffer_offset),
                              SIZE_CAST(m_send_buffer_size), 0);
-    if (res < 0 && WSAGetLastError() != WSAEWOULDBLOCK)
+    if (res < 0)
     {
-      CloseWithError();
-      return;
+      if (WSAGetLastError() != WSAEWOULDBLOCK)
+      {
+        CloseWithError();
+        return;
+      }
+    }
+    else
+    {
+      m_send_buffer_offset += static_cast<size_t>(res);
+      m_send_buffer_size -= static_cast<size_t>(res);
     }
 
-    m_send_buffer_offset += static_cast<size_t>(res);
-    m_send_buffer_size -= static_cast<size_t>(res);
     if (m_send_buffer_size == 0)
       m_send_buffer_offset = 0;
   }

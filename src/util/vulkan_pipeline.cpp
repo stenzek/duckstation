@@ -38,7 +38,7 @@ std::unique_ptr<GPUShader> VulkanDevice::CreateShaderFromBinary(GPUShaderStage s
 
   // In the very rare event that the pointer isn't word-aligned...
   DynamicHeapArray<u32> data_copy;
-  if (Common::IsAlignedPow2(reinterpret_cast<uintptr_t>(data.data()), 4)) [[unlikely]]
+  if (!Common::IsAlignedPow2(reinterpret_cast<uintptr_t>(data.data()), 4)) [[unlikely]]
   {
     data_copy.resize((data.size() + (sizeof(u32) - 1)) / sizeof(u32));
     std::memcpy(data_copy.data(), data.data(), data.size());

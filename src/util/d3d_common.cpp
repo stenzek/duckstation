@@ -140,7 +140,7 @@ Microsoft::WRL::ComPtr<IDXGIFactory5> D3DCommon::CreateFactory(bool debug, Error
   {
     // another thread may have opened it
     const std::unique_lock lock(s_libs.load_mutex);
-    if (!s_libs.d3d11_library.IsOpen())
+    if (!s_libs.dxgi_library.IsOpen())
     {
       if (!s_libs.dxgi_library.Open("dxgi.dll", error))
         return {};
@@ -191,7 +191,7 @@ bool D3DCommon::CreateD3D11Device(IDXGIAdapter* adapter, UINT create_flags, cons
       if (!s_libs.d3d11_library.GetSymbol("D3D11CreateDevice", &s_libs.D3D11CreateDevice))
       {
         Error::SetStringView(error, "Failed to load D3D11CreateDevice from d3d11.dll");
-        s_libs.d3dcompiler_library.Close();
+        s_libs.d3d11_library.Close();
         return false;
       }
     }
@@ -205,7 +205,7 @@ bool D3DCommon::CreateD3D11Device(IDXGIAdapter* adapter, UINT create_flags, cons
     return true;
 
   Error::SetHResult(error, "D3D11CreateDevice() failed: ", hr);
-  return true;
+  return false;
 }
 
 bool D3DCommon::LoadD3D12Library(Error* error)

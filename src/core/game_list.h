@@ -109,7 +109,6 @@ std::span<const Entry> GetEntries();
 const Entry* GetEntryByIndex(size_t index);
 const Entry* GetEntryForPath(std::string_view path);
 const Entry* GetEntryBySerial(std::string_view serial);
-const Entry* GetEntryBySerialAndHash(std::string_view serial, u64 hash);
 std::vector<const Entry*> GetDiscSetMembers(const GameDatabase::DiscSetEntry* dsentry,
                                             bool sort_by_most_recent = false);
 const Entry* GetFirstDiscSetMember(const GameDatabase::DiscSetEntry* dsentry);

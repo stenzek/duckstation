@@ -428,6 +428,12 @@ QSlider::handle:hover {
 QSlider::handle:pressed {
   background-color: $slider-handle-pressed;
 }
+QSlider::groove:disabled {
+  background-color: $bg-disabled;
+}
+QSlider::handle:disabled {
+  background-color: $text-disabled;
+}
 
 QTextBrowser {
   border: none;

@@ -81,9 +81,9 @@ u32 PostProcessing::ParseVector(std::string_view line, ShaderOption::ValueVector
   for (; index < PostProcessing::ShaderOption::MAX_VECTOR_COMPONENTS; index++)
   {
     if constexpr (std::is_same_v<T, float>)
-      (*values)[index++].float_value = 0.0f;
+      (*values)[index].float_value = 0.0f;
     else if constexpr (std::is_same_v<T, s32>)
-      (*values)[index++].int_value = 0;
+      (*values)[index].int_value = 0;
   }
 
   return size;

@@ -403,6 +403,11 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
       si.GetStringViewValue("Display", "ScreenshotFormat",
                             GetDisplayScreenshotFormatName(DEFAULT_DISPLAY_SCREENSHOT_FORMAT)))
       .value_or(DEFAULT_DISPLAY_SCREENSHOT_FORMAT);
+  display_screenshot_filename_format =
+    ParseCaptureFileNameFormat(
+      si.GetStringViewValue("Display", "ScreenshotFileNameFormat",
+                            GetCaptureFileNameFormatName(DEFAULT_DISPLAY_SCREENSHOT_FILENAME_FORMAT)))
+      .value_or(DEFAULT_DISPLAY_SCREENSHOT_FILENAME_FORMAT);
   display_screenshot_quality = static_cast<u8>(
     std::clamp<u32>(si.GetUIntValue("Display", "ScreenshotQuality", DEFAULT_DISPLAY_SCREENSHOT_QUALITY), 1, 100));
   display_optimal_frame_pacing = si.GetBoolValue("Display", "OptimalFramePacing", DEFAULT_OPTIMAL_FRAME_PACING);
@@ -772,6 +777,8 @@ void Settings::Save(SettingsInterface& si, bool ignore_base) const
                     GetDisplayExclusiveFullscreenControlName(display_exclusive_fullscreen_control));
   si.SetStringValue("Display", "ScreenshotMode", GetDisplayScreenshotModeName(display_screenshot_mode));
   si.SetStringValue("Display", "ScreenshotFormat", GetDisplayScreenshotFormatName(display_screenshot_format));
+  si.SetStringValue("Display", "ScreenshotFileNameFormat",
+                    GetCaptureFileNameFormatName(display_screenshot_filename_format));
   si.SetUIntValue("Display", "ScreenshotQuality", display_screenshot_quality);
   if (!ignore_base)
   {
@@ -2356,6 +2363,46 @@ std::optional<DisplayScreenshotFormat> Settings::GetDisplayScreenshotFormatFromF
   }
 
   return std::nullopt;
+}
+
+static constexpr const std::array s_capture_file_name_format_names = {
+  "Timestamp",
+  "TitleAndTimestamp",
+  "TimestampInFolder",
+  "TitleAndTimestampInFolder",
+};
+static_assert(s_capture_file_name_format_names.size() == static_cast<size_t>(CaptureFileNameFormat::Count));
+static constexpr const std::array s_capture_file_name_format_display_names = {
+  TRANSLATE_DISAMBIG_NOOP("Settings", "Timestamp", "CaptureFileNameFormat"),
+  TRANSLATE_DISAMBIG_NOOP("Settings", "Game and Timestamp", "CaptureFileNameFormat"),
+  TRANSLATE_DISAMBIG_NOOP("Settings", "Timestamp in Game Folder", "CaptureFileNameFormat"),
+  TRANSLATE_DISAMBIG_NOOP("Settings", "Game and Timestamp in Game Folder", "CaptureFileNameFormat"),
+};
+static_assert(s_capture_file_name_format_names.size() == static_cast<size_t>(CaptureFileNameFormat::Count));
+
+std::optional<CaptureFileNameFormat> Settings::ParseCaptureFileNameFormat(std::string_view str)
+{
+  int index = 0;
+  for (const char* name : s_capture_file_name_format_names)
+  {
+    if (str == name)
+      return static_cast<CaptureFileNameFormat>(index);
+
+    index++;
+  }
+
+  return std::nullopt;
+}
+
+const char* Settings::GetCaptureFileNameFormatName(CaptureFileNameFormat format)
+{
+  return s_capture_file_name_format_names[static_cast<size_t>(format)];
+}
+
+const char* Settings::GetCaptureFileNameFormatDisplayName(CaptureFileNameFormat format)
+{
+  return Host::TranslateToCString("Settings", s_capture_file_name_format_display_names[static_cast<size_t>(format)],
+                                  "CaptureFileNameFormat");
 }
 
 static constexpr const std::array s_display_osd_message_type_names = {

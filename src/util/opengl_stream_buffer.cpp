@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "opengl_stream_buffer.h"
@@ -245,24 +245,22 @@ public:
 
   virtual ~SyncingStreamBuffer() override
   {
-    for (u32 i = m_available_block_index; i <= m_used_block_index; i++)
+    for (GLsync& sync : m_sync_objects)
     {
-      DebugAssert(m_sync_objects[i]);
-      glDeleteSync(m_sync_objects[i]);
+      if (sync)
+        glDeleteSync(sync);
     }
   }
 
 protected:
   SyncingStreamBuffer(GLenum target, GLuint buffer_id, u32 size)
-    : OpenGLStreamBuffer(target, buffer_id, size), m_bytes_per_block((size + (NUM_SYNC_POINTS)-1) / NUM_SYNC_POINTS)
+    : OpenGLStreamBuffer(target, buffer_id, size), m_bytes_per_block((size + (NUM_SYNC_POINTS - 1)) / NUM_SYNC_POINTS)
   {
   }
 
-  ALWAYS_INLINE u32 GetSyncIndexForOffset(u32 offset) { return offset / m_bytes_per_block; }
-
-  ALWAYS_INLINE void AddSyncsForOffset(u32 offset)
+  ALWAYS_INLINE_RELEASE void AddSyncsForOffset(u32 offset)
   {
-    const u32 end = GetSyncIndexForOffset(offset);
+    const u32 end = offset / m_bytes_per_block;
     for (; m_used_block_index < end; m_used_block_index++)
     {
       DebugAssert(!m_sync_objects[m_used_block_index]);
@@ -270,16 +268,16 @@ protected:
     }
   }
 
-  ALWAYS_INLINE void WaitForSync(GLsync& sync)
+  ALWAYS_INLINE_RELEASE void WaitForSync(GLsync& sync)
   {
     glClientWaitSync(sync, GL_SYNC_FLUSH_COMMANDS_BIT, GL_TIMEOUT_IGNORED);
     glDeleteSync(sync);
     sync = nullptr;
   }
 
-  ALWAYS_INLINE void EnsureSyncsWaitedForOffset(u32 offset)
+  ALWAYS_INLINE_RELEASE void EnsureSyncsWaitedForOffset(u32 offset)
   {
-    const u32 end = std::min<u32>(GetSyncIndexForOffset(offset) + 1, NUM_SYNC_POINTS);
+    const u32 end = (offset + (m_bytes_per_block - 1)) / m_bytes_per_block;
     for (; m_available_block_index < end; m_available_block_index++)
     {
       DebugAssert(m_sync_objects[m_available_block_index]);
@@ -289,15 +287,13 @@ protected:
 
   void AllocateSpace(u32 size)
   {
-    // add sync objects for writes since the last allocation
-    AddSyncsForOffset(m_position);
-
-    // wait for sync objects for the space we want to use
-    EnsureSyncsWaitedForOffset(m_position + size);
-
     // wrap-around?
     if ((m_position + size) > m_size)
     {
+      // ensure any old syncs in the last part of the buffer have been waited
+      // we could get away with deleting these instead of waiting, but I don't want to risk it..
+      EnsureSyncsWaitedForOffset(m_size);
+
       // current position ... buffer end
       AddSyncsForOffset(m_size);
 
@@ -311,6 +307,14 @@ protected:
       // and however much more we need to satisfy the allocation
       EnsureSyncsWaitedForOffset(size);
       m_used_block_index = 0;
+    }
+    else
+    {
+      // add sync objects for writes since the last allocation
+      AddSyncsForOffset(m_position);
+
+      // wait for sync objects for the space we want to use
+      EnsureSyncsWaitedForOffset(m_position + size);
     }
   }
 

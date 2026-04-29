@@ -44,7 +44,7 @@ bool InterruptController::DoState(StateWrapper& sw)
 
 void InterruptController::SetLineState(IRQ irq, bool state)
 {
-  // Interupts are edge-triggered, so only set the flag in the status register on a 0-1 transition.
+  // Interrupts are edge-triggered, so only set the flag in the status register on a 0-1 transition.
   const u32 bit = (1u << static_cast<u32>(irq));
   const u32 prev_state = s_interrupt_line_state;
   s_interrupt_line_state = (s_interrupt_line_state & ~bit) | (state ? bit : 0u);
@@ -106,8 +106,8 @@ void InterruptController::WriteRegister(u32 offset, u32 value)
     }
     break;
 
-    default:
-      [[unlikely]] ERROR_LOG("Invalid write at offset 0x{:08X}", offset);
+    [[unlikely]] default:
+      ERROR_LOG("Invalid write at offset 0x{:08X}", offset);
       break;
   }
 }

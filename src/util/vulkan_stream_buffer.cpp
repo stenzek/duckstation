@@ -43,6 +43,7 @@ VulkanStreamBuffer& VulkanStreamBuffer::operator=(VulkanStreamBuffer&& move)
   std::swap(m_current_offset, move.m_current_offset);
   std::swap(m_current_space, move.m_current_space);
   std::swap(m_current_gpu_position, move.m_current_gpu_position);
+  std::swap(m_allocation, move.m_allocation);
   std::swap(m_buffer, move.m_buffer);
   std::swap(m_host_pointer, move.m_host_pointer);
   std::swap(m_tracked_fences, move.m_tracked_fences);
@@ -112,7 +113,8 @@ void VulkanStreamBuffer::Destroy(bool defer)
 
 bool VulkanStreamBuffer::ReserveMemory(u32 num_bytes, u32 alignment)
 {
-  const u32 required_bytes = num_bytes + alignment;
+  DebugAssert(num_bytes > 0 && alignment > 0);
+  const u32 required_bytes = num_bytes + alignment - 1;
 
   // Check for sane allocations
   if (required_bytes > m_size) [[unlikely]]

@@ -49,7 +49,6 @@ public:
   bool Transfer(const u8 data_in, u8* data_out) override;
 
 private:
-  bool IsTriggerPressed() const;
   void UpdatePosition();
   void UpdateIRQEvent();
   void IRQEvent();

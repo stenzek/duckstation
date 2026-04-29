@@ -235,7 +235,7 @@ bool D3D12Device::CreateDeviceAndMainSwapChain(std::string_view adapter, CreateF
   }
 
   GPUDriverType driver_type = GPUDriverType::Unknown;
-  if (std::string adapter_name = D3DCommon::GetAdapterName(m_adapter.Get(), &driver_type); adapter_name.empty())
+  if (std::string adapter_name = D3DCommon::GetAdapterName(m_adapter.Get(), &driver_type); !adapter_name.empty())
     INFO_LOG("D3D Adapter: {}", adapter_name);
   SetDriverType(driver_type);
 
@@ -1497,7 +1497,7 @@ void D3D12Device::ResolveTextureRegion(GPUTexture* dst, u32 dst_x, u32 dst_y, u3
   {
     D3D12_RECT src_rc{static_cast<LONG>(src_x), static_cast<LONG>(src_y), static_cast<LONG>(src_x + width),
                       static_cast<LONG>(src_y + height)};
-    cmdlist->ResolveSubresourceRegion(D->GetResource(), D->CalculateSubresource(dst_level, dst_layer), dst_x, dst_y,
+    cmdlist->ResolveSubresourceRegion(D->GetResource(), D->CalculateSubresource(dst_layer, dst_level), dst_x, dst_y,
                                       S->GetResource(), 0, &src_rc, D->GetDXGIFormat(), D3D12_RESOLVE_MODE_AVERAGE);
   }
 

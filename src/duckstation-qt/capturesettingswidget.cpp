@@ -33,6 +33,10 @@ CaptureSettingsWidget::CaptureSettingsWidget(SettingsWindow* dialog, QWidget* pa
                                                  tr("Select Screenshots Directory"), m_ui.screenshotsDirectoryOpen,
                                                  m_ui.screenshotsDirectoryReset, "Folders", "Screenshots",
                                                  Path::Combine(EmuFolders::DataRoot, "screenshots"));
+  SettingWidgetBinder::BindWidgetToEnumSetting(
+    sif, m_ui.screenshotSaveName, "Display", "ScreenshotFileNameFormat", &Settings::ParseCaptureFileNameFormat,
+    &Settings::GetCaptureFileNameFormatName, &Settings::GetCaptureFileNameFormatDisplayName,
+    Settings::DEFAULT_DISPLAY_SCREENSHOT_FILENAME_FORMAT, CaptureFileNameFormat::Count);
 
   SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.mediaCaptureBackend, "MediaCapture", "Backend",
                                                &MediaCapture::ParseBackendName, &MediaCapture::GetBackendName,
@@ -42,6 +46,10 @@ CaptureSettingsWidget::CaptureSettingsWidget(SettingsWindow* dialog, QWidget* pa
                                                  tr("Select Media Capture Directory"), m_ui.videosDirectoryOpen,
                                                  m_ui.videosDirectoryReset, "Folders", "Videos",
                                                  Path::Combine(EmuFolders::DataRoot, "videos"));
+  SettingWidgetBinder::BindWidgetToEnumSetting(
+    sif, m_ui.mediaCaptureSaveName, "MediaCapture", "FilenameFormat", &Settings::ParseCaptureFileNameFormat,
+    &Settings::GetCaptureFileNameFormatName, &Settings::GetCaptureFileNameFormatDisplayName,
+    Settings::DEFAULT_DISPLAY_SCREENSHOT_FILENAME_FORMAT, CaptureFileNameFormat::Count);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableVideoCapture, "MediaCapture", "VideoCapture", true);
   SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.videoCaptureWidth, "MediaCapture", "VideoWidth",
                                               Settings::DEFAULT_MEDIA_CAPTURE_VIDEO_WIDTH);
@@ -81,6 +89,11 @@ CaptureSettingsWidget::CaptureSettingsWidget(SettingsWindow* dialog, QWidget* pa
   dialog->registerWidgetHelp(m_ui.screenshotsDirectory, tr("Save Location"), tr("Default"),
                              tr("Specifies the directory where screenshots will be saved."));
   dialog->registerWidgetHelp(
+    m_ui.screenshotSaveName, tr("Save Name"),
+    Settings::GetCaptureFileNameFormatDisplayName(Settings::DEFAULT_DISPLAY_SCREENSHOT_FILENAME_FORMAT),
+    tr("Determines the format of the filename used when saving screenshots, and whether a subdirectory is created "
+       "per-game."));
+  dialog->registerWidgetHelp(
     m_ui.screenshotFormat, tr("Screenshot Format"), tr("PNG"),
     tr("Selects the format which will be used to save screenshots. JPEG produces smaller files, but loses detail."));
   dialog->registerWidgetHelp(m_ui.screenshotQuality, tr("Screenshot Quality"),
@@ -95,6 +108,11 @@ CaptureSettingsWidget::CaptureSettingsWidget(SettingsWindow* dialog, QWidget* pa
                              tr("Determines the file format used to contain the captured audio/video."));
   dialog->registerWidgetHelp(m_ui.videosDirectory, tr("Save Location"), tr("Default"),
                              tr("Specifies the directory where media capture (video/audio) will be saved."));
+  dialog->registerWidgetHelp(
+    m_ui.mediaCaptureSaveName, tr("Save Name"),
+    Settings::GetCaptureFileNameFormatDisplayName(Settings::DEFAULT_MEDIA_CAPTURE_FILENAME_FORMAT),
+    tr("Determines the format of the filename used when saving screenshots, and whether a subdirectory is created "
+       "per-game."));
   dialog->registerWidgetHelp(m_ui.enableVideoCapture, tr("Capture Video"), tr("Checked"),
                              tr("Captures video to the chosen file when media capture is started. If unchecked, the "
                                 "file will only contain audio."));

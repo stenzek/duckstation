@@ -856,14 +856,7 @@ void FilteredSampleFromVRAM(TEXPAGE_VALUE texpage, float2 coords, float4 uv_limi
 float luma(float4 col) {
 
 	//Use CRT-era BT.601 standard.
-    float rgbsum =dot(col.rgb, float3(0.299, 0.587, 0.114));
-
-    float alphafactor = 
-        (col.a > 0.998) ? 0.0 :
-        (col.a > 0.5) ? 2.0 :
-        (col.a > 0.002) ? 4.0 : 6.0;
-
-    return rgbsum + alphafactor;
+    return dot(col.rgb, float3(0.299, 0.587, 0.114));
 }
 
 float mixGate(float4 col1, float4 col2) {
@@ -1076,15 +1069,7 @@ skiprest = skiprest||slope1||slope2||slope3||slope4||E==0u||B==0u||D==0u||F==0u|
 float luma(float4 col) {
 
 	//Use CRT-era BT.601 standard. Clamp range to [0.0 - 0.999]
-    float rgbsum =min(dot(col.rgb, float3(0.299, 0.587, 0.114)), 0.9999);
-
-	// Alpha weighting can be removed for subsequent fractional bit extraction
-    float alphafactor = 
-        (col.a > 0.998) ? 0.0 :		// Opaque
-        (col.a > 0.5) ? 2.0 :
-        (col.a > 0.002) ? 4.0 : 6.0;	// Fully transparent
-
-    return rgbsum + alphafactor;
+    return min(dot(col.rgb, float3(0.299, 0.587, 0.114)), 0.999);
 }
 
 /* Constant explanations:
@@ -1265,6 +1250,12 @@ float4 admixX( uint A, uint B, uint C, uint D, uint E, uint F, uint G, uint H, u
     bool comboE3 = eq_E_C && eq_E_G;
     bool comboA3 = eq_A_P && eq_A_Q;
 
+	Bl = fract(Bl);
+	Dl = fract(Dl);
+	El = fract(El);
+	Fl = fract(Fl);
+	Hl = fract(Hl);
+
 if (neq(B,D)){
 
 	if (eq(E,A)) return slopeBAD;
@@ -1274,7 +1265,6 @@ if (neq(B,D)){
 
 
 	vX = mix(vB, vD, 0.5);
-	vX.a = min(vB.a, vD.a);
 
 	mixFactor = 0.381966 * mixGate(vX,vE) * float(E!=0u);
 
@@ -1311,12 +1301,6 @@ if (neq(B,D)){
 
     return slopeBAD;
 }
-
-	Bl = fract(Bl);
-	Dl = fract(Dl);
-	El = fract(El);
-	Fl = fract(Fl);
-	Hl = fract(Hl);
 
 	bool Xisblack = checkblack(vB);
 	if ( Xisblack && El >0.5 && (Fl<0.078 || Hl<0.078) ) return theEXIT;

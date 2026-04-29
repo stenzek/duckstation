@@ -1104,7 +1104,7 @@ void GPUDevice::TrimTexturePool()
   GL_INS_FMT("VRAM Usage: {:.2f} MB", s_total_vram_usage / 1048576.0);
 
   DEBUG_LOG("Texture Pool Size: {} Target Pool Size: {} VRAM: {:.2f} MB", m_texture_pool.size(), m_target_pool.size(),
-            s_total_vram_usage / 1048756.0);
+            s_total_vram_usage / 1048576.0);
 
   if (m_texture_pool.empty() && m_target_pool.empty())
     return;

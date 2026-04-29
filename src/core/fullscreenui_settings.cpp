@@ -4374,6 +4374,13 @@ void FullscreenUI::DrawGraphicsSettingsPage()
   DrawIntRangeSetting(bsi, FSUI_ICONVSTR(ICON_FA_CAMERA_RETRO, "Screenshot Quality"),
                       FSUI_VSTR("Selects the quality at which screenshots will be compressed."), "Display",
                       "ScreenshotQuality", Settings::DEFAULT_DISPLAY_SCREENSHOT_QUALITY, 1, 100, "%d%%");
+  DrawEnumSetting(bsi, FSUI_ICONVSTR(ICON_FA_FILE, "Screenshot File Name Format"),
+                  FSUI_VSTR("Determines the format of the screenshot file names."), "Display",
+                  "ScreenshotFileNameFormat", Settings::DEFAULT_DISPLAY_SCREENSHOT_FILENAME_FORMAT,
+                  &Settings::ParseCaptureFileNameFormat, &Settings::GetCaptureFileNameFormatName,
+                  &Settings::GetCaptureFileNameFormatDisplayName, CaptureFileNameFormat::Count);
+  DrawFolderSetting(bsi, FSUI_ICONVSTR(ICON_FA_FOLDER, "Screenshot Directory"), "Folders", "Screenshots",
+                    EmuFolders::Screenshots);
 
   MenuHeading(FSUI_VSTR("Texture Replacements"));
 

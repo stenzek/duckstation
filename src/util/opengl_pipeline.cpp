@@ -410,13 +410,13 @@ GLuint OpenGLDevice::CompileProgram(const GPUPipeline::GraphicsConfig& plconfig,
       {
         if (is_gles)
           glBindFragDataLocationIndexed(program_id, 0, 0, "o_col0");
-        glBindFragDataLocationIndexed(program_id, 1, 0, "o_col1");
+        glBindFragDataLocationIndexed(program_id, 0, 1, "o_col1");
       }
       else if (GLAD_GL_EXT_blend_func_extended)
       {
         if (is_gles)
-          glBindFragDataLocationIndexedEXT(program_id, 0, 0, "o_col1");
-        glBindFragDataLocationIndexedEXT(program_id, 1, 0, "o_col1");
+          glBindFragDataLocationIndexedEXT(program_id, 0, 0, "o_col0");
+        glBindFragDataLocationIndexedEXT(program_id, 0, 1, "o_col1");
       }
     }
   }
@@ -834,7 +834,9 @@ bool OpenGLDevice::OpenPipelineCache(const std::string& path, Error* error)
 
   PipelineDiskCacheFooter file_footer;
   if (FileSystem::FSeek64(fp.get(), size - sizeof(PipelineDiskCacheFooter), SEEK_SET) != 0 ||
-      std::fread(&file_footer, sizeof(file_footer), 1, fp.get()) != 1)
+      std::fread(&file_footer, sizeof(file_footer), 1, fp.get()) != 1 ||
+      (size < static_cast<s64>(sizeof(PipelineDiskCacheFooter) +
+                               (sizeof(PipelineDiskCacheIndexEntry) * file_footer.num_programs))))
   {
     Error::SetStringView(error, "Invalid cache file footer.");
     return false;
@@ -857,8 +859,7 @@ bool OpenGLDevice::OpenPipelineCache(const std::string& path, Error* error)
 
   m_pipeline_disk_cache_data_end = static_cast<u32>(size) - sizeof(PipelineDiskCacheFooter) -
                                    (sizeof(PipelineDiskCacheIndexEntry) * file_footer.num_programs);
-  if (m_pipeline_disk_cache_data_end < 0 ||
-      FileSystem::FSeek64(fp.get(), m_pipeline_disk_cache_data_end, SEEK_SET) != 0)
+  if (FileSystem::FSeek64(fp.get(), m_pipeline_disk_cache_data_end, SEEK_SET) != 0)
   {
     Error::SetStringView(error, "Failed to seek to start of index entries.");
     return false;
@@ -1094,7 +1095,7 @@ bool OpenGLDevice::ClosePipelineCache(const std::string& filename, Error* error)
   }
 
   // Rewrite footer/index entries.
-  if (!FileSystem::FSeek64(m_pipeline_disk_cache_file, m_pipeline_disk_cache_data_end, SEEK_SET, error) != 0)
+  if (!FileSystem::FSeek64(m_pipeline_disk_cache_file, m_pipeline_disk_cache_data_end, SEEK_SET, error))
   {
     close_cache();
     return false;

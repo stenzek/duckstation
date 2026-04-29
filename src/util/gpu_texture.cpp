@@ -275,8 +275,8 @@ u32 GPUTexture::GetPixelSize(GPUTextureFormat format)
     4,  // R32U
     4,  // R32F
     2,  // RG8
-    2,  // RG16
-    2,  // RG16F
+    4,  // RG16
+    4,  // RG16F
     8,  // RG32F
     8,  // RGBA16
     8,  // RGBA16F
@@ -286,7 +286,7 @@ u32 GPUTexture::GetPixelSize(GPUTextureFormat format)
     8,  // BC1 - 16 pixels in 64 bits
     16, // BC2 - 16 pixels in 128 bits
     16, // BC3 - 16 pixels in 128 bits
-    16, // BC4 - 16 pixels in 128 bits
+    16, // BC7 - 16 pixels in 128 bits
   }};
 
   return sizes[static_cast<size_t>(format)];

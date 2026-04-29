@@ -63,6 +63,7 @@ void NeGconRumble::Reset()
 
   if (m_force_analog_on_reset)
   {
+    // NOTE: Should be NeGconRumble, but we don't want to break it for games that haven't opted in.
     if (CanStartInAnalogMode(ControllerType::AnalogController))
       SetAnalogMode(true, false);
   }

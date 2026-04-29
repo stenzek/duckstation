@@ -81,26 +81,14 @@ bool CDImageM3u::Open(const char* path, bool apply_patches, Error* error)
   std::string line;
   while (std::getline(ifs, line))
   {
-    u32 start_offset = 0;
-    while (start_offset < line.size() && StringUtil::IsWhitespace(line[start_offset]))
-      start_offset++;
+    StringUtil::StripWhitespace(&line);
 
     // skip comments
-    if (start_offset == line.size() || line[start_offset] == '#')
-      continue;
-
-    // strip ending whitespace
-    u32 end_offset = static_cast<u32>(line.size()) - 1;
-    while (StringUtil::IsWhitespace(line[end_offset]) && end_offset > start_offset)
-      end_offset--;
-
-    // anything?
-    if (start_offset == end_offset)
+    if (line.empty() || line[0] == '#')
       continue;
 
     Entry entry;
-    std::string entry_filename =
-      Path::ToNativePath(std::string_view(line.begin() + start_offset, line.begin() + end_offset + 1));
+    std::string entry_filename = Path::ToNativePath(line);
     entry.title = Path::GetFileTitle(entry_filename);
     if (!Path::IsAbsolute(entry_filename))
       entry.filename = Path::BuildRelativePath(path, entry_filename);

@@ -233,7 +233,6 @@ std::FILE* WAVReader::TakeFile()
   std::FILE* ret = std::exchange(m_file, nullptr);
   m_frames_start = 0;
   m_format = InvalidFormat;
-  m_bytes_per_frame = 0;
   m_bits_per_sample = 0;
   m_num_channels = 0;
   m_bytes_per_frame = 0;
@@ -261,7 +260,7 @@ bool WAVReader::SeekToFrame(u32 num, Error* error)
     return false;
   }
 
-  const s64 offset = m_frames_start + (static_cast<s64>(num) * (sizeof(s16) * m_num_channels));
+  const s64 offset = m_frames_start + (static_cast<s64>(num) * m_bytes_per_frame);
   if (!FileSystem::FSeek64(m_file, offset, SEEK_SET, error))
     return false;
 

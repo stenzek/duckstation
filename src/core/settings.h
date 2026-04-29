@@ -51,8 +51,6 @@ struct GPUSettings
   DisplayScalingMode display_scaling_24bit = DEFAULT_DISPLAY_SCALING;
   DisplayExclusiveFullscreenControl display_exclusive_fullscreen_control = DEFAULT_DISPLAY_EXCLUSIVE_FULLSCREEN_CONTROL;
   DisplayScreenshotMode display_screenshot_mode = DEFAULT_DISPLAY_SCREENSHOT_MODE;
-  DisplayScreenshotFormat display_screenshot_format = DEFAULT_DISPLAY_SCREENSHOT_FORMAT;
-  u8 display_screenshot_quality = DEFAULT_DISPLAY_SCREENSHOT_QUALITY;
   u8 gpu_max_queued_frames = DEFAULT_GPU_MAX_QUEUED_FRAMES;
   s16 display_active_start_offset = 0;
   s16 display_active_end_offset = 0;
@@ -241,8 +239,6 @@ struct GPUSettings
   static constexpr DisplayExclusiveFullscreenControl DEFAULT_DISPLAY_EXCLUSIVE_FULLSCREEN_CONTROL =
     DisplayExclusiveFullscreenControl::Automatic;
   static constexpr DisplayScreenshotMode DEFAULT_DISPLAY_SCREENSHOT_MODE = DisplayScreenshotMode::ScreenResolution;
-  static constexpr DisplayScreenshotFormat DEFAULT_DISPLAY_SCREENSHOT_FORMAT = DisplayScreenshotFormat::PNG;
-  static constexpr u8 DEFAULT_DISPLAY_SCREENSHOT_QUALITY = 85;
   static constexpr float DEFAULT_DISPLAY_PRE_FRAME_SLEEP_BUFFER = 2.0f;
   static constexpr float DEFAULT_OSD_SCALE = 100.0f;
   static constexpr NotificationLocation DEFAULT_OSD_MESSAGE_LOCATION = NotificationLocation::TopLeft;
@@ -341,6 +337,10 @@ struct Settings : public GPUSettings
   u8 cdrom_seek_speedup = 1;
   u32 cdrom_max_seek_speedup_cycles = DEFAULT_CDROM_MAX_SEEK_SPEEDUP_CYCLES;
   u32 cdrom_max_read_speedup_cycles = DEFAULT_CDROM_MAX_READ_SPEEDUP_CYCLES;
+
+  DisplayScreenshotFormat display_screenshot_format = DEFAULT_DISPLAY_SCREENSHOT_FORMAT;
+  u8 display_screenshot_quality = DEFAULT_DISPLAY_SCREENSHOT_QUALITY;
+  CaptureFileNameFormat display_screenshot_filename_format = DEFAULT_DISPLAY_SCREENSHOT_FILENAME_FORMAT;
 
   u8 audio_output_volume = 100;
   u8 audio_fast_forward_volume = 100;
@@ -585,6 +585,10 @@ struct Settings : public GPUSettings
   static const char* GetDisplayScreenshotFormatExtension(DisplayScreenshotFormat mode);
   static std::optional<DisplayScreenshotFormat> GetDisplayScreenshotFormatFromFileName(const std::string_view filename);
 
+  static std::optional<CaptureFileNameFormat> ParseCaptureFileNameFormat(std::string_view str);
+  static const char* GetCaptureFileNameFormatName(CaptureFileNameFormat format);
+  static const char* GetCaptureFileNameFormatDisplayName(CaptureFileNameFormat format);
+
   static const char* GetDisplayOSDMessageTypeName(OSDMessageType type);
 
   static std::optional<MemoryCardType> ParseMemoryCardTypeName(std::string_view str);
@@ -631,6 +635,11 @@ struct Settings : public GPUSettings
   static constexpr u32 DEFAULT_CDROM_MAX_READ_SPEEDUP_CYCLES = 30000;
   static constexpr CDROMMechaconVersion DEFAULT_CDROM_MECHACON_VERSION = CDROMMechaconVersion::VC1A;
 
+  static constexpr DisplayScreenshotFormat DEFAULT_DISPLAY_SCREENSHOT_FORMAT = DisplayScreenshotFormat::PNG;
+  static constexpr u8 DEFAULT_DISPLAY_SCREENSHOT_QUALITY = 85;
+  static constexpr CaptureFileNameFormat DEFAULT_DISPLAY_SCREENSHOT_FILENAME_FORMAT =
+    CaptureFileNameFormat::TitleAndTimestamp;
+
   static constexpr ControllerType DEFAULT_CONTROLLER_1_TYPE = ControllerType::AnalogController;
   static constexpr ControllerType DEFAULT_CONTROLLER_2_TYPE = ControllerType::None;
   static constexpr MemoryCardType DEFAULT_MEMORY_CARD_1_TYPE = MemoryCardType::PerGameTitle;
@@ -649,6 +658,8 @@ struct Settings : public GPUSettings
   static constexpr u32 DEFAULT_MEDIA_CAPTURE_VIDEO_HEIGHT = 480;
   static constexpr u32 DEFAULT_MEDIA_CAPTURE_VIDEO_BITRATE = 6000;
   static constexpr u32 DEFAULT_MEDIA_CAPTURE_AUDIO_BITRATE = 128;
+  static constexpr CaptureFileNameFormat DEFAULT_MEDIA_CAPTURE_FILENAME_FORMAT =
+    CaptureFileNameFormat::TitleAndTimestamp;
 
   // Android doesn't create settings until they're first opened, so we have to override the defaults here.
 #ifndef __ANDROID__

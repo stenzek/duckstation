@@ -555,9 +555,7 @@ void ImGuiManager::DrawPerformanceOverlay(const GPUBackend* gpu, float& position
     DrawPerformanceStat(dl, position_y, ui_font, status_size, 0.0f, 0, rbound, text);
   }
 
-#undef UNCOLOR
 #undef COLOR
-#undef UNBOLD
 #undef BOLD
 }
 
@@ -668,7 +666,7 @@ void ImGuiManager::DrawMediaCaptureOverlay(float& position_y, float scale, float
 
   const float box_margin = 5.0f * scale;
   const ImVec2 box_size = ImVec2(ImCeil(icon_size.x + shadow_offset + text_size.x + box_margin * 2.0f),
-                                 ImCeil(std::max(icon_size.x, text_size.y) + box_margin * 2.0f));
+                                 ImCeil(std::max(icon_size.y, text_size.y) + box_margin * 2.0f));
   const ImVec2 box_pos = ImVec2(ImGui::GetIO().DisplaySize.x - margin - box_size.x, position_y);
   dl->AddRectFilled(box_pos, box_pos + box_size, IM_COL32(0, 0, 0, 64), box_margin);
 
@@ -726,7 +724,7 @@ void ImGuiManager::DrawFrameTimeOverlay(float& position_y, float scale, float ma
       }
 
       min = vmin.minv();
-      max = vmin.maxv();
+      max = vmax.maxv();
     }
 
     // add a little bit of space either side, so we're not constantly resizing
@@ -833,7 +831,7 @@ void ImGuiManager::UpdateInputOverlay()
 void ImGuiManager::UpdateInputOverlay(void* buffer)
 {
   InputOverlayStateUpdateBuffer* const RESTRICT ubuffer = static_cast<InputOverlayStateUpdateBuffer*>(buffer);
-  DebugAssert(ubuffer->num_active_pads < NUM_CONTROLLER_AND_CARD_PORTS);
+  DebugAssert(ubuffer->num_active_pads <= NUM_CONTROLLER_AND_CARD_PORTS);
   s_input_overlay_state.num_active_pads = ubuffer->num_active_pads;
   for (u32 i = 0; i < ubuffer->num_active_pads; i++)
     s_input_overlay_state.pads[i] = ubuffer->pads[i];

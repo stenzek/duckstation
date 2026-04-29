@@ -80,10 +80,10 @@ bool IsoReader::ReadPVD(Error* error)
     const ISOVolumeDescriptorHeader* header = reinterpret_cast<ISOVolumeDescriptorHeader*>(buffer.data());
     if (std::memcmp(header->standard_identifier, "CD001", 5) != 0)
       continue;
-    else if (header->type_code != 1)
-      continue;
     else if (header->type_code == 255)
       break;
+    else if (header->type_code != 1)
+      continue;
 
     m_pvd_lba = START_SECTOR + i;
     std::memcpy(&m_pvd, buffer.data(), sizeof(ISOPrimaryVolumeDescriptor));
@@ -230,7 +230,7 @@ std::optional<IsoReader::ISODirectoryEntry> IsoReader::LocateFile(std::string_vi
 
   // start reading directory entries
   const u32 num_sectors =
-    (directory_record_size == 0) ? SECTOR_SIZE : ((directory_record_size + (SECTOR_SIZE - 1)) / SECTOR_SIZE);
+    (directory_record_size == 0) ? 1 : ((directory_record_size + (SECTOR_SIZE - 1)) / SECTOR_SIZE);
   for (u32 i = 0; i < num_sectors; i++)
   {
     if (!ReadSector(sector_buffer, directory_record_lba + i, error))
@@ -442,7 +442,7 @@ bool IsoReader::ReadFile(const ISODirectoryEntry& de, std::vector<u8>* data, Rea
     return true;
   }
 
-  if (!m_image->Seek(1, de.location_le))
+  if (!m_image->Seek(m_track_number, de.location_le))
   {
     Error::SetStringFmt(error, "Failed to seek to LSN #{}", de.location_le);
     return false;
@@ -501,7 +501,7 @@ bool IsoReader::WriteFileToStream(const ISODirectoryEntry& de, std::FILE* fp, Re
   if (de.length_le == 0)
     return FileSystem::FTruncate64(fp, 0, error);
 
-  if (!m_image->Seek(1, de.location_le))
+  if (!m_image->Seek(m_track_number, de.location_le))
   {
     Error::SetStringFmt(error, "Failed to seek to LSN #{}", de.location_le);
     return false;
@@ -565,12 +565,12 @@ std::string IsoReader::ISODirectoryEntryDateTime::GetFormattedTime() const
   struct tm utime;
   utime.tm_year = years_since_1900;
   utime.tm_mon = (month > 0) ? (month - 1) : 0;
-  utime.tm_mday = (day > 0) ? (day - 1) : 0;
+  utime.tm_mday = day;
   utime.tm_hour = hour;
   utime.tm_min = minute;
   utime.tm_sec = second;
 
-  const s32 uts_offset = static_cast<s32>(gmt_offset) * 3600;
+  const s32 uts_offset = static_cast<s32>(gmt_offset) * 900;
   const time_t uts = std::mktime(&utime) + uts_offset;
 
   std::string ret;

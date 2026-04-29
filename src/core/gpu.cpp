@@ -1705,7 +1705,7 @@ void GPU::HandleGetGPUInfoCommand(u32 value)
     case 0x04: // Get Draw Area Bottom Right
     {
       m_GPUREAD_latch = (m_drawing_area.right | (m_drawing_area.bottom << 10));
-      DEBUG_LOG("Get drawing area bottom right: ({}, {}) => 0x{:08X}", m_drawing_area.bottom, m_drawing_area.right,
+      DEBUG_LOG("Get drawing area bottom right: ({}, {}) => 0x{:08X}", m_drawing_area.right, m_drawing_area.bottom,
                 m_GPUREAD_latch);
     }
     break;

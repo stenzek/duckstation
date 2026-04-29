@@ -226,6 +226,15 @@ enum class DisplayScreenshotFormat : u8
   Count
 };
 
+enum class CaptureFileNameFormat : u8
+{
+  Timestamp,
+  TitleAndTimestamp,
+  TimestampInFolder,
+  TitleAndTimestampInFolder,
+  Count
+};
+
 enum class PresentSkipMode : u8
 {
   Disabled,

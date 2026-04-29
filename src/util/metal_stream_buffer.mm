@@ -59,7 +59,8 @@ void MetalStreamBuffer::Destroy()
 
 bool MetalStreamBuffer::ReserveMemory(u32 num_bytes, u32 alignment)
 {
-  const u32 required_bytes = num_bytes + alignment;
+  DebugAssert(num_bytes > 0 && alignment > 0);
+  const u32 required_bytes = num_bytes + alignment - 1;
 
   // Check for sane allocations
   if (required_bytes > m_size) [[unlikely]]

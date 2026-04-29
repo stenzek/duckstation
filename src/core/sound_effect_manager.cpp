@@ -857,10 +857,9 @@ u32 SoundEffectManager::ReadEntryFrames(PlayingResampledEffect& effect, AudioStr
       const bool needs_shift = (effect->reader.GetBitsPerSample() != 16);
       if (needs_upmix || needs_shift)
       {
-        u32 required_buffer_space = ((ResampledStreamedEffect::INPUT_BUFFER_SIZE * effect->reader.GetNumChannels() *
-                                      effect->reader.GetBytesPerFrame()) +
-                                     (sizeof(s16) - 1)) /
-                                    sizeof(s16);
+        u32 required_buffer_space =
+          ((ResampledStreamedEffect::INPUT_BUFFER_SIZE * effect->reader.GetBytesPerFrame()) + (sizeof(s16) - 1)) /
+          sizeof(s16);
 
         // use second half of buffer as scratch when doing both
         if (needs_upmix && needs_shift)

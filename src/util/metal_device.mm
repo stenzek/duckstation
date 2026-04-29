@@ -807,7 +807,7 @@ std::unique_ptr<GPUPipeline> MetalDevice::CreatePipeline(const GPUPipeline::Grap
       if (config.color_formats[i] == GPUTextureFormat::Unknown)
         break;
 
-      MTLRenderPipelineColorAttachmentDescriptor* ca = desc.colorAttachments[0];
+      MTLRenderPipelineColorAttachmentDescriptor* ca = desc.colorAttachments[i];
       ca.pixelFormat = s_pixel_format_mapping[static_cast<u8>(config.color_formats[i])];
       ca.writeMask = (config.blend.write_r ? MTLColorWriteMaskRed : MTLColorWriteMaskNone) |
                      (config.blend.write_g ? MTLColorWriteMaskGreen : MTLColorWriteMaskNone) |
@@ -1494,7 +1494,7 @@ void MetalDevice::CopyTextureRegion(GPUTexture* dst, u32 dst_x, u32 dst_y, u32 d
   {
     id<MTLBlitCommandEncoder> encoder = GetBlitEncoder(true);
     [encoder copyFromTexture:S->GetMTLTexture()
-                 sourceSlice:src_level
+                 sourceSlice:src_layer
                  sourceLevel:src_level
                 sourceOrigin:MTLOriginMake(src_x, src_y, 0)
                   sourceSize:MTLSizeMake(width, height, 1)
@@ -1519,7 +1519,7 @@ void MetalDevice::ResolveTextureRegion(GPUTexture* dst, u32 dst_x, u32 dst_y, u3
   // Only does first level for now..
   DebugAssert(dst_level == 0 && dst_layer == 0);
 
-  const GPUTextureFormat src_format = dst->GetFormat();
+  const GPUTextureFormat src_format = src->GetFormat();
   const GPUTextureFormat dst_format = dst->GetFormat();
   GPUPipeline* resolve_pipeline;
   if (auto iter = std::find_if(m_resolve_pipelines.begin(), m_resolve_pipelines.end(),
@@ -1979,7 +1979,7 @@ void MetalDevice::SetTextureSampler(u32 slot, GPUTexture* texture, GPUSampler* s
     if (InRenderPass())
       [m_render_encoder setFragmentSamplerState:S atIndex:slot];
     else if (InComputePass())
-      [m_compute_encoder setTexture:T atIndex:slot];
+      [m_compute_encoder setSamplerState:S atIndex:slot];
   }
 }
 
@@ -2005,7 +2005,7 @@ void MetalDevice::UnbindTexture(MetalTexture* tex)
       if (InRenderPass())
         [m_render_encoder setFragmentTexture:nil atIndex:i];
       else if (InComputePass())
-        [m_compute_encoder setTexture:nil atIndex:0];
+        [m_compute_encoder setTexture:nil atIndex:i];
     }
   }
 
@@ -2454,7 +2454,7 @@ void MetalDevice::SubmitDrawIndexedWithBarrier(u32 index_count, u32 base_index, 
                                      afterStages:MTLRenderStageFragment
                                     beforeStages:MTLRenderStageFragment];
         [m_render_encoder drawIndexedPrimitives:primitive
-                                     indexCount:index_count
+                                     indexCount:vertices_per_primitive[static_cast<size_t>(primitive)][0]
                                       indexType:MTLIndexTypeUInt16
                                     indexBuffer:index_buffer
                               indexBufferOffset:index_offset
@@ -2558,7 +2558,7 @@ GPUPresentResult MetalDevice::BeginPresent(GPUSwapChain* swap_chain, u32 clear_c
     desc.colorAttachments[0].texture = layer_texture;
     desc.colorAttachments[0].loadAction = MTLLoadActionClear;
     desc.colorAttachments[0].clearColor =
-      MTLClearColorMake(clear_color_v.r, clear_color_v.g, clear_color_v.g, clear_color_v.a);
+      MTLClearColorMake(clear_color_v.r, clear_color_v.g, clear_color_v.b, clear_color_v.a);
     desc.renderTargetWidth = swap_chain->GetWidth();
     desc.renderTargetHeight = swap_chain->GetHeight();
     m_render_encoder = [[m_render_cmdbuf renderCommandEncoderWithDescriptor:desc] retain];
@@ -2600,7 +2600,7 @@ void MetalDevice::EndPresent(GPUSwapChain* swap_chain, bool explicit_present, u6
   TrimTexturePool();
 }
 
-void MetalDevice::SubmitPresent(GPUSwapChain* swap_chainwel)
+void MetalDevice::SubmitPresent(GPUSwapChain* swap_chain)
 {
   Panic("Not supported by this API.");
 }

@@ -461,7 +461,7 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
   {
     settings.display_line_end_offset = display_line_end_offset.value();
     if (display_osd_messages)
-      INFO_LOG("GameDB: Display line end offset set to {}.", settings.display_line_start_offset);
+      INFO_LOG("GameDB: Display line end offset set to {}.", settings.display_line_end_offset);
   }
   if (dma_max_slice_ticks.has_value())
   {
@@ -574,7 +574,7 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
 
   if (HasTrait(Trait::DisableCDROMReadSpeedup))
   {
-    if (settings.cdrom_read_speedup != 1)
+    if (display_osd_messages && settings.cdrom_read_speedup != 1)
       append_message(TRANSLATE_SV("GameDatabase", "CD-ROM read speedup disabled."));
 
     settings.cdrom_read_speedup = 1;
@@ -582,7 +582,7 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
 
   if (HasTrait(Trait::DisableCDROMSeekSpeedup))
   {
-    if (settings.cdrom_seek_speedup != 1)
+    if (display_osd_messages && settings.cdrom_seek_speedup != 1)
       append_message(TRANSLATE_SV("GameDatabase", "CD-ROM seek speedup disabled."));
 
     settings.cdrom_seek_speedup = 1;
@@ -857,7 +857,7 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
     if (display_osd_messages && settings.gpu_pgxp_enable && !settings.gpu_pgxp_disable_2d)
       append_message(TRANSLATE_SV("GameDatabase", "PGXP disabled on 2D polygons."));
 
-    g_settings.gpu_pgxp_disable_2d = true;
+    settings.gpu_pgxp_disable_2d = true;
   }
 
   if (gpu_pgxp_preserve_proj_fp.has_value())
@@ -1331,6 +1331,13 @@ bool GameDatabase::SaveToCache()
   {
     writer.WriteSizePrefixedString(it.first);
     writer.WriteU32(it.second);
+  }
+
+  if (!writer.Flush(&error))
+  {
+    ERROR_LOG("Failed to write cache file: {}", error.GetDescription());
+    FileSystem::DiscardAtomicRenamedFile(file);
+    return false;
   }
 
   return true;

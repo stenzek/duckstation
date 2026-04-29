@@ -273,7 +273,7 @@ bool CDImageDeviceWin32::Open(const char* filename, Error* error)
     }
   }
 
-  // Set it to 4x speed. A good balance between readahead and spinning up way too high.
+  // Set it to 8x speed. A good balance between readahead and spinning up way too high.
   static constexpr u32 READ_SPEED_MULTIPLIER = 8;
   static constexpr u32 READ_SPEED_KBS = (DATA_SECTOR_SIZE * FRAMES_PER_SECOND * READ_SPEED_MULTIPLIER) / 1024;
   CDROM_SET_SPEED set_speed = {CdromSetSpeed, READ_SPEED_KBS, 0, CdromDefaultRotation};
@@ -400,7 +400,7 @@ bool CDImageDeviceWin32::Open(const char* filename, Error* error)
   }
   for (u32 i = 0; i < m_indices.size(); i++)
   {
-    DEV_LOG(" Index {}: Track {}, Index [], Start {}, length {}, file sector size {}, file offset {}", i,
+    DEV_LOG(" Index {}: Track {}, Index {}, Start {}, length {}, file sector size {}, file offset {}", i,
             m_indices[i].track_number, m_indices[i].index_number, m_indices[i].start_lba_on_disc, m_indices[i].length,
             m_indices[i].file_sector_size, m_indices[i].file_offset);
   }
@@ -895,7 +895,7 @@ bool CDImageDeviceLinux::Open(const char* filename, Error* error)
   }
   for (u32 i = 0; i < m_indices.size(); i++)
   {
-    DEV_LOG(" Index {}: Track {}, Index [], Start {}, length {}, file sector size {}, file offset {}", i,
+    DEV_LOG(" Index {}: Track {}, Index {}, Start {}, length {}, file sector size {}, file offset {}", i,
             m_indices[i].track_number, m_indices[i].index_number, m_indices[i].start_lba_on_disc, m_indices[i].length,
             m_indices[i].file_sector_size, m_indices[i].file_offset);
   }
@@ -1403,7 +1403,7 @@ bool CDImageDeviceMacOS::Open(const char* filename, Error* error)
   }
   for (u32 i = 0; i < m_indices.size(); i++)
   {
-    DEV_LOG(" Index {}: Track {}, Index [], Start {}, length {}, file sector size {}, file offset {}", i,
+    DEV_LOG(" Index {}: Track {}, Index {}, Start {}, length {}, file sector size {}, file offset {}", i,
             m_indices[i].track_number, m_indices[i].index_number, m_indices[i].start_lba_on_disc, m_indices[i].length,
             m_indices[i].file_sector_size, m_indices[i].file_offset);
   }

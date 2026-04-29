@@ -882,7 +882,7 @@ void CoreAudioStream::UpdateStretchTempo()
       iterations = 0;
 
       min_tempo = std::numeric_limits<float>::max();
-      max_tempo = std::numeric_limits<float>::min();
+      max_tempo = std::numeric_limits<float>::lowest();
       acc_tempo = 0.0f;
       acc_cnt = 0;
     }

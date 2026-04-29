@@ -714,7 +714,6 @@ QTreeWidgetItem* PostProcessingSelectShaderDialog::createTreeItem(const QString&
     const QString parent_name = name.left(pos);
 
     QTreeWidgetItem* parent_item = findTreeItemByName(m_ui.shaderList->invisibleRootItem(), parent_name);
-    ;
     if (!parent_item)
       parent_item = createTreeItem(parent_name, display_name.left(pos), true);
 
@@ -838,12 +837,14 @@ void PostProcessingSelectShaderDialog::collapseShaderList(QTreeWidgetItem* item)
     {
       QTreeWidgetItem* const grandchild = child->child(0);
       const QString merged_name = QStringLiteral("%1/%2").arg(child->text(0)).arg(grandchild->text(0));
-      child->setText(0, merged_name);
-      child->setIcon(0, grandchild->icon(0));
-      child->setData(0, NameRole, grandchild->data(0, NameRole));
-      child->setData(0, TypeRole, grandchild->data(0, TypeRole));
+      grandchild->setText(0, merged_name);
       child->removeChild(grandchild);
-      delete grandchild;
+      item->insertChild(i, grandchild);
+      delete child;
+
+      // Reparenting seems to lose the expanded state, fix it.
+      if (grandchild->childCount() > 0)
+        grandchild->setExpanded(true);
     }
   }
 }

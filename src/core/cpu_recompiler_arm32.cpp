@@ -69,7 +69,7 @@ Recompiler* g_compiler = &s_instance;
 bool armIsCallerSavedRegister(u32 id)
 {
   return ((id >= 0 && id <= 3) ||  // r0-r3
-          (id == 12 || id == 14)); // sp, pc
+          (id == 12 || id == 14)); // sp, lr
 }
 
 s32 armGetPCDisplacement(const void* current, const void* target)
@@ -471,12 +471,12 @@ void CPU::ARM32Recompiler::SwitchToNearCode(bool emit_jump, vixl::aarch32::Condi
     {
       Label skip;
       armAsm->b(Condition(cond).Negate(), &skip);
-      armEmitJmp(armAsm, m_far_emitter.GetCursorAddress<const void*>(), true);
+      armEmitJmp(armAsm, m_emitter.GetCursorAddress<const void*>(), true);
       armAsm->bind(&skip);
     }
     else
     {
-      armEmitJmp(armAsm, m_far_emitter.GetCursorAddress<const void*>(), true);
+      armEmitJmp(armAsm, m_emitter.GetCursorAddress<const void*>(), true);
     }
   }
   armAsm = &m_emitter;
@@ -1496,7 +1496,7 @@ void CPU::ARM32Recompiler::Compile_dst_op(CompileFlags cf,
   else if (cf.const_t)
   {
     const Register rs = CFGetRegS(cf);
-    if (const u32 cv = GetConstantRegU32(cf.const_s ? cf.MipsS() : cf.MipsT()); cv != 0)
+    if (const u32 cv = GetConstantRegU32(cf.MipsT()); cv != 0)
     {
       (armAsm->*op)(rd, rs, logical ? armCheckLogicalConstant(cv) : armCheckAddSubConstant(cv));
     }

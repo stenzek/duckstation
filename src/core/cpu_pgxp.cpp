@@ -617,7 +617,7 @@ ALWAYS_INLINE_RELEASE CPU::PGXPValue* CPU::PGXP::GetCachedVertex(u32 value)
 {
   const s16 sx = static_cast<s16>(value & 0xFFFFu);
   const s16 sy = static_cast<s16>(value >> 16);
-  return (sx >= -1024 && sx <= 1023 && sy >= -1024 && sy <= 1013) ?
+  return (sx >= -1024 && sx <= 1023 && sy >= -1024 && sy <= 1023) ?
            &s_vertex_cache[(sy + 1024) * VERTEX_CACHE_WIDTH + (sx + 1024)] :
            nullptr;
 }
@@ -1378,7 +1378,7 @@ void CPU::PGXP::CPU_MULT(Instruction instr, u32 rsVal, u32 rtVal)
   PGXPValue& ploVal = g_state.pgxp_gpr[static_cast<u8>(Reg::lo)];
   PGXPValue& phiVal = g_state.pgxp_gpr[static_cast<u8>(Reg::hi)];
   ploVal = prsVal;
-  CopyZIfMissing(ploVal, prsVal);
+  CopyZIfMissing(ploVal, prtVal);
 
   // Z/valid is the same
   phiVal = ploVal;
@@ -1424,7 +1424,7 @@ void CPU::PGXP::CPU_MULTU(Instruction instr, u32 rsVal, u32 rtVal)
   PGXPValue& ploVal = g_state.pgxp_gpr[static_cast<u8>(Reg::lo)];
   PGXPValue& phiVal = g_state.pgxp_gpr[static_cast<u8>(Reg::hi)];
   ploVal = prsVal;
-  CopyZIfMissing(ploVal, prsVal);
+  CopyZIfMissing(ploVal, prtVal);
 
   // Z/valid is the same
   phiVal = ploVal;
@@ -1471,7 +1471,7 @@ void CPU::PGXP::CPU_DIV(Instruction instr, u32 rsVal, u32 rtVal)
   PGXPValue& ploVal = g_state.pgxp_gpr[static_cast<u8>(Reg::lo)];
   PGXPValue& phiVal = g_state.pgxp_gpr[static_cast<u8>(Reg::hi)];
   ploVal = prsVal;
-  CopyZIfMissing(ploVal, prsVal);
+  CopyZIfMissing(ploVal, prtVal);
 
   // Z/valid is the same
   phiVal = ploVal;
@@ -1521,7 +1521,7 @@ void CPU::PGXP::CPU_DIVU(Instruction instr, u32 rsVal, u32 rtVal)
   PGXPValue& ploVal = g_state.pgxp_gpr[static_cast<u8>(Reg::lo)];
   PGXPValue& phiVal = g_state.pgxp_gpr[static_cast<u8>(Reg::hi)];
   ploVal = prsVal;
-  CopyZIfMissing(ploVal, prsVal);
+  CopyZIfMissing(ploVal, prtVal);
 
   // Z/valid is the same
   phiVal = ploVal;
@@ -1740,5 +1740,5 @@ void CPU::PGXP::CPU_MTC0(Instruction instr, u32 rdVal, u32 rtVal)
   PGXPValue& prtVal = ValidateAndGetRtValue(instr, rtVal);
   PGXPValue& prdVal = g_state.pgxp_cop0[static_cast<u8>(instr.r.rd.GetValue())];
   prdVal = prtVal;
-  prtVal.value = rdVal;
+  prdVal.value = rdVal;
 }

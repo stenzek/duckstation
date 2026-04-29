@@ -1622,7 +1622,7 @@ GPUPresentResult PostProcessing::ReShadeFXShader::Apply(GPUTexture* original_col
       DebugAssert((opt.buffer_offset + opt.buffer_size) <= m_uniforms_size);
       std::memcpy(uniforms + opt.buffer_offset, &opt.value[0].float_value, opt.buffer_size);
     }
-    for (const SourceOption& so : m_source_options)
+    for (SourceOption& so : m_source_options)
     {
       u8* dst = uniforms + so.offset;
       switch (so.source)
@@ -1673,31 +1673,31 @@ GPUPresentResult PostProcessing::ReShadeFXShader::Apply(GPUTexture* original_col
                               so.step[0] :
                               (so.step[0] + std::fmod(static_cast<float>(std::rand()), so.step[1] - so.step[0] + 1));
 
-          std::array<float, 2> value = {so.value[0].float_value, so.value[1].float_value};
-          if (value[1] >= 0)
+          if (so.value[1].float_value >= 0)
           {
-            increment = std::max(increment - std::max(0.0f, so.smoothing - (so.max - value[0])), 0.05f);
-            increment *= static_cast<float>(m_frame_timer.GetTimeMilliseconds() * 1e-9);
+            increment = std::max(increment - std::max(0.0f, so.smoothing - (so.max - so.value[0].float_value)), 0.05f);
+            increment *= static_cast<float>(m_frame_timer.GetTimeMilliseconds() * 1e-3);
 
-            if ((value[0] += increment) >= so.max)
+            if ((so.value[0].float_value += increment) >= so.max)
             {
-              value[0] = so.max;
-              value[1] = -1;
+              so.value[0].float_value = so.max;
+              so.value[1].float_value = -1;
             }
           }
           else
           {
-            increment = std::max(increment - std::max(0.0f, so.smoothing - (value[0] - so.min)), 0.05f);
-            increment *= static_cast<float>(m_frame_timer.GetTimeMilliseconds() * 1e-9);
+            increment = std::max(increment - std::max(0.0f, so.smoothing - (so.value[0].float_value - so.min)), 0.05f);
+            increment *= static_cast<float>(m_frame_timer.GetTimeMilliseconds() * 1e-3);
 
-            if ((value[0] -= increment) <= so.min)
+            if ((so.value[0].float_value -= increment) <= so.min)
             {
-              value[0] = so.min;
-              value[1] = +1;
+              so.value[0].float_value = so.min;
+              so.value[1].float_value = +1;
             }
           }
 
-          std::memcpy(dst, value.data(), sizeof(value));
+          std::memcpy(dst, &so.value[0].float_value, sizeof(so.value[0].float_value));
+          std::memcpy(dst + sizeof(so.value[0].float_value), &so.value[1].float_value, sizeof(so.value[1].float_value));
         }
         break;
 

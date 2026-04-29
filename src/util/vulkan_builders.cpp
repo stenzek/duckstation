@@ -374,7 +374,7 @@ void Vulkan::GraphicsPipelineBuilder::AddVertexBuffer(u32 binding, u32 stride,
 
 void Vulkan::GraphicsPipelineBuilder::AddVertexAttribute(u32 location, u32 binding, VkFormat format, u32 offset)
 {
-  DebugAssert(m_vertex_input_state.vertexAttributeDescriptionCount < MAX_VERTEX_BUFFERS);
+  DebugAssert(m_vertex_input_state.vertexAttributeDescriptionCount < MAX_VERTEX_ATTRIBUTES);
 
   VkVertexInputAttributeDescription& a = m_vertex_attributes[m_vertex_input_state.vertexAttributeDescriptionCount];
   a.location = location;

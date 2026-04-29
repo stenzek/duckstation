@@ -383,13 +383,13 @@ void FullscreenUI::ClosePauseMenu()
   if (!VideoThread::HasGPUBackend())
     return;
 
-  UnpauseForMenuClose();
-
   BeginTransition(SHORT_TRANSITION_TIME, []() {
     s_locals.current_pause_submenu = PauseSubMenu::None;
     s_locals.pause_menu_was_open = false;
     SwitchToMainWindow(MainWindowType::None);
   });
+
+  UnpauseForMenuClose();
 }
 
 void FullscreenUI::ClosePauseMenuImmediately()
@@ -493,8 +493,6 @@ void FullscreenUI::ReturnToMainWindow()
 
 void FullscreenUI::ReturnToMainWindow(float transition_time)
 {
-  UnpauseForMenuClose();
-
   BeginTransition(transition_time, []() {
     s_locals.previous_main_window = MainWindowType::None;
     s_locals.current_pause_submenu = PauseSubMenu::None;
@@ -840,25 +838,32 @@ void FullscreenUI::ConfirmWithSafetyCheck(std::string action, bool check_achieve
 
 void FullscreenUI::RequestShutdown(bool save_state)
 {
-  SwitchToMainWindow(MainWindowType::None);
-
   ConfirmWithSafetyCheck(FSUI_STR("shut down"), true, [save_state](bool result) {
     if (result)
-      Host::RunOnCoreThread([save_state]() { Host::RequestSystemShutdown(false, save_state, false); });
+    {
+      BeginTransition(LONG_TRANSITION_TIME, [save_state]() {
+        Host::RunOnCoreThread([save_state]() { Host::RequestSystemShutdown(false, save_state, false); });
+      });
+    }
     else
-      ClosePauseMenuImmediately();
+    {
+      ClosePauseMenu();
+    }
   });
 }
 
 void FullscreenUI::RequestRestart()
 {
-  SwitchToMainWindow(MainWindowType::None);
-
   ConfirmWithSafetyCheck(FSUI_STR("restart"), false, [](bool result) {
     if (result)
+    {
       Host::RunOnCoreThread(System::ResetSystem);
-
-    BeginTransition(LONG_TRANSITION_TIME, &ClosePauseMenuImmediately);
+      BeginTransition(LONG_TRANSITION_TIME, &ClosePauseMenuImmediately);
+    }
+    else
+    {
+      ClosePauseMenu();
+    }
   });
 }
 
@@ -1762,7 +1767,7 @@ void FullscreenUI::DrawPauseMenu()
         {
           // skip submenu when we can't save anyway
           if (!has_game)
-            BeginTransition(LONG_TRANSITION_TIME, []() { RequestShutdown(false); });
+            RequestShutdown(false);
           else
             BeginTransition([]() { switch_submenu(PauseSubMenu::Exit); });
         }
@@ -1773,18 +1778,22 @@ void FullscreenUI::DrawPauseMenu()
       {
         if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_PF_NAVIGATION_BACK, "Back To Pause Menu")) ||
             WantsToCloseMenu())
+        {
           BeginTransition([]() { switch_submenu(PauseSubMenu::None); });
+        }
         else
+        {
           ImGui::SetItemDefaultFocus();
+        }
 
         if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_FA_ARROWS_ROTATE, "Restart Game")))
           RequestRestart();
 
         if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_FA_FLOPPY_DISK, "Close and Save State")))
-          BeginTransition(LONG_TRANSITION_TIME, []() { RequestShutdown(true); });
+          RequestShutdown(true);
 
         if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_FA_POWER_OFF, "Close Without Saving")))
-          BeginTransition(LONG_TRANSITION_TIME, []() { RequestShutdown(false); });
+          RequestShutdown(false);
       }
       break;
 
@@ -1792,9 +1801,13 @@ void FullscreenUI::DrawPauseMenu()
       {
         if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_PF_NAVIGATION_BACK, "Back To Pause Menu")) ||
             WantsToCloseMenu())
+        {
           BeginTransition([]() { switch_submenu(PauseSubMenu::None); });
+        }
         else
+        {
           ImGui::SetItemDefaultFocus();
+        }
 
         if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_FA_TROPHY, "Achievements")))
           BeginTransition(&SwitchToAchievements);

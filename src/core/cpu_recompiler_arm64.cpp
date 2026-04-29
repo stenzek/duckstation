@@ -589,8 +589,8 @@ void CPU::ARM64Recompiler::Reset(CodeCache::Block* block, u8* code_buffer, u32 c
   {
     HostRegAlloc& ra = m_host_regs[i];
 
-    if (i == RWARG1.GetCode() || i == RWARG1.GetCode() || i == RWARG2.GetCode() || i == RWARG3.GetCode() ||
-        i == RWSCRATCH.GetCode() || i == RSTATE.GetCode() || i == membase_idx || i == x18.GetCode() || i > max_reg_idx)
+    if (i == RWARG1.GetCode() || i == RWARG2.GetCode() || i == RWARG3.GetCode() || i == RWSCRATCH.GetCode() ||
+        i == RSTATE.GetCode() || i == membase_idx || i == x18.GetCode() || i > max_reg_idx)
     {
       continue;
     }
@@ -1679,7 +1679,7 @@ void CPU::ARM64Recompiler::Compile_dst_op(CompileFlags cf,
   else if (cf.const_t)
   {
     const Register rs = CFGetRegS(cf);
-    if (const u32 cv = GetConstantRegU32(cf.const_s ? cf.MipsS() : cf.MipsT()); cv != 0)
+    if (const u32 cv = GetConstantRegU32(cf.MipsT()); cv != 0)
     {
       (armAsm->*op)(rd, rs, logical ? armCheckLogicalConstant(cv) : armCheckAddSubConstant(cv));
     }

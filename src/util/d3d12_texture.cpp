@@ -465,7 +465,7 @@ bool D3D12Texture::Update(u32 x, u32 y, u32 width, u32 height, const void* data,
   D3D12_TEXTURE_COPY_LOCATION dstloc;
   dstloc.pResource = m_resource.Get();
   dstloc.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
-  dstloc.SubresourceIndex = layer;
+  dstloc.SubresourceIndex = CalculateSubresource(layer, level);
 
   const D3D12_BOX srcbox{0u, 0u, 0u, width, height, 1u};
   cmdlist->CopyTextureRegion(&dstloc, x, y, 0, &srcloc, &srcbox);
@@ -548,7 +548,7 @@ void D3D12Texture::Unmap()
   D3D12_TEXTURE_COPY_LOCATION dstloc;
   dstloc.pResource = m_resource.Get();
   dstloc.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
-  dstloc.SubresourceIndex = m_map_level;
+  dstloc.SubresourceIndex = CalculateSubresource(m_map_layer, m_map_level);
 
   const D3D12_BOX srcbox{0u, 0u, 0u, m_map_width, m_map_height, 1};
   cmdlist->CopyTextureRegion(&dstloc, m_map_x, m_map_y, 0, &srcloc, &srcbox);
@@ -873,7 +873,7 @@ D3D12DownloadTexture::~D3D12DownloadTexture()
     D3D12DownloadTexture::Unmap();
 
   if (m_buffer)
-    D3D12Device::GetInstance().DeferResourceDestruction(m_allocation.Get(), m_buffer.Get());
+    D3D12Device::GetInstance().DeferResourceDestruction(std::move(m_allocation), std::move(m_buffer));
 }
 
 std::unique_ptr<D3D12DownloadTexture> D3D12DownloadTexture::Create(u32 width, u32 height, GPUTextureFormat format,

@@ -1289,7 +1289,7 @@ void GTE::ExecuteInstruction(u32 inst_bits)
       break;
 
     case 0x11:
-      CPU::AddGTETicks(7);
+      CPU::AddGTETicks(8);
       Execute_INTPL(inst);
       break;
 
@@ -1411,7 +1411,7 @@ GTE::InstructionImpl GTE::GetInstructionImpl(u32 inst_bits, TickCount* ticks)
       return &Execute_DPCS;
 
     case 0x11:
-      *ticks = 7;
+      *ticks = 8;
       return &Execute_INTPL;
 
     case 0x12:

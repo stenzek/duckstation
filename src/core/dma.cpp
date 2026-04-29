@@ -101,7 +101,7 @@ union DPCRRegister
   BitField<u32, u8, 4, 3> MDECout_priority;
   BitField<u32, bool, 7, 1> MDECout_master_enable;
   BitField<u32, u8, 8, 3> GPU_priority;
-  BitField<u32, bool, 10, 1> GPU_master_enable;
+  BitField<u32, bool, 11, 1> GPU_master_enable;
   BitField<u32, u8, 12, 3> CDROM_priority;
   BitField<u32, bool, 15, 1> CDROM_master_enable;
   BitField<u32, u8, 16, 3> SPU_priority;
@@ -113,14 +113,14 @@ union DPCRRegister
   BitField<u32, u8, 28, 3> priority_offset;
   BitField<u32, bool, 31, 1> unused;
 
-  ALWAYS_INLINE u8 GetPriority(Channel channel) const { return ((bits >> (static_cast<u8>(channel) * 4)) & u32(3)); }
+  ALWAYS_INLINE u8 GetPriority(Channel channel) const { return ((bits >> (static_cast<u8>(channel) * 4)) & u32(7)); }
   ALWAYS_INLINE bool GetMasterEnable(Channel channel) const
   {
     return ConvertToBoolUnchecked((bits >> (static_cast<u8>(channel) * 4 + 3)) & u32(1));
   }
 };
 
-static constexpr u32 DICR_WRITE_MASK = 0b00000000'11111111'10000000'00111111;
+static constexpr u32 DICR_WRITE_MASK = 0b00000000'11111111'10000000'01111111;
 static constexpr u32 DICR_RESET_MASK = 0b01111111'00000000'00000000'00000000;
 union DICRRegister
 {

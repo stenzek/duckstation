@@ -1504,7 +1504,7 @@ void CPU::RISCV64Recompiler::Compile_dst_op(
   else if (cf.const_t)
   {
     const GPR rs = CFGetRegS(cf);
-    if (const u32 cv = GetConstantRegU32(cf.const_s ? cf.MipsS() : cf.MipsT()); cv != 0)
+    if (const u32 cv = GetConstantRegU32(cf.MipsT()); cv != 0)
     {
       (this->*op_const)(rd, rs, cv);
     }

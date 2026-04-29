@@ -95,11 +95,12 @@ private:
                                                            bool output_latency_minimal, AudioStreamSource* source,
                                                            bool auto_start, Error* error);
 #else
-  static std::unique_ptr<AudioStream> CreateAAudioAudioStream(u32 sample_rate, u32 output_latency_frames,
+  static std::unique_ptr<AudioStream> CreateAAudioAudioStream(u32 sample_rate, u32 channels, u32 output_latency_frames,
                                                               bool output_latency_minimal, AudioStreamSource* source,
                                                               bool auto_start, Error* error);
-  static std::unique_ptr<AudioStream> CreateOpenSLESAudioStream(u32 sample_rate, u32 output_latency_frames,
-                                                                bool output_latency_minimal, AudioStreamSource* source,
-                                                                bool auto_start, Error* error);
+  static std::unique_ptr<AudioStream> CreateOpenSLESAudioStream(u32 sample_rate, u32 channels,
+                                                                u32 output_latency_frames, bool output_latency_minimal,
+                                                                AudioStreamSource* source, bool auto_start,
+                                                                Error* error);
 #endif
 };

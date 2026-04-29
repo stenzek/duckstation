@@ -70,13 +70,23 @@
        </layout>
       </item>
       <item row="1" column="0">
+       <widget class="QLabel" name="screenshotNameLabel">
+        <property name="text">
+         <string>Save Name:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QComboBox" name="screenshotSaveName"/>
+      </item>
+      <item row="2" column="0">
        <widget class="QLabel" name="screenshotsDirectoryLabel">
         <property name="text">
          <string>Save Location:</string>
         </property>
        </widget>
       </item>
-      <item row="1" column="1">
+      <item row="2" column="1">
        <layout class="QHBoxLayout" name="screenshotsDirectoryLayout">
         <item>
          <widget class="QLineEdit" name="screenshotsDirectory"/>
@@ -143,13 +153,23 @@
        <widget class="QComboBox" name="captureContainer"/>
       </item>
       <item row="2" column="0">
+       <widget class="QLabel" name="mediaCaptureSaveNameLabel">
+        <property name="text">
+         <string>Save Name:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QComboBox" name="mediaCaptureSaveName"/>
+      </item>
+      <item row="3" column="0">
        <widget class="QLabel" name="videosDirectoryLabel">
         <property name="text">
          <string>Save Location:</string>
         </property>
        </widget>
       </item>
-      <item row="2" column="1">
+      <item row="3" column="1">
        <layout class="QHBoxLayout" name="videosDirectoryLayout">
         <item>
          <widget class="QLineEdit" name="videosDirectory"/>
@@ -186,7 +206,7 @@
         </item>
        </layout>
       </item>
-      <item row="3" column="0" colspan="2">
+      <item row="4" column="0" colspan="2">
        <layout class="QGridLayout" name="captureOptionLayout">
         <property name="horizontalSpacing">
          <number>20</number>

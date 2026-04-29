@@ -8,6 +8,8 @@
 #include "shadergen.h"
 #include "spirv_module.h"
 
+#include "core/host.h" // TODO: Remove after removing ReadResourceFile()
+
 #include "common/assert.h"
 #include "common/bitutils.h"
 #include "common/error.h"
@@ -30,6 +32,8 @@
 #include <string_view>
 
 LOG_CHANNEL(PostProcessing);
+
+using namespace std::string_view_literals;
 
 // TODO:
 //  - Need some sort of cache for the UBO/push constant layout so we don't need to go through SPIR-V Cross every time.
@@ -70,7 +74,7 @@ public:
   SlangPresetParser();
   ~SlangPresetParser();
 
-  bool Parse(std::string_view path, std::string_view contents, Error* error);
+  bool Parse(std::string_view path, std::string_view contents, u32 reference_nesting_level, Error* error);
 
   bool ContainsValue(std::string_view key) const;
   std::string_view GetStringValue(std::string_view key, std::string_view def) const;
@@ -88,6 +92,9 @@ public:
 
 private:
   static bool GetLine(const std::string_view& contents, std::string_view* line, size_t& offset);
+
+  bool ParsePresetReference(const std::string_view& path, const std::string_view& line, u32 reference_nesting_level,
+                            Error* error);
 
   UnorderedStringMap<std::string> m_options;
 };
@@ -117,7 +124,6 @@ public:
 private:
   static std::optional<std::pair<std::string, std::string>> ReadShaderFile(std::string_view base_path,
                                                                            std::string_view path, Error* error);
-  static std::string_view StripCommentsAndWhitespace(std::string_view line);
 
   std::string_view GetCurrentFilename() const;
 
@@ -166,6 +172,8 @@ struct SlangShaderVertex
 
 } // namespace
 
+static std::string_view StripCommentsAndWhitespace(std::string_view line);
+
 } // namespace PostProcessing
 
 inline PostProcessing::SlangPresetParser::SlangPresetParser() = default;
@@ -195,7 +203,8 @@ inline bool PostProcessing::SlangPresetParser::GetLine(const std::string_view& c
   return true;
 }
 
-inline bool PostProcessing::SlangPresetParser::Parse(std::string_view path, std::string_view contents, Error* error)
+inline bool PostProcessing::SlangPresetParser::Parse(std::string_view path, std::string_view contents,
+                                                     u32 reference_nesting_level, Error* error)
 {
   u32 line_number = 0;
   size_t offset = 0;
@@ -205,8 +214,21 @@ inline bool PostProcessing::SlangPresetParser::Parse(std::string_view path, std:
   {
     line_number++;
 
-    const std::string_view clean_line = StringUtil::StripWhitespace(line);
-    if (clean_line.empty() || clean_line[0] == '#')
+    const std::string_view clean_line = StripCommentsAndWhitespace(line);
+    if (clean_line.empty())
+      continue;
+
+    if (clean_line.starts_with("#reference "))
+    {
+      if (!ParsePresetReference(path, clean_line, reference_nesting_level, error))
+        return false;
+
+      continue;
+    }
+
+    // despite having c-style comments, presets can also use # as a comment, but #reference is a thing
+    // ughhhhhh what a mess
+    if (clean_line.starts_with('#'))
       continue;
 
     std::string_view key, value;
@@ -229,6 +251,110 @@ inline bool PostProcessing::SlangPresetParser::Parse(std::string_view path, std:
       fixed_value.erase(pos, 1);
 
     m_options.emplace(key, std::move(fixed_value));
+  }
+
+  return true;
+}
+
+inline bool PostProcessing::SlangPresetParser::ParsePresetReference(const std::string_view& path,
+                                                                    const std::string_view& line,
+                                                                    u32 reference_nesting_level, Error* error)
+{
+  if (reference_nesting_level == MAX_SLANG_INCLUDE_DEPTH)
+  {
+    Error::SetStringFmt(error, "{}:{} Too many nested references", Path::GetFileName(path), line);
+    return false;
+  }
+
+  const std::string_view reference_quoted_path = StringUtil::StripWhitespace(line.substr(11));
+  if (reference_quoted_path.size() < 3 || !reference_quoted_path.starts_with('"') ||
+      !reference_quoted_path.ends_with('"'))
+  {
+    Error::SetStringFmt(error, "{}:{} Malformed preset reference", Path::GetFileName(path), line);
+    return false;
+  }
+
+  const std::string_view reference_unquoted_path = reference_quoted_path.substr(1, reference_quoted_path.size() - 2);
+  std::string reference_path = Path::BuildRelativePath(path, reference_unquoted_path);
+  Path::ToNativePath(&reference_path);
+
+  std::optional<std::string> reference_contents;
+  if (!Path::IsAbsolute(reference_path))
+    reference_contents = Host::ReadResourceFileToString(reference_path, true, error);
+  else
+    reference_contents = FileSystem::ReadFileToString(reference_path.c_str(), error);
+  if (!reference_contents.has_value())
+  {
+    Error::AddPrefixFmt(error, "Failed to read referenced preset {}: ", reference_unquoted_path);
+    return false;
+  }
+
+  SlangPresetParser pp;
+  if (!pp.Parse(reference_path, reference_contents.value(), reference_nesting_level + 1, error))
+  {
+    Error::AddPrefixFmt(error, "In referenced preset {}: ", Path::GetFileName(reference_path));
+    return false;
+  }
+
+  // once we hit a full preset, we need to fix up the paths so that they're relative to the original preset
+  if (const auto iter = pp.m_options.find("shaders"sv); iter != pp.m_options.end())
+  {
+    const u32 num_shaders = StringUtil::FromChars<u32>(iter->second).value_or(0);
+    for (u32 i = 0; i < num_shaders; i++)
+    {
+      const TinyString key = TinyString::from_format("shader{}", i);
+      const auto siter = pp.m_options.find(key.view());
+      if (siter == pp.m_options.end())
+        continue;
+
+      // if it's already absolute, no need to do anything
+      if (Path::IsAbsolute(siter->second))
+        continue;
+
+      // if not, we need to make it absolute, relative to the current preset file
+      std::string fixed_path = Path::BuildRelativePath(reference_path, siter->second);
+      Path::ToNativePath(&fixed_path);
+      DEV_LOG("Fixing up shader path in reference '{}' to '{}' (ref {})", siter->second, fixed_path,
+              reference_unquoted_path);
+      siter->second = std::move(fixed_path);
+    }
+  }
+
+  // same for textures...
+  if (const auto iter = pp.m_options.find("textures"sv); iter != pp.m_options.end())
+  {
+    const std::vector<std::string_view> texture_names = StringUtil::SplitString(iter->second, ';');
+    for (const std::string_view orig_name : texture_names)
+    {
+      const std::string_view name = StringUtil::StripWhitespace(orig_name);
+      if (name.empty())
+        continue;
+
+      const auto titer = pp.m_options.find(name);
+      if (titer == pp.m_options.end())
+        continue;
+
+      // if it's already absolute, no need to do anything
+      if (Path::IsAbsolute(titer->second))
+        continue;
+
+      // if not, we need to make it absolute, relative to the current preset file
+      std::string fixed_path = Path::BuildRelativePath(reference_path, titer->second);
+      Path::ToNativePath(&fixed_path);
+      DEV_LOG("Fixing up texture path in reference '{}' to '{}' (ref {})", titer->second, fixed_path,
+              reference_unquoted_path);
+      titer->second = std::move(fixed_path);
+    }
+  }
+
+  // now merge the options back
+  for (auto iter = pp.m_options.begin(); iter != pp.m_options.end(); ++iter)
+  {
+    const auto biter = m_options.find(iter->first);
+    if (biter != m_options.end())
+      biter->second = std::move(iter->second);
+    else
+      m_options.emplace(iter->first, std::move(iter->second));
   }
 
   return true;
@@ -331,7 +457,7 @@ PostProcessing::SlangShaderPreprocessor::ReadShaderFile(std::string_view base_pa
   return result;
 }
 
-inline std::string_view PostProcessing::SlangShaderPreprocessor::StripCommentsAndWhitespace(std::string_view line)
+std::string_view PostProcessing::StripCommentsAndWhitespace(std::string_view line)
 {
   // TODO: Handle block comments, not just line comments
   std::string_view clean_line = StringUtil::StripWhitespace(line);
@@ -495,11 +621,14 @@ inline bool PostProcessing::SlangShaderPreprocessor::HandleIncludeDirective(std:
     return false;
   }
 
-  if (!ParseFile(m_path, operand.substr(1, operand.size() - 2)))
-    return false;
+  m_include_depth++;
+
+  const bool result = ParseFile(m_path, operand.substr(1, operand.size() - 2));
+
+  m_include_depth--;
 
   m_needs_line_reset = true;
-  return true;
+  return result;
 }
 
 inline bool PostProcessing::SlangShaderPreprocessor::HandlePragmaDirective(std::string_view line)
@@ -789,7 +918,7 @@ bool PostProcessing::SlangShader::LoadFromString(std::string name, std::string_v
 bool PostProcessing::SlangShader::ParsePresetFile(std::string_view path, std::string_view code, Error* error)
 {
   SlangPresetParser pp;
-  if (!pp.Parse(path, code, error))
+  if (!pp.Parse(path, code, 0, error))
     return false;
 
   const u32 num_shaders = pp.GetUIntValue("shaders", 0);
@@ -1061,6 +1190,24 @@ bool PostProcessing::SlangShader::ParsePresetPass(std::string_view preset_path, 
         }
 
         m_options.push_back(std::move(option));
+      }
+    }
+
+    // Extract any options from the preset if overridden.
+    for (ShaderOption& option : m_options)
+    {
+      if (!parser.ContainsValue(option.name))
+        continue;
+
+      if (option.type == ShaderOption::Type::Bool)
+      {
+        option.default_value[0].int_value = option.value[0].int_value =
+          parser.GetBoolValue(option.name, option.default_value[0].int_value);
+      }
+      else
+      {
+        option.default_value[0].float_value = option.value[0].float_value =
+          parser.GetFloatValue(option.name, option.default_value[0].float_value);
       }
     }
   }
@@ -1977,6 +2124,9 @@ bool PostProcessing::SlangShader::ResizeTargets(u32 source_width, u32 source_hei
 
       case ScaleType::Absolute:
         return static_cast<u32>(val);
+
+      case ScaleType::Original:
+        return static_cast<u32>(static_cast<float>(original_dim) * val);
 
         DefaultCaseIsUnreachable();
     }

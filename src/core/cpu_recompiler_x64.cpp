@@ -1290,7 +1290,7 @@ void CPU::X64Recompiler::Compile_mult(CompileFlags cf, bool sign)
     cg->mov(CFGetRegLO(cf), cg->eax);
   else
     cg->mov(MipsPtr(Reg::lo), cg->eax);
-  if (cf.valid_host_lo)
+  if (cf.valid_host_hi)
     cg->mov(CFGetRegHI(cf), cg->edx);
   else
     cg->mov(MipsPtr(Reg::hi), cg->edx);
@@ -1668,7 +1668,7 @@ Xbyak::Reg32 CPU::X64Recompiler::GenerateLoad(const Xbyak::Reg32& addr_reg, Memo
 
       case MemoryAccessSize::Word:
       {
-        cg->mov(dst, cg->word[membase + addr_reg.cvt64()]);
+        cg->mov(dst, cg->dword[membase + addr_reg.cvt64()]);
       }
       break;
     }
@@ -1788,7 +1788,7 @@ void CPU::X64Recompiler::GenerateStore(const Xbyak::Reg32& addr_reg, const Xbyak
         break;
 
       case MemoryAccessSize::Word:
-        cg->mov(cg->word[membase + addr_reg.cvt64()], value_reg.cvt32());
+        cg->mov(cg->dword[membase + addr_reg.cvt64()], value_reg.cvt32());
         break;
     }
 

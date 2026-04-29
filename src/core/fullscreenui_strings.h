@@ -265,6 +265,7 @@ TRANSLATE_NOOP("FullscreenUI", "Determines that field that the game list will be
 TRANSLATE_NOOP("FullscreenUI", "Determines the amount of audio buffered before being pulled by the host API.");
 TRANSLATE_NOOP("FullscreenUI", "Determines the area of the overlay image that the display will be drawn within.");
 TRANSLATE_NOOP("FullscreenUI", "Determines the emulated hardware type.");
+TRANSLATE_NOOP("FullscreenUI", "Determines the format of the screenshot file names.");
 TRANSLATE_NOOP("FullscreenUI", "Determines the format that screenshots will be saved/compressed with.");
 TRANSLATE_NOOP("FullscreenUI", "Determines the frequency at which the macro will toggle the buttons on and off (aka auto fire).");
 TRANSLATE_NOOP("FullscreenUI", "Determines the margin between the edge of the screen and on-screen messages.");
@@ -675,6 +676,8 @@ TRANSLATE_NOOP("FullscreenUI", "Scanning Subdirectories");
 TRANSLATE_NOOP("FullscreenUI", "Screen Margins");
 TRANSLATE_NOOP("FullscreenUI", "Screen Position");
 TRANSLATE_NOOP("FullscreenUI", "Screen Rotation");
+TRANSLATE_NOOP("FullscreenUI", "Screenshot Directory");
+TRANSLATE_NOOP("FullscreenUI", "Screenshot File Name Format");
 TRANSLATE_NOOP("FullscreenUI", "Screenshot Format");
 TRANSLATE_NOOP("FullscreenUI", "Screenshot Quality");
 TRANSLATE_NOOP("FullscreenUI", "Screenshot Size");

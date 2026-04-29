@@ -556,6 +556,8 @@ void TimingEvent::Delay(TickCount ticks)
 {
   using namespace TimingEvents;
 
+  DebugAssert(ticks > 0);
+
   if (!m_active)
   {
     Panic("Trying to delay an inactive event");

@@ -493,7 +493,7 @@ bool ECMTrackFileInterface::Read(void* buffer, u64 offset, u32 size, Error* erro
   DebugAssert(offset >= m_chunk_start && file_end <= (m_chunk_start + m_chunk_buffer.size()));
 
   const size_t chunk_offset = static_cast<size_t>(offset - m_chunk_start);
-  std::memcpy(buffer, &m_chunk_buffer[chunk_offset], CDImage::RAW_SECTOR_SIZE);
+  std::memcpy(buffer, &m_chunk_buffer[chunk_offset], size);
   return true;
 }
 
@@ -666,7 +666,7 @@ bool CDImageCueSheet::OpenAndParseCueSheet(const char* path, Error* error)
       {
         ERROR_LOG("Failed to open track {} in '{}': track start is out of range ({} vs {})", track_num, path,
                   track_start, file_size);
-        Error::SetStringFmt(error, "Failed to open track {} in '{}': track start is out of range ({} vs {}))",
+        Error::SetStringFmt(error, "Failed to open track {} in '{}': track start is out of range ({} vs {})",
                             track_num, Path::GetFileName(path), track_start, file_size);
         return false;
       }

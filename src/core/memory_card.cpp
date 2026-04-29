@@ -181,7 +181,7 @@ bool MemoryCard::Transfer(const u8 data_in, u8* data_out)
     break;
 
       FIXED_REPLY_STATE(State::ReadChecksum, m_checksum, true, State::ReadEnd);
-      FIXED_REPLY_STATE(State::ReadEnd, 0x47, true, State::Idle);
+      FIXED_REPLY_STATE(State::ReadEnd, 0x47, false, State::Idle);
 
       // write state
 
@@ -222,7 +222,7 @@ bool MemoryCard::Transfer(const u8 data_in, u8* data_out)
     }
     break;
 
-      FIXED_REPLY_STATE(State::WriteChecksum, m_checksum, true, State::WriteACK1);
+      FIXED_REPLY_STATE(State::WriteChecksum, m_last_byte, true, State::WriteACK1);
       FIXED_REPLY_STATE(State::WriteACK1, 0x5C, true, State::WriteACK2);
       FIXED_REPLY_STATE(State::WriteACK2, 0x5D, true, State::WriteEnd);
       FIXED_REPLY_STATE(State::WriteEnd, 0x47, false, State::Idle);
@@ -235,7 +235,7 @@ bool MemoryCard::Transfer(const u8 data_in, u8* data_out)
       FIXED_REPLY_STATE(State::GetID1, 0x04, true, State::GetID2);
       FIXED_REPLY_STATE(State::GetID2, 0x00, true, State::GetID3);
       FIXED_REPLY_STATE(State::GetID3, 0x00, true, State::GetID4);
-      FIXED_REPLY_STATE(State::GetID4, 0x80, true, State::Command);
+      FIXED_REPLY_STATE(State::GetID4, 0x80, false, State::Idle);
 
       // new command
     case State::Idle:

@@ -1027,7 +1027,9 @@ void FullscreenUI::BeginTransition(TransitionStartCallback func, float time)
     if (s_state.transition_state == TransitionState::Starting)
       WARNING_LOG("More than one transition started");
 
-    std::move(s_state.transition_start_callback)();
+    TransitionStartCallback callback = std::move(s_state.transition_start_callback);
+    s_state.transition_start_callback = {};
+    callback();
   }
 
   s_state.transition_start_callback = std::move(func);
@@ -1041,7 +1043,11 @@ void FullscreenUI::CancelTransition()
     return;
 
   if (s_state.transition_start_callback)
-    std::move(s_state.transition_start_callback)();
+  {
+    TransitionStartCallback callback = std::move(s_state.transition_start_callback);
+    s_state.transition_start_callback = {};
+    callback();
+  }
 
   s_state.transition_state = TransitionState::Inactive;
   s_state.transition_start_callback = {};
@@ -1217,8 +1223,9 @@ void FullscreenUI::UpdateTransitionState()
   // this callback will exist after starting if a second transition gets queued
   if (s_state.transition_start_callback)
   {
-    std::move(s_state.transition_start_callback)();
+    TransitionStartCallback callback = std::move(s_state.transition_start_callback);
     s_state.transition_start_callback = {};
+    callback();
   }
 
   s_state.transition_remaining_time -= ImGui::GetIO().DeltaTime;

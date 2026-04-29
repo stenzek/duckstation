@@ -280,7 +280,7 @@ bool CPU::DoState(StateWrapper& sw)
     g_state.load_delay_reg =
       static_cast<Reg>(std::min(static_cast<u8>(g_state.load_delay_reg), static_cast<u8>(Reg::count)));
     g_state.next_load_delay_reg =
-      static_cast<Reg>(std::min(static_cast<u8>(g_state.load_delay_reg), static_cast<u8>(Reg::count)));
+      static_cast<Reg>(std::min(static_cast<u8>(g_state.next_load_delay_reg), static_cast<u8>(Reg::count)));
   }
 
   sw.Do(&g_state.cache_control.bits);
@@ -444,7 +444,7 @@ void CPU::SetIRQRequest(bool state)
   constexpr u32 bit = (1u << 10);
   const u32 old_cause = g_state.cop0_regs.cause.bits;
   g_state.cop0_regs.cause.bits = (g_state.cop0_regs.cause.bits & ~bit) | (state ? bit : 0u);
-  if (old_cause ^ g_state.cop0_regs.cause.bits && state)
+  if ((old_cause ^ g_state.cop0_regs.cause.bits) && state)
     CheckForPendingInterrupt();
 }
 
@@ -1329,7 +1329,7 @@ restart_instruction:
     {
       const u32 rsVal = ReadReg(inst.i.rs);
       const u32 imm = inst.i.imm_zext32();
-      const u32 new_value = ReadReg(inst.i.rs) ^ imm;
+      const u32 new_value = rsVal ^ imm;
       WriteReg(inst.i.rt, new_value);
 
       if constexpr (pgxp_mode >= PGXPMode::CPU)
@@ -2042,7 +2042,6 @@ restart_instruction:
     }
     break;
 
-      break;
     case InstructionOp::swc0:
     case InstructionOp::swc1:
     case InstructionOp::swc3:

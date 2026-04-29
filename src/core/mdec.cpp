@@ -521,7 +521,7 @@ void MDEC::Execute()
         const u32 words_to_consume = std::min(s_state.remaining_halfwords, s_state.data_in_fifo.GetSize());
         s_state.data_in_fifo.Remove(words_to_consume);
         s_state.remaining_halfwords -= words_to_consume;
-        if (s_state.remaining_halfwords == 0)
+        if (s_state.remaining_halfwords > 0)
           goto finished;
 
         s_state.state = State::Idle;
@@ -1135,6 +1135,7 @@ void MDEC::HandleSetQuantTableCommand()
     DebugAssert(s_state.remaining_halfwords >= 32);
 
     s_state.data_in_fifo.PopRange(packed_data.data(), static_cast<u32>(packed_data.size()));
+    s_state.remaining_halfwords -= 32;
     std::memcpy(s_state.iq_uv.data(), packed_data.data(), s_state.iq_uv.size());
   }
 }
@@ -1145,7 +1146,7 @@ void MDEC::HandleSetScaleCommand()
 
   std::array<u16, 64> packed_data;
   s_state.data_in_fifo.PopRange(packed_data.data(), static_cast<u32>(packed_data.size()));
-  s_state.remaining_halfwords -= 32;
+  s_state.remaining_halfwords -= 64;
   SetScaleMatrix(packed_data.data());
 }
 

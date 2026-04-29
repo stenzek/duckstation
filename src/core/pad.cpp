@@ -480,7 +480,7 @@ bool Pad::DoState(StateWrapper& sw, bool is_memory_state)
     }
   }
 
-  if (sw.GetVersion() >= 50) [[unlikely]]
+  if (sw.GetVersion() >= 50) [[likely]]
   {
     for (u32 i = 0; i < NUM_MULTITAPS; i++)
     {
@@ -747,7 +747,7 @@ void Pad::DoTransfer(TickCount ticks_late)
 {
   DEBUG_LOG("Transferring slot {}", s_state.JOY_CTRL.SLOT.GetValue());
 
-  const u8 device_index = s_state.multitaps[0].IsEnabled() ? 4u : s_state.JOY_CTRL.SLOT;
+  const u8 device_index = s_state.multitaps[s_state.JOY_CTRL.SLOT].IsEnabled() ? 4u : s_state.JOY_CTRL.SLOT;
   Controller* const controller = s_state.controllers[device_index].get();
   MemoryCard* const memory_card = s_state.memory_cards[device_index].get();
 
@@ -844,7 +844,7 @@ void Pad::DoTransfer(TickCount ticks_late)
   s_state.receive_buffer = data_in;
   s_state.receive_buffer_full = true;
   if (s_state.JOY_CTRL.RXINTEN)
-    TriggerIRQ("TX");
+    TriggerIRQ("RX");
 
   // device no longer active?
   if (!ack)

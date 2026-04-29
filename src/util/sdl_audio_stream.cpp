@@ -80,7 +80,7 @@ bool SDLAudioStream::Initialize(u32 sample_rate, u32 channels, u32 output_latenc
   }
 
   if (auto_start)
-    SDL_ResumeAudioDevice(SDL_GetAudioStreamDevice(m_sdl_stream));
+    SDL_ResumeAudioStreamDevice(m_sdl_stream);
 
   return true;
 }

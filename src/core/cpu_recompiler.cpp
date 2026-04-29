@@ -2573,7 +2573,7 @@ void CPU::Recompiler::Recompiler::SpecExec_multu()
   const SpecValue rt = SpecReadReg(inst->r.rt);
   if (rs.has_value() && rt.has_value())
   {
-    const u64 result = ZeroExtend64(rs.value()) * SignExtend64(rt.value());
+    const u64 result = ZeroExtend64(rs.value()) * ZeroExtend64(rt.value());
     SpecWriteReg(Reg::hi, Truncate32(result >> 32));
     SpecWriteReg(Reg::lo, Truncate32(result));
   }

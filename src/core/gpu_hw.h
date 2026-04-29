@@ -184,6 +184,8 @@ private:
   void PrintSettingsToLog();
   void CheckSettings();
 
+  void ClearBatch();
+  void PostLoadState();
   void UpdateVRAMReadTexture(bool drawn, bool written);
   void UpdateDepthBufferFromMaskBit();
   void CopyAndClearDepthBuffer(bool only_drawing_area);

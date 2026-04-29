@@ -898,6 +898,8 @@ bool CDImagePBP::SwitchSubImage(u32 index, Error* error)
     // return to old disc, this should never fail... in theory.
     if (!OpenDisc(old_disc, nullptr))
       Panic("Failed to reopen old disc after switch.");
+
+    return false;
   }
 
   return true;

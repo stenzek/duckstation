@@ -1007,25 +1007,6 @@ const GameList::Entry* GameList::GetEntryBySerial(std::string_view serial)
   return fallback_entry;
 }
 
-const GameList::Entry* GameList::GetEntryBySerialAndHash(std::string_view serial, u64 hash)
-{
-  const Entry* fallback_entry = nullptr;
-
-  for (const Entry& entry : s_state.entries)
-  {
-    if (!entry.IsDiscSet() && entry.serial == serial && entry.hash == hash)
-    {
-      // prefer actual discs
-      if (!entry.IsDisc())
-        fallback_entry = fallback_entry ? fallback_entry : &entry;
-      else
-        return &entry;
-    }
-  }
-
-  return nullptr;
-}
-
 std::vector<const GameList::Entry*> GameList::GetDiscSetMembers(const GameDatabase::DiscSetEntry* dsentry,
                                                                 bool sort_by_most_recent)
 {
@@ -1449,9 +1430,9 @@ bool GameList::ParsePlayedTimeLine(char* line, std::string_view& serial, PlayedT
 
   const std::string_view serial_tok(StringUtil::StripWhitespace(std::string_view(line, PLAYED_TIME_SERIAL_LENGTH)));
   const std::string_view total_played_time_tok(
-    StringUtil::StripWhitespace(std::string_view(line + PLAYED_TIME_SERIAL_LENGTH + 1, PLAYED_TIME_LAST_TIME_LENGTH)));
+    StringUtil::StripWhitespace(std::string_view(line + PLAYED_TIME_SERIAL_LENGTH + 1, PLAYED_TIME_TOTAL_TIME_LENGTH)));
   const std::string_view last_played_time_tok(StringUtil::StripWhitespace(std::string_view(
-    line + PLAYED_TIME_SERIAL_LENGTH + 1 + PLAYED_TIME_LAST_TIME_LENGTH + 1, PLAYED_TIME_TOTAL_TIME_LENGTH)));
+    line + PLAYED_TIME_SERIAL_LENGTH + 1 + PLAYED_TIME_TOTAL_TIME_LENGTH + 1, PLAYED_TIME_LAST_TIME_LENGTH)));
 
   const std::optional<u64> total_played_time(StringUtil::FromChars<u64>(total_played_time_tok));
   const std::optional<u64> last_played_time(StringUtil::FromChars<u64>(last_played_time_tok));

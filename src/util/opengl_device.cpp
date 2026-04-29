@@ -502,6 +502,14 @@ bool OpenGLDevice::CheckFeatures(CreateFlags create_flags)
   {
     // glReadPixels() is about 2x as fast as glGetTextureSubImage() on NVIDIA drivers.
     m_use_get_texture_sub_image = false;
+
+    // Using PBOs for texture uploads in RGB5A1 format is **incredibly** slow on NVIDIA.
+    // It causes stalls for 16ms+ when creating or waiting for syncs. It looks like the driver gets
+    // stuck contended on a lock with a worker thread, where the worker thread is buzzing away
+    // rotating 16-bit words right by one bit. Even weirder, it looks like it's in jitted code????
+    // And it's not even vectorized???? This is the sort of rubbish I'd expect from Adreno or Mali,
+    // seeing it on NVIDIA is very wtf.
+    m_disable_pbo = true;
   }
 
   return true;

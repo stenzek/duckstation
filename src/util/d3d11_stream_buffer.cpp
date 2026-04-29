@@ -129,7 +129,7 @@ D3D11StreamBuffer::MappingResult D3D11StreamBuffer::Map(ID3D11DeviceContext1* co
   hr = context->Map(m_buffer.Get(), 0, map_type, 0, &sr);
   if (FAILED(hr)) [[unlikely]]
   {
-    ERROR_LOG("Map failed: 0x{:08X} (alignment {}, minsize {}, size {}, position [], map type {})",
+    ERROR_LOG("Map failed: 0x{:08X} (alignment {}, minsize {}, size {}, position {}, map type {})",
               static_cast<unsigned>(hr), alignment, min_size, m_size, m_position, static_cast<u32>(map_type));
     Panic("Map failed");
   }

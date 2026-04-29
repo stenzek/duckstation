@@ -370,11 +370,32 @@ void GPU_HW::ClearVRAM()
   ClearFramebuffer();
 }
 
-void GPU_HW::LoadState(const GPUBackendLoadStateCommand* cmd)
+void GPU_HW::ClearBatch()
 {
   DebugAssert((m_batch_vertex_ptr != nullptr) == (m_batch_index_ptr != nullptr));
   if (m_batch_vertex_ptr)
     UnmapGPUBuffer(0, 0);
+
+  // Don't desync mask bit etc.
+  m_batch = {};
+  m_batch_ubo_data.u_set_mask_while_drawing = 0;
+  m_batch_ubo_dirty = true;
+
+  // UpdateVRAMOnGPU() will write depth, no need to do it again.
+  m_current_depth = 1;
+}
+
+void GPU_HW::PostLoadState()
+{
+  ClearVRAMDirtyRectangle();
+  SetFullVRAMDirtyRectangle();
+  UpdateVRAMReadTexture(true, false);
+  ClearVRAMDirtyRectangle();
+}
+
+void GPU_HW::LoadState(const GPUBackendLoadStateCommand* cmd)
+{
+  ClearBatch();
 
   std::memcpy(g_vram, cmd->vram_data, sizeof(g_vram));
   std::memcpy(g_gpu_clut, cmd->clut_data, sizeof(g_gpu_clut));
@@ -388,13 +409,7 @@ void GPU_HW::LoadState(const GPUBackendLoadStateCommand* cmd)
       Panic("Failed to process texture cache state.");
   }
 
-  m_batch = {};
-  m_current_depth = 1;
-  ClearVRAMDirtyRectangle();
-  SetFullVRAMDirtyRectangle();
-  UpdateVRAMReadTexture(true, false);
-  ClearVRAMDirtyRectangle();
-  ResetBatchVertexDepth();
+  PostLoadState();
 }
 
 bool GPU_HW::AllocateMemorySaveState(System::MemorySaveState& mss, Error* error)
@@ -441,8 +456,7 @@ void GPU_HW::DoMemoryState(StateWrapper& sw, System::MemorySaveState& mss)
     if (m_batch_vertex_ptr)
       UnmapGPUBuffer(0, 0);
 
-    m_batch = {};
-    ResetBatchVertexDepth();
+    ClearBatch();
   }
   else
   {
@@ -478,10 +492,7 @@ void GPU_HW::DoMemoryState(StateWrapper& sw, System::MemorySaveState& mss)
       UpdateVRAMOnGPU(0, 0, VRAM_WIDTH, VRAM_HEIGHT, g_vram, VRAM_WIDTH * sizeof(u16), false, false, VRAM_SIZE_RECT);
     }
 
-    ClearVRAMDirtyRectangle();
-    SetFullVRAMDirtyRectangle();
-    UpdateVRAMReadTexture(true, false);
-    ClearVRAMDirtyRectangle();
+    PostLoadState();
   }
   else
   {

@@ -248,7 +248,7 @@ bool CDImageMDS::ReadSectorFromIndex(void* buffer, const Index& index, LBA lba_i
   const u64 file_position = index.file_offset + (static_cast<u64>(lba_in_index) * index.file_sector_size);
   if (m_mdf_file_position != file_position)
   {
-    if (std::fseek(m_mdf_file, static_cast<long>(file_position), SEEK_SET) != 0)
+    if (FileSystem::FSeek64(m_mdf_file, file_position, SEEK_SET) != 0)
       return false;
 
     m_mdf_file_position = file_position;
@@ -258,7 +258,7 @@ bool CDImageMDS::ReadSectorFromIndex(void* buffer, const Index& index, LBA lba_i
   const u32 read_size = RAW_SECTOR_SIZE;
   if (std::fread(buffer, read_size, 1, m_mdf_file) != 1)
   {
-    std::fseek(m_mdf_file, static_cast<long>(m_mdf_file_position), SEEK_SET);
+    FileSystem::FSeek64(m_mdf_file, m_mdf_file_position, SEEK_SET);
     return false;
   }
 

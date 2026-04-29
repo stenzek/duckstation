@@ -100,7 +100,7 @@ static cubeb* GetCubebContext(std::string_view driver_name, Error* error)
   {
     // Check if the requested driver/device matches the existing context.
     if (driver_name != s_cubeb_context.driver_name)
-      ERROR_LOG("Cubeb context initialized with driver {}, but requested {}", driver_name, s_cubeb_context.driver_name);
+      ERROR_LOG("Cubeb context initialized with driver {}, but requested {}", s_cubeb_context.driver_name, driver_name);
 
     s_cubeb_context.reference_count++;
     return s_cubeb_context.context;
@@ -199,7 +199,7 @@ bool CubebAudioStream::Initialize(u32 sample_rate, u32 channels, u32 output_late
   {
     if (rv != CUBEB_OK)
     {
-      FormatCubebError(error, "cubeb_get_min_latency() failed: {}", rv);
+      FormatCubebError(error, "cubeb_get_min_latency() failed: ", rv);
       return false;
     }
 
@@ -217,7 +217,7 @@ bool CubebAudioStream::Initialize(u32 sample_rate, u32 channels, u32 output_late
   }
 
   DEV_LOG("Output latency: {} ms ({} audio frames)", FramesToMS(sample_rate, output_latency_frames),
-          min_latency_frames);
+          output_latency_frames);
 
   cubeb_devid selected_device = nullptr;
   cubeb_device_collection devices;

@@ -181,7 +181,6 @@ static void ClearRunningGame();
 static void DestroySystem();
 
 static void RecreateGPU(GPURenderer new_renderer);
-static std::string GetScreenshotPath(std::string_view extension);
 static bool StartMediaCapture(std::string path, bool capture_video, bool capture_audio, u32 video_width,
                               u32 video_height);
 static void StopMediaCapture(std::unique_ptr<MediaCapture> cap);
@@ -357,11 +356,6 @@ static StateVars s_state;
 
 } // namespace System
 
-static TinyString GetTimestampStringForFileName()
-{
-  return TinyString::from_format("{:%Y-%m-%d-%H-%M-%S}", Common::LocalTime(std::time(nullptr)).value_or(std::tm{}));
-}
-
 bool System::PerformEarlyHardwareChecks(Error* error)
 {
   // This shouldn't fail... if it does, just hope for the best.
@@ -394,7 +388,7 @@ bool System::PerformEarlyHardwareChecks(Error* error)
   if (runtime_host_page_size == 0)
   {
     Error::SetStringFmt(error, "Cannot determine size of page. Continuing with expectation of {} byte pages.",
-                        runtime_host_page_size);
+                        HOST_PAGE_SIZE);
   }
   else if (HOST_PAGE_SIZE != runtime_host_page_size)
   {
@@ -1428,6 +1422,8 @@ void System::SetDefaultSettings(SettingsInterface& si)
 #ifndef __ANDROID__
   si.SetStringValue("MediaCapture", "Backend", MediaCapture::GetBackendName(Settings::DEFAULT_MEDIA_CAPTURE_BACKEND));
   si.SetStringValue("MediaCapture", "Container", Settings::DEFAULT_MEDIA_CAPTURE_CONTAINER);
+  si.SetStringValue("MediaCapture", "FileNameFormat",
+                    Settings::GetCaptureFileNameFormatName(Settings::DEFAULT_MEDIA_CAPTURE_FILENAME_FORMAT));
   si.SetBoolValue("MediaCapture", "VideoCapture", true);
   si.SetUIntValue("MediaCapture", "VideoWidth", Settings::DEFAULT_MEDIA_CAPTURE_VIDEO_WIDTH);
   si.SetUIntValue("MediaCapture", "VideoHeight", Settings::DEFAULT_MEDIA_CAPTURE_VIDEO_HEIGHT);
@@ -1435,7 +1431,7 @@ void System::SetDefaultSettings(SettingsInterface& si)
   si.SetUIntValue("MediaCapture", "VideoBitrate", Settings::DEFAULT_MEDIA_CAPTURE_VIDEO_BITRATE);
   si.SetStringValue("MediaCapture", "VideoCodec", "");
   si.SetBoolValue("MediaCapture", "VideoCodecUseArgs", false);
-  si.SetStringValue("MediaCapture", "AudioCodecArgs", "");
+  si.SetStringValue("MediaCapture", "VideoCodecArgs", "");
   si.SetBoolValue("MediaCapture", "AudioCapture", true);
   si.SetUIntValue("MediaCapture", "AudioBitrate", Settings::DEFAULT_MEDIA_CAPTURE_AUDIO_BITRATE);
   si.SetStringValue("MediaCapture", "AudioCodec", "");
@@ -3157,18 +3153,7 @@ bool System::LoadStateFromBuffer(const SaveStateBuffer& buffer, Error* error, bo
   // Updating game/loading settings can turn on hardcore mode. Catch this.
   Achievements::DisableHardcoreMode(true, true);
 
-  return LoadStateDataFromBuffer(buffer.state_data.cspan(0, buffer.state_size), buffer.version, error, update_display);
-}
-
-bool System::LoadStateDataFromBuffer(std::span<const u8> data, u32 version, Error* error, bool update_display)
-{
-  if (IsShutdown()) [[unlikely]]
-  {
-    Error::SetStringView(error, "System is invalid.");
-    return 0;
-  }
-
-  StateWrapper sw(data, StateWrapper::Mode::Read, version);
+  StateWrapper sw(buffer.state_data.cspan(0, buffer.state_size), StateWrapper::Mode::Read, buffer.version);
   if (!DoState(sw, update_display))
   {
     Error::SetStringView(error, "Save state stream is corrupted.");
@@ -3583,7 +3568,7 @@ bool System::SaveStateDataToBuffer(std::span<u8> data, size_t* data_size, Error*
   if (IsShutdown()) [[unlikely]]
   {
     Error::SetStringView(error, "System is invalid.");
-    return 0;
+    return false;
   }
 
   // back up and restore memory affected by cheats when saving state
@@ -3669,7 +3654,7 @@ bool System::SaveStateBufferToFile(const SaveStateBuffer& buffer, std::FILE* fp,
   // re-write header
   if (std::fwrite(&header, sizeof(header), 1, fp) != 1 || std::fflush(fp) != 0)
   {
-    Error::SetErrno(error, "fwrite()/fflush() to rewrite header failed: {}", errno);
+    Error::SetErrno(error, "fwrite()/fflush() to rewrite header failed: ", errno);
     return false;
   }
 
@@ -4425,6 +4410,12 @@ void System::UpdateRunningGame(const std::string& path, CDImage* image, bool boo
 
   UpdateRichPresence(booting);
 
+  if (!s_state.running_game_title.empty())
+  {
+    INFO_LOG("Game: {} | {} | HASH-{:016X}", s_state.running_game_title, s_state.running_game_serial,
+             s_state.running_game_hash);
+  }
+
   if (!booting)
   {
     VideoThread::UpdateGameInfo(s_state.running_game_title, s_state.running_game_serial, s_state.running_game_path,
@@ -4791,7 +4782,6 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
              g_settings.display_fine_crop_amount != old_settings.display_fine_crop_amount ||
              g_settings.display_alignment != old_settings.display_alignment ||
              g_settings.display_rotation != old_settings.display_rotation ||
-             g_settings.display_deinterlacing_mode != old_settings.display_deinterlacing_mode ||
              g_settings.gpu_pgxp_enable != old_settings.gpu_pgxp_enable ||
              g_settings.gpu_pgxp_texture_correction != old_settings.gpu_pgxp_texture_correction ||
              g_settings.gpu_pgxp_color_correction != old_settings.gpu_pgxp_color_correction ||
@@ -4842,15 +4832,12 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
              g_settings.display_show_latency_stats != old_settings.display_show_latency_stats ||
              g_settings.display_show_cpu_usage != old_settings.display_show_cpu_usage ||
              g_settings.display_show_gpu_usage != old_settings.display_show_gpu_usage ||
-             g_settings.display_show_latency_stats != old_settings.display_show_latency_stats ||
              g_settings.display_show_frame_times != old_settings.display_show_frame_times ||
              g_settings.display_show_status_indicators != old_settings.display_show_status_indicators ||
              g_settings.display_show_inputs != old_settings.display_show_inputs ||
              g_settings.display_show_enhancements != old_settings.display_show_enhancements ||
              g_settings.display_auto_resize_window != old_settings.display_auto_resize_window ||
              g_settings.display_screenshot_mode != old_settings.display_screenshot_mode ||
-             g_settings.display_screenshot_format != old_settings.display_screenshot_format ||
-             g_settings.display_screenshot_quality != old_settings.display_screenshot_quality ||
              g_settings.display_osd_scale != old_settings.display_osd_scale ||
              g_settings.display_osd_margin != old_settings.display_osd_margin ||
              g_settings.display_osd_message_duration != old_settings.display_osd_message_duration ||
@@ -5637,27 +5624,82 @@ void System::UpdateVolume()
   SPU::GetOutputStream().SetOutputVolume(GetAudioOutputVolume());
 }
 
-std::string System::GetScreenshotPath(std::string_view extension)
+std::string System::GetNewCapturePath(const std::string& directory, const std::string_view title,
+                                      CaptureFileNameFormat format, std::string_view extension)
 {
-  const std::string sanitized_name = Path::SanitizeFileName(System::GetGameTitle());
-  std::string basename;
-  if (sanitized_name.empty())
-    basename = fmt::format("{}", GetTimestampStringForFileName());
-  else
-    basename = fmt::format("{} {}", sanitized_name, GetTimestampStringForFileName());
+  // don't calculate if unnecessary
+  std::string sanitized_title;
+  if (!title.empty() &&
+      (format == CaptureFileNameFormat::TitleAndTimestamp || format >= CaptureFileNameFormat::TimestampInFolder))
+  {
+    sanitized_title = Path::SanitizeFileName(title);
+  }
 
-  std::string path = fmt::format("{}" FS_OSPATH_SEPARATOR_STR "{}.{}", EmuFolders::Screenshots, basename, extension);
+  std::string path;
+  if (format >= CaptureFileNameFormat::TimestampInFolder && !sanitized_title.empty())
+  {
+    path = Path::Combine(directory, sanitized_title);
+
+    if (Error error; !FileSystem::EnsureDirectoryExists(path.c_str(), false, &error)) [[unlikely]]
+    {
+      WARNING_LOG("Failed to create capture subdirectory '{}': {}", path, error.GetDescription());
+      path = directory;
+    }
+  }
+  else
+  {
+    path = directory;
+  }
+
+  path += FS_OSPATH_SEPARATOR_CHARACTER;
+
+  if ((format == CaptureFileNameFormat::TitleAndTimestamp ||
+       format == CaptureFileNameFormat::TitleAndTimestampInFolder) &&
+      !sanitized_title.empty())
+  {
+    path += sanitized_title;
+    path += ' ';
+  }
+
+  fmt::format_to(std::back_inserter(path), "{:%Y-%m-%d-%H-%M-%S}",
+                 Common::LocalTime(std::time(nullptr)).value_or(std::tm{}));
+
+  if (!extension.empty())
+  {
+    path += '.';
+    path += extension;
+  }
 
   // handle quick screenshots to the same filename
   u32 next_suffix = 1;
   while (FileSystem::FileExists(path.c_str()))
   {
-    path =
-      fmt::format("{}" FS_OSPATH_SEPARATOR_STR "{} ({}).{}", EmuFolders::Screenshots, basename, next_suffix, extension);
+    // remove and re-add the extension
+    if (!extension.empty())
+      path.erase(path.rfind('.'));
+
+    // and the suffix if this isn't the first
+    if (next_suffix > 1)
+      path.erase(path.rfind(' '));
+
+    if (!extension.empty())
+      fmt::format_to(std::back_inserter(path), " ({}).{}", next_suffix, extension);
+    else
+      fmt::format_to(std::back_inserter(path), " ({})", next_suffix);
+
     next_suffix++;
   }
 
   return path;
+}
+
+std::string System::GetNewMediaCapturePath(const std::string_view title, const std::string_view container)
+{
+  const CaptureFileNameFormat format =
+    Settings::ParseCaptureFileNameFormat(Core::GetBaseTinyStringSettingValue("MediaCapture", "FilenameFormat"))
+      .value_or(Settings::DEFAULT_MEDIA_CAPTURE_FILENAME_FORMAT);
+
+  return GetNewCapturePath(EmuFolders::Videos, title, format, container);
 }
 
 void System::SaveScreenshot(const char* path, DisplayScreenshotMode mode, DisplayScreenshotFormat format, u8 quality)
@@ -5667,7 +5709,12 @@ void System::SaveScreenshot(const char* path, DisplayScreenshotMode mode, Displa
 
   std::string auto_path;
   if (!path || path[0] == '\0')
-    path = (auto_path = GetScreenshotPath(Settings::GetDisplayScreenshotFormatExtension(format))).c_str();
+  {
+    path = (auto_path = GetNewCapturePath(EmuFolders::Screenshots, s_state.running_game_title,
+                                          g_settings.display_screenshot_filename_format,
+                                          Settings::GetDisplayScreenshotFormatExtension(format)))
+             .c_str();
+  }
 
   GPUBackend::RenderScreenshotToFile(path, mode, quality, true);
 }
@@ -5679,7 +5726,11 @@ bool System::StartRecordingGPUDump(const char* path /*= nullptr*/, u32 num_frame
 
   std::string auto_path;
   if (!path)
-    path = (auto_path = GetScreenshotPath("psxgpu")).c_str();
+  {
+    path = (auto_path = GetNewCapturePath(EmuFolders::Screenshots, s_state.running_game_title,
+                                          g_settings.display_screenshot_filename_format, "psxgpu"))
+             .c_str();
+  }
 
   return g_gpu.StartRecordingGPUDump(path, num_frames);
 }
@@ -5702,23 +5753,6 @@ static std::string_view GetCaptureTypeForMessage(bool capture_video, bool captur
 MediaCapture* System::GetMediaCapture()
 {
   return s_state.media_capture.get();
-}
-
-std::string System::GetNewMediaCapturePath(const std::string_view title, const std::string_view container)
-{
-  const std::string sanitized_name = Path::SanitizeFileName(title);
-  std::string path;
-  if (sanitized_name.empty())
-  {
-    path = Path::Combine(EmuFolders::Videos, fmt::format("{}.{}", GetTimestampStringForFileName(), container));
-  }
-  else
-  {
-    path = Path::Combine(EmuFolders::Videos,
-                         fmt::format("{} {}.{}", sanitized_name, GetTimestampStringForFileName(), container));
-  }
-
-  return path;
 }
 
 bool System::StartMediaCapture(std::string path)
@@ -5777,9 +5811,9 @@ bool System::StartMediaCapture(std::string path, bool capture_video, bool captur
 
   if (path.empty())
   {
-    path =
-      GetNewMediaCapturePath(GetGameTitle(), Core::GetStringSettingValue("MediaCapture", "Container",
-                                                                         Settings::DEFAULT_MEDIA_CAPTURE_CONTAINER));
+    path = GetNewMediaCapturePath(
+      s_state.running_game_title,
+      Core::GetTinyStringSettingValue("MediaCapture", "Container", Settings::DEFAULT_MEDIA_CAPTURE_CONTAINER));
   }
 
   const MediaCaptureBackend backend =
@@ -5794,7 +5828,7 @@ bool System::StartMediaCapture(std::string path, bool capture_video, bool captur
         capture_video, Core::GetSmallStringSettingValue("MediaCapture", "VideoCodec"),
         Core::GetUIntSettingValue("MediaCapture", "VideoBitrate", Settings::DEFAULT_MEDIA_CAPTURE_VIDEO_BITRATE),
         Core::GetBoolSettingValue("MediaCapture", "VideoCodecUseArgs", false) ?
-          Core::GetStringSettingValue("MediaCapture", "AudioCodecArgs") :
+          Core::GetStringSettingValue("MediaCapture", "VideoCodecArgs") :
           std::string(),
         capture_audio, Core::GetSmallStringSettingValue("MediaCapture", "AudioCodec"),
         Core::GetUIntSettingValue("MediaCapture", "AudioBitrate", Settings::DEFAULT_MEDIA_CAPTURE_AUDIO_BITRATE),
@@ -6362,7 +6396,8 @@ bool System::ChangeGPUDump(std::string new_path)
   std::unique_ptr<GPUDump::Player> new_dump = GPUDump::Player::Open(std::move(new_path), &error);
   if (!new_dump)
   {
-    Host::ReportErrorAsync("Error", fmt::format(TRANSLATE_FS("Failed to change GPU dump: {}", error.GetDescription())));
+    Host::ReportErrorAsync(
+      "Error", fmt::format(TRANSLATE_FS("System", "Failed to change GPU dump: {}"), error.GetDescription()));
     return false;
   }
 

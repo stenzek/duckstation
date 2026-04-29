@@ -297,7 +297,6 @@ void LoadStateFromSlot(bool global, s32 slot);
 void SaveStateToSlot(bool global, s32 slot);
 
 /// State data access, use with care as the media path is not updated.
-bool LoadStateDataFromBuffer(std::span<const u8> data, u32 version, Error* error, bool update_display);
 bool SaveStateDataToBuffer(std::span<u8> data, size_t* data_size, Error* error);
 
 /// Runs the VM until the CPU execution is canceled.
@@ -428,6 +427,8 @@ bool StartRecordingGPUDump(const char* path = nullptr, u32 num_frames = 1);
 void StopRecordingGPUDump();
 
 /// Returns the path that a new media capture would be saved to by default. Safe to call from any thread.
+std::string GetNewCapturePath(const std::string& directory, const std::string_view title, CaptureFileNameFormat format,
+                              std::string_view extension);
 std::string GetNewMediaCapturePath(const std::string_view title, const std::string_view container);
 
 /// Current media capture (if active).

@@ -420,6 +420,7 @@ bool MemoryWatchList::RemoveEntryByDescription(const char* description)
     {
       it = m_entries.erase(it);
       result = true;
+      m_entries_changed = true;
       continue;
     }
 
