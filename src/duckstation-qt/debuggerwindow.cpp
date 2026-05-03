@@ -569,7 +569,7 @@ void DebuggerWindow::setMemoryViewRegion(Bus::MemoryRegion region)
 
   static constexpr auto edit_ram_callback = [](size_t offset, size_t count) {
     // shouldn't happen
-    if (offset > Bus::g_ram_size)
+    if (offset >= Bus::g_ram_size)
       return;
 
     const u32 start_page = static_cast<u32>(offset) >> HOST_PAGE_SHIFT;
