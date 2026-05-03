@@ -314,8 +314,8 @@ void DebuggerCodeView::drawInstruction(QPainter& painter, VirtualMemoryAddress a
   else
   {
     instruction_color = palette().text().color();
-    bytes_color = bytes_color.darker(200);
-    address_color = instruction_color.darker(230);
+    bytes_color = instruction_color.darker(250);
+    address_color = instruction_color.darker(200);
     register_color = QColor(0, 150, 255);  // Blue for registers
     immediate_color = QColor(255, 150, 0); // Orange for immediates
     comment_color = QColor(150, 150, 150); // Gray for comments
@@ -351,7 +351,7 @@ void DebuggerCodeView::drawInstruction(QPainter& painter, VirtualMemoryAddress a
   if (u32 instruction_bits; CPU::SafeReadInstruction(address, &instruction_bits))
   {
     const QString bytes_text = QString::asprintf("%08X", instruction_bits);
-    painter.setPen(address_color);
+    painter.setPen(bytes_color);
     painter.drawText(x, y, bytes_text);
     x += BYTES_COLUMN_WIDTH;
 
