@@ -477,7 +477,7 @@ void DebuggerCodeView::drawBranchArrows(QPainter& painter, const QRect& visible_
 
     // Choose color based on arrow type
     QColor arrow_color = colors[source_row % std::size(colors)];
-    painter.setPen(QPen(arrow_color, 1)); // Extra thick for debugging
+    painter.setPen(QPen(arrow_color, 1));
 
     int nest_level = 8 - (source_row % 8); // Adjust nesting level based on row
 
@@ -642,8 +642,11 @@ void DebuggerCodeView::wheelEvent(QWheelEvent* event)
   const int delta = event->angleDelta().y();
   const int steps = delta / 120; // Standard wheel step
 
+  const u32 instruction_steps = static_cast<u32>(std::abs(steps) * CPU::INSTRUCTION_SIZE * 3);
   VirtualMemoryAddress old_top = m_top_address;
-  VirtualMemoryAddress new_top = m_top_address - (steps * CPU::INSTRUCTION_SIZE * 3);
+  VirtualMemoryAddress new_top = (steps >= 0) ?
+                                   (instruction_steps >= m_top_address) ? 0 : (m_top_address - instruction_steps) :
+                                   (m_top_address + instruction_steps);
 
   // Clamp to valid range
   new_top = std::clamp(new_top, m_code_region_start, m_code_region_end - CPU::INSTRUCTION_SIZE);
