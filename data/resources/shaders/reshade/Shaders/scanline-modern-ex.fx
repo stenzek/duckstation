@@ -53,11 +53,11 @@ uniform float sinCompX <
 
 uniform float densY <
     ui_type = "drag";
-    ui_min = 1.0;
+    ui_min = 2.0;
     ui_max = 6.0;
     ui_step = 1.0;
     ui_label = "Scanline Density";
-    ui_tooltip = "Frequency of scanlines. Recommended: 3.0 for 1080P, 2.0 for 4K.";
+    ui_tooltip = "Frequency of scanlines. Recommended higher for high resolution.";
 > = 3.0;
 
 uniform float densX <
@@ -74,10 +74,10 @@ uniform float colAtten <
     ui_min = 0.0;
     ui_max = 2.0;
     ui_label = "Chroma Attenuation";
-    ui_tooltip = "Adjusts color quantization depth. Useful for correcting washed-out retro titles (e.g., GBA).";
+    ui_tooltip = "Adjusts color quantization depth. Useful for correcting excessively bright graphics (e.g., GBA).";
 > = 0.0;
 
-#define PI 3.141592654
+#define PI 3.1415926536
 
 // --- Pixel Shader ---
 
@@ -91,10 +91,8 @@ float4 PS_SineScanline(float4 vpos : SV_POSITION, float2 texcoord : TEXCOORD0) :
     // 2. Frequency Calculation (Omega)
     // Map coordinate space to angular frequency. 
     // Uses 1.999 factor on Y-axis to avoid integer-multiple aliasing (Moire patterns).
-    float2 omega = float2(
-        PI * BUFFER_WIDTH * densX, 
-        1.999 * PI * BUFFER_HEIGHT / densY
-    );
+	float inv_densY = 1.0 / densY;
+    float2 omega = PI * float2(BUFFER_WIDTH * densX, BUFFER_HEIGHT * inv_densY * 1.999);
 
     // 3. Sine Wave Generation
     // Project UVs into periodic sine space for smooth transitions
