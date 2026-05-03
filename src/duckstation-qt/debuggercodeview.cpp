@@ -510,42 +510,61 @@ void DebuggerCodeView::drawBranchArrows(QPainter& painter, const QRect& visible_
 
     const int arrow_x = arrow_left + (nest_level * 4);
 
-    // Draw debug circles at source and target positions
-    painter.setBrush(arrow_color);
-    painter.drawEllipse(arrow_right - 1, source_y - 1, 3, 3);
+    // Source dot
+    if (source_y >= 0 && source_y < viewport_height)
+    {
+      painter.setBrush(arrow_color);
+      painter.setPen(Qt::NoPen);
+      painter.drawEllipse(arrow_right - 2, source_y - 2, 5, 5);
+      painter.setPen(QPen(arrow_color, 1));
+    }
 
-    // Draw straight line arrow with right angles
+    static constexpr int ARROWHEAD_SIZE = 4;
+
     if (source_y == target_y)
     {
-      // Horizontal line for same-row branches
-      painter.drawLine(arrow_x, source_y, arrow_x + 15, target_y);
+      // Self-referencing branch: draw a stub to the right edge
+      painter.drawLine(arrow_x, source_y, arrow_right, source_y);
     }
     else
     {
-      // Horizontal line from left edge to source
+      // Horizontal line from source to vertical stem
       if (source_y >= 0 && source_y < viewport_height)
         painter.drawLine(arrow_x, source_y, arrow_right, source_y);
 
-      // Vertical line from source to target
+      // Vertical line from source to target (clamped to viewport)
       painter.drawLine(arrow_x, clamped_source_y, arrow_x, clamped_target_y);
 
-      // Horizontal line to target
       if (target_y >= 0 && target_y < viewport_height)
-        painter.drawLine(arrow_x, target_y, arrow_right, target_y);
-
-      // Draw arrowhead with simple lines
-      const int arrow_size = 3;
-      const bool pointing_down = (target_y > source_y);
-
-      if (pointing_down)
       {
-        painter.drawLine(arrow_right, target_y, arrow_right - arrow_size, target_y - arrow_size);
-        painter.drawLine(arrow_right, target_y, arrow_right - arrow_size, target_y + arrow_size);
+        // Target on-screen: horizontal line to target + filled right-pointing arrowhead
+        painter.drawLine(arrow_x, target_y, arrow_right - ARROWHEAD_SIZE, target_y);
+
+        const QPoint arrowhead[3] = {
+          QPoint(arrow_right,                  target_y),
+          QPoint(arrow_right - ARROWHEAD_SIZE, target_y - ARROWHEAD_SIZE),
+          QPoint(arrow_right - ARROWHEAD_SIZE, target_y + ARROWHEAD_SIZE),
+        };
+        painter.setBrush(arrow_color);
+        painter.setPen(Qt::NoPen);
+        painter.drawConvexPolygon(arrowhead, 3);
+        painter.setPen(QPen(arrow_color, 1));
       }
       else
       {
-        painter.drawLine(arrow_right, target_y, arrow_right - arrow_size, target_y - arrow_size);
-        painter.drawLine(arrow_right, target_y, arrow_right - arrow_size, target_y + arrow_size);
+        // Target off-screen: filled arrowhead at the viewport edge pointing toward the target
+        const bool branch_goes_up = (target_y < 0);
+        const int edge_y = branch_goes_up ? 0 : viewport_height;
+
+        const QPoint arrowhead[3] = {
+          QPoint(arrow_x,                  edge_y),
+          QPoint(arrow_x - ARROWHEAD_SIZE, edge_y + (branch_goes_up ? ARROWHEAD_SIZE : -ARROWHEAD_SIZE)),
+          QPoint(arrow_x + ARROWHEAD_SIZE, edge_y + (branch_goes_up ? ARROWHEAD_SIZE : -ARROWHEAD_SIZE)),
+        };
+        painter.setBrush(arrow_color);
+        painter.setPen(Qt::NoPen);
+        painter.drawConvexPolygon(arrowhead, 3);
+        painter.setPen(QPen(arrow_color, 1));
       }
     }
   }
