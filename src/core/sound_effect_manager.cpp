@@ -175,15 +175,20 @@ void SoundEffectManager::EnsureInitialized()
 
 void SoundEffectManager::Shutdown()
 {
-  std::lock_guard lock(s_locals.state_mutex);
+  std::unique_lock lock(s_locals.state_mutex);
   if (!s_locals.audio_stream)
     return;
 
   INFO_COLOR_LOG(StrongGreen, "Closing audio stream");
   decltype(s_locals.active_sounds)().swap(s_locals.active_sounds);
-  s_locals.audio_stream.reset();
   s_locals.stream_started = false;
   s_locals.silence_frames = 0;
+
+  // we **must** release the lock here, otherwise we risk a deadlock because the callback will
+  // try to run while we're shutting down, and we still have the lock held.
+  std::unique_ptr<AudioStream> stream = std::move(s_locals.audio_stream);
+  lock.unlock();
+  stream.reset();
 }
 
 void SoundEffectManager::EnqueueSoundEffect(std::string_view name)
