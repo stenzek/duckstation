@@ -81,7 +81,7 @@ namespace ImGuiManager {
 
 using WCharType = u32;
 
-enum class TextFont : u8
+enum class LanguageFont : u8
 {
   Default,
   Chinese,
@@ -90,7 +90,7 @@ enum class TextFont : u8
   MaxCount
 };
 
-using TextFontOrder = std::array<TextFont, static_cast<size_t>(TextFont::MaxCount)>;
+using LanguageFontOrder = std::array<LanguageFont, static_cast<size_t>(LanguageFont::MaxCount)>;
 
 /// Default size for screen margins.
 #ifndef __ANDROID__
@@ -99,15 +99,27 @@ inline constexpr float DEFAULT_SCREEN_MARGIN = 10.0f;
 inline constexpr float DEFAULT_SCREEN_MARGIN = 16.0f;
 #endif
 
-/// Sets the order for text fonts.
-TextFontOrder GetDefaultTextFontOrder();
-void SetTextFontOrder(const TextFontOrder& order);
-
 /// Initializes ImGui, creates fonts, etc.
 bool Initialize(Error* error);
 
 /// Frees all ImGui resources.
 void Shutdown();
+
+/// Sets the order for text fonts.
+LanguageFontOrder GetLanguageTextFontOrder();
+void SetLanguageFontOrder(const LanguageFontOrder& order);
+
+/// Returns a list of possible font names.
+std::span<const char* const> GetTextFontNames();
+std::span<const char* const> GetTextFontDisplayNames();
+const char* GetDefaultTextFontName();
+void UpdateTextFont();
+
+/// Returns a list of possible fixed-width (overlay) font names.
+std::span<const char* const> GetFixedFontNames();
+std::span<const char* const> GetFixedFontDisplayNames();
+const char* GetDefaultFixedFontName();
+void UpdateFixedFont();
 
 bool CreateGPUResources(Error* error);
 void DestroyGPUResources();

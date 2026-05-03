@@ -1313,6 +1313,18 @@ void VideoThread::ReportFatalErrorAndShutdown(std::string_view reason)
   DebugAssert(IsOnThread());
 
   std::string message = fmt::format("GPU thread shut down with fatal error:\n\n{}", reason);
+
+  if (!s_state.gpu_backend)
+  {
+    // if we have no backend, it crapped out in fullscreenui alone
+    if (!g_gpu_device)
+      return;
+
+    Host::RunOnCoreThread([message = std::move(message)]() { Host::OnSystemAbnormalShutdown(message); });
+    DestroyDeviceOnThread(false);
+    return;
+  }
+
   Host::RunOnCoreThread([message = std::move(message)]() { System::AbnormalShutdown(message); });
 
   // replace the renderer with a dummy/null backend, so that all commands get dropped

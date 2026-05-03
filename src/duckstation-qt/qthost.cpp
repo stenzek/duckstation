@@ -2701,8 +2701,8 @@ void QtHost::UpdateFontOrder(std::string_view language)
   // Why is this a thing? Because we want all glyphs to be available, but don't want to conflict
   // between codepoints shared between Chinese and Japanese. Therefore we prioritize the language
   // that the user has selected.
-  ImGuiManager::TextFontOrder font_order;
-#define TF(name) ImGuiManager::TextFont::name
+  ImGuiManager::LanguageFontOrder font_order;
+#define TF(name) ImGuiManager::LanguageFont::name
   if (language == "ja")
     font_order = {TF(Default), TF(Japanese), TF(Chinese), TF(Korean)};
   else if (language == "ko")
@@ -2710,20 +2710,20 @@ void QtHost::UpdateFontOrder(std::string_view language)
   else if (language == "zh-CN")
     font_order = {TF(Default), TF(Chinese), TF(Japanese), TF(Korean)};
   else
-    font_order = ImGuiManager::GetDefaultTextFontOrder();
+    font_order = ImGuiManager::GetLanguageTextFontOrder();
 #undef TF
 
   if (g_core_thread)
   {
     Host::RunOnCoreThread([font_order]() mutable {
-      VideoThread::RunOnThread([font_order]() mutable { ImGuiManager::SetTextFontOrder(font_order); });
+      VideoThread::RunOnThread([font_order]() mutable { ImGuiManager::SetLanguageFontOrder(font_order); });
       Host::ClearTranslationCache();
     });
   }
   else
   {
     // Startup, safe to set directly.
-    ImGuiManager::SetTextFontOrder(font_order);
+    ImGuiManager::SetLanguageFontOrder(font_order);
     Host::ClearTranslationCache();
   }
 }
