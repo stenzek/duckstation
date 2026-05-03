@@ -753,7 +753,7 @@ void Host::ReportDebuggerEvent(CPU::DebuggerEvent event, std::string_view messag
 {
   if (event == CPU::DebuggerEvent::Message)
   {
-    if (!message.empty())
+    if (message.empty())
       return;
 
     INFO_LOG("Debugger message: {}", message);
