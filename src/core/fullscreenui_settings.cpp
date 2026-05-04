@@ -1761,7 +1761,7 @@ void FullscreenUI::SwitchToSettings()
 
 bool FullscreenUI::SwitchToGameSettings(SettingsPage page)
 {
-  return SwitchToGameSettingsForPath(VideoThread::GetGamePath());
+  return SwitchToGameSettingsForPath(VideoThread::GetGamePath(), page);
 }
 
 bool FullscreenUI::SwitchToGameSettingsForPath(const std::string& path, SettingsPage page)
@@ -1784,7 +1784,10 @@ bool FullscreenUI::SwitchToGameSettingsForPath(const std::string& path, Settings
       }
       else
       {
-        ShowToast(OSDMessageType::Info, {}, error.TakeDescription());
+        VideoThread::RunOnThread([error_str = error.TakeDescription()]() mutable {
+          ShowToast(OSDMessageType::Info, {}, std::move(error_str));
+          ClosePauseMenuImmediately();
+        });
       }
     });
 

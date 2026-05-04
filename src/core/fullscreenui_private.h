@@ -63,7 +63,7 @@ void ReturnToPreviousWindow();
 bool AreAnyDialogsOpen();
 bool AreAnyDialogsInteractable();
 
-void PauseForMenuOpen(bool was_paused, bool set_pause_menu_open);
+void PauseAndOpenMenuFromCoreThread(void(*callback)());
 void ClosePauseMenu(float transition_time = SHORT_TRANSITION_TIME);
 void ClosePauseMenuImmediately();
 

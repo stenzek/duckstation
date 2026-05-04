@@ -1531,23 +1531,13 @@ void FullscreenUI::OpenAchievementsWindow()
     return;
   }
 
-  const bool was_paused = System::IsPaused();
-
-  VideoThread::RunOnThread([was_paused]() {
-    Initialize();
-
-    if (!CanCurrentMainWindowStack() || !SetPendingMainWindowSwitch())
-      return;
-
-    PauseForMenuOpen(was_paused, false);
-    ForceKeyNavEnabled();
-    EnqueueSoundEffect(SFX_NAV_ACTIVATE);
-
-    BeginTransition(SHORT_TRANSITION_TIME, &SwitchToAchievements);
+  PauseAndOpenMenuFromCoreThread([]() {
+    BeginTransition(SHORT_TRANSITION_TIME, []() {
+      ForceKeyNavEnabled();
+      EnqueueSoundEffect(SFX_NAV_ACTIVATE);
+      SwitchToAchievements();
+    });
   });
-
-  if (!was_paused)
-    System::PauseSystem(true);
 }
 
 void FullscreenUI::AddSubsetInfo(const rc_client_subset_t* subset)
@@ -2441,23 +2431,13 @@ void FullscreenUI::OpenLeaderboardsWindow()
     return;
   }
 
-  const bool was_paused = System::IsPaused();
-
-  VideoThread::RunOnThread([was_paused]() {
-    Initialize();
-
-    if (!CanCurrentMainWindowStack() || !SetPendingMainWindowSwitch())
-      return;
-
-    PauseForMenuOpen(was_paused, false);
-    ForceKeyNavEnabled();
-    EnqueueSoundEffect(SFX_NAV_ACTIVATE);
-
-    BeginTransition(SHORT_TRANSITION_TIME, &SwitchToLeaderboards);
+  PauseAndOpenMenuFromCoreThread([]() {
+    BeginTransition(SHORT_TRANSITION_TIME, []() {
+      ForceKeyNavEnabled();
+      EnqueueSoundEffect(SFX_NAV_ACTIVATE);
+      SwitchToLeaderboards();
+    });
   });
-
-  if (!was_paused)
-    System::PauseSystem(true);
 }
 
 void FullscreenUI::SwitchToLeaderboards()

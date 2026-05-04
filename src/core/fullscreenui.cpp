@@ -86,8 +86,8 @@ static void DoToggleFastForward();
 static void ConfirmWithSafetyCheck(std::string action, bool check_achievements, std::function<void(bool)> callback);
 static void RequestShutdown(bool save_state);
 static void RequestRestart();
-static void BeginChangeDiscOnCoreThread(bool was_paused, bool needs_pause);
-static void StartChangeDiscFromFile();
+static void BeginChangeDiscOnCoreThread(bool return_to_game);
+static void StartChangeDiscFromFile(bool return_to_game);
 static void DoRequestExit();
 static void DoDesktopMode();
 static void DoToggleFullscreen();
@@ -144,7 +144,6 @@ struct Locals
   MainWindowType previous_main_window = MainWindowType::None;
   bool initialized = false;
   bool background_loaded = false;
-  bool pause_menu_was_open = false;
   bool was_paused_on_quick_menu_open = false;
   bool has_pending_window_switch = false;
 
@@ -288,71 +287,65 @@ void FullscreenUI::OnSystemDestroyed()
     if (!IsInitialized())
       return;
 
-    s_locals.pause_menu_was_open = false;
     s_locals.was_paused_on_quick_menu_open = false;
     s_locals.current_pause_submenu = PauseSubMenu::None;
     ReturnToMainWindow(LONG_TRANSITION_TIME);
   });
 }
 
-void FullscreenUI::PauseForMenuOpen(bool was_paused, bool set_pause_menu_open)
+void FullscreenUI::PauseAndOpenMenuFromCoreThread(void (*callback)())
 {
+  DebugAssert(!VideoThread::IsOnThread());
+  if (!System::IsValid())
+    return;
+
+  // Do the pause early, that way the core thread doesn't push extra frames while the transition is happening.
+  // But, we also don't want extra frames between the pause and the open, because otherwise we'll see the pause icon.
+  const bool was_paused = System::IsPaused();
+
+  VideoThread::RunOnThread([callback, was_paused]() {
+    Initialize();
+    if (!CanCurrentMainWindowStack() || !SetPendingMainWindowSwitch())
+      return;
+
+    s_locals.was_paused_on_quick_menu_open = was_paused;
+    callback();
+  });
+
+  // See comment above. We want the video thread to start transitioning before the pause goes through.
+  if (!was_paused)
+    System::PauseSystem(true);
+
   s_locals.was_paused_on_quick_menu_open = was_paused;
-  s_locals.pause_menu_was_open |= set_pause_menu_open;
+  if (!was_paused)
+    Host::RunOnCoreThread([]() { System::PauseSystem(true); });
 }
 
 void FullscreenUI::OpenPauseMenu()
 {
-  if (!System::IsValid())
-    return;
-
-  const bool was_paused = System::IsPaused();
-
-  VideoThread::RunOnThread([was_paused]() {
-    Initialize();
-    if (s_locals.current_main_window != MainWindowType::None)
-      return;
-
-    PauseForMenuOpen(was_paused, true);
-    ForceKeyNavEnabled();
-    EnqueueSoundEffect(SFX_NAV_ACTIVATE);
-
-    UpdateAchievementsPauseScreenInfo();
+  PauseAndOpenMenuFromCoreThread([]() {
     BeginTransition(SHORT_TRANSITION_TIME, []() {
+      ForceKeyNavEnabled();
+      EnqueueSoundEffect(SFX_NAV_ACTIVATE);
+
+      UpdateAchievementsPauseScreenInfo();
       s_locals.current_pause_submenu = PauseSubMenu::None;
       SwitchToMainWindow(MainWindowType::PauseMenu);
     });
   });
-
-  // NOTE: Down here to avoid flickering pause icon.
-  if (!was_paused)
-    System::PauseSystem(true);
 }
 
 void FullscreenUI::OpenCheatsMenu()
 {
-  if (!System::IsValid())
-    return;
-
-  const bool was_paused = System::IsPaused();
-
-  VideoThread::RunOnThread([was_paused]() {
-    Initialize();
-    if (s_locals.current_main_window != MainWindowType::None)
-      return;
-
-    PauseForMenuOpen(was_paused, false);
-    ForceKeyNavEnabled();
-    EnqueueSoundEffect(SFX_NAV_ACTIVATE);
-
+  PauseAndOpenMenuFromCoreThread([]() {
     BeginTransition(SHORT_TRANSITION_TIME, []() {
       if (!SwitchToGameSettings(SettingsPage::Cheats))
         ClosePauseMenuImmediately();
+
+      ForceKeyNavEnabled();
+      EnqueueSoundEffect(SFX_NAV_ACTIVATE);
     });
   });
-
-  if (!was_paused)
-    System::PauseSystem(true);
 }
 
 void FullscreenUI::OpenDiscChangeMenu()
@@ -360,13 +353,8 @@ void FullscreenUI::OpenDiscChangeMenu()
   if (!System::IsValid())
     return;
 
-  const bool was_paused = System::IsPaused();
-
-  DebugAssert(!VideoThread::IsOnThread());
-  BeginChangeDiscOnCoreThread(was_paused, true);
-
-  if (!was_paused)
-    System::PauseSystem(true);
+  // bit of back and forth here, but needed because we're not coming from the pause menu
+  PauseAndOpenMenuFromCoreThread([]() { Host::RunOnCoreThread([]() { BeginChangeDiscOnCoreThread(true); }); });
 }
 
 void FullscreenUI::FixStateIfPaused()
@@ -385,7 +373,6 @@ void FullscreenUI::ClosePauseMenu(float transition_time /*= SHORT_TRANSITION_TIM
 
   BeginTransition(transition_time, []() {
     s_locals.current_pause_submenu = PauseSubMenu::None;
-    s_locals.pause_menu_was_open = false;
     SwitchToMainWindow(MainWindowType::None);
   });
 
@@ -401,13 +388,12 @@ void FullscreenUI::ClosePauseMenuImmediately()
   UnpauseForMenuClose();
 
   s_locals.current_pause_submenu = PauseSubMenu::None;
-  s_locals.pause_menu_was_open = false;
   s_locals.has_pending_window_switch = false;
   SwitchToMainWindow(MainWindowType::None);
 
   // Present frame with menu closed. We have to defer this for a frame so imgui loses keyboard focus.
   if (VideoThread::IsSystemPaused())
-    VideoThread::PresentCurrentFrame();
+    Host::RunOnCoreThread(&VideoThread::PresentCurrentFrame);
 }
 
 FullscreenUI::MainWindowType FullscreenUI::GetCurrentMainWindow()
@@ -473,7 +459,16 @@ void FullscreenUI::ReturnToPreviousWindow()
 {
   if (s_locals.previous_main_window == MainWindowType::None)
   {
-    ReturnToMainWindow();
+    // if we're coming from a pause menu, we need to release the pause
+    if (s_locals.current_main_window >= MainWindowType::Settings &&
+        s_locals.current_main_window <= MainWindowType::Leaderboards)
+    {
+      ClosePauseMenu();
+    }
+    else
+    {
+      ReturnToMainWindow();
+    }
   }
   else
   {
@@ -496,7 +491,6 @@ void FullscreenUI::ReturnToMainWindow(float transition_time)
   BeginTransition(transition_time, []() {
     s_locals.previous_main_window = MainWindowType::None;
     s_locals.current_pause_submenu = PauseSubMenu::None;
-    s_locals.pause_menu_was_open = false;
     s_locals.has_pending_window_switch = false;
 
     if (VideoThread::HasGPUBackend())
@@ -524,7 +518,7 @@ void FullscreenUI::UnpauseForMenuClose()
   if (!s_locals.was_paused_on_quick_menu_open)
     Host::RunOnCoreThread([]() { System::PauseSystem(false); });
   else
-    Host::RunOnCoreThread([]() { VideoThread::RunOnThread(&VideoThread::PresentCurrentFrame); });
+    Host::RunOnCoreThread([]() { VideoThread::PresentCurrentFrame(); });
 }
 
 void FullscreenUI::Shutdown()
@@ -536,7 +530,6 @@ void FullscreenUI::Shutdown()
   s_locals.current_main_window = MainWindowType::None;
   s_locals.current_pause_submenu = PauseSubMenu::None;
   s_locals.previous_main_window = MainWindowType::None;
-  s_locals.pause_menu_was_open = false;
   s_locals.was_paused_on_quick_menu_open = false;
   s_locals.has_pending_window_switch = false;
 
@@ -877,30 +870,32 @@ void FullscreenUI::DoToggleFastForward()
   });
 }
 
-void FullscreenUI::StartChangeDiscFromFile()
+void FullscreenUI::StartChangeDiscFromFile(bool return_to_game)
 {
-  auto callback = [](const std::string& path) {
+  auto callback = [return_to_game](const std::string& path) {
     if (path.empty())
     {
-      ReturnToPreviousWindow();
+      if (return_to_game)
+        UnpauseForMenuClose();
       return;
     }
 
-    ConfirmWithSafetyCheck(FSUI_STR("change disc"), false, [path](bool result) {
+    ConfirmWithSafetyCheck(FSUI_STR("change disc"), false, [path, return_to_game](bool result) {
       if (result)
       {
         if (!GameList::IsScannableFilename(path))
         {
-          ShowToast(OSDMessageType::Error, {},
-                    fmt::format(FSUI_FSTR("{} is not a valid disc image."), Path::GetFileName(path)));
+          OpenInfoMessageDialog(ICON_EMOJI_NO_ENTRY_SIGN, FSUI_STR("Error"),
+                                fmt::format(FSUI_FSTR("{} is not a valid disc image."), Path::GetFileName(path)));
+          if (return_to_game)
+            UnpauseForMenuClose();
         }
         else
         {
           Host::RunOnCoreThread([path]() { System::InsertMedia(path.c_str()); });
+          ClosePauseMenuImmediately();
         }
       }
-
-      ReturnToMainWindow();
     });
   };
 
@@ -908,19 +903,9 @@ void FullscreenUI::StartChangeDiscFromFile()
                    GetDiscImageFilters(), std::string(Path::GetDirectory(VideoThread::GetGamePath())));
 }
 
-void FullscreenUI::BeginChangeDiscOnCoreThread(bool was_paused, bool needs_pause)
+void FullscreenUI::BeginChangeDiscOnCoreThread(bool return_to_game)
 {
   ChoiceDialogOptions options;
-
-  auto pause_if_needed = [was_paused, needs_pause]() {
-    if (!needs_pause)
-      return;
-
-    PauseForMenuOpen(was_paused, true);
-    ForceKeyNavEnabled();
-    UpdateRunIdleState();
-    FixStateIfPaused();
-  };
 
   if (System::HasMediaSubImages())
   {
@@ -932,32 +917,31 @@ void FullscreenUI::BeginChangeDiscOnCoreThread(bool was_paused, bool needs_pause
     for (u32 i = 0; i < count; i++)
       options.emplace_back(System::GetMediaSubImageTitle(i), i == current_index);
 
-    VideoThread::RunOnThread([options = std::move(options), pause_if_needed = std::move(pause_if_needed)]() mutable {
-      Initialize();
-
-      auto callback = [](s32 index, const std::string& title, bool checked) {
+    VideoThread::RunOnThread([options = std::move(options), return_to_game]() mutable {
+      auto callback = [return_to_game](s32 index, const std::string& title, bool checked) {
         if (index == 0)
         {
-          StartChangeDiscFromFile();
+          StartChangeDiscFromFile(return_to_game);
         }
         else if (index > 0)
         {
           ConfirmWithSafetyCheck(FSUI_STR("change disc"), false, [index](bool result) {
             if (result)
+            {
               System::SwitchMediaSubImage(static_cast<u32>(index - 1));
-
-            ReturnToPreviousWindow();
+              ClosePauseMenuImmediately();
+            }
           });
         }
         else
         {
-          ReturnToPreviousWindow();
+          if (return_to_game)
+            UnpauseForMenuClose();
         }
       };
 
       OpenChoiceDialog(FSUI_ICONVSTR(ICON_FA_COMPACT_DISC, "Select Disc Image"), false, std::move(options),
                        std::move(callback));
-      pause_if_needed();
     });
 
     return;
@@ -982,43 +966,42 @@ void FullscreenUI::BeginChangeDiscOnCoreThread(bool was_paused, bool needs_pause
         paths.push_back(glentry->path);
       }
 
-      VideoThread::RunOnThread([options = std::move(options), paths = std::move(paths),
-                                pause_if_needed = std::move(pause_if_needed)]() mutable {
+      VideoThread::RunOnThread([options = std::move(options), paths = std::move(paths), return_to_game]() mutable {
         Initialize();
 
-        auto callback = [paths = std::move(paths)](s32 index, const std::string& title, bool checked) mutable {
+        auto callback = [paths = std::move(paths), return_to_game](s32 index, const std::string& title,
+                                                                   bool checked) mutable {
           if (index == 0)
           {
-            StartChangeDiscFromFile();
+            StartChangeDiscFromFile(return_to_game);
           }
           else if (index > 0)
           {
             ConfirmWithSafetyCheck(FSUI_STR("change disc"), false, [paths = std::move(paths), index](bool result) {
               if (result)
+              {
                 Host::RunOnCoreThread([path = std::move(paths[index - 1])]() { System::InsertMedia(path.c_str()); });
-
-              ReturnToPreviousWindow();
+                ClosePauseMenu();
+              }
             });
           }
           else
           {
-            ReturnToPreviousWindow();
+            if (return_to_game)
+              UnpauseForMenuClose();
           }
         };
 
         OpenChoiceDialog(FSUI_ICONVSTR(ICON_FA_COMPACT_DISC, "Select Disc Image"), false, std::move(options),
                          std::move(callback));
-        pause_if_needed();
       });
 
       return;
     }
   }
 
-  VideoThread::RunOnThread([pause_if_needed = std::move(pause_if_needed)]() {
-    Initialize();
-    StartChangeDiscFromFile();
-    pause_if_needed();
+  VideoThread::RunOnThread([return_to_game]() {
+    StartChangeDiscFromFile(return_to_game);
   });
 }
 
@@ -1703,8 +1686,11 @@ void FullscreenUI::DrawPauseMenu()
         // NOTE: Menu close must come first, because otherwise VM destruction options will race.
         const bool has_game = VideoThread::HasGPUBackend();
 
-        if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_FA_PLAY, "Resume Game")) || WantsToCloseMenu())
+        if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_FA_PLAY, "Resume Game")) ||
+            (!AreAnyDialogsOpen() && WantsToCloseMenu()))
+        {
           ClosePauseMenu();
+        }
         ImGui::SetItemDefaultFocus();
 
         if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_FA_FORWARD, "Toggle Fast Forward")))
@@ -1755,10 +1741,7 @@ void FullscreenUI::DrawPauseMenu()
         }
 
         if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_FA_COMPACT_DISC, "Change Disc")))
-        {
-          BeginTransition(SHORT_TRANSITION_TIME, []() { s_locals.current_main_window = MainWindowType::None; });
-          Host::RunOnCoreThread([]() { BeginChangeDiscOnCoreThread(true, false); });
-        }
+          Host::RunOnCoreThread([]() { BeginChangeDiscOnCoreThread(false); });
 
         if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_FA_SLIDERS, "Settings")))
           BeginTransition(&SwitchToSettings);
