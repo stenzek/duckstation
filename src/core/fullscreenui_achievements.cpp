@@ -1071,7 +1071,7 @@ void FullscreenUI::DrawAchievementsPauseMenuOverlays(float start_pos_y)
   const ImVec2 display_margin = LayoutScale(16.0f, 16.0f);
   const float box_margin = LayoutScale(10.0f);
   const float box_width = LayoutScale(450.0f);
-  const float box_padding = LayoutScale(10.0f);
+  const float box_padding = LayoutScale(12.0f);
   const float box_content_width = box_width - box_padding - box_padding;
   const float box_rounding = LayoutScale(20.0f);
   const u32 box_background_color =
