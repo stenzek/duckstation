@@ -235,7 +235,7 @@ void FullscreenUI::DrawAchievementsOverlays()
   NotificationLayout layout(g_gpu_settings.achievements_notification_location);
   DrawNotifications(layout);
 
-  if (Achievements::HasActiveGame())
+  if (Achievements::HasActiveGame() && GetCurrentMainWindow() == MainWindowType::None)
   {
     // need to group them together if they're in the same location
     if (g_gpu_settings.achievements_indicator_location != layout.GetLocation())
