@@ -315,10 +315,6 @@ void FullscreenUI::PauseAndOpenMenuFromCoreThread(void (*callback)())
   // See comment above. We want the video thread to start transitioning before the pause goes through.
   if (!was_paused)
     System::PauseSystem(true);
-
-  s_locals.was_paused_on_quick_menu_open = was_paused;
-  if (!was_paused)
-    Host::RunOnCoreThread([]() { System::PauseSystem(true); });
 }
 
 void FullscreenUI::OpenPauseMenu()
