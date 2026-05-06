@@ -99,6 +99,7 @@ static bool CreateFontAtlas(Error* error);
 static bool CompilePipelines(Error* error);
 static void RenderDrawLists(u32 window_width, u32 window_height, WindowInfoPrerotation prerotation);
 static void UpdateTextures();
+static void DestroyTextures(bool recycle);
 static void SetCommonIOOptions(ImGuiIO& io, ImGuiPlatformIO& pio);
 static void SetImKeyState(ImGuiIO& io, ImGuiKey imkey, bool pressed);
 static const char* GetClipboardTextImpl(ImGuiContext* ctx);
@@ -468,20 +469,7 @@ void ImGuiManager::DestroyGPUResources()
   s_state.imgui_pipeline.reset();
 
   if (s_state.imgui_context)
-  {
-    for (ImTextureData* tex : s_state.imgui_context->IO.Fonts->TexList)
-    {
-      if (tex->Status == ImTextureStatus_Destroyed)
-        continue;
-
-      delete std::exchange(tex->TexID, nullptr);
-
-      if (tex->Status == ImTextureStatus_WantDestroy)
-        tex->Status = ImTextureStatus_Destroyed;
-      else
-        tex->Status = ImTextureStatus_WantCreate;
-    }
-  }
+    DestroyTextures(false);
 }
 
 ImGuiContext* ImGuiManager::GetMainContext()
@@ -744,15 +732,15 @@ void ImGuiManager::UpdateTextures()
         }
 
         gtex->MakeReadyForSampling();
-        tex->SetTexID(reinterpret_cast<ImTextureID>(gtex.release()));
-        tex->Status = ImTextureStatus_OK;
+        tex->SetTexID(gtex.release());
+        tex->SetStatus(ImTextureStatus_OK);
       }
       break;
 
       case ImTextureStatus_WantUpdates:
       {
         // TODO: Do we want to just update the whole dirty area? Probably need a heuristic...
-        GPUTexture* const gtex = reinterpret_cast<GPUTexture*>(tex->GetTexID());
+        GPUTexture* const gtex = tex->GetTexID();
         for (const ImTextureRect& rc : tex->Updates)
         {
           DEBUG_LOG("Update {}x{} @ {},{} in {}x{} ImGui texture", rc.w, rc.h, rc.x, rc.y, tex->Width, tex->Height);
@@ -766,13 +754,13 @@ void ImGuiManager::UpdateTextures()
         gtex->MakeReadyForSampling();
 
         // Updates is cleared by ImGui NewFrame.
-        tex->Status = ImTextureStatus_OK;
+        tex->SetStatus(ImTextureStatus_OK);
       }
       break;
 
       case ImTextureStatus_WantDestroy:
       {
-        std::unique_ptr<GPUTexture> gtex(reinterpret_cast<GPUTexture*>(tex->GetTexID()));
+        std::unique_ptr<GPUTexture> gtex(tex->GetTexID());
         if (gtex)
         {
           DEV_LOG("Destroy {}x{} ImGui texture", gtex->GetWidth(), gtex->GetHeight());
@@ -780,7 +768,7 @@ void ImGuiManager::UpdateTextures()
         }
 
         tex->SetTexID(nullptr);
-        tex->Status = ImTextureStatus_Destroyed;
+        tex->SetStatus(ImTextureStatus_Destroyed);
       }
       break;
 
@@ -789,6 +777,28 @@ void ImGuiManager::UpdateTextures()
       default:
         continue;
     }
+  }
+}
+
+void ImGuiManager::DestroyTextures(bool recycle)
+{
+  for (ImTextureData* tex : s_state.imgui_context->IO.Fonts->TexList)
+  {
+    if (tex->Status == ImTextureStatus_Destroyed)
+      continue;
+
+    std::unique_ptr<GPUTexture> gtex(tex->GetTexID());
+    if (gtex)
+    {
+      DEV_LOG("Destroy {}x{} ImGui texture", gtex->GetWidth(), gtex->GetHeight());
+      if (recycle)
+        g_gpu_device->RecycleTexture(std::move(gtex));
+    }
+  
+    if (tex->Status == ImTextureStatus_WantDestroy)
+      tex->SetStatus(ImTextureStatus_Destroyed);
+    else
+      tex->SetStatus(ImTextureStatus_WantCreate);
   }
 }
 
@@ -924,6 +934,9 @@ bool ImGuiManager::LoadFontData(Error* error)
 bool ImGuiManager::CreateFontAtlas(Error* error)
 {
   Timer load_timer;
+
+  // Free textures before clearing fonts, so the clear can remove all texture data immediately.
+  DestroyTextures(true);
 
   ImGuiIO& io = ImGui::GetIO();
   io.Fonts->Clear();
