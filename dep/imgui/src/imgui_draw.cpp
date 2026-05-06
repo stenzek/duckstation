@@ -2670,11 +2670,8 @@ ImFontAtlas::~ImFontAtlas()
 // If you call this mid-frame, you would need to add new font and bind them!
 void ImFontAtlas::Clear()
 {
-    bool backup_renderer_has_textures = RendererHasTextures;
-    RendererHasTextures = false; // Full Clear() is supported, but ClearTexData() only isn't.
     ClearFonts();
     ClearTexData();
-    RendererHasTextures = backup_renderer_has_textures;
 }
 
 void ImFontAtlas::CompactCache()
@@ -2708,9 +2705,40 @@ void ImFontAtlas::ClearInputData()
 void ImFontAtlas::ClearTexData()
 {
     IM_ASSERT(!Locked && "Cannot modify a locked ImFontAtlas!");
-    IM_ASSERT(RendererHasTextures == false && "Not supported for dynamic atlases, but you may call Clear().");
-    for (ImTextureData* tex : TexList)
-        tex->DestroyPixels();
+
+    if (RendererHasTextures)
+    {
+        for (int i = 0; i < TexList.Size;)
+        {
+            ImTextureData* const tex = TexList[i];
+
+            // If the texture has been destroyed or never created by the backend, no need to keep it here either.
+            if (tex->Status == ImTextureStatus_WantCreate || tex->Status == ImTextureStatus_Destroyed)
+            {
+                tex->DestroyPixels();
+                TexList.erase(TexList.Data + i);
+                continue;
+            }
+
+            // Clear latest reference.
+            if (TexData == tex)
+            {
+                TexData = NULL;
+                TexIsBuilt = false;
+            }
+
+            // Defer the cleanup for now.
+            tex->WantDestroyNextFrame = true;
+            tex->Status = ImTextureStatus_WantDestroy;
+            i++;
+        }
+    }
+    else
+    {
+        for (ImTextureData* tex : TexList)
+            tex->DestroyPixels();
+    }
+
     //Locked = true; // Hoped to be able to lock this down but some reload patterns may not be happy with it.
 }
 
