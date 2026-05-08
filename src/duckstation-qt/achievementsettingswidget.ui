@@ -311,12 +311,6 @@
         </property>
        </widget>
       </item>
-      <item row="1" column="1">
-       <widget class="QComboBox" name="progressIndicatorMode"/>
-      </item>
-      <item row="2" column="1">
-       <widget class="QComboBox" name="indicatorLocation"/>
-      </item>
       <item row="0" column="1">
        <widget class="QComboBox" name="challengeIndicatorMode"/>
       </item>
@@ -324,6 +318,26 @@
        <widget class="QLabel" name="progressIndicatorModeLabel">
         <property name="text">
          <string>Progress Indicators:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QComboBox" name="progressIndicatorMode"/>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="indicatorLocationLabel">
+        <property name="text">
+         <string>Indicator Location:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QComboBox" name="indicatorLocation"/>
+      </item>
+      <item row="3" column="0">
+       <widget class="QLabel" name="indicatorScaleLabel">
+        <property name="text">
+         <string>Indicator Size:</string>
         </property>
        </widget>
       </item>
@@ -346,20 +360,6 @@
          </widget>
         </item>
        </layout>
-      </item>
-      <item row="2" column="0">
-       <widget class="QLabel" name="indicatorLocationLabel">
-        <property name="text">
-         <string>Indicator Location:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="0">
-       <widget class="QLabel" name="indicatorScaleLabel">
-        <property name="text">
-         <string>Indicator Size:</string>
-        </property>
-       </widget>
       </item>
      </layout>
     </widget>
