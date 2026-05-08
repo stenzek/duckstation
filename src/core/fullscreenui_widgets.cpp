@@ -1015,7 +1015,24 @@ void FullscreenUI::BeginTransition(TransitionStartCallback func, float time)
 {
   if (s_state.transition_state == TransitionState::Inactive)
   {
-    const float real_time = UIStyle.Animations ? time : 0.0f;
+    float real_time = UIStyle.Animations ? time : 0.0f;
+    if (real_time > 0.0f)
+    {
+      // Align the transition time so that the opacity step value is evenly distributed across the time.
+      const float refresh_rate =
+        g_gpu_device->HasMainSwapChain() ? g_gpu_device->GetMainSwapChain()->GetRefreshRate() : 0.0f;
+      if (refresh_rate > 0.0f)
+      {
+        const float frame_time = 1.0f / refresh_rate;
+        const float num_frames = std::ceil(time / frame_time);
+        real_time = std::max(num_frames * frame_time, real_time);
+      }
+    }
+    else
+    {
+      real_time = 0.0f;
+    }
+
     s_state.transition_state = TransitionState::Starting;
     s_state.transition_total_time = real_time;
     s_state.transition_remaining_time = real_time;
