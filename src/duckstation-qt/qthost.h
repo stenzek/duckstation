@@ -196,7 +196,6 @@ private:
   void onRenderWindowResized(int width, int height, float scale, float refresh_rate);
   void onRenderWindowKeyEvent(int key, bool pressed);
   void onRenderWindowTextEntered(const QString& text);
-  void doBackgroundControllerPoll();
   void processAuxiliaryRenderWindowInputEvent(void* userdata, quint32 event, quint32 param1, quint32 param2,
                                               quint32 param3);
 

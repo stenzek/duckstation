@@ -2044,18 +2044,13 @@ void CoreThread::processAuxiliaryRenderWindowInputEvent(void* userdata, quint32 
   });
 }
 
-void CoreThread::doBackgroundControllerPoll()
-{
-  Core::IdleUpdate();
-}
-
 void CoreThread::createBackgroundControllerPollTimer()
 {
   DebugAssert(!m_background_controller_polling_timer);
   m_background_controller_polling_timer = new QTimer(this);
   m_background_controller_polling_timer->setSingleShot(false);
   m_background_controller_polling_timer->setTimerType(Qt::CoarseTimer);
-  connect(m_background_controller_polling_timer, &QTimer::timeout, this, &CoreThread::doBackgroundControllerPoll);
+  connect(m_background_controller_polling_timer, &QTimer::timeout, &Core::IdleUpdate);
 }
 
 void CoreThread::destroyBackgroundControllerPollTimer()
