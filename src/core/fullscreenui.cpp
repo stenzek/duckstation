@@ -202,8 +202,13 @@ bool FullscreenUI::IsInitialized()
 
 bool FullscreenUI::HasActiveWindow()
 {
+  return s_locals.initialized && (s_locals.current_main_window != MainWindowType::None || AreAnyDialogsOpen());
+}
+
+bool FullscreenUI::HasActiveOrPendingWindow()
+{
   return s_locals.initialized && (s_locals.current_main_window != MainWindowType::None ||
-                                  GetTransitionState() != TransitionState::Inactive || AreAnyDialogsOpen());
+                                  s_locals.has_pending_window_switch || AreAnyDialogsOpen());
 }
 
 bool FullscreenUI::AreAnyDialogsOpen()
@@ -223,7 +228,8 @@ void FullscreenUI::CheckForConfigChanges(const GPUSettings& old_settings)
 
 void FullscreenUI::UpdateRunIdleState()
 {
-  VideoThread::SetRunIdleReason(VideoThread::RunIdleReason::FullscreenUIActive, HasActiveWindow());
+  VideoThread::SetRunIdleReason(VideoThread::RunIdleReason::FullscreenUIActive,
+                                (HasActiveWindow() || GetTransitionState() != TransitionState::Inactive));
 }
 
 void FullscreenUI::OnSystemStarting()

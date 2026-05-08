@@ -236,8 +236,8 @@ void ImGuiManager::DestroyAllDebugWindows()
 
 void ImGuiManager::RenderTextOverlays(const GPUBackend* gpu)
 {
-  // Don't draw anything with loading screen open, it'll be nonsensical.
-  if (FullscreenUI::IsLoadingScreenOpen())
+  // Don't draw anything with loading screen or FSUI open, it'll be nonsensical.
+  if (FullscreenUI::IsLoadingScreenOpen() || FullscreenUI::HasActiveOrPendingWindow())
     return;
 
   const bool paused = VideoThread::IsSystemPaused();
@@ -549,7 +549,7 @@ void ImGuiManager::DrawPerformanceOverlay(const GPUBackend* gpu, float& position
       DrawPerformanceStat(dl, position_y, ui_font, status_size, 0.0f, 0, rbound, text);
     }
   }
-  else if (g_gpu_settings.display_show_status_indicators && !FullscreenUI::HasActiveWindow())
+  else if (g_gpu_settings.display_show_status_indicators)
   {
     SetStatusIndicatorIcons(text, true);
     DrawPerformanceStat(dl, position_y, ui_font, status_size, 0.0f, 0, rbound, text);
@@ -646,7 +646,7 @@ void ImGuiManager::DrawMediaCaptureOverlay(float& position_y, float scale, float
 {
 #ifndef __ANDROID__
   MediaCapture* const cap = System::GetMediaCapture();
-  if (!cap || FullscreenUI::HasActiveWindow())
+  if (!cap)
     return;
 
   const float shadow_offset = std::ceil(scale);
