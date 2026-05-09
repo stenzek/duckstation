@@ -1032,6 +1032,8 @@ void FullscreenUI::UpdateAchievementsPauseScreenInfo()
             active_lbs.erase(active_lbs.begin() + num_active_lbs, active_lbs.end());
 
           PauseMenuLeaderboardInfo& lbinfo = active_lbs.emplace_back();
+          lbinfo.leaderboard_id = leaderboard->id;
+          lbinfo.format = leaderboard->format;
           lbinfo.title = leaderboard->title;
           if (leaderboard->description)
             lbinfo.description = leaderboard->description;
