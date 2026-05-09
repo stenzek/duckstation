@@ -250,7 +250,7 @@ void FullscreenUI::AddAchievementNotification(std::string key, float duration, s
                                               std::string text, std::string note,
                                               AchievementNotificationNoteType note_type, u16 min_width, bool small_font)
 {
-  const bool prev_had_notifications = s_achievements_locals.notifications.empty();
+  const bool prev_had_notifications = !s_achievements_locals.notifications.empty();
   const Timer::Value current_time = Timer::GetCurrentValue();
 
   if (!key.empty())
