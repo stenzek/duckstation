@@ -350,6 +350,8 @@ private:
                        std::string_view no_text = {}) override;
 
   protected:
+    static std::string_view GetIconString(PromptIcon icon);
+
     void StateChanged(StateChange changed) override;
   };
 
@@ -5733,6 +5735,23 @@ bool FullscreenUI::ProgressDialog::ProgressCallbackImpl::IsCancelled() const
   return s_state.progress_dialog.m_cancelled.load(std::memory_order_acquire);
 }
 
+std::string_view FullscreenUI::ProgressDialog::ProgressCallbackImpl::GetIconString(PromptIcon icon)
+{
+  std::string_view icon_str;
+  switch (icon)
+  {
+    case PromptIcon::Error:
+      return ICON_EMOJI_NO_ENTRY_SIGN;
+    case PromptIcon::Warning:
+      return ICON_EMOJI_WARNING;
+    case PromptIcon::Question:
+      return ICON_EMOJI_QUESTION_MARK;
+    case PromptIcon::Information:
+    default:
+      return ICON_EMOJI_INFORMATION;
+  }
+}
+
 void FullscreenUI::ProgressDialog::ProgressCallbackImpl::AlertPrompt(PromptIcon icon, std::string_view message)
 {
   s_state.progress_dialog.m_prompt_waiting.test_and_set(std::memory_order_release);
@@ -5754,26 +5773,8 @@ void FullscreenUI::ProgressDialog::ProgressCallbackImpl::AlertPrompt(PromptIcon 
       float width = s_state.progress_dialog.m_width;
       s_state.progress_dialog.CloseImmediately();
 
-      std::string_view icon_str;
-      switch (icon)
-      {
-        case PromptIcon::Error:
-          icon_str = ICON_EMOJI_NO_ENTRY_SIGN;
-          break;
-        case PromptIcon::Warning:
-          icon_str = ICON_EMOJI_WARNING;
-          break;
-        case PromptIcon::Question:
-          icon_str = ICON_EMOJI_QUESTION_MARK;
-          break;
-        case PromptIcon::Information:
-        default:
-          icon_str = ICON_EMOJI_INFORMATION;
-          break;
-      }
-
       OpenInfoMessageDialog(
-        icon_str, s_state.progress_dialog.GetTitle(), std::move(message),
+        GetIconString(icon), s_state.progress_dialog.GetTitle(), std::move(message),
         [existing_title = std::move(existing_title), progress_range, progress_value, last_frac, width]() mutable {
           s_state.progress_dialog.SetTitleAndOpen(std::move(existing_title));
           s_state.progress_dialog.m_progress_range = progress_range;
@@ -5797,9 +5798,9 @@ bool FullscreenUI::ProgressDialog::ProgressCallbackImpl::ConfirmPrompt(PromptIco
   s_state.progress_dialog.m_prompt_waiting.test_and_set(std::memory_order_release);
 
   Host::RunOnCoreThread(
-    [message = std::string(message), yes_text = std::string(yes_text), no_text = std::string(no_text)]() mutable {
+    [message = std::string(message), yes_text = std::string(yes_text), no_text = std::string(no_text), icon]() mutable {
       VideoThread::RunOnThread(
-        [message = std::move(message), yes_text = std::move(yes_text), no_text = std::move(no_text)]() mutable {
+        [message = std::move(message), yes_text = std::move(yes_text), no_text = std::move(no_text), icon]() mutable {
           if (!s_state.progress_dialog.IsOpen())
           {
             s_state.progress_dialog.m_prompt_waiting.clear(std::memory_order_release);
@@ -5820,7 +5821,7 @@ bool FullscreenUI::ProgressDialog::ProgressCallbackImpl::ConfirmPrompt(PromptIco
           if (no_text.empty())
             no_text = FSUI_ICONSTR(ICON_FA_XMARK, "No");
 
-          OpenConfirmMessageDialog(ICON_EMOJI_QUESTION_MARK, s_state.progress_dialog.GetTitle(), std::move(message),
+          OpenConfirmMessageDialog(GetIconString(icon), s_state.progress_dialog.GetTitle(), std::move(message),
                                    [existing_title = std::move(existing_title), progress_range, progress_value,
                                     last_frac, width](bool result) mutable {
                                      s_state.progress_dialog.SetTitleAndOpen(std::move(existing_title));
