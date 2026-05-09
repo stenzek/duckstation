@@ -844,7 +844,7 @@ void FullscreenUI::DrawGameGrid(const ImVec2& heading_size)
         }
       }
 
-      if (draw_title)
+      if (show_titles)
       {
         const ImRect title_bb(ImVec2(bb.Min.x, bb.Min.y + image_height + title_spacing), bb.Max);
         RenderMultiLineShadowedTextClipped(dl, UIStyle.Font, title_font_size, title_font_weight, title_bb.Min,
