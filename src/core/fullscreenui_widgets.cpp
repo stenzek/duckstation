@@ -3323,7 +3323,7 @@ bool FullscreenUI::MenuImageButton(std::string_view title, std::string_view summ
 
   const ImRect image_rect(
     CenterImage(ImRect(ImVec2(bb.title_bb.Min.x - left_margin, bb.title_bb.Min.y),
-                       ImVec2(bb.title_bb.Min.x - image_margin, bb.title_bb.Min.y + real_image_size.x)),
+                       ImVec2(bb.title_bb.Min.x - image_margin, bb.title_bb.Min.y + real_image_size.y)),
                 ImVec2(static_cast<float>(image->GetWidth()), static_cast<float>(image->GetHeight()))));
 
   ImGui::GetWindowDrawList()->AddImage(image, image_rect.Min, image_rect.Max, uv0, uv1,
