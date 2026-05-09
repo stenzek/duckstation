@@ -1290,7 +1290,7 @@ void SaveStateSelectorUI::Draw()
 
           dl->ChannelsSetCurrent(0);
           dl->AddRectFilled(highlight_pos, ImVec2(highlight_pos.x + item_width, highlight_pos.y + item_height),
-                            ImGui::GetColorU32(UIStyle.PrimaryColor), padding_and_rounding);
+                            ImGui::GetColorU32(UIStyle.PopupHighlight), padding_and_rounding);
           dl->ChannelsSetCurrent(1);
         }
 
