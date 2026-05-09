@@ -259,7 +259,7 @@ void FullscreenUI::PopulateGameListEntryList()
                        static_cast<float>(rhs->num_achievements)) :
                       0;
                   if (std::abs(unlock_lhs - unlock_rhs) >= 0.0001f)
-                    return reverse ? (unlock_lhs >= unlock_rhs) : (unlock_lhs < unlock_rhs);
+                    return reverse ? (unlock_lhs > unlock_rhs) : (unlock_lhs < unlock_rhs);
 
                   // order by achievement count
                   if (lhs->num_achievements != rhs->num_achievements)
@@ -306,9 +306,8 @@ void FullscreenUI::DrawGameListWindow()
     {
       if (NavButton(icons[i], static_cast<GameListView>(i) == s_game_list_locals.game_list_view, true))
       {
-        BeginTransition([]() {
-          s_game_list_locals.game_list_view =
-            (s_game_list_locals.game_list_view == GameListView::Grid) ? GameListView::List : GameListView::Grid;
+        BeginTransition([i]() {
+          s_game_list_locals.game_list_view = static_cast<GameListView>(i);
           QueueResetFocus(FocusResetType::ViewChanged);
         });
       }
