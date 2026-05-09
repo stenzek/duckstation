@@ -6312,7 +6312,8 @@ void FullscreenUI::DrawLoadingScreen(std::string_view image, std::string_view ti
 
     if (has_progress)
     {
-      const float fraction = static_cast<float>(progress_value) / static_cast<float>(progress_max - progress_min);
+      const float fraction =
+        static_cast<float>(progress_value - progress_min) / static_cast<float>(progress_max - progress_min);
       ImGui::RenderRectFilledInRangeH(dl, ImRect(box_start, box_end), ImGui::GetColorU32(UIStyle.SecondaryColor),
                                       box_start.x, box_start.x + (fraction * content_width), frame_rounding);
     }
