@@ -5350,6 +5350,7 @@ void FullscreenUI::InputStringDialog::ClearState()
   m_message = {};
   m_caption = {};
   m_ok_text = {};
+  m_text = {};
   m_callback = {};
 }
 
