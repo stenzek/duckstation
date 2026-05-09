@@ -613,7 +613,7 @@ void FullscreenUI::DrawIndicators(NotificationLayout& layout)
 
       current_position.x += x_advance;
 
-      if (!indicator.active && indicator.opacity <= 0.01f)
+      if (!active && indicator.opacity <= 0.01f)
       {
         DEV_LOG("Remove challenge indicator");
         it = indicators.erase(it);
