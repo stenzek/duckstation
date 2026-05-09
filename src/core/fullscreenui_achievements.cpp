@@ -221,6 +221,7 @@ void FullscreenUI::ClearAchievementsState()
 
   s_achievements_locals.most_recent_unlock.reset();
   s_achievements_locals.achievement_nearest_completion.reset();
+  s_achievements_locals.most_recent_progress_update.reset();
 
   UpdateAchievementOverlaysRunIdle();
 }
@@ -954,6 +955,7 @@ void FullscreenUI::UpdateAchievementsPauseScreenInfo()
   {
     s_achievements_locals.most_recent_unlock.reset();
     s_achievements_locals.achievement_nearest_completion.reset();
+    s_achievements_locals.most_recent_progress_update.reset();
     s_achievements_locals.active_leaderboards.clear();
     return;
   }
