@@ -1125,7 +1125,9 @@ void FullscreenUI::DrawAchievementsPauseMenuOverlays(float start_pos_y)
     dl->AddText(UIStyle.Font, UIStyle.MediumFontSize, UIStyle.BoldFontWeight, text_pos, box_title_text_color,
                 IMSTR_START_END(buffer));
     const float unlocked_fraction =
-      static_cast<float>(summary.num_unlocked_achievements) / static_cast<float>(summary.num_core_achievements);
+      (summary.num_core_achievements > 0) ?
+        (static_cast<float>(summary.num_unlocked_achievements) / static_cast<float>(summary.num_core_achievements)) :
+        0.0f;
     buffer.format("{}%", static_cast<u32>(std::round(unlocked_fraction * 100.0f)));
     text_size = UIStyle.Font->CalcTextSizeA(UIStyle.MediumFontSize, UIStyle.BoldFontWeight, FLT_MAX, 0.0f,
                                             IMSTR_START_END(buffer));
