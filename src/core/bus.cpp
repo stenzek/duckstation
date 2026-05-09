@@ -830,6 +830,8 @@ static constexpr std::array<std::tuple<PhysicalMemoryAddress, PhysicalMemoryAddr
     {Bus::EXP1_BASE, Bus::EXP1_BASE + Bus::EXP1_SIZE, false},
     {CPU::SCRATCHPAD_ADDR, CPU::SCRATCHPAD_ADDR + CPU::SCRATCHPAD_SIZE, true},
     {Bus::BIOS_BASE, Bus::BIOS_BASE + Bus::BIOS_SIZE, false},
+    {0, VRAM_SIZE, true},
+    {0, SPU::RAM_SIZE, true},
   }};
 
 PhysicalMemoryAddress Bus::GetMemoryRegionStart(MemoryRegion region)
@@ -871,6 +873,12 @@ u8* Bus::GetMemoryRegionPointer(MemoryRegion region)
 
     case MemoryRegion::BIOS:
       return g_bios;
+
+    case MemoryRegion::VRAM:
+      return reinterpret_cast<u8*>(g_vram);
+
+    case MemoryRegion::SPURAM:
+      return SPU::GetWritableRAM().data();
 
     default:
       return nullptr;

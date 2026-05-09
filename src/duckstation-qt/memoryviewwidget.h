@@ -20,7 +20,10 @@ public:
                             size_t data_size = 0, bool data_editable = false, EditCallback edit_callback = nullptr);
   ~MemoryViewWidget();
 
-  size_t addressOffset() const { return m_address_offset; }
+  ALWAYS_INLINE size_t dataSize() const { return m_data_size; }
+  ALWAYS_INLINE size_t addressOffset() const { return m_address_offset; }
+  ALWAYS_INLINE size_t startOffset() const { return m_start_offset; }
+  ALWAYS_INLINE size_t endOffset() const { return m_end_offset; }
   size_t selectedAddress() const;
   size_t topAddress() const;
 

@@ -495,6 +495,9 @@ void DebuggerWindow::connectSignals()
   connect(m_ui.memoryRegionScratchpad, &QRadioButton::clicked,
           [this]() { setMemoryViewRegion(Bus::MemoryRegion::Scratchpad); });
   connect(m_ui.memoryRegionBIOS, &QRadioButton::clicked, [this]() { setMemoryViewRegion(Bus::MemoryRegion::BIOS); });
+  connect(m_ui.memoryRegionVRAM, &QRadioButton::clicked, [this]() { setMemoryViewRegion(Bus::MemoryRegion::VRAM); });
+  connect(m_ui.memoryRegionSPURAM, &QRadioButton::clicked,
+          [this]() { setMemoryViewRegion(Bus::MemoryRegion::SPURAM); });
 
   connect(m_ui.memorySearch, &QPushButton::clicked, this, &DebuggerWindow::onMemorySearchTriggered);
   connect(m_ui.memorySearchString, &QLineEdit::textChanged, this, &DebuggerWindow::onMemorySearchStringChanged);
@@ -595,6 +598,8 @@ void DebuggerWindow::setMemoryViewRegion(Bus::MemoryRegion region)
   m_ui.memoryRegionEXP1->setChecked(region == Bus::MemoryRegion::EXP1);
   m_ui.memoryRegionScratchpad->setChecked(region == Bus::MemoryRegion::Scratchpad);
   m_ui.memoryRegionBIOS->setChecked(region == Bus::MemoryRegion::BIOS);
+  m_ui.memoryRegionVRAM->setChecked(region == Bus::MemoryRegion::VRAM);
+  m_ui.memoryRegionSPURAM->setChecked(region == Bus::MemoryRegion::SPURAM);
 
   m_ui.memoryView->repaint();
 }
@@ -646,6 +651,16 @@ bool DebuggerWindow::tryFollowLoadStore(VirtualMemoryAddress address)
 
 bool DebuggerWindow::scrollToMemoryAddress(VirtualMemoryAddress address)
 {
+  // Keep the existing region if we're viewing VRAM/SPU RAM.
+  if (m_ui.memoryRegionVRAM->isChecked() || m_ui.memoryRegionSPURAM->isChecked())
+  {
+    if (address >= m_ui.memoryView->dataSize())
+      return false;
+
+    m_ui.memoryView->scrollToOffset(address);
+    return true;
+  }
+
   const PhysicalMemoryAddress phys_address = CPU::VirtualAddressToPhysical(address);
   std::optional<Bus::MemoryRegion> region = Bus::GetMemoryRegionForAddress(phys_address);
   if (!region.has_value())
