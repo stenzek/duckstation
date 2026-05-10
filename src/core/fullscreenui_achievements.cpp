@@ -587,22 +587,45 @@ void FullscreenUI::DrawIndicators(NotificationLayout& layout)
       (g_gpu_settings.achievements_challenge_indicator_mode == AchievementChallengeIndicatorMode::TemporaryIcon);
     const float x_advance = image_size + spacing;
     const float total_width = image_size + (static_cast<float>(indicators.size() - 1) * x_advance);
-    ImVec2 current_position = layout.GetFixedPosition(total_width, image_size);
+    bool space_reserved = false;
+    ImVec2 current_position;
 
     for (auto it = indicators.begin(); it != indicators.end();)
     {
       Achievements::ActiveChallengeIndicator& indicator = *it;
-      bool active = indicator.active;
+      bool draw_icon = indicator.active;
       if (use_time_remaining)
       {
         indicator.time_remaining = std::max(indicator.time_remaining - io.DeltaTime, 0.0f);
-        active = (indicator.time_remaining > 0.0f);
+        draw_icon = (draw_icon && indicator.time_remaining > 0.0f);
+
+        // Skip drawing when not visible.
+        if (!draw_icon && indicator.opacity < 0.01f)
+        {
+          if (!indicator.active)
+          {
+            DEV_LOG("Remove non-visible challenge indicator");
+            it = indicators.erase(it);
+          }
+          else
+          {
+            ++it;
+          }
+
+          continue;
+        }
       }
 
-      const float target_opacity = active ? 1.0f : 0.0f;
-      const float rate = active ? CHALLENGE_INDICATOR_FADE_IN_TIME : -CHALLENGE_INDICATOR_FADE_OUT_TIME;
+      const float target_opacity = draw_icon ? 1.0f : 0.0f;
+      const float rate = draw_icon ? CHALLENGE_INDICATOR_FADE_IN_TIME : -CHALLENGE_INDICATOR_FADE_OUT_TIME;
       indicator.opacity =
         (indicator.opacity != target_opacity) ? ImSaturate(indicator.opacity + (io.DeltaTime / rate)) : target_opacity;
+
+      if (!space_reserved)
+      {
+        space_reserved = true;
+        current_position = layout.GetFixedPosition(total_width, image_size);
+      }
 
       GPUTexture* badge = FullscreenUI::GetCachedTextureAsync(indicator.badge_url);
       if (badge)
@@ -613,7 +636,7 @@ void FullscreenUI::DrawIndicators(NotificationLayout& layout)
 
       current_position.x += x_advance;
 
-      if (!active && indicator.opacity <= 0.01f)
+      if (!indicator.active && indicator.opacity < 0.01f)
       {
         DEV_LOG("Remove challenge indicator");
         it = indicators.erase(it);
