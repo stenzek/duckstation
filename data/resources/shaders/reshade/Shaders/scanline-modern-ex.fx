@@ -15,9 +15,7 @@ Core Features:
   with lossless brightness/color;
 - Optimized scanline performance based on human eye brightness sensitivity curve: 
   scanlines are prominent in medium brightness areas and weakened in extreme brightness areas;
-- Adjustable color channel quantization attenuation, suitable for games like GBA that have 
-  hardware-encoded gamma bias (over-bright/grayed out) due to lack of backlighting. 
-  It can perfectly restore vivid colors. 
+- For PS1 games:Set to match the original internal resolution for pixel-perfect scanline alignment.
 
     Perceptual Sensitivity Curve:
     Sensitivity
@@ -32,106 +30,108 @@ Core Features:
 	 * (C) 2025-2026 by crashGG.
 */
 
-// --- UI Parameters ---
+// --- UI Uniforms ---
+uniform float oriVert <
+    ui_type = "drag";
+    ui_min = 192.0; ui_max = 288.0; ui_step = 8.0;
+    ui_label = "Source Vertical Resolution";
+    ui_tooltip = "Set to match the original internal resolution for pixel-perfect scanline alignment.";
+    ui_category = "Scanline Settings";
+> = 240.0;
 
 uniform float sinCompY <
     ui_type = "drag";
-    ui_min = 0.0;
-    ui_max = 1.0;
-    ui_label = "Vertical Scanline Intensity";
-    ui_tooltip = "Intensity of horizontal lines (Y-axis oscillation).";
-> = 0.1;
+    ui_min = 0.0; ui_max = 0.50; ui_step = 0.01;
+    ui_label = "Scanline Intensity (Vertical)";
+    ui_category = "Scanline Settings";
+> = 0.10;
 
-uniform float sinCompX <
+uniform float CompXlevl <
     ui_type = "drag";
-    ui_min = 0.0;
-    ui_max = 0.10;
-    ui_step = 0.01;
-    ui_label = "Horizontal Grid Intensity";
-    ui_tooltip = "Intensity of vertical lines (X-axis oscillation), creating a shadow mask effect.";
-> = 0.01;
-
-uniform float densY <
-    ui_type = "drag";
-    ui_min = 2.0;
-    ui_max = 6.0;
-    ui_step = 1.0;
-    ui_label = "Scanline Density";
-    ui_tooltip = "Frequency of scanlines. Recommended higher for high resolution.";
+    ui_min = 0.0; ui_max = 20.0; ui_step = 1.0;
+    ui_label = "Shadow Mask Strength (Horizontal)";
+    ui_category = "Scanline Settings";
 > = 3.0;
 
+uniform float densY <
+    ui_type = "slider";
+    ui_min = 1.0; ui_max = 4.0; ui_step = 1.0;
+    ui_label = "Scanline Density";
+    ui_category = "Scanline Settings";
+> = 2.0;
+
 uniform float densX <
-    ui_type = "drag";
-    ui_min = 0.5;
-    ui_max = 1.0;
-    ui_step = 0.5;
-    ui_label = "Grid Density";
-    ui_tooltip = "Density multiplier for the horizontal grid.";
-> = 1.0;
+    ui_type = "slider";
+    ui_min = 1.0; ui_max = 4.0; ui_step = 1.0;
+    ui_label = "Shadow Mask Density";
+    ui_category = "Scanline Settings";
+> = 3.0;
 
-uniform float colAtten <
-    ui_type = "drag";
-    ui_min = 0.0;
-    ui_max = 2.0;
-    ui_label = "Chroma Attenuation";
-    ui_tooltip = "Adjusts color quantization depth. Useful for correcting excessively bright graphics (e.g., GBA).";
-> = 0.0;
+static const float PI = 3.1415926536;
 
-#define PI 3.1415926536
+// --- Vertex to Fragment Bridge ---
+struct v2f {
+    float4 pos : SV_Position;
+    float2 uv : TEXCOORD0;
+    float2 omega : TEXCOORD1;
+};
+
+// --- Vertex Shader ---
+v2f VS_Scanline(uint id : SV_VertexID) {
+    v2f o;
+    // Standard full-screen triangle generation
+    o.uv.x = (id == 2) ? 2.0 : 0.0;
+    o.uv.y = (id == 1) ? 2.0 : 0.0;
+    o.pos = float4(o.uv * float2(2.0, -2.0) + float2(-1.0, 1.0), 0.0, 1.0);
+
+    // Calculate vertical scaling factor based on source vs. output height
+    // BUFFER_RCP_HEIGHT is a pre-calculated constant (1.0 / Height) to avoid runtime division
+    float scale = oriVert * BUFFER_RCP_HEIGHT;
+
+    // Calculate angular frequency (omega) to control sine wave cycles
+    // Locked to source resolution via scale factor to ensure grid alignment across varying viewports
+    o.omega = PI * 2.0 * float2(BUFFER_WIDTH * densX, BUFFER_HEIGHT * densY) * scale;
+
+    return o;
+}
 
 // --- Pixel Shader ---
+float4 PS_Scanline(v2f i) : SV_Target {
 
-float4 PS_SineScanline(float4 vpos : SV_POSITION, float2 texcoord : TEXCOORD0) : SV_Target
-{
-    // 1. Texture Sampling
-    // Apply a micro-offset (1.0001) to UVs to prevent edge bleeding on certain hardware
-    float2 uv = texcoord * 1.0001;
-    float3 res = tex2D(ReShade::BackBuffer, uv).rgb;
+    // Step size for horizontal mask intensity
+    float sinCompX = CompXlevl * 0.005;
 
-    // 2. Frequency Calculation (Omega)
-    // Map coordinate space to angular frequency. 
-    // Uses 1.999 factor on Y-axis to avoid integer-multiple aliasing (Moire patterns).
-	float inv_densY = 1.0 / densY;
-    float2 omega = PI * float2(BUFFER_WIDTH * densX, BUFFER_HEIGHT * inv_densY * 1.999);
+    // Sample source texture (backbuffer)
+    float3 texel = tex2D(ReShade::BackBuffer, i.uv).rgb;
 
-    // 3. Sine Wave Generation
-    // Project UVs into periodic sine space for smooth transitions
-    float2 tex_omega_product = uv * omega;
-    float2 sine_wave = sin(tex_omega_product);
+    // Map texture coordinates to sine wave phase
+    float2 tex_omega_product = i.uv * i.omega;
+
+    // Generate periodic luminosity fluctuation [-1.0, 1.0]
+    // Apply -0.5 * PI phase shift to align wave troughs (dark lines) with pixel boundaries
+    float2 sine_wave = sin(tex_omega_product - 0.5 * PI);
+
+    // 1. Modulate sine wave intensity per axis
+    // 2. Linear accumulation of horizontal/vertical waves for final gain scalar
+    float total_sine_fluctuation = (sinCompX * sine_wave.x) + (sinCompY * sine_wave.y);
+
+    // Luma-dependent weighting: calculate distance from mid-tone (0.5)
+    // Scanline depth is maximized at 0.5 luma and attenuated at extremes to simulate CRT bloom
+    float3 dist = abs(texel - 0.5) * 2.0;
     
-    // 4. Amplitude Modulation
-    float2 scaled_sine_wave = float2(sinCompX, sinCompY) * sine_wave;
-    
-    // 5. Signal Summation
-    // Combine X and Y oscillations into a single scalar fluctuation value
-    float total_sine_fluctuation = scaled_sine_wave.x + scaled_sine_wave.y;
+    // Composite final brightness:
+    // Apply modulation gain adjusted by local luma distance, then multiply by source
+    float3 final_brightness = 1.0 + total_sine_fluctuation * (1.0 - dist);
 
-    // 6. Luma-Aware Perceptual Weighting (dist)
-    // Calculates squared distance from neutral gray (0.5).
-    // This ensures scanlines fade out in pure blacks and pure whites.
-    float3 dist_linear = abs(res - 0.5) * 2.0;
-    float3 dist = dist_linear * dist_linear;
-
-    // 7. Final Luma Modulation
-    // Component A: Chroma attenuation based on grid intensity
-    // Component B: Dynamic sine oscillation
-    // Both components are gated by the 'weight' (1.0 - dist) for perceptual balance.
-    float3 weight = 1.0 - dist;
-    float3 final_brightness = 1.0 - ((sinCompX + sinCompY) * weight * colAtten) + total_sine_fluctuation * weight;
-
-    // 8. Output Composition
-    float3 scanline = res * final_brightness;
+    float3 scanline = texel * final_brightness;
 
     return float4(scanline, 1.0);
 }
 
-// --- Technique Definition ---
-
-technique Modern_Sine_Scanlines 
-{
-    pass P0 
-    {
-        VertexShader = PostProcessVS;
-        PixelShader = PS_SineScanline;
+// --- Techniques ---
+technique Scanline_Modern {
+    pass {
+        VertexShader = VS_Scanline;
+        PixelShader = PS_Scanline;
     }
 }
