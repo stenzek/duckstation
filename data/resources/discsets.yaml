@@ -2213,6 +2213,11 @@
   serials:
     - SLPS-02785
     - SLPS-02786
+- name: "Persona 2 - Eternal Punishment"
+  saveName: "Persona 2 - Eternal Punishment (USA)"
+  serials:
+    - SLUS-01158
+    - SLUS-01339
 - name: "Pixygarden"
   saveName: "Pixygarden (Japan)"
   serials:
