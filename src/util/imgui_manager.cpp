@@ -794,7 +794,7 @@ void ImGuiManager::DestroyTextures(bool recycle)
       if (recycle)
         g_gpu_device->RecycleTexture(std::move(gtex));
     }
-  
+
     if (tex->Status == ImTextureStatus_WantDestroy)
       tex->SetStatus(ImTextureStatus_Destroyed);
     else
@@ -1378,8 +1378,11 @@ void ImGuiManager::DrawOSDMessages(Timer::Value current_time)
       actual_y = layout_pos.y;
     }
 
-    if (actual_y >= ImGui::GetIO().DisplaySize.y || (msg.type >= OSDMessageType::Info && !show_messages))
+    if (actual_y >= ImGui::GetIO().DisplaySize.y || (msg.type >= OSDMessageType::Info && !show_messages) ||
+        opacity == 0.0f)
+    {
       break;
+    }
 
     const ImVec2 pos = ImVec2(layout_pos.x, actual_y);
     const ImVec2 pos_max = ImVec2(pos.x + box_width, pos.y + box_height);
