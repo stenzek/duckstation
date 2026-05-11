@@ -80,10 +80,7 @@ bool CDImageCCD::OpenAndParse(const char* filename, Error* error)
   std::string sub_filename(Path::ReplaceExtension(filename, "sub"));
   m_sub_file = FileSystem::OpenSharedCFile(sub_filename.c_str(), "rb", FileSystem::FileShareMode::DenyWrite, error);
   if (!m_sub_file)
-  {
-    Error::AddPrefixFmt(error, "Failed to open sub file '{}': ", Path::GetFileName(sub_filename));
-    return false;
-  }
+    WARNING_LOG("Failed to open sub file '{}': ", Path::GetFileName(sub_filename));
 
   // Parse CCD INI-style file into sections.
   StringMap<StringMap<std::string>> sections;
@@ -417,7 +414,7 @@ bool CDImageCCD::ReadSectorFromIndex(void* buffer, const Index& index, LBA lba_i
 bool CDImageCCD::ReadSubChannelQ(SubChannelQ* subq, const Index& index, LBA lba_in_index)
 {
   // For virtual pregaps (not in file), fall back to generated subchannel Q.
-  if (index.is_pregap && index.file_sector_size == 0)
+  if (!m_sub_file || (index.is_pregap && index.file_sector_size == 0))
     return CDImage::ReadSubChannelQ(subq, index, lba_in_index);
 
   // Q subchannel is the second 12-byte block (P, Q, R, S, T, U, V, W).
@@ -440,7 +437,7 @@ bool CDImageCCD::ReadSubChannelQ(SubChannelQ* subq, const Index& index, LBA lba_
 
 bool CDImageCCD::HasSubchannelData() const
 {
-  return true;
+  return (m_sub_file != nullptr);
 }
 
 s64 CDImageCCD::GetSizeOnDisk() const
