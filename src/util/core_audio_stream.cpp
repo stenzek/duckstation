@@ -461,6 +461,7 @@ void CoreAudioStream::DestroyBuffer()
   m_float_buffer.reset();
   m_buffer.reset();
   m_buffer_size = 0;
+  m_staging_buffer_pos = 0;
   m_wpos.store(0, std::memory_order_release);
   m_rpos.store(0, std::memory_order_release);
 }
