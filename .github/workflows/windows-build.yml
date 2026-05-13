@@ -10,7 +10,7 @@ permissions:
 jobs:
   windows-build:
     name: "${{ matrix.name }}"
-    runs-on: windows-2022
+    runs-on: windows-2025-vs2026
     timeout-minutes: 240
     strategy:
       matrix:
@@ -106,7 +106,7 @@ jobs:
     - name: Compile ${{ matrix.name }} Release Build
       shell: cmd
       run: |
-        call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.vcvars }}
+        call "C:\Program Files\Microsoft Visual Studio\18\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.vcvars }}
         msbuild duckstation.sln -t:Build -p:Platform=${{ matrix.platform }};Configuration=${{ matrix.config }}
 
     - name: Create ${{ matrix.name }} Symbols Archive

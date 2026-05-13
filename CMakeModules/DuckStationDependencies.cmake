@@ -61,7 +61,7 @@ find_package(zstd 1.5.7 REQUIRED
              NO_DEFAULT_PATH PATHS "${DEPS_PATH}/lib/cmake/zstd")
 find_package(WebP 1.6.0 REQUIRED
              NO_DEFAULT_PATH PATHS "${DEPS_PATH}/share/WebP/cmake")
-find_package(PNG 1.6.56 REQUIRED
+find_package(PNG 1.6.58 REQUIRED
              NO_DEFAULT_PATH PATHS "${DEPS_PATH}/lib/cmake/PNG")
 find_package(libjpeg-turbo 3.1.4.1 REQUIRED
              NO_DEFAULT_PATH PATHS "${DEPS_PATH}/lib/cmake/libjpeg-turbo")
@@ -100,11 +100,11 @@ set(QT_NO_PRIVATE_MODULE_WARNING ON)
 
 # Should be prebuilt.
 if(LINUX)
-  find_package(Qt6 6.11.0 REQUIRED
+  find_package(Qt6 6.11.1 REQUIRED
                 NO_DEFAULT_PATH PATHS "${DEPS_PATH}/lib/cmake/Qt6"
                 COMPONENTS Core Gui GuiPrivate Widgets LinguistTools DBus)
 else()
-  find_package(Qt6 6.11.0 REQUIRED
+  find_package(Qt6 6.11.1 REQUIRED
                 NO_DEFAULT_PATH PATHS "${DEPS_PATH}/lib/cmake/Qt6"
                 COMPONENTS Core Gui GuiPrivate Widgets LinguistTools)
 endif()
