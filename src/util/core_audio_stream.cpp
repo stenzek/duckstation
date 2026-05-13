@@ -634,13 +634,7 @@ void CoreAudioStream::StretchAllocate()
     soundtouch_setTempo(m_soundtouch, m_nominal_rate);
 
   m_stretch_reset = STRETCH_RESET_THRESHOLD;
-  m_stretch_inactive = false;
-  m_stretch_ok_count = 0;
-  m_dynamic_target_usage = 0.0f;
-  m_average_position = 0;
-  m_average_available = 0;
-
-  m_staging_buffer_pos = 0;
+  m_stretch_reset_time = Timer::GetCurrentValue();
 }
 
 void CoreAudioStream::StretchUpdateParameters(const AudioStreamParameters& params)
@@ -686,6 +680,14 @@ void CoreAudioStream::StretchDestroy()
     soundtouch_destroyInstance(m_soundtouch);
     m_soundtouch = nullptr;
   }
+
+  m_stretch_reset = 0;
+  m_stretch_reset_time = 0;
+  m_stretch_inactive = false;
+  m_stretch_ok_count = 0;
+  m_dynamic_target_usage = 0.0f;
+  m_average_position = 0;
+  m_average_available = 0;
 }
 
 void CoreAudioStream::StretchWriteBlock(const float* block)
