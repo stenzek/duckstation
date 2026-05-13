@@ -5738,7 +5738,6 @@ bool FullscreenUI::ProgressDialog::ProgressCallbackImpl::IsCancelled() const
 
 std::string_view FullscreenUI::ProgressDialog::ProgressCallbackImpl::GetIconString(PromptIcon icon)
 {
-  std::string_view icon_str;
   switch (icon)
   {
     case PromptIcon::Error:
