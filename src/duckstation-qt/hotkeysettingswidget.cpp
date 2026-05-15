@@ -145,10 +145,12 @@ void HotkeySettingsWidget::createButtons()
     QHBoxLayout* row_layout = new QHBoxLayout(row);
     row_layout->setContentsMargins(LR_MARGIN, TB_MARGIN, LR_MARGIN, TB_MARGIN);
 
-    row_layout->addWidget(new QLabel(qApp->translate("Hotkeys", hotkey.display_name), row));
+    const QString display_name = qApp->translate("Hotkeys", hotkey.display_name);
+    row_layout->addWidget(new QLabel(display_name, row));
 
-    InputBindingWidget* const bind = new InputBindingWidget(row, m_dialog->getEditingSettingsInterface(),
-                                                            InputBindingInfo::Type::Button, "Hotkeys", hotkey.name);
+    InputBindingWidget* const bind =
+      new InputBindingWidget(row, m_dialog->getEditingSettingsInterface(), InputBindingInfo::Type::Button, "Hotkeys",
+                             hotkey.name, display_name);
     bind->setFixedWidth(300);
     row_layout->addWidget(bind);
   }

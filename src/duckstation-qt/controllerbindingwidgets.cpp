@@ -505,7 +505,10 @@ void ControllerBindingWidget::bindBindingWidgets(QWidget* parent)
         continue;
       }
 
-      widget->initialize(sif, bi.type, config_section, bi.name);
+      widget->initialize(sif, bi.type, config_section, bi.name,
+                         tr("Controller %1 %2")
+                           .arg(m_port_number + 1)
+                           .arg(QtUtils::StringViewToQString(m_controller_info->GetBindingDisplayName(bi))));
     }
   }
 }
@@ -621,7 +624,8 @@ ControllerMacroEditWidget::ControllerMacroEditWidget(ControllerMacroWidget* pare
   updateFrequencyText();
 
   m_ui.trigger->initialize(dialog->getEditingSettingsInterface(), InputBindingInfo::Type::Macro, section,
-                           fmt::format("Macro{}", index + 1u));
+                           fmt::format("Macro{}", index + 1u),
+                           tr("Controller %1 Macro %2").arg(m_bwidget->getPortNumber() + 1).arg(index + 1));
 
   connect(m_ui.increaseFrequency, &QAbstractButton::clicked, this, [this]() { modFrequency(1); });
   connect(m_ui.decreateFrequency, &QAbstractButton::clicked, this, [this]() { modFrequency(-1); });

@@ -37,14 +37,15 @@ InputBindingWidget::InputBindingWidget(QWidget* parent) : QPushButton(parent)
 }
 
 InputBindingWidget::InputBindingWidget(QWidget* parent, SettingsInterface* sif, InputBindingInfo::Type bind_type,
-                                       std::string section_name, std::string key_name)
+                                       std::string section_name, std::string key_name,
+                                       const QString display_name /* = */)
   : QPushButton(parent)
 {
   setFixedWidth(220);
 
   connect(this, &QPushButton::clicked, this, &InputBindingWidget::onClicked);
 
-  initialize(sif, bind_type, std::move(section_name), std::move(key_name));
+  initialize(sif, bind_type, std::move(section_name), std::move(key_name), display_name);
 }
 
 InputBindingWidget::~InputBindingWidget()
@@ -76,12 +77,13 @@ void InputBindingWidget::logInputEvent(InputBindingInfo::Type bind_type, InputBi
 }
 
 void InputBindingWidget::initialize(SettingsInterface* sif, InputBindingInfo::Type bind_type, std::string section_name,
-                                    std::string key_name)
+                                    std::string key_name, const QString& display_name)
 {
   m_sif = sif;
   m_bind_type = bind_type;
   m_section_name = std::move(section_name);
   m_key_name = std::move(key_name);
+  m_display_name = display_name;
   reloadBinding();
 }
 
@@ -118,7 +120,7 @@ void InputBindingWidget::updateTextAndToolTip()
   {
     m_full_text.clear();
     setText(QString());
-    setToolTip(QStringLiteral("%1\n\n%2").arg(tr("No binding set.")).arg(tr(help_text)));
+    setToolTip(QStringLiteral("%1:\n\n%2\n\n%3").arg(m_display_name).arg(tr("No binding set.")).arg(tr(help_text)));
   }
   else
   {
@@ -143,7 +145,11 @@ void InputBindingWidget::updateTextAndToolTip()
       setText(tr("%n bindings", nullptr, static_cast<int>(m_bindings.size())));
     }
     // keep the full thing for the tooltip
-    setToolTip(QStringLiteral("%1\n%2\n%3").arg(bindings_qstr).arg(tr(help_text)).arg(tr(help_clear_text)));
+    setToolTip(QStringLiteral("%1:\n\n%2\n%3\n%4")
+                 .arg(m_display_name)
+                 .arg(bindings_qstr)
+                 .arg(tr(help_text))
+                 .arg(tr(help_clear_text)));
   }
 }
 
@@ -486,7 +492,7 @@ void InputBindingWidget::unhookInputManager()
 void InputBindingWidget::openDialog()
 {
   InputBindingDialog* const dlg =
-    new InputBindingDialog(m_sif, m_bind_type, m_section_name, m_key_name, m_bindings, this);
+    new InputBindingDialog(m_sif, m_bind_type, m_section_name, m_key_name, m_bindings, m_display_name, this);
   dlg->setAttribute(Qt::WA_DeleteOnClose);
   connect(dlg, &QDialog::finished, this, &InputBindingWidget::reloadBinding);
   dlg->open();
