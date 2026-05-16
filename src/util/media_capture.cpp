@@ -710,6 +710,12 @@ private:
   VISIT_MF_IMPORTS(DECLARE_IMPORT);
 #undef DECLARE_IMPORT
 
+#define X(X) {#X, reinterpret_cast<void**>(&wrap_##X)},
+  static inline const DynamicLibrary::SymbolTable s_mfplat_symbols[] = {VISIT_MFPLAT_IMPORTS(X)};
+  static inline const DynamicLibrary::SymbolTable s_mfreadwrite_symbols[] = {VISIT_MFREADWRITE_IMPORTS(X)};
+  static inline const DynamicLibrary::SymbolTable s_mf_symbols[] = {VISIT_MF_IMPORTS(X)};
+#undef X
+
   static bool LoadMediaFoundation(Error* error);
   static void UnloadMediaFoundation();
 
@@ -760,17 +766,10 @@ bool MediaCaptureMF::LoadMediaFoundation(Error* error)
   result = result && s_mfreadwrite_library.Open("mfreadwrite.dll", error);
   result = result && s_mf_library.Open("mf.dll", error);
 
-#define RESOLVE_IMPORT(X) result = result && s_mfplat_library.GetSymbol(#X, &wrap_##X);
-  VISIT_MFPLAT_IMPORTS(RESOLVE_IMPORT);
-#undef RESOLVE_IMPORT
-
-#define RESOLVE_IMPORT(X) result = result && s_mfreadwrite_library.GetSymbol(#X, &wrap_##X);
-  VISIT_MFREADWRITE_IMPORTS(RESOLVE_IMPORT);
-#undef RESOLVE_IMPORT
-
-#define RESOLVE_IMPORT(X) result = result && s_mf_library.GetSymbol(#X, &wrap_##X);
-  VISIT_MF_IMPORTS(RESOLVE_IMPORT);
-#undef RESOLVE_IMPORT
+  result = result && s_mfplat_library.ResolveSymbols(s_mfplat_symbols, std::size(s_mfplat_symbols), error);
+  result =
+    result && s_mfreadwrite_library.ResolveSymbols(s_mfreadwrite_symbols, std::size(s_mfreadwrite_symbols), error);
+  result = result && s_mf_library.ResolveSymbols(s_mf_symbols, std::size(s_mf_symbols), error);
 
   HRESULT hr;
   if (result && FAILED(hr = wrap_MFStartup(MF_VERSION, MFSTARTUP_NOSOCKET))) [[unlikely]]
@@ -794,11 +793,9 @@ bool MediaCaptureMF::LoadMediaFoundation(Error* error)
 
 void MediaCaptureMF::UnloadMediaFoundation()
 {
-#define CLEAR_IMPORT(X) wrap_##X = nullptr;
-  VISIT_MF_IMPORTS(CLEAR_IMPORT);
-  VISIT_MFREADWRITE_IMPORTS(CLEAR_IMPORT);
-  VISIT_MFPLAT_IMPORTS(CLEAR_IMPORT);
-#undef CLEAR_IMPORT
+  DynamicLibrary::ClearSymbols(s_mf_symbols);
+  DynamicLibrary::ClearSymbols(s_mfreadwrite_symbols);
+  DynamicLibrary::ClearSymbols(s_mfplat_symbols);
 
   s_mf_library.Close();
   s_mfreadwrite_library.Close();
@@ -1980,25 +1977,19 @@ bool MediaCaptureFFmpeg::LoadFFmpeg(Error* error)
   result = result && open_dynlib(s_swscale_library, "swscale", LIBSWSCALE_VERSION_MAJOR);
   result = result && open_dynlib(s_swresample_library, "swresample", LIBSWRESAMPLE_VERSION_MAJOR);
 
-#define RESOLVE_IMPORT(X) result = result && s_avcodec_library.GetSymbol(#X, &wrap_##X);
-  VISIT_AVCODEC_IMPORTS(RESOLVE_IMPORT);
-#undef RESOLVE_IMPORT
+#define X(X) {#X, reinterpret_cast<void**>(&wrap_##X)},
+  static const DynamicLibrary::SymbolTable avcodec_symbols[] = {VISIT_AVCODEC_IMPORTS(X)};
+  static const DynamicLibrary::SymbolTable avformat_symbols[] = {VISIT_AVFORMAT_IMPORTS(X)};
+  static const DynamicLibrary::SymbolTable avutil_symbols[] = {VISIT_AVUTIL_IMPORTS(X)};
+  static const DynamicLibrary::SymbolTable swscale_symbols[] = {VISIT_SWSCALE_IMPORTS(X)};
+  static const DynamicLibrary::SymbolTable swresample_symbols[] = {VISIT_SWRESAMPLE_IMPORTS(X)};
+#undef X
 
-#define RESOLVE_IMPORT(X) result = result && s_avformat_library.GetSymbol(#X, &wrap_##X);
-  VISIT_AVFORMAT_IMPORTS(RESOLVE_IMPORT);
-#undef RESOLVE_IMPORT
-
-#define RESOLVE_IMPORT(X) result = result && s_avutil_library.GetSymbol(#X, &wrap_##X);
-  VISIT_AVUTIL_IMPORTS(RESOLVE_IMPORT);
-#undef RESOLVE_IMPORT
-
-#define RESOLVE_IMPORT(X) result = result && s_swscale_library.GetSymbol(#X, &wrap_##X);
-  VISIT_SWSCALE_IMPORTS(RESOLVE_IMPORT);
-#undef RESOLVE_IMPORT
-
-#define RESOLVE_IMPORT(X) result = result && s_swresample_library.GetSymbol(#X, &wrap_##X);
-  VISIT_SWRESAMPLE_IMPORTS(RESOLVE_IMPORT);
-#undef RESOLVE_IMPORT
+  result = result && s_avcodec_library.ResolveSymbols(avcodec_symbols, std::size(avcodec_symbols));
+  result = result && s_avformat_library.ResolveSymbols(avformat_symbols, std::size(avformat_symbols));
+  result = result && s_avutil_library.ResolveSymbols(avutil_symbols, std::size(avutil_symbols));
+  result = result && s_swscale_library.ResolveSymbols(swscale_symbols, std::size(swscale_symbols));
+  result = result && s_swresample_library.ResolveSymbols(swresample_symbols, std::size(swresample_symbols));
 
   if (result)
   {
