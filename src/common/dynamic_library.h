@@ -1,8 +1,9 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #pragma once
 
+#include <span>
 #include <string>
 
 class Error;
@@ -66,6 +67,27 @@ public:
 
   /// Returns the opaque OS-specific handle.
   void* GetHandle() const { return m_handle; }
+
+  /// Symbol load helper.
+  struct SymbolTable
+  {
+    const char* name;
+    void** ptr;
+  };
+  struct OptionalSymbolTable
+  {
+    const char* name;
+    void** ptr;
+    bool required;
+  };
+  bool ResolveSymbols(const SymbolTable* symbols, size_t count, Error* error = nullptr) const;
+  bool ResolveSymbols(const OptionalSymbolTable* symbols, size_t count, Error* error = nullptr) const;
+  bool ResolveSymbols(const std::span<const SymbolTable> symbols, Error* error = nullptr) const;
+  bool ResolveSymbols(const std::span<const OptionalSymbolTable> symbols, Error* error = nullptr) const;
+  static void ClearSymbols(const SymbolTable* symbols, size_t count);
+  static void ClearSymbols(const OptionalSymbolTable* symbols, size_t count);
+  static void ClearSymbols(const std::span<const SymbolTable> symbols);
+  static void ClearSymbols(const std::span<const OptionalSymbolTable> symbols);
 
   /// Move assignment, transfer ownership.
   DynamicLibrary& operator=(DynamicLibrary&& move);

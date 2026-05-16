@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "common/dynamic_library.h"
@@ -162,6 +162,75 @@ void* DynamicLibrary::GetSymbolAddress(const char* name) const
 #else
   return reinterpret_cast<void*>(dlsym(m_handle, name));
 #endif
+}
+
+bool DynamicLibrary::ResolveSymbols(const SymbolTable* symbols, size_t count, Error* error /* = nullptr */) const
+{
+  for (size_t i = 0; i < count; i++)
+  {
+    if (!GetSymbol(symbols[i].name, symbols[i].ptr))
+    {
+      Error::SetStringFmt(error, "Failed to load symbol {} from library", symbols[i].name);
+      ClearSymbols(symbols, count);
+      return false;
+    }
+  }
+
+  return true;
+}
+
+bool DynamicLibrary::ResolveSymbols(const OptionalSymbolTable* symbols, size_t count, Error* error /* = nullptr */) const
+{
+  for (size_t i = 0; i < count; i++)
+  {
+    if (!GetSymbol(symbols[i].name, symbols[i].ptr))
+    {
+      if (symbols[i].required)
+      {
+        Error::SetStringFmt(error, "Failed to load required symbol {} from library", symbols[i].name);
+        ClearSymbols(symbols, count);
+        return false;
+      }
+      else
+      {
+        WARNING_LOG("Failed to load optional symbol {} from library", symbols[i].name);
+      }
+    }
+  }
+
+  return true;
+}
+
+bool DynamicLibrary::ResolveSymbols(const std::span<const SymbolTable> symbols, Error* error /*= nullptr*/) const
+{
+  return ResolveSymbols(symbols.data(), symbols.size(), error);
+}
+
+bool DynamicLibrary::ResolveSymbols(const std::span<const OptionalSymbolTable> symbols, Error* error /*= nullptr*/) const
+{
+  return ResolveSymbols(symbols.data(), symbols.size(), error);
+}
+
+void DynamicLibrary::ClearSymbols(const SymbolTable* symbols, size_t count)
+{
+  for (size_t i = 0; i < count; i++)
+    *symbols[i].ptr = nullptr;
+}
+
+void DynamicLibrary::ClearSymbols(const OptionalSymbolTable* symbols, size_t count)
+{
+  for (size_t i = 0; i < count; i++)
+    *symbols[i].ptr = nullptr;
+}
+
+void DynamicLibrary::ClearSymbols(const std::span<const SymbolTable> symbols)
+{
+  ClearSymbols(symbols.data(), symbols.size());
+}
+
+void DynamicLibrary::ClearSymbols(const std::span<const OptionalSymbolTable> symbols)
+{
+  ClearSymbols(symbols.data(), symbols.size());
 }
 
 DynamicLibrary& DynamicLibrary::operator=(DynamicLibrary&& move)
