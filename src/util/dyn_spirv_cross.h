@@ -46,13 +46,15 @@ class Error;
 #define SPIRV_CROSS_MSL_FUNCTIONS(X)
 #endif
 
-namespace dyn_libs {
-extern bool OpenSpirvCross(Error* error);
-
-#define ADD_FUNC(F) extern decltype(&::F) F;
-SPIRV_CROSS_FUNCTIONS(ADD_FUNC)
-SPIRV_CROSS_HLSL_FUNCTIONS(ADD_FUNC)
-SPIRV_CROSS_MSL_FUNCTIONS(ADD_FUNC)
+struct DynSpirvCross
+{
+#define ADD_FUNC(F) decltype(&::F) F;
+  SPIRV_CROSS_FUNCTIONS(ADD_FUNC)
+  SPIRV_CROSS_HLSL_FUNCTIONS(ADD_FUNC)
+  SPIRV_CROSS_MSL_FUNCTIONS(ADD_FUNC)
 #undef ADD_FUNC
 
-} // namespace dyn_libs
+  bool Open(Error* error);
+};
+
+extern DynSpirvCross g_dyn_spirv_cross;

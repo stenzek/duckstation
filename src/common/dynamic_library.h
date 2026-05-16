@@ -39,6 +39,9 @@ public:
   /// Mac: libLIBNAME.MAJOR.MINOR.PATCH.dylib
   static std::string GetVersionedFilename(const char* libname, int major = -1, int minor = -1, int patch = -1);
 
+  /// Returns the path to the specified library name, depending on the platform.
+  static std::string GetBundledLibraryPath(const char* libname, int major = -1, int minor = -1, int patch = -1);
+
   /// Returns true if a module is loaded, otherwise false.
   bool IsOpen() const { return m_handle != nullptr; }
 

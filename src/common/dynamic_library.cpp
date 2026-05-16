@@ -88,6 +88,26 @@ std::string DynamicLibrary::GetVersionedFilename(const char* libname, int major,
 #endif
 }
 
+std::string DynamicLibrary::GetBundledLibraryPath(const char* libname, int major /*= -1*/, int minor /*= -1*/,
+                                                  int patch /*= -1*/)
+{
+  Error error;
+  std::string program_path = FileSystem::GetProgramPath(&error);
+  if (program_path.empty()) [[unlikely]]
+  {
+    ERROR_LOG("Failed to get program path: {}", error.GetDescription());
+    return {};
+  }
+
+#ifdef __APPLE__
+  program_path = Path::Combine(Path::GetDirectory(program_path), ".." FS_OSPATH_SEPARATOR_STR "Frameworks");
+  Path::Canonicalize(&program_path);
+  return Path::Combine(program_path, GetVersionedFilename(libname, major, minor, patch));
+#else
+  return Path::Combine(Path::GetDirectory(program_path), GetVersionedFilename(libname, major, minor, patch));
+#endif
+}
+
 bool DynamicLibrary::Open(const char* filename, Error* error)
 {
 #ifdef _WIN32
@@ -179,7 +199,8 @@ bool DynamicLibrary::ResolveSymbols(const SymbolTable* symbols, size_t count, Er
   return true;
 }
 
-bool DynamicLibrary::ResolveSymbols(const OptionalSymbolTable* symbols, size_t count, Error* error /* = nullptr */) const
+bool DynamicLibrary::ResolveSymbols(const OptionalSymbolTable* symbols, size_t count,
+                                    Error* error /* = nullptr */) const
 {
   for (size_t i = 0; i < count; i++)
   {
@@ -206,7 +227,8 @@ bool DynamicLibrary::ResolveSymbols(const std::span<const SymbolTable> symbols, 
   return ResolveSymbols(symbols.data(), symbols.size(), error);
 }
 
-bool DynamicLibrary::ResolveSymbols(const std::span<const OptionalSymbolTable> symbols, Error* error /*= nullptr*/) const
+bool DynamicLibrary::ResolveSymbols(const std::span<const OptionalSymbolTable> symbols,
+                                    Error* error /*= nullptr*/) const
 {
   return ResolveSymbols(symbols.data(), symbols.size(), error);
 }

@@ -215,10 +215,6 @@ function(add_core_resources target)
 
   add_resources(${target} "resources" ${CMAKE_SOURCE_DIR}/data/resources)
 
-  if(APPLE)
-    # Copy discord-rpc into the bundle
-    get_target_property(DISCORD_RPC_LIBRARY DiscordRPC::discord-rpc IMPORTED_LOCATION_RELEASE)
-    target_sources(${target} PRIVATE "${DISCORD_RPC_LIBRARY}")
-    set_source_files_properties("${DISCORD_RPC_LIBRARY}" PROPERTIES MACOSX_PACKAGE_LOCATION Frameworks)
-  endif()
+  # Copy dynamically-loaded libraries into the bundle.
+  bundle_libraries(${target} DiscordRPC::discord-rpc)
 endfunction()

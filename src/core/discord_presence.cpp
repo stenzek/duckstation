@@ -58,8 +58,7 @@ bool DiscordPresence::OpenDiscordRPC(Error* error)
   if (s_locals.rpc_library.IsOpen())
     return true;
 
-  const std::string libname = DynamicLibrary::GetVersionedFilename("discord-rpc");
-  if (!s_locals.rpc_library.Open(libname.c_str(), error))
+  if (!s_locals.rpc_library.Open(DynamicLibrary::GetBundledLibraryPath("discord-rpc").c_str(), error))
   {
     Error::AddPrefix(error, "Failed to load discord-rpc: ");
     return false;

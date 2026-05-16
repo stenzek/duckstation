@@ -39,11 +39,8 @@ declare -a MANUAL_LIBS=(
 	"libavutil.so.60"
 	"libswscale.so.9"
 	"libswresample.so.6"
-	"libdiscord-rpc.so"
 	"libharfbuzz.so"
 	"libfreetype.so.6"
-	"libshaderc_shared.so"
-	"libspirv-cross-c-shared.so.0"
 )
 
 set -e
@@ -119,6 +116,7 @@ $LINUXDEPLOY --plugin qt --appdir="$OUTDIR" --executable="$BUILDDIR/bin/duckstat
 
 echo "Copying resources into AppDir..."
 cp -a "$BUILDDIR/bin/resources" "$OUTDIR/usr/bin"
+cp "$BUILDDIR/bin/"*.so* "$OUTDIR/usr/bin"
 
 # Restore unstripped deps (for cache).
 rm -fr "$DEPSDIR"
