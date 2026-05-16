@@ -1421,17 +1421,17 @@ void dyn_libs::InitializeShaderc(Error* error)
     return;
   }
 
-#define LOAD_FUNC(F)                                                                                                   \
-  if (!lib.GetSymbol(#F, &F))                                                                                          \
-  {                                                                                                                    \
-    ERROR_LOG("Failed to find function {} in shaderc", #F);                                                            \
-    Error::SetStringFmt(error, "Failed to find function {}", #F);                                                      \
-    CloseShaderc();                                                                                                    \
-    return;                                                                                                            \
-  }
+  static const DynamicLibrary::SymbolTable shaderc_symbols[] = {
+#define SHADERC_SYMBOL(F) {#F, (void**)&F},
+    DYN_SHADERC_FUNCTIONS(SHADERC_SYMBOL)
+#undef SHADERC_SYMBOL
+  };
 
-  DYN_SHADERC_FUNCTIONS(LOAD_FUNC)
-#undef LOAD_FUNC
+  if (!lib.ResolveSymbols(shaderc_symbols, std::size(shaderc_symbols), error))
+  {
+    CloseShaderc();
+    return;
+  }
 
   s_locals.shaderc_compiler = shaderc_compiler_initialize();
   if (!s_locals.shaderc_compiler)
@@ -1491,18 +1491,21 @@ void dyn_libs::InitializeSpirvCross(Error* error)
     return;
   }
 
-#define LOAD_FUNC(F)                                                                                                   \
-  if (!lib.GetSymbol(#F, &F))                                                                                          \
-  {                                                                                                                    \
-    Error::SetStringFmt(error, "Failed to find function {}", #F);                                                      \
-    CloseSpirvCross();                                                                                                 \
-    return;                                                                                                            \
-  }
+  // clang-format off
+  static const DynamicLibrary::SymbolTable spirv_cross_symbols[] = {
+#define SPIRV_CROSS_SYMBOL(F) {#F, (void**)&F},
+    SPIRV_CROSS_FUNCTIONS(SPIRV_CROSS_SYMBOL)
+    SPIRV_CROSS_HLSL_FUNCTIONS(SPIRV_CROSS_SYMBOL)
+    SPIRV_CROSS_MSL_FUNCTIONS(SPIRV_CROSS_SYMBOL)
+#undef SPIRV_CROSS_SYMBOL
+  };
+  // clang-format on
 
-  SPIRV_CROSS_FUNCTIONS(LOAD_FUNC)
-  SPIRV_CROSS_HLSL_FUNCTIONS(LOAD_FUNC)
-  SPIRV_CROSS_MSL_FUNCTIONS(LOAD_FUNC)
-#undef LOAD_FUNC
+  if (!lib.ResolveSymbols(spirv_cross_symbols, std::size(spirv_cross_symbols), error))
+  {
+    CloseShaderc();
+    return;
+  }
 
   s_locals.spirv_cross_library = std::move(lib);
 }
