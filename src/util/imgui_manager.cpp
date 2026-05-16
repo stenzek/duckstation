@@ -1379,7 +1379,7 @@ void ImGuiManager::DrawOSDMessages(Timer::Value current_time)
     }
 
     if (actual_y >= ImGui::GetIO().DisplaySize.y || (msg.type >= OSDMessageType::Info && !show_messages) ||
-        opacity == 0.0f)
+        opacity < (1.0f / 255.0f))
     {
       break;
     }
