@@ -73,6 +73,33 @@ extern "C" {
 
 LOG_CHANNEL(MediaCapture);
 
+#if defined(_WIN32) || !defined(__ANDROID__)
+
+namespace {
+struct Locals
+{
+#ifdef _WIN32
+  DynamicLibrary mfplat_library;
+  DynamicLibrary mfreadwrite_library;
+  DynamicLibrary mf_library;
+  std::once_flag mf_library_once_flag;
+#endif
+
+#ifndef __ANDROID__
+  static inline DynamicLibrary avcodec_library;
+  static inline DynamicLibrary avformat_library;
+  static inline DynamicLibrary avutil_library;
+  static inline DynamicLibrary swscale_library;
+  static inline DynamicLibrary swresample_library;
+  std::once_flag ffmpeg_once_flag;
+#endif
+};
+} // namespace
+
+static Locals s_locals;
+
+#endif
+
 namespace {
 
 static constexpr u32 VIDEO_WIDTH_ALIGNMENT = 8;
@@ -179,9 +206,6 @@ protected:
   std::atomic<u32> m_audio_buffer_size{0};
   u32 m_audio_buffer_write_pos = 0;
   ALIGN_TO_CACHE_LINE u32 m_audio_buffer_read_pos = 0;
-
-  // Shared across all backends.
-  [[maybe_unused]] static inline std::mutex s_load_mutex;
 };
 
 MediaCaptureBase::~MediaCaptureBase() = default;
@@ -718,11 +742,6 @@ private:
 
   static bool LoadMediaFoundation(Error* error);
   static void UnloadMediaFoundation();
-
-  static inline DynamicLibrary s_mfplat_library;
-  static inline DynamicLibrary s_mfreadwrite_library;
-  static inline DynamicLibrary s_mf_library;
-  static inline bool s_library_loaded = false;
 };
 
 struct MediaFoundationVideoCodec
@@ -758,37 +777,36 @@ static constexpr const MediaFoundationAudioCodec s_media_foundation_audio_codecs
 
 bool MediaCaptureMF::LoadMediaFoundation(Error* error)
 {
-  std::unique_lock lock(s_load_mutex);
-  if (s_library_loaded)
+  if (s_locals.mf_library.IsOpen())
     return true;
 
-  bool result = s_mfplat_library.Open("mfplat.dll", error);
-  result = result && s_mfreadwrite_library.Open("mfreadwrite.dll", error);
-  result = result && s_mf_library.Open("mf.dll", error);
+  std::call_once(s_locals.mf_library_once_flag, [&error]() {
+    bool result = s_locals.mfplat_library.Open("mfplat.dll", error);
+    result = result && s_locals.mfreadwrite_library.Open("mfreadwrite.dll", error);
+    result = result && s_locals.mf_library.Open("mf.dll", error);
 
-  result = result && s_mfplat_library.ResolveSymbols(s_mfplat_symbols, std::size(s_mfplat_symbols), error);
-  result =
-    result && s_mfreadwrite_library.ResolveSymbols(s_mfreadwrite_symbols, std::size(s_mfreadwrite_symbols), error);
-  result = result && s_mf_library.ResolveSymbols(s_mf_symbols, std::size(s_mf_symbols), error);
+    result = result && s_locals.mfplat_library.ResolveSymbols(s_mfplat_symbols, error);
+    result = result && s_locals.mfreadwrite_library.ResolveSymbols(s_mfreadwrite_symbols, error);
+    result = result && s_locals.mf_library.ResolveSymbols(s_mf_symbols, error);
 
-  HRESULT hr;
-  if (result && FAILED(hr = wrap_MFStartup(MF_VERSION, MFSTARTUP_NOSOCKET))) [[unlikely]]
+    if (HRESULT hr; result && FAILED(hr = wrap_MFStartup(MF_VERSION, MFSTARTUP_NOSOCKET))) [[unlikely]]
+    {
+      ERROR_LOG("MFStartup() failed with error code {:08X}", hr);
+      Error::SetHResult(error, "MFStartup() failed: ", hr);
+      result = false;
+    }
+
+    if (result)
+      UnloadMediaFoundation();
+  });
+
+  if (!s_locals.mf_library.IsOpen())
   {
-    Error::SetHResult(error, "MFStartup() failed: ", hr);
-    result = false;
+    Error::AddPrefix(error, TRANSLATE_SV("MediaCapture", "Failed to load Media Foundation libraries: "));
+    return false;
   }
 
-  if (result) [[likely]]
-  {
-    s_library_loaded = true;
-    std::atexit(&MediaCaptureMF::UnloadMediaFoundation);
-    return true;
-  }
-
-  UnloadMediaFoundation();
-
-  Error::AddPrefix(error, TRANSLATE_SV("MediaCapture", "Failed to load Media Foundation libraries: "));
-  return false;
+  return true;
 }
 
 void MediaCaptureMF::UnloadMediaFoundation()
@@ -797,10 +815,9 @@ void MediaCaptureMF::UnloadMediaFoundation()
   DynamicLibrary::ClearSymbols(s_mfreadwrite_symbols);
   DynamicLibrary::ClearSymbols(s_mfplat_symbols);
 
-  s_mf_library.Close();
-  s_mfreadwrite_library.Close();
-  s_mfplat_library.Close();
-  s_library_loaded = false;
+  s_locals.mf_library.Close();
+  s_locals.mfreadwrite_library.Close();
+  s_locals.mfplat_library.Close();
 }
 
 #undef VISIT_MF_IMPORTS
@@ -1940,65 +1957,57 @@ private:
   VISIT_SWRESAMPLE_IMPORTS(DECLARE_IMPORT);
 #undef DECLARE_IMPORT
 
+#define X(X) {#X, reinterpret_cast<void**>(&wrap_##X)},
+  static inline const DynamicLibrary::SymbolTable s_avcodec_symbols[] = {VISIT_AVCODEC_IMPORTS(X)};
+  static inline const DynamicLibrary::SymbolTable s_avformat_symbols[] = {VISIT_AVFORMAT_IMPORTS(X)};
+  static inline const DynamicLibrary::SymbolTable s_avutil_symbols[] = {VISIT_AVUTIL_IMPORTS(X)};
+  static inline const DynamicLibrary::SymbolTable s_swscale_symbols[] = {VISIT_SWSCALE_IMPORTS(X)};
+  static inline const DynamicLibrary::SymbolTable s_swresample_symbols[] = {VISIT_SWRESAMPLE_IMPORTS(X)};
+#undef X
+
   static bool LoadFFmpeg(Error* error);
   static void UnloadFFmpeg();
-
-  static inline DynamicLibrary s_avcodec_library;
-  static inline DynamicLibrary s_avformat_library;
-  static inline DynamicLibrary s_avutil_library;
-  static inline DynamicLibrary s_swscale_library;
-  static inline DynamicLibrary s_swresample_library;
-  static inline bool s_library_loaded = false;
 };
 
 bool MediaCaptureFFmpeg::LoadFFmpeg(Error* error)
 {
-  std::unique_lock lock(s_load_mutex);
-  if (s_library_loaded)
+  if (s_locals.avcodec_library.IsOpen())
     return true;
 
-  static constexpr auto open_dynlib = [](DynamicLibrary& lib, const char* name, int major_version) {
-    Error error;
-    const std::string full_name = DynamicLibrary::GetVersionedFilename(name, major_version);
-    if (!lib.Open(full_name.c_str(), &error))
-    {
-      ERROR_LOG("Failed to open {}: {}", name, error.GetDescription());
-      return false;
-    }
+  std::call_once(s_locals.ffmpeg_once_flag, []() {
+    static constexpr auto open_dynlib = [](DynamicLibrary& lib, const char* name,
+                                           std::span<const DynamicLibrary::SymbolTable> symbols, int major_version) {
+      Error error;
+      const std::string full_name = DynamicLibrary::GetVersionedFilename(name, major_version);
+      if (!lib.Open(full_name.c_str(), &error))
+      {
+        ERROR_LOG("Failed to open {}: {}", name, error.GetDescription());
+        return false;
+      }
 
+      if (!lib.ResolveSymbols(symbols, &error))
+      {
+        ERROR_LOG("Failed to resolve symbols for {}: {}", name, error.GetDescription());
+        return false;
+      }
+
+      return true;
+    };
+
+    bool result = open_dynlib(s_locals.avutil_library, "avutil", s_avutil_symbols, LIBAVUTIL_VERSION_MAJOR);
+    result = result && open_dynlib(s_locals.avcodec_library, "avcodec", s_avcodec_symbols, LIBAVCODEC_VERSION_MAJOR);
+    result =
+      result && open_dynlib(s_locals.avformat_library, "avformat", s_avformat_symbols, LIBAVFORMAT_VERSION_MAJOR);
+    result = result && open_dynlib(s_locals.swscale_library, "swscale", s_swscale_symbols, LIBSWSCALE_VERSION_MAJOR);
+    result = result &&
+             open_dynlib(s_locals.swresample_library, "swresample", s_swresample_symbols, LIBSWRESAMPLE_VERSION_MAJOR);
+
+    if (!result)
+      UnloadFFmpeg();
+  });
+
+  if (s_locals.avcodec_library.IsOpen())
     return true;
-  };
-
-  bool result = true;
-
-  result = result && open_dynlib(s_avutil_library, "avutil", LIBAVUTIL_VERSION_MAJOR);
-  result = result && open_dynlib(s_avcodec_library, "avcodec", LIBAVCODEC_VERSION_MAJOR);
-  result = result && open_dynlib(s_avformat_library, "avformat", LIBAVFORMAT_VERSION_MAJOR);
-  result = result && open_dynlib(s_swscale_library, "swscale", LIBSWSCALE_VERSION_MAJOR);
-  result = result && open_dynlib(s_swresample_library, "swresample", LIBSWRESAMPLE_VERSION_MAJOR);
-
-#define X(X) {#X, reinterpret_cast<void**>(&wrap_##X)},
-  static const DynamicLibrary::SymbolTable avcodec_symbols[] = {VISIT_AVCODEC_IMPORTS(X)};
-  static const DynamicLibrary::SymbolTable avformat_symbols[] = {VISIT_AVFORMAT_IMPORTS(X)};
-  static const DynamicLibrary::SymbolTable avutil_symbols[] = {VISIT_AVUTIL_IMPORTS(X)};
-  static const DynamicLibrary::SymbolTable swscale_symbols[] = {VISIT_SWSCALE_IMPORTS(X)};
-  static const DynamicLibrary::SymbolTable swresample_symbols[] = {VISIT_SWRESAMPLE_IMPORTS(X)};
-#undef X
-
-  result = result && s_avcodec_library.ResolveSymbols(avcodec_symbols, std::size(avcodec_symbols));
-  result = result && s_avformat_library.ResolveSymbols(avformat_symbols, std::size(avformat_symbols));
-  result = result && s_avutil_library.ResolveSymbols(avutil_symbols, std::size(avutil_symbols));
-  result = result && s_swscale_library.ResolveSymbols(swscale_symbols, std::size(swscale_symbols));
-  result = result && s_swresample_library.ResolveSymbols(swresample_symbols, std::size(swresample_symbols));
-
-  if (result)
-  {
-    s_library_loaded = true;
-    std::atexit(&MediaCaptureFFmpeg::UnloadFFmpeg);
-    return true;
-  }
-
-  UnloadFFmpeg();
 
   Error::SetStringFmt(error,
                       TRANSLATE_FS("MediaCapture",
@@ -2017,20 +2026,17 @@ bool MediaCaptureFFmpeg::LoadFFmpeg(Error* error)
 
 void MediaCaptureFFmpeg::UnloadFFmpeg()
 {
-#define CLEAR_IMPORT(X) wrap_##X = nullptr;
-  VISIT_AVCODEC_IMPORTS(CLEAR_IMPORT);
-  VISIT_AVFORMAT_IMPORTS(CLEAR_IMPORT);
-  VISIT_AVUTIL_IMPORTS(CLEAR_IMPORT);
-  VISIT_SWSCALE_IMPORTS(CLEAR_IMPORT);
-  VISIT_SWRESAMPLE_IMPORTS(CLEAR_IMPORT);
-#undef CLEAR_IMPORT
+  DynamicLibrary::ClearSymbols(s_avcodec_symbols);
+  DynamicLibrary::ClearSymbols(s_avformat_symbols);
+  DynamicLibrary::ClearSymbols(s_avutil_symbols);
+  DynamicLibrary::ClearSymbols(s_swscale_symbols);
+  DynamicLibrary::ClearSymbols(s_swresample_symbols);
 
-  s_swresample_library.Close();
-  s_swscale_library.Close();
-  s_avutil_library.Close();
-  s_avformat_library.Close();
-  s_avcodec_library.Close();
-  s_library_loaded = false;
+  s_locals.avcodec_library.Close();
+  s_locals.avformat_library.Close();
+  s_locals.avutil_library.Close();
+  s_locals.swscale_library.Close();
+  s_locals.swresample_library.Close();
 }
 
 #undef VISIT_AVCODEC_IMPORTS
