@@ -37,9 +37,7 @@ extern "C" {
 namespace VulkanLoader {
 
 static bool LoadVulkanLibrary(WindowInfoType wtype, Error* error);
-static void ResetModuleFunctions();
 static bool LoadInstanceFunctions(VkInstance instance, Error* error);
-static void ResetInstanceFunctions();
 static void UnloadVulkanLibrary();
 
 static bool LockedCreateVulkanInstance(WindowInfoType wtype, bool* request_debug_instance, Error* error);
@@ -66,6 +64,24 @@ struct Locals
   bool is_debug_instance = false;
 
   std::mutex mutex;
+};
+
+static const DynamicLibrary::OptionalSymbolTable s_vulkan_module_entry_points[] = {
+#define VULKAN_MODULE_ENTRY_POINT(name, required) {#name, reinterpret_cast<void**>(&name), required},
+#include "vulkan_entry_points.inl"
+#undef VULKAN_MODULE_ENTRY_POINT
+};
+
+static const DynamicLibrary::OptionalSymbolTable s_vulkan_instance_entry_points[] = {
+#define VULKAN_INSTANCE_ENTRY_POINT(name, required) {#name, reinterpret_cast<void**>(&name), required},
+#include "vulkan_entry_points.inl"
+#undef VULKAN_INSTANCE_ENTRY_POINT
+};
+
+static const DynamicLibrary::OptionalSymbolTable s_vulkan_device_entry_points[] = {
+#define VULKAN_DEVICE_ENTRY_POINT(name, required) {#name, reinterpret_cast<void**>(&name), required},
+#include "vulkan_entry_points.inl"
+#undef VULKAN_DEVICE_ENTRY_POINT
 };
 
 } // namespace
@@ -98,24 +114,9 @@ bool VulkanLoader::LoadVulkanLibrary(WindowInfoType wtype, Error* error)
   }
 #endif
 
-  bool required_functions_missing = false;
-  const auto load_function = [&error, &required_functions_missing](PFN_vkVoidFunction* func_ptr, const char* name,
-                                                                   bool is_required) {
-    if (!s_locals.library.GetSymbol(name, func_ptr) && is_required && !required_functions_missing)
-    {
-      Error::SetStringFmt(error, "Failed to load required module function {}", name);
-      required_functions_missing = true;
-    }
-  };
-
-#define VULKAN_MODULE_ENTRY_POINT(name, required)                                                                      \
-  load_function(reinterpret_cast<PFN_vkVoidFunction*>(&name), #name, required);
-#include "vulkan_entry_points.inl"
-#undef VULKAN_MODULE_ENTRY_POINT
-
-  if (required_functions_missing)
+  if (!s_locals.library.ResolveSymbols(s_vulkan_module_entry_points, error))
   {
-    ResetModuleFunctions();
+    DynamicLibrary::ClearSymbols(s_vulkan_module_entry_points);
     s_locals.library.Close();
     return false;
   }
@@ -125,34 +126,21 @@ bool VulkanLoader::LoadVulkanLibrary(WindowInfoType wtype, Error* error)
 
 void VulkanLoader::UnloadVulkanLibrary()
 {
-  ResetModuleFunctions();
+  DynamicLibrary::ClearSymbols(s_vulkan_module_entry_points);
   s_locals.library.Close();
-}
-
-void VulkanLoader::ResetModuleFunctions()
-{
-#define VULKAN_MODULE_ENTRY_POINT(name, required) name = nullptr;
-#include "vulkan_entry_points.inl"
-#undef VULKAN_MODULE_ENTRY_POINT
 }
 
 bool VulkanLoader::LoadInstanceFunctions(VkInstance instance, Error* error)
 {
-  bool required_functions_missing = false;
-  const auto load_function = [&instance, &error, &required_functions_missing](PFN_vkVoidFunction* func_ptr,
-                                                                              const char* name, bool is_required) {
-    *func_ptr = vkGetInstanceProcAddr(instance, name);
-    if (!(*func_ptr) && is_required && !required_functions_missing)
+  for (const DynamicLibrary::OptionalSymbolTable& entry : s_vulkan_instance_entry_points)
+  {
+    if (!(*entry.ptr = reinterpret_cast<void*>(vkGetInstanceProcAddr(instance, entry.name))) && entry.required)
     {
-      Error::SetStringFmt(error, "Failed to load required instance function {}", name);
-      required_functions_missing = true;
+      Error::SetStringFmt(error, "Failed to load required instance function {}", entry.name);
+      DynamicLibrary::ClearSymbols(s_vulkan_instance_entry_points);
+      return false;
     }
-  };
-
-#define VULKAN_INSTANCE_ENTRY_POINT(name, required)                                                                    \
-  load_function(reinterpret_cast<PFN_vkVoidFunction*>(&name), #name, required);
-#include "vulkan_entry_points.inl"
-#undef VULKAN_INSTANCE_ENTRY_POINT
+  }
 
   // we might not have VK_KHR_get_physical_device_properties2...
   if (!vkGetPhysicalDeviceFeatures2 || !vkGetPhysicalDeviceProperties2 || !vkGetPhysicalDeviceMemoryProperties2)
@@ -174,36 +162,20 @@ bool VulkanLoader::LoadInstanceFunctions(VkInstance instance, Error* error)
     }
   }
 
-  return !required_functions_missing;
-}
-
-void VulkanLoader::ResetInstanceFunctions()
-{
-#define VULKAN_INSTANCE_ENTRY_POINT(name, required) name = nullptr;
-#include "vulkan_entry_points.inl"
-#undef VULKAN_INSTANCE_ENTRY_POINT
+  return true;
 }
 
 bool VulkanLoader::LoadDeviceFunctions(VkDevice device, Error* error)
 {
-  bool required_functions_missing = false;
-  const auto load_function = [&device, &error, &required_functions_missing](PFN_vkVoidFunction* func_ptr,
-                                                                            const char* name, bool is_required) {
-    *func_ptr = vkGetDeviceProcAddr(device, name);
-    if (!(*func_ptr) && is_required && !required_functions_missing)
+  for (const DynamicLibrary::OptionalSymbolTable& entry : s_vulkan_device_entry_points)
+  {
+    if (!(*entry.ptr = reinterpret_cast<void*>(vkGetDeviceProcAddr(device, entry.name))) && entry.required)
     {
-      Error::SetStringFmt(error, "Failed to load required device function {}", name);
-      required_functions_missing = true;
+      Error::SetStringFmt(error, "Failed to load required device function {}", entry.name);
+      DynamicLibrary::ClearSymbols(s_vulkan_device_entry_points);
+      return false;
     }
-  };
-
-#define VULKAN_DEVICE_ENTRY_POINT(name, required)                                                                      \
-  load_function(reinterpret_cast<PFN_vkVoidFunction*>(&name), #name, required);
-#include "vulkan_entry_points.inl"
-#undef VULKAN_DEVICE_ENTRY_POINT
-
-  if (required_functions_missing)
-    return false;
+  }
 
   // Alias for swapchain maintenance.
   if (!vkReleaseSwapchainImagesKHR)
@@ -214,9 +186,7 @@ bool VulkanLoader::LoadDeviceFunctions(VkDevice device, Error* error)
 
 void VulkanLoader::ResetDeviceFunctions()
 {
-#define VULKAN_DEVICE_ENTRY_POINT(name, required) name = nullptr;
-#include "vulkan_entry_points.inl"
-#undef VULKAN_DEVICE_ENTRY_POINT
+  DynamicLibrary::ClearSymbols(s_vulkan_device_entry_points);
 }
 
 bool VulkanLoader::LockedCreateVulkanInstance(WindowInfoType wtype, bool* request_debug_instance, Error* error)
@@ -498,7 +468,7 @@ void VulkanLoader::LockedDestroyVulkanInstance()
 
   s_locals.optional_extensions = {};
   s_locals.instance = VK_NULL_HANDLE;
-  ResetInstanceFunctions();
+  DynamicLibrary::ClearSymbols(s_vulkan_instance_entry_points);
 }
 
 bool VulkanLoader::CreateVulkanInstance(WindowInfoType window_type, bool* request_debug_instance, Error* error)
