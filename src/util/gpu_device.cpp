@@ -48,10 +48,25 @@ LOG_CHANNEL(GPUDevice);
 
 std::unique_ptr<GPUDevice> g_gpu_device;
 
-static std::string s_shader_dump_path;
-static std::string s_pipeline_cache_path;
-static size_t s_pipeline_cache_size;
-static std::array<u8, SHA1Digest::DIGEST_SIZE> s_pipeline_cache_hash;
+namespace {
+struct Locals
+{
+  std::string shader_dump_path;
+  std::string pipeline_cache_path;
+  size_t pipeline_cache_size;
+  std::array<u8, SHA1Digest::DIGEST_SIZE> pipeline_cache_hash;
+
+  // Dynamic libraries
+  DynamicLibrary shaderc_library;
+  DynamicLibrary spirv_cross_library;
+  shaderc_compiler_t shaderc_compiler;
+  std::once_flag shaderc_init_flag;
+  std::once_flag spirv_cross_init_flag;
+};
+} // namespace
+
+ALIGN_TO_CACHE_LINE static Locals s_locals;
+
 size_t GPUDevice::s_total_vram_usage = 0;
 GPUDevice::Statistics GPUDevice::s_stats = {};
 
@@ -428,7 +443,7 @@ bool GPUDevice::Create(std::string_view adapter, CreateFlags create_flags, std::
                        std::optional<bool> exclusive_fullscreen_control, Error* error)
 {
   m_debug_device = HasCreateFlag(create_flags, CreateFlags::EnableDebugDevice);
-  s_shader_dump_path = shader_dump_path;
+  s_locals.shader_dump_path = shader_dump_path;
 
   INFO_LOG("Main render window is {}x{}.", wi.surface_width, wi.surface_height);
 
@@ -490,7 +505,7 @@ bool GPUDevice::Create(std::string_view adapter, CreateFlags create_flags, std::
 
 void GPUDevice::Destroy()
 {
-  s_shader_dump_path = {};
+  s_locals.shader_dump_path = {};
 
   PurgeTexturePool();
   DestroyResources();
@@ -550,29 +565,29 @@ void GPUDevice::OpenShaderCache(std::string_view base_path, u32 version)
     m_shader_cache.Open(std::string_view(), m_render_api_version, version);
   }
 
-  s_pipeline_cache_path = {};
-  s_pipeline_cache_size = 0;
-  s_pipeline_cache_hash = {};
+  s_locals.pipeline_cache_path = {};
+  s_locals.pipeline_cache_size = 0;
+  s_locals.pipeline_cache_hash = {};
 
   if (m_features.pipeline_cache && !base_path.empty())
   {
     Error error;
-    s_pipeline_cache_path =
+    s_locals.pipeline_cache_path =
       Path::Combine(base_path, TinyString::from_format("{}.bin", GetShaderCacheBaseName("pipelines")));
-    if (FileSystem::FileExists(s_pipeline_cache_path.c_str()))
+    if (FileSystem::FileExists(s_locals.pipeline_cache_path.c_str()))
     {
-      if (OpenPipelineCache(s_pipeline_cache_path, &error))
+      if (OpenPipelineCache(s_locals.pipeline_cache_path, &error))
         return;
 
-      WARNING_LOG("Failed to read pipeline cache '{}': {}", Path::GetFileName(s_pipeline_cache_path),
+      WARNING_LOG("Failed to read pipeline cache '{}': {}", Path::GetFileName(s_locals.pipeline_cache_path),
                   error.GetDescription());
     }
 
-    if (!CreatePipelineCache(s_pipeline_cache_path, &error))
+    if (!CreatePipelineCache(s_locals.pipeline_cache_path, &error))
     {
-      WARNING_LOG("Failed to create pipeline cache '{}': {}", Path::GetFileName(s_pipeline_cache_path),
+      WARNING_LOG("Failed to create pipeline cache '{}': {}", Path::GetFileName(s_locals.pipeline_cache_path),
                   error.GetDescription());
-      s_pipeline_cache_path = {};
+      s_locals.pipeline_cache_path = {};
     }
   }
 }
@@ -581,16 +596,16 @@ void GPUDevice::CloseShaderCache()
 {
   m_shader_cache.Close();
 
-  if (!s_pipeline_cache_path.empty())
+  if (!s_locals.pipeline_cache_path.empty())
   {
     Error error;
-    if (!ClosePipelineCache(s_pipeline_cache_path, &error))
+    if (!ClosePipelineCache(s_locals.pipeline_cache_path, &error))
     {
-      WARNING_LOG("Failed to close pipeline cache '{}': {}", Path::GetFileName(s_pipeline_cache_path),
+      WARNING_LOG("Failed to close pipeline cache '{}': {}", Path::GetFileName(s_locals.pipeline_cache_path),
                   error.GetDescription());
     }
 
-    s_pipeline_cache_path = {};
+    s_locals.pipeline_cache_path = {};
   }
 }
 
@@ -618,8 +633,8 @@ bool GPUDevice::OpenPipelineCache(const std::string& path, Error* error)
   if (!ReadPipelineCache(std::move(data.value()), error))
     return false;
 
-  s_pipeline_cache_size = cache_size;
-  s_pipeline_cache_hash = cache_hash;
+  s_locals.pipeline_cache_size = cache_size;
+  s_locals.pipeline_cache_hash = cache_hash;
   return true;
 }
 
@@ -635,7 +650,8 @@ bool GPUDevice::ClosePipelineCache(const std::string& path, Error* error)
     return false;
 
   // Save disk writes if it hasn't changed, think of the poor SSDs.
-  if (s_pipeline_cache_size == data.size() && s_pipeline_cache_hash == SHA1Digest::GetDigest(data.cspan()))
+  if (s_locals.pipeline_cache_size == data.size() &&
+      s_locals.pipeline_cache_hash == SHA1Digest::GetDigest(data.cspan()))
   {
     INFO_LOG("Skipping updating pipeline cache '{}' due to no changes.", Path::GetFileName(path));
     return true;
@@ -874,11 +890,11 @@ void GPUDevice::DumpBadShader(std::string_view code, std::string_view errors)
 {
   static u32 next_bad_shader_id = 0;
 
-  if (s_shader_dump_path.empty())
+  if (s_locals.shader_dump_path.empty())
     return;
 
   const std::string filename =
-    Path::Combine(s_shader_dump_path, TinyString::from_format("bad_shader_{}.txt", ++next_bad_shader_id));
+    Path::Combine(s_locals.shader_dump_path, TinyString::from_format("bad_shader_{}.txt", ++next_bad_shader_id));
   auto fp = FileSystem::OpenManagedCFile(filename.c_str(), "wb");
   if (fp)
   {
@@ -1369,14 +1385,10 @@ std::unique_ptr<GPUDevice> GPUDevice::CreateDeviceForAPI(RenderAPI api)
 }
 
 namespace dyn_libs {
+static void InitializeShaderc(Error* error);
 static void CloseShaderc();
+static void InitializeSpirvCross(Error* error);
 static void CloseSpirvCross();
-
-static std::mutex s_dyn_mutex;
-static DynamicLibrary s_shaderc_library;
-static DynamicLibrary s_spirv_cross_library;
-
-shaderc_compiler_t g_shaderc_compiler = nullptr;
 
 // TODO: Merge all of these into a struct?
 #define ADD_FUNC(F) decltype(&::F) F;
@@ -1390,84 +1402,101 @@ SPIRV_CROSS_MSL_FUNCTIONS(ADD_FUNC)
 
 bool dyn_libs::OpenShaderc(Error* error)
 {
-  const std::unique_lock lock(s_dyn_mutex);
-  if (s_shaderc_library.IsOpen())
+  if (s_locals.shaderc_library.IsOpen())
     return true;
 
+  std::call_once(s_locals.shaderc_init_flag, [&error]() { InitializeShaderc(error); });
+  return s_locals.shaderc_library.IsOpen();
+}
+
+void dyn_libs::InitializeShaderc(Error* error)
+{
+  Error lerror;
+  DynamicLibrary lib;
   const std::string libname = DynamicLibrary::GetVersionedFilename("shaderc_shared");
-  if (!s_shaderc_library.Open(libname.c_str(), error))
+  if (!lib.Open(libname.c_str(), error))
   {
+    ERROR_LOG("Failed to load shaderc: {}", (error ? error : &lerror)->GetDescription());
     Error::AddPrefix(error, "Failed to load shaderc: ");
-    return false;
+    return;
   }
 
 #define LOAD_FUNC(F)                                                                                                   \
-  if (!s_shaderc_library.GetSymbol(#F, &F))                                                                            \
+  if (!lib.GetSymbol(#F, &F))                                                                                          \
   {                                                                                                                    \
+    ERROR_LOG("Failed to find function {} in shaderc", #F);                                                            \
     Error::SetStringFmt(error, "Failed to find function {}", #F);                                                      \
     CloseShaderc();                                                                                                    \
-    return false;                                                                                                      \
+    return;                                                                                                            \
   }
 
   DYN_SHADERC_FUNCTIONS(LOAD_FUNC)
 #undef LOAD_FUNC
 
-  g_shaderc_compiler = shaderc_compiler_initialize();
-  if (!g_shaderc_compiler)
+  s_locals.shaderc_compiler = shaderc_compiler_initialize();
+  if (!s_locals.shaderc_compiler)
   {
+    ERROR_LOG("shaderc_compiler_initialize() failed");
     Error::SetStringView(error, "shaderc_compiler_initialize() failed");
     CloseShaderc();
-    return false;
+    return;
   }
 
-  return true;
+  s_locals.shaderc_library = std::move(lib);
+}
+
+shaderc_compiler_t dyn_libs::GetShadercCompiler()
+{
+  return s_locals.shaderc_compiler;
 }
 
 void dyn_libs::CloseShaderc()
 {
-  if (!s_shaderc_library.IsOpen())
+  if (s_locals.shaderc_compiler)
   {
-    DebugAssert(!g_shaderc_compiler);
-    return;
-  }
-
-  if (g_shaderc_compiler)
-  {
-    shaderc_compiler_release(g_shaderc_compiler);
-    g_shaderc_compiler = nullptr;
+    shaderc_compiler_release(s_locals.shaderc_compiler);
+    s_locals.shaderc_compiler = nullptr;
   }
 
 #define UNLOAD_FUNC(F) F = nullptr;
   DYN_SHADERC_FUNCTIONS(UNLOAD_FUNC)
 #undef UNLOAD_FUNC
 
-  s_shaderc_library.Close();
+  s_locals.shaderc_library.Close();
 }
 
 bool dyn_libs::OpenSpirvCross(Error* error)
 {
-  const std::unique_lock lock(s_dyn_mutex);
-  if (s_spirv_cross_library.IsOpen())
+  if (s_locals.spirv_cross_library.IsOpen())
     return true;
 
+  std::call_once(s_locals.spirv_cross_init_flag, [&error]() { InitializeSpirvCross(error); });
+  return s_locals.spirv_cross_library.IsOpen();
+}
+
+void dyn_libs::InitializeSpirvCross(Error* error)
+{
+  Error lerror;
+  DynamicLibrary lib;
 #if defined(_WIN32) || defined(__ANDROID__)
   // SPVC's build on Windows doesn't spit out a versioned DLL.
   const std::string libname = DynamicLibrary::GetVersionedFilename("spirv-cross-c-shared");
 #else
   const std::string libname = DynamicLibrary::GetVersionedFilename("spirv-cross-c-shared", SPVC_C_API_VERSION_MAJOR);
 #endif
-  if (!s_spirv_cross_library.Open(libname.c_str(), error))
+  if (!lib.Open(libname.c_str(), error ? error : &lerror))
   {
+    ERROR_LOG("Failed to load spirv-cross: {}", (error ? error : &lerror)->GetDescription());
     Error::AddPrefix(error, "Failed to load spirv-cross: ");
-    return false;
+    return;
   }
 
 #define LOAD_FUNC(F)                                                                                                   \
-  if (!s_spirv_cross_library.GetSymbol(#F, &F))                                                                        \
+  if (!lib.GetSymbol(#F, &F))                                                                                          \
   {                                                                                                                    \
     Error::SetStringFmt(error, "Failed to find function {}", #F);                                                      \
     CloseSpirvCross();                                                                                                 \
-    return false;                                                                                                      \
+    return;                                                                                                            \
   }
 
   SPIRV_CROSS_FUNCTIONS(LOAD_FUNC)
@@ -1475,21 +1504,18 @@ bool dyn_libs::OpenSpirvCross(Error* error)
   SPIRV_CROSS_MSL_FUNCTIONS(LOAD_FUNC)
 #undef LOAD_FUNC
 
-  return true;
+  s_locals.spirv_cross_library = std::move(lib);
 }
 
 void dyn_libs::CloseSpirvCross()
 {
-  if (!s_spirv_cross_library.IsOpen())
-    return;
-
 #define UNLOAD_FUNC(F) F = nullptr;
   SPIRV_CROSS_FUNCTIONS(UNLOAD_FUNC)
   SPIRV_CROSS_HLSL_FUNCTIONS(UNLOAD_FUNC)
   SPIRV_CROSS_MSL_FUNCTIONS(UNLOAD_FUNC)
 #undef UNLOAD_FUNC
 
-  s_spirv_cross_library.Close();
+  s_locals.spirv_cross_library.Close();
 }
 
 #undef SPIRV_CROSS_HLSL_FUNCTIONS
@@ -1532,7 +1558,7 @@ std::optional<DynamicHeapArray<u8>> GPUDevice::OptimizeVulkanSpv(const std::span
   dyn_libs::shaderc_compile_options_set_optimization_level(options, shaderc_optimization_level_performance);
 
   const shaderc_compilation_result_t result =
-    dyn_libs::shaderc_optimize_spv(dyn_libs::g_shaderc_compiler, spirv.data(), spirv.size(), options);
+    dyn_libs::shaderc_optimize_spv(s_locals.shaderc_compiler, spirv.data(), spirv.size(), options);
   const shaderc_compilation_status status =
     result ? dyn_libs::shaderc_result_get_compilation_status(result) : shaderc_compilation_status_internal_error;
   if (status != shaderc_compilation_status_success)
@@ -1587,7 +1613,7 @@ bool GPUDevice::CompileGLSLShaderToVulkanSpv(GPUShaderStage stage, GPUShaderLang
     options, optimization ? shaderc_optimization_level_performance : shaderc_optimization_level_zero);
 
   const shaderc_compilation_result_t result =
-    dyn_libs::shaderc_compile_into_spv(dyn_libs::g_shaderc_compiler, source.data(), source.length(),
+    dyn_libs::shaderc_compile_into_spv(s_locals.shaderc_compiler, source.data(), source.length(),
                                        stage_kinds[static_cast<size_t>(stage)], "source", entry_point, options);
   const shaderc_compilation_status status =
     result ? dyn_libs::shaderc_result_get_compilation_status(result) : shaderc_compilation_status_internal_error;

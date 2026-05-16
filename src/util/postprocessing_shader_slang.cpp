@@ -1232,7 +1232,7 @@ static std::optional<DynamicHeapArray<u32>> CompileToSPV(shaderc_shader_kind sta
   dyn_libs::shaderc_compile_options_set_optimization_level(options, shaderc_optimization_level_zero);
 
   const shaderc_compilation_result_t result = dyn_libs::shaderc_compile_into_spv(
-    dyn_libs::g_shaderc_compiler, code.data(), code.length(), stage, "source", "main", options);
+    dyn_libs::GetShadercCompiler(), code.data(), code.length(), stage, "source", "main", options);
   const shaderc_compilation_status status =
     result ? dyn_libs::shaderc_result_get_compilation_status(result) : shaderc_compilation_status_internal_error;
   if (status != shaderc_compilation_status_success)

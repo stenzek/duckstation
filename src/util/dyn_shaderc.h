@@ -27,11 +27,10 @@
 namespace dyn_libs {
 
 extern bool OpenShaderc(Error* error);
+extern shaderc_compiler_t GetShadercCompiler();
 
 #define ADD_FUNC(F) extern decltype(&::F) F;
 DYN_SHADERC_FUNCTIONS(ADD_FUNC)
 #undef ADD_FUNC
-
-extern shaderc_compiler_t g_shaderc_compiler;
 
 } // namespace dyn_libs
