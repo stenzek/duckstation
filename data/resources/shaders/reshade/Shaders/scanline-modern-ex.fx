@@ -2,20 +2,19 @@
 
 /*
 
-This shader is not designed to simply simulate the scanline + cross grid effect of old CRT monitors. 
+This shader is not designed to simply simulate the scanline + aperture grille effect of old CRT monitors. 
 Instead, it aims to combine the advantages of sharp clarity on modern displays with retro games, 
 enabling better pixel-level scaling.
 The generation intensity of scanlines is dynamically quantized and adjusted based on the human eye's 
 perceptual curve for chromatic brightness, rather than using rigid stripe overlay.
 
 Core Features:
-- Supports independent adjustment of vertical scanline and horizontal crossline intensity/density, 
+- Supports independent adjustment of vertical scanline and horizontal aperture grille intensity/density, 
   adapting to different resolutions (1080P/4K / high-magnification scaling);
-- Default parameters are suitable for most pixel games scaled up on large modern 4K resolution screens, 
+- Default parameters are suitable for most pixel games scaled up on modern resolution screens, 
   with lossless brightness/color;
 - Optimized scanline performance based on human eye brightness sensitivity curve: 
   scanlines are prominent in medium brightness areas and weakened in extreme brightness areas;
-- For PS1 games:Set to match the original internal resolution for pixel-perfect scanline alignment.
 
     Perceptual Sensitivity Curve:
     Sensitivity
@@ -30,15 +29,7 @@ Core Features:
 	 * (C) 2025-2026 by crashGG.
 */
 
-// --- UI Uniforms ---
-uniform float oriVert <
-    ui_type = "drag";
-    ui_min = 192.0; ui_max = 288.0; ui_step = 8.0;
-    ui_label = "Source Vertical Resolution";
-    ui_tooltip = "Set to match the original internal resolution for pixel-perfect scanline alignment.";
-    ui_category = "Scanline Settings";
-> = 240.0;
-
+// --- UI Parameters ---
 uniform float sinCompY <
     ui_type = "drag";
     ui_min = 0.0; ui_max = 0.50; ui_step = 0.01;
@@ -48,28 +39,30 @@ uniform float sinCompY <
 
 uniform float CompXlevl <
     ui_type = "drag";
-    ui_min = 0.0; ui_max = 20.0; ui_step = 1.0;
-    ui_label = "Shadow Mask Strength (Horizontal)";
+    ui_min = 0.0; ui_max = 20.0; ui_step = 0.5;
+    ui_label = "Aperture Grille Level (Horizontal)";
     ui_category = "Scanline Settings";
 > = 3.0;
 
 uniform float densY <
-    ui_type = "slider";
-    ui_min = 1.0; ui_max = 4.0; ui_step = 1.0;
-    ui_label = "Scanline Density";
+    ui_type = "drag";
+    ui_min = 2.0; ui_max = 10.0; ui_step = 0.5;
+    ui_label = "Scanline Period (Vertical Pixels)";
+    ui_tooltip = "Number of physical screen pixels per full scanline cycle. Integer values yield better results.";
+    ui_category = "Scanline Settings";
+> = 4.0;
+
+uniform float densX <
+    ui_type = "drag";
+    ui_min = 2.0; ui_max = 10.0; ui_step = 0.5;
+    ui_label = "Aperture Grille Period (Horizontal Pixels)";
+    ui_tooltip = "Number of physical screen pixels per full aperture grille cycle. Integer values yield better results.";
     ui_category = "Scanline Settings";
 > = 2.0;
 
-uniform float densX <
-    ui_type = "slider";
-    ui_min = 1.0; ui_max = 4.0; ui_step = 1.0;
-    ui_label = "Shadow Mask Density";
-    ui_category = "Scanline Settings";
-> = 3.0;
-
 static const float PI = 3.1415926536;
 
-// --- Vertex to Fragment Bridge ---
+// --- Structs ---
 struct v2f {
     float4 pos : SV_Position;
     float2 uv : TEXCOORD0;
@@ -79,18 +72,17 @@ struct v2f {
 // --- Vertex Shader ---
 v2f VS_Scanline(uint id : SV_VertexID) {
     v2f o;
-    // Standard full-screen triangle generation
+    // Standard full-screen triangle logic for ReShade.fxh
     o.uv.x = (id == 2) ? 2.0 : 0.0;
     o.uv.y = (id == 1) ? 2.0 : 0.0;
     o.pos = float4(o.uv * float2(2.0, -2.0) + float2(-1.0, 1.0), 0.0, 1.0);
 
-    // Calculate vertical scaling factor based on source vs. output height
-    // BUFFER_RCP_HEIGHT is a pre-calculated constant (1.0 / Height) to avoid runtime division
-    float scale = oriVert * BUFFER_RCP_HEIGHT;
 
-    // Calculate angular frequency (omega) to control sine wave cycles
-    // Locked to source resolution via scale factor to ensure grid alignment across varying viewports
-    o.omega = PI * 2.0 * float2(BUFFER_WIDTH * densX, BUFFER_HEIGHT * densY) * scale;
+    // Compute angular frequency to control sine wave periods.
+    // Approach: Use exact multi-integer frequencies to guarantee perfect alignment between scanlines and the native pixel grid.
+    // Logic: Angular Frequency = 2 * PI * (Screen Resolution / Target Pixel Period)
+
+    o.omega = PI * 2.0 * float2(BUFFER_WIDTH, BUFFER_HEIGHT) / float2(densX, densY);
 
     return o;
 }
@@ -98,29 +90,31 @@ v2f VS_Scanline(uint id : SV_VertexID) {
 // --- Pixel Shader ---
 float4 PS_Scanline(v2f i) : SV_Target {
 
-    // Step size for horizontal mask intensity
+    // Granularity step of 0.005 per level
     float sinCompX = CompXlevl * 0.005;
 
-    // Sample source texture (backbuffer)
+    // Center point tap
     float3 texel = tex2D(ReShade::BackBuffer, i.uv).rgb;
 
-    // Map texture coordinates to sine wave phase
+    // Signal shaping: Map UV coordinates to sine wave phase
     float2 tex_omega_product = i.uv * i.omega;
 
-    // Generate periodic luminosity fluctuation [-1.0, 1.0]
-    // Apply -0.5 * PI phase shift to align wave troughs (dark lines) with pixel boundaries
-    float2 sine_wave = sin(tex_omega_product - 0.5 * PI);
+	// Calculate horizontal and vertical sine wave oscillations to generate periodic brightness variations in [-1.0, 1.0].
+	// Applies a -0.5 * PI (90-degree) phase shift to anchor the wave troughs (-1.0) exactly at pixel boundaries.
 
-    // 1. Modulate sine wave intensity per axis
-    // 2. Linear accumulation of horizontal/vertical waves for final gain scalar
+	// Note: Adjusts phase when density is 2.0 to prevent scanline cancellation caused by Nyquist spatial sampling dead zones.
+    float2 sine_wave = sin(tex_omega_product - 0.5 * PI * float2(densX>2.0,densY>2.0));
+
+	// 1. Modulate sine wave intensity via component-wise multiplication.
+	// 2. Linearly blend horiz/vert sine waves to synthesize the final scalar gain for the luminance oscillation.
     float total_sine_fluctuation = (sinCompX * sine_wave.x) + (sinCompY * sine_wave.y);
 
-    // Luma-dependent weighting: calculate distance from mid-tone (0.5)
-    // Scanline depth is maximized at 0.5 luma and attenuated at extremes to simulate CRT bloom
+    // Core dynamic quantization logic: distance from the mid-gray value (0.5) per channel, yielding vec3 [0.0 - 1.0].
+    // 'dist' approaches 0 near mid-tones (0.5) where attenuation is maximum; oscillation dampens at extreme brightness levels.
     float3 dist = abs(texel - 0.5) * 2.0;
     
-    // Composite final brightness:
-    // Apply modulation gain adjusted by local luma distance, then multiply by source
+	// Composite final scanline lighting effects:
+	// Modulate base brightness (1.0) with scanline oscillation, then multiply back into the original texel.
     float3 final_brightness = 1.0 + total_sine_fluctuation * (1.0 - dist);
 
     float3 scanline = texel * final_brightness;
