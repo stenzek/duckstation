@@ -263,6 +263,15 @@ enum class AchievementChallengeIndicatorMode : u8
   MaxCount
 };
 
+enum class AchievementProgressIndicatorMode : u8
+{
+  Disabled,
+  Icon,
+  IconAndTitle,
+
+  MaxCount
+};
+
 enum class ControllerType : u8
 {
   None,

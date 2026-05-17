@@ -120,7 +120,8 @@ u32 CPU::CodeCache::EmitASMFunctions(void* code, u32 code_size)
   Label exit_recompiler;
   Label run_events_and_dispatch;
 
-  g_enter_recompiler = reinterpret_cast<decltype(g_enter_recompiler)>(const_cast<u8*>(cg->getCurr()));
+  g_recompiler_functions.enter_recompiler =
+    reinterpret_cast<decltype(g_recompiler_functions.enter_recompiler)>(const_cast<u8*>(cg->getCurr()));
   {
     // Don't need to save registers, because we fastjmp out when execution is interrupted.
     cg->sub(cg->rsp, stack_size);
@@ -142,13 +143,13 @@ u32 CPU::CodeCache::EmitASMFunctions(void* code, u32 code_size)
     cg->cmp(RWARG1, cg->dword[PTR(&g_state.downcount)]);
     cg->jl(dispatch);
 
-    g_run_events_and_dispatch = cg->getCurr();
+    g_recompiler_functions.run_events_and_dispatch = cg->getCurr();
     cg->L(run_events_and_dispatch);
     cg->call(reinterpret_cast<const void*>(&TimingEvents::RunEvents));
   }
 
   cg->align(FUNCTION_ALIGNMENT);
-  g_dispatcher = cg->getCurr();
+  g_recompiler_functions.dispatcher = cg->getCurr();
   {
     cg->L(dispatch);
 
@@ -165,7 +166,7 @@ u32 CPU::CodeCache::EmitASMFunctions(void* code, u32 code_size)
   }
 
   cg->align(FUNCTION_ALIGNMENT);
-  g_compile_or_revalidate_block = cg->getCurr();
+  g_recompiler_functions.compile_or_revalidate_block = cg->getCurr();
   {
     cg->mov(RWARG1, cg->dword[PTR(&g_state.pc)]);
     cg->call(&CompileOrRevalidateBlock);
@@ -173,7 +174,7 @@ u32 CPU::CodeCache::EmitASMFunctions(void* code, u32 code_size)
   }
 
   cg->align(FUNCTION_ALIGNMENT);
-  g_discard_and_recompile_block = cg->getCurr();
+  g_recompiler_functions.discard_and_recompile_block = cg->getCurr();
   {
     cg->mov(RWARG1, cg->dword[PTR(&g_state.pc)]);
     cg->call(&DiscardAndRecompileBlock);
@@ -181,7 +182,7 @@ u32 CPU::CodeCache::EmitASMFunctions(void* code, u32 code_size)
   }
 
   cg->align(FUNCTION_ALIGNMENT);
-  g_interpret_block = cg->getCurr();
+  g_recompiler_functions.interpret_block = cg->getCurr();
   {
     cg->call(CodeCache::GetInterpretUncachedBlockFunction());
     cg->mov(RWARG1, cg->dword[PTR(&g_state.pending_ticks)]);
@@ -499,14 +500,14 @@ void CPU::X64Recompiler::GenerateBlockProtectCheck(const u8* ram_ptr, const u8* 
   {
     cg->movmskps(cg->eax, cg->xmm0);
     cg->cmp(cg->eax, 0xf);
-    cg->jne(CodeCache::g_discard_and_recompile_block);
+    cg->jne(CodeCache::g_recompiler_functions.discard_and_recompile_block);
   }
 
   while (size >= 8)
   {
     cg->mov(RXARG3, cg->qword[RXARG1 + offset]);
     cg->cmp(RXARG3, cg->qword[RXARG2 + offset]);
-    cg->jne(CodeCache::g_discard_and_recompile_block);
+    cg->jne(CodeCache::g_recompiler_functions.discard_and_recompile_block);
     offset += 8;
     size -= 8;
   }
@@ -515,7 +516,7 @@ void CPU::X64Recompiler::GenerateBlockProtectCheck(const u8* ram_ptr, const u8* 
   {
     cg->mov(RWARG3, cg->dword[RXARG1 + offset]);
     cg->cmp(RWARG3, cg->dword[RXARG2 + offset]);
-    cg->jne(CodeCache::g_discard_and_recompile_block);
+    cg->jne(CodeCache::g_recompiler_functions.discard_and_recompile_block);
     offset += 4;
     size -= 4;
   }
@@ -644,7 +645,7 @@ void CPU::X64Recompiler::EndAndLinkBlock(const std::optional<u32>& newpc, bool d
 
     if (force_run_events)
     {
-      cg->jmp(CodeCache::g_run_events_and_dispatch);
+      cg->jmp(CodeCache::g_recompiler_functions.run_events_and_dispatch);
       return;
     }
   }
@@ -667,13 +668,13 @@ void CPU::X64Recompiler::EndAndLinkBlock(const std::optional<u32>& newpc, bool d
     if (cycles > 0)
       cg->mov(cg->dword[PTR(&g_state.pending_ticks)], RWARG1);
     if (do_event_test)
-      cg->jge(CodeCache::g_run_events_and_dispatch);
+      cg->jge(CodeCache::g_recompiler_functions.run_events_and_dispatch);
   }
 
   // jump to dispatcher or next block
   if (!newpc.has_value())
   {
-    cg->jmp(CodeCache::g_dispatcher);
+    cg->jmp(CodeCache::g_recompiler_functions.dispatcher);
   }
   else
   {

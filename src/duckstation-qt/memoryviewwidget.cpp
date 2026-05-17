@@ -473,18 +473,22 @@ void MemoryViewWidget::setSelection(size_t new_selection, bool new_ascii)
 void MemoryViewWidget::expandCurrentDataToInclude(size_t offset)
 {
   offset = std::min(offset, m_data_size - 1);
+  if (m_last_data.empty())
+    m_last_data_start_offset = offset;
+
   if (offset < m_last_data_start_offset)
   {
     const size_t add_bytes = m_last_data_start_offset - offset;
     const size_t old_size = m_last_data.size();
     m_last_data.resize(old_size + add_bytes);
-    std::memmove(&m_last_data[add_bytes], &m_last_data[0], old_size);
+    if (old_size > 0)
+      std::memmove(&m_last_data[add_bytes], &m_last_data[0], old_size);
     std::memcpy(&m_last_data[0], static_cast<const u8*>(m_data) + offset, add_bytes);
     m_last_data_start_offset = offset;
   }
   else if (offset >= (m_last_data_start_offset + m_last_data.size()))
   {
-    const size_t new_size = m_last_data_start_offset + offset + 1;
+    const size_t new_size = m_last_data.size() + (offset - m_last_data_start_offset) + 1;
     const size_t old_size = m_last_data.size();
     m_last_data.resize(new_size);
     std::memcpy(&m_last_data[old_size], static_cast<const u8*>(m_data) + m_last_data_start_offset + old_size,
@@ -496,7 +500,6 @@ void MemoryViewWidget::adjustScrollToInclude(size_t offset)
 {
   const int row = static_cast<int>(offset / m_bytes_per_line);
   const int scroll_row = verticalScrollBar()->value();
-  ;
   const int last_visible_row = scroll_row + m_rows_visible;
   if (row < scroll_row)
     verticalScrollBar()->setValue(row);
@@ -513,10 +516,13 @@ void MemoryViewWidget::saveCurrentData()
   }
 
   const size_t size = m_end_offset - m_start_offset;
-  m_last_data_start_offset = m_start_offset;
-  m_last_data.resize(size);
-  std::memcpy(m_last_data.data(), static_cast<const u8*>(m_data) + m_start_offset, size);
-  forceRefresh();
+  if (size > 0)
+  {
+    m_last_data_start_offset = m_start_offset;
+    m_last_data.resize(size);
+    std::memcpy(m_last_data.data(), static_cast<const u8*>(m_data) + m_start_offset, size);
+    forceRefresh();
+  }
 }
 
 void MemoryViewWidget::forceRefresh()
@@ -536,13 +542,41 @@ void MemoryViewWidget::adjustContent()
   m_rows_visible = (viewport()->height() - m_char_height) / m_char_height; // -1 for the header
   int val = verticalScrollBar()->value();
   m_start_offset = (size_t)val * m_bytes_per_line;
-  m_end_offset = m_start_offset + m_rows_visible * m_bytes_per_line - 1;
+  m_end_offset = (m_rows_visible > 0) ? (m_start_offset + m_rows_visible * m_bytes_per_line - 1) : m_start_offset;
   if (m_end_offset >= m_data_size)
     m_end_offset = m_data_size - 1;
 
   const int lineCount = static_cast<int>(m_data_size / m_bytes_per_line);
   verticalScrollBar()->setRange(0, lineCount - m_rows_visible);
   verticalScrollBar()->setPageStep(m_rows_visible);
+
+  // shrink current data, but preserve an extra page worth of lines
+  const size_t extra_buffer = m_bytes_per_line * m_rows_visible;
+  const size_t extra_start_offset = (m_start_offset > extra_buffer) ? (m_start_offset - extra_buffer) : 0;
+  if (extra_start_offset > m_last_data_start_offset)
+  {
+    const size_t shrink_bytes = extra_start_offset - m_last_data_start_offset;
+    if (shrink_bytes < m_last_data.size())
+    {
+      std::memmove(&m_last_data[0], &m_last_data[shrink_bytes], m_last_data.size() - shrink_bytes);
+      m_last_data.resize(m_last_data.size() - shrink_bytes);
+      m_last_data_start_offset = extra_start_offset;
+    }
+    else
+    {
+      m_last_data.clear();
+      m_last_data_start_offset = extra_start_offset;
+    }
+  }
+  const size_t extra_end_offset = std::min(m_end_offset + extra_buffer, m_data_size - 1);
+  if (extra_end_offset < (m_last_data_start_offset + m_last_data.size()))
+  {
+    const size_t shrink_bytes = (m_last_data_start_offset + m_last_data.size()) - extra_end_offset;
+    if (shrink_bytes < m_last_data.size())
+      m_last_data.resize(m_last_data.size() - shrink_bytes);
+    else
+      m_last_data.clear();
+  }
 
   expandCurrentDataToInclude(m_start_offset);
   expandCurrentDataToInclude(m_end_offset);

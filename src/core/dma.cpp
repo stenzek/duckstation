@@ -179,7 +179,7 @@ static bool IsTransferHalted();
 static void UpdateIRQ();
 
 static void HaltTransfer(TickCount duration);
-static void UnhaltTransfer(void*, TickCount ticks, TickCount ticks_late);
+static void UnhaltTransfer(void*, TickCount ticks);
 
 template<Channel channel>
 static bool TransferChannel();
@@ -760,9 +760,9 @@ void DMA::HaltTransfer(TickCount duration)
   s_state.unhalt_event.SetIntervalAndSchedule(s_state.halt_ticks_remaining);
 }
 
-void DMA::UnhaltTransfer(void*, TickCount ticks, TickCount ticks_late)
+void DMA::UnhaltTransfer(void*, TickCount ticks)
 {
-  DEBUG_LOG("Resuming DMA after {} ticks, {} ticks late", ticks, -(s_state.halt_ticks_remaining - ticks));
+  DEBUG_LOG("Resuming DMA after {} ticks", ticks, -(s_state.halt_ticks_remaining - ticks));
   s_state.halt_ticks_remaining -= ticks;
   s_state.unhalt_event.Deactivate();
 

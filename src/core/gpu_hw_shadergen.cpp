@@ -1175,7 +1175,7 @@ float mixGate(float4 col1, float4 col2) {
 #define Xoff vX+slopOFF
 //#define checkblack(col) ((col).g < 0.078 && (col).r < 0.1 && (col).b < 0.1)
 
-#if API_OPENGL || API_OPENGL_ES || API_VULKAN
+#if GLSL
 
     #define checkblack(col) all(lessThan((col).rgb, float3(0.1, 0.078, 0.1)))
     #define checkwhite(col) all(greaterThan((col).rgb, float3(0.92, 0.92, 0.92)))

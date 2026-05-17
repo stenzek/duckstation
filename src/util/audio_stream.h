@@ -18,6 +18,9 @@ enum class AudioBackend : u8
 #ifndef __ANDROID__
   Cubeb,
   SDL,
+#ifdef _WIN32
+  XAudio2,
+#endif
 #else
   AAudio,
   OpenSLES,
@@ -94,6 +97,13 @@ private:
   static std::unique_ptr<AudioStream> CreateSDLAudioStream(u32 sample_rate, u32 channels, u32 output_latency_frames,
                                                            bool output_latency_minimal, AudioStreamSource* source,
                                                            bool auto_start, Error* error);
+#ifdef _WIN32
+  static std::vector<DeviceInfo> GetXAudio2OutputDevices(u32 sample_rate);
+  static std::unique_ptr<AudioStream> CreateXAudio2AudioStream(u32 sample_rate, u32 channels, u32 output_latency_frames,
+                                                               bool output_latency_minimal,
+                                                               std::string_view device_name, AudioStreamSource* source,
+                                                               bool auto_start, Error* error);
+#endif
 #else
   static std::unique_ptr<AudioStream> CreateAAudioAudioStream(u32 sample_rate, u32 channels, u32 output_latency_frames,
                                                               bool output_latency_minimal, AudioStreamSource* source,

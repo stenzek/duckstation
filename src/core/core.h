@@ -3,8 +3,9 @@
 
 #pragma once
 
+#include "types.h"
+
 #include "common/small_string.h"
-#include "common/types.h"
 
 #include <mutex>
 #include <string>
@@ -63,5 +64,8 @@ SettingsInterface* GetGameSettingsLayer();
 
 /// Retrieves the input settings layer, if present. Must call with lock held.
 SettingsInterface* GetInputSettingsLayer();
+
+/// Returns the number of seconds since the process started.
+float GetProcessUptime();
 
 } // namespace Core

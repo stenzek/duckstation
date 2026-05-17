@@ -5972,7 +5972,7 @@ static void rc_client_do_frame_update_progress_tracker(rc_client_t* client, rc_c
     game->progress_tracker.action = RC_CLIENT_PROGRESS_TRACKER_ACTION_UPDATE;
 
   rc_client_reschedule_callback(client, game->progress_tracker.hide_callback,
-      client->callbacks.get_time_millisecs(client) + 2 * 1000);
+      client->callbacks.get_time_millisecs(client) + 3 * 1000);
 }
 
 static void rc_client_raise_progress_tracker_events(rc_client_t* client, rc_client_game_info_t* game)

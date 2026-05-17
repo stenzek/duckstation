@@ -13,10 +13,12 @@
 #include "cpu_code_cache.h"
 #include "cpu_core.h"
 #include "cpu_pgxp.h"
+#include "discord_presence.h"
 #include "dma.h"
 #include "fullscreenui.h"
 #include "game_database.h"
 #include "game_list.h"
+#include "gdb_server.h"
 #include "gpu.h"
 #include "gpu_backend.h"
 #include "gpu_dump.h"
@@ -42,9 +44,6 @@
 #include "video_presenter.h"
 #include "video_thread.h"
 
-#include "scmversion/scmversion.h"
-
-#include "util/audio_stream.h"
 #include "util/cd_image.h"
 #include "util/compress_helpers.h"
 #include "util/gpu_device.h"
@@ -55,21 +54,19 @@
 #include "util/iso_reader.h"
 #include "util/media_capture.h"
 #include "util/postprocessing.h"
-#include "util/sockets.h"
 #include "util/state_wrapper.h"
 #include "util/translation.h"
 
 #include "common/align.h"
 #include "common/binary_reader_writer.h"
-#include "common/dynamic_library.h"
 #include "common/error.h"
 #include "common/file_system.h"
 #include "common/layered_settings_interface.h"
 #include "common/log.h"
 #include "common/memmap.h"
 #include "common/path.h"
-#include "common/ryml_helpers.h"
 #include "common/string_util.h"
+#include "common/threading.h"
 #include "common/time_helpers.h"
 #include "common/timer.h"
 
@@ -77,10 +74,8 @@
 #include "IconsFontAwesome.h"
 #include "IconsPromptFont.h"
 
-#include "cpuinfo.h"
 #include "fmt/chrono.h"
 #include "fmt/format.h"
-#include "imgui.h"
 #include "xxhash.h"
 
 #include <cctype>
@@ -89,21 +84,8 @@
 #include <cmath>
 #include <cstdio>
 #include <limits>
-#include <thread>
 
 LOG_CHANNEL(System);
-
-#ifdef _WIN32
-#include "common/windows_headers.h"
-#include <Objbase.h>
-#endif
-
-#ifndef __ANDROID__
-#define ENABLE_DISCORD_PRESENCE 1
-#define ENABLE_GDB_SERVER 1
-#define ENABLE_SOCKET_MULTIPLEXER 1
-#include "gdb_server.h"
-#endif
 
 // #define PROFILE_MEMORY_SAVE_STATES 1
 
@@ -147,9 +129,6 @@ struct UndoSaveStateBuffer : public SaveStateBuffer
 };
 
 } // namespace
-
-static void CheckCacheLineSize();
-static void LogStartupInformation();
 
 static const SettingsInterface& GetInputSourceSettingsLayer(std::unique_lock<std::mutex>& lock);
 static const SettingsInterface& GetControllerSettingsLayer(std::unique_lock<std::mutex>& lock);
@@ -237,15 +216,9 @@ static bool DoRunahead();
 
 static void UpdateSessionTime(const std::string& prev_serial);
 
-#ifdef ENABLE_DISCORD_PRESENCE
-static void InitializeDiscordPresence();
-static void ShutdownDiscordPresence();
-static void PollDiscordPresence();
-#endif
-
 namespace {
 
-struct ALIGN_TO_CACHE_LINE StateVars
+struct StateVars
 {
   TickCount ticks_per_second = 0;
   TickCount max_slice_ticks = 0;
@@ -317,16 +290,11 @@ struct ALIGN_TO_CACHE_LINE StateVars
   GameHash running_game_hash = 0;
   bool running_game_custom_title = false;
 
-  // Prevent screensaver inhibits when running on platforms that don't have it (e.g. gamescope).
-  bool disable_screensaver_inhibit = false;
-
   std::atomic_bool startup_cancelled{false};
 
   std::unique_ptr<INISettingsInterface> game_settings_interface;
   std::unique_ptr<INISettingsInterface> input_settings_interface;
   std::string input_profile_name;
-
-  Threading::ThreadHandle core_thread_handle;
 
   // temporary save state, created when loading, used to undo load state
   std::optional<UndoSaveStateBuffer> undo_load_state;
@@ -336,144 +304,15 @@ struct ALIGN_TO_CACHE_LINE StateVars
 
   // internal async task counters
   std::atomic_uint32_t outstanding_save_state_tasks{0};
-
-  // process start time
-  Timer::Value process_start_time = 0;
-
-#ifdef ENABLE_SOCKET_MULTIPLEXER
-  std::unique_ptr<SocketMultiplexer> socket_multiplexer;
-#endif
-
-#ifdef ENABLE_DISCORD_PRESENCE
-  bool discord_presence_active = false;
-  std::time_t discord_presence_time_epoch;
-#endif
 };
 
 } // namespace
 
-static StateVars s_state;
+ALIGN_TO_CACHE_LINE static StateVars s_state;
 
 } // namespace System
 
-bool System::PerformEarlyHardwareChecks(Error* error)
-{
-  // This shouldn't fail... if it does, just hope for the best.
-  cpuinfo_initialize();
-
-#ifdef CPU_ARCH_X64
-#ifdef CPU_ARCH_SSE41
-  if (!cpuinfo_has_x86_sse4_1())
-  {
-    Error::SetStringFmt(
-      error, "<h3>Your CPU does not support the SSE4.1 instruction set.</h3><p>SSE4.1 is required for this version of "
-             "DuckStation. Please download and switch to the legacy SSE2 version.</p><p>You can download this from <a "
-             "href=\"https://www.duckstation.org/\">www.duckstation.org</a> under \"Other Platforms\".");
-    return false;
-  }
-#else
-  if (cpuinfo_has_x86_sse4_1())
-  {
-    Error::SetStringFmt(
-      error, "You are running the <strong>legacy SSE2 DuckStation executable</strong> on a CPU that supports the "
-             "SSE4.1 instruction set.\nPlease download and switch to the regular, non-SSE2 version.\nYou can download "
-             "this from <a href=\"https://www.duckstation.org/\">www.duckstation.org</a>.");
-  }
-#endif
-#endif
-
-#ifndef DYNAMIC_HOST_PAGE_SIZE
-  // Check page size. If it doesn't match, it is a fatal error.
-  const size_t runtime_host_page_size = MemMap::GetRuntimePageSize();
-  if (runtime_host_page_size == 0)
-  {
-    Error::SetStringFmt(error, "Cannot determine size of page. Continuing with expectation of {} byte pages.",
-                        HOST_PAGE_SIZE);
-  }
-  else if (HOST_PAGE_SIZE != runtime_host_page_size)
-  {
-    Error::SetStringFmt(
-      error, "Page size mismatch. This build was compiled with {} byte pages, but the system has {} byte pages.",
-      HOST_PAGE_SIZE, runtime_host_page_size);
-    return false;
-  }
-#else
-  if (HOST_PAGE_SIZE == 0 || HOST_PAGE_SIZE < MIN_HOST_PAGE_SIZE || HOST_PAGE_SIZE > MAX_HOST_PAGE_SIZE)
-  {
-    Error::SetStringFmt(error, "Page size of {} bytes is out of the range supported by this build: {}-{}.",
-                        HOST_PAGE_SIZE, MIN_HOST_PAGE_SIZE, MAX_HOST_PAGE_SIZE);
-    return false;
-  }
-#endif
-
-  return true;
-}
-
-void System::CheckCacheLineSize()
-{
-  u32 max_line_size = 0;
-  if (cpuinfo_initialize())
-  {
-    const u32 num_l1is = cpuinfo_get_l1i_caches_count();
-    const u32 num_l1ds = cpuinfo_get_l1d_caches_count();
-    const u32 num_l2s = cpuinfo_get_l2_caches_count();
-    for (u32 i = 0; i < num_l1is; i++)
-    {
-      const cpuinfo_cache* cache = cpuinfo_get_l1i_cache(i);
-      if (cache)
-        max_line_size = std::max(max_line_size, cache->line_size);
-    }
-    for (u32 i = 0; i < num_l1ds; i++)
-    {
-      const cpuinfo_cache* cache = cpuinfo_get_l1d_cache(i);
-      if (cache)
-        max_line_size = std::max(max_line_size, cache->line_size);
-    }
-    for (u32 i = 0; i < num_l2s; i++)
-    {
-      const cpuinfo_cache* cache = cpuinfo_get_l2_cache(i);
-      if (cache)
-        max_line_size = std::max(max_line_size, cache->line_size);
-    }
-  }
-
-  if (max_line_size == 0)
-  {
-    ERROR_LOG("Cannot determine size of cache line. Continuing with expectation of {} byte lines.",
-              HOST_CACHE_LINE_SIZE);
-  }
-  else if (HOST_CACHE_LINE_SIZE != max_line_size)
-  {
-    // Not fatal, but does have performance implications.
-    WARNING_LOG(
-      "Cache line size mismatch. This build was compiled with {} byte lines, but the system has {} byte lines.",
-      HOST_CACHE_LINE_SIZE, max_line_size);
-  }
-}
-
-void System::LogStartupInformation()
-{
-#if !defined(CPU_ARCH_X64) || defined(CPU_ARCH_SSE41)
-  const std::string_view suffix = {};
-#else
-  const std::string_view suffix = " [Legacy SSE2]";
-#endif
-  INFO_LOG("DuckStation for {} ({}){}", TARGET_OS_STR, CPU_ARCH_STR, suffix);
-  INFO_LOG("Version: {} [{}]", g_scm_tag_str, g_scm_branch_str);
-  INFO_LOG("SCM Timestamp: {}", g_scm_date_str);
-  if (const cpuinfo_package* package = cpuinfo_initialize() ? cpuinfo_get_package(0) : nullptr) [[likely]]
-  {
-    INFO_LOG("Host CPU: {}", package->name);
-    INFO_LOG("CPU has {} logical processor(s) and {} core(s) across {} cluster(s).", package->processor_count,
-             package->core_count, package->cluster_count);
-  }
-
-#ifdef DYNAMIC_HOST_PAGE_SIZE
-  INFO_LOG("Host Page Size: {} bytes", HOST_PAGE_SIZE);
-#endif
-}
-
-bool System::ProcessStartup(Error* error)
+bool System::AllocatePersistentMemory(Error* error)
 {
   Timer timer;
 
@@ -492,130 +331,13 @@ bool System::ProcessStartup(Error* error)
   }
 
   VERBOSE_LOG("Memory allocation took {} ms.", timer.GetTimeMilliseconds());
-
-  CheckCacheLineSize();
-
-  // Initialize rapidyaml before anything can use it.
-  SetRymlCallbacks();
-
-#ifdef __linux__
-  // Disable screensaver inhibit if running on gamescope.
-  const char* desktop = std::getenv("XDG_CURRENT_DESKTOP");
-  if (!desktop)
-    desktop = std::getenv("XDG_SESSION_DESKTOP");
-  if (!desktop || std::strlen(desktop) == 0 || std::strstr(desktop, "gamescope"))
-  {
-    INFO_LOG("Missing XDG_CURRENT_DESKTOP ({}) or running under gamescope, disabling screensaver inhibit.",
-             desktop ? desktop : "null");
-    s_state.disable_screensaver_inhibit = true;
-  }
-
-  // Running DuckStation out of /usr is not supported and makes no sense.
-  if (std::memcmp(EmuFolders::AppRoot.data(), "/usr/", 5) == 0)
-    return false;
-#endif
-
-  s_state.process_start_time = Timer::GetCurrentValue();
   return true;
 }
 
-void System::ProcessShutdown()
+void System::ReleasePersistentMemory()
 {
   Bus::ReleaseMemory();
   CPU::CodeCache::ProcessShutdown();
-}
-
-float System::GetProcessUptime()
-{
-  return static_cast<float>(Timer::ConvertValueToSeconds(Timer::GetCurrentValue() - s_state.process_start_time));
-}
-
-bool System::CoreThreadInitialize(Error* error)
-{
-#ifdef _WIN32
-  // On Win32, we have a bunch of things which use COM (e.g. SDL, Cubeb, etc).
-  // We need to initialize COM first, before anything else does, because otherwise they might
-  // initialize it in single-threaded/apartment mode, which can't be changed to multithreaded.
-  HRESULT hr = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
-  if (FAILED(hr))
-  {
-    Error::SetHResult(error, "CoInitializeEx() failed: ", hr);
-    return false;
-  }
-#endif
-
-  s_state.core_thread_handle = Threading::ThreadHandle::GetForCallingThread();
-
-  // This will call back to Host::LoadSettings() -> ReloadSources().
-  LoadSettings(false);
-
-  LogStartupInformation();
-
-  VideoThread::Internal::ProcessStartup();
-
-  Achievements::Initialize();
-
-#ifdef ENABLE_DISCORD_PRESENCE
-  if (g_settings.enable_discord_presence)
-    InitializeDiscordPresence();
-#endif
-
-  return true;
-}
-
-void System::CoreThreadShutdown()
-{
-#ifdef ENABLE_DISCORD_PRESENCE
-  ShutdownDiscordPresence();
-#endif
-
-  Achievements::Shutdown();
-
-  GPUDevice::UnloadDynamicLibraries();
-
-  InputManager::CloseSources();
-
-  HTTPCache::Shutdown();
-
-  s_state.core_thread_handle = {};
-
-#ifdef _WIN32
-  CoUninitialize();
-#endif
-}
-
-const Threading::ThreadHandle& System::GetCoreThreadHandle()
-{
-  return s_state.core_thread_handle;
-}
-
-void System::SetCoreThreadHandle(Threading::ThreadHandle handle)
-{
-  s_state.core_thread_handle = std::move(handle);
-}
-
-bool Host::IsOnCoreThread()
-{
-  // This really doesn't belong here...
-  return System::GetCoreThreadHandle().IsCallingThread();
-}
-
-void System::IdlePollUpdate()
-{
-  InputManager::PollSources();
-
-#ifdef ENABLE_DISCORD_PRESENCE
-  PollDiscordPresence();
-#endif
-
-  HTTPCache::PollRequests();
-
-  Achievements::IdleUpdate();
-
-#ifdef ENABLE_SOCKET_MULTIPLEXER
-  if (s_state.socket_multiplexer)
-    s_state.socket_multiplexer->PollEventsWithTimeout(0);
-#endif
 }
 
 System::State System::GetState()
@@ -819,6 +541,11 @@ const GameDatabase::Entry* System::GetGameDatabaseEntry()
 GameHash System::GetGameHash()
 {
   return s_state.running_game_hash;
+}
+
+bool System::IsRunningGameCustomTitle()
+{
+  return s_state.running_game_custom_title;
 }
 
 bool System::IsRunningUnknownGame()
@@ -2222,7 +1949,9 @@ void System::ClearRunningGame()
   Host::OnSystemGameChanged(s_state.running_game_path, s_state.running_game_serial, s_state.running_game_title,
                             s_state.running_game_hash);
 
-  UpdateRichPresence(true);
+#ifdef ENABLE_DISCORD_PRESENCE
+  DiscordPresence::Update(true);
+#endif
 }
 
 void System::Execute()
@@ -2280,12 +2009,11 @@ void System::FrameDone()
   }
 
 #ifdef ENABLE_DISCORD_PRESENCE
-  PollDiscordPresence();
+  DiscordPresence::Poll();
 #endif
 
-#ifdef ENABLE_SOCKET_MULTIPLEXER
-  if (s_state.socket_multiplexer)
-    s_state.socket_multiplexer->PollEventsWithTimeout(0);
+#ifdef ENABLE_GDB_SERVER
+  GDBServer::Poll(0);
 #endif
 
   // Save states for rewind and runahead.
@@ -2497,35 +2225,32 @@ void System::Throttle(Timer::Value current_time, Timer::Value sleep_until)
     return;
   }
 
-#ifdef ENABLE_SOCKET_MULTIPLEXER
-  // If we are using the socket multiplier, and have clients, then use it to sleep instead.
+#ifdef ENABLE_GDB_SERVER
+  // If we are running the GDB server and have clients, then use it to sleep instead.
   // That way in a query->response->query->response chain, we don't process only one message per frame.
-  if (s_state.socket_multiplexer && s_state.socket_multiplexer->HasAnyClientSockets())
+  if (GDBServer::HasAnyClients())
   {
     Timer::Value poll_start_time = current_time;
     for (;;)
     {
       const u32 sleep_ms = static_cast<u32>(Timer::ConvertValueToMilliseconds(sleep_until - poll_start_time));
-      s_state.socket_multiplexer->PollEventsWithTimeout(sleep_ms);
+      GDBServer::Poll(sleep_ms);
       poll_start_time = Timer::GetCurrentValue();
       if (poll_start_time >= sleep_until || (!g_settings.display_optimal_frame_pacing && sleep_ms == 0))
         break;
     }
   }
   else
+#endif
   {
     // Use a spinwait if we undersleep for all platforms except android.. don't want to burn battery.
     // Linux also seems to do a much better job of waking up at the requested time.
-#if !defined(__linux__)
+#if !defined(__linux__) && !defined(__ANDROID__)
     Timer::SleepUntil(sleep_until, g_settings.display_optimal_frame_pacing);
 #else
     Timer::SleepUntil(sleep_until, false);
 #endif
   }
-#else
-  // No spinwait on Android, see above.
-  Timer::SleepUntil(sleep_until, false);
-#endif
 
 #if 0
   const Timer::Value time_after_sleep = Timer::GetCurrentValue();
@@ -3850,12 +3575,13 @@ void System::UpdateSpeedLimiterState()
   {
     const u64 typical_time =
       std::min(std::max<u64>((new_scheduler_period / 1000000) * 1000000, MIN_FRAME_TIME_NS), TYPICAL_FRAME_TIME_NS);
-    if (s_state.core_thread_handle)
+    const Threading::ThreadHandle& core_thread = Host::GetCoreThreadHandle();
+    if (core_thread)
     {
-      s_state.core_thread_handle.SetTimeConstraints(s_state.optimal_frame_pacing, new_scheduler_period, typical_time,
-                                                    new_scheduler_period);
+      core_thread.SetTimeConstraints(s_state.optimal_frame_pacing, new_scheduler_period, typical_time,
+                                     new_scheduler_period);
     }
-    const Threading::ThreadHandle& video_thread = VideoThread::Internal::GetThreadHandle();
+    const Threading::ThreadHandle& video_thread = VideoThread::GetThreadHandle();
     if (video_thread)
     {
       video_thread.SetTimeConstraints(s_state.optimal_frame_pacing, new_scheduler_period, typical_time,
@@ -3932,9 +3658,6 @@ PresentSkipMode System::GetEffectivePresentSkipMode()
 
 void System::InhibitScreensaver(bool inhibit)
 {
-  if (s_state.disable_screensaver_inhibit)
-    return;
-
   Error error;
   if (!Host::SetScreensaverInhibit(inhibit, &error))
   {
@@ -4006,7 +3729,7 @@ void System::SetRewindState(bool enabled)
   UpdateSpeedLimiterState();
 }
 
-void System::DoFrameStep()
+void System::FrameStep()
 {
   if (!IsValid())
     return;
@@ -4015,7 +3738,7 @@ void System::DoFrameStep()
   {
     Achievements::ConfirmHardcoreModeDisableAsync("Frame stepping", [](bool approved) {
       if (approved)
-        DoFrameStep();
+        FrameStep();
     });
     return;
   }
@@ -4408,7 +4131,9 @@ void System::UpdateRunningGame(const std::string& path, CDImage* image, bool boo
   if (s_state.running_game_serial != prev_serial)
     UpdateSessionTime(prev_serial);
 
-  UpdateRichPresence(booting);
+#ifdef ENABLE_DISCORD_PRESENCE
+  DiscordPresence::Update(booting);
+#endif
 
   if (!s_state.running_game_title.empty())
   {
@@ -4845,6 +4570,7 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
              g_settings.achievements_notification_location != old_settings.achievements_notification_location ||
              g_settings.achievements_indicator_location != old_settings.achievements_indicator_location ||
              g_settings.achievements_challenge_indicator_mode != old_settings.achievements_challenge_indicator_mode ||
+             g_settings.achievements_progress_indicator_mode != old_settings.achievements_progress_indicator_mode ||
              g_settings.achievements_notification_scale != old_settings.achievements_notification_scale ||
              g_settings.achievements_indicator_scale != old_settings.achievements_indicator_scale)
     {
@@ -5011,9 +4737,9 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
   if (g_settings.enable_discord_presence != old_settings.enable_discord_presence)
   {
     if (g_settings.enable_discord_presence)
-      InitializeDiscordPresence();
+      DiscordPresence::Initialize();
     else
-      ShutdownDiscordPresence();
+      DiscordPresence::Shutdown();
   }
 #endif
 
@@ -5396,7 +5122,7 @@ void System::DoRewind()
   VideoThread::PresentCurrentFrame();
 
   Host::PumpMessagesOnCoreThread();
-  IdlePollUpdate();
+  Core::IdleUpdate();
 
   // get back into it straight away if we're no longer rewinding
   if (!IsRewinding())
@@ -6453,184 +6179,3 @@ u64 System::GetSessionPlayedTime()
   const Timer::Value ctime = Timer::GetCurrentValue();
   return static_cast<u64>(std::round(Timer::ConvertValueToSeconds(ctime - s_state.session_start_time)));
 }
-
-SocketMultiplexer* System::GetSocketMultiplexer()
-{
-#ifdef ENABLE_SOCKET_MULTIPLEXER
-  if (s_state.socket_multiplexer)
-    return s_state.socket_multiplexer.get();
-
-  Error error;
-  s_state.socket_multiplexer = SocketMultiplexer::Create(&error);
-  if (s_state.socket_multiplexer)
-    INFO_LOG("Created socket multiplexer.");
-  else
-    ERROR_LOG("Failed to create socket multiplexer: {}", error.GetDescription());
-
-  return s_state.socket_multiplexer.get();
-#else
-  ERROR_LOG("This build does not support sockets.");
-  return nullptr;
-#endif
-}
-
-void System::ReleaseSocketMultiplexer()
-{
-#ifdef ENABLE_SOCKET_MULTIPLEXER
-  if (!s_state.socket_multiplexer || s_state.socket_multiplexer->HasAnyOpenSockets())
-    return;
-
-  INFO_LOG("Destroying socket multiplexer.");
-  s_state.socket_multiplexer.reset();
-#endif
-}
-
-#ifdef ENABLE_DISCORD_PRESENCE
-
-#include "discord_rpc.h"
-
-#define DISCORD_RPC_FUNCTIONS(X)                                                                                       \
-  X(Discord_Initialize)                                                                                                \
-  X(Discord_Shutdown)                                                                                                  \
-  X(Discord_RunCallbacks)                                                                                              \
-  X(Discord_UpdatePresence)                                                                                            \
-  X(Discord_ClearPresence)
-
-namespace dyn_libs {
-static bool OpenDiscordRPC(Error* error);
-static void CloseDiscordRPC();
-
-static DynamicLibrary s_discord_rpc_library;
-
-#define ADD_FUNC(F) static decltype(&::F) F;
-DISCORD_RPC_FUNCTIONS(ADD_FUNC)
-#undef ADD_FUNC
-} // namespace dyn_libs
-
-bool dyn_libs::OpenDiscordRPC(Error* error)
-{
-  if (s_discord_rpc_library.IsOpen())
-    return true;
-
-  const std::string libname = DynamicLibrary::GetVersionedFilename("discord-rpc");
-  if (!s_discord_rpc_library.Open(libname.c_str(), error))
-  {
-    Error::AddPrefix(error, "Failed to load discord-rpc: ");
-    return false;
-  }
-
-#define LOAD_FUNC(F)                                                                                                   \
-  if (!s_discord_rpc_library.GetSymbol(#F, &F))                                                                        \
-  {                                                                                                                    \
-    Error::SetStringFmt(error, "Failed to find function {}", #F);                                                      \
-    CloseDiscordRPC();                                                                                                 \
-    return false;                                                                                                      \
-  }
-  DISCORD_RPC_FUNCTIONS(LOAD_FUNC)
-#undef LOAD_FUNC
-
-  return true;
-}
-
-void dyn_libs::CloseDiscordRPC()
-{
-  if (!s_discord_rpc_library.IsOpen())
-    return;
-
-#define UNLOAD_FUNC(F) F = nullptr;
-  DISCORD_RPC_FUNCTIONS(UNLOAD_FUNC)
-#undef UNLOAD_FUNC
-
-  s_discord_rpc_library.Close();
-}
-
-void System::InitializeDiscordPresence()
-{
-  if (s_state.discord_presence_active)
-    return;
-
-  Error error;
-  if (!dyn_libs::OpenDiscordRPC(&error))
-  {
-    ERROR_LOG("Failed to open discord-rpc: {}", error.GetDescription());
-    return;
-  }
-
-  DiscordEventHandlers handlers = {};
-  dyn_libs::Discord_Initialize("705325712680288296", &handlers, 0, nullptr);
-  s_state.discord_presence_active = true;
-
-  UpdateRichPresence(true);
-}
-
-void System::ShutdownDiscordPresence()
-{
-  if (!s_state.discord_presence_active)
-    return;
-
-  dyn_libs::Discord_ClearPresence();
-  dyn_libs::Discord_Shutdown();
-  dyn_libs::CloseDiscordRPC();
-
-  s_state.discord_presence_active = false;
-}
-
-void System::UpdateRichPresence(bool update_session_time)
-{
-  if (!s_state.discord_presence_active)
-    return;
-
-  if (update_session_time)
-    s_state.discord_presence_time_epoch = std::time(nullptr);
-
-  // https://discord.com/developers/docs/rich-presence/how-to#updating-presence-update-presence-payload-fields
-  DiscordRichPresence rp = {};
-  rp.largeImageKey = "duckstation_logo";
-  rp.largeImageText = "DuckStation PS1/PSX Emulator";
-  rp.startTimestamp = s_state.discord_presence_time_epoch;
-
-  TinyString game_details("No Game Running");
-  if (IsValidOrInitializing())
-  {
-    // Use disc set name if it's not a custom title.
-    if (!s_state.running_game_custom_title && s_state.running_game_entry && s_state.running_game_entry->disc_set)
-    {
-      game_details = s_state.running_game_entry->disc_set->GetDisplayTitle(true);
-    }
-    else
-    {
-      if (s_state.running_game_title.empty())
-        game_details = "Unknown Game";
-      else
-        game_details = std::string_view(s_state.running_game_title);
-    }
-  }
-  rp.details = game_details.c_str();
-
-  const auto lock = Achievements::GetLock();
-
-  std::string state_string;
-  if (Achievements::HasRichPresence())
-    rp.state = (state_string = StringUtil::Ellipsise(Achievements::GetRichPresenceString(), 128)).c_str();
-
-  if (const std::string& badge_url = Achievements::GetCurrentGameBadgeURL(); !badge_url.empty())
-    rp.largeImageKey = badge_url.c_str();
-
-  dyn_libs::Discord_UpdatePresence(&rp);
-}
-
-void System::PollDiscordPresence()
-{
-  if (!s_state.discord_presence_active)
-    return;
-
-  dyn_libs::Discord_RunCallbacks();
-}
-
-#else
-
-void System::UpdateRichPresence(bool update_session_time)
-{
-}
-
-#endif

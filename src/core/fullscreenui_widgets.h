@@ -273,8 +273,8 @@ bool TextureNeedsSVGDimensions(std::string_view path);
 void UploadAsyncTextures();
 
 /// Screen transitions.
-inline constexpr float SHORT_TRANSITION_TIME = 0.08f;
-inline constexpr float DEFAULT_TRANSITION_TIME = 0.15f;
+inline constexpr float SHORT_TRANSITION_TIME = 0.15f;
+inline constexpr float DEFAULT_TRANSITION_TIME = 0.22f;
 inline constexpr float LONG_TRANSITION_TIME = 0.3f;
 
 enum class TransitionState : u8

@@ -243,7 +243,7 @@ void GameListSettingsWidget::onAddExcludedFolderButtonClicked()
 void GameListSettingsWidget::onRemoveExcludedPathButtonClicked()
 {
   const int row = m_ui.excludedPaths->currentRow();
-  QListWidgetItem* item = (row >= 0) ? m_ui.excludedPaths->takeItem(row) : 0;
+  QListWidgetItem* item = (row >= 0) ? m_ui.excludedPaths->takeItem(row) : nullptr;
   if (!item)
     return;
 

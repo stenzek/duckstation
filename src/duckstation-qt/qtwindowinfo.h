@@ -37,3 +37,10 @@ bool SetWindowRoundedCornerState(QWidget* widget, bool enabled);
 #endif
 
 } // namespace QtUtils
+
+namespace QtHost {
+
+/// Prevents the screensaver from being inhibited, if it is not supported on the current platform.
+void DisableScreensaverInhibit();
+
+} // namespace QtHost

@@ -25,13 +25,12 @@ InputBindingDialog* InputBindingDialog::s_current_hook_dialog = nullptr;
 
 InputBindingDialog::InputBindingDialog(SettingsInterface* sif, InputBindingInfo::Type bind_type,
                                        std::string section_name, std::string key_name,
-                                       std::vector<std::string> bindings, QWidget* parent)
+                                       std::vector<std::string> bindings, const QString& display_name, QWidget* parent)
   : QDialog(parent), m_sif(sif), m_bind_type(bind_type), m_section_name(std::move(section_name)),
     m_key_name(std::move(key_name)), m_bindings(std::move(bindings))
 {
   m_ui.setupUi(this);
-  m_ui.title->setText(
-    tr("Bindings for %1 %2").arg(QString::fromStdString(m_section_name)).arg(QString::fromStdString(m_key_name)));
+  m_ui.title->setText(tr("Bindings for %1:").arg(display_name));
   m_ui.buttonBox->button(QDialogButtonBox::Close)->setDefault(true);
 
   connect(m_ui.addBinding, &QPushButton::clicked, this, &InputBindingDialog::onAddBindingButtonClicked);

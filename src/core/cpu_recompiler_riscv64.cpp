@@ -243,7 +243,8 @@ u32 CPU::CodeCache::EmitASMFunctions(void* code, u32 code_size)
   Label dispatch;
   Label run_events_and_dispatch;
 
-  g_enter_recompiler = reinterpret_cast<decltype(g_enter_recompiler)>(rvAsm->GetCursorPointer());
+  g_recompiler_functions.enter_recompiler =
+    reinterpret_cast<decltype(g_recompiler_functions.enter_recompiler)>(rvAsm->GetCursorPointer());
   {
     // TODO: reserve some space for saving caller-saved registers
 
@@ -265,14 +266,14 @@ u32 CPU::CodeCache::EmitASMFunctions(void* code, u32 code_size)
     rvAsm->BLTU(RARG1, RARG2, &skip_event_check);
 
     rvAsm->Bind(&run_events_and_dispatch);
-    g_run_events_and_dispatch = rvAsm->GetCursorPointer();
+    g_recompiler_functions.run_events_and_dispatch = rvAsm->GetCursorPointer();
     rvEmitCall(rvAsm, reinterpret_cast<const void*>(&TimingEvents::RunEvents));
 
     rvAsm->Bind(&skip_event_check);
   }
 
   // TODO: align?
-  g_dispatcher = rvAsm->GetCursorPointer();
+  g_recompiler_functions.dispatcher = rvAsm->GetCursorPointer();
   {
     rvAsm->Bind(&dispatch);
 
@@ -293,21 +294,21 @@ u32 CPU::CodeCache::EmitASMFunctions(void* code, u32 code_size)
     rvAsm->JR(RARG1);
   }
 
-  g_compile_or_revalidate_block = rvAsm->GetCursorPointer();
+  g_recompiler_functions.compile_or_revalidate_block = rvAsm->GetCursorPointer();
   {
     rvAsm->LW(RARG1, PTR(&g_state.pc));
     rvEmitCall(rvAsm, reinterpret_cast<const void*>(&CompileOrRevalidateBlock));
     rvAsm->J(&dispatch);
   }
 
-  g_discard_and_recompile_block = rvAsm->GetCursorPointer();
+  g_recompiler_functions.discard_and_recompile_block = rvAsm->GetCursorPointer();
   {
     rvAsm->LW(RARG1, PTR(&g_state.pc));
     rvEmitCall(rvAsm, reinterpret_cast<const void*>(&DiscardAndRecompileBlock));
     rvAsm->J(&dispatch);
   }
 
-  g_interpret_block = rvAsm->GetCursorPointer();
+  g_recompiler_functions.interpret_block = rvAsm->GetCursorPointer();
   {
     rvEmitCall(rvAsm, CodeCache::GetInterpretUncachedBlockFunction());
     rvAsm->LW(RARG1, PTR(&g_state.pending_ticks));
@@ -553,7 +554,7 @@ void CPU::RISCV64Recompiler::GenerateBlockProtectCheck(const u8* ram_ptr, const 
   Label block_unchanged;
   rvAsm->J(&block_unchanged);
   rvAsm->Bind(&block_changed);
-  rvEmitJmp(rvAsm, CodeCache::g_discard_and_recompile_block);
+  rvEmitJmp(rvAsm, CodeCache::g_recompiler_functions.discard_and_recompile_block);
   rvAsm->Bind(&block_unchanged);
 }
 
@@ -716,18 +717,18 @@ void CPU::RISCV64Recompiler::EndAndLinkBlock(const std::optional<u32>& newpc, bo
     // TODO: see if we can do a far jump somehow with this..
     Label cont;
     rvAsm->BLT(RARG1, RARG2, &cont);
-    rvEmitJmp(rvAsm, CodeCache::g_run_events_and_dispatch);
+    rvEmitJmp(rvAsm, CodeCache::g_recompiler_functions.run_events_and_dispatch);
     rvAsm->Bind(&cont);
   }
 
   // jump to dispatcher or next block
   if (force_run_events)
   {
-    rvEmitJmp(rvAsm, CodeCache::g_run_events_and_dispatch);
+    rvEmitJmp(rvAsm, CodeCache::g_recompiler_functions.run_events_and_dispatch);
   }
   else if (!newpc.has_value())
   {
-    rvEmitJmp(rvAsm, CodeCache::g_dispatcher);
+    rvEmitJmp(rvAsm, CodeCache::g_recompiler_functions.dispatcher);
   }
   else
   {

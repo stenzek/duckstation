@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "video_thread.h"
@@ -16,6 +16,7 @@
 #include "system_private.h"
 #include "video_presenter.h"
 #include "video_thread_commands.h"
+#include "video_thread_private.h"
 
 #include "util/gpu_device.h"
 #include "util/imgui_manager.h"
@@ -71,6 +72,7 @@ static bool IsCommandFIFOEmpty();
 static void WakeThread();
 static void WakeThreadIfSleeping();
 static bool SleepThread(bool allow_sleep);
+static void VideoThreadEntryPoint();
 
 static bool CreateDeviceOnThread(RenderAPI api, bool fullscreen, bool start_fullscreen_ui,
                                  bool preserve_imgui_on_failure, Error* error);
@@ -100,7 +102,7 @@ struct ALIGN_TO_CACHE_LINE State
 {
   // Owned by CPU thread.
   Timer::Value thread_spin_time = 0;
-  Threading::ThreadHandle thread_handle;
+  Threading::Thread thread;
   Common::unique_aligned_ptr<u8[]> command_fifo_data;
   WindowInfo render_window_info;
   std::optional<GPURenderer> requested_renderer;
@@ -132,9 +134,9 @@ static State s_state;
 
 } // namespace VideoThread
 
-const Threading::ThreadHandle& VideoThread::Internal::GetThreadHandle()
+const Threading::ThreadHandle& VideoThread::GetThreadHandle()
 {
-  return s_state.thread_handle;
+  return s_state.thread;
 }
 
 void VideoThread::ResetCommandFIFO()
@@ -145,15 +147,18 @@ void VideoThread::ResetCommandFIFO()
   s_state.command_fifo_read_ptr.store(0, std::memory_order_release);
 }
 
-void VideoThread::Internal::ProcessStartup()
+void VideoThread::ProcessStartup()
 {
   s_state.thread_spin_time = Timer::ConvertNanosecondsToValue(THREAD_SPIN_TIME_US * 1000.0);
   s_state.command_fifo_data = Common::make_unique_aligned_for_overwrite<u8[]>(HOST_CACHE_LINE_SIZE, COMMAND_QUEUE_SIZE);
   s_state.use_thread = g_settings.gpu_use_thread;
   s_state.run_idle_reasons = static_cast<u8>(RunIdleReason::NoGPUBackend);
+
+  // Thread is always started/persists regardless of whether it is used or not.
+  s_state.thread.Start(&VideoThread::VideoThreadEntryPoint);
 }
 
-void VideoThread::Internal::RequestShutdown()
+void VideoThread::ProcessShutdown()
 {
   INFO_LOG("Shutting down video thread...");
   SyncThread(false);
@@ -161,6 +166,9 @@ void VideoThread::Internal::RequestShutdown()
   // Thread must be enabled to shut it down.
   SetThreadEnabled(true);
   PushCommandAndWakeThread(AllocateCommand(VideoThreadCommandType::Shutdown, sizeof(VideoThreadCommand)));
+  s_state.thread.Join();
+
+  INFO_LOG("Video thread shutdown complete.");
 }
 
 VideoThreadCommand* VideoThread::AllocateCommand(VideoThreadCommandType command, u32 size)
@@ -407,9 +415,9 @@ bool VideoThread::SleepThread(bool allow_sleep)
   }
 }
 
-void VideoThread::Internal::VideoThreadEntryPoint()
+void VideoThread::VideoThreadEntryPoint()
 {
-  s_state.thread_handle = Threading::ThreadHandle::GetForCallingThread();
+  Threading::SetNameOfCurrentThread("Video Thread");
 
   // Take a local copy of the FIFO, that way it's not ping-ponging between the threads.
   u8* const command_fifo_data = s_state.command_fifo_data.get();
@@ -503,7 +511,6 @@ void VideoThread::Internal::VideoThreadEntryPoint()
           // Should have consumed everything, and be shutdown.
           DebugAssert(read_ptr == write_ptr);
           s_state.command_fifo_read_ptr.store(read_ptr, std::memory_order_release);
-          s_state.thread_handle = {};
           return;
         }
         break;
@@ -518,7 +525,7 @@ void VideoThread::Internal::VideoThreadEntryPoint()
   }
 }
 
-void VideoThread::Internal::DoRunIdle()
+void VideoThread::DoRunIdle()
 {
   if (!g_gpu_device->HasMainSwapChain()) [[unlikely]]
   {
@@ -1038,7 +1045,7 @@ void VideoThread::DestroyGPUPresenterOnThread()
   VideoPresenter::Shutdown();
 }
 
-bool VideoThread::Internal::PresentFrameAndRestoreContext()
+bool VideoThread::PresentFrameAndRestoreContext()
 {
   DebugAssert(IsOnThread());
 
@@ -1136,7 +1143,7 @@ void VideoThread::UpdateSettingsOnThread(GPUSettings&& new_settings)
     }
 
     if (ImGuiManager::UpdateDebugWindowConfig())
-      Internal::PresentFrameAndRestoreContext();
+      PresentFrameAndRestoreContext();
     else
       s_state.gpu_backend->RestoreDeviceContext();
   }
@@ -1144,6 +1151,8 @@ void VideoThread::UpdateSettingsOnThread(GPUSettings&& new_settings)
 
 void VideoThread::RunOnThread(AsyncCallType func)
 {
+  DebugAssert(!VideoThread::IsOnThread());
+
   if (!s_state.use_thread) [[unlikely]]
   {
     func();
@@ -1157,6 +1166,8 @@ void VideoThread::RunOnThread(AsyncCallType func)
 
 void VideoThread::RunOnThreadAndSync(AsyncCallType func)
 {
+  DebugAssert(!VideoThread::IsOnThread());
+
   if (!s_state.use_thread) [[unlikely]]
   {
     func();
@@ -1170,6 +1181,8 @@ void VideoThread::RunOnThreadAndSync(AsyncCallType func)
 
 std::pair<VideoThreadCommand*, void*> VideoThread::BeginASyncBufferCall(AsyncBufferCallType func, u32 buffer_size)
 {
+  DebugAssert(!VideoThread::IsOnThread());
+
   // this is less than optimal, but it's only used for input osd updates currently, so whatever
   VideoThreadAsyncBufferCallCommand* const cmd = AllocateCommand<VideoThreadAsyncBufferCallCommand>(
     sizeof(VideoThreadAsyncBufferCallCommand) + buffer_size, VideoThreadCommandType::AsyncBufferCall, func);
@@ -1179,6 +1192,8 @@ std::pair<VideoThreadCommand*, void*> VideoThread::BeginASyncBufferCall(AsyncBuf
 
 void VideoThread::EndASyncBufferCall(VideoThreadCommand* cmd)
 {
+  DebugAssert(!VideoThread::IsOnThread());
+
   if (!s_state.use_thread) [[unlikely]]
   {
     VideoThreadAsyncBufferCallCommand* const acmd = static_cast<VideoThreadAsyncBufferCallCommand*>(cmd);
@@ -1229,7 +1244,7 @@ void VideoThread::UpdateSettings(bool gpu_settings_changed, bool device_settings
       if (s_state.gpu_backend)
       {
         if (ImGuiManager::UpdateDebugWindowConfig())
-          Internal::PresentFrameAndRestoreContext();
+          PresentFrameAndRestoreContext();
       }
     });
 #endif
@@ -1306,6 +1321,18 @@ void VideoThread::ReportFatalErrorAndShutdown(std::string_view reason)
   DebugAssert(IsOnThread());
 
   std::string message = fmt::format("GPU thread shut down with fatal error:\n\n{}", reason);
+
+  if (!s_state.gpu_backend)
+  {
+    // if we have no backend, it crapped out in fullscreenui alone
+    if (!g_gpu_device)
+      return;
+
+    Host::RunOnCoreThread([message = std::move(message)]() { Host::OnSystemAbnormalShutdown(message); });
+    DestroyDeviceOnThread(false);
+    return;
+  }
+
   Host::RunOnCoreThread([message = std::move(message)]() { System::AbnormalShutdown(message); });
 
   // replace the renderer with a dummy/null backend, so that all commands get dropped
@@ -1319,7 +1346,7 @@ void VideoThread::ReportFatalErrorAndShutdown(std::string_view reason)
 
 bool VideoThread::IsOnThread()
 {
-  return (!s_state.use_thread || s_state.thread_handle.IsCallingThread());
+  return (!s_state.use_thread || s_state.thread.IsCallingThread());
 }
 
 bool VideoThread::IsUsingThread()
@@ -1340,8 +1367,9 @@ void VideoThread::ResizeRenderWindow(s32 width, s32 height, float scale, float r
   s_state.render_window_info.surface_scale = scale;
   s_state.render_window_info.surface_refresh_rate = refresh_rate;
 
-  RunOnThread(
-    [width, height, scale, refresh_rate]() { ResizeRenderWindowOnThread(width, height, scale, refresh_rate); });
+  RunOnThread([clamped_width, clamped_height, scale, refresh_rate]() {
+    ResizeRenderWindowOnThread(clamped_width, clamped_height, scale, refresh_rate);
+  });
 
   if (System::IsValid())
   {
@@ -1502,8 +1530,8 @@ void VideoThread::RenderWindowResizedOnThread()
   {
     // Hackity hack, on some systems, presenting a single frame isn't enough to actually get it
     // displayed. Two seems to be good enough. Maybe something to do with direct scanout.
-    Internal::PresentFrameAndRestoreContext();
-    Internal::PresentFrameAndRestoreContext();
+    PresentFrameAndRestoreContext();
+    PresentFrameAndRestoreContext();
   }
 }
 
@@ -1546,7 +1574,7 @@ void VideoThread::PresentCurrentFrame()
 
     // But we shouldn't be not running idle without a GPU backend.
     if (s_state.gpu_backend)
-      Internal::PresentFrameAndRestoreContext();
+      PresentFrameAndRestoreContext();
   });
 }
 

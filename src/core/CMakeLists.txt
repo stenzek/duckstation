@@ -38,6 +38,8 @@ add_library(core
   ddgo_controller.h
   digital_controller.cpp
   digital_controller.h
+  discord_presence.cpp
+  discord_presence.h
   dma.cpp
   dma.h
   fullscreenui.cpp
@@ -141,6 +143,7 @@ add_library(core
   video_thread.cpp
   video_thread.h
   video_thread_commands.h
+  video_thread_private.h
 )
 
 set(RECOMPILER_SRCS
@@ -212,10 +215,6 @@ function(add_core_resources target)
 
   add_resources(${target} "resources" ${CMAKE_SOURCE_DIR}/data/resources)
 
-  if(APPLE)
-    # Copy discord-rpc into the bundle
-    get_target_property(DISCORD_RPC_LIBRARY DiscordRPC::discord-rpc IMPORTED_LOCATION_RELEASE)
-    target_sources(${target} PRIVATE "${DISCORD_RPC_LIBRARY}")
-    set_source_files_properties("${DISCORD_RPC_LIBRARY}" PROPERTIES MACOSX_PACKAGE_LOCATION Frameworks)
-  endif()
+  # Copy dynamically-loaded libraries into the bundle.
+  bundle_libraries(${target} DiscordRPC::discord-rpc)
 endfunction()

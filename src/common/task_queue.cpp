@@ -43,6 +43,14 @@ void TaskQueue::SetWorkerCount(u32 count)
 void TaskQueue::SubmitTask(TaskFunctionType func)
 {
   std::unique_lock lock(m_mutex);
+
+  if (m_threads.empty()) [[unlikely]]
+  {
+    lock.unlock();
+    func();
+    return;
+  }
+
   m_tasks.push_back(std::move(func));
   m_tasks_outstanding++;
   m_task_wait_cv.notify_one();

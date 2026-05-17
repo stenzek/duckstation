@@ -212,6 +212,8 @@ enum class MemoryRegion
   EXP1,
   Scratchpad,
   BIOS,
+  VRAM,
+  SPURAM,
   Count
 };
 

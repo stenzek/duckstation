@@ -12,11 +12,13 @@
 #include "core/gpu.h"
 #include "core/gpu_backend.h"
 #include "core/host.h"
+#include "core/performance_counters.h"
 #include "core/spu.h"
 #include "core/system.h"
 #include "core/system_private.h"
 #include "core/video_presenter.h"
 #include "core/video_thread.h"
+#include "core/video_thread_private.h"
 
 #include "scmversion/scmversion.h"
 
@@ -34,7 +36,6 @@
 #include "common/path.h"
 #include "common/sha256_digest.h"
 #include "common/string_util.h"
-#include "common/task_queue.h"
 #include "common/threading.h"
 #include "common/time_helpers.h"
 #include "common/timer.h"
@@ -59,7 +60,6 @@ static bool SetNewDataRoot(const std::string& filename);
 static void DumpSystemStateHashes();
 static std::string GetFrameDumpPath(u32 frame);
 static void ProcessCoreThreadEvents();
-static void VideoThreadEntryPoint();
 
 struct RegTestHostState
 {
@@ -70,11 +70,8 @@ struct RegTestHostState
 };
 
 static RegTestHostState s_state;
-ALIGN_TO_CACHE_LINE static TaskQueue s_async_task_queue;
 
 } // namespace RegTestHost
-
-static Threading::Thread s_video_thread;
 
 static u32 s_frames_to_run = 60 * 60;
 static u32 s_frames_remaining = 0;
@@ -364,16 +361,6 @@ void RegTestHost::ProcessCoreThreadEvents()
 void Host::RunOnUIThread(std::function<void()> function, bool block /* = false */)
 {
   RunOnCoreThread(std::move(function), block);
-}
-
-void Host::QueueAsyncTask(std::function<void()> function)
-{
-  RegTestHost::s_async_task_queue.SubmitTask(std::move(function));
-}
-
-void Host::WaitForAllAsyncTasks()
-{
-  RegTestHost::s_async_task_queue.WaitForAll();
 }
 
 void Host::RequestResizeHostDisplay(s32 width, s32 height)
@@ -705,12 +692,6 @@ void RegTestHost::HookSignals()
 #endif
 }
 
-void RegTestHost::VideoThreadEntryPoint()
-{
-  Threading::SetNameOfCurrentThread("Video Thread");
-  VideoThread::Internal::VideoThreadEntryPoint();
-}
-
 void RegTestHost::DumpSystemStateHashes()
 {
   Error error;
@@ -971,7 +952,7 @@ int main(int argc, char* argv[])
   CrashHandler::Install(&Bus::CleanupMemoryMap);
 
   Error error;
-  if (!System::PerformEarlyHardwareChecks(&error) || !System::ProcessStartup(&error))
+  if (!Core::PerformEarlyHardwareChecks(&error) || !Core::ProcessStartup(&error))
   {
     std::fprintf(stderr, "ERROR: ProcessStartup() failed: %s\n", error.GetDescription().c_str());
     return EXIT_FAILURE;
@@ -996,17 +977,13 @@ int main(int argc, char* argv[])
   if (!RegTestHost::SetNewDataRoot(autoboot->path))
     return EXIT_FAILURE;
 
-  if (!System::CoreThreadInitialize(&error))
+  if (!Core::CoreThreadInitialize(true, &error))
   {
     ERROR_LOG("CoreThreadInitialize() failed: {}", error.GetDescription());
     return EXIT_FAILURE;
   }
 
-  // Only one async worker, keep the CPU usage down so we can parallelize execution of regtest itself.
-  RegTestHost::s_async_task_queue.SetWorkerCount(1);
-
   RegTestHost::HookSignals();
-  s_video_thread.Start(&RegTestHost::VideoThreadEntryPoint);
 
   int result = -1;
   INFO_LOG("Trying to boot '{}'...", autoboot->path);
@@ -1053,16 +1030,8 @@ int main(int argc, char* argv[])
   result = 0;
 
 cleanup:
-  if (s_video_thread.Joinable())
-  {
-    VideoThread::Internal::RequestShutdown();
-    s_video_thread.Join();
-  }
-
-  RegTestHost::s_async_task_queue.SetWorkerCount(0);
-
   RegTestHost::ProcessCoreThreadEvents();
-  System::CoreThreadShutdown();
-  System::ProcessShutdown();
+  Core::CoreThreadShutdown();
+  Core::ProcessShutdown();
   return result;
 }

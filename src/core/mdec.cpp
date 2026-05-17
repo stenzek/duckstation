@@ -113,7 +113,7 @@ static void SetScaleMatrix(const u16* values);
 static bool DecodeMonoMacroblock();
 static bool DecodeColoredMacroblock();
 static void ScheduleBlockCopyOut(TickCount ticks);
-static void CopyOutBlock(void* param, TickCount ticks, TickCount ticks_late);
+static void CopyOutBlock(void* param, TickCount ticks);
 
 static bool DecodeRLE_Old(s16* blk, const u8* qt);
 static void IDCT_Old(s16* blk);
@@ -650,7 +650,7 @@ void MDEC::ScheduleBlockCopyOut(TickCount ticks)
   s_state.block_copy_out_event.SetIntervalAndSchedule(ticks);
 }
 
-void MDEC::CopyOutBlock(void* param, TickCount ticks, TickCount ticks_late)
+void MDEC::CopyOutBlock(void* param, TickCount ticks)
 {
   Assert(s_state.state == State::WritingMacroblock);
   s_state.block_copy_out_event.Deactivate();

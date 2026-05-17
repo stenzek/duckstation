@@ -163,7 +163,7 @@ private:
   void* m_soundtouch = nullptr;
 
   u32 m_target_buffer_size = 0;
-  u32 m_stretch_reset = STRETCH_RESET_THRESHOLD;
+  u32 m_stretch_reset = 0;
   u64 m_stretch_reset_time = 0;
 
   u32 m_stretch_ok_count = 0;

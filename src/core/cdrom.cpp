@@ -294,7 +294,7 @@ static_assert(sizeof(XA_ADPCMBlockHeader) == 1, "XA-ADPCM block header is one by
 
 } // namespace
 
-static TickCount SoftReset(TickCount ticks_late);
+static TickCount SoftReset();
 
 static const CDImage::SubChannelQ& GetSectorSubQ(u32 lba, const CDImage::SubChannelQ& real_subq);
 static bool CanReadMedia();
@@ -315,7 +315,7 @@ static s16 SaturateVolume(s32 volume);
 static void SetInterrupt(Interrupt interrupt);
 static void SetAsyncInterrupt(Interrupt interrupt);
 static void ClearAsyncInterrupt();
-static void DeliverAsyncInterrupt(void*, TickCount ticks, TickCount ticks_late);
+static void DeliverAsyncInterrupt(void*, TickCount ticks);
 static void QueueDeliverAsyncInterrupt();
 static void SendACKAndStat();
 static void SendErrorResponse(u8 stat_bits = STAT_ERROR, u8 reason = ERROR_REASON_NOT_READY);
@@ -340,18 +340,18 @@ static bool CompleteSeek();
 
 static void BeginCommand(Command command); // also update status register
 static void EndCommand();                  // also updates status register
-static void ExecuteCommand(void*, TickCount ticks, TickCount ticks_late);
+static void ExecuteCommand(void*, TickCount ticks);
 static void ExecuteTestCommand(u8 subcommand);
-static void ExecuteCommandSecondResponse(void*, TickCount ticks, TickCount ticks_late);
+static void ExecuteCommandSecondResponse(void*, TickCount ticks);
 static void QueueCommandSecondResponse(Command command, TickCount ticks);
 static void ClearCommandSecondResponse();
 static void UpdateCommandEvent();
-static void ExecuteDrive(void*, TickCount ticks, TickCount ticks_late);
+static void ExecuteDrive(void*, TickCount ticks);
 static void ClearDriveState();
-static void BeginReading(TickCount ticks_late = 0, bool after_seek = false);
-static void BeginPlaying(u8 track, TickCount ticks_late = 0, bool after_seek = false);
-static void DoShellOpenComplete(TickCount ticks_late);
-static void DoSeekComplete(TickCount ticks_late);
+static void BeginReading(bool after_seek);
+static void BeginPlaying(u8 track, bool after_seek);
+static void DoShellOpenComplete();
+static void DoSeekComplete();
 static void DoStatSecondResponse();
 static void DoChangeSessionComplete();
 static void DoSpinUpComplete();
@@ -631,7 +631,7 @@ void CDROM::Reset()
   SetHoldPosition(0, 0);
 }
 
-TickCount CDROM::SoftReset(TickCount ticks_late)
+TickCount CDROM::SoftReset()
 {
   const bool was_double_speed = s_state.mode.double_speed;
 
@@ -672,7 +672,7 @@ TickCount CDROM::SoftReset(TickCount ticks_late)
 
     const TickCount speed_change_ticks = was_double_speed ? GetTicksForSpeedChange() : 0;
     const TickCount seek_ticks = (s_state.current_lba != 0) ? GetTicksForSeek(0) : 0;
-    total_ticks = std::max<TickCount>(speed_change_ticks + seek_ticks, INIT_TICKS) - ticks_late;
+    total_ticks = std::max<TickCount>(speed_change_ticks + seek_ticks, INIT_TICKS);
     DEV_LOG("CDROM init total disc ticks = {} (speed change = {}, seek = {})", total_ticks, speed_change_ticks,
             seek_ticks);
 
@@ -693,7 +693,7 @@ TickCount CDROM::SoftReset(TickCount ticks_late)
   }
   else
   {
-    total_ticks = INIT_TICKS - ticks_late;
+    total_ticks = INIT_TICKS;
   }
 
   return total_ticks;
@@ -1416,7 +1416,7 @@ void CDROM::QueueDeliverAsyncInterrupt()
   const u32 diff = static_cast<u32>(System::GetGlobalTickCounter() - s_state.last_interrupt_time);
   if (diff >= MINIMUM_INTERRUPT_DELAY)
   {
-    DeliverAsyncInterrupt(nullptr, 0, 0);
+    DeliverAsyncInterrupt(nullptr, 0);
   }
   else
   {
@@ -1426,7 +1426,7 @@ void CDROM::QueueDeliverAsyncInterrupt()
   }
 }
 
-void CDROM::DeliverAsyncInterrupt(void*, TickCount ticks, TickCount ticks_late)
+void CDROM::DeliverAsyncInterrupt(void*, TickCount ticks)
 {
   if (HasPendingInterrupt())
   {
@@ -1832,7 +1832,7 @@ void CDROM::EndCommand()
   UpdateStatusRegister();
 }
 
-void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
+void CDROM::ExecuteCommand(void*, TickCount ticks)
 {
   const CommandInfo& ci = s_command_info[static_cast<u8>(s_state.command)];
   if (s_state.param_fifo.GetSize() < ci.min_parameters || s_state.param_fifo.GetSize() > ci.max_parameters) [[unlikely]]
@@ -2084,7 +2084,7 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
         }
         else
         {
-          BeginReading();
+          BeginReading(false);
         }
       }
 
@@ -2114,7 +2114,7 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
         }
         else
         {
-          BeginPlaying(track);
+          BeginPlaying(track, false);
         }
       }
 
@@ -2252,7 +2252,7 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
       DEV_COLOR_LOG(StrongOrange, "Init");
       SendACKAndStat();
 
-      const TickCount reset_ticks = SoftReset(ticks_late);
+      const TickCount reset_ticks = SoftReset();
       QueueCommandSecondResponse(Command::Init, reset_ticks);
       EndCommand();
       return;
@@ -2602,7 +2602,7 @@ void CDROM::ExecuteTestCommand(u8 subcommand)
   }
 }
 
-void CDROM::ExecuteCommandSecondResponse(void*, TickCount ticks, TickCount ticks_late)
+void CDROM::ExecuteCommandSecondResponse(void*, TickCount ticks)
 {
   switch (s_state.command_second_response)
   {
@@ -2681,17 +2681,17 @@ void CDROM::UpdateCommandEvent()
   }
 }
 
-void CDROM::ExecuteDrive(void*, TickCount ticks, TickCount ticks_late)
+void CDROM::ExecuteDrive(void*, TickCount ticks)
 {
   switch (s_state.drive_state)
   {
     case DriveState::ShellOpening:
-      DoShellOpenComplete(ticks_late);
+      DoShellOpenComplete();
       break;
 
     case DriveState::SeekingPhysical:
     case DriveState::SeekingLogical:
-      DoSeekComplete(ticks_late);
+      DoSeekComplete();
       break;
 
     case DriveState::SeekingImplicit:
@@ -2759,7 +2759,7 @@ void CDROM::ClearDriveState()
   s_state.drive_event.Deactivate();
 }
 
-void CDROM::BeginReading(TickCount ticks_late /* = 0 */, bool after_seek /* = false */)
+void CDROM::BeginReading(bool after_seek)
 {
   if (!after_seek && s_state.setloc_pending)
   {
@@ -2786,7 +2786,7 @@ void CDROM::BeginReading(TickCount ticks_late /* = 0 */, bool after_seek /* = fa
   DEBUG_LOG("Starting reading @ LBA {}", s_state.current_lba);
 
   const TickCount ticks = GetTicksForRead();
-  const TickCount first_sector_ticks = ticks + (after_seek ? 0 : GetTicksForSeek(s_state.current_lba)) - ticks_late;
+  const TickCount first_sector_ticks = ticks + (after_seek ? 0 : GetTicksForSeek(s_state.current_lba));
 
   ClearCommandSecondResponse();
   ClearAsyncInterrupt();
@@ -2808,7 +2808,7 @@ void CDROM::BeginReading(TickCount ticks_late /* = 0 */, bool after_seek /* = fa
   s_reader.QueueReadSector(s_state.requested_lba);
 }
 
-void CDROM::BeginPlaying(u8 track, TickCount ticks_late /* = 0 */, bool after_seek /* = false */)
+void CDROM::BeginPlaying(u8 track, bool after_seek)
 {
   DEBUG_LOG("Starting playing CDDA track {}", track);
   s_state.play_track_number_bcd = track;
@@ -2835,8 +2835,7 @@ void CDROM::BeginPlaying(u8 track, TickCount ticks_late /* = 0 */, bool after_se
   }
 
   const TickCount ticks = GetTicksForRead();
-  const TickCount first_sector_ticks =
-    ticks + (after_seek ? 0 : GetTicksForSeek(s_state.current_lba, true)) - ticks_late;
+  const TickCount first_sector_ticks = ticks + (after_seek ? 0 : GetTicksForSeek(s_state.current_lba, true));
 
   ClearCommandSecondResponse();
   ClearAsyncInterrupt();
@@ -3040,7 +3039,7 @@ void CDROM::EnsureLastSubQValid()
     s_state.last_subq = subq;
 }
 
-void CDROM::DoShellOpenComplete(TickCount ticks_late)
+void CDROM::DoShellOpenComplete()
 {
   // media is now readable (if any)
   ClearDriveState();
@@ -3125,7 +3124,7 @@ bool CDROM::CompleteSeek()
   return seek_okay;
 }
 
-void CDROM::DoSeekComplete(TickCount ticks_late)
+void CDROM::DoSeekComplete()
 {
   const bool logical = (s_state.drive_state == DriveState::SeekingLogical);
   const bool seek_okay = CompleteSeek();
@@ -3139,11 +3138,11 @@ void CDROM::DoSeekComplete(TickCount ticks_late)
     // INT2 is not sent on play/read
     if (s_state.read_after_seek)
     {
-      BeginReading(ticks_late, true);
+      BeginReading(true);
     }
     else if (s_state.play_after_seek)
     {
-      BeginPlaying(0, ticks_late, true);
+      BeginPlaying(0, true);
     }
     else
     {

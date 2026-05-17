@@ -225,6 +225,7 @@
     <ClCompile Include="x11_tools.cpp">
       <ExcludedFromBuild>true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="xaudio2_audio_stream.cpp" />
     <ClCompile Include="xinput_source.cpp" />
   </ItemGroup>
   <ItemGroup>

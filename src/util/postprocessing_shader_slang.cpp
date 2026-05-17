@@ -1219,46 +1219,47 @@ bool PostProcessing::SlangShader::ParsePresetPass(std::string_view preset_path, 
 static std::optional<DynamicHeapArray<u32>> CompileToSPV(shaderc_shader_kind stage, std::string_view code, Error* error)
 {
   std::optional<DynamicHeapArray<u32>> ret;
-  if (!dyn_libs::OpenShaderc(error))
+  if (!g_dyn_shaderc.Open(error))
     return ret;
 
   const bool generate_debug_info = (g_gpu_device && g_gpu_device->IsDebugDevice());
-  const shaderc_compile_options_t options = dyn_libs::shaderc_compile_options_initialize();
+  const shaderc_compile_options_t options = g_dyn_shaderc.shaderc_compile_options_initialize();
   AssertMsg(options, "shaderc_compile_options_initialize() failed");
 
-  dyn_libs::shaderc_compile_options_set_source_language(options, shaderc_source_language_glsl);
-  dyn_libs::shaderc_compile_options_set_target_env(options, shaderc_target_env_vulkan, 0);
-  dyn_libs::shaderc_compile_options_set_generate_debug_info(options, generate_debug_info, false);
-  dyn_libs::shaderc_compile_options_set_optimization_level(options, shaderc_optimization_level_zero);
+  g_dyn_shaderc.shaderc_compile_options_set_source_language(options, shaderc_source_language_glsl);
+  g_dyn_shaderc.shaderc_compile_options_set_target_env(options, shaderc_target_env_vulkan, 0);
+  g_dyn_shaderc.shaderc_compile_options_set_generate_debug_info(options, generate_debug_info, false);
+  g_dyn_shaderc.shaderc_compile_options_set_optimization_level(options, shaderc_optimization_level_zero);
 
-  const shaderc_compilation_result_t result = dyn_libs::shaderc_compile_into_spv(
-    dyn_libs::g_shaderc_compiler, code.data(), code.length(), stage, "source", "main", options);
+  const shaderc_compilation_result_t result = g_dyn_shaderc.shaderc_compile_into_spv(
+    g_dyn_shaderc.compiler, code.data(), code.length(), stage, "source", "main", options);
   const shaderc_compilation_status status =
-    result ? dyn_libs::shaderc_result_get_compilation_status(result) : shaderc_compilation_status_internal_error;
+    result ? g_dyn_shaderc.shaderc_result_get_compilation_status(result) : shaderc_compilation_status_internal_error;
   if (status != shaderc_compilation_status_success)
   {
-    const std::string_view errors(result ? dyn_libs::shaderc_result_get_error_message(result) : "null result object");
+    const std::string_view errors(result ? g_dyn_shaderc.shaderc_result_get_error_message(result) :
+                                           "null result object");
     Error::SetStringFmt(error, "Failed to compile shader to SPIR-V: {}\n{}",
-                        dyn_libs::shaderc_compilation_status_to_string(status), errors);
-    ERROR_LOG("Failed to compile shader to SPIR-V: {}\n{}", dyn_libs::shaderc_compilation_status_to_string(status),
+                        g_dyn_shaderc.shaderc_compilation_status_to_string(status), errors);
+    ERROR_LOG("Failed to compile shader to SPIR-V: {}\n{}", g_dyn_shaderc.shaderc_compilation_status_to_string(status),
               errors);
     GPUDevice::DumpBadShader(code, errors);
   }
   else
   {
-    const size_t num_warnings = dyn_libs::shaderc_result_get_num_warnings(result);
+    const size_t num_warnings = g_dyn_shaderc.shaderc_result_get_num_warnings(result);
     if (num_warnings > 0)
-      WARNING_LOG("Shader compiled with warnings:\n{}", dyn_libs::shaderc_result_get_error_message(result));
+      WARNING_LOG("Shader compiled with warnings:\n{}", g_dyn_shaderc.shaderc_result_get_error_message(result));
 
-    const size_t spirv_size = dyn_libs::shaderc_result_get_length(result);
+    const size_t spirv_size = g_dyn_shaderc.shaderc_result_get_length(result);
     Assert(spirv_size > 0 && (spirv_size % sizeof(u32)) == 0);
     ret.emplace();
     ret->resize(spirv_size / sizeof(u32));
-    std::memcpy(ret->data(), dyn_libs::shaderc_result_get_bytes(result), spirv_size);
+    std::memcpy(ret->data(), g_dyn_shaderc.shaderc_result_get_bytes(result), spirv_size);
   }
 
-  dyn_libs::shaderc_result_release(result);
-  dyn_libs::shaderc_compile_options_release(options);
+  g_dyn_shaderc.shaderc_result_release(result);
+  g_dyn_shaderc.shaderc_compile_options_release(options);
   return ret;
 }
 
@@ -1284,20 +1285,20 @@ bool PostProcessing::SlangShader::ReflectPass(Pass& pass, Error* error)
 
 bool PostProcessing::SlangShader::ReflectShader(Pass& pass, std::span<u32> spv, GPUShaderStage stage, Error* error)
 {
-  if (!dyn_libs::OpenSpirvCross(error))
+  if (!g_dyn_spirv_cross.Open(error))
     return false;
 
   spvc_context sctx;
   spvc_result sres;
-  if ((sres = dyn_libs::spvc_context_create(&sctx)) != SPVC_SUCCESS)
+  if ((sres = g_dyn_spirv_cross.spvc_context_create(&sctx)) != SPVC_SUCCESS)
   {
     Error::SetStringFmt(error, "spvc_context_create() failed: {}", static_cast<int>(sres));
     return false;
   }
 
-  const ScopedGuard sctx_guard = [&sctx]() { dyn_libs::spvc_context_destroy(sctx); };
+  const ScopedGuard sctx_guard = [&sctx]() { g_dyn_spirv_cross.spvc_context_destroy(sctx); };
 
-  dyn_libs::spvc_context_set_error_callback(
+  g_dyn_spirv_cross.spvc_context_set_error_callback(
     sctx,
     [](void* error, const char* errormsg) {
       ERROR_LOG("SPIRV-Cross reported an error: {}", errormsg);
@@ -1306,30 +1307,31 @@ bool PostProcessing::SlangShader::ReflectShader(Pass& pass, std::span<u32> spv, 
     error);
 
   spvc_parsed_ir sir;
-  if ((sres = dyn_libs::spvc_context_parse_spirv(sctx, reinterpret_cast<const u32*>(spv.data()), spv.size(), &sir)) !=
-      SPVC_SUCCESS)
+  if ((sres = g_dyn_spirv_cross.spvc_context_parse_spirv(sctx, reinterpret_cast<const u32*>(spv.data()), spv.size(),
+                                                         &sir)) != SPVC_SUCCESS)
   {
     Error::SetStringFmt(error, "spvc_context_parse_spirv() failed: {}", static_cast<int>(sres));
     return false;
   }
 
   spvc_compiler scompiler;
-  if ((sres = dyn_libs::spvc_context_create_compiler(sctx, SPVC_BACKEND_NONE /*SPVC_BACKEND_GLSL*/, sir,
-                                                     SPVC_CAPTURE_MODE_TAKE_OWNERSHIP, &scompiler)) != SPVC_SUCCESS)
+  if ((sres = g_dyn_spirv_cross.spvc_context_create_compiler(sctx, SPVC_BACKEND_NONE /*SPVC_BACKEND_GLSL*/, sir,
+                                                             SPVC_CAPTURE_MODE_TAKE_OWNERSHIP, &scompiler)) !=
+      SPVC_SUCCESS)
   {
     Error::SetStringFmt(error, "spvc_context_create_compiler() failed: {}", static_cast<int>(sres));
     return false;
   }
 
   spvc_compiler_options soptions;
-  if ((sres = dyn_libs::spvc_compiler_create_compiler_options(scompiler, &soptions)) != SPVC_SUCCESS)
+  if ((sres = g_dyn_spirv_cross.spvc_compiler_create_compiler_options(scompiler, &soptions)) != SPVC_SUCCESS)
   {
     Error::SetStringFmt(error, "spvc_compiler_create_compiler_options() failed: {}", static_cast<int>(sres));
     return false;
   }
 
   spvc_resources resources;
-  if ((sres = dyn_libs::spvc_compiler_create_shader_resources(scompiler, &resources)) != SPVC_SUCCESS)
+  if ((sres = g_dyn_spirv_cross.spvc_compiler_create_shader_resources(scompiler, &resources)) != SPVC_SUCCESS)
   {
     Error::SetStringFmt(error, "spvc_compiler_create_shader_resources() failed: {}", static_cast<int>(sres));
     return false;
@@ -1338,12 +1340,12 @@ bool PostProcessing::SlangShader::ReflectShader(Pass& pass, std::span<u32> spv, 
   // Need to know if there's UBOs for mapping.
   const spvc_reflected_resource *ubos, *push_constants, *textures;
   size_t ubos_count, push_constants_count, textures_count;
-  if ((sres = dyn_libs::spvc_resources_get_resource_list_for_type(resources, SPVC_RESOURCE_TYPE_UNIFORM_BUFFER, &ubos,
-                                                                  &ubos_count)) != SPVC_SUCCESS ||
-      (sres = dyn_libs::spvc_resources_get_resource_list_for_type(
+  if ((sres = g_dyn_spirv_cross.spvc_resources_get_resource_list_for_type(resources, SPVC_RESOURCE_TYPE_UNIFORM_BUFFER,
+                                                                          &ubos, &ubos_count)) != SPVC_SUCCESS ||
+      (sres = g_dyn_spirv_cross.spvc_resources_get_resource_list_for_type(
          resources, SPVC_RESOURCE_TYPE_PUSH_CONSTANT, &push_constants, &push_constants_count)) != SPVC_SUCCESS ||
-      (sres = dyn_libs::spvc_resources_get_resource_list_for_type(resources, SPVC_RESOURCE_TYPE_SAMPLED_IMAGE,
-                                                                  &textures, &textures_count)) != SPVC_SUCCESS)
+      (sres = g_dyn_spirv_cross.spvc_resources_get_resource_list_for_type(resources, SPVC_RESOURCE_TYPE_SAMPLED_IMAGE,
+                                                                          &textures, &textures_count)) != SPVC_SUCCESS)
   {
     Error::SetStringFmt(error, "spvc_resources_get_resource_list_for_type() failed: {}", static_cast<int>(sres));
     return false;
@@ -1351,15 +1353,16 @@ bool PostProcessing::SlangShader::ReflectShader(Pass& pass, std::span<u32> spv, 
 
   // Try to only allocate active textures.
   std::optional<std::span<const spvc_reflected_resource>> active_textures;
-  if (spvc_set active_interface_variables; (sres = dyn_libs::spvc_compiler_get_active_interface_variables(
+  if (spvc_set active_interface_variables; (sres = g_dyn_spirv_cross.spvc_compiler_get_active_interface_variables(
                                               scompiler, &active_interface_variables)) == SPVC_SUCCESS)
   {
-    if (spvc_resources active_resources; (sres = dyn_libs::spvc_compiler_create_shader_resources_for_active_variables(
-                                            scompiler, &active_resources, active_interface_variables)) == SPVC_SUCCESS)
+    if (spvc_resources active_resources;
+        (sres = g_dyn_spirv_cross.spvc_compiler_create_shader_resources_for_active_variables(
+           scompiler, &active_resources, active_interface_variables)) == SPVC_SUCCESS)
     {
       const spvc_reflected_resource* active_textures_begin;
       size_t active_textures_count;
-      if ((sres = dyn_libs::spvc_resources_get_resource_list_for_type(
+      if ((sres = g_dyn_spirv_cross.spvc_resources_get_resource_list_for_type(
              active_resources, SPVC_RESOURCE_TYPE_SAMPLED_IMAGE, &active_textures_begin, &active_textures_count)) ==
           SPVC_SUCCESS)
       {
@@ -1419,8 +1422,9 @@ bool PostProcessing::SlangShader::ReflectShader(Pass& pass, std::span<u32> spv, 
     }
 
     const unsigned orig_descriptor_set =
-      dyn_libs::spvc_compiler_get_decoration(scompiler, tex.id, SpvDecorationDescriptorSet);
-    const unsigned orig_binding = dyn_libs::spvc_compiler_get_decoration(scompiler, tex.id, SpvDecorationBinding);
+      g_dyn_spirv_cross.spvc_compiler_get_decoration(scompiler, tex.id, SpvDecorationDescriptorSet);
+    const unsigned orig_binding =
+      g_dyn_spirv_cross.spvc_compiler_get_decoration(scompiler, tex.id, SpvDecorationBinding);
     if (orig_descriptor_set != 0)
     {
       Error::SetStringFmt(error, "Texture '{}' is in descriptor set {}, only set 0 is supported", tex.name,
@@ -1507,7 +1511,7 @@ bool PostProcessing::SlangShader::ReflectPassUniforms(const spvc_compiler& scomp
                                                       const spvc_reflected_resource& resource, Pass& pass,
                                                       bool push_constant, Error* error)
 {
-  const spvc_type type_handle = dyn_libs::spvc_compiler_get_type_handle(scompiler, resource.base_type_id);
+  const spvc_type type_handle = g_dyn_spirv_cross.spvc_compiler_get_type_handle(scompiler, resource.base_type_id);
   if (!type_handle)
   {
     Error::SetStringFmt(error, "spvc_compiler_get_type_handle() failed for resource '{}'", resource.name);
@@ -1515,7 +1519,8 @@ bool PostProcessing::SlangShader::ReflectPassUniforms(const spvc_compiler& scomp
   }
 
   size_t struct_size = 0;
-  if (const spvc_result sres = dyn_libs::spvc_compiler_get_declared_struct_size(scompiler, type_handle, &struct_size);
+  if (const spvc_result sres =
+        g_dyn_spirv_cross.spvc_compiler_get_declared_struct_size(scompiler, type_handle, &struct_size);
       sres != SPVC_SUCCESS)
   {
     Error::SetStringFmt(error, "spvc_compiler_get_declared_struct_size() failed for resource '{}': {}", resource.name,
@@ -1545,16 +1550,17 @@ bool PostProcessing::SlangShader::ReflectPassUniforms(const spvc_compiler& scomp
 
   for (unsigned member_idx = 0;; member_idx++)
   {
-    const char* member_name = dyn_libs::spvc_compiler_get_member_name(scompiler, resource.base_type_id, member_idx);
+    const char* member_name =
+      g_dyn_spirv_cross.spvc_compiler_get_member_name(scompiler, resource.base_type_id, member_idx);
     if (!member_name || member_name[0] == '\0')
       break;
 
-    const u32 offset =
-      dyn_libs::spvc_compiler_get_member_decoration(scompiler, resource.base_type_id, member_idx, SpvDecorationOffset);
+    const u32 offset = g_dyn_spirv_cross.spvc_compiler_get_member_decoration(scompiler, resource.base_type_id,
+                                                                             member_idx, SpvDecorationOffset);
 
     size_t member_size = 0;
-    if (const spvc_result sres =
-          dyn_libs::spvc_compiler_get_declared_struct_member_size(scompiler, type_handle, member_idx, &member_size);
+    if (const spvc_result sres = g_dyn_spirv_cross.spvc_compiler_get_declared_struct_member_size(
+          scompiler, type_handle, member_idx, &member_size);
         sres != SPVC_SUCCESS)
     {
       Error::SetStringFmt(error, "spvc_compiler_get_declared_struct_member_size() failed for member '{}' of '{}': {}",

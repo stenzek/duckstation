@@ -22,7 +22,8 @@ class InputBindingDialog : public QDialog
 
 public:
   InputBindingDialog(SettingsInterface* sif, InputBindingInfo::Type bind_type, std::string section_name,
-                     std::string key_name, std::vector<std::string> bindings, QWidget* parent);
+                     std::string key_name, std::vector<std::string> bindings, const QString& display_name,
+                     QWidget* parent);
   ~InputBindingDialog();
 
 protected:

@@ -15,7 +15,6 @@
 #include "core/achievements.h"
 #include "core/bus.h"
 #include "core/cheats.h"
-#include "core/controller.h"
 #include "core/core.h"
 #include "core/core_private.h"
 #include "core/fullscreenui.h"
@@ -27,29 +26,23 @@
 #include "core/gpu_backend.h"
 #include "core/gpu_hw_texture_cache.h"
 #include "core/host.h"
-#include "core/imgui_overlays.h"
-#include "core/memory_card.h"
 #include "core/performance_counters.h"
-#include "core/spu.h"
 #include "core/system.h"
 #include "core/system_private.h"
 #include "core/video_presenter.h"
 #include "core/video_thread.h"
+#include "core/video_thread_private.h"
 
 #include "common/assert.h"
 #include "common/crash_handler.h"
 #include "common/error.h"
 #include "common/file_system.h"
 #include "common/log.h"
-#include "common/minizip_helpers.h"
 #include "common/path.h"
 #include "common/scoped_guard.h"
 #include "common/string_util.h"
-#include "common/task_queue.h"
 #include "common/threading.h"
 
-#include "util/audio_stream.h"
-#include "util/cd_image.h"
 #include "util/http_cache.h"
 #include "util/http_downloader.h"
 #include "util/imgui_manager.h"
@@ -69,11 +62,8 @@
 #include <QtCore/QFile>
 #include <QtCore/QTimer>
 #include <QtCore/QTranslator>
-#include <QtCore/QtLogging>
 #include <QtGui/QClipboard>
 #include <QtGui/QKeyEvent>
-#include <QtWidgets/QFileDialog>
-#include <QtWidgets/QMessageBox>
 #include <algorithm>
 #include <cmath>
 #include <csignal>
@@ -81,9 +71,11 @@
 #include <cstdlib>
 #include <memory>
 
-#ifdef _WIN32
+#if defined(_WIN32)
 #include "common/windows_headers.h"
 #include <objbase.h> // CoInitializeEx
+#elif defined(__APPLE__)
+#include <unistd.h>
 #endif
 
 #include "moc_qthost.cpp"
@@ -104,9 +96,6 @@ QT_TRANSLATE_NOOP("MAC_APPLICATION_MENU", "About %1")
 #endif
 
 static constexpr u32 SETTINGS_SAVE_DELAY = 1000;
-
-/// Use two async worker threads, should be enough for most tasks.
-static constexpr u32 NUM_ASYNC_WORKER_THREADS = 2;
 
 /// Interval at which the controllers are polled when the system is not active.
 static constexpr int BACKGROUND_CONTROLLER_POLLING_INTERVAL_WITH_DEVICES = 100;
@@ -179,7 +168,6 @@ struct State
 } // namespace
 
 ALIGN_TO_CACHE_LINE static State s_state;
-ALIGN_TO_CACHE_LINE static TaskQueue s_async_task_queue;
 
 } // namespace QtHost
 
@@ -215,7 +203,7 @@ void QtHost::RegisterTypes()
 bool QtHost::PerformEarlyHardwareChecks()
 {
   Error error;
-  const bool okay = System::PerformEarlyHardwareChecks(&error);
+  const bool okay = Core::PerformEarlyHardwareChecks(&error);
   if (okay && !error.IsValid()) [[likely]]
     return true;
 
@@ -268,7 +256,7 @@ bool QtHost::EarlyProcessStartup()
   QApplication::setDesktopFileName("org.duckstation.DuckStation"_L1);
 
   Error error;
-  if (!System::ProcessStartup(&error)) [[unlikely]]
+  if (!Core::ProcessStartup(&error)) [[unlikely]]
   {
     QMessageBox::critical(nullptr, QStringLiteral("Process Startup Failed"),
                           QString::fromStdString(error.GetDescription()));
@@ -286,7 +274,7 @@ bool QtHost::EarlyProcessStartup()
 
 void QtHost::ProcessShutdown()
 {
-  System::ProcessShutdown();
+  Core::ProcessShutdown();
 
   // Ensure log is flushed.
   Log::SetFileOutputParams(false, nullptr);
@@ -347,13 +335,21 @@ bool QtHost::IsDisplayWidgetContainerNeeded()
 
 void QtHost::AdjustQtEnvironmentVariables()
 {
-  const char* desktop = std::getenv("XDG_SESSION_DESKTOP");
+  // Disable screensaver inhibit if running on gamescope.
+  const char* desktop = std::getenv("XDG_CURRENT_DESKTOP");
   if (!desktop)
-    return;
+    desktop = std::getenv("XDG_SESSION_DESKTOP");
 
-  std::fprintf(stderr, "XDG_SESSION_DESKTOP=%s\n", desktop);
+  std::fprintf(stderr, "XDG_SESSION_DESKTOP=%s\n", desktop ? desktop : "null");
 
-  if (std::strcmp(desktop, "KDE") == 0 || std::strcmp(desktop, "GNOME") == 0)
+  if (!desktop || std::strstr(desktop, "gamescope"))
+  {
+    INFO_LOG("Missing XDG_CURRENT_DESKTOP ({}) or running under gamescope, disabling screensaver inhibit.",
+             desktop ? desktop : "null");
+    QtHost::DisableScreensaverInhibit();
+  }
+
+  if (desktop && (std::strstr(desktop, "KDE") == 0 || std::strstr(desktop, "GNOME") == 0))
   {
     const char* platform_theme = std::getenv("QT_QPA_PLATFORMTHEME");
     if (platform_theme)
@@ -911,19 +907,8 @@ void QtHost::ApplyMigrations()
   const std::string achievement_icons_directory = Path::Combine(EmuFolders::Cache, "achievement_images");
   if (FileSystem::DirectoryExists(achievement_icons_directory.c_str()))
   {
-    Error error;
-
     // If it's empty, just delete it.
-    if (FileSystem::IsDirectoryEmpty(achievement_icons_directory.c_str()))
-    {
-      if (!FileSystem::DeleteDirectory(achievement_icons_directory.c_str(), &error))
-      {
-        QMessageBox::critical(nullptr, "Error"_L1,
-                              QString::fromStdString(fmt::format(
-                                "Failed to delete empty achievement icons directory: {}", error.GetDescription())));
-      }
-    }
-    else
+    if (!FileSystem::IsDirectoryEmpty(achievement_icons_directory.c_str()))
     {
       QMessageBox mb(
         QMessageBox::Question, "DuckStation"_L1,
@@ -936,6 +921,7 @@ void QtHost::ApplyMigrations()
       mb.setWindowIcon(GetAppIcon());
       if (mb.exec() == QMessageBox::Yes)
       {
+        Error error;
         if (!FileSystem::RecursiveDeleteDirectory(achievement_icons_directory.c_str(), &error))
         {
           QMessageBox::critical(nullptr, "Error"_L1,
@@ -1015,10 +1001,6 @@ void CoreThread::startFullscreenUI()
 
   if (System::IsValid() || VideoThread::IsFullscreenUIRequested())
     return;
-
-  // we want settings loaded so we choose the correct renderer
-  // this also sorts out input sources.
-  System::LoadSettings(false);
 
   // borrow the game start fullscreen flag
   const bool start_fullscreen =
@@ -1707,16 +1689,6 @@ void Host::RunOnUIThread(std::function<void()> function, bool block /* = false*/
                             block ? Qt::BlockingQueuedConnection : Qt::QueuedConnection, std::move(function));
 }
 
-void Host::QueueAsyncTask(std::function<void()> function)
-{
-  QtHost::s_async_task_queue.SubmitTask(std::move(function));
-}
-
-void Host::WaitForAllAsyncTasks()
-{
-  QtHost::s_async_task_queue.WaitForAll();
-}
-
 QtAsyncTask::QtAsyncTask(WorkCallback callback)
 {
   m_callback = std::move(callback);
@@ -2072,18 +2044,13 @@ void CoreThread::processAuxiliaryRenderWindowInputEvent(void* userdata, quint32 
   });
 }
 
-void CoreThread::doBackgroundControllerPoll()
-{
-  System::IdlePollUpdate();
-}
-
 void CoreThread::createBackgroundControllerPollTimer()
 {
   DebugAssert(!m_background_controller_polling_timer);
   m_background_controller_polling_timer = new QTimer(this);
   m_background_controller_polling_timer->setSingleShot(false);
   m_background_controller_polling_timer->setTimerType(Qt::CoarseTimer);
-  connect(m_background_controller_polling_timer, &QTimer::timeout, this, &CoreThread::doBackgroundControllerPoll);
+  connect(m_background_controller_polling_timer, &QTimer::timeout, &Core::IdleUpdate);
 }
 
 void CoreThread::destroyBackgroundControllerPollTimer()
@@ -2136,9 +2103,12 @@ void CoreThread::updateBackgroundControllerPollInterval()
 
 int CoreThread::getBackgroundControllerPollInterval() const
 {
+#ifdef ENABLE_GDB_SERVER
   if (GDBServer::HasAnyClients())
     return GDB_SERVER_POLLING_INTERVAL;
-  else if (m_video_thread_run_idle)
+#endif
+
+  if (m_video_thread_run_idle)
     return FULLSCREEN_UI_CONTROLLER_POLLING_INTERVAL;
   else if (InputManager::GetPollableDeviceCount() > 0)
     return BACKGROUND_CONTROLLER_POLLING_INTERVAL_WITH_DEVICES;
@@ -2210,17 +2180,13 @@ void CoreThread::run()
   // input source setup must happen on emu thread
   {
     Error startup_error;
-    if (!System::CoreThreadInitialize(&startup_error))
+    if (!Core::CoreThreadInitialize(false, &startup_error))
     {
       moveToThread(m_ui_thread);
       Host::ReportFatalError("Fatal Startup Error", startup_error.GetDescription());
       return;
     }
   }
-
-  // start up worker threads
-  // TODO: Replace this with QThreads
-  QtHost::s_async_task_queue.SetWorkerCount(NUM_ASYNC_WORKER_THREADS);
 
   // connections
   connect(qApp, &QGuiApplication::applicationStateChanged, this, &CoreThread::applicationStateChanged);
@@ -2231,9 +2197,6 @@ void CoreThread::run()
   // start background input polling
   createBackgroundControllerPollTimer();
   startBackgroundControllerPollTimer();
-
-  // kick off GPU thread
-  Threading::Thread video_thread(&CoreThread::videoThreadEntryPoint);
 
   // main loop
   while (!m_shutdown_flag)
@@ -2248,7 +2211,7 @@ void CoreThread::run()
 
       // have to double-check the condition after processing events, because the events could shut us down
       if (!VideoThread::IsUsingThread() && VideoThread::IsRunningIdle())
-        VideoThread::Internal::DoRunIdle();
+        VideoThread::DoRunIdle();
     }
     else
     {
@@ -2261,26 +2224,13 @@ void CoreThread::run()
 
   destroyBackgroundControllerPollTimer();
 
-  // tell GPU thread to exit
-  VideoThread::Internal::RequestShutdown();
-  video_thread.Join();
-
-  // join worker threads
-  QtHost::s_async_task_queue.SetWorkerCount(0);
-
   // and tidy up everything left
-  System::CoreThreadShutdown();
+  Core::CoreThreadShutdown();
 
   // move back to UI thread
   moveToThread(m_ui_thread);
   delete m_event_loop;
   m_event_loop = nullptr;
-}
-
-void CoreThread::videoThreadEntryPoint()
-{
-  Threading::SetNameOfCurrentThread("Video Thread");
-  VideoThread::Internal::VideoThreadEntryPoint();
 }
 
 void Host::FrameDoneOnVideoThread(GPUBackend* gpu_backend, u32 frame_number)
@@ -2736,8 +2686,8 @@ void QtHost::UpdateFontOrder(std::string_view language)
   // Why is this a thing? Because we want all glyphs to be available, but don't want to conflict
   // between codepoints shared between Chinese and Japanese. Therefore we prioritize the language
   // that the user has selected.
-  ImGuiManager::TextFontOrder font_order;
-#define TF(name) ImGuiManager::TextFont::name
+  ImGuiManager::LanguageFontOrder font_order;
+#define TF(name) ImGuiManager::LanguageFont::name
   if (language == "ja")
     font_order = {TF(Default), TF(Japanese), TF(Chinese), TF(Korean)};
   else if (language == "ko")
@@ -2745,20 +2695,20 @@ void QtHost::UpdateFontOrder(std::string_view language)
   else if (language == "zh-CN")
     font_order = {TF(Default), TF(Chinese), TF(Japanese), TF(Korean)};
   else
-    font_order = ImGuiManager::GetDefaultTextFontOrder();
+    font_order = ImGuiManager::GetLanguageTextFontOrder();
 #undef TF
 
   if (g_core_thread)
   {
     Host::RunOnCoreThread([font_order]() mutable {
-      VideoThread::RunOnThread([font_order]() mutable { ImGuiManager::SetTextFontOrder(font_order); });
+      VideoThread::RunOnThread([font_order]() mutable { ImGuiManager::SetLanguageFontOrder(font_order); });
       Host::ClearTranslationCache();
     });
   }
   else
   {
     // Startup, safe to set directly.
-    ImGuiManager::SetTextFontOrder(font_order);
+    ImGuiManager::SetLanguageFontOrder(font_order);
     Host::ClearTranslationCache();
   }
 }

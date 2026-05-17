@@ -24,14 +24,15 @@
   X(shaderc_result_get_error_message)                                                                                  \
   X(shaderc_optimize_spv)
 
-namespace dyn_libs {
-
-extern bool OpenShaderc(Error* error);
-
-#define ADD_FUNC(F) extern decltype(&::F) F;
-DYN_SHADERC_FUNCTIONS(ADD_FUNC)
+struct DynShaderc
+{
+#define ADD_FUNC(F) decltype(&::F) F;
+  DYN_SHADERC_FUNCTIONS(ADD_FUNC)
 #undef ADD_FUNC
 
-extern shaderc_compiler_t g_shaderc_compiler;
+  shaderc_compiler_t compiler;
 
-} // namespace dyn_libs
+  bool Open(Error* error);
+};
+
+extern DynShaderc g_dyn_shaderc;

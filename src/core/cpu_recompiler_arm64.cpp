@@ -455,7 +455,8 @@ u32 CPU::CodeCache::EmitASMFunctions(void* code, u32 code_size)
   Label dispatch;
   Label run_events_and_dispatch;
 
-  g_enter_recompiler = armAsm->GetCursorAddress<decltype(g_enter_recompiler)>();
+  g_recompiler_functions.enter_recompiler =
+    armAsm->GetCursorAddress<decltype(g_recompiler_functions.enter_recompiler)>();
   {
 #ifdef _WIN32
     // Frame pointer setup is needed on Windows
@@ -481,13 +482,13 @@ u32 CPU::CodeCache::EmitASMFunctions(void* code, u32 code_size)
     armAsm->cmp(RWARG1, RWARG2);
     armAsm->b(&dispatch, lt);
 
-    g_run_events_and_dispatch = armAsm->GetCursorAddress<const void*>();
+    g_recompiler_functions.run_events_and_dispatch = armAsm->GetCursorAddress<const void*>();
     armAsm->bind(&run_events_and_dispatch);
     armEmitCall(armAsm, reinterpret_cast<const void*>(&TimingEvents::RunEvents), true);
   }
 
   armAlignCode(armAsm, Recompiler::FUNCTION_ALIGNMENT);
-  g_dispatcher = armAsm->GetCursorAddress<const void*>();
+  g_recompiler_functions.dispatcher = armAsm->GetCursorAddress<const void*>();
   {
     armAsm->bind(&dispatch);
 
@@ -504,7 +505,7 @@ u32 CPU::CodeCache::EmitASMFunctions(void* code, u32 code_size)
   }
 
   armAlignCode(armAsm, Recompiler::FUNCTION_ALIGNMENT);
-  g_compile_or_revalidate_block = armAsm->GetCursorAddress<const void*>();
+  g_recompiler_functions.compile_or_revalidate_block = armAsm->GetCursorAddress<const void*>();
   {
     armAsm->ldr(RWARG1, PTR(&g_state.pc));
     armEmitCall(armAsm, reinterpret_cast<const void*>(&CompileOrRevalidateBlock), true);
@@ -512,7 +513,7 @@ u32 CPU::CodeCache::EmitASMFunctions(void* code, u32 code_size)
   }
 
   armAlignCode(armAsm, Recompiler::FUNCTION_ALIGNMENT);
-  g_discard_and_recompile_block = armAsm->GetCursorAddress<const void*>();
+  g_recompiler_functions.discard_and_recompile_block = armAsm->GetCursorAddress<const void*>();
   {
     armAsm->ldr(RWARG1, PTR(&g_state.pc));
     armEmitCall(armAsm, reinterpret_cast<const void*>(&DiscardAndRecompileBlock), true);
@@ -520,7 +521,7 @@ u32 CPU::CodeCache::EmitASMFunctions(void* code, u32 code_size)
   }
 
   armAlignCode(armAsm, Recompiler::FUNCTION_ALIGNMENT);
-  g_interpret_block = armAsm->GetCursorAddress<const void*>();
+  g_recompiler_functions.interpret_block = armAsm->GetCursorAddress<const void*>();
   {
     armEmitCall(armAsm, reinterpret_cast<const void*>(GetInterpretUncachedBlockFunction()), true);
     armAsm->ldr(RWARG1, PTR(&g_state.pending_ticks));
@@ -780,7 +781,7 @@ void CPU::ARM64Recompiler::GenerateBlockProtectCheck(const u8* ram_ptr, const u8
   Label block_unchanged;
   armAsm->b(&block_unchanged);
   armAsm->bind(&block_changed);
-  armEmitJmp(armAsm, CodeCache::g_discard_and_recompile_block, false);
+  armEmitJmp(armAsm, CodeCache::g_recompiler_functions.discard_and_recompile_block, false);
   armAsm->bind(&block_unchanged);
 }
 
@@ -925,16 +926,16 @@ void CPU::ARM64Recompiler::EndAndLinkBlock(const std::optional<u32>& newpc, bool
   if (cycles > 0)
     armAsm->str(RWARG1, PTR(&g_state.pending_ticks));
   if (do_event_test)
-    armEmitCondBranch(armAsm, ge, CodeCache::g_run_events_and_dispatch);
+    armEmitCondBranch(armAsm, ge, CodeCache::g_recompiler_functions.run_events_and_dispatch);
 
   // jump to dispatcher or next block
   if (force_run_events)
   {
-    armEmitJmp(armAsm, CodeCache::g_run_events_and_dispatch, false);
+    armEmitJmp(armAsm, CodeCache::g_recompiler_functions.run_events_and_dispatch, false);
   }
   else if (!newpc.has_value())
   {
-    armEmitJmp(armAsm, CodeCache::g_dispatcher, false);
+    armEmitJmp(armAsm, CodeCache::g_recompiler_functions.dispatcher, false);
   }
   else
   {

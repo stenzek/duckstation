@@ -36,6 +36,7 @@ static constexpr const char* PROFILE_DETAILS_URL_TEMPLATE = "https://retroachiev
 
 static constexpr float WINDOW_ALPHA = 0.9f;
 static constexpr float WINDOW_HEADING_ALPHA = 0.95f;
+static constexpr float PROGRESS_BAR_ALPHA = 0.5f;
 
 static constexpr u32 LEADERBOARD_NEARBY_ENTRIES_TO_FETCH = 20;
 static constexpr u32 LEADERBOARD_ALL_FETCH_SIZE = 50;
@@ -220,6 +221,7 @@ void FullscreenUI::ClearAchievementsState()
 
   s_achievements_locals.most_recent_unlock.reset();
   s_achievements_locals.achievement_nearest_completion.reset();
+  s_achievements_locals.most_recent_progress_update.reset();
 
   UpdateAchievementOverlaysRunIdle();
 }
@@ -234,7 +236,7 @@ void FullscreenUI::DrawAchievementsOverlays()
   NotificationLayout layout(g_gpu_settings.achievements_notification_location);
   DrawNotifications(layout);
 
-  if (Achievements::HasActiveGame())
+  if (Achievements::HasActiveGame() && GetCurrentMainWindow() == MainWindowType::None)
   {
     // need to group them together if they're in the same location
     if (g_gpu_settings.achievements_indicator_location != layout.GetLocation())
@@ -248,7 +250,7 @@ void FullscreenUI::AddAchievementNotification(std::string key, float duration, s
                                               std::string text, std::string note,
                                               AchievementNotificationNoteType note_type, u16 min_width, bool small_font)
 {
-  const bool prev_had_notifications = s_achievements_locals.notifications.empty();
+  const bool prev_had_notifications = !s_achievements_locals.notifications.empty();
   const Timer::Value current_time = Timer::GetCurrentValue();
 
   if (!key.empty())
@@ -585,22 +587,45 @@ void FullscreenUI::DrawIndicators(NotificationLayout& layout)
       (g_gpu_settings.achievements_challenge_indicator_mode == AchievementChallengeIndicatorMode::TemporaryIcon);
     const float x_advance = image_size + spacing;
     const float total_width = image_size + (static_cast<float>(indicators.size() - 1) * x_advance);
-    ImVec2 current_position = layout.GetFixedPosition(total_width, image_size);
+    bool space_reserved = false;
+    ImVec2 current_position;
 
     for (auto it = indicators.begin(); it != indicators.end();)
     {
       Achievements::ActiveChallengeIndicator& indicator = *it;
-      bool active = indicator.active;
+      bool draw_icon = indicator.active;
       if (use_time_remaining)
       {
         indicator.time_remaining = std::max(indicator.time_remaining - io.DeltaTime, 0.0f);
-        active = (indicator.time_remaining > 0.0f);
+        draw_icon = (draw_icon && indicator.time_remaining > 0.0f);
+
+        // Skip drawing when not visible.
+        if (!draw_icon && indicator.opacity < 0.01f)
+        {
+          if (!indicator.active)
+          {
+            DEV_LOG("Remove non-visible challenge indicator");
+            it = indicators.erase(it);
+          }
+          else
+          {
+            ++it;
+          }
+
+          continue;
+        }
       }
 
-      const float target_opacity = active ? 1.0f : 0.0f;
-      const float rate = active ? CHALLENGE_INDICATOR_FADE_IN_TIME : -CHALLENGE_INDICATOR_FADE_OUT_TIME;
+      const float target_opacity = draw_icon ? 1.0f : 0.0f;
+      const float rate = draw_icon ? CHALLENGE_INDICATOR_FADE_IN_TIME : -CHALLENGE_INDICATOR_FADE_OUT_TIME;
       indicator.opacity =
         (indicator.opacity != target_opacity) ? ImSaturate(indicator.opacity + (io.DeltaTime / rate)) : target_opacity;
+
+      if (!space_reserved)
+      {
+        space_reserved = true;
+        current_position = layout.GetFixedPosition(total_width, image_size);
+      }
 
       GPUTexture* badge = FullscreenUI::GetCachedTextureAsync(indicator.badge_url);
       if (badge)
@@ -611,7 +636,7 @@ void FullscreenUI::DrawIndicators(NotificationLayout& layout)
 
       current_position.x += x_advance;
 
-      if (!indicator.active && indicator.opacity <= 0.01f)
+      if (!indicator.active && indicator.opacity < 0.01f)
       {
         DEV_LOG("Remove challenge indicator");
         it = indicators.erase(it);
@@ -624,16 +649,28 @@ void FullscreenUI::DrawIndicators(NotificationLayout& layout)
   }
 
   if (std::optional<Achievements::AchievementProgressIndicator>& indicator = Achievements::GetActiveProgressIndicator();
-      indicator.has_value())
+      indicator.has_value() &&
+      g_gpu_settings.achievements_progress_indicator_mode != AchievementProgressIndicatorMode::Disabled)
   {
     indicator->time += indicator->active ? io.DeltaTime : -io.DeltaTime;
 
+    const bool show_title =
+      (g_gpu_settings.achievements_progress_indicator_mode == AchievementProgressIndicatorMode::IconAndTitle);
     const ImVec4 left_background_color = DarkerColor(UIStyle.ToastBackgroundColor, 1.3f);
     const ImVec4 right_background_color = DarkerColor(UIStyle.ToastBackgroundColor, 0.8f);
     const float progress_image_size = ImCeil(32.0f * scale);
-    const std::string_view text = indicator->achievement->measured_progress;
-    const ImVec2 text_size = UIStyle.Font->CalcTextSizeA(font_size, font_weight, FLT_MAX, 0.0f, IMSTR_START_END(text));
-    const float box_width = progress_image_size + text_size.x + spacing + padding.x * 2.0f;
+    const std::string_view progress_text = indicator->achievement->measured_progress;
+    const float& progress_text_weight = show_title ? UIStyle.NormalFontWeight : font_weight;
+    const ImVec2 progress_text_size =
+      UIStyle.Font->CalcTextSizeA(font_size, progress_text_weight, FLT_MAX, 0.0f, IMSTR_START_END(progress_text));
+    const std::string_view title_text =
+      show_title ? std::string_view(indicator->achievement->title) : std::string_view();
+    const ImVec2 title_text_size =
+      show_title ? UIStyle.Font->CalcTextSizeA(font_size, font_weight, FLT_MAX, 0.0f, indicator->achievement->title) :
+                   ImVec2();
+
+    const float box_width =
+      progress_image_size + std::max(progress_text_size.x, title_text_size.x) + spacing + padding.x * 2.0f;
     const float box_height = progress_image_size + padding.y * 2.0f;
 
     const auto& [box_min, opacity] = layout.GetNextPosition(
@@ -661,12 +698,40 @@ void FullscreenUI::DrawIndicators(NotificationLayout& layout)
                    ImVec2(1.0f, 1.0f), ImGui::GetColorU32(ImVec4(1.0f, 1.0f, 1.0f, opacity)));
     }
 
-    const ImVec2 text_pos = box_min + ImVec2(padding.x + progress_image_size + spacing,
-                                             ImFloor((box_max.y - box_min.y - text_size.y) * 0.5f));
-    const ImRect text_clip_rect(text_pos, box_max);
-    RenderShadowedTextClipped(dl, UIStyle.Font, font_size, font_weight, text_pos, box_max,
-                              ImGui::GetColorU32(ModAlpha(UIStyle.ToastTextColor, opacity)), text, &text_size,
-                              ImVec2(0.0f, 0.0f), 0.0f, &text_clip_rect);
+    // Show:
+    // [ badge ] [ title ]
+    // [ badge ] [ progress text ]
+    // Or:
+    // [ badge ] [ progress text centered vertically ]
+    if (show_title)
+    {
+      const float space = box_width - (padding.x * 2.0f) - progress_image_size - spacing;
+      const ImRect title_clip_rect(ImVec2(box_min.x + padding.x + progress_image_size + spacing +
+                                            std::max(ImFloor((space - title_text_size.x) * 0.5f), 0.0f),
+                                          box_min.y + padding.y),
+                                   box_max);
+      RenderShadowedTextClipped(dl, UIStyle.Font, font_size, font_weight, title_clip_rect.Min, title_clip_rect.Max,
+                                ImGui::GetColorU32(ModAlpha(UIStyle.ToastTextColor, opacity)), title_text,
+                                &title_text_size, ImVec2(0.0f, 0.0f), 0.0f, &title_clip_rect);
+
+      const ImRect text_clip_rect(ImVec2(box_min.x + padding.x + progress_image_size + spacing +
+                                           std::max(ImFloor((space - progress_text_size.x) * 0.5f), 0.0f),
+                                         box_min.y + padding.y + title_text_size.y),
+                                  box_max);
+      RenderShadowedTextClipped(dl, UIStyle.Font, font_size, progress_text_weight, text_clip_rect.Min,
+                                text_clip_rect.Max,
+                                ImGui::GetColorU32(ModAlpha(DarkerColor(UIStyle.ToastTextColor), opacity)),
+                                progress_text, &progress_text_size, ImVec2(0.0f, 0.0f), 0.0f, &text_clip_rect);
+    }
+    else
+    {
+      const ImRect text_clip_rect(box_min + ImVec2(padding.x + progress_image_size + spacing,
+                                                   ImFloor((box_max.y - box_min.y - progress_text_size.y) * 0.5f)),
+                                  box_max);
+      RenderShadowedTextClipped(dl, UIStyle.Font, font_size, progress_text_weight, text_clip_rect.Min,
+                                text_clip_rect.Max, ImGui::GetColorU32(ModAlpha(UIStyle.ToastTextColor, opacity)),
+                                progress_text, &progress_text_size, ImVec2(0.0f, 0.0f), 0.0f, &text_clip_rect);
+    }
 
     if (!indicator->active && opacity <= 0.01f)
     {
@@ -913,6 +978,7 @@ void FullscreenUI::UpdateAchievementsPauseScreenInfo()
   {
     s_achievements_locals.most_recent_unlock.reset();
     s_achievements_locals.achievement_nearest_completion.reset();
+    s_achievements_locals.most_recent_progress_update.reset();
     s_achievements_locals.active_leaderboards.clear();
     return;
   }
@@ -989,6 +1055,8 @@ void FullscreenUI::UpdateAchievementsPauseScreenInfo()
             active_lbs.erase(active_lbs.begin() + num_active_lbs, active_lbs.end());
 
           PauseMenuLeaderboardInfo& lbinfo = active_lbs.emplace_back();
+          lbinfo.leaderboard_id = leaderboard->id;
+          lbinfo.format = leaderboard->format;
           lbinfo.title = leaderboard->title;
           if (leaderboard->description)
             lbinfo.description = leaderboard->description;
@@ -1030,7 +1098,7 @@ void FullscreenUI::DrawAchievementsPauseMenuOverlays(float start_pos_y)
   const ImVec2 display_margin = LayoutScale(16.0f, 16.0f);
   const float box_margin = LayoutScale(10.0f);
   const float box_width = LayoutScale(450.0f);
-  const float box_padding = LayoutScale(15.0f);
+  const float box_padding = LayoutScale(12.0f);
   const float box_content_width = box_width - box_padding - box_padding;
   const float box_rounding = LayoutScale(20.0f);
   const u32 box_background_color =
@@ -1080,7 +1148,9 @@ void FullscreenUI::DrawAchievementsPauseMenuOverlays(float start_pos_y)
     dl->AddText(UIStyle.Font, UIStyle.MediumFontSize, UIStyle.BoldFontWeight, text_pos, box_title_text_color,
                 IMSTR_START_END(buffer));
     const float unlocked_fraction =
-      static_cast<float>(summary.num_unlocked_achievements) / static_cast<float>(summary.num_core_achievements);
+      (summary.num_core_achievements > 0) ?
+        (static_cast<float>(summary.num_unlocked_achievements) / static_cast<float>(summary.num_core_achievements)) :
+        0.0f;
     buffer.format("{}%", static_cast<u32>(std::round(unlocked_fraction * 100.0f)));
     text_size = UIStyle.Font->CalcTextSizeA(UIStyle.MediumFontSize, UIStyle.BoldFontWeight, FLT_MAX, 0.0f,
                                             IMSTR_START_END(buffer));
@@ -1090,8 +1160,8 @@ void FullscreenUI::DrawAchievementsPauseMenuOverlays(float start_pos_y)
     text_pos.y += UIStyle.MediumFontSize + paragraph_spacing;
 
     const ImRect progress_bb(text_pos, text_pos + ImVec2(box_content_width, progress_height));
-    dl->AddRectFilled(progress_bb.Min, progress_bb.Max, ImGui::GetColorU32(UIStyle.PrimaryDarkColor),
-                      progress_rounding);
+    dl->AddRectFilled(progress_bb.Min, progress_bb.Max,
+                      ImGui::GetColorU32(ModAlpha(UIStyle.PrimaryDarkColor, PROGRESS_BAR_ALPHA)), progress_rounding);
     if (summary.num_unlocked_achievements > 0)
     {
       ImGui::RenderRectFilledInRangeH(
@@ -1161,8 +1231,8 @@ void FullscreenUI::DrawAchievementsPauseMenuOverlays(float start_pos_y)
       const float progress_height = UIStyle.MediumFontSize;
       const ImRect progress_bb(ImVec2(text_pos.x + box_content_width - progress_width, text_pos.y),
                                ImVec2(text_pos.x + box_content_width, text_pos.y + progress_height));
-      dl->AddRectFilled(progress_bb.Min, progress_bb.Max, ImGui::GetColorU32(UIStyle.PrimaryDarkColor),
-                        progress_rounding);
+      dl->AddRectFilled(progress_bb.Min, progress_bb.Max,
+                        ImGui::GetColorU32(ModAlpha(UIStyle.PrimaryDarkColor, PROGRESS_BAR_ALPHA)), progress_rounding);
       if (measured_percent > 0.0f)
       {
         ImGui::RenderRectFilledInRangeH(
@@ -1490,23 +1560,13 @@ void FullscreenUI::OpenAchievementsWindow()
     return;
   }
 
-  const bool was_paused = System::IsPaused();
-
-  VideoThread::RunOnThread([was_paused]() {
-    Initialize();
-
-    if (!CanCurrentMainWindowStack() || !SetPendingMainWindowSwitch())
-      return;
-
-    PauseForMenuOpen(was_paused, false);
-    ForceKeyNavEnabled();
-    EnqueueSoundEffect(SFX_NAV_ACTIVATE);
-
-    BeginTransition(SHORT_TRANSITION_TIME, &SwitchToAchievements);
+  PauseAndOpenMenuFromCoreThread([]() {
+    BeginTransition(SHORT_TRANSITION_TIME, []() {
+      ForceKeyNavEnabled();
+      EnqueueSoundEffect(SFX_NAV_ACTIVATE);
+      SwitchToAchievements();
+    });
   });
-
-  if (!was_paused)
-    System::PauseSystem(true);
 }
 
 void FullscreenUI::AddSubsetInfo(const rc_client_subset_t* subset)
@@ -1951,8 +2011,8 @@ void FullscreenUI::DrawAchievementsWindow()
       const ImRect progress_bb(ImVec2(left, top), ImVec2(right, top + progress_height));
       const float fraction =
         static_cast<float>(summary.num_unlocked_achievements) / static_cast<float>(summary.num_core_achievements);
-      dl->AddRectFilled(progress_bb.Min, progress_bb.Max, ImGui::GetColorU32(UIStyle.PrimaryDarkColor),
-                        progress_rounding);
+      dl->AddRectFilled(progress_bb.Min, progress_bb.Max,
+                        ImGui::GetColorU32(ModAlpha(UIStyle.PrimaryDarkColor, PROGRESS_BAR_ALPHA)), progress_rounding);
       if (summary.num_unlocked_achievements > 0)
       {
         ImGui::RenderRectFilledInRangeH(dl, progress_bb, ImGui::GetColorU32(UIStyle.SecondaryColor), progress_bb.Min.x,
@@ -2280,8 +2340,8 @@ void FullscreenUI::DrawAchievement(const rc_client_achievement_t* cheevo, const 
     const ImRect progress_bb(
       current_pos, ImVec2(current_pos.x + max_text_width, current_pos.y + LayoutScale(progress_height_unscaled)));
     const float fraction = cheevo->measured_percent * 0.01f;
-    dl->AddRectFilled(progress_bb.Min, progress_bb.Max, ImGui::GetColorU32(UIStyle.PrimaryDarkColor),
-                      progress_rounding);
+    dl->AddRectFilled(progress_bb.Min, progress_bb.Max,
+                      ImGui::GetColorU32(ModAlpha(UIStyle.PrimaryDarkColor, PROGRESS_BAR_ALPHA)), progress_rounding);
     ImGui::RenderRectFilledInRangeH(dl, progress_bb, ImGui::GetColorU32(UIStyle.SecondaryColor), progress_bb.Min.x,
                                     progress_bb.Min.x + (fraction * progress_bb.GetWidth()), progress_rounding);
 
@@ -2400,23 +2460,13 @@ void FullscreenUI::OpenLeaderboardsWindow()
     return;
   }
 
-  const bool was_paused = System::IsPaused();
-
-  VideoThread::RunOnThread([was_paused]() {
-    Initialize();
-
-    if (!CanCurrentMainWindowStack() || !SetPendingMainWindowSwitch())
-      return;
-
-    PauseForMenuOpen(was_paused, false);
-    ForceKeyNavEnabled();
-    EnqueueSoundEffect(SFX_NAV_ACTIVATE);
-
-    BeginTransition(SHORT_TRANSITION_TIME, &SwitchToLeaderboards);
+  PauseAndOpenMenuFromCoreThread([]() {
+    BeginTransition(SHORT_TRANSITION_TIME, []() {
+      ForceKeyNavEnabled();
+      EnqueueSoundEffect(SFX_NAV_ACTIVATE);
+      SwitchToLeaderboards();
+    });
   });
-
-  if (!was_paused)
-    System::PauseSystem(true);
 }
 
 void FullscreenUI::SwitchToLeaderboards()

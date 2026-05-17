@@ -1,7 +1,7 @@
 # TODO
 # - backend selection via command line, rather than simply detecting headers.
 
-cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.19 FATAL_ERROR)
 project(cubeb C CXX)
 
 option(LAZY_LOAD_LIBS "Lazily load shared libraries" ON)
@@ -33,21 +33,19 @@ add_library(cubeb
   src/cubeb_strings.c
   src/cubeb_utils.cpp
 )
-target_include_directories(cubeb
-  PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include> $<INSTALL_INTERFACE:include>
-)
+target_include_directories(cubeb PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-  add_library(speex OBJECT subprojects/speex/resample.c)
-  set_target_properties(speex PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
-  target_include_directories(speex INTERFACE subprojects)
-  target_compile_definitions(speex PUBLIC
-    OUTSIDE_SPEEX
-    FLOATING_POINT
-    EXPORT=
-    RANDOM_PREFIX=speex
-  )
-  add_library(speex_resampler_headers INTERFACE)
-  target_include_directories(speex_resampler_headers INTERFACE subprojects)
+add_library(speex OBJECT subprojects/speex/resample.c)
+set_target_properties(speex PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
+target_include_directories(speex INTERFACE subprojects)
+target_compile_definitions(speex PUBLIC
+  OUTSIDE_SPEEX
+  FLOATING_POINT
+  EXPORT=
+  RANDOM_PREFIX=speex
+)
+add_library(speex_resampler_headers INTERFACE)
+target_include_directories(speex_resampler_headers INTERFACE subprojects)
 
 # $<BUILD_INTERFACE:> required because of https://gitlab.kitware.com/cmake/cmake/-/issues/15415
 target_link_libraries(cubeb PRIVATE $<BUILD_INTERFACE:speex>)
@@ -144,7 +142,7 @@ if(USE_WASAPI)
   target_sources(cubeb PRIVATE
     src/cubeb_wasapi.cpp)
   target_compile_definitions(cubeb PRIVATE USE_WASAPI)
-  target_link_libraries(cubeb PRIVATE ole32 ksuser)
+  target_link_libraries(cubeb PRIVATE avrt ole32 ksuser)
 endif()
 
 check_include_files("windows.h;mmsystem.h" USE_WINMM)

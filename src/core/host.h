@@ -13,6 +13,12 @@
 
 class Error;
 
+namespace Threading {
+class ThreadHandle;
+}
+
+enum class WindowInfoType : u8;
+
 namespace Host {
 
 /// Returns true if the specified resource file exists.
@@ -64,6 +70,9 @@ const char* GetLanguageName(std::string_view language_code);
 /// Refreshes the UI when the language is changed.
 bool ChangeLanguage(const char* new_language);
 
+/// Gets a handle to the core thread.
+const Threading::ThreadHandle& GetCoreThreadHandle();
+
 /// Returns true if the currently executing thread is the core thread.
 bool IsOnCoreThread();
 
@@ -79,5 +88,11 @@ void WaitForAllAsyncTasks();
 
 /// Commits any changes made to the base settings layer to the host.
 void CommitBaseSettingChanges();
+
+/// Returns the window type for the host.
+WindowInfoType GetRenderWindowInfoType();
+
+/// Changes the screensaver inhibit state.
+bool SetScreensaverInhibit(bool inhibit, Error* error);
 
 } // namespace Host

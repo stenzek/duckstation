@@ -22,7 +22,6 @@
     <ClInclude Include="subprojects\speex\resample_sse.h" />
     <ClInclude Include="subprojects\speex\speex_config_types.h" />
     <ClInclude Include="subprojects\speex\speex_resampler.h" />
-    <ClInclude Include="subprojects\speex\stack_alloc.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\cubeb.c" />

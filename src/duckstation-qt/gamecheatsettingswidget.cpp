@@ -412,6 +412,7 @@ void GameCheatSettingsWidget::checkForMasterDisable()
       Host::CommitBaseSettingChanges();
       g_core_thread->applySettings(false);
     });
+    connect(mbox, &QMessageBox::finished, this, [this, cb]() { m_master_enable_ignored = cb->isChecked(); });
 
     mbox->open();
   }

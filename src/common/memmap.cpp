@@ -17,9 +17,6 @@
 #include "windows_headers.h"
 #include <Psapi.h>
 #elif defined(__APPLE__)
-#ifdef __aarch64__
-#include <pthread.h> // pthread_jit_write_protect_np()
-#endif
 #include <mach-o/dyld.h>
 #include <mach-o/getsect.h>
 #include <mach/mach_init.h>
@@ -617,34 +614,6 @@ bool SharedMemoryMappingArea::Unmap(void* map_base, size_t map_size)
   m_num_mappings--;
   return true;
 }
-
-#ifdef __aarch64__
-
-static thread_local int s_code_write_depth = 0;
-
-void MemMap::BeginCodeWrite()
-{
-  // DEBUG_LOG("BeginCodeWrite(): {}", s_code_write_depth);
-  if ((s_code_write_depth++) == 0)
-  {
-    // DEBUG_LOG("  pthread_jit_write_protect_np(0)");
-    pthread_jit_write_protect_np(0);
-  }
-}
-
-void MemMap::EndCodeWrite()
-{
-  // DEBUG_LOG("EndCodeWrite(): {}", s_code_write_depth);
-
-  DebugAssert(s_code_write_depth > 0);
-  if ((--s_code_write_depth) == 0)
-  {
-    // DEBUG_LOG("  pthread_jit_write_protect_np(1)");
-    pthread_jit_write_protect_np(1);
-  }
-}
-
-#endif
 
 #else
 

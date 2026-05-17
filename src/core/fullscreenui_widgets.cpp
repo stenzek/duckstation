@@ -350,6 +350,8 @@ private:
                        std::string_view no_text = {}) override;
 
   protected:
+    static std::string_view GetIconString(PromptIcon icon);
+
     void StateChanged(StateChange changed) override;
   };
 
@@ -1015,7 +1017,24 @@ void FullscreenUI::BeginTransition(TransitionStartCallback func, float time)
 {
   if (s_state.transition_state == TransitionState::Inactive)
   {
-    const float real_time = UIStyle.Animations ? time : 0.0f;
+    float real_time = UIStyle.Animations ? time : 0.0f;
+    if (real_time > 0.0f)
+    {
+      // Align the transition time so that the opacity step value is evenly distributed across the time.
+      const float refresh_rate =
+        g_gpu_device->HasMainSwapChain() ? g_gpu_device->GetMainSwapChain()->GetRefreshRate() : 0.0f;
+      if (refresh_rate > 0.0f)
+      {
+        const float frame_time = 1.0f / refresh_rate;
+        const float num_frames = std::ceil(time / frame_time);
+        real_time = std::max(num_frames * frame_time, real_time);
+      }
+    }
+    else
+    {
+      real_time = 0.0f;
+    }
+
     s_state.transition_state = TransitionState::Starting;
     s_state.transition_total_time = real_time;
     s_state.transition_remaining_time = real_time;
@@ -3304,7 +3323,7 @@ bool FullscreenUI::MenuImageButton(std::string_view title, std::string_view summ
 
   const ImRect image_rect(
     CenterImage(ImRect(ImVec2(bb.title_bb.Min.x - left_margin, bb.title_bb.Min.y),
-                       ImVec2(bb.title_bb.Min.x - image_margin, bb.title_bb.Min.y + real_image_size.x)),
+                       ImVec2(bb.title_bb.Min.x - image_margin, bb.title_bb.Min.y + real_image_size.y)),
                 ImVec2(static_cast<float>(image->GetWidth()), static_cast<float>(image->GetHeight()))));
 
   ImGui::GetWindowDrawList()->AddImage(image, image_rect.Min, image_rect.Max, uv0, uv1,
@@ -4775,8 +4794,9 @@ void FullscreenUI::FileSelectorDialog::PopulateItems()
   {
     FileSystem::FindResultsArray results;
     FileSystem::FindFiles(m_current_directory.c_str(), "*",
-                          FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_FOLDERS | FILESYSTEM_FIND_HIDDEN_FILES |
-                            FILESYSTEM_FIND_RELATIVE_PATHS | FILESYSTEM_FIND_SORT_BY_NAME,
+                          (m_is_directory ? 0 : FILESYSTEM_FIND_FILES) | FILESYSTEM_FIND_FOLDERS |
+                            FILESYSTEM_FIND_HIDDEN_FILES | FILESYSTEM_FIND_RELATIVE_PATHS |
+                            FILESYSTEM_FIND_SORT_BY_NAME,
                           &results);
 
     // Ensure we only go back to the root list once we've gone up from the root of that drive.
@@ -4806,7 +4826,7 @@ void FullscreenUI::FileSelectorDialog::PopulateItems()
       }
       else
       {
-        if (m_filters.empty() || std::none_of(m_filters.begin(), m_filters.end(), [&fd](const std::string& filter) {
+        if (!m_filters.empty() && std::none_of(m_filters.begin(), m_filters.end(), [&fd](const std::string& filter) {
               return StringUtil::WildcardMatch(fd.FileName.c_str(), filter.c_str(), false);
             }))
         {
@@ -4909,7 +4929,8 @@ void FullscreenUI::FileSelectorDialog::Draw()
     }
     else
     {
-      SetDirectory(std::move(selected->full_path));
+      BeginTransition(DEFAULT_TRANSITION_TIME,
+                      [this, dir = std::move(selected->full_path)]() mutable { SetDirectory(std::move(dir)); });
     }
   }
   else if (directory_selected)
@@ -4924,7 +4945,10 @@ void FullscreenUI::FileSelectorDialog::Draw()
     if (ImGui::IsKeyPressed(ImGuiKey_Backspace, false) || ImGui::IsKeyPressed(ImGuiKey_NavGamepadContextMenu, false))
     {
       if (!m_items.empty() && m_first_item_is_parent_directory)
-        SetDirectory(std::move(m_items.front().full_path));
+      {
+        BeginTransition(DEFAULT_TRANSITION_TIME,
+                        [this, dir = std::move(m_items.front().full_path)]() mutable { SetDirectory(std::move(dir)); });
+      }
     }
   }
 }
@@ -5326,6 +5350,7 @@ void FullscreenUI::InputStringDialog::ClearState()
   m_message = {};
   m_caption = {};
   m_ok_text = {};
+  m_text = {};
   m_callback = {};
 }
 
@@ -5711,6 +5736,22 @@ bool FullscreenUI::ProgressDialog::ProgressCallbackImpl::IsCancelled() const
   return s_state.progress_dialog.m_cancelled.load(std::memory_order_acquire);
 }
 
+std::string_view FullscreenUI::ProgressDialog::ProgressCallbackImpl::GetIconString(PromptIcon icon)
+{
+  switch (icon)
+  {
+    case PromptIcon::Error:
+      return ICON_EMOJI_NO_ENTRY_SIGN;
+    case PromptIcon::Warning:
+      return ICON_EMOJI_WARNING;
+    case PromptIcon::Question:
+      return ICON_EMOJI_QUESTION_MARK;
+    case PromptIcon::Information:
+    default:
+      return ICON_EMOJI_INFORMATION;
+  }
+}
+
 void FullscreenUI::ProgressDialog::ProgressCallbackImpl::AlertPrompt(PromptIcon icon, std::string_view message)
 {
   s_state.progress_dialog.m_prompt_waiting.test_and_set(std::memory_order_release);
@@ -5732,26 +5773,8 @@ void FullscreenUI::ProgressDialog::ProgressCallbackImpl::AlertPrompt(PromptIcon 
       float width = s_state.progress_dialog.m_width;
       s_state.progress_dialog.CloseImmediately();
 
-      std::string_view icon_str;
-      switch (icon)
-      {
-        case PromptIcon::Error:
-          icon_str = ICON_EMOJI_NO_ENTRY_SIGN;
-          break;
-        case PromptIcon::Warning:
-          icon_str = ICON_EMOJI_WARNING;
-          break;
-        case PromptIcon::Question:
-          icon_str = ICON_EMOJI_QUESTION_MARK;
-          break;
-        case PromptIcon::Information:
-        default:
-          icon_str = ICON_EMOJI_INFORMATION;
-          break;
-      }
-
       OpenInfoMessageDialog(
-        icon_str, s_state.progress_dialog.GetTitle(), std::move(message),
+        GetIconString(icon), s_state.progress_dialog.GetTitle(), std::move(message),
         [existing_title = std::move(existing_title), progress_range, progress_value, last_frac, width]() mutable {
           s_state.progress_dialog.SetTitleAndOpen(std::move(existing_title));
           s_state.progress_dialog.m_progress_range = progress_range;
@@ -5775,9 +5798,9 @@ bool FullscreenUI::ProgressDialog::ProgressCallbackImpl::ConfirmPrompt(PromptIco
   s_state.progress_dialog.m_prompt_waiting.test_and_set(std::memory_order_release);
 
   Host::RunOnCoreThread(
-    [message = std::string(message), yes_text = std::string(yes_text), no_text = std::string(no_text)]() mutable {
+    [message = std::string(message), yes_text = std::string(yes_text), no_text = std::string(no_text), icon]() mutable {
       VideoThread::RunOnThread(
-        [message = std::move(message), yes_text = std::move(yes_text), no_text = std::move(no_text)]() mutable {
+        [message = std::move(message), yes_text = std::move(yes_text), no_text = std::move(no_text), icon]() mutable {
           if (!s_state.progress_dialog.IsOpen())
           {
             s_state.progress_dialog.m_prompt_waiting.clear(std::memory_order_release);
@@ -5798,7 +5821,7 @@ bool FullscreenUI::ProgressDialog::ProgressCallbackImpl::ConfirmPrompt(PromptIco
           if (no_text.empty())
             no_text = FSUI_ICONSTR(ICON_FA_XMARK, "No");
 
-          OpenConfirmMessageDialog(ICON_EMOJI_QUESTION_MARK, s_state.progress_dialog.GetTitle(), std::move(message),
+          OpenConfirmMessageDialog(GetIconString(icon), s_state.progress_dialog.GetTitle(), std::move(message),
                                    [existing_title = std::move(existing_title), progress_range, progress_value,
                                     last_frac, width](bool result) mutable {
                                      s_state.progress_dialog.SetTitleAndOpen(std::move(existing_title));
@@ -6288,7 +6311,8 @@ void FullscreenUI::DrawLoadingScreen(std::string_view image, std::string_view ti
 
     if (has_progress)
     {
-      const float fraction = static_cast<float>(progress_value) / static_cast<float>(progress_max - progress_min);
+      const float fraction =
+        static_cast<float>(progress_value - progress_min) / static_cast<float>(progress_max - progress_min);
       ImGui::RenderRectFilledInRangeH(dl, ImRect(box_start, box_end), ImGui::GetColorU32(UIStyle.SecondaryColor),
                                       box_start.x, box_start.x + (fraction * content_width), frame_rounding);
     }
@@ -6349,7 +6373,7 @@ void FullscreenUI::LoadingScreenProgressCallback::Close()
   else
   {
     // since this was pushing frames, we need to restore the context. do that by pushing a frame ourselves
-    VideoThread::Internal::PresentFrameAndRestoreContext();
+    VideoThread::PresentFrameAndRestoreContext();
   }
 
   m_last_progress_percent = -1;

@@ -306,8 +306,8 @@ void DebuggingSettingsWidget::onResetToDefaultClicked()
   INISettingsInterface* sif = m_dialog->getSettingsInterface();
   sif->DeleteValue("Main", "ApplyCompatibilitySettings");
   sif->DeleteValue("Main", "LoadDevicesFromSaveStates");
-  sif->DeleteValue("Main", "PauseOnStart");
-  sif->DeleteValue("Main", "CompressSaveStates");
+  sif->DeleteValue("Main", "StartPaused");
+  sif->DeleteValue("Main", "SaveStateCompression");
   sif->DeleteValue("Display", "ActiveStartOffset");
   sif->DeleteValue("Display", "ActiveEndOffset");
   sif->DeleteValue("Display", "LineStartOffset");

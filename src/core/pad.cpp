@@ -101,9 +101,9 @@ static constexpr TickCount GetACKTicks(bool memory_card)
 
 static void SoftReset();
 static void UpdateJoyStat();
-static void TransferEvent(void*, TickCount ticks, TickCount ticks_late);
+static void TransferEvent(void*, TickCount ticks);
 static void BeginTransfer();
-static void DoTransfer(TickCount ticks_late);
+static void DoTransfer();
 static void DoACK();
 static void EndTransfer();
 static void ResetDeviceTransferState();
@@ -707,10 +707,10 @@ void Pad::UpdateJoyStat()
   s_state.JOY_STAT.TXRDY = !s_state.transmit_buffer_full;
 }
 
-void Pad::TransferEvent(void*, TickCount ticks, TickCount ticks_late)
+void Pad::TransferEvent(void*, TickCount ticks)
 {
   if (s_state.state == State::Transmitting)
-    DoTransfer(ticks_late);
+    DoTransfer();
   else
     DoACK();
 }
@@ -743,7 +743,7 @@ void Pad::BeginTransfer()
   s_state.transfer_event.SetPeriodAndSchedule(GetTransferTicks());
 }
 
-void Pad::DoTransfer(TickCount ticks_late)
+void Pad::DoTransfer()
 {
   DEBUG_LOG("Transferring slot {}", s_state.JOY_CTRL.SLOT.GetValue());
 

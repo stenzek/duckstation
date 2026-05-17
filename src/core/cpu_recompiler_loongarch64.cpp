@@ -212,7 +212,8 @@ u32 CPU::CodeCache::EmitASMFunctions(void* code, u32 code_size)
   lagoon_label_t dispatch = {};
   lagoon_label_t run_events_and_dispatch = {};
 
-  g_enter_recompiler = reinterpret_cast<decltype(g_enter_recompiler)>(laAsm->cursor);
+  g_recompiler_functions.enter_recompiler =
+    reinterpret_cast<decltype(g_recompiler_functions.enter_recompiler)>(laAsm->cursor);
   {
     // TODO: reserve some space for saving caller-saved registers
 
@@ -233,7 +234,7 @@ u32 CPU::CodeCache::EmitASMFunctions(void* code, u32 code_size)
     la_bltu(laAsm, RARG1, RARG2, la_label(laAsm, &skip_event_check));
 
     la_bind(laAsm, &run_events_and_dispatch);
-    g_run_events_and_dispatch = laAsm->cursor;
+    g_recompiler_functions.run_events_and_dispatch = laAsm->cursor;
     laEmitCall(laAsm, reinterpret_cast<const void*>(&TimingEvents::RunEvents));
 
     la_bind(laAsm, &skip_event_check);
@@ -241,7 +242,7 @@ u32 CPU::CodeCache::EmitASMFunctions(void* code, u32 code_size)
   }
 
   // TODO: align?
-  g_dispatcher = laAsm->cursor;
+  g_recompiler_functions.dispatcher = laAsm->cursor;
   {
     la_bind(laAsm, &dispatch);
 
@@ -262,21 +263,21 @@ u32 CPU::CodeCache::EmitASMFunctions(void* code, u32 code_size)
     la_jirl(laAsm, LA_ZERO, RARG1, 0);
   }
 
-  g_compile_or_revalidate_block = laAsm->cursor;
+  g_recompiler_functions.compile_or_revalidate_block = laAsm->cursor;
   {
     la_ld_w(laAsm, RARG1, RSTATE, OFFS(&g_state.pc));
     laEmitCall(laAsm, reinterpret_cast<const void*>(&CompileOrRevalidateBlock));
     la_b(laAsm, la_label(laAsm, &dispatch));
   }
 
-  g_discard_and_recompile_block = laAsm->cursor;
+  g_recompiler_functions.discard_and_recompile_block = laAsm->cursor;
   {
     la_ld_w(laAsm, RARG1, RSTATE, OFFS(&g_state.pc));
     laEmitCall(laAsm, reinterpret_cast<const void*>(&DiscardAndRecompileBlock));
     la_b(laAsm, la_label(laAsm, &dispatch));
   }
 
-  g_interpret_block = laAsm->cursor;
+  g_recompiler_functions.interpret_block = laAsm->cursor;
   {
     laEmitCall(laAsm, CodeCache::GetInterpretUncachedBlockFunction());
     la_ld_w(laAsm, RARG1, RSTATE, OFFS(&g_state.pending_ticks));
@@ -547,7 +548,7 @@ void CPU::LoongArch64Recompiler::GenerateBlockProtectCheck(const u8* ram_ptr, co
   lagoon_label_t block_unchanged = {};
   la_b(laAsm, la_label(laAsm, &block_unchanged));
   la_bind(laAsm, &block_changed);
-  laEmitJmp(laAsm, CodeCache::g_discard_and_recompile_block);
+  laEmitJmp(laAsm, CodeCache::g_recompiler_functions.discard_and_recompile_block);
   la_bind(laAsm, &block_unchanged);
   la_label_free(laAsm, &block_changed);
   la_label_free(laAsm, &block_unchanged);
@@ -714,7 +715,7 @@ void CPU::LoongArch64Recompiler::EndAndLinkBlock(const std::optional<u32>& newpc
     // TODO: see if we can do a far jump somehow with this..
     lagoon_label_t cont = {};
     la_blt(laAsm, RARG1, RARG2, la_label(laAsm, &cont));
-    laEmitJmp(laAsm, CodeCache::g_run_events_and_dispatch);
+    laEmitJmp(laAsm, CodeCache::g_recompiler_functions.run_events_and_dispatch);
     la_bind(laAsm, &cont);
     la_label_free(laAsm, &cont);
   }
@@ -722,11 +723,11 @@ void CPU::LoongArch64Recompiler::EndAndLinkBlock(const std::optional<u32>& newpc
   // jump to dispatcher or next block
   if (force_run_events)
   {
-    laEmitJmp(laAsm, CodeCache::g_run_events_and_dispatch);
+    laEmitJmp(laAsm, CodeCache::g_recompiler_functions.run_events_and_dispatch);
   }
   else if (!newpc.has_value())
   {
-    laEmitJmp(laAsm, CodeCache::g_dispatcher);
+    laEmitJmp(laAsm, CodeCache::g_recompiler_functions.dispatcher);
   }
   else
   {

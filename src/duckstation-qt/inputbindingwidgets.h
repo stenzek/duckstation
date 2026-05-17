@@ -19,7 +19,7 @@ class InputBindingWidget : public QPushButton
 public:
   explicit InputBindingWidget(QWidget* parent);
   InputBindingWidget(QWidget* parent, SettingsInterface* sif, InputBindingInfo::Type bind_type,
-                     std::string section_name, std::string key_name);
+                     std::string section_name, std::string key_name, const QString display_name = {});
   ~InputBindingWidget();
 
   static bool isMouseMappingEnabled();
@@ -29,7 +29,7 @@ public:
                             float min_value);
 
   void initialize(SettingsInterface* sif, InputBindingInfo::Type bind_type, std::string section_name,
-                  std::string key_name);
+                  std::string key_name, const QString& display_name);
 
   void clearBinding();
   void reloadBinding();
@@ -68,6 +68,7 @@ protected:
   InputBindingInfo::Type m_bind_type = InputBindingInfo::Type::Unknown;
   std::string m_section_name;
   std::string m_key_name;
+  QString m_display_name;
   std::vector<std::string> m_bindings;
   std::vector<InputBindingKey> m_new_bindings;
   std::vector<std::pair<InputBindingKey, std::pair<float, float>>> m_value_ranges;

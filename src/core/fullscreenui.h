@@ -23,6 +23,7 @@ namespace FullscreenUI {
 void Initialize();
 bool IsInitialized();
 bool HasActiveWindow();
+bool HasActiveOrPendingWindow();
 void CheckForConfigChanges(const GPUSettings& old_settings);
 void OnSystemStarting();
 void OnSystemPaused();

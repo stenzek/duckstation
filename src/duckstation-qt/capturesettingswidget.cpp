@@ -29,10 +29,6 @@ CaptureSettingsWidget::CaptureSettingsWidget(SettingsWindow* dialog, QWidget* pa
     Settings::DEFAULT_DISPLAY_SCREENSHOT_FORMAT, DisplayScreenshotFormat::Count);
   SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.screenshotQuality, "Display", "ScreenshotQuality",
                                               Settings::DEFAULT_DISPLAY_SCREENSHOT_QUALITY);
-  SettingWidgetBinder::BindWidgetToFolderSetting(sif, m_ui.screenshotsDirectory, m_ui.screenshotsDirectoryBrowse,
-                                                 tr("Select Screenshots Directory"), m_ui.screenshotsDirectoryOpen,
-                                                 m_ui.screenshotsDirectoryReset, "Folders", "Screenshots",
-                                                 Path::Combine(EmuFolders::DataRoot, "screenshots"));
   SettingWidgetBinder::BindWidgetToEnumSetting(
     sif, m_ui.screenshotSaveName, "Display", "ScreenshotFileNameFormat", &Settings::ParseCaptureFileNameFormat,
     &Settings::GetCaptureFileNameFormatName, &Settings::GetCaptureFileNameFormatDisplayName,
@@ -42,10 +38,6 @@ CaptureSettingsWidget::CaptureSettingsWidget(SettingsWindow* dialog, QWidget* pa
                                                &MediaCapture::ParseBackendName, &MediaCapture::GetBackendName,
                                                &MediaCapture::GetBackendDisplayName,
                                                Settings::DEFAULT_MEDIA_CAPTURE_BACKEND, MediaCaptureBackend::MaxCount);
-  SettingWidgetBinder::BindWidgetToFolderSetting(sif, m_ui.videosDirectory, m_ui.videosDirectoryBrowse,
-                                                 tr("Select Media Capture Directory"), m_ui.videosDirectoryOpen,
-                                                 m_ui.videosDirectoryReset, "Folders", "Videos",
-                                                 Path::Combine(EmuFolders::DataRoot, "videos"));
   SettingWidgetBinder::BindWidgetToEnumSetting(
     sif, m_ui.mediaCaptureSaveName, "MediaCapture", "FilenameFormat", &Settings::ParseCaptureFileNameFormat,
     &Settings::GetCaptureFileNameFormatName, &Settings::GetCaptureFileNameFormatDisplayName,
@@ -61,13 +53,51 @@ CaptureSettingsWidget::CaptureSettingsWidget(SettingsWindow* dialog, QWidget* pa
                                               Settings::DEFAULT_MEDIA_CAPTURE_VIDEO_BITRATE);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableVideoCaptureArguments, "MediaCapture",
                                                "VideoCodecUseArgs", false);
-  SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.videoCaptureArguments, "MediaCapture", "AudioCodecArgs");
+  SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.videoCaptureArguments, "MediaCapture", "VideoCodecArgs");
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableAudioCapture, "MediaCapture", "AudioCapture", true);
   SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.audioCaptureBitrate, "MediaCapture", "AudioBitrate",
                                               Settings::DEFAULT_MEDIA_CAPTURE_AUDIO_BITRATE);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableVideoCaptureArguments, "MediaCapture",
-                                               "VideoCodecUseArgs", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableAudioCaptureArguments, "MediaCapture",
+                                               "AudioCodecUseArgs", false);
   SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.audioCaptureArguments, "MediaCapture", "AudioCodecArgs");
+
+  if (!m_dialog->isPerGameSettings())
+  {
+    SettingWidgetBinder::BindWidgetToFolderSetting(sif, m_ui.screenshotsDirectory, m_ui.screenshotsDirectoryBrowse,
+                                                   tr("Select Screenshots Directory"), m_ui.screenshotsDirectoryOpen,
+                                                   m_ui.screenshotsDirectoryReset, "Folders", "Screenshots",
+                                                   Path::Combine(EmuFolders::DataRoot, "screenshots"));
+    SettingWidgetBinder::BindWidgetToFolderSetting(sif, m_ui.videosDirectory, m_ui.videosDirectoryBrowse,
+                                                   tr("Select Media Capture Directory"), m_ui.videosDirectoryOpen,
+                                                   m_ui.videosDirectoryReset, "Folders", "Videos",
+                                                   Path::Combine(EmuFolders::DataRoot, "videos"));
+  }
+  else
+  {
+    m_ui.screenshotsLayout->removeWidget(m_ui.screenshotsDirectoryLabel);
+    m_ui.screenshotsDirectoryLayout->removeWidget(m_ui.screenshotsDirectory);
+    m_ui.screenshotsDirectoryLayout->removeWidget(m_ui.screenshotsDirectoryBrowse);
+    m_ui.screenshotsDirectoryLayout->removeWidget(m_ui.screenshotsDirectoryOpen);
+    m_ui.screenshotsDirectoryLayout->removeWidget(m_ui.screenshotsDirectoryReset);
+    QtUtils::SafeDeleteWidget(m_ui.screenshotsDirectoryLabel);
+    QtUtils::SafeDeleteWidget(m_ui.screenshotsDirectoryLayout);
+    QtUtils::SafeDeleteWidget(m_ui.screenshotsDirectory);
+    QtUtils::SafeDeleteWidget(m_ui.screenshotsDirectoryBrowse);
+    QtUtils::SafeDeleteWidget(m_ui.screenshotsDirectoryOpen);
+    QtUtils::SafeDeleteWidget(m_ui.screenshotsDirectoryReset);
+
+    m_ui.captureLayout->removeWidget(m_ui.videosDirectoryLabel);
+    m_ui.videosDirectoryLayout->removeWidget(m_ui.videosDirectory);
+    m_ui.videosDirectoryLayout->removeWidget(m_ui.videosDirectoryBrowse);
+    m_ui.videosDirectoryLayout->removeWidget(m_ui.videosDirectoryOpen);
+    m_ui.videosDirectoryLayout->removeWidget(m_ui.videosDirectoryReset);
+    QtUtils::SafeDeleteWidget(m_ui.videosDirectoryLabel);
+    QtUtils::SafeDeleteWidget(m_ui.videosDirectoryLayout);
+    QtUtils::SafeDeleteWidget(m_ui.videosDirectory);
+    QtUtils::SafeDeleteWidget(m_ui.videosDirectoryBrowse);
+    QtUtils::SafeDeleteWidget(m_ui.videosDirectoryOpen);
+    QtUtils::SafeDeleteWidget(m_ui.videosDirectoryReset);
+  }
 
   connect(m_ui.mediaCaptureBackend, &QComboBox::currentIndexChanged, this,
           &CaptureSettingsWidget::onMediaCaptureBackendChanged);

@@ -62,14 +62,12 @@ u16 g_gpu_clut[GPU_CLUT_SIZE];
 
 const GPU::GP0CommandHandlerTable GPU::s_GP0_command_handler_table = GPU::GenerateGP0CommandHandlerTable();
 
-static TimingEvent s_crtc_tick_event(
-  "GPU CRTC Tick", 1, 1, [](void* param, TickCount ticks, TickCount ticks_late) { g_gpu.CRTCTickEvent(ticks); },
-  nullptr);
+static TimingEvent
+  s_crtc_tick_event("GPU CRTC Tick", 1, 1, [](void* param, TickCount ticks) { g_gpu.CRTCTickEvent(ticks); }, nullptr);
 static TimingEvent s_command_tick_event(
-  "GPU Command Tick", 1, 1, [](void* param, TickCount ticks, TickCount ticks_late) { g_gpu.CommandTickEvent(ticks); },
-  nullptr);
-static TimingEvent s_frame_done_event(
-  "Frame Done", 1, 1, [](void* param, TickCount ticks, TickCount ticks_late) { g_gpu.FrameDoneEvent(ticks); }, nullptr);
+  "GPU Command Tick", 1, 1, [](void* param, TickCount ticks) { g_gpu.CommandTickEvent(ticks); }, nullptr);
+static TimingEvent
+  s_frame_done_event("Frame Done", 1, 1, [](void* param, TickCount ticks) { g_gpu.FrameDoneEvent(ticks); }, nullptr);
 
 GPU::GPU() = default;
 

@@ -261,7 +261,8 @@ u32 CPU::CodeCache::EmitASMFunctions(void* code, u32 code_size)
   Label dispatch;
   Label run_events_and_dispatch;
 
-  g_enter_recompiler = armAsm->GetCursorAddress<decltype(g_enter_recompiler)>();
+  g_recompiler_functions.enter_recompiler =
+    armAsm->GetCursorAddress<decltype(g_recompiler_functions.enter_recompiler)>();
   {
     // Need the CPU state for basically everything :-)
     armMoveAddressToReg(armAsm, RSTATE, &g_state);
@@ -275,7 +276,7 @@ u32 CPU::CodeCache::EmitASMFunctions(void* code, u32 code_size)
     armAsm->cmp(RARG1, RARG2);
     armAsm->b(lt, &skip_event_check);
 
-    g_run_events_and_dispatch = armAsm->GetCursorAddress<const void*>();
+    g_recompiler_functions.run_events_and_dispatch = armAsm->GetCursorAddress<const void*>();
     armAsm->bind(&run_events_and_dispatch);
     armEmitCall(armAsm, reinterpret_cast<const void*>(&TimingEvents::RunEvents), true);
 
@@ -283,7 +284,7 @@ u32 CPU::CodeCache::EmitASMFunctions(void* code, u32 code_size)
   }
 
   // TODO: align?
-  g_dispatcher = armAsm->GetCursorAddress<const void*>();
+  g_recompiler_functions.dispatcher = armAsm->GetCursorAddress<const void*>();
   {
     armAsm->bind(&dispatch);
 
@@ -299,21 +300,21 @@ u32 CPU::CodeCache::EmitASMFunctions(void* code, u32 code_size)
     armAsm->bx(RARG1);
   }
 
-  g_compile_or_revalidate_block = armAsm->GetCursorAddress<const void*>();
+  g_recompiler_functions.compile_or_revalidate_block = armAsm->GetCursorAddress<const void*>();
   {
     armAsm->ldr(RARG1, PTR(&g_state.pc));
     armEmitCall(armAsm, reinterpret_cast<const void*>(&CompileOrRevalidateBlock), true);
     armAsm->b(&dispatch);
   }
 
-  g_discard_and_recompile_block = armAsm->GetCursorAddress<const void*>();
+  g_recompiler_functions.discard_and_recompile_block = armAsm->GetCursorAddress<const void*>();
   {
     armAsm->ldr(RARG1, PTR(&g_state.pc));
     armEmitCall(armAsm, reinterpret_cast<const void*>(&DiscardAndRecompileBlock), true);
     armAsm->b(&dispatch);
   }
 
-  g_interpret_block = armAsm->GetCursorAddress<const void*>();
+  g_recompiler_functions.interpret_block = armAsm->GetCursorAddress<const void*>();
   {
     armEmitCall(armAsm, reinterpret_cast<const void*>(GetInterpretUncachedBlockFunction()), true);
     armAsm->ldr(RARG1, PTR(&g_state.pending_ticks));
@@ -593,7 +594,7 @@ bool foo(const void* a, const void* b)
   Label block_unchanged;
   armAsm->b(&block_unchanged);
   armAsm->bind(&block_changed);
-  armEmitJmp(armAsm, CodeCache::g_discard_and_recompile_block, false);
+  armEmitJmp(armAsm, CodeCache::g_recompiler_functions.discard_and_recompile_block, false);
   armAsm->bind(&block_unchanged);
 }
 
@@ -749,16 +750,16 @@ void CPU::ARM32Recompiler::EndAndLinkBlock(const std::optional<u32>& newpc, bool
   if (cycles > 0)
     armAsm->str(RARG1, PTR(&g_state.pending_ticks));
   if (do_event_test)
-    armEmitCondBranch(armAsm, ge, CodeCache::g_run_events_and_dispatch);
+    armEmitCondBranch(armAsm, ge, CodeCache::g_recompiler_functions.run_events_and_dispatch);
 
   // jump to dispatcher or next block
   if (force_run_events)
   {
-    armEmitJmp(armAsm, CodeCache::g_run_events_and_dispatch, false);
+    armEmitJmp(armAsm, CodeCache::g_recompiler_functions.run_events_and_dispatch, false);
   }
   else if (!newpc.has_value())
   {
-    armEmitJmp(armAsm, CodeCache::g_dispatcher, false);
+    armEmitJmp(armAsm, CodeCache::g_recompiler_functions.dispatcher, false);
   }
   else
   {

@@ -1754,7 +1754,7 @@ SettingsInterface& VideoPresenter::GetPostProcessingSettingsInterface(const char
 
 void VideoPresenter::TogglePostProcessing()
 {
-  DebugAssert(System::GetCoreThreadHandle().IsCallingThread());
+  DebugAssert(Host::IsOnCoreThread());
 
   VideoThread::RunOnThread([]() {
     GPUBackend* const backend = VideoThread::GetGPUBackend();
@@ -1772,7 +1772,7 @@ void VideoPresenter::TogglePostProcessing()
 
 void VideoPresenter::ReloadPostProcessingSettings(bool display, bool internal, bool reload_shaders)
 {
-  DebugAssert(System::GetCoreThreadHandle().IsCallingThread());
+  DebugAssert(Host::IsOnCoreThread());
 
   VideoThread::RunOnThread([display, internal, reload_shaders]() {
     GPUBackend* const backend = VideoThread::GetGPUBackend();
@@ -1808,7 +1808,7 @@ void VideoPresenter::ReloadPostProcessingSettings(bool display, bool internal, b
 
     // trigger represent of frame
     if (VideoThread::IsSystemPaused())
-      VideoThread::Internal::PresentFrameAndRestoreContext();
+      VideoThread::PresentFrameAndRestoreContext();
   });
 }
 

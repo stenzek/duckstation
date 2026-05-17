@@ -442,6 +442,8 @@ void MemoryEditorWindow::updateUIEnabled()
   m_ui.memoryRegionEXP1->setEnabled(system_valid);
   m_ui.memoryRegionScratchpad->setEnabled(system_valid);
   m_ui.memoryRegionBIOS->setEnabled(system_valid);
+  m_ui.memoryRegionVRAM->setEnabled(system_valid);
+  m_ui.memoryRegionSPURAM->setEnabled(system_valid);
   m_ui.memorySearch->setEnabled(system_valid);
   m_ui.memorySearchString->setEnabled(system_valid);
   m_ui.dataInspector->setEnabled(system_valid);
@@ -462,6 +464,16 @@ void MemoryEditorWindow::closeEvent(QCloseEvent* event)
 
 bool MemoryEditorWindow::scrollToMemoryAddress(VirtualMemoryAddress address)
 {
+  // Keep the existing region if we're viewing VRAM/SPU RAM.
+  if (m_ui.memoryRegionVRAM->isChecked() || m_ui.memoryRegionSPURAM->isChecked())
+  {
+    if (address >= m_ui.memoryView->dataSize())
+      return false;
+
+    m_ui.memoryView->scrollToOffset(address);
+    return true;
+  }
+
   const PhysicalMemoryAddress phys_address = CPU::VirtualAddressToPhysical(address);
   std::optional<Bus::MemoryRegion> region = Bus::GetMemoryRegionForAddress(phys_address);
   if (!region.has_value())
@@ -490,6 +502,10 @@ void MemoryEditorWindow::updateMemoryViewRegion()
     region = Bus::MemoryRegion::Scratchpad;
   else if (m_ui.memoryRegionBIOS->isChecked())
     region = Bus::MemoryRegion::BIOS;
+  else if (m_ui.memoryRegionVRAM->isChecked())
+    region = Bus::MemoryRegion::VRAM;
+  else if (m_ui.memoryRegionSPURAM->isChecked())
+    region = Bus::MemoryRegion::SPURAM;
   else
     region = Bus::MemoryRegion::RAM;
 

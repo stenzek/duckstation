@@ -254,13 +254,18 @@ u32 GetHostInstructionCount(const void* start, u32 size);
 
 extern CodeLUTArray g_code_lut;
 
-extern NORETURN_FUNCTION_POINTER void (*g_enter_recompiler)();
-extern const void* g_compile_or_revalidate_block;
-extern const void* g_run_events_and_dispatch;
-extern const void* g_dispatcher;
-extern const void* g_block_dispatcher;
-extern const void* g_interpret_block;
-extern const void* g_discard_and_recompile_block;
+struct RecompilerFunctions
+{
+  NORETURN_FUNCTION_POINTER void (*enter_recompiler)();
+  const void* compile_or_revalidate_block;
+  const void* run_events_and_dispatch;
+  const void* dispatcher;
+  const void* block_dispatcher;
+  const void* interpret_block;
+  const void* discard_and_recompile_block;
+};
+
+extern RecompilerFunctions g_recompiler_functions;
 
 #ifdef ENABLE_RECOMPILER_PROFILING
 

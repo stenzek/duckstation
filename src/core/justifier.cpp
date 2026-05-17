@@ -34,9 +34,9 @@ static constexpr std::array<const char*, NUM_CONTROLLER_AND_CARD_PORTS> s_event_
    "Justifier IRQ P5", "Justifier IRQ P6", "Justifier IRQ P7"}};
 
 Justifier::Justifier(u32 index)
-  : Controller(index), m_irq_event(
-                         s_event_names[index], 1, 1,
-                         [](void* param, TickCount, TickCount) { static_cast<Justifier*>(param)->IRQEvent(); }, this)
+  : Controller(index),
+    m_irq_event(
+      s_event_names[index], 1, 1, [](void* param, TickCount) { static_cast<Justifier*>(param)->IRQEvent(); }, this)
 {
 }
 

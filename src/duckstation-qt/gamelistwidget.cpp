@@ -621,7 +621,7 @@ const QPixmap& GameListModel::getCoverForEntry(const GameList::Entry* ge) const
 
   // We insert the placeholder into the cache, so that we don't repeatedly queue loading jobs for this game.
   const_cast<GameListModel*>(this)->loadOrGenerateCover(ge);
-  if (pm && !pm->is_loading)
+  if (pm)
   {
     // Use a fast resize so we don't block the main thread, it'll get fixed up soon.
     // But don't try to resize loading pixmaps.

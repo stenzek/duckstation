@@ -259,7 +259,7 @@ void FullscreenUI::PopulateGameListEntryList()
                        static_cast<float>(rhs->num_achievements)) :
                       0;
                   if (std::abs(unlock_lhs - unlock_rhs) >= 0.0001f)
-                    return reverse ? (unlock_lhs >= unlock_rhs) : (unlock_lhs < unlock_rhs);
+                    return reverse ? (unlock_lhs > unlock_rhs) : (unlock_lhs < unlock_rhs);
 
                   // order by achievement count
                   if (lhs->num_achievements != rhs->num_achievements)
@@ -306,9 +306,8 @@ void FullscreenUI::DrawGameListWindow()
     {
       if (NavButton(icons[i], static_cast<GameListView>(i) == s_game_list_locals.game_list_view, true))
       {
-        BeginTransition([]() {
-          s_game_list_locals.game_list_view =
-            (s_game_list_locals.game_list_view == GameListView::Grid) ? GameListView::List : GameListView::Grid;
+        BeginTransition([i]() {
+          s_game_list_locals.game_list_view = static_cast<GameListView>(i);
           QueueResetFocus(FocusResetType::ViewChanged);
         });
       }
@@ -845,7 +844,7 @@ void FullscreenUI::DrawGameGrid(const ImVec2& heading_size)
         }
       }
 
-      if (draw_title)
+      if (show_titles)
       {
         const ImRect title_bb(ImVec2(bb.Min.x, bb.Min.y + image_height + title_spacing), bb.Max);
         RenderMultiLineShadowedTextClipped(dl, UIStyle.Font, title_font_size, title_font_weight, title_bb.Min,
@@ -1037,7 +1036,8 @@ void FullscreenUI::HandleSelectDiscForDiscSet(const GameDatabase::DiscSetEntry* 
 void FullscreenUI::SwitchToGameList()
 {
   s_game_list_locals.game_list_view =
-    static_cast<GameListView>(Core::GetBaseIntSettingValue("Main", "DefaultFullscreenUIGameView", 0));
+    static_cast<GameListView>(std::min(Core::GetBaseUIntSettingValue("Main", "DefaultFullscreenUIGameView", 0),
+                                       static_cast<u32>(GameListView::Count) - 1));
   s_game_list_locals.game_list_current_selection_path = {};
   s_game_list_locals.game_list_current_selection_timeout = 0.0f;
 
@@ -1144,7 +1144,7 @@ GPUTexture* FullscreenUI::GetCoverForCurrentGame(const std::string& game_path)
 
 void FullscreenUI::SetCoverCacheEntry(std::string path, std::string cover_path)
 {
-  s_game_list_locals.cover_image_map.emplace(std::move(path), std::move(cover_path));
+  s_game_list_locals.cover_image_map.insert_or_assign(std::move(path), std::move(cover_path));
 }
 
 void FullscreenUI::RemoveCoverCacheEntry(const std::string& path)

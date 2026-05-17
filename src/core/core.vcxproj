@@ -31,6 +31,7 @@
     <ClCompile Include="cpu_types.cpp" />
     <ClCompile Include="ddgo_controller.cpp" />
     <ClCompile Include="digital_controller.cpp" />
+    <ClCompile Include="discord_presence.cpp" />
     <ClCompile Include="fullscreenui_achievements.cpp" />
     <ClCompile Include="fullscreenui_game_list.cpp" />
     <ClCompile Include="fullscreenui_settings.cpp" />
@@ -118,6 +119,7 @@
     </ClInclude>
     <ClInclude Include="ddgo_controller.h" />
     <ClInclude Include="digital_controller.h" />
+    <ClInclude Include="discord_presence.h" />
     <ClInclude Include="fullscreenui_private.h" />
     <ClInclude Include="fullscreenui_strings.h" />
     <ClInclude Include="fullscreenui_widgets.h" />
@@ -177,6 +179,7 @@
     <ClInclude Include="timers.h" />
     <ClInclude Include="timing_event.h" />
     <ClInclude Include="types.h" />
+    <ClInclude Include="video_thread_private.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\dep\imgui\imgui.vcxproj">

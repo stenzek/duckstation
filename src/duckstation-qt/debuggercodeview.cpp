@@ -314,8 +314,8 @@ void DebuggerCodeView::drawInstruction(QPainter& painter, VirtualMemoryAddress a
   else
   {
     instruction_color = palette().text().color();
-    bytes_color = bytes_color.darker(200);
-    address_color = instruction_color.darker(230);
+    bytes_color = instruction_color.darker(250);
+    address_color = instruction_color.darker(200);
     register_color = QColor(0, 150, 255);  // Blue for registers
     immediate_color = QColor(255, 150, 0); // Orange for immediates
     comment_color = QColor(150, 150, 150); // Gray for comments
@@ -351,7 +351,7 @@ void DebuggerCodeView::drawInstruction(QPainter& painter, VirtualMemoryAddress a
   if (u32 instruction_bits; CPU::SafeReadInstruction(address, &instruction_bits))
   {
     const QString bytes_text = QString::asprintf("%08X", instruction_bits);
-    painter.setPen(address_color);
+    painter.setPen(bytes_color);
     painter.drawText(x, y, bytes_text);
     x += BYTES_COLUMN_WIDTH;
 
@@ -477,7 +477,7 @@ void DebuggerCodeView::drawBranchArrows(QPainter& painter, const QRect& visible_
 
     // Choose color based on arrow type
     QColor arrow_color = colors[source_row % std::size(colors)];
-    painter.setPen(QPen(arrow_color, 1)); // Extra thick for debugging
+    painter.setPen(QPen(arrow_color, 1));
 
     int nest_level = 8 - (source_row % 8); // Adjust nesting level based on row
 
@@ -510,42 +510,61 @@ void DebuggerCodeView::drawBranchArrows(QPainter& painter, const QRect& visible_
 
     const int arrow_x = arrow_left + (nest_level * 4);
 
-    // Draw debug circles at source and target positions
-    painter.setBrush(arrow_color);
-    painter.drawEllipse(arrow_right - 1, source_y - 1, 3, 3);
+    // Source dot
+    if (source_y >= 0 && source_y < viewport_height)
+    {
+      painter.setBrush(arrow_color);
+      painter.setPen(Qt::NoPen);
+      painter.drawEllipse(arrow_right - 2, source_y - 2, 5, 5);
+      painter.setPen(QPen(arrow_color, 1));
+    }
 
-    // Draw straight line arrow with right angles
+    static constexpr int ARROWHEAD_SIZE = 4;
+
     if (source_y == target_y)
     {
-      // Horizontal line for same-row branches
-      painter.drawLine(arrow_x, source_y, arrow_x + 15, target_y);
+      // Self-referencing branch: draw a stub to the right edge
+      painter.drawLine(arrow_x, source_y, arrow_right, source_y);
     }
     else
     {
-      // Horizontal line from left edge to source
+      // Horizontal line from source to vertical stem
       if (source_y >= 0 && source_y < viewport_height)
         painter.drawLine(arrow_x, source_y, arrow_right, source_y);
 
-      // Vertical line from source to target
+      // Vertical line from source to target (clamped to viewport)
       painter.drawLine(arrow_x, clamped_source_y, arrow_x, clamped_target_y);
 
-      // Horizontal line to target
       if (target_y >= 0 && target_y < viewport_height)
-        painter.drawLine(arrow_x, target_y, arrow_right, target_y);
-
-      // Draw arrowhead with simple lines
-      const int arrow_size = 3;
-      const bool pointing_down = (target_y > source_y);
-
-      if (pointing_down)
       {
-        painter.drawLine(arrow_right, target_y, arrow_right - arrow_size, target_y - arrow_size);
-        painter.drawLine(arrow_right, target_y, arrow_right - arrow_size, target_y + arrow_size);
+        // Target on-screen: horizontal line to target + filled right-pointing arrowhead
+        painter.drawLine(arrow_x, target_y, arrow_right - ARROWHEAD_SIZE, target_y);
+
+        const QPoint arrowhead[3] = {
+          QPoint(arrow_right,                  target_y),
+          QPoint(arrow_right - ARROWHEAD_SIZE, target_y - ARROWHEAD_SIZE),
+          QPoint(arrow_right - ARROWHEAD_SIZE, target_y + ARROWHEAD_SIZE),
+        };
+        painter.setBrush(arrow_color);
+        painter.setPen(Qt::NoPen);
+        painter.drawConvexPolygon(arrowhead, 3);
+        painter.setPen(QPen(arrow_color, 1));
       }
       else
       {
-        painter.drawLine(arrow_right, target_y, arrow_right - arrow_size, target_y - arrow_size);
-        painter.drawLine(arrow_right, target_y, arrow_right - arrow_size, target_y + arrow_size);
+        // Target off-screen: filled arrowhead at the viewport edge pointing toward the target
+        const bool branch_goes_up = (target_y < 0);
+        const int edge_y = branch_goes_up ? 0 : viewport_height;
+
+        const QPoint arrowhead[3] = {
+          QPoint(arrow_x,                  edge_y),
+          QPoint(arrow_x - ARROWHEAD_SIZE, edge_y + (branch_goes_up ? ARROWHEAD_SIZE : -ARROWHEAD_SIZE)),
+          QPoint(arrow_x + ARROWHEAD_SIZE, edge_y + (branch_goes_up ? ARROWHEAD_SIZE : -ARROWHEAD_SIZE)),
+        };
+        painter.setBrush(arrow_color);
+        painter.setPen(Qt::NoPen);
+        painter.drawConvexPolygon(arrowhead, 3);
+        painter.setPen(QPen(arrow_color, 1));
       }
     }
   }
@@ -642,8 +661,11 @@ void DebuggerCodeView::wheelEvent(QWheelEvent* event)
   const int delta = event->angleDelta().y();
   const int steps = delta / 120; // Standard wheel step
 
+  const u32 instruction_steps = static_cast<u32>(std::abs(steps) * CPU::INSTRUCTION_SIZE * 3);
   VirtualMemoryAddress old_top = m_top_address;
-  VirtualMemoryAddress new_top = m_top_address - (steps * CPU::INSTRUCTION_SIZE * 3);
+  VirtualMemoryAddress new_top = (steps >= 0) ?
+                                   (instruction_steps >= m_top_address) ? 0 : (m_top_address - instruction_steps) :
+                                   (m_top_address + instruction_steps);
 
   // Clamp to valid range
   new_top = std::clamp(new_top, m_code_region_start, m_code_region_end - CPU::INSTRUCTION_SIZE);

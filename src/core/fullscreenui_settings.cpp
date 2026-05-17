@@ -548,7 +548,7 @@ void FullscreenUI::InputBindingDialog::Draw()
       // allow the dialog to fade out, but stop receiving any more events
       m_time_remaining = 0.0f;
       m_binding_type = InputBindingInfo::Type::Unknown;
-      InputManager::RemoveHook();
+      Host::RunOnCoreThread(&InputManager::RemoveHook);
       StartClose();
     }
   }
@@ -1761,7 +1761,7 @@ void FullscreenUI::SwitchToSettings()
 
 bool FullscreenUI::SwitchToGameSettings(SettingsPage page)
 {
-  return SwitchToGameSettingsForPath(VideoThread::GetGamePath());
+  return SwitchToGameSettingsForPath(VideoThread::GetGamePath(), page);
 }
 
 bool FullscreenUI::SwitchToGameSettingsForPath(const std::string& path, SettingsPage page)
@@ -1784,7 +1784,10 @@ bool FullscreenUI::SwitchToGameSettingsForPath(const std::string& path, Settings
       }
       else
       {
-        ShowToast(OSDMessageType::Info, {}, error.TakeDescription());
+        VideoThread::RunOnThread([error_str = error.TakeDescription()]() mutable {
+          ShowToast(OSDMessageType::Info, {}, std::move(error_str));
+          ClosePauseMenuImmediately();
+        });
       }
     });
 
@@ -2312,6 +2315,16 @@ void FullscreenUI::DrawInterfaceSettingsPage()
                         "", FullscreenUI::GetThemeDisplayNames(), FullscreenUI::GetThemeNames(), true, false,
                         [](std::string_view) { BeginTransition(LONG_TRANSITION_TIME, &FullscreenUI::UpdateTheme); });
 
+  DrawStringListSetting(bsi, FSUI_ICONVSTR(ICON_FA_FONT, "Font"), FSUI_VSTR("Selects the font used for UI text."),
+                        "Main", "ImGuiTextFont", ImGuiManager::GetDefaultTextFontName(),
+                        ImGuiManager::GetTextFontDisplayNames(), ImGuiManager::GetTextFontNames(), true, false,
+                        [](std::string_view) {
+                          // defer it, since we can't change the fonts while rendering
+                          BeginTransition(LONG_TRANSITION_TIME, []() {
+                            Host::RunOnCoreThread([]() { VideoThread::RunOnThread(&ImGuiManager::UpdateTextFont); });
+                          });
+                        });
+
   if (const TinyString current_value =
         bsi->GetTinyStringValue("Main", "FullscreenUIBackground", DEFAULT_BACKGROUND_NAME);
       MenuActionButton(FSUI_ICONVSTR(ICON_FA_IMAGE, "Menu Background"),
@@ -2467,6 +2480,15 @@ void FullscreenUI::DrawInterfaceSettingsPage()
                   "OSDMessageLocation", Settings::DEFAULT_OSD_MESSAGE_LOCATION, &Settings::ParseNotificationLocation,
                   &Settings::GetNotificationLocationName, &Settings::GetNotificationLocationDisplayName,
                   NotificationLocation::MaxCount);
+  DrawStringListSetting(bsi, FSUI_ICONVSTR(ICON_FA_FONT, "Overlay Font"),
+                        FSUI_VSTR("Selects the font used for the performance overlay."), "Main", "ImGuiFixedFont",
+                        ImGuiManager::GetDefaultFixedFontName(), ImGuiManager::GetFixedFontDisplayNames(),
+                        ImGuiManager::GetFixedFontNames(), true, true, [](std::string_view) {
+                          // defer it, since we can't change the fonts while rendering
+                          BeginTransition(LONG_TRANSITION_TIME, []() {
+                            Host::RunOnCoreThread([]() { VideoThread::RunOnThread(&ImGuiManager::UpdateFixedFont); });
+                          });
+                        });
 
   DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_CIRCLE_EXCLAMATION, "Show Messages"),
                     FSUI_VSTR("Shows on-screen-display messages when events occur. Errors and warnings are still "
@@ -5217,6 +5239,12 @@ void FullscreenUI::DrawAchievementsSettingsPage(std::unique_lock<std::mutex>& se
     "Cheevos", "ChallengeIndicatorMode", Settings::DEFAULT_ACHIEVEMENT_CHALLENGE_INDICATOR_MODE,
     &Settings::ParseAchievementChallengeIndicatorMode, &Settings::GetAchievementChallengeIndicatorModeName,
     &Settings::GetAchievementChallengeIndicatorModeDisplayName, AchievementChallengeIndicatorMode::MaxCount, enabled);
+  DrawEnumSetting(
+    bsi, FSUI_ICONVSTR(ICON_FA_BARS_PROGRESS, "Progress Indicators"),
+    FSUI_VSTR("Shows a popup in the selected location when progress towards a measured achievement changes."),
+    "Cheevos", "ProgressIndicatorMode", Settings::DEFAULT_ACHIEVEMENT_PROGRESS_INDICATOR_MODE,
+    &Settings::ParseAchievementProgressIndicatorMode, &Settings::GetAchievementProgressIndicatorModeName,
+    &Settings::GetAchievementProgressIndicatorModeDisplayName, AchievementProgressIndicatorMode::MaxCount, enabled);
 
   DrawEnumSetting(bsi, FSUI_ICONVSTR(ICON_FA_LOCATION_DOT, "Indicator Location"),
                   FSUI_VSTR("Selects the screen location for challenge/progress indicators, and leaderboard trackers."),
@@ -5227,11 +5255,6 @@ void FullscreenUI::DrawAchievementsSettingsPage(std::unique_lock<std::mutex>& se
                      FSUI_VSTR("Determines the size of challenge/progress indicators."),
                      FSUI_ICONVSTR(ICON_FA_EXPAND, "Custom Indicator Scale"),
                      FSUI_VSTR("Sets the custom scale percentage for challenge/progress indicators."));
-
-  DrawToggleSetting(
-    bsi, FSUI_ICONVSTR(ICON_FA_BARS_PROGRESS, "Progress Indicators"),
-    FSUI_VSTR("Shows a popup in the selected location when progress towards a measured achievement changes."),
-    "Cheevos", "ProgressIndicators", true, enabled);
 
   if (!IsEditingGameSettings(bsi))
   {

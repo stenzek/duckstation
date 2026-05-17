@@ -56,7 +56,7 @@
       <string>Restore Title</string>
      </property>
      <property name="icon">
-      <iconset theme="restart-line"/>
+      <iconset theme="delete-back-2-line"/>
      </property>
     </widget>
    </item>
@@ -79,7 +79,7 @@
       <string>Restore Disc Set Title</string>
      </property>
      <property name="icon">
-      <iconset theme="restart-line"/>
+      <iconset theme="delete-back-2-line"/>
      </property>
     </widget>
    </item>
@@ -133,7 +133,7 @@
       <string>Restore Region</string>
      </property>
      <property name="icon">
-      <iconset theme="restart-line"/>
+      <iconset theme="delete-back-2-line"/>
      </property>
     </widget>
    </item>

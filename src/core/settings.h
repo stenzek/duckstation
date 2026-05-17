@@ -119,15 +119,6 @@ struct GPUSettings
   bool display_show_enhancements : 1 = false;
   bool display_auto_resize_window : 1 = false;
 
-  float gpu_pgxp_tolerance = -1.0f;
-  float gpu_pgxp_depth_clear_threshold = 0.0f;
-
-  std::array<s16, 4> display_fine_crop_amount = {};
-
-  float display_osd_scale = DEFAULT_OSD_SCALE;
-  float display_osd_margin = 0.0f;
-
-  std::array<float, 4> display_osd_message_duration = DEFAULT_DISPLAY_OSD_MESSAGE_DURATIONS;
   NotificationLocation display_osd_message_location = DEFAULT_OSD_MESSAGE_LOCATION;
 
   // achievements
@@ -135,8 +126,19 @@ struct GPUSettings
   NotificationLocation achievements_indicator_location = DEFAULT_ACHIEVEMENT_INDICATOR_LOCATION;
   AchievementChallengeIndicatorMode achievements_challenge_indicator_mode =
     DEFAULT_ACHIEVEMENT_CHALLENGE_INDICATOR_MODE;
+  AchievementProgressIndicatorMode achievements_progress_indicator_mode = DEFAULT_ACHIEVEMENT_PROGRESS_INDICATOR_MODE;
   s16 achievements_notification_scale = ACHIEVEMENT_NOTIFICATION_SCALE_AUTO;
   s16 achievements_indicator_scale = ACHIEVEMENT_NOTIFICATION_SCALE_AUTO;
+
+  std::array<s16, 4> display_fine_crop_amount = {};
+
+  float display_osd_scale = DEFAULT_OSD_SCALE;
+  float display_osd_margin = 0.0f;
+
+  std::array<float, 4> display_osd_message_duration = DEFAULT_DISPLAY_OSD_MESSAGE_DURATIONS;
+
+  float gpu_pgxp_tolerance = -1.0f;
+  float gpu_pgxp_depth_clear_threshold = 0.0f;
 
   // texture replacements
   struct TextureReplacementSettings
@@ -247,6 +249,8 @@ struct GPUSettings
 
   static constexpr AchievementChallengeIndicatorMode DEFAULT_ACHIEVEMENT_CHALLENGE_INDICATOR_MODE =
     AchievementChallengeIndicatorMode::Notification;
+  static constexpr AchievementProgressIndicatorMode DEFAULT_ACHIEVEMENT_PROGRESS_INDICATOR_MODE =
+    AchievementProgressIndicatorMode::IconAndTitle;
   static constexpr NotificationLocation DEFAULT_ACHIEVEMENT_NOTIFICATION_LOCATION = NotificationLocation::TopLeft;
   static constexpr NotificationLocation DEFAULT_ACHIEVEMENT_INDICATOR_LOCATION = NotificationLocation::BottomRight;
   static constexpr s16 ACHIEVEMENT_NOTIFICATION_SCALE_OSD_SCALE = -1;
@@ -370,7 +374,6 @@ struct Settings : public GPUSettings
   bool achievements_leaderboard_notifications : 1 = true;
   bool achievements_leaderboard_trackers : 1 = true;
   bool achievements_sound_effects : 1 = true;
-  bool achievements_progress_indicators : 1 = true;
   bool achievements_prefetch_badges : 1 = DEFAULT_ACHIEVEMENT_BADGE_PREFETCH;
   u8 achievements_notification_duration = DEFAULT_ACHIEVEMENT_NOTIFICATION_TIME;
   u8 achievements_leaderboard_duration = DEFAULT_LEADERBOARD_NOTIFICATION_TIME;
@@ -578,6 +581,10 @@ struct Settings : public GPUSettings
   static std::optional<AchievementChallengeIndicatorMode> ParseAchievementChallengeIndicatorMode(std::string_view str);
   static const char* GetAchievementChallengeIndicatorModeName(AchievementChallengeIndicatorMode mode);
   static const char* GetAchievementChallengeIndicatorModeDisplayName(AchievementChallengeIndicatorMode mode);
+
+  static std::optional<AchievementProgressIndicatorMode> ParseAchievementProgressIndicatorMode(std::string_view str);
+  static const char* GetAchievementProgressIndicatorModeName(AchievementProgressIndicatorMode mode);
+  static const char* GetAchievementProgressIndicatorModeDisplayName(AchievementProgressIndicatorMode mode);
 
   static std::optional<DisplayScreenshotFormat> ParseDisplayScreenshotFormat(std::string_view str);
   static const char* GetDisplayScreenshotFormatName(DisplayScreenshotFormat mode);

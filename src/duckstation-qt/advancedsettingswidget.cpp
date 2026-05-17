@@ -6,6 +6,8 @@
 #include "settingswindow.h"
 #include "settingwidgetbinder.h"
 
+#include "core/achievements.h"
+
 #include "util/http_cache.h"
 #include "util/object_archive.h"
 
@@ -81,6 +83,23 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(SettingsWindow* dialog, QWidget* 
   dialog->registerWidgetHelp(m_ui.coversDirectory, tr("Covers Directory"), tr("Default"),
                              tr("Specifies the directory where game cover images that are used in the game grid and "
                                 "Big Picture UI will be stored."));
+
+  // RAIntegration is not available on non-win32/x64.
+#ifdef RC_CLIENT_SUPPORTS_RAINTEGRATION
+  if (Achievements::IsRAIntegrationAvailable())
+    SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.useRAIntegration, "Cheevos", "UseRAIntegration", false);
+  else
+    m_ui.useRAIntegration->setEnabled(false);
+
+  dialog->registerWidgetHelp(
+    m_ui.useRAIntegration, tr("Enable RAIntegration (Development Only)"), tr("Unchecked"),
+    tr("When enabled, DuckStation will load the RAIntegration DLL which allows for achievement development.<br>The "
+       "RA_Integration.dll file must be placed in the same directory as the DuckStation executable."));
+#else
+  m_ui.interfaceSettingsLayout->removeWidget(m_ui.useRAIntegration);
+  delete m_ui.useRAIntegration;
+  m_ui.useRAIntegration = nullptr;
+#endif
 }
 
 AdvancedSettingsWidget::~AdvancedSettingsWidget() = default;

@@ -10,7 +10,7 @@
 class StateWrapper;
 
 // Event callback type. Second parameter is the number of cycles the event was executed "late".
-using TimingEventCallback = void (*)(void* param, TickCount ticks, TickCount ticks_late);
+using TimingEventCallback = void (*)(void* param, TickCount ticks);
 
 class TimingEvent
 {

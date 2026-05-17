@@ -182,7 +182,7 @@ chd_file* CDImageCHD::OpenCHD(std::string_view filename, FileSystem::ManagedCFil
                           &parent_files);
     for (FILESYSTEM_FIND_DATA& fd : parent_files)
     {
-      if (StringUtil::EndsWithNoCase(Path::GetExtension(fd.FileName), ".chd"))
+      if (!StringUtil::EqualNoCase(Path::GetExtension(fd.FileName), "chd"))
         continue;
 
       // Re-check the header, it might have changed since we last opened.

@@ -1227,7 +1227,7 @@ void TextureReplacementSettingsDialog::onExportClicked()
   config.dump_texture_force_alpha_channel = m_ui.setTextureDumpAlphaChannel->isChecked();
   config.vram_write_dump_width_threshold = static_cast<u16>(m_ui.minDumpedVRAMWriteWidth->value());
   config.vram_write_dump_height_threshold = static_cast<u16>(m_ui.minDumpedVRAMWriteHeight->value());
-  config.dump_vram_write_force_alpha_channel = m_ui.setTextureDumpAlphaChannel->isChecked();
+  config.dump_vram_write_force_alpha_channel = m_ui.setVRAMWriteAlphaChannel->isChecked();
 
   QInputDialog* const idlg = new QInputDialog(this);
   idlg->resize(600, 400);

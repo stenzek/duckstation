@@ -81,6 +81,7 @@ The following people have contributed to the project in some way, and are credit
 - @Overload86
 - @landcaster
 - @Sekai9
+- @Pesa
 
 ## Special Thanks
 

@@ -35,8 +35,7 @@ static constexpr std::array<std::string_view, NUM_CONTROLLER_AND_CARD_PORTS> s_e
 MemoryCard::MemoryCard(u32 index)
   : m_save_event(
       s_event_names[index], GetSaveDelayInTicks(), GetSaveDelayInTicks(),
-      [](void* param, TickCount ticks, TickCount ticks_late) { static_cast<MemoryCard*>(param)->SaveIfChanged(true); },
-      this),
+      [](void* param, TickCount ticks) { static_cast<MemoryCard*>(param)->SaveIfChanged(true); }, this),
     m_index(index)
 {
   m_FLAG.no_write_yet = true;

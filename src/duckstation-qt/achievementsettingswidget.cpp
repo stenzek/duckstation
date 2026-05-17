@@ -57,7 +57,11 @@ AchievementSettingsWidget::AchievementSettingsWidget(SettingsWindow* dialog, QWi
     &Settings::ParseAchievementChallengeIndicatorMode, &Settings::GetAchievementChallengeIndicatorModeName,
     &Settings::GetAchievementChallengeIndicatorModeDisplayName, Settings::DEFAULT_ACHIEVEMENT_CHALLENGE_INDICATOR_MODE,
     AchievementChallengeIndicatorMode::MaxCount);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.progressIndicators, "Cheevos", "ProgressIndicators", true);
+  SettingWidgetBinder::BindWidgetToEnumSetting(
+    sif, m_ui.progressIndicatorMode, "Cheevos", "ProgressIndicatorMode",
+    &Settings::ParseAchievementProgressIndicatorMode, &Settings::GetAchievementProgressIndicatorModeName,
+    &Settings::GetAchievementProgressIndicatorModeDisplayName, Settings::DEFAULT_ACHIEVEMENT_PROGRESS_INDICATOR_MODE,
+    AchievementProgressIndicatorMode::MaxCount);
   SettingWidgetBinder::BindWidgetToEnumSetting(
     sif, m_ui.indicatorLocation, "Cheevos", "IndicatorLocation", &Settings::ParseNotificationLocation,
     &Settings::GetNotificationLocationName, &Settings::GetNotificationLocationDisplayName,
@@ -114,7 +118,7 @@ AchievementSettingsWidget::AchievementSettingsWidget(SettingsWindow* dialog, QWi
   dialog->registerWidgetHelp(m_ui.indicatorScaleCustom, tr("Custom Indicator Scale"), tr("100%"),
                              tr("Sets the custom scale percentage for challenge/progress indicators."));
   dialog->registerWidgetHelp(
-    m_ui.progressIndicators, tr("Show Progress Indicators"), tr("Checked"),
+    m_ui.progressIndicatorMode, tr("Progress Indicators"), tr("Checked"),
     tr("Shows a popup in the selected location when progress towards a measured achievement changes."));
 
   connect(m_ui.enable, &QCheckBox::checkStateChanged, this, &AchievementSettingsWidget::updateEnableState);
@@ -144,23 +148,6 @@ AchievementSettingsWidget::AchievementSettingsWidget(SettingsWindow* dialog, QWi
     m_ui.loginBox->deleteLater();
     m_ui.loginBox = nullptr;
   }
-
-  // RAIntegration is not available on non-win32/x64.
-#ifdef RC_CLIENT_SUPPORTS_RAINTEGRATION
-  if (Achievements::IsRAIntegrationAvailable())
-    SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.useRAIntegration, "Cheevos", "UseRAIntegration", false);
-  else
-    m_ui.useRAIntegration->setEnabled(false);
-
-  dialog->registerWidgetHelp(
-    m_ui.useRAIntegration, tr("Enable RAIntegration (Development Only)"), tr("Unchecked"),
-    tr("When enabled, DuckStation will load the RAIntegration DLL which allows for achievement development.<br>The "
-       "RA_Integration.dll file must be placed in the same directory as the DuckStation executable."));
-#else
-  m_ui.settingsLayout->removeWidget(m_ui.useRAIntegration);
-  delete m_ui.useRAIntegration;
-  m_ui.useRAIntegration = nullptr;
-#endif
 
   updateEnableState();
   onAchievementsNotificationDurationSliderChanged();
@@ -250,6 +237,7 @@ void AchievementSettingsWidget::updateEnableState()
   m_ui.spectatorMode->setEnabled(enabled);
   m_ui.encoreMode->setEnabled(enabled && !spectator_enabled);
   m_ui.unofficialAchievements->setEnabled(enabled);
+  m_ui.prefetchBadges->setEnabled(enabled);
   m_ui.notificationsGroup->setEnabled(enabled);
   m_ui.progressTrackingGroup->setEnabled(enabled);
 

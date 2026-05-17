@@ -10,6 +10,7 @@
 #include "cheats.h"
 #include "core.h"
 #include "cpu_core.h"
+#include "discord_presence.h"
 #include "fullscreenui.h"
 #include "fullscreenui_private.h"
 #include "game_list.h"
@@ -795,7 +796,8 @@ void Achievements::UpdateSettings(const Settings& old_config)
   if (!g_settings.achievements_leaderboard_trackers)
     s_state.active_leaderboard_trackers.clear();
 
-  if (!g_settings.achievements_progress_indicators)
+  // remove progress indicator because it won't remove normally
+  if (g_settings.achievements_progress_indicator_mode == AchievementProgressIndicatorMode::Disabled)
     s_state.active_progress_indicator.reset();
 }
 
@@ -1098,9 +1100,9 @@ void Achievements::UpdateRichPresence(std::unique_lock<std::recursive_mutex>& lo
 
   INFO_LOG("Rich presence updated: {}", s_state.rich_presence_string);
 
-  lock.unlock();
-  System::UpdateRichPresence(false);
-  lock.lock();
+#ifdef ENABLE_DISCORD_PRESENCE
+  DiscordPresence::UpdateDetails(GetCurrentGameBadgeURL(), s_state.rich_presence_string);
+#endif
 }
 
 void Achievements::OnSystemStarting(CDImage* image, bool disable_hardcore_mode)
@@ -1337,10 +1339,12 @@ void Achievements::ClientLoadGameCallback(int result, const char* error_message,
   // update progress database on first load, in case it was played on another PC
   UpdateGameSummary(true);
 
-  // Defer starting the prefetch, because otherwise when loading state we'll block until it's all downloaded.
-  // TODO: This can be removed once we're counting requests.
+#ifdef ENABLE_DISCORD_PRESENCE
+  DiscordPresence::UpdateDetails(s_state.game_badge_url, s_state.rich_presence_string);
+#endif
+
   if (g_settings.achievements_prefetch_badges)
-    Host::RunOnCoreThread(&Achievements::PrefetchAllAchievementBadges);
+    Achievements::PrefetchAllAchievementBadges();
   else
     PrefetchNextAchievementBadge();
 
@@ -1355,6 +1359,10 @@ void Achievements::ClientLoadGameCallback(int result, const char* error_message,
 
 void Achievements::ClearGameInfo()
 {
+#ifdef ENABLE_DISCORD_PRESENCE
+  DiscordPresence::UpdateDetails({}, {});
+#endif
+
   FullscreenUI::ClearAchievementsState();
 
   s_state.active_leaderboard_trackers = {};
@@ -1786,9 +1794,6 @@ void Achievements::HandleAchievementProgressIndicatorShowEvent(const rc_client_e
   DEV_LOG("Showing progress indicator: {} ({}): {}", event->achievement->id, event->achievement->title,
           event->achievement->measured_progress);
 
-  if (!g_settings.achievements_progress_indicators)
-    return;
-
   // Don't show pinned achievements.
   if (IsAchievementPinned(event->achievement->id))
   {
@@ -1812,12 +1817,6 @@ void Achievements::HandleAchievementProgressIndicatorHideEvent(const rc_client_e
     return;
 
   DEV_LOG("Hiding progress indicator");
-
-  if (!g_settings.achievements_progress_indicators)
-  {
-    s_state.active_progress_indicator.reset();
-    return;
-  }
 
   s_state.active_progress_indicator->active = false;
   s_state.active_progress_indicator->time = std::min(s_state.active_progress_indicator->time, INDICATOR_FADE_OUT_TIME);
@@ -2614,7 +2613,7 @@ void Achievements::BeginRefreshHashDatabase()
     rc_client_begin_fetch_hash_library(s_state.client, RC_CONSOLE_PLAYSTATION, FetchHashLibraryCallback, nullptr);
   s_state.fetch_all_progress_request =
     rc_client_begin_fetch_all_user_progress(s_state.client, RC_CONSOLE_PLAYSTATION, FetchAllProgressCallback, nullptr);
-  if (!s_state.fetch_hash_library_request || !s_state.fetch_hash_library_request)
+  if (!s_state.fetch_hash_library_request || !s_state.fetch_all_progress_request)
   {
     ERROR_LOG("Failed to create hash database refresh requests.");
     CancelHashDatabaseRequests();

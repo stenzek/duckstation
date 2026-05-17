@@ -27,9 +27,6 @@
     <ClInclude Include="subprojects\speex\speex_resampler.h">
       <Filter>speex</Filter>
     </ClInclude>
-    <ClInclude Include="subprojects\speex\stack_alloc.h">
-      <Filter>speex</Filter>
-    </ClInclude>
     <ClInclude Include="subprojects\speex\arch.h">
       <Filter>speex</Filter>
     </ClInclude>

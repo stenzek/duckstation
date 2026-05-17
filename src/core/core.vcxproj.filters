@@ -73,6 +73,7 @@
     <ClCompile Include="fullscreenui_achievements.cpp" />
     <ClCompile Include="core.cpp" />
     <ClCompile Include="sound_effect_manager.cpp" />
+    <ClCompile Include="discord_presence.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="types.h" />
@@ -158,6 +159,8 @@
     <ClInclude Include="core_private.h" />
     <ClInclude Include="sound_effect_manager.h" />
     <ClInclude Include="gpu_helpers.h" />
+    <ClInclude Include="discord_presence.h" />
+    <ClInclude Include="video_thread_private.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="gpu_sw_rasterizer.inl" />

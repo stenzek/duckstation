@@ -356,12 +356,12 @@ static void ReverbWrite(u32 address, s16 data);
 static void ProcessReverb(s32 left_in, s32 right_in, s32* left_out, s32* right_out);
 
 static void InternalGeneratePendingSamples();
-static void Execute(void* param, TickCount ticks, TickCount ticks_late);
+static void Execute(void* param, TickCount ticks);
 static void UpdateEventInterval();
 
 static void ExecuteFIFOWriteToRAM(TickCount& ticks);
 static void ExecuteFIFOReadFromRAM(TickCount& ticks);
-static void ExecuteTransfer(void* param, TickCount ticks, TickCount ticks_late);
+static void ExecuteTransfer(void* param, TickCount ticks);
 static void ManualTransferWrite(u16 value);
 static void UpdateTransferEvent();
 static void UpdateDMARequest();
@@ -1403,7 +1403,7 @@ ALWAYS_INLINE_RELEASE void SPU::ExecuteFIFOWriteToRAM(TickCount& ticks)
   }
 }
 
-void SPU::ExecuteTransfer(void* param, TickCount ticks, TickCount ticks_late)
+void SPU::ExecuteTransfer(void* param, TickCount ticks)
 {
   const RAMTransferMode mode = s_state.SPUCNT.ram_transfer_mode;
   DebugAssert(mode != RAMTransferMode::Stopped);
@@ -1464,7 +1464,7 @@ void SPU::ManualTransferWrite(u16 value)
   {
     WARNING_LOG("FIFO not empty on manual SPU write, draining to hopefully avoid corruption. Game is silly.");
     if (s_state.SPUCNT.ram_transfer_mode != RAMTransferMode::Stopped)
-      ExecuteTransfer(nullptr, std::numeric_limits<s32>::max(), 0);
+      ExecuteTransfer(nullptr, std::numeric_limits<s32>::max());
   }
 
   std::memcpy(&s_ram[s_state.transfer_address], &value, sizeof(u16));
@@ -2377,7 +2377,7 @@ void SPU::ProcessReverb(s32 left_in, s32 right_in, s32* left_out, s32* right_out
 #endif
 }
 
-void SPU::Execute(void* param, TickCount ticks, TickCount ticks_late)
+void SPU::Execute(void* param, TickCount ticks)
 {
   u32 remaining_frames;
   if (g_settings.cpu_overclock_active)

@@ -2,10 +2,19 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "core.h"
+#include "achievements.h"
 #include "core_private.h"
+#include "discord_presence.h"
+#include "gdb_server.h"
+#include "host.h"
 #include "settings.h"
 #include "system.h"
+#include "system_private.h"
+#include "video_thread.h"
+#include "video_thread_private.h"
 
+#include "util/gpu_device.h"
+#include "util/http_cache.h"
 #include "util/ini_settings_interface.h"
 #include "util/input_manager.h"
 
@@ -15,9 +24,17 @@
 #include "common/file_system.h"
 #include "common/layered_settings_interface.h"
 #include "common/log.h"
+#include "common/memmap.h"
 #include "common/path.h"
+#include "common/ryml_helpers.h"
 #include "common/string_util.h"
+#include "common/task_queue.h"
+#include "common/threading.h"
+#include "common/timer.h"
 
+#include "scmversion/scmversion.h"
+
+#include "cpuinfo.h"
 #include "fmt/format.h"
 
 #include <cstdarg>
@@ -33,19 +50,28 @@ LOG_CHANNEL(Core);
 
 namespace Core {
 
+/// Use two async worker threads, should be enough for most tasks.
+static constexpr u32 NUM_ASYNC_WORKER_THREADS = 2;
+
 static bool SetAppRootAndResources(const char* resources_subdir, Error* error);
 static bool SetDataRoot(Error* error);
 static void SetDefaultSettings(SettingsInterface& si, bool host, bool system, bool controller);
+
+static void CheckCacheLineSize();
+static void LogStartupInformation();
 
 namespace {
 struct CoreLocals
 {
   std::mutex settings_mutex;
   LayeredSettingsInterface layered_settings_interface;
-
-#ifndef __ANDROID__
   INISettingsInterface base_settings_interface;
-#endif
+
+  Threading::ThreadHandle core_thread_handle;
+
+  Timer::Value process_start_time = 0;
+
+  TaskQueue async_task_queue;
 };
 } // namespace
 
@@ -522,17 +548,6 @@ SettingsInterface* Core::GetInputSettingsLayer()
   return s_locals.layered_settings_interface.GetLayer(LayeredSettingsInterface::LAYER_INPUT);
 }
 
-#ifdef __ANDROID__
-
-void Core::SetBaseSettingsLayer(SettingsInterface* sif)
-{
-  AssertMsg(s_locals.layered_settings_interface.GetLayer(LayeredSettingsInterface::LAYER_BASE) == nullptr,
-            "Base layer has not been set");
-  s_locals.layered_settings_interface.SetLayer(LayeredSettingsInterface::LAYER_BASE, sif);
-}
-
-#endif // __ANDROID__
-
 void Core::SetGameSettingsLayer(SettingsInterface* sif, std::unique_lock<std::mutex>& lock)
 {
   s_locals.layered_settings_interface.SetLayer(LayeredSettingsInterface::LAYER_GAME, sif);
@@ -541,4 +556,249 @@ void Core::SetGameSettingsLayer(SettingsInterface* sif, std::unique_lock<std::mu
 void Core::SetInputSettingsLayer(SettingsInterface* sif, std::unique_lock<std::mutex>& lock)
 {
   s_locals.layered_settings_interface.SetLayer(LayeredSettingsInterface::LAYER_INPUT, sif);
+}
+
+bool Core::PerformEarlyHardwareChecks(Error* error)
+{
+  // This shouldn't fail... if it does, just hope for the best.
+  cpuinfo_initialize();
+
+#ifdef CPU_ARCH_X64
+#ifdef CPU_ARCH_SSE41
+  if (!cpuinfo_has_x86_sse4_1())
+  {
+    Error::SetStringFmt(
+      error, "<h3>Your CPU does not support the SSE4.1 instruction set.</h3><p>SSE4.1 is required for this version of "
+             "DuckStation. Please download and switch to the legacy SSE2 version.</p><p>You can download this from <a "
+             "href=\"https://www.duckstation.org/\">www.duckstation.org</a> under \"Other Platforms\".");
+    return false;
+  }
+#else
+  if (cpuinfo_has_x86_sse4_1())
+  {
+    Error::SetStringFmt(
+      error, "You are running the <strong>legacy SSE2 DuckStation executable</strong> on a CPU that supports the "
+             "SSE4.1 instruction set.\nPlease download and switch to the regular, non-SSE2 version.\nYou can download "
+             "this from <a href=\"https://www.duckstation.org/\">www.duckstation.org</a>.");
+  }
+#endif
+#endif
+
+#ifndef DYNAMIC_HOST_PAGE_SIZE
+  // Check page size. If it doesn't match, it is a fatal error.
+  const size_t runtime_host_page_size = MemMap::GetRuntimePageSize();
+  if (runtime_host_page_size == 0)
+  {
+    Error::SetStringFmt(error, "Cannot determine size of page. Continuing with expectation of {} byte pages.",
+                        HOST_PAGE_SIZE);
+  }
+  else if (HOST_PAGE_SIZE != runtime_host_page_size)
+  {
+    Error::SetStringFmt(
+      error, "Page size mismatch. This build was compiled with {} byte pages, but the system has {} byte pages.",
+      HOST_PAGE_SIZE, runtime_host_page_size);
+    return false;
+  }
+#else
+  if (HOST_PAGE_SIZE == 0 || HOST_PAGE_SIZE < MIN_HOST_PAGE_SIZE || HOST_PAGE_SIZE > MAX_HOST_PAGE_SIZE)
+  {
+    Error::SetStringFmt(error, "Page size of {} bytes is out of the range supported by this build: {}-{}.",
+                        HOST_PAGE_SIZE, MIN_HOST_PAGE_SIZE, MAX_HOST_PAGE_SIZE);
+    return false;
+  }
+#endif
+
+  return true;
+}
+
+void Core::CheckCacheLineSize()
+{
+  u32 max_line_size = 0;
+  if (cpuinfo_initialize())
+  {
+    const u32 num_l1is = cpuinfo_get_l1i_caches_count();
+    const u32 num_l1ds = cpuinfo_get_l1d_caches_count();
+    const u32 num_l2s = cpuinfo_get_l2_caches_count();
+    for (u32 i = 0; i < num_l1is; i++)
+    {
+      const cpuinfo_cache* cache = cpuinfo_get_l1i_cache(i);
+      if (cache)
+        max_line_size = std::max(max_line_size, cache->line_size);
+    }
+    for (u32 i = 0; i < num_l1ds; i++)
+    {
+      const cpuinfo_cache* cache = cpuinfo_get_l1d_cache(i);
+      if (cache)
+        max_line_size = std::max(max_line_size, cache->line_size);
+    }
+    for (u32 i = 0; i < num_l2s; i++)
+    {
+      const cpuinfo_cache* cache = cpuinfo_get_l2_cache(i);
+      if (cache)
+        max_line_size = std::max(max_line_size, cache->line_size);
+    }
+  }
+
+  if (max_line_size == 0)
+  {
+    ERROR_LOG("Cannot determine size of cache line. Continuing with expectation of {} byte lines.",
+              HOST_CACHE_LINE_SIZE);
+  }
+  else if (HOST_CACHE_LINE_SIZE != max_line_size)
+  {
+    // Not fatal, but does have performance implications.
+    WARNING_LOG(
+      "Cache line size mismatch. This build was compiled with {} byte lines, but the system has {} byte lines.",
+      HOST_CACHE_LINE_SIZE, max_line_size);
+  }
+}
+
+void Core::LogStartupInformation()
+{
+#if !defined(CPU_ARCH_X64) || defined(CPU_ARCH_SSE41)
+  const std::string_view suffix = {};
+#else
+  const std::string_view suffix = " [Legacy SSE2]";
+#endif
+  INFO_LOG("DuckStation for {} ({}){}", TARGET_OS_STR, CPU_ARCH_STR, suffix);
+  INFO_LOG("Version: {} [{}]", g_scm_tag_str, g_scm_branch_str);
+  INFO_LOG("SCM Timestamp: {}", g_scm_date_str);
+  if (const cpuinfo_package* package = cpuinfo_initialize() ? cpuinfo_get_package(0) : nullptr) [[likely]]
+  {
+    INFO_LOG("Host CPU: {}", package->name);
+    INFO_LOG("CPU has {} logical processor(s) and {} core(s) across {} cluster(s).", package->processor_count,
+             package->core_count, package->cluster_count);
+  }
+
+#ifdef DYNAMIC_HOST_PAGE_SIZE
+  INFO_LOG("Host Page Size: {} bytes", HOST_PAGE_SIZE);
+#endif
+}
+
+bool Core::ProcessStartup(Error* error)
+{
+  s_locals.process_start_time = Timer::GetCurrentValue();
+
+  if (!System::AllocatePersistentMemory(error))
+    return false;
+
+  CheckCacheLineSize();
+
+  // Initialize rapidyaml before anything can use it.
+  SetRymlCallbacks();
+
+#ifdef __linux__
+  // Running DuckStation out of /usr is not supported and makes no sense.
+  if (std::memcmp(EmuFolders::AppRoot.data(), "/usr/", 5) == 0)
+    return false;
+#endif
+
+  return true;
+}
+
+void Core::ProcessShutdown()
+{
+  System::ReleasePersistentMemory();
+}
+
+bool Core::CoreThreadInitialize(bool disable_worker_threads, Error* error)
+{
+#ifdef _WIN32
+  // On Win32, we have a bunch of things which use COM (e.g. SDL, Cubeb, etc).
+  // We need to initialize COM first, before anything else does, because otherwise they might
+  // initialize it in single-threaded/apartment mode, which can't be changed to multithreaded.
+  HRESULT hr = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
+  if (FAILED(hr))
+  {
+    Error::SetHResult(error, "CoInitializeEx() failed: ", hr);
+    return false;
+  }
+#endif
+
+  s_locals.core_thread_handle = Threading::ThreadHandle::GetForCallingThread();
+
+  if (!disable_worker_threads)
+    s_locals.async_task_queue.SetWorkerCount(NUM_ASYNC_WORKER_THREADS);
+
+  System::LoadSettings(false);
+
+  LogStartupInformation();
+
+  VideoThread::ProcessStartup();
+
+  Achievements::Initialize();
+
+#ifdef ENABLE_DISCORD_PRESENCE
+  if (g_settings.enable_discord_presence)
+    DiscordPresence::Initialize();
+#endif
+
+  return true;
+}
+
+void Core::CoreThreadShutdown()
+{
+  s_locals.async_task_queue.SetWorkerCount(0);
+
+#ifdef ENABLE_DISCORD_PRESENCE
+  DiscordPresence::Shutdown();
+#endif
+
+  Achievements::Shutdown();
+
+  GPUDevice::UnloadDynamicLibraries();
+
+  InputManager::CloseSources();
+
+  HTTPCache::Shutdown();
+
+  VideoThread::ProcessShutdown();
+
+  s_locals.core_thread_handle = {};
+
+#ifdef _WIN32
+  CoUninitialize();
+#endif
+}
+
+const Threading::ThreadHandle& Host::GetCoreThreadHandle()
+{
+  return Core::s_locals.core_thread_handle;
+}
+
+bool Host::IsOnCoreThread()
+{
+  return Core::s_locals.core_thread_handle.IsCallingThread();
+}
+
+void Host::QueueAsyncTask(std::function<void()> function)
+{
+  Core::s_locals.async_task_queue.SubmitTask(std::move(function));
+}
+
+void Host::WaitForAllAsyncTasks()
+{
+  Core::s_locals.async_task_queue.WaitForAll();
+}
+
+float Core::GetProcessUptime()
+{
+  return static_cast<float>(Timer::ConvertValueToSeconds(Timer::GetCurrentValue() - s_locals.process_start_time));
+}
+
+void Core::IdleUpdate()
+{
+  InputManager::PollSources();
+
+#ifdef ENABLE_DISCORD_PRESENCE
+  DiscordPresence::Poll();
+#endif
+
+  HTTPCache::PollRequests();
+
+  Achievements::IdleUpdate();
+
+#ifdef ENABLE_GDB_SERVER
+  GDBServer::Poll(0);
+#endif
 }

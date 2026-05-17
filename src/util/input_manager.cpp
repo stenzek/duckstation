@@ -1891,7 +1891,7 @@ void InputManager::OnInputDeviceConnected(InputBindingKey key, std::string_view 
   Host::OnInputDeviceConnected(key, identifier, device_name);
 
   const bool has_fsui = (System::IsValid() || VideoThread::IsFullscreenUIRequested());
-  if (has_fsui && System::GetProcessUptime() >= DEVICE_CONNECTED_NOTIFICATION_DELAY)
+  if (has_fsui && Core::GetProcessUptime() >= DEVICE_CONNECTED_NOTIFICATION_DELAY)
   {
     Host::AddIconOSDMessage(OSDMessageType::Info, fmt::format("ControllerConnected{}", identifier), ICON_FA_GAMEPAD,
                             fmt::format(TRANSLATE_FS("InputManager", "Controller {} connected."), identifier));

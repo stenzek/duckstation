@@ -8,6 +8,9 @@
 
 #include "core/fullscreenui_widgets.h"
 #include "core/settings.h"
+#include "core/video_thread.h"
+
+#include "util/imgui_manager.h"
 
 #include "common/error.h"
 
@@ -25,6 +28,10 @@ OSDSettingsWidget::OSDSettingsWidget(SettingsWindow* dialog, QWidget* parent) : 
   SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_ui.osdMargin, "Display", "OSDMargin",
                                                 ImGuiManager::DEFAULT_SCREEN_MARGIN);
   SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.fullscreenUITheme, "UI", "FullscreenUITheme");
+  SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.imguiFont, "Main", "ImGuiTextFont",
+                                                 ImGuiManager::GetDefaultTextFontName());
+  SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.imguiFixedFont, "Main", "ImGuiFixedFont",
+                                                 ImGuiManager::GetDefaultFixedFontName());
   SettingWidgetBinder::BindWidgetToEnumSetting(
     sif, m_ui.osdMessageLocation, "Display", "OSDMessageLocation", &Settings::ParseNotificationLocation,
     &Settings::GetNotificationLocationName, &Settings::GetNotificationLocationDisplayName,
@@ -61,6 +68,16 @@ OSDSettingsWidget::OSDSettingsWidget(SettingsWindow* dialog, QWidget* parent) : 
 
   connect(m_ui.fullscreenUITheme, &QComboBox::currentIndexChanged, g_core_thread, &CoreThread::updateFullscreenUITheme);
   connect(m_ui.showMessages, &QCheckBox::checkStateChanged, this, &OSDSettingsWidget::onOSDShowMessagesChanged);
+  connect(m_ui.imguiFont, &QComboBox::currentIndexChanged, g_core_thread, []() {
+    // don't bother if nothing is running
+    if (VideoThread::IsFullscreenUIRequested() || VideoThread::IsGPUBackendRequested())
+      VideoThread::RunOnThread(&ImGuiManager::UpdateTextFont);
+  });
+  connect(m_ui.imguiFixedFont, &QComboBox::currentIndexChanged, g_core_thread, []() {
+    // don't bother if nothing is running
+    if (VideoThread::IsFullscreenUIRequested() || VideoThread::IsGPUBackendRequested())
+      VideoThread::RunOnThread(&ImGuiManager::UpdateFixedFont);
+  });
 
   onOSDShowMessagesChanged();
 
@@ -69,6 +86,15 @@ OSDSettingsWidget::OSDSettingsWidget(SettingsWindow* dialog, QWidget* parent) : 
     tr("Changes the size at which on-screen elements, including status and messages are displayed."));
   dialog->registerWidgetHelp(m_ui.fullscreenUITheme, tr("Theme"), tr("Automatic"),
                              tr("Determines the theme to use for on-screen display elements and the Big Picture UI."));
+  dialog->registerWidgetHelp(
+    m_ui.imguiFont, tr("Font"),
+    m_ui.imguiFont->itemText(m_ui.imguiFont->findData(QString::fromUtf8(ImGuiManager::GetDefaultTextFontName()))),
+    tr("Determines the font to use for on-screen display elements and the Big Picture UI."));
+  dialog->registerWidgetHelp(
+    m_ui.imguiFixedFont, tr("Overlay Font"),
+    m_ui.imguiFixedFont->itemText(
+      m_ui.imguiFixedFont->findData(QString::fromUtf8(ImGuiManager::GetDefaultFixedFontName()))),
+    tr("Determines the font to use for the performance overlay."));
   dialog->registerWidgetHelp(m_ui.osdMargin, tr("Display Margins"),
                              QStringLiteral("%1px").arg(static_cast<int>(ImGuiManager::DEFAULT_SCREEN_MARGIN)),
                              tr("Determines the margin between the edge of the screen and on-screen messages."));
@@ -126,6 +152,17 @@ void OSDSettingsWidget::setupAdditionalUi()
     m_ui.fullscreenUITheme->addItem(QtUtils::StringViewToQString(fsui_theme_names[i]),
                                     QString::fromUtf8(fsui_theme_values[i]));
   }
+
+  const std::span<const char* const> imgui_font_values = ImGuiManager::GetTextFontNames();
+  const std::span<const char* const> imgui_font_names = ImGuiManager::GetTextFontDisplayNames();
+  for (size_t i = 0; i < imgui_font_values.size(); i++)
+    m_ui.imguiFont->addItem(QString::fromUtf8(imgui_font_names[i]), QString::fromUtf8(imgui_font_values[i]));
+
+  const std::span<const char* const> imgui_fixed_font_values = ImGuiManager::GetFixedFontNames();
+  const std::span<const char* const> imgui_fixed_font_names = ImGuiManager::GetFixedFontDisplayNames();
+  for (size_t i = 0; i < imgui_fixed_font_values.size(); i++)
+    m_ui.imguiFixedFont->addItem(QString::fromUtf8(imgui_fixed_font_names[i]),
+                                 QString::fromUtf8(imgui_fixed_font_values[i]));
 }
 
 void OSDSettingsWidget::onOSDShowMessagesChanged()

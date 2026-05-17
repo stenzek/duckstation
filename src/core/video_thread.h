@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #pragma once
@@ -18,7 +18,6 @@ class ThreadHandle;
 
 enum class RenderAPI : u8;
 enum class GPUVSyncMode : u8;
-enum class WindowInfoType : u8;
 
 enum class GPURenderer : u8;
 enum class VideoThreadCommandType : u8;
@@ -102,36 +101,10 @@ void PushCommandAndWakeThread(VideoThreadCommand* cmd);
 void PushCommandAndSync(VideoThreadCommand* cmd, bool spin);
 void SyncThread(bool spin);
 
-namespace Internal {
+/// Returns a handle to the video thread.
 const Threading::ThreadHandle& GetThreadHandle();
-void ProcessStartup();
-void DoRunIdle();
-void RequestShutdown();
-void VideoThreadEntryPoint();
+
+/// Presents the current frame and restores the GPU context, only carefully call on the video thread.
 bool PresentFrameAndRestoreContext();
-} // namespace Internal
+
 } // namespace VideoThread
-
-namespace Host {
-
-/// Called when the core is creating a render device.
-/// This could also be fullscreen transition.
-std::optional<WindowInfo> AcquireRenderWindow(RenderAPI render_api, bool fullscreen, bool exclusive_fullscreen,
-                                              Error* error);
-
-/// Returns the window type for the host.
-WindowInfoType GetRenderWindowInfoType();
-
-/// Called when the core is finished with a render window.
-void ReleaseRenderWindow();
-
-/// Called before a fullscreen transition occurs.
-bool CanChangeFullscreenMode(bool new_fullscreen_state);
-
-/// Called when the pause state changes, or fullscreen UI opens.
-void OnVideoThreadRunIdleChanged(bool is_active);
-
-/// Changes the screensaver inhibit state.
-bool SetScreensaverInhibit(bool inhibit, Error* error);
-
-} // namespace Host

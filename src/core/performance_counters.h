@@ -33,3 +33,10 @@ void Update(GPUBackend* gpu, u32 frame_number, u32 internal_frame_number);
 void AccumulateGPUTime();
 
 } // namespace PerformanceCounters
+
+namespace Host {
+
+/// Called when performance metrics are updated, approximately once a second.
+void OnPerformanceCountersUpdated(const GPUBackend* gpu_backend);
+
+} // namespace Host

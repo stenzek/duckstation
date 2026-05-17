@@ -5,7 +5,7 @@
 #include "qtutils.h"
 
 #include "core/core.h"
-#include "core/video_thread.h"
+#include "core/host.h"
 
 #include "util/gpu_device.h"
 
@@ -49,14 +49,16 @@ namespace {
 
 struct WindowInfoLocals
 {
-  bool screensaver_inhibited;
-
 #if defined(__APPLE__)
   IOPMAssertionID screensaver_inhibit_assertion;
 #elif defined(__linux__)
-  u32 screensaver_inhibit_cookie;
+  // Prevent screensaver inhibits when running on platforms that don't have it (e.g. gamescope).
   std::optional<QDBusInterface> screensaver_inhibit_interface;
+  u32 screensaver_inhibit_cookie = 0;
+  bool disable_screensaver_inhibit = false;
 #endif
+
+  bool screensaver_inhibited = false;
 };
 
 } // namespace
@@ -257,6 +259,13 @@ bool Host::SetScreensaverInhibit(bool inhibit, Error* error)
 
 #elif defined(__linux__)
 
+  if (s_window_info_locals.disable_screensaver_inhibit)
+  {
+    // pretend it succeeded so the caller doesn't throw an error
+    s_window_info_locals.screensaver_inhibited = inhibit;
+    return true;
+  }
+
   if (!s_window_info_locals.screensaver_inhibit_interface.has_value())
   {
     const QDBusConnection connection = QDBusConnection::sessionBus();
@@ -330,3 +339,10 @@ bool QtUtils::SetWindowRoundedCornerState(QWidget* widget, bool enabled)
 }
 
 #endif // _WIN32
+
+void QtHost::DisableScreensaverInhibit()
+{
+#ifdef __linux__
+  s_window_info_locals.disable_screensaver_inhibit = true;
+#endif
+}

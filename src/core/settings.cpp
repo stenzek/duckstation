@@ -6,9 +6,9 @@
 #include "controller.h"
 #include "core.h"
 #include "gte_types.h"
+#include "host.h"
 #include "imgui_overlays.h"
 #include "system.h"
-#include "video_thread.h"
 
 #include "util/gpu_device.h"
 #include "util/imgui_manager.h"
@@ -544,7 +544,6 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
   achievements_leaderboard_notifications = si.GetBoolValue("Cheevos", "LeaderboardNotifications", true);
   achievements_leaderboard_trackers = si.GetBoolValue("Cheevos", "LeaderboardTrackers", true);
   achievements_sound_effects = si.GetBoolValue("Cheevos", "SoundEffects", true);
-  achievements_progress_indicators = si.GetBoolValue("Cheevos", "ProgressIndicators", true);
   achievements_prefetch_badges = si.GetBoolValue("Cheevos", "PrefetchBadges", true);
   achievements_notification_location =
     ParseNotificationLocation(si.GetStringViewValue("Cheevos", "NotificationLocation"))
@@ -554,6 +553,9 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
   achievements_challenge_indicator_mode =
     ParseAchievementChallengeIndicatorMode(si.GetStringViewValue("Cheevos", "ChallengeIndicatorMode"))
       .value_or(DEFAULT_ACHIEVEMENT_CHALLENGE_INDICATOR_MODE);
+  achievements_progress_indicator_mode =
+    ParseAchievementProgressIndicatorMode(si.GetStringViewValue("Cheevos", "ProgressIndicatorMode"))
+      .value_or(DEFAULT_ACHIEVEMENT_PROGRESS_INDICATOR_MODE);
   achievements_notification_duration =
     si.GetSaturatedIntValue<u8>("Cheevos", "NotificationsDuration", DEFAULT_ACHIEVEMENT_NOTIFICATION_TIME);
   achievements_leaderboard_duration =
@@ -883,12 +885,13 @@ void Settings::Save(SettingsInterface& si, bool ignore_base) const
   si.SetBoolValue("Cheevos", "LeaderboardNotifications", achievements_leaderboard_notifications);
   si.SetBoolValue("Cheevos", "LeaderboardTrackers", achievements_leaderboard_trackers);
   si.SetBoolValue("Cheevos", "SoundEffects", achievements_sound_effects);
-  si.SetBoolValue("Cheevos", "ProgressIndicators", achievements_progress_indicators);
   si.SetBoolValue("Cheevos", "PrefetchBadges", achievements_prefetch_badges);
   si.SetStringValue("Cheevos", "NotificationLocation", GetNotificationLocationName(achievements_notification_location));
   si.SetStringValue("Cheevos", "IndicatorLocation", GetNotificationLocationName(achievements_indicator_location));
   si.SetStringValue("Cheevos", "ChallengeIndicatorMode",
                     GetAchievementChallengeIndicatorModeName(achievements_challenge_indicator_mode));
+  si.SetStringValue("Cheevos", "ProgressIndicatorMode",
+                    GetAchievementProgressIndicatorModeName(achievements_progress_indicator_mode));
   si.SetUIntValue("Cheevos", "NotificationsDuration", achievements_notification_duration);
   si.SetUIntValue("Cheevos", "LeaderboardsDuration", achievements_leaderboard_duration);
   si.SetIntValue("Cheevos", "NotificationScale", achievements_notification_scale);
@@ -2495,6 +2498,47 @@ const char* Settings::GetAchievementChallengeIndicatorModeDisplayName(Achievemen
   return Host::TranslateToCString("Settings",
                                   s_achievement_challenge_indicator_mode_display_names[static_cast<size_t>(mode)],
                                   "AchievementChallengeIndicatorMode");
+}
+
+static constexpr const std::array s_achievement_progress_indicator_mode_names = {
+  "Disabled",
+  "Icon",
+  "IconAndTitle",
+};
+static_assert(s_achievement_progress_indicator_mode_names.size() ==
+              static_cast<size_t>(AchievementProgressIndicatorMode::MaxCount));
+static constexpr const std::array s_achievement_progress_indicator_mode_display_names = {
+  TRANSLATE_DISAMBIG_NOOP("Settings", "Disabled", "AchievementProgressIndicatorMode"),
+  TRANSLATE_DISAMBIG_NOOP("Settings", "Show Icon", "AchievementProgressIndicatorMode"),
+  TRANSLATE_DISAMBIG_NOOP("Settings", "Show Icon and Title", "AchievementProgressIndicatorMode"),
+};
+static_assert(s_achievement_progress_indicator_mode_display_names.size() ==
+              static_cast<size_t>(AchievementProgressIndicatorMode::MaxCount));
+
+std::optional<AchievementProgressIndicatorMode> Settings::ParseAchievementProgressIndicatorMode(std::string_view str)
+{
+  int index = 0;
+  for (const char* name : s_achievement_progress_indicator_mode_names)
+  {
+    if (str == name)
+      return static_cast<AchievementProgressIndicatorMode>(index);
+
+    index++;
+  }
+
+  return std::nullopt;
+}
+
+const char* Settings::GetAchievementProgressIndicatorModeName(AchievementProgressIndicatorMode mode)
+{
+  return s_achievement_progress_indicator_mode_names[static_cast<size_t>(mode)];
+}
+
+const char* Settings::GetAchievementProgressIndicatorModeDisplayName(AchievementProgressIndicatorMode mode)
+{
+  return Host::TranslateToCString("Settings",
+                                  s_achievement_progress_indicator_mode_display_names[static_cast<size_t>(mode)],
+                                  "AchievementProgressIndicatorMode");
 }
 
 static constexpr const std::array s_memory_card_type_names = {

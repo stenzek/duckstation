@@ -16,6 +16,7 @@
   X(Controller)                                                                                                        \
   X(Core)                                                                                                              \
   X(CueParser)                                                                                                         \
+  X(DiscordPresence)                                                                                                   \
   X(DInputSource)                                                                                                      \
   X(DMA)                                                                                                               \
   X(DynamicLibrary)                                                                                                    \

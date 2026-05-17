@@ -67,7 +67,7 @@ struct CounterState
 static void UpdateCountingEnabled(CounterState& cs);
 static void CheckForIRQ(u32 index, u32 old_counter);
 
-static void AddSysClkTicks(void*, TickCount sysclk_ticks, TickCount ticks_late);
+static void AddSysClkTicks(void*, TickCount sysclk_ticks);
 
 static TickCount GetTicksUntilNextInterrupt();
 static void UpdateSysClkEvent();
@@ -274,7 +274,7 @@ void Timers::CheckForIRQ(u32 timer, u32 old_counter)
   }
 }
 
-void Timers::AddSysClkTicks(void*, TickCount sysclk_ticks, TickCount ticks_late)
+void Timers::AddSysClkTicks(void*, TickCount sysclk_ticks)
 {
   sysclk_ticks = System::UnscaleTicksToOverclock(sysclk_ticks, &s_state.sysclk_ticks_carry);
 
