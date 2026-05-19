@@ -117,7 +117,6 @@ jobs:
     - name: Upload ${{ matrix.name }} Symbols Archive
       uses: actions/upload-artifact@v7
       with:
-        name: "windows-${{ matrix.arch }}"
         path: "duckstation-windows-${{ matrix.arch }}-release-symbols.7z"
         archive: false
         if-no-files-found: error
@@ -142,7 +141,6 @@ jobs:
     - name: Upload ${{ matrix.name }} Release Archive
       uses: actions/upload-artifact@v7
       with:
-        name: "windows-${{ matrix.arch }}"
         path: "${{ matrix.assetname }}"
         archive: false
         if-no-files-found: error
@@ -157,7 +155,6 @@ jobs:
     - name: Upload ${{ matrix.name }} Installer Archive
       uses: actions/upload-artifact@v7
       with:
-        name: "windows-${{ matrix.arch }}"
         path: "${{ matrix.installerassetname }}"
         archive: false
         if-no-files-found: error

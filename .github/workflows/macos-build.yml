@@ -68,7 +68,6 @@ jobs:
     - name: Upload MacOS .app
       uses: actions/upload-artifact@v7
       with:
-        name: "macos"
         path: "build/duckstation-mac-release.zip"
         archive: false
         if-no-files-found: error

@@ -17,11 +17,9 @@ jobs:
         include:
           - name: "x64"
             asset: "DuckStation-x64.AppImage"
-            artifact: "linux-x64-appimage"
             cmakeoptions: ""
           - name: "x64 SSE2"
             asset: "DuckStation-x64-SSE2.AppImage"
-            artifact: "linux-x64-sse2-appimage"
             cmakeoptions: "-DDISABLE_SSE4=ON"
     steps:
     - uses: actions/checkout@v6
@@ -74,7 +72,6 @@ jobs:
     - name: Upload AppImage
       uses: actions/upload-artifact@v7
       with:
-        name: "${{ matrix.artifact }}"
         path: "${{ matrix.asset }}"
         archive: false
         if-no-files-found: error
