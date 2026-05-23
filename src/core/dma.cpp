@@ -87,6 +87,9 @@ struct ChannelState
     BitField<u32, bool, 28, 1> start_trigger;
 
     static constexpr u32 WRITE_MASK = 0b01110001'01110111'00000111'00000011;
+
+    // Only bits 24, 28 and 30 can be set in OTC. All other bits are hardwired to zero.
+    static constexpr u32 OTC_MASK = 0b01010001'00000000'00000000'00000000;
   } channel_control = {};
 
   bool request = false;
@@ -379,6 +382,9 @@ void DMA::WriteRegister(u32 offset, u32 value)
 
         state.channel_control.bits = (state.channel_control.bits & ~ChannelState::ChannelControl::WRITE_MASK) |
                                      (value & ChannelState::ChannelControl::WRITE_MASK);
+        state.channel_control.bits = (static_cast<Channel>(channel_index) == Channel::OTC) ?
+                                       (state.channel_control.bits & ChannelState::ChannelControl::OTC_MASK) :
+                                       state.channel_control.bits;
         TRACE_LOG("DMA channel {} channel control <- 0x{:08X}", static_cast<Channel>(channel_index),
                   state.channel_control.bits);
 
