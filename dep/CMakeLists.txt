@@ -1,3 +1,9 @@
+# SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com>
+# SPDX-License-Identifier: CC-BY-NC-ND-4.0 + Packaging Restriction
+#
+# NOTE: In addition to the terms of CC-BY-NC-ND-4.0, you may not use this file to create
+# packages or build recipes without explicit permission from the copyright holder.
+
 set(_saved_CMAKE_MESSAGE_LOG_LEVEL ${CMAKE_MESSAGE_LOG_LEVEL})
 set(CMAKE_MESSAGE_LOG_LEVEL NOTICE)
 
@@ -59,12 +65,6 @@ endif()
 if(CPU_ARCH_LOONGARCH64)
   add_subdirectory(lagoon EXCLUDE_FROM_ALL)
   disable_compiler_warnings_for_target(lagoon)
-endif()
-
-if(WIN32)
-  add_subdirectory(d3d12ma EXCLUDE_FROM_ALL)
-  disable_compiler_warnings_for_target(d3d12ma)
-  add_subdirectory(winpixeventruntime EXCLUDE_FROM_ALL)
 endif()
 
 set(CMAKE_MESSAGE_LOG_LEVEL ${_saved_CMAKE_MESSAGE_LOG_LEVEL})

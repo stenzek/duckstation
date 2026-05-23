@@ -48,33 +48,9 @@ if(LINUX OR BSD)
   set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
 endif()
 
-# Release build optimizations for MSVC.
-if(MSVC)
-  add_compile_definitions("_UNICODE" "UNICODE" "_CRT_NONSTDC_NO_DEPRECATE" "_CRT_SECURE_NO_WARNINGS")
-  foreach(config CMAKE_C_FLAGS CMAKE_CXX_FLAGS)
-    # Enable intrinsic functions, disable minimal rebuild, UTF-8 source, set __cplusplus version.
-    set(${config} "${${config}} /Oi /Gm- /utf-8 /Zc:__cplusplus")
-  endforeach()
-
-  # RelWithDebInfo is set to Ob1 instead of Ob2.   
-  string(REPLACE "/Ob1" "/Ob2" CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO}")
-  string(REPLACE "/Ob1" "/Ob2" CMAKE_C_FLAGS_DEVEL "${CMAKE_C_FLAGS_DEVEL}")
-  string(REPLACE "/Ob1" "/Ob2" CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
-  string(REPLACE "/Ob1" "/Ob2" CMAKE_CXX_FLAGS_DEVEL "${CMAKE_CXX_FLAGS_DEVEL}")
-
-  # Disable incremental linking in RelWithDebInfo.
-  string(REPLACE "/INCREMENTAL" "/INCREMENTAL:NO" CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO "${CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO}")
-  string(REPLACE "/INCREMENTAL" "/INCREMENTAL:NO" CMAKE_EXE_LINKER_FLAGS_DEVEL "${CMAKE_EXE_LINKER_FLAGS_DEVEL}")
-
-  # COMDAT folding/remove unused functions.
-  set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} /OPT:REF /OPT:ICF")
-  set(CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO "${CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO} /OPT:REF /OPT:ICF")
-  set(CMAKE_EXE_LINKER_FLAGS_DEVEL "${CMAKE_EXE_LINKER_FLAGS_DEVEL} /OPT:REF /OPT:ICF")
-else()
-  # Force debug symbols for Linux builds.
-  add_debug_symbol_flag(CMAKE_C_FLAGS_RELEASE)
-  add_debug_symbol_flag(CMAKE_CXX_FLAGS_RELEASE)
-endif()
+# Force debug symbols for Linux builds.
+add_debug_symbol_flag(CMAKE_C_FLAGS_RELEASE)
+add_debug_symbol_flag(CMAKE_CXX_FLAGS_RELEASE)
 
 # Warning disables.
 if(COMPILER_CLANG OR COMPILER_CLANG_CL OR COMPILER_GCC)
@@ -84,17 +60,7 @@ if(COMPILER_CLANG OR COMPILER_CLANG_CL OR COMPILER_GCC)
 endif()
 
 # We don't need exceptions, disable them to save a bit of code size.
-if(MSVC)
-  string(REPLACE "/EHsc" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
-  string(REPLACE "/GR" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
-
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /D_HAS_EXCEPTIONS=0 /permissive-")
-  if(COMPILER_CLANG_CL)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /clang:-fno-rtti")
-  endif()
-else()
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-exceptions -fno-rtti")
-endif()
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-exceptions -fno-rtti")
 
 # Rewrite paths in macros to be relative to the source directory.
 # Helpful for reproducible builds.

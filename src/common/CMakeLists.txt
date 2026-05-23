@@ -1,3 +1,9 @@
+# SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com>
+# SPDX-License-Identifier: CC-BY-NC-ND-4.0 + Packaging Restriction
+#
+# NOTE: In addition to the terms of CC-BY-NC-ND-4.0, you may not use this file to create
+# packages or build recipes without explicit permission from the copyright holder.
+
 add_library(common
   align.h
   assert.cpp
@@ -81,26 +87,6 @@ target_include_directories(common PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/..")
 target_link_libraries(common PUBLIC fmt Threads::Threads)
 target_link_libraries(common PRIVATE fast_float "${CMAKE_DL_LIBS}")
 
-if(WIN32)
-  target_sources(common PRIVATE
-    thirdparty/StackWalker.cpp
-    thirdparty/StackWalker.h
-    windows_headers.h
-  )
-  target_link_libraries(common PRIVATE OneCore.lib)
-endif()
-
-if(MSVC)
-  if(CPU_ARCH_X64)
-    enable_language(ASM_MASM)
-    target_sources(common PRIVATE fastjmp_x86.asm)
-    set_source_files_properties(fastjmp_x86.asm PROPERTIES COMPILE_FLAGS "/D_M_X86_64")
-  elseif(CPU_ARCH_ARM32 OR CPU_ARCH_ARM64)
-    enable_language(ASM_MARMASM)
-    target_sources(common PRIVATE fastjmp_arm.asm)
-  endif()
-endif()
-
 if(APPLE)
   set(MAC_SOURCES
     cocoa_tools.h
@@ -113,7 +99,7 @@ if(APPLE)
   target_link_libraries(common PRIVATE ${COCOA_LIBRARY} ${QUARTZCORE_LIBRARY})
 endif()
 
-if(NOT WIN32 AND NOT ANDROID AND NOT APPLE)
+if(NOT ANDROID AND NOT APPLE)
   target_link_libraries(common PRIVATE libbacktrace::libbacktrace)
 endif()
 
