@@ -328,12 +328,11 @@ void HTTPDownloader::CancelRequestsForOwner(const void* owner)
 {
   std::unique_lock lock(m_pending_http_request_lock);
 
-  bool has_pending_requests = false;
+  // one request might start another, so loop multiple times until we match none
+  bool had_matching_requests;
   do
   {
-    has_pending_requests = false;
-
-    LockedPollRequests(lock);
+    had_matching_requests = false;
 
     for (size_t index = 0; index < m_pending_http_requests.size();)
     {
@@ -344,36 +343,31 @@ void HTTPDownloader::CancelRequestsForOwner(const void* owner)
         continue;
       }
 
+      // Should never be cancelled at this point.
       const Request::State req_state = req->state.load(std::memory_order_acquire);
+      DebugAssert(req_state != Request::State::Cancelled);
 
-      // can't cancel a request in pending stage
+      // Cancel even completed requests.
+      ERROR_LOG("Request for '{}' cancelled", req->url);
+
+      req->state.store(Request::State::Cancelled, std::memory_order_release);
+      m_pending_http_requests.erase(m_pending_http_requests.begin() + index);
+      lock.unlock();
+
+      req->error.SetStringView("Request was cancelled.");
+      req->callback(HTTP_STATUS_CANCELLED, req->error, req->content_type, req->data);
+
+      // If pending, we can delete it immediately since it won't be processed by the worker thread.
+      // Otherwise, we need to close it so the worker thread can clean up properly.
       if (req_state == Request::State::Pending)
-      {
-        has_pending_requests = true;
-        index++;
-        continue;
-      }
-      else if (req_state == Request::State::Started || req_state == Request::State::Receiving)
-      {
-        // request timed out
-        ERROR_LOG("Request for '{}' cancelled", req->url);
-
-        req->state.store(Request::State::Cancelled, std::memory_order_release);
-        m_pending_http_requests.erase(m_pending_http_requests.begin() + index);
-        lock.unlock();
-
-        req->error.SetStringView("Request was cancelled.");
-        req->callback(HTTP_STATUS_CANCELLED, req->error, req->content_type, req->data);
-
+        delete req;
+      else
         CloseRequest(req);
 
-        lock.lock();
-        continue;
-      }
-
-      index++;
+      lock.lock();
+      had_matching_requests = true;
     }
-  } while (has_pending_requests);
+  } while (had_matching_requests);
 }
 
 std::string HTTPDownloader::GetExtensionForContentType(const std::string& content_type)
