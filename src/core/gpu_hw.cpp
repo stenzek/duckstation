@@ -322,7 +322,7 @@ bool GPU_HW::Initialize(bool upload_vram, Error* error)
 
   if (m_use_texture_cache)
   {
-    if (!GPUTextureCache::Initialize(this, error))
+    if (!GPUTextureCache::Initialize(error))
       return false;
   }
   else
@@ -681,7 +681,7 @@ bool GPU_HW::UpdateSettings(const GPUSettings& old_settings, Error* error)
 
   if (m_use_texture_cache && !old_settings.gpu_texture_cache)
   {
-    if (!GPUTextureCache::Initialize(this, error))
+    if (!GPUTextureCache::Initialize(error))
     {
       Error::AddPrefix(error, "Failed to initialize texture cache: ");
       return false;
