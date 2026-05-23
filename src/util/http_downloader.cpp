@@ -200,10 +200,11 @@ void HTTPDownloader::LockedPollRequests(std::unique_lock<std::mutex>& lock)
   }
 }
 
-void HTTPDownloader::PollRequests()
+bool HTTPDownloader::PollRequests()
 {
   std::unique_lock lock(m_pending_http_request_lock);
   LockedPollRequests(lock);
+  return !m_pending_http_requests.empty();
 }
 
 void HTTPDownloader::WaitForAllRequests()

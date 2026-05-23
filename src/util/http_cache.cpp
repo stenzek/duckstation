@@ -39,11 +39,12 @@ namespace {
 struct Locals
 {
   std::unique_ptr<HTTPDownloader> downloader;
+  bool downloader_was_active = false;
+  bool tried_initialize_cache_archive = false;
   ObjectArchive cache_archive;
   std::deque<std::pair<std::string, FetchCallback>> pending_downloads;
   std::mutex cache_mutex;
   std::once_flag downloader_once_flag;
-  bool tried_initialize_cache_archive = false;
 };
 
 } // namespace
@@ -109,9 +110,9 @@ void HTTPCache::Shutdown()
     s_locals.cache_archive.Close();
 }
 
-bool HTTPCache::HasAnyRequests()
+bool HTTPCache::IsDownloaderActive()
 {
-  return (s_locals.downloader && s_locals.downloader->HasAnyRequests());
+  return s_locals.downloader_was_active;
 }
 
 void HTTPCache::PollRequests()
@@ -120,7 +121,12 @@ void HTTPCache::PollRequests()
   if (!s_locals.downloader)
     return;
 
-  s_locals.downloader->PollRequests();
+  const bool active = s_locals.downloader->PollRequests();
+  if (s_locals.downloader_was_active != active)
+  {
+    s_locals.downloader_was_active = active;
+    Host::OnHTTPCacheDownloaderActiveChanged(active);
+  }
 }
 
 void HTTPCache::WaitForAllRequests()

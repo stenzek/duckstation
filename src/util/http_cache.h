@@ -3,10 +3,10 @@
 
 #pragma once
 
+#include "common/heap_array.h"
 #include "common/locked_ptr.h"
 #include "common/optional_with_status.h"
 #include "common/types.h"
-#include "common/heap_array.h"
 
 #include <functional>
 #include <mutex>
@@ -54,7 +54,7 @@ std::string GetUserAgent();
 void Shutdown();
 
 /// Returns true if idle updates are necessary (e.g. outstanding requests).
-bool HasAnyRequests();
+bool IsDownloaderActive();
 
 /// Processes completed HTTP requests and invokes their callbacks. Should be called regularly on the main thread.
 void PollRequests();
@@ -99,3 +99,11 @@ void Prefetch(std::string_view url, PrefetchCallback callback);
 bool Clear(Error* error);
 
 } // namespace HTTPCache
+
+namespace Host {
+
+/// Called by the HTTPDownloader implementation when the active state of the downloader changes.
+/// active is set if there are any requests in-progress.
+void OnHTTPCacheDownloaderActiveChanged(bool active);
+
+} // namespace Host

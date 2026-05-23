@@ -104,6 +104,9 @@ static constexpr int BACKGROUND_CONTROLLER_POLLING_INTERVAL_WITHOUT_DEVICES = 10
 /// Poll at half the vsync rate for FSUI to reduce the chance of getting a press+release in the same frame.
 static constexpr int FULLSCREEN_UI_CONTROLLER_POLLING_INTERVAL = 8;
 
+/// Poll at 10ms when downloads are active to ensure the speed is not impacted.
+static constexpr int DOWNLOAD_CONTROLLER_POLLING_INTERVAL = 10;
+
 /// Poll at 1ms when running GDB server. We can get rid of this once we move networking to its own thread.
 static constexpr int GDB_SERVER_POLLING_INTERVAL = 1;
 
@@ -2110,6 +2113,8 @@ int CoreThread::getBackgroundControllerPollInterval() const
 
   if (m_video_thread_run_idle)
     return FULLSCREEN_UI_CONTROLLER_POLLING_INTERVAL;
+  else if (HTTPCache::IsDownloaderActive())
+    return DOWNLOAD_CONTROLLER_POLLING_INTERVAL;
   else if (InputManager::GetPollableDeviceCount() > 0)
     return BACKGROUND_CONTROLLER_POLLING_INTERVAL_WITH_DEVICES;
   else
@@ -2148,6 +2153,11 @@ void CoreThread::updateFullscreenUITheme()
   // don't bother if nothing is running
   if (VideoThread::IsFullscreenUIRequested() || VideoThread::IsGPUBackendRequested())
     VideoThread::RunOnThread(&FullscreenUI::UpdateTheme);
+}
+
+void Host::OnHTTPCacheDownloaderActiveChanged(bool active)
+{
+  g_core_thread->updateBackgroundControllerPollInterval();
 }
 
 void CoreThread::stop()

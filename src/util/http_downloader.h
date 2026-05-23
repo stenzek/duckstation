@@ -90,7 +90,7 @@ public:
   void CreatePostRequest(std::string url, std::string post_data, Request::Callback callback,
                          ProgressCallback* progress = nullptr, HeaderList additional_headers = {},
                          std::optional<u16> timeout_seconds = {});
-  void PollRequests();
+  bool PollRequests();
   void WaitForAllRequests();
   void WaitForAllRequestsWithYield(std::function<void()> before_sleep_cb, std::function<void()> after_sleep_cb);
   bool HasAnyRequests();
