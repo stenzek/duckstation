@@ -30,7 +30,7 @@ namespace HTTPCache {
 
 static constexpr u32 CACHE_VERSION = 1;
 
-static bool QueueDownload(const DownloaderPtr& downloader, std::string_view url, FetchCallback callback, Error* error);
+static bool QueueDownload(std::string_view url, FetchCallback callback, Error* error);
 static void DownloadCallback(const std::string& url, s32 status_code, const Error& error,
                              const std::string& content_type, const HTTPDownloader::Request::Data& data);
 
@@ -39,12 +39,11 @@ namespace {
 struct Locals
 {
   std::unique_ptr<HTTPDownloader> downloader;
-  std::recursive_mutex downloader_mutex;
   ObjectArchive cache_archive;
-  std::mutex cache_mutex;
   std::deque<std::pair<std::string, FetchCallback>> pending_downloads;
+  std::mutex cache_mutex;
+  std::once_flag downloader_once_flag;
   bool tried_initialize_cache_archive = false;
-  bool tried_initialize_downloader = false;
 };
 
 } // namespace
@@ -84,20 +83,25 @@ std::string HTTPCache::GetUserAgent()
 
 void HTTPCache::Shutdown()
 {
-  const std::unique_lock downloader_lock(s_locals.downloader_mutex);
-
   // awkward situation where a request callback could create another downloader...
-  for (auto iter = s_locals.pending_downloads.begin(); iter != s_locals.pending_downloads.end();)
+  std::unique_ptr<HTTPDownloader> downloader;
   {
-    if (iter->second)
-      iter->second({});
-    iter = s_locals.pending_downloads.erase(iter);
+    const std::unique_lock cache_lock(s_locals.cache_mutex);
+    for (auto iter = s_locals.pending_downloads.begin(); iter != s_locals.pending_downloads.end();)
+    {
+      if (iter->second)
+        iter->second({});
+      iter = s_locals.pending_downloads.erase(iter);
+    }
+
+    // Hope nothing else is calling in here... we'll use the cache mutex as a guard.
+    downloader = std::move(s_locals.downloader);
   }
 
-  if (s_locals.downloader)
+  if (downloader)
   {
-    s_locals.downloader->CancelAllRequests();
-    s_locals.downloader.reset();
+    downloader->CancelAllRequests();
+    downloader.reset();
   }
 
   const std::unique_lock cache_lock(s_locals.cache_mutex);
@@ -107,7 +111,6 @@ void HTTPCache::Shutdown()
 
 bool HTTPCache::HasAnyRequests()
 {
-  std::unique_lock lock(s_locals.downloader_mutex);
   return (s_locals.downloader && s_locals.downloader->HasAnyRequests());
 }
 
@@ -117,58 +120,43 @@ void HTTPCache::PollRequests()
   if (!s_locals.downloader)
     return;
 
-  std::unique_lock lock(s_locals.downloader_mutex);
-  if (s_locals.downloader)
-    s_locals.downloader->PollRequests();
+  s_locals.downloader->PollRequests();
 }
 
 void HTTPCache::WaitForAllRequests()
 {
-  std::unique_lock lock(s_locals.downloader_mutex);
   if (s_locals.downloader)
-    s_locals.downloader->WaitForAllRequestsWithYield([&lock]() { lock.unlock(); }, [&lock]() { lock.lock(); });
+    s_locals.downloader->WaitForAllRequests();
 }
 
 void HTTPCache::WaitForAllRequestsWithYield(std::function<void()> before_sleep_cb, std::function<void()> after_sleep_cb)
 {
-  std::unique_lock lock(s_locals.downloader_mutex);
   if (s_locals.downloader)
-  {
-    s_locals.downloader->WaitForAllRequestsWithYield(
-      [&before_sleep_cb, &lock]() {
-        lock.unlock();
-        if (before_sleep_cb)
-          before_sleep_cb();
-      },
-      [&after_sleep_cb, &lock]() {
-        if (after_sleep_cb)
-          after_sleep_cb();
-        lock.lock();
-      });
-  }
+    s_locals.downloader->WaitForAllRequestsWithYield(std::move(before_sleep_cb), std::move(after_sleep_cb));
 }
 
-HTTPCache::DownloaderPtr HTTPCache::GetDownloader(Error* create_error)
+HTTPDownloader* HTTPCache::GetDownloader(Error* create_error)
 {
-  std::unique_lock lock(s_locals.downloader_mutex);
   if (s_locals.downloader) [[likely]]
-    return DownloaderPtr(std::move(lock), s_locals.downloader.get());
+    return s_locals.downloader.get();
 
-  // create again if error specified
-  if (s_locals.tried_initialize_downloader && !create_error)
-    return {};
+  Error::Clear(create_error);
+  std::call_once(s_locals.downloader_once_flag, [&create_error]() {
+    Error error;
+    s_locals.downloader = HTTPDownloader::Create(GetUserAgent(), create_error ? create_error : &error);
+    if (!s_locals.downloader)
+      ERROR_LOG("Failed to create HTTPDownloader: {}", (create_error ? create_error : &error)->GetDescription());
+  });
 
-  s_locals.tried_initialize_downloader = true;
-
-  Error error;
-  s_locals.downloader = HTTPDownloader::Create(GetUserAgent(), create_error ? create_error : &error);
   if (!s_locals.downloader)
   {
-    ERROR_LOG("Failed to create HTTPDownloader: {}", (create_error ? create_error : &error)->GetDescription());
-    return {};
+    if (create_error && !create_error->IsValid())
+      create_error->SetStringView("Previous HTTPDownloader creation failed");
+
+    return nullptr;
   }
 
-  return DownloaderPtr(std::move(lock), s_locals.downloader.get());
+  return s_locals.downloader.get();
 }
 
 HTTPCache::CacheArchivePtr HTTPCache::GetCacheArchive()
@@ -218,59 +206,40 @@ HTTPCache::LookupResult HTTPCache::LookupOrFetch(std::string_view url, Error* er
 {
   std::optional<ObjectArchive::ObjectData> image_data;
 
-  // release the lock after reading to memory
+  const auto cache = GetCacheArchive();
+
+  Error lookup_error;
+  image_data = cache->Lookup(url, &lookup_error);
+  if (!image_data.has_value() && lookup_error.GetDescription() != ObjectArchive::ERROR_DESCRIPTION_DOES_NOT_EXIST)
+    [[unlikely]]
   {
-    const auto cache = GetCacheArchive();
+    ERROR_LOG("Failed to read cached texture data for URL '{}': {}", url, lookup_error.GetDescription());
+    if (error)
+      *error = std::move(lookup_error);
 
-    Error lookup_error;
-    image_data = cache->Lookup(url, &lookup_error);
-    if (!image_data.has_value() && lookup_error.GetDescription() != ObjectArchive::ERROR_DESCRIPTION_DOES_NOT_EXIST)
-      [[unlikely]]
-    {
-      ERROR_LOG("Failed to read cached texture data for URL '{}': {}", url, lookup_error.GetDescription());
-      if (error)
-        *error = std::move(lookup_error);
-
-      return LookupResult(LookupStatus::Error);
-    }
+    return LookupResult(LookupStatus::Error);
   }
 
   // did we find it? return the data directly without invoking the callback
   if (image_data.has_value())
     return LookupResult(LookupStatus::Hit, std::move(*image_data));
 
-  // need to queue it..
-  const auto downloader = GetDownloader(error);
-  if (!downloader) [[unlikely]]
-    return LookupResult(LookupStatus::Error);
-
-  // check the cache against after locking the downloader, because otherwise there's a small window of time
-  // where it can be inserted into the cache by another thread after a successful download
-  {
-    const auto cache = GetCacheArchive();
-
-    Error lookup_error;
-    image_data = cache->Lookup(url, &lookup_error);
-    if (image_data.has_value())
-      return LookupResult(LookupStatus::Hit, std::move(*image_data));
-
-    if (lookup_error.GetDescription() != ObjectArchive::ERROR_DESCRIPTION_DOES_NOT_EXIST) [[unlikely]]
-    {
-      ERROR_LOG("Failed to read cached texture data for URL '{}': {}", url, lookup_error.GetDescription());
-      if (error)
-        *error = std::move(lookup_error);
-
-      return LookupResult(LookupStatus::Error);
-    }
-  }
-
-  return QueueDownload(downloader, url, std::move(callback), error) ? LookupResult(LookupStatus::Miss) :
-                                                                      LookupResult(LookupStatus::Error);
+  return QueueDownload(url, std::move(callback), error) ? LookupResult(LookupStatus::Miss) :
+                                                          LookupResult(LookupStatus::Error);
 }
 
-bool HTTPCache::QueueDownload(const DownloaderPtr& downloader, std::string_view url, FetchCallback callback,
-                              Error* error)
+bool HTTPCache::QueueDownload(std::string_view url, FetchCallback callback, Error* error)
 {
+  // NOTE: Assumes that the lock is held
+
+  HTTPDownloader* const downloader = GetDownloader(error);
+  if (!downloader) [[unlikely]]
+  {
+    if (callback)
+      callback({});
+    return false;
+  }
+
   // do we already have a request?
   const bool has_request =
     std::ranges::any_of(s_locals.pending_downloads, [url](const auto& pair) { return pair.first == url; });
@@ -281,16 +250,16 @@ bool HTTPCache::QueueDownload(const DownloaderPtr& downloader, std::string_view 
     s_locals.pending_downloads.emplace_back(url, std::move(callback));
 
   // don't queue it twice
-  if (!has_request)
-  {
-    DEV_LOG("Cache miss for URL '{}', downloading...", url);
+  if (has_request)
+    return true;
 
-    downloader->CreateRequest(std::string(url), [url = std::string(url)](s32 status_code, const Error& error,
-                                                                         const std::string& content_type,
-                                                                         HTTPDownloader::Request::Data data) {
-      DownloadCallback(url, status_code, error, content_type, std::move(data));
-    });
-  }
+  DEV_LOG("Cache miss for URL '{}', downloading...", url);
+
+  downloader->CreateRequest(std::string(url), [url = std::string(url)](s32 status_code, const Error& error,
+                                                                       const std::string& content_type,
+                                                                       HTTPDownloader::Request::Data data) {
+    DownloadCallback(url, status_code, error, content_type, std::move(data));
+  });
 
   return true;
 }
@@ -302,7 +271,9 @@ void HTTPCache::DownloadCallback(const std::string& url, s32 status_code, const 
   if (!success)
     ERROR_LOG("Failed to download '{}': HTTP status code {}, error: {}", url, status_code, error.GetDescription());
 
-  // NOTE: Assumes lock is held, which it should be during poll
+  const auto cache = GetCacheArchive();
+  DebugAssert(cache);
+
   // invoke all callbacks
   for (auto iter = s_locals.pending_downloads.begin(); iter != s_locals.pending_downloads.end();)
   {
@@ -324,9 +295,6 @@ void HTTPCache::DownloadCallback(const std::string& url, s32 status_code, const 
 
   // NOTE: we're not doing this on a worker thread because if we queue it, another request can come in
   // for the same url, which will re-trigger a download...
-  const auto cache = GetCacheArchive();
-  DebugAssert(cache);
-
   VERBOSE_LOG("Adding URL '{}' to cache ({} bytes)", url, data.size());
 
   // TODO: only compress if it's images
@@ -345,60 +313,45 @@ bool HTTPCache::Contains(std::string_view url)
 
 void HTTPCache::Prefetch(std::string_view url)
 {
-  {
-    // skip early if already cached, or cannot prefetch
-    const auto cache = GetCacheArchive();
-    if (!cache->IsOpen() || cache->Contains(url)) [[unlikely]]
-      return;
-  }
+  // skip early if already cached, or cannot prefetch
+  const auto cache = GetCacheArchive();
+  if (!cache->IsOpen() || cache->Contains(url)) [[unlikely]]
+    return;
 
-  const auto downloader = GetDownloader();
+  HTTPDownloader* const downloader = GetDownloader();
   if (!downloader) [[unlikely]]
     return;
 
-  // check cache again, see Lookup() for rationale
-  if (GetCacheArchive()->Contains(url))
-    return;
-
   // queue a download with no callback, which will cause it to be cached when it completes
-  QueueDownload(downloader, url, {}, nullptr);
+  QueueDownload(url, {}, nullptr);
 }
 
 void HTTPCache::Prefetch(std::string_view url, PrefetchCallback callback)
 {
-  {
-    const auto cache = GetCacheArchive();
-    if (!cache->IsOpen()) [[unlikely]]
-    {
-      callback(false);
-      return;
-    }
+  const auto cache = GetCacheArchive();
 
-    // skip early if already cached
-    if (cache->Contains(url))
-    {
-      callback(true);
-      return;
-    }
+  if (!cache->IsOpen()) [[unlikely]]
+  {
+    callback(false);
+    return;
   }
 
-  const auto downloader = GetDownloader();
+  // skip early if already cached
+  if (cache->Contains(url))
+  {
+    callback(true);
+    return;
+  }
+
+  HTTPDownloader* const downloader = GetDownloader();
   if (!downloader) [[unlikely]]
   {
     callback(false);
     return;
   }
 
-  // check cache again, see Lookup() for rationale
-  if (GetCacheArchive()->Contains(url))
-  {
-    callback(true);
-    return;
-  }
-
   // queue a download with no callback, which will cause it to be cached when it completes
-  QueueDownload(
-    downloader, url, [callback = std::move(callback)](std::span<const u8> data) { callback(!data.empty()); }, nullptr);
+  QueueDownload(url, [callback = std::move(callback)](std::span<const u8> data) { callback(!data.empty()); }, nullptr);
 }
 
 bool HTTPCache::Clear(Error* error)

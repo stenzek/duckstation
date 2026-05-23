@@ -18,9 +18,6 @@ class ObjectArchive;
 
 namespace HTTPCache {
 
-/// Thread-safe locked pointer to the shared HTTP downloader. Holds the downloader mutex for its lifetime.
-using DownloaderPtr = LockedPtr<HTTPDownloader, std::recursive_mutex>;
-
 /// Thread-safe locked pointer to the shared cache archive. Holds the cache mutex for its lifetime.
 using CacheArchivePtr = LockedPtr<ObjectArchive, std::mutex>;
 
@@ -71,7 +68,7 @@ void WaitForAllRequestsWithYield(std::function<void()> before_sleep_cb, std::fun
 /// Returns a locked pointer to the shared HTTP downloader, creating it on first use.
 /// If @p create_error is non-null, creation details are written there on failure; if null, creation
 /// is skipped after the first failed attempt.
-DownloaderPtr GetDownloader(Error* create_error = nullptr);
+HTTPDownloader* GetDownloader(Error* create_error = nullptr);
 
 /// Returns a locked pointer to the shared cache archive, opening it on first use.
 CacheArchivePtr GetCacheArchive();

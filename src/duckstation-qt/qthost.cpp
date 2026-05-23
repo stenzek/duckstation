@@ -739,7 +739,7 @@ void QtHost::DownloadFile(QWidget* parent, std::string url, std::string path,
      completion_callback = std::move(completion_callback)](ProgressCallback* const progress) mutable {
       Error error;
       bool result = false;
-      if (const auto downloader = HTTPCache::GetDownloader(&error))
+      if (HTTPDownloader* const downloader = HTTPCache::GetDownloader(&error))
       {
         result = true;
         downloader->CreateRequest(

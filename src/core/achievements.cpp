@@ -894,7 +894,7 @@ void Achievements::ClientServerCall(const rc_api_request_t* request, rc_client_s
     callback(&rr, callback_data);
   };
 
-  const auto downloader = HTTPCache::GetDownloader();
+  HTTPDownloader* const downloader = HTTPCache::GetDownloader();
   DebugAssert(downloader);
 
   s_state.pending_server_calls++;
@@ -952,10 +952,11 @@ void Achievements::WaitForServerCallsWithYield(std::unique_lock<std::recursive_m
   if (s_state.pending_server_calls == 0)
     return;
 
+  HTTPDownloader* downloader = HTTPCache::GetDownloader();
   for (;;)
   {
     lock.unlock();
-    HTTPCache::GetDownloader()->PollRequests();
+    downloader->PollRequests();
     lock.lock();
 
     // check before sleeping
