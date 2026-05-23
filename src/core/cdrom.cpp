@@ -2505,7 +2505,6 @@ void CDROM::ExecuteTestCommand(u8 subcommand)
     case 0x05: // Read SCEx counters
     {
       DEBUG_LOG("Read SCEx counters");
-      s_state.response_fifo.Push(s_state.secondary_status.bits);
       s_state.response_fifo.Push(0); // # of TOC reads?
       s_state.response_fifo.Push(0); // # of SCEx strings received
       SetInterrupt(Interrupt::ACK);
