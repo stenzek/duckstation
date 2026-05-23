@@ -225,7 +225,6 @@ namespace {
 struct State
 {
   rc_client_t* client = nullptr;
-  u16 pending_server_calls = 0;
   u16 pending_badge_downloads = 0;
   bool has_achievements : 1 = false;
   bool has_leaderboards : 1 = false;
@@ -890,14 +889,11 @@ void Achievements::ClientServerCall(const rc_api_request_t* request, rc_client_s
 
     const rc_api_server_response_t rr = MakeRCAPIServerResponse(status_code, data);
     const auto lock = GetLock();
-    s_state.pending_server_calls = (s_state.pending_server_calls > 0) ? (s_state.pending_server_calls - 1) : 0;
     callback(&rr, callback_data);
   };
 
   HTTPDownloader* const downloader = HTTPCache::GetDownloader();
   DebugAssert(downloader);
-
-  s_state.pending_server_calls++;
 
   const std::array<const char* const, 1> headers = {s_state.http_user_agent_header.c_str()};
   if (request->post_data)
@@ -949,24 +945,7 @@ rc_api_server_response_t Achievements::MakeRCAPIServerResponse(s32 status_code, 
 
 void Achievements::WaitForServerCallsWithYield(std::unique_lock<std::recursive_mutex>& lock)
 {
-  if (s_state.pending_server_calls == 0)
-    return;
-
-  HTTPDownloader* downloader = HTTPCache::GetDownloader();
-  for (;;)
-  {
-    lock.unlock();
-    downloader->PollRequests();
-    lock.lock();
-
-    // check before sleeping
-    if (s_state.pending_server_calls == 0)
-      return;
-
-    lock.unlock();
-    Timer::NanoSleep(HTTPDownloader::WAIT_FOR_ALL_REQUESTS_POLL_INTERVAL_NS);
-    lock.lock();
-  }
+  HTTPCache::WaitForAllRequestsFromOwnerWithYield(&s_state, [&lock]() { lock.unlock(); }, [&lock]() { lock.lock(); });
 }
 
 void Achievements::IdleUpdate()
