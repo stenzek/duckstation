@@ -677,14 +677,18 @@ bool Achievements::CreateClient(std::unique_lock<std::recursive_mutex>& lock, bo
 
 void Achievements::FinishInitialize()
 {
+  // Identify game regardless of login status.
+  if (System::IsValid())
+    IdentifyCurrentGame();
+
   // Start logging in. This can take a while.
   if (!IsLoggedInOrLoggingIn())
-    TryLoggingInWithToken();
-
-  // Are we running a game?
-  if (System::IsValid())
   {
-    IdentifyCurrentGame();
+    TryLoggingInWithToken();
+  }
+  // Are we running a game?
+  else if (System::IsValid())
+  {
     BeginLoadGame();
 
     // Hardcore mode isn't enabled when achievements first starts, if a game is already running.
@@ -2245,6 +2249,9 @@ void Achievements::FinishLogin()
                                              s_state.logged_in_user_icon_url, user->display_name, std::move(summary),
                                              RA_LOGO_ICON_NAME, FullscreenUI::AchievementNotificationNoteType::Image);
   }
+
+  if (!s_state.load_game_request && System::IsValid())
+    BeginLoadGame();
 }
 
 const std::string& Achievements::GetLoggedInUserName()
