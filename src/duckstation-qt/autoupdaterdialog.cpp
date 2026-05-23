@@ -1,7 +1,8 @@
-// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "autoupdaterdialog.h"
+#include "asynchttprequest.h"
 #include "mainwindow.h"
 #include "qthost.h"
 #include "qtprogresscallback.h"
@@ -43,9 +44,6 @@
 #include "moc_autoupdaterdialog.cpp"
 
 using namespace Qt::StringLiterals;
-
-// Interval at which HTTP requests are polled.
-static constexpr u32 HTTP_POLL_INTERVAL = 10;
 
 #if defined(_WIN32)
 #include "common/windows_headers.h"
@@ -113,7 +111,7 @@ static constexpr const std::pair<const char*, const char*> s_update_channels[] =
 
 LOG_CHANNEL(Host);
 
-AutoUpdaterDialog::AutoUpdaterDialog(QWidget* const parent, Error* const error) : QDialog(parent)
+AutoUpdaterDialog::AutoUpdaterDialog(QWidget* const parent) : QDialog(parent)
 {
   m_ui.setupUi(this);
   QFont title_font(m_ui.titleLabel->font());
@@ -126,25 +124,12 @@ AutoUpdaterDialog::AutoUpdaterDialog(QWidget* const parent, Error* const error) 
   connect(m_ui.downloadAndInstall, &QPushButton::clicked, this, &AutoUpdaterDialog::downloadUpdateClicked);
   connect(m_ui.skipThisUpdate, &QPushButton::clicked, this, &AutoUpdaterDialog::skipThisUpdateClicked);
   connect(m_ui.remindMeLater, &QPushButton::clicked, this, &AutoUpdaterDialog::remindMeLaterClicked);
-
-  m_http = HTTPDownloader::Create(HTTPCache::GetUserAgent(), error);
-
-  m_http_poll_timer = new QTimer(this);
-  m_http_poll_timer->connect(m_http_poll_timer, &QTimer::timeout, this, &AutoUpdaterDialog::httpPollTimerPoll);
 }
 
-AutoUpdaterDialog::~AutoUpdaterDialog() = default;
-
-AutoUpdaterDialog* AutoUpdaterDialog::create(QWidget* const parent, Error* const error)
+AutoUpdaterDialog::~AutoUpdaterDialog()
 {
-  AutoUpdaterDialog* const win = new AutoUpdaterDialog(parent, error);
-  if (!win->m_http)
-  {
-    delete win;
-    return nullptr;
-  }
-
-  return win;
+  // Ensure all requests have finished.
+  HTTPCache::CancelRequestsForOwner(this);
 }
 
 void AutoUpdaterDialog::warnAboutUnofficialBuild()
@@ -310,33 +295,14 @@ void AutoUpdaterDialog::reportError(const std::string_view msg)
   msgbox->open();
 }
 
-void AutoUpdaterDialog::ensureHttpPollingActive()
-{
-  if (m_http_poll_timer->isActive())
-    return;
-
-  m_http_poll_timer->setSingleShot(false);
-  m_http_poll_timer->setInterval(HTTP_POLL_INTERVAL);
-  m_http_poll_timer->start();
-}
-
-void AutoUpdaterDialog::httpPollTimerPoll()
-{
-  m_http->PollRequests();
-
-  if (!m_http->HasAnyRequests())
-  {
-    VERBOSE_LOG("All HTTP requests done.");
-    m_http_poll_timer->stop();
-  }
-}
-
 void AutoUpdaterDialog::cancel()
 {
   if (m_updates_available)
     return;
 
-  m_http->CancelAllRequests();
+  HTTPDownloader* const downloader = HTTPCache::GetDownloader();
+  if (downloader)
+    downloader->CancelRequestsForOwner(this);
 }
 
 bool AutoUpdaterDialog::handleCancelledRequest(s32 status_code)
@@ -358,21 +324,22 @@ void AutoUpdaterDialog::queueUpdateCheck(bool display_errors, bool ignore_skippe
     Host::CommitBaseSettingChanges();
   }
 
-  ensureHttpPollingActive();
-  m_http->CreateRequest(
-    LATEST_TAG_URL, this,
-    [this, display_errors](s32 status_code, Error& error, std::string& content_type, std::vector<u8>& response) {
-      getLatestTagComplete(status_code, error, response, display_errors);
-    });
+  AsyncHTTPRequest* const req = new AsyncHTTPRequest();
+  connect(req, &AsyncHTTPRequest::requestComplete, this,
+          [this, display_errors](s32 status_code, Error& error, std::string& content_type, std::vector<u8>& response) {
+            getLatestTagComplete(status_code, error, response, display_errors);
+          });
+  req->get(LATEST_TAG_URL, this);
 }
 
 void AutoUpdaterDialog::queueGetLatestRelease()
 {
-  ensureHttpPollingActive();
-  std::string url = fmt::format(LATEST_RELEASE_URL, getCurrentUpdateTag());
-  m_http->CreateRequest(std::move(url), this,
-                        std::bind(&AutoUpdaterDialog::getLatestReleaseComplete, this, std::placeholders::_1,
-                                  std::placeholders::_2, std::placeholders::_4));
+  AsyncHTTPRequest* const req = new AsyncHTTPRequest();
+  connect(req, &AsyncHTTPRequest::requestComplete, this,
+          [this](s32 status_code, Error& error, std::string& content_type, std::vector<u8>& response) {
+            getLatestReleaseComplete(status_code, error, response);
+          });
+  req->get(fmt::format(LATEST_RELEASE_URL, getCurrentUpdateTag()), this);
 }
 
 void AutoUpdaterDialog::getLatestTagComplete(s32 status_code, Error& error, std::vector<u8>& response,
@@ -520,11 +487,12 @@ void AutoUpdaterDialog::getLatestReleaseComplete(s32 status_code, Error& error, 
 
 void AutoUpdaterDialog::queueGetChanges()
 {
-  ensureHttpPollingActive();
-  std::string url = fmt::format(CHANGES_URL, g_scm_hash_str, getCurrentUpdateTag());
-  m_http->CreateRequest(std::move(url), this,
-                        std::bind(&AutoUpdaterDialog::getChangesComplete, this, std::placeholders::_1,
-                                  std::placeholders::_2, std::placeholders::_4));
+  AsyncHTTPRequest* const req = new AsyncHTTPRequest();
+  connect(req, &AsyncHTTPRequest::requestComplete, this,
+          [this](s32 status_code, Error& error, std::string& content_type, std::vector<u8>& response) {
+            getChangesComplete(status_code, error, response);
+          });
+  req->get(fmt::format(CHANGES_URL, g_scm_hash_str, getCurrentUpdateTag()), this);
 }
 
 void AutoUpdaterDialog::getChangesComplete(s32 status_code, Error& error, std::vector<u8>& response)
@@ -607,49 +575,51 @@ void AutoUpdaterDialog::downloadUpdateClicked()
                                                m_ui.downloadButtonBox->button(QDialogButtonBox::Cancel));
   m_download_progress_callback->SetStatusText(TRANSLATE_SV("AutoUpdaterWindow", "Downloading Update..."));
 
-  ensureHttpPollingActive();
-  m_http->CreateRequest(
-    m_download_url.toStdString(), this,
-    [this](s32 status_code, Error& error, std::string&, std::vector<u8>& response) {
-      m_download_progress_callback->SetStatusText(TRANSLATE_SV("AutoUpdaterWindow", "Processing Update..."));
-      m_download_progress_callback->SetProgressRange(1);
-      m_download_progress_callback->SetProgressValue(1);
-      DebugAssert(m_download_progress_callback);
-      delete m_download_progress_callback;
-      m_download_progress_callback = nullptr;
+  AsyncHTTPRequest* const req = new AsyncHTTPRequest();
+  connect(req, &AsyncHTTPRequest::requestComplete, this,
+          [this](s32 status_code, Error& error, std::string&, std::vector<u8>& response) {
+            downloadUpdateComplete(status_code, error, response);
+          });
+  req->get(m_download_url.toStdString(), this, m_download_progress_callback);
+}
 
-      if (status_code == HTTPDownloader::HTTP_STATUS_CANCELLED)
-      {
-        setDownloadSectionVisibility(false);
-        return;
-      }
+void AutoUpdaterDialog::downloadUpdateComplete(s32 status_code, Error& error, std::vector<u8>& response)
+{
+  DebugAssert(m_download_progress_callback);
+  m_download_progress_callback->SetState(TRANSLATE_SV("AutoUpdaterWindow", "Processing Update..."), 1, 1);
+  delete m_download_progress_callback;
+  m_download_progress_callback = nullptr;
 
-      if (status_code != HTTPDownloader::HTTP_STATUS_OK)
-      {
-        reportError(fmt::format("Download failed: {}", error.GetDescription()));
-        setDownloadSectionVisibility(false);
-        return;
-      }
+  if (status_code == HTTPDownloader::HTTP_STATUS_CANCELLED)
+  {
+    setDownloadSectionVisibility(false);
+    return;
+  }
 
-      if (response.empty())
-      {
-        reportError("Download failed: Update is empty");
-        setDownloadSectionVisibility(false);
-        return;
-      }
+  if (status_code != HTTPDownloader::HTTP_STATUS_OK)
+  {
+    reportError(fmt::format("Download failed: {}", error.GetDescription()));
+    setDownloadSectionVisibility(false);
+    return;
+  }
 
-      if (processUpdate(response))
-      {
-        // updater started, request exit. can't do it immediately as closing the main window will delete us.
-        QMetaObject::invokeMethod(g_main_window, &MainWindow::requestExit, Qt::QueuedConnection, false);
-      }
-      else
-      {
-        // allow user to try again
-        setDownloadSectionVisibility(false);
-      }
-    },
-    m_download_progress_callback);
+  if (response.empty())
+  {
+    reportError("Download failed: Update is empty");
+    setDownloadSectionVisibility(false);
+    return;
+  }
+
+  if (processUpdate(response))
+  {
+    // updater started, request exit. can't do it immediately as closing the main window will delete us.
+    QMetaObject::invokeMethod(g_main_window, &MainWindow::requestExit, Qt::QueuedConnection, false);
+  }
+  else
+  {
+    // allow user to try again
+    setDownloadSectionVisibility(false);
+  }
 }
 
 bool AutoUpdaterDialog::updateNeeded() const
