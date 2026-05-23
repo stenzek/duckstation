@@ -23,6 +23,8 @@ set(SRCS
   advancedsettingswidget.cpp
   advancedsettingswidget.h
   advancedsettingswidget.ui
+  asynchttprequest.cpp
+  asynchttprequest.h
   asyncpixmaploader.cpp
   asyncpixmaploader.h
   audiosettingswidget.cpp
