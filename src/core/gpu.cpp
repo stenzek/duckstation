@@ -71,7 +71,7 @@ enum class BlitterState : u8
 
 enum : u32
 {
-  MAX_FIFO_SIZE = 4096,
+  MAX_FIFO_SIZE = 256,
   DOT_TIMER_INDEX = 0,
   HBLANK_TIMER_INDEX = 1,
   DRAWING_AREA_COORD_MASK = 1023,
@@ -379,7 +379,6 @@ struct Locals
 
   std::unique_ptr<GPUDump::Recorder> gpu_dump;
 
-  HeapFIFOQueue<u64, MAX_FIFO_SIZE> fifo;
   TickCount max_run_ahead = 128;
   u32 fifo_size = 128;
   u32 blit_remaining_words;
@@ -389,6 +388,8 @@ struct Locals
 
   u32 cpu_to_vram_dump_id = 0;
   u32 vram_to_cpu_dump_id = 0;
+
+  InlineFIFOQueue<u64, MAX_FIFO_SIZE> fifo;
 };
 } // namespace
 
