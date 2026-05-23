@@ -1855,10 +1855,10 @@ bool GameList::DownloadCovers(const std::vector<std::string>& url_templates, boo
     std::string filename = Path::URLDecode(url);
     if (HTTPDownloader* const downloader = HTTPCache::GetDownloader(error))
     {
-      downloader->CreateRequest(std::move(url), [use_serial, &save_callback, entry_path = std::move(entry_path),
-                                                 filename = std::move(filename)](s32 status_code, const Error& error,
-                                                                                 const std::string& content_type,
-                                                                                 HTTPDownloader::Request::Data data) {
+      downloader->CreateRequest(
+        std::move(url), &s_state,
+        [use_serial, &save_callback, entry_path = std::move(entry_path), filename = std::move(filename)](
+          s32 status_code, Error& error, std::string& content_type, HTTPDownloader::Request::Data& data) {
         if (status_code != HTTPDownloader::HTTP_STATUS_OK || data.empty())
         {
           ERROR_LOG("Download for {} failed: {}", Path::GetFileName(filename), error.GetDescription());

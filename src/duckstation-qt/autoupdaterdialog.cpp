@@ -11,8 +11,8 @@
 
 #include "core/core.h"
 
-#include "util/http_downloader.h"
 #include "util/http_cache.h"
+#include "util/http_downloader.h"
 #include "util/translation.h"
 
 #include "common/assert.h"
@@ -359,22 +359,23 @@ void AutoUpdaterDialog::queueUpdateCheck(bool display_errors, bool ignore_skippe
   }
 
   ensureHttpPollingActive();
-  m_http->CreateRequest(LATEST_TAG_URL,
-                        [this, display_errors](s32 status_code, const Error& error, const std::string& content_type,
-                                               std::vector<u8> response) {
-                          getLatestTagComplete(status_code, error, std::move(response), display_errors);
-                        });
+  m_http->CreateRequest(
+    LATEST_TAG_URL, this,
+    [this, display_errors](s32 status_code, Error& error, std::string& content_type, std::vector<u8>& response) {
+      getLatestTagComplete(status_code, error, response, display_errors);
+    });
 }
 
 void AutoUpdaterDialog::queueGetLatestRelease()
 {
   ensureHttpPollingActive();
   std::string url = fmt::format(LATEST_RELEASE_URL, getCurrentUpdateTag());
-  m_http->CreateRequest(std::move(url), std::bind(&AutoUpdaterDialog::getLatestReleaseComplete, this,
-                                                  std::placeholders::_1, std::placeholders::_2, std::placeholders::_4));
+  m_http->CreateRequest(std::move(url), this,
+                        std::bind(&AutoUpdaterDialog::getLatestReleaseComplete, this, std::placeholders::_1,
+                                  std::placeholders::_2, std::placeholders::_4));
 }
 
-void AutoUpdaterDialog::getLatestTagComplete(s32 status_code, const Error& error, std::vector<u8> response,
+void AutoUpdaterDialog::getLatestTagComplete(s32 status_code, Error& error, std::vector<u8>& response,
                                              bool display_errors)
 {
   if (handleCancelledRequest(status_code))
@@ -441,7 +442,7 @@ void AutoUpdaterDialog::getLatestTagComplete(s32 status_code, const Error& error
   emit updateCheckCompleted(false);
 }
 
-void AutoUpdaterDialog::getLatestReleaseComplete(s32 status_code, const Error& error, std::vector<u8> response)
+void AutoUpdaterDialog::getLatestReleaseComplete(s32 status_code, Error& error, std::vector<u8>& response)
 {
   if (handleCancelledRequest(status_code))
     return;
@@ -521,11 +522,12 @@ void AutoUpdaterDialog::queueGetChanges()
 {
   ensureHttpPollingActive();
   std::string url = fmt::format(CHANGES_URL, g_scm_hash_str, getCurrentUpdateTag());
-  m_http->CreateRequest(std::move(url), std::bind(&AutoUpdaterDialog::getChangesComplete, this, std::placeholders::_1,
-                                                  std::placeholders::_2, std::placeholders::_4));
+  m_http->CreateRequest(std::move(url), this,
+                        std::bind(&AutoUpdaterDialog::getChangesComplete, this, std::placeholders::_1,
+                                  std::placeholders::_2, std::placeholders::_4));
 }
 
-void AutoUpdaterDialog::getChangesComplete(s32 status_code, const Error& error, std::vector<u8> response)
+void AutoUpdaterDialog::getChangesComplete(s32 status_code, Error& error, std::vector<u8>& response)
 {
   std::string_view error_message;
 
@@ -607,8 +609,8 @@ void AutoUpdaterDialog::downloadUpdateClicked()
 
   ensureHttpPollingActive();
   m_http->CreateRequest(
-    m_download_url.toStdString(),
-    [this](s32 status_code, const Error& error, const std::string&, std::vector<u8> response) {
+    m_download_url.toStdString(), this,
+    [this](s32 status_code, Error& error, std::string&, std::vector<u8>& response) {
       m_download_progress_callback->SetStatusText(TRANSLATE_SV("AutoUpdaterWindow", "Processing Update..."));
       m_download_progress_callback->SetProgressRange(1);
       m_download_progress_callback->SetProgressValue(1);

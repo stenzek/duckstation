@@ -882,9 +882,9 @@ uint32_t Achievements::ClientReadMemory(uint32_t address, uint8_t* buffer, uint3
 void Achievements::ClientServerCall(const rc_api_request_t* request, rc_client_server_callback_t callback,
                                     void* callback_data, rc_client_t* client)
 {
-  HTTPDownloader::Request::Callback hd_callback = [callback, callback_data](s32 status_code, const Error& error,
-                                                                            const std::string& content_type,
-                                                                            HTTPDownloader::Request::Data data) {
+  HTTPDownloader::Request::Callback hd_callback = [callback, callback_data](s32 status_code, Error& error,
+                                                                            std::string& content_type,
+                                                                            HTTPDownloader::Request::Data& data) {
     if (status_code != HTTPDownloader::HTTP_STATUS_OK)
       ERROR_LOG("Server call failed: {}", error.GetDescription());
 
@@ -904,12 +904,12 @@ void Achievements::ClientServerCall(const rc_api_request_t* request, rc_client_s
   {
     // const auto pd = std::string_view(request->post_data);
     // Log_DevFmt("Server POST: {}", pd.substr(0, std::min<size_t>(pd.length(), 10)));
-    downloader->CreatePostRequest(request->url, request->post_data, std::move(hd_callback), nullptr, headers,
+    downloader->CreatePostRequest(request->url, request->post_data, &s_state, std::move(hd_callback), nullptr, headers,
                                   SERVER_CALL_TIMEOUT);
   }
   else
   {
-    downloader->CreateRequest(request->url, std::move(hd_callback), nullptr, headers, SERVER_CALL_TIMEOUT);
+    downloader->CreateRequest(request->url, &s_state, std::move(hd_callback), nullptr, headers, SERVER_CALL_TIMEOUT);
   }
 }
 

@@ -24,8 +24,8 @@ public:
   bool Initialize(std::string user_agent, Error* error);
 
 protected:
-  Request* InternalCreateRequest(Request::Type type, std::string url, std::string post_data, Request::Callback callback,
-                                 ProgressCallback* progress, u16 timeout_seconds,
+  Request* InternalCreateRequest(Request::Type type, std::string url, std::string post_data, const void* owner,
+                                 Request::Callback callback, ProgressCallback* progress, u16 timeout_seconds,
                                  HeaderList additional_headers) override;
   bool StartRequest(HTTPDownloader::Request* request) override;
   void CloseRequest(HTTPDownloader::Request* request) override;
@@ -261,12 +261,13 @@ void CALLBACK HTTPDownloaderWinHttp::HTTPStatusCallback(HINTERNET hRequest, DWOR
 }
 
 HTTPDownloader::Request* HTTPDownloaderWinHttp::InternalCreateRequest(Request::Type type, std::string url,
-                                                                      std::string post_data, Request::Callback callback,
+                                                                      std::string post_data, const void* owner,
+                                                                      Request::Callback callback,
                                                                       ProgressCallback* progress, u16 timeout_seconds,
                                                                       HeaderList additional_headers)
 {
-  Request* req =
-    new Request(this, type, std::move(url), std::move(post_data), std::move(callback), progress, timeout_seconds);
+  Request* req = new Request(this, owner, type, std::move(url), std::move(post_data), std::move(callback), progress,
+                             timeout_seconds);
 
   if (!additional_headers.empty())
   {
@@ -307,7 +308,7 @@ bool HTTPDownloaderWinHttp::StartRequest(HTTPDownloader::Request* request)
     const DWORD err = GetLastError();
     ERROR_LOG("WinHttpCrackUrl() failed: {}", err);
     req->error.SetWin32("WinHttpCrackUrl() failed: ", err);
-    req->callback(HTTP_STATUS_ERROR, req->error, std::string(), req->data);
+    req->callback(HTTP_STATUS_ERROR, req->error, req->content_type, req->data);
     delete req;
     return false;
   }
@@ -321,7 +322,7 @@ bool HTTPDownloaderWinHttp::StartRequest(HTTPDownloader::Request* request)
     const DWORD err = GetLastError();
     ERROR_LOG("Failed to start HTTP request for '{}': {}", req->url, err);
     req->error.SetWin32("WinHttpConnect() failed: ", err);
-    req->callback(HTTP_STATUS_ERROR, req->error, std::string(), req->data);
+    req->callback(HTTP_STATUS_ERROR, req->error, req->content_type, req->data);
     delete req;
     return false;
   }
@@ -335,7 +336,7 @@ bool HTTPDownloaderWinHttp::StartRequest(HTTPDownloader::Request* request)
     const DWORD err = GetLastError();
     ERROR_LOG("WinHttpOpenRequest() failed: {}", err);
     req->error.SetWin32("WinHttpOpenRequest() failed: ", err);
-    req->callback(HTTP_STATUS_ERROR, req->error, std::string(), req->data);
+    req->callback(HTTP_STATUS_ERROR, req->error, req->content_type, req->data);
     WinHttpCloseHandle(req->hConnection);
     delete req;
     return false;
@@ -349,7 +350,7 @@ bool HTTPDownloaderWinHttp::StartRequest(HTTPDownloader::Request* request)
     const DWORD err = GetLastError();
     ERROR_LOG("WinHttpAddRequestHeaders() failed: {}", err);
     req->error.SetWin32("WinHttpAddRequestHeaders() failed: ", err);
-    req->callback(HTTP_STATUS_ERROR, req->error, std::string(), req->data);
+    req->callback(HTTP_STATUS_ERROR, req->error, req->content_type, req->data);
     WinHttpCloseHandle(req->hRequest);
     WinHttpCloseHandle(req->hConnection);
     delete req;

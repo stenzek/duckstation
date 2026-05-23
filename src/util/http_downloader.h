@@ -36,8 +36,7 @@ public:
   struct Request
   {
     using Data = std::vector<u8>;
-    using Callback =
-      std::function<void(s32 status_code, const Error& error, const std::string& content_type, Data data)>;
+    using Callback = std::function<void(s32 status_code, Error& error, std::string& content_type, Data& data)>;
 
     enum class Type : u8
     {
@@ -54,11 +53,12 @@ public:
       Complete,
     };
 
-    Request(HTTPDownloader* parent, Type type, std::string url, std::string post_data, Callback callback,
-            ProgressCallback* progress, u16 timeout_seconds);
+    Request(HTTPDownloader* parent, const void* owner, Type type, std::string url, std::string post_data,
+            Callback callback, ProgressCallback* progress, u16 timeout_seconds);
     virtual ~Request();
 
     HTTPDownloader* parent;
+    const void* owner;
     Callback callback;
     ProgressCallback* progress;
     std::string url;
@@ -85,19 +85,25 @@ public:
   void SetDefaultTimeout(u16 timeout_seconds);
   void SetMaxActiveRequests(u32 max_active_requests);
 
-  void CreateRequest(std::string url, Request::Callback callback, ProgressCallback* progress = nullptr,
-                     HeaderList additional_headers = {}, std::optional<u16> timeout_seconds = {});
-  void CreatePostRequest(std::string url, std::string post_data, Request::Callback callback,
+  void CreateRequest(std::string url, const void* owner, Request::Callback callback,
+                     ProgressCallback* progress = nullptr, HeaderList additional_headers = {},
+                     std::optional<u16> timeout_seconds = {});
+  void CreatePostRequest(std::string url, std::string post_data, const void* owner, Request::Callback callback,
                          ProgressCallback* progress = nullptr, HeaderList additional_headers = {},
                          std::optional<u16> timeout_seconds = {});
   bool PollRequests();
   void WaitForAllRequests();
   void WaitForAllRequestsWithYield(std::function<void()> before_sleep_cb, std::function<void()> after_sleep_cb);
+  void WaitForAllRequestsFromOwner(const void* owner);
+  void WaitForAllRequestsFromOwnerWithYield(const void* owner, std::function<void()> before_sleep_cb,
+                                            std::function<void()> after_sleep_cb);
   bool HasAnyRequests();
+  bool HasAnyRequestsFromOwner(const void* owner);
   void CancelAllRequests();
+  void CancelRequestsForOwner(const void* owner);
 
 protected:
-  virtual Request* InternalCreateRequest(Request::Type type, std::string url, std::string post_data,
+  virtual Request* InternalCreateRequest(Request::Type type, std::string url, std::string post_data, const void* owner,
                                          Request::Callback callback, ProgressCallback* progress, u16 timeout_seconds,
                                          HeaderList additional_headers) = 0;
 

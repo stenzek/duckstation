@@ -738,7 +738,7 @@ void QtHost::DownloadFile(QWidget* parent, std::string url, std::string path,
 
   QtAsyncTaskWithProgressDialog::create(
     parent, TRANSLATE_SV("QtHost", "File Download"), status_text, false, true, 0, 0, 0.0f, true,
-    [url = std::move(url), path = std::move(path),
+    [parent, url = std::move(url), path = std::move(path),
      completion_callback = std::move(completion_callback)](ProgressCallback* const progress) mutable {
       Error error;
       bool result = false;
@@ -746,9 +746,8 @@ void QtHost::DownloadFile(QWidget* parent, std::string url, std::string path,
       {
         result = true;
         downloader->CreateRequest(
-          std::move(url),
-          [&result, &error, &path](s32 status_code, const Error& http_error, const std::string&,
-                                   std::vector<u8> hdata) {
+          std::move(url), parent,
+          [&result, &error, &path](s32 status_code, Error& http_error, std::string&, std::vector<u8>& hdata) {
             if (status_code != HTTPDownloader::HTTP_STATUS_OK)
             {
               error.SetString(http_error.GetDescription());
@@ -766,7 +765,7 @@ void QtHost::DownloadFile(QWidget* parent, std::string url, std::string path,
       }
 
       // Block until completion.
-      HTTPCache::WaitForAllRequests();
+      HTTPCache::WaitForAllRequestsFromOwner(parent);
 
       QtAsyncTaskWithProgressDialog::CompletionCallback ret;
       if (completion_callback)

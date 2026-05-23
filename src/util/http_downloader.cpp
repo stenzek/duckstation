@@ -24,9 +24,10 @@ HTTPDownloader::HTTPDownloader()
 
 HTTPDownloader::~HTTPDownloader() = default;
 
-HTTPDownloader::Request::Request(HTTPDownloader* parent, Type type, std::string url, std::string post_data,
-                                 Callback callback, ProgressCallback* progress, u16 timeout_seconds)
-  : parent(parent), callback(std::move(callback)), progress(progress), url(std::move(url)),
+HTTPDownloader::Request::Request(HTTPDownloader* parent, const void* owner, Type type, std::string url,
+                                 std::string post_data, Callback callback, ProgressCallback* progress,
+                                 u16 timeout_seconds)
+  : parent(parent), owner(owner), callback(std::move(callback)), progress(progress), url(std::move(url)),
     post_data(std::move(post_data)), type(type), timeout_seconds(timeout_seconds)
 {
   // set progress state to indeterminate until we know the size
@@ -47,23 +48,24 @@ void HTTPDownloader::SetMaxActiveRequests(u32 max_active_requests)
   m_max_active_requests = max_active_requests;
 }
 
-void HTTPDownloader::CreateRequest(std::string url, Request::Callback callback,
+void HTTPDownloader::CreateRequest(std::string url, const void* owner, Request::Callback callback,
                                    ProgressCallback* progress /* = nullptr */, HeaderList additional_headers /* =  */,
                                    std::optional<u16> timeout_seconds /* = */)
 {
-  Request* req = InternalCreateRequest(Request::Type::Get, std::move(url), {}, std::move(callback), progress,
+  Request* req = InternalCreateRequest(Request::Type::Get, std::move(url), {}, owner, std::move(callback), progress,
                                        timeout_seconds.value_or(m_default_timeout), additional_headers);
   DebugAssert(req);
   StartOrAddRequest(req);
 }
 
-void HTTPDownloader::CreatePostRequest(std::string url, std::string post_data, Request::Callback callback,
-                                       ProgressCallback* progress /* = nullptr */,
+void HTTPDownloader::CreatePostRequest(std::string url, std::string post_data, const void* owner,
+                                       Request::Callback callback, ProgressCallback* progress /* = nullptr */,
                                        HeaderList additional_headers /* =  */,
                                        std::optional<u16> timeout_seconds /* = */)
 {
-  Request* req = InternalCreateRequest(Request::Type::Post, std::move(url), std::move(post_data), std::move(callback),
-                                       progress, timeout_seconds.value_or(m_default_timeout), additional_headers);
+  Request* req =
+    InternalCreateRequest(Request::Type::Post, std::move(url), std::move(post_data), owner, std::move(callback),
+                          progress, timeout_seconds.value_or(m_default_timeout), additional_headers);
   DebugAssert(req);
   StartOrAddRequest(req);
 }
@@ -112,7 +114,7 @@ void HTTPDownloader::LockedPollRequests(std::unique_lock<std::mutex>& lock)
       lock.unlock();
 
       req->error.SetStringFmt("Request timed out after {} seconds.", req->timeout_seconds);
-      req->callback(HTTP_STATUS_TIMEOUT, req->error, std::string(), Request::Data());
+      req->callback(HTTP_STATUS_TIMEOUT, req->error, req->content_type, req->data);
 
       CloseRequest(req);
 
@@ -130,7 +132,7 @@ void HTTPDownloader::LockedPollRequests(std::unique_lock<std::mutex>& lock)
       lock.unlock();
 
       req->error.SetStringView("Request was cancelled.");
-      req->callback(HTTP_STATUS_CANCELLED, req->error, std::string(), Request::Data());
+      req->callback(HTTP_STATUS_CANCELLED, req->error, req->content_type, req->data);
 
       CloseRequest(req);
 
@@ -168,7 +170,7 @@ void HTTPDownloader::LockedPollRequests(std::unique_lock<std::mutex>& lock)
     else if (req->status_code < 0)
       DEV_LOG("Request failed with error {}", req->error.GetDescription());
 
-    req->callback(req->status_code, req->error, req->content_type, std::move(req->data));
+    req->callback(req->status_code, req->error, req->content_type, req->data);
     CloseRequest(req);
     lock.lock();
   }
@@ -240,6 +242,51 @@ void HTTPDownloader::WaitForAllRequestsWithYield(std::function<void()> before_sl
   }
 }
 
+void HTTPDownloader::WaitForAllRequestsFromOwner(const void* owner)
+{
+  if (!owner)
+  {
+    WaitForAllRequests();
+    return;
+  }
+
+  std::unique_lock lock(m_pending_http_request_lock);
+  while (std::ranges::any_of(m_pending_http_requests, [owner](const Request* req) { return req->owner == owner; }))
+  {
+    // Don't burn too much CPU.
+    Timer::NanoSleep(WAIT_FOR_ALL_REQUESTS_POLL_INTERVAL_NS);
+    LockedPollRequests(lock);
+  }
+}
+
+void HTTPDownloader::WaitForAllRequestsFromOwnerWithYield(const void* owner, std::function<void()> before_sleep_cb,
+                                                          std::function<void()> after_sleep_cb)
+{
+  if (!owner)
+  {
+    WaitForAllRequestsWithYield(std::move(before_sleep_cb), std::move(after_sleep_cb));
+    return;
+  }
+
+  std::unique_lock lock(m_pending_http_request_lock);
+  while (std::ranges::any_of(m_pending_http_requests, [owner](const Request* req) { return req->owner == owner; }))
+  {
+    // Don't burn too much CPU.
+    if (before_sleep_cb)
+    {
+      lock.unlock();
+      before_sleep_cb();
+    }
+    Timer::NanoSleep(WAIT_FOR_ALL_REQUESTS_POLL_INTERVAL_NS);
+    if (after_sleep_cb)
+    {
+      after_sleep_cb();
+      lock.lock();
+    }
+    LockedPollRequests(lock);
+  }
+}
+
 void HTTPDownloader::LockedAddRequest(Request* request)
 {
   m_pending_http_requests.push_back(request);
@@ -263,7 +310,21 @@ bool HTTPDownloader::HasAnyRequests()
   return !m_pending_http_requests.empty();
 }
 
+bool HTTPDownloader::HasAnyRequestsFromOwner(const void* owner)
+{
+  if (!owner)
+    return HasAnyRequests();
+
+  std::unique_lock lock(m_pending_http_request_lock);
+  return std::ranges::any_of(m_pending_http_requests, [owner](const Request* req) { return req->owner == owner; });
+}
+
 void HTTPDownloader::CancelAllRequests()
+{
+  CancelRequestsForOwner(nullptr);
+}
+
+void HTTPDownloader::CancelRequestsForOwner(const void* owner)
 {
   std::unique_lock lock(m_pending_http_request_lock);
 
@@ -277,6 +338,12 @@ void HTTPDownloader::CancelAllRequests()
     for (size_t index = 0; index < m_pending_http_requests.size();)
     {
       Request* req = m_pending_http_requests[index];
+      if (owner && req->owner != owner)
+      {
+        index++;
+        continue;
+      }
+
       const Request::State req_state = req->state.load(std::memory_order_acquire);
 
       // can't cancel a request in pending stage
@@ -296,7 +363,7 @@ void HTTPDownloader::CancelAllRequests()
         lock.unlock();
 
         req->error.SetStringView("Request was cancelled.");
-        req->callback(HTTP_STATUS_CANCELLED, req->error, std::string(), Request::Data());
+        req->callback(HTTP_STATUS_CANCELLED, req->error, req->content_type, req->data);
 
         CloseRequest(req);
 

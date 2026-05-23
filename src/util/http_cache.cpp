@@ -135,10 +135,34 @@ void HTTPCache::WaitForAllRequests()
     s_locals.downloader->WaitForAllRequests();
 }
 
+void HTTPCache::WaitForAllRequestsFromOwner(const void* owner)
+{
+  if (s_locals.downloader)
+    s_locals.downloader->WaitForAllRequestsFromOwner(owner);
+}
+
 void HTTPCache::WaitForAllRequestsWithYield(std::function<void()> before_sleep_cb, std::function<void()> after_sleep_cb)
 {
   if (s_locals.downloader)
     s_locals.downloader->WaitForAllRequestsWithYield(std::move(before_sleep_cb), std::move(after_sleep_cb));
+}
+
+void HTTPCache::WaitForAllRequestsFromOwnerWithYield(const void* owner, std::function<void()> before_sleep_cb,
+                                                     std::function<void()> after_sleep_cb)
+{
+  if (s_locals.downloader)
+  {
+    s_locals.downloader->WaitForAllRequestsFromOwnerWithYield(owner, std::move(before_sleep_cb),
+                                                              std::move(after_sleep_cb));
+  }
+}
+
+void HTTPCache::CancelRequestsForOwner(const void* owner)
+{
+  if (!s_locals.downloader)
+    return;
+
+  s_locals.downloader->CancelRequestsForOwner(owner);
 }
 
 HTTPDownloader* HTTPCache::GetDownloader(Error* create_error)
@@ -261,11 +285,11 @@ bool HTTPCache::QueueDownload(std::string_view url, FetchCallback callback, Erro
 
   DEV_LOG("Cache miss for URL '{}', downloading...", url);
 
-  downloader->CreateRequest(std::string(url), [url = std::string(url)](s32 status_code, const Error& error,
-                                                                       const std::string& content_type,
-                                                                       HTTPDownloader::Request::Data data) {
-    DownloadCallback(url, status_code, error, content_type, std::move(data));
-  });
+  downloader->CreateRequest(std::string(url), &s_locals,
+                            [url = std::string(url)](s32 status_code, Error& error, std::string& content_type,
+                                                     HTTPDownloader::Request::Data& data) {
+                              DownloadCallback(url, status_code, error, content_type, std::move(data));
+                            });
 
   return true;
 }

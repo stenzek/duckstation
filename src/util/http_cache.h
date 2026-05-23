@@ -53,6 +53,11 @@ std::string GetUserAgent();
 /// Shuts down the HTTP cache, releasing the downloader and cache archive.
 void Shutdown();
 
+/// Returns a pointer to the shared HTTP downloader, creating it on first use.
+/// If @p create_error is non-null, creation details are written there on failure; if null, creation
+/// is skipped after the first failed attempt.
+HTTPDownloader* GetDownloader(Error* create_error = nullptr);
+
 /// Returns true if idle updates are necessary (e.g. outstanding requests).
 bool IsDownloaderActive();
 
@@ -61,14 +66,15 @@ void PollRequests();
 
 /// Waits for all requests to finish.
 void WaitForAllRequests();
+void WaitForAllRequestsFromOwner(const void* owner);
 
 /// Waits for all requests to finish, periodically yielding to allow other tasks to run.
 void WaitForAllRequestsWithYield(std::function<void()> before_sleep_cb, std::function<void()> after_sleep_cb);
+void WaitForAllRequestsFromOwnerWithYield(const void* owner, std::function<void()> before_sleep_cb,
+                                          std::function<void()> after_sleep_cb);
 
-/// Returns a locked pointer to the shared HTTP downloader, creating it on first use.
-/// If @p create_error is non-null, creation details are written there on failure; if null, creation
-/// is skipped after the first failed attempt.
-HTTPDownloader* GetDownloader(Error* create_error = nullptr);
+/// Cancels all outstanding requests for the specified owner.
+void CancelRequestsForOwner(const void* owner);
 
 /// Returns a locked pointer to the shared cache archive, opening it on first use.
 CacheArchivePtr GetCacheArchive();

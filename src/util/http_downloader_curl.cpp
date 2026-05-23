@@ -30,8 +30,8 @@ public:
   bool Initialize(std::string user_agent, Error* error);
 
 protected:
-  Request* InternalCreateRequest(Request::Type type, std::string url, std::string post_data, Request::Callback callback,
-                                 ProgressCallback* progress, u16 timeout_seconds,
+  Request* InternalCreateRequest(Request::Type type, std::string url, std::string post_data, const void* owner,
+                                 Request::Callback callback, ProgressCallback* progress, u16 timeout_seconds,
                                  HeaderList additional_headers) override;
   bool StartRequest(HTTPDownloader::Request* request) override;
   void CloseRequest(HTTPDownloader::Request* request) override;
@@ -171,12 +171,13 @@ HTTPDownloaderCurl::Request::~Request()
 }
 
 HTTPDownloader::Request* HTTPDownloaderCurl::InternalCreateRequest(Request::Type type, std::string url,
-                                                                   std::string post_data, Request::Callback callback,
+                                                                   std::string post_data, const void* owner,
+                                                                   Request::Callback callback,
                                                                    ProgressCallback* progress, u16 timeout_seconds,
                                                                    HeaderList additional_headers)
 {
-  Request* req =
-    new Request(this, type, std::move(url), std::move(post_data), std::move(callback), progress, timeout_seconds);
+  Request* req = new Request(this, owner, type, std::move(url), std::move(post_data), std::move(callback), progress,
+                             timeout_seconds);
 
   for (const char* header : additional_headers)
     req->header_list = curl_slist_append(req->header_list, header);
@@ -303,7 +304,7 @@ bool HTTPDownloaderCurl::StartRequest(HTTPDownloader::Request* request)
   {
     ERROR_LOG("curl_easy_init() failed");
     req->error.SetStringView("curl_easy_init() failed");
-    req->callback(HTTP_STATUS_ERROR, req->error, std::string(), req->data);
+    req->callback(HTTP_STATUS_ERROR, req->error, req->content_type, req->data);
     delete req;
     return false;
   }
