@@ -311,7 +311,11 @@ void InterfaceSettingsWidget::checkForUpdates()
   pdlg->setMinimumWidth(400);
   pdlg->open();
 
-  connect(pdlg, &QProgressDialog::canceled, dlg, &AutoUpdaterDialog::cancel);
+  connect(pdlg, &QProgressDialog::canceled, dlg, [pdlg, dlg]() {
+    // Qt sends cancelled() on close...
+    if (pdlg->wasCanceled())
+      dlg->cancel();
+  });
   connect(dlg, &AutoUpdaterDialog::updateCheckAboutToComplete, pdlg, &QProgressDialog::close);
 
   dlg->queueUpdateCheck(true, true);
