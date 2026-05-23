@@ -167,7 +167,7 @@ union GP1SetDisplayMode
   BitField<u32, bool, 7, 1> reverse_flag;
 };
 
-union GPUSTAT
+union GPUSTATReg
 {
   // During transfer/render operations, if ((dst_pixel & mask_and) == 0) { pixel = src_pixel | mask_or }
 

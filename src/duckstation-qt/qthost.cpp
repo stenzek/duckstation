@@ -3103,7 +3103,7 @@ void CoreThread::updatePerformanceCounters(const GPUBackend* gpu_backend)
   if (gpu_backend)
   {
     const u32 render_scale = gpu_backend->GetResolutionScale();
-    std::tie(render_width, render_height) = g_gpu.GetFullDisplayResolution();
+    std::tie(render_width, render_height) = GPU::GetFullDisplayResolution();
     render_width *= render_scale;
     render_height *= render_scale;
   }

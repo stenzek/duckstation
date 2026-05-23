@@ -219,12 +219,12 @@ void Justifier::UpdatePosition()
 
   const auto [window_x, window_y] = (m_has_relative_binds) ? GetAbsolutePositionFromRelativeAxes() :
                                                              InputManager::GetPointerAbsolutePosition(m_cursor_index);
-  const GSVector2 display_pos = g_gpu.ConvertScreenCoordinatesToDisplayCoordinates(GSVector2(window_x, window_y));
+  const GSVector2 display_pos = GPU::ConvertScreenCoordinatesToDisplayCoordinates(GSVector2(window_x, window_y));
 
   // are we within the active display area?
   u32 tick, line;
   if ((display_pos < GSVector2::zero()).anytrue() ||
-      !g_gpu.ConvertDisplayCoordinatesToBeamTicksAndLines(display_pos, m_x_scale, &tick, &line) || m_shoot_offscreen)
+      !GPU::ConvertDisplayCoordinatesToBeamTicksAndLines(display_pos, m_x_scale, &tick, &line) || m_shoot_offscreen)
   {
     DEV_LOG("Lightgun out of range for window coordinates {:.0f},{:.0f}", window_x, window_y);
     m_position_valid = false;
@@ -237,11 +237,11 @@ void Justifier::UpdatePosition()
   m_irq_tick = static_cast<u16>(static_cast<TickCount>(tick) +
                                 System::ScaleTicksToOverclock(static_cast<TickCount>(m_tick_offset)));
   m_irq_first_line = static_cast<u16>(std::clamp<s32>(static_cast<s32>(line) + m_first_line_offset,
-                                                      static_cast<s32>(g_gpu.GetCRTCActiveStartLine()),
-                                                      static_cast<s32>(g_gpu.GetCRTCActiveEndLine())));
+                                                      static_cast<s32>(GPU::GetCRTCActiveStartLine()),
+                                                      static_cast<s32>(GPU::GetCRTCActiveEndLine())));
   m_irq_last_line = static_cast<u16>(std::clamp<s32>(static_cast<s32>(line) + m_last_line_offset,
-                                                     static_cast<s32>(g_gpu.GetCRTCActiveStartLine()),
-                                                     static_cast<s32>(g_gpu.GetCRTCActiveEndLine())));
+                                                     static_cast<s32>(GPU::GetCRTCActiveStartLine()),
+                                                     static_cast<s32>(GPU::GetCRTCActiveEndLine())));
 
   DEV_LOG("Lightgun window coordinates {},{} -> dpy {} -> tick {} line {} [{}-{}]", window_x, window_y, display_pos,
           tick, line, m_irq_first_line, m_irq_last_line);
@@ -258,7 +258,7 @@ void Justifier::UpdateIRQEvent()
     return;
 
   u32 current_tick, current_line;
-  g_gpu.GetBeamPosition(&current_tick, &current_line);
+  GPU::GetBeamPosition(&current_tick, &current_line);
 
   u32 target_line;
   if (current_line < m_irq_first_line || current_line >= m_irq_last_line)
@@ -266,7 +266,7 @@ void Justifier::UpdateIRQEvent()
   else
     target_line = current_line + 1;
 
-  const TickCount ticks_until_pos = g_gpu.GetSystemTicksUntilTicksAndLine(m_irq_tick, target_line);
+  const TickCount ticks_until_pos = GPU::GetSystemTicksUntilTicksAndLine(m_irq_tick, target_line);
   DEBUG_LOG("Triggering IRQ in {} ticks @ tick {} line {}", ticks_until_pos, m_irq_tick, target_line);
   m_irq_event.Schedule(ticks_until_pos);
 }

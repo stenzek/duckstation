@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "imgui_overlays.h"
@@ -29,6 +29,7 @@
 #include "util/media_capture.h"
 #include "util/translation.h"
 
+#include "common/assert.h"
 #include "common/align.h"
 #include "common/error.h"
 #include "common/file_system.h"
@@ -118,7 +119,7 @@ static constexpr const std::array<DebugWindowInfo, NUM_DEBUG_WINDOWS> s_debug_wi
   {"Freecam", "Free Camera", ":icons/applications-system.png", &GTE::DrawFreecamWindow, 510, 500},
   {"SPU", "SPU State", ":icons/applications-system.png", &SPU::DrawDebugStateWindow, 820, 950},
   {"CDROM", "CD-ROM State", ":icons/applications-system.png", &CDROM::DrawDebugWindow, 820, 555},
-  {"GPU", "GPU State", ":icons/applications-system.png", [](float sc) { g_gpu.DrawDebugStateWindow(sc); }, 450, 550},
+  {"GPU", "GPU State", ":icons/applications-system.png", &GPU::DrawDebugStateWindow, 450, 550},
   {"DMA", "DMA State", ":icons/applications-system.png", &DMA::DrawDebugStateWindow, 860, 180},
   {"MDEC", "MDEC State", ":icons/applications-system.png", &MDEC::DrawDebugStateWindow, 300, 350},
   {"Timers", "Timers State", ":icons/applications-system.png", &Timers::DrawDebugStateWindow, 800, 95},
@@ -443,10 +444,10 @@ void ImGuiManager::DrawPerformanceOverlay(const GPUBackend* gpu, float& position
     {
       const u32 resolution_scale = gpu->GetResolutionScale();
       const bool pgxp = gpu->IsUsingHardwareBackend() && g_gpu_settings.gpu_pgxp_enable;
-      const auto [display_width, display_height] = g_gpu.GetFullDisplayResolution(); // NOTE: Racey read.
-      const bool interlaced = g_gpu.IsInterlacedDisplayEnabled();
-      const bool progressive_forced = g_gpu.IsProgressiveDisplayScanForced();
-      const bool pal = g_gpu.IsInPALMode();
+      const auto [display_width, display_height] = GPU::GetFullDisplayResolution(); // NOTE: Racey read.
+      const bool interlaced = GPU::IsInterlacedDisplayEnabled();
+      const bool progressive_forced = GPU::IsProgressiveDisplayScanForced();
+      const bool pal = GPU::IsInPALMode();
       text.format("{}x{} " BOLD("{} {}") " | {}x " BOLD("IR") "{}", display_width * resolution_scale,
                   display_height * resolution_scale, pal ? "PAL" : "NTSC",
                   interlaced ? "Interlaced" : (progressive_forced ? "Forced-Progressive" : "Progressive"),
