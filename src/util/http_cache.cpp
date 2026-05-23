@@ -13,8 +13,6 @@
 #include "common/path.h"
 #include "common/string_util.h"
 
-#include "scmversion/scmversion.h"
-
 #include <array>
 #include <deque>
 #include <functional>
@@ -32,19 +30,16 @@ static constexpr u32 CACHE_VERSION = 1;
 
 static bool QueueDownload(std::string_view url, FetchCallback callback, Error* error);
 static void DownloadCallback(const std::string& url, s32 status_code, const Error& error,
-                             const std::string& content_type, const HTTPDownloader::Request::Data& data);
+                             const std::string& content_type, const HTTPDownloader::RequestData& data);
 
 namespace {
 
 struct Locals
 {
-  std::unique_ptr<HTTPDownloader> downloader;
-  bool downloader_was_active = false;
-  bool tried_initialize_cache_archive = false;
   ObjectArchive cache_archive;
   std::deque<std::pair<std::string, FetchCallback>> pending_downloads;
   std::mutex cache_mutex;
-  std::once_flag downloader_once_flag;
+  bool tried_initialize_cache_archive = false;
 };
 
 } // namespace
@@ -77,116 +72,21 @@ std::string_view HTTPCache::GetURLFilename(std::string_view url)
   return (pos != std::string_view::npos) ? url.substr(pos + 1) : url;
 }
 
-std::string HTTPCache::GetUserAgent()
-{
-  return fmt::format("DuckStation for {} ({}) {}", TARGET_OS_STR, CPU_ARCH_STR, g_scm_tag_str);
-}
-
 void HTTPCache::Shutdown()
 {
   // awkward situation where a request callback could create another downloader...
-  std::unique_ptr<HTTPDownloader> downloader;
-  {
-    const std::unique_lock cache_lock(s_locals.cache_mutex);
-    for (auto iter = s_locals.pending_downloads.begin(); iter != s_locals.pending_downloads.end();)
-    {
-      if (iter->second)
-        iter->second({});
-      iter = s_locals.pending_downloads.erase(iter);
-    }
-
-    // Hope nothing else is calling in here... we'll use the cache mutex as a guard.
-    downloader = std::move(s_locals.downloader);
-  }
-
-  if (downloader)
-  {
-    downloader->CancelAllRequests();
-    downloader.reset();
-  }
+  HTTPDownloader::CancelRequestsForOwner(&s_locals);
 
   const std::unique_lock cache_lock(s_locals.cache_mutex);
+  for (auto iter = s_locals.pending_downloads.begin(); iter != s_locals.pending_downloads.end();)
+  {
+    if (iter->second)
+      iter->second({});
+    iter = s_locals.pending_downloads.erase(iter);
+  }
+
   if (s_locals.cache_archive.IsOpen())
     s_locals.cache_archive.Close();
-}
-
-bool HTTPCache::IsDownloaderActive()
-{
-  return s_locals.downloader_was_active;
-}
-
-void HTTPCache::PollRequests()
-{
-  // Racey read, but worst case we just miss some requests until the next update
-  if (!s_locals.downloader)
-    return;
-
-  const bool active = s_locals.downloader->PollRequests();
-  if (s_locals.downloader_was_active != active)
-  {
-    s_locals.downloader_was_active = active;
-    Host::OnHTTPCacheDownloaderActiveChanged(active);
-  }
-}
-
-void HTTPCache::WaitForAllRequests()
-{
-  if (s_locals.downloader)
-    s_locals.downloader->WaitForAllRequests();
-}
-
-void HTTPCache::WaitForAllRequestsFromOwner(const void* owner)
-{
-  if (s_locals.downloader)
-    s_locals.downloader->WaitForAllRequestsFromOwner(owner);
-}
-
-void HTTPCache::WaitForAllRequestsWithYield(std::function<void()> before_sleep_cb, std::function<void()> after_sleep_cb)
-{
-  if (s_locals.downloader)
-    s_locals.downloader->WaitForAllRequestsWithYield(std::move(before_sleep_cb), std::move(after_sleep_cb));
-}
-
-void HTTPCache::WaitForAllRequestsFromOwnerWithYield(const void* owner, std::function<void()> before_sleep_cb,
-                                                     std::function<void()> after_sleep_cb)
-{
-  if (s_locals.downloader)
-  {
-    s_locals.downloader->WaitForAllRequestsFromOwnerWithYield(owner, std::move(before_sleep_cb),
-                                                              std::move(after_sleep_cb));
-  }
-}
-
-void HTTPCache::CancelRequestsForOwner(const void* owner)
-{
-  if (!s_locals.downloader)
-    return;
-
-  s_locals.downloader->CancelRequestsForOwner(owner);
-}
-
-HTTPDownloader* HTTPCache::GetDownloader(Error* create_error)
-{
-  if (s_locals.downloader) [[likely]]
-    return s_locals.downloader.get();
-
-  Error::Clear(create_error);
-  std::call_once(s_locals.downloader_once_flag, [&create_error]() {
-    Error error;
-    s_locals.downloader = HTTPDownloader::Create(GetUserAgent(), create_error ? create_error : &error);
-    if (!s_locals.downloader)
-      ERROR_LOG("Failed to create HTTPDownloader: {}", (create_error ? create_error : &error)->GetDescription());
-  });
-
-  if (!s_locals.downloader)
-  {
-    if (create_error && !create_error->IsValid())
-      create_error->SetStringView("Previous HTTPDownloader creation failed");
-
-    return nullptr;
-  }
-
-  return s_locals.downloader.get();
 }
 
 HTTPCache::CacheArchivePtr HTTPCache::GetCacheArchive()
@@ -262,14 +162,6 @@ bool HTTPCache::QueueDownload(std::string_view url, FetchCallback callback, Erro
 {
   // NOTE: Assumes that the lock is held
 
-  HTTPDownloader* const downloader = GetDownloader(error);
-  if (!downloader) [[unlikely]]
-  {
-    if (callback)
-      callback({});
-    return false;
-  }
-
   // do we already have a request?
   const bool has_request =
     std::ranges::any_of(s_locals.pending_downloads, [url](const auto& pair) { return pair.first == url; });
@@ -285,17 +177,17 @@ bool HTTPCache::QueueDownload(std::string_view url, FetchCallback callback, Erro
 
   DEV_LOG("Cache miss for URL '{}', downloading...", url);
 
-  downloader->CreateRequest(std::string(url), &s_locals,
-                            [url = std::string(url)](s32 status_code, Error& error, std::string& content_type,
-                                                     HTTPDownloader::Request::Data& data) {
-                              DownloadCallback(url, status_code, error, content_type, std::move(data));
-                            });
+  HTTPDownloader::CreateRequest(std::string(url), &s_locals,
+                                [url = std::string(url)](s32 status_code, Error& error, std::string& content_type,
+                                                         HTTPDownloader::RequestData& data) {
+                                  DownloadCallback(url, status_code, error, content_type, std::move(data));
+                                });
 
   return true;
 }
 
 void HTTPCache::DownloadCallback(const std::string& url, s32 status_code, const Error& error,
-                                 const std::string& content_type, const HTTPDownloader::Request::Data& data)
+                                 const std::string& content_type, const HTTPDownloader::RequestData& data)
 {
   const bool success = (status_code == HTTPDownloader::HTTP_STATUS_OK);
   if (!success)
@@ -348,10 +240,6 @@ void HTTPCache::Prefetch(std::string_view url)
   if (!cache->IsOpen() || cache->Contains(url)) [[unlikely]]
     return;
 
-  HTTPDownloader* const downloader = GetDownloader();
-  if (!downloader) [[unlikely]]
-    return;
-
   // queue a download with no callback, which will cause it to be cached when it completes
   QueueDownload(url, {}, nullptr);
 }
@@ -373,15 +261,13 @@ void HTTPCache::Prefetch(std::string_view url, PrefetchCallback callback)
     return;
   }
 
-  HTTPDownloader* const downloader = GetDownloader();
-  if (!downloader) [[unlikely]]
-  {
-    callback(false);
-    return;
-  }
-
   // queue a download with no callback, which will cause it to be cached when it completes
   QueueDownload(url, [callback = std::move(callback)](std::span<const u8> data) { callback(!data.empty()); }, nullptr);
+}
+
+void HTTPCache::WaitForAllPrefetchRequests()
+{
+  HTTPDownloader::WaitForAllRequestsFromOwner(&s_locals);
 }
 
 bool HTTPCache::Clear(Error* error)

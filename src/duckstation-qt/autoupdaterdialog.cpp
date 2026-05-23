@@ -12,7 +12,6 @@
 
 #include "core/core.h"
 
-#include "util/http_cache.h"
 #include "util/http_downloader.h"
 #include "util/translation.h"
 
@@ -129,7 +128,7 @@ AutoUpdaterDialog::AutoUpdaterDialog(QWidget* const parent) : QDialog(parent)
 AutoUpdaterDialog::~AutoUpdaterDialog()
 {
   // Ensure all requests have finished.
-  HTTPCache::CancelRequestsForOwner(this);
+  HTTPDownloader::CancelRequestsForOwner(this);
 }
 
 void AutoUpdaterDialog::warnAboutUnofficialBuild()
@@ -300,9 +299,7 @@ void AutoUpdaterDialog::cancel()
   if (m_updates_available)
     return;
 
-  HTTPDownloader* const downloader = HTTPCache::GetDownloader();
-  if (downloader)
-    downloader->CancelRequestsForOwner(this);
+  HTTPDownloader::CancelRequestsForOwner(this);
 }
 
 bool AutoUpdaterDialog::handleCancelledRequest(s32 status_code)

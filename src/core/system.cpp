@@ -47,7 +47,7 @@
 #include "util/cd_image.h"
 #include "util/compress_helpers.h"
 #include "util/gpu_device.h"
-#include "util/http_cache.h"
+#include "util/http_downloader.h"
 #include "util/imgui_manager.h"
 #include "util/ini_settings_interface.h"
 #include "util/input_manager.h"
@@ -2001,7 +2001,7 @@ void System::FrameDone()
 
     Cheats::ApplyFrameEndCodes();
 
-    HTTPCache::PollRequests();
+    HTTPDownloader::PollRequests();
 
     if (Achievements::IsActive())
       Achievements::FrameUpdate();

@@ -13,7 +13,6 @@
 #include <string_view>
 
 class Error;
-class HTTPDownloader;
 class ObjectArchive;
 
 namespace HTTPCache {
@@ -47,34 +46,8 @@ bool IsHTTPURL(std::string_view url);
 /// Returns the filename portion of @p url, stripping any query string or fragment.
 std::string_view GetURLFilename(std::string_view url);
 
-/// Returns the user agent to use for HTTP requests.
-std::string GetUserAgent();
-
-/// Shuts down the HTTP cache, releasing the downloader and cache archive.
+/// Shuts down the HTTP cache, releasing the cache archive.
 void Shutdown();
-
-/// Returns a pointer to the shared HTTP downloader, creating it on first use.
-/// If @p create_error is non-null, creation details are written there on failure; if null, creation
-/// is skipped after the first failed attempt.
-HTTPDownloader* GetDownloader(Error* create_error = nullptr);
-
-/// Returns true if idle updates are necessary (e.g. outstanding requests).
-bool IsDownloaderActive();
-
-/// Processes completed HTTP requests and invokes their callbacks. Should be called regularly on the main thread.
-void PollRequests();
-
-/// Waits for all requests to finish.
-void WaitForAllRequests();
-void WaitForAllRequestsFromOwner(const void* owner);
-
-/// Waits for all requests to finish, periodically yielding to allow other tasks to run.
-void WaitForAllRequestsWithYield(std::function<void()> before_sleep_cb, std::function<void()> after_sleep_cb);
-void WaitForAllRequestsFromOwnerWithYield(const void* owner, std::function<void()> before_sleep_cb,
-                                          std::function<void()> after_sleep_cb);
-
-/// Cancels all outstanding requests for the specified owner.
-void CancelRequestsForOwner(const void* owner);
 
 /// Returns a locked pointer to the shared cache archive, opening it on first use.
 CacheArchivePtr GetCacheArchive();
@@ -101,15 +74,10 @@ void Prefetch(std::string_view url);
 /// Use this to warm the cache ahead of an anticipated lookup.
 void Prefetch(std::string_view url, PrefetchCallback callback);
 
+/// Waits for all prefetches to complete.
+void WaitForAllPrefetchRequests();
+
 /// Removes all entries currently in the cache.
 bool Clear(Error* error);
 
 } // namespace HTTPCache
-
-namespace Host {
-
-/// Called by the HTTPDownloader implementation when the active state of the downloader changes.
-/// active is set if there are any requests in-progress.
-void OnHTTPCacheDownloaderActiveChanged(bool active);
-
-} // namespace Host

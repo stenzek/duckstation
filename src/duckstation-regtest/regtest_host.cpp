@@ -24,7 +24,7 @@
 
 #include "util/cd_image.h"
 #include "util/gpu_device.h"
-#include "util/http_cache.h"
+#include "util/http_downloader.h"
 #include "util/imgui_manager.h"
 #include "util/input_manager.h"
 #include "util/translation.h"
@@ -313,7 +313,7 @@ void Host::OnMediaCaptureStopped()
   //
 }
 
-void Host::OnHTTPCacheDownloaderActiveChanged(bool active)
+void Host::OnHTTPDownloaderActiveChanged(bool active)
 {
   //
 }

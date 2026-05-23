@@ -179,6 +179,7 @@ public:
   void captureGPUFrameDump();
   void startControllerTest();
   void openGamePropertiesForCurrentGame(const QString& category = {});
+  void setHTTPDownloaderActive(bool active);
   void setVideoThreadRunIdle(bool active);
   void updateFullscreenUITheme();
   void runOnCoreThread(const std::function<void()>& callback);
@@ -213,17 +214,19 @@ private:
   std::unique_ptr<InputDeviceListModel> m_input_device_list_model;
 
   bool m_shutdown_flag = false;
+  bool m_http_downloader_active = false;
   bool m_video_thread_run_idle = false;
   bool m_is_fullscreen_ui_started = false;
   bool m_was_paused_by_focus_loss = false;
+
+  RenderAPI m_last_render_api = RenderAPI::None;
+  bool m_last_hardware_renderer = false;
 
   float m_last_speed = std::numeric_limits<float>::infinity();
   float m_last_game_fps = std::numeric_limits<float>::infinity();
   float m_last_video_fps = std::numeric_limits<float>::infinity();
   u32 m_last_render_width = std::numeric_limits<u32>::max();
   u32 m_last_render_height = std::numeric_limits<u32>::max();
-  RenderAPI m_last_render_api = RenderAPI::None;
-  bool m_last_hardware_renderer = false;
 };
 
 class InputDeviceListModel final : public QAbstractListModel

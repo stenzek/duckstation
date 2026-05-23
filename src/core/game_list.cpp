@@ -1852,13 +1852,12 @@ bool GameList::DownloadCovers(const std::vector<std::string>& url_templates, boo
     }
 
     // we could actually do a few in parallel here...
+    // TODO: if we do, need to make sure to not write the same file at the same time, and to update progress correctly.
     std::string filename = Path::URLDecode(url);
-    if (HTTPDownloader* const downloader = HTTPCache::GetDownloader(error))
-    {
-      downloader->CreateRequest(
-        std::move(url), &s_state,
-        [use_serial, &save_callback, entry_path = std::move(entry_path), filename = std::move(filename)](
-          s32 status_code, Error& error, std::string& content_type, HTTPDownloader::Request::Data& data) {
+    HTTPDownloader::CreateRequest(
+      std::move(url), &s_state,
+      [use_serial, &save_callback, entry_path = std::move(entry_path), filename = std::move(filename)](
+        s32 status_code, Error& error, std::string& content_type, HTTPDownloader::RequestData& data) {
         if (status_code != HTTPDownloader::HTTP_STATUS_OK || data.empty())
         {
           ERROR_LOG("Download for {} failed: {}", Path::GetFileName(filename), error.GetDescription());
@@ -1892,8 +1891,7 @@ bool GameList::DownloadCovers(const std::vector<std::string>& url_templates, boo
         if (FileSystem::WriteBinaryFile(write_path.c_str(), data.data(), data.size()) && save_callback)
           save_callback(entry, std::move(write_path));
       });
-    }
-    HTTPCache::WaitForAllRequests();
+    HTTPDownloader::WaitForAllRequestsFromOwner(&s_state);
     progress->IncrementProgressValue();
   }
 

@@ -12,7 +12,6 @@
 #include <vector>
 
 class Error;
-class HTTPDownloader;
 class QtProgressCallback;
 
 class CoreThread;

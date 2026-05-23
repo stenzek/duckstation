@@ -238,12 +238,7 @@ elseif(NOT ANDROID)
 endif()
 
 if(NOT ANDROID)
-  target_sources(util PRIVATE
-    http_downloader_curl.cpp
-  )
-  target_link_libraries(util PRIVATE
-    CURL::libcurl
-  )
+  target_link_libraries(util PRIVATE CURL::libcurl)
 endif()
 
 function(add_util_resources target)

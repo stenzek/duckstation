@@ -5,6 +5,8 @@
 
 #include "util/http_downloader.h"
 
+#include "common/error.h"
+
 #include <string>
 #include <string_view>
 
@@ -27,13 +29,14 @@ public:
 
 Q_SIGNALS:
   void requestComplete(qint32 status_code, Error& error_message, std::string& content_type,
-                       HTTPDownloader::Request::Data& data);
+                       HTTPDownloader::RequestData& data);
 
 private:
+  void handleResponse(s32 status_code, Error& error, std::string& content_type, HTTPDownloader::RequestData& data);
   void finishRequest();
 
   s32 m_status_code = HTTPDownloader::HTTP_STATUS_ERROR;
   Error m_error;
   std::string m_content_type;
-  HTTPDownloader::Request::Data m_data;
+  HTTPDownloader::RequestData m_data;
 };

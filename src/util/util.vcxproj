@@ -153,10 +153,6 @@
     <ClCompile Include="gpu_shader_cache.cpp" />
     <ClCompile Include="gpu_texture.cpp" />
     <ClCompile Include="http_downloader.cpp" />
-    <ClCompile Include="http_downloader_curl.cpp">
-      <ExcludedFromBuild>true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="http_downloader_winhttp.cpp" />
     <ClCompile Include="image.cpp" />
     <ClCompile Include="imgui_manager.cpp" />
     <ClCompile Include="ini_settings_interface.cpp" />

@@ -742,30 +742,26 @@ void QtHost::DownloadFile(QWidget* parent, std::string url, std::string path,
      completion_callback = std::move(completion_callback)](ProgressCallback* const progress) mutable {
       Error error;
       bool result = false;
-      if (HTTPDownloader* const downloader = HTTPCache::GetDownloader(&error))
-      {
-        result = true;
-        downloader->CreateRequest(
-          std::move(url), parent,
-          [&result, &error, &path](s32 status_code, Error& http_error, std::string&, std::vector<u8>& hdata) {
-            if (status_code != HTTPDownloader::HTTP_STATUS_OK)
-            {
-              error.SetString(http_error.GetDescription());
-              return;
-            }
-            else if (hdata.empty())
-            {
-              error.SetStringView(TRANSLATE_SV("QtHost", "Download failed: Data is empty."));
-              return;
-            }
+      HTTPDownloader::CreateRequest(
+        std::move(url), parent,
+        [&result, &error, &path](s32 status_code, Error& http_error, std::string&, std::vector<u8>& hdata) {
+          if (status_code != HTTPDownloader::HTTP_STATUS_OK)
+          {
+            error.SetString(http_error.GetDescription());
+            return;
+          }
+          else if (hdata.empty())
+          {
+            error.SetStringView(TRANSLATE_SV("QtHost", "Download failed: Data is empty."));
+            return;
+          }
 
-            result = FileSystem::WriteBinaryFile(path.c_str(), hdata, &error);
-          },
-          progress);
-      }
+          result = FileSystem::WriteBinaryFile(path.c_str(), hdata, &error);
+        },
+        progress);
 
       // Block until completion.
-      HTTPCache::WaitForAllRequestsFromOwner(parent);
+      HTTPDownloader::WaitForAllRequestsFromOwner(parent);
 
       QtAsyncTaskWithProgressDialog::CompletionCallback ret;
       if (completion_callback)
@@ -2112,12 +2108,25 @@ int CoreThread::getBackgroundControllerPollInterval() const
 
   if (m_video_thread_run_idle)
     return FULLSCREEN_UI_CONTROLLER_POLLING_INTERVAL;
-  else if (HTTPCache::IsDownloaderActive())
+  else if (m_http_downloader_active)
     return DOWNLOAD_CONTROLLER_POLLING_INTERVAL;
   else if (InputManager::GetPollableDeviceCount() > 0)
     return BACKGROUND_CONTROLLER_POLLING_INTERVAL_WITH_DEVICES;
   else
     return BACKGROUND_CONTROLLER_POLLING_INTERVAL_WITHOUT_DEVICES;
+}
+
+void CoreThread::setHTTPDownloaderActive(bool active)
+{
+  if (!isCurrentThread())
+  {
+    QMetaObject::invokeMethod(this, &CoreThread::setHTTPDownloaderActive, Qt::QueuedConnection, active);
+    return;
+  }
+
+  DEV_LOG("HTTP Downloader now {}", active ? "active" : "inactive");
+  m_http_downloader_active = active;
+  updateBackgroundControllerPollInterval();
 }
 
 void CoreThread::setVideoThreadRunIdle(bool active)
@@ -2154,9 +2163,9 @@ void CoreThread::updateFullscreenUITheme()
     VideoThread::RunOnThread(&FullscreenUI::UpdateTheme);
 }
 
-void Host::OnHTTPCacheDownloaderActiveChanged(bool active)
+void Host::OnHTTPDownloaderActiveChanged(bool active)
 {
-  g_core_thread->updateBackgroundControllerPollInterval();
+  g_core_thread->setHTTPDownloaderActive(active);
 }
 
 void CoreThread::stop()

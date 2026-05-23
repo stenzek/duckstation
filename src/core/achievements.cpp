@@ -615,12 +615,6 @@ bool Achievements::CreateClient(std::unique_lock<std::recursive_mutex>& lock, bo
 {
   Assert(!s_state.client);
 
-  if (!HTTPCache::GetDownloader())
-  {
-    Host::ReportErrorAsync("Achievements Error", "Failed to create HTTPDownloader, cannot use achievements");
-    return false;
-  }
-
   s_state.client = rc_client_create(ClientReadMemory, ClientServerCall);
   if (!s_state.client)
   {
@@ -638,7 +632,7 @@ bool Achievements::CreateClient(std::unique_lock<std::recursive_mutex>& lock, bo
   // Populate user-agent.
   char rc_client_user_agent[128];
   rc_client_get_user_agent_clause(s_state.client, rc_client_user_agent, std::size(rc_client_user_agent));
-  s_state.http_user_agent_header = fmt::format("User-Agent: {} {}", HTTPCache::GetUserAgent(), rc_client_user_agent);
+  s_state.http_user_agent_header = fmt::format("User-Agent: {} {}", Host::GetHTTPUserAgent(), rc_client_user_agent);
   VERBOSE_LOG(s_state.http_user_agent_header);
 
   // Allow custom host to be overridden through config.
@@ -881,9 +875,9 @@ uint32_t Achievements::ClientReadMemory(uint32_t address, uint8_t* buffer, uint3
 void Achievements::ClientServerCall(const rc_api_request_t* request, rc_client_server_callback_t callback,
                                     void* callback_data, rc_client_t* client)
 {
-  HTTPDownloader::Request::Callback hd_callback = [callback, callback_data](s32 status_code, Error& error,
-                                                                            std::string& content_type,
-                                                                            HTTPDownloader::Request::Data& data) {
+  HTTPDownloader::RequestCallback hd_callback = [callback, callback_data](s32 status_code, Error& error,
+                                                                          std::string& content_type,
+                                                                          HTTPDownloader::RequestData& data) {
     if (status_code != HTTPDownloader::HTTP_STATUS_OK)
       ERROR_LOG("Server call failed: {}", error.GetDescription());
 
@@ -892,20 +886,18 @@ void Achievements::ClientServerCall(const rc_api_request_t* request, rc_client_s
     callback(&rr, callback_data);
   };
 
-  HTTPDownloader* const downloader = HTTPCache::GetDownloader();
-  DebugAssert(downloader);
-
   const std::array<const char* const, 1> headers = {s_state.http_user_agent_header.c_str()};
   if (request->post_data)
   {
     // const auto pd = std::string_view(request->post_data);
     // Log_DevFmt("Server POST: {}", pd.substr(0, std::min<size_t>(pd.length(), 10)));
-    downloader->CreatePostRequest(request->url, request->post_data, &s_state, std::move(hd_callback), nullptr, headers,
-                                  SERVER_CALL_TIMEOUT);
+    HTTPDownloader::CreatePostRequest(request->url, request->post_data, &s_state, std::move(hd_callback), nullptr,
+                                      headers, SERVER_CALL_TIMEOUT);
   }
   else
   {
-    downloader->CreateRequest(request->url, &s_state, std::move(hd_callback), nullptr, headers, SERVER_CALL_TIMEOUT);
+    HTTPDownloader::CreateRequest(request->url, &s_state, std::move(hd_callback), nullptr, headers,
+                                  SERVER_CALL_TIMEOUT);
   }
 }
 
@@ -945,7 +937,8 @@ rc_api_server_response_t Achievements::MakeRCAPIServerResponse(s32 status_code, 
 
 void Achievements::WaitForServerCallsWithYield(std::unique_lock<std::recursive_mutex>& lock)
 {
-  HTTPCache::WaitForAllRequestsFromOwnerWithYield(&s_state, [&lock]() { lock.unlock(); }, [&lock]() { lock.lock(); });
+  HTTPDownloader::WaitForAllRequestsFromOwnerWithYield(
+    &s_state, [&lock]() { lock.unlock(); }, [&lock]() { lock.lock(); });
 }
 
 void Achievements::IdleUpdate()
@@ -2344,7 +2337,7 @@ bool Achievements::DownloadGameIcons(ProgressCallback* progress, Error* error)
   progress->SetProgressRange(badges_to_download);
   progress->FormatStatusText(TRANSLATE_FS("Achievements", "Downloading {} game icons..."), badges_to_download);
   lock.unlock();
-  HTTPCache::WaitForAllRequests();
+  HTTPCache::WaitForAllPrefetchRequests();
   return true;
 }
 
