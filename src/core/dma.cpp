@@ -799,64 +799,26 @@ TickCount DMA::TransferMemoryToDevice(u32 address, u32 increment, u32 word_count
   address &= mask;
 
   const u32* src_pointer = reinterpret_cast<u32*>(Bus::g_ram + address);
-  if constexpr (channel != Channel::GPU)
+  if (static_cast<s32>(increment) < 0 || ((address + (increment * word_count)) & mask) <= address) [[unlikely]]
   {
-    if (static_cast<s32>(increment) < 0 || ((address + (increment * word_count)) & mask) <= address) [[unlikely]]
-    {
-      // Use temp buffer if it's wrapping around
-      if (s_state.transfer_buffer.size() < word_count)
-        s_state.transfer_buffer.resize(word_count);
-      src_pointer = s_state.transfer_buffer.data();
+    // Use temp buffer if it's wrapping around
+    if (s_state.transfer_buffer.size() < word_count)
+      s_state.transfer_buffer.resize(word_count);
+    src_pointer = s_state.transfer_buffer.data();
 
-      u8* ram_pointer = Bus::g_ram;
-      for (u32 i = 0; i < word_count; i++)
-      {
-        std::memcpy(&s_state.transfer_buffer[i], &ram_pointer[address], sizeof(u32));
-        address = (address + increment) & mask;
-      }
+    u8* ram_pointer = Bus::g_ram;
+    for (u32 i = 0; i < word_count; i++)
+    {
+      std::memcpy(&s_state.transfer_buffer[i], &ram_pointer[address], sizeof(u32));
+      address = (address + increment) & mask;
     }
   }
 
   switch (channel)
   {
     case Channel::GPU:
-    {
-      if (GPU::BeginDMAWrite()) [[likely]]
-      {
-        if (GPUDump::Recorder* dump = GPU::GetGPUDump()) [[unlikely]]
-        {
-          // No wraparound?
-          dump->BeginGP0Packet(word_count);
-          if (((address + (increment * (word_count - 1))) & mask) >= address) [[likely]]
-          {
-            dump->WriteWords(reinterpret_cast<const u32*>(&Bus::g_ram[address]), word_count);
-          }
-          else
-          {
-            u32 dump_address = address;
-            for (u32 i = 0; i < word_count; i++)
-            {
-              u32 value;
-              std::memcpy(&value, &Bus::g_ram[dump_address], sizeof(u32));
-              dump->WriteWord(value);
-              dump_address = (dump_address + increment) & mask;
-            }
-          }
-          dump->EndGP0Packet();
-        }
-
-        u8* ram_pointer = Bus::g_ram;
-        for (u32 i = 0; i < word_count; i++)
-        {
-          u32 value;
-          std::memcpy(&value, &ram_pointer[address], sizeof(u32));
-          GPU::DMAWrite(address, value);
-          address = (address + increment) & mask;
-        }
-        GPU::EndDMAWrite();
-      }
-    }
-    break;
+      GPU::DMAWrite(src_pointer, address, increment, word_count);
+      break;
 
     case Channel::SPU:
       SPU::DMAWrite(src_pointer, word_count);

@@ -49,10 +49,8 @@ u32 ReadRegister(u32 offset);
 void WriteRegister(u32 offset, u32 value);
 
 // DMA access
-void DMARead(u32* words, u32 word_count);
-bool BeginDMAWrite();
-void DMAWrite(u32 address, u32 value);
-void EndDMAWrite();
+void DMARead(u32* RESTRICT words, u32 word_count);
+void DMAWrite(const u32* RESTRICT words, u32 address, u32 increment, u32 word_count);
 
 /// Writing to GPU dump.
 GPUDump::Recorder* GetGPUDump();

@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "gpu.h"
+#include "bus.h"
 #include "core.h"
 #include "cpu_pgxp.h"
 #include "dma.h"
@@ -897,7 +898,7 @@ void GPU::WriteRegister(u32 offset, u32 value)
   }
 }
 
-void GPU::DMARead(u32* words, u32 word_count)
+void GPU::DMARead(u32* RESTRICT words, u32 word_count)
 {
   if (s_locals.GPUSTAT.dma_direction != GPUDMADirection::GPUREADtoCPU)
   {
@@ -910,19 +911,45 @@ void GPU::DMARead(u32* words, u32 word_count)
     words[i] = ReadGPUREAD();
 }
 
-bool GPU::BeginDMAWrite()
+void GPU::DMAWrite(const u32* RESTRICT words, u32 address, u32 increment, u32 word_count)
 {
-  return (s_locals.GPUSTAT.dma_direction == GPUDMADirection::CPUtoGP0 ||
-          s_locals.GPUSTAT.dma_direction == GPUDMADirection::FIFO);
-}
+  if (s_locals.GPUSTAT.dma_direction != GPUDMADirection::CPUtoGP0 &&
+      s_locals.GPUSTAT.dma_direction != GPUDMADirection::FIFO)
+  {
+    return;
+  }
 
-void GPU::DMAWrite(u32 address, u32 value)
-{
-  s_locals.fifo.Push((ZeroExtend64(address) << 32) | ZeroExtend64(value));
-}
+  if (GPUDump::Recorder* dump = GPU::GetGPUDump()) [[unlikely]]
+  {
+    // No wraparound?
+    dump->BeginGP0Packet(word_count);
+    dump->WriteWords(words, word_count);
+    dump->EndGP0Packet();
+  }
 
-void GPU::EndDMAWrite()
-{
+  const u32 mask = Bus::g_ram_mask;
+  if (const u32 contig_words = std::min(word_count, s_locals.fifo.GetContiguousSpace()); contig_words > 0)
+  {
+    const u32* RESTRICT const contig_words_end = words + contig_words;
+    u32* RESTRICT fifo_ptr = reinterpret_cast<u32*>(s_locals.fifo.GetWritePointer());
+    while (words < contig_words_end)
+    {
+      *(fifo_ptr++) = *(words++);
+      *(fifo_ptr++) = address;
+      address = (address + increment) & mask;
+    }
+
+    s_locals.fifo.AdvanceTail(contig_words);
+    word_count -= contig_words;
+  }
+
+  const u32* RESTRICT const words_end = words + word_count;
+  while (words < words_end)
+  {
+    s_locals.fifo.Push((ZeroExtend64(address) << 32) | ZeroExtend64(*(words++)));
+    address = (address + increment) & mask;
+  }
+
   ExecuteCommands();
 }
 
@@ -2638,17 +2665,37 @@ static constexpr u32 ReplaceZero(u32 value, u32 value_for_zero)
 
 ALWAYS_INLINE u32 GPU::FifoPop()
 {
-  return Truncate32(s_locals.fifo.Pop());
+  // Avoid the memcpy() call in debug builds.
+  u32 ret;
+#ifdef _DEBUG
+  std::memcpy(&ret, &s_locals.fifo.Peek(), sizeof(u32));
+#else
+  ret = Truncate32(s_locals.fifo.Peek());
+#endif
+  s_locals.fifo.RemoveOne();
+  return ret;
 }
 
 ALWAYS_INLINE u32 GPU::FifoPeek()
 {
-  return Truncate32(s_locals.fifo.Peek());
+  u32 ret;
+#ifdef _DEBUG
+  std::memcpy(&ret, &s_locals.fifo.Peek(), sizeof(u32));
+#else
+  ret = Truncate32(s_locals.fifo.Peek());
+#endif
+  return ret;
 }
 
 ALWAYS_INLINE u32 GPU::FifoPeek(u32 i)
 {
-  return Truncate32(s_locals.fifo.Peek(i));
+  u32 ret;
+#ifdef _DEBUG
+  std::memcpy(&ret, &s_locals.fifo.Peek(i), sizeof(u32));
+#else
+  ret = Truncate32(s_locals.fifo.Peek(i));
+#endif
+  return ret;
 }
 
 void GPU::ExecuteCommands()
