@@ -4878,6 +4878,8 @@ void System::WarnAboutUnsafeSettings()
       append(TRANSLATE_SV("System", "PIO device removed."));
     if (g_settings.pcdrv_enable)
       append(TRANSLATE_SV("System", "PCDrv disabled."));
+    if (g_settings.pcsx_expansion_region_enable)
+      append(TRANSLATE_SV("System", "PCSX Expansion Region disabled."));
     if (g_settings.bios_patch_fast_boot)
       append(TRANSLATE_SV("System", "Fast boot disabled."));
 
