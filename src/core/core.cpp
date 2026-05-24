@@ -15,6 +15,7 @@
 
 #include "util/gpu_device.h"
 #include "util/http_cache.h"
+#include "util/http_downloader.h"
 #include "util/ini_settings_interface.h"
 #include "util/input_manager.h"
 
@@ -558,6 +559,11 @@ void Core::SetInputSettingsLayer(SettingsInterface* sif, std::unique_lock<std::m
   s_locals.layered_settings_interface.SetLayer(LayeredSettingsInterface::LAYER_INPUT, sif);
 }
 
+std::string Host::GetHTTPUserAgent()
+{
+  return fmt::format("DuckStation for {} ({}) {}", TARGET_OS_STR, CPU_ARCH_STR, g_scm_tag_str);
+}
+
 bool Core::PerformEarlyHardwareChecks(Error* error)
 {
   // This shouldn't fail... if it does, just hope for the best.
@@ -750,6 +756,7 @@ void Core::CoreThreadShutdown()
 
   InputManager::CloseSources();
 
+  HTTPDownloader::Shutdown();
   HTTPCache::Shutdown();
 
   VideoThread::ProcessShutdown();
@@ -794,7 +801,7 @@ void Core::IdleUpdate()
   DiscordPresence::Poll();
 #endif
 
-  HTTPCache::PollRequests();
+  HTTPDownloader::PollRequests();
 
   Achievements::IdleUpdate();
 

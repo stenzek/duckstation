@@ -1,3 +1,9 @@
+# SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com>
+# SPDX-License-Identifier: CC-BY-NC-ND-4.0 + Packaging Restriction
+#
+# NOTE: In addition to the terms of CC-BY-NC-ND-4.0, you may not use this file to create
+# packages or build recipes without explicit permission from the copyright holder.
+
 add_executable(updater
   updater.cpp
   updater.h
@@ -5,23 +11,6 @@ add_executable(updater
 
 target_include_directories(updater PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/..")
 target_link_libraries(updater PRIVATE common minizip ZLIB::ZLIB)
-
-if(WIN32)
-  target_sources(updater PRIVATE
-    resource.h
-    updater.manifest
-    updater.rc
-    updater_progress_callback.h
-    win32_main.cpp
-    win32_progress_callback.cpp
-    win32_progress_callback.h
-    win32_window_util.cpp
-    win32_window_util.h
-    ../duckstation-qt/vcruntimecheck.cpp
-  )
-  target_link_libraries(updater PRIVATE "Comctl32.lib")
-  set_target_properties(updater PROPERTIES WIN32_EXECUTABLE TRUE)
-endif()
 
 if(APPLE)
   set(MAC_SOURCES

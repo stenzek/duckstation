@@ -1705,6 +1705,10 @@ void ImGuiManager::SetImKeyState(ImGuiIO& io, ImGuiKey imkey, bool pressed)
 
 bool ImGuiManager::ProcessGenericInputEvent(GenericInputBinding key, float value)
 {
+  // Racey read, but that's okay, worst case we push a couple of keys during shutdown.
+  if (!s_state.imgui_context)
+    return false;
+
   static constexpr std::array key_map = {
     ImGuiKey_None,               // Unknown,
     ImGuiKey_GamepadDpadUp,      // DPadUp
@@ -1735,51 +1739,47 @@ bool ImGuiManager::ProcessGenericInputEvent(GenericInputBinding key, float value
   };
 
   const ImGuiKey imkey = (static_cast<u32>(key) < key_map.size()) ? key_map[static_cast<u32>(key)] : ImGuiKey_None;
-  if (imkey == ImGuiKey_None)
-    return false;
+  if (imkey != ImGuiKey_None)
+  {
+    VideoThread::RunOnThread([imkey, value]() {
+      if (!s_state.imgui_context)
+        return;
 
-  // Racey read, but that's okay, worst case we push a couple of keys during shutdown.
-  if (!s_state.imgui_context)
-    return false;
-
-  VideoThread::RunOnThread([imkey, value]() {
-    if (!s_state.imgui_context)
-      return;
-
-    if (imkey >= ImGuiKey_GamepadLStickLeft && imkey <= ImGuiKey_GamepadLStickDown)
-    {
-      // NOTE: This assumes the source is sending a whole axis value, not half axis.
-      const u32 axis = BoolToUInt32(imkey >= ImGuiKey_GamepadLStickUp);
-      const s8 old_state = s_state.left_stick_axis_state[axis];
-      const s8 new_state = (value <= -0.5f) ? -1 : ((value >= 0.5f) ? 1 : 0);
-      if (old_state != new_state)
+      if (imkey >= ImGuiKey_GamepadLStickLeft && imkey <= ImGuiKey_GamepadLStickDown)
       {
-        static constexpr auto map_to_key = [](u32 axis, s8 state) {
-          // 0:-1/1 => ImGuiKey_GamepadDpadLeft/Right, 1:-1/1 => ImGuiKey_GamepadDpadUp/ImGuiKey_GamepadDpadDown
-          return static_cast<ImGuiKey>(static_cast<u32>(ImGuiKey_GamepadDpadLeft) + (axis << 1) +
-                                       BoolToUInt32(state > 0));
-        };
+        // NOTE: This assumes the source is sending a whole axis value, not half axis.
+        const u32 axis = BoolToUInt32(imkey >= ImGuiKey_GamepadLStickUp);
+        const s8 old_state = s_state.left_stick_axis_state[axis];
+        const s8 new_state = (value <= -0.5f) ? -1 : ((value >= 0.5f) ? 1 : 0);
+        if (old_state != new_state)
+        {
+          static constexpr auto map_to_key = [](u32 axis, s8 state) {
+            // 0:-1/1 => ImGuiKey_GamepadDpadLeft/Right, 1:-1/1 => ImGuiKey_GamepadDpadUp/ImGuiKey_GamepadDpadDown
+            return static_cast<ImGuiKey>(static_cast<u32>(ImGuiKey_GamepadDpadLeft) + (axis << 1) +
+                                         BoolToUInt32(state > 0));
+          };
 
-        s_state.left_stick_axis_state[axis] = new_state;
-        if (old_state != 0)
-          s_state.imgui_context->IO.AddKeyAnalogEvent(map_to_key(axis, old_state), false, 0.0f);
-        if (new_state != 0)
-          s_state.imgui_context->IO.AddKeyAnalogEvent(map_to_key(axis, new_state), true, 1.0f);
+          s_state.left_stick_axis_state[axis] = new_state;
+          if (old_state != 0)
+            s_state.imgui_context->IO.AddKeyAnalogEvent(map_to_key(axis, old_state), false, 0.0f);
+          if (new_state != 0)
+            s_state.imgui_context->IO.AddKeyAnalogEvent(map_to_key(axis, new_state), true, 1.0f);
+        }
       }
-    }
-    else
-    {
-      ImGuiKey mapkey = imkey;
-      if (s_state.swap_gamepad_face_buttons)
+      else
       {
-        mapkey = (mapkey == ImGuiKey_GamepadFaceRight) ?
-                   ImGuiKey_GamepadFaceDown :
-                   ((mapkey == ImGuiKey_GamepadFaceDown) ? ImGuiKey_GamepadFaceRight : mapkey);
-      }
+        ImGuiKey mapkey = imkey;
+        if (s_state.swap_gamepad_face_buttons)
+        {
+          mapkey = (mapkey == ImGuiKey_GamepadFaceRight) ?
+                     ImGuiKey_GamepadFaceDown :
+                     ((mapkey == ImGuiKey_GamepadFaceDown) ? ImGuiKey_GamepadFaceRight : mapkey);
+        }
 
-      s_state.imgui_context->IO.AddKeyAnalogEvent(mapkey, (value > 0.0f), value);
-    }
-  });
+        s_state.imgui_context->IO.AddKeyAnalogEvent(mapkey, (value > 0.0f), value);
+      }
+    });
+  }
 
   return s_state.imgui_wants_keyboard.load(std::memory_order_acquire);
 }

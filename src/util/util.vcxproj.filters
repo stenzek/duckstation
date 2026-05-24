@@ -144,8 +144,6 @@
     <ClCompile Include="d3d11_texture.cpp" />
     <ClCompile Include="postprocessing_shader_fx.cpp" />
     <ClCompile Include="pch.cpp" />
-    <ClCompile Include="http_downloader_curl.cpp" />
-    <ClCompile Include="http_downloader_winhttp.cpp" />
     <ClCompile Include="http_downloader.cpp" />
     <ClCompile Include="metal_device.mm" />
     <ClCompile Include="metal_stream_buffer.mm" />

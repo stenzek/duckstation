@@ -225,7 +225,6 @@ namespace {
 struct State
 {
   rc_client_t* client = nullptr;
-  u16 pending_server_calls = 0;
   u16 pending_badge_downloads = 0;
   bool has_achievements : 1 = false;
   bool has_leaderboards : 1 = false;
@@ -616,12 +615,6 @@ bool Achievements::CreateClient(std::unique_lock<std::recursive_mutex>& lock, bo
 {
   Assert(!s_state.client);
 
-  if (!HTTPCache::GetDownloader())
-  {
-    Host::ReportErrorAsync("Achievements Error", "Failed to create HTTPDownloader, cannot use achievements");
-    return false;
-  }
-
   s_state.client = rc_client_create(ClientReadMemory, ClientServerCall);
   if (!s_state.client)
   {
@@ -639,7 +632,7 @@ bool Achievements::CreateClient(std::unique_lock<std::recursive_mutex>& lock, bo
   // Populate user-agent.
   char rc_client_user_agent[128];
   rc_client_get_user_agent_clause(s_state.client, rc_client_user_agent, std::size(rc_client_user_agent));
-  s_state.http_user_agent_header = fmt::format("User-Agent: {} {}", HTTPCache::GetUserAgent(), rc_client_user_agent);
+  s_state.http_user_agent_header = fmt::format("User-Agent: {} {}", Host::GetHTTPUserAgent(), rc_client_user_agent);
   VERBOSE_LOG(s_state.http_user_agent_header);
 
   // Allow custom host to be overridden through config.
@@ -677,14 +670,18 @@ bool Achievements::CreateClient(std::unique_lock<std::recursive_mutex>& lock, bo
 
 void Achievements::FinishInitialize()
 {
+  // Identify game regardless of login status.
+  if (System::IsValid())
+    IdentifyCurrentGame();
+
   // Start logging in. This can take a while.
   if (!IsLoggedInOrLoggingIn())
-    TryLoggingInWithToken();
-
-  // Are we running a game?
-  if (System::IsValid())
   {
-    IdentifyCurrentGame();
+    TryLoggingInWithToken();
+  }
+  // Are we running a game?
+  else if (System::IsValid())
+  {
     BeginLoadGame();
 
     // Hardcore mode isn't enabled when achievements first starts, if a game is already running.
@@ -878,34 +875,29 @@ uint32_t Achievements::ClientReadMemory(uint32_t address, uint8_t* buffer, uint3
 void Achievements::ClientServerCall(const rc_api_request_t* request, rc_client_server_callback_t callback,
                                     void* callback_data, rc_client_t* client)
 {
-  HTTPDownloader::Request::Callback hd_callback = [callback, callback_data](s32 status_code, const Error& error,
-                                                                            const std::string& content_type,
-                                                                            HTTPDownloader::Request::Data data) {
+  HTTPDownloader::RequestCallback hd_callback = [callback, callback_data](s32 status_code, Error& error,
+                                                                          std::string& content_type,
+                                                                          HTTPDownloader::RequestData& data) {
     if (status_code != HTTPDownloader::HTTP_STATUS_OK)
       ERROR_LOG("Server call failed: {}", error.GetDescription());
 
     const rc_api_server_response_t rr = MakeRCAPIServerResponse(status_code, data);
     const auto lock = GetLock();
-    s_state.pending_server_calls = (s_state.pending_server_calls > 0) ? (s_state.pending_server_calls - 1) : 0;
     callback(&rr, callback_data);
   };
-
-  const auto downloader = HTTPCache::GetDownloader();
-  DebugAssert(downloader);
-
-  s_state.pending_server_calls++;
 
   const std::array<const char* const, 1> headers = {s_state.http_user_agent_header.c_str()};
   if (request->post_data)
   {
     // const auto pd = std::string_view(request->post_data);
     // Log_DevFmt("Server POST: {}", pd.substr(0, std::min<size_t>(pd.length(), 10)));
-    downloader->CreatePostRequest(request->url, request->post_data, std::move(hd_callback), nullptr, headers,
-                                  SERVER_CALL_TIMEOUT);
+    HTTPDownloader::CreatePostRequest(request->url, request->post_data, &s_state, std::move(hd_callback), nullptr,
+                                      headers, SERVER_CALL_TIMEOUT);
   }
   else
   {
-    downloader->CreateRequest(request->url, std::move(hd_callback), nullptr, headers, SERVER_CALL_TIMEOUT);
+    HTTPDownloader::CreateRequest(request->url, &s_state, std::move(hd_callback), nullptr, headers,
+                                  SERVER_CALL_TIMEOUT);
   }
 }
 
@@ -945,23 +937,8 @@ rc_api_server_response_t Achievements::MakeRCAPIServerResponse(s32 status_code, 
 
 void Achievements::WaitForServerCallsWithYield(std::unique_lock<std::recursive_mutex>& lock)
 {
-  if (s_state.pending_server_calls == 0)
-    return;
-
-  for (;;)
-  {
-    lock.unlock();
-    HTTPCache::GetDownloader()->PollRequests();
-    lock.lock();
-
-    // check before sleeping
-    if (s_state.pending_server_calls == 0)
-      return;
-
-    lock.unlock();
-    Timer::NanoSleep(HTTPDownloader::WAIT_FOR_ALL_REQUESTS_POLL_INTERVAL_NS);
-    lock.lock();
-  }
+  HTTPDownloader::WaitForAllRequestsFromOwnerWithYield(
+    &s_state, [&lock]() { lock.unlock(); }, [&lock]() { lock.lock(); });
 }
 
 void Achievements::IdleUpdate()
@@ -2245,6 +2222,9 @@ void Achievements::FinishLogin()
                                              s_state.logged_in_user_icon_url, user->display_name, std::move(summary),
                                              RA_LOGO_ICON_NAME, FullscreenUI::AchievementNotificationNoteType::Image);
   }
+
+  if (!s_state.load_game_request && System::IsValid())
+    BeginLoadGame();
 }
 
 const std::string& Achievements::GetLoggedInUserName()
@@ -2357,7 +2337,7 @@ bool Achievements::DownloadGameIcons(ProgressCallback* progress, Error* error)
   progress->SetProgressRange(badges_to_download);
   progress->FormatStatusText(TRANSLATE_FS("Achievements", "Downloading {} game icons..."), badges_to_download);
   lock.unlock();
-  HTTPCache::WaitForAllRequests();
+  HTTPCache::WaitForAllPrefetchRequests();
   return true;
 }
 

@@ -1,3 +1,9 @@
+# SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com>
+# SPDX-License-Identifier: CC-BY-NC-ND-4.0 + Packaging Restriction
+#
+# NOTE: In addition to the terms of CC-BY-NC-ND-4.0, you may not use this file to create
+# packages or build recipes without explicit permission from the copyright holder.
+
 add_library(core
   achievements.cpp
   achievements.h
@@ -60,7 +66,6 @@ add_library(core
   gpu.h
   gpu_backend.cpp
   gpu_backend.h
-  gpu_commands.cpp
   gpu_dump.cpp
   gpu_dump.h
   gpu_helpers.h

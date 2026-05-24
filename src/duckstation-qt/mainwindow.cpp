@@ -3488,19 +3488,7 @@ AutoUpdaterDialog* MainWindow::createAutoUpdaterDialog(QWidget* parent, bool dis
     return nullptr;
   }
 
-  Error error;
-  m_auto_updater_dialog = AutoUpdaterDialog::create(parent, &error);
-  if (!m_auto_updater_dialog)
-  {
-    if (display_message)
-    {
-      QtUtils::AsyncMessageBox(
-        parent, QMessageBox::Critical, "Error"_L1,
-        QStringLiteral("Failed to create auto updater: %1").arg(QString::fromStdString(error.GetDescription())));
-    }
-
-    return nullptr;
-  }
+  m_auto_updater_dialog = new AutoUpdaterDialog(parent);
 
   // display status message indicating check is in progress
   // technically this could conflict with the game list refresh, but this is only for manual update checks.

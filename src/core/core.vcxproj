@@ -41,7 +41,6 @@
     <ClCompile Include="game_list.cpp" />
     <ClCompile Include="gdb_server.cpp" />
     <ClCompile Include="gpu_backend.cpp" />
-    <ClCompile Include="gpu_commands.cpp" />
     <ClCompile Include="gpu_dump.cpp" />
     <ClCompile Include="gpu_hw_shadergen.cpp" />
     <ClCompile Include="gpu_hw_texture_cache.cpp" />

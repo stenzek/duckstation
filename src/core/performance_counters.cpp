@@ -10,6 +10,7 @@
 
 #include "util/media_capture.h"
 
+#include "common/assert.h"
 #include "common/log.h"
 #include "common/threading.h"
 #include "common/timer.h"

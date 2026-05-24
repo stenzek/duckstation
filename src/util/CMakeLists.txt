@@ -1,3 +1,9 @@
+# SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com>
+# SPDX-License-Identifier: CC-BY-NC-ND-4.0 + Packaging Restriction
+#
+# NOTE: In addition to the terms of CC-BY-NC-ND-4.0, you may not use this file to create
+# packages or build recipes without explicit permission from the copyright holder.
+
 add_library(util
   animated_image.cpp
   animated_image.h
@@ -124,13 +130,6 @@ if(ENABLE_OPENGL)
   target_compile_definitions(util PUBLIC "ENABLE_OPENGL=1")
   target_link_libraries(util PRIVATE glad)
 
-  if(WIN32)
-    target_sources(util PRIVATE
-      opengl_context_wgl.cpp
-      opengl_context_wgl.h
-    )
-  endif()
-
   if(LINUX OR BSD OR ANDROID)
     target_sources(util PRIVATE
       opengl_context_egl.cpp
@@ -215,46 +214,7 @@ if(NOT ANDROID)
   target_include_directories(util PUBLIC ${FFMPEG_INCLUDE_DIRS})
 endif()
 
-if(WIN32)
-  target_sources(util PRIVATE
-    d3d_common.cpp
-    d3d_common.h
-    d3d11_device.cpp
-    d3d11_device.h
-    d3d11_pipeline.cpp
-    d3d11_pipeline.h
-    d3d11_stream_buffer.cpp
-    d3d11_stream_buffer.h
-    d3d11_texture.cpp
-    d3d11_texture.h
-    d3d12_builders.cpp
-    d3d12_builders.h
-    d3d12_descriptor_heap_manager.cpp
-    d3d12_descriptor_heap_manager.h
-    d3d12_device.cpp
-    d3d12_device.h
-    d3d12_pipeline.cpp
-    d3d12_pipeline.h
-    d3d12_stream_buffer.cpp
-    d3d12_stream_buffer.h
-    d3d12_texture.cpp
-    d3d12_texture.h
-    dinput_source.cpp
-    dinput_source.h
-    http_downloader_winhttp.cpp
-    win32_raw_input_source.cpp
-    win32_raw_input_source.h
-    xaudio2_audio_stream.cpp
-    xinput_source.cpp
-    xinput_source.h
-  )
-  target_link_libraries(util PRIVATE d3d12ma)
-  target_link_libraries(util PRIVATE Cfgmgr32.lib Dwmapi.lib winhttp.lib)
-
-  if(CMAKE_BUILD_TYPE MATCHES "Debug|Devel")
-    target_link_libraries(util PRIVATE WinPixEventRuntime::WinPixEventRuntime)
-  endif()
-elseif(APPLE)
+if(APPLE)
   set(MAC_SOURCES
     metal_device.h
     metal_device.mm
@@ -277,13 +237,8 @@ elseif(NOT ANDROID)
   endif()
 endif()
 
-if(NOT WIN32 AND NOT ANDROID)
-  target_sources(util PRIVATE
-    http_downloader_curl.cpp
-  )
-  target_link_libraries(util PRIVATE
-    CURL::libcurl
-  )
+if(NOT ANDROID)
+  target_link_libraries(util PRIVATE CURL::libcurl)
 endif()
 
 function(add_util_resources target)

@@ -18,7 +18,6 @@
     <ClCompile Include="mdec.cpp" />
     <ClCompile Include="memory_card.cpp" />
     <ClCompile Include="settings.cpp" />
-    <ClCompile Include="gpu_commands.cpp" />
     <ClCompile Include="gpu_sw.cpp" />
     <ClCompile Include="gpu_hw_shadergen.cpp" />
     <ClCompile Include="bios.cpp" />

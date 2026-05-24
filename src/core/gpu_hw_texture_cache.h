@@ -106,7 +106,7 @@ struct Source
   TListNode<Source> hash_cache_ref;
 };
 
-bool Initialize(GPU_HW* backend, Error* error);
+bool Initialize(Error* error);
 bool UpdateSettings(bool use_texture_cache, const GPUSettings& old_settings, Error* error);
 
 bool GetStateSize(StateWrapper& sw, u32* size);

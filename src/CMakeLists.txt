@@ -4,13 +4,8 @@ add_subdirectory(core)
 add_subdirectory(scmversion)
 add_subdirectory(duckstation-qt)
 
-if(WIN32 OR APPLE)
+if(APPLE)
   add_subdirectory(updater)
-endif()
-
-if(WIN32)
-  add_subdirectory(installer)
-  add_subdirectory(uninstaller)
 endif()
 
 if(BUILD_REGTEST)

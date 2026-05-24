@@ -87,6 +87,9 @@ struct ChannelState
     BitField<u32, bool, 28, 1> start_trigger;
 
     static constexpr u32 WRITE_MASK = 0b01110001'01110111'00000111'00000011;
+
+    // Only bits 24, 28 and 30 can be set in OTC. All other bits are hardwired to zero.
+    static constexpr u32 OTC_MASK = 0b01010001'00000000'00000000'00000000;
   } channel_control = {};
 
   bool request = false;
@@ -379,6 +382,9 @@ void DMA::WriteRegister(u32 offset, u32 value)
 
         state.channel_control.bits = (state.channel_control.bits & ~ChannelState::ChannelControl::WRITE_MASK) |
                                      (value & ChannelState::ChannelControl::WRITE_MASK);
+        state.channel_control.bits = (static_cast<Channel>(channel_index) == Channel::OTC) ?
+                                       (state.channel_control.bits & ChannelState::ChannelControl::OTC_MASK) :
+                                       state.channel_control.bits;
         TRACE_LOG("DMA channel {} channel control <- 0x{:08X}", static_cast<Channel>(channel_index),
                   state.channel_control.bits);
 
@@ -793,64 +799,26 @@ TickCount DMA::TransferMemoryToDevice(u32 address, u32 increment, u32 word_count
   address &= mask;
 
   const u32* src_pointer = reinterpret_cast<u32*>(Bus::g_ram + address);
-  if constexpr (channel != Channel::GPU)
+  if (static_cast<s32>(increment) < 0 || ((address + (increment * word_count)) & mask) <= address) [[unlikely]]
   {
-    if (static_cast<s32>(increment) < 0 || ((address + (increment * word_count)) & mask) <= address) [[unlikely]]
-    {
-      // Use temp buffer if it's wrapping around
-      if (s_state.transfer_buffer.size() < word_count)
-        s_state.transfer_buffer.resize(word_count);
-      src_pointer = s_state.transfer_buffer.data();
+    // Use temp buffer if it's wrapping around
+    if (s_state.transfer_buffer.size() < word_count)
+      s_state.transfer_buffer.resize(word_count);
+    src_pointer = s_state.transfer_buffer.data();
 
-      u8* ram_pointer = Bus::g_ram;
-      for (u32 i = 0; i < word_count; i++)
-      {
-        std::memcpy(&s_state.transfer_buffer[i], &ram_pointer[address], sizeof(u32));
-        address = (address + increment) & mask;
-      }
+    u8* ram_pointer = Bus::g_ram;
+    for (u32 i = 0; i < word_count; i++)
+    {
+      std::memcpy(&s_state.transfer_buffer[i], &ram_pointer[address], sizeof(u32));
+      address = (address + increment) & mask;
     }
   }
 
   switch (channel)
   {
     case Channel::GPU:
-    {
-      if (g_gpu.BeginDMAWrite()) [[likely]]
-      {
-        if (GPUDump::Recorder* dump = g_gpu.GetGPUDump()) [[unlikely]]
-        {
-          // No wraparound?
-          dump->BeginGP0Packet(word_count);
-          if (((address + (increment * (word_count - 1))) & mask) >= address) [[likely]]
-          {
-            dump->WriteWords(reinterpret_cast<const u32*>(&Bus::g_ram[address]), word_count);
-          }
-          else
-          {
-            u32 dump_address = address;
-            for (u32 i = 0; i < word_count; i++)
-            {
-              u32 value;
-              std::memcpy(&value, &Bus::g_ram[dump_address], sizeof(u32));
-              dump->WriteWord(value);
-              dump_address = (dump_address + increment) & mask;
-            }
-          }
-          dump->EndGP0Packet();
-        }
-
-        u8* ram_pointer = Bus::g_ram;
-        for (u32 i = 0; i < word_count; i++)
-        {
-          u32 value;
-          std::memcpy(&value, &ram_pointer[address], sizeof(u32));
-          g_gpu.DMAWrite(address, value);
-          address = (address + increment) & mask;
-        }
-        g_gpu.EndDMAWrite();
-      }
-    }
-    break;
+      GPU::DMAWrite(src_pointer, address, increment, word_count);
+      break;
 
     case Channel::SPU:
       SPU::DMAWrite(src_pointer, word_count);
@@ -922,7 +890,7 @@ TickCount DMA::TransferDeviceToMemory(u32 address, u32 increment, u32 word_count
   switch (channel)
   {
     case Channel::GPU:
-      g_gpu.DMARead(dest_pointer, word_count);
+      GPU::DMARead(dest_pointer, word_count);
       break;
 
     case Channel::CDROM:

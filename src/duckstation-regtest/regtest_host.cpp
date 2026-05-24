@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "core/achievements.h"
@@ -24,6 +24,7 @@
 
 #include "util/cd_image.h"
 #include "util/gpu_device.h"
+#include "util/http_downloader.h"
 #include "util/imgui_manager.h"
 #include "util/input_manager.h"
 #include "util/translation.h"
@@ -308,6 +309,11 @@ void Host::OnMediaCaptureStarted()
 }
 
 void Host::OnMediaCaptureStopped()
+{
+  //
+}
+
+void Host::OnHTTPDownloaderActiveChanged(bool active)
 {
   //
 }

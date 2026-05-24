@@ -540,7 +540,6 @@ struct GPUTextureCacheState
 
   GPUTextureFormat hash_cache_texture_format = GPUTextureFormat::Unknown;
   HashCache hash_cache;
-  GPU_HW* hw_backend = nullptr; // TODO:FIXME: remove me
 
   /// List of candidates for purging when the hash cache gets too large.
   std::vector<std::pair<HashCache::iterator, s32>> hash_cache_purge_list;
@@ -597,10 +596,8 @@ bool GPUTextureCache::IsDumpingVRAMWriteTextures()
   return (g_gpu_settings.texture_replacements.dump_textures && !s_state.config.dump_texture_pages);
 }
 
-bool GPUTextureCache::Initialize(GPU_HW* backend, Error* error)
+bool GPUTextureCache::Initialize(Error* error)
 {
-  s_state.hw_backend = backend;
-
   SetHashCacheTextureFormat();
 
   // note: safe because the CPU thread is waiting for the GPU thread to finish initializing
@@ -828,7 +825,6 @@ void GPUTextureCache::Shutdown()
   s_state.hash_cache_purge_list = {};
   s_state.temp_vram_write_list = {};
   s_state.track_vram_writes = false;
-  s_state.hw_backend = nullptr;
 
   for (auto it = s_state.gpu_replacement_image_cache.begin(); it != s_state.gpu_replacement_image_cache.end();)
   {
@@ -3895,5 +3891,5 @@ void GPUTextureCache::ApplyTextureReplacements(SourceKey key, HashType tex_hash,
   g_gpu_device->RecycleTexture(std::move(entry->texture));
   entry->texture = std::move(replacement_tex);
 
-  s_state.hw_backend->RestoreDeviceContext();
+  static_cast<GPU_HW*>(VideoThread::GetGPUBackend())->RestoreDeviceContext();
 }

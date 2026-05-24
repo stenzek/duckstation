@@ -1,3 +1,9 @@
+# SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com>
+# SPDX-License-Identifier: CC-BY-NC-ND-4.0 + Packaging Restriction
+#
+# NOTE: In addition to the terms of CC-BY-NC-ND-4.0, you may not use this file to create
+# packages or build recipes without explicit permission from the copyright holder.
+
 message(STATUS "Build Type: ${CMAKE_BUILD_TYPE}")
 string(TOUPPER "${CMAKE_BUILD_TYPE}" CMAKE_BUILD_TYPE_UPPER)
 message(STATUS "C Flags: ${CMAKE_C_FLAGS} ${CMAKE_C_FLAGS_${CMAKE_BUILD_TYPE_UPPER}}")
@@ -55,15 +61,6 @@ if(NOT IS_SUPPORTED_COMPILER)
 You are not compiling DuckStation with a supported compiler.
 It may not even build successfully.
 DuckStation only supports the Clang and MSVC compilers.
-No support will be provided, continue at your own risk.
-*********************************************************")
-endif()
-
-if(WIN32)
-  message(WARNING "*************** UNSUPPORTED CONFIGURATION ***************
-You are compiling DuckStation with CMake on Windows.
-It may not even build successfully.
-DuckStation only supports MSBuild on Windows.
 No support will be provided, continue at your own risk.
 *********************************************************")
 endif()

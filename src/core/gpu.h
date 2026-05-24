@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #pragma once
@@ -6,502 +6,137 @@
 #include "gpu_types.h"
 #include "types.h"
 
-#include "common/bitfield.h"
-#include "common/fifo_queue.h"
 #include "common/gsvector.h"
-#include "common/types.h"
 
 #include <algorithm>
-#include <array>
-#include <deque>
-#include <memory>
 #include <span>
 #include <string>
-#include <tuple>
-#include <vector>
+#include <utility>
 
 class Error;
-class Image;
-class SmallStringBase;
 
 class StateWrapper;
-
-class GPUDevice;
-class GPUTexture;
-class GPUPipeline;
-class MediaCapture;
 
 namespace GPUDump {
 enum class PacketType : u8;
 class Recorder;
-class Player;
 } // namespace GPUDump
 
-class GPUBackend;
 struct Settings;
 
 namespace System {
 struct MemorySaveState;
 }
 
-struct GPUBackendCommand;
-struct GPUBackendDrawCommand;
-
-class GPU final
-{
-public:
-  enum class BlitterState : u8
-  {
-    Idle,
-    ReadingVRAM,
-    WritingVRAM,
-    DrawingPolyLine
-  };
-
-  enum : u32
-  {
-    MAX_FIFO_SIZE = 4096,
-    DOT_TIMER_INDEX = 0,
-    HBLANK_TIMER_INDEX = 1,
-    MAX_RESOLUTION_SCALE = 32,
-    DRAWING_AREA_COORD_MASK = 1023,
-  };
-
-  enum : u16
-  {
-    NTSC_TICKS_PER_LINE = 3413,
-    NTSC_TOTAL_LINES = 263,
-    PAL_TICKS_PER_LINE = 3406,
-    PAL_TOTAL_LINES = 314,
-  };
-
-  enum : u16
-  {
-    NTSC_HORIZONTAL_ACTIVE_START = 488,
-    NTSC_HORIZONTAL_ACTIVE_END = 3288,
-    NTSC_VERTICAL_ACTIVE_START = 16,
-    NTSC_VERTICAL_ACTIVE_END = 256,
-    NTSC_OVERSCAN_HORIZONTAL_ACTIVE_START = 608,
-    NTSC_OVERSCAN_HORIZONTAL_ACTIVE_END = 3168,
-    NTSC_OVERSCAN_VERTICAL_ACTIVE_START = 24,
-    NTSC_OVERSCAN_VERTICAL_ACTIVE_END = 248,
-    PAL_HORIZONTAL_ACTIVE_START = 488,
-    PAL_HORIZONTAL_ACTIVE_END = 3300,
-    PAL_VERTICAL_ACTIVE_START = 20,
-    PAL_VERTICAL_ACTIVE_END = 308,
-    PAL_OVERSCAN_HORIZONTAL_ACTIVE_START = 628,
-    PAL_OVERSCAN_HORIZONTAL_ACTIVE_END = 3188,
-    PAL_OVERSCAN_VERTICAL_ACTIVE_START = 30,
-    PAL_OVERSCAN_VERTICAL_ACTIVE_END = 298,
-  };
-
-  // Base class constructor.
-  GPU();
-  ~GPU();
-
-  void Initialize();
-  void Shutdown();
-  void Reset(bool clear_vram);
-  bool DoState(StateWrapper& sw);
-  void DoMemoryState(StateWrapper& sw, System::MemorySaveState& mss);
-
-  // Render statistics debug window.
-  void DrawDebugStateWindow(float scale);
-
-  void CPUClockChanged();
-
-  // MMIO access
-  u32 ReadRegister(u32 offset);
-  void WriteRegister(u32 offset, u32 value);
-
-  // DMA access
-  void DMARead(u32* words, u32 word_count);
-
-  ALWAYS_INLINE bool BeginDMAWrite() const
-  {
-    return (m_GPUSTAT.dma_direction == GPUDMADirection::CPUtoGP0 || m_GPUSTAT.dma_direction == GPUDMADirection::FIFO);
-  }
-  ALWAYS_INLINE void DMAWrite(u32 address, u32 value)
-  {
-    m_fifo.Push((ZeroExtend64(address) << 32) | ZeroExtend64(value));
-  }
-  void EndDMAWrite();
-
-  /// Writing to GPU dump.
-  GPUDump::Recorder* GetGPUDump() const { return m_gpu_dump.get(); }
-  bool StartRecordingGPUDump(const char* path, u32 num_frames = 1);
-  void StopRecordingGPUDump();
-  void WriteCurrentVideoModeToDump(GPUDump::Recorder* dump) const;
-  void ProcessGPUDumpPacket(GPUDump::PacketType type, const std::span<const u32> data);
-
-  /// Returns true if no data is being sent from VRAM to the DAC or that no portion of VRAM would be visible on screen.
-  ALWAYS_INLINE bool IsDisplayDisabled() const
-  {
-    return m_GPUSTAT.display_disable || m_crtc_state.display_vram_width == 0 || m_crtc_state.display_vram_height == 0;
-  }
-
-  /// Returns true if scanout should be interlaced.
-  ALWAYS_INLINE bool IsInterlacedDisplayEnabled() const
-  {
-    return (!m_force_progressive_scan && m_GPUSTAT.vertical_interlace);
-  }
-
-  /// Returns true if scanout is forced to progressive.
-  ALWAYS_INLINE bool IsProgressiveDisplayScanForced() const
-  {
-    return (m_force_progressive_scan && m_GPUSTAT.vertical_interlace);
-  }
+namespace GPU {
 
-  /// Returns true if interlaced rendering is enabled and force progressive scan is disabled.
-  ALWAYS_INLINE bool IsInterlacedRenderingEnabled() const
-  {
-    return (!m_force_progressive_scan && m_GPUSTAT.SkipDrawingToActiveField());
-  }
-
-  /// Returns true if we're in PAL mode, otherwise false if NTSC.
-  ALWAYS_INLINE bool IsInPALMode() const { return m_GPUSTAT.pal_mode; }
+/// The maximum resolution scale factor that can be applied to rendering.
+inline constexpr u32 MAX_RESOLUTION_SCALE = 32;
 
-  /// Returns the number of pending GPU ticks.
-  TickCount GetPendingCRTCTicks() const;
-  TickCount GetPendingCommandTicks() const;
-  TickCount GetRemainingCommandTicks() const;
-
-  /// Returns true if enough ticks have passed for the raster to be on the next line.
-  bool IsCRTCScanlinePending() const;
+void Initialize();
+void Shutdown();
+void Reset(bool clear_vram);
+bool DoState(StateWrapper& sw);
+void DoMemoryState(StateWrapper& sw, System::MemorySaveState& mss);
 
-  /// Returns true if a raster scanline or command execution is pending.
-  bool IsCommandCompletionPending() const;
-
-  /// Synchronizes the CRTC, updating the hblank timer.
-  void SynchronizeCRTC();
-
-  /// Recompile shaders/recreate framebuffers when needed.
-  void UpdateSettings(const Settings& old_settings);
-
-  /// Returns the full display resolution of the GPU, including padding.
-  std::tuple<u32, u32> GetFullDisplayResolution() const;
+// Render statistics debug window.
+void DrawDebugStateWindow(float scale);
 
-  /// Computes clamped drawing area.
-  static GSVector4i GetClampedDrawingArea(const GPUDrawingArea& drawing_area);
+void CPUClockChanged();
 
-  float ComputeHorizontalFrequency() const;
-  float ComputeVerticalFrequency() const;
-  float ComputePixelAspectRatio() const;
+// MMIO access
+u32 ReadRegister(u32 offset);
+void WriteRegister(u32 offset, u32 value);
 
-  /// Computes aspect ratio correction, i.e. the scale to apply to the source aspect ratio to preserve
-  /// the original pixel aspect ratio regardless of how much cropping has been applied.
-  float ComputeAspectRatioCorrection() const;
+// DMA access
+void DMARead(u32* RESTRICT words, u32 word_count);
+void DMAWrite(const u32* RESTRICT words, u32 address, u32 increment, u32 word_count);
 
-  /// Applies the pixel aspect ratio to a given size, preserving the larger dimension.
-  static GSVector2 CalculateRenderWindowSize(DisplayFineCropMode mode, std::span<const s16, 4> amount,
-                                             float pixel_aspect_ratio, const GSVector2 video_size,
-                                             const GSVector2 source_size, const GSVector2 window_size);
+/// Writing to GPU dump.
+GPUDump::Recorder* GetGPUDump();
+bool StartRecordingGPUDump(const char* path, u32 num_frames = 1);
+void StopRecordingGPUDump();
+void WriteCurrentVideoModeToDump(GPUDump::Recorder* dump);
+void ProcessGPUDumpPacket(GPUDump::PacketType type, const std::span<const u32> data);
 
-  // Converts window coordinates into horizontal ticks and scanlines. Returns -1 if out of range. Used for lightguns.
-  GSVector2 ConvertScreenCoordinatesToDisplayCoordinates(GSVector2 window_pos) const;
-  bool ConvertDisplayCoordinatesToBeamTicksAndLines(const GSVector2& display_pos, float x_scale, u32* out_tick,
-                                                    u32* out_line) const;
+/// Returns true if scanout should be interlaced.
+bool IsInterlacedDisplayEnabled();
 
-  // Returns the current beam position.
-  void GetBeamPosition(u32* out_ticks, u32* out_line);
+/// Returns true if scanout is forced to progressive.
+bool IsProgressiveDisplayScanForced();
 
-  // Returns the number of system clock ticks until the specified tick/line.
-  TickCount GetSystemTicksUntilTicksAndLine(u32 ticks, u32 line);
+/// Returns true if we're in PAL mode, otherwise false if NTSC.
+bool IsInPALMode();
 
-  // Returns the number of visible lines.
-  ALWAYS_INLINE u16 GetCRTCActiveStartLine() const { return m_crtc_state.vertical_display_start; }
-  ALWAYS_INLINE u16 GetCRTCActiveEndLine() const { return m_crtc_state.vertical_display_end; }
+/// Returns true if enough ticks have passed for the raster to be on the next line.
+bool IsCRTCScanlinePending();
 
-  // Returns the video clock frequency.
-  TickCount GetCRTCFrequency() const;
+/// Synchronizes the CRTC, updating the hblank timer.
+void SynchronizeCRTC();
 
-  // Video output access.
-  GSVector2i GetCRTCVideoSize() const;
-  GSVector4i GetCRTCVideoActiveRect() const;
-  GSVector4i GetCRTCVRAMSourceRect() const;
+/// Recompile shaders/recreate framebuffers when needed.
+void UpdateSettings(const Settings& old_settings);
 
-  // Ticks for hblank/vblank.
-  void CRTCTickEvent(TickCount ticks);
-  void CommandTickEvent(TickCount ticks);
-  void FrameDoneEvent(TickCount ticks);
+/// Returns the full display resolution of the GPU, including padding.
+std::pair<u32, u32> GetFullDisplayResolution();
 
-  // Dumps raw VRAM to a file.
-  bool DumpVRAMToFile(std::string path, Error* error);
+/// Computes clamped drawing area.
+GSVector4i GetClampedDrawingArea(const GPUDrawingArea& drawing_area);
 
-  // Kicks the current frame to the backend for display.
-  void UpdateDisplay(bool submit_frame);
+/// Computes the pixel aspect ratio based on the current display mode and settings.
+float ComputePixelAspectRatio();
 
-  // Queues the current frame for presentation. Should only be used with runahead.
-  void QueuePresentCurrentFrame();
-
-  /// Computes the effective resolution scale when it is set to automatic.
-  u8 CalculateAutomaticResolutionScale() const;
+/// Computes aspect ratio correction, i.e. the scale to apply to the source aspect ratio to preserve
+/// the original pixel aspect ratio regardless of how much cropping has been applied.
+float ComputeAspectRatioCorrection();
 
-  /// Helper function for computing the draw rectangle in a larger window.
-  static void CalculateDrawRect(const GSVector2i& window_size, const GSVector2i& video_size,
-                                const GSVector4i& video_active_rect, const GSVector4i& source_rect,
-                                DisplayRotation rotation, DisplayAlignment alignment, float pixel_aspect_ratio,
-                                bool integer_scale, DisplayFineCropMode fine_crop,
-                                const std::span<const s16, 4>& fine_crop_amount, GSVector4i* out_source_rect,
-                                GSVector4i* out_display_rect, GSVector4i* out_draw_rect,
-                                GSVector4* out_crop_amount = nullptr);
-
-private:
-  TickCount CRTCTicksToSystemTicks(TickCount crtc_ticks, TickCount fractional_ticks) const;
-  TickCount SystemTicksToCRTCTicks(TickCount sysclk_ticks, TickCount* fractional_ticks) const;
-
-  // The GPU internally appears to run at 2x the system clock.
-  ALWAYS_INLINE static constexpr TickCount GPUTicksToSystemTicks(TickCount gpu_ticks)
-  {
-    return std::max<TickCount>((gpu_ticks + 1) >> 1, 1);
-  }
-  ALWAYS_INLINE static constexpr TickCount SystemTicksToGPUTicks(TickCount sysclk_ticks) { return sysclk_ticks << 1; }
-
-  static bool DumpVRAMToFile(std::string path, u32 width, u32 height, u32 stride, const void* buffer, bool remove_alpha,
-                             Error* error = nullptr);
-
-  void SoftReset();
-  void ClearDisplay();
-
-  // Sets dots per scanline
-  void UpdateCRTCConfig();
-  void UpdateCRTCDisplayParameters();
-
-  // Update ticks for this execution slice
-  void UpdateCRTCTickEvent();
-  void UpdateCommandTickEvent();
-  u8 UpdateOrGetGPUBusyPct();
-
-  // Updates dynamic bits in GPUSTAT (ready to send VRAM/ready to receive DMA)
-  void UpdateDMARequest();
-  void UpdateGPUIdle();
-
-  /// Updates drawing area that's suitable for clamping.
-  void SetClampedDrawingArea();
-
-  /// Sets/decodes GP0(E1h) (set draw mode).
-  void SetDrawMode(u16 bits);
-
-  /// Sets/decodes polygon/rectangle texture palette value.
-  void SetTexturePalette(u16 bits);
-
-  /// Sets/decodes texture window bits.
-  void SetTextureWindow(u32 value);
-
-  u32 ReadGPUREAD();
-  void FinishVRAMWrite();
-
-  /// Returns the number of vertices in the buffered poly-line.
-  u32 GetPolyLineVertexCount() const;
-
-  void AddCommandTicks(TickCount ticks);
-
-  void WriteGP1(u32 value);
-  void EndCommand();
-  void ExecuteCommands();
-  void TryExecuteCommands();
-  void HandleGetGPUInfoCommand(u32 value);
-  void UpdateCLUTIfNeeded(GPUTextureMode texmode, GPUTexturePaletteReg clut);
-  void InvalidateCLUT();
-  bool IsCLUTValid() const;
-
-  void ReadVRAM(u16 x, u16 y, u16 width, u16 height);
-  void UpdateVRAM(u16 x, u16 y, u16 width, u16 height, const void* data, bool set_mask, bool check_mask);
-
-  void PrepareForDraw();
-  void FinishPolyline();
-  void FillDrawCommand(GPUBackendDrawCommand* RESTRICT cmd, GPURenderCommand rc) const;
-
-  void AddDrawTriangleTicks(GSVector2i v1, GSVector2i v2, GSVector2i v3, bool shaded, bool textured,
-                            bool semitransparent);
-  void AddDrawRectangleTicks(const GSVector4i rect, bool textured, bool semitransparent);
-  void AddDrawLineTicks(const GSVector4i rect, bool shaded);
-
-  GPUSTAT m_GPUSTAT = {};
-
-  bool m_console_is_pal = false;
-  bool m_set_texture_disable_mask = false;
-  bool m_drawing_area_changed = false;
-  bool m_force_progressive_scan = false;
-
-  struct DrawMode
-  {
-    static constexpr u16 PALETTE_MASK = UINT16_C(0b0111111111111111);
-    static constexpr u32 TEXTURE_WINDOW_MASK = UINT32_C(0b11111111111111111111);
-
-    // original values
-    GPUDrawModeReg mode_reg;
-    GPUTexturePaletteReg palette_reg; // from vertex
-    u32 texture_window_value;
-
-    // decoded values
-    // TODO: Make this a command
-    GPUTextureWindow texture_window;
-    bool texture_x_flip;
-    bool texture_y_flip;
-  } m_draw_mode = {};
-
-  GPUDrawingArea m_drawing_area = {};
-  GPUDrawingOffset m_drawing_offset = {};
-
-  GSVector4i m_clamped_drawing_area = {};
-
-  struct CRTCState
-  {
-    struct Regs
-    {
-      static constexpr u32 DISPLAY_ADDRESS_START_MASK = 0b111'11111111'11111110;
-      static constexpr u32 HORIZONTAL_DISPLAY_RANGE_MASK = 0b11111111'11111111'11111111;
-      static constexpr u32 VERTICAL_DISPLAY_RANGE_MASK = 0b1111'11111111'11111111;
-
-      union
-      {
-        u32 display_address_start;
-        BitField<u32, u16, 0, 10> X;
-        BitField<u32, u16, 10, 9> Y;
-      };
-      union
-      {
-        u32 horizontal_display_range;
-        BitField<u32, u16, 0, 12> X1;
-        BitField<u32, u16, 12, 12> X2;
-      };
-
-      union
-      {
-        u32 vertical_display_range;
-        BitField<u32, u16, 0, 10> Y1;
-        BitField<u32, u16, 10, 10> Y2;
-      };
-    } regs;
-
-    u16 dot_clock_divider;
-
-    // Size of the simulated screen in pixels. Depending on crop mode, this may include overscan area.
-    u16 display_width;
-    u16 display_height;
-
-    // Top-left corner in screen coordinates where the outputted portion of VRAM is first visible.
-    u16 display_origin_left;
-    u16 display_origin_top;
-
-    // Rectangle in VRAM coordinates describing the area of VRAM that is visible on screen.
-    u16 display_vram_left;
-    u16 display_vram_top;
-    u16 display_vram_width;
-    u16 display_vram_height;
-
-    // Visible range of the screen, in GPU ticks/lines. Clamped to lie within the active video region.
-    u16 horizontal_visible_start;
-    u16 horizontal_visible_end;
-    u16 vertical_visible_start;
-    u16 vertical_visible_end;
-
-    u16 horizontal_display_start;
-    u16 horizontal_display_end;
-    u16 vertical_display_start;
-    u16 vertical_display_end;
-
-    u16 horizontal_active_start;
-    u16 horizontal_active_end;
-
-    u16 horizontal_total;
-    u16 vertical_total;
-
-    u16 current_scanline;
-    TickCount fractional_ticks;
-    TickCount current_tick_in_scanline;
-
-    TickCount fractional_dot_ticks; // only used when timer0 is enabled
-
-    bool in_hblank;
-    bool in_vblank;
-
-    /// 0 if the currently-displayed field is on odd lines (1,3,5,...) or 1 if even (2,4,6,...)
-    u8 interlaced_field;
-    u8 interlaced_display_field;
-
-    /// 0 if the currently-displayed field is on an even line in VRAM, otherwise 1.
-    u8 active_line_lsb;
-
-    ALWAYS_INLINE void UpdateHBlankFlag()
-    {
-      in_hblank =
-        (current_tick_in_scanline < horizontal_active_start || current_tick_in_scanline >= horizontal_active_end);
-    }
-  } m_crtc_state = {};
-
-  u32 m_command_total_words = 0;
-  TickCount m_pending_command_ticks = 0;
-  u32 m_active_ticks_since_last_update = 0;
-
-  /// True if currently executing/syncing.
-  bool m_executing_commands = false;
-  BlitterState m_blitter_state = BlitterState::Idle;
-
-  struct VRAMTransfer
-  {
-    u16 x;
-    u16 y;
-    u16 width;
-    u16 height;
-    u16 col;
-    u16 row;
-  } m_vram_transfer = {};
-
-  // One byte free, store the GPU usage here.
-  u8 m_last_gpu_busy_pct = 0;
-
-  // These are the bits from the palette register, but zero extended to 32-bit, so we can have an "invalid" value.
-  // If an extra byte is ever not needed here for padding, the 8-bit flag could be packed into the MSB of this value.
-  bool m_current_clut_is_8bit = false;
-  u32 m_current_clut_reg_bits = {};
-
-  /// GPUREAD value for non-VRAM-reads.
-  u32 m_GPUREAD_latch = 0;
-
-  std::unique_ptr<GPUDump::Recorder> m_gpu_dump;
-
-  HeapFIFOQueue<u64, MAX_FIFO_SIZE> m_fifo;
-  TickCount m_max_run_ahead = 128;
-  u32 m_fifo_size = 128;
-  u32 m_blit_remaining_words;
-  GPURenderCommand m_render_command{};
-  std::vector<u32> m_blit_buffer;
-  std::vector<u64> m_polyline_buffer;
-
-  ALWAYS_INLINE u32 FifoPop() { return Truncate32(m_fifo.Pop()); }
-  ALWAYS_INLINE u32 FifoPeek() { return Truncate32(m_fifo.Peek()); }
-  ALWAYS_INLINE u32 FifoPeek(u32 i) { return Truncate32(m_fifo.Peek(i)); }
-
-private:
-  using GP0CommandHandler = bool (GPU::*)();
-  using GP0CommandHandlerTable = std::array<GP0CommandHandler, 256>;
-  static GP0CommandHandlerTable GenerateGP0CommandHandlerTable();
-
-  // Rendering commands, returns false if not enough data is provided
-  bool HandleUnknownGP0Command();
-  bool HandleNOPCommand();
-  bool HandleClearCacheCommand();
-  bool HandleInterruptRequestCommand();
-  bool HandleSetDrawModeCommand();
-  bool HandleSetTextureWindowCommand();
-  bool HandleSetDrawingAreaTopLeftCommand();
-  bool HandleSetDrawingAreaBottomRightCommand();
-  bool HandleSetDrawingOffsetCommand();
-  bool HandleSetMaskBitCommand();
-  bool HandleRenderPolygonCommand();
-  bool HandleRenderRectangleCommand();
-  bool HandleRenderLineCommand();
-  bool HandleRenderPolyLineCommand();
-  bool HandleFillRectangleCommand();
-  bool HandleCopyRectangleCPUToVRAMCommand();
-  bool HandleCopyRectangleVRAMToCPUCommand();
-  bool HandleCopyRectangleVRAMToVRAMCommand();
-
-  static const GP0CommandHandlerTable s_GP0_command_handler_table;
-};
-
-extern GPU g_gpu;
+/// Applies the pixel aspect ratio to a given size, preserving the larger dimension.
+GSVector2 CalculateRenderWindowSize(DisplayFineCropMode mode, std::span<const s16, 4> amount, float pixel_aspect_ratio,
+                                    const GSVector2 video_size, const GSVector2 source_size,
+                                    const GSVector2 window_size);
+
+// Converts window coordinates into horizontal ticks and scanlines. Returns -1 if out of range. Used for lightguns.
+GSVector2 ConvertScreenCoordinatesToDisplayCoordinates(GSVector2 window_pos);
+bool ConvertDisplayCoordinatesToBeamTicksAndLines(const GSVector2& display_pos, float x_scale, u32* out_tick,
+                                                  u32* out_line);
+
+// Returns the current beam position.
+void GetBeamPosition(u32* out_ticks, u32* out_line);
+
+// Returns the number of system clock ticks until the specified tick/line.
+TickCount GetSystemTicksUntilTicksAndLine(u32 ticks, u32 line);
+
+// Returns the number of visible lines.
+u16 GetCRTCActiveStartLine();
+u16 GetCRTCActiveEndLine();
+
+// Returns the video clock frequency.
+TickCount GetCRTCFrequency();
+
+// Video output access.
+GSVector2i GetCRTCVideoSize();
+GSVector4i GetCRTCVideoActiveRect();
+GSVector4i GetCRTCVRAMSourceRect();
+
+// Dumps raw VRAM to a file.
+bool DumpVRAMToFile(std::string path, Error* error);
+
+// Kicks the current frame to the backend for display.
+void UpdateDisplay(bool submit_frame);
+
+// Queues the current frame for presentation. Should only be used with runahead.
+void QueuePresentCurrentFrame();
+
+/// Computes the effective resolution scale when it is set to automatic.
+u8 CalculateAutomaticResolutionScale();
+
+/// Helper function for computing the draw rectangle in a larger window.
+void CalculateDrawRect(const GSVector2i& window_size, const GSVector2i& video_size, const GSVector4i& video_active_rect,
+                       const GSVector4i& source_rect, DisplayRotation rotation, DisplayAlignment alignment,
+                       float pixel_aspect_ratio, bool integer_scale, DisplayFineCropMode fine_crop,
+                       const std::span<const s16, 4>& fine_crop_amount, GSVector4i* out_source_rect,
+                       GSVector4i* out_display_rect, GSVector4i* out_draw_rect, GSVector4* out_crop_amount = nullptr);
+}; // namespace GPU
+
 extern u16 g_vram[VRAM_SIZE / sizeof(u16)];
 extern u16 g_gpu_clut[GPU_CLUT_SIZE];

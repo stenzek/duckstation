@@ -131,7 +131,7 @@ union GPURenderCommand
   BitField<u32, bool, 27, 1> quad_polygon;                   // only for polygons
   BitField<u32, bool, 27, 1> polyline;                       // only for lines
   BitField<u32, bool, 28, 1> shading_enable;                 // 0 - flat, 1 = gouraud
-  BitField<u32, GPUPrimitive, 29, 21> primitive;
+  BitField<u32, GPUPrimitive, 29, 3> primitive;
 
   /// Returns true if texturing should be enabled. Depends on the primitive type.
   ALWAYS_INLINE bool IsTexturingEnabled() const { return (primitive != GPUPrimitive::Line) ? texture_enable : false; }
@@ -167,7 +167,7 @@ union GP1SetDisplayMode
   BitField<u32, bool, 7, 1> reverse_flag;
 };
 
-union GPUSTAT
+union GPUSTATReg
 {
   // During transfer/render operations, if ((dst_pixel & mask_and) == 0) { pixel = src_pixel | mask_or }
 

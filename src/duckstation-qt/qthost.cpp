@@ -104,6 +104,9 @@ static constexpr int BACKGROUND_CONTROLLER_POLLING_INTERVAL_WITHOUT_DEVICES = 10
 /// Poll at half the vsync rate for FSUI to reduce the chance of getting a press+release in the same frame.
 static constexpr int FULLSCREEN_UI_CONTROLLER_POLLING_INTERVAL = 8;
 
+/// Poll at 10ms when downloads are active to ensure the speed is not impacted.
+static constexpr int DOWNLOAD_CONTROLLER_POLLING_INTERVAL = 10;
+
 /// Poll at 1ms when running GDB server. We can get rid of this once we move networking to its own thread.
 static constexpr int GDB_SERVER_POLLING_INTERVAL = 1;
 
@@ -735,35 +738,30 @@ void QtHost::DownloadFile(QWidget* parent, std::string url, std::string path,
 
   QtAsyncTaskWithProgressDialog::create(
     parent, TRANSLATE_SV("QtHost", "File Download"), status_text, false, true, 0, 0, 0.0f, true,
-    [url = std::move(url), path = std::move(path),
+    [parent, url = std::move(url), path = std::move(path),
      completion_callback = std::move(completion_callback)](ProgressCallback* const progress) mutable {
       Error error;
       bool result = false;
-      if (const auto downloader = HTTPCache::GetDownloader(&error))
-      {
-        result = true;
-        downloader->CreateRequest(
-          std::move(url),
-          [&result, &error, &path](s32 status_code, const Error& http_error, const std::string&,
-                                   std::vector<u8> hdata) {
-            if (status_code != HTTPDownloader::HTTP_STATUS_OK)
-            {
-              error.SetString(http_error.GetDescription());
-              return;
-            }
-            else if (hdata.empty())
-            {
-              error.SetStringView(TRANSLATE_SV("QtHost", "Download failed: Data is empty."));
-              return;
-            }
+      HTTPDownloader::CreateRequest(
+        std::move(url), parent,
+        [&result, &error, &path](s32 status_code, Error& http_error, std::string&, std::vector<u8>& hdata) {
+          if (status_code != HTTPDownloader::HTTP_STATUS_OK)
+          {
+            error.SetString(http_error.GetDescription());
+            return;
+          }
+          else if (hdata.empty())
+          {
+            error.SetStringView(TRANSLATE_SV("QtHost", "Download failed: Data is empty."));
+            return;
+          }
 
-            result = FileSystem::WriteBinaryFile(path.c_str(), hdata, &error);
-          },
-          progress);
-      }
+          result = FileSystem::WriteBinaryFile(path.c_str(), hdata, &error);
+        },
+        progress);
 
       // Block until completion.
-      HTTPCache::WaitForAllRequests();
+      HTTPDownloader::WaitForAllRequestsFromOwner(parent);
 
       QtAsyncTaskWithProgressDialog::CompletionCallback ret;
       if (completion_callback)
@@ -2110,10 +2108,25 @@ int CoreThread::getBackgroundControllerPollInterval() const
 
   if (m_video_thread_run_idle)
     return FULLSCREEN_UI_CONTROLLER_POLLING_INTERVAL;
+  else if (m_http_downloader_active)
+    return DOWNLOAD_CONTROLLER_POLLING_INTERVAL;
   else if (InputManager::GetPollableDeviceCount() > 0)
     return BACKGROUND_CONTROLLER_POLLING_INTERVAL_WITH_DEVICES;
   else
     return BACKGROUND_CONTROLLER_POLLING_INTERVAL_WITHOUT_DEVICES;
+}
+
+void CoreThread::setHTTPDownloaderActive(bool active)
+{
+  if (!isCurrentThread())
+  {
+    QMetaObject::invokeMethod(this, &CoreThread::setHTTPDownloaderActive, Qt::QueuedConnection, active);
+    return;
+  }
+
+  DEV_LOG("HTTP Downloader now {}", active ? "active" : "inactive");
+  m_http_downloader_active = active;
+  updateBackgroundControllerPollInterval();
 }
 
 void CoreThread::setVideoThreadRunIdle(bool active)
@@ -2148,6 +2161,11 @@ void CoreThread::updateFullscreenUITheme()
   // don't bother if nothing is running
   if (VideoThread::IsFullscreenUIRequested() || VideoThread::IsGPUBackendRequested())
     VideoThread::RunOnThread(&FullscreenUI::UpdateTheme);
+}
+
+void Host::OnHTTPDownloaderActiveChanged(bool active)
+{
+  g_core_thread->setHTTPDownloaderActive(active);
 }
 
 void CoreThread::stop()
@@ -3103,7 +3121,7 @@ void CoreThread::updatePerformanceCounters(const GPUBackend* gpu_backend)
   if (gpu_backend)
   {
     const u32 render_scale = gpu_backend->GetResolutionScale();
-    std::tie(render_width, render_height) = g_gpu.GetFullDisplayResolution();
+    std::tie(render_width, render_height) = GPU::GetFullDisplayResolution();
     render_width *= render_scale;
     render_height *= render_scale;
   }

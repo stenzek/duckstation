@@ -47,7 +47,7 @@
 #include "util/cd_image.h"
 #include "util/compress_helpers.h"
 #include "util/gpu_device.h"
-#include "util/http_cache.h"
+#include "util/http_downloader.h"
 #include "util/imgui_manager.h"
 #include "util/ini_settings_interface.h"
 #include "util/input_manager.h"
@@ -490,7 +490,7 @@ void System::UpdateOverclock()
   s_state.max_slice_ticks = ScaleTicksToOverclock(MASTER_CLOCK / 10);
   SPU::CPUClockChanged();
   CDROM::CPUClockChanged();
-  g_gpu.CPUClockChanged();
+  GPU::CPUClockChanged();
   Timers::CPUClocksChanged();
   UpdateThrottlePeriod();
 }
@@ -1009,7 +1009,7 @@ void System::RecreateGPU(GPURenderer renderer)
 
   ClearMemorySaveStates(true, false);
 
-  g_gpu.UpdateDisplay(false);
+  GPU::UpdateDisplay(false);
   if (IsPaused())
     VideoThread::PresentCurrentFrame();
 }
@@ -1029,7 +1029,7 @@ void System::LoadSettings(bool display_osd_messages)
 
   // Fix up automatic resolution scale, yuck.
   if (g_settings.gpu_automatic_resolution_scale && IsValid())
-    g_settings.gpu_resolution_scale = g_gpu.CalculateAutomaticResolutionScale();
+    g_settings.gpu_resolution_scale = GPU::CalculateAutomaticResolutionScale();
 
   // show safe mode warning if it's toggled on, or on startup
   if (IsValidOrInitializing() && (display_osd_messages || (!previous_safe_mode && g_settings.disable_all_enhancements)))
@@ -1807,8 +1807,7 @@ bool System::Initialize(std::unique_ptr<CDImage> disc, DiscRegion disc_region, b
     return false;
   }
 
-  // TODO: Drop class
-  g_gpu.Initialize();
+  GPU::Initialize();
 
   // Game info must be set prior to backend creation because of texture replacements.
   // We don't do it in UpdateRunningGame() when booting because it can fail in a number of locations.
@@ -1889,7 +1888,7 @@ void System::DestroySystem()
   Timers::Shutdown();
   Pad::Shutdown();
   CDROM::Shutdown();
-  g_gpu.Shutdown();
+  GPU::Shutdown();
   DMA::Shutdown();
   PIO::Shutdown();
   CPU::CodeCache::Shutdown();
@@ -2002,7 +2001,7 @@ void System::FrameDone()
 
     Cheats::ApplyFrameEndCodes();
 
-    HTTPCache::PollRequests();
+    HTTPDownloader::PollRequests();
 
     if (Achievements::IsActive())
       Achievements::FrameUpdate();
@@ -2049,7 +2048,7 @@ void System::FrameDone()
     }
 
     // Late submission of frame. This is needed because the input poll can determine whether we need to rewind.
-    g_gpu.QueuePresentCurrentFrame();
+    GPU::QueuePresentCurrentFrame();
 
     SaveMemoryState(AllocateMemoryState());
   }
@@ -2350,7 +2349,7 @@ bool System::DoState(StateWrapper& sw, bool update_display)
   if (!sw.DoMarker("InterruptController") || !InterruptController::DoState(sw))
     return false;
 
-  if (!sw.DoMarker("GPU") || !g_gpu.DoState(sw))
+  if (!sw.DoMarker("GPU") || !GPU::DoState(sw))
     return false;
 
   if (!sw.DoMarker("CDROM") || !CDROM::DoState(sw))
@@ -2415,7 +2414,7 @@ bool System::DoState(StateWrapper& sw, bool update_display)
 
   // If we're paused, need to update the display FB.
   if (update_display)
-    g_gpu.UpdateDisplay(false);
+    GPU::UpdateDisplay(false);
 
   return true;
 }
@@ -2627,7 +2626,7 @@ void System::DoMemoryState(StateWrapper& sw, MemorySaveState& mss, bool update_d
   SAVE_COMPONENT("DMA", DMA::DoState(sw));
   SAVE_COMPONENT("InterruptController", InterruptController::DoState(sw));
 
-  g_gpu.DoMemoryState(sw, mss);
+  GPU::DoMemoryState(sw, mss);
 
   SAVE_COMPONENT("CDROM", CDROM::DoState(sw));
   SAVE_COMPONENT("Pad", Pad::DoState(sw, true));
@@ -2641,7 +2640,7 @@ void System::DoMemoryState(StateWrapper& sw, MemorySaveState& mss, bool update_d
 #undef SAVE_COMPONENT
 
   if (update_display)
-    g_gpu.UpdateDisplay(false);
+    GPU::UpdateDisplay(false);
 }
 
 bool System::LoadBIOS(Error* error)
@@ -2679,7 +2678,7 @@ void System::InternalReset()
   PIO::Reset();
   DMA::Reset();
   InterruptController::Reset();
-  g_gpu.Reset(true);
+  GPU::Reset(true);
   CDROM::Reset();
   Pad::Reset();
   Timers::Reset();
@@ -2893,7 +2892,7 @@ bool System::LoadStateFromBuffer(const SaveStateBuffer& buffer, Error* error, bo
   ResetThrottler();
 
   if (update_display)
-    g_gpu.UpdateDisplay(true);
+    GPU::UpdateDisplay(true);
 
   return true;
 }
@@ -3952,7 +3951,7 @@ bool System::DumpVRAM(std::string path, Error* error)
     return false;
   }
 
-  return g_gpu.DumpVRAMToFile(path, error);
+  return GPU::DumpVRAMToFile(path, error);
 }
 
 bool System::DumpSPURAM(std::string path, Error* error)
@@ -4467,7 +4466,7 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
         g_settings.display_line_start_offset != old_settings.display_line_start_offset ||
         g_settings.display_line_end_offset != old_settings.display_line_end_offset)
     {
-      g_gpu.UpdateSettings(old_settings);
+      GPU::UpdateSettings(old_settings);
     }
 
     if (g_settings.gpu_renderer != old_settings.gpu_renderer)
@@ -4542,7 +4541,7 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
       if (IsPaused())
       {
         // resolution change needs display updated
-        g_gpu.UpdateDisplay(false);
+        GPU::UpdateDisplay(false);
         VideoThread::PresentCurrentFrame();
       }
     }
@@ -4593,7 +4592,7 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
         if (IsPaused())
         {
           // and display the current frame on the new device
-          g_gpu.UpdateDisplay(false);
+          GPU::UpdateDisplay(false);
           VideoThread::PresentCurrentFrame();
         }
       }
@@ -5458,7 +5457,7 @@ bool System::StartRecordingGPUDump(const char* path /*= nullptr*/, u32 num_frame
              .c_str();
   }
 
-  return g_gpu.StartRecordingGPUDump(path, num_frames);
+  return GPU::StartRecordingGPUDump(path, num_frames);
 }
 
 void System::StopRecordingGPUDump()
@@ -5466,7 +5465,7 @@ void System::StopRecordingGPUDump()
   if (!IsValid())
     return;
 
-  g_gpu.StopRecordingGPUDump();
+  GPU::StopRecordingGPUDump();
 }
 
 static std::string_view GetCaptureTypeForMessage(bool capture_video, bool capture_audio)
@@ -6029,8 +6028,8 @@ void System::RequestDisplaySize(float scale /*= 0.0f*/)
   {
     const WindowInfo& wi = VideoThread::GetRenderWindowInfo();
     requested_size = GPU::CalculateRenderWindowSize(
-      g_settings.display_fine_crop_mode, g_settings.display_fine_crop_amount, g_gpu.ComputePixelAspectRatio(),
-      GSVector2(g_gpu.GetCRTCVideoSize()), GSVector2(g_gpu.GetCRTCVRAMSourceRect().rsize()) * scale,
+      g_settings.display_fine_crop_mode, g_settings.display_fine_crop_amount, GPU::ComputePixelAspectRatio(),
+      GSVector2(GPU::GetCRTCVideoSize()), GSVector2(GPU::GetCRTCVRAMSourceRect().rsize()) * scale,
       GSVector2(GSVector2i(wi.surface_width, wi.surface_height)));
   }
 
@@ -6078,7 +6077,7 @@ void System::UpdateGTEAspectRatio()
     {
       // Pre-apply the native aspect ratio correction to the window size.
       // MatchWindow does not correct the display aspect ratio, so we need to apply it here.
-      const float correction = g_gpu.ComputeAspectRatioCorrection();
+      const float correction = GPU::ComputeAspectRatioCorrection();
       custom_num =
         static_cast<u32>(std::max(std::round(static_cast<float>(main_window_info.surface_width) / correction), 1.0f));
       custom_denom = std::max<u32>(main_window_info.surface_height, 1u);
@@ -6099,7 +6098,7 @@ void System::UpdateAutomaticResolutionScale()
   if (!IsValidOrInitializing() || !g_settings.gpu_automatic_resolution_scale)
     return;
 
-  const u32 new_scale = g_gpu.CalculateAutomaticResolutionScale();
+  const u32 new_scale = GPU::CalculateAutomaticResolutionScale();
   if (g_settings.gpu_resolution_scale == new_scale)
     return;
 
@@ -6111,7 +6110,7 @@ void System::UpdateAutomaticResolutionScale()
   if (IsPaused())
   {
     // resolution change needs display updated
-    g_gpu.UpdateDisplay(false);
+    GPU::UpdateDisplay(false);
     VideoThread::PresentCurrentFrame();
   }
 }

@@ -53,6 +53,7 @@
     <ClCompile Include="capturesettingswidget.cpp" />
     <ClCompile Include="asyncpixmaploader.cpp" />
     <ClCompile Include="debuggingsettingswidget.cpp" />
+    <ClCompile Include="asynchttprequest.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="qtutils.h" />
@@ -118,6 +119,7 @@
     <QtMoc Include="capturesettingswidget.h" />
     <QtMoc Include="asyncpixmaploader.h" />
     <QtMoc Include="debuggingsettingswidget.h" />
+    <QtMoc Include="asynchttprequest.h" />
   </ItemGroup>
   <ItemGroup>
     <QtUi Include="consolesettingswidget.ui" />
@@ -242,8 +244,5 @@
     <QtTs Include="translations\duckstation-qt_ko.ts">
       <Filter>translations</Filter>
     </QtTs>
-  </ItemGroup>
-  <ItemGroup>
-    <Manifest Include="duckstation-qt.manifest" />
   </ItemGroup>
 </Project>

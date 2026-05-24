@@ -310,6 +310,9 @@ void FullscreenUI::PauseAndOpenMenuFromCoreThread(void (*callback)())
   const bool was_paused = System::IsPaused();
 
   VideoThread::RunOnThread([callback, was_paused]() {
+    if (s_locals.current_main_window != MainWindowType::None)
+      return;
+
     Initialize();
     if (!CanCurrentMainWindowStack() || !SetPendingMainWindowSwitch())
       return;

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "gpu_sw_rasterizer.h"
@@ -7,6 +7,7 @@
 
 #include "cpuinfo.h"
 
+#include "common/assert.h"
 #include "common/gsvector.h"
 #include "common/log.h"
 #include "common/string_util.h"
