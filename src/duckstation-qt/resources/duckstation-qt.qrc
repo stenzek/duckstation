@@ -136,7 +136,6 @@
 		<file>icons/debug-step-out.png</file>
 		<file>icons/debug-step-over.png</file>
 		<file>icons/debug-trace.png</file>
-		<file>icons/discord.png</file>
 		<file>icons/flags/az.png</file>
 		<file>icons/flags/az@2x.png</file>
 		<file>icons/flags/de.png</file>
@@ -175,7 +174,6 @@
 		<file>icons/flags/tr@2x.png</file>
 		<file>icons/flags/zh-CN.png</file>
 		<file>icons/flags/zh-CN@2x.png</file>
-		<file>icons/github.png</file>
 		<file>icons/media-record.png</file>
 		<file>icons/media-record@2x.png</file>
 		<file>icons/monochrome/index.theme</file>
@@ -221,13 +219,16 @@
 		<file>icons/monochrome/svg/delete-back-2-line.svg</file>
 		<file>icons/monochrome/svg/disc-eject-line.svg</file>
 		<file>icons/monochrome/svg/disc-line.svg</file>
+		<file>icons/monochrome/svg/discord.svg</file>
 		<file>icons/monochrome/svg/door-open-line.svg</file>
 		<file>icons/monochrome/svg/download-2-line.svg</file>
 		<file>icons/monochrome/svg/edit-box-line.svg</file>
 		<file>icons/monochrome/svg/eject-line.svg</file>
 		<file>icons/monochrome/svg/emulation-line.svg</file>
+		<file>icons/monochrome/svg/error-warning-line.svg</file>
 		<file>icons/monochrome/svg/export-line.svg</file>
 		<file>icons/monochrome/svg/file-add-line.svg</file>
+		<file>icons/monochrome/svg/file-check-line.svg</file>
 		<file>icons/monochrome/svg/file-forbid-line.svg</file>
 		<file>icons/monochrome/svg/file-line.svg</file>
 		<file>icons/monochrome/svg/file-list-line.svg</file>
@@ -245,8 +246,10 @@
 		<file>icons/monochrome/svg/folder-settings-line.svg</file>
 		<file>icons/monochrome/svg/fullscreen-line.svg</file>
 		<file>icons/monochrome/svg/function-line.svg</file>
+		<file>icons/monochrome/svg/github.svg</file>
 		<file>icons/monochrome/svg/global-line.svg</file>
 		<file>icons/monochrome/svg/guncon-line.svg</file>
+		<file>icons/monochrome/svg/id-card-line.svg</file>
 		<file>icons/monochrome/svg/image-fill.svg</file>
 		<file>icons/monochrome/svg/import-line.svg</file>
 		<file>icons/monochrome/svg/information-line.svg</file>
@@ -256,6 +259,7 @@
 		<file>icons/monochrome/svg/layout-grid-line.svg</file>
 		<file>icons/monochrome/svg/lightbulb-line.svg</file>
 		<file>icons/monochrome/svg/list-check.svg</file>
+		<file>icons/monochrome/svg/login-box-line.svg</file>
 		<file>icons/monochrome/svg/mag-line.svg</file>
 		<file>icons/monochrome/svg/memcard-line.svg</file>
 		<file>icons/monochrome/svg/minus-line.svg</file>
@@ -281,6 +285,8 @@
 		<file>icons/monochrome/svg/shader-slang.svg</file>
 		<file>icons/monochrome/svg/shut-down-line.svg</file>
 		<file>icons/monochrome/svg/sort-alphabet-asc.svg</file>
+		<file>icons/monochrome/svg/sort-asc.svg</file>
+		<file>icons/monochrome/svg/sort-desc.svg</file>
 		<file>icons/monochrome/svg/sparkle-fill.svg</file>
 		<file>icons/monochrome/svg/sparkling-line.svg</file>
 		<file>icons/monochrome/svg/sun-fill.svg</file>

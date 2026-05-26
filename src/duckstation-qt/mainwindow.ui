@@ -538,7 +538,7 @@
   <action name="actionGitHubRepository">
    <property name="icon">
     <iconset resource="resources/duckstation-qt.qrc">
-     <normaloff>:/icons/github.png</normaloff>:/icons/github.png</iconset>
+     <normaloff>:/icons/monochrome/svg/github.svg</normaloff>:/icons/monochrome/svg/github.svg</iconset>
    </property>
    <property name="text">
     <string>&amp;GitHub Repository...</string>
@@ -550,7 +550,7 @@
   <action name="actionDiscordServer">
    <property name="icon">
     <iconset resource="resources/duckstation-qt.qrc">
-     <normaloff>:/icons/discord.png</normaloff>:/icons/discord.png</iconset>
+     <normaloff>:/icons/monochrome/svg/discord.svg</normaloff>:/icons/monochrome/svg/discord.svg</iconset>
    </property>
    <property name="text">
     <string>&amp;Discord Server...</string>
@@ -571,6 +571,10 @@
    </property>
   </action>
   <action name="actionViewThirdPartyNotices">
+   <property name="icon">
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/file-list-line.svg</normaloff>:/icons/monochrome/svg/file-list-line.svg</iconset>
+   </property>
    <property name="text">
     <string>View Third-Party Notices...</string>
    </property>
@@ -1083,7 +1087,8 @@
   </action>
   <action name="actionViewZoomIn">
    <property name="icon">
-    <iconset theme="zoom-in"/>
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/zoom-in-line.svg</normaloff>:/icons/monochrome/svg/zoom-in-line.svg</iconset>
    </property>
    <property name="text">
     <string>Zoom &amp;In</string>
@@ -1094,7 +1099,8 @@
   </action>
   <action name="actionViewZoomOut">
    <property name="icon">
-    <iconset theme="zoom-out"/>
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/zoom-out-line.svg</normaloff>:/icons/monochrome/svg/zoom-out-line.svg</iconset>
    </property>
    <property name="text">
     <string>Zoom &amp;Out</string>
