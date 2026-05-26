@@ -29,8 +29,8 @@
 #include "util/media_capture.h"
 #include "util/translation.h"
 
-#include "common/assert.h"
 #include "common/align.h"
+#include "common/assert.h"
 #include "common/error.h"
 #include "common/file_system.h"
 #include "common/gsvector.h"
@@ -103,7 +103,10 @@ struct DebugWindowInfo
 } // namespace
 
 static void FormatProcessorStat(SmallStringBase& text, double usage, double time);
-static void SetStatusIndicatorIcons(SmallStringBase& text, bool paused);
+static void DrawPerformanceStat(ImDrawList* dl, float& position_y, ImFont* font, float size, float alt_weight,
+                                ImU32 alt_color, float rbounds, std::string_view text);
+static void DrawStatusIndicators(ImDrawList* dl, float& position_y, ImFont* font, float size, float rbounds,
+                                 SmallStringBase& text, bool paused);
 static void DrawPerformanceOverlay(const GPUBackend* gpu, float& position_y, float scale, float margin, float spacing);
 static void DrawMediaCaptureOverlay(float& position_y, float scale, float margin, float spacing);
 static void DrawFrameTimeOverlay(float& position_y, float scale, float margin, float spacing);
@@ -268,7 +271,8 @@ void ImGuiManager::FormatProcessorStat(SmallStringBase& text, double usage, doub
     text.append_format("{:.1f}% ({:.2f}ms)", usage, time);
 }
 
-void ImGuiManager::SetStatusIndicatorIcons(SmallStringBase& text, bool paused)
+void ImGuiManager::DrawStatusIndicators(ImDrawList* dl, float& position_y, ImFont* font, float size, float rbounds,
+                                        SmallStringBase& text, bool paused)
 {
   text.clear();
   if (GTE::IsFreecamEnabled())
@@ -287,10 +291,22 @@ void ImGuiManager::SetStatusIndicatorIcons(SmallStringBase& text, bool paused)
 
   if (!text.empty() && text.back() == ' ')
     text.pop_back();
+
+  if (text.empty())
+    return;
+
+  constexpr ImU32 color = IM_COL32(255, 255, 255, 255);
+  constexpr float default_weight = 0.0f;
+  const ImVec2 text_size = font->CalcTextSizeA(size, default_weight, FLT_MAX, 0.0f, IMSTR_START_END(text));
+
+  const ImVec2 position = ImVec2(rbounds - text_size.x, position_y);
+  dl->AddText(font, size, default_weight, position, color, IMSTR_START_END(text), 0.0f, nullptr);
+
+  position_y += text_size.y;
 }
 
-static void DrawPerformanceStat(ImDrawList* dl, float& position_y, ImFont* font, float size, float alt_weight,
-                                ImU32 alt_color, float rbounds, std::string_view text)
+void ImGuiManager::DrawPerformanceStat(ImDrawList* dl, float& position_y, ImFont* font, float size, float alt_weight,
+                                       ImU32 alt_color, float rbounds, std::string_view text)
 {
   static constexpr auto find_control_char = [](const std::string_view& sv, std::string_view::size_type pos) {
     const size_t len = sv.length();
@@ -382,7 +398,7 @@ void ImGuiManager::DrawPerformanceOverlay(const GPUBackend* gpu, float& position
     return;
   }
 
-  const float status_size = std::ceil(40.0f * scale);
+  const float status_size = std::ceil(50.0f * scale);
   ImFont* const fixed_font = ImGuiManager::GetFixedFont();
   const float fixed_font_size = ImGuiManager::GetFixedFontSize();
   ImFont* ui_font = ImGuiManager::GetTextFont();
@@ -545,15 +561,11 @@ void ImGuiManager::DrawPerformanceOverlay(const GPUBackend* gpu, float& position
       DrawFrameTimeOverlay(position_y, scale, margin, spacing);
 
     if (g_gpu_settings.display_show_status_indicators)
-    {
-      SetStatusIndicatorIcons(text, false);
-      DrawPerformanceStat(dl, position_y, ui_font, status_size, 0.0f, 0, rbound, text);
-    }
+      DrawStatusIndicators(dl, position_y, ui_font, status_size, rbound, text, false);
   }
   else if (g_gpu_settings.display_show_status_indicators)
   {
-    SetStatusIndicatorIcons(text, true);
-    DrawPerformanceStat(dl, position_y, ui_font, status_size, 0.0f, 0, rbound, text);
+    DrawStatusIndicators(dl, position_y, ui_font, status_size, rbound, text, true);
   }
 
 #undef COLOR
