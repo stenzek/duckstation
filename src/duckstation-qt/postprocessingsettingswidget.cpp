@@ -202,8 +202,9 @@ void PostProcessingChainConfigWidget::onAddButtonClicked()
     Error error;
     if (!PostProcessing::Config::AddStage(si, m_section, selected_shader, &error))
     {
-      QtUtils::AsyncMessageBox(this, QMessageBox::Critical, "Error"_L1,
-                               QStringLiteral("Failed to add shader: %1").arg(QString::fromStdString(error.GetDescription())));
+      QtUtils::AsyncMessageBox(
+        this, QMessageBox::Critical, "Error"_L1,
+        QStringLiteral("Failed to add shader: %1").arg(QString::fromStdString(error.GetDescription())));
       return;
     }
 
@@ -668,7 +669,7 @@ PostProcessingSelectShaderDialog::PostProcessingSelectShaderDialog(QWidget* pare
 {
   m_ui.setupUi(this);
 
-  m_ui.searchIcon->setPixmap(QIcon::fromTheme("mag-line"_L1).pixmap(16));
+  m_ui.searchIcon->setPixmap(QIcon(":/icons/monochrome/svg/mag-line.svg"_L1).pixmap(16));
 
   m_ui.filterGroup->setId(m_ui.filterGLSL, static_cast<int>(PostProcessing::ShaderType::GLSL));
   m_ui.filterGroup->setId(m_ui.filterReshade, static_cast<int>(PostProcessing::ShaderType::Reshade));
@@ -724,7 +725,7 @@ QTreeWidgetItem* PostProcessingSelectShaderDialog::createTreeItem(const QString&
   item->setText(0, display_name.mid(pos + 1));
   if (is_directory)
   {
-    item->setIcon(0, QIcon::fromTheme("folder-open-line"_L1));
+    item->setIcon(0, QIcon(":/icons/monochrome/svg/folder-open-line.svg"_L1));
     item->setExpanded(true);
   }
 
@@ -770,11 +771,11 @@ QIcon PostProcessingSelectShaderDialog::shaderIconFromType(const PostProcessing:
   switch (type)
   {
     case PostProcessing::ShaderType::GLSL:
-      return QIcon::fromTheme("shader-glsl"_L1);
+      return QIcon(":/icons/monochrome/svg/shader-glsl.svg"_L1);
     case PostProcessing::ShaderType::Reshade:
-      return QIcon::fromTheme("shader-reshade"_L1);
+      return QIcon(":/icons/monochrome/svg/shader-reshade.svg"_L1);
     case PostProcessing::ShaderType::Slang:
-      return QIcon::fromTheme("shader-slang"_L1);
+      return QIcon(":/icons/monochrome/svg/shader-slang.svg"_L1);
     default:
       return QIcon();
   }

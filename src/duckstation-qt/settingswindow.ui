@@ -20,7 +20,8 @@
    <string>DuckStation Settings</string>
   </property>
   <property name="windowIcon">
-   <iconset theme="settings-3-line"/>
+   <iconset resource="resources/duckstation-qt.qrc">
+    <normaloff>:/icons/monochrome/svg/settings-3-line.svg</normaloff>:/icons/monochrome/svg/settings-3-line.svg</iconset>
   </property>
   <property name="class" stdset="0">
    <string>settings-window</string>
@@ -146,6 +147,8 @@
    </item>
   </layout>
  </widget>
- <resources/>
+ <resources>
+  <include location="resources/duckstation-qt.qrc"/>
+ </resources>
  <connections/>
 </ui>

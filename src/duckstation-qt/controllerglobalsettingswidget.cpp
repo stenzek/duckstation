@@ -223,7 +223,7 @@ void ControllerGlobalSettingsWidget::ledSettingsClicked()
 
   QHBoxLayout* const heading_layout = new QHBoxLayout;
   QLabel* const icon = new QLabel;
-  icon->setPixmap(QIcon::fromTheme("lightbulb-line"_L1).pixmap(32));
+  icon->setPixmap(QIcon(":/icons/monochrome/svg/lightbulb-line.svg"_L1).pixmap(32));
   QLabel* const heading = new QLabel(
     tr("<strong>Controller LED Settings</strong><br>\nThe \"alternate\" color is used when analog mode is active."));
   heading->setWordWrap(true);

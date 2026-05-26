@@ -114,7 +114,8 @@
          <string>Reset Sensitivity</string>
         </property>
         <property name="icon">
-         <iconset theme="restart-line"/>
+         <iconset resource="resources/duckstation-qt.qrc">
+          <normaloff>:/icons/monochrome/svg/restart-line.svg</normaloff>:/icons/monochrome/svg/restart-line.svg</iconset>
         </property>
        </widget>
       </item>
@@ -124,7 +125,8 @@
          <string>Reset Deadzone</string>
         </property>
         <property name="icon">
-         <iconset theme="restart-line"/>
+         <iconset resource="resources/duckstation-qt.qrc">
+          <normaloff>:/icons/monochrome/svg/restart-line.svg</normaloff>:/icons/monochrome/svg/restart-line.svg</iconset>
         </property>
        </widget>
       </item>
@@ -146,7 +148,8 @@
         <string>Add Binding</string>
        </property>
        <property name="icon">
-        <iconset theme="add-line"/>
+        <iconset resource="resources/duckstation-qt.qrc">
+         <normaloff>:/icons/monochrome/svg/add-line.svg</normaloff>:/icons/monochrome/svg/add-line.svg</iconset>
        </property>
       </widget>
      </item>
@@ -156,7 +159,8 @@
         <string>Remove Binding</string>
        </property>
        <property name="icon">
-        <iconset theme="minus-line"/>
+        <iconset resource="resources/duckstation-qt.qrc">
+         <normaloff>:/icons/monochrome/svg/minus-line.svg</normaloff>:/icons/monochrome/svg/minus-line.svg</iconset>
        </property>
       </widget>
      </item>
@@ -166,7 +170,8 @@
         <string>Clear Bindings</string>
        </property>
        <property name="icon">
-        <iconset theme="trash-fill"/>
+        <iconset resource="resources/duckstation-qt.qrc">
+         <normaloff>:/icons/monochrome/svg/trash-fill.svg</normaloff>:/icons/monochrome/svg/trash-fill.svg</iconset>
        </property>
       </widget>
      </item>
@@ -181,6 +186,8 @@
    </item>
   </layout>
  </widget>
- <resources/>
+ <resources>
+  <include location="resources/duckstation-qt.qrc"/>
+ </resources>
  <connections/>
 </ui>

@@ -1935,7 +1935,7 @@ void MainWindow::setupAdditionalUi()
     QActionGroup* const order_group = new QActionGroup(m_ui.menuSortBy);
 
     QAction* const ascending_action = new QAction(tr("&Ascending"), order_group);
-    ascending_action->setIcon(QIcon::fromTheme(QIcon::ThemeIcon::GoUp));
+    ascending_action->setIcon(QIcon(":/icons/monochrome/svg/sort-asc.svg"_L1));
     ascending_action->setCheckable(true);
     ascending_action->setChecked(current_sort_order == Qt::AscendingOrder);
     ascending_action->setObjectName("SortAscending"_L1);
@@ -1943,7 +1943,7 @@ void MainWindow::setupAdditionalUi()
     connect(ascending_action, &QAction::triggered, this, &MainWindow::onViewSortOrderActionTriggered);
 
     QAction* const descending_action = new QAction(tr("&Descending"), order_group);
-    descending_action->setIcon(QIcon::fromTheme(QIcon::ThemeIcon::GoDown));
+    descending_action->setIcon(QIcon(":/icons/monochrome/svg/sort-desc.svg"_L1));
     descending_action->setCheckable(true);
     descending_action->setChecked(current_sort_order == Qt::DescendingOrder);
     descending_action->setObjectName("SortDescending"_L1);

@@ -239,6 +239,10 @@
           <property name="text">
            <string>Check for Updates...</string>
           </property>
+          <property name="icon">
+           <iconset resource="resources/duckstation-qt.qrc">
+            <normaloff>:/icons/monochrome/svg/download-2-line.svg</normaloff>:/icons/monochrome/svg/download-2-line.svg</iconset>
+          </property>
          </widget>
         </item>
        </layout>

@@ -7,14 +7,15 @@
     <x>0</x>
     <y>0</y>
     <width>720</width>
-    <height>480</height>
+    <height>506</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Download Covers</string>
   </property>
   <property name="windowIcon">
-   <iconset theme="artboard-2-line"/>
+   <iconset resource="resources/duckstation-qt.qrc">
+    <normaloff>:/icons/monochrome/svg/artboard-2-line.svg</normaloff>:/icons/monochrome/svg/artboard-2-line.svg</iconset>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
@@ -103,6 +104,10 @@
        <property name="text">
         <string>Start</string>
        </property>
+       <property name="icon">
+        <iconset resource="resources/duckstation-qt.qrc">
+         <normaloff>:/icons/monochrome/svg/download-2-line.svg</normaloff>:/icons/monochrome/svg/download-2-line.svg</iconset>
+       </property>
        <property name="default">
         <bool>true</bool>
        </property>
@@ -113,12 +118,18 @@
        <property name="text">
         <string>Close</string>
        </property>
+       <property name="icon">
+        <iconset resource="resources/duckstation-qt.qrc">
+         <normaloff>:/icons/monochrome/svg/close-line.svg</normaloff>:/icons/monochrome/svg/close-line.svg</iconset>
+       </property>
       </widget>
      </item>
     </layout>
    </item>
   </layout>
  </widget>
- <resources/>
+ <resources>
+  <include location="resources/duckstation-qt.qrc"/>
+ </resources>
  <connections/>
 </ui>

@@ -47,7 +47,8 @@
         <string>Disable All Patches</string>
        </property>
        <property name="icon">
-        <iconset theme="chat-off-line"/>
+        <iconset resource="resources/duckstation-qt.qrc">
+         <normaloff>:/icons/monochrome/svg/chat-off-line.svg</normaloff>:/icons/monochrome/svg/chat-off-line.svg</iconset>
        </property>
       </widget>
      </item>
@@ -70,7 +71,8 @@
         <string>Reload Patches</string>
        </property>
        <property name="icon">
-        <iconset theme="refresh-line"/>
+        <iconset resource="resources/duckstation-qt.qrc">
+         <normaloff>:/icons/monochrome/svg/refresh-line.svg</normaloff>:/icons/monochrome/svg/refresh-line.svg</iconset>
        </property>
       </widget>
      </item>
@@ -78,6 +80,8 @@
    </item>
   </layout>
  </widget>
- <resources/>
+ <resources>
+  <include location="resources/duckstation-qt.qrc"/>
+ </resources>
  <connections/>
 </ui>

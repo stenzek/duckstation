@@ -2806,11 +2806,11 @@ InputDeviceListModel::~InputDeviceListModel() = default;
 QIcon InputDeviceListModel::getIconForKey(const InputBindingKey& key)
 {
   if (key.source_type == InputSourceType::Keyboard)
-    return QIcon::fromTheme("keyboard-line"_L1);
+    return QIcon(":/icons/monochrome/svg/keyboard-line.svg"_L1);
   else if (key.source_type == InputSourceType::Pointer)
-    return QIcon::fromTheme("mouse-line"_L1);
+    return QIcon(":/icons/monochrome/svg/mouse-line.svg"_L1);
   else
-    return QIcon::fromTheme("controller-line"_L1);
+    return QIcon(":/icons/monochrome/svg/controller-line.svg"_L1);
 }
 
 QString InputDeviceListModel::getDeviceName(const InputBindingKey& key)

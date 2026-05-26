@@ -35,7 +35,8 @@
       <string>Change Disc</string>
      </property>
      <property name="icon">
-      <iconset theme="disc-line"/>
+      <iconset resource="resources/duckstation-qt.qrc">
+       <normaloff>:/icons/monochrome/svg/disc-line.svg</normaloff>:/icons/monochrome/svg/disc-line.svg</iconset>
      </property>
     </widget>
     <widget class="QMenu" name="menuCheats">
@@ -43,7 +44,8 @@
       <string>Cheats</string>
      </property>
      <property name="icon">
-      <iconset theme="cheats-line"/>
+      <iconset resource="resources/duckstation-qt.qrc">
+       <normaloff>:/icons/monochrome/svg/cheats-line.svg</normaloff>:/icons/monochrome/svg/cheats-line.svg</iconset>
      </property>
     </widget>
     <widget class="QMenu" name="menuLoadState">
@@ -51,7 +53,8 @@
       <string>Load State</string>
      </property>
      <property name="icon">
-      <iconset theme="folder-open-line"/>
+      <iconset resource="resources/duckstation-qt.qrc">
+       <normaloff>:/icons/monochrome/svg/folder-open-line.svg</normaloff>:/icons/monochrome/svg/folder-open-line.svg</iconset>
      </property>
     </widget>
     <widget class="QMenu" name="menuSaveState">
@@ -59,7 +62,8 @@
       <string>Save State</string>
      </property>
      <property name="icon">
-      <iconset theme="save-3-line"/>
+      <iconset resource="resources/duckstation-qt.qrc">
+       <normaloff>:/icons/monochrome/svg/save-3-line.svg</normaloff>:/icons/monochrome/svg/save-3-line.svg</iconset>
      </property>
     </widget>
     <addaction name="actionStartFile"/>
@@ -192,7 +196,8 @@
       <string>&amp;Window Size</string>
      </property>
      <property name="icon">
-      <iconset theme="window-2-line"/>
+      <iconset resource="resources/duckstation-qt.qrc">
+       <normaloff>:/icons/monochrome/svg/window-2-line.svg</normaloff>:/icons/monochrome/svg/window-2-line.svg</iconset>
      </property>
     </widget>
     <widget class="QMenu" name="menuSortBy">
@@ -200,7 +205,8 @@
       <string>Sort B&amp;y</string>
      </property>
      <property name="icon">
-      <iconset theme="sort-alphabet-asc"/>
+      <iconset resource="resources/duckstation-qt.qrc">
+       <normaloff>:/icons/monochrome/svg/sort-alphabet-asc.svg</normaloff>:/icons/monochrome/svg/sort-alphabet-asc.svg</iconset>
      </property>
     </widget>
     <addaction name="actionViewToolbar"/>
@@ -291,7 +297,9 @@
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionStartFile">
    <property name="icon">
-    <iconset theme="file-line"/>
+    <iconset>
+     <normalon>:/icons/monochrome/svg/file-line.svg</normalon>
+    </iconset>
    </property>
    <property name="text">
     <string>Start &amp;File...</string>
@@ -302,7 +310,8 @@
   </action>
   <action name="actionStartDisc">
    <property name="icon">
-    <iconset theme="disc-line"/>
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/disc-line.svg</normaloff>:/icons/monochrome/svg/disc-line.svg</iconset>
    </property>
    <property name="text">
     <string>Start &amp;Disc...</string>
@@ -316,7 +325,8 @@
   </action>
   <action name="actionStartBios">
    <property name="icon">
-    <iconset theme="chip-line"/>
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/chip-line.svg</normaloff>:/icons/monochrome/svg/chip-line.svg</iconset>
    </property>
    <property name="text">
     <string>Start &amp;BIOS</string>
@@ -327,7 +337,8 @@
   </action>
   <action name="actionScanForNewGames">
    <property name="icon">
-    <iconset theme="file-search-line"/>
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/file-search-line.svg</normaloff>:/icons/monochrome/svg/file-search-line.svg</iconset>
    </property>
    <property name="text">
     <string>Scan &amp;For New Games</string>
@@ -338,7 +349,8 @@
   </action>
   <action name="actionRescanAllGames">
    <property name="icon">
-    <iconset theme="refresh-line"/>
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/refresh-line.svg</normaloff>:/icons/monochrome/svg/refresh-line.svg</iconset>
    </property>
    <property name="text">
     <string>&amp;Rescan All Games</string>
@@ -349,7 +361,8 @@
   </action>
   <action name="actionCloseGame">
    <property name="icon">
-    <iconset theme="shut-down-line"/>
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/shut-down-line.svg</normaloff>:/icons/monochrome/svg/shut-down-line.svg</iconset>
    </property>
    <property name="text">
     <string>Cl&amp;ose Game</string>
@@ -363,7 +376,8 @@
   </action>
   <action name="actionRestartGame">
    <property name="icon">
-    <iconset theme="restart-line"/>
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/restart-line.svg</normaloff>:/icons/monochrome/svg/restart-line.svg</iconset>
    </property>
    <property name="text">
     <string>&amp;Restart Game</string>
@@ -380,7 +394,8 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset theme="pause-line"/>
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/pause-line.svg</normaloff>:/icons/monochrome/svg/pause-line.svg</iconset>
    </property>
    <property name="text">
     <string>&amp;Pause</string>
@@ -391,7 +406,8 @@
   </action>
   <action name="actionLoadState">
    <property name="icon">
-    <iconset theme="folder-open-line"/>
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/folder-open-line.svg</normaloff>:/icons/monochrome/svg/folder-open-line.svg</iconset>
    </property>
    <property name="text">
     <string>&amp;Load State</string>
@@ -402,7 +418,8 @@
   </action>
   <action name="actionSaveState">
    <property name="icon">
-    <iconset theme="save-3-line"/>
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/save-3-line.svg</normaloff>:/icons/monochrome/svg/save-3-line.svg</iconset>
    </property>
    <property name="text">
     <string>&amp;Save State</string>
@@ -413,7 +430,8 @@
   </action>
   <action name="actionExit">
    <property name="icon">
-    <iconset theme="door-open-line"/>
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/door-open-line.svg</normaloff>:/icons/monochrome/svg/door-open-line.svg</iconset>
    </property>
    <property name="text">
     <string>E&amp;xit</string>
@@ -424,7 +442,8 @@
   </action>
   <action name="actionBIOSSettings">
    <property name="icon">
-    <iconset theme="chip-line"/>
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/chip-line.svg</normaloff>:/icons/monochrome/svg/chip-line.svg</iconset>
    </property>
    <property name="text">
     <string>&amp;BIOS</string>
@@ -435,7 +454,8 @@
   </action>
   <action name="actionConsoleSettings">
    <property name="icon">
-    <iconset theme="emulation-line"/>
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/emulation-line.svg</normaloff>:/icons/monochrome/svg/emulation-line.svg</iconset>
    </property>
    <property name="text">
     <string>C&amp;onsole</string>
@@ -446,7 +466,8 @@
   </action>
   <action name="actionEmulationSettings">
    <property name="icon">
-    <iconset theme="chip-2-line"/>
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/chip-2-line.svg</normaloff>:/icons/monochrome/svg/chip-2-line.svg</iconset>
    </property>
    <property name="text">
     <string>&amp;Emulation</string>
@@ -457,7 +478,8 @@
   </action>
   <action name="actionControllerSettings">
    <property name="icon">
-    <iconset theme="controller-digital-line"/>
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/controller-digital-line.svg</normaloff>:/icons/monochrome/svg/controller-digital-line.svg</iconset>
    </property>
    <property name="text">
     <string>&amp;Controllers</string>
@@ -468,7 +490,8 @@
   </action>
   <action name="actionHotkeySettings">
    <property name="icon">
-    <iconset theme="keyboard-line"/>
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/keyboard-line.svg</normaloff>:/icons/monochrome/svg/keyboard-line.svg</iconset>
    </property>
    <property name="text">
     <string>Hot&amp;keys</string>
@@ -479,7 +502,8 @@
   </action>
   <action name="actionGraphicsSettings">
    <property name="icon">
-    <iconset theme="image-fill"/>
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/image-fill.svg</normaloff>:/icons/monochrome/svg/image-fill.svg</iconset>
    </property>
    <property name="text">
     <string>&amp;Graphics</string>
@@ -490,7 +514,8 @@
   </action>
   <action name="actionPostProcessingSettings">
    <property name="icon">
-    <iconset theme="sun-fill"/>
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/sun-fill.svg</normaloff>:/icons/monochrome/svg/sun-fill.svg</iconset>
    </property>
    <property name="text">
     <string>&amp;Post-Processing</string>
@@ -501,7 +526,8 @@
   </action>
   <action name="actionOSDSettings">
    <property name="icon">
-    <iconset theme="numbers-fill"/>
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/numbers-fill.svg</normaloff>:/icons/monochrome/svg/numbers-fill.svg</iconset>
    </property>
    <property name="text">
     <string>On-&amp;Screen Display</string>
@@ -512,7 +538,8 @@
   </action>
   <action name="actionCaptureSettings">
    <property name="icon">
-    <iconset theme="vidicon-line"/>
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/vidicon-line.svg</normaloff>:/icons/monochrome/svg/vidicon-line.svg</iconset>
    </property>
    <property name="text">
     <string>Capt&amp;ure</string>
@@ -526,7 +553,8 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset theme="fullscreen-line"/>
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/fullscreen-line.svg</normaloff>:/icons/monochrome/svg/fullscreen-line.svg</iconset>
    </property>
    <property name="text">
     <string>&amp;Fullscreen</string>
@@ -561,7 +589,8 @@
   </action>
   <action name="actionCheckForUpdates">
    <property name="icon">
-    <iconset theme="download-2-line"/>
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/download-2-line.svg</normaloff>:/icons/monochrome/svg/download-2-line.svg</iconset>
    </property>
    <property name="text">
     <string>Check for &amp;Updates...</string>
@@ -610,7 +639,8 @@
   </action>
   <action name="actionChangeDisc">
    <property name="icon">
-    <iconset theme="disc-line"/>
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/disc-line.svg</normaloff>:/icons/monochrome/svg/disc-line.svg</iconset>
    </property>
    <property name="text">
     <string>Change Disc</string>
@@ -621,7 +651,8 @@
   </action>
   <action name="actionCheatsToolbar">
    <property name="icon">
-    <iconset theme="cheats-line"/>
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/cheats-line.svg</normaloff>:/icons/monochrome/svg/cheats-line.svg</iconset>
    </property>
    <property name="text">
     <string>Cheats</string>
@@ -632,7 +663,8 @@
   </action>
   <action name="actionAudioSettings">
    <property name="icon">
-    <iconset theme="volume-up-line"/>
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/volume-up-line.svg</normaloff>:/icons/monochrome/svg/volume-up-line.svg</iconset>
    </property>
    <property name="text">
     <string>&amp;Audio</string>
@@ -643,7 +675,8 @@
   </action>
   <action name="actionAchievementSettings">
    <property name="icon">
-    <iconset theme="trophy-line"/>
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/trophy-line.svg</normaloff>:/icons/monochrome/svg/trophy-line.svg</iconset>
    </property>
    <property name="text">
     <string>Ac&amp;hievements</string>
@@ -654,7 +687,8 @@
   </action>
   <action name="actionGameListSettings">
    <property name="icon">
-    <iconset theme="folder-open-line"/>
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/folder-open-line.svg</normaloff>:/icons/monochrome/svg/folder-open-line.svg</iconset>
    </property>
    <property name="text">
     <string>Game &amp;List</string>
@@ -665,7 +699,8 @@
   </action>
   <action name="actionInterfaceSettings">
    <property name="icon">
-    <iconset theme="settings-3-line"/>
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/settings-3-line.svg</normaloff>:/icons/monochrome/svg/settings-3-line.svg</iconset>
    </property>
    <property name="text">
     <string>&amp;Interface</string>
@@ -676,7 +711,8 @@
   </action>
   <action name="actionAdvancedSettings">
    <property name="icon">
-    <iconset theme="alert-line"/>
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/alert-line.svg</normaloff>:/icons/monochrome/svg/alert-line.svg</iconset>
    </property>
    <property name="text">
     <string>A&amp;dvanced</string>
@@ -687,7 +723,8 @@
   </action>
   <action name="actionDebuggingSettings">
    <property name="icon">
-    <iconset theme="code-line"/>
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/code-line.svg</normaloff>:/icons/monochrome/svg/code-line.svg</iconset>
    </property>
    <property name="text">
     <string>Debuggi&amp;ng</string>
@@ -698,7 +735,8 @@
   </action>
   <action name="actionAddGameDirectory">
    <property name="icon">
-    <iconset theme="folder-add-line"/>
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/folder-add-line.svg</normaloff>:/icons/monochrome/svg/folder-add-line.svg</iconset>
    </property>
    <property name="text">
     <string>Add Game Director&amp;y...</string>
@@ -709,7 +747,8 @@
   </action>
   <action name="actionSettings">
    <property name="icon">
-    <iconset theme="settings-3-line"/>
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/settings-3-line.svg</normaloff>:/icons/monochrome/svg/settings-3-line.svg</iconset>
    </property>
    <property name="text">
     <string>&amp;Settings</string>
@@ -723,7 +762,8 @@
   </action>
   <action name="actionToolbarSettings">
    <property name="icon">
-    <iconset theme="settings-3-line"/>
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/settings-3-line.svg</normaloff>:/icons/monochrome/svg/settings-3-line.svg</iconset>
    </property>
    <property name="text">
     <string>&amp;Settings</string>
@@ -864,7 +904,8 @@
   </action>
   <action name="actionScreenshot">
    <property name="icon">
-    <iconset theme="screenshot-2-line"/>
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/screenshot-2-line.svg</normaloff>:/icons/monochrome/svg/screenshot-2-line.svg</iconset>
    </property>
    <property name="text">
     <string>&amp;Screenshot</string>
@@ -875,7 +916,8 @@
   </action>
   <action name="actionMemoryCardSettings">
    <property name="icon">
-    <iconset theme="memcard-line"/>
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/memcard-line.svg</normaloff>:/icons/monochrome/svg/memcard-line.svg</iconset>
    </property>
    <property name="text">
     <string>&amp;Memory Cards</string>
@@ -886,7 +928,8 @@
   </action>
   <action name="actionResumeLastState">
    <property name="icon">
-    <iconset theme="play-circle-line"/>
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/play-circle-line.svg</normaloff>:/icons/monochrome/svg/play-circle-line.svg</iconset>
    </property>
    <property name="text">
     <string>Resume</string>
@@ -972,7 +1015,8 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset theme="list-check"/>
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/list-check.svg</normaloff>:/icons/monochrome/svg/list-check.svg</iconset>
    </property>
    <property name="text">
     <string>Game &amp;List</string>
@@ -989,7 +1033,8 @@
     <bool>false</bool>
    </property>
    <property name="icon">
-    <iconset theme="tv-2-line"/>
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/tv-2-line.svg</normaloff>:/icons/monochrome/svg/tv-2-line.svg</iconset>
    </property>
    <property name="text">
     <string>System &amp;Display</string>
@@ -1003,7 +1048,8 @@
     <bool>false</bool>
    </property>
    <property name="icon">
-    <iconset theme="file-settings-line"/>
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/file-settings-line.svg</normaloff>:/icons/monochrome/svg/file-settings-line.svg</iconset>
    </property>
    <property name="text">
     <string>Game &amp;Properties</string>
@@ -1014,7 +1060,8 @@
   </action>
   <action name="actionMemoryCardEditor">
    <property name="icon">
-    <iconset theme="memcard-line"/>
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/memcard-line.svg</normaloff>:/icons/monochrome/svg/memcard-line.svg</iconset>
    </property>
    <property name="text">
     <string>Memory &amp;Card Editor</string>
@@ -1025,7 +1072,8 @@
   </action>
   <action name="actionCPUDebugger">
    <property name="icon">
-    <iconset theme="code-line"/>
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/code-line.svg</normaloff>:/icons/monochrome/svg/code-line.svg</iconset>
    </property>
    <property name="text">
     <string>CPU D&amp;ebugger</string>
@@ -1039,7 +1087,8 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset theme="function-line"/>
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/function-line.svg</normaloff>:/icons/monochrome/svg/function-line.svg</iconset>
    </property>
    <property name="text">
     <string>Game &amp;Grid</string>
@@ -1056,7 +1105,8 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset theme="multi-discs"/>
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/multi-discs.svg</normaloff>:/icons/monochrome/svg/multi-discs.svg</iconset>
    </property>
    <property name="text">
     <string>&amp;Merge Multi-Disc Games</string>
@@ -1073,7 +1123,8 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset theme="price-tag-3-line"/>
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/price-tag-3-line.svg</normaloff>:/icons/monochrome/svg/price-tag-3-line.svg</iconset>
    </property>
    <property name="text">
     <string>Show G&amp;rid Captions</string>
@@ -1111,7 +1162,8 @@
   </action>
   <action name="actionGridViewRefreshCovers">
    <property name="icon">
-    <iconset theme="refresh-line"/>
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/refresh-line.svg</normaloff>:/icons/monochrome/svg/refresh-line.svg</iconset>
    </property>
    <property name="text">
     <string>Refresh Grid &amp;Covers</string>
@@ -1122,7 +1174,8 @@
   </action>
   <action name="actionOpenDataDirectory">
    <property name="icon">
-    <iconset theme="folder-open-line"/>
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/folder-open-line.svg</normaloff>:/icons/monochrome/svg/folder-open-line.svg</iconset>
    </property>
    <property name="text">
     <string>Open Data Directory...</string>
@@ -1133,7 +1186,8 @@
   </action>
   <action name="actionCloseGameWithoutSaving">
    <property name="icon">
-    <iconset theme="close-line"/>
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/close-line.svg</normaloff>:/icons/monochrome/svg/close-line.svg</iconset>
    </property>
    <property name="text">
     <string>Close Game &amp;Without Saving</string>
@@ -1147,7 +1201,8 @@
   </action>
   <action name="actionStartFullscreenUI">
    <property name="icon">
-    <iconset theme="tv-2-line"/>
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/tv-2-line.svg</normaloff>:/icons/monochrome/svg/tv-2-line.svg</iconset>
    </property>
    <property name="text">
     <string>Start Big Picture Mode</string>
@@ -1158,7 +1213,8 @@
   </action>
   <action name="actionToolbarStartFullscreenUI">
    <property name="icon">
-    <iconset theme="tv-2-line"/>
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/tv-2-line.svg</normaloff>:/icons/monochrome/svg/tv-2-line.svg</iconset>
    </property>
    <property name="text">
     <string>Big Picture</string>
@@ -1169,7 +1225,8 @@
   </action>
   <action name="actionCoverDownloader">
    <property name="icon">
-    <iconset theme="artboard-2-line"/>
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/artboard-2-line.svg</normaloff>:/icons/monochrome/svg/artboard-2-line.svg</iconset>
    </property>
    <property name="text">
     <string>Cover Downloader</string>
@@ -1180,7 +1237,8 @@
   </action>
   <action name="actionMemoryScanner">
    <property name="icon">
-    <iconset theme="mag-line"/>
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/mag-line.svg</normaloff>:/icons/monochrome/svg/mag-line.svg</iconset>
    </property>
    <property name="text">
     <string>Memory &amp;Scanner</string>
@@ -1200,7 +1258,8 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset theme="image-fill"/>
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/image-fill.svg</normaloff>:/icons/monochrome/svg/image-fill.svg</iconset>
    </property>
    <property name="text">
     <string>Show Game Ico&amp;ns</string>
@@ -1214,7 +1273,8 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset theme="video-on-line"/>
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/video-on-line.svg</normaloff>:/icons/monochrome/svg/video-on-line.svg</iconset>
    </property>
    <property name="text">
     <string>Media Ca&amp;pture</string>
@@ -1228,7 +1288,8 @@
   </action>
   <action name="actionOpenTextureDirectory">
    <property name="icon">
-    <iconset theme="folder-add-line"/>
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/folder-add-line.svg</normaloff>:/icons/monochrome/svg/folder-add-line.svg</iconset>
    </property>
    <property name="text">
     <string>Open Texture Directory...</string>
@@ -1239,7 +1300,8 @@
   </action>
   <action name="actionReloadTextureReplacements">
    <property name="icon">
-    <iconset theme="refresh-line"/>
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/refresh-line.svg</normaloff>:/icons/monochrome/svg/refresh-line.svg</iconset>
    </property>
    <property name="text">
     <string>Reload Texture Replacements</string>
@@ -1250,7 +1312,8 @@
   </action>
   <action name="actionCaptureGPUFrame">
    <property name="icon">
-    <iconset theme="image-fill"/>
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/image-fill.svg</normaloff>:/icons/monochrome/svg/image-fill.svg</iconset>
    </property>
    <property name="text">
     <string>Capture GPU Frame</string>
@@ -1301,7 +1364,8 @@
   </action>
   <action name="actionISOBrowser">
    <property name="icon">
-    <iconset theme="disc-line"/>
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/disc-line.svg</normaloff>:/icons/monochrome/svg/disc-line.svg</iconset>
    </property>
    <property name="text">
     <string>ISO Browser</string>
@@ -1315,7 +1379,8 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset theme="camera-switch-line"/>
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/camera-switch-line.svg</normaloff>:/icons/monochrome/svg/camera-switch-line.svg</iconset>
    </property>
    <property name="text">
     <string>Free Camera</string>
@@ -1326,7 +1391,8 @@
   </action>
   <action name="actionControllerTest">
    <property name="icon">
-    <iconset theme="controller-digital-line"/>
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/controller-digital-line.svg</normaloff>:/icons/monochrome/svg/controller-digital-line.svg</iconset>
    </property>
    <property name="text">
     <string>Controller Test</string>
@@ -1337,7 +1403,8 @@
   </action>
   <action name="actionControllerProfiles">
    <property name="icon">
-    <iconset theme="controllers-line"/>
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/controllers-line.svg</normaloff>:/icons/monochrome/svg/controllers-line.svg</iconset>
    </property>
    <property name="text">
     <string>Controller Prese&amp;ts</string>
@@ -1347,6 +1414,10 @@
    </property>
   </action>
   <action name="actionChangeGameListBackground">
+   <property name="icon">
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/image-fill.svg</normaloff>:/icons/monochrome/svg/image-fill.svg</iconset>
+   </property>
    <property name="text">
     <string>&amp;Change List Background...</string>
    </property>
@@ -1355,6 +1426,10 @@
    </property>
   </action>
   <action name="actionClearGameListBackground">
+   <property name="icon">
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/trash-fill.svg</normaloff>:/icons/monochrome/svg/trash-fill.svg</iconset>
+   </property>
    <property name="text">
     <string>Clea&amp;r List Background</string>
    </property>
@@ -1367,7 +1442,8 @@
     <bool>false</bool>
    </property>
    <property name="icon">
-    <iconset theme="refresh-line"/>
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/refresh-line.svg</normaloff>:/icons/monochrome/svg/refresh-line.svg</iconset>
    </property>
    <property name="text">
     <string>Refresh Achievement &amp;Progress</string>
@@ -1381,7 +1457,8 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset theme="language"/>
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/language.svg</normaloff>:/icons/monochrome/svg/language.svg</iconset>
    </property>
    <property name="text">
     <string>Show Locali&amp;zed Titles</string>
@@ -1392,7 +1469,8 @@
   </action>
   <action name="actionMemoryEditor">
    <property name="icon">
-    <iconset theme="chip-line"/>
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/chip-line.svg</normaloff>:/icons/monochrome/svg/chip-line.svg</iconset>
    </property>
    <property name="text">
     <string>Memory &amp;Editor</string>
@@ -1409,7 +1487,8 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset theme="add-animation"/>
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/add-animation.svg</normaloff>:/icons/monochrome/svg/add-animation.svg</iconset>
    </property>
    <property name="text">
     <string>Animate Game Icons</string>
@@ -1423,7 +1502,8 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset theme="trophy-line"/>
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/trophy-line.svg</normaloff>:/icons/monochrome/svg/trophy-line.svg</iconset>
    </property>
    <property name="text">
     <string>Prefer Achievement Icons</string>
@@ -1437,7 +1517,8 @@
     <bool>false</bool>
    </property>
    <property name="icon">
-    <iconset theme="download-2-line"/>
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/download-2-line.svg</normaloff>:/icons/monochrome/svg/download-2-line.svg</iconset>
    </property>
    <property name="text">
     <string>Download Achievement &amp;Icons</string>
@@ -1454,7 +1535,8 @@
     <bool>false</bool>
    </property>
    <property name="icon">
-    <iconset theme="file-list-line"/>
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/file-list-line.svg</normaloff>:/icons/monochrome/svg/file-list-line.svg</iconset>
    </property>
    <property name="text">
     <string>System Log</string>

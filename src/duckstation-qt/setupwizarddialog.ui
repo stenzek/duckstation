@@ -321,12 +321,20 @@
            <property name="text">
             <string>Browse...</string>
            </property>
+           <property name="icon">
+            <iconset resource="resources/duckstation-qt.qrc">
+             <normaloff>:/icons/monochrome/svg/folder-open-line.svg</normaloff>:/icons/monochrome/svg/folder-open-line.svg</iconset>
+           </property>
           </widget>
          </item>
          <item>
           <widget class="QPushButton" name="resetBiosSearchDirectory">
            <property name="text">
             <string>Reset</string>
+           </property>
+           <property name="icon">
+            <iconset resource="resources/duckstation-qt.qrc">
+             <normaloff>:/icons/monochrome/svg/delete-back-2-line.svg</normaloff>:/icons/monochrome/svg/delete-back-2-line.svg</iconset>
            </property>
           </widget>
          </item>
@@ -407,12 +415,20 @@
            <property name="text">
             <string>Open in Explorer...</string>
            </property>
+           <property name="icon">
+            <iconset resource="resources/duckstation-qt.qrc">
+             <normaloff>:/icons/monochrome/svg/open-folder-line.svg</normaloff>:/icons/monochrome/svg/open-folder-line.svg</iconset>
+           </property>
           </widget>
          </item>
          <item>
           <widget class="QPushButton" name="refreshBiosList">
            <property name="text">
             <string>Refresh List</string>
+           </property>
+           <property name="icon">
+            <iconset resource="resources/duckstation-qt.qrc">
+             <normaloff>:/icons/monochrome/svg/refresh-line.svg</normaloff>:/icons/monochrome/svg/refresh-line.svg</iconset>
            </property>
           </widget>
          </item>
@@ -494,7 +510,8 @@
             <string>Add...</string>
            </property>
            <property name="icon">
-            <iconset theme="folder-add-line"/>
+            <iconset resource="resources/duckstation-qt.qrc">
+             <normaloff>:/icons/monochrome/svg/folder-add-line.svg</normaloff>:/icons/monochrome/svg/folder-add-line.svg</iconset>
            </property>
           </widget>
          </item>
@@ -510,7 +527,8 @@
             <string>Remove</string>
            </property>
            <property name="icon">
-            <iconset theme="folder-reduce-line"/>
+            <iconset resource="resources/duckstation-qt.qrc">
+             <normaloff>:/icons/monochrome/svg/folder-reduce-line.svg</normaloff>:/icons/monochrome/svg/folder-reduce-line.svg</iconset>
            </property>
           </widget>
          </item>
@@ -628,7 +646,8 @@
                <string>Automatic Mapping</string>
               </property>
               <property name="icon">
-               <iconset theme="controller-digital-line"/>
+               <iconset resource="resources/duckstation-qt.qrc">
+                <normaloff>:/icons/monochrome/svg/controller-digital-line.svg</normaloff>:/icons/monochrome/svg/controller-digital-line.svg</iconset>
               </property>
              </widget>
             </item>
@@ -688,7 +707,8 @@
                <string>Automatic Mapping</string>
               </property>
               <property name="icon">
-               <iconset theme="controller-digital-line"/>
+               <iconset resource="resources/duckstation-qt.qrc">
+                <normaloff>:/icons/monochrome/svg/controller-digital-line.svg</normaloff>:/icons/monochrome/svg/controller-digital-line.svg</iconset>
               </property>
              </widget>
             </item>
@@ -1058,12 +1078,20 @@ Login token generated at:</string>
               <property name="text">
                <string>View Profile...</string>
               </property>
+              <property name="icon">
+               <iconset resource="resources/duckstation-qt.qrc">
+                <normaloff>:/icons/monochrome/svg/id-card-line.svg</normaloff>:/icons/monochrome/svg/id-card-line.svg</iconset>
+              </property>
              </widget>
             </item>
             <item>
              <widget class="QPushButton" name="loginButton">
               <property name="text">
                <string>Login...</string>
+              </property>
+              <property name="icon">
+               <iconset resource="resources/duckstation-qt.qrc">
+                <normaloff>:/icons/monochrome/svg/login-box-line.svg</normaloff>:/icons/monochrome/svg/login-box-line.svg</iconset>
               </property>
              </widget>
             </item>

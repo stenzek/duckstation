@@ -382,7 +382,8 @@
                <string>Reset Fine Cropping</string>
               </property>
               <property name="icon">
-               <iconset theme="delete-back-2-line"/>
+               <iconset resource="resources/duckstation-qt.qrc">
+                <normaloff>:/icons/monochrome/svg/delete-back-2-line.svg</normaloff>:/icons/monochrome/svg/delete-back-2-line.svg</iconset>
               </property>
              </widget>
             </item>
@@ -812,7 +813,8 @@
                </sizepolicy>
               </property>
               <property name="icon">
-               <iconset theme="settings-3-line"/>
+               <iconset resource="resources/duckstation-qt.qrc">
+                <normaloff>:/icons/monochrome/svg/settings-3-line.svg</normaloff>:/icons/monochrome/svg/settings-3-line.svg</iconset>
               </property>
              </widget>
             </item>
@@ -887,7 +889,8 @@
              <string>Browse...</string>
             </property>
             <property name="icon">
-             <iconset theme="folder-open-line"/>
+             <iconset resource="resources/duckstation-qt.qrc">
+              <normaloff>:/icons/monochrome/svg/folder-open-line.svg</normaloff>:/icons/monochrome/svg/folder-open-line.svg</iconset>
             </property>
            </widget>
           </item>
@@ -897,7 +900,8 @@
              <string>Open...</string>
             </property>
             <property name="icon">
-             <iconset theme="open-folder-line"/>
+             <iconset resource="resources/duckstation-qt.qrc">
+              <normaloff>:/icons/monochrome/svg/open-folder-line.svg</normaloff>:/icons/monochrome/svg/open-folder-line.svg</iconset>
             </property>
            </widget>
           </item>
@@ -907,7 +911,8 @@
              <string>Reset</string>
             </property>
             <property name="icon">
-             <iconset theme="delete-back-2-line"/>
+             <iconset resource="resources/duckstation-qt.qrc">
+              <normaloff>:/icons/monochrome/svg/delete-back-2-line.svg</normaloff>:/icons/monochrome/svg/delete-back-2-line.svg</iconset>
             </property>
            </widget>
           </item>
@@ -1103,6 +1108,8 @@
    </item>
   </layout>
  </widget>
- <resources/>
+ <resources>
+  <include location="resources/duckstation-qt.qrc"/>
+ </resources>
  <connections/>
 </ui>

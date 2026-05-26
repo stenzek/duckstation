@@ -163,7 +163,7 @@ DebuggingSettingsWidget::DebuggingSettingsWidget(SettingsWindow* dialog, QWidget
   : QWidget(parent), m_dialog(dialog)
 {
   m_ui.setupUi(this);
-  m_ui.icon->setPixmap(QIcon::fromTheme(QIcon::ThemeIcon::DialogWarning).pixmap(48));
+  m_ui.icon->setPixmap(QIcon(":/icons/monochrome/svg/error-warning-line.svg"_L1).pixmap(48));
 
   connect(m_ui.resetToDefaultButton, &QPushButton::clicked, this, &DebuggingSettingsWidget::onResetToDefaultClicked);
 

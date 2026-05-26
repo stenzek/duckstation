@@ -349,21 +349,22 @@ void GameCheatSettingsWidget::onCheatListContextMenuRequested(const QPoint& pos)
 
   QMenu* const context_menu = QtUtils::NewPopupMenu(m_ui.cheatList);
 
-  context_menu->addAction(QIcon::fromTheme("add-line"_L1), tr("Add Cheat..."), this, &GameCheatSettingsWidget::newCode);
+  context_menu->addAction(QIcon(":/icons/monochrome/svg/add-line.svg"_L1), tr("Add Cheat..."), this,
+                          &GameCheatSettingsWidget::newCode);
   context_menu
-    ->addAction(QIcon::fromTheme("mag-line"_L1), tr("Edit Cheat..."),
+    ->addAction(QIcon(":/icons/monochrome/svg/mag-line.svg"_L1), tr("Edit Cheat..."),
                 [this, selected_code]() { editCode(selected_code); })
     ->setEnabled(selected != nullptr);
   context_menu
-    ->addAction(QIcon::fromTheme("minus-line"_L1), tr("Remove Cheat"),
+    ->addAction(QIcon(":/icons/monochrome/svg/minus-line.svg"_L1), tr("Remove Cheat"),
                 [this, selected_code]() { removeCode(selected_code, true); })
     ->setEnabled(selected != nullptr);
   context_menu->addSeparator();
 
-  context_menu->addAction(QIcon::fromTheme("chat-off-line"_L1), tr("Disable All Cheats"), this,
+  context_menu->addAction(QIcon(":/icons/monochrome/svg/chat-off-line.svg"_L1), tr("Disable All Cheats"), this,
                           &GameCheatSettingsWidget::disableAllCheats);
 
-  context_menu->addAction(QIcon::fromTheme("refresh-line"_L1), tr("Reload Cheats"), this,
+  context_menu->addAction(QIcon(":/icons/monochrome/svg/refresh-line.svg"_L1), tr("Reload Cheats"), this,
                           &GameCheatSettingsWidget::onReloadClicked);
 
   context_menu->popup(m_ui.cheatList->mapToGlobal(pos));

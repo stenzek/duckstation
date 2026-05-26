@@ -14,7 +14,8 @@
    <string>Memory Scanner</string>
   </property>
   <property name="windowIcon">
-   <iconset theme="mag-line"/>
+   <iconset resource="resources/duckstation-qt.qrc">
+    <normaloff>:/icons/monochrome/svg/mag-line.svg</normaloff>:/icons/monochrome/svg/mag-line.svg</iconset>
   </property>
   <layout class="QGridLayout" name="gridLayout_3">
    <item row="0" column="0">
@@ -501,6 +502,8 @@
    </item>
   </layout>
  </widget>
- <resources/>
+ <resources>
+  <include location="resources/duckstation-qt.qrc"/>
+ </resources>
  <connections/>
 </ui>

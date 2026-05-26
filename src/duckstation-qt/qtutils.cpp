@@ -443,7 +443,7 @@ QIcon QtUtils::GetIconForRegion(ConsoleRegion region)
       return QIcon(":/icons/system-search.png"_L1);
 
     default:
-      return QIcon::fromTheme("file-unknow-line"_L1);
+      return QIcon(":/icons/monochrome/svg/file-unknow-line.svg"_L1);
   }
 }
 
@@ -463,7 +463,7 @@ QIcon QtUtils::GetIconForRegion(DiscRegion region)
     case DiscRegion::Other:
     case DiscRegion::NonPS1:
     default:
-      return QIcon::fromTheme("file-unknow-line"_L1);
+      return QIcon(":/icons/monochrome/svg/file-unknow-line.svg"_L1);
   }
 }
 
@@ -472,16 +472,16 @@ QIcon QtUtils::GetIconForEntryType(GameList::EntryType type)
   switch (type)
   {
     case GameList::EntryType::Disc:
-      return QIcon::fromTheme("disc-line"_L1);
+      return QIcon(":/icons/monochrome/svg/disc-line.svg"_L1);
     case GameList::EntryType::Playlist:
-      return QIcon::fromTheme("play-list-2-line"_L1);
+      return QIcon(":/icons/monochrome/svg/play-list-2-line.svg"_L1);
     case GameList::EntryType::DiscSet:
-      return QIcon::fromTheme("multi-discs"_L1);
+      return QIcon(":/icons/monochrome/svg/multi-discs.svg"_L1);
     case GameList::EntryType::PSF:
-      return QIcon::fromTheme("file-music-line"_L1);
+      return QIcon(":/icons/monochrome/svg/file-music-line.svg"_L1);
     case GameList::EntryType::PSExe:
     default:
-      return QIcon::fromTheme("settings-3-line"_L1);
+      return QIcon(":/icons/monochrome/svg/settings-3-line.svg"_L1);
   }
 }
 

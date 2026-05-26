@@ -194,8 +194,9 @@
         </item>
         <item>
          <widget class="QPushButton" name="setFrequency">
-          <property name="text">
-           <string>Set...</string>
+          <property name="icon">
+           <iconset resource="resources/duckstation-qt.qrc">
+            <normaloff>:/icons/monochrome/svg/edit-box-line.svg</normaloff>:/icons/monochrome/svg/edit-box-line.svg</iconset>
           </property>
          </widget>
         </item>
@@ -207,6 +208,10 @@
             <height>20</height>
            </size>
           </property>
+          <property name="icon">
+           <iconset resource="resources/duckstation-qt.qrc">
+            <normaloff>:/icons/monochrome/svg/arrow-up-line.svg</normaloff>:/icons/monochrome/svg/arrow-up-line.svg</iconset>
+          </property>
          </widget>
         </item>
         <item>
@@ -216,6 +221,10 @@
             <width>0</width>
             <height>20</height>
            </size>
+          </property>
+          <property name="icon">
+           <iconset resource="resources/duckstation-qt.qrc">
+            <normaloff>:/icons/monochrome/svg/arrow-down-line.svg</normaloff>:/icons/monochrome/svg/arrow-down-line.svg</iconset>
           </property>
          </widget>
         </item>
@@ -233,6 +242,8 @@
    <header>inputbindingwidgets.h</header>
   </customwidget>
  </customwidgets>
- <resources/>
+ <resources>
+  <include location="resources/duckstation-qt.qrc"/>
+ </resources>
  <connections/>
 </ui>

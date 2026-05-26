@@ -61,7 +61,8 @@
              <string>Adjusts LED settings for controllers with configurable LEDs.</string>
             </property>
             <property name="icon">
-             <iconset theme="lightbulb-line"/>
+             <iconset resource="resources/duckstation-qt.qrc">
+              <normaloff>:/icons/monochrome/svg/lightbulb-line.svg</normaloff>:/icons/monochrome/svg/lightbulb-line.svg</iconset>
             </property>
            </widget>
           </item>
@@ -447,6 +448,8 @@
    </item>
   </layout>
  </widget>
- <resources/>
+ <resources>
+  <include location="resources/duckstation-qt.qrc"/>
+ </resources>
  <connections/>
 </ui>

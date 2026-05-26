@@ -67,7 +67,8 @@
         <string>Sort Alphabetically</string>
        </property>
        <property name="icon">
-        <iconset theme="sort-alphabet-asc"/>
+        <iconset resource="resources/duckstation-qt.qrc">
+         <normaloff>:/icons/monochrome/svg/sort-alphabet-asc.svg</normaloff>:/icons/monochrome/svg/sort-alphabet-asc.svg</iconset>
        </property>
        <property name="checkable">
         <bool>true</bool>
@@ -80,7 +81,8 @@
         <string>Add Cheat</string>
        </property>
        <property name="icon">
-        <iconset theme="add-line"/>
+        <iconset resource="resources/duckstation-qt.qrc">
+         <normaloff>:/icons/monochrome/svg/add-line.svg</normaloff>:/icons/monochrome/svg/add-line.svg</iconset>
        </property>
       </widget>
      </item>
@@ -90,7 +92,8 @@
         <string>Remove Cheat</string>
        </property>
        <property name="icon">
-        <iconset theme="minus-line"/>
+        <iconset resource="resources/duckstation-qt.qrc">
+         <normaloff>:/icons/monochrome/svg/minus-line.svg</normaloff>:/icons/monochrome/svg/minus-line.svg</iconset>
        </property>
       </widget>
      </item>
@@ -100,7 +103,8 @@
         <string>Disable All Cheats</string>
        </property>
        <property name="icon">
-        <iconset theme="chat-off-line"/>
+        <iconset resource="resources/duckstation-qt.qrc">
+         <normaloff>:/icons/monochrome/svg/chat-off-line.svg</normaloff>:/icons/monochrome/svg/chat-off-line.svg</iconset>
        </property>
       </widget>
      </item>
@@ -110,7 +114,8 @@
         <string>Reload Cheats</string>
        </property>
        <property name="icon">
-        <iconset theme="refresh-line"/>
+        <iconset resource="resources/duckstation-qt.qrc">
+         <normaloff>:/icons/monochrome/svg/refresh-line.svg</normaloff>:/icons/monochrome/svg/refresh-line.svg</iconset>
        </property>
       </widget>
      </item>
@@ -178,7 +183,8 @@
         <string>Clear List</string>
        </property>
        <property name="icon">
-        <iconset theme="trash-fill"/>
+        <iconset resource="resources/duckstation-qt.qrc">
+         <normaloff>:/icons/monochrome/svg/trash-fill.svg</normaloff>:/icons/monochrome/svg/trash-fill.svg</iconset>
        </property>
       </widget>
      </item>
@@ -188,7 +194,8 @@
         <string>Import...</string>
        </property>
        <property name="icon">
-        <iconset theme="import-line"/>
+        <iconset resource="resources/duckstation-qt.qrc">
+         <normaloff>:/icons/monochrome/svg/import-line.svg</normaloff>:/icons/monochrome/svg/import-line.svg</iconset>
        </property>
       </widget>
      </item>
@@ -198,7 +205,8 @@
         <string>Export...</string>
        </property>
        <property name="icon">
-        <iconset theme="export-line"/>
+        <iconset resource="resources/duckstation-qt.qrc">
+         <normaloff>:/icons/monochrome/svg/export-line.svg</normaloff>:/icons/monochrome/svg/export-line.svg</iconset>
        </property>
       </widget>
      </item>
@@ -206,6 +214,8 @@
    </item>
   </layout>
  </widget>
- <resources/>
+ <resources>
+  <include location="resources/duckstation-qt.qrc"/>
+ </resources>
  <connections/>
 </ui>

@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1280</width>
+    <width>1289</width>
     <height>674</height>
    </rect>
   </property>
@@ -20,7 +20,8 @@
    <string>DuckStation Controller Settings</string>
   </property>
   <property name="windowIcon">
-   <iconset theme="controller-digital-line"/>
+   <iconset resource="resources/duckstation-qt.qrc">
+    <normaloff>:/icons/monochrome/svg/controller-digital-line.svg</normaloff>:/icons/monochrome/svg/controller-digital-line.svg</iconset>
   </property>
   <property name="class" stdset="0">
    <string>settings-window</string>
@@ -94,7 +95,8 @@
           <string>New Preset</string>
          </property>
          <property name="icon">
-          <iconset theme="add-line"/>
+          <iconset resource="resources/duckstation-qt.qrc">
+           <normaloff>:/icons/monochrome/svg/add-line.svg</normaloff>:/icons/monochrome/svg/add-line.svg</iconset>
          </property>
         </widget>
        </item>
@@ -104,7 +106,8 @@
           <string>Apply Preset</string>
          </property>
          <property name="icon">
-          <iconset theme="folder-open-line"/>
+          <iconset resource="resources/duckstation-qt.qrc">
+           <normaloff>:/icons/monochrome/svg/folder-open-line.svg</normaloff>:/icons/monochrome/svg/folder-open-line.svg</iconset>
          </property>
         </widget>
        </item>
@@ -114,7 +117,8 @@
           <string>Delete Preset</string>
          </property>
          <property name="icon">
-          <iconset theme="minus-line"/>
+          <iconset resource="resources/duckstation-qt.qrc">
+           <normaloff>:/icons/monochrome/svg/minus-line.svg</normaloff>:/icons/monochrome/svg/minus-line.svg</iconset>
          </property>
         </widget>
        </item>
@@ -124,7 +128,8 @@
           <string>Copy Global Settings</string>
          </property>
          <property name="icon">
-          <iconset theme="folder-open-line"/>
+          <iconset resource="resources/duckstation-qt.qrc">
+           <normaloff>:/icons/monochrome/svg/folder-open-line.svg</normaloff>:/icons/monochrome/svg/folder-open-line.svg</iconset>
          </property>
         </widget>
        </item>
@@ -141,6 +146,8 @@
    </item>
   </layout>
  </widget>
- <resources/>
+ <resources>
+  <include location="resources/duckstation-qt.qrc"/>
+ </resources>
  <connections/>
 </ui>

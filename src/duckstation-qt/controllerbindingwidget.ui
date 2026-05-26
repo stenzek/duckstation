@@ -10,7 +10,7 @@
     <height>617</height>
    </rect>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout" stretch="0,1">
+  <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0">
    <property name="leftMargin">
     <number>0</number>
    </property>
@@ -40,7 +40,8 @@
            <string>Bindings</string>
           </property>
           <property name="icon">
-           <iconset theme="controller-digital-line"/>
+           <iconset resource="resources/duckstation-qt.qrc">
+            <normaloff>:/icons/monochrome/svg/controller-digital-line.svg</normaloff>:/icons/monochrome/svg/controller-digital-line.svg</iconset>
           </property>
           <property name="checkable">
            <bool>true</bool>
@@ -59,7 +60,8 @@
            <string>Settings</string>
           </property>
           <property name="icon">
-           <iconset theme="checkbox-multiple-blank-line"/>
+           <iconset resource="resources/duckstation-qt.qrc">
+            <normaloff>:/icons/black/svg/checkbox-multiple-blank-line.svg</normaloff>:/icons/black/svg/checkbox-multiple-blank-line.svg</iconset>
           </property>
           <property name="checkable">
            <bool>true</bool>
@@ -78,7 +80,8 @@
            <string>Macros</string>
           </property>
           <property name="icon">
-           <iconset theme="flashlight-line"/>
+           <iconset resource="resources/duckstation-qt.qrc">
+            <normaloff>:/icons/monochrome/svg/flashlight-line.svg</normaloff>:/icons/monochrome/svg/flashlight-line.svg</iconset>
           </property>
           <property name="checkable">
            <bool>true</bool>
@@ -114,7 +117,8 @@
            <string>Automatic Mapping</string>
           </property>
           <property name="icon">
-           <iconset theme="controller-digital-line"/>
+           <iconset resource="resources/duckstation-qt.qrc">
+            <normaloff>:/icons/monochrome/svg/controller-digital-line.svg</normaloff>:/icons/monochrome/svg/controller-digital-line.svg</iconset>
           </property>
          </widget>
         </item>
@@ -124,7 +128,8 @@
            <string>Clear Mapping</string>
           </property>
           <property name="icon">
-           <iconset theme="trash-fill"/>
+           <iconset resource="resources/duckstation-qt.qrc">
+            <normaloff>:/icons/monochrome/svg/trash-fill.svg</normaloff>:/icons/monochrome/svg/trash-fill.svg</iconset>
           </property>
          </widget>
         </item>
@@ -139,7 +144,7 @@
   </layout>
  </widget>
  <resources>
-  <include location="../resources/resources.qrc"/>
+  <include location="resources/duckstation-qt.qrc"/>
  </resources>
  <connections/>
 </ui>

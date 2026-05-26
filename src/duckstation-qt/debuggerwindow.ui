@@ -14,7 +14,8 @@
    <string>CPU Debugger</string>
   </property>
   <property name="windowIcon">
-   <iconset theme="code-line"/>
+   <iconset resource="resources/duckstation-qt.qrc">
+    <normaloff>:/icons/monochrome/svg/code-line.svg</normaloff>:/icons/monochrome/svg/code-line.svg</iconset>
   </property>
   <property name="dockNestingEnabled">
    <bool>true</bool>
@@ -319,7 +320,8 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset theme="pause-line"/>
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/pause-line.svg</normaloff>:/icons/monochrome/svg/pause-line.svg</iconset>
    </property>
    <property name="text">
     <string>&amp;Pause/Continue</string>
@@ -333,7 +335,8 @@
   </action>
   <action name="actionStepInto">
    <property name="icon">
-    <iconset theme="debug-step-into-line"/>
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/debug-step-into-line.svg</normaloff>:/icons/monochrome/svg/debug-step-into-line.svg</iconset>
    </property>
    <property name="text">
     <string>&amp;Step Into</string>
@@ -347,7 +350,8 @@
   </action>
   <action name="actionStepOver">
    <property name="icon">
-    <iconset theme="debug-step-over-line"/>
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/debug-step-over-line.svg</normaloff>:/icons/monochrome/svg/debug-step-over-line.svg</iconset>
    </property>
    <property name="text">
     <string>Step &amp;Over</string>
@@ -361,7 +365,8 @@
   </action>
   <action name="actionToggleBreakpoint">
    <property name="icon">
-    <iconset theme="debug-toggle-breakpoint"/>
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/debug-toggle-breakpoint.svg</normaloff>:/icons/monochrome/svg/debug-toggle-breakpoint.svg</iconset>
    </property>
    <property name="text">
     <string>Toggle &amp;Breakpoint</string>
@@ -374,13 +379,18 @@
    </property>
   </action>
   <action name="actionClose">
+   <property name="icon">
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/door-open-line.svg</normaloff>:/icons/monochrome/svg/door-open-line.svg</iconset>
+   </property>
    <property name="text">
     <string>&amp;Close</string>
    </property>
   </action>
   <action name="actionStepOut">
    <property name="icon">
-    <iconset theme="debug-step-out-line"/>
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/debug-step-out-line.svg</normaloff>:/icons/monochrome/svg/debug-step-out-line.svg</iconset>
    </property>
    <property name="text">
     <string>Step O&amp;ut</string>
@@ -394,7 +404,8 @@
   </action>
   <action name="actionRunToCursor">
    <property name="icon">
-    <iconset theme="debugger-go-to-cursor"/>
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/debugger-go-to-cursor.svg</normaloff>:/icons/monochrome/svg/debugger-go-to-cursor.svg</iconset>
    </property>
    <property name="text">
     <string>&amp;Run To Cursor</string>
@@ -408,7 +419,8 @@
   </action>
   <action name="actionClearBreakpoints">
    <property name="icon">
-    <iconset theme="debugger-clear-breakpoint"/>
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/debugger-clear-breakpoint.svg</normaloff>:/icons/monochrome/svg/debugger-clear-breakpoint.svg</iconset>
    </property>
    <property name="text">
     <string>&amp;Clear Breakpoints</string>
@@ -422,7 +434,8 @@
   </action>
   <action name="actionAddBreakpoint">
    <property name="icon">
-    <iconset theme="add-line"/>
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/add-line.svg</normaloff>:/icons/monochrome/svg/add-line.svg</iconset>
    </property>
    <property name="text">
     <string>&amp;Add Breakpoint</string>
@@ -436,7 +449,8 @@
   </action>
   <action name="actionGoToPC">
    <property name="icon">
-    <iconset theme="debugger-go-to-pc"/>
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/debugger-go-to-pc.svg</normaloff>:/icons/monochrome/svg/debugger-go-to-pc.svg</iconset>
    </property>
    <property name="text">
     <string>&amp;Go To PC</string>
@@ -450,7 +464,8 @@
   </action>
   <action name="actionGoToAddress">
    <property name="icon">
-    <iconset theme="debugger-go-to-address"/>
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/debugger-go-to-address.svg</normaloff>:/icons/monochrome/svg/debugger-go-to-address.svg</iconset>
    </property>
    <property name="text">
     <string>Go To &amp;Address</string>
@@ -464,7 +479,8 @@
   </action>
   <action name="actionDumpAddress">
    <property name="icon">
-    <iconset theme="debugger-dump-address"/>
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/debugger-dump-address.svg</normaloff>:/icons/monochrome/svg/debugger-dump-address.svg</iconset>
    </property>
    <property name="text">
     <string>&amp;Dump Address</string>
@@ -475,7 +491,8 @@
   </action>
   <action name="actionTrace">
    <property name="icon">
-    <iconset theme="debug-trace-line"/>
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/debug-trace-line.svg</normaloff>:/icons/monochrome/svg/debug-trace-line.svg</iconset>
    </property>
    <property name="text">
     <string>&amp;Trace</string>

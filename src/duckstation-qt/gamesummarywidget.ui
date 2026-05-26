@@ -56,7 +56,8 @@
       <string>Restore Title</string>
      </property>
      <property name="icon">
-      <iconset theme="delete-back-2-line"/>
+      <iconset resource="resources/duckstation-qt.qrc">
+       <normaloff>:/icons/monochrome/svg/delete-back-2-line.svg</normaloff>:/icons/monochrome/svg/delete-back-2-line.svg</iconset>
      </property>
     </widget>
    </item>
@@ -79,7 +80,8 @@
       <string>Restore Disc Set Title</string>
      </property>
      <property name="icon">
-      <iconset theme="delete-back-2-line"/>
+      <iconset resource="resources/duckstation-qt.qrc">
+       <normaloff>:/icons/monochrome/svg/delete-back-2-line.svg</normaloff>:/icons/monochrome/svg/delete-back-2-line.svg</iconset>
      </property>
     </widget>
    </item>
@@ -103,7 +105,8 @@
       <string>Change Serial</string>
      </property>
      <property name="icon">
-      <iconset theme="edit-box-line"/>
+      <iconset resource="resources/duckstation-qt.qrc">
+       <normaloff>:/icons/monochrome/svg/edit-box-line.svg</normaloff>:/icons/monochrome/svg/edit-box-line.svg</iconset>
      </property>
     </widget>
    </item>
@@ -133,7 +136,8 @@
       <string>Restore Region</string>
      </property>
      <property name="icon">
-      <iconset theme="delete-back-2-line"/>
+      <iconset resource="resources/duckstation-qt.qrc">
+       <normaloff>:/icons/monochrome/svg/delete-back-2-line.svg</normaloff>:/icons/monochrome/svg/delete-back-2-line.svg</iconset>
      </property>
     </widget>
    </item>
@@ -175,7 +179,8 @@
    <item row="6" column="2">
     <widget class="QPushButton" name="compatibilityComments">
      <property name="icon">
-      <iconset theme="information-line"/>
+      <iconset resource="resources/duckstation-qt.qrc">
+       <normaloff>:/icons/monochrome/svg/information-line.svg</normaloff>:/icons/monochrome/svg/information-line.svg</iconset>
      </property>
     </widget>
    </item>
@@ -280,6 +285,10 @@
        <property name="text">
         <string>Edit...</string>
        </property>
+       <property name="icon">
+        <iconset resource="resources/duckstation-qt.qrc">
+         <normaloff>:/icons/monochrome/svg/edit-box-line.svg</normaloff>:/icons/monochrome/svg/edit-box-line.svg</iconset>
+       </property>
       </widget>
      </item>
     </layout>
@@ -310,6 +319,10 @@
       <widget class="QPushButton" name="computeHashes">
        <property name="text">
         <string>Verify</string>
+       </property>
+       <property name="icon">
+        <iconset resource="resources/duckstation-qt.qrc">
+         <normaloff>:/icons/monochrome/svg/file-check-line.svg</normaloff>:/icons/monochrome/svg/file-check-line.svg</iconset>
        </property>
       </widget>
      </item>
@@ -376,6 +389,8 @@
    </item>
   </layout>
  </widget>
- <resources/>
+ <resources>
+  <include location="resources/duckstation-qt.qrc"/>
+ </resources>
  <connections/>
 </ui>
