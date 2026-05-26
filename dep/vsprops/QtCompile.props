@@ -119,10 +119,10 @@
 
   <!--Copy the needed dlls-->
   <ItemGroup>
-    <QtLibNames Include="Qt6Core$(QtLibSuffix);Qt6Gui$(QtLibSuffix);Qt6Widgets$(QtLibSuffix);Qt6Svg$(QtLibSuffix)" />
+    <QtLibNames Include="Qt6Core$(QtLibSuffix);Qt6Gui$(QtLibSuffix);Qt6Widgets$(QtLibSuffix)" />
     <QtDlls Include="@(QtLibNames -> '$(QtBinDir)%(Identity).dll')" />
     <!--Filter plugins to copy based on the observation that all debug versions end in "d"-->
-    <QtAllPlugins Include="$(QtPluginsDir)**\*$(QtLibSuffix).dll" />
+    <QtAllPlugins Include="$(QtPluginsDir)**\*$(QtLibSuffix).dll" Exclude="$(QtPluginsDir)iconengines\qsvgicon$(QtLibSuffix).dll;$(QtPluginsDir)imageformats\qsvg$(QtLibSuffix).dll" />
     <QtPlugins Condition="$(Configuration.Contains(Debug))" Include="@(QtAllPlugins)" />
     <QtPlugins Condition="!$(Configuration.Contains(Debug))" Exclude="$(QtPluginsDir)**\*$(QtDebugSuffix).dll" Include="@(QtAllPlugins)" />
     <QtPluginsDest Include="@(QtPlugins -> '$(BinaryOutputDir)$(QtPluginFolder)\%(RecursiveDir)%(Filename)%(Extension)')" />

@@ -54,6 +54,7 @@
     <ClCompile Include="asyncpixmaploader.cpp" />
     <ClCompile Include="debuggingsettingswidget.cpp" />
     <ClCompile Include="asynchttprequest.cpp" />
+    <ClCompile Include="themesvgiconengine.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="qtutils.h" />
@@ -120,6 +121,7 @@
     <QtMoc Include="asyncpixmaploader.h" />
     <QtMoc Include="debuggingsettingswidget.h" />
     <QtMoc Include="asynchttprequest.h" />
+    <QtMoc Include="themesvgiconengine.h" />
   </ItemGroup>
   <ItemGroup>
     <QtUi Include="consolesettingswidget.ui" />
@@ -200,6 +202,7 @@
     <None Include="translations\duckstation-qt_az.ts">
       <Filter>translations</Filter>
     </None>
+    <None Include="themesvgiconengine.json" />
   </ItemGroup>
   <ItemGroup>
     <QtTs Include="translations\duckstation-qt_de.ts">

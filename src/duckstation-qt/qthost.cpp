@@ -62,6 +62,7 @@
 #include <QtCore/QFile>
 #include <QtCore/QTimer>
 #include <QtCore/QTranslator>
+#include <QtCore/QtPlugin>
 #include <QtGui/QClipboard>
 #include <QtGui/QKeyEvent>
 #include <algorithm>
@@ -94,6 +95,9 @@ QT_TRANSLATE_NOOP("MAC_APPLICATION_MENU", "Preferences...")
 QT_TRANSLATE_NOOP("MAC_APPLICATION_MENU", "Quit %1")
 QT_TRANSLATE_NOOP("MAC_APPLICATION_MENU", "About %1")
 #endif
+
+Q_IMPORT_PLUGIN(ThemeSVGIconEnginePlugin);
+Q_IMPORT_PLUGIN(PlutoSVGImagePlugin);
 
 static constexpr u32 SETTINGS_SAVE_DELAY = 1000;
 
@@ -272,6 +276,7 @@ bool QtHost::EarlyProcessStartup()
     icon_theme_search_paths.emplace_back(":/icons"_L1);
   icon_theme_search_paths.emplace_back(":/standard-icons"_L1);
   QIcon::setThemeSearchPaths(icon_theme_search_paths);
+  QIcon::setThemeName("monochrome");
   return true;
 }
 
@@ -929,6 +934,34 @@ void QtHost::ApplyMigrations()
       }
     }
   }
+
+#ifdef _WIN32
+#ifdef _DEBUG
+#define SUFFIX "d"
+#else
+#define SUFFIX
+#endif
+  // Remove Qt6Svg.dll and the plugins which use QtSvg, since the updater can't remove them itself...
+  for (const char* path_to_remove : {
+         "Qt6Svg" SUFFIX ".dll",
+         "QtPlugins\\iconengines\\qsvgicon" SUFFIX ".dll",
+         "QtPlugins\\imageformats\\qsvg" SUFFIX ".dll",
+       })
+  {
+    const std::string full_path = Path::Combine(EmuFolders::AppRoot, path_to_remove);
+    if (FileSystem::FileExists(full_path.c_str()))
+    {
+      Error error;
+      if (!FileSystem::DeleteFile(full_path.c_str(), &error))
+      {
+        QMessageBox::critical(nullptr, "Error"_L1,
+                              QString::fromStdString(fmt::format("Failed to delete conflicting library {}: {}",
+                                                                 path_to_remove, error.GetDescription())));
+      }
+    }
+  }
+#undef SUFFIX
+#endif
 }
 
 void CoreThread::applySettings(bool display_osd_messages /* = false */)
