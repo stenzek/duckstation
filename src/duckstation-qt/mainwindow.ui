@@ -717,7 +717,7 @@
     <enum>QAction::MenuRole::PreferencesRole</enum>
    </property>
   </action>
-  <action name="actionSettings2">
+  <action name="actionToolbarSettings">
    <property name="icon">
     <iconset theme="settings-3-line"/>
    </property>
@@ -1150,7 +1150,7 @@
     <string>Opens or closes the controller-based &quot;big picture&quot; mode.</string>
    </property>
   </action>
-  <action name="actionStartFullscreenUI2">
+  <action name="actionToolbarStartFullscreenUI">
    <property name="icon">
     <iconset theme="tv-2-line"/>
    </property>
