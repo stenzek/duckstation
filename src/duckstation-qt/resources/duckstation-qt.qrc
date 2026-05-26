@@ -21,18 +21,8 @@
 		<file>icons/black/svg/checkbox-unchecked-disabled.svg</file>
 		<file>icons/black/svg/checkbox-unchecked-pressed.svg</file>
 		<file>icons/black/svg/checkbox-unchecked.svg</file>
-		<file>icons/debug-execute-from-cursor.png</file>
-		<file>icons/debug-execute-to-cursor.png</file>
 		<file>icons/debug-pc.png</file>
 		<file>icons/debug-pc@2x.png</file>
-		<file>icons/debug-run-cursor.png</file>
-		<file>icons/debug-run.png</file>
-		<file>icons/debug-step-instruction.png</file>
-		<file>icons/debug-step-into-instruction.png</file>
-		<file>icons/debug-step-into.png</file>
-		<file>icons/debug-step-out.png</file>
-		<file>icons/debug-step-over.png</file>
-		<file>icons/debug-trace.png</file>
 		<file>icons/flags/az.png</file>
 		<file>icons/flags/az@2x.png</file>
 		<file>icons/flags/de.png</file>
