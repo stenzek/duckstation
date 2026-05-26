@@ -1980,6 +1980,10 @@ void MainWindow::setupAdditionalUi()
 #endif
 
   QtUtils::StyleChildMenus(this);
+
+#ifdef __APPLE__
+  QtUtils::SetIsMaskForMonochromeMenuBarActionIcons(menuBar());
+#endif
 }
 
 void MainWindow::onGameListSortIndicatorOrderChanged(int column, Qt::SortOrder order)

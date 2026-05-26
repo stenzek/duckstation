@@ -27,6 +27,7 @@
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QMainWindow>
 #include <QtWidgets/QMenu>
+#include <QtWidgets/QMenuBar>
 #include <QtWidgets/QMessageBox>
 #include <QtWidgets/QScrollBar>
 #include <QtWidgets/QSlider>
@@ -53,6 +54,7 @@ namespace QtUtils {
 
 static bool TryMigrateWindowGeometry(SettingsInterface* si, std::string_view window_name, QWidget* widget);
 static void SetMessageBoxStyle(QMessageBox* const dlg);
+static void SetIsMaskForMonochromeMenuBarActionIcons(QMenu* const menu);
 
 static constexpr const char* WINDOW_GEOMETRY_CONFIG_SECTION = "UI";
 
@@ -671,6 +673,39 @@ void QtUtils::CenterWindowRelativeToParent(QWidget* window, const QWidget* paren
   window_geometry.moveCenter(parent_center_pos);
 
   window->setGeometry(window_geometry);
+}
+
+void QtUtils::SetIsMaskForMonochromeMenuBarActionIcons(QMenu* const menu)
+{
+  const QList<QAction*> actions = menu->actions();
+  for (QAction* const action : actions)
+  {
+    if (QMenu* const submenu = action->menu())
+      SetIsMaskForMonochromeMenuBarActionIcons(submenu);
+
+    QIcon icon = action->icon();
+    if (icon.isNull())
+      continue;
+
+    // Skip icons that aren't monochrome.
+    const QString icon_name = icon.name();
+    if (!icon_name.startsWith(":/icons/monochrome/"_L1))
+      continue;
+
+    // Annoyingly this creates a new icon, we can't modify the existing icon.
+    icon.setIsMask(true);
+    action->setIcon(icon);
+  }
+}
+
+void QtUtils::SetIsMaskForMonochromeMenuBarActionIcons(QMenuBar* const menubar)
+{
+  const QList<QAction*> actions = menubar->actions();
+  for (QAction* const action : actions)
+  {
+    if (QMenu* const menu = action->menu())
+      SetIsMaskForMonochromeMenuBarActionIcons(menu);
+  }
 }
 
 bool QtUtils::TryMigrateWindowGeometry(SettingsInterface* si, std::string_view window_name, QWidget* widget)

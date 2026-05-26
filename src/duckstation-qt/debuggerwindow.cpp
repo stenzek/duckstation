@@ -459,6 +459,10 @@ void DebuggerWindow::setupAdditionalUi()
 
   setCentralWidget(nullptr);
   delete m_ui.centralwidget;
+
+#ifdef __APPLE__
+  QtUtils::SetIsMaskForMonochromeMenuBarActionIcons(menuBar());
+#endif
 }
 
 void DebuggerWindow::connectSignals()

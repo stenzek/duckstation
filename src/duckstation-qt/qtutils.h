@@ -26,6 +26,7 @@ class QGridLayout;
 class QKeyEvent;
 class QLabel;
 class QMenu;
+class QMenuBar;
 class QSlider;
 class QTableView;
 class QTreeView;
@@ -187,6 +188,10 @@ bool RestoreWindowGeometry(std::string_view window_name, QWidget* widget);
 
 /// Positions a window in the center of its parent or the screen.
 void CenterWindowRelativeToParent(QWidget* window, const QWidget* parent_window);
+
+/// Sets the isMask property on all monochrome icons in a menu bar, which is necessary for correct
+/// colouring in the MacOS global menu bar. Does not need to be called on other platforms.
+void SetIsMaskForMonochromeMenuBarActionIcons(QMenuBar* const menubar);
 
 /// CPU-friendly way of blocking the UI thread while some predicate holds true.
 template<typename Predicate>
