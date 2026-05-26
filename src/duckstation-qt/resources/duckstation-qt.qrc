@@ -11,18 +11,6 @@
 		<file>icons/UpdateDuck.png</file>
 		<file>icons/applications-system.png</file>
 		<file>icons/applications-system@2x.png</file>
-		<file>icons/black/index.theme</file>
-		<file>icons/black/svg/add-animation.svg</file>
-		<file>icons/black/svg/add-line.svg</file>
-		<file>icons/black/svg/alert-line.svg</file>
-		<file>icons/black/svg/arrow-down-line.svg</file>
-		<file>icons/black/svg/arrow-left-right-line.svg</file>
-		<file>icons/black/svg/arrow-up-line.svg</file>
-		<file>icons/black/svg/artboard-2-line.svg</file>
-		<file>icons/black/svg/camera-switch-line.svg</file>
-		<file>icons/black/svg/chat-history-line.svg</file>
-		<file>icons/black/svg/chat-off-line.svg</file>
-		<file>icons/black/svg/cheats-line.svg</file>
 		<file>icons/black/svg/checkbox-checked-disabled.svg</file>
 		<file>icons/black/svg/checkbox-checked-pressed.svg</file>
 		<file>icons/black/svg/checkbox-checked.svg</file>
@@ -33,97 +21,6 @@
 		<file>icons/black/svg/checkbox-unchecked-disabled.svg</file>
 		<file>icons/black/svg/checkbox-unchecked-pressed.svg</file>
 		<file>icons/black/svg/checkbox-unchecked.svg</file>
-		<file>icons/black/svg/chip-2-line.svg</file>
-		<file>icons/black/svg/chip-line.svg</file>
-		<file>icons/black/svg/close-line.svg</file>
-		<file>icons/black/svg/code-line.svg</file>
-		<file>icons/black/svg/controller-digital-line.svg</file>
-		<file>icons/black/svg/controller-line.svg</file>
-		<file>icons/black/svg/controller-strike-line.svg</file>
-		<file>icons/black/svg/controllers-line.svg</file>
-		<file>icons/black/svg/debug-step-into-line.svg</file>
-		<file>icons/black/svg/debug-step-out-line.svg</file>
-		<file>icons/black/svg/debug-step-over-line.svg</file>
-		<file>icons/black/svg/debug-toggle-breakpoint.svg</file>
-		<file>icons/black/svg/debug-trace-line.svg</file>
-		<file>icons/black/svg/debugger-clear-breakpoint.svg</file>
-		<file>icons/black/svg/debugger-dump-address.svg</file>
-		<file>icons/black/svg/debugger-go-to-address.svg</file>
-		<file>icons/black/svg/debugger-go-to-cursor.svg</file>
-		<file>icons/black/svg/debugger-go-to-pc.svg</file>
-		<file>icons/black/svg/delete-back-2-line.svg</file>
-		<file>icons/black/svg/disc-eject-line.svg</file>
-		<file>icons/black/svg/disc-line.svg</file>
-		<file>icons/black/svg/door-open-line.svg</file>
-		<file>icons/black/svg/download-2-line.svg</file>
-		<file>icons/black/svg/edit-box-line.svg</file>
-		<file>icons/black/svg/eject-line.svg</file>
-		<file>icons/black/svg/emulation-line.svg</file>
-		<file>icons/black/svg/export-line.svg</file>
-		<file>icons/black/svg/file-add-line.svg</file>
-		<file>icons/black/svg/file-forbid-line.svg</file>
-		<file>icons/black/svg/file-line.svg</file>
-		<file>icons/black/svg/file-list-line.svg</file>
-		<file>icons/black/svg/file-music-line.svg</file>
-		<file>icons/black/svg/file-reduce-line.svg</file>
-		<file>icons/black/svg/file-search-line.svg</file>
-		<file>icons/black/svg/file-settings-line.svg</file>
-		<file>icons/black/svg/file-unknow-line.svg</file>
-		<file>icons/black/svg/filter-line.svg</file>
-		<file>icons/black/svg/flashlight-line.svg</file>
-		<file>icons/black/svg/folder-add-line.svg</file>
-		<file>icons/black/svg/folder-line.svg</file>
-		<file>icons/black/svg/folder-open-line.svg</file>
-		<file>icons/black/svg/folder-reduce-line.svg</file>
-		<file>icons/black/svg/folder-settings-line.svg</file>
-		<file>icons/black/svg/fullscreen-line.svg</file>
-		<file>icons/black/svg/function-line.svg</file>
-		<file>icons/black/svg/global-line.svg</file>
-		<file>icons/black/svg/guncon-line.svg</file>
-		<file>icons/black/svg/image-fill.svg</file>
-		<file>icons/black/svg/import-line.svg</file>
-		<file>icons/black/svg/information-line.svg</file>
-		<file>icons/black/svg/joystick-line.svg</file>
-		<file>icons/black/svg/keyboard-line.svg</file>
-		<file>icons/black/svg/language.svg</file>
-		<file>icons/black/svg/layout-grid-line.svg</file>
-		<file>icons/black/svg/lightbulb-line.svg</file>
-		<file>icons/black/svg/list-check.svg</file>
-		<file>icons/black/svg/mag-line.svg</file>
-		<file>icons/black/svg/memcard-line.svg</file>
-		<file>icons/black/svg/minus-line.svg</file>
-		<file>icons/black/svg/mouse-line.svg</file>
-		<file>icons/black/svg/multi-discs.svg</file>
-		<file>icons/black/svg/negcon-line.svg</file>
-		<file>icons/black/svg/numbers-fill.svg</file>
-		<file>icons/black/svg/open-folder-line.svg</file>
-		<file>icons/black/svg/paint-brush-line.svg</file>
-		<file>icons/black/svg/pause-line.svg</file>
-		<file>icons/black/svg/play-circle-line.svg</file>
-		<file>icons/black/svg/play-line.svg</file>
-		<file>icons/black/svg/play-list-2-line.svg</file>
-		<file>icons/black/svg/price-tag-3-line.svg</file>
-		<file>icons/black/svg/pushpin-line.svg</file>
-		<file>icons/black/svg/refresh-line.svg</file>
-		<file>icons/black/svg/restart-line.svg</file>
-		<file>icons/black/svg/save-3-line.svg</file>
-		<file>icons/black/svg/screenshot-2-line.svg</file>
-		<file>icons/black/svg/settings-3-line.svg</file>
-		<file>icons/black/svg/shader-glsl.svg</file>
-		<file>icons/black/svg/shader-reshade.svg</file>
-		<file>icons/black/svg/shader-slang.svg</file>
-		<file>icons/black/svg/shut-down-line.svg</file>
-		<file>icons/black/svg/sort-alphabet-asc.svg</file>
-		<file>icons/black/svg/sparkle-fill.svg</file>
-		<file>icons/black/svg/sparkling-line.svg</file>
-		<file>icons/black/svg/sun-fill.svg</file>
-		<file>icons/black/svg/trash-fill.svg</file>
-		<file>icons/black/svg/trophy-line.svg</file>
-		<file>icons/black/svg/tv-2-line.svg</file>
-		<file>icons/black/svg/video-on-line.svg</file>
-		<file>icons/black/svg/vidicon-line.svg</file>
-		<file>icons/black/svg/volume-up-line.svg</file>
-		<file>icons/black/svg/window-2-line.svg</file>
 		<file>icons/debug-execute-from-cursor.png</file>
 		<file>icons/debug-execute-to-cursor.png</file>
 		<file>icons/debug-pc.png</file>
@@ -299,18 +196,6 @@
 		<file>icons/monochrome/svg/window-2-line.svg</file>
 		<file>icons/system-search.png</file>
 		<file>icons/system-search@2x.png</file>
-		<file>icons/white/index.theme</file>
-		<file>icons/white/svg/add-animation.svg</file>
-		<file>icons/white/svg/add-line.svg</file>
-		<file>icons/white/svg/alert-line.svg</file>
-		<file>icons/white/svg/arrow-down-line.svg</file>
-		<file>icons/white/svg/arrow-left-right-line.svg</file>
-		<file>icons/white/svg/arrow-up-line.svg</file>
-		<file>icons/white/svg/artboard-2-line.svg</file>
-		<file>icons/white/svg/camera-switch-line.svg</file>
-		<file>icons/white/svg/chat-history-line.svg</file>
-		<file>icons/white/svg/chat-off-line.svg</file>
-		<file>icons/white/svg/cheats-line.svg</file>
 		<file>icons/white/svg/checkbox-checked-disabled.svg</file>
 		<file>icons/white/svg/checkbox-checked-pressed.svg</file>
 		<file>icons/white/svg/checkbox-checked.svg</file>
@@ -321,97 +206,6 @@
 		<file>icons/white/svg/checkbox-unchecked-disabled.svg</file>
 		<file>icons/white/svg/checkbox-unchecked-pressed.svg</file>
 		<file>icons/white/svg/checkbox-unchecked.svg</file>
-		<file>icons/white/svg/chip-2-line.svg</file>
-		<file>icons/white/svg/chip-line.svg</file>
-		<file>icons/white/svg/close-line.svg</file>
-		<file>icons/white/svg/code-line.svg</file>
-		<file>icons/white/svg/controller-digital-line.svg</file>
-		<file>icons/white/svg/controller-line.svg</file>
-		<file>icons/white/svg/controller-strike-line.svg</file>
-		<file>icons/white/svg/controllers-line.svg</file>
-		<file>icons/white/svg/debug-step-into-line.svg</file>
-		<file>icons/white/svg/debug-step-out-line.svg</file>
-		<file>icons/white/svg/debug-step-over-line.svg</file>
-		<file>icons/white/svg/debug-toggle-breakpoint.svg</file>
-		<file>icons/white/svg/debug-trace-line.svg</file>
-		<file>icons/white/svg/debugger-clear-breakpoint.svg</file>
-		<file>icons/white/svg/debugger-dump-address.svg</file>
-		<file>icons/white/svg/debugger-go-to-address.svg</file>
-		<file>icons/white/svg/debugger-go-to-cursor.svg</file>
-		<file>icons/white/svg/debugger-go-to-pc.svg</file>
-		<file>icons/white/svg/delete-back-2-line.svg</file>
-		<file>icons/white/svg/disc-eject-line.svg</file>
-		<file>icons/white/svg/disc-line.svg</file>
-		<file>icons/white/svg/door-open-line.svg</file>
-		<file>icons/white/svg/download-2-line.svg</file>
-		<file>icons/white/svg/edit-box-line.svg</file>
-		<file>icons/white/svg/eject-line.svg</file>
-		<file>icons/white/svg/emulation-line.svg</file>
-		<file>icons/white/svg/export-line.svg</file>
-		<file>icons/white/svg/file-add-line.svg</file>
-		<file>icons/white/svg/file-forbid-line.svg</file>
-		<file>icons/white/svg/file-line.svg</file>
-		<file>icons/white/svg/file-list-line.svg</file>
-		<file>icons/white/svg/file-music-line.svg</file>
-		<file>icons/white/svg/file-reduce-line.svg</file>
-		<file>icons/white/svg/file-search-line.svg</file>
-		<file>icons/white/svg/file-settings-line.svg</file>
-		<file>icons/white/svg/file-unknow-line.svg</file>
-		<file>icons/white/svg/filter-line.svg</file>
-		<file>icons/white/svg/flashlight-line.svg</file>
-		<file>icons/white/svg/folder-add-line.svg</file>
-		<file>icons/white/svg/folder-line.svg</file>
-		<file>icons/white/svg/folder-open-line.svg</file>
-		<file>icons/white/svg/folder-reduce-line.svg</file>
-		<file>icons/white/svg/folder-settings-line.svg</file>
-		<file>icons/white/svg/fullscreen-line.svg</file>
-		<file>icons/white/svg/function-line.svg</file>
-		<file>icons/white/svg/global-line.svg</file>
-		<file>icons/white/svg/guncon-line.svg</file>
-		<file>icons/white/svg/image-fill.svg</file>
-		<file>icons/white/svg/import-line.svg</file>
-		<file>icons/white/svg/information-line.svg</file>
-		<file>icons/white/svg/joystick-line.svg</file>
-		<file>icons/white/svg/keyboard-line.svg</file>
-		<file>icons/white/svg/language.svg</file>
-		<file>icons/white/svg/layout-grid-line.svg</file>
-		<file>icons/white/svg/lightbulb-line.svg</file>
-		<file>icons/white/svg/list-check.svg</file>
-		<file>icons/white/svg/mag-line.svg</file>
-		<file>icons/white/svg/memcard-line.svg</file>
-		<file>icons/white/svg/minus-line.svg</file>
-		<file>icons/white/svg/mouse-line.svg</file>
-		<file>icons/white/svg/multi-discs.svg</file>
-		<file>icons/white/svg/negcon-line.svg</file>
-		<file>icons/white/svg/numbers-fill.svg</file>
-		<file>icons/white/svg/open-folder-line.svg</file>
-		<file>icons/white/svg/paint-brush-line.svg</file>
-		<file>icons/white/svg/pause-line.svg</file>
-		<file>icons/white/svg/play-circle-line.svg</file>
-		<file>icons/white/svg/play-line.svg</file>
-		<file>icons/white/svg/play-list-2-line.svg</file>
-		<file>icons/white/svg/price-tag-3-line.svg</file>
-		<file>icons/white/svg/pushpin-line.svg</file>
-		<file>icons/white/svg/refresh-line.svg</file>
-		<file>icons/white/svg/restart-line.svg</file>
-		<file>icons/white/svg/save-3-line.svg</file>
-		<file>icons/white/svg/screenshot-2-line.svg</file>
-		<file>icons/white/svg/settings-3-line.svg</file>
-		<file>icons/white/svg/shader-glsl.svg</file>
-		<file>icons/white/svg/shader-reshade.svg</file>
-		<file>icons/white/svg/shader-slang.svg</file>
-		<file>icons/white/svg/shut-down-line.svg</file>
-		<file>icons/white/svg/sort-alphabet-asc.svg</file>
-		<file>icons/white/svg/sparkle-fill.svg</file>
-		<file>icons/white/svg/sparkling-line.svg</file>
-		<file>icons/white/svg/sun-fill.svg</file>
-		<file>icons/white/svg/trash-fill.svg</file>
-		<file>icons/white/svg/trophy-line.svg</file>
-		<file>icons/white/svg/tv-2-line.svg</file>
-		<file>icons/white/svg/video-on-line.svg</file>
-		<file>icons/white/svg/vidicon-line.svg</file>
-		<file>icons/white/svg/volume-up-line.svg</file>
-		<file>icons/white/svg/window-2-line.svg</file>
 		<file>qdarkstyle/arrow_down.png</file>
 		<file>qdarkstyle/arrow_down@2x.png</file>
 		<file>qdarkstyle/arrow_down_disabled.png</file>
@@ -621,27 +415,6 @@
 		<file>qdarkstyle/window_undock_focus@2x.png</file>
 		<file>qdarkstyle/window_undock_pressed.png</file>
 		<file>qdarkstyle/window_undock_pressed@2x.png</file>
-		<file>standard-icons/black/index.theme</file>
-		<file>standard-icons/black/svg/computer.svg</file>
-		<file>standard-icons/black/svg/dialog-cancel.svg</file>
-		<file>standard-icons/black/svg/dialog-ok.svg</file>
-		<file>standard-icons/black/svg/document-save.svg</file>
-		<file>standard-icons/black/svg/edit-clear.svg</file>
-		<file>standard-icons/black/svg/edit-delete.svg</file>
-		<file>standard-icons/black/svg/folder-new.svg</file>
-		<file>standard-icons/black/svg/folder-open.svg</file>
-		<file>standard-icons/black/svg/folder.svg</file>
-		<file>standard-icons/black/svg/go-down.svg</file>
-		<file>standard-icons/black/svg/go-next.svg</file>
-		<file>standard-icons/black/svg/go-previous.svg</file>
-		<file>standard-icons/black/svg/go-up.svg</file>
-		<file>standard-icons/black/svg/media-optical.svg</file>
-		<file>standard-icons/black/svg/text-x-generic.svg</file>
-		<file>standard-icons/black/svg/user-home.svg</file>
-		<file>standard-icons/black/svg/view-list-details.svg</file>
-		<file>standard-icons/black/svg/view-list-icons.svg</file>
-		<file>standard-icons/black/svg/view-refresh.svg</file>
-		<file>standard-icons/black/svg/window-close.svg</file>
 		<file>standard-icons/monochrome/index.theme</file>
 		<file>standard-icons/monochrome/svg/computer.svg</file>
 		<file>standard-icons/monochrome/svg/dialog-cancel.svg</file>
@@ -663,27 +436,6 @@
 		<file>standard-icons/monochrome/svg/view-list-icons.svg</file>
 		<file>standard-icons/monochrome/svg/view-refresh.svg</file>
 		<file>standard-icons/monochrome/svg/window-close.svg</file>
-		<file>standard-icons/white/index.theme</file>
-		<file>standard-icons/white/svg/computer.svg</file>
-		<file>standard-icons/white/svg/dialog-cancel.svg</file>
-		<file>standard-icons/white/svg/dialog-ok.svg</file>
-		<file>standard-icons/white/svg/document-save.svg</file>
-		<file>standard-icons/white/svg/edit-clear.svg</file>
-		<file>standard-icons/white/svg/edit-delete.svg</file>
-		<file>standard-icons/white/svg/folder-new.svg</file>
-		<file>standard-icons/white/svg/folder-open.svg</file>
-		<file>standard-icons/white/svg/folder.svg</file>
-		<file>standard-icons/white/svg/go-down.svg</file>
-		<file>standard-icons/white/svg/go-next.svg</file>
-		<file>standard-icons/white/svg/go-previous.svg</file>
-		<file>standard-icons/white/svg/go-up.svg</file>
-		<file>standard-icons/white/svg/media-optical.svg</file>
-		<file>standard-icons/white/svg/text-x-generic.svg</file>
-		<file>standard-icons/white/svg/user-home.svg</file>
-		<file>standard-icons/white/svg/view-list-details.svg</file>
-		<file>standard-icons/white/svg/view-list-icons.svg</file>
-		<file>standard-icons/white/svg/view-refresh.svg</file>
-		<file>standard-icons/white/svg/window-close.svg</file>
 		<file>themes/AMOLED.qss</file>
 		<file>themes/cobaltsky.qss</file>
 		<file>themes/darkerfusion.qss</file>
