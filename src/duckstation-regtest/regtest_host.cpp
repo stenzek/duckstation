@@ -131,8 +131,9 @@ void Host::ReportStatusMessage(std::string_view message)
   INFO_LOG("ReportStatusMessage: {}", message);
 }
 
-void Host::ConfirmMessageAsync(std::string_view title, std::string_view message, ConfirmMessageAsyncCallback callback,
-                               std::string_view yes_text, std::string_view no_text)
+void Host::ConfirmMessageAsync(std::string_view icon, std::string_view title, std::string_view message,
+                               ConfirmMessageAsyncCallback callback, std::string_view yes_text,
+                               std::string_view no_text)
 {
   if (!title.empty() && !message.empty())
     ERROR_LOG("ConfirmMessage: {}: {}", title, message);

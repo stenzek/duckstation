@@ -2396,7 +2396,7 @@ void Achievements::Logout()
 void Achievements::ConfirmHardcoreModeDisableAsync(std::string_view trigger, std::function<void(bool)> callback)
 {
   Host::ConfirmMessageAsync(
-    TRANSLATE_STR("Achievements", "Confirm Hardcore Mode Disable"),
+    RA_LOGO_SVG_ICON_NAME, TRANSLATE_STR("Achievements", "Confirm Hardcore Mode Disable"),
     fmt::format(TRANSLATE_FS("Achievements", "{0} cannot be performed while hardcore mode is active. Do you want to "
                                              "disable hardcore mode? {0} will be cancelled if you select No."),
                 trigger),

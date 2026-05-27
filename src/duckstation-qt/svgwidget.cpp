@@ -180,3 +180,66 @@ void SVGWidget::changeEvent(QEvent* event)
     update();
   }
 }
+
+QPixmap SVGWidget::renderSVGToPixmap(const QString& resource_path, const QSize& size, qreal device_pixel_ratio,
+                                     const QColor& color)
+{
+  DynamicHeapArray<u8> svg_data;
+  QFile file(resource_path);
+  if (!file.open(QFile::ReadOnly) || !QtUtils::ReadFileToByteArray(&file, svg_data))
+  {
+    qCritical() << "Failed to open SVG file: " << resource_path;
+    return {};
+  }
+
+  // plutosvg borrows the raw pointer; svg_data must outlive m_document.
+  plutosvg_document* const document = plutosvg_document_load_from_data(
+    reinterpret_cast<const char*>(svg_data.data()), static_cast<int>(svg_data.size()), -1.0f, -1.0f, nullptr, nullptr);
+  if (!document)
+  {
+    qCritical() << "PlutoSVGWidget: failed to parse SVG" << resource_path;
+    return {};
+  }
+
+  // Determine SVG intrinsic size and compute a uniform scale that fits inside physical,
+  // preserving aspect ratio.
+  const float svg_w = plutosvg_document_get_width(document);
+  const float svg_h = plutosvg_document_get_height(document);
+
+  const QSize physical = QtUtils::ApplyDevicePixelRatioToSize(size, device_pixel_ratio);
+  int render_w = physical.width();
+  int render_h = physical.height();
+
+  if (svg_w > 0.0f && svg_h > 0.0f)
+  {
+    // Scale to fit, preserving aspect ratio (letterbox / pillarbox).
+    const float scale_x = static_cast<float>(physical.width()) / svg_w;
+    const float scale_y = static_cast<float>(physical.height()) / svg_h;
+    const float scale = std::min(scale_x, scale_y);
+    render_w = std::max(1, static_cast<int>(svg_w * scale));
+    render_h = std::max(1, static_cast<int>(svg_h * scale));
+  }
+
+  // Use white as currentColor so the SVG's own colours are preserved.
+  // Swap in a palette colour here if tinting is ever desired.
+  const plutovg_color_t current_color = {.r = 1.0f, .g = 1.0f, .b = 1.0f, .a = 1.0f};
+
+  plutovg_surface_t* const surface =
+    plutosvg_document_render_to_surface(document, nullptr, render_w, render_h, &current_color, nullptr, nullptr);
+  if (!surface)
+  {
+    qCritical() << "PlutoSVGWidget: render failed for" << resource_path;
+    plutosvg_document_destroy(document);
+    return {};
+  }
+
+  // plutovg surfaces are premultiplied ARGB (native-endian) == QImage::Format_ARGB32_Premultiplied.
+  const QImage img(plutovg_surface_get_data(surface), plutovg_surface_get_width(surface),
+                   plutovg_surface_get_height(surface), plutovg_surface_get_stride(surface),
+                   QImage::Format_ARGB32_Premultiplied, CleanupSurface, surface);
+
+  QPixmap pm = QPixmap::fromImage(img);
+  pm.setDevicePixelRatio(device_pixel_ratio);
+  plutosvg_document_destroy(document);
+  return pm;
+}

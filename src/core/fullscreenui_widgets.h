@@ -566,16 +566,15 @@ using ConfirmMessageDialogCallback = std::function<void(bool)>;
 using InfoMessageDialogCallback = std::function<void()>;
 using MessageDialogCallback = std::function<void(s32)>;
 bool IsMessageBoxDialogOpen();
-void OpenConfirmMessageDialog(std::string_view icon, std::string_view title, std::string message,
+void OpenConfirmMessageDialog(std::string icon, std::string_view title, std::string message,
                               ConfirmMessageDialogCallback callback,
                               std::string yes_button_text = FSUI_ICONSTR(ICON_FA_CHECK, "Yes"),
                               std::string no_button_text = FSUI_ICONSTR(ICON_FA_XMARK, "No"));
-void OpenInfoMessageDialog(std::string_view icon, std::string_view title, std::string message,
+void OpenInfoMessageDialog(std::string icon, std::string_view title, std::string message,
                            InfoMessageDialogCallback callback = {},
                            std::string button_text = FSUI_ICONSTR(ICON_FA_SQUARE_XMARK, "Close"));
-void OpenMessageDialog(std::string_view icon, std::string_view title, std::string message,
-                       MessageDialogCallback callback, std::string first_button_text, std::string second_button_text,
-                       std::string third_button_text);
+void OpenMessageDialog(std::string icon, std::string_view title, std::string message, MessageDialogCallback callback,
+                       std::string first_button_text, std::string second_button_text, std::string third_button_text);
 void CloseMessageDialog();
 
 std::unique_ptr<ProgressCallbackWithPrompt> OpenModalProgressDialog(std::string title,

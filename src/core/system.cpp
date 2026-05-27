@@ -1684,7 +1684,7 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
     if (Core::GetBoolSettingValue("CDROM", "AllowBootingWithoutSBIFile", false))
     {
       Host::ConfirmMessageAsync(
-        "Confirm Unsupported Configuration",
+        "images/warning.svg", "Confirm Unsupported Configuration",
         fmt::format(TRANSLATE_FS("System",
                                  "You are attempting to run a libcrypt protected game without an SBI file:\n\n{0}: "
                                  "{1}\n\nThe game will likely not run properly.\n\nPlease check the README for "

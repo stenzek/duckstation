@@ -40,6 +40,10 @@ public:
   /// Returns the path that was passed to setSource().
   const QString& source() const { return m_resource_path; }
 
+  /// Renders a SVG for the specified widget and returns it.
+  static QPixmap renderSVGToPixmap(const QString& resource_path, const QSize& size, qreal device_pixel_ratio,
+                                   const QColor& color = QColor());
+
 protected:
   void paintEvent(QPaintEvent* event) override;
   void resizeEvent(QResizeEvent* event) override;

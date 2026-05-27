@@ -49,8 +49,9 @@ void ReportStatusMessage(std::string_view message);
 /// Displays an asynchronous confirmation on the UI thread, but does not block the caller.
 /// The callback may be executed on a different thread. Use RunOnCoreThread() in the callback to ensure safety.
 using ConfirmMessageAsyncCallback = std::function<void(bool)>;
-void ConfirmMessageAsync(std::string_view title, std::string_view message, ConfirmMessageAsyncCallback callback,
-                         std::string_view yes_text = std::string_view(), std::string_view no_text = std::string_view());
+void ConfirmMessageAsync(std::string_view icon, std::string_view title, std::string_view message,
+                         ConfirmMessageAsyncCallback callback, std::string_view yes_text = std::string_view(),
+                         std::string_view no_text = std::string_view());
 
 /// Opens a URL, using the default application.
 void OpenURL(std::string_view url);

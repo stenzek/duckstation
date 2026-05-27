@@ -207,7 +207,7 @@ public:
   MessageDialog();
   ~MessageDialog();
 
-  void Open(std::string_view icon, std::string_view title, std::string message, CallbackVariant callback,
+  void Open(std::string icon, std::string_view title, std::string message, CallbackVariant callback,
             std::string first_button_text, std::string second_button_text, std::string third_button_text);
   void ClearState();
 
@@ -350,7 +350,7 @@ private:
                        std::string_view no_text = {}) override;
 
   protected:
-    static std::string_view GetIconString(PromptIcon icon);
+    static std::string GetIconString(PromptIcon icon);
 
     void StateChanged(StateChange changed) override;
   };
@@ -5438,12 +5438,12 @@ FullscreenUI::MessageDialog::MessageDialog() = default;
 
 FullscreenUI::MessageDialog::~MessageDialog() = default;
 
-void FullscreenUI::MessageDialog::Open(std::string_view icon, std::string_view title, std::string message,
+void FullscreenUI::MessageDialog::Open(std::string icon, std::string_view title, std::string message,
                                        CallbackVariant callback, std::string first_button_text,
                                        std::string second_button_text, std::string third_button_text)
 {
   SetTitleAndOpen(fmt::format("{}##message_dialog", title));
-  m_icon = icon;
+  m_icon = std::move(icon);
   m_message = std::move(message);
   m_callback = std::move(callback);
   m_buttons[0] = std::move(first_button_text);
@@ -5476,9 +5476,17 @@ void FullscreenUI::MessageDialog::Draw()
 
   if (!m_icon.empty())
   {
-    ImGui::PushFont(nullptr, LayoutScale(50.0f), 0.0f);
-    ImGui::TextUnformatted(IMSTR_START_END(m_icon));
-    ImGui::PopFont();
+    const ImVec2 icon_size = LayoutScale(52.0f, 52.0f);
+    if (Path::IsAbsolute(m_icon))
+    {
+      ImGui::Image(GetCachedTexture(m_icon, icon_size), icon_size);
+    }
+    else
+    {
+      ImGui::PushFont(nullptr, LayoutScale(52.0f), 0.0f);
+      ImGui::TextUnformatted(IMSTR_START_END(m_icon));
+      ImGui::PopFont();
+    }
     ImGui::SameLine();
     ImGui::SetCursorPosX(ImGui::GetCursorPosX() + LayoutScale(10.0f));
   }
@@ -5553,26 +5561,26 @@ bool FullscreenUI::IsMessageBoxDialogOpen()
   return s_state.message_dialog.IsOpen();
 }
 
-void FullscreenUI::OpenConfirmMessageDialog(std::string_view icon, std::string_view title, std::string message,
+void FullscreenUI::OpenConfirmMessageDialog(std::string icon, std::string_view title, std::string message,
                                             ConfirmMessageDialogCallback callback, std::string yes_button_text,
                                             std::string no_button_text)
 {
-  s_state.message_dialog.Open(icon, std::move(title), std::move(message), std::move(callback),
+  s_state.message_dialog.Open(std::move(icon), std::move(title), std::move(message), std::move(callback),
                               std::move(yes_button_text), std::move(no_button_text), std::string());
 }
 
-void FullscreenUI::OpenInfoMessageDialog(std::string_view icon, std::string_view title, std::string message,
+void FullscreenUI::OpenInfoMessageDialog(std::string icon, std::string_view title, std::string message,
                                          InfoMessageDialogCallback callback, std::string button_text)
 {
-  s_state.message_dialog.Open(icon, std::move(title), std::move(message), std::move(callback), std::move(button_text),
-                              std::string(), std::string());
+  s_state.message_dialog.Open(std::move(icon), std::move(title), std::move(message), std::move(callback),
+                              std::move(button_text), std::string(), std::string());
 }
 
-void FullscreenUI::OpenMessageDialog(std::string_view icon, std::string_view title, std::string message,
+void FullscreenUI::OpenMessageDialog(std::string icon, std::string_view title, std::string message,
                                      MessageDialogCallback callback, std::string first_button_text,
                                      std::string second_button_text, std::string third_button_text)
 {
-  s_state.message_dialog.Open(icon, std::move(title), std::move(message), std::move(callback),
+  s_state.message_dialog.Open(std::move(icon), std::move(title), std::move(message), std::move(callback),
                               std::move(first_button_text), std::move(second_button_text),
                               std::move(third_button_text));
 }
@@ -5744,7 +5752,7 @@ bool FullscreenUI::ProgressDialog::ProgressCallbackImpl::IsCancelled() const
   return s_state.progress_dialog.m_cancelled.load(std::memory_order_acquire);
 }
 
-std::string_view FullscreenUI::ProgressDialog::ProgressCallbackImpl::GetIconString(PromptIcon icon)
+std::string FullscreenUI::ProgressDialog::ProgressCallbackImpl::GetIconString(PromptIcon icon)
 {
   switch (icon)
   {
