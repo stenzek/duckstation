@@ -169,7 +169,7 @@ void ControllerBindingWidget::populateWidgets()
       Ui::ControllerBindingWidget_NeGconRumble ui;
       ui.setupUi(m_bindings_widget);
       bindBindingWidgets(m_bindings_widget);
-      m_icon = QIcon(":/icons/monochrome/svg/negcon-rumble-line.svg"_L1);
+      m_icon = QIcon(":/icons/monochrome/svg/negcon-line.svg"_L1);
       image_widget = ui.image;
     }
     break;
