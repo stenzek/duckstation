@@ -254,7 +254,7 @@
     </spacer>
    </item>
    <item row="1" column="4">
-    <widget class="QLabel" name="label">
+    <widget class="SVGWidget" name="image">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
        <horstretch>0</horstretch>
@@ -272,15 +272,6 @@
        <width>230</width>
        <height>295</height>
       </size>
-     </property>
-     <property name="text">
-      <string/>
-     </property>
-     <property name="pixmap">
-      <pixmap resource="resources/duckstation-qt.qrc">:/controllers/mouse.svg</pixmap>
-     </property>
-     <property name="scaledContents">
-      <bool>true</bool>
      </property>
     </widget>
    </item>
@@ -307,6 +298,11 @@
    <class>InputBindingWidget</class>
    <extends>QPushButton</extends>
    <header>inputbindingwidgets.h</header>
+  </customwidget>
+  <customwidget>
+   <class>SVGWidget</class>
+   <extends>QWidget</extends>
+   <header>svgwidget.h</header>
   </customwidget>
  </customwidgets>
  <resources>

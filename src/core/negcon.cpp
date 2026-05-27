@@ -327,9 +327,13 @@ static const SettingInfo s_settings[] = {
    TRANSLATE_NOOP("NeGcon", "Sets scaling for left trigger."), "1", "0.01", "10", "0.01", "%.0f%%", nullptr, 100.0f},
 };
 
-const Controller::ControllerInfo NeGcon::INFO = {
-  ControllerType::NeGcon, "NeGcon",       TRANSLATE_NOOP("ControllerType", "NeGcon"),
-  ICON_PF_STEERING_WHEEL, s_binding_info, s_settings};
+const Controller::ControllerInfo NeGcon::INFO = {ControllerType::NeGcon,
+                                                 "NeGcon",
+                                                 TRANSLATE_NOOP("ControllerType", "NeGcon"),
+                                                 ICON_PF_STEERING_WHEEL,
+                                                 "images/controllers/negcon.svg",
+                                                 s_binding_info,
+                                                 s_settings};
 
 void NeGcon::LoadSettings(const SettingsInterface& si, const char* section, bool initial)
 {

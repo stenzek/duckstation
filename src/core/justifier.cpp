@@ -395,9 +395,13 @@ static const SettingInfo s_settings[] = {
    "5", "0", "80", "1", "%u", nullptr, 0.0f},
 };
 
-const Controller::ControllerInfo Justifier::INFO = {
-  ControllerType::Justifier, "Justifier",    TRANSLATE_NOOP("ControllerType", "Justifier"),
-  ICON_PF_LIGHT_GUN,         s_binding_info, s_settings};
+const Controller::ControllerInfo Justifier::INFO = {ControllerType::Justifier,
+                                                    "Justifier",
+                                                    TRANSLATE_NOOP("ControllerType", "Justifier"),
+                                                    ICON_PF_LIGHT_GUN,
+                                                    "images/controllers/justifier.svg",
+                                                    s_binding_info,
+                                                    s_settings};
 
 void Justifier::LoadSettings(const SettingsInterface& si, const char* section, bool initial)
 {

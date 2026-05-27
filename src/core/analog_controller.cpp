@@ -882,6 +882,7 @@ const Controller::ControllerInfo AnalogController::INFO = {ControllerType::Analo
                                                            "AnalogController",
                                                            TRANSLATE_NOOP("ControllerType", "Analog Controller"),
                                                            ICON_PF_GAMEPAD_ALT,
+                                                           "images/controllers/analog_controller.svg",
                                                            s_binding_info,
                                                            s_settings};
 

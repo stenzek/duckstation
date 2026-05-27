@@ -21,8 +21,13 @@
 #include "IconsPromptFont.h"
 #include "fmt/format.h"
 
-static const Controller::ControllerInfo s_none_info = {
-  ControllerType::None, "None", TRANSLATE_NOOP("ControllerType", "Not Connected"), ICON_PF_NO_CONTROLLER, {}, {}};
+static const Controller::ControllerInfo s_none_info = {ControllerType::None,
+                                                       "None",
+                                                       TRANSLATE_NOOP("ControllerType", "Not Connected"),
+                                                       ICON_PF_NO_CONTROLLER,
+                                                       nullptr,
+                                                       {},
+                                                       {}};
 
 static constexpr std::array<const Controller::ControllerInfo*, static_cast<size_t>(ControllerType::Count)>
   s_controller_info = {{

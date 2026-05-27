@@ -670,5 +670,5 @@ static const SettingInfo s_settings[] = {
 };
 
 const Controller::ControllerInfo JogCon::INFO = {
-  ControllerType::JogCon,    "JogCon",       TRANSLATE_NOOP("ControllerType", "JogCon"),
-  ICON_PF_JOGCON_CONTROLLER, s_binding_info, s_settings};
+  ControllerType::JogCon, "JogCon",  TRANSLATE_NOOP("ControllerType", "JogCon"), ICON_PF_JOGCON_CONTROLLER, nullptr,
+  s_binding_info,         s_settings};

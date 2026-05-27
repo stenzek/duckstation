@@ -1,12 +1,5 @@
 <RCC>
 	<qresource>
-		<file>controllers/analog_controller.svg</file>
-		<file>controllers/analog_joystick.svg</file>
-		<file>controllers/digital_controller.svg</file>
-		<file>controllers/guncon.svg</file>
-		<file>controllers/justifier.svg</file>
-		<file>controllers/mouse.svg</file>
-		<file>controllers/negcon.svg</file>
 		<file>icons/QT.png</file>
 		<file>icons/UpdateDuck.png</file>
 		<file>icons/applications-system.png</file>

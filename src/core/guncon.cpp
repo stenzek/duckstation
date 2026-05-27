@@ -315,9 +315,13 @@ static const SettingInfo s_settings[] = {
    nullptr, 0.0f},
 };
 
-const Controller::ControllerInfo GunCon::INFO = {
-  ControllerType::GunCon, "GunCon",       TRANSLATE_NOOP("ControllerType", "GunCon"),
-  ICON_PF_LIGHT_GUN,      s_binding_info, s_settings};
+const Controller::ControllerInfo GunCon::INFO = {ControllerType::GunCon,
+                                                 "GunCon",
+                                                 TRANSLATE_NOOP("ControllerType", "GunCon"),
+                                                 ICON_PF_LIGHT_GUN,
+                                                 "images/controllers/guncon.svg",
+                                                 s_binding_info,
+                                                 s_settings};
 
 void GunCon::LoadSettings(const SettingsInterface& si, const char* section, bool initial)
 {

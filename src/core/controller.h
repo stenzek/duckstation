@@ -37,6 +37,7 @@ public:
     const char* name;
     const char* display_name;
     const char* icon_name;
+    const char* image_name;
     std::span<const ControllerBindingInfo> bindings;
     std::span<const SettingInfo> settings;
 
