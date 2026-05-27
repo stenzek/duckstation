@@ -2746,13 +2746,13 @@ void SPU::DrawDebugStateWindow(float scale)
       ImGui::NextColumn();
       ImGui::TextColored(color, "%.2f", (float(v.regs.adpcm_sample_rate) / 4096.0f) * 44100.0f);
       ImGui::NextColumn();
-      ImGui::TextColored(color, "%d%%", ApplyVolume(100, v.left_volume.current_level));
+      ImGui::TextColored(color, "%.1f%%", ApplyVolumeF(100.0f, v.left_volume.current_level));
       ImGui::NextColumn();
-      ImGui::TextColored(color, "%d%%", ApplyVolume(100, v.right_volume.current_level));
+      ImGui::TextColored(color, "%.1f%%", ApplyVolumeF(100.0f, v.right_volume.current_level));
       ImGui::NextColumn();
       ImGui::TextColored(color, "%s", adsr_phases[static_cast<u8>(v.adsr_phase)]);
       ImGui::NextColumn();
-      ImGui::TextColored(color, "%d%%", ApplyVolume(100, v.regs.adsr_volume));
+      ImGui::TextColored(color, "%.1f%%", ApplyVolumeF(100.0f, v.regs.adsr_volume));
       ImGui::NextColumn();
       ImGui::TextColored(color, "%d", v.adsr_envelope.counter);
       ImGui::NextColumn();
