@@ -55,6 +55,7 @@
     <ClCompile Include="debuggingsettingswidget.cpp" />
     <ClCompile Include="asynchttprequest.cpp" />
     <ClCompile Include="themesvgiconengine.cpp" />
+    <ClCompile Include="svgwidget.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="qtutils.h" />
@@ -122,6 +123,7 @@
     <QtMoc Include="debuggingsettingswidget.h" />
     <QtMoc Include="asynchttprequest.h" />
     <QtMoc Include="themesvgiconengine.h" />
+    <QtMoc Include="svgwidget.h" />
   </ItemGroup>
   <ItemGroup>
     <QtUi Include="consolesettingswidget.ui" />

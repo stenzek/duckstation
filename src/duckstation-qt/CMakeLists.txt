@@ -166,6 +166,8 @@ set(SRCS
   setupwizarddialog.cpp
   setupwizarddialog.h
   setupwizarddialog.ui
+  svgwidget.cpp
+  svgwidget.h
   texturereplacementsettingsdialog.ui
   themesvgiconengine.cpp
   themesvgiconengine.h

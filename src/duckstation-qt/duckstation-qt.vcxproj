@@ -55,14 +55,17 @@
     <ClCompile Include="selectdiscdialog.cpp" />
     <ClCompile Include="settingswindow.cpp" />
     <ClCompile Include="setupwizarddialog.cpp" />
+    <ClCompile Include="svgwidget.cpp" />
     <ClCompile Include="themesvgiconengine.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <ForcedIncludeFiles></ForcedIncludeFiles>
+      <ForcedIncludeFiles>
+      </ForcedIncludeFiles>
     </ClCompile>
     <ClCompile Include="togglebutton.cpp" />
     <ClCompile Include="vcruntimecheck.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <QtMoc Include="svgwidget.h" />
     <QtMoc Include="themesvgiconengine.h" />
     <QtMoc Include="togglebutton.h" />
     <QtMoc Include="setupwizarddialog.h" />
