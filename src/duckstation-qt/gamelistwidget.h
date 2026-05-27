@@ -3,7 +3,6 @@
 
 #pragma once
 
-#include "ui_emptygamelistwidget.h"
 #include "ui_gamelistwidget.h"
 
 #include "core/game_database.h"
@@ -334,7 +333,6 @@ private:
   GameListGridView* m_grid_view = nullptr;
 
   QWidget* m_empty_widget = nullptr;
-  Ui::EmptyGameListWidget m_empty_ui;
 
   QImage m_background_image;
 

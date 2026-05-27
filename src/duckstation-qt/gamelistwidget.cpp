@@ -44,8 +44,11 @@
 #include <limits>
 
 #include "moc_gamelistwidget.cpp"
+#include "ui_emptygamelistwidget.h"
 
 LOG_CHANNEL(GameList);
+
+using namespace Qt::StringLiterals;
 
 static constexpr int VIEW_MODE_LIST = 0;
 static constexpr int VIEW_MODE_GRID = 1;
@@ -1854,8 +1857,10 @@ GameListWidget::GameListWidget(QWidget* parent, QAction* action_view_list, QActi
   m_ui.stack->insertWidget(1, m_grid_view);
 
   m_empty_widget = new QWidget(m_ui.stack);
-  m_empty_ui.setupUi(m_empty_widget);
-  m_empty_ui.supportedFormats->setText(qApp->translate("GameListWidget", SUPPORTED_FORMATS_STRING));
+  Ui::EmptyGameListWidget empty_ui;
+  empty_ui.setupUi(m_empty_widget);
+  empty_ui.supportedFormats->setText(qApp->translate("GameListWidget", SUPPORTED_FORMATS_STRING));
+  empty_ui.icon->setPixmap(QIcon(":/icons/monochrome/svg/information-line.svg"_L1).pixmap(72));
   m_ui.stack->insertWidget(2, m_empty_widget);
 
   m_ui.viewGameList->setDefaultAction(action_view_list);
@@ -1889,8 +1894,8 @@ GameListWidget::GameListWidget(QWidget* parent, QAction* action_view_list, QActi
   connect(m_grid_view, &QListView::activated, this, &GameListWidget::onGridViewItemActivated);
   connect(m_grid_view, &QListView::customContextMenuRequested, this, &GameListWidget::onGridViewContextMenuRequested);
 
-  connect(m_empty_ui.addGameDirectory, &QPushButton::clicked, this, [this]() { emit addGameDirectoryRequested(); });
-  connect(m_empty_ui.scanForNewGames, &QPushButton::clicked, this, [this]() { refresh(false); });
+  connect(empty_ui.addGameDirectory, &QPushButton::clicked, this, [this]() { emit addGameDirectoryRequested(); });
+  connect(empty_ui.scanForNewGames, &QPushButton::clicked, this, [this]() { refresh(false); });
 
   connect(g_main_window, &MainWindow::themeChanged, this, &GameListWidget::onThemeChanged);
 
