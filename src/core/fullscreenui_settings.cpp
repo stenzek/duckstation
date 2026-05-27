@@ -21,6 +21,7 @@
 
 #include "util/gpu_device.h"
 #include "util/http_cache.h"
+#include "util/imgui_gsvector.h"
 #include "util/imgui_manager.h"
 #include "util/ini_settings_interface.h"
 #include "util/input_manager.h"
@@ -3601,6 +3602,13 @@ void FullscreenUI::DrawControllerSettingsPage()
                    FSUI_VSTR("Removes all bindings for this controller port.")))
     {
       StartClearBindingsForPort(global_slot);
+    }
+
+    if (ci->image_name)
+    {
+      const ImVec2 image_size =
+        GSVectorToImVec2(GSVector2(static_cast<float>(MenuButtonBounds::CalcAvailWidth()), LayoutScale(200.0f)));
+      ImGui::Image(GetCachedTexture(ci->image_name, image_size), image_size);
     }
 
     MenuHeading(FSUI_ICONVSTR(ICON_FA_MICROCHIP, "Bindings"));
