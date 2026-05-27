@@ -1,7 +1,1 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!-- Creator: CorelDRAW -->
-<svg xmlns="http://www.w3.org/2000/svg" width="600" height="400">
-	<rect fill="#969594" width="600" height="400"/>
-	<rect fill="#c2c1c1" width="400" height="400"/>
-	<rect fill="#72706f" width="200" height="400"/>
-</svg>
+<svg height="400" width="600" xmlns="http://www.w3.org/2000/svg"><path d="m0 0h600v400h-600z" fill="#969594"/><path d="m0 0h400v400h-400z" fill="#c2c1c1"/><path d="m0 0h200v400h-200z" fill="#72706f"/></svg>
