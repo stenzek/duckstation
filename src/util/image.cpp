@@ -388,7 +388,8 @@ bool Image::LoadFromBuffer(std::string_view filename, std::span<const u8> data, 
   return handler->buffer_loader(this, data, error);
 }
 
-bool Image::RasterizeSVG(const std::span<const u8> data, u32 width, u32 height, Error* error)
+bool Image::RasterizeSVG(const std::span<const u8> data, u32 width, u32 height,
+                         bool maintain_aspect_ratio /* = false */, Error* error /* = nullptr */)
 {
   if (width == 0 || height == 0)
   {
@@ -407,6 +408,42 @@ bool Image::RasterizeSVG(const std::span<const u8> data, u32 width, u32 height, 
   }
 
   const plutovg_color_t current_color = {.r = 1.0f, .g = 1.0f, .b = 1.0f, .a = 1.0f};
+  u32 canvas_width = width;
+  u32 canvas_height = height;
+  u32 canvas_offset_x = 0;
+  u32 canvas_offset_y = 0;
+
+  if (maintain_aspect_ratio)
+  {
+    const float doc_width = plutosvg_document_get_width(doc.get());
+    const float doc_height = plutosvg_document_get_height(doc.get());
+    if (doc_width > 0.0f && doc_height > 0.0f)
+    {
+      const float fwidth = static_cast<float>(width);
+      const float fheight = static_cast<float>(height);
+      const float fit_ar = fwidth / fheight;
+      const float image_ar = doc_width / doc_height;
+      if (std::abs(image_ar - fit_ar) > 1e-6f)
+      {
+        if (fit_ar > image_ar)
+        {
+          // center horizontally
+          const float scaled_width = std::floor(fheight * image_ar);
+          canvas_width = width;
+          canvas_offset_x = static_cast<u32>((fwidth - scaled_width) * 0.5f);
+          width = static_cast<u32>(scaled_width);
+        }
+        else
+        {
+          // center vertically
+          const float scaled_height = std::floor(fwidth / image_ar);
+          canvas_height = height;
+          canvas_offset_y = static_cast<u32>((fheight - scaled_height) * 0.5f);
+          height = static_cast<u32>(scaled_height);
+        }
+      }
+    }
+  }
 
   std::unique_ptr<plutovg_surface, void (*)(plutovg_surface*)> bitmap(
     plutosvg_document_render_to_surface(doc.get(), nullptr, static_cast<int>(width), static_cast<int>(height),
@@ -418,10 +455,14 @@ bool Image::RasterizeSVG(const std::span<const u8> data, u32 width, u32 height, 
     return false;
   }
 
+  // pad out canvas if we're positioning it
+  Resize(canvas_width, canvas_height, ImageFormat::RGBA8, false);
+  if (canvas_width != width || canvas_height != height)
+    Clear();
+
   // lunasvg works in BGRA, swap to RGBA
-  Resize(width, height, ImageFormat::RGBA8, false);
-  SwapBGRAToRGBA(m_pixels.get(), m_pitch, plutovg_surface_get_data(bitmap.get()),
-                 plutovg_surface_get_stride(bitmap.get()), width, height);
+  SwapBGRAToRGBA(m_pixels.get() + (canvas_offset_y * m_pitch) + (canvas_offset_x * sizeof(u32)), m_pitch,
+                 plutovg_surface_get_data(bitmap.get()), plutovg_surface_get_stride(bitmap.get()), width, height);
   return true;
 }
 
