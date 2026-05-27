@@ -582,12 +582,13 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
       // region
       {
         const bool display_as_language = (selected_entry->dbentry && selected_entry->dbentry->HasAnyLanguage());
+        const ImVec2 size = LayoutScale(23.0f, 16.0f);
         ImGui::PushFont(UIStyle.Font, UIStyle.MediumFontSize, UIStyle.BoldFontWeight);
         TextUnformatted(
           FSUI_ICONVSTR(ICON_EMOJI_GLOBE, display_as_language ? FSUI_CSTR("Language: ") : FSUI_CSTR("Region: ")));
         ImGui::PopFont();
         ImGui::SameLine();
-        ImGui::Image(GetCachedTexture(selected_entry->GetLanguageIconName(), 23, 16), LayoutScale(23.0f, 16.0f));
+        ImGui::Image(GetCachedTexture(selected_entry->GetLanguageIconName(), size), size);
         ImGui::SameLine();
         ImGui::PushStyleColor(ImGuiCol_Text, subtitle_text_color);
         if (display_as_language)
@@ -650,11 +651,12 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
       }
 
       // compatibility
+      const ImVec2 compatibility_size = LayoutScale(88.0f, 16.0f);
       ImGui::PushFont(UIStyle.Font, UIStyle.MediumFontSize, UIStyle.BoldFontWeight);
       TextUnformatted(FSUI_ICONSTR(ICON_EMOJI_STAR, FSUI_VSTR("Compatibility: ")));
       ImGui::PopFont();
       ImGui::SameLine();
-      ImGui::Image(GetCachedTexture(selected_entry->GetCompatibilityIconFileName(), 88, 16), LayoutScale(88.0f, 16.0f));
+      ImGui::Image(GetCachedTexture(selected_entry->GetCompatibilityIconFileName(), compatibility_size), compatibility_size);
       ImGui::SameLine();
       ImGui::PushStyleColor(ImGuiCol_Text, subtitle_text_color);
       ImGui::Text(" (%s)", GameDatabase::GetCompatibilityRatingDisplayName(

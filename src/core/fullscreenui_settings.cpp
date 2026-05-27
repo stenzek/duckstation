@@ -5332,9 +5332,7 @@ void FullscreenUI::DrawAchievementsLoginWindow()
   const float ra_title_spacing = LayoutScale(10.0f);
   const ImVec2 ra_logo_size = ImVec2(UIStyle.LargeFontSize * 2.0f, UIStyle.LargeFontSize);
   const ImRect ra_logo_rect = CenterImage(ra_logo_size, ImVec2(454.0f, 245.0f));
-  GPUTexture* const ra_logo =
-    GetCachedTexture(Achievements::RA_LOGO_SVG_ICON_NAME, static_cast<u32>(ra_logo_rect.GetWidth()),
-                     static_cast<u32>(ra_logo_rect.GetHeight()));
+  GPUTexture* const ra_logo = GetCachedTexture(Achievements::RA_LOGO_SVG_ICON_NAME, ra_logo_rect.GetSize());
   const ImRect work_rect = ImGui::GetCurrentWindow()->WorkRect;
   const float indent = (work_rect.GetWidth() - (ra_logo_size.x + ra_title_spacing + ra_title_size.x)) * 0.5f;
   ImDrawList* const dl = ImGui::GetWindowDrawList();

@@ -839,11 +839,13 @@ std::shared_ptr<GPUTexture> FullscreenUI::LoadTexture(std::string_view name, u32
   if (!TextureNeedsSVGDimensions(name))
     return LoadTexture(name, name, 0, 0);
 
-  svg_width = static_cast<u32>(std::ceil(LayoutScale(static_cast<float>(svg_width))));
-  svg_height = static_cast<u32>(std::ceil(LayoutScale(static_cast<float>(svg_height))));
-
   const SmallString wh_name = SmallString::from_format("{}#{}x{}", name, svg_width, svg_height);
   return LoadTexture(name, wh_name, svg_width, svg_height);
+}
+
+std::shared_ptr<GPUTexture> FullscreenUI::LoadTexture(std::string_view name, const ImVec2& size)
+{
+  return LoadTexture(name, name, static_cast<u32>(size.x), static_cast<u32>(size.y));
 }
 
 GPUTexture* FullscreenUI::FindCachedTexture(std::string_view name)
@@ -858,12 +860,14 @@ GPUTexture* FullscreenUI::FindCachedTexture(std::string_view name, u32 svg_width
   if (!TextureNeedsSVGDimensions(name))
     return FindCachedTexture(name);
 
-  svg_width = static_cast<u32>(std::ceil(LayoutScale(static_cast<float>(svg_width))));
-  svg_height = static_cast<u32>(std::ceil(LayoutScale(static_cast<float>(svg_height))));
-
   const SmallString wh_name = SmallString::from_format("{}#{}x{}", name, svg_width, svg_height);
   std::shared_ptr<GPUTexture>* tex_ptr = s_state.texture_cache.Lookup(wh_name.view());
   return tex_ptr ? tex_ptr->get() : nullptr;
+}
+
+GPUTexture* FullscreenUI::FindCachedTexture(std::string_view name, const ImVec2& size)
+{
+  return FindCachedTexture(name, static_cast<u32>(size.x), static_cast<u32>(size.y));
 }
 
 GPUTexture* FullscreenUI::GetCachedTexture(std::string_view name)
@@ -889,9 +893,6 @@ GPUTexture* FullscreenUI::GetCachedTexture(std::string_view name, u32 svg_width,
   if (!TextureNeedsSVGDimensions(name))
     return GetCachedTexture(name);
 
-  svg_width = static_cast<u32>(std::ceil(LayoutScale(static_cast<float>(svg_width))));
-  svg_height = static_cast<u32>(std::ceil(LayoutScale(static_cast<float>(svg_height))));
-
   const SmallString wh_name = SmallString::from_format("{}#{}x{}", name, svg_width, svg_height);
   std::shared_ptr<GPUTexture>* tex_ptr = s_state.texture_cache.Lookup(wh_name.view());
   if (!tex_ptr)
@@ -901,6 +902,11 @@ GPUTexture* FullscreenUI::GetCachedTexture(std::string_view name, u32 svg_width,
   }
 
   return tex_ptr->get();
+}
+
+GPUTexture* FullscreenUI::GetCachedTexture(std::string_view name, const ImVec2& size)
+{
+  return GetCachedTexture(name, static_cast<u32>(size.x), static_cast<u32>(size.y));
 }
 
 GPUTexture* FullscreenUI::LookupCachedTextureAsync(std::string_view path, std::string_view name, u32 svg_width,
@@ -977,11 +983,13 @@ GPUTexture* FullscreenUI::GetCachedTextureAsync(std::string_view name, u32 svg_w
   if (!TextureNeedsSVGDimensions(name))
     return LookupCachedTextureAsync(name, {}, 0, 0);
 
-  svg_width = static_cast<u32>(std::ceil(LayoutScale(static_cast<float>(svg_width))));
-  svg_height = static_cast<u32>(std::ceil(LayoutScale(static_cast<float>(svg_height))));
-
   const SmallString wh_name = SmallString::from_format("{}#{}x{}", name, svg_width, svg_height);
   return LookupCachedTextureAsync(name, wh_name.view(), svg_width, svg_height);
+}
+
+GPUTexture* FullscreenUI::GetCachedTextureAsync(std::string_view name, const ImVec2& size)
+{
+  return GetCachedTextureAsync(name, static_cast<u32>(size.x), static_cast<u32>(size.y));
 }
 
 bool FullscreenUI::InvalidateCachedTexture(std::string_view path)
