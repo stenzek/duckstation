@@ -166,11 +166,11 @@ set(SRCS
   setupwizarddialog.cpp
   setupwizarddialog.h
   setupwizarddialog.ui
+  svgiconengine.cpp
+  svgiconengine.h
   svgwidget.cpp
   svgwidget.h
   texturereplacementsettingsdialog.ui
-  themesvgiconengine.cpp
-  themesvgiconengine.h
   togglebutton.cpp
   togglebutton.h
 )
@@ -211,7 +211,7 @@ target_compile_definitions(duckstation-qt PRIVATE QT_NO_EXCEPTIONS QT_NO_SIGNALS
 
 # We need to override QT_STATICPLUGIN to force our SVG plugin to be statically linked to the exectuable.
 # Prevent the force include of the pch from interfering.
-set_source_files_properties("themesvgiconengine.cpp" PROPERTIES SKIP_PRECOMPILE_HEADERS TRUE)
+set_source_files_properties("svgiconengine.cpp" PROPERTIES SKIP_PRECOMPILE_HEADERS TRUE)
 
 add_core_resources(duckstation-qt)
 

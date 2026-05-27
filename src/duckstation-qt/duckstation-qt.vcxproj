@@ -56,7 +56,7 @@
     <ClCompile Include="settingswindow.cpp" />
     <ClCompile Include="setupwizarddialog.cpp" />
     <ClCompile Include="svgwidget.cpp" />
-    <ClCompile Include="themesvgiconengine.cpp">
+    <ClCompile Include="svgiconengine.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <ForcedIncludeFiles>
       </ForcedIncludeFiles>
@@ -66,7 +66,7 @@
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="svgwidget.h" />
-    <QtMoc Include="themesvgiconengine.h" />
+    <QtMoc Include="svgiconengine.h" />
     <QtMoc Include="togglebutton.h" />
     <QtMoc Include="setupwizarddialog.h" />
     <QtMoc Include="aboutdialog.h" />
@@ -339,7 +339,7 @@
     <QtUi Include="debuggingsettingswidget.ui">
       <FileType>Document</FileType>
     </QtUi>
-    <None Include="themesvgiconengine.json" />
+    <None Include="svgiconengine.json" />
     <None Include="translations\duckstation-qt_az.ts" />
     <None Include="translations\duckstation-qt_es-es.ts" />
     <None Include="translations\duckstation-qt_sv.ts" />

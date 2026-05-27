@@ -27,12 +27,12 @@ struct plutosvg_document;
  * Pixmaps are cached in QPixmapCache keyed by resource path, size (in device pixels), and the RGBA
  * value of the resolved colour, so the cache is automatically invalidated when the palette changes.
  */
-class ThemeSVGIconEngine final : public QIconEngine
+class SVGIconEngine final : public QIconEngine
 {
 public:
-  explicit ThemeSVGIconEngine(const QString& resource_path);
-  ThemeSVGIconEngine(const ThemeSVGIconEngine&) = delete;
-  ~ThemeSVGIconEngine() override;
+  explicit SVGIconEngine(const QString& resource_path);
+  SVGIconEngine(const SVGIconEngine&) = delete;
+  ~SVGIconEngine() override;
 
   void paint(QPainter* painter, const QRect& rect, QIcon::Mode mode, QIcon::State state) override;
   QPixmap pixmap(const QSize& size, QIcon::Mode mode, QIcon::State state) override;
@@ -50,10 +50,10 @@ private:
   mutable plutosvg_document* m_document = nullptr;
 };
 
-class ThemeSVGIconEnginePlugin : public QIconEnginePlugin
+class SVGIconEnginePlugin : public QIconEnginePlugin
 {
   Q_OBJECT
-  Q_PLUGIN_METADATA(IID QIconEngineFactoryInterface_iid FILE "themesvgiconengine.json")
+  Q_PLUGIN_METADATA(IID QIconEngineFactoryInterface_iid FILE "svgiconengine.json")
 
 public:
   QIconEngine* create(const QString& resource_path) override;
@@ -69,11 +69,11 @@ public:
  * Callers can influence the output size through the standard QImageIOHandler
  * ScaledSize option; if not set the SVG's intrinsic dimensions are used.
  */
-class PlutoSVGImageHandler final : public QImageIOHandler
+class SVGImageHandler final : public QImageIOHandler
 {
 public:
-  PlutoSVGImageHandler() = default;
-  ~PlutoSVGImageHandler() override = default;
+  SVGImageHandler() = default;
+  ~SVGImageHandler() override = default;
 
   /// Lazily load and parse the SVG data from device(). Returns false on failure.
   bool canRead() const override;
@@ -92,10 +92,10 @@ private:
 };
 
 /// QImageIOPlugin that installs PlutoSVGImageHandler for SVG files.
-class PlutoSVGImagePlugin final : public QImageIOPlugin
+class SVGImageHandlerPlugin final : public QImageIOPlugin
 {
   Q_OBJECT
-  Q_PLUGIN_METADATA(IID QImageIOHandlerFactoryInterface_iid FILE "themesvgiconengine.json")
+  Q_PLUGIN_METADATA(IID QImageIOHandlerFactoryInterface_iid FILE "svgiconengine.json")
 
 public:
   Capabilities capabilities(QIODevice* device, const QByteArray& format) const override;

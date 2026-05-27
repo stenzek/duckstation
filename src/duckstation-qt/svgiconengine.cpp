@@ -4,7 +4,7 @@
 // Needs to be defined before any includes.
 #define QT_STATICPLUGIN
 
-#include "themesvgiconengine.h"
+#include "svgiconengine.h"
 #include "qtutils.h"
 
 #include <QtCore/QFile>
@@ -18,7 +18,7 @@
 #include <limits>
 #include <plutosvg.h>
 
-#include "moc_themesvgiconengine.cpp"
+#include "moc_svgiconengine.cpp"
 
 /// Returns the icon color for the given mode based on the application palette.
 static QColor GetIconColorFromPalette(QIcon::Mode mode)
@@ -82,17 +82,17 @@ static bool RenderSVGToPixmap(QPixmap& pm, const plutosvg_document* doc, const Q
   return !pm.isNull();
 }
 
-ThemeSVGIconEngine::ThemeSVGIconEngine(const QString& resource_path) : m_resource_path(resource_path)
+SVGIconEngine::SVGIconEngine(const QString& resource_path) : m_resource_path(resource_path)
 {
 }
 
-ThemeSVGIconEngine::~ThemeSVGIconEngine()
+SVGIconEngine::~SVGIconEngine()
 {
   if (m_document)
     plutosvg_document_destroy(m_document);
 }
 
-bool ThemeSVGIconEngine::ensureLoaded() const
+bool SVGIconEngine::ensureLoaded() const
 {
   // Previous load failed?
   if (m_resource_path.isEmpty())
@@ -119,7 +119,7 @@ bool ThemeSVGIconEngine::ensureLoaded() const
   return true;
 }
 
-void ThemeSVGIconEngine::paint(QPainter* painter, const QRect& rect, QIcon::Mode mode, QIcon::State state)
+void SVGIconEngine::paint(QPainter* painter, const QRect& rect, QIcon::Mode mode, QIcon::State state)
 {
   Q_UNUSED(state);
 
@@ -148,7 +148,7 @@ void ThemeSVGIconEngine::paint(QPainter* painter, const QRect& rect, QIcon::Mode
   painter->drawPixmap(rect, pm);
 }
 
-QPixmap ThemeSVGIconEngine::pixmap(const QSize& size, QIcon::Mode mode, QIcon::State state)
+QPixmap SVGIconEngine::pixmap(const QSize& size, QIcon::Mode mode, QIcon::State state)
 {
   Q_UNUSED(state);
 
@@ -169,7 +169,7 @@ QPixmap ThemeSVGIconEngine::pixmap(const QSize& size, QIcon::Mode mode, QIcon::S
   return pm;
 }
 
-QPixmap ThemeSVGIconEngine::scaledPixmap(const QSize& size, QIcon::Mode mode, QIcon::State state, qreal scale)
+QPixmap SVGIconEngine::scaledPixmap(const QSize& size, QIcon::Mode mode, QIcon::State state, qreal scale)
 {
   Q_UNUSED(state);
 
@@ -194,30 +194,30 @@ QPixmap ThemeSVGIconEngine::scaledPixmap(const QSize& size, QIcon::Mode mode, QI
   return pm;
 }
 
-QIconEngine* ThemeSVGIconEngine::clone() const
+QIconEngine* SVGIconEngine::clone() const
 {
-  return new ThemeSVGIconEngine(m_resource_path);
+  return new SVGIconEngine(m_resource_path);
 }
 
-QString ThemeSVGIconEngine::key() const
+QString SVGIconEngine::key() const
 {
   return QStringLiteral("svg");
 }
 
-QString ThemeSVGIconEngine::iconName()
+QString SVGIconEngine::iconName()
 {
   return m_resource_path;
 }
 
-QIconEngine* ThemeSVGIconEnginePlugin::create(const QString& resource_path)
+QIconEngine* SVGIconEnginePlugin::create(const QString& resource_path)
 {
   if (resource_path.endsWith(".svg", Qt::CaseInsensitive))
-    return new ThemeSVGIconEngine(resource_path);
+    return new SVGIconEngine(resource_path);
 
   return nullptr;
 }
 
-bool PlutoSVGImageHandler::canRead() const
+bool SVGImageHandler::canRead() const
 {
   if (m_document)
     return m_document;
@@ -242,7 +242,7 @@ bool PlutoSVGImageHandler::canRead() const
   return true;
 }
 
-bool PlutoSVGImageHandler::read(QImage* image)
+bool SVGImageHandler::read(QImage* image)
 {
   if (!canRead())
     return false;
@@ -273,12 +273,12 @@ bool PlutoSVGImageHandler::read(QImage* image)
   return !image->isNull();
 }
 
-bool PlutoSVGImageHandler::supportsOption(ImageOption option) const
+bool SVGImageHandler::supportsOption(ImageOption option) const
 {
   return (option == Size || option == ScaledSize);
 }
 
-QVariant PlutoSVGImageHandler::option(ImageOption option) const
+QVariant SVGImageHandler::option(ImageOption option) const
 {
   if (option == ScaledSize)
     return m_scaled_size;
@@ -295,13 +295,13 @@ QVariant PlutoSVGImageHandler::option(ImageOption option) const
   return {};
 }
 
-void PlutoSVGImageHandler::setOption(ImageOption option, const QVariant& value)
+void SVGImageHandler::setOption(ImageOption option, const QVariant& value)
 {
   if (option == ScaledSize)
     m_scaled_size = value.toSize();
 }
 
-QImageIOPlugin::Capabilities PlutoSVGImagePlugin::capabilities(QIODevice* device, const QByteArray& format) const
+QImageIOPlugin::Capabilities SVGImageHandlerPlugin::capabilities(QIODevice* device, const QByteArray& format) const
 {
   if (format == "svg")
     return CanRead;
@@ -317,9 +317,9 @@ QImageIOPlugin::Capabilities PlutoSVGImagePlugin::capabilities(QIODevice* device
   return {};
 }
 
-QImageIOHandler* PlutoSVGImagePlugin::create(QIODevice* device, const QByteArray& format) const
+QImageIOHandler* SVGImageHandlerPlugin::create(QIODevice* device, const QByteArray& format) const
 {
-  PlutoSVGImageHandler* const handler = new PlutoSVGImageHandler();
+  SVGImageHandler* const handler = new SVGImageHandler();
   handler->setDevice(device);
   handler->setFormat(format.isEmpty() ? QByteArray("svg") : format);
   return handler;

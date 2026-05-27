@@ -96,8 +96,8 @@ QT_TRANSLATE_NOOP("MAC_APPLICATION_MENU", "Quit %1")
 QT_TRANSLATE_NOOP("MAC_APPLICATION_MENU", "About %1")
 #endif
 
-Q_IMPORT_PLUGIN(ThemeSVGIconEnginePlugin);
-Q_IMPORT_PLUGIN(PlutoSVGImagePlugin);
+Q_IMPORT_PLUGIN(SVGIconEnginePlugin);
+Q_IMPORT_PLUGIN(SVGImageHandlerPlugin);
 
 static constexpr u32 SETTINGS_SAVE_DELAY = 1000;
 
