@@ -23,6 +23,7 @@ class Error;
 class QComboBox;
 class QFrame;
 class QGridLayout;
+class QIODevice;
 class QKeyEvent;
 class QLabel;
 class QMenu;
@@ -43,7 +44,13 @@ namespace GameList {
 enum class EntryType : u8;
 }
 
+template<typename T, size_t alignment>
+class DynamicHeapArray;
+
 namespace QtUtils {
+
+/// Helper function to read a QFile to a DynamicHeapArray<u8>.
+bool ReadFileToByteArray(QIODevice* dev, DynamicHeapArray<u8, 0>& out_data);
 
 /// Creates a horizontal line widget.
 QFrame* CreateHorizontalLine(QWidget* parent);

@@ -82,52 +82,6 @@ static bool RenderSVGToPixmap(QPixmap& pm, const plutosvg_document* doc, const Q
   return !pm.isNull();
 }
 
-/// Helper function to read a QFile to a DynamicHeapArray<u8>.
-static bool ReadFileToByteArray(QIODevice* dev, DynamicHeapArray<u8>& out_data)
-{
-  if (qint64 size; !dev->isSequential() && (size = dev->size()) > 0)
-  {
-    out_data.resize(static_cast<size_t>(
-      (sizeof(size_t) == sizeof(qint64)) ? size : std::min<qint64>(size, std::numeric_limits<size_t>::max())));
-
-    if (dev->read(reinterpret_cast<char*>(out_data.data()), size) != size)
-    {
-      out_data.deallocate();
-      return false;
-    }
-  }
-  else
-  {
-    constexpr size_t chunk_size = 1048576;
-    size_t read_so_far = 0;
-    for (;;)
-    {
-      const size_t prev_size = out_data.size();
-      const size_t new_size =
-        ((read_so_far + chunk_size) < read_so_far) ? std::numeric_limits<size_t>::max() : (read_so_far + chunk_size);
-      const size_t space = (new_size - prev_size);
-      if (space > 0)
-        out_data.resize(new_size);
-      const qint64 bytes_read =
-        (space > 0) ? dev->read(reinterpret_cast<char*>(out_data.data() + read_so_far), static_cast<qint64>(space)) : 0;
-      if (bytes_read < 0)
-      {
-        out_data.deallocate();
-        return false;
-      }
-      else if (bytes_read == 0)
-      {
-        out_data.resize(prev_size);
-        break;
-      }
-
-      read_so_far += static_cast<size_t>(bytes_read);
-    }
-  }
-
-  return true;
-}
-
 ThemeSVGIconEngine::ThemeSVGIconEngine(const QString& resource_path) : m_resource_path(resource_path)
 {
 }
@@ -145,7 +99,7 @@ bool ThemeSVGIconEngine::ensureLoaded() const
     return false;
 
   QFile file(m_resource_path);
-  if (!file.open(QFile::ReadOnly) || !ReadFileToByteArray(&file, m_svg_data))
+  if (!file.open(QFile::ReadOnly) || !QtUtils::ReadFileToByteArray(&file, m_svg_data))
   {
     qCritical() << "Failed to open SVG file: " << m_resource_path;
     m_resource_path = {};
@@ -270,7 +224,7 @@ bool PlutoSVGImageHandler::canRead() const
 
   // Read all data once and keep it alive; plutosvg_document borrows the raw pointer.
   QIODevice* const dev = device();
-  if (!dev || !ReadFileToByteArray(dev, m_svg_data))
+  if (!dev || !QtUtils::ReadFileToByteArray(dev, m_svg_data))
   {
     qCritical() << "Failed to read SVG data from device";
     return false;

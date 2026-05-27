@@ -11,9 +11,11 @@
 
 #include "util/input_manager.h"
 
+#include "common/dynamic_library.h"
 #include "common/error.h"
 #include "common/log.h"
 
+#include <QtCore/QIODevice>
 #include <QtCore/QMetaObject>
 #include <QtGui/QDesktopServices>
 #include <QtGui/QGuiApplication>
@@ -59,6 +61,51 @@ static void SetIsMaskForMonochromeMenuBarActionIcons(QMenu* const menu);
 static constexpr const char* WINDOW_GEOMETRY_CONFIG_SECTION = "UI";
 
 } // namespace QtUtils
+
+bool QtUtils::ReadFileToByteArray(QIODevice* dev, DynamicHeapArray<u8, 0>& out_data)
+{
+  if (qint64 size; !dev->isSequential() && (size = dev->size()) > 0)
+  {
+    out_data.resize(static_cast<size_t>(
+      (sizeof(size_t) == sizeof(qint64)) ? size : std::min<qint64>(size, std::numeric_limits<size_t>::max())));
+
+    if (dev->read(reinterpret_cast<char*>(out_data.data()), size) != size)
+    {
+      out_data.deallocate();
+      return false;
+    }
+  }
+  else
+  {
+    constexpr size_t chunk_size = 1048576;
+    size_t read_so_far = 0;
+    for (;;)
+    {
+      const size_t prev_size = out_data.size();
+      const size_t new_size =
+        ((read_so_far + chunk_size) < read_so_far) ? std::numeric_limits<size_t>::max() : (read_so_far + chunk_size);
+      const size_t space = (new_size - prev_size);
+      if (space > 0)
+        out_data.resize(new_size);
+      const qint64 bytes_read =
+        (space > 0) ? dev->read(reinterpret_cast<char*>(out_data.data() + read_so_far), static_cast<qint64>(space)) : 0;
+      if (bytes_read < 0)
+      {
+        out_data.deallocate();
+        return false;
+      }
+      else if (bytes_read == 0)
+      {
+        out_data.resize(prev_size);
+        break;
+      }
+
+      read_so_far += static_cast<size_t>(bytes_read);
+    }
+  }
+
+  return true;
+}
 
 QFrame* QtUtils::CreateHorizontalLine(QWidget* parent)
 {
