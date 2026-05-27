@@ -442,7 +442,7 @@ void ControllerSettingsWindow::createWidgets()
     // global settings
     QListWidgetItem* item = new QListWidgetItem();
     item->setText(tr("Global Settings"));
-    item->setIcon(QIcon::fromTheme("settings-3-line"_L1));
+    item->setIcon(QIcon(":/icons/monochrome/svg/settings-3-line.svg"_L1));
     m_ui.settingsCategory->addItem(item);
     m_ui.settingsCategory->setCurrentRow(0);
     m_global_settings = new ControllerGlobalSettingsWidget(m_ui.settingsContainer, this);
@@ -481,7 +481,7 @@ void ControllerSettingsWindow::createWidgets()
   {
     QListWidgetItem* item = new QListWidgetItem();
     item->setText(tr("Hotkeys"));
-    item->setIcon(QIcon::fromTheme("keyboard-line"_L1));
+    item->setIcon(QIcon(":/icons/monochrome/svg/keyboard-line.svg"_L1));
     m_ui.settingsCategory->addItem(item);
     m_hotkey_settings = new HotkeySettingsWidget(m_ui.settingsContainer, this);
     m_ui.settingsContainer->addWidget(m_hotkey_settings);

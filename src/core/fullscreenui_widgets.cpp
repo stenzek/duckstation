@@ -207,7 +207,7 @@ public:
   MessageDialog();
   ~MessageDialog();
 
-  void Open(std::string_view icon, std::string_view title, std::string message, CallbackVariant callback,
+  void Open(std::string icon, std::string_view title, std::string message, CallbackVariant callback,
             std::string first_button_text, std::string second_button_text, std::string third_button_text);
   void ClearState();
 
@@ -350,7 +350,7 @@ private:
                        std::string_view no_text = {}) override;
 
   protected:
-    static std::string_view GetIconString(PromptIcon icon);
+    static std::string GetIconString(PromptIcon icon);
 
     void StateChanged(StateChange changed) override;
   };
@@ -639,7 +639,7 @@ std::optional<Image> FullscreenUI::LoadTextureImage(std::string_view path, u32 s
     if (svg_data.has_value())
     {
       image = Image();
-      if (!image->RasterizeSVG(svg_data->cspan(), svg_width, svg_height, &error))
+      if (!image->RasterizeSVG(svg_data->cspan(), svg_width, svg_height, true, &error))
       {
         ERROR_LOG("Failed to rasterize SVG texture file '{}': {}", path, error.GetDescription());
         image.reset();
@@ -698,7 +698,7 @@ std::optional<Image> FullscreenUI::LoadTextureImage(std::string_view filename, s
   if (StringUtil::EqualNoCase(Path::GetExtension(filename), "svg"))
   {
     image = Image();
-    if (!image->RasterizeSVG(buffer, svg_width, svg_height, &error))
+    if (!image->RasterizeSVG(buffer, svg_width, svg_height, true, &error))
     {
       ERROR_LOG("Failed to rasterize SVG texture file '{}': {}", filename, error.GetDescription());
       image.reset();
@@ -839,11 +839,13 @@ std::shared_ptr<GPUTexture> FullscreenUI::LoadTexture(std::string_view name, u32
   if (!TextureNeedsSVGDimensions(name))
     return LoadTexture(name, name, 0, 0);
 
-  svg_width = static_cast<u32>(std::ceil(LayoutScale(static_cast<float>(svg_width))));
-  svg_height = static_cast<u32>(std::ceil(LayoutScale(static_cast<float>(svg_height))));
-
   const SmallString wh_name = SmallString::from_format("{}#{}x{}", name, svg_width, svg_height);
   return LoadTexture(name, wh_name, svg_width, svg_height);
+}
+
+std::shared_ptr<GPUTexture> FullscreenUI::LoadTexture(std::string_view name, const ImVec2& size)
+{
+  return LoadTexture(name, name, static_cast<u32>(size.x), static_cast<u32>(size.y));
 }
 
 GPUTexture* FullscreenUI::FindCachedTexture(std::string_view name)
@@ -858,12 +860,14 @@ GPUTexture* FullscreenUI::FindCachedTexture(std::string_view name, u32 svg_width
   if (!TextureNeedsSVGDimensions(name))
     return FindCachedTexture(name);
 
-  svg_width = static_cast<u32>(std::ceil(LayoutScale(static_cast<float>(svg_width))));
-  svg_height = static_cast<u32>(std::ceil(LayoutScale(static_cast<float>(svg_height))));
-
   const SmallString wh_name = SmallString::from_format("{}#{}x{}", name, svg_width, svg_height);
   std::shared_ptr<GPUTexture>* tex_ptr = s_state.texture_cache.Lookup(wh_name.view());
   return tex_ptr ? tex_ptr->get() : nullptr;
+}
+
+GPUTexture* FullscreenUI::FindCachedTexture(std::string_view name, const ImVec2& size)
+{
+  return FindCachedTexture(name, static_cast<u32>(size.x), static_cast<u32>(size.y));
 }
 
 GPUTexture* FullscreenUI::GetCachedTexture(std::string_view name)
@@ -889,9 +893,6 @@ GPUTexture* FullscreenUI::GetCachedTexture(std::string_view name, u32 svg_width,
   if (!TextureNeedsSVGDimensions(name))
     return GetCachedTexture(name);
 
-  svg_width = static_cast<u32>(std::ceil(LayoutScale(static_cast<float>(svg_width))));
-  svg_height = static_cast<u32>(std::ceil(LayoutScale(static_cast<float>(svg_height))));
-
   const SmallString wh_name = SmallString::from_format("{}#{}x{}", name, svg_width, svg_height);
   std::shared_ptr<GPUTexture>* tex_ptr = s_state.texture_cache.Lookup(wh_name.view());
   if (!tex_ptr)
@@ -901,6 +902,11 @@ GPUTexture* FullscreenUI::GetCachedTexture(std::string_view name, u32 svg_width,
   }
 
   return tex_ptr->get();
+}
+
+GPUTexture* FullscreenUI::GetCachedTexture(std::string_view name, const ImVec2& size)
+{
+  return GetCachedTexture(name, static_cast<u32>(size.x), static_cast<u32>(size.y));
 }
 
 GPUTexture* FullscreenUI::LookupCachedTextureAsync(std::string_view path, std::string_view name, u32 svg_width,
@@ -977,11 +983,13 @@ GPUTexture* FullscreenUI::GetCachedTextureAsync(std::string_view name, u32 svg_w
   if (!TextureNeedsSVGDimensions(name))
     return LookupCachedTextureAsync(name, {}, 0, 0);
 
-  svg_width = static_cast<u32>(std::ceil(LayoutScale(static_cast<float>(svg_width))));
-  svg_height = static_cast<u32>(std::ceil(LayoutScale(static_cast<float>(svg_height))));
-
   const SmallString wh_name = SmallString::from_format("{}#{}x{}", name, svg_width, svg_height);
   return LookupCachedTextureAsync(name, wh_name.view(), svg_width, svg_height);
+}
+
+GPUTexture* FullscreenUI::GetCachedTextureAsync(std::string_view name, const ImVec2& size)
+{
+  return GetCachedTextureAsync(name, static_cast<u32>(size.x), static_cast<u32>(size.y));
 }
 
 bool FullscreenUI::InvalidateCachedTexture(std::string_view path)
@@ -5430,12 +5438,12 @@ FullscreenUI::MessageDialog::MessageDialog() = default;
 
 FullscreenUI::MessageDialog::~MessageDialog() = default;
 
-void FullscreenUI::MessageDialog::Open(std::string_view icon, std::string_view title, std::string message,
+void FullscreenUI::MessageDialog::Open(std::string icon, std::string_view title, std::string message,
                                        CallbackVariant callback, std::string first_button_text,
                                        std::string second_button_text, std::string third_button_text)
 {
   SetTitleAndOpen(fmt::format("{}##message_dialog", title));
-  m_icon = icon;
+  m_icon = std::move(icon);
   m_message = std::move(message);
   m_callback = std::move(callback);
   m_buttons[0] = std::move(first_button_text);
@@ -5468,9 +5476,17 @@ void FullscreenUI::MessageDialog::Draw()
 
   if (!m_icon.empty())
   {
-    ImGui::PushFont(nullptr, LayoutScale(50.0f), 0.0f);
-    ImGui::TextUnformatted(IMSTR_START_END(m_icon));
-    ImGui::PopFont();
+    const ImVec2 icon_size = LayoutScale(52.0f, 52.0f);
+    if (Path::IsAbsolute(m_icon))
+    {
+      ImGui::Image(GetCachedTexture(m_icon, icon_size), icon_size);
+    }
+    else
+    {
+      ImGui::PushFont(nullptr, LayoutScale(52.0f), 0.0f);
+      ImGui::TextUnformatted(IMSTR_START_END(m_icon));
+      ImGui::PopFont();
+    }
     ImGui::SameLine();
     ImGui::SetCursorPosX(ImGui::GetCursorPosX() + LayoutScale(10.0f));
   }
@@ -5545,26 +5561,26 @@ bool FullscreenUI::IsMessageBoxDialogOpen()
   return s_state.message_dialog.IsOpen();
 }
 
-void FullscreenUI::OpenConfirmMessageDialog(std::string_view icon, std::string_view title, std::string message,
+void FullscreenUI::OpenConfirmMessageDialog(std::string icon, std::string_view title, std::string message,
                                             ConfirmMessageDialogCallback callback, std::string yes_button_text,
                                             std::string no_button_text)
 {
-  s_state.message_dialog.Open(icon, std::move(title), std::move(message), std::move(callback),
+  s_state.message_dialog.Open(std::move(icon), std::move(title), std::move(message), std::move(callback),
                               std::move(yes_button_text), std::move(no_button_text), std::string());
 }
 
-void FullscreenUI::OpenInfoMessageDialog(std::string_view icon, std::string_view title, std::string message,
+void FullscreenUI::OpenInfoMessageDialog(std::string icon, std::string_view title, std::string message,
                                          InfoMessageDialogCallback callback, std::string button_text)
 {
-  s_state.message_dialog.Open(icon, std::move(title), std::move(message), std::move(callback), std::move(button_text),
-                              std::string(), std::string());
+  s_state.message_dialog.Open(std::move(icon), std::move(title), std::move(message), std::move(callback),
+                              std::move(button_text), std::string(), std::string());
 }
 
-void FullscreenUI::OpenMessageDialog(std::string_view icon, std::string_view title, std::string message,
+void FullscreenUI::OpenMessageDialog(std::string icon, std::string_view title, std::string message,
                                      MessageDialogCallback callback, std::string first_button_text,
                                      std::string second_button_text, std::string third_button_text)
 {
-  s_state.message_dialog.Open(icon, std::move(title), std::move(message), std::move(callback),
+  s_state.message_dialog.Open(std::move(icon), std::move(title), std::move(message), std::move(callback),
                               std::move(first_button_text), std::move(second_button_text),
                               std::move(third_button_text));
 }
@@ -5736,7 +5752,7 @@ bool FullscreenUI::ProgressDialog::ProgressCallbackImpl::IsCancelled() const
   return s_state.progress_dialog.m_cancelled.load(std::memory_order_acquire);
 }
 
-std::string_view FullscreenUI::ProgressDialog::ProgressCallbackImpl::GetIconString(PromptIcon icon)
+std::string FullscreenUI::ProgressDialog::ProgressCallbackImpl::GetIconString(PromptIcon icon)
 {
   switch (icon)
   {

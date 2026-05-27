@@ -205,7 +205,8 @@
          <string>All Types</string>
         </property>
         <property name="icon">
-         <iconset theme="filter-line"/>
+         <iconset resource="resources/duckstation-qt.qrc">
+          <normaloff>:/icons/monochrome/svg/filter-line.svg</normaloff>:/icons/monochrome/svg/filter-line.svg</iconset>
         </property>
        </item>
       </widget>
@@ -217,7 +218,8 @@
          <string>All Regions</string>
         </property>
         <property name="icon">
-         <iconset theme="global-line"/>
+         <iconset resource="resources/duckstation-qt.qrc">
+          <normaloff>:/icons/monochrome/svg/global-line.svg</normaloff>:/icons/monochrome/svg/global-line.svg</iconset>
         </property>
        </item>
       </widget>

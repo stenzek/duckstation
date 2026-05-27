@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>598</width>
-    <height>550</height>
+    <height>552</height>
    </rect>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
@@ -66,12 +66,20 @@
         <property name="text">
          <string>View Profile...</string>
         </property>
+        <property name="icon">
+         <iconset resource="resources/duckstation-qt.qrc">
+          <normaloff>:/icons/monochrome/svg/id-card-line.svg</normaloff>:/icons/monochrome/svg/id-card-line.svg</iconset>
+        </property>
        </widget>
       </item>
       <item>
        <widget class="QPushButton" name="loginButton">
         <property name="text">
          <string>Login...</string>
+        </property>
+        <property name="icon">
+         <iconset resource="resources/duckstation-qt.qrc">
+          <normaloff>:/icons/monochrome/svg/login-box-line.svg</normaloff>:/icons/monochrome/svg/login-box-line.svg</iconset>
         </property>
        </widget>
       </item>

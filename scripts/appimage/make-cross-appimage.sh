@@ -177,14 +177,12 @@ declare -a QTLIBS=(
 	"libQt6DBus.so.6"
 	"libQt6Gui.so.6"
 	"libQt6OpenGL.so.6"
-	"libQt6Svg.so.6"
 	"libQt6WaylandClient.so.6"
 	"libQt6Widgets.so.6"
 	"libQt6XcbQpa.so.6"
 )
 
 declare -a QTPLUGINS=(
-	"plugins/iconengines"
 	"plugins/imageformats"
 	"plugins/platforminputcontexts"
 	"plugins/platforms"

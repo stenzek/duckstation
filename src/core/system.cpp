@@ -1684,7 +1684,7 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
     if (Core::GetBoolSettingValue("CDROM", "AllowBootingWithoutSBIFile", false))
     {
       Host::ConfirmMessageAsync(
-        "Confirm Unsupported Configuration",
+        "images/warning.svg", "Confirm Unsupported Configuration",
         fmt::format(TRANSLATE_FS("System",
                                  "You are attempting to run a libcrypt protected game without an SBI file:\n\n{0}: "
                                  "{1}\n\nThe game will likely not run properly.\n\nPlease check the README for "
@@ -4878,6 +4878,8 @@ void System::WarnAboutUnsafeSettings()
       append(TRANSLATE_SV("System", "PIO device removed."));
     if (g_settings.pcdrv_enable)
       append(TRANSLATE_SV("System", "PCDrv disabled."));
+    if (g_settings.pcsx_expansion_region_enable)
+      append(TRANSLATE_SV("System", "PCSX Expansion Region disabled."));
     if (g_settings.bios_patch_fast_boot)
       append(TRANSLATE_SV("System", "Fast boot disabled."));
 

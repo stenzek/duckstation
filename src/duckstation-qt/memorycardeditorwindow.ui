@@ -14,7 +14,8 @@
    <string>Memory Card Editor</string>
   </property>
   <property name="windowIcon">
-   <iconset theme="memcard-line"/>
+   <iconset resource="resources/duckstation-qt.qrc">
+    <normaloff>:/icons/monochrome/svg/memcard-line.svg</normaloff>:/icons/monochrome/svg/memcard-line.svg</iconset>
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="1" column="0">
@@ -81,7 +82,8 @@
         <string>New...</string>
        </property>
        <property name="icon">
-        <iconset theme="file-add-line"/>
+        <iconset resource="resources/duckstation-qt.qrc">
+         <normaloff>:/icons/monochrome/svg/file-add-line.svg</normaloff>:/icons/monochrome/svg/file-add-line.svg</iconset>
        </property>
       </widget>
      </item>
@@ -91,7 +93,8 @@
         <string>Open...</string>
        </property>
        <property name="icon">
-        <iconset theme="folder-open-line"/>
+        <iconset resource="resources/duckstation-qt.qrc">
+         <normaloff>:/icons/monochrome/svg/folder-open-line.svg</normaloff>:/icons/monochrome/svg/folder-open-line.svg</iconset>
        </property>
       </widget>
      </item>
@@ -197,7 +200,8 @@
         <string>New...</string>
        </property>
        <property name="icon">
-        <iconset theme="file-add-line"/>
+        <iconset resource="resources/duckstation-qt.qrc">
+         <normaloff>:/icons/monochrome/svg/file-add-line.svg</normaloff>:/icons/monochrome/svg/file-add-line.svg</iconset>
        </property>
       </widget>
      </item>
@@ -207,7 +211,8 @@
         <string>Open...</string>
        </property>
        <property name="icon">
-        <iconset theme="folder-open-line"/>
+        <iconset resource="resources/duckstation-qt.qrc">
+         <normaloff>:/icons/monochrome/svg/folder-open-line.svg</normaloff>:/icons/monochrome/svg/folder-open-line.svg</iconset>
        </property>
       </widget>
      </item>

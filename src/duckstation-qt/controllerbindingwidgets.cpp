@@ -110,6 +110,7 @@ void ControllerBindingWidget::populateWidgets()
   m_ui.settings->setEnabled(has_settings);
   m_ui.macros->setEnabled(has_macros);
 
+  SVGWidget* image_widget = nullptr;
   m_bindings_widget = new QWidget(this);
   switch (m_controller_info->type)
   {
@@ -118,7 +119,8 @@ void ControllerBindingWidget::populateWidgets()
       Ui::ControllerBindingWidget_AnalogController ui;
       ui.setupUi(m_bindings_widget);
       bindBindingWidgets(m_bindings_widget);
-      m_icon = QIcon::fromTheme("controller-line"_L1);
+      m_icon = QIcon(":/icons/monochrome/svg/controller-line.svg"_L1);
+      image_widget = ui.image;
     }
     break;
 
@@ -127,7 +129,8 @@ void ControllerBindingWidget::populateWidgets()
       Ui::ControllerBindingWidget_AnalogJoystick ui;
       ui.setupUi(m_bindings_widget);
       bindBindingWidgets(m_bindings_widget);
-      m_icon = QIcon::fromTheme("joystick-line"_L1);
+      m_icon = QIcon(":/icons/monochrome/svg/joystick-line.svg"_L1);
+      image_widget = ui.image;
     }
     break;
 
@@ -136,7 +139,8 @@ void ControllerBindingWidget::populateWidgets()
       Ui::ControllerBindingWidget_DigitalController ui;
       ui.setupUi(m_bindings_widget);
       bindBindingWidgets(m_bindings_widget);
-      m_icon = QIcon::fromTheme("controller-digital-line"_L1);
+      m_icon = QIcon(":/icons/monochrome/svg/controller-digital-line.svg"_L1);
+      image_widget = ui.image;
     }
     break;
 
@@ -145,7 +149,8 @@ void ControllerBindingWidget::populateWidgets()
       Ui::ControllerBindingWidget_GunCon ui;
       ui.setupUi(m_bindings_widget);
       bindBindingWidgets(m_bindings_widget);
-      m_icon = QIcon::fromTheme("guncon-line"_L1);
+      m_icon = QIcon(":/icons/monochrome/svg/guncon-line.svg"_L1);
+      image_widget = ui.image;
     }
     break;
 
@@ -154,7 +159,8 @@ void ControllerBindingWidget::populateWidgets()
       Ui::ControllerBindingWidget_NeGcon ui;
       ui.setupUi(m_bindings_widget);
       bindBindingWidgets(m_bindings_widget);
-      m_icon = QIcon::fromTheme("negcon-line"_L1);
+      m_icon = QIcon(":/icons/monochrome/svg/negcon-line.svg"_L1);
+      image_widget = ui.image;
     }
     break;
 
@@ -163,7 +169,8 @@ void ControllerBindingWidget::populateWidgets()
       Ui::ControllerBindingWidget_NeGconRumble ui;
       ui.setupUi(m_bindings_widget);
       bindBindingWidgets(m_bindings_widget);
-      m_icon = QIcon::fromTheme("negcon-line"_L1);
+      m_icon = QIcon(":/icons/monochrome/svg/negcon-line.svg"_L1);
+      image_widget = ui.image;
     }
     break;
 
@@ -172,7 +179,8 @@ void ControllerBindingWidget::populateWidgets()
       Ui::ControllerBindingWidget_Mouse ui;
       ui.setupUi(m_bindings_widget);
       bindBindingWidgets(m_bindings_widget);
-      m_icon = QIcon::fromTheme("mouse-line"_L1);
+      m_icon = QIcon(":/icons/monochrome/svg/mouse-line.svg"_L1);
+      image_widget = ui.image;
     }
     break;
 
@@ -181,23 +189,27 @@ void ControllerBindingWidget::populateWidgets()
       Ui::ControllerBindingWidget_Justifier ui;
       ui.setupUi(m_bindings_widget);
       bindBindingWidgets(m_bindings_widget);
-      m_icon = QIcon::fromTheme("guncon-line"_L1);
+      m_icon = QIcon(":/icons/monochrome/svg/guncon-line.svg"_L1);
+      image_widget = ui.image;
     }
     break;
 
     case ControllerType::None:
     {
-      m_icon = QIcon::fromTheme("controller-strike-line"_L1);
+      m_icon = QIcon(":/icons/monochrome/svg/controller-strike-line.svg"_L1);
     }
     break;
 
     default:
     {
       createBindingWidgets(m_bindings_widget);
-      m_icon = QIcon::fromTheme("controller-line"_L1);
+      m_icon = QIcon(":/icons/monochrome/svg/controller-line.svg"_L1);
     }
     break;
   }
+
+  if (image_widget)
+    image_widget->setSource(QtHost::GetResourceQPath(m_controller_info->image_name, true));
 
   m_ui.stackedWidget->addWidget(m_bindings_widget);
   m_ui.stackedWidget->setCurrentWidget(m_bindings_widget);
@@ -550,7 +562,7 @@ void ControllerMacroWidget::createWidgets(ControllerBindingWidget* bwidget)
     m_container->addWidget(m_macros[i]);
 
     QListWidgetItem* item = new QListWidgetItem();
-    item->setIcon(QIcon::fromTheme("flashlight-line"_L1));
+    item->setIcon(QIcon(":/icons/monochrome/svg/flashlight-line.svg"_L1));
     m_macroList->addItem(item);
     updateListItem(i);
   }
@@ -961,7 +973,7 @@ ControllerCustomSettingsWidget::ControllerCustomSettingsWidget(ControllerBinding
 
   QHBoxLayout* bottom_hlayout = new QHBoxLayout();
   QPushButton* restore_defaults = new QPushButton(tr("Restore Default Settings"), swidget);
-  restore_defaults->setIcon(QIcon::fromTheme("restart-line"_L1));
+  restore_defaults->setIcon(QIcon(":/icons/monochrome/svg/restart-line.svg"_L1));
   bottom_hlayout->addStretch(1);
   bottom_hlayout->addWidget(restore_defaults);
   swidget_layout->addLayout(bottom_hlayout, current_row++, 0, 1, 4);

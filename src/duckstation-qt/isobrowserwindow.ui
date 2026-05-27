@@ -14,7 +14,8 @@
    <string>ISO Browser</string>
   </property>
   <property name="windowIcon">
-   <iconset theme="disc-line"/>
+   <iconset resource="resources/duckstation-qt.qrc">
+    <normaloff>:/icons/monochrome/svg/disc-line.svg</normaloff>:/icons/monochrome/svg/disc-line.svg</iconset>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout" stretch="0,1,0">
    <item>
@@ -39,7 +40,8 @@
         <string>Open...</string>
        </property>
        <property name="icon">
-        <iconset theme="folder-open-line"/>
+        <iconset resource="resources/duckstation-qt.qrc">
+         <normaloff>:/icons/monochrome/svg/folder-open-line.svg</normaloff>:/icons/monochrome/svg/folder-open-line.svg</iconset>
        </property>
       </widget>
      </item>
@@ -97,6 +99,12 @@
       <spacer name="horizontalSpacer">
        <property name="orientation">
         <enum>Qt::Orientation::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>0</width>
+         <height>0</height>
+        </size>
        </property>
       </spacer>
      </item>

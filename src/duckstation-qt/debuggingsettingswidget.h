@@ -23,5 +23,5 @@ private:
 
   SettingsWindow* m_dialog;
 
-  Ui::DebugSettingsWidget m_ui;
+  Ui::DebuggingSettingsWidget m_ui;
 };

@@ -77,7 +77,8 @@
          <string>Reset Output Volume</string>
         </property>
         <property name="icon">
-         <iconset theme="delete-back-2-line"/>
+         <iconset resource="resources/duckstation-qt.qrc">
+          <normaloff>:/icons/monochrome/svg/delete-back-2-line.svg</normaloff>:/icons/monochrome/svg/delete-back-2-line.svg</iconset>
         </property>
        </widget>
       </item>
@@ -129,7 +130,8 @@
          <string>Reset Fast Forward Volume</string>
         </property>
         <property name="icon">
-         <iconset theme="delete-back-2-line"/>
+         <iconset resource="resources/duckstation-qt.qrc">
+          <normaloff>:/icons/monochrome/svg/delete-back-2-line.svg</normaloff>:/icons/monochrome/svg/delete-back-2-line.svg</iconset>
         </property>
        </widget>
       </item>
@@ -271,7 +273,8 @@
            <string>Reset Buffer Size</string>
           </property>
           <property name="icon">
-           <iconset theme="delete-back-2-line"/>
+           <iconset resource="resources/duckstation-qt.qrc">
+            <normaloff>:/icons/monochrome/svg/delete-back-2-line.svg</normaloff>:/icons/monochrome/svg/delete-back-2-line.svg</iconset>
           </property>
          </widget>
         </item>
@@ -397,7 +400,8 @@
          <string>Reset Sequence Length</string>
         </property>
         <property name="icon">
-         <iconset theme="delete-back-2-line"/>
+         <iconset resource="resources/duckstation-qt.qrc">
+          <normaloff>:/icons/monochrome/svg/delete-back-2-line.svg</normaloff>:/icons/monochrome/svg/delete-back-2-line.svg</iconset>
         </property>
        </widget>
       </item>
@@ -452,7 +456,8 @@
          <string>Reset Seek Window</string>
         </property>
         <property name="icon">
-         <iconset theme="delete-back-2-line"/>
+         <iconset resource="resources/duckstation-qt.qrc">
+          <normaloff>:/icons/monochrome/svg/delete-back-2-line.svg</normaloff>:/icons/monochrome/svg/delete-back-2-line.svg</iconset>
         </property>
        </widget>
       </item>
@@ -507,7 +512,8 @@
          <string>Reset Overlap</string>
         </property>
         <property name="icon">
-         <iconset theme="delete-back-2-line"/>
+         <iconset resource="resources/duckstation-qt.qrc">
+          <normaloff>:/icons/monochrome/svg/delete-back-2-line.svg</normaloff>:/icons/monochrome/svg/delete-back-2-line.svg</iconset>
         </property>
        </widget>
       </item>

@@ -77,7 +77,7 @@ static constexpr std::pair<const char*, QAction * Ui::MainWindow::*> s_toolbar_a
   {"StartFile", &Ui::MainWindow::actionStartFile},
   {"StartBIOS", &Ui::MainWindow::actionStartBios},
   {"StartDisc", &Ui::MainWindow::actionStartDisc},
-  {"FullscreenUI", &Ui::MainWindow::actionStartFullscreenUI2},
+  {"FullscreenUI", &Ui::MainWindow::actionToolbarStartFullscreenUI},
   {nullptr, nullptr},
   {"PowerOff", &Ui::MainWindow::actionCloseGame},
   {"PowerOffWithoutSaving", &Ui::MainWindow::actionCloseGameWithoutSaving},
@@ -91,13 +91,16 @@ static constexpr std::pair<const char*, QAction * Ui::MainWindow::*> s_toolbar_a
   {"LoadState", &Ui::MainWindow::actionLoadState},
   {"SaveState", &Ui::MainWindow::actionSaveState},
   {nullptr, nullptr},
+  {"Debugger", &Ui::MainWindow::actionCPUDebugger},
   {"MemoryScanner", &Ui::MainWindow::actionMemoryScanner},
   {"MemoryEditor", &Ui::MainWindow::actionMemoryEditor},
   {nullptr, nullptr},
   {"Fullscreen", &Ui::MainWindow::actionFullscreen},
-  {"Settings", &Ui::MainWindow::actionSettings2},
+  {"Settings", &Ui::MainWindow::actionToolbarSettings},
   {"ControllerSettings", &Ui::MainWindow::actionControllerSettings},
   {"ControllerPresets", &Ui::MainWindow::actionControllerProfiles},
+  {nullptr, nullptr},
+  {"Exit", &Ui::MainWindow::actionExit},
 };
 
 static constexpr const char* DEFAULT_TOOLBAR_ACTIONS =
@@ -1425,7 +1428,7 @@ void MainWindow::onFullscreenUIStartedOrStopped(bool running)
 {
   s_locals.fullscreen_ui_started = running;
   m_ui.actionStartFullscreenUI->setText(running ? tr("Stop Big Picture Mode") : tr("Start Big Picture Mode"));
-  m_ui.actionStartFullscreenUI2->setText(running ? tr("Exit Big Picture") : tr("Big Picture"));
+  m_ui.actionToolbarStartFullscreenUI->setText(running ? tr("Exit Big Picture") : tr("Big Picture"));
 }
 
 void MainWindow::onCloseGameActionTriggered()
@@ -1932,7 +1935,7 @@ void MainWindow::setupAdditionalUi()
     QActionGroup* const order_group = new QActionGroup(m_ui.menuSortBy);
 
     QAction* const ascending_action = new QAction(tr("&Ascending"), order_group);
-    ascending_action->setIcon(QIcon::fromTheme(QIcon::ThemeIcon::GoUp));
+    ascending_action->setIcon(QIcon(":/icons/monochrome/svg/sort-asc.svg"_L1));
     ascending_action->setCheckable(true);
     ascending_action->setChecked(current_sort_order == Qt::AscendingOrder);
     ascending_action->setObjectName("SortAscending"_L1);
@@ -1940,7 +1943,7 @@ void MainWindow::setupAdditionalUi()
     connect(ascending_action, &QAction::triggered, this, &MainWindow::onViewSortOrderActionTriggered);
 
     QAction* const descending_action = new QAction(tr("&Descending"), order_group);
-    descending_action->setIcon(QIcon::fromTheme(QIcon::ThemeIcon::GoDown));
+    descending_action->setIcon(QIcon(":/icons/monochrome/svg/sort-desc.svg"_L1));
     descending_action->setCheckable(true);
     descending_action->setChecked(current_sort_order == Qt::DescendingOrder);
     descending_action->setObjectName("SortDescending"_L1);
@@ -1977,6 +1980,10 @@ void MainWindow::setupAdditionalUi()
 #endif
 
   QtUtils::StyleChildMenus(this);
+
+#ifdef __APPLE__
+  QtUtils::SetIsMaskForMonochromeMenuBarActionIcons(menuBar());
+#endif
 }
 
 void MainWindow::onGameListSortIndicatorOrderChanged(int column, Qt::SortOrder order)
@@ -2215,7 +2222,7 @@ void MainWindow::updateEmulationActions()
   m_ui.actionStartBios->setDisabled(starting_or_running);
   m_ui.actionResumeLastState->setDisabled(starting_or_running || achievements_hardcore_mode);
   m_ui.actionStartFullscreenUI->setDisabled(starting_or_running);
-  m_ui.actionStartFullscreenUI2->setDisabled(starting_or_running);
+  m_ui.actionToolbarStartFullscreenUI->setDisabled(starting_or_running);
 
   m_ui.actionCloseGame->setDisabled(starting_or_not_running);
   m_ui.actionCloseGameWithoutSaving->setDisabled(starting_or_not_running);
@@ -2504,7 +2511,7 @@ void MainWindow::connectSignals()
   connect(m_ui.menuCheats, &QMenu::aboutToShow, this, &MainWindow::onCheatsMenuAboutToShow);
   connect(m_ui.actionCheatsToolbar, &QAction::triggered, [this] { m_ui.menuCheats->popup(QCursor::pos()); });
   connect(m_ui.actionStartFullscreenUI, &QAction::triggered, this, &MainWindow::onStartFullscreenUITriggered);
-  connect(m_ui.actionStartFullscreenUI2, &QAction::triggered, this, &MainWindow::onStartFullscreenUITriggered);
+  connect(m_ui.actionToolbarStartFullscreenUI, &QAction::triggered, this, &MainWindow::onStartFullscreenUITriggered);
   connect(m_ui.actionRemoveDisc, &QAction::triggered, this, &MainWindow::onRemoveDiscActionTriggered);
   connect(m_ui.actionAddGameDirectory, &QAction::triggered,
           [this]() { getSettingsWindow()->getGameListSettingsWidget()->addSearchDirectory(this); });
@@ -2521,7 +2528,7 @@ void MainWindow::connectSignals()
   connect(m_ui.actionExit, &QAction::triggered, this, &MainWindow::close);
   connect(m_ui.actionFullscreen, &QAction::triggered, g_core_thread, &CoreThread::toggleFullscreen);
   connect(m_ui.actionSettings, &QAction::triggered, [this]() { doSettings(); });
-  connect(m_ui.actionSettings2, &QAction::triggered, this, &MainWindow::onSettingsTriggeredFromToolbar);
+  connect(m_ui.actionToolbarSettings, &QAction::triggered, this, &MainWindow::onSettingsTriggeredFromToolbar);
   connect(m_ui.actionInterfaceSettings, &QAction::triggered, [this]() { doSettings("Interface"); });
   connect(m_ui.actionBIOSSettings, &QAction::triggered, [this]() { doSettings("BIOS"); });
   connect(m_ui.actionConsoleSettings, &QAction::triggered, [this]() { doSettings("Console"); });
@@ -3017,6 +3024,7 @@ void MainWindow::updateDebugMenuVisibility()
   const bool visible = QtHost::ShouldShowDebugOptions();
   m_ui.menuDebug->menuAction()->setVisible(visible);
   m_ui.actionDebuggingSettings->setVisible(visible);
+  m_ui.actionCPUDebugger->setVisible(visible); // so it doesn't appear in the toolbar
 }
 
 void MainWindow::refreshGameList(bool invalidate_cache)

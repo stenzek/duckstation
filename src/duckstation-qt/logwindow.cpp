@@ -278,7 +278,7 @@ bool LogWindow::deferredShow()
 {
   if (!g_log_window)
     return false;
-  
+
   if (g_log_window->isVisible())
     return true;
 
@@ -310,7 +310,7 @@ void LogWindow::updateWindowTitle()
 
 void LogWindow::createUi()
 {
-  setWindowIcon(QIcon::fromTheme("file-list-line"_L1));
+  setWindowIcon(QIcon(":/icons/monochrome/svg/file-list-line.svg"_L1));
   setWindowFlag(Qt::CustomizeWindowHint, true);
   setWindowFlag(Qt::WindowCloseButtonHint, false);
   updateWindowTitle();

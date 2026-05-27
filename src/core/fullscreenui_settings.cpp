@@ -21,6 +21,7 @@
 
 #include "util/gpu_device.h"
 #include "util/http_cache.h"
+#include "util/imgui_gsvector.h"
 #include "util/imgui_manager.h"
 #include "util/ini_settings_interface.h"
 #include "util/input_manager.h"
@@ -217,6 +218,7 @@ struct SettingsLocals
   bool game_settings_changed = false;
   bool cover_downloader_urls_loaded = false;
   bool cover_downloader_use_serial_names = false;
+  GPURenderer graphics_adapter_list_cache_renderer = GPURenderer::Count;
   InputBindingDialog input_binding_dialog;
 };
 
@@ -1747,7 +1749,6 @@ void FullscreenUI::SwitchToSettings()
   s_settings_locals.game_cheat_groups = {};
   s_settings_locals.selected_controller_port = -1;
 
-  PopulateGraphicsAdapterList();
   PopulateHotkeyList();
 
   const auto lock = Core::GetSettingsLock();
@@ -1813,17 +1814,9 @@ void FullscreenUI::SwitchToGameSettings(const GameList::Entry* entry, SettingsPa
 
 void FullscreenUI::PopulateGraphicsAdapterList()
 {
-  GPURenderer renderer;
-  const auto lock = Core::GetSettingsLock();
-  {
-    renderer = Settings::ParseRendererName(
-                 GetEffectiveTinyStringSetting(GetEditingSettingsInterface(false), "GPU", "Renderer").c_str())
-                 .value_or(Settings::DEFAULT_GPU_RENDERER);
-  }
-
   Error error;
   std::optional<GPUDevice::AdapterInfoList> adapter_list = GPUDevice::GetAdapterListForAPI(
-    Settings::GetRenderAPIForRenderer(renderer),
+    Settings::GetRenderAPIForRenderer(s_settings_locals.graphics_adapter_list_cache_renderer),
     g_gpu_device->HasMainSwapChain() ? g_gpu_device->GetMainSwapChain()->GetWindowInfo().type :
                                        WindowInfoType::Surfaceless,
     &error);
@@ -3611,6 +3604,13 @@ void FullscreenUI::DrawControllerSettingsPage()
       StartClearBindingsForPort(global_slot);
     }
 
+    if (ci->image_name)
+    {
+      const ImVec2 image_size =
+        GSVectorToImVec2(GSVector2(static_cast<float>(MenuButtonBounds::CalcAvailWidth()), LayoutScale(200.0f)));
+      ImGui::Image(GetCachedTexture(ci->image_name, image_size), image_size);
+    }
+
     MenuHeading(FSUI_ICONVSTR(ICON_FA_MICROCHIP, "Bindings"));
 
     for (const Controller::ControllerBindingInfo& bi : ci->bindings)
@@ -3975,15 +3975,26 @@ void FullscreenUI::DrawGraphicsSettingsPage()
         .c_str())
       .value_or(Settings::DEFAULT_GPU_RENDERER);
   const bool is_hardware = (renderer != GPURenderer::Software);
+  if (s_settings_locals.graphics_adapter_list_cache_renderer != renderer)
+  {
+    s_settings_locals.graphics_adapter_list_cache_renderer = renderer;
+    PopulateGraphicsAdapterList();
+  }
 
   std::optional<SmallString> current_adapter =
     bsi->GetOptionalSmallStringValue("GPU", "Adapter", game_settings ? std::nullopt : std::optional<const char*>(""));
 
   if (MenuActionButton(
         FSUI_ICONVSTR(ICON_PF_GPU_GRAPHICS_CARD, "GPU Adapter"), FSUI_VSTR("Selects the GPU to use for rendering."),
-        current_adapter.has_value() ? (current_adapter->empty() ? FSUI_VSTR("Default") : current_adapter->view()) :
-                                      FSUI_VSTR("Use Global Setting"),
-        true))
+        current_adapter.has_value() ?
+          ((current_adapter->empty() || std::ranges::none_of(s_settings_locals.graphics_adapter_list_cache,
+                                                             [&current_adapter](const GPUDevice::AdapterInfo& ai) {
+                                                               return (current_adapter.value() == ai.name);
+                                                             })) ?
+             FSUI_VSTR("Default") :
+             current_adapter->view()) :
+          FSUI_VSTR("Use Global Setting"),
+        true, !s_settings_locals.graphics_adapter_list_cache.empty()))
   {
     DropdownDialogOptions options;
     options.reserve(s_settings_locals.graphics_adapter_list_cache.size() + 2);
@@ -5329,9 +5340,7 @@ void FullscreenUI::DrawAchievementsLoginWindow()
   const float ra_title_spacing = LayoutScale(10.0f);
   const ImVec2 ra_logo_size = ImVec2(UIStyle.LargeFontSize * 2.0f, UIStyle.LargeFontSize);
   const ImRect ra_logo_rect = CenterImage(ra_logo_size, ImVec2(454.0f, 245.0f));
-  GPUTexture* const ra_logo =
-    GetCachedTexture(Achievements::RA_LOGO_SVG_ICON_NAME, static_cast<u32>(ra_logo_rect.GetWidth()),
-                     static_cast<u32>(ra_logo_rect.GetHeight()));
+  GPUTexture* const ra_logo = GetCachedTexture(Achievements::RA_LOGO_SVG_ICON_NAME, ra_logo_rect.GetSize());
   const ImRect work_rect = ImGui::GetCurrentWindow()->WorkRect;
   const float indent = (work_rect.GetWidth() - (ra_logo_size.x + ra_title_spacing + ra_title_size.x)) * 0.5f;
   ImDrawList* const dl = ImGui::GetWindowDrawList();

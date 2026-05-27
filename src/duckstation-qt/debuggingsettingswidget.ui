@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>DebugSettingsWidget</class>
+ <class>DebuggingSettingsWidget</class>
  <widget class="QWidget" name="DebuggingSettingsWidget">
   <property name="geometry">
    <rect>
@@ -22,9 +22,6 @@
    </property>
    <property name="bottomMargin">
     <number>0</number>
-   </property>
-   <property name="spacing">
-    <number>12</number>
    </property>
    <item row="0" column="0">
     <widget class="QLabel" name="icon">
@@ -70,7 +67,8 @@
       <string>Reset To Default</string>
      </property>
      <property name="icon">
-      <iconset theme="restart-line"/>
+      <iconset resource="resources/duckstation-qt.qrc">
+       <normaloff>:/icons/monochrome/svg/restart-line.svg</normaloff>:/icons/monochrome/svg/restart-line.svg</iconset>
      </property>
     </widget>
    </item>

@@ -184,6 +184,7 @@ const Controller::ControllerInfo DigitalController::INFO = {ControllerType::Digi
                                                             "DigitalController",
                                                             TRANSLATE_NOOP("ControllerType", "Digital Controller"),
                                                             ICON_PF_GAMEPAD_ALT,
+                                                            "images/controllers/digital_controller.svg",
                                                             s_binding_info,
                                                             {}};
 
@@ -208,6 +209,10 @@ static const Controller::ControllerBindingInfo s_popn_binding_info[] = {
 #undef BUTTON
 };
 
-const Controller::ControllerInfo DigitalController::INFO_POPN = {
-  ControllerType::PopnController, "PopnController",    TRANSLATE_NOOP("ControllerType", "Pop'n Controller"),
-  ICON_PF_POPN_CONTROLLER,        s_popn_binding_info, {}};
+const Controller::ControllerInfo DigitalController::INFO_POPN = {ControllerType::PopnController,
+                                                                 "PopnController",
+                                                                 TRANSLATE_NOOP("ControllerType", "Pop'n Controller"),
+                                                                 ICON_PF_POPN_CONTROLLER,
+                                                                 nullptr,
+                                                                 s_popn_binding_info,
+                                                                 {}};

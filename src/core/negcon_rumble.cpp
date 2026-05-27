@@ -771,9 +771,13 @@ static const SettingInfo s_settings[] = {
    "8", "-255", "255", "1", "%d", nullptr, 1.0f},
 };
 
-const Controller::ControllerInfo NeGconRumble::INFO = {
-  ControllerType::NeGconRumble, "NeGconRumble", TRANSLATE_NOOP("ControllerType", "NeGcon (Rumble)"),
-  ICON_PF_STEERING_WHEEL,       s_binding_info, s_settings};
+const Controller::ControllerInfo NeGconRumble::INFO = {ControllerType::NeGconRumble,
+                                                       "NeGconRumble",
+                                                       TRANSLATE_NOOP("ControllerType", "NeGcon (Rumble)"),
+                                                       ICON_PF_STEERING_WHEEL,
+                                                       "images/controllers/negcon.svg",
+                                                       s_binding_info,
+                                                       s_settings};
 
 void NeGconRumble::LoadSettings(const SettingsInterface& si, const char* section, bool initial)
 {

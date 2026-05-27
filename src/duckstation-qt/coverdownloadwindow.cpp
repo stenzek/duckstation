@@ -20,7 +20,7 @@ using namespace Qt::StringLiterals;
 CoverDownloadWindow::CoverDownloadWindow() : QWidget()
 {
   m_ui.setupUi(this);
-  m_ui.coverIcon->setPixmap(QIcon::fromTheme("artboard-2-line"_L1).pixmap(32));
+  m_ui.coverIcon->setPixmap(QIcon(":/icons/monochrome/svg/artboard-2-line.svg"_L1).pixmap(32));
   updateEnabled();
 
   connect(m_ui.start, &QPushButton::clicked, this, &CoverDownloadWindow::onStartClicked);

@@ -23,9 +23,11 @@ class Error;
 class QComboBox;
 class QFrame;
 class QGridLayout;
+class QIODevice;
 class QKeyEvent;
 class QLabel;
 class QMenu;
+class QMenuBar;
 class QSlider;
 class QTableView;
 class QTreeView;
@@ -42,7 +44,13 @@ namespace GameList {
 enum class EntryType : u8;
 }
 
+template<typename T, size_t alignment>
+class DynamicHeapArray;
+
 namespace QtUtils {
+
+/// Helper function to read a QFile to a DynamicHeapArray<u8>.
+bool ReadFileToByteArray(QIODevice* dev, DynamicHeapArray<u8, 0>& out_data);
 
 /// Creates a horizontal line widget.
 QFrame* CreateHorizontalLine(QWidget* parent);
@@ -187,6 +195,10 @@ bool RestoreWindowGeometry(std::string_view window_name, QWidget* widget);
 
 /// Positions a window in the center of its parent or the screen.
 void CenterWindowRelativeToParent(QWidget* window, const QWidget* parent_window);
+
+/// Sets the isMask property on all monochrome icons in a menu bar, which is necessary for correct
+/// colouring in the MacOS global menu bar. Does not need to be called on other platforms.
+void SetIsMaskForMonochromeMenuBarActionIcons(QMenuBar* const menubar);
 
 /// CPU-friendly way of blocking the UI thread while some predicate holds true.
 template<typename Predicate>

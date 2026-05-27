@@ -11,6 +11,7 @@
 #include "qtwindowinfo.h"
 #include "settingswindow.h"
 #include "setupwizarddialog.h"
+#include "svgwidget.h"
 
 #include "core/achievements.h"
 #include "core/bus.h"
@@ -62,6 +63,7 @@
 #include <QtCore/QFile>
 #include <QtCore/QTimer>
 #include <QtCore/QTranslator>
+#include <QtCore/QtPlugin>
 #include <QtGui/QClipboard>
 #include <QtGui/QKeyEvent>
 #include <algorithm>
@@ -94,6 +96,9 @@ QT_TRANSLATE_NOOP("MAC_APPLICATION_MENU", "Preferences...")
 QT_TRANSLATE_NOOP("MAC_APPLICATION_MENU", "Quit %1")
 QT_TRANSLATE_NOOP("MAC_APPLICATION_MENU", "About %1")
 #endif
+
+Q_IMPORT_PLUGIN(SVGIconEnginePlugin);
+Q_IMPORT_PLUGIN(SVGImageHandlerPlugin);
 
 static constexpr u32 SETTINGS_SAVE_DELAY = 1000;
 
@@ -272,6 +277,7 @@ bool QtHost::EarlyProcessStartup()
     icon_theme_search_paths.emplace_back(":/icons"_L1);
   icon_theme_search_paths.emplace_back(":/standard-icons"_L1);
   QIcon::setThemeSearchPaths(icon_theme_search_paths);
+  QIcon::setThemeName("monochrome");
   return true;
 }
 
@@ -929,6 +935,34 @@ void QtHost::ApplyMigrations()
       }
     }
   }
+
+#ifdef _WIN32
+#ifdef _DEBUG
+#define SUFFIX "d"
+#else
+#define SUFFIX
+#endif
+  // Remove Qt6Svg.dll and the plugins which use QtSvg, since the updater can't remove them itself...
+  for (const char* path_to_remove : {
+         "Qt6Svg" SUFFIX ".dll",
+         "QtPlugins\\iconengines\\qsvgicon" SUFFIX ".dll",
+         "QtPlugins\\imageformats\\qsvg" SUFFIX ".dll",
+       })
+  {
+    const std::string full_path = Path::Combine(EmuFolders::AppRoot, path_to_remove);
+    if (FileSystem::FileExists(full_path.c_str()))
+    {
+      Error error;
+      if (!FileSystem::DeleteFile(full_path.c_str(), &error))
+      {
+        QMessageBox::critical(nullptr, "Error"_L1,
+                              QString::fromStdString(fmt::format("Failed to delete conflicting library {}: {}",
+                                                                 path_to_remove, error.GetDescription())));
+      }
+    }
+  }
+#undef SUFFIX
+#endif
 }
 
 void CoreThread::applySettings(bool display_osd_messages /* = false */)
@@ -2318,8 +2352,9 @@ void Host::ReportStatusMessage(std::string_view message)
   emit g_core_thread->statusMessage(QtUtils::StringViewToQString(message));
 }
 
-void Host::ConfirmMessageAsync(std::string_view title, std::string_view message, ConfirmMessageAsyncCallback callback,
-                               std::string_view yes_text, std::string_view no_text)
+void Host::ConfirmMessageAsync(std::string_view icon, std::string_view title, std::string_view message,
+                               ConfirmMessageAsyncCallback callback, std::string_view yes_text,
+                               std::string_view no_text)
 {
   INFO_LOG("ConfirmMessageAsync({}, {})", title, message);
 
@@ -2332,9 +2367,10 @@ void Host::ConfirmMessageAsync(std::string_view title, std::string_view message,
   // Ensure it always comes from the CPU thread.
   if (!g_core_thread->isCurrentThread())
   {
-    Host::RunOnCoreThread([title = std::string(title), message = std::string(message), callback = std::move(callback),
-                           yes_text = std::string(yes_text), no_text = std::string(no_text)]() mutable {
-      ConfirmMessageAsync(title, message, std::move(callback));
+    Host::RunOnCoreThread([title = std::string(title), icon = std::string(icon), message = std::string(message),
+                           callback = std::move(callback), yes_text = std::string(yes_text),
+                           no_text = std::string(no_text)]() mutable {
+      ConfirmMessageAsync(icon, title, message, std::move(callback), yes_text, no_text);
     });
     return;
   }
@@ -2347,7 +2383,7 @@ void Host::ConfirmMessageAsync(std::string_view title, std::string_view message,
   // Use FSUI if we're ingame.
   if (System::IsValid() || g_core_thread->isFullscreenUIStarted())
   {
-    VideoThread::RunOnThread([title = std::string(title), message = std::string(message),
+    VideoThread::RunOnThread([title = std::string(title), icon = std::string(icon), message = std::string(message),
                               callback = std::move(callback), yes_text = std::string(yes_text),
                               no_text = std::string(no_text), needs_pause]() mutable {
       // Need to reset run idle state _again_ after displaying.
@@ -2363,8 +2399,13 @@ void Host::ConfirmMessageAsync(std::string_view title, std::string_view message,
         callback(result);
       };
 
+      if (icon.empty())
+        icon = ICON_EMOJI_QUESTION_MARK;
+      else if (StringUtil::GetUTF8CharacterCount(icon) > 1 && !Path::IsAbsolute(icon))
+        icon = QtHost::GetResourcePath(icon, true);
+
       FullscreenUI::Initialize();
-      FullscreenUI::OpenConfirmMessageDialog(ICON_EMOJI_QUESTION_MARK, std::move(title), std::move(message),
+      FullscreenUI::OpenConfirmMessageDialog(std::move(icon), std::move(title), std::move(message),
                                              std::move(final_callback), fmt::format(ICON_FA_CHECK " {}", yes_text),
                                              fmt::format(ICON_FA_XMARK " {}", no_text));
       FullscreenUI::UpdateRunIdleState();
@@ -2372,15 +2413,22 @@ void Host::ConfirmMessageAsync(std::string_view title, std::string_view message,
   }
   else
   {
+    QString qicon;
+    if (!icon.empty())
+      qicon = Path::IsAbsolute(icon) ? QtUtils::StringViewToQString(icon) : QtHost::GetResourceQPath(icon, true);
+
     // Otherwise, use the desktop UI.
-    Host::RunOnUIThread([title = QtUtils::StringViewToQString(title), message = QtUtils::StringViewToQString(message),
-                         callback = std::move(callback), yes_text = QtUtils::StringViewToQString(yes_text),
+    Host::RunOnUIThread([qicon = std::move(qicon), title = QtUtils::StringViewToQString(title),
+                         message = QtUtils::StringViewToQString(message), callback = std::move(callback),
+                         yes_text = QtUtils::StringViewToQString(yes_text),
                          no_text = QtUtils::StringViewToQString(no_text), needs_pause]() mutable {
       auto lock = g_main_window->pauseAndLockSystem();
 
       QWidget* const dialog_parent = lock.getDialogParent();
       QMessageBox* const msgbox =
         QtUtils::NewMessageBox(dialog_parent, QMessageBox::Question, title, message, QMessageBox::NoButton);
+      if (!qicon.isEmpty())
+        msgbox->setIconPixmap(SVGWidget::renderSVGToPixmap(qicon, QSize(64, 64), msgbox->devicePixelRatio(), QColor()));
 
       QPushButton* const yes_button = msgbox->addButton(yes_text, QMessageBox::AcceptRole);
       msgbox->addButton(no_text, QMessageBox::RejectRole);
@@ -2773,11 +2821,11 @@ InputDeviceListModel::~InputDeviceListModel() = default;
 QIcon InputDeviceListModel::getIconForKey(const InputBindingKey& key)
 {
   if (key.source_type == InputSourceType::Keyboard)
-    return QIcon::fromTheme("keyboard-line"_L1);
+    return QIcon(":/icons/monochrome/svg/keyboard-line.svg"_L1);
   else if (key.source_type == InputSourceType::Pointer)
-    return QIcon::fromTheme("mouse-line"_L1);
+    return QIcon(":/icons/monochrome/svg/mouse-line.svg"_L1);
   else
-    return QIcon::fromTheme("controller-line"_L1);
+    return QIcon(":/icons/monochrome/svg/controller-line.svg"_L1);
 }
 
 QString InputDeviceListModel::getDeviceName(const InputBindingKey& key)

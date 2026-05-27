@@ -11,9 +11,11 @@
 
 #include "util/input_manager.h"
 
+#include "common/dynamic_library.h"
 #include "common/error.h"
 #include "common/log.h"
 
+#include <QtCore/QIODevice>
 #include <QtCore/QMetaObject>
 #include <QtGui/QDesktopServices>
 #include <QtGui/QGuiApplication>
@@ -27,6 +29,7 @@
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QMainWindow>
 #include <QtWidgets/QMenu>
+#include <QtWidgets/QMenuBar>
 #include <QtWidgets/QMessageBox>
 #include <QtWidgets/QScrollBar>
 #include <QtWidgets/QSlider>
@@ -53,10 +56,56 @@ namespace QtUtils {
 
 static bool TryMigrateWindowGeometry(SettingsInterface* si, std::string_view window_name, QWidget* widget);
 static void SetMessageBoxStyle(QMessageBox* const dlg);
+static void SetIsMaskForMonochromeMenuBarActionIcons(QMenu* const menu);
 
 static constexpr const char* WINDOW_GEOMETRY_CONFIG_SECTION = "UI";
 
 } // namespace QtUtils
+
+bool QtUtils::ReadFileToByteArray(QIODevice* dev, DynamicHeapArray<u8, 0>& out_data)
+{
+  if (qint64 size; !dev->isSequential() && (size = dev->size()) > 0)
+  {
+    out_data.resize(static_cast<size_t>(
+      (sizeof(size_t) == sizeof(qint64)) ? size : std::min<qint64>(size, std::numeric_limits<size_t>::max())));
+
+    if (dev->read(reinterpret_cast<char*>(out_data.data()), size) != size)
+    {
+      out_data.deallocate();
+      return false;
+    }
+  }
+  else
+  {
+    constexpr size_t chunk_size = 1048576;
+    size_t read_so_far = 0;
+    for (;;)
+    {
+      const size_t prev_size = out_data.size();
+      const size_t new_size =
+        ((read_so_far + chunk_size) < read_so_far) ? std::numeric_limits<size_t>::max() : (read_so_far + chunk_size);
+      const size_t space = (new_size - prev_size);
+      if (space > 0)
+        out_data.resize(new_size);
+      const qint64 bytes_read =
+        (space > 0) ? dev->read(reinterpret_cast<char*>(out_data.data() + read_so_far), static_cast<qint64>(space)) : 0;
+      if (bytes_read < 0)
+      {
+        out_data.deallocate();
+        return false;
+      }
+      else if (bytes_read == 0)
+      {
+        out_data.resize(prev_size);
+        break;
+      }
+
+      read_so_far += static_cast<size_t>(bytes_read);
+    }
+  }
+
+  return true;
+}
 
 QFrame* QtUtils::CreateHorizontalLine(QWidget* parent)
 {
@@ -443,7 +492,7 @@ QIcon QtUtils::GetIconForRegion(ConsoleRegion region)
       return QIcon(":/icons/system-search.png"_L1);
 
     default:
-      return QIcon::fromTheme("file-unknow-line"_L1);
+      return QIcon(":/icons/monochrome/svg/file-unknow-line.svg"_L1);
   }
 }
 
@@ -463,7 +512,7 @@ QIcon QtUtils::GetIconForRegion(DiscRegion region)
     case DiscRegion::Other:
     case DiscRegion::NonPS1:
     default:
-      return QIcon::fromTheme("file-unknow-line"_L1);
+      return QIcon(":/icons/monochrome/svg/file-unknow-line.svg"_L1);
   }
 }
 
@@ -472,16 +521,16 @@ QIcon QtUtils::GetIconForEntryType(GameList::EntryType type)
   switch (type)
   {
     case GameList::EntryType::Disc:
-      return QIcon::fromTheme("disc-line"_L1);
+      return QIcon(":/icons/monochrome/svg/disc-line.svg"_L1);
     case GameList::EntryType::Playlist:
-      return QIcon::fromTheme("play-list-2-line"_L1);
+      return QIcon(":/icons/monochrome/svg/play-list-2-line.svg"_L1);
     case GameList::EntryType::DiscSet:
-      return QIcon::fromTheme("multi-discs"_L1);
+      return QIcon(":/icons/monochrome/svg/multi-discs.svg"_L1);
     case GameList::EntryType::PSF:
-      return QIcon::fromTheme("file-music-line"_L1);
+      return QIcon(":/icons/monochrome/svg/file-music-line.svg"_L1);
     case GameList::EntryType::PSExe:
     default:
-      return QIcon::fromTheme("settings-3-line"_L1);
+      return QIcon(":/icons/monochrome/svg/settings-3-line.svg"_L1);
   }
 }
 
@@ -671,6 +720,39 @@ void QtUtils::CenterWindowRelativeToParent(QWidget* window, const QWidget* paren
   window_geometry.moveCenter(parent_center_pos);
 
   window->setGeometry(window_geometry);
+}
+
+void QtUtils::SetIsMaskForMonochromeMenuBarActionIcons(QMenu* const menu)
+{
+  const QList<QAction*> actions = menu->actions();
+  for (QAction* const action : actions)
+  {
+    if (QMenu* const submenu = action->menu())
+      SetIsMaskForMonochromeMenuBarActionIcons(submenu);
+
+    QIcon icon = action->icon();
+    if (icon.isNull())
+      continue;
+
+    // Skip icons that aren't monochrome.
+    const QString icon_name = icon.name();
+    if (!icon_name.startsWith(":/icons/monochrome/"_L1))
+      continue;
+
+    // Annoyingly this creates a new icon, we can't modify the existing icon.
+    icon.setIsMask(true);
+    action->setIcon(icon);
+  }
+}
+
+void QtUtils::SetIsMaskForMonochromeMenuBarActionIcons(QMenuBar* const menubar)
+{
+  const QList<QAction*> actions = menubar->actions();
+  for (QAction* const action : actions)
+  {
+    if (QMenu* const menu = action->menu())
+      SetIsMaskForMonochromeMenuBarActionIcons(menu);
+  }
 }
 
 bool QtUtils::TryMigrateWindowGeometry(SettingsInterface* si, std::string_view window_name, QWidget* widget)

@@ -78,7 +78,7 @@ void GameListSettingsWidget::refreshExclusionList()
   for (const std::string& path : paths)
   {
     QListWidgetItem* const it = new QListWidgetItem(QString::fromStdString(path));
-    it->setIcon(QIcon::fromTheme("file-forbid-line"_L1));
+    it->setIcon(QIcon(":/icons/monochrome/svg/file-forbid-line.svg"_L1));
     m_ui.excludedPaths->addItem(it);
   }
 
@@ -89,7 +89,7 @@ void GameListSettingsWidget::addPathToTable(const std::string& path, bool recurs
 {
   QTreeWidgetItem* const item = new QTreeWidgetItem();
   item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
-  item->setIcon(0, QIcon::fromTheme(recursive ? "folder-open-line"_L1 : "folder-line"_L1));
+  item->setIcon(0, QIcon(recursive ? ":/icons/monochrome/svg/folder-open-line.svg"_L1 : ":/icons/monochrome/svg/folder-line.svg"_L1));
   item->setText(0, QString::fromStdString(path));
   item->setCheckState(1, recursive ? Qt::Checked : Qt::Unchecked);
   m_ui.searchDirectoryList->addTopLevelItem(item);
@@ -149,7 +149,7 @@ void GameListSettingsWidget::onDirectoryListItemChanged(QTreeWidgetItem* item, i
   const std::string path = item->text(0).toStdString();
   const bool recursive = (item->checkState(1) == Qt::Checked);
 
-  item->setIcon(0, QIcon::fromTheme(recursive ? "folder-open-line"_L1 : "folder-line"_L1));
+  item->setIcon(0, QIcon(recursive ? ":/icons/monochrome/svg/folder-open-line.svg"_L1 : ":/icons/monochrome/svg/folder-line.svg"_L1));
 
   if (recursive)
   {
@@ -174,10 +174,10 @@ void GameListSettingsWidget::onDirectoryListContextMenuRequested(const QPoint& p
   const int row = selection[0].row();
 
   QMenu* const menu = QtUtils::NewPopupMenu(this);
-  menu->addAction(QIcon::fromTheme("folder-reduce-line"_L1), tr("Remove"), this,
+  menu->addAction(QIcon(":/icons/monochrome/svg/folder-reduce-line.svg"_L1), tr("Remove"), this,
                   &GameListSettingsWidget::onRemoveSearchDirectoryButtonClicked);
   menu->addSeparator();
-  menu->addAction(QIcon::fromTheme("folder-open-line"_L1), tr("Open Directory..."), [this, row]() {
+  menu->addAction(QIcon(":/icons/monochrome/svg/folder-open-line.svg"_L1), tr("Open Directory..."), [this, row]() {
     const QTreeWidgetItem* const item = m_ui.searchDirectoryList->topLevelItem(row);
     if (item)
       QtUtils::OpenURL(this, QUrl::fromLocalFile(item->text(0)));

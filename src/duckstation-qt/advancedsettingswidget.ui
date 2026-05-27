@@ -52,7 +52,8 @@
          <string>Log Channels</string>
         </property>
         <property name="icon">
-         <iconset theme="filter-line"/>
+         <iconset resource="resources/duckstation-qt.qrc">
+          <normaloff>:/icons/monochrome/svg/filter-line.svg</normaloff>:/icons/monochrome/svg/filter-line.svg</iconset>
         </property>
        </widget>
       </item>
@@ -150,7 +151,8 @@
          <string>Browse...</string>
         </property>
         <property name="icon">
-         <iconset theme="folder-open-line"/>
+         <iconset resource="resources/duckstation-qt.qrc">
+          <normaloff>:/icons/monochrome/svg/folder-open-line.svg</normaloff>:/icons/monochrome/svg/folder-open-line.svg</iconset>
         </property>
        </widget>
       </item>
@@ -160,7 +162,8 @@
          <string>Open...</string>
         </property>
         <property name="icon">
-         <iconset theme="open-folder-line"/>
+         <iconset resource="resources/duckstation-qt.qrc">
+          <normaloff>:/icons/monochrome/svg/open-folder-line.svg</normaloff>:/icons/monochrome/svg/open-folder-line.svg</iconset>
         </property>
        </widget>
       </item>
@@ -170,7 +173,8 @@
          <string>Reset</string>
         </property>
         <property name="icon">
-         <iconset theme="delete-back-2-line"/>
+         <iconset resource="resources/duckstation-qt.qrc">
+          <normaloff>:/icons/monochrome/svg/delete-back-2-line.svg</normaloff>:/icons/monochrome/svg/delete-back-2-line.svg</iconset>
         </property>
        </widget>
       </item>
@@ -199,7 +203,8 @@
          <string>Browse...</string>
         </property>
         <property name="icon">
-         <iconset theme="folder-open-line"/>
+         <iconset resource="resources/duckstation-qt.qrc">
+          <normaloff>:/icons/monochrome/svg/folder-open-line.svg</normaloff>:/icons/monochrome/svg/folder-open-line.svg</iconset>
         </property>
        </widget>
       </item>
@@ -209,7 +214,8 @@
          <string>Open...</string>
         </property>
         <property name="icon">
-         <iconset theme="open-folder-line"/>
+         <iconset resource="resources/duckstation-qt.qrc">
+          <normaloff>:/icons/monochrome/svg/open-folder-line.svg</normaloff>:/icons/monochrome/svg/open-folder-line.svg</iconset>
         </property>
        </widget>
       </item>
@@ -219,7 +225,8 @@
          <string>Reset</string>
         </property>
         <property name="icon">
-         <iconset theme="delete-back-2-line"/>
+         <iconset resource="resources/duckstation-qt.qrc">
+          <normaloff>:/icons/monochrome/svg/delete-back-2-line.svg</normaloff>:/icons/monochrome/svg/delete-back-2-line.svg</iconset>
         </property>
        </widget>
       </item>
@@ -245,7 +252,8 @@
          <string>Refresh</string>
         </property>
         <property name="icon">
-         <iconset theme="refresh-line"/>
+         <iconset resource="resources/duckstation-qt.qrc">
+          <normaloff>:/icons/monochrome/svg/refresh-line.svg</normaloff>:/icons/monochrome/svg/refresh-line.svg</iconset>
         </property>
        </widget>
       </item>
@@ -255,7 +263,8 @@
          <string>Clear</string>
         </property>
         <property name="icon">
-         <iconset theme="trash-fill"/>
+         <iconset resource="resources/duckstation-qt.qrc">
+          <normaloff>:/icons/monochrome/svg/trash-fill.svg</normaloff>:/icons/monochrome/svg/trash-fill.svg</iconset>
         </property>
        </widget>
       </item>

@@ -219,5 +219,6 @@ const Controller::ControllerInfo PlayStationMouse::INFO = {ControllerType::PlayS
                                                            "PlayStationMouse",
                                                            TRANSLATE_NOOP("ControllerType", "Mouse"),
                                                            ICON_PF_MOUSE,
+                                                           "images/controllers/mouse.svg",
                                                            s_binding_info,
                                                            s_settings};

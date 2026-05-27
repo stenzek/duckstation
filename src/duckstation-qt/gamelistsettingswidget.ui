@@ -57,7 +57,8 @@
         <string>Add</string>
        </property>
        <property name="icon">
-        <iconset theme="folder-add-line"/>
+        <iconset resource="resources/duckstation-qt.qrc">
+         <normaloff>:/icons/monochrome/svg/folder-add-line.svg</normaloff>:/icons/monochrome/svg/folder-add-line.svg</iconset>
        </property>
       </widget>
      </item>
@@ -73,7 +74,8 @@
         <string>Remove</string>
        </property>
        <property name="icon">
-        <iconset theme="folder-reduce-line"/>
+        <iconset resource="resources/duckstation-qt.qrc">
+         <normaloff>:/icons/monochrome/svg/folder-reduce-line.svg</normaloff>:/icons/monochrome/svg/folder-reduce-line.svg</iconset>
        </property>
       </widget>
      </item>
@@ -145,7 +147,8 @@
         <string>File...</string>
        </property>
        <property name="icon">
-        <iconset theme="file-add-line"/>
+        <iconset resource="resources/duckstation-qt.qrc">
+         <normaloff>:/icons/monochrome/svg/file-add-line.svg</normaloff>:/icons/monochrome/svg/file-add-line.svg</iconset>
        </property>
       </widget>
      </item>
@@ -161,7 +164,8 @@
         <string>Folder...</string>
        </property>
        <property name="icon">
-        <iconset theme="folder-add-line"/>
+        <iconset resource="resources/duckstation-qt.qrc">
+         <normaloff>:/icons/monochrome/svg/folder-add-line.svg</normaloff>:/icons/monochrome/svg/folder-add-line.svg</iconset>
        </property>
       </widget>
      </item>
@@ -177,7 +181,8 @@
         <string>Remove</string>
        </property>
        <property name="icon">
-        <iconset theme="folder-reduce-line"/>
+        <iconset resource="resources/duckstation-qt.qrc">
+         <normaloff>:/icons/monochrome/svg/folder-reduce-line.svg</normaloff>:/icons/monochrome/svg/folder-reduce-line.svg</iconset>
        </property>
       </widget>
      </item>
@@ -220,7 +225,8 @@
         <string>Scan For New Games</string>
        </property>
        <property name="icon">
-        <iconset theme="mag-line"/>
+        <iconset resource="resources/duckstation-qt.qrc">
+         <normaloff>:/icons/monochrome/svg/mag-line.svg</normaloff>:/icons/monochrome/svg/mag-line.svg</iconset>
        </property>
       </widget>
      </item>
@@ -236,7 +242,8 @@
         <string>Rescan All Games</string>
        </property>
        <property name="icon">
-        <iconset theme="refresh-line"/>
+        <iconset resource="resources/duckstation-qt.qrc">
+         <normaloff>:/icons/monochrome/svg/refresh-line.svg</normaloff>:/icons/monochrome/svg/refresh-line.svg</iconset>
        </property>
       </widget>
      </item>

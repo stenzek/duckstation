@@ -632,6 +632,8 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
   pcdrv_enable_writes = si.GetBoolValue("PCDrv", "EnableWrites", false);
   pcdrv_root = si.GetStringViewValue("PCDrv", "Root");
 
+  pcsx_expansion_region_enable = si.GetBoolValue("Debug", "PCSXExpansionRegion", false);
+
 #ifdef __ANDROID__
   // Android users are incredibly silly and don't understand that stretch is in the aspect ratio list...
   if (si.GetBoolValue("Display", "Stretch", false))
@@ -954,6 +956,8 @@ void Settings::Save(SettingsInterface& si, bool ignore_base) const
   si.SetBoolValue("PCDrv", "Enabled", pcdrv_enable);
   si.SetBoolValue("PCDrv", "EnableWrites", pcdrv_enable_writes);
   si.SetStringValue("PCDrv", "Root", pcdrv_root.c_str());
+
+  si.SetBoolValue("Debug", "PCSXExpansionRegion", pcsx_expansion_region_enable);
 }
 
 bool Settings::TextureReplacementSettings::Configuration::operator==(const Configuration& rhs) const
@@ -1160,6 +1164,7 @@ void Settings::ApplySettingRestrictions()
     rewind_enable = false;
     pio_device_type = PIODeviceType::None;
     pcdrv_enable = false;
+    pcsx_expansion_region_enable = false;
     dma_max_slice_ticks = DEFAULT_DMA_MAX_SLICE_TICKS;
     dma_halt_ticks = DEFAULT_DMA_HALT_TICKS;
     gpu_fifo_size = DEFAULT_GPU_FIFO_SIZE;

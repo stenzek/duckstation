@@ -1,0 +1,9 @@
+[Icon Theme]
+Name=Monochrome Icon Theme
+Comment=Monochrome Icon Theme
+
+[svg]
+Size=128
+Type=Scalable
+MinSize=16
+MaxSize=1024

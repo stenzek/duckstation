@@ -104,7 +104,7 @@ for i in $(find "$DEPSDIR" -iname '*.so'); do
 done
 
 echo "Running linuxdeploy to create AppDir..."
-EXTRA_QT_MODULES="core;gui;svg;widgets;xcbqpa;waylandcompositor" \
+EXTRA_QT_MODULES="core;gui;widgets;xcbqpa;waylandcompositor" \
 EXTRA_PLATFORM_PLUGINS="libqwayland.so" \
 DEPLOY_PLATFORM_THEMES="1" \
 LINUXDEPLOY_EXCLUDED_LIBRARIES="libwayland-cursor*;libwayland-egl*" \

@@ -90,7 +90,8 @@ public:
   bool LoadFromFile(std::string_view filename, std::FILE* fp, Error* error = nullptr);
   bool LoadFromBuffer(std::string_view filename, std::span<const u8> data, Error* error = nullptr);
 
-  bool RasterizeSVG(const std::span<const u8> data, u32 width, u32 height, Error* error = nullptr);
+  bool RasterizeSVG(const std::span<const u8> data, u32 width, u32 height, bool maintain_aspect_ratio = false,
+                    Error* error = nullptr);
 
   bool SaveToFile(const char* filename, u8 quality = DEFAULT_SAVE_QUALITY, Error* error = nullptr) const;
   bool SaveToFile(std::string_view filename, std::FILE* fp, u8 quality = DEFAULT_SAVE_QUALITY,

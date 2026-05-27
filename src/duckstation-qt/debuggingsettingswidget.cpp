@@ -163,7 +163,7 @@ DebuggingSettingsWidget::DebuggingSettingsWidget(SettingsWindow* dialog, QWidget
   : QWidget(parent), m_dialog(dialog)
 {
   m_ui.setupUi(this);
-  m_ui.icon->setPixmap(QIcon::fromTheme(QIcon::ThemeIcon::DialogWarning).pixmap(48));
+  m_ui.icon->setPixmap(QIcon(":/icons/monochrome/svg/error-warning-line.svg"_L1).pixmap(48));
 
   connect(m_ui.resetToDefaultButton, &QPushButton::clicked, this, &DebuggingSettingsWidget::onResetToDefaultClicked);
 
@@ -247,6 +247,8 @@ void DebuggingSettingsWidget::addTweakOptions()
   addIntRangeTweakOption(m_dialog, m_ui.tweakOptionTable, tr("GDB Server Port"), "Debug", "GDBServerPort", 1, 65535,
                          Settings::DEFAULT_GDB_SERVER_PORT);
 
+  addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Enable PCSX Expansion Region"), "Debug",
+                        "PCSXExpansionRegion", false);
   addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Export Shared Memory"), "Hacks", "ExportSharedMemory",
                         false);
   addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Redirect SIO to TTY"), "SIO", "RedirectToTTY", false);
@@ -294,10 +296,11 @@ void DebuggingSettingsWidget::onResetToDefaultClicked()
     setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);                // Enable GDB Server
     setIntRangeTweakOption(m_ui.tweakOptionTable, i++, Settings::DEFAULT_GDB_SERVER_PORT); // GDB Server Port
     setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);                              // Export Shared Memory
-    setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);                              // Redirect SIO to TTY
-    setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);                              // Enable PCDRV
-    setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);                              // Enable PCDRV Writes
-    setDirectoryOption(m_ui.tweakOptionTable, i++, "");                                    // PCDrv Root Directory
+    setBooleanTweakOption(m_ui.tweakOptionTable, i++, false); // Enable PCSX Expansion Region
+    setBooleanTweakOption(m_ui.tweakOptionTable, i++, false); // Redirect SIO to TTY
+    setBooleanTweakOption(m_ui.tweakOptionTable, i++, false); // Enable PCDRV
+    setBooleanTweakOption(m_ui.tweakOptionTable, i++, false); // Enable PCDRV Writes
+    setDirectoryOption(m_ui.tweakOptionTable, i++, "");       // PCDrv Root Directory
 
     return;
   }
@@ -330,6 +333,7 @@ void DebuggingSettingsWidget::onResetToDefaultClicked()
   sif->DeleteValue("CDROM", "AllowBootingWithoutSBIFile");
   sif->DeleteValue("Debug", "EnableGDBServer");
   sif->DeleteValue("Debug", "GDBServerPort");
+  sif->DeleteValue("Debug", "PCSXExpansionRegion");
   sif->DeleteValue("SIO", "RedirectToTTY");
   sif->DeleteValue("PCDrv", "Enabled");
   sif->DeleteValue("PCDrv", "EnableWrites");

@@ -326,10 +326,6 @@ bool QtHost::HasGlobalStylesheet()
 
 void QtHost::UpdateThemeOnStyleChange()
 {
-  const QLatin1StringView new_theme_name = IsDarkApplicationTheme() ? "white"_L1 : "black"_L1;
-  if (QIcon::themeName() != new_theme_name)
-    QIcon::setThemeName(new_theme_name);
-
   if (NativeThemeStylesheetNeedsUpdate())
   {
     const QString stylesheet = GetNativeThemeStylesheet();

@@ -1609,23 +1609,21 @@ void Bus::EXP2WriteHandler(VirtualMemoryAddress address, u32 value)
   {
     DEV_LOG("BIOS POST2 status: {:02X}", value & UINT32_C(0x0F));
   }
-#if 0
-  // TODO: Put behind configuration variable
-  else if (offset == 0x81)
+  else if (offset >= 0x81 && offset <= 0x82 && g_settings.pcsx_expansion_region_enable)
   {
-    Log_WarningPrint("pcsx_debugbreak()");
-    Host::ReportErrorAsync("Error", "pcsx_debugbreak()");
-    System::PauseSystem(true);
-    CPU::ExitExecution();
+    if (offset == 0x81)
+    {
+      WARNING_LOG("pcsx_debugbreak()");
+      System::PauseSystem(true);
+      CPU::ExitExecution();
+    }
+    else // if (offset == 0x82)
+    {
+      WARNING_LOG("pcsx_exit() with status 0x{:02X}", value & UINT32_C(0xFF));
+      System::ShutdownSystem(false);
+      CPU::ExitExecution();
+    }
   }
-  else if (offset == 0x82)
-  {
-    Log_WarningFmt("pcsx_exit() with status 0x{:02X}", value & UINT32_C(0xFF));
-    Host::ReportErrorAsync("Error", fmt::format("pcsx_exit() with status 0x{:02X}", value & UINT32_C(0xFF)));
-    System::ShutdownSystem(false);
-    CPU::ExitExecution();
-  }
-#endif
   else
   {
     WARNING_LOG("EXP2 write: 0x{:08X} <- 0x{:08X}", address, value);

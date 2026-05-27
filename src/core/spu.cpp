@@ -50,6 +50,11 @@ ALWAYS_INLINE static constexpr s32 ApplyVolume(s32 sample, s16 volume)
   return (sample * s32(volume)) >> 15;
 }
 
+ALWAYS_INLINE static constexpr float ApplyVolumeF(float sample, s16 volume)
+{
+  return (sample * static_cast<float>(volume)) / static_cast<float>(0x8000);
+}
+
 namespace SPU {
 namespace {
 
@@ -2559,6 +2564,29 @@ void SPU::UpdateEventInterval()
   s_state.tick_event.Schedule(new_downcount);
 }
 
+static constexpr const char* GetReverbModeName(const SPU::ReverbRegisters& reverb_registers)
+{
+  const u32 signature =
+    (static_cast<u32>(reverb_registers.FB_SRC_A) << 16) | (static_cast<u16>(reverb_registers.IIR_COEF));
+
+  switch (signature)
+  {
+      // clang-format off
+    case 0x0000'0000: return "Off";
+    case 0x007D'BA80: return "Room";
+    case 0x0033'9C00: return "Studio Small";
+    case 0x00B1'B4C0: return "Studio Medium";
+    case 0x00E3'A680: return "Studio Large";
+    case 0x01A5'C000: return "Hall";
+    case 0x033D'B000: return "Space Echo";
+    case 0x0001'8100: return "Chaos Echo";
+    case 0x0001'0000: return "Delay";
+    case 0x0017'8500: return "Half Echo";
+    default: return "Unknown";
+      // clang-format on
+  }
+}
+
 void SPU::DrawDebugStateWindow(float scale)
 {
   static const ImVec4 active_color{1.0f, 1.0f, 1.0f, 1.0f};
@@ -2646,9 +2674,9 @@ void SPU::DrawDebugStateWindow(float scale)
 
     ImGui::Text("Volume: ");
     ImGui::SameLine(offsets[0]);
-    ImGui::Text("Left: %d%%", ApplyVolume(100, s_state.main_volume_left.current_level));
+    ImGui::Text("Left: %.1f%%", ApplyVolumeF(100.0f, s_state.main_volume_left.current_level));
     ImGui::SameLine(offsets[1]);
-    ImGui::Text("Right: %d%%", ApplyVolume(100, s_state.main_volume_right.current_level));
+    ImGui::Text("Right: %.1f%%", ApplyVolumeF(100.0f, s_state.main_volume_right.current_level));
 #ifdef SPU_ENABLE_VU_METER
     ImGui::SameLine(offsets[2]);
     draw_vu_meter(s_state.output_peaks);
@@ -2660,11 +2688,11 @@ void SPU::DrawDebugStateWindow(float scale)
     ImGui::TextColored(s_state.SPUCNT.cd_audio_enable ? active_color : inactive_color,
                        s_state.SPUCNT.cd_audio_enable ? "Enabled" : "Disabled");
     ImGui::SameLine(offsets[1]);
-    ImGui::TextColored(s_state.SPUCNT.cd_audio_enable ? active_color : inactive_color, "Left Volume: %d%%",
-                       ApplyVolume(100, s_state.cd_audio_volume_left));
+    ImGui::TextColored(s_state.SPUCNT.cd_audio_enable ? active_color : inactive_color, "Left Volume: %.1f%%",
+                       ApplyVolumeF(100.0f, s_state.cd_audio_volume_left));
     ImGui::SameLine(offsets[3]);
-    ImGui::TextColored(s_state.SPUCNT.cd_audio_enable ? active_color : inactive_color, "Right Volume: %d%%",
-                       ApplyVolume(100, s_state.cd_audio_volume_right));
+    ImGui::TextColored(s_state.SPUCNT.cd_audio_enable ? active_color : inactive_color, "Right Volume: %.1f%%",
+                       ApplyVolumeF(100.0f, s_state.cd_audio_volume_right));
 #ifdef SPU_ENABLE_VU_METER
     ImGui::SameLine(offsets[5]);
     draw_vu_meter(s_state.cd_audio_peaks);
@@ -2718,13 +2746,13 @@ void SPU::DrawDebugStateWindow(float scale)
       ImGui::NextColumn();
       ImGui::TextColored(color, "%.2f", (float(v.regs.adpcm_sample_rate) / 4096.0f) * 44100.0f);
       ImGui::NextColumn();
-      ImGui::TextColored(color, "%d%%", ApplyVolume(100, v.left_volume.current_level));
+      ImGui::TextColored(color, "%.1f%%", ApplyVolumeF(100.0f, v.left_volume.current_level));
       ImGui::NextColumn();
-      ImGui::TextColored(color, "%d%%", ApplyVolume(100, v.right_volume.current_level));
+      ImGui::TextColored(color, "%.1f%%", ApplyVolumeF(100.0f, v.right_volume.current_level));
       ImGui::NextColumn();
       ImGui::TextColored(color, "%s", adsr_phases[static_cast<u8>(v.adsr_phase)]);
       ImGui::NextColumn();
-      ImGui::TextColored(color, "%d%%", ApplyVolume(100, v.regs.adsr_volume));
+      ImGui::TextColored(color, "%.1f%%", ApplyVolumeF(100.0f, v.regs.adsr_volume));
       ImGui::NextColumn();
       ImGui::TextColored(color, "%d", v.adsr_envelope.counter);
       ImGui::NextColumn();
@@ -2761,8 +2789,9 @@ void SPU::DrawDebugStateWindow(float scale)
     ImGui::Text("Current Address: 0x%08X", s_state.reverb_current_address);
     ImGui::Text("Current Amplitude: Input (%d, %d) Output (%d, %d)", s_state.last_reverb_input[0],
                 s_state.last_reverb_input[1], s_state.last_reverb_output[0], s_state.last_reverb_output[1]);
-    ImGui::Text("Output Volume: Left %d%% Right %d%%", ApplyVolume(100, s_state.reverb_registers.vLOUT),
-                ApplyVolume(100, s_state.reverb_registers.vROUT));
+    ImGui::Text("Current Mode: %s", GetReverbModeName(s_state.reverb_registers));
+    ImGui::Text("Output Volume: Left %.1f%% Right %.1f%%", ApplyVolumeF(100.0f, s_state.reverb_registers.vLOUT),
+                ApplyVolumeF(100.0f, s_state.reverb_registers.vROUT));
 #ifdef SPU_ENABLE_VU_METER
     ImGui::SameLine();
     draw_vu_meter(s_state.reverb_peaks);

@@ -917,7 +917,7 @@ std::string MemoryCardRenameFileDialog::getNewName() const
 
 void MemoryCardRenameFileDialog::setupAdditionalUi()
 {
-  m_ui.icon->setPixmap(QIcon::fromTheme("memcard-line"_L1).pixmap(32));
+  m_ui.icon->setPixmap(QIcon(":/icons/monochrome/svg/memcard-line.svg"_L1).pixmap(32));
 
   for (const auto& [region, prefix] : MEMORY_CARD_FILE_REGION_PREFIXES)
   {

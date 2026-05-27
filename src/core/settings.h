@@ -301,6 +301,7 @@ struct Settings : public GPUSettings
 
   bool pcdrv_enable : 1 = false;
   bool pcdrv_enable_writes : 1 = false;
+  bool pcsx_expansion_region_enable : 1 = false;
 
   bool pio_switch_active : 1 = true;
   bool pio_flash_write_enable : 1 = false;
