@@ -596,7 +596,6 @@ bool CDImageCueSheet::OpenAndParseCueSheet(const char* path, Error* error)
     {
       std::string track_full_path =
         !Path::IsAbsolute(track_filename) ? Path::BuildRelativePath(m_filename, track_filename) : track_filename;
-      Error track_error;
       std::unique_ptr<TrackFileInterface> track_file;
 
       if (track->file_format == CueParser::FileFormat::Binary)
@@ -666,8 +665,8 @@ bool CDImageCueSheet::OpenAndParseCueSheet(const char* path, Error* error)
       {
         ERROR_LOG("Failed to open track {} in '{}': track start is out of range ({} vs {})", track_num, path,
                   track_start, file_size);
-        Error::SetStringFmt(error, "Failed to open track {} in '{}': track start is out of range ({} vs {})",
-                            track_num, Path::GetFileName(path), track_start, file_size);
+        Error::SetStringFmt(error, "Failed to open track {} in '{}': track start is out of range ({} vs {})", track_num,
+                            Path::GetFileName(path), track_start, file_size);
         return false;
       }
 
