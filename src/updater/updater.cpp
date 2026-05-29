@@ -450,6 +450,27 @@ void Updater::CleanupStagingDirectory()
     m_progress->FormatError("Failed to remove staging directory '{}'", m_staging_directory);
 }
 
+void Updater::CleanupStaleFiles()
+{
+#ifdef _WIN32
+  // Remove Qt6Svg.dll and the plugins which use QtSvg, since the staging/extraction won't remove it...
+  for (const char* path_to_remove : {
+         "Qt6Svg.dll",
+         "QtPlugins\\iconengines\\qsvgicon.dll",
+         "QtPlugins\\imageformats\\qsvg.dll",
+       })
+  {
+    const std::string path = Path::Combine(m_destination_directory, path_to_remove);
+    if (!FileSystem::FileExists(path.c_str()))
+      continue;
+
+    Error error;
+    if (!FileSystem::DeleteFile(path.c_str(), &error))
+      m_progress->FormatModalError("Failed to remove file '{}': {}", path, error.GetDescription());
+  }
+#endif
+}
+
 bool Updater::ClearDestinationDirectory()
 {
   return RecursiveDeleteDirectory(m_destination_directory.c_str(), false);

@@ -24,6 +24,7 @@ public:
   bool StageUpdate();
   bool CommitUpdate();
   void CleanupStagingDirectory();
+  void CleanupStaleFiles();
   bool ClearDestinationDirectory();
 
 private:

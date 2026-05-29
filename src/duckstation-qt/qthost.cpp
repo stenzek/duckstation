@@ -935,34 +935,6 @@ void QtHost::ApplyMigrations()
       }
     }
   }
-
-#ifdef _WIN32
-#ifdef _DEBUG
-#define SUFFIX "d"
-#else
-#define SUFFIX
-#endif
-  // Remove Qt6Svg.dll and the plugins which use QtSvg, since the updater can't remove them itself...
-  for (const char* path_to_remove : {
-         "Qt6Svg" SUFFIX ".dll",
-         "QtPlugins\\iconengines\\qsvgicon" SUFFIX ".dll",
-         "QtPlugins\\imageformats\\qsvg" SUFFIX ".dll",
-       })
-  {
-    const std::string full_path = Path::Combine(EmuFolders::AppRoot, path_to_remove);
-    if (FileSystem::FileExists(full_path.c_str()))
-    {
-      Error error;
-      if (!FileSystem::DeleteFile(full_path.c_str(), &error))
-      {
-        QMessageBox::critical(nullptr, "Error"_L1,
-                              QString::fromStdString(fmt::format("Failed to delete conflicting library {}: {}",
-                                                                 path_to_remove, error.GetDescription())));
-      }
-    }
-  }
-#undef SUFFIX
-#endif
 }
 
 void CoreThread::applySettings(bool display_osd_messages /* = false */)
