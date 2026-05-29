@@ -796,7 +796,7 @@ bool MediaCaptureMF::LoadMediaFoundation(Error* error)
       result = false;
     }
 
-    if (result)
+    if (!result)
       UnloadMediaFoundation();
   });
 
