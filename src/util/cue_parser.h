@@ -78,8 +78,6 @@ public:
 private:
   Track* GetMutableTrack(u32 n);
 
-  void SetError(u32 line_number, Error* error, const char* format, ...);
-
   static std::string_view GetToken(const char*& line);
   static std::optional<MSF> GetMSF(std::string_view token);
 
