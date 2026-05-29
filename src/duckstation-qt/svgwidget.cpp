@@ -88,6 +88,11 @@ void SVGWidget::destroyDocument()
   m_svg_data.deallocate();
 }
 
+QColor SVGWidget::effectiveColor() const
+{
+  return m_color.isValid() ? m_color : palette().color(QPalette::WindowText);
+}
+
 void SVGWidget::rasterize()
 {
   m_pixmap = {};
@@ -126,7 +131,13 @@ void SVGWidget::rasterize()
 
   // Use white as currentColor so the SVG's own colours are preserved.
   // Swap in a palette colour here if tinting is ever desired.
-  const plutovg_color_t current_color = {.r = 1.0f, .g = 1.0f, .b = 1.0f, .a = 1.0f};
+  const QColor color = effectiveColor();
+  const plutovg_color_t current_color = {
+    .r = static_cast<float>(color.redF()),
+    .g = static_cast<float>(color.greenF()),
+    .b = static_cast<float>(color.blueF()),
+    .a = static_cast<float>(color.alphaF()),
+  };
 
   plutovg_surface_t* const surface =
     plutosvg_document_render_to_surface(m_document, nullptr, render_w, render_h, &current_color, nullptr, nullptr);
@@ -173,7 +184,9 @@ void SVGWidget::changeEvent(QEvent* event)
   QWidget::changeEvent(event);
 
   // Re-rasterize when the screen changes (e.g. window moved to a display with a different DPR).
-  if (event->type() == QEvent::DevicePixelRatioChange || event->type() == QEvent::ScreenChangeInternal)
+  // Or when the theme/current colour changes.
+  const QEvent::Type type = event->type();
+  if (type == QEvent::DevicePixelRatioChange || type == QEvent::ScreenChangeInternal || type == QEvent::PaletteChange)
   {
     m_last_raster_size = {}; // force re-render
     rasterize();

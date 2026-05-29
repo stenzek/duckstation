@@ -50,6 +50,9 @@ protected:
   void changeEvent(QEvent* event) override;
 
 private:
+  // Effective value of currentColor for rasterization, taking into account the widget's palette and m_color.
+  QColor effectiveColor() const;
+
   /// (Re)render m_document at the current widget size + DPR and store the result in m_pixmap.
   void rasterize();
 
