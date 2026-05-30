@@ -10,7 +10,6 @@
 		<file>icons/black/svg/checkbox-indeterminate-disabled.svg</file>
 		<file>icons/black/svg/checkbox-indeterminate-pressed.svg</file>
 		<file>icons/black/svg/checkbox-indeterminate.svg</file>
-		<file>icons/black/svg/checkbox-multiple-blank-line.svg</file>
 		<file>icons/black/svg/checkbox-unchecked-disabled.svg</file>
 		<file>icons/black/svg/checkbox-unchecked-pressed.svg</file>
 		<file>icons/black/svg/checkbox-unchecked.svg</file>
@@ -68,16 +67,7 @@
 		<file>icons/monochrome/svg/chat-history-line.svg</file>
 		<file>icons/monochrome/svg/chat-off-line.svg</file>
 		<file>icons/monochrome/svg/cheats-line.svg</file>
-		<file>icons/monochrome/svg/checkbox-checked-disabled.svg</file>
-		<file>icons/monochrome/svg/checkbox-checked-pressed.svg</file>
-		<file>icons/monochrome/svg/checkbox-checked.svg</file>
-		<file>icons/monochrome/svg/checkbox-indeterminate-disabled.svg</file>
-		<file>icons/monochrome/svg/checkbox-indeterminate-pressed.svg</file>
-		<file>icons/monochrome/svg/checkbox-indeterminate.svg</file>
 		<file>icons/monochrome/svg/checkbox-multiple-blank-line.svg</file>
-		<file>icons/monochrome/svg/checkbox-unchecked-disabled.svg</file>
-		<file>icons/monochrome/svg/checkbox-unchecked-pressed.svg</file>
-		<file>icons/monochrome/svg/checkbox-unchecked.svg</file>
 		<file>icons/monochrome/svg/chip-2-line.svg</file>
 		<file>icons/monochrome/svg/chip-line.svg</file>
 		<file>icons/monochrome/svg/close-line.svg</file>
@@ -187,7 +177,6 @@
 		<file>icons/white/svg/checkbox-indeterminate-disabled.svg</file>
 		<file>icons/white/svg/checkbox-indeterminate-pressed.svg</file>
 		<file>icons/white/svg/checkbox-indeterminate.svg</file>
-		<file>icons/white/svg/checkbox-multiple-blank-line.svg</file>
 		<file>icons/white/svg/checkbox-unchecked-disabled.svg</file>
 		<file>icons/white/svg/checkbox-unchecked-pressed.svg</file>
 		<file>icons/white/svg/checkbox-unchecked.svg</file>
