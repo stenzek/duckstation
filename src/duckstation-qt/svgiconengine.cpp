@@ -15,6 +15,7 @@
 #include <QtGui/QPixmapCache>
 #include <QtWidgets/QApplication>
 
+#include <cmath>
 #include <limits>
 #include <plutosvg.h>
 
@@ -66,8 +67,16 @@ static bool RenderSVGToPixmap(QPixmap& pm, const plutosvg_document* doc, const Q
     .a = static_cast<float>(color.alphaF()),
   };
 
-  plutovg_surface_t* surface =
-    plutosvg_document_render_to_surface(doc, nullptr, size.width(), size.height(), &current_color, nullptr, nullptr);
+  // Determine SVG intrinsic size and compute a uniform scale that fits inside physical,
+  // preserving aspect ratio.
+  const float svg_w = plutosvg_document_get_width(doc);
+  const float svg_h = plutosvg_document_get_height(doc);
+  QSize render_size = size;
+  if (svg_w > 0.0f && svg_h > 0.0f)
+    render_size = QSizeF(svg_w, svg_h).scaled(size, Qt::KeepAspectRatio).toSize();
+
+  plutovg_surface_t* surface = plutosvg_document_render_to_surface(
+    doc, nullptr, render_size.width(), render_size.height(), &current_color, nullptr, nullptr);
   if (!surface)
     return false;
 
@@ -79,7 +88,28 @@ static bool RenderSVGToPixmap(QPixmap& pm, const plutosvg_document* doc, const Q
                    QImage::Format_ARGB32_Premultiplied, CleanupPlutoSVGSurface, surface);
 
   pm = QPixmap::fromImage(img);
-  return !pm.isNull();
+  if (pm.isNull())
+    return false;
+
+  // If the rendered size is smaller than the requested size, center it in a transparent pixmap.
+  if (render_size != size)
+  {
+    QPixmap centered_pm(size);
+    centered_pm.fill(Qt::transparent);
+
+    QPainter painter(&centered_pm);
+    const int offset_x = (size.width() - render_size.width()) / 2;
+    const int offset_y = (size.height() - render_size.height()) / 2;
+    painter.drawImage(offset_x, offset_y, img);
+
+    pm = std::move(centered_pm);
+  }
+  else
+  {
+    pm = QPixmap::fromImage(img);
+  }
+
+  return true;
 }
 
 SVGIconEngine::SVGIconEngine(const QString& resource_path) : m_resource_path(resource_path)
