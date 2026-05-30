@@ -14,6 +14,8 @@
 #include <QtGui/QPalette>
 #include <QtGui/QPixmapCache>
 #include <QtWidgets/QApplication>
+#include <QtWidgets/QStyle>
+#include <QtWidgets/QStyleOption>
 
 #include <cmath>
 #include <limits>
@@ -60,6 +62,18 @@ static QString BuildCacheKey(const QString& resource_path, const QSize& size, qr
     .arg(static_cast<unsigned>(color.rgba()), 8, 16, QLatin1Char('0'));
 }
 
+// Constructs a cache key for non-coloured icons (relies on the mode).
+static QString BuildCacheKey(const QString& resource_path, const QSize& size, qreal dpr, QIcon::Mode mode)
+{
+  // Cache key includes path, size, and colour so stale entries are not reused after a palette change.
+  return QStringLiteral("%1_%2x%3@%4_%5")
+    .arg(resource_path)
+    .arg(size.width())
+    .arg(size.height())
+    .arg(dpr)
+    .arg(static_cast<u8>(mode));
+}
+
 /// Callback used when freeing the QImage.
 static void CleanupPlutoSVGSurface(void* surface)
 {
@@ -72,12 +86,14 @@ static bool RenderSVGToPixmap(QPixmap& pm, const plutosvg_document* doc, const Q
 {
   // Pass the desired icon colour as CSS currentColor so plutosvg tints the monochrome SVG in a
   // single render pass, avoiding a separate SourceIn compositing step.
-  const plutovg_color_t current_color = {
-    .r = static_cast<float>(color.redF()),
-    .g = static_cast<float>(color.greenF()),
-    .b = static_cast<float>(color.blueF()),
-    .a = static_cast<float>(color.alphaF()),
-  };
+  const plutovg_color_t current_color = color.isValid() ?
+                                          plutovg_color_t{
+                                            .r = static_cast<float>(color.redF()),
+                                            .g = static_cast<float>(color.greenF()),
+                                            .b = static_cast<float>(color.blueF()),
+                                            .a = static_cast<float>(color.alphaF()),
+                                          } :
+                                          plutovg_color_t{.r = 1.0f, .g = 1.0f, .b = 1.0f, .a = 1.0f};
 
   // Determine SVG intrinsic size and compute a uniform scale that fits inside physical,
   // preserving aspect ratio.
@@ -158,7 +174,42 @@ bool SVGIconEngine::ensureLoaded() const
     return false;
   }
 
+  // Is this a coloured SVG?
+  m_is_colored =
+    (std::string_view(reinterpret_cast<const char*>(m_svg_data.data()), m_svg_data.size()).find("currentColor") !=
+     std::string_view::npos);
+
   return true;
+}
+
+QPixmap SVGIconEngine::getPixmap(const QSize& size, qreal dpr, QIcon::Mode mode, QIcon::State state)
+{
+  // Apply device pixel ratio to requested size so we can cache pixmaps at the correct sizes for different DPRs.
+  const QSize scaled_size = QtUtils::ApplyDevicePixelRatioToSize(size, dpr);
+  const QColor color = m_is_colored ? GetIconColorFromPalette(mode, state) : QColor();
+  const QString cache_key = m_is_colored ? BuildCacheKey(m_resource_path, scaled_size, dpr, color) :
+                                           BuildCacheKey(m_resource_path, scaled_size, dpr, mode);
+
+  QPixmap pm;
+  if (!QPixmapCache::find(cache_key, &pm))
+  {
+    // Don't reload multiple times if we hit the cache.
+    if (ensureLoaded() && RenderSVGToPixmap(pm, m_document, scaled_size, color))
+    {
+      if (!m_is_colored && mode != QIcon::Normal)
+      {
+        QStyleOption opt;
+        opt.palette = QGuiApplication::palette();
+        pm = QApplication::style()->generatedIconPixmap(mode, pm, &opt);
+      }
+
+      // DPR set must be before inserting into the cache, otherwise it copies.
+      pm.setDevicePixelRatio(dpr);
+      QPixmapCache::insert(cache_key, pm);
+    }
+  }
+
+  return pm;
 }
 
 void SVGIconEngine::paint(QPainter* painter, const QRect& rect, QIcon::Mode mode, QIcon::State state)
@@ -169,69 +220,25 @@ void SVGIconEngine::paint(QPainter* painter, const QRect& rect, QIcon::Mode mode
   // Apply device pixel ratio to requested size so we can cache pixmaps at the correct sizes for different DPRs.
   const QPaintDevice* const device = painter->device();
   const qreal dpr = device ? device->devicePixelRatio() : 1.0;
-  const QSize size = QtUtils::ApplyDevicePixelRatioToSize(rect.size(), dpr);
-  const QColor color = GetIconColorFromPalette(mode, state);
-  const QString cache_key = BuildCacheKey(m_resource_path, size, dpr, color);
-
-  QPixmap pm;
-  if (!QPixmapCache::find(cache_key, &pm))
-  {
-    // Don't reload multiple times if we hit the cache.
-    if (ensureLoaded() && RenderSVGToPixmap(pm, m_document, size, color))
-    {
-      // DPR set must be before inserting into the cache, otherwise it copies.
-      pm.setDevicePixelRatio(dpr);
-      QPixmapCache::insert(cache_key, pm);
-    }
-  }
-
-  painter->drawPixmap(rect, pm);
+  const QPixmap pm = getPixmap(rect.size(), dpr, mode, state);
+  if (!pm.isNull())
+    painter->drawPixmap(rect, pm);
 }
 
 QPixmap SVGIconEngine::pixmap(const QSize& size, QIcon::Mode mode, QIcon::State state)
 {
-  Q_UNUSED(state);
-
   if (size.isEmpty())
     return {};
 
-  const QColor color = GetIconColorFromPalette(mode, state);
-  const QString cache_key = BuildCacheKey(m_resource_path, size, 1.0, color);
-
-  QPixmap pm;
-  if (!QPixmapCache::find(cache_key, &pm))
-  {
-    // Don't reload multiple times if we hit the cache.
-    if (ensureLoaded() && RenderSVGToPixmap(pm, m_document, size, color))
-      QPixmapCache::insert(cache_key, pm);
-  }
-
-  return pm;
+  return getPixmap(size, 1.0, mode, state);
 }
 
 QPixmap SVGIconEngine::scaledPixmap(const QSize& size, QIcon::Mode mode, QIcon::State state, qreal scale)
 {
-  Q_UNUSED(state);
-
-  const QSize scaled_size = QtUtils::ApplyDevicePixelRatioToSize(size, scale);
-  if (scaled_size.isEmpty())
+  if (size.isEmpty())
     return {};
 
-  const QColor color = GetIconColorFromPalette(mode, state);
-  const QString cache_key = BuildCacheKey(m_resource_path, scaled_size, scale, color);
-
-  QPixmap pm;
-  if (!QPixmapCache::find(cache_key, &pm))
-  {
-    // Don't reload multiple times if we hit the cache.
-    if (ensureLoaded() && RenderSVGToPixmap(pm, m_document, scaled_size, color))
-    {
-      pm.setDevicePixelRatio(scale);
-      QPixmapCache::insert(cache_key, pm);
-    }
-  }
-
-  return pm;
+  return getPixmap(size, scale, mode, state);
 }
 
 QIconEngine* SVGIconEngine::clone() const

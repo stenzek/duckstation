@@ -45,9 +45,13 @@ private:
   /// Ensures the SVG file has been loaded.
   bool ensureLoaded() const;
 
+  /// Returns a pixmap for the specified configuration for drawing or caching.
+  QPixmap getPixmap(const QSize& size, qreal dpr, QIcon::Mode mode, QIcon::State state);
+
   mutable QString m_resource_path;
   mutable DynamicHeapArray<u8> m_svg_data;
   mutable plutosvg_document* m_document = nullptr;
+  mutable bool m_is_colored = false;
 };
 
 class SVGIconEnginePlugin : public QIconEnginePlugin
