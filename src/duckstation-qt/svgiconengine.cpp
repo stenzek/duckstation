@@ -21,12 +21,24 @@
 
 #include "moc_svgiconengine.cpp"
 
-/// Returns the icon color for the given mode based on the application palette.
-static QColor GetIconColorFromPalette(QIcon::Mode mode)
+/// Returns the icon color for the given mode and state based on the application palette.
+static QColor GetIconColorFromPalette(QIcon::Mode mode, QIcon::State state)
 {
   // Thank gosh these are copy-on-write...
   const QPalette palette = QApplication::palette();
 
+  // For the "On" state (e.g., checked icons), use highlight/button colors
+  if (state == QIcon::On)
+  {
+    if (mode == QIcon::Disabled)
+      return palette.color(QPalette::Disabled, QPalette::ButtonText);
+    else if (mode == QIcon::Selected)
+      return palette.color(QPalette::Current, QPalette::HighlightedText);
+    else
+      return palette.color(QPalette::Normal, QPalette::ButtonText);
+  }
+
+  // For the "Off" state (normal/unchecked)
   // NOTE: Active and Normal are the same in QPalette.
   if (mode == QIcon::Disabled)
     return palette.color(QPalette::Disabled, QPalette::WindowText);
@@ -151,8 +163,6 @@ bool SVGIconEngine::ensureLoaded() const
 
 void SVGIconEngine::paint(QPainter* painter, const QRect& rect, QIcon::Mode mode, QIcon::State state)
 {
-  Q_UNUSED(state);
-
   if (rect.isEmpty())
     return;
 
@@ -160,7 +170,7 @@ void SVGIconEngine::paint(QPainter* painter, const QRect& rect, QIcon::Mode mode
   const QPaintDevice* const device = painter->device();
   const qreal dpr = device ? device->devicePixelRatio() : 1.0;
   const QSize size = QtUtils::ApplyDevicePixelRatioToSize(rect.size(), dpr);
-  const QColor color = GetIconColorFromPalette(mode);
+  const QColor color = GetIconColorFromPalette(mode, state);
   const QString cache_key = BuildCacheKey(m_resource_path, size, dpr, color);
 
   QPixmap pm;
@@ -185,7 +195,7 @@ QPixmap SVGIconEngine::pixmap(const QSize& size, QIcon::Mode mode, QIcon::State 
   if (size.isEmpty())
     return {};
 
-  const QColor color = GetIconColorFromPalette(mode);
+  const QColor color = GetIconColorFromPalette(mode, state);
   const QString cache_key = BuildCacheKey(m_resource_path, size, 1.0, color);
 
   QPixmap pm;
@@ -207,7 +217,7 @@ QPixmap SVGIconEngine::scaledPixmap(const QSize& size, QIcon::Mode mode, QIcon::
   if (scaled_size.isEmpty())
     return {};
 
-  const QColor color = GetIconColorFromPalette(mode);
+  const QColor color = GetIconColorFromPalette(mode, state);
   const QString cache_key = BuildCacheKey(m_resource_path, scaled_size, scale, color);
 
   QPixmap pm;
