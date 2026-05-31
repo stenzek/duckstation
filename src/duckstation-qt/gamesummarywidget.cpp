@@ -527,8 +527,8 @@ void GameSummaryWidget::onCompatibilityCommentsClicked()
 
 void GameSummaryWidget::onInputProfileChanged(int index)
 {
-
   SettingsInterface* sif = m_dialog->getSettingsInterface();
+
   if (index == 0)
   {
     // Use global settings.
@@ -759,7 +759,10 @@ void GameSummaryWidget::processHashResults(const CDImageHasher::TrackHashes& tra
   }
 
   if (!m_redump_search_keyword.empty())
+  {
+    m_ui.computeHashes->setIcon(QIcon(u":/icons/monochrome/svg/mag-line.svg"_s));
     m_ui.computeHashes->setText(tr("Search on Redump.org"));
+  }
   else
     m_ui.computeHashes->setEnabled(false);
 }
