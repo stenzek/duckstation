@@ -352,7 +352,7 @@ void GameCheatSettingsWidget::onCheatListContextMenuRequested(const QPoint& pos)
   context_menu->addAction(QIcon(":/icons/monochrome/svg/add-line.svg"_L1), tr("Add Cheat..."), this,
                           &GameCheatSettingsWidget::newCode);
   context_menu
-    ->addAction(QIcon(":/icons/monochrome/svg/mag-line.svg"_L1), tr("Edit Cheat..."),
+    ->addAction(QIcon(":/icons/monochrome/svg/edit-box-line.svg"_L1), tr("Edit Cheat..."),
                 [this, selected_code]() { editCode(selected_code); })
     ->setEnabled(selected != nullptr);
   context_menu
