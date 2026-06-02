@@ -147,7 +147,7 @@ void AdvancedSettingsWidget::onClearWebCacheClicked()
   Error error;
   if (!HTTPCache::Clear(&error))
   {
-    QtUtils::AsyncMessageBox(this, QMessageBox::Critical, "Failed to clear web cache"_L1,
+    QtUtils::AsyncMessageBox(this, QMessageBox::Critical, u"Failed to clear web cache"_s,
                              QString::fromStdString(error.GetDescription()));
   }
 

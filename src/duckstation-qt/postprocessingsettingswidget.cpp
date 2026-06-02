@@ -203,7 +203,7 @@ void PostProcessingChainConfigWidget::onAddButtonClicked()
     if (!PostProcessing::Config::AddStage(si, m_section, selected_shader, &error))
     {
       QtUtils::AsyncMessageBox(
-        this, QMessageBox::Critical, "Error"_L1,
+        this, QMessageBox::Critical, u"Error"_s,
         QStringLiteral("Failed to add shader: %1").arg(QString::fromStdString(error.GetDescription())));
       return;
     }
@@ -669,7 +669,7 @@ PostProcessingSelectShaderDialog::PostProcessingSelectShaderDialog(QWidget* pare
 {
   m_ui.setupUi(this);
 
-  m_ui.searchIcon->setPixmap(QIcon(":/icons/monochrome/svg/mag-line.svg"_L1).pixmap(16));
+  m_ui.searchIcon->setPixmap(QIcon(u":/icons/monochrome/svg/mag-line.svg"_s).pixmap(16));
 
   m_ui.filterGroup->setId(m_ui.filterGLSL, static_cast<int>(PostProcessing::ShaderType::GLSL));
   m_ui.filterGroup->setId(m_ui.filterReshade, static_cast<int>(PostProcessing::ShaderType::Reshade));
@@ -725,7 +725,7 @@ QTreeWidgetItem* PostProcessingSelectShaderDialog::createTreeItem(const QString&
   item->setText(0, display_name.mid(pos + 1));
   if (is_directory)
   {
-    item->setIcon(0, QIcon(":/icons/monochrome/svg/folder-open-line.svg"_L1));
+    item->setIcon(0, QIcon(u":/icons/monochrome/svg/folder-open-line.svg"_s));
     item->setExpanded(true);
   }
 
@@ -771,11 +771,11 @@ QIcon PostProcessingSelectShaderDialog::shaderIconFromType(const PostProcessing:
   switch (type)
   {
     case PostProcessing::ShaderType::GLSL:
-      return QIcon(":/icons/monochrome/svg/shader-glsl.svg"_L1);
+      return QIcon(u":/icons/monochrome/svg/shader-glsl.svg"_s);
     case PostProcessing::ShaderType::Reshade:
-      return QIcon(":/icons/monochrome/svg/shader-reshade.svg"_L1);
+      return QIcon(u":/icons/monochrome/svg/shader-reshade.svg"_s);
     case PostProcessing::ShaderType::Slang:
-      return QIcon(":/icons/monochrome/svg/shader-slang.svg"_L1);
+      return QIcon(u":/icons/monochrome/svg/shader-slang.svg"_s);
     default:
       return QIcon();
   }

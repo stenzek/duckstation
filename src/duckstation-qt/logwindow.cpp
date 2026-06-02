@@ -310,7 +310,7 @@ void LogWindow::updateWindowTitle()
 
 void LogWindow::createUi()
 {
-  setWindowIcon(QIcon(":/icons/monochrome/svg/file-list-line.svg"_L1));
+  setWindowIcon(QIcon(u":/icons/monochrome/svg/file-list-line.svg"_s));
   setWindowFlag(Qt::CustomizeWindowHint, true);
   setWindowFlag(Qt::WindowCloseButtonHint, false);
   updateWindowTitle();
@@ -417,7 +417,7 @@ void LogWindow::onSaveTriggered()
   QFile file(path);
   if (!file.open(QFile::WriteOnly | QFile::Text))
   {
-    QtUtils::AsyncMessageBox(this, QMessageBox::Critical, "Error"_L1, "Failed to open file for writing."_L1);
+    QtUtils::AsyncMessageBox(this, QMessageBox::Critical, u"Error"_s, u"Failed to open file for writing."_s);
     return;
   }
 

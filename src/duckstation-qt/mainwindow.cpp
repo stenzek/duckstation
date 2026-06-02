@@ -1935,18 +1935,18 @@ void MainWindow::setupAdditionalUi()
     QActionGroup* const order_group = new QActionGroup(m_ui.menuSortBy);
 
     QAction* const ascending_action = new QAction(tr("&Ascending"), order_group);
-    ascending_action->setIcon(QIcon(":/icons/monochrome/svg/sort-asc.svg"_L1));
+    ascending_action->setIcon(QIcon(u":/icons/monochrome/svg/sort-asc.svg"_s));
     ascending_action->setCheckable(true);
     ascending_action->setChecked(current_sort_order == Qt::AscendingOrder);
-    ascending_action->setObjectName("SortAscending"_L1);
+    ascending_action->setObjectName(u"SortAscending"_s);
     m_ui.menuSortBy->addAction(ascending_action);
     connect(ascending_action, &QAction::triggered, this, &MainWindow::onViewSortOrderActionTriggered);
 
     QAction* const descending_action = new QAction(tr("&Descending"), order_group);
-    descending_action->setIcon(QIcon(":/icons/monochrome/svg/sort-desc.svg"_L1));
+    descending_action->setIcon(QIcon(u":/icons/monochrome/svg/sort-desc.svg"_s));
     descending_action->setCheckable(true);
     descending_action->setChecked(current_sort_order == Qt::DescendingOrder);
-    descending_action->setObjectName("SortDescending"_L1);
+    descending_action->setObjectName(u"SortDescending"_s);
     m_ui.menuSortBy->addAction(descending_action);
     connect(descending_action, &QAction::triggered, this, &MainWindow::onViewSortOrderActionTriggered);
   }
@@ -1993,9 +1993,9 @@ void MainWindow::onGameListSortIndicatorOrderChanged(int column, Qt::SortOrder o
   {
     bool activate = false;
 
-    if (action->objectName() == "SortAscending"_L1)
+    if (action->objectName() == u"SortAscending"_s)
       activate = (order == Qt::AscendingOrder);
-    else if (action->objectName() == "SortDescending"_L1)
+    else if (action->objectName() == u"SortDescending"_s)
       activate = (order == Qt::DescendingOrder);
     else
       activate = (action->data() == column);

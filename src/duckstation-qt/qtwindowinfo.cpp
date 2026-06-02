@@ -288,7 +288,7 @@ bool Host::SetScreensaverInhibit(bool inhibit, Error* error)
   if (inhibit)
   {
     const QDBusReply<quint32> msg = s_window_info_locals.screensaver_inhibit_interface->call(
-      "Inhibit", "DuckStation"_L1, "DuckStation VM is running."_L1);
+      "Inhibit", u"DuckStation"_s, u"DuckStation VM is running."_s);
     if (!msg.isValid())
     {
       FormatQDBusReplyError(error, "Inhibit message call failed: ", msg.error());

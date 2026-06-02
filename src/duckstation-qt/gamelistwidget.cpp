@@ -1860,7 +1860,7 @@ GameListWidget::GameListWidget(QWidget* parent, QAction* action_view_list, QActi
   Ui::EmptyGameListWidget empty_ui;
   empty_ui.setupUi(m_empty_widget);
   empty_ui.supportedFormats->setText(qApp->translate("GameListWidget", SUPPORTED_FORMATS_STRING));
-  empty_ui.icon->setSource(":/icons/monochrome/svg/information-line.svg"_L1);
+  empty_ui.icon->setSource(u":/icons/monochrome/svg/information-line.svg"_s);
   m_ui.stack->insertWidget(2, m_empty_widget);
 
   m_ui.viewGameList->setDefaultAction(action_view_list);

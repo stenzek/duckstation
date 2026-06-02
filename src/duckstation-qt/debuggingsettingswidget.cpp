@@ -131,13 +131,13 @@ static void addDirectoryOption(SettingsWindow* dialog, QTableWidget* table, cons
   layout->setContentsMargins(0, 0, 0, 0);
 
   QLineEdit* value = new QLineEdit(container);
-  value->setObjectName("value"_L1);
+  value->setObjectName(u"value"_s);
   SettingWidgetBinder::BindWidgetToStringSetting(dialog->getSettingsInterface(), value, std::move(section),
                                                  std::move(key));
   layout->addWidget(value, 1);
 
   QPushButton* browse = new QPushButton(container);
-  browse->setText("..."_L1);
+  browse->setText(u"..."_s);
   browse->setMaximumWidth(32);
   QObject::connect(browse, &QPushButton::clicked, browse, [browse, value, name]() {
     const QString path(QDir::toNativeSeparators(QFileDialog::getExistingDirectory(
@@ -154,7 +154,7 @@ static void setDirectoryOption(QTableWidget* table, int row, const char* value)
 {
   QWidget* widget = table->cellWidget(row, 1);
   Assert(widget);
-  QLineEdit* valuew = widget->findChild<QLineEdit*>("value"_L1);
+  QLineEdit* valuew = widget->findChild<QLineEdit*>(u"value"_s);
   Assert(valuew);
   valuew->setText(QString::fromUtf8(value));
 }
@@ -163,7 +163,7 @@ DebuggingSettingsWidget::DebuggingSettingsWidget(SettingsWindow* dialog, QWidget
   : QWidget(parent), m_dialog(dialog)
 {
   m_ui.setupUi(this);
-  m_ui.icon->setSource(":/icons/monochrome/svg/error-warning-line.svg"_L1);
+  m_ui.icon->setSource(u":/icons/monochrome/svg/error-warning-line.svg"_s);
 
   connect(m_ui.resetToDefaultButton, &QPushButton::clicked, this, &DebuggingSettingsWidget::onResetToDefaultClicked);
 

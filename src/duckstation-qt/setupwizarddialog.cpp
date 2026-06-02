@@ -259,10 +259,10 @@ void SetupWizardDialog::onDirectoryListContextMenuRequested(const QPoint& point)
   const int row = selection[0].row();
 
   QMenu* const menu = QtUtils::NewPopupMenu(this);
-  menu->addAction(QIcon(":/icons/monochrome/svg/folder-reduce-line.svg"_L1), tr("Remove"), this,
+  menu->addAction(QIcon(u":/icons/monochrome/svg/folder-reduce-line.svg"_s), tr("Remove"), this,
                   &SetupWizardDialog::onRemoveSearchDirectoryButtonClicked);
   menu->addSeparator();
-  menu->addAction(QIcon(":/icons/monochrome/svg/folder-open-line.svg"_L1), tr("Open Directory..."), [this, row]() {
+  menu->addAction(QIcon(u":/icons/monochrome/svg/folder-open-line.svg"_s), tr("Open Directory..."), [this, row]() {
     const QTreeWidgetItem* const item = m_ui.searchDirectoryList->topLevelItem(row);
     if (item)
       QtUtils::OpenURL(this, QUrl::fromLocalFile(item->text(0)));
@@ -327,8 +327,8 @@ void SetupWizardDialog::onSearchDirectoryListItemChanged(QTreeWidgetItem* item, 
   const std::string path = item->text(0).toStdString();
   const bool recursive = (item->checkState(1) == Qt::Checked);
 
-  item->setIcon(0, QIcon(recursive ? ":/icons/monochrome/svg/folder-open-line.svg"_L1 :
-                                     ":/icons/monochrome/svg/folder-line.svg"_L1));
+  item->setIcon(0, QIcon(recursive ? u":/icons/monochrome/svg/folder-open-line.svg"_s :
+                                     u":/icons/monochrome/svg/folder-line.svg"_s));
 
   if (recursive)
   {
@@ -348,8 +348,8 @@ void SetupWizardDialog::addPathToTable(const std::string& path, bool recursive)
 {
   QTreeWidgetItem* const item = new QTreeWidgetItem();
   item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
-  item->setIcon(0, QIcon(recursive ? ":/icons/monochrome/svg/folder-open-line.svg"_L1 :
-                                     ":/icons/monochrome/svg/folder-line.svg"_L1));
+  item->setIcon(0, QIcon(recursive ? u":/icons/monochrome/svg/folder-open-line.svg"_s :
+                                     u":/icons/monochrome/svg/folder-line.svg"_s));
   item->setText(0, QString::fromStdString(path));
   item->setCheckState(1, recursive ? Qt::Checked : Qt::Unchecked);
   m_ui.searchDirectoryList->addTopLevelItem(item);

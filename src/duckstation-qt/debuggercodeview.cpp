@@ -39,8 +39,8 @@ DebuggerCodeView::DebuggerCodeView(QWidget* parent) : QAbstractScrollArea(parent
   updateRowHeight();
 
   // Load icons
-  m_pc_pixmap = QIcon(":/icons/debug-pc.png"_L1).pixmap(12);
-  m_breakpoint_pixmap = QIcon(":/icons/media-record.png"_L1).pixmap(12);
+  m_pc_pixmap = QIcon(u":/icons/debug-pc.png"_s).pixmap(12);
+  m_breakpoint_pixmap = QIcon(u":/icons/media-record.png"_s).pixmap(12);
 
   // Connect scroll bar
   connect(verticalScrollBar(), &QScrollBar::valueChanged, this, [this](int value) {

@@ -376,7 +376,7 @@ bool MemoryCardEditorWindow::loadCard(const QString& filename, Card* card)
   if (!MemoryCardImage::LoadFromFile(&card->data, filename_str.c_str(), &error))
   {
     QtUtils::AsyncMessageBox(
-      this, QMessageBox::Critical, "Error"_L1,
+      this, QMessageBox::Critical, u"Error"_s,
       QStringLiteral("Failed to load memory card:\n%1").arg(QString::fromStdString(error.GetDescription())));
     return false;
   }
@@ -570,7 +570,7 @@ void MemoryCardEditorWindow::saveCard(Card* card)
   if (!MemoryCardImage::SaveToFile(card->data, card->filename.c_str(), &error))
   {
     QtUtils::AsyncMessageBox(
-      this, QMessageBox::Critical, "Error"_L1,
+      this, QMessageBox::Critical, u"Error"_s,
       QStringLiteral("Failed to save memory card: %1").arg(QString::fromStdString(error.GetDescription())));
     return;
   }
@@ -629,7 +629,7 @@ void MemoryCardEditorWindow::doCopyFile()
   std::vector<u8> buffer;
   if (!MemoryCardImage::ReadFile(src->data, *fi, &buffer, &error))
   {
-    QtUtils::AsyncMessageBox(this, QMessageBox::Critical, "Error"_L1,
+    QtUtils::AsyncMessageBox(this, QMessageBox::Critical, u"Error"_s,
                              QStringLiteral("Failed to read file %1:\n%2")
                                .arg(QString::fromStdString(fi->filename))
                                .arg(QString::fromStdString(error.GetDescription())));
@@ -638,7 +638,7 @@ void MemoryCardEditorWindow::doCopyFile()
 
   if (!MemoryCardImage::WriteFile(&dst->data, fi->filename, buffer, &error))
   {
-    QtUtils::AsyncMessageBox(this, QMessageBox::Critical, "Error"_L1,
+    QtUtils::AsyncMessageBox(this, QMessageBox::Critical, u"Error"_s,
                              QStringLiteral("Failed to write file %1:\n%2")
                                .arg(QString::fromStdString(fi->filename))
                                .arg(QString::fromStdString(error.GetDescription())));
@@ -660,7 +660,7 @@ void MemoryCardEditorWindow::doDeleteFile()
 
   if (!MemoryCardImage::DeleteFile(&card->data, *fi, fi->deleted))
   {
-    QtUtils::AsyncMessageBox(this, QMessageBox::Critical, "Error"_L1,
+    QtUtils::AsyncMessageBox(this, QMessageBox::Critical, u"Error"_s,
                              QStringLiteral("Failed to delete file %1").arg(QString::fromStdString(fi->filename)));
     return;
   }
@@ -709,7 +709,7 @@ void MemoryCardEditorWindow::doExportSaveFile()
   Error error;
   if (!MemoryCardImage::ExportSave(&card->data, *fi, filename.toStdString().c_str(), &error))
   {
-    QtUtils::AsyncMessageBox(this, QMessageBox::Critical, "Error"_L1,
+    QtUtils::AsyncMessageBox(this, QMessageBox::Critical, u"Error"_s,
                              QStringLiteral("Failed to export save file %1:\n%2")
                                .arg(QString::fromStdString(fi->filename))
                                .arg(QString::fromStdString(error.GetDescription())));
@@ -917,7 +917,7 @@ std::string MemoryCardRenameFileDialog::getNewName() const
 
 void MemoryCardRenameFileDialog::setupAdditionalUi()
 {
-  m_ui.icon->setPixmap(QIcon(":/icons/monochrome/svg/memcard-line.svg"_L1).pixmap(32));
+  m_ui.icon->setPixmap(QIcon(u":/icons/monochrome/svg/memcard-line.svg"_s).pixmap(32));
 
   for (const auto& [region, prefix] : MEMORY_CARD_FILE_REGION_PREFIXES)
   {

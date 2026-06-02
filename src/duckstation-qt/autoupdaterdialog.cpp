@@ -1011,7 +1011,7 @@ bool AutoUpdaterDialog::processUpdate(const std::vector<u8>& update_data)
   // Execute new appimage.
   QProcess* new_process = new QProcess();
   new_process->setProgram(QString::fromUtf8(appimage_path));
-  new_process->setArguments(QStringList{"-updatecleanup"_L1});
+  new_process->setArguments(QStringList{u"-updatecleanup"_s});
   if (!new_process->startDetached())
   {
     reportError("Failed to execute new AppImage.");

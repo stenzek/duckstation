@@ -119,7 +119,7 @@ void ControllerBindingWidget::populateWidgets()
       Ui::ControllerBindingWidget_AnalogController ui;
       ui.setupUi(m_bindings_widget);
       bindBindingWidgets(m_bindings_widget);
-      m_icon = QIcon(":/icons/monochrome/svg/controller-line.svg"_L1);
+      m_icon = QIcon(u":/icons/monochrome/svg/controller-line.svg"_s);
       image_widget = ui.image;
     }
     break;
@@ -129,7 +129,7 @@ void ControllerBindingWidget::populateWidgets()
       Ui::ControllerBindingWidget_AnalogJoystick ui;
       ui.setupUi(m_bindings_widget);
       bindBindingWidgets(m_bindings_widget);
-      m_icon = QIcon(":/icons/monochrome/svg/joystick-line.svg"_L1);
+      m_icon = QIcon(u":/icons/monochrome/svg/joystick-line.svg"_s);
       image_widget = ui.image;
     }
     break;
@@ -139,7 +139,7 @@ void ControllerBindingWidget::populateWidgets()
       Ui::ControllerBindingWidget_DigitalController ui;
       ui.setupUi(m_bindings_widget);
       bindBindingWidgets(m_bindings_widget);
-      m_icon = QIcon(":/icons/monochrome/svg/controller-digital-line.svg"_L1);
+      m_icon = QIcon(u":/icons/monochrome/svg/controller-digital-line.svg"_s);
       image_widget = ui.image;
     }
     break;
@@ -149,7 +149,7 @@ void ControllerBindingWidget::populateWidgets()
       Ui::ControllerBindingWidget_GunCon ui;
       ui.setupUi(m_bindings_widget);
       bindBindingWidgets(m_bindings_widget);
-      m_icon = QIcon(":/icons/monochrome/svg/guncon-line.svg"_L1);
+      m_icon = QIcon(u":/icons/monochrome/svg/guncon-line.svg"_s);
       image_widget = ui.image;
     }
     break;
@@ -159,7 +159,7 @@ void ControllerBindingWidget::populateWidgets()
       Ui::ControllerBindingWidget_NeGcon ui;
       ui.setupUi(m_bindings_widget);
       bindBindingWidgets(m_bindings_widget);
-      m_icon = QIcon(":/icons/monochrome/svg/negcon-line.svg"_L1);
+      m_icon = QIcon(u":/icons/monochrome/svg/negcon-line.svg"_s);
       image_widget = ui.image;
     }
     break;
@@ -169,7 +169,7 @@ void ControllerBindingWidget::populateWidgets()
       Ui::ControllerBindingWidget_NeGconRumble ui;
       ui.setupUi(m_bindings_widget);
       bindBindingWidgets(m_bindings_widget);
-      m_icon = QIcon(":/icons/monochrome/svg/negcon-line.svg"_L1);
+      m_icon = QIcon(u":/icons/monochrome/svg/negcon-line.svg"_s);
       image_widget = ui.image;
     }
     break;
@@ -179,7 +179,7 @@ void ControllerBindingWidget::populateWidgets()
       Ui::ControllerBindingWidget_Mouse ui;
       ui.setupUi(m_bindings_widget);
       bindBindingWidgets(m_bindings_widget);
-      m_icon = QIcon(":/icons/monochrome/svg/mouse-line.svg"_L1);
+      m_icon = QIcon(u":/icons/monochrome/svg/mouse-line.svg"_s);
       image_widget = ui.image;
     }
     break;
@@ -189,21 +189,21 @@ void ControllerBindingWidget::populateWidgets()
       Ui::ControllerBindingWidget_Justifier ui;
       ui.setupUi(m_bindings_widget);
       bindBindingWidgets(m_bindings_widget);
-      m_icon = QIcon(":/icons/monochrome/svg/guncon-line.svg"_L1);
+      m_icon = QIcon(u":/icons/monochrome/svg/guncon-line.svg"_s);
       image_widget = ui.image;
     }
     break;
 
     case ControllerType::None:
     {
-      m_icon = QIcon(":/icons/monochrome/svg/controller-strike-line.svg"_L1);
+      m_icon = QIcon(u":/icons/monochrome/svg/controller-strike-line.svg"_s);
     }
     break;
 
     default:
     {
       createBindingWidgets(m_bindings_widget);
-      m_icon = QIcon(":/icons/monochrome/svg/controller-line.svg"_L1);
+      m_icon = QIcon(u":/icons/monochrome/svg/controller-line.svg"_s);
     }
     break;
   }
@@ -562,7 +562,7 @@ void ControllerMacroWidget::createWidgets(ControllerBindingWidget* bwidget)
     m_container->addWidget(m_macros[i]);
 
     QListWidgetItem* item = new QListWidgetItem();
-    item->setIcon(QIcon(":/icons/monochrome/svg/flashlight-line.svg"_L1));
+    item->setIcon(QIcon(u":/icons/monochrome/svg/flashlight-line.svg"_s));
     m_macroList->addItem(item);
     updateListItem(i);
   }
@@ -821,7 +821,7 @@ static void createSettingWidgets(SettingsInterface* const sif, QWidget* parent_w
           if (std::abs(si.multiplier - 100.0f) < 0.01f)
           {
             sb->setDecimals(0);
-            sb->setSuffix("%"_L1);
+            sb->setSuffix(u"%"_s);
           }
 
           ControllerSettingWidgetBinder::BindWidgetToInputProfileNormalized(sif, sb, section, std::move(key_name),
@@ -973,7 +973,7 @@ ControllerCustomSettingsWidget::ControllerCustomSettingsWidget(ControllerBinding
 
   QHBoxLayout* bottom_hlayout = new QHBoxLayout();
   QPushButton* restore_defaults = new QPushButton(tr("Restore Default Settings"), swidget);
-  restore_defaults->setIcon(QIcon(":/icons/monochrome/svg/restart-line.svg"_L1));
+  restore_defaults->setIcon(QIcon(u":/icons/monochrome/svg/restart-line.svg"_s));
   bottom_hlayout->addStretch(1);
   bottom_hlayout->addWidget(restore_defaults);
   swidget_layout->addLayout(bottom_hlayout, current_row++, 0, 1, 4);

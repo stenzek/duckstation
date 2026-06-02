@@ -231,7 +231,7 @@ void ControllerSettingsWindow::onNewProfileClicked()
   Error error;
   if (!temp_si.Save(&error, Settings::GetSectionSaveOrder()))
   {
-    QtUtils::AsyncMessageBox(this, QMessageBox::Critical, "Error"_L1,
+    QtUtils::AsyncMessageBox(this, QMessageBox::Critical, u"Error"_s,
                              QStringLiteral("Failed to save the new preset to '%1':\n%2")
                                .arg(QString::fromStdString(temp_si.GetPath()))
                                .arg(QString::fromStdString(error.GetDescription())));
@@ -282,7 +282,7 @@ void ControllerSettingsWindow::onDeleteProfileClicked()
   std::string profile_path(System::GetInputProfilePath(m_profile_name.toStdString()));
   if (!FileSystem::DeleteFile(profile_path.c_str()))
   {
-    QtUtils::AsyncMessageBox(this, QMessageBox::Critical, "Error"_L1,
+    QtUtils::AsyncMessageBox(this, QMessageBox::Critical, u"Error"_s,
                              QStringLiteral("Failed to delete '%1'.").arg(QString::fromStdString(profile_path)));
     return;
   }
@@ -442,7 +442,7 @@ void ControllerSettingsWindow::createWidgets()
     // global settings
     QListWidgetItem* item = new QListWidgetItem();
     item->setText(tr("Global Settings"));
-    item->setIcon(QIcon(":/icons/monochrome/svg/settings-3-line.svg"_L1));
+    item->setIcon(QIcon(u":/icons/monochrome/svg/settings-3-line.svg"_s));
     m_ui.settingsCategory->addItem(item);
     m_ui.settingsCategory->setCurrentRow(0);
     m_global_settings = new ControllerGlobalSettingsWidget(m_ui.settingsContainer, this);
@@ -481,7 +481,7 @@ void ControllerSettingsWindow::createWidgets()
   {
     QListWidgetItem* item = new QListWidgetItem();
     item->setText(tr("Hotkeys"));
-    item->setIcon(QIcon(":/icons/monochrome/svg/keyboard-line.svg"_L1));
+    item->setIcon(QIcon(u":/icons/monochrome/svg/keyboard-line.svg"_s));
     m_ui.settingsCategory->addItem(item);
     m_hotkey_settings = new HotkeySettingsWidget(m_ui.settingsContainer, this);
     m_ui.settingsContainer->addWidget(m_hotkey_settings);

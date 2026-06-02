@@ -242,7 +242,7 @@ bool QtHost::LoadStyledFusionTheme(std::string_view name)
   }
 
   SetThemeAttributes(true, false, is_dark); // is_dark parsed from PALETTE block
-  qApp->setStyle(QStyleFactory::create("Fusion"_L1));
+  qApp->setStyle(QStyleFactory::create(u"Fusion"_s));
   qApp->setPalette(palette);
   if (ShouldDisableStyleSheet())
     SetStyleSheet(QString());
@@ -275,21 +275,21 @@ void QtHost::SetStyleFromSettings()
     qApp->setStyle(s_themes_locals.unthemed_style_name);
     qApp->setPalette(s_themes_locals.unthemed_palette);
 
-    QFile f(":qdarkstyle/style.qss"_L1);
+    QFile f(u":qdarkstyle/style.qss"_s);
     if (f.open(QFile::ReadOnly | QFile::Text))
       SetStyleSheet(f.readAll());
   }
   else if (theme == "fusion")
   {
     SetThemeAttributes(false, true, false);
-    qApp->setStyle(QStyleFactory::create("Fusion"_L1));
+    qApp->setStyle(QStyleFactory::create(u"Fusion"_s));
     qApp->setPalette(s_themes_locals.unthemed_palette);
   }
 #ifdef _WIN32
   else if (theme == "windowsvista")
   {
     SetThemeAttributes(false, false, false);
-    qApp->setStyle(QStyleFactory::create("windowsvista"_L1));
+    qApp->setStyle(QStyleFactory::create(u"windowsvista"_s));
     qApp->setPalette(s_themes_locals.unthemed_palette);
   }
 #endif

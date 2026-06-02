@@ -136,9 +136,9 @@ void BIOSSettingsWidget::populateDropDownForRegion(ConsoleRegion region, QComboB
   cb->clear();
 
   if (per_game)
-    cb->addItem(QIcon(":/icons/system-search.png"_L1), tr("Use Global Setting"));
+    cb->addItem(QIcon(u":/icons/system-search.png"_s), tr("Use Global Setting"));
 
-  cb->addItem(QIcon(":/icons/system-search.png"_L1), tr("Auto-Detect"));
+  cb->addItem(QIcon(u":/icons/system-search.png"_s), tr("Auto-Detect"));
 
   std::sort(images.begin(), images.end(), [region](const auto& left, const auto& right) {
     const bool left_region_match = (left.second && left.second->region == region);
@@ -182,7 +182,7 @@ void BIOSSettingsWidget::setDropDownValue(QComboBox* cb, const std::optional<std
     }
   }
 
-  cb->addItem(QIcon(":/icons/monochrome/svg/close-line.png"_L1), tr("%1 (Missing)").arg(qname), QVariant(qname));
+  cb->addItem(QIcon(u":/icons/monochrome/svg/close-line.png"_s), tr("%1 (Missing)").arg(qname), QVariant(qname));
   cb->setCurrentIndex(cb->count() - 1);
 }
 

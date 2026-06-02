@@ -349,22 +349,22 @@ void GameCheatSettingsWidget::onCheatListContextMenuRequested(const QPoint& pos)
 
   QMenu* const context_menu = QtUtils::NewPopupMenu(m_ui.cheatList);
 
-  context_menu->addAction(QIcon(":/icons/monochrome/svg/add-line.svg"_L1), tr("Add Cheat..."), this,
+  context_menu->addAction(QIcon(u":/icons/monochrome/svg/add-line.svg"_s), tr("Add Cheat..."), this,
                           &GameCheatSettingsWidget::newCode);
   context_menu
-    ->addAction(QIcon(":/icons/monochrome/svg/edit-box-line.svg"_L1), tr("Edit Cheat..."),
+    ->addAction(QIcon(u":/icons/monochrome/svg/edit-box-line.svg"_s), tr("Edit Cheat..."),
                 [this, selected_code]() { editCode(selected_code); })
     ->setEnabled(selected != nullptr);
   context_menu
-    ->addAction(QIcon(":/icons/monochrome/svg/minus-line.svg"_L1), tr("Remove Cheat"),
+    ->addAction(QIcon(u":/icons/monochrome/svg/minus-line.svg"_s), tr("Remove Cheat"),
                 [this, selected_code]() { removeCode(selected_code, true); })
     ->setEnabled(selected != nullptr);
   context_menu->addSeparator();
 
-  context_menu->addAction(QIcon(":/icons/monochrome/svg/chat-off-line.svg"_L1), tr("Disable All Cheats"), this,
+  context_menu->addAction(QIcon(u":/icons/monochrome/svg/chat-off-line.svg"_s), tr("Disable All Cheats"), this,
                           &GameCheatSettingsWidget::disableAllCheats);
 
-  context_menu->addAction(QIcon(":/icons/monochrome/svg/refresh-line.svg"_L1), tr("Reload Cheats"), this,
+  context_menu->addAction(QIcon(u":/icons/monochrome/svg/refresh-line.svg"_s), tr("Reload Cheats"), this,
                           &GameCheatSettingsWidget::onReloadClicked);
 
   context_menu->popup(m_ui.cheatList->mapToGlobal(pos));
@@ -602,7 +602,7 @@ void GameCheatSettingsWidget::importCodes(const std::string& file_contents)
   if (!Cheats::ImportCodesFromString(&new_codes, file_contents, Cheats::FileFormat::Unknown, true, &error))
   {
     QtUtils::AsyncMessageBox(
-      this, QMessageBox::Critical, "Error"_L1,
+      this, QMessageBox::Critical, u"Error"_s,
       QStringLiteral("Failed to parse file:\n%1").arg(QString::fromStdString(error.GetDescription())));
     return;
   }
@@ -610,7 +610,7 @@ void GameCheatSettingsWidget::importCodes(const std::string& file_contents)
   if (!Cheats::SaveCodesToFile(getPathForSavingCheats().c_str(), new_codes, &error))
   {
     QtUtils::AsyncMessageBox(
-      this, QMessageBox::Critical, "Error"_L1,
+      this, QMessageBox::Critical, u"Error"_s,
       QStringLiteral("Failed to save file:\n%1").arg(QString::fromStdString(error.GetDescription())));
   }
 

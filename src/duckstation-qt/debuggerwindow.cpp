@@ -300,10 +300,10 @@ void DebuggerWindow::onCodeViewContextMenuRequested(const QPoint& pt)
   menu->addAction(QStringLiteral("0x%1").arg(static_cast<uint>(address), 8, 16, QChar('0')))->setEnabled(false);
   menu->addSeparator();
 
-  menu->addAction(QIcon(":/icons/monochrome/svg/debug-toggle-breakpoint.svg"_L1), tr("Toggle &Breakpoint"),
+  menu->addAction(QIcon(u":/icons/monochrome/svg/debug-toggle-breakpoint.svg"_s), tr("Toggle &Breakpoint"),
                   [this, address]() { toggleBreakpoint(address); });
 
-  menu->addAction(QIcon(":/icons/monochrome/svg/debugger-go-to-cursor.svg"_L1), tr("&Run To Cursor"), [address]() {
+  menu->addAction(QIcon(u":/icons/monochrome/svg/debugger-go-to-cursor.svg"_s), tr("&Run To Cursor"), [address]() {
     Host::RunOnCoreThread([address]() {
       CPU::AddBreakpoint(CPU::BreakpointType::Execute, address, true, true);
       g_core_thread->setSystemPaused(false);
@@ -311,10 +311,10 @@ void DebuggerWindow::onCodeViewContextMenuRequested(const QPoint& pt)
   });
 
   menu->addSeparator();
-  menu->addAction(QIcon(":/icons/monochrome/svg/debugger-go-to-address.svg"_L1), tr("View in &Dump"),
+  menu->addAction(QIcon(u":/icons/monochrome/svg/debugger-go-to-address.svg"_s), tr("View in &Dump"),
                   [this, address]() { scrollToMemoryAddress(address); });
 
-  menu->addAction(QIcon(":/icons/monochrome/svg/debug-trace-line.svg"_L1), tr("&Follow Load/Store"),
+  menu->addAction(QIcon(u":/icons/monochrome/svg/debug-trace-line.svg"_s), tr("&Follow Load/Store"),
                   [this, address]() { tryFollowLoadStore(address); });
 
   menu->popup(m_ui.codeView->mapToGlobal(pt));

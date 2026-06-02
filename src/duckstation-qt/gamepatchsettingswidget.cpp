@@ -91,7 +91,7 @@ void GamePatchSettingsWidget::reloadList()
     m_dialog->getSettingsInterface()->GetStringList(Cheats::PATCHES_CONFIG_SECTION, Cheats::PATCH_ENABLE_CONFIG_KEY);
 
   QWidget* container = new QWidget(m_ui.scrollArea);
-  container->setObjectName("patches_container"_L1);
+  container->setObjectName(u"patches_container"_s);
   QVBoxLayout* layout = new QVBoxLayout(container);
   m_ui.scrollArea->setWidget(container);
 

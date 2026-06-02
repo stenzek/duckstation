@@ -520,7 +520,7 @@ void InputBindingWidget::showEffectBindingDialog()
 
   QHBoxLayout* const heading_layout = new QHBoxLayout();
   QLabel* const icon = new QLabel(&dlg);
-  icon->setPixmap(QIcon(":/icons/monochrome/svg/pushpin-line.svg"_L1).pixmap(32, 32));
+  icon->setPixmap(QIcon(u":/icons/monochrome/svg/pushpin-line.svg"_s).pixmap(32, 32));
   QLabel* const heading =
     new QLabel(tr("<strong>%1</strong><br>Select the device and effect to map this bind to.").arg(full_key), &dlg);
   heading->setWordWrap(true);

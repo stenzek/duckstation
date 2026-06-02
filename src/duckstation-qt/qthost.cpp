@@ -257,11 +257,11 @@ bool QtHost::EarlyProcessStartup()
   // Set application details.
   // This is critical for Linux to show the correct application name in the task switcher, since it appears
   // to uses the application name to search for desktop files with the corresponding StartupWMClass.
-  QApplication::setApplicationName("duckstation-qt"_L1);
+  QApplication::setApplicationName(u"duckstation-qt"_s);
   QApplication::setApplicationVersion(QString::fromUtf8(g_scm_version_str));
-  QApplication::setOrganizationName("Stenzek"_L1);
-  QApplication::setOrganizationDomain("duckstation.org"_L1);
-  QApplication::setDesktopFileName("org.duckstation.DuckStation"_L1);
+  QApplication::setOrganizationName(u"Stenzek"_s);
+  QApplication::setOrganizationDomain(u"duckstation.org"_s);
+  QApplication::setDesktopFileName(u"org.duckstation.DuckStation"_s);
 
   Error error;
   if (!Core::ProcessStartup(&error)) [[unlikely]]
@@ -273,9 +273,9 @@ bool QtHost::EarlyProcessStartup()
 
   // allow us to override standard qt icons as well
   QStringList icon_theme_search_paths = QIcon::themeSearchPaths();
-  if (!icon_theme_search_paths.contains(":/icons"_L1))
-    icon_theme_search_paths.emplace_back(":/icons"_L1);
-  icon_theme_search_paths.emplace_back(":/standard-icons"_L1);
+  if (!icon_theme_search_paths.contains(u":/icons"_s))
+    icon_theme_search_paths.emplace_back(u":/icons"_s);
+  icon_theme_search_paths.emplace_back(u":/standard-icons"_s);
   QIcon::setThemeSearchPaths(icon_theme_search_paths);
   QIcon::setThemeName("monochrome");
   return true;
@@ -537,7 +537,7 @@ void QtHost::CheckDesktopFile()
     desktop_file_path = fmt::format("{}/.local/share/{}", home, DESKTOP_FILE_NAME);
   }
 
-  const auto msgbox_title = "DuckStation"_L1;
+  const auto msgbox_title = u"DuckStation"_s;
 
   if (!FileSystem::FileExists(desktop_file_path.c_str()))
   {
@@ -608,7 +608,7 @@ void QtHost::CheckDesktopFile()
     INFO_LOG("Desktop file path mismatch: current='{}', existing='{}'", application_path, normalized_existing);
 
     const QMessageBox::StandardButton result = QMessageBox::question(
-      g_main_window, "DuckStation"_L1,
+      g_main_window, u"DuckStation"_s,
       qApp
         ->translate("QtHost", "The existing launcher shortcut points to a different location:\n\n"
                               "Current: %1\n"
@@ -802,9 +802,9 @@ bool QtHost::InitializeFoldersAndConfig(Error* error)
   if (!Core::InitializeBaseSettingsLayer(Core::GetBaseSettingsPath(), &config_error))
   {
     if (QMessageBox::question(
-          nullptr, "DuckStation"_L1,
-          "Failed to load configuration. The error was:\n\n%1\n\nThe settings file may be corrupted. Do you want to "
-          "delete the settings file and try again? Note that any currently-configured settings will be lost."_L1.arg(
+          nullptr, u"DuckStation"_s,
+          u"Failed to load configuration. The error was:\n\n%1\n\nThe settings file may be corrupted. Do you want to "
+          "delete the settings file and try again? Note that any currently-configured settings will be lost."_s.arg(
             QString::fromStdString(config_error.GetDescription()))) == QMessageBox::Yes)
     {
       if (!FileSystem::DeleteFile(Core::GetBaseSettingsPath().c_str(), &config_error))
@@ -915,12 +915,12 @@ void QtHost::ApplyMigrations()
     if (!FileSystem::IsDirectoryEmpty(achievement_icons_directory.c_str()))
     {
       QMessageBox mb(
-        QMessageBox::Question, "DuckStation"_L1,
-        "DuckStation has migrated to using an archive for caching achievement icons, which is significantly more "
+        QMessageBox::Question, u"DuckStation"_s,
+        u"DuckStation has migrated to using an archive for caching achievement icons, which is significantly more "
         "efficient and does not create thousands of files.\n\n"
         "The old directory of achievement icons is no longer needed and can be deleted.\n\n"
         "Do you want to delete the old achievement icons cache now?"
-        "\n\nNo save data or achievement progress will be lost."_L1,
+        "\n\nNo save data or achievement progress will be lost."_s,
         QMessageBox::Yes | QMessageBox::No);
       mb.setWindowIcon(GetAppIcon());
       if (mb.exec() == QMessageBox::Yes)
@@ -928,7 +928,7 @@ void QtHost::ApplyMigrations()
         Error error;
         if (!FileSystem::RecursiveDeleteDirectory(achievement_icons_directory.c_str(), &error))
         {
-          QMessageBox::critical(nullptr, "Error"_L1,
+          QMessageBox::critical(nullptr, u"Error"_s,
                                 QString::fromStdString(fmt::format(
                                   "Failed to delete old achievement icons directory: {}", error.GetDescription())));
         }
@@ -2793,11 +2793,11 @@ InputDeviceListModel::~InputDeviceListModel() = default;
 QIcon InputDeviceListModel::getIconForKey(const InputBindingKey& key)
 {
   if (key.source_type == InputSourceType::Keyboard)
-    return QIcon(":/icons/monochrome/svg/keyboard-line.svg"_L1);
+    return QIcon(u":/icons/monochrome/svg/keyboard-line.svg"_s);
   else if (key.source_type == InputSourceType::Pointer)
-    return QIcon(":/icons/monochrome/svg/mouse-line.svg"_L1);
+    return QIcon(u":/icons/monochrome/svg/mouse-line.svg"_s);
   else
-    return QIcon(":/icons/monochrome/svg/controller-line.svg"_L1);
+    return QIcon(u":/icons/monochrome/svg/controller-line.svg"_s);
 }
 
 QString InputDeviceListModel::getDeviceName(const InputBindingKey& key)
@@ -3532,7 +3532,7 @@ bool QtHost::ParseCommandLineParametersAndInitializeConfig(QApplication& app,
       }
       else if (args[i][0] == QChar('-'))
       {
-        QMessageBox::critical(nullptr, "DuckStation"_L1, QString("Unknown parameter: %1"_L1).arg(args[i]));
+        QMessageBox::critical(nullptr, u"DuckStation"_s, u"Unknown parameter: %1"_s.arg(args[i]));
         return false;
       }
 
@@ -3550,7 +3550,7 @@ bool QtHost::ParseCommandLineParametersAndInitializeConfig(QApplication& app,
   if (!InitializeFoldersAndConfig(&error) || !LoadResources(&error))
   {
     // NOTE: No point translating this, because no config means the language won't be loaded anyway.
-    QMessageBox::critical(nullptr, "DuckStation"_L1, QString::fromStdString(error.GetDescription()));
+    QMessageBox::critical(nullptr, u"DuckStation"_s, QString::fromStdString(error.GetDescription()));
     return false;
   }
 

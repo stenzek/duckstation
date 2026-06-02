@@ -186,7 +186,7 @@ void QtUtils::OpenURL(QWidget* parent, const QUrl& qurl)
 {
   if (!QDesktopServices::openUrl(qurl))
   {
-    QtUtils::AsyncMessageBox(parent, QMessageBox::Critical, "Failed to open URL"_L1,
+    QtUtils::AsyncMessageBox(parent, QMessageBox::Critical, u"Failed to open URL"_s,
                              QStringLiteral("Failed to open URL.\n\nThe URL was: %1").arg(qurl.toString()));
   }
 }
@@ -489,10 +489,10 @@ QIcon QtUtils::GetIconForRegion(ConsoleRegion region)
       return QIcon(QtHost::GetResourceQPath("images/flags/PAL.svg", true));
 
     case ConsoleRegion::Auto:
-      return QIcon(":/icons/system-search.png"_L1);
+      return QIcon(u":/icons/system-search.png"_s);
 
     default:
-      return QIcon(":/icons/monochrome/svg/file-unknow-line.svg"_L1);
+      return QIcon(u":/icons/monochrome/svg/file-unknow-line.svg"_s);
   }
 }
 
@@ -512,7 +512,7 @@ QIcon QtUtils::GetIconForRegion(DiscRegion region)
     case DiscRegion::Other:
     case DiscRegion::NonPS1:
     default:
-      return QIcon(":/icons/monochrome/svg/file-unknow-line.svg"_L1);
+      return QIcon(u":/icons/monochrome/svg/file-unknow-line.svg"_s);
   }
 }
 
@@ -521,16 +521,16 @@ QIcon QtUtils::GetIconForEntryType(GameList::EntryType type)
   switch (type)
   {
     case GameList::EntryType::Disc:
-      return QIcon(":/icons/monochrome/svg/disc-line.svg"_L1);
+      return QIcon(u":/icons/monochrome/svg/disc-line.svg"_s);
     case GameList::EntryType::Playlist:
-      return QIcon(":/icons/monochrome/svg/play-list-2-line.svg"_L1);
+      return QIcon(u":/icons/monochrome/svg/play-list-2-line.svg"_s);
     case GameList::EntryType::DiscSet:
-      return QIcon(":/icons/monochrome/svg/multi-discs.svg"_L1);
+      return QIcon(u":/icons/monochrome/svg/multi-discs.svg"_s);
     case GameList::EntryType::PSF:
-      return QIcon(":/icons/monochrome/svg/file-music-line.svg"_L1);
+      return QIcon(u":/icons/monochrome/svg/file-music-line.svg"_s);
     case GameList::EntryType::PSExe:
     default:
-      return QIcon(":/icons/monochrome/svg/settings-3-line.svg"_L1);
+      return QIcon(u":/icons/monochrome/svg/settings-3-line.svg"_s);
   }
 }
 
@@ -736,7 +736,7 @@ void QtUtils::SetIsMaskForMonochromeMenuBarActionIcons(QMenu* const menu)
 
     // Skip icons that aren't monochrome.
     const QString icon_name = icon.name();
-    if (!icon_name.startsWith(":/icons/monochrome/"_L1))
+    if (!icon_name.startsWith(u":/icons/monochrome/"_s))
       continue;
 
     // Annoyingly this creates a new icon, we can't modify the existing icon.

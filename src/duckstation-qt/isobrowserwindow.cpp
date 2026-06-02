@@ -57,7 +57,7 @@ ISOBrowserWindow* ISOBrowserWindow::createAndOpenFile(QWidget* parent, const QSt
   if (!ib->tryOpenFile(path, &error))
   {
     QtUtils::AsyncMessageBox(
-      parent, QMessageBox::Critical, "Error"_L1,
+      parent, QMessageBox::Critical, u"Error"_s,
       QStringLiteral("Failed to open %1:\n%2").arg(path).arg(QString::fromStdString(error.GetDescription())));
     delete ib;
     return nullptr;
@@ -99,7 +99,7 @@ void ISOBrowserWindow::onOpenFileClicked()
   if (!tryOpenFile(path, &error))
   {
     QtUtils::AsyncMessageBox(
-      this, QMessageBox::Critical, "Error"_L1,
+      this, QMessageBox::Critical, u"Error"_s,
       QStringLiteral("Failed to open %1:\n%2").arg(path).arg(QString::fromStdString(error.GetDescription())));
     return;
   }
@@ -165,16 +165,16 @@ void ISOBrowserWindow::onFileContextMenuRequested(const QPoint& pos)
   const QString path = items.front()->data(0, Qt::UserRole).toString();
   if (is_directory)
   {
-    menu->addAction(QIcon(":/icons/monochrome/svg/file-line.svg"_L1), tr("&Open"),
+    menu->addAction(QIcon(u":/icons/monochrome/svg/file-line.svg"_s), tr("&Open"),
                     [this, path]() { populateFiles(path); });
   }
   else
   {
-    menu->addAction(QIcon(":/icons/monochrome/svg/save-3-line.svg"_L1), tr("&Extract"),
+    menu->addAction(QIcon(u":/icons/monochrome/svg/save-3-line.svg"_s), tr("&Extract"),
                     [this, path]() { extractFile(path, IsoReader::ReadMode::Data); });
-    menu->addAction(QIcon(":/icons/monochrome/svg/save-3-line.svg"_L1), tr("Extract (&XA)"),
+    menu->addAction(QIcon(u":/icons/monochrome/svg/save-3-line.svg"_s), tr("Extract (&XA)"),
                     [this, path]() { extractFile(path, IsoReader::ReadMode::Mode2); });
-    menu->addAction(QIcon(":/icons/monochrome/svg/save-3-line.svg"_L1), tr("Extract (&Raw)"),
+    menu->addAction(QIcon(u":/icons/monochrome/svg/save-3-line.svg"_s), tr("Extract (&Raw)"),
                     [this, path]() { extractFile(path, IsoReader::ReadMode::Raw); });
   }
 
@@ -219,7 +219,7 @@ void ISOBrowserWindow::extractFile(const QString& path, IsoReader::ReadMode mode
       return [this, spath = std::move(spath), error = std::move(error), result]() mutable {
         if (!result)
         {
-          QtUtils::AsyncMessageBox(this, QMessageBox::Critical, "Error"_L1,
+          QtUtils::AsyncMessageBox(this, QMessageBox::Critical, u"Error"_s,
                                    QStringLiteral("Failed to save %1:\n%2")
                                      .arg(QtUtils::StringViewToQString(Path::GetFileName(spath)))
                                      .arg(QString::fromStdString(error.GetDescription())));
@@ -274,7 +274,7 @@ void ISOBrowserWindow::populateDirectories()
   enableExtractButtons(false);
 
   QTreeWidgetItem* root = new QTreeWidgetItem;
-  root->setIcon(0, QIcon(":/icons/monochrome/svg/disc-line.svg"_L1));
+  root->setIcon(0, QIcon(u":/icons/monochrome/svg/disc-line.svg"_s));
   root->setText(0, QtUtils::StringViewToQString(Path::GetFileTitle(m_image->GetPath())));
   root->setData(0, Qt::UserRole, QString());
   m_ui.directoryView->addTopLevelItem(root);
@@ -303,7 +303,7 @@ void ISOBrowserWindow::populateSubdirectories(std::string_view dir, QTreeWidgetI
       continue;
 
     QTreeWidgetItem* item = new QTreeWidgetItem(parent);
-    item->setIcon(0, QIcon(":/icons/monochrome/svg/folder-open-line.svg"_L1));
+    item->setIcon(0, QIcon(u":/icons/monochrome/svg/folder-open-line.svg"_s));
     item->setText(0, QtUtils::StringViewToQString(Path::GetFileName(full_path)));
     item->setData(0, Qt::UserRole, QString::fromStdString(full_path));
     populateSubdirectories(full_path, item);
@@ -327,8 +327,8 @@ void ISOBrowserWindow::populateFiles(const QString& path)
 
   const auto add_entry = [this](const std::string& full_path, const IsoReader::ISODirectoryEntry& entry) {
     QTreeWidgetItem* item = new QTreeWidgetItem;
-    item->setIcon(0, QIcon(entry.IsDirectory() ? ":/icons/monochrome/svg/folder-open-line.svg"_L1 :
-                                                 ":/icons/monochrome/svg/file-line.svg"_L1));
+    item->setIcon(0, QIcon(entry.IsDirectory() ? u":/icons/monochrome/svg/folder-open-line.svg"_s :
+                                                 u":/icons/monochrome/svg/file-line.svg"_s));
     item->setText(0, QtUtils::StringViewToQString(Path::GetFileName(full_path)));
     item->setData(0, Qt::UserRole, QString::fromStdString(full_path));
     item->setData(0, Qt::UserRole + 1, entry.IsDirectory());
@@ -341,7 +341,7 @@ void ISOBrowserWindow::populateFiles(const QString& path)
   if (!path.isEmpty())
   {
     QTreeWidgetItem* item = new QTreeWidgetItem;
-    item->setIcon(0, QIcon(":/icons/monochrome/svg/folder-open-line.svg"_L1));
+    item->setIcon(0, QIcon(u":/icons/monochrome/svg/folder-open-line.svg"_s));
     item->setText(0, tr("<Parent Directory>"));
     item->setData(0, Qt::UserRole, QtUtils::StringViewToQString(Path::GetDirectory(spath)));
     item->setData(0, Qt::UserRole + 1, true);
