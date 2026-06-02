@@ -724,9 +724,9 @@ void GameSummaryWidget::processHashResults(const CDImageHasher::TrackHashes& tra
     }
     else
     {
-      const QString mismatch_str = tr("Serial Mismatch: %1 vs %2")
-                                     .arg(QString::fromStdString(found_serial))
-                                     .arg(QString::fromStdString(m_dialog->getGameSerial()));
+      const QString mismatch_str = tr("Serial Mismatch: Disc %1 vs Hash %2")
+                                     .arg(QString::fromStdString(m_dialog->getGameSerial()))
+                                     .arg(QString::fromStdString(found_serial));
       if (!text.isEmpty())
         text = QStringLiteral("%1 | %2").arg(mismatch_str).arg(text);
       else
