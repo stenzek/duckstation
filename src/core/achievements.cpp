@@ -1310,6 +1310,13 @@ void Achievements::ClientLoadGameCallback(int result, const char* error_message,
   s_state.has_rich_presence = rc_client_has_rich_presence(client);
   s_state.game_badge_url =
     info->badge_url ? std::string(info->badge_url) : GetImageURL(info->badge_name, RC_IMAGE_TYPE_GAME);
+
+  // prefetch the game badge before any of the achievement badges, because the popup for the game summary
+  // is going to display, and we don't want a placeholder stuck there until after the badges finish
+  if (!s_state.game_badge_url.empty())
+    HTTPCache::Prefetch(s_state.game_badge_url);
+
+  // update game list badge in case it was missing
   if (info->badge_name)
     UpdateGameBadgeName(info->id, info->badge_name);
 
