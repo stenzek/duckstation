@@ -42,10 +42,13 @@ include(DuckStationDependencies)
 include(DuckStationCompilerRequirement)
 
 # Enable PIC on Linux, otherwise the builds do not support ASLR.
+# Also force immediate binding of all symbols, glibc and its
+# xsave/xrstor on first shared library call is bonkers.
 if(LINUX OR BSD)
   include(CheckPIESupported)
   check_pie_supported()
   set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
+  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-z,now,-z,relro")
 endif()
 
 # Force debug symbols for Linux builds.
