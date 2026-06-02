@@ -240,7 +240,7 @@ void ControllerBindingWidget::updateHeaderToolButtons()
   const QSignalBlocker settings_sb(m_ui.settings);
   const QSignalBlocker macros_sb(m_ui.macros);
 
-  const bool is_bindings = (current_widget == m_bindings_widget);
+  const bool is_bindings = (current_widget == m_bindings_widget && m_controller_info->type != ControllerType::None);
   m_ui.bindings->setChecked(is_bindings);
   m_ui.automaticBinding->setEnabled(is_bindings);
   m_ui.clearBindings->setEnabled(is_bindings);
