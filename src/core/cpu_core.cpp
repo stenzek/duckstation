@@ -504,8 +504,7 @@ ALWAYS_INLINE_RELEASE void CPU::WriteRegDelayed(Reg rd, u32 value)
     return;
 
   // double load delays ignore the first value
-  if (g_state.load_delay_reg == rd)
-    g_state.load_delay_reg = Reg::count;
+  g_state.load_delay_reg = (g_state.load_delay_reg == rd) ? Reg::count : g_state.load_delay_reg;
 
   // save the old value, if something else overwrites this reg we want to preserve it
   g_state.next_load_delay_reg = rd;
