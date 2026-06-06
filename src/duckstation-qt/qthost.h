@@ -153,6 +153,7 @@ public:
   void setSystemPaused(bool paused);
   void changeDisc(const QString& new_disc_path, bool reset_system, bool check_memcard_busy);
   void changeDiscFromPlaylist(quint32 index);
+  void setLidState(bool manual_control, bool manual_state);
   void loadState(const QString& path);
   void loadState(bool global, qint32 slot);
   void saveState(const QString& path);

@@ -584,6 +584,7 @@ void MainWindow::onSystemStarting()
   s_locals.system_starting = true;
   s_locals.system_valid = false;
   s_locals.system_paused = false;
+  m_ui.actionCDROMLidStateAutomatic->setChecked(true);
 
   updateLogWidget();
   switchToEmulationView();
@@ -2240,6 +2241,8 @@ void MainWindow::updateEmulationActions()
   m_ui.actionMemoryScanner->setDisabled(achievements_hardcore_mode);
   m_ui.actionFreeCamera->setDisabled(achievements_hardcore_mode);
   m_ui.actionReloadTextureReplacements->setDisabled(starting_or_not_running);
+  m_ui.menuCDROMLidState->setDisabled(starting_or_not_running);
+  m_ui.actionCDROMLidState->setDisabled(starting_or_not_running);
   m_ui.actionDumpRAM->setDisabled(starting_or_not_running || achievements_hardcore_mode);
   m_ui.actionDumpVRAM->setDisabled(starting_or_not_running || achievements_hardcore_mode);
   m_ui.actionDumpSPURAM->setDisabled(starting_or_not_running || achievements_hardcore_mode);
@@ -2666,6 +2669,9 @@ void MainWindow::connectSignals()
                                              &Settings::GetLogLevelName, &Settings::GetLogLevelDisplayName,
                                              Log::DEFAULT_LOG_LEVEL, Log::Level::MaxCount);
   connect(m_ui.menuLogChannels, &QMenu::aboutToShow, this, &MainWindow::onDebugLogChannelsMenuAboutToShow);
+  connect(m_ui.actionCDROMLidStateAutomatic, &QAction::triggered, this, &MainWindow::onDebugCDROMLidStateChanged);
+  connect(m_ui.actionCDROMLidStateOpen, &QAction::triggered, this, &MainWindow::onDebugCDROMLidStateChanged);
+  connect(m_ui.actionCDROMLidStateClosed, &QAction::triggered, this, &MainWindow::onDebugCDROMLidStateChanged);
   SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.actionLogToSystemConsole, "Logging", "LogToConsole",
                                                false);
   SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.actionLogToFile, "Logging", "LogToFile", false);
@@ -3580,6 +3586,13 @@ void MainWindow::onDebugLogChannelsMenuAboutToShow()
 {
   m_ui.menuLogChannels->clear();
   LogWindow::populateFilterMenu(m_ui.menuLogChannels);
+}
+
+void MainWindow::onDebugCDROMLidStateChanged()
+{
+  const bool manual_control = !m_ui.actionCDROMLidStateAutomatic->isChecked();
+  const bool manual_open = (manual_control && m_ui.actionCDROMLidStateOpen->isChecked());
+  g_core_thread->setLidState(manual_control, manual_open);
 }
 
 MainWindow::SystemLock MainWindow::pauseAndLockSystem()

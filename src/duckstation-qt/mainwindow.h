@@ -316,6 +316,7 @@ private:
   void onGameListSortIndicatorOrderChanged(int column, Qt::SortOrder order);
 
   void onDebugLogChannelsMenuAboutToShow();
+  void onDebugCDROMLidStateChanged();
   void openCPUDebugger();
 
   Ui::MainWindow m_ui;

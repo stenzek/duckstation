@@ -157,9 +157,18 @@
       <string>Log Channels</string>
      </property>
     </widget>
+    <widget class="QMenu" name="menuCDROMLidState">
+     <property name="title">
+      <string>CD-ROM Lid Control</string>
+     </property>
+     <addaction name="actionCDROMLidStateAutomatic"/>
+     <addaction name="actionCDROMLidStateClosed"/>
+     <addaction name="actionCDROMLidStateOpen"/>
+    </widget>
     <addaction name="menuCPUExecutionMode"/>
     <addaction name="menuRenderer"/>
     <addaction name="menuCropMode"/>
+    <addaction name="menuCDROMLidState"/>
     <addaction name="actionEnableSafeMode"/>
     <addaction name="separator"/>
     <addaction name="menuLogLevel"/>
@@ -1542,6 +1551,35 @@
     <string>System Log</string>
    </property>
   </action>
+  <actiongroup name="actionCDROMLidState">
+   <action name="actionCDROMLidStateAutomatic">
+    <property name="checkable">
+     <bool>true</bool>
+    </property>
+    <property name="checked">
+     <bool>true</bool>
+    </property>
+    <property name="text">
+     <string>Automatic</string>
+    </property>
+   </action>
+   <action name="actionCDROMLidStateClosed">
+    <property name="checkable">
+     <bool>true</bool>
+    </property>
+    <property name="text">
+     <string>Closed</string>
+    </property>
+   </action>
+   <action name="actionCDROMLidStateOpen">
+    <property name="checkable">
+     <bool>true</bool>
+    </property>
+    <property name="text">
+     <string>Open</string>
+    </property>
+   </action>
+  </actiongroup>
  </widget>
  <resources>
   <include location="resources/duckstation-qt.qrc"/>

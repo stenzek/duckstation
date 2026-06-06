@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #pragma once
@@ -35,6 +35,9 @@ bool InsertMedia(std::unique_ptr<CDImage>& media, DiscRegion region, std::string
 std::unique_ptr<CDImage> RemoveMedia(bool for_disc_swap);
 bool PrecacheMedia();
 bool HasNonStandardOrReplacementSubQ();
+
+// nullopt = automatic
+void SetLidState(bool manual_control, bool manual_state);
 
 void CPUClockChanged();
 

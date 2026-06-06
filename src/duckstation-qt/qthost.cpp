@@ -15,6 +15,7 @@
 
 #include "core/achievements.h"
 #include "core/bus.h"
+#include "core/cdrom.h"
 #include "core/cheats.h"
 #include "core/core.h"
 #include "core/core_private.h"
@@ -1520,6 +1521,20 @@ void CoreThread::changeDiscFromPlaylist(quint32 index)
 
   if (!System::SwitchMediaSubImage(index))
     errorReported(tr("Error"), tr("Failed to switch to subimage %1").arg(index));
+}
+
+void CoreThread::setLidState(bool manual_control, bool manual_state)
+{
+  if (!isCurrentThread())
+  {
+    QMetaObject::invokeMethod(this, &CoreThread::setLidState, Qt::QueuedConnection, manual_control, manual_state);
+    return;
+  }
+
+  if (!System::IsValid())
+    return;
+
+  CDROM::SetLidState(manual_control, manual_state);
 }
 
 void CoreThread::reloadCheats(bool reload_files, bool reload_enabled_list, bool verbose, bool verbose_if_changed)

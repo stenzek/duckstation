@@ -85,6 +85,13 @@ enum : u32
   DOUBLE_SPEED_SECTORS_PER_SECOND = 150, // 2X speed is 150 sectors per second.
 };
 
+enum ManualLidControl : u8
+{
+  MANUAL_LID_CONTROL_DISABLED = 0x00,
+  MANUAL_LID_CONTROL_ENABLED = 0x01,
+  MANUAL_LID_CONTROL_OPEN = 0x02,
+};
+
 static constexpr u8 INTERRUPT_REGISTER_MASK = 0x1F;
 
 static constexpr TickCount MIN_SEEK_TICKS = 30000;
@@ -181,6 +188,7 @@ enum StatBits : u8
 
 enum ErrorReason : u8
 {
+  ERROR_REASON_SHELL_OPEN = 0x08,
   ERROR_REASON_INVALID_ARGUMENT = 0x10,
   ERROR_REASON_INCORRECT_NUMBER_OF_PARAMETERS = 0x20,
   ERROR_REASON_INVALID_COMMAND = 0x40,
@@ -416,6 +424,7 @@ struct CDROMState
   Command command_second_response = Command::None;
   DriveState drive_state = DriveState::Idle;
   DiscRegion disc_region = DiscRegion::NonPS1;
+  ManualLidControl manual_lid_control = MANUAL_LID_CONTROL_DISABLED;
 
   StatusRegister status = {};
 
@@ -555,6 +564,7 @@ static std::array<CommandInfo, 255> s_command_info = {{
 void CDROM::Initialize()
 {
   s_state.disc_region = DiscRegion::NonPS1;
+  s_state.manual_lid_control = MANUAL_LID_CONTROL_DISABLED;
 
   if (g_settings.cdrom_readahead_sectors > 0)
     s_reader.StartThread(g_settings.cdrom_readahead_sectors);
@@ -585,7 +595,9 @@ void CDROM::Reset()
   s_state.status.bits = 0;
   s_state.secondary_status.bits = 0;
   s_state.secondary_status.motor_on = CanReadMedia();
-  s_state.secondary_status.shell_open = !CanReadMedia();
+  s_state.secondary_status.shell_open = (s_state.manual_lid_control & MANUAL_LID_CONTROL_ENABLED) ?
+                                          (s_state.manual_lid_control & MANUAL_LID_CONTROL_OPEN) :
+                                          !CanReadMedia();
   s_state.mode.bits = 0;
   s_state.mode.read_raw_sector = true;
   s_state.interrupt_enable_register = INTERRUPT_REGISTER_MASK;
@@ -639,7 +651,9 @@ TickCount CDROM::SoftReset()
   ClearDriveState();
   s_state.secondary_status.bits = 0;
   s_state.secondary_status.motor_on = CanReadMedia();
-  s_state.secondary_status.shell_open = !CanReadMedia();
+  s_state.secondary_status.shell_open = (s_state.manual_lid_control & MANUAL_LID_CONTROL_ENABLED) ?
+                                          (s_state.manual_lid_control & MANUAL_LID_CONTROL_OPEN) :
+                                          !CanReadMedia();
   s_state.mode.bits = 0;
   s_state.mode.read_raw_sector = true;
   s_state.request_register.bits = 0;
@@ -935,7 +949,8 @@ bool CDROM::IsReadingOrPlaying()
 
 bool CDROM::CanReadMedia()
 {
-  return (s_state.drive_state != DriveState::ShellOpening && s_reader.HasMedia());
+  return (s_state.drive_state != DriveState::ShellOpening &&
+          s_state.manual_lid_control != (MANUAL_LID_CONTROL_ENABLED | MANUAL_LID_CONTROL_OPEN) && s_reader.HasMedia());
 }
 
 bool CDROM::InsertMedia(std::unique_ptr<CDImage>& media, DiscRegion region, std::string_view serial,
@@ -961,7 +976,7 @@ bool CDROM::InsertMedia(std::unique_ptr<CDImage>& media, DiscRegion region, std:
   SetHoldPosition(0, 0);
 
   // motor automatically spins up
-  if (s_state.drive_state != DriveState::ShellOpening)
+  if (s_state.drive_state != DriveState::ShellOpening && !(s_state.manual_lid_control & MANUAL_LID_CONTROL_OPEN))
     StartMotor();
 
   if (s_state.show_current_file)
@@ -1002,16 +1017,45 @@ std::unique_ptr<CDImage> CDROM::RemoveMedia(bool for_disc_swap)
 
   // The console sends an interrupt when the shell is opened regardless of whether a command was executing.
   ClearAsyncInterrupt();
-  SendAsyncErrorResponse(STAT_ERROR, 0x08);
+  SendAsyncErrorResponse(STAT_ERROR, ERROR_REASON_SHELL_OPEN);
 
   // Begin spin-down timer, we can't swap the new disc in immediately for some games (e.g. Metal Gear Solid).
-  if (for_disc_swap)
+  if (for_disc_swap && !s_state.manual_lid_control)
   {
     s_state.drive_state = DriveState::ShellOpening;
     s_state.drive_event.SetIntervalAndSchedule(stop_ticks);
   }
 
   return image;
+}
+
+void CDROM::SetLidState(bool manual_control, bool manual_state)
+{
+  INFO_LOG("Setting lid state: manual_control={}, manual_state={}", manual_control, manual_state);
+
+  const bool current_state = s_state.secondary_status.shell_open;
+  s_state.manual_lid_control =
+    manual_control ?
+      static_cast<ManualLidControl>(MANUAL_LID_CONTROL_ENABLED | (manual_state ? MANUAL_LID_CONTROL_OPEN : 0)) :
+      MANUAL_LID_CONTROL_DISABLED;
+
+  // Set shell open bit when manually opened, and start motor when closed.
+  if (!CanReadMedia())
+    s_state.secondary_status.shell_open = true;
+  else if (!s_state.secondary_status.motor_on)
+    StartMotor();
+
+  if (current_state == s_state.secondary_status.shell_open)
+    return;
+
+  // Notify when opened.
+  if (s_state.secondary_status.shell_open)
+  {
+    if (IsReadingOrPlaying())
+      StopReadingWithError(ERROR_REASON_SHELL_OPEN);
+    else
+      SendAsyncErrorResponse(STAT_ERROR, ERROR_REASON_SHELL_OPEN);
+  }
 }
 
 bool CDROM::PrecacheMedia()
@@ -1865,9 +1909,13 @@ void CDROM::ExecuteCommand(void*, TickCount ticks)
       // if bit 0 or 2 is set, send an additional byte
       SendACKAndStat();
 
-      // shell open bit is cleared after sending the status
-      if (CanReadMedia())
+      // shell open bit is cleared after sending the status and door is closed
+      if ((s_state.manual_lid_control & MANUAL_LID_CONTROL_ENABLED) ?
+            !(s_state.manual_lid_control & MANUAL_LID_CONTROL_OPEN) :
+            CanReadMedia())
+      {
         s_state.secondary_status.shell_open = false;
+      }
 
       EndCommand();
       return;
@@ -4257,6 +4305,12 @@ void CDROM::DrawDebugWindow(float scale)
     ImGui::NextColumn();
     ImGui::TextColored(s_state.secondary_status.shell_open ? active_color : inactive_color, "Shell Open: %s",
                        s_state.secondary_status.shell_open ? "Yes" : "No");
+    if (s_state.manual_lid_control & MANUAL_LID_CONTROL_ENABLED)
+    {
+      const bool open = (s_state.manual_lid_control & MANUAL_LID_CONTROL_OPEN);
+      ImGui::SameLine();
+      ImGui::TextColored(open ? active_color : inactive_color, "Lid: %s", open ? "Open" : "Closed");
+    }
     ImGui::NextColumn();
     ImGui::TextColored(s_state.mode.ignore_bit ? active_color : inactive_color, "Ignore Bit: %s",
                        s_state.mode.ignore_bit ? "Yes" : "No");
