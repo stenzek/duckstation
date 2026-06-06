@@ -33,19 +33,13 @@ enum class LoginRequestReason
 inline constexpr size_t GAME_HASH_LENGTH = 16;
 using GameHash = std::array<u8, GAME_HASH_LENGTH>;
 
-struct HashDatabaseEntry
-{
-  GameHash hash;
-  u32 game_id;
-  u32 num_achievements;
-};
-
 class ProgressDatabase
 {
 public:
   struct Entry
   {
     u32 game_id;
+    u16 num_achievements;
     u16 num_achievements_unlocked;
     u16 num_hc_achievements_unlocked;
   };
@@ -55,9 +49,16 @@ public:
 
   bool Load(Error* error);
 
-  const Entry* LookupGame(u32 game_id) const;
+  const Entry* LookupHash(const GameHash& hash) const;
 
 private:
+  struct HashEntry
+  {
+    GameHash hash;
+    u32 game_id;
+  };
+
+  std::vector<HashEntry> m_hashes;
   std::vector<Entry> m_entries;
 };
 
@@ -68,14 +69,14 @@ std::unique_lock<std::recursive_mutex> GetLock();
 std::optional<GameHash> GetGameHash(CDImage* image);
 std::optional<GameHash> GetGameHash(const std::string_view executable_name, std::span<const u8> executable_data);
 
-/// Returns the number of achievements for a given hash.
-const HashDatabaseEntry* LookupGameHash(const GameHash& hash);
-
 /// Converts a game hash to a string for display. If the hash is nullopt, returns "[NO HASH]".
 TinyString GameHashToString(const std::optional<GameHash>& hash);
 
 /// Updates achievements settings.
 void UpdateSettings(const Settings& old_config);
+
+/// Call to refresh the game database.
+bool RefreshGameList(ProgressCallback* progress, Error* error);
 
 /// Call to refresh the all-progress database.
 bool RefreshAllProgressDatabase(ProgressCallback* progress, Error* error);
@@ -178,10 +179,6 @@ SmallString GetLoggedInUserPointsSummary();
 
 /// Returns the URL for the specified game icon, using the game ID.
 std::string GetGameBadgeURL(u32 game_id);
-
-/// Downloads game icons from RetroAchievements for all games that have an achievements_game_id.
-/// This fetches the game badge images that are normally downloaded when a game is opened.
-bool DownloadGameIcons(ProgressCallback* progress, Error* error);
 
 /// Returns 0 if pausing is allowed, otherwise the number of frames until pausing is allowed.
 u32 GetPauseThrottleFrames();

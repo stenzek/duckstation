@@ -259,7 +259,6 @@
     <addaction name="actionCoverDownloader"/>
     <addaction name="actionControllerTest"/>
     <addaction name="separator"/>
-    <addaction name="actionToolsDownloadAchievementGameIcons"/>
     <addaction name="actionToolsRefreshAchievementProgress"/>
     <addaction name="separator"/>
     <addaction name="actionMemoryEditor"/>
@@ -1519,21 +1518,6 @@
    </property>
    <property name="toolTip">
     <string>Prioritizes the games badges used for RetroAchievements over memory card icons.</string>
-   </property>
-  </action>
-  <action name="actionToolsDownloadAchievementGameIcons">
-   <property name="enabled">
-    <bool>false</bool>
-   </property>
-   <property name="icon">
-    <iconset resource="resources/duckstation-qt.qrc">
-     <normaloff>:/icons/monochrome/svg/download-2-line.svg</normaloff>:/icons/monochrome/svg/download-2-line.svg</iconset>
-   </property>
-   <property name="text">
-    <string>Download Achievement &amp;Icons</string>
-   </property>
-   <property name="toolTip">
-    <string>Downloads icons for all games from RetroAchievements.</string>
    </property>
   </action>
   <action name="actionViewSystemLog">

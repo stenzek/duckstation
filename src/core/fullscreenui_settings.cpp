@@ -105,7 +105,6 @@ static void DrawCoverDownloaderWindow();
 static void SaveCoverDownloaderURLs();
 static void DrawAchievementsLoginWindow();
 static void StartAchievementsProgressRefresh();
-static void StartAchievementsGameIconDownload();
 static void ClearWebCache();
 
 static bool ShouldShowAdvancedSettings();
@@ -5278,12 +5277,6 @@ void FullscreenUI::DrawAchievementsSettingsPage(std::unique_lock<std::mutex>& se
       StartAchievementsProgressRefresh();
     }
 
-    if (MenuButton(FSUI_ICONVSTR(ICON_FA_DOWNLOAD, "Download Game Icons"),
-                   FSUI_VSTR("Downloads icons for all games from RetroAchievements."), enabled))
-    {
-      StartAchievementsGameIconDownload();
-    }
-
     if (MenuButton(FSUI_ICONVSTR(ICON_FA_TRASH, "Clear Web Cache"),
                    FSUI_VSTR("Clears all cached images in the web cache."), enabled))
     {
@@ -5449,30 +5442,6 @@ void FullscreenUI::StartAchievementsProgressRefresh()
         else
         {
           FullscreenUI::OpenInfoMessageDialog(ICON_EMOJI_NO_ENTRY_SIGN, FSUI_STR("Update Progress"),
-                                              error.TakeDescription());
-        }
-      });
-    });
-  });
-}
-
-void FullscreenUI::StartAchievementsGameIconDownload()
-{
-  auto progress = OpenModalProgressDialog(FSUI_STR("Download Game Icons"));
-
-  Host::QueueAsyncTask([progress = progress.release()]() {
-    Error error;
-    const bool result = Achievements::DownloadGameIcons(progress, &error);
-    Host::RunOnCoreThread([error = std::move(error), progress, result]() mutable {
-      VideoThread::RunOnThread([error = std::move(error), progress, result]() mutable {
-        delete progress;
-        if (result)
-        {
-          ShowToast(OSDMessageType::Info, {}, FSUI_STR("Game icons downloaded."));
-        }
-        else
-        {
-          FullscreenUI::OpenInfoMessageDialog(ICON_EMOJI_NO_ENTRY_SIGN, FSUI_STR("Download Game Icons"),
                                               error.TakeDescription());
         }
       });
