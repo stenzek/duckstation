@@ -590,6 +590,55 @@ ALWAYS_INLINE_RELEASE void CPU::Cop0DataBreakpointCheck(VirtualMemoryAddress add
   DispatchCop0Breakpoint(true);
 }
 
+namespace CPU {
+static constexpr const std::array<std::pair<u32*, u32>, 32> s_cop0_table = {{
+  {nullptr, 0x00000000u},
+  {nullptr, 0x00000000u},
+  {nullptr, 0x00000000u},
+  {&g_state.cop0_regs.BPC, 0xffffffffu},
+  {nullptr, 0},
+  {&g_state.cop0_regs.BDA, 0xffffffffu},
+  {&g_state.cop0_regs.TAR, 0x00000000u},
+  {&g_state.cop0_regs.dcic.bits, Cop0Registers::DCIC::WRITE_MASK},
+  {&g_state.cop0_regs.BadVaddr, 0x00000000u},
+  {&g_state.cop0_regs.BDAM, 0xffffffffu},
+  {nullptr, 0x00000000u},
+  {&g_state.cop0_regs.BPCM, 0xffffffffu},
+  {&g_state.cop0_regs.sr.bits, Cop0Registers::SR::WRITE_MASK},
+  {&g_state.cop0_regs.cause.bits, Cop0Registers::CAUSE::WRITE_MASK},
+  {&g_state.cop0_regs.EPC, 0x00000000u},
+  {&g_state.cop0_regs.PRID, 0x00000000u},
+  {nullptr, 0x00000000u},
+  {nullptr, 0x00000000u},
+  {nullptr, 0x00000000u},
+  {nullptr, 0x00000000u},
+  {nullptr, 0x00000000u},
+  {nullptr, 0x00000000u},
+  {nullptr, 0x00000000u},
+  {nullptr, 0x00000000u},
+  {nullptr, 0x00000000u},
+  {nullptr, 0x00000000u},
+  {nullptr, 0x00000000u},
+  {nullptr, 0x00000000u},
+  {nullptr, 0x00000000u},
+  {nullptr, 0x00000000u},
+  {nullptr, 0x00000000u},
+  {nullptr, 0x00000000u},
+}};
+} // namespace CPU
+
+u32* CPU::GetCop0RegPtr(Cop0Reg reg)
+{
+  DebugAssert(static_cast<u8>(reg) < std::size(s_cop0_table));
+  return s_cop0_table[static_cast<u8>(reg)].first;
+}
+
+u32 CPU::GetCop0RegWriteMask(Cop0Reg reg)
+{
+  DebugAssert(static_cast<u8>(reg) < std::size(s_cop0_table));
+  return s_cop0_table[static_cast<u8>(reg)].second;
+}
+
 #ifdef _DEBUG
 
 void CPU::TracePrintInstruction()
@@ -1723,63 +1772,18 @@ restart_instruction:
         {
           case CopCommonInstruction::mfcn:
           {
-            u32 value;
-
-            switch (static_cast<Cop0Reg>(inst.r.rd.GetValue()))
+            if (const u32* value = GetCop0RegPtr(static_cast<Cop0Reg>(inst.r.rd.GetValue()))) [[likely]]
             {
-              case Cop0Reg::BPC:
-                value = g_state.cop0_regs.BPC;
-                break;
+              WriteRegDelayed(inst.r.rt, *value);
 
-              case Cop0Reg::BPCM:
-                value = g_state.cop0_regs.BPCM;
-                break;
-
-              case Cop0Reg::BDA:
-                value = g_state.cop0_regs.BDA;
-                break;
-
-              case Cop0Reg::BDAM:
-                value = g_state.cop0_regs.BDAM;
-                break;
-
-              case Cop0Reg::DCIC:
-                value = g_state.cop0_regs.dcic.bits;
-                break;
-
-              case Cop0Reg::JUMPDEST:
-                value = g_state.cop0_regs.TAR;
-                break;
-
-              case Cop0Reg::BadVaddr:
-                value = g_state.cop0_regs.BadVaddr;
-                break;
-
-              case Cop0Reg::SR:
-                value = g_state.cop0_regs.sr.bits;
-                break;
-
-              case Cop0Reg::CAUSE:
-                value = g_state.cop0_regs.cause.bits;
-                break;
-
-              case Cop0Reg::EPC:
-                value = g_state.cop0_regs.EPC;
-                break;
-
-              case Cop0Reg::PRID:
-                value = g_state.cop0_regs.PRID;
-                break;
-
-              default:
-                RaiseException(Exception::RI);
-                return;
+              if constexpr (pgxp_mode == PGXPMode::CPU)
+                PGXP::CPU_MFC0(inst, *value);
             }
-
-            WriteRegDelayed(inst.r.rt, value);
-
-            if constexpr (pgxp_mode == PGXPMode::CPU)
-              PGXP::CPU_MFC0(inst, value);
+            else
+            {
+              RaiseException(Exception::RI);
+              return;
+            }
           }
           break;
 
@@ -2102,6 +2106,10 @@ restart_instruction:
       DefaultCaseIsUnreachable();
   }
 }
+
+#undef END_INSTRUCTION
+#undef BEGIN_FUNCT_INSTRUCTION
+#undef BEGIN_INSTRUCTION
 
 void CPU::DispatchInterrupt()
 {

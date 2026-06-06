@@ -2183,34 +2183,6 @@ void CPU::Recompiler::Recompiler::Compile_lui()
     GeneratePGXPCallWithMIPSRegs(reinterpret_cast<const void*>(&PGXP::CPU_LUI), inst->bits);
 }
 
-static constexpr const std::array<std::pair<u32*, u32>, 16> s_cop0_table = {
-  {{nullptr, 0x00000000u},
-   {nullptr, 0x00000000u},
-   {nullptr, 0x00000000u},
-   {&CPU::g_state.cop0_regs.BPC, 0xffffffffu},
-   {nullptr, 0},
-   {&CPU::g_state.cop0_regs.BDA, 0xffffffffu},
-   {&CPU::g_state.cop0_regs.TAR, 0x00000000u},
-   {&CPU::g_state.cop0_regs.dcic.bits, CPU::Cop0Registers::DCIC::WRITE_MASK},
-   {&CPU::g_state.cop0_regs.BadVaddr, 0x00000000u},
-   {&CPU::g_state.cop0_regs.BDAM, 0xffffffffu},
-   {nullptr, 0x00000000u},
-   {&CPU::g_state.cop0_regs.BPCM, 0xffffffffu},
-   {&CPU::g_state.cop0_regs.sr.bits, CPU::Cop0Registers::SR::WRITE_MASK},
-   {&CPU::g_state.cop0_regs.cause.bits, CPU::Cop0Registers::CAUSE::WRITE_MASK},
-   {&CPU::g_state.cop0_regs.EPC, 0x00000000u},
-   {&CPU::g_state.cop0_regs.PRID, 0x00000000u}}};
-
-u32* CPU::Recompiler::Recompiler::GetCop0RegPtr(Cop0Reg reg)
-{
-  return (static_cast<u8>(reg) < s_cop0_table.size()) ? s_cop0_table[static_cast<u8>(reg)].first : nullptr;
-}
-
-u32 CPU::Recompiler::Recompiler::GetCop0RegWriteMask(Cop0Reg reg)
-{
-  return (static_cast<u8>(reg) < s_cop0_table.size()) ? s_cop0_table[static_cast<u8>(reg)].second : 0;
-}
-
 void CPU::Recompiler::Recompiler::Compile_mfc0(CompileFlags cf)
 {
   const Cop0Reg r = static_cast<Cop0Reg>(MipsD());

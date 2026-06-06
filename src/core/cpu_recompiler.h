@@ -443,9 +443,6 @@ protected:
   virtual void Compile_swc2(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,
                             const std::optional<VirtualMemoryAddress>& address) = 0;
 
-  static u32* GetCop0RegPtr(Cop0Reg reg);
-  static u32 GetCop0RegWriteMask(Cop0Reg reg);
-
   static void MIPSSignedDivide(s32 num, s32 denom, u32* lo, u32* hi);
   static void MIPSUnsignedDivide(u32 num, u32 denom, u32* lo, u32* hi);
 

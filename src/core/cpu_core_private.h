@@ -24,6 +24,9 @@ void RaiseException(Exception excode);
 void RaiseException(u32 CAUSE_bits, u32 EPC);
 void RaiseBreakException(u32 CAUSE_bits, u32 EPC, u32 instruction_bits);
 
+u32* GetCop0RegPtr(Cop0Reg reg);
+u32 GetCop0RegWriteMask(Cop0Reg reg);
+
 ALWAYS_INLINE bool HasPendingInterrupt()
 {
   return g_state.cop0_regs.sr.IEc &&
