@@ -1378,9 +1378,23 @@ void GTE::ExecuteInstruction(u32 inst_bits)
       Execute_NCCT(inst);
       break;
 
-    default:
-      Panic("Missing handler");
+      // clang-format off
+    [[unlikely]] case 0: [[unlikely]] case 2: [[unlikely]] case 3: [[unlikely]] case 4:
+    [[unlikely]] case 5: [[unlikely]] case 7: [[unlikely]] case 8: [[unlikely]] case 9:
+    [[unlikely]] case 10: [[unlikely]] case 11: [[unlikely]] case 13: [[unlikely]] case 14:
+    [[unlikely]] case 15: [[unlikely]] case 21: [[unlikely]] case 23: [[unlikely]] case 24:
+    [[unlikely]] case 25: [[unlikely]] case 26: [[unlikely]] case 29: [[unlikely]] case 31:
+    [[unlikely]] case 33: [[unlikely]] case 34: [[unlikely]] case 35: [[unlikely]] case 36:
+    [[unlikely]] case 37: [[unlikely]] case 38: [[unlikely]] case 39: [[unlikely]] case 43:
+    [[unlikely]] case 44: [[unlikely]] case 47: [[unlikely]] case 49: [[unlikely]] case 50:
+    [[unlikely]] case 51: [[unlikely]] case 52: [[unlikely]] case 53: [[unlikely]] case 54:
+    [[unlikely]] case 55: [[unlikely]] case 56: [[unlikely]] case 57: [[unlikely]] case 58:
+    [[unlikely]] case 59: [[unlikely]] case 60:
+      // clang-format on
+      ERROR_LOG("Unhandled GTE opcode 0x{:08X}", inst.bits);
       break;
+
+      DefaultCaseIsUnreachable();
   }
 }
 
