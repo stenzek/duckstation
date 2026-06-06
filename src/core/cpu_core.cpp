@@ -2557,13 +2557,13 @@ template<PGXPMode pgxp_mode, bool debug>
       }
 
       // fetch the next instruction - even if this fails, it'll still refetch on the flush so we can continue
-      if (!FetchInstruction())
+      if (!FetchInstruction()) [[unlikely]]
         continue;
 
       // trace functionality
       if constexpr (debug)
       {
-        if (s_locals.trace_to_log)
+        if (s_locals.trace_to_log) [[unlikely]]
           LogInstruction(g_state.current_instruction.bits, g_state.current_instruction_pc, true);
 
         // handle all mirrors of the syscall trampoline. will catch 200000A0 etc, but those aren't fetchable anyway
@@ -2973,6 +2973,9 @@ ALWAYS_INLINE_RELEASE bool CPU::FetchInstruction()
   DebugAssert(Common::IsAlignedPow2(g_state.npc, 4));
 
   const PhysicalMemoryAddress address = g_state.npc;
+  g_state.pc = g_state.npc;
+  g_state.npc += sizeof(g_state.next_instruction.bits);
+
   switch (address >> 29)
   {
     case 0x00: // KUSEG 0M-512M
@@ -2991,25 +2994,24 @@ ALWAYS_INLINE_RELEASE bool CPU::FetchInstruction()
 
     case 0x05: // KSEG1 - physical memory uncached
     {
-      if (!DoInstructionRead<true, false, 1, true>(address, &g_state.next_instruction.bits))
+      if (!DoInstructionRead<true, false, 1, true>(address, &g_state.next_instruction.bits)) [[unlikely]]
         return false;
     }
     break;
 
-    case 0x01: // KUSEG 512M-1024M
-    case 0x02: // KUSEG 1024M-1536M
-    case 0x03: // KUSEG 1536M-2048M
-    case 0x06: // KSEG2
-    case 0x07: // KSEG2
-    default:
+    [[unlikely]] case 0x01: // KUSEG 512M-1024M
+    [[unlikely]] case 0x02: // KUSEG 1024M-1536M
+    [[unlikely]] case 0x03: // KUSEG 1536M-2048M
+    [[unlikely]] case 0x06: // KSEG2
+    [[unlikely]] case 0x07: // KSEG2
     {
       CPU::RaiseException(Cop0Registers::CAUSE::MakeValueForException(Exception::IBE, false, false, 0), address);
       return false;
     }
+
+      DefaultCaseIsUnreachable();
   }
 
-  g_state.pc = g_state.npc;
-  g_state.npc += sizeof(g_state.next_instruction.bits);
   return true;
 }
 
@@ -3024,11 +3026,14 @@ bool CPU::FetchInstructionForInterpreterFallback()
   }
 
   const PhysicalMemoryAddress address = g_state.npc;
+  g_state.pc = g_state.npc;
+  g_state.npc += sizeof(g_state.next_instruction.bits);
+
   switch (address >> 29)
   {
-    case 0x00: // KUSEG 0M-512M
-    case 0x04: // KSEG0 - physical memory cached
-    case 0x05: // KSEG1 - physical memory uncached
+    [[unlikely]] case 0x00: // KUSEG 0M-512M
+    [[unlikely]] case 0x04: // KSEG0 - physical memory cached
+    [[unlikely]] case 0x05: // KSEG1 - physical memory uncached
     {
       // We don't use the icache when doing interpreter fallbacks, because it's probably stale.
       if (!DoInstructionRead<false, false, 1, true>(address, &g_state.next_instruction.bits)) [[unlikely]]
@@ -3036,12 +3041,11 @@ bool CPU::FetchInstructionForInterpreterFallback()
     }
     break;
 
-    case 0x01: // KUSEG 512M-1024M
-    case 0x02: // KUSEG 1024M-1536M
-    case 0x03: // KUSEG 1536M-2048M
-    case 0x06: // KSEG2
-    case 0x07: // KSEG2
-    default:
+    [[unlikely]] case 0x01: // KUSEG 512M-1024M
+    [[unlikely]] case 0x02: // KUSEG 1024M-1536M
+    [[unlikely]] case 0x03: // KUSEG 1536M-2048M
+    [[unlikely]] case 0x06: // KSEG2
+    [[unlikely]] case 0x07: // KSEG2
     {
       CPU::RaiseException(Cop0Registers::CAUSE::MakeValueForException(Exception::IBE,
                                                                       g_state.current_instruction_in_branch_delay_slot,
@@ -3049,10 +3053,10 @@ bool CPU::FetchInstructionForInterpreterFallback()
                           address);
       return false;
     }
+
+      DefaultCaseIsUnreachable();
   }
 
-  g_state.pc = g_state.npc;
-  g_state.npc += sizeof(g_state.next_instruction.bits);
   return true;
 }
 
@@ -3068,15 +3072,14 @@ bool CPU::SafeReadInstruction(VirtualMemoryAddress addr, u32* value)
       return DoInstructionRead<false, false, 1, false>(addr, value);
     }
 
-    case 0x01: // KUSEG 512M-1024M
-    case 0x02: // KUSEG 1024M-1536M
-    case 0x03: // KUSEG 1536M-2048M
-    case 0x06: // KSEG2
-    case 0x07: // KSEG2
-    default:
-    {
+    [[unlikely]] case 0x01: // KUSEG 512M-1024M
+    [[unlikely]] case 0x02: // KUSEG 1024M-1536M
+    [[unlikely]] case 0x03: // KUSEG 1536M-2048M
+    [[unlikely]] case 0x06: // KSEG2
+    [[unlikely]] case 0x07: // KSEG2
       return false;
-    }
+
+      DefaultCaseIsUnreachable();
   }
 }
 
@@ -3134,11 +3137,11 @@ ALWAYS_INLINE bool CPU::DoSafeMemoryAccess(VirtualMemoryAddress address, u32& va
     }
     break;
 
-    case 0x01: // KUSEG 512M-1024M
-    case 0x02: // KUSEG 1024M-1536M
-    case 0x03: // KUSEG 1536M-2048M
-    case 0x06: // KSEG2
-    case 0x07: // KSEG2
+    [[unlikely]] case 0x01: // KUSEG 512M-1024M
+    [[unlikely]] case 0x02: // KUSEG 1024M-1536M
+    [[unlikely]] case 0x03: // KUSEG 1536M-2048M
+    [[unlikely]] case 0x06: // KSEG2
+    [[unlikely]] case 0x07: // KSEG2
     {
       // Above 512mb raises an exception.
       return false;
@@ -3480,12 +3483,12 @@ ALWAYS_INLINE_RELEASE bool CPU::DoAlignmentCheck(VirtualMemoryAddress address)
 {
   if constexpr (size == MemoryAccessSize::HalfWord)
   {
-    if (Common::IsAlignedPow2(address, 2))
+    if (Common::IsAlignedPow2(address, 2)) [[likely]]
       return true;
   }
   else if constexpr (size == MemoryAccessSize::Word)
   {
-    if (Common::IsAlignedPow2(address, 4))
+    if (Common::IsAlignedPow2(address, 4)) [[likely]]
       return true;
   }
   else
@@ -3567,7 +3570,7 @@ bool CPU::ReadMemoryByte(VirtualMemoryAddress addr, u8* value)
 
 bool CPU::ReadMemoryHalfWord(VirtualMemoryAddress addr, u16* value)
 {
-  if (!DoAlignmentCheck<MemoryAccessType::Read, MemoryAccessSize::HalfWord>(addr))
+  if (!DoAlignmentCheck<MemoryAccessType::Read, MemoryAccessSize::HalfWord>(addr)) [[unlikely]]
     return false;
 
   *value = Truncate16(GetMemoryReadHandler(addr, MemoryAccessSize::HalfWord)(addr));
@@ -3584,7 +3587,7 @@ bool CPU::ReadMemoryHalfWord(VirtualMemoryAddress addr, u16* value)
 
 bool CPU::ReadMemoryWord(VirtualMemoryAddress addr, u32* value)
 {
-  if (!DoAlignmentCheck<MemoryAccessType::Read, MemoryAccessSize::Word>(addr))
+  if (!DoAlignmentCheck<MemoryAccessType::Read, MemoryAccessSize::Word>(addr)) [[unlikely]]
     return false;
 
   *value = GetMemoryReadHandler(addr, MemoryAccessSize::Word)(addr);
@@ -3618,7 +3621,7 @@ bool CPU::WriteMemoryHalfWord(VirtualMemoryAddress addr, u32 value)
 {
   MEMORY_BREAKPOINT(MemoryAccessType::Write, MemoryAccessSize::HalfWord, addr, value);
 
-  if (!DoAlignmentCheck<MemoryAccessType::Write, MemoryAccessSize::HalfWord>(addr))
+  if (!DoAlignmentCheck<MemoryAccessType::Write, MemoryAccessSize::HalfWord>(addr)) [[unlikely]]
     return false;
 
   GetMemoryWriteHandler(addr, MemoryAccessSize::HalfWord)(addr, value);
@@ -3636,7 +3639,7 @@ bool CPU::WriteMemoryWord(VirtualMemoryAddress addr, u32 value)
 {
   MEMORY_BREAKPOINT(MemoryAccessType::Write, MemoryAccessSize::Word, addr, value);
 
-  if (!DoAlignmentCheck<MemoryAccessType::Write, MemoryAccessSize::Word>(addr))
+  if (!DoAlignmentCheck<MemoryAccessType::Write, MemoryAccessSize::Word>(addr)) [[unlikely]]
     return false;
 
   GetMemoryWriteHandler(addr, MemoryAccessSize::Word)(addr, value);
