@@ -471,13 +471,16 @@ struct CDROMState
   u8 async_command_parameter = 0x00;
   s8 fast_forward_rate = 0;
 
+  TickCount last_sector_read_ticks = 0;
+
   std::array<std::array<u8, 2>, 2> cd_audio_volume_matrix{};
   std::array<std::array<u8, 2>, 2> next_cd_audio_volume_matrix{};
 
-  std::array<s32, 4> xa_last_samples{};
-  std::array<std::array<s16, XA_RESAMPLE_RING_BUFFER_SIZE>, 2> xa_resample_ring_buffer{};
   u8 xa_resample_p = 0;
   u8 xa_resample_sixstep = 6;
+
+  std::array<s32, 4> xa_last_samples{};
+  std::array<std::array<s16, XA_RESAMPLE_RING_BUFFER_SIZE>, 2> xa_resample_ring_buffer{};
 
   InlineFIFOQueue<u8, PARAM_FIFO_SIZE> param_fifo;
   InlineFIFOQueue<u8, RESPONSE_FIFO_SIZE> response_fifo;
@@ -1565,7 +1568,10 @@ void CDROM::DisableReadSpeedup()
   const TickCount sector_ticks = ticks_since_last_sector + ticks_until_next_sector;
   s_state.drive_event.SetInterval(std::min(s_state.drive_event.GetInterval(), expected_ticks));
   if (sector_ticks < expected_ticks)
+  {
+    s_state.last_sector_read_ticks = expected_ticks;
     s_state.drive_event.Schedule(expected_ticks - ticks_since_last_sector);
+  }
 }
 
 TickCount CDROM::GetAckDelayForCommand(Command command)
@@ -2850,6 +2856,7 @@ void CDROM::BeginReading(bool after_seek)
   s_state.drive_state = DriveState::Reading;
   s_state.drive_event.SetInterval(ticks);
   s_state.drive_event.Schedule(first_sector_ticks);
+  s_state.last_sector_read_ticks = ticks;
 
   s_state.requested_lba = s_state.current_lba;
   s_state.seek_start_lba = 0;
@@ -4044,7 +4051,10 @@ void CDROM::CheckForSectorBufferReadComplete()
     const TickCount remaining_time = s_state.drive_event.GetTicksUntilNextExecution();
     const TickCount instant_ticks = System::ScaleTicksToOverclock(g_settings.cdrom_max_read_speedup_cycles);
     if (remaining_time > instant_ticks)
+    {
+      s_state.last_sector_read_ticks = s_state.drive_event.GetTicksSinceLastExecution() + instant_ticks;
       s_state.drive_event.Schedule(instant_ticks);
+    }
   }
 
   // Buffer complete?
@@ -4345,6 +4355,9 @@ void CDROM::DrawDebugWindow(float scale)
     ImGui::Columns(1);
     ImGui::NewLine();
 
+    ImGui::Columns(2);
+    ImGui::SetColumnWidth(0, std::ceil(scale * 500.0f));
+
     if (HasPendingCommand())
     {
       ImGui::TextColored(active_color, "Command: %s (0x%02X) (%d ticks remaining)",
@@ -4356,7 +4369,12 @@ void CDROM::DrawDebugWindow(float scale)
       ImGui::TextColored(inactive_color, "Command: None");
     }
 
-    if (IsDriveIdle())
+    ImGui::NextColumn();
+    ImGui::Text("Interrupt Enable Register: 0x%02X", s_state.interrupt_enable_register);
+
+    ImGui::NextColumn();
+    const bool drive_idle = IsDriveIdle();
+    if (drive_idle)
     {
       ImGui::TextColored(inactive_color, "Drive: Idle");
     }
@@ -4365,23 +4383,33 @@ void CDROM::DrawDebugWindow(float scale)
       ImGui::TextColored(active_color, "Drive: %s (%d ticks remaining)",
                          s_drive_state_names[static_cast<u8>(s_state.drive_state)],
                          s_state.drive_event.IsActive() ? s_state.drive_event.GetTicksUntilNextExecution() : 0);
-
-      if (g_settings.cdrom_read_speedup != 1 && !CanUseReadSpeedup())
-      {
-        ImGui::SameLine();
-        ImGui::SetCursorPosX(std::max(ImGui::GetCursorPosX(), 400.0f));
-        ImGui::TextColored(ImVec4(1.0f, 0.3f, 0.3f, 1.0f), "SPEEDUP BLOCKED");
-      }
     }
 
-    ImGui::Text("Interrupt Enable Register: 0x%02X", s_state.interrupt_enable_register);
+    ImGui::NextColumn();
     ImGui::Text("Interrupt Flag Register: 0x%02X", s_state.interrupt_flag_register);
 
+    ImGui::NextColumn();
+    ImGui::TextColored(drive_idle ? inactive_color : active_color, "Effective Drive Speed: %.2fx",
+                       (s_state.last_sector_read_ticks > 0) ? ((static_cast<float>(System::GetTicksPerSecond()) /
+                                                                static_cast<float>(SINGLE_SPEED_SECTORS_PER_SECOND)) /
+                                                               static_cast<float>(s_state.last_sector_read_ticks)) :
+                                                              0.0f);
+    if (!drive_idle && g_settings.cdrom_read_speedup != 1 && !CanUseReadSpeedup())
+    {
+      ImGui::SameLine();
+      ImGui::SetCursorPosX(std::max(ImGui::GetCursorPosX(), 200.0f));
+      ImGui::TextColored(ImVec4(1.0f, 0.3f, 0.3f, 1.0f), "SPEEDUP BLOCKED");
+    }
+
+    ImGui::NextColumn();
     if (HasPendingAsyncInterrupt())
     {
       ImGui::SameLine();
-      ImGui::TextColored(inactive_color, " (0x%02X pending)", s_state.pending_async_interrupt);
+      ImGui::TextColored(inactive_color, "0x%02X pending", s_state.pending_async_interrupt);
     }
+
+    ImGui::Columns(1);
+    ImGui::NewLine();
   }
 
   if (ImGui::CollapsingHeader("CD Audio", ImGuiTreeNodeFlags_DefaultOpen))
