@@ -1508,18 +1508,20 @@ bool CDROM::CanUseReadSpeedup()
 
 void CDROM::DisableReadSpeedup()
 {
-  if (s_state.drive_state != CDROM::DriveState::Reading || !CanUseReadSpeedup())
+  if (s_state.drive_state != CDROM::DriveState::Reading || s_state.mode.cdda || s_state.mode.xa_enable ||
+      !s_state.mode.double_speed)
+  {
     return;
+  }
 
   // Can't test the interval directly because max speedup changes the downcount directly.
   const TickCount expected_ticks = System::GetTicksPerSecond() / DOUBLE_SPEED_SECTORS_PER_SECOND;
   const TickCount ticks_since_last_sector = s_state.drive_event.GetTicksSinceLastExecution();
   const TickCount ticks_until_next_sector = s_state.drive_event.GetTicksUntilNextExecution();
   const TickCount sector_ticks = ticks_since_last_sector + ticks_until_next_sector;
-  if (sector_ticks >= expected_ticks)
-    return;
-
-  s_state.drive_event.Schedule(expected_ticks - ticks_since_last_sector);
+  s_state.drive_event.SetInterval(std::min(s_state.drive_event.GetInterval(), expected_ticks));
+  if (sector_ticks < expected_ticks)
+    s_state.drive_event.Schedule(expected_ticks - ticks_since_last_sector);
 }
 
 TickCount CDROM::GetAckDelayForCommand(Command command)
