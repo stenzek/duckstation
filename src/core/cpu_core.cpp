@@ -894,13 +894,17 @@ restart_instruction:
   if (inst.bits == 0)
     return;
 
-  switch (inst.op)
+#define BEGIN_INSTRUCTION(name) case static_cast<u8>(InstructionOp::name):
+#define BEGIN_FUNCT_INSTRUCTION(name) case static_cast<u8>(InstructionFunct::name):
+#define END_INSTRUCTION() break;
+
+  switch (static_cast<u8>(inst.op.GetValue()))
   {
-    case InstructionOp::funct:
+    BEGIN_INSTRUCTION(funct)
     {
-      switch (inst.r.funct)
+      switch (static_cast<u8>(inst.r.funct.GetValue()))
       {
-        case InstructionFunct::sll:
+        BEGIN_FUNCT_INSTRUCTION(sll)
         {
           const u32 rtVal = ReadReg(inst.r.rt);
           const u32 rdVal = rtVal << inst.r.shamt;
@@ -909,9 +913,9 @@ restart_instruction:
           if constexpr (pgxp_mode >= PGXPMode::CPU)
             PGXP::CPU_SLL(inst, rtVal);
         }
-        break;
+        END_INSTRUCTION()
 
-        case InstructionFunct::srl:
+        BEGIN_FUNCT_INSTRUCTION(srl)
         {
           const u32 rtVal = ReadReg(inst.r.rt);
           const u32 rdVal = rtVal >> inst.r.shamt;
@@ -922,7 +926,7 @@ restart_instruction:
         }
         break;
 
-        case InstructionFunct::sra:
+        BEGIN_FUNCT_INSTRUCTION(sra)
         {
           const u32 rtVal = ReadReg(inst.r.rt);
           const u32 rdVal = static_cast<u32>(static_cast<s32>(rtVal) >> inst.r.shamt);
@@ -931,9 +935,9 @@ restart_instruction:
           if constexpr (pgxp_mode >= PGXPMode::CPU)
             PGXP::CPU_SRA(inst, rtVal);
         }
-        break;
+        END_INSTRUCTION()
 
-        case InstructionFunct::sllv:
+        BEGIN_FUNCT_INSTRUCTION(sllv)
         {
           const u32 rtVal = ReadReg(inst.r.rt);
           const u32 shamt = ReadReg(inst.r.rs) & UINT32_C(0x1F);
@@ -943,9 +947,9 @@ restart_instruction:
 
           WriteReg(inst.r.rd, rdVal);
         }
-        break;
+        END_INSTRUCTION()
 
-        case InstructionFunct::srlv:
+        BEGIN_FUNCT_INSTRUCTION(srlv)
         {
           const u32 rtVal = ReadReg(inst.r.rt);
           const u32 shamt = ReadReg(inst.r.rs) & UINT32_C(0x1F);
@@ -955,9 +959,9 @@ restart_instruction:
           if constexpr (pgxp_mode >= PGXPMode::CPU)
             PGXP::CPU_SRLV(inst, rtVal, shamt);
         }
-        break;
+        END_INSTRUCTION()
 
-        case InstructionFunct::srav:
+        BEGIN_FUNCT_INSTRUCTION(srav)
         {
           const u32 rtVal = ReadReg(inst.r.rt);
           const u32 shamt = ReadReg(inst.r.rs) & UINT32_C(0x1F);
@@ -967,9 +971,9 @@ restart_instruction:
           if constexpr (pgxp_mode >= PGXPMode::CPU)
             PGXP::CPU_SRAV(inst, rtVal, shamt);
         }
-        break;
+        END_INSTRUCTION()
 
-        case InstructionFunct::and_:
+        BEGIN_FUNCT_INSTRUCTION(and_)
         {
           const u32 rsVal = ReadReg(inst.r.rs);
           const u32 rtVal = ReadReg(inst.r.rt);
@@ -979,9 +983,9 @@ restart_instruction:
           if constexpr (pgxp_mode >= PGXPMode::CPU)
             PGXP::CPU_AND_(inst, rsVal, rtVal);
         }
-        break;
+        END_INSTRUCTION()
 
-        case InstructionFunct::or_:
+        BEGIN_FUNCT_INSTRUCTION(or_)
         {
           const u32 rsVal = ReadReg(inst.r.rs);
           const u32 rtVal = ReadReg(inst.r.rt);
@@ -993,9 +997,9 @@ restart_instruction:
           else if constexpr (pgxp_mode >= PGXPMode::Memory)
             PGXP::TryMove(inst.r.rd, inst.r.rs, inst.r.rt);
         }
-        break;
+        END_INSTRUCTION()
 
-        case InstructionFunct::xor_:
+        BEGIN_FUNCT_INSTRUCTION(xor_)
         {
           const u32 rsVal = ReadReg(inst.r.rs);
           const u32 rtVal = ReadReg(inst.r.rt);
@@ -1007,9 +1011,9 @@ restart_instruction:
           else if constexpr (pgxp_mode >= PGXPMode::Memory)
             PGXP::TryMove(inst.r.rd, inst.r.rs, inst.r.rt);
         }
-        break;
+        END_INSTRUCTION()
 
-        case InstructionFunct::nor:
+        BEGIN_FUNCT_INSTRUCTION(nor)
         {
           const u32 rsVal = ReadReg(inst.r.rs);
           const u32 rtVal = ReadReg(inst.r.rt);
@@ -1019,9 +1023,9 @@ restart_instruction:
           if constexpr (pgxp_mode >= PGXPMode::CPU)
             PGXP::CPU_NOR(inst, rsVal, rtVal);
         }
-        break;
+        END_INSTRUCTION()
 
-        case InstructionFunct::add:
+        BEGIN_FUNCT_INSTRUCTION(add)
         {
           const u32 rsVal = ReadReg(inst.r.rs);
           const u32 rtVal = ReadReg(inst.r.rt);
@@ -1039,9 +1043,9 @@ restart_instruction:
           else if constexpr (pgxp_mode >= PGXPMode::Memory)
             PGXP::TryMove(inst.r.rd, inst.r.rs, inst.r.rt);
         }
-        break;
+        END_INSTRUCTION()
 
-        case InstructionFunct::addu:
+        BEGIN_FUNCT_INSTRUCTION(addu)
         {
           const u32 rsVal = ReadReg(inst.r.rs);
           const u32 rtVal = ReadReg(inst.r.rt);
@@ -1053,9 +1057,9 @@ restart_instruction:
           else if constexpr (pgxp_mode >= PGXPMode::Memory)
             PGXP::TryMove(inst.r.rd, inst.r.rs, inst.r.rt);
         }
-        break;
+        END_INSTRUCTION()
 
-        case InstructionFunct::sub:
+        BEGIN_FUNCT_INSTRUCTION(sub)
         {
           const u32 rsVal = ReadReg(inst.r.rs);
           const u32 rtVal = ReadReg(inst.r.rt);
@@ -1071,9 +1075,9 @@ restart_instruction:
           if constexpr (pgxp_mode >= PGXPMode::CPU)
             PGXP::CPU_SUB(inst, rsVal, rtVal);
         }
-        break;
+        END_INSTRUCTION()
 
-        case InstructionFunct::subu:
+        BEGIN_FUNCT_INSTRUCTION(subu)
         {
           const u32 rsVal = ReadReg(inst.r.rs);
           const u32 rtVal = ReadReg(inst.r.rt);
@@ -1083,9 +1087,9 @@ restart_instruction:
           if constexpr (pgxp_mode >= PGXPMode::CPU)
             PGXP::CPU_SUB(inst, rsVal, rtVal);
         }
-        break;
+        END_INSTRUCTION()
 
-        case InstructionFunct::slt:
+        BEGIN_FUNCT_INSTRUCTION(slt)
         {
           const u32 rsVal = ReadReg(inst.r.rs);
           const u32 rtVal = ReadReg(inst.r.rt);
@@ -1095,9 +1099,9 @@ restart_instruction:
           if constexpr (pgxp_mode >= PGXPMode::CPU)
             PGXP::CPU_SLT(inst, rsVal, rtVal);
         }
-        break;
+        END_INSTRUCTION()
 
-        case InstructionFunct::sltu:
+        BEGIN_FUNCT_INSTRUCTION(sltu)
         {
           const u32 rsVal = ReadReg(inst.r.rs);
           const u32 rtVal = ReadReg(inst.r.rt);
@@ -1107,9 +1111,9 @@ restart_instruction:
           if constexpr (pgxp_mode >= PGXPMode::CPU)
             PGXP::CPU_SLTU(inst, rsVal, rtVal);
         }
-        break;
+        END_INSTRUCTION()
 
-        case InstructionFunct::mfhi:
+        BEGIN_FUNCT_INSTRUCTION(mfhi)
         {
           const u32 value = g_state.regs.hi;
           WriteReg(inst.r.rd, value);
@@ -1119,9 +1123,9 @@ restart_instruction:
           if constexpr (pgxp_mode >= PGXPMode::CPU)
             PGXP::CPU_MOVE(static_cast<u32>(inst.r.rd.GetValue()), static_cast<u32>(Reg::hi), value);
         }
-        break;
+        END_INSTRUCTION()
 
-        case InstructionFunct::mthi:
+        BEGIN_FUNCT_INSTRUCTION(mthi)
         {
           const u32 value = ReadReg(inst.r.rs);
           g_state.regs.hi = value;
@@ -1131,9 +1135,9 @@ restart_instruction:
           if constexpr (pgxp_mode >= PGXPMode::CPU)
             PGXP::CPU_MOVE(static_cast<u32>(Reg::hi), static_cast<u32>(inst.r.rs.GetValue()), value);
         }
-        break;
+        END_INSTRUCTION()
 
-        case InstructionFunct::mflo:
+        BEGIN_FUNCT_INSTRUCTION(mflo)
         {
           const u32 value = g_state.regs.lo;
           WriteReg(inst.r.rd, value);
@@ -1143,9 +1147,9 @@ restart_instruction:
           if constexpr (pgxp_mode >= PGXPMode::CPU)
             PGXP::CPU_MOVE(static_cast<u32>(inst.r.rd.GetValue()), static_cast<u32>(Reg::lo), value);
         }
-        break;
+        END_INSTRUCTION()
 
-        case InstructionFunct::mtlo:
+        BEGIN_FUNCT_INSTRUCTION(mtlo)
         {
           const u32 value = ReadReg(inst.r.rs);
           g_state.regs.lo = value;
@@ -1155,9 +1159,9 @@ restart_instruction:
           if constexpr (pgxp_mode == PGXPMode::CPU)
             PGXP::CPU_MOVE(static_cast<u32>(Reg::lo), static_cast<u32>(inst.r.rs.GetValue()), value);
         }
-        break;
+        END_INSTRUCTION()
 
-        case InstructionFunct::mult:
+        BEGIN_FUNCT_INSTRUCTION(mult)
         {
           const u32 lhs = ReadReg(inst.r.rs);
           const u32 rhs = ReadReg(inst.r.rt);
@@ -1173,9 +1177,9 @@ restart_instruction:
           if constexpr (pgxp_mode >= PGXPMode::CPU)
             PGXP::CPU_MULT(inst, lhs, rhs);
         }
-        break;
+        END_INSTRUCTION()
 
-        case InstructionFunct::multu:
+        BEGIN_FUNCT_INSTRUCTION(multu)
         {
           const u32 lhs = ReadReg(inst.r.rs);
           const u32 rhs = ReadReg(inst.r.rt);
@@ -1190,20 +1194,20 @@ restart_instruction:
           if constexpr (pgxp_mode >= PGXPMode::CPU)
             PGXP::CPU_MULTU(inst, lhs, rhs);
         }
-        break;
+        END_INSTRUCTION()
 
-        case InstructionFunct::div:
+        BEGIN_FUNCT_INSTRUCTION(div)
         {
           const s32 num = static_cast<s32>(ReadReg(inst.r.rs));
           const s32 denom = static_cast<s32>(ReadReg(inst.r.rt));
 
-          if (denom == 0)
+          if (denom == 0) [[unlikely]]
           {
             // divide by zero
             g_state.regs.lo = (num >= 0) ? UINT32_C(0xFFFFFFFF) : UINT32_C(1);
             g_state.regs.hi = static_cast<u32>(num);
           }
-          else if (static_cast<u32>(num) == UINT32_C(0x80000000) && denom == -1)
+          else if (static_cast<u32>(num) == UINT32_C(0x80000000) && denom == -1) [[unlikely]]
           {
             // unrepresentable
             g_state.regs.lo = UINT32_C(0x80000000);
@@ -1221,14 +1225,14 @@ restart_instruction:
           if constexpr (pgxp_mode >= PGXPMode::CPU)
             PGXP::CPU_DIV(inst, num, denom);
         }
-        break;
+        END_INSTRUCTION()
 
-        case InstructionFunct::divu:
+        BEGIN_FUNCT_INSTRUCTION(divu)
         {
           const u32 num = ReadReg(inst.r.rs);
           const u32 denom = ReadReg(inst.r.rt);
 
-          if (denom == 0)
+          if (denom == 0) [[unlikely]]
           {
             // divide by zero
             g_state.regs.lo = UINT32_C(0xFFFFFFFF);
@@ -1246,50 +1250,61 @@ restart_instruction:
           if constexpr (pgxp_mode >= PGXPMode::CPU)
             PGXP::CPU_DIVU(inst, num, denom);
         }
-        break;
+        END_INSTRUCTION()
 
-        case InstructionFunct::jr:
+        BEGIN_FUNCT_INSTRUCTION(jr)
         {
           g_state.next_instruction_is_branch_delay_slot = true;
           const u32 target = ReadReg(inst.r.rs);
           Branch(target);
         }
-        break;
+        END_INSTRUCTION()
 
-        case InstructionFunct::jalr:
+        BEGIN_FUNCT_INSTRUCTION(jalr)
         {
           g_state.next_instruction_is_branch_delay_slot = true;
           const u32 target = ReadReg(inst.r.rs);
           WriteReg(inst.r.rd, g_state.npc);
           Branch(target);
         }
-        break;
+        END_INSTRUCTION()
 
-        case InstructionFunct::syscall:
+        BEGIN_FUNCT_INSTRUCTION(syscall)
         {
           RaiseException(Exception::Syscall);
         }
-        break;
+        END_INSTRUCTION()
 
-        case InstructionFunct::break_:
+        BEGIN_FUNCT_INSTRUCTION(break_)
         {
           RaiseBreakException(Cop0Registers::CAUSE::MakeValueForException(
                                 Exception::BP, g_state.current_instruction_in_branch_delay_slot,
                                 g_state.current_instruction_was_branch_taken, g_state.current_instruction.cop.cop_n),
                               g_state.current_instruction_pc, g_state.current_instruction.bits);
         }
-        break;
+        END_INSTRUCTION()
 
-        default:
-        {
+        // clang-format off
+        [[unlikely]] case 1: [[unlikely]] case 5: [[unlikely]] case 10: [[unlikely]] case 11:
+        [[unlikely]] case 14: [[unlikely]] case 15: [[unlikely]] case 20: [[unlikely]] case 21:
+        [[unlikely]] case 22: [[unlikely]] case 23: [[unlikely]] case 28: [[unlikely]] case 29:
+        [[unlikely]] case 30: [[unlikely]] case 31: [[unlikely]] case 40: [[unlikely]] case 41:
+        [[unlikely]] case 44: [[unlikely]] case 45: [[unlikely]] case 46: [[unlikely]] case 47:
+        [[unlikely]] case 48: [[unlikely]] case 49: [[unlikely]] case 50: [[unlikely]] case 51:
+        [[unlikely]] case 52: [[unlikely]] case 53: [[unlikely]] case 54: [[unlikely]] case 55:
+        [[unlikely]] case 56: [[unlikely]] case 57: [[unlikely]] case 58: [[unlikely]] case 59:
+        [[unlikely]] case 60: [[unlikely]] case 61: [[unlikely]] case 62: [[unlikely]] case 63:
+        { // clang-format on
           RaiseException(Exception::RI);
           break;
         }
+
+          DefaultCaseIsUnreachable();
       }
     }
-    break;
+    END_INSTRUCTION()
 
-    case InstructionOp::lui:
+    BEGIN_INSTRUCTION(lui)
     {
       const u32 value = inst.i.imm_zext32() << 16;
       WriteReg(inst.i.rt, value);
@@ -1297,9 +1312,9 @@ restart_instruction:
       if constexpr (pgxp_mode >= PGXPMode::CPU)
         PGXP::CPU_LUI(inst);
     }
-    break;
+    END_INSTRUCTION()
 
-    case InstructionOp::andi:
+    BEGIN_INSTRUCTION(andi)
     {
       const u32 rsVal = ReadReg(inst.i.rs);
       const u32 new_value = rsVal & inst.i.imm_zext32();
@@ -1308,9 +1323,9 @@ restart_instruction:
       if constexpr (pgxp_mode >= PGXPMode::CPU)
         PGXP::CPU_ANDI(inst, rsVal);
     }
-    break;
+    END_INSTRUCTION()
 
-    case InstructionOp::ori:
+    BEGIN_INSTRUCTION(ori)
     {
       const u32 rsVal = ReadReg(inst.i.rs);
       const u32 imm = inst.i.imm_zext32();
@@ -1322,9 +1337,9 @@ restart_instruction:
       else if constexpr (pgxp_mode >= PGXPMode::Memory)
         PGXP::TryMoveImm(inst.r.rd, inst.r.rs, imm);
     }
-    break;
+    END_INSTRUCTION()
 
-    case InstructionOp::xori:
+    BEGIN_INSTRUCTION(xori)
     {
       const u32 rsVal = ReadReg(inst.i.rs);
       const u32 imm = inst.i.imm_zext32();
@@ -1336,9 +1351,9 @@ restart_instruction:
       else if constexpr (pgxp_mode >= PGXPMode::Memory)
         PGXP::TryMoveImm(inst.r.rd, inst.r.rs, imm);
     }
-    break;
+    END_INSTRUCTION()
 
-    case InstructionOp::addi:
+    BEGIN_INSTRUCTION(addi)
     {
       const u32 rsVal = ReadReg(inst.i.rs);
       const u32 imm = inst.i.imm_sext32();
@@ -1356,9 +1371,9 @@ restart_instruction:
       else if constexpr (pgxp_mode >= PGXPMode::Memory)
         PGXP::TryMoveImm(inst.r.rd, inst.r.rs, imm);
     }
-    break;
+    END_INSTRUCTION()
 
-    case InstructionOp::addiu:
+    BEGIN_INSTRUCTION(addiu)
     {
       const u32 rsVal = ReadReg(inst.i.rs);
       const u32 imm = inst.i.imm_sext32();
@@ -1370,9 +1385,9 @@ restart_instruction:
       else if constexpr (pgxp_mode >= PGXPMode::Memory)
         PGXP::TryMoveImm(inst.r.rd, inst.r.rs, imm);
     }
-    break;
+    END_INSTRUCTION()
 
-    case InstructionOp::slti:
+    BEGIN_INSTRUCTION(slti)
     {
       const u32 rsVal = ReadReg(inst.i.rs);
       const u32 result = BoolToUInt32(static_cast<s32>(rsVal) < static_cast<s32>(inst.i.imm_sext32()));
@@ -1381,9 +1396,9 @@ restart_instruction:
       if constexpr (pgxp_mode >= PGXPMode::CPU)
         PGXP::CPU_SLTI(inst, rsVal);
     }
-    break;
+    END_INSTRUCTION()
 
-    case InstructionOp::sltiu:
+    BEGIN_INSTRUCTION(sltiu)
     {
       const u32 result = BoolToUInt32(ReadReg(inst.i.rs) < inst.i.imm_sext32());
       WriteReg(inst.i.rt, result);
@@ -1391,9 +1406,9 @@ restart_instruction:
       if constexpr (pgxp_mode >= PGXPMode::CPU)
         PGXP::CPU_SLTIU(inst, ReadReg(inst.i.rs));
     }
-    break;
+    END_INSTRUCTION()
 
-    case InstructionOp::lb:
+    BEGIN_INSTRUCTION(lb)
     {
       const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
       if constexpr (debug)
@@ -1413,9 +1428,9 @@ restart_instruction:
       if constexpr (pgxp_mode >= PGXPMode::Memory)
         PGXP::CPU_LBx(inst, addr, sxvalue);
     }
-    break;
+    END_INSTRUCTION()
 
-    case InstructionOp::lh:
+    BEGIN_INSTRUCTION(lh)
     {
       const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
       if constexpr (debug)
@@ -1434,9 +1449,9 @@ restart_instruction:
       if constexpr (pgxp_mode >= PGXPMode::Memory)
         PGXP::CPU_LH(inst, addr, sxvalue);
     }
-    break;
+    END_INSTRUCTION()
 
-    case InstructionOp::lw:
+    BEGIN_INSTRUCTION(lw)
     {
       const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
       if constexpr (debug)
@@ -1454,9 +1469,9 @@ restart_instruction:
       if constexpr (pgxp_mode >= PGXPMode::Memory)
         PGXP::CPU_LW(inst, addr, value);
     }
-    break;
+    END_INSTRUCTION()
 
-    case InstructionOp::lbu:
+    BEGIN_INSTRUCTION(lbu)
     {
       const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
       if constexpr (debug)
@@ -1475,9 +1490,9 @@ restart_instruction:
       if constexpr (pgxp_mode >= PGXPMode::Memory)
         PGXP::CPU_LBx(inst, addr, zxvalue);
     }
-    break;
+    END_INSTRUCTION()
 
-    case InstructionOp::lhu:
+    BEGIN_INSTRUCTION(lhu)
     {
       const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
       if constexpr (debug)
@@ -1496,10 +1511,10 @@ restart_instruction:
       if constexpr (pgxp_mode >= PGXPMode::Memory)
         PGXP::CPU_LHU(inst, addr, zxvalue);
     }
-    break;
+    END_INSTRUCTION()
 
-    case InstructionOp::lwl:
-    case InstructionOp::lwr:
+    BEGIN_INSTRUCTION(lwl)
+    BEGIN_INSTRUCTION(lwr)
     {
       const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
       const VirtualMemoryAddress aligned_addr = addr & ~UINT32_C(3);
@@ -1533,9 +1548,9 @@ restart_instruction:
 
       WriteRegDelayed(inst.i.rt, new_value);
     }
-    break;
+    END_INSTRUCTION() break;
 
-    case InstructionOp::sb:
+    BEGIN_INSTRUCTION(sb)
     {
       const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
       if constexpr (debug)
@@ -1550,9 +1565,9 @@ restart_instruction:
       if constexpr (pgxp_mode >= PGXPMode::Memory)
         PGXP::CPU_SB(inst, addr, value);
     }
-    break;
+    END_INSTRUCTION()
 
-    case InstructionOp::sh:
+    BEGIN_INSTRUCTION(sh)
     {
       const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
       if constexpr (debug)
@@ -1567,9 +1582,9 @@ restart_instruction:
       if constexpr (pgxp_mode >= PGXPMode::Memory)
         PGXP::CPU_SH(inst, addr, value);
     }
-    break;
+    END_INSTRUCTION()
 
-    case InstructionOp::sw:
+    BEGIN_INSTRUCTION(sw)
     {
       const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
       if constexpr (debug)
@@ -1584,10 +1599,10 @@ restart_instruction:
       if constexpr (pgxp_mode >= PGXPMode::Memory)
         PGXP::CPU_SW(inst, addr, value);
     }
-    break;
+    END_INSTRUCTION()
 
-    case InstructionOp::swl:
-    case InstructionOp::swr:
+    BEGIN_INSTRUCTION(swl)
+    BEGIN_INSTRUCTION(swr)
     {
       const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
       const VirtualMemoryAddress aligned_addr = addr & ~UINT32_C(3);
@@ -1620,24 +1635,24 @@ restart_instruction:
 
       WriteMemoryWord(aligned_addr, new_value);
     }
-    break;
+    END_INSTRUCTION()
 
-    case InstructionOp::j:
+    BEGIN_INSTRUCTION(j)
     {
       g_state.next_instruction_is_branch_delay_slot = true;
       Branch((g_state.pc & UINT32_C(0xF0000000)) | (inst.j.target << 2));
     }
-    break;
+    END_INSTRUCTION()
 
-    case InstructionOp::jal:
+    BEGIN_INSTRUCTION(jal)
     {
       WriteReg(Reg::ra, g_state.npc);
       g_state.next_instruction_is_branch_delay_slot = true;
       Branch((g_state.pc & UINT32_C(0xF0000000)) | (inst.j.target << 2));
     }
-    break;
+    END_INSTRUCTION()
 
-    case InstructionOp::beq:
+    BEGIN_INSTRUCTION(beq)
     {
       // We're still flagged as a branch delay slot even if the branch isn't taken.
       g_state.next_instruction_is_branch_delay_slot = true;
@@ -1645,36 +1660,36 @@ restart_instruction:
       if (branch)
         Branch(g_state.pc + (inst.i.imm_sext32() << 2));
     }
-    break;
+    END_INSTRUCTION()
 
-    case InstructionOp::bne:
+    BEGIN_INSTRUCTION(bne)
     {
       g_state.next_instruction_is_branch_delay_slot = true;
       const bool branch = (ReadReg(inst.i.rs) != ReadReg(inst.i.rt));
       if (branch)
         Branch(g_state.pc + (inst.i.imm_sext32() << 2));
     }
-    break;
+    END_INSTRUCTION()
 
-    case InstructionOp::bgtz:
+    BEGIN_INSTRUCTION(bgtz)
     {
       g_state.next_instruction_is_branch_delay_slot = true;
       const bool branch = (static_cast<s32>(ReadReg(inst.i.rs)) > 0);
       if (branch)
         Branch(g_state.pc + (inst.i.imm_sext32() << 2));
     }
-    break;
+    END_INSTRUCTION()
 
-    case InstructionOp::blez:
+    BEGIN_INSTRUCTION(blez)
     {
       g_state.next_instruction_is_branch_delay_slot = true;
       const bool branch = (static_cast<s32>(ReadReg(inst.i.rs)) <= 0);
       if (branch)
         Branch(g_state.pc + (inst.i.imm_sext32() << 2));
     }
-    break;
+    END_INSTRUCTION()
 
-    case InstructionOp::b:
+    BEGIN_INSTRUCTION(b)
     {
       g_state.next_instruction_is_branch_delay_slot = true;
       const u8 rt = static_cast<u8>(inst.i.rt.GetValue());
@@ -1691,11 +1706,11 @@ restart_instruction:
       if (branch)
         Branch(g_state.pc + (inst.i.imm_sext32() << 2));
     }
-    break;
+    END_INSTRUCTION()
 
-    case InstructionOp::cop0:
+    BEGIN_INSTRUCTION(cop0)
     {
-      if (InUserMode() && !g_state.cop0_regs.sr.CU0)
+      if (InUserMode() && !g_state.cop0_regs.sr.CU0) [[unlikely]]
       {
         WARNING_LOG("Coprocessor 0 not present in user mode");
         RaiseException(Exception::CpU);
@@ -1856,9 +1871,8 @@ restart_instruction:
           }
           break;
 
-          default:
-            [[unlikely]] ERROR_LOG("Unhandled instruction at {:08X}: {:08X}", g_state.current_instruction_pc,
-                                   inst.bits);
+          [[unlikely]] default:
+            ERROR_LOG("Unhandled instruction at {:08X}: {:08X}", g_state.current_instruction_pc, inst.bits);
             break;
         }
       }
@@ -1875,23 +1889,22 @@ restart_instruction:
           }
           break;
 
-          case Cop0Instruction::tlbr:
-          case Cop0Instruction::tlbwi:
-          case Cop0Instruction::tlbwr:
-          case Cop0Instruction::tlbp:
+          [[unlikely]] case Cop0Instruction::tlbr:
+          [[unlikely]] case Cop0Instruction::tlbwi:
+          [[unlikely]] case Cop0Instruction::tlbwr:
+          [[unlikely]] case Cop0Instruction::tlbp:
             RaiseException(Exception::RI);
             return;
 
-          default:
-            [[unlikely]] ERROR_LOG("Unhandled instruction at {:08X}: {:08X}", g_state.current_instruction_pc,
-                                   inst.bits);
+          [[unlikely]] default:
+            ERROR_LOG("Unhandled instruction at {:08X}: {:08X}", g_state.current_instruction_pc, inst.bits);
             break;
         }
       }
     }
-    break;
+    END_INSTRUCTION()
 
-    case InstructionOp::cop2:
+    BEGIN_INSTRUCTION(cop2)
     {
       if (!g_state.cop0_regs.sr.CE2) [[unlikely]]
       {
@@ -1903,9 +1916,9 @@ restart_instruction:
       if (inst.cop.IsCommonInstruction())
       {
         // TODO: Combine with cop0.
-        switch (inst.cop.CommonOp())
+        switch (static_cast<u8>(inst.cop.CommonOp()))
         {
-          case CopCommonInstruction::cfcn:
+          case static_cast<u8>(CopCommonInstruction::cfcn):
           {
             StallUntilGTEComplete();
 
@@ -1917,7 +1930,7 @@ restart_instruction:
           }
           break;
 
-          case CopCommonInstruction::ctcn:
+          case static_cast<u8>(CopCommonInstruction::ctcn):
           {
             const u32 value = ReadReg(inst.r.rt);
             GTE::WriteRegister(static_cast<u32>(inst.r.rd.GetValue()) + 32, value);
@@ -1927,7 +1940,7 @@ restart_instruction:
           }
           break;
 
-          case CopCommonInstruction::mfcn:
+          case static_cast<u8>(CopCommonInstruction::mfcn):
           {
             StallUntilGTEComplete();
 
@@ -1939,7 +1952,7 @@ restart_instruction:
           }
           break;
 
-          case CopCommonInstruction::mtcn:
+          case static_cast<u8>(CopCommonInstruction::mtcn):
           {
             const u32 value = ReadReg(inst.r.rt);
             GTE::WriteRegister(static_cast<u32>(inst.r.rd.GetValue()), value);
@@ -1949,10 +1962,15 @@ restart_instruction:
           }
           break;
 
-          default:
-            [[unlikely]] ERROR_LOG("Unhandled instruction at {:08X}: {:08X}", g_state.current_instruction_pc,
-                                   inst.bits);
+            // clang-format off
+          [[unlikely]] case 1: [[unlikely]] case 3: [[unlikely]] case 5: [[unlikely]] case 7:
+          [[unlikely]] case 8: [[unlikely]] case 9: [[unlikely]] case 10: [[unlikely]] case 11:
+          [[unlikely]] case 12: [[unlikely]] case 13: [[unlikely]] case 14: [[unlikely]] case 15:
+            // clang-format on
+            ERROR_LOG("Unhandled instruction at {:08X}: {:08X}", g_state.current_instruction_pc, inst.bits);
             break;
+
+            DefaultCaseIsUnreachable();
         }
       }
       else
@@ -1961,9 +1979,9 @@ restart_instruction:
         GTE::ExecuteInstruction(inst.bits);
       }
     }
-    break;
+    END_INSTRUCTION()
 
-    case InstructionOp::lwc2:
+    BEGIN_INSTRUCTION(lwc2)
     {
       if (!g_state.cop0_regs.sr.CE2) [[unlikely]]
       {
@@ -1980,7 +1998,7 @@ restart_instruction:
       }
 
       u32 value;
-      if (!ReadMemoryWord(addr, &value))
+      if (!ReadMemoryWord(addr, &value)) [[unlikely]]
         return;
 
       GTE::WriteRegister(ZeroExtend32(static_cast<u8>(inst.i.rt.GetValue())), value);
@@ -1988,9 +2006,9 @@ restart_instruction:
       if constexpr (pgxp_mode >= PGXPMode::Memory)
         PGXP::CPU_LWC2(inst, addr, value);
     }
-    break;
+    END_INSTRUCTION()
 
-    case InstructionOp::swc2:
+    BEGIN_INSTRUCTION(swc2)
     {
       if (!g_state.cop0_regs.sr.CE2) [[unlikely]]
       {
@@ -2016,16 +2034,16 @@ restart_instruction:
     }
     break;
 
-      // cop1/cop3 are essentially no-ops
-    case InstructionOp::cop1:
-    case InstructionOp::cop3:
+    // cop1/cop3 are essentially no-ops
+    BEGIN_INSTRUCTION(cop1)
+    BEGIN_INSTRUCTION(cop3)
     {
     }
-    break;
+    END_INSTRUCTION()
 
-    case InstructionOp::lwc0:
-    case InstructionOp::lwc1:
-    case InstructionOp::lwc3:
+    BEGIN_INSTRUCTION(lwc0)
+    BEGIN_INSTRUCTION(lwc1)
+    BEGIN_INSTRUCTION(lwc3)
     {
       // todo: check enable
       // lwc0/1/3 should still perform the memory read, but discard the result
@@ -2039,11 +2057,11 @@ restart_instruction:
       u32 value;
       ReadMemoryWord(addr, &value);
     }
-    break;
+    END_INSTRUCTION()
 
-    case InstructionOp::swc0:
-    case InstructionOp::swc1:
-    case InstructionOp::swc3:
+    BEGIN_INSTRUCTION(swc0)
+    BEGIN_INSTRUCTION(swc1)
+    BEGIN_INSTRUCTION(swc3)
     {
       // todo: check enable
       // lwc0/1/3 should still perform the memory read, but discard the result
@@ -2056,12 +2074,17 @@ restart_instruction:
 
       WriteMemoryWord(addr, 0);
     }
-    break;
+    END_INSTRUCTION()
 
-      // everything else is reserved/invalid
-    [[unlikely]]
-    default:
-    {
+    // everything else is reserved/invalid
+    // clang-format off
+    [[unlikely]] case 20: [[unlikely]] case 21: [[unlikely]] case 22: [[unlikely]] case 23:
+    [[unlikely]] case 24: [[unlikely]] case 25: [[unlikely]] case 26: [[unlikely]] case 27:
+    [[unlikely]] case 28: [[unlikely]] case 29: [[unlikely]] case 30: [[unlikely]] case 31:
+    [[unlikely]] case 39: [[unlikely]] case 44: [[unlikely]] case 45: [[unlikely]] case 47:
+    [[unlikely]] case 52: [[unlikely]] case 53: [[unlikely]] case 54: [[unlikely]] case 55:
+    [[unlikely]] case 60: [[unlikely]] case 61: [[unlikely]] case 62: [[unlikely]] case 63:
+    { // clang-format on
       u32 ram_value;
       if (SafeReadInstruction(g_state.current_instruction_pc, &ram_value) &&
           ram_value != g_state.current_instruction.bits) [[unlikely]]
@@ -2075,6 +2098,8 @@ restart_instruction:
       RaiseException(Exception::RI);
     }
     break;
+
+      DefaultCaseIsUnreachable();
   }
 }
 
