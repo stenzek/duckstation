@@ -84,6 +84,8 @@
     <ClInclude Include="sdl_video_helpers.h" />
     <ClInclude Include="object_archive.h" />
     <ClInclude Include="http_cache.h" />
+    <ClInclude Include="dyn_sqlite.h" />
+    <ClInclude Include="sqlite_helpers.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="state_wrapper.cpp" />
@@ -170,6 +172,7 @@
     <ClCompile Include="object_archive.cpp" />
     <ClCompile Include="http_cache.cpp" />
     <ClCompile Include="xaudio2_audio_stream.cpp" />
+    <ClCompile Include="sqlite_helpers.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="metal_shaders.metal" />

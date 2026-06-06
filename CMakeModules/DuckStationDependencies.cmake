@@ -64,6 +64,8 @@ find_package(freetype 2.14.3 REQUIRED
              NO_DEFAULT_PATH PATHS "${DEPS_PATH}/lib/cmake/freetype")
 find_package(harfbuzz REQUIRED
              NO_DEFAULT_PATH PATHS "${DEPS_PATH}/lib/cmake/harfbuzz")
+find_package(SQLite3 3.53.1 REQUIRED
+             NO_DEFAULT_PATH PATHS "${DEPS_PATH}/lib/cmake/SQLite3")
 find_package(plutosvg 0.0.7 REQUIRED
              NO_DEFAULT_PATH PATHS "${DEPS_PATH}/lib/cmake/plutosvg")
 find_package(cpuinfo REQUIRED
@@ -94,7 +96,7 @@ else()
 endif()
 
 # Verify dependency paths.
-foreach(dep zstd WebP PNG libjpeg-turbo freetype harfbuzz plutosvg cpuinfo
+foreach(dep zstd WebP PNG libjpeg-turbo freetype harfbuzz SQLite3plutosvg cpuinfo
             DiscordRPC SoundTouch libzip Shaderc spirv_cross_c_shared SDL3 Qt6)
   if((${dep}_LIBRARY AND NOT "${${dep}_LIBRARY}" MATCHES "^${DEPS_PATH}") OR
      (${dep}_DIR AND NOT "${${dep}_DIR}" MATCHES "^${DEPS_PATH}"))

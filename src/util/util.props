@@ -46,6 +46,7 @@
     <DepsDLLs Include="$(DepsBinDir)shaderc_shared.dll" />
     <DepsDLLs Include="$(DepsBinDir)soundtouch.dll" />
     <DepsDLLs Include="$(DepsBinDir)spirv-cross-c-shared.dll" />
+    <DepsDLLs Include="$(DepsBinDir)sqlite3.dll" />
     <DepsDLLs Include="$(DepsBinDir)zip.dll" />
     <DepsDLLs Include="$(DepsBinDir)zlib1.dll" />
     <DepsDLLs Include="$(DepsBinDir)zstd.dll" />

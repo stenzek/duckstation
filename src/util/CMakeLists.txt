@@ -30,6 +30,7 @@ add_library(util
   cue_parser.h
   dyn_shaderc.h
   dyn_spirv_cross.h
+  dyn_sqlite.h
   elf_file.cpp
   elf_file.h
   gpu_device.cpp
@@ -81,6 +82,8 @@ add_library(util
   sockets.h
   spirv_module.cpp
   spirv_module.h
+  sqlite_helpers.cpp
+  sqlite_helpers.h
   state_wrapper.cpp
   state_wrapper.h
   texture_decompress.cpp
@@ -270,7 +273,7 @@ function(add_util_resources target)
   endif()
 
   # Copy dynamically-loaded libraries (harfbuzz/shaderc/spirv-cross) into the bundle.
-  bundle_libraries(${target} spirv-cross-c-shared Shaderc::shaderc_shared)
+  bundle_libraries(${target} spirv-cross-c-shared Shaderc::shaderc_shared SQLite3::sqlite3-shared)
   if(APPLE)
     bundle_libraries(${target} harfbuzz::harfbuzz)
   endif()
