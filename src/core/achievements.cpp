@@ -591,7 +591,7 @@ const std::string& Achievements::GetRichPresenceString()
   return s_state.rich_presence_string;
 }
 
-void Achievements::Initialize()
+void Achievements::ProcessStartup()
 {
   // Called on startup, no need to grab lock just to populate has saved credentials.
   {
@@ -601,7 +601,10 @@ void Achievements::Initialize()
     s_state.has_saved_credentials = (si->LookupValue("Cheevos", "Username", &username) && !username.empty() &&
                                      si->LookupValue("Cheevos", "Token", &token) && !token.empty());
   }
+}
 
+void Achievements::Initialize()
+{
   // No need to do anything else if we're not enabled.
   if (!g_settings.achievements_enabled)
     return;
