@@ -200,9 +200,8 @@ static bool WriteAllProgressToDatabase(const rc_client_all_user_progress_t* allp
 static void UpdateProgressDatabaseFromCurrentGame();
 static void ClearProgressDatabase();
 
-static std::string GetPinnedAchievementsPath(u32 game_id);
 static void LoadPinnedAchievements();
-static void SavePinnedAchievements();
+static void SetAchievementPinnedInDatabase(u32 achievement_id, bool pinned);
 
 #ifdef RC_CLIENT_SUPPORTS_RAINTEGRATION
 
@@ -2667,6 +2666,12 @@ CREATE TABLE IF NOT EXISTS metadata (
   key TEXT NOT NULL PRIMARY KEY,
   value TEXT NOT NULL
 ) WITHOUT ROWID;
+CREATE TABLE IF NOT EXISTS pinned_achievements (
+  game_id INTEGER NOT NULL,
+  achievement_id INTEGER NOT NULL,
+  PRIMARY KEY (game_id, achievement_id)
+);
+CREATE INDEX IF NOT EXISTS idx_pinned_achievements_game_id ON pinned_achievements (game_id);
 )";
 
   if (!SQLiteHelpers::Execute(s_state.achievements_db, schema_sql, &lerror))
@@ -3418,95 +3423,63 @@ std::string Achievements::GetGameBadgeURL(u32 game_id)
   return ret;
 }
 
-std::string Achievements::GetPinnedAchievementsPath(u32 game_id)
-{
-  return Path::Combine(EmuFolders::GameSettings, fmt::format("{}_achievements.ini", game_id));
-}
-
 void Achievements::LoadPinnedAchievements()
 {
   s_state.pinned_achievement_indicators = {};
   if (!HasAchievements())
     return;
 
-  const std::string path = GetPinnedAchievementsPath(s_state.game_id);
-  INISettingsInterface ini(path);
-  if (!ini.Load())
-    return;
-
-  const std::vector<std::string> ids = ini.GetStringList("PinnedAchievements", "AchievementID");
-  for (const std::string& id_str : ids)
+  Error error;
+  SQLitePreparedStatement query_stmt;
+  if (!query_stmt.Prepare(s_state.achievements_db, "SELECT achievement_id FROM pinned_achievements WHERE game_id = ?",
+                          &error)) [[unlikely]]
   {
-    const std::optional<u32> id = StringUtil::FromChars<u32>(id_str);
-    if (!id.has_value())
+    ERROR_LOG("Failed to prepare pinned achievements query: {}", error.GetDescription());
+    return;
+  }
+
+  query_stmt.BindInt(1, static_cast<int>(s_state.game_id));
+
+  for (;;)
+  {
+    const int rc = query_stmt.Step();
+    if (rc == SQLITE_DONE)
+      break;
+    if (rc != SQLITE_ROW) [[unlikely]]
     {
-      WARNING_LOG("Invalid pinned achievement ID '{}'", id_str);
-      continue;
+      SQLiteHelpers::SetError(&error, s_state.achievements_db);
+      ERROR_LOG("Failed to execute pinned achievements query: {}", error.GetDescription());
+      break;
     }
 
-    const rc_client_achievement_t* achievement = rc_client_get_achievement_info(s_state.client, id.value());
+    const u32 achievement_id = static_cast<u32>(query_stmt.ColumnInt(0));
+    const rc_client_achievement_t* achievement = rc_client_get_achievement_info(s_state.client, achievement_id);
     if (!achievement)
     {
-      WARNING_LOG("Pinned achievement {} not found in game", id.value());
+      WARNING_LOG("Pinned achievement {} not found in game, unpinning", achievement_id);
+      SetAchievementPinnedInDatabase(achievement_id, false);
       continue;
     }
 
     if (achievement->state != RC_CLIENT_ACHIEVEMENT_STATE_ACTIVE)
     {
-      WARNING_LOG("Pinned achievement {} is not unlocked, skipping", id.value());
+      WARNING_LOG("Pinned achievement {} is unlocked, unpinning", achievement_id);
+      SetAchievementPinnedInDatabase(achievement_id, false);
       continue;
     }
 
     PinnedAchievementIndicator indicator;
-    indicator.achievement_id = id.value();
+    indicator.achievement_id = achievement_id;
     indicator.badge_url = GetAchievementBadgeURL(achievement, false);
     s_state.pinned_achievement_indicators.push_back(std::move(indicator));
-    std::sort(s_state.pinned_achievement_indicators.begin(), s_state.pinned_achievement_indicators.end(),
-              [](const PinnedAchievementIndicator& lhs, const PinnedAchievementIndicator& rhs) {
-                return (lhs.achievement_id < rhs.achievement_id);
-              });
   }
+
+  std::sort(s_state.pinned_achievement_indicators.begin(), s_state.pinned_achievement_indicators.end(),
+            [](const PinnedAchievementIndicator& lhs, const PinnedAchievementIndicator& rhs) {
+              return (lhs.achievement_id < rhs.achievement_id);
+            });
 
   DEV_LOG("Loaded {} pinned achievements for game {}", s_state.pinned_achievement_indicators.size(), s_state.game_id);
-
-  // If there's nothing, clear out the file.
-  if (ids.size() != s_state.pinned_achievement_indicators.size())
-    SavePinnedAchievements();
-}
-
-void Achievements::SavePinnedAchievements()
-{
-  if (!HasAchievements())
-    return;
-
-  std::string path = GetPinnedAchievementsPath(s_state.game_id);
-
-  if (s_state.pinned_achievement_indicators.empty())
-  {
-    // Remove the file if there are no pinned achievements.
-    if (FileSystem::FileExists(path.c_str()))
-    {
-      Error error;
-      if (!FileSystem::DeleteFile(path.c_str(), &error))
-        ERROR_LOG("Failed to remove pinned achievements file: {}", error.GetDescription());
-    }
-
-    return;
-  }
-
-  INISettingsInterface ini(std::move(path));
-  ini.Load();
-
-  std::vector<std::string> ids;
-  ids.reserve(s_state.pinned_achievement_indicators.size());
-  for (const PinnedAchievementIndicator& indicator : s_state.pinned_achievement_indicators)
-    ids.push_back(StringUtil::ToChars(indicator.achievement_id));
-
-  ini.SetStringList("PinnedAchievements", "AchievementID", ids);
-
-  Error error;
-  if (!ini.Save(&error))
-    ERROR_LOG("Failed to save pinned achievements: {}", error.GetDescription());
 }
 
 bool Achievements::IsAchievementPinned(u32 achievement_id)
@@ -3530,6 +3503,8 @@ void Achievements::SetAchievementPinned(u32 achievement_id, bool pinned)
   {
     DEV_LOG("Unpinning achievement {}", achievement_id);
     s_state.pinned_achievement_indicators.erase(it);
+
+    SetAchievementPinnedInDatabase(achievement_id, false);
   }
   else
   {
@@ -3541,6 +3516,7 @@ void Achievements::SetAchievementPinned(u32 achievement_id, bool pinned)
     }
 
     DEV_LOG("Pinning achievement {}", achievement_id);
+
     PinnedAchievementIndicator indicator;
     indicator.achievement_id = achievement_id;
     indicator.badge_url = GetAchievementBadgeURL(achievement, false);
@@ -3553,9 +3529,35 @@ void Achievements::SetAchievementPinned(u32 achievement_id, bool pinned)
       DEV_COLOR_LOG(StrongYellow, "Clearing progress indicator for achievement {} due to pin", achievement_id);
       s_state.active_progress_indicator.reset();
     }
-  }
 
-  SavePinnedAchievements();
+    SetAchievementPinnedInDatabase(achievement_id, true);
+  }
+}
+
+void Achievements::SetAchievementPinnedInDatabase(u32 achievement_id, bool pinned)
+{
+  Error error;
+  SQLitePreparedStatement stmt;
+  if (pinned)
+  {
+    if (!stmt.Prepare(s_state.achievements_db,
+                      "INSERT INTO pinned_achievements (game_id, achievement_id) VALUES (?, ?)", &error) ||
+        !(stmt.BindInt(1, static_cast<int>(s_state.game_id)), stmt.BindInt(2, static_cast<int>(achievement_id)),
+          stmt.Execute(s_state.achievements_db, &error)))
+    {
+      ERROR_LOG("Failed to pin achievement in database: {}", error.GetDescription());
+    }
+  }
+  else
+  {
+    if (!stmt.Prepare(s_state.achievements_db,
+                      "DELETE FROM pinned_achievements WHERE game_id = ? AND achievement_id = ?", &error) ||
+        !(stmt.BindInt(1, static_cast<int>(s_state.game_id)), stmt.BindInt(2, static_cast<int>(achievement_id)),
+          stmt.Execute(s_state.achievements_db, &error)))
+    {
+      ERROR_LOG("Failed to unpin achievement in database: {}", error.GetDescription());
+    }
+  }
 }
 
 #ifdef RC_CLIENT_SUPPORTS_RAINTEGRATION
