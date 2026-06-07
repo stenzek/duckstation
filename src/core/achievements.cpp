@@ -694,9 +694,34 @@ void Achievements::FinishInitialize()
 
 void Achievements::DestroyClient(std::unique_lock<std::recursive_mutex>& lock)
 {
+  DebugAssert(IsActive());
   WaitForServerCallsWithYield(lock);
-  rc_client_destroy(s_state.client);
-  s_state.client = nullptr;
+
+  ClearGameInfo();
+  ClearGameHash();
+  DisableHardcoreMode(false, false);
+  CancelHashDatabaseRequests();
+
+  if (s_state.login_request)
+  {
+    rc_client_abort_async(s_state.client, s_state.login_request);
+    s_state.login_request = nullptr;
+  }
+
+#ifdef RC_CLIENT_SUPPORTS_RAINTEGRATION
+  if (s_state.using_raintegration)
+  {
+    UnloadRAIntegration(lock);
+    return;
+  }
+  else
+#endif
+  {
+    rc_client_destroy(s_state.client);
+    s_state.client = nullptr;
+  }
+
+  Host::OnAchievementsActiveChanged(false);
 }
 
 bool Achievements::HasSavedCredentials()
@@ -737,17 +762,22 @@ bool Achievements::TryLoggingInWithToken()
 
 void Achievements::UpdateSettings(const Settings& old_config)
 {
-  if (!g_settings.achievements_enabled)
+  auto lock = GetLock();
+
+  if (g_settings.achievements_enabled != old_config.achievements_enabled)
   {
     // we're done here
-    Shutdown();
-    return;
-  }
+    if (g_settings.achievements_enabled)
+    {
+      if (!IsActive())
+        CreateClient(lock, false);
+    }
+    else
+    {
+      if (IsActive())
+        DestroyClient(lock);
+    }
 
-  if (!IsActive())
-  {
-    // we just got enabled
-    Initialize();
     return;
   }
 
@@ -755,8 +785,9 @@ void Achievements::UpdateSettings(const Settings& old_config)
   if (g_settings.achievements_use_raintegration != old_config.achievements_use_raintegration)
   {
     // RAIntegration requires a full client reload?
-    Shutdown();
-    Initialize();
+    if (IsActive())
+      DestroyClient(lock);
+    CreateClient(lock, false);
     return;
   }
 #endif
@@ -767,8 +798,6 @@ void Achievements::UpdateSettings(const Settings& old_config)
     if (!g_settings.achievements_hardcore_mode)
       DisableHardcoreMode(true, true);
   }
-
-  auto lock = GetLock();
 
   // If a game is active and these settings changed, reload the game to apply them.
   // Just unload and reload without destroying the client to preserve hardcore mode.
@@ -817,27 +846,7 @@ void Achievements::Shutdown()
   if (!IsActive())
     return;
 
-  ClearGameInfo();
-  ClearGameHash();
-  DisableHardcoreMode(false, false);
-  CancelHashDatabaseRequests();
-
-  if (s_state.login_request)
-  {
-    rc_client_abort_async(s_state.client, s_state.login_request);
-    s_state.login_request = nullptr;
-  }
-
-#ifdef RC_CLIENT_SUPPORTS_RAINTEGRATION
-  if (s_state.using_raintegration)
-  {
-    UnloadRAIntegration(lock);
-    return;
-  }
-#endif
-
   DestroyClient(lock);
-  Host::OnAchievementsActiveChanged(false);
 }
 
 void Achievements::ClientMessageCallback(const char* message, const rc_client_t* client)
