@@ -47,16 +47,16 @@
 #include "util/ini_settings_interface.h"
 #include "util/state_wrapper.h"
 
-#include "IconsEmoji.h"
-#include "IconsFontAwesome.h"
-#include "IconsPromptFont.h"
-#include "fmt/format.h"
-#include "imgui.h"
-#include "imgui_internal.h"
-#include "rc_api_info.h"
-#include "rc_api_runtime.h"
-#include "rc_client.h"
-#include "rc_consoles.h"
+#include <IconsEmoji.h>
+#include <IconsFontAwesome.h>
+#include <IconsPromptFont.h>
+#include <fmt/format.h>
+#include <imgui.h>
+#include <imgui_internal.h>
+#include <rc_api_info.h>
+#include <rc_api_runtime.h>
+#include <rc_client.h>
+#include <rc_consoles.h>
 
 #include <algorithm>
 #include <atomic>

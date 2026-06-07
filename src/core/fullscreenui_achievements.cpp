@@ -20,8 +20,9 @@
 #include "common/time_helpers.h"
 #include "common/timer.h"
 
-#include "IconsEmoji.h"
-#include "IconsPromptFont.h"
+#include <IconsEmoji.h>
+#include <IconsPromptFont.h>
+#include <rc_client.h>
 
 #include <bitset>
 

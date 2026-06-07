@@ -74,17 +74,8 @@ const HashDatabaseEntry* LookupGameHash(const GameHash& hash);
 /// Converts a game hash to a string for display. If the hash is nullopt, returns "[NO HASH]".
 TinyString GameHashToString(const std::optional<GameHash>& hash);
 
-/// Initializes global state.
-void ProcessStartup();
-
-/// Initializes the RetroAchievments client.
-void Initialize();
-
 /// Updates achievements settings.
 void UpdateSettings(const Settings& old_config);
-
-/// Shuts down the RetroAchievements client.
-void Shutdown();
 
 /// Call to refresh the all-progress database.
 bool RefreshAllProgressDatabase(ProgressCallback* progress, Error* error);

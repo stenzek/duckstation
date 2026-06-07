@@ -3,6 +3,7 @@
 
 #include "core.h"
 #include "achievements.h"
+#include "achievements_private.h"
 #include "core_private.h"
 #include "discord_presence.h"
 #include "gdb_server.h"
