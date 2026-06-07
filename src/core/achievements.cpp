@@ -1893,12 +1893,6 @@ void Achievements::OnHardcoreModeChanged(bool enabled, bool display_message, boo
                                       TRANSLATE_STR("Achievements", "Restrictions are no longer active."));
   }
 
-  if (HasActiveGame() && display_game_summary)
-  {
-    UpdateGameSummary(true);
-    DisplayAchievementSummary();
-  }
-
   DebugAssert((rc_client_get_hardcore_enabled(s_state.client) != 0) == enabled);
 
   // Reload setting to permit cheating-like things if we were just disabled.
@@ -1918,6 +1912,12 @@ void Achievements::OnHardcoreModeChanged(bool enabled, bool display_message, boo
 
   // Toss away UI state, because it's invalid now
   FullscreenUI::ClearAchievementsState();
+
+  if (HasActiveGame() && display_game_summary)
+  {
+    UpdateGameSummary(true);
+    DisplayAchievementSummary();
+  }
 
   Host::OnAchievementsHardcoreModeChanged(enabled);
 }
