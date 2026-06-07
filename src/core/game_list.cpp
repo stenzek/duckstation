@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "game_list.h"
@@ -67,6 +67,13 @@ enum : u32
     PLAYED_TIME_SERIAL_LENGTH + 1 + PLAYED_TIME_LAST_TIME_LENGTH + 1 + PLAYED_TIME_TOTAL_TIME_LENGTH,
 };
 
+enum ListState : u8
+{
+  Unloaded,
+  Loaded,
+  Loading,
+};
+
 struct PlayedTimeEntry
 {
   std::time_t last_played_time;
@@ -109,15 +116,15 @@ static bool GetGameListEntryFromCache(const std::string& path, Entry* entry,
                                       const INISettingsInterface& custom_attributes_ini,
                                       const Achievements::ProgressDatabase& achievements_progress);
 static Entry* GetMutableEntryForPath(std::string_view path);
-static void ScanDirectory(const std::string& path, bool recursive, bool only_cache,
-                          const std::vector<std::string>& excluded_paths, const PlayedTimeMap& played_time_map,
-                          const INISettingsInterface& custom_attributes_ini,
+static void ScanDirectory(std::unique_lock<std::recursive_mutex>& lock, const std::string& path, bool recursive,
+                          bool only_cache, const std::vector<std::string>& excluded_paths,
+                          const PlayedTimeMap& played_time_map, const INISettingsInterface& custom_attributes_ini,
                           const Achievements::ProgressDatabase& achievements_progress, BinaryFileWriter& cache_writer,
                           ProgressCallback* progress);
 static bool AddFileFromCache(const std::string& path, const std::string& path_in_cache, std::time_t timestamp,
                              const PlayedTimeMap& played_time_map, const INISettingsInterface& custom_attributes_ini,
                              const Achievements::ProgressDatabase& achievements_progress);
-static void ScanFile(std::string path, std::time_t timestamp, std::unique_lock<std::recursive_mutex>& lock,
+static void ScanFile(std::unique_lock<std::recursive_mutex>& lock, std::string path, std::time_t timestamp,
                      const PlayedTimeMap& played_time_map, const INISettingsInterface& custom_attributes_ini,
                      const Achievements::ProgressDatabase& achievements_progress, const std::string& path_for_cache,
                      BinaryFileWriter& cache_writer);
@@ -125,7 +132,8 @@ static void ScanFile(std::string path, std::time_t timestamp, std::unique_lock<s
 static bool LoadOrInitializeCache(std::FILE* fp, bool invalidate_cache);
 static bool LoadEntriesFromCache(BinaryFileReader& reader);
 static bool WriteEntryToCache(const Entry* entry, const std::string& entry_path, BinaryFileWriter& writer);
-static void CreateDiscSetEntries(const std::vector<std::string>& excluded_paths, const PlayedTimeMap& played_time_map,
+static void CreateDiscSetEntries(std::unique_lock<std::recursive_mutex>& lock,
+                                 const std::vector<std::string>& excluded_paths, const PlayedTimeMap& played_time_map,
                                  const INISettingsInterface& custom_attributes_ini);
 static void RefreshDiscSetEntries();
 
@@ -149,7 +157,7 @@ struct State
   std::recursive_mutex mutex;
   CacheMap cache_map;
   std::vector<MemcardTimestampCacheEntry> memcard_timestamp_cache_entries;
-  bool game_list_loaded = false;
+  ListState game_list_loaded = ListState::Unloaded;
 };
 
 ALIGN_TO_CACHE_LINE static State s_state;
@@ -182,7 +190,8 @@ const char* GameList::GetEntryTypeDisplayName(EntryType type)
 
 bool GameList::IsGameListLoaded()
 {
-  return s_state.game_list_loaded;
+  const std::unique_lock lock(s_state.mutex);
+  return (s_state.game_list_loaded != ListState::Unloaded);
 }
 
 bool GameList::ShouldShowLocalizedTitles()
@@ -537,9 +546,9 @@ static bool IsPathExcluded(const std::vector<std::string>& excluded_paths, const
                       [&path](const std::string& entry) { return path.starts_with(entry); }) != excluded_paths.end();
 }
 
-void GameList::ScanDirectory(const std::string& path, bool recursive, bool only_cache,
-                             const std::vector<std::string>& excluded_paths, const PlayedTimeMap& played_time_map,
-                             const INISettingsInterface& custom_attributes_ini,
+void GameList::ScanDirectory(std::unique_lock<std::recursive_mutex>& lock, const std::string& path, bool recursive,
+                             bool only_cache, const std::vector<std::string>& excluded_paths,
+                             const PlayedTimeMap& played_time_map, const INISettingsInterface& custom_attributes_ini,
                              const Achievements::ProgressDatabase& achievements_progress,
                              BinaryFileWriter& cache_writer, ProgressCallback* progress)
 {
@@ -582,18 +591,21 @@ void GameList::ScanDirectory(const std::string& path, bool recursive, bool only_
       ffd.FileName = Path::Combine(EmuFolders::DataRoot, path_in_cache);
     }
 
-    std::unique_lock lock(s_state.mutex);
+    lock.lock();
     if (GetEntryForPath(ffd.FileName) ||
         AddFileFromCache(ffd.FileName, path_in_cache, ffd.ModificationTime, played_time_map, custom_attributes_ini,
                          achievements_progress) ||
         only_cache)
     {
+      lock.unlock();
       continue;
     }
 
+    lock.unlock();
+
     progress->SetStatusText(
       SmallString::from_format(TRANSLATE_FS("GameList", "Scanning '{}'..."), Path::GetFileName(ffd.FileName)));
-    ScanFile(std::move(ffd.FileName), ffd.ModificationTime, lock, played_time_map, custom_attributes_ini,
+    ScanFile(lock, std::move(ffd.FileName), ffd.ModificationTime, played_time_map, custom_attributes_ini,
              achievements_progress, path_in_cache, cache_writer);
     progress->SetProgressValue(files_scanned);
   }
@@ -633,14 +645,11 @@ bool GameList::AddFileFromCache(const std::string& path, const std::string& path
   return true;
 }
 
-void GameList::ScanFile(std::string path, std::time_t timestamp, std::unique_lock<std::recursive_mutex>& lock,
+void GameList::ScanFile(std::unique_lock<std::recursive_mutex>& lock, std::string path, std::time_t timestamp,
                         const PlayedTimeMap& played_time_map, const INISettingsInterface& custom_attributes_ini,
                         const Achievements::ProgressDatabase& achievements_progress, const std::string& path_for_cache,
                         BinaryFileWriter& cache_writer)
 {
-  // don't block UI while scanning
-  lock.unlock();
-
   VERBOSE_LOG("Scanning '{}'...", path);
 
   Entry entry;
@@ -673,11 +682,11 @@ void GameList::ScanFile(std::string path, std::time_t timestamp, std::unique_loc
     WARNING_LOG("Failed to write entry '{}' to cache", entry.path);
   }
 
-  lock.lock();
-
   // don't add invalid entries to the list
   if (!entry.IsValid())
     return;
+
+  lock.lock();
 
   // replace if present
   auto it = std::find_if(s_state.entries.begin(), s_state.entries.end(),
@@ -686,6 +695,8 @@ void GameList::ScanFile(std::string path, std::time_t timestamp, std::unique_loc
     *it = std::move(entry);
   else
     s_state.entries.push_back(std::move(entry));
+
+  lock.unlock();
 }
 
 bool GameList::RescanCustomAttributesForPath(const std::string& path, const INISettingsInterface& custom_attributes_ini)
@@ -1063,11 +1074,26 @@ size_t GameList::GetEntryCount()
 
 void GameList::Refresh(bool invalidate_cache, bool only_cache, ProgressCallback* progress /* = nullptr */)
 {
-  s_state.game_list_loaded = true;
+  std::unique_lock lock(s_state.mutex);
+  if (s_state.game_list_loaded == ListState::Loading)
+  {
+    // if another thread is loading, wait for them to finish
+    while (s_state.game_list_loaded == ListState::Loading)
+    {
+      lock.unlock();
+      Timer::NanoSleep(10000000); // 10ms
+      lock.lock();
+    }
+
+    return;
+  }
+
+  s_state.game_list_loaded = ListState::Loading;
 
   if (!progress)
     progress = ProgressCallback::NullProgressCallback;
 
+  Timer timer;
   Error error;
   FileSystem::LockedFile cache_file =
     FileSystem::OpenLockedFile(Path::Combine(EmuFolders::Cache, "gamelist.cache").c_str(), true, &error);
@@ -1080,10 +1106,10 @@ void GameList::Refresh(bool invalidate_cache, bool only_cache, ProgressCallback*
 
   // don't delete the old entries, since the frontend might still access them
   std::vector<Entry> old_entries;
-  {
-    std::unique_lock lock(s_state.mutex);
-    old_entries.swap(s_state.entries);
-  }
+  old_entries.swap(s_state.entries);
+
+  // don't hold mutex while loading stuff
+  lock.unlock();
 
   const std::vector<std::string> excluded_paths(Core::GetBaseStringListSetting("GameList", "ExcludedPaths"));
   std::vector<std::string> dirs(Core::GetBaseStringListSetting("GameList", "Paths"));
@@ -1114,8 +1140,8 @@ void GameList::Refresh(bool invalidate_cache, bool only_cache, ProgressCallback*
       if (progress->IsCancelled())
         break;
 
-      ScanDirectory(dir, false, only_cache, excluded_paths, played_time, custom_attributes_ini, achievements_progress,
-                    cache_writer, progress);
+      ScanDirectory(lock, dir, false, only_cache, excluded_paths, played_time, custom_attributes_ini,
+                    achievements_progress, cache_writer, progress);
       progress->SetProgressValue(++directory_counter);
     }
     for (const std::string& dir : recursive_dirs)
@@ -1123,17 +1149,24 @@ void GameList::Refresh(bool invalidate_cache, bool only_cache, ProgressCallback*
       if (progress->IsCancelled())
         break;
 
-      ScanDirectory(dir, true, only_cache, excluded_paths, played_time, custom_attributes_ini, achievements_progress,
-                    cache_writer, progress);
+      ScanDirectory(lock, dir, true, only_cache, excluded_paths, played_time, custom_attributes_ini,
+                    achievements_progress, cache_writer, progress);
       progress->SetProgressValue(++directory_counter);
     }
   }
+
+  lock.lock();
 
   // don't need unused cache entries
   s_state.cache_map.clear();
 
   // merge multi-disc games
-  CreateDiscSetEntries(excluded_paths, played_time, custom_attributes_ini);
+  CreateDiscSetEntries(lock, excluded_paths, played_time, custom_attributes_ini);
+
+  // all done
+  s_state.game_list_loaded = ListState::Loaded;
+
+  INFO_LOG("Finished game list refresh in {} ms", timer.GetTimeMilliseconds());
 }
 
 void GameList::RefreshDiscSetEntries()
@@ -1163,7 +1196,8 @@ void GameList::RefreshDiscSetEntries()
   INISettingsInterface custom_attributes_ini(GetCustomPropertiesFile());
   custom_attributes_ini.Load();
 
-  CreateDiscSetEntries(excluded_paths, played_time, custom_attributes_ini);
+  std::unique_lock lock(s_state.mutex);
+  CreateDiscSetEntries(lock, excluded_paths, played_time, custom_attributes_ini);
 
   for (size_t i = 0; i < s_state.entries.size(); i++)
   {
@@ -1185,12 +1219,11 @@ GameList::EntryList GameList::TakeEntryList()
   return ret;
 }
 
-void GameList::CreateDiscSetEntries(const std::vector<std::string>& excluded_paths,
+void GameList::CreateDiscSetEntries(std::unique_lock<std::recursive_mutex>& lock,
+                                    const std::vector<std::string>& excluded_paths,
                                     const PlayedTimeMap& played_time_map,
                                     const INISettingsInterface& custom_attributes_ini)
 {
-  std::unique_lock lock(s_state.mutex);
-
   for (size_t i = 0; i < s_state.entries.size(); i++)
   {
     const Entry& entry = s_state.entries[i];
