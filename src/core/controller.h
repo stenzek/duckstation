@@ -53,6 +53,9 @@ public:
   static constexpr float DEFAULT_STICK_SENSITIVITY = 1.33f;
   static constexpr float DEFAULT_BUTTON_DEADZONE = 0.25f;
 
+  /// Center position when dealing with axis values.
+  static constexpr u8 AXIS_CENTER = 0x80;
+
   explicit Controller(u32 index);
   virtual ~Controller();
 
@@ -118,6 +121,12 @@ public:
 
   /// Returns true if automatic analog mode can be used.
   static bool CanStartInAnalogMode(ControllerType ctype);
+
+  /// Converts a 0..255 half-axis value to an unsigned 8-bit value, with 128 indicating center.
+  static u8 MergeHalfAxes(u8 neg_value, u8 pos_value, bool invert);
+
+  /// Converts a 0..255 half-axis value to a normalized floating-point value, with 0 indicating center.
+  static float MergeHalfAxesToFloat(u8 neg_value, u8 pos_value, bool invert);
 
 protected:
   u32 m_index;

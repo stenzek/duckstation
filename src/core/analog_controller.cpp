@@ -186,40 +186,36 @@ void AnalogController::SetBindState(u32 index, float value)
 
     m_half_axis_state[sub_index] = u8_value;
 
-#define MERGE(pos, neg)                                                                                                \
-  ((m_half_axis_state[static_cast<u32>(pos)] != 0) ? (127u + ((m_half_axis_state[static_cast<u32>(pos)] + 1u) / 2u)) : \
-                                                     (127u - (m_half_axis_state[static_cast<u32>(neg)] / 2u)))
-
     const auto prev_axis_state = m_axis_state;
 
     switch (static_cast<HalfAxis>(sub_index))
     {
       case HalfAxis::LLeft:
       case HalfAxis::LRight:
-        m_axis_state[static_cast<u8>(Axis::LeftX)] = ((m_invert_left_stick & 1u) != 0u) ?
-                                                       MERGE(HalfAxis::LLeft, HalfAxis::LRight) :
-                                                       MERGE(HalfAxis::LRight, HalfAxis::LLeft);
+        m_axis_state[static_cast<u8>(Axis::LeftX)] =
+          MergeHalfAxes(m_half_axis_state[static_cast<size_t>(HalfAxis::LLeft)],
+                        m_half_axis_state[static_cast<size_t>(HalfAxis::LRight)], (m_invert_left_stick & 1));
         break;
 
       case HalfAxis::LDown:
       case HalfAxis::LUp:
-        m_axis_state[static_cast<u8>(Axis::LeftY)] = ((m_invert_left_stick & 2u) != 0u) ?
-                                                       MERGE(HalfAxis::LUp, HalfAxis::LDown) :
-                                                       MERGE(HalfAxis::LDown, HalfAxis::LUp);
+        m_axis_state[static_cast<u8>(Axis::LeftY)] =
+          MergeHalfAxes(m_half_axis_state[static_cast<size_t>(HalfAxis::LUp)],
+                        m_half_axis_state[static_cast<size_t>(HalfAxis::LDown)], (m_invert_left_stick & 2));
         break;
 
       case HalfAxis::RLeft:
       case HalfAxis::RRight:
-        m_axis_state[static_cast<u8>(Axis::RightX)] = ((m_invert_right_stick & 1u) != 0u) ?
-                                                        MERGE(HalfAxis::RLeft, HalfAxis::RRight) :
-                                                        MERGE(HalfAxis::RRight, HalfAxis::RLeft);
+        m_axis_state[static_cast<u8>(Axis::RightX)] =
+          MergeHalfAxes(m_half_axis_state[static_cast<size_t>(HalfAxis::RLeft)],
+                        m_half_axis_state[static_cast<size_t>(HalfAxis::RRight)], (m_invert_right_stick & 1));
         break;
 
       case HalfAxis::RDown:
       case HalfAxis::RUp:
-        m_axis_state[static_cast<u8>(Axis::RightY)] = ((m_invert_right_stick & 2u) != 0u) ?
-                                                        MERGE(HalfAxis::RUp, HalfAxis::RDown) :
-                                                        MERGE(HalfAxis::RDown, HalfAxis::RUp);
+        m_axis_state[static_cast<u8>(Axis::RightY)] =
+          MergeHalfAxes(m_half_axis_state[static_cast<size_t>(HalfAxis::RUp)],
+                        m_half_axis_state[static_cast<size_t>(HalfAxis::RDown)], (m_invert_right_stick & 2));
         break;
 
       default:
@@ -228,42 +224,37 @@ void AnalogController::SetBindState(u32 index, float value)
 
     if (m_analog_deadzone > 0.0f)
     {
-#define MERGE_F(pos, neg)                                                                                              \
-  ((m_half_axis_state[static_cast<u32>(pos)] != 0) ?                                                                   \
-     (static_cast<float>(m_half_axis_state[static_cast<u32>(pos)]) / 255.0f) :                                         \
-     (static_cast<float>(m_half_axis_state[static_cast<u32>(neg)]) / -255.0f))
-
       float pos_x, pos_y;
       if (static_cast<HalfAxis>(sub_index) < HalfAxis::RLeft)
       {
-        pos_x = ((m_invert_left_stick & 1u) != 0u) ? MERGE_F(HalfAxis::LLeft, HalfAxis::LRight) :
-                                                     MERGE_F(HalfAxis::LRight, HalfAxis::LLeft);
-        pos_y = ((m_invert_left_stick & 2u) != 0u) ? MERGE_F(HalfAxis::LUp, HalfAxis::LDown) :
-                                                     MERGE_F(HalfAxis::LDown, HalfAxis::LUp);
+        pos_x =
+          MergeHalfAxesToFloat(m_half_axis_state[static_cast<size_t>(HalfAxis::LLeft)],
+                               m_half_axis_state[static_cast<size_t>(HalfAxis::LRight)], (m_invert_left_stick & 1));
+        pos_y =
+          MergeHalfAxesToFloat(m_half_axis_state[static_cast<size_t>(HalfAxis::LUp)],
+                               m_half_axis_state[static_cast<size_t>(HalfAxis::LDown)], (m_invert_left_stick & 2));
       }
       else
       {
-        pos_x = ((m_invert_right_stick & 1u) != 0u) ? MERGE_F(HalfAxis::RLeft, HalfAxis::RRight) :
-                                                      MERGE_F(HalfAxis::RRight, HalfAxis::RLeft);
-        pos_y = ((m_invert_right_stick & 2u) != 0u) ? MERGE_F(HalfAxis::RUp, HalfAxis::RDown) :
-                                                      MERGE_F(HalfAxis::RDown, HalfAxis::RUp);
+        pos_x =
+          MergeHalfAxesToFloat(m_half_axis_state[static_cast<size_t>(HalfAxis::RLeft)],
+                               m_half_axis_state[static_cast<size_t>(HalfAxis::RRight)], (m_invert_right_stick & 1));
+        pos_y =
+          MergeHalfAxesToFloat(m_half_axis_state[static_cast<size_t>(HalfAxis::RUp)],
+                               m_half_axis_state[static_cast<size_t>(HalfAxis::RDown)], (m_invert_right_stick & 2));
       }
 
       if (InCircularDeadzone(m_analog_deadzone, pos_x, pos_y))
       {
-        // Set to 127 (center).
         if (static_cast<HalfAxis>(sub_index) < HalfAxis::RLeft)
-          m_axis_state[static_cast<u8>(Axis::LeftX)] = m_axis_state[static_cast<u8>(Axis::LeftY)] = 127;
+          m_axis_state[static_cast<u8>(Axis::LeftX)] = m_axis_state[static_cast<u8>(Axis::LeftY)] = AXIS_CENTER;
         else
-          m_axis_state[static_cast<u8>(Axis::RightX)] = m_axis_state[static_cast<u8>(Axis::RightY)] = 127;
+          m_axis_state[static_cast<u8>(Axis::RightX)] = m_axis_state[static_cast<u8>(Axis::RightY)] = AXIS_CENTER;
       }
-#undef MERGE_F
     }
 
     if (std::memcmp(m_axis_state.data(), prev_axis_state.data(), m_axis_state.size()) != 0)
       System::SetRunaheadReplayFlag(true);
-
-#undef MERGE
 
     return;
   }

@@ -239,3 +239,17 @@ bool Controller::CanStartInAnalogMode(ControllerType ctype)
   return ((dbentry->supported_controllers & (1u << static_cast<u8>(ctype))) != 0 &&
           !dbentry->HasTrait(GameDatabase::Trait::DisableAutoAnalogMode));
 }
+
+u8 Controller::MergeHalfAxes(u8 neg_value, u8 pos_value, bool invert)
+{
+  if (invert)
+    std::swap(neg_value, pos_value);
+
+  return static_cast<u8>(128 + (static_cast<u32>(pos_value) / 2) - ((static_cast<u32>(neg_value) + 1) / 2));
+}
+
+float Controller::MergeHalfAxesToFloat(u8 neg_value, u8 pos_value, bool invert)
+{
+  const float result = (static_cast<s32>(pos_value) - static_cast<s32>(neg_value)) / 255.0f;
+  return (invert ? -result : result);
+}
