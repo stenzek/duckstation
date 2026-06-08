@@ -29,25 +29,13 @@ static QColor GetIconColorFromPalette(QIcon::Mode mode, QIcon::State state)
   // Thank gosh these are copy-on-write...
   const QPalette palette = QApplication::palette();
 
-  // For the "On" state (e.g., checked icons), use highlight/button colors
-  if (state == QIcon::On)
-  {
-    if (mode == QIcon::Disabled)
-      return palette.color(QPalette::Disabled, QPalette::ButtonText);
-    else if (mode == QIcon::Selected)
-      return palette.color(QPalette::Current, QPalette::HighlightedText);
-    else
-      return palette.color(QPalette::Normal, QPalette::ButtonText);
-  }
-
+  // For the "On" state (e.g., checked icons)
   // For the "Off" state (normal/unchecked)
   // NOTE: Active and Normal are the same in QPalette.
-  if (mode == QIcon::Disabled)
-    return palette.color(QPalette::Disabled, QPalette::WindowText);
-  else if (mode == QIcon::Selected)
-    return palette.color(QPalette::Current, QPalette::HighlightedText);
-  else
-    return palette.color(QPalette::Normal, QPalette::WindowText);
+  const QPalette::ColorGroup cgroup =
+    (mode == QIcon::Disabled) ? QPalette::Disabled : ((mode == QIcon::Selected) ? QPalette::Current : QPalette::Normal);
+  const QPalette::ColorRole crole = (state == QIcon::On) ? QPalette::ButtonText : QPalette::WindowText;
+  return palette.color(cgroup, crole);
 }
 
 /// Constructs a cache key for the given resource path, pixel size, and RGBA color value.
