@@ -881,6 +881,7 @@ static void createSettingWidgets(SettingsInterface* const sif, QWidget* parent_w
     }
 
     QLabel* label = new QLabel(si.description ? qApp->translate(tr_context, si.description) : QString(), parent_widget);
+    label->setEnabled(false);
     label->setWordWrap(true);
     layout->addWidget(label, current_row++, 0, 1, 4);
 
