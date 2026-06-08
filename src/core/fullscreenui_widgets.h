@@ -454,9 +454,9 @@ bool MenuActionButton(std::string_view title, std::string_view summary, std::str
                       bool dropdown_icon = false, bool enabled = true);
 
 template<typename DataType, typename CountType>
-ALWAYS_INLINE static bool EnumChoiceButton(std::string_view title, std::string_view summary, DataType* value_pointer,
-                                           const char* (*to_display_name_function)(DataType value), CountType count,
-                                           bool enabled = true)
+ALWAYS_INLINE bool EnumChoiceButton(std::string_view title, std::string_view summary, DataType* value_pointer,
+                                    const char* (*to_display_name_function)(DataType value), CountType count,
+                                    bool enabled = true)
 {
   s32 value = static_cast<s32>(*value_pointer);
   auto to_display_name_wrapper = [](s32 value, void* opaque) -> const char* {

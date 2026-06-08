@@ -33,48 +33,48 @@ class GSVector4i;
 #ifndef CPU_ARCH_SSE41
 
 // Thank LLVM for these.
-ALWAYS_INLINE static __m128i sse2_min_s8(const __m128i m, const __m128i v)
+ALWAYS_INLINE __m128i sse2_min_s8(const __m128i m, const __m128i v)
 {
   const __m128i temp = _mm_cmpgt_epi8(m, v);
   return _mm_or_si128(_mm_andnot_si128(temp, m), _mm_and_si128(v, temp));
 }
 
-ALWAYS_INLINE static __m128i sse2_max_s8(const __m128i m, const __m128i v)
+ALWAYS_INLINE __m128i sse2_max_s8(const __m128i m, const __m128i v)
 {
   const __m128i temp = _mm_cmpgt_epi8(v, m);
   return _mm_or_si128(_mm_andnot_si128(temp, m), _mm_and_si128(v, temp));
 }
 
-ALWAYS_INLINE static __m128i sse2_min_s32(const __m128i m, const __m128i v)
+ALWAYS_INLINE __m128i sse2_min_s32(const __m128i m, const __m128i v)
 {
   const __m128i temp = _mm_cmpgt_epi32(m, v);
   return _mm_or_si128(_mm_andnot_si128(temp, m), _mm_and_si128(v, temp));
 }
 
-ALWAYS_INLINE static __m128i sse2_max_s32(const __m128i m, const __m128i v)
+ALWAYS_INLINE __m128i sse2_max_s32(const __m128i m, const __m128i v)
 {
   const __m128i temp = _mm_cmpgt_epi32(v, m);
   return _mm_or_si128(_mm_andnot_si128(temp, m), _mm_and_si128(v, temp));
 }
 
-ALWAYS_INLINE static __m128i sse2_min_u16(const __m128i m, const __m128i v)
+ALWAYS_INLINE __m128i sse2_min_u16(const __m128i m, const __m128i v)
 {
   return _mm_sub_epi16(m, _mm_subs_epu16(m, v));
 }
 
-ALWAYS_INLINE static __m128i sse2_max_u16(const __m128i m, const __m128i v)
+ALWAYS_INLINE __m128i sse2_max_u16(const __m128i m, const __m128i v)
 {
   return _mm_add_epi16(m, _mm_subs_epu16(v, m));
 }
 
-ALWAYS_INLINE static __m128i sse2_min_u32(const __m128i m, const __m128i v)
+ALWAYS_INLINE __m128i sse2_min_u32(const __m128i m, const __m128i v)
 {
   const __m128i msb = _mm_set1_epi32(0x80000000);
   const __m128i temp = _mm_cmpgt_epi32(_mm_xor_si128(msb, v), _mm_xor_si128(m, msb));
   return _mm_or_si128(_mm_andnot_si128(temp, v), _mm_and_si128(m, temp));
 }
 
-ALWAYS_INLINE static __m128i sse2_max_u32(const __m128i m, const __m128i v)
+ALWAYS_INLINE __m128i sse2_max_u32(const __m128i m, const __m128i v)
 {
   const __m128i msb = _mm_set1_epi32(0x80000000);
   const __m128i temp = _mm_cmpgt_epi32(_mm_xor_si128(msb, m), _mm_xor_si128(v, msb));

@@ -76,7 +76,7 @@ static_assert(s_batch_render_modes.size() == static_cast<size_t>(GPU_HW::BatchRe
 #endif
 
 /// Returns the distance between two rectangles.
-ALWAYS_INLINE static float RectDistance(const GSVector4i lhs, const GSVector4i rhs)
+ALWAYS_INLINE float RectDistance(const GSVector4i lhs, const GSVector4i rhs)
 {
   const s32 lcx = (lhs.left + ((lhs.right - lhs.left) / 2));
   const s32 lcy = (lhs.top + ((lhs.bottom - lhs.top) / 2));
@@ -88,7 +88,7 @@ ALWAYS_INLINE static float RectDistance(const GSVector4i lhs, const GSVector4i r
   return std::sqrt(static_cast<float>(distsq));
 }
 
-ALWAYS_INLINE static u32 GetMaxResolutionScale()
+ALWAYS_INLINE u32 GetMaxResolutionScale()
 {
   return g_gpu_device->GetMaxTextureSize() / VRAM_WIDTH;
 }
@@ -101,34 +101,34 @@ ALWAYS_INLINE_RELEASE static u32 GetBoxDownsampleScale(u32 resolution_scale)
   return scale;
 }
 
-ALWAYS_INLINE static bool ShouldDrawWithSoftwareRenderer()
+ALWAYS_INLINE bool ShouldDrawWithSoftwareRenderer()
 {
   return (g_gpu_settings.gpu_use_software_renderer_for_readbacks ||
           g_gpu_settings.gpu_use_software_renderer_for_memory_states);
 }
 
-ALWAYS_INLINE static bool ShouldClampUVs(GPUTextureFilter texture_filter)
+ALWAYS_INLINE bool ShouldClampUVs(GPUTextureFilter texture_filter)
 {
   // We only need UV limits if PGXP is enabled, or texture filtering is enabled.
   return (g_gpu_settings.gpu_pgxp_enable || texture_filter != GPUTextureFilter::Nearest);
 }
 
-ALWAYS_INLINE static bool ShouldAllowSpriteMode(u8 resolution_scale, GPUTextureFilter texture_filter,
-                                                GPUTextureFilter sprite_texture_filter)
+ALWAYS_INLINE bool ShouldAllowSpriteMode(u8 resolution_scale, GPUTextureFilter texture_filter,
+                                         GPUTextureFilter sprite_texture_filter)
 {
   // Use sprite shaders/mode when texcoord rounding is forced, or if the filters are different.
   return (sprite_texture_filter != texture_filter ||
           (resolution_scale > 1 && g_gpu_settings.gpu_force_round_texcoords));
 }
 
-ALWAYS_INLINE static bool ShouldDisableColorPerspective()
+ALWAYS_INLINE bool ShouldDisableColorPerspective()
 {
   return g_gpu_settings.gpu_pgxp_enable && g_gpu_settings.gpu_pgxp_texture_correction &&
          !g_gpu_settings.gpu_pgxp_color_correction;
 }
 
 /// Returns true if the specified texture filtering mode requires dual-source blending.
-ALWAYS_INLINE static bool IsBlendedTextureFiltering(GPUTextureFilter filter)
+ALWAYS_INLINE bool IsBlendedTextureFiltering(GPUTextureFilter filter)
 {
   // return (filter == GPUTextureFilter::Bilinear || filter == GPUTextureFilter::JINC2 || filter ==
   // GPUTextureFilter::xBR);
@@ -164,14 +164,14 @@ ALWAYS_INLINE_RELEASE static GSVector4i GetVRAMTransferBounds(u32 x, u32 y, u32 
 }
 
 /// Returns true if the below function should be applied.
-ALWAYS_INLINE static bool ShouldTruncate32To16(const GPUBackendDrawCommand* cmd)
+ALWAYS_INLINE bool ShouldTruncate32To16(const GPUBackendDrawCommand* cmd)
 {
   return (!cmd->texture_enable && !cmd->shading_enable && !cmd->dither_enable &&
           g_gpu_settings.gpu_dithering_mode == GPUDitheringMode::TrueColor);
 }
 
 /// Truncates a 32-bit colour to 16-bit.
-ALWAYS_INLINE static u32 Truncate32To16(u32 color)
+ALWAYS_INLINE u32 Truncate32To16(u32 color)
 {
   return GSVector4i((GSVector4(GSVector4i::zext32(color).u8to32().srl32<3>()) / GSVector4::cxpr(31.0f)) *
                     GSVector4::cxpr(255.0f))
@@ -179,14 +179,14 @@ ALWAYS_INLINE static u32 Truncate32To16(u32 color)
 }
 
 /// Returns true if two given spans overlap.
-ALWAYS_INLINE static bool SpansOverlap(s32 start1, s32 end1, s32 start2, s32 end2)
+ALWAYS_INLINE bool SpansOverlap(s32 start1, s32 end1, s32 start2, s32 end2)
 {
   return (start1 <= end2 && start2 <= end1);
 }
 
 /// Computes the clamped average Z for the given polygon Z values.
 template<typename... Args>
-ALWAYS_INLINE static float ComputePolygonAverageZ(Args... args)
+ALWAYS_INLINE float ComputePolygonAverageZ(Args... args)
 {
   static_assert(sizeof...(args) >= 2, "At least two arguments are required");
   const float sum = (args + ...);

@@ -20,7 +20,7 @@ static constexpr const char* DOWNLOAD_URL = "https://aka.ms/vs/17/release/vc_red
 
 // Can't rely on IsProcessorFeaturePresent(PF_SSE4_1_INSTRUCTIONS_AVAILABLE) because that was only added in Win10 2004,
 // and you can bet that people with such ancient CPUs probably aren't running the latest OS versions either.
-ALWAYS_INLINE static bool CheckCPUIDForSSE4()
+ALWAYS_INLINE bool CheckCPUIDForSSE4()
 {
   int result[4] = {};
 

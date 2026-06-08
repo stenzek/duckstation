@@ -874,7 +874,7 @@ const std::array<CPU::DebuggerRegisterListEntry, CPU::NUM_DEBUGGER_REGISTER_LIST
                                     {"ZSF4", &CPU::g_state.gte_regs.r32[62]},
                                     {"FLAG", &CPU::g_state.gte_regs.r32[63]}}};
 
-ALWAYS_INLINE static bool AddOverflow(u32 old_value, u32 add_value, u32* new_value)
+ALWAYS_INLINE bool AddOverflow(u32 old_value, u32 add_value, u32* new_value)
 {
 #if defined(__clang__) || defined(__GNUC__)
   return __builtin_add_overflow(static_cast<s32>(old_value), static_cast<s32>(add_value),
@@ -885,7 +885,7 @@ ALWAYS_INLINE static bool AddOverflow(u32 old_value, u32 add_value, u32* new_val
 #endif
 }
 
-ALWAYS_INLINE static bool SubOverflow(u32 old_value, u32 sub_value, u32* new_value)
+ALWAYS_INLINE bool SubOverflow(u32 old_value, u32 sub_value, u32* new_value)
 {
 #if defined(__clang__) || defined(__GNUC__)
   return __builtin_sub_overflow(static_cast<s32>(old_value), static_cast<s32>(sub_value),

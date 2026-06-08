@@ -130,11 +130,11 @@ static void FrameDoneEvent(void*, TickCount ticks);
 
 // The GPU internally appears to run at 2x the system clock.
 // TODO: No, it just draws two pixels per clock.
-ALWAYS_INLINE static constexpr TickCount GPUTicksToSystemTicks(TickCount gpu_ticks)
+ALWAYS_INLINE constexpr TickCount GPUTicksToSystemTicks(TickCount gpu_ticks)
 {
   return std::max<TickCount>((gpu_ticks + 1) >> 1, 1);
 }
-ALWAYS_INLINE static constexpr TickCount SystemTicksToGPUTicks(TickCount sysclk_ticks)
+ALWAYS_INLINE constexpr TickCount SystemTicksToGPUTicks(TickCount sysclk_ticks)
 {
   return sysclk_ticks << 1;
 }

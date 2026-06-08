@@ -98,7 +98,7 @@ static constinit Config s_config;
 
 #define REGS CPU::g_state.gte_regs
 
-ALWAYS_INLINE static u32 CountLeadingBits(u32 value)
+ALWAYS_INLINE u32 CountLeadingBits(u32 value)
 {
   // if top-most bit is set, we want to count ones not zeros
   if (value & UINT32_C(0x80000000))
@@ -108,7 +108,7 @@ ALWAYS_INLINE static u32 CountLeadingBits(u32 value)
 }
 
 template<u32 index>
-ALWAYS_INLINE static void CheckMACOverflow(s64 value)
+ALWAYS_INLINE void CheckMACOverflow(s64 value)
 {
   constexpr s64 MIN_VALUE = (index == 0) ? MAC0_MIN_VALUE : MAC123_MIN_VALUE;
   constexpr s64 MAX_VALUE = (index == 0) ? MAC0_MAX_VALUE : MAC123_MAX_VALUE;
@@ -137,14 +137,14 @@ ALWAYS_INLINE static void CheckMACOverflow(s64 value)
 }
 
 template<u32 index>
-ALWAYS_INLINE static s64 SignExtendMACResult(s64 value)
+ALWAYS_INLINE s64 SignExtendMACResult(s64 value)
 {
   CheckMACOverflow<index>(value);
   return SignExtendN < index == 0 ? 31 : 44 > (value);
 }
 
 template<u32 index>
-ALWAYS_INLINE static void TruncateAndSetMAC(s64 value, u8 shift)
+ALWAYS_INLINE void TruncateAndSetMAC(s64 value, u8 shift)
 {
   CheckMACOverflow<index>(value);
 
@@ -155,7 +155,7 @@ ALWAYS_INLINE static void TruncateAndSetMAC(s64 value, u8 shift)
 }
 
 template<u32 index>
-ALWAYS_INLINE static void TruncateAndSetIR(s32 value, bool lm)
+ALWAYS_INLINE void TruncateAndSetIR(s32 value, bool lm)
 {
   constexpr s32 MIN_VALUE = (index == 0) ? IR0_MIN_VALUE : IR123_MIN_VALUE;
   constexpr s32 MAX_VALUE = (index == 0) ? IR0_MAX_VALUE : IR123_MAX_VALUE;
@@ -190,7 +190,7 @@ ALWAYS_INLINE static void TruncateAndSetIR(s32 value, bool lm)
 }
 
 template<u32 index>
-ALWAYS_INLINE static void TruncateAndSetMACAndIR(s64 value, u8 shift, bool lm)
+ALWAYS_INLINE void TruncateAndSetMACAndIR(s64 value, u8 shift, bool lm)
 {
   CheckMACOverflow<index>(value);
 
@@ -206,7 +206,7 @@ ALWAYS_INLINE static void TruncateAndSetMACAndIR(s64 value, u8 shift, bool lm)
 }
 
 template<u32 index>
-ALWAYS_INLINE static u32 TruncateRGB(s32 value)
+ALWAYS_INLINE u32 TruncateRGB(s32 value)
 {
   if (value < 0 || value > 0xFF)
   {

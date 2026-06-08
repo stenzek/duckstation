@@ -516,12 +516,12 @@ ALWAYS_INLINE_RELEASE static void LoopXWrappedPages(u32 page, u32 num_pages, con
     f((page & VRAM_PAGE_Y_MASK) | ((page + i) & VRAM_PAGE_X_MASK));
 }
 
-ALWAYS_INLINE static void DoStateVector(StateWrapper& sw, GSVector4i* vec)
+ALWAYS_INLINE void DoStateVector(StateWrapper& sw, GSVector4i* vec)
 {
   sw.DoBytes(vec->S32, sizeof(vec->S32));
 }
 
-ALWAYS_INLINE static float RectDistance(const GSVector4i& lhs, const GSVector4i& rhs)
+ALWAYS_INLINE float RectDistance(const GSVector4i& lhs, const GSVector4i& rhs)
 {
   const GSVector4 flhs(lhs);
   const GSVector4 frhs(rhs);
@@ -1128,7 +1128,7 @@ void GPUTextureCache::AddWrittenRectangle(const GSVector4i rect, bool update_vra
   });
 }
 
-[[maybe_unused]] ALWAYS_INLINE static TinyString SourceKeyToString(const GPUTextureCache::SourceKey& key)
+[[maybe_unused]] ALWAYS_INLINE TinyString SourceKeyToString(const GPUTextureCache::SourceKey& key)
 {
   static constexpr const std::array<const char*, 4> texture_modes = {
     {"Palette4Bit", "Palette8Bit", "Direct16Bit", "Reserved_Direct16Bit"}};
@@ -1146,7 +1146,7 @@ void GPUTextureCache::AddWrittenRectangle(const GSVector4i rect, bool update_vra
   return ret;
 }
 
-[[maybe_unused]] ALWAYS_INLINE static TinyString SourceToString(const GPUTextureCache::Source* src)
+[[maybe_unused]] ALWAYS_INLINE TinyString SourceToString(const GPUTextureCache::Source* src)
 {
   return SourceKeyToString(src->key);
 }

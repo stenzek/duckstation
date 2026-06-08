@@ -75,7 +75,7 @@ void ReleaseJITMemory(void* ptr, size_t size);
 /// Only needed outside of X86, X86 has coherent D/I cache.
 #if !defined(CPU_ARCH_ARM32) && !defined(CPU_ARCH_ARM64) && !defined(CPU_ARCH_RISCV64) && !defined(CPU_ARCH_LOONGARCH64)
 // clang-format off
-ALWAYS_INLINE static void FlushInstructionCache(void* address, size_t size) { }
+ALWAYS_INLINE void FlushInstructionCache(void* address, size_t size) { }
 // clang-format on
 #else
 void FlushInstructionCache(void* address, size_t size);

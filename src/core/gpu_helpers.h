@@ -10,7 +10,7 @@
 #include "common/bitutils.h"
 #include "common/gsvector.h"
 
-ALWAYS_INLINE static constexpr bool TextureModeHasPalette(GPUTextureMode mode)
+ALWAYS_INLINE constexpr bool TextureModeHasPalette(GPUTextureMode mode)
 {
   return (mode < GPUTextureMode::Direct16Bit);
 }

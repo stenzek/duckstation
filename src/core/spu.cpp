@@ -40,17 +40,17 @@ LOG_CHANNEL(SPU);
 #define SPU_ENABLE_VU_METER 1
 #endif
 
-ALWAYS_INLINE static constexpr s32 Clamp16(s32 value)
+ALWAYS_INLINE constexpr s32 Clamp16(s32 value)
 {
   return (value < -0x8000) ? -0x8000 : (value > 0x7FFF) ? 0x7FFF : value;
 }
 
-ALWAYS_INLINE static constexpr s32 ApplyVolume(s32 sample, s16 volume)
+ALWAYS_INLINE constexpr s32 ApplyVolume(s32 sample, s16 volume)
 {
   return (sample * s32(volume)) >> 15;
 }
 
-ALWAYS_INLINE static constexpr float ApplyVolumeF(float sample, s16 volume)
+ALWAYS_INLINE constexpr float ApplyVolumeF(float sample, s16 volume)
 {
   return (sample * static_cast<float>(volume)) / static_cast<float>(0x8000);
 }

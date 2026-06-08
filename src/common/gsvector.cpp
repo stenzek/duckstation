@@ -94,7 +94,7 @@ void GSMatrix2x2::store(void* m)
   std::memcpy(m, E, sizeof(E));
 }
 
-ALWAYS_INLINE static void MatrixMult4x4(GSMatrix4x4& res, const GSMatrix4x4& lhs, const GSMatrix4x4& rhs)
+ALWAYS_INLINE void MatrixMult4x4(GSMatrix4x4& res, const GSMatrix4x4& lhs, const GSMatrix4x4& rhs)
 {
   // This isn't speedy by any means, but it's not hot code either.
 #define MultRC(rw, cl)                                                                                                 \
