@@ -160,6 +160,7 @@
     <ClInclude Include="gpu_helpers.h" />
     <ClInclude Include="discord_presence.h" />
     <ClInclude Include="video_thread_private.h" />
+    <ClInclude Include="controller_helpers.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="gpu_sw_rasterizer.inl" />

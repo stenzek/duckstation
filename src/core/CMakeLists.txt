@@ -26,6 +26,7 @@ add_library(core
   cheats.h
   controller.cpp
   controller.h
+  controller_helpers.h
   core.cpp
   core.h
   cpu_code_cache.cpp

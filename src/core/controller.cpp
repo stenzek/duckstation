@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "controller.h"
@@ -220,13 +220,6 @@ std::string Controller::GetSettingsSection(u32 pad)
   return fmt::format("Pad{}", pad + 1u);
 }
 
-bool Controller::InCircularDeadzone(float deadzone, float pos_x, float pos_y)
-{
-  // Calculate the actual distance from center, and compare to deadzone radius.
-  const float distance = std::sqrt(pos_x * pos_x + pos_y * pos_y);
-  return (distance <= deadzone);
-}
-
 bool Controller::CanStartInAnalogMode(ControllerType ctype)
 {
   if (!g_settings.apply_compatibility_settings)
@@ -238,18 +231,4 @@ bool Controller::CanStartInAnalogMode(ControllerType ctype)
 
   return ((dbentry->supported_controllers & (1u << static_cast<u8>(ctype))) != 0 &&
           !dbentry->HasTrait(GameDatabase::Trait::DisableAutoAnalogMode));
-}
-
-u8 Controller::MergeHalfAxes(u8 neg_value, u8 pos_value, bool invert)
-{
-  if (invert)
-    std::swap(neg_value, pos_value);
-
-  return static_cast<u8>(128 + (static_cast<u32>(pos_value) / 2) - ((static_cast<u32>(neg_value) + 1) / 2));
-}
-
-float Controller::MergeHalfAxesToFloat(u8 neg_value, u8 pos_value, bool invert)
-{
-  const float result = (static_cast<s32>(pos_value) - static_cast<s32>(neg_value)) / 255.0f;
-  return (invert ? -result : result);
 }

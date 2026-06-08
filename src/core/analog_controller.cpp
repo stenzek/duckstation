@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "analog_controller.h"
+#include "controller_helpers.h"
 #include "settings.h"
 #include "system.h"
 
@@ -192,30 +193,30 @@ void AnalogController::SetBindState(u32 index, float value)
     {
       case HalfAxis::LLeft:
       case HalfAxis::LRight:
-        m_axis_state[static_cast<u8>(Axis::LeftX)] =
-          MergeHalfAxes(m_half_axis_state[static_cast<size_t>(HalfAxis::LLeft)],
-                        m_half_axis_state[static_cast<size_t>(HalfAxis::LRight)], (m_invert_left_stick & 1));
+        m_axis_state[static_cast<u8>(Axis::LeftX)] = ControllerHelpers::MergeHalfAxes(
+          m_half_axis_state[static_cast<size_t>(HalfAxis::LLeft)],
+          m_half_axis_state[static_cast<size_t>(HalfAxis::LRight)], (m_invert_left_stick & 1));
         break;
 
       case HalfAxis::LDown:
       case HalfAxis::LUp:
-        m_axis_state[static_cast<u8>(Axis::LeftY)] =
-          MergeHalfAxes(m_half_axis_state[static_cast<size_t>(HalfAxis::LUp)],
-                        m_half_axis_state[static_cast<size_t>(HalfAxis::LDown)], (m_invert_left_stick & 2));
+        m_axis_state[static_cast<u8>(Axis::LeftY)] = ControllerHelpers::MergeHalfAxes(
+          m_half_axis_state[static_cast<size_t>(HalfAxis::LUp)],
+          m_half_axis_state[static_cast<size_t>(HalfAxis::LDown)], (m_invert_left_stick & 2));
         break;
 
       case HalfAxis::RLeft:
       case HalfAxis::RRight:
-        m_axis_state[static_cast<u8>(Axis::RightX)] =
-          MergeHalfAxes(m_half_axis_state[static_cast<size_t>(HalfAxis::RLeft)],
-                        m_half_axis_state[static_cast<size_t>(HalfAxis::RRight)], (m_invert_right_stick & 1));
+        m_axis_state[static_cast<u8>(Axis::RightX)] = ControllerHelpers::MergeHalfAxes(
+          m_half_axis_state[static_cast<size_t>(HalfAxis::RLeft)],
+          m_half_axis_state[static_cast<size_t>(HalfAxis::RRight)], (m_invert_right_stick & 1));
         break;
 
       case HalfAxis::RDown:
       case HalfAxis::RUp:
-        m_axis_state[static_cast<u8>(Axis::RightY)] =
-          MergeHalfAxes(m_half_axis_state[static_cast<size_t>(HalfAxis::RUp)],
-                        m_half_axis_state[static_cast<size_t>(HalfAxis::RDown)], (m_invert_right_stick & 2));
+        m_axis_state[static_cast<u8>(Axis::RightY)] = ControllerHelpers::MergeHalfAxes(
+          m_half_axis_state[static_cast<size_t>(HalfAxis::RUp)],
+          m_half_axis_state[static_cast<size_t>(HalfAxis::RDown)], (m_invert_right_stick & 2));
         break;
 
       default:
@@ -227,24 +228,24 @@ void AnalogController::SetBindState(u32 index, float value)
       float pos_x, pos_y;
       if (static_cast<HalfAxis>(sub_index) < HalfAxis::RLeft)
       {
-        pos_x =
-          MergeHalfAxesToFloat(m_half_axis_state[static_cast<size_t>(HalfAxis::LLeft)],
-                               m_half_axis_state[static_cast<size_t>(HalfAxis::LRight)], (m_invert_left_stick & 1));
-        pos_y =
-          MergeHalfAxesToFloat(m_half_axis_state[static_cast<size_t>(HalfAxis::LUp)],
-                               m_half_axis_state[static_cast<size_t>(HalfAxis::LDown)], (m_invert_left_stick & 2));
+        pos_x = ControllerHelpers::MergeHalfAxesToFloat(m_half_axis_state[static_cast<size_t>(HalfAxis::LLeft)],
+                                                        m_half_axis_state[static_cast<size_t>(HalfAxis::LRight)],
+                                                        (m_invert_left_stick & 1));
+        pos_y = ControllerHelpers::MergeHalfAxesToFloat(m_half_axis_state[static_cast<size_t>(HalfAxis::LUp)],
+                                                        m_half_axis_state[static_cast<size_t>(HalfAxis::LDown)],
+                                                        (m_invert_left_stick & 2));
       }
       else
       {
-        pos_x =
-          MergeHalfAxesToFloat(m_half_axis_state[static_cast<size_t>(HalfAxis::RLeft)],
-                               m_half_axis_state[static_cast<size_t>(HalfAxis::RRight)], (m_invert_right_stick & 1));
-        pos_y =
-          MergeHalfAxesToFloat(m_half_axis_state[static_cast<size_t>(HalfAxis::RUp)],
-                               m_half_axis_state[static_cast<size_t>(HalfAxis::RDown)], (m_invert_right_stick & 2));
+        pos_x = ControllerHelpers::MergeHalfAxesToFloat(m_half_axis_state[static_cast<size_t>(HalfAxis::RLeft)],
+                                                        m_half_axis_state[static_cast<size_t>(HalfAxis::RRight)],
+                                                        (m_invert_right_stick & 1));
+        pos_y = ControllerHelpers::MergeHalfAxesToFloat(m_half_axis_state[static_cast<size_t>(HalfAxis::RUp)],
+                                                        m_half_axis_state[static_cast<size_t>(HalfAxis::RDown)],
+                                                        (m_invert_right_stick & 2));
       }
 
-      if (InCircularDeadzone(m_analog_deadzone, pos_x, pos_y))
+      if (ControllerHelpers::InCircularDeadzone(m_analog_deadzone, pos_x, pos_y))
       {
         if (static_cast<HalfAxis>(sub_index) < HalfAxis::RLeft)
           m_axis_state[static_cast<u8>(Axis::LeftX)] = m_axis_state[static_cast<u8>(Axis::LeftY)] = AXIS_CENTER;

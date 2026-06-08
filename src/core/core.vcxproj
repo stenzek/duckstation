@@ -96,6 +96,7 @@
     <ClInclude Include="cdrom_subq_replacement.h" />
     <ClInclude Include="cheats.h" />
     <ClInclude Include="achievements.h" />
+    <ClInclude Include="controller_helpers.h" />
     <ClInclude Include="core.h" />
     <ClInclude Include="core_private.h" />
     <ClInclude Include="cpu_code_cache_private.h" />

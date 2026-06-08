@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #pragma once
@@ -96,9 +96,6 @@ public:
   static const ControllerInfo& GetControllerInfo(ControllerType type);
   static const ControllerInfo* GetControllerInfo(std::string_view name);
 
-  /// Returns true if the specified coordinates are inside a circular deadzone.
-  static bool InCircularDeadzone(float deadzone, float pos_x, float pos_y);
-
   /// Converts a global pad index to a multitap port and slot.
   static std::tuple<u32, u32> ConvertPadToPortAndSlot(u32 index);
 
@@ -121,12 +118,6 @@ public:
 
   /// Returns true if automatic analog mode can be used.
   static bool CanStartInAnalogMode(ControllerType ctype);
-
-  /// Converts a 0..255 half-axis value to an unsigned 8-bit value, with 128 indicating center.
-  static u8 MergeHalfAxes(u8 neg_value, u8 pos_value, bool invert);
-
-  /// Converts a 0..255 half-axis value to a normalized floating-point value, with 0 indicating center.
-  static float MergeHalfAxesToFloat(u8 neg_value, u8 pos_value, bool invert);
 
 protected:
   u32 m_index;
