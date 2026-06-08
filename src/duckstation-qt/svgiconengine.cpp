@@ -39,27 +39,17 @@ static QColor GetIconColorFromPalette(QIcon::Mode mode, QIcon::State state)
 }
 
 /// Constructs a cache key for the given resource path, pixel size, and RGBA color value.
-static QString BuildCacheKey(const QString& resource_path, const QSize& size, qreal dpr, const QColor& color)
+static QString BuildCacheKey(const QString& resource_path, const QSize& size, qreal dpr, QIcon::Mode mode,
+                             const QColor& color)
 {
   // Cache key includes path, size, and colour so stale entries are not reused after a palette change.
-  return QStringLiteral("%1_%2x%3@%4_%5")
+  return QStringLiteral("%1_%2x%3@%4%5_%6")
     .arg(resource_path)
     .arg(size.width())
     .arg(size.height())
     .arg(dpr)
+    .arg(static_cast<u8>(mode))
     .arg(static_cast<unsigned>(color.rgba()), 8, 16, QLatin1Char('0'));
-}
-
-// Constructs a cache key for non-coloured icons (relies on the mode).
-static QString BuildCacheKey(const QString& resource_path, const QSize& size, qreal dpr, QIcon::Mode mode)
-{
-  // Cache key includes path, size, and colour so stale entries are not reused after a palette change.
-  return QStringLiteral("%1_%2x%3@%4_%5")
-    .arg(resource_path)
-    .arg(size.width())
-    .arg(size.height())
-    .arg(dpr)
-    .arg(static_cast<u8>(mode));
 }
 
 /// Callback used when freeing the QImage.
@@ -174,9 +164,8 @@ QPixmap SVGIconEngine::getPixmap(const QSize& size, qreal dpr, QIcon::Mode mode,
 {
   // Apply device pixel ratio to requested size so we can cache pixmaps at the correct sizes for different DPRs.
   const QSize scaled_size = QtUtils::ApplyDevicePixelRatioToSize(size, dpr);
-  const QColor color = m_is_colored ? GetIconColorFromPalette(mode, state) : QColor();
-  const QString cache_key = m_is_colored ? BuildCacheKey(m_resource_path, scaled_size, dpr, color) :
-                                           BuildCacheKey(m_resource_path, scaled_size, dpr, mode);
+  const QColor color = GetIconColorFromPalette(mode, state);
+  const QString cache_key = BuildCacheKey(m_resource_path, scaled_size, dpr, mode, color);
 
   QPixmap pm;
   if (!QPixmapCache::find(cache_key, &pm))
