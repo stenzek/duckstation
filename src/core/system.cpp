@@ -1417,7 +1417,7 @@ void System::ResetSystem()
     return;
 
   SaveUndoLoadState();
-
+  ClearMemorySaveStates(false, false);
   InternalReset();
 
   // Reset boot mode/reload BIOS if needed. Preserve exe/psf boot.
