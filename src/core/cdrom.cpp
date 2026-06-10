@@ -726,8 +726,11 @@ bool CDROM::DoState(StateWrapper& sw)
   sw.Do(&s_state.mode.bits);
   sw.DoEx(&s_state.request_register.bits, 65, static_cast<u8>(0));
 
-  bool current_double_speed = s_state.mode.double_speed;
-  sw.Do(&current_double_speed);
+  // Was bool current_double_speed in versions <84
+  // Due to how INT1 and INT3 can interact, you can end up in a situation where the command event doesn't
+  // reactivate after loading state, mainly with runahead. Instead, explicitly serialize it here.
+  bool command_event_active = s_state.command_event.IsActive();
+  sw.Do(&command_event_active);
 
   sw.Do(&s_state.interrupt_enable_register);
   sw.Do(&s_state.interrupt_flag_register);
@@ -859,7 +862,10 @@ bool CDROM::DoState(StateWrapper& sw)
     s_state.last_subq_needs_update = true;
     if (s_reader.HasMedia())
       s_reader.QueueReadSector(s_state.requested_lba);
-    UpdateCommandEvent();
+    if (sw.GetVersion() >= 84) [[likely]]
+      s_state.command_event.SetState(command_event_active);
+    else
+      UpdateCommandEvent();
     s_state.drive_event.SetState(!IsDriveIdle());
 
     // Time will get fixed up later.
