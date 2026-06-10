@@ -1677,7 +1677,7 @@ GPURenderer Settings::GetRendererForRenderAPI(RenderAPI api)
 
 static constexpr const std::array s_texture_filter_names = {
   "Nearest",     "Bilinear", "BilinearBinAlpha", "JINC2", "JINC2BinAlpha", "xBR",
-  "xBRBinAlpha", "Scale2x",  "Scale3x",          "MMPX",  "MMPXEnhanced",  "MMPXQuality",
+  "xBRBinAlpha", "Scale2x",  "Scale3x",          "MMPX",  "MMPXEnhanced",  "MMPXAdvanced",
 };
 static constexpr const std::array s_texture_filter_display_names = {
   TRANSLATE_DISAMBIG_NOOP("Settings", "Nearest-Neighbor", "GPUTextureFilter"),
@@ -1691,7 +1691,7 @@ static constexpr const std::array s_texture_filter_display_names = {
   TRANSLATE_DISAMBIG_NOOP("Settings", "Scale3x (Slow)", "GPUTextureFilter"),
   TRANSLATE_DISAMBIG_NOOP("Settings", "MMPX (Slow)", "GPUTextureFilter"),
   TRANSLATE_DISAMBIG_NOOP("Settings", "MMPX Enhanced (Slow)", "GPUTextureFilter"),
-  TRANSLATE_DISAMBIG_NOOP("Settings", "MMPX Quality (Very Slow)", "GPUTextureFilter"),
+  TRANSLATE_DISAMBIG_NOOP("Settings", "MMPX Advanced (Very Slow)", "GPUTextureFilter"),
 };
 static_assert(s_texture_filter_names.size() == static_cast<size_t>(GPUTextureFilter::Count));
 static_assert(s_texture_filter_display_names.size() == static_cast<size_t>(GPUTextureFilter::Count));
