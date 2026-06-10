@@ -4172,17 +4172,13 @@ void FullscreenUI::DrawGraphicsSettingsPage()
     const GPUTextureFilter texture_filtering =
       Settings::ParseTextureFilterName(GetEffectiveTinyStringSetting(bsi, "GPU", "TextureFilter"))
         .value_or(Settings::DEFAULT_GPU_TEXTURE_FILTER);
-    const GPUTextureFilter sprite_texture_filtering =
-      Settings::ParseTextureFilterName(GetEffectiveTinyStringSetting(bsi, "GPU", "SpriteTextureFilter"))
-        .value_or(texture_filtering);
 
     DrawToggleSetting(
       bsi, FSUI_ICONVSTR(ICON_FA_EYE_DROPPER, "Round Upscaled Texture Coordinates"),
       FSUI_VSTR("Rounds texture coordinates instead of flooring when upscaling. Can fix misaligned "
                 "textures in some games, but break others, and is incompatible with texture filtering."),
       "GPU", "ForceRoundTextureCoordinates", false,
-      resolution_scale != 1 &&
-        (texture_filtering == GPUTextureFilter::Nearest || sprite_texture_filtering == GPUTextureFilter::Nearest));
+      resolution_scale != 1 && texture_filtering == GPUTextureFilter::Nearest);
   }
 
   DrawToggleSetting(

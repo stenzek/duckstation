@@ -636,8 +636,6 @@ void GraphicsSettingsWidget::updateRendererDependentOptions()
                                      !m_dialog->hasGameTrait(GameDatabase::Trait::DisableScaledInterlacing));
   m_ui.useSoftwareRendererForReadbacks->setEnabled(
     is_hardware && !m_dialog->hasGameTrait(GameDatabase::Trait::ForceSoftwareRendererForReadbacks));
-  m_ui.forceRoundedTexcoords->setEnabled(
-    is_hardware && !m_dialog->hasGameTrait(GameDatabase::Trait::ForceRoundUpscaledTextureCoordinates));
 
   m_ui.tabs->setTabEnabled(TAB_INDEX_TEXTURE_REPLACEMENTS, is_hardware);
 
@@ -1002,8 +1000,7 @@ void GraphicsSettingsWidget::updateResolutionDependentOptions()
     Settings::ParseTextureFilterName(m_dialog->getEffectiveStringValue("GPU", "SpriteTextureFilter").c_str())
       .value_or(texture_filtering);
   m_ui.forceRoundedTexcoords->setEnabled(
-    is_hardware && scale != 1 &&
-    (texture_filtering == GPUTextureFilter::Nearest || sprite_texture_filtering == GPUTextureFilter::Nearest) &&
+    is_hardware && scale != 1 && texture_filtering == GPUTextureFilter::Nearest &&
     !m_dialog->hasGameTrait(GameDatabase::Trait::ForceRoundUpscaledTextureCoordinates));
 }
 
