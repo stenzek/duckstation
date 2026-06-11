@@ -27,16 +27,41 @@ OSDSettingsWidget::OSDSettingsWidget(SettingsWindow* dialog, QWidget* parent) : 
                                               static_cast<int>(GPUSettings::DEFAULT_OSD_SCALE));
   SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_ui.osdMargin, "Display", "OSDMargin",
                                                 ImGuiManager::DEFAULT_SCREEN_MARGIN);
-  SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.fullscreenUITheme, "UI", "FullscreenUITheme");
-  SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.imguiFont, "Main", "ImGuiTextFont",
-                                                 ImGuiManager::GetDefaultTextFontName());
-  SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.imguiFixedFont, "Main", "ImGuiFixedFont",
-                                                 ImGuiManager::GetDefaultFixedFontName());
+  if (!m_dialog->isPerGameSettings())
+  {
+    SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.fullscreenUITheme, "UI", "FullscreenUITheme");
+    SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.imguiFont, "Main", "ImGuiTextFont",
+                                                   ImGuiManager::GetDefaultTextFontName());
+    SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.imguiFixedFont, "Main", "ImGuiFixedFont",
+                                                   ImGuiManager::GetDefaultFixedFontName());
+    connect(m_ui.fullscreenUITheme, &QComboBox::currentIndexChanged, g_core_thread, &CoreThread::updateFullscreenUITheme);
+    connect(m_ui.imguiFont, &QComboBox::currentIndexChanged, g_core_thread, []() {
+      // don't bother if nothing is running
+      if (VideoThread::IsFullscreenUIRequested() || VideoThread::IsGPUBackendRequested())
+        VideoThread::RunOnThread(&ImGuiManager::UpdateTextFont);
+    });
+    connect(m_ui.imguiFixedFont, &QComboBox::currentIndexChanged, g_core_thread, []() {
+      // don't bother if nothing is running
+      if (VideoThread::IsFullscreenUIRequested() || VideoThread::IsGPUBackendRequested())
+        VideoThread::RunOnThread(&ImGuiManager::UpdateFixedFont);
+    });
+  }
+  else
+  {
+    QtUtils::SafeDeleteWidget(m_ui.fullscreenUITheme);
+    QtUtils::SafeDeleteWidget(m_ui.fullscreenUIThemeLabel);
+    QtUtils::SafeDeleteWidget(m_ui.imguiFont);
+    QtUtils::SafeDeleteWidget(m_ui.imguiFontLabel);
+    QtUtils::SafeDeleteWidget(m_ui.imguiFixedFont);
+    QtUtils::SafeDeleteWidget(m_ui.imguiFixedFontLabel);
+  }
+
   SettingWidgetBinder::BindWidgetToEnumSetting(
     sif, m_ui.osdMessageLocation, "Display", "OSDMessageLocation", &Settings::ParseNotificationLocation,
     &Settings::GetNotificationLocationName, &Settings::GetNotificationLocationDisplayName,
     Settings::DEFAULT_OSD_MESSAGE_LOCATION, NotificationLocation::MaxCount);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showMessages, "Display", "ShowOSDMessages", true);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showStatusIndicators, "Display", "ShowStatusIndicators", true);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.animateMessages, "Display", "AnimateOSDMessages", true);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.blurMessageBackgrounds, "Display", "BlurOSDMessageBackgrounds",
                                                true);
@@ -49,7 +74,6 @@ OSDSettingsWidget::OSDSettingsWidget(SettingsWindow* dialog, QWidget* parent) : 
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showGPUStatistics, "Display", "ShowGPUStatistics", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showLatencyStatistics, "Display", "ShowLatencyStatistics",
                                                false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showStatusIndicators, "Display", "ShowStatusIndicators", true);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showFrameTimes, "Display", "ShowFrameTimes", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showSettings, "Display", "ShowEnhancements", false);
 
@@ -66,51 +90,45 @@ OSDSettingsWidget::OSDSettingsWidget(SettingsWindow* dialog, QWidget* parent) : 
     sif, m_ui.osdQuickDuration, "Display", "OSDQuickDuration",
     Settings::DEFAULT_DISPLAY_OSD_MESSAGE_DURATIONS[static_cast<size_t>(OSDMessageType::Quick)]);
 
-  connect(m_ui.fullscreenUITheme, &QComboBox::currentIndexChanged, g_core_thread, &CoreThread::updateFullscreenUITheme);
   connect(m_ui.showMessages, &QCheckBox::checkStateChanged, this, &OSDSettingsWidget::onOSDShowMessagesChanged);
-  connect(m_ui.imguiFont, &QComboBox::currentIndexChanged, g_core_thread, []() {
-    // don't bother if nothing is running
-    if (VideoThread::IsFullscreenUIRequested() || VideoThread::IsGPUBackendRequested())
-      VideoThread::RunOnThread(&ImGuiManager::UpdateTextFont);
-  });
-  connect(m_ui.imguiFixedFont, &QComboBox::currentIndexChanged, g_core_thread, []() {
-    // don't bother if nothing is running
-    if (VideoThread::IsFullscreenUIRequested() || VideoThread::IsGPUBackendRequested())
-      VideoThread::RunOnThread(&ImGuiManager::UpdateFixedFont);
-  });
-
   onOSDShowMessagesChanged();
 
   dialog->registerWidgetHelp(
     m_ui.osdScale, tr("Display Scale"), QStringLiteral("%1%").arg(static_cast<int>(GPUSettings::DEFAULT_OSD_SCALE)),
     tr("Changes the size at which on-screen elements, including status and messages are displayed."));
-  dialog->registerWidgetHelp(m_ui.fullscreenUITheme, tr("Theme"), tr("Automatic"),
-                             tr("Determines the theme to use for on-screen display elements and the Big Picture UI."));
-  dialog->registerWidgetHelp(
-    m_ui.imguiFont, tr("Font"),
-    m_ui.imguiFont->itemText(m_ui.imguiFont->findData(QString::fromUtf8(ImGuiManager::GetDefaultTextFontName()))),
-    tr("Determines the font to use for on-screen display elements and the Big Picture UI."));
-  dialog->registerWidgetHelp(
-    m_ui.imguiFixedFont, tr("Overlay Font"),
-    m_ui.imguiFixedFont->itemText(
-      m_ui.imguiFixedFont->findData(QString::fromUtf8(ImGuiManager::GetDefaultFixedFontName()))),
-    tr("Determines the font to use for the performance overlay."));
   dialog->registerWidgetHelp(m_ui.osdMargin, tr("Display Margins"),
                              QStringLiteral("%1px").arg(static_cast<int>(ImGuiManager::DEFAULT_SCREEN_MARGIN)),
                              tr("Determines the margin between the edge of the screen and on-screen messages."));
-  dialog->registerWidgetHelp(
-    m_ui.osdMessageLocation, tr("Message Location"),
-    QString::fromStdString(Settings::GetNotificationLocationDisplayName(Settings::DEFAULT_OSD_MESSAGE_LOCATION)),
-    tr("Selects which location on the screen messages are displayed."));
+  if (!m_dialog->isPerGameSettings())
+  {
+    dialog->registerWidgetHelp(m_ui.fullscreenUITheme, tr("Theme"), tr("Automatic"),
+                               tr("Determines the theme to use for on-screen display elements and the Big Picture UI."));
+    dialog->registerWidgetHelp(
+      m_ui.imguiFont, tr("Font"),
+      m_ui.imguiFont->itemText(m_ui.imguiFont->findData(QString::fromUtf8(ImGuiManager::GetDefaultTextFontName()))),
+      tr("Determines the font to use for on-screen display elements and the Big Picture UI."));
+    dialog->registerWidgetHelp(
+      m_ui.imguiFixedFont, tr("Overlay Font"),
+      m_ui.imguiFixedFont->itemText(
+        m_ui.imguiFixedFont->findData(QString::fromUtf8(ImGuiManager::GetDefaultFixedFontName()))),
+      tr("Determines the font to use for the performance overlay."));
+  }
   dialog->registerWidgetHelp(
     m_ui.showMessages, tr("Show Messages"), tr("Checked"),
     tr("Shows on-screen-display messages when events occur such as save states being created/loaded, screenshots being "
        "taken, etc. Errors and warnings are still displayed regardless of this setting."));
+  dialog->registerWidgetHelp(m_ui.showStatusIndicators, tr("Show Status Indicators"), tr("Checked"),
+                             tr("Shows indicators on screen when the system is not running in its \"normal\" state. "
+                                "For example, fast forwarding, or being paused."));
   dialog->registerWidgetHelp(m_ui.animateMessages, tr("Animate Messages"), tr("Checked"),
                              tr("Enables animation for on-screen messages when they appear and disappear."));
   dialog->registerWidgetHelp(
     m_ui.blurMessageBackgrounds, tr("Blur Message Backgrounds"), tr("Checked"),
     tr("Enables a blur effect on the background behind on-screen messages to improve readability."));
+  dialog->registerWidgetHelp(
+    m_ui.osdMessageLocation, tr("Message Location"),
+    QString::fromStdString(Settings::GetNotificationLocationDisplayName(Settings::DEFAULT_OSD_MESSAGE_LOCATION)),
+    tr("Selects which location on the screen messages are displayed."));
   dialog->registerWidgetHelp(m_ui.showResolution, tr("Show Resolution"), tr("Unchecked"),
                              tr("Shows the resolution of the game in the top-right corner of the display."));
   dialog->registerWidgetHelp(
@@ -136,33 +154,22 @@ OSDSettingsWidget::OSDSettingsWidget(SettingsWindow* dialog, QWidget* parent) : 
     tr("Shows the current controller state of the system in the bottom-left corner of the display."));
   dialog->registerWidgetHelp(m_ui.showSettings, tr("Show Settings"), tr("Unchecked"),
                              tr("Shows a summary of current settings in the bottom-right corner of the display."));
-  dialog->registerWidgetHelp(m_ui.showStatusIndicators, tr("Show Status Indicators"), tr("Checked"),
-                             tr("Shows indicators on screen when the system is not running in its \"normal\" state. "
-                                "For example, fast forwarding, or being paused."));
 }
 
 OSDSettingsWidget::~OSDSettingsWidget() = default;
 
 void OSDSettingsWidget::setupAdditionalUi()
 {
-  const std::span<const char* const> fsui_theme_values = FullscreenUI::GetThemeNames();
-  const std::vector<std::string_view> fsui_theme_names = FullscreenUI::GetLocalizedThemeDisplayNames();
-  for (size_t i = 0; i < fsui_theme_values.size(); i++)
+  if (!m_dialog->isPerGameSettings())
   {
-    m_ui.fullscreenUITheme->addItem(QtUtils::StringViewToQString(fsui_theme_names[i]),
-                                    QString::fromUtf8(fsui_theme_values[i]));
+    auto populate_combobox = [](QComboBox* cb, std::span<const char* const> values, const auto& display_names) {
+      for (size_t i = 0; i < values.size(); i++)
+        cb->addItem(QString::fromUtf8(QByteArrayView(display_names[i])), QString::fromUtf8(values[i]));
+    };
+    populate_combobox(m_ui.fullscreenUITheme, FullscreenUI::GetThemeNames(), FullscreenUI::GetLocalizedThemeDisplayNames());
+    populate_combobox(m_ui.imguiFont, ImGuiManager::GetTextFontNames(), ImGuiManager::GetTextFontDisplayNames());
+    populate_combobox(m_ui.imguiFixedFont, ImGuiManager::GetFixedFontNames(), ImGuiManager::GetFixedFontDisplayNames());
   }
-
-  const std::span<const char* const> imgui_font_values = ImGuiManager::GetTextFontNames();
-  const std::span<const char* const> imgui_font_names = ImGuiManager::GetTextFontDisplayNames();
-  for (size_t i = 0; i < imgui_font_values.size(); i++)
-    m_ui.imguiFont->addItem(QString::fromUtf8(imgui_font_names[i]), QString::fromUtf8(imgui_font_values[i]));
-
-  const std::span<const char* const> imgui_fixed_font_values = ImGuiManager::GetFixedFontNames();
-  const std::span<const char* const> imgui_fixed_font_names = ImGuiManager::GetFixedFontDisplayNames();
-  for (size_t i = 0; i < imgui_fixed_font_values.size(); i++)
-    m_ui.imguiFixedFont->addItem(QString::fromUtf8(imgui_fixed_font_names[i]),
-                                 QString::fromUtf8(imgui_fixed_font_values[i]));
 }
 
 void OSDSettingsWidget::onOSDShowMessagesChanged()
