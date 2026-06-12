@@ -356,16 +356,13 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
   display_24bit_chroma_smoothing = si.GetBoolValue("GPU", "ChromaSmoothing24Bit", false);
   gpu_pgxp_enable = si.GetBoolValue("GPU", "PGXPEnable", false);
   LoadPGXPSettings(si);
-  gpu_show_vram = si.GetBoolValue("Debug", "ShowVRAM");
-  gpu_dump_cpu_to_vram_copies = si.GetBoolValue("Debug", "DumpCPUToVRAMCopies");
-  gpu_dump_vram_to_cpu_copies = si.GetBoolValue("Debug", "DumpVRAMToCPUCopies");
   gpu_dump_fast_replay_mode = si.GetBoolValue("GPU", "DumpFastReplayMode", false);
-
   display_deinterlacing_mode =
     ParseDisplayDeinterlacingMode(
       si.GetStringViewValue("GPU", "DeinterlacingMode",
                             GetDisplayDeinterlacingModeName(DEFAULT_DISPLAY_DEINTERLACING_MODE)))
       .value_or(DEFAULT_DISPLAY_DEINTERLACING_MODE);
+
   display_crop_mode = ParseDisplayCropMode(
                         si.GetStringViewValue("Display", "CropMode", GetDisplayCropModeName(DEFAULT_DISPLAY_CROP_MODE)))
                         .value_or(DEFAULT_DISPLAY_CROP_MODE);
@@ -485,16 +482,7 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
   audio_stream_parameters.Load(si, "Audio");
   audio_output_volume = si.GetSaturatedIntValue<u8>("Audio", "OutputVolume", 100);
   audio_fast_forward_volume = si.GetSaturatedIntValue<u8>("Audio", "FastForwardVolume", 100);
-
   audio_output_muted = si.GetBoolValue("Audio", "OutputMuted", false);
-
-  mdec_use_old_routines = si.GetBoolValue("Hacks", "UseOldMDECRoutines", false);
-  export_shared_memory = si.GetBoolValue("Hacks", "ExportSharedMemory", false);
-
-  dma_max_slice_ticks = si.GetIntValue("Hacks", "DMAMaxSliceTicks", DEFAULT_DMA_MAX_SLICE_TICKS);
-  dma_halt_ticks = si.GetIntValue("Hacks", "DMAHaltTicks", DEFAULT_DMA_HALT_TICKS);
-  gpu_fifo_size = si.GetUIntValue("Hacks", "GPUFIFOSize", DEFAULT_GPU_FIFO_SIZE);
-  gpu_max_run_ahead = si.GetIntValue("Hacks", "GPUMaxRunAhead", DEFAULT_GPU_MAX_RUN_AHEAD);
 
   bios_tty_logging = si.GetBoolValue("BIOS", "TTYLogging", false);
   bios_patch_fast_boot = si.GetBoolValue("BIOS", "PatchFastBoot", DEFAULT_FAST_BOOT_VALUE);
@@ -565,10 +553,28 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
   achievements_indicator_scale =
     si.GetSaturatedIntValue<s16>("Cheevos", "IndicatorScale", ACHIEVEMENT_NOTIFICATION_SCALE_AUTO);
 
+  dma_max_slice_ticks = si.GetIntValue("Hacks", "DMAMaxSliceTicks", DEFAULT_DMA_MAX_SLICE_TICKS);
+  dma_halt_ticks = si.GetIntValue("Hacks", "DMAHaltTicks", DEFAULT_DMA_HALT_TICKS);
+  gpu_fifo_size = si.GetUIntValue("Hacks", "GPUFIFOSize", DEFAULT_GPU_FIFO_SIZE);
+  gpu_max_run_ahead = si.GetIntValue("Hacks", "GPUMaxRunAhead", DEFAULT_GPU_MAX_RUN_AHEAD);
+  mdec_use_old_routines = si.GetBoolValue("Hacks", "UseOldMDECRoutines", false);
+  export_shared_memory = si.GetBoolValue("Hacks", "ExportSharedMemory", false);
+
+  pcsx_expansion_region_enable = si.GetBoolValue("Debug", "PCSXExpansionRegion", false);
+  gpu_show_vram = si.GetBoolValue("Debug", "ShowVRAM");
+  gpu_dump_cpu_to_vram_copies = si.GetBoolValue("Debug", "DumpCPUToVRAMCopies");
+  gpu_dump_vram_to_cpu_copies = si.GetBoolValue("Debug", "DumpVRAMToCPUCopies");
+
 #ifndef __ANDROID__
   enable_gdb_server = si.GetBoolValue("Debug", "EnableGDBServer");
   gdb_server_port = static_cast<u16>(si.GetUIntValue("Debug", "GDBServerPort", DEFAULT_GDB_SERVER_PORT));
 #endif
+
+  sio_redirect_to_tty = si.GetBoolValue("SIO", "RedirectToTTY", false);
+
+  pcdrv_enable = si.GetBoolValue("PCDrv", "Enabled", false);
+  pcdrv_enable_writes = si.GetBoolValue("PCDrv", "EnableWrites", false);
+  pcdrv_root = si.GetStringViewValue("PCDrv", "Root");
 
   texture_replacements.enable_texture_replacements =
     si.GetBoolValue("TextureReplacements", "EnableTextureReplacements", false);
@@ -626,13 +632,6 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
   pio_flash_image_path = si.GetStringViewValue("PIO", "FlashImagePath");
   pio_flash_write_enable = si.GetBoolValue("PIO", "FlashImageWriteEnable", false);
   pio_switch_active = si.GetBoolValue("PIO", "SwitchActive", true);
-  sio_redirect_to_tty = si.GetBoolValue("SIO", "RedirectToTTY", false);
-
-  pcdrv_enable = si.GetBoolValue("PCDrv", "Enabled", false);
-  pcdrv_enable_writes = si.GetBoolValue("PCDrv", "EnableWrites", false);
-  pcdrv_root = si.GetStringViewValue("PCDrv", "Root");
-
-  pcsx_expansion_region_enable = si.GetBoolValue("Debug", "PCSXExpansionRegion", false);
 
 #ifdef __ANDROID__
   // Android users are incredibly silly and don't understand that stretch is in the aspect ratio list...
@@ -656,7 +655,7 @@ void Settings::LoadPGXPSettings(const SettingsInterface& si)
   SetPGXPDepthClearThreshold(si.GetFloatValue("GPU", "PGXPDepthThreshold", DEFAULT_GPU_PGXP_DEPTH_THRESHOLD));
 }
 
-void Settings::Save(SettingsInterface& si, bool ignore_base) const
+void Settings::Save(SettingsInterface& si, bool ignore_user_prefs, bool for_copy) const
 {
   si.SetStringValue("Console", "Region", GetConsoleRegionName(region));
   si.SetBoolValue("Console", "Enable8MBRAM", cpu_enable_8mb_ram);
@@ -665,7 +664,7 @@ void Settings::Save(SettingsInterface& si, bool ignore_base) const
   si.SetFloatValue("Main", "FastForwardSpeed", fast_forward_speed);
   si.SetFloatValue("Main", "TurboSpeed", turbo_speed);
 
-  if (!ignore_base)
+  if (!ignore_user_prefs)
   {
     si.SetBoolValue("Main", "SyncToHostRefreshRate", sync_to_host_refresh_rate);
     si.SetBoolValue("Main", "InhibitScreensaver", inhibit_screensaver);
@@ -677,11 +676,14 @@ void Settings::Save(SettingsInterface& si, bool ignore_base) const
     si.SetBoolValue("Main", "ConfirmPowerOff", confim_power_off);
     si.SetBoolValue("Main", "EnableDiscordPresence", enable_discord_presence);
   }
+  if (!for_copy)
+  {
+    si.SetBoolValue("Main", "LoadDevicesFromSaveStates", load_devices_from_save_states);
+    si.SetBoolValue("Main", "DisableAllEnhancements", disable_all_enhancements);
+  }
 
   si.SetBoolValue("Main", "DisableBackgroundInput", disable_background_input);
 
-  si.SetBoolValue("Main", "LoadDevicesFromSaveStates", load_devices_from_save_states);
-  si.SetBoolValue("Main", "DisableAllEnhancements", disable_all_enhancements);
   si.SetBoolValue("Main", "RewindEnable", rewind_enable);
   si.SetFloatValue("Main", "RewindFrequency", rewind_save_frequency);
   si.SetUIntValue("Main", "RewindSaveSlots", rewind_save_slots);
@@ -692,17 +694,20 @@ void Settings::Save(SettingsInterface& si, bool ignore_base) const
   si.SetBoolValue("CPU", "OverclockEnable", cpu_overclock_enable);
   si.SetIntValue("CPU", "OverclockNumerator", cpu_overclock_numerator);
   si.SetIntValue("CPU", "OverclockDenominator", cpu_overclock_denominator);
-  si.SetBoolValue("CPU", "RecompilerMemoryExceptions", cpu_recompiler_memory_exceptions);
-  si.SetBoolValue("CPU", "RecompilerBlockLinking", cpu_recompiler_block_linking);
-  si.SetBoolValue("CPU", "RecompilerICache", cpu_recompiler_icache);
-  si.SetStringValue("CPU", "FastmemMode", GetCPUFastmemModeName(cpu_fastmem_mode));
+  if (!for_copy)
+  {
+    si.SetBoolValue("CPU", "RecompilerMemoryExceptions", cpu_recompiler_memory_exceptions);
+    si.SetBoolValue("CPU", "RecompilerBlockLinking", cpu_recompiler_block_linking);
+    si.SetBoolValue("CPU", "RecompilerICache", cpu_recompiler_icache);
+    si.SetStringValue("CPU", "FastmemMode", GetCPUFastmemModeName(cpu_fastmem_mode));
+  }
 
   si.SetStringValue("GPU", "Renderer", GetRendererName(gpu_renderer));
   si.SetStringValue("GPU", "Adapter", gpu_adapter.c_str());
   si.SetUIntValue("GPU", "ResolutionScale", gpu_resolution_scale);
   si.SetUIntValue("GPU", "Multisamples", gpu_multisamples);
 
-  if (!ignore_base)
+  if (!ignore_user_prefs)
   {
     si.SetBoolValue("GPU", "UseDebugDevice", gpu_use_debug_device);
     si.SetBoolValue("GPU", "UseGPUBasedValidation", gpu_use_debug_device_gpu_validation);
@@ -749,17 +754,10 @@ void Settings::Save(SettingsInterface& si, bool ignore_base) const
   si.SetBoolValue("GPU", "PGXPDisableOn2DPolygons", gpu_pgxp_disable_2d);
   si.SetBoolValue("GPU", "PGXPTransparentDepthTest", gpu_pgxp_transparent_depth);
   si.SetFloatValue("GPU", "PGXPDepthThreshold", GetPGXPDepthClearThreshold());
-  si.SetBoolValue("Debug", "ShowVRAM", gpu_show_vram);
-  si.SetBoolValue("Debug", "DumpCPUToVRAMCopies", gpu_dump_cpu_to_vram_copies);
-  si.SetBoolValue("Debug", "DumpVRAMToCPUCopies", gpu_dump_vram_to_cpu_copies);
   si.SetBoolValue("GPU", "DumpFastReplayMode", gpu_dump_fast_replay_mode);
-
   si.SetStringValue("GPU", "DeinterlacingMode", GetDisplayDeinterlacingModeName(display_deinterlacing_mode));
+
   si.SetStringValue("Display", "CropMode", GetDisplayCropModeName(display_crop_mode));
-  si.SetIntValue("Display", "ActiveStartOffset", display_active_start_offset);
-  si.SetIntValue("Display", "ActiveEndOffset", display_active_end_offset);
-  si.SetIntValue("Display", "LineStartOffset", display_line_start_offset);
-  si.SetIntValue("Display", "LineEndOffset", display_line_end_offset);
   si.SetBoolValue("Display", "Force4_3For24Bit", display_force_4_3_for_24bit);
   si.SetStringValue("Display", "AspectRatio", GetDisplayAspectRatioName(display_aspect_ratio).c_str());
   si.SetStringValue("Display", "FineCropMode", GetDisplayFineCropModeName(display_fine_crop_mode));
@@ -784,7 +782,15 @@ void Settings::Save(SettingsInterface& si, bool ignore_base) const
   si.SetStringValue("Display", "ScreenshotFileNameFormat",
                     GetCaptureFileNameFormatName(display_screenshot_filename_format));
   si.SetUIntValue("Display", "ScreenshotQuality", display_screenshot_quality);
-  if (!ignore_base)
+  if (!for_copy)
+  {
+    si.SetIntValue("Display", "ActiveStartOffset", display_active_start_offset);
+    si.SetIntValue("Display", "ActiveEndOffset", display_active_end_offset);
+    si.SetIntValue("Display", "LineStartOffset", display_line_start_offset);
+    si.SetIntValue("Display", "LineEndOffset", display_line_end_offset);
+  }
+
+  if (!ignore_user_prefs)
   {
     si.SetBoolValue("Display", "ShowOSDMessages", display_show_messages);
     si.SetBoolValue("Display", "AnimateOSDMessages", display_animate_messages);
@@ -816,20 +822,23 @@ void Settings::Save(SettingsInterface& si, bool ignore_base) const
 
   si.SetBoolValue("Display", "AutoResizeWindow", display_auto_resize_window);
 
-  si.SetIntValue("CDROM", "ReadaheadSectors", cdrom_readahead_sectors);
-  si.SetStringValue("CDROM", "MechaconVersion", GetCDROMMechVersionName(cdrom_mechacon_version));
-  si.SetBoolValue("CDROM", "RegionCheck", cdrom_region_check);
-  si.SetBoolValue("CDROM", "SubQSkew", cdrom_subq_skew);
   si.SetBoolValue("CDROM", "LoadImageToRAM", cdrom_load_image_to_ram);
   si.SetBoolValue("CDROM", "LoadImagePatches", cdrom_load_image_patches);
-  si.SetBoolValue("CDROM", "IgnoreHostSubcode", cdrom_ignore_host_subcode);
   si.SetBoolValue("CDROM", "MuteCDAudio", cdrom_mute_cd_audio);
   si.SetBoolValue("CDROM", "AutoDiscChange", cdrom_auto_disc_change);
   si.SetUIntValue("CDROM", "ReadSpeedup", cdrom_read_speedup);
   si.SetUIntValue("CDROM", "SeekSpeedup", cdrom_seek_speedup);
-  si.SetUIntValue("CDROM", "MaxReadSpeedupCycles", cdrom_max_seek_speedup_cycles);
-  si.SetUIntValue("CDROM", "MaxSeekSpeedupCycles", cdrom_max_read_speedup_cycles);
-  si.SetBoolValue("CDROM", "DisableSpeedupOnMDEC", mdec_disable_cdrom_speedup);
+  if (!for_copy)
+  {
+    si.SetStringValue("CDROM", "MechaconVersion", GetCDROMMechVersionName(cdrom_mechacon_version));
+    si.SetIntValue("CDROM", "ReadaheadSectors", cdrom_readahead_sectors);
+    si.SetBoolValue("CDROM", "RegionCheck", cdrom_region_check);
+    si.SetBoolValue("CDROM", "SubQSkew", cdrom_subq_skew);
+    si.SetBoolValue("CDROM", "IgnoreHostSubcode", cdrom_ignore_host_subcode);
+    si.SetBoolValue("CDROM", "DisableSpeedupOnMDEC", mdec_disable_cdrom_speedup);
+    si.SetUIntValue("CDROM", "MaxReadSpeedupCycles", cdrom_max_seek_speedup_cycles);
+    si.SetUIntValue("CDROM", "MaxSeekSpeedupCycles", cdrom_max_read_speedup_cycles);
+  }
 
   si.SetStringValue("Audio", "Backend", AudioStream::GetBackendName(audio_backend));
   si.SetStringValue("Audio", "Driver", audio_driver.c_str());
@@ -838,17 +847,6 @@ void Settings::Save(SettingsInterface& si, bool ignore_base) const
   si.SetUIntValue("Audio", "OutputVolume", audio_output_volume);
   si.SetUIntValue("Audio", "FastForwardVolume", audio_fast_forward_volume);
   si.SetBoolValue("Audio", "OutputMuted", audio_output_muted);
-
-  si.SetBoolValue("Hacks", "UseOldMDECRoutines", mdec_use_old_routines);
-  si.SetBoolValue("Hacks", "ExportSharedMemory", export_shared_memory);
-
-  if (!ignore_base)
-  {
-    si.SetIntValue("Hacks", "DMAMaxSliceTicks", dma_max_slice_ticks);
-    si.SetIntValue("Hacks", "DMAHaltTicks", dma_halt_ticks);
-    si.SetIntValue("Hacks", "GPUFIFOSize", gpu_fifo_size);
-    si.SetIntValue("Hacks", "GPUMaxRunAhead", gpu_max_run_ahead);
-  }
 
   si.SetBoolValue("BIOS", "TTYLogging", bios_tty_logging);
   si.SetBoolValue("BIOS", "PatchFastBoot", bios_patch_fast_boot);
@@ -899,10 +897,31 @@ void Settings::Save(SettingsInterface& si, bool ignore_base) const
   si.SetIntValue("Cheevos", "NotificationScale", achievements_notification_scale);
   si.SetIntValue("Cheevos", "IndicatorScale", achievements_indicator_scale);
 
+  if (!for_copy)
+  {
+    si.SetIntValue("Hacks", "DMAMaxSliceTicks", dma_max_slice_ticks);
+    si.SetIntValue("Hacks", "DMAHaltTicks", dma_halt_ticks);
+    si.SetIntValue("Hacks", "GPUFIFOSize", gpu_fifo_size);
+    si.SetIntValue("Hacks", "GPUMaxRunAhead", gpu_max_run_ahead);
+    si.SetBoolValue("Hacks", "UseOldMDECRoutines", mdec_use_old_routines);
+    si.SetBoolValue("Hacks", "ExportSharedMemory", export_shared_memory);
+
+    si.SetBoolValue("Debug", "PCSXExpansionRegion", pcsx_expansion_region_enable);
+    si.SetBoolValue("Debug", "ShowVRAM", gpu_show_vram);
+    si.SetBoolValue("Debug", "DumpCPUToVRAMCopies", gpu_dump_cpu_to_vram_copies);
+    si.SetBoolValue("Debug", "DumpVRAMToCPUCopies", gpu_dump_vram_to_cpu_copies);
+
 #ifndef __ANDROID__
-  si.SetBoolValue("Debug", "EnableGDBServer", enable_gdb_server);
-  si.SetUIntValue("Debug", "GDBServerPort", gdb_server_port);
+    si.SetBoolValue("Debug", "EnableGDBServer", enable_gdb_server);
+    si.SetUIntValue("Debug", "GDBServerPort", gdb_server_port);
 #endif
+
+    si.SetBoolValue("SIO", "RedirectToTTY", sio_redirect_to_tty);
+
+    si.SetBoolValue("PCDrv", "Enabled", pcdrv_enable);
+    si.SetBoolValue("PCDrv", "EnableWrites", pcdrv_enable_writes);
+    si.SetStringValue("PCDrv", "Root", pcdrv_root.c_str());
+  }
 
   si.SetBoolValue("TextureReplacements", "EnableTextureReplacements", texture_replacements.enable_texture_replacements);
   si.SetBoolValue("TextureReplacements", "EnableVRAMWriteReplacements",
@@ -951,13 +970,6 @@ void Settings::Save(SettingsInterface& si, bool ignore_base) const
   si.SetStringValue("PIO", "FlashImagePath", pio_flash_image_path.c_str());
   si.SetBoolValue("PIO", "FlashImageWriteEnable", pio_flash_write_enable);
   si.SetBoolValue("PIO", "SwitchActive", pio_switch_active);
-  si.SetBoolValue("SIO", "RedirectToTTY", sio_redirect_to_tty);
-
-  si.SetBoolValue("PCDrv", "Enabled", pcdrv_enable);
-  si.SetBoolValue("PCDrv", "EnableWrites", pcdrv_enable_writes);
-  si.SetStringValue("PCDrv", "Root", pcdrv_root.c_str());
-
-  si.SetBoolValue("Debug", "PCSXExpansionRegion", pcsx_expansion_region_enable);
 }
 
 bool Settings::TextureReplacementSettings::Configuration::operator==(const Configuration& rhs) const

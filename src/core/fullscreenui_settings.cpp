@@ -1876,7 +1876,7 @@ void FullscreenUI::DoCopyGameSettings()
 
   Settings temp_settings;
   temp_settings.Load(*GetEditingSettingsInterface(false), *GetEditingSettingsInterface(false));
-  temp_settings.Save(*s_settings_locals.game_settings_interface, true);
+  temp_settings.Save(*s_settings_locals.game_settings_interface, true, true);
   SetSettingsChanged(s_settings_locals.game_settings_interface.get());
 
   ShowToast(OSDMessageType::Info, {},
