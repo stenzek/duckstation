@@ -709,7 +709,7 @@ void GraphicsSettingsWidget::populateGPUAdaptersAndResolutions(RenderAPI render_
       {
         // if the adapter is not available, ensure it's in the list anyway, otherwise select the default
         const QString qadaptername = QString::fromStdString(current_adapter_name);
-        m_ui.adapter->addItem(qadaptername, QVariant(qadaptername));
+        m_ui.adapter->addItem(tr("%1 [Unavailable]").arg(qadaptername), QVariant(qadaptername));
       }
     }
 

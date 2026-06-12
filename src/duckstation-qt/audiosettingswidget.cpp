@@ -241,7 +241,7 @@ void AudioSettingsWidget::queueUpdateDeviceNames()
       }
       else
       {
-        const std::string current_device = m_dialog->getEffectiveStringValue("Audio", "Device");
+        const std::string current_device = m_dialog->getEffectiveStringValue("Audio", "OutputDevice");
 
         m_ui.outputDevice->setEnabled(true);
 
@@ -258,7 +258,7 @@ void AudioSettingsWidget::queueUpdateDeviceNames()
 
         if (!is_known_device)
         {
-          m_ui.outputDevice->addItem(tr("Unknown Device \"%1\"").arg(QString::fromStdString(current_device)),
+          m_ui.outputDevice->addItem(tr("%1 [Unavailable]").arg(QString::fromStdString(current_device)),
                                      QString::fromStdString(current_device));
         }
 
