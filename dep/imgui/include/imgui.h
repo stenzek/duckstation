@@ -1295,6 +1295,9 @@ enum ImGuiInputTextFlags_
     //   The CPU cost is very roughly proportional to text length, so a 10 KB buffer should cost about ten times less.
     ImGuiInputTextFlags_WordWrap            = 1 << 24,  // InputTextMultiline(): word-wrap lines that are too long.
 
+    // DuckStation additions
+    ImGuiInputTextFlags_AlwaysActivate      = 1 << 25,  // Force the widget to activate immediately.
+
     // Obsolete names
     //ImGuiInputTextFlags_AlwaysInsertMode  = ImGuiInputTextFlags_AlwaysOverwrite   // [renamed in 1.82] name was not matching behavior
 };

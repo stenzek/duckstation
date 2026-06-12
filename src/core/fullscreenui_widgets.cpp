@@ -4556,6 +4556,50 @@ bool FullscreenUI::SplitWindowIsNavWindow()
   return (nav_window && (nav_window == current_window || nav_window->ParentWindow == current_window));
 }
 
+bool FullscreenUI::InputTextWithIcon(const char* str_id, std::string_view icon, const char* hint, char* buf,
+                                     size_t buf_size, float width, float font_size, float font_weight,
+                                     ImGuiInputTextFlags flags /* = 0 */,
+                                     ImGuiInputTextCallback callback /* = nullptr */, void* user_data /* = nullptr */)
+{
+  const ImGuiStyle& style = ImGui::GetStyle();
+  const ImVec2 icon_size =
+    UIStyle.Font->CalcTextSizeA(font_size, font_weight, std::numeric_limits<float>::max(), 0.0f, IMSTR_START_END(icon));
+  const float& icon_spacing = ImCeil(font_size * 0.5f);
+
+  const ImVec2 box_min = ImGui::GetCursorScreenPos();
+  const ImVec2 box_max = box_min + ImVec2(width, font_size + style.FramePadding.y * 2.0f);
+  const float box_rounding = ImCeil(font_size * 0.75f);
+
+  ImGuiWindow* const win = ImGui::GetCurrentWindow();
+  ImDrawList* const dl = win->DrawList;
+  dl->AddRectFilled(box_min, box_max, ImGui::GetColorU32(DarkerColor(UIStyle.PrimaryColor, 1.2f)), box_rounding);
+
+  dl->AddText(UIStyle.Font, font_size, font_weight, box_min + style.FramePadding, ImGui::GetColorU32(ImGuiCol_Text),
+              IMSTR_START_END(icon));
+
+  ImGui::SetCursorScreenPos(ImVec2(box_min.x + style.FramePadding.x + icon_size.x + icon_spacing, box_min.y));
+  ImGui::SetNextItemWidth(width - style.FramePadding.x * 2.0f - icon_size.x - icon_spacing);
+
+  ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
+  ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 0.0f);
+  ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0.0f, style.FramePadding.y));
+  ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
+  ImGui::PushStyleColor(ImGuiCol_NavCursor, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
+  ImGui::PushStyleColor(ImGuiCol_Text, UIStyle.PrimaryTextColor);
+  ImGui::PushFont(UIStyle.Font, font_size, font_weight);
+
+  const bool result = ImGui::InputTextWithHint(str_id, hint, buf, buf_size, flags, callback, user_data);
+
+  if (ImGui::IsItemFocused())
+    dl->AddRect(box_min, box_max, ImGui::GetColorU32(ImGuiCol_Border), box_rounding, 0, LayoutScale(1.0f));
+
+  ImGui::PopFont();
+  ImGui::PopStyleColor(3);
+  ImGui::PopStyleVar(3);
+
+  return result;
+}
+
 FullscreenUI::PopupDialog::PopupDialog() = default;
 
 FullscreenUI::PopupDialog::~PopupDialog() = default;
