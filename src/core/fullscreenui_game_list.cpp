@@ -57,6 +57,7 @@ struct GameListLocals
   GameListView game_list_view = GameListView::Grid;
   float game_list_current_selection_timeout = 0.0f;
   std::string game_list_current_selection_path;
+  char game_list_search_string[256];
 };
 
 } // namespace
@@ -153,6 +154,7 @@ void FullscreenUI::PopulateGameListEntryList()
   const s32 sort = Core::GetBaseIntSettingValue("Main", "FullscreenUIGameSort", 0);
   const bool reverse = Core::GetBaseBoolSettingValue("Main", "FullscreenUIGameSortReverse", false);
   const bool merge_disc_sets = Core::GetBaseBoolSettingValue("Main", "FullscreenUIMergeDiscSets", true);
+  const std::string_view string_filter = s_game_list_locals.game_list_search_string;
 
   s_game_list_locals.game_list_sorted_entries.clear();
   s_game_list_locals.game_list_sorted_entries.reserve(GameList::GetEntryCount());
@@ -167,6 +169,17 @@ void FullscreenUI::PopulateGameListEntryList()
     {
       if (entry.IsDiscSet())
         continue;
+    }
+
+    if (!string_filter.empty())
+    {
+      if (!((!entry.IsDiscSet() && StringUtil::ContainsNoCase(entry.path, string_filter)) ||
+            StringUtil::ContainsNoCase(entry.serial, string_filter) ||
+            StringUtil::ContainsNoCase(entry.GetDisplayTitle(true), string_filter) ||
+            StringUtil::ContainsNoCase(entry.GetDisplayTitle(false), string_filter)))
+      {
+        continue;
+      }
     }
 
     s_game_list_locals.game_list_sorted_entries.push_back(&entry);
@@ -300,6 +313,33 @@ void FullscreenUI::DrawGameListWindow()
       BeginTransition([]() { SwitchToMainWindow(MainWindowType::Landing); });
 
     NavTitle(Host::TranslateToStringView(FSUI_TR_CONTEXT, titles[static_cast<u32>(s_game_list_locals.game_list_view)]));
+
+    static constexpr const float& search_font_size = UIStyle.MediumFontSize;
+    static constexpr const float& search_font_weight = UIStyle.NormalFontWeight;
+
+    const ImGuiStyle& style = ImGui::GetStyle();
+    const float search_width = LayoutScale(400.0f);
+    const ImVec2 prev_cursor_pos = ImGui::GetCursorPos();
+    ImGui::SetCursorPos(
+      ImFloor(ImVec2((ImGui::GetWindowWidth() - search_width) * 0.5f,
+                     (ImGui::GetWindowHeight() - search_font_size - (style.FramePadding.y * 2.0f)) * 0.5f)));
+
+    const ImGuiInputTextFlags extra_flags =
+      (ImGui::IsKeyPressed(ImGuiKey_NavGamepadMenu, false) || ImGui::IsKeyPressed(ImGuiKey_F3, false)) ?
+        ImGuiInputTextFlags_AlwaysActivate :
+        0;
+    if (InputTextWithIcon("##game_list_search", ICON_FA_MAGNIFYING_GLASS, FSUI_CSTR("Search"),
+                          s_game_list_locals.game_list_search_string,
+                          sizeof(s_game_list_locals.game_list_search_string), search_width, search_font_size,
+                          search_font_weight,
+                          ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_EnterReturnsTrue | extra_flags))
+    {
+      QueueResetFocus(FocusResetType::Other);
+      ForceKeyNavEnabled();
+    }
+
+    ImGui::SetCursorPos(prev_cursor_pos);
+
     RightAlignNavButtons(count);
 
     for (u32 i = 0; i < count; i++)
@@ -333,7 +373,8 @@ void FullscreenUI::DrawGameListWindow()
   // note: has to come afterwards
   if (!AreAnyDialogsOpen())
   {
-    if (ImGui::IsKeyPressed(ImGuiKey_NavGamepadMenu, false) || ImGui::IsKeyPressed(ImGuiKey_F4, false))
+    if (ImGui::IsKeyPressed(ImGuiKey_NavGamepadTweakSlow, false) ||
+        ImGui::IsKeyPressed(ImGuiKey_NavGamepadTweakFast, false) || ImGui::IsKeyPressed(ImGuiKey_F4, false))
     {
       EnqueueSoundEffect(SFX_NAV_MOVE);
       BeginTransition([]() {
@@ -347,7 +388,7 @@ void FullscreenUI::DrawGameListWindow()
       EnqueueSoundEffect(SFX_NAV_BACK);
       BeginTransition(&SwitchToSettings);
     }
-    else if (ImGui::IsKeyPressed(ImGuiKey_GamepadStart, false) || ImGui::IsKeyPressed(ImGuiKey_F3, false))
+    else if (ImGui::IsKeyPressed(ImGuiKey_GamepadStart, false) || ImGui::IsKeyPressed(ImGuiKey_F5, false))
     {
       EnqueueSoundEffect(SFX_NAV_ACTIVATE);
       DoResume();
@@ -356,23 +397,25 @@ void FullscreenUI::DrawGameListWindow()
 
   if (IsGamepadInputSource())
   {
-    SetFullscreenFooterText(std::array{std::make_pair(ICON_PF_XBOX_DPAD, FSUI_VSTR("Select Game")),
-                                       std::make_pair(ICON_PF_BURGER_MENU, FSUI_VSTR("Resume Last Session")),
-                                       std::make_pair(ICON_PF_SHARE_CAPTURE, FSUI_VSTR("Settings")),
-                                       std::make_pair(ICON_PF_BUTTON_X, FSUI_VSTR("Change View")),
-                                       std::make_pair(ICON_PF_BUTTON_Y, FSUI_VSTR("Launch Options")),
-                                       std::make_pair(ICON_PF_BUTTON_A, FSUI_VSTR("Start Game")),
-                                       std::make_pair(ICON_PF_BUTTON_B, FSUI_VSTR("Back"))});
+    SetFullscreenFooterText(std::array{
+      std::make_pair(ICON_PF_XBOX_DPAD, FSUI_VSTR("Select Game")),
+      std::make_pair(ICON_PF_BURGER_MENU, FSUI_VSTR("Resume Last Session")),
+      std::make_pair(ICON_PF_SHARE_CAPTURE, FSUI_VSTR("Settings")),
+      std::make_pair(ICON_PF_LEFT_SHOULDER_L1 ICON_PF_RIGHT_SHOULDER_R1, FSUI_VSTR("Change View")),
+      std::make_pair(ICON_PF_BUTTON_Y, FSUI_VSTR("Launch Options")),
+      std::make_pair(ICON_PF_BUTTON_X, FSUI_VSTR("Search")), std::make_pair(ICON_PF_BUTTON_A, FSUI_VSTR("Start Game")),
+      std::make_pair(ICON_PF_BUTTON_B, FSUI_VSTR("Back"))});
   }
   else
   {
     SetFullscreenFooterText(std::array{
       std::make_pair(ICON_PF_ARROW_UP ICON_PF_ARROW_DOWN ICON_PF_ARROW_LEFT ICON_PF_ARROW_RIGHT,
                      FSUI_VSTR("Select Game")),
-      std::make_pair(ICON_PF_F3, FSUI_VSTR("Resume Last Session")),
-      std::make_pair(ICON_PF_F2, FSUI_VSTR("Settings")),
-      std::make_pair(ICON_PF_F4, FSUI_VSTR("Change View")),
       std::make_pair(ICON_PF_F1, FSUI_VSTR("Launch Options")),
+      std::make_pair(ICON_PF_F2, FSUI_VSTR("Settings")),
+      std::make_pair(ICON_PF_F3, FSUI_VSTR("Search")),
+      std::make_pair(ICON_PF_F4, FSUI_VSTR("Change View")),
+      std::make_pair(ICON_PF_F5, FSUI_VSTR("Resume Last Session")),
       std::make_pair(ICON_PF_ENTER, FSUI_VSTR("Start Game")),
       std::make_pair(ICON_PF_ESC, FSUI_VSTR("Back")),
     });
@@ -656,7 +699,8 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
       TextUnformatted(FSUI_ICONSTR(ICON_EMOJI_STAR, FSUI_VSTR("Compatibility: ")));
       ImGui::PopFont();
       ImGui::SameLine();
-      ImGui::Image(GetCachedTexture(selected_entry->GetCompatibilityIconFileName(), compatibility_size), compatibility_size);
+      ImGui::Image(GetCachedTexture(selected_entry->GetCompatibilityIconFileName(), compatibility_size),
+                   compatibility_size);
       ImGui::SameLine();
       ImGui::PushStyleColor(ImGuiCol_Text, subtitle_text_color);
       ImGui::Text(" (%s)", GameDatabase::GetCompatibilityRatingDisplayName(
@@ -1042,6 +1086,7 @@ void FullscreenUI::SwitchToGameList()
                                        static_cast<u32>(GameListView::Count) - 1));
   s_game_list_locals.game_list_current_selection_path = {};
   s_game_list_locals.game_list_current_selection_timeout = 0.0f;
+  s_game_list_locals.game_list_search_string[0] = '\0';
 
   // Wipe icon map, because a new save might give us an icon.
   for (const auto& it : s_game_list_locals.icon_image_map)
