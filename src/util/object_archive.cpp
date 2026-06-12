@@ -13,7 +13,7 @@
 #include <algorithm>
 #include <fmt/core.h>
 
-LOG_CHANNEL(CompressHelpers);
+LOG_CHANNEL(HTTPCache);
 
 namespace {
 
