@@ -323,6 +323,8 @@ void FullscreenUI::DrawGameListWindow()
     ImGui::SetCursorPos(
       ImFloor(ImVec2((ImGui::GetWindowWidth() - search_width) * 0.5f,
                      (ImGui::GetWindowHeight() - search_font_size - (style.FramePadding.y * 2.0f)) * 0.5f)));
+    ImGui::PushStyleColor(ImGuiCol_Button, DarkerColor(UIStyle.PrimaryColor, 1.2f));
+    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, DarkerColor(UIStyle.PrimaryColor, 1.4f));
 
     const ImGuiInputTextFlags extra_flags =
       (ImGui::IsKeyPressed(ImGuiKey_NavGamepadMenu, false) || ImGui::IsKeyPressed(ImGuiKey_F3, false)) ?
@@ -338,6 +340,7 @@ void FullscreenUI::DrawGameListWindow()
       ForceKeyNavEnabled();
     }
 
+    ImGui::PopStyleColor(2);
     ImGui::SetCursorPos(prev_cursor_pos);
 
     RightAlignNavButtons(count);

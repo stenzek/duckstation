@@ -1951,6 +1951,7 @@ void FullscreenUI::CancelPendingMenuClose()
 void FullscreenUI::PushPrimaryColor()
 {
   ImGui::PushStyleColor(ImGuiCol_Text, UIStyle.PrimaryTextColor);
+  ImGui::PushStyleColor(ImGuiCol_TextDisabled, DarkerColor(UIStyle.PrimaryTextColor, 0.6f));
   ImGui::PushStyleColor(ImGuiCol_Button, UIStyle.PrimaryDarkColor);
   ImGui::PushStyleColor(ImGuiCol_ButtonActive, DarkerColor(UIStyle.PrimaryLightColor, 1.2f));
   ImGui::PushStyleColor(ImGuiCol_ButtonHovered, UIStyle.PrimaryLightColor);
@@ -1959,7 +1960,7 @@ void FullscreenUI::PushPrimaryColor()
 
 void FullscreenUI::PopPrimaryColor()
 {
-  ImGui::PopStyleColor(5);
+  ImGui::PopStyleColor(6);
 }
 
 void FullscreenUI::DrawRoundedGradientRect(ImDrawList* const dl, const ImVec2& pos_min, const ImVec2& pos_max,
@@ -4569,11 +4570,12 @@ bool FullscreenUI::InputTextWithIcon(const char* str_id, std::string_view icon, 
 
   const ImVec2 box_min = ImGui::GetCursorScreenPos();
   const ImVec2 box_max = box_min + ImVec2(width, font_size + style.FramePadding.y * 2.0f);
-  const float box_rounding = ImCeil(font_size * 0.75f);
 
   ImGuiWindow* const win = ImGui::GetCurrentWindow();
   ImDrawList* const dl = win->DrawList;
-  dl->AddRectFilled(box_min, box_max, ImGui::GetColorU32(DarkerColor(UIStyle.PrimaryColor, 1.2f)), box_rounding);
+  const bool is_active = (GImGui->NavId == win->GetID(str_id));
+  const u32 color = ImGui::GetColorU32(style.Colors[is_active ? ImGuiCol_ButtonHovered : ImGuiCol_Button]);
+  DrawMenuButtonFrameAtOnCurrentLayer(box_min, box_max, color, is_active);
 
   dl->AddText(UIStyle.Font, font_size, font_weight, box_min + style.FramePadding, ImGui::GetColorU32(ImGuiCol_Text),
               IMSTR_START_END(icon));
@@ -4586,16 +4588,12 @@ bool FullscreenUI::InputTextWithIcon(const char* str_id, std::string_view icon, 
   ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0.0f, style.FramePadding.y));
   ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
   ImGui::PushStyleColor(ImGuiCol_NavCursor, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
-  ImGui::PushStyleColor(ImGuiCol_Text, UIStyle.PrimaryTextColor);
   ImGui::PushFont(UIStyle.Font, font_size, font_weight);
 
   const bool result = ImGui::InputTextWithHint(str_id, hint, buf, buf_size, flags, callback, user_data);
 
-  if (ImGui::IsItemFocused())
-    dl->AddRect(box_min, box_max, ImGui::GetColorU32(ImGuiCol_Border), box_rounding, 0, LayoutScale(1.0f));
-
   ImGui::PopFont();
-  ImGui::PopStyleColor(3);
+  ImGui::PopStyleColor(2);
   ImGui::PopStyleVar(3);
 
   return result;
@@ -4733,6 +4731,7 @@ bool FullscreenUI::PopupDialog::BeginRender(float scaled_window_padding /* = Lay
                       LayoutScale(LAYOUT_MENU_BUTTON_X_PADDING, LAYOUT_MENU_BUTTON_Y_PADDING));
   ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
   ImGui::PushStyleColor(ImGuiCol_PopupBg, ModAlpha(UIStyle.PopupBackgroundColor, 1.0f));
+  ImGui::PushStyleColor(ImGuiCol_Button, DarkerColor(UIStyle.PopupBackgroundColor, 1.2f));
   ImGui::PushStyleColor(ImGuiCol_ButtonActive, DarkerColor(UIStyle.PopupHighlight, 1.2f));
   ImGui::PushStyleColor(ImGuiCol_ButtonHovered, UIStyle.PopupHighlight);
   ImGui::PushStyleColor(ImGuiCol_FrameBg, UIStyle.PopupFrameBackgroundColor);
@@ -4771,7 +4770,7 @@ bool FullscreenUI::PopupDialog::BeginRender(float scaled_window_padding /* = Lay
       ImGui::EndPopup();
     }
 
-    ImGui::PopStyleColor(7);
+    ImGui::PopStyleColor(8);
     ImGui::PopStyleVar(6);
     ImGui::PopFont();
     QueueResetFocus(FocusResetType::PopupClosed);
@@ -4793,7 +4792,7 @@ bool FullscreenUI::PopupDialog::BeginRender(float scaled_window_padding /* = Lay
 void FullscreenUI::PopupDialog::EndRender()
 {
   ImGui::EndPopup();
-  ImGui::PopStyleColor(7);
+  ImGui::PopStyleColor(8);
   ImGui::PopStyleVar(6);
   ImGui::PopFont();
 }
