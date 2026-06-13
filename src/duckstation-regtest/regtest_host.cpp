@@ -959,15 +959,21 @@ int main(int argc, char* argv[])
   CrashHandler::Install(&Bus::CleanupMemoryMap);
 
   Error error;
-  if (!Core::PerformEarlyHardwareChecks(&error) || !Core::ProcessStartup(&error))
+  if (!Core::PerformEarlyHardwareChecks(&error))
   {
-    std::fprintf(stderr, "ERROR: ProcessStartup() failed: %s\n", error.GetDescription().c_str());
+    std::fprintf(stderr, "ERROR: PerformEarlyHardwareChecks() failed: %s\n", error.GetDescription().c_str());
     return EXIT_FAILURE;
   }
 
   if (!RegTestHost::InitializeFoldersAndConfig(&error))
   {
     std::fprintf(stderr, "ERROR: Failed to initialize config: %s\n", error.GetDescription().c_str());
+    return EXIT_FAILURE;
+  }
+
+  if (!Core::ProcessStartup(&error))
+  {
+    std::fprintf(stderr, "ERROR: ProcessStartup() failed: %s\n", error.GetDescription().c_str());
     return EXIT_FAILURE;
   }
 
