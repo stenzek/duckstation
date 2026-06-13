@@ -629,26 +629,41 @@
            </widget>
           </item>
           <item row="0" column="1">
-           <widget class="QDoubleSpinBox" name="pgxpGeometryTolerance">
-            <property name="prefix">
-             <string/>
-            </property>
-            <property name="suffix">
-             <string>px</string>
-            </property>
-            <property name="minimum">
-             <double>-1.000000000000000</double>
-            </property>
-            <property name="maximum">
-             <double>100.000000000000000</double>
-            </property>
-            <property name="singleStep">
-             <double>0.250000000000000</double>
-            </property>
-            <property name="value">
-             <double>-1.000000000000000</double>
-            </property>
-           </widget>
+           <layout class="QHBoxLayout" name="pgxpGeometryToleranceLayout" stretch="1,0">
+            <item>
+             <widget class="QDoubleSpinBox" name="pgxpGeometryTolerance">
+              <property name="prefix">
+               <string/>
+              </property>
+              <property name="suffix">
+               <string>px</string>
+              </property>
+              <property name="minimum">
+               <double>-1.000000000000000</double>
+              </property>
+              <property name="maximum">
+               <double>100.000000000000000</double>
+              </property>
+              <property name="singleStep">
+               <double>0.250000000000000</double>
+              </property>
+              <property name="value">
+               <double>-1.000000000000000</double>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="resetPGXPGeometryTolerance">
+              <property name="toolTip">
+               <string>Reset Sequence Length</string>
+              </property>
+              <property name="icon">
+               <iconset resource="resources/duckstation-qt.qrc">
+                <normaloff>:/icons/monochrome/svg/delete-back-2-line.svg</normaloff>:/icons/monochrome/svg/delete-back-2-line.svg</iconset>
+              </property>
+             </widget>
+            </item>
+           </layout>
           </item>
           <item row="1" column="0">
            <widget class="QLabel" name="pgxpDepthClearThresholdLabel">
@@ -658,11 +673,26 @@
            </widget>
           </item>
           <item row="1" column="1">
-           <widget class="QDoubleSpinBox" name="pgxpDepthClearThreshold">
-            <property name="maximum">
-             <double>65536.000000000000000</double>
-            </property>
-           </widget>
+           <layout class="QHBoxLayout" name="pgxpDepthClearThresholdLayout" stretch="1,0">
+            <item>
+             <widget class="QDoubleSpinBox" name="pgxpDepthClearThreshold">
+              <property name="maximum">
+               <double>65536.000000000000000</double>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="resetPGXPDepthClearThreshold">
+              <property name="toolTip">
+               <string>Reset Sequence Length</string>
+              </property>
+              <property name="icon">
+               <iconset resource="resources/duckstation-qt.qrc">
+                <normaloff>:/icons/monochrome/svg/delete-back-2-line.svg</normaloff>:/icons/monochrome/svg/delete-back-2-line.svg</iconset>
+              </property>
+             </widget>
+            </item>
+           </layout>
           </item>
           <item row="2" column="0" colspan="2">
            <layout class="QGridLayout" name="gridLayout">

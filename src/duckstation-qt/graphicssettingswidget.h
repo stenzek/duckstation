@@ -48,11 +48,14 @@ private:
   void updateRendererDependentOptions();
   void updatePGXPSettingsEnabled();
   void updateResolutionDependentOptions();
-  
+
   void warnAboutRendererChange();
   void onDownsampleModeChanged();
   void onFineCropModeChanged();
   void onFineCropResetClicked();
+
+  void onResetPGXPGeometryToleranceClicked();
+  void onResetPGXPDepthClearThresholdClicked();
 
   void onEnableTextureCacheChanged();
   void onEnableAnyTextureDumpingChanged();
