@@ -417,7 +417,7 @@ struct SettingAccessor<QSpinBox>
   {
     // We should be able to use QFont here.. but it doesn't update on change.
     widget->setStyleSheet(isNull ? u"font-style: italic;"_s : QString());
-    widget->setPrefix(isNull ? qApp->translate("SettingWidgetBinder", "Default: ") : QString());
+    widget->setPrefix(isNull ? qApp->translate("SettingWidgetBinder", "Global: ") : QString());
   }
 
   static bool getBoolValue(const QSpinBox* widget) { return widget->value() > 0; }
@@ -553,7 +553,7 @@ struct SettingAccessor<QDoubleSpinBox>
   {
     // We should be able to use QFont here.. but it doesn't update on change.
     widget->setStyleSheet(isNull ? QStringLiteral("font-style: italic;") : QString());
-    widget->setPrefix(isNull ? qApp->translate("SettingWidgetBinder", "Default: ") : QString());
+    widget->setPrefix(isNull ? qApp->translate("SettingWidgetBinder", "Global: ") : QString());
   }
 
   static bool getBoolValue(const QDoubleSpinBox* widget) { return widget->value() > 0.0; }
