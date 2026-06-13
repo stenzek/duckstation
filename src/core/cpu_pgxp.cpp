@@ -1606,7 +1606,7 @@ void CPU::PGXP::CPU_SLL(Instruction instr, u32 rtVal)
   CPU_SLL(instr, rtVal, sh);
 }
 
-void CPU::PGXP::CPU_SLLV(Instruction instr, u32 rtVal, u32 rsVal)
+void CPU::PGXP::CPU_SLLV(Instruction instr, u32 rsVal, u32 rtVal)
 {
   LOG_VALUES_C2(instr.r.rt.GetValue(), rtVal, instr.r.rs.GetValue(), rsVal);
 
@@ -1697,7 +1697,7 @@ void CPU::PGXP::CPU_SRL(Instruction instr, u32 rtVal)
   CPU_SRx(instr, rtVal, sh, false, false);
 }
 
-void CPU::PGXP::CPU_SRLV(Instruction instr, u32 rtVal, u32 rsVal)
+void CPU::PGXP::CPU_SRLV(Instruction instr, u32 rsVal, u32 rtVal)
 {
   LOG_VALUES_C2(instr.r.rt.GetValue(), rtVal, instr.r.rs.GetValue(), rsVal);
 
@@ -1715,7 +1715,7 @@ void CPU::PGXP::CPU_SRA(Instruction instr, u32 rtVal)
   CPU_SRx(instr, rtVal, sh, true, false);
 }
 
-void CPU::PGXP::CPU_SRAV(Instruction instr, u32 rtVal, u32 rsVal)
+void CPU::PGXP::CPU_SRAV(Instruction instr, u32 rsVal, u32 rtVal)
 {
   LOG_VALUES_C2(instr.r.rt.GetValue(), rtVal, instr.r.rs.GetValue(), rsVal);
 

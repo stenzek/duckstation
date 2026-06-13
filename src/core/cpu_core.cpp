@@ -992,7 +992,7 @@ restart_instruction:
           const u32 shamt = ReadReg(inst.r.rs) & UINT32_C(0x1F);
           const u32 rdVal = rtVal << shamt;
           if constexpr (pgxp_mode >= PGXPMode::CPU)
-            PGXP::CPU_SLLV(inst, rtVal, shamt);
+            PGXP::CPU_SLLV(inst, shamt, rtVal);
 
           WriteReg(inst.r.rd, rdVal);
         }
@@ -1006,7 +1006,7 @@ restart_instruction:
           WriteReg(inst.r.rd, rdVal);
 
           if constexpr (pgxp_mode >= PGXPMode::CPU)
-            PGXP::CPU_SRLV(inst, rtVal, shamt);
+            PGXP::CPU_SRLV(inst, shamt, rtVal);
         }
         END_INSTRUCTION()
 
@@ -1018,7 +1018,7 @@ restart_instruction:
           WriteReg(inst.r.rd, rdVal);
 
           if constexpr (pgxp_mode >= PGXPMode::CPU)
-            PGXP::CPU_SRAV(inst, rtVal, shamt);
+            PGXP::CPU_SRAV(inst, shamt, rtVal);
         }
         END_INSTRUCTION()
 
