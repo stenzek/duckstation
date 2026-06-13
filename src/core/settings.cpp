@@ -462,7 +462,6 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
   cdrom_subq_skew = si.GetBoolValue("CDROM", "SubQSkew", false);
   cdrom_load_image_to_ram = si.GetBoolValue("CDROM", "LoadImageToRAM", false);
   cdrom_load_image_patches = si.GetBoolValue("CDROM", "LoadImagePatches", false);
-  cdrom_ignore_host_subcode = si.GetBoolValue("CDROM", "IgnoreHostSubcode", false);
   cdrom_mute_cd_audio = si.GetBoolValue("CDROM", "MuteCDAudio", false);
   cdrom_auto_disc_change = si.GetBoolValue("CDROM", "AutoDiscChange", false);
   cdrom_read_speedup = si.GetSaturatedIntValue<u8>("CDROM", "ReadSpeedup", 1);
@@ -834,7 +833,6 @@ void Settings::Save(SettingsInterface& si, bool ignore_user_prefs, bool for_copy
     si.SetIntValue("CDROM", "ReadaheadSectors", cdrom_readahead_sectors);
     si.SetBoolValue("CDROM", "RegionCheck", cdrom_region_check);
     si.SetBoolValue("CDROM", "SubQSkew", cdrom_subq_skew);
-    si.SetBoolValue("CDROM", "IgnoreHostSubcode", cdrom_ignore_host_subcode);
     si.SetBoolValue("CDROM", "DisableSpeedupOnMDEC", mdec_disable_cdrom_speedup);
     si.SetUIntValue("CDROM", "MaxReadSpeedupCycles", cdrom_max_seek_speedup_cycles);
     si.SetUIntValue("CDROM", "MaxSeekSpeedupCycles", cdrom_max_read_speedup_cycles);
