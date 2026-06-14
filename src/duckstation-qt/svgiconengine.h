@@ -76,8 +76,8 @@ public:
 class SVGImageHandler final : public QImageIOHandler
 {
 public:
-  SVGImageHandler() = default;
-  ~SVGImageHandler() override = default;
+  SVGImageHandler();
+  ~SVGImageHandler() override;
 
   /// Lazily load and parse the SVG data from device(). Returns false on failure.
   bool canRead() const override;

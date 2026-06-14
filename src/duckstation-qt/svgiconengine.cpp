@@ -130,6 +130,9 @@ SVGIconEngine::~SVGIconEngine()
 
 bool SVGIconEngine::ensureLoaded() const
 {
+  if (m_document)
+    return true;
+
   // Previous load failed?
   if (m_resource_path.isEmpty())
     return false;
@@ -171,7 +174,7 @@ QPixmap SVGIconEngine::getPixmap(const QSize& size, qreal dpr, QIcon::Mode mode,
   if (!QPixmapCache::find(cache_key, &pm))
   {
     // Don't reload multiple times if we hit the cache.
-    if (ensureLoaded() && RenderSVGToPixmap(pm, m_document, scaled_size, color))
+    if ((m_document || ensureLoaded()) && RenderSVGToPixmap(pm, m_document, scaled_size, color))
     {
       if (!m_is_colored && mode != QIcon::Normal)
       {
@@ -239,6 +242,14 @@ QIconEngine* SVGIconEnginePlugin::create(const QString& resource_path)
     return new SVGIconEngine(resource_path);
 
   return nullptr;
+}
+
+SVGImageHandler::SVGImageHandler() = default;
+
+SVGImageHandler::~SVGImageHandler()
+{
+  if (m_document)
+    plutosvg_document_destroy(m_document);
 }
 
 bool SVGImageHandler::canRead() const
