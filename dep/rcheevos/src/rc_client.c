@@ -14,15 +14,15 @@
 #include <stdarg.h>
 
 #ifdef _WIN32
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#include <profileapi.h>
+ #define WIN32_LEAN_AND_MEAN
+ #include <windows.h>
 #else
-#include <time.h>
+ #include <time.h>
 #endif
 
 #define RC_CLIENT_UNKNOWN_GAME_ID (uint32_t)-1
 #define RC_CLIENT_RECENT_UNLOCK_DELAY_SECONDS (10 * 60) /* ten minutes */
+#define RC_CLIENT_ACHIEVEMENT_WARNING_ID 101000001
 
 #define RC_MINIMUM_UNPAUSED_FRAMES 20
 #define RC_PAUSE_DECAY_MULTIPLIER 4
@@ -240,7 +240,7 @@ static void rc_client_log_message_va(const rc_client_t* client, const char* form
     char buffer[2048];
 
 #ifdef __STDC_SECURE_LIB__
-    _vsnprintf_s(buffer, sizeof(buffer), _TRUNCATE, format, args);
+    vsnprintf_s(buffer, sizeof(buffer), _TRUNCATE, format, args);
 #elif __STDC_VERSION__ >= 199901L /* vsnprintf requires c99 */
     vsnprintf(buffer, sizeof(buffer), format, args);
 #else /* c89 doesn't have a size-limited vsprintf function - assume the buffer is large enough */
@@ -320,6 +320,22 @@ void rc_client_enable_logging(rc_client_t* client, int level, rc_client_message_
 
 static rc_clock_t rc_client_clock_get_now_millisecs(const rc_client_t* client)
 {
+#if defined(__APPLE__) && defined(__MACH__)
+ #ifdef CLOCK_MONOTONIC
+  /* clock_gettime() was added to Darwin in iOS 10.0 and macOS 10.12.
+   * On earlier deployment targets (like Leopard 10.5), the symbol doesn't exist
+   * in libSystem causing an "undefined reference to clock_gettime" linker error.
+   * To get the code to use the #else block below, forcibly undefine CLOCK_MONOTONIC
+   * when targeting earlier versions. */
+  #include <AvailabilityMacros.h>
+  #if (defined(MAC_OS_X_VERSION_MIN_REQUIRED) && MAC_OS_X_VERSION_MIN_REQUIRED < 101200)
+   #undef CLOCK_MONOTONIC
+  #elif (defined(__IPHONE_OS_VERSION_MIN_REQUIRED) && __IPHONE_OS_VERSION_MIN_REQUIRED < 100000)
+   #undef CLOCK_MONOTONIC
+  #endif
+ #endif
+#endif
+
 #if defined(CLOCK_MONOTONIC)
   struct timespec now;
   (void)client;
@@ -934,6 +950,11 @@ static void rc_client_subset_get_user_game_summary(const rc_client_t* client,
   for (; achievement < stop; ++achievement) {
     switch (achievement->public_.category) {
       case RC_CLIENT_ACHIEVEMENT_CATEGORY_CORE:
+        if (achievement->public_.id >= RC_CLIENT_ACHIEVEMENT_WARNING_ID) {
+          /* ignore warning achievements */
+          continue;
+        }
+
         ++summary->num_core_achievements;
         summary->points_core += achievement->public_.points;
 
@@ -2109,9 +2130,9 @@ static void rc_client_copy_achievements(rc_client_load_state_t* load_state,
       else {
         rc_buffer_consume(buffer, (const uint8_t*)preparse.parse.buffer, (uint8_t*)preparse.parse.buffer + preparse.parse.offset);
       }
-
-      rc_destroy_preparse_state(&preparse);
     }
+
+    rc_destroy_preparse_state(&preparse);
 
     achievement->created_time = read->created;
     achievement->updated_time = read->updated;
@@ -3926,7 +3947,7 @@ static void rc_client_update_achievement_display_information(rc_client_t* client
           if (!achievement->trigger->measured_as_percent) {
             char* ptr = achievement->public_.measured_progress;
             const int buffer_size = (int)sizeof(achievement->public_.measured_progress);
-            const int chars = rc_format_value(ptr, buffer_size, (int32_t)new_measured_value, RC_FORMAT_UNSIGNED_VALUE);
+            const int chars = rc_format_value(ptr, buffer_size - 1, (int32_t)new_measured_value, RC_FORMAT_UNSIGNED_VALUE);
             ptr[chars] = '/';
             rc_format_value(ptr + chars + 1, buffer_size - chars - 1, (int32_t)achievement->trigger->measured_target, RC_FORMAT_UNSIGNED_VALUE);
           }
@@ -4647,6 +4668,11 @@ static void rc_client_award_achievement(rc_client_t* client, rc_client_achieveme
 
   rc_mutex_unlock(&client->state.mutex);
 
+  if (achievement->public_.id >= RC_CLIENT_ACHIEVEMENT_WARNING_ID) {
+    RC_CLIENT_LOG_INFO_FORMATTED(client, "Unlocked warning achievement %u: %s", achievement->public_.id, achievement->public_.title);
+    return;
+  }
+
   if (client->callbacks.can_submit_achievement_unlock &&
       !client->callbacks.can_submit_achievement_unlock(achievement->public_.id, client)) {
     RC_CLIENT_LOG_INFO_FORMATTED(client, "Achievement %u unlock blocked by client", achievement->public_.id);
@@ -4674,7 +4700,6 @@ static void rc_client_award_achievement(rc_client_t* client, rc_client_achieveme
   callback_data->client = client;
   callback_data->id = achievement->public_.id;
   callback_data->hardcore = client->state.hardcore;
-  callback_data->game_hash = client->game->public_.hash;
   callback_data->unlock_time = client->callbacks.get_time_millisecs(client);
 
   if (client->game) /* may be NULL if this gets called while unloading the game (from another thread - events are raised outside the lock) */
@@ -5851,9 +5876,6 @@ static void rc_client_update_memref_values(rc_client_t* client) {
     } while (modified_memref_list);
   }
 
-  if (client->game->runtime.richpresence && client->game->runtime.richpresence->richpresence)
-    rc_update_values(client->game->runtime.richpresence->richpresence->values, client->state.legacy_peek, client);
-
   if (invalidated_memref)
     rc_client_update_active_achievements(client->game);
 }
@@ -5883,6 +5905,7 @@ static void rc_client_do_frame_process_achievements(rc_client_t* client, rc_clie
     /* if the measured value changed and the achievement hasn't triggered, show a progress indicator */
     if (trigger->measured_value != old_measured_value && old_measured_value != RC_MEASURED_UNKNOWN &&
         trigger->measured_value <= trigger->measured_target &&
+        trigger->measured_target != 0 &&
         rc_trigger_state_active(new_state) && new_state != RC_TRIGGER_STATE_WAITING) {
 
       /* only show a popup for the achievement closest to triggering */

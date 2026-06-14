@@ -145,7 +145,6 @@ int rc_api_process_start_session_server_response(rc_api_start_session_response_t
   rc_api_unlock_entry_t* unlock;
   rc_json_field_t array_field;
   rc_json_iterator_t iterator;
-  uint32_t timet;
   int result;
 
   rc_json_field_t fields[] = {
@@ -181,9 +180,8 @@ int rc_api_process_start_session_server_response(rc_api_start_session_response_t
     while (rc_json_get_array_entry_object(unlock_entry_fields, sizeof(unlock_entry_fields) / sizeof(unlock_entry_fields[0]), &iterator)) {
       if (!rc_json_get_required_unum(&unlock->achievement_id, &response->response, &unlock_entry_fields[0], "ID"))
         return RC_MISSING_VALUE;
-      if (!rc_json_get_required_unum(&timet, &response->response, &unlock_entry_fields[1], "When"))
+      if (!rc_json_get_required_timet(&unlock->when, &response->response, &unlock_entry_fields[1], "When"))
         return RC_MISSING_VALUE;
-      unlock->when = (time_t)timet;
 
       ++unlock;
     }
@@ -202,16 +200,14 @@ int rc_api_process_start_session_server_response(rc_api_start_session_response_t
     while (rc_json_get_array_entry_object(unlock_entry_fields, sizeof(unlock_entry_fields) / sizeof(unlock_entry_fields[0]), &iterator)) {
       if (!rc_json_get_required_unum(&unlock->achievement_id, &response->response, &unlock_entry_fields[0], "ID"))
         return RC_MISSING_VALUE;
-      if (!rc_json_get_required_unum(&timet, &response->response, &unlock_entry_fields[1], "When"))
+      if (!rc_json_get_required_timet(&unlock->when, &response->response, &unlock_entry_fields[1], "When"))
         return RC_MISSING_VALUE;
-      unlock->when = (time_t)timet;
 
       ++unlock;
     }
   }
 
-  rc_json_get_optional_unum(&timet, &fields[4], "ServerNow", 0);
-  response->server_now = (time_t)timet;
+  rc_json_get_optional_timet(&response->server_now, &fields[4], "ServerNow", 0);
 
   return RC_OK;
 }
@@ -307,7 +303,6 @@ int rc_api_process_fetch_followed_users_server_response(rc_api_fetch_followed_us
   rc_json_field_t array_field;
   rc_json_iterator_t iterator;
   rc_api_followed_user_t* user;
-  uint32_t timet;
   int result;
   rc_json_field_t fields[] = {
     RC_JSON_NEW_FIELD("Success"),
@@ -355,10 +350,7 @@ int rc_api_process_fetch_followed_users_server_response(rc_api_fetch_followed_us
         return RC_MISSING_VALUE;
 
       rc_json_get_optional_string(&user->recent_activity.description, &response->response, &followed_user_entry_fields[3], "LastSeen", NULL);
-
-      rc_json_get_optional_unum(&timet, &followed_user_entry_fields[4], "LastSeenTime", 0);
-      user->recent_activity.when = (time_t)timet;
-
+      rc_json_get_optional_timet(&user->recent_activity.when, &followed_user_entry_fields[4], "LastSeenTime", 0);
       rc_json_get_optional_unum(&user->recent_activity.context_id, &followed_user_entry_fields[5], "LastGameId", 0);
       rc_json_get_optional_string(&user->recent_activity.context, &response->response, &followed_user_entry_fields[6], "LastGameTitle", NULL);
       rc_json_get_optional_string(&user->recent_activity.context_image_url, &response->response, &followed_user_entry_fields[7], "LastGameIconUrl", NULL);
