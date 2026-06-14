@@ -456,6 +456,60 @@ RC_EXPORT rc_client_async_handle_t* RC_CCONV rc_client_begin_fetch_game_titles(
 RC_EXPORT void RC_CCONV rc_client_destroy_game_title_list(rc_client_game_title_list_t* list);
 
 /*****************************************************************************\
+| Fetch Games List|
+\*****************************************************************************/
+
+typedef struct rc_client_game_list_entry_t {
+  /* The unique identifier of the game */
+  uint32_t id;
+  /* The number of achievements in the game */
+  uint32_t num_achievements;
+  /* The number of leaderboards in the game */
+  uint32_t num_leaderboards;
+  /* The number of points in the game */
+  uint32_t points;
+  /* The name of the game */
+  const char* name;
+  /* The image name for the game badge */
+  const char* image_name;
+  /* The URL for the game badge image */
+  const char* image_url;
+  /* An array of supported hashes */
+  const char** supported_hashes;
+  /* An array of unsupported hashes */
+  const char** unsupported_hashes;
+  /* The number of items in the supported_hashes array */
+  uint32_t num_supported_hashes;
+  /* The number of items in the unsupported_hashes array */
+  uint32_t num_unsupported_hashes;
+} rc_client_game_list_entry_t;
+
+typedef struct rc_client_game_list_t {
+  rc_client_game_list_entry_t* entries;
+  uint32_t num_entries;
+} rc_client_game_list_t;
+
+/**
+ * Callback that is fired when a games list request completes. list may be null if the query failed.
+ */
+typedef void(RC_CCONV* rc_client_fetch_game_list_callback_t)(int result, const char* error_message,
+                                                             rc_client_game_list_t* list, rc_client_t* client,
+                                                             void* callback_userdata);
+
+/**
+ * Starts an asynchronous request for all games for the given console.
+ * This request returns a mapping from hashes to the game's unique identifier. A single game may have multiple
+ * hashes in the case of multi-disc games, or variants that are still compatible with the same achievement set.
+ */
+RC_EXPORT rc_client_async_handle_t* RC_CCONV rc_client_begin_fetch_game_list(
+  rc_client_t* client, uint32_t console_id, rc_client_fetch_game_list_callback_t callback, void* callback_userdata);
+
+/**
+ * Destroys a previously-allocated result from the rc_client_destroy_game_list() callback.
+ */
+RC_EXPORT void RC_CCONV rc_client_destroy_game_list(rc_client_game_list_t* list);
+
+/*****************************************************************************\
 | Achievements                                                                |
 \*****************************************************************************/
 
