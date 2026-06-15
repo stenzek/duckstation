@@ -30,13 +30,20 @@ DynSqlite g_dyn_sqlite;
 
 bool DynSqlite::Open(Error* error)
 {
+  // Because of course friggin linux is different...
+#ifdef _WIN32
+  static constexpr int lib_major_version = -1;
+#else
+  static constexpr int lib_major_version = 3;
+#endif
+
   if (s_locals.sqlite_library.IsOpen())
     return true;
 
   std::call_once(s_locals.sqlite_init_flag, [&error]() {
     Error lerror;
     DynamicLibrary lib;
-    if (!lib.Open(DynamicLibrary::GetBundledLibraryPath("sqlite3", 3).c_str(), &lerror))
+    if (!lib.Open(DynamicLibrary::GetBundledLibraryPath("sqlite3", lib_major_version).c_str(), &lerror))
     {
       ERROR_LOG("Failed to load sqlite: {}", lerror.GetDescription());
       Error::SetStringFmt(error, "Failed to load sqlite: {}", lerror.GetDescription());
