@@ -1311,7 +1311,12 @@ void Achievements::ClientLoadGameCallback(int result, const char* error_message,
 
   // update progress database on first load, in case it was played on another PC
   UpdateGameSummary();
-  UpdateGameDatabaseFromCurrentGame();
+
+  // don't update the game database on disc change, because switching to unknown media will associate those hashes
+  if (was_disc_change)
+    UpdateGameDatabaseFromCurrentGame();
+
+  // but the progress is fine since that's just game IDs
   UpdateProgressDatabaseFromCurrentGame();
 
 #ifdef ENABLE_DISCORD_PRESENCE
