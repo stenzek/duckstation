@@ -3425,8 +3425,7 @@ std::string Achievements::GetGameBadgeURL(u32 game_id)
 
 void Achievements::LoadPinnedAchievements()
 {
-  s_state.pinned_achievement_indicators = {};
-  if (!HasAchievements())
+  if (!HasAchievements() || !EnsureAchievementsDatabaseOpen())
     return;
 
   Error error;
@@ -3536,6 +3535,9 @@ void Achievements::SetAchievementPinned(u32 achievement_id, bool pinned)
 
 void Achievements::SetAchievementPinnedInDatabase(u32 achievement_id, bool pinned)
 {
+  if (!EnsureAchievementsDatabaseOpen())
+    return;
+
   Error error;
   SQLitePreparedStatement stmt;
   if (pinned)
