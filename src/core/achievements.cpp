@@ -2899,7 +2899,7 @@ bool Achievements::CreateGameDatabaseFromSeedDatabase(Error* error)
 
 void Achievements::UpdateGameDatabaseFromCurrentGame()
 {
-  if (!EnsureAchievementsDatabaseOpen())
+  if (s_state.game_id == 0 || !s_state.game_hash.has_value() || !EnsureAchievementsDatabaseOpen())
     return;
 
   // update hash
@@ -3219,7 +3219,7 @@ bool Achievements::WriteAllProgressToDatabase(const rc_client_all_user_progress_
 void Achievements::UpdateProgressDatabaseFromCurrentGame()
 {
   // don't write updates in spectator mode
-  if (rc_client_get_spectator_mode_enabled(s_state.client))
+  if (s_state.game_id == 0 || rc_client_get_spectator_mode_enabled(s_state.client))
     return;
 
   // query list to get both hardcore and softcore counts
