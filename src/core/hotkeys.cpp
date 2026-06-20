@@ -85,6 +85,45 @@ static void HotkeyToggleOSD()
   VideoThread::UpdateSettings(true, false, false);
 }
 
+static bool HotkeyCheckRewindAvailability(bool enabled)
+{
+  if (g_settings.rewind_enable)
+    return true;
+
+  // don't do anything on key release
+  if (!enabled)
+    return false;
+
+  // figure out why it's disabled...
+  std::string summary;
+  const bool rewind_actually_enabled = Core::GetBoolSettingValue("Main", "RewindEnable", false);
+  if (rewind_actually_enabled)
+  {
+    if (g_settings.IsRunaheadEnabled())
+    {
+      summary = TRANSLATE_STR("OSDMessage", "Rewinding is disabled while runahead is enabled.");
+    }
+    else if (g_settings.disable_all_enhancements)
+    {
+      summary = TRANSLATE_STR("OSDMessage", "Rewinding is disabled while safe mode is enabled.");
+    }
+    else if (Achievements::IsHardcoreModeActive())
+    {
+      // because this is keypress-based, don't enable it on accept
+      Achievements::ConfirmHardcoreModeDisableAsync("Rewinding", {});
+      return false;
+    }
+  }
+  else
+  {
+    summary = TRANSLATE_STR("OSDMessage", "Rewinding is not enabled.");
+  }
+
+  Host::AddIconOSDMessage(OSDMessageType::Warning, "SetRewindState", ICON_EMOJI_WARNING,
+                          TRANSLATE_STR("OSDMessage", "Rewinding unavailable."), std::move(summary));
+  return false;
+}
+
 static constexpr const HotkeyInfo s_hotkey_list[] = {
 
 #ifndef __ANDROID__
@@ -197,7 +236,10 @@ static constexpr const HotkeyInfo s_hotkey_list[] = {
    [](s32 pressed) {
      if (pressed < 0)
        return;
-     System::SetRewindState(pressed > 0);
+
+     const bool enabled = (pressed > 0);
+     if (HotkeyCheckRewindAvailability(enabled))
+       System::SetRewindState(enabled);
    }},
 
 #ifndef __ANDROID__

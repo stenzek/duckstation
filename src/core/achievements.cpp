@@ -2299,7 +2299,8 @@ void Achievements::ConfirmHardcoreModeDisableAsync(std::string_view trigger, std
       Host::RunOnCoreThread([callback = std::move(callback), res]() {
         if (res)
           DisableHardcoreMode(true, true);
-        callback(res);
+        if (callback)
+          callback(res);
       });
     });
 }

@@ -209,7 +209,6 @@ static void DoMemoryState(StateWrapper& sw, MemorySaveState& mss, bool update_di
 static bool IsExecutionInterrupted();
 static void CheckForAndExitExecution();
 
-static void SetRewinding(bool enabled);
 static void DoRewind();
 
 static bool DoRunahead();
@@ -3699,35 +3698,6 @@ void System::SetTurboEnabled(bool enabled)
   UpdateSpeedLimiterState();
 }
 
-void System::SetRewindState(bool enabled)
-{
-  if (!System::IsValid())
-    return;
-
-  if (!g_settings.rewind_enable)
-  {
-    if (enabled)
-    {
-      Host::AddKeyedOSDMessage(OSDMessageType::Info, "SetRewindState",
-                               TRANSLATE_STR("OSDMessage", "Rewinding is not enabled."));
-    }
-
-    return;
-  }
-
-  if (Achievements::IsHardcoreModeActive() && enabled)
-  {
-    Achievements::ConfirmHardcoreModeDisableAsync("Rewinding", [](bool approved) {
-      if (approved)
-        SetRewindState(true);
-    });
-    return;
-  }
-
-  System::SetRewinding(enabled);
-  UpdateSpeedLimiterState();
-}
-
 void System::FrameStep()
 {
   if (!IsValid())
@@ -5072,9 +5042,14 @@ bool System::IsRewinding()
   return (s_state.rewind_load_frequency >= 0);
 }
 
-void System::SetRewinding(bool enabled)
+void System::SetRewindState(bool enabled)
 {
+  if (!System::IsValid() || !g_settings.rewind_enable)
+    return;
+
   const bool was_enabled = IsRewinding();
+  if (enabled == was_enabled)
+    return;
 
   if (enabled)
   {
@@ -5106,6 +5081,8 @@ void System::SetRewinding(bool enabled)
       s_state.rewind_save_counter = s_state.rewind_save_frequency;
     }
   }
+
+  UpdateSpeedLimiterState();
 }
 
 void System::DoRewind()
