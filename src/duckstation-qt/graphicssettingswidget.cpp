@@ -296,6 +296,9 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
                                                Settings::ParseGPUWireframeMode, Settings::GetGPUWireframeModeName,
                                                &Settings::GetGPUWireframeModeDisplayName,
                                                Settings::DEFAULT_GPU_WIREFRAME_MODE, GPUWireframeMode::Count);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.gpuDisableTextures, "GPU", "DisableTextures", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.gpuDisableVertexLighting, "GPU", "DisableVertexLighting",
+                                               false);
 
   SettingWidgetBinder::BindWidgetToEnumSetting(
     sif, m_ui.gpuDumpCompressionMode, "GPU", "DumpCompressionMode", &Settings::ParseGPUDumpCompressionMode,
@@ -536,6 +539,12 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
   dialog->registerWidgetHelp(m_ui.gpuWireframeMode, tr("Wireframe Mode"), tr("Disabled"),
                              tr("Draws a wireframe outline of the triangles rendered by the console's GPU, either as a "
                                 "replacement or an overlay."));
+  dialog->registerWidgetHelp(
+    m_ui.gpuDisableTextures, tr("Disable Textures"), tr("Unchecked"),
+    tr("Disables texture emulation in the GPU, forcing all primitives to only show vertex colours."));
+  dialog->registerWidgetHelp(
+    m_ui.gpuDisableVertexLighting, tr("Disable Vertex Lighting"), tr("Unchecked"),
+    tr("Disables vertex lighting in the GPU, forcing all primitives to only show raw texture colours."));
   dialog->registerWidgetHelp(
     m_ui.useDebugDevice, tr("Use Debug Device"), tr("Unchecked"),
     tr("Enable debugging when supported by the host's renderer API. <strong>Only for developer use.</strong>"));

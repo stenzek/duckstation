@@ -997,6 +997,24 @@
           <item row="0" column="1">
            <widget class="QComboBox" name="gpuWireframeMode"/>
           </item>
+          <item row="1" column="0" colspan="2">
+           <layout class="QGridLayout" name="gridLayout_3">
+            <item row="0" column="0">
+             <widget class="QCheckBox" name="gpuDisableTextures">
+              <property name="text">
+               <string>Disable Textures</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QCheckBox" name="gpuDisableVertexLighting">
+              <property name="text">
+               <string>Disable Vertex Lighting</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
          </layout>
         </widget>
        </item>

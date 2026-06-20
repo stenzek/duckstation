@@ -5519,6 +5519,15 @@ void FullscreenUI::DrawAdvancedSettingsPage()
                   &Settings::GetGPUWireframeModeName, &Settings::GetGPUWireframeModeDisplayName,
                   GPUWireframeMode::Count);
 
+  DrawToggleSetting(
+    bsi, FSUI_VSTR("Disable Textures"),
+    FSUI_VSTR("Disables texture emulation in the GPU, forcing all primitives to only show vertex colours."), "GPU",
+    "DisableTextures", false);
+  DrawToggleSetting(
+    bsi, FSUI_VSTR("Disable Vertex Lighting"),
+    FSUI_VSTR("Disables vertex lighting in the GPU, forcing all primitives to only show raw texture colours."), "GPU",
+    "DisableVertexLighting", false);
+
   MenuHeading(FSUI_VSTR("CPU Emulation"));
 
   DrawToggleSetting(bsi, FSUI_VSTR("Enable Recompiler Memory Exceptions"),

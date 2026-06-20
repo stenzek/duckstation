@@ -323,13 +323,16 @@ struct Locals
   bool set_texture_disable_mask = false;
   bool drawing_area_changed = false;
   bool force_progressive_scan = false;
+  bool texture_enable_mask = false;
+  bool force_raw_texture = false;
+
+  bool texture_x_flip = false;
+  bool texture_y_flip = false;
 
   GPUDrawModeReg draw_mode_reg = {};
   GPUTexturePaletteReg texture_palette_reg = {}; // from vertex
   u32 texture_window_reg = 0;
   GPUTextureWindow texture_window = {};
-  bool texture_x_flip = false;
-  bool texture_y_flip = false;
 
   GPUDrawingArea drawing_area = {};
   GPUDrawingOffset drawing_offset = {};
@@ -406,6 +409,8 @@ void GPU::Initialize()
   s_locals.fifo_size = g_settings.gpu_fifo_size;
   s_locals.max_run_ahead = g_settings.gpu_max_run_ahead;
   s_locals.console_is_pal = System::IsPALRegion();
+  s_locals.texture_enable_mask = !g_settings.gpu_disable_textures;
+  s_locals.force_raw_texture = g_settings.gpu_disable_vertex_lighting;
   UpdateCRTCConfig();
 }
 
@@ -423,6 +428,8 @@ void GPU::UpdateSettings(const Settings& old_settings)
   s_locals.force_progressive_scan = (g_settings.display_deinterlacing_mode == DisplayDeinterlacingMode::Progressive);
   s_locals.fifo_size = g_settings.gpu_fifo_size;
   s_locals.max_run_ahead = g_settings.gpu_max_run_ahead;
+  s_locals.texture_enable_mask = !g_settings.gpu_disable_textures;
+  s_locals.force_raw_texture = g_settings.gpu_disable_vertex_lighting;
 
   if (g_settings.gpu_force_video_timing != old_settings.gpu_force_video_timing)
   {
@@ -720,8 +727,8 @@ void GPU::DoMemoryState(StateWrapper& sw, System::MemorySaveState& mss)
   sw.DoBytes(&s_locals.texture_palette_reg, sizeof(s_locals.texture_palette_reg));
   sw.DoBytes(&s_locals.texture_window_reg, sizeof(s_locals.texture_window_reg));
   sw.DoBytes(&s_locals.texture_window, sizeof(s_locals.texture_window));
-  //sw.DoBytes(&s_locals.texture_x_flip, sizeof(s_locals.texture_x_flip));
-  //sw.DoBytes(&s_locals.texture_y_flip, sizeof(s_locals.texture_y_flip));
+  // sw.DoBytes(&s_locals.texture_x_flip, sizeof(s_locals.texture_x_flip));
+  // sw.DoBytes(&s_locals.texture_y_flip, sizeof(s_locals.texture_y_flip));
   sw.DoBytes(&s_locals.drawing_area, sizeof(s_locals.drawing_area));
   sw.DoBytes(&s_locals.drawing_offset, sizeof(s_locals.drawing_offset));
 
@@ -2944,12 +2951,13 @@ ALWAYS_INLINE_RELEASE void GPU::FillDrawCommand(GPUBackendDrawCommand* RESTRICT 
   cmd->active_line_lsb = ConvertToBoolUnchecked(s_locals.crtc_state.active_line_lsb);
   cmd->check_mask_before_draw = s_locals.GPUSTAT.check_mask_before_draw;
   cmd->set_mask_while_drawing = s_locals.GPUSTAT.set_mask_while_drawing;
-  const bool texture_enable = (primitive != GPUPrimitive::Line && rc.texture_enable);
-  const bool raw_texture_enable = (texture_enable && rc.raw_texture_enable);
+  const bool texture_enable = (primitive != GPUPrimitive::Line && rc.texture_enable && s_locals.texture_enable_mask);
+  const bool raw_texture_enable = (texture_enable && (rc.raw_texture_enable || s_locals.force_raw_texture));
   cmd->texture_enable = texture_enable;
   cmd->raw_texture_enable = raw_texture_enable;
   cmd->transparency_enable = rc.transparency_enable;
-  cmd->shading_enable = rc.shading_enable;
+  const bool shading_enable = rc.shading_enable;
+  cmd->shading_enable = shading_enable;
   cmd->quad_polygon = rc.quad_polygon;
 
   // Dithering is always enabled for lines, always disabled for sprites, and follows the dither enable bit for polygons.
@@ -2960,7 +2968,7 @@ ALWAYS_INLINE_RELEASE void GPU::FillDrawCommand(GPUBackendDrawCommand* RESTRICT 
   else if constexpr (primitive == GPUPrimitive::Rectangle)
     cmd->dither_enable = false;
   else
-    cmd->dither_enable = (dither_enable && (rc.shading_enable || (texture_enable && !raw_texture_enable)));
+    cmd->dither_enable = (dither_enable && (shading_enable || (texture_enable && !raw_texture_enable)));
 
   cmd->draw_mode.bits = s_locals.draw_mode_reg.bits;
   cmd->palette.bits = s_locals.texture_palette_reg.bits;

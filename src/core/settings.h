@@ -72,6 +72,8 @@ struct GPUSettings
   bool gpu_disable_raster_order_views : 1 = false;
   bool gpu_disable_compute_shaders : 1 = false;
   bool gpu_disable_compressed_textures : 1 = false;
+  bool gpu_disable_textures : 1 = false;
+  bool gpu_disable_vertex_lighting : 1 = false;
   bool gpu_automatic_resolution_scale : 1 = false;
   bool gpu_per_sample_shading : 1 = false;
   bool gpu_scaled_interlacing : 1 = true;

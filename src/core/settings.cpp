@@ -350,6 +350,8 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
     ParseForceVideoTimingName(
       si.GetStringViewValue("GPU", "ForceVideoTiming", GetForceVideoTimingName(DEFAULT_FORCE_VIDEO_TIMING_MODE)))
       .value_or(DEFAULT_FORCE_VIDEO_TIMING_MODE);
+  gpu_disable_textures = si.GetBoolValue("GPU", "DisableTextures", false);
+  gpu_disable_vertex_lighting = si.GetBoolValue("GPU", "DisableVertexLighting", false);
   gpu_widescreen_rendering = gpu_widescreen_hack = si.GetBoolValue("GPU", "WidescreenHack", false);
   gpu_modulation_crop = si.GetBoolValue("GPU", "EnableModulationCrop", false);
   gpu_texture_cache = si.GetBoolValue("GPU", "EnableTextureCache", false);
@@ -737,6 +739,8 @@ void Settings::Save(SettingsInterface& si, bool ignore_user_prefs, bool for_copy
   si.SetUIntValue("GPU", "DownsampleScale", gpu_downsample_scale);
   si.SetStringValue("GPU", "WireframeMode", GetGPUWireframeModeName(gpu_wireframe_mode));
   si.SetStringValue("GPU", "ForceVideoTiming", GetForceVideoTimingName(gpu_force_video_timing));
+  si.SetBoolValue("GPU", "DisableTextures", gpu_disable_textures);
+  si.SetBoolValue("GPU", "DisableVertexLighting", gpu_disable_vertex_lighting);
   si.SetBoolValue("GPU", "WidescreenHack", gpu_widescreen_rendering);
   si.SetBoolValue("GPU", "EnableModulationCrop", gpu_modulation_crop);
   si.SetBoolValue("GPU", "EnableTextureCache", gpu_texture_cache);
@@ -1152,6 +1156,8 @@ void Settings::ApplySettingRestrictions()
     gpu_downsample_mode = GPUDownsampleMode::Disabled;
     gpu_wireframe_mode = GPUWireframeMode::Disabled;
     gpu_force_video_timing = ForceVideoTimingMode::Disabled;
+    gpu_disable_textures = false;
+    gpu_disable_vertex_lighting = false;
     gpu_widescreen_rendering = false;
     gpu_widescreen_hack = false;
     gpu_modulation_crop = false;
