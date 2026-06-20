@@ -259,6 +259,7 @@
     <addaction name="actionCoverDownloader"/>
     <addaction name="actionControllerTest"/>
     <addaction name="separator"/>
+    <addaction name="actionToolsRefreshAchievementDatabase"/>
     <addaction name="actionToolsRefreshAchievementProgress"/>
     <addaction name="separator"/>
     <addaction name="actionMemoryEditor"/>
@@ -1451,13 +1452,28 @@
    </property>
    <property name="icon">
     <iconset resource="resources/duckstation-qt.qrc">
-     <normaloff>:/icons/monochrome/svg/refresh-line.svg</normaloff>:/icons/monochrome/svg/refresh-line.svg</iconset>
+     <normaloff>:/icons/monochrome/svg/ruler-line.svg</normaloff>:/icons/monochrome/svg/ruler-line.svg</iconset>
    </property>
    <property name="text">
     <string>Refresh Achievement &amp;Progress</string>
    </property>
    <property name="toolTip">
     <string>Refreshes the list of unlocked achievements.</string>
+   </property>
+  </action>
+  <action name="actionToolsRefreshAchievementDatabase">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/refresh-line.svg</normaloff>:/icons/monochrome/svg/refresh-line.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Refresh Achievement Database</string>
+   </property>
+   <property name="toolTip">
+    <string>Updates the database for achievements shown in the game list.</string>
    </property>
   </action>
   <action name="actionShowLocalizedTitles">

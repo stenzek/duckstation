@@ -104,6 +104,7 @@ static void DrawPatchesOrCheatsSettingsPage(bool cheats);
 static void DrawCoverDownloaderWindow();
 static void SaveCoverDownloaderURLs();
 static void DrawAchievementsLoginWindow();
+static void StartAchievementsDatabaseRefresh();
 static void StartAchievementsProgressRefresh();
 static void ClearWebCache();
 
@@ -5271,8 +5272,14 @@ void FullscreenUI::DrawAchievementsSettingsPage(std::unique_lock<std::mutex>& se
   {
     MenuHeading(FSUI_VSTR("Operations"));
 
-    if (MenuButton(FSUI_ICONVSTR(ICON_FA_ARROWS_ROTATE, "Refresh Achievement Progress"),
-                   FSUI_VSTR("Updates the progress database for achievements shown in the game list."), enabled))
+    if (MenuButton(FSUI_ICONVSTR(ICON_FA_ARROWS_ROTATE, "Refresh Achievement Database"),
+                   FSUI_VSTR("Updates the database for achievements shown in the game list."), enabled))
+    {
+      StartAchievementsDatabaseRefresh();
+    }
+
+    if (MenuButton(FSUI_ICONVSTR(ICON_FA_RULER_HORIZONTAL, "Refresh Achievement Progress"),
+                   FSUI_VSTR("Refreshes the list of unlocked achievements."), enabled))
     {
       StartAchievementsProgressRefresh();
     }
@@ -5423,6 +5430,30 @@ void FullscreenUI::DrawAchievementsLoginWindow()
   EndHorizontalMenuButtons();
 
   EndFixedPopupDialog();
+}
+
+void FullscreenUI::StartAchievementsDatabaseRefresh()
+{
+  auto progress = OpenModalProgressDialog(FSUI_STR("Refresh Achievement Database"));
+
+  Host::QueueAsyncTask([progress = progress.release()]() {
+    Error error;
+    const bool result = Achievements::RefreshGameList(progress, &error);
+    Host::RunOnCoreThread([error = std::move(error), progress, result]() mutable {
+      VideoThread::RunOnThread([error = std::move(error), progress, result]() mutable {
+        delete progress;
+        if (result)
+        {
+          ShowToast(OSDMessageType::Info, {}, FSUI_STR("Database updated."));
+        }
+        else
+        {
+          FullscreenUI::OpenInfoMessageDialog(ICON_EMOJI_NO_ENTRY_SIGN, FSUI_STR("Update Database"),
+                                              error.TakeDescription());
+        }
+      });
+    });
+  });
 }
 
 void FullscreenUI::StartAchievementsProgressRefresh()

@@ -2577,6 +2577,8 @@ void MainWindow::connectSignals()
   connect(m_ui.actionISOBrowser, &QAction::triggered, this, &MainWindow::onToolsISOBrowserTriggered);
   connect(m_ui.actionControllerTest, &QAction::triggered, g_core_thread, &CoreThread::startControllerTest);
   connect(m_ui.actionCoverDownloader, &QAction::triggered, this, &MainWindow::onToolsCoverDownloaderTriggered);
+  connect(m_ui.actionToolsRefreshAchievementDatabase, &QAction::triggered, g_main_window,
+          &MainWindow::onToolsRefreshAchievementDatabaseTriggered);
   connect(m_ui.actionToolsRefreshAchievementProgress, &QAction::triggered, g_main_window,
           &MainWindow::refreshAchievementProgress);
   connect(m_ui.actionMediaCapture, &QAction::triggered, this, &MainWindow::onToolsMediaCaptureTriggered);
@@ -3284,6 +3286,7 @@ void MainWindow::onAchievementsLoginSuccess(const QString& username, quint32 poi
 
 void MainWindow::onAchievementsActiveChanged(bool active)
 {
+  m_ui.actionToolsRefreshAchievementDatabase->setEnabled(active);
   m_ui.actionToolsRefreshAchievementProgress->setEnabled(active);
 }
 
@@ -3353,6 +3356,23 @@ void MainWindow::onToolsCoverDownloaderTriggered()
   }
 
   QtUtils::ShowOrRaiseWindow(m_cover_download_window, this, true);
+}
+
+void MainWindow::onToolsRefreshAchievementDatabaseTriggered()
+{
+  QtAsyncTaskWithProgressDialog::create(
+    this, TRANSLATE_STR("MainWindow", "Refresh Achievement Progress"), {}, false, true, 0, 0, 0.0f, true,
+    [](ProgressCallback* progress) {
+      Error error;
+      const bool result = Achievements::RefreshGameList(progress, &error);
+      return [error = std::move(error), result]() {
+        if (!result)
+          g_main_window->reportError(tr("Error"), QString::fromStdString(error.GetDescription()));
+
+        g_main_window->m_ui.statusBar->showMessage(tr("RA: Updated achievement game database."));
+        g_main_window->m_game_list_widget->getModel()->invalidateColumn(GameListModel::Column_Achievements);
+      };
+    });
 }
 
 void MainWindow::refreshAchievementProgress()
