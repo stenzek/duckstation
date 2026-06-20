@@ -9,7 +9,7 @@
 
 #include "util/postprocessing.h"
 
-#include <QtWidgets/QTableWidget>
+#include <QtWidgets/QTabWidget>
 #include <QtWidgets/QWidget>
 
 class SettingsWindow;
