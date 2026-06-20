@@ -32,7 +32,7 @@ LOG_CHANNEL(GPU);
 
 namespace {
 
-struct ALIGN_TO_CACHE_LINE CoreThreadState
+struct CoreThreadState
 {
   static constexpr u32 WAIT_NONE = 0;
   static constexpr u32 WAIT_CORE_THREAD_WAITING = 1;
@@ -49,7 +49,7 @@ struct ALIGN_TO_CACHE_LINE CoreThreadState
 GPUBackend::Counters GPUBackend::s_counters = {};
 GPUBackend::Stats GPUBackend::s_stats = {};
 
-static CoreThreadState s_core_thread_state = {};
+ALIGN_TO_CACHE_LINE static CoreThreadState s_core_thread_state = {};
 
 GPUBackend::GPUBackend()
 {

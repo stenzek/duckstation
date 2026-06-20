@@ -372,7 +372,7 @@ static void UpdateTransferEvent();
 static void UpdateDMARequest();
 
 namespace {
-struct ALIGN_TO_CACHE_LINE SPUState
+struct SPUState
 {
   TimingEvent transfer_event{"SPU Transfer", TRANSFER_TICKS_PER_HALFWORD, TRANSFER_TICKS_PER_HALFWORD,
                              &SPU::ExecuteTransfer, nullptr};
@@ -444,7 +444,7 @@ struct ALIGN_TO_CACHE_LINE SPUState
 };
 } // namespace
 
-static SPUState s_state;
+ALIGN_TO_CACHE_LINE static SPUState s_state;
 ALIGN_TO_CACHE_LINE static std::array<u8, RAM_SIZE> s_ram{};
 ALIGN_TO_CACHE_LINE static std::array<s16, (44100 / 60) * 2> s_muted_output_buffer{};
 
