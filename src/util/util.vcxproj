@@ -117,6 +117,7 @@
       <ExcludedFromBuild>true</ExcludedFromBuild>
     </ClInclude>
     <ClInclude Include="xinput_source.h" />
+    <ClInclude Include="zip_helpers.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="animated_image.cpp" />
@@ -226,6 +227,7 @@
     </ClCompile>
     <ClCompile Include="xaudio2_audio_stream.cpp" />
     <ClCompile Include="xinput_source.cpp" />
+    <ClCompile Include="zip_helpers.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\dep\cubeb\cubeb.vcxproj">

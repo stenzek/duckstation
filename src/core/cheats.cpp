@@ -13,6 +13,7 @@
 
 #include "util/imgui_manager.h"
 #include "util/translation.h"
+#include "util/zip_helpers.h"
 
 #include "common/assert.h"
 #include "common/error.h"
@@ -22,7 +23,6 @@
 #include "common/settings_interface.h"
 #include "common/small_string.h"
 #include "common/string_util.h"
-#include "common/zip_helpers.h"
 
 #include "IconsEmoji.h"
 #include "IconsFontAwesome.h"

@@ -94,6 +94,8 @@ add_library(util
   wav_reader_writer.h
   window_info.cpp
   window_info.h
+  zip_helpers.cpp
+  zip_helpers.h
 )
 
 target_precompile_headers(util PRIVATE "pch.h")
@@ -101,7 +103,7 @@ target_include_directories(util PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/..")
 target_link_libraries(util PUBLIC common imgui)
 target_link_libraries(util PRIVATE libchdr lzma libjpeg-turbo::jpeg PNG::png_shared WebP::webp
                                    plutosvg::plutosvg ZLIB::ZLIB SoundTouch::SoundTouchDLL xxhash
-                                   zstd::libzstd_shared reshadefx)
+                                   libzip::zip zstd::libzstd_shared reshadefx)
 
 if(ENABLE_X11)
   target_sources(util PRIVATE

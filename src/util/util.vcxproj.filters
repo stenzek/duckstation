@@ -86,6 +86,7 @@
     <ClInclude Include="http_cache.h" />
     <ClInclude Include="dyn_sqlite.h" />
     <ClInclude Include="sqlite_helpers.h" />
+    <ClInclude Include="zip_helpers.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="state_wrapper.cpp" />
@@ -173,6 +174,7 @@
     <ClCompile Include="http_cache.cpp" />
     <ClCompile Include="xaudio2_audio_stream.cpp" />
     <ClCompile Include="sqlite_helpers.cpp" />
+    <ClCompile Include="zip_helpers.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="metal_shaders.metal" />

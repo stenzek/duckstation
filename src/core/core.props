@@ -24,7 +24,7 @@
 
   <ItemDefinitionGroup>
     <Link>
-      <AdditionalDependencies>%(AdditionalDependencies);cpuinfo.lib;zip.lib</AdditionalDependencies>
+      <AdditionalDependencies>%(AdditionalDependencies);cpuinfo.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
 </Project>
