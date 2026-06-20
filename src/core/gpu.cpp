@@ -231,22 +231,6 @@ static bool HandleCopyRectangleVRAMToCPUCommand();
 static bool HandleCopyRectangleVRAMToVRAMCommand();
 
 namespace {
-struct DrawMode
-{
-  static constexpr u16 PALETTE_MASK = UINT16_C(0b0111111111111111);
-  static constexpr u32 TEXTURE_WINDOW_MASK = UINT32_C(0b11111111111111111111);
-
-  // original values
-  GPUDrawModeReg mode_reg;
-  GPUTexturePaletteReg palette_reg; // from vertex
-  u32 texture_window_value;
-
-  // decoded values
-  // TODO: Make this a command
-  GPUTextureWindow texture_window;
-  bool texture_x_flip;
-  bool texture_y_flip;
-};
 
 struct CRTCState
 {
@@ -340,7 +324,12 @@ struct Locals
   bool drawing_area_changed = false;
   bool force_progressive_scan = false;
 
-  DrawMode draw_mode = {};
+  GPUDrawModeReg draw_mode_reg = {};
+  GPUTexturePaletteReg texture_palette_reg = {}; // from vertex
+  u32 texture_window_reg = 0;
+  GPUTextureWindow texture_window = {};
+  bool texture_x_flip = false;
+  bool texture_y_flip = false;
 
   GPUDrawingArea drawing_area = {};
   GPUDrawingOffset drawing_offset = {};
@@ -560,7 +549,7 @@ void GPU::SoftReset()
   s_locals.fifo.Clear();
   s_locals.blit_buffer.clear();
   s_locals.blit_remaining_words = 0;
-  s_locals.draw_mode.texture_window_value = 0xFFFFFFFFu;
+  s_locals.texture_window_reg = 0xFFFFFFFFu;
   SetDrawMode(0);
   SetTexturePalette(0);
   SetTextureWindow(0);
@@ -581,9 +570,9 @@ bool GPU::DoState(StateWrapper& sw)
 
   sw.Do(&s_locals.GPUSTAT.bits);
 
-  sw.Do(&s_locals.draw_mode.mode_reg.bits);
-  sw.Do(&s_locals.draw_mode.palette_reg.bits);
-  sw.Do(&s_locals.draw_mode.texture_window_value);
+  sw.Do(&s_locals.draw_mode_reg.bits);
+  sw.Do(&s_locals.texture_palette_reg.bits);
+  sw.Do(&s_locals.texture_window_reg);
 
   if (sw.GetVersion() < 62) [[unlikely]]
   {
@@ -592,12 +581,12 @@ bool GPU::DoState(StateWrapper& sw)
     sw.SkipBytes(sizeof(u32) * 4);
   }
 
-  sw.Do(&s_locals.draw_mode.texture_window.and_x);
-  sw.Do(&s_locals.draw_mode.texture_window.and_y);
-  sw.Do(&s_locals.draw_mode.texture_window.or_x);
-  sw.Do(&s_locals.draw_mode.texture_window.or_y);
-  sw.Do(&s_locals.draw_mode.texture_x_flip);
-  sw.Do(&s_locals.draw_mode.texture_y_flip);
+  sw.Do(&s_locals.texture_window.and_x);
+  sw.Do(&s_locals.texture_window.and_y);
+  sw.Do(&s_locals.texture_window.or_x);
+  sw.Do(&s_locals.texture_window.or_y);
+  sw.Do(&s_locals.texture_x_flip);
+  sw.Do(&s_locals.texture_y_flip);
 
   sw.Do(&s_locals.drawing_area.left);
   sw.Do(&s_locals.drawing_area.top);
@@ -727,7 +716,12 @@ void GPU::DoMemoryState(StateWrapper& sw, System::MemorySaveState& mss)
 {
   sw.Do(&s_locals.GPUSTAT.bits);
 
-  sw.DoBytes(&s_locals.draw_mode, sizeof(s_locals.draw_mode));
+  sw.DoBytes(&s_locals.draw_mode_reg, sizeof(s_locals.draw_mode_reg));
+  sw.DoBytes(&s_locals.texture_palette_reg, sizeof(s_locals.texture_palette_reg));
+  sw.DoBytes(&s_locals.texture_window_reg, sizeof(s_locals.texture_window_reg));
+  sw.DoBytes(&s_locals.texture_window, sizeof(s_locals.texture_window));
+  //sw.DoBytes(&s_locals.texture_x_flip, sizeof(s_locals.texture_x_flip));
+  //sw.DoBytes(&s_locals.texture_y_flip, sizeof(s_locals.texture_y_flip));
   sw.DoBytes(&s_locals.drawing_area, sizeof(s_locals.drawing_area));
   sw.DoBytes(&s_locals.drawing_offset, sizeof(s_locals.drawing_offset));
 
@@ -2108,7 +2102,7 @@ void GPU::HandleGetGPUInfoCommand(u32 value)
 
     case 0x02: // Get Texture Window
     {
-      s_locals.GPUREAD_latch = s_locals.draw_mode.texture_window_value;
+      s_locals.GPUREAD_latch = s_locals.texture_window_reg;
       DEBUG_LOG("Get texture window => 0x{:08X}", s_locals.GPUREAD_latch);
     }
     break;
@@ -2194,24 +2188,25 @@ void GPU::SetDrawMode(u16 value)
   if (!s_locals.set_texture_disable_mask)
     new_mode_reg.texture_disable = false;
 
-  s_locals.draw_mode.mode_reg.bits = new_mode_reg.bits;
+  s_locals.draw_mode_reg.bits = new_mode_reg.bits;
 
   // Bits 0..10 are returned in the GPU status register.
   s_locals.GPUSTAT.bits = (s_locals.GPUSTAT.bits & ~(GPUDrawModeReg::GPUSTAT_MASK)) |
                           (ZeroExtend32(new_mode_reg.bits) & GPUDrawModeReg::GPUSTAT_MASK);
-  s_locals.GPUSTAT.texture_disable = s_locals.draw_mode.mode_reg.texture_disable;
+  s_locals.GPUSTAT.texture_disable = s_locals.draw_mode_reg.texture_disable;
 }
 
 void GPU::SetTexturePalette(u16 value)
 {
-  value &= DrawMode::PALETTE_MASK;
-  s_locals.draw_mode.palette_reg.bits = value;
+  s_locals.texture_palette_reg.bits = value & GPUTexturePaletteReg::MASK;
 }
 
 void GPU::SetTextureWindow(u32 value)
 {
-  value &= DrawMode::TEXTURE_WINDOW_MASK;
-  if (s_locals.draw_mode.texture_window_value == value)
+  static constexpr u32 REGISTER_MASK = UINT32_C(0b11111111111111111111);
+
+  value &= REGISTER_MASK;
+  if (s_locals.texture_window_reg == value)
     return;
 
   const u8 mask_x = Truncate8(value & UINT32_C(0x1F));
@@ -2220,11 +2215,11 @@ void GPU::SetTextureWindow(u32 value)
   const u8 offset_y = Truncate8((value >> 15) & UINT32_C(0x1F));
   DEBUG_LOG("Set texture window {:02X} {:02X} {:02X} {:02X}", mask_x, mask_y, offset_x, offset_y);
 
-  s_locals.draw_mode.texture_window.and_x = ~(mask_x * 8);
-  s_locals.draw_mode.texture_window.and_y = ~(mask_y * 8);
-  s_locals.draw_mode.texture_window.or_x = (offset_x & mask_x) * 8u;
-  s_locals.draw_mode.texture_window.or_y = (offset_y & mask_y) * 8u;
-  s_locals.draw_mode.texture_window_value = value;
+  s_locals.texture_window.and_x = ~(mask_x * 8);
+  s_locals.texture_window.and_y = ~(mask_y * 8);
+  s_locals.texture_window.or_x = (offset_x & mask_x) * 8u;
+  s_locals.texture_window.or_y = (offset_y & mask_y) * 8u;
+  s_locals.texture_window_reg = value;
 }
 
 static bool IntegerScalePreferWidth(float display_width, float display_height, float pixel_aspect_ratio,
@@ -2959,7 +2954,7 @@ ALWAYS_INLINE_RELEASE void GPU::FillDrawCommand(GPUBackendDrawCommand* RESTRICT 
 
   // Dithering is always enabled for lines, always disabled for sprites, and follows the dither enable bit for polygons.
   // Relying on inlining to do the heavy lifting here.
-  const bool dither_enable = s_locals.draw_mode.mode_reg.dither_enable;
+  const bool dither_enable = s_locals.draw_mode_reg.dither_enable;
   if constexpr (primitive == GPUPrimitive::Line)
     cmd->dither_enable = dither_enable;
   else if constexpr (primitive == GPUPrimitive::Rectangle)
@@ -2967,9 +2962,9 @@ ALWAYS_INLINE_RELEASE void GPU::FillDrawCommand(GPUBackendDrawCommand* RESTRICT 
   else
     cmd->dither_enable = (dither_enable && (rc.shading_enable || (texture_enable && !raw_texture_enable)));
 
-  cmd->draw_mode.bits = s_locals.draw_mode.mode_reg.bits;
-  cmd->palette.bits = s_locals.draw_mode.palette_reg.bits;
-  cmd->window = s_locals.draw_mode.texture_window;
+  cmd->draw_mode.bits = s_locals.draw_mode_reg.bits;
+  cmd->palette.bits = s_locals.texture_palette_reg.bits;
+  cmd->window = s_locals.texture_window;
 }
 
 ALWAYS_INLINE u32 GPU::GetPolyLineVertexCount()
@@ -3012,7 +3007,7 @@ ALWAYS_INLINE_RELEASE void GPU::AddDrawRectangleTicks(const GSVector4i rect, boo
   u32 ticks_per_row = drawn_width;
   if (textured)
   {
-    switch (s_locals.draw_mode.mode_reg.texture_mode)
+    switch (s_locals.draw_mode_reg.texture_mode)
     {
       case GPUTextureMode::Palette4Bit:
         ticks_per_row += drawn_width;
@@ -3103,9 +3098,9 @@ bool GPU::HandleRenderPolygonCommand()
   {
     const u16 texpage_attribute = Truncate16((rc.shading_enable ? FifoPeek(5) : FifoPeek(4)) >> 16);
     SetDrawMode((texpage_attribute & GPUDrawModeReg::POLYGON_TEXPAGE_MASK) |
-                (s_locals.draw_mode.mode_reg.bits & ~GPUDrawModeReg::POLYGON_TEXPAGE_MASK));
+                (s_locals.draw_mode_reg.bits & ~GPUDrawModeReg::POLYGON_TEXPAGE_MASK));
     SetTexturePalette(Truncate16(FifoPeek(2) >> 16));
-    UpdateCLUTIfNeeded(s_locals.draw_mode.mode_reg.texture_mode, s_locals.draw_mode.palette_reg);
+    UpdateCLUTIfNeeded(s_locals.draw_mode_reg.texture_mode, s_locals.texture_palette_reg);
   }
 
   s_locals.render_command.bits = rc.bits;
@@ -3347,7 +3342,7 @@ bool GPU::HandleRenderRectangleCommand()
   if (rc.texture_enable)
   {
     SetTexturePalette(Truncate16(FifoPeek(2) >> 16));
-    UpdateCLUTIfNeeded(s_locals.draw_mode.mode_reg.texture_mode, s_locals.draw_mode.palette_reg);
+    UpdateCLUTIfNeeded(s_locals.draw_mode_reg.texture_mode, s_locals.texture_palette_reg);
   }
 
   const TickCount setup_ticks = 16;
@@ -4043,8 +4038,8 @@ void GPU::WriteCurrentVideoModeToDump(GPUDump::Recorder* dump)
   dump->WriteGP1Command(GP1Command::SetDisplayMode, dispmode.bits);
 
   // texture window/texture page
-  dump->WriteGP0Packet((0xE1u << 24) | ZeroExtend32(s_locals.draw_mode.mode_reg.bits));
-  dump->WriteGP0Packet((0xE2u << 24) | s_locals.draw_mode.texture_window_value);
+  dump->WriteGP0Packet((0xE1u << 24) | ZeroExtend32(s_locals.draw_mode_reg.bits));
+  dump->WriteGP0Packet((0xE2u << 24) | s_locals.texture_window_reg);
 
   // drawing area
   dump->WriteGP0Packet((0xE3u << 24) | static_cast<u32>(s_locals.drawing_area.left) |
