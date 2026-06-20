@@ -299,7 +299,7 @@ static TimingEvent* TimingEvents::FindActiveEvent(const std::string_view name)
 {
   for (TimingEvent* event = s_state.active_events_head; event; event = event->next)
   {
-    if (event->GetName() == name)
+    if (name == event->GetName())
       return event;
   }
 
@@ -512,7 +512,8 @@ bool TimingEvents::DoState(StateWrapper& sw)
 
       for (TimingEvent* event = s_state.active_events_head; event; event = event->next)
       {
-        sw.Do(&event->m_name);
+        std::string_view event_name = event->GetName();
+        sw.Do(&event_name);
         GlobalTicks next_run_time =
           (s_state.current_event == event) ? s_state.current_event_next_run_time : event->m_next_run_time;
         sw.Do(&next_run_time);
@@ -528,8 +529,8 @@ bool TimingEvents::DoState(StateWrapper& sw)
   return !sw.HasError();
 }
 
-TimingEvent::TimingEvent(const std::string_view name, TickCount period, TickCount interval,
-                         TimingEventCallback callback, void* callback_param)
+TimingEvent::TimingEvent(const char* name, TickCount period, TickCount interval, TimingEventCallback callback,
+                         void* callback_param)
   : m_callback(callback), m_callback_param(callback_param), m_period(period), m_interval(interval), m_name(name)
 {
   const GlobalTicks ts = TimingEvents::GetTimestampForNewEvent();

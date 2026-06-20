@@ -15,11 +15,11 @@ using TimingEventCallback = void (*)(void* param, TickCount ticks);
 class TimingEvent
 {
 public:
-  TimingEvent(const std::string_view name, TickCount period, TickCount interval, TimingEventCallback callback,
+  TimingEvent(const char* name, TickCount period, TickCount interval, TimingEventCallback callback,
               void* callback_param);
   ~TimingEvent();
 
-  ALWAYS_INLINE const std::string_view GetName() const { return m_name; }
+  ALWAYS_INLINE const char* GetName() const { return m_name; }
   ALWAYS_INLINE bool IsActive() const { return m_active; }
 
   // Returns the number of ticks between each event.
@@ -71,7 +71,7 @@ public:
   TickCount m_interval;
   bool m_active = false;
 
-  std::string_view m_name;
+  const char* m_name;
 };
 
 namespace TimingEvents {

@@ -21,7 +21,7 @@
 
 LOG_CHANNEL(MemoryCard);
 
-static constexpr std::array<std::string_view, NUM_CONTROLLER_AND_CARD_PORTS> s_event_names = {{
+static constexpr std::array<const char*, NUM_CONTROLLER_AND_CARD_PORTS> s_event_names = {{
   "Memory Card 1 Host Flush",
   "Memory Card 2 Host Flush",
   "Memory Card 3 Host Flush",
