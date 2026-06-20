@@ -132,26 +132,6 @@ union GPURenderCommand
   BitField<u32, bool, 27, 1> polyline;                       // only for lines
   BitField<u32, bool, 28, 1> shading_enable;                 // 0 - flat, 1 = gouraud
   BitField<u32, GPUPrimitive, 29, 3> primitive;
-
-  /// Returns true if texturing should be enabled. Depends on the primitive type.
-  ALWAYS_INLINE bool IsTexturingEnabled() const { return (primitive != GPUPrimitive::Line) ? texture_enable : false; }
-
-  /// Returns true if dithering should be enabled. Depends on the primitive type.
-  ALWAYS_INLINE bool IsDitheringEnabled() const
-  {
-    switch (primitive)
-    {
-      case GPUPrimitive::Polygon:
-        return shading_enable || (texture_enable && !raw_texture_enable);
-
-      case GPUPrimitive::Line:
-        return true;
-
-      case GPUPrimitive::Rectangle:
-      default:
-        return false;
-    }
-  }
 };
 
 union GP1SetDisplayMode

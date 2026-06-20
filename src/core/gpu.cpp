@@ -199,6 +199,7 @@ static void UpdateVRAM(u16 x, u16 y, u16 width, u16 height, const void* data, bo
 
 static void PrepareForDraw();
 static void FinishPolyline();
+template<GPUPrimitive primitive>
 static void FillDrawCommand(GPUBackendDrawCommand* RESTRICT cmd, GPURenderCommand rc);
 
 static void AddDrawTriangleTicks(GSVector2i v1, GSVector2i v2, GSVector2i v3, bool shaded, bool textured,
@@ -2941,18 +2942,30 @@ void GPU::PrepareForDraw()
   }
 }
 
-void GPU::FillDrawCommand(GPUBackendDrawCommand* RESTRICT cmd, GPURenderCommand rc)
+template<GPUPrimitive primitive>
+ALWAYS_INLINE_RELEASE void GPU::FillDrawCommand(GPUBackendDrawCommand* RESTRICT cmd, GPURenderCommand rc)
 {
   cmd->interlaced_rendering = IsInterlacedRenderingEnabled();
   cmd->active_line_lsb = ConvertToBoolUnchecked(s_locals.crtc_state.active_line_lsb);
   cmd->check_mask_before_draw = s_locals.GPUSTAT.check_mask_before_draw;
   cmd->set_mask_while_drawing = s_locals.GPUSTAT.set_mask_while_drawing;
-  cmd->texture_enable = rc.IsTexturingEnabled();
-  cmd->raw_texture_enable = rc.raw_texture_enable;
+  const bool texture_enable = (primitive != GPUPrimitive::Line && rc.texture_enable);
+  const bool raw_texture_enable = (texture_enable && rc.raw_texture_enable);
+  cmd->texture_enable = texture_enable;
+  cmd->raw_texture_enable = raw_texture_enable;
   cmd->transparency_enable = rc.transparency_enable;
   cmd->shading_enable = rc.shading_enable;
   cmd->quad_polygon = rc.quad_polygon;
-  cmd->dither_enable = rc.IsDitheringEnabled() && s_locals.draw_mode.mode_reg.dither_enable;
+
+  // Dithering is always enabled for lines, always disabled for sprites, and follows the dither enable bit for polygons.
+  // Relying on inlining to do the heavy lifting here.
+  const bool dither_enable = s_locals.draw_mode.mode_reg.dither_enable;
+  if constexpr (primitive == GPUPrimitive::Line)
+    cmd->dither_enable = dither_enable;
+  else if constexpr (primitive == GPUPrimitive::Rectangle)
+    cmd->dither_enable = false;
+  else
+    cmd->dither_enable = (dither_enable && (rc.shading_enable || (texture_enable && !raw_texture_enable)));
 
   cmd->draw_mode.bits = s_locals.draw_mode.mode_reg.bits;
   cmd->palette.bits = s_locals.draw_mode.palette_reg.bits;
@@ -3103,7 +3116,7 @@ bool GPU::HandleRenderPolygonCommand()
   if (g_settings.gpu_pgxp_enable)
   {
     GPUBackendDrawPrecisePolygonCommand* RESTRICT cmd = GPUBackend::NewDrawPrecisePolygonCommand(num_vertices);
-    FillDrawCommand(cmd, rc);
+    FillDrawCommand<GPUPrimitive::Polygon>(cmd, rc);
     cmd->num_vertices = Truncate16(num_vertices);
 
     const u32 first_color = rc.color_for_first_vertex;
@@ -3227,7 +3240,7 @@ bool GPU::HandleRenderPolygonCommand()
   else
   {
     GPUBackendDrawPolygonCommand* RESTRICT cmd = GPUBackend::NewDrawPolygonCommand(num_vertices);
-    FillDrawCommand(cmd, rc);
+    FillDrawCommand<GPUPrimitive::Polygon>(cmd, rc);
     cmd->num_vertices = Truncate16(num_vertices);
 
     const u32 first_color = rc.color_for_first_vertex;
@@ -3349,7 +3362,7 @@ bool GPU::HandleRenderRectangleCommand()
 
   PrepareForDraw();
   GPUBackendDrawRectangleCommand* cmd = GPUBackend::NewDrawRectangleCommand();
-  FillDrawCommand(cmd, rc);
+  FillDrawCommand<GPUPrimitive::Rectangle>(cmd, rc);
   cmd->color = rc.color_for_first_vertex;
 
   const GPUVertexPosition vp{FifoPop()};
@@ -3419,7 +3432,7 @@ bool GPU::HandleRenderLineCommand()
   if (g_settings.gpu_pgxp_enable)
   {
     GPUBackendDrawPreciseLineCommand* RESTRICT cmd = GPUBackend::NewDrawPreciseLineCommand(2);
-    FillDrawCommand(cmd, rc);
+    FillDrawCommand<GPUPrimitive::Line>(cmd, rc);
     cmd->palette.bits = 0;
 
     bool valid_w = g_settings.gpu_pgxp_texture_correction;
@@ -3459,7 +3472,7 @@ bool GPU::HandleRenderLineCommand()
   else
   {
     GPUBackendDrawLineCommand* RESTRICT cmd = GPUBackend::NewDrawLineCommand(2);
-    FillDrawCommand(cmd, rc);
+    FillDrawCommand<GPUPrimitive::Line>(cmd, rc);
     cmd->palette.bits = 0;
 
     if (rc.shading_enable)
@@ -3548,7 +3561,7 @@ void GPU::FinishPolyline()
   if (g_settings.gpu_pgxp_enable)
   {
     GPUBackendDrawPreciseLineCommand* RESTRICT cmd = GPUBackend::NewDrawPreciseLineCommand((num_vertices - 1) * 2);
-    FillDrawCommand(cmd, s_locals.render_command);
+    FillDrawCommand<GPUPrimitive::Line>(cmd, s_locals.render_command);
     cmd->palette.bits = 0;
 
     u32 buffer_pos = 0;
@@ -3606,7 +3619,7 @@ void GPU::FinishPolyline()
   else
   {
     GPUBackendDrawLineCommand* RESTRICT cmd = GPUBackend::NewDrawLineCommand((num_vertices - 1) * 2);
-    FillDrawCommand(cmd, s_locals.render_command);
+    FillDrawCommand<GPUPrimitive::Line>(cmd, s_locals.render_command);
     cmd->palette.bits = 0;
 
     u32 buffer_pos = 0;
