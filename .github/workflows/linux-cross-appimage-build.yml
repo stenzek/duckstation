@@ -50,7 +50,7 @@ jobs:
 
     - name: Create Binary Aliases
       run: |
-        ln -s llvm-strip-20 /usr/bin/llvm-strip
+        ln -s llvm-strip-22 /usr/bin/llvm-strip
 
     - name: Set Up Toolchain File
       run: |
@@ -58,12 +58,12 @@ jobs:
         echo "set(CMAKE_FIND_ROOT_PATH \"$PWD/dep/prebuilt/linux-cross-${{matrix.arch}};/${{matrix.arch}}-chroot\")" >> "$HOME/toolchain.cmake"
         echo "set(QT_HOST_PATH \"$PWD/dep/prebuilt/linux-x64\")" >> "$HOME/toolchain.cmake"
         echo "set(LCONVERT_EXE \"$PWD/dep/prebuilt/linux-x64/bin/lconvert\")" >> "$HOME/toolchain.cmake"
-        echo "set(CMAKE_C_COMPILER clang-20)" >> "$HOME/toolchain.cmake"
-        echo "set(CMAKE_C_COMPILER_AR llvm-ar-20)" >> "$HOME/toolchain.cmake"
-        echo "set(CMAKE_C_COMPILER_RANLIB llvm-ranlib-20)" >> "$HOME/toolchain.cmake"
-        echo "set(CMAKE_CXX_COMPILER clang++-20)" >> "$HOME/toolchain.cmake"
-        echo "set(CMAKE_CXX_COMPILER_AR llvm-ar-20)" >> "$HOME/toolchain.cmake"
-        echo "set(CMAKE_CXX_COMPILER_RANLIB llvm-ranlib-20)" >> "$HOME/toolchain.cmake"
+        echo "set(CMAKE_C_COMPILER clang-22)" >> "$HOME/toolchain.cmake"
+        echo "set(CMAKE_C_COMPILER_AR llvm-ar-22)" >> "$HOME/toolchain.cmake"
+        echo "set(CMAKE_C_COMPILER_RANLIB llvm-ranlib-22)" >> "$HOME/toolchain.cmake"
+        echo "set(CMAKE_CXX_COMPILER clang++-22)" >> "$HOME/toolchain.cmake"
+        echo "set(CMAKE_CXX_COMPILER_AR llvm-ar-22)" >> "$HOME/toolchain.cmake"
+        echo "set(CMAKE_CXX_COMPILER_RANLIB llvm-ranlib-22)" >> "$HOME/toolchain.cmake"
         echo "set(CMAKE_EXE_LINKER_FLAGS_INIT "-fuse-ld=lld")" >> "$HOME/toolchain.cmake"
         echo "set(CMAKE_MODULE_LINKER_FLAGS_INIT "-fuse-ld=lld")" >> "$HOME/toolchain.cmake"
         echo "set(CMAKE_SHARED_LINKER_FLAGS_INIT "-fuse-ld=lld")" >> "$HOME/toolchain.cmake"
