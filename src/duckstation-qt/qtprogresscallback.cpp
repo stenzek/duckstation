@@ -176,7 +176,7 @@ QtAsyncTaskWithProgressDialog::~QtAsyncTaskWithProgressDialog()
 {
   if (m_dialog)
   {
-    if (m_auto_close)
+    if (m_auto_close.load(std::memory_order_acquire))
     {
       // should null out itself
       delete m_dialog;
@@ -494,7 +494,7 @@ void QtAsyncTaskWithProgressDialog::AppendMessage(std::string_view message)
 
 void QtAsyncTaskWithProgressDialog::SetAutoClose(bool enabled)
 {
-  m_auto_close = enabled;
+  m_auto_close.store(enabled, std::memory_order_release);
 }
 
 void QtAsyncTaskWithProgressDialog::EnsureShown()

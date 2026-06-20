@@ -172,7 +172,7 @@ private:
   Timer m_show_timer;
   float m_show_delay;
   bool m_shown = false;
-  bool m_auto_close = true;
+  std::atomic_bool m_auto_close{true};
   std::atomic_bool m_ts_cancelled{false};
   std::atomic_bool m_prompt_result{false};
   std::atomic_flag m_prompt_waiting = ATOMIC_FLAG_INIT;
