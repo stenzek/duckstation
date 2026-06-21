@@ -713,6 +713,18 @@ static constexpr const HotkeyInfo s_hotkey_list[] = {
      }
    }},
 
+  {"SelectNextSlotSaveState", TRANSLATE_NOOP("Hotkeys", "Save States"),
+   TRANSLATE_NOOP("Hotkeys", "Select Next Slot and Save State"),
+   [](s32 pressed) {
+     if (!pressed && System::IsValid())
+     {
+       VideoThread::RunOnThread([]() {
+         SaveStateSelectorUI::SelectNextSlot(false);
+         SaveStateSelectorUI::SaveCurrentSlot();
+       });
+     }
+   }},
+
   {"UndoLoadState", TRANSLATE_NOOP("Hotkeys", "Save States"), TRANSLATE_NOOP("Hotkeys", "Undo Load State"),
    [](s32 pressed) {
      if (!pressed)

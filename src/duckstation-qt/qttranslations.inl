@@ -18,4 +18,5 @@ TRANSLATION_LIST_ENTRY("Português (Br)", "pt-BR", "pt-BR", QLocale::Portuguese,
 TRANSLATION_LIST_ENTRY("Русский", "ru", "ru-RU", QLocale::Russian, QLocale::Russia)
 TRANSLATION_LIST_ENTRY("Svenska", "sv", "sv-SV", QLocale::Swedish, QLocale::Sweden)
 TRANSLATION_LIST_ENTRY("Türkçe", "tr", "tr-TR", QLocale::Turkish, QLocale::Turkey)
+TRANSLATION_LIST_ENTRY("Українська", "uk", "uk-UA", QLocale::Ukrainian, QLocale::Ukraine)
 TRANSLATION_LIST_ENTRY("简体中文", "zh-CN", "zh-CN", QLocale::Chinese, QLocale::China)

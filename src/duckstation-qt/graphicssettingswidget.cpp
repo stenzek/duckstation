@@ -63,7 +63,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 
   // Rendering Tab
 
-  connect(m_dialog, &SettingsWindow::debugOptionsVisibiltyChanged, this,
+  connect(m_dialog, &SettingsWindow::debugOptionsVisibilityChanged, this,
           &GraphicsSettingsWidget::onShowDebugSettingsChanged);
 
   if (!m_dialog->isPerGameSettings())

@@ -741,13 +741,11 @@ void FullscreenUI::DoResume()
 
 void FullscreenUI::DoStartFile()
 {
-  auto callback = [](const std::string& path) {
-    if (!path.empty())
-      DoStartPath(path);
-  };
-
-  OpenFileSelector(FSUI_ICONVSTR(ICON_EMOJI_OPTICAL_DISK, "Select Disc Image"), false, std::move(callback),
-                   GetDiscImageFilters());
+  OpenFileSelector(FSUI_ICONVSTR(ICON_EMOJI_OPTICAL_DISK, "Select Disc Image"), GetDiscImageFilters(), {},
+                   [](const std::string& path) {
+                     if (!path.empty())
+                       DoStartPath(path);
+                   });
 }
 
 void FullscreenUI::DoStartBIOS()
@@ -877,35 +875,34 @@ void FullscreenUI::DoToggleFastForward()
 
 void FullscreenUI::StartChangeDiscFromFile(bool return_to_game)
 {
-  auto callback = [return_to_game](const std::string& path) {
-    if (path.empty())
-    {
-      if (return_to_game)
-        UnpauseForMenuClose();
-      return;
-    }
-
-    ConfirmWithSafetyCheck(FSUI_STR("change disc"), false, [path, return_to_game](bool result) {
-      if (result)
+  OpenFileSelector(
+    FSUI_ICONVSTR(ICON_FA_COMPACT_DISC, "Select Disc Image"), GetDiscImageFilters(),
+    std::string(Path::GetDirectory(VideoThread::GetGamePath())), [return_to_game](const std::string& path) {
+      if (path.empty())
       {
-        if (!GameList::IsScannableFilename(path))
-        {
-          OpenInfoMessageDialog(ICON_EMOJI_NO_ENTRY_SIGN, FSUI_STR("Error"),
-                                fmt::format(FSUI_FSTR("{} is not a valid disc image."), Path::GetFileName(path)));
-          if (return_to_game)
-            UnpauseForMenuClose();
-        }
-        else
-        {
-          Host::RunOnCoreThread([path]() { System::InsertMedia(path.c_str()); });
-          ClosePauseMenuImmediately();
-        }
+        if (return_to_game)
+          UnpauseForMenuClose();
+        return;
       }
-    });
-  };
 
-  OpenFileSelector(FSUI_ICONVSTR(ICON_FA_COMPACT_DISC, "Select Disc Image"), false, std::move(callback),
-                   GetDiscImageFilters(), std::string(Path::GetDirectory(VideoThread::GetGamePath())));
+      ConfirmWithSafetyCheck(FSUI_STR("change disc"), false, [path, return_to_game](bool result) {
+        if (result)
+        {
+          if (!GameList::IsScannableFilename(path))
+          {
+            OpenInfoMessageDialog(ICON_EMOJI_NO_ENTRY_SIGN, FSUI_STR("Error"),
+                                  fmt::format(FSUI_FSTR("{} is not a valid disc image."), Path::GetFileName(path)));
+            if (return_to_game)
+              UnpauseForMenuClose();
+          }
+          else
+          {
+            Host::RunOnCoreThread([path]() { System::InsertMedia(path.c_str()); });
+            ClosePauseMenuImmediately();
+          }
+        }
+      });
+    });
 
   // This can come from the core thread without the menu, so need to to trigger run idle.
   UpdateRunIdleState();
@@ -1930,11 +1927,14 @@ u32 FullscreenUI::PopulateSaveStateListEntries(const std::string& serial,
     }
   }
 
-  for (s32 i = 1; i <= System::GLOBAL_SAVE_STATE_SLOTS; i++)
+  if (System::AreGlobalSaveStatesEnabled())
   {
-    SaveStateListEntry li;
-    if (InitializeSaveStateListEntryFromSerial(&li, serial, i, true) || !is_loading)
-      s_locals.save_state_selector_slots.push_back(std::move(li));
+    for (s32 i = 1; i <= System::GLOBAL_SAVE_STATE_SLOTS; i++)
+    {
+      SaveStateListEntry li;
+      if (InitializeSaveStateListEntryFromSerial(&li, serial, i, true) || !is_loading)
+        s_locals.save_state_selector_slots.push_back(std::move(li));
+    }
   }
 
   return static_cast<u32>(s_locals.save_state_selector_slots.size());
@@ -2038,7 +2038,8 @@ void FullscreenUI::DrawSaveStateSelector()
         ImVec2(0.0f, heading_size.y),
         ImVec2(io.DisplaySize.x, io.DisplaySize.y - heading_size.y - LayoutScale(LAYOUT_FOOTER_HEIGHT)),
         "##save_state_selector_list", ModAlpha(UIStyle.BackgroundColor, GetBackgroundAlpha()), 0.0f,
-        ImVec2(LAYOUT_MENU_WINDOW_X_PADDING, LAYOUT_MENU_WINDOW_Y_PADDING), 0, true))
+        ImVec2(LAYOUT_MENU_WINDOW_X_PADDING, LAYOUT_MENU_WINDOW_Y_PADDING), 0, true) &&
+      !s_locals.save_state_selector_slots.empty())
   {
     ResetFocusHere();
     BeginMenuButtons();

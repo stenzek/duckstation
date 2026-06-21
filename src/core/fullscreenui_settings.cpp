@@ -1611,22 +1611,22 @@ void FullscreenUI::DrawFolderSetting(SettingsInterface* bsi, std::string_view ti
 {
   if (MenuButton(title, runtime_var))
   {
-    OpenFileSelector(title, true,
-                     [game_settings = IsEditingGameSettings(bsi), section = TinyString(section),
-                      key = TinyString(key)](const std::string& dir) {
-                       if (dir.empty())
-                         return;
+    OpenDirectorySelector(title, runtime_var, EmuFolders::GetDefaultPath(&runtime_var),
+                          [game_settings = IsEditingGameSettings(bsi), section = TinyString(section),
+                           key = TinyString(key)](const std::string& dir) {
+                            if (dir.empty())
+                              return;
 
-                       const auto lock = Core::GetSettingsLock();
-                       SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
-                       std::string relative_path(Path::MakeRelative(dir, EmuFolders::DataRoot));
-                       bsi->SetStringValue(section.c_str(), key.c_str(), relative_path.c_str());
-                       SetSettingsChanged(bsi);
+                            const auto lock = Core::GetSettingsLock();
+                            SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
+                            std::string relative_path(Path::MakeRelative(dir, EmuFolders::DataRoot));
+                            bsi->SetStringValue(section.c_str(), key.c_str(), relative_path.c_str());
+                            SetSettingsChanged(bsi);
 
-                       Host::RunOnCoreThread(&EmuFolders::Update);
-                       if (key == "Covers")
-                         RemoveCoverCacheEntry({});
-                     });
+                            Host::RunOnCoreThread(&EmuFolders::Update);
+                            if (key == "Covers")
+                              RemoveCoverCacheEntry({});
+                          });
   }
 }
 
@@ -1867,7 +1867,7 @@ void FullscreenUI::BeginResetSettings()
                              if (!result)
                                return;
 
-                             Core::SetDefaultSettings(true, true, false);
+                             Core::SetDefaultSettings(true, true, false, true);
                              ShowToast(OSDMessageType::Quick, {}, FSUI_STR("Settings reset to default."));
                            });
 }
@@ -2630,19 +2630,20 @@ void FullscreenUI::DrawGameListSettingsPage()
   if (MenuButton(FSUI_ICONVSTR(ICON_FA_FOLDER_PLUS, "Add Search Directory"),
                  FSUI_VSTR("Adds a new directory to the game search list.")))
   {
-    OpenFileSelector(FSUI_ICONVSTR(ICON_FA_FOLDER_PLUS, "Add Search Directory"), true, [](const std::string& dir) {
-      if (!dir.empty())
-      {
-        const auto lock = Core::GetSettingsLock();
-        SettingsInterface* bsi = Core::GetBaseSettingsLayer();
+    OpenDirectorySelector(FSUI_ICONVSTR(ICON_FA_FOLDER_PLUS, "Add Search Directory"), {}, {},
+                          [](const std::string& dir) {
+                            if (!dir.empty())
+                            {
+                              const auto lock = Core::GetSettingsLock();
+                              SettingsInterface* bsi = Core::GetBaseSettingsLayer();
 
-        bsi->AddToStringList("GameList", "RecursivePaths", dir.c_str());
-        bsi->RemoveFromStringList("GameList", "Paths", dir.c_str());
-        SetSettingsChanged(bsi);
-        PopulateGameListDirectoryCache(*bsi);
-        Host::RefreshGameListAsync(false);
-      }
-    });
+                              bsi->AddToStringList("GameList", "RecursivePaths", dir.c_str());
+                              bsi->RemoveFromStringList("GameList", "Paths", dir.c_str());
+                              SetSettingsChanged(bsi);
+                              PopulateGameListDirectoryCache(*bsi);
+                              Host::RefreshGameListAsync(false);
+                            }
+                          });
   }
 
   for (const auto& it : s_settings_locals.game_list_directories_cache)
@@ -3335,7 +3336,7 @@ void FullscreenUI::BeginResetControllerSettings()
                              if (!result)
                                return;
 
-                             Core::SetDefaultSettings(false, false, true);
+                             Core::SetDefaultSettings(false, false, true, true);
                              ShowToast(OSDMessageType::Quick, {}, FSUI_STR("Controller settings reset to default."));
                            });
 }
@@ -3839,7 +3840,6 @@ void FullscreenUI::DrawMemoryCardSettingsPage()
   static constexpr const std::array path_keys = {"Card1Path", "Card2Path"};
 
   SettingsInterface* bsi = GetEditingSettingsInterface();
-  const bool game_settings = IsEditingGameSettings(bsi);
 
   BeginMenuButtons();
   ResetFocusHere();
@@ -3915,7 +3915,7 @@ void FullscreenUI::DrawMemoryCardSettingsPage()
     }
   }
 
-  MenuHeading(FSUI_VSTR("Settings and Operations"));
+  MenuHeading(FSUI_VSTR("Save Locations"));
 
   DrawFolderSetting(bsi, FSUI_ICONVSTR(ICON_FA_FOLDER_OPEN, "Memory Card Directory"), "MemoryCards", "Directory",
                     EmuFolders::MemoryCards);
@@ -3923,17 +3923,17 @@ void FullscreenUI::DrawMemoryCardSettingsPage()
   DrawFolderSetting(bsi, FSUI_ICONVSTR(ICON_FA_FOLDER_OPEN, "Save State Directory"), "Folders", "SaveStates",
                     EmuFolders::SaveStates);
 
-  if (!game_settings && MenuButton(FSUI_ICONVSTR(ICON_FA_ARROW_ROTATE_LEFT, "Reset Memory Card Directory"),
-                                   FSUI_VSTR("Resets memory card directory to default (user directory).")))
-  {
-    bsi->SetStringValue("MemoryCards", "Directory", "memcards");
-    SetSettingsChanged(bsi);
-  }
+  MenuHeading(FSUI_VSTR("Settings"));
 
   DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_SHARE_NODES, "Use Single Card For Multi-Disc Games"),
                     FSUI_VSTR("When playing a multi-disc game and using per-game (title) memory cards, "
                               "use a single memory card for all discs."),
                     "MemoryCards", "UsePlaylistTitle", true);
+
+  DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_GLOBE, "Enable Global Save States"),
+                    FSUI_VSTR("When enabled, the legacy global save state slots will be available. These slots are "
+                              "independent of the current game."),
+                    "Main", "EnableGlobalStates", false);
 
   EndMenuButtons();
 }
@@ -4889,18 +4889,16 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
       if (MenuButton(FSUI_ICONVSTR(ICON_FA_IMAGE, "Image Path"),
                      GetEffectiveTinyStringSetting(bsi, "BorderOverlay", "ImagePath", "")))
       {
-        OpenFileSelector(
-          FSUI_ICONVSTR(ICON_FA_IMAGE, "Image Path"), false,
-          [game_settings = IsEditingGameSettings(bsi)](const std::string& path) {
-            if (path.empty())
-              return;
+        OpenFileSelector(FSUI_ICONVSTR(ICON_FA_IMAGE, "Image Path"), GetImageFilters(), {},
+                         [game_settings = IsEditingGameSettings(bsi)](const std::string& path) {
+                           if (path.empty())
+                             return;
 
-            SettingsInterface* const bsi = GetEditingSettingsInterface(game_settings);
-            bsi->SetStringValue("BorderOverlay", "ImagePath", path.c_str());
-            SetSettingsChanged(bsi);
-            queue_reload();
-          },
-          GetImageFilters());
+                           SettingsInterface* const bsi = GetEditingSettingsInterface(game_settings);
+                           bsi->SetStringValue("BorderOverlay", "ImagePath", path.c_str());
+                           SetSettingsChanged(bsi);
+                           queue_reload();
+                         });
       }
 
       reload_pending |= DrawIntRectSetting(

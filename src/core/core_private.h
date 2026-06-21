@@ -24,7 +24,7 @@ bool InitializeBaseSettingsLayer(std::string settings_path, Error* error);
 bool SaveBaseSettingsLayer(Error* error);
 
 /// Restores default settings.
-void SetDefaultSettings(bool host, bool system, bool controller);
+void SetDefaultSettings(bool host, bool system, bool controller, bool ignore_user_prefs);
 
 /// Sets the game settings layer. Called by System when the game changes.
 void SetGameSettingsLayer(SettingsInterface* sif, std::unique_lock<std::mutex>& lock);

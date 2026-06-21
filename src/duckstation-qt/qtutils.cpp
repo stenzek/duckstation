@@ -288,7 +288,7 @@ void QtUtils::SetWindowResizeable(QWidget* widget, bool resizeable)
       // Min/max numbers come from uic.
       widget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
       widget->setMinimumSize(1, 1);
-      widget->setMaximumSize(16777215, 16777215);
+      widget->setMaximumSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
     }
     else
     {

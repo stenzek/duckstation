@@ -57,7 +57,7 @@ static constexpr u32 NUM_ASYNC_WORKER_THREADS = 2;
 
 static bool SetAppRootAndResources(const char* resources_subdir, Error* error);
 static bool SetDataRoot(Error* error);
-static void SetDefaultSettings(SettingsInterface& si, bool host, bool system, bool controller);
+static void SetDefaultSettings(SettingsInterface& si, bool host, bool system, bool controller, bool ignore_user_prefs);
 
 static void CheckCacheLineSize();
 static void LogStartupInformation();
@@ -276,7 +276,7 @@ bool Core::InitializeBaseSettingsLayer(std::string settings_path, Error* error)
     }
     else
     {
-      SetDefaultSettings(si, true, true, true);
+      SetDefaultSettings(si, true, true, true, false);
       if (!si.Save(error, Settings::GetSectionSaveOrder()))
       {
         Error::AddPrefix(error, "Failed to save settings: ");
@@ -287,7 +287,7 @@ bool Core::InitializeBaseSettingsLayer(std::string settings_path, Error* error)
   else
   {
     // Running settings-file-less, use defaults.
-    SetDefaultSettings(si, true, true, true);
+    SetDefaultSettings(si, true, true, true, false);
   }
 
   EmuFolders::LoadConfig(si);
@@ -310,24 +310,24 @@ bool Core::SaveBaseSettingsLayer(Error* error)
   return si.Save(error, Settings::GetSectionSaveOrder());
 }
 
-void Core::SetDefaultSettings(bool host, bool system, bool controller)
+void Core::SetDefaultSettings(bool host, bool system, bool controller, bool ignore_user_prefs)
 {
   {
     const auto lock = GetSettingsLock();
-    SetDefaultSettings(s_locals.base_settings_interface, host, system, controller);
+    SetDefaultSettings(s_locals.base_settings_interface, host, system, controller, ignore_user_prefs);
   }
 
   Host::OnSettingsResetToDefault(host, system, controller);
 }
 
-void Core::SetDefaultSettings(SettingsInterface& si, bool host, bool system, bool controller)
+void Core::SetDefaultSettings(SettingsInterface& si, bool host, bool system, bool controller, bool ignore_user_prefs)
 {
   if (host)
     Host::SetDefaultSettings(si);
 
   if (system)
   {
-    System::SetDefaultSettings(si);
+    System::SetDefaultSettings(si, ignore_user_prefs);
     EmuFolders::SetDefaults();
     EmuFolders::Save(si);
   }

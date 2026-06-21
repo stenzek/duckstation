@@ -110,7 +110,7 @@ struct Request
 };
 } // namespace
 
-static void StartOrAddRequest(Request* request);
+static void StartOrAddRequest(Request* req);
 static u32 LockedGetActiveRequestCount();
 static void LockedPollRequests(std::unique_lock<std::mutex>& lock);
 
@@ -121,9 +121,9 @@ static void InternalCreateRequest(Request::Type type, std::string url, std::stri
                                   RequestCallback callback, ProgressCallback* progress, u16 timeout_seconds,
                                   HeaderList additional_headers);
 
-static bool StartRequest(Request* request);
-static void CloseRequest(Request* request);
-static void DeleteRequest(Request* request);
+static bool StartRequest(Request* req);
+static void CloseRequest(Request* req);
+static void DeleteRequest(Request* req);
 
 #if defined(USE_WINHTTP)
 
@@ -234,17 +234,17 @@ void HTTPDownloader::CreatePostRequest(std::string url, std::string post_data, c
 // otherwise leaves it in Pending state to be promoted by LockedPollRequests().
 // Notifies the host when the queue transitions from empty to non-empty.
 // Called without pending_http_request_lock held; acquires it internally.
-void HTTPDownloader::StartOrAddRequest(Request* request)
+void HTTPDownloader::StartOrAddRequest(Request* req)
 {
   std::unique_lock lock(s_locals.pending_http_request_lock);
   if (LockedGetActiveRequestCount() < s_locals.max_active_requests)
   {
-    if (!StartRequest(request))
+    if (!StartRequest(req))
       return;
   }
 
   const bool was_empty = s_locals.pending_http_requests.empty();
-  s_locals.pending_http_requests.push_back(request);
+  s_locals.pending_http_requests.push_back(req);
   if (was_empty)
     Host::OnHTTPDownloaderActiveChanged(true);
 }
@@ -915,10 +915,8 @@ void HTTPDownloader::InternalCreateRequest(Request::Type type, std::string url, 
 // WinHttpSendRequest() to begin the async transfer. On success returns true and
 // leaves the request in Started state; the remainder of the transfer is driven by
 // HTTPStatusCallback(). On failure fires the callback directly and returns false.
-bool HTTPDownloader::StartRequest(Request* request)
+bool HTTPDownloader::StartRequest(Request* req)
 {
-  Request* req = static_cast<Request*>(request);
-
   std::wstring host_name;
   host_name.resize(req->url.size());
   req->object_name.resize(req->url.size());
@@ -1018,10 +1016,8 @@ bool HTTPDownloader::StartRequest(Request* request)
 // complete all pending I/O and then fire HANDLE_CLOSING, where the Request is freed.
 // If hRequest was never opened (early failure path), falls back to closing hConnection
 // and deleting the request directly.
-void HTTPDownloader::CloseRequest(Request* request)
+void HTTPDownloader::CloseRequest(Request* req)
 {
-  Request* req = static_cast<Request*>(request);
-
   if (req->hRequest != NULL)
   {
     // req will be freed by the callback.
@@ -1288,10 +1284,8 @@ void HTTPDownloader::ReadMultiResults()
 // Configures a new curl easy handle for the request and enqueues an Add action
 // for the worker thread. The worker thread owns the easy handle from this point;
 // the main thread must not touch it directly.
-bool HTTPDownloader::StartRequest(Request* request)
+bool HTTPDownloader::StartRequest(Request* req)
 {
-  Request* req = static_cast<Request*>(request);
-
   req->handle = curl_easy_init();
   if (!req->handle)
   {
@@ -1302,7 +1296,7 @@ bool HTTPDownloader::StartRequest(Request* request)
     return false;
   }
 
-  curl_easy_setopt(req->handle, CURLOPT_URL, request->url.c_str());
+  curl_easy_setopt(req->handle, CURLOPT_URL, req->url.c_str());
   curl_easy_setopt(req->handle, CURLOPT_WRITEFUNCTION, &HTTPDownloader::WriteCallback);
   curl_easy_setopt(req->handle, CURLOPT_WRITEDATA, req);
   curl_easy_setopt(req->handle, CURLOPT_NOSIGNAL, 1L);
@@ -1332,10 +1326,10 @@ bool HTTPDownloader::StartRequest(Request* request)
     curl_easy_setopt(req->handle, CURLOPT_USERAGENT, s_locals.user_agent.c_str());
   }
 
-  if (request->type == Request::Type::Post)
+  if (req->type == Request::Type::Post)
   {
     curl_easy_setopt(req->handle, CURLOPT_POST, 1L);
-    curl_easy_setopt(req->handle, CURLOPT_POSTFIELDS, request->post_data.c_str());
+    curl_easy_setopt(req->handle, CURLOPT_POSTFIELDS, req->post_data.c_str());
   }
 
   DEV_LOG("Started HTTP request for '{}'", req->url);
@@ -1356,9 +1350,8 @@ bool HTTPDownloader::StartRequest(Request* request)
 // Enqueues a RemoveAndDelete action so the worker thread removes the easy handle
 // from the multi handle, cleans it up, and frees the Request. The worker is then
 // woken via curl_multi_wakeup() to process the action promptly.
-void HTTPDownloader::CloseRequest(Request* request)
+void HTTPDownloader::CloseRequest(Request* req)
 {
-  Request* req = static_cast<Request*>(request);
   DebugAssert(req->handle);
 
   // Add to action queue for worker thread to process

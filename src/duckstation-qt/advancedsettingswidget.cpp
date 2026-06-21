@@ -124,7 +124,7 @@ void AdvancedSettingsWidget::onAnyLogSinksChanged()
 void AdvancedSettingsWidget::onShowDebugOptionsStateChanged()
 {
   const bool enabled = QtHost::ShouldShowDebugOptions();
-  emit m_dialog->debugOptionsVisibiltyChanged(enabled);
+  emit m_dialog->debugOptionsVisibilityChanged(enabled);
 }
 
 void AdvancedSettingsWidget::refreshWebCacheSize()

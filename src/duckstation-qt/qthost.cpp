@@ -875,7 +875,7 @@ void CoreThread::setDefaultSettings(bool host, bool system, bool controller)
     return;
   }
 
-  Core::SetDefaultSettings(host, system, controller);
+  Core::SetDefaultSettings(host, system, controller, true);
 }
 
 void Host::SetDefaultSettings(SettingsInterface& si)

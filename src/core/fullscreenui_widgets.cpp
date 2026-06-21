@@ -271,7 +271,7 @@ public:
   ~FileSelectorDialog();
 
   void Open(std::string_view title, FileSelectorCallback callback, FileSelectorFilters filters,
-            std::string initial_directory, bool select_directory);
+            std::string initial_directory);
   void ClearState();
 
   void Draw();
@@ -298,10 +298,50 @@ private:
 
   std::string m_current_directory;
   std::vector<Item> m_items;
-  std::vector<std::string> m_filters;
+  FileSelectorFilters m_filters;
   FileSelectorCallback m_callback;
 
-  bool m_is_directory = false;
+  bool m_directory_changed = false;
+  bool m_first_item_is_parent_directory = false;
+};
+
+class DirectorySelectorDialog : public PopupDialog
+{
+public:
+  DirectorySelectorDialog();
+  ~DirectorySelectorDialog();
+
+  void Open(std::string_view title, DirectorySelectorCallback callback, std::string initial_directory,
+            std::string default_directory);
+  void ClearState();
+
+  void Draw();
+
+private:
+  struct Item
+  {
+    Item() = default;
+    Item(std::string display_name_, std::string full_path_, bool is_file_);
+    Item(const Item&) = default;
+    Item(Item&&) = default;
+    ~Item() = default;
+
+    Item& operator=(const Item&) = default;
+    Item& operator=(Item&&) = default;
+
+    std::string display_name;
+    std::string full_path;
+    bool is_file;
+  };
+
+  void PopulateItems();
+  void SetDirectory(std::string dir);
+
+  std::string m_current_directory;
+  std::vector<Item> m_items;
+  std::string m_default_directory;
+  FileSelectorCallback m_callback;
+
   bool m_directory_changed = false;
   bool m_first_item_is_parent_directory = false;
 };
@@ -435,9 +475,11 @@ struct WidgetsState
   ImAnimatedVec2 menu_button_frame_min_animated;
   ImAnimatedVec2 menu_button_frame_max_animated;
 
+  // TODO: Make these dynamic rather than global state.
   ChoiceDialog choice_dialog;
   DropdownDialog dropdown_dialog;
   FileSelectorDialog file_selector_dialog;
+  DirectorySelectorDialog directory_selector_dialog;
   InputStringDialog input_string_dialog;
   FixedPopupDialog fixed_popup_dialog;
   ProgressDialog progress_dialog;
@@ -1648,6 +1690,7 @@ void FullscreenUI::EndLayout()
   s_state.choice_dialog.Draw();
   s_state.dropdown_dialog.Draw();
   s_state.file_selector_dialog.Draw();
+  s_state.directory_selector_dialog.Draw();
   s_state.input_string_dialog.Draw();
   s_state.progress_dialog.Draw();
   s_state.message_dialog.Draw();
@@ -3215,6 +3258,24 @@ void FullscreenUI::MenuHeading(std::string_view title, bool draw_line /*= true*/
     total_height += line_thickness + line_padding;
   }
 
+  ImGui::Dummy(ImVec2(0.0f, total_height));
+}
+
+void FullscreenUI::MenuSeparator()
+{
+  const float line_thickness = LayoutScale(1.0f);
+  const float line_padding = LayoutScale(5.0f);
+  const float avail_width = MenuButtonBounds::CalcAvailWidth();
+
+  const ImGuiWindow* const window = ImGui::GetCurrentWindowRead();
+  const ImGuiStyle& style = ImGui::GetStyle();
+  const ImVec2 pos = ImVec2(window->DC.CursorPos.x + style.FramePadding.x, window->DC.CursorPos.y);
+  const ImVec2 line_start = ImVec2(pos.x, pos.y + line_padding);
+  const ImVec2 line_end = ImVec2(line_start.x + avail_width, line_start.y);
+
+  window->DrawList->AddLine(line_start, line_end, ImGui::GetColorU32(ImGuiCol_TextDisabled), line_thickness);
+
+  const float total_height = line_thickness + style.FramePadding.y;
   ImGui::Dummy(ImVec2(0.0f, total_height));
 }
 
@@ -4802,8 +4863,7 @@ FullscreenUI::FileSelectorDialog::FileSelectorDialog() = default;
 FullscreenUI::FileSelectorDialog::~FileSelectorDialog() = default;
 
 void FullscreenUI::FileSelectorDialog::Open(std::string_view title, FileSelectorCallback callback,
-                                            FileSelectorFilters filters, std::string initial_directory,
-                                            bool select_directory)
+                                            FileSelectorFilters filters, std::string initial_directory)
 {
   if (initial_directory.empty() || !FileSystem::DirectoryExists(initial_directory.c_str()))
     initial_directory = FileSystem::GetWorkingDirectory();
@@ -4811,7 +4871,6 @@ void FullscreenUI::FileSelectorDialog::Open(std::string_view title, FileSelector
   SetTitleAndOpen(fmt::format("{}##file_selector_dialog", title));
   m_callback = std::move(callback);
   m_filters = std::move(filters);
-  m_is_directory = select_directory;
   SetDirectory(std::move(initial_directory));
 }
 
@@ -4820,7 +4879,6 @@ void FullscreenUI::FileSelectorDialog::ClearState()
   PopupDialog::ClearState();
   m_callback = {};
   m_filters = {};
-  m_is_directory = false;
   m_directory_changed = false;
 }
 
@@ -4846,9 +4904,8 @@ void FullscreenUI::FileSelectorDialog::PopulateItems()
   {
     FileSystem::FindResultsArray results;
     FileSystem::FindFiles(m_current_directory.c_str(), "*",
-                          (m_is_directory ? 0 : FILESYSTEM_FIND_FILES) | FILESYSTEM_FIND_FOLDERS |
-                            FILESYSTEM_FIND_HIDDEN_FILES | FILESYSTEM_FIND_RELATIVE_PATHS |
-                            FILESYSTEM_FIND_SORT_BY_NAME,
+                          FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_FOLDERS | FILESYSTEM_FIND_HIDDEN_FILES |
+                            FILESYSTEM_FIND_RELATIVE_PATHS | FILESYSTEM_FIND_SORT_BY_NAME,
                           &results);
 
     // Ensure we only go back to the root list once we've gone up from the root of that drive.
@@ -4863,8 +4920,8 @@ void FullscreenUI::FileSelectorDialog::PopulateItems()
         parent_path.push_back(FS_OSPATH_SEPARATOR_CHARACTER);
     }
 
-    m_items.emplace_back(fmt::format(ICON_EMOJI_FILE_FOLDER_OPEN " {}", FSUI_VSTR("<Parent Directory>")),
-                         std::move(parent_path), false);
+    m_items.emplace_back(fmt::format(ICON_EMOJI_ARROW_UP " {}", FSUI_VSTR("Parent Directory")), std::move(parent_path),
+                         false);
     m_first_item_is_parent_directory = true;
 
     for (const FILESYSTEM_FIND_DATA& fd : results)
@@ -4931,19 +4988,9 @@ void FullscreenUI::FileSelectorDialog::Draw()
   BeginMenuButtons();
 
   Item* selected = nullptr;
-  bool directory_selected = false;
 
   if (!m_current_directory.empty())
     MenuButtonWithoutSummary(SmallString::from_format(ICON_FA_FOLDER_OPEN " {}", m_current_directory), false);
-
-  if (m_is_directory && !m_current_directory.empty())
-  {
-    if (MenuButtonWithoutSummary(
-          SmallString::from_format(ICON_EMOJI_FILE_FOLDER_OPEN " {}", FSUI_VSTR("<Use This Directory>"))))
-    {
-      directory_selected = true;
-    }
-  }
 
   for (Item& item : m_items)
   {
@@ -4985,13 +5032,6 @@ void FullscreenUI::FileSelectorDialog::Draw()
                       [this, dir = std::move(selected->full_path)]() mutable { SetDirectory(std::move(dir)); });
     }
   }
-  else if (directory_selected)
-  {
-    std::string path = std::exchange(m_current_directory, std::string());
-    const FileSelectorCallback callback = std::exchange(m_callback, FileSelectorCallback());
-    StartClose();
-    callback(std::move(path));
-  }
   else
   {
     if (ImGui::IsKeyPressed(ImGuiKey_Backspace, false) || ImGui::IsKeyPressed(ImGuiKey_NavGamepadContextMenu, false))
@@ -5010,16 +5050,220 @@ bool FullscreenUI::IsFileSelectorOpen()
   return s_state.file_selector_dialog.IsOpen();
 }
 
-void FullscreenUI::OpenFileSelector(std::string_view title, bool select_directory, FileSelectorCallback callback,
-                                    FileSelectorFilters filters, std::string initial_directory)
+void FullscreenUI::OpenFileSelector(std::string_view title, FileSelectorFilters filters, std::string initial_directory,
+                                    FileSelectorCallback callback)
 {
-  s_state.file_selector_dialog.Open(title, std::move(callback), std::move(filters), std::move(initial_directory),
-                                    select_directory);
+  s_state.file_selector_dialog.Open(title, std::move(callback), std::move(filters), std::move(initial_directory));
 }
 
 void FullscreenUI::CloseFileSelector()
 {
   s_state.file_selector_dialog.StartClose();
+}
+
+FullscreenUI::DirectorySelectorDialog::DirectorySelectorDialog() = default;
+
+FullscreenUI::DirectorySelectorDialog::~DirectorySelectorDialog() = default;
+
+void FullscreenUI::DirectorySelectorDialog::Open(std::string_view title, DirectorySelectorCallback callback,
+                                                 std::string initial_directory, std::string default_directory)
+{
+  if (initial_directory.empty() || !FileSystem::DirectoryExists(initial_directory.c_str()))
+    initial_directory = FileSystem::GetWorkingDirectory();
+
+  SetTitleAndOpen(fmt::format("{}##file_selector_dialog", title));
+  m_default_directory = std::move(default_directory);
+  m_callback = std::move(callback);
+  SetDirectory(std::move(initial_directory));
+}
+
+void FullscreenUI::DirectorySelectorDialog::ClearState()
+{
+  PopupDialog::ClearState();
+  m_callback = {};
+  m_default_directory = {};
+  m_directory_changed = false;
+}
+
+FullscreenUI::DirectorySelectorDialog::Item::Item(std::string display_name_, std::string full_path_, bool is_file_)
+  : display_name(std::move(display_name_)), full_path(std::move(full_path_)), is_file(is_file_)
+{
+}
+
+void FullscreenUI::DirectorySelectorDialog::PopulateItems()
+{
+  m_items.clear();
+  m_first_item_is_parent_directory = false;
+
+  if (m_current_directory.empty())
+  {
+    for (std::string& root_path : FileSystem::GetRootDirectoryList())
+    {
+      std::string label = fmt::format(ICON_EMOJI_FILE_FOLDER " {}", root_path);
+      m_items.emplace_back(std::move(label), std::move(root_path), false);
+    }
+  }
+  else
+  {
+    FileSystem::FindResultsArray results;
+    FileSystem::FindFiles(m_current_directory.c_str(), "*",
+                          FILESYSTEM_FIND_FOLDERS | FILESYSTEM_FIND_HIDDEN_FILES | FILESYSTEM_FIND_RELATIVE_PATHS |
+                            FILESYSTEM_FIND_SORT_BY_NAME,
+                          &results);
+
+    // Ensure we only go back to the root list once we've gone up from the root of that drive.
+    std::string parent_path;
+    std::string::size_type sep_pos = m_current_directory.rfind(FS_OSPATH_SEPARATOR_CHARACTER);
+    if (sep_pos != std::string::npos && sep_pos != (m_current_directory.size() - 1))
+    {
+      parent_path = Path::Canonicalize(m_current_directory.substr(0, sep_pos));
+
+      // Ensure that the root directory has a trailing backslash.
+      if (parent_path.find(FS_OSPATH_SEPARATOR_CHARACTER) == std::string::npos)
+        parent_path.push_back(FS_OSPATH_SEPARATOR_CHARACTER);
+    }
+
+    m_items.emplace_back(fmt::format(ICON_EMOJI_ARROW_UP " {}", FSUI_VSTR("Parent Directory")), std::move(parent_path),
+                         false);
+    m_first_item_is_parent_directory = true;
+
+    for (const FILESYSTEM_FIND_DATA& fd : results)
+    {
+      std::string full_path = Path::Combine(m_current_directory, fd.FileName);
+      std::string title = fmt::format(ICON_EMOJI_FILE_FOLDER " {}", fd.FileName);
+      m_items.emplace_back(std::move(title), std::move(full_path), false);
+    }
+  }
+}
+
+void FullscreenUI::DirectorySelectorDialog::SetDirectory(std::string dir)
+{
+  // Ensure at least one slash always exists.
+  while (!dir.empty() && dir.back() == FS_OSPATH_SEPARATOR_CHARACTER &&
+         dir.find(FS_OSPATH_SEPARATOR_CHARACTER) != (dir.size() - 1))
+  {
+    dir.pop_back();
+  }
+
+  m_current_directory = std::move(dir);
+  m_directory_changed = true;
+  PopulateItems();
+}
+
+void FullscreenUI::DirectorySelectorDialog::Draw()
+{
+  if (!IsOpen())
+    return;
+
+  if (!BeginRender(LayoutScale(10.0f), LayoutScale(20.0f), LayoutScale(1000.0f, 650.0f)))
+  {
+    const DirectorySelectorCallback callback = std::move(m_callback);
+    ClearState();
+    if (callback)
+      callback(std::string());
+    return;
+  }
+
+  if (m_directory_changed)
+  {
+    m_directory_changed = false;
+    ImGui::SetScrollY(0.0f);
+    QueueResetFocus(FocusResetType::Other);
+  }
+
+  ResetFocusHere();
+  BeginMenuButtons();
+
+  Item* selected = nullptr;
+  std::string selected_directory;
+
+  if (!m_current_directory.empty())
+  {
+    MenuButtonWithoutSummary(SmallString::from_format(ICON_FA_FOLDER_OPEN " {}", m_current_directory), false);
+
+    if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_EMOJI_CHECKMARK_BUTTON, "Use This Directory")))
+      selected_directory = m_current_directory;
+  }
+
+  if (!m_default_directory.empty())
+  {
+    if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_EMOJI_REFRESH, "Reset To Default")))
+      selected_directory = m_default_directory;
+  }
+
+  bool needs_separator =
+    (!m_current_directory.empty() || !m_default_directory.empty() || m_first_item_is_parent_directory);
+  for (size_t i = 0; i < m_items.size(); i++)
+  {
+    if (needs_separator && (i > 0 || !m_first_item_is_parent_directory))
+    {
+      needs_separator = false;
+      MenuSeparator();
+    }
+
+    Item& item = m_items[i];
+    if (MenuButtonWithoutSummary(item.display_name))
+      selected = &item;
+  }
+
+  EndMenuButtons();
+
+  if (IsGamepadInputSource())
+  {
+    SetFullscreenFooterText(std::array{std::make_pair(ICON_PF_XBOX_DPAD_UP_DOWN, FSUI_VSTR("Change Selection")),
+                                       std::make_pair(ICON_PF_BUTTON_Y, FSUI_VSTR("Parent Directory")),
+                                       std::make_pair(ICON_PF_BUTTON_A, FSUI_VSTR("Select")),
+                                       std::make_pair(ICON_PF_BUTTON_B, FSUI_VSTR("Cancel"))});
+  }
+  else
+  {
+    SetFullscreenFooterText(
+      std::array{std::make_pair(ICON_PF_ARROW_UP ICON_PF_ARROW_DOWN, FSUI_VSTR("Change Selection")),
+                 std::make_pair(ICON_PF_BACKSPACE, FSUI_VSTR("Parent Directory")),
+                 std::make_pair(ICON_PF_ENTER, FSUI_VSTR("Select")), std::make_pair(ICON_PF_ESC, FSUI_VSTR("Cancel"))});
+  }
+
+  EndRender();
+
+  if (selected)
+  {
+    BeginTransition(DEFAULT_TRANSITION_TIME,
+                    [this, dir = std::move(selected->full_path)]() mutable { SetDirectory(std::move(dir)); });
+  }
+  else if (!selected_directory.empty())
+  {
+    const DirectorySelectorCallback callback = std::exchange(m_callback, DirectorySelectorCallback());
+    StartClose();
+    callback(std::move(selected_directory));
+  }
+  else
+  {
+    if (ImGui::IsKeyPressed(ImGuiKey_Backspace, false) || ImGui::IsKeyPressed(ImGuiKey_NavGamepadContextMenu, false))
+    {
+      if (!m_items.empty() && m_first_item_is_parent_directory)
+      {
+        BeginTransition(DEFAULT_TRANSITION_TIME,
+                        [this, dir = std::move(m_items.front().full_path)]() mutable { SetDirectory(std::move(dir)); });
+      }
+    }
+  }
+}
+
+bool FullscreenUI::IsDirectorySelectorOpen()
+{
+  return s_state.directory_selector_dialog.IsOpen();
+}
+
+void FullscreenUI::OpenDirectorySelector(std::string_view title, std::string initial_directory,
+                                         std::string default_directory, DirectorySelectorCallback callback)
+{
+  s_state.directory_selector_dialog.Open(title, std::move(callback), std::move(initial_directory),
+                                         std::move(default_directory));
+}
+
+void FullscreenUI::CloseDirectorySelector()
+{
+  s_state.directory_selector_dialog.StartClose();
 }
 
 FullscreenUI::ChoiceDialog::ChoiceDialog() = default;

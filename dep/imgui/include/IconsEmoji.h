@@ -52,3 +52,8 @@
 #define ICON_EMOJI_CHART_UPWARDS_TREND "\xf0\x9f\x93\x88"
 #define ICON_EMOJI_DIRECT_HIT "\xf0\x9f\x8e\xaf"
 #define ICON_EMOJI_RED_FLAG "\xf0\x9f\x9a\xa9"
+#define ICON_EMOJI_ARROW_UP "\xe2\xac\x86"
+#define ICON_EMOJI_ARROW_LEFT "\xe2\xac\x85"
+#define ICON_EMOJI_ARROW_DOWN "\xe2\xac\x87"
+#define ICON_EMOJI_ARROW_RIGHT "\xe2\x9e\xa1"
+#define ICON_EMOJI_ARROW_RIGHT_CURVE_UP "\xe2\xa4\xb4"

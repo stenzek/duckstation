@@ -983,19 +983,23 @@ void MainWindow::populateLoadStateMenu(std::string_view game_serial, QMenu* menu
                       tr("Undo Load State"));
   load_from_state->setEnabled(s_locals.undo_state_timestamp.has_value());
   connect(load_from_state, &QAction::triggered, g_core_thread, &CoreThread::undoLoadState);
-  menu->addSeparator();
 
   if (!game_serial.empty())
   {
+    menu->addSeparator();
+
     for (u32 slot = 1; slot <= System::PER_GAME_SAVE_STATE_SLOTS; slot++)
       add_slot(tr("Game Save %1 (%2)"), tr("Game Save %1 (Empty)"), game_serial, static_cast<s32>(slot));
-
-    menu->addSeparator();
   }
 
-  std::string_view empty_serial;
-  for (u32 slot = 1; slot <= System::GLOBAL_SAVE_STATE_SLOTS; slot++)
-    add_slot(tr("Global Save %1 (%2)"), tr("Global Save %1 (Empty)"), empty_serial, static_cast<s32>(slot));
+  if (System::AreGlobalSaveStatesEnabled())
+  {
+    menu->addSeparator();
+
+    std::string_view empty_serial;
+    for (u32 slot = 1; slot <= System::GLOBAL_SAVE_STATE_SLOTS; slot++)
+      add_slot(tr("Global Save %1 (%2)"), tr("Global Save %1 (Empty)"), empty_serial, static_cast<s32>(slot));
+  }
 }
 
 void MainWindow::populateSaveStateMenu(std::string_view game_serial, QMenu* menu)
@@ -1026,19 +1030,23 @@ void MainWindow::populateSaveStateMenu(std::string_view game_serial, QMenu* menu
 
     g_core_thread->saveState(QDir::toNativeSeparators(path));
   });
-  menu->addSeparator();
 
   if (!game_serial.empty())
   {
+    menu->addSeparator();
+
     for (u32 slot = 1; slot <= System::PER_GAME_SAVE_STATE_SLOTS; slot++)
       add_slot(tr("Game Save %1 (%2)"), tr("Game Save %1 (Empty)"), game_serial, static_cast<s32>(slot));
-
-    menu->addSeparator();
   }
 
-  std::string_view empty_serial;
-  for (u32 slot = 1; slot <= System::GLOBAL_SAVE_STATE_SLOTS; slot++)
-    add_slot(tr("Global Save %1 (%2)"), tr("Global Save %1 (Empty)"), empty_serial, static_cast<s32>(slot));
+  if (System::AreGlobalSaveStatesEnabled())
+  {
+    menu->addSeparator();
+
+    std::string_view empty_serial;
+    for (u32 slot = 1; slot <= System::GLOBAL_SAVE_STATE_SLOTS; slot++)
+      add_slot(tr("Global Save %1 (%2)"), tr("Global Save %1 (Empty)"), empty_serial, static_cast<s32>(slot));
+  }
 }
 
 void MainWindow::onCheatsMenuAboutToShow()
@@ -2801,7 +2809,7 @@ SettingsWindow* MainWindow::getSettingsWindow()
   if (!m_settings_window)
   {
     m_settings_window = new SettingsWindow();
-    connect(m_settings_window, &SettingsWindow::debugOptionsVisibiltyChanged, this,
+    connect(m_settings_window, &SettingsWindow::debugOptionsVisibilityChanged, this,
             &MainWindow::updateDebugMenuVisibility);
   }
 

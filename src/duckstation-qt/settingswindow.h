@@ -88,8 +88,7 @@ public:
   void setCategory(const char* category);
 
 Q_SIGNALS:
-  void settingsResetToDefaults();
-  void debugOptionsVisibiltyChanged(bool enabled);
+  void debugOptionsVisibilityChanged(bool enabled);
 
 protected:
   void closeEvent(QCloseEvent* event) override;
