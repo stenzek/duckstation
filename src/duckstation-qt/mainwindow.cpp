@@ -2809,7 +2809,7 @@ SettingsWindow* MainWindow::getSettingsWindow()
   if (!m_settings_window)
   {
     m_settings_window = new SettingsWindow();
-    connect(m_settings_window, &SettingsWindow::debugOptionsVisibiltyChanged, this,
+    connect(m_settings_window, &SettingsWindow::debugOptionsVisibilityChanged, this,
             &MainWindow::updateDebugMenuVisibility);
   }
 

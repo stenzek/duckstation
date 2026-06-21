@@ -270,7 +270,7 @@ void SettingsWindow::connectUi()
   if (!isPerGameSettings())
   {
     // must be a queued connection, since this comes from a control on the widget
-    connect(this, &SettingsWindow::debugOptionsVisibiltyChanged, this, &SettingsWindow::reloadPages,
+    connect(this, &SettingsWindow::debugOptionsVisibilityChanged, this, &SettingsWindow::reloadPages,
             Qt::QueuedConnection);
   }
 }
