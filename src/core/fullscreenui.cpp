@@ -1927,11 +1927,14 @@ u32 FullscreenUI::PopulateSaveStateListEntries(const std::string& serial,
     }
   }
 
-  for (s32 i = 1; i <= System::GLOBAL_SAVE_STATE_SLOTS; i++)
+  if (System::AreGlobalSaveStatesEnabled())
   {
-    SaveStateListEntry li;
-    if (InitializeSaveStateListEntryFromSerial(&li, serial, i, true) || !is_loading)
-      s_locals.save_state_selector_slots.push_back(std::move(li));
+    for (s32 i = 1; i <= System::GLOBAL_SAVE_STATE_SLOTS; i++)
+    {
+      SaveStateListEntry li;
+      if (InitializeSaveStateListEntryFromSerial(&li, serial, i, true) || !is_loading)
+        s_locals.save_state_selector_slots.push_back(std::move(li));
+    }
   }
 
   return static_cast<u32>(s_locals.save_state_selector_slots.size());
@@ -2035,7 +2038,8 @@ void FullscreenUI::DrawSaveStateSelector()
         ImVec2(0.0f, heading_size.y),
         ImVec2(io.DisplaySize.x, io.DisplaySize.y - heading_size.y - LayoutScale(LAYOUT_FOOTER_HEIGHT)),
         "##save_state_selector_list", ModAlpha(UIStyle.BackgroundColor, GetBackgroundAlpha()), 0.0f,
-        ImVec2(LAYOUT_MENU_WINDOW_X_PADDING, LAYOUT_MENU_WINDOW_Y_PADDING), 0, true))
+        ImVec2(LAYOUT_MENU_WINDOW_X_PADDING, LAYOUT_MENU_WINDOW_Y_PADDING), 0, true) &&
+      !s_locals.save_state_selector_slots.empty())
   {
     ResetFocusHere();
     BeginMenuButtons();
