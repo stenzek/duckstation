@@ -3935,6 +3935,11 @@ void FullscreenUI::DrawMemoryCardSettingsPage()
                               "use a single memory card for all discs."),
                     "MemoryCards", "UsePlaylistTitle", true);
 
+  DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_GLOBE, "Enable Global Save States"),
+                    FSUI_VSTR("When enabled, the legacy global save state slots will be available. These slots are "
+                              "independent of the current game."),
+                    "Main", "EnableGlobalStates", false);
+
   EndMenuButtons();
 }
 

@@ -321,6 +321,7 @@ TRANSLATE_NOOP("FullscreenUI", "Enable Discord Presence");
 TRANSLATE_NOOP("FullscreenUI", "Enable Fast Boot");
 TRANSLATE_NOOP("FullscreenUI", "Enable GPU-Based Validation");
 TRANSLATE_NOOP("FullscreenUI", "Enable GPU-based validation when supported by the host's renderer API. Only for developer use.");
+TRANSLATE_NOOP("FullscreenUI", "Enable Global Save States");
 TRANSLATE_NOOP("FullscreenUI", "Enable Overclocking");
 TRANSLATE_NOOP("FullscreenUI", "Enable Post Processing");
 TRANSLATE_NOOP("FullscreenUI", "Enable Recompiler Block Linking");
@@ -896,6 +897,7 @@ TRANSLATE_NOOP("FullscreenUI", "When enabled, DuckStation will assume all achiev
 TRANSLATE_NOOP("FullscreenUI", "When enabled, DuckStation will list achievements from unofficial sets. These achievements are not tracked by RetroAchievements.");
 TRANSLATE_NOOP("FullscreenUI", "When enabled, each session will behave as if no achievements have been unlocked.");
 TRANSLATE_NOOP("FullscreenUI", "When enabled, memory cards and controllers will be overwritten when save states are loaded.");
+TRANSLATE_NOOP("FullscreenUI", "When enabled, the legacy global save state slots will be available. These slots are independent of the current game.");
 TRANSLATE_NOOP("FullscreenUI", "When enabled, the minimum supported output latency will be used for the host API.");
 TRANSLATE_NOOP("FullscreenUI", "When playing a multi-disc game and using per-game (title) memory cards, use a single memory card for all discs.");
 TRANSLATE_NOOP("FullscreenUI", "When this option is chosen, the clock speed set below will be used.");
