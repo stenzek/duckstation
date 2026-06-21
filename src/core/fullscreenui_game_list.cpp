@@ -86,38 +86,36 @@ void FullscreenUI::ClearGameListState()
 
 void FullscreenUI::DoSetCoverImage(std::string entry_path)
 {
-  OpenFileSelector(
-    FSUI_ICONVSTR(ICON_FA_IMAGE, "Set Cover Image"), false,
-    [entry_path = std::move(entry_path)](std::string path) {
-      if (path.empty())
-        return;
+  OpenFileSelector(FSUI_ICONVSTR(ICON_FA_IMAGE, "Set Cover Image"), GetImageFilters(), EmuFolders::Covers,
+                   [entry_path = std::move(entry_path)](std::string path) {
+                     if (path.empty())
+                       return;
 
-      const auto lock = GameList::GetLock();
-      const GameList::Entry* entry = GameList::GetEntryForPath(entry_path);
-      if (!entry)
-        return;
+                     const auto lock = GameList::GetLock();
+                     const GameList::Entry* entry = GameList::GetEntryForPath(entry_path);
+                     if (!entry)
+                       return;
 
-      std::string existing_path = GameList::GetCoverImagePathForEntry(entry);
-      std::string new_path = GameList::GetNewCoverImagePathForEntry(entry, path.c_str(), false);
-      if (!existing_path.empty())
-      {
-        OpenConfirmMessageDialog(
-          ICON_EMOJI_WARNING, FSUI_ICONVSTR(ICON_FA_IMAGE, "Set Cover Image"),
-          FSUI_STR("A cover already exists for this game. Are you sure that you want to overwrite it?"),
-          [path = std::move(path), existing_path = std::move(existing_path),
-           new_path = std::move(new_path)](bool result) {
-            if (!result)
-              return;
+                     std::string existing_path = GameList::GetCoverImagePathForEntry(entry);
+                     std::string new_path = GameList::GetNewCoverImagePathForEntry(entry, path.c_str(), false);
+                     if (!existing_path.empty())
+                     {
+                       OpenConfirmMessageDialog(
+                         ICON_EMOJI_WARNING, FSUI_ICONVSTR(ICON_FA_IMAGE, "Set Cover Image"),
+                         FSUI_STR("A cover already exists for this game. Are you sure that you want to overwrite it?"),
+                         [path = std::move(path), existing_path = std::move(existing_path),
+                          new_path = std::move(new_path)](bool result) {
+                           if (!result)
+                             return;
 
-            DoSetCoverImage(std::move(path), std::move(existing_path), std::move(new_path));
-          });
-      }
-      else
-      {
-        DoSetCoverImage(std::move(path), std::move(existing_path), std::move(new_path));
-      }
-    },
-    GetImageFilters(), EmuFolders::Covers);
+                           DoSetCoverImage(std::move(path), std::move(existing_path), std::move(new_path));
+                         });
+                     }
+                     else
+                     {
+                       DoSetCoverImage(std::move(path), std::move(existing_path), std::move(new_path));
+                     }
+                   });
 }
 
 void FullscreenUI::DoSetCoverImage(std::string source_path, std::string existing_path, std::string new_path)

@@ -713,6 +713,9 @@ void EnsureFoldersExist();
 void LoadConfig(SettingsInterface& si);
 void Save(SettingsInterface& si);
 
+// Returns the default path for the given settings key.
+std::string GetDefaultPath(const std::string* ref_folder);
+
 /// Updates the variables in the EmuFolders namespace, reloading subsystems if needed.
 void Update();
 

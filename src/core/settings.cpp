@@ -2775,6 +2775,10 @@ const char* Settings::GetPIODeviceTypeModeDisplayName(PIODeviceType type)
 
 namespace EmuFolders {
 
+static void EnsureFolderExists(const std::string& path);
+static std::string LoadPathFromSettings(SettingsInterface& si, const std::string& root, const char* section,
+                                        const char* name, const char* def);
+
 std::string AppRoot;
 std::string DataRoot;
 std::string Bios;
@@ -2795,9 +2799,32 @@ std::string Textures;
 std::string UserResources;
 std::string Videos;
 
-static void EnsureFolderExists(const std::string& path);
-
 } // namespace EmuFolders
+
+std::string EmuFolders::GetDefaultPath(const std::string* ref_folder)
+{
+  // clang-format off
+  std::string_view subdir;
+  if (ref_folder == &Bios) subdir = "bios";
+  else if (ref_folder == &Cache) subdir = "cache";
+  else if (ref_folder == &Cheats) subdir = "cheats";
+  else if (ref_folder == &Covers) subdir = "covers";
+  else if (ref_folder == &GameIcons) subdir = "gameicons";
+  else if (ref_folder == &GameSettings) subdir = "gamesettings";
+  else if (ref_folder == &InputProfiles) subdir = "inputprofiles";
+  else if (ref_folder == &MemoryCards) subdir = "memcards";
+  else if (ref_folder == &Patches) subdir = "patches";
+  else if (ref_folder == &SaveStates) subdir = "savestates";
+  else if (ref_folder == &Screenshots) subdir = "screenshots";
+  else if (ref_folder == &Shaders) subdir = "shaders";
+  else if (ref_folder == &Subchannels) subdir = "subchannels";
+  else if (ref_folder == &Textures) subdir = "textures";
+  else if (ref_folder == &UserResources) subdir = "resources";
+  else if (ref_folder == &Videos) subdir = "videos";
+  // clang-format on
+
+  return Path::Combine(DataRoot, subdir);
+}
 
 void EmuFolders::SetDefaults()
 {
@@ -2819,7 +2846,7 @@ void EmuFolders::SetDefaults()
   Videos = Path::Combine(DataRoot, "videos");
 }
 
-static std::string LoadPathFromSettings(SettingsInterface& si, const std::string& root, const char* section,
+std::string EmuFolders::LoadPathFromSettings(SettingsInterface& si, const std::string& root, const char* section,
                                         const char* name, const char* def)
 {
   std::string value = si.GetStringValue(section, name, def);
