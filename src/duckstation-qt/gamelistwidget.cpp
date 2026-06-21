@@ -2165,8 +2165,7 @@ void GameListWidget::onSearchReturnPressed()
 
   QAbstractItemView* const target =
     isShowingGameGrid() ? static_cast<QAbstractItemView*>(m_grid_view) : static_cast<QAbstractItemView*>(m_list_view);
-  target->selectionModel()->select(m_sort_model->index(0, 0),
-                                   QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows);
+  target->setCurrentIndex(m_sort_model->index(0, 0));
   target->setFocus(Qt::ShortcutFocusReason);
 }
 
