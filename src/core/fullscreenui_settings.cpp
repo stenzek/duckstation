@@ -1867,7 +1867,7 @@ void FullscreenUI::BeginResetSettings()
                              if (!result)
                                return;
 
-                             Core::SetDefaultSettings(true, true, false);
+                             Core::SetDefaultSettings(true, true, false, true);
                              ShowToast(OSDMessageType::Quick, {}, FSUI_STR("Settings reset to default."));
                            });
 }
@@ -3336,7 +3336,7 @@ void FullscreenUI::BeginResetControllerSettings()
                              if (!result)
                                return;
 
-                             Core::SetDefaultSettings(false, false, true);
+                             Core::SetDefaultSettings(false, false, true, true);
                              ShowToast(OSDMessageType::Quick, {}, FSUI_STR("Controller settings reset to default."));
                            });
 }

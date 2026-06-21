@@ -1126,7 +1126,7 @@ const SettingsInterface& System::GetHotkeySettingsLayer(std::unique_lock<std::mu
   }
 }
 
-void System::SetDefaultSettings(SettingsInterface& si)
+void System::SetDefaultSettings(SettingsInterface& si, bool ignore_user_prefs)
 {
   Settings temp;
 
@@ -1134,7 +1134,7 @@ void System::SetDefaultSettings(SettingsInterface& si)
   for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
     temp.controller_types[i] = g_settings.controller_types[i];
 
-  temp.Save(si, false, false);
+  temp.Save(si, ignore_user_prefs, false);
 
   si.SetBoolValue("Main", "StartPaused", false);
   si.SetBoolValue("Main", "StartFullscreen", false);

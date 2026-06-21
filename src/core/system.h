@@ -252,7 +252,7 @@ bool PopulateGameListEntryFromCurrentGame(GameList::Entry* entry, Error* error);
 
 void FormatLatencyStats(SmallStringBase& str);
 
-void SetDefaultSettings(SettingsInterface& si);
+void SetDefaultSettings(SettingsInterface& si, bool ignore_user_prefs);
 
 /// Reloads settings, and applies any changes present.
 void ApplySettings(bool display_osd_messages);
