@@ -2410,6 +2410,7 @@ GameListListView::GameListListView(GameListModel* model, GameListSortModel* sort
   setContextMenuPolicy(Qt::CustomContextMenu);
   setAlternatingRowColors(true);
   setShowGrid(false);
+  setTabKeyNavigation(false);
 
   QHeaderView* const horizontal_header = horizontalHeader();
   horizontal_header->setHighlightSections(false);
