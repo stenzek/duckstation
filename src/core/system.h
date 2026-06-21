@@ -298,6 +298,9 @@ void SaveStateToSlot(bool global, s32 slot);
 /// State data access, use with care as the media path is not updated.
 bool SaveStateDataToBuffer(std::span<u8> data, size_t* data_size, Error* error);
 
+/// Returns true if global states should be include in the slot list.
+bool AreGlobalSaveStatesEnabled();
+
 /// Runs the VM until the CPU execution is canceled.
 void Execute();
 

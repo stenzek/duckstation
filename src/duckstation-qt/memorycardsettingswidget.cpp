@@ -119,19 +119,30 @@ void MemoryCardSettingsWidget::createUi(SettingsWindow* dialog)
 
   {
     QGroupBox* const box = new QGroupBox(tr("Game-Specific Card Settings"), this);
-    QVBoxLayout* const box_layout = new QVBoxLayout(box);
+    QGridLayout* const grid_layout = new QGridLayout(box);
     layout->addWidget(box);
 
     QCheckBox* playlist_title_as_game_title = new QCheckBox(tr("Use Single Card For Multi-Disc Games"), box);
     SettingWidgetBinder::BindWidgetToBoolSetting(m_dialog->getSettingsInterface(), playlist_title_as_game_title,
                                                  "MemoryCards", "UsePlaylistTitle", true);
-    box_layout->addWidget(playlist_title_as_game_title);
+    grid_layout->addWidget(playlist_title_as_game_title, 0, 0);
     dialog->registerWidgetHelp(
       playlist_title_as_game_title, tr("Use Single Card For Multi-Disc Games"), tr("Checked"),
       tr("When playing a multi-disc game and using per-game (title) memory cards, a single memory card "
          "will be used for all discs. If unchecked, a separate card will be used for each disc."));
 
-    box_layout->addWidget(QtUtils::CreateHorizontalLine(box));
+    if (!dialog->isPerGameSettings())
+    {
+      QCheckBox* enable_global_states = new QCheckBox(tr("Enable Global Save States"), box);
+      SettingWidgetBinder::BindWidgetToBoolSetting(m_dialog->getSettingsInterface(), enable_global_states, "Main",
+                                                   "EnableGlobalStates", false);
+      grid_layout->addWidget(enable_global_states, 0, 1);
+      dialog->registerWidgetHelp(enable_global_states, tr("Enable Global Save States"), tr("Unchecked"),
+                                 tr("When enabled, the legacy global save state slots will be available. These slots "
+                                    "are independent of the current game."));
+    }
+
+    grid_layout->addWidget(QtUtils::CreateHorizontalLine(box), 1, 0, 1, 2);
 
     {
       QHBoxLayout* const hbox = new QHBoxLayout();
@@ -144,7 +155,7 @@ void MemoryCardSettingsWidget::createUi(SettingsWindow* dialog)
       QPushButton* const button = new QPushButton(tr("Memory Card Editor..."), box);
       connect(button, &QPushButton::clicked, []() { g_main_window->openMemoryCardEditor(QString(), QString()); });
       hbox->addWidget(button);
-      box_layout->addLayout(hbox);
+      grid_layout->addLayout(hbox, 2, 0, 1, 2);
     }
   }
 

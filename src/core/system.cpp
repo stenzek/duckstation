@@ -3310,6 +3310,11 @@ bool System::SaveStateDataToBuffer(std::span<u8> data, size_t* data_size, Error*
   return true;
 }
 
+bool System::AreGlobalSaveStatesEnabled()
+{
+  return Core::GetBaseBoolSettingValue("Main", "EnableGlobalStates", false);
+}
+
 bool System::SaveStateBufferToFile(const SaveStateBuffer& buffer, std::FILE* fp, Error* error,
                                    SaveStateCompressionMode compression)
 {
