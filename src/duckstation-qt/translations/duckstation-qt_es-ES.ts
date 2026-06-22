@@ -141,7 +141,7 @@ Do you want to enable tracking now?</source>
     <message>
         <location filename="../achievementlogindialog.cpp" line="126"/>
         <source>Enable Hardcore Mode</source>
-        <translation>Habilitar modo «hardcore»</translation>
+        <translation>Habilitar modo hardcore</translation>
     </message>
     <message>
         <location filename="../achievementlogindialog.cpp" line="127"/>
@@ -150,11 +150,11 @@ Do you want to enable tracking now?</source>
 However, hardcore mode also prevents the usage of save states, cheats and slowdown functionality.
 
 Do you want to enable hardcore mode?</source>
-        <translation>El modo «hardcore» no está activado. Este modo te permite registrar tiempos o puntuaciones y participar en tablas de clasificación individuales para cada juego.
+        <translation>El modo hardcore no está activado. Este modo te permite registrar tiempos o puntuaciones y participar en tablas de clasificación individuales para cada juego.
 
-No obstante, el modo «hardcore» también impide el uso de los guardados rápidos, los trucos y las funciones de ralentización.
+No obstante, el modo hardcore también impide el uso de los guardados rápidos, los trucos y las funciones de ralentización.
 
-¿Deseas activar el modo «hardcore»?</translation>
+¿Deseas activar el modo hardcore?</translation>
     </message>
     <message>
         <location filename="../achievementlogindialog.cpp" line="150"/>
@@ -164,7 +164,7 @@ No obstante, el modo «hardcore» también impide el uso de los guardados rápid
     <message>
         <location filename="../achievementlogindialog.cpp" line="151"/>
         <source>Hardcore mode will not be enabled until the game is restarted. Do you want to restart the game now?</source>
-        <translation>El modo «hardcore» no se activará hasta que se reinicie el juego. ¿Deseas hacerlo ahora?</translation>
+        <translation>El modo hardcore no se activará hasta que se reinicie el juego. ¿Deseas hacerlo ahora?</translation>
     </message>
 </context>
 <context>
@@ -179,7 +179,7 @@ No obstante, el modo «hardcore» también impide el uso de los guardados rápid
         <location filename="../achievementsettingswidget.ui" line="97"/>
         <location filename="../achievementsettingswidget.cpp" line="77"/>
         <source>Enable Hardcore Mode</source>
-        <translation>Habilitar modo «hardcore»</translation>
+        <translation>Habilitar modo hardcore</translation>
     </message>
     <message>
         <location filename="../achievementsettingswidget.ui" line="118"/>
@@ -276,7 +276,7 @@ No obstante, el modo «hardcore» también impide el uso de los guardados rápid
         <location filename="../achievementsettingswidget.ui" line="111"/>
         <location filename="../achievementsettingswidget.cpp" line="80"/>
         <source>Enable Encore Mode</source>
-        <translation>Habilitar modo «encore» (nueva partida)</translation>
+        <translation>Habilitar modo encore (nueva partida)</translation>
     </message>
     <message>
         <source>Enable RAIntegration (Development Only)</source>
@@ -410,7 +410,7 @@ No obstante, el modo «hardcore» también impide el uso de los guardados rápid
     <message>
         <location filename="../achievementsettingswidget.cpp" line="105"/>
         <source>Determines the size of achievement notification popups. Automatic will use the same scaling as the Big Picture UI.</source>
-        <translation>Determina el tamaño de las notificaciones emergentes de logros. «Automático» utilizará el mismo valor de escalado de la interfaz Big Picture.</translation>
+        <translation>Determina el tamaño de las notificaciones emergentes de logros. Automático utilizará el mismo valor de escalado de la interfaz Big Picture.</translation>
     </message>
     <message>
         <location filename="../achievementsettingswidget.cpp" line="107"/>
@@ -466,7 +466,7 @@ No obstante, el modo «hardcore» también impide el uso de los guardados rápid
     <message>
         <location filename="../achievementsettingswidget.cpp" line="116"/>
         <source>Determines the size of challenge/progress indicators. Automatic will use the same scaling as the Big Picture UI.</source>
-        <translation>Determina el tamaño de los indicadores de desafíos y progresos. «Automático» utilizará el mismo valor de escalado de la interfaz Big Picture.</translation>
+        <translation>Determina el tamaño de los indicadores de desafíos y progresos. Automático utilizará el mismo valor de escalado de la interfaz Big Picture.</translation>
     </message>
     <message>
         <location filename="../achievementsettingswidget.cpp" line="118"/>
@@ -508,7 +508,7 @@ No obstante, el modo «hardcore» también impide el uso de los guardados rápid
     <message>
         <location filename="../achievementsettingswidget.cpp" line="271"/>
         <source>Hardcore mode will not be enabled until the game is restarted. Do you want to restart the game now?</source>
-        <translation>El modo «hardcore» no se activará hasta que se reinicie el juego. ¿Deseas hacerlo ahora?</translation>
+        <translation>El modo hardcore no se activará hasta que se reinicie el juego. ¿Deseas hacerlo ahora?</translation>
     </message>
     <message>
         <location filename="../achievementsettingswidget.cpp" line="319"/>
@@ -652,12 +652,12 @@ Fecha de creación del token de acceso: %2</translation>
     <message>
         <location filename="../../core/achievements.cpp" line="1897"/>
         <source>Hardcore mode enabled.</source>
-        <translation>Modo «hardcore» habilitado.</translation>
+        <translation>Modo hardcore habilitado.</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1898"/>
         <source>Hardcore mode disabled.</source>
-        <translation>Modo «hardcore» deshabilitado.</translation>
+        <translation>Modo hardcore deshabilitado.</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1941"/>
@@ -703,7 +703,7 @@ Error: {}</translation>
     <message>
         <location filename="../../core/achievements.cpp" line="1461"/>
         <source>Encore mode enabled.</source>
-        <translation>Modo «encore» habilitado.</translation>
+        <translation>Modo encore habilitado.</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1462"/>
@@ -784,7 +784,7 @@ Mensajes sin leer: {}</translation>
     <message>
         <location filename="../../core/achievements.cpp" line="2420"/>
         <source>{0} cannot be performed while hardcore mode is active. Do you want to disable hardcore mode? {0} will be cancelled if you select No.</source>
-        <translation>No se puede ejecutar la característica de {0} mientras el modo «hardcore» esté activo. ¿Deseas desactivar el modo «hardcore»? Si seleccionas No, se cancelará la acción.</translation>
+        <translation>No se puede ejecutar la característica de {0} mientras el modo hardcore esté activo. ¿Deseas desactivar el modo hardcore? Si seleccionas No, se cancelará la acción.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreenui_achievements.cpp" line="1351"/>
@@ -801,7 +801,7 @@ Mensajes sin leer: {}</translation>
     <message>
         <location filename="../../core/fullscreenui_achievements.cpp" line="1555"/>
         <source>Core</source>
-        <translation>«Hardcore»/«Softcore»</translation>
+        <translation>Hardcore/Softcore</translation>
     </message>
     <message>
         <location filename="../../core/fullscreenui_achievements.cpp" line="1568"/>
@@ -811,7 +811,7 @@ Mensajes sin leer: {}</translation>
     <message>
         <location filename="../../core/fullscreenui_achievements.cpp" line="1855"/>
         <source> (Hardcore Mode)</source>
-        <translation> (modo «hardcore»)</translation>
+        <translation> (modo hardcore)</translation>
     </message>
     <message numerus="yes">
         <location filename="../../core/fullscreenui_achievements.cpp" line="1886"/>
@@ -1012,7 +1012,7 @@ Mensajes sin leer: {}</translation>
     <message>
         <location filename="../../core/achievements.cpp" line="1421"/>
         <source>Hardcore mode is disabled. Leaderboards will not be tracked.</source>
-        <translation>Modo «hardcore» desactivado. No habrá seguimiento de tablas de clasificación.</translation>
+        <translation>Modo hardcore desactivado. No habrá seguimiento de tablas de clasificación.</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1438"/>
@@ -1142,7 +1142,7 @@ Mensajes sin leer: {}</translation>
     <message>
         <location filename="../../core/achievements.cpp" line="1417"/>
         <source>Hardcore mode is enabled. Cheats and save states are unavailable.</source>
-        <translation>Modo «hardcore» activado. Los trucos y los guardados rápidos no están disponibles.</translation>
+        <translation>Modo hardcore activado. Los trucos y los guardados rápidos no están disponibles.</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1426"/>
@@ -1155,7 +1155,7 @@ Mensajes sin leer: {}</translation>
         <location filename="../../core/achievements.cpp" line="1475"/>
         <location filename="../../core/achievements.cpp" line="1480"/>
         <source>Hardcore mode will be enabled on game restart.</source>
-        <translation>El modo «hardcore» se activará al reiniciar la partida.</translation>
+        <translation>El modo hardcore se activará al reiniciar la partida.</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1535"/>
@@ -1186,7 +1186,7 @@ Mensajes sin leer: {}</translation>
     <message>
         <location filename="../../core/achievements.cpp" line="2419"/>
         <source>Confirm Hardcore Mode Disable</source>
-        <translation>Confirmar desactivación de modo «hardcore»</translation>
+        <translation>Confirmar desactivación de modo hardcore</translation>
     </message>
     <message>
         <location filename="../../core/fullscreenui_achievements.cpp" line="1120"/>
@@ -1245,7 +1245,7 @@ Mensajes sin leer: {}</translation>
     <message>
         <location filename="../../core/fullscreenui_achievements.cpp" line="2025"/>
         <source>Unlocked in Softcore</source>
-        <translation>Desbloqueado en modo «softcore»</translation>
+        <translation>Desbloqueado en modo softcore</translation>
     </message>
     <message>
         <location filename="../../core/fullscreenui_achievements.cpp" line="2080"/>
@@ -1301,7 +1301,7 @@ Mensajes sin leer: {}</translation>
     <message>
         <location filename="../../core/fullscreenui_achievements.cpp" line="2572"/>
         <source>Submitting scores is disabled because hardcore mode is off. Leaderboards are read-only.</source>
-        <translation>No se enviarán puntuaciones porque el modo «hardcore» está desactivado. Las tablas de puntuaciones están en modo de solo lectura.</translation>
+        <translation>No se enviarán puntuaciones porque el modo hardcore está desactivado. Las tablas de puntuaciones están en modo de solo lectura.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreenui_achievements.cpp" line="2739"/>
@@ -2462,7 +2462,7 @@ Mensajes sin leer: {}</translation>
     <message>
         <location filename="../audiosettingswidget.cpp" line="261"/>
         <source>Unknown Device &quot;%1&quot;</source>
-        <translation>Dispositivo desconocido: «%1»</translation>
+        <translation>Dispositivo desconocido: %1</translation>
     </message>
     <message>
         <location filename="../audiosettingswidget.cpp" line="316"/>
@@ -2828,7 +2828,7 @@ Los archivos WAV han de estar en estéreo y tener una frecuencia de 44&#xa0;100&
     <message>
         <location filename="../../util/cd_image_hasher.cpp" line="68"/>
         <source>Computing hash for Track {}...</source>
-        <translation>Calculando «hash» para pista {}...</translation>
+        <translation>Calculando hash para pista {}...</translation>
     </message>
 </context>
 <context>
@@ -2959,7 +2959,7 @@ Tu volcado podría estar dañado o tu disco físico está arañado.</translation
     <message>
         <location filename="../capturesettingswidget.ui" line="310"/>
         <source>x</source>
-        <translation>×</translation>
+        <translation>x</translation>
     </message>
     <message>
         <location filename="../capturesettingswidget.ui" line="333"/>
@@ -3020,7 +3020,7 @@ Tu volcado podría estar dañado o tu disco físico está arañado.</translation
     <message>
         <location filename="../capturesettingswidget.cpp" line="136"/>
         <source>Selects the framework that is used to encode video/audio.</source>
-        <translation>Selecciona el «framework» con el que se codificará el vídeo o el audio.</translation>
+        <translation>Selecciona el framework con el que se codificará el vídeo o el audio.</translation>
     </message>
     <message>
         <location filename="../capturesettingswidget.cpp" line="137"/>
@@ -3162,7 +3162,7 @@ Tu volcado podría estar dañado o tu disco físico está arañado.</translation
     <message>
         <location filename="../capturesettingswidget.cpp" line="164"/>
         <source>Parameters passed to the selected video codec.&lt;br&gt;&lt;b&gt;You must use &apos;=&apos; to separate key from value and &apos;:&apos; to separate two pairs from each other.&lt;/b&gt;&lt;br&gt;For example: &quot;crf = 21 : preset = veryfast&quot;</source>
-        <translation>Los parámetros enviados al códec de audio seleccionado.&lt;br&gt;&lt;b&gt;Debes utilizar «=» para separar cada elemento de su valor y «:» para separar cada pareja de elementos.&lt;/b&gt;&lt;br&gt;Ejemplo: &quot;crf = 21 : preset = veryfast&quot;</translation>
+        <translation>Los parámetros enviados al códec de audio seleccionado.&lt;br&gt;&lt;b&gt;Debes utilizar = para separar cada elemento de su valor y : para separar cada pareja de elementos.&lt;/b&gt;&lt;br&gt;Ejemplo: &quot;crf = 21 : preset = veryfast&quot;</translation>
     </message>
     <message>
         <location filename="../capturesettingswidget.cpp" line="167"/>
@@ -3212,7 +3212,7 @@ Tu volcado podría estar dañado o tu disco físico está arañado.</translation
     <message>
         <location filename="../capturesettingswidget.cpp" line="178"/>
         <source>Parameters passed to the selected audio codec.&lt;br&gt;&lt;b&gt;You must use &apos;=&apos; to separate key from value and &apos;:&apos; to separate two pairs from each other.&lt;/b&gt;&lt;br&gt;For example: &quot;compression_level = 4 : joint_stereo = 1&quot;</source>
-        <translation>Los parámetros enviados al códec de audio seleccionado.&lt;br&gt;&lt;b&gt;Debes utilizar «=» para separar cada elemento de su valor y «:» para separar cada pareja de elementos.&lt;/b&gt;&lt;br&gt;Ejemplo: &quot;compression_level = 4 : joint_stereo = 1&quot;</translation>
+        <translation>Los parámetros enviados al códec de audio seleccionado.&lt;br&gt;&lt;b&gt;Debes utilizar = para separar cada elemento de su valor y : para separar cada pareja de elementos.&lt;/b&gt;&lt;br&gt;Ejemplo: &quot;compression_level = 4 : joint_stereo = 1&quot;</translation>
     </message>
     <message>
         <location filename="../capturesettingswidget.cpp" line="202"/>
@@ -3269,7 +3269,7 @@ Si intentas utilizarlo, no funcionará tal y como se espera. ¿Quieres continuar
     <message>
         <location filename="../gamecheatsettingswidget.cpp" line="891"/>
         <source>A code with the name &apos;%1&apos; already exists.</source>
-        <translation>Ya existe un código con el nombre «%1».</translation>
+        <translation>Ya existe un código con el nombre %1.</translation>
     </message>
     <message>
         <location filename="../gamecheatsettingswidget.cpp" line="932"/>
@@ -3355,18 +3355,18 @@ Si intentas utilizarlo, no funcionará tal y como se espera. ¿Quieres continuar
     <message>
         <location filename="../../core/cheats.cpp" line="1162"/>
         <source>{0} and {1} disabled by achievements hardcore mode/safe mode.</source>
-        <translation>Se han desactivado {0} y {1} por el modo «hardcore» de los logros o el modo seguro.</translation>
+        <translation>Se han desactivado {0} y {1} por el modo hardcore de los logros o el modo seguro.</translation>
     </message>
     <message>
         <location filename="../../core/cheats.cpp" line="1164"/>
         <source>{} disabled by achievements hardcore mode/safe mode.</source>
-        <translation>Se ha desactivado lo siguiente por el modo «hardcore» de los logros o el modo seguro:
+        <translation>Se ha desactivado lo siguiente por el modo hardcore de los logros o el modo seguro:
 {0}</translation>
     </message>
     <message>
         <location filename="../../core/cheats.cpp" line="1237"/>
         <source>Cheat &apos;{}&apos; applied.</source>
-        <translation>Truco «{}» aplicado.</translation>
+        <translation>Truco {} aplicado.</translation>
     </message>
     <message>
         <location filename="../../core/cheats.cpp" line="1547"/>
@@ -3427,7 +3427,7 @@ Si intentas utilizarlo, no funcionará tal y como se espera. ¿Quieres continuar
         <location filename="../consolesettingswidget.ui" line="108"/>
         <location filename="../consolesettingswidget.cpp" line="105"/>
         <source>Enable Clock Speed Control (Overclocking/Underclocking)</source>
-        <translation>Control de velocidad de reloj («overclocking»/«underclocking»)</translation>
+        <translation>Control de velocidad de reloj (overclocking/underclocking)</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.ui" line="168"/>
@@ -3640,7 +3640,7 @@ Si intentas utilizarlo, no funcionará tal y como se espera. ¿Quieres continuar
     <message>
         <location filename="../consolesettingswidget.cpp" line="107"/>
         <source>Overclocking Percentage</source>
-        <translation>Porcentaje de «overclocking»</translation>
+        <translation>Porcentaje de overclocking</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.cpp" line="107"/>
@@ -3699,16 +3699,16 @@ Si intentas utilizarlo, no funcionará tal y como se espera. ¿Quieres continuar
 By enabling this option you are agreeing to not create any bug reports unless you have confirmed the bug also occurs with overclocking disabled.
 
 This warning will only be shown once.</source>
-        <translation>Habilitar el «overclocking» de la CPU puede romper juegos, causar defectos, reducir el rendimiento y aumentar significativamente los requisitos del sistema.
+        <translation>Habilitar el overclocking de la CPU puede romper juegos, causar defectos, reducir el rendimiento y aumentar significativamente los requisitos del sistema.
 
-Si habilitas esta opción, aceptas no enviar ningún informe de problemas sin haber confirmado que estos ocurran también con el «overclocking» desactivado.
+Si habilitas esta opción, aceptas no enviar ningún informe de problemas sin haber confirmado que estos ocurran también con el overclocking desactivado.
 
 Esta advertencia se mostrará solo una vez.</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.cpp" line="199"/>
         <source>Yes, I will confirm bugs without overclocking before reporting.</source>
-        <translation>Sí, confirmaré los problemas sin «overclocking» antes de informar de ellos.</translation>
+        <translation>Sí, confirmaré los problemas sin overclocking antes de informar de ellos.</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.cpp" line="200"/>
@@ -3718,7 +3718,7 @@ Esta advertencia se mostrará solo una vez.</translation>
     <message>
         <location filename="../consolesettingswidget.cpp" line="196"/>
         <source>CPU Overclocking Warning</source>
-        <translation>Alerta de «overclocking» de CPU</translation>
+        <translation>Alerta de overclocking de CPU</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.cpp" line="82"/>
@@ -3821,7 +3821,7 @@ Esta advertencia se mostrará solo una vez.</translation>
     <message>
         <location filename="../controllerbindingwidgets.cpp" line="348"/>
         <source>No generic bindings were generated for device &apos;%1&apos;. The controller/source may not support automatic mapping.</source>
-        <translation>No se han podido generar asociaciones genéricas para el dispositivo «%1». El mando/dispositivo de origen podría no ser compatible con las asociaciones automáticas.</translation>
+        <translation>No se han podido generar asociaciones genéricas para el dispositivo %1. El mando/dispositivo de origen podría no ser compatible con las asociaciones automáticas.</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidgets.cpp" line="419"/>
@@ -4695,7 +4695,7 @@ Esta advertencia se mostrará solo una vez.</translation>
         <location filename="../controllerglobalsettingswidget.ui" line="122"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The XInput source provides support for controllers that use the XInput protocol. This source should &lt;span style=&quot; font-weight:700;&quot;&gt;only&lt;/span&gt; be used if you are using a XInput wrapper library.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translatorcomment>Abbreviated because of heavy space constraints.</translatorcomment>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Permite el uso de mandos compatibles con el protocolo XInput. Utiliza este origen &lt;span style=&quot; font-weight:700;&quot;&gt;única y exclusivamente&lt;/span&gt; si utilizas un «wrapper» para XInput.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Permite el uso de mandos compatibles con el protocolo XInput. Utiliza este origen &lt;span style=&quot; font-weight:700;&quot;&gt;única y exclusivamente&lt;/span&gt; si utilizas un wrapper para XInput.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="../controllerglobalsettingswidget.ui" line="103"/>
@@ -5080,7 +5080,7 @@ Se utilizará el color alternativo al activar el modo analógico.</translation>
     <message>
         <location filename="../controllersettingswindow.cpp" line="184"/>
         <source>A preset with the name &apos;%1&apos; already exists.</source>
-        <translation>Ya existe un perfil con el nombre «%1».</translation>
+        <translation>Ya existe un perfil con el nombre %1.</translation>
     </message>
     <message>
         <location filename="../controllersettingswindow.cpp" line="190"/>
@@ -5104,7 +5104,7 @@ Se utilizará el color alternativo al activar el modo analógico.</translation>
 All current global bindings will be removed, and the preset bindings loaded.
 
 You cannot undo this action.</source>
-        <translation>¿Seguro que quieres cargar el perfil de mando «%1»?
+        <translation>¿Seguro que quieres cargar el perfil de mando %1?
 
 Se eliminarán todas las asignaciones globales y también las correspondientes al perfil.
 
@@ -5120,7 +5120,7 @@ Esta acción no puede deshacerse.</translation>
         <source>Are you sure you want to delete the controller preset named &apos;%1&apos;?
 
 You cannot undo this action.</source>
-        <translation>¿Seguro que quieres eliminar el perfil de mando «%1»?
+        <translation>¿Seguro que quieres eliminar el perfil de mando %1?
 
 Esta acción no puede deshacerse.</translation>
     </message>
@@ -5154,7 +5154,7 @@ Se eliminarán todas las asignaciones y configuraciones. Esta acción no puede d
     <message>
         <location filename="../controllersettingswindow.cpp" line="590"/>
         <source>The controller preset named &apos;%1&apos; cannot be found.</source>
-        <translation>No se ha encontrado el perfil de mando «%1».</translation>
+        <translation>No se ha encontrado el perfil de mando %1.</translation>
     </message>
 </context>
 <context>
@@ -5319,7 +5319,7 @@ El archivo pesa aproximadamente 206&#xa0;KB. ¿Deseas descargarlo?</translation>
     <message>
         <location filename="../qthost.cpp" line="1777"/>
         <source>State saved to %1.</source>
-        <translation>Guardado rápido creado en «%1».</translation>
+        <translation>Guardado rápido creado en %1.</translation>
     </message>
     <message>
         <location filename="../qthost.cpp" line="1779"/>
@@ -5329,7 +5329,7 @@ El archivo pesa aproximadamente 206&#xa0;KB. ¿Deseas descargarlo?</translation>
     <message>
         <location filename="../qthost.cpp" line="3123"/>
         <source>%1x%2</source>
-        <translation>%1&#xa0;×&#xa0;%2</translation>
+        <translation>%1&#xa0;x&#xa0;%2</translation>
     </message>
     <message>
         <location filename="../qthost.cpp" line="3123"/>
@@ -5367,7 +5367,7 @@ El archivo pesa aproximadamente 206&#xa0;KB. ¿Deseas descargarlo?</translation>
     <message>
         <location filename="../coverdownloadwindow.ui" line="72"/>
         <source>By default, the downloaded covers will be saved with the game&apos;s title. If this is not desired, you can check the &quot;Use Serial File Names&quot; box below. Using serials instead of game titles will prevent conflicts when multiple regions of the same game are used.</source>
-        <translation>Las carátulas se descargarán de forma predeterminada con el título del juego. Si no quieres que ocurra esto, activa la opción inferior, «Usar números de serie como nombres de archivo». El uso de números de serie en lugar de títulos de juegos evitará cualquier conflicto que ocurra al utilizar varias versiones de regiones distintas del mismo juego.</translation>
+        <translation>Las carátulas se descargarán de forma predeterminada con el título del juego. Si no quieres que ocurra esto, activa la opción inferior, Usar números de serie como nombres de archivo. El uso de números de serie en lugar de títulos de juegos evitará cualquier conflicto que ocurra al utilizar varias versiones de regiones distintas del mismo juego.</translation>
     </message>
     <message>
         <location filename="../coverdownloadwindow.ui" line="82"/>
@@ -6353,13 +6353,13 @@ Haz clic en Reiniciar para restablecer el número de serie al que se ha encontra
         <location filename="../emulationsettingswidget.ui" line="81"/>
         <location filename="../emulationsettingswidget.cpp" line="117"/>
         <source>Sync To Host Refresh Rate</source>
-        <translation>Sincronizar con frec. act. del equipo</translation>
+        <translation>Sincronizar con frecuencia de pantalla</translation>
     </message>
     <message>
         <location filename="../emulationsettingswidget.ui" line="74"/>
         <location filename="../emulationsettingswidget.cpp" line="112"/>
         <source>Vertical Sync (VSync)</source>
-        <translation>Sincronización vertical («VSync»)</translation>
+        <translation>Sincronización vertical (VSync)</translation>
     </message>
     <message>
         <location filename="../emulationsettingswidget.ui" line="88"/>
@@ -7500,12 +7500,12 @@ Se eliminarán todas las asignaciones y configuraciones. Esta acción no puede d
     <message>
         <location filename="../../core/fullscreenui_strings.h" line="204"/>
         <source>Controller preset &apos;{}&apos; loaded.</source>
-        <translation>Perfil de mando «{}» cargado.</translation>
+        <translation>Perfil de mando {} cargado.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreenui_strings.h" line="205"/>
         <source>Controller preset &apos;{}&apos; saved.</source>
-        <translation>Perfil de mando «{}» guardado.</translation>
+        <translation>Perfil de mando {} guardado.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreenui_strings.h" line="206"/>
@@ -7595,7 +7595,7 @@ Se eliminarán todas las asignaciones y configuraciones. Esta acción no puede d
     <message>
         <location filename="../../core/fullscreenui_strings.h" line="226"/>
         <source>Culling Correction</source>
-        <translation>Corrección de «culling»</translation>
+        <translation>Corrección de culling</translation>
     </message>
     <message>
         <location filename="../../core/fullscreenui_strings.h" line="227"/>
@@ -7835,7 +7835,7 @@ Se eliminarán todas las asignaciones y configuraciones. Esta acción no puede d
     <message>
         <location filename="../../core/fullscreenui_strings.h" line="282"/>
         <source>Disable Mailbox Presentation</source>
-        <translation>Deshabilitar presentación «mailbox»</translation>
+        <translation>Deshabilitar presentación mailbox</translation>
     </message>
     <message>
         <location filename="../../core/fullscreenui_strings.h" line="283"/>
@@ -7975,7 +7975,7 @@ Se eliminarán todas las asignaciones y configuraciones. Esta acción no puede d
     <message>
         <location filename="../../core/fullscreenui_strings.h" line="321"/>
         <source>Enable Overclocking</source>
-        <translation>«Overclocking»</translation>
+        <translation>Overclocking</translation>
     </message>
     <message>
         <location filename="../../core/fullscreenui_strings.h" line="322"/>
@@ -8095,7 +8095,7 @@ Se eliminarán todas las asignaciones y configuraciones. Esta acción no puede d
     <message>
         <location filename="../../core/fullscreenui_strings.h" line="354"/>
         <source>Encore Mode</source>
-        <translation>Modo «encore» (nueva partida)</translation>
+        <translation>Modo encore (nueva partida)</translation>
     </message>
     <message>
         <location filename="../../core/fullscreenui_strings.h" line="355"/>
@@ -8172,7 +8172,7 @@ El error ha sido el siguiente:</translation>
     <message>
         <location filename="../../core/fullscreenui_strings.h" line="375"/>
         <source>Failed to save controller preset &apos;{}&apos;.</source>
-        <translation>Error al guardar el perfil de mando «{}».</translation>
+        <translation>Error al guardar el perfil de mando {}.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreenui_strings.h" line="377"/>
@@ -8857,7 +8857,7 @@ El error ha sido el siguiente:</translation>
     <message>
         <location filename="../../core/fullscreenui_strings.h" line="805"/>
         <source>Support for controllers that use the XInput protocol. XInput should only be used if you are using a XInput wrapper library.</source>
-        <translation>Soporte para mandos que utilicen el protocolo XInput. Utilizar únicamente si vas a usar un «wrapper» para XInput.</translation>
+        <translation>Soporte para mandos que utilicen el protocolo XInput. Utilizar únicamente si vas a usar un wrapper para XInput.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreenui_strings.h" line="808"/>
@@ -8987,7 +8987,7 @@ El error ha sido el siguiente:</translation>
     <message>
         <location filename="../../core/fullscreenui_strings.h" line="880"/>
         <source>Vertical Sync (VSync)</source>
-        <translation>Sincronización vertical («VSync»)</translation>
+        <translation>Sincronización vertical (VSync)</translation>
     </message>
     <message>
         <location filename="../../core/fullscreenui_strings.h" line="881"/>
@@ -9221,7 +9221,7 @@ Esta acción no puede deshacerse.</translation>
     <message>
         <location filename="../../core/fullscreenui_strings.h" line="270"/>
         <source>Determines the frequency at which the macro will toggle the buttons on and off (aka auto fire).</source>
-        <translation>Determina la frecuencia con la que la macro activará y desactivará los botones (es decir, autodisparo/«autofire»).</translation>
+        <translation>Determina la frecuencia con la que la macro activará y desactivará los botones (es decir, autodisparo/autofire).</translation>
     </message>
     <message>
         <location filename="../../core/fullscreenui_strings.h" line="271"/>
@@ -9351,12 +9351,12 @@ Esta acción no puede deshacerse.</translation>
     <message>
         <location filename="../../core/fullscreenui_strings.h" line="371"/>
         <source>Failed to delete {}.</source>
-        <translation>Error al eliminar «{}».</translation>
+        <translation>Error al eliminar {}.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreenui_strings.h" line="372"/>
         <source>Failed to load &apos;{}&apos;.</source>
-        <translation>Error al cargar «{}».</translation>
+        <translation>Error al cargar {}.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreenui_strings.h" line="376"/>
@@ -9401,7 +9401,7 @@ Esta acción no puede deshacerse.</translation>
     <message>
         <location filename="../../core/fullscreenui_strings.h" line="391"/>
         <source>Forces the use of FIFO over Mailbox presentation, i.e. double buffering instead of triple buffering. Usually results in worse frame pacing.</source>
-        <translation>Fuerza la presentación FIFO en vez de la tipo «mailbox», es decir: búfer doble en vez de triple. Suele producir un ritmo de fotogramas peor.</translation>
+        <translation>Fuerza la presentación FIFO en vez de la tipo mailbox, es decir: búfer doble en vez de triple. Suele producir un ritmo de fotogramas peor.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreenui_strings.h" line="392"/>
@@ -9506,12 +9506,12 @@ Esta acción no puede deshacerse.</translation>
     <message>
         <location filename="../../core/fullscreenui_strings.h" line="413"/>
         <source>Game settings have been cleared for &apos;{}&apos;.</source>
-        <translation>Configuración del juego «{}» eliminada.</translation>
+        <translation>Configuración del juego {} eliminada.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreenui_strings.h" line="414"/>
         <source>Game settings initialized with global settings for &apos;{}&apos;.</source>
-        <translation>Configuración del juego «{}» creada en base a la configuración global.</translation>
+        <translation>Configuración del juego {} creada en base a la configuración global.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreenui_strings.h" line="415"/>
@@ -9561,7 +9561,7 @@ Esta acción no puede deshacerse.</translation>
     <message>
         <location filename="../../core/fullscreenui_strings.h" line="427"/>
         <source>Hardcore Mode</source>
-        <translation>Modo «hardcore»</translation>
+        <translation>Modo hardcore</translation>
     </message>
     <message>
         <location filename="../../core/fullscreenui_strings.h" line="429"/>
@@ -9601,7 +9601,7 @@ Esta acción no puede deshacerse.</translation>
     <message>
         <location filename="../../core/fullscreenui_strings.h" line="446"/>
         <source>Increases the precision of polygon culling, reducing the number of holes in geometry.</source>
-        <translation>Incrementa la precisión de la selección (o «culling») de polígonos para reducir el número de huecos en la geometría.</translation>
+        <translation>Incrementa la precisión de la selección (o culling) de polígonos para reducir el número de huecos en la geometría.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreenui_strings.h" line="450"/>
@@ -9930,7 +9930,7 @@ Comprueba tu nombre de usuario y contraseña y vuelve a intentarlo.</translation
     <message>
         <location filename="../../core/fullscreenui_strings.h" line="556"/>
         <source>Overclocking Percentage</source>
-        <translation>Porcentaje de «overclocking»</translation>
+        <translation>Porcentaje de overclocking</translation>
     </message>
     <message>
         <location filename="../../core/fullscreenui_strings.h" line="558"/>
@@ -10190,7 +10190,7 @@ Comprueba tu nombre de usuario y contraseña y vuelve a intentarlo.</translation
     <message>
         <location filename="../../core/fullscreenui_strings.h" line="816"/>
         <source>Texture Modulation Cropping (&quot;Old/v0&quot; GPU)</source>
-        <translation>Recorte de modulación de texturas («GPU v0/vieja»)</translation>
+        <translation>Recorte de modulación de texturas (GPU v0/vieja)</translation>
     </message>
     <message>
         <location filename="../../core/fullscreenui_strings.h" line="823"/>
@@ -10300,7 +10300,7 @@ Comprueba tu nombre de usuario y contraseña y vuelve a intentarlo.</translation
     <message>
         <location filename="../../core/fullscreenui_strings.h" line="428"/>
         <source>Hardcore mode will not be enabled until the game is restarted. Do you want to restart the game now?</source>
-        <translation>El modo «hardcore» no se activará hasta que se reinicie el juego. ¿Deseas hacerlo ahora?</translation>
+        <translation>El modo hardcore no se activará hasta que se reinicie el juego. ¿Deseas hacerlo ahora?</translation>
     </message>
     <message>
         <location filename="../../core/fullscreenui_strings.h" line="431"/>
@@ -10405,7 +10405,7 @@ Comprueba tu nombre de usuario y contraseña y vuelve a intentarlo.</translation
     <message>
         <location filename="../../core/fullscreenui_strings.h" line="611"/>
         <source>Reduces &quot;wobbly&quot; polygons by attempting to preserve the fractional component through memory transfers.</source>
-        <translation>Evita el «tembleque» de los polígonos intentando preservar los componentes fraccionarios durante las transferencias de memoria.</translation>
+        <translation>Evita el tembleque de los polígonos intentando preservar los componentes fraccionarios durante las transferencias de memoria.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreenui_strings.h" line="612"/>
@@ -10420,7 +10420,7 @@ Comprueba tu nombre de usuario y contraseña y vuelve a intentarlo.</translation
     <message>
         <location filename="../../core/fullscreenui_strings.h" line="614"/>
         <source>Reduces polygon Z-fighting through depth testing. Low compatibility with games.</source>
-        <translation>Reduce las interferencias entre polígonos (o «Z-fighting») mediante pruebas de profundidad. Tiene baja compatibilidad.</translation>
+        <translation>Reduce las interferencias entre polígonos (o Z-fighting) mediante pruebas de profundidad. Tiene baja compatibilidad.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreenui_strings.h" line="615"/>
@@ -10640,7 +10640,7 @@ Comprueba tu nombre de usuario y contraseña y vuelve a intentarlo.</translation
     <message>
         <location filename="../../core/fullscreenui_strings.h" line="708"/>
         <source>Selects the resolution scale that will be applied to the final image. 1x will downsample to the original console resolution.</source>
-        <translation>Selecciona la escala de resolución que se aplicará a la imagen final. «1x» reducirá la resolución a la original de la consola.</translation>
+        <translation>Selecciona la escala de resolución que se aplicará a la imagen final. 1x reducirá la resolución a la original de la consola.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreenui_strings.h" line="709"/>
@@ -10715,7 +10715,7 @@ Comprueba tu nombre de usuario y contraseña y vuelve a intentarlo.</translation
     <message>
         <location filename="../../core/fullscreenui_strings.h" line="730"/>
         <source>Setting {} binding {}.</source>
-        <translation>Configurando la asociación para el {0} «{1}».</translation>
+        <translation>Configurando la asociación para el {0} {1}.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreenui_strings.h" line="731"/>
@@ -10895,7 +10895,7 @@ Comprueba tu nombre de usuario y contraseña y vuelve a intentarlo.</translation
     <message>
         <location filename="../../core/fullscreenui_strings.h" line="792"/>
         <source>Sprite Texture Filtering</source>
-        <translation>Filtrado de «sprites»</translation>
+        <translation>Filtrado de sprites</translation>
     </message>
     <message>
         <location filename="../../core/fullscreenui_strings.h" line="793"/>
@@ -11160,12 +11160,12 @@ Comprueba tu nombre de usuario y contraseña y vuelve a intentarlo.</translation
     <message>
         <location filename="../../core/fullscreenui_strings.h" line="903"/>
         <source>&quot;Challenge&quot; mode for achievements, including leaderboard tracking. Disables save state, cheats, and slowdown functions.</source>
-        <translation>Activa el modo «desafío» para los logros y el seguimiento de las tablas de puntuación. Desactiva los guardados rápidos, los trucos y las funciones de ralentización.</translation>
+        <translation>Activa el modo desafío para los logros y el seguimiento de las tablas de puntuación. Desactiva los guardados rápidos, los trucos y las funciones de ralentización.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreenui_strings.h" line="904"/>
         <source>&quot;PlayStation&quot; and &quot;PSX&quot; are registered trademarks of Sony Interactive Entertainment Europe Limited. This software is not affiliated in any way with Sony Interactive Entertainment.</source>
-        <translation>«PlayStation» y «PSX» son marcas registradas de Sony Interactive Entertainment. Esta aplicación no está afiliada de ninguna forma con Sony Interactive Entertainment.</translation>
+        <translation>PlayStation y PSX son marcas registradas de Sony Interactive Entertainment. Esta aplicación no está afiliada de ninguna forma con Sony Interactive Entertainment.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreenui_strings.h" line="905"/>
@@ -11229,17 +11229,17 @@ Comprueba tu nombre de usuario y contraseña y vuelve a intentarlo.</translation
     <message>
         <location filename="../../core/gpu_backend.cpp" line="788"/>
         <source>Saving screenshot to &apos;{}&apos;.</source>
-        <translation>Guardando captura de pantalla en «{}».</translation>
+        <translation>Guardando captura de pantalla en {}.</translation>
     </message>
     <message>
         <location filename="../../core/gpu_backend.cpp" line="828"/>
         <source>Saved screenshot to &apos;{}&apos;.</source>
-        <translation>Captura de pantalla guardada en «{}».</translation>
+        <translation>Captura de pantalla guardada en {}.</translation>
     </message>
     <message>
         <location filename="../../core/gpu_backend.cpp" line="829"/>
         <source>Failed to save screenshot to &apos;{}&apos;.</source>
-        <translation>Error al guardar captura de pantalla en «{}».</translation>
+        <translation>Error al guardar captura de pantalla en {}.</translation>
     </message>
     <message>
         <location filename="../../core/gpu.cpp" line="2266"/>
@@ -11249,12 +11249,12 @@ Comprueba tu nombre de usuario y contraseña y vuelve a intentarlo.</translation
     <message>
         <location filename="../../core/gpu.cpp" line="2273"/>
         <source>Saving {0} frame GPU trace to &apos;{1}&apos;.</source>
-        <translation>Guardando seguimiento de la GPU de {0} fotograma a «{1}».</translation>
+        <translation>Guardando seguimiento de la GPU de {0} fotograma a {1}.</translation>
     </message>
     <message>
         <location filename="../../core/gpu.cpp" line="2274"/>
         <source>Saving multi-frame frame GPU trace to &apos;{1}&apos;.</source>
-        <translation>Guardando seguimiento de la GPU multifotograma a «{1}».</translation>
+        <translation>Guardando seguimiento de la GPU multifotograma a {1}.</translation>
     </message>
     <message>
         <location filename="../../core/gpu.cpp" line="2293"/>
@@ -11265,17 +11265,17 @@ Comprueba tu nombre de usuario y contraseña y vuelve a intentarlo.</translation
         <location filename="../../core/gpu.cpp" line="2306"/>
         <location filename="../../core/gpu.cpp" line="2323"/>
         <source>Saved GPU trace to &apos;{}&apos;.</source>
-        <translation>Seguimiento de la GPU guardado en «{}».</translation>
+        <translation>Seguimiento de la GPU guardado en {}.</translation>
     </message>
     <message>
         <location filename="../../core/gpu.cpp" line="2316"/>
         <source>Compressing GPU trace &apos;{}&apos;...</source>
-        <translation>Comprimiendo archivo de seguimiento de la GPU «{}»...</translation>
+        <translation>Comprimiendo archivo de seguimiento de la GPU {}...</translation>
     </message>
     <message>
         <location filename="../../core/gpu.cpp" line="2330"/>
         <source>Failed to save GPU trace to &apos;{}&apos;:</source>
-        <translation>Error al guardar el seguimiento de la GPU en «{}»:</translation>
+        <translation>Error al guardar el seguimiento de la GPU en {}:</translation>
     </message>
 </context>
 <context>
@@ -11293,27 +11293,27 @@ Comprueba tu nombre de usuario y contraseña y vuelve a intentarlo.</translation
     <message>
         <location filename="../../core/gpu_hw.cpp" line="574"/>
         <source>Internal resolution set to {0}x ({1}x{2}).</source>
-        <translation>Resolución interna establecida en ×{0} ({1}&#xa0;×&#xa0;{2}).</translation>
+        <translation>Resolución interna establecida en {0}x ({1}&#xa0;x&#xa0;{2}).</translation>
     </message>
     <message>
         <location filename="../../core/gpu_hw.cpp" line="581"/>
         <source>Internal resolution set to {0}x.</source>
-        <translation>Resolución interna establecida en ×{0}.</translation>
+        <translation>Resolución interna establecida en {0}x.</translation>
     </message>
     <message>
         <location filename="../../core/gpu_hw.cpp" line="591"/>
         <source>Multisample anti-aliasing set to {}x (SSAA).</source>
-        <translation>Suavizado de bordes de muestreo múltiple configurado a ×{} (SSAA).</translation>
+        <translation>Suavizado de bordes de muestreo múltiple configurado a {}x (SSAA).</translation>
     </message>
     <message>
         <location filename="../../core/gpu_hw.cpp" line="597"/>
         <source>Multisample anti-aliasing set to {}x.</source>
-        <translation>Suavizado de bordes de muestreo múltiple configurado a ×{}.</translation>
+        <translation>Suavizado de bordes de muestreo múltiple configurado a {}x.</translation>
     </message>
     <message>
         <location filename="../../core/gpu_hw.cpp" line="727"/>
         <source>{}x MSAA is not supported, using {}x instead.</source>
-        <translation>El nivel de MSAA ×{0} no es compatible, se va a usar ×{1} en su lugar.</translation>
+        <translation>El nivel de MSAA {0}x no es compatible, se va a usar {1}x en su lugar.</translation>
     </message>
     <message>
         <location filename="../../core/gpu_hw.cpp" line="738"/>
@@ -11323,7 +11323,7 @@ Comprueba tu nombre de usuario y contraseña y vuelve a intentarlo.</translation
     <message>
         <location filename="../../core/gpu_hw.cpp" line="745"/>
         <source>Texture filter &apos;{}/{}&apos; is not supported with the current renderer.</source>
-        <translation>El filtro de texturas «{}/{}» no es compatible con el renderizador actual.</translation>
+        <translation>El filtro de texturas {}/{} no es compatible con el renderizador actual.</translation>
     </message>
     <message>
         <location filename="../../core/gpu_hw.cpp" line="759"/>
@@ -11355,23 +11355,23 @@ con la mezcla de shaders.</translation>
     <message>
         <location filename="../../core/gpu_hw.cpp" line="803"/>
         <source>Resolution scale {0}x is not divisible by downsample scale {1}x, downsampling disabled.</source>
-        <translation>La escala de resolución ×{0} no es divisible por la escala de submuestreo ×{1}, desactivando submuestreo.</translation>
+        <translation>La escala de resolución {0}x no es divisible por la escala de submuestreo {1}x, desactivando submuestreo.</translation>
     </message>
     <message>
         <location filename="../../core/gpu_hw.cpp" line="811"/>
         <source>Resolution scale {0}x is not divisible by downsample scale {1}x, using {2}x instead.</source>
-        <translation>La escala de resolución ×{0} no es divisible por la escala de submuestreo ×{1}, utilizando ×{2} en su lugar.</translation>
+        <translation>La escala de resolución {0}x no es divisible por la escala de submuestreo {1}x, utilizando {2}x en su lugar.</translation>
     </message>
     <message>
         <location filename="../../core/gpu_hw.cpp" line="836"/>
         <source>Resolution scale {0}x not supported for adaptive downsampling, using {1}x.</source>
-        <translation>La escala de resolución ×{0} no es compatible con el suavizado adaptativo, se va a usar ×{1}.</translation>
+        <translation>La escala de resolución {0}x no es compatible con el suavizado adaptativo, se va a usar {1}x.</translation>
     </message>
     <message>
         <location filename="../../core/gpu_hw_texture_cache.cpp" line="1447"/>
         <source>Failed to allocate {}x{} texture for cache:
 {}</source>
-        <translation>Error al asignar la textura {}×{} para la caché:
+        <translation>Error al asignar la textura {}{}x para la caché:
 {}</translation>
     </message>
     <message>
@@ -11441,12 +11441,12 @@ con la mezcla de shaders.</translation>
     <message>
         <location filename="../gamecheatsettingswidget.cpp" line="1084"/>
         <source>The option &apos;%1&apos; is defined twice.</source>
-        <translation>La opción «%1» está definida dos veces.</translation>
+        <translation>La opción %1 está definida dos veces.</translation>
     </message>
     <message>
         <location filename="../gamecheatsettingswidget.cpp" line="1094"/>
         <source>The option &apos;%1&apos; does not have a valid value. It must be a number.</source>
-        <translation>La opción «%1» no tiene un valor válido. El valor ha de ser un número.</translation>
+        <translation>La opción %1 no tiene un valor válido. El valor ha de ser un número.</translation>
     </message>
 </context>
 <context>
@@ -11669,7 +11669,7 @@ Do you want to enable cheats now?</source>
     <message>
         <location filename="../gamecheatsettingswidget.cpp" line="668"/>
         <source>You are removing the code named &apos;%1&apos;. You cannot undo this action, are you sure you wish to delete this code?</source>
-        <translation>Vas a eliminar el código «%1». Esta acción no puede deshacerse. ¿Seguro que quieres eliminarlo?</translation>
+        <translation>Vas a eliminar el código %1. Esta acción no puede deshacerse. ¿Seguro que quieres eliminarlo?</translation>
     </message>
     <message>
         <location filename="../gamecheatsettingswidget.cpp" line="689"/>
@@ -11697,7 +11697,7 @@ Any database cheats will still be loaded and present unless you uncheck the &quo
 Are you sure you want to continue?</source>
         <translation>Vas a borrar todos los trucos que has añadido manualmente para este juego. Esta acción no se puede deshacer.
 
-Cualquier truco de la base de datos seguirá cargado y presente, a menos que desactives la opción «Cargar trucos de base de datos».
+Cualquier truco de la base de datos seguirá cargado y presente, a menos que desactives la opción Cargar trucos de base de datos.
 
 ¿Seguro que quieres continuar?</translation>
     </message>
@@ -11856,7 +11856,7 @@ Cualquier truco de la base de datos seguirá cargado y presente, a menos que des
         <location filename="../../core/game_database.cpp" line="140"/>
         <source>Disable Sprite Texture Filtering</source>
         <comment>GameDatabase::Trait</comment>
-        <translation>Deshabilitar filtrado de «sprites»</translation>
+        <translation>Deshabilitar filtrado de sprites</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="141"/>
@@ -11886,7 +11886,7 @@ Cualquier truco de la base de datos seguirá cargado y presente, a menos que des
         <location filename="../../core/game_database.cpp" line="146"/>
         <source>Disable PGXP Culling</source>
         <comment>GameDatabase::Trait</comment>
-        <translation>Deshabilitar «culling» de la PGXP</translation>
+        <translation>Deshabilitar culling de la PGXP</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="147"/>
@@ -12000,7 +12000,7 @@ Cualquier truco de la base de datos seguirá cargado y presente, a menos que des
     <message>
         <location filename="../../core/game_database.cpp" line="746"/>
         <source>Sprite texture filtering disabled.</source>
-        <translation>Filtrado de «sprites» deshabilitado.</translation>
+        <translation>Filtrado de sprites deshabilitado.</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="766"/>
@@ -12015,7 +12015,7 @@ Cualquier truco de la base de datos seguirá cargado y presente, a menos que des
     <message>
         <location filename="../../core/game_database.cpp" line="783"/>
         <source>PGXP culling correction disabled.</source>
-        <translation>Corrección de «culling» de la PGXP deshabilitada.</translation>
+        <translation>Corrección de culling de la PGXP deshabilitada.</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="791"/>
@@ -12214,7 +12214,7 @@ Cualquier truco de la base de datos seguirá cargado y presente, a menos que des
     <message>
         <location filename="../../core/game_database.cpp" line="1071"/>
         <source>CPU Overclock Percent</source>
-        <translation>Porcentaje de «overclocking» de CPU</translation>
+        <translation>Porcentaje de overclocking de CPU</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="1072"/>
@@ -12418,7 +12418,7 @@ Cualquier truco de la base de datos seguirá cargado y presente, a menos que des
     <message>
         <location filename="../gamelistwidget.cpp" line="1083"/>
         <source>%1 unlocked in hardcore mode</source>
-        <translation>%1 desbloqueado en modo «hardcore»</translation>
+        <translation>%1 desbloqueado en modo hardcore</translation>
     </message>
     <message>
         <location filename="../gamelistwidget.cpp" line="84"/>
@@ -12575,7 +12575,7 @@ Cualquier truco de la base de datos seguirá cargado y presente, a menos que des
         <source>Would you like to scan the directory &quot;%1&quot; recursively?
 
 Scanning recursively takes more time, but will identify files in subdirectories.</source>
-        <translation>¿Deseas que la búsqueda en el directorio «%1» sea recursiva?
+        <translation>¿Deseas que la búsqueda en el directorio %1 sea recursiva?
 
 La búsqueda recursiva llevará más tiempo, pero identificará todo archivo que se encuentre en subdirectorios.</translation>
     </message>
@@ -12688,7 +12688,7 @@ La búsqueda recursiva llevará más tiempo, pero identificará todo archivo que
     <message>
         <location filename="../gamepatchsettingswidget.cpp" line="35"/>
         <source>&lt;br&gt;&lt;strong&gt;Not permitted in RetroAchievements hardcore mode.&lt;/strong&gt;</source>
-        <translation>&lt;br&gt;&lt;strong&gt;No se puede usar en el modo «hardcore» de RetroAchievements.&lt;/strong&gt;</translation>
+        <translation>&lt;br&gt;&lt;strong&gt;No se puede usar en el modo hardcore de RetroAchievements.&lt;/strong&gt;</translation>
     </message>
     <message>
         <location filename="../gamepatchsettingswidget.cpp" line="37"/>
@@ -12754,7 +12754,7 @@ La búsqueda recursiva llevará más tiempo, pero identificará todo archivo que
     <message>
         <location filename="../gamesummarywidget.ui" line="213"/>
         <source>Hashes:</source>
-        <translation>«Hashes»:</translation>
+        <translation>Hashes:</translation>
     </message>
     <message>
         <location filename="../gamesummarywidget.ui" line="227"/>
@@ -12789,7 +12789,7 @@ La búsqueda recursiva llevará más tiempo, pero identificará todo archivo que
     <message>
         <location filename="../gamesummarywidget.ui" line="354"/>
         <source>Hash</source>
-        <translation>«Hash»</translation>
+        <translation>Hash</translation>
     </message>
     <message>
         <location filename="../gamesummarywidget.ui" line="359"/>
@@ -12924,7 +12924,7 @@ La búsqueda recursiva llevará más tiempo, pero identificará todo archivo que
     <message>
         <location filename="../gamesummarywidget.cpp" line="645"/>
         <source>Hash Calculation Failed</source>
-        <translation>Error al calcular el «hash»</translation>
+        <translation>Error al calcular el hash</translation>
     </message>
     <message>
         <location filename="../gamesummarywidget.cpp" line="65"/>
@@ -12991,7 +12991,7 @@ La búsqueda recursiva llevará más tiempo, pero identificará todo archivo que
     <message>
         <location filename="../gamesummarywidget.cpp" line="721"/>
         <source>No known dump found that matches this hash.</source>
-        <translation>No existen volcados conocidos que tengan el mismo «hash».</translation>
+        <translation>No existen volcados conocidos que tengan el mismo hash.</translation>
     </message>
     <message>
         <location filename="../gamesummarywidget.cpp" line="725"/>
@@ -13039,27 +13039,32 @@ La búsqueda recursiva llevará más tiempo, pero identificará todo archivo que
     <message>
         <location filename="../graphicssettingswidget.cpp" line="834"/>
         <source>1x Native (Default)</source>
-        <translation>Nativa ×1 (predeterminada)</translation>
+        <translation>Nativa 1x (predeterminada)</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="835"/>
         <source>3x Native (for 720p)</source>
-        <translation>Nativa ×3 (para 720p)</translation>
+        <translation>Nativa 3x (para 720p)</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="836"/>
         <source>5x Native (for 1080p)</source>
-        <translation>Nativa ×5 (para 1080p)</translation>
+        <translation>Nativa 5x (para 1080p)</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="837"/>
         <source>6x Native (for 1440p)</source>
-        <translation>Nativa ×6 (para 1440p)</translation>
+        <translation>Nativa 6x (para 1440p)</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="838"/>
         <source>9x Native (for 4K)</source>
-        <translation>Nativa ×9 (para 4K)</translation>
+        <translation>Nativa 9x (para 4K)</translation>
+    </message>
+    <message>
+        <location filename="../graphicssettingswidget.cpp" line="845"/>
+        <source>%1x Native</source>
+        <translation>Nativa %1x</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="105"/>
@@ -13138,7 +13143,7 @@ La búsqueda recursiva llevará más tiempo, pero identificará todo archivo que
     <message>
         <location filename="../graphicssettingswidget.ui" line="142"/>
         <source>Sprite Texture Filtering:</source>
-        <translation>Filtrado de «sprites»:</translation>
+        <translation>Filtrado de sprites:</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="306"/>
@@ -13170,7 +13175,7 @@ La búsqueda recursiva llevará más tiempo, pero identificará todo archivo que
         <location filename="../graphicssettingswidget.ui" line="487"/>
         <location filename="../graphicssettingswidget.cpp" line="428"/>
         <source>Disable Mailbox Presentation</source>
-        <translation>Deshabilitar presentación «mailbox»</translation>
+        <translation>Deshabilitar presentación mailbox</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="506"/>
@@ -13317,7 +13322,7 @@ La búsqueda recursiva llevará más tiempo, pero identificará todo archivo que
         <location filename="../graphicssettingswidget.ui" line="685"/>
         <location filename="../graphicssettingswidget.cpp" line="479"/>
         <source>Culling Correction</source>
-        <translation>Corrección de «culling»</translation>
+        <translation>Corrección de culling</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="692"/>
@@ -13397,7 +13402,7 @@ La búsqueda recursiva llevará más tiempo, pero identificará todo archivo que
     <message>
         <location filename="../graphicssettingswidget.ui" line="559"/>
         <source>Texture Modulation Cropping (&quot;Old/v0 GPU&quot;)</source>
-        <translation>Recorte de modulación de texturas («GPU v0/vieja»)</translation>
+        <translation>Recorte de modulación de texturas (GPU v0/vieja)</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="1017"/>
@@ -13595,7 +13600,7 @@ La búsqueda recursiva llevará más tiempo, pero identificará todo archivo que
     <message>
         <location filename="../graphicssettingswidget.cpp" line="351"/>
         <source>Selects the resolution scale that will be applied to the final image. 1x will downsample to the original console resolution.</source>
-        <translation>Selecciona la escala de resolución que se aplicará a la imagen final. «1x» reducirá la resolución a la original de la consola.</translation>
+        <translation>Selecciona la escala de resolución que se aplicará a la imagen final. 1x reducirá la resolución a la original de la consola.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="354"/>
@@ -13605,12 +13610,12 @@ La búsqueda recursiva llevará más tiempo, pero identificará todo archivo que
     <message>
         <location filename="../graphicssettingswidget.cpp" line="359"/>
         <source>Sprite Texture Filtering</source>
-        <translation>Filtrado de «sprites»</translation>
+        <translation>Filtrado de sprites</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="361"/>
         <source>Smooths out the blockiness of magnified textures on 2D objects by using filtering. This filter only applies to sprites and other 2D elements, such as the HUD.</source>
-        <translation>Suaviza el efecto cuadriculado de las texturas ampliadas en objetos 2D con un filtrado.&lt;br&gt;Este filtro se aplicará únicamente a «sprites» y otros elementos 2D, como la interfaz.</translation>
+        <translation>Suaviza el efecto cuadriculado de las texturas ampliadas en objetos 2D con un filtrado.&lt;br&gt;Este filtro se aplicará únicamente a sprites y otros elementos 2D, como la interfaz.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="364"/>
@@ -13630,7 +13635,7 @@ La búsqueda recursiva llevará más tiempo, pero identificará todo archivo que
     <message>
         <location filename="../graphicssettingswidget.cpp" line="373"/>
         <source>Changes the aspect ratio used to display the console&apos;s output to the screen. The default is Auto (Game Native) which automatically adjusts the aspect ratio to match how a game would be shown on a typical TV of the era.</source>
-        <translation>Cambia la relación de aspecto usada para mostrar la salida de la consola en la pantalla. La opción por defecto es «Automática (nativa del juego)», que ajustará automáticamente el aspecto al que utilizaría un juego en un televisor típico de la época.</translation>
+        <translation>Cambia la relación de aspecto usada para mostrar la salida de la consola en la pantalla. La opción por defecto es Automática (nativa del juego), que ajustará automáticamente el aspecto al que utilizaría un juego en un televisor típico de la época.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="376"/>
@@ -13740,7 +13745,7 @@ La búsqueda recursiva llevará más tiempo, pero identificará todo archivo que
     <message>
         <location filename="../graphicssettingswidget.cpp" line="398"/>
         <source>Reduces &quot;wobbly&quot; polygons and &quot;warping&quot; textures that are common in PS1 games. &lt;strong&gt;May not be compatible with all games.&lt;/strong&gt;</source>
-        <translation>Reduce el «baile» de polígonos y la «deformación» de texturas habitual en los juegos de PS1. &lt;strong&gt;Esta opción podría no ser compatible con todos los juegos.&lt;/strong&gt;</translation>
+        <translation>Reduce el baile de polígonos y la deformación de texturas habitual en los juegos de PS1. &lt;strong&gt;Esta opción podría no ser compatible con todos los juegos.&lt;/strong&gt;</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="401"/>
@@ -13750,7 +13755,7 @@ La búsqueda recursiva llevará más tiempo, pero identificará todo archivo que
     <message>
         <location filename="../graphicssettingswidget.cpp" line="402"/>
         <source>Attempts to reduce polygon Z-fighting by testing pixels against the depth values from PGXP. Low compatibility, but can work well in some games. Other games may need a threshold adjustment.</source>
-        <translation>Intenta reducir las interferencias entre polígonos (o «Z-fighting») probando píxeles con los valores de profundidad de PGXP. Tiene baja compatibilidad, pero puede funcionar bien en algunos juegos, mientras que otros necesitarán un cambio en el umbral.</translation>
+        <translation>Intenta reducir las interferencias entre polígonos (o Z-fighting) probando píxeles con los valores de profundidad de PGXP. Tiene baja compatibilidad, pero puede funcionar bien en algunos juegos, mientras que otros necesitarán un cambio en el umbral.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="406"/>
@@ -13826,7 +13831,7 @@ La búsqueda recursiva llevará más tiempo, pero identificará todo archivo que
     <message>
         <location filename="../graphicssettingswidget.cpp" line="429"/>
         <source>Forces the use of FIFO over Mailbox presentation, i.e. double buffering instead of triple buffering. Usually results in worse frame pacing.</source>
-        <translation>Fuerza la presentación FIFO en vez de la tipo «mailbox», es decir: búfer doble en vez de triple. Suele producir un ritmo de fotogramas peor.</translation>
+        <translation>Fuerza la presentación FIFO en vez de la tipo mailbox, es decir: búfer doble en vez de triple. Suele producir un ritmo de fotogramas peor.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="390"/>
@@ -13861,7 +13866,7 @@ La búsqueda recursiva llevará más tiempo, pero identificará todo archivo que
     <message>
         <location filename="../graphicssettingswidget.cpp" line="445"/>
         <source>Uses multi-sampled anti-aliasing when rendering 3D polygons. Can improve visuals with a lower performance requirement compared to upscaling, &lt;strong&gt;but often introduces rendering errors.&lt;/strong&gt;</source>
-        <translation>Renderiza los polígonos 3D con suavizado de bordes MSAA («multi-sampled anti-aliasing»). Puede mejorar la imagen utilizando menos recursos que el escalado, &lt;strong&gt;pero suele introducir errores de renderizado.&lt;/strong&gt;</translation>
+        <translation>Renderiza los polígonos 3D con suavizado de bordes MSAA (multi-sampled anti-aliasing). Puede mejorar la imagen utilizando menos recursos que el escalado, &lt;strong&gt;pero suele introducir errores de renderizado.&lt;/strong&gt;</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="459"/>
@@ -13911,7 +13916,7 @@ La búsqueda recursiva llevará más tiempo, pero identificará todo archivo que
     <message>
         <location filename="../graphicssettingswidget.cpp" line="480"/>
         <source>Increases the precision of polygon culling, reducing the number of holes in geometry. Requires geometry correction enabled.</source>
-        <translation>Incrementa la precisión de la selección (o «culling») de polígonos para reducir el número de huecos en la geometría. Requiere la corrección de geometría.</translation>
+        <translation>Incrementa la precisión de la selección (o culling) de polígonos para reducir el número de huecos en la geometría. Requiere la corrección de geometría.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="484"/>
@@ -13961,12 +13966,12 @@ La búsqueda recursiva llevará más tiempo, pero identificará todo archivo que
     <message>
         <location filename="../graphicssettingswidget.cpp" line="451"/>
         <source>Texture Modulation Cropping (&quot;Old/v0&quot; GPU)</source>
-        <translation>Recorte de modulación de texturas («GPU v0/vieja»)</translation>
+        <translation>Recorte de modulación de texturas (GPU v0/vieja)</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="452"/>
         <source>Crops vertex colours to 5:5:5 before modulating with the texture colour, which typically results in more visible banding. This is a characteristic of the &quot;old&quot; GPUs found in early model consoles.</source>
-        <translation>Recorta los colores de los vértices a 5:5:5 antes de modularlos con el color de las texturas, lo que suele provocar bandeados más visibles. Es una característica de las GPU «viejas» de los primeros modelos de la consola.</translation>
+        <translation>Recorta los colores de los vértices a 5:5:5 antes de modularlos con el color de las texturas, lo que suele provocar bandeados más visibles. Es una característica de las GPU viejas de los primeros modelos de la consola.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="455"/>
@@ -14096,12 +14101,12 @@ La búsqueda recursiva llevará más tiempo, pero identificará todo archivo que
     <message>
         <location filename="../graphicssettingswidget.cpp" line="780"/>
         <source>%1x MSAA</source>
-        <translation>MSAA ×%1</translation>
+        <translation>MSAA %1x</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="782"/>
         <source>%1x SSAA</source>
-        <translation>SSAA ×%1</translation>
+        <translation>SSAA %1x</translation>
     </message>
 </context>
 <context>
@@ -14252,7 +14257,7 @@ La búsqueda recursiva llevará más tiempo, pero identificará todo archivo que
     <message>
         <location filename="../../core/hotkeys.cpp" line="230"/>
         <source>Toggle Clock Speed Control (Overclocking)</source>
-        <translation>Alternar control de velocidad de reloj («overclocking»)</translation>
+        <translation>Alternar control de velocidad de reloj (overclocking)</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="295"/>
@@ -16325,7 +16330,7 @@ Clic+Mayús: establecer varias asignaciones.</translation>
         <location filename="../mainwindow.ui" line="1150"/>
         <location filename="../mainwindow.ui" line="1161"/>
         <source>Opens or closes the controller-based &quot;big picture&quot; mode.</source>
-        <translation>Abre o cierra el modo «Big Picture» para mandos.</translation>
+        <translation>Abre o cierra el modo Big Picture para mandos.</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="1172"/>
@@ -17080,12 +17085,12 @@ Clic+Mayús: establecer varias asignaciones.</translation>
     <message>
         <location filename="../mainwindow.cpp" line="1813"/>
         <source>Failed to remove existing cover &apos;%1&apos;</source>
-        <translation>Error al eliminar la carátula existente «%1»</translation>
+        <translation>Error al eliminar la carátula existente %1</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="1819"/>
         <source>Failed to copy &apos;%1&apos; to &apos;%2&apos;</source>
-        <translation>Error al copiar «%1» a «%2»</translation>
+        <translation>Error al copiar %1 a %2</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="115"/>
@@ -17210,7 +17215,7 @@ Una vez sean borrados, no se podrán recuperar.</translation>
         <location filename="../mainwindow.cpp" line="1150"/>
         <location filename="../mainwindow.cpp" line="1239"/>
         <source>Failed to delete save state file &apos;%1&apos;.</source>
-        <translation>Error al eliminar el guardado rápido «%1».</translation>
+        <translation>Error al eliminar el guardado rápido %1.</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="1294"/>
@@ -17408,7 +17413,7 @@ Do you want to delete the save state and boot the game anyway?</source>
     <message>
         <location filename="../mainwindow.cpp" line="1825"/>
         <source>Failed to remove &apos;%1&apos;</source>
-        <translation>Error al eliminar «%1»</translation>
+        <translation>Error al eliminar %1</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="1835"/>
@@ -17420,7 +17425,7 @@ Do you want to delete the save state and boot the game anyway?</source>
         <source>Are you sure you want to reset the play time for &apos;%1&apos;?
 
 This action cannot be undone.</source>
-        <translation>¿Seguro que quieres reiniciar el tiempo jugado de «%1»?
+        <translation>¿Seguro que quieres reiniciar el tiempo jugado de %1?
 
 Esta acción no se puede deshacer.</translation>
     </message>
@@ -17538,18 +17543,18 @@ Esta acción no se puede deshacer.</translation>
     <message>
         <location filename="../mainwindow.cpp" line="3197"/>
         <source>Memory card &apos;%1&apos; does not exist. Do you want to create an empty memory card?</source>
-        <translation>La Memory Card «%1» no existe. ¿Quieres crear una Memory Card vacía?</translation>
+        <translation>La Memory Card %1 no existe. ¿Quieres crear una Memory Card vacía?</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="3232"/>
         <location filename="../mainwindow.cpp" line="3241"/>
         <source>Memory card &apos;%1&apos; could not be found. Try starting the game and saving to create it.</source>
-        <translation>No se ha encontrado la Memory Card «%1». Intenta iniciar el juego y guardar una partida para crearla.</translation>
+        <translation>No se ha encontrado la Memory Card %1. Intenta iniciar el juego y guardar una partida para crearla.</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="3208"/>
         <source>Failed to create memory card &apos;%1&apos;: %2</source>
-        <translation>Error al crear la Memory Card «%1»: %2</translation>
+        <translation>Error al crear la Memory Card %1: %2</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="3398"/>
@@ -17613,7 +17618,7 @@ Esta compilación necesita la versión v{} de FFmpeg con las siguientes versione
         <location filename="../../core/memory_card_image.cpp" line="751"/>
         <location filename="../../core/memory_card_image.cpp" line="798"/>
         <source>Save file with the same name &apos;{}&apos; already exists in memory card.</source>
-        <translation>Ya existe un archivo de guardado con el nombre «{}» en la Memory Card.</translation>
+        <translation>Ya existe un archivo de guardado con el nombre {} en la Memory Card.</translation>
     </message>
     <message>
         <location filename="../../core/memory_card_image.cpp" line="521"/>
@@ -17641,7 +17646,7 @@ Esta compilación necesita la versión v{} de FFmpeg con las siguientes versione
     <message>
         <location filename="../../core/memory_card_image.cpp" line="662"/>
         <source>Unknown extension &apos;{}&apos;.</source>
-        <translation>Extensión desconocida: «{}».</translation>
+        <translation>Extensión desconocida: {}.</translation>
     </message>
     <message>
         <location filename="../../core/memory_card_image.cpp" line="705"/>
@@ -17724,7 +17729,7 @@ Error: {1}</translation>
     <message>
         <location filename="../../core/memory_card.cpp" line="385"/>
         <source>Saved card to &apos;{}&apos;.</source>
-        <translation>Memory Card guardada en «{}».</translation>
+        <translation>Memory Card guardada en {}.</translation>
     </message>
 </context>
 <context>
@@ -17889,7 +17894,7 @@ Error: {1}</translation>
     <message>
         <location filename="../memorycardeditorwindow.cpp" line="589"/>
         <source>Memory card &apos;%1&apos; is not saved, do you want to save before closing?</source>
-        <translation>La Memory Card «%1» no se ha guardado, ¿quieres guardarla antes de cerrar?</translation>
+        <translation>La Memory Card %1 no se ha guardado, ¿quieres guardarla antes de cerrar?</translation>
     </message>
     <message>
         <location filename="../memorycardeditorwindow.cpp" line="612"/>
@@ -17978,7 +17983,7 @@ Error: {1}</translation>
     <message>
         <location filename="../memorycardeditorwindow.cpp" line="794"/>
         <source>Formatting the memory card will destroy all saves, and they will not be recoverable. The memory card which will be formatted is located at &apos;%1&apos;.</source>
-        <translation>Al formatear la Memory Card, destruirás todos los datos guardados y no podrán ser recuperados. La Memory Card en cuestión se encuentra en «%1».</translation>
+        <translation>Al formatear la Memory Card, destruirás todos los datos guardados y no podrán ser recuperados. La Memory Card en cuestión se encuentra en %1.</translation>
     </message>
 </context>
 <context>
@@ -18233,7 +18238,7 @@ Error: {1}</translation>
     <message>
         <location filename="../memoryeditorwindow.ui" line="260"/>
         <source>Unsigned Halfword:</source>
-        <translation>«Halfword» sin signo:</translation>
+        <translation>Halfword sin signo:</translation>
     </message>
     <message>
         <location filename="../memoryeditorwindow.ui" line="267"/>
@@ -18243,7 +18248,7 @@ Error: {1}</translation>
     <message>
         <location filename="../memoryeditorwindow.ui" line="288"/>
         <source>Unsigned Doubleword:</source>
-        <translation>«Doubleword» sin signo:</translation>
+        <translation>Doubleword sin signo:</translation>
     </message>
     <message>
         <location filename="../memoryeditorwindow.ui" line="337"/>
@@ -18258,22 +18263,22 @@ Error: {1}</translation>
     <message>
         <location filename="../memoryeditorwindow.ui" line="358"/>
         <source>Unsigned Word:</source>
-        <translation>«Word» sin signo:</translation>
+        <translation>Word sin signo:</translation>
     </message>
     <message>
         <location filename="../memoryeditorwindow.ui" line="365"/>
         <source>Signed Word:</source>
-        <translation>«Word» con signo:</translation>
+        <translation>Word con signo:</translation>
     </message>
     <message>
         <location filename="../memoryeditorwindow.ui" line="385"/>
         <source>Signed Halfword:</source>
-        <translation>«Halfword» con signo:</translation>
+        <translation>Halfword con signo:</translation>
     </message>
     <message>
         <location filename="../memoryeditorwindow.ui" line="392"/>
         <source>Signed Doubleword:</source>
-        <translation>«Doubleword» con signo:</translation>
+        <translation>Doubleword con signo:</translation>
     </message>
     <message>
         <location filename="../memoryeditorwindow.cpp" line="95"/>
@@ -18374,12 +18379,12 @@ Error: {1}</translation>
     <message>
         <location filename="../memoryscannerwindow.ui" line="138"/>
         <source>Halfword (2 bytes)</source>
-        <translation>«Halfword» (2 bytes)</translation>
+        <translation>Halfword (2 bytes)</translation>
     </message>
     <message>
         <location filename="../memoryscannerwindow.ui" line="143"/>
         <source>Word (4 bytes)</source>
-        <translation>«Word» (4 bytes)</translation>
+        <translation>Word (4 bytes)</translation>
     </message>
     <message>
         <location filename="../memoryscannerwindow.ui" line="151"/>
@@ -18574,12 +18579,12 @@ Error: {1}</translation>
     <message>
         <location filename="../memoryscannerwindow.cpp" line="37"/>
         <source>Halfword</source>
-        <translation>«Halfword»</translation>
+        <translation>Halfword</translation>
     </message>
     <message>
         <location filename="../memoryscannerwindow.cpp" line="38"/>
         <source>Word</source>
-        <translation>«Word»</translation>
+        <translation>Word</translation>
     </message>
     <message>
         <location filename="../memoryscannerwindow.cpp" line="38"/>
@@ -18589,12 +18594,12 @@ Error: {1}</translation>
     <message>
         <location filename="../memoryscannerwindow.cpp" line="39"/>
         <source>Signed Halfword</source>
-        <translation>«Halfword» con signo</translation>
+        <translation>Halfword con signo</translation>
     </message>
     <message>
         <location filename="../memoryscannerwindow.cpp" line="39"/>
         <source>Signed Word</source>
-        <translation>«Word» con signo</translation>
+        <translation>Word con signo</translation>
     </message>
     <message>
         <location filename="../memoryscannerwindow.cpp" line="98"/>
@@ -18638,7 +18643,7 @@ Error: {1}</translation>
     <message>
         <location filename="../controllerbindingwidgets.cpp" line="1063"/>
         <source>No generic bindings were generated for device &apos;%1&apos;. The controller/source may not support automatic mapping.</source>
-        <translation>No se han podido generar asociaciones genéricas para el dispositivo «%1». El mando/dispositivo de origen podría no ser compatible con las asociaciones automáticas.</translation>
+        <translation>No se han podido generar asociaciones genéricas para el dispositivo %1. El mando/dispositivo de origen podría no ser compatible con las asociaciones automáticas.</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidgets.cpp" line="1078"/>
@@ -19009,7 +19014,7 @@ Error: {1}</translation>
     <message>
         <location filename="../../core/cdrom.cpp" line="1026"/>
         <source>CD image preloading not available for multi-disc image &apos;{}&apos;</source>
-        <translation>Precarga de imagen de CD no disponible para la imagen multidisco «{}»</translation>
+        <translation>Precarga de imagen de CD no disponible para la imagen multidisco {}</translation>
     </message>
     <message>
         <location filename="../../core/cdrom.cpp" line="1036"/>
@@ -19156,12 +19161,12 @@ Error: {1}</translation>
     <message>
         <location filename="../../core/system.cpp" line="3983"/>
         <source>Failed to open disc image &apos;{}&apos;: {}.</source>
-        <translation>Error al abrir la imagen de disco «{}»: {}.</translation>
+        <translation>Error al abrir la imagen de disco {}: {}.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="3993"/>
         <source>Inserted disc &apos;{}&apos; ({}).</source>
-        <translation>Disco «{}» introducido ({}).</translation>
+        <translation>Disco {} introducido ({}).</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="4477"/>
@@ -19566,7 +19571,7 @@ Error: {1}</translation>
     <message>
         <location filename="../osdsettingswidget.cpp" line="140"/>
         <source>Shows indicators on screen when the system is not running in its &quot;normal&quot; state. For example, fast forwarding, or being paused.</source>
-        <translation>Muestra indicadores en pantalla cuando el sistema no se ejecute en condiciones «normales», como el avance rápido o las pausas.</translation>
+        <translation>Muestra indicadores en pantalla cuando el sistema no se ejecute en condiciones normales, como el avance rápido o las pausas.</translation>
     </message>
 </context>
 <context>
@@ -19744,12 +19749,12 @@ Error: {1}</translation>
     <message>
         <location filename="../../util/postprocessing.cpp" line="765"/>
         <source>Failed to compile post-processing shader &apos;{}&apos;.</source>
-        <translation>Error al cargar la cadena de shaders de posprocesado «{}».</translation>
+        <translation>Error al cargar la cadena de shaders de posprocesado {}.</translation>
     </message>
     <message>
         <location filename="../../util/postprocessing.cpp" line="806"/>
         <source>Failed to resize post-processing shader &apos;{}&apos;.</source>
-        <translation>Error al cambiar el tamaño del shader de posprocesado «{}».</translation>
+        <translation>Error al cambiar el tamaño del shader de posprocesado {}.</translation>
     </message>
 </context>
 <context>
@@ -20496,12 +20501,12 @@ Error: {1}</translation>
     <message>
         <location filename="../../util/sdl_input_source.cpp" line="209"/>
         <source>Force Digital Hat Inputs</source>
-        <translation>Forzar entradas de POV/«setas» digitales</translation>
+        <translation>Forzar entradas de POV/setas digitales</translation>
     </message>
     <message>
         <location filename="../../util/sdl_input_source.cpp" line="210"/>
         <source>Forces joysticks to always treat &apos;hat&apos; axis inputs (ABS_HAT0X - ABS_HAT3Y) as 8-way digital hats without checking whether they may be analog.</source>
-        <translation>Obliga a los mandos a tratar las entradas de los ejes de un botón de punto de mira, POV o «seta» (ABS_HAT0X - ABS_HAT3Y) como botones digitales de 8 direcciones sin comprobar si pueden ser analógicos.</translation>
+        <translation>Obliga a los mandos a tratar las entradas de los ejes de un botón de punto de mira, POV o seta (ABS_HAT0X - ABS_HAT3Y) como botones digitales de 8 direcciones sin comprobar si pueden ser analógicos.</translation>
     </message>
     <message>
         <location filename="../../util/sdl_input_source.cpp" line="905"/>
@@ -21078,7 +21083,7 @@ Error: {1}</translation>
         <location filename="../../core/settings.cpp" line="1903"/>
         <source>Weave (Combing)</source>
         <comment>DisplayDeinterlacingMode</comment>
-        <translation>«Weave» (efecto de peine)</translation>
+        <translation>Weave (efecto de peine)</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="1904"/>
@@ -22079,12 +22084,12 @@ Se perderá cualquier ajuste actual.
     <message>
         <location filename="../setupwizarddialog.ui" line="787"/>
         <source>Sprite Texture Filtering:</source>
-        <translation>Filtrado de «sprites»:</translation>
+        <translation>Filtrado de sprites:</translation>
     </message>
     <message>
         <location filename="../setupwizarddialog.ui" line="794"/>
         <source>Smooths out the blockiness of magnified textures on 2D objects by using filtering. This filter only applies to sprites and other 2D elements, such as the HUD.</source>
-        <translation>Suaviza el efecto cuadriculado de las texturas ampliadas en objetos 2D con un filtrado.&lt;br&gt;Este filtro se aplicará únicamente a «sprites» y otros elementos 2D, como la interfaz.</translation>
+        <translation>Suaviza el efecto cuadriculado de las texturas ampliadas en objetos 2D con un filtrado.&lt;br&gt;Este filtro se aplicará únicamente a sprites y otros elementos 2D, como la interfaz.</translation>
     </message>
     <message>
         <location filename="../setupwizarddialog.ui" line="815"/>
@@ -22094,7 +22099,7 @@ Se perderá cualquier ajuste actual.
     <message>
         <location filename="../setupwizarddialog.ui" line="824"/>
         <source>Changes the aspect ratio used to display the console&apos;s output to the screen. The default is Auto (Game Native) which automatically adjusts the aspect ratio to match how a game would be shown on a typical TV of the era.</source>
-        <translation>Cambia la relación de aspecto usada para mostrar la salida de la consola en la pantalla. La opción por defecto es «Automática (nativa del juego)», que ajustará automáticamente el aspecto al que utilizaría un juego en un televisor típico de la época.</translation>
+        <translation>Cambia la relación de aspecto usada para mostrar la salida de la consola en la pantalla. La opción por defecto es Automática (nativa del juego), que ajustará automáticamente el aspecto al que utilizaría un juego en un televisor típico de la época.</translation>
     </message>
     <message>
         <location filename="../setupwizarddialog.ui" line="841"/>
@@ -22134,7 +22139,7 @@ Se perderá cualquier ajuste actual.
     <message>
         <location filename="../setupwizarddialog.ui" line="900"/>
         <source>Reduces &quot;wobbly&quot; polygons and &quot;warping&quot; textures that are common in PS1 games. &lt;strong&gt;May not be compatible with all games.&lt;/strong&gt;</source>
-        <translation>Reduce el «baile» de polígonos y la «deformación» de texturas habitual en los juegos de PS1. &lt;strong&gt;Esta opción podría no ser compatible con todos los juegos.&lt;/strong&gt;</translation>
+        <translation>Reduce el baile de polígonos y la deformación de texturas habitual en los juegos de PS1. &lt;strong&gt;Esta opción podría no ser compatible con todos los juegos.&lt;/strong&gt;</translation>
     </message>
     <message>
         <location filename="../setupwizarddialog.ui" line="903"/>
@@ -22180,7 +22185,7 @@ Se perderá cualquier ajuste actual.
     <message>
         <location filename="../setupwizarddialog.ui" line="1030"/>
         <source>Enable Hardcore Mode</source>
-        <translation>Habilitar modo «hardcore»</translation>
+        <translation>Habilitar modo hardcore</translation>
     </message>
     <message>
         <location filename="../setupwizarddialog.ui" line="1040"/>
@@ -22323,7 +22328,7 @@ Se ha guardado cualquier cambio que hayas hecho y el asistente volverá a aparec
         <source>Would you like to scan the directory &quot;%1&quot; recursively?
 
 Scanning recursively takes more time, but will identify files in subdirectories.</source>
-        <translation>¿Quieres hacer una búsqueda recursiva en el directorio «%1»?
+        <translation>¿Quieres hacer una búsqueda recursiva en el directorio %1?
 
 La búsqueda recursiva lleva más tiempo, pero identificará los archivos que estén en subdirectorios.</translation>
     </message>
@@ -22345,7 +22350,7 @@ La búsqueda recursiva lleva más tiempo, pero identificará los archivos que es
     <message>
         <location filename="../setupwizarddialog.cpp" line="470"/>
         <source>No generic bindings were generated for device &apos;%1&apos;. The controller/source may not support automatic mapping.</source>
-        <translation>No se han podido generar asociaciones genéricas para el dispositivo «%1». El mando/dispositivo de origen podría no ser compatible con las asociaciones automáticas.</translation>
+        <translation>No se han podido generar asociaciones genéricas para el dispositivo %1. El mando/dispositivo de origen podría no ser compatible con las asociaciones automáticas.</translation>
     </message>
     <message>
         <location filename="../setupwizarddialog.cpp" line="603"/>
@@ -22387,7 +22392,7 @@ Fecha de creación del token de acceso: %2.</translation>
         <location filename="../../core/system.cpp" line="435"/>
         <source>CPU Overclock</source>
         <comment>Taint</comment>
-        <translation>«Overclocking» de CPU</translation>
+        <translation>Overclocking de CPU</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="436"/>
@@ -22530,7 +22535,7 @@ Deberás guardar tus avances en una Memory Card y reiniciar el sistema para elim
     <message>
         <location filename="../../core/system.cpp" line="2399"/>
         <source>CPU Overclock Changed</source>
-        <translation>Cambio en el «overclocking» de la CPU</translation>
+        <translation>Cambio en el overclocking de la CPU</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="2401"/>
@@ -22640,7 +22645,7 @@ Utilizando imagen de CD actual, podrían producirse inestabilidades.</translatio
     <message>
         <location filename="../../core/system.cpp" line="4836"/>
         <source>Overclock disabled.</source>
-        <translation>«Overclocking» deshabilitado.</translation>
+        <translation>Overclocking deshabilitado.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="4838"/>
@@ -22650,7 +22655,7 @@ Utilizando imagen de CD actual, podrían producirse inestabilidades.</translatio
     <message>
         <location filename="../../core/system.cpp" line="4840"/>
         <source>Resolution scale set to 1x.</source>
-        <translation>Escala de resolución configurada a ×1.</translation>
+        <translation>Escala de resolución configurada a 1x.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="4842"/>
@@ -22774,7 +22779,7 @@ Using shared card instead.</source>
         <location filename="../../core/system.cpp" line="2858"/>
         <source>Failed to open CD image &apos;{}&apos; used by save state:
 </source>
-        <translation>Error al abrir la imagen de CD «{}» usada por el guardado rápido:
+        <translation>Error al abrir la imagen de CD {} usada por el guardado rápido:
 </translation>
     </message>
     <message>
@@ -22823,12 +22828,12 @@ El nombre del archivo SBI debe ser idéntico al nombre de la imagen de disco.</t
     <message>
         <location filename="../../core/system.cpp" line="4262"/>
         <source>Failed to switch to subimage {} in &apos;{}&apos;: {}.</source>
-        <translation>Error al cambiar a la subimagen {} de «{}»: {}.</translation>
+        <translation>Error al cambiar a la subimagen {} de {}: {}.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="4276"/>
         <source>Switched to sub-image {} ({}) in &apos;{}&apos;.</source>
-        <translation>Cambiando a subimagen {} ({}) de «{}».</translation>
+        <translation>Cambiando a subimagen {} ({}) de {}.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="4898"/>
@@ -22914,12 +22919,12 @@ Los juegos podrían ejecutarse a velocidades incorrectas.</translation>
     <message>
         <location filename="../../core/system.cpp" line="5576"/>
         <source>Starting {0} to &apos;{1}&apos;.</source>
-        <translation>Iniciando {0} en «{1}».</translation>
+        <translation>Iniciando {0} en {1}.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="5616"/>
         <source>Stopped {0} to &apos;{1}&apos;.</source>
-        <translation>Deteniendo {0} de «{1}».</translation>
+        <translation>Deteniendo {0} de {1}.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="5623"/>
@@ -22941,7 +22946,7 @@ DuckStation necesita una BIOS de PS1 o PS2 para poder funcionar.
 
 Por motivos de legalidad, *es imperativo* que obtengas una BIOS a partir de un sistema PS1 que hayas comprado (no vale pedir una prestada).
 
-Una vez hayas volcado una imagen de la BIOS, deberás guardarla en la carpeta «bios» del directorio de datos (menú Herramientas -&gt; Abrir directorio de datos).</translation>
+Una vez hayas volcado una imagen de la BIOS, deberás guardarla en la carpeta bios del directorio de datos (menú Herramientas -&gt; Abrir directorio de datos).</translation>
     </message>
     <message>
         <location filename="../../core/bios.cpp" line="448"/>
