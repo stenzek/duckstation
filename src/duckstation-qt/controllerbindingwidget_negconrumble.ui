@@ -88,9 +88,6 @@
                <height>16777215</height>
               </size>
              </property>
-             <property name="text">
-              <string>PushButton</string>
-             </property>
             </widget>
            </item>
           </layout>
@@ -127,9 +124,6 @@
                <width>100</width>
                <height>16777215</height>
               </size>
-             </property>
-             <property name="text">
-              <string>PushButton</string>
              </property>
             </widget>
            </item>
@@ -168,9 +162,6 @@
                <height>16777215</height>
               </size>
              </property>
-             <property name="text">
-              <string>PushButton</string>
-             </property>
             </widget>
            </item>
           </layout>
@@ -208,9 +199,6 @@
                <height>16777215</height>
               </size>
              </property>
-             <property name="text">
-              <string>PushButton</string>
-             </property>
             </widget>
            </item>
           </layout>
@@ -244,9 +232,6 @@
             <width>100</width>
             <height>16777215</height>
            </size>
-          </property>
-          <property name="text">
-           <string>PushButton</string>
           </property>
          </widget>
         </item>
@@ -296,9 +281,6 @@
             <height>16777215</height>
            </size>
           </property>
-          <property name="text">
-           <string>PushButton</string>
-          </property>
          </widget>
         </item>
        </layout>
@@ -329,9 +311,6 @@
             <width>100</width>
             <height>16777215</height>
            </size>
-          </property>
-          <property name="text">
-           <string>PushButton</string>
           </property>
          </widget>
         </item>
@@ -393,9 +372,6 @@
                <height>16777215</height>
               </size>
              </property>
-             <property name="text">
-              <string>PushButton</string>
-             </property>
             </widget>
            </item>
           </layout>
@@ -432,9 +408,6 @@
                <width>100</width>
                <height>16777215</height>
               </size>
-             </property>
-             <property name="text">
-              <string>PushButton</string>
              </property>
             </widget>
            </item>
@@ -473,9 +446,6 @@
                <height>16777215</height>
               </size>
              </property>
-             <property name="text">
-              <string>PushButton</string>
-             </property>
             </widget>
            </item>
           </layout>
@@ -512,9 +482,6 @@
                <width>100</width>
                <height>16777215</height>
               </size>
-             </property>
-             <property name="text">
-              <string>PushButton</string>
              </property>
             </widget>
            </item>
@@ -631,9 +598,6 @@
                <height>16777215</height>
               </size>
              </property>
-             <property name="text">
-              <string>PushButton</string>
-             </property>
             </widget>
            </item>
           </layout>
@@ -671,9 +635,6 @@
                <height>16777215</height>
               </size>
              </property>
-             <property name="text">
-              <string>PushButton</string>
-             </property>
             </widget>
            </item>
           </layout>
@@ -708,9 +669,6 @@
             <width>150</width>
             <height>16777215</height>
            </size>
-          </property>
-          <property name="text">
-           <string>PushButton</string>
           </property>
          </widget>
         </item>
@@ -749,9 +707,6 @@
             <height>16777215</height>
            </size>
           </property>
-          <property name="text">
-           <string>PushButton</string>
-          </property>
          </widget>
         </item>
        </layout>
@@ -788,9 +743,6 @@
             <width>16777215</width>
             <height>16777215</height>
            </size>
-          </property>
-          <property name="text">
-           <string>PushButton</string>
           </property>
          </widget>
         </item>

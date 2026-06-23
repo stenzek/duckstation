@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>618</width>
-    <height>481</height>
+    <height>520</height>
    </rect>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
@@ -164,9 +164,6 @@
       </item>
       <item row="3" column="0" colspan="2">
        <widget class="QLabel" name="rewindSummary">
-        <property name="text">
-         <string>TextLabel</string>
-        </property>
         <property name="wordWrap">
          <bool>true</bool>
         </property>

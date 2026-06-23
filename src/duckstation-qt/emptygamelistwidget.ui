@@ -88,9 +88,6 @@
    </item>
    <item>
     <widget class="QLabel" name="supportedFormats">
-     <property name="text">
-      <string>TextLabel</string>
-     </property>
      <property name="alignment">
       <set>Qt::AlignmentFlag::AlignCenter</set>
      </property>
