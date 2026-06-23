@@ -340,10 +340,18 @@
       <FileType>Document</FileType>
     </QtUi>
     <None Include="svgiconengine.json" />
-    <None Include="translations\duckstation-qt_az.ts" />
-    <None Include="translations\duckstation-qt_es-es.ts" />
-    <None Include="translations\duckstation-qt_sv.ts" />
-    <None Include="translations\duckstation-qt_tr.ts" />
+    <QtTs Include="translations\duckstation-qt_az.ts">
+      <FileType>Document</FileType>
+    </QtTs>
+    <QtTs Include="translations\duckstation-qt_es-es.ts">
+      <FileType>Document</FileType>
+    </QtTs>
+    <QtTs Include="translations\duckstation-qt_sv.ts">
+      <FileType>Document</FileType>
+    </QtTs>
+    <QtTs Include="translations\duckstation-qt_tr.ts">
+      <FileType>Document</FileType>
+    </QtTs>
   </ItemGroup>
   <ItemGroup>
     <CommonDataFiles Include="$(SolutionDir)data\**\*.*">
