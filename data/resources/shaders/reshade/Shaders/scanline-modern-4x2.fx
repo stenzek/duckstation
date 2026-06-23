@@ -68,7 +68,7 @@ float4 PS_SCANLINE4x2(float4 vpos : SV_POSITION, float2 texcoord : TEXCOORD0) : 
 
     // Square wave generator: 1-pixel phase shift on Y-axis to form a -1, +1, +1, -1 pattern
     float2 freq = float2(0.5, 0.25) * float2(BUFFER_WIDTH, BUFFER_HEIGHT);
-    float2 phase = frac(texYplus1 * freq); 
+    float2 phase = frac(texYplus1 * freq +0.01); // +0.01 to avoid precision drift at boundaries
     float2 wave = step(0.5, phase) * 2.0 - 1.0;
 
 	//	Scanline edge detection
