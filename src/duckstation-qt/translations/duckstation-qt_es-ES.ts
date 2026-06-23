@@ -2971,7 +2971,7 @@ Tu volcado podría estar dañado o tu disco físico está arañado.</translation
     <message>
         <location filename="../capturesettingswidget.ui" line="316"/>
         <source>x</source>
-        <translation>×</translation>
+        <translation>x</translation>
     </message>
     <message>
         <location filename="../capturesettingswidget.ui" line="339"/>
@@ -5350,7 +5350,7 @@ El archivo pesa aproximadamente 206&#xa0;KB. ¿Deseas descargarlo?</translation>
     <message>
         <location filename="../qthost.cpp" line="3176"/>
         <source>%1x%2</source>
-        <translation>%1&#xa0;×&#xa0;%2</translation>
+        <translation>%1x%2</translation>
     </message>
     <message>
         <location filename="../qthost.cpp" line="3176"/>
@@ -11411,27 +11411,27 @@ Comprueba tu nombre de usuario y contraseña y vuelve a intentarlo.</translation
     <message>
         <location filename="../../core/gpu_hw.cpp" line="574"/>
         <source>Internal resolution set to {0}x ({1}x{2}).</source>
-        <translation>Resolución interna establecida en ×{0} ({1}&#xa0;×&#xa0;{2}).</translation>
+        <translation>Resolución interna establecida en {0}x ({1}x{2}).</translation>
     </message>
     <message>
         <location filename="../../core/gpu_hw.cpp" line="581"/>
         <source>Internal resolution set to {0}x.</source>
-        <translation>Resolución interna establecida en ×{0}.</translation>
+        <translation>Resolución interna establecida en {0}x.</translation>
     </message>
     <message>
         <location filename="../../core/gpu_hw.cpp" line="591"/>
         <source>Multisample anti-aliasing set to {}x (SSAA).</source>
-        <translation>Suavizado de bordes de muestreo múltiple configurado a ×{} (SSAA).</translation>
+        <translation>Suavizado de bordes de muestreo múltiple configurado a {}x (SSAA).</translation>
     </message>
     <message>
         <location filename="../../core/gpu_hw.cpp" line="597"/>
         <source>Multisample anti-aliasing set to {}x.</source>
-        <translation>Suavizado de bordes de muestreo múltiple configurado a ×{}.</translation>
+        <translation>Suavizado de bordes de muestreo múltiple configurado a {}x.</translation>
     </message>
     <message>
         <location filename="../../core/gpu_hw.cpp" line="727"/>
         <source>{}x MSAA is not supported, using {}x instead.</source>
-        <translation>El nivel de MSAA ×{0} no es compatible, se va a usar ×{1} en su lugar.</translation>
+        <translation>El nivel de MSAA {}x no es compatible, se va a usar {}x en su lugar.</translation>
     </message>
     <message>
         <location filename="../../core/gpu_hw.cpp" line="738"/>
@@ -11473,23 +11473,23 @@ con la mezcla de shaders.</translation>
     <message>
         <location filename="../../core/gpu_hw.cpp" line="803"/>
         <source>Resolution scale {0}x is not divisible by downsample scale {1}x, downsampling disabled.</source>
-        <translation>La escala de resolución ×{0} no es divisible por la escala de submuestreo ×{1}, desactivando submuestreo.</translation>
+        <translation>La escala de resolución {0}x no es divisible por la escala de submuestreo {1}x, desactivando submuestreo.</translation>
     </message>
     <message>
         <location filename="../../core/gpu_hw.cpp" line="811"/>
         <source>Resolution scale {0}x is not divisible by downsample scale {1}x, using {2}x instead.</source>
-        <translation>La escala de resolución ×{0} no es divisible por la escala de submuestreo ×{1}, utilizando ×{2} en su lugar.</translation>
+        <translation>La escala de resolución {0}x no es divisible por la escala de submuestreo {1}x, utilizando {2}x en su lugar.</translation>
     </message>
     <message>
         <location filename="../../core/gpu_hw.cpp" line="836"/>
         <source>Resolution scale {0}x not supported for adaptive downsampling, using {1}x.</source>
-        <translation>La escala de resolución ×{0} no es compatible con el suavizado adaptativo, se va a usar ×{1}.</translation>
+        <translation>La escala de resolución {0}x no es compatible con el suavizado adaptativo, se va a usar {1}x.</translation>
     </message>
     <message>
         <location filename="../../core/gpu_hw_texture_cache.cpp" line="1443"/>
         <source>Failed to allocate {}x{} texture for cache:
 {}</source>
-        <translation>Error al asignar la textura {}×{} para la caché:
+        <translation>Error al asignar la textura {}x{} para la caché:
 {}</translation>
     </message>
     <message>
@@ -13159,32 +13159,32 @@ La búsqueda recursiva llevará más tiempo, pero identificará todo archivo que
     <message>
         <location filename="../graphicssettingswidget.cpp" line="845"/>
         <source>1x Native (Default)</source>
-        <translation>Nativa ×1 (predeterminada)</translation>
+        <translation>Nativa 1x (predeterminada)</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="846"/>
         <source>3x Native (for 720p)</source>
-        <translation>Nativa ×3 (para 720p)</translation>
+        <translation>Nativa 3x (para 720p)</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="847"/>
         <source>5x Native (for 1080p)</source>
-        <translation>Nativa ×5 (para 1080p)</translation>
+        <translation>Nativa 5x (para 1080p)</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="848"/>
         <source>6x Native (for 1440p)</source>
-        <translation>Nativa ×6 (para 1440p)</translation>
+        <translation>Nativa 6x (para 1440p)</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="849"/>
         <source>9x Native (for 4K)</source>
-        <translation>Nativa ×9 (para 4K)</translation>
+        <translation>Nativa 9x (para 4K)</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="844"/>
         <source>%1x Native</source>
-        <translation>Nativa ×%1</translation>
+        <translation>Nativa %1x</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="105"/>
@@ -14256,12 +14256,12 @@ La búsqueda recursiva llevará más tiempo, pero identificará todo archivo que
     <message>
         <location filename="../graphicssettingswidget.cpp" line="791"/>
         <source>%1x MSAA</source>
-        <translation>MSAA ×%1</translation>
+        <translation>MSAA %1x</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="793"/>
         <source>%1x SSAA</source>
-        <translation>SSAA ×%1</translation>
+        <translation>SSAA %1x</translation>
     </message>
 </context>
 <context>
@@ -22906,7 +22906,7 @@ Utilizando imagen de CD actual, podrían producirse inestabilidades.</translatio
     <message>
         <location filename="../../core/system.cpp" line="4816"/>
         <source>Resolution scale set to 1x.</source>
-        <translation>Escala de resolución configurada a ×1.</translation>
+        <translation>Escala de resolución configurada a 1x.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="4818"/>
