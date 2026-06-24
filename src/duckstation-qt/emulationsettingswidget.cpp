@@ -14,6 +14,7 @@
 
 #include "moc_emulationsettingswidget.cpp"
 
+namespace {
 struct SpeedControl
 {
   SettingsWindow* dialog;
@@ -22,6 +23,7 @@ struct SpeedControl
   const char* setting_name;
   float default_value;
 };
+} // namespace
 
 static void UpdateSpeedControlState(const SpeedControl& control)
 {
@@ -29,7 +31,6 @@ static void UpdateSpeedControlState(const SpeedControl& control)
   const float effective_value =
     control.dialog->getEffectiveFloatValue("Main", control.setting_name, control.default_value);
   const bool inherited = (control.dialog->isPerGameSettings() && !value.has_value());
-  const bool unlimited = (value.value_or(effective_value) == 0.0f);
 
   QSignalBlocker spinbox_blocker(control.spinbox);
   QSignalBlocker checkbox_blocker(control.checkbox);
