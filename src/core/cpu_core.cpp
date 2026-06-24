@@ -2966,6 +2966,31 @@ void CPU::ClearICache()
   g_state.icache_tags.fill(ICACHE_INVALID_BITS);
 }
 
+void CPU::InvalidateICacheAt(VirtualMemoryAddress address)
+{
+  u32& tag = g_state.icache_tags[GetICacheLine(address)];
+  if ((tag & ICACHE_TAG_ADDRESS_MASK) == GetICacheTagForAddress(address))
+    tag = ICACHE_INVALID_BITS;
+}
+
+void CPU::InvalidICacheRange(VirtualMemoryAddress start, VirtualMemoryAddress end)
+{
+  if (start >= end)
+    return;
+
+  const VirtualMemoryAddress first_word = Common::AlignDownPow2(start, 4);
+  const VirtualMemoryAddress last_word = Common::AlignDownPow2(end - 1u, 4);
+  for (VirtualMemoryAddress address = first_word;; address += sizeof(u32))
+  {
+    u32& tag = g_state.icache_tags[GetICacheLine(address)];
+    if ((tag & ICACHE_TAG_ADDRESS_MASK) == GetICacheTagForAddress(address))
+      tag = ICACHE_INVALID_BITS;
+
+    if (address == last_word)
+      break;
+  }
+}
+
 namespace CPU {
 ALWAYS_INLINE_RELEASE static u32 ReadICache(VirtualMemoryAddress address)
 {
