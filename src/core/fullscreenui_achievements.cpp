@@ -2629,13 +2629,21 @@ void FullscreenUI::DrawLeaderboardsWindow()
       const ImVec2 saved_cursor_pos = ImGui::GetCursorPos();
       BeginFloatingNavBar(30.0f, 10.0f, nav_width, nav_font_size, 1.0f, 0.0f, nav_x_padding, nav_y_padding);
 
-      const bool view_toggled =
-        (ImGui::IsKeyPressed(ImGuiKey_GamepadDpadLeft, false) ||
-         ImGui::IsKeyPressed(ImGuiKey_NavGamepadTweakSlow, false) || ImGui::IsKeyPressed(ImGuiKey_LeftArrow, false) ||
-         ImGui::IsKeyPressed(ImGuiKey_GamepadDpadRight, false) ||
-         ImGui::IsKeyPressed(ImGuiKey_NavGamepadTweakFast, false) || ImGui::IsKeyPressed(ImGuiKey_RightArrow, false));
-      bool new_view = view_toggled ? !s_achievements_locals.is_showing_all_leaderboard_entries :
-                                     s_achievements_locals.is_showing_all_leaderboard_entries;
+      bool new_view = s_achievements_locals.is_showing_all_leaderboard_entries;
+      TransitionEffect new_view_effect = TransitionEffect::Fade;
+      if (ImGui::IsKeyPressed(ImGuiKey_GamepadDpadLeft, false) ||
+          ImGui::IsKeyPressed(ImGuiKey_NavGamepadTweakSlow, false) || ImGui::IsKeyPressed(ImGuiKey_LeftArrow, false))
+      {
+        new_view = !new_view;
+        new_view_effect = TransitionEffect::SlideLeft;
+      }
+      else if (ImGui::IsKeyPressed(ImGuiKey_GamepadDpadRight, false) ||
+               ImGui::IsKeyPressed(ImGuiKey_NavGamepadTweakFast, false) ||
+               ImGui::IsKeyPressed(ImGuiKey_RightArrow, false))
+      {
+        new_view = !new_view;
+        new_view_effect = TransitionEffect::SlideRight;
+      }
       for (const bool show_all : {false, true})
       {
         if (FloatingNavBarIcon(show_all ? show_all_title.view() : show_nearby_title.view(), nullptr,
@@ -2647,7 +2655,7 @@ void FullscreenUI::DrawLeaderboardsWindow()
       }
       if (s_achievements_locals.is_showing_all_leaderboard_entries != new_view)
       {
-        BeginTransition(DEFAULT_TRANSITION_TIME, [new_view]() {
+        BeginTransition(new_view_effect, DEFAULT_TRANSITION_TIME, [new_view]() {
           s_achievements_locals.is_showing_all_leaderboard_entries = new_view;
           QueueResetFocus(FocusResetType::ViewChanged);
         });

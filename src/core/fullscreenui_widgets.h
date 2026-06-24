@@ -295,7 +295,6 @@ enum class TransitionEffect : u8
   ZoomOut,
   SlideLeft,
   SlideRight,
-  MaxCount,
 };
 
 using TransitionStartCallback = std::function<void()>;

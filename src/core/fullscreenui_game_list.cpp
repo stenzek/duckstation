@@ -983,7 +983,8 @@ void FullscreenUI::HandleGameListOptions(const GameList::Entry* entry)
         switch (index)
         {
           case 0: // Open Game Properties
-            BeginTransition([entry_path = std::move(entry_path)]() { SwitchToGameSettingsForPath(entry_path); });
+            BeginTransition(TransitionEffect::ZoomIn, DEFAULT_TRANSITION_TIME,
+                            [entry_path = std::move(entry_path)]() { SwitchToGameSettingsForPath(entry_path); });
             break;
           case 1: // Open Containing Directory
             ExitFullscreenAndOpenURL(Path::CreateFileURL(Path::GetDirectory(entry_path)));
@@ -995,9 +996,10 @@ void FullscreenUI::HandleGameListOptions(const GameList::Entry* entry)
             DoStartPath(entry_path, System::GetGameSaveStatePath(entry_serial, -1));
             break;
           case 4: // Load State
-            BeginTransition([entry_serial = std::move(entry_serial), entry_path = std::move(entry_path)]() {
-              OpenSaveStateSelector(entry_serial, entry_path, true);
-            });
+            BeginTransition(TransitionEffect::ZoomIn, DEFAULT_TRANSITION_TIME,
+                            [entry_serial = std::move(entry_serial), entry_path = std::move(entry_path)]() {
+                              OpenSaveStateSelector(entry_serial, entry_path, true);
+                            });
             break;
           case 5: // Default Boot
             DoStartPath(entry_path);
