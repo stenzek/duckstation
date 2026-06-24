@@ -985,6 +985,8 @@ void CheatCodeEditorDialog::setupAdditionalUi(const QStringList& group_names)
     m_ui.group->addItems(group_names);
 
   m_ui.group->addItem(tr("New..."));
+
+  m_ui.instructions->setFont(QtHost::GetFixedFont());
 }
 
 void CheatCodeEditorDialog::fillUi()
