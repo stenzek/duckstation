@@ -379,7 +379,7 @@ void DebuggerWindow::patchInstruction(VirtualMemoryAddress address, u32 bits)
   Host::RunOnCoreThread([address, bits]() {
     const bool success = CPU::SafeWriteMemoryWord(address, bits);
     if (success)
-      CPU::ClearICache();
+      CPU::InvalidateICacheAt(address);
 
     Host::RunOnUIThread([address, success]() {
       DebuggerWindow* const win = g_main_window->getDebuggerWindow();

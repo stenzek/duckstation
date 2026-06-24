@@ -2770,7 +2770,10 @@ void Cheats::GamesharkCheatCode::Apply() const
         const u16 comparevalue = Truncate16(inst.value32 >> 16);
         const u16 newvalue = Truncate16(inst.value32 & 0xFFFFu);
         if (value == comparevalue)
+        {
           DoMemoryWrite<u16>(inst.address, newvalue);
+          CPU::InvalidateICacheAt(inst.address);
+        }
 
         index++;
       }
@@ -2782,7 +2785,10 @@ void Cheats::GamesharkCheatCode::Apply() const
         const u8 comparevalue = Truncate8(inst.value16 >> 8);
         const u8 newvalue = Truncate8(inst.value16 & 0xFFu);
         if (value == comparevalue)
+        {
           DoMemoryWrite<u8>(inst.address, newvalue);
+          CPU::InvalidateICacheAt(inst.address);
+        }
 
         index++;
       }
@@ -4494,6 +4500,7 @@ void Cheats::GamesharkCheatCode::ApplyOnDisable(RollbackLog* rollback_list) cons
             rollback_list->emplace_back(MemoryAccessSize::HalfWord, inst.address, newvalue);
 
           DoMemoryWrite<u16>(inst.address, comparevalue);
+          CPU::InvalidateICacheAt(inst.address);
         }
 
         index++;
@@ -4511,6 +4518,7 @@ void Cheats::GamesharkCheatCode::ApplyOnDisable(RollbackLog* rollback_list) cons
             rollback_list->emplace_back(MemoryAccessSize::Byte, inst.address, newvalue);
 
           DoMemoryWrite<u8>(inst.address, comparevalue);
+          CPU::InvalidateICacheAt(inst.address);
         }
 
         index++;
@@ -4778,6 +4786,7 @@ void Cheats::AssemblyCheatCode::Apply() const
     {
       inst.old_value = ZeroExtend64(current_value);
       CPU::SafeWriteMemoryWord(inst.pc, inst.new_value);
+      CPU::InvalidateICacheAt(inst.pc);
     }
   }
 }
@@ -4793,6 +4802,7 @@ void Cheats::AssemblyCheatCode::ApplyOnDisable(RollbackLog* rollback_list) const
     if (CPU::SafeReadMemoryWord(inst.pc, &current_value) && current_value == inst.new_value &&
         CPU::SafeWriteMemoryWord(inst.pc, Truncate32(inst.old_value)))
     {
+      CPU::InvalidateICacheAt(inst.pc);
       if (rollback_list)
         rollback_list->emplace_back(MemoryAccessSize::Word, inst.pc, inst.new_value);
     }
