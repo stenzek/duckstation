@@ -72,58 +72,56 @@ std::string GPU_HW_ShaderGen::GenerateScreenVertexShader() const
   return std::move(ss).str();
 }
 
-std::string GPU_HW_ShaderGen::GenerateBatchVertexShader(bool upscaled, bool msaa, bool per_sample_shading,
-                                                        bool textured, bool palette, bool page_texture, bool uv_limits,
-                                                        bool force_round_texcoords, bool pgxp_depth,
-                                                        bool disable_color_perspective) const
+std::string GPU_HW_ShaderGen::GenerateBatchVertexShader(const BatchVertexShaderSelector sel) const
 {
   std::stringstream ss;
   WriteHeader(ss);
-  DefineMacro(ss, "TEXTURED", textured);
-  DefineMacro(ss, "PALETTE", palette);
-  DefineMacro(ss, "PAGE_TEXTURE", page_texture);
-  DefineMacro(ss, "UV_LIMITS", uv_limits);
-  DefineMacro(ss, "FORCE_ROUND_TEXCOORDS", force_round_texcoords);
-  DefineMacro(ss, "PGXP_DEPTH", pgxp_depth);
-  DefineMacro(ss, "UPSCALED", upscaled);
+  DefineMacro(ss, "TEXTURED", sel.textured);
+  DefineMacro(ss, "PALETTE", sel.palette);
+  DefineMacro(ss, "PAGE_TEXTURE", sel.page_texture);
+  DefineMacro(ss, "UV_LIMITS", sel.uv_limits);
+  DefineMacro(ss, "FORCE_ROUND_TEXCOORDS", sel.force_round_texcoords);
+  DefineMacro(ss, "PGXP_DEPTH", sel.pgxp_depth);
+  DefineMacro(ss, "UPSCALED", sel.upscaled);
 
   WriteBatchUniformBuffer(ss);
 
-  if (textured && page_texture)
+  if (sel.textured && sel.page_texture)
   {
-    if (uv_limits)
+    if (sel.uv_limits)
     {
       DeclareVertexEntryPoint(
         ss, {"float4 a_pos", "float4 a_col0", "uint a_texcoord", "uint a_texpage", "float4 a_uv_limits"}, 1, 1,
-        {{"nointerpolation", "float4 v_uv_limits"}}, false, "", msaa, per_sample_shading, disable_color_perspective);
+        {{"nointerpolation", "float4 v_uv_limits"}}, false, "", sel.msaa, sel.per_sample_shading,
+        sel.disable_color_perspective);
     }
     else
     {
       DeclareVertexEntryPoint(ss, {"float4 a_pos", "float4 a_col0", "uint a_texcoord", "uint a_texpage"}, 1, 1, {},
-                              false, "", msaa, per_sample_shading, disable_color_perspective);
+                              false, "", sel.msaa, sel.per_sample_shading, sel.disable_color_perspective);
     }
   }
-  else if (textured)
+  else if (sel.textured)
   {
-    if (uv_limits)
+    if (sel.uv_limits)
     {
       DeclareVertexEntryPoint(
         ss, {"float4 a_pos", "float4 a_col0", "uint a_texcoord", "uint a_texpage", "float4 a_uv_limits"}, 1, 1,
-        {{"nointerpolation", palette ? "uint4 v_texpage" : "uint2 v_texpage"},
+        {{"nointerpolation", sel.palette ? "uint4 v_texpage" : "uint2 v_texpage"},
          {"nointerpolation", "float4 v_uv_limits"}},
-        false, "", msaa, per_sample_shading, disable_color_perspective);
+        false, "", sel.msaa, sel.per_sample_shading, sel.disable_color_perspective);
     }
     else
     {
       DeclareVertexEntryPoint(ss, {"float4 a_pos", "float4 a_col0", "uint a_texcoord", "uint a_texpage"}, 1, 1,
-                              {{"nointerpolation", palette ? "uint4 v_texpage" : "uint2 v_texpage"}}, false, "", msaa,
-                              per_sample_shading, disable_color_perspective);
+                              {{"nointerpolation", sel.palette ? "uint4 v_texpage" : "uint2 v_texpage"}}, false, "",
+                              sel.msaa, sel.per_sample_shading, sel.disable_color_perspective);
     }
   }
   else
   {
-    DeclareVertexEntryPoint(ss, {"float4 a_pos", "float4 a_col0"}, 1, 0, {}, false, "", msaa, per_sample_shading,
-                            disable_color_perspective);
+    DeclareVertexEntryPoint(ss, {"float4 a_pos", "float4 a_col0"}, 1, 0, {}, false, "", sel.msaa,
+                            sel.per_sample_shading, sel.disable_color_perspective);
   }
 
   ss << R"(
@@ -2142,59 +2140,54 @@ void FilteredSampleFromVRAM(TEXPAGE_VALUE texpage, float2 coords, float4 uv_limi
   }
 }
 
-std::string GPU_HW_ShaderGen::GenerateBatchFragmentShader(
-  GPU_HW::BatchRenderMode render_mode, GPUTransparencyMode transparency, GPU_HW::BatchTextureMode texture_mode,
-  GPUTextureFilter texture_filtering, bool is_blended_texture_filtering, bool upscaled, bool msaa,
-  bool per_sample_shading, bool uv_limits, bool force_round_texcoords, bool modulation_crop, bool true_color,
-  bool dithering, bool scaled_dithering, bool disable_color_perspective, bool interlacing, bool scaled_interlacing,
-  bool check_mask, bool write_mask_as_depth, bool use_rov, bool use_rov_depth, bool rov_depth_test,
-  bool rov_depth_write) const
+std::string GPU_HW_ShaderGen::GenerateBatchFragmentShader(const BatchFragmentShaderSelector sel) const
 {
-  DebugAssert(!true_color || !dithering); // Should not be doing dithering+true color.
+  DebugAssert(!sel.true_color || !sel.dithering); // Should not be doing dithering+true color.
 
-  DebugAssert(transparency == GPUTransparencyMode::Disabled || render_mode == GPU_HW::BatchRenderMode::ShaderBlend);
-  DebugAssert((!rov_depth_test && !rov_depth_write) || (use_rov && use_rov_depth));
+  DebugAssert(sel.transparency == GPUTransparencyMode::Disabled ||
+              sel.render_mode == GPU_HW::BatchRenderMode::ShaderBlend);
+  DebugAssert((!sel.rov_depth_test && !sel.rov_depth_write) || (sel.use_rov && sel.use_rov_depth));
 
-  const bool textured = (texture_mode != GPU_HW::BatchTextureMode::Disabled);
-  const bool palette =
-    (texture_mode == GPU_HW::BatchTextureMode::Palette4Bit || texture_mode == GPU_HW::BatchTextureMode::Palette8Bit);
-  const bool page_texture = (texture_mode == GPU_HW::BatchTextureMode::PageTexture);
-  const bool shader_blending = (render_mode == GPU_HW::BatchRenderMode::ShaderBlend);
-  const bool use_dual_source = (!shader_blending && !use_rov && m_supports_dual_source_blend &&
-                                ((render_mode != GPU_HW::BatchRenderMode::TransparencyDisabled &&
-                                  render_mode != GPU_HW::BatchRenderMode::OnlyOpaque) ||
-                                 is_blended_texture_filtering));
+  const bool textured = (sel.texture_mode != GPU_HW::BatchTextureMode::Disabled);
+  const bool palette = (sel.texture_mode == GPU_HW::BatchTextureMode::Palette4Bit ||
+                        sel.texture_mode == GPU_HW::BatchTextureMode::Palette8Bit);
+  const bool page_texture = (sel.texture_mode == GPU_HW::BatchTextureMode::PageTexture);
+  const bool shader_blending = (sel.render_mode == GPU_HW::BatchRenderMode::ShaderBlend);
+  const bool use_dual_source = (!shader_blending && !sel.use_rov && m_supports_dual_source_blend &&
+                                ((sel.render_mode != GPU_HW::BatchRenderMode::TransparencyDisabled &&
+                                  sel.render_mode != GPU_HW::BatchRenderMode::OnlyOpaque) ||
+                                 sel.is_blended_texture_filtering));
 
   std::stringstream ss;
-  WriteHeader(ss, use_rov, shader_blending && !use_rov, use_dual_source);
-  DefineMacro(ss, "TRANSPARENCY", render_mode != GPU_HW::BatchRenderMode::TransparencyDisabled);
-  DefineMacro(ss, "TRANSPARENCY_ONLY_OPAQUE", render_mode == GPU_HW::BatchRenderMode::OnlyOpaque);
-  DefineMacro(ss, "TRANSPARENCY_ONLY_TRANSPARENT", render_mode == GPU_HW::BatchRenderMode::OnlyTransparent);
-  DefineMacro(ss, "TRANSPARENCY_MODE", static_cast<s32>(transparency));
+  WriteHeader(ss, sel.use_rov, shader_blending && !sel.use_rov, use_dual_source);
+  DefineMacro(ss, "TRANSPARENCY", sel.render_mode != GPU_HW::BatchRenderMode::TransparencyDisabled);
+  DefineMacro(ss, "TRANSPARENCY_ONLY_OPAQUE", sel.render_mode == GPU_HW::BatchRenderMode::OnlyOpaque);
+  DefineMacro(ss, "TRANSPARENCY_ONLY_TRANSPARENT", sel.render_mode == GPU_HW::BatchRenderMode::OnlyTransparent);
+  DefineMacro(ss, "TRANSPARENCY_MODE", static_cast<s32>(sel.transparency));
   DefineMacro(ss, "SHADER_BLENDING", shader_blending);
-  DefineMacro(ss, "CHECK_MASK_BIT", check_mask);
+  DefineMacro(ss, "CHECK_MASK_BIT", sel.check_mask);
   DefineMacro(ss, "TEXTURED", textured);
   DefineMacro(ss, "PALETTE", palette);
-  DefineMacro(ss, "PALETTE_4_BIT", texture_mode == GPU_HW::BatchTextureMode::Palette4Bit);
-  DefineMacro(ss, "PALETTE_8_BIT", texture_mode == GPU_HW::BatchTextureMode::Palette8Bit);
+  DefineMacro(ss, "PALETTE_4_BIT", sel.texture_mode == GPU_HW::BatchTextureMode::Palette4Bit);
+  DefineMacro(ss, "PALETTE_8_BIT", sel.texture_mode == GPU_HW::BatchTextureMode::Palette8Bit);
   DefineMacro(ss, "PAGE_TEXTURE", page_texture);
-  DefineMacro(ss, "DITHERING", dithering);
-  DefineMacro(ss, "DITHERING_SCALED", dithering && scaled_dithering);
-  DefineMacro(ss, "INTERLACING", interlacing);
-  DefineMacro(ss, "INTERLACING_SCALED", interlacing && scaled_interlacing);
-  DefineMacro(ss, "MODULATION_CROP", modulation_crop);
-  DefineMacro(ss, "TRUE_COLOR", true_color);
-  DefineMacro(ss, "TEXTURE_FILTERING", texture_filtering != GPUTextureFilter::Nearest);
-  DefineMacro(ss, "TEXTURE_ALPHA_BLENDING", is_blended_texture_filtering);
-  DefineMacro(ss, "UV_LIMITS", uv_limits);
-  DefineMacro(ss, "USE_ROV", use_rov);
-  DefineMacro(ss, "USE_ROV_DEPTH", use_rov_depth);
-  DefineMacro(ss, "ROV_DEPTH_TEST", rov_depth_test);
-  DefineMacro(ss, "ROV_DEPTH_WRITE", rov_depth_write);
+  DefineMacro(ss, "DITHERING", sel.dithering);
+  DefineMacro(ss, "DITHERING_SCALED", sel.dithering && sel.scaled_dithering);
+  DefineMacro(ss, "INTERLACING", sel.interlacing);
+  DefineMacro(ss, "INTERLACING_SCALED", sel.interlacing && sel.scaled_interlacing);
+  DefineMacro(ss, "MODULATION_CROP", sel.modulation_crop);
+  DefineMacro(ss, "TRUE_COLOR", sel.true_color);
+  DefineMacro(ss, "TEXTURE_FILTERING", sel.texture_filtering != GPUTextureFilter::Nearest);
+  DefineMacro(ss, "TEXTURE_ALPHA_BLENDING", sel.is_blended_texture_filtering);
+  DefineMacro(ss, "UV_LIMITS", sel.uv_limits);
+  DefineMacro(ss, "USE_ROV", sel.use_rov);
+  DefineMacro(ss, "USE_ROV_DEPTH", sel.use_rov_depth);
+  DefineMacro(ss, "ROV_DEPTH_TEST", sel.rov_depth_test);
+  DefineMacro(ss, "ROV_DEPTH_WRITE", sel.rov_depth_write);
   DefineMacro(ss, "USE_DUAL_SOURCE", use_dual_source);
-  DefineMacro(ss, "WRITE_MASK_AS_DEPTH", write_mask_as_depth);
-  DefineMacro(ss, "FORCE_ROUND_TEXCOORDS", force_round_texcoords);
-  DefineMacro(ss, "UPSCALED", upscaled);
+  DefineMacro(ss, "WRITE_MASK_AS_DEPTH", sel.write_mask_as_depth);
+  DefineMacro(ss, "FORCE_ROUND_TEXCOORDS", sel.force_round_texcoords);
+  DefineMacro(ss, "UPSCALED", sel.upscaled);
 
   // Used for converting to normalized coordinates for sampling.
   ss << "CONSTANT float2 RCP_VRAM_SIZE = float2(1.0 / float(" << VRAM_WIDTH << "), 1.0 / float(" << VRAM_HEIGHT
@@ -2204,10 +2197,10 @@ std::string GPU_HW_ShaderGen::GenerateBatchFragmentShader(
   WriteBatchUniformBuffer(ss);
   DeclareTexture(ss, "samp0", 0);
 
-  if (use_rov)
+  if (sel.use_rov)
   {
     DeclareImage(ss, "rov_color", 0);
-    if (use_rov_depth)
+    if (sel.use_rov_depth)
       DeclareImage(ss, "rov_depth", 1, true);
   }
 
@@ -2369,51 +2362,52 @@ float4 SampleFromVRAM(TEXPAGE_VALUE texpage, DECLARE_UV_LIMITS(float2 coords, fl
 #endif // TEXTURED
 )";
 
-  const u32 num_fragment_outputs = use_rov ? 0 : (use_dual_source ? 2 : 1);
+  const u32 num_fragment_outputs = sel.use_rov ? 0 : (use_dual_source ? 2 : 1);
   if (textured && page_texture)
   {
-    if (texture_filtering != GPUTextureFilter::Nearest)
-      WriteBatchTextureFilter(ss, texture_filtering);
+    if (sel.texture_filtering != GPUTextureFilter::Nearest)
+      WriteBatchTextureFilter(ss, sel.texture_filtering);
 
-    if (uv_limits)
+    if (sel.uv_limits)
     {
       DeclareFragmentEntryPoint(ss, 1, 1, {{"nointerpolation", "float4 v_uv_limits"}}, true, num_fragment_outputs,
-                                use_dual_source, write_mask_as_depth, msaa, per_sample_shading, false,
-                                disable_color_perspective, shader_blending && !use_rov, use_rov);
+                                use_dual_source, sel.write_mask_as_depth, sel.msaa, sel.per_sample_shading, false,
+                                sel.disable_color_perspective, shader_blending && !sel.use_rov, sel.use_rov);
     }
     else
     {
-      DeclareFragmentEntryPoint(ss, 1, 1, {}, true, num_fragment_outputs, use_dual_source, write_mask_as_depth, msaa,
-                                per_sample_shading, false, disable_color_perspective, shader_blending && !use_rov,
-                                use_rov);
+      DeclareFragmentEntryPoint(ss, 1, 1, {}, true, num_fragment_outputs, use_dual_source, sel.write_mask_as_depth,
+                                sel.msaa, sel.per_sample_shading, false, sel.disable_color_perspective,
+                                shader_blending && !sel.use_rov, sel.use_rov);
     }
   }
   else if (textured)
   {
-    if (texture_filtering != GPUTextureFilter::Nearest)
-      WriteBatchTextureFilter(ss, texture_filtering);
+    if (sel.texture_filtering != GPUTextureFilter::Nearest)
+      WriteBatchTextureFilter(ss, sel.texture_filtering);
 
-    if (uv_limits)
+    if (sel.uv_limits)
     {
       DeclareFragmentEntryPoint(ss, 1, 1,
                                 {{"nointerpolation", palette ? "uint4 v_texpage" : "uint2 v_texpage"},
                                  {"nointerpolation", "float4 v_uv_limits"}},
-                                true, num_fragment_outputs, use_dual_source, write_mask_as_depth, msaa,
-                                per_sample_shading, false, disable_color_perspective, shader_blending && !use_rov,
-                                use_rov);
+                                true, num_fragment_outputs, use_dual_source, sel.write_mask_as_depth, sel.msaa,
+                                sel.per_sample_shading, false, sel.disable_color_perspective,
+                                shader_blending && !sel.use_rov, sel.use_rov);
     }
     else
     {
       DeclareFragmentEntryPoint(ss, 1, 1, {{"nointerpolation", palette ? "uint4 v_texpage" : "uint2 v_texpage"}}, true,
-                                num_fragment_outputs, use_dual_source, write_mask_as_depth, msaa, per_sample_shading,
-                                false, disable_color_perspective, shader_blending && !use_rov, use_rov);
+                                num_fragment_outputs, use_dual_source, sel.write_mask_as_depth, sel.msaa,
+                                sel.per_sample_shading, false, sel.disable_color_perspective,
+                                shader_blending && !sel.use_rov, sel.use_rov);
     }
   }
   else
   {
-    DeclareFragmentEntryPoint(ss, 1, 0, {}, true, num_fragment_outputs, use_dual_source, write_mask_as_depth, msaa,
-                              per_sample_shading, false, disable_color_perspective, shader_blending && !use_rov,
-                              use_rov);
+    DeclareFragmentEntryPoint(ss, 1, 0, {}, true, num_fragment_outputs, use_dual_source, sel.write_mask_as_depth,
+                              sel.msaa, sel.per_sample_shading, false, sel.disable_color_perspective,
+                              shader_blending && !sel.use_rov, sel.use_rov);
   }
 
   ss << R"(
