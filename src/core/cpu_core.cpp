@@ -2950,10 +2950,11 @@ u32 CPU::FillICache(VirtualMemoryAddress address)
       line_tag = GetICacheTagForAddress(address) | 0x3;
       break;
     case 3:
-    default:
       DoInstructionRead<true, true, 1, false>(address & (~(ICACHE_LINE_SIZE - 1u) | 0xC), offset_line_data);
       line_tag = GetICacheTagForAddress(address) | 0x7;
       break;
+
+      DefaultCaseIsUnreachable();
   }
 
   g_state.icache_tags[line] = line_tag;
