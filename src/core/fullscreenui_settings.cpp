@@ -1899,7 +1899,7 @@ void FullscreenUI::DrawSettingsWindow()
     BeginNavBar();
 
     if (NavButton(ICON_PF_NAVIGATION_BACK, true, true))
-      ReturnToPreviousWindow();
+      ReturnToPreviousWindow(TransitionEffect::ZoomOut);
 
     NavTitle(s_settings_locals.game_settings_entry ?
                s_settings_locals.game_settings_entry->GetDisplayTitle(show_localized_titles) :
@@ -1940,7 +1940,7 @@ void FullscreenUI::DrawSettingsWindow()
       blur_background);
 
     if (ImGui::IsWindowFocused() && WantsToCloseMenu())
-      ReturnToPreviousWindow();
+      ReturnToPreviousWindow(TransitionEffect::ZoomOut);
   }
   else
   {
@@ -1952,7 +1952,7 @@ void FullscreenUI::DrawSettingsWindow()
       ModAlpha(UIStyle.BackgroundColor, bg_alpha), 0.0f, ImVec2(), 0, true);
 
     if (SplitWindowIsNavWindow() && WantsToCloseMenu())
-      ReturnToPreviousWindow();
+      ReturnToPreviousWindow(TransitionEffect::ZoomOut);
   }
 
   if (window_visible)
@@ -2034,16 +2034,17 @@ void FullscreenUI::DrawSettingsWindow()
         ImGui::IsKeyPressed(ImGuiKey_NavGamepadTweakSlow, true) || ImGui::IsKeyPressed(ImGuiKey_LeftArrow, true))
     {
       EnqueueSoundEffect(SFX_NAV_MOVE);
-      BeginTransition([page = pages[(index == 0) ? (count - 1) : (index - 1)]]() {
-        s_settings_locals.settings_page = page;
-        QueueResetFocus(FocusResetType::Other);
-      });
+      BeginTransition(TransitionEffect::SlideLeft, SHORT_TRANSITION_TIME,
+                      [page = pages[(index == 0) ? (count - 1) : (index - 1)]]() {
+                        s_settings_locals.settings_page = page;
+                        QueueResetFocus(FocusResetType::Other);
+                      });
     }
     else if (ImGui::IsKeyPressed(ImGuiKey_GamepadDpadRight, true) ||
              ImGui::IsKeyPressed(ImGuiKey_NavGamepadTweakFast, true) || ImGui::IsKeyPressed(ImGuiKey_RightArrow, true))
     {
       EnqueueSoundEffect(SFX_NAV_MOVE);
-      BeginTransition([page = pages[(index + 1) % count]]() {
+      BeginTransition(TransitionEffect::SlideRight, SHORT_TRANSITION_TIME, [page = pages[(index + 1) % count]]() {
         s_settings_locals.settings_page = page;
         QueueResetFocus(FocusResetType::Other);
       });

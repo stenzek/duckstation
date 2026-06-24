@@ -288,9 +288,20 @@ enum class TransitionState : u8
   Active,
 };
 
+enum class TransitionEffect : u8
+{
+  Fade,
+  ZoomIn,
+  ZoomOut,
+  SlideLeft,
+  SlideRight,
+  MaxCount,
+};
+
 using TransitionStartCallback = std::function<void()>;
 void BeginTransition(TransitionStartCallback func, float time = DEFAULT_TRANSITION_TIME);
 void BeginTransition(float time, TransitionStartCallback func);
+void BeginTransition(TransitionEffect effect, float time, TransitionStartCallback func);
 void CancelTransition();
 bool IsTransitionActive();
 TransitionState GetTransitionState();

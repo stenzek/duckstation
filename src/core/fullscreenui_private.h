@@ -57,14 +57,14 @@ MainWindowType GetCurrentMainWindow();
 bool SetPendingMainWindowSwitch();
 bool CanCurrentMainWindowStack();
 void SwitchToMainWindow(MainWindowType type);
-void ReturnToMainWindow();
-void ReturnToMainWindow(float transition_time);
-void ReturnToPreviousWindow();
+void ReturnToMainWindow(TransitionEffect effect = TransitionEffect::Fade);
+void ReturnToMainWindow(TransitionEffect effect, float transition_time);
+void ReturnToPreviousWindow(TransitionEffect effect = TransitionEffect::Fade);
 bool AreAnyDialogsOpen();
 bool AreAnyDialogsInteractable();
 
-void PauseAndOpenMenuFromCoreThread(void(*callback)());
-void ClosePauseMenu(float transition_time = SHORT_TRANSITION_TIME);
+void PauseAndOpenMenuFromCoreThread(void (*callback)());
+void ClosePauseMenu(TransitionEffect effect = TransitionEffect::Fade, float transition_time = SHORT_TRANSITION_TIME);
 void ClosePauseMenuImmediately();
 
 void ExitFullscreenAndOpenURL(std::string_view url);
