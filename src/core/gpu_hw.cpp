@@ -1226,8 +1226,16 @@ bool GPU_HW::CompilePipelines(Error* error)
     batch_fragment_shaders.enumerate(destroy_shader);
   });
 
+  GPU_HW_ShaderGen::BatchVertexShaderSelector vssel = {};
+  vssel.upscaled = upscaled;
+  vssel.msaa = msaa;
+  vssel.per_sample_shading = per_sample_shading;
+  vssel.pgxp_depth = m_pgxp_depth_buffer;
+  vssel.disable_color_perspective = disable_color_perspective;
   for (u8 textured = 0; textured < 2; textured++)
   {
+    vssel.textured = (textured != 0);
+
     for (u8 palette = 0; palette < 3; palette++)
     {
       if (palette && !textured)
@@ -1235,17 +1243,18 @@ bool GPU_HW::CompilePipelines(Error* error)
       if (palette == 2 && !needs_page_texture)
         continue;
 
+      vssel.palette = (palette == 1);
+      vssel.page_texture = (palette == 2);
+
       for (u8 sprite = 0; sprite < 2; sprite++)
       {
         if (sprite && (!textured || !m_allow_sprite_mode))
           continue;
 
-        const bool uv_limits = ShouldClampUVs(sprite ? m_sprite_texture_filtering : m_texture_filtering);
-        const std::string vs = shadergen.GenerateBatchVertexShader(
-          upscaled, msaa, per_sample_shading, textured != 0, palette == 1, palette == 2, uv_limits,
-          !sprite && force_round_texcoords, m_pgxp_depth_buffer, disable_color_perspective);
-        if (!(batch_vertex_shaders[textured][palette][sprite] =
-                g_gpu_device->CreateShader(GPUShaderStage::Vertex, shadergen.GetLanguage(), vs, error)))
+        vssel.uv_limits = ShouldClampUVs(sprite ? m_sprite_texture_filtering : m_texture_filtering);
+        vssel.force_round_texcoords = !sprite && force_round_texcoords;
+        if (!(batch_vertex_shaders[textured][palette][sprite] = g_gpu_device->CreateShader(
+                GPUShaderStage::Vertex, shadergen.GetLanguage(), shadergen.GenerateBatchVertexShader(vssel), error)))
         {
           return false;
         }
@@ -1255,6 +1264,15 @@ bool GPU_HW::CompilePipelines(Error* error)
       }
     }
   }
+
+  GPU_HW_ShaderGen::BatchFragmentShaderSelector fssel = {};
+  fssel.upscaled = upscaled;
+  fssel.msaa = msaa;
+  fssel.per_sample_shading = per_sample_shading;
+  fssel.modulation_crop = modulation_crop;
+  fssel.true_color = true_color;
+  fssel.disable_color_perspective = disable_color_perspective;
+  fssel.write_mask_as_depth = m_write_mask_as_depth;
 
   for (u8 depth_test = 0; depth_test < 2; depth_test++)
   {
@@ -1266,6 +1284,8 @@ bool GPU_HW::CompilePipelines(Error* error)
 
     for (u8 render_mode = 0; render_mode < 5; render_mode++)
     {
+      fssel.render_mode = static_cast<BatchRenderMode>(render_mode);
+
       for (u8 transparency_mode = 0; transparency_mode < 5; transparency_mode++)
       {
         if (
@@ -1290,6 +1310,12 @@ bool GPU_HW::CompilePipelines(Error* error)
           continue;
         }
 
+        fssel.transparency = static_cast<GPUTransparencyMode>(transparency_mode);
+        fssel.use_rov = (fssel.render_mode == BatchRenderMode::ShaderBlend && m_use_rov_for_shader_blend);
+        fssel.use_rov_depth = (fssel.use_rov && needs_rov_depth);
+        fssel.rov_depth_test = (fssel.use_rov && depth_test != 0);
+        fssel.rov_depth_write = (fssel.rov_depth_test && fssel.transparency == GPUTransparencyMode::Disabled);
+
         for (u8 texture_mode = 0; texture_mode < max_active_texture_modes; texture_mode++)
         {
           if (!needs_page_texture && (texture_mode == static_cast<u8>(BatchTextureMode::PageTexture) ||
@@ -1297,6 +1323,15 @@ bool GPU_HW::CompilePipelines(Error* error)
           {
             continue;
           }
+
+          const bool sprite = (static_cast<BatchTextureMode>(texture_mode) >= BatchTextureMode::SpriteStart);
+          fssel.uv_limits = ShouldClampUVs(sprite ? m_sprite_texture_filtering : m_texture_filtering);
+          fssel.force_round_texcoords = !sprite && force_round_texcoords;
+          fssel.texture_mode =
+            static_cast<BatchTextureMode>(texture_mode - (sprite ? static_cast<u8>(BatchTextureMode::SpriteStart) : 0));
+          fssel.texture_filtering = sprite ? m_sprite_texture_filtering : m_texture_filtering;
+          fssel.is_blended_texture_filtering =
+            (fssel.texture_mode != BatchTextureMode::Disabled && IsBlendedTextureFiltering(fssel.texture_filtering));
 
           for (u8 check_mask = 0; check_mask < 2; check_mask++)
           {
@@ -1312,11 +1347,16 @@ bool GPU_HW::CompilePipelines(Error* error)
               continue;
             }
 
+            fssel.check_mask = ConvertToBoolUnchecked(check_mask);
+
             for (u8 dithering = 0; dithering < 2; dithering++)
             {
               // Never going to draw with dithering on in true color.
               if (dithering && true_color)
                 continue;
+
+              fssel.dithering = ConvertToBoolUnchecked(dithering);
+              fssel.scaled_dithering = (fssel.dithering && scaled_dithering);
 
               for (u8 interlacing = 0; interlacing < 2; interlacing++)
               {
@@ -1324,29 +1364,13 @@ bool GPU_HW::CompilePipelines(Error* error)
                 if (interlacing && force_progressive_scan)
                   continue;
 
-                const bool sprite = (static_cast<BatchTextureMode>(texture_mode) >= BatchTextureMode::SpriteStart);
-                const bool uv_limits = ShouldClampUVs(sprite ? m_sprite_texture_filtering : m_texture_filtering);
-                const BatchTextureMode shader_texmode = static_cast<BatchTextureMode>(
-                  texture_mode - (sprite ? static_cast<u8>(BatchTextureMode::SpriteStart) : 0));
-                const GPUTextureFilter texture_filter = sprite ? m_sprite_texture_filtering : m_texture_filtering;
-                const bool texture_filter_is_blended =
-                  (shader_texmode != BatchTextureMode::Disabled && IsBlendedTextureFiltering(texture_filter));
-                const bool use_rov =
-                  (render_mode == static_cast<u8>(BatchRenderMode::ShaderBlend) && m_use_rov_for_shader_blend);
-                const bool rov_depth_test = (use_rov && depth_test != 0);
-                const bool rov_depth_write = (rov_depth_test && static_cast<GPUTransparencyMode>(transparency_mode) ==
-                                                                  GPUTransparencyMode::Disabled);
-                const std::string fs = shadergen.GenerateBatchFragmentShader(
-                  static_cast<BatchRenderMode>(render_mode), static_cast<GPUTransparencyMode>(transparency_mode),
-                  shader_texmode, texture_filter, texture_filter_is_blended, upscaled, msaa, per_sample_shading,
-                  uv_limits, !sprite && force_round_texcoords, modulation_crop, true_color,
-                  ConvertToBoolUnchecked(dithering), scaled_dithering, disable_color_perspective,
-                  ConvertToBoolUnchecked(interlacing), scaled_interlacing, ConvertToBoolUnchecked(check_mask),
-                  m_write_mask_as_depth, use_rov, needs_rov_depth, rov_depth_test, rov_depth_write);
+                fssel.interlacing = ConvertToBoolUnchecked(interlacing);
+                fssel.scaled_interlacing = (fssel.interlacing && scaled_interlacing);
 
                 if (!(batch_fragment_shaders[depth_test][render_mode][transparency_mode][texture_mode][check_mask]
                                             [dithering][interlacing] = g_gpu_device->CreateShader(
-                                              GPUShaderStage::Fragment, shadergen.GetLanguage(), fs, error)))
+                                              GPUShaderStage::Fragment, shadergen.GetLanguage(),
+                                              shadergen.GenerateBatchFragmentShader(fssel), error)))
                 {
                   return false;
                 }
