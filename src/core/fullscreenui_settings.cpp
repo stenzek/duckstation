@@ -175,10 +175,8 @@ static void DrawEnumSetting(SettingsInterface* bsi, std::string_view title, std:
                             const char* (*to_string_function)(DataType value),
                             const char* (*to_display_string_function)(DataType value), SizeType option_count,
                             bool enabled = true);
-static void DrawFloatListSetting(SettingsInterface* bsi, std::string_view title, std::string_view summary,
-                                 const char* section, const char* key, float default_value, const char* const* options,
-                                 const float* option_values, size_t option_count, bool translate_options,
-                                 bool enabled = true);
+static void DrawSpeedSelectorSetting(SettingsInterface* bsi, std::string_view title, std::string_view summary,
+                                     const char* section, const char* key, float default_value, bool enabled = true);
 static void DrawFolderSetting(SettingsInterface* bsi, std::string_view title, const char* section, const char* key,
                               const std::string& runtime_var);
 
@@ -1530,79 +1528,6 @@ void FullscreenUI::DrawEnumSetting(SettingsInterface* bsi, std::string_view titl
 
                          SetSettingsChanged(bsi);
                        });
-  }
-}
-
-void FullscreenUI::DrawFloatListSetting(SettingsInterface* bsi, std::string_view title, std::string_view summary,
-                                        const char* section, const char* key, float default_value,
-                                        const char* const* options, const float* option_values, size_t option_count,
-                                        bool translate_options, bool enabled /* = true */)
-{
-  const bool game_settings = IsEditingGameSettings(bsi);
-  const std::optional<float> value(
-    bsi->GetOptionalFloatValue(section, key, game_settings ? std::nullopt : std::optional<float>(default_value)));
-
-  if (option_count == 0)
-  {
-    // select from null entry
-    while (options && options[option_count] != nullptr)
-      option_count++;
-  }
-
-  size_t index = option_count;
-  if (value.has_value())
-  {
-    for (size_t i = 0; i < option_count; i++)
-    {
-      if (value == option_values[i])
-      {
-        index = i;
-        break;
-      }
-    }
-  }
-
-  if (MenuActionButton(
-        title, summary,
-        value.has_value() ?
-          ((index < option_count) ?
-             (translate_options ? Host::TranslateToStringView(FSUI_TR_CONTEXT, options[index]) : options[index]) :
-             FSUI_VSTR("Unknown")) :
-          FSUI_VSTR("Use Global Setting"),
-        false, enabled))
-  {
-    ChoiceDialogOptions cd_options;
-    cd_options.reserve(option_count + 1);
-    if (game_settings)
-      cd_options.emplace_back(FSUI_STR("Use Global Setting"), !value.has_value());
-    for (size_t i = 0; i < option_count; i++)
-    {
-      cd_options.emplace_back(translate_options ? Host::TranslateToString(FSUI_TR_CONTEXT, options[i]) :
-                                                  std::string(options[i]),
-                              (value.has_value() && i == static_cast<size_t>(index)));
-    }
-    OpenChoiceDialog(title, false, std::move(cd_options),
-                     [game_settings, section = TinyString(section), key = TinyString(key),
-                      option_values](s32 index, const std::string& title, bool checked) {
-                       if (index < 0)
-                         return;
-
-                       const auto lock = Core::GetSettingsLock();
-                       SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
-                       if (game_settings)
-                       {
-                         if (index == 0)
-                           bsi->DeleteValue(section, key);
-                         else
-                           bsi->SetFloatValue(section, key, option_values[index - 1]);
-                       }
-                       else
-                       {
-                         bsi->SetFloatValue(section, key, option_values[index]);
-                       }
-
-                       SetSettingsChanged(bsi);
-                     });
   }
 }
 
@@ -3052,62 +2977,161 @@ void FullscreenUI::DrawConsoleSettingsPage()
   EndMenuButtons();
 }
 
+void FullscreenUI::DrawSpeedSelectorSetting(SettingsInterface* bsi, std::string_view title, std::string_view summary,
+                                            const char* section, const char* key, float default_value,
+                                            bool enabled /* = true */)
+{
+  const bool game_settings = IsEditingGameSettings(bsi);
+  const std::optional<float> value =
+    bsi->GetOptionalFloatValue(section, key, game_settings ? std::nullopt : std::optional<float>(default_value));
+  const float effective_value = GetEffectiveFloatSetting(bsi, section, key, default_value);
+
+  SmallString value_text;
+  if (!value.has_value())
+    value_text = FSUI_VSTR("Use Global Setting");
+  else if (value.value() == 0.0f)
+    value_text = FSUI_VSTR("Unlimited");
+  else
+    value_text.format("{:.0f}%", value.value() * 100.0f);
+
+  static bool manual_input = false;
+
+  const bool pressed = MenuActionButton(title, summary, value_text, false, enabled);
+
+  // use setting key to avoid id conflicts
+  value_text.format("{}##{}-speed-selector", title, key);
+  if (pressed)
+  {
+    OpenFixedPopupDialog(value_text);
+    manual_input = false;
+  }
+
+  if (!IsFixedPopupDialogOpen(value_text) ||
+      !BeginFixedPopupDialog(LayoutScale(LAYOUT_SMALL_POPUP_PADDING), LayoutScale(LAYOUT_SMALL_POPUP_PADDING),
+                             LayoutScale(650.0f, 0.0f)))
+  {
+    return;
+  }
+
+  ImGui::PushFont(UIStyle.Font, UIStyle.MediumLargeFontSize, UIStyle.NormalFontWeight);
+  TextAlignedMultiLine(0.0f, IMSTR_START_END(summary));
+  ImGui::PushFont(UIStyle.Font, UIStyle.MediumLargeFontSize, UIStyle.BoldFontWeight);
+  ImGui::Text("%s: ", FSUI_CSTR("Default Value"));
+  ImGui::PopFont();
+  ImGui::SameLine();
+  if (default_value == 0.0f)
+    ImGui::TextUnformatted(FSUI_CSTR("Unlimited"));
+  else
+    ImGui::Text("%.0f%%", default_value * 100.0f);
+  ImGui::PopFont();
+  ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(10.0f));
+
+  ResetFocusHere();
+
+  static constexpr int MIN_VALUE = 1;
+  bool unlimited = (effective_value == 0.0f);
+  int dlg_value = static_cast<int>(std::round((unlimited ? 1.0f : effective_value) * 100.0f));
+  bool dlg_value_changed = false;
+
+  char str_value[32];
+  if (!value.has_value())
+    StringUtil::Strlcpy(str_value, FSUI_VSTR("Global"), std::size(str_value));
+  else if (unlimited)
+    StringUtil::Strlcpy(str_value, FSUI_VSTR("N/A"), std::size(str_value));
+  else
+    std::snprintf(str_value, std::size(str_value), "%d%%", dlg_value);
+
+  if (manual_input)
+  {
+    ImGui::SetNextItemWidth(ImGui::GetCurrentWindow()->WorkRect.GetWidth());
+
+    ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, LayoutScale(LAYOUT_WIDGET_FRAME_ROUNDING));
+    ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
+    if (ImGui::InputText("##value", str_value, std::size(str_value), ImGuiInputTextFlags_CharsDecimal))
+    {
+      dlg_value = std::max(MIN_VALUE, StringUtil::FromChars<int>(str_value).value_or(dlg_value));
+      dlg_value_changed = true;
+    }
+    ImGui::PopStyleVar(2);
+
+    ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(10.0f));
+  }
+  else if (!unlimited)
+  {
+    BeginHorizontalMenuButtons(4);
+    HorizontalMenuButton(str_value, false);
+
+    ImGui::PushItemFlag(ImGuiItemFlags_ButtonRepeat, true);
+    if (HorizontalMenuButton(ICON_FA_CHEVRON_UP, !unlimited))
+    {
+      dlg_value++;
+      dlg_value_changed = true;
+    }
+    if (HorizontalMenuButton(ICON_FA_CHEVRON_DOWN, !unlimited))
+    {
+      dlg_value = std::max(MIN_VALUE, dlg_value - 1);
+      dlg_value_changed = true;
+    }
+    ImGui::PopItemFlag();
+    if (HorizontalMenuButton(ICON_FA_KEYBOARD, !unlimited))
+      manual_input = true;
+
+    EndHorizontalMenuButtons(10.0f);
+  }
+
+  BeginMenuButtons();
+  if (ToggleButton(FSUI_VSTR("Unlimited"), {}, &unlimited))
+  {
+    dlg_value = unlimited ? 0 : 100;
+    dlg_value_changed = true;
+  }
+  EndMenuButtons();
+  ImGui::Dummy(ImVec2(0.0f, LayoutScale(10.0f)));
+
+  if (dlg_value_changed)
+  {
+    bsi->SetFloatValue(section, key, static_cast<float>(dlg_value) / 100.0f);
+    SetSettingsChanged(bsi);
+  }
+
+  BeginHorizontalMenuButtons(2);
+
+  if (HorizontalMenuButton(FSUI_ICONVSTR(ICON_FA_ARROW_ROTATE_LEFT, "Reset")))
+  {
+    if (game_settings)
+      bsi->DeleteValue(section, key);
+    else
+      bsi->SetFloatValue(section, key, default_value);
+    SetSettingsChanged(bsi);
+  }
+
+  if (HorizontalMenuButton(FSUI_VSTR("OK")))
+    CloseFixedPopupDialog();
+  EndHorizontalMenuButtons();
+
+  EndFixedPopupDialog();
+}
+
 void FullscreenUI::DrawEmulationSettingsPage()
 {
-  static constexpr const std::array emulation_speed_values = {
-    0.0f,  0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f, 0.7f, 0.8f, 0.9f, 1.0f, 1.25f, 1.5f,
-    1.75f, 2.0f, 2.5f, 3.0f, 3.5f, 4.0f, 4.5f, 5.0f, 6.0f, 7.0f, 8.0f, 9.0f,  10.0f,
-  };
-  static constexpr const std::array emulation_speed_titles = {
-    FSUI_NSTR("Unlimited"),
-    FSUI_NSTR("10% [6 FPS (NTSC) / 5 FPS (PAL)]"),
-    FSUI_NSTR("20% [12 FPS (NTSC) / 10 FPS (PAL)]"),
-    FSUI_NSTR("30% [18 FPS (NTSC) / 15 FPS (PAL)]"),
-    FSUI_NSTR("40% [24 FPS (NTSC) / 20 FPS (PAL)]"),
-    FSUI_NSTR("50% [30 FPS (NTSC) / 25 FPS (PAL)]"),
-    FSUI_NSTR("60% [36 FPS (NTSC) / 30 FPS (PAL)]"),
-    FSUI_NSTR("70% [42 FPS (NTSC) / 35 FPS (PAL)]"),
-    FSUI_NSTR("80% [48 FPS (NTSC) / 40 FPS (PAL)]"),
-    FSUI_NSTR("90% [54 FPS (NTSC) / 45 FPS (PAL)]"),
-    FSUI_NSTR("100% [60 FPS (NTSC) / 50 FPS (PAL)]"),
-    FSUI_NSTR("125% [75 FPS (NTSC) / 62 FPS (PAL)]"),
-    FSUI_NSTR("150% [90 FPS (NTSC) / 75 FPS (PAL)]"),
-    FSUI_NSTR("175% [105 FPS (NTSC) / 87 FPS (PAL)]"),
-    FSUI_NSTR("200% [120 FPS (NTSC) / 100 FPS (PAL)]"),
-    FSUI_NSTR("250% [150 FPS (NTSC) / 125 FPS (PAL)]"),
-    FSUI_NSTR("300% [180 FPS (NTSC) / 150 FPS (PAL)]"),
-    FSUI_NSTR("350% [210 FPS (NTSC) / 175 FPS (PAL)]"),
-    FSUI_NSTR("400% [240 FPS (NTSC) / 200 FPS (PAL)]"),
-    FSUI_NSTR("450% [270 FPS (NTSC) / 225 FPS (PAL)]"),
-    FSUI_NSTR("500% [300 FPS (NTSC) / 250 FPS (PAL)]"),
-    FSUI_NSTR("600% [360 FPS (NTSC) / 300 FPS (PAL)]"),
-    FSUI_NSTR("700% [420 FPS (NTSC) / 350 FPS (PAL)]"),
-    FSUI_NSTR("800% [480 FPS (NTSC) / 400 FPS (PAL)]"),
-    FSUI_NSTR("900% [540 FPS (NTSC) / 450 FPS (PAL)]"),
-    FSUI_NSTR("1000% [600 FPS (NTSC) / 500 FPS (PAL)]"),
-  };
-
   SettingsInterface* bsi = GetEditingSettingsInterface();
 
   BeginMenuButtons();
   ResetFocusHere();
 
   MenuHeading(FSUI_VSTR("Speed Control"));
-  DrawFloatListSetting(
+  DrawSpeedSelectorSetting(
     bsi, FSUI_ICONVSTR(ICON_FA_GAUGE, "Emulation Speed"),
     FSUI_VSTR("Sets the target emulation speed. It is not guaranteed that this speed will be reached on all systems."),
-    "Main", "EmulationSpeed", 1.0f, emulation_speed_titles.data(), emulation_speed_values.data(),
-    emulation_speed_titles.size(), true);
-  DrawFloatListSetting(
+    "Main", "EmulationSpeed", 1.0f);
+  DrawSpeedSelectorSetting(
     bsi, FSUI_ICONVSTR(ICON_FA_FORWARD, "Fast Forward Speed"),
     FSUI_VSTR("Sets the fast forward speed. It is not guaranteed that this speed will be reached on all systems."),
-    "Main", "FastForwardSpeed", 0.0f, emulation_speed_titles.data(), emulation_speed_values.data(),
-    emulation_speed_titles.size(), true);
-  DrawFloatListSetting(
+    "Main", "FastForwardSpeed", 0.0f);
+  DrawSpeedSelectorSetting(
     bsi, FSUI_ICONVSTR(ICON_FA_BOLT, "Turbo Speed"),
     FSUI_VSTR("Sets the turbo speed. It is not guaranteed that this speed will be reached on all systems."), "Main",
-    "TurboSpeed", 2.0f, emulation_speed_titles.data(), emulation_speed_values.data(), emulation_speed_titles.size(),
-    true);
+    "TurboSpeed", 0.0f);
 
   MenuHeading(FSUI_VSTR("Latency Control"));
   DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_TV, "Vertical Sync (VSync)"),

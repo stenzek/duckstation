@@ -18,11 +18,6 @@ public:
   ~EmulationSettingsWidget();
 
 private:
-  void fillComboBoxWithEmulationSpeeds(QComboBox* cb, float global_value);
-
-  void onEmulationSpeedIndexChanged(int index);
-  void onFastForwardSpeedIndexChanged(int index);
-  void onTurboSpeedIndexChanged(int index);
   void onOptimalFramePacingChanged();
   void onPreFrameSleepChanged();
   void updateSkipDuplicateFramesEnabled();
