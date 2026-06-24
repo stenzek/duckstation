@@ -100,6 +100,7 @@ private:
   void onGroupSelectedIndexChanged(int index);
   void saveClicked();
 
+  void onCodeTypeChanged(int index);
   void onOptionTypeChanged(int index);
   void onRangeMinChanged(int value);
   void onRangeMaxChanged(int value);

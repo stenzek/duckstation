@@ -19,6 +19,7 @@ namespace Cheats {
 enum class CodeType : u8
 {
   Gameshark,
+  Assembly,
   Count
 };
 

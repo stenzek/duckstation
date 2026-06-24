@@ -7,6 +7,7 @@
 #include "controller.h"
 #include "core.h"
 #include "cpu_core.h"
+#include "cpu_disasm.h"
 #include "game_database.h"
 #include "host.h"
 #include "system.h"
@@ -16,6 +17,7 @@
 #include "util/zip_helpers.h"
 
 #include "common/assert.h"
+#include "common/bitutils.h"
 #include "common/error.h"
 #include "common/file_system.h"
 #include "common/log.h"
@@ -319,8 +321,9 @@ void Cheats::CheatCode::ApplySettingOverrides()
   }
 }
 
-static std::array<const char*, 1> s_cheat_code_type_names = {{"Gameshark"}};
-static std::array<const char*, 1> s_cheat_code_type_display_names{{TRANSLATE_NOOP("Cheats", "Gameshark")}};
+static std::array<const char*, 2> s_cheat_code_type_names = {{"Gameshark", "Assembly"}};
+static std::array<const char*, 2> s_cheat_code_type_display_names{
+  {TRANSLATE_NOOP("Cheats", "Gameshark"), TRANSLATE_NOOP("Cheats", "Assembly")}};
 
 const char* Cheats::GetTypeName(CodeType type)
 {
@@ -4550,6 +4553,259 @@ bool Cheats::GamesharkCheatCode::HasRestorableOnDisableEffects() const
   return false;
 }
 
+//////////////////////////////////////////////////////////////////////////
+// Assembly codes
+//////////////////////////////////////////////////////////////////////////
+
+namespace Cheats {
+namespace {
+
+class AssemblyCheatCode final : public CheatCode
+{
+public:
+  explicit AssemblyCheatCode(Metadata metadata);
+  ~AssemblyCheatCode() override;
+
+  static std::unique_ptr<AssemblyCheatCode> Parse(Metadata metadata, std::string_view data, Error* error);
+
+  void SetOptionValue(u32 value) override;
+
+  void Apply() const override;
+  void ApplyOnDisable(RollbackLog* rollback_list) const override;
+
+  bool HasRestorableOnDisableEffects() const override;
+
+private:
+  static constexpr u64 UNINITIALIZED_OLD_VALUE = UINT64_C(0xFFFFFFFFFFFFFFFF);
+
+  struct Instruction
+  {
+    u32 pc;
+    u32 new_value;
+    mutable u64 old_value; // higher order bits are set so fresh codes apply
+  };
+  static_assert(std::is_trivially_copyable_v<Instruction>);
+
+  std::vector<Instruction> instructions;
+  std::vector<std::tuple<u32, u8, u8>> option_instruction_values;
+};
+
+} // namespace
+} // namespace Cheats
+
+Cheats::AssemblyCheatCode::AssemblyCheatCode(Metadata metadata) : CheatCode(std::move(metadata))
+{
+}
+
+Cheats::AssemblyCheatCode::~AssemblyCheatCode() = default;
+
+std::unique_ptr<Cheats::AssemblyCheatCode> Cheats::AssemblyCheatCode::Parse(Metadata metadata, std::string_view data,
+                                                                            Error* error)
+{
+  if (metadata.activation != CodeActivation::EndFrame)
+  {
+    Error::SetStringView(error, "Assembly codes only support EndFrame activation.");
+    return {};
+  }
+
+  std::unique_ptr<AssemblyCheatCode> code = std::make_unique<AssemblyCheatCode>(std::move(metadata));
+  CheatFileReader reader(data);
+  std::optional<u32> pc;
+  u32 section_line = 0;
+  bool section_has_instruction = false;
+  std::string_view line;
+  while (reader.GetLine(&line))
+  {
+    std::string_view linev = StringUtil::StripWhitespace(line);
+    const size_t comment_pos = linev.find_first_of("#;");
+    if (comment_pos != std::string_view::npos)
+      linev = StringUtil::StripWhitespace(linev.substr(0, comment_pos));
+    if (linev.empty())
+      continue;
+
+    if (linev.back() == ':')
+    {
+      if (pc.has_value() && !section_has_instruction)
+      {
+        Error::SetStringFmt(error, "No instructions after address at line {}.", section_line);
+        return {};
+      }
+
+      std::string_view address_text = StringUtil::StripWhitespace(linev.substr(0, linev.size() - 1));
+      if (address_text.starts_with("0x") || address_text.starts_with("0X"))
+        address_text.remove_prefix(2);
+
+      std::string_view end;
+      const std::optional<u32> address = StringUtil::FromChars<u32>(address_text, 16, &end);
+      if (!address.has_value() || !end.empty())
+      {
+        Error::SetStringFmt(error, "Malformed starting address at line {}: {}", reader.GetCurrentLineNumber(), linev);
+        return {};
+      }
+      if ((address.value() & (CPU::INSTRUCTION_SIZE - 1)) != 0)
+      {
+        Error::SetStringFmt(error, "Unaligned starting address at line {}: {}", reader.GetCurrentLineNumber(), linev);
+        return {};
+      }
+
+      pc = address.value();
+      section_line = reader.GetCurrentLineNumber();
+      section_has_instruction = false;
+      continue;
+    }
+
+    if (!pc.has_value())
+    {
+      Error::SetStringFmt(error, "Instruction before starting address at line {}: {}", reader.GetCurrentLineNumber(),
+                          linev);
+      return {};
+    }
+
+    u32 bits;
+    Error assemble_error;
+    const size_t wildcard_pos = linev.find('?');
+    if (wildcard_pos == std::string_view::npos)
+    {
+      if (!CPU::AssembleInstruction(&bits, static_cast<u32>(pc.value()), linev, &assemble_error))
+      {
+        Error::SetStringFmt(error, "Failed to assemble instruction at line {}: {}", reader.GetCurrentLineNumber(),
+                            assemble_error.GetDescription());
+        return {};
+      }
+    }
+    else
+    {
+      size_t wildcard_count = 0;
+      bool wildcard_ended = false;
+      std::string zero_instruction(linev);
+      std::string one_instruction(linev);
+      for (size_t i = 0; i < linev.size(); i++)
+      {
+        if (linev[i] == '?')
+        {
+          if (wildcard_ended || wildcard_count == 8)
+          {
+            Error::SetStringFmt(error, "Wildcards must be one contiguous group of at most 8 digits at line {}.",
+                                reader.GetCurrentLineNumber());
+            return {};
+          }
+
+          wildcard_count++;
+          zero_instruction[i] = '0';
+          one_instruction[i] = 'f';
+        }
+        else if (wildcard_count > 0)
+        {
+          wildcard_ended = true;
+        }
+      }
+
+      u32 one_bits;
+      if (!CPU::AssembleInstruction(&bits, static_cast<u32>(pc.value()), zero_instruction, &assemble_error) ||
+          !CPU::AssembleInstruction(&one_bits, static_cast<u32>(pc.value()), one_instruction, &assemble_error))
+      {
+        Error::SetStringFmt(error, "Failed to assemble wildcard instruction at line {}: {}",
+                            reader.GetCurrentLineNumber(), assemble_error.GetDescription());
+        return {};
+      }
+
+      const u32 option_mask = bits ^ one_bits;
+      const u32 option_bit_count = static_cast<u32>(wildcard_count * 4);
+      const u32 option_bit_position = option_mask ? CountTrailingZeros(option_mask) : 0;
+      const u32 expected_mask = (option_bit_count == 32) ?
+                                  std::numeric_limits<u32>::max() :
+                                  (((UINT32_C(1) << option_bit_count) - 1) << option_bit_position);
+      if (option_mask != expected_mask)
+      {
+        Error::SetStringFmt(error, "Wildcard at line {} does not map to a contiguous instruction field.",
+                            reader.GetCurrentLineNumber());
+        return {};
+      }
+
+      code->option_instruction_values.emplace_back(static_cast<u32>(code->instructions.size()),
+                                                   static_cast<u8>(option_bit_position),
+                                                   static_cast<u8>(option_bit_count));
+    }
+
+    const u32 instruction_pc = static_cast<u32>(pc.value());
+    if (std::ranges::any_of(code->instructions,
+                            [instruction_pc](const Instruction& inst) { return inst.pc == instruction_pc; }))
+    {
+      Error::SetStringFmt(error, "Duplicate instruction address 0x{:08X} at line {}.", instruction_pc,
+                          reader.GetCurrentLineNumber());
+      return {};
+    }
+
+    code->instructions.push_back({instruction_pc, bits, UNINITIALIZED_OLD_VALUE});
+    section_has_instruction = true;
+    pc = pc.value() + CPU::INSTRUCTION_SIZE;
+  }
+
+  if (pc.has_value() && !section_has_instruction)
+  {
+    Error::SetStringFmt(error, "No instructions after address at line {}.", section_line);
+    return {};
+  }
+  if (code->instructions.empty())
+  {
+    Error::SetStringView(error, "No instructions in code.");
+    return {};
+  }
+
+  return code;
+}
+
+void Cheats::AssemblyCheatCode::SetOptionValue(u32 value)
+{
+  for (const auto& [index, bit_position, bit_count] : option_instruction_values)
+  {
+    Instruction& inst = instructions[index];
+    const u32 value_mask = (bit_count == 32) ? std::numeric_limits<u32>::max() : ((UINT32_C(1) << bit_count) - 1);
+    const u32 instruction_mask = value_mask << bit_position;
+    inst.new_value = (inst.new_value & ~instruction_mask) | ((value & value_mask) << bit_position);
+  }
+}
+
+void Cheats::AssemblyCheatCode::Apply() const
+{
+  for (const Instruction& inst : instructions)
+  {
+    u32 current_value;
+    if (!CPU::SafeReadMemoryWord(inst.pc, &current_value))
+      continue;
+
+    if (current_value != inst.new_value)
+    {
+      inst.old_value = ZeroExtend64(current_value);
+      CPU::SafeWriteMemoryWord(inst.pc, inst.new_value);
+    }
+  }
+}
+
+void Cheats::AssemblyCheatCode::ApplyOnDisable(RollbackLog* rollback_list) const
+{
+  for (const Instruction& inst : instructions)
+  {
+    if (inst.old_value == UNINITIALIZED_OLD_VALUE)
+      continue;
+
+    u32 current_value;
+    if (CPU::SafeReadMemoryWord(inst.pc, &current_value) && current_value == inst.new_value &&
+        CPU::SafeWriteMemoryWord(inst.pc, Truncate32(inst.old_value)))
+    {
+      if (rollback_list)
+        rollback_list->emplace_back(MemoryAccessSize::Word, inst.pc, inst.new_value);
+    }
+
+    inst.old_value = UNINITIALIZED_OLD_VALUE;
+  }
+}
+
+bool Cheats::AssemblyCheatCode::HasRestorableOnDisableEffects() const
+{
+  return true;
+}
+
 std::unique_ptr<Cheats::CheatCode> Cheats::ParseCode(CheatCode::Metadata metadata, const std::string_view data,
                                                      Error* error)
 {
@@ -4559,6 +4815,10 @@ std::unique_ptr<Cheats::CheatCode> Cheats::ParseCode(CheatCode::Metadata metadat
   {
     case CodeType::Gameshark:
       ret = GamesharkCheatCode::Parse(std::move(metadata), data, error);
+      break;
+
+    case CodeType::Assembly:
+      ret = AssemblyCheatCode::Parse(std::move(metadata), data, error);
       break;
 
     default:
