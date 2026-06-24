@@ -35,6 +35,7 @@ public:
 
   // Code model functionality integrated
   void resetCodeView(VirtualMemoryAddress start_address);
+  void refreshView();
   void setPC(VirtualMemoryAddress pc);
   void invalidatePC();
   void ensureAddressVisible(VirtualMemoryAddress address);

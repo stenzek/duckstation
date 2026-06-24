@@ -43,6 +43,8 @@ private:
   void setUIEnabled(bool enabled, bool allow_pause);
   void saveCurrentState();
   void setMemoryViewRegion(Bus::MemoryRegion region);
+  void startPatchInstruction(VirtualMemoryAddress address);
+  void patchInstruction(VirtualMemoryAddress address, u32 bits);
   void toggleBreakpoint(VirtualMemoryAddress address);
   void clearBreakpoints();
   bool tryFollowLoadStore(VirtualMemoryAddress address);
