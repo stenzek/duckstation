@@ -401,6 +401,7 @@ private:
   float m_width = 0.0f;
   u32 m_progress_value = 0;
   u32 m_progress_range = 0;
+  bool m_cancellable = false;
   std::atomic_bool m_cancelled{false};
   std::atomic_bool m_prompt_result{false};
   std::atomic_flag m_prompt_waiting = ATOMIC_FLAG_INIT;
@@ -4820,11 +4821,7 @@ bool FullscreenUI::PopupDialog::BeginRender(float scaled_window_padding /* = Lay
   // reopening is messy...
   if (m_state == State::Reopening) [[unlikely]]
   {
-    // close it under the old name
-    if (ImGui::IsPopupOpen(ImGui::GetCurrentWindowRead()->GetID(IMSTR_START_END(m_title)), ImGuiPopupFlags_None))
-      ImGui::ClosePopupToLevel(GImGui->OpenPopupStack.Size, true);
-
-    // and open under the new name
+    // open under the new name, imgui will clear the old one for us
     m_state = State::OpeningTrigger;
   }
 
@@ -5985,9 +5982,6 @@ void FullscreenUI::ProgressDialog::Draw()
 
   if (!BeginRender(window_padding, window_padding, ImVec2(m_width, 0.0f)))
   {
-    if (m_user_closeable)
-      m_cancelled.store(true, std::memory_order_release);
-
     m_status_text = {};
     m_last_frac = 0.0f;
     ClearState();
@@ -6013,9 +6007,9 @@ void FullscreenUI::ProgressDialog::Draw()
     const ImVec2 text_width = ImGui::CalcTextSize(IMSTR_START_END(text));
     const ImVec2 screen_pos = ImGui::GetCursorScreenPos();
     const ImVec2 text_pos = ImVec2(screen_pos.x + wrap_width - text_width.x, screen_pos.y);
-    ImGui::GetWindowDrawList()->AddText(UIStyle.Font, UIStyle.LargeFontSize, UIStyle.BoldFontWeight, text_pos,
+    ImGui::GetWindowDrawList()->AddText(UIStyle.Font, UIStyle.MediumLargeFontSize, UIStyle.BoldFontWeight, text_pos,
                                         ImGui::GetColorU32(ImGuiCol_Text), IMSTR_START_END(text));
-    wrap_width -= text_width.x + spacing;
+    wrap_width -= text_width.x + LayoutScale(15.0f);
   }
 
   if (!m_status_text.empty())
@@ -6035,7 +6029,7 @@ void FullscreenUI::ProgressDialog::Draw()
   {
     frac = static_cast<float>(-ImGui::GetTime());
   }
-  ImGui::ProgressBar(frac, ImVec2(-1.0f, bar_height), "");
+  ImGui::ProgressBar(frac, ImVec2(wrap_width, bar_height), "");
 
   ImGui::Dummy(ImVec2(0.0f, LayoutScale(5.0f)));
 
@@ -6043,11 +6037,15 @@ void FullscreenUI::ProgressDialog::Draw()
   ImGui::PopStyleColor(3);
   ImGui::PopStyleVar(2);
 
-  if (m_user_closeable)
+  if (m_cancellable)
   {
     BeginHorizontalMenuButtons(1, 150.0f);
-    if (HorizontalMenuButton(FSUI_ICONSTR(ICON_FA_SQUARE_XMARK, "Cancel")))
-      StartClose();
+    if (HorizontalMenuButton(FSUI_ICONSTR(ICON_FA_SQUARE_XMARK, "Cancel"),
+                             !m_cancelled.load(std::memory_order_relaxed)))
+    {
+      m_cancelled.store(true, std::memory_order_release);
+    }
+
     EndHorizontalMenuButtons();
   }
 
@@ -6124,7 +6122,7 @@ void FullscreenUI::ProgressDialog::ProgressCallbackImpl::StateChanged(StateChang
         if (!s_state.progress_dialog.IsOpen())
           return;
 
-        s_state.progress_dialog.m_user_closeable = cancellable;
+        s_state.progress_dialog.m_cancellable = cancellable;
       });
     });
   }
