@@ -2811,6 +2811,12 @@ SettingsWindow* MainWindow::getSettingsWindow()
     m_settings_window = new SettingsWindow();
     connect(m_settings_window, &SettingsWindow::debugOptionsVisibilityChanged, this,
             &MainWindow::updateDebugMenuVisibility);
+
+    if (m_controller_settings_window)
+    {
+      connect(m_controller_settings_window, &ControllerSettingsWindow::multitapModeChanged, m_settings_window,
+              &SettingsWindow::onMultitapModeChanged);
+    }
   }
 
   return m_settings_window;
@@ -2849,7 +2855,16 @@ void MainWindow::openGamePropertiesForCurrentGame(const char* category /* = null
 ControllerSettingsWindow* MainWindow::getControllerSettingsWindow()
 {
   if (!m_controller_settings_window)
+  {
     m_controller_settings_window = new ControllerSettingsWindow();
+
+    // What a pain in the butt to sync...
+    if (m_settings_window)
+    {
+      connect(m_controller_settings_window, &ControllerSettingsWindow::multitapModeChanged, m_settings_window,
+              &SettingsWindow::onMultitapModeChanged);
+    }
+  }
 
   return m_controller_settings_window;
 }
@@ -2908,13 +2923,14 @@ void MainWindow::onSettingsControllerProfilesTriggered()
   QtUtils::ShowOrRaiseWindow(m_input_profile_editor_window, this);
 }
 
-void MainWindow::openInputProfileEditor(const std::string_view name)
+ControllerSettingsWindow* MainWindow::openInputProfileEditor(const std::string_view name)
 {
   if (!m_input_profile_editor_window)
     m_input_profile_editor_window = new ControllerSettingsWindow(nullptr, true);
 
   QtUtils::ShowOrRaiseWindow(m_input_profile_editor_window, this);
   m_input_profile_editor_window->switchProfile(name);
+  return m_input_profile_editor_window;
 }
 
 void MainWindow::closeEvent(QCloseEvent* event)

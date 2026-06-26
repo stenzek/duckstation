@@ -110,7 +110,8 @@ ControllerSettingsWindow::ControllerSettingsWindow(INISettingsInterface* game_si
 
 ControllerSettingsWindow::~ControllerSettingsWindow() = default;
 
-void ControllerSettingsWindow::editControllerSettingsForGame(QWidget* parent, INISettingsInterface* sif)
+ControllerSettingsWindow* ControllerSettingsWindow::editControllerSettingsForGame(QWidget* parent,
+                                                                                  INISettingsInterface* sif)
 {
   ControllerSettingsWindow* dlg = new ControllerSettingsWindow(sif, false, parent);
   dlg->setWindowFlag(Qt::Window);
@@ -119,6 +120,7 @@ void ControllerSettingsWindow::editControllerSettingsForGame(QWidget* parent, IN
   dlg->setWindowTitle(parent->windowTitle());
   dlg->setWindowIcon(parent->windowIcon());
   dlg->show();
+  return dlg;
 }
 
 int ControllerSettingsWindow::getHotkeyCategoryIndex() const

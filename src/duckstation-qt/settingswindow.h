@@ -17,6 +17,7 @@
 class QWheelEvent;
 
 enum class DiscRegion : u8;
+enum class MultitapMode : u8;
 
 namespace GameDatabase {
 enum class Trait : u32;
@@ -29,6 +30,7 @@ struct Entry;
 
 class GameSummaryWidget;
 class GameListSettingsWidget;
+class MemoryCardSettingsWidget;
 
 class SettingsWindow final : public QWidget
 {
@@ -83,6 +85,9 @@ public:
   bool hasGameTrait(GameDatabase::Trait trait);
   bool isGameHashStable() const;
 
+  MultitapMode getEffectiveMultitapMode() const;
+  void onMultitapModeChanged(MultitapMode mode);
+
   int getCategoryRow() const;
   void setCategoryRow(int index);
   void setCategory(const char* category);
@@ -122,6 +127,7 @@ private:
 
   GameSummaryWidget* m_game_summary = nullptr;
   GameListSettingsWidget* m_game_list_settings = nullptr;
+  MemoryCardSettingsWidget* m_memory_card_settings = nullptr;
 
   std::array<QString, MAX_SETTINGS_WIDGETS> m_category_help_text;
 
