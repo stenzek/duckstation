@@ -800,6 +800,7 @@ void ImGuiManager::UpdateInputOverlay()
   ubuffer->num_active_pads = num_active_pads;
 
   size_t out_index = 0;
+  const std::array<bool, 2> multitap_ports = Controller::GetMultitapEnabledPorts(g_settings.multitap_mode);
   for (const u32 pad : Controller::PortDisplayOrder)
   {
     const Controller* controller = System::GetController(pad);
@@ -808,11 +809,10 @@ void ImGuiManager::UpdateInputOverlay()
 
     const ControllerType ctype = controller->GetType();
     const auto& [port, slot] = Controller::ConvertPadToPortAndSlot(pad);
-    const bool multitap = g_settings.IsMultitapPortEnabled(port);
     InputOverlayState::PadState& pstate = ubuffer->pads[out_index++];
     pstate.port = Truncate8(port);
     pstate.slot = Truncate8(slot);
-    pstate.multitap = multitap;
+    pstate.multitap = multitap_ports[port];
     pstate.ctype = ctype;
     pstate.icon_color = NORMAL_ICON_COLOR;
 

@@ -534,8 +534,7 @@ std::array<bool, 2> ControllerSettingsWindow::getEnabledMultitaps() const
       getStringValue("ControllerPorts", "MultitapMode", Settings::GetMultitapModeName(Settings::DEFAULT_MULTITAP_MODE))
         .c_str())
       .value_or(Settings::DEFAULT_MULTITAP_MODE);
-  return {{(mtap_mode == MultitapMode::Port1Only || mtap_mode == MultitapMode::BothPorts),
-           (mtap_mode == MultitapMode::Port2Only || mtap_mode == MultitapMode::BothPorts)}};
+  return Controller::GetMultitapEnabledPorts(mtap_mode);
 }
 
 void ControllerSettingsWindow::refreshProfileList()
