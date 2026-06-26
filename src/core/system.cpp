@@ -5329,7 +5329,9 @@ bool System::IsFastForwardingBoot()
 
 u8 System::GetAudioOutputVolume()
 {
-  return g_settings.GetAudioOutputVolume(IsRunningAtNonStandardSpeed());
+  return ((s_state.target_speed == 0.0 || s_state.target_speed > 1.0f) && !s_state.syncing_to_host) ?
+           g_settings.audio_fast_forward_volume :
+           g_settings.audio_output_volume;
 }
 
 void System::UpdateVolume()

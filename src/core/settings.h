@@ -414,11 +414,6 @@ struct Settings : public GPUSettings
 
   ALWAYS_INLINE bool IsRunaheadEnabled() const { return (runahead_frames > 0); }
 
-  ALWAYS_INLINE u8 GetAudioOutputVolume(bool fast_forwarding) const
-  {
-    return audio_output_muted ? 0 : (fast_forwarding ? audio_fast_forward_volume : audio_output_volume);
-  }
-
   /// Returns the default type for the specified port.
   ALWAYS_INLINE static ControllerType GetDefaultControllerType(u32 pad)
   {
