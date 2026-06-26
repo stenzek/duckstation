@@ -420,11 +420,6 @@ struct Settings : public GPUSettings
     return (pad == 0) ? DEFAULT_CONTROLLER_1_TYPE : DEFAULT_CONTROLLER_2_TYPE;
   }
 
-  ALWAYS_INLINE static bool IsPerGameMemoryCardType(MemoryCardType type)
-  {
-    return (type == MemoryCardType::PerGame || type == MemoryCardType::PerGameTitle ||
-            type == MemoryCardType::PerGameFileTitle);
-  }
   bool HasAnyPerGameMemoryCards() const;
 
   /// Returns the default path to a memory card.
