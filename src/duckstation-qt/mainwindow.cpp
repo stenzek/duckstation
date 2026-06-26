@@ -2940,7 +2940,8 @@ void MainWindow::closeEvent(QCloseEvent* event)
   // When recreating, g_main_window will be the new window at this point.
   if (!QtHost::IsSystemValidOrStarting() || g_main_window != this)
   {
-    QtUtils::SaveWindowGeometry(this);
+    if (!QtHost::InNoGUIMode())
+      QtUtils::SaveWindowGeometry(this);
 
     if (s_locals.fullscreen_ui_started && g_main_window == this)
       g_core_thread->stopFullscreenUI();
