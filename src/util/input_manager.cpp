@@ -1702,12 +1702,17 @@ void InputManager::CopyConfiguration(SettingsInterface* dest_si, const SettingsI
 #endif
   }
 
+  const MultitapMode mtap_mode =
+    Settings::ParseMultitapModeName(
+      (copy_pad_config ? &src_si : dest_si)->GetStringViewValue("ControllerPorts", "MultitapMode"))
+      .value_or(g_settings.multitap_mode);
+  const auto mtap_enabled = Controller::GetMultitapEnabledPorts(mtap_mode);
   for (u32 port = 0; port < NUM_CONTROLLER_AND_CARD_PORTS; port++)
   {
     if (Controller::PadIsMultitapSlot(port))
     {
       const auto [mt_port, mt_slot] = Controller::ConvertPadToPortAndSlot(port);
-      if (!g_settings.IsMultitapPortEnabled(mt_port))
+      if (!mtap_enabled[mt_port])
         continue;
     }
 

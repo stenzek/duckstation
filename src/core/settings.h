@@ -419,19 +419,6 @@ struct Settings : public GPUSettings
     return audio_output_muted ? 0 : (fast_forwarding ? audio_fast_forward_volume : audio_output_volume);
   }
 
-  ALWAYS_INLINE bool IsPort1MultitapEnabled() const
-  {
-    return (multitap_mode == MultitapMode::Port1Only || multitap_mode == MultitapMode::BothPorts);
-  }
-  ALWAYS_INLINE bool IsPort2MultitapEnabled() const
-  {
-    return (multitap_mode == MultitapMode::Port2Only || multitap_mode == MultitapMode::BothPorts);
-  }
-  ALWAYS_INLINE bool IsMultitapPortEnabled(u32 port) const
-  {
-    return (port == 0) ? IsPort1MultitapEnabled() : IsPort2MultitapEnabled();
-  }
-
   /// Returns the default type for the specified port.
   ALWAYS_INLINE static ControllerType GetDefaultControllerType(u32 pad)
   {
