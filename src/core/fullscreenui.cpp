@@ -958,7 +958,8 @@ void FullscreenUI::BeginChangeDiscOnCoreThread(bool return_to_game)
 
   if (const GameDatabase::Entry* entry = System::GetGameDatabaseEntry(); entry && entry->disc_set)
   {
-    const auto lock = GameList::GetLock();
+    auto lock = GameList::GetLock();
+    GameList::EnsureLoaded(lock);
     auto matches = GameList::GetEntriesInDiscSet(entry->disc_set, GameList::ShouldShowLocalizedTitles());
     if (matches.size() > 1)
     {

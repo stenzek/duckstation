@@ -1402,6 +1402,7 @@ void MainWindow::onChangeDiscMenuAboutToShow()
   else if (const GameDatabase::Entry* entry = System::GetGameDatabaseEntry(); entry && entry->disc_set)
   {
     auto lock = GameList::GetLock();
+    GameList::EnsureLoaded(lock);
     for (const auto& [title, glentry] :
          GameList::GetEntriesInDiscSet(entry->disc_set, m_game_list_widget->getModel()->getShowLocalizedTitles()))
     {
