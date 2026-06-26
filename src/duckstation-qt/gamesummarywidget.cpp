@@ -587,7 +587,7 @@ void GameSummaryWidget::onComputeHashClicked()
   // Search redump when it's already computed.
   if (!m_redump_search_keyword.empty())
   {
-    QtUtils::OpenURL(this, fmt::format("http://redump.org/discs/quicksearch/{}", m_redump_search_keyword).c_str());
+    QtUtils::OpenURL(this, fmt::format("https://redump.info/discs?q={}", m_redump_search_keyword).c_str());
     return;
   }
 
@@ -761,7 +761,7 @@ void GameSummaryWidget::processHashResults(const CDImageHasher::TrackHashes& tra
   if (!m_redump_search_keyword.empty())
   {
     m_ui.computeHashes->setIcon(QIcon(u":/icons/monochrome/svg/mag-line.svg"_s));
-    m_ui.computeHashes->setText(tr("Search on Redump.org"));
+    m_ui.computeHashes->setText(tr("Search on Redump"));
   }
   else
     m_ui.computeHashes->setEnabled(false);
