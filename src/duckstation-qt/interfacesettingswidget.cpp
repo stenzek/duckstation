@@ -63,8 +63,6 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* dialog, QWidget
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.hideMouseCursor, "Main", "HideCursorInFullscreen", true);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.displayLogInMainWindow, "Main", "DisplayLogInMainWindow",
                                                false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.createSaveStateBackups, "Main", "CreateSaveStateBackups",
-                                               Settings::DEFAULT_SAVE_STATE_BACKUPS);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableDiscordPresence, "Main", "EnableDiscordPresence", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.automaticallyResizeWindow, "Display", "AutoResizeWindow",
                                                false);
@@ -169,9 +167,6 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* dialog, QWidget
   dialog->registerWidgetHelp(m_ui.pauseOnControllerDisconnection, tr("Pause On Controller Disconnection"),
                              tr("Unchecked"),
                              tr("Pauses the emulator when a controller with bindings is disconnected."));
-  dialog->registerWidgetHelp(
-    m_ui.createSaveStateBackups, tr("Create Save State Backups"), tr("Checked"),
-    tr("Backs up any previous save state when creating a new save state, with a .bak extension."));
   dialog->registerWidgetHelp(m_ui.enableDiscordPresence, tr("Enable Discord Presence"), tr("Unchecked"),
                              tr("Shows the game you are currently playing as part of your profile in Discord."));
 

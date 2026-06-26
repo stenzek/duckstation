@@ -133,46 +133,51 @@ void MemoryCardSettingsWidget::createUi()
   }
 
   {
-    QGroupBox* const box = new QGroupBox(tr("Game-Specific Card Settings"), this);
+    QGroupBox* const box = new QGroupBox(tr("Settings"), this);
     QGridLayout* const grid_layout = new QGridLayout(box);
     layout->addWidget(box);
+
+    QCheckBox* const create_save_state_backups = new QCheckBox(tr("Create Save State Backups"), box);
+    SettingWidgetBinder::BindWidgetToBoolSetting(m_dialog->getSettingsInterface(), create_save_state_backups, "Main",
+                                                 "CreateSaveStateBackups", Settings::DEFAULT_SAVE_STATE_BACKUPS);
+    grid_layout->addWidget(create_save_state_backups, 0, 0);
+    m_dialog->registerWidgetHelp(
+      create_save_state_backups, tr("Create Save State Backups"), tr("Checked"),
+      tr("Backs up any previous save state when creating a new save state, with a .bak extension."));
+
+    QCheckBox* const enable_global_states = new QCheckBox(tr("Enable Global Save States"), box);
+    SettingWidgetBinder::BindWidgetToBoolSetting(m_dialog->getSettingsInterface(), enable_global_states, "Main",
+                                                 "EnableGlobalStates", false);
+    grid_layout->addWidget(enable_global_states, 0, 1);
+    m_dialog->registerWidgetHelp(enable_global_states, tr("Enable Global Save States"), tr("Unchecked"),
+                                 tr("When enabled, the legacy global save state slots will be available. These slots "
+                                    "are independent of the current game."));
 
     QCheckBox* playlist_title_as_game_title = new QCheckBox(tr("Use Single Card For Multi-Disc Games"), box);
     SettingWidgetBinder::BindWidgetToBoolSetting(m_dialog->getSettingsInterface(), playlist_title_as_game_title,
                                                  "MemoryCards", "UsePlaylistTitle", true);
-    grid_layout->addWidget(playlist_title_as_game_title, 0, 0);
+    grid_layout->addWidget(playlist_title_as_game_title, 1, 0);
     m_dialog->registerWidgetHelp(
       playlist_title_as_game_title, tr("Use Single Card For Multi-Disc Games"), tr("Checked"),
       tr("When playing a multi-disc game and using per-game (title) memory cards, a single memory card "
          "will be used for all discs. If unchecked, a separate card will be used for each disc."));
+  }
 
-    if (!m_dialog->isPerGameSettings())
-    {
-      QCheckBox* enable_global_states = new QCheckBox(tr("Enable Global Save States"), box);
-      SettingWidgetBinder::BindWidgetToBoolSetting(m_dialog->getSettingsInterface(), enable_global_states, "Main",
-                                                   "EnableGlobalStates", false);
-      grid_layout->addWidget(enable_global_states, 0, 1);
-      m_dialog->registerWidgetHelp(enable_global_states, tr("Enable Global Save States"), tr("Unchecked"),
-                                   tr("When enabled, the legacy global save state slots will be available. These slots "
-                                      "are independent of the current game."));
-    }
+  {
+    QGroupBox* const box = new QGroupBox(tr("Memory Card Editor"), this);
+    QHBoxLayout* const box_layout = new QHBoxLayout(box);
+    layout->addWidget(box);
 
-    grid_layout->addWidget(QtUtils::CreateHorizontalLine(box), 1, 0, 1, 2);
+    QLabel* const label = new QLabel(
+      tr("The memory card editor enables you to move saves between cards, as well as import cards of other formats."),
+      box);
+    label->setWordWrap(true);
+    box_layout->addWidget(label, 1);
 
-    {
-      QHBoxLayout* const hbox = new QHBoxLayout();
-      QLabel* const label = new QLabel(
-        tr("The memory card editor enables you to move saves between cards, as well as import cards of other formats."),
-        box);
-      label->setWordWrap(true);
-      hbox->addWidget(label, 1);
-
-      QPushButton* const button =
-        new QPushButton(QIcon(u":/icons/monochrome/svg/memcard-line.svg"_s), tr("Memory Card Editor"), box);
-      connect(button, &QPushButton::clicked, []() { g_main_window->openMemoryCardEditor(QString(), QString()); });
-      hbox->addWidget(button);
-      grid_layout->addLayout(hbox, 2, 0, 1, 2);
-    }
+    QPushButton* const button =
+      new QPushButton(QIcon(u":/icons/monochrome/svg/memcard-line.svg"_s), tr("Memory Card Editor"), box);
+    connect(button, &QPushButton::clicked, []() { g_main_window->openMemoryCardEditor(QString(), QString()); });
+    box_layout->addWidget(button);
   }
 
   layout->addStretch(1);

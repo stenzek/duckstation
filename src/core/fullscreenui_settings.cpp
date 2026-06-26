@@ -2364,9 +2364,6 @@ void FullscreenUI::DrawInterfaceSettingsPage()
   DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_GAMEPAD, "Pause On Controller Disconnection"),
                     FSUI_VSTR("Pauses the emulator when a controller with bindings is disconnected."), "Main",
                     "PauseOnControllerDisconnection", false);
-  DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_FILE_EXPORT, "Create Save State Backups"),
-                    FSUI_VSTR("Renames existing save states when saving to a backup file."), "Main",
-                    "CreateSaveStateBackups", false);
   DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_CIRCLE_USER, "Enable Discord Presence"),
                     FSUI_VSTR("Shows the game you are currently playing as part of your profile in Discord."), "Main",
                     "EnableDiscordPresence", false);
@@ -3950,15 +3947,19 @@ void FullscreenUI::DrawMemoryCardSettingsPage()
 
   MenuHeading(FSUI_VSTR("Settings"));
 
-  DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_SHARE_NODES, "Use Single Card For Multi-Disc Games"),
-                    FSUI_VSTR("When playing a multi-disc game and using per-game (title) memory cards, "
-                              "use a single memory card for all discs."),
-                    "MemoryCards", "UsePlaylistTitle", true);
+  DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_FILE_EXPORT, "Create Save State Backups"),
+                    FSUI_VSTR("Renames existing save states when saving to a backup file."), "Main",
+                    "CreateSaveStateBackups", false);
 
   DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_GLOBE, "Enable Global Save States"),
                     FSUI_VSTR("When enabled, the legacy global save state slots will be available. These slots are "
                               "independent of the current game."),
                     "Main", "EnableGlobalStates", false);
+
+  DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_SHARE_NODES, "Use Single Card For Multi-Disc Games"),
+                    FSUI_VSTR("When playing a multi-disc game and using per-game (title) memory cards, "
+                              "use a single memory card for all discs."),
+                    "MemoryCards", "UsePlaylistTitle", true);
 
   EndMenuButtons();
 }
