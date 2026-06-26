@@ -3733,7 +3733,7 @@ int main(int argc, char* argv[])
     QtUtils::ShowOrRaiseWindow(g_main_window, nullptr, true);
 
   // Initialize big picture mode if requested.
-  if (QtHost::s_state.start_fullscreen_ui)
+  if (QtHost::s_state.start_fullscreen_ui || Core::GetBaseBoolSettingValue("Main", "StartFullscreenUI", false))
     g_core_thread->startFullscreenUI();
   else
     QtHost::s_state.start_fullscreen_ui_fullscreen = false;

@@ -2364,6 +2364,9 @@ void FullscreenUI::DrawInterfaceSettingsPage()
   DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_GAMEPAD, "Pause On Controller Disconnection"),
                     FSUI_VSTR("Pauses the emulator when a controller with bindings is disconnected."), "Main",
                     "PauseOnControllerDisconnection", false);
+  DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_TV, "Start In Big Picture Mode"),
+                    FSUI_VSTR("Starts the application in Big Picture Mode instead of the desktop interface."), "Main",
+                    "StartFullscreenUI", false);
   DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_CIRCLE_USER, "Enable Discord Presence"),
                     FSUI_VSTR("Shows the game you are currently playing as part of your profile in Discord."), "Main",
                     "EnableDiscordPresence", false);

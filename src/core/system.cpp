@@ -1138,6 +1138,7 @@ void System::SetDefaultSettings(SettingsInterface& si, bool ignore_user_prefs)
 
   si.SetBoolValue("Main", "StartPaused", false);
   si.SetBoolValue("Main", "StartFullscreen", false);
+  si.SetBoolValue("Main", "StartFullscreenUI", false);
 
   Settings::SetDefaultLogConfig(si);
 

@@ -28,7 +28,7 @@
      <property name="title">
       <string>Behavior</string>
      </property>
-     <layout class="QGridLayout" name="formLayout_4">
+     <layout class="QGridLayout" name="behaviorLayout">
       <item row="0" column="0">
        <widget class="QCheckBox" name="confirmGameClose">
         <property name="text">
@@ -72,6 +72,13 @@
        </widget>
       </item>
       <item row="3" column="0">
+       <widget class="QCheckBox" name="startFullscreenUI">
+        <property name="text">
+         <string>Start In Big Picture Mode</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
        <widget class="QCheckBox" name="enableDiscordPresence">
         <property name="text">
          <string>Enable Discord Presence</string>
