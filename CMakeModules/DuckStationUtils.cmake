@@ -365,7 +365,6 @@ function(add_resources TARGET DEST_SUBDIR SOURCE_DIR)
       add_custom_command(TARGET ${TARGET} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E make_directory "${DEST_PATH}"
         COMMAND ${CMAKE_COMMAND} -E copy_if_different "${SOURCE_FILE}" "${DEST_PATH}/"
-        COMMENT "Copying ${REL_PATH} to ${DEST_SUBDIR}"
       )
     endif()
   endforeach()
