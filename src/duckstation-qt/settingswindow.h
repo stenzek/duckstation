@@ -31,6 +31,7 @@ struct Entry;
 class GameSummaryWidget;
 class GameListSettingsWidget;
 class MemoryCardSettingsWidget;
+class AchievementSettingsWidget;
 
 class SettingsWindow final : public QWidget
 {
@@ -55,7 +56,8 @@ public:
   ALWAYS_INLINE const GameDatabase::Entry* getDatabaseEntry() const { return m_database_entry; }
   ALWAYS_INLINE bool hasDatabaseEntry() const { return (m_database_entry != nullptr); }
 
-  ALWAYS_INLINE GameListSettingsWidget* getGameListSettingsWidget() const { return m_game_list_settings; }
+  GameListSettingsWidget* getGameListSettingsWidget() const;
+  AchievementSettingsWidget* getAchievementSettingsWidget() const;
 
   void registerWidgetHelp(QObject* object, QString title, QString recommended_value, QString text);
   bool eventFilter(QObject* object, QEvent* event) override;
@@ -126,8 +128,6 @@ private:
   const GameDatabase::Entry* m_database_entry = nullptr;
 
   GameSummaryWidget* m_game_summary = nullptr;
-  GameListSettingsWidget* m_game_list_settings = nullptr;
-  MemoryCardSettingsWidget* m_memory_card_settings = nullptr;
 
   std::array<QString, MAX_SETTINGS_WIDGETS> m_category_help_text;
 

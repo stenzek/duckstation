@@ -687,7 +687,7 @@ extern std::string Videos;
 // Assumes that AppRoot and DataRoot have been initialized.
 void SetDefaults();
 void EnsureFoldersExist();
-void LoadConfig(SettingsInterface& si);
+void LoadConfig(const SettingsInterface& si);
 void Save(SettingsInterface& si);
 
 // Returns the default path for the given settings key.

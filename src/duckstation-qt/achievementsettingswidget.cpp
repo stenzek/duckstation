@@ -136,7 +136,9 @@ AchievementSettingsWidget::AchievementSettingsWidget(SettingsWindow* dialog, QWi
 
   if (!m_dialog->isPerGameSettings())
   {
-    connect(m_ui.loginButton, &QPushButton::clicked, this, &AchievementSettingsWidget::onLoginLogoutPressed);
+    connect(m_ui.login, &QPushButton::clicked, this, &AchievementSettingsWidget::onLoginPressed);
+    connect(m_ui.logout, &QPushButton::clicked, this, &AchievementSettingsWidget::onLogoutPressed);
+    connect(m_ui.registerUser, &QPushButton::clicked, this, &AchievementSettingsWidget::onRegisterUserPressed);
     connect(m_ui.viewProfile, &QPushButton::clicked, this, &AchievementSettingsWidget::onViewProfilePressed);
     connect(g_core_thread, &CoreThread::achievementsLoginSuccess, this, &AchievementSettingsWidget::updateLoginState);
     updateLoginState();
@@ -317,29 +319,43 @@ void AchievementSettingsWidget::updateLoginState()
     const QString login_timestamp =
       QtHost::FormatNumber(Host::NumberFormatType::ShortDateTime, static_cast<s64>(login_unix_timestamp));
     m_ui.loginStatus->setText(tr("Logged in as %1\nToken generated at %2").arg(qusername).arg(login_timestamp));
-    m_ui.loginButton->setText(tr("Logout"));
   }
   else
   {
     m_ui.loginStatus->setText(tr("Not Logged In."));
-    m_ui.loginButton->setText(tr("Login..."));
   }
 
+  m_ui.viewProfile->setVisible(logged_in);
   m_ui.viewProfile->setEnabled(logged_in);
+  m_ui.logout->setVisible(logged_in);
+  m_ui.logout->setEnabled(logged_in);
+  m_ui.registerUser->setVisible(!logged_in);
+  m_ui.registerUser->setEnabled(!logged_in);
+  m_ui.login->setVisible(!logged_in);
+  m_ui.login->setEnabled(!logged_in);
 }
 
-void AchievementSettingsWidget::onLoginLogoutPressed()
+void AchievementSettingsWidget::onLoginPressed()
 {
-  if (!Core::GetBaseStringSettingValue("Cheevos", "Username").empty())
-  {
-    Host::RunOnCoreThread([]() { Achievements::Logout(); }, true);
-    updateLoginState();
-    return;
-  }
-
   AchievementLoginDialog* login = new AchievementLoginDialog(this, Achievements::LoginRequestReason::UserInitiated);
   connect(login, &AchievementLoginDialog::accepted, this, &AchievementSettingsWidget::onLoginCompleted);
   login->open();
+}
+
+void AchievementSettingsWidget::onLogoutPressed()
+{
+  if (Core::GetBaseStringSettingValue("Cheevos", "Username").empty())
+    return;
+
+  Host::RunOnCoreThread([]() {
+    Achievements::Logout();
+    Host::RunOnUIThread([]() {
+      SettingsWindow* settings = g_main_window ? g_main_window->getSettingsWindow() : nullptr;
+      AchievementSettingsWidget* achievement_settings = settings ? settings->getAchievementSettingsWidget() : nullptr;
+      if (achievement_settings)
+        achievement_settings->updateLoginState();
+    });
+  });
 }
 
 void AchievementSettingsWidget::onLoginCompleted()
@@ -354,6 +370,11 @@ void AchievementSettingsWidget::onLoginCompleted()
   }
   if (!m_ui.hardcoreMode->isChecked() && Core::GetBaseBoolSettingValue("Cheevos", "ChallengeMode", false))
     m_ui.hardcoreMode->setChecked(true);
+}
+
+void AchievementSettingsWidget::onRegisterUserPressed()
+{
+  QtUtils::OpenURL(this, QUrl(QStringLiteral("https://retroachievements.org/createaccount.php")));
 }
 
 void AchievementSettingsWidget::onViewProfilePressed()
