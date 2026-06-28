@@ -804,6 +804,7 @@ CheatCodeEditorDialog::CheatCodeEditorDialog(GameCheatSettingsWidget* parent, Ch
   fillUi();
 
   connect(m_ui.group, &QComboBox::currentIndexChanged, this, &CheatCodeEditorDialog::onGroupSelectedIndexChanged);
+  connect(m_ui.type, &QComboBox::currentIndexChanged, this, &CheatCodeEditorDialog::onCodeTypeChanged);
   connect(m_ui.optionsType, &QComboBox::currentIndexChanged, this, &CheatCodeEditorDialog::onOptionTypeChanged);
   connect(m_ui.rangeMin, &QSpinBox::valueChanged, this, &CheatCodeEditorDialog::onRangeMinChanged);
   connect(m_ui.rangeMax, &QSpinBox::valueChanged, this, &CheatCodeEditorDialog::onRangeMaxChanged);
@@ -944,6 +945,14 @@ void CheatCodeEditorDialog::onOptionTypeChanged(int index)
   m_ui.rangeMax->setVisible(index == 2);
 }
 
+void CheatCodeEditorDialog::onCodeTypeChanged(int index)
+{
+  const bool is_assembly = (static_cast<Cheats::CodeType>(index) == Cheats::CodeType::Assembly);
+  if (is_assembly)
+    m_ui.activation->setCurrentIndex(static_cast<int>(Cheats::CodeActivation::EndFrame));
+  m_ui.activation->setEnabled(!is_assembly);
+}
+
 void CheatCodeEditorDialog::onRangeMinChanged(int value)
 {
   m_ui.rangeMax->setValue(std::max(m_ui.rangeMax->value(), value));
@@ -976,6 +985,8 @@ void CheatCodeEditorDialog::setupAdditionalUi(const QStringList& group_names)
     m_ui.group->addItems(group_names);
 
   m_ui.group->addItem(tr("New..."));
+
+  m_ui.instructions->setFont(QtHost::GetFixedFont());
 }
 
 void CheatCodeEditorDialog::fillUi()
@@ -1013,6 +1024,7 @@ void CheatCodeEditorDialog::fillUi()
   m_new_options = m_code.options;
 
   m_ui.optionsType->setCurrentIndex(m_code.HasOptionRange() ? 2 : (m_code.HasOptionChoices() ? 1 : 0));
+  onCodeTypeChanged(m_ui.type->currentIndex());
   onOptionTypeChanged(m_ui.optionsType->currentIndex());
 }
 

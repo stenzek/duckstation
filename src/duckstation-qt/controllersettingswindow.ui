@@ -24,7 +24,7 @@
     <normaloff>:/icons/monochrome/svg/controller-digital-line.svg</normaloff>:/icons/monochrome/svg/controller-digital-line.svg</iconset>
   </property>
   <property name="class" stdset="0">
-   <string>settings-window</string>
+   <string notr="true">settings-window</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="0" column="0">

@@ -3647,42 +3647,44 @@ bool QtHost::RunSetupWizard()
 
 int main(int argc, char* argv[])
 {
-  if (!QtHost::VeryEarlyProcessStartup())
+  using namespace QtHost;
+
+  if (!VeryEarlyProcessStartup())
     return EXIT_FAILURE;
 
   QApplication app(argc, argv);
-  if (!QtHost::PerformEarlyHardwareChecks())
+  if (!PerformEarlyHardwareChecks())
     return EXIT_FAILURE;
 
 #ifdef __linux__
   // Normally we'd have this shitfuckery in VeryEarlyProcessStartup(), but QApplication needs to be
   // created before the platform plugin is loaded. This is only here because GNOME plus Wankland
   // and their implementation of it is fucking terrible.
-  QtHost::ApplyWaylandWorkarounds();
+  ApplyWaylandWorkarounds();
 #endif
 
   // Type registration has to happen after hardware checks, clang emits ptest instructions otherwise.
-  QtHost::RegisterTypes();
+  RegisterTypes();
 
   std::shared_ptr<SystemBootParameters> autoboot;
-  if (!QtHost::ParseCommandLineParametersAndInitializeConfig(app, autoboot))
+  if (!ParseCommandLineParametersAndInitializeConfig(app, autoboot))
     return EXIT_FAILURE;
 
-  if (!QtHost::EarlyProcessStartup())
+  if (!EarlyProcessStartup())
     return EXIT_FAILURE;
 
   // Remove any previous-version remnants.
-  if (QtHost::s_state.cleanup_after_update)
+  if (s_state.cleanup_after_update)
     AutoUpdaterDialog::cleanupAfterUpdate();
 
   // Set theme before creating any windows.
-  QtHost::UpdateApplicationTheme();
+  UpdateApplicationTheme();
 
   // Build warning.
   AutoUpdaterDialog::warnAboutUnofficialBuild();
 
   // Setting/folder migrations.
-  QtHost::ApplyMigrations();
+  ApplyMigrations();
 
   // Create core thread object, but don't start it yet. That way the main window can connect to it,
   // and ensures that no signals are lost. Then we create and connect the main window.
@@ -3697,12 +3699,12 @@ int main(int argc, char* argv[])
   LogWindow::updateSettings(true);
 
   // Now we can actually start the CPU thread.
-  QtHost::HookSignals();
+  HookSignals();
   g_core_thread->start();
 
   // Optionally run setup wizard.
   int result;
-  if (QtHost::s_state.run_setup_wizard && !QtHost::RunSetupWizard())
+  if (s_state.run_setup_wizard && !RunSetupWizard())
   {
     result = EXIT_FAILURE;
     goto shutdown_and_exit;
@@ -3710,13 +3712,13 @@ int main(int argc, char* argv[])
 
 #ifdef __linux__
   // Create desktop file if it does not exist.
-  QtHost::CheckDesktopFile();
+  CheckDesktopFile();
 
   // I hate this so much. Turns out not only is window raising non-functional on GNOME for what I'm guessing
   // is purely political reasons, it's also very unreliable on KDE too. Sometimes raising works, other times
   // it doesn't. Deferring the request doesn't seem to help either. Can't be arsed to debug, just force all
   // Wayland down the reverse path of showing the log window first.
-  if (QtHost::IsRunningOnWayland())
+  if (IsRunningOnWayland())
   {
     LogWindow::deferredShow();
     QApplication::sync();
@@ -3725,18 +3727,18 @@ int main(int argc, char* argv[])
 #endif
 
   // When running in batch mode, ensure game list is loaded, but don't scan for any new files.
-  if (!QtHost::s_state.batch_mode)
+  if (!s_state.batch_mode)
     g_main_window->refreshGameList(false);
 
   // Don't bother showing the window in no-gui mode.
-  if (!QtHost::s_state.nogui_mode)
+  if (!s_state.nogui_mode)
     QtUtils::ShowOrRaiseWindow(g_main_window, nullptr, true);
 
   // Initialize big picture mode if requested.
-  if (QtHost::s_state.start_fullscreen_ui)
+  if (s_state.start_fullscreen_ui || Core::GetBaseBoolSettingValue("Main", "StartFullscreenUI", false))
     g_core_thread->startFullscreenUI();
   else
-    QtHost::s_state.start_fullscreen_ui_fullscreen = false;
+    s_state.start_fullscreen_ui_fullscreen = false;
 
   // Always kick off update check. It'll take over if the user is booting a game fullscreen.
   g_main_window->startupUpdateCheck();
@@ -3767,7 +3769,7 @@ shutdown_and_exit:
   delete g_main_window;
   Assert(!g_main_window);
 
-  QtHost::ProcessShutdown();
+  ProcessShutdown();
 
   return result;
 }

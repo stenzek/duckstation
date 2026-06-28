@@ -111,7 +111,13 @@ public:
 
   /// Returns a printable label for a given port.
   static const char* GetPortDisplayName(u32 port, u32 slot, bool mtap);
-  static const char* GetPortDisplayName(u32 index);
+  static const char* GetPortDisplayName(u32 index, MultitapMode mode);
+
+  /// Returns true if multitap is enabled on the given port.
+  static bool IsMultitapEnabledOnPort(u32 port, MultitapMode mode);
+
+  /// Returns a boolean array of which ports have multitap enabled for a given mode.
+  static std::array<bool, 2> GetMultitapEnabledPorts(MultitapMode mode);
 
   /// List of controller indices in the order that they should be displayed.
   static const std::array<u32, NUM_CONTROLLER_AND_CARD_PORTS> PortDisplayOrder;

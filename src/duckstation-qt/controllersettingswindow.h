@@ -38,7 +38,7 @@ public:
                            QWidget* parent = nullptr);
   ~ControllerSettingsWindow();
 
-  static void editControllerSettingsForGame(QWidget* parent, INISettingsInterface* sif);
+  static ControllerSettingsWindow* editControllerSettingsForGame(QWidget* parent, INISettingsInterface* sif);
 
   ALWAYS_INLINE HotkeySettingsWidget* getHotkeySettingsWidget() const { return m_hotkey_settings; }
 
@@ -74,6 +74,9 @@ public:
   static constexpr u32 CATEGORY_GLOBAL_SETTINGS = 0;
   static constexpr u32 CATEGORY_FIRST_CONTROLLER_SETTINGS = 1;
   static constexpr u32 CATEGORY_HOTKEY_SETTINGS = 2;
+
+Q_SIGNALS:
+  void multitapModeChanged(MultitapMode mode);
 
 protected:
   void closeEvent(QCloseEvent* event) override;

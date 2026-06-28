@@ -1024,22 +1024,37 @@ std::string ShaderGen::GenerateImGuiBlurFragmentShader() const
   return std::move(ss).str();
 }
 
-std::string ShaderGen::GenerateFadeFragmentShader() const
+std::string ShaderGen::GenerateTransitionFragmentShader(bool zoom) const
 {
   std::stringstream ss;
   WriteHeader(ss);
-  DeclareUniformBuffer(ss, {"float u_tex0_weight", "float u_tex1_weight"}, true);
+  DeclareUniformBuffer(ss, {"float u_tex0_weight", "float u_tex1_weight", "float u_offset"}, true);
   DeclareTexture(ss, "samp0", 0);
   DeclareTexture(ss, "samp1", 1);
   DeclareFragmentEntryPoint(ss, 0, 1);
 
-  ss << R"(
+  if (!zoom)
+  {
+    ss << R"(
 {
-  o_col0 = SAMPLE_TEXTURE(samp0, v_tex0) * u_tex0_weight;
+  float2 tex0_uv = v_tex0 + float2(u_offset, 0.0f);
+  o_col0 = SAMPLE_TEXTURE(samp0, tex0_uv) * u_tex0_weight;
   o_col0 += SAMPLE_TEXTURE(samp1, v_tex0) * u_tex1_weight;
   o_col0.a = 1.0f;
 }
 )";
+  }
+  else
+  {
+    ss << R"(
+{
+  float2 tex0_uv = ((v_tex0 - float2(0.5f, 0.5f)) / u_offset) + float2(0.5f, 0.5f);
+  o_col0 = SAMPLE_TEXTURE(samp0, tex0_uv) * u_tex0_weight;
+  o_col0 += SAMPLE_TEXTURE(samp1, v_tex0) * u_tex1_weight;
+  o_col0.a = 1.0f;
+}
+)";
+  }
 
   return std::move(ss).str();
 }

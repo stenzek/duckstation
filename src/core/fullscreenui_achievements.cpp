@@ -1562,7 +1562,7 @@ void FullscreenUI::OpenAchievementsWindow()
   }
 
   PauseAndOpenMenuFromCoreThread([]() {
-    BeginTransition(SHORT_TRANSITION_TIME, []() {
+    BeginTransition(TransitionEffect::ZoomIn, DEFAULT_TRANSITION_TIME, []() {
       ForceKeyNavEnabled();
       EnqueueSoundEffect(SFX_NAV_ACTIVATE);
       SwitchToAchievements();
@@ -1623,8 +1623,6 @@ void FullscreenUI::DrawSubsetSelector()
 
   BeginFloatingNavBar(30.0f, 10.0f, nav_width, font_size, 1.0f, 0.0f, nav_x_padding, nav_y_padding);
 
-  std::optional<u32> new_subset_id;
-
   for (size_t i = 0; i < s_achievements_locals.subset_info_list.size(); i++)
   {
     const SubsetInfo& subset = s_achievements_locals.subset_info_list[i];
@@ -1633,38 +1631,37 @@ void FullscreenUI::DrawSubsetSelector()
     if (FloatingNavBarIcon(subset.short_name, badge, (&subset == s_achievements_locals.open_subset), font_size,
                            font_size, font_weight))
     {
-      new_subset_id = subset.subset_id;
+      BeginTransition(TransitionEffect::Fade, DEFAULT_TRANSITION_TIME,
+                      [new_subset_id = subset.subset_id]() { SetCurrentSubsetID(new_subset_id); });
     }
   }
 
-  if (!new_subset_id.has_value())
-  {
-    const size_t i = s_achievements_locals.open_subset - &s_achievements_locals.subset_info_list[0];
+  const size_t i = s_achievements_locals.open_subset - &s_achievements_locals.subset_info_list[0];
 
-    if (ImGui::IsKeyPressed(ImGuiKey_GamepadDpadLeft, true) ||
-        ImGui::IsKeyPressed(ImGuiKey_NavGamepadTweakSlow, true) || ImGui::IsKeyPressed(ImGuiKey_LeftArrow, true))
-    {
-      EnqueueSoundEffect(SFX_NAV_MOVE);
-      new_subset_id = (i == 0) ? s_achievements_locals.subset_info_list.back().subset_id :
-                                 s_achievements_locals.subset_info_list[i - 1].subset_id;
-    }
-    else if (ImGui::IsKeyPressed(ImGuiKey_GamepadDpadRight, true) ||
-             ImGui::IsKeyPressed(ImGuiKey_NavGamepadTweakFast, true) || ImGui::IsKeyPressed(ImGuiKey_RightArrow, true))
-    {
-      EnqueueSoundEffect(SFX_NAV_MOVE);
-      new_subset_id = ((i + 1) == s_achievements_locals.subset_info_list.size()) ?
-                        s_achievements_locals.subset_info_list.front().subset_id :
-                        s_achievements_locals.subset_info_list[i + 1].subset_id;
-    }
+  if (ImGui::IsKeyPressed(ImGuiKey_GamepadDpadLeft, true) || ImGui::IsKeyPressed(ImGuiKey_NavGamepadTweakSlow, true) ||
+      ImGui::IsKeyPressed(ImGuiKey_LeftArrow, true))
+  {
+    EnqueueSoundEffect(SFX_NAV_MOVE);
+    BeginTransition(TransitionEffect::SlideLeft, DEFAULT_TRANSITION_TIME,
+                    [new_subset_id = (i == 0) ? s_achievements_locals.subset_info_list.back().subset_id :
+                                                s_achievements_locals.subset_info_list[i - 1].subset_id]() {
+                      SetCurrentSubsetID(new_subset_id);
+                    });
+    ;
+  }
+  else if (ImGui::IsKeyPressed(ImGuiKey_GamepadDpadRight, true) ||
+           ImGui::IsKeyPressed(ImGuiKey_NavGamepadTweakFast, true) || ImGui::IsKeyPressed(ImGuiKey_RightArrow, true))
+  {
+    EnqueueSoundEffect(SFX_NAV_MOVE);
+    BeginTransition(TransitionEffect::SlideRight, DEFAULT_TRANSITION_TIME,
+                    [new_subset_id = ((i + 1) == s_achievements_locals.subset_info_list.size()) ?
+                                       s_achievements_locals.subset_info_list.front().subset_id :
+                                       s_achievements_locals.subset_info_list[i + 1].subset_id]() {
+                      SetCurrentSubsetID(new_subset_id);
+                    });
   }
 
   EndFloatingNavBar();
-
-  if (new_subset_id.has_value())
-  {
-    BeginTransition(DEFAULT_TRANSITION_TIME,
-                    [new_subset_id = new_subset_id.value()]() { SetCurrentSubsetID(new_subset_id); });
-  }
 }
 
 bool FullscreenUI::IsCoreSubsetOpen()
@@ -1830,7 +1827,7 @@ void FullscreenUI::DrawAchievementsWindow()
   // achievements can get turned off via the main UI
   if (!s_achievements_locals.achievement_list)
   {
-    ReturnToPreviousWindow();
+    ReturnToPreviousWindow(TransitionEffect::ZoomOut);
     return;
   }
 
@@ -2141,7 +2138,7 @@ void FullscreenUI::DrawAchievementsWindow()
   }
 
   if (close_window)
-    ReturnToPreviousWindow();
+    ReturnToPreviousWindow(TransitionEffect::ZoomOut);
 }
 
 void FullscreenUI::DrawAchievement(const rc_client_achievement_t* cheevo, const ImVec2& prefetch_range)
@@ -2462,7 +2459,7 @@ void FullscreenUI::OpenLeaderboardsWindow()
   }
 
   PauseAndOpenMenuFromCoreThread([]() {
-    BeginTransition(SHORT_TRANSITION_TIME, []() {
+    BeginTransition(TransitionEffect::ZoomIn, DEFAULT_TRANSITION_TIME, []() {
       ForceKeyNavEnabled();
       EnqueueSoundEffect(SFX_NAV_ACTIVATE);
       SwitchToLeaderboards();
@@ -2502,7 +2499,7 @@ void FullscreenUI::DrawLeaderboardsWindow()
   const auto lock = Achievements::GetLock();
   if (!s_achievements_locals.leaderboard_list)
   {
-    ReturnToPreviousWindow();
+    ReturnToPreviousWindow(TransitionEffect::ZoomOut);
     return;
   }
 
@@ -2614,7 +2611,7 @@ void FullscreenUI::DrawLeaderboardsWindow()
         DrawSubsetSelector();
 
       if (FloatingButton(ICON_FA_XMARK, 10.0f, 10.0f, 1.0f, 0.0f, true) || WantsToCloseMenu())
-        ReturnToPreviousWindow();
+        ReturnToPreviousWindow(TransitionEffect::ZoomOut);
     }
     else
     {
@@ -2632,13 +2629,21 @@ void FullscreenUI::DrawLeaderboardsWindow()
       const ImVec2 saved_cursor_pos = ImGui::GetCursorPos();
       BeginFloatingNavBar(30.0f, 10.0f, nav_width, nav_font_size, 1.0f, 0.0f, nav_x_padding, nav_y_padding);
 
-      const bool view_toggled =
-        (ImGui::IsKeyPressed(ImGuiKey_GamepadDpadLeft, false) ||
-         ImGui::IsKeyPressed(ImGuiKey_NavGamepadTweakSlow, false) || ImGui::IsKeyPressed(ImGuiKey_LeftArrow, false) ||
-         ImGui::IsKeyPressed(ImGuiKey_GamepadDpadRight, false) ||
-         ImGui::IsKeyPressed(ImGuiKey_NavGamepadTweakFast, false) || ImGui::IsKeyPressed(ImGuiKey_RightArrow, false));
-      bool new_view = view_toggled ? !s_achievements_locals.is_showing_all_leaderboard_entries :
-                                     s_achievements_locals.is_showing_all_leaderboard_entries;
+      bool new_view = s_achievements_locals.is_showing_all_leaderboard_entries;
+      TransitionEffect new_view_effect = TransitionEffect::Fade;
+      if (ImGui::IsKeyPressed(ImGuiKey_GamepadDpadLeft, false) ||
+          ImGui::IsKeyPressed(ImGuiKey_NavGamepadTweakSlow, false) || ImGui::IsKeyPressed(ImGuiKey_LeftArrow, false))
+      {
+        new_view = !new_view;
+        new_view_effect = TransitionEffect::SlideLeft;
+      }
+      else if (ImGui::IsKeyPressed(ImGuiKey_GamepadDpadRight, false) ||
+               ImGui::IsKeyPressed(ImGuiKey_NavGamepadTweakFast, false) ||
+               ImGui::IsKeyPressed(ImGuiKey_RightArrow, false))
+      {
+        new_view = !new_view;
+        new_view_effect = TransitionEffect::SlideRight;
+      }
       for (const bool show_all : {false, true})
       {
         if (FloatingNavBarIcon(show_all ? show_all_title.view() : show_nearby_title.view(), nullptr,
@@ -2650,7 +2655,7 @@ void FullscreenUI::DrawLeaderboardsWindow()
       }
       if (s_achievements_locals.is_showing_all_leaderboard_entries != new_view)
       {
-        BeginTransition(DEFAULT_TRANSITION_TIME, [new_view]() {
+        BeginTransition(new_view_effect, DEFAULT_TRANSITION_TIME, [new_view]() {
           s_achievements_locals.is_showing_all_leaderboard_entries = new_view;
           QueueResetFocus(FocusResetType::ViewChanged);
         });
@@ -2900,7 +2905,7 @@ void FullscreenUI::DrawLeaderboardsWindow()
 
   if (close_leaderboard_on_exit)
   {
-    BeginTransition([]() {
+    BeginTransition(TransitionEffect::ZoomOut, DEFAULT_TRANSITION_TIME, []() {
       CloseLeaderboard();
       QueueResetFocus(FocusResetType::ViewChanged);
     });
@@ -3112,7 +3117,8 @@ void FullscreenUI::DrawLeaderboardListEntry(const rc_client_leaderboard_t* lboar
     summary = lboard->description;
 
   if (MenuButton(title, summary))
-    BeginTransition([id = lboard->id]() { OpenLeaderboardById(id); });
+    BeginTransition(TransitionEffect::ZoomIn, DEFAULT_TRANSITION_TIME,
+                    [id = lboard->id]() { OpenLeaderboardById(id); });
 }
 
 bool FullscreenUI::OpenLeaderboardById(u32 leaderboard_id)

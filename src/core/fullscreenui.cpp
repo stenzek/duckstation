@@ -295,7 +295,7 @@ void FullscreenUI::OnSystemDestroyed()
 
     s_locals.was_paused_on_quick_menu_open = false;
     s_locals.current_pause_submenu = PauseSubMenu::None;
-    ReturnToMainWindow(LONG_TRANSITION_TIME);
+    ReturnToMainWindow(TransitionEffect::Fade, LONG_TRANSITION_TIME);
   });
 }
 
@@ -329,7 +329,7 @@ void FullscreenUI::PauseAndOpenMenuFromCoreThread(void (*callback)())
 void FullscreenUI::OpenPauseMenu()
 {
   PauseAndOpenMenuFromCoreThread([]() {
-    BeginTransition(SHORT_TRANSITION_TIME, []() {
+    BeginTransition(TransitionEffect::ZoomIn, SHORT_TRANSITION_TIME, []() {
       ForceKeyNavEnabled();
       EnqueueSoundEffect(SFX_NAV_ACTIVATE);
 
@@ -343,7 +343,7 @@ void FullscreenUI::OpenPauseMenu()
 void FullscreenUI::OpenCheatsMenu()
 {
   PauseAndOpenMenuFromCoreThread([]() {
-    BeginTransition(SHORT_TRANSITION_TIME, []() {
+    BeginTransition(TransitionEffect::ZoomIn, SHORT_TRANSITION_TIME, []() {
       if (!SwitchToGameSettings(SettingsPage::Cheats))
         ClosePauseMenuImmediately();
 
@@ -371,12 +371,13 @@ void FullscreenUI::FixStateIfPaused()
   ImGui::UpdateInputEvents(false);
 }
 
-void FullscreenUI::ClosePauseMenu(float transition_time /*= SHORT_TRANSITION_TIME*/)
+void FullscreenUI::ClosePauseMenu(TransitionEffect effect /*= TransitionEffect::Fade*/,
+                                  float transition_time /*= SHORT_TRANSITION_TIME*/)
 {
   if (!VideoThread::HasGPUBackend())
     return;
 
-  BeginTransition(transition_time, []() {
+  BeginTransition(effect, transition_time, []() {
     s_locals.current_pause_submenu = PauseSubMenu::None;
     SwitchToMainWindow(MainWindowType::None);
   });
@@ -460,7 +461,7 @@ void FullscreenUI::SwitchToMainWindow(MainWindowType type)
   FixStateIfPaused();
 }
 
-void FullscreenUI::ReturnToPreviousWindow()
+void FullscreenUI::ReturnToPreviousWindow(TransitionEffect effect)
 {
   if (s_locals.previous_main_window == MainWindowType::None)
   {
@@ -468,16 +469,16 @@ void FullscreenUI::ReturnToPreviousWindow()
     if (s_locals.current_main_window >= MainWindowType::Settings &&
         s_locals.current_main_window <= MainWindowType::Leaderboards)
     {
-      ClosePauseMenu();
+      ClosePauseMenu(effect);
     }
     else
     {
-      ReturnToMainWindow();
+      ReturnToMainWindow(effect);
     }
   }
   else
   {
-    BeginTransition([window = s_locals.previous_main_window]() {
+    BeginTransition(effect, DEFAULT_TRANSITION_TIME, [window = s_locals.previous_main_window]() {
       SwitchToMainWindow(window);
 
       // return stack is only one deep
@@ -486,14 +487,17 @@ void FullscreenUI::ReturnToPreviousWindow()
   }
 }
 
-void FullscreenUI::ReturnToMainWindow()
+void FullscreenUI::ReturnToMainWindow(TransitionEffect effect)
 {
-  ReturnToMainWindow(VideoThread::HasGPUBackend() ? SHORT_TRANSITION_TIME : DEFAULT_TRANSITION_TIME);
+  const float transition_time = (effect == TransitionEffect::Fade) ?
+                                  (VideoThread::HasGPUBackend() ? SHORT_TRANSITION_TIME : DEFAULT_TRANSITION_TIME) :
+                                  DEFAULT_TRANSITION_TIME;
+  ReturnToMainWindow(effect, transition_time);
 }
 
-void FullscreenUI::ReturnToMainWindow(float transition_time)
+void FullscreenUI::ReturnToMainWindow(TransitionEffect effect, float transition_time)
 {
-  BeginTransition(transition_time, []() {
+  BeginTransition(effect, transition_time, []() {
     s_locals.previous_main_window = MainWindowType::None;
     s_locals.current_pause_submenu = PauseSubMenu::None;
     s_locals.has_pending_window_switch = false;
@@ -837,7 +841,7 @@ void FullscreenUI::RequestShutdown(bool save_state)
   ConfirmWithSafetyCheck(FSUI_STR("shut down"), true, [save_state](bool result) {
     if (result)
     {
-      BeginTransition(LONG_TRANSITION_TIME, [save_state]() {
+      BeginTransition(TransitionEffect::Fade, LONG_TRANSITION_TIME, [save_state]() {
         Host::RunOnCoreThread([save_state]() { Host::RequestSystemShutdown(false, save_state, false); });
       });
     }
@@ -854,7 +858,7 @@ void FullscreenUI::RequestRestart()
     if (result)
     {
       Host::RunOnCoreThread(System::ResetSystem);
-      ClosePauseMenu(LONG_TRANSITION_TIME);
+      ClosePauseMenu(TransitionEffect::Fade, LONG_TRANSITION_TIME);
     }
     else
     {
@@ -954,7 +958,8 @@ void FullscreenUI::BeginChangeDiscOnCoreThread(bool return_to_game)
 
   if (const GameDatabase::Entry* entry = System::GetGameDatabaseEntry(); entry && entry->disc_set)
   {
-    const auto lock = GameList::GetLock();
+    auto lock = GameList::GetLock();
+    GameList::EnsureLoaded(lock);
     auto matches = GameList::GetEntriesInDiscSet(entry->disc_set, GameList::ShouldShowLocalizedTitles());
     if (matches.size() > 1)
     {
@@ -1358,7 +1363,7 @@ void FullscreenUI::DrawLandingWindow()
                                       FSUI_VSTR("Game List"),
                                       FSUI_VSTR("Launch a game from images scanned from your game directories.")))
     {
-      BeginTransition(&SwitchToGameList);
+      BeginTransition(TransitionEffect::ZoomIn, DEFAULT_TRANSITION_TIME, &SwitchToGameList);
     }
 
     ImGui::SetItemDefaultFocus();
@@ -1373,7 +1378,7 @@ void FullscreenUI::DrawLandingWindow()
     if (UserThemeableHorizontalButton("fullscreenui/settings.png", "fullscreenui/settings.svg", FSUI_VSTR("Settings"),
                                       FSUI_VSTR("Changes settings for the application.")))
     {
-      BeginTransition(&SwitchToSettings);
+      BeginTransition(TransitionEffect::ZoomIn, DEFAULT_TRANSITION_TIME, &SwitchToSettings);
     }
 
     if (UserThemeableHorizontalButton("fullscreenui/exit.png", "fullscreenui/exit.svg", FSUI_VSTR("Exit"),
@@ -1692,31 +1697,33 @@ void FullscreenUI::DrawPauseMenu()
         if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_FA_PLAY, "Resume Game")) ||
             (!AreAnyDialogsOpen() && WantsToCloseMenu()))
         {
-          ClosePauseMenu();
+          ClosePauseMenu(TransitionEffect::ZoomOut);
         }
         ImGui::SetItemDefaultFocus();
 
         if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_FA_FORWARD, "Toggle Fast Forward")))
         {
-          ClosePauseMenu();
+          ClosePauseMenu(TransitionEffect::ZoomOut);
           DoToggleFastForward();
         }
 
         if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_PF_DOWNLOAD, "Load State"), has_game))
         {
-          BeginTransition(
-            []() { OpenSaveStateSelector(VideoThread::GetGameSerial(), VideoThread::GetGamePath(), true); });
+          BeginTransition(TransitionEffect::ZoomIn, DEFAULT_TRANSITION_TIME, []() {
+            OpenSaveStateSelector(VideoThread::GetGameSerial(), VideoThread::GetGamePath(), true);
+          });
         }
 
         if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_PF_DISKETTE, "Save State"), has_game))
         {
-          BeginTransition(
-            []() { OpenSaveStateSelector(VideoThread::GetGameSerial(), VideoThread::GetGamePath(), false); });
+          BeginTransition(TransitionEffect::ZoomIn, DEFAULT_TRANSITION_TIME, []() {
+            OpenSaveStateSelector(VideoThread::GetGameSerial(), VideoThread::GetGamePath(), false);
+          });
         }
 
         if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_PF_GAMEPAD_ALT, "Toggle Analog")))
         {
-          ClosePauseMenu();
+          ClosePauseMenu(TransitionEffect::ZoomOut);
           DoToggleAnalogMode();
         }
 
@@ -1724,7 +1731,7 @@ void FullscreenUI::DrawPauseMenu()
                                      has_game && GameList::CanEditGameSettingsForPath(VideoThread::GetGameSerial(),
                                                                                       VideoThread::GetGamePath())))
         {
-          BeginTransition([]() { SwitchToGameSettings(); });
+          BeginTransition(TransitionEffect::ZoomIn, DEFAULT_TRANSITION_TIME, []() { SwitchToGameSettings(); });
         }
 
         if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_FA_TROPHY, "Achievements"),
@@ -1732,7 +1739,7 @@ void FullscreenUI::DrawPauseMenu()
         {
           // skip second menu and go straight to cheevos if there's no lbs
           if (!Achievements::HasLeaderboards())
-            BeginTransition(&SwitchToAchievements);
+            BeginTransition(TransitionEffect::ZoomIn, DEFAULT_TRANSITION_TIME, &SwitchToAchievements);
           else
             BeginTransition([]() { switch_submenu(PauseSubMenu::Achievements); });
         }
@@ -1740,14 +1747,14 @@ void FullscreenUI::DrawPauseMenu()
         if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_FA_CAMERA, "Save Screenshot")))
         {
           Host::RunOnCoreThread([]() { System::SaveScreenshot(); });
-          ClosePauseMenu();
+          ClosePauseMenu(TransitionEffect::ZoomOut);
         }
 
         if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_FA_COMPACT_DISC, "Change Disc")))
           Host::RunOnCoreThread([]() { BeginChangeDiscOnCoreThread(false); });
 
         if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_FA_SLIDERS, "Settings")))
-          BeginTransition(&SwitchToSettings);
+          BeginTransition(TransitionEffect::ZoomIn, DEFAULT_TRANSITION_TIME, &SwitchToSettings);
 
         if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_FA_POWER_OFF, "Close Game")))
         {
@@ -1796,10 +1803,10 @@ void FullscreenUI::DrawPauseMenu()
         }
 
         if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_FA_TROPHY, "Achievements")))
-          BeginTransition(&SwitchToAchievements);
+          BeginTransition(TransitionEffect::ZoomIn, DEFAULT_TRANSITION_TIME, &SwitchToAchievements);
 
         if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_FA_STOPWATCH, "Leaderboards")))
-          BeginTransition(&SwitchToLeaderboards);
+          BeginTransition(TransitionEffect::ZoomIn, DEFAULT_TRANSITION_TIME, &SwitchToLeaderboards);
       }
       break;
     }
@@ -1985,7 +1992,7 @@ void FullscreenUI::DrawSaveStateSelector()
       const bool global = entry.global;
       const bool is_undo = entry.state_path.empty();
       ClearSaveStateEntryList(); // entry no longer valid
-      ClosePauseMenu(LONG_TRANSITION_TIME);
+      ClosePauseMenu(TransitionEffect::Fade, LONG_TRANSITION_TIME);
 
       // Loading undo state?
       if (is_undo)
@@ -2003,7 +2010,7 @@ void FullscreenUI::DrawSaveStateSelector()
     const s32 slot = entry.slot;
     const bool global = entry.global;
     ClearSaveStateEntryList(); // entry no longer valid
-    ClosePauseMenu(LONG_TRANSITION_TIME);
+    ClosePauseMenu(TransitionEffect::Fade, LONG_TRANSITION_TIME);
 
     Host::RunOnCoreThread([slot, global]() { System::SaveStateToSlot(global, slot); });
   };

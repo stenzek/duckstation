@@ -7,9 +7,114 @@
 #include "settingswindow.h"
 #include "settingwidgetbinder.h"
 
+#include <QtCore/QSignalBlocker>
+#include <algorithm>
+#include <cmath>
 #include <limits>
 
 #include "moc_emulationsettingswidget.cpp"
+
+namespace {
+struct SpeedControl
+{
+  SettingsWindow* dialog;
+  QSpinBox* spinbox;
+  QCheckBox* checkbox;
+  const char* setting_name;
+  float default_value;
+};
+} // namespace
+
+static void UpdateSpeedControlState(const SpeedControl& control)
+{
+  const std::optional<float> value = control.dialog->getFloatValue("Main", control.setting_name, std::nullopt);
+  const float effective_value =
+    control.dialog->getEffectiveFloatValue("Main", control.setting_name, control.default_value);
+  const bool inherited = (control.dialog->isPerGameSettings() && !value.has_value());
+
+  QSignalBlocker spinbox_blocker(control.spinbox);
+  QSignalBlocker checkbox_blocker(control.checkbox);
+
+  control.checkbox->setTristate(inherited);
+  if (inherited)
+  {
+    const QString inherited_text = (effective_value == 0.0f) ?
+                                     qApp->translate("EmulationSettingsWidget", "Use Global Setting [Unlimited]") :
+                                     qApp->translate("EmulationSettingsWidget", "Use Global Setting [%1%]")
+                                       .arg(static_cast<int>(std::round(effective_value * 100.0f)));
+
+    control.checkbox->setCheckState(Qt::PartiallyChecked);
+    control.spinbox->setMinimum(0);
+    control.spinbox->setValue(0);
+    control.spinbox->setSpecialValueText(inherited_text);
+    control.spinbox->setEnabled(effective_value != 0.0f);
+  }
+  else
+  {
+    DebugAssert(value.has_value());
+    if (effective_value == 0.0f)
+    {
+      control.checkbox->setCheckState(Qt::Checked);
+      control.spinbox->setEnabled(false);
+      control.spinbox->setMinimum(0);
+      control.spinbox->setValue(0);
+      control.spinbox->setSuffix(QString());
+      control.spinbox->setSpecialValueText(qApp->translate("EmulationSettingsWidget", "N/A"));
+    }
+    else
+    {
+      control.checkbox->setCheckState(Qt::Unchecked);
+      control.spinbox->setEnabled(true);
+      control.spinbox->setValue(static_cast<int>(std::round(effective_value * 100.0f)));
+      control.spinbox->setMinimum(1);
+      control.spinbox->setSuffix((effective_value == 1.0f) ?
+                                   qApp->translate("EmulationSettingsWidget", "% (Normal Speed)") :
+                                   qApp->translate("EmulationSettingsWidget", "%"));
+      control.spinbox->setSpecialValueText(QString());
+    }
+  }
+}
+
+static void OnSpeedControlValueChanged(const SpeedControl& control)
+{
+  const float value = static_cast<float>(control.spinbox->value()) / 100.0f;
+  control.dialog->setFloatSettingValue("Main", control.setting_name, value);
+  UpdateSpeedControlState(control);
+}
+
+static void OnSpeedControlUnlimitedStateChanged(const SpeedControl& control, Qt::CheckState state)
+{
+  if (state == Qt::PartiallyChecked)
+    control.dialog->removeSettingValue("Main", control.setting_name);
+  else if (state == Qt::Checked)
+    control.dialog->setFloatSettingValue("Main", control.setting_name, 0.0f);
+  else
+    control.dialog->setFloatSettingValue("Main", control.setting_name, 1.0f);
+
+  UpdateSpeedControlState(control);
+}
+
+static void ResetSpeedControlState(const SpeedControl& control)
+{
+  if (control.dialog->isPerGameSettings())
+    control.dialog->removeSettingValue("Main", control.setting_name);
+  else
+    control.dialog->setFloatSettingValue("Main", control.setting_name, control.default_value);
+
+  UpdateSpeedControlState(control);
+}
+
+static void InitializeSpeedControl(SettingsWindow* dialog, QSpinBox* spinbox, QCheckBox* checkbox,
+                                   QPushButton* reset_button, const char* setting_name, float default_value)
+{
+  const SpeedControl control{dialog, spinbox, checkbox, setting_name, default_value};
+  QObject::connect(spinbox, QOverload<int>::of(&QSpinBox::valueChanged), spinbox,
+                   [control](int) { OnSpeedControlValueChanged(control); });
+  QObject::connect(checkbox, &QCheckBox::checkStateChanged, checkbox,
+                   [control](Qt::CheckState state) { OnSpeedControlUnlimitedStateChanged(control, state); });
+  QObject::connect(reset_button, &QPushButton::clicked, reset_button, [control]() { ResetSpeedControlState(control); });
+  UpdateSpeedControlState(control);
+}
 
 EmulationSettingsWidget::EmulationSettingsWidget(SettingsWindow* dialog, QWidget* parent)
   : QWidget(parent), m_dialog(dialog)
@@ -36,50 +141,11 @@ EmulationSettingsWidget::EmulationSettingsWidget(SettingsWindow* dialog, QWidget
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.runaheadForAnalogInput, "Main", "RunaheadForAnalogInput",
                                                false);
 
-  const float effective_emulation_speed = m_dialog->getEffectiveFloatValue("Main", "EmulationSpeed", 1.0f);
-  fillComboBoxWithEmulationSpeeds(m_ui.emulationSpeed, effective_emulation_speed);
-  if (m_dialog->isPerGameSettings() && !m_dialog->getFloatValue("Main", "EmulationSpeed", std::nullopt).has_value())
-  {
-    m_ui.emulationSpeed->setCurrentIndex(0);
-  }
-  else
-  {
-    const int emulation_speed_index = m_ui.emulationSpeed->findData(QVariant(effective_emulation_speed));
-    if (emulation_speed_index >= 0)
-      m_ui.emulationSpeed->setCurrentIndex(emulation_speed_index);
-  }
-  connect(m_ui.emulationSpeed, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
-          &EmulationSettingsWidget::onEmulationSpeedIndexChanged);
-
-  const float effective_fast_forward_speed = m_dialog->getEffectiveFloatValue("Main", "FastForwardSpeed", 0.0f);
-  fillComboBoxWithEmulationSpeeds(m_ui.fastForwardSpeed, effective_fast_forward_speed);
-  if (m_dialog->isPerGameSettings() && !m_dialog->getFloatValue("Main", "FastForwardSpeed", std::nullopt).has_value())
-  {
-    m_ui.fastForwardSpeed->setCurrentIndex(0);
-  }
-  else
-  {
-    const int fast_forward_speed_index = m_ui.fastForwardSpeed->findData(QVariant(effective_fast_forward_speed));
-    if (fast_forward_speed_index >= 0)
-      m_ui.fastForwardSpeed->setCurrentIndex(fast_forward_speed_index);
-  }
-  connect(m_ui.fastForwardSpeed, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
-          &EmulationSettingsWidget::onFastForwardSpeedIndexChanged);
-
-  const float effective_turbo_speed = m_dialog->getEffectiveFloatValue("Main", "TurboSpeed", 0.0f);
-  fillComboBoxWithEmulationSpeeds(m_ui.turboSpeed, effective_turbo_speed);
-  if (m_dialog->isPerGameSettings() && !m_dialog->getFloatValue("Main", "TurboSpeed", std::nullopt).has_value())
-  {
-    m_ui.turboSpeed->setCurrentIndex(0);
-  }
-  else
-  {
-    const int turbo_speed_index = m_ui.turboSpeed->findData(QVariant(effective_turbo_speed));
-    if (turbo_speed_index >= 0)
-      m_ui.turboSpeed->setCurrentIndex(turbo_speed_index);
-  }
-  connect(m_ui.turboSpeed, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
-          &EmulationSettingsWidget::onTurboSpeedIndexChanged);
+  InitializeSpeedControl(dialog, m_ui.normalSpeed, m_ui.normalSpeedUnlimited, m_ui.resetNormalSpeed, "EmulationSpeed",
+                         1.0f);
+  InitializeSpeedControl(dialog, m_ui.fastForwardSpeed, m_ui.fastForwardSpeedUnlimited, m_ui.resetFastForwardSpeed,
+                         "FastForwardSpeed", 0.0f);
+  InitializeSpeedControl(dialog, m_ui.turboSpeed, m_ui.turboSpeedUnlimited, m_ui.resetTurboSpeed, "TurboSpeed", 0.0f);
   connect(m_ui.vsync, &QCheckBox::checkStateChanged, this, &EmulationSettingsWidget::updateSkipDuplicateFramesEnabled);
   connect(m_ui.syncToHostRefreshRate, &QCheckBox::checkStateChanged, this,
           &EmulationSettingsWidget::updateSkipDuplicateFramesEnabled);
@@ -98,7 +164,7 @@ EmulationSettingsWidget::EmulationSettingsWidget(SettingsWindow* dialog, QWidget
           &EmulationSettingsWidget::updateRewind);
 
   dialog->registerWidgetHelp(
-    m_ui.emulationSpeed, tr("Emulation Speed"), "100%",
+    m_ui.normalSpeed, tr("Emulation Speed"), "100%",
     tr("Sets the target emulation speed. It is not guaranteed that this speed will be reached, "
        "and if not, the emulator will run as fast as it can manage."));
   dialog->registerWidgetHelp(
@@ -167,66 +233,6 @@ EmulationSettingsWidget::EmulationSettingsWidget(SettingsWindow* dialog, QWidget
 }
 
 EmulationSettingsWidget::~EmulationSettingsWidget() = default;
-
-void EmulationSettingsWidget::fillComboBoxWithEmulationSpeeds(QComboBox* cb, float global_value)
-{
-  if (m_dialog->isPerGameSettings())
-  {
-    if (global_value == 0.0f)
-      cb->addItem(tr("Use Global Setting [Unlimited]"));
-    else
-      cb->addItem(tr("Use Global Setting [%1%]").arg(static_cast<u32>(global_value * 100.0f)));
-  }
-
-  cb->addItem(tr("Unlimited"), QVariant(0.0f));
-
-  static constexpr const std::array speeds = {10,  20,  30,  40,  50,  60,  70,  80,  90,  100, 125, 150, 175,
-                                              200, 250, 300, 350, 400, 450, 500, 600, 700, 800, 900, 1000};
-  for (const int speed : speeds)
-  {
-    cb->addItem(tr("%1% [%2 FPS (NTSC) / %3 FPS (PAL)]").arg(speed).arg((60 * speed) / 100).arg((50 * speed) / 100),
-                QVariant(static_cast<float>(speed) / 100.0f));
-  }
-}
-
-void EmulationSettingsWidget::onEmulationSpeedIndexChanged(int index)
-{
-  if (m_dialog->isPerGameSettings() && index == 0)
-  {
-    m_dialog->removeSettingValue("Main", "EmulationSpeed");
-    return;
-  }
-
-  bool okay;
-  const float value = m_ui.emulationSpeed->currentData().toFloat(&okay);
-  m_dialog->setFloatSettingValue("Main", "EmulationSpeed", okay ? value : 1.0f);
-}
-
-void EmulationSettingsWidget::onFastForwardSpeedIndexChanged(int index)
-{
-  if (m_dialog->isPerGameSettings() && index == 0)
-  {
-    m_dialog->removeSettingValue("Main", "FastForwardSpeed");
-    return;
-  }
-
-  bool okay;
-  const float value = m_ui.fastForwardSpeed->currentData().toFloat(&okay);
-  m_dialog->setFloatSettingValue("Main", "FastForwardSpeed", okay ? value : 0.0f);
-}
-
-void EmulationSettingsWidget::onTurboSpeedIndexChanged(int index)
-{
-  if (m_dialog->isPerGameSettings() && index == 0)
-  {
-    m_dialog->removeSettingValue("Main", "TurboSpeed");
-    return;
-  }
-
-  bool okay;
-  const float value = m_ui.turboSpeed->currentData().toFloat(&okay);
-  m_dialog->setFloatSettingValue("Main", "TurboSpeed", okay ? value : 0.0f);
-}
 
 void EmulationSettingsWidget::onOptimalFramePacingChanged()
 {

@@ -22,6 +22,7 @@
 #include "util/shadergen.h"
 
 #include "common/assert.h"
+#include "common/easing.h"
 #include "common/error.h"
 #include "common/file_system.h"
 #include "common/gsvector_formatter.h"
@@ -400,6 +401,7 @@ private:
   float m_width = 0.0f;
   u32 m_progress_value = 0;
   u32 m_progress_range = 0;
+  bool m_cancellable = false;
   std::atomic_bool m_cancelled{false};
   std::atomic_bool m_prompt_result{false};
   std::atomic_flag m_prompt_waiting = ATOMIC_FLAG_INIT;
@@ -425,6 +427,7 @@ struct WidgetsState
   CloseButtonState close_button_state = CloseButtonState::None;
   FocusResetType focus_reset_queued = FocusResetType::None;
   TransitionState transition_state = TransitionState::Inactive;
+  TransitionEffect transition_effect = TransitionEffect::Fade;
   s8 has_pending_nav_move = static_cast<s8>(ImGuiDir_None);
   bool blur_active = false;
   bool blur_valid = false;
@@ -440,6 +443,7 @@ struct WidgetsState
   std::unique_ptr<GPUTexture> transition_prev_texture;
   std::unique_ptr<GPUTexture> transition_current_texture;
   std::unique_ptr<GPUPipeline> transition_blend_pipeline;
+  std::unique_ptr<GPUPipeline> transition_zoom_pipeline;
   float transition_total_time = 0.0f;
   float transition_remaining_time = 0.0f;
 
@@ -523,6 +527,7 @@ FullscreenUI::WidgetsState::~WidgetsState()
 {
   DebugAssert(!transition_prev_texture);
   DebugAssert(!transition_current_texture);
+  DebugAssert(!transition_zoom_pipeline);
   DebugAssert(!transition_blend_pipeline);
   DebugAssert(!blur_source_texture);
   DebugAssert(!blur_intermediate_texture);
@@ -646,6 +651,7 @@ void FullscreenUI::DestroyWidgetsGPUResources()
   s_state.blur_active = false;
   s_state.blur_valid = false;
 
+  s_state.transition_zoom_pipeline.reset();
   s_state.transition_blend_pipeline.reset();
   g_gpu_device->RecycleTexture(std::move(s_state.transition_prev_texture));
   g_gpu_device->RecycleTexture(std::move(s_state.transition_current_texture));
@@ -1065,6 +1071,11 @@ void FullscreenUI::UploadAsyncTextures()
 
 void FullscreenUI::BeginTransition(TransitionStartCallback func, float time)
 {
+  BeginTransition(TransitionEffect::Fade, time, std::move(func));
+}
+
+void FullscreenUI::BeginTransition(TransitionEffect effect, float time, TransitionStartCallback func)
+{
   if (s_state.transition_state == TransitionState::Inactive)
   {
     float real_time = UIStyle.Animations ? time : 0.0f;
@@ -1086,6 +1097,7 @@ void FullscreenUI::BeginTransition(TransitionStartCallback func, float time)
     }
 
     s_state.transition_state = TransitionState::Starting;
+    s_state.transition_effect = effect;
     s_state.transition_total_time = real_time;
     s_state.transition_remaining_time = real_time;
   }
@@ -1125,7 +1137,7 @@ void FullscreenUI::CancelTransition()
 
 void FullscreenUI::BeginTransition(float time, TransitionStartCallback func)
 {
-  BeginTransition(std::move(func), time);
+  BeginTransition(TransitionEffect::Fade, time, std::move(func));
 }
 
 bool FullscreenUI::IsTransitionActive()
@@ -1162,14 +1174,14 @@ bool FullscreenUI::CompilePipelines(Error* error)
   std::unique_ptr<GPUShader> vs = g_gpu_device->CreateShader(GPUShaderStage::Vertex, shadergen.GetLanguage(),
                                                              shadergen.GeneratePassthroughVertexShader(), error);
   std::unique_ptr<GPUShader> fs = g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GetLanguage(),
-                                                             shadergen.GenerateFadeFragmentShader(), error);
+                                                             shadergen.GenerateTransitionFragmentShader(false), error);
   if (!vs || !fs)
   {
     Error::AddPrefix(error, "Failed to compile transition shaders: ");
     return false;
   }
   GL_OBJECT_NAME(vs, "Transition Vertex Shader");
-  GL_OBJECT_NAME(fs, "Transition Fragment Shader");
+  GL_OBJECT_NAME(fs, "Transition Blend Fragment Shader");
 
   GPUPipeline::GraphicsConfig plconfig;
   GPUBackend::SetScreenQuadInputLayout(plconfig);
@@ -1186,9 +1198,27 @@ bool FullscreenUI::CompilePipelines(Error* error)
   s_state.transition_blend_pipeline = g_gpu_device->CreatePipeline(plconfig, error);
   if (!s_state.transition_blend_pipeline)
   {
-    Error::AddPrefix(error, "Failed to create transition blend pipeline: ");
+    Error::AddPrefix(error, "Failed to create transition pipeline: ");
     return false;
   }
+  GL_OBJECT_NAME(s_state.transition_blend_pipeline, "Transition Blend Pipeline");
+
+  fs = g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GetLanguage(),
+                                  shadergen.GenerateTransitionFragmentShader(true), error);
+  if (!fs)
+  {
+    Error::AddPrefix(error, "Failed to compile transition shaders: ");
+    return false;
+  }
+  GL_OBJECT_NAME(fs, "Transition Zoom Fragment Shader");
+  plconfig.fragment_shader = fs.get();
+  s_state.transition_zoom_pipeline = g_gpu_device->CreatePipeline(plconfig, error);
+  if (!s_state.transition_zoom_pipeline)
+  {
+    Error::AddPrefix(error, "Failed to create transition pipeline: ");
+    return false;
+  }
+  GL_OBJECT_NAME(s_state.transition_zoom_pipeline, "Transition Zoom Pipeline");
 
   fs = g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GetLanguage(),
                                   shadergen.GenerateCopyFragmentShader(false), error);
@@ -1270,11 +1300,77 @@ void FullscreenUI::RenderTransitionBlend(GPUSwapChain* swap_chain, GPUTexture* c
   }
 
   const float transition_alpha = s_state.transition_remaining_time / s_state.transition_total_time;
-  const float uniforms[2] = {1.0f - transition_alpha, transition_alpha};
-  g_gpu_device->SetPipeline(s_state.transition_blend_pipeline.get());
+  GPUTexture* textures[2];
+  GPUPipeline* pipeline;
+  float uniforms[3];
+  switch (s_state.transition_effect)
+  {
+    case TransitionEffect::Fade:
+    {
+      uniforms[0] = 1.0f - transition_alpha;
+      uniforms[1] = transition_alpha;
+      uniforms[2] = 0.0f;
+      textures[0] = transition_texture;
+      textures[1] = s_state.transition_prev_texture.get();
+      pipeline = s_state.transition_blend_pipeline.get();
+    }
+    break;
+
+    case TransitionEffect::ZoomIn:
+    {
+      static constexpr float START_SCALE = 0.95f;
+      uniforms[1] = Easing::InCubic(transition_alpha);
+      uniforms[0] = 1.0f - uniforms[1];
+      uniforms[2] = START_SCALE + ((1.0f - START_SCALE) * uniforms[0]);
+      textures[0] = transition_texture;
+      textures[1] = s_state.transition_prev_texture.get();
+      pipeline = s_state.transition_zoom_pipeline.get();
+    }
+    break;
+
+    case TransitionEffect::ZoomOut:
+    {
+      static constexpr float END_SCALE = 0.95f;
+      uniforms[0] = Easing::InCubic(transition_alpha);
+      uniforms[1] = 1.0f - uniforms[0];
+      uniforms[2] = 1.0f + ((END_SCALE - 1.0f) * uniforms[1]);
+      textures[0] = s_state.transition_prev_texture.get();
+      textures[1] = transition_texture;
+      pipeline = s_state.transition_zoom_pipeline.get();
+    }
+    break;
+
+    case TransitionEffect::SlideLeft:
+    {
+      static constexpr float START_POSITION = 0.95f;
+      uniforms[1] = Easing::InCubic(transition_alpha);
+      uniforms[0] = 1.0f - uniforms[1];
+      uniforms[2] = (1.0f - START_POSITION) * (1.0f - uniforms[0]);
+      textures[0] = transition_texture;
+      textures[1] = s_state.transition_prev_texture.get();
+      pipeline = s_state.transition_blend_pipeline.get();
+    }
+    break;
+
+    case TransitionEffect::SlideRight:
+    {
+      static constexpr float START_POSITION = 0.95f;
+      uniforms[1] = Easing::InCubic(transition_alpha);
+      uniforms[0] = 1.0f - uniforms[1];
+      uniforms[2] = -((1.0f - START_POSITION) * (1.0f - uniforms[0]));
+      textures[0] = transition_texture;
+      textures[1] = s_state.transition_prev_texture.get();
+      pipeline = s_state.transition_blend_pipeline.get();
+    }
+    break;
+
+      DefaultCaseIsUnreachable();
+  }
+
+  g_gpu_device->SetPipeline(pipeline);
+  g_gpu_device->SetTextureSampler(0, textures[0], g_gpu_device->GetNearestSampler());
+  g_gpu_device->SetTextureSampler(1, textures[1], g_gpu_device->GetNearestSampler());
   g_gpu_device->SetViewportAndScissor(0, 0, swap_chain->GetPostRotatedWidth(), swap_chain->GetPostRotatedHeight());
-  g_gpu_device->SetTextureSampler(0, transition_texture, g_gpu_device->GetNearestSampler());
-  g_gpu_device->SetTextureSampler(1, s_state.transition_prev_texture.get(), g_gpu_device->GetNearestSampler());
 
   const GSVector2i size = swap_chain->GetSizeVec();
   const GSVector2i postrotated_size = swap_chain->GetPostRotatedSizeVec();
@@ -4725,11 +4821,7 @@ bool FullscreenUI::PopupDialog::BeginRender(float scaled_window_padding /* = Lay
   // reopening is messy...
   if (m_state == State::Reopening) [[unlikely]]
   {
-    // close it under the old name
-    if (ImGui::IsPopupOpen(ImGui::GetCurrentWindowRead()->GetID(IMSTR_START_END(m_title)), ImGuiPopupFlags_None))
-      ImGui::ClosePopupToLevel(GImGui->OpenPopupStack.Size, true);
-
-    // and open under the new name
+    // open under the new name, imgui will clear the old one for us
     m_state = State::OpeningTrigger;
   }
 
@@ -5890,9 +5982,6 @@ void FullscreenUI::ProgressDialog::Draw()
 
   if (!BeginRender(window_padding, window_padding, ImVec2(m_width, 0.0f)))
   {
-    if (m_user_closeable)
-      m_cancelled.store(true, std::memory_order_release);
-
     m_status_text = {};
     m_last_frac = 0.0f;
     ClearState();
@@ -5918,9 +6007,9 @@ void FullscreenUI::ProgressDialog::Draw()
     const ImVec2 text_width = ImGui::CalcTextSize(IMSTR_START_END(text));
     const ImVec2 screen_pos = ImGui::GetCursorScreenPos();
     const ImVec2 text_pos = ImVec2(screen_pos.x + wrap_width - text_width.x, screen_pos.y);
-    ImGui::GetWindowDrawList()->AddText(UIStyle.Font, UIStyle.LargeFontSize, UIStyle.BoldFontWeight, text_pos,
+    ImGui::GetWindowDrawList()->AddText(UIStyle.Font, UIStyle.MediumLargeFontSize, UIStyle.BoldFontWeight, text_pos,
                                         ImGui::GetColorU32(ImGuiCol_Text), IMSTR_START_END(text));
-    wrap_width -= text_width.x + spacing;
+    wrap_width -= text_width.x + LayoutScale(15.0f);
   }
 
   if (!m_status_text.empty())
@@ -5940,7 +6029,7 @@ void FullscreenUI::ProgressDialog::Draw()
   {
     frac = static_cast<float>(-ImGui::GetTime());
   }
-  ImGui::ProgressBar(frac, ImVec2(-1.0f, bar_height), "");
+  ImGui::ProgressBar(frac, ImVec2(wrap_width, bar_height), "");
 
   ImGui::Dummy(ImVec2(0.0f, LayoutScale(5.0f)));
 
@@ -5948,11 +6037,15 @@ void FullscreenUI::ProgressDialog::Draw()
   ImGui::PopStyleColor(3);
   ImGui::PopStyleVar(2);
 
-  if (m_user_closeable)
+  if (m_cancellable)
   {
     BeginHorizontalMenuButtons(1, 150.0f);
-    if (HorizontalMenuButton(FSUI_ICONSTR(ICON_FA_SQUARE_XMARK, "Cancel")))
-      StartClose();
+    if (HorizontalMenuButton(FSUI_ICONSTR(ICON_FA_SQUARE_XMARK, "Cancel"),
+                             !m_cancelled.load(std::memory_order_relaxed)))
+    {
+      m_cancelled.store(true, std::memory_order_release);
+    }
+
     EndHorizontalMenuButtons();
   }
 
@@ -6029,7 +6122,7 @@ void FullscreenUI::ProgressDialog::ProgressCallbackImpl::StateChanged(StateChang
         if (!s_state.progress_dialog.IsOpen())
           return;
 
-        s_state.progress_dialog.m_user_closeable = cancellable;
+        s_state.progress_dialog.m_cancellable = cancellable;
       });
     });
   }

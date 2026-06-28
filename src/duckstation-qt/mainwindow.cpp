@@ -1402,6 +1402,7 @@ void MainWindow::onChangeDiscMenuAboutToShow()
   else if (const GameDatabase::Entry* entry = System::GetGameDatabaseEntry(); entry && entry->disc_set)
   {
     auto lock = GameList::GetLock();
+    GameList::EnsureLoaded(lock);
     for (const auto& [title, glentry] :
          GameList::GetEntriesInDiscSet(entry->disc_set, m_game_list_widget->getModel()->getShowLocalizedTitles()))
     {
@@ -2811,6 +2812,12 @@ SettingsWindow* MainWindow::getSettingsWindow()
     m_settings_window = new SettingsWindow();
     connect(m_settings_window, &SettingsWindow::debugOptionsVisibilityChanged, this,
             &MainWindow::updateDebugMenuVisibility);
+
+    if (m_controller_settings_window)
+    {
+      connect(m_controller_settings_window, &ControllerSettingsWindow::multitapModeChanged, m_settings_window,
+              &SettingsWindow::onMultitapModeChanged);
+    }
   }
 
   return m_settings_window;
@@ -2849,7 +2856,16 @@ void MainWindow::openGamePropertiesForCurrentGame(const char* category /* = null
 ControllerSettingsWindow* MainWindow::getControllerSettingsWindow()
 {
   if (!m_controller_settings_window)
+  {
     m_controller_settings_window = new ControllerSettingsWindow();
+
+    // What a pain in the butt to sync...
+    if (m_settings_window)
+    {
+      connect(m_controller_settings_window, &ControllerSettingsWindow::multitapModeChanged, m_settings_window,
+              &SettingsWindow::onMultitapModeChanged);
+    }
+  }
 
   return m_controller_settings_window;
 }
@@ -2908,13 +2924,14 @@ void MainWindow::onSettingsControllerProfilesTriggered()
   QtUtils::ShowOrRaiseWindow(m_input_profile_editor_window, this);
 }
 
-void MainWindow::openInputProfileEditor(const std::string_view name)
+ControllerSettingsWindow* MainWindow::openInputProfileEditor(const std::string_view name)
 {
   if (!m_input_profile_editor_window)
     m_input_profile_editor_window = new ControllerSettingsWindow(nullptr, true);
 
   QtUtils::ShowOrRaiseWindow(m_input_profile_editor_window, this);
   m_input_profile_editor_window->switchProfile(name);
+  return m_input_profile_editor_window;
 }
 
 void MainWindow::closeEvent(QCloseEvent* event)
@@ -2923,7 +2940,8 @@ void MainWindow::closeEvent(QCloseEvent* event)
   // When recreating, g_main_window will be the new window at this point.
   if (!QtHost::IsSystemValidOrStarting() || g_main_window != this)
   {
-    QtUtils::SaveWindowGeometry(this);
+    if (!QtHost::InNoGUIMode())
+      QtUtils::SaveWindowGeometry(this);
 
     if (s_locals.fullscreen_ui_started && g_main_window == this)
       g_core_thread->stopFullscreenUI();

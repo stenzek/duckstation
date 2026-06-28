@@ -214,10 +214,20 @@ QLineEdit {
   selection-color: $text-active;
   color: $text-color;
 }
+QPlainTextEdit {
+  border: none;
+  border-radius: 8px;
+  padding: 3px 6px;
+  background-color: $bg-control;
+  selection-background-color: $bg-active;
+  selection-color: $text-active;
+  color: $text-color;
+}
 QLineEdit::hover {
   background-color: $bg-hover;
 }
-QLineEdit:disabled {
+QLineEdit:disabled,
+QPlainTextEdit:disabled {
   background-color: $bg-disabled;
   color: $text-disabled;
 }

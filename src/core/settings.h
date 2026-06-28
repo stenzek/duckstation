@@ -414,35 +414,12 @@ struct Settings : public GPUSettings
 
   ALWAYS_INLINE bool IsRunaheadEnabled() const { return (runahead_frames > 0); }
 
-  ALWAYS_INLINE u8 GetAudioOutputVolume(bool fast_forwarding) const
-  {
-    return audio_output_muted ? 0 : (fast_forwarding ? audio_fast_forward_volume : audio_output_volume);
-  }
-
-  ALWAYS_INLINE bool IsPort1MultitapEnabled() const
-  {
-    return (multitap_mode == MultitapMode::Port1Only || multitap_mode == MultitapMode::BothPorts);
-  }
-  ALWAYS_INLINE bool IsPort2MultitapEnabled() const
-  {
-    return (multitap_mode == MultitapMode::Port2Only || multitap_mode == MultitapMode::BothPorts);
-  }
-  ALWAYS_INLINE bool IsMultitapPortEnabled(u32 port) const
-  {
-    return (port == 0) ? IsPort1MultitapEnabled() : IsPort2MultitapEnabled();
-  }
-
   /// Returns the default type for the specified port.
   ALWAYS_INLINE static ControllerType GetDefaultControllerType(u32 pad)
   {
     return (pad == 0) ? DEFAULT_CONTROLLER_1_TYPE : DEFAULT_CONTROLLER_2_TYPE;
   }
 
-  ALWAYS_INLINE static bool IsPerGameMemoryCardType(MemoryCardType type)
-  {
-    return (type == MemoryCardType::PerGame || type == MemoryCardType::PerGameTitle ||
-            type == MemoryCardType::PerGameFileTitle);
-  }
   bool HasAnyPerGameMemoryCards() const;
 
   /// Returns the default path to a memory card.

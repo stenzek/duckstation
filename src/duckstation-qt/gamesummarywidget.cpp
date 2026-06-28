@@ -563,6 +563,7 @@ void GameSummaryWidget::onInputProfileChanged(int index)
   }
 
   m_dialog->saveAndReloadGameSettings();
+  m_dialog->onMultitapModeChanged(m_dialog->getEffectiveMultitapMode());
   m_ui.editInputProfile->setEnabled(index > 0);
 }
 
@@ -571,14 +572,17 @@ void GameSummaryWidget::onEditInputProfileClicked()
   if (m_dialog->getBoolValue("ControllerPorts", "UseGameSettingsForController", std::nullopt).value_or(false))
   {
     // Edit game configuration.
-    ControllerSettingsWindow::editControllerSettingsForGame(this, m_dialog->getSettingsInterface());
+    ControllerSettingsWindow* window =
+      ControllerSettingsWindow::editControllerSettingsForGame(this, m_dialog->getSettingsInterface());
+    connect(window, &ControllerSettingsWindow::multitapModeChanged, m_dialog, &SettingsWindow::onMultitapModeChanged);
   }
   else if (const std::optional<std::string> profile_name =
              m_dialog->getStringValue("ControllerPorts", "InputProfileName", std::nullopt);
            profile_name.has_value() && !profile_name->empty())
   {
     // Edit input profile.
-    g_main_window->openInputProfileEditor(profile_name.value());
+    ControllerSettingsWindow* window = g_main_window->openInputProfileEditor(profile_name.value());
+    connect(window, &ControllerSettingsWindow::multitapModeChanged, m_dialog, &SettingsWindow::onMultitapModeChanged);
   }
 }
 
@@ -587,7 +591,7 @@ void GameSummaryWidget::onComputeHashClicked()
   // Search redump when it's already computed.
   if (!m_redump_search_keyword.empty())
   {
-    QtUtils::OpenURL(this, fmt::format("http://redump.org/discs/quicksearch/{}", m_redump_search_keyword).c_str());
+    QtUtils::OpenURL(this, fmt::format("https://redump.info/discs?q={}", m_redump_search_keyword).c_str());
     return;
   }
 
@@ -761,7 +765,7 @@ void GameSummaryWidget::processHashResults(const CDImageHasher::TrackHashes& tra
   if (!m_redump_search_keyword.empty())
   {
     m_ui.computeHashes->setIcon(QIcon(u":/icons/monochrome/svg/mag-line.svg"_s));
-    m_ui.computeHashes->setText(tr("Search on Redump.org"));
+    m_ui.computeHashes->setText(tr("Search on redump.info"));
   }
   else
     m_ui.computeHashes->setEnabled(false);

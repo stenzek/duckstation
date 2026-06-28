@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>618</width>
-    <height>481</height>
+    <height>526</height>
    </rect>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
@@ -28,36 +28,132 @@
      <property name="title">
       <string>Speed Control</string>
      </property>
-     <layout class="QGridLayout" name="gridLayout_2" columnstretch="0,1">
+     <layout class="QGridLayout" name="gridLayout_2" columnstretch="0,0" columnminimumwidth="160,0">
       <item row="0" column="0">
-       <widget class="QLabel" name="label_4">
+       <widget class="QLabel" name="normalSpeedLabel">
         <property name="text">
-         <string>Emulation Speed:</string>
+         <string>Normal Speed:</string>
         </property>
        </widget>
       </item>
-      <item row="0" column="1">
-       <widget class="QComboBox" name="emulationSpeed"/>
-      </item>
       <item row="1" column="0">
-       <widget class="QLabel" name="label_5">
+       <widget class="QLabel" name="fastForwardSpeedLabel">
         <property name="text">
          <string>Fast Forward Speed:</string>
         </property>
        </widget>
       </item>
-      <item row="1" column="1">
-       <widget class="QComboBox" name="fastForwardSpeed"/>
-      </item>
       <item row="2" column="0">
-       <widget class="QLabel" name="label_6">
+       <widget class="QLabel" name="turboSpeedLabel">
         <property name="text">
          <string>Turbo Speed:</string>
         </property>
        </widget>
       </item>
+      <item row="0" column="1">
+       <layout class="QHBoxLayout" name="normalSpeedLayout" stretch="1,0,0">
+        <item>
+         <widget class="QSpinBox" name="normalSpeed">
+          <property name="suffix">
+           <string>%</string>
+          </property>
+          <property name="minimum">
+           <number>1</number>
+          </property>
+          <property name="maximum">
+           <number>2000</number>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="normalSpeedUnlimited">
+          <property name="text">
+           <string>Unlimited</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="resetNormalSpeed">
+          <property name="toolTip">
+           <string>Reset Normal Speed</string>
+          </property>
+          <property name="icon">
+           <iconset resource="resources/duckstation-qt.qrc">
+            <normaloff>:/icons/monochrome/svg/delete-back-2-line.svg</normaloff>:/icons/monochrome/svg/delete-back-2-line.svg</iconset>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item row="1" column="1">
+       <layout class="QHBoxLayout" name="fastForwardSpeedLayout" stretch="1,0,0">
+        <item>
+         <widget class="QSpinBox" name="fastForwardSpeed">
+          <property name="suffix">
+           <string>%</string>
+          </property>
+          <property name="minimum">
+           <number>1</number>
+          </property>
+          <property name="maximum">
+           <number>2000</number>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="fastForwardSpeedUnlimited">
+          <property name="text">
+           <string>Unlimited</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="resetFastForwardSpeed">
+          <property name="toolTip">
+           <string>Reset Fast Forward Speed</string>
+          </property>
+          <property name="icon">
+           <iconset resource="resources/duckstation-qt.qrc">
+            <normaloff>:/icons/monochrome/svg/delete-back-2-line.svg</normaloff>:/icons/monochrome/svg/delete-back-2-line.svg</iconset>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
       <item row="2" column="1">
-       <widget class="QComboBox" name="turboSpeed"/>
+       <layout class="QHBoxLayout" name="turboSpeedLayout" stretch="1,0,0">
+        <item>
+         <widget class="QSpinBox" name="turboSpeed">
+          <property name="suffix">
+           <string>%</string>
+          </property>
+          <property name="minimum">
+           <number>1</number>
+          </property>
+          <property name="maximum">
+           <number>2000</number>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="turboSpeedUnlimited">
+          <property name="text">
+           <string>Unlimited</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="resetTurboSpeed">
+          <property name="toolTip">
+           <string>Reset Turbo Speed</string>
+          </property>
+          <property name="icon">
+           <iconset resource="resources/duckstation-qt.qrc">
+            <normaloff>:/icons/monochrome/svg/delete-back-2-line.svg</normaloff>:/icons/monochrome/svg/delete-back-2-line.svg</iconset>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </item>
      </layout>
     </widget>
@@ -164,9 +260,6 @@
       </item>
       <item row="3" column="0" colspan="2">
        <widget class="QLabel" name="rewindSummary">
-        <property name="text">
-         <string>TextLabel</string>
-        </property>
         <property name="wordWrap">
          <bool>true</bool>
         </property>

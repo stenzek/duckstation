@@ -2950,10 +2950,11 @@ u32 CPU::FillICache(VirtualMemoryAddress address)
       line_tag = GetICacheTagForAddress(address) | 0x3;
       break;
     case 3:
-    default:
       DoInstructionRead<true, true, 1, false>(address & (~(ICACHE_LINE_SIZE - 1u) | 0xC), offset_line_data);
       line_tag = GetICacheTagForAddress(address) | 0x7;
       break;
+
+      DefaultCaseIsUnreachable();
   }
 
   g_state.icache_tags[line] = line_tag;
@@ -2964,6 +2965,31 @@ void CPU::ClearICache()
 {
   std::memset(g_state.icache_data.data(), 0, ICACHE_SIZE);
   g_state.icache_tags.fill(ICACHE_INVALID_BITS);
+}
+
+void CPU::InvalidateICacheAt(VirtualMemoryAddress address)
+{
+  u32& tag = g_state.icache_tags[GetICacheLine(address)];
+  if ((tag & ICACHE_TAG_ADDRESS_MASK) == GetICacheTagForAddress(address))
+    tag = ICACHE_INVALID_BITS;
+}
+
+void CPU::InvalidICacheRange(VirtualMemoryAddress start, VirtualMemoryAddress end)
+{
+  if (start >= end)
+    return;
+
+  const VirtualMemoryAddress first_word = Common::AlignDownPow2(start, 4);
+  const VirtualMemoryAddress last_word = Common::AlignDownPow2(end - 1u, 4);
+  for (VirtualMemoryAddress address = first_word;; address += sizeof(u32))
+  {
+    u32& tag = g_state.icache_tags[GetICacheLine(address)];
+    if ((tag & ICACHE_TAG_ADDRESS_MASK) == GetICacheTagForAddress(address))
+      tag = ICACHE_INVALID_BITS;
+
+    if (address == last_word)
+      break;
+  }
 }
 
 namespace CPU {

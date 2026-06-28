@@ -78,6 +78,12 @@ void DebuggerCodeView::resetCodeView(VirtualMemoryAddress start_address)
   calculateBranchArrows(); // Recalculate arrows when region changes
 }
 
+void DebuggerCodeView::refreshView()
+{
+  calculateBranchArrows();
+  viewport()->update();
+}
+
 void DebuggerCodeView::setPC(VirtualMemoryAddress pc)
 {
   if (m_last_pc == pc)

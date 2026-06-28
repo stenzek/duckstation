@@ -38,7 +38,7 @@ public:
   std::string GenerateImGuiFragmentShader() const;
   std::string GenerateImGuiBlurVertexShader() const;
   std::string GenerateImGuiBlurFragmentShader() const;
-  std::string GenerateFadeFragmentShader() const;
+  std::string GenerateTransitionFragmentShader(bool zoom) const;
   std::string GenerateGaussianBlurFragmentShader() const;
 
   const char* GetInterpolationQualifier(bool interface_block, bool centroid_interpolation, bool sample_interpolation,

@@ -11,6 +11,7 @@
 
 #include <array>
 #include <optional>
+#include <span>
 #include <string>
 #include <vector>
 
@@ -134,6 +135,8 @@ void Shutdown();
 void Reset();
 bool DoState(StateWrapper& sw);
 void ClearICache();
+void InvalidateICacheAt(VirtualMemoryAddress address);
+void InvalidICacheRange(VirtualMemoryAddress start, VirtualMemoryAddress end);
 CPUExecutionMode GetCurrentExecutionMode();
 bool UpdateDebugDispatcherFlag();
 void UpdateMemoryPointers();

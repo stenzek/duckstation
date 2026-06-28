@@ -192,18 +192,6 @@
     </QtResource>
   </ItemGroup>
   <ItemGroup>
-    <None Include="translations\duckstation-qt_tr.ts">
-      <Filter>translations</Filter>
-    </None>
-    <None Include="translations\duckstation-qt_es-es.ts">
-      <Filter>translations</Filter>
-    </None>
-    <None Include="translations\duckstation-qt_sv.ts">
-      <Filter>translations</Filter>
-    </None>
-    <None Include="translations\duckstation-qt_az.ts">
-      <Filter>translations</Filter>
-    </None>
     <None Include="svgiconengine.json" />
   </ItemGroup>
   <ItemGroup>
@@ -247,6 +235,18 @@
       <Filter>translations</Filter>
     </QtTs>
     <QtTs Include="translations\duckstation-qt_ko.ts">
+      <Filter>translations</Filter>
+    </QtTs>
+    <QtTs Include="translations\duckstation-qt_az.ts">
+      <Filter>translations</Filter>
+    </QtTs>
+    <QtTs Include="translations\duckstation-qt_es-es.ts">
+      <Filter>translations</Filter>
+    </QtTs>
+    <QtTs Include="translations\duckstation-qt_sv.ts">
+      <Filter>translations</Filter>
+    </QtTs>
+    <QtTs Include="translations\duckstation-qt_tr.ts">
       <Filter>translations</Filter>
     </QtTs>
   </ItemGroup>

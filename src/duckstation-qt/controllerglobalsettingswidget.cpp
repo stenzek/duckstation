@@ -169,7 +169,10 @@ ControllerGlobalSettingsWidget::ControllerGlobalSettingsWidget(QWidget* parent, 
     sif, m_ui.multitapMode, "ControllerPorts", "MultitapMode", &Settings::ParseMultitapModeName,
     &Settings::GetMultitapModeName, &Settings::GetMultitapModeDisplayName, Settings::DEFAULT_MULTITAP_MODE,
     MultitapMode::Count);
-  connect(m_ui.multitapMode, &QComboBox::currentIndexChanged, this, [this]() { emit bindingSetupChanged(); });
+  connect(m_ui.multitapMode, &QComboBox::currentIndexChanged, this, [this]() {
+    emit bindingSetupChanged();
+    emit m_dialog->multitapModeChanged(static_cast<MultitapMode>(m_ui.multitapMode->currentIndex()));
+  });
 }
 
 ControllerGlobalSettingsWidget::~ControllerGlobalSettingsWidget() = default;

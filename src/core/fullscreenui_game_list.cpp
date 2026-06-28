@@ -308,7 +308,10 @@ void FullscreenUI::DrawGameListWindow()
     BeginNavBar();
 
     if (NavButton(ICON_PF_NAVIGATION_BACK, true, true))
-      BeginTransition([]() { SwitchToMainWindow(MainWindowType::Landing); });
+    {
+      BeginTransition(TransitionEffect::ZoomOut, DEFAULT_TRANSITION_TIME,
+                      []() { SwitchToMainWindow(MainWindowType::Landing); });
+    }
 
     NavTitle(Host::TranslateToStringView(FSUI_TR_CONTEXT, titles[static_cast<u32>(s_game_list_locals.game_list_view)]));
 
@@ -434,7 +437,10 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
   }
 
   if (!AreAnyDialogsOpen() && WantsToCloseMenu())
-    BeginTransition([]() { SwitchToMainWindow(MainWindowType::Landing); });
+  {
+    BeginTransition(TransitionEffect::ZoomOut, DEFAULT_TRANSITION_TIME,
+                    []() { SwitchToMainWindow(MainWindowType::Landing); });
+  }
 
   const bool compact_mode = Core::GetBaseBoolSettingValue("Main", "FullscreenUIGameListCompactMode", true);
   const bool show_localized_titles = GameList::ShouldShowLocalizedTitles();
@@ -785,7 +791,10 @@ void FullscreenUI::DrawGameGrid(const ImVec2& heading_size)
   }
 
   if (ImGui::IsWindowFocused() && WantsToCloseMenu())
-    BeginTransition([]() { SwitchToMainWindow(MainWindowType::Landing); });
+  {
+    BeginTransition(TransitionEffect::ZoomOut, DEFAULT_TRANSITION_TIME,
+                    []() { SwitchToMainWindow(MainWindowType::Landing); });
+  }
 
   ResetFocusHere();
   BeginMenuButtons(0, 0.0f, 15.0f, 15.0f, 20.0f, 20.0f);
@@ -974,7 +983,8 @@ void FullscreenUI::HandleGameListOptions(const GameList::Entry* entry)
         switch (index)
         {
           case 0: // Open Game Properties
-            BeginTransition([entry_path = std::move(entry_path)]() { SwitchToGameSettingsForPath(entry_path); });
+            BeginTransition(TransitionEffect::ZoomIn, DEFAULT_TRANSITION_TIME,
+                            [entry_path = std::move(entry_path)]() { SwitchToGameSettingsForPath(entry_path); });
             break;
           case 1: // Open Containing Directory
             ExitFullscreenAndOpenURL(Path::CreateFileURL(Path::GetDirectory(entry_path)));
@@ -986,9 +996,10 @@ void FullscreenUI::HandleGameListOptions(const GameList::Entry* entry)
             DoStartPath(entry_path, System::GetGameSaveStatePath(entry_serial, -1));
             break;
           case 4: // Load State
-            BeginTransition([entry_serial = std::move(entry_serial), entry_path = std::move(entry_path)]() {
-              OpenSaveStateSelector(entry_serial, entry_path, true);
-            });
+            BeginTransition(TransitionEffect::ZoomIn, DEFAULT_TRANSITION_TIME,
+                            [entry_serial = std::move(entry_serial), entry_path = std::move(entry_path)]() {
+                              OpenSaveStateSelector(entry_serial, entry_path, true);
+                            });
             break;
           case 5: // Default Boot
             DoStartPath(entry_path);

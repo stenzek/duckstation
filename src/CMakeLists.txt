@@ -14,5 +14,6 @@ endif()
 
 if(BUILD_TESTS)
   add_subdirectory(common-tests EXCLUDE_FROM_ALL)
+  add_subdirectory(core-tests EXCLUDE_FROM_ALL)
   add_subdirectory(util-tests EXCLUDE_FROM_ALL)
 endif()

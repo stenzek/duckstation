@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #pragma once
@@ -16,6 +16,7 @@ class QVBoxLayout;
 class QComboBox;
 class QLineEdit;
 class QPushButton;
+class QTabWidget;
 
 class SettingsWindow;
 
@@ -27,8 +28,12 @@ public:
   MemoryCardSettingsWidget(SettingsWindow* dialog, QWidget* parent);
   ~MemoryCardSettingsWidget();
 
+  void createPortSettings(MultitapMode mtap_mode);
+
 private:
   SettingsWindow* m_dialog;
+  QLabel* m_multitap_label;
+  QTabWidget* m_port_tabs;
 
   struct PortSettingsUI
   {
@@ -41,13 +46,13 @@ private:
     QPushButton* memory_card_path_reset;
   };
 
-  void createUi(SettingsWindow* dialog);
-  void createPortSettingsUi(SettingsWindow* dialog, int index, PortSettingsUI* ui);
-  void onMemoryCardTypeChanged(int index);
-  void onBrowseMemoryCardPathClicked(int index);
-  void onResetMemoryCardPathClicked(int index);
-  void onMemoryCardPathChanged(int index);
-  void updateMemoryCardPath(int index);
+  void createUi();
+  void createPortSettingsUi(u32 index, PortSettingsUI* ui);
+  void onMemoryCardTypeChanged(u32 index);
+  void onBrowseMemoryCardPathClicked(u32 index);
+  void onResetMemoryCardPathClicked(u32 index);
+  void onMemoryCardPathChanged(u32 index);
+  void updateMemoryCardPath(u32 index);
 
-  std::array<PortSettingsUI, 2> m_port_ui = {};
+  std::array<PortSettingsUI, NUM_CONTROLLER_AND_CARD_PORTS> m_port_ui = {};
 };

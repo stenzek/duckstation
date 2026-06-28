@@ -125,6 +125,9 @@ bool CanEditGameSettingsForPath(const std::string_view path, const std::string_v
 /// If only_cache is set, no new files will be scanned, only those present in the cache.
 void Refresh(bool invalidate_cache, bool only_cache = false, ProgressCallback* progress = nullptr);
 
+/// Ensures that the list is loaded.
+void EnsureLoaded(std::unique_lock<std::recursive_mutex>& lock);
+
 /// Moves the current game list, which can be temporarily displayed in the UI until refresh completes.
 /// The caller **must** call Refresh() afterward, otherwise it will be permanently lost.
 EntryList TakeEntryList();

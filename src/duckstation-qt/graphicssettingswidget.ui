@@ -10,9 +10,6 @@
     <height>551</height>
    </rect>
   </property>
-  <property name="windowTitle">
-   <string>Form</string>
-  </property>
   <layout class="QVBoxLayout" name="verticalLayout_3">
    <property name="leftMargin">
     <number>0</number>
@@ -86,9 +83,6 @@
           <string/>
          </property>
          <layout class="QGridLayout" name="gridLayout_4" columnstretch="0,1">
-          <property name="topMargin">
-           <number>6</number>
-          </property>
           <item row="0" column="0">
            <widget class="QLabel" name="resolutionScaleLabel">
             <property name="text">
@@ -618,9 +612,6 @@
           <string/>
          </property>
          <layout class="QGridLayout" name="gridLayout_13" columnstretch="0,1">
-          <property name="topMargin">
-           <number>6</number>
-          </property>
           <item row="0" column="0">
            <widget class="QLabel" name="pgxpGeometryToleranceLabel">
             <property name="text">
@@ -655,7 +646,7 @@
             <item>
              <widget class="QPushButton" name="resetPGXPGeometryTolerance">
               <property name="toolTip">
-               <string>Reset Sequence Length</string>
+               <string>Reset Geometry Tolerance</string>
               </property>
               <property name="icon">
                <iconset resource="resources/duckstation-qt.qrc">
@@ -684,7 +675,7 @@
             <item>
              <widget class="QPushButton" name="resetPGXPDepthClearThreshold">
               <property name="toolTip">
-               <string>Reset Sequence Length</string>
+               <string>Reset Depth Clear Threshold</string>
               </property>
               <property name="icon">
                <iconset resource="resources/duckstation-qt.qrc">

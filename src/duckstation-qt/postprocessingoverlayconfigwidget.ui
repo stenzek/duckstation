@@ -12,13 +12,13 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <property name="leftMargin">
-    <number>0</number>
+    <number>3</number>
    </property>
    <property name="topMargin">
     <number>6</number>
    </property>
    <property name="rightMargin">
-    <number>0</number>
+    <number>3</number>
    </property>
    <property name="bottomMargin">
     <number>0</number>
@@ -72,8 +72,12 @@
         </item>
         <item>
          <widget class="QPushButton" name="imagePathBrowse">
-          <property name="text">
+          <property name="toolTip">
            <string>Browse...</string>
+          </property>
+          <property name="icon">
+           <iconset resource="resources/duckstation-qt.qrc">
+            <normaloff>:/icons/monochrome/svg/folder-open-line.svg</normaloff>:/icons/monochrome/svg/folder-open-line.svg</iconset>
           </property>
          </widget>
         </item>
@@ -203,7 +207,11 @@
           <item>
            <widget class="QPushButton" name="exportCustomConfig">
             <property name="text">
-             <string>Export</string>
+             <string>Export...</string>
+            </property>
+            <property name="icon">
+             <iconset resource="resources/duckstation-qt.qrc">
+              <normaloff>:/icons/monochrome/svg/export-line.svg</normaloff>:/icons/monochrome/svg/export-line.svg</iconset>
             </property>
            </widget>
           </item>

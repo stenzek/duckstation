@@ -1151,7 +1151,7 @@ void VideoThread::UpdateSettingsOnThread(GPUSettings&& new_settings)
 
 void VideoThread::RunOnThread(AsyncCallType func)
 {
-  DebugAssert(!VideoThread::IsOnThread());
+  DebugAssert(!s_state.use_thread || !IsOnThread());
 
   if (!s_state.use_thread) [[unlikely]]
   {
@@ -1166,7 +1166,7 @@ void VideoThread::RunOnThread(AsyncCallType func)
 
 void VideoThread::RunOnThreadAndSync(AsyncCallType func)
 {
-  DebugAssert(!VideoThread::IsOnThread());
+  DebugAssert(!s_state.use_thread || !IsOnThread());
 
   if (!s_state.use_thread) [[unlikely]]
   {
@@ -1181,7 +1181,7 @@ void VideoThread::RunOnThreadAndSync(AsyncCallType func)
 
 std::pair<VideoThreadCommand*, void*> VideoThread::BeginASyncBufferCall(AsyncBufferCallType func, u32 buffer_size)
 {
-  DebugAssert(!VideoThread::IsOnThread());
+  DebugAssert(!s_state.use_thread || !IsOnThread());
 
   // this is less than optimal, but it's only used for input osd updates currently, so whatever
   VideoThreadAsyncBufferCallCommand* const cmd = AllocateCommand<VideoThreadAsyncBufferCallCommand>(
@@ -1192,7 +1192,7 @@ std::pair<VideoThreadCommand*, void*> VideoThread::BeginASyncBufferCall(AsyncBuf
 
 void VideoThread::EndASyncBufferCall(VideoThreadCommand* cmd)
 {
-  DebugAssert(!VideoThread::IsOnThread());
+  DebugAssert(!s_state.use_thread || !IsOnThread());
 
   if (!s_state.use_thread) [[unlikely]]
   {

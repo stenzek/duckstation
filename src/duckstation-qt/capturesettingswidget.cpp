@@ -124,7 +124,8 @@ CaptureSettingsWidget::CaptureSettingsWidget(SettingsWindow* dialog, QWidget* pa
     tr("Determines the format of the filename used when saving screenshots, and whether a subdirectory is created "
        "per-game."));
   dialog->registerWidgetHelp(
-    m_ui.screenshotFormat, tr("Screenshot Format"), tr("PNG"),
+    m_ui.screenshotFormat, tr("Screenshot Format"),
+    Settings::GetDisplayScreenshotFormatDisplayName(Settings::DEFAULT_DISPLAY_SCREENSHOT_FORMAT),
     tr("Selects the format which will be used to save screenshots. JPEG produces smaller files, but loses detail."));
   dialog->registerWidgetHelp(m_ui.screenshotQuality, tr("Screenshot Quality"),
                              QStringLiteral("%1%").arg(Settings::DEFAULT_DISPLAY_SCREENSHOT_QUALITY),
@@ -134,7 +135,7 @@ CaptureSettingsWidget::CaptureSettingsWidget(SettingsWindow* dialog, QWidget* pa
     m_ui.mediaCaptureBackend, tr("Backend"),
     QString::fromUtf8(MediaCapture::GetBackendDisplayName(Settings::DEFAULT_MEDIA_CAPTURE_BACKEND)),
     tr("Selects the framework that is used to encode video/audio."));
-  dialog->registerWidgetHelp(m_ui.captureContainer, tr("Container"), tr("MP4"),
+  dialog->registerWidgetHelp(m_ui.captureContainer, tr("Container"), Settings::DEFAULT_MEDIA_CAPTURE_CONTAINER,
                              tr("Determines the file format used to contain the captured audio/video."));
   dialog->registerWidgetHelp(m_ui.videosDirectory, tr("Save Location"), tr("Default"),
                              tr("Specifies the directory where media capture (video/audio) will be saved."));
@@ -149,7 +150,8 @@ CaptureSettingsWidget::CaptureSettingsWidget(SettingsWindow* dialog, QWidget* pa
   dialog->registerWidgetHelp(
     m_ui.videoCaptureCodec, tr("Video Codec"), tr("Default"),
     tr("Selects which Video Codec to be used for media capture. <b>If unsure, leave it on default.<b>"));
-  dialog->registerWidgetHelp(m_ui.videoCaptureBitrate, tr("Video Bitrate"), tr("6000 kbps"),
+  dialog->registerWidgetHelp(m_ui.videoCaptureBitrate, tr("Video Bitrate"),
+                             tr("%1 kbps").arg(Settings::DEFAULT_MEDIA_CAPTURE_VIDEO_BITRATE),
                              tr("Sets the video bitrate to be used. Larger bitrate generally yields better video "
                                 "quality at the cost of larger resulting file size."));
   dialog->registerWidgetHelp(
@@ -169,7 +171,8 @@ CaptureSettingsWidget::CaptureSettingsWidget(SettingsWindow* dialog, QWidget* pa
   dialog->registerWidgetHelp(
     m_ui.audioCaptureCodec, tr("Audio Codec"), tr("Default"),
     tr("Selects which Audio Codec to be used for media capture. <b>If unsure, leave it on default.<b>"));
-  dialog->registerWidgetHelp(m_ui.audioCaptureBitrate, tr("Audio Bitrate"), tr("128 kbps"),
+  dialog->registerWidgetHelp(m_ui.audioCaptureBitrate, tr("Audio Bitrate"),
+                             tr("%1 kbps").arg(Settings::DEFAULT_MEDIA_CAPTURE_AUDIO_BITRATE),
                              tr("Sets the audio bitrate to be used."));
   dialog->registerWidgetHelp(m_ui.enableAudioCaptureArguments, tr("Enable Extra Audio Arguments"), tr("Unchecked"),
                              tr("Allows you to pass arguments to the selected audio codec."));

@@ -138,7 +138,7 @@ void SettingsWindow::addPages()
   }
 
   addWidget(
-    new MemoryCardSettingsWidget(this, m_ui.settingsContainer), tr("Memory Cards"),
+    (m_memory_card_settings = new MemoryCardSettingsWidget(this, m_ui.settingsContainer)), tr("Memory Cards"),
     u":/icons/monochrome/svg/memcard-line.svg"_s,
     tr("<strong>Memory Card Settings</strong><hr>This page lets you control what mode the memory card emulation will "
        "function in, and where the images for these cards will be stored on disk."));
@@ -707,6 +707,36 @@ bool SettingsWindow::hasGameTrait(GameDatabase::Trait trait)
 bool SettingsWindow::isGameHashStable() const
 {
   return (m_path.empty() || !CDImage::HasOverlayablePatch(m_path.c_str()));
+}
+
+MultitapMode SettingsWindow::getEffectiveMultitapMode() const
+{
+  TinyString str;
+  if (isPerGameSettings())
+  {
+    if (m_sif->GetBoolValue("ControllerPorts", "UseGameSettingsForController", false))
+    {
+      str = m_sif->GetTinyStringValue("ControllerPorts", "MultitapMode");
+    }
+    else if (!(str = m_sif->GetTinyStringValue("ControllerPorts", "InputProfileName")).empty())
+    {
+      // this is massive ugh, we need to load the input profile...
+      INISettingsInterface profile_sif(System::GetInputProfilePath(str));
+      if (profile_sif.Load())
+        str = profile_sif.GetTinyStringValue("ControllerPorts", "MultitapMode");
+    }
+  }
+
+  // fall back to global
+  if (str.empty())
+    str = Core::GetBaseTinyStringSettingValue("ControllerPorts", "MultitapMode");
+
+  return Settings::ParseMultitapModeName(str).value_or(Settings::DEFAULT_MULTITAP_MODE);
+}
+
+void SettingsWindow::onMultitapModeChanged(MultitapMode mode)
+{
+  m_memory_card_settings->createPortSettings(mode);
 }
 
 SettingsWindow* SettingsWindow::openGamePropertiesDialog(const GameList::Entry* entry,
