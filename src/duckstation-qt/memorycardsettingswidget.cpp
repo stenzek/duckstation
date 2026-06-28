@@ -220,6 +220,7 @@ void MemoryCardSettingsWidget::createPortSettingsUi(u32 index, PortSettingsUI* u
 {
   ui->container = new QGroupBox(m_port_tabs);
   ui->layout = new QVBoxLayout(ui->container);
+  ui->layout->setContentsMargins(9, 9, 9, 9);
 
   ui->memory_card_type = new QComboBox(ui->container);
   for (int i = 0; i < static_cast<int>(MemoryCardType::Count); i++)
@@ -233,7 +234,7 @@ void MemoryCardSettingsWidget::createPortSettingsUi(u32 index, PortSettingsUI* u
                                                fmt::format("Card{}Type", index + 1), &Settings::ParseMemoryCardTypeName,
                                                &Settings::GetMemoryCardTypeName, default_value);
   connect(ui->memory_card_type, &QComboBox::currentIndexChanged, this,
-          std::bind(&MemoryCardSettingsWidget::onMemoryCardTypeChanged, this, index));
+          [this, index]() { onMemoryCardTypeChanged(index); });
   ui->layout->addWidget(new QLabel(tr("Memory Card Type:"), ui->container));
   ui->layout->addWidget(ui->memory_card_type);
 

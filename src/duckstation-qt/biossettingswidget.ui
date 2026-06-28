@@ -123,7 +123,7 @@
         </item>
         <item>
          <widget class="QPushButton" name="browseSearchDirectory">
-          <property name="text">
+          <property name="toolTip">
            <string>Browse...</string>
           </property>
           <property name="icon">
@@ -134,7 +134,7 @@
         </item>
         <item>
          <widget class="QPushButton" name="searchDirectoryOpen">
-          <property name="text">
+          <property name="toolTip">
            <string>Open...</string>
           </property>
           <property name="icon">
@@ -145,7 +145,7 @@
         </item>
         <item>
          <widget class="QPushButton" name="searchDirectoryReset">
-          <property name="text">
+          <property name="toolTip">
            <string>Reset</string>
           </property>
           <property name="icon">
@@ -194,8 +194,12 @@
       </item>
       <item row="1" column="2">
        <widget class="QPushButton" name="pioImagePathBrowse">
-        <property name="text">
+        <property name="toolTip">
          <string>Browse...</string>
+        </property>
+        <property name="icon">
+         <iconset resource="resources/duckstation-qt.qrc">
+          <normaloff>:/icons/monochrome/svg/folder-open-line.svg</normaloff>:/icons/monochrome/svg/folder-open-line.svg</iconset>
         </property>
        </widget>
       </item>
