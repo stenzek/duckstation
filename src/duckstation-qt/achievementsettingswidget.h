@@ -26,8 +26,10 @@ private:
   void onHardcoreModeStateChanged();
   void onAchievementsNotificationDurationSliderChanged();
   void onLeaderboardsNotificationDurationSliderChanged();
-  void onLoginLogoutPressed();
+  void onLoginPressed();
+  void onLogoutPressed();
   void onLoginCompleted();
+  void onRegisterUserPressed();
   void onViewProfilePressed();
 
   Ui::AchievementSettingsWidget m_ui;

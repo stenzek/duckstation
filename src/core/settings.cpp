@@ -2774,7 +2774,7 @@ const char* Settings::GetPIODeviceTypeModeDisplayName(PIODeviceType type)
 namespace EmuFolders {
 
 static void EnsureFolderExists(const std::string& path);
-static std::string LoadPathFromSettings(SettingsInterface& si, const std::string& root, const char* section,
+static std::string LoadPathFromSettings(const SettingsInterface& si, const std::string& root, const char* section,
                                         const char* name, const char* def);
 
 std::string AppRoot;
@@ -2844,7 +2844,7 @@ void EmuFolders::SetDefaults()
   Videos = Path::Combine(DataRoot, "videos");
 }
 
-std::string EmuFolders::LoadPathFromSettings(SettingsInterface& si, const std::string& root, const char* section,
+std::string EmuFolders::LoadPathFromSettings(const SettingsInterface& si, const std::string& root, const char* section,
                                              const char* name, const char* def)
 {
   std::string value = si.GetStringValue(section, name, def);
@@ -2856,7 +2856,7 @@ std::string EmuFolders::LoadPathFromSettings(SettingsInterface& si, const std::s
   return value;
 }
 
-void EmuFolders::LoadConfig(SettingsInterface& si)
+void EmuFolders::LoadConfig(const SettingsInterface& si)
 {
   Bios = LoadPathFromSettings(si, DataRoot, "BIOS", "SearchDirectory", "bios");
   Cache = LoadPathFromSettings(si, DataRoot, "Folders", "Cache", "cache");

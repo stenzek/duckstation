@@ -25,7 +25,7 @@
    </property>
    <item>
     <widget class="QGroupBox" name="loginBox">
-     <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,1,0,0">
+     <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,1,0,0,0,0">
       <property name="spacing">
        <number>10</number>
       </property>
@@ -62,6 +62,17 @@
        </widget>
       </item>
       <item>
+       <widget class="QPushButton" name="registerUser">
+        <property name="text">
+         <string>Register</string>
+        </property>
+        <property name="icon">
+         <iconset resource="resources/duckstation-qt.qrc">
+          <normaloff>:/icons/monochrome/svg/user-add-line.svg</normaloff>:/icons/monochrome/svg/user-add-line.svg</iconset>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="QPushButton" name="viewProfile">
         <property name="text">
          <string>View Profile...</string>
@@ -73,13 +84,24 @@
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="loginButton">
+       <widget class="QPushButton" name="login">
         <property name="text">
          <string>Login...</string>
         </property>
         <property name="icon">
          <iconset resource="resources/duckstation-qt.qrc">
           <normaloff>:/icons/monochrome/svg/login-box-line.svg</normaloff>:/icons/monochrome/svg/login-box-line.svg</iconset>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="logout">
+        <property name="text">
+         <string>Logout</string>
+        </property>
+        <property name="icon">
+         <iconset resource="resources/duckstation-qt.qrc">
+          <normaloff>:/icons/monochrome/svg/logout-box-line.svg</normaloff>:/icons/monochrome/svg/logout-box-line.svg</iconset>
         </property>
        </widget>
       </item>

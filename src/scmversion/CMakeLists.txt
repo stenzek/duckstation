@@ -7,8 +7,7 @@
 add_custom_target(generate_scmversion
                   COMMAND "${CMAKE_CURRENT_SOURCE_DIR}/gen_scmversion.sh"
                   WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
-                  BYPRODUCTS "${CMAKE_CURRENT_BINARY_DIR}/scmversion.cpp"
-                  COMMENT "Checking if scmversion.cpp needs to be updated")
+                  BYPRODUCTS "${CMAKE_CURRENT_BINARY_DIR}/scmversion.cpp")
 
 add_library(scmversion
   "${CMAKE_CURRENT_BINARY_DIR}/scmversion.cpp"

@@ -100,7 +100,7 @@ void SettingsWindow::addPages()
   if (!isPerGameSettings())
   {
     addWidget(
-      m_game_list_settings = new GameListSettingsWidget(this, m_ui.settingsContainer), tr("Game List"),
+      new GameListSettingsWidget(this, m_ui.settingsContainer), tr("Game List"),
       u":/icons/monochrome/svg/folder-open-line.svg"_s,
       tr("<strong>Game List Settings</strong><hr>The list above shows the directories which will be searched by "
          "DuckStation to populate the game list. Search directories can be added, removed, and switched to "
@@ -138,12 +138,11 @@ void SettingsWindow::addPages()
   }
 
   addWidget(
-    (m_memory_card_settings = new MemoryCardSettingsWidget(this, m_ui.settingsContainer)), tr("Memory Cards"),
+    new MemoryCardSettingsWidget(this, m_ui.settingsContainer), tr("Memory Cards"),
     u":/icons/monochrome/svg/memcard-line.svg"_s,
     tr("<strong>Memory Card Settings</strong><hr>This page lets you control what mode the memory card emulation will "
        "function in, and where the images for these cards will be stored on disk."));
-  GraphicsSettingsWidget* graphics_settings;
-  addWidget(graphics_settings = new GraphicsSettingsWidget(this, m_ui.settingsContainer), tr("Graphics"),
+  addWidget(new GraphicsSettingsWidget(this, m_ui.settingsContainer), tr("Graphics"),
             u":/icons/monochrome/svg/image-fill.svg"_s,
             tr("<strong>Graphics Settings</strong><hr>These options control how the graphics of the emulated console "
                "are rendered. Not all options are available for the software renderer. Mouse over each option for "
@@ -385,6 +384,16 @@ void SettingsWindow::onClearSettingsClicked()
 
   QtUtils::AsyncMessageBox(this, QMessageBox::Information, tr("DuckStation Settings"),
                            tr("Per-game configuration cleared."));
+}
+
+GameListSettingsWidget* SettingsWindow::getGameListSettingsWidget() const
+{
+  return findChild<GameListSettingsWidget*>();
+}
+
+AchievementSettingsWidget* SettingsWindow::getAchievementSettingsWidget() const
+{
+  return findChild<AchievementSettingsWidget*>();
 }
 
 void SettingsWindow::registerWidgetHelp(QObject* object, QString title, QString recommended_value, QString text)
@@ -736,7 +745,8 @@ MultitapMode SettingsWindow::getEffectiveMultitapMode() const
 
 void SettingsWindow::onMultitapModeChanged(MultitapMode mode)
 {
-  m_memory_card_settings->createPortSettings(mode);
+  if (MemoryCardSettingsWidget* memcard_settings = findChild<MemoryCardSettingsWidget*>())
+    memcard_settings->createPortSettings(mode);
 }
 
 SettingsWindow* SettingsWindow::openGamePropertiesDialog(const GameList::Entry* entry,
