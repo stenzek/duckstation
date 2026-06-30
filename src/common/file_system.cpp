@@ -1830,20 +1830,39 @@ bool FileSystem::RecursiveDeleteDirectory(const char* path, Error* error)
 
 bool FileSystem::CopyFilePath(const char* source, const char* destination, bool replace, Error* error)
 {
-#ifndef _WIN32
-  // TODO: There's technically a race here between checking and opening the file..
-  // But fopen doesn't specify any way to say "don't create if it exists"...
-  if (!replace && FileExists(destination))
+#ifdef _WIN32
+  const std::wstring source_wpath = GetWin32Path(source);
+  const std::wstring destination_wpath = GetWin32Path(destination);
+  std::string temp_path;
+  auto temp_fp = OpenTemporaryManagedCFile(destination, &temp_path, error);
+  if (!temp_fp)
+    return false;
+  temp_fp.reset();
+
+  const std::wstring temp_wpath = GetWin32Path(temp_path);
+  if (!CopyFileW(source_wpath.c_str(), temp_wpath.c_str(), FALSE))
   {
-    Error::SetStringView(error, "File already exists.");
+    Error::SetWin32(error, "CopyFileW() failed: ", GetLastError());
+    DeleteFileW(temp_wpath.c_str());
     return false;
   }
 
+  const DWORD move_flags = replace ? MOVEFILE_REPLACE_EXISTING : 0;
+  if (!MoveFileExW(temp_wpath.c_str(), destination_wpath.c_str(), move_flags))
+  {
+    Error::SetWin32(error, "MoveFileExW() failed: ", GetLastError());
+    DeleteFileW(temp_wpath.c_str());
+    return false;
+  }
+
+  return true;
+#else
   auto in_fp = OpenManagedCFile(source, "rb", error);
   if (!in_fp)
     return false;
 
-  auto out_fp = OpenManagedCFile(destination, "wb", error);
+  std::string temp_path;
+  auto out_fp = OpenTemporaryManagedCFile(destination, &temp_path, error);
   if (!out_fp)
     return false;
 
@@ -1856,26 +1875,42 @@ bool FileSystem::CopyFilePath(const char* source, const char* destination, bool 
     {
       Error::SetErrno(error, "fread() or fwrite() failed: ", errno);
       out_fp.reset();
-      DeleteFile(destination);
+      DeleteFile(temp_path.c_str());
       return false;
     }
   }
 
-  if (std::fflush(out_fp.get()) != 0)
+  if (std::fclose(out_fp.release()) != 0)
   {
-    Error::SetErrno(error, "fflush() failed: ", errno);
-    out_fp.reset();
-    DeleteFile(destination);
+    Error::SetErrno(error, "fclose() failed: ", errno);
+    DeleteFile(temp_path.c_str());
     return false;
   }
 
-  return true;
-#else
-  if (CopyFileW(GetWin32Path(source).c_str(), GetWin32Path(destination).c_str(), !replace))
-    return true;
+  if (replace)
+  {
+    if (!RenamePath(temp_path.c_str(), destination, error))
+    {
+      DeleteFile(temp_path.c_str());
+      return false;
+    }
+  }
+  else
+  {
+    // link() atomically publishes the completed temporary file without replacing an existing file.
+    // Removing the temporary name afterwards leaves the destination referring to the copied file.
+    if (link(temp_path.c_str(), destination) != 0)
+    {
+      Error::SetErrno(error, "link() failed: ", errno);
+      DeleteFile(temp_path.c_str());
+      return false;
+    }
 
-  Error::SetWin32(error, "CopyFileW() failed(): ", GetLastError());
-  return false;
+    if (unlink(temp_path.c_str()) != 0)
+      WARNING_LOG("Failed to remove temporary copy '{}': {}", temp_path, std::strerror(errno));
+  }
+
+  return true;
 #endif
 }
 
