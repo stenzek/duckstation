@@ -101,6 +101,13 @@ std::string CDImageHasher::HashToString(const Hash& hash)
                      hash[11], hash[12], hash[13], hash[14], hash[15]);
 }
 
+void CDImageHasher::HashToString(const Hash& hash, SmallStringBase* out_str)
+{
+  out_str->format("{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}",
+                  hash[0], hash[1], hash[2], hash[3], hash[4], hash[5], hash[6], hash[7], hash[8], hash[9], hash[10],
+                  hash[11], hash[12], hash[13], hash[14], hash[15]);
+}
+
 std::optional<CDImageHasher::Hash> CDImageHasher::HashFromString(std::string_view str)
 {
   auto decoded = StringUtil::DecodeHex(str);

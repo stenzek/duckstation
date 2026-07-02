@@ -448,19 +448,8 @@ void GameSummaryWidget::onCustomLanguageChanged(int language)
   g_main_window->getGameListWidget()->getModel()->invalidateColumnForPath(m_path, GameListModel::Column_Region);
 }
 
-static QString MSFToString(const CDImage::Position& position)
-{
-  return QStringLiteral("%1:%2:%3")
-    .arg(static_cast<uint>(position.minute), 2, 10, static_cast<QChar>('0'))
-    .arg(static_cast<uint>(position.second), 2, 10, static_cast<QChar>('0'))
-    .arg(static_cast<uint>(position.frame), 2, 10, static_cast<QChar>('0'));
-}
-
 void GameSummaryWidget::populateTracksInfo()
 {
-  static constexpr std::array<const char*, 8> track_mode_strings = {
-    {"Audio", "Mode 1", "Mode 1/Raw", "Mode 2", "Mode 2/Form 1", "Mode 2/Form 2", "Mode 2/Mix", "Mode 2/Raw"}};
-
   m_ui.tracks->clear();
   QtUtils::SetColumnWidthsForTreeView(m_ui.tracks, {80, 90, 70, 70, -1, 40});
 
@@ -468,24 +457,20 @@ void GameSummaryWidget::populateTracksInfo()
   if (!image)
     return;
 
-  m_ui.revision->setText(tr("%n track(s) covering %1 MB (%2 MB on disk)", nullptr, image->GetTrackCount())
-                           .arg(((image->GetLBACount() * CDImage::RAW_SECTOR_SIZE) + 1048575) / 1048576)
-                           .arg((image->GetSizeOnDisk() + 1048575) / 1048576));
+  m_ui.revision->setText(QString::fromStdString(image->GetSummary()));
 
   const u32 num_tracks = image->GetTrackCount();
   for (u32 track = 1; track <= num_tracks; track++)
   {
-    const CDImage::Position position = image->GetTrackStartMSFPosition(static_cast<u8>(track));
-    const CDImage::Position length = image->GetTrackMSFLength(static_cast<u8>(track));
     const CDImage::TrackMode mode = image->GetTrackMode(static_cast<u8>(track));
 
     QTreeWidgetItem* row = new QTreeWidgetItem(m_ui.tracks);
     row->setIcon(0, QIcon((mode == CDImage::TrackMode::Audio) ? u":/icons/monochrome/svg/file-music-line.svg"_s :
                                                                 u":/icons/monochrome/svg/disc-line.svg"_s));
     row->setText(0, tr("Track %1").arg(track));
-    row->setText(1, QString::fromUtf8(track_mode_strings[static_cast<u32>(mode)]));
-    row->setText(2, MSFToString(position));
-    row->setText(3, MSFToString(length));
+    row->setText(1, QString::fromUtf8(CDImage::GetTrackModeDisplayName(mode)));
+    row->setText(2, QString::fromStdString(image->GetTrackStartMSFPosition(static_cast<u8>(track)).ToString()));
+    row->setText(3, QString::fromStdString(image->GetTrackMSFLength(static_cast<u8>(track)).ToString()));
     row->setText(4, tr("<not computed>"));
     row->setTextAlignment(5, Qt::AlignCenter);
   }
@@ -589,58 +574,31 @@ void GameSummaryWidget::onEditInputProfileClicked()
 void GameSummaryWidget::onComputeHashClicked()
 {
   // Search redump when it's already computed.
-  if (!m_redump_search_keyword.empty())
+  QTreeWidgetItem* const first_track = m_ui.tracks->topLevelItem(0);
+  if (first_track && !first_track->text(5).isEmpty())
   {
-    QtUtils::OpenURL(this, fmt::format("https://redump.info/discs?q={}", m_redump_search_keyword).c_str());
+    QtUtils::OpenURL(this, GameDatabase::GetRedumpSearchURL(first_track->text(4).toStdString()).c_str());
     return;
   }
 
   m_ui.computeHashes->setEnabled(false);
 
-  QtAsyncTaskWithProgressDialog::create(this, TRANSLATE_SV("GameSummaryWidget", "Verifying Image"), {}, false, true, 1,
-                                        0, 0.0f, true, [this, path = m_path](ProgressCallback* progress) {
-                                          Error error;
-                                          CDImageHasher::TrackHashes track_hashes;
-                                          const bool result = computeImageHash(path, track_hashes, progress, &error);
-                                          const bool cancelled = (!result && progress->IsCancelled());
-                                          return [this, track_hashes = std::move(track_hashes),
-                                                  error = std::move(error), result, cancelled]() {
-                                            processHashResults(track_hashes, result, cancelled, error);
-                                          };
-                                        });
+  QtAsyncTaskWithProgressDialog::create(
+    this, TRANSLATE_SV("GameSummaryWidget", "Verifying Image"), {}, false, true, 1, 0, 0.0f, true,
+    [this, path = m_path, serial = m_dialog->getGameSerial()](ProgressCallback* progress) {
+      Error error;
+      GameDatabase::TrackVerificationResult verification;
+      std::unique_ptr<CDImage> image = CDImage::Open(path.c_str(), false, &error);
+      const bool result = image && GameDatabase::VerifyImage(image.get(), serial, &verification, progress, &error);
+      const bool cancelled = (!result && progress->IsCancelled());
+      return [this, verification = std::move(verification), error = std::move(error), result, cancelled]() {
+        processHashResults(verification, result, cancelled, error);
+      };
+    });
 }
 
-bool GameSummaryWidget::computeImageHash(const std::string& path, CDImageHasher::TrackHashes& track_hashes,
-                                         ProgressCallback* const progress, Error* const error) const
-{
-  std::unique_ptr<CDImage> image = CDImage::Open(path.c_str(), false, error);
-  if (!image)
-    return false;
-
-  track_hashes.reserve(image->GetTrackCount());
-  progress->SetProgressRange(image->GetTrackCount());
-
-  for (u32 track = 0; track < image->GetTrackCount(); track++)
-  {
-    progress->SetProgressValue(track);
-    progress->PushState();
-
-    CDImageHasher::Hash hash;
-    if (!CDImageHasher::GetTrackHash(image.get(), static_cast<u8>(track + 1), &hash, progress, error))
-    {
-      progress->PopState();
-      return false;
-    }
-
-    track_hashes.emplace_back(hash);
-    progress->PopState();
-  }
-
-  return true;
-}
-
-void GameSummaryWidget::processHashResults(const CDImageHasher::TrackHashes& track_hashes, bool result, bool cancelled,
-                                           const Error& error)
+void GameSummaryWidget::processHashResults(const GameDatabase::TrackVerificationResult& verification, bool result,
+                                           bool cancelled, const Error& error)
 {
   m_ui.computeHashes->setEnabled(true);
 
@@ -655,100 +613,17 @@ void GameSummaryWidget::processHashResults(const CDImageHasher::TrackHashes& tra
     return;
   }
 
-  // Verify hashes against gamedb
-  std::vector<bool> verification_results(track_hashes.size(), false);
-
-  std::string found_revision;
-  std::string found_serial;
-  m_redump_search_keyword = CDImageHasher::HashToString(track_hashes.front());
-
-  // Verification strategy used:
-  // 1. First, find all matches for the data track
-  //    If none are found, fail verification for all tracks
-  // 2. For each data track match, try to match all audio tracks
-  //    If all match, assume this revision. Else, try other revisions,
-  //    and accept the one with the most matches.
-  const GameDatabase::TrackHashesMap& hashes_map = GameDatabase::GetTrackHashesMap();
-
-  auto data_track_matches = hashes_map.equal_range(track_hashes[0]);
-  if (data_track_matches.first != data_track_matches.second)
-  {
-    auto best_data_match = data_track_matches.second;
-    for (auto iter = data_track_matches.first; iter != data_track_matches.second; ++iter)
-    {
-      std::vector<bool> current_verification_results(track_hashes.size(), false);
-      const auto& data_track_attribs = iter->second;
-      current_verification_results[0] = true; // Data track already matched
-
-      for (auto audio_tracks_iter = std::next(track_hashes.begin()); audio_tracks_iter != track_hashes.end();
-           ++audio_tracks_iter)
-      {
-        auto audio_track_matches = hashes_map.equal_range(*audio_tracks_iter);
-        for (auto audio_iter = audio_track_matches.first; audio_iter != audio_track_matches.second; ++audio_iter)
-        {
-          // If audio track comes from the same revision and code as the data track, "pass" it
-          if (audio_iter->second == data_track_attribs)
-          {
-            current_verification_results[std::distance(track_hashes.begin(), audio_tracks_iter)] = true;
-            break;
-          }
-        }
-      }
-
-      const auto old_matches_count = std::count(verification_results.begin(), verification_results.end(), true);
-      const auto new_matches_count =
-        std::count(current_verification_results.begin(), current_verification_results.end(), true);
-
-      if (new_matches_count > old_matches_count)
-      {
-        best_data_match = iter;
-        verification_results = current_verification_results;
-        // If all elements got matched, early out
-        if (new_matches_count >= static_cast<ptrdiff_t>(verification_results.size()))
-        {
-          break;
-        }
-      }
-    }
-
-    found_revision = best_data_match->second.revision_str;
-    found_serial = best_data_match->second.serial;
-  }
-
-  QString text;
-
-  if (!found_revision.empty())
-    text = tr("Revision: %1").arg(QString::fromStdString(found_revision));
-
-  if (found_serial != m_dialog->getGameSerial())
-  {
-    if (found_serial.empty())
-    {
-      text = tr("No known dump found that matches this hash.");
-    }
-    else
-    {
-      const QString mismatch_str = tr("Serial Mismatch: Disc %1 vs Hash %2")
-                                     .arg(QString::fromStdString(m_dialog->getGameSerial()))
-                                     .arg(QString::fromStdString(found_serial));
-      if (!text.isEmpty())
-        text = QStringLiteral("%1 | %2").arg(mismatch_str).arg(text);
-      else
-        text = mismatch_str;
-    }
-  }
-
-  if (!text.isEmpty())
-    m_ui.revision->setText(text);
+  if (!verification.summary.empty())
+    m_ui.revision->setText(QString::fromStdString(verification.summary));
 
   // update in ui
-  for (size_t i = 0; i < track_hashes.size(); i++)
+  for (size_t i = 0; i < verification.track_hashes.size(); i++)
   {
     QTreeWidgetItem* const row = m_ui.tracks->topLevelItem(static_cast<int>(i));
-    row->setText(4, QString::fromStdString(CDImageHasher::HashToString(track_hashes[i])));
+    row->setText(4, QString::fromStdString(CDImageHasher::HashToString(verification.track_hashes[i])));
 
     QBrush brush;
-    if (verification_results[i])
+    if (verification.track_matches[i])
     {
       brush = QColor(0, 200, 0);
       row->setText(5, QString::fromUtf8(u8"\u2713"));
@@ -762,11 +637,6 @@ void GameSummaryWidget::processHashResults(const CDImageHasher::TrackHashes& tra
     row->setForeground(5, brush);
   }
 
-  if (!m_redump_search_keyword.empty())
-  {
-    m_ui.computeHashes->setIcon(QIcon(u":/icons/monochrome/svg/mag-line.svg"_s));
-    m_ui.computeHashes->setText(tr("Search on redump.info"));
-  }
-  else
-    m_ui.computeHashes->setEnabled(false);
+  m_ui.computeHashes->setIcon(QIcon(u":/icons/monochrome/svg/mag-line.svg"_s));
+  m_ui.computeHashes->setText(tr("Search on redump.info"));
 }

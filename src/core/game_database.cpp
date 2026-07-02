@@ -17,6 +17,7 @@
 #include "common/heterogeneous_containers.h"
 #include "common/log.h"
 #include "common/path.h"
+#include "common/progress_callback.h"
 #include "common/ryml_helpers.h"
 #include "common/string_util.h"
 #include "common/timer.h"
@@ -59,6 +60,17 @@ static bool ParseYamlCodes(UnorderedStringMap<std::string_view>& lookup, const r
                            std::string_view serial);
 static void BindDiscSetsToEntries();
 static bool LoadTrackHashes();
+
+namespace {
+struct TrackHashMatchResult
+{
+  std::vector<bool> track_matches;
+  std::string revision;
+  std::string serial;
+};
+} // namespace
+
+static TrackHashMatchResult MatchTrackHashes(const CDImageHasher::TrackHashes& track_hashes);
 
 static constexpr const std::array<const char*, static_cast<int>(CompatibilityRating::Count)>
   s_compatibility_rating_names = {{
@@ -1850,4 +1862,119 @@ const GameDatabase::TrackHashesMap& GameDatabase::GetTrackHashesMap()
 {
   EnsureTrackHashesMapLoaded();
   return s_state.track_hashes_map;
+}
+
+GameDatabase::TrackHashMatchResult GameDatabase::MatchTrackHashes(const CDImageHasher::TrackHashes& track_hashes)
+{
+  TrackHashMatchResult result = {std::vector<bool>(track_hashes.size(), false), {}, {}};
+
+  DebugAssert(!track_hashes.empty());
+  const TrackHashesMap& hashes_map = GetTrackHashesMap();
+  const auto data_track_matches = hashes_map.equal_range(track_hashes[0]);
+  if (data_track_matches.first != data_track_matches.second)
+  {
+    auto best_data_match = data_track_matches.second;
+    for (auto iter = data_track_matches.first; iter != data_track_matches.second; ++iter)
+    {
+      std::vector<bool> current_verification_results(track_hashes.size(), false);
+      const auto& data_track_attribs = iter->second;
+      current_verification_results[0] = true; // Data track already matched
+
+      for (auto audio_tracks_iter = std::next(track_hashes.begin()); audio_tracks_iter != track_hashes.end();
+           ++audio_tracks_iter)
+      {
+        auto audio_track_matches = hashes_map.equal_range(*audio_tracks_iter);
+        for (auto audio_iter = audio_track_matches.first; audio_iter != audio_track_matches.second; ++audio_iter)
+        {
+          // If audio track comes from the same revision and code as the data track, "pass" it
+          if (audio_iter->second == data_track_attribs)
+          {
+            current_verification_results[std::distance(track_hashes.begin(), audio_tracks_iter)] = true;
+            break;
+          }
+        }
+      }
+
+      const auto old_matches_count = std::count(result.track_matches.begin(), result.track_matches.end(), true);
+      const auto new_matches_count =
+        std::count(current_verification_results.begin(), current_verification_results.end(), true);
+
+      if (new_matches_count > old_matches_count)
+      {
+        best_data_match = iter;
+        result.track_matches = std::move(current_verification_results);
+
+        // If all elements got matched, early out
+        {
+        }
+      }
+    }
+
+    result.revision = best_data_match->second.revision_str;
+    result.serial = best_data_match->second.serial;
+  }
+
+  return result;
+}
+
+bool GameDatabase::VerifyImage(CDImage* image, std::string_view expected_serial, TrackVerificationResult* result,
+                               ProgressCallback* progress, Error* error)
+{
+  CDImageHasher::TrackHashes track_hashes;
+  const u32 num_tracks = image->GetTrackCount();
+  track_hashes.reserve(num_tracks);
+  progress->SetState({}, 0, num_tracks, true);
+
+  for (u32 track = 0; track < num_tracks; track++)
+  {
+    progress->SetProgressValue(track);
+    progress->PushState();
+
+    CDImageHasher::Hash hash;
+    if (!CDImageHasher::GetTrackHash(image, static_cast<u8>(track + 1), &hash, progress, error))
+    {
+      progress->PopState();
+      return false;
+    }
+
+    track_hashes.emplace_back(hash);
+    progress->PopState();
+  }
+
+  if (track_hashes.empty())
+  {
+    Error::SetStringView(error, "Image contains no tracks.");
+    return false;
+  }
+
+  TrackHashMatchResult match = MatchTrackHashes(track_hashes);
+  std::string summary;
+  if (!match.revision.empty())
+    result->summary = fmt::format(TRANSLATE_FS("GameDatabase", "Revision: {}"), match.revision);
+  else
+    result->summary = {};
+
+  if (match.serial != expected_serial)
+  {
+    if (match.serial.empty())
+    {
+      summary = TRANSLATE_STR("GameDatabase", "No known dump found that matches this hash.");
+    }
+    else
+    {
+      const std::string mismatch =
+        fmt::format(TRANSLATE_FS("GameDatabase", "Serial Mismatch: Disc {} vs Hash {}"), expected_serial, match.serial);
+      summary = summary.empty() ? mismatch : fmt::format("{} | {}", mismatch, summary);
+    }
+  }
+
+  result->track_hashes = std::move(track_hashes);
+  result->track_matches = std::move(match.track_matches);
+  result->summary = std::move(summary);
+  return true;
+}
+
+std::string GameDatabase::GetRedumpSearchURL(std::string_view hash)
+{
+  return fmt::format("https://redump.info/discs?q={}", hash);
 }

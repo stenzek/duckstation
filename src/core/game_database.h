@@ -16,6 +16,8 @@
 #include <vector>
 
 class CDImage;
+class Error;
+class ProgressCallback;
 
 struct Settings;
 
@@ -240,5 +242,16 @@ struct TrackData
 using TrackHashesMap = std::multimap<CDImageHasher::Hash, TrackData>;
 const TrackHashesMap& GetTrackHashesMap();
 void EnsureTrackHashesMapLoaded();
+
+struct TrackVerificationResult
+{
+  CDImageHasher::TrackHashes track_hashes;
+  std::vector<bool> track_matches;
+  std::string summary;
+};
+
+bool VerifyImage(CDImage* image, std::string_view expected_serial, TrackVerificationResult* result,
+                 ProgressCallback* progress, Error* error);
+std::string GetRedumpSearchURL(std::string_view hash);
 
 } // namespace GameDatabase

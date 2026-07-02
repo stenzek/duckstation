@@ -17,6 +17,10 @@ namespace GameList {
 struct Entry;
 }
 
+namespace GameDatabase {
+struct TrackVerificationResult;
+}
+
 class ProgressCallback;
 class SettingsWindow;
 
@@ -47,15 +51,12 @@ private:
   void onEditInputProfileClicked();
   void onComputeHashClicked();
 
-  bool computeImageHash(const std::string& path, CDImageHasher::TrackHashes& track_hashes,
-                        ProgressCallback* const progress, Error* const error) const;
-  void processHashResults(const CDImageHasher::TrackHashes& track_hashes, bool result, bool cancelled,
+  void processHashResults(const GameDatabase::TrackVerificationResult& verification, bool result, bool cancelled,
                           const Error& error);
 
   Ui::GameSummaryWidget m_ui;
   SettingsWindow* m_dialog;
 
   std::string m_path;
-  std::string m_redump_search_keyword;
   QString m_compatibility_comments;
 };
