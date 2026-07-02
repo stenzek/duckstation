@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "cd_image.h"
+#include "translation.h"
 
 #include "common/assert.h"
 #include "common/bcdutils.h"
@@ -11,6 +12,8 @@
 #include "common/log.h"
 #include "common/path.h"
 #include "common/string_util.h"
+
+#include <fmt/format.h>
 
 #include <array>
 
@@ -53,13 +56,7 @@ void CDImage::DeinterleaveSubcode(const u8* subcode_in, u8* subcode_out)
 
 std::unique_ptr<CDImage> CDImage::Open(const char* path, bool allow_patches, Error* error)
 {
-  // Annoying handling because of storage access framework.
-#ifdef __ANDROID__
-  const std::string path_display_name = FileSystem::GetDisplayNameFromPath(path);
-  const std::string_view extension = Path::GetExtension(path_display_name);
-#else
   const std::string_view extension = Path::GetExtension(path);
-#endif
 
   std::unique_ptr<CDImage> image;
   if (extension.empty())
@@ -118,11 +115,7 @@ std::unique_ptr<CDImage> CDImage::Open(const char* path, bool allow_patches, Err
 
   if (allow_patches)
   {
-#ifdef __ANDROID__
-    const std::string ppf_path = Path::BuildRelativePath(path, Path::ReplaceExtension(path_display_name, "ppf"));
-#else
     const std::string ppf_path = Path::BuildRelativePath(path, Path::ReplaceExtension(Path::GetFileName(path), "ppf"));
-#endif
     if (FileSystem::FileExists(ppf_path.c_str()))
     {
       image = CDImage::OverlayPPFPatch(ppf_path.c_str(), std::move(image), error);
@@ -136,15 +129,23 @@ std::unique_ptr<CDImage> CDImage::Open(const char* path, bool allow_patches, Err
 
 bool CDImage::HasOverlayablePatch(const char* path)
 {
-  // Annoying handling because of storage access framework.
-#ifdef __ANDROID__
-  const std::string ppf_path =
-    Path::BuildRelativePath(path, Path::ReplaceExtension(FileSystem::GetDisplayNameFromPath(path), "ppf"));
-#else
   const std::string ppf_path = Path::BuildRelativePath(path, Path::ReplaceExtension(Path::GetFileName(path), "ppf"));
-#endif
-
   return FileSystem::FileExists(ppf_path.c_str());
+}
+
+const char* CDImage::GetTrackModeDisplayName(TrackMode mode)
+{
+  static constexpr std::array<const char*, 8> track_mode_strings = {{
+    TRANSLATE_DISAMBIG_NOOP("CDImage", "Audio", "TrackMode"),
+    TRANSLATE_DISAMBIG_NOOP("CDImage", "Mode 1", "TrackMode"),
+    TRANSLATE_DISAMBIG_NOOP("CDImage", "Mode 1/Raw", "TrackMode"),
+    TRANSLATE_DISAMBIG_NOOP("CDImage", "Mode 2", "TrackMode"),
+    TRANSLATE_DISAMBIG_NOOP("CDImage", "Mode 2/Form 1", "TrackMode"),
+    TRANSLATE_DISAMBIG_NOOP("CDImage", "Mode 2/Form 2", "TrackMode"),
+    TRANSLATE_DISAMBIG_NOOP("CDImage", "Mode 2/Mix", "TrackMode"),
+    TRANSLATE_DISAMBIG_NOOP("CDImage", "Mode 2/Raw", "TrackMode"),
+  }};
+  return Host::TranslateToCString("CDImage", track_mode_strings[static_cast<size_t>(mode)], "TrackMode");
 }
 
 CDImage::LBA CDImage::GetTrackStartPosition(u8 track) const
@@ -362,6 +363,14 @@ s64 CDImage::GetSizeOnDisk() const
   return -1;
 }
 
+std::string CDImage::GetSummary() const
+{
+  return fmt::format(TRANSLATE_PLURAL_FS("CDImage", "%n tracks covering {0} MB ({1} MB on disk)", "Number of tracks",
+                                         static_cast<int>(m_tracks.size())),
+                     ((m_lba_count * CDImage::RAW_SECTOR_SIZE) + 1048575) / 1048576,
+                     (GetSizeOnDisk() + 1048575) / 1048576);
+}
+
 void CDImage::ClearTOC()
 {
   m_lba_count = 0;
@@ -544,6 +553,11 @@ CDImage::LBA CDImage::Position::ToLBA() const
 std::tuple<u8, u8, u8> CDImage::Position::ToBCD() const
 {
   return std::make_tuple<u8, u8, u8>(BinaryToBCD(minute), BinaryToBCD(second), BinaryToBCD(frame));
+}
+
+std::string CDImage::Position::ToString() const
+{
+  return fmt::format("{:02}:{:02}:{:02}", minute, second, frame);
 }
 
 CDImage::Position CDImage::Position::operator+(const Position& rhs)

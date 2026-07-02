@@ -92,6 +92,7 @@ public:
 
     LBA ToLBA() const;
     std::tuple<u8, u8, u8> ToBCD() const;
+    std::string ToString() const;
 
     Position operator+(const Position& rhs);
     Position& operator+=(const Position& pos);
@@ -189,6 +190,9 @@ public:
   /// Returns true if an overlayable patch file exists for the specified image path.
   static bool HasOverlayablePatch(const char* path);
 
+  /// Returns a readable string for the given track mode.
+  static const char* GetTrackModeDisplayName(TrackMode mode);
+
   // Opening disc image.
   static std::unique_ptr<CDImage> Open(const char* path, bool allow_patches, Error* error);
   static std::unique_ptr<CDImage> OpenBinImage(const char* path, Error* error);
@@ -280,6 +284,9 @@ public:
   // Returns the size on disk of the image. This could be multiple files.
   // If this function returns -1, it means the size could not be computed.
   virtual s64 GetSizeOnDisk() const;
+
+  // Returns readable track summary of the image.
+  std::string GetSummary() const;
 
 protected:
   void ClearTOC();
