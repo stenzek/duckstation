@@ -5994,17 +5994,18 @@ void FullscreenUI::ProgressDialog::Draw()
   ImGui::PushStyleColor(ImGuiCol_WindowBg, DarkerColor(UIStyle.PopupBackgroundColor));
   ImGui::PushStyleColor(ImGuiCol_Text, UIStyle.BackgroundTextColor);
   ImGui::PushStyleColor(ImGuiCol_PlotHistogram, UIStyle.SecondaryColor);
-  ImGui::PushFont(UIStyle.Font, UIStyle.LargeFontSize, UIStyle.NormalFontWeight);
 
   const bool has_progress = (m_progress_range > 0);
-  float wrap_width = ImGui::GetContentRegionAvail().x;
+  const float content_width = ImGui::GetContentRegionAvail().x;
+  float wrap_width = content_width;
   if (has_progress)
   {
     // reserve space for text
     TinyString text;
     text.format("{}/{}", m_progress_value, m_progress_range);
 
-    const ImVec2 text_width = ImGui::CalcTextSize(IMSTR_START_END(text));
+    const ImVec2 text_width = UIStyle.Font->CalcTextSizeA(UIStyle.MediumLargeFontSize, UIStyle.BoldFontWeight, FLT_MAX,
+                                                          0.0f, IMSTR_START_END(text));
     const ImVec2 screen_pos = ImGui::GetCursorScreenPos();
     const ImVec2 text_pos = ImVec2(screen_pos.x + wrap_width - text_width.x, screen_pos.y);
     ImGui::GetWindowDrawList()->AddText(UIStyle.Font, UIStyle.MediumLargeFontSize, UIStyle.BoldFontWeight, text_pos,
@@ -6013,7 +6014,11 @@ void FullscreenUI::ProgressDialog::Draw()
   }
 
   if (!m_status_text.empty())
+  {
+    ImGui::PushFont(UIStyle.Font, UIStyle.LargeFontSize, UIStyle.NormalFontWeight);
     FullscreenUI::TextAlignedMultiLine(0.0f, IMSTR_START_END(m_status_text), wrap_width);
+    ImGui::PopFont();
+  }
 
   const float bar_height = LayoutScale(20.0f);
 
@@ -6029,11 +6034,10 @@ void FullscreenUI::ProgressDialog::Draw()
   {
     frac = static_cast<float>(-ImGui::GetTime());
   }
-  ImGui::ProgressBar(frac, ImVec2(wrap_width, bar_height), "");
+  ImGui::ProgressBar(frac, ImVec2(content_width, bar_height), "");
 
   ImGui::Dummy(ImVec2(0.0f, LayoutScale(5.0f)));
 
-  ImGui::PopFont();
   ImGui::PopStyleColor(3);
   ImGui::PopStyleVar(2);
 
