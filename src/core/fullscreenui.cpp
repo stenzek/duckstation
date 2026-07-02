@@ -2250,7 +2250,7 @@ void FullscreenUI::DrawSaveStateSelector()
   else if ((!AreAnyDialogsOpen() && WantsToCloseMenu()) || closed)
   {
     ClearSaveStateEntryList();
-    ReturnToPreviousWindow();
+    ReturnToPreviousWindow(TransitionEffect::ZoomOut);
   }
 }
 
