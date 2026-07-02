@@ -378,6 +378,8 @@ public:
   void Draw();
 
 private:
+  static constexpr float PROGRESS_BAR_ANIMATION_TIME = 0.5f;
+
   class ProgressCallbackImpl : public ProgressCallbackWithPrompt
   {
   public:
@@ -398,6 +400,9 @@ private:
 
   std::string m_status_text;
   float m_last_frac = 0.0f;
+  float m_animation_start_frac = 0.0f;
+  float m_animation_target_frac = 0.0f;
+  float m_animation_time = 0.0f;
   float m_width = 0.0f;
   u32 m_progress_value = 0;
   u32 m_progress_range = 0;
@@ -5984,6 +5989,9 @@ void FullscreenUI::ProgressDialog::Draw()
   {
     m_status_text = {};
     m_last_frac = 0.0f;
+    m_animation_start_frac = 0.0f;
+    m_animation_target_frac = 0.0f;
+    m_animation_time = 0.0f;
     ClearState();
     return;
   }
@@ -6026,9 +6034,38 @@ void FullscreenUI::ProgressDialog::Draw()
   if (has_progress)
   {
     const float max_frac = (static_cast<float>(m_progress_value) / static_cast<float>(m_progress_range));
-    const float dt = ImGui::GetIO().DeltaTime;
-    frac = std::min(m_last_frac + dt, max_frac);
-    m_last_frac = frac;
+    if (max_frac != m_animation_target_frac)
+    {
+      if (max_frac > m_last_frac)
+      {
+        m_animation_start_frac = m_last_frac;
+        m_animation_target_frac = max_frac;
+        m_animation_time = 0.0f;
+      }
+      else
+      {
+        m_last_frac = max_frac;
+        m_animation_start_frac = max_frac;
+        m_animation_target_frac = max_frac;
+        m_animation_time = 0.0f;
+      }
+    }
+
+    if (m_last_frac != m_animation_target_frac)
+    {
+      m_animation_time = std::min(m_animation_time + ImGui::GetIO().DeltaTime, PROGRESS_BAR_ANIMATION_TIME);
+      if (m_animation_time == PROGRESS_BAR_ANIMATION_TIME)
+      {
+        m_last_frac = m_animation_target_frac;
+      }
+      else
+      {
+        const float animation_frac = Easing::OutExpo(m_animation_time / PROGRESS_BAR_ANIMATION_TIME);
+        m_last_frac = m_animation_start_frac +
+                      ((m_animation_target_frac - m_animation_start_frac) * animation_frac);
+      }
+    }
+    frac = m_last_frac;
   }
   else
   {
@@ -6069,6 +6106,9 @@ FullscreenUI::ProgressDialog::GetProgressCallback(std::string title, float windo
   SetTitleAndOpen(std::move(title));
   m_width = LayoutScale(window_unscaled_width);
   m_last_frac = 0.0f;
+  m_animation_start_frac = 0.0f;
+  m_animation_target_frac = 0.0f;
+  m_animation_time = 0.0f;
   m_cancelled.store(false, std::memory_order_release);
   return std::make_unique<ProgressCallbackImpl>();
 }
