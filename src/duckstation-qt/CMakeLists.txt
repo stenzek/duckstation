@@ -36,6 +36,8 @@ set(SRCS
   biossettingswidget.cpp
   biossettingswidget.h
   biossettingswidget.ui
+  cardradiobutton.cpp
+  cardradiobutton.h
   colorpickerbutton.cpp
   colorpickerbutton.h
   capturesettingswidget.cpp

@@ -11,6 +11,7 @@
     <ClCompile Include="audiosettingswidget.cpp" />
     <ClCompile Include="autoupdaterdialog.cpp" />
     <ClCompile Include="biossettingswidget.cpp" />
+    <ClCompile Include="cardradiobutton.cpp" />
     <ClCompile Include="capturesettingswidget.cpp" />
     <ClCompile Include="colorpickerbutton.cpp" />
     <ClCompile Include="consolesettingswidget.cpp" />
@@ -111,6 +112,7 @@
     <ClInclude Include="resource.h" />
     <QtMoc Include="selectdiscdialog.h" />
     <ClInclude Include="settingwidgetbinder.h" />
+    <QtMoc Include="cardradiobutton.h" />
     <QtMoc Include="consolesettingswidget.h" />
     <QtMoc Include="emulationsettingswidget.h" />
     <QtMoc Include="gamelistsettingswidget.h" />

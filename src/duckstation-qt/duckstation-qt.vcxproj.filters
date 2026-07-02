@@ -20,6 +20,7 @@
     <ClCompile Include="inputbindingdialog.cpp" />
     <ClCompile Include="autoupdaterdialog.cpp" />
     <ClCompile Include="biossettingswidget.cpp" />
+    <ClCompile Include="cardradiobutton.cpp" />
     <ClCompile Include="memorycardeditorwindow.cpp" />
     <ClCompile Include="postprocessingsettingswidget.cpp" />
     <ClCompile Include="debuggerwindow.cpp" />
@@ -124,6 +125,7 @@
     <QtMoc Include="asynchttprequest.h" />
     <QtMoc Include="svgiconengine.h" />
     <QtMoc Include="svgwidget.h" />
+    <QtMoc Include="cardradiobutton.h" />
   </ItemGroup>
   <ItemGroup>
     <QtUi Include="consolesettingswidget.ui" />
