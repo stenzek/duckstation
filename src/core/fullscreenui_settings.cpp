@@ -19,6 +19,8 @@
 #include "video_presenter.h"
 #include "video_thread.h"
 
+#include "util/cd_image.h"
+#include "util/cd_image_hasher.h"
 #include "util/gpu_device.h"
 #include "util/http_cache.h"
 #include "util/imgui_gsvector.h"
@@ -81,11 +83,24 @@ struct PostProcessingStageInfo
   bool enabled;
 };
 
+struct ImageTrackInfo
+{
+  std::string summary;
+  CDImageHasher::Hash hash;
+  std::optional<bool> verified;
+  bool is_audio;
+};
+
 } // namespace
 
 static void PopulateHotkeyList();
+static void PopulateImageTrackList();
+static void StartImageVerification();
+static void ProcessImageVerificationResults(std::string path, GameDatabase::TrackVerificationResult verification,
+                                            bool result, bool cancelled, Error error);
 
 static void DrawSummarySettingsPage(bool show_localized_titles);
+static void DrawSummarySettingsTrackList();
 static void DrawInterfaceSettingsPage();
 static void DrawGameListSettingsPage();
 static void DrawBIOSSettingsPage();
@@ -211,6 +226,8 @@ struct SettingsLocals
   std::vector<std::string_view> game_cheat_groups;
   std::vector<PostProcessingStageInfo> postprocessing_stages;
   std::vector<const HotkeyInfo*> hotkey_list_cache;
+  std::vector<ImageTrackInfo> image_track_list;
+  std::string image_track_summary;
   s8 selected_controller_port = -1;
   bool settings_changed = false;
   bool game_settings_changed = false;
@@ -1663,6 +1680,8 @@ void FullscreenUI::ClearSettingsState()
   s_settings_locals.fullscreen_mode_list_cache = {};
   s_settings_locals.graphics_adapter_list_cache = {};
   s_settings_locals.hotkey_list_cache = {};
+  s_settings_locals.image_track_list = {};
+  s_settings_locals.image_track_summary = {};
 }
 
 void FullscreenUI::SwitchToSettings()
@@ -1675,6 +1694,8 @@ void FullscreenUI::SwitchToSettings()
   s_settings_locals.game_cheats_list = {};
   s_settings_locals.enabled_game_cheat_cache = {};
   s_settings_locals.game_cheat_groups = {};
+  s_settings_locals.image_track_list = {};
+  s_settings_locals.image_track_summary = {};
   s_settings_locals.selected_controller_port = -1;
 
   PopulateHotkeyList();
@@ -1732,6 +1753,7 @@ void FullscreenUI::SwitchToGameSettings(const GameList::Entry* entry, SettingsPa
   s_settings_locals.game_settings_entry = std::make_unique<GameList::Entry>(*entry);
   s_settings_locals.game_settings_interface = System::GetGameSettingsInterface(
     s_settings_locals.game_settings_entry->dbentry, s_settings_locals.game_settings_entry->serial, true, false);
+  PopulateImageTrackList();
   PopulatePatchesAndCheatsList();
   PopulatePostProcessingChain(*s_settings_locals.game_settings_interface,
                               PostProcessing::Config::DISPLAY_CHAIN_SECTION);
@@ -2198,7 +2220,136 @@ void FullscreenUI::DrawSummarySettingsPage(bool show_localized_titles)
     DoClearGameSettings();
   }
 
+  if (!s_settings_locals.image_track_list.empty())
+    DrawSummarySettingsTrackList();
+
   EndMenuButtons();
+}
+
+void FullscreenUI::DrawSummarySettingsTrackList()
+{
+  DebugAssert(!s_settings_locals.image_track_list.empty());
+
+  MenuHeading(FSUI_VSTR("Tracks"));
+
+  const ImageTrackInfo& first_track = s_settings_locals.image_track_list.front();
+  if (!first_track.verified.has_value())
+  {
+    if (MenuButton(FSUI_ICONVSTR(ICON_FA_FILE_CIRCLE_CHECK, "Verify"), s_settings_locals.image_track_summary))
+    {
+      StartImageVerification();
+    }
+  }
+  else
+  {
+    if (MenuButton(FSUI_ICONVSTR(ICON_FA_MAGNIFYING_GLASS, "Search on redump.info"),
+                   s_settings_locals.image_track_summary))
+    {
+      ExitFullscreenAndOpenURL(GameDatabase::GetRedumpSearchURL(CDImageHasher::HashToString(first_track.hash)));
+    }
+  }
+
+  TinyString title, value;
+  for (size_t i = 0; i < s_settings_locals.image_track_list.size(); i++)
+  {
+    const ImageTrackInfo& track = s_settings_locals.image_track_list[i];
+    title.format("{} {} {}", track.is_audio ? ICON_FA_FILE_AUDIO : ICON_FA_COMPACT_DISC, FSUI_VSTR("Track"), i + 1);
+
+    const bool enable = track.verified.has_value();
+    if (!enable)
+    {
+      value = FSUI_VSTR("<not computed>");
+    }
+    else
+    {
+      CDImageHasher::HashToString(track.hash, &value);
+      value.append(track.verified.value() ? " " ICON_EMOJI_CHECKMARK_BUTTON : " " ICON_EMOJI_CROSS_MARK_BUTTON);
+    }
+
+    if (MenuButtonWithValue(title, track.summary, value, enable))
+    {
+      CopyTextToClipboard({}, CDImageHasher::HashToString(track.hash));
+      ShowToast(OSDMessageType::Info, {}, FSUI_STR("Track hash copied to clipboard."));
+    }
+  }
+}
+
+void FullscreenUI::PopulateImageTrackList()
+{
+  s_settings_locals.image_track_list.clear();
+  s_settings_locals.image_track_summary.clear();
+
+  if (!s_settings_locals.game_settings_entry || s_settings_locals.game_settings_entry->is_runtime_populated)
+    return;
+
+  std::unique_ptr<CDImage> image = CDImage::Open(s_settings_locals.game_settings_entry->path.c_str(), false, nullptr);
+  if (!image)
+    return;
+
+  const u32 num_tracks = image->GetTrackCount();
+  s_settings_locals.image_track_summary = image->GetSummary();
+  s_settings_locals.image_track_list.reserve(num_tracks);
+
+  for (u32 track = 1; track <= num_tracks; track++)
+  {
+    const CDImage::TrackMode mode = image->GetTrackMode(static_cast<u8>(track));
+    s_settings_locals.image_track_list.push_back(
+      {fmt::format(FSUI_FSTR("{} | Start: {} | Length: {}"), CDImage::GetTrackModeDisplayName(mode),
+                   image->GetTrackStartMSFPosition(static_cast<u8>(track)).ToString(),
+                   image->GetTrackMSFLength(static_cast<u8>(track)).ToString()),
+       {},
+       {},
+       mode == CDImage::TrackMode::Audio});
+  }
+}
+
+void FullscreenUI::StartImageVerification()
+{
+  const std::string path = s_settings_locals.game_settings_entry->path;
+  const std::string serial = s_settings_locals.game_settings_entry->serial;
+  auto progress = OpenModalProgressDialog(FSUI_ICONSTR(ICON_FA_COMPACT_DISC, "Verifying Image"), 800.0f);
+  Host::QueueAsyncTask([path, serial, progress = progress.release()]() {
+    Error error;
+    GameDatabase::TrackVerificationResult verification;
+    std::unique_ptr<CDImage> image = CDImage::Open(path.c_str(), false, &error);
+    const bool result = image && GameDatabase::VerifyImage(image.get(), serial, &verification, progress, &error);
+    const bool cancelled = (!result && progress->IsCancelled());
+
+    Host::RunOnCoreThread([path, progress, verification = std::move(verification), result, cancelled,
+                           error = std::move(error)]() mutable {
+      VideoThread::RunOnThread([path = std::move(path), progress, verification = std::move(verification), result,
+                                cancelled, error = std::move(error)]() mutable {
+        delete progress;
+        ProcessImageVerificationResults(std::move(path), std::move(verification), result, cancelled, std::move(error));
+      });
+    });
+  });
+}
+
+void FullscreenUI::ProcessImageVerificationResults(std::string path, GameDatabase::TrackVerificationResult verification,
+                                                   bool result, bool cancelled, Error error)
+{
+  if (!s_settings_locals.game_settings_entry || s_settings_locals.game_settings_entry->path != path)
+    return;
+
+  if (!result)
+  {
+    if (!cancelled)
+      OpenInfoMessageDialog(ICON_EMOJI_NO_ENTRY_SIGN, FSUI_STR("Hash Calculation Failed"), error.TakeDescription());
+
+    return;
+  }
+
+  if (!verification.summary.empty())
+    s_settings_locals.image_track_summary = std::move(verification.summary);
+
+  const size_t count = std::min(s_settings_locals.image_track_list.size(), verification.track_hashes.size());
+  for (size_t i = 0; i < count; i++)
+  {
+    ImageTrackInfo& track = s_settings_locals.image_track_list[i];
+    track.hash = verification.track_hashes[i];
+    track.verified = verification.track_matches[i];
+  }
 }
 
 void FullscreenUI::DrawInterfaceSettingsPage()
