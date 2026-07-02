@@ -6,6 +6,7 @@
 #include "biossettingswidget.h"
 #include "controllerbindingwidgets.h"
 #include "controllersettingwidgetbinder.h"
+#include "gamelistwidget.h"
 #include "graphicssettingswidget.h"
 #include "interfacesettingswidget.h"
 #include "mainwindow.h"
@@ -25,6 +26,8 @@
 #include "common/string_util.h"
 
 #include "fmt/format.h"
+
+#include <QtWidgets/QButtonGroup>
 
 #include "moc_setupwizarddialog.cpp"
 
@@ -162,6 +165,8 @@ void SetupWizardDialog::setupUi()
   m_page_labels[Page_Controller] = m_ui.labelController;
   m_page_labels[Page_Graphics] = m_ui.labelGraphics;
   m_page_labels[Page_Achievements] = m_ui.labelAchievements;
+  m_page_labels[Page_Interface] = m_ui.labelInterface;
+  m_page_labels[Page_GameListView] = m_ui.labelGameListView;
   m_page_labels[Page_Complete] = m_ui.labelComplete;
 
   connect(m_ui.back, &QPushButton::clicked, this, &SetupWizardDialog::previousPage);
@@ -174,6 +179,8 @@ void SetupWizardDialog::setupUi()
   setupControllerPage(true);
   setupGraphicsPage(true);
   setupAchievementsPage(true);
+  setupInterfacePage();
+  setupGameListViewPage();
 }
 
 void SetupWizardDialog::setupLanguagePage(bool initial)
@@ -652,4 +659,62 @@ void SetupWizardDialog::onAchievementsViewProfileClicked()
   const QByteArray encoded_username(QUrl::toPercentEncoding(QString::fromStdString(username)));
   QtUtils::OpenURL(
     this, QUrl(QStringLiteral("https://retroachievements.org/user/%1").arg(QString::fromUtf8(encoded_username))));
+}
+
+void SetupWizardDialog::setupGameListViewPage()
+{
+  const bool use_grid = Core::GetBaseBoolSettingValue("UI", "GameListGridView", false);
+  m_ui.listView->setChecked(!use_grid);
+  m_ui.gridView->setChecked(use_grid);
+
+  connect(m_ui.listView, &QRadioButton::toggled, this, &SetupWizardDialog::onGridViewChanged);
+  connect(m_ui.gridView, &QRadioButton::toggled, this, &SetupWizardDialog::onGridViewChanged);
+}
+
+void SetupWizardDialog::onGridViewChanged(bool checked)
+{
+  if (!checked)
+    return;
+
+  bool setting_value;
+  if (const QObject* const sender_widget = sender(); sender_widget == m_ui.listView)
+    setting_value = false;
+  else if (sender_widget == m_ui.gridView)
+    setting_value = true;
+  else
+    return;
+
+  // NOTE: No settings apply here, we explicitly change the layout.
+  Core::SetBaseBoolSettingValue("UI", "GameListGridView", setting_value);
+  Core::SetBaseUIntSettingValue("Main", "DefaultFullscreenUIGameView", setting_value ? 0 : 1);
+  Host::CommitBaseSettingChanges();
+  g_main_window->getGameListWidget()->reloadViewModeFromSettings();
+}
+
+void SetupWizardDialog::setupInterfacePage()
+{
+  const bool use_big_picture = Core::GetBaseBoolSettingValue("Main", "StartFullscreenUI", false);
+  m_ui.desktopMode->setChecked(!use_big_picture);
+  m_ui.bigPictureMode->setChecked(use_big_picture);
+
+  connect(m_ui.desktopMode, &QRadioButton::toggled, this, &SetupWizardDialog::onStartFullscreenUIChanged);
+  connect(m_ui.bigPictureMode, &QRadioButton::toggled, this, &SetupWizardDialog::onStartFullscreenUIChanged);
+}
+
+void SetupWizardDialog::onStartFullscreenUIChanged(bool checked)
+{
+  if (!checked)
+    return;
+
+  bool setting_value;
+  if (const QObject* const sender_widget = sender(); sender_widget == m_ui.desktopMode)
+    setting_value = false;
+  else if (sender_widget == m_ui.bigPictureMode)
+    setting_value = true;
+  else
+    return;
+
+  // NOTE: No settings apply here, this is queried after the wizard completes.
+  Core::SetBaseBoolSettingValue("Main", "StartFullscreenUI", setting_value);
+  Host::CommitBaseSettingChanges();
 }

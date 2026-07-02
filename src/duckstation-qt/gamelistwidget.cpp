@@ -84,14 +84,22 @@ static const char* SUPPORTED_FORMATS_STRING =
                                     ".pbp (PlayStation Portable, Only Decrypted)");
 
 static constexpr std::array<const char*, GameListModel::Column_Count> s_column_names = {{
-  QT_TRANSLATE_NOOP("GameListModel", "Icon"), QT_TRANSLATE_NOOP("GameListModel", "Serial"),
-  QT_TRANSLATE_NOOP("GameListModel", "Title"), QT_TRANSLATE_NOOP("GameListModel", "File Title"),
-  QT_TRANSLATE_NOOP("GameListModel", "Developer"), QT_TRANSLATE_NOOP("GameListModel", "Publisher"),
-  QT_TRANSLATE_NOOP("GameListModel", "Genre"), QT_TRANSLATE_NOOP("GameListModel", "Year"),
-  QT_TRANSLATE_NOOP("GameListModel", "Players"), QT_TRANSLATE_NOOP("GameListModel", "Time Played"),
-  QT_TRANSLATE_NOOP("GameListModel", "Last Played"), QT_TRANSLATE_NOOP("GameListModel", "Size"),
-  QT_TRANSLATE_NOOP("GameListModel", "Data Size"), QT_TRANSLATE_NOOP("GameListModel", "Region"),
-  QT_TRANSLATE_NOOP("GameListModel", "Achievements"), QT_TRANSLATE_NOOP("GameListModel", "Compatibility"),
+  QT_TRANSLATE_NOOP("GameListModel", "Icon"),
+  QT_TRANSLATE_NOOP("GameListModel", "Serial"),
+  QT_TRANSLATE_NOOP("GameListModel", "Title"),
+  QT_TRANSLATE_NOOP("GameListModel", "File Title"),
+  QT_TRANSLATE_NOOP("GameListModel", "Developer"),
+  QT_TRANSLATE_NOOP("GameListModel", "Publisher"),
+  QT_TRANSLATE_NOOP("GameListModel", "Genre"),
+  QT_TRANSLATE_NOOP("GameListModel", "Year"),
+  QT_TRANSLATE_NOOP("GameListModel", "Players"),
+  QT_TRANSLATE_NOOP("GameListModel", "Time Played"),
+  QT_TRANSLATE_NOOP("GameListModel", "Last Played"),
+  QT_TRANSLATE_NOOP("GameListModel", "Size"),
+  QT_TRANSLATE_NOOP("GameListModel", "Data Size"),
+  QT_TRANSLATE_NOOP("GameListModel", "Region"),
+  QT_TRANSLATE_NOOP("GameListModel", "Achievements"),
+  QT_TRANSLATE_NOOP("GameListModel", "Compatibility"),
   "Cover", // Do not translate.
 }};
 
@@ -1899,11 +1907,6 @@ GameListWidget::GameListWidget(QWidget* parent, QAction* action_view_list, QActi
 
   connect(g_main_window, &MainWindow::themeChanged, this, &GameListWidget::onThemeChanged);
 
-  const bool grid_view = Core::GetBaseBoolSettingValue("UI", "GameListGridView", false);
-  if (grid_view)
-    action_view_grid->setChecked(true);
-  else
-    action_view_list->setChecked(true);
   action_merge_disc_sets->setChecked(m_sort_model->isMergingDiscSets());
   action_show_localized_titles->setChecked(m_model->getShowLocalizedTitles());
   action_show_list_icons->setChecked(m_model->getShowGameIcons());
@@ -1912,7 +1915,7 @@ GameListWidget::GameListWidget(QWidget* parent, QAction* action_view_list, QActi
   action_show_grid_titles->setChecked(m_model->getShowCoverTitles());
   onIconSizeChanged(m_model->getIconSize());
 
-  setViewMode(grid_view ? VIEW_MODE_GRID : VIEW_MODE_LIST);
+  reloadViewModeFromSettings();
   updateBackground(true);
 }
 
@@ -2096,6 +2099,8 @@ void GameListWidget::onRefreshComplete()
   // if we still had no games, switch to the helper widget
   if (m_model->rowCount() == 0)
     setViewMode(VIEW_MODE_NO_GAMES);
+  else
+    reloadViewModeFromSettings();
 }
 
 void GameListWidget::onSelectionModelCurrentChanged(const QModelIndex& current, const QModelIndex& previous)
@@ -2191,6 +2196,16 @@ void GameListWidget::showGameGrid()
   Host::CommitBaseSettingChanges();
 
   setViewMode(VIEW_MODE_GRID);
+}
+
+void GameListWidget::reloadViewModeFromSettings()
+{
+  const bool grid_view = Core::GetBaseBoolSettingValue("UI", "GameListGridView", false);
+  m_ui.viewGameList->defaultAction()->setChecked(!grid_view);
+  m_ui.viewGameGrid->defaultAction()->setChecked(grid_view);
+
+  if (m_model->rowCount() > 0 || m_ui.stack->currentIndex() != VIEW_MODE_NO_GAMES)
+    setViewMode(grid_view ? VIEW_MODE_GRID : VIEW_MODE_LIST);
 }
 
 void GameListWidget::setMergeDiscSets(bool enabled)

@@ -19,6 +19,9 @@
    </property>
    <item row="0" column="0">
     <layout class="QVBoxLayout" name="verticalLayout_2">
+     <property name="spacing">
+      <number>15</number>
+     </property>
      <item>
       <widget class="QLabel" name="logo">
        <property name="sizePolicy">
@@ -57,8 +60,8 @@
        </property>
        <property name="sizeHint" stdset="0">
         <size>
-         <width>20</width>
-         <height>20</height>
+         <width>0</width>
+         <height>0</height>
         </size>
        </property>
       </spacer>
@@ -66,7 +69,7 @@
      <item>
       <layout class="QVBoxLayout" name="verticalLayout">
        <property name="spacing">
-        <number>20</number>
+        <number>15</number>
        </property>
        <item>
         <widget class="QLabel" name="labelLanguage">
@@ -112,6 +115,20 @@
         <widget class="QLabel" name="labelAchievements">
          <property name="text">
           <string>RetroAchievements</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="labelInterface">
+         <property name="text">
+          <string>Interface Selection</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="labelGameListView">
+         <property name="text">
+          <string>View Selection</string>
          </property>
         </widget>
        </item>
@@ -724,8 +741,8 @@
          </property>
          <property name="sizeHint" stdset="0">
           <size>
-           <width>20</width>
-           <height>1</height>
+           <width>0</width>
+           <height>0</height>
           </size>
          </property>
         </spacer>
@@ -945,7 +962,7 @@
          </property>
          <property name="sizeHint" stdset="0">
           <size>
-           <width>20</width>
+           <width>0</width>
            <height>0</height>
           </size>
          </property>
@@ -1107,8 +1124,196 @@ Login token generated at:</string>
          </property>
          <property name="sizeHint" stdset="0">
           <size>
-           <width>20</width>
-           <height>1</height>
+           <width>0</width>
+           <height>0</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="interfacePage">
+      <layout class="QVBoxLayout" name="interfacePageLayout">
+       <property name="spacing">
+        <number>16</number>
+       </property>
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
+        <number>0</number>
+       </property>
+       <item>
+        <widget class="QLabel" name="interfaceDescription">
+         <property name="text">
+          <string>Choose the interface DuckStation should show when it starts. Desktop Mode is designed for mouse and keyboard use, while Big Picture Mode is optimized for navigation with a controller on a TV.
+
+You can change this at a later time by toggling the &quot;Start In Big Picture Mode&quot; setting in Interface Settings.</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
+         </property>
+         <property name="wordWrap">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="interfaceChoicesLayout">
+         <property name="spacing">
+          <number>16</number>
+         </property>
+         <item>
+          <widget class="CardRadioButton" name="desktopMode">
+           <property name="text">
+            <string>Desktop Mode</string>
+           </property>
+           <property name="icon">
+            <iconset resource="resources/duckstation-qt.qrc">
+             <normaloff>:/icons/monochrome/svg/window-2-line.svg</normaloff>:/icons/monochrome/svg/window-2-line.svg</iconset>
+           </property>
+           <property name="iconSize">
+            <size>
+             <width>64</width>
+             <height>64</height>
+            </size>
+           </property>
+           <attribute name="buttonGroup">
+            <string notr="true">interfaceGroup</string>
+           </attribute>
+          </widget>
+         </item>
+         <item>
+          <widget class="CardRadioButton" name="bigPictureMode">
+           <property name="text">
+            <string>Big Picture Mode</string>
+           </property>
+           <property name="icon">
+            <iconset resource="resources/duckstation-qt.qrc">
+             <normaloff>:/icons/monochrome/svg/tv-2-line.svg</normaloff>:/icons/monochrome/svg/tv-2-line.svg</iconset>
+           </property>
+           <property name="iconSize">
+            <size>
+             <width>64</width>
+             <height>64</height>
+            </size>
+           </property>
+           <attribute name="buttonGroup">
+            <string notr="true">interfaceGroup</string>
+           </attribute>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <spacer name="interfacePageSpacer">
+         <property name="orientation">
+          <enum>Qt::Orientation::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>0</width>
+           <height>0</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="gameListViewPage">
+      <layout class="QVBoxLayout" name="gameListViewPageLayout">
+       <property name="spacing">
+        <number>16</number>
+       </property>
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
+        <number>0</number>
+       </property>
+       <item>
+        <widget class="QLabel" name="gameListViewDescription">
+         <property name="text">
+          <string>Choose how games should initially be displayed in both Desktop and Big Picture Mode. List View shows detailed information in columns, while Grid View shows game cover art.
+
+You can change this option at a later time by using the toolbar in Desktop Mode or shortcuts in Big Picture Mode.</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
+         </property>
+         <property name="wordWrap">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="gameListViewChoicesLayout">
+         <property name="spacing">
+          <number>16</number>
+         </property>
+         <item>
+          <widget class="CardRadioButton" name="listView">
+           <property name="text">
+            <string>List View</string>
+           </property>
+           <property name="icon">
+            <iconset resource="resources/duckstation-qt.qrc">
+             <normaloff>:/icons/monochrome/svg/list-check.svg</normaloff>:/icons/monochrome/svg/list-check.svg</iconset>
+           </property>
+           <property name="iconSize">
+            <size>
+             <width>64</width>
+             <height>64</height>
+            </size>
+           </property>
+           <attribute name="buttonGroup">
+            <string notr="true">viewGroup</string>
+           </attribute>
+          </widget>
+         </item>
+         <item>
+          <widget class="CardRadioButton" name="gridView">
+           <property name="text">
+            <string>Grid View</string>
+           </property>
+           <property name="icon">
+            <iconset resource="resources/duckstation-qt.qrc">
+             <normaloff>:/icons/monochrome/svg/function-line.svg</normaloff>:/icons/monochrome/svg/function-line.svg</iconset>
+           </property>
+           <property name="iconSize">
+            <size>
+             <width>64</width>
+             <height>64</height>
+            </size>
+           </property>
+           <attribute name="buttonGroup">
+            <string notr="true">viewGroup</string>
+           </attribute>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <spacer name="gameListViewPageSpacer">
+         <property name="orientation">
+          <enum>Qt::Orientation::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>0</width>
+           <height>0</height>
           </size>
          </property>
         </spacer>
@@ -1148,8 +1353,19 @@ Login token generated at:</string>
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>CardRadioButton</class>
+   <extends>QRadioButton</extends>
+   <header>cardradiobutton.h</header>
+  </customwidget>
+ </customwidgets>
  <resources>
   <include location="resources/duckstation-qt.qrc"/>
  </resources>
  <connections/>
+ <buttongroups>
+  <buttongroup name="viewGroup"/>
+  <buttongroup name="interfaceGroup"/>
+ </buttongroups>
 </ui>

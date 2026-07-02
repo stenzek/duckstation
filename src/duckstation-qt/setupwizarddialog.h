@@ -29,6 +29,8 @@ private:
     Page_Controller,
     Page_Graphics,
     Page_Achievements,
+    Page_Interface,
+    Page_GameListView,
     Page_Complete,
     Page_Count,
   };
@@ -40,6 +42,8 @@ private:
   void setupControllerPage(bool initial);
   void setupGraphicsPage(bool initial);
   void setupAchievementsPage(bool initial);
+  void setupInterfacePage();
+  void setupGameListViewPage();
   void updateStylesheets();
 
   void updatePageLabels(int prev_page);
@@ -74,6 +78,9 @@ private:
   void onAchievementsViewProfileClicked();
   void updateAchievementsEnableState();
   void updateAchievementsLoginState();
+
+  void onGridViewChanged(bool checked);
+  void onStartFullscreenUIChanged(bool checked);
 
 private:
   Ui::SetupWizardDialog m_ui;

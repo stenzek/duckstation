@@ -283,6 +283,7 @@ public:
 
   void showGameList();
   void showGameGrid();
+  void reloadViewModeFromSettings();
   void setMergeDiscSets(bool enabled);
   void setShowLocalizedTitles(bool enabled);
   void setShowGameIcons(bool enabled);
