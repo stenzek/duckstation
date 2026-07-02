@@ -429,6 +429,9 @@ void SetupWizardDialog::setupControllerPage(bool initial)
     for (const PadWidgets& w : pad_widgets)
       w.type_combo->blockSignals(false);
   }
+
+  m_ui.pauseMenuHotkey->initialize(nullptr, InputBindingInfo::Type::Button, "Hotkeys", "OpenPauseMenu",
+                                   tr("Open Pause Menu"));
 }
 
 void SetupWizardDialog::updateStylesheets()
