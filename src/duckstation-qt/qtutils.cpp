@@ -588,7 +588,7 @@ void QtUtils::SaveWindowGeometry(QWidget* widget, bool auto_commit_changes /* = 
 void QtUtils::SaveWindowGeometry(std::string_view window_name, QWidget* widget, bool auto_commit_changes)
 {
   // don't touch minimized/fullscreen windows
-  if (widget->windowState() & (Qt::WindowMinimized | Qt::WindowFullScreen))
+  if (widget->windowState() & (Qt::WindowMinimized | Qt::WindowFullScreen) || !widget->isVisible())
     return;
 
   // save the unmaximized geometry if maximized
