@@ -201,7 +201,7 @@
     </layout>
    </item>
    <item row="0" column="1">
-    <widget class="QStackedWidget" name="pages">
+    <widget class="AnimatedStackedWidget" name="pages">
      <property name="currentIndex">
       <number>0</number>
      </property>
@@ -1354,6 +1354,11 @@ You can change this option at a later time by using the toolbar in Desktop Mode 
   </layout>
  </widget>
  <customwidgets>
+  <customwidget>
+   <class>AnimatedStackedWidget</class>
+   <extends>QStackedWidget</extends>
+   <header>animatedstackedwidget.h</header>
+  </customwidget>
   <customwidget>
    <class>CardRadioButton</class>
    <extends>QRadioButton</extends>

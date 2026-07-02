@@ -6,6 +6,7 @@
     <ClCompile Include="achievementsettingswidget.cpp" />
     <ClCompile Include="achievementlogindialog.cpp" />
     <ClCompile Include="advancedsettingswidget.cpp" />
+    <ClCompile Include="animatedstackedwidget.cpp" />
     <ClCompile Include="asynchttprequest.cpp" />
     <ClCompile Include="asyncpixmaploader.cpp" />
     <ClCompile Include="audiosettingswidget.cpp" />
@@ -113,6 +114,7 @@
     <QtMoc Include="selectdiscdialog.h" />
     <ClInclude Include="settingwidgetbinder.h" />
     <QtMoc Include="cardradiobutton.h" />
+    <QtMoc Include="animatedstackedwidget.h" />
     <QtMoc Include="consolesettingswidget.h" />
     <QtMoc Include="emulationsettingswidget.h" />
     <QtMoc Include="gamelistsettingswidget.h" />

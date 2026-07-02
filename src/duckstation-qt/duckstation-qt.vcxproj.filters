@@ -15,6 +15,7 @@
     <ClCompile Include="qtprogresscallback.cpp" />
     <ClCompile Include="interfacesettingswidget.cpp" />
     <ClCompile Include="advancedsettingswidget.cpp" />
+    <ClCompile Include="animatedstackedwidget.cpp" />
     <ClCompile Include="aboutdialog.cpp" />
     <ClCompile Include="memorycardsettingswidget.cpp" />
     <ClCompile Include="inputbindingdialog.cpp" />
@@ -126,6 +127,7 @@
     <QtMoc Include="svgiconengine.h" />
     <QtMoc Include="svgwidget.h" />
     <QtMoc Include="cardradiobutton.h" />
+    <QtMoc Include="animatedstackedwidget.h" />
   </ItemGroup>
   <ItemGroup>
     <QtUi Include="consolesettingswidget.ui" />
