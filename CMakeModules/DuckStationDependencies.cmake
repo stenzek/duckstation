@@ -64,7 +64,7 @@ find_package(freetype 2.14.3 REQUIRED
              NO_DEFAULT_PATH PATHS "${DEPS_PATH}/lib/cmake/freetype")
 find_package(harfbuzz REQUIRED
              NO_DEFAULT_PATH PATHS "${DEPS_PATH}/lib/cmake/harfbuzz")
-find_package(SQLite3 3.53.1 REQUIRED
+find_package(SQLite3 3.53.3 REQUIRED
              NO_DEFAULT_PATH PATHS "${DEPS_PATH}/lib/cmake/SQLite3")
 find_package(plutosvg 0.0.7 REQUIRED
              NO_DEFAULT_PATH PATHS "${DEPS_PATH}/lib/cmake/plutosvg")
@@ -80,7 +80,7 @@ find_package(Shaderc 2026.1 REQUIRED
              NO_DEFAULT_PATH PATHS "${DEPS_PATH}/lib/cmake/Shaderc")
 find_package(spirv_cross_c_shared REQUIRED
              NO_DEFAULT_PATH PATHS "${DEPS_PATH}/share/spirv_cross_c_shared/cmake")
-find_package(SDL3 3.4.4 REQUIRED
+find_package(SDL3 3.4.12 REQUIRED
              NO_DEFAULT_PATH PATHS "${DEPS_PATH}/lib/cmake/SDL3")
 
 # All our builds include Qt, so this is not a problem.
