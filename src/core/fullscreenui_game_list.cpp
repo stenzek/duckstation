@@ -976,47 +976,44 @@ void FullscreenUI::HandleGameListOptions(const GameList::Entry* entry)
       {FSUI_ICONSTR(ICON_FA_DELETE_LEFT, "Reset Play Time"), false},
     };
 
-    OpenChoiceDialog(
-      entry->GetDisplayTitle(GameList::ShouldShowLocalizedTitles()), false, std::move(options),
-      [entry_path = entry->path, entry_serial = entry->serial](s32 index, const std::string& title,
-                                                               bool checked) mutable {
-        switch (index)
-        {
-          case 0: // Open Game Properties
-            BeginTransition(TransitionEffect::ZoomIn, DEFAULT_TRANSITION_TIME,
-                            [entry_path = std::move(entry_path)]() { SwitchToGameSettingsForPath(entry_path); });
-            break;
-          case 1: // Open Containing Directory
-            ExitFullscreenAndOpenURL(Path::CreateFileURL(Path::GetDirectory(entry_path)));
-            break;
-          case 2: // Set Cover Image
-            DoSetCoverImage(std::move(entry_path));
-            break;
-          case 3: // Resume Game
-            DoStartPath(entry_path, System::GetGameSaveStatePath(entry_serial, -1));
-            break;
-          case 4: // Load State
-            BeginTransition(TransitionEffect::ZoomIn, DEFAULT_TRANSITION_TIME,
-                            [entry_serial = std::move(entry_serial), entry_path = std::move(entry_path)]() {
-                              OpenSaveStateSelector(entry_serial, entry_path, true);
-                            });
-            break;
-          case 5: // Default Boot
-            DoStartPath(entry_path);
-            break;
-          case 6: // Fast Boot
-            DoStartPath(entry_path, {}, true);
-            break;
-          case 7: // Slow Boot
-            DoStartPath(entry_path, {}, false);
-            break;
-          case 8: // Reset Play Time
-            GameList::ClearPlayedTimeForSerial(entry_serial);
-            break;
-          default:
-            break;
-        }
-      });
+    OpenChoiceDialog(entry->GetDisplayTitle(GameList::ShouldShowLocalizedTitles()), false, std::move(options),
+                     [entry_path = entry->path, entry_serial = entry->serial](s32 index, const std::string& title,
+                                                                              bool checked) mutable {
+                       switch (index)
+                       {
+                         case 0: // Open Game Properties
+                           BeginTransition(
+                             TransitionEffect::ZoomIn, DEFAULT_TRANSITION_TIME,
+                             [entry_path = std::move(entry_path)]() { SwitchToGameSettingsForPath(entry_path); });
+                           break;
+                         case 1: // Open Containing Directory
+                           ExitFullscreenAndOpenURL(Path::CreateFileURL(Path::GetDirectory(entry_path)));
+                           break;
+                         case 2: // Set Cover Image
+                           DoSetCoverImage(std::move(entry_path));
+                           break;
+                         case 3: // Resume Game
+                           DoStartPath(entry_path, System::GetGameSaveStatePath(entry_serial, -1));
+                           break;
+                         case 4: // Load State
+                           OpenSaveStateSelector(entry_serial, entry_path, true);
+                           break;
+                         case 5: // Default Boot
+                           DoStartPath(entry_path);
+                           break;
+                         case 6: // Fast Boot
+                           DoStartPath(entry_path, {}, true);
+                           break;
+                         case 7: // Slow Boot
+                           DoStartPath(entry_path, {}, false);
+                           break;
+                         case 8: // Reset Play Time
+                           GameList::ClearPlayedTimeForSerial(entry_serial);
+                           break;
+                         default:
+                           break;
+                       }
+                     });
   }
   else
   {

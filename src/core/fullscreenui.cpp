@@ -1708,18 +1708,10 @@ void FullscreenUI::DrawPauseMenu()
         }
 
         if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_PF_DOWNLOAD, "Load State"), has_game))
-        {
-          BeginTransition(TransitionEffect::ZoomIn, DEFAULT_TRANSITION_TIME, []() {
-            OpenSaveStateSelector(VideoThread::GetGameSerial(), VideoThread::GetGamePath(), true);
-          });
-        }
+          OpenSaveStateSelector(VideoThread::GetGameSerial(), VideoThread::GetGamePath(), true);
 
         if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_PF_DISKETTE, "Save State"), has_game))
-        {
-          BeginTransition(TransitionEffect::ZoomIn, DEFAULT_TRANSITION_TIME, []() {
-            OpenSaveStateSelector(VideoThread::GetGameSerial(), VideoThread::GetGamePath(), false);
-          });
-        }
+          OpenSaveStateSelector(VideoThread::GetGameSerial(), VideoThread::GetGamePath(), false);
 
         if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_PF_GAMEPAD_ALT, "Toggle Analog")))
         {
@@ -1960,7 +1952,8 @@ void FullscreenUI::OpenSaveStateSelector(const std::string& serial, const std::s
         if (PopulateSaveStateListEntries(serial, std::move(undo_state), is_loading) > 0)
         {
           s_locals.save_state_selector_loading = is_loading;
-          SwitchToMainWindow(MainWindowType::SaveStateSelector);
+          BeginTransition(TransitionEffect::ZoomIn, DEFAULT_TRANSITION_TIME,
+                          []() { SwitchToMainWindow(MainWindowType::SaveStateSelector); });
         }
         else
         {
@@ -1974,7 +1967,8 @@ void FullscreenUI::OpenSaveStateSelector(const std::string& serial, const std::s
     if (PopulateSaveStateListEntries(serial, std::nullopt, is_loading) > 0)
     {
       s_locals.save_state_selector_loading = is_loading;
-      SwitchToMainWindow(MainWindowType::SaveStateSelector);
+      BeginTransition(TransitionEffect::ZoomIn, DEFAULT_TRANSITION_TIME,
+                      []() { SwitchToMainWindow(MainWindowType::SaveStateSelector); });
     }
     else
     {
