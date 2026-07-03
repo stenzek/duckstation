@@ -2157,7 +2157,7 @@ static std::optional<u32> ParseHexOptionMask(const std::string_view str, u8* out
       else if (!last_was_option)
       {
         // ? must be consecutive
-        return false;
+        return std::nullopt;
       }
 
       option_nibble_count++;
@@ -2172,7 +2172,7 @@ static std::optional<u32> ParseHexOptionMask(const std::string_view str, u8* out
     else
     {
       // not a valid hex digit
-      return false;
+      return std::nullopt;
     }
   }
 
