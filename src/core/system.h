@@ -8,6 +8,8 @@
 
 #include "util/image.h"
 
+#include <ctime>
+#include <functional>
 #include <memory>
 #include <optional>
 #include <span>

@@ -112,6 +112,7 @@
     <ClInclude Include="cpu_pgxp.h" />
     <ClInclude Include="cpu_core_private.h" />
     <ClInclude Include="cheats.h" />
+    <ClInclude Include="cheats_private.h" />
     <ClInclude Include="memory_card_image.h" />
     <ClInclude Include="analog_joystick.h" />
     <ClInclude Include="gpu_types.h" />

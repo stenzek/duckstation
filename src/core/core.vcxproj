@@ -95,6 +95,7 @@
     <ClInclude Include="cdrom_async_reader.h" />
     <ClInclude Include="cdrom_subq_replacement.h" />
     <ClInclude Include="cheats.h" />
+    <ClInclude Include="cheats_private.h" />
     <ClInclude Include="achievements.h" />
     <ClInclude Include="controller_helpers.h" />
     <ClInclude Include="core.h" />

@@ -2,8 +2,11 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="..\..\dep\googletest\src\gtest_main.cc" />
+    <ClCompile Include="..\core\cheats.cpp" />
     <ClCompile Include="..\core\cpu_disasm.cpp" />
     <ClCompile Include="..\core\cpu_types.cpp" />
+    <ClCompile Include="..\util\zip_helpers.cpp" />
+    <ClCompile Include="cheats_tests.cpp" />
     <ClCompile Include="cpu_disasm_tests.cpp" />
     <ClCompile Include="stub_cpu.cpp" />
   </ItemGroup>

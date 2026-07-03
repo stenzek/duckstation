@@ -24,6 +24,7 @@ add_library(core
   cdrom_subq_replacement.h
   cheats.cpp
   cheats.h
+  cheats_private.h
   controller.cpp
   controller.h
   controller_helpers.h
