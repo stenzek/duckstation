@@ -4631,7 +4631,7 @@ std::unique_ptr<Cheats::AssemblyCheatCode> Cheats::AssemblyCheatCode::Parse(Meta
     if (linev.empty())
       continue;
 
-    if (linev.back() == ':')
+    if (linev.starts_with(".org "))
     {
       if (pc.has_value() && !section_has_instruction)
       {
@@ -4639,7 +4639,7 @@ std::unique_ptr<Cheats::AssemblyCheatCode> Cheats::AssemblyCheatCode::Parse(Meta
         return {};
       }
 
-      std::string_view address_text = StringUtil::StripWhitespace(linev.substr(0, linev.size() - 1));
+      std::string_view address_text = StringUtil::StripWhitespace(linev.substr(4));
       if (address_text.starts_with("0x") || address_text.starts_with("0X"))
         address_text.remove_prefix(2);
 
