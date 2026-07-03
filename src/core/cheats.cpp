@@ -4617,10 +4617,10 @@ std::unique_ptr<Cheats::AssemblyCheatCode> Cheats::AssemblyCheatCode::Parse(Meta
   }
 
   std::unique_ptr<AssemblyCheatCode> code = std::make_unique<AssemblyCheatCode>(std::move(metadata));
+  code->instructions.reserve(static_cast<size_t>(std::ranges::count(data, '\n')) + 1);
+  CPU::AssemblyLabelList labels;
   CheatFileReader reader(data);
   std::optional<u32> pc;
-  u32 section_line = 0;
-  bool section_has_instruction = false;
   std::string_view line;
   while (reader.GetLine(&line))
   {
@@ -4631,14 +4631,47 @@ std::unique_ptr<Cheats::AssemblyCheatCode> Cheats::AssemblyCheatCode::Parse(Meta
     if (linev.empty())
       continue;
 
-    if (linev.starts_with(".org "))
+    const size_t colon_pos = linev.find(':');
+    if (colon_pos != std::string_view::npos)
     {
-      if (pc.has_value() && !section_has_instruction)
+      const std::string_view label_name = StringUtil::StripWhitespace(linev.substr(0, colon_pos));
+      if (label_name.empty() || label_name.front() == '+' || label_name.front() == '-' ||
+          (label_name.front() >= '0' && label_name.front() <= '9') || label_name.find('?') != std::string_view::npos ||
+          label_name.find_first_of(" \t\r\n") != std::string_view::npos)
       {
-        Error::SetStringFmt(error, "No instructions after address at line {}.", section_line);
+        Error::SetStringFmt(error, "Malformed label at line {}: {}", reader.GetCurrentLineNumber(), linev);
+        return {};
+      }
+      if (!pc.has_value())
+      {
+        Error::SetStringFmt(error, "Label before starting address at line {}: {}", reader.GetCurrentLineNumber(),
+                            linev);
         return {};
       }
 
+      CPU::AssemblyLabel* label = CPU::DefineAssemblyLabel(&labels, label_name, pc.value(), error);
+      if (!label)
+        return {};
+
+      if (!CPU::FixupAssemblyLabelBackreferences(label, code.get(), error, [](u32 pc, void* userdata) {
+            for (Instruction& inst : static_cast<AssemblyCheatCode*>(userdata)->instructions)
+            {
+              if (inst.pc == pc)
+                return &inst.new_value;
+            }
+            return static_cast<u32*>(nullptr);
+          }))
+      {
+        return {};
+      }
+
+      linev = StringUtil::StripWhitespace(linev.substr(colon_pos + 1));
+      if (linev.empty())
+        continue;
+    }
+
+    if (linev.starts_with(".org "))
+    {
       std::string_view address_text = StringUtil::StripWhitespace(linev.substr(4));
       if (address_text.starts_with("0x") || address_text.starts_with("0X"))
         address_text.remove_prefix(2);
@@ -4657,8 +4690,6 @@ std::unique_ptr<Cheats::AssemblyCheatCode> Cheats::AssemblyCheatCode::Parse(Meta
       }
 
       pc = address.value();
-      section_line = reader.GetCurrentLineNumber();
-      section_has_instruction = false;
       continue;
     }
 
@@ -4669,12 +4700,22 @@ std::unique_ptr<Cheats::AssemblyCheatCode> Cheats::AssemblyCheatCode::Parse(Meta
       return {};
     }
 
-    u32 bits;
+    const u32 instruction_pc = pc.value();
+    if (std::ranges::any_of(code->instructions,
+                            [instruction_pc](const Instruction& inst) { return inst.pc == instruction_pc; }))
+    {
+      Error::SetStringFmt(error, "Duplicate instruction address 0x{:08X} at line {}.", instruction_pc,
+                          reader.GetCurrentLineNumber());
+      return {};
+    }
+
+    code->instructions.emplace_back(instruction_pc, 0, UNINITIALIZED_OLD_VALUE);
+    u32& bits = code->instructions.back().new_value;
     Error assemble_error;
     const size_t wildcard_pos = linev.find('?');
     if (wildcard_pos == std::string_view::npos)
     {
-      if (!CPU::AssembleInstruction(&bits, static_cast<u32>(pc.value()), linev, &assemble_error))
+      if (!CPU::AssembleInstruction(&bits, instruction_pc, linev, &labels, &assemble_error))
       {
         Error::SetStringFmt(error, "Failed to assemble instruction at line {}: {}", reader.GetCurrentLineNumber(),
                             assemble_error.GetDescription());
@@ -4709,8 +4750,8 @@ std::unique_ptr<Cheats::AssemblyCheatCode> Cheats::AssemblyCheatCode::Parse(Meta
       }
 
       u32 one_bits;
-      if (!CPU::AssembleInstruction(&bits, static_cast<u32>(pc.value()), zero_instruction, &assemble_error) ||
-          !CPU::AssembleInstruction(&one_bits, static_cast<u32>(pc.value()), one_instruction, &assemble_error))
+      if (!CPU::AssembleInstruction(&bits, instruction_pc, zero_instruction, &labels, &assemble_error) ||
+          !CPU::AssembleInstruction(&one_bits, instruction_pc, one_instruction, &labels, &assemble_error))
       {
         Error::SetStringFmt(error, "Failed to assemble wildcard instruction at line {}: {}",
                             reader.GetCurrentLineNumber(), assemble_error.GetDescription());
@@ -4730,33 +4771,24 @@ std::unique_ptr<Cheats::AssemblyCheatCode> Cheats::AssemblyCheatCode::Parse(Meta
         return {};
       }
 
-      code->option_instruction_values.emplace_back(static_cast<u32>(code->instructions.size()),
+      code->option_instruction_values.emplace_back(static_cast<u32>(code->instructions.size() - 1),
                                                    static_cast<u8>(option_bit_position),
                                                    static_cast<u8>(option_bit_count));
     }
 
-    const u32 instruction_pc = static_cast<u32>(pc.value());
-    if (std::ranges::any_of(code->instructions,
-                            [instruction_pc](const Instruction& inst) { return inst.pc == instruction_pc; }))
-    {
-      Error::SetStringFmt(error, "Duplicate instruction address 0x{:08X} at line {}.", instruction_pc,
-                          reader.GetCurrentLineNumber());
-      return {};
-    }
-
-    code->instructions.push_back({instruction_pc, bits, UNINITIALIZED_OLD_VALUE});
-    section_has_instruction = true;
-    pc = pc.value() + CPU::INSTRUCTION_SIZE;
+    pc = instruction_pc + CPU::INSTRUCTION_SIZE;
   }
 
-  if (pc.has_value() && !section_has_instruction)
-  {
-    Error::SetStringFmt(error, "No instructions after address at line {}.", section_line);
-    return {};
-  }
   if (code->instructions.empty())
   {
     Error::SetStringView(error, "No instructions in code.");
+    return {};
+  }
+  if (CPU::ContainsUnresolvedLabels(labels))
+  {
+    const auto iter =
+      std::ranges::find_if(labels, [](const CPU::AssemblyLabel& label) { return !label.address.has_value(); });
+    Error::SetStringFmt(error, "Undefined label '{}'.", iter->name);
     return {};
   }
 

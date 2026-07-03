@@ -55,9 +55,13 @@ static bool ParseGPR(std::string_view text, u32* index);
 static bool ParseNumericRegister(std::string_view text, u32* index);
 static bool ParseCopRegister(std::string_view text, u32 cop_n, bool control, u32* index);
 static bool SetField(u32* bits, u32 shift, u32 width, u32 value);
-static bool AssembleFormat(u32* bits, u32 pc, const char* format, std::string_view text, Error* error);
+static bool EncodeAssemblyTarget(u32* bits, u32 pc, u32 target, bool jump, Error* error);
+static std::optional<u32> ResolveAssemblyTarget(AssemblyLabelList* labels, std::string_view operand, u32 placeholder,
+                                                u32* instruction, u32 pc);
+static bool AssembleFormat(u32* bits, u32* instruction, u32 pc, const char* format, std::string_view text,
+                           AssemblyLabelList* labels, Error* error);
 static AssembleResult TryTableEntry(u32* dest, u32 pc, std::string_view text, const char* format, u32 base_bits,
-                                    Error* error);
+                                    AssemblyLabelList* labels, Error* error);
 static AssembleResult AssembleGTEInstruction(u32* dest, std::string_view text, Error* error);
 
 static const std::array<const char*, 64> s_base_table = {{
@@ -966,7 +970,60 @@ bool CPU::SetField(u32* bits, u32 shift, u32 width, u32 value)
   return true;
 }
 
-bool CPU::AssembleFormat(u32* bits, u32 pc, const char* format, std::string_view text, Error* error)
+bool CPU::EncodeAssemblyTarget(u32* bits, const u32 pc, const u32 target, const bool jump, Error* error)
+{
+  if (jump)
+  {
+    if ((target & 3) != 0 || (target & 0xF0000000u) != ((pc + 4) & 0xF0000000u))
+    {
+      Error::SetStringFmt(error, "Jump target 0x{:08X} is outside the current 256 MB region.", target);
+      return false;
+    }
+
+    SetField(bits, 0, 26, (target & ~0xF0000000u) >> 2);
+    return true;
+  }
+
+  const u32 delta = target - (pc + 4);
+  const s64 word_delta = static_cast<s64>(static_cast<s32>(delta)) / 4;
+  if ((delta & 3) != 0 || word_delta < std::numeric_limits<s16>::min() || word_delta > std::numeric_limits<s16>::max())
+  {
+    Error::SetStringFmt(error, "Branch target 0x{:08X} is out of range.", target);
+    return false;
+  }
+
+  SetField(bits, 0, 16, static_cast<u16>(word_delta));
+  return true;
+}
+
+std::optional<u32> CPU::ResolveAssemblyTarget(AssemblyLabelList* labels, const std::string_view operand,
+                                              const u32 placeholder, u32* instruction, const u32 pc)
+{
+  if (!labels || operand.empty() || operand.front() == '+' || operand.front() == '-' ||
+      (operand.front() >= '0' && operand.front() <= '9'))
+  {
+    return std::nullopt;
+  }
+
+  const auto iter = std::ranges::find(*labels, operand, &AssemblyLabel::name);
+  if (iter == labels->end())
+  {
+    labels->emplace_back(std::string(operand), std::nullopt, std::vector<u32>());
+    labels->back().backreferences.push_back(pc);
+    return placeholder;
+  }
+
+  if (!iter->address.has_value())
+  {
+    if (std::ranges::find(iter->backreferences, pc) == iter->backreferences.end())
+      iter->backreferences.push_back(pc);
+  }
+
+  return iter->address.value_or(placeholder);
+}
+
+bool CPU::AssembleFormat(u32* bits, u32* instruction, u32 pc, const char* format, std::string_view text,
+                         AssemblyLabelList* labels, Error* error)
 {
   const std::string_view format_view(format);
   const size_t format_space = format_view.find_first_of(" \t\r\n");
@@ -1047,40 +1104,46 @@ bool CPU::AssembleFormat(u32* bits, u32 pc, const char* format, std::string_view
     else if (type == "$rel")
     {
       u64 target_value;
-      if (!ParseUnsignedValue(operand, &target_value) || target_value > std::numeric_limits<u32>::max() ||
-          (target_value & 3) != 0)
+      if (!ParseUnsignedValue(operand, &target_value))
+      {
+        const std::optional<u32> label_target = ResolveAssemblyTarget(labels, operand, pc + 4, instruction, pc);
+        if (!label_target.has_value())
+        {
+          Error::SetStringFmt(error, "Branch target '{}' is not an aligned 32-bit address.", operand);
+          return false;
+        }
+        target_value = label_target.value();
+      }
+      if (target_value > std::numeric_limits<u32>::max() || (target_value & 3) != 0)
       {
         Error::SetStringFmt(error, "Branch target '{}' is not an aligned 32-bit address.", operand);
         return false;
       }
 
-      const u32 delta = static_cast<u32>(target_value) - (pc + 4);
-      const s64 word_delta = static_cast<s64>(static_cast<s32>(delta)) / 4;
-      if ((delta & 3) != 0 || word_delta < std::numeric_limits<s16>::min() ||
-          word_delta > std::numeric_limits<s16>::max())
-      {
-        Error::SetStringFmt(error, "Branch target '{}' is out of range.", operand);
+      if (!EncodeAssemblyTarget(bits, pc, static_cast<u32>(target_value), false, error))
         return false;
-      }
-      SetField(bits, 0, 16, static_cast<u16>(word_delta));
     }
     else if (type == "$jt")
     {
       u64 target_value;
-      if (!ParseUnsignedValue(operand, &target_value) || target_value > std::numeric_limits<u32>::max() ||
-          (target_value & 3) != 0)
+      if (!ParseUnsignedValue(operand, &target_value))
+      {
+        const std::optional<u32> label_target = ResolveAssemblyTarget(labels, operand, pc + 4, instruction, pc);
+        if (!label_target.has_value())
+        {
+          Error::SetStringFmt(error, "Jump target '{}' is not an aligned 32-bit address.", operand);
+          return false;
+        }
+        target_value = label_target.value();
+      }
+      if (target_value > std::numeric_limits<u32>::max() || (target_value & 3) != 0)
       {
         Error::SetStringFmt(error, "Jump target '{}' is not an aligned 32-bit address.", operand);
         return false;
       }
 
-      const u32 target = static_cast<u32>(target_value);
-      if ((target & 0xF0000000u) != ((pc + 4) & 0xF0000000u))
-      {
-        Error::SetStringFmt(error, "Jump target '{}' is outside the current 256 MB region.", operand);
+      if (!EncodeAssemblyTarget(bits, pc, static_cast<u32>(target_value), true, error))
         return false;
-      }
-      SetField(bits, 0, 26, target >> 2);
     }
     else if (type == "$offsetrs")
     {
@@ -1118,7 +1181,7 @@ bool CPU::AssembleFormat(u32* bits, u32 pc, const char* format, std::string_view
 }
 
 CPU::AssembleResult CPU::TryTableEntry(u32* dest, u32 pc, std::string_view text, const char* format, u32 base_bits,
-                                       Error* error)
+                                       AssemblyLabelList* labels, Error* error)
 {
   if (!format) // Unknown
     return AssembleResult::NoMatch;
@@ -1128,7 +1191,7 @@ CPU::AssembleResult CPU::TryTableEntry(u32* dest, u32 pc, std::string_view text,
     return AssembleResult::NoMatch;
 
   u32 bits = base_bits;
-  if (!AssembleFormat(&bits, pc, format, text, error))
+  if (!AssembleFormat(&bits, dest, pc, format, text, labels, error))
     return AssembleResult::Error;
 
   *dest = bits;
@@ -1226,6 +1289,11 @@ CPU::AssembleResult CPU::AssembleGTEInstruction(u32* dest, std::string_view text
 
 bool CPU::AssembleInstruction(u32* dest, u32 pc, std::string_view text, Error* error)
 {
+  return AssembleInstruction(dest, pc, text, nullptr, error);
+}
+
+bool CPU::AssembleInstruction(u32* dest, u32 pc, std::string_view text, AssemblyLabelList* labels, Error* error)
+{
   if (!dest)
   {
     Error::SetStringView(error, "Destination pointer is null.");
@@ -1242,7 +1310,7 @@ bool CPU::AssembleInstruction(u32* dest, u32 pc, std::string_view text, Error* e
   const std::string_view mnemonic = GetMnemonic(text);
   if (StringUtil::EqualNoCase(mnemonic, "nop"))
   {
-    const AssembleResult result = TryTableEntry(dest, pc, text, "nop", 0, error);
+    const AssembleResult result = TryTableEntry(dest, pc, text, "nop", 0, labels, error);
     return (result == AssembleResult::Success);
   }
 
@@ -1254,14 +1322,14 @@ bool CPU::AssembleInstruction(u32* dest, u32 pc, std::string_view text, Error* e
       continue;
     }
 
-    const AssembleResult result = TryTableEntry(dest, pc, text, s_base_table[op], op << 26, error);
+    const AssembleResult result = TryTableEntry(dest, pc, text, s_base_table[op], op << 26, labels, error);
     if (result != AssembleResult::NoMatch)
       return (result == AssembleResult::Success);
   }
 
   for (u32 funct = 0; funct < s_special_table.size(); funct++)
   {
-    const AssembleResult result = TryTableEntry(dest, pc, text, s_special_table[funct], funct, error);
+    const AssembleResult result = TryTableEntry(dest, pc, text, s_special_table[funct], funct, labels, error);
     if (result != AssembleResult::NoMatch)
       return (result == AssembleResult::Success);
   }
@@ -1275,7 +1343,7 @@ bool CPU::AssembleInstruction(u32* dest, u32 pc, std::string_view text, Error* e
   for (const auto& [rt, format] : branch_table)
   {
     const u32 base_bits = (static_cast<u32>(InstructionOp::b) << 26) | (rt << 16);
-    const AssembleResult result = TryTableEntry(dest, pc, text, format, base_bits, error);
+    const AssembleResult result = TryTableEntry(dest, pc, text, format, base_bits, labels, error);
     if (result != AssembleResult::NoMatch)
       return (result == AssembleResult::Success);
   }
@@ -1286,7 +1354,7 @@ bool CPU::AssembleInstruction(u32* dest, u32 pc, std::string_view text, Error* e
     {
       const u32 base_bits =
         ((static_cast<u32>(InstructionOp::cop0) + cop_n) << 26) | (static_cast<u32>(common_op) << 21);
-      const AssembleResult result = TryTableEntry(dest, pc, text, format, base_bits, error);
+      const AssembleResult result = TryTableEntry(dest, pc, text, format, base_bits, labels, error);
       if (result != AssembleResult::NoMatch)
         return (result == AssembleResult::Success);
     }
@@ -1296,7 +1364,7 @@ bool CPU::AssembleInstruction(u32* dest, u32 pc, std::string_view text, Error* e
   {
     const u32 base_bits =
       (static_cast<u32>(InstructionOp::cop0) << 26) | (UINT32_C(1) << 25) | static_cast<u32>(cop0_op);
-    const AssembleResult result = TryTableEntry(dest, pc, text, format, base_bits, error);
+    const AssembleResult result = TryTableEntry(dest, pc, text, format, base_bits, labels, error);
     if (result != AssembleResult::NoMatch)
       return (result == AssembleResult::Success);
   }
@@ -1321,4 +1389,53 @@ bool CPU::AssembleInstruction(u32* dest, u32 pc, std::string_view text, Error* e
 
   Error::SetStringFmt(error, "Unknown instruction mnemonic '{}'.", mnemonic);
   return false;
+}
+
+bool CPU::ContainsUnresolvedLabels(const AssemblyLabelList& labels)
+{
+  return std::ranges::any_of(labels, [](const AssemblyLabel& label) { return !label.address.has_value(); });
+}
+
+CPU::AssemblyLabel* CPU::DefineAssemblyLabel(AssemblyLabelList* labels, const std::string_view name, const u32 address,
+                                             Error* error)
+{
+  const auto iter = std::ranges::find(*labels, name, &AssemblyLabel::name);
+  if (iter == labels->end())
+  {
+    labels->emplace_back(std::string(name), std::make_optional(address), std::vector<u32>());
+    return &labels->back();
+  }
+
+  if (iter->address.has_value())
+  {
+    Error::SetStringFmt(error, "Label '{}' is already defined.", name);
+    return nullptr;
+  }
+
+  iter->address = address;
+  return &(*iter);
+}
+
+bool CPU::FixupAssemblyLabelBackreferences(AssemblyLabel* label, void* userdata, Error* error,
+                                           u32* (*instruction_reader)(u32 pc, void* userdata))
+{
+  for (const u32 fixup_pc : label->backreferences)
+  {
+    u32* instruction = instruction_reader(fixup_pc, userdata);
+    if (!instruction)
+    {
+      Error::SetStringFmt(error, "Failed to read instruction at 0x{:08X} for label backreference.", fixup_pc);
+      return false;
+    }
+
+    const InstructionOp op = Instruction{*instruction}.op;
+    if (!EncodeAssemblyTarget(instruction, fixup_pc, label->address.value(),
+                              (op == InstructionOp::j || op == InstructionOp::jal), error))
+    {
+      return false;
+    }
+  }
+
+  label->backreferences.clear();
+  return true;
 }

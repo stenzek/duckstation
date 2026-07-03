@@ -10,6 +10,7 @@
 #include <gtest/gtest.h>
 
 #include <array>
+#include <limits>
 
 namespace {
 
@@ -33,6 +34,30 @@ struct AssemblyCase
   std::string_view text;
   u32 bits;
 };
+
+struct LabelAssemblyCase
+{
+  std::string_view label_text;
+  std::string_view forward_text;
+  std::string_view backward_text;
+};
+
+struct LabelAssemblyInstructions
+{
+  u32* instructions;
+  size_t count;
+  u32 base_pc;
+};
+
+static u32* GetLabelAssemblyInstruction(const u32 pc, void* userdata)
+{
+  const LabelAssemblyInstructions* const code = static_cast<LabelAssemblyInstructions*>(userdata);
+  if (pc < code->base_pc || ((pc - code->base_pc) % CPU::INSTRUCTION_SIZE) != 0)
+    return nullptr;
+
+  const size_t index = (pc - code->base_pc) / CPU::INSTRUCTION_SIZE;
+  return (index < code->count) ? &code->instructions[index] : nullptr;
+}
 
 TEST(CPUDisasm, Disassemble)
 {
@@ -140,6 +165,95 @@ TEST(CPUDisasm, Assemble)
     EXPECT_EQ(Assemble(0x1000, test.text), test.bits) << test.text;
 }
 
+TEST(CPUDisasm, JumpTargets)
+{
+  struct JumpType
+  {
+    std::string_view mnemonic;
+    u32 opcode;
+  };
+
+  static constexpr std::array jump_types = {
+    JumpType{"j", 0x08000000},
+    JumpType{"jal", 0x0C000000},
+  };
+  static constexpr std::array<u32, 5> regions = {0x00000000, 0x10000000, 0x80000000, 0xA0000000, 0xF0000000};
+  static constexpr std::array<u32, 4> target_fields = {0x0000000, 0x0000001, 0x0123456, 0x3FFFFFF};
+
+  for (const JumpType& jump : jump_types)
+  {
+    for (const u32 region : regions)
+    {
+      const u32 pc = region | 0x1000;
+      for (const u32 target_field : target_fields)
+      {
+        const u32 target = region | (target_field << 2);
+        const u32 bits = jump.opcode | target_field;
+        const std::string text = fmt::format("{} 0x{:08x}", jump.mnemonic, target);
+        SCOPED_TRACE(fmt::format("pc=0x{:08x}, instruction={}", pc, text));
+        EXPECT_EQ(Assemble(pc, text), bits);
+        EXPECT_EQ(Disassemble(pc, bits), text);
+      }
+    }
+  }
+
+  static constexpr std::array boundary_cases = {
+    AssemblyCase{"j 0x10000000", 0x08000000},
+    AssemblyCase{"jal 0x10000000", 0x0C000000},
+  };
+  for (const AssemblyCase& test : boundary_cases)
+  {
+    EXPECT_EQ(Assemble(0x0FFFFFFC, test.text), test.bits);
+    EXPECT_EQ(Disassemble(0x0FFFFFFC, test.bits), test.text);
+  }
+
+  EXPECT_EQ(Assemble(0xFFFFFFFC, "j 0x00000000"), 0x08000000u);
+  EXPECT_EQ(Disassemble(0xFFFFFFFC, 0x08000000), "j 0x00000000");
+}
+
+TEST(CPUDisasm, BranchTargetBoundaries)
+{
+  static constexpr std::array<s32, 5> word_offsets = {
+    std::numeric_limits<s16>::min(), -1, 0, 1, std::numeric_limits<s16>::max(),
+  };
+  static constexpr u32 pc = 0x80010000;
+  for (const s32 word_offset : word_offsets)
+  {
+    const u32 target = (pc + 4) + static_cast<u32>(word_offset * 4);
+    const u32 bits = 0x11090000 | static_cast<u16>(word_offset);
+    const std::string text = fmt::format("beq t0, t1, 0x{:08x}", target);
+    SCOPED_TRACE(text);
+    EXPECT_EQ(Assemble(pc, text), bits);
+    EXPECT_EQ(Disassemble(pc, bits), text);
+  }
+
+  EXPECT_EQ(Assemble(0xFFFFFFFC, "beq t0, t1, 0x00000000"), 0x11090000u);
+  EXPECT_EQ(Disassemble(0xFFFFFFFC, 0x11090000), "beq t0, t1, 0x00000000");
+}
+
+TEST(CPUDisasm, ControlFlowTargetErrorsDoNotModifyDestination)
+{
+  struct ErrorCase
+  {
+    u32 pc;
+    std::string_view text;
+  };
+  static constexpr std::array cases = {
+    ErrorCase{0x80001000, "j 0x90001000"},           ErrorCase{0x80001000, "jal 0x80001002"},
+    ErrorCase{0x0FFFFFF8, "j 0x10000000"},           ErrorCase{0x80010000, "beq t0, t1, 0x80030004"},
+    ErrorCase{0x80010000, "beq t0, t1, 0x7fff0000"},
+  };
+
+  for (const ErrorCase& test : cases)
+  {
+    u32 result = 0xDEADBEEF;
+    Error error;
+    EXPECT_FALSE(CPU::AssembleInstruction(&result, test.pc, test.text, &error)) << test.text;
+    EXPECT_EQ(result, 0xDEADBEEFu) << test.text;
+    EXPECT_TRUE(error.IsValid()) << test.text;
+  }
+}
+
 TEST(CPUDisasm, AssembleErrorsDoNotModifyDestination)
 {
   static constexpr std::array<std::string_view, 14> cases = {
@@ -157,6 +271,54 @@ TEST(CPUDisasm, AssembleErrorsDoNotModifyDestination)
     EXPECT_EQ(result, 0xDEADBEEFu) << text;
     EXPECT_TRUE(error.IsValid()) << text;
     EXPECT_FALSE(error.GetDescription().empty()) << text;
+  }
+}
+
+TEST(CPUDisasm, AssembleBranchLabels)
+{
+  static constexpr std::array cases = {
+    LabelAssemblyCase{"j @target", "j 0x1040", "j 0x1000"},
+    LabelAssemblyCase{"jal @target", "jal 0x1040", "jal 0x1000"},
+    LabelAssemblyCase{"beq t1, t2, @target", "beq t1, t2, 0x1040", "beq t1, t2, 0x1000"},
+    LabelAssemblyCase{"bne t1, t2, @target", "bne t1, t2, 0x1040", "bne t1, t2, 0x1000"},
+    LabelAssemblyCase{"blez t1, @target", "blez t1, 0x1040", "blez t1, 0x1000"},
+    LabelAssemblyCase{"bgtz t1, @target", "bgtz t1, 0x1040", "bgtz t1, 0x1000"},
+    LabelAssemblyCase{"bltz t0, @target", "bltz t0, 0x1040", "bltz t0, 0x1000"},
+    LabelAssemblyCase{"bgez t0, @target", "bgez t0, 0x1040", "bgez t0, 0x1000"},
+    LabelAssemblyCase{"bltzal t0, @target", "bltzal t0, 0x1040", "bltzal t0, 0x1000"},
+    LabelAssemblyCase{"bgezal t0, @target", "bgezal t0, 0x1040", "bgezal t0, 0x1000"},
+  };
+
+  CPU::AssemblyLabelList forward_labels;
+  std::array<u32, cases.size()> forward_results = {};
+  for (size_t i = 0; i < cases.size(); i++)
+  {
+    Error error;
+    ASSERT_TRUE(CPU::AssembleInstruction(&forward_results[i], 0x1000 + static_cast<u32>(i * 4), cases[i].label_text,
+                                         &forward_labels, &error))
+      << error.GetDescription();
+  }
+  EXPECT_TRUE(CPU::ContainsUnresolvedLabels(forward_labels));
+
+  Error error;
+  CPU::AssemblyLabel* label;
+  ASSERT_TRUE((label = CPU::DefineAssemblyLabel(&forward_labels, "@target", 0x1040, &error))) << error.GetDescription();
+  EXPECT_FALSE(CPU::ContainsUnresolvedLabels(forward_labels));
+  LabelAssemblyInstructions forward_code = {forward_results.data(), forward_results.size(), 0x1000};
+  ASSERT_TRUE(CPU::FixupAssemblyLabelBackreferences(label, &forward_code, &error, GetLabelAssemblyInstruction))
+    << error.GetDescription();
+  for (size_t i = 0; i < cases.size(); i++)
+    EXPECT_EQ(forward_results[i], Assemble(0x1000 + static_cast<u32>(i * 4), cases[i].forward_text));
+
+  CPU::AssemblyLabelList backward_labels;
+  ASSERT_TRUE(CPU::DefineAssemblyLabel(&backward_labels, "@target", 0x1000, &error)) << error.GetDescription();
+  for (size_t i = 0; i < cases.size(); i++)
+  {
+    const u32 pc = 0x1040 + static_cast<u32>(i * 4);
+    u32 result;
+    ASSERT_TRUE(CPU::AssembleInstruction(&result, pc, cases[i].label_text, &backward_labels, &error))
+      << error.GetDescription();
+    EXPECT_EQ(result, Assemble(pc, cases[i].backward_text));
   }
 }
 
