@@ -70,7 +70,7 @@ AnimatedStackedWidget::AnimatedStackedWidget(QWidget* parent) : QStackedWidget(p
   m_overlay = new SlideTransitionOverlay(this);
   m_overlay->hide();
 
-  m_animation.setDuration(150);
+  m_animation.setDuration(style()->styleHint(QStyle::SH_Widget_Animation_Duration, nullptr, this));
   m_animation.setEasingCurve(QEasingCurve::OutCubic);
   connect(&m_animation, &QVariantAnimation::valueChanged, this,
           [this](const QVariant& value) { m_overlay->setProgress(value.toReal()); });
@@ -87,7 +87,7 @@ void AnimatedStackedWidget::setCurrentIndex(int index)
 
   finishAnimation();
 
-  if (!isVisible() || !style()->styleHint(QStyle::SH_Widget_Animate, nullptr, this))
+  if (!isVisible() || style()->styleHint(QStyle::SH_Widget_Animation_Duration, nullptr, this) <= 0)
   {
     QStackedWidget::setCurrentIndex(index);
     return;
