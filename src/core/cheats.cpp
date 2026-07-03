@@ -4376,12 +4376,17 @@ void Cheats::GamesharkCheatCode::ApplyOnDisable(RollbackLog* rollback_list) cons
   }
 }
 
+std::span<const Cheats::GamesharkCheatCode::Instruction> Cheats::GamesharkCheatCode::GetInstructions() const
+{
+  return instructions;
+}
+
 void Cheats::GamesharkCheatCode::SetOptionValue(u32 value)
 {
   for (const auto& [index, bitpos_start, bit_count] : option_instruction_values)
   {
     Instruction& inst = instructions[index];
-    const u32 value_mask = ((1u << bit_count) - 1);
+    const u32 value_mask = (bit_count == 32) ? std::numeric_limits<u32>::max() : ((UINT32_C(1) << bit_count) - 1);
     const u32 fixed_mask = ~(value_mask << bitpos_start);
     inst.second = (inst.second & fixed_mask) | ((value & value_mask) << bitpos_start);
   }
