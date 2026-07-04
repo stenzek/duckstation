@@ -19,9 +19,9 @@
         <location filename="../../core/achievements.cpp" line="504"/>
         <source>Prefetching achievement badges (%n remaining)...</source>
         <comment>Achievement badge prefetch count</comment>
-        <translation type="unfinished">
-            <numerusform></numerusform>
-            <numerusform></numerusform>
+        <translation>
+            <numerusform>Prefetching achievement badges (%n remaining)...</numerusform>
+            <numerusform>Prefetching achievement badges (%n remaining)...</numerusform>
         </translation>
     </message>
     <message numerus="yes">
@@ -188,9 +188,9 @@
         <location filename="../../util/cd_image.cpp" line="368"/>
         <source>%n tracks covering {0} MB ({1} MB on disk)</source>
         <comment>Number of tracks</comment>
-        <translation type="unfinished">
-            <numerusform></numerusform>
-            <numerusform></numerusform>
+        <translation>
+            <numerusform>%n track covering {0} MB ({1} MB on disk)</numerusform>
+            <numerusform>%n tracks covering {0} MB ({1} MB on disk)</numerusform>
         </translation>
     </message>
 </context>
@@ -370,9 +370,9 @@
         <location filename="../memorycardsettingswidget.cpp" line="215"/>
         <source>Current Multitap Mode: %1 (%n Cards)</source>
         <comment>Card Count</comment>
-        <translation type="unfinished">
-            <numerusform></numerusform>
-            <numerusform></numerusform>
+        <translation>
+            <numerusform>Current Multitap Mode: %1 (%n Card)</numerusform>
+            <numerusform>Current Multitap Mode: %1 (%n Cards)</numerusform>
         </translation>
     </message>
 </context>
