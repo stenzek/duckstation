@@ -1923,7 +1923,7 @@ bool GameDatabase::VerifyImage(CDImage* image, std::string_view expected_serial,
   CDImageHasher::TrackHashes track_hashes;
   const u32 num_tracks = image->GetTrackCount();
   track_hashes.reserve(num_tracks);
-  progress->SetState({}, 0, num_tracks, true);
+  progress->SetState(TRANSLATE_SV("GameDatabase", "Verifying Image"), 0, num_tracks, true);
 
   for (u32 track = 0; track < num_tracks; track++)
   {
