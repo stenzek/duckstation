@@ -2147,8 +2147,6 @@ void FullscreenUI::DrawSettingsWindow()
 
 void FullscreenUI::DrawSummarySettingsPage(bool show_localized_titles)
 {
-  SmallString sstr;
-
   BeginMenuButtons();
   ResetFocusHere();
 
@@ -2163,9 +2161,13 @@ void FullscreenUI::DrawSummarySettingsPage(bool show_localized_titles)
 
   if (s_settings_locals.game_settings_entry)
   {
+    const float title_width = LayoutScale(200.0f);
     const bool allow_customization = !s_settings_locals.game_settings_entry->is_runtime_populated;
     const std::string_view title = s_settings_locals.game_settings_entry->GetDisplayTitle(show_localized_titles);
-    if (MenuButton(FSUI_ICONVSTR(ICON_FA_WINDOW_MAXIMIZE, "Title"), title, true))
+    if (MenuButtonWithInlineValue(s_settings_locals.game_settings_entry->has_custom_title ?
+                                    FSUI_ICONVSTR(ICON_FA_WINDOW_MAXIMIZE, "Title (*)") :
+                                    FSUI_ICONVSTR(ICON_FA_WINDOW_MAXIMIZE, "Title"),
+                                  title, {}, true, title_width))
     {
       if (allow_customization)
       {
@@ -2194,7 +2196,10 @@ void FullscreenUI::DrawSummarySettingsPage(bool show_localized_titles)
       }
 
       if (!disc_set_title.empty() &&
-          MenuButton(FSUI_ICONVSTR(ICON_FA_LAYER_GROUP, "Disc Set Title"), disc_set_title, true))
+          MenuButtonWithInlineValue(has_custom_disc_set_title ?
+                                      FSUI_ICONVSTR(ICON_FA_LAYER_GROUP, "Disc Set Title (*)") :
+                                      FSUI_ICONVSTR(ICON_FA_LAYER_GROUP, "Disc Set Title"),
+                                    disc_set_title, {}, true, title_width))
       {
         if (allow_customization)
           OpenGameTitleActions(disc_set_name, disc_set_title, has_custom_disc_set_title, true);
@@ -2203,14 +2208,10 @@ void FullscreenUI::DrawSummarySettingsPage(bool show_localized_titles)
       }
     }
 
-    std::string_view visible_serial = s_settings_locals.game_settings_entry->serial;
-    if (s_settings_locals.game_settings_entry->has_custom_serial)
-    {
-      sstr.format(FSUI_FSTR("{} (Custom)"), s_settings_locals.game_settings_entry->serial);
-      visible_serial = sstr;
-    }
-
-    if (MenuButton(FSUI_ICONVSTR(ICON_FA_PAGER, "Serial"), visible_serial, true))
+    if (MenuButtonWithInlineValue(s_settings_locals.game_settings_entry->has_custom_serial ?
+                                    FSUI_ICONVSTR(ICON_FA_PAGER, "Serial (*)") :
+                                    FSUI_ICONVSTR(ICON_FA_PAGER, "Serial"),
+                                  s_settings_locals.game_settings_entry->serial, {}, true, title_width))
     {
       if (allow_customization)
       {
@@ -2225,24 +2226,26 @@ void FullscreenUI::DrawSummarySettingsPage(bool show_localized_titles)
       }
     }
 
-    if (MenuButton(FSUI_ICONVSTR(ICON_FA_COMPACT_DISC, "Type"),
-                   GameList::GetEntryTypeDisplayName(s_settings_locals.game_settings_entry->type), true))
+    if (MenuButtonWithInlineValue(FSUI_ICONVSTR(ICON_FA_COMPACT_DISC, "Type"),
+                                  GameList::GetEntryTypeDisplayName(s_settings_locals.game_settings_entry->type), {},
+                                  true, title_width))
     {
       CopyTextToClipboard(FSUI_STR("Game type copied to clipboard."),
                           GameList::GetEntryTypeDisplayName(s_settings_locals.game_settings_entry->type));
     }
-    if (MenuButton(FSUI_ICONVSTR(ICON_FA_GLOBE, "Region"),
-                   Settings::GetDiscRegionDisplayName(s_settings_locals.game_settings_entry->region), true))
+    if (MenuButtonWithInlineValue(FSUI_ICONVSTR(ICON_FA_GLOBE, "Region"),
+                                  Settings::GetDiscRegionDisplayName(s_settings_locals.game_settings_entry->region), {},
+                                  true, title_width))
     {
       CopyTextToClipboard(FSUI_STR("Game region copied to clipboard."),
                           Settings::GetDiscRegionDisplayName(s_settings_locals.game_settings_entry->region));
     }
-    if (MenuButton(FSUI_ICONVSTR(ICON_FA_STAR, "Compatibility Rating"),
-                   GameDatabase::GetCompatibilityRatingDisplayName(
-                     s_settings_locals.game_settings_entry->dbentry ?
-                       s_settings_locals.game_settings_entry->dbentry->compatibility :
-                       GameDatabase::CompatibilityRating::Unknown),
-                   true))
+    if (MenuButtonWithInlineValue(FSUI_ICONVSTR(ICON_FA_STAR, "Compatibility"),
+                                  GameDatabase::GetCompatibilityRatingDisplayName(
+                                    s_settings_locals.game_settings_entry->dbentry ?
+                                      s_settings_locals.game_settings_entry->dbentry->compatibility :
+                                      GameDatabase::CompatibilityRating::Unknown),
+                                  {}, true, title_width))
     {
       CopyTextToClipboard(FSUI_STR("Game compatibility rating copied to clipboard."),
                           GameDatabase::GetCompatibilityRatingDisplayName(
@@ -2250,11 +2253,15 @@ void FullscreenUI::DrawSummarySettingsPage(bool show_localized_titles)
                               s_settings_locals.game_settings_entry->dbentry->compatibility :
                               GameDatabase::CompatibilityRating::Unknown));
     }
-    if (MenuButton(FSUI_ICONVSTR(ICON_FA_FILE, "Path"), s_settings_locals.game_settings_entry->path, true))
+    if (MenuButtonWithInlineValue(FSUI_ICONVSTR(ICON_FA_FILE, "Path"), s_settings_locals.game_settings_entry->path, {},
+                                  true, title_width))
     {
       CopyTextToClipboard(FSUI_STR("Game path copied to clipboard."), s_settings_locals.game_settings_entry->path);
     }
   }
+
+  if (!s_settings_locals.image_track_list.empty())
+    DrawSummarySettingsTrackList();
 
   MenuHeading(FSUI_VSTR("Options"));
 
@@ -2280,9 +2287,6 @@ void FullscreenUI::DrawSummarySettingsPage(bool show_localized_titles)
   {
     DoClearGameSettings();
   }
-
-  if (!s_settings_locals.image_track_list.empty())
-    DrawSummarySettingsTrackList();
 
   EndMenuButtons();
 }
@@ -2410,26 +2414,22 @@ void FullscreenUI::DrawSummarySettingsTrackList()
 {
   DebugAssert(!s_settings_locals.image_track_list.empty());
 
-  MenuHeading(FSUI_VSTR("Tracks"));
+  MenuHeading(s_settings_locals.image_track_summary);
 
   const ImageTrackInfo& first_track = s_settings_locals.image_track_list.front();
   if (!first_track.verified.has_value())
   {
-    if (MenuButton(FSUI_ICONVSTR(ICON_FA_FILE_CIRCLE_CHECK, "Verify"), s_settings_locals.image_track_summary))
-    {
+    if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_FA_FILE_CIRCLE_CHECK, "Verify")))
       StartImageVerification();
-    }
   }
   else
   {
-    if (MenuButton(FSUI_ICONVSTR(ICON_FA_MAGNIFYING_GLASS, "Search on redump.info"),
-                   s_settings_locals.image_track_summary))
-    {
+    if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_FA_MAGNIFYING_GLASS, "Search on redump.info")))
       ExitFullscreenAndOpenURL(GameDatabase::GetRedumpSearchURL(CDImageHasher::HashToString(first_track.hash)));
-    }
   }
 
   TinyString title, value;
+  const float min_width = LayoutScale(200.0f);
   for (size_t i = 0; i < s_settings_locals.image_track_list.size(); i++)
   {
     const ImageTrackInfo& track = s_settings_locals.image_track_list[i];
@@ -2446,7 +2446,7 @@ void FullscreenUI::DrawSummarySettingsTrackList()
       value.append(track.verified.value() ? " " ICON_EMOJI_CHECKMARK_BUTTON : " " ICON_EMOJI_CROSS_MARK_BUTTON);
     }
 
-    if (MenuButtonWithValue(title, track.summary, value, enable))
+    if (MenuButtonWithInlineValue(title, track.summary, value, enable, min_width))
     {
       CopyTextToClipboard({}, CDImageHasher::HashToString(track.hash));
       ShowToast(OSDMessageType::Info, {}, FSUI_STR("Track hash copied to clipboard."));

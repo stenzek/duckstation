@@ -3471,6 +3471,58 @@ bool FullscreenUI::MenuButtonWithVisibilityQuery(std::string_view str_id, std::s
   return pressed;
 }
 
+bool FullscreenUI::MenuButtonWithInlineValue(std::string_view title, std::string_view value,
+                                             std::string_view right_value, bool enabled /* = true */,
+                                             const float min_title_width /* = 0.0f */,
+                                             const ImVec2& text_align /* = ImVec2(0.0f, 0.0f) */)
+{
+  const ImVec2 title_size = title.empty() ? ImVec2() :
+                                            UIStyle.Font->CalcTextSizeA(UIStyle.LargeFontSize, UIStyle.BoldFontWeight,
+                                                                        FLT_MAX, 0.0f, IMSTR_START_END(title));
+  const ImVec2 separator_size =
+    UIStyle.Font->CalcTextSizeA(UIStyle.LargeFontSize, UIStyle.BoldFontWeight, FLT_MAX, 0.0f, " ");
+  const ImVec2 value_size = value.empty() ? ImVec2() :
+                                            UIStyle.Font->CalcTextSizeA(UIStyle.LargeFontSize, UIStyle.NormalFontWeight,
+                                                                        FLT_MAX, 0.0f, IMSTR_START_END(value));
+  const ImVec2 right_value_size = right_value.empty() ?
+                                    ImVec2() :
+                                    UIStyle.Font->CalcTextSizeA(UIStyle.LargeFontSize, UIStyle.BoldFontWeight, FLT_MAX,
+                                                                0.0f, IMSTR_START_END(right_value));
+  const float title_space = std::max(title_size.x, min_title_width) + separator_size.x;
+  const ImVec2 total_size = ImVec2(title_space + value_size.x, std::max(title_size.y, value_size.y));
+  const MenuButtonBounds bb(total_size, right_value_size, ImVec2());
+
+  bool hovered, visible;
+  bool pressed = MenuButtonFrame(title, enabled, bb.frame_bb, &visible, &hovered);
+  if (!visible)
+    return false;
+
+  const ImVec4& color = ImGui::GetStyle().Colors[enabled ? ImGuiCol_Text : ImGuiCol_TextDisabled];
+  if (!title.empty())
+  {
+    RenderShadowedTextClipped(UIStyle.Font, UIStyle.LargeFontSize, UIStyle.BoldFontWeight, bb.title_bb.Min,
+                              bb.title_bb.Max, ImGui::GetColorU32(color), title, &title_size, text_align, title_size.x,
+                              &bb.title_bb);
+  }
+
+  if (!value.empty())
+  {
+    const ImVec2 new_pos = ImVec2(bb.title_bb.Min.x + title_space, bb.title_bb.Min.y);
+    RenderShadowedTextClipped(UIStyle.Font, UIStyle.LargeFontSize, UIStyle.NormalFontWeight, new_pos, bb.title_bb.Max,
+                              ImGui::GetColorU32(DarkerColor(color)), value, &value_size, text_align, value_size.x,
+                              &bb.title_bb);
+  }
+
+  if (!right_value.empty())
+  {
+    RenderShadowedTextClipped(UIStyle.Font, UIStyle.LargeFontSize, UIStyle.BoldFontWeight, bb.value_bb.Min,
+                              bb.value_bb.Max, ImGui::GetColorU32(color), right_value, &bb.value_size,
+                              ImVec2(1.0f, 0.5f), bb.value_size.x, &bb.value_bb);
+  }
+
+  return pressed;
+}
+
 bool FullscreenUI::MenuImageButton(std::string_view title, std::string_view summary, std::string_view value,
                                    ImTextureID image, const ImVec2& image_size, bool enabled /*= true*/,
                                    const ImVec2& uv0 /*= ImVec2(0.0f, 0.0f)*/,

@@ -446,6 +446,9 @@ bool MenuButtonWithValue(std::string_view title, std::string_view summary, std::
 bool MenuButtonWithVisibilityQuery(std::string_view str_id, std::string_view title, std::string_view summary,
                                    std::string_view value, bool* visible, bool enabled = true,
                                    const ImVec2& text_align = ImVec2(0.0f, 0.0f));
+bool MenuButtonWithInlineValue(std::string_view title, std::string_view value, std::string_view right_value,
+                               bool enabled = true, const float min_title_width = 0.0f,
+                               const ImVec2& text_align = ImVec2(0.0f, 0.0f));
 bool MenuImageButton(std::string_view title, std::string_view summary, std::string_view value, ImTextureID image,
                      const ImVec2& image_size = ImVec2(0.0f, 0.0f), bool enabled = true,
                      const ImVec2& uv0 = ImVec2(0.0f, 0.0f), const ImVec2& uv1 = ImVec2(1.0f, 1.0f));
