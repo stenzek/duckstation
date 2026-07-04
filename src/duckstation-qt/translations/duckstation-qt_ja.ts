@@ -2550,8 +2550,8 @@ You can manually update DuckStation by re-downloading the latest release. Do you
     </message>
     <message>
         <location filename="../autoupdaterdialog.cpp" line="728"/>
-        <source>&lt;h1&gt;Inconsistent Application State&lt;/h1&gt;&lt;h3&gt;The update zip is missing the current executable:&lt;/h3&gt;&lt;div align=&quot;center&quot;&gt;&lt;pre&gt;%1&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;strong&gt;This is usually a result of manually renaming the file.&lt;/strong&gt; Continuing to install this update may result in a broken installation if the renamed executable is used. The DuckStation executable should be named:&lt;div align=&quot;center&quot;&gt;&lt;pre&gt;%2&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Do you want to continue anyway?&lt;/p&gt;</source>
-        <translation>&lt;h1&gt;アプリケーションの状態が一致しません&lt;/h1&gt;&lt;h3&gt;更新用 ZIP に現在の実行ファイルが含まれていません:&lt;/h3&gt;&lt;div align=&quot;center&quot;&gt;&lt;pre&gt;%1&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;strong&gt;通常、これはファイル名を手動で変更したことが原因です。&lt;/strong&gt;名前を変更した実行ファイルを使用している場合、この更新を続行するとインストールが破損する可能性があります。DuckStation の実行ファイル名は次のとおりである必要があります:&lt;div align=&quot;center&quot;&gt;&lt;pre&gt;%2&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;それでも続行しますか？&lt;/p&gt;</translation>
+        <source>&lt;h1&gt;Inconsistent Application State&lt;/h1&gt;&lt;h3&gt;The update zip is missing the current executable:&lt;/h3&gt;&lt;div align=&quot;center&quot;&gt;&lt;pre&gt;%1&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;strong&gt;This is usually a result of manually renaming the file.&lt;/strong&gt; Continuing to install this update may result in a broken installation if the renamed executable is used. The DuckStation executable should be named:&lt;/p&gt;&lt;div align=&quot;center&quot;&gt;&lt;pre&gt;%2&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Do you want to continue anyway?&lt;/p&gt;</source>
+        <translation>&lt;h1&gt;アプリケーションの状態が一致しません&lt;/h1&gt;&lt;h3&gt;更新用 ZIP に現在の実行ファイルが含まれていません:&lt;/h3&gt;&lt;div align=&quot;center&quot;&gt;&lt;pre&gt;%1&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;strong&gt;通常、これはファイル名を手動で変更したことが原因です。&lt;/strong&gt;名前を変更した実行ファイルを使用している場合、この更新を続行するとインストールが破損する可能性があります。DuckStation の実行ファイル名は次のとおりである必要があります:&lt;/p&gt;&lt;div align=&quot;center&quot;&gt;&lt;pre&gt;%2&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;それでも続行しますか？&lt;/p&gt;</translation>
     </message>
     <message>
         <location filename="../autoupdaterdialog.cpp" line="832"/>
@@ -3086,8 +3086,8 @@ Your dump may be corrupted, or the physical disc is scratched.</source>
     </message>
     <message>
         <location filename="../capturesettingswidget.cpp" line="152"/>
-        <source>Selects which Video Codec to be used for media capture. &lt;b&gt;If unsure, leave it on default.&lt;b&gt;</source>
-        <translation>メディアキャプチャに使用する映像コーデックを選択します。&lt;b&gt;不明な場合は、デフォルトのままにしてください。&lt;b&gt;</translation>
+        <source>Selects which Video Codec to be used for media capture. &lt;b&gt;If unsure, leave it on default.&lt;/b&gt;</source>
+        <translation>メディアキャプチャに使用する映像コーデックを選択します。&lt;b&gt;不明な場合は、デフォルトのままにしてください。&lt;/b&gt;</translation>
     </message>
     <message>
         <location filename="../capturesettingswidget.cpp" line="153"/>
@@ -3160,8 +3160,8 @@ Your dump may be corrupted, or the physical disc is scratched.</source>
     </message>
     <message>
         <location filename="../capturesettingswidget.cpp" line="173"/>
-        <source>Selects which Audio Codec to be used for media capture. &lt;b&gt;If unsure, leave it on default.&lt;b&gt;</source>
-        <translation>メディアキャプチャに使用する音声コーデックを選択します。&lt;b&gt;不明な場合は、デフォルトのままにしてください。&lt;b&gt;</translation>
+        <source>Selects which Audio Codec to be used for media capture. &lt;b&gt;If unsure, leave it on default.&lt;/b&gt;</source>
+        <translation>メディアキャプチャに使用する音声コーデックを選択します。&lt;b&gt;不明な場合は、デフォルトのままにしてください。&lt;/b&gt;</translation>
     </message>
     <message>
         <location filename="../capturesettingswidget.cpp" line="174"/>

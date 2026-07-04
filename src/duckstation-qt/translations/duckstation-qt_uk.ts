@@ -3374,7 +3374,7 @@ Your dump may be corrupted, or the physical disc is scratched.</source>
     </message>
     <message>
         <location filename="../capturesettingswidget.cpp" line="151"/>
-        <source>Selects which Video Codec to be used for media capture. &lt;b&gt;If unsure, leave it on default.&lt;b&gt;</source>
+        <source>Selects which Video Codec to be used for media capture. &lt;b&gt;If unsure, leave it on default.&lt;/b&gt;</source>
         <translation>Вибирає відеокодек для запису медіа. &lt;b&gt;Якщо не впевнені, залиште значення за замовчуванням.&lt;/b&gt;</translation>
     </message>
     <message>
@@ -3447,7 +3447,7 @@ Your dump may be corrupted, or the physical disc is scratched.</source>
     </message>
     <message>
         <location filename="../capturesettingswidget.cpp" line="171"/>
-        <source>Selects which Audio Codec to be used for media capture. &lt;b&gt;If unsure, leave it on default.&lt;b&gt;</source>
+        <source>Selects which Audio Codec to be used for media capture. &lt;b&gt;If unsure, leave it on default.&lt;/b&gt;</source>
         <translation>Вибирає аудіокодек для запису медіа. &lt;b&gt;Якщо не впевнені, залиште значення за замовчуванням.&lt;/b&gt;</translation>
     </message>
     <message>

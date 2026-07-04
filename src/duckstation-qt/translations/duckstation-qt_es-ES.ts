@@ -6667,8 +6667,8 @@ Haz clic en Reiniciar para restablecer el número de serie al que se ha encontra
         <source>Rewind for %n frame(s), lasting %1 second(s) will require %2MB of RAM.</source>
         <translatorcomment>Plural here is for &quot;frames&quot; only, not &quot;seconds&quot;.</translatorcomment>
         <translation>
-            <numerusform>%n fotograma y %1 segundos de rebobinado requerirán %2 MB de RAM y %3 MB de VRAM.</numerusform>
-            <numerusform>%n fotogramas y %1 segundos de rebobinado requerirán %2 MB de RAM y %3 MB de VRAM.</numerusform>
+            <numerusform>%n fotograma y %1 segundos de rebobinado requerirán %2 MB de RAM.</numerusform>
+            <numerusform>%n fotogramas y %1 segundos de rebobinado requerirán %2 MB de RAM.</numerusform>
         </translation>
     </message>
     <message>
@@ -9820,7 +9820,7 @@ Esta acción no puede deshacerse.</translation>
 Error: {}
 Please check your username and password, and try again.</source>
         <translation>No se ha podido iniciar la sesión.
-Error: %1
+Error: {}
 Comprueba tu nombre de usuario y contraseña y vuelve a intentarlo.</translation>
     </message>
     <message>
@@ -11273,7 +11273,7 @@ Comprueba tu nombre de usuario y contraseña y vuelve a intentarlo.</translation
     <message>
         <location filename="../../core/fullscreenui_strings.h" line="908"/>
         <source>Yes, {} now and risk memory card corruption.</source>
-        <translation>Sí, correr el riesgo de corromper la Memory Card.</translation>
+        <translation>Sí, {} ahora y correr el riesgo de corromper la Memory Card.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreenui_strings.h" line="909"/>
@@ -15968,7 +15968,7 @@ Clic+Mayús: establecer varias asignaciones.</translation>
         <location filename="../logwindow.cpp" line="64"/>
         <source>Dropped %1 log messages, please use file or system console logging.
 </source>
-        <translation>Se han omitido %d mensajes del registro, comprueba el registro por archivo o consola del sistema.</translation>
+        <translation>Se han omitido %1 mensajes del registro, comprueba el registro por archivo o consola del sistema.</translation>
     </message>
 </context>
 <context>

@@ -17,9 +17,13 @@ from translation.ts_utils import (  # noqa: E402
     SKIPPED_TYPES,
     CatalogMessage,
     extra_rich_tags,
+    extract_placeholders,
     load_jsonl,
+    missing_rich_tags,
     parse_catalog,
+    placeholder_counts_match,
     placeholders_match,
+    unbalanced_rich_tags,
     validate_translation,
 )
 
@@ -109,11 +113,28 @@ def main() -> int:
                 if args.placeholders_only and not problem.startswith("placeholder mismatch"):
                     continue
                 errors.append(f"{label}: {problem}")
+            if placeholders_match(message.identity.source, value) and not placeholder_counts_match(
+                message.identity.source, value
+            ):
+                source_placeholders = extract_placeholders(message.identity.source)
+                translated_placeholders = extract_placeholders(value)
+                warnings.append(
+                    f"{label}: placeholder count mismatch: source={dict(source_placeholders)} "
+                    f"translation={dict(translated_placeholders)}"
+                )
             if not args.placeholders_only:
                 extras = extra_rich_tags(message.identity.source, value)
                 if extras:
                     output = errors if args.strict_extra_tags else warnings
                     output.append(f"{label}: additional rich-text tags: {dict(extras)}")
+                extras = missing_rich_tags(message.identity.source, value)
+                if extras:
+                    output = errors if args.strict_extra_tags else warnings
+                    output.append(f"{label}: missing rich-text tags: {dict(extras)}")
+                unbalanced = unbalanced_rich_tags(value)
+                if unbalanced:
+                    output = errors if args.strict_extra_tags else warnings
+                    output.append(f"{label}: unbalanced rich-text tags (opening, closing): {unbalanced}")
         if (
             message.identity.numerus
             and any(value.strip() for value in values_for(message))

@@ -6954,7 +6954,7 @@ You cannot undo this action.</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9516"/>
         <source>BIOS to use when emulating {} consoles.</source>
-        <translation>콘솔을 에뮬레이트할 때 사용할 바이오스입니다.</translation>
+        <translation>{} 콘솔을 에뮬레이트할 때 사용할 바이오스입니다.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9517"/>

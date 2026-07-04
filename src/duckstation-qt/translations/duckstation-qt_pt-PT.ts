@@ -4233,7 +4233,7 @@ Esta ação não pode ser anulada.</translation>
     <message>
         <location filename="../../core/cpu_core.cpp" line="2074"/>
         <source>No return instruction found after %u instructions for step-out at %08X.</source>
-        <translation>Nenhuma instrução de regresso encontrada após % u instruções para saída em %08X.</translation>
+        <translation>Nenhuma instrução de regresso encontrada após %u instruções para saída em %08X.</translation>
     </message>
 </context>
 <context>
@@ -12238,7 +12238,7 @@ Tem a certeza que pretende continuar?</translation>
     <message>
         <location filename="../../core/memory_card.cpp" line="288"/>
         <source>Memory card at &apos;%s&apos; could not be read, formatting.</source>
-        <translation>O cartão de memória em &apos;% s&apos; não pode ser lido, a formatar.</translation>
+        <translation>O cartão de memória em &apos;%s&apos; não pode ser lido, a formatar.</translation>
     </message>
     <message>
         <location filename="../../core/memory_card.cpp" line="333"/>

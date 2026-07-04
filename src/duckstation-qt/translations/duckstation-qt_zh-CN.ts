@@ -2519,8 +2519,8 @@ You can manually update DuckStation by re-downloading the latest release. Do you
     </message>
     <message>
         <location filename="../autoupdaterdialog.cpp" line="728"/>
-        <source>&lt;h1&gt;Inconsistent Application State&lt;/h1&gt;&lt;h3&gt;The update zip is missing the current executable:&lt;/h3&gt;&lt;div align=&quot;center&quot;&gt;&lt;pre&gt;%1&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;strong&gt;This is usually a result of manually renaming the file.&lt;/strong&gt; Continuing to install this update may result in a broken installation if the renamed executable is used. The DuckStation executable should be named:&lt;div align=&quot;center&quot;&gt;&lt;pre&gt;%2&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Do you want to continue anyway?&lt;/p&gt;</source>
-        <translation>&lt;h1&gt;应用程序状态不一致&lt;/h1&gt;&lt;h3&gt;更新压缩包缺少当前可执行文件:&lt;/h3&gt;&lt;div align=&quot;center&quot;&gt;&lt;pre&gt;%1&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;strong&gt;这通常是手动重命名文件造成的。&lt;/strong&gt;如果继续安装此更新，使用重命名后的可执行文件可能会导致安装损坏。DuckStation可执行文件应命名为:&lt;div align=&quot;center&quot;&gt;&lt;pre&gt;%2&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;您仍然想要继续吗？&lt;/p&gt;</translation>
+        <source>&lt;h1&gt;Inconsistent Application State&lt;/h1&gt;&lt;h3&gt;The update zip is missing the current executable:&lt;/h3&gt;&lt;div align=&quot;center&quot;&gt;&lt;pre&gt;%1&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;strong&gt;This is usually a result of manually renaming the file.&lt;/strong&gt; Continuing to install this update may result in a broken installation if the renamed executable is used. The DuckStation executable should be named:&lt;/p&gt;&lt;div align=&quot;center&quot;&gt;&lt;pre&gt;%2&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Do you want to continue anyway?&lt;/p&gt;</source>
+        <translation>&lt;h1&gt;应用程序状态不一致&lt;/h1&gt;&lt;h3&gt;更新压缩包缺少当前可执行文件:&lt;/h3&gt;&lt;div align=&quot;center&quot;&gt;&lt;pre&gt;%1&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;strong&gt;这通常是手动重命名文件造成的。&lt;/strong&gt;如果继续安装此更新，使用重命名后的可执行文件可能会导致安装损坏。DuckStation可执行文件应命名为:&lt;/p&gt;&lt;div align=&quot;center&quot;&gt;&lt;pre&gt;%2&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;您仍然想要继续吗？&lt;/p&gt;</translation>
     </message>
     <message>
         <location filename="../autoupdaterdialog.cpp" line="832"/>
@@ -3086,8 +3086,8 @@ Your dump may be corrupted, or the physical disc is scratched.</source>
     </message>
     <message>
         <location filename="../capturesettingswidget.cpp" line="152"/>
-        <source>Selects which Video Codec to be used for media capture. &lt;b&gt;If unsure, leave it on default.&lt;b&gt;</source>
-        <translation>选择用于媒体捕获的视频编解码器。&lt;b&gt;如果不确定，请保持默认。&lt;b&gt;</translation>
+        <source>Selects which Video Codec to be used for media capture. &lt;b&gt;If unsure, leave it on default.&lt;/b&gt;</source>
+        <translation>选择用于媒体捕获的视频编解码器。&lt;b&gt;如果不确定，请保持默认。&lt;/b&gt;</translation>
     </message>
     <message>
         <location filename="../capturesettingswidget.cpp" line="153"/>
@@ -3160,8 +3160,8 @@ Your dump may be corrupted, or the physical disc is scratched.</source>
     </message>
     <message>
         <location filename="../capturesettingswidget.cpp" line="173"/>
-        <source>Selects which Audio Codec to be used for media capture. &lt;b&gt;If unsure, leave it on default.&lt;b&gt;</source>
-        <translation>选择用于媒体捕获的音频编解码器。&lt;b&gt;如果不确定，请保持默认。&lt;b&gt;</translation>
+        <source>Selects which Audio Codec to be used for media capture. &lt;b&gt;If unsure, leave it on default.&lt;/b&gt;</source>
+        <translation>选择用于媒体捕获的音频编解码器。&lt;b&gt;如果不确定，请保持默认。&lt;/b&gt;</translation>
     </message>
     <message>
         <location filename="../capturesettingswidget.cpp" line="174"/>

@@ -440,7 +440,7 @@ Tek kullanımlık giriş kodu (access token) oluşturulma tarihi: %2.</translati
     <message>
         <location filename="../../core/achievements.cpp" line="1679"/>
         <source>Your Value: {}</source>
-        <translation>Puanın: {}}</translation>
+        <translation>Puanın: {}</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1688"/>
@@ -4894,7 +4894,7 @@ Tüm atamalar ve ayarlar silinecek bunu geri alamazsınız.</translation>
     <message>
         <location filename="../coverdownloaddialog.ui" line="50"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;In the box below, specify the URLs to download covers from, with one template URL per line. The following variables are available:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${title}:&lt;/span&gt; Title of the game.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${filetitle}:&lt;/span&gt; Name component of the game&apos;s filename.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${serial}:&lt;/span&gt; Serial of the game.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Example:&lt;/span&gt; https://www.example-not-a-real-domain.com/covers/${serial}.jpg&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Aşağıdaki kutuda kapak görseli indirilecek sitelerin linklerini yazabilirsiniz, Her satır için bir satır şablon link olacak şekilde. Şu değişkenler ayarlanabilir:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${İsim}:&lt;/span&gt; Oyunun ismi&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${Dosya İsmi}:&lt;/span&gt; Oyunun dosya ismi.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${seri no}:&lt;/span&gt; Oyunun seri numarası.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Örnek:&lt;/span&gt; https://www.ornek/kapaklar/${seri-no}.jpg&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Aşağıdaki kutuda kapak görseli indirilecek sitelerin linklerini yazabilirsiniz, Her satır için bir satır şablon link olacak şekilde. Şu değişkenler ayarlanabilir:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${title}:&lt;/span&gt; Oyunun ismi&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${filetitle}:&lt;/span&gt; Oyunun dosya ismi.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${serial}:&lt;/span&gt; Oyunun seri numarası.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Örnek:&lt;/span&gt; https://www.ornek/kapaklar/${serial}.jpg&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="../coverdownloaddialog.ui" line="69"/>
@@ -10485,12 +10485,12 @@ Yinede işleminize {0} devam etmek istiyor musunuz?</translation>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9831"/>
         <source>{:%H:%M}</source>
-        <translation>{:%Saat:%Dakika}</translation>
+        <translation>{:%H:%M}</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9832"/>
         <source>{:%Y-%m-%d %H:%M:%S}</source>
-        <translation>{:%Yıl-%Ay-%Day %Saat:%Dakika:%Saniye}</translation>
+        <translation>{:%Y-%m-%d %H:%M:%S}</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9833"/>

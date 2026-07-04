@@ -728,7 +728,7 @@ bool AutoUpdaterDialog::extractUpdater(const std::string& zip_path, const std::s
           tr("<h1>Inconsistent Application State</h1><h3>The update zip is missing the current executable:</h3><div "
              "align=\"center\"><pre>%1</pre></div><p><strong>This is usually a result of manually renaming the "
              "file.</strong> Continuing to install this update may result in a broken installation if the renamed "
-             "executable is used. The DuckStation executable should be named:<div "
+             "executable is used. The DuckStation executable should be named:</p><div "
              "align=\"center\"><pre>%2</pre></div><p>Do you want to continue anyway?</p>")
             .arg(QString::fromStdString(std::string(check_for_file)))
             .arg(QStringLiteral(UPDATER_EXPECTED_EXECUTABLE)),

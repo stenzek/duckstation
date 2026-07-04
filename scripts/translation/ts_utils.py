@@ -152,7 +152,10 @@ def extract_placeholders(text: str) -> collections.Counter[str]:
             if any(match.start() < end and match.end() > start for start, end in occupied):
                 continue
             occupied.append(match.span())
-            tokens.append(f"{kind}:{match.group(0)}")
+            placeholder = match.group(0)
+            if kind == "fmt" and ":" in placeholder:
+                placeholder = f"{placeholder.split(':', 1)[0]}}}"
+            tokens.append(f"{kind}:{placeholder}")
     return collections.Counter(tokens)
 
 
@@ -174,8 +177,11 @@ def placeholders_match(source: str, translation: str) -> bool:
     translated_non_fmt = collections.Counter(
         token for token in translated_tokens.elements() if not token.startswith("fmt:")
     )
-    if source_non_fmt != translated_non_fmt:
+    if set(source_non_fmt) != set(translated_non_fmt):
         return False
+
+    if set(source_fmt) == set(translated_fmt):
+        return True
 
     # Qt's fmt usage permits translators to number anonymous plain placeholders
     # when reordering arguments, e.g. "{} {}" -> "{1} {0}".
@@ -185,13 +191,14 @@ def placeholders_match(source: str, translation: str) -> bool:
     return False
 
 
-def placeholders_are_subset(source: str, translation: str) -> bool:
-    """Allow a plural form to omit redundant arguments without adding any."""
-    if placeholders_match(source, translation):
-        return True
+def placeholder_counts_match(source: str, translation: str) -> bool:
+    """Return whether compatible placeholders occur the same number of times."""
+    if not placeholders_match(source, translation):
+        return False
+
     source_tokens = extract_placeholders(source)
     translated_tokens = extract_placeholders(translation)
-    if translated_tokens <= source_tokens:
+    if source_tokens == translated_tokens:
         return True
 
     source_fmt = collections.Counter(
@@ -206,7 +213,35 @@ def placeholders_are_subset(source: str, translation: str) -> bool:
     translated_non_fmt = collections.Counter(
         token for token in translated_tokens.elements() if not token.startswith("fmt:")
     )
-    if not translated_non_fmt <= source_non_fmt or set(source_fmt) != {"{}"}:
+    if set(source_fmt) == {"{}"}:
+        fmt_counts_match = sum(source_fmt.values()) == sum(translated_fmt.values())
+    else:
+        fmt_counts_match = source_fmt == translated_fmt
+    return source_non_fmt == translated_non_fmt and fmt_counts_match
+
+
+def placeholders_are_subset(source: str, translation: str) -> bool:
+    """Allow a plural form to omit redundant arguments without adding any."""
+    if placeholders_match(source, translation):
+        return True
+    source_tokens = extract_placeholders(source)
+    translated_tokens = extract_placeholders(translation)
+    if set(translated_tokens) <= set(source_tokens):
+        return True
+
+    source_fmt = collections.Counter(
+        token.removeprefix("fmt:") for token in source_tokens.elements() if token.startswith("fmt:")
+    )
+    translated_fmt = collections.Counter(
+        token.removeprefix("fmt:") for token in translated_tokens.elements() if token.startswith("fmt:")
+    )
+    source_non_fmt = collections.Counter(
+        token for token in source_tokens.elements() if not token.startswith("fmt:")
+    )
+    translated_non_fmt = collections.Counter(
+        token for token in translated_tokens.elements() if not token.startswith("fmt:")
+    )
+    if not set(translated_non_fmt) <= set(source_non_fmt) or set(source_fmt) != {"{}"}:
         return False
     allowed_numbered = {f"{{{index}}}" for index in range(source_fmt["{}"])}
     return set(translated_fmt) <= allowed_numbered and all(count == 1 for count in translated_fmt.values())
@@ -218,6 +253,23 @@ def extract_rich_tags(text: str) -> collections.Counter[str]:
         closing = "/" if match.group(1) else ""
         tags.append(f"{closing}{match.group(2).lower()}")
     return collections.Counter(tags)
+
+
+def unbalanced_rich_tags(text: str) -> dict[str, tuple[int, int]]:
+    """Return paired rich-text elements with unequal opening and closing counts."""
+    opening: collections.Counter[str] = collections.Counter()
+    closing: collections.Counter[str] = collections.Counter()
+    for match in RICH_TAG_RE.finditer(text):
+        tag = match.group(2).lower()
+        if tag in {"br", "hr"} or (not match.group(1) and match.group(0).rstrip().endswith("/>")):
+            continue
+        (closing if match.group(1) else opening)[tag] += 1
+
+    return {
+        tag: (opening[tag], closing[tag])
+        for tag in sorted(opening.keys() | closing.keys())
+        if opening[tag] != closing[tag]
+    }
 
 
 def validate_translation(source: str, translation: str, allow_missing_placeholders: bool = False) -> list[str]:
@@ -233,16 +285,15 @@ def validate_translation(source: str, translation: str, allow_missing_placeholde
         problems.append(
             f"placeholder mismatch: source={dict(source_placeholders)} translation={dict(translated_placeholders)}"
         )
-    required_tags = extract_rich_tags(source)
-    translated_tags = extract_rich_tags(translation)
-    missing_tags = required_tags - translated_tags
-    if missing_tags:
-        problems.append(f"missing rich-text tags: {dict(missing_tags)}")
     return problems
 
 
 def extra_rich_tags(source: str, translation: str) -> collections.Counter[str]:
     return extract_rich_tags(translation) - extract_rich_tags(source)
+
+
+def missing_rich_tags(source: str, translation: str) -> collections.Counter[str]:
+    return extract_rich_tags(source) - extract_rich_tags(translation)
 
 
 def message_to_batch_record(message: CatalogMessage) -> dict[str, object]:

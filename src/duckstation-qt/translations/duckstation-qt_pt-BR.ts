@@ -9806,7 +9806,7 @@ Esta ação não pode ser desfeita.</translation>
     <message>
         <location filename="../../core/fullscreenui_strings.h" line="337"/>
         <source>Example: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</source>
-        <translation>Exemplo: https://www.exemplo-nao-eh-um-site.com/capas/${numeroserial}.jpg</translation>
+        <translation>Exemplo: https://www.exemplo-nao-eh-um-site.com/capas/${serial}.jpg</translation>
     </message>
     <message>
         <location filename="../../core/fullscreenui_strings.h" line="340"/>

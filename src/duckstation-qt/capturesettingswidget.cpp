@@ -149,7 +149,7 @@ CaptureSettingsWidget::CaptureSettingsWidget(SettingsWindow* dialog, QWidget* pa
                                 "file will only contain audio."));
   dialog->registerWidgetHelp(
     m_ui.videoCaptureCodec, tr("Video Codec"), tr("Default"),
-    tr("Selects which Video Codec to be used for media capture. <b>If unsure, leave it on default.<b>"));
+    tr("Selects which Video Codec to be used for media capture. <b>If unsure, leave it on default.</b>"));
   dialog->registerWidgetHelp(m_ui.videoCaptureBitrate, tr("Video Bitrate"),
                              tr("%1 kbps").arg(Settings::DEFAULT_MEDIA_CAPTURE_VIDEO_BITRATE),
                              tr("Sets the video bitrate to be used. Larger bitrate generally yields better video "
@@ -170,7 +170,7 @@ CaptureSettingsWidget::CaptureSettingsWidget(SettingsWindow* dialog, QWidget* pa
                                 "file will only contain video."));
   dialog->registerWidgetHelp(
     m_ui.audioCaptureCodec, tr("Audio Codec"), tr("Default"),
-    tr("Selects which Audio Codec to be used for media capture. <b>If unsure, leave it on default.<b>"));
+    tr("Selects which Audio Codec to be used for media capture. <b>If unsure, leave it on default.</b>"));
   dialog->registerWidgetHelp(m_ui.audioCaptureBitrate, tr("Audio Bitrate"),
                              tr("%1 kbps").arg(Settings::DEFAULT_MEDIA_CAPTURE_AUDIO_BITRATE),
                              tr("Sets the audio bitrate to be used."));

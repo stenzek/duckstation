@@ -19,9 +19,11 @@ from translation.ts_utils import (  # noqa: E402
     extract_placeholders,
     extract_rich_tags,
     parse_catalog,
+    placeholder_counts_match,
     placeholders_are_subset,
     placeholders_match,
     replace_translation_node,
+    unbalanced_rich_tags,
     validate_translation,
 )
 
@@ -94,13 +96,21 @@ class TranslationToolTests(unittest.TestCase):
         self.assertEqual(1, placeholders["qt:%1"])
         self.assertEqual(1, placeholders["qt:%n"])
         self.assertEqual(1, placeholders["fmt:{}"])
-        self.assertEqual(1, placeholders["fmt:{0:08X}"])
+        self.assertEqual(1, placeholders["fmt:{0}"])
         self.assertEqual(1, placeholders["printf:%.1f"])
         self.assertEqual(1, placeholders["printf:%s"])
         self.assertEqual(1, placeholders["template:${title}"])
         self.assertEqual(7, sum(placeholders.values()))
         self.assertTrue(placeholders_match("{} {}", "{1} {0}"))
         self.assertFalse(placeholders_match("{} {}", "{0} {0}"))
+        self.assertTrue(placeholders_match("Use {0}, then use {0} again", "Usar {0}"))
+        self.assertFalse(placeholder_counts_match("Use {0}, then use {0} again", "Usar {0}"))
+        self.assertTrue(placeholders_match("Saved at {0:%H:%M} on {0:%Y/%m/%d}", "Guardado {0:%d/%m/%Y}"))
+        self.assertFalse(
+            placeholder_counts_match("Saved at {0:%H:%M} on {0:%Y/%m/%d}", "Guardado {0:%d/%m/%Y}")
+        )
+        self.assertFalse(placeholder_counts_match("{0} {0} {1}", "{0} {1} {1}"))
+        self.assertFalse(placeholders_match("Use %1 and %2", "Usar %1"))
         self.assertTrue(placeholders_are_subset("{} of %n", "%n"))
         self.assertFalse(placeholders_are_subset("{} of %n", "%n %1"))
         self.assertEqual({"qt:%1": 1}, dict(extract_placeholders("%1x")))
@@ -108,7 +118,12 @@ class TranslationToolTests(unittest.TestCase):
     def test_rich_text_ignores_angle_bracket_labels(self) -> None:
         self.assertFalse(extract_rich_tags("<Parent Directory>"))
         self.assertEqual({"strong": 1, "/strong": 1}, dict(extract_rich_tags("<strong>Text</strong>")))
-        self.assertTrue(validate_translation("<strong>Text</strong>", "テキスト"))
+        self.assertFalse(validate_translation("<strong>Text</strong>", "テキスト"))
+
+    def test_rich_text_tag_pairs_are_balanced(self) -> None:
+        self.assertFalse(unbalanced_rich_tags("<html><head/><body><br><hr/></body></html>"))
+        self.assertFalse(unbalanced_rich_tags("<strong><b>Text</strong></b>"))
+        self.assertEqual({"p": (2, 1), "strong": (1, 0)}, unbalanced_rich_tags("<p><p><strong>Text</p>"))
 
     def test_fingerprint_ignores_translation_changes(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -255,6 +270,24 @@ class TranslationToolTests(unittest.TestCase):
             result = self.run_tool("validate_ts.py", catalog, "--placeholders-only", expect=1)
             self.assertIn(f"{catalog}:{expected_line}:", result.stdout)
             self.assertIn("[source: alpha.cpp:1]", result.stdout)
+
+    def test_validation_warns_for_placeholder_count_mismatch(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            catalog = Path(directory) / "catalog.ts"
+            catalog.write_text(
+                FIXTURE.replace(
+                    "Hello %1 {0} ${title} %.1f &lt;strong&gt;world&lt;/strong&gt;",
+                    "Use {0}, then use {0} again",
+                ).replace(
+                    '<translation type="unfinished"></translation>',
+                    "<translation>Usar {0}</translation>",
+                    1,
+                ),
+                encoding="utf-8",
+            )
+            result = self.run_tool("validate_ts.py", catalog, "--placeholders-only")
+            self.assertIn("WARNING:", result.stdout)
+            self.assertIn("placeholder count mismatch", result.stdout)
 
 
 if __name__ == "__main__":
