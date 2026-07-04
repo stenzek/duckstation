@@ -27,5 +27,5 @@ jobs:
       shell: bash
       run: |
         for i in src/duckstation-qt/translations/*.ts; do
-          python scripts/verify_translation_placeholders.py "$i"
+          python scripts/translation/validate_ts.py "$i"
         done
