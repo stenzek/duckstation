@@ -177,7 +177,7 @@ void SetupWizardDialog::setupUi()
 
   setupLanguagePage(true);
   setupBIOSPage();
-  setupGameListPage();
+  setupGameListPage(true);
   setupControllerPage(true);
   setupGraphicsPage(true);
   setupAchievementsPage(true);
@@ -210,6 +210,7 @@ void SetupWizardDialog::languageChanged()
   QtHost::UpdateApplicationLanguage(this);
   m_ui.retranslateUi(this);
   setupLanguagePage(false);
+  setupGameListPage(false);
   setupControllerPage(false);
   setupGraphicsPage(false);
   setupAchievementsPage(false);
@@ -240,8 +241,13 @@ void SetupWizardDialog::refreshBiosList()
   BIOSSettingsWidget::setDropDownValue(m_ui.imagePAL, Core::GetBaseStringSettingValue("BIOS", "PathPAL"), false);
 }
 
-void SetupWizardDialog::setupGameListPage()
+void SetupWizardDialog::setupGameListPage(bool initial)
 {
+  m_ui.gameDirectoriesDescription->setText(
+    m_ui.gameDirectoriesDescription->text().arg(GameListWidget::getSupportedFormatsString().split('\n').join(", ")));
+  if (!initial)
+    return;
+
   m_directory_model = new GameListSearchDirectoriesModel(this);
   m_ui.searchDirectoryList->setModel(m_directory_model);
   QtUtils::SetColumnWidthsForTreeView(m_ui.searchDirectoryList, {-1, 100});

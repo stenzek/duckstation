@@ -75,13 +75,13 @@ static constexpr QSize ACHIEVEMENT_PIXMAP_SIZE(16, 16);
 static constexpr QSize COMPATIBILITY_PIXMAP_SIZE(96, 24);
 
 static const char* SUPPORTED_FORMATS_STRING =
-  QT_TRANSLATE_NOOP(GameListWidget, ".cue (Cue Sheets)\n"
-                                    ".iso (Single Track Image)\n"
-                                    ".ecm (Error Code Modeling Image)\n"
-                                    ".mds (Media Descriptor Sidecar)\n"
-                                    ".ccd (CloneCD Image)\n"
-                                    ".chd (Compressed Hunks of Data)\n"
-                                    ".pbp (PlayStation Portable, Only Decrypted)");
+  QT_TRANSLATE_NOOP("GameListWidget", ".cue (Cue Sheets)\n"
+                                      ".iso (Single Track Image)\n"
+                                      ".ecm (Error Code Modeling Image)\n"
+                                      ".mds (Media Descriptor Sidecar)\n"
+                                      ".ccd (CloneCD Image)\n"
+                                      ".chd (Compressed Hunks of Data)\n"
+                                      ".pbp (PlayStation Portable, Only Decrypted)");
 
 static constexpr std::array<const char*, GameListModel::Column_Count> s_column_names = {{
   QT_TRANSLATE_NOOP("GameListModel", "Icon"),
@@ -1920,6 +1920,11 @@ GameListWidget::GameListWidget(QWidget* parent, QAction* action_view_list, QActi
 }
 
 GameListWidget::~GameListWidget() = default;
+
+QString GameListWidget::getSupportedFormatsString()
+{
+  return qApp->translate("GameListWidget", SUPPORTED_FORMATS_STRING);
+}
 
 bool GameListWidget::isShowingGameList() const
 {

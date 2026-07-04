@@ -486,7 +486,7 @@
        <item>
         <widget class="QLabel" name="gameDirectoriesDescription">
          <property name="text">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DuckStation will automatically scan and identify games from the selected directories below, and populate the game list. These games should be dumped from discs you own. Utilities such as ImgBurn can be used to create images of game discs in .bin/.cue format.&lt;/p&gt;&lt;p&gt;Supported formats for dumps include: &lt;span style=&quot; font-weight:700;&quot;&gt;.cue&lt;/span&gt; (Cue Sheets), &lt;span style=&quot; font-weight:700;&quot;&gt;.iso/.img&lt;/span&gt; (Single Track Image), &lt;span style=&quot; font-weight:700;&quot;&gt;.ecm&lt;/span&gt; (Error Code Modeling Image), &lt;span style=&quot; font-weight:700;&quot;&gt;.mds&lt;/span&gt; (Media Descriptor Sidecar), &lt;span style=&quot; font-weight:700;&quot;&gt;.chd&lt;/span&gt; (Compressed Hunks of Data), &lt;span style=&quot; font-weight:700;&quot;&gt;.pbp&lt;/span&gt; (PlayStation Portable, Only Decrypted).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DuckStation will automatically scan and identify games from the selected directories below, and populate the game list. These games should be dumped from discs you own. Utilities such as ImgBurn can be used to create images of game discs in .bin/.cue format.&lt;/p&gt;&lt;p&gt;Supported formats for dumps include: %1&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="alignment">
           <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>

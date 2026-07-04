@@ -40,7 +40,7 @@ private:
   void setupUi();
   void setupLanguagePage(bool initial);
   void setupBIOSPage();
-  void setupGameListPage();
+  void setupGameListPage(bool initial);
   void setupControllerPage(bool initial);
   void setupGraphicsPage(bool initial);
   void updateResolutionScaleWarning();
