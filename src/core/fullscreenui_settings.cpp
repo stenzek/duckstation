@@ -1689,7 +1689,7 @@ void FullscreenUI::ClearSettingsState()
   s_settings_locals.image_track_summary = {};
 }
 
-void FullscreenUI::SwitchToSettings()
+void FullscreenUI::SwitchToSettings(SettingsPage page /* = SettingsPage::Interface */)
 {
   s_settings_locals.game_settings_entry.reset();
   s_settings_locals.game_settings_interface.reset();
@@ -1711,7 +1711,7 @@ void FullscreenUI::SwitchToSettings()
   PopulatePostProcessingChain(*sif, PostProcessing::Config::DISPLAY_CHAIN_SECTION);
 
   SwitchToMainWindow(MainWindowType::Settings);
-  s_settings_locals.settings_page = SettingsPage::Interface;
+  s_settings_locals.settings_page = page;
 }
 
 bool FullscreenUI::SwitchToGameSettings(SettingsPage page)

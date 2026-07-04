@@ -390,7 +390,11 @@ void FullscreenUI::DrawGameListWindow()
     else if (ImGui::IsKeyPressed(ImGuiKey_GamepadBack, false) || ImGui::IsKeyPressed(ImGuiKey_F2, false))
     {
       EnqueueSoundEffect(SFX_NAV_BACK);
-      BeginTransition(&SwitchToSettings);
+      BeginTransition(TransitionEffect::ZoomIn, DEFAULT_TRANSITION_TIME, []() {
+        // if we're opening to game list, use the main page, otherwise game list settings
+        const SettingsPage page = ShouldOpenToGameList() ? SettingsPage::Interface : SettingsPage::GameList;
+        FullscreenUI::SwitchToSettings(page);
+      });
     }
     else if (ImGui::IsKeyPressed(ImGuiKey_GamepadStart, false) || ImGui::IsKeyPressed(ImGuiKey_F5, false))
     {

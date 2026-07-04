@@ -1378,7 +1378,7 @@ void FullscreenUI::DrawLandingWindow()
     if (UserThemeableHorizontalButton("fullscreenui/settings.png", "fullscreenui/settings.svg", FSUI_VSTR("Settings"),
                                       FSUI_VSTR("Changes settings for the application.")))
     {
-      BeginTransition(TransitionEffect::ZoomIn, DEFAULT_TRANSITION_TIME, &SwitchToSettings);
+      BeginTransition(TransitionEffect::ZoomIn, DEFAULT_TRANSITION_TIME, []() { SwitchToSettings(); });
     }
 
     if (UserThemeableHorizontalButton("fullscreenui/exit.png", "fullscreenui/exit.svg", FSUI_VSTR("Exit"),
@@ -1746,7 +1746,7 @@ void FullscreenUI::DrawPauseMenu()
           Host::RunOnCoreThread([]() { BeginChangeDiscOnCoreThread(false); });
 
         if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_FA_SLIDERS, "Settings")))
-          BeginTransition(TransitionEffect::ZoomIn, DEFAULT_TRANSITION_TIME, &SwitchToSettings);
+          BeginTransition(TransitionEffect::ZoomIn, DEFAULT_TRANSITION_TIME, []() { SwitchToSettings(); });
 
         if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_FA_POWER_OFF, "Close Game")))
         {

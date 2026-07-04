@@ -111,7 +111,7 @@ void RemoveCoverCacheEntry(const std::string& path);
 //////////////////////////////////////////////////////////////////////////
 
 void ClearSettingsState();
-void SwitchToSettings();
+void SwitchToSettings(SettingsPage page = SettingsPage::Interface);
 bool SwitchToGameSettings(SettingsPage page = SettingsPage::Summary);
 void SwitchToGameSettings(const GameList::Entry* entry, SettingsPage page = SettingsPage::Summary);
 bool SwitchToGameSettingsForPath(const std::string& path, SettingsPage page = SettingsPage::Summary);
