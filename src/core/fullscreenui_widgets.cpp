@@ -6085,6 +6085,11 @@ void FullscreenUI::ProgressDialog::Draw()
     FullscreenUI::TextAlignedMultiLine(0.0f, IMSTR_START_END(m_status_text), wrap_width);
     ImGui::PopFont();
   }
+  else if (has_progress)
+  {
+    // reserve space for the missing status text
+    ImGui::Dummy(ImVec2(0.0f, UIStyle.LargeFontSize + spacing));
+  }
 
   const float bar_height = LayoutScale(20.0f);
 
