@@ -101,6 +101,11 @@ static void ProcessImageVerificationResults(std::string path, GameDatabase::Trac
 
 static void DrawSummarySettingsPage(bool show_localized_titles);
 static void DrawSummarySettingsTrackList();
+static void OpenGameTitleActions(const std::string_view& path, const std::string_view& title, bool has_custom_title,
+                                 bool is_disc_set_title);
+static void OpenGameSerialActions(const std::string& path, const std::string& serial, bool has_custom_serial);
+static void SaveCustomTitle(const std::string& path, const std::string& title);
+static void SaveCustomSerial(const std::string& path, const std::string& serial);
 static void DrawInterfaceSettingsPage();
 static void DrawGameListSettingsPage();
 static void DrawBIOSSettingsPage();
@@ -1720,7 +1725,7 @@ bool FullscreenUI::SwitchToGameSettingsForPath(const std::string& path, Settings
   const GameList::Entry* entry = !path.empty() ? GameList::GetEntryForPath(path) : nullptr;
 
   // playlists will always contain the first disc's serial, so use the current game instead
-  if (!entry || entry->serial.empty() || entry->type == GameList::EntryType::Playlist)
+  if (!entry || entry->serial.empty() || (entry->type == GameList::EntryType::Playlist && VideoThread::HasGPUBackend()))
   {
     Host::RunOnCoreThread([page]() {
       Error error;
@@ -2142,6 +2147,8 @@ void FullscreenUI::DrawSettingsWindow()
 
 void FullscreenUI::DrawSummarySettingsPage(bool show_localized_titles)
 {
+  SmallString sstr;
+
   BeginMenuButtons();
   ResetFocusHere();
 
@@ -2156,14 +2163,68 @@ void FullscreenUI::DrawSummarySettingsPage(bool show_localized_titles)
 
   if (s_settings_locals.game_settings_entry)
   {
-    if (MenuButton(FSUI_ICONVSTR(ICON_FA_WINDOW_MAXIMIZE, "Title"),
-                   s_settings_locals.game_settings_entry->GetDisplayTitle(show_localized_titles), true))
+    const bool allow_customization = !s_settings_locals.game_settings_entry->is_runtime_populated;
+    const std::string_view title = s_settings_locals.game_settings_entry->GetDisplayTitle(show_localized_titles);
+    if (MenuButton(FSUI_ICONVSTR(ICON_FA_WINDOW_MAXIMIZE, "Title"), title, true))
     {
-      CopyTextToClipboard(FSUI_STR("Game title copied to clipboard."),
-                          s_settings_locals.game_settings_entry->GetDisplayTitle(show_localized_titles));
+      if (allow_customization)
+      {
+        OpenGameTitleActions(s_settings_locals.game_settings_entry->path, title,
+                             s_settings_locals.game_settings_entry->has_custom_title, false);
+      }
+      else
+      {
+        CopyTextToClipboard(FSUI_STR("Game title copied to clipboard."), title);
+      }
     }
-    if (MenuButton(FSUI_ICONVSTR(ICON_FA_PAGER, "Serial"), s_settings_locals.game_settings_entry->serial, true))
-      CopyTextToClipboard(FSUI_STR("Game serial copied to clipboard."), s_settings_locals.game_settings_entry->serial);
+
+    if (s_settings_locals.game_settings_entry->disc_set_member)
+    {
+      const std::string_view disc_set_name = s_settings_locals.game_settings_entry->GetDiscSetEntry()->GetSaveTitle();
+      std::string disc_set_title;
+      bool has_custom_disc_set_title = false;
+      {
+        const auto lock = GameList::GetLock();
+        const GameList::Entry* const disc_set_entry = GameList::GetEntryForPath(disc_set_name);
+        if (disc_set_entry)
+        {
+          disc_set_title = disc_set_entry->GetDisplayTitle(show_localized_titles);
+          has_custom_disc_set_title = disc_set_entry->has_custom_title;
+        }
+      }
+
+      if (!disc_set_title.empty() &&
+          MenuButton(FSUI_ICONVSTR(ICON_FA_LAYER_GROUP, "Disc Set Title"), disc_set_title, true))
+      {
+        if (allow_customization)
+          OpenGameTitleActions(disc_set_name, disc_set_title, has_custom_disc_set_title, true);
+        else
+          CopyTextToClipboard(FSUI_STR("Disc set title copied to clipboard."), disc_set_title);
+      }
+    }
+
+    std::string_view visible_serial = s_settings_locals.game_settings_entry->serial;
+    if (s_settings_locals.game_settings_entry->has_custom_serial)
+    {
+      sstr.format(FSUI_FSTR("{} (Custom)"), s_settings_locals.game_settings_entry->serial);
+      visible_serial = sstr;
+    }
+
+    if (MenuButton(FSUI_ICONVSTR(ICON_FA_PAGER, "Serial"), visible_serial, true))
+    {
+      if (allow_customization)
+      {
+        OpenGameSerialActions(s_settings_locals.game_settings_entry->path,
+                              s_settings_locals.game_settings_entry->serial,
+                              s_settings_locals.game_settings_entry->has_custom_serial);
+      }
+      else
+      {
+        CopyTextToClipboard(FSUI_STR("Game serial copied to clipboard."),
+                            s_settings_locals.game_settings_entry->serial);
+      }
+    }
+
     if (MenuButton(FSUI_ICONVSTR(ICON_FA_COMPACT_DISC, "Type"),
                    GameList::GetEntryTypeDisplayName(s_settings_locals.game_settings_entry->type), true))
     {
@@ -2224,6 +2285,125 @@ void FullscreenUI::DrawSummarySettingsPage(bool show_localized_titles)
     DrawSummarySettingsTrackList();
 
   EndMenuButtons();
+}
+
+void FullscreenUI::OpenGameTitleActions(const std::string_view& path, const std::string_view& title,
+                                        bool has_custom_title, bool is_disc_set_title)
+{
+  ChoiceDialogOptions options;
+  options.reserve(has_custom_title ? 4 : 3);
+  options.emplace_back(FSUI_ICONSTR(ICON_FA_FILE_PEN, "Change Title"), false);
+  if (has_custom_title)
+    options.emplace_back(FSUI_ICONSTR(ICON_FA_ARROW_ROTATE_LEFT, "Reset Title"), false);
+  options.emplace_back(FSUI_ICONSTR(ICON_FA_COPY, "Copy Title"), false);
+  options.emplace_back(FSUI_ICONSTR(ICON_FA_SQUARE_XMARK, "Close Menu"), false);
+
+  OpenChoiceDialog(is_disc_set_title ? FSUI_ICONVSTR(ICON_FA_LAYER_GROUP, "Disc Set Title") :
+                                       FSUI_ICONVSTR(ICON_FA_WINDOW_MAXIMIZE, "Game Title"),
+                   false, std::move(options),
+                   [path = std::string(path), title = std::string(title), has_custom_title,
+                    is_disc_set_title](s32 index, const std::string&, bool) mutable {
+                     if (index < 0)
+                       return;
+
+                     if (index == 0)
+                     {
+                       OpenInputStringDialog(is_disc_set_title ?
+                                               FSUI_ICONSTR(ICON_FA_LAYER_GROUP, "Change Disc Set Title") :
+                                               FSUI_ICONSTR(ICON_FA_WINDOW_MAXIMIZE, "Change Game Title"),
+                                             is_disc_set_title ? FSUI_STR("Enter a new title for this disc set.") :
+                                                                 FSUI_STR("Enter a new title for this game."),
+                                             FSUI_STR("Title:"), FSUI_ICONSTR(ICON_FA_CHECK, "Save"), title,
+                                             [path = std::move(path)](std::string new_title) mutable {
+                                               if (!new_title.empty())
+                                                 SaveCustomTitle(std::move(path), std::move(new_title));
+                                             });
+                     }
+                     else if (has_custom_title && index == 1)
+                     {
+                       SaveCustomTitle(std::move(path), {});
+                     }
+                     else if (index == (has_custom_title ? 2 : 1))
+                     {
+                       CopyTextToClipboard(is_disc_set_title ? FSUI_STR("Disc set title copied to clipboard.") :
+                                                               FSUI_STR("Game title copied to clipboard."),
+                                           title);
+                     }
+                   });
+}
+
+void FullscreenUI::OpenGameSerialActions(const std::string& path, const std::string& serial, bool has_custom_serial)
+{
+  ChoiceDialogOptions options;
+  options.reserve(has_custom_serial ? 4 : 3);
+  options.emplace_back(FSUI_ICONSTR(ICON_FA_FILE_PEN, "Change Serial"), false);
+  if (has_custom_serial)
+    options.emplace_back(FSUI_ICONSTR(ICON_FA_ARROW_ROTATE_LEFT, "Reset Serial"), false);
+  options.emplace_back(FSUI_ICONSTR(ICON_FA_COPY, "Copy Serial"), false);
+  options.emplace_back(FSUI_ICONSTR(ICON_FA_SQUARE_XMARK, "Close Menu"), false);
+
+  OpenChoiceDialog(FSUI_ICONVSTR(ICON_FA_PAGER, "Game Serial"), false, std::move(options),
+                   [path, serial, has_custom_serial](s32 index, const std::string&, bool) mutable {
+                     if (index < 0)
+                       return;
+
+                     if (index == 0)
+                     {
+                       OpenInputStringDialog(FSUI_ICONSTR(ICON_FA_PAGER, "Change Game Serial"),
+                                             FSUI_STR("Enter a new serial for this game."), FSUI_STR("Serial:"),
+                                             FSUI_ICONSTR(ICON_FA_CHECK, "Save"), serial,
+                                             [path = std::move(path)](std::string new_serial) mutable {
+                                               StringUtil::StripWhitespace(&new_serial);
+                                               if (!new_serial.empty())
+                                                 SaveCustomSerial(std::move(path), std::move(new_serial));
+                                             });
+                     }
+                     else if (has_custom_serial && index == 1)
+                     {
+                       SaveCustomSerial(std::move(path), {});
+                     }
+                     else if (index == (has_custom_serial ? 2 : 1))
+                     {
+                       CopyTextToClipboard(FSUI_STR("Game serial copied to clipboard."), serial);
+                     }
+                   });
+}
+
+void FullscreenUI::SaveCustomTitle(const std::string& path, const std::string& title)
+{
+  if (!GameList::SaveCustomTitleForPath(path, title))
+  {
+    ShowToast(OSDMessageType::Error, {}, FSUI_STR("Failed to save custom title."));
+    return;
+  }
+
+  if (!s_settings_locals.game_settings_entry || s_settings_locals.game_settings_entry->path != path)
+    return;
+
+  const auto lock = GameList::GetLock();
+  const GameList::Entry* const entry = GameList::GetEntryForPath(path);
+  if (entry)
+  {
+    SwitchToGameSettings(entry, SettingsPage::Summary);
+    ShowToast(OSDMessageType::Info, {}, FSUI_STR("Game title updated."));
+  }
+}
+
+void FullscreenUI::SaveCustomSerial(const std::string& path, const std::string& serial)
+{
+  if (!GameList::SaveCustomSerialForPath(path, serial))
+  {
+    ShowToast(OSDMessageType::Error, {}, FSUI_STR("Failed to save custom serial."));
+    return;
+  }
+
+  const auto lock = GameList::GetLock();
+  const GameList::Entry* const entry = GameList::GetEntryForPath(path);
+  if (entry)
+  {
+    SwitchToGameSettings(entry, SettingsPage::Summary);
+    ShowToast(OSDMessageType::Info, {}, FSUI_STR("Game serial updated."));
+  }
 }
 
 void FullscreenUI::DrawSummarySettingsTrackList()
