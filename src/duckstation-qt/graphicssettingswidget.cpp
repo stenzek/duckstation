@@ -836,6 +836,12 @@ void GraphicsSettingsWidget::populateAndConnectUpscalingModes(int max_scale)
                                               "ResolutionScale", 1);
   connect(m_ui.resolutionScale, &QComboBox::currentIndexChanged, this,
           &GraphicsSettingsWidget::updateResolutionDependentOptions);
+
+  m_ui.resolutionScaleWarningIcon->setPixmap(
+    QIcon(QtHost::GetResourceQPath("images/warning.svg", true)).pixmap(16, 16));
+  m_ui.resolutionScaleWarningIcon->setToolTip(
+    tr("PGXP is not enabled. Increasing the resolution without enabling PGXP will result in visible polygon "
+       "glitches."));
 }
 
 void GraphicsSettingsWidget::populateUpscalingModes(QComboBox* const cb, int max_scale)
@@ -1002,18 +1008,22 @@ void GraphicsSettingsWidget::updatePGXPSettingsEnabled()
   m_ui.pgxpDisableOn2DPolygons->setEnabled(enabled &&
                                            !m_dialog->hasGameTrait(GameDatabase::Trait::DisablePGXPOn2DPolygons));
   m_ui.pgxpTransparentDepthTest->setEnabled(depth_enabled);
+  updateResolutionDependentOptions();
 }
 
 void GraphicsSettingsWidget::updateResolutionDependentOptions()
 {
   const bool is_hardware = (getEffectiveRenderer() != GPURenderer::Software);
   const int scale = m_dialog->getEffectiveIntValue("GPU", "ResolutionScale", 1);
+  const bool pgxp_enabled = (is_hardware && m_dialog->getEffectiveBoolValue("GPU", "PGXPEnable", false) &&
+                             !m_dialog->hasGameTrait(GameDatabase::Trait::DisablePGXP));
   const GPUTextureFilter texture_filtering =
     Settings::ParseTextureFilterName(m_dialog->getEffectiveStringValue("GPU", "TextureFilter").c_str())
       .value_or(Settings::DEFAULT_GPU_TEXTURE_FILTER);
   m_ui.forceRoundedTexcoords->setEnabled(
     is_hardware && scale != 1 && texture_filtering == GPUTextureFilter::Nearest &&
     !m_dialog->hasGameTrait(GameDatabase::Trait::ForceRoundUpscaledTextureCoordinates));
+  m_ui.resolutionScaleWarningIcon->setVisible(scale != 1 && !pgxp_enabled);
 }
 
 void GraphicsSettingsWidget::warnAboutRendererChange()

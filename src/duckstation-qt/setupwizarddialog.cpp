@@ -509,10 +509,21 @@ void SetupWizardDialog::doMultipleDeviceAutomaticBinding(u32 port, QLabel* updat
 
 void SetupWizardDialog::setupGraphicsPage(bool initial)
 {
+  if (initial)
+  {
+    m_ui.resolutionScaleWarningIcon->setPixmap(
+      QIcon(QtHost::GetResourceQPath("images/warning.svg", true)).pixmap(16, 16));
+  }
+  m_ui.resolutionScaleWarningIcon->setToolTip(
+    tr("PGXP is not enabled. Increasing the resolution without enabling PGXP will result in visible polygon "
+       "glitches."));
+
   SettingWidgetBinder::DisconnectWidget(m_ui.resolutionScale);
   m_ui.resolutionScale->clear();
   GraphicsSettingsWidget::populateUpscalingModes(m_ui.resolutionScale);
   SettingWidgetBinder::BindWidgetToIntSetting(nullptr, m_ui.resolutionScale, "GPU", "ResolutionScale", 1);
+  connect(m_ui.resolutionScale, &QComboBox::currentIndexChanged, this,
+          &SetupWizardDialog::updateResolutionScaleWarning);
 
   SettingWidgetBinder::DisconnectWidget(m_ui.textureFiltering);
   m_ui.textureFiltering->clear();
@@ -570,7 +581,16 @@ void SetupWizardDialog::setupGraphicsPage(bool initial)
   {
     SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.pgxpEnable, "GPU", "PGXPEnable", false);
     SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.widescreenHack, "GPU", "WidescreenHack", false);
+    connect(m_ui.pgxpEnable, &QCheckBox::checkStateChanged, this, &SetupWizardDialog::updateResolutionScaleWarning);
   }
+
+  updateResolutionScaleWarning();
+}
+
+void SetupWizardDialog::updateResolutionScaleWarning()
+{
+  m_ui.resolutionScaleWarningIcon->setVisible(m_ui.resolutionScale->currentData().toInt() != 1 &&
+                                              !m_ui.pgxpEnable->isChecked());
 }
 
 void SetupWizardDialog::setupAchievementsPage(bool initial)

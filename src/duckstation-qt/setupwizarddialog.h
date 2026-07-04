@@ -41,6 +41,7 @@ private:
   void setupGameListPage();
   void setupControllerPage(bool initial);
   void setupGraphicsPage(bool initial);
+  void updateResolutionScaleWarning();
   void setupAchievementsPage(bool initial);
   void setupInterfacePage();
   void setupGameListViewPage();
