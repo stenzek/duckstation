@@ -354,7 +354,7 @@ public:
   ~InputStringDialog();
 
   void Open(std::string_view title, std::string message, std::string caption, std::string ok_button_text,
-            InputStringDialogCallback callback);
+            std::string initial_value, InputStringDialogCallback callback);
   void ClearState();
 
   void Draw();
@@ -5716,10 +5716,11 @@ bool FullscreenUI::IsInputDialogOpen()
 }
 
 void FullscreenUI::OpenInputStringDialog(std::string_view title, std::string message, std::string caption,
-                                         std::string ok_button_text, InputStringDialogCallback callback)
+                                         std::string ok_button_text, std::string initial_value,
+                                         InputStringDialogCallback callback)
 {
   s_state.input_string_dialog.Open(title, std::move(message), std::move(caption), std::move(ok_button_text),
-                                   std::move(callback));
+                                   std::move(initial_value), std::move(callback));
   QueueResetFocus(FocusResetType::PopupOpened);
 }
 
@@ -5728,12 +5729,14 @@ FullscreenUI::InputStringDialog::InputStringDialog() = default;
 FullscreenUI::InputStringDialog::~InputStringDialog() = default;
 
 void FullscreenUI::InputStringDialog::Open(std::string_view title, std::string message, std::string caption,
-                                           std::string ok_button_text, InputStringDialogCallback callback)
+                                           std::string ok_button_text, std::string initial_value,
+                                           InputStringDialogCallback callback)
 {
   SetTitleAndOpen(fmt::format("{}##input_string_dialog", title));
   m_message = std::move(message);
   m_caption = std::move(caption);
   m_ok_text = std::move(ok_button_text);
+  m_text = std::move(initial_value);
   m_callback = std::move(callback);
 }
 
@@ -5764,27 +5767,30 @@ void FullscreenUI::InputStringDialog::Draw()
   ResetFocusHere();
   ImGui::TextWrapped("%s", m_message.c_str());
 
-  BeginMenuButtons();
-
   ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(10.0f));
 
   if (!m_caption.empty())
   {
-    const float prev = ImGui::GetCursorPosX();
+    ImGui::AlignTextToFramePadding();
     ImGui::TextUnformatted(IMSTR_START_END(m_caption));
-    ImGui::SetNextItemWidth(ImGui::GetCursorPosX() - prev);
+    ImGui::SameLine(0.0f, LayoutScale(10.0f));
+    ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
   }
   else
   {
     ImGui::SetNextItemWidth(ImGui::GetCurrentWindow()->WorkRect.GetWidth());
   }
+  ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, LayoutScale(LAYOUT_WIDGET_FRAME_ROUNDING));
   ImGui::InputText("##input", &m_text);
+  ImGui::PopStyleVar();
 
   ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(10.0f));
 
   const bool ok_enabled = !m_text.empty();
 
-  if (MenuButtonWithoutSummary(m_ok_text, ok_enabled) && ok_enabled)
+  BeginHorizontalMenuButtons(2, 200.0f);
+
+  if (HorizontalMenuButton(m_ok_text, ok_enabled) && ok_enabled)
   {
     // have to move out in case they open another dialog in the callback
     const InputStringDialogCallback cb = std::exchange(m_callback, InputStringDialogCallback());
@@ -5793,10 +5799,10 @@ void FullscreenUI::InputStringDialog::Draw()
     cb(std::move(text));
   }
 
-  if (MenuButtonWithoutSummary(ICON_FA_XMARK " Cancel"))
+  if (HorizontalMenuButton(FSUI_ICONVSTR(ICON_FA_XMARK, "Cancel")))
     StartClose();
 
-  EndMenuButtons();
+  EndHorizontalMenuButtons();
 
   if (IsGamepadInputSource())
   {
@@ -6061,8 +6067,7 @@ void FullscreenUI::ProgressDialog::Draw()
       else
       {
         const float animation_frac = Easing::OutExpo(m_animation_time / PROGRESS_BAR_ANIMATION_TIME);
-        m_last_frac = m_animation_start_frac +
-                      ((m_animation_target_frac - m_animation_start_frac) * animation_frac);
+        m_last_frac = m_animation_start_frac + ((m_animation_target_frac - m_animation_start_frac) * animation_frac);
       }
     }
     frac = m_last_frac;

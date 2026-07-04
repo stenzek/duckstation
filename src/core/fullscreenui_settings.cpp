@@ -3471,7 +3471,7 @@ void FullscreenUI::DoSaveNewInputProfile()
 {
   OpenInputStringDialog(FSUI_ICONSTR(ICON_FA_FLOPPY_DISK, "Save Controller Preset"),
                         FSUI_STR("Enter the name of the controller preset you wish to create."), std::string(),
-                        FSUI_ICONSTR(ICON_FA_FOLDER_PLUS, "Create"), [](std::string title) {
+                        FSUI_ICONSTR(ICON_FA_FOLDER_PLUS, "Create"), std::string(), [](std::string title) {
                           if (!title.empty())
                             DoSaveInputProfile(title);
                         });

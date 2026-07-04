@@ -579,7 +579,7 @@ void CloseDropdownDialog();
 using InputStringDialogCallback = std::function<void(std::string text)>;
 bool IsInputDialogOpen();
 void OpenInputStringDialog(std::string_view title, std::string message, std::string caption, std::string ok_button_text,
-                           InputStringDialogCallback callback);
+                           std::string initial_value, InputStringDialogCallback callback);
 void CloseInputDialog();
 
 using ConfirmMessageDialogCallback = std::function<void(bool)>;
