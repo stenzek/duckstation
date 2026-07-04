@@ -2965,9 +2965,6 @@ DuckStation&apos;ın ən son buraxılışını yenidən endirərək özünüz on
         <translation>Güncəlləmə sonrası güncəlləmə (update) exe&apos;sini silmək uğursuz oldu:
 %1</translation>
     </message>
-</context>
-<context>
-    <name>AutoUpdaterWindow</name>
     <message>
         <source>Automatic Updater</source>
         <translation type="vanished">Özbaşına Güncəlləyici</translation>

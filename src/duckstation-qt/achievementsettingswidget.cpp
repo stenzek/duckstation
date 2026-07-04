@@ -165,7 +165,7 @@ void AchievementSettingsWidget::setupAdditionalUi()
     {
       const int global_value = Core::GetIntSettingValue("Cheevos", key, Settings::ACHIEVEMENT_NOTIFICATION_SCALE_AUTO);
       cb->addItem(
-        qApp->translate("SettingsDialog", "Use Global Setting [%1]")
+        QCoreApplication::translate("SettingWidgetBinder", "Use Global Setting [%1]")
           .arg((global_value < 0) ? tr("Use OSD Scale") : ((global_value == 0) ? tr("Automatic") : tr("Custom"))));
     }
 

@@ -38,10 +38,11 @@ static void UpdateSpeedControlState(const SpeedControl& control)
   control.checkbox->setTristate(inherited);
   if (inherited)
   {
-    const QString inherited_text = (effective_value == 0.0f) ?
-                                     qApp->translate("EmulationSettingsWidget", "Use Global Setting [Unlimited]") :
-                                     qApp->translate("EmulationSettingsWidget", "Use Global Setting [%1%]")
-                                       .arg(static_cast<int>(std::round(effective_value * 100.0f)));
+    const QString inherited_text =
+      (effective_value == 0.0f) ?
+        QCoreApplication::translate("EmulationSettingsWidget", "Use Global Setting [Unlimited]") :
+        QCoreApplication::translate("EmulationSettingsWidget", "Use Global Setting [%1%]")
+          .arg(static_cast<int>(std::round(effective_value * 100.0f)));
 
     control.checkbox->setCheckState(Qt::PartiallyChecked);
     control.spinbox->setMinimum(0);
@@ -59,7 +60,7 @@ static void UpdateSpeedControlState(const SpeedControl& control)
       control.spinbox->setMinimum(0);
       control.spinbox->setValue(0);
       control.spinbox->setSuffix(QString());
-      control.spinbox->setSpecialValueText(qApp->translate("EmulationSettingsWidget", "N/A"));
+      control.spinbox->setSpecialValueText(QCoreApplication::translate("EmulationSettingsWidget", "N/A"));
     }
     else
     {
@@ -68,8 +69,8 @@ static void UpdateSpeedControlState(const SpeedControl& control)
       control.spinbox->setValue(static_cast<int>(std::round(effective_value * 100.0f)));
       control.spinbox->setMinimum(1);
       control.spinbox->setSuffix((effective_value == 1.0f) ?
-                                   qApp->translate("EmulationSettingsWidget", "% (Normal Speed)") :
-                                   qApp->translate("EmulationSettingsWidget", "%"));
+                                   QCoreApplication::translate("EmulationSettingsWidget", "% (Normal Speed)") :
+                                   QCoreApplication::translate("EmulationSettingsWidget", "%"));
       control.spinbox->setSpecialValueText(QString());
     }
   }

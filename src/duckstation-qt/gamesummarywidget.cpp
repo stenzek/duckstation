@@ -41,9 +41,8 @@ GameSummaryWidget::GameSummaryWidget(const GameList::Entry* entry, SettingsWindo
 
   for (u32 i = 0; i < static_cast<u32>(GameList::EntryType::MaxCount); i++)
   {
-    m_ui.entryType->addItem(
-      QtUtils::GetIconForEntryType(static_cast<GameList::EntryType>(i)),
-      qApp->translate("GameList", GameList::GetEntryTypeDisplayName(static_cast<GameList::EntryType>(i))));
+    m_ui.entryType->addItem(QtUtils::GetIconForEntryType(static_cast<GameList::EntryType>(i)),
+                            QString::fromUtf8(GameList::GetEntryTypeDisplayName(static_cast<GameList::EntryType>(i))));
   }
 
   for (u32 i = 0; i < static_cast<u32>(DiscRegion::Count); i++)

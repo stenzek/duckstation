@@ -770,7 +770,7 @@ static void createSettingWidgets(SettingsInterface* const sif, QWidget* parent_w
     {
       case SettingInfo::Type::Boolean:
       {
-        QCheckBox* cb = new QCheckBox(qApp->translate(tr_context, si.display_name), parent_widget);
+        QCheckBox* cb = new QCheckBox(QCoreApplication::translate(tr_context, si.display_name), parent_widget);
         cb->setObjectName(si.name);
         ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, cb, section, std::move(key_name),
                                                                     si.BooleanDefaultValue());
@@ -788,7 +788,8 @@ static void createSettingWidgets(SettingsInterface* const sif, QWidget* parent_w
         sb->setSingleStep(si.IntegerStepValue());
         ControllerSettingWidgetBinder::BindWidgetToInputProfileInt(sif, sb, section, std::move(key_name),
                                                                    si.IntegerDefaultValue());
-        layout->addWidget(new QLabel(qApp->translate(tr_context, si.display_name), parent_widget), current_row, 0);
+        layout->addWidget(new QLabel(QCoreApplication::translate(tr_context, si.display_name), parent_widget),
+                          current_row, 0);
         layout->addWidget(sb, current_row, 1, 1, 3);
         current_row++;
       }
@@ -799,10 +800,11 @@ static void createSettingWidgets(SettingsInterface* const sif, QWidget* parent_w
         QComboBox* cb = new QComboBox(parent_widget);
         cb->setObjectName(si.name);
         for (u32 j = 0; si.options[j] != nullptr; j++)
-          cb->addItem(qApp->translate(tr_context, si.options[j]));
+          cb->addItem(QCoreApplication::translate(tr_context, si.options[j]));
         ControllerSettingWidgetBinder::BindWidgetToInputProfileInt(sif, cb, section, std::move(key_name),
                                                                    si.IntegerDefaultValue(), si.IntegerMinValue());
-        layout->addWidget(new QLabel(qApp->translate(tr_context, si.display_name), parent_widget), current_row, 0);
+        layout->addWidget(new QLabel(QCoreApplication::translate(tr_context, si.display_name), parent_widget),
+                          current_row, 0);
         layout->addWidget(cb, current_row, 1, 1, 3);
         current_row++;
       }
@@ -836,7 +838,8 @@ static void createSettingWidgets(SettingsInterface* const sif, QWidget* parent_w
           ControllerSettingWidgetBinder::BindWidgetToInputProfileFloat(sif, sb, section, std::move(key_name),
                                                                        si.FloatDefaultValue());
         }
-        layout->addWidget(new QLabel(qApp->translate(tr_context, si.display_name), parent_widget), current_row, 0);
+        layout->addWidget(new QLabel(QCoreApplication::translate(tr_context, si.display_name), parent_widget),
+                          current_row, 0);
         layout->addWidget(sb, current_row, 1, 1, 3);
         current_row++;
       }
@@ -848,7 +851,8 @@ static void createSettingWidgets(SettingsInterface* const sif, QWidget* parent_w
         le->setObjectName(si.name);
         ControllerSettingWidgetBinder::BindWidgetToInputProfileString(sif, le, section, std::move(key_name),
                                                                       si.StringDefaultValue());
-        layout->addWidget(new QLabel(qApp->translate(tr_context, si.display_name), parent_widget), current_row, 0);
+        layout->addWidget(new QLabel(QCoreApplication::translate(tr_context, si.display_name), parent_widget),
+                          current_row, 0);
         layout->addWidget(le, current_row, 1, 1, 3);
         current_row++;
       }
@@ -859,12 +863,12 @@ static void createSettingWidgets(SettingsInterface* const sif, QWidget* parent_w
         QLineEdit* le = new QLineEdit(parent_widget);
         le->setObjectName(si.name);
         QPushButton* browse_button =
-          new QPushButton(qApp->translate("ControllerCustomSettingsWidget", "Browse..."), parent_widget);
+          new QPushButton(QCoreApplication::translate("ControllerCustomSettingsWidget", "Browse..."), parent_widget);
         ControllerSettingWidgetBinder::BindWidgetToInputProfileString(sif, le, section, std::move(key_name),
                                                                       si.StringDefaultValue());
         QObject::connect(browse_button, &QPushButton::clicked, [le, root = parent_widget]() {
-          QString path = QDir::toNativeSeparators(
-            QFileDialog::getOpenFileName(root, qApp->translate("ControllerCustomSettingsWidget", "Select File")));
+          QString path = QDir::toNativeSeparators(QFileDialog::getOpenFileName(
+            root, QCoreApplication::translate("ControllerCustomSettingsWidget", "Select File")));
           if (!path.isEmpty())
             le->setText(path);
         });
@@ -873,14 +877,16 @@ static void createSettingWidgets(SettingsInterface* const sif, QWidget* parent_w
         hbox->addWidget(le, 1);
         hbox->addWidget(browse_button);
 
-        layout->addWidget(new QLabel(qApp->translate(tr_context, si.display_name), parent_widget), current_row, 0);
+        layout->addWidget(new QLabel(QCoreApplication::translate(tr_context, si.display_name), parent_widget),
+                          current_row, 0);
         layout->addLayout(hbox, current_row, 1, 1, 3);
         current_row++;
       }
       break;
     }
 
-    QLabel* label = new QLabel(si.description ? qApp->translate(tr_context, si.description) : QString(), parent_widget);
+    QLabel* label =
+      new QLabel(si.description ? QCoreApplication::translate(tr_context, si.description) : QString(), parent_widget);
     label->setEnabled(false);
     label->setWordWrap(true);
     layout->addWidget(label, current_row++, 0, 1, 4);

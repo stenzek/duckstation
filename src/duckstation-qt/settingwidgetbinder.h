@@ -141,8 +141,9 @@ struct SettingAccessor<QComboBox>
   static void setBoolValue(QComboBox* widget, bool value) { widget->setCurrentIndex(value ? 1 : 0); }
   static void makeNullableBool(QComboBox* widget, bool globalValue)
   {
-    widget->insertItem(0, globalValue ? qApp->translate("SettingsDialog", "Use Global Setting [Enabled]") :
-                                        qApp->translate("SettingsDialog", "Use Global Setting [Disabled]"));
+    widget->insertItem(0, globalValue ?
+                            QCoreApplication::translate("SettingWidgetBinder", "Use Global Setting [Enabled]") :
+                            QCoreApplication::translate("SettingWidgetBinder", "Use Global Setting [Disabled]"));
   }
 
   static int getIntValue(const QComboBox* widget) { return widget->currentIndex(); }
@@ -150,7 +151,7 @@ struct SettingAccessor<QComboBox>
   static void makeNullableInt(QComboBox* widget, int globalValue)
   {
     widget->insertItem(
-      0, qApp->translate("SettingsDialog", "Use Global Setting [%1]")
+      0, QCoreApplication::translate("SettingWidgetBinder", "Use Global Setting [%1]")
            .arg((globalValue >= 0 && globalValue < widget->count()) ? widget->itemText(globalValue) : QString()));
   }
   static std::optional<int> getNullableIntValue(const QComboBox* widget)
@@ -166,7 +167,7 @@ struct SettingAccessor<QComboBox>
   static void setFloatValue(QComboBox* widget, float value) { widget->setCurrentIndex(static_cast<int>(value)); }
   static void makeNullableFloat(QComboBox* widget, float globalValue)
   {
-    widget->insertItem(0, qApp->translate("SettingsDialog", "Use Global Setting [%1]")
+    widget->insertItem(0, QCoreApplication::translate("SettingWidgetBinder", "Use Global Setting [%1]")
                             .arg((globalValue >= 0.0f && static_cast<int>(globalValue) < widget->count()) ?
                                    widget->itemText(static_cast<int>(globalValue)) :
                                    QString()));
@@ -417,7 +418,7 @@ struct SettingAccessor<QSpinBox>
   {
     // We should be able to use QFont here.. but it doesn't update on change.
     widget->setStyleSheet(isNull ? u"font-style: italic;"_s : QString());
-    widget->setPrefix(isNull ? qApp->translate("SettingWidgetBinder", "Global: ") : QString());
+    widget->setPrefix(isNull ? QCoreApplication::translate("SettingWidgetBinder", "Global: ") : QString());
   }
 
   static bool getBoolValue(const QSpinBox* widget) { return widget->value() > 0; }
@@ -553,7 +554,7 @@ struct SettingAccessor<QDoubleSpinBox>
   {
     // We should be able to use QFont here.. but it doesn't update on change.
     widget->setStyleSheet(isNull ? QStringLiteral("font-style: italic;") : QString());
-    widget->setPrefix(isNull ? qApp->translate("SettingWidgetBinder", "Global: ") : QString());
+    widget->setPrefix(isNull ? QCoreApplication::translate("SettingWidgetBinder", "Global: ") : QString());
   }
 
   static bool getBoolValue(const QDoubleSpinBox* widget) { return widget->value() > 0.0; }
@@ -1295,11 +1296,10 @@ inline void BindWidgetToFolderSetting(SettingsInterface* sif, QLineEdit* widget,
     {
       if (FileSystem::DirectoryExists(new_value.c_str()) ||
           QtUtils::MessageBoxQuestion(
-            widget, qApp->translate("SettingWidgetBinder", "Confirm Folder"),
-            qApp
-              ->translate(
-                "SettingWidgetBinder",
-                "The chosen directory does not currently exist:\n\n%1\n\nDo you want to create this directory?")
+            widget, QCoreApplication::translate("SettingWidgetBinder", "Confirm Folder"),
+            QCoreApplication::translate(
+              "SettingWidgetBinder",
+              "The chosen directory does not currently exist:\n\n%1\n\nDo you want to create this directory?")
               .arg(QString::fromStdString(new_value))) == QMessageBox::Yes)
       {
         if (use_relative)
@@ -1319,8 +1319,9 @@ inline void BindWidgetToFolderSetting(SettingsInterface* sif, QLineEdit* widget,
     }
     else
     {
-      QtUtils::AsyncMessageBox(widget, QMessageBox::Critical, qApp->translate("SettingWidgetBinder", "Error"),
-                               qApp->translate("SettingWidgetBinder", "Folder path cannot be empty."));
+      QtUtils::AsyncMessageBox(widget, QMessageBox::Critical,
+                               QCoreApplication::translate("SettingWidgetBinder", "Error"),
+                               QCoreApplication::translate("SettingWidgetBinder", "Folder path cannot be empty."));
     }
 
     // reset to old value
@@ -1379,15 +1380,15 @@ inline void SetAvailability(WidgetType* widget, bool available, QLabel* widget_l
   if constexpr (std::is_same_v<WidgetType, QComboBox>)
   {
     widget->clear();
-    widget->addItem(qApp->translate("SettingWidgetBinder", "Incompatible with this game"));
+    widget->addItem(QCoreApplication::translate("SettingWidgetBinder", "Incompatible with this game"));
   }
   else if constexpr (std::is_same_v<WidgetType, QLineEdit>)
   {
-    widget->setText(qApp->translate("SettingWidgetBinder", "Incompatible with this game"));
+    widget->setText(QCoreApplication::translate("SettingWidgetBinder", "Incompatible with this game"));
   }
   else if constexpr (std::is_same_v<WidgetType, QCheckBox>)
   {
-    widget->setText(widget->text() + qApp->translate("SettingWidgetBinder", " [incompatible]"));
+    widget->setText(QCoreApplication::translate("SettingWidgetBinder", "%1 [incompatible]").arg(widget->text()));
     widget->setCheckState(Qt::Unchecked);
   }
   else if constexpr (std::is_same_v<WidgetType, QSlider>)
@@ -1409,7 +1410,7 @@ inline void SetForceEnabled(QCheckBox* widget, bool forced)
 
   DisconnectWidget(widget);
 
-  widget->setText(widget->text() + qApp->translate("SettingWidgetBinder", " [forced]"));
+  widget->setText(QCoreApplication::translate("SettingWidgetBinder", "%1 [forced]").arg(widget->text()));
   widget->setCheckState(Qt::Checked);
   widget->setEnabled(false);
 }

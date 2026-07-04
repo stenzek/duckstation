@@ -3195,9 +3195,6 @@ Você pode atualizar manualmente o DuckStation baixando novamente a versão mais
         <translation>Falha ao remover o executável do atualizador após esta atualização:
 %1</translation>
     </message>
-</context>
-<context>
-    <name>AutoUpdaterWindow</name>
     <message>
         <source>Automatic Updater</source>
         <translation type="vanished">Atualizador automático</translation>

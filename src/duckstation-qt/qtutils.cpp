@@ -200,7 +200,7 @@ std::optional<unsigned> QtUtils::PromptForAddress(QWidget* parent, const QString
                                                   bool code)
 {
   const QString address_str(
-    QInputDialog::getText(parent, title, qApp->translate("DebuggerWindow", "Enter memory address:")));
+    QInputDialog::getText(parent, title, QCoreApplication::translate("DebuggerWindow", "Enter memory address:")));
   if (address_str.isEmpty())
     return std::nullopt;
 
@@ -217,7 +217,7 @@ std::optional<unsigned> QtUtils::PromptForAddress(QWidget* parent, const QString
   {
     MessageBoxCritical(
       parent, title,
-      qApp->translate("DebuggerWindow", "Invalid address. It should be in hex (0x12345678 or 12345678)"));
+      QCoreApplication::translate("DebuggerWindow", "Invalid address. It should be in hex (0x12345678 or 12345678)"));
     return std::nullopt;
   }
 

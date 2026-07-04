@@ -223,7 +223,7 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* dialog, QWidget
     {
       if (std::strcmp(name, default_theme_cname) == 0)
       {
-        default_theme_name = qApp->translate("MainWindow", display_name);
+        default_theme_name = QCoreApplication::translate("MainWindow", display_name);
         break;
       }
     }
@@ -271,7 +271,7 @@ void InterfaceSettingsWidget::setupLanguageCombo(QComboBox* const cb)
 void InterfaceSettingsWidget::setupThemeCombo(QComboBox* const cb)
 {
   for (const auto& [name, display_name] : BUILTIN_THEMES)
-    cb->addItem(qApp->translate("MainWindow", display_name), QString::fromLatin1(name));
+    cb->addItem(QCoreApplication::translate("MainWindow", display_name), QString::fromLatin1(name));
   for (const QString& name : QtHost::GetCustomThemeList())
   {
     if (cb->findData(name) < 0)
@@ -308,8 +308,9 @@ void InterfaceSettingsWidget::checkForUpdates()
   if (!dlg)
     return;
 
-  QProgressDialog* const pdlg = new QProgressDialog(qApp->translate("MainWindow", "Checking for updates..."),
-                                                    qApp->translate("QPlatformTheme", "Cancel"), 0, 0, this);
+  QProgressDialog* const pdlg =
+    new QProgressDialog(QCoreApplication::translate("MainWindow", "Checking for updates..."),
+                        qApp->translate("QPlatformTheme", "Cancel"), 0, 0, this);
   pdlg->setWindowTitle(m_dialog->windowTitle());
   pdlg->setAttribute(Qt::WA_DeleteOnClose);
   pdlg->setMinimumWidth(400);

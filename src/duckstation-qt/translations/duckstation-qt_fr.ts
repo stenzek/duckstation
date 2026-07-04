@@ -2736,9 +2736,6 @@ Vous pouvez mettre à jour DuckStation manuellement en téléchargeant à nouvea
         <translation>Échec de la suppression de l&apos;exécutable du programme de mise à jour après la mise à jour :
 %1</translation>
     </message>
-</context>
-<context>
-    <name>AutoUpdaterWindow</name>
     <message>
         <source>Automatic Updater</source>
         <translation type="vanished">Mise à jour automatique</translation>

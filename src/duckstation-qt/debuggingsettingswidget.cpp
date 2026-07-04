@@ -141,7 +141,8 @@ static void addDirectoryOption(SettingsWindow* dialog, QTableWidget* table, cons
   browse->setMaximumWidth(32);
   QObject::connect(browse, &QPushButton::clicked, browse, [browse, value, name]() {
     const QString path(QDir::toNativeSeparators(QFileDialog::getExistingDirectory(
-      browse, qApp->translate("AdvancedSettingsWidget", "Select folder for %1").arg(name), value->text())));
+      browse, QCoreApplication::translate("DebuggingSettingsWidget", "Select folder for %1").arg(name),
+      value->text())));
     if (!path.isEmpty())
       value->setText(path);
   });

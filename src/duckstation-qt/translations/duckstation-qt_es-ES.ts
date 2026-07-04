@@ -2628,9 +2628,6 @@ Puedes actualizar DuckStation de forma manual redescargando la última versión.
         <translation>Error al eliminar el ejecutable del actualizador tras la actualización:
 %1</translation>
     </message>
-</context>
-<context>
-    <name>AutoUpdaterWindow</name>
     <message>
         <location filename="../autoupdaterdialog.cpp" line="107"/>
         <source>Stable Releases</source>

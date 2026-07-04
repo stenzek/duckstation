@@ -2560,9 +2560,6 @@ You can manually update DuckStation by re-downloading the latest release. Do you
         <source>Automatic Updater</source>
         <translation>自动更新程序</translation>
     </message>
-</context>
-<context>
-    <name>AutoUpdaterWindow</name>
     <message>
         <location filename="../autoupdaterdialog.cpp" line="107"/>
         <source>Stable Releases</source>

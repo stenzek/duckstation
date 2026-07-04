@@ -2421,7 +2421,7 @@ Unread messages: {}</source>
     </message>
 </context>
 <context>
-    <name>AutoUpdaterWindow</name>
+    <name>AutoUpdaterDialog</name>
     <message>
         <location filename="../autoupdaterwindow.ui" line="14"/>
         <location filename="../autoupdaterwindow.cpp" line="344"/>

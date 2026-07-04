@@ -2956,9 +2956,6 @@ You can manually update DuckStation by re-downloading the latest release. Do you
         <translation>Не удалось удалить исполняемый файл программы обновления после обновления:
 %1</translation>
     </message>
-</context>
-<context>
-    <name>AutoUpdaterWindow</name>
     <message>
         <source>Automatic Updater</source>
         <translation type="vanished">Автоматическое обновление</translation>

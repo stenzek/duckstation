@@ -155,9 +155,7 @@ void BIOSSettingsWidget::populateDropDownForRegion(ConsoleRegion region, QComboB
   {
     QString name_str(QString::fromStdString(name));
     cb->addItem(QtUtils::GetIconForRegion(info ? info->region : ConsoleRegion::Count),
-                QStringLiteral("%1 (%2)")
-                  .arg(info ? QString(info->description) : qApp->translate("BIOSSettingsWidget", "Unknown"))
-                  .arg(name_str),
+                QStringLiteral("%1 (%2)").arg(info ? QString(info->description) : tr("Unknown")).arg(name_str),
                 QVariant(name_str));
   }
 }

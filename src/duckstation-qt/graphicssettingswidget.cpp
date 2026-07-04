@@ -858,8 +858,8 @@ void GraphicsSettingsWidget::populateUpscalingModes(QComboBox* const cb, int max
   {
     const auto it = std::find_if(std::begin(templates), std::end(templates),
                                  [&scale](const std::pair<int, const char*>& it) { return scale == it.first; });
-    cb->addItem((it != std::end(templates)) ? qApp->translate("GraphicsSettingsWidget", it->second) :
-                                              qApp->translate("GraphicsSettingsWidget", "%1x Native").arg(scale));
+    cb->addItem((it != std::end(templates)) ? QCoreApplication::translate("GraphicsSettingsWidget", it->second) :
+                                              QCoreApplication::translate("GraphicsSettingsWidget", "%1x Native").arg(scale));
   }
 }
 
@@ -884,7 +884,7 @@ void GraphicsSettingsWidget::createAspectRatioSetting(QComboBox* const cb, QSpin
   // AR requires special handling because of the custom option.
   if (sif)
   {
-    cb->addItem(qApp->translate("SettingsDialog", "Use Global Setting [%1]")
+    cb->addItem(QCoreApplication::translate("SettingWidgetBinder", "Use Global Setting [%1]")
                   .arg(QtUtils::StringViewToQString(Settings::GetDisplayAspectRatioDisplayName(
                     Settings::ParseDisplayAspectRatio(Core::GetBaseStringSettingValue(CONFIG_SECTION, CONFIG_KEY))
                       .value_or(Settings::DEFAULT_DISPLAY_ASPECT_RATIO)))));

@@ -2560,9 +2560,6 @@ You can manually update DuckStation by re-downloading the latest release. Do you
         <translation>更新後にアップデーターの実行ファイルを削除できませんでした:
 %1</translation>
     </message>
-</context>
-<context>
-    <name>AutoUpdaterWindow</name>
     <message>
         <location filename="../autoupdaterdialog.cpp" line="107"/>
         <source>Stable Releases</source>

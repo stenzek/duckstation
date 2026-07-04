@@ -104,8 +104,8 @@ using namespace Qt::StringLiterals;
 
 // Update channels.
 static constexpr const std::pair<const char*, const char*> s_update_channels[] = {
-  {"latest", QT_TRANSLATE_NOOP("AutoUpdaterWindow", "Stable Releases")},
-  {"preview", QT_TRANSLATE_NOOP("AutoUpdaterWindow", "Preview Releases")},
+  {"latest", QT_TRANSLATE_NOOP("AutoUpdaterDialog", "Stable Releases")},
+  {"preview", QT_TRANSLATE_NOOP("AutoUpdaterDialog", "Preview Releases")},
 };
 
 LOG_CHANNEL(Host);
@@ -253,7 +253,7 @@ std::vector<std::pair<QString, QString>> AutoUpdaterDialog::getChannelList()
   std::vector<std::pair<QString, QString>> ret;
   ret.reserve(std::size(s_update_channels));
   for (const auto& [name, desc] : s_update_channels)
-    ret.emplace_back(QString::fromUtf8(name), qApp->translate("AutoUpdaterWindow", desc));
+    ret.emplace_back(QString::fromUtf8(name), tr(desc));
   return ret;
 }
 

@@ -2251,9 +2251,6 @@ Du kan uppdatera DuckStation manuellt genom att hämta ner den senaste utgåvan 
         <translation>Misslyckades med att ta bort uppdateringsfil efter uppdatering:
 %1</translation>
     </message>
-</context>
-<context>
-    <name>AutoUpdaterWindow</name>
     <message>
         <source>Automatic Updater</source>
         <translation type="vanished">Automatisk uppdatering</translation>

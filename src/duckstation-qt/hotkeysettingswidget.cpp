@@ -31,7 +31,7 @@ HotkeySettingsWidget::~HotkeySettingsWidget() = default;
 HotkeySettingsWidget::Container::Container(QWidget* parent) : QWidget(parent)
 {
   m_search = new QLineEdit(this);
-  m_search->setPlaceholderText(qApp->translate("HotkeySettingsWidget", "Search..."));
+  m_search->setPlaceholderText(tr("Search..."));
   m_search->setClearButtonEnabled(true);
 }
 
@@ -104,7 +104,7 @@ void HotkeySettingsWidget::createButtons()
   const QPalette row_palette = getRowPalette();
   for (const HotkeyInfo& hotkey : Core::GetHotkeyList())
   {
-    const QString category(qApp->translate("Hotkeys", hotkey.category));
+    const QString category = QCoreApplication::translate("Hotkeys", hotkey.category);
 
     auto iter = m_categories.find(category);
     if (iter == m_categories.end())
@@ -145,7 +145,7 @@ void HotkeySettingsWidget::createButtons()
     QHBoxLayout* row_layout = new QHBoxLayout(row);
     row_layout->setContentsMargins(LR_MARGIN, TB_MARGIN, LR_MARGIN, TB_MARGIN);
 
-    const QString display_name = qApp->translate("Hotkeys", hotkey.display_name);
+    const QString display_name = QCoreApplication::translate("Hotkeys", hotkey.display_name);
     row_layout->addWidget(new QLabel(display_name, row));
 
     InputBindingWidget* const bind =

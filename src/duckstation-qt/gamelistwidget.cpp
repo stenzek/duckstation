@@ -219,7 +219,7 @@ static QString sizeToString(s64 size)
 {
   static constexpr s64 one_mb = 1024 * 1024;
   return (size >= 0) ? QStringLiteral("%1 MB").arg((size + (one_mb - 1)) / one_mb) :
-                       qApp->translate("GameListModel", "Unknown");
+                       QCoreApplication::translate("GameListModel", "Unknown");
 }
 
 std::optional<GameListModel::Column> GameListModel::getColumnIdForName(std::string_view name)
@@ -1110,7 +1110,7 @@ QVariant GameListModel::headerData(int section, Qt::Orientation orientation, int
 {
   QVariant ret;
   if (orientation == Qt::Horizontal && role == Qt::DisplayRole && section >= 0 && section < Column_Count)
-    ret = qApp->translate("GameListModel", s_column_names[static_cast<u32>(section)]);
+    ret = QCoreApplication::translate("GameListModel", s_column_names[static_cast<u32>(section)]);
 
   return ret;
 }
@@ -1867,7 +1867,7 @@ GameListWidget::GameListWidget(QWidget* parent, QAction* action_view_list, QActi
   m_empty_widget = new QWidget(m_ui.stack);
   Ui::EmptyGameListWidget empty_ui;
   empty_ui.setupUi(m_empty_widget);
-  empty_ui.supportedFormats->setText(qApp->translate("GameListWidget", SUPPORTED_FORMATS_STRING));
+  empty_ui.supportedFormats->setText(tr(SUPPORTED_FORMATS_STRING));
   empty_ui.icon->setSource(u":/icons/monochrome/svg/information-line.svg"_s);
   m_ui.stack->insertWidget(2, m_empty_widget);
 
@@ -1923,7 +1923,7 @@ GameListWidget::~GameListWidget() = default;
 
 QString GameListWidget::getSupportedFormatsString()
 {
-  return qApp->translate("GameListWidget", SUPPORTED_FORMATS_STRING);
+  return tr(SUPPORTED_FORMATS_STRING);
 }
 
 bool GameListWidget::isShowingGameList() const
@@ -2508,15 +2508,16 @@ void GameListListView::updateFixedColumnWidths()
 
   // Played time is a little trickier, since some locales might have longer words for "hours" and "minutes".
   setFixedColumnWidth(fm, GameListModel::Column_TimePlayed,
-                      std::max({width_for(qApp->translate("GameList", "%n seconds", "", 59)),
-                                width_for(qApp->translate("GameList", "%n minutes", "", 59)),
-                                width_for(qApp->translate("GameList", "%n hours", "", 1000))}));
+                      std::max({width_for(QCoreApplication::translate("GameList", "%n seconds", "", 59)),
+                                width_for(QCoreApplication::translate("GameList", "%n minutes", "", 59)),
+                                width_for(QCoreApplication::translate("GameList", "%n hours", "", 1000))}));
 
   // And this is a monstrosity.
   setFixedColumnWidth(
     fm, GameListModel::Column_LastPlayed,
-    std::max({width_for(qApp->translate("GameList", "Today")), width_for(qApp->translate("GameList", "Yesterday")),
-              width_for(qApp->translate("GameList", "Never")),
+    std::max({width_for(QCoreApplication::translate("GameList", "Today")),
+              width_for(QCoreApplication::translate("GameList", "Yesterday")),
+              width_for(QCoreApplication::translate("GameList", "Never")),
               width_for(QtHost::FormatNumber(Host::NumberFormatType::ShortDate,
                                              static_cast<s64>(QDateTime::currentSecsSinceEpoch())))}));
 
