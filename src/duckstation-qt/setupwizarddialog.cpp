@@ -530,7 +530,7 @@ void SetupWizardDialog::setupGraphicsPage(bool initial)
 
 void SetupWizardDialog::updateResolutionScaleWarning()
 {
-  m_ui.resolutionScaleWarningIcon->setVisible(m_ui.resolutionScale->currentData().toInt() != 1 &&
+  m_ui.resolutionScaleWarningIcon->setVisible(m_ui.resolutionScale->currentIndex() != 1 &&
                                               !m_ui.pgxpEnable->isChecked());
 }
 
