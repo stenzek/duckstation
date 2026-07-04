@@ -374,7 +374,7 @@ void AchievementSettingsWidget::onLoginCompleted()
 
 void AchievementSettingsWidget::onRegisterUserPressed()
 {
-  QtUtils::OpenURL(this, QUrl(QStringLiteral("https://retroachievements.org/createaccount.php")));
+  QtUtils::OpenURL(this, QUrl(QString::fromLatin1(Achievements::RA_REGISTER_URL)));
 }
 
 void AchievementSettingsWidget::onViewProfilePressed()
@@ -383,7 +383,5 @@ void AchievementSettingsWidget::onViewProfilePressed()
   if (username.empty())
     return;
 
-  const QByteArray encoded_username(QUrl::toPercentEncoding(QString::fromStdString(username)));
-  QtUtils::OpenURL(
-    this, QUrl(QStringLiteral("https://retroachievements.org/user/%1").arg(QString::fromUtf8(encoded_username))));
+  QtUtils::OpenURL(this, QUrl(QString::fromStdString(Achievements::GetProfileURL(username))));
 }

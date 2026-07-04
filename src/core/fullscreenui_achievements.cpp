@@ -33,7 +33,6 @@ LOG_CHANNEL(FullscreenUI);
 namespace FullscreenUI {
 
 static constexpr const char* ACHEIVEMENT_DETAILS_URL_TEMPLATE = "https://retroachievements.org/achievement/{}";
-static constexpr const char* PROFILE_DETAILS_URL_TEMPLATE = "https://retroachievements.org/user/{}";
 
 static constexpr float WINDOW_ALPHA = 0.9f;
 static constexpr float WINDOW_HEADING_ALPHA = 0.95f;
@@ -2987,7 +2986,7 @@ bool FullscreenUI::DrawLeaderboardEntry(const rc_client_leaderboard_entry_t& ent
 
   if (pressed)
   {
-    const std::string url = fmt::format(fmt::runtime(PROFILE_DETAILS_URL_TEMPLATE), entry.user);
+    const std::string url = Achievements::GetProfileURL(entry.user);
     INFO_LOG("Opening profile details: {}", url);
     Host::OpenURL(url);
   }

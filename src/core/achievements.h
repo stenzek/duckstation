@@ -177,6 +177,9 @@ const std::string& GetLoggedInUserIconURL();
 /// Should be called with the lock held.
 SmallString GetLoggedInUserPointsSummary();
 
+/// Returns a URL for the given user's profile.
+std::string GetProfileURL(std::string_view username);
+
 /// Returns the URL for the specified game icon, using the game ID.
 std::string GetGameBadgeURL(u32 game_id);
 
@@ -189,6 +192,9 @@ u32 GetPendingUnlockCount();
 /// The name of the RetroAchievements icon, which can be used in notifications.
 extern const char* const RA_LOGO_ICON_NAME;
 extern const char* const RA_LOGO_SVG_ICON_NAME;
+
+/// URL for registering accounts.
+extern const char* const RA_REGISTER_URL;
 
 } // namespace Achievements
 

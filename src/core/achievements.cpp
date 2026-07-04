@@ -78,6 +78,7 @@ static constexpr const char* UNLOCK_SOUND_NAME = "sounds/achievements/unlock.wav
 static constexpr const char* LBSUBMIT_SOUND_NAME = "sounds/achievements/lbsubmit.wav";
 constexpr const char* const RA_LOGO_ICON_NAME = "images/ra-icon.webp";
 constexpr const char* const RA_LOGO_SVG_ICON_NAME = "images/ra-icon.svg";
+constexpr const char* const RA_REGISTER_URL = "https://retroachievements.org/createaccount.php";
 
 static constexpr float LOGIN_NOTIFICATION_TIME = 5.0f;
 static constexpr float ACHIEVEMENT_SUMMARY_NOTIFICATION_TIME = 5.0f;
@@ -2232,6 +2233,11 @@ SmallString Achievements::GetLoggedInUserPointsSummary()
   //: Score summary, shown in Big Picture mode.
   ret.format(TRANSLATE_FS("Achievements", "Score: {} ({} softcore)"), user->score, user->score_softcore);
   return ret;
+}
+
+std::string Achievements::GetProfileURL(std::string_view username)
+{
+  return fmt::format("https://retroachievements.org/user/{}", Path::URLEncode(username));
 }
 
 u32 Achievements::GetPauseThrottleFrames()
