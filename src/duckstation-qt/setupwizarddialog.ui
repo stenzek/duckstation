@@ -13,6 +13,9 @@
   <property name="windowTitle">
    <string>DuckStation Setup Wizard</string>
   </property>
+  <property name="class" stdset="0">
+   <string notr="true">settings-window</string>
+  </property>
   <layout class="QGridLayout" name="gridLayout">
    <property name="horizontalSpacing">
     <number>10</number>
