@@ -7713,7 +7713,7 @@ Error was:</source>
     </message>
     <message>
         <location filename="../../core/fullscreenui_strings.h" line="401"/>
-        <source>Game Slot {0}##game_slot_{0}</source>
+        <source>Game Slot {0}##game_slot_{8}</source>
         <translation>ゲームスロット {0}##game_slot_{0}</translation>
     </message>
     <message>
