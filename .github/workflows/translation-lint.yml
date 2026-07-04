@@ -21,11 +21,30 @@ jobs:
     timeout-minutes: 120
     steps:
     - uses: actions/checkout@v6
+      with:
+        fetch-depth: 0
 
-    # Meh, can't be bothered to work out exactly which one was modified, just check them all.
     - name: Check Translation Placeholders
       shell: bash
+      env:
+        EVENT_NAME: ${{ github.event_name }}
+        BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        HEAD_SHA: ${{ github.event.pull_request.head.sha }}
       run: |
-        for i in src/duckstation-qt/translations/*.ts; do
-          python scripts/translation/validate_ts.py "$i"
+        if [[ "$EVENT_NAME" == "pull_request" ]]; then
+          mapfile -t files < <(
+            git diff --name-only --diff-filter=ACMRT "$BASE_SHA...$HEAD_SHA" -- \
+              'src/duckstation-qt/translations/*.ts'
+          )
+        else
+          files=(src/duckstation-qt/translations/*.ts)
+        fi
+
+        if (( ${#files[@]} == 0 )); then
+          echo "No translation files to validate."
+          exit 0
+        fi
+
+        for file in "${files[@]}"; do
+          python scripts/translation/validate_ts.py "$file"
         done
