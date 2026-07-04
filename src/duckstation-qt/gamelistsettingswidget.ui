@@ -82,12 +82,15 @@
     </layout>
    </item>
    <item>
-    <widget class="QTreeWidget" name="searchDirectoryList">
+    <widget class="QTreeView" name="searchDirectoryList">
      <property name="contextMenuPolicy">
       <enum>Qt::ContextMenuPolicy::CustomContextMenu</enum>
      </property>
      <property name="alternatingRowColors">
       <bool>true</bool>
+     </property>
+     <property name="selectionBehavior">
+      <enum>QAbstractItemView::SelectionBehavior::SelectRows</enum>
      </property>
      <property name="iconSize">
       <size>
@@ -101,16 +104,6 @@
      <property name="uniformRowHeights">
       <bool>true</bool>
      </property>
-     <column>
-      <property name="text">
-       <string>Search Directory</string>
-      </property>
-     </column>
-     <column>
-      <property name="text">
-       <string>Scan Recursively</string>
-      </property>
-     </column>
     </widget>
    </item>
    <item>

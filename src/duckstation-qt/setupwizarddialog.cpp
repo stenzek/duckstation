@@ -6,6 +6,7 @@
 #include "biossettingswidget.h"
 #include "controllerbindingwidgets.h"
 #include "controllersettingwidgetbinder.h"
+#include "gamelistsettingswidget.h"
 #include "gamelistwidget.h"
 #include "graphicssettingswidget.h"
 #include "interfacesettingswidget.h"
@@ -27,6 +28,7 @@
 
 #include "fmt/format.h"
 
+#include <QtCore/QItemSelectionModel>
 #include <QtWidgets/QButtonGroup>
 
 #include "moc_setupwizarddialog.cpp"
@@ -65,7 +67,7 @@ bool SetupWizardDialog::canShowNextPage()
 
     case Page_GameList:
     {
-      if (m_ui.searchDirectoryList->topLevelItemCount() == 0)
+      if (m_directory_model->rowCount() == 0)
       {
         if (QtUtils::MessageBoxQuestion(
               this, tr("No Game Directories Selected"),
@@ -240,40 +242,36 @@ void SetupWizardDialog::refreshBiosList()
 
 void SetupWizardDialog::setupGameListPage()
 {
-  m_ui.searchDirectoryList->setContextMenuPolicy(Qt::ContextMenuPolicy::CustomContextMenu);
+  m_directory_model = new GameListSearchDirectoriesModel(this);
+  m_ui.searchDirectoryList->setModel(m_directory_model);
   QtUtils::SetColumnWidthsForTreeView(m_ui.searchDirectoryList, {-1, 100});
 
-  connect(m_ui.searchDirectoryList, &QTreeWidget::customContextMenuRequested, this,
+  connect(m_ui.searchDirectoryList, &QTreeView::customContextMenuRequested, this,
           &SetupWizardDialog::onDirectoryListContextMenuRequested);
   connect(m_ui.addSearchDirectoryButton, &QPushButton::clicked, this,
           &SetupWizardDialog::onAddSearchDirectoryButtonClicked);
   connect(m_ui.removeSearchDirectoryButton, &QPushButton::clicked, this,
           &SetupWizardDialog::onRemoveSearchDirectoryButtonClicked);
-  connect(m_ui.searchDirectoryList, &QTreeWidget::itemSelectionChanged, this,
+  connect(m_ui.searchDirectoryList->selectionModel(), &QItemSelectionModel::selectionChanged, this,
           &SetupWizardDialog::onSearchDirectoryListSelectionChanged);
-  connect(m_ui.searchDirectoryList, &QTreeWidget::itemChanged, this,
-          &SetupWizardDialog::onSearchDirectoryListItemChanged);
 
   refreshDirectoryList();
 }
 
 void SetupWizardDialog::onDirectoryListContextMenuRequested(const QPoint& point)
 {
-  QModelIndexList selection = m_ui.searchDirectoryList->selectionModel()->selectedIndexes();
-  if (selection.size() < 1)
+  const QModelIndex index = m_ui.searchDirectoryList->currentIndex();
+  if (!index.isValid())
     return;
 
-  const int row = selection[0].row();
+  const QString path = QString::fromStdString(m_directory_model->pathForIndex(index));
 
   QMenu* const menu = QtUtils::NewPopupMenu(this);
   menu->addAction(QIcon(u":/icons/monochrome/svg/folder-reduce-line.svg"_s), tr("Remove"), this,
                   &SetupWizardDialog::onRemoveSearchDirectoryButtonClicked);
   menu->addSeparator();
-  menu->addAction(QIcon(u":/icons/monochrome/svg/folder-open-line.svg"_s), tr("Open Directory..."), [this, row]() {
-    const QTreeWidgetItem* const item = m_ui.searchDirectoryList->topLevelItem(row);
-    if (item)
-      QtUtils::OpenURL(this, QUrl::fromLocalFile(item->text(0)));
-  });
+  menu->addAction(QIcon(u":/icons/monochrome/svg/folder-open-line.svg"_s), tr("Open Directory..."),
+                  [this, path]() { QtUtils::OpenURL(this, QUrl::fromLocalFile(path)); });
   menu->popup(m_ui.searchDirectoryList->mapToGlobal(point));
 }
 
@@ -293,89 +291,26 @@ void SetupWizardDialog::onAddSearchDirectoryButtonClicked()
   if (selection != QMessageBox::Yes && selection != QMessageBox::No)
     return;
 
-  const bool recursive = (selection == QMessageBox::Yes);
-  const std::string spath = dir.toStdString();
-  Core::RemoveValueFromBaseStringListSetting("GameList", recursive ? "Paths" : "RecursivePaths", spath.c_str());
-  Core::AddValueToBaseStringListSetting("GameList", recursive ? "RecursivePaths" : "Paths", spath.c_str());
-  Host::CommitBaseSettingChanges();
-  refreshDirectoryList();
+  m_directory_model->addPath(dir.toStdString(), selection == QMessageBox::Yes);
 }
 
 void SetupWizardDialog::onRemoveSearchDirectoryButtonClicked()
 {
   const QModelIndex index = m_ui.searchDirectoryList->currentIndex();
-  const QTreeWidgetItem* const item = m_ui.searchDirectoryList->takeTopLevelItem(index.row());
-  if (!item)
+  if (!index.isValid())
     return;
 
-  const std::string spath = item->text(0).toStdString();
-  delete item;
-
-  if (!Core::RemoveValueFromBaseStringListSetting("GameList", "Paths", spath.c_str()) &&
-      !Core::RemoveValueFromBaseStringListSetting("GameList", "RecursivePaths", spath.c_str()))
-  {
-    return;
-  }
-
-  Host::CommitBaseSettingChanges();
-  refreshDirectoryList();
+  m_directory_model->removePath(index);
 }
 
 void SetupWizardDialog::onSearchDirectoryListSelectionChanged()
 {
-  m_ui.removeSearchDirectoryButton->setEnabled(!m_ui.searchDirectoryList->selectedItems().isEmpty());
-}
-
-void SetupWizardDialog::onSearchDirectoryListItemChanged(QTreeWidgetItem* item, int column)
-{
-  if (column != 1)
-    return;
-
-  const std::string path = item->text(0).toStdString();
-  const bool recursive = (item->checkState(1) == Qt::Checked);
-
-  item->setIcon(0, QIcon(recursive ? u":/icons/monochrome/svg/folder-open-line.svg"_s :
-                                     u":/icons/monochrome/svg/folder-line.svg"_s));
-
-  if (recursive)
-  {
-    Core::RemoveValueFromBaseStringListSetting("GameList", "Paths", path.c_str());
-    Core::AddValueToBaseStringListSetting("GameList", "RecursivePaths", path.c_str());
-  }
-  else
-  {
-    Core::RemoveValueFromBaseStringListSetting("GameList", "RecursivePaths", path.c_str());
-    Core::AddValueToBaseStringListSetting("GameList", "Paths", path.c_str());
-  }
-
-  Host::CommitBaseSettingChanges();
-}
-
-void SetupWizardDialog::addPathToTable(const std::string& path, bool recursive)
-{
-  QTreeWidgetItem* const item = new QTreeWidgetItem();
-  item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
-  item->setIcon(0, QIcon(recursive ? u":/icons/monochrome/svg/folder-open-line.svg"_s :
-                                     u":/icons/monochrome/svg/folder-line.svg"_s));
-  item->setText(0, QString::fromStdString(path));
-  item->setCheckState(1, recursive ? Qt::Checked : Qt::Unchecked);
-  m_ui.searchDirectoryList->addTopLevelItem(item);
+  m_ui.removeSearchDirectoryButton->setEnabled(m_ui.searchDirectoryList->selectionModel()->hasSelection());
 }
 
 void SetupWizardDialog::refreshDirectoryList()
 {
-  QSignalBlocker sb(m_ui.searchDirectoryList);
-  m_ui.searchDirectoryList->clear();
-
-  std::vector<std::string> path_list = Core::GetBaseStringListSetting("GameList", "Paths");
-  for (const std::string& entry : path_list)
-    addPathToTable(entry, false);
-
-  path_list = Core::GetBaseStringListSetting("GameList", "RecursivePaths");
-  for (const std::string& entry : path_list)
-    addPathToTable(entry, true);
-
-  m_ui.searchDirectoryList->sortByColumn(0, Qt::AscendingOrder);
+  m_directory_model->reload();
   m_ui.removeSearchDirectoryButton->setEnabled(false);
 }
 

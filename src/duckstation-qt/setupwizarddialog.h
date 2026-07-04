@@ -12,6 +12,8 @@
 #include <string>
 #include <utility>
 
+class GameListSearchDirectoriesModel;
+
 class SetupWizardDialog final : public QDialog
 {
   Q_OBJECT
@@ -63,12 +65,9 @@ private:
   void onAddSearchDirectoryButtonClicked();
   void onRemoveSearchDirectoryButtonClicked();
   void onSearchDirectoryListSelectionChanged();
-  void onSearchDirectoryListItemChanged(QTreeWidgetItem* item, int column);
   void refreshDirectoryList();
 
   void doMultipleDeviceAutomaticBinding(u32 port, QLabel* update_label);
-
-  void addPathToTable(const std::string& path, bool recursive);
 
   QString findCurrentDeviceForPort(u32 port) const;
   void openAutomaticMappingMenu(u32 port, QLabel* update_label);
@@ -85,6 +84,7 @@ private:
 
 private:
   Ui::SetupWizardDialog m_ui;
+  GameListSearchDirectoriesModel* m_directory_model;
 
   std::array<QLabel*, Page_Count> m_page_labels;
 };
