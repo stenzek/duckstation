@@ -4440,6 +4440,33 @@ std::unique_ptr<Cheats::AssemblyCheatCode> Cheats::AssemblyCheatCode::Parse(Meta
     if (linev.empty())
       continue;
 
+    std::string_view address_text;
+    if (linev.starts_with(".org "))
+      address_text = StringUtil::StripWhitespace(linev.substr(4));
+    else if (linev.ends_with(':') && linev.front() >= '0' && linev.front() <= '9')
+      address_text = StringUtil::StripWhitespace(linev.substr(0, linev.size() - 1));
+    if (!address_text.empty())
+    {
+      if (address_text.starts_with("0x") || address_text.starts_with("0X"))
+        address_text.remove_prefix(2);
+
+      std::string_view end;
+      const std::optional<u32> address = StringUtil::FromChars<u32>(address_text, 16, &end);
+      if (!address.has_value() || !end.empty())
+      {
+        Error::SetStringFmt(error, "Malformed starting address at line {}: {}", reader.GetCurrentLineNumber(), linev);
+        return {};
+      }
+      if ((address.value() & (CPU::INSTRUCTION_SIZE - 1)) != 0)
+      {
+        Error::SetStringFmt(error, "Unaligned starting address at line {}: {}", reader.GetCurrentLineNumber(), linev);
+        return {};
+      }
+
+      pc = address.value();
+      continue;
+    }
+
     const size_t colon_pos = linev.find(':');
     if (colon_pos != std::string_view::npos)
     {
@@ -4477,29 +4504,6 @@ std::unique_ptr<Cheats::AssemblyCheatCode> Cheats::AssemblyCheatCode::Parse(Meta
       linev = StringUtil::StripWhitespace(linev.substr(colon_pos + 1));
       if (linev.empty())
         continue;
-    }
-
-    if (linev.starts_with(".org "))
-    {
-      std::string_view address_text = StringUtil::StripWhitespace(linev.substr(4));
-      if (address_text.starts_with("0x") || address_text.starts_with("0X"))
-        address_text.remove_prefix(2);
-
-      std::string_view end;
-      const std::optional<u32> address = StringUtil::FromChars<u32>(address_text, 16, &end);
-      if (!address.has_value() || !end.empty())
-      {
-        Error::SetStringFmt(error, "Malformed starting address at line {}: {}", reader.GetCurrentLineNumber(), linev);
-        return {};
-      }
-      if ((address.value() & (CPU::INSTRUCTION_SIZE - 1)) != 0)
-      {
-        Error::SetStringFmt(error, "Unaligned starting address at line {}: {}", reader.GetCurrentLineNumber(), linev);
-        return {};
-      }
-
-      pc = address.value();
-      continue;
     }
 
     if (!pc.has_value())

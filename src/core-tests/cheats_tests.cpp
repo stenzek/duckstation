@@ -231,13 +231,15 @@ TEST(Cheats, ParseAssemblyInstructionFormatsAndOrigins)
                                             "sw t0, 16(sp)\n"
                                             "lw v0, -4(sp)\n"
                                             "addu v1, v0, t0\n"
-                                            ".org 0x80030000\n"
+                                            ".org 80030000\n"
                                             "jal 0x80031000\n"
-                                            "jr ra\n";
+                                            "jr ra\n"
+                                            "0x80040000:\n"
+                                            "nop\n";
   static constexpr std::array expected = {
     std::pair{0x80020000u, 0x3C081234u}, std::pair{0x80020004u, 0x35085678u}, std::pair{0x80020008u, 0xAFA80010u},
     std::pair{0x8002000Cu, 0x8FA2FFFCu}, std::pair{0x80020010u, 0x00481821u}, std::pair{0x80030000u, 0x0C00C400u},
-    std::pair{0x80030004u, 0x03E00008u},
+    std::pair{0x80030004u, 0x03E00008u}, std::pair{0x80040000u, 0x00000000u},
   };
 
   Error error;
