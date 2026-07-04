@@ -1130,11 +1130,96 @@
        <item>
         <widget class="QLabel" name="achievementsDescription">
          <property name="text">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DuckStation supports earning achievements and leaderboard tracking with RetroAchievements.&lt;/p&gt;&lt;p&gt;If you have a RetroAchievements account, you can use the form below to log in. If not, you can register at &lt;a href=&quot;https://retroachievements.org/createaccount.php&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#99ebff;&quot;&gt;https://retroachievements.org/createaccount.php&lt;/span&gt;&lt;/a&gt;.&lt;/p&gt;&lt;p&gt;A RetroAchievements account is &lt;span style=&quot; font-weight:700;&quot;&gt;not&lt;/span&gt; required to use DuckStation.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DuckStation supports earning achievements and leaderboard tracking with RetroAchievements.&lt;/p&gt;&lt;p&gt;If you have a RetroAchievements account, you can use the form below to log in. If not, you can register by clicking the Register button below.&lt;/p&gt;&lt;p&gt;A RetroAchievements account is &lt;span style=&quot; font-weight:700;&quot;&gt;not&lt;/span&gt; required to use DuckStation.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="wordWrap">
           <bool>true</bool>
          </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="achievementsLoginBox">
+         <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,1,0,0,0,0">
+          <property name="spacing">
+           <number>10</number>
+          </property>
+          <item>
+           <widget class="QLabel" name="achievementsUserBadge">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>32</width>
+              <height>32</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>32</width>
+              <height>32</height>
+             </size>
+            </property>
+            <property name="scaledContents">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="achievementsLoginStatus">
+            <property name="alignment">
+             <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="achievementsRegisterUserButton">
+            <property name="text">
+             <string>Register</string>
+            </property>
+            <property name="icon">
+             <iconset resource="resources/duckstation-qt.qrc">
+              <normaloff>:/icons/monochrome/svg/user-add-line.svg</normaloff>:/icons/monochrome/svg/user-add-line.svg</iconset>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="achievementsViewProfileButton">
+            <property name="text">
+             <string>View Profile...</string>
+            </property>
+            <property name="icon">
+             <iconset resource="resources/duckstation-qt.qrc">
+              <normaloff>:/icons/monochrome/svg/id-card-line.svg</normaloff>:/icons/monochrome/svg/id-card-line.svg</iconset>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="achievementsLoginButton">
+            <property name="text">
+             <string>Login...</string>
+            </property>
+            <property name="icon">
+             <iconset resource="resources/duckstation-qt.qrc">
+              <normaloff>:/icons/monochrome/svg/login-box-line.svg</normaloff>:/icons/monochrome/svg/login-box-line.svg</iconset>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="achievementsLogoutButton">
+            <property name="text">
+             <string>Logout</string>
+            </property>
+            <property name="icon">
+             <iconset resource="resources/duckstation-qt.qrc">
+              <normaloff>:/icons/monochrome/svg/logout-box-line.svg</normaloff>:/icons/monochrome/svg/logout-box-line.svg</iconset>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </widget>
        </item>
        <item>
@@ -1156,52 +1241,6 @@
              <string>Enable Hardcore Mode</string>
             </property>
            </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item>
-        <widget class="QGroupBox" name="loginBox">
-         <property name="title">
-          <string>Account</string>
-         </property>
-         <layout class="QHBoxLayout" name="achievementsAccountLayout" stretch="1,0">
-          <item>
-           <widget class="QLabel" name="loginStatus">
-            <property name="text">
-             <string>Username:
-Login token generated at:</string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <layout class="QHBoxLayout" name="achievementsAccountButtonsLayout">
-            <item>
-             <widget class="QPushButton" name="viewProfile">
-              <property name="text">
-               <string>View Profile...</string>
-              </property>
-              <property name="icon">
-               <iconset resource="resources/duckstation-qt.qrc">
-                <normaloff>:/icons/monochrome/svg/id-card-line.svg</normaloff>:/icons/monochrome/svg/id-card-line.svg</iconset>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QPushButton" name="loginButton">
-              <property name="text">
-               <string>Login...</string>
-              </property>
-              <property name="icon">
-               <iconset resource="resources/duckstation-qt.qrc">
-                <normaloff>:/icons/monochrome/svg/login-box-line.svg</normaloff>:/icons/monochrome/svg/login-box-line.svg</iconset>
-              </property>
-             </widget>
-            </item>
-           </layout>
           </item>
          </layout>
         </widget>

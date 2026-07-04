@@ -73,9 +73,11 @@ private:
   void openAutomaticMappingMenu(u32 port, QLabel* update_label);
   void doDeviceAutomaticBinding(u32 port, QLabel* update_label, const QString& device);
 
-  void onAchievementsLoginLogoutClicked();
+  void onAchievementsLoginPressed();
+  void onAchievementsLogoutPressed();
   void onAchievementsLoginCompleted();
-  void onAchievementsViewProfileClicked();
+  void onAchievementsRegisterUserPressed();
+  void onAchievementsViewProfilePressed();
   void updateAchievementsEnableState();
   void updateAchievementsLoginState();
 

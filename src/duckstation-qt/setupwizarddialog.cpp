@@ -547,8 +547,13 @@ void SetupWizardDialog::setupAchievementsPage(bool initial)
     SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.enable, "Cheevos", "Enabled", false);
     SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.hardcoreMode, "Cheevos", "ChallengeMode", false);
     connect(m_ui.enable, &QCheckBox::checkStateChanged, this, &SetupWizardDialog::updateAchievementsEnableState);
-    connect(m_ui.loginButton, &QPushButton::clicked, this, &SetupWizardDialog::onAchievementsLoginLogoutClicked);
-    connect(m_ui.viewProfile, &QPushButton::clicked, this, &SetupWizardDialog::onAchievementsViewProfileClicked);
+    connect(m_ui.achievementsLoginButton, &QPushButton::clicked, this, &SetupWizardDialog::onAchievementsLoginPressed);
+    connect(m_ui.achievementsLogoutButton, &QPushButton::clicked, this,
+            &SetupWizardDialog::onAchievementsLogoutPressed);
+    connect(m_ui.achievementsRegisterUserButton, &QPushButton::clicked, this,
+            &SetupWizardDialog::onAchievementsRegisterUserPressed);
+    connect(m_ui.achievementsViewProfileButton, &QPushButton::clicked, this,
+            &SetupWizardDialog::onAchievementsViewProfilePressed);
   }
 
   updateAchievementsEnableState();
@@ -563,8 +568,25 @@ void SetupWizardDialog::updateAchievementsEnableState()
 
 void SetupWizardDialog::updateAchievementsLoginState()
 {
-  const std::string username(Core::GetBaseStringSettingValue("Cheevos", "Username"));
-  const bool logged_in = !username.empty();
+  m_ui.achievementsUserBadge->setPixmap(QPixmap(QtHost::GetResourceQPath("images/ra-generic-user.png", true)));
+
+  QString qusername;
+  QString qbadge_path;
+
+  {
+    const auto lock = Achievements::GetLock();
+    if (Achievements::IsLoggedIn())
+    {
+      qusername = QString::fromStdString(Achievements::GetLoggedInUserName());
+      QtUtils::SetLabelPixmapPathOrURL(m_ui.achievementsUserBadge, Achievements::GetLoggedInUserIconURL(), true);
+    }
+    else
+    {
+      qusername = QString::fromStdString(Core::GetBaseStringSettingValue("Cheevos", "Username"));
+    }
+  }
+
+  const bool logged_in = !qusername.isEmpty();
 
   if (logged_in)
   {
@@ -572,57 +594,67 @@ void SetupWizardDialog::updateAchievementsLoginState()
       StringUtil::FromChars<u64>(Core::GetBaseStringSettingValue("Cheevos", "LoginTimestamp", "0")).value_or(0);
     const QString login_timestamp =
       QtHost::FormatNumber(Host::NumberFormatType::ShortDateTime, static_cast<s64>(login_unix_timestamp));
-    m_ui.loginStatus->setText(
-      tr("Username: %1\nLogin token generated on %2.").arg(QString::fromStdString(username)).arg(login_timestamp));
-    m_ui.loginButton->setText(tr("Logout"));
+    m_ui.achievementsLoginStatus->setText(
+      tr("Logged in as %1\nToken generated at %2").arg(qusername).arg(login_timestamp));
   }
   else
   {
-    m_ui.loginStatus->setText(tr("Not Logged In."));
-    m_ui.loginButton->setText(tr("Login..."));
+    m_ui.achievementsLoginStatus->setText(tr("Not Logged In."));
   }
 
-  m_ui.viewProfile->setEnabled(logged_in);
+  m_ui.achievementsViewProfileButton->setVisible(logged_in);
+  m_ui.achievementsViewProfileButton->setEnabled(logged_in);
+  m_ui.achievementsLogoutButton->setVisible(logged_in);
+  m_ui.achievementsLogoutButton->setEnabled(logged_in);
+  m_ui.achievementsRegisterUserButton->setVisible(!logged_in);
+  m_ui.achievementsRegisterUserButton->setEnabled(!logged_in);
+  m_ui.achievementsLoginButton->setVisible(!logged_in);
+  m_ui.achievementsLoginButton->setEnabled(!logged_in);
 }
 
-void SetupWizardDialog::onAchievementsLoginLogoutClicked()
+void SetupWizardDialog::onAchievementsLoginPressed()
 {
-  if (!Core::GetBaseStringSettingValue("Cheevos", "Username").empty())
-  {
-    Host::RunOnCoreThread([]() { Achievements::Logout(); }, true);
-    updateAchievementsLoginState();
-    return;
-  }
-
   AchievementLoginDialog* login = new AchievementLoginDialog(this, Achievements::LoginRequestReason::UserInitiated);
   connect(login, &AchievementLoginDialog::accepted, this, &SetupWizardDialog::onAchievementsLoginCompleted);
   login->open();
 }
 
+void SetupWizardDialog::onAchievementsLogoutPressed()
+{
+  if (Core::GetBaseStringSettingValue("Cheevos", "Username").empty())
+    return;
+
+  // Really should do this on the core thread, but it's luckily not doing anything at this point.
+  Achievements::Logout();
+  updateAchievementsLoginState();
+}
+
 void SetupWizardDialog::onAchievementsLoginCompleted()
 {
-  updateAchievementsEnableState();
   updateAchievementsLoginState();
 
   // Login can enable achievements/hardcore.
   if (!m_ui.enable->isChecked() && Core::GetBaseBoolSettingValue("Cheevos", "Enabled", false))
   {
     m_ui.enable->setChecked(true);
-    updateAchievementsLoginState();
+    updateAchievementsEnableState();
   }
   if (!m_ui.hardcoreMode->isChecked() && Core::GetBaseBoolSettingValue("Cheevos", "ChallengeMode", false))
     m_ui.hardcoreMode->setChecked(true);
 }
 
-void SetupWizardDialog::onAchievementsViewProfileClicked()
+void SetupWizardDialog::onAchievementsRegisterUserPressed()
+{
+  QtUtils::OpenURL(this, QUrl(QString::fromLatin1(Achievements::RA_REGISTER_URL)));
+}
+
+void SetupWizardDialog::onAchievementsViewProfilePressed()
 {
   const std::string username(Core::GetBaseStringSettingValue("Cheevos", "Username"));
   if (username.empty())
     return;
 
-  const QByteArray encoded_username(QUrl::toPercentEncoding(QString::fromStdString(username)));
-  QtUtils::OpenURL(
-    this, QUrl(QStringLiteral("https://retroachievements.org/user/%1").arg(QString::fromUtf8(encoded_username))));
+  QtUtils::OpenURL(this, QUrl(QString::fromStdString(Achievements::GetProfileURL(username))));
 }
 
 void SetupWizardDialog::setupGameListViewPage()
