@@ -16,12 +16,12 @@
   <property name="class" stdset="0">
    <string notr="true">settings-window</string>
   </property>
-  <layout class="QGridLayout" name="gridLayout">
+  <layout class="QGridLayout" name="mainLayout">
    <property name="horizontalSpacing">
     <number>10</number>
    </property>
    <item row="0" column="0">
-    <layout class="QVBoxLayout" name="verticalLayout_2">
+    <layout class="QVBoxLayout" name="sidebarLayout">
      <property name="spacing">
       <number>15</number>
      </property>
@@ -54,7 +54,7 @@
       </widget>
      </item>
      <item>
-      <spacer name="verticalSpacer_5">
+      <spacer name="sidebarLogoSpacer">
        <property name="orientation">
         <enum>Qt::Orientation::Vertical</enum>
        </property>
@@ -70,7 +70,7 @@
       </spacer>
      </item>
      <item>
-      <layout class="QVBoxLayout" name="verticalLayout">
+      <layout class="QVBoxLayout" name="pageLabelsLayout">
        <property name="spacing">
         <number>15</number>
        </property>
@@ -145,7 +145,7 @@
       </layout>
      </item>
      <item>
-      <spacer name="verticalSpacer">
+      <spacer name="sidebarBottomSpacer">
        <property name="orientation">
         <enum>Qt::Orientation::Vertical</enum>
        </property>
@@ -160,12 +160,12 @@
     </layout>
    </item>
    <item row="1" column="0" colspan="2">
-    <layout class="QHBoxLayout" name="horizontalLayout">
+    <layout class="QHBoxLayout" name="navigationButtonsLayout">
      <property name="spacing">
       <number>6</number>
      </property>
      <item>
-      <spacer name="horizontalSpacer">
+      <spacer name="navigationButtonsSpacer">
        <property name="orientation">
         <enum>Qt::Orientation::Horizontal</enum>
        </property>
@@ -208,8 +208,8 @@
      <property name="currentIndex">
       <number>0</number>
      </property>
-     <widget class="QWidget" name="page">
-      <layout class="QVBoxLayout" name="verticalLayout_3">
+     <widget class="QWidget" name="languagePage">
+      <layout class="QVBoxLayout" name="languagePageLayout">
        <property name="spacing">
         <number>10</number>
        </property>
@@ -245,9 +245,9 @@
         </widget>
        </item>
        <item>
-        <layout class="QGridLayout" name="gridLayout_4" columnstretch="0,1">
+        <layout class="QGridLayout" name="languageOptionsLayout" columnstretch="0,1">
          <item row="0" column="0">
-          <widget class="QLabel" name="label_3">
+          <widget class="QLabel" name="languageLabel">
            <property name="text">
             <string>Language:</string>
            </property>
@@ -264,7 +264,7 @@
           </widget>
          </item>
          <item row="1" column="0">
-          <widget class="QLabel" name="label_5">
+          <widget class="QLabel" name="themeLabel">
            <property name="text">
             <string>Theme:</string>
            </property>
@@ -281,7 +281,7 @@
           </widget>
          </item>
          <item row="3" column="1">
-          <spacer name="verticalSpacer_3">
+          <spacer name="languagePageSpacer">
            <property name="orientation">
             <enum>Qt::Orientation::Vertical</enum>
            </property>
@@ -297,8 +297,8 @@
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="page_2">
-      <layout class="QVBoxLayout" name="verticalLayout_4">
+     <widget class="QWidget" name="biosPage">
+      <layout class="QVBoxLayout" name="biosPageLayout">
        <property name="leftMargin">
         <number>0</number>
        </property>
@@ -312,7 +312,7 @@
         <number>0</number>
        </property>
        <item>
-        <widget class="QLabel" name="label_4">
+        <widget class="QLabel" name="biosDescription">
          <property name="text">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DuckStation requires a PS1 or PS2 BIOS in order to run.&lt;/p&gt;&lt;p&gt;For legal reasons, you must obtain a BIOS &lt;span style=&quot; font-weight:700;&quot;&gt;from an actual PS1 unit that you own&lt;/span&gt; (borrowing doesn't count). You should use Caetla or another utility to create an image from your console's BIOS ROM on your PC.&lt;/p&gt;&lt;p&gt;Once dumped, this BIOS image should be placed in the bios folder within the data directory shown below, or you can instruct DuckStation to scan an alternative directory.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
@@ -325,9 +325,9 @@
         </widget>
        </item>
        <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_3">
+        <layout class="QHBoxLayout" name="biosDirectoryLayout">
          <item>
-          <widget class="QLabel" name="label_10">
+          <widget class="QLabel" name="biosDirectoryLabel">
            <property name="text">
             <string>BIOS Directory:</string>
            </property>
@@ -361,9 +361,9 @@
         </layout>
        </item>
        <item>
-        <layout class="QGridLayout" name="gridLayout_5" columnstretch="0,1">
+        <layout class="QGridLayout" name="biosImagesLayout" columnstretch="0,1">
          <item row="0" column="0">
-          <widget class="QLabel" name="label">
+          <widget class="QLabel" name="imageNTSCJLabel">
            <property name="text">
             <string>NTSC-J (Japan):</string>
            </property>
@@ -380,7 +380,7 @@
           </widget>
          </item>
          <item row="1" column="0">
-          <widget class="QLabel" name="label_15">
+          <widget class="QLabel" name="imageNTSCULabel">
            <property name="text">
             <string>NTSC-U/C (US/Canada):</string>
            </property>
@@ -397,7 +397,7 @@
           </widget>
          </item>
          <item row="2" column="0">
-          <widget class="QLabel" name="label_16">
+          <widget class="QLabel" name="imagePALLabel">
            <property name="text">
             <string>PAL (Europe, Australia):</string>
            </property>
@@ -416,9 +416,9 @@
         </layout>
        </item>
        <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_2">
+        <layout class="QHBoxLayout" name="biosButtonsLayout">
          <item>
-          <spacer name="horizontalSpacer_4">
+          <spacer name="biosButtonsSpacer">
            <property name="orientation">
             <enum>Qt::Orientation::Horizontal</enum>
            </property>
@@ -455,7 +455,7 @@
         </layout>
        </item>
        <item>
-        <spacer name="verticalSpacer_2">
+        <spacer name="biosPageSpacer">
          <property name="orientation">
           <enum>Qt::Orientation::Vertical</enum>
          </property>
@@ -469,8 +469,8 @@
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="page_3">
-      <layout class="QVBoxLayout" name="verticalLayout_5">
+     <widget class="QWidget" name="gameDirectoriesPage">
+      <layout class="QVBoxLayout" name="gameDirectoriesPageLayout">
        <property name="leftMargin">
         <number>0</number>
        </property>
@@ -484,7 +484,7 @@
         <number>0</number>
        </property>
        <item>
-        <widget class="QLabel" name="label_6">
+        <widget class="QLabel" name="gameDirectoriesDescription">
          <property name="text">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DuckStation will automatically scan and identify games from the selected directories below, and populate the game list. These games should be dumped from discs you own. Utilities such as ImgBurn can be used to create images of game discs in .bin/.cue format.&lt;/p&gt;&lt;p&gt;Supported formats for dumps include: &lt;span style=&quot; font-weight:700;&quot;&gt;.cue&lt;/span&gt; (Cue Sheets), &lt;span style=&quot; font-weight:700;&quot;&gt;.iso/.img&lt;/span&gt; (Single Track Image), &lt;span style=&quot; font-weight:700;&quot;&gt;.ecm&lt;/span&gt; (Error Code Modeling Image), &lt;span style=&quot; font-weight:700;&quot;&gt;.mds&lt;/span&gt; (Media Descriptor Sidecar), &lt;span style=&quot; font-weight:700;&quot;&gt;.chd&lt;/span&gt; (Compressed Hunks of Data), &lt;span style=&quot; font-weight:700;&quot;&gt;.pbp&lt;/span&gt; (PlayStation Portable, Only Decrypted).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
@@ -497,16 +497,16 @@
         </widget>
        </item>
        <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_4">
+        <layout class="QHBoxLayout" name="gameDirectoriesHeaderLayout">
          <item>
-          <widget class="QLabel" name="label_7">
+          <widget class="QLabel" name="gameDirectoriesLabel">
            <property name="text">
             <string>Search Directories (will be scanned for games)</string>
            </property>
           </widget>
          </item>
          <item>
-          <spacer name="horizontalSpacer_5">
+          <spacer name="gameDirectoriesHeaderSpacer">
            <property name="orientation">
             <enum>Qt::Orientation::Horizontal</enum>
            </property>
@@ -581,8 +581,8 @@
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="page_4">
-      <layout class="QVBoxLayout" name="verticalLayout_6">
+     <widget class="QWidget" name="controllerPage">
+      <layout class="QVBoxLayout" name="controllerPageLayout">
        <property name="spacing">
         <number>10</number>
        </property>
@@ -599,7 +599,7 @@
         <number>0</number>
        </property>
        <item>
-        <widget class="QLabel" name="label_8">
+        <widget class="QLabel" name="controllerDescription">
          <property name="text">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;By default, DuckStation will map your keyboard to the virtual controller. &lt;span style=&quot; font-weight:700;&quot;&gt;To use an external controller, you must map it first. &lt;/span&gt;On this screen, you can automatically map any controller which is currently connected. If your controller is not currently connected, you can plug it in now.&lt;/p&gt;&lt;p&gt;To change controller bindings in more detail, or use multi-tap, open the Settings menu and choose Controllers once you have completed the Setup Wizard.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
@@ -609,13 +609,13 @@
         </widget>
        </item>
        <item>
-        <widget class="QGroupBox" name="groupBox">
+        <widget class="QGroupBox" name="controller1Group">
          <property name="title">
           <string>Controller Port 1</string>
          </property>
-         <layout class="QGridLayout" name="gridLayout_6" columnstretch="0,1">
+         <layout class="QGridLayout" name="controller1Layout" columnstretch="0,1">
           <item row="0" column="0">
-           <widget class="QLabel" name="label_11">
+           <widget class="QLabel" name="controller1TypeLabel">
             <property name="text">
              <string>Controller Type:</string>
             </property>
@@ -625,14 +625,14 @@
            <widget class="QComboBox" name="controller1Type"/>
           </item>
           <item row="1" column="0">
-           <widget class="QLabel" name="label_12">
+           <widget class="QLabel" name="controller1MappingLabel">
             <property name="text">
              <string>Controller Mapped To:</string>
             </property>
            </widget>
           </item>
           <item row="1" column="1">
-           <layout class="QHBoxLayout" name="horizontalLayout_5">
+           <layout class="QHBoxLayout" name="controller1MappingLayout">
             <item>
              <widget class="QLabel" name="controller1Mapping">
               <property name="text">
@@ -641,7 +641,7 @@
              </widget>
             </item>
             <item>
-             <spacer name="horizontalSpacer_6">
+             <spacer name="controller1MappingSpacer">
               <property name="orientation">
                <enum>Qt::Orientation::Horizontal</enum>
               </property>
@@ -670,13 +670,13 @@
         </widget>
        </item>
        <item>
-        <widget class="QGroupBox" name="groupBox_2">
+        <widget class="QGroupBox" name="controller2Group">
          <property name="title">
           <string>Controller Port 2</string>
          </property>
-         <layout class="QGridLayout" name="gridLayout_7" columnstretch="0,1">
+         <layout class="QGridLayout" name="controller2Layout" columnstretch="0,1">
           <item row="0" column="0">
-           <widget class="QLabel" name="label_13">
+           <widget class="QLabel" name="controller2TypeLabel">
             <property name="text">
              <string>Controller Type:</string>
             </property>
@@ -686,14 +686,14 @@
            <widget class="QComboBox" name="controller2Type"/>
           </item>
           <item row="1" column="0">
-           <widget class="QLabel" name="label_14">
+           <widget class="QLabel" name="controller2MappingLabel">
             <property name="text">
              <string>Controller Mapped To:</string>
             </property>
            </widget>
           </item>
           <item row="1" column="1">
-           <layout class="QHBoxLayout" name="horizontalLayout_6">
+           <layout class="QHBoxLayout" name="controller2MappingLayout">
             <item>
              <widget class="QLabel" name="controller2Mapping">
               <property name="text">
@@ -702,7 +702,7 @@
              </widget>
             </item>
             <item>
-             <spacer name="horizontalSpacer_8">
+             <spacer name="controller2MappingSpacer">
               <property name="orientation">
                <enum>Qt::Orientation::Horizontal</enum>
               </property>
@@ -731,13 +731,13 @@
         </widget>
        </item>
        <item>
-        <widget class="QGroupBox" name="groupBox_3">
+        <widget class="QGroupBox" name="pauseMenuHotkeyGroup">
          <property name="title">
           <string>Pause Menu Hotkey</string>
          </property>
-         <layout class="QGridLayout" name="gridLayout_9" columnstretch="0,1,0">
+         <layout class="QGridLayout" name="pauseMenuHotkeyLayout" columnstretch="0,1,0">
           <item row="0" column="0" colspan="3">
-           <widget class="QLabel" name="label_2">
+           <widget class="QLabel" name="pauseMenuHotkeyDescription">
             <property name="text">
              <string>Pressing this key will open the pause menu when ingame, allowing you to load/save state, change settings, and perform other functions without needing to use a mouse. Click the button to change the trigger.</string>
             </property>
@@ -747,7 +747,7 @@
            </widget>
           </item>
           <item row="1" column="0">
-           <spacer name="horizontalSpacer_2">
+           <spacer name="pauseMenuHotkeyLeftSpacer">
             <property name="orientation">
              <enum>Qt::Orientation::Horizontal</enum>
             </property>
@@ -770,7 +770,7 @@
            </widget>
           </item>
           <item row="1" column="2">
-           <spacer name="horizontalSpacer_3">
+           <spacer name="pauseMenuHotkeyRightSpacer">
             <property name="orientation">
              <enum>Qt::Orientation::Horizontal</enum>
             </property>
@@ -786,7 +786,7 @@
         </widget>
        </item>
        <item>
-        <spacer name="verticalSpacer_4">
+        <spacer name="controllerPageSpacer">
          <property name="orientation">
           <enum>Qt::Orientation::Vertical</enum>
          </property>
@@ -800,8 +800,8 @@
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="page_6">
-      <layout class="QVBoxLayout" name="verticalLayout_8">
+     <widget class="QWidget" name="graphicsPage">
+      <layout class="QVBoxLayout" name="graphicsPageLayout">
        <property name="spacing">
         <number>10</number>
        </property>
@@ -818,7 +818,7 @@
         <number>0</number>
        </property>
        <item>
-        <widget class="QLabel" name="label_17">
+        <widget class="QLabel" name="graphicsDescription">
          <property name="text">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This page includes some of the commonly set graphics options in DuckStation.&lt;/p&gt;&lt;p&gt;These options are generally safe to enable, and compatible with most games. Changing the internal resolution and enabling PGXP geometry correction will significantly improve the graphical fidelity of most games.&lt;/p&gt;&lt;p&gt;You can change these options and others in &lt;span style=&quot; font-weight:700;&quot;&gt;Graphics Settings &lt;/span&gt;after completing setup.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
@@ -828,7 +828,7 @@
         </widget>
        </item>
        <item>
-        <layout class="QGridLayout" name="gridLayout_8" columnstretch="0,1">
+        <layout class="QGridLayout" name="graphicsOptionsLayout" columnstretch="0,1">
          <property name="leftMargin">
           <number>10</number>
          </property>
@@ -936,14 +936,14 @@
           </widget>
          </item>
          <item row="4" column="0">
-          <widget class="QLabel" name="label_18">
+          <widget class="QLabel" name="displayAspectRatioLabel">
            <property name="text">
             <string>Aspect Ratio:</string>
            </property>
           </widget>
          </item>
          <item row="4" column="1">
-          <layout class="QHBoxLayout" name="horizontalLayout_7" stretch="1,0,0,0">
+          <layout class="QHBoxLayout" name="displayAspectRatioLayout" stretch="1,0,0,0">
            <item>
             <widget class="QComboBox" name="displayAspectRatio">
              <property name="toolTip">
@@ -981,7 +981,7 @@
           </layout>
          </item>
          <item row="5" column="0">
-          <widget class="QLabel" name="label_19">
+          <widget class="QLabel" name="displayCropModeLabel">
            <property name="text">
             <string>Crop:</string>
            </property>
@@ -995,7 +995,7 @@
           </widget>
          </item>
          <item row="6" column="0">
-          <widget class="QLabel" name="label_20">
+          <widget class="QLabel" name="displayScalingLabel">
            <property name="text">
             <string>Scaling:</string>
            </property>
@@ -1009,7 +1009,7 @@
           </widget>
          </item>
          <item row="7" column="0">
-          <widget class="QLabel" name="label_22">
+          <widget class="QLabel" name="displayScaling24BitLabel">
            <property name="text">
             <string>FMV Scaling:</string>
            </property>
@@ -1019,7 +1019,7 @@
           <widget class="QComboBox" name="displayScaling24Bit"/>
          </item>
          <item row="8" column="0" colspan="2">
-          <layout class="QGridLayout" name="gridLayout_2">
+          <layout class="QGridLayout" name="graphicsEnhancementsLayout">
            <item row="0" column="0">
             <widget class="QCheckBox" name="pgxpEnable">
              <property name="toolTip">
@@ -1045,7 +1045,7 @@
         </layout>
        </item>
        <item>
-        <spacer name="verticalSpacer_6">
+        <spacer name="graphicsPageSpacer">
          <property name="orientation">
           <enum>Qt::Orientation::Vertical</enum>
          </property>
@@ -1059,8 +1059,8 @@
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="page_7">
-      <layout class="QVBoxLayout" name="verticalLayout_9">
+     <widget class="QWidget" name="achievementsPage">
+      <layout class="QVBoxLayout" name="achievementsPageLayout">
        <property name="spacing">
         <number>10</number>
        </property>
@@ -1077,7 +1077,7 @@
         <number>0</number>
        </property>
        <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_10" stretch="0,1">
+        <layout class="QHBoxLayout" name="achievementsHeaderLayout" stretch="0,1">
          <item>
           <widget class="QLabel" name="achievementsIconLabel">
            <property name="sizePolicy">
@@ -1128,7 +1128,7 @@
         </layout>
        </item>
        <item>
-        <widget class="QLabel" name="label_21">
+        <widget class="QLabel" name="achievementsDescription">
          <property name="text">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DuckStation supports earning achievements and leaderboard tracking with RetroAchievements.&lt;/p&gt;&lt;p&gt;If you have a RetroAchievements account, you can use the form below to log in. If not, you can register at &lt;a href=&quot;https://retroachievements.org/createaccount.php&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#99ebff;&quot;&gt;https://retroachievements.org/createaccount.php&lt;/span&gt;&lt;/a&gt;.&lt;/p&gt;&lt;p&gt;A RetroAchievements account is &lt;span style=&quot; font-weight:700;&quot;&gt;not&lt;/span&gt; required to use DuckStation.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
@@ -1138,11 +1138,11 @@
         </widget>
        </item>
        <item>
-        <widget class="QGroupBox" name="groupBox_4">
+        <widget class="QGroupBox" name="achievementsSettingsGroup">
          <property name="title">
           <string>Settings</string>
          </property>
-         <layout class="QGridLayout" name="gridLayout_3">
+         <layout class="QGridLayout" name="achievementsSettingsLayout">
           <item row="0" column="0">
            <widget class="QCheckBox" name="enable">
             <property name="text">
@@ -1165,7 +1165,7 @@
          <property name="title">
           <string>Account</string>
          </property>
-         <layout class="QHBoxLayout" name="horizontalLayout_8" stretch="1,0">
+         <layout class="QHBoxLayout" name="achievementsAccountLayout" stretch="1,0">
           <item>
            <widget class="QLabel" name="loginStatus">
             <property name="text">
@@ -1178,7 +1178,7 @@ Login token generated at:</string>
            </widget>
           </item>
           <item>
-           <layout class="QHBoxLayout" name="horizontalLayout_9">
+           <layout class="QHBoxLayout" name="achievementsAccountButtonsLayout">
             <item>
              <widget class="QPushButton" name="viewProfile">
               <property name="text">
@@ -1207,7 +1207,7 @@ Login token generated at:</string>
         </widget>
        </item>
        <item>
-        <spacer name="verticalSpacer_7">
+        <spacer name="achievementsPageSpacer">
          <property name="orientation">
           <enum>Qt::Orientation::Vertical</enum>
          </property>
@@ -1409,8 +1409,8 @@ You can change this option at a later time by using the toolbar in Desktop Mode 
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="page_5">
-      <layout class="QVBoxLayout" name="verticalLayout_7">
+     <widget class="QWidget" name="completePage">
+      <layout class="QVBoxLayout" name="completePageLayout">
        <property name="leftMargin">
         <number>0</number>
        </property>
@@ -1424,7 +1424,7 @@ You can change this option at a later time by using the toolbar in Desktop Mode 
         <number>0</number>
        </property>
        <item>
-        <widget class="QLabel" name="label_9">
+        <widget class="QLabel" name="completeDescription">
          <property name="text">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;h1 style=&quot; margin-top:18px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:xx-large; font-weight:700;&quot;&gt;Setup Complete!&lt;/span&gt;&lt;/h1&gt;&lt;p&gt;You are now ready to run games.&lt;/p&gt;&lt;p&gt;Further options are available under the settings menu. You can also use the Big Picture UI for navigation entirely with a gamepad.&lt;/p&gt;&lt;p&gt;We hope you enjoy using DuckStation.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
