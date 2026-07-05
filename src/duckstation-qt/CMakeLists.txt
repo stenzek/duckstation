@@ -160,6 +160,8 @@ set(SRCS
   qtwindowinfo.cpp
   qtwindowinfo.h
   resource.h
+  searchbox.cpp
+  searchbox.h
   selectdiscdialog.cpp
   selectdiscdialog.h
   selectdiscdialog.ui

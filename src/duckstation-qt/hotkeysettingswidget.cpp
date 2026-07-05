@@ -6,6 +6,7 @@
 #include "inputbindingwidgets.h"
 #include "mainwindow.h"
 #include "qtutils.h"
+#include "searchbox.h"
 #include "settingswindow.h"
 #include "settingwidgetbinder.h"
 
@@ -14,7 +15,6 @@
 #include <QtGui/QResizeEvent>
 #include <QtWidgets/QGridLayout>
 #include <QtWidgets/QLabel>
-#include <QtWidgets/QLineEdit>
 #include <QtWidgets/QScrollArea>
 
 #include "moc_hotkeysettingswidget.cpp"
@@ -30,9 +30,7 @@ HotkeySettingsWidget::~HotkeySettingsWidget() = default;
 
 HotkeySettingsWidget::Container::Container(QWidget* parent) : QWidget(parent)
 {
-  m_search = new QLineEdit(this);
-  m_search->setPlaceholderText(tr("Search..."));
-  m_search->setClearButtonEnabled(true);
+  m_search = new SearchBox(this);
 }
 
 HotkeySettingsWidget::Container::~Container() = default;

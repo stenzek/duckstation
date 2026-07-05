@@ -37,27 +37,15 @@
        <property name="orientation">
         <enum>Qt::Orientation::Horizontal</enum>
        </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>40</width>
-         <height>20</height>
-        </size>
-       </property>
       </spacer>
      </item>
      <item>
-      <widget class="QLineEdit" name="search">
+      <widget class="SearchBox" name="search">
        <property name="minimumSize">
         <size>
          <width>100</width>
          <height>0</height>
         </size>
-       </property>
-       <property name="placeholderText">
-        <string>Search...</string>
-       </property>
-       <property name="clearButtonEnabled">
-        <bool>true</bool>
        </property>
       </widget>
      </item>
@@ -214,6 +202,13 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>SearchBox</class>
+   <extends>QLineEdit</extends>
+   <header>searchbox.h</header>
+  </customwidget>
+ </customwidgets>
  <resources>
   <include location="resources/duckstation-qt.qrc"/>
  </resources>
