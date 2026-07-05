@@ -70,7 +70,7 @@ const char* AudioStream::GetBackendName(AudioBackend backend)
 
 const char* AudioStream::GetBackendDisplayName(AudioBackend backend)
 {
-  return Host::TranslateToCString("AudioStream", s_backend_display_names[static_cast<int>(backend)], "AudioBackend");
+  return Host::TranslateToCString("Settings", s_backend_display_names[static_cast<int>(backend)], "AudioBackend");
 }
 
 u32 AudioStream::FramesToMS(u32 sample_rate, u32 frames)
