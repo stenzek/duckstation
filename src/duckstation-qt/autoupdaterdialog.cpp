@@ -257,9 +257,20 @@ std::vector<std::pair<QString, QString>> AutoUpdaterDialog::getChannelList()
   return ret;
 }
 
-std::string AutoUpdaterDialog::getDefaultTag()
+const char* AutoUpdaterDialog::getDefaultTag()
 {
   return UPDATER_RELEASE_CHANNEL;
+}
+
+QString AutoUpdaterDialog::getTagDisplayName(const std::string_view tag)
+{
+  for (const auto& [name, desc] : s_update_channels)
+  {
+    if (tag == name)
+      return tr(desc);
+  }
+
+  return QString();
 }
 
 std::string AutoUpdaterDialog::getCurrentUpdateTag()

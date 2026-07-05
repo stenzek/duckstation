@@ -34,7 +34,8 @@ public:
   // (channel name, channel display name)
   static std::vector<std::pair<QString, QString>> getChannelList();
 
-  static std::string getDefaultTag();
+  static const char* getDefaultTag();
+  static QString getTagDisplayName(const std::string_view tag);
   static std::string getCurrentUpdateTag();
   static void cleanupAfterUpdate();
   static void warnAboutUnofficialBuild();

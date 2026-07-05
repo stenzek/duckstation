@@ -231,7 +231,7 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* dialog, QWidget
                                tr("Selects the theme for the application."));
 
     dialog->registerWidgetHelp(m_ui.autoUpdateTag, tr("Update Channel"),
-                               QString::fromStdString(AutoUpdaterDialog::getDefaultTag()),
+                               AutoUpdaterDialog::getTagDisplayName(AutoUpdaterDialog::getDefaultTag()),
                                tr("Selects the channel that will be checked for updates to the application. The "
                                   "<strong>preview</strong> channel contains the latest changes, and may be unstable. "
                                   "The <strong>latest</strong> channel tracks the latest release."));
