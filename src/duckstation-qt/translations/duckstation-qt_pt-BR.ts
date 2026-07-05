@@ -3196,54 +3196,6 @@ Você pode atualizar manualmente o DuckStation baixando novamente a versão mais
 %1</translation>
     </message>
     <message>
-        <source>Automatic Updater</source>
-        <translation type="vanished">Atualizador automático</translation>
-    </message>
-    <message>
-        <source>Update Available</source>
-        <translation type="vanished">Atualização Disponível</translation>
-    </message>
-    <message>
-        <source>Current Version: </source>
-        <translation type="vanished">Versão atual: </translation>
-    </message>
-    <message>
-        <source>New Version: </source>
-        <translation type="vanished">Nova versão: </translation>
-    </message>
-    <message>
-        <source>Download Size:</source>
-        <translation type="vanished">Tamanho do arquivo baixado:</translation>
-    </message>
-    <message>
-        <source>Download and Install...</source>
-        <translation type="vanished">Baixar e instalar...</translation>
-    </message>
-    <message>
-        <source>Skip This Update</source>
-        <translation type="vanished">Pular esta atualização</translation>
-    </message>
-    <message>
-        <source>Remind Me Later</source>
-        <translation type="vanished">Lembrar-me mais tarde</translation>
-    </message>
-    <message>
-        <source>Do not show again</source>
-        <translation type="vanished">Não mostrar novamente</translation>
-    </message>
-    <message>
-        <source>Updater Error</source>
-        <translation type="vanished">Erro na atualização</translation>
-    </message>
-    <message>
-        <source>No updates are currently available. Please try again later.</source>
-        <translation type="vanished">Não há novas atualizações no momento.</translation>
-    </message>
-    <message>
-        <source>Current Version: %1 (%2)</source>
-        <translation type="vanished">Versão atual: %1 (%2)</translation>
-    </message>
-    <message>
         <source>New Version: %1 (%2)</source>
         <translation type="vanished">Nova versão: %1 (%2)</translation>
     </message>
@@ -3256,34 +3208,12 @@ Você pode atualizar manualmente o DuckStation baixando novamente a versão mais
         <translation type="vanished">Baixando...</translation>
     </message>
     <message>
-        <source>Loading...</source>
-        <translation type="vanished">Carregando...</translation>
-    </message>
-    <message>
-        <source>&lt;h2&gt;Changes:&lt;/h2&gt;</source>
-        <translation type="vanished">&lt;h2&gt;Mudanças:&lt;/h2&gt;</translation>
-    </message>
-    <message>
-        <source>&lt;h2&gt;Save State Warning&lt;/h2&gt;&lt;p&gt;Installing this update will make your save states &lt;b&gt;incompatible&lt;/b&gt;. Please ensure you have saved your games to memory card before installing this update or you will lose progress.&lt;/p&gt;</source>
-        <translation type="vanished">&lt;h2&gt;Alerta para ESTADOS SALVOS&lt;/h2&gt;&lt;p&gt;Ao instalar esta atualização, seus ESTADOS SALVOS se tornarão&lt;b&gt; incompativeis&lt;/b&gt;. Tenha absoluta certeza de ter salvo todo o seu progresso no seu CARTÃO DE MEMÓRIA antes de instalar esta atualização ou você perderá todo o seu progresso.&lt;/p&gt;</translation>
-    </message>
-    <message>
-        <source>&lt;h2&gt;Settings Warning&lt;/h2&gt;&lt;p&gt;Installing this update will reset your program configuration. Please note that you will have to reconfigure your settings after this update.&lt;/p&gt;</source>
-        <translation type="vanished">&lt;h2&gt;Alerta sobre suas configurações&lt;/h2&gt;&lt;p&gt;Ao instalar esta atualização todas as suas configurações serão REDEFINIDAS para o padrão sendo assim, você terá de refazê-las novamente.&lt;/p&gt;</translation>
-    </message>
-    <message>
         <source>&lt;h4&gt;Installing this update will download %1 MB through your internet connection.&lt;/h4&gt;</source>
         <translation type="vanished">&lt;h4&gt;Esta atualização irá baixar %1 MB.&lt;/h4&gt;</translation>
     </message>
     <message>
         <source>Downloading %1...</source>
         <translation type="vanished">Baixando %1...</translation>
-    </message>
-    <message>
-        <source>Failed to remove updater exe after update:
-%1</source>
-        <translation type="vanished">Falha ao remover o executável do atualizador após esta atualização:
-%1</translation>
     </message>
     <message>
         <source>Failed to remove updater exe after update.</source>

@@ -2935,11 +2935,6 @@ You can manually update DuckStation by re-downloading the latest release. Do you
         <translation>&lt;h2&gt;Изменения:&lt;/h2&gt;</translation>
     </message>
     <message>
-        <location filename="../autoupdaterdialog.cpp" line="570"/>
-        <source>&lt;h2&gt;Save State Warning&lt;/h2&gt;&lt;p&gt;Installing this update will make your save states &lt;b&gt;incompatible&lt;/b&gt;. Please ensure you have saved your games to memory card before installing this update or you will lose progress.&lt;/p&gt;</source>
-        <translation>&lt;h2&gt;Предупреждение о сохраненных состояниях&lt;/h2&gt;&lt;p&gt;Установка этого обновления сделает ваши сохраненные состояний &lt;b&gt;несовместимыми&lt;/b&gt;. Перед установкой этого обновления убедитесь, что вы сохранили свои игры на карту памяти, иначе вы потеряете прогресс. &lt;/p&gt;</translation>
-    </message>
-    <message>
         <location filename="../autoupdaterdialog.cpp" line="758"/>
         <source>Updater Warning</source>
         <translation>Предупреждение обновления</translation>
@@ -2950,57 +2945,6 @@ You can manually update DuckStation by re-downloading the latest release. Do you
         <translation>&lt;h1&gt;Несоответствие состояния приложения&lt;/h1&gt;&lt;h3&gt;В архиве обновления отсутствует текущий исполняемый файл:&lt;/h3&gt;&lt;div align=&quot;center&quot;&gt;&lt;pre&gt;%1&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;strong&gt;Обычно это происходит в результате ручного переименования файла.&lt;/strong&gt; Продолжение установки этого обновления может привести к сбою установки, если будет использован переименованный исполняемый файл. Исполняемый файл DuckStation должен называться:&lt;div align=&quot;center&quot;&gt;&lt;pre&gt;%2&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Вы все равно хотите продолжить?&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../autoupdaterdialog.cpp" line="863"/>
-        <source>Failed to remove updater exe after update:
-%1</source>
-        <translation>Не удалось удалить исполняемый файл программы обновления после обновления:
-%1</translation>
-    </message>
-    <message>
-        <source>Automatic Updater</source>
-        <translation type="vanished">Автоматическое обновление</translation>
-    </message>
-    <message>
-        <source>Update Available</source>
-        <translation type="vanished">Доступно обновление</translation>
-    </message>
-    <message>
-        <source>Current Version: </source>
-        <translation type="vanished">Текущая версия: </translation>
-    </message>
-    <message>
-        <source>New Version: </source>
-        <translation type="vanished">Новая версия: </translation>
-    </message>
-    <message>
-        <source>Download Size:</source>
-        <translation type="vanished">Размер загрузки:</translation>
-    </message>
-    <message>
-        <source>Download and Install...</source>
-        <translation type="vanished">Загрузка и установка...</translation>
-    </message>
-    <message>
-        <source>Skip This Update</source>
-        <translation type="vanished">Пропустить это обновление</translation>
-    </message>
-    <message>
-        <source>Remind Me Later</source>
-        <translation type="vanished">Напомнить позже</translation>
-    </message>
-    <message>
-        <source>Do not show again</source>
-        <translation type="vanished">Не показывать снова</translation>
-    </message>
-    <message>
-        <source>Updater Error</source>
-        <translation type="vanished">Ошибка обновления</translation>
-    </message>
-    <message>
-        <source>No updates are currently available. Please try again later.</source>
-        <translation type="vanished">В настоящее время обновлений нет. Пожалуйста, попробуйте позже.</translation>
-    </message>
-    <message>
         <source>Current Version: %1 (%2)</source>
         <translation type="vanished">Текущая версия: %1 (%2)</translation>
     </message>
@@ -3009,20 +2953,8 @@ You can manually update DuckStation by re-downloading the latest release. Do you
         <translation type="vanished">Новая версия: %1 (%2)</translation>
     </message>
     <message>
-        <source>Download Size: %1 MB</source>
-        <translation type="vanished">Размер загрузки: %1 МБ</translation>
-    </message>
-    <message>
         <source>Download...</source>
         <translation type="vanished">Скачивание...</translation>
-    </message>
-    <message>
-        <source>Loading...</source>
-        <translation type="vanished">Загрузка...</translation>
-    </message>
-    <message>
-        <source>&lt;h2&gt;Changes:&lt;/h2&gt;</source>
-        <translation type="vanished">&lt;h2&gt;Изменения:&lt;/h2&gt;</translation>
     </message>
     <message>
         <source>&lt;h2&gt;Save State Warning&lt;/h2&gt;&lt;p&gt;Installing this update will make your save states &lt;b&gt;incompatible&lt;/b&gt;. Please ensure you have saved your games to memory card before installing this update or you will lose progress.&lt;/p&gt;</source>

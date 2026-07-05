@@ -2737,62 +2737,6 @@ Vous pouvez mettre à jour DuckStation manuellement en téléchargeant à nouvea
 %1</translation>
     </message>
     <message>
-        <source>Automatic Updater</source>
-        <translation type="vanished">Mise à jour automatique</translation>
-    </message>
-    <message>
-        <source>Update Available</source>
-        <translation type="vanished">Mise à jour disponible</translation>
-    </message>
-    <message>
-        <source>Current Version: </source>
-        <translation type="vanished">Version installée: </translation>
-    </message>
-    <message>
-        <source>New Version: </source>
-        <translation type="vanished">Dernière Version: </translation>
-    </message>
-    <message>
-        <source>Download and Install...</source>
-        <translation type="vanished">Télécharger et installer...</translation>
-    </message>
-    <message>
-        <source>Skip This Update</source>
-        <translation type="vanished">Passer cette mise à jour</translation>
-    </message>
-    <message>
-        <source>Remind Me Later</source>
-        <translation type="vanished">Me le rappeler plus tard</translation>
-    </message>
-    <message>
-        <source>Updater Error</source>
-        <translation type="vanished">Erreur de mise à jour</translation>
-    </message>
-    <message>
-        <source>No updates are currently available. Please try again later.</source>
-        <translation type="vanished">Aucune mise à jour n&apos;est actuellement disponible. Veuillez réessayer plus tard.</translation>
-    </message>
-    <message>
-        <source>Current Version: %1 (%2)</source>
-        <translation type="vanished">Version installée: %1 (%2)</translation>
-    </message>
-    <message>
-        <source>New Version: %1 (%2)</source>
-        <translation type="vanished">Dernière version: %1 (%2)</translation>
-    </message>
-    <message>
-        <source>Loading...</source>
-        <translation type="vanished">Téléchargement...</translation>
-    </message>
-    <message>
-        <source>&lt;h2&gt;Changes:&lt;/h2&gt;</source>
-        <translation type="vanished">&lt;h2&gt;Changements:&lt;/h2&gt;</translation>
-    </message>
-    <message>
-        <source>&lt;h2&gt;Save State Warning&lt;/h2&gt;&lt;p&gt;Installing this update will make your save states &lt;b&gt;incompatible&lt;/b&gt;. Please ensure you have saved your games to memory card before installing this update or you will lose progress.&lt;/p&gt;</source>
-        <translation type="vanished">&lt;h2&gt;Avertissement des sauvegardes d&apos;état&lt;/h2&gt;&lt;p&gt;L&apos;installation de cette mise à jour rendra vos sauvegardes d&apos;états &lt;b&gt;incompatibles&lt;/b&gt;. Veuillez vous assurer que vous avez sauvegardé vos parties sur la carte mémoire avant d&apos;installer cette mise à jour ou vous perdrez votre progression.&lt;/p&gt;</translation>
-    </message>
-    <message>
         <source>&lt;h2&gt;Settings Warning&lt;/h2&gt;&lt;p&gt;Installing this update will reset your program configuration. Please note that you will have to reconfigure your settings after this update.&lt;/p&gt;</source>
         <translation type="vanished">&lt;h2&gt;Avertissement sur les paramètres&lt;/h2&gt;&lt;p&gt;L&apos;installation de cette mise à jour réinitialisera la configuration de votre programme. Veuillez noter que vous devrez reconfigurer vos paramètres après cette mise à jour.&lt;/p&gt;</translation>
     </message>

@@ -2966,76 +2966,8 @@ DuckStation&apos;ın ən son buraxılışını yenidən endirərək özünüz on
 %1</translation>
     </message>
     <message>
-        <source>Automatic Updater</source>
-        <translation type="vanished">Özbaşına Güncəlləyici</translation>
-    </message>
-    <message>
-        <source>Update Available</source>
-        <translation type="vanished">Güncəlləniş Əlçatandır</translation>
-    </message>
-    <message>
-        <source>Current Version: </source>
-        <translation type="vanished">İndiki Sürüm: </translation>
-    </message>
-    <message>
-        <source>New Version: </source>
-        <translation type="vanished">Yeni Sürüm: </translation>
-    </message>
-    <message>
-        <source>Download Size:</source>
-        <translation type="vanished">Endirim Ölçüsü:</translation>
-    </message>
-    <message>
-        <source>Download and Install...</source>
-        <translation type="vanished">Endir və quraşdır...</translation>
-    </message>
-    <message>
-        <source>Skip This Update</source>
-        <translation type="vanished">Bu Güncəllənməni Burax</translation>
-    </message>
-    <message>
-        <source>Remind Me Later</source>
-        <translation type="vanished">Sonra Yada Sal</translation>
-    </message>
-    <message>
-        <source>Do not show again</source>
-        <translation type="vanished">Bir daha göstərmə</translation>
-    </message>
-    <message>
-        <source>Updater Error</source>
-        <translation type="vanished">Güncəlləyici Yanlışı</translation>
-    </message>
-    <message>
-        <source>No updates are currently available. Please try again later.</source>
-        <translation type="vanished">Hazırda əlçatan güncəllənmə yoxdur. Daha sonra sınayın.</translation>
-    </message>
-    <message>
-        <source>Current Version: %1 (%2)</source>
-        <translation type="vanished">İndiki Sürüm: %1 (%2)</translation>
-    </message>
-    <message>
-        <source>New Version: %1 (%2)</source>
-        <translation type="vanished">Yeni Sürüm: %1 (%2)</translation>
-    </message>
-    <message>
-        <source>Download Size: %1 MB</source>
-        <translation type="vanished">Endirilmə Ölçüsü: %1 MB</translation>
-    </message>
-    <message>
         <source>Download...</source>
         <translation type="vanished">Endir...</translation>
-    </message>
-    <message>
-        <source>Loading...</source>
-        <translation type="vanished">Yüklənir...</translation>
-    </message>
-    <message>
-        <source>&lt;h2&gt;Changes:&lt;/h2&gt;</source>
-        <translation type="vanished">&lt;h2&gt;Dəyişimlər:&lt;/h2&gt;</translation>
-    </message>
-    <message>
-        <source>&lt;h2&gt;Save State Warning&lt;/h2&gt;&lt;p&gt;Installing this update will make your save states &lt;b&gt;incompatible&lt;/b&gt;. Please ensure you have saved your games to memory card before installing this update or you will lose progress.&lt;/p&gt;</source>
-        <translation type="vanished">&lt;h2&gt;Durum Qorunuşu Uyarımı&lt;/h2&gt;&lt;p&gt;Bu güncəlləmənin quraşdırılması Sizin durum qorunuşlarınızı &lt;b&gt;uyumsuz&lt;/b&gt; edəcək. İrəliləyişini itirməməyiniz üçün lütfən bu güncəllənməni quraşdırmadan öncə oyunlarınızı yaddaş kartına yazdığınızdan əmin olun.&lt;/p&gt;</translation>
     </message>
     <message>
         <source>&lt;h2&gt;Settings Warning&lt;/h2&gt;&lt;p&gt;Installing this update will reset your program configuration. Please note that you will have to reconfigure your settings after this update.&lt;/p&gt;</source>
@@ -3044,12 +2976,6 @@ DuckStation&apos;ın ən son buraxılışını yenidən endirərək özünüz on
     <message>
         <source>Downloading %1...</source>
         <translation type="vanished">%1 endirilir...</translation>
-    </message>
-    <message>
-        <source>Failed to remove updater exe after update:
-%1</source>
-        <translation type="vanished">Güncəlləmə sonrası güncəlləmə (update) exe&apos;sini silmək uğursuz oldu:
-%1</translation>
     </message>
     <message>
         <location filename="../autoupdaterdialog.cpp" line="110"/>
