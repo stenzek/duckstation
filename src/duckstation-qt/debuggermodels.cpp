@@ -201,8 +201,9 @@ void DebuggerAddBreakpointDialog::okClicked()
 
     if (!ok)
     {
-      QtUtils::AsyncMessageBox(this, QMessageBox::Critical, tr("Error"),
-                               tr("Invalid address. It should be in hex (0x12345678 or 12345678)"));
+      QtUtils::AsyncMessageBox(
+        this, QMessageBox::Critical, windowTitle(),
+        QCoreApplication::translate("DebuggerWindow", "Invalid address. It should be in hex (0x12345678 or 12345678)"));
       return;
     }
 
