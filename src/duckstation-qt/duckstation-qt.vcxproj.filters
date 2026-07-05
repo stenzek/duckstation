@@ -58,6 +58,7 @@
     <ClCompile Include="asynchttprequest.cpp" />
     <ClCompile Include="svgiconengine.cpp" />
     <ClCompile Include="svgwidget.cpp" />
+    <ClCompile Include="searchbox.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="qtutils.h" />
@@ -128,6 +129,7 @@
     <QtMoc Include="svgwidget.h" />
     <QtMoc Include="cardradiobutton.h" />
     <QtMoc Include="animatedstackedwidget.h" />
+    <QtMoc Include="searchbox.h" />
   </ItemGroup>
   <ItemGroup>
     <QtUi Include="consolesettingswidget.ui" />

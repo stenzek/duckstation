@@ -225,18 +225,12 @@
       </widget>
      </item>
      <item>
-      <widget class="QLineEdit" name="searchText">
+      <widget class="SearchBox" name="searchText">
        <property name="minimumSize">
         <size>
          <width>200</width>
          <height>0</height>
         </size>
-       </property>
-       <property name="placeholderText">
-        <string>Search...</string>
-       </property>
-       <property name="clearButtonEnabled">
-        <bool>true</bool>
        </property>
       </widget>
      </item>
@@ -247,6 +241,13 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>SearchBox</class>
+   <extends>QLineEdit</extends>
+   <header>searchbox.h</header>
+  </customwidget>
+ </customwidgets>
  <resources>
   <include location="resources/duckstation-qt.qrc"/>
  </resources>

@@ -54,6 +54,7 @@
     <ClCompile Include="qtprogresscallback.cpp" />
     <ClCompile Include="qtutils.cpp" />
     <ClCompile Include="qtwindowinfo.cpp" />
+    <ClCompile Include="searchbox.cpp" />
     <ClCompile Include="selectdiscdialog.cpp" />
     <ClCompile Include="settingswindow.cpp" />
     <ClCompile Include="setupwizarddialog.cpp" />
@@ -111,6 +112,7 @@
     <ClInclude Include="pch.h" />
     <ClInclude Include="qtwindowinfo.h" />
     <ClInclude Include="resource.h" />
+    <QtMoc Include="searchbox.h" />
     <QtMoc Include="selectdiscdialog.h" />
     <ClInclude Include="settingwidgetbinder.h" />
     <QtMoc Include="cardradiobutton.h" />

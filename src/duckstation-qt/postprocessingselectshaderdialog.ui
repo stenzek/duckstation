@@ -27,11 +27,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QLineEdit" name="search">
-       <property name="placeholderText">
-        <string>Search...</string>
-       </property>
-      </widget>
+      <widget class="SearchBox" name="search"/>
      </item>
     </layout>
    </item>
@@ -106,6 +102,13 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>SearchBox</class>
+   <extends>QLineEdit</extends>
+   <header>searchbox.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections>
   <connection>
