@@ -19,7 +19,6 @@
 #include "common/file_system.h"
 
 #include <QtWidgets/QInputDialog>
-#include <QtWidgets/QTextEdit>
 #include <array>
 
 #include "moc_controllersettingswindow.cpp"
