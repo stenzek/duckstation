@@ -759,21 +759,23 @@ struct MediaFoundationAudioCodec
   u32 min_bitrate;
   u32 max_bitrate;
 };
+// clang-format off
 static constexpr const MediaFoundationVideoCodec s_media_foundation_video_codecs[] = {
-  {"h264", "H.264 with Software Encoding", MFVideoFormat_H264, false},
-  {"h264_hw", "H.264 with Hardware Encoding", MFVideoFormat_H264, true},
-  {"hevc", "HEVC with Software Encoding", MFVideoFormat_HEVC, false},
-  {"hevc_hw", "HEVC with Hardware Encoding", MFVideoFormat_HEVC, true},
-  {"vp9", "VP9 with Software Encoding", MFVideoFormat_VP90, false},
-  {"vp9_hw", "VP9 with Hardware Encoding", MFVideoFormat_VP90, true},
-  {"av1", "AV1 with Software Encoding", MFVideoFormat_AV1, false},
-  {"av1_hw", "AV1 with Hardware Encoding", MFVideoFormat_AV1, false},
+  {"h264", TRANSLATE_DISAMBIG_NOOP("MediaCapture", "H.264 with Software Encoding", "VideoCodec"), MFVideoFormat_H264, false},
+  {"h264_hw", TRANSLATE_DISAMBIG_NOOP("MediaCapture", "H.264 with Hardware Encoding", "VideoCodec"), MFVideoFormat_H264, true},
+  {"hevc", TRANSLATE_DISAMBIG_NOOP("MediaCapture", "HEVC with Software Encoding", "VideoCodec"), MFVideoFormat_HEVC, false},
+  {"hevc_hw", TRANSLATE_DISAMBIG_NOOP("MediaCapture", "HEVC with Hardware Encoding", "VideoCodec"), MFVideoFormat_HEVC, true},
+  {"vp9", TRANSLATE_DISAMBIG_NOOP("MediaCapture", "VP9 with Software Encoding", "VideoCodec"), MFVideoFormat_VP90, false},
+  {"vp9_hw", TRANSLATE_DISAMBIG_NOOP("MediaCapture", "VP9 with Hardware Encoding", "VideoCodec"), MFVideoFormat_VP90, true},
+  {"av1", TRANSLATE_DISAMBIG_NOOP("MediaCapture", "AV1 with Software Encoding", "VideoCodec"), MFVideoFormat_AV1, false},
+  {"av1_hw", TRANSLATE_DISAMBIG_NOOP("MediaCapture", "AV1 with Hardware Encoding", "VideoCodec"), MFVideoFormat_AV1, false},
 };
 static constexpr const MediaFoundationAudioCodec s_media_foundation_audio_codecs[] = {
-  {"aac", "Advanced Audio Coding", MFAudioFormat_AAC, 64, 224},
-  {"mp3", "MPEG-2 Audio Layer III", MFAudioFormat_MP3, 64, 320},
-  {"pcm", "Uncompressed PCM", MFAudioFormat_PCM, 0, std::numeric_limits<u32>::max()},
+  {"aac", TRANSLATE_DISAMBIG_NOOP("MediaCapture", "Advanced Audio Coding", "AudioCodec"), MFAudioFormat_AAC, 64, 224},
+  {"mp3", TRANSLATE_DISAMBIG_NOOP("MediaCapture", "MPEG-2 Audio Layer III", "AudioCodec"), MFAudioFormat_MP3, 64, 320},
+  {"pcm", TRANSLATE_DISAMBIG_NOOP("MediaCapture", "Uncompressed PCM", "AudioCodec"), MFAudioFormat_PCM, 0, std::numeric_limits<u32>::max()},
 };
+// clang-format on
 
 bool MediaCaptureMF::LoadMediaFoundation(Error* error)
 {
@@ -837,10 +839,10 @@ std::unique_ptr<MediaCapture> MediaCaptureMF::Create(Error* error)
 MediaCapture::ContainerList MediaCaptureMF::GetContainerList()
 {
   return {
-    {"avi", "Audio Video Interleave"},
-    {"mp4", "MPEG-4 Part 14"},
-    {"mp3", "MPEG-2 Audio Layer III"},
-    {"wav", "Waveform Audio File Format"},
+    {"avi", TRANSLATE_DISAMBIG_STR("MediaCapture", "Audio Video Interleave", "ContainerFormat")},
+    {"mp4", TRANSLATE_DISAMBIG_STR("MediaCapture", "MPEG-4 Part 14", "ContainerFormat")},
+    {"mp3", TRANSLATE_DISAMBIG_STR("MediaCapture", "MPEG-2 Audio Layer III", "ContainerFormat")},
+    {"wav", TRANSLATE_DISAMBIG_STR("MediaCapture", "Waveform Audio File Format", "ContainerFormat")},
   };
 }
 
@@ -849,7 +851,7 @@ MediaCapture::ContainerList MediaCaptureMF::GetAudioCodecList(const char* contai
   ContainerList ret;
   ret.reserve(std::size(s_media_foundation_audio_codecs));
   for (const MediaFoundationAudioCodec& codec : s_media_foundation_audio_codecs)
-    ret.emplace_back(codec.name, codec.display_name);
+    ret.emplace_back(codec.name, Host::TranslateToString("MediaCapture", codec.display_name, "AudioCodec"));
   return ret;
 }
 
@@ -858,7 +860,7 @@ MediaCapture::ContainerList MediaCaptureMF::GetVideoCodecList(const char* contai
   ContainerList ret;
   ret.reserve(std::size(s_media_foundation_video_codecs));
   for (const MediaFoundationVideoCodec& codec : s_media_foundation_video_codecs)
-    ret.emplace_back(codec.name, codec.display_name);
+    ret.emplace_back(codec.name, Host::TranslateToString("MediaCapture", codec.display_name, "VideoCodec"));
   return ret;
 }
 
@@ -2855,8 +2857,12 @@ std::unique_ptr<MediaCapture> MediaCaptureFFmpeg::Create(Error* error)
 MediaCapture::ContainerList MediaCaptureFFmpeg::GetContainerList()
 {
   return {
-    {"avi", "Audio Video Interleave"}, {"mp4", "MPEG-4 Part 14"},         {"mkv", "Matroska Media Container"},
-    {"mov", "QuickTime File Format"},  {"mp3", "MPEG-2 Audio Layer III"}, {"wav", "Waveform Audio File Format"},
+    {"avi", TRANSLATE_DISAMBIG_STR("MediaCapture", "Audio Video Interleave", "ContainerFormat")},
+    {"mp4", TRANSLATE_DISAMBIG_STR("MediaCapture", "MPEG-4 Part 14", "ContainerFormat")},
+    {"mkv", TRANSLATE_DISAMBIG_STR("MediaCapture", "Matroska Media Container", "ContainerFormat")},
+    {"mov", TRANSLATE_DISAMBIG_STR("MediaCapture", "QuickTime File Format", "ContainerFormat")},
+    {"mp3", TRANSLATE_DISAMBIG_STR("MediaCapture", "MPEG-2 Audio Layer III", "ContainerFormat")},
+    {"wav", TRANSLATE_DISAMBIG_STR("MediaCapture", "Waveform Audio File Format", "ContainerFormat")},
   };
 }
 
@@ -2924,10 +2930,10 @@ static constexpr const std::array<const char*, static_cast<size_t>(MediaCaptureB
 static constexpr const std::array<const char*, static_cast<size_t>(MediaCaptureBackend::MaxCount)>
   s_backend_display_names = {
 #ifdef _WIN32
-    TRANSLATE_DISAMBIG_NOOP("Settings", "Media Foundation", "MediaCaptureBackend"),
+    TRANSLATE_DISAMBIG_NOOP("MediaCapture", "Media Foundation", "MediaCaptureBackend"),
 #endif
 #ifndef __ANDROID__
-    TRANSLATE_DISAMBIG_NOOP("Settings", "FFmpeg", "MediaCaptureBackend"),
+    TRANSLATE_DISAMBIG_NOOP("MediaCapture", "FFmpeg", "MediaCaptureBackend"),
 #endif
 };
 static_assert(s_backend_names.size() == static_cast<size_t>(MediaCaptureBackend::MaxCount));
@@ -2956,7 +2962,7 @@ const char* MediaCapture::GetBackendName(MediaCaptureBackend backend)
 
 const char* MediaCapture::GetBackendDisplayName(MediaCaptureBackend backend)
 {
-  return Host::TranslateToCString("Settings", s_backend_display_names[static_cast<size_t>(backend)],
+  return Host::TranslateToCString("MediaCapture", s_backend_display_names[static_cast<size_t>(backend)],
                                   "MediaCaptureBackend");
 }
 
