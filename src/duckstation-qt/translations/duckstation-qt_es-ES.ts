@@ -3443,7 +3443,7 @@ Si intentas utilizarlo, no funcionará tal y como se espera. ¿Quieres continuar
         <location filename="../consolesettingswidget.ui" line="108"/>
         <location filename="../consolesettingswidget.cpp" line="105"/>
         <source>Enable Clock Speed Control (Overclocking/Underclocking)</source>
-        <translation>Control de velocidad de reloj («overclocking»/«underclocking»)</translation>
+        <translation>Control de velocidad de reloj (overclocking/underclocking)</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.ui" line="168"/>
@@ -11574,55 +11574,50 @@ con la mezcla de shaders.</translation>
         <translation>Habilitar trucos</translation>
     </message>
     <message>
-        <location filename="../gamecheatsettingswidget.ui" line="57"/>
-        <source>Search...</source>
-        <translation>Buscar...</translation>
-    </message>
-    <message>
-        <location filename="../gamecheatsettingswidget.ui" line="67"/>
+        <location filename="../gamecheatsettingswidget.ui" line="55"/>
         <source>Sort Alphabetically</source>
         <translation>Orden alfabético</translation>
     </message>
     <message>
-        <location filename="../gamecheatsettingswidget.ui" line="81"/>
+        <location filename="../gamecheatsettingswidget.ui" line="69"/>
         <source>Add Cheat</source>
         <translation>Añadir truco</translation>
     </message>
     <message>
-        <location filename="../gamecheatsettingswidget.ui" line="92"/>
+        <location filename="../gamecheatsettingswidget.ui" line="80"/>
         <location filename="../gamecheatsettingswidget.cpp" line="359"/>
         <source>Remove Cheat</source>
         <translation>Eliminar truco</translation>
     </message>
     <message>
-        <location filename="../gamecheatsettingswidget.ui" line="103"/>
+        <location filename="../gamecheatsettingswidget.ui" line="91"/>
         <location filename="../gamecheatsettingswidget.cpp" line="364"/>
         <source>Disable All Cheats</source>
         <translation>Desactivar todos los trucos</translation>
     </message>
     <message>
-        <location filename="../gamecheatsettingswidget.ui" line="114"/>
+        <location filename="../gamecheatsettingswidget.ui" line="102"/>
         <location filename="../gamecheatsettingswidget.cpp" line="367"/>
         <source>Reload Cheats</source>
         <translation>Recargar trucos</translation>
     </message>
     <message>
-        <location filename="../gamecheatsettingswidget.ui" line="157"/>
+        <location filename="../gamecheatsettingswidget.ui" line="145"/>
         <source>Load Database Cheats</source>
         <translation>Cargar trucos de base de datos</translation>
     </message>
     <message>
-        <location filename="../gamecheatsettingswidget.ui" line="183"/>
+        <location filename="../gamecheatsettingswidget.ui" line="171"/>
         <source>Clear List</source>
         <translation>Borrar lista</translation>
     </message>
     <message>
-        <location filename="../gamecheatsettingswidget.ui" line="194"/>
+        <location filename="../gamecheatsettingswidget.ui" line="182"/>
         <source>Import...</source>
         <translation>Importar...</translation>
     </message>
     <message>
-        <location filename="../gamecheatsettingswidget.ui" line="205"/>
+        <location filename="../gamecheatsettingswidget.ui" line="193"/>
         <source>Export...</source>
         <translation>Exportar...</translation>
     </message>
@@ -12600,7 +12595,7 @@ Cualquier truco de la base de datos seguirá cargado y presente, a menos que des
     <message>
         <location filename="../gamelistsettingswidget.cpp" line="81"/>
         <source>Scan Recursively</source>
-        <translation>Escanear recursivamente</translation>
+        <translation>Escaneo recursivo</translation>
     </message>
 </context>
 <context>
@@ -12723,11 +12718,6 @@ La búsqueda recursiva llevará más tiempo, pero identificará todo archivo que
         <location filename="../gamelistwidget.ui" line="218"/>
         <source>All Regions</source>
         <translation>Todas las regiones</translation>
-    </message>
-    <message>
-        <location filename="../gamelistwidget.ui" line="236"/>
-        <source>Search...</source>
-        <translation>Buscar...</translation>
     </message>
     <message>
         <location filename="../gamelistwidget.cpp" line="78"/>
@@ -13247,7 +13237,7 @@ Hojas</translation>
         <location filename="../graphicssettingswidget.ui" line="520"/>
         <location filename="../graphicssettingswidget.cpp" line="435"/>
         <source>Disable Mailbox Presentation</source>
-        <translation>Desactivar presentación «mailbox»</translation>
+        <translation>Desactivar presentación mailbox</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="539"/>
@@ -13394,7 +13384,7 @@ Hojas</translation>
         <location filename="../graphicssettingswidget.ui" line="745"/>
         <location filename="../graphicssettingswidget.cpp" line="486"/>
         <source>Culling Correction</source>
-        <translation>Corrección de «culling»</translation>
+        <translation>Corrección de culling</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="752"/>
@@ -14331,14 +14321,6 @@ Hojas</translation>
         <location filename="../../core/guncon.cpp" line="314"/>
         <source>Offset applied to lightgun horizontal position.</source>
         <translation>Indica la compensación que se aplicará a la posición horizontal de la pistola de luz.</translation>
-    </message>
-</context>
-<context>
-    <name>HotkeySettingsWidget</name>
-    <message>
-        <location filename="../hotkeysettingswidget.cpp" line="34"/>
-        <source>Search...</source>
-        <translation>Buscar...</translation>
     </message>
 </context>
 <context>
@@ -20323,27 +20305,22 @@ Error: {1}</translation>
         <translation>Seleccionar shader</translation>
     </message>
     <message>
-        <location filename="../postprocessingselectshaderdialog.ui" line="32"/>
-        <source>Search...</source>
-        <translation>Buscar...</translation>
-    </message>
-    <message>
-        <location filename="../postprocessingselectshaderdialog.ui" line="55"/>
+        <location filename="../postprocessingselectshaderdialog.ui" line="51"/>
         <source>All</source>
         <translation>Todos</translation>
     </message>
     <message>
-        <location filename="../postprocessingselectshaderdialog.ui" line="68"/>
+        <location filename="../postprocessingselectshaderdialog.ui" line="64"/>
         <source>GLSL</source>
         <translation>GLSL</translation>
     </message>
     <message>
-        <location filename="../postprocessingselectshaderdialog.ui" line="78"/>
+        <location filename="../postprocessingselectshaderdialog.ui" line="74"/>
         <source>Reshade</source>
         <translation>Reshade</translation>
     </message>
     <message>
-        <location filename="../postprocessingselectshaderdialog.ui" line="88"/>
+        <location filename="../postprocessingselectshaderdialog.ui" line="84"/>
         <source>Slang</source>
         <translation>Slang</translation>
     </message>
@@ -21071,6 +21048,14 @@ Acceso directo: %2
         <location filename="../../core/imgui_overlays.cpp" line="1459"/>
         <source>Save Slot {0} selected.</source>
         <translation>Espacio de guardado {0} seleccionado.</translation>
+    </message>
+</context>
+<context>
+    <name>SearchBox</name>
+    <message>
+        <location filename="../searchbox.cpp" line="13"/>
+        <source>Search...</source>
+        <translation>Buscar...</translation>
     </message>
 </context>
 <context>
