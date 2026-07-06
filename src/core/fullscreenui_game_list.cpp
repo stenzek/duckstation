@@ -1125,9 +1125,11 @@ GPUTexture* FullscreenUI::GetGameListCover(const GameList::Entry* entry, bool fa
     // try achievements image before memcard icon
     if (fallback_to_achievements_icon && cover_it->second.empty() && Achievements::IsActive())
     {
-      const auto lock = Achievements::GetLock();
       if (VideoThread::GetGamePath() == entry->path)
+      {
+        const auto lock = Achievements::GetLock();
         cover_it->second = Achievements::GetCurrentGameBadgeURL();
+      }
     }
   }
 
