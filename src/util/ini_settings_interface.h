@@ -41,6 +41,7 @@ public:
 
   ALWAYS_INLINE bool IsDirty() const { return m_dirty; }
   ALWAYS_INLINE const std::string& GetPath() const { return m_path; }
+  void SetDirty(bool dirty);
   void SetPath(std::string path);
 
   bool Load(Error* error = nullptr);

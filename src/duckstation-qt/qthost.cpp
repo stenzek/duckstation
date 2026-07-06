@@ -683,6 +683,9 @@ bool QtHost::SaveGameSettings(SettingsInterface* sif, bool delete_if_empty)
   {
     INFO_LOG("Removing empty gamesettings ini {}", Path::GetFileName(ini->GetPath()));
 
+    // prevent empty ini from being saved if it was modified and transitioned back to empty
+    ini->SetDirty(false);
+
     // grab the settings lock while we're writing the file, that way the CPU thread doesn't try
     // to read it at the same time.
     const auto lock = Core::GetSettingsLock();

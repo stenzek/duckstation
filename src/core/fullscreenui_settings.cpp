@@ -2114,10 +2114,12 @@ void FullscreenUI::DrawSettingsWindow()
     if (s_settings_locals.game_settings_interface)
     {
       Error error;
-      s_settings_locals.game_settings_interface->RemoveEmptySections();
 
       if (s_settings_locals.game_settings_interface->IsEmpty())
       {
+        // prevent empty ini from being saved if it was modified and transitioned back to empty
+        s_settings_locals.game_settings_interface->SetDirty(false);
+
         if (FileSystem::FileExists(s_settings_locals.game_settings_interface->GetPath().c_str()))
         {
           INFO_LOG("Removing empty game settings {}", s_settings_locals.game_settings_interface->GetPath());
@@ -2131,6 +2133,8 @@ void FullscreenUI::DrawSettingsWindow()
       }
       else
       {
+        s_settings_locals.game_settings_interface->RemoveEmptySections();
+
         if (!s_settings_locals.game_settings_interface->Save(&error))
         {
           OpenInfoMessageDialog(

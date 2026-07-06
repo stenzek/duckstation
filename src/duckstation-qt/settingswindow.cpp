@@ -77,6 +77,9 @@ SettingsWindow::SettingsWindow(const GameList::Entry* entry, std::unique_ptr<INI
 
 SettingsWindow::~SettingsWindow()
 {
+  if (m_sif && m_sif->IsDirty()) [[unlikely]]
+    WARNING_LOG("File {} was dirty when SettingsWindow was closed", Path::GetFileName(m_sif->GetPath()));
+
   if (isPerGameSettings())
     s_open_game_properties_dialogs.removeOne(this);
 }

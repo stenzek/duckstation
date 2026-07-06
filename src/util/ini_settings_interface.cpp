@@ -31,6 +31,11 @@ INISettingsInterface::~INISettingsInterface()
     Save();
 }
 
+void INISettingsInterface::SetDirty(bool dirty)
+{
+  m_dirty = dirty;
+}
+
 void INISettingsInterface::SetPath(std::string path)
 {
   m_dirty |= (path != m_path);
