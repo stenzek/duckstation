@@ -10,7 +10,6 @@
 #include "common/small_string.h"
 
 #include <bitset>
-#include <map>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -218,30 +217,6 @@ const char* GetCompatibilityRatingDisplayName(CompatibilityRating rating);
 const char* GetLanguageName(Language language);
 std::optional<Language> ParseLanguageName(std::string_view str);
 TinyString GetLanguageFlagResourceName(std::string_view language_name);
-
-/// Map of track hashes for image verification
-struct TrackData
-{
-  TrackData(std::string serial_, std::string revision_str_, uint32_t revision_)
-    : serial(std::move(serial_)), revision_str(std::move(revision_str_)), revision(revision_)
-  {
-  }
-
-  friend bool operator==(const TrackData& left, const TrackData& right)
-  {
-    // 'revisionString' is deliberately ignored in comparisons as it's redundant with comparing 'revision'! Do not
-    // change!
-    return left.serial == right.serial && left.revision == right.revision;
-  }
-
-  std::string serial;
-  std::string revision_str;
-  u32 revision;
-};
-
-using TrackHashesMap = std::multimap<CDImageHasher::Hash, TrackData>;
-const TrackHashesMap& GetTrackHashesMap();
-void EnsureTrackHashesMapLoaded();
 
 struct TrackVerificationResult
 {

@@ -40,11 +40,43 @@ LOG_CHANNEL(GameDatabase);
 
 namespace GameDatabase {
 
+namespace {
 enum : u32
 {
   GAME_DATABASE_CACHE_SIGNATURE = 0x45434C48,
   GAME_DATABASE_CACHE_VERSION = 33,
 };
+
+/// Map of track hashes for image verification
+struct TrackData
+{
+  TrackData(std::string serial_, std::string revision_str_, uint32_t revision_)
+    : serial(std::move(serial_)), revision_str(std::move(revision_str_)), revision(revision_)
+  {
+  }
+
+  friend bool operator==(const TrackData& left, const TrackData& right)
+  {
+    // 'revisionString' is deliberately ignored in comparisons as it's redundant with comparing 'revision'! Do not
+    // change!
+    return left.serial == right.serial && left.revision == right.revision;
+  }
+
+  std::string serial;
+  std::string revision_str;
+  u32 revision;
+};
+
+struct TrackHashMatchResult
+{
+  std::vector<bool> track_matches;
+  std::string revision;
+  std::string serial;
+};
+
+using TrackHashesMap = std::multimap<CDImageHasher::Hash, TrackData>;
+
+} // namespace
 
 static const Entry* GetEntryForId(std::string_view code);
 
@@ -59,17 +91,9 @@ static bool ParseYamlDiscSetEntry(DiscSetEntry* entry, const ryml::ConstNodeRef&
 static bool ParseYamlCodes(UnorderedStringMap<std::string_view>& lookup, const ryml::ConstNodeRef& value,
                            std::string_view serial);
 static void BindDiscSetsToEntries();
-static bool LoadTrackHashes();
 
-namespace {
-struct TrackHashMatchResult
-{
-  std::vector<bool> track_matches;
-  std::string revision;
-  std::string serial;
-};
-} // namespace
-
+static bool EnsureTrackHashesLoaded(Error* error);
+static bool LoadTrackHashes(Error* error);
 static TrackHashMatchResult MatchTrackHashes(const CDImageHasher::TrackHashes& track_hashes);
 
 static constexpr const std::array<const char*, static_cast<int>(CompatibilityRating::Count)>
@@ -1768,24 +1792,22 @@ bool GameDatabase::ParseYamlCodes(UnorderedStringMap<std::string_view>& lookup, 
   return (added > 0);
 }
 
-void GameDatabase::EnsureTrackHashesMapLoaded()
+bool GameDatabase::EnsureTrackHashesLoaded(Error* error)
 {
   if (s_state.track_hashes_loaded)
-    return;
+    return true;
 
-  s_state.track_hashes_loaded = true;
-  LoadTrackHashes();
+  return (s_state.track_hashes_loaded = LoadTrackHashes(error));
 }
 
-bool GameDatabase::LoadTrackHashes()
+bool GameDatabase::LoadTrackHashes(Error* error)
 {
   Timer load_timer;
 
-  Error error;
-  std::optional<std::string> gamedb_data(Host::ReadResourceFileToString(DISCDB_YAML_FILENAME, false, &error));
+  std::optional<std::string> gamedb_data(Host::ReadResourceFileToString(DISCDB_YAML_FILENAME, false, error));
   if (!gamedb_data.has_value())
   {
-    ERROR_LOG("Failed to read disc database: {}", error.GetDescription());
+    Error::AddPrefix(error, "Failed to read disc database: ");
     return false;
   }
 
@@ -1858,19 +1880,12 @@ bool GameDatabase::LoadTrackHashes()
   return !s_state.track_hashes_map.empty();
 }
 
-const GameDatabase::TrackHashesMap& GameDatabase::GetTrackHashesMap()
-{
-  EnsureTrackHashesMapLoaded();
-  return s_state.track_hashes_map;
-}
-
 GameDatabase::TrackHashMatchResult GameDatabase::MatchTrackHashes(const CDImageHasher::TrackHashes& track_hashes)
 {
   TrackHashMatchResult result = {std::vector<bool>(track_hashes.size(), false), {}, {}};
 
   DebugAssert(!track_hashes.empty());
-  const TrackHashesMap& hashes_map = GetTrackHashesMap();
-  const auto data_track_matches = hashes_map.equal_range(track_hashes[0]);
+  const auto data_track_matches = s_state.track_hashes_map.equal_range(track_hashes[0]);
   if (data_track_matches.first != data_track_matches.second)
   {
     auto best_data_match = data_track_matches.second;
@@ -1883,7 +1898,7 @@ GameDatabase::TrackHashMatchResult GameDatabase::MatchTrackHashes(const CDImageH
       for (auto audio_tracks_iter = std::next(track_hashes.begin()); audio_tracks_iter != track_hashes.end();
            ++audio_tracks_iter)
       {
-        auto audio_track_matches = hashes_map.equal_range(*audio_tracks_iter);
+        auto audio_track_matches = s_state.track_hashes_map.equal_range(*audio_tracks_iter);
         for (auto audio_iter = audio_track_matches.first; audio_iter != audio_track_matches.second; ++audio_iter)
         {
           // If audio track comes from the same revision and code as the data track, "pass" it
@@ -1946,6 +1961,9 @@ bool GameDatabase::VerifyImage(CDImage* image, std::string_view expected_serial,
     Error::SetStringView(error, "Image contains no tracks.");
     return false;
   }
+
+  if (!EnsureTrackHashesLoaded(error))
+    return false;
 
   TrackHashMatchResult match = MatchTrackHashes(track_hashes);
   std::string summary;
