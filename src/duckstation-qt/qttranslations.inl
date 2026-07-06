@@ -5,7 +5,7 @@
 
 TRANSLATION_LIST_ENTRY("English", "en", "en-US", QLocale::English, QLocale::UnitedStates)
 TRANSLATION_LIST_ENTRY("Azərbaycanca", "az", "az-AZ", QLocale::Azerbaijani, QLocale::Azerbaijan)
-TRANSLATION_LIST_ENTRY("Español de Latinoamérica", "es", "es-ES", QLocale::Spanish, QLocale::LatinAmerica)
+TRANSLATION_LIST_ENTRY("Español de Hispanoamérica", "es", "es-ES", QLocale::Spanish, QLocale::LatinAmerica)
 TRANSLATION_LIST_ENTRY("Español de España", "es-ES", "es-ES", QLocale::Spanish, QLocale::Spain)
 TRANSLATION_LIST_ENTRY("Français", "fr", "fr-FR", QLocale::French, QLocale::France)
 TRANSLATION_LIST_ENTRY("Bahasa Indonesia", "id", "id-ID", QLocale::Indonesian, QLocale::Indonesia)
