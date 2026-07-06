@@ -27,7 +27,7 @@
 #include <QtCore/QSignalBlocker>
 #include <QtWidgets/QDialog>
 #include <QtWidgets/QDialogButtonBox>
-#include <QtWidgets/QTextBrowser>
+#include <QtWidgets/QTextEdit>
 
 #include "moc_gamesummarywidget.cpp"
 #include "ui_editgameserialdialog.h"
@@ -498,9 +498,10 @@ void GameSummaryWidget::onCompatibilityCommentsClicked()
 
   QVBoxLayout* layout = new QVBoxLayout(dlg);
 
-  QTextBrowser* tb = new QTextBrowser(dlg);
-  tb->setMarkdown(m_compatibility_comments);
-  layout->addWidget(tb, 1);
+  QTextEdit* text = new QTextEdit(dlg);
+  text->setMarkdown(m_compatibility_comments);
+  text->setReadOnly(true);
+  layout->addWidget(text, 1);
 
   QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Close, dlg);
   connect(bb, &QDialogButtonBox::rejected, dlg, &QDialog::accept);

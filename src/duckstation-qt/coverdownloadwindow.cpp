@@ -25,7 +25,7 @@ CoverDownloadWindow::CoverDownloadWindow() : QWidget()
 
   connect(m_ui.start, &QPushButton::clicked, this, &CoverDownloadWindow::onStartClicked);
   connect(m_ui.close, &QPushButton::clicked, this, &CoverDownloadWindow::close);
-  connect(m_ui.urls, &QTextEdit::textChanged, this, &CoverDownloadWindow::updateEnabled);
+  connect(m_ui.urls, &QPlainTextEdit::textChanged, this, &CoverDownloadWindow::updateEnabled);
 
   const std::vector<std::string> urls = Core::GetBaseStringListSetting("UI", "CoverDownloaderURL");
   if (!urls.empty())
