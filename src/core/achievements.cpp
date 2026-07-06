@@ -102,6 +102,7 @@ struct LoginWithPasswordParameters
   const char* username;
   Error* error;
   rc_client_async_handle_t* request;
+  bool is_temporary_client;
   bool result;
 };
 
@@ -343,7 +344,6 @@ void Achievements::ReportRCError(int err, fmt::format_string<T...> fmt, T&&... a
   str.append_format("{} ({})", rc_error_str(err), err);
   ReportError(str);
 }
-
 
 std::string Achievements::GetImageURL(const char* image_name, u32 type)
 {
@@ -1989,14 +1989,14 @@ bool Achievements::Login(const char* username, const char* password, Error* erro
   auto lock = GetLock();
 
   // We need to use a temporary client if achievements aren't currently active.
-  const bool needs_temporary_client = (s_state.client == nullptr);
-  if (needs_temporary_client && !CreateClient(lock, true))
+  const bool is_temporary_client = (s_state.client == nullptr);
+  if (is_temporary_client && !CreateClient(lock, true))
   {
     Error::SetString(error, "Failed to create client.");
     return false;
   }
 
-  LoginWithPasswordParameters params = {username, error, nullptr, false};
+  LoginWithPasswordParameters params = {username, error, nullptr, is_temporary_client, false};
   params.request =
     rc_client_begin_login_with_password(s_state.client, username, password, ClientLoginWithPasswordCallback, &params);
   if (!params.request)
@@ -2009,18 +2009,19 @@ bool Achievements::Login(const char* username, const char* password, Error* erro
   WaitForServerCallsWithYield(lock);
   Assert(!params.request);
 
-  // Free temporary client if we created one.
-  if (needs_temporary_client)
-  {
-    // Did we get enabled and disabled in the meantime?
-    if (!s_state.client)
-      return false;
+  // Did we get enabled and disabled in the meantime?
+  if (!s_state.client)
+    return params.result;
 
-    // Did we get enabled? Leave the client if so
-    if (!g_settings.achievements_enabled)
-      DestroyClient(lock);
-    else
-      FinishInitialize();
+  // Did we get enabled? Leave the client if so
+  if (!g_settings.achievements_enabled)
+  {
+    DestroyClient(lock);
+  }
+  else
+  {
+    FinishLogin();
+    FinishInitialize();
   }
 
   // Success? Assume the callback set the error message.
@@ -2062,10 +2063,6 @@ void Achievements::ClientLoginWithPasswordCallback(int result, const char* error
   Core::SetBaseStringSettingValue("Cheevos", "LoginTimestamp", fmt::format("{}", std::time(nullptr)).c_str());
   Host::CommitBaseSettingChanges();
   s_state.has_saved_credentials = true;
-
-  // Will be using temporary client if achievements are not enabled.
-  if (g_settings.achievements_enabled)
-    FinishLogin();
 }
 
 void Achievements::ClientLoginWithTokenCallback(int result, const char* error_message, rc_client_t* client,
@@ -2100,6 +2097,10 @@ void Achievements::ClientLoginWithTokenCallback(int result, const char* error_me
   // Should be active here.
   DebugAssert(client == s_state.client);
   FinishLogin();
+
+  // Triggered through FinishInitialize(), which didn't load the game yet, so we need to do it here.
+  if (!s_state.load_game_request && System::IsValid())
+    BeginLoadGame();
 }
 
 void Achievements::FinishLogin()
@@ -2128,9 +2129,6 @@ void Achievements::FinishLogin()
                                              s_state.logged_in_user_icon_url, user->display_name, std::move(summary),
                                              RA_LOGO_ICON_NAME, FullscreenUI::AchievementNotificationNoteType::Image);
   }
-
-  if (!s_state.load_game_request && System::IsValid())
-    BeginLoadGame();
 }
 
 const std::string& Achievements::GetLoggedInUserName()
@@ -3093,8 +3091,12 @@ void Achievements::FetchAllProgressIfMissing()
 
   const bool has_progress_database = (stmt.ColumnInt(0) > 0);
   if (has_progress_database)
+  {
+    DEV_LOG("Progress database already exists, skipping fetch");
     return;
+  }
 
+  INFO_LOG("Progress database is missing, updating...");
   BeginFetchAllProgressRequest(nullptr);
 }
 
