@@ -115,15 +115,12 @@ static void ReportFmtError(fmt::format_string<T...> fmt, T&&... args);
 template<typename... T>
 static void ReportRCError(int err, fmt::format_string<T...> fmt, T&&... args);
 static void ClearGameInfo();
-static void ClearGameHash();
 static bool TryLoggingInWithToken();
 static void EnableHardcoreMode(bool display_message, bool display_game_summary);
 static void OnHardcoreModeChanged(bool enabled, bool display_message, bool display_game_summary);
 static bool IsRAIntegrationInitializing();
 static void FinishInitialize();
 static void FinishLogin();
-static bool IdentifyGame(CDImage* image);
-static bool IdentifyCurrentGame();
 static void BeginLoadGame();
 static void UpdateGameSummary();
 static void UpdateModeSettings(const Settings& old_config);
@@ -241,7 +238,6 @@ struct State
   std::optional<GameHash> game_hash;
   u32 game_id = 0;
 
-  std::string game_path;
   std::string game_title;
   std::string game_badge_url;
   rc_client_user_game_summary_t game_summary = {};
@@ -352,12 +348,13 @@ void Achievements::ReportRCError(int err, fmt::format_string<T...> fmt, T&&... a
 
 std::optional<Achievements::GameHash> Achievements::GetGameHash(CDImage* image)
 {
-  std::optional<GameHash> ret;
+  if (!image)
+    return std::nullopt;
 
   std::string executable_name;
   std::vector<u8> executable_data;
   if (!System::ReadExecutableFromImage(image, &executable_name, &executable_data))
-    return ret;
+    return std::nullopt;
 
   return GetGameHash(executable_name, executable_data);
 }
@@ -365,14 +362,12 @@ std::optional<Achievements::GameHash> Achievements::GetGameHash(CDImage* image)
 std::optional<Achievements::GameHash> Achievements::GetGameHash(const std::string_view executable_name,
                                                                 std::span<const u8> executable_data)
 {
-  std::optional<GameHash> ret;
-
   // NOTE: Assumes executable_data is aligned to 4 bytes at least.. it should be.
   const BIOS::PSEXEHeader* header = reinterpret_cast<const BIOS::PSEXEHeader*>(executable_data.data());
   if (executable_data.size() < sizeof(BIOS::PSEXEHeader) || !BIOS::IsValidPSExeHeader(*header, executable_data.size()))
   {
     ERROR_LOG("PS-EXE header is invalid in '{}' ({} bytes)", executable_name, executable_data.size());
-    return ret;
+    return std::nullopt;
   }
 
   const u32 hash_size = std::min(header->file_size + 2048, static_cast<u32>(executable_data.size()));
@@ -382,8 +377,8 @@ std::optional<Achievements::GameHash> Achievements::GetGameHash(const std::strin
   if (hash_size > 0)
     digest.Update(executable_data.data(), hash_size);
 
-  ret.emplace();
-  digest.Final(ret.value());
+  std::optional<GameHash> ret;
+  digest.Final(ret.emplace());
 
   INFO_COLOR_LOG(StrongOrange, "RA Hash for '{}': {} ({} bytes hashed)", executable_name, GameHashToString(ret),
                  hash_size);
@@ -560,11 +555,6 @@ const std::string& Achievements::GetCurrentGameTitle()
   return s_state.game_title;
 }
 
-const std::string& Achievements::GetCurrentGamePath()
-{
-  return s_state.game_path;
-}
-
 const std::string& Achievements::GetCurrentGameBadgeURL()
 {
   return s_state.game_badge_url;
@@ -657,10 +647,6 @@ bool Achievements::CreateClient(std::unique_lock<std::recursive_mutex>& lock, bo
 
 void Achievements::FinishInitialize()
 {
-  // Identify game regardless of login status.
-  if (System::IsValid())
-    IdentifyCurrentGame();
-
   // Start logging in. This can take a while.
   if (!IsLoggedInOrLoggingIn())
   {
@@ -685,7 +671,6 @@ void Achievements::DestroyClient(std::unique_lock<std::recursive_mutex>& lock)
   WaitForServerCallsWithYield(lock);
 
   ClearGameInfo();
-  ClearGameHash();
   DisableHardcoreMode(false, false);
   CancelFetchGameListRequest();
   CancelFetchAllProgressRequest();
@@ -1078,7 +1063,12 @@ void Achievements::UpdateRichPresence(std::unique_lock<std::recursive_mutex>& lo
 
 void Achievements::OnSystemStarting(CDImage* image, bool disable_hardcore_mode)
 {
+  const std::optional<GameHash> game_hash = GetGameHash(image);
+
   std::unique_lock lock(s_state.mutex);
+
+  // Always set hash in case we late enable.
+  s_state.game_hash = game_hash;
 
   if (!IsActive() || IsRAIntegrationInitializing())
     return;
@@ -1106,16 +1096,20 @@ void Achievements::OnSystemStarting(CDImage* image, bool disable_hardcore_mode)
   }
 
   // now we can finally identify the game
-  IdentifyGame(image);
   BeginLoadGame();
 }
 
 void Achievements::OnSystemDestroyed()
 {
   const auto lock = GetLock();
-  ClearGameInfo();
-  ClearGameHash();
-  DisableHardcoreMode(false, false);
+
+  s_state.game_hash.reset();
+
+  if (IsActive())
+  {
+    ClearGameInfo();
+    DisableHardcoreMode(false, false);
+  }
 }
 
 void Achievements::OnSystemReset()
@@ -1148,13 +1142,17 @@ void Achievements::OnSystemReset()
 
 void Achievements::GameChanged(CDImage* image)
 {
+  const auto game_hash = GetGameHash(image);
+
   std::unique_lock lock(s_state.mutex);
 
-  if (!IsActive() || IsRAIntegrationInitializing())
+  // disc changed?
+  if (s_state.game_hash == game_hash)
     return;
 
-  // disc changed?
-  if (!IdentifyGame(image))
+  s_state.game_hash = game_hash;
+
+  if (!IsActive() || IsRAIntegrationInitializing())
     return;
 
   // cancel previous requests
@@ -1170,52 +1168,6 @@ void Achievements::GameChanged(CDImage* image)
 
   // Flag the disc change. That way we reload the game on reset instead of treating it as a swap.
   s_state.reload_game_on_reset = true;
-}
-
-bool Achievements::IdentifyGame(CDImage* image)
-{
-  std::optional<GameHash> game_hash;
-  if (image)
-  {
-    game_hash = GetGameHash(image);
-
-    if (!game_hash.has_value() && !rc_client_is_game_loaded(s_state.client))
-    {
-      // If we are starting with this game and it's bad, notify the user that this is why.
-      Host::AddIconOSDMessage(OSDMessageType::Error, "AchievementsHashFailed", ICON_EMOJI_WARNING,
-                              TRANSLATE_STR("Achievements", "Failed to read executable from disc."),
-                              TRANSLATE_STR("Achievements", "Achievements have been disabled."));
-    }
-  }
-
-  s_state.game_path = image ? image->GetPath() : std::string();
-
-  if (s_state.game_hash == game_hash)
-  {
-    // only the path has changed - different format/save state/etc.
-    INFO_LOG("Detected path change to '{}'", s_state.game_path);
-    return false;
-  }
-
-  s_state.game_hash = game_hash;
-  return true;
-}
-
-bool Achievements::IdentifyCurrentGame()
-{
-  DebugAssert(System::IsValid());
-
-  // this crap is only needed because we can't grab the image from the reader...
-  std::unique_ptr<CDImage> temp_image;
-  if (const std::string& disc_path = System::GetGamePath(); !disc_path.empty())
-  {
-    Error error;
-    temp_image = CDImage::Open(disc_path.c_str(), g_settings.cdrom_load_image_patches, &error);
-    if (!temp_image)
-      ERROR_LOG("Failed to open disc for late game identification: {}", error.GetDescription());
-  }
-
-  return IdentifyGame(temp_image.get());
 }
 
 void Achievements::BeginLoadGame()
@@ -1367,12 +1319,6 @@ void Achievements::ClearGameInfo()
   s_state.has_rich_presence = false;
   s_state.rich_presence_string = {};
   s_state.game_summary = {};
-}
-
-void Achievements::ClearGameHash()
-{
-  s_state.game_path = {};
-  s_state.game_hash.reset();
 }
 
 void Achievements::DisplayAchievementSummary()

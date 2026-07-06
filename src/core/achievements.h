@@ -154,9 +154,6 @@ const std::string& GetCurrentGameBadgeURL();
 /// Should be called with the lock held.
 const std::string& GetCurrentGameTitle();
 
-/// Returns the path for the game that is current hashed/running.
-const std::string& GetCurrentGamePath();
-
 /// Returns true if the user has been successfully logged in.
 bool IsLoggedIn();
 
