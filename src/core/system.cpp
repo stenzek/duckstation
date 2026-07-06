@@ -63,6 +63,7 @@
 #include "common/file_system.h"
 #include "common/layered_settings_interface.h"
 #include "common/log.h"
+#include "common/md5_digest.h"
 #include "common/memmap.h"
 #include "common/path.h"
 #include "common/string_util.h"
@@ -139,6 +140,10 @@ static bool ReadExecutableFromImage(IsoReader& iso, std::string* out_executable_
                                     std::vector<u8>* out_executable_data);
 static GameHash GetGameHashFromBuffer(std::string_view exe_name, std::span<const u8> exe_buffer,
                                       const IsoReader::ISOPrimaryVolumeDescriptor& iso_pvd, u32 track_1_length);
+
+/// Returns the achievements game hash for a given executable.
+static std::optional<Achievements::GameHash> GetAchievementsHash(const std::string& executable_name,
+                                                                 const std::vector<u8>& executable_data);
 
 /// Settings that are looked up on demand.
 static bool ShouldStartFullscreen();
@@ -669,7 +674,7 @@ std::string System::GetGameHashId(GameHash hash)
 }
 
 bool System::GetGameDetailsFromImage(CDImage* cdi, std::string* out_id, GameHash* out_hash,
-                                     std::string* out_executable_name, std::vector<u8>* out_executable_data)
+                                     std::optional<std::array<u8, 16>>* out_achievements_hash)
 {
   IsoReader iso;
   std::string id;
@@ -681,10 +686,8 @@ bool System::GetGameDetailsFromImage(CDImage* cdi, std::string* out_id, GameHash
       out_id->clear();
     if (out_hash)
       *out_hash = 0;
-    if (out_executable_name)
-      out_executable_name->clear();
-    if (out_executable_data)
-      out_executable_data->clear();
+    if (out_achievements_hash)
+      out_achievements_hash->reset();
     return false;
   }
 
@@ -729,11 +732,8 @@ bool System::GetGameDetailsFromImage(CDImage* cdi, std::string* out_id, GameHash
 
   if (out_hash)
     *out_hash = hash;
-
-  if (out_executable_name)
-    *out_executable_name = std::move(exe_name);
-  if (out_executable_data)
-    *out_executable_data = std::move(exe_buffer);
+  if (out_achievements_hash)
+    *out_achievements_hash = GetAchievementsHash(exe_name, exe_buffer);
 
   return true;
 }
@@ -899,6 +899,31 @@ GameHash System::GetGameHashFromBuffer(std::string_view exe_name, std::span<cons
   const GameHash hash = XXH64_digest(state);
   XXH64_freeState(state);
   return hash;
+}
+
+std::optional<Achievements::GameHash> System::GetAchievementsHash(const std::string& executable_name,
+                                                                  const std::vector<u8>& executable_data)
+{
+  // NOTE: Assumes executable_data is aligned to 4 bytes at least.. it should be.
+  const BIOS::PSEXEHeader* header = reinterpret_cast<const BIOS::PSEXEHeader*>(executable_data.data());
+  if (executable_data.size() < sizeof(BIOS::PSEXEHeader) || !BIOS::IsValidPSExeHeader(*header, executable_data.size()))
+  {
+    ERROR_LOG("PS-EXE header is invalid in '{}' ({} bytes)", executable_name, executable_data.size());
+    return std::nullopt;
+  }
+
+  const u32 hash_size = std::min(header->file_size + 2048, static_cast<u32>(executable_data.size()));
+
+  MD5Digest digest;
+  digest.Update(executable_name.data(), static_cast<u32>(executable_name.size()));
+  if (hash_size > 0)
+    digest.Update(executable_data.data(), hash_size);
+
+  std::optional<Achievements::GameHash> ret;
+  digest.Final(ret.emplace());
+
+  DEV_LOG("RA Hash for '{}': {} ({} bytes hashed)", executable_name, Achievements::GameHashToString(ret), hash_size);
+  return ret;
 }
 
 DiscRegion System::GetRegionForSerial(const std::string_view serial)
@@ -1607,10 +1632,10 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
   s_state.gpu_dump_player = std::move(gpu_dump);
   Host::OnSystemStarting();
   FullscreenUI::OnSystemStarting();
+  Achievements::OnSystemStarting(parameters.disable_achievements_hardcore_mode);
 
   // Update running game, this will apply settings as well.
   UpdateRunningGame(disc ? disc->GetPath() : parameters.path, disc.get(), true);
-  Achievements::OnSystemStarting(disc.get(), parameters.disable_achievements_hardcore_mode);
 
   // Determine console region. Has to be done here, because gamesettings can override it.
   s_state.region = (g_settings.region == ConsoleRegion::Auto) ? auto_console_region : g_settings.region;
@@ -1744,6 +1769,7 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
     GDBServer::Initialize(g_settings.gdb_server_port);
 #endif
 
+  Achievements::OnSystemStarted();
   Host::OnSystemStarted();
 
   if (parameters.load_image_to_ram || g_settings.cdrom_load_image_to_ram)
@@ -2612,7 +2638,6 @@ void System::DoMemoryState(StateWrapper& sw, MemorySaveState& mss, bool update_d
 #else
 #define SAVE_COMPONENT(name, expr) expr
 #endif
-
   sw.Do(&s_state.frame_number);
   sw.Do(&s_state.internal_frame_number);
 
@@ -3988,6 +4013,7 @@ void System::UpdateRunningGame(const std::string& path, CDImage* image, bool boo
   s_state.running_game_hash = 0;
   s_state.running_game_custom_title = false;
 
+  std::optional<Achievements::GameHash> achievements_hash;
   if (!path.empty())
   {
     s_state.running_game_path = path;
@@ -4047,7 +4073,7 @@ void System::UpdateRunningGame(const std::string& path, CDImage* image, bool boo
       if (image->GetTrack(1).mode != CDImage::TrackMode::Audio)
       {
         std::string id;
-        GetGameDetailsFromImage(image, &id, &s_state.running_game_hash);
+        GetGameDetailsFromImage(image, &id, &s_state.running_game_hash, &achievements_hash);
 
         // Custom serial?
         s_state.running_game_entry = s_state.running_game_serial.empty() ?
@@ -4088,11 +4114,11 @@ void System::UpdateRunningGame(const std::string& path, CDImage* image, bool boo
 
   if (!IsReplayingGPUDump())
   {
+    Achievements::SetGameHash(achievements_hash);
+
     // Cheats are loaded later in Initialize().
     if (!booting)
     {
-      Achievements::GameChanged(image);
-
       const bool had_setting_overrides = Cheats::HasAnySettingOverrides();
       Cheats::ReloadCheats(true, true, false, true, true);
       if (had_setting_overrides)
@@ -4155,6 +4181,8 @@ bool System::PopulateGameListEntryFromCurrentGame(GameList::Entry* entry, Error*
   }
 
   entry->achievements_game_id = Achievements::GetGameID();
+  if (const std::optional<Achievements::GameHash> achievements_hash = Achievements::GetGameHash())
+    entry->achievements_hash = achievements_hash.value();
   entry->is_runtime_populated = true;
 
   return true;

@@ -8,6 +8,7 @@
 
 #include "util/image.h"
 
+#include <array>
 #include <ctime>
 #include <functional>
 #include <memory>
@@ -152,9 +153,8 @@ std::string GetExecutableNameForImage(CDImage* cdi, bool strip_subdirectories);
 bool ReadExecutableFromImage(CDImage* cdi, std::string* out_executable_name, std::vector<u8>* out_executable_data);
 
 std::string GetGameHashId(GameHash hash);
-bool GetGameDetailsFromImage(CDImage* cdi, std::string* out_id = nullptr, GameHash* out_hash = nullptr,
-                             std::string* out_executable_name = nullptr,
-                             std::vector<u8>* out_executable_data = nullptr);
+bool GetGameDetailsFromImage(CDImage* cdi, std::string* out_id, GameHash* out_hash,
+                             std::optional<std::array<u8, 16>>* out_achievements_hash);
 GameHash GetGameHashFromFile(const char* path);
 GameHash GetGameHashFromBuffer(const std::string_view path, const std::span<const u8> data);
 DiscRegion GetRegionForSerial(const std::string_view serial);

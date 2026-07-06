@@ -280,7 +280,7 @@ const GameDatabase::Entry* GameDatabase::GetEntryForDisc(CDImage* image)
 {
   std::string id;
   GameHash hash;
-  System::GetGameDetailsFromImage(image, &id, &hash);
+  System::GetGameDetailsFromImage(image, &id, &hash, nullptr);
   const Entry* entry = GetEntryForGameDetails(id, hash);
   if (entry)
     return entry;

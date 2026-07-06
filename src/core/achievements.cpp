@@ -5,7 +5,6 @@
 
 #include "achievements.h"
 #include "achievements_private.h"
-#include "bios.h"
 #include "bus.h"
 #include "cheats.h"
 #include "core.h"
@@ -29,7 +28,6 @@
 #include "common/file_system.h"
 #include "common/heap_array.h"
 #include "common/log.h"
-#include "common/md5_digest.h"
 #include "common/path.h"
 #include "common/progress_callback.h"
 #include "common/ryml_helpers.h"
@@ -346,45 +344,6 @@ void Achievements::ReportRCError(int err, fmt::format_string<T...> fmt, T&&... a
   ReportError(str);
 }
 
-std::optional<Achievements::GameHash> Achievements::GetGameHash(CDImage* image)
-{
-  if (!image)
-    return std::nullopt;
-
-  std::string executable_name;
-  std::vector<u8> executable_data;
-  if (!System::ReadExecutableFromImage(image, &executable_name, &executable_data))
-    return std::nullopt;
-
-  return GetGameHash(executable_name, executable_data);
-}
-
-std::optional<Achievements::GameHash> Achievements::GetGameHash(const std::string_view executable_name,
-                                                                std::span<const u8> executable_data)
-{
-  // NOTE: Assumes executable_data is aligned to 4 bytes at least.. it should be.
-  const BIOS::PSEXEHeader* header = reinterpret_cast<const BIOS::PSEXEHeader*>(executable_data.data());
-  if (executable_data.size() < sizeof(BIOS::PSEXEHeader) || !BIOS::IsValidPSExeHeader(*header, executable_data.size()))
-  {
-    ERROR_LOG("PS-EXE header is invalid in '{}' ({} bytes)", executable_name, executable_data.size());
-    return std::nullopt;
-  }
-
-  const u32 hash_size = std::min(header->file_size + 2048, static_cast<u32>(executable_data.size()));
-
-  MD5Digest digest;
-  digest.Update(executable_name.data(), static_cast<u32>(executable_name.size()));
-  if (hash_size > 0)
-    digest.Update(executable_data.data(), hash_size);
-
-  std::optional<GameHash> ret;
-  digest.Final(ret.emplace());
-
-  INFO_COLOR_LOG(StrongOrange, "RA Hash for '{}': {} ({} bytes hashed)", executable_name, GameHashToString(ret),
-                 hash_size);
-
-  return ret;
-}
 
 std::string Achievements::GetImageURL(const char* image_name, u32 type)
 {
@@ -1061,14 +1020,9 @@ void Achievements::UpdateRichPresence(std::unique_lock<std::recursive_mutex>& lo
 #endif
 }
 
-void Achievements::OnSystemStarting(CDImage* image, bool disable_hardcore_mode)
+void Achievements::OnSystemStarting(bool disable_hardcore_mode)
 {
-  const std::optional<GameHash> game_hash = GetGameHash(image);
-
   std::unique_lock lock(s_state.mutex);
-
-  // Always set hash in case we late enable.
-  s_state.game_hash = game_hash;
 
   if (!IsActive() || IsRAIntegrationInitializing())
     return;
@@ -1091,12 +1045,20 @@ void Achievements::OnSystemStarting(CDImage* image, bool disable_hardcore_mode)
   else
   {
     // only enable hardcore mode if we're logged in, or waiting for a login response
-    if (image && !disable_hardcore_mode && g_settings.achievements_hardcore_mode && IsLoggedInOrLoggingIn())
+    if (!disable_hardcore_mode && g_settings.achievements_hardcore_mode && IsLoggedInOrLoggingIn())
       EnableHardcoreMode(false, false);
   }
+}
+
+void Achievements::OnSystemStarted()
+{
+  const auto lock = GetLock();
+  if (!IsActive() || IsRAIntegrationInitializing())
+    return;
 
   // now we can finally identify the game
-  BeginLoadGame();
+  if (!s_state.load_game_request)
+    BeginLoadGame();
 }
 
 void Achievements::OnSystemDestroyed()
@@ -1140,19 +1102,26 @@ void Achievements::OnSystemReset()
   }
 }
 
-void Achievements::GameChanged(CDImage* image)
+void Achievements::SetGameHash(const std::optional<GameHash>& hash)
 {
-  const auto game_hash = GetGameHash(image);
-
-  std::unique_lock lock(s_state.mutex);
+  const auto lock = GetLock();
 
   // disc changed?
-  if (s_state.game_hash == game_hash)
+  if (s_state.game_hash == hash)
     return;
 
-  s_state.game_hash = game_hash;
+  s_state.game_hash = hash;
+  INFO_COLOR_LOG(StrongOrange, "RA Hash: {}", GameHashToString(s_state.game_hash));
 
+  // just set the hash if inactive
   if (!IsActive() || IsRAIntegrationInitializing())
+  {
+    DisableHardcoreMode(false, false);
+    return;
+  }
+
+  // if session hasn't started yet, don't treat this as a change
+  if (!System::IsValid())
     return;
 
   // cancel previous requests
@@ -1168,6 +1137,12 @@ void Achievements::GameChanged(CDImage* image)
 
   // Flag the disc change. That way we reload the game on reset instead of treating it as a swap.
   s_state.reload_game_on_reset = true;
+}
+
+std::optional<Achievements::GameHash> Achievements::GetGameHash()
+{
+  const auto lock = GetLock();
+  return s_state.game_hash;
 }
 
 void Achievements::BeginLoadGame()

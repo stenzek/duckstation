@@ -65,10 +65,6 @@ private:
 /// Acquires the achievements lock. Must be held when accessing any achievement state from another thread.
 std::unique_lock<std::recursive_mutex> GetLock();
 
-/// Returns the achievements game hash for a given disc.
-std::optional<GameHash> GetGameHash(CDImage* image);
-std::optional<GameHash> GetGameHash(const std::string_view executable_name, std::span<const u8> executable_data);
-
 /// Converts a game hash to a string for display. If the hash is nullopt, returns "[NO HASH]".
 TinyString GameHashToString(const std::optional<GameHash>& hash);
 
@@ -82,7 +78,10 @@ bool RefreshGameList(ProgressCallback* progress, Error* error);
 bool RefreshAllProgressDatabase(ProgressCallback* progress, Error* error);
 
 /// Called when the system is start. Engages hardcore mode if enabled.
-void OnSystemStarting(CDImage* image, bool disable_hardcore_mode);
+void OnSystemStarting(bool disable_hardcore_mode);
+
+/// Called when the system has finished starting. Identifies the game, assuming the system has set it.
+void OnSystemStarted();
 
 /// Called when the system is shutting down. If this returns false, the shutdown should be aborted.
 void OnSystemDestroyed();
@@ -91,7 +90,10 @@ void OnSystemDestroyed();
 void OnSystemReset();
 
 /// Called when the system changes game.
-void GameChanged(CDImage* image);
+void SetGameHash(const std::optional<GameHash>& hash);
+
+/// Returns the game hash for the currently loaded game, or nullopt if no hash is set.
+std::optional<GameHash> GetGameHash();
 
 /// Called once a frame at vsync time on the CPU thread.
 void FrameUpdate();

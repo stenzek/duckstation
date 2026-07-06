@@ -341,12 +341,12 @@ bool GameList::GetDiscListEntry(const std::string& path, Entry* entry)
   // use the same buffer for game and achievement hashing, to avoid double decompression
   std::string id, executable_name;
   std::vector<u8> executable_data;
-  if (System::GetGameDetailsFromImage(cdi.get(), &id, &entry->hash, &executable_name, &executable_data))
+  std::optional<Achievements::GameHash> achievements_hash;
+  if (System::GetGameDetailsFromImage(cdi.get(), &id, &entry->hash, &achievements_hash) &&
+      achievements_hash.has_value())
   {
     // used for achievement count lookup later
-    const std::optional<Achievements::GameHash> hash = Achievements::GetGameHash(executable_name, executable_data);
-    if (hash.has_value())
-      entry->achievements_hash = hash.value();
+    entry->achievements_hash = achievements_hash.value();
   }
 
   // try the database first
