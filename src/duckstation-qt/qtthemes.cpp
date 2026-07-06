@@ -392,7 +392,11 @@ QString QtHost::GetNativeThemeStylesheet()
 #ifdef __APPLE__
   // Qt's native style on MacOS is... not great.
   // We re-theme the tool buttons to look like Cocoa tool buttons, and fix up popup menus.
+  // We also need to restore the native focus frame on QLineEdit, since it is disabled by setting a stylesheet.
   ret = R"(
+QLineEdit {
+    border-style: native;
+}
 QMenu {
     border-radius: 10px;
     padding: 4px 0;
