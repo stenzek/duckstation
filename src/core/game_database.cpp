@@ -1968,9 +1968,9 @@ bool GameDatabase::VerifyImage(CDImage* image, std::string_view expected_serial,
   TrackHashMatchResult match = MatchTrackHashes(track_hashes);
   std::string summary;
   if (!match.revision.empty())
-    result->summary = fmt::format(TRANSLATE_FS("GameDatabase", "Revision: {}"), match.revision);
+    summary = fmt::format(TRANSLATE_FS("GameDatabase", "Revision: {}"), match.revision);
   else
-    result->summary = {};
+    summary = {};
 
   if (match.serial != expected_serial)
   {
