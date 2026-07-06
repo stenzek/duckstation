@@ -499,7 +499,7 @@ void QtAsyncTaskWithProgressDialog::SetAutoClose(bool enabled)
 
 void QtAsyncTaskWithProgressDialog::EnsureShown()
 {
-  if (!m_shown)
+  if (m_shown)
     return;
 
   m_shown = true;
