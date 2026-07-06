@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>720</width>
-    <height>506</height>
+    <height>551</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -59,7 +59,7 @@
     </widget>
    </item>
    <item>
-    <widget class="QTextEdit" name="urls"/>
+    <widget class="QPlainTextEdit" name="urls"/>
    </item>
    <item>
     <widget class="QLabel" name="label_2">
