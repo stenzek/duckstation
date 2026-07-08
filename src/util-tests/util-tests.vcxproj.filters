@@ -9,5 +9,6 @@
     <ClCompile Include="stub_host.cpp" />
     <ClCompile Include="ini_settings_interface_tests.cpp" />
     <ClCompile Include="object_archive_tests.cpp" />
+    <ClCompile Include="cd_image_tests.cpp" />
   </ItemGroup>
 </Project>

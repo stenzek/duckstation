@@ -31,8 +31,8 @@ public:
     SECTOR_HEADER_SIZE = 4,
     MODE1_HEADER_SIZE = 4,
     MODE2_HEADER_SIZE = 12,
-    MODE2_DATA_SECTOR_SIZE = 2336, // header + edc
-    FRAMES_PER_SECOND = 75,        // "sectors", or "timecode frames" (not "channel frames")
+    MODE2_DATA_SECTOR_SIZE = 2336,
+    FRAMES_PER_SECOND = 75, // "sectors", or "timecode frames" (not "channel frames")
     SECONDS_PER_MINUTE = 60,
     FRAMES_PER_MINUTE = FRAMES_PER_SECOND * SECONDS_PER_MINUTE,
     SUBCHANNEL_BYTES_PER_FRAME = 12,
@@ -177,6 +177,9 @@ public:
     bool is_pregap;
   };
 
+  // Sector sync bit pattern, used for raw sector generation.
+  static const std::array<u8, SECTOR_SYNC_SIZE> SECTOR_SYNC_DATA;
+
   // Helper functions.
   static u32 GetBytesPerSector(TrackMode mode);
   static void DeinterleaveSubcode(const u8* subcode_in, u8* subcode_out);
@@ -192,6 +195,9 @@ public:
 
   /// Returns a readable string for the given track mode.
   static const char* GetTrackModeDisplayName(TrackMode mode);
+
+  /// Converts a stored sector in the specified mode to a 2352-byte raw sector.
+  static void ConvertSectorToRaw(void* buffer, u32 lba, TrackMode mode);
 
   // Opening disc image.
   static std::unique_ptr<CDImage> Open(const char* path, bool allow_patches, Error* error);
@@ -305,6 +311,9 @@ protected:
   std::vector<Index> m_indices;
 
 private:
+  // Helper function for filling in raw sector headers.
+  static void FillRawSectorSyncAndHeader(u8* sector, LBA lba, u8 sector_mode);
+
   // Position on disc.
   LBA m_position_on_disc = 0;
 

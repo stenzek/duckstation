@@ -21,6 +21,7 @@
 #include <algorithm>
 #include <cinttypes>
 #include <map>
+#include <optional>
 
 LOG_CHANNEL(CDImage);
 
@@ -150,6 +151,8 @@ protected:
   bool ReadSectorFromIndex(void* buffer, const Index& index, LBA lba_in_index) override;
 
 private:
+  std::optional<TrackMode> DetectSingleFileTrackMode(TrackFileInterface* fi, const char* path, Error* error);
+
   std::vector<std::unique_ptr<TrackFileInterface>> m_files;
 };
 
@@ -818,13 +821,18 @@ bool CDImageCueSheet::OpenAndParseSingleFile(const char* path, Error* error)
   if (!fi)
     return false;
 
-  const u32 track_sector_size = RAW_SECTOR_SIZE;
+  const std::optional<TrackMode> detected_mode = DetectSingleFileTrackMode(fi.get(), path, error);
+  if (!detected_mode.has_value())
+    return false;
+
+  INFO_LOG("Detected track mode {} for '{}'", GetTrackModeDisplayName(detected_mode.value()), Path::GetFileName(path));
+
+  const u32 track_sector_size = GetBytesPerSector(detected_mode.value());
   m_lba_count = Truncate32(fi->GetSize() / track_sector_size);
   m_files.push_back(std::move(fi));
 
   SubChannelQ::Control control = {};
-  TrackMode mode = TrackMode::Mode2Raw;
-  control.data = mode != TrackMode::Audio;
+  control.data = (detected_mode.value() != TrackMode::Audio);
 
   // Two seconds default pregap.
   const u32 pregap_frames = 2 * FRAMES_PER_SECOND;
@@ -835,7 +843,7 @@ bool CDImageCueSheet::OpenAndParseSingleFile(const char* path, Error* error)
   pregap_index.length = pregap_frames;
   pregap_index.track_number = 1;
   pregap_index.index_number = 0;
-  pregap_index.mode = mode;
+  pregap_index.mode = detected_mode.value();
   pregap_index.submode = CDImage::SubchannelMode::None;
   pregap_index.control.bits = control.bits;
   pregap_index.is_pregap = true;
@@ -851,18 +859,51 @@ bool CDImageCueSheet::OpenAndParseSingleFile(const char* path, Error* error)
   data_index.index_number = 1;
   data_index.start_lba_in_track = 0;
   data_index.length = m_lba_count;
-  data_index.mode = mode;
+  data_index.mode = detected_mode.value();
   data_index.submode = CDImage::SubchannelMode::None;
   data_index.control.bits = control.bits;
   m_indices.push_back(data_index);
 
   // Assume a single track.
   m_tracks.push_back(Track{static_cast<u32>(1), data_index.start_lba_on_disc, static_cast<u32>(0),
-                           m_lba_count + pregap_frames, mode, SubchannelMode::None, control});
+                           m_lba_count + pregap_frames, detected_mode.value(), SubchannelMode::None, control});
 
   AddLeadOutIndex();
 
   return Seek(1, Position{0, 0, 0});
+}
+
+std::optional<CDImage::TrackMode> CDImageCueSheet::DetectSingleFileTrackMode(TrackFileInterface* fi, const char* path,
+                                                                             Error* error)
+{
+  const u64 file_size = fi->GetSize();
+  if (file_size == 0)
+  {
+    Error::SetStringFmt(error, "File '{}' is empty", Path::GetFileName(path));
+    return std::nullopt;
+  }
+
+  std::array<u8, 16> sector_header;
+  if (file_size < sector_header.size() || !fi->Read(sector_header.data(), 0, sector_header.size(), error))
+  {
+    Error::SetStringFmt(error, "Unable to determine sector format for '{}'", Path::GetFileName(path));
+    return std::nullopt;
+  }
+
+  // Check for a sector header.
+  if (std::memcmp(sector_header.data(), SECTOR_SYNC_DATA.data(), SECTOR_SYNC_DATA.size()) == 0)
+  {
+    // Check for mode 1/mode 2.
+    if ((sector_header[15] == 0x01 || sector_header[15] == 0x02) && (file_size % RAW_SECTOR_SIZE) == 0)
+      return (sector_header[15] == 0x01) ? TrackMode::Mode1Raw : TrackMode::Mode2Raw;
+  }
+
+  // If it's aligned to 2352 and missing a sector header, it's probably audio.
+  if ((file_size % RAW_SECTOR_SIZE) == 0)
+    return TrackMode::Audio;
+
+  // Otherwise assume mode 1.
+  return TrackMode::Mode1;
 }
 
 bool CDImageCueSheet::ReadSectorFromIndex(void* buffer, const Index& index, LBA lba_in_index)
