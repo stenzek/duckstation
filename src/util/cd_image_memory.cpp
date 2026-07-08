@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "cd_image.h"
+#include "translation.h"
 
 #include "common/assert.h"
 #include "common/error.h"
@@ -25,14 +26,16 @@ public:
 
   bool CopyImage(CDImage* image, ProgressCallback* progress, Error* error);
 
-  bool IsPrecached() const override;
-
-protected:
   bool ReadSectorFromIndex(void* buffer, const Index& index, LBA lba_in_index) override;
+  bool ReadSubChannelQ(SubChannelQ* subq, const Index& index, LBA lba_in_index) override;
+
+  bool HasSubchannelData() const override { return m_has_subchannel_data; }
+  bool IsPrecached() const override;
 
 private:
   u8* m_memory = nullptr;
-  u32 m_memory_sectors = 0;
+  size_t m_memory_size = 0;
+  bool m_has_subchannel_data = false;
 };
 
 } // namespace
@@ -48,74 +51,88 @@ CDImageMemory::~CDImageMemory()
 bool CDImageMemory::CopyImage(CDImage* image, ProgressCallback* progress, Error* error)
 {
   // figure out the total number of sectors (not including blank pregaps)
-  m_memory_sectors = 0;
+  m_has_subchannel_data = image->HasSubchannelData();
+
+  u64 total_size = 0;
   for (u32 i = 0; i < image->GetIndexCount(); i++)
   {
     const Index& index = image->GetIndex(i);
     if (index.file_sector_size > 0)
-      m_memory_sectors += image->GetIndex(i).length;
+    {
+      const u32 memory_sector_size =
+        GetBytesPerSector(index.mode) + (m_has_subchannel_data ? SUBCHANNEL_BYTES_PER_FRAME : 0);
+      total_size += static_cast<u64>(index.length) * static_cast<u64>(memory_sector_size);
+    }
   }
 
-  if (m_memory_sectors == 0 || (static_cast<u64>(RAW_SECTOR_SIZE) * static_cast<u64>(m_memory_sectors)) >=
-                                 static_cast<u64>(std::numeric_limits<size_t>::max()))
+  if (total_size == 0 || total_size >= static_cast<u64>(std::numeric_limits<size_t>::max()))
   {
     Error::SetStringView(error, "Insufficient address space");
     return false;
   }
 
-  progress->FormatStatusText("Allocating memory for {} sectors...", m_memory_sectors);
+  progress->SetTitle(TRANSLATE_SV("CDImage", "Preload Image To RAM"));
+  progress->FormatStatusText(TRANSLATE_FS("CDImage", "Allocating {} MB memory for precaching..."),
+                             (total_size + 1048575) / 1048576);
 
-  m_memory =
-    static_cast<u8*>(std::malloc(static_cast<size_t>(RAW_SECTOR_SIZE) * static_cast<size_t>(m_memory_sectors)));
+  m_memory_size = static_cast<size_t>(total_size);
+  m_memory = static_cast<u8*>(std::malloc(m_memory_size));
   if (!m_memory)
   {
-    Error::SetStringFmt(error, "Failed to allocate memory for {} sectors", m_memory_sectors);
+    Error::SetStringFmt(error, "Failed to allocate {} MB of memory", (total_size + 1048575) / 1048576);
     return false;
   }
 
-  progress->SetTitle("Preloading CD image to RAM...");
-  progress->SetProgressRange(m_memory_sectors);
+  progress->SetProgressRange(image->GetLBACount());
   progress->SetProgressValue(0);
 
-  u8* memory_ptr = m_memory;
   u32 sectors_read = 0;
+  size_t memory_offset = 0;
+  m_indices.reserve(image->GetIndexCount());
   for (u32 i = 0; i < image->GetIndexCount(); i++)
   {
-    const Index& index = image->GetIndex(i);
+    Index& index = m_indices.emplace_back(image->GetIndex(i));
     if (index.file_sector_size == 0)
+    {
+      progress->SetProgressValue(sectors_read += index.length);
       continue;
+    }
+
+    progress->FormatStatusText(TRANSLATE_FS("CDImage", "Loading Track {0} ({1})..."), index.track_number,
+                               GetTrackModeDisplayName(index.mode));
+
+    if (!image->Seek(index.start_lba_on_disc))
+    {
+      ERROR_LOG("Failed to seek to LBA {} in index {}", index.start_lba_on_disc, i);
+      return false;
+    }
+
+    index.file_index = 0;
+    index.file_offset = memory_offset;
+    index.file_sector_size = GetBytesPerSector(index.mode) + (m_has_subchannel_data ? SUBCHANNEL_BYTES_PER_FRAME : 0);
 
     for (u32 lba = 0; lba < index.length; lba++)
     {
-      if (!image->ReadSectorFromIndex(memory_ptr, index, lba))
+      u8* const sector_ptr = m_memory + memory_offset;
+      SubChannelQ* const subq_ptr =
+        m_has_subchannel_data ?
+          reinterpret_cast<SubChannelQ*>(sector_ptr + index.file_sector_size - SUBCHANNEL_BYTES_PER_FRAME) :
+          nullptr;
+      if (!image->ReadRawSector(sector_ptr, subq_ptr))
       {
-        ERROR_LOG("Failed to read LBA {} in index {}", lba, i);
+        ERROR_LOG("Failed to read LBA {} in index {} (disc LBA {})", lba, i, index.start_lba_on_disc + lba);
         return false;
       }
 
-      progress->SetProgressValue(sectors_read);
-      memory_ptr += RAW_SECTOR_SIZE;
-      sectors_read++;
+      memory_offset += index.file_sector_size;
+      progress->SetProgressValue(sectors_read++);
     }
   }
 
   for (u32 i = 1; i <= image->GetTrackCount(); i++)
     m_tracks.push_back(image->GetTrack(i));
 
-  u32 current_offset = 0;
-  for (u32 i = 0; i < image->GetIndexCount(); i++)
-  {
-    Index new_index = image->GetIndex(i);
-    new_index.file_index = 0;
-    if (new_index.file_sector_size > 0)
-    {
-      new_index.file_offset = current_offset;
-      current_offset += new_index.length;
-    }
-    m_indices.push_back(new_index);
-  }
-
-  Assert(current_offset == m_memory_sectors);
+  Assert(memory_offset == m_memory_size);
   m_filename = image->GetPath();
   m_lba_count = image->GetLBACount();
 
@@ -131,12 +148,33 @@ bool CDImageMemory::ReadSectorFromIndex(void* buffer, const Index& index, LBA lb
 {
   DebugAssert(index.file_index == 0);
 
-  const u64 sector_number = index.file_offset + lba_in_index;
-  if (sector_number >= m_memory_sectors)
+  const u64 memory_offset = (index.file_offset + (lba_in_index * static_cast<u64>(index.file_sector_size)));
+  const size_t sector_size = static_cast<size_t>(index.file_sector_size);
+  if ((memory_offset + sector_size) > m_memory_size)
     return false;
 
-  const size_t file_offset = static_cast<size_t>(sector_number) * static_cast<size_t>(RAW_SECTOR_SIZE);
-  std::memcpy(buffer, &m_memory[file_offset], RAW_SECTOR_SIZE);
+  // don't copy subq into the receiving buffer
+  std::memcpy(buffer, &m_memory[memory_offset],
+              index.file_sector_size - (m_has_subchannel_data ? SUBCHANNEL_BYTES_PER_FRAME : 0));
+  return true;
+}
+
+bool CDImageMemory::ReadSubChannelQ(SubChannelQ* subq, const Index& index, LBA lba_in_index)
+{
+  // generate subq for non-file indices
+  if (!m_has_subchannel_data || index.file_sector_size == 0)
+  {
+    GenerateSubChannelQ(subq, index, lba_in_index);
+    return true;
+  }
+
+  const u64 memory_offset = (index.file_offset + (lba_in_index * static_cast<u64>(index.file_sector_size)));
+  const size_t sector_size = static_cast<size_t>(index.file_sector_size);
+  if ((memory_offset + sector_size) > m_memory_size)
+    return false;
+
+  std::memcpy(subq->data.data(), &m_memory[memory_offset + index.file_sector_size - SUBCHANNEL_BYTES_PER_FRAME],
+              SUBCHANNEL_BYTES_PER_FRAME);
   return true;
 }
 
