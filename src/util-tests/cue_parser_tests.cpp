@@ -96,7 +96,13 @@ TEST(CueParser, DifferentTrackModes)
                           "TRACK 04 MODE2/2048\n"
                           "INDEX 01 30:10:00\n"
                           "TRACK 05 MODE2/2352\n"
-                          "INDEX 01 45:00:00\n";
+                          "INDEX 01 45:00:00\n"
+                          "TRACK 06 MODE2/2324\n"
+                          "INDEX 01 60:00:00\n"
+                          "TRACK 07 MODE1_RAW\n"
+                          "INDEX 01 75:00:00\n"
+                          "TRACK 08 MODE2_RAW\n"
+                          "INDEX 01 90:00:00\n";
 
   CueParser::File cue_file;
   Error error;
@@ -125,6 +131,18 @@ TEST(CueParser, DifferentTrackModes)
   const CueParser::Track* track5 = cue_file.GetTrack(5);
   ASSERT_NE(track5, nullptr);
   EXPECT_EQ(track5->mode, CueParser::TrackMode::Mode2Raw);
+
+  const CueParser::Track* track6 = cue_file.GetTrack(6);
+  ASSERT_NE(track6, nullptr);
+  EXPECT_EQ(track6->mode, CueParser::TrackMode::Mode2Form2);
+
+  const CueParser::Track* track7 = cue_file.GetTrack(7);
+  ASSERT_NE(track7, nullptr);
+  EXPECT_EQ(track7->mode, CueParser::TrackMode::Mode1Raw);
+
+  const CueParser::Track* track8 = cue_file.GetTrack(8);
+  ASSERT_NE(track8, nullptr);
+  EXPECT_EQ(track8->mode, CueParser::TrackMode::Mode2Raw);
 }
 
 // Test track flags
@@ -269,13 +287,19 @@ TEST(CueParser, InvalidIndexNumber)
 // Test invalid MSF format
 TEST(CueParser, InvalidMSFFormat)
 {
-  const std::string cue = "FILE \"game.bin\" BINARY\n"
-                          "TRACK 01 AUDIO\n"
-                          "INDEX 01 00:99:00\n";
+  const std::string invalid_second = "FILE \"game.bin\" BINARY\n"
+                                     "TRACK 01 AUDIO\n"
+                                     "INDEX 01 00:60:00\n";
+  const std::string invalid_frame = "FILE \"game.bin\" BINARY\n"
+                                    "TRACK 01 AUDIO\n"
+                                    "INDEX 01 00:00:75\n";
 
-  CueParser::File cue_file;
   Error error;
-  ASSERT_FALSE(cue_file.Parse(cue, &error));
+  CueParser::File cue_file;
+  ASSERT_FALSE(cue_file.Parse(invalid_second, &error));
+
+  cue_file = CueParser::File();
+  ASSERT_FALSE(cue_file.Parse(invalid_frame, &error));
 }
 
 // Test duplicate index
@@ -308,6 +332,9 @@ TEST(CueParser, ReverseIndexOrder)
 TEST(CueParser, CommentsAndWhitespace)
 {
   const std::string cue = "REM This is a comment\n"
+                          "; This is also a comment\n"
+                          "// cdrdao comment\n"
+                          "CD_ROM_XA\n"
                           "   FILE    \"game.bin\"    BINARY   \n"
                           "\n"
                           "REM Another comment\n"
@@ -322,6 +349,46 @@ TEST(CueParser, CommentsAndWhitespace)
   const CueParser::Track* track = cue_file.GetTrack(1);
   ASSERT_NE(track, nullptr);
   EXPECT_EQ(track->mode, CueParser::TrackMode::Mode2Raw);
+}
+
+TEST(CueParser, CdrdaoTrackWithoutNumber)
+{
+  const std::string cue = "FILE \"game.bin\" BINARY\n"
+                          "TRACK MODE1_RAW\n"
+                          "INDEX 01 00:00:00\n";
+
+  CueParser::File cue_file;
+  Error error;
+
+  ASSERT_TRUE(cue_file.Parse(cue, &error)) << error.GetDescription();
+
+  const CueParser::Track* track = cue_file.GetTrack(1);
+  ASSERT_NE(track, nullptr);
+  EXPECT_EQ(track->mode, CueParser::TrackMode::Mode1Raw);
+}
+
+TEST(CueParser, StandaloneFlagCommands)
+{
+  const std::string cue = "FILE \"game.bin\" BINARY\n"
+                          "TRACK 01 AUDIO\n"
+                          "COPY\n"
+                          "PRE_EMPHASIS\n"
+                          "FOUR_CHANNEL_AUDIO\n"
+                          "NO COPY\n"
+                          "NO PRE_EMPHASIS\n"
+                          "TWO_CHANNEL_AUDIO\n"
+                          "INDEX 01 00:00:00\n";
+
+  CueParser::File cue_file;
+  Error error;
+
+  ASSERT_TRUE(cue_file.Parse(cue, &error)) << error.GetDescription();
+
+  const CueParser::Track* track = cue_file.GetTrack(1);
+  ASSERT_NE(track, nullptr);
+  EXPECT_FALSE(track->HasFlag(CueParser::TrackFlag::CopyPermitted));
+  EXPECT_FALSE(track->HasFlag(CueParser::TrackFlag::PreEmphasis));
+  EXPECT_FALSE(track->HasFlag(CueParser::TrackFlag::FourChannelAudio));
 }
 
 // Test handling of multiple files

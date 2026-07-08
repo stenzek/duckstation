@@ -88,6 +88,9 @@ private:
   bool HandleIndexCommand(const char* line, u32 line_number, Error* error);
   bool HandlePregapCommand(const char* line, u32 line_number, Error* error);
   bool HandleFlagCommand(const char* line, u32 line_number, Error* error);
+  bool HandleCopyCommand(u32 line_number, bool enabled, Error* error);
+  bool HandlePreEmphasisCommand(u32 line_number, bool enabled, Error* error);
+  bool HandleFourChannelAudioCommand(u32 line_number, bool enabled, Error* error);
 
   bool CompleteLastTrack(u32 line_number, Error* error);
   bool SetTrackLengths(u32 line_number, Error* error);
