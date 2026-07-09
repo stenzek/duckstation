@@ -2023,7 +2023,7 @@ void SPU::ReadADPCMBlock(u16 address, ADPCMBlock* block)
   }
 
   // fast path - no wrap-around
-  if ((ram_address + sizeof(ADPCMBlock)) <= RAM_SIZE)
+  if ((ram_address + sizeof(ADPCMBlock)) <= RAM_SIZE) [[likely]]
   {
     std::memcpy(block, &s_ram[ram_address], sizeof(ADPCMBlock));
     return;
