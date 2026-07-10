@@ -836,7 +836,11 @@ void FilteredSampleFromVRAM(TEXPAGE_VALUE texpage, float2 coords, float4 uv_limi
   else if (texture_filter == GPUTextureFilter::MMPXEnhanced)
   {
     ss << R"(
-	#define srcf(xoffs,yoffs) SampleFromVRAM(texpage, bcoords + float2((xoffs), (yoffs)), uv_limits)
+	#define srcf(xoffs,yoffs) \
+	  SampleFromVRAM(texpage, bcoords + float2(xoffs, yoffs), uv_limits) * \
+	  step(abs(bcoords.x + xoffs - clamp(bcoords.x + xoffs, uv_limits.x, uv_limits.z)), 0.001) * \
+	  step(abs(bcoords.y + yoffs - clamp(bcoords.y + yoffs, uv_limits.y, uv_limits.w)), 0.001)
+
 	#define src(xoffs,yoffs) packUnorm4x8(srcf(xoffs,yoffs))
 	)";
 
@@ -1047,7 +1051,11 @@ skiprest = skiprest||slope1||slope2||slope3||slope4||E==0u||B==0u||D==0u||F==0u|
   else if (texture_filter == GPUTextureFilter::MMPXAdvanced)
   {
     ss << R"(
-	#define srcf(xoffs,yoffs) SampleFromVRAM(texpage, bcoords + float2((xoffs), (yoffs)), uv_limits)
+	#define srcf(xoffs,yoffs) \
+	  SampleFromVRAM(texpage, bcoords + float2(xoffs, yoffs), uv_limits) * \
+	  step(abs(bcoords.x + xoffs - clamp(bcoords.x + xoffs, uv_limits.x, uv_limits.z)), 0.001) * \
+	  step(abs(bcoords.y + yoffs - clamp(bcoords.y + yoffs, uv_limits.y, uv_limits.w)), 0.001)
+
 	#define src(xoffs,yoffs) packUnorm4x8(srcf(xoffs,yoffs))
 	)";
 
