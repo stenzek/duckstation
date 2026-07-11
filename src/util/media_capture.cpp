@@ -776,10 +776,6 @@ static constexpr const MediaFoundationVideoCodec s_media_foundation_video_codecs
   {"h264_hw", TRANSLATE_DISAMBIG_NOOP("MediaCapture", "H.264 with Hardware Encoding", "VideoCodec"), MFVideoFormat_H264, true},
   {"hevc", TRANSLATE_DISAMBIG_NOOP("MediaCapture", "HEVC with Software Encoding", "VideoCodec"), MFVideoFormat_HEVC, false},
   {"hevc_hw", TRANSLATE_DISAMBIG_NOOP("MediaCapture", "HEVC with Hardware Encoding", "VideoCodec"), MFVideoFormat_HEVC, true},
-  {"vp9", TRANSLATE_DISAMBIG_NOOP("MediaCapture", "VP9 with Software Encoding", "VideoCodec"), MFVideoFormat_VP90, false},
-  {"vp9_hw", TRANSLATE_DISAMBIG_NOOP("MediaCapture", "VP9 with Hardware Encoding", "VideoCodec"), MFVideoFormat_VP90, true},
-  {"av1", TRANSLATE_DISAMBIG_NOOP("MediaCapture", "AV1 with Software Encoding", "VideoCodec"), MFVideoFormat_AV1, false},
-  {"av1_hw", TRANSLATE_DISAMBIG_NOOP("MediaCapture", "AV1 with Hardware Encoding", "VideoCodec"), MFVideoFormat_AV1, false},
 };
 static constexpr const MediaFoundationAudioCodec s_media_foundation_audio_codecs[] = {
   {"aac", TRANSLATE_DISAMBIG_NOOP("MediaCapture", "Advanced Audio Coding", "AudioCodec"), MFAudioFormat_AAC, 64, 224},
