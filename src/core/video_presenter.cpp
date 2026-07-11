@@ -1551,6 +1551,8 @@ bool VideoPresenter::PresentFrame(GPUBackend* backend, u64 present_time)
     }
   }
 
+  FullscreenUI::RecycleQueuedTextures();
+
   if (pres == GPUPresentResult::OK)
   {
     const GPUDevice::Features features = g_gpu_device->GetFeatures();

@@ -275,6 +275,8 @@ GPUTexture* GetCachedTextureAsync(std::string_view name, const ImVec2& size);
 bool InvalidateCachedTexture(std::string_view path);
 bool TextureNeedsSVGDimensions(std::string_view path);
 void UploadAsyncTextures();
+void QueueTextureRecycle(std::unique_ptr<GPUTexture> texture);
+void RecycleQueuedTextures();
 
 /// Screen transitions.
 inline constexpr float SHORT_TRANSITION_TIME = 0.15f;

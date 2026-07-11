@@ -1893,10 +1893,7 @@ bool FullscreenUI::InitializeSaveStateListEntryFromPath(SaveStateListEntry* li, 
 void FullscreenUI::ClearSaveStateEntryList()
 {
   for (SaveStateListEntry& entry : s_locals.save_state_selector_slots)
-  {
-    if (entry.preview_texture)
-      g_gpu_device->RecycleTexture(std::move(entry.preview_texture));
-  }
+    QueueTextureRecycle(std::move(entry.preview_texture));
   s_locals.save_state_selector_slots.clear();
 }
 
@@ -1993,10 +1990,8 @@ void FullscreenUI::DrawSaveStateSelector()
           [global = entry.global, slot = entry.slot]() { System::LoadStateFromSlot(global, slot); });
       }
 
-      BeginTransition(TransitionEffect::Fade, LONG_TRANSITION_TIME, []() {
-        ClearSaveStateEntryList(); // entry no longer valid
-        ClosePauseMenu(TransitionEffect::None);
-      });
+      ClearSaveStateEntryList();
+      ClosePauseMenu(TransitionEffect::Fade, LONG_TRANSITION_TIME);
     }
     else
     {
@@ -2006,11 +2001,8 @@ void FullscreenUI::DrawSaveStateSelector()
 
   static constexpr auto do_save_state = [](const SaveStateListEntry& entry) {
     Host::RunOnCoreThread([slot = entry.slot, global = entry.global]() { System::SaveStateToSlot(global, slot); });
-
-    BeginTransition(TransitionEffect::Fade, LONG_TRANSITION_TIME, []() {
-      ClearSaveStateEntryList(); // entry no longer valid
-      ClosePauseMenu(TransitionEffect::None);
-    });
+    ClearSaveStateEntryList();
+    ClosePauseMenu(TransitionEffect::Fade, LONG_TRANSITION_TIME);
   };
 
   ImGuiIO& io = ImGui::GetIO();
@@ -2171,8 +2163,7 @@ void FullscreenUI::DrawSaveStateSelector()
                   ShowToast(OSDMessageType::Quick, {}, fmt::format(FSUI_FSTR("{} deleted."), RemoveHash(entry.title)));
 
                   // need to preserve the texture, since it's going to be drawn this frame
-                  // TODO: do this with a transition for safety
-                  g_gpu_device->RecycleTexture(std::move(entry.preview_texture));
+                  QueueTextureRecycle(std::move(entry.preview_texture));
 
                   if (s_locals.save_state_selector_loading)
                   {
@@ -2247,10 +2238,8 @@ void FullscreenUI::DrawSaveStateSelector()
   }
   else if ((!AreAnyDialogsOpen() && WantsToCloseMenu()) || closed)
   {
-    BeginTransition(TransitionEffect::ZoomOut, DEFAULT_TRANSITION_TIME, []() {
-      ClearSaveStateEntryList();
-      ReturnToPreviousWindow(TransitionEffect::None);
-    });
+    ClearSaveStateEntryList();
+    ReturnToPreviousWindow(TransitionEffect::ZoomOut);
   }
 }
 

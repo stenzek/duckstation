@@ -442,6 +442,7 @@ struct WidgetsState
   LRUCache<std::string, std::shared_ptr<GPUTexture>> texture_cache{128, true};
   std::shared_ptr<GPUTexture> placeholder_texture;
   std::deque<std::pair<std::string, Image>> texture_upload_queue;
+  std::vector<std::unique_ptr<GPUTexture>> texture_recycle_queue;
 
   // Transition Resources
   TransitionStartCallback transition_start_callback;
@@ -647,6 +648,8 @@ bool FullscreenUI::CreateWidgetsGPUResources(Error* error)
 
 void FullscreenUI::DestroyWidgetsGPUResources()
 {
+  RecycleQueuedTextures();
+
   g_gpu_device->RecycleTexture(std::move(s_state.blur_source_texture));
   g_gpu_device->RecycleTexture(std::move(s_state.blur_intermediate_texture));
   g_gpu_device->RecycleTexture(std::move(s_state.blur_output_texture));
@@ -1072,6 +1075,19 @@ void FullscreenUI::UploadAsyncTextures()
 
     lock.lock();
   }
+}
+
+void FullscreenUI::QueueTextureRecycle(std::unique_ptr<GPUTexture> texture)
+{
+  if (texture)
+    s_state.texture_recycle_queue.push_back(std::move(texture));
+}
+
+void FullscreenUI::RecycleQueuedTextures()
+{
+  for (std::unique_ptr<GPUTexture>& tex : s_state.texture_recycle_queue)
+    g_gpu_device->RecycleTexture(std::move(tex));
+  s_state.texture_recycle_queue.clear();
 }
 
 void FullscreenUI::BeginTransition(TransitionStartCallback func, float time)
