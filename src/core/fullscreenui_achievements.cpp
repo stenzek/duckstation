@@ -37,6 +37,7 @@ static constexpr const char* ACHEIVEMENT_DETAILS_URL_TEMPLATE = "https://retroac
 static constexpr float WINDOW_ALPHA = 0.9f;
 static constexpr float WINDOW_HEADING_ALPHA = 0.95f;
 static constexpr float PROGRESS_BAR_ALPHA = 0.5f;
+static constexpr float PROGRESS_BAR_ANIMATION_TIME = 0.25f;
 
 static constexpr u32 LEADERBOARD_NEARBY_ENTRIES_TO_FETCH = 20;
 static constexpr u32 LEADERBOARD_ALL_FETCH_SIZE = 50;
@@ -172,6 +173,8 @@ struct AchievementsLocals
   rc_client_achievement_list_t* achievement_list = nullptr;
   std::bitset<NUM_RC_CLIENT_ACHIEVEMENT_BUCKETS> achievement_buckets_collapsed = {};
   u32 scroll_to_achievement_id = 0;
+  float unlock_percent_animation_remaining_time = 0.0f;
+  float last_unlock_percent = 0.0f;
 
   rc_client_leaderboard_list_t* leaderboard_list = nullptr;
   const rc_client_leaderboard_t* open_leaderboard = nullptr;
@@ -214,6 +217,8 @@ void FullscreenUI::ClearAchievementsState()
     s_achievements_locals.achievement_list = nullptr;
   }
   s_achievements_locals.scroll_to_achievement_id = 0;
+  s_achievements_locals.unlock_percent_animation_remaining_time = 0.0f;
+  s_achievements_locals.last_unlock_percent = 0.0f;
 
   s_achievements_locals.open_subset = nullptr;
   s_achievements_locals.subset_info_list.clear();
@@ -2010,10 +2015,35 @@ void FullscreenUI::DrawAchievementsWindow()
         static_cast<float>(summary.num_unlocked_achievements) / static_cast<float>(summary.num_core_achievements);
       dl->AddRectFilled(progress_bb.Min, progress_bb.Max,
                         ImGui::GetColorU32(ModAlpha(UIStyle.PrimaryDarkColor, PROGRESS_BAR_ALPHA)), progress_rounding);
-      if (summary.num_unlocked_achievements > 0)
+
+      float progress_fraction = fraction;
+      if (fraction != s_achievements_locals.last_unlock_percent)
+      {
+        if (s_achievements_locals.unlock_percent_animation_remaining_time == 0.0f)
+          s_achievements_locals.unlock_percent_animation_remaining_time = PROGRESS_BAR_ANIMATION_TIME;
+        else
+          s_achievements_locals.unlock_percent_animation_remaining_time -= ImGui::GetIO().DeltaTime;
+
+        const float animation_frac =
+          1.0f - (s_achievements_locals.unlock_percent_animation_remaining_time / PROGRESS_BAR_ANIMATION_TIME);
+        if (animation_frac >= 1.0f)
+        {
+          s_achievements_locals.unlock_percent_animation_remaining_time = 0.0f;
+          s_achievements_locals.last_unlock_percent = fraction;
+        }
+        else
+        {
+          progress_fraction =
+            s_achievements_locals.last_unlock_percent +
+            ((fraction - s_achievements_locals.last_unlock_percent) * Easing::OutExpo(animation_frac));
+        }
+      }
+
+      if (progress_fraction > 0.0f)
       {
         ImGui::RenderRectFilledInRangeH(dl, progress_bb, ImGui::GetColorU32(UIStyle.SecondaryColor), progress_bb.Min.x,
-                                        progress_bb.Min.x + (fraction * progress_bb.GetWidth()), progress_rounding);
+                                        progress_bb.Min.x + (progress_fraction * progress_bb.GetWidth()),
+                                        progress_rounding);
       }
 
       text.format("{}%", static_cast<u32>(std::round(fraction * 100.0f)));
