@@ -1083,7 +1083,7 @@ void FullscreenUI::BeginTransition(TransitionEffect effect, float time, Transiti
 {
   if (s_state.transition_state == TransitionState::Inactive)
   {
-    float real_time = UIStyle.Animations ? time : 0.0f;
+    float real_time = (effect != TransitionEffect::None && UIStyle.Animations) ? time : 0.0f;
     if (real_time > 0.0f)
     {
       // Align the transition time so that the opacity step value is evenly distributed across the time.

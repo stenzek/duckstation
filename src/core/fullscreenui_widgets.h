@@ -290,6 +290,7 @@ enum class TransitionState : u8
 
 enum class TransitionEffect : u8
 {
+  None,
   Fade,
   ZoomIn,
   ZoomOut,

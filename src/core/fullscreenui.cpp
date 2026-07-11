@@ -1982,17 +1982,21 @@ void FullscreenUI::DrawSaveStateSelector()
   static constexpr auto do_load_state = [](const SaveStateListEntry& entry) {
     if (VideoThread::HasGPUBackend())
     {
-      const s32 slot = entry.slot;
-      const bool global = entry.global;
-      const bool is_undo = entry.state_path.empty();
-      ClearSaveStateEntryList(); // entry no longer valid
-      ClosePauseMenu(TransitionEffect::Fade, LONG_TRANSITION_TIME);
-
       // Loading undo state?
-      if (is_undo)
+      if (entry.state_path.empty())
+      {
         Host::RunOnCoreThread(&System::UndoLoadState);
+      }
       else
-        Host::RunOnCoreThread([global, slot]() { System::LoadStateFromSlot(global, slot); });
+      {
+        Host::RunOnCoreThread(
+          [global = entry.global, slot = entry.slot]() { System::LoadStateFromSlot(global, slot); });
+      }
+
+      BeginTransition(TransitionEffect::Fade, LONG_TRANSITION_TIME, []() {
+        ClearSaveStateEntryList(); // entry no longer valid
+        ClosePauseMenu(TransitionEffect::None);
+      });
     }
     else
     {
@@ -2001,12 +2005,12 @@ void FullscreenUI::DrawSaveStateSelector()
   };
 
   static constexpr auto do_save_state = [](const SaveStateListEntry& entry) {
-    const s32 slot = entry.slot;
-    const bool global = entry.global;
-    ClearSaveStateEntryList(); // entry no longer valid
-    ClosePauseMenu(TransitionEffect::Fade, LONG_TRANSITION_TIME);
+    Host::RunOnCoreThread([slot = entry.slot, global = entry.global]() { System::SaveStateToSlot(global, slot); });
 
-    Host::RunOnCoreThread([slot, global]() { System::SaveStateToSlot(global, slot); });
+    BeginTransition(TransitionEffect::Fade, LONG_TRANSITION_TIME, []() {
+      ClearSaveStateEntryList(); // entry no longer valid
+      ClosePauseMenu(TransitionEffect::None);
+    });
   };
 
   ImGuiIO& io = ImGui::GetIO();
@@ -2243,8 +2247,10 @@ void FullscreenUI::DrawSaveStateSelector()
   }
   else if ((!AreAnyDialogsOpen() && WantsToCloseMenu()) || closed)
   {
-    ClearSaveStateEntryList();
-    ReturnToPreviousWindow(TransitionEffect::ZoomOut);
+    BeginTransition(TransitionEffect::ZoomOut, DEFAULT_TRANSITION_TIME, []() {
+      ClearSaveStateEntryList();
+      ReturnToPreviousWindow(TransitionEffect::None);
+    });
   }
 }
 
