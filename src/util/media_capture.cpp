@@ -534,8 +534,8 @@ bool MediaCaptureBase::EndCapture(Error* error)
   std::unique_lock lock(m_lock);
   if (!InternalEndCapture(lock, error))
   {
-    DeleteOutputFile();
     ClearState();
+    DeleteOutputFile();
     return false;
   }
 
