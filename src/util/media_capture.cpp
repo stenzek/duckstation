@@ -226,10 +226,21 @@ bool MediaCaptureBase::BeginCapture(float fps, float aspect, u32 width, u32 heig
     Error::SetStringView(error, "No path specified.");
     return false;
   }
-  else if (capture_video && (fps == 0.0f || m_video_width == 0 || m_video_height == 0))
+
+  if (capture_video)
   {
-    Error::SetStringView(error, "Invalid video dimensions/rate.");
-    return false;
+    if (static_cast<u64>(width) * static_cast<u64>(height) >
+        (static_cast<u64>(std::numeric_limits<u32>::max()) / sizeof(u32)))
+    {
+      Error::SetStringFmt(error, "Video dimensions {}x{} require too much frame buffer memory.", width, height);
+      return false;
+    }
+
+    if (fps < 1.0 || fps > static_cast<double>(std::numeric_limits<u32>::max()))
+    {
+      Error::SetStringFmt(error, "Video frame rate {} is outside the supported range.", fps);
+      return false;
+    }
   }
 
   m_path = std::move(path);
@@ -919,7 +930,8 @@ bool MediaCaptureMF::InternalBeginCapture(float fps, float aspect, u32 sample_ra
       return false;
 
     // only used when not capturing video
-    m_audio_frame_size = static_cast<u32>(static_cast<float>(sample_rate) / fps);
+    m_audio_frame_size =
+      std::max(capture_video ? static_cast<u32>(static_cast<float>(sample_rate) / fps) : sample_rate, 1u);
     m_audio_sample_duration = ConvertFrequencyToMFDurationUnits(sample_rate);
   }
 
@@ -1023,8 +1035,8 @@ MediaCaptureMF::ComPtr<IMFTransform> MediaCaptureMF::CreateVideoYUVTransform(Com
 
   IMFActivate** transforms = nullptr;
   UINT32 num_transforms = 0;
-  HRESULT hr = wrap_MFTEnumEx(MFT_CATEGORY_VIDEO_PROCESSOR, MFT_ENUM_FLAG_SORTANDFILTER, &input_type_info,
-                              &output_type_info, &transforms, &num_transforms);
+  HRESULT hr = wrap_MFTEnumEx(MFT_CATEGORY_VIDEO_PROCESSOR, MFT_ENUM_FLAG_SYNCMFT | MFT_ENUM_FLAG_SORTANDFILTER,
+                              &input_type_info, &output_type_info, &transforms, &num_transforms);
   if (FAILED(hr)) [[unlikely]]
   {
     Error::SetHResult(error, "YUV MFTEnumEx() failed: ", hr);
@@ -1036,21 +1048,13 @@ MediaCaptureMF::ComPtr<IMFTransform> MediaCaptureMF::CreateVideoYUVTransform(Com
     return nullptr;
   }
 
-  ComPtr<IMFTransform> transform;
-  hr = transforms[0]->ActivateObject(IID_PPV_ARGS(transform.GetAddressOf()));
-  if (transforms)
-    wrap_MFHeapFree(transforms);
-  if (FAILED(hr)) [[unlikely]]
-  {
-    Error::SetHResult(error, "YUV ActivateObject() failed: ", hr);
-    return nullptr;
-  }
-
   ComPtr<IMFMediaType> input_type;
+  ComPtr<IMFMediaType> candidate_output_type;
   if (FAILED(hr = wrap_MFCreateMediaType(input_type.GetAddressOf())) ||
-      FAILED(hr = wrap_MFCreateMediaType(output_type->GetAddressOf()))) [[unlikely]]
+      FAILED(hr = wrap_MFCreateMediaType(candidate_output_type.GetAddressOf()))) [[unlikely]]
   {
     Error::SetHResult(error, "YUV MFCreateMediaType() failed: ", hr);
+    wrap_MFHeapFree(transforms);
     return nullptr;
   }
 
@@ -1060,30 +1064,57 @@ MediaCaptureMF::ComPtr<IMFTransform> MediaCaptureMF::CreateVideoYUVTransform(Com
       FAILED(hr = MFSetAttributeSize(input_type.Get(), MF_MT_FRAME_SIZE, m_video_width, m_video_height)) ||
       FAILED(hr =
                MFSetAttributeRatio(input_type.Get(), MF_MT_FRAME_RATE, frame_rate_numerator, frame_rate_denominator)) ||
-      FAILED(hr = (*output_type)->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Video)) ||
-      FAILED(hr = (*output_type)->SetGUID(MF_MT_SUBTYPE, VIDEO_YUV_MEDIA_FORMAT)) ||
-      FAILED(hr = (*output_type)->SetUINT32(MF_MT_INTERLACE_MODE, MFVideoInterlace_Progressive)) ||
-      FAILED(hr = MFSetAttributeSize(output_type->Get(), MF_MT_FRAME_SIZE, m_video_width, m_video_height)) ||
-      FAILED(hr = MFSetAttributeRatio(output_type->Get(), MF_MT_FRAME_RATE, frame_rate_numerator,
+      FAILED(hr = candidate_output_type->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Video)) ||
+      FAILED(hr = candidate_output_type->SetGUID(MF_MT_SUBTYPE, VIDEO_YUV_MEDIA_FORMAT)) ||
+      FAILED(hr = candidate_output_type->SetUINT32(MF_MT_INTERLACE_MODE, MFVideoInterlace_Progressive)) ||
+      FAILED(hr = MFSetAttributeSize(candidate_output_type.Get(), MF_MT_FRAME_SIZE, m_video_width, m_video_height)) ||
+      FAILED(hr = MFSetAttributeRatio(candidate_output_type.Get(), MF_MT_FRAME_RATE, frame_rate_numerator,
                                       frame_rate_denominator))) [[unlikely]]
   {
     Error::SetHResult(error, "YUV setting attributes failed: ", hr);
+    wrap_MFHeapFree(transforms);
     return nullptr;
   }
 
-  if (FAILED(hr = transform->SetOutputType(0, output_type->Get(), 0))) [[unlikely]]
+  HRESULT last_hr = E_FAIL;
+  for (UINT32 i = 0; i < num_transforms; i++)
   {
-    Error::SetHResult(error, "YUV SetOutputType() failed: ", hr);
-    return nullptr;
+    ComPtr<IMFTransform> transform;
+    hr = transforms[i]->ActivateObject(IID_PPV_ARGS(transform.GetAddressOf()));
+    if (FAILED(hr))
+    {
+      last_hr = hr;
+      continue;
+    }
+
+    hr = transform->SetOutputType(0, candidate_output_type.Get(), 0);
+    if (FAILED(hr))
+    {
+      last_hr = hr;
+      const HRESULT input_hr = transform->SetInputType(0, input_type.Get(), 0);
+      if (SUCCEEDED(input_hr))
+        hr = transform->SetOutputType(0, candidate_output_type.Get(), 0);
+      else
+        hr = input_hr;
+    }
+    else
+    {
+      hr = transform->SetInputType(0, input_type.Get(), 0);
+    }
+
+    if (SUCCEEDED(hr))
+    {
+      *output_type = std::move(candidate_output_type);
+      wrap_MFHeapFree(transforms);
+      return transform;
+    }
+
+    last_hr = hr;
   }
 
-  if (FAILED(hr = transform->SetInputType(0, input_type.Get(), 0))) [[unlikely]]
-  {
-    Error::SetHResult(error, "YUV SetInputType() failed: ", hr);
-    return nullptr;
-  }
-
-  return transform;
+  wrap_MFHeapFree(transforms);
+  Error::SetHResult(error, "No video processor supports the requested video dimensions/rate: ", last_hr);
+  return nullptr;
 }
 
 MediaCaptureMF::ComPtr<IMFTransform>
@@ -1117,9 +1148,10 @@ MediaCaptureMF::CreateVideoEncodeTransform(std::string_view codec, u32 frame_rat
 
   IMFActivate** transforms = nullptr;
   UINT32 num_transforms = 0;
-  HRESULT hr =
-    wrap_MFTEnumEx(MFT_CATEGORY_VIDEO_ENCODER, (hardware ? MFT_ENUM_FLAG_HARDWARE : 0) | MFT_ENUM_FLAG_SORTANDFILTER,
-                   &input_type_info, &output_type_info, &transforms, &num_transforms);
+  const UINT32 enum_flags = MFT_ENUM_FLAG_SORTANDFILTER |
+                            (hardware ? MFT_ENUM_FLAG_HARDWARE : (MFT_ENUM_FLAG_SYNCMFT | MFT_ENUM_FLAG_ASYNCMFT));
+  HRESULT hr = wrap_MFTEnumEx(MFT_CATEGORY_VIDEO_ENCODER, enum_flags, &input_type_info, &output_type_info, &transforms,
+                              &num_transforms);
   if (FAILED(hr)) [[unlikely]]
   {
     Error::SetHResult(error, "Encoder MFTEnumEx() failed: ", hr);
@@ -1127,53 +1159,15 @@ MediaCaptureMF::CreateVideoEncodeTransform(std::string_view codec, u32 frame_rat
   }
   else if (num_transforms == 0) [[unlikely]]
   {
-    Error::SetStringView(error, "No video encoders found.");
+    Error::SetStringFmt(error, "No {} video encoders found.", hardware ? "hardware" : "software");
     return nullptr;
   }
 
-  ComPtr<IMFTransform> transform;
-  hr = transforms[0]->ActivateObject(IID_PPV_ARGS(transform.GetAddressOf()));
-  if (transforms)
-  {
-    LPWSTR transform_name;
-    UINT32 transform_name_length;
-    if (SUCCEEDED(
-          transforms[0]->GetAllocatedString(MFT_FRIENDLY_NAME_Attribute, &transform_name, &transform_name_length)))
-    {
-      INFO_LOG("Video encoder name: {}",
-               StringUtil::WideStringToUTF8String(std::wstring_view(transform_name, transform_name_length)));
-      CoTaskMemFree(transform_name);
-    }
-
-    wrap_MFHeapFree(transforms);
-  }
-
-  if (FAILED(hr)) [[unlikely]]
-  {
-    Error::SetHResult(error, "Encoder ActivateObject() failed: ", hr);
-    return nullptr;
-  }
-
-  *use_async_transform = false;
-  if (hardware)
-  {
-    ComPtr<IMFAttributes> attributes;
-    if (FAILED(transform->GetAttributes(attributes.GetAddressOf()))) [[unlikely]]
-    {
-      Error::SetHResult(error, "YUV GetAttributes() failed: ", hr);
-      return nullptr;
-    }
-    UINT32 async_supported;
-    *use_async_transform =
-      (SUCCEEDED(hr = attributes->GetUINT32(MF_TRANSFORM_ASYNC, &async_supported)) && async_supported == TRUE &&
-       SUCCEEDED(hr = attributes->SetUINT32(MF_TRANSFORM_ASYNC_UNLOCK, 1)));
-    if (use_async_transform)
-      INFO_LOG("Using async video transform.");
-  }
-
-  if (FAILED(hr = wrap_MFCreateMediaType(output_type->GetAddressOf()))) [[unlikely]]
+  ComPtr<IMFMediaType> candidate_output_type;
+  if (FAILED(hr = wrap_MFCreateMediaType(candidate_output_type.GetAddressOf()))) [[unlikely]]
   {
     Error::SetHResult(error, "Encoder MFCreateMediaType() failed: ", hr);
+    wrap_MFHeapFree(transforms);
     return nullptr;
   }
 
@@ -1188,53 +1182,136 @@ MediaCaptureMF::CreateVideoEncodeTransform(std::string_view codec, u32 frame_rat
   else if (output_type_info.guidSubtype == MFVideoFormat_VP90)
     profile = eAVEncVP9VProfile_420_8;
 
-  if (FAILED(hr = (*output_type)->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Video)) ||
-      FAILED(hr = (*output_type)->SetGUID(MF_MT_SUBTYPE, output_type_info.guidSubtype)) ||
-      FAILED(hr = (*output_type)->SetUINT32(MF_MT_AVG_BITRATE, bitrate * 1000)) ||
-      FAILED(hr = (*output_type)->SetUINT32(MF_MT_INTERLACE_MODE, MFVideoInterlace_Progressive)) ||
-      FAILED(hr = (*output_type)->SetUINT32(MF_MT_MPEG2_PROFILE, profile)) ||
-      FAILED(hr = MFSetAttributeSize(output_type->Get(), MF_MT_FRAME_SIZE, m_video_width, m_video_height)) ||
-      FAILED(
-        hr = MFSetAttributeRatio(output_type->Get(), MF_MT_FRAME_RATE, frame_rate_numerator, frame_rate_denominator)) ||
-      FAILED(hr = MFSetAttributeRatio(output_type->Get(), MF_MT_PIXEL_ASPECT_RATIO, par_numerator, par_denominator)))
-    [[unlikely]]
+  const u64 bitrate_bits =
+    std::min(static_cast<u64>(bitrate) * 1000u, static_cast<u64>(std::numeric_limits<UINT32>::max()));
+  if (FAILED(hr = candidate_output_type->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Video)) ||
+      FAILED(hr = candidate_output_type->SetGUID(MF_MT_SUBTYPE, output_type_info.guidSubtype)) ||
+      FAILED(hr = candidate_output_type->SetUINT32(MF_MT_AVG_BITRATE, static_cast<UINT32>(bitrate_bits))) ||
+      FAILED(hr = candidate_output_type->SetUINT32(MF_MT_INTERLACE_MODE, MFVideoInterlace_Progressive)) ||
+      FAILED(hr = MFSetAttributeSize(candidate_output_type.Get(), MF_MT_FRAME_SIZE, m_video_width, m_video_height)) ||
+      FAILED(hr = MFSetAttributeRatio(candidate_output_type.Get(), MF_MT_FRAME_RATE, frame_rate_numerator,
+                                      frame_rate_denominator)) ||
+      FAILED(hr = MFSetAttributeRatio(candidate_output_type.Get(), MF_MT_PIXEL_ASPECT_RATIO, par_numerator,
+                                      par_denominator))) [[unlikely]]
   {
     Error::SetHResult(error, "Encoder setting attributes failed: ", hr);
+    wrap_MFHeapFree(transforms);
     return nullptr;
   }
 
-  if (FAILED(hr = transform->SetOutputType(0, output_type->Get(), 0))) [[unlikely]]
+  if (profile != 0 && FAILED(hr = candidate_output_type->SetUINT32(MF_MT_MPEG2_PROFILE, profile)))
   {
-    Error::SetHResult(error, "Encoder SetOutputType() failed: ", hr);
+    Error::SetHResult(error, "Encoder setting profile failed: ", hr);
+    wrap_MFHeapFree(transforms);
     return nullptr;
   }
 
-  if (FAILED(hr = transform->SetInputType(0, input_type, 0))) [[unlikely]]
+  HRESULT last_hr = E_FAIL;
+  for (UINT32 i = 0; i < num_transforms; i++)
   {
-    Error::SetHResult(error, "Encoder SetInputType() failed: ", hr);
-    return nullptr;
-  }
-
-  MFT_OUTPUT_STREAM_INFO osi;
-  if (FAILED(hr = transform->GetOutputStreamInfo(0, &osi))) [[unlikely]]
-  {
-    Error::SetHResult(error, "Encoder GetOutputStreamInfo() failed: ", hr);
-    return nullptr;
-  }
-
-  if (!(osi.dwFlags & MFT_OUTPUT_STREAM_PROVIDES_SAMPLES))
-  {
-    if (osi.cbSize == 0)
+    ComPtr<IMFTransform> transform;
+    hr = transforms[i]->ActivateObject(IID_PPV_ARGS(transform.GetAddressOf()));
+    if (FAILED(hr))
     {
-      Error::SetStringFmt(error, "Invalid sample size for non-output-providing stream");
-      return nullptr;
+      last_hr = hr;
+      continue;
     }
 
-    m_video_sample_size = osi.cbSize;
+    LPWSTR transform_name = nullptr;
+    UINT32 transform_name_length = 0;
+    if (SUCCEEDED(
+          transforms[i]->GetAllocatedString(MFT_FRIENDLY_NAME_Attribute, &transform_name, &transform_name_length)))
+    {
+      INFO_LOG("Trying video encoder: {}",
+               StringUtil::WideStringToUTF8String(std::wstring_view(transform_name, transform_name_length)));
+      CoTaskMemFree(transform_name);
+    }
+
+    bool candidate_is_async = false;
+    ComPtr<IMFAttributes> attributes;
+    if (SUCCEEDED(hr = transform->GetAttributes(attributes.GetAddressOf())))
+    {
+      UINT32 async_supported = FALSE;
+      if (SUCCEEDED(hr = attributes->GetUINT32(MF_TRANSFORM_ASYNC, &async_supported)) && async_supported == TRUE)
+      {
+        if (FAILED(hr = attributes->SetUINT32(MF_TRANSFORM_ASYNC_UNLOCK, TRUE)))
+        {
+          last_hr = hr;
+          continue;
+        }
+
+        candidate_is_async = true;
+        INFO_LOG("Using async video transform.");
+      }
+    }
+    else if (hardware)
+    {
+      last_hr = hr;
+      continue;
+    }
+
+    if (hardware && !candidate_is_async)
+    {
+      WARNING_LOG("Hardware video encoder is not asynchronous, skipping it.");
+      last_hr = MF_E_UNSUPPORTED_BYTESTREAM_TYPE;
+      continue;
+    }
+
+    // Most encoders accept the output type first, but some hardware and third-party MFTs require
+    // the input type to be set before they can validate the output dimensions. Try both orders.
+    hr = transform->SetOutputType(0, candidate_output_type.Get(), 0);
+    if (FAILED(hr))
+    {
+      last_hr = hr;
+      const HRESULT input_hr = transform->SetInputType(0, input_type, 0);
+      if (SUCCEEDED(input_hr))
+        hr = transform->SetOutputType(0, candidate_output_type.Get(), 0);
+      else
+        hr = input_hr;
+      if (FAILED(hr))
+      {
+        last_hr = hr;
+        continue;
+      }
+    }
+    else if (FAILED(hr = transform->SetInputType(0, input_type, 0)))
+    {
+      last_hr = hr;
+      continue;
+    }
+
+    MFT_OUTPUT_STREAM_INFO osi;
+    if (FAILED(hr = transform->GetOutputStreamInfo(0, &osi)))
+    {
+      last_hr = hr;
+      continue;
+    }
+
+    u32 video_sample_size = 0;
+    if (!(osi.dwFlags & MFT_OUTPUT_STREAM_PROVIDES_SAMPLES))
+    {
+      if (osi.cbSize == 0)
+      {
+        last_hr = MF_E_INVALIDMEDIATYPE;
+        continue;
+      }
+
+      video_sample_size = osi.cbSize;
+    }
+
+    *output_type = candidate_output_type;
+    *use_async_transform = candidate_is_async;
+    m_video_sample_size = video_sample_size;
+    wrap_MFHeapFree(transforms);
+    return transform;
   }
 
-  INFO_LOG("Video sample size: {}", m_video_sample_size);
-  return transform;
+  wrap_MFHeapFree(transforms);
+  Error::SetHResult(error,
+                    hardware ? "No compatible hardware video encoder supports the requested dimensions/rate: " :
+                               "No compatible software video encoder supports the requested dimensions/rate: ",
+                    last_hr);
+  return nullptr;
 }
 
 ALWAYS_INLINE_RELEASE void MediaCaptureMF::ConvertVideoFrame(u8* dst, size_t dst_stride, const u8* src,
@@ -1644,6 +1721,10 @@ bool MediaCaptureMF::GetAudioTypes(std::string_view codec, ComPtr<IMFMediaType>*
       return false;
     }
   }
+  else
+  {
+    bitrate = std::clamp(bitrate, 32u, 320u);
+  }
 
   HRESULT hr;
   if (FAILED(hr = wrap_MFCreateMediaType(input_type->GetAddressOf()))) [[unlikely]]
@@ -1709,13 +1790,19 @@ bool MediaCaptureMF::GetAudioTypes(std::string_view codec, ComPtr<IMFMediaType>*
     }
   }
 
-  // pick the closest bitrate
+  // Pick the closest bitrate. Some systems only expose rates below the requested value, so do
+  // not reject the stream just because an exact-or-higher rate is unavailable.
   const u32 bitrate_kbps = bitrate * 1000;
   std::pair<ComPtr<IMFMediaType>, u32>* selected_output_type = nullptr;
   for (auto it = output_types.begin(); it != output_types.end(); ++it)
   {
-    if (it->second >= bitrate_kbps &&
-        (!selected_output_type || (selected_output_type->second - bitrate_kbps) > (it->second - bitrate_kbps)))
+    const u64 current_difference =
+      (it->second >= bitrate_kbps) ? (it->second - bitrate_kbps) : (bitrate_kbps - it->second);
+    const u64 selected_difference = selected_output_type ? ((selected_output_type->second >= bitrate_kbps) ?
+                                                              (selected_output_type->second - bitrate_kbps) :
+                                                              (bitrate_kbps - selected_output_type->second)) :
+                                                           std::numeric_limits<u64>::max();
+    if (!selected_output_type || current_difference < selected_difference)
     {
       selected_output_type = &(*it);
     }
