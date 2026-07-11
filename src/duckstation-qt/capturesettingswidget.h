@@ -22,7 +22,9 @@ private:
   void onMediaCaptureContainerChanged();
   void onMediaCaptureVideoEnabledChanged();
   void onMediaCaptureVideoAutoResolutionChanged();
+  void onMediaCaptureUseVideoArgsChanged();
   void onMediaCaptureAudioEnabledChanged();
+  void onMediaCaptureUseAudioArgsChanged();
 
   Ui::CaptureSettingsWidget m_ui;
 

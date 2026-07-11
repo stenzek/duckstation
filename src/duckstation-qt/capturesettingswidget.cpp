@@ -105,8 +105,12 @@ CaptureSettingsWidget::CaptureSettingsWidget(SettingsWindow* dialog, QWidget* pa
           &CaptureSettingsWidget::onMediaCaptureVideoEnabledChanged);
   connect(m_ui.videoCaptureResolutionAuto, &QCheckBox::checkStateChanged, this,
           &CaptureSettingsWidget::onMediaCaptureVideoAutoResolutionChanged);
+  connect(m_ui.enableVideoCaptureArguments, &QCheckBox::checkStateChanged, this,
+          &CaptureSettingsWidget::onMediaCaptureUseVideoArgsChanged);
   connect(m_ui.enableAudioCapture, &QCheckBox::checkStateChanged, this,
           &CaptureSettingsWidget::onMediaCaptureAudioEnabledChanged);
+  connect(m_ui.enableAudioCaptureArguments, &QCheckBox::checkStateChanged, this,
+          &CaptureSettingsWidget::onMediaCaptureUseAudioArgsChanged);
 
   // Init all dependent options.
   onMediaCaptureBackendChanged();
@@ -237,6 +241,13 @@ void CaptureSettingsWidget::onMediaCaptureContainerChanged()
       m_ui.videoCaptureCodec->addItem(tr("%1 (%2)").arg(QString::fromStdString(display_name)).arg(qname), qname);
     }
 
+    if (const QString current_value =
+          QString::fromStdString(m_dialog->getEffectiveStringValue("MediaCapture", "VideoCodec", ""));
+        !current_value.isEmpty() && m_ui.videoCaptureCodec->findData(current_value) < 0)
+    {
+      m_ui.videoCaptureCodec->addItem(tr("%1 (Unknown)").arg(current_value), current_value);
+    }
+
     SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.videoCaptureCodec, "MediaCapture", "VideoCodec");
   }
 
@@ -249,6 +260,13 @@ void CaptureSettingsWidget::onMediaCaptureContainerChanged()
     {
       const QString qname = QString::fromStdString(name);
       m_ui.audioCaptureCodec->addItem(tr("%1 (%2)").arg(QString::fromStdString(display_name)).arg(qname), qname);
+    }
+
+    if (const QString current_value =
+          QString::fromStdString(m_dialog->getEffectiveStringValue("MediaCapture", "AudioCodec", ""));
+        !current_value.isEmpty() && m_ui.audioCaptureCodec->findData(current_value) < 0)
+    {
+      m_ui.audioCaptureCodec->addItem(tr("%1 (Unknown)").arg(current_value), current_value);
     }
 
     SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.audioCaptureCodec, "MediaCapture", "AudioCodec");
@@ -265,8 +283,8 @@ void CaptureSettingsWidget::onMediaCaptureVideoEnabledChanged()
   m_ui.videoCaptureResolutionLabel->setEnabled(enabled);
   m_ui.videoCaptureResolutionAuto->setEnabled(enabled);
   m_ui.enableVideoCaptureArguments->setEnabled(enabled);
-  m_ui.videoCaptureArguments->setEnabled(enabled);
   onMediaCaptureVideoAutoResolutionChanged();
+  onMediaCaptureUseVideoArgsChanged();
 }
 
 void CaptureSettingsWidget::onMediaCaptureVideoAutoResolutionChanged()
@@ -278,6 +296,13 @@ void CaptureSettingsWidget::onMediaCaptureVideoAutoResolutionChanged()
   m_ui.videoCaptureHeight->setEnabled(enabled && !auto_enabled);
 }
 
+void CaptureSettingsWidget::onMediaCaptureUseVideoArgsChanged()
+{
+  const bool enabled = m_dialog->getEffectiveBoolValue("MediaCapture", "VideoCapture", true);
+  const bool extra_video_args_enabled = m_dialog->getEffectiveBoolValue("MediaCapture", "VideoCodecUseArgs", false);
+  m_ui.videoCaptureArguments->setEnabled(enabled && extra_video_args_enabled);
+}
+
 void CaptureSettingsWidget::onMediaCaptureAudioEnabledChanged()
 {
   const bool enabled = m_dialog->getEffectiveBoolValue("MediaCapture", "AudioCapture", true);
@@ -286,5 +311,12 @@ void CaptureSettingsWidget::onMediaCaptureAudioEnabledChanged()
   m_ui.audioCaptureBitrateLabel->setEnabled(enabled);
   m_ui.audioCaptureBitrate->setEnabled(enabled);
   m_ui.enableAudioCaptureArguments->setEnabled(enabled);
-  m_ui.audioCaptureArguments->setEnabled(enabled);
+  onMediaCaptureUseAudioArgsChanged();
+}
+
+void CaptureSettingsWidget::onMediaCaptureUseAudioArgsChanged()
+{
+  const bool enabled = m_dialog->getEffectiveBoolValue("MediaCapture", "AudioCapture", true);
+  const bool extra_audio_args_enabled = m_dialog->getEffectiveBoolValue("MediaCapture", "AudioCodecUseArgs", false);
+  m_ui.audioCaptureArguments->setEnabled(enabled && extra_audio_args_enabled);
 }
