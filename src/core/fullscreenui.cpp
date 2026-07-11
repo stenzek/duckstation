@@ -301,7 +301,7 @@ void FullscreenUI::OnSystemDestroyed()
 
 void FullscreenUI::PauseAndOpenMenuFromCoreThread(void (*callback)())
 {
-  DebugAssert(!VideoThread::IsOnThread());
+  DebugAssert(Host::IsOnCoreThread());
   if (!System::IsValid())
     return;
 
