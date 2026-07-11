@@ -276,7 +276,7 @@ void FullscreenUI::OnSystemResumed()
       return;
 
     // get rid of pause menu if we unpaused another way
-    if (s_locals.current_main_window == MainWindowType::PauseMenu)
+    if (s_locals.current_main_window != MainWindowType::None)
       ClosePauseMenuImmediately();
 
     UpdateRunIdleState();
