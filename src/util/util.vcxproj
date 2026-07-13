@@ -86,7 +86,6 @@
     </ClInclude>
     <ClInclude Include="page_fault_handler.h" />
     <ClInclude Include="pch.h" />
-    <ClInclude Include="platform_misc.h" />
     <ClInclude Include="postprocessing.h" />
     <ClInclude Include="postprocessing_shader.h" />
     <ClInclude Include="postprocessing_shader_fx.h" />

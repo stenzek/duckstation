@@ -16,7 +16,6 @@
     <ClInclude Include="postprocessing.h" />
     <ClInclude Include="postprocessing_shader.h" />
     <ClInclude Include="input_source.h" />
-    <ClInclude Include="platform_misc.h" />
     <ClInclude Include="sdl_input_source.h" />
     <ClInclude Include="win32_raw_input_source.h" />
     <ClInclude Include="xinput_source.h" />
