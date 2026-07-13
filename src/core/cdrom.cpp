@@ -140,6 +140,7 @@ enum class Command : u16
   ReadTOC = 0x1E,
   VideoCD = 0x1F,
 
+  ValidCommandCount = VideoCD + 1,
   None = 0xFFFF
 };
 
@@ -301,6 +302,8 @@ union XA_ADPCMBlockHeader
 static_assert(sizeof(XA_ADPCMBlockHeader) == 1, "XA-ADPCM block header is one byte");
 
 } // namespace
+
+static const char* GetCommandName(Command command);
 
 static TickCount SoftReset();
 
@@ -516,53 +519,51 @@ struct CommandInfo
   u8 max_parameters;
 };
 
-static std::array<CommandInfo, 255> s_command_info = {{
-  {"Sync", 0, 0},     {"Getstat", 0, 0},   {"Setloc", 3, 3},  {"Play", 0, 1},    {"Forward", 0, 0}, {"Backward", 0, 0},
-  {"ReadN", 0, 0},    {"Standby", 0, 0},   {"Stop", 0, 0},    {"Pause", 0, 0},   {"Init", 0, 0},    {"Mute", 0, 0},
-  {"Demute", 0, 0},   {"Setfilter", 2, 2}, {"Setmode", 1, 1}, {"Getmode", 0, 0}, {"GetlocL", 0, 0}, {"GetlocP", 0, 0},
-  {"ReadT", 1, 1},    {"GetTN", 0, 0},     {"GetTD", 1, 1},   {"SeekL", 0, 0},   {"SeekP", 0, 0},   {"SetClock", 0, 0},
-  {"GetClock", 0, 0}, {"Test", 1, 16},     {"GetID", 0, 0},   {"ReadS", 0, 0},   {"Reset", 0, 0},   {"GetQ", 2, 2},
-  {"ReadTOC", 0, 0},  {"VideoCD", 6, 16},  {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0},
-  {"Unknown", 0, 0},  {"Unknown", 0, 0},   {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0},
-  {"Unknown", 0, 0},  {"Unknown", 0, 0},   {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0},
-  {"Unknown", 0, 0},  {"Unknown", 0, 0},   {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0},
-  {"Unknown", 0, 0},  {"Unknown", 0, 0},   {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0},
-  {"Unknown", 0, 0},  {"Unknown", 0, 0},   {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0},
-  {"Unknown", 0, 0},  {"Unknown", 0, 0},   {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0},
-  {"Unknown", 0, 0},  {"Unknown", 0, 0},   {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0},
-  {"Unknown", 0, 0},  {"Unknown", 0, 0},   {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0},
-  {"Unknown", 0, 0},  {"Unknown", 0, 0},   {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0},
-  {"Unknown", 0, 0},  {"Unknown", 0, 0},   {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0},
-  {"Unknown", 0, 0},  {"Unknown", 0, 0},   {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0},
-  {"Unknown", 0, 0},  {"Unknown", 0, 0},   {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0},
-  {"Unknown", 0, 0},  {"Unknown", 0, 0},   {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0},
-  {"Unknown", 0, 0},  {"Unknown", 0, 0},   {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0},
-  {"Unknown", 0, 0},  {"Unknown", 0, 0},   {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0},
-  {"Unknown", 0, 0},  {"Unknown", 0, 0},   {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0},
-  {"Unknown", 0, 0},  {"Unknown", 0, 0},   {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0},
-  {"Unknown", 0, 0},  {"Unknown", 0, 0},   {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0},
-  {"Unknown", 0, 0},  {"Unknown", 0, 0},   {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0},
-  {"Unknown", 0, 0},  {"Unknown", 0, 0},   {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0},
-  {"Unknown", 0, 0},  {"Unknown", 0, 0},   {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0},
-  {"Unknown", 0, 0},  {"Unknown", 0, 0},   {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0},
-  {"Unknown", 0, 0},  {"Unknown", 0, 0},   {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0},
-  {"Unknown", 0, 0},  {"Unknown", 0, 0},   {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0},
-  {"Unknown", 0, 0},  {"Unknown", 0, 0},   {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0},
-  {"Unknown", 0, 0},  {"Unknown", 0, 0},   {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0},
-  {"Unknown", 0, 0},  {"Unknown", 0, 0},   {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0},
-  {"Unknown", 0, 0},  {"Unknown", 0, 0},   {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0},
-  {"Unknown", 0, 0},  {"Unknown", 0, 0},   {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0},
-  {"Unknown", 0, 0},  {"Unknown", 0, 0},   {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0},
-  {"Unknown", 0, 0},  {"Unknown", 0, 0},   {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0},
-  {"Unknown", 0, 0},  {"Unknown", 0, 0},   {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0},
-  {"Unknown", 0, 0},  {"Unknown", 0, 0},   {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0},
-  {"Unknown", 0, 0},  {"Unknown", 0, 0},   {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0},
-  {"Unknown", 0, 0},  {"Unknown", 0, 0},   {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0},
-  {"Unknown", 0, 0},  {"Unknown", 0, 0},   {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0},
-  {"Unknown", 0, 0},  {"Unknown", 0, 0},   {nullptr, 0, 0} // Unknown
-}};
+static constexpr const CommandInfo s_command_info[] = {
+  {"Sync", 0, 0},      // 0x00
+  {"Getstat", 0, 0},   // 0x01
+  {"Setloc", 3, 3},    // 0x02
+  {"Play", 0, 1},      // 0x03
+  {"Forward", 0, 0},   // 0x04
+  {"Backward", 0, 0},  // 0x05
+  {"ReadN", 0, 0},     // 0x06
+  {"Standby", 0, 0},   // 0x07
+  {"Stop", 0, 0},      // 0x08
+  {"Pause", 0, 0},     // 0x09
+  {"Init", 0, 0},      // 0x0A
+  {"Mute", 0, 0},      // 0x0B
+  {"Demute", 0, 0},    // 0x0C
+  {"Setfilter", 2, 2}, // 0x0D
+  {"Setmode", 1, 1},   // 0x0E
+  {"Getmode", 0, 0},   // 0x0F
+  {"GetlocL", 0, 0},   // 0x10
+  {"GetlocP", 0, 0},   // 0x11
+  {"ReadT", 1, 1},     // 0x12
+  {"GetTN", 0, 0},     // 0x13
+  {"GetTD", 1, 1},     // 0x14
+  {"SeekL", 0, 0},     // 0x15
+  {"SeekP", 0, 0},     // 0x16
+  {"SetClock", 0, 0},  // 0x17
+  {"GetClock", 0, 0},  // 0x18
+  {"Test", 1, 16},     // 0x19
+  {"GetID", 0, 0},     // 0x1A
+  {"ReadS", 0, 0},     // 0x1B
+  {"Reset", 0, 0},     // 0x1C
+  {"GetQ", 2, 2},      // 0x1D
+  {"ReadTOC", 0, 0},   // 0x1E
+  {"VideoCD", 6, 16},  // 0x1F
+  // 0x20..0xFF are unimplemented.
+};
+static_assert(std::size(s_command_info) == static_cast<size_t>(Command::ValidCommandCount));
 
 } // namespace CDROM
+
+const char* CDROM::GetCommandName(Command command)
+{
+  return (static_cast<size_t>(command) < std::size(s_command_info)) ?
+           s_command_info[static_cast<size_t>(command)].name :
+           "Unknown";
+}
 
 void CDROM::Initialize()
 {
@@ -1214,7 +1215,7 @@ void CDROM::WriteRegister(u32 offset, u8 value)
   {
     case 0:
     {
-      DEBUG_LOG("CDROM command register <- 0x{:02X} ({})", value, s_command_info[value].name);
+      DEBUG_LOG("CDROM command register <- 0x{:02X} ({})", value, GetCommandName(static_cast<Command>(value)));
       BeginCommand(static_cast<Command>(value));
       return;
     }
@@ -1839,19 +1840,20 @@ void CDROM::BeginCommand(Command command)
     // behavior is not correct. So, let's use a heuristic; if the number of parameters of the "old" command is
     // greater than the "new" command, empty the FIFO, which will return the error when the command executes.
     // Otherwise, override the command with the new one.
-    if (s_command_info[static_cast<u8>(s_state.command)].min_parameters >
-        s_command_info[static_cast<u8>(command)].min_parameters)
+    if (command <= Command::ValidCommandCount && s_state.command <= Command::ValidCommandCount &&
+        s_command_info[static_cast<size_t>(s_state.command)].min_parameters >
+          s_command_info[static_cast<size_t>(command)].min_parameters)
     {
       WARNING_LOG("Ignoring command 0x{:02X} ({}) and emptying FIFO as 0x{:02X} ({}) is still pending",
-                  static_cast<u8>(command), s_command_info[static_cast<u8>(command)].name,
-                  static_cast<u8>(s_state.command), s_command_info[static_cast<u8>(s_state.command)].name);
+                  static_cast<u8>(command), GetCommandName(command), static_cast<u8>(s_state.command),
+                  GetCommandName(s_state.command));
       s_state.param_fifo.Clear();
       return;
     }
 
     WARNING_LOG("Cancelling pending command 0x{:02X} ({}) for new command 0x{:02X} ({})",
-                static_cast<u8>(s_state.command), s_command_info[static_cast<u8>(s_state.command)].name,
-                static_cast<u8>(command), s_command_info[static_cast<u8>(command)].name);
+                static_cast<u8>(s_state.command), GetCommandName(s_state.command), static_cast<u8>(command),
+                GetCommandName(command));
 
     // subtract the currently-elapsed ack ticks from the new command
     if (s_state.command_event.IsActive())
@@ -1868,8 +1870,7 @@ void CDROM::BeginCommand(Command command)
       if (HasPendingAsyncInterrupt())
       {
         WARNING_LOG("Delivering pending interrupt after command {} cancellation for {}.",
-                    s_command_info[static_cast<u8>(s_state.command)].name,
-                    s_command_info[static_cast<u8>(command)].name);
+                    GetCommandName(s_state.command), GetCommandName(command));
         QueueDeliverAsyncInterrupt();
       }
     }
@@ -1892,7 +1893,16 @@ void CDROM::EndCommand()
 
 void CDROM::ExecuteCommand(void*, TickCount ticks)
 {
-  const CommandInfo& ci = s_command_info[static_cast<u8>(s_state.command)];
+  if (s_state.command >= Command::ValidCommandCount)
+  {
+    ERROR_LOG("Unknown CDROM command 0x{:04X} with {} parameters, please report", static_cast<u16>(s_state.command),
+              s_state.param_fifo.GetSize());
+    SendErrorResponse(STAT_ERROR, ERROR_REASON_INVALID_COMMAND);
+    EndCommand();
+    return;
+  }
+
+  const CommandInfo& ci = s_command_info[static_cast<size_t>(s_state.command)];
   if (s_state.param_fifo.GetSize() < ci.min_parameters || s_state.param_fifo.GetSize() > ci.max_parameters) [[unlikely]]
   {
     WARNING_LOG("Incorrect parameters for command 0x{:02X} ({}), expecting {}-{} got {}",
@@ -2517,9 +2527,23 @@ void CDROM::ExecuteCommand(void*, TickCount ticks)
       return;
     }
 
+    case Command::Reset:
+    {
+      WARNING_LOG("Undocumented Reset");
+
+      // not properly implemented, but nothing actually uses this so whatever...
+      SoftReset();
+      SendACKAndStat();
+      EndCommand();
+      return;
+    }
+
+    case Command::SetClock:
+    case Command::GetClock:
+    case Command::GetQ:
     case Command::Sync:
     {
-      ERROR_LOG("Invalid sync command");
+      ERROR_LOG("Invalid {} command with {} parameters", GetCommandName(s_state.command), s_state.param_fifo.GetSize());
 
       SendErrorResponse(STAT_ERROR, ERROR_REASON_INVALID_COMMAND);
       EndCommand();
@@ -2538,15 +2562,7 @@ void CDROM::ExecuteCommand(void*, TickCount ticks)
       return;
     }
 
-    default:
-      [[unlikely]]
-      {
-        ERROR_LOG("Unknown CDROM command 0x{:04X} with {} parameters, please report", static_cast<u16>(s_state.command),
-                  s_state.param_fifo.GetSize());
-        SendErrorResponse(STAT_ERROR, ERROR_REASON_INVALID_COMMAND);
-        EndCommand();
-        return;
-      }
+      DefaultCaseIsUnreachable();
   }
 }
 
@@ -2678,7 +2694,7 @@ void CDROM::ExecuteCommandSecondResponse(void*, TickCount ticks)
       if (HasPendingCommand())
       {
         WARNING_LOG("Cancelling pending command 0x{:02X} ({}) due to init completion.",
-                    static_cast<u8>(s_state.command), s_command_info[static_cast<u8>(s_state.command)].name);
+                    static_cast<u8>(s_state.command), GetCommandName(s_state.command));
         EndCommand();
       }
     }
@@ -2719,8 +2735,7 @@ void CDROM::ClearCommandSecondResponse()
   if (s_state.command_second_response != Command::None)
   {
     DEV_LOG("Cancelling pending command 0x{:02X} ({}) second response",
-            static_cast<u16>(s_state.command_second_response),
-            s_command_info[static_cast<u16>(s_state.command_second_response)].name);
+            static_cast<u16>(s_state.command_second_response), GetCommandName(s_state.command_second_response));
   }
 
   s_state.command_second_response_event.Deactivate();
@@ -2855,7 +2870,8 @@ void CDROM::BeginReading(bool after_seek)
   ResetAudioDecoder();
 
   // Even though this isn't "officially" a seek, we still need to jump back to the target sector unless we're
-  // immediately following a seek from Play/Read. The seeking bit will get cleared after the first sector is processed.
+  // immediately following a seek from Play/Read. The seeking bit will get cleared after the first sector is
+  // processed.
   if (!after_seek)
     s_state.secondary_status.SetSeeking();
 
@@ -2933,9 +2949,9 @@ void CDROM::BeginSeeking(bool logical, bool read_after_seek, bool play_after_see
   const CDImage::LBA seek_lba = s_state.setloc_position.ToLBA();
   TickCount seek_time;
 
-  // Yay for edge cases. If we repeatedly send SeekL to the same target before a new sector is read, it should complete
-  // nearly instantly, because it's looking for a valid target of -2. See the note in CompleteSeek(). We gate this with
-  // the seek target in case another read happened in the interim. Test case: Resident Evil 3.
+  // Yay for edge cases. If we repeatedly send SeekL to the same target before a new sector is read, it should
+  // complete nearly instantly, because it's looking for a valid target of -2. See the note in CompleteSeek(). We gate
+  // this with the seek target in case another read happened in the interim. Test case: Resident Evil 3.
   if (logical && !read_after_seek && s_state.current_subq_lba == (seek_lba - SUBQ_SECTOR_SKEW) &&
       s_state.seek_end_lba == seek_lba &&
       (System::GetGlobalTickCounter() - s_state.subq_lba_update_tick) < static_cast<GlobalTicks>(GetTicksForRead()))
@@ -3011,8 +3027,8 @@ void CDROM::UpdateSubQPosition(bool update_logical)
   const GlobalTicks ticks = System::GetGlobalTickCounter();
   if (IsSeeking() || IsReadingOrPlaying() || !IsMotorOn())
   {
-    // If we're seeking+reading the first sector (no stat bits set), we need to return the set/current lba, not the last
-    // SubQ LBA. Failing to do so may result in a track-jumped position getting returned in GetlocP, which causes
+    // If we're seeking+reading the first sector (no stat bits set), we need to return the set/current lba, not the
+    // last SubQ LBA. Failing to do so may result in a track-jumped position getting returned in GetlocP, which causes
     // Mad Panic Coaster to go into a seek+play loop.
     if ((s_state.secondary_status.bits & (STAT_READING | STAT_PLAYING_CDDA | STAT_MOTOR_ON)) == STAT_MOTOR_ON &&
         s_state.current_lba != s_state.current_subq_lba)
@@ -3398,15 +3414,17 @@ void CDROM::DoSectorRead()
       //   Captain Commando would always corrupt the first boss sprite.
       //
       //   What the game does, is repeat the tile/texture data throughout the audio sectors for the background
-      //   music when you reach the boss part of the level, it looks for a specific subq timecode coming in (by spamming
-      //   GetlocP) then DMA's the data sector interleaved with the audio sectors out at the last possible moment
+      //   music when you reach the boss part of the level, it looks for a specific subq timecode coming in (by
+      //   spamming GetlocP) then DMA's the data sector interleaved with the audio sectors out at the last possible
+      //   moment
       //
       //   So, they hard coded it to look for a sector timecode +2 from the sector they actually wanted, then DMA that
-      //   data out they do perform some validation on the data itself, so if you're not offsetting the timecode query,
-      //   it never gets the right sector, and just keeps reading forever. Hence why the boss tiles are broken, because
-      //   it never gets the data to upload. The most insane part is they should have just done what every other game
-      //   does: use the raw read mode (2352 instead of 2048), and look at the data sector header. Instead they do this
-      //   nonsense of repeating the data throughout the audio, and racing the DMA at the last possible minute.
+      //   data out they do perform some validation on the data itself, so if you're not offsetting the timecode
+      //   query, it never gets the right sector, and just keeps reading forever. Hence why the boss tiles are broken,
+      //   because it never gets the data to upload. The most insane part is they should have just done what every
+      //   other game does: use the raw read mode (2352 instead of 2048), and look at the data sector header. Instead
+      //   they do this nonsense of repeating the data throughout the audio, and racing the DMA at the last possible
+      //   minute.
       //
       // This hack just generates synthetic SubQ with a +2 offset. I'd planned on refactoring the CDImage interface
       // so that multiple sectors could be read in one back, in which case we could just "look ahead" to grab the
@@ -3444,9 +3462,9 @@ void CDROM::DoSectorRead()
       return;
     }
 
-    // Only update the tracked track-to-pause-after once auto pause is enabled. Pitball's menu music starts mid-second,
-    // and there's no pregap, so the first couple of reports are for the previous track. It doesn't enable autopause
-    // until receiving a couple, and it's actually playing the track it wants.
+    // Only update the tracked track-to-pause-after once auto pause is enabled. Pitball's menu music starts
+    // mid-second, and there's no pregap, so the first couple of reports are for the previous track. It doesn't enable
+    // autopause until receiving a couple, and it's actually playing the track it wants.
     if (s_state.play_track_number_bcd == 0)
     {
       // track number was not specified, but we've found the track now
@@ -3737,8 +3755,9 @@ void CDROM::ResampleXAADPCM18900(const s16* frames_in, u32 num_frames_in)
 {
   // Weights originally from Mednafen's interpolator. It's unclear where these came from, perhaps it was calculated
   // somehow. This doesn't appear to use a zigzag pattern like psx-spx suggests, therefore it is restricted to only
-  // 18900hz resampling. Duplicating the 18900hz samples to 37800hz sounds even more awful than lower sample rate audio
-  // should, with a big spike at ~16KHz, especially with music in FMVs. Fortunately, few games actually use 18900hz XA.
+  // 18900hz resampling. Duplicating the 18900hz samples to 37800hz sounds even more awful than lower sample rate
+  // audio should, with a big spike at ~16KHz, especially with music in FMVs. Fortunately, few games actually use
+  // 18900hz XA.
   static constexpr auto interpolate = [](const s16* ringbuf, u32 table_index, u32 p) -> s16 {
     static std::array<std::array<s16, 25>, 7> tables = {{
       {{0x0,     -0x5,  0x11,   -0x23, 0x46,  -0x17, -0x44, 0x15b, -0x347, 0x80e, -0x1249, 0x3c07, 0x53e0,
@@ -3829,8 +3848,8 @@ ALWAYS_INLINE_RELEASE void CDROM::ProcessXAADPCMSector(const u8* raw_sector, con
     return;
   }
 
-  // Track the current file being played. If this is not set by the filter, it'll be set by the first file/sector which
-  // is read. Fixes audio in Tomb Raider III menu.
+  // Track the current file being played. If this is not set by the filter, it'll be set by the first file/sector
+  // which is read. Fixes audio in Tomb Raider III menu.
   if (!s_state.xa_current_set)
   {
     // Some games (Taxi 2 and Blues Clues) have junk audio sectors with a channel number of 255.
@@ -4366,8 +4385,8 @@ void CDROM::DrawDebugWindow(float scale)
 
     if (HasPendingCommand())
     {
-      ImGui::TextColored(active_color, "Command: %s (0x%02X) (%d ticks remaining)",
-                         s_command_info[static_cast<u8>(s_state.command)].name, static_cast<u8>(s_state.command),
+      ImGui::TextColored(active_color, "Command: %s (0x%02X) (%d ticks remaining)", GetCommandName(s_state.command),
+                         static_cast<u8>(s_state.command),
                          s_state.command_event.IsActive() ? s_state.command_event.GetTicksUntilNextExecution() : 0);
     }
     else
