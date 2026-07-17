@@ -22,7 +22,7 @@ jobs:
             asset: "DuckStation-x64-SSE2.AppImage"
             cmakeoptions: "-DDISABLE_SSE4=ON"
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7
       with:
         fetch-depth: 0
 
