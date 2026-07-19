@@ -140,12 +140,19 @@ MemoryCardEditorWindow::MemoryCardEditorWindow() : QWidget()
   setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
   m_deleteFile = m_ui.centerButtonBox->addButton(tr("Delete File"), QDialogButtonBox::ActionRole);
+  m_deleteFile->setIcon(QIcon(u":/icons/monochrome/svg/trash-fill.svg"_s));
   m_undeleteFile = m_ui.centerButtonBox->addButton(tr("Undelete File"), QDialogButtonBox::ActionRole);
+  m_undeleteFile->setIcon(QIcon(u":/icons/monochrome/svg/arrow-go-back-line.svg"_s));
   m_renameFile = m_ui.centerButtonBox->addButton(tr("Rename File"), QDialogButtonBox::ActionRole);
+  m_renameFile->setIcon(QIcon(u":/icons/monochrome/svg/edit-box-line.svg"_s));
   m_exportFile = m_ui.centerButtonBox->addButton(tr("Export File"), QDialogButtonBox::ActionRole);
+  m_exportFile->setIcon(QIcon(u":/icons/monochrome/svg/export-line.svg"_s));
   m_extractIcon = m_ui.centerButtonBox->addButton(tr("Extract Icon"), QDialogButtonBox::ActionRole);
-  m_moveLeft = m_ui.centerButtonBox->addButton(tr("<<"), QDialogButtonBox::ActionRole);
-  m_moveRight = m_ui.centerButtonBox->addButton(tr(">>"), QDialogButtonBox::ActionRole);
+  m_extractIcon->setIcon(QIcon(u":/icons/monochrome/svg/image-fill.svg"_s));
+  m_moveLeft = m_ui.centerButtonBox->addButton(QString(), QDialogButtonBox::ActionRole);
+  m_moveLeft->setIcon(style()->standardIcon(QStyle::SP_ArrowLeft));
+  m_moveRight = m_ui.centerButtonBox->addButton(QString(), QDialogButtonBox::ActionRole);
+  m_moveRight->setIcon(style()->standardIcon(QStyle::SP_ArrowRight));
 
   m_card_a.path_cb = m_ui.cardAPath;
   m_card_a.table = m_ui.cardA;
@@ -259,6 +266,11 @@ void MemoryCardEditorWindow::createCardButtons(Card* card, QDialogButtonBox* but
   card->import_file_button = buttonBox->addButton(tr("Import File..."), QDialogButtonBox::ActionRole);
   card->import_button = buttonBox->addButton(tr("Import Card..."), QDialogButtonBox::ActionRole);
   card->save_button = buttonBox->addButton(tr("Save"), QDialogButtonBox::ActionRole);
+
+  card->format_button->setIcon(QIcon(u":/icons/monochrome/svg/file-settings-line.svg"_s));
+  card->import_file_button->setIcon(QIcon(u":/icons/monochrome/svg/import-line.svg"_s));
+  card->import_button->setIcon(QIcon(u":/icons/monochrome/svg/import-line.svg"_s));
+  card->save_button->setIcon(QIcon(u":/icons/monochrome/svg/save-3-line.svg"_s));
 }
 
 void MemoryCardEditorWindow::connectCardUi(Card* card, QDialogButtonBox* buttonBox)
@@ -729,8 +741,10 @@ void MemoryCardEditorWindow::doExportSaveFile()
 void MemoryCardEditorWindow::onExtractIconClicked()
 {
   QMenu* const extract_icon_menu = QtUtils::NewPopupMenu(m_extractIcon);
-  extract_icon_menu->addAction(tr("Extract Icon"), this, &MemoryCardEditorWindow::doExtractIcon);
-  extract_icon_menu->addAction(tr("Extract Animated Icon"), this, &MemoryCardEditorWindow::doExtractAnimatedIcon);
+  extract_icon_menu->addAction(QIcon(u":/icons/monochrome/svg/image-fill.svg"_s), tr("Extract Icon"), this,
+                               &MemoryCardEditorWindow::doExtractIcon);
+  extract_icon_menu->addAction(QIcon(u":/icons/monochrome/svg/add-animation.svg"_s), tr("Extract Animated Icon"), this,
+                               &MemoryCardEditorWindow::doExtractAnimatedIcon);
   extract_icon_menu->popup(QCursor::pos());
 }
 
@@ -918,19 +932,26 @@ void MemoryCardEditorWindow::onCardContextMenuRequested(const QPoint& pos)
     return;
 
   QMenu* const menu = QtUtils::NewPopupMenu(this);
-  QAction* action = menu->addAction(tr("Delete File"), this, &MemoryCardEditorWindow::doDeleteFile);
+  QAction* action = menu->addAction(QIcon(u":/icons/monochrome/svg/trash-fill.svg"_s), tr("Delete File"), this,
+                                    &MemoryCardEditorWindow::doDeleteFile);
   action->setEnabled(fi && !fi->deleted);
-  action = menu->addAction(tr("Undelete File"), this, &MemoryCardEditorWindow::doUndeleteFile);
+  action = menu->addAction(QIcon(u":/icons/monochrome/svg/delete-back-2-line.svg"_s), tr("Undelete File"), this,
+                           &MemoryCardEditorWindow::doUndeleteFile);
   action->setEnabled(fi && fi->deleted);
-  action = menu->addAction(tr("Rename File"), this, &MemoryCardEditorWindow::doRenameSaveFile);
+  action = menu->addAction(QIcon(u":/icons/monochrome/svg/edit-box-line.svg"_s), tr("Rename File"), this,
+                           &MemoryCardEditorWindow::doRenameSaveFile);
   action->setEnabled(fi != nullptr);
-  action = menu->addAction(tr("Export File"), this, &MemoryCardEditorWindow::doExportSaveFile);
+  action = menu->addAction(QIcon(u":/icons/monochrome/svg/export-line.svg"_s), tr("Export File"), this,
+                           &MemoryCardEditorWindow::doExportSaveFile);
   action->setEnabled(fi != nullptr);
-  action = menu->addAction(tr("Extract Icon"), this, &MemoryCardEditorWindow::doExtractIcon);
+  action = menu->addAction(QIcon(u":/icons/monochrome/svg/image-fill.svg"_s), tr("Extract Icon"), this,
+                           &MemoryCardEditorWindow::doExtractIcon);
   action->setEnabled(fi && !fi->icon_frames.empty());
-  action = menu->addAction(tr("Extract Animated Icon"), this, &MemoryCardEditorWindow::doExtractAnimatedIcon);
+  action = menu->addAction(QIcon(u":/icons/monochrome/svg/add-animation.svg"_s), tr("Extract Animated Icon"), this,
+                           &MemoryCardEditorWindow::doExtractAnimatedIcon);
   action->setEnabled(fi && !fi->icon_frames.empty());
-  action = menu->addAction(tr("Copy File"), this, &MemoryCardEditorWindow::doCopyFile);
+  action = menu->addAction(QIcon(u":/icons/monochrome/svg/arrow-left-right-line.svg"_s), tr("Copy File"), this,
+                           &MemoryCardEditorWindow::doCopyFile);
   action->setEnabled(fi && !m_card_a.filename.empty() && !m_card_b.filename.empty());
 
   menu->popup(table->mapToGlobal(pos));
