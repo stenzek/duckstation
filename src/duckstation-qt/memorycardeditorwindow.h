@@ -75,6 +75,9 @@ private:
 
   void doRenameSaveFile();
   void doExportSaveFile();
+  void onExtractIconClicked();
+  void doExtractIcon();
+  void doExtractAnimatedIcon();
   void importSaveFile(Card* card);
 
   std::tuple<Card*, const MemoryCardImage::FileInfo*> getSelectedFile();
@@ -95,6 +98,7 @@ private:
   QPushButton* m_undeleteFile;
   QPushButton* m_renameFile;
   QPushButton* m_exportFile;
+  QPushButton* m_extractIcon;
   QPushButton* m_moveLeft;
   QPushButton* m_moveRight;
 

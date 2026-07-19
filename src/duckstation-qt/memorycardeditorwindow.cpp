@@ -9,6 +9,9 @@
 #include "core/host.h"
 #include "core/settings.h"
 
+#include "util/animated_image.h"
+#include "util/image.h"
+
 #include "common/assert.h"
 #include "common/error.h"
 #include "common/file_system.h"
@@ -35,6 +38,10 @@ static constexpr char MEMORY_CARD_IMPORT_FILTER[] = QT_TRANSLATE_NOOP(
   "All Importable Memory Card Types (*.mcd *.mcr *.mc *.gme *.srm *.psm *.ps *.ddf *.mem *.vgs *.psx)");
 static constexpr char SINGLE_SAVEFILE_FILTER[] =
   QT_TRANSLATE_NOOP("MemoryCardEditorWindow", "Single Save Files (*.mcs);;All Files (*.*)");
+static constexpr char ICON_IMAGE_FILTER[] =
+  QT_TRANSLATE_NOOP("MemoryCardEditorWindow", "PNG Images (*.png);;JPEG Images (*.jpg *.jpeg);;WebP Images (*.webp)");
+static constexpr char ANIMATED_ICON_IMAGE_FILTER[] =
+  QT_TRANSLATE_NOOP("MemoryCardEditorWindow", "Animated PNG Images (*.png)");
 static constexpr std::array<std::pair<ConsoleRegion, const char*>, 3> MEMORY_CARD_FILE_REGION_PREFIXES = {{
   {ConsoleRegion::NTSC_U, "BA"},
   {ConsoleRegion::NTSC_J, "BI"},
@@ -136,6 +143,7 @@ MemoryCardEditorWindow::MemoryCardEditorWindow() : QWidget()
   m_undeleteFile = m_ui.centerButtonBox->addButton(tr("Undelete File"), QDialogButtonBox::ActionRole);
   m_renameFile = m_ui.centerButtonBox->addButton(tr("Rename File"), QDialogButtonBox::ActionRole);
   m_exportFile = m_ui.centerButtonBox->addButton(tr("Export File"), QDialogButtonBox::ActionRole);
+  m_extractIcon = m_ui.centerButtonBox->addButton(tr("Extract Icon"), QDialogButtonBox::ActionRole);
   m_moveLeft = m_ui.centerButtonBox->addButton(tr("<<"), QDialogButtonBox::ActionRole);
   m_moveRight = m_ui.centerButtonBox->addButton(tr(">>"), QDialogButtonBox::ActionRole);
 
@@ -290,6 +298,7 @@ void MemoryCardEditorWindow::connectUi()
   connect(m_ui.openCardB, &QPushButton::clicked, [this]() { openCard(&m_card_b); });
   connect(m_renameFile, &QPushButton::clicked, this, &MemoryCardEditorWindow::doRenameSaveFile);
   connect(m_exportFile, &QPushButton::clicked, this, &MemoryCardEditorWindow::doExportSaveFile);
+  connect(m_extractIcon, &QPushButton::clicked, this, &MemoryCardEditorWindow::onExtractIconClicked);
 }
 
 void MemoryCardEditorWindow::populateComboBox(QComboBox* cb)
@@ -597,7 +606,7 @@ void MemoryCardEditorWindow::promptForSave(Card* card)
 
 void MemoryCardEditorWindow::doCopyFile()
 {
-  const auto [src, fi] = getSelectedFile();
+  const auto& [src, fi] = getSelectedFile();
   if (!fi)
     return;
 
@@ -654,7 +663,7 @@ void MemoryCardEditorWindow::doCopyFile()
 
 void MemoryCardEditorWindow::doDeleteFile()
 {
-  const auto [card, fi] = getSelectedFile();
+  const auto& [card, fi] = getSelectedFile();
   if (!fi)
     return;
 
@@ -674,7 +683,7 @@ void MemoryCardEditorWindow::doDeleteFile()
 
 void MemoryCardEditorWindow::doUndeleteFile()
 {
-  const auto [card, fi] = getSelectedFile();
+  const auto& [card, fi] = getSelectedFile();
   if (!fi)
     return;
 
@@ -702,7 +711,7 @@ void MemoryCardEditorWindow::doExportSaveFile()
   if (filename.isEmpty())
     return;
 
-  const auto [card, fi] = getSelectedFile();
+  const auto& [card, fi] = getSelectedFile();
   if (!fi)
     return;
 
@@ -717,9 +726,74 @@ void MemoryCardEditorWindow::doExportSaveFile()
   }
 }
 
+void MemoryCardEditorWindow::onExtractIconClicked()
+{
+  QMenu* const extract_icon_menu = QtUtils::NewPopupMenu(m_extractIcon);
+  extract_icon_menu->addAction(tr("Extract Icon"), this, &MemoryCardEditorWindow::doExtractIcon);
+  extract_icon_menu->addAction(tr("Extract Animated Icon"), this, &MemoryCardEditorWindow::doExtractAnimatedIcon);
+  extract_icon_menu->popup(QCursor::pos());
+}
+
+void MemoryCardEditorWindow::doExtractIcon()
+{
+  const auto& [card, fi] = getSelectedFile();
+  if (!fi || fi->icon_frames.empty())
+    return;
+
+  const QString default_filename = QString::fromStdString(fi->filename) + QStringLiteral(".png");
+  const QString filename = QDir::toNativeSeparators(
+    QFileDialog::getSaveFileName(this, tr("Extract Icon"), default_filename, tr(ICON_IMAGE_FILTER)));
+  if (filename.isEmpty())
+    return;
+
+  const MemoryCardImage::IconFrame& frame = fi->icon_frames.front();
+  const Image image(MemoryCardImage::ICON_WIDTH, MemoryCardImage::ICON_HEIGHT, ImageFormat::RGBA8, frame.pixels,
+                    MemoryCardImage::ICON_WIDTH * sizeof(frame.pixels[0]));
+
+  Error error;
+  if (!image.SaveToFile(filename.toStdString().c_str(), Image::DEFAULT_SAVE_QUALITY, &error))
+  {
+    QtUtils::AsyncMessageBox(this, QMessageBox::Critical, tr("Error"),
+                             tr("Failed to extract icon from save file %1:\n%2")
+                               .arg(QString::fromStdString(fi->filename))
+                               .arg(QString::fromStdString(error.GetDescription())));
+  }
+}
+
+void MemoryCardEditorWindow::doExtractAnimatedIcon()
+{
+  const auto& [card, fi] = getSelectedFile();
+  if (!fi || fi->icon_frames.empty())
+    return;
+
+  const QString default_filename = QString::fromStdString(fi->filename) + QStringLiteral(".png");
+  const QString filename = QDir::toNativeSeparators(
+    QFileDialog::getSaveFileName(this, tr("Extract Animated Icon"), default_filename, tr(ANIMATED_ICON_IMAGE_FILTER)));
+  if (filename.isEmpty())
+    return;
+
+  const AnimatedImage::FrameDelay frame_delay = {MEMORY_CARD_ICON_FRAME_DURATION_MS, 1000};
+  AnimatedImage image(MemoryCardImage::ICON_WIDTH, MemoryCardImage::ICON_HEIGHT,
+                      static_cast<u32>(fi->icon_frames.size()), frame_delay);
+  for (u32 frame_index = 0; frame_index < static_cast<u32>(fi->icon_frames.size()); frame_index++)
+  {
+    image.SetPixels(frame_index, fi->icon_frames[frame_index].pixels,
+                    MemoryCardImage::ICON_WIDTH * sizeof(fi->icon_frames[frame_index].pixels[0]));
+  }
+
+  Error error;
+  if (!image.SaveToFile(filename.toStdString().c_str(), AnimatedImage::DEFAULT_SAVE_QUALITY, &error))
+  {
+    QtUtils::AsyncMessageBox(this, QMessageBox::Critical, tr("Error"),
+                             tr("Failed to extract animated icon from save file %1:\n%2")
+                               .arg(QString::fromStdString(fi->filename))
+                               .arg(QString::fromStdString(error.GetDescription())));
+  }
+}
+
 void MemoryCardEditorWindow::doRenameSaveFile()
 {
-  const auto [card, fi] = getSelectedFile();
+  const auto& [card, fi] = getSelectedFile();
   if (!fi)
     return;
 
@@ -727,7 +801,7 @@ void MemoryCardEditorWindow::doRenameSaveFile()
   dlg->setAttribute(Qt::WA_DeleteOnClose);
 
   connect(dlg, &QDialog::accepted, this, [this, dlg] {
-    const auto [card, fi] = getSelectedFile();
+    const auto& [card, fi] = getSelectedFile();
     if (!fi)
       return;
 
@@ -852,6 +926,10 @@ void MemoryCardEditorWindow::onCardContextMenuRequested(const QPoint& pos)
   action->setEnabled(fi != nullptr);
   action = menu->addAction(tr("Export File"), this, &MemoryCardEditorWindow::doExportSaveFile);
   action->setEnabled(fi != nullptr);
+  action = menu->addAction(tr("Extract Icon"), this, &MemoryCardEditorWindow::doExtractIcon);
+  action->setEnabled(fi && !fi->icon_frames.empty());
+  action = menu->addAction(tr("Extract Animated Icon"), this, &MemoryCardEditorWindow::doExtractAnimatedIcon);
+  action->setEnabled(fi && !fi->icon_frames.empty());
   action = menu->addAction(tr("Copy File"), this, &MemoryCardEditorWindow::doCopyFile);
   action->setEnabled(fi && !m_card_a.filename.empty() && !m_card_b.filename.empty());
 
@@ -880,7 +958,7 @@ std::tuple<MemoryCardEditorWindow::Card*, const MemoryCardImage::FileInfo*> Memo
 
 void MemoryCardEditorWindow::updateButtonState()
 {
-  const auto [selected_card, selected_file] = getSelectedFile();
+  const auto& [selected_card, selected_file] = getSelectedFile();
   const bool is_card_b = (selected_card == &m_card_b);
   const bool has_selection = (selected_file != nullptr);
   const bool is_deleted = (selected_file != nullptr && selected_file->deleted);
@@ -890,6 +968,7 @@ void MemoryCardEditorWindow::updateButtonState()
   m_deleteFile->setEnabled(has_selection);
   m_undeleteFile->setEnabled(is_deleted);
   m_exportFile->setEnabled(has_selection);
+  m_extractIcon->setEnabled(has_selection && !selected_file->icon_frames.empty());
   m_renameFile->setEnabled(has_selection);
   m_moveLeft->setEnabled(both_cards_present && has_selection && is_card_b);
   m_moveRight->setEnabled(both_cards_present && has_selection && !is_card_b);
