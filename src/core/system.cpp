@@ -2615,7 +2615,7 @@ void System::SaveMemoryState(MemorySaveState& mss)
   StateWrapper sw(mss.state_data.span(), StateWrapper::Mode::Write, SAVE_STATE_VERSION);
   DoMemoryState(sw, mss, false);
   DebugAssert(!sw.HasError());
-  mss.state_size = sw.GetPosition();
+  mss.state_size = static_cast<u32>(sw.GetPosition());
 
 #ifdef PROFILE_MEMORY_SAVE_STATES
   DEV_LOG("Saving frame {} to memory state slot {} took {} bytes and {:.4f} ms", s_state.frame_number,

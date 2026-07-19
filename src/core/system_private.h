@@ -16,11 +16,10 @@ namespace System {
 struct MemorySaveState
 {
   DynamicHeapArray<u8> state_data;
-  size_t state_size;
-
   std::unique_ptr<GPUTexture> vram_texture;
   DynamicHeapArray<u8> gpu_state_data;
-  size_t gpu_state_size;
+  u32 state_size;
+  u32 gpu_state_size;
 };
 
 MemorySaveState& AllocateMemoryState();
