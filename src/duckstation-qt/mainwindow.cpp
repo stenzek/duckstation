@@ -3182,10 +3182,14 @@ void MainWindow::onSettingsReloaded()
       disable_window_rounded_corners != s_locals.disable_window_rounded_corners)
   {
     s_locals.disable_window_rounded_corners = disable_window_rounded_corners;
-    QtUtils::SetWindowRoundedCornerState(this, !s_locals.disable_window_rounded_corners);
+    QtUtils::SetWindowRoundedCornerState(this, s_locals.disable_window_rounded_corners ? std::make_optional(false) :
+                                                                                         std::nullopt);
 
     if (QWidget* container = getDisplayContainer(); container && !container->parent() && !container->isFullScreen())
-      QtUtils::SetWindowRoundedCornerState(container, !s_locals.disable_window_rounded_corners);
+    {
+      QtUtils::SetWindowRoundedCornerState(
+        container, s_locals.disable_window_rounded_corners ? std::make_optional(false) : std::nullopt);
+    }
   }
 #endif
 

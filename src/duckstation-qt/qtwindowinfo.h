@@ -7,6 +7,8 @@
 
 #include "common/types.h"
 
+#include <optional>
+
 class Error;
 
 enum class RenderAPI : u8;
@@ -32,7 +34,7 @@ void UpdateSurfaceRefreshRate(QWidget* widget, WindowInfo* wi);
 
 /// Sets the rounded corner state for a window.
 /// Currently only supported on Windows.
-bool SetWindowRoundedCornerState(QWidget* widget, bool enabled);
+bool SetWindowRoundedCornerState(QWidget* widget, std::optional<bool> enabled);
 
 #endif
 

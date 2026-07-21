@@ -324,12 +324,27 @@ bool Host::SetScreensaverInhibit(bool inhibit, Error* error)
 
 #ifdef _WIN32
 
-bool QtUtils::SetWindowRoundedCornerState(QWidget* widget, bool enabled)
+bool QtUtils::SetWindowRoundedCornerState(QWidget* widget, std::optional<bool> enabled)
 {
   const HWND window_handle = reinterpret_cast<HWND>(widget->winId());
-  const DWM_WINDOW_CORNER_PREFERENCE value = enabled ? DWMWCP_DEFAULT : DWMWCP_DONOTROUND;
-  const HRESULT hr = DwmSetWindowAttribute(window_handle, DWMWA_WINDOW_CORNER_PREFERENCE, &value, sizeof(value));
-  if (FAILED(hr))
+
+  const DWM_WINDOW_CORNER_PREFERENCE wanted_value =
+    enabled.has_value() ? (enabled.value() ? DWMWCP_ROUND : DWMWCP_DONOTROUND) : DWMWCP_DEFAULT;
+  DWM_WINDOW_CORNER_PREFERENCE current_value = DWMWCP_DEFAULT;
+  HRESULT hr =
+    DwmGetWindowAttribute(window_handle, DWMWA_WINDOW_CORNER_PREFERENCE, &current_value, sizeof(current_value));
+  if (FAILED(hr)) [[unlikely]]
+  {
+    ERROR_LOG("DwmGetWindowAttribute(DWMWA_WINDOW_CORNER_PREFERENCE) failed: ",
+              Error::CreateHResult(hr).GetDescription());
+  }
+  else if (current_value == wanted_value)
+  {
+    return true;
+  }
+
+  hr = DwmSetWindowAttribute(window_handle, DWMWA_WINDOW_CORNER_PREFERENCE, &wanted_value, sizeof(wanted_value));
+  if (FAILED(hr)) [[unlikely]]
   {
     ERROR_LOG("DwmSetWindowAttribute(DWMWA_WINDOW_CORNER_PREFERENCE) failed: ",
               Error::CreateHResult(hr).GetDescription());
