@@ -405,4 +405,10 @@ bool IsSystemLocked();
 const QString& GetCurrentGameTitle();
 const QString& GetCurrentGameSerial();
 const QString& GetCurrentGamePath();
+
+#ifdef _WIN32
+/// Window corner rounding on Windows.
+bool AreWindowRoundedCornersDisabled();
+#endif
+
 } // namespace QtHost

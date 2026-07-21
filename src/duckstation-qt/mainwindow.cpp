@@ -178,6 +178,15 @@ const QString& QtHost::GetCurrentGamePath()
   return s_locals.current_game_path;
 }
 
+#ifdef _WIN32
+
+bool QtHost::AreWindowRoundedCornersDisabled()
+{
+  return s_locals.disable_window_rounded_corners;
+}
+
+#endif
+
 MainWindow::MainWindow() : QMainWindow(nullptr)
 {
   Assert(!g_main_window);
@@ -391,11 +400,6 @@ void MainWindow::createDisplayWidget(bool fullscreen, bool render_to_main)
   {
     restoreRenderWindowGeometryFromConfig();
     container->showNormal();
-
-#ifdef _WIN32
-    if (s_locals.disable_window_rounded_corners)
-      QtUtils::SetWindowRoundedCornerState(container, false);
-#endif
   }
   else
   {
@@ -3184,12 +3188,8 @@ void MainWindow::onSettingsReloaded()
     s_locals.disable_window_rounded_corners = disable_window_rounded_corners;
     QtUtils::SetWindowRoundedCornerState(this, s_locals.disable_window_rounded_corners ? std::make_optional(false) :
                                                                                          std::nullopt);
-
-    if (QWidget* container = getDisplayContainer(); container && !container->parent() && !container->isFullScreen())
-    {
-      QtUtils::SetWindowRoundedCornerState(
-        container, s_locals.disable_window_rounded_corners ? std::make_optional(false) : std::nullopt);
-    }
+    if (m_display_widget)
+      m_display_widget->updateWindowRoundedCornerState();
   }
 #endif
 

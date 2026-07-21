@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include "util/window_info.h"
 #include "util/gpu_types.h"
+#include "util/window_info.h"
 
 #include "common/types.h"
 
@@ -41,6 +41,10 @@ public:
   void checkForSizeChange(bool update_refresh_rate);
   void handleCloseEvent(QCloseEvent* event);
   void destroy();
+
+#ifdef _WIN32
+  void updateWindowRoundedCornerState();
+#endif
 
 Q_SIGNALS:
   void windowResizedEvent(int width, int height, float scale, float refresh_rate);

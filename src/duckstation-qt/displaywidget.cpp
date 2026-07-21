@@ -22,6 +22,7 @@
 #include <QtGui/QScreen>
 #include <QtGui/QWindow>
 #include <QtGui/QWindowStateChangeEvent>
+#include <QtWidgets/QStyle>
 #include <cmath>
 
 #include "moc_displaywidget.cpp"
@@ -33,6 +34,8 @@
 #ifdef _WIN32
 #include "common/windows_headers.h"
 #endif
+
+using namespace Qt::StringLiterals;
 
 LOG_CHANNEL(Host);
 
@@ -241,6 +244,34 @@ void DisplayWidget::destroy()
   deleteLater();
 }
 
+#ifdef _WIN32
+
+void DisplayWidget::updateWindowRoundedCornerState()
+{
+  // Only applies to top-level windows (i.e. not render-to-main-window).
+  if (!isTopLevel())
+    return;
+
+  // We only need to change this if the user toggled the option, or we're on the win11 theme.
+  std::optional<bool> wanted_value;
+  const bool is_fullscreen = isFullScreen();
+  if (style()->name() == u"windows11"_s)
+  {
+    // windows11 theme explicitly enables/disables rounding.
+    wanted_value = (!is_fullscreen && !QtHost::AreWindowRoundedCornersDisabled());
+  }
+  else
+  {
+    // leave value alone unless we explicitly disabled rounding
+    if (QtHost::AreWindowRoundedCornersDisabled())
+      wanted_value = false;
+  }
+
+  QtUtils::SetWindowRoundedCornerState(this, wanted_value);
+}
+
+#endif
+
 bool DisplayWidget::isActuallyFullscreen() const
 {
   // I hate you QtWayland... have to check the parent, not ourselves.
@@ -428,6 +459,14 @@ bool DisplayWidget::event(QEvent* event)
     }
 
     case QEvent::Show:
+    {
+#if defined(_WIN32)
+      // Thankfully this executes after the event filter, where the bug is.
+      updateWindowRoundedCornerState();
+#endif
+    }
+      [[fallthrough]];
+
     case QEvent::Resize:
     case QEvent::DevicePixelRatioChange:
     {
@@ -465,7 +504,11 @@ bool DisplayWidget::event(QEvent* event)
       if (ws_event->oldState() & Qt::WindowMinimized)
         emit windowRestoredEvent();
 
-#ifdef __APPLE__
+#if defined(_WIN32)
+      // Work around incorrect rounded windows11 theme bug.
+      if ((ws_event->oldState() ^ windowState()) & Qt::WindowFullScreen)
+        updateWindowRoundedCornerState();
+#elif defined(__APPLE__)
       // On MacOS, the user can "cancel" fullscreen by unmaximizing the window.
       if (ws_event->oldState() & Qt::WindowFullScreen && !(windowState() & Qt::WindowFullScreen))
         g_core_thread->setFullscreen(false);
