@@ -249,7 +249,7 @@ void DisplayWidget::destroy()
 void DisplayWidget::updateWindowRoundedCornerState()
 {
   // Only applies to top-level windows (i.e. not render-to-main-window).
-  if (!isTopLevel())
+  if (!isWindow())
     return;
 
   // We only need to change this if the user toggled the option, or we're on the win11 theme.
