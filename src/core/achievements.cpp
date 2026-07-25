@@ -1241,7 +1241,7 @@ void Achievements::ClientLoadGameCallback(int result, const char* error_message,
   UpdateGameSummary();
 
   // don't update the game database on disc change, because switching to unknown media will associate those hashes
-  if (was_disc_change)
+  if (!was_disc_change)
     UpdateGameDatabaseFromCurrentGame();
 
   // but the progress is fine since that's just game IDs
