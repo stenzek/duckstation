@@ -4829,6 +4829,31 @@ bool FullscreenUI::InputTextWithIcon(const char* str_id, std::string_view icon, 
   return result;
 }
 
+bool FullscreenUI::InputTextWithSuffix(const char* str_id, std::string_view suffix, char* buf, size_t buf_size,
+                                       ImGuiInputTextFlags flags /* = 0 */,
+                                       ImGuiInputTextCallback callback /* = nullptr */, void* user_data /* = nullptr */)
+{
+  ImGuiWindow* const window = ImGui::GetCurrentWindow();
+  const ImGuiID id = window->GetID(str_id);
+  const bool result = ImGui::InputText(str_id, buf, buf_size, flags, callback, user_data);
+
+  if (suffix.empty())
+    return result;
+
+  const ImGuiStyle& style = ImGui::GetStyle();
+  const float scroll_x =
+    (GImGui->ActiveId == id && GImGui->InputTextState.ID == id) ? GImGui->InputTextState.Scroll.x : 0.0f;
+  const ImVec2 suffix_pos =
+    ImGui::GetItemRectMin() + style.FramePadding + ImVec2(ImGui::CalcTextSize(buf).x - scroll_x, 0.0f);
+
+  ImDrawList* const draw_list = window->DrawList;
+  draw_list->PushClipRect(ImGui::GetItemRectMin(), ImGui::GetItemRectMax(), true);
+  draw_list->AddText(suffix_pos, ImGui::GetColorU32(ImGuiCol_Text), IMSTR_START_END(suffix));
+  draw_list->PopClipRect();
+
+  return result;
+}
+
 FullscreenUI::PopupDialog::PopupDialog() = default;
 
 FullscreenUI::PopupDialog::~PopupDialog() = default;

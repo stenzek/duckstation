@@ -3375,7 +3375,7 @@ void FullscreenUI::DrawSpeedSelectorSetting(SettingsInterface* bsi, std::string_
   else if (unlimited)
     StringUtil::Strlcpy(str_value, FSUI_VSTR("N/A"), std::size(str_value));
   else
-    std::snprintf(str_value, std::size(str_value), "%d%%", dlg_value);
+    fmt::format_to_n(str_value, std::size(str_value), "{}{}", dlg_value, manual_input ? "" : "%");
 
   if (manual_input)
   {
@@ -3383,7 +3383,7 @@ void FullscreenUI::DrawSpeedSelectorSetting(SettingsInterface* bsi, std::string_
 
     ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, LayoutScale(LAYOUT_WIDGET_FRAME_ROUNDING));
     ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
-    if (ImGui::InputText("##value", str_value, std::size(str_value), ImGuiInputTextFlags_CharsDecimal))
+    if (InputTextWithSuffix("##value", "%", str_value, std::size(str_value), ImGuiInputTextFlags_CharsDecimal))
     {
       dlg_value = std::max(MIN_VALUE, StringUtil::FromChars<int>(str_value).value_or(dlg_value));
       dlg_value_changed = true;
