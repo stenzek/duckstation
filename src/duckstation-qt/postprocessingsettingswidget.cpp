@@ -543,15 +543,6 @@ PostProcessingOverlayConfigWidget::PostProcessingOverlayConfigWidget(SettingsWin
 
   m_ui.setupUi(this);
 
-  m_ui.overlayName->addItem(tr("None"), QString());
-  m_ui.overlayName->addItem(tr("Custom..."), QStringLiteral("Custom"));
-  for (const std::string& name : VideoPresenter::EnumerateBorderOverlayPresets())
-  {
-    const QString qname = QString::fromStdString(name);
-    m_ui.overlayName->addItem(qname, qname);
-  }
-
-  SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.overlayName, "BorderOverlay", "PresetName");
   SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.imagePath, "BorderOverlay", "ImagePath");
   SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.displayStartX, "BorderOverlay", "DisplayStartX", 0);
   SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.displayStartY, "BorderOverlay", "DisplayStartY", 0);
@@ -561,10 +552,7 @@ PostProcessingOverlayConfigWidget::PostProcessingOverlayConfigWidget(SettingsWin
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.destinationAlphaBlend, "BorderOverlay",
                                                "DestinationAlphaBlend", false);
 
-  connect(m_ui.overlayName, &QComboBox::currentIndexChanged, this,
-          &PostProcessingOverlayConfigWidget::onOverlayNameCurrentIndexChanged);
-  connect(m_ui.overlayName, &QComboBox::currentIndexChanged, this,
-          &PostProcessingOverlayConfigWidget::triggerSettingsReload);
+  connect(m_ui.refreshOverlayList, &QPushButton::clicked, this, &PostProcessingOverlayConfigWidget::refreshOverlayList);
   connect(m_ui.imagePathBrowse, &QPushButton::clicked, this,
           &PostProcessingOverlayConfigWidget::onImagePathBrowseClicked);
   connect(m_ui.imagePath, &QLineEdit::textChanged, this, &PostProcessingOverlayConfigWidget::triggerSettingsReload);
@@ -589,7 +577,7 @@ PostProcessingOverlayConfigWidget::PostProcessingOverlayConfigWidget(SettingsWin
     m_ui.exportCustomConfig = nullptr;
   }
 
-  onOverlayNameCurrentIndexChanged(m_ui.overlayName->currentIndex());
+  refreshOverlayList();
 
   dialog->registerWidgetHelp(m_ui.imagePath, tr("Image Path"), tr("Unspecified"),
                              tr("Defines the path of the custom overlay image that will be loaded."));
@@ -610,6 +598,29 @@ PostProcessingOverlayConfigWidget::PostProcessingOverlayConfigWidget(SettingsWin
 }
 
 PostProcessingOverlayConfigWidget::~PostProcessingOverlayConfigWidget() = default;
+
+void PostProcessingOverlayConfigWidget::refreshOverlayList()
+{
+  SettingWidgetBinder::DisconnectWidget(m_ui.overlayName);
+
+  m_ui.overlayName->clear();
+  m_ui.overlayName->addItem(tr("None"), QString());
+  m_ui.overlayName->addItem(tr("Custom..."), QStringLiteral("Custom"));
+  for (const std::string& name : VideoPresenter::EnumerateBorderOverlayPresets())
+  {
+    const QString qname = QString::fromStdString(name);
+    m_ui.overlayName->addItem(qname, qname);
+  }
+
+  SettingWidgetBinder::BindWidgetToStringSetting(m_dialog->getSettingsInterface(), m_ui.overlayName, "BorderOverlay",
+                                                 "PresetName");
+  connect(m_ui.overlayName, &QComboBox::currentIndexChanged, this,
+          &PostProcessingOverlayConfigWidget::onOverlayNameCurrentIndexChanged);
+  connect(m_ui.overlayName, &QComboBox::currentIndexChanged, this,
+          &PostProcessingOverlayConfigWidget::triggerSettingsReload);
+
+  onOverlayNameCurrentIndexChanged(m_ui.overlayName->currentIndex());
+}
 
 void PostProcessingOverlayConfigWidget::triggerSettingsReload()
 {

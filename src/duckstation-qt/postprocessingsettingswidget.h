@@ -99,6 +99,7 @@ public:
   ~PostProcessingOverlayConfigWidget();
 
 private:
+  void refreshOverlayList();
   void triggerSettingsReload();
   void onOverlayNameCurrentIndexChanged(int index);
   void onImagePathBrowseClicked();
