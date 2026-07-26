@@ -135,7 +135,6 @@ public:
   bool DeliverVideoFrame(GPUTexture* stex) override final;
   bool DeliverAudioFrames(const s16* frames, u32 num_frames) override final;
   bool EndCapture(Error* error) override final;
-  void Flush() override final;
 
 protected:
   struct PendingFrame
@@ -610,28 +609,6 @@ void MediaCaptureBase::UpdateCaptureThreadUsage(double pct_divider, double time_
   m_encoder_thread_usage = static_cast<float>(static_cast<double>(delta) * pct_divider);
   m_encoder_thread_time = static_cast<float>(static_cast<double>(delta) * time_divider);
   m_encoder_thread_last_time = time;
-}
-
-void MediaCaptureBase::Flush()
-{
-  std::unique_lock lock(m_lock);
-
-  if (m_encoding_error)
-    return;
-
-  ProcessAllInFlightFrames(lock);
-
-  if (IsCapturingAudio())
-  {
-    // Clear any buffered audio frames out, we don't want to delay the CPU thread.
-    const u32 audio_frames = m_audio_buffer_size.load(std::memory_order_acquire);
-    if (audio_frames > 0)
-      WARNING_LOG("Dropping {} audio frames for buffer clear.", audio_frames);
-
-    m_audio_buffer_read_pos = 0;
-    m_audio_buffer_write_pos = 0;
-    m_audio_buffer_size.store(0, std::memory_order_release);
-  }
 }
 
 void MediaCaptureBase::DeleteOutputFile()

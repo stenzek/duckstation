@@ -73,5 +73,4 @@ public:
   virtual GPUTexture* GetRenderTexture() = 0;
   virtual bool DeliverVideoFrame(GPUTexture* stex) = 0;
   virtual bool DeliverAudioFrames(const s16* frames, u32 num_frames) = 0;
-  virtual void Flush() = 0;
 };
