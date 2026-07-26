@@ -2963,6 +2963,7 @@ void EmuFolders::EnsureFoldersExist()
   EnsureFolderExists(Subchannels);
   EnsureFolderExists(Textures);
   EnsureFolderExists(UserResources);
+  EnsureFolderExists(Path::Combine(UserResources, "overlays"));
   EnsureFolderExists(Videos);
 }
 
