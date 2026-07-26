@@ -3,6 +3,7 @@
 
 #include "media_capture.h"
 #include "gpu_device.h"
+#include "imgui_manager.h"
 #include "translation.h"
 
 #include "common/align.h"
@@ -2710,8 +2711,10 @@ bool MediaCaptureFFmpeg::InternalBeginCapture(float fps, float aspect, u32 sampl
 
       if (output_sample_rate != sample_rate)
       {
-        WARNING_LOG("Audio codec '{}' does not support {} Hz samples, using {} Hz.", acodec->name, sample_rate,
-                    output_sample_rate);
+        Host::AddKeyedOSDMessage(
+          OSDMessageType::Warning, "MediaCaptureResampling",
+          fmt::format(TRANSLATE_FS("MediaCapture", "Audio codec '{0}' does not support {1} Hz samples, using {2} Hz."),
+                      acodec->name, sample_rate, output_sample_rate));
       }
     }
 
