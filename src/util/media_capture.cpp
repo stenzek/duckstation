@@ -1928,6 +1928,7 @@ bool MediaCaptureMF::ProcessAudioPackets(s64 video_pts, Error* error)
   X(av_channel_layout_default)                                                                                         \
   X(av_channel_layout_copy)                                                                                            \
   X(av_opt_set_chlayout)                                                                                               \
+  X(av_samples_set_silence)                                                                                            \
   X(av_frame_alloc)                                                                                                    \
   X(av_frame_unref)                                                                                                    \
   X(av_frame_get_buffer)                                                                                               \
@@ -1967,9 +1968,10 @@ bool MediaCaptureMF::ProcessAudioPackets(s64 video_pts, Error* error)
 #define VISIT_SWRESAMPLE_IMPORTS(X)                                                                                    \
   X(swr_alloc)                                                                                                         \
   X(swr_init)                                                                                                          \
+  X(swr_close)                                                                                                         \
   X(swr_free)                                                                                                          \
   X(swr_convert)                                                                                                       \
-  X(swr_next_pts)
+  X(swr_get_out_samples)
 
 class MediaCaptureFFmpeg final : public MediaCaptureBase
 {
@@ -2002,6 +2004,11 @@ private:
   bool IsUsingHardwareVideoEncoding();
 
   bool ReceivePackets(AVCodecContext* codec_context, AVStream* stream, AVPacket* packet, Error* error);
+  bool AppendAudioFrameSamples(const u8* const* samples, u32 num_samples, Error* error);
+  bool ConvertAudioFrames(const s16* samples, u32 num_samples, Error* error);
+  bool FinalizeAudioFrame(Error* error);
+  bool FlushAudioResampler(Error* error);
+  bool SendAudioFrame(u32 num_samples, Error* error);
 
   AVFormatContext* m_format_context = nullptr;
 
@@ -2023,6 +2030,9 @@ private:
   AVDictionary* m_audio_codec_arguments = nullptr;
 
   AVPixelFormat m_video_pixel_format = AV_PIX_FMT_NONE;
+  DynamicHeapArray<u8> m_resampled_audio_buffer;
+  u32 m_audio_input_sample_rate = 0;
+  u32 m_audio_codec_frame_size = 0;
   u32 m_audio_frame_bps = 0;
   bool m_audio_frame_planar = false;
 
@@ -2650,9 +2660,64 @@ bool MediaCaptureFFmpeg::InternalBeginCapture(float fps, float aspect, u32 sampl
     m_audio_codec_context->codec_type = AVMEDIA_TYPE_AUDIO;
     m_audio_codec_context->bit_rate = audio_bitrate * 1000;
     m_audio_codec_context->sample_fmt = AV_SAMPLE_FMT_S16;
-    m_audio_codec_context->sample_rate = sample_rate;
-    m_audio_codec_context->time_base = {1, static_cast<int>(sample_rate)};
     wrap_av_channel_layout_default(&m_audio_codec_context->ch_layout, AUDIO_CHANNELS);
+
+    // Encoders such as Opus expose a restricted set of rates, resample if the input rate is unsupported.
+    const int* supported_sample_rates = nullptr;
+    int num_supported_sample_rates = 0;
+    res = wrap_avcodec_get_supported_config(m_audio_codec_context, acodec, AV_CODEC_CONFIG_SAMPLE_RATE, 0,
+                                            reinterpret_cast<const void**>(&supported_sample_rates),
+                                            &num_supported_sample_rates);
+    if (res < 0)
+    {
+      SetAVError(error, "avcodec_get_supported_config() for audio sample rates failed: ", res);
+      return false;
+    }
+
+    u32 output_sample_rate = sample_rate;
+    if (supported_sample_rates)
+    {
+      if (num_supported_sample_rates == 0)
+      {
+        Error::SetStringView(error, "Audio codec supports no sample rates.");
+        return false;
+      }
+
+      // Pick the closest supported rate. When both sides are equally close, prefer the higher
+      // rate to avoid unnecessarily discarding high-frequency content.
+      u32 best_difference = std::numeric_limits<u32>::max();
+      output_sample_rate = 0;
+      for (int i = 0; i < num_supported_sample_rates; i++)
+      {
+        const int supported_rate = supported_sample_rates[i];
+        if (supported_rate <= 0)
+          continue;
+
+        const u32 rate = static_cast<u32>(supported_rate);
+        const u32 difference = (rate > sample_rate) ? (rate - sample_rate) : (sample_rate - rate);
+        if (difference < best_difference || (difference == best_difference && rate > output_sample_rate))
+        {
+          output_sample_rate = rate;
+          best_difference = difference;
+        }
+      }
+
+      if (output_sample_rate == 0)
+      {
+        Error::SetStringView(error, "Audio codec supports no valid sample rates.");
+        return false;
+      }
+
+      if (output_sample_rate != sample_rate)
+      {
+        WARNING_LOG("Audio codec '{}' does not support {} Hz samples, using {} Hz.", acodec->name, sample_rate,
+                    output_sample_rate);
+      }
+    }
+
+    m_audio_input_sample_rate = sample_rate;
+    m_audio_codec_context->sample_rate = static_cast<int>(output_sample_rate);
+    m_audio_codec_context->time_base = {1, static_cast<int>(output_sample_rate)};
 
     bool supports_format = false;
     const AVSampleFormat* supported_sample_formats = nullptr;
@@ -2686,6 +2751,12 @@ bool MediaCaptureFFmpeg::InternalBeginCapture(float fps, float aspect, u32 sampl
         return false;
       }
       m_audio_codec_context->sample_fmt = supported_sample_formats[0];
+    }
+
+    // swresample is needed for either a sample-format conversion or a rate conversion. Its input
+    // is always the interleaved S16 stereo data supplied by MediaCaptureBase.
+    if (!supports_format || output_sample_rate != sample_rate)
+    {
       m_swr_context = wrap_swr_alloc();
       if (!m_swr_context)
       {
@@ -2697,7 +2768,7 @@ bool MediaCaptureFFmpeg::InternalBeginCapture(float fps, float aspect, u32 sampl
       wrap_av_opt_set_int(m_swr_context, "in_sample_rate", sample_rate, 0);
       wrap_av_opt_set_sample_fmt(m_swr_context, "in_sample_fmt", AV_SAMPLE_FMT_S16, 0);
       wrap_av_opt_set_int(m_swr_context, "out_channel_count", AUDIO_CHANNELS, 0);
-      wrap_av_opt_set_int(m_swr_context, "out_sample_rate", sample_rate, 0);
+      wrap_av_opt_set_int(m_swr_context, "out_sample_rate", output_sample_rate, 0);
       wrap_av_opt_set_sample_fmt(m_swr_context, "out_sample_fmt", m_audio_codec_context->sample_fmt, 0);
       wrap_av_opt_set_chlayout(m_swr_context, "in_chlayout", &m_audio_codec_context->ch_layout, 0);
       wrap_av_opt_set_chlayout(m_swr_context, "out_chlayout", &m_audio_codec_context->ch_layout, 0);
@@ -2733,15 +2804,28 @@ bool MediaCaptureFFmpeg::InternalBeginCapture(float fps, float aspect, u32 sampl
     }
 
     // Use packet size for frame if it supports it... but most don't.
+    // m_audio_frame_size is the number of producer-rate frames needed to wake the encoder,
+    // m_audio_codec_frame_size is the number of output-rate samples in each codec frame.
     if (acodec->capabilities & AV_CODEC_CAP_VARIABLE_FRAME_SIZE)
-      m_audio_frame_size = static_cast<u32>(static_cast<float>(sample_rate) / fps);
+      m_audio_codec_frame_size = std::max(static_cast<u32>(static_cast<float>(output_sample_rate) / fps), 1u);
     else
-      m_audio_frame_size = m_audio_codec_context->frame_size;
-    if (m_audio_frame_size >= m_audio_buffer.size())
+      m_audio_codec_frame_size = m_audio_codec_context->frame_size;
+
+    if (m_audio_codec_frame_size == 0)
+    {
+      Error::SetStringView(error, "Audio codec returned an invalid frame size.");
+      return false;
+    }
+
+    m_audio_frame_size =
+      std::max(static_cast<u32>((static_cast<u64>(m_audio_codec_frame_size) * sample_rate + output_sample_rate - 1) /
+                                output_sample_rate),
+               1u);
+    if (m_audio_frame_size >= GetAudioBufferSizeInFrames())
     {
       SetAVError(error,
                  TinyString::from_format("Audio frame size {} exceeds buffer size {}", m_audio_frame_size,
-                                         m_audio_buffer.size()),
+                                         GetAudioBufferSizeInFrames()),
                  AVERROR(EINVAL));
       return false;
     }
@@ -2757,7 +2841,7 @@ bool MediaCaptureFFmpeg::InternalBeginCapture(float fps, float aspect, u32 sampl
     }
 
     m_converted_audio_frame->format = m_audio_codec_context->sample_fmt;
-    m_converted_audio_frame->nb_samples = m_audio_frame_size;
+    m_converted_audio_frame->nb_samples = m_audio_codec_frame_size;
 #if LIBAVUTIL_VERSION_MAJOR < 57
     m_converted_audio_frame->channels = AUDIO_CHANNELS;
     m_converted_audio_frame->channel_layout = m_audio_codec_context->channel_layout;
@@ -2814,37 +2898,55 @@ bool MediaCaptureFFmpeg::InternalBeginCapture(float fps, float aspect, u32 sampl
 
 bool MediaCaptureFFmpeg::InternalEndCapture(std::unique_lock<std::mutex>& lock, Error* error)
 {
-  int res = MediaCaptureBase::InternalEndCapture(lock, error) ? 0 : -1;
-  if (res == 0)
-  {
-    // end of stream
-    if (m_video_stream)
-    {
-      res = wrap_avcodec_send_frame(m_video_codec_context, nullptr);
-      if (res < 0)
-        SetAVError(error, "avcodec_send_frame() for video EOS failed: ", res);
-      else
-        res = ReceivePackets(m_video_codec_context, m_video_stream, m_video_packet, error) ? 0 : -1;
-    }
-    if (m_audio_stream)
-    {
-      res = wrap_avcodec_send_frame(m_audio_codec_context, nullptr);
-      if (res < 0)
-        SetAVError(error, "avcodec_send_frame() for audio EOS failed: ", res);
-      else
-        res = ReceivePackets(m_audio_codec_context, m_audio_stream, m_audio_packet, error) ? 0 : -1;
-    }
+  if (!MediaCaptureBase::InternalEndCapture(lock, error))
+    return false;
 
-    // end of file!
-    if (res == 0)
-    {
-      res = wrap_av_write_trailer(m_format_context);
-      if (res < 0)
-        SetAVError(error, "av_write_trailer() failed: ", res);
-    }
+  if (m_audio_stream)
+  {
+    // Stop the worker first, then consume all source samples and all resampler delay on this
+    // thread. This guarantees that shutdown does not discard audio left below the wake threshold.
+    if (!ProcessAudioPackets(std::numeric_limits<s64>::max(), error))
+      return false;
+    if (m_swr_context && !FlushAudioResampler(error))
+      return false;
+    if (!FinalizeAudioFrame(error))
+      return false;
   }
 
-  return (res == 0);
+  // end of stream
+  if (m_video_stream)
+  {
+    const int res = wrap_avcodec_send_frame(m_video_codec_context, nullptr);
+    if (res < 0)
+    {
+      SetAVError(error, "avcodec_send_frame() for video EOS failed: ", res);
+      return false;
+    }
+    if (!ReceivePackets(m_video_codec_context, m_video_stream, m_video_packet, error))
+      return false;
+  }
+
+  if (m_audio_stream)
+  {
+    const int res = wrap_avcodec_send_frame(m_audio_codec_context, nullptr);
+    if (res < 0)
+    {
+      SetAVError(error, "avcodec_send_frame() for audio EOS failed: ", res);
+      return false;
+    }
+    if (!ReceivePackets(m_audio_codec_context, m_audio_stream, m_audio_packet, error))
+      return false;
+  }
+
+  // end of file!
+  const int res = wrap_av_write_trailer(m_format_context);
+  if (res < 0)
+  {
+    SetAVError(error, "av_write_trailer() failed: ", res);
+    return false;
+  }
+
+  return true;
 }
 
 void MediaCaptureFFmpeg::ClearState()
@@ -2898,6 +3000,12 @@ void MediaCaptureFFmpeg::ClearState()
     wrap_av_dict_free(&m_video_codec_arguments);
   if (m_audio_codec_arguments)
     wrap_av_dict_free(&m_audio_codec_arguments);
+
+  m_resampled_audio_buffer.deallocate();
+  m_audio_input_sample_rate = 0;
+  m_audio_codec_frame_size = 0;
+  m_audio_frame_bps = 0;
+  m_audio_frame_planar = false;
 }
 
 bool MediaCaptureFFmpeg::ReceivePackets(AVCodecContext* codec_context, AVStream* stream, AVPacket* packet, Error* error)
@@ -3018,20 +3126,35 @@ bool MediaCaptureFFmpeg::SendFrame(const PendingFrame& pf, Error* error)
 
 bool MediaCaptureFFmpeg::ProcessAudioPackets(s64 video_pts, Error* error)
 {
+  // EndCapture() uses the sentinel to drain the source ring without involving video timestamps.
   const u32 max_audio_buffer_size = GetAudioBufferSizeInFrames();
+  const bool drain = (video_pts == std::numeric_limits<s64>::max());
 
   u32 pending_frames = m_audio_buffer_size.load(std::memory_order_acquire);
-  while (pending_frames > 0 &&
-         (!m_video_codec_context || wrap_av_compare_ts(video_pts, m_video_codec_context->time_base, m_next_audio_pts,
-                                                       m_audio_codec_context->time_base) > 0))
+  while (pending_frames > 0 && (drain || !m_video_codec_context ||
+                                wrap_av_compare_ts(video_pts, m_video_codec_context->time_base, m_next_audio_pts,
+                                                   m_audio_codec_context->time_base) > 0))
   {
     // In case the encoder is still using it.
-    if (m_audio_frame_pos == 0)
-      wrap_av_frame_make_writable(m_converted_audio_frame);
+    if (!m_swr_context && m_audio_frame_pos == 0)
+    {
+      const int res = wrap_av_frame_make_writable(m_converted_audio_frame);
+      if (res < 0)
+      {
+        SetAVError(error, "av_frame_make_writable() for audio failed: ", res);
+        return false;
+      }
+    }
 
     // Grab as many source frames as we can.
     const u32 contig_frames = std::min(pending_frames, max_audio_buffer_size - m_audio_buffer_read_pos);
-    const u32 this_batch = std::min(m_audio_frame_size - m_audio_frame_pos, contig_frames);
+    const u32 remaining_output_frames = m_audio_codec_frame_size - m_audio_frame_pos;
+    const u32 requested_input_frames =
+      std::max(static_cast<u32>((static_cast<u64>(remaining_output_frames) * m_audio_input_sample_rate +
+                                 m_audio_codec_context->sample_rate - 1) /
+                                m_audio_codec_context->sample_rate),
+               1u);
+    const u32 this_batch = std::min(requested_input_frames, contig_frames);
 
     // Do we need to convert the sample format?
     if (!m_swr_context)
@@ -3062,67 +3185,183 @@ bool MediaCaptureFFmpeg::ProcessAudioPackets(s64 video_pts, Error* error)
     }
     else
     {
-      // Use swresample to convert.
-      const u8* input = reinterpret_cast<u8*>(&m_audio_buffer[m_audio_buffer_read_pos * AUDIO_CHANNELS]);
-
-      // Might be planar, so offset both buffers.
-      u8* output[AUDIO_CHANNELS];
-      if (m_audio_frame_planar)
-      {
-        for (u32 i = 0; i < AUDIO_CHANNELS; i++)
-          output[i] = m_converted_audio_frame->data[i] + (m_audio_frame_pos * m_audio_frame_bps);
-      }
-      else
-      {
-        output[0] = m_converted_audio_frame->data[0] + (m_audio_frame_pos * m_audio_frame_bps * AUDIO_CHANNELS);
-      }
-
-      const int res = wrap_swr_convert(m_swr_context, output, this_batch, &input, this_batch);
-      if (res < 0)
-      {
-        SetAVError(error, "swr_convert() failed: ", res);
+      if (!ConvertAudioFrames(&m_audio_buffer[m_audio_buffer_read_pos * AUDIO_CHANNELS], this_batch, error))
         return false;
-      }
     }
 
     m_audio_buffer_read_pos = (m_audio_buffer_read_pos + this_batch) % max_audio_buffer_size;
     m_audio_buffer_size.fetch_sub(this_batch);
-    m_audio_frame_pos += this_batch;
     pending_frames -= this_batch;
 
-    // Do we have a complete frame?
-    if (m_audio_frame_pos == m_audio_frame_size)
+    if (!m_swr_context)
     {
-      m_audio_frame_pos = 0;
-
-      if (!m_swr_context)
+      m_audio_frame_pos += this_batch;
+      if (m_audio_frame_pos == m_audio_codec_frame_size)
       {
-        // PTS is simply frames.
-        m_converted_audio_frame->pts = m_next_audio_pts;
+        if (!SendAudioFrame(m_audio_codec_frame_size, error))
+          return false;
       }
-      else
-      {
-        m_converted_audio_frame->pts = wrap_swr_next_pts(m_swr_context, m_next_audio_pts);
-      }
-
-      // Increment PTS.
-      m_next_audio_pts += m_audio_frame_size;
-
-      // Send off for encoding.
-      int res = wrap_avcodec_send_frame(m_audio_codec_context, m_converted_audio_frame);
-      if (res < 0) [[unlikely]]
-      {
-        SetAVError(error, "avcodec_send_frame() for audio failed: ", res);
-        return false;
-      }
-
-      // Write any packets back to the output file.
-      if (!ReceivePackets(m_audio_codec_context, m_audio_stream, m_audio_packet, error)) [[unlikely]]
-        return false;
     }
   }
 
   return true;
+}
+
+bool MediaCaptureFFmpeg::AppendAudioFrameSamples(const u8* const* samples, u32 num_samples, Error* error)
+{
+  for (u32 sample_offset = 0; sample_offset < num_samples;)
+  {
+    if (m_audio_frame_pos == 0)
+    {
+      const int res = wrap_av_frame_make_writable(m_converted_audio_frame);
+      if (res < 0)
+      {
+        SetAVError(error, "av_frame_make_writable() for audio failed: ", res);
+        return false;
+      }
+    }
+
+    const u32 samples_to_copy = std::min(num_samples - sample_offset, m_audio_codec_frame_size - m_audio_frame_pos);
+    if (m_audio_frame_planar)
+    {
+      for (u32 channel = 0; channel < AUDIO_CHANNELS; channel++)
+      {
+        std::memcpy(m_converted_audio_frame->data[channel] + (m_audio_frame_pos * m_audio_frame_bps),
+                    samples[channel] + (sample_offset * m_audio_frame_bps), samples_to_copy * m_audio_frame_bps);
+      }
+    }
+    else
+    {
+      std::memcpy(m_converted_audio_frame->data[0] + (m_audio_frame_pos * m_audio_frame_bps * AUDIO_CHANNELS),
+                  samples[0] + (sample_offset * m_audio_frame_bps * AUDIO_CHANNELS),
+                  samples_to_copy * m_audio_frame_bps * AUDIO_CHANNELS);
+    }
+
+    m_audio_frame_pos += samples_to_copy;
+    sample_offset += samples_to_copy;
+    if (m_audio_frame_pos == m_audio_codec_frame_size && !SendAudioFrame(m_audio_codec_frame_size, error))
+      return false;
+  }
+
+  return true;
+}
+
+bool MediaCaptureFFmpeg::ConvertAudioFrames(const s16* samples, u32 num_samples, Error* error)
+{
+  // swr_get_out_samples() is an upper bound, so the scratch buffer is large enough even when
+  // resampler delay causes this input batch to produce more output than its nominal ratio.
+  const int max_output_samples = wrap_swr_get_out_samples(m_swr_context, static_cast<int>(num_samples));
+  if (max_output_samples < 0)
+  {
+    SetAVError(error, "swr_get_out_samples() failed: ", max_output_samples);
+    return false;
+  }
+  if (max_output_samples == 0)
+    return true;
+
+  const size_t output_plane_size = static_cast<size_t>(max_output_samples) * m_audio_frame_bps;
+  if (m_resampled_audio_buffer.size() < (output_plane_size * AUDIO_CHANNELS))
+    m_resampled_audio_buffer.resize(output_plane_size * AUDIO_CHANNELS);
+
+  u8* output[AUDIO_CHANNELS] = {m_resampled_audio_buffer.data(), nullptr};
+  if (m_audio_frame_planar)
+    output[1] = output[0] + output_plane_size;
+
+  const u8* input = reinterpret_cast<const u8*>(samples);
+  const int converted_samples =
+    wrap_swr_convert(m_swr_context, output, max_output_samples, &input, static_cast<int>(num_samples));
+  if (converted_samples < 0)
+  {
+    SetAVError(error, "swr_convert() failed: ", converted_samples);
+    return false;
+  }
+
+  return AppendAudioFrameSamples(output, static_cast<u32>(converted_samples), error);
+}
+
+bool MediaCaptureFFmpeg::FlushAudioResampler(Error* error)
+{
+  // Passing no input asks swresample to emit its delayed tail. Repeat until it reports no output.
+  for (;;)
+  {
+    const int max_output_samples = wrap_swr_get_out_samples(m_swr_context, 0);
+    if (max_output_samples < 0)
+    {
+      SetAVError(error, "swr_get_out_samples() for flush failed: ", max_output_samples);
+      return false;
+    }
+    if (max_output_samples == 0)
+      return true;
+
+    const size_t output_plane_size = static_cast<size_t>(max_output_samples) * m_audio_frame_bps;
+    if (m_resampled_audio_buffer.size() < (output_plane_size * AUDIO_CHANNELS))
+      m_resampled_audio_buffer.resize(output_plane_size * AUDIO_CHANNELS);
+
+    u8* output[AUDIO_CHANNELS] = {m_resampled_audio_buffer.data(), nullptr};
+    if (m_audio_frame_planar)
+      output[1] = output[0] + output_plane_size;
+
+    const int converted_samples = wrap_swr_convert(m_swr_context, output, max_output_samples, nullptr, 0);
+    if (converted_samples < 0)
+    {
+      SetAVError(error, "swr_convert() for flush failed: ", converted_samples);
+      return false;
+    }
+    else if (converted_samples == 0)
+    {
+      return true;
+    }
+    else if (!AppendAudioFrameSamples(output, static_cast<u32>(converted_samples), error))
+    {
+      return false;
+    }
+  }
+}
+
+bool MediaCaptureFFmpeg::FinalizeAudioFrame(Error* error)
+{
+  if (m_audio_frame_pos == 0)
+    return true;
+
+  const AVCodec* codec = m_audio_codec_context->codec;
+  if (codec->capabilities & (AV_CODEC_CAP_VARIABLE_FRAME_SIZE | AV_CODEC_CAP_SMALL_LAST_FRAME))
+  {
+    // These codecs can accept the final frame at its natural length.
+    return SendAudioFrame(m_audio_frame_pos, error);
+  }
+
+  // Fixed-size codecs need a complete frame. Fill the unused tail with codec-appropriate silence
+  // rather than dropping the final converted samples.
+  const int res = wrap_av_samples_set_silence(m_converted_audio_frame->data, static_cast<int>(m_audio_frame_pos),
+                                              static_cast<int>(m_audio_codec_frame_size - m_audio_frame_pos),
+                                              AUDIO_CHANNELS, m_audio_codec_context->sample_fmt);
+  if (res < 0)
+  {
+    SetAVError(error, "av_samples_set_silence() failed: ", res);
+    return false;
+  }
+
+  return SendAudioFrame(m_audio_codec_frame_size, error);
+}
+
+bool MediaCaptureFFmpeg::SendAudioFrame(u32 num_samples, Error* error)
+{
+  // PTS is expressed in output-rate samples, so it must advance by the actual final-frame size
+  // when a variable/small-last-frame codec receives a short frame.
+  DebugAssert(num_samples > 0 && num_samples <= m_audio_codec_frame_size);
+  m_converted_audio_frame->nb_samples = num_samples;
+  m_converted_audio_frame->pts = m_next_audio_pts;
+
+  int res = wrap_avcodec_send_frame(m_audio_codec_context, m_converted_audio_frame);
+  if (res < 0) [[unlikely]]
+  {
+    SetAVError(error, "avcodec_send_frame() for audio failed: ", res);
+    return false;
+  }
+
+  m_next_audio_pts += num_samples;
+  m_audio_frame_pos = 0;
+  return ReceivePackets(m_audio_codec_context, m_audio_stream, m_audio_packet, error);
 }
 
 std::unique_ptr<MediaCapture> MediaCaptureFFmpeg::Create(Error* error)
