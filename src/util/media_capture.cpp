@@ -439,7 +439,8 @@ void MediaCaptureBase::ProcessAllInFlightFrames(std::unique_lock<std::mutex>& lo
 
   while (m_frames_pending_encode > 0)
   {
-    m_frame_encoded_cv.wait(lock, [this]() { return (m_frames_pending_encode == 0 || m_encoding_error); });
+    m_frame_encoded_cv.wait(
+      lock, [this]() { return (m_frames_pending_encode == 0 || m_encoding_error.load(std::memory_order_acquire)); });
   }
 }
 
@@ -447,7 +448,7 @@ bool MediaCaptureBase::DeliverAudioFrames(const s16* frames, u32 num_frames)
 {
   if (!IsCapturingAudio())
     return true;
-  else if (!m_capturing.load(std::memory_order_acquire))
+  else if (!m_capturing.load(std::memory_order_acquire) || m_encoding_error.load(std::memory_order_acquire))
     return false;
 
   const u32 audio_buffer_size = GetAudioBufferSizeInFrames();
@@ -456,10 +457,10 @@ bool MediaCaptureBase::DeliverAudioFrames(const s16* frames, u32 num_frames)
     // Need to wait for it to drain a bit.
     std::unique_lock lock(m_lock);
     m_frame_encoded_cv.wait(lock, [this, &num_frames, &audio_buffer_size]() {
-      return (!m_capturing.load(std::memory_order_acquire) ||
+      return (!m_capturing.load(std::memory_order_acquire) || m_encoding_error.load(std::memory_order_acquire) ||
               ((audio_buffer_size - m_audio_buffer_size.load(std::memory_order_acquire)) >= num_frames));
     });
-    if (!m_capturing.load(std::memory_order_acquire))
+    if (!m_capturing.load(std::memory_order_acquire) || m_encoding_error.load(std::memory_order_acquire))
       return false;
   }
 
@@ -481,10 +482,22 @@ bool MediaCaptureBase::DeliverAudioFrames(const s16* frames, u32 num_frames)
   {
     // If we're not capturing video, push "frames" when we hit the audio packet size.
     std::unique_lock lock(m_lock);
-    if (!m_capturing.load(std::memory_order_acquire))
+
+    // In the rare event that somehow we're crossing a frame boundary, we need to wait for the
+    // encode thread to catch up.
+    PendingFrame& pf = m_pending_frames[m_pending_frames_pos];
+    DebugAssert(pf.state != PendingFrame::State::NeedsMap);
+    if (pf.state == PendingFrame::State::NeedsEncoding)
+    {
+      m_frame_encoded_cv.wait(lock, [this, &pf]() {
+        return (!m_capturing.load(std::memory_order_acquire) || m_encoding_error.load(std::memory_order_acquire) ||
+                pf.state == PendingFrame::State::Unused);
+      });
+    }
+
+    if (!m_capturing.load(std::memory_order_acquire) || m_encoding_error.load(std::memory_order_acquire))
       return false;
 
-    PendingFrame& pf = m_pending_frames[m_pending_frames_pos];
     pf.state = PendingFrame::State::NeedsEncoding;
     m_pending_frames_pos = (m_pending_frames_pos + 1) % MAX_PENDING_FRAMES;
 
