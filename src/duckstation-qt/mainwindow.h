@@ -37,6 +37,7 @@ class CoverDownloadWindow;
 
 struct SystemBootParameters;
 
+enum class MediaCaptureMode : u8;
 enum class RenderAPI : u8;
 class GPUDevice;
 namespace Achievements {
@@ -195,6 +196,7 @@ private:
   void updateDisplayWidgetCursor();
   void updateDisplayRelatedActions();
   void updateGameListRelatedActions();
+  void updateMediaCaptureActions(MediaCaptureMode mode);
   void updateLogWidget();
 
   void doSettings(const char* category = nullptr);
@@ -244,7 +246,7 @@ private:
   void onSystemResumed();
   void onSystemGameChanged(const QString& path, const QString& game_serial, const QString& game_title);
   void onSystemUndoStateAvailabilityChanged(bool available, quint64 timestamp);
-  void onMediaCaptureStarted();
+  void onMediaCaptureStarted(MediaCaptureMode mode);
   void onMediaCaptureStopped();
   void onAchievementsLoginRequested(Achievements::LoginRequestReason reason);
   void onAchievementsLoginSuccess(const QString& username, quint32 points, quint32 sc_points, quint32 unread_messages);
@@ -302,7 +304,9 @@ private:
   void onToolsISOBrowserTriggered();
   void onToolsCoverDownloaderTriggered();
   void onToolsRefreshAchievementDatabaseTriggered();
-  void onToolsMediaCaptureTriggered(bool checked);
+  void onToolsMediaCaptureTriggered();
+  void onToolsStartMediaCaptureTriggered(bool audio, bool video);
+  void onToolsStopMediaCaptureTriggered();
   void onToolsOpenDataDirectoryTriggered();
   void onToolsOpenTextureDirectoryTriggered();
   void onSettingsTriggeredFromToolbar();

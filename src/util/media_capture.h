@@ -25,6 +25,14 @@ enum class MediaCaptureBackend : u8
   MaxCount,
 };
 
+enum class MediaCaptureMode : u8
+{
+  AudioAndVideo,
+  AudioOnly,
+  VideoOnly,
+  MaxCount,
+};
+
 class MediaCapture
 {
 public:
@@ -39,17 +47,18 @@ public:
   static const char* GetBackendName(MediaCaptureBackend backend);
   static const char* GetBackendDisplayName(MediaCaptureBackend backend);
 
-  static ContainerList GetContainerList(MediaCaptureBackend backend);
-  static CodecList GetVideoCodecList(MediaCaptureBackend backend, const char* container);
+  static ContainerList GetAudioContainerList(MediaCaptureBackend backend);
   static CodecList GetAudioCodecList(MediaCaptureBackend backend, const char* container);
+  static ContainerList GetVideoContainerList(MediaCaptureBackend backend);
+  static CodecList GetVideoCodecList(MediaCaptureBackend backend, const char* container);
 
   static void AdjustVideoSize(u32* width, u32* height);
 
   static std::unique_ptr<MediaCapture> Create(MediaCaptureBackend backend, Error* error);
 
-  virtual bool BeginCapture(float fps, float aspect, u32 width, u32 height, GPUTextureFormat texture_format,
-                            u32 sample_rate, std::string path, bool capture_video, std::string_view video_codec,
-                            u32 video_bitrate, std::string_view video_codec_args, bool capture_audio,
+  virtual bool BeginCapture(MediaCaptureMode mode, float fps, float aspect, u32 width, u32 height,
+                            GPUTextureFormat texture_format, u32 sample_rate, std::string path,
+                            std::string_view video_codec, u32 video_bitrate, std::string_view video_codec_args,
                             std::string_view audio_codec, u32 audio_bitrate, std::string_view audio_codec_args,
                             Error* error) = 0;
   virtual bool EndCapture(Error* error) = 0;
@@ -57,6 +66,7 @@ public:
   // TODO: make non-virtual?
   virtual const std::string& GetPath() const = 0;
   virtual std::string GetNextCapturePath() const = 0;
+  virtual MediaCaptureMode GetCaptureMode() const = 0;
   virtual bool IsCapturingAudio() const = 0;
   virtual bool IsCapturingVideo() const = 0;
   virtual u32 GetVideoWidth() const = 0;

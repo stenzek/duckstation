@@ -44,6 +44,7 @@ class QTimer;
 class QTranslator;
 
 class INISettingsInterface;
+enum class MediaCaptureMode : u8;
 
 enum class RenderAPI : u8;
 class GPUDevice;
@@ -125,7 +126,7 @@ Q_SIGNALS:
   void achievementsLoginSuccess(const QString& username, quint32 points, quint32 sc_points, quint32 unread_messages);
   void achievementsActiveChanged(bool active);
   void achievementsHardcoreModeChanged(bool enabled);
-  void mediaCaptureStarted();
+  void mediaCaptureStarted(MediaCaptureMode mode);
   void mediaCaptureStopped();
 
   bool onCreateAuxiliaryRenderWindow(RenderAPI render_api, qint32 x, qint32 y, quint32 width, quint32 height,

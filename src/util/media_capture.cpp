@@ -117,13 +117,14 @@ public:
 
   virtual ~MediaCaptureBase() override;
 
-  bool BeginCapture(float fps, float aspect, u32 width, u32 height, GPUTextureFormat texture_format, u32 sample_rate,
-                    std::string path, bool capture_video, std::string_view video_codec, u32 video_bitrate,
-                    std::string_view video_codec_args, bool capture_audio, std::string_view audio_codec,
+  bool BeginCapture(MediaCaptureMode mode, float fps, float aspect, u32 width, u32 height,
+                    GPUTextureFormat texture_format, u32 sample_rate, std::string path, std::string_view video_codec,
+                    u32 video_bitrate, std::string_view video_codec_args, std::string_view audio_codec,
                     u32 audio_bitrate, std::string_view audio_codec_args, Error* error) override final;
 
   const std::string& GetPath() const override final;
   std::string GetNextCapturePath() const override final;
+  MediaCaptureMode GetCaptureMode() const override final;
   u32 GetVideoWidth() const override final;
   u32 GetVideoHeight() const override final;
   float GetVideoFPS() const override final;
@@ -212,9 +213,9 @@ protected:
 
 MediaCaptureBase::~MediaCaptureBase() = default;
 
-bool MediaCaptureBase::BeginCapture(float fps, float aspect, u32 width, u32 height, GPUTextureFormat texture_format,
-                                    u32 sample_rate, std::string path, bool capture_video, std::string_view video_codec,
-                                    u32 video_bitrate, std::string_view video_codec_args, bool capture_audio,
+bool MediaCaptureBase::BeginCapture(MediaCaptureMode mode, float fps, float aspect, u32 width, u32 height,
+                                    GPUTextureFormat texture_format, u32 sample_rate, std::string path,
+                                    std::string_view video_codec, u32 video_bitrate, std::string_view video_codec_args,
                                     std::string_view audio_codec, u32 audio_bitrate, std::string_view audio_codec_args,
                                     Error* error)
 {
@@ -228,6 +229,9 @@ bool MediaCaptureBase::BeginCapture(float fps, float aspect, u32 width, u32 heig
     Error::SetStringView(error, "No path specified.");
     return false;
   }
+
+  const bool capture_audio = (mode == MediaCaptureMode::AudioAndVideo || mode == MediaCaptureMode::AudioOnly);
+  const bool capture_video = (mode == MediaCaptureMode::AudioAndVideo || mode == MediaCaptureMode::VideoOnly);
 
   if (capture_video)
   {
@@ -591,6 +595,18 @@ std::string MediaCaptureBase::GetNextCapturePath() const
   return Path::BuildRelativePath(m_path, fmt::format("{}_part{:03d}.{}", name, partnum, ext));
 }
 
+MediaCaptureMode MediaCaptureBase::GetCaptureMode() const
+{
+  const bool capture_audio = IsCapturingAudio();
+  const bool capture_video = IsCapturingVideo();
+  if (capture_audio && !capture_video)
+    return MediaCaptureMode::AudioOnly;
+  else if (!capture_audio && capture_video)
+    return MediaCaptureMode::VideoOnly;
+  else
+    return MediaCaptureMode::AudioAndVideo;
+}
+
 u32 MediaCaptureBase::GetVideoWidth() const
 {
   return m_video_width;
@@ -673,9 +689,10 @@ public:
   ~MediaCaptureMF() override;
 
   static std::unique_ptr<MediaCapture> Create(Error* error);
-  static ContainerList GetContainerList();
-  static CodecList GetVideoCodecList(const char* container);
+  static ContainerList GetAudioContainerList();
   static CodecList GetAudioCodecList(const char* container);
+  static ContainerList GetVideoContainerList();
+  static CodecList GetVideoCodecList(const char* container);
 
   bool IsCapturingAudio() const override;
   bool IsCapturingVideo() const override;
@@ -838,10 +855,9 @@ std::unique_ptr<MediaCapture> MediaCaptureMF::Create(Error* error)
   return std::make_unique<MediaCaptureMF>();
 }
 
-MediaCapture::ContainerList MediaCaptureMF::GetContainerList()
+MediaCapture::ContainerList MediaCaptureMF::GetAudioContainerList()
 {
   return {
-    {"avi", TRANSLATE_DISAMBIG_STR("MediaCapture", "Audio Video Interleave", "ContainerFormat")},
     {"mp4", TRANSLATE_DISAMBIG_STR("MediaCapture", "MPEG-4 Part 14", "ContainerFormat")},
     {"mp3", TRANSLATE_DISAMBIG_STR("MediaCapture", "MPEG-2 Audio Layer III", "ContainerFormat")},
     {"wav", TRANSLATE_DISAMBIG_STR("MediaCapture", "Waveform Audio File Format", "ContainerFormat")},
@@ -855,6 +871,14 @@ MediaCapture::ContainerList MediaCaptureMF::GetAudioCodecList(const char* contai
   for (const MediaFoundationAudioCodec& codec : s_media_foundation_audio_codecs)
     ret.emplace_back(codec.name, Host::TranslateToString("MediaCapture", codec.display_name, "AudioCodec"));
   return ret;
+}
+
+MediaCapture::ContainerList MediaCaptureMF::GetVideoContainerList()
+{
+  return {
+    {"avi", TRANSLATE_DISAMBIG_STR("MediaCapture", "Audio Video Interleave", "ContainerFormat")},
+    {"mp4", TRANSLATE_DISAMBIG_STR("MediaCapture", "MPEG-4 Part 14", "ContainerFormat")},
+  };
 }
 
 MediaCapture::ContainerList MediaCaptureMF::GetVideoCodecList(const char* container)
@@ -1980,8 +2004,9 @@ public:
   ~MediaCaptureFFmpeg() override = default;
 
   static std::unique_ptr<MediaCapture> Create(Error* error);
-  static ContainerList GetContainerList();
+  static ContainerList GetVideoContainerList();
   static CodecList GetVideoCodecList(const char* container);
+  static ContainerList GetAudioContainerList();
   static CodecList GetAudioCodecList(const char* container);
 
   bool IsCapturingAudio() const override;
@@ -3375,15 +3400,22 @@ std::unique_ptr<MediaCapture> MediaCaptureFFmpeg::Create(Error* error)
   return std::make_unique<MediaCaptureFFmpeg>();
 }
 
-MediaCapture::ContainerList MediaCaptureFFmpeg::GetContainerList()
+MediaCapture::ContainerList MediaCaptureFFmpeg::GetAudioContainerList()
+{
+  return {
+    {"mp4", TRANSLATE_DISAMBIG_STR("MediaCapture", "MPEG-4 Part 14", "ContainerFormat")},
+    {"mp3", TRANSLATE_DISAMBIG_STR("MediaCapture", "MPEG-2 Audio Layer III", "ContainerFormat")},
+    {"wav", TRANSLATE_DISAMBIG_STR("MediaCapture", "Waveform Audio File Format", "ContainerFormat")},
+  };
+}
+
+MediaCapture::ContainerList MediaCaptureFFmpeg::GetVideoContainerList()
 {
   return {
     {"avi", TRANSLATE_DISAMBIG_STR("MediaCapture", "Audio Video Interleave", "ContainerFormat")},
     {"mp4", TRANSLATE_DISAMBIG_STR("MediaCapture", "MPEG-4 Part 14", "ContainerFormat")},
     {"mkv", TRANSLATE_DISAMBIG_STR("MediaCapture", "Matroska Media Container", "ContainerFormat")},
     {"mov", TRANSLATE_DISAMBIG_STR("MediaCapture", "QuickTime File Format", "ContainerFormat")},
-    {"mp3", TRANSLATE_DISAMBIG_STR("MediaCapture", "MPEG-2 Audio Layer III", "ContainerFormat")},
-    {"wav", TRANSLATE_DISAMBIG_STR("MediaCapture", "Waveform Audio File Format", "ContainerFormat")},
   };
 }
 
@@ -3493,40 +3525,19 @@ void MediaCapture::AdjustVideoSize(u32* width, u32* height)
   *height = Common::AlignUpPow2(*height, VIDEO_HEIGHT_ALIGNMENT);
 }
 
-MediaCapture::ContainerList MediaCapture::GetContainerList(MediaCaptureBackend backend)
+MediaCapture::ContainerList MediaCapture::GetAudioContainerList(MediaCaptureBackend backend)
 {
   ContainerList ret;
   switch (backend)
   {
 #ifdef _WIN32
     case MediaCaptureBackend::MediaFoundation:
-      ret = MediaCaptureMF::GetContainerList();
+      ret = MediaCaptureMF::GetAudioContainerList();
       break;
 #endif
 #ifndef __ANDROID__
     case MediaCaptureBackend::FFmpeg:
-      ret = MediaCaptureFFmpeg::GetContainerList();
-      break;
-#endif
-    default:
-      break;
-  }
-  return ret;
-}
-
-MediaCapture::CodecList MediaCapture::GetVideoCodecList(MediaCaptureBackend backend, const char* container)
-{
-  CodecList ret;
-  switch (backend)
-  {
-#ifdef _WIN32
-    case MediaCaptureBackend::MediaFoundation:
-      ret = MediaCaptureMF::GetVideoCodecList(container);
-      break;
-#endif
-#ifndef __ANDROID__
-    case MediaCaptureBackend::FFmpeg:
-      ret = MediaCaptureFFmpeg::GetVideoCodecList(container);
+      ret = MediaCaptureFFmpeg::GetAudioContainerList();
       break;
 #endif
     default:
@@ -3548,6 +3559,48 @@ MediaCapture::CodecList MediaCapture::GetAudioCodecList(MediaCaptureBackend back
 #ifndef __ANDROID__
     case MediaCaptureBackend::FFmpeg:
       ret = MediaCaptureFFmpeg::GetAudioCodecList(container);
+      break;
+#endif
+    default:
+      break;
+  }
+  return ret;
+}
+
+MediaCapture::ContainerList MediaCapture::GetVideoContainerList(MediaCaptureBackend backend)
+{
+  ContainerList ret;
+  switch (backend)
+  {
+#ifdef _WIN32
+    case MediaCaptureBackend::MediaFoundation:
+      ret = MediaCaptureMF::GetVideoContainerList();
+      break;
+#endif
+#ifndef __ANDROID__
+    case MediaCaptureBackend::FFmpeg:
+      ret = MediaCaptureFFmpeg::GetVideoContainerList();
+      break;
+#endif
+    default:
+      break;
+  }
+  return ret;
+}
+
+MediaCapture::CodecList MediaCapture::GetVideoCodecList(MediaCaptureBackend backend, const char* container)
+{
+  CodecList ret;
+  switch (backend)
+  {
+#ifdef _WIN32
+    case MediaCaptureBackend::MediaFoundation:
+      ret = MediaCaptureMF::GetVideoCodecList(container);
+      break;
+#endif
+#ifndef __ANDROID__
+    case MediaCaptureBackend::FFmpeg:
+      ret = MediaCaptureFFmpeg::GetVideoCodecList(container);
       break;
 #endif
     default:

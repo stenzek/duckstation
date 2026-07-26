@@ -3236,9 +3236,9 @@ void Host::OnSystemUndoStateAvailabilityChanged(bool available, u64 timestamp)
   emit g_core_thread->systemUndoStateAvailabilityChanged(available, timestamp);
 }
 
-void Host::OnMediaCaptureStarted()
+void Host::OnMediaCaptureStarted(MediaCaptureMode mode)
 {
-  emit g_core_thread->mediaCaptureStarted();
+  emit g_core_thread->mediaCaptureStarted(mode);
 }
 
 void Host::OnMediaCaptureStopped()

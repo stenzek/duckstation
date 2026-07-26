@@ -165,8 +165,7 @@ static void ClearRunningGame();
 static void DestroySystem();
 
 static void RecreateGPU(GPURenderer new_renderer);
-static bool StartMediaCapture(std::string path, bool capture_video, bool capture_audio, u32 video_width,
-                              u32 video_height);
+static bool StartMediaCapture(MediaCaptureMode mode, std::string path, u32 video_width, u32 video_height);
 static void StopMediaCapture(std::unique_ptr<MediaCapture> cap);
 
 /// Returns true if boot is being fast forwarded.
@@ -1173,10 +1172,9 @@ void System::SetDefaultSettings(SettingsInterface& si, bool ignore_user_prefs)
 
 #ifndef __ANDROID__
   si.SetStringValue("MediaCapture", "Backend", MediaCapture::GetBackendName(Settings::DEFAULT_MEDIA_CAPTURE_BACKEND));
-  si.SetStringValue("MediaCapture", "Container", Settings::DEFAULT_MEDIA_CAPTURE_CONTAINER);
   si.SetStringValue("MediaCapture", "FileNameFormat",
                     Settings::GetCaptureFileNameFormatName(Settings::DEFAULT_MEDIA_CAPTURE_FILENAME_FORMAT));
-  si.SetBoolValue("MediaCapture", "VideoCapture", true);
+  si.SetStringValue("MediaCapture", "VideoContainer", Settings::DEFAULT_MEDIA_CAPTURE_VIDEO_CONTAINER);
   si.SetUIntValue("MediaCapture", "VideoWidth", Settings::DEFAULT_MEDIA_CAPTURE_VIDEO_WIDTH);
   si.SetUIntValue("MediaCapture", "VideoHeight", Settings::DEFAULT_MEDIA_CAPTURE_VIDEO_HEIGHT);
   si.SetBoolValue("MediaCapture", "VideoAutoSize", false);
@@ -1184,7 +1182,7 @@ void System::SetDefaultSettings(SettingsInterface& si, bool ignore_user_prefs)
   si.SetStringValue("MediaCapture", "VideoCodec", "");
   si.SetBoolValue("MediaCapture", "VideoCodecUseArgs", false);
   si.SetStringValue("MediaCapture", "VideoCodecArgs", "");
-  si.SetBoolValue("MediaCapture", "AudioCapture", true);
+  si.SetStringValue("MediaCapture", "AudioContainer", Settings::DEFAULT_MEDIA_CAPTURE_AUDIO_CONTAINER);
   si.SetUIntValue("MediaCapture", "AudioBitrate", Settings::DEFAULT_MEDIA_CAPTURE_AUDIO_BITRATE);
   si.SetStringValue("MediaCapture", "AudioCodec", "");
   si.SetBoolValue("MediaCapture", "AudioCodecUseArgs", false);
@@ -2178,9 +2176,9 @@ bool System::GetFramePresentationParameters(GPUBackendFramePresentationParameter
       const u32 video_height = cap->GetVideoHeight();
       INFO_LOG("Video frame rate changed, switching to new capture file {}", Path::GetFileName(next_capture_path));
 
-      const bool was_capturing_audio = cap->IsCapturingAudio();
+      const MediaCaptureMode mode = cap->GetCaptureMode();
       StopMediaCapture();
-      StartMediaCapture(std::move(next_capture_path), true, was_capturing_audio, video_width, video_height);
+      StartMediaCapture(mode, std::move(next_capture_path), video_width, video_height);
       frame->media_capture = s_state.media_capture.get();
     }
   }
@@ -5450,6 +5448,26 @@ std::string System::GetNewMediaCapturePath(const std::string_view title, const s
   return GetNewCapturePath(EmuFolders::Videos, title, format, container);
 }
 
+MediaCaptureBackend System::GetConfiguredMediaCaptureBackend()
+{
+  return MediaCapture::ParseBackendName(Core::GetStringSettingValue("MediaCapture", "Backend").c_str())
+    .value_or(Settings::DEFAULT_MEDIA_CAPTURE_BACKEND);
+}
+
+std::string System::GetConfiguredMediaCaptureContainerForMode(MediaCaptureMode mode)
+{
+  if (mode == MediaCaptureMode::AudioOnly)
+  {
+    return Core::GetStringSettingValue("MediaCapture", "AudioContainer",
+                                       Settings::DEFAULT_MEDIA_CAPTURE_AUDIO_CONTAINER);
+  }
+  else
+  {
+    return Core::GetStringSettingValue("MediaCapture", "VideoContainer",
+                                       Settings::DEFAULT_MEDIA_CAPTURE_VIDEO_CONTAINER);
+  }
+}
+
 void System::SaveScreenshot(const char* path, DisplayScreenshotMode mode, DisplayScreenshotFormat format, u8 quality)
 {
   if (!IsValid())
@@ -5503,30 +5521,28 @@ MediaCapture* System::GetMediaCapture()
   return s_state.media_capture.get();
 }
 
-bool System::StartMediaCapture(std::string path)
+bool System::StartMediaCapture(MediaCaptureMode mode, std::string path)
 {
-  const bool capture_video = Core::GetBoolSettingValue("MediaCapture", "VideoCapture", true);
-  const bool capture_audio = Core::GetBoolSettingValue("MediaCapture", "AudioCapture", true);
-
   // Auto size is more complex.
+  const bool capture_video = (mode == MediaCaptureMode::AudioAndVideo || mode == MediaCaptureMode::VideoOnly);
   if (capture_video && Core::GetBoolSettingValue("MediaCapture", "VideoAutoSize", false))
   {
     // need to query this on the GPU thread
     VideoThread::RunOnThread(
-      [path = std::move(path), capture_audio, mode = g_settings.display_screenshot_mode]() mutable {
+      [path = std::move(path), mode, screenshot_mode = g_settings.display_screenshot_mode]() mutable {
         GPUBackend* const backend = VideoThread::GetGPUBackend();
         if (!backend) [[unlikely]]
           return;
 
         // Prefer aligning for non-window size.
-        const GSVector2i video_size = VideoPresenter::CalculateScreenshotSize(mode);
+        const GSVector2i video_size = VideoPresenter::CalculateScreenshotSize(screenshot_mode);
         u32 video_width = static_cast<u32>(video_size.x);
         u32 video_height = static_cast<u32>(video_size.y);
         MediaCapture::AdjustVideoSize(&video_width, &video_height);
 
         // fire back to the CPU thread to actually start the capture
-        Host::RunOnCoreThread([path = std::move(path), capture_audio, video_width, video_height]() mutable {
-          StartMediaCapture(std::move(path), true, capture_audio, video_width, video_height);
+        Host::RunOnCoreThread([path = std::move(path), mode, video_width, video_height]() mutable {
+          StartMediaCapture(mode, std::move(path), video_width, video_height);
         });
       });
     return true;
@@ -5538,11 +5554,10 @@ bool System::StartMediaCapture(std::string path)
     Core::GetUIntSettingValue("MediaCapture", "VideoHeight", Settings::DEFAULT_MEDIA_CAPTURE_VIDEO_HEIGHT);
   MediaCapture::AdjustVideoSize(&video_width, &video_height);
 
-  return StartMediaCapture(std::move(path), capture_video, capture_audio, video_width, video_height);
+  return StartMediaCapture(mode, std::move(path), video_width, video_height);
 }
 
-bool System::StartMediaCapture(std::string path, bool capture_video, bool capture_audio, u32 video_width,
-                               u32 video_height)
+bool System::StartMediaCapture(MediaCaptureMode mode, std::string path, u32 video_width, u32 video_height)
 {
   if (!IsValid())
     return false;
@@ -5558,27 +5573,21 @@ bool System::StartMediaCapture(std::string path, bool capture_video, bool captur
   constexpr float aspect = 1.0f;
 
   if (path.empty())
-  {
-    path = GetNewMediaCapturePath(
-      s_state.running_game_title,
-      Core::GetTinyStringSettingValue("MediaCapture", "Container", Settings::DEFAULT_MEDIA_CAPTURE_CONTAINER));
-  }
+    path = GetNewMediaCapturePath(s_state.running_game_title, GetConfiguredMediaCaptureContainerForMode(mode));
 
-  const MediaCaptureBackend backend =
-    MediaCapture::ParseBackendName(Core::GetStringSettingValue("MediaCapture", "Backend").c_str())
-      .value_or(Settings::DEFAULT_MEDIA_CAPTURE_BACKEND);
+  const MediaCaptureBackend backend = GetConfiguredMediaCaptureBackend();
 
   Error error;
   s_state.media_capture = MediaCapture::Create(backend, &error);
   if (!s_state.media_capture ||
       !s_state.media_capture->BeginCapture(
-        s_state.video_frame_rate, aspect, video_width, video_height, capture_format, SPU::SAMPLE_RATE, std::move(path),
-        capture_video, Core::GetSmallStringSettingValue("MediaCapture", "VideoCodec"),
+        mode, s_state.video_frame_rate, aspect, video_width, video_height, capture_format, SPU::SAMPLE_RATE,
+        std::move(path), Core::GetSmallStringSettingValue("MediaCapture", "VideoCodec"),
         Core::GetUIntSettingValue("MediaCapture", "VideoBitrate", Settings::DEFAULT_MEDIA_CAPTURE_VIDEO_BITRATE),
         Core::GetBoolSettingValue("MediaCapture", "VideoCodecUseArgs", false) ?
           Core::GetStringSettingValue("MediaCapture", "VideoCodecArgs") :
           std::string(),
-        capture_audio, Core::GetSmallStringSettingValue("MediaCapture", "AudioCodec"),
+        Core::GetSmallStringSettingValue("MediaCapture", "AudioCodec"),
         Core::GetUIntSettingValue("MediaCapture", "AudioBitrate", Settings::DEFAULT_MEDIA_CAPTURE_AUDIO_BITRATE),
         Core::GetBoolSettingValue("MediaCapture", "AudioCodecUseArgs", false) ?
           Core::GetStringSettingValue("MediaCapture", "AudioCodecArgs") :
@@ -5600,7 +5609,7 @@ bool System::StartMediaCapture(std::string path, bool capture_video, bool captur
                                                                s_state.media_capture->IsCapturingAudio()),
                                       Path::GetFileName(s_state.media_capture->GetPath())));
 
-  Host::OnMediaCaptureStarted();
+  Host::OnMediaCaptureStarted(mode);
   return true;
 }
 

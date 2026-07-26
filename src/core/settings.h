@@ -639,7 +639,8 @@ struct Settings : public GPUSettings
   static constexpr SaveStateCompressionMode DEFAULT_SAVE_STATE_COMPRESSION_MODE = SaveStateCompressionMode::ZstDefault;
 
   static const MediaCaptureBackend DEFAULT_MEDIA_CAPTURE_BACKEND;
-  static constexpr const char* DEFAULT_MEDIA_CAPTURE_CONTAINER = "mp4";
+  static constexpr const char* DEFAULT_MEDIA_CAPTURE_VIDEO_CONTAINER = "mp4";
+  static constexpr const char* DEFAULT_MEDIA_CAPTURE_AUDIO_CONTAINER = "mp4";
   static constexpr u32 DEFAULT_MEDIA_CAPTURE_VIDEO_WIDTH = 640;
   static constexpr u32 DEFAULT_MEDIA_CAPTURE_VIDEO_HEIGHT = 480;
   static constexpr u32 DEFAULT_MEDIA_CAPTURE_VIDEO_BITRATE = 6000;

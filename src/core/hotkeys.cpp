@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "achievements.h"
@@ -20,6 +20,7 @@
 
 #include "util/gpu_device.h"
 #include "util/input_manager.h"
+#include "util/media_capture.h"
 #include "util/postprocessing.h"
 #include "util/translation.h"
 
@@ -256,7 +257,29 @@ static constexpr const HotkeyInfo s_hotkey_list[] = {
        if (System::GetMediaCapture())
          System::StopMediaCapture();
        else
-         System::StartMediaCapture();
+         System::StartMediaCapture(MediaCaptureMode::AudioAndVideo);
+     }
+   }},
+
+  {"ToggleAudioCapture", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_NOOP("Hotkeys", "Toggle Audio Capture"),
+   [](s32 pressed) {
+     if (!pressed)
+     {
+       if (System::GetMediaCapture())
+         System::StopMediaCapture();
+       else
+         System::StartMediaCapture(MediaCaptureMode::AudioOnly);
+     }
+   }},
+
+  {"ToggleVideoCapture", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_NOOP("Hotkeys", "Toggle Video Capture"),
+   [](s32 pressed) {
+     if (!pressed)
+     {
+       if (System::GetMediaCapture())
+         System::StopMediaCapture();
+       else
+         System::StartMediaCapture(MediaCaptureMode::VideoOnly);
      }
    }},
 

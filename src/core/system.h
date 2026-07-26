@@ -33,6 +33,8 @@ class Controller;
 class GPUTexture;
 class INISettingsInterface;
 class MediaCapture;
+enum class MediaCaptureBackend : u8;
+enum class MediaCaptureMode : u8;
 
 namespace GameDatabase {
 struct Entry;
@@ -57,12 +59,12 @@ struct SystemBootParameters
   std::optional<bool> override_fast_boot;
   std::optional<bool> override_fullscreen;
   std::optional<bool> override_start_paused;
+  std::optional<MediaCaptureMode> start_media_capture;
 
   bool load_image_to_ram = false;
   bool ignore_missing_subchannel = false;
   bool force_software_renderer = false;
   bool disable_achievements_hardcore_mode = false;
-  bool start_media_capture = false;
 };
 
 struct SaveStateInfo
@@ -434,12 +436,14 @@ void StopRecordingGPUDump();
 std::string GetNewCapturePath(const std::string& directory, const std::string_view title, CaptureFileNameFormat format,
                               std::string_view extension);
 std::string GetNewMediaCapturePath(const std::string_view title, const std::string_view container);
+MediaCaptureBackend GetConfiguredMediaCaptureBackend();
+std::string GetConfiguredMediaCaptureContainerForMode(MediaCaptureMode mode);
 
 /// Current media capture (if active).
 MediaCapture* GetMediaCapture();
 
 /// Media capture (video and/or audio). If no path is provided, one will be generated automatically.
-bool StartMediaCapture(std::string path = {});
+bool StartMediaCapture(MediaCaptureMode mode, std::string path = {});
 void StopMediaCapture();
 
 /// Toggle Widescreen Hack and Aspect Ratio

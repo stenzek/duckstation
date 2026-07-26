@@ -19,11 +19,10 @@ public:
 
 private:
   void onMediaCaptureBackendChanged();
-  void onMediaCaptureContainerChanged();
-  void onMediaCaptureVideoEnabledChanged();
+  void onMediaCaptureVideoContainerChanged();
   void onMediaCaptureVideoAutoResolutionChanged();
   void onMediaCaptureUseVideoArgsChanged();
-  void onMediaCaptureAudioEnabledChanged();
+  void onMediaCaptureAudioContainerChanged();
   void onMediaCaptureUseAudioArgsChanged();
 
   Ui::CaptureSettingsWidget m_ui;

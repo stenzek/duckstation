@@ -9,6 +9,7 @@
 
 class GPUBackend;
 struct GPUBackendFramePresentationParameters;
+enum class MediaCaptureMode : u8;
 
 namespace System {
 
@@ -103,7 +104,7 @@ void OnSystemGameChanged(const std::string& disc_path, const std::string& game_s
 void OnSystemUndoStateAvailabilityChanged(bool available, u64 timestamp);
 
 /// Called when media capture starts/stops.
-void OnMediaCaptureStarted();
+void OnMediaCaptureStarted(MediaCaptureMode mode);
 void OnMediaCaptureStopped();
 
 /// Provided by the host; called once per frame at guest vsync.

@@ -253,6 +253,23 @@
     <property name="title">
      <string>&amp;Tools</string>
     </property>
+    <widget class="QMenu" name="menuMediaCapture">
+     <property name="toolTip">
+      <string>Allows you to record audio and/or video from the content.</string>
+     </property>
+     <property name="title">
+      <string>Media Ca&amp;pture</string>
+     </property>
+     <property name="icon">
+      <iconset resource="resources/duckstation-qt.qrc">
+       <normaloff>:/icons/monochrome/svg/video-on-line.svg</normaloff>:/icons/monochrome/svg/video-on-line.svg</iconset>
+     </property>
+     <addaction name="actionStartMediaCapture"/>
+     <addaction name="actionStopMediaCapture"/>
+     <addaction name="separator"/>
+     <addaction name="actionCaptureVideoOnly"/>
+     <addaction name="actionCaptureAudioOnly"/>
+    </widget>
     <addaction name="actionOpenDataDirectory"/>
     <addaction name="separator"/>
     <addaction name="actionMemoryCardEditor"/>
@@ -266,8 +283,8 @@
     <addaction name="actionMemoryScanner"/>
     <addaction name="actionISOBrowser"/>
     <addaction name="separator"/>
+    <addaction name="menuMediaCapture"/>
     <addaction name="actionFreeCamera"/>
-    <addaction name="actionMediaCapture"/>
     <addaction name="actionCaptureGPUFrame"/>
     <addaction name="separator"/>
     <addaction name="actionOpenTextureDirectory"/>
@@ -1278,9 +1295,6 @@
    </property>
   </action>
   <action name="actionMediaCapture">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
    <property name="icon">
     <iconset resource="resources/duckstation-qt.qrc">
      <normaloff>:/icons/monochrome/svg/video-on-line.svg</normaloff>:/icons/monochrome/svg/video-on-line.svg</iconset>
@@ -1549,6 +1563,60 @@
    </property>
    <property name="text">
     <string>System Log</string>
+   </property>
+  </action>
+  <action name="actionStartMediaCapture">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/video-on-line.svg</normaloff>:/icons/monochrome/svg/video-on-line.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Start &amp;Capture</string>
+   </property>
+   <property name="toolTip">
+    <string>Starts recording audio and video.</string>
+   </property>
+  </action>
+  <action name="actionStopMediaCapture">
+   <property name="icon">
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/video-off-line.svg</normaloff>:/icons/monochrome/svg/video-off-line.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Stop &amp;Capture</string>
+   </property>
+  </action>
+  <action name="actionCaptureVideoOnly">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/camera-switch-line.svg</normaloff>:/icons/monochrome/svg/camera-switch-line.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Start &amp;Video-Only Capture</string>
+   </property>
+   <property name="toolTip">
+    <string>Starts a video-only recording.</string>
+   </property>
+  </action>
+  <action name="actionCaptureAudioOnly">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/volume-up-line.svg</normaloff>:/icons/monochrome/svg/volume-up-line.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Start &amp;Audio-Only Capture</string>
+   </property>
+   <property name="toolTip">
+    <string>Starts an audio-only recording.</string>
    </property>
   </action>
   <actiongroup name="actionCDROMLidState">

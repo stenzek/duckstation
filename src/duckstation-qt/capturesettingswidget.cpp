@@ -42,7 +42,6 @@ CaptureSettingsWidget::CaptureSettingsWidget(SettingsWindow* dialog, QWidget* pa
     sif, m_ui.mediaCaptureSaveName, "MediaCapture", "FilenameFormat", &Settings::ParseCaptureFileNameFormat,
     &Settings::GetCaptureFileNameFormatName, &Settings::GetCaptureFileNameFormatDisplayName,
     Settings::DEFAULT_DISPLAY_SCREENSHOT_FILENAME_FORMAT, CaptureFileNameFormat::Count);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableVideoCapture, "MediaCapture", "VideoCapture", true);
   SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.videoCaptureWidth, "MediaCapture", "VideoWidth",
                                               Settings::DEFAULT_MEDIA_CAPTURE_VIDEO_WIDTH);
   SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.videoCaptureHeight, "MediaCapture", "VideoHeight",
@@ -54,7 +53,6 @@ CaptureSettingsWidget::CaptureSettingsWidget(SettingsWindow* dialog, QWidget* pa
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableVideoCaptureArguments, "MediaCapture",
                                                "VideoCodecUseArgs", false);
   SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.videoCaptureArguments, "MediaCapture", "VideoCodecArgs");
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableAudioCapture, "MediaCapture", "AudioCapture", true);
   SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.audioCaptureBitrate, "MediaCapture", "AudioBitrate",
                                               Settings::DEFAULT_MEDIA_CAPTURE_AUDIO_BITRATE);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableAudioCaptureArguments, "MediaCapture",
@@ -101,21 +99,22 @@ CaptureSettingsWidget::CaptureSettingsWidget(SettingsWindow* dialog, QWidget* pa
 
   connect(m_ui.mediaCaptureBackend, &QComboBox::currentIndexChanged, this,
           &CaptureSettingsWidget::onMediaCaptureBackendChanged);
-  connect(m_ui.enableVideoCapture, &QCheckBox::checkStateChanged, this,
-          &CaptureSettingsWidget::onMediaCaptureVideoEnabledChanged);
+  connect(m_ui.videoCaptureContainer, &QComboBox::currentIndexChanged, this,
+          &CaptureSettingsWidget::onMediaCaptureVideoContainerChanged);
   connect(m_ui.videoCaptureResolutionAuto, &QCheckBox::checkStateChanged, this,
           &CaptureSettingsWidget::onMediaCaptureVideoAutoResolutionChanged);
   connect(m_ui.enableVideoCaptureArguments, &QCheckBox::checkStateChanged, this,
           &CaptureSettingsWidget::onMediaCaptureUseVideoArgsChanged);
-  connect(m_ui.enableAudioCapture, &QCheckBox::checkStateChanged, this,
-          &CaptureSettingsWidget::onMediaCaptureAudioEnabledChanged);
+  connect(m_ui.audioCaptureContainer, &QComboBox::currentIndexChanged, this,
+          &CaptureSettingsWidget::onMediaCaptureAudioContainerChanged);
   connect(m_ui.enableAudioCaptureArguments, &QCheckBox::checkStateChanged, this,
           &CaptureSettingsWidget::onMediaCaptureUseAudioArgsChanged);
 
   // Init all dependent options.
   onMediaCaptureBackendChanged();
-  onMediaCaptureAudioEnabledChanged();
-  onMediaCaptureVideoEnabledChanged();
+  onMediaCaptureVideoAutoResolutionChanged();
+  onMediaCaptureUseVideoArgsChanged();
+  onMediaCaptureUseAudioArgsChanged();
 
   dialog->registerWidgetHelp(m_ui.screenshotSize, tr("Screenshot Size"), tr("Screen Resolution"),
                              tr("Determines the resolution at which screenshots will be saved. Internal resolutions "
@@ -139,8 +138,6 @@ CaptureSettingsWidget::CaptureSettingsWidget(SettingsWindow* dialog, QWidget* pa
     m_ui.mediaCaptureBackend, tr("Backend"),
     QString::fromUtf8(MediaCapture::GetBackendDisplayName(Settings::DEFAULT_MEDIA_CAPTURE_BACKEND)),
     tr("Selects the framework that is used to encode video/audio."));
-  dialog->registerWidgetHelp(m_ui.captureContainer, tr("Container"), Settings::DEFAULT_MEDIA_CAPTURE_CONTAINER,
-                             tr("Determines the file format used to contain the captured audio/video."));
   dialog->registerWidgetHelp(m_ui.videosDirectory, tr("Save Location"), tr("Default"),
                              tr("Specifies the directory where media capture (video/audio) will be saved."));
   dialog->registerWidgetHelp(
@@ -148,9 +145,9 @@ CaptureSettingsWidget::CaptureSettingsWidget(SettingsWindow* dialog, QWidget* pa
     Settings::GetCaptureFileNameFormatDisplayName(Settings::DEFAULT_MEDIA_CAPTURE_FILENAME_FORMAT),
     tr("Determines the format of the filename used when saving screenshots, and whether a subdirectory is created "
        "per-game."));
-  dialog->registerWidgetHelp(m_ui.enableVideoCapture, tr("Capture Video"), tr("Checked"),
-                             tr("Captures video to the chosen file when media capture is started. If unchecked, the "
-                                "file will only contain audio."));
+  dialog->registerWidgetHelp(m_ui.videoCaptureContainer, tr("Container"),
+                             Settings::DEFAULT_MEDIA_CAPTURE_VIDEO_CONTAINER,
+                             tr("Determines the file format used to contain the captured video."));
   dialog->registerWidgetHelp(
     m_ui.videoCaptureCodec, tr("Video Codec"), tr("Default"),
     tr("Selects which Video Codec to be used for media capture. <b>If unsure, leave it on default.</b>"));
@@ -169,9 +166,9 @@ CaptureSettingsWidget::CaptureSettingsWidget(SettingsWindow* dialog, QWidget* pa
     m_ui.videoCaptureArguments, tr("Extra Video Arguments"), tr("Empty"),
     tr("Parameters passed to the selected video codec.<br><b>You must use '=' to separate key from value and ':' to "
        "separate two pairs from each other.</b><br>For example: \"crf = 21 : preset = veryfast\""));
-  dialog->registerWidgetHelp(m_ui.enableAudioCapture, tr("Capture Audio"), tr("Checked"),
-                             tr("Captures audio to the chosen file when media capture is started. If unchecked, the "
-                                "file will only contain video."));
+  dialog->registerWidgetHelp(m_ui.audioCaptureContainer, tr("Container"),
+                             Settings::DEFAULT_MEDIA_CAPTURE_AUDIO_CONTAINER,
+                             tr("Determines the file format used to contain the captured audio."));
   dialog->registerWidgetHelp(
     m_ui.audioCaptureCodec, tr("Audio Codec"), tr("Default"),
     tr("Selects which Audio Codec to be used for media capture. <b>If unsure, leave it on default.</b>"));
@@ -200,25 +197,39 @@ void CaptureSettingsWidget::onMediaCaptureBackendChanged()
       .value_or(Settings::DEFAULT_MEDIA_CAPTURE_BACKEND);
 
   {
-    SettingWidgetBinder::DisconnectWidget(m_ui.captureContainer);
-    m_ui.captureContainer->clear();
+    SettingWidgetBinder::DisconnectWidget(m_ui.audioCaptureContainer);
+    m_ui.audioCaptureContainer->clear();
+    SettingWidgetBinder::DisconnectWidget(m_ui.videoCaptureContainer);
+    m_ui.videoCaptureContainer->clear();
 
-    for (const auto& [name, display_name] : MediaCapture::GetContainerList(backend))
+    for (const auto& [name, display_name] : MediaCapture::GetAudioContainerList(backend))
     {
       const QString qname = QString::fromStdString(name);
-      m_ui.captureContainer->addItem(tr("%1 (%2)").arg(QString::fromStdString(display_name)).arg(qname), qname);
+      m_ui.audioCaptureContainer->addItem(tr("%1 (%2)").arg(QString::fromStdString(display_name)).arg(qname), qname);
     }
 
-    SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.captureContainer, "MediaCapture", "Container",
-                                                   Settings::DEFAULT_MEDIA_CAPTURE_CONTAINER);
-    connect(m_ui.captureContainer, &QComboBox::currentIndexChanged, this,
-            &CaptureSettingsWidget::onMediaCaptureContainerChanged);
+    for (const auto& [name, display_name] : MediaCapture::GetVideoContainerList(backend))
+    {
+      const QString qname = QString::fromStdString(name);
+      m_ui.videoCaptureContainer->addItem(tr("%1 (%2)").arg(QString::fromStdString(display_name)).arg(qname), qname);
+    }
+
+    SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.audioCaptureContainer, "MediaCapture", "AudioContainer",
+                                                   Settings::DEFAULT_MEDIA_CAPTURE_AUDIO_CONTAINER);
+    connect(m_ui.audioCaptureContainer, &QComboBox::currentIndexChanged, this,
+            &CaptureSettingsWidget::onMediaCaptureAudioContainerChanged);
+
+    SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.videoCaptureContainer, "MediaCapture", "VideoContainer",
+                                                   Settings::DEFAULT_MEDIA_CAPTURE_VIDEO_CONTAINER);
+    connect(m_ui.videoCaptureContainer, &QComboBox::currentIndexChanged, this,
+            &CaptureSettingsWidget::onMediaCaptureVideoContainerChanged);
   }
 
-  onMediaCaptureContainerChanged();
+  onMediaCaptureAudioContainerChanged();
+  onMediaCaptureVideoContainerChanged();
 }
 
-void CaptureSettingsWidget::onMediaCaptureContainerChanged()
+void CaptureSettingsWidget::onMediaCaptureVideoContainerChanged()
 {
   SettingsInterface* const sif = m_dialog->getSettingsInterface();
   const MediaCaptureBackend backend =
@@ -228,63 +239,27 @@ void CaptureSettingsWidget::onMediaCaptureContainerChanged()
                                   MediaCapture::GetBackendName(Settings::DEFAULT_MEDIA_CAPTURE_BACKEND))
         .c_str())
       .value_or(Settings::DEFAULT_MEDIA_CAPTURE_BACKEND);
-  const std::string container = m_dialog->getEffectiveStringValue("MediaCapture", "Container", "mp4");
+  const std::string container = m_dialog->getEffectiveStringValue("MediaCapture", "VideoContainer",
+                                                                  Settings::DEFAULT_MEDIA_CAPTURE_AUDIO_CONTAINER);
 
+  SettingWidgetBinder::DisconnectWidget(m_ui.videoCaptureCodec);
+  m_ui.videoCaptureCodec->clear();
+  m_ui.videoCaptureCodec->addItem(tr("Default"), QVariant(QString()));
+
+  for (const auto& [name, display_name] : MediaCapture::GetVideoCodecList(backend, container.c_str()))
   {
-    SettingWidgetBinder::DisconnectWidget(m_ui.videoCaptureCodec);
-    m_ui.videoCaptureCodec->clear();
-    m_ui.videoCaptureCodec->addItem(tr("Default"), QVariant(QString()));
-
-    for (const auto& [name, display_name] : MediaCapture::GetVideoCodecList(backend, container.c_str()))
-    {
-      const QString qname = QString::fromStdString(name);
-      m_ui.videoCaptureCodec->addItem(tr("%1 (%2)").arg(QString::fromStdString(display_name)).arg(qname), qname);
-    }
-
-    if (const QString current_value =
-          QString::fromStdString(m_dialog->getEffectiveStringValue("MediaCapture", "VideoCodec", ""));
-        !current_value.isEmpty() && m_ui.videoCaptureCodec->findData(current_value) < 0)
-    {
-      m_ui.videoCaptureCodec->addItem(tr("%1 (Unknown)").arg(current_value), current_value);
-    }
-
-    SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.videoCaptureCodec, "MediaCapture", "VideoCodec");
+    const QString qname = QString::fromStdString(name);
+    m_ui.videoCaptureCodec->addItem(tr("%1 (%2)").arg(QString::fromStdString(display_name)).arg(qname), qname);
   }
 
+  if (const QString current_value =
+        QString::fromStdString(m_dialog->getEffectiveStringValue("MediaCapture", "VideoCodec", ""));
+      !current_value.isEmpty() && m_ui.videoCaptureCodec->findData(current_value) < 0)
   {
-    SettingWidgetBinder::DisconnectWidget(m_ui.audioCaptureCodec);
-    m_ui.audioCaptureCodec->clear();
-    m_ui.audioCaptureCodec->addItem(tr("Default"), QVariant(QString()));
-
-    for (const auto& [name, display_name] : MediaCapture::GetAudioCodecList(backend, container.c_str()))
-    {
-      const QString qname = QString::fromStdString(name);
-      m_ui.audioCaptureCodec->addItem(tr("%1 (%2)").arg(QString::fromStdString(display_name)).arg(qname), qname);
-    }
-
-    if (const QString current_value =
-          QString::fromStdString(m_dialog->getEffectiveStringValue("MediaCapture", "AudioCodec", ""));
-        !current_value.isEmpty() && m_ui.audioCaptureCodec->findData(current_value) < 0)
-    {
-      m_ui.audioCaptureCodec->addItem(tr("%1 (Unknown)").arg(current_value), current_value);
-    }
-
-    SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.audioCaptureCodec, "MediaCapture", "AudioCodec");
+    m_ui.videoCaptureCodec->addItem(tr("%1 (Unknown)").arg(current_value), current_value);
   }
-}
 
-void CaptureSettingsWidget::onMediaCaptureVideoEnabledChanged()
-{
-  const bool enabled = m_dialog->getEffectiveBoolValue("MediaCapture", "VideoCapture", true);
-  m_ui.videoCaptureCodecLabel->setEnabled(enabled);
-  m_ui.videoCaptureCodec->setEnabled(enabled);
-  m_ui.videoCaptureBitrateLabel->setEnabled(enabled);
-  m_ui.videoCaptureBitrate->setEnabled(enabled);
-  m_ui.videoCaptureResolutionLabel->setEnabled(enabled);
-  m_ui.videoCaptureResolutionAuto->setEnabled(enabled);
-  m_ui.enableVideoCaptureArguments->setEnabled(enabled);
-  onMediaCaptureVideoAutoResolutionChanged();
-  onMediaCaptureUseVideoArgsChanged();
+  SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.videoCaptureCodec, "MediaCapture", "VideoCodec");
 }
 
 void CaptureSettingsWidget::onMediaCaptureVideoAutoResolutionChanged()
@@ -303,15 +278,37 @@ void CaptureSettingsWidget::onMediaCaptureUseVideoArgsChanged()
   m_ui.videoCaptureArguments->setEnabled(enabled && extra_video_args_enabled);
 }
 
-void CaptureSettingsWidget::onMediaCaptureAudioEnabledChanged()
+void CaptureSettingsWidget::onMediaCaptureAudioContainerChanged()
 {
-  const bool enabled = m_dialog->getEffectiveBoolValue("MediaCapture", "AudioCapture", true);
-  m_ui.audioCaptureCodecLabel->setEnabled(enabled);
-  m_ui.audioCaptureCodec->setEnabled(enabled);
-  m_ui.audioCaptureBitrateLabel->setEnabled(enabled);
-  m_ui.audioCaptureBitrate->setEnabled(enabled);
-  m_ui.enableAudioCaptureArguments->setEnabled(enabled);
-  onMediaCaptureUseAudioArgsChanged();
+  SettingsInterface* const sif = m_dialog->getSettingsInterface();
+  const MediaCaptureBackend backend =
+    MediaCapture::ParseBackendName(
+      m_dialog
+        ->getEffectiveStringValue("MediaCapture", "Backend",
+                                  MediaCapture::GetBackendName(Settings::DEFAULT_MEDIA_CAPTURE_BACKEND))
+        .c_str())
+      .value_or(Settings::DEFAULT_MEDIA_CAPTURE_BACKEND);
+  const std::string container = m_dialog->getEffectiveStringValue("MediaCapture", "AudioContainer",
+                                                                  Settings::DEFAULT_MEDIA_CAPTURE_AUDIO_CONTAINER);
+
+  SettingWidgetBinder::DisconnectWidget(m_ui.audioCaptureCodec);
+  m_ui.audioCaptureCodec->clear();
+  m_ui.audioCaptureCodec->addItem(tr("Default"), QVariant(QString()));
+
+  for (const auto& [name, display_name] : MediaCapture::GetAudioCodecList(backend, container.c_str()))
+  {
+    const QString qname = QString::fromStdString(name);
+    m_ui.audioCaptureCodec->addItem(tr("%1 (%2)").arg(QString::fromStdString(display_name)).arg(qname), qname);
+  }
+
+  if (const QString current_value =
+        QString::fromStdString(m_dialog->getEffectiveStringValue("MediaCapture", "AudioCodec", ""));
+      !current_value.isEmpty() && m_ui.audioCaptureCodec->findData(current_value) < 0)
+  {
+    m_ui.audioCaptureCodec->addItem(tr("%1 (Unknown)").arg(current_value), current_value);
+  }
+
+  SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.audioCaptureCodec, "MediaCapture", "AudioCodec");
 }
 
 void CaptureSettingsWidget::onMediaCaptureUseAudioArgsChanged()

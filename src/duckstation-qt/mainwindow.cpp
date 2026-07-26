@@ -36,6 +36,7 @@
 
 #include "util/cd_image.h"
 #include "util/gpu_device.h"
+#include "util/media_capture.h"
 #include "util/translation.h"
 
 #include "common/assert.h"
@@ -213,7 +214,7 @@ void MainWindow::initialize()
   updateToolbarIconStyle();
   updateToolbarArea();
   updateEmulationActions();
-  updateDisplayRelatedActions();
+  updateMediaCaptureActions(MediaCaptureMode::MaxCount);
   updateWindowTitle();
   connectSignals();
 
@@ -681,14 +682,25 @@ void MainWindow::onSystemUndoStateAvailabilityChanged(bool available, quint64 ti
     s_locals.undo_state_timestamp = timestamp;
 }
 
-void MainWindow::onMediaCaptureStarted()
+void MainWindow::onMediaCaptureStarted(MediaCaptureMode mode)
 {
-  m_ui.actionMediaCapture->setChecked(true);
+  updateMediaCaptureActions(mode);
 }
 
 void MainWindow::onMediaCaptureStopped()
 {
-  m_ui.actionMediaCapture->setChecked(false);
+  updateMediaCaptureActions(MediaCaptureMode::MaxCount);
+}
+
+void MainWindow::updateMediaCaptureActions(MediaCaptureMode mode)
+{
+  m_ui.actionStartMediaCapture->setChecked(mode == MediaCaptureMode::AudioAndVideo);
+  m_ui.actionStartMediaCapture->setEnabled(mode == MediaCaptureMode::MaxCount);
+  m_ui.actionCaptureAudioOnly->setChecked(mode == MediaCaptureMode::AudioOnly);
+  m_ui.actionCaptureAudioOnly->setEnabled(mode == MediaCaptureMode::MaxCount);
+  m_ui.actionCaptureVideoOnly->setChecked(mode == MediaCaptureMode::VideoOnly);
+  m_ui.actionCaptureVideoOnly->setEnabled(mode == MediaCaptureMode::MaxCount);
+  m_ui.actionStopMediaCapture->setEnabled(mode != MediaCaptureMode::MaxCount);
 }
 
 void MainWindow::onStartFileActionTriggered()
@@ -1114,7 +1126,12 @@ const GameList::Entry* MainWindow::resolveDiscSetEntry(const GameList::Entry* en
 std::shared_ptr<SystemBootParameters> MainWindow::getSystemBootParameters(std::string file)
 {
   std::shared_ptr<SystemBootParameters> ret = std::make_shared<SystemBootParameters>(std::move(file));
-  ret->start_media_capture = m_ui.actionMediaCapture->isChecked();
+  if (m_ui.actionStartMediaCapture->isChecked())
+    ret->start_media_capture = MediaCaptureMode::AudioAndVideo;
+  else if (m_ui.actionCaptureAudioOnly->isChecked())
+    ret->start_media_capture = MediaCaptureMode::AudioOnly;
+  else if (m_ui.actionCaptureVideoOnly->isChecked())
+    ret->start_media_capture = MediaCaptureMode::VideoOnly;
   return ret;
 }
 
@@ -2595,6 +2612,13 @@ void MainWindow::connectSignals()
   connect(m_ui.actionToolsRefreshAchievementProgress, &QAction::triggered, g_main_window,
           &MainWindow::refreshAchievementProgress);
   connect(m_ui.actionMediaCapture, &QAction::triggered, this, &MainWindow::onToolsMediaCaptureTriggered);
+  connect(m_ui.actionStartMediaCapture, &QAction::triggered, this,
+          [this]() { onToolsStartMediaCaptureTriggered(true, true); });
+  connect(m_ui.actionCaptureAudioOnly, &QAction::triggered, this,
+          [this]() { onToolsStartMediaCaptureTriggered(true, false); });
+  connect(m_ui.actionCaptureVideoOnly, &QAction::triggered, this,
+          [this]() { onToolsStartMediaCaptureTriggered(false, true); });
+  connect(m_ui.actionStopMediaCapture, &QAction::triggered, this, &MainWindow::onToolsStopMediaCaptureTriggered);
   connect(m_ui.actionCaptureGPUFrame, &QAction::triggered, g_core_thread, &CoreThread::captureGPUFrameDump);
   connect(m_ui.actionCPUDebugger, &QAction::triggered, this, &MainWindow::openCPUDebugger);
   connect(m_ui.actionOpenDataDirectory, &QAction::triggered, this, &MainWindow::onToolsOpenDataDirectoryTriggered);
@@ -3422,35 +3446,78 @@ void MainWindow::refreshAchievementProgress()
     });
 }
 
-void MainWindow::onToolsMediaCaptureTriggered(bool checked)
+void MainWindow::onToolsMediaCaptureTriggered()
 {
+  m_ui.menuMediaCapture->popup(QCursor::pos());
+}
+
+void MainWindow::onToolsStartMediaCaptureTriggered(bool audio, bool video)
+{
+  // uncheck those apart from the current
+  m_ui.actionCaptureAudioOnly->setChecked(audio && !video);
+  m_ui.actionCaptureVideoOnly->setChecked(video && !audio);
+  m_ui.actionStartMediaCapture->setChecked(audio && video);
+
   if (!s_locals.system_valid)
   {
     // leave it for later, we'll fill in the boot params
     return;
   }
 
-  if (!checked)
+  const MediaCaptureMode mode =
+    video ? (audio ? MediaCaptureMode::AudioAndVideo : MediaCaptureMode::VideoOnly) : MediaCaptureMode::AudioOnly;
+  const MediaCaptureBackend backend = System::GetConfiguredMediaCaptureBackend();
+  const MediaCapture::ContainerList containers =
+    video ? MediaCapture::GetVideoContainerList(backend) : MediaCapture::GetAudioContainerList(backend);
+  if (containers.empty())
   {
-    Host::RunOnCoreThread(&System::StopMediaCapture);
+    updateMediaCaptureActions(MediaCaptureMode::MaxCount);
+    QtUtils::AsyncMessageBox(this, QMessageBox::Critical, windowTitle(),
+                             tr("No containers are available for the current backend."));
     return;
   }
 
-  const std::string container =
-    Core::GetStringSettingValue("MediaCapture", "Container", Settings::DEFAULT_MEDIA_CAPTURE_CONTAINER);
-  const QString qcontainer = QString::fromStdString(container);
-  const QString filter(tr("%1 Files (*.%2)").arg(qcontainer.toUpper()).arg(qcontainer));
+  // configured container might be invalid
+  std::string container = System::GetConfiguredMediaCaptureContainerForMode(mode);
+  if (std::ranges::none_of(containers, [&](const auto& it) { return (it.first == container); }))
+  {
+    container =
+      video ? Settings::DEFAULT_MEDIA_CAPTURE_VIDEO_CONTAINER : Settings::DEFAULT_MEDIA_CAPTURE_AUDIO_CONTAINER;
+  }
+
+  QString filter;
+  QString selected_filter;
+  for (const auto& [container_name, container_desc] : containers)
+  {
+    const QString this_filter =
+      tr("%1 Files (*.%2)").arg(QString::fromStdString(container_desc)).arg(QString::fromStdString(container_name));
+    if (container_name == container)
+      selected_filter = this_filter;
+
+    if (filter.length() > 0)
+      filter.append(u";;"_s);
+    filter.append(this_filter);
+  }
 
   QString path =
     QString::fromStdString(System::GetNewMediaCapturePath(QtHost::GetCurrentGameTitle().toStdString(), container));
-  path = QDir::toNativeSeparators(QFileDialog::getSaveFileName(this, tr("Media Capture"), path, filter));
+  path =
+    QDir::toNativeSeparators(QFileDialog::getSaveFileName(this, tr("Media Capture"), path, filter, &selected_filter));
   if (path.isEmpty())
   {
-    m_ui.actionMediaCapture->setChecked(false);
+    updateMediaCaptureActions(MediaCaptureMode::MaxCount);
     return;
   }
 
-  Host::RunOnCoreThread([path = path.toStdString()]() { System::StartMediaCapture(path); });
+  Host::RunOnCoreThread([path = path.toStdString(), mode]() { System::StartMediaCapture(mode, path); });
+}
+
+void MainWindow::onToolsStopMediaCaptureTriggered()
+{
+  m_ui.actionCaptureAudioOnly->setChecked(false);
+  m_ui.actionCaptureVideoOnly->setChecked(false);
+  m_ui.actionStartMediaCapture->setChecked(false);
+  Host::RunOnCoreThread([]() { System::StopMediaCapture(); });
 }
 
 void MainWindow::onToolsMemoryEditorTriggered()
