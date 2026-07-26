@@ -464,12 +464,14 @@ bool MediaCaptureBase::DeliverAudioFrames(const s16* frames, u32 num_frames)
       return false;
   }
 
+  const s16* current_frames = frames;
   for (u32 remaining_frames = num_frames;;)
   {
     const u32 contig_frames = std::min(audio_buffer_size - m_audio_buffer_write_pos, remaining_frames);
-    std::memcpy(&m_audio_buffer[m_audio_buffer_write_pos * AUDIO_CHANNELS], frames,
+    std::memcpy(&m_audio_buffer[m_audio_buffer_write_pos * AUDIO_CHANNELS], current_frames,
                 sizeof(s16) * AUDIO_CHANNELS * contig_frames);
     m_audio_buffer_write_pos = (m_audio_buffer_write_pos + contig_frames) % audio_buffer_size;
+    current_frames += contig_frames * AUDIO_CHANNELS;
     remaining_frames -= contig_frames;
     if (remaining_frames == 0)
       break;
