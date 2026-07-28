@@ -7,7 +7,9 @@ import bisect
 import collections
 import hashlib
 import json
+import os
 import re
+import tempfile
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass
 from pathlib import Path
@@ -15,7 +17,6 @@ from typing import Iterable, Iterator, Sequence
 
 
 SKIPPED_TYPES = frozenset({"vanished", "obsolete"})
-SCHEMA = "duckstation-qt-translation-batch-v1"
 
 QT_PLACEHOLDER_RE = re.compile(r"%(?:L?\d+|Ln|n)")
 PRINTF_PLACEHOLDER_RE = re.compile(r"%(?!%)(?:(?:[-+0#]+\d*|\d+)?(?:\.\d+)?[diuoxXfFeEgGaAcsp])")
@@ -296,7 +297,7 @@ def missing_rich_tags(source: str, translation: str) -> collections.Counter[str]
     return extract_rich_tags(source) - extract_rich_tags(translation)
 
 
-def message_to_batch_record(message: CatalogMessage) -> dict[str, object]:
+def message_to_task_record(message: CatalogMessage) -> dict[str, object]:
     return {
         "record_type": "message",
         "id": message.identifier,
@@ -305,9 +306,7 @@ def message_to_batch_record(message: CatalogMessage) -> dict[str, object]:
         "current_type": message.translation_type,
         "current_translation": message.translation,
         "current_plural_translations": message.plural_translations,
-        "accept_current": False,
-        "target_translation": None,
-        "target_plural_translations": None,
+        "plural_arity": len(message.plural_translations),
         "suggestions": [],
     }
 
@@ -334,12 +333,36 @@ def load_jsonl(paths: Sequence[Path | str]) -> tuple[list[dict[str, object]], li
     return metadata, records
 
 
-def write_jsonl(path: Path, metadata: dict[str, object], records: Sequence[dict[str, object]]) -> None:
+def atomic_write_text(path: Path, text: str, mode: int | None = None) -> None:
+    """Write text beside its destination and atomically replace the destination."""
     path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("w", encoding="utf-8", newline="\n") as stream:
-        stream.write(json.dumps(metadata, ensure_ascii=False, sort_keys=True) + "\n")
-        for record in records:
-            stream.write(json.dumps(record, ensure_ascii=False, sort_keys=True) + "\n")
+    if mode is None and path.exists():
+        mode = path.stat().st_mode
+    temporary_name: str | None = None
+    try:
+        with tempfile.NamedTemporaryFile(
+            "w", encoding="utf-8", newline="", dir=path.parent, delete=False
+        ) as stream:
+            temporary_name = stream.name
+            stream.write(text)
+            stream.flush()
+            os.fsync(stream.fileno())
+        if mode is not None:
+            os.chmod(temporary_name, mode)
+        os.replace(temporary_name, path)
+    finally:
+        if temporary_name and os.path.exists(temporary_name):
+            os.unlink(temporary_name)
+
+
+def jsonl_text(metadata: dict[str, object], records: Sequence[dict[str, object]]) -> str:
+    lines = [json.dumps(metadata, ensure_ascii=False, sort_keys=True)]
+    lines.extend(json.dumps(record, ensure_ascii=False, sort_keys=True) for record in records)
+    return "\n".join(lines) + "\n"
+
+
+def text_sha256(text: str) -> str:
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
 def scan_raw_messages(text: str) -> dict[str, RawMessageSpan]:
@@ -392,10 +415,17 @@ def remove_unfinished_attribute(attributes: str) -> str:
 def replace_translation_node(block: str, singular: str | None, plurals: Sequence[str] | None) -> str:
     match = TRANSLATION_RE.search(block)
     if match is None:
-        raise ValueError("message has no translation element")
-    attributes = remove_unfinished_attribute(match.group("attrs") or match.group("self_attrs") or "")
-    line_start = block.rfind("\n", 0, match.start()) + 1
-    indent = block[line_start:match.start()]
+        closing = block.rfind("</message>")
+        if closing < 0:
+            raise ValueError("message has no closing element")
+        line_start = block.rfind("\n", 0, closing) + 1
+        message_indent = block[line_start:closing]
+        indent = f"{message_indent}    "
+        attributes = ""
+    else:
+        attributes = remove_unfinished_attribute(match.group("attrs") or match.group("self_attrs") or "")
+        line_start = block.rfind("\n", 0, match.start()) + 1
+        indent = block[line_start:match.start()]
     if plurals is not None:
         forms = "\n".join(f"{indent}    <numerusform>{xml_escape_text(value)}</numerusform>" for value in plurals)
         replacement = f"<translation{attributes}>\n{forms}\n{indent}</translation>"
@@ -403,4 +433,6 @@ def replace_translation_node(block: str, singular: str | None, plurals: Sequence
         if singular is None:
             raise ValueError("missing singular target translation")
         replacement = f"<translation{attributes}>{xml_escape_text(singular)}</translation>"
+    if match is None:
+        return f"{block[:line_start]}{indent}{replacement}\n{block[line_start:]}"
     return block[: match.start()] + replacement + block[match.end() :]

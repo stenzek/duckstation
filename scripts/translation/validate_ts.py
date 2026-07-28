@@ -38,6 +38,11 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="check placeholders only, allowing incomplete translations",
     )
+    parser.add_argument(
+        "--strict-required-tags",
+        action="store_true",
+        help="treat missing or unbalanced rich-text tags as errors",
+    )
     parser.add_argument("--strict-extra-tags", action="store_true", help="treat added rich-text tags as errors")
     return parser.parse_args()
 
@@ -129,11 +134,11 @@ def main() -> int:
                     output.append(f"{label}: additional rich-text tags: {dict(extras)}")
                 extras = missing_rich_tags(message.identity.source, value)
                 if extras:
-                    output = errors if args.strict_extra_tags else warnings
+                    output = errors if args.strict_required_tags or args.strict_extra_tags else warnings
                     output.append(f"{label}: missing rich-text tags: {dict(extras)}")
                 unbalanced = unbalanced_rich_tags(value)
                 if unbalanced:
-                    output = errors if args.strict_extra_tags else warnings
+                    output = errors if args.strict_required_tags or args.strict_extra_tags else warnings
                     output.append(f"{label}: unbalanced rich-text tags (opening, closing): {unbalanced}")
         if (
             message.identity.numerus

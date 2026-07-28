@@ -783,14 +783,6 @@ Unread messages: {}</source>
         </translation>
     </message>
     <message>
-        <source>Failed to read executable from disc.</source>
-        <translation>ディスクから実行ファイルを読み取れませんでした。</translation>
-    </message>
-    <message>
-        <source>Achievements have been disabled.</source>
-        <translation>実績が無効になりました。</translation>
-    </message>
-    <message>
         <source>{0}, {1}.</source>
         <translation>{0}、{1}。</translation>
     </message>
@@ -2174,6 +2166,18 @@ WAV files must be stereo and use a sample rate of 44100hz.</source>
         <translation>{0} のサンプルレートは {1} Hz、チャンネル数は {2} です。
 WAV ファイルはステレオかつサンプルレート 44100 Hz である必要があります。</translation>
     </message>
+    <message>
+        <source>Preload Image To RAM</source>
+        <translation>RAM にイメージを先読みする</translation>
+    </message>
+    <message>
+        <source>Allocating {} MB memory for precaching...</source>
+        <translation>先読み用に {} MB のメモリを確保しています...</translation>
+    </message>
+    <message>
+        <source>Loading Track {0} ({1})...</source>
+        <translation>トラック {0}（{1}）を読み込んでいます...</translation>
+    </message>
 </context>
 <context>
     <name>CDImageHasher</name>
@@ -2244,14 +2248,6 @@ Your dump may be corrupted, or the physical disc is scratched.</source>
     <message>
         <source>Container:</source>
         <translation>コンテナー:</translation>
-    </message>
-    <message>
-        <source>Capture Video</source>
-        <translation>映像をキャプチャ</translation>
-    </message>
-    <message>
-        <source>Capture Audio</source>
-        <translation>音声をキャプチャ</translation>
     </message>
     <message>
         <source>Codec:</source>
@@ -2351,20 +2347,20 @@ Your dump may be corrupted, or the physical disc is scratched.</source>
         <translation>コンテナー</translation>
     </message>
     <message>
-        <source>Determines the file format used to contain the captured audio/video.</source>
-        <translation>キャプチャした音声/映像を格納するファイル形式を指定します。</translation>
+        <source>Determines the file format used to contain the captured video.</source>
+        <translation>キャプチャした動画を保存するファイル形式を指定します。</translation>
+    </message>
+    <message>
+        <source>Determines the file format used to contain the captured audio.</source>
+        <translation>キャプチャした音声を保存するファイル形式を指定します。</translation>
+    </message>
+    <message>
+        <source>%1 (Unknown)</source>
+        <translation>%1（不明）</translation>
     </message>
     <message>
         <source>Specifies the directory where media capture (video/audio) will be saved.</source>
         <translation>メディアキャプチャ (映像/音声) を保存するディレクトリを指定します。</translation>
-    </message>
-    <message>
-        <source>Checked</source>
-        <translation>オン</translation>
-    </message>
-    <message>
-        <source>Captures video to the chosen file when media capture is started. If unchecked, the file will only contain audio.</source>
-        <translation>メディアキャプチャの開始時に、選択したファイルへ映像をキャプチャします。オフの場合、ファイルには音声のみが含まれます。</translation>
     </message>
     <message>
         <source>Video Codec</source>
@@ -2417,10 +2413,6 @@ Your dump may be corrupted, or the physical disc is scratched.</source>
     <message>
         <source>Parameters passed to the selected video codec.&lt;br&gt;&lt;b&gt;You must use &apos;=&apos; to separate key from value and &apos;:&apos; to separate two pairs from each other.&lt;/b&gt;&lt;br&gt;For example: &quot;crf = 21 : preset = veryfast&quot;</source>
         <translation>選択した映像コーデックに渡すパラメーターです。&lt;br&gt;&lt;b&gt;キーと値の区切りには「=」を、各ペアの区切りには「:」を使用する必要があります。&lt;/b&gt;&lt;br&gt;例: &quot;crf = 21 : preset = veryfast&quot;</translation>
-    </message>
-    <message>
-        <source>Captures audio to the chosen file when media capture is started. If unchecked, the file will only contain video.</source>
-        <translation>メディアキャプチャの開始時に、選択したファイルへ音声をキャプチャします。オフの場合、ファイルには映像のみが含まれます。</translation>
     </message>
     <message>
         <source>Audio Codec</source>
@@ -9083,10 +9075,6 @@ Do you want to {0} anyway?</source>
         <translation>チートを有効にする</translation>
     </message>
     <message>
-        <source>Search...</source>
-        <translation>検索...</translation>
-    </message>
-    <message>
         <source>Sort Alphabetically</source>
         <translation>アルファベット順に並べ替え</translation>
     </message>
@@ -10003,10 +9991,6 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <source>All Regions</source>
         <translation>すべてのリージョン</translation>
-    </message>
-    <message>
-        <source>Search...</source>
-        <translation>検索...</translation>
     </message>
     <message>
         <source>.cue (Cue Sheets)
@@ -11217,13 +11201,6 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
 </context>
 <context>
-    <name>HotkeySettingsWidget</name>
-    <message>
-        <source>Search...</source>
-        <translation>検索...</translation>
-    </message>
-</context>
-<context>
     <name>Hotkeys</name>
     <message>
         <source>Toggle Fullscreen</source>
@@ -11448,6 +11425,14 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <source>Toggle Media Capture</source>
         <translation>メディアキャプチャを切り替え</translation>
+    </message>
+    <message>
+        <source>Toggle Audio Capture</source>
+        <translation>オーディオキャプチャの切り替え</translation>
+    </message>
+    <message>
+        <source>Toggle Video Capture</source>
+        <translation>ビデオキャプチャの切り替え</translation>
     </message>
     <message>
         <source>Rotate Display Clockwise</source>
@@ -12669,6 +12654,10 @@ Shift+クリックで複数のバインドを設定します。</translation>
         <translation>並べ替え(&amp;Y)</translation>
     </message>
     <message>
+        <source>Allows you to record audio and/or video from the content.</source>
+        <translation>コンテンツの音声や映像を録画できます。</translation>
+    </message>
+    <message>
         <source>Start &amp;File...</source>
         <translation>イメージ起動(&amp;F)...</translation>
     </message>
@@ -13047,6 +13036,34 @@ Shift+クリックで複数のバインドを設定します。</translation>
     <message>
         <source>System Log</source>
         <translation>システムログ</translation>
+    </message>
+    <message>
+        <source>Start &amp;Capture</source>
+        <translation>キャプチャを開始(&amp;C)</translation>
+    </message>
+    <message>
+        <source>Starts recording audio and video.</source>
+        <translation>音声と映像の録画を開始します。</translation>
+    </message>
+    <message>
+        <source>Stop &amp;Capture</source>
+        <translation>キャプチャを停止(&amp;C)</translation>
+    </message>
+    <message>
+        <source>Start &amp;Video-Only Capture</source>
+        <translation>動画のみのキャプチャを開始(&amp;V)</translation>
+    </message>
+    <message>
+        <source>Starts a video-only recording.</source>
+        <translation>動画のみの録画を開始します。</translation>
+    </message>
+    <message>
+        <source>Start &amp;Audio-Only Capture</source>
+        <translation>音声のみのキャプチャを開始(&amp;A)</translation>
+    </message>
+    <message>
+        <source>Starts an audio-only recording.</source>
+        <translation>音声のみの録音を開始します。</translation>
     </message>
     <message>
         <source>Automatic</source>
@@ -13641,6 +13658,10 @@ Do you want to delete the save state and boot the game anyway?</source>
         <translation>RA: 実績進捗データベースを更新しました。</translation>
     </message>
     <message>
+        <source>No containers are available for the current backend.</source>
+        <translation>現在のバックエンドで使用できるコンテナがありません。</translation>
+    </message>
+    <message>
         <source>%1 Files (*.%2)</source>
         <translation>%1 ファイル (*.%2)</translation>
     </message>
@@ -13841,26 +13862,6 @@ This action cannot be undone.</source>
         <translation>HEVC (ハードウェアエンコード)</translation>
     </message>
     <message>
-        <source>VP9 with Software Encoding</source>
-        <comment>VideoCodec</comment>
-        <translation>VP9 (ソフトウェアエンコード)</translation>
-    </message>
-    <message>
-        <source>VP9 with Hardware Encoding</source>
-        <comment>VideoCodec</comment>
-        <translation>VP9 (ハードウェアエンコード)</translation>
-    </message>
-    <message>
-        <source>AV1 with Software Encoding</source>
-        <comment>VideoCodec</comment>
-        <translation>AV1 (ソフトウェアエンコード)</translation>
-    </message>
-    <message>
-        <source>AV1 with Hardware Encoding</source>
-        <comment>VideoCodec</comment>
-        <translation>AV1 (ハードウェアエンコード)</translation>
-    </message>
-    <message>
         <source>Advanced Audio Coding</source>
         <comment>AudioCodec</comment>
         <translation>高度音声符号化</translation>
@@ -13918,6 +13919,10 @@ FFmpeg は {} からダウンロードできます。
   libswscale: {}
   libswresample: {}
 </translation>
+    </message>
+    <message>
+        <source>Audio codec &apos;{0}&apos; does not support {1} Hz samples, using {2} Hz.</source>
+        <translation>オーディオコーデック「{0}」は {1} Hz のサンプルに対応していないため、{2} Hz を使用します。</translation>
     </message>
     <message>
         <source>Matroska Media Container</source>
@@ -14121,14 +14126,6 @@ Error: {1}</source>
         <translation>データのエクスポート</translation>
     </message>
     <message>
-        <source>&lt;&lt;</source>
-        <translation>&lt;&lt;コピー</translation>
-    </message>
-    <message>
-        <source>&gt;&gt;</source>
-        <translation>コピー&gt;&gt;</translation>
-    </message>
-    <message>
         <source>New Card...</source>
         <translation>新規作成...</translation>
     </message>
@@ -14181,6 +14178,18 @@ Error: {1}</source>
         <translation> (削&#x3000;除)</translation>
     </message>
     <message>
+        <source>PNG Images (*.png);;JPEG Images (*.jpg *.jpeg);;WebP Images (*.webp)</source>
+        <translation>PNG 画像（*.png）;;JPEG 画像（*.jpg *.jpeg）;;WebP 画像（*.webp）</translation>
+    </message>
+    <message>
+        <source>Animated PNG Images (*.png)</source>
+        <translation>アニメーション PNG 画像（*.png）</translation>
+    </message>
+    <message>
+        <source>Extract Icon</source>
+        <translation>アイコンを抽出</translation>
+    </message>
+    <message>
         <source>Select Memory Card</source>
         <translation>メモリーカードを選択</translation>
     </message>
@@ -14200,6 +14209,22 @@ Error: {1}</source>
     <message>
         <source>Insufficient blocks, this file needs %1 but only %2 are available.</source>
         <translation>空ブロックが不十分です、このファイルには %1 が必要ですが、使用できるのは %2 のみです。</translation>
+    </message>
+    <message>
+        <source>Extract Animated Icon</source>
+        <translation>アニメーションアイコンを抽出</translation>
+    </message>
+    <message>
+        <source>Failed to extract icon from save file %1:
+%2</source>
+        <translation>セーブファイル %1 からアイコンを抽出できませんでした:
+%2</translation>
+    </message>
+    <message>
+        <source>Failed to extract animated icon from save file %1:
+%2</source>
+        <translation>セーブファイル %1 からアニメーションアイコンを抽出できませんでした:
+%2</translation>
     </message>
     <message>
         <source>Failed to import memory card from %1:
@@ -15733,6 +15758,10 @@ Error: {1}</source>
         <translation>選択中のプリセット:</translation>
     </message>
     <message>
+        <source>Refresh Overlay List</source>
+        <translation>オーバーレイリストを更新</translation>
+    </message>
+    <message>
         <source>Custom Configuration</source>
         <translation>カスタム設定</translation>
     </message>
@@ -15846,10 +15875,6 @@ Error: {1}</source>
     <message>
         <source>Select Shader</source>
         <translation>シェーダーを選択</translation>
-    </message>
-    <message>
-        <source>Search...</source>
-        <translation>検索...</translation>
     </message>
     <message>
         <source>All</source>
@@ -16428,6 +16453,13 @@ Would you like to update the shortcut to point to the current location?</source>
     <message>
         <source>Save Slot {0} selected.</source>
         <translation>セーブスロット {0} を選択しました。</translation>
+    </message>
+</context>
+<context>
+    <name>SearchBox</name>
+    <message>
+        <source>Search...</source>
+        <translation>検索...</translation>
     </message>
 </context>
 <context>

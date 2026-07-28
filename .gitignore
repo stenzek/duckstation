@@ -45,7 +45,7 @@ CMakeLists.txt.user
 
 # python bytecode
 __pycache__
+/.translation-work/
 
 # other repos
 /android
-
