@@ -1811,19 +1811,24 @@ ALWAYS_INLINE_RELEASE bool SPU::VolumeEnvelope::Tick(s16& current_level)
   // negative (inverted) volume. Except when decrementing, then it snaps straight to zero. Simply clamping to int16
   // range will be fine for incrementing, because the volume never decreases past zero. If the volume _was_ negative,
   // and is incrementing, hardware tests show that it only clamps to max, not 0.
-  s32 new_level = current_level + this_step;
+  const s32 new_level = current_level + this_step;
   if (!decreasing)
   {
-    current_level = Truncate16(new_level = std::clamp(new_level, MIN_VOLUME, MAX_VOLUME));
-    return (new_level != ((this_step < 0) ? MIN_VOLUME : MAX_VOLUME));
+    current_level = Truncate16(std::clamp(new_level, MIN_VOLUME, MAX_VOLUME));
+    return (current_level != ((this_step < 0) ? MIN_VOLUME : MAX_VOLUME));
   }
   else
   {
     if (phase_invert)
-      current_level = Truncate16(new_level = std::clamp(new_level, MIN_VOLUME, 0));
+    {
+      current_level = Truncate16(std::clamp(new_level, MIN_VOLUME, 0));
+      return (current_level < 0);
+    }
     else
-      current_level = Truncate16(new_level = std::max(new_level, 0));
-    return (new_level == 0);
+    {
+      current_level = Truncate16(std::max(new_level, 0));
+      return (current_level > 0);
+    }
   }
 }
 
