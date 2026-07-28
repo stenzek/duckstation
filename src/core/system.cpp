@@ -2675,9 +2675,15 @@ bool System::LoadBIOS(Error* error)
   s_state.bios_image_info = bios_image->info;
   s_state.bios_hash = bios_image->hash;
   if (s_state.bios_image_info)
+  {
     INFO_LOG("Using BIOS: {}", s_state.bios_image_info->description);
+    INFO_LOG("BIOS Version: {}", s_state.bios_image_info->version ? s_state.bios_image_info->version : "Unknown");
+    INFO_LOG("BIOS Region: {}", Settings::GetConsoleRegionName(s_state.bios_image_info->region));
+  }
   else
+  {
     WARNING_LOG("Using an unknown BIOS: {}", BIOS::ImageInfo::GetHashString(s_state.bios_hash));
+  }
 
   std::memcpy(Bus::g_bios, bios_image->data.data(), Bus::BIOS_SIZE);
   return true;
