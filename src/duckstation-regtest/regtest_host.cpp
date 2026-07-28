@@ -304,7 +304,7 @@ void Host::OnSystemUndoStateAvailabilityChanged(bool available, u64 timestamp)
   //
 }
 
-void Host::OnMediaCaptureStarted()
+void Host::OnMediaCaptureStarted(MediaCaptureMode mode)
 {
   //
 }
