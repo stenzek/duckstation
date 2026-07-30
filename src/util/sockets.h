@@ -277,7 +277,7 @@ public:
 
   // Hide StreamSocket read/write methods.
   size_t Read(void* buffer, size_t buffer_size);
-  size_t Write(const void* buffer, size_t buffer_size);
+  size_t Write(const void* buffer, size_t buffer_size, bool allow_smaller = true);
   size_t WriteVector(const void** buffers, const size_t* buffer_lengths, size_t num_buffers);
   virtual void Close() override;
 

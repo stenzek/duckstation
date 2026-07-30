@@ -1072,13 +1072,13 @@ size_t BufferedStreamSocket::Read(void* buffer, size_t buffer_size)
   return bytes_to_read;
 }
 
-size_t BufferedStreamSocket::Write(const void* buffer, size_t buffer_size)
+size_t BufferedStreamSocket::Write(const void* buffer, size_t buffer_size, bool allow_smaller /* = true */)
 {
   if (!m_connected)
     return 0;
 
   // Read from receive buffer.
-  const std::span<u8> wrbuf = AcquireWriteBuffer(buffer_size, true);
+  const std::span<u8> wrbuf = AcquireWriteBuffer(buffer_size, allow_smaller);
   if (wrbuf.empty())
     return 0;
 

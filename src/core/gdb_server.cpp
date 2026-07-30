@@ -672,8 +672,11 @@ void GDBServer::ClientSocket::SendPacket(std::string_view sv)
     return;
 
   DEBUG_LOG("Send reply: {}", sv);
-  if (size_t written = Write(sv.data(), sv.length()); written != sv.length())
+  if (size_t written = Write(sv.data(), sv.length(), false); written != sv.length())
+  {
     ERROR_LOG("Only wrote {} of {} bytes.", written, sv.length());
+    Close();
+  }
 }
 
 void GDBServer::ClientSocket::OnSystemPaused(u8 signal)
