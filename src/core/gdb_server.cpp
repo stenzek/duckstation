@@ -72,13 +72,17 @@ static bool Cmd$H(ClientSocket* client, std::string_view data);
 static bool Cmd$m(ClientSocket* client, std::string_view data);
 static bool Cmd$M(ClientSocket* client, std::string_view data);
 static bool Cmd$c(ClientSocket* client, std::string_view data);
+static bool Cmd$C(ClientSocket* client, std::string_view data);
 static bool Cmd$s(ClientSocket* client, std::string_view data);
+static bool Cmd$S(ClientSocket* client, std::string_view data);
 template<bool add_breakpoint>
 static bool Cmd$z(ClientSocket* client, std::string_view data);
 static bool Cmd$vMustReplyEmpty(ClientSocket* client, std::string_view data);
 static bool Cmd$qSupported(ClientSocket* client, std::string_view data);
 
 static bool ParseOptionalAddress(std::string_view data, std::optional<VirtualMemoryAddress>* address);
+static bool ParseSignalAndOptionalAddress(std::string_view data, u8* signal,
+                                          std::optional<VirtualMemoryAddress>* address);
 static void InvalidateMemoryWrite(VirtualMemoryAddress address, u32 length);
 
 static bool IsPacketAck(std::string_view data);
@@ -145,7 +149,9 @@ static constexpr std::pair<std::string_view, bool (*)(ClientSocket*, std::string
   {"m", Cmd$m},
   {"M", Cmd$M},
   {"c", Cmd$c},
+  {"C", Cmd$C},
   {"s", Cmd$s},
+  {"S", Cmd$S},
   {"z", Cmd$z<false>},
   {"Z", Cmd$z<true>},
   {"vMustReplyEmpty", Cmd$vMustReplyEmpty},
@@ -375,6 +381,26 @@ bool GDBServer::Cmd$c(ClientSocket* client, std::string_view data)
   return true;
 }
 
+/// Continue with signal.
+bool GDBServer::Cmd$C(ClientSocket* client, std::string_view data)
+{
+  u8 signal;
+  std::optional<VirtualMemoryAddress> address;
+  if (!ParseSignalAndOptionalAddress(data, &signal, &address))
+  {
+    ERROR_LOG("Invalid continue-with-signal packet: {}", data);
+    client->SendReplyWithAck("E01");
+    return true;
+  }
+
+  WARNING_LOG("Ignoring signal 0x{:02X} in continue packet", signal);
+  client->SendAck();
+  if (address.has_value() && address.value() != CPU::g_state.pc)
+    CPU::SetPC(address.value());
+  System::PauseSystem(false);
+  return true;
+}
+
 /// Single step.
 bool GDBServer::Cmd$s(ClientSocket* client, std::string_view data)
 {
@@ -386,6 +412,26 @@ bool GDBServer::Cmd$s(ClientSocket* client, std::string_view data)
     return true;
   }
 
+  client->SendAck();
+  if (address.has_value() && address.value() != CPU::g_state.pc)
+    CPU::SetPC(address.value());
+  System::SingleStepCPU();
+  return true;
+}
+
+/// Single step with signal.
+bool GDBServer::Cmd$S(ClientSocket* client, std::string_view data)
+{
+  u8 signal;
+  std::optional<VirtualMemoryAddress> address;
+  if (!ParseSignalAndOptionalAddress(data, &signal, &address))
+  {
+    ERROR_LOG("Invalid single-step-with-signal packet: {}", data);
+    client->SendReplyWithAck("E01");
+    return true;
+  }
+
+  WARNING_LOG("Ignoring signal 0x{:02X} in single-step packet", signal);
   client->SendAck();
   if (address.has_value() && address.value() != CPU::g_state.pc)
     CPU::SetPC(address.value());
@@ -490,6 +536,24 @@ bool GDBServer::ParseOptionalAddress(std::string_view data, std::optional<Virtua
   std::string_view end;
   *address = StringUtil::FromChars<VirtualMemoryAddress>(data, 16, &end);
   return address->has_value() && end.empty() && ((address->value() & 3u) == 0);
+}
+
+bool GDBServer::ParseSignalAndOptionalAddress(std::string_view data, u8* signal,
+                                              std::optional<VirtualMemoryAddress>* address)
+{
+  std::array<u8, 1> signal_bytes;
+  if (data.size() < 2 || StringUtil::DecodeHex(signal_bytes, data.substr(0, 2)) != signal_bytes.size())
+    return false;
+
+  *signal = signal_bytes[0];
+  data.remove_prefix(2);
+  if (data.empty())
+  {
+    address->reset();
+    return true;
+  }
+
+  return data[0] == ';' && data.size() > 1 && ParseOptionalAddress(data.substr(1), address) && address->has_value();
 }
 
 void GDBServer::InvalidateMemoryWrite(VirtualMemoryAddress address, u32 length)
