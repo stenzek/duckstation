@@ -171,6 +171,12 @@ u8 GDBServer::ComputeChecksum(std::string_view str)
 /// Get stop reason.
 bool GDBServer::Cmd$_questionMark(ClientSocket* client, std::string_view data)
 {
+  if (!data.empty())
+  {
+    client->SendReplyWithAck("E01");
+    return true;
+  }
+
   client->SendLastStopReplyWithAck();
   return true;
 }
@@ -178,6 +184,12 @@ bool GDBServer::Cmd$_questionMark(ClientSocket* client, std::string_view data)
 /// Get general registers.
 bool GDBServer::Cmd$g(ClientSocket* client, std::string_view data)
 {
+  if (!data.empty())
+  {
+    client->SendReplyWithAck("E01");
+    return true;
+  }
+
   LargeReplyPacket reply;
 
   for (const u32* reg : REGISTERS)
@@ -245,7 +257,8 @@ bool GDBServer::Cmd$m(ClientSocket* client, std::string_view data)
   std::optional<VirtualMemoryAddress> address;
   std::optional<u32> length;
   if (!(address = StringUtil::FromChars<VirtualMemoryAddress>(caret, 16, &caret)).has_value() || caret.empty() ||
-      caret[0] != ',' || !(length = StringUtil::FromChars<u32>(caret.substr(1), 16)).has_value())
+      caret[0] != ',' || !(length = StringUtil::FromChars<u32>(caret.substr(1), 16, &caret)).has_value() ||
+      !caret.empty())
   {
     ERROR_LOG("Invalid packet: {}", data);
     client->SendReplyWithAck("E01");
@@ -358,10 +371,13 @@ bool GDBServer::Cmd$z(ClientSocket* client, std::string_view data)
   std::string_view caret = data;
   std::optional<u32> bptype;
   std::optional<VirtualMemoryAddress> bpaddr;
+  std::optional<u32> bpkind;
 
-  // type,addr
+  // type,addr,kind
   if (!(bptype = StringUtil::FromChars<u32>(caret, 10, &caret)) || caret.empty() || caret[0] != ',' ||
-      !(bpaddr = StringUtil::FromChars<VirtualMemoryAddress>(caret.substr(1), 16)).has_value())
+      !(bpaddr = StringUtil::FromChars<VirtualMemoryAddress>(caret.substr(1), 16, &caret)).has_value() ||
+      caret.empty() || caret[0] != ',' ||
+      !(bpkind = StringUtil::FromChars<u32>(caret.substr(1), 16, &caret)).has_value() || !caret.empty())
   {
     ERROR_LOG("Invalid {} hw breakpoint packet: {}", add_breakpoint ? "add" : "remove", data);
     client->SendReplyWithAck("E01");
@@ -474,11 +490,18 @@ bool GDBServer::ProcessPacket(ClientSocket* client, std::string_view data)
 
   // Verify checksum.
   const std::string_view request = data.substr(1, data.size() - 4);
-  const u8 packet_checksum = StringUtil::FromChars<u8>(data.substr(data.size() - 2, 2), 16).value_or(0);
-  const u8 computed_checksum = ComputeChecksum(request);
-  if (packet_checksum != computed_checksum)
+  std::array<u8, 1> packet_checksum;
+  if (StringUtil::DecodeHex(packet_checksum, data.substr(data.size() - 2, 2)) != 1)
   {
-    ERROR_LOG("Incorrect checksum, expected 0x{:02x} got 0x{:02x} for '{}'", computed_checksum, packet_checksum, data);
+    ERROR_LOG("Invalid checksum in packet '{}'", data);
+    return false;
+  }
+
+  const u8 computed_checksum = ComputeChecksum(request);
+  if (packet_checksum[0] != computed_checksum)
+  {
+    ERROR_LOG("Incorrect checksum, expected 0x{:02x} got 0x{:02x} for '{}'", computed_checksum, packet_checksum[0],
+              data);
     return false;
   }
 
