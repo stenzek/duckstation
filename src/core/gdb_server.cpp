@@ -6,6 +6,7 @@
 #ifdef ENABLE_GDB_SERVER
 
 #include "bus.h"
+#include "cpu_code_cache.h"
 #include "cpu_core.h"
 #include "cpu_core_private.h"
 #include "system.h"
@@ -73,6 +74,7 @@ static bool Cmd$vMustReplyEmpty(ClientSocket* client, std::string_view data);
 static bool Cmd$qSupported(ClientSocket* client, std::string_view data);
 
 static bool ParseOptionalAddress(std::string_view data, std::optional<VirtualMemoryAddress>* address);
+static void InvalidateMemoryWrite(VirtualMemoryAddress address, u32 length);
 
 static bool IsPacketAck(std::string_view data);
 static bool IsPacketInterrupt(std::string_view data);
@@ -338,6 +340,7 @@ bool GDBServer::Cmd$M(ClientSocket* client, std::string_view data)
     return true;
   }
 
+  InvalidateMemoryWrite(address.value(), length.value());
   client->SendReplyWithAck("OK");
   return true;
 }
@@ -475,6 +478,29 @@ bool GDBServer::ParseOptionalAddress(std::string_view data, std::optional<Virtua
   std::string_view end;
   *address = StringUtil::FromChars<VirtualMemoryAddress>(data, 16, &end);
   return address->has_value() && end.empty() && ((address->value() & 3u) == 0);
+}
+
+void GDBServer::InvalidateMemoryWrite(VirtualMemoryAddress address, u32 length)
+{
+  for (u32 offset = 0; offset < length;)
+  {
+    const VirtualMemoryAddress current_address = address + offset;
+    CPU::InvalidateICacheAt(current_address);
+    offset += std::min(length - offset, CPU::ICACHE_LINE_SIZE - (current_address & (CPU::ICACHE_LINE_SIZE - 1)));
+  }
+
+  for (u32 offset = 0; offset < length;)
+  {
+    const PhysicalMemoryAddress physical_address = (address + offset) & CPU::KSEG_MASK;
+    if (Bus::IsRAMAddress(physical_address))
+    {
+      const u32 page = Bus::GetRAMCodePageIndex(physical_address);
+      if (Bus::IsRAMCodePage(page))
+        CPU::CodeCache::InvalidateBlocksWithPageIndex(page);
+    }
+
+    offset += std::min(length - offset, HOST_PAGE_SIZE - (physical_address & (HOST_PAGE_SIZE - 1)));
+  }
 }
 
 bool GDBServer::IsPacketAck(std::string_view data)
