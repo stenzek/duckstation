@@ -210,34 +210,49 @@ bool GDBServer::Cmd$g(ClientSocket* client, std::string_view data)
 /// Set general registers.
 bool GDBServer::Cmd$G(ClientSocket* client, std::string_view data)
 {
-  if (data.size() == NUM_GDB_REGISTERS * 8)
+  std::array<u8, NUM_GDB_REGISTERS * sizeof(u32)> bytes;
+  if (data.size() != bytes.size() * 2 || StringUtil::DecodeHex(bytes, data) != bytes.size())
   {
-    size_t offset = 0;
-
-    for (u32* reg : REGISTERS)
-    {
-      // Data is in host order (little endian).
-      const std::string_view tex_value = data.substr(offset, 8);
-      std::array<u8, 4> le_value;
-      if (StringUtil::DecodeHex(le_value, tex_value) == 4)
-      {
-        *reg = ZeroExtend32(le_value[0]) | (ZeroExtend32(le_value[1]) << 8) | (ZeroExtend32(le_value[2]) << 16) |
-               (ZeroExtend32(le_value[3]) << 24);
-      }
-      else
-      {
-        ERROR_LOG("Invalid register set value: {}", tex_value);
-      }
-
-      offset += 8;
-    }
-  }
-  else
-  {
-    ERROR_LOG("Wrong payload size for 'G' command, expected {} got {}", NUM_GDB_REGISTERS * 8, data.size());
+    ERROR_LOG("Invalid payload for 'G' command, expected {} hex digits", bytes.size() * 2);
+    client->SendReplyWithAck("E01");
+    return true;
   }
 
-  client->SendReplyWithAck();
+  std::array<u32, NUM_GDB_REGISTERS> values;
+  for (size_t i = 0; i < values.size(); i++)
+  {
+    const size_t offset = i * sizeof(u32);
+    values[i] = ZeroExtend32(bytes[offset]) | (ZeroExtend32(bytes[offset + 1]) << 8) |
+                (ZeroExtend32(bytes[offset + 2]) << 16) | (ZeroExtend32(bytes[offset + 3]) << 24);
+  }
+
+  const u32 new_pc = values[37];
+  if ((new_pc & 3u) != 0)
+  {
+    ERROR_LOG("Invalid PC 0x{:08X} in 'G' command", new_pc);
+    client->SendReplyWithAck("E01");
+    return true;
+  }
+
+  CPU::g_state.regs.r[0] = 0;
+  for (size_t i = 1; i < 32; i++)
+    CPU::g_state.regs.r[i] = values[i];
+
+  CPU::g_state.cop0_regs.sr.bits = (CPU::g_state.cop0_regs.sr.bits & ~CPU::Cop0Registers::SR::WRITE_MASK) |
+                                   (values[32] & CPU::Cop0Registers::SR::WRITE_MASK);
+  CPU::UpdateMemoryPointers();
+
+  CPU::g_state.regs.lo = values[33];
+  CPU::g_state.regs.hi = values[34];
+
+  CPU::g_state.cop0_regs.cause.bits = (CPU::g_state.cop0_regs.cause.bits & ~CPU::Cop0Registers::CAUSE::WRITE_MASK) |
+                                      (values[36] & CPU::Cop0Registers::CAUSE::WRITE_MASK);
+  CPU::CheckForPendingInterrupt();
+
+  if (new_pc != CPU::g_state.pc)
+    CPU::SetPC(new_pc);
+
+  client->SendReplyWithAck("OK");
   return true;
 }
 
