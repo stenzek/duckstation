@@ -27,6 +27,8 @@ namespace GDBServer {
 
 static constexpr u8 GDB_SIGNAL_INTERRUPT = 2;
 static constexpr u8 GDB_SIGNAL_TRAP = 5;
+static constexpr u32 MAX_PACKET_SIZE = 16384;
+static constexpr u32 MAX_MEMORY_READ_SIZE = MAX_PACKET_SIZE / 2;
 
 namespace {
 
@@ -282,6 +284,13 @@ bool GDBServer::Cmd$m(ClientSocket* client, std::string_view data)
     return true;
   }
 
+  if (length.value() > MAX_MEMORY_READ_SIZE)
+  {
+    ERROR_LOG("Memory read of {} bytes exceeds maximum of {}", length.value(), MAX_MEMORY_READ_SIZE);
+    client->SendReplyWithAck("E01");
+    return true;
+  }
+
   // large enough for most requests
   llvm::SmallVector<u8, 128> buffer;
   buffer.resize_for_overwrite(length.value());
@@ -465,7 +474,7 @@ bool GDBServer::Cmd$vMustReplyEmpty(ClientSocket* client, std::string_view data)
 
 bool GDBServer::Cmd$qSupported(ClientSocket* client, std::string_view data)
 {
-  client->SendReplyWithAck();
+  client->SendReplyWithAck(TinyString::from_format("PacketSize={:x}", MAX_PACKET_SIZE));
   return true;
 }
 
