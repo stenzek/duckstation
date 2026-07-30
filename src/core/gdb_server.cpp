@@ -45,6 +45,7 @@ public:
   void SendReply(std::string_view reply = std::string_view());
   void SendLastStopReplyWithAck();
   void SendReplyWithAck(std::string_view reply = std::string_view());
+  void ResendLastReply();
 
 protected:
   void OnConnected() override;
@@ -56,6 +57,7 @@ private:
 
   bool m_seen_resume = false;
   u8 m_last_stop_signal = GDB_SIGNAL_INTERRUPT;
+  SmallString m_last_reply;
 };
 
 } // namespace
@@ -623,9 +625,8 @@ void GDBServer::ClientSocket::OnRead()
 
       if (GDBServer::IsPacketAck(current_packet))
       {
-        // Eat ACKs.
         if (current_packet[0] == '-')
-          ERROR_LOG("Received negative ack");
+          ResendLastReply();
 
         packet_complete = true;
         break;
@@ -702,7 +703,8 @@ void GDBServer::ClientSocket::SendAck()
 
 void GDBServer::ClientSocket::SendReply(std::string_view reply)
 {
-  SendPacket(SmallString::from_format("${}#{:02x}", reply, ComputeChecksum(reply)));
+  m_last_reply.format("${}#{:02x}", reply, ComputeChecksum(reply));
+  SendPacket(m_last_reply);
 }
 
 void GDBServer::ClientSocket::SendLastStopReplyWithAck()
@@ -712,7 +714,19 @@ void GDBServer::ClientSocket::SendLastStopReplyWithAck()
 
 void GDBServer::ClientSocket::SendReplyWithAck(std::string_view reply)
 {
-  SendPacket(SmallString::from_format("+${}#{:02x}", reply, ComputeChecksum(reply)));
+  SendAck();
+  SendReply(reply);
+}
+
+void GDBServer::ClientSocket::ResendLastReply()
+{
+  if (m_last_reply.empty())
+  {
+    WARNING_LOG("Received negative acknowledgement without a previous reply.");
+    return;
+  }
+
+  SendPacket(m_last_reply);
 }
 
 bool GDBServer::Initialize(u16 port)
