@@ -28,6 +28,7 @@ namespace GDBServer {
 static constexpr u8 GDB_SIGNAL_INTERRUPT = 2;
 static constexpr u8 GDB_SIGNAL_TRAP = 5;
 static constexpr u32 MAX_PACKET_SIZE = 16384;
+static constexpr u32 MAX_FRAMED_PACKET_SIZE = MAX_PACKET_SIZE + 4;
 static constexpr u32 MAX_MEMORY_READ_SIZE = MAX_PACKET_SIZE / 2;
 
 namespace {
@@ -620,6 +621,13 @@ void GDBServer::ClientSocket::OnRead()
     bool packet_complete = false;
     for (; (buffer_offset + current_packet_size) <= buffer.size(); current_packet_size++)
     {
+      if (current_packet_size > MAX_FRAMED_PACKET_SIZE)
+      {
+        ERROR_LOG("Closing GDB client after oversized packet.");
+        Close();
+        return;
+      }
+
       const std::string_view current_packet(reinterpret_cast<const char*>(buffer.data() + buffer_offset),
                                             current_packet_size);
 
