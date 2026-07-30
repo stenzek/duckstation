@@ -316,7 +316,7 @@ bool GDBServer::Cmd$c(ClientSocket* client, std::string_view data)
   }
 
   client->SendAck();
-  if (address.has_value())
+  if (address.has_value() && address.value() != CPU::g_state.pc)
     CPU::SetPC(address.value());
   System::PauseSystem(false);
   return true;
@@ -334,7 +334,7 @@ bool GDBServer::Cmd$s(ClientSocket* client, std::string_view data)
   }
 
   client->SendAck();
-  if (address.has_value())
+  if (address.has_value() && address.value() != CPU::g_state.pc)
     CPU::SetPC(address.value());
   System::SingleStepCPU();
   return true;
