@@ -2467,15 +2467,29 @@ ALWAYS_INLINE_RELEASE bool CPU::CheckBreakpointList(BreakpointType type, Virtual
     if (bp.callback)
     {
       // if callback returns false, the bp is no longer recorded
-      if (!bp.callback(BreakpointType::Execute, pc, address))
+      switch (bp.callback(type, pc, address))
       {
-        bplist.erase(bplist.begin() + i);
-        count--;
-        UpdateDebugDispatcherFlag();
-      }
-      else
-      {
-        i++;
+        case BreakpointCallbackAction::Continue:
+        {
+          i++;
+        }
+        break;
+
+        case BreakpointCallbackAction::Pause:
+        {
+          System::PauseSystem(true);
+          return true;
+        }
+
+        case BreakpointCallbackAction::Remove:
+        {
+          bplist.erase(bplist.begin() + i);
+          count--;
+          UpdateDebugDispatcherFlag();
+        }
+        break;
+
+          DefaultCaseIsUnreachable();
       }
     }
     else

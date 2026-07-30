@@ -219,8 +219,17 @@ enum class BreakpointType : u8
   Count
 };
 
-// Breakpoint callback - if the callback returns false, the breakpoint will be removed.
-using BreakpointCallback = bool (*)(BreakpointType type, VirtualMemoryAddress pc, VirtualMemoryAddress memaddr);
+// Breakpoint callback actions
+enum class BreakpointCallbackAction : u8
+{
+  Continue,
+  Pause,
+  Remove,
+};
+
+// Breakpoint callback invoked before pausing. If the callback returns false, the breakpoint will be removed.
+using BreakpointCallback = BreakpointCallbackAction (*)(BreakpointType type, VirtualMemoryAddress pc,
+                                                        VirtualMemoryAddress memaddr);
 
 struct Breakpoint
 {
