@@ -60,15 +60,17 @@ static bool Cmd$G(ClientSocket* client, std::string_view data);
 static bool Cmd$H(ClientSocket* client, std::string_view data);
 static bool Cmd$m(ClientSocket* client, std::string_view data);
 static bool Cmd$M(ClientSocket* client, std::string_view data);
+static bool Cmd$c(ClientSocket* client, std::string_view data);
 static bool Cmd$s(ClientSocket* client, std::string_view data);
 template<bool add_breakpoint>
 static bool Cmd$z(ClientSocket* client, std::string_view data);
 static bool Cmd$vMustReplyEmpty(ClientSocket* client, std::string_view data);
 static bool Cmd$qSupported(ClientSocket* client, std::string_view data);
 
+static bool ParseOptionalAddress(std::string_view data, std::optional<VirtualMemoryAddress>* address);
+
 static bool IsPacketAck(std::string_view data);
 static bool IsPacketInterrupt(std::string_view data);
-static bool IsPacketContinue(std::string_view data);
 
 static bool IsPacketComplete(std::string_view data);
 static bool ProcessPacket(ClientSocket* socket, std::string_view data);
@@ -130,6 +132,7 @@ static constexpr std::pair<std::string_view, bool (*)(ClientSocket*, std::string
   {"H", Cmd$H},
   {"m", Cmd$m},
   {"M", Cmd$M},
+  {"c", Cmd$c},
   {"s", Cmd$s},
   {"z", Cmd$z<false>},
   {"Z", Cmd$z<true>},
@@ -301,6 +304,24 @@ bool GDBServer::Cmd$M(ClientSocket* client, std::string_view data)
   return true;
 }
 
+/// Continue.
+bool GDBServer::Cmd$c(ClientSocket* client, std::string_view data)
+{
+  std::optional<VirtualMemoryAddress> address;
+  if (!ParseOptionalAddress(data, &address))
+  {
+    ERROR_LOG("Invalid continue address: {}", data);
+    client->SendReplyWithAck("E01");
+    return true;
+  }
+
+  client->SendAck();
+  if (address.has_value())
+    CPU::SetPC(address.value());
+  System::PauseSystem(false);
+  return true;
+}
+
 /// Single step.
 bool GDBServer::Cmd$s(ClientSocket* client, std::string_view data)
 {
@@ -392,6 +413,17 @@ bool GDBServer::Cmd$qSupported(ClientSocket* client, std::string_view data)
   return true;
 }
 
+bool GDBServer::ParseOptionalAddress(std::string_view data, std::optional<VirtualMemoryAddress>* address)
+{
+  address->reset();
+  if (data.empty())
+    return true;
+
+  std::string_view end;
+  *address = StringUtil::FromChars<VirtualMemoryAddress>(data, 16, &end);
+  return address->has_value() && end.empty() && ((address->value() & 3u) == 0);
+}
+
 bool GDBServer::IsPacketAck(std::string_view data)
 {
   DebugAssert(data.size() >= 1);
@@ -402,11 +434,6 @@ bool GDBServer::IsPacketInterrupt(std::string_view data)
 {
   DebugAssert(data.size() >= 1);
   return (data[data.size() - 1] == '\003');
-}
-
-bool GDBServer::IsPacketContinue(std::string_view data)
-{
-  return (data.size() >= 5) && (data.substr(data.size() - 5) == "$c#63");
 }
 
 bool GDBServer::IsPacketComplete(std::string_view data)
@@ -512,14 +539,6 @@ void GDBServer::ClientSocket::OnRead()
       {
         DEV_LOG("{} > Interrupt request", GetRemoteAddress().ToString());
         System::PauseSystem(true);
-        packet_complete = true;
-        break;
-      }
-      else if (GDBServer::IsPacketContinue(current_packet))
-      {
-        DEV_LOG("{} > Continue request", GetRemoteAddress().ToString());
-        SendAck();
-        System::PauseSystem(false);
         packet_complete = true;
         break;
       }
