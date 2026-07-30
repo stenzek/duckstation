@@ -24,6 +24,9 @@ LOG_CHANNEL(GDBServer);
 
 namespace GDBServer {
 
+static constexpr u8 GDB_SIGNAL_INTERRUPT = 2;
+static constexpr u8 GDB_SIGNAL_TRAP = 5;
+
 namespace {
 
 class ClientSocket final : public BufferedStreamSocket
@@ -32,11 +35,12 @@ public:
   ClientSocket(SocketMultiplexer& multiplexer, SocketDescriptor descriptor);
   ~ClientSocket() override;
 
-  void OnSystemPaused();
+  void OnSystemPaused(u8 signal);
   void OnSystemResumed();
 
   void SendAck();
   void SendReply(std::string_view reply = std::string_view());
+  void SendLastStopReplyWithAck();
   void SendReplyWithAck(std::string_view reply = std::string_view());
 
 protected:
@@ -48,6 +52,7 @@ private:
   void SendPacket(std::string_view sv);
 
   bool m_seen_resume = false;
+  u8 m_last_stop_signal = GDB_SIGNAL_INTERRUPT;
 };
 
 } // namespace
@@ -146,6 +151,7 @@ struct Locals
   std::unique_ptr<SocketMultiplexer> multiplexer;
   std::shared_ptr<ListenSocket> listen_socket;
   std::vector<std::shared_ptr<ClientSocket>> clients;
+  u8 pending_stop_signal = GDB_SIGNAL_TRAP;
 };
 } // namespace
 
@@ -165,7 +171,7 @@ u8 GDBServer::ComputeChecksum(std::string_view str)
 /// Get stop reason.
 bool GDBServer::Cmd$_questionMark(ClientSocket* client, std::string_view data)
 {
-  client->SendReplyWithAck("S02");
+  client->SendLastStopReplyWithAck();
   return true;
 }
 
@@ -548,7 +554,9 @@ void GDBServer::ClientSocket::OnRead()
       else if (GDBServer::IsPacketInterrupt(current_packet))
       {
         DEV_LOG("{} > Interrupt request", GetRemoteAddress().ToString());
+        s_locals.pending_stop_signal = GDB_SIGNAL_INTERRUPT;
         System::PauseSystem(true);
+        s_locals.pending_stop_signal = GDB_SIGNAL_TRAP;
         packet_complete = true;
         break;
       }
@@ -589,14 +597,15 @@ void GDBServer::ClientSocket::SendPacket(std::string_view sv)
     ERROR_LOG("Only wrote {} of {} bytes.", written, sv.length());
 }
 
-void GDBServer::ClientSocket::OnSystemPaused()
+void GDBServer::ClientSocket::OnSystemPaused(u8 signal)
 {
   if (!m_seen_resume)
     return;
 
   m_seen_resume = false;
+  m_last_stop_signal = signal;
 
-  SendReply("S05");
+  SendReply(TinyString::from_format("S{:02x}", m_last_stop_signal));
 }
 
 void GDBServer::ClientSocket::OnSystemResumed()
@@ -612,6 +621,11 @@ void GDBServer::ClientSocket::SendAck()
 void GDBServer::ClientSocket::SendReply(std::string_view reply)
 {
   SendPacket(SmallString::from_format("${}#{:02x}", reply, ComputeChecksum(reply)));
+}
+
+void GDBServer::ClientSocket::SendLastStopReplyWithAck()
+{
+  SendReplyWithAck(TinyString::from_format("S{:02x}", m_last_stop_signal));
 }
 
 void GDBServer::ClientSocket::SendReplyWithAck(std::string_view reply)
@@ -683,7 +697,7 @@ void GDBServer::Shutdown()
 void GDBServer::OnSystemPaused()
 {
   for (auto& it : s_locals.clients)
-    it->OnSystemPaused();
+    it->OnSystemPaused(s_locals.pending_stop_signal);
 }
 
 void GDBServer::OnSystemResumed()
