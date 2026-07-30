@@ -19,6 +19,7 @@
 
 #include "util/sockets.h"
 
+#include <limits>
 #include <optional>
 #include <utility>
 
@@ -31,6 +32,7 @@ static constexpr u8 GDB_SIGNAL_TRAP = 5;
 static constexpr u32 MAX_PACKET_SIZE = 16384;
 static constexpr u32 MAX_FRAMED_PACKET_SIZE = MAX_PACKET_SIZE + 4;
 static constexpr u32 MAX_MEMORY_READ_SIZE = MAX_PACKET_SIZE / 2;
+static constexpr u32 MAX_WATCHPOINT_LENGTH = 256;
 
 namespace {
 
@@ -509,6 +511,23 @@ bool GDBServer::Cmd$z(ClientSocket* client, std::string_view data)
   }
 
   const GDBBreakpointType type = static_cast<GDBBreakpointType>(bptype.value());
+  if (type == GDBBreakpointType::Software || type == GDBBreakpointType::Hardware)
+  {
+    if (bpkind.value() != sizeof(CPU::Instruction))
+    {
+      ERROR_LOG("Unsupported breakpoint kind {}", bpkind.value());
+      client->SendReplyWithAck("E01");
+      return true;
+    }
+  }
+  else if (bpkind.value() == 0 || bpkind.value() > MAX_WATCHPOINT_LENGTH ||
+           bpaddr.value() > (std::numeric_limits<VirtualMemoryAddress>::max() - (bpkind.value() - 1)))
+  {
+    ERROR_LOG("Invalid watchpoint length {} at 0x{:08X}", bpkind.value(), bpaddr.value());
+    client->SendReplyWithAck("E01");
+    return true;
+  }
+
   if constexpr (add_breakpoint)
     client->AddBreakpoint(type, bpaddr.value(), bpkind.value());
   else
@@ -681,16 +700,21 @@ void GDBServer::ClientSocket::AddBreakpoint(GDBBreakpointType type, VirtualMemor
       break;
 
     case GDBBreakpointType::Write:
-      acquire_breakpoint(CPU::BreakpointType::Write, address);
+      for (u32 offset = 0; offset < kind; offset++)
+        acquire_breakpoint(CPU::BreakpointType::Write, address + offset);
       break;
 
     case GDBBreakpointType::Read:
-      acquire_breakpoint(CPU::BreakpointType::Read, address);
+      for (u32 offset = 0; offset < kind; offset++)
+        acquire_breakpoint(CPU::BreakpointType::Read, address + offset);
       break;
 
     case GDBBreakpointType::Access:
-      acquire_breakpoint(CPU::BreakpointType::Read, address);
-      acquire_breakpoint(CPU::BreakpointType::Write, address);
+      for (u32 offset = 0; offset < kind; offset++)
+      {
+        acquire_breakpoint(CPU::BreakpointType::Read, address + offset);
+        acquire_breakpoint(CPU::BreakpointType::Write, address + offset);
+      }
       break;
   }
 
@@ -725,16 +749,21 @@ void GDBServer::ClientSocket::RemoveBreakpoint(GDBBreakpointType type, VirtualMe
       break;
 
     case GDBBreakpointType::Write:
-      release_breakpoint(CPU::BreakpointType::Write, address);
+      for (u32 offset = 0; offset < kind; offset++)
+        release_breakpoint(CPU::BreakpointType::Write, address + offset);
       break;
 
     case GDBBreakpointType::Read:
-      release_breakpoint(CPU::BreakpointType::Read, address);
+      for (u32 offset = 0; offset < kind; offset++)
+        release_breakpoint(CPU::BreakpointType::Read, address + offset);
       break;
 
     case GDBBreakpointType::Access:
-      release_breakpoint(CPU::BreakpointType::Read, address);
-      release_breakpoint(CPU::BreakpointType::Write, address);
+      for (u32 offset = 0; offset < kind; offset++)
+      {
+        release_breakpoint(CPU::BreakpointType::Read, address + offset);
+        release_breakpoint(CPU::BreakpointType::Write, address + offset);
+      }
       break;
   }
 
