@@ -325,7 +325,17 @@ bool GDBServer::Cmd$c(ClientSocket* client, std::string_view data)
 /// Single step.
 bool GDBServer::Cmd$s(ClientSocket* client, std::string_view data)
 {
+  std::optional<VirtualMemoryAddress> address;
+  if (!ParseOptionalAddress(data, &address))
+  {
+    ERROR_LOG("Invalid single-step address: {}", data);
+    client->SendReplyWithAck("E01");
+    return true;
+  }
+
   client->SendAck();
+  if (address.has_value())
+    CPU::SetPC(address.value());
   System::SingleStepCPU();
   return true;
 }
