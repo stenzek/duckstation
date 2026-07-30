@@ -75,6 +75,7 @@ public:
   ClientSocket(SocketMultiplexer& multiplexer, SocketDescriptor descriptor);
   ~ClientSocket() override;
 
+  void OnBreakpointHit(CPU::BreakpointType type, VirtualMemoryAddress address);
   void OnSystemPaused(u8 signal);
   void OnSystemResumed();
 
@@ -97,7 +98,7 @@ private:
   void SendPacket(std::string_view sv);
 
   bool m_seen_resume = false;
-  u8 m_last_stop_signal = GDB_SIGNAL_INTERRUPT;
+  SmallString m_last_stop_reply;
   SmallString m_last_reply;
   std::vector<ClientBreakpoint> m_breakpoints;
 };
@@ -125,6 +126,8 @@ static bool ParseOptionalAddress(std::string_view data, std::optional<VirtualMem
 static bool ParseSignalAndOptionalAddress(std::string_view data, u8* signal,
                                           std::optional<VirtualMemoryAddress>* address);
 static void InvalidateMemoryWrite(VirtualMemoryAddress address, u32 length);
+static CPU::BreakpointCallbackAction OnBreakpointHit(CPU::BreakpointType type, VirtualMemoryAddress pc,
+                                                     VirtualMemoryAddress address);
 
 static bool IsPacketAck(std::string_view data);
 static bool IsPacketInterrupt(std::string_view data);
@@ -604,6 +607,15 @@ void GDBServer::InvalidateMemoryWrite(VirtualMemoryAddress address, u32 length)
   }
 }
 
+CPU::BreakpointCallbackAction GDBServer::OnBreakpointHit(CPU::BreakpointType type, VirtualMemoryAddress,
+                                                         VirtualMemoryAddress address)
+{
+  for (auto& it : s_locals.clients)
+    it->OnBreakpointHit(type, address);
+
+  return s_locals.clients.empty() ? CPU::BreakpointCallbackAction::Continue : CPU::BreakpointCallbackAction::Pause;
+}
+
 bool GDBServer::IsPacketAck(std::string_view data)
 {
   DebugAssert(data.size() >= 1);
@@ -668,6 +680,7 @@ bool GDBServer::ProcessPacket(ClientSocket* client, std::string_view data)
 GDBServer::ClientSocket::ClientSocket(SocketMultiplexer& multiplexer, SocketDescriptor descriptor)
   : BufferedStreamSocket(multiplexer, descriptor, 65536, 65536)
 {
+  m_last_stop_reply.format("S{:02x}", GDB_SIGNAL_INTERRUPT);
 }
 
 GDBServer::ClientSocket::~ClientSocket() = default;
@@ -688,7 +701,7 @@ void GDBServer::ClientSocket::AddBreakpoint(GDBBreakpointType type, VirtualMemor
       return;
     }
 
-    const bool added_by_gdb = CPU::AddBreakpoint(cpu_type, cpu_address);
+    const bool added_by_gdb = CPU::AddBreakpointWithCallback(cpu_type, cpu_address, &GDBServer::OnBreakpointHit);
     s_locals.breakpoints.push_back({key, 1, added_by_gdb});
   };
 
@@ -904,15 +917,50 @@ void GDBServer::ClientSocket::SendPacket(std::string_view sv)
   }
 }
 
+void GDBServer::ClientSocket::OnBreakpointHit(CPU::BreakpointType type, VirtualMemoryAddress address)
+{
+  if (!m_seen_resume)
+    return;
+
+  const PhysicalMemoryAddress hit_address = CPU::VirtualAddressToPhysical(address);
+  const auto it = std::ranges::find_if(m_breakpoints, [&type, &address, &hit_address](const ClientBreakpoint& bp) {
+    if (bp.type == GDBBreakpointType::Software || bp.type == GDBBreakpointType::Hardware)
+      return false;
+    if (bp.type == GDBBreakpointType::Read && type != CPU::BreakpointType::Read)
+      return false;
+    if (bp.type == GDBBreakpointType::Write && type != CPU::BreakpointType::Write)
+      return false;
+
+    for (u32 offset = 0; offset < bp.kind; offset++)
+    {
+      if (CPU::VirtualAddressToPhysical(bp.address + offset) == hit_address)
+        return true;
+    }
+    return false;
+  });
+
+  if (it != m_breakpoints.end())
+  {
+    // Prevent the OnSystemPaused() from sending a reply.
+    m_seen_resume = false;
+
+    const char* const reason =
+      (it->type == GDBBreakpointType::Access) ? "awatch" : ((type == CPU::BreakpointType::Read) ? "rwatch" : "watch");
+    m_last_stop_reply.format("T{:02x}{}:{:08x};", s_locals.pending_stop_signal, reason, address);
+    SendReply(m_last_stop_reply);
+    return;
+  }
+}
+
 void GDBServer::ClientSocket::OnSystemPaused(u8 signal)
 {
   if (!m_seen_resume)
     return;
 
   m_seen_resume = false;
-  m_last_stop_signal = signal;
 
-  SendReply(TinyString::from_format("S{:02x}", m_last_stop_signal));
+  m_last_stop_reply.format("S{:02x}", signal);
+  SendReply(m_last_stop_reply);
 }
 
 void GDBServer::ClientSocket::OnSystemResumed()
@@ -933,7 +981,7 @@ void GDBServer::ClientSocket::SendReply(std::string_view reply)
 
 void GDBServer::ClientSocket::SendLastStopReplyWithAck()
 {
-  SendReplyWithAck(TinyString::from_format("S{:02x}", m_last_stop_signal));
+  SendReplyWithAck(m_last_stop_reply);
 }
 
 void GDBServer::ClientSocket::SendReplyWithAck(std::string_view reply)
