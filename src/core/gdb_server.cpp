@@ -34,6 +34,39 @@ static constexpr u32 MAX_MEMORY_READ_SIZE = MAX_PACKET_SIZE / 2;
 
 namespace {
 
+enum class GDBBreakpointType : u8
+{
+  Software,
+  Hardware,
+  Write,
+  Read,
+  Access,
+};
+
+struct BreakpointKey
+{
+  CPU::BreakpointType type;
+  VirtualMemoryAddress address;
+
+  bool operator==(const BreakpointKey&) const = default;
+};
+
+struct ManagedBreakpoint
+{
+  BreakpointKey key;
+  u32 reference_count;
+  bool added_by_gdb;
+};
+
+struct ClientBreakpoint
+{
+  GDBBreakpointType type;
+  VirtualMemoryAddress address;
+  u32 kind;
+
+  bool operator==(const ClientBreakpoint&) const = default;
+};
+
 class ClientSocket final : public BufferedStreamSocket
 {
 public:
@@ -49,6 +82,10 @@ public:
   void SendReplyWithAck(std::string_view reply = std::string_view());
   void ResendLastReply();
 
+  void AddBreakpoint(GDBBreakpointType type, VirtualMemoryAddress address, u32 kind);
+  void RemoveBreakpoint(GDBBreakpointType type, VirtualMemoryAddress address, u32 kind);
+  void ClearBreakpoints();
+
 protected:
   void OnConnected() override;
   void OnDisconnected(const Error& error) override;
@@ -60,6 +97,7 @@ private:
   bool m_seen_resume = false;
   u8 m_last_stop_signal = GDB_SIGNAL_INTERRUPT;
   SmallString m_last_reply;
+  std::vector<ClientBreakpoint> m_breakpoints;
 };
 
 } // namespace
@@ -165,6 +203,7 @@ struct Locals
   std::unique_ptr<SocketMultiplexer> multiplexer;
   std::shared_ptr<ListenSocket> listen_socket;
   std::vector<std::shared_ptr<ClientSocket>> clients;
+  std::vector<ManagedBreakpoint> breakpoints;
   u8 pending_stop_signal = GDB_SIGNAL_TRAP;
   bool resume_on_last_disconnect = false;
 };
@@ -462,56 +501,21 @@ bool GDBServer::Cmd$z(ClientSocket* client, std::string_view data)
     return true;
   }
 
-  if (bptype.value() == 0 || bptype.value() == 1) // software/hardware breakpoint
-  {
-    if constexpr (add_breakpoint)
-      CPU::AddBreakpoint(CPU::BreakpointType::Execute, bpaddr.value());
-    else
-      CPU::RemoveBreakpoint(CPU::BreakpointType::Execute, bpaddr.value());
-    client->SendReplyWithAck("OK");
-    return true;
-  }
-  else if (bptype.value() == 2) // write breakpoint
-  {
-    if constexpr (add_breakpoint)
-      CPU::AddBreakpoint(CPU::BreakpointType::Write, bpaddr.value());
-    else
-      CPU::RemoveBreakpoint(CPU::BreakpointType::Write, bpaddr.value());
-
-    client->SendReplyWithAck("OK");
-    return true;
-  }
-  else if (bptype.value() == 3) // read breakpoint
-  {
-    if constexpr (add_breakpoint)
-      CPU::AddBreakpoint(CPU::BreakpointType::Read, bpaddr.value());
-    else
-      CPU::RemoveBreakpoint(CPU::BreakpointType::Read, bpaddr.value());
-    client->SendReplyWithAck("OK");
-    return true;
-  }
-  else if (bptype.value() == 4) // read+write breakpoint
-  {
-    if constexpr (add_breakpoint)
-    {
-      CPU::AddBreakpoint(CPU::BreakpointType::Read, bpaddr.value());
-      CPU::AddBreakpoint(CPU::BreakpointType::Write, bpaddr.value());
-    }
-    else
-    {
-      CPU::RemoveBreakpoint(CPU::BreakpointType::Read, bpaddr.value());
-      CPU::RemoveBreakpoint(CPU::BreakpointType::Write, bpaddr.value());
-    }
-
-    client->SendReplyWithAck("OK");
-    return true;
-  }
-  else
+  if (bptype.value() > static_cast<u32>(GDBBreakpointType::Access))
   {
     ERROR_LOG("Unknown breakpoint type {}", bptype.value());
     client->SendReplyWithAck();
     return true;
   }
+
+  const GDBBreakpointType type = static_cast<GDBBreakpointType>(bptype.value());
+  if constexpr (add_breakpoint)
+    client->AddBreakpoint(type, bpaddr.value(), bpkind.value());
+  else
+    client->RemoveBreakpoint(type, bpaddr.value(), bpkind.value());
+
+  client->SendReplyWithAck("OK");
+  return true;
 }
 
 template bool GDBServer::Cmd$z<false>(ClientSocket* client, std::string_view data);
@@ -649,6 +653,103 @@ GDBServer::ClientSocket::ClientSocket(SocketMultiplexer& multiplexer, SocketDesc
 
 GDBServer::ClientSocket::~ClientSocket() = default;
 
+void GDBServer::ClientSocket::AddBreakpoint(GDBBreakpointType type, VirtualMemoryAddress address, u32 kind)
+{
+  const ClientBreakpoint client_breakpoint{type, address, kind};
+  if (std::ranges::find(m_breakpoints, client_breakpoint) != m_breakpoints.end())
+    return;
+
+  const auto acquire_breakpoint = [](CPU::BreakpointType cpu_type, VirtualMemoryAddress cpu_address) {
+    const BreakpointKey key{cpu_type, cpu_address};
+    const auto it = std::ranges::find_if(s_locals.breakpoints,
+                                         [&key](const ManagedBreakpoint& breakpoint) { return breakpoint.key == key; });
+    if (it != s_locals.breakpoints.end())
+    {
+      it->reference_count++;
+      return;
+    }
+
+    const bool added_by_gdb = CPU::AddBreakpoint(cpu_type, cpu_address);
+    s_locals.breakpoints.push_back({key, 1, added_by_gdb});
+  };
+
+  switch (type)
+  {
+    case GDBBreakpointType::Software:
+    case GDBBreakpointType::Hardware:
+      acquire_breakpoint(CPU::BreakpointType::Execute, address);
+      break;
+
+    case GDBBreakpointType::Write:
+      acquire_breakpoint(CPU::BreakpointType::Write, address);
+      break;
+
+    case GDBBreakpointType::Read:
+      acquire_breakpoint(CPU::BreakpointType::Read, address);
+      break;
+
+    case GDBBreakpointType::Access:
+      acquire_breakpoint(CPU::BreakpointType::Read, address);
+      acquire_breakpoint(CPU::BreakpointType::Write, address);
+      break;
+  }
+
+  m_breakpoints.push_back(client_breakpoint);
+}
+
+void GDBServer::ClientSocket::RemoveBreakpoint(GDBBreakpointType type, VirtualMemoryAddress address, u32 kind)
+{
+  const ClientBreakpoint client_breakpoint{type, address, kind};
+  const auto client_it = std::ranges::find(m_breakpoints, client_breakpoint);
+  if (client_it == m_breakpoints.end())
+    return;
+
+  const auto release_breakpoint = [](CPU::BreakpointType cpu_type, VirtualMemoryAddress cpu_address) {
+    const BreakpointKey key{cpu_type, cpu_address};
+    const auto it = std::ranges::find_if(s_locals.breakpoints,
+                                         [&key](const ManagedBreakpoint& breakpoint) { return breakpoint.key == key; });
+    DebugAssert(it != s_locals.breakpoints.end());
+    if (--it->reference_count > 0)
+      return;
+
+    if (it->added_by_gdb)
+      CPU::RemoveBreakpoint(cpu_type, cpu_address);
+    s_locals.breakpoints.erase(it);
+  };
+
+  switch (type)
+  {
+    case GDBBreakpointType::Software:
+    case GDBBreakpointType::Hardware:
+      release_breakpoint(CPU::BreakpointType::Execute, address);
+      break;
+
+    case GDBBreakpointType::Write:
+      release_breakpoint(CPU::BreakpointType::Write, address);
+      break;
+
+    case GDBBreakpointType::Read:
+      release_breakpoint(CPU::BreakpointType::Read, address);
+      break;
+
+    case GDBBreakpointType::Access:
+      release_breakpoint(CPU::BreakpointType::Read, address);
+      release_breakpoint(CPU::BreakpointType::Write, address);
+      break;
+  }
+
+  m_breakpoints.erase(client_it);
+}
+
+void GDBServer::ClientSocket::ClearBreakpoints()
+{
+  while (!m_breakpoints.empty())
+  {
+    const ClientBreakpoint& breakpoint = m_breakpoints.back();
+    RemoveBreakpoint(breakpoint.type, breakpoint.address, breakpoint.kind);
+  }
+}
+
 void GDBServer::ClientSocket::OnConnected()
 {
   INFO_LOG("Client {} connected.", GetRemoteAddress().ToString());
@@ -672,6 +773,8 @@ void GDBServer::ClientSocket::OnConnected()
 void GDBServer::ClientSocket::OnDisconnected(const Error& error)
 {
   INFO_LOG("Client {} disconnected: {}", GetRemoteAddress().ToString(), error.GetDescription());
+
+  ClearBreakpoints();
 
   const auto iter = std::find_if(s_locals.clients.begin(), s_locals.clients.end(),
                                  [this](const std::shared_ptr<ClientSocket>& rhs) { return (rhs.get() == this); });
