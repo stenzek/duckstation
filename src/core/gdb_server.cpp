@@ -35,6 +35,8 @@ public:
   void OnSystemPaused();
   void OnSystemResumed();
 
+  void SendAck();
+  void SendReply(std::string_view reply = std::string_view());
   void SendReplyWithAck(std::string_view reply = std::string_view());
 
 protected:
@@ -302,6 +304,7 @@ bool GDBServer::Cmd$M(ClientSocket* client, std::string_view data)
 /// Single step.
 bool GDBServer::Cmd$s(ClientSocket* client, std::string_view data)
 {
+  client->SendAck();
   System::SingleStepCPU();
   return true;
 }
@@ -515,6 +518,7 @@ void GDBServer::ClientSocket::OnRead()
       else if (GDBServer::IsPacketContinue(current_packet))
       {
         DEV_LOG("{} > Continue request", GetRemoteAddress().ToString());
+        SendAck();
         System::PauseSystem(false);
         packet_complete = true;
         break;
@@ -563,16 +567,22 @@ void GDBServer::ClientSocket::OnSystemPaused()
 
   m_seen_resume = false;
 
-  // Generate a stop reply packet, insert '?' command to generate it.
-  SendReplyWithAck("S05");
+  SendReply("S05");
 }
 
 void GDBServer::ClientSocket::OnSystemResumed()
 {
   m_seen_resume = true;
+}
 
-  // Send ack, in case GDB sent a continue request.
+void GDBServer::ClientSocket::SendAck()
+{
   SendPacket("+");
+}
+
+void GDBServer::ClientSocket::SendReply(std::string_view reply)
+{
+  SendPacket(SmallString::from_format("${}#{:02x}", reply, ComputeChecksum(reply)));
 }
 
 void GDBServer::ClientSocket::SendReplyWithAck(std::string_view reply)
