@@ -248,7 +248,8 @@ bool GDBServer::Cmd$m(ClientSocket* client, std::string_view data)
       caret[0] != ',' || !(length = StringUtil::FromChars<u32>(caret.substr(1), 16)).has_value())
   {
     ERROR_LOG("Invalid packet: {}", data);
-    return false;
+    client->SendReplyWithAck("E01");
+    return true;
   }
 
   // large enough for most requests
@@ -279,7 +280,8 @@ bool GDBServer::Cmd$M(ClientSocket* client, std::string_view data)
       caret.empty() || caret[0] != ':')
   {
     ERROR_LOG("Invalid packet: {}", data);
-    return false;
+    client->SendReplyWithAck("E01");
+    return true;
   }
 
   // remove ':'
@@ -287,7 +289,8 @@ bool GDBServer::Cmd$M(ClientSocket* client, std::string_view data)
   if (length.value() != (caret.size() / 2))
   {
     ERROR_LOG("Invalid length in packet {}", data);
-    return false;
+    client->SendReplyWithAck("E01");
+    return true;
   }
 
   // large enough for most requests
@@ -296,7 +299,8 @@ bool GDBServer::Cmd$M(ClientSocket* client, std::string_view data)
   if (StringUtil::DecodeHex(buffer, caret) != length.value())
   {
     ERROR_LOG("Invalid hex in packet {}", data);
-    return false;
+    client->SendReplyWithAck("E01");
+    return true;
   }
 
   if (!CPU::SafeWriteMemoryBytes(address.value(), buffer))
@@ -360,7 +364,8 @@ bool GDBServer::Cmd$z(ClientSocket* client, std::string_view data)
       !(bpaddr = StringUtil::FromChars<VirtualMemoryAddress>(caret.substr(1), 16)).has_value())
   {
     ERROR_LOG("Invalid {} hw breakpoint packet: {}", add_breakpoint ? "add" : "remove", data);
-    return false;
+    client->SendReplyWithAck("E01");
+    return true;
   }
 
   if (bptype.value() == 0 || bptype.value() == 1) // software/hardware breakpoint
@@ -410,7 +415,8 @@ bool GDBServer::Cmd$z(ClientSocket* client, std::string_view data)
   else
   {
     ERROR_LOG("Unknown breakpoint type {}", bptype.value());
-    return false;
+    client->SendReplyWithAck();
+    return true;
   }
 }
 
