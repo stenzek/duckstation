@@ -20,6 +20,7 @@
 #include "util/sockets.h"
 
 #include <optional>
+#include <utility>
 
 LOG_CHANNEL(GDBServer);
 
@@ -165,6 +166,7 @@ struct Locals
   std::shared_ptr<ListenSocket> listen_socket;
   std::vector<std::shared_ptr<ClientSocket>> clients;
   u8 pending_stop_signal = GDB_SIGNAL_TRAP;
+  bool resume_on_last_disconnect = false;
 };
 } // namespace
 
@@ -651,6 +653,9 @@ void GDBServer::ClientSocket::OnConnected()
 {
   INFO_LOG("Client {} connected.", GetRemoteAddress().ToString());
 
+  if (s_locals.clients.empty())
+    s_locals.resume_on_last_disconnect = System::IsRunning();
+
   m_seen_resume = System::IsPaused();
   System::PauseSystem(true);
 
@@ -670,6 +675,12 @@ void GDBServer::ClientSocket::OnDisconnected(const Error& error)
   }
 
   s_locals.clients.erase(iter);
+  if (s_locals.clients.empty())
+  {
+    const bool resume_system = std::exchange(s_locals.resume_on_last_disconnect, false);
+    if (resume_system)
+      System::PauseSystem(false);
+  }
 }
 
 void GDBServer::ClientSocket::OnRead()
