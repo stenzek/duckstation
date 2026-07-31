@@ -2122,7 +2122,7 @@ void Achievements::FinishLogin()
   if (g_settings.achievements_notifications)
   {
     //: Summary for login notification.
-    std::string summary = fmt::format(TRANSLATE_FS("Achievements", "Score: {} ({} softcore)\nUnread messages: {}"),
+    std::string summary = fmt::format(TRANSLATE_FS("Achievements", "Score: {} ({} casual)\nUnread messages: {}"),
                                       user->score, user->score_softcore, user->num_unread_messages);
 
     FullscreenUI::AddAchievementNotification("achievements_login", LOGIN_NOTIFICATION_TIME,
@@ -2150,7 +2150,7 @@ SmallString Achievements::GetLoggedInUserPointsSummary()
     return ret;
 
   //: Score summary, shown in Big Picture mode.
-  ret.format(TRANSLATE_FS("Achievements", "Score: {} ({} softcore)"), user->score, user->score_softcore);
+  ret.format(TRANSLATE_FS("Achievements", "Score: {} ({} casual)"), user->score, user->score_softcore);
   return ret;
 }
 

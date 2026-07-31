@@ -2078,7 +2078,7 @@ void FullscreenUI::DrawAchievementsWindow()
       {ICON_FA_HAND_FIST, TRANSLATE_NOOP("Achievements", "Active Challenges")},
       {ICON_FA_FLAG_CHECKERED, TRANSLATE_NOOP("Achievements", "Almost There")},
       {ICON_EMOJI_WARNING, TRANSLATE_NOOP("Achievements", "Not Confirmed")},
-      {ICON_FA_UNLOCK, TRANSLATE_NOOP("Achievements", "Unlocked in Softcore")},
+      {ICON_FA_UNLOCK, TRANSLATE_NOOP("Achievements", "Unlocked in Casual")},
     };
     static_assert(std::size(bucket_names) == NUM_RC_CLIENT_ACHIEVEMENT_BUCKETS);
 

@@ -1978,9 +1978,9 @@ void Host::OnAchievementsLoginRequested(Achievements::LoginRequestReason reason)
   emit g_core_thread->achievementsLoginRequested(reason);
 }
 
-void Host::OnAchievementsLoginSuccess(const char* username, u32 points, u32 sc_points, u32 unread_messages)
+void Host::OnAchievementsLoginSuccess(const char* username, u32 points, u32 casual_points, u32 unread_messages)
 {
-  emit g_core_thread->achievementsLoginSuccess(QString::fromUtf8(username), points, sc_points, unread_messages);
+  emit g_core_thread->achievementsLoginSuccess(QString::fromUtf8(username), points, casual_points, unread_messages);
 }
 
 void Host::OnAchievementsActiveChanged(bool active)

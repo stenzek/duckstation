@@ -123,7 +123,7 @@ Q_SIGNALS:
   void mouseModeRequested(bool relative, bool hide_cursor, bool ignore_double_click);
   void fullscreenUIStartedOrStopped(bool running);
   void achievementsLoginRequested(Achievements::LoginRequestReason reason);
-  void achievementsLoginSuccess(const QString& username, quint32 points, quint32 sc_points, quint32 unread_messages);
+  void achievementsLoginSuccess(const QString& username, quint32 points, quint32 casual_points, quint32 unread_messages);
   void achievementsActiveChanged(bool active);
   void achievementsHardcoreModeChanged(bool enabled);
   void mediaCaptureStarted(MediaCaptureMode mode);
