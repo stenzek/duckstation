@@ -600,7 +600,7 @@ std::string Host::FormatNumber(NumberFormatType type, double value)
 
 void Host::SetMouseMode(bool relative, bool hide_cursor)
 {
-  //
+  // noop
 }
 
 void Host::OnAchievementsLoginRequested(Achievements::LoginRequestReason reason)
@@ -608,7 +608,7 @@ void Host::OnAchievementsLoginRequested(Achievements::LoginRequestReason reason)
   // noop
 }
 
-void Host::OnAchievementsLoginSuccess(const char* username, u32 points, u32 sc_points, u32 unread_messages)
+void Host::OnAchievementsLoginSuccess(const char* username, u32 points, u32 casual_points, u32 unread_messages)
 {
   // noop
 }
