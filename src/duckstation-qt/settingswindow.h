@@ -59,7 +59,8 @@ public:
   GameListSettingsWidget* getGameListSettingsWidget() const;
   AchievementSettingsWidget* getAchievementSettingsWidget() const;
 
-  void registerWidgetHelp(QObject* object, QString title, QString recommended_value, QString text);
+  void registerWidgetHelp(QObject* const object, const QString& title, const QString& recommended_value,
+                          const QString& text);
   bool eventFilter(QObject* object, QEvent* event) override;
 
   // Helper functions for reading effective setting values (from game -> global settings).

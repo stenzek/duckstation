@@ -399,7 +399,8 @@ AchievementSettingsWidget* SettingsWindow::getAchievementSettingsWidget() const
   return findChild<AchievementSettingsWidget*>();
 }
 
-void SettingsWindow::registerWidgetHelp(QObject* object, QString title, QString recommended_value, QString text)
+void SettingsWindow::registerWidgetHelp(QObject* const object, const QString& title, const QString& recommended_value,
+                                        const QString& text)
 {
   if (!object)
     return;
@@ -408,11 +409,16 @@ void SettingsWindow::registerWidgetHelp(QObject* object, QString title, QString 
   QString full_text;
   full_text += "<table width='100%' cellpadding='0' cellspacing='0'><tr><td><strong>";
   full_text += title;
-  full_text += "</strong></td><td align='right'><strong>";
-  full_text += tr("Recommended Value");
-  full_text += ": </strong>";
-  full_text += recommended_value;
-  full_text += "</td></table><hr>";
+  full_text += "</strong></td>";
+  if (!recommended_value.isEmpty())
+  {
+    full_text += "<td align='right'><strong>";
+    full_text += tr("Recommended Value");
+    full_text += ": </strong>";
+    full_text += recommended_value;
+    full_text += "</td>";
+  }
+  full_text += "</tr></table><hr>";
   full_text += text;
 
   m_widget_help_text_map[object] = std::move(full_text);
