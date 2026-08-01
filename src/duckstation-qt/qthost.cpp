@@ -3639,6 +3639,8 @@ bool QtHost::ParseCommandLineParametersAndInitializeConfig(QApplication& app,
 
 bool QtHost::RunSetupWizard()
 {
+  const std::string previous_language = Core::GetBaseStringSettingValue("Main", "Language");
+
   SetupWizardDialog dialog;
   if (dialog.exec() == QDialog::Rejected)
     return false;
@@ -3646,6 +3648,11 @@ bool QtHost::RunSetupWizard()
   // Remove the flag.
   Core::SetBaseBoolSettingValue("Main", "SetupWizardIncomplete", false);
   Host::CommitBaseSettingChanges();
+
+  // Recreate main window if language changes to update its text.
+  if (Core::GetBaseStringSettingValue("Main", "Language") != previous_language)
+    g_main_window->recreate();
+
   return true;
 }
 

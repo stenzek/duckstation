@@ -795,7 +795,8 @@ void MainWindow::recreate()
   destroySubWindows();
 
   // Ensure the main window is visible, otherwise last-window-closed terminates the application.
-  if (!isVisible())
+  const bool was_visible = isVisible();
+  if (!was_visible)
     show();
 
   // We need to close input sources, because e.g. DInput uses our window handle.
@@ -816,10 +817,13 @@ void MainWindow::recreate()
 
   // Qt+XCB will ignore the raise request of the settings window if we raise the main window.
   // So skip that if we're going to be re-opening the settings window.
-  if (!settings_window_pos.has_value())
-    QtUtils::ShowOrRaiseWindow(new_main_window);
-  else
-    new_main_window->show();
+  if (was_visible)
+  {
+    if (!settings_window_pos.has_value())
+      QtUtils::ShowOrRaiseWindow(new_main_window);
+    else
+      new_main_window->show();
+  }
 
   LogWindow::deferredShow();
 
@@ -854,7 +858,7 @@ void MainWindow::recreate()
     dlg->setCategoryRow(settings_window_row);
     QtUtils::ShowOrRaiseWindow(dlg);
   }
-  else
+  else if (was_visible)
   {
     QtUtils::RaiseWindow(new_main_window);
   }
