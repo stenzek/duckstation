@@ -59,6 +59,7 @@
     <ClCompile Include="svgiconengine.cpp" />
     <ClCompile Include="svgwidget.cpp" />
     <ClCompile Include="searchbox.cpp" />
+    <ClCompile Include="collapsiblewidget.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="qtutils.h" />
@@ -130,6 +131,7 @@
     <QtMoc Include="cardradiobutton.h" />
     <QtMoc Include="animatedstackedwidget.h" />
     <QtMoc Include="searchbox.h" />
+    <QtMoc Include="collapsiblewidget.h" />
   </ItemGroup>
   <ItemGroup>
     <QtUi Include="consolesettingswidget.ui" />
