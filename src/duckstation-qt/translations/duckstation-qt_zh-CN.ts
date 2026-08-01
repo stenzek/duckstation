@@ -517,14 +517,6 @@ Error: {}</source>
         </translation>
     </message>
     <message>
-        <source>Failed to read executable from disc.</source>
-        <translation>无法从光盘读取可执行文件。</translation>
-    </message>
-    <message>
-        <source>Achievements have been disabled.</source>
-        <translation>成就已禁用。</translation>
-    </message>
-    <message>
         <source>Spectator mode enabled.</source>
         <translation>旁观者模式已启用。</translation>
     </message>
@@ -585,18 +577,6 @@ We will keep trying to submit this request.</source>
     <message>
         <source>Restrictions are no longer active.</source>
         <translation>限制已不再生效。</translation>
-    </message>
-    <message>
-        <source>Score: {} ({} softcore)
-Unread messages: {}</source>
-        <extracomment>Summary for login notification.</extracomment>
-        <translation>得分: {} ({}软核)
-未读消息: {}</translation>
-    </message>
-    <message>
-        <source>Score: {} ({} softcore)</source>
-        <extracomment>Score summary, shown in Big Picture mode.</extracomment>
-        <translation>得分: {} ({}软核)</translation>
     </message>
     <message>
         <source>Refreshing game database...</source>
@@ -727,6 +707,18 @@ Unread messages: {}</source>
         </translation>
     </message>
     <message>
+        <source>Score: {} ({} casual)
+Unread messages: {}</source>
+        <extracomment>Summary for login notification.</extracomment>
+        <translation>得分：{}（{} 休闲模式）
+未读消息：{}</translation>
+    </message>
+    <message>
+        <source>Score: {} ({} casual)</source>
+        <extracomment>Score summary, shown in Big Picture mode.</extracomment>
+        <translation>得分：{}（{} 休闲模式）</translation>
+    </message>
+    <message>
         <source>Confirm Hardcore Mode Disable</source>
         <translation>确认硬核模式禁用</translation>
     </message>
@@ -817,10 +809,6 @@ Unread messages: {}</source>
         <translation>未确认</translation>
     </message>
     <message>
-        <source>Unlocked in Softcore</source>
-        <translation>在软核模式中解锁</translation>
-    </message>
-    <message>
         <source>Change Subset</source>
         <translation>更改子集</translation>
     </message>
@@ -886,6 +874,10 @@ Unread messages: {}</source>
     <message>
         <source>Loading...</source>
         <translation>载入中…</translation>
+    </message>
+    <message>
+        <source>Unlocked in Casual</source>
+        <translation>在休闲模式中解锁</translation>
     </message>
     <message>
         <source>Leaderboards are not available.</source>
@@ -2023,6 +2015,38 @@ You can manually update DuckStation by re-downloading the latest release. Do you
         <translation>选择BIOS目录</translation>
     </message>
     <message>
+        <source>Refreshes the list of BIOS images that can be selected.</source>
+        <translation>刷新可选 BIOS 镜像列表。</translation>
+    </message>
+    <message>
+        <source>Installs a new BIOS image into the emulator&apos;s BIOS directory.</source>
+        <translation>将新的 BIOS 镜像安装到模拟器的 BIOS 目录中。</translation>
+    </message>
+    <message>
+        <source>Select BIOS Image</source>
+        <translation>选择 BIOS 镜像</translation>
+    </message>
+    <message>
+        <source>BIOS Install Error</source>
+        <translation>BIOS 安装错误</translation>
+    </message>
+    <message>
+        <source>BIOS Already Installed</source>
+        <translation>BIOS 已安装</translation>
+    </message>
+    <message>
+        <source>The BIOS file &apos;%1&apos; is already installed. Do you want to overwrite it?</source>
+        <translation>BIOS 文件“%1”已安装。要覆盖它吗？</translation>
+    </message>
+    <message>
+        <source>BIOS Installed</source>
+        <translation>BIOS 已安装</translation>
+    </message>
+    <message>
+        <source>BIOS &apos;%1&apos; installed as &apos;%2&apos;.</source>
+        <translation>BIOS“%1”已安装为“%2”。</translation>
+    </message>
+    <message>
         <source>Use Global Setting</source>
         <translation>使用全局设置</translation>
     </message>
@@ -2049,10 +2073,6 @@ You can manually update DuckStation by re-downloading the latest release. Do you
     <message>
         <source>NTSC-U/C (US/Canada):</source>
         <translation>NTSC-U/C (美国/加拿大):</translation>
-    </message>
-    <message>
-        <source>Refresh BIOS List</source>
-        <translation>刷新BIOS列表</translation>
     </message>
     <message>
         <source>Open...</source>
@@ -2089,6 +2109,14 @@ You can manually update DuckStation by re-downloading the latest release. Do you
     <message>
         <source>DuckStation will search for BIOS images in this directory.</source>
         <translation>DuckStation将在此目录中搜索BIOS文件。</translation>
+    </message>
+    <message>
+        <source>Install BIOS</source>
+        <translation>安装 BIOS</translation>
+    </message>
+    <message>
+        <source>Refresh List</source>
+        <translation>刷新列表</translation>
     </message>
     <message>
         <source>Browse...</source>
@@ -2174,6 +2202,18 @@ WAV文件必须是立体声，并使用44100hz的采样率。</translation>
             <numerusform>%n个轨道，涵盖{0} MB (磁盘占用{1} MB)</numerusform>
         </translation>
     </message>
+    <message>
+        <source>Preload Image To RAM</source>
+        <translation>预加载镜像到内存</translation>
+    </message>
+    <message>
+        <source>Allocating {} MB memory for precaching...</source>
+        <translation>正在为预缓存分配 {} MB 内存……</translation>
+    </message>
+    <message>
+        <source>Loading Track {0} ({1})...</source>
+        <translation>正在加载轨道 {0}（{1}）……</translation>
+    </message>
 </context>
 <context>
     <name>CDImageHasher</name>
@@ -2244,14 +2284,6 @@ Your dump may be corrupted, or the physical disc is scratched.</source>
     <message>
         <source>Container:</source>
         <translation>文件格式:</translation>
-    </message>
-    <message>
-        <source>Capture Video</source>
-        <translation>捕获视频</translation>
-    </message>
-    <message>
-        <source>Capture Audio</source>
-        <translation>捕获音频</translation>
     </message>
     <message>
         <source>Codec:</source>
@@ -2351,20 +2383,20 @@ Your dump may be corrupted, or the physical disc is scratched.</source>
         <translation>文件格式</translation>
     </message>
     <message>
-        <source>Determines the file format used to contain the captured audio/video.</source>
-        <translation>确定用于包含捕获的音频/视频的文件格式。</translation>
+        <source>Determines the file format used to contain the captured video.</source>
+        <translation>确定用于存储捕获视频的文件格式。</translation>
+    </message>
+    <message>
+        <source>Determines the file format used to contain the captured audio.</source>
+        <translation>确定用于存储捕获音频的文件格式。</translation>
+    </message>
+    <message>
+        <source>%1 (Unknown)</source>
+        <translation>%1（未知）</translation>
     </message>
     <message>
         <source>Specifies the directory where media capture (video/audio) will be saved.</source>
         <translation>指定用于保存媒体捕获内容 (视频/音频) 的目录。</translation>
-    </message>
-    <message>
-        <source>Checked</source>
-        <translation>勾选</translation>
-    </message>
-    <message>
-        <source>Captures video to the chosen file when media capture is started. If unchecked, the file will only contain audio.</source>
-        <translation>开始媒体捕获时，将视频捕获到所选的文件中。如果不勾选，该文件将仅包含音频。</translation>
     </message>
     <message>
         <source>Video Codec</source>
@@ -2417,10 +2449,6 @@ Your dump may be corrupted, or the physical disc is scratched.</source>
     <message>
         <source>Parameters passed to the selected video codec.&lt;br&gt;&lt;b&gt;You must use &apos;=&apos; to separate key from value and &apos;:&apos; to separate two pairs from each other.&lt;/b&gt;&lt;br&gt;For example: &quot;crf = 21 : preset = veryfast&quot;</source>
         <translation>传递给所选视频编解码器的参数。&lt;br&gt;&lt;b&gt;您必须使用&apos;=&apos;将键与值分隔开，并使用&apos;:&apos;将两对彼此分隔开。&lt;/b&gt;&lt;br&gt;例如: &quot;crf = 21 : preset = veryfast&quot;</translation>
-    </message>
-    <message>
-        <source>Captures audio to the chosen file when media capture is started. If unchecked, the file will only contain video.</source>
-        <translation>开始媒体捕获时，将音频捕获到所选的文件中。如果不勾选，该文件将仅包含视频。</translation>
     </message>
     <message>
         <source>Audio Codec</source>
@@ -7502,8 +7530,28 @@ Error was:</source>
         <translation>%d扇区</translation>
     </message>
     <message>
+        <source>BIOS &apos;{}&apos; installed as &apos;{}&apos;.</source>
+        <translation>BIOS“{}”已安装为“{}”。</translation>
+    </message>
+    <message>
+        <source>BIOS Already Installed</source>
+        <translation>BIOS 已安装</translation>
+    </message>
+    <message>
+        <source>BIOS Install Error</source>
+        <translation>BIOS 安装错误</translation>
+    </message>
+    <message>
+        <source>BIOS Installed</source>
+        <translation>BIOS 已安装</translation>
+    </message>
+    <message>
         <source>Capture</source>
         <translation>捕获</translation>
+    </message>
+    <message>
+        <source>Copies a BIOS image to the configured global BIOS directory.</source>
+        <translation>将 BIOS 镜像复制到配置的全局 BIOS 目录。</translation>
     </message>
     <message>
         <source>Depth Clear Threshold</source>
@@ -7768,6 +7816,10 @@ Error was:</source>
     <message>
         <source>Informational Message Duration</source>
         <translation>信息消息持续时间</translation>
+    </message>
+    <message>
+        <source>Install BIOS</source>
+        <translation>安装 BIOS</translation>
     </message>
     <message>
         <source>Language</source>
@@ -8174,6 +8226,10 @@ Please check your username and password, and try again.</source>
         <translation>选择</translation>
     </message>
     <message>
+        <source>Select BIOS Image</source>
+        <translation>选择 BIOS 镜像</translation>
+    </message>
+    <message>
         <source>Select Disc</source>
         <translation>选择光盘</translation>
     </message>
@@ -8408,6 +8464,10 @@ Please check your username and password, and try again.</source>
     <message>
         <source>Textures Directory</source>
         <translation>纹理目录</translation>
+    </message>
+    <message>
+        <source>The BIOS file &apos;{}&apos; is already installed. Do you want to overwrite it?</source>
+        <translation>BIOS 文件“{}”已安装。要覆盖它吗？</translation>
     </message>
     <message>
         <source>Theme</source>
@@ -9076,10 +9136,6 @@ Do you want to {1} anyway?</source>
     <message>
         <source>Enable Cheats</source>
         <translation>启用金手指</translation>
-    </message>
-    <message>
-        <source>Search...</source>
-        <translation>搜索…</translation>
     </message>
     <message>
         <source>Sort Alphabetically</source>
@@ -9990,10 +10046,6 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <source>Show Titles</source>
         <translation>显示标题</translation>
-    </message>
-    <message>
-        <source>Search...</source>
-        <translation>搜索…</translation>
     </message>
     <message>
         <source>All Regions</source>
@@ -11212,13 +11264,6 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
 </context>
 <context>
-    <name>HotkeySettingsWidget</name>
-    <message>
-        <source>Search...</source>
-        <translation>搜索…</translation>
-    </message>
-</context>
-<context>
     <name>Hotkeys</name>
     <message>
         <source>Audio</source>
@@ -11503,6 +11548,14 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <source>Toggle Media Capture</source>
         <translation>媒体捕获开关</translation>
+    </message>
+    <message>
+        <source>Toggle Audio Capture</source>
+        <translation>音频捕获开关</translation>
+    </message>
+    <message>
+        <source>Toggle Video Capture</source>
+        <translation>视频捕获开关</translation>
     </message>
     <message>
         <source>Toggle Texture Modulation Cropping</source>
@@ -12904,10 +12957,6 @@ This action cannot be undone.</source>
         <translation>显示显存</translation>
     </message>
     <message>
-        <source>RA: Logged in as %1 (%2, %3 softcore). %4 unread messages.</source>
-        <translation>RA: 以%1 (%2, %3软核) 登录。%4未读消息。</translation>
-    </message>
-    <message>
         <source>Delete And Boot</source>
         <translation>删除并启动</translation>
     </message>
@@ -12994,6 +13043,10 @@ This action cannot be undone.</source>
     <message>
         <source>Close</source>
         <translation>关闭</translation>
+    </message>
+    <message>
+        <source>Allows you to record audio and/or video from the content.</source>
+        <translation>允许从内容中录制音频和/或视频。</translation>
     </message>
     <message>
         <source>Restarts the emulated system.</source>
@@ -13134,6 +13187,34 @@ This action cannot be undone.</source>
     <message>
         <source>System Log</source>
         <translation>系统日志</translation>
+    </message>
+    <message>
+        <source>Start &amp;Capture</source>
+        <translation>开始捕获(&amp;C)</translation>
+    </message>
+    <message>
+        <source>Starts recording audio and video.</source>
+        <translation>开始录制音频和视频。</translation>
+    </message>
+    <message>
+        <source>Stop &amp;Capture</source>
+        <translation>停止捕获(&amp;C)</translation>
+    </message>
+    <message>
+        <source>Start &amp;Video-Only Capture</source>
+        <translation>开始仅视频捕获(&amp;V)</translation>
+    </message>
+    <message>
+        <source>Starts a video-only recording.</source>
+        <translation>开始仅录制视频。</translation>
+    </message>
+    <message>
+        <source>Start &amp;Audio-Only Capture</source>
+        <translation>开始仅音频捕获(&amp;A)</translation>
+    </message>
+    <message>
+        <source>Starts an audio-only recording.</source>
+        <translation>开始仅录制音频。</translation>
     </message>
     <message>
         <source>Automatic</source>
@@ -13576,6 +13657,10 @@ Do you want to delete the save state and boot the game anyway?</source>
         <translation>无法创建记忆卡&apos;%1&apos;: %2</translation>
     </message>
     <message>
+        <source>RA: Logged in as %1 (%2, %3 casual). %4 unread messages.</source>
+        <translation>RA：已登录为 %1（%2，%3 休闲模式）。%4 条未读消息。</translation>
+    </message>
+    <message>
         <source>Refresh Achievement Progress</source>
         <translation>刷新成就进度</translation>
     </message>
@@ -13586,6 +13671,10 @@ Do you want to delete the save state and boot the game anyway?</source>
     <message>
         <source>RA: Updated achievement progress database.</source>
         <translation>RA: 更新了成就进度数据库。</translation>
+    </message>
+    <message>
+        <source>No containers are available for the current backend.</source>
+        <translation>当前后端没有可用的容器。</translation>
     </message>
     <message>
         <source>%1 Files (*.%2)</source>
@@ -13835,26 +13924,6 @@ The saves will not be recoverable.</source>
         <translation>HEVC（硬件编码）</translation>
     </message>
     <message>
-        <source>VP9 with Software Encoding</source>
-        <comment>VideoCodec</comment>
-        <translation>VP9（软件编码）</translation>
-    </message>
-    <message>
-        <source>VP9 with Hardware Encoding</source>
-        <comment>VideoCodec</comment>
-        <translation>VP9（硬件编码）</translation>
-    </message>
-    <message>
-        <source>AV1 with Software Encoding</source>
-        <comment>VideoCodec</comment>
-        <translation>AV1（软件编码）</translation>
-    </message>
-    <message>
-        <source>AV1 with Hardware Encoding</source>
-        <comment>VideoCodec</comment>
-        <translation>AV1（硬件编码）</translation>
-    </message>
-    <message>
         <source>Advanced Audio Coding</source>
         <comment>AudioCodec</comment>
         <translation>高级音频编码</translation>
@@ -13912,6 +13981,10 @@ This build of DuckStation requires FFmpeg v{}, with library versions:
   libswscale: {}
   libswresample: {}
 </translation>
+    </message>
+    <message>
+        <source>Audio codec &apos;{0}&apos; does not support {1} Hz samples, using {2} Hz.</source>
+        <translation>音频编解码器“{0}”不支持 {1} Hz 采样，将使用 {2} Hz。</translation>
     </message>
     <message>
         <source>Matroska Media Container</source>
@@ -14107,14 +14180,6 @@ Error: {1}</source>
         <translation>导出文件</translation>
     </message>
     <message>
-        <source>&lt;&lt;</source>
-        <translation>&lt;&lt;复制</translation>
-    </message>
-    <message>
-        <source>&gt;&gt;</source>
-        <translation>复制&gt;&gt;</translation>
-    </message>
-    <message>
         <source>New Card...</source>
         <translation>新建记忆卡…</translation>
     </message>
@@ -14157,6 +14222,18 @@ Error: {1}</source>
         <translation> (已删除)</translation>
     </message>
     <message>
+        <source>PNG Images (*.png);;JPEG Images (*.jpg *.jpeg);;WebP Images (*.webp)</source>
+        <translation>PNG 图像（*.png）;;JPEG 图像（*.jpg *.jpeg）;;WebP 图像（*.webp）</translation>
+    </message>
+    <message>
+        <source>Animated PNG Images (*.png)</source>
+        <translation>动画 PNG 图像（*.png）</translation>
+    </message>
+    <message>
+        <source>Extract Icon</source>
+        <translation>提取图标</translation>
+    </message>
+    <message>
         <source>Select Memory Card</source>
         <translation>选择记忆卡</translation>
     </message>
@@ -14175,6 +14252,22 @@ Error: {1}</source>
     <message>
         <source>Insufficient blocks, this file needs %1 but only %2 are available.</source>
         <translation>块不足，此文件需要%1格，但仅有%2格可用。</translation>
+    </message>
+    <message>
+        <source>Extract Animated Icon</source>
+        <translation>提取动画图标</translation>
+    </message>
+    <message>
+        <source>Failed to extract icon from save file %1:
+%2</source>
+        <translation>无法从保存文件 %1 中提取图标：
+%2</translation>
+    </message>
+    <message>
+        <source>Failed to extract animated icon from save file %1:
+%2</source>
+        <translation>无法从保存文件 %1 中提取动画图标：
+%2</translation>
     </message>
     <message>
         <source>Failed to rename save file %1:
@@ -15726,6 +15819,10 @@ Error: {1}</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;边框覆盖是绘制在系统显示屏周围的图像。边框覆盖是在后期处理后应用的。您可以从下面的边框列表中进行选择，也可以手动配置自定义边框。&lt;/p&gt;&lt;p&gt;其他预设边框可添加到数据目录下的&lt;span style=&quot; font-weight:700;&quot;&gt;resources\overlays&lt;/span&gt;文件夹中。&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
+        <source>Refresh Overlay List</source>
+        <translation>刷新覆盖层列表</translation>
+    </message>
+    <message>
         <source>Custom Configuration</source>
         <translation>自定义配置</translation>
     </message>
@@ -15839,10 +15936,6 @@ Error: {1}</source>
     <message>
         <source>Select Shader</source>
         <translation>选择着色器</translation>
-    </message>
-    <message>
-        <source>Search...</source>
-        <translation>搜索…</translation>
     </message>
     <message>
         <source>All</source>
@@ -16421,6 +16514,13 @@ Would you like to update the shortcut to point to the current location?</source>
     <message>
         <source>Select Previous</source>
         <translation>选择前一个</translation>
+    </message>
+</context>
+<context>
+    <name>SearchBox</name>
+    <message>
+        <source>Search...</source>
+        <translation>搜索…</translation>
     </message>
 </context>
 <context>
@@ -17597,6 +17697,26 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>语言</translation>
     </message>
     <message>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DuckStation requires a PS1 or PS2 BIOS in order to run.&lt;/p&gt;&lt;p&gt;For legal reasons, you must obtain a BIOS &lt;span style=&quot; font-weight:700;&quot;&gt;from an actual PS1/PS2 unit that you own&lt;/span&gt; (borrowing doesn&apos;t count). You should use Caetla or another utility to create an image from your console&apos;s BIOS ROM on your PC.&lt;/p&gt;&lt;p&gt;Once you have dumped the BIOS from your console, you can click the &amp;quot;Install BIOS&amp;quot; button below to add this image to DuckStation.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DuckStation 需要 PS1 或 PS2 BIOS 才能运行。&lt;/p&gt;&lt;p&gt;出于法律原因，你必须从&lt;span style=&quot; font-weight:700;&quot;&gt;自己拥有的实际 PS1/PS2 主机&lt;/span&gt;中获取 BIOS（借用的不算）。你可以使用 Caetla 或其他工具，在电脑上从主机的 BIOS ROM 创建镜像。&lt;/p&gt;&lt;p&gt;从主机导出 BIOS 后，点击下方的 &amp;quot;安装 BIOS&amp;quot; 按钮，将该镜像添加到 DuckStation。&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+    </message>
+    <message>
+        <source>Install BIOS...</source>
+        <translation>安装 BIOS……</translation>
+    </message>
+    <message>
+        <source>BIOS Directory</source>
+        <translation>BIOS目录</translation>
+    </message>
+    <message>
+        <source>DuckStation will search for BIOS images in this directory.</source>
+        <translation>DuckStation将在此目录中搜索BIOS文件。</translation>
+    </message>
+    <message>
+        <source>BIOS Selection</source>
+        <translation>BIOS选择</translation>
+    </message>
+    <message>
         <source>Default (Keyboard)</source>
         <translation>默认 (键盘)</translation>
     </message>
@@ -17822,6 +17942,17 @@ Are you sure you wish to continue without selecting a BIOS image?</source>
         <translation>选择BIOS目录</translation>
     </message>
     <message>
+        <source>No BIOS images found. Please install one to continue.</source>
+        <translation>未找到 BIOS 镜像。请安装一个以继续。</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n BIOS images found. You can install additional BIOS images if desired.</source>
+        <comment>BIOS Count</comment>
+        <translation>
+            <numerusform>找到 %n 个 BIOS 镜像。你可以根据需要安装其他 BIOS 镜像。</numerusform>
+        </translation>
+    </message>
+    <message>
         <source>Open Pause Menu</source>
         <translation>打开暂停菜单</translation>
     </message>
@@ -17854,10 +17985,6 @@ Token generated at %2</source>
     <message>
         <source>Refresh List</source>
         <translation>刷新列表</translation>
-    </message>
-    <message>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DuckStation requires a PS1 or PS2 BIOS in order to run.&lt;/p&gt;&lt;p&gt;For legal reasons, you must obtain a BIOS &lt;span style=&quot; font-weight:700;&quot;&gt;from an actual PS1 unit that you own&lt;/span&gt; (borrowing doesn&apos;t count). You should use Caetla or another utility to create an image from your console&apos;s BIOS ROM on your PC.&lt;/p&gt;&lt;p&gt;Once dumped, this BIOS image should be placed in the bios folder within the data directory shown below, or you can instruct DuckStation to scan an alternative directory.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DuckStation需要PS1或PS2 BIOS才能运行。&lt;/p&gt;&lt;p&gt;出于法律原因，您必须&lt;span style=&quot; font-weight:700;&quot;&gt;从您拥有的实体PS1设备获取BIOS&lt;/span&gt; (借的不算)。您应该在您的个人电脑上使用Caetla或其他工具，从游戏机的BIOS ROM中创建文件。&lt;/p&gt;&lt;p&gt;一旦转储后，该BIOS文件应当放置在以下显示的数据目录内的bios文件夹中，或者您可以指示DuckStation去扫描一个备选目录。&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>Controller Port 1</source>
@@ -17914,10 +18041,6 @@ Are you sure you want to continue?</source>
     <message>
         <source>Controller Setup</source>
         <translation>控制器设置</translation>
-    </message>
-    <message>
-        <source>BIOS Directory:</source>
-        <translation>BIOS目录:</translation>
     </message>
 </context>
 <context>

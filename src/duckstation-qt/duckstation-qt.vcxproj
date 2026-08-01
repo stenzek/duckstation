@@ -284,6 +284,9 @@
     </QtTs>
   </ItemGroup>
   <ItemGroup>
+    <QtTs Include="translations\duckstation-qt_id.ts">
+      <FileType>Document</FileType>
+    </QtTs>
     <QtUi Include="setupwizarddialog.ui">
       <FileType>Document</FileType>
     </QtUi>

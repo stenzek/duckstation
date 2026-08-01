@@ -479,13 +479,6 @@ Error: {}</source>
 エラー: {}</translation>
     </message>
     <message>
-        <source>Score: {} ({} softcore)
-Unread messages: {}</source>
-        <extracomment>Summary for login notification.</extracomment>
-        <translation>スコア: {} (ソフトコア {})
-未読メッセージ: {}</translation>
-    </message>
-    <message>
         <source>{0} cannot be performed while hardcore mode is active. Do you want to disable hardcore mode? {0} will be cancelled if you select No.</source>
         <translation>ハードコアモードが有効な間は{0}を実行できません。ハードコアモードを無効にしますか? いいえを選択すると{0}はキャンセルされます。</translation>
     </message>
@@ -640,10 +633,6 @@ Unread messages: {}</source>
         <translation>未確認</translation>
     </message>
     <message>
-        <source>Unlocked in Softcore</source>
-        <translation>ソフトコアで解除済み</translation>
-    </message>
-    <message>
         <source>Change Subset</source>
         <translation>サブセットを変更</translation>
     </message>
@@ -712,6 +701,10 @@ Unread messages: {}</source>
     <message>
         <source>XXX points</source>
         <translation>XXX ポイント</translation>
+    </message>
+    <message>
+        <source>Unlocked in Casual</source>
+        <translation>カジュアルで解除</translation>
     </message>
     <message>
         <source>Loading...</source>
@@ -909,9 +902,16 @@ We will keep trying to submit this request.</source>
 このリクエストの送信を引き続き試行します。</translation>
     </message>
     <message>
-        <source>Score: {} ({} softcore)</source>
+        <source>Score: {} ({} casual)
+Unread messages: {}</source>
+        <extracomment>Summary for login notification.</extracomment>
+        <translation>スコア: {}（{} カジュアル）
+未読メッセージ: {}</translation>
+    </message>
+    <message>
+        <source>Score: {} ({} casual)</source>
         <extracomment>Score summary, shown in Big Picture mode.</extracomment>
-        <translation>スコア: {} (ソフトコア {})</translation>
+        <translation>スコア: {}（{} カジュアル）</translation>
     </message>
     <message>
         <source>Confirm Hardcore Mode Disable</source>
@@ -1999,8 +1999,12 @@ You can manually update DuckStation by re-downloading the latest release. Do you
         <translation>DuckStation は、このディレクトリの BIOS イメージを検索します。</translation>
     </message>
     <message>
-        <source>Refresh BIOS List</source>
-        <translation>BIOS リストを更新</translation>
+        <source>Install BIOS</source>
+        <translation>BIOSをインストール</translation>
+    </message>
+    <message>
+        <source>Refresh List</source>
+        <translation>リストを更新</translation>
     </message>
     <message>
         <source>Browse...</source>
@@ -2047,6 +2051,14 @@ You can manually update DuckStation by re-downloading the latest release. Do you
         <translation>BIOS ディレクトリを選択</translation>
     </message>
     <message>
+        <source>Refreshes the list of BIOS images that can be selected.</source>
+        <translation>選択可能なBIOSイメージのリストを更新します。</translation>
+    </message>
+    <message>
+        <source>Installs a new BIOS image into the emulator&apos;s BIOS directory.</source>
+        <translation>新しいBIOSイメージをエミュレーターのBIOSディレクトリにインストールします。</translation>
+    </message>
+    <message>
         <source>Device Type</source>
         <translation>デバイスの種類</translation>
     </message>
@@ -2085,6 +2097,30 @@ You can manually update DuckStation by re-downloading the latest release. Do you
     <message>
         <source>Logs BIOS calls to printf(). Not all games contain debugging messages.</source>
         <translation>BIOS 呼び出しを printf() に記録します。すべてのゲームにデバッグメッセージが含まれているわけではありません。</translation>
+    </message>
+    <message>
+        <source>Select BIOS Image</source>
+        <translation>BIOSイメージを選択</translation>
+    </message>
+    <message>
+        <source>BIOS Install Error</source>
+        <translation>BIOSインストールエラー</translation>
+    </message>
+    <message>
+        <source>BIOS Already Installed</source>
+        <translation>BIOSはインストール済みです</translation>
+    </message>
+    <message>
+        <source>The BIOS file &apos;%1&apos; is already installed. Do you want to overwrite it?</source>
+        <translation>BIOSファイル「%1」はすでにインストールされています。上書きしますか？</translation>
+    </message>
+    <message>
+        <source>BIOS Installed</source>
+        <translation>BIOSをインストールしました</translation>
+    </message>
+    <message>
+        <source>BIOS &apos;%1&apos; installed as &apos;%2&apos;.</source>
+        <translation>BIOS「%1」を「%2」としてインストールしました。</translation>
     </message>
     <message>
         <source>Auto-Detect</source>
@@ -5383,8 +5419,24 @@ You cannot undo this action.</source>
         <translation>C++ コードの呼び出しを回避し、リコンパイラーを大幅に高速化します。</translation>
     </message>
     <message>
+        <source>BIOS &apos;{}&apos; installed as &apos;{}&apos;.</source>
+        <translation>BIOS「{}」を「{}」としてインストールしました。</translation>
+    </message>
+    <message>
+        <source>BIOS Already Installed</source>
+        <translation>BIOSはインストール済みです</translation>
+    </message>
+    <message>
         <source>BIOS Directory</source>
         <translation>BIOS ディレクトリ</translation>
+    </message>
+    <message>
+        <source>BIOS Install Error</source>
+        <translation>BIOSインストールエラー</translation>
+    </message>
+    <message>
+        <source>BIOS Installed</source>
+        <translation>BIOSをインストールしました</translation>
     </message>
     <message>
         <source>BIOS Selection</source>
@@ -5573,6 +5625,10 @@ You cannot undo this action.</source>
     <message>
         <source>Controls the volume of the audio played on the host.</source>
         <translation>ホストで再生されるオーディオの音量を調整します。</translation>
+    </message>
+    <message>
+        <source>Copies a BIOS image to the configured global BIOS directory.</source>
+        <translation>設定されたグローバルBIOSディレクトリにBIOSイメージをコピーします。</translation>
     </message>
     <message>
         <source>Copies the current global settings to this game.</source>
@@ -6135,6 +6191,10 @@ Error was:</source>
     <message>
         <source>Input Sources</source>
         <translation>入力ソース</translation>
+    </message>
+    <message>
+        <source>Install BIOS</source>
+        <translation>BIOSをインストール</translation>
     </message>
     <message>
         <source>Interface Settings</source>
@@ -8047,6 +8107,10 @@ Do you want to {1} anyway?</source>
         <translation>選択</translation>
     </message>
     <message>
+        <source>Select BIOS Image</source>
+        <translation>BIOSイメージを選択</translation>
+    </message>
+    <message>
         <source>Select Device</source>
         <translation>デバイスを選択</translation>
     </message>
@@ -8513,6 +8577,10 @@ Do you want to {1} anyway?</source>
     <message>
         <source>Textures Directory</source>
         <translation>テクスチャディレクトリ</translation>
+    </message>
+    <message>
+        <source>The BIOS file &apos;{}&apos; is already installed. Do you want to overwrite it?</source>
+        <translation>BIOSファイル「{}」はすでにインストールされています。上書きしますか？</translation>
     </message>
     <message>
         <source>The SDL input source supports most controllers.</source>
@@ -13642,8 +13710,8 @@ Do you want to delete the save state and boot the game anyway?</source>
         <translation>メモリーカード「%1」を作成できませんでした: %2</translation>
     </message>
     <message>
-        <source>RA: Logged in as %1 (%2, %3 softcore). %4 unread messages.</source>
-        <translation>RA: %1 としてログインしました (%2、ソフトコア %3)。未読メッセージ %4 件。</translation>
+        <source>RA: Logged in as %1 (%2, %3 casual). %4 unread messages.</source>
+        <translation>RA: %1 としてログイン中（%2、%3 カジュアル）。未読メッセージ: %4。</translation>
     </message>
     <message>
         <source>Refresh Achievement Progress</source>
@@ -17568,10 +17636,6 @@ Do you want to continue?</source>
         <translation>自動更新</translation>
     </message>
     <message>
-        <source>BIOS Directory:</source>
-        <translation>BIOSディレクトリ</translation>
-    </message>
-    <message>
         <source>Browse...</source>
         <translation>参照...</translation>
     </message>
@@ -17626,10 +17690,6 @@ Do you want to continue?</source>
     <message>
         <source>Controller Type:</source>
         <translation>コントローラータイプ:</translation>
-    </message>
-    <message>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DuckStation requires a PS1 or PS2 BIOS in order to run.&lt;/p&gt;&lt;p&gt;For legal reasons, you must obtain a BIOS &lt;span style=&quot; font-weight:700;&quot;&gt;from an actual PS1 unit that you own&lt;/span&gt; (borrowing doesn&apos;t count). You should use Caetla or another utility to create an image from your console&apos;s BIOS ROM on your PC.&lt;/p&gt;&lt;p&gt;Once dumped, this BIOS image should be placed in the bios folder within the data directory shown below, or you can instruct DuckStation to scan an alternative directory.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DuckStation の実行には PS1 または PS2 の BIOS が必要です。&lt;/p&gt;&lt;p&gt;法的な理由により、BIOS は&lt;span style=&quot; font-weight:700;&quot;&gt;ご自身が所有する実機の PS1&lt;/span&gt; から取得する必要があります (借りた本体は不可)。Caetla などのユーティリティを使用して、本体の BIOS ROM から PC 上にイメージを作成してください。&lt;/p&gt;&lt;p&gt;ダンプした BIOS イメージは、以下に表示されるデータディレクトリ内の bios フォルダーに配置するか、別のディレクトリをスキャンするよう DuckStation に指定してください。&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;By default, DuckStation will map your keyboard to the virtual controller. &lt;span style=&quot; font-weight:700;&quot;&gt;To use an external controller, you must map it first. &lt;/span&gt;On this screen, you can automatically map any controller which is currently connected. If your controller is not currently connected, you can plug it in now.&lt;/p&gt;&lt;p&gt;To change controller bindings in more detail, or use multi-tap, open the Settings menu and choose Controllers once you have completed the Setup Wizard.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
@@ -17769,6 +17829,26 @@ Do you want to continue?</source>
         <translation>プロフィール表示...</translation>
     </message>
     <message>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DuckStation requires a PS1 or PS2 BIOS in order to run.&lt;/p&gt;&lt;p&gt;For legal reasons, you must obtain a BIOS &lt;span style=&quot; font-weight:700;&quot;&gt;from an actual PS1/PS2 unit that you own&lt;/span&gt; (borrowing doesn&apos;t count). You should use Caetla or another utility to create an image from your console&apos;s BIOS ROM on your PC.&lt;/p&gt;&lt;p&gt;Once you have dumped the BIOS from your console, you can click the &amp;quot;Install BIOS&amp;quot; button below to add this image to DuckStation.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DuckStationを実行するには、PS1またはPS2のBIOSが必要です。&lt;/p&gt;&lt;p&gt;法的な理由により、BIOSは&lt;span style=&quot; font-weight:700;&quot;&gt;所有している実機のPS1/PS2から&lt;/span&gt;取得する必要があります（借りたものは使用できません）。Caetlaなどのユーティリティを使用して、コンソールのBIOS ROMからPC上にイメージを作成してください。&lt;/p&gt;&lt;p&gt;コンソールからBIOSをダンプしたら、下の &amp;quot;BIOSをインストール&amp;quot; ボタンをクリックして、このイメージをDuckStationに追加できます。&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+    </message>
+    <message>
+        <source>Install BIOS...</source>
+        <translation>BIOSをインストール...</translation>
+    </message>
+    <message>
+        <source>BIOS Directory</source>
+        <translation>BIOS ディレクトリ</translation>
+    </message>
+    <message>
+        <source>DuckStation will search for BIOS images in this directory.</source>
+        <translation>DuckStation は、このディレクトリの BIOS イメージを検索します。</translation>
+    </message>
+    <message>
+        <source>BIOS Selection</source>
+        <translation>BIOS の選択</translation>
+    </message>
+    <message>
         <source>Login...</source>
         <translation>ログイン...</translation>
     </message>
@@ -17899,6 +17979,17 @@ Any changes have been saved, and the wizard will run again next time you start D
     <message>
         <source>Select BIOS Directory</source>
         <translation>BIOS ディレクトリを選択</translation>
+    </message>
+    <message>
+        <source>No BIOS images found. Please install one to continue.</source>
+        <translation>BIOSイメージが見つかりません。続行するにはBIOSをインストールしてください。</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n BIOS images found. You can install additional BIOS images if desired.</source>
+        <comment>BIOS Count</comment>
+        <translation>
+            <numerusform>%n個のBIOSイメージが見つかりました。必要に応じて、追加のBIOSイメージをインストールできます。</numerusform>
+        </translation>
     </message>
     <message>
         <source>Open Directory...</source>

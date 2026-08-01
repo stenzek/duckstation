@@ -622,16 +622,16 @@ Error: {}</source>
 Fehler: {}</translation>
     </message>
     <message>
-        <source>Score: {} ({} softcore)
+        <source>Score: {} ({} casual)
 Unread messages: {}</source>
         <extracomment>Summary for login notification.</extracomment>
-        <translation>Punktzahl: {} ({} Softcore)
+        <translation>Punktzahl: {} ({} Gelegenheitsspieler)
 Ungelesene Nachrichten: {}</translation>
     </message>
     <message>
-        <source>Score: {} ({} softcore)</source>
+        <source>Score: {} ({} casual)</source>
         <extracomment>Score summary, shown in Big Picture mode.</extracomment>
-        <translation>Punktzahl: {} ({} Softcore)</translation>
+        <translation>Punktzahl: {} ({} Gelegenheitsspieler)</translation>
     </message>
     <message>
         <source>Confirm Hardcore Mode Disable</source>
@@ -824,10 +824,6 @@ Ungelesene Nachrichten: {}</translation>
         <translation>Noch nicht bestätigt</translation>
     </message>
     <message>
-        <source>Unlocked in Softcore</source>
-        <translation>Im Softcore-Modus freigeschaltet</translation>
-    </message>
-    <message>
         <source>Change Subset</source>
         <translation>Untergruppe wechseln</translation>
     </message>
@@ -898,6 +894,10 @@ Ungelesene Nachrichten: {}</translation>
     <message>
         <source>XXX points</source>
         <translation>XXX Punkte</translation>
+    </message>
+    <message>
+        <source>Unlocked in Casual</source>
+        <translation>In Gelegenheit freigeschaltet</translation>
     </message>
     <message>
         <source>Loading...</source>
@@ -2018,8 +2018,12 @@ Sie können DuckStation manuell aktualisieren, indem Sie die neueste Version ern
         <translation>DuckStation sucht in diesem Verzeichnis nach BIOS-Images.</translation>
     </message>
     <message>
-        <source>Refresh BIOS List</source>
-        <translation>BIOS-Liste aktualisieren</translation>
+        <source>Install BIOS</source>
+        <translation>BIOS installieren</translation>
+    </message>
+    <message>
+        <source>Refresh List</source>
+        <translation>Liste aktualisieren</translation>
     </message>
     <message>
         <source>Browse...</source>
@@ -2066,6 +2070,14 @@ Sie können DuckStation manuell aktualisieren, indem Sie die neueste Version ern
         <translation>BIOS-Verzeichnis auswählen</translation>
     </message>
     <message>
+        <source>Refreshes the list of BIOS images that can be selected.</source>
+        <translation>Aktualisiert die Liste der auswählbaren BIOS-Images.</translation>
+    </message>
+    <message>
+        <source>Installs a new BIOS image into the emulator&apos;s BIOS directory.</source>
+        <translation>Installiert ein neues BIOS-Image im BIOS-Verzeichnis des Emulators.</translation>
+    </message>
+    <message>
         <source>Device Type</source>
         <translation>Gerätetyp</translation>
     </message>
@@ -2104,6 +2116,30 @@ Sie können DuckStation manuell aktualisieren, indem Sie die neueste Version ern
     <message>
         <source>Logs BIOS calls to printf(). Not all games contain debugging messages.</source>
         <translation>Protokolliert BIOS-Aufrufe an printf(). Nicht alle Spiele enthalten Debug-Nachrichten.</translation>
+    </message>
+    <message>
+        <source>Select BIOS Image</source>
+        <translation>BIOS-Image auswählen</translation>
+    </message>
+    <message>
+        <source>BIOS Install Error</source>
+        <translation>BIOS-Installationsfehler</translation>
+    </message>
+    <message>
+        <source>BIOS Already Installed</source>
+        <translation>BIOS bereits installiert</translation>
+    </message>
+    <message>
+        <source>The BIOS file &apos;%1&apos; is already installed. Do you want to overwrite it?</source>
+        <translation>Die BIOS-Datei &apos;%1&apos; ist bereits installiert. Möchten Sie sie überschreiben?</translation>
+    </message>
+    <message>
+        <source>BIOS Installed</source>
+        <translation>BIOS installiert</translation>
+    </message>
+    <message>
+        <source>BIOS &apos;%1&apos; installed as &apos;%2&apos;.</source>
+        <translation>BIOS &apos;%1&apos; als &apos;%2&apos; installiert.</translation>
     </message>
     <message>
         <source>Auto-Detect</source>
@@ -6328,6 +6364,22 @@ Diese Aktion kann nicht rückgängig gemacht werden.</translation>
         <translation>Wechselt automatisch zur nächsten Disc im Spiel, wenn das Spiel den CD-ROM-Motor anhält. Funktioniert nicht mit allen Spielen.</translation>
     </message>
     <message>
+        <source>BIOS &apos;{}&apos; installed as &apos;{}&apos;.</source>
+        <translation>BIOS &apos;{}&apos; als &apos;{}&apos; installiert.</translation>
+    </message>
+    <message>
+        <source>BIOS Already Installed</source>
+        <translation>BIOS bereits installiert</translation>
+    </message>
+    <message>
+        <source>BIOS Install Error</source>
+        <translation>BIOS-Installationsfehler</translation>
+    </message>
+    <message>
+        <source>BIOS Installed</source>
+        <translation>BIOS installiert</translation>
+    </message>
+    <message>
         <source>Back</source>
         <translation>Zurück</translation>
     </message>
@@ -6458,6 +6510,10 @@ Diese Aktion kann nicht rückgängig gemacht werden.</translation>
     <message>
         <source>Controls how dithering is applied in the emulated GPU. True Color disables dithering and produces the nicest looking gradients.</source>
         <translation>Steuert, wie Dithering in der emulierten GPU angewendet wird. True Color deaktiviert Dithering und erzeugt die schönsten Farbverläufe.</translation>
+    </message>
+    <message>
+        <source>Copies a BIOS image to the configured global BIOS directory.</source>
+        <translation>Kopiert ein BIOS-Image in das konfigurierte globale BIOS-Verzeichnis.</translation>
     </message>
     <message>
         <source>Copy Serial</source>
@@ -7044,6 +7100,10 @@ Diese Aktion kann nicht rückgängig gemacht werden.</translation>
         <translation>Dauer von Informationsmeldungen</translation>
     </message>
     <message>
+        <source>Install BIOS</source>
+        <translation>BIOS installieren</translation>
+    </message>
+    <message>
         <source>Internal Resolution</source>
         <translation>Interne Auflösung</translation>
     </message>
@@ -7496,6 +7556,10 @@ Bitte überprüfen Sie Ihren Benutzernamen und Ihr Passwort und versuchen Sie es
         <translation>Suchen</translation>
     </message>
     <message>
+        <source>Select BIOS Image</source>
+        <translation>BIOS-Image auswählen</translation>
+    </message>
+    <message>
         <source>Settings reset to default.</source>
         <translation>Einstellungen auf Standardwerte zurückgesetzt.</translation>
     </message>
@@ -7566,6 +7630,10 @@ Bitte überprüfen Sie Ihren Benutzernamen und Ihr Passwort und versuchen Sie es
     <message>
         <source>Synchronizes presentation of the console&apos;s frames to the host. GSync/FreeSync users should enable Optimal Frame Pacing instead.</source>
         <translation>Synchronisiert die Darstellung der Konsolenbilder mit dem Host. GSync/FreeSync-Nutzer sollten stattdessen optimales Frame-Pacing aktivieren.</translation>
+    </message>
+    <message>
+        <source>The BIOS file &apos;{}&apos; is already installed. Do you want to overwrite it?</source>
+        <translation>Die BIOS-Datei &apos;{}&apos; ist bereits installiert. Möchten Sie sie überschreiben?</translation>
     </message>
     <message>
         <source>Theme</source>
@@ -13598,6 +13666,10 @@ Möchtest du den Spielstand löschen und das Spiel trotzdem starten?</translatio
         <translation>Memory Card &apos;%1&apos; konnte nicht erstellt werden: %2</translation>
     </message>
     <message>
+        <source>RA: Logged in as %1 (%2, %3 casual). %4 unread messages.</source>
+        <translation>RA: Als %1 angemeldet (%2, %3 Gelegenheitsspieler). %4 ungelesene Nachrichten.</translation>
+    </message>
+    <message>
         <source>Refresh Achievement Progress</source>
         <translation>Erfolgsfortschritt aktualisieren</translation>
     </message>
@@ -13860,10 +13932,6 @@ Diese Aktion kann nicht rückgängig gemacht werden.</translation>
     <message>
         <source>Memory card &apos;%1&apos; could not be found. Try starting the game and saving to create it.</source>
         <translation>Memory Card &apos;%1&apos; konnte nicht gefunden werden. Versuche das Spiel zu starten und zu speichern, um sie zu erstellen.</translation>
-    </message>
-    <message>
-        <source>RA: Logged in as %1 (%2, %3 softcore). %4 unread messages.</source>
-        <translation>RA: Angemeldet als %1 (%2, %3 Softcore). %4 ungelesene Nachrichten.</translation>
     </message>
     <message>
         <source>QDarkStyle</source>
@@ -17600,10 +17668,6 @@ Möchten Sie fortfahren?</translation>
         <translation>Automatische Updates aktivieren</translation>
     </message>
     <message>
-        <source>BIOS Directory:</source>
-        <translation>BIOS-Verzeichnis:</translation>
-    </message>
-    <message>
         <source>Browse...</source>
         <translation>Durchsuchen…</translation>
     </message>
@@ -17626,6 +17690,26 @@ Möchten Sie fortfahren?</translation>
     <message>
         <source>Open in Explorer...</source>
         <translation>Im Explorer öffnen...</translation>
+    </message>
+    <message>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DuckStation requires a PS1 or PS2 BIOS in order to run.&lt;/p&gt;&lt;p&gt;For legal reasons, you must obtain a BIOS &lt;span style=&quot; font-weight:700;&quot;&gt;from an actual PS1/PS2 unit that you own&lt;/span&gt; (borrowing doesn&apos;t count). You should use Caetla or another utility to create an image from your console&apos;s BIOS ROM on your PC.&lt;/p&gt;&lt;p&gt;Once you have dumped the BIOS from your console, you can click the &amp;quot;Install BIOS&amp;quot; button below to add this image to DuckStation.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DuckStation benötigt ein PS1- oder PS2-BIOS, um ausgeführt zu werden.&lt;/p&gt;&lt;p&gt;Aus rechtlichen Gründen müssen Sie ein BIOS &lt;span style=&quot; font-weight:700;&quot;&gt;von einem tatsächlichen PS1/PS2-Gerät, das Ihnen gehört&lt;/span&gt; beziehen (Ausleihen zählt nicht). Sie sollten Caetla oder ein anderes Dienstprogramm verwenden, um auf Ihrem PC ein Image des BIOS-ROMs Ihrer Konsole zu erstellen.&lt;/p&gt;&lt;p&gt;Nachdem Sie das BIOS Ihrer Konsole ausgelesen haben, können Sie unten auf die Schaltfläche &amp;quot;BIOS installieren&amp;quot; klicken, um dieses Image zu DuckStation hinzuzufügen.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+    </message>
+    <message>
+        <source>Install BIOS...</source>
+        <translation>BIOS installieren ...</translation>
+    </message>
+    <message>
+        <source>BIOS Directory</source>
+        <translation>BIOS-Verzeichnis</translation>
+    </message>
+    <message>
+        <source>DuckStation will search for BIOS images in this directory.</source>
+        <translation>DuckStation sucht in diesem Verzeichnis nach BIOS-Images.</translation>
+    </message>
+    <message>
+        <source>BIOS Selection</source>
+        <translation>BIOS-Auswahl</translation>
     </message>
     <message>
         <source>Refresh List</source>
@@ -17654,10 +17738,6 @@ Möchten Sie fortfahren?</translation>
     <message>
         <source>Controller Type:</source>
         <translation>Controllertyp:</translation>
-    </message>
-    <message>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DuckStation requires a PS1 or PS2 BIOS in order to run.&lt;/p&gt;&lt;p&gt;For legal reasons, you must obtain a BIOS &lt;span style=&quot; font-weight:700;&quot;&gt;from an actual PS1 unit that you own&lt;/span&gt; (borrowing doesn&apos;t count). You should use Caetla or another utility to create an image from your console&apos;s BIOS ROM on your PC.&lt;/p&gt;&lt;p&gt;Once dumped, this BIOS image should be placed in the bios folder within the data directory shown below, or you can instruct DuckStation to scan an alternative directory.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DuckStation benötigt ein PS1- oder PS2-BIOS, um zu starten.&lt;/p&gt;&lt;p&gt;Aus rechtlichen Gründen müssen Sie ein BIOS &lt;span style=&quot; font-weight:700;&quot;&gt;von einer tatsächlichen PS1-Konsole in Ihrem Besitz&lt;/span&gt; beziehen (Ausleihen zählt nicht). Sie sollten Caetla oder ein anderes Hilfsprogramm verwenden, um auf Ihrem PC ein Image aus dem BIOS-ROM Ihrer Konsole zu erstellen.&lt;/p&gt;&lt;p&gt;Nachdem es ausgelesen wurde, sollte dieses BIOS-Image im BIOS-Ordner innerhalb des unten gezeigten Datenverzeichnisses abgelegt werden, oder Sie können DuckStation anweisen, ein alternatives Verzeichnis zu durchsuchen.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DuckStation will automatically scan and identify games from the selected directories below, and populate the game list. These games should be dumped from discs you own. Utilities such as ImgBurn can be used to create images of game discs in .bin/.cue format.&lt;/p&gt;&lt;p&gt;Supported formats for dumps include: %1&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
@@ -17935,6 +18015,18 @@ Alle Änderungen wurden gespeichert, und der Assistent wird beim nächsten Start
     <message>
         <source>Select BIOS Directory</source>
         <translation>BIOS-Verzeichnis auswählen</translation>
+    </message>
+    <message>
+        <source>No BIOS images found. Please install one to continue.</source>
+        <translation>Keine BIOS-Images gefunden. Bitte installieren Sie eines, um fortzufahren.</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n BIOS images found. You can install additional BIOS images if desired.</source>
+        <comment>BIOS Count</comment>
+        <translation>
+            <numerusform>%n BIOS-Image gefunden. Sie können bei Bedarf weitere BIOS-Images installieren.</numerusform>
+            <numerusform>%n BIOS-Images gefunden. Sie können bei Bedarf weitere BIOS-Images installieren.</numerusform>
+        </translation>
     </message>
     <message>
         <source>Open Directory...</source>
@@ -18436,7 +18528,13 @@ Es wird stattdessen die gemeinsame Karte verwendet.</translation>
 Your dump is incomplete, you must add the SBI file to run this game. 
 
 The name of the SBI file must match the name of the disc image.</source>
-        <translation type="unfinished"></translation>
+        <translation>Sie versuchen, ein libcrypt-geschütztes Spiel ohne SBI-Datei auszuführen:
+
+{0}: {1}
+
+Ihr Dump ist unvollständig. Sie müssen die SBI-Datei hinzufügen, um dieses Spiel auszuführen.
+
+Der Name der SBI-Datei muss mit dem Namen des Disc-Images übereinstimmen.</translation>
     </message>
     <message>
         <source>Round upscaled texture coordinates is enabled. This may cause rendering errors.</source>
