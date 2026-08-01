@@ -94,6 +94,8 @@ BIOSSettingsWidget::BIOSSettingsWidget(SettingsWindow* dialog, QWidget* parent) 
   {
     m_ui.mainLayout->removeWidget(m_ui.directoryGroupBox);
     delete m_ui.directoryGroupBox;
+    m_ui.rescan = nullptr;
+    m_ui.install = nullptr;
     m_ui.directoryGroupBox = nullptr;
     m_ui.directoryGroupBoxLabel = nullptr;
     m_ui.directoryGroupBoxLayout = nullptr;
