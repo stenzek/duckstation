@@ -215,7 +215,7 @@ Apakah ingin mengaktifkan Mode Hardcore?</translation>
     </message>
     <message>
         <source>Register</source>
-        <translation>Register</translation>
+        <translation>Daftar</translation>
     </message>
     <message>
         <source>Settings</source>
@@ -426,8 +426,8 @@ Token dibuat pada %2</translation>
     <message>
         <source>Achievement unlocks will not be submitted for this session.
 Error: {}</source>
-        <translation>Pembukaan pencapaian tidak akan di kirimkan pada sesi ini.
-Eror: {}</translation>
+        <translation>Pembukaan pencapaian tidak akan dikirimkan untuk sesi ini.
+Kesalahan: {}</translation>
     </message>
     <message>
         <source>RetroAchievements Login Failed</source>
@@ -612,7 +612,7 @@ Pesan belum dibaca: {}</translation>
     </message>
     <message>
         <source>Leaderboard Position: {0} of {1}</source>
-        <translation>Posisi Papan Pencapaian: {0} of {1}</translation>
+        <translation>Posisi Papan Peringkat: {0} dari {1}</translation>
     </message>
     <message>
         <source>Achievements Disconnected</source>
@@ -997,11 +997,11 @@ Pesan belum dibaca: {}</translation>
     <name>AdvancedSettingsWidget</name>
     <message>
         <source>Select Cache Directory</source>
-        <translation>Pilih Directory Cache</translation>
+        <translation>Pilih Direktori Cache</translation>
     </message>
     <message>
         <source>Select Covers Directory</source>
-        <translation>Pilih Cover Cache</translation>
+        <translation>Pilih Direktori Sampul</translation>
     </message>
     <message>
         <source>Log Level</source>
@@ -1412,7 +1412,7 @@ Pesan belum dibaca: {}</translation>
     </message>
     <message>
         <source>Mode LED</source>
-        <translation>LED Mode</translation>
+        <translation>Mode LED</translation>
     </message>
 </context>
 <context>
@@ -1519,7 +1519,7 @@ Pesan belum dibaca: {}</translation>
     </message>
     <message>
         <source>Mode LED</source>
-        <translation>LED Mode</translation>
+        <translation>Mode LED</translation>
     </message>
     <message>
         <source>Not Inverted</source>
@@ -2499,7 +2499,7 @@ Dump Anda mungkin rusak, atau disk fisiknya tergores.</translation>
     </message>
     <message>
         <source>Error</source>
-        <translation>Eror</translation>
+        <translation>Kesalahan</translation>
     </message>
     <message>
         <source>Name cannot be empty.</source>
@@ -2714,7 +2714,7 @@ Mencoba menggunakan kode curang ini tidak akan bekerja seperti yang diharapkan. 
     </message>
     <message>
         <source>3x</source>
-        <translation>100% {3x?}</translation>
+        <translation>3x</translation>
     </message>
     <message>
         <source>4x</source>
@@ -2722,11 +2722,11 @@ Mencoba menggunakan kode curang ini tidak akan bekerja seperti yang diharapkan. 
     </message>
     <message>
         <source>5x</source>
-        <translation>100% {5x?}</translation>
+        <translation>5x</translation>
     </message>
     <message>
         <source>6x</source>
-        <translation>100% {6x?}</translation>
+        <translation>6x</translation>
     </message>
     <message>
         <source>Preload Image To RAM</source>
@@ -4962,31 +4962,31 @@ Mengklik Atur Ulang akan mengembalikan nomor seri ke nilai yang dipindai dari ci
     </message>
     <message>
         <source>4 Frames</source>
-        <translation>3 Frame {4 ?}</translation>
+        <translation>4 Bingkai</translation>
     </message>
     <message>
         <source>5 Frames</source>
-        <translation>3 Frame {5 ?}</translation>
+        <translation>5 Bingkai</translation>
     </message>
     <message>
         <source>6 Frames</source>
-        <translation>3 Frame {6 ?}</translation>
+        <translation>6 Bingkai</translation>
     </message>
     <message>
         <source>7 Frames</source>
-        <translation>3 Frame {7 ?}</translation>
+        <translation>7 Bingkai</translation>
     </message>
     <message>
         <source>8 Frames</source>
-        <translation>3 Frame {8 ?}</translation>
+        <translation>8 Bingkai</translation>
     </message>
     <message>
         <source>9 Frames</source>
-        <translation>3 Frame {9 ?}</translation>
+        <translation>9 Bingkai</translation>
     </message>
     <message>
         <source>10 Frames</source>
-        <translation>3 Frame {10 ?}</translation>
+        <translation>10 Bingkai</translation>
     </message>
     <message>
         <source>Enable for Analog Input</source>
@@ -5233,35 +5233,35 @@ ${serial}: Nomor seri permainan.</translation>
     </message>
     <message>
         <source>10 Frames</source>
-        <translation>3 Frame {10 ?}</translation>
+        <translation>10 Bingkai</translation>
     </message>
     <message>
         <source>10x</source>
-        <translation>100% {10x?}</translation>
+        <translation>10x</translation>
     </message>
     <message>
         <source>11x</source>
-        <translation>100% {11x?}</translation>
+        <translation>11x</translation>
     </message>
     <message>
         <source>12x</source>
-        <translation>100% {12x?}</translation>
+        <translation>12x</translation>
     </message>
     <message>
         <source>13x</source>
-        <translation>100% {13x?}</translation>
+        <translation>13x</translation>
     </message>
     <message>
         <source>14x</source>
-        <translation>100% {14x?}</translation>
+        <translation>14x</translation>
     </message>
     <message>
         <source>15x</source>
-        <translation>100% {15x?}</translation>
+        <translation>15x</translation>
     </message>
     <message>
         <source>1x</source>
-        <translation>100% {1x?}</translation>
+        <translation>1x</translation>
     </message>
     <message>
         <source>2x (Quad Speed)</source>
@@ -5269,7 +5269,7 @@ ${serial}: Nomor seri permainan.</translation>
     </message>
     <message>
         <source>3x</source>
-        <translation>100% {3x?}</translation>
+        <translation>3x</translation>
     </message>
     <message>
         <source>3x (6x Speed)</source>
@@ -5281,7 +5281,7 @@ ${serial}: Nomor seri permainan.</translation>
     </message>
     <message>
         <source>4 Frames</source>
-        <translation>3 Frame {4 ?}</translation>
+        <translation>4 Bingkai</translation>
     </message>
     <message>
         <source>4x (8x Speed)</source>
@@ -5289,11 +5289,11 @@ ${serial}: Nomor seri permainan.</translation>
     </message>
     <message>
         <source>5 Frames</source>
-        <translation>3 Frame {5 ?}</translation>
+        <translation>5 Bingkai</translation>
     </message>
     <message>
         <source>5x</source>
-        <translation>100% {5x?}</translation>
+        <translation>5x</translation>
     </message>
     <message>
         <source>5x (10x Speed)</source>
@@ -5305,11 +5305,11 @@ ${serial}: Nomor seri permainan.</translation>
     </message>
     <message>
         <source>6 Frames</source>
-        <translation>3 Frame {6 ?}</translation>
+        <translation>6 Bingkai</translation>
     </message>
     <message>
         <source>6x</source>
-        <translation>100% {6x?}</translation>
+        <translation>6x</translation>
     </message>
     <message>
         <source>6x (12x Speed)</source>
@@ -5321,19 +5321,19 @@ ${serial}: Nomor seri permainan.</translation>
     </message>
     <message>
         <source>7 Frames</source>
-        <translation>3 Frame {7 ?}</translation>
+        <translation>7 Bingkai</translation>
     </message>
     <message>
         <source>7x</source>
-        <translation>100% {7x?}</translation>
+        <translation>7x</translation>
     </message>
     <message>
         <source>8 Frames</source>
-        <translation>3 Frame {8 ?}</translation>
+        <translation>8 Bingkai</translation>
     </message>
     <message>
         <source>9 Frames</source>
-        <translation>3 Frame {9 ?}</translation>
+        <translation>9 Bingkai</translation>
     </message>
     <message>
         <source>9x (for 4K)</source>
@@ -10063,13 +10063,13 @@ Pemindaian rekursif akan membuat proses pencarian menjadi lebih lama, namun dapa
 .ccd (CloneCD Image)
 .chd (Compressed Hunks of Data)
 .pbp (PlayStation Portable, Only Decrypted)</source>
-        <translation>.cue (Cue Sheets)
-.iso (Single Track Image)
-.ecm (Kesalahan Code Modeling Image)
-.mds (Media Descriptor Sidecar)
-.ccd (CloneCD Image)
-.chd (Compressed Hunks of Data)
-.pbp (PlayStation Portable, Hanya Decrypted)</translation>
+        <translation>.cue (Lembar Cue)
+.iso (Citra Satu Trek)
+.ecm (Citra Error Code Modeling)
+.mds (Sidecar Media Descriptor)
+.ccd (Citra CloneCD)
+.chd (Citra Compressed Hunks of Data)
+.pbp (PlayStation Portable, Hanya yang Didekripsi)</translation>
     </message>
     <message>
         <source>Cover scale: %1%</source>
@@ -10104,7 +10104,7 @@ Pemindaian rekursif akan membuat proses pencarian menjadi lebih lama, namun dapa
     </message>
     <message>
         <source>&lt;br&gt;&lt;strong&gt;Not permitted in RetroAchievements hardcore mode.&lt;/strong&gt;</source>
-        <translation>&lt;br&gt;&lt;strong&gt;Tidak permitted in RetroAchievements hardcore mode.&lt;/strong&gt;</translation>
+        <translation>&lt;br&gt;&lt;strong&gt;Tidak diizinkan dalam mode hardcore RetroAchievements.&lt;/strong&gt;</translation>
     </message>
     <message>
         <source>No description provided.</source>
@@ -10115,7 +10115,7 @@ Pemindaian rekursif akan membuat proses pencarian menjadi lebih lama, namun dapa
     <name>GamePatchSettingsWidget</name>
     <message>
         <source>Disable All Patches</source>
-        <translation>Nonaktifkan All Patches</translation>
+        <translation>Nonaktifkan Semua Patch</translation>
     </message>
     <message>
         <source>Reload Patches</source>
@@ -10365,7 +10365,7 @@ Pemindaian rekursif akan membuat proses pencarian menjadi lebih lama, namun dapa
     </message>
     <message>
         <source>Select Textures Directory</source>
-        <translation>Select Tekstur Direktori</translation>
+        <translation>Pilih Direktori Tekstur</translation>
     </message>
     <message>
         <source>Renderer</source>
@@ -10373,7 +10373,7 @@ Pemindaian rekursif akan membuat proses pencarian menjadi lebih lama, namun dapa
     </message>
     <message>
         <source>Selects the backend to use for rendering the console/game visuals. &lt;br&gt;Depending on your system and hardware, Direct3D 11 and OpenGL hardware backends may be available. &lt;br&gt;The software renderer offers the best compatibility, but is the slowest and does not offer any enhancements.</source>
-        <translation>Memilih backend ke use untuk rendering the console/game visuals. &lt;br&gt;Depending on your system dan hardware, Direct3D 11 dan BukaGL hardware backends mungkin be available. &lt;br&gt;The software renderer offers the best compatibility, but adalah the slowest dan does not offer any enhancements.</translation>
+        <translation>Memilih backend yang digunakan untuk merender visual konsol/game. &lt;br&gt;Tergantung pada sistem dan perangkat keras Anda, backend perangkat keras Direct3D 11 dan OpenGL mungkin tersedia. &lt;br&gt;Renderer perangkat lunak menawarkan kompatibilitas terbaik, tetapi paling lambat dan tidak menawarkan peningkatan apa pun.</translation>
     </message>
     <message>
         <source>Adapter</source>
@@ -10381,11 +10381,11 @@ Pemindaian rekursif akan membuat proses pencarian menjadi lebih lama, namun dapa
     </message>
     <message>
         <source>If your system contains multiple GPUs or adapters, you can select which GPU you wish to use for the hardware renderers. &lt;br&gt;This option is only supported in Direct3D and Vulkan. OpenGL will always use the default device.</source>
-        <translation>If your system contains multiple GPUs atau adapters, you dapat select which GPU you wish ke use untuk the hardware renderers. &lt;br&gt;Ini option adalah hanya supported in Direct3D dan Vulkan. BukaGL akan always use the default device.</translation>
+        <translation>Jika sistem Anda memiliki beberapa GPU atau adaptor, Anda dapat memilih GPU yang ingin digunakan untuk renderer perangkat keras. &lt;br&gt;Opsi ini hanya didukung di Direct3D dan Vulkan. OpenGL akan selalu menggunakan perangkat bawaan.</translation>
     </message>
     <message>
         <source>Setting this beyond 1x will enhance the resolution of rendered 3D polygons and lines. Only applies to the hardware backends. &lt;br&gt;This option is usually safe, with most games looking fine at higher resolutions. Higher resolutions require a more powerful GPU.</source>
-        <translation>Pengaturan this beyond 1x akan enhance the resolution of rendered 3D polygons dan lines. Hanya applies ke the hardware backends. &lt;br&gt;Ini option adalah usually safe, dengan most games looking fine at higher resolutions. Higher resolutions require a more powerful GPU.</translation>
+        <translation>Pengaturan di atas 1x akan meningkatkan resolusi poligon dan garis 3D yang dirender. Hanya berlaku untuk backend perangkat keras. &lt;br&gt;Opsi ini biasanya aman, dan sebagian besar game terlihat baik pada resolusi lebih tinggi. Resolusi lebih tinggi memerlukan GPU yang lebih bertenaga.</translation>
     </message>
     <message>
         <source>Down-Sampling</source>
@@ -10393,7 +10393,7 @@ Pemindaian rekursif akan membuat proses pencarian menjadi lebih lama, namun dapa
     </message>
     <message>
         <source>Downsamples the rendered image prior to displaying it. Can improve overall image quality in mixed 2D/3D games, but should be disabled for pure 3D games.</source>
-        <translation>Downsamples the rendered image prior ke displaying it. Can improve overall image quality in mixed 2D/3D games, but should be disabled untuk pure 3D games.</translation>
+        <translation>Menurunkan skala gambar yang dirender sebelum menampilkannya. Dapat meningkatkan kualitas gambar secara keseluruhan pada game 2D/3D campuran, tetapi harus dinonaktifkan untuk game 3D murni.</translation>
     </message>
     <message>
         <source>Down-Sampling Display Scale</source>
@@ -10401,7 +10401,7 @@ Pemindaian rekursif akan membuat proses pencarian menjadi lebih lama, namun dapa
     </message>
     <message>
         <source>1x</source>
-        <translation>100% {1x?}</translation>
+        <translation>1x</translation>
     </message>
     <message>
         <source>Selects the resolution scale that will be applied to the final image. 1x will downsample to the original console resolution.</source>
@@ -10409,7 +10409,7 @@ Pemindaian rekursif akan membuat proses pencarian menjadi lebih lama, namun dapa
     </message>
     <message>
         <source>Smooths out the blockiness of magnified textures on 3D objects by using filtering. &lt;br&gt;Will have a greater effect on higher resolution scales.</source>
-        <translation>Menghaluskan the blockiness of magnified textures on 3D objects by using filtering. &lt;br&gt;Will have a greater effect on higher resolution scales.</translation>
+        <translation>Menghaluskan tampilan kotak-kotak pada tekstur yang diperbesar di objek 3D menggunakan penyaringan. &lt;br&gt;Efeknya akan lebih besar pada skala resolusi yang lebih tinggi.</translation>
     </message>
     <message>
         <source>Sprite Texture Filtering</source>
@@ -10417,19 +10417,19 @@ Pemindaian rekursif akan membuat proses pencarian menjadi lebih lama, namun dapa
     </message>
     <message>
         <source>Smooths out the blockiness of magnified textures on 2D objects by using filtering. This filter only applies to sprites and other 2D elements, such as the HUD.</source>
-        <translation>Menghaluskan the blockiness of magnified textures on 2D objects by using filtering. Ini filter hanya applies ke sprites dan other 2D elements, such as the HUD.</translation>
+        <translation>Menghaluskan tampilan kotak-kotak pada tekstur yang diperbesar di objek 2D menggunakan penyaringan. Penyaring ini hanya berlaku untuk sprite dan elemen 2D lainnya, seperti HUD.</translation>
     </message>
     <message>
         <source>Controls how dithering is applied in the emulated GPU. True Color disables dithering and produces the nicest looking gradients. Scaled options make the dither pattern less noticeable at higher resolutions. Shader Blending options perform blending in software, and are more accurate but have a &lt;strong&gt;significant&lt;/strong&gt; performance penalty.</source>
-        <translation>Mengontrol how dithering adalah applied in the emulated GPU. True Warna disables dithering dan produces the nicest looking gradients. Scaled options make the dither pattern less noticeable at higher resolutions. Shader Blending options perform blending in software, dan adalah more accurate but have a &lt;strong&gt;significant&lt;/strong&gt; performance penalty.</translation>
+        <translation>Mengontrol cara dithering diterapkan pada GPU yang diemulasikan. True Color menonaktifkan dithering dan menghasilkan gradasi dengan tampilan terbaik. Opsi berskala membuat pola dither kurang terlihat pada resolusi lebih tinggi. Opsi Shader Blending melakukan blending dalam perangkat lunak dan lebih akurat, tetapi memiliki penalti performa yang &lt;strong&gt;signifikan&lt;/strong&gt;.</translation>
     </message>
     <message>
         <source>Changes the aspect ratio used to display the console&apos;s output to the screen. The default is Auto (Game Native) which automatically adjusts the aspect ratio to match how a game would be shown on a typical TV of the era.</source>
-        <translation>Changes the aspect ratio used ke display the console&apos;s output ke the screen. The default adalah Auke (Game Native) which automatically adjusts the aspect ratio ke match how a game would be shown on a typical TV of the era.</translation>
+        <translation>Mengubah rasio aspek yang digunakan untuk menampilkan keluaran konsol ke layar. Nilai bawaan adalah Auto (Game Native), yang secara otomatis menyesuaikan rasio aspek agar sesuai dengan tampilan game pada TV biasa di zamannya.</translation>
     </message>
     <message>
         <source>Determines which algorithm is used to convert interlaced frames to progressive for display on your system. Using progressive rendering provides the best quality output, but some games require interlaced rendering.</source>
-        <translation>Menentukan which algorithm adalah used ke convert interlaced frames ke progressive untuk display on your system. Using progressive rendering provides the best quality output, but some games require interlaced rendering.</translation>
+        <translation>Menentukan algoritma yang digunakan untuk mengubah frame interlace menjadi progressive untuk ditampilkan di sistem Anda. Rendering progressive memberikan keluaran dengan kualitas terbaik, tetapi beberapa game memerlukan rendering interlace.</translation>
     </message>
     <message>
         <source>Crop</source>
@@ -10437,7 +10437,7 @@ Pemindaian rekursif akan membuat proses pencarian menjadi lebih lama, namun dapa
     </message>
     <message>
         <source>Determines how much of the area typically not visible on a consumer TV set to crop/hide. Some games display content in the overscan area, or use it for screen effects. May not display correctly with the &quot;All Borders&quot; setting. &quot;Only Overscan&quot; offers a good compromise between stability and hiding black borders.</source>
-        <translation>Menentukan how much of the area typically not visible on a consumer TV set ke crop/hide. Some games display content in the overscan area, atau use it untuk screen effects. May not display correctly dengan the &quot;All Borders&quot; setting. &quot;Hanya Overscan&quot; offers a good compromise between stability dan hiding black borders.</translation>
+        <translation>Menentukan seberapa banyak area yang biasanya tidak terlihat pada TV konsumen untuk dipotong/disembunyikan. Beberapa game menampilkan konten di area overscan atau menggunakannya untuk efek layar. Tampilan mungkin tidak benar dengan pengaturan "Semua Batas". "Hanya Overscan" memberikan kompromi yang baik antara stabilitas dan penyembunyian batas hitam.</translation>
     </message>
     <message>
         <source>Scaling</source>
@@ -10457,11 +10457,11 @@ Pemindaian rekursif akan membuat proses pencarian menjadi lebih lama, namun dapa
     </message>
     <message>
         <source>Scales vertex positions in screen-space to a widescreen aspect ratio, essentially increasing the field of view from 4:3 to the chosen display aspect ratio in 3D games. &lt;b&gt;&lt;u&gt;May not be compatible with all games.&lt;/u&gt;&lt;/b&gt;</source>
-        <translation>Scales vertex positions in screen-space ke a widescreen aspect ratio, essentially increasing the field of view dari 4:3 ke the chosen display aspect ratio in 3D games. &lt;b&gt;&lt;u&gt;May not be compatible dengan all games.&lt;/u&gt;&lt;/b&gt;</translation>
+        <translation>Menskalakan posisi vertex dalam ruang layar ke rasio aspek layar lebar, yang pada dasarnya memperluas bidang pandang dari 4:3 ke rasio aspek layar yang dipilih dalam game 3D. &lt;b&gt;&lt;u&gt;Mungkin tidak kompatibel dengan semua game.&lt;/u&gt;&lt;/b&gt;</translation>
     </message>
     <message>
         <source>Reduces &quot;wobbly&quot; polygons and &quot;warping&quot; textures that are common in PS1 games. &lt;strong&gt;May not be compatible with all games.&lt;/strong&gt;</source>
-        <translation>Mengurangi &quot;wobbly&quot; polygons dan &quot;warping&quot; textures that adalah common in PS1 games. &lt;strong&gt;May not be compatible dengan all games.&lt;/strong&gt;</translation>
+        <translation>Mengurangi poligon yang "bergoyang" dan tekstur yang "melengkung" yang umum pada game PS1. &lt;strong&gt;Mungkin tidak kompatibel dengan semua game.&lt;/strong&gt;</translation>
     </message>
     <message>
         <source>PGXP Depth Buffer</source>
@@ -10469,7 +10469,7 @@ Pemindaian rekursif akan membuat proses pencarian menjadi lebih lama, namun dapa
     </message>
     <message>
         <source>Attempts to reduce polygon Z-fighting by testing pixels against the depth values from PGXP. Low compatibility, but can work well in some games. Other games may need a threshold adjustment.</source>
-        <translation>Attempts ke reduce polygon Z-fighting by testing pixels against the depth values dari PGXP. Low compatibility, but dapat work well in some games. Other games mungkin need a threshold adjustment.</translation>
+        <translation>Mencoba mengurangi Z-fighting poligon dengan menguji piksel terhadap nilai kedalaman dari PGXP. Kompatibilitas rendah, tetapi dapat bekerja dengan baik pada beberapa game. Game lain mungkin memerlukan penyesuaian ambang batas.</translation>
     </message>
     <message>
         <source>Switches back to 4:3 display aspect ratio when displaying 24-bit content, usually FMVs.</source>
@@ -10489,7 +10489,7 @@ Pemindaian rekursif akan membuat proses pencarian menjadi lebih lama, namun dapa
     </message>
     <message>
         <source>Controls whether exclusive fullscreen can be utilized by Vulkan drivers.</source>
-        <translation>Mengontrol whether exclusive fullscreen dapat be utilized by Vulkan drivers.</translation>
+        <translation>Mengontrol apakah mode layar penuh eksklusif dapat digunakan oleh driver Vulkan.</translation>
     </message>
     <message>
         <source>Position</source>
@@ -10513,7 +10513,7 @@ Pemindaian rekursif akan membuat proses pencarian menjadi lebih lama, namun dapa
     </message>
     <message>
         <source>Uses multi-sampled anti-aliasing when rendering 3D polygons. Can improve visuals with a lower performance requirement compared to upscaling, &lt;strong&gt;but often introduces rendering errors.&lt;/strong&gt;</source>
-        <translation>Menggunakan multi-sampled anti-aliasing saat rendering 3D polygons. Can improve visuals dengan a lower performance requirement compared ke upscaling, &lt;strong&gt;but often introduces rendering errors.&lt;/strong&gt;</translation>
+        <translation>Menggunakan anti-aliasing multi-sampel saat merender poligon 3D. Dapat meningkatkan visual dengan kebutuhan performa yang lebih rendah dibandingkan peningkatan skala, &lt;strong&gt;tetapi sering menimbulkan kesalahan rendering.&lt;/strong&gt;</translation>
     </message>
     <message>
         <source>Wireframe Mode</source>
@@ -10521,7 +10521,7 @@ Pemindaian rekursif akan membuat proses pencarian menjadi lebih lama, namun dapa
     </message>
     <message>
         <source>Draws a wireframe outline of the triangles rendered by the console&apos;s GPU, either as a replacement or an overlay.</source>
-        <translation>Draws a wireframe outline of the triangles rendered by the console&apos;s GPU, either as a replacement atau an overlay.</translation>
+        <translation>Menggambar garis tepi wireframe dari segitiga yang dirender oleh GPU konsol, baik sebagai pengganti maupun sebagai overlay.</translation>
     </message>
     <message>
         <source>Uses a second thread for drawing graphics. Provides a significant speed improvement particularly with the software renderer, and is safe to use.</source>
@@ -10529,7 +10529,7 @@ Pemindaian rekursif akan membuat proses pencarian menjadi lebih lama, namun dapa
     </message>
     <message>
         <source>Scales line skipping in interlaced rendering to the internal resolution. This makes the combing less obvious at higher resolutions. Usually safe to enable.</source>
-        <translation>Scales line skipping in interlaced rendering ke the internal resolution. Ini makes the combing less obvious at higher resolutions. Usually safe ke enable.</translation>
+        <translation>Menskalakan pelewatan garis dalam rendering interlace ke resolusi internal. Ini membuat efek sisir kurang terlihat pada resolusi lebih tinggi. Biasanya aman untuk diaktifkan.</translation>
     </message>
     <message>
         <source>Runs the software renderer in parallel for VRAM readbacks. On some systems, this may result in greater performance when using graphical enhancements with the hardware renderer.</source>
@@ -10557,7 +10557,7 @@ Pemindaian rekursif akan membuat proses pencarian menjadi lebih lama, namun dapa
     </message>
     <message>
         <source>Crops vertex colours to 5:5:5 before modulating with the texture colour, which typically results in more visible banding. This is a characteristic of the &quot;old&quot; GPUs found in early model consoles.</source>
-        <translation>Crops vertex colours ke 5:5:5 before modulating dengan the texture colour, which typically results in more visible banding. Ini adalah a characteristic of the &quot;old&quot; GPUs found in early model consoles.</translation>
+        <translation>Memotong warna vertex menjadi 5:5:5 sebelum memodulasinya dengan warna tekstur, yang biasanya menghasilkan banding yang lebih terlihat. Ini adalah karakteristik GPU "lama" yang ditemukan pada konsol model awal.</translation>
     </message>
     <message>
         <source>Geometry Tolerance</source>
@@ -10569,7 +10569,7 @@ Pemindaian rekursif akan membuat proses pencarian menjadi lebih lama, namun dapa
     </message>
     <message>
         <source>Discards precise geometry when it is found to be offset past the specified threshold. This can help with games that have vertices significantly moved by PGXP, but is still a hack/workaround.</source>
-        <translation>Discards precise geometry saat it adalah found ke be offset past the specified threshold. Ini dapat help dengan games that have vertices significantly moved by PGXP, but adalah still a hack/workaround.</translation>
+        <translation>Membuang geometri presisi jika ditemukan bergeser melewati ambang batas yang ditentukan. Ini dapat membantu game yang vertex-nya dipindahkan secara signifikan oleh PGXP, tetapi tetap merupakan hack/solusi sementara.</translation>
     </message>
     <message>
         <source>Depth Clear Threshold</source>
@@ -10577,15 +10577,15 @@ Pemindaian rekursif akan membuat proses pencarian menjadi lebih lama, namun dapa
     </message>
     <message>
         <source>Determines the increase in depth that will result in the depth buffer being cleared. Can help with depth issues in some games, but is still a hack/workaround.</source>
-        <translation>Menentukan the increase in depth that akan result in the depth buffer being cleared. Can help dengan depth issues in some games, but adalah still a hack/workaround.</translation>
+        <translation>Menentukan peningkatan kedalaman yang akan menyebabkan buffer kedalaman dihapus. Dapat membantu mengatasi masalah kedalaman pada beberapa game, tetapi tetap merupakan hack/solusi sementara.</translation>
     </message>
     <message>
         <source>Uses perspective-correct interpolation for texture coordinates, straightening out warped textures. Requires geometry correction enabled.</source>
-        <translation>Menggunakan perspective-correct interpolation untuk texture coordinates, straightening out warped textures. Requires geometry correction enabled.</translation>
+        <translation>Menggunakan interpolasi yang dikoreksi perspektif untuk koordinat tekstur, sehingga meluruskan tekstur yang terdistorsi. Memerlukan koreksi geometri untuk diaktifkan.</translation>
     </message>
     <message>
         <source>Uses perspective-correct interpolation for vertex colors, which can improve visuals in some games, but cause rendering errors in others. Requires geometry correction enabled.</source>
-        <translation>Menggunakan perspective-correct interpolation untuk vertex colors, which dapat improve visuals in some games, but cause rendering errors in others. Requires geometry correction enabled.</translation>
+        <translation>Menggunakan interpolasi yang dikoreksi perspektif untuk warna vertex, yang dapat meningkatkan visual pada beberapa game, tetapi menyebabkan kesalahan rendering pada game lainnya. Memerlukan koreksi geometri untuk diaktifkan.</translation>
     </message>
     <message>
         <source>Increases the precision of polygon culling, reducing the number of holes in geometry. Requires geometry correction enabled.</source>
@@ -10597,23 +10597,23 @@ Pemindaian rekursif akan membuat proses pencarian menjadi lebih lama, namun dapa
     </message>
     <message>
         <source>Uses PGXP for all instructions, not just memory operations. Required for PGXP to correct wobble in some games, but has a high performance cost.</source>
-        <translation>Menggunakan PGXP untuk all instructions, not just memory operations. Required untuk PGXP ke correct wobble in some games, but has a high performance cost.</translation>
+        <translation>Menggunakan PGXP untuk semua instruksi, bukan hanya operasi memori. Diperlukan agar PGXP dapat memperbaiki efek bergoyang pada beberapa game, tetapi memiliki biaya performa yang tinggi.</translation>
     </message>
     <message>
         <source>Uses screen-space vertex positions to obtain precise positions, instead of tracking memory accesses. Can provide PGXP compatibility for some games, but &lt;strong&gt;generally provides no benefit.&lt;/strong&gt;</source>
-        <translation>Menggunakan screen-space vertex positions ke obtain precise positions, instead of tracking memory accesses. Can provide PGXP compatibility untuk some games, but &lt;strong&gt;generally provides no benefit.&lt;/strong&gt;</translation>
+        <translation>Menggunakan posisi vertex ruang layar untuk memperoleh posisi presisi, bukan melacak akses memori. Dapat memberikan kompatibilitas PGXP untuk beberapa game, tetapi &lt;strong&gt;umumnya tidak memberikan manfaat.&lt;/strong&gt;</translation>
     </message>
     <message>
         <source>Uses native resolution coordinates for 2D polygons, instead of precise coordinates. Can fix misaligned UI in some games, but otherwise should be left disabled. The game database will enable this automatically when needed.</source>
-        <translation>Menggunakan native resolution coordinates untuk 2D polygons, instead of precise coordinates. Can fix misaligned UI in some games, but otherwise should be left disabled. The game database akan enable this automatically saat needed.</translation>
+        <translation>Menggunakan koordinat resolusi asli untuk poligon 2D, bukan koordinat presisi. Dapat memperbaiki UI yang tidak selaras pada beberapa game, tetapi selain itu sebaiknya dibiarkan nonaktif. Basis data game akan mengaktifkannya secara otomatis saat diperlukan.</translation>
     </message>
     <message>
         <source>Enables depth testing for semi-transparent polygons. Usually these include shadows, and tend to clip through the ground when depth testing is enabled. Depth writes for semi-transparent polygons are disabled regardless of this setting.</source>
-        <translation>Mengaktifkan depth testing untuk semi-transparent polygons. Usually these include shadows, dan tend ke clip through the ground saat depth testing adalah enabled. Kedalaman writes untuk semi-transparent polygons adalah disabled regardless of this setting.</translation>
+        <translation>Mengaktifkan pengujian kedalaman untuk poligon semitransparan. Biasanya poligon ini mencakup bayangan dan cenderung menembus tanah saat pengujian kedalaman diaktifkan. Penulisan kedalaman untuk poligon semitransparan dinonaktifkan terlepas dari pengaturan ini.</translation>
     </message>
     <message>
         <source>Enables caching of guest textures, required for texture replacement. &lt;strong&gt;The texture cache is currently experimental, and may cause rendering errors in some games.&lt;/strong&gt;</source>
-        <translation>Mengaktifkan caching of guest textures, required untuk texture replacement. &lt;strong&gt;The texture cache adalah currently experimental, dan mungkin cause rendering errors in some games.&lt;/strong&gt;</translation>
+        <translation>Mengaktifkan caching tekstur guest, yang diperlukan untuk penggantian tekstur. &lt;strong&gt;Cache tekstur saat ini masih eksperimental dan dapat menyebabkan kesalahan rendering pada beberapa game.&lt;/strong&gt;</translation>
     </message>
     <message>
         <source>Loads all replacement texture to RAM, reducing stuttering at runtime.</source>
@@ -10629,7 +10629,7 @@ Pemindaian rekursif akan membuat proses pencarian menjadi lebih lama, namun dapa
     </message>
     <message>
         <source>Forces texture upload tracking to be enabled regardless of whether it is needed. Reduces performance, but allows toggling replacements on and off. &lt;strong&gt;Not required for replacements to load, &lt;/strong&gt;normally tracking is automatically enabled when needed.</source>
-        <translation>Memaksa texture upload tracking ke be enabled regardless of whether it adalah needed. Mengurangi performance, but allows toggling replacements on dan off. &lt;strong&gt;Tidak required untuk replacements ke load, &lt;/strong&gt;normally tracking adalah automatically enabled saat needed.</translation>
+        <translation>Memaksa pelacakan unggahan tekstur agar diaktifkan terlepas dari apakah diperlukan. Mengurangi performa, tetapi memungkinkan pengaktifan dan penonaktifan penggantian. &lt;strong&gt;Tidak diperlukan agar penggantian dimuat, &lt;/strong&gt;pelacakan biasanya diaktifkan secara otomatis saat diperlukan.</translation>
     </message>
     <message>
         <source>Enables dumping of textures to image files, which can be replaced. Not compatible with all games.</source>
@@ -10661,11 +10661,11 @@ Pemindaian rekursif akan membuat proses pencarian menjadi lebih lama, namun dapa
     </message>
     <message>
         <source>Enable debugging when supported by the host&apos;s renderer API. &lt;strong&gt;Only for developer use.&lt;/strong&gt;</source>
-        <translation>Aktifkan debugging saat supported by the host&apos;s renderer API. &lt;strong&gt;Hanya untuk developer use.&lt;/strong&gt;</translation>
+        <translation>Mengaktifkan debugging jika didukung oleh API renderer host. &lt;strong&gt;Hanya untuk penggunaan pengembang.&lt;/strong&gt;</translation>
     </message>
     <message>
         <source>Enable GPU-based validation when supported by the renderer API. &lt;strong&gt;Only for developer use.&lt;/strong&gt;</source>
-        <translation>Aktifkan GPU-based validation saat supported by the renderer API. &lt;strong&gt;Hanya untuk developer use.&lt;/strong&gt;</translation>
+        <translation>Mengaktifkan validasi berbasis GPU jika didukung oleh API renderer. &lt;strong&gt;Hanya untuk penggunaan pengembang.&lt;/strong&gt;</translation>
     </message>
     <message>
         <source>Uses OpenGL ES even when desktop OpenGL is supported. May improve performance on some SBC drivers.</source>
@@ -10673,43 +10673,43 @@ Pemindaian rekursif akan membuat proses pencarian menjadi lebih lama, namun dapa
     </message>
     <message>
         <source>Forces shaders to be compiled for every run of the program. &lt;strong&gt;Only for developer use.&lt;/strong&gt;</source>
-        <translation>Memaksa shaders ke be compiled untuk every run of the program. &lt;strong&gt;Hanya untuk developer use.&lt;/strong&gt;</translation>
+        <translation>Memaksa shader dikompilasi setiap kali program dijalankan. &lt;strong&gt;Hanya untuk penggunaan pengembang.&lt;/strong&gt;</translation>
     </message>
     <message>
         <source>Prevents dual-source blending from being used. Useful for testing broken graphics drivers. &lt;strong&gt;Only for developer use.&lt;/strong&gt;</source>
-        <translation>Mencegah dual-source blending dari being used. Useful untuk testing broken graphics drivers. &lt;strong&gt;Hanya untuk developer use.&lt;/strong&gt;</translation>
+        <translation>Mencegah penggunaan blending sumber ganda. Berguna untuk menguji driver grafis yang bermasalah. &lt;strong&gt;Hanya untuk penggunaan pengembang.&lt;/strong&gt;</translation>
     </message>
     <message>
         <source>Prevents the framebuffer fetch extensions from being used. Useful for testing broken graphics drivers. &lt;strong&gt;Only for developer use.&lt;/strong&gt;</source>
-        <translation>Mencegah the framebuffer fetch extensions dari being used. Useful untuk testing broken graphics drivers. &lt;strong&gt;Hanya untuk developer use.&lt;/strong&gt;</translation>
+        <translation>Mencegah penggunaan ekstensi pengambilan framebuffer. Berguna untuk menguji driver grafis yang bermasalah. &lt;strong&gt;Hanya untuk penggunaan pengembang.&lt;/strong&gt;</translation>
     </message>
     <message>
         <source>Forces VRAM updates through texture updates, instead of texture buffers and draws. Useful for testing broken graphics drivers. &lt;strong&gt;Only for developer use.&lt;/strong&gt;</source>
-        <translation>Memaksa VRAM updates through texture updates, instead of texture buffers dan draws. Useful untuk testing broken graphics drivers. &lt;strong&gt;Hanya untuk developer use.&lt;/strong&gt;</translation>
+        <translation>Memaksa pembaruan VRAM melalui pembaruan tekstur, bukan buffer tekstur dan gambar. Berguna untuk menguji driver grafis yang bermasalah. &lt;strong&gt;Hanya untuk penggunaan pengembang.&lt;/strong&gt;</translation>
     </message>
     <message>
         <source>Disable Texture Copies To Self</source>
-        <translation>Nonaktifkan Tekstur Copies To Self</translation>
+        <translation>Nonaktifkan Penyalinan Tekstur ke Diri Sendiri</translation>
     </message>
     <message>
         <source>Disables the use of self-copy updates for the VRAM texture. Useful for testing broken graphics drivers. &lt;strong&gt;Only for developer use.&lt;/strong&gt;</source>
-        <translation>Menonaktifkan the use of self-copy updates untuk the VRAM texture. Useful untuk testing broken graphics drivers. &lt;strong&gt;Hanya untuk developer use.&lt;/strong&gt;</translation>
+        <translation>Menonaktifkan penggunaan pembaruan salin-ke-diri-sendiri untuk tekstur VRAM. Berguna untuk menguji driver grafis yang bermasalah. &lt;strong&gt;Hanya untuk penggunaan pengembang.&lt;/strong&gt;</translation>
     </message>
     <message>
         <source>Disables the use of host memory importing. Useful for testing broken graphics drivers. &lt;strong&gt;Only for developer use.&lt;/strong&gt;</source>
-        <translation>Menonaktifkan the use of host memory importing. Useful untuk testing broken graphics drivers. &lt;strong&gt;Hanya untuk developer use.&lt;/strong&gt;</translation>
+        <translation>Menonaktifkan penggunaan pengimporan memori host. Berguna untuk menguji driver grafis yang bermasalah. &lt;strong&gt;Hanya untuk penggunaan pengembang.&lt;/strong&gt;</translation>
     </message>
     <message>
         <source>Disables the use of rasterizer order views. Useful for testing broken graphics drivers. &lt;strong&gt;Only for developer use.&lt;/strong&gt;</source>
-        <translation>Menonaktifkan the use of rasterizer order views. Useful untuk testing broken graphics drivers. &lt;strong&gt;Hanya untuk developer use.&lt;/strong&gt;</translation>
+        <translation>Menonaktifkan penggunaan tampilan urutan rasterizer. Berguna untuk menguji driver grafis yang bermasalah. &lt;strong&gt;Hanya untuk penggunaan pengembang.&lt;/strong&gt;</translation>
     </message>
     <message>
         <source>Disables the use of compute shaders. Useful for testing broken graphics drivers. &lt;strong&gt;Only for developer use.&lt;/strong&gt;</source>
-        <translation>Menonaktifkan the use of compute shaders. Useful untuk testing broken graphics drivers. &lt;strong&gt;Hanya untuk developer use.&lt;/strong&gt;</translation>
+        <translation>Menonaktifkan penggunaan shader komputasi. Berguna untuk menguji driver grafis yang bermasalah. &lt;strong&gt;Hanya untuk penggunaan pengembang.&lt;/strong&gt;</translation>
     </message>
     <message>
         <source>Disables the use of compressed textures. Useful for testing broken graphics drivers. &lt;strong&gt;Only for developer use.&lt;/strong&gt;</source>
-        <translation>Menonaktifkan the use of compressed textures. Useful untuk testing broken graphics drivers. &lt;strong&gt;Hanya untuk developer use.&lt;/strong&gt;</translation>
+        <translation>Menonaktifkan penggunaan tekstur terkompresi. Berguna untuk menguji driver grafis yang bermasalah. &lt;strong&gt;Hanya untuk penggunaan pengembang.&lt;/strong&gt;</translation>
     </message>
     <message>
         <source>%1 [Unavailable]</source>
@@ -10729,7 +10729,7 @@ Pemindaian rekursif akan membuat proses pencarian menjadi lebih lama, namun dapa
     </message>
     <message>
         <source>PGXP is not enabled. Increasing the resolution without enabling PGXP will result in visible polygon glitches.</source>
-        <translation>PGXP adalah not enabled. Increasing the resolution tanpa enabling PGXP akan result in visible polygon glitches.</translation>
+        <translation>PGXP tidak diaktifkan. Meningkatkan resolusi tanpa mengaktifkan PGXP akan menyebabkan glitch poligon yang terlihat.</translation>
     </message>
     <message>
         <source>Automatic (Based on Window Size)</source>
@@ -10761,7 +10761,7 @@ Pemindaian rekursif akan membuat proses pencarian menjadi lebih lama, namun dapa
     </message>
     <message>
         <source>&lt;h3&gt;Changing the renderer is not recommended!&lt;/h3&gt;&lt;p&gt;The &lt;strong&gt;Automatic&lt;/strong&gt; option provides the best experience, selecting the optimal renderer for your graphics adapter. There is &lt;strong&gt;no visual or performance advantage&lt;/strong&gt; to using a different renderer, and you risk the application breaking due to driver bugs.&lt;br&gt;&lt;br&gt;If you continue with changing the renderer, &lt;strong&gt;do not ask for support&lt;/strong&gt;.&lt;br&gt;&lt;br&gt;Are you sure you want to change the renderer?&lt;/p&gt;</source>
-        <translation>&lt;h3&gt;Changing the renderer adalah not recommended!&lt;/h3&gt;&lt;p&gt;The &lt;strong&gt;Otomatis&lt;/strong&gt; option provides the best experience, selecting the optimal renderer untuk your graphics adapter. There adalah &lt;strong&gt;no visual atau performance advantage&lt;/strong&gt; ke using a different renderer, dan you risk the application breaking due ke driver bugs.&lt;br&gt;&lt;br&gt;If you continue dengan changing the renderer, &lt;strong&gt;do not ask untuk support&lt;/strong&gt;.&lt;br&gt;&lt;br&gt;Are you sure you want ke change the renderer?&lt;/p&gt;</translation>
+        <translation>&lt;h3&gt;Mengubah renderer tidak disarankan!&lt;/h3&gt;&lt;p&gt;Opsi &lt;strong&gt;Otomatis&lt;/strong&gt; memberikan pengalaman terbaik dengan memilih renderer optimal untuk adaptor grafis Anda. Tidak ada &lt;strong&gt;keuntungan visual atau performa&lt;/strong&gt; dalam menggunakan renderer yang berbeda, dan aplikasi berisiko berhenti berfungsi akibat bug driver.&lt;br&gt;&lt;br&gt;Jika Anda tetap mengubah renderer, &lt;strong&gt;jangan minta dukungan&lt;/strong&gt;.&lt;br&gt;&lt;br&gt;Apakah Anda yakin ingin mengubah renderer?&lt;/p&gt;</translation>
     </message>
     <message>
         <source>Rendering</source>
@@ -10889,7 +10889,7 @@ Pemindaian rekursif akan membuat proses pencarian menjadi lebih lama, namun dapa
     </message>
     <message>
         <source>Directory to load replacement textures from, and save dumps to.</source>
-        <translation>Direktori ke load replacement textures from, dan save dumps to.</translation>
+        <translation>Direktori untuk memuat tekstur pengganti dan menyimpan dump.</translation>
     </message>
     <message>
         <source>Reset</source>
@@ -11085,7 +11085,7 @@ Pemindaian rekursif akan membuat proses pencarian menjadi lebih lama, namun dapa
     </message>
     <message>
         <source>Disable Texture Copy To Self</source>
-        <translation>Nonaktifkan Tekstur Copy To Self</translation>
+        <translation>Nonaktifkan Penyalinan Tekstur ke Diri Sendiri</translation>
     </message>
     <message>
         <source>Disable Memory Import</source>
@@ -11908,7 +11908,7 @@ Shift-click ke set multiple bindings.</translation>
     </message>
     <message>
         <source>&lt;strong&gt;%1&lt;/strong&gt;&lt;br&gt;Select the device and effect to map this bind to.</source>
-        <translation>&lt;strong&gt;%1&lt;/strong&gt;&lt;br&gt;Select the device dan effect ke map this bind to.</translation>
+        <translation>&lt;strong&gt;%1&lt;/strong&gt;&lt;br&gt;Pilih perangkat dan efek yang akan dipetakan ke binding ini.</translation>
     </message>
 </context>
 <context>
@@ -12086,7 +12086,7 @@ Shift-click ke set multiple bindings.</translation>
     </message>
     <message>
         <source>Renders the display of the simulated console to the main window of the application, over the game list. If checked, the display will render in a separate window.</source>
-        <translation>Renders the display of the simulated console ke the main window of the application, over the game list. If checked, the display akan render in a separate window.</translation>
+        <translation>Merender tampilan konsol yang disimulasikan ke jendela utama aplikasi, di atas daftar game. Jika dicentang, tampilan akan dirender di jendela terpisah.</translation>
     </message>
     <message>
         <source>Automatically checks for updates to the program on startup. Updates can be deferred until later or skipped entirely.</source>
@@ -12106,7 +12106,7 @@ Shift-click ke set multiple bindings.</translation>
     </message>
     <message>
         <source>Uses the system font for the interface, instead of the bundled Roboto font. Enabling this option may cause some UI elements to not fit within windows.</source>
-        <translation>Menggunakan the system font untuk the interface, instead of the bundled Roboke font. Enabling this option mungkin cause some UI elements ke not fit within windows.</translation>
+        <translation>Menggunakan font sistem untuk antarmuka, bukan font Roboto bawaan. Mengaktifkan opsi ini dapat menyebabkan beberapa elemen UI tidak muat dalam jendela.</translation>
     </message>
     <message>
         <source>Disable Style Sheets</source>
@@ -12114,7 +12114,7 @@ Shift-click ke set multiple bindings.</translation>
     </message>
     <message>
         <source>Disables the use of style sheets in the application, reverting to the original &apos;Fusion&apos; style but retaining the color scheme.</source>
-        <translation>Menonaktifkan the use of style sheets in the application, reverting ke the original &apos;Fusion&apos; style but retaining the color scheme.</translation>
+        <translation>Menonaktifkan penggunaan lembar gaya dalam aplikasi, mengembalikannya ke gaya "Fusion" asli dengan tetap mempertahankan skema warna.</translation>
     </message>
     <message>
         <source>%1 (%2)</source>
@@ -12142,11 +12142,11 @@ Shift-click ke set multiple bindings.</translation>
     </message>
     <message>
         <source>Hides the main window of the application while the game is displayed in a separate window.</source>
-        <translation>Hides the main window of the application while the game adalah displayed in a separate window.</translation>
+        <translation>Menyembunyikan jendela utama aplikasi saat game ditampilkan di jendela terpisah.</translation>
     </message>
     <message>
         <source>Displays the log in the main window of the application while a game is running.</source>
-        <translation>Tampilans the log in the main window of the application while a game adalah running.</translation>
+        <translation>Menampilkan log di jendela utama aplikasi saat game sedang berjalan.</translation>
     </message>
     <message>
         <source>Prevents resizing of the window while a game is running.</source>
@@ -12154,15 +12154,15 @@ Shift-click ke set multiple bindings.</translation>
     </message>
     <message>
         <source>Automatically resizes the window to match the internal resolution. &lt;strong&gt;For high internal resolutions, this will create very large windows.&lt;/strong&gt;</source>
-        <translation>Otomatisally resizes the window ke match the internal resolution. &lt;strong&gt;For high internal resolutions, this akan create very large windows.&lt;/strong&gt;</translation>
+        <translation>Mengubah ukuran jendela secara otomatis agar sesuai dengan resolusi internal. &lt;strong&gt;Untuk resolusi internal tinggi, ini akan membuat jendela yang sangat besar.&lt;/strong&gt;</translation>
     </message>
     <message>
         <source>Disables the rounding of windows automatically applied in Windows 11, which may obscure parts of the content.</source>
-        <translation>Menonaktifkan the rounding of windows automatically applied in Jendelas 11, which mungkin obscure parts of the content.</translation>
+        <translation>Menonaktifkan pembulatan jendela yang diterapkan secara otomatis di Windows 11, yang dapat mengaburkan sebagian konten.</translation>
     </message>
     <message>
         <source>Calculates the true scaling factor for your display, avoiding the downsampling applied by MacOS.</source>
-        <translation>Calculates the true scaling factor untuk your display, avoiding the downsampling applied by MacOS.</translation>
+        <translation>Menghitung faktor penskalaan sebenarnya untuk layar Anda, dengan menghindari penurunan skala yang diterapkan oleh MacOS.</translation>
     </message>
     <message>
         <source>Language</source>
@@ -12174,7 +12174,7 @@ Shift-click ke set multiple bindings.</translation>
     </message>
     <message>
         <source>Selects the language for the application. Please note that not all parts of the application may be translated for a given language.</source>
-        <translation>Memilih language untuk the application. Please note that not all parts of the application mungkin be translated untuk a given language.</translation>
+        <translation>Memilih bahasa untuk aplikasi. Harap diperhatikan bahwa tidak semua bagian aplikasi mungkin telah diterjemahkan untuk bahasa tertentu.</translation>
     </message>
     <message>
         <source>Theme</source>
@@ -12182,7 +12182,7 @@ Shift-click ke set multiple bindings.</translation>
     </message>
     <message>
         <source>Selects the theme for the application.</source>
-        <translation>Memilih theme untuk the application.</translation>
+        <translation>Memilih tema untuk aplikasi.</translation>
     </message>
     <message>
         <source>Update Channel</source>
@@ -12190,7 +12190,7 @@ Shift-click ke set multiple bindings.</translation>
     </message>
     <message>
         <source>Selects the channel that will be checked for updates to the application. The &lt;strong&gt;preview&lt;/strong&gt; channel contains the latest changes, and may be unstable. The &lt;strong&gt;latest&lt;/strong&gt; channel tracks the latest release.</source>
-        <translation>Memilih channel that akan be checked untuk updates ke the application. The &lt;strong&gt;preview&lt;/strong&gt; channel contains the latest changes, dan mungkin be unstable. The &lt;strong&gt;latest&lt;/strong&gt; channel tracks the latest release.</translation>
+        <translation>Memilih kanal yang akan diperiksa untuk pembaruan aplikasi. Kanal &lt;strong&gt;preview&lt;/strong&gt; berisi perubahan terbaru dan mungkin tidak stabil. Kanal &lt;strong&gt;latest&lt;/strong&gt; mengikuti rilis terbaru.</translation>
     </message>
     <message>
         <source>Unchecked</source>
@@ -12299,7 +12299,7 @@ Shift-click ke set multiple bindings.</translation>
     </message>
     <message>
         <source>Mode LED</source>
-        <translation>LED Mode</translation>
+        <translation>Mode LED</translation>
     </message>
     <message>
         <source>Vibration Motor</source>
@@ -12462,7 +12462,7 @@ Shift-click ke set multiple bindings.</translation>
     <message>
         <source>Dropped %1 log messages, please use file or system console logging.
 </source>
-        <translation>Dropped %1 log messages, please use file atau system console logging.
+        <translation>Sebanyak %1 pesan log dibuang, silakan gunakan pencatatan ke file atau konsol sistem.
 </translation>
     </message>
 </context>
@@ -13038,7 +13038,7 @@ Shift-click ke set multiple bindings.</translation>
     </message>
     <message>
         <source>Invalidates the cache of game covers, allowing new images to be discovered.</source>
-        <translation>Invalidates the cache of game covers, allowing new images ke be discovered.</translation>
+        <translation>Membatalkan cache sampul game, sehingga gambar baru dapat ditemukan.</translation>
     </message>
     <message>
         <source>Opens the directory containing application data in your file browser.</source>
@@ -13046,7 +13046,7 @@ Shift-click ke set multiple bindings.</translation>
     </message>
     <message>
         <source>Close Game &amp;Without Saving</source>
-        <translation>Tutup Game &amp;Without Saving</translation>
+        <translation>Tutup Game &amp;Tanpa Menyimpan</translation>
     </message>
     <message>
         <source>Close (No Save)</source>
@@ -13058,7 +13058,7 @@ Shift-click ke set multiple bindings.</translation>
     </message>
     <message>
         <source>Opens or closes the controller-based &quot;big picture&quot; mode.</source>
-        <translation>Bukas atau closes the controller-based &quot;big picture&quot; mode.</translation>
+        <translation>Membuka atau menutup mode "big picture" berbasis kontroler.</translation>
     </message>
     <message>
         <source>Opens the cover downloader window.</source>
@@ -13398,7 +13398,7 @@ Shift-click ke set multiple bindings.</translation>
     </message>
     <message>
         <source>&amp;Memory Cards</source>
-        <translation>&amp;Memory Card</translation>
+        <translation>&amp;Kartu Memori</translation>
     </message>
     <message>
         <source>&amp;Toolbar</source>
@@ -13478,7 +13478,7 @@ Shift-click ke set multiple bindings.</translation>
     </message>
     <message>
         <source>Images (*.jpg *.jpeg *.png *.webp)</source>
-        <translation>Images (*.jpg *.jpeg *.png *.webp)</translation>
+        <translation>Gambar (*.jpg *.jpeg *.png *.webp)</translation>
     </message>
     <message>
         <source>Could not find any CD-ROM devices. Please ensure you have a CD-ROM drive connected and sufficient permissions to access it.</source>
@@ -13498,11 +13498,11 @@ Shift-click ke set multiple bindings.</translation>
     </message>
     <message>
         <source>Edit Memory Cards...</source>
-        <translation>&amp;Memory Card</translation>
+        <translation>Edit Kartu Memori...</translation>
     </message>
     <message>
         <source>Delete Save States</source>
-        <translation>Pilih File Save State</translation>
+        <translation>Hapus Status Simpanan</translation>
     </message>
     <message>
         <source>Confirm Save State Deletion</source>
@@ -13510,7 +13510,7 @@ Shift-click ke set multiple bindings.</translation>
     </message>
     <message>
         <source>Save States (*.sav)</source>
-        <translation>Save States (*.sav)</translation>
+        <translation>Status Simpanan (*.sav)</translation>
     </message>
     <message>
         <source>Undo Load State (%1)</source>
@@ -13634,11 +13634,11 @@ Shift-click ke set multiple bindings.</translation>
     </message>
     <message>
         <source>Binary Files (*.bin)</source>
-        <translation>Binary Berkass (*.bin)</translation>
+        <translation>Berkas Biner (*.bin)</translation>
     </message>
     <message>
         <source>Binary Files (*.bin);;PNG Images (*.png)</source>
-        <translation>Binary Berkass (*.bin);;PNG Images (*.png)</translation>
+        <translation>Berkas Biner (*.bin);;Gambar PNG (*.png)</translation>
     </message>
     <message>
         <source>Select Background Image</source>
@@ -13646,19 +13646,19 @@ Shift-click ke set multiple bindings.</translation>
     </message>
     <message>
         <source>Confirm Exit</source>
-        <translation>Konfirmasi Reset</translation>
+        <translation>Konfirmasi Keluar</translation>
     </message>
     <message>
         <source>Confirm Close</source>
-        <translation>Konfirmasi Reset</translation>
+        <translation>Konfirmasi Penutupan</translation>
     </message>
     <message>
         <source>Are you sure you want to exit the application?</source>
-        <translation>Are you sure you want ke exit the application?</translation>
+        <translation>Apakah Anda yakin ingin keluar dari aplikasi?</translation>
     </message>
     <message>
         <source>Are you sure you want to close the current game?</source>
-        <translation>Are you sure you want ke close the current game?</translation>
+        <translation>Apakah Anda yakin ingin menutup game saat ini?</translation>
     </message>
     <message>
         <source>Memory Card Not Found</source>
@@ -13666,15 +13666,15 @@ Shift-click ke set multiple bindings.</translation>
     </message>
     <message>
         <source>Memory card &apos;%1&apos; does not exist. Do you want to create an empty memory card?</source>
-        <translation>Memory card &apos;%1&apos; does not exist. Do you want ke create an empty memory card?</translation>
+        <translation>Kartu memori '%1' tidak ada. Apakah Anda ingin membuat kartu memori kosong?</translation>
     </message>
     <message>
         <source>Failed to create memory card &apos;%1&apos;: %2</source>
-        <translation>Failed ke create memory card &apos;%1&apos;: %2</translation>
+        <translation>Gagal membuat kartu memori '%1': %2</translation>
     </message>
     <message>
         <source>Memory card &apos;%1&apos; could not be found. Try starting the game and saving to create it.</source>
-        <translation>Memory card &apos;%1&apos; could not be found. Try starting the game dan saving ke create it.</translation>
+        <translation>Kartu memori '%1' tidak dapat ditemukan. Coba mulai game dan simpan untuk membuatnya.</translation>
     </message>
     <message>
         <source>RA: Updated achievement progress database.</source>
@@ -13686,7 +13686,7 @@ Shift-click ke set multiple bindings.</translation>
     </message>
     <message>
         <source>Paused</source>
-        <translation>Pause</translation>
+        <translation>Dijeda</translation>
     </message>
     <message>
         <source>Stop Big Picture Mode</source>
@@ -13730,7 +13730,7 @@ Shift-click ke set multiple bindings.</translation>
     </message>
     <message>
         <source>All File Types (*.bin *.img *.iso *.cue *.chd *.cpe *.ecm *.mds *.pbp *.ccd *.elf *.exe *.psexe *.ps-exe *.psx *.psf *.minipsf *.m3u *.psxgpu);;Single-Track Raw Images (*.bin *.img *.iso);;Cue Sheets (*.cue);;MAME CHD Images (*.chd);;Error Code Modeler Images (*.ecm);;Media Descriptor Sidecar Images (*.mds);;CloneCD Images (*.ccd);;PlayStation EBOOTs (*.pbp *.PBP);;PlayStation Executables (*.cpe *.elf *.exe *.psexe *.ps-exe, *.psx);;Portable Sound Format Files (*.psf *.minipsf);;Playlists (*.m3u);;PSX GPU Dumps (*.psxgpu *.psxgpu.zst *.psxgpu.xz)</source>
-        <translation>All Berkas Types (*.bin *.img *.iso *.cue *.chd *.cpe *.ecm *.mds *.pbp *.ccd *.elf *.exe *.psexe *.ps-exe *.psx *.psf *.minipsf *.m3u *.psxgpu);;Single-Track Raw Images (*.bin *.img *.iso);;Cue Sheets (*.cue);;MAME CHD Images (*.chd);;Kesalahan Code Modeler Images (*.ecm);;Media Descriptor Sidecar Images (*.mds);;CloneCD Images (*.ccd);;PlayStation EBOOTs (*.pbp *.PBP);;PlayStation Executables (*.cpe *.elf *.exe *.psexe *.ps-exe, *.psx);;Portable Sound Format Berkass (*.psf *.minipsf);;Playlists (*.m3u);;PSX GPU Mendump (*.psxgpu *.psxgpu.zst *.psxgpu.xz)</translation>
+        <translation>Semua Jenis Berkas (*.bin *.img *.iso *.cue *.chd *.cpe *.ecm *.mds *.pbp *.ccd *.elf *.exe *.psexe *.ps-exe *.psx *.psf *.minipsf *.m3u *.psxgpu);;Citra Mentah Satu Trek (*.bin *.img *.iso);;Lembar Cue (*.cue);;Citra MAME CHD (*.chd);;Citra Error Code Modeler (*.ecm);;Citra Sidecar Media Descriptor (*.mds);;Citra CloneCD (*.ccd);;EBOOT PlayStation (*.pbp *.PBP);;Program PlayStation (*.cpe *.elf *.exe *.psexe *.ps-exe, *.psx);;Berkas Portable Sound Format (*.psf *.minipsf);;Daftar Putar (*.m3u);;Dump GPU PSX (*.psxgpu *.psxgpu.zst *.psxgpu.xz)</translation>
     </message>
     <message>
         <source>A resume save state was found for this game, but it is corrupted and cannot be loaded:
@@ -13738,15 +13738,15 @@ Shift-click ke set multiple bindings.</translation>
 %1
 
 Do you want to delete the save state and boot the game anyway?</source>
-        <translation>A resume save state was found untuk this game, but it is corrupted dan cannot be loaded:
+        <translation>Status simpanan untuk melanjutkan permainan ditemukan, tetapi rusak dan tidak dapat dimuat:
 
 %1
 
-Do you want ke delete the save state dan boot the game anyway?</translation>
+Apakah Anda ingin menghapus status simpanan tersebut dan tetap menjalankan game?</translation>
     </message>
     <message>
         <source>&lt;strong&gt;Resume Game&lt;/strong&gt;&lt;br&gt;Do you want to load this state, or start from a fresh boot?</source>
-        <translation>&lt;strong&gt;Resume Game&lt;/strong&gt;&lt;br&gt;Do you want ke load this state, atau start dari a fresh boot?</translation>
+        <translation>&lt;strong&gt;Lanjutkan Game&lt;/strong&gt;&lt;br&gt;Apakah Anda ingin memuat status ini atau memulai dari awal?</translation>
     </message>
     <message>
         <source>Save was created on %1.</source>
@@ -13754,7 +13754,7 @@ Do you want ke delete the save state dan boot the game anyway?</translation>
     </message>
     <message>
         <source>Do you want to swap discs or boot the new image via system restart?</source>
-        <translation>Do you want ke swap discs atau boot the new image via system restart?</translation>
+        <translation>Apakah Anda ingin menukar disk atau menjalankan citra baru melalui mulai ulang sistem?</translation>
     </message>
     <message>
         <source>No resume save state found.</source>
@@ -14118,7 +14118,7 @@ Kesalahan: {1}</translation>
     <name>MemoryCardEditorDialog</name>
     <message>
         <source>Memory Card Editor</source>
-        <translation>Editor Memory Card</translation>
+        <translation>Editor Kartu Memori</translation>
     </message>
     <message>
         <source>Icon</source>
@@ -14138,7 +14138,7 @@ Kesalahan: {1}</translation>
     </message>
     <message>
         <source>Memory Card 2:</source>
-        <translation>Editor Memory Card</translation>
+        <translation>Kartu Memori 2:</translation>
     </message>
     <message>
         <source>Card Modified</source>
@@ -14146,7 +14146,7 @@ Kesalahan: {1}</translation>
     </message>
     <message>
         <source>Memory Card 1:</source>
-        <translation>Editor Memory Card</translation>
+        <translation>Kartu Memori 1:</translation>
     </message>
     <message>
         <source>New...</source>
@@ -14161,23 +14161,23 @@ Kesalahan: {1}</translation>
     <name>MemoryCardEditorWindow</name>
     <message>
         <source>DuckStation Memory Card (*.mcd)</source>
-        <translation>DuckStation Memory Card (*.mcd)</translation>
+        <translation>Kartu Memori DuckStation (*.mcd)</translation>
     </message>
     <message>
         <source>All Importable Memory Card Types (*.mcd *.mcr *.mc *.gme *.srm *.psm *.ps *.ddf *.mem *.vgs *.psx)</source>
-        <translation>All Importable Memory Card Types (*.mcd *.mcr *.mc *.gme *.srm *.psm *.ps *.ddf *.mem *.vgs *.psx)</translation>
+        <translation>Semua Jenis Kartu Memori yang Dapat Diimpor (*.mcd *.mcr *.mc *.gme *.srm *.psm *.ps *.ddf *.mem *.vgs *.psx)</translation>
     </message>
     <message>
         <source>Single Save Files (*.mcs);;All Files (*.*)</source>
-        <translation>Single Save Berkass (*.mcs);;All Berkass (*.*)</translation>
+        <translation>Berkas Simpanan Tunggal (*.mcs);;Semua Berkas (*.*)</translation>
     </message>
     <message>
         <source>PNG Images (*.png);;JPEG Images (*.jpg *.jpeg);;WebP Images (*.webp)</source>
-        <translation>PNG Images (*.png);;JPEG Images (*.jpg *.jpeg);;WebP Images (*.webp)</translation>
+        <translation>Gambar PNG (*.png);;Gambar JPEG (*.jpg *.jpeg);;Gambar WebP (*.webp)</translation>
     </message>
     <message>
         <source>Animated PNG Images (*.png)</source>
-        <translation>Animated PNG Images (*.png)</translation>
+        <translation>Gambar PNG Animasi (*.png)</translation>
     </message>
     <message>
         <source>Delete File</source>
@@ -14206,13 +14206,13 @@ Kesalahan: {1}</translation>
     <message>
         <source>Failed to extract icon from save file %1:
 %2</source>
-        <translation>Failed ke extract icon dari save file %1:
+        <translation>Gagal mengekstrak ikon dari berkas simpanan %1:
 %2</translation>
     </message>
     <message>
         <source>Failed to extract animated icon from save file %1:
 %2</source>
-        <translation>Failed ke extract animated icon dari save file %1:
+        <translation>Gagal mengekstrak ikon animasi dari berkas simpanan %1:
 %2</translation>
     </message>
     <message>
@@ -14363,7 +14363,7 @@ Kesalahan: {1}</translation>
     <name>MemoryCardSettingsWidget</name>
     <message>
         <source>All Memory Card Types (*.mcd *.mcr *.mc)</source>
-        <translation>All Memory Card Types (*.mcd *.mcr *.mc)</translation>
+        <translation>Semua Jenis Kartu Memori (*.mcd *.mcr *.mc)</translation>
     </message>
     <message>
         <source>Browse...</source>
@@ -17448,7 +17448,7 @@ Apakah Anda ingin membuat direktori ini?</translation>
     </message>
     <message>
         <source>Memory Cards</source>
-        <translation>Memory Card</translation>
+        <translation>Kartu Memori</translation>
     </message>
     <message>
         <source>Achievements</source>
