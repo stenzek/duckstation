@@ -17671,6 +17671,14 @@ Apakah Anda ingin melanjutkan?</translation>
         <translation>Aktifkan Pembaruan Otomatis</translation>
     </message>
     <message>
+        <source>Advanced Settings</source>
+        <translation>Pengaturan Lanjutan</translation>
+    </message>
+    <message>
+        <source>BIOS Directory:</source>
+        <translation>Direktori BIOS:</translation>
+    </message>
+    <message>
         <source>NTSC-J (Japan):</source>
         <translation>NTSC-J (Jepang):</translation>
     </message>
@@ -17890,18 +17898,6 @@ Anda dapat mengubah opsi ini nanti dengan menggunakan bilah alat dalam Mode Desk
     <message>
         <source>Install BIOS...</source>
         <translation>Pasang BIOS...</translation>
-    </message>
-    <message>
-        <source>BIOS Directory</source>
-        <translation>Direktori BIOS</translation>
-    </message>
-    <message>
-        <source>DuckStation will search for BIOS images in this directory.</source>
-        <translation>DuckStation akan mencari image BIOS dalam direktori ini.</translation>
-    </message>
-    <message>
-        <source>BIOS Selection</source>
-        <translation>Pilihan BIOS</translation>
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DuckStation will automatically scan and identify games from the selected directories below, and populate the game list. These games should be dumped from discs you own. Utilities such as ImgBurn can be used to create images of game discs in .bin/.cue format.&lt;/p&gt;&lt;p&gt;Supported formats for dumps include: %1&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>

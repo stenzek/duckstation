@@ -17720,6 +17720,14 @@ Do you want to continue?</source>
         <translation>자동 업데이트 사용</translation>
     </message>
     <message>
+        <source>Advanced Settings</source>
+        <translation>고급 설정</translation>
+    </message>
+    <message>
+        <source>BIOS Directory:</source>
+        <translation>BIOS 디렉터리 :</translation>
+    </message>
+    <message>
         <source>Browse...</source>
         <translation>찾아보기...</translation>
     </message>
@@ -17778,18 +17786,6 @@ Do you want to continue?</source>
     <message>
         <source>Install BIOS...</source>
         <translation>바이오스 설치...</translation>
-    </message>
-    <message>
-        <source>BIOS Directory</source>
-        <translation>바이오스 디렉터리</translation>
-    </message>
-    <message>
-        <source>DuckStation will search for BIOS images in this directory.</source>
-        <translation>DuckStation은 이 디렉터리에서 바이오스 이미지를 검색합니다.</translation>
-    </message>
-    <message>
-        <source>BIOS Selection</source>
-        <translation>바이오스 선택</translation>
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DuckStation will automatically scan and identify games from the selected directories below, and populate the game list. These games should be dumped from discs you own. Utilities such as ImgBurn can be used to create images of game discs in .bin/.cue format.&lt;/p&gt;&lt;p&gt;Supported formats for dumps include: %1&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>

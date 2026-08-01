@@ -17700,18 +17700,6 @@ Möchten Sie fortfahren?</translation>
         <translation>BIOS installieren ...</translation>
     </message>
     <message>
-        <source>BIOS Directory</source>
-        <translation>BIOS-Verzeichnis</translation>
-    </message>
-    <message>
-        <source>DuckStation will search for BIOS images in this directory.</source>
-        <translation>DuckStation sucht in diesem Verzeichnis nach BIOS-Images.</translation>
-    </message>
-    <message>
-        <source>BIOS Selection</source>
-        <translation>BIOS-Auswahl</translation>
-    </message>
-    <message>
         <source>Refresh List</source>
         <translation>Liste aktualisieren</translation>
     </message>
@@ -17738,6 +17726,14 @@ Möchten Sie fortfahren?</translation>
     <message>
         <source>Controller Type:</source>
         <translation>Controllertyp:</translation>
+    </message>
+    <message>
+        <source>Advanced Settings</source>
+        <translation>Erweiterte Einstellungen</translation>
+    </message>
+    <message>
+        <source>BIOS Directory:</source>
+        <translation>BIOS-Verzeichnis:</translation>
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DuckStation will automatically scan and identify games from the selected directories below, and populate the game list. These games should be dumped from discs you own. Utilities such as ImgBurn can be used to create images of game discs in .bin/.cue format.&lt;/p&gt;&lt;p&gt;Supported formats for dumps include: %1&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>

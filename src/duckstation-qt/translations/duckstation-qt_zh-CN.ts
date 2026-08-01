@@ -17705,18 +17705,6 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>安装 BIOS……</translation>
     </message>
     <message>
-        <source>BIOS Directory</source>
-        <translation>BIOS目录</translation>
-    </message>
-    <message>
-        <source>DuckStation will search for BIOS images in this directory.</source>
-        <translation>DuckStation将在此目录中搜索BIOS文件。</translation>
-    </message>
-    <message>
-        <source>BIOS Selection</source>
-        <translation>BIOS选择</translation>
-    </message>
-    <message>
         <source>Default (Keyboard)</source>
         <translation>默认 (键盘)</translation>
     </message>
@@ -17807,6 +17795,14 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <source>View Selection</source>
         <translation>视图选择</translation>
+    </message>
+    <message>
+        <source>Advanced Settings</source>
+        <translation>高级设置</translation>
+    </message>
+    <message>
+        <source>BIOS Directory:</source>
+        <translation>BIOS目录:</translation>
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DuckStation will automatically scan and identify games from the selected directories below, and populate the game list. These games should be dumped from discs you own. Utilities such as ImgBurn can be used to create images of game discs in .bin/.cue format.&lt;/p&gt;&lt;p&gt;Supported formats for dumps include: %1&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>

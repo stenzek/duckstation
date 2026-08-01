@@ -17692,6 +17692,14 @@ Do you want to continue?</source>
         <translation>コントローラータイプ:</translation>
     </message>
     <message>
+        <source>Advanced Settings</source>
+        <translation>高度な設定</translation>
+    </message>
+    <message>
+        <source>BIOS Directory:</source>
+        <translation>BIOS ディレクトリ:</translation>
+    </message>
+    <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;By default, DuckStation will map your keyboard to the virtual controller. &lt;span style=&quot; font-weight:700;&quot;&gt;To use an external controller, you must map it first. &lt;/span&gt;On this screen, you can automatically map any controller which is currently connected. If your controller is not currently connected, you can plug it in now.&lt;/p&gt;&lt;p&gt;To change controller bindings in more detail, or use multi-tap, open the Settings menu and choose Controllers once you have completed the Setup Wizard.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;デフォルトでは、DuckStation はキーボードを仮想コントローラーに割り当てます。&lt;span style=&quot; font-weight:700;&quot;&gt;外部コントローラーを使用するには、最初に割り当てる必要があります。&lt;/span&gt;この画面では、現在接続されているコントローラーを自動的に割り当てられます。コントローラーが接続されていない場合は、ここで接続できます。&lt;/p&gt;&lt;p&gt;コントローラーの割り当てを詳しく変更したり、マルチタップを使用したりするには、セットアップウィザードの完了後に「設定」メニューを開き、「コントローラー」を選択してください。&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
@@ -17835,18 +17843,6 @@ Do you want to continue?</source>
     <message>
         <source>Install BIOS...</source>
         <translation>BIOSをインストール...</translation>
-    </message>
-    <message>
-        <source>BIOS Directory</source>
-        <translation>BIOS ディレクトリ</translation>
-    </message>
-    <message>
-        <source>DuckStation will search for BIOS images in this directory.</source>
-        <translation>DuckStation は、このディレクトリの BIOS イメージを検索します。</translation>
-    </message>
-    <message>
-        <source>BIOS Selection</source>
-        <translation>BIOS の選択</translation>
     </message>
     <message>
         <source>Login...</source>

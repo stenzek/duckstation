@@ -350,36 +350,18 @@
        <item>
         <widget class="CollapsibleWidget" name="biosDirectoryGroupBox">
          <property name="title">
-          <string>BIOS Directory</string>
+          <string>Advanced Settings</string>
          </property>
-         <layout class="QGridLayout" name="gridLayout_2">
-          <item row="0" column="0">
-           <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="1,0">
+         <layout class="QVBoxLayout" name="verticalLayout">
+          <item>
+           <layout class="QHBoxLayout" name="biosDirectoryLayout">
             <item>
-             <widget class="QLabel" name="directoryGroupBoxLabel">
+             <widget class="QLabel" name="biosDirectoryLabel">
               <property name="text">
-               <string>DuckStation will search for BIOS images in this directory.</string>
-              </property>
-              <property name="wordWrap">
-               <bool>true</bool>
+               <string>BIOS Directory:</string>
               </property>
              </widget>
             </item>
-            <item>
-             <widget class="QPushButton" name="openBiosSearchDirectory">
-              <property name="text">
-               <string>Open in Explorer...</string>
-              </property>
-              <property name="icon">
-               <iconset resource="resources/duckstation-qt.qrc">
-                <normaloff>:/icons/monochrome/svg/open-folder-line.svg</normaloff>:/icons/monochrome/svg/open-folder-line.svg</iconset>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
-          <item row="1" column="0">
-           <layout class="QHBoxLayout" name="horizontalLayout_4">
             <item>
              <widget class="QLineEdit" name="biosSearchDirectory"/>
             </item>
@@ -407,68 +389,63 @@
             </item>
            </layout>
           </item>
-         </layout>
-        </widget>
-       </item>
-       <item>
-        <widget class="CollapsibleWidget" name="biosSelectionBox">
-         <property name="title">
-          <string>BIOS Selection</string>
-         </property>
-         <layout class="QGridLayout" name="gridLayout" columnminimumwidth="175,0">
-          <item row="0" column="0">
-           <widget class="QLabel" name="imageNTSCJLabel">
-            <property name="text">
-             <string>NTSC-J (Japan):</string>
-            </property>
-           </widget>
+          <item>
+           <layout class="QGridLayout" name="biosImagesLayout" columnstretch="0,1" columnminimumwidth="175,0">
+            <item row="0" column="0">
+             <widget class="QLabel" name="imageNTSCJLabel">
+              <property name="text">
+               <string>NTSC-J (Japan):</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QComboBox" name="imageNTSCJ">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QLabel" name="imageNTSCULabel">
+              <property name="text">
+               <string>NTSC-U/C (US/Canada):</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QComboBox" name="imageNTSCU">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="0">
+             <widget class="QLabel" name="imagePALLabel">
+              <property name="text">
+               <string>PAL (Europe, Australia):</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="1">
+             <widget class="QComboBox" name="imagePAL">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+             </widget>
+            </item>
+           </layout>
           </item>
-          <item row="0" column="1">
-           <widget class="QComboBox" name="imageNTSCJ">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="0">
-           <widget class="QLabel" name="imageNTSCULabel">
-            <property name="text">
-             <string>NTSC-U/C (US/Canada):</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="1">
-           <widget class="QComboBox" name="imageNTSCU">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="0">
-           <widget class="QLabel" name="imagePALLabel">
-            <property name="text">
-             <string>PAL (Europe, Australia):</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="1">
-           <widget class="QComboBox" name="imagePAL">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="0" colspan="2">
-           <layout class="QHBoxLayout" name="biosSelectionActionLayout" stretch="1,0">
+          <item>
+           <layout class="QHBoxLayout" name="biosButtonsLayout">
             <item>
              <spacer name="biosButtonsSpacer">
               <property name="orientation">
@@ -481,6 +458,17 @@
                </size>
               </property>
              </spacer>
+            </item>
+            <item>
+             <widget class="QPushButton" name="openBiosSearchDirectory">
+              <property name="text">
+               <string>Open in Explorer...</string>
+              </property>
+              <property name="icon">
+               <iconset resource="resources/duckstation-qt.qrc">
+                <normaloff>:/icons/monochrome/svg/open-folder-line.svg</normaloff>:/icons/monochrome/svg/open-folder-line.svg</iconset>
+              </property>
+             </widget>
             </item>
             <item>
              <widget class="QPushButton" name="refreshBiosList">
@@ -505,8 +493,8 @@
          </property>
          <property name="sizeHint" stdset="0">
           <size>
-           <width>1</width>
-           <height>1</height>
+           <width>0</width>
+           <height>0</height>
           </size>
          </property>
         </spacer>

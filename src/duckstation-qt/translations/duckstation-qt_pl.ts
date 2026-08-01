@@ -17710,6 +17710,14 @@ Czy chcesz kontynuować?</translation>
         <translation>Włącz automatyczne aktualizacje</translation>
     </message>
     <message>
+        <source>Advanced Settings</source>
+        <translation>Zaawansowane ustawienia</translation>
+    </message>
+    <message>
+        <source>BIOS Directory:</source>
+        <translation>Katalog BIOS:</translation>
+    </message>
+    <message>
         <source>Browse...</source>
         <translation>Przeglądaj...</translation>
     </message>
@@ -17768,18 +17776,6 @@ Czy chcesz kontynuować?</translation>
     <message>
         <source>Install BIOS...</source>
         <translation>Zainstaluj BIOS...</translation>
-    </message>
-    <message>
-        <source>BIOS Directory</source>
-        <translation>Katalog BIOS</translation>
-    </message>
-    <message>
-        <source>DuckStation will search for BIOS images in this directory.</source>
-        <translation>DuckStation wyszuka obrazy BIOS w tym katalogu.</translation>
-    </message>
-    <message>
-        <source>BIOS Selection</source>
-        <translation>Wybór systemu BIOS</translation>
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DuckStation will automatically scan and identify games from the selected directories below, and populate the game list. These games should be dumped from discs you own. Utilities such as ImgBurn can be used to create images of game discs in .bin/.cue format.&lt;/p&gt;&lt;p&gt;Supported formats for dumps include: %1&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>

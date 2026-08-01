@@ -17691,18 +17691,6 @@ Voulez-vous continuer ?</translation>
         <translation>Installer le BIOS...</translation>
     </message>
     <message>
-        <source>BIOS Directory</source>
-        <translation>Répertoire du BIOS</translation>
-    </message>
-    <message>
-        <source>DuckStation will search for BIOS images in this directory.</source>
-        <translation>DuckStation recherchera les images BIOS dans ce répertoire.</translation>
-    </message>
-    <message>
-        <source>BIOS Selection</source>
-        <translation>Sélection du BIOS</translation>
-    </message>
-    <message>
         <source>Refresh List</source>
         <translation>Actualiser la liste</translation>
     </message>
@@ -17745,6 +17733,14 @@ Voulez-vous continuer ?</translation>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DuckStation will automatically scan and identify games from the selected directories below, and populate the game list. These games should be dumped from discs you own. Utilities such as ImgBurn can be used to create images of game discs in .bin/.cue format.&lt;/p&gt;&lt;p&gt;Supported formats for dumps include: %1&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DuckStation analysera automatiquement les jeux présents dans les répertoires sélectionnés ci-dessous et remplira la liste des jeux. Ces jeux doivent avoir été extraits de disques que vous possédez. Des utilitaires tels qu&apos;ImgBurn peuvent être utilisés pour créer des images de disques de jeux au format .bin/.cue.&lt;/p&gt;&lt;p&gt;Les formats d&apos;extraction pris en charge comprennent : %1&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+    </message>
+    <message>
+        <source>Advanced Settings</source>
+        <translation>Paramètres avancés</translation>
+    </message>
+    <message>
+        <source>BIOS Directory:</source>
+        <translation>Répertoire du BIOS</translation>
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;By default, DuckStation will map your keyboard to the virtual controller. &lt;span style=&quot; font-weight:700;&quot;&gt;To use an external controller, you must map it first. &lt;/span&gt;On this screen, you can automatically map any controller which is currently connected. If your controller is not currently connected, you can plug it in now.&lt;/p&gt;&lt;p&gt;To change controller bindings in more detail, or use multi-tap, open the Settings menu and choose Controllers once you have completed the Setup Wizard.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
