@@ -59,7 +59,8 @@ private:
 
   void languageChanged();
 
-  void refreshBiosList();
+  void refreshBIOSList();
+  void updateBIOSSummary();
 
   void onDirectoryListContextMenuRequested(const QPoint& point);
   void onAddSearchDirectoryButtonClicked();
