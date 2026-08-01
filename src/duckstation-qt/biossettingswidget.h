@@ -22,6 +22,7 @@ public:
   explicit BIOSSettingsWidget(SettingsWindow* dialog, QWidget* parent);
   ~BIOSSettingsWidget();
 
+  static bool installBIOS(QWidget* parent);
   static void populateDropDownForRegion(ConsoleRegion region, QComboBox* cb,
                                         std::vector<std::pair<std::string, const BIOS::ImageInfo*>>& images,
                                         bool per_game);

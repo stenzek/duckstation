@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>732</width>
-    <height>470</height>
+    <height>472</height>
    </rect>
   </property>
   <layout class="QVBoxLayout" name="mainLayout">
@@ -28,7 +28,7 @@
      <property name="title">
       <string>BIOS Selection</string>
      </property>
-     <layout class="QGridLayout" name="gridLayout">
+     <layout class="QGridLayout" name="gridLayout" columnminimumwidth="175,0">
       <item row="0" column="0">
        <widget class="QLabel" name="label">
         <property name="text">
@@ -46,6 +46,13 @@
         </property>
        </widget>
       </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="label_2">
+        <property name="text">
+         <string>NTSC-U/C (US/Canada):</string>
+        </property>
+       </widget>
+      </item>
       <item row="1" column="1">
        <widget class="QComboBox" name="imageNTSCU">
         <property name="sizePolicy">
@@ -53,13 +60,6 @@
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="label_2">
-        <property name="text">
-         <string>NTSC-U/C (US/Canada):</string>
         </property>
        </widget>
       </item>
@@ -100,21 +100,30 @@
        </widget>
       </item>
       <item row="0" column="2">
-       <widget class="QPushButton" name="rescan">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="toolTip">
-         <string>Refresh BIOS List</string>
-        </property>
-        <property name="icon">
-         <iconset resource="resources/duckstation-qt.qrc">
-          <normaloff>:/icons/monochrome/svg/refresh-line.svg</normaloff>:/icons/monochrome/svg/refresh-line.svg</iconset>
-        </property>
-       </widget>
+       <layout class="QHBoxLayout" name="horizontalLayout">
+        <item>
+         <widget class="QPushButton" name="install">
+          <property name="text">
+           <string>Install BIOS</string>
+          </property>
+          <property name="icon">
+           <iconset resource="resources/duckstation-qt.qrc">
+            <normaloff>:/icons/monochrome/svg/file-add-line.svg</normaloff>:/icons/monochrome/svg/file-add-line.svg</iconset>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="rescan">
+          <property name="text">
+           <string>Refresh List</string>
+          </property>
+          <property name="icon">
+           <iconset resource="resources/duckstation-qt.qrc">
+            <normaloff>:/icons/monochrome/svg/refresh-line.svg</normaloff>:/icons/monochrome/svg/refresh-line.svg</iconset>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </item>
       <item row="1" column="0" colspan="3">
        <layout class="QHBoxLayout" name="directoryGroupBoxHorizontalLayout">

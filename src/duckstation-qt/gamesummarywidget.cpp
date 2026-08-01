@@ -626,12 +626,12 @@ void GameSummaryWidget::processHashResults(const GameDatabase::TrackVerification
     if (verification.track_matches[i])
     {
       brush = QColor(0, 200, 0);
-      row->setText(5, QString::fromUtf8(u8"\u2713"));
+      row->setText(5, u"\u2713"_s);
     }
     else
     {
       brush = QColor(200, 0, 0);
-      row->setText(5, QString::fromUtf8(u8"\u2715"));
+      row->setText(5, u"\u2715"_s);
     }
     row->setForeground(4, brush);
     row->setForeground(5, brush);

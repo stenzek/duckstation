@@ -314,7 +314,7 @@
        <item>
         <widget class="QLabel" name="biosDescription">
          <property name="text">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DuckStation requires a PS1 or PS2 BIOS in order to run.&lt;/p&gt;&lt;p&gt;For legal reasons, you must obtain a BIOS &lt;span style=&quot; font-weight:700;&quot;&gt;from an actual PS1 unit that you own&lt;/span&gt; (borrowing doesn't count). You should use Caetla or another utility to create an image from your console's BIOS ROM on your PC.&lt;/p&gt;&lt;p&gt;Once dumped, this BIOS image should be placed in the bios folder within the data directory shown below, or you can instruct DuckStation to scan an alternative directory.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DuckStation requires a PS1 or PS2 BIOS in order to run.&lt;/p&gt;&lt;p&gt;For legal reasons, you must obtain a BIOS &lt;span style=&quot; font-weight:700;&quot;&gt;from an actual PS1/PS2 unit that you own&lt;/span&gt; (borrowing doesn't count). You should use Caetla or another utility to create an image from your console's BIOS ROM on your PC.&lt;/p&gt;&lt;p&gt;Once you have dumped the BIOS from your console, you can click the &amp;quot;Install BIOS&amp;quot; button below to add this image to DuckStation.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="alignment">
           <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
@@ -325,134 +325,178 @@
         </widget>
        </item>
        <item>
-        <layout class="QHBoxLayout" name="biosDirectoryLayout">
-         <item>
-          <widget class="QLabel" name="biosDirectoryLabel">
-           <property name="text">
-            <string>BIOS Directory:</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QLineEdit" name="biosSearchDirectory"/>
-         </item>
-         <item>
-          <widget class="QPushButton" name="browseBiosSearchDirectory">
-           <property name="text">
-            <string>Browse...</string>
-           </property>
-           <property name="icon">
-            <iconset resource="resources/duckstation-qt.qrc">
-             <normaloff>:/icons/monochrome/svg/folder-open-line.svg</normaloff>:/icons/monochrome/svg/folder-open-line.svg</iconset>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QPushButton" name="resetBiosSearchDirectory">
-           <property name="text">
-            <string>Reset</string>
-           </property>
-           <property name="icon">
-            <iconset resource="resources/duckstation-qt.qrc">
-             <normaloff>:/icons/monochrome/svg/delete-back-2-line.svg</normaloff>:/icons/monochrome/svg/delete-back-2-line.svg</iconset>
-           </property>
-          </widget>
-         </item>
-        </layout>
+        <widget class="QGroupBox" name="groupBox">
+         <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,1,0">
+          <item>
+           <widget class="QLabel" name="biosSummaryIcon"/>
+          </item>
+          <item>
+           <widget class="QLabel" name="biosSummary"/>
+          </item>
+          <item>
+           <widget class="QPushButton" name="installBios">
+            <property name="text">
+             <string>Install BIOS...</string>
+            </property>
+            <property name="icon">
+             <iconset resource="resources/duckstation-qt.qrc">
+              <normaloff>:/icons/monochrome/svg/file-add-line.svg</normaloff>:/icons/monochrome/svg/file-add-line.svg</iconset>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
        </item>
        <item>
-        <layout class="QGridLayout" name="biosImagesLayout" columnstretch="0,1">
-         <item row="0" column="0">
-          <widget class="QLabel" name="imageNTSCJLabel">
-           <property name="text">
-            <string>NTSC-J (Japan):</string>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="1">
-          <widget class="QComboBox" name="imageNTSCJ">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="0">
-          <widget class="QLabel" name="imageNTSCULabel">
-           <property name="text">
-            <string>NTSC-U/C (US/Canada):</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="1">
-          <widget class="QComboBox" name="imageNTSCU">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="0">
-          <widget class="QLabel" name="imagePALLabel">
-           <property name="text">
-            <string>PAL (Europe, Australia):</string>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="1">
-          <widget class="QComboBox" name="imagePAL">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-          </widget>
-         </item>
-        </layout>
+        <widget class="CollapsibleWidget" name="biosDirectoryGroupBox">
+         <property name="title">
+          <string>BIOS Directory</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_2">
+          <item row="0" column="0">
+           <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="1,0">
+            <item>
+             <widget class="QLabel" name="directoryGroupBoxLabel">
+              <property name="text">
+               <string>DuckStation will search for BIOS images in this directory.</string>
+              </property>
+              <property name="wordWrap">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="openBiosSearchDirectory">
+              <property name="text">
+               <string>Open in Explorer...</string>
+              </property>
+              <property name="icon">
+               <iconset resource="resources/duckstation-qt.qrc">
+                <normaloff>:/icons/monochrome/svg/open-folder-line.svg</normaloff>:/icons/monochrome/svg/open-folder-line.svg</iconset>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item row="1" column="0">
+           <layout class="QHBoxLayout" name="horizontalLayout_4">
+            <item>
+             <widget class="QLineEdit" name="biosSearchDirectory"/>
+            </item>
+            <item>
+             <widget class="QPushButton" name="browseBiosSearchDirectory">
+              <property name="text">
+               <string>Browse...</string>
+              </property>
+              <property name="icon">
+               <iconset resource="resources/duckstation-qt.qrc">
+                <normaloff>:/icons/monochrome/svg/folder-open-line.svg</normaloff>:/icons/monochrome/svg/folder-open-line.svg</iconset>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="resetBiosSearchDirectory">
+              <property name="text">
+               <string>Reset</string>
+              </property>
+              <property name="icon">
+               <iconset resource="resources/duckstation-qt.qrc">
+                <normaloff>:/icons/monochrome/svg/delete-back-2-line.svg</normaloff>:/icons/monochrome/svg/delete-back-2-line.svg</iconset>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </widget>
        </item>
        <item>
-        <layout class="QHBoxLayout" name="biosButtonsLayout">
-         <item>
-          <spacer name="biosButtonsSpacer">
-           <property name="orientation">
-            <enum>Qt::Orientation::Horizontal</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>0</width>
-             <height>0</height>
-            </size>
-           </property>
-          </spacer>
-         </item>
-         <item>
-          <widget class="QPushButton" name="openBiosSearchDirectory">
-           <property name="text">
-            <string>Open in Explorer...</string>
-           </property>
-           <property name="icon">
-            <iconset resource="resources/duckstation-qt.qrc">
-             <normaloff>:/icons/monochrome/svg/open-folder-line.svg</normaloff>:/icons/monochrome/svg/open-folder-line.svg</iconset>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QPushButton" name="refreshBiosList">
-           <property name="text">
-            <string>Refresh List</string>
-           </property>
-           <property name="icon">
-            <iconset resource="resources/duckstation-qt.qrc">
-             <normaloff>:/icons/monochrome/svg/refresh-line.svg</normaloff>:/icons/monochrome/svg/refresh-line.svg</iconset>
-           </property>
-          </widget>
-         </item>
-        </layout>
+        <widget class="CollapsibleWidget" name="biosSelectionBox">
+         <property name="title">
+          <string>BIOS Selection</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout" columnminimumwidth="175,0">
+          <item row="0" column="0">
+           <widget class="QLabel" name="imageNTSCJLabel">
+            <property name="text">
+             <string>NTSC-J (Japan):</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QComboBox" name="imageNTSCJ">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="imageNTSCULabel">
+            <property name="text">
+             <string>NTSC-U/C (US/Canada):</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QComboBox" name="imageNTSCU">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="imagePALLabel">
+            <property name="text">
+             <string>PAL (Europe, Australia):</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QComboBox" name="imagePAL">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0" colspan="2">
+           <layout class="QHBoxLayout" name="biosSelectionActionLayout" stretch="1,0">
+            <item>
+             <spacer name="biosButtonsSpacer">
+              <property name="orientation">
+               <enum>Qt::Orientation::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>0</width>
+                <height>0</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item>
+             <widget class="QPushButton" name="refreshBiosList">
+              <property name="text">
+               <string>Refresh List</string>
+              </property>
+              <property name="icon">
+               <iconset resource="resources/duckstation-qt.qrc">
+                <normaloff>:/icons/monochrome/svg/refresh-line.svg</normaloff>:/icons/monochrome/svg/refresh-line.svg</iconset>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </widget>
        </item>
        <item>
         <spacer name="biosPageSpacer">
@@ -1498,13 +1542,19 @@ You can change this option at a later time by using the toolbar in Desktop Mode 
    <extends>QPushButton</extends>
    <header>inputbindingwidgets.h</header>
   </customwidget>
+  <customwidget>
+   <class>CollapsibleWidget</class>
+   <extends>QGroupBox</extends>
+   <header>collapsiblewidget.h</header>
+   <container>1</container>
+  </customwidget>
  </customwidgets>
  <resources>
   <include location="resources/duckstation-qt.qrc"/>
  </resources>
  <connections/>
  <buttongroups>
-  <buttongroup name="viewGroup"/>
   <buttongroup name="interfaceGroup"/>
+  <buttongroup name="viewGroup"/>
  </buttongroups>
 </ui>

@@ -10,8 +10,13 @@
 #include "core/bios.h"
 #include "core/settings.h"
 
+#include "common/error.h"
+#include "common/file_system.h"
+#include "common/path.h"
+
 #include <QtCore/QDir>
 #include <QtWidgets/QFileDialog>
+#include <QtWidgets/QMessageBox>
 #include <algorithm>
 
 #include "moc_biossettingswidget.cpp"
@@ -72,6 +77,10 @@ BIOSSettingsWidget::BIOSSettingsWidget(SettingsWindow* dialog, QWidget* parent) 
     }
   });
 
+  connect(m_ui.install, &QPushButton::clicked, this, [this]() {
+    if (installBIOS(this))
+      refreshList();
+  });
   connect(m_ui.rescan, &QPushButton::clicked, this, &BIOSSettingsWidget::refreshList);
 
   if (!m_dialog->isPerGameSettings())
@@ -95,6 +104,11 @@ BIOSSettingsWidget::BIOSSettingsWidget(SettingsWindow* dialog, QWidget* parent) 
 
   refreshList();
 
+  dialog->registerWidgetHelp(m_ui.rescan, tr("Refresh List"), QString(),
+                             tr("Refreshes the list of BIOS images that can be selected."));
+  dialog->registerWidgetHelp(m_ui.install, tr("Install BIOS"), QString(),
+                             tr("Installs a new BIOS image into the emulator's BIOS directory."));
+
   dialog->registerWidgetHelp(m_ui.pioDeviceType, tr("Device Type"), tr("None"),
                              tr("Simulates a device plugged into the console's parallel port. Usually these are flash "
                                 "cartridges, and require some sort of image dump to function."));
@@ -112,6 +126,57 @@ BIOSSettingsWidget::BIOSSettingsWidget(SettingsWindow* dialog, QWidget* parent) 
 }
 
 BIOSSettingsWidget::~BIOSSettingsWidget() = default;
+
+bool BIOSSettingsWidget::installBIOS(QWidget* parent)
+{
+  const QString source_path = QDir::toNativeSeparators(QFileDialog::getOpenFileName(parent, tr("Select BIOS Image")));
+  if (source_path.isEmpty())
+    return false;
+
+  const std::string source_path_str(source_path.toStdString());
+  Error error;
+  const std::optional<BIOS::Image> image = BIOS::LoadImageFromFile(source_path_str.c_str(), &error);
+  if (!image.has_value())
+  {
+    QtUtils::AsyncMessageBox(parent, QMessageBox::Critical, tr("BIOS Install Error"),
+                             QString::fromStdString(error.GetDescription()));
+    return false;
+  }
+
+  const std::string_view source_filename = Path::GetFileName(source_path_str);
+  const std::string_view destination_filename =
+    (image->info && image->info->expected_filename) ? image->info->expected_filename : source_filename;
+  const std::string destination_path = Path::Combine(EmuFolders::Bios, destination_filename);
+
+  bool replace = false;
+  if (FileSystem::FileExists(destination_path.c_str()))
+  {
+    if (QtUtils::MessageBoxQuestion(
+          parent, tr("BIOS Already Installed"),
+          tr("The BIOS file '%1' is already installed. Do you want to overwrite it?")
+            .arg(QString::fromUtf8(destination_filename.data(), static_cast<qsizetype>(destination_filename.size()))),
+          QMessageBox::Yes | QMessageBox::No) != QMessageBox::Yes)
+    {
+      return false;
+    }
+
+    replace = true;
+  }
+
+  if (!FileSystem::CopyFilePath(source_path_str.c_str(), destination_path.c_str(), replace, &error))
+  {
+    QtUtils::AsyncMessageBox(parent, QMessageBox::Critical, tr("BIOS Install Error"),
+                             QString::fromStdString(error.GetDescription()));
+    return false;
+  }
+
+  QMessageBox::information(
+    parent, tr("BIOS Installed"),
+    tr("BIOS '%1' installed as '%2'.")
+      .arg(image->info ? QString::fromUtf8(image->info->description) : tr("Unknown"),
+           QString::fromUtf8(destination_filename.data(), static_cast<qsizetype>(destination_filename.size()))));
+  return true;
+}
 
 void BIOSSettingsWidget::refreshList()
 {

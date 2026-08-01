@@ -226,6 +226,10 @@ void SetupWizardDialog::setupBIOSPage()
   refreshBiosList();
 
   connect(m_ui.biosSearchDirectory, &QLineEdit::textChanged, this, &SetupWizardDialog::refreshBiosList);
+  connect(m_ui.installBios, &QPushButton::clicked, this, [this]() {
+    if (BIOSSettingsWidget::installBIOS(this))
+      refreshBiosList();
+  });
   connect(m_ui.refreshBiosList, &QPushButton::clicked, this, &SetupWizardDialog::refreshBiosList);
 }
 
@@ -239,6 +243,24 @@ void SetupWizardDialog::refreshBiosList()
   BIOSSettingsWidget::setDropDownValue(m_ui.imageNTSCU, Core::GetBaseStringSettingValue("BIOS", "PathNTSCU"), false);
   BIOSSettingsWidget::setDropDownValue(m_ui.imageNTSCJ, Core::GetBaseStringSettingValue("BIOS", "PathNTSCJ"), false);
   BIOSSettingsWidget::setDropDownValue(m_ui.imagePAL, Core::GetBaseStringSettingValue("BIOS", "PathPAL"), false);
+
+  if (list.empty())
+  {
+    QPalette palette = m_ui.biosSummaryIcon->palette();
+    palette.setBrush(QPalette::WindowText, QBrush(QColor(200, 0, 0)));
+    m_ui.biosSummaryIcon->setPalette(palette);
+    m_ui.biosSummaryIcon->setText(u"\u2715"_s);
+    m_ui.biosSummary->setText(tr("No BIOS images found. Please install one to continue."));
+  }
+  else
+  {
+    QPalette palette = m_ui.biosSummaryIcon->palette();
+    palette.setBrush(QPalette::WindowText, QBrush(QColor(0, 200, 0)));
+    m_ui.biosSummaryIcon->setPalette(palette);
+    m_ui.biosSummaryIcon->setText(u"\u2713"_s);
+    m_ui.biosSummary->setText(tr("%n BIOS images found. You can install additional BIOS images if desired.",
+                                 "BIOS Count", static_cast<int>(list.size())));
+  }
 }
 
 void SetupWizardDialog::setupGameListPage(bool initial)

@@ -109,6 +109,7 @@ static void SaveCustomSerial(const std::string& path, const std::string& serial)
 static void DrawInterfaceSettingsPage();
 static void DrawGameListSettingsPage();
 static void DrawBIOSSettingsPage();
+static void InstallBIOS(std::string source_path, bool replace);
 static void DrawConsoleSettingsPage();
 static void DrawEmulationSettingsPage();
 static void DrawGraphicsSettingsPage();
@@ -3179,6 +3180,15 @@ void FullscreenUI::DrawBIOSSettingsPage()
 
   MenuHeading(FSUI_VSTR("Options"));
 
+  if (MenuButton(FSUI_ICONVSTR(ICON_FA_FILE_IMPORT, "Install BIOS"),
+                 FSUI_VSTR("Copies a BIOS image to the configured global BIOS directory.")))
+  {
+    OpenFileSelector(FSUI_ICONVSTR(ICON_FA_FILE_IMPORT, "Select BIOS Image"), {}, {}, [](std::string path) {
+      if (!path.empty())
+        InstallBIOS(std::move(path), false);
+    });
+  }
+
   DrawFolderSetting(bsi, FSUI_ICONVSTR(ICON_FA_FOLDER, "BIOS Directory"), "BIOS", "SearchDirectory", EmuFolders::Bios);
 
   DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_SCROLL, "Enable TTY Logging"),
@@ -3186,6 +3196,47 @@ void FullscreenUI::DrawBIOSSettingsPage()
                     "TTYLogging", false);
 
   EndMenuButtons();
+}
+
+void FullscreenUI::InstallBIOS(std::string source_path, bool replace)
+{
+  Error error;
+  const std::optional<BIOS::Image> image = BIOS::LoadImageFromFile(source_path.c_str(), &error);
+  if (!image.has_value())
+  {
+    OpenInfoMessageDialog(ICON_EMOJI_NO_ENTRY_SIGN, FSUI_STR("BIOS Install Error"), error.TakeDescription());
+    return;
+  }
+
+  const std::string_view source_filename = Path::GetFileName(source_path);
+  const std::string_view destination_filename =
+    (image->info && image->info->expected_filename) ? image->info->expected_filename : source_filename;
+  const std::string destination_path = Path::Combine(EmuFolders::Bios, destination_filename);
+
+  if (!replace && FileSystem::FileExists(destination_path.c_str()))
+  {
+    OpenConfirmMessageDialog(
+      ICON_EMOJI_WARNING, FSUI_STR("BIOS Already Installed"),
+      fmt::format(FSUI_FSTR("The BIOS file '{}' is already installed. Do you want to overwrite it?"),
+                  destination_filename),
+      [source_path = std::move(source_path)](bool result) mutable {
+        if (result)
+          InstallBIOS(std::move(source_path), true);
+      });
+    return;
+  }
+
+  // Copy the whole thing (PS2 BIOS only loads the first 512KB)
+  if (!FileSystem::CopyFilePath(source_path.c_str(), destination_path.c_str(), replace, &error))
+  {
+    OpenInfoMessageDialog(ICON_EMOJI_NO_ENTRY_SIGN, FSUI_STR("BIOS Install Error"), error.TakeDescription());
+    return;
+  }
+
+  OpenInfoMessageDialog(ICON_EMOJI_CHECKMARK_BUTTON, FSUI_STR("BIOS Installed"),
+                        fmt::format(FSUI_FSTR("BIOS '{}' installed as '{}'."),
+                                    image->info ? image->info->description : FSUI_VSTR("Unknown"),
+                                    destination_filename));
 }
 
 void FullscreenUI::DrawConsoleSettingsPage()
