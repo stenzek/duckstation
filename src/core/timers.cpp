@@ -24,6 +24,7 @@ namespace Timers {
 namespace {
 
 static constexpr u32 NUM_TIMERS = 3;
+static constexpr u32 TIMER_OVERFLOW = 0x10000;
 
 enum class SyncMode : u8
 {
@@ -211,8 +212,8 @@ TickCount Timers::GetTicksUntilIRQ(u32 timer)
   TickCount ticks_until_irq = std::numeric_limits<TickCount>::max();
   if (cs.mode.irq_at_target && cs.counter < cs.target)
     ticks_until_irq = static_cast<TickCount>(cs.target - cs.counter);
-  if (cs.mode.irq_on_overflow)
-    ticks_until_irq = std::min(ticks_until_irq, static_cast<TickCount>(0xFFFFu - cs.counter));
+  if (cs.mode.irq_on_overflow && !cs.mode.reset_at_target)
+    ticks_until_irq = std::min(ticks_until_irq, static_cast<TickCount>(TIMER_OVERFLOW - cs.counter));
 
   return ticks_until_irq;
 }
@@ -220,14 +221,40 @@ TickCount Timers::GetTicksUntilIRQ(u32 timer)
 void Timers::AddTicks(u32 timer, TickCount count)
 {
   CounterState& cs = s_state.counters[timer];
-  const u32 old_counter = cs.counter;
-  cs.counter += static_cast<u32>(count);
-  CheckForIRQ(timer, old_counter);
+
+  // Needs slow path if using non-repeat mode, because unless it's resetting an even number of times
+  // the IRQ might not actually trigger, and we need to stop in that middle state.
+  if (cs.mode.irq_pulse_n)
+  {
+    do
+    {
+      const u32 reset_at = (cs.mode.reset_at_target && cs.counter < cs.target) ? cs.target : TIMER_OVERFLOW;
+      const u32 add = std::min(reset_at - cs.counter, static_cast<u32>(count));
+      const u32 old_counter = cs.counter;
+      cs.counter += add;
+      count -= static_cast<TickCount>(add);
+      CheckForIRQ(timer, old_counter);
+    } while (count > 0);
+  }
+  else
+  {
+    const u32 old_counter = cs.counter;
+    cs.counter += static_cast<u32>(count);
+    CheckForIRQ(timer, old_counter);
+  }
 }
 
 void Timers::CheckForIRQ(u32 timer, u32 old_counter)
 {
   CounterState& cs = s_state.counters[timer];
+
+  // The counter can be set above the target, in which case it _will_ wrap around and trigger an IRQ.
+  bool wrapped_overflow = false;
+  if (cs.counter >= TIMER_OVERFLOW)
+  {
+    wrapped_overflow = (!cs.mode.reset_at_target || old_counter >= cs.target);
+    old_counter = 0;
+  }
 
   bool interrupt_request = false;
   if (cs.counter >= cs.target && (old_counter < cs.target || cs.target == 0))
@@ -235,14 +262,18 @@ void Timers::CheckForIRQ(u32 timer, u32 old_counter)
     interrupt_request |= cs.mode.irq_at_target;
     cs.mode.reached_target = true;
 
-    if (cs.mode.reset_at_target && cs.target > 0)
+    // This is pretty janky. If you set the target to 0xFFFF, the overflow IRQ still needs to fire.
+    // Presumably, the reset happens after the next increment. Also consider the case where the
+    // target is resetting below 0xFFFF, and the counter is incremented by a large amount. In this
+    // second case, the overflow IRQ shouldn't trigger.
+    if (cs.mode.reset_at_target && cs.target > 0 && cs.target != 0xFFFFu)
       cs.counter %= cs.target;
   }
-  if (cs.counter >= 0xFFFF)
+  if (cs.counter >= TIMER_OVERFLOW || wrapped_overflow)
   {
     interrupt_request |= cs.mode.irq_on_overflow;
     cs.mode.reached_overflow = true;
-    cs.counter %= 0xFFFFu;
+    cs.counter &= 0xFFFFu;
   }
 
   if (interrupt_request)
@@ -376,10 +407,9 @@ void Timers::WriteRegister(u32 offset, u32 value)
   {
     case 0x00:
     {
-      const u32 old_counter = cs.counter;
+      // Writing the new counter does not compare against the target value.
       DEBUG_LOG("Timer {} write counter {}", timer_index, value);
       cs.counter = value & u32(0xFFFF);
-      CheckForIRQ(timer_index, old_counter);
       if (timer_index == 2 || !cs.external_counting_enabled)
         UpdateSysClkEvent();
     }
@@ -442,7 +472,6 @@ void Timers::WriteRegister(u32 offset, u32 value)
     {
       DEBUG_LOG("Timer {} write target 0x{:04X}", timer_index, ZeroExtend32(Truncate16(value)));
       cs.target = value & u32(0xFFFF);
-      CheckForIRQ(timer_index, cs.counter);
       if (timer_index == 2 || !cs.external_counting_enabled)
         UpdateSysClkEvent();
     }
