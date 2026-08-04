@@ -2237,7 +2237,7 @@ void FullscreenUI::DrawAchievement(const rc_client_achievement_t* cheevo, const 
   const ImVec2 right_side_size = UIStyle.Font->CalcTextSizeA(UIStyle.MediumFontSize, UIStyle.NormalFontWeight, FLT_MAX,
                                                              0.0f, TRANSLATE("Achievements", "XXX points"));
   const float max_text_width =
-    avail_width - (image_size.x + image_right_padding + (spacing * 2.0f) + right_side_size.x);
+    avail_width - (image_size.x + image_right_padding + (spacing * 2.0f) + right_side_size.x + spacing);
   const float max_title_width = max_text_width -
                                 (type_badge_text.empty() ? 0.0f : type_badge_size.x + type_badge_spacing) -
                                 (pin_text.empty() ? 0.0f : pin_size.x + pin_spacing);
@@ -2316,7 +2316,7 @@ void FullscreenUI::DrawAchievement(const rc_client_achievement_t* cheevo, const 
   // -- Type Badge --
   if (!type_badge_text.empty())
   {
-    const ImVec2 type_badge_pos(title_bb.Max.x + type_badge_spacing,
+    const ImVec2 type_badge_pos(current_pos.x + max_text_width - type_badge_size.x,
                                 ImFloor(title_bb.Min.y + (title_font_size - type_badge_size.y) * 0.5f));
     dl->AddRectFilled(type_badge_pos, type_badge_pos + type_badge_size, type_badge_bg_color, type_badge_rounding);
 
