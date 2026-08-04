@@ -386,6 +386,7 @@ struct AVFrame;
  creation_time-- date when the file was created, preferably in ISO 8601.
  date         -- date when the work was created, preferably in ISO 8601.
  disc         -- number of a subset, e.g. disc in a multi-disc collection.
+ disc_subtitle-- title of a subset, e.g. disc subtitle in a multi-disc collection.
  encoder      -- name/settings of the software/hardware that produced the file.
  encoded_by   -- person/group who created the file.
  filename     -- original name of the file.
@@ -495,6 +496,7 @@ typedef struct AVProbeData {
                                         The user or muxer can override this through
                                         AVFormatContext.avoid_negative_ts
                                         */
+#define AVFMT_FIXED_FRAMESIZE 0x80000 /**< Format wants @ref AVCodecParameters.frame_size "fixed size audio frames." */
 
 #define AVFMT_SEEK_TO_PTS   0x4000000 /**< Seeking is based on PTS */
 
@@ -517,10 +519,10 @@ typedef struct AVOutputFormat {
     enum AVCodecID video_codec;    /**< default video codec */
     enum AVCodecID subtitle_codec; /**< default subtitle codec */
     /**
-     * can use flags: AVFMT_NOFILE, AVFMT_NEEDNUMBER,
+     * can use flags: AVFMT_NOFILE, AVFMT_NEEDNUMBER, AVFMT_EXPERIMENTAL,
      * AVFMT_GLOBALHEADER, AVFMT_NOTIMESTAMPS, AVFMT_VARIABLE_FPS,
      * AVFMT_NODIMENSIONS, AVFMT_NOSTREAMS,
-     * AVFMT_TS_NONSTRICT, AVFMT_TS_NEGATIVE
+     * AVFMT_TS_NONSTRICT, AVFMT_TS_NEGATIVE, AVFMT_FIXED_FRAMESIZE
      */
     int flags;
 
@@ -556,9 +558,10 @@ typedef struct AVInputFormat {
     const char *long_name;
 
     /**
-     * Can use flags: AVFMT_NOFILE, AVFMT_NEEDNUMBER, AVFMT_SHOW_IDS,
-     * AVFMT_NOTIMESTAMPS, AVFMT_GENERIC_INDEX, AVFMT_TS_DISCONT, AVFMT_NOBINSEARCH,
-     * AVFMT_NOGENSEARCH, AVFMT_NO_BYTE_SEEK, AVFMT_SEEK_TO_PTS.
+     * Can use flags: AVFMT_NOFILE, AVFMT_NEEDNUMBER, AVFMT_EXPERIMENTAL,
+     * AVFMT_SHOW_IDS, AVFMT_NOTIMESTAMPS, AVFMT_GENERIC_INDEX,
+     * AVFMT_TS_DISCONT, AVFMT_NOBINSEARCH, AVFMT_NOGENSEARCH,
+     * AVFMT_NO_BYTE_SEEK, AVFMT_SEEK_TO_PTS.
      */
     int flags;
 
@@ -1062,19 +1065,32 @@ typedef struct AVStreamGroupTileGrid {
 } AVStreamGroupTileGrid;
 
 /**
- * AVStreamGroupLCEVC is meant to define the relation between video streams
- * and a data stream containing LCEVC enhancement layer NALUs.
+ * AVStreamGroupLayeredVideo is meant to define the relation between a base
+ * layer video stream and a separate enhancement layer stream that together
+ * form a single layered video presentation (for example a video stream and a
+ * data stream containing LCEVC enhancement layer NALUs, or Dolby Vision
+ * Profile 7 dual-layer encoding).
  *
- * No more than one stream of
- * @ref AVCodecParameters.codec_id "codec_id" AV_CODEC_ID_LCEVC shall be present.
+ * The enhancement layer stream is identified by @ref el_index.
  */
-typedef struct AVStreamGroupLCEVC {
+typedef struct AVStreamGroupLayeredVideo {
     const AVClass *av_class;
 
     /**
-     * Index of the LCEVC data stream in AVStreamGroup.
+     * Index of the enhancement layer stream in AVStreamGroup.
      */
-    unsigned int lcevc_index;
+#if FF_API_LCEVC_STRUCT
+    union {
+#endif
+        unsigned int el_index;
+#if FF_API_LCEVC_STRUCT
+        /**
+         * Alias for @ref el_index, kept for backward compatibility.
+         */
+        attribute_deprecated
+        unsigned int lcevc_index;
+    };
+#endif
     /**
      * Width of the final stream for presentation.
      */
@@ -1083,7 +1099,32 @@ typedef struct AVStreamGroupLCEVC {
      * Height of the final image for presentation.
      */
     int height;
-} AVStreamGroupLCEVC;
+} AVStreamGroupLayeredVideo;
+
+#if FF_API_LCEVC_STRUCT
+/**
+ * Alias kept for backward compatibility.
+ *
+ * AVStreamGroupLCEVC was renamed to @ref AVStreamGroupLayeredVideo.
+ */
+#define AVStreamGroupLCEVC AVStreamGroupLayeredVideo
+#endif
+
+/**
+ * AVStreamGroupTREF is meant to define the relation between video, audio,
+ * or subtitle streams, and a data stream containing metadata.
+ *
+ * No more than one stream of @ref AVCodecParameters.codec_type "codec_type"
+ * AVMEDIA_TYPE_DATA shall be present.
+ */
+typedef struct AVStreamGroupTREF {
+    const AVClass *av_class;
+
+    /**
+     * Index of the metadata stream in the AVStreamGroup.
+     */
+    unsigned int metadata_index;
+} AVStreamGroupTREF;
 
 enum AVStreamGroupParamsType {
     AV_STREAM_GROUP_PARAMS_NONE,
@@ -1091,6 +1132,8 @@ enum AVStreamGroupParamsType {
     AV_STREAM_GROUP_PARAMS_IAMF_MIX_PRESENTATION,
     AV_STREAM_GROUP_PARAMS_TILE_GRID,
     AV_STREAM_GROUP_PARAMS_LCEVC,
+    AV_STREAM_GROUP_PARAMS_TREF,
+    AV_STREAM_GROUP_PARAMS_DOLBY_VISION,
 };
 
 struct AVIAMFAudioElement;
@@ -1132,7 +1175,15 @@ typedef struct AVStreamGroup {
         struct AVIAMFAudioElement *iamf_audio_element;
         struct AVIAMFMixPresentation *iamf_mix_presentation;
         struct AVStreamGroupTileGrid *tile_grid;
+        struct AVStreamGroupLayeredVideo *layered_video;
+#if FF_API_LCEVC_STRUCT
+        /**
+         * deprecated, use layered_video.
+         */
+        attribute_deprecated
         struct AVStreamGroupLCEVC *lcevc;
+#endif
+        struct AVStreamGroupTREF *tref;
     } params;
 
     /**
@@ -1538,7 +1589,12 @@ typedef struct AVFormatContext {
      * Flags to enable debugging.
      */
     int debug;
-#define FF_FDEBUG_TS        0x0001
+#define AV_FDEBUG_TS        0x0001
+#define AV_FDEBUG_ID3V2     0x0002
+
+#if FF_API_FDEBUG_TS
+#define FF_FDEBUG_TS AV_FDEBUG_TS
+#endif
 
     /**
      * The maximum number of streams.
@@ -2069,6 +2125,37 @@ int avformat_stream_group_add_stream(AVStreamGroup *stg, AVStream *st);
 
 AVProgram *av_new_program(AVFormatContext *s, int id);
 
+
+#define AVFMT_PROGCOPY_MATCH_BY_ID          (1 << 0) ///< match streams using stream id
+#define AVFMT_PROGCOPY_MATCH_BY_INDEX       (1 << 1) ///< match streams using stream index
+#define AVFMT_PROGCOPY_OVERWRITE            (1 << 8) ///< overwrite pre-existing program having same ID
+
+/**
+ * Copy an AVProgram from one AVFormatContext to another.
+ *
+ * Streams in the destination context whose designated attribute match the attribute of
+ * the streams in the source AVProgram index are added to the stream index of the copied
+ * AVProgram. The attribute is designated using AVFMT_PROGCOPY_MATCH_ flags.
+ *
+ * If a new program has to be added, the function expects and requires any existing buffer
+ * holding the array of pointers to AVPrograms in the destination context to have its size
+ * be a power-of-two value. This should be the case if all earlier programs were created
+ * using av_new_program or this function.
+ *
+ * @param dst           pointer to the target muxer context
+ * @param src           pointer to the source muxer context
+ * @param progid        ID of the program to be copied
+ * @param flags         combination of flags which determine how streams are matched and
+ *                      whether pre-existing AVProgram in target is overwritten.
+ *                      If no match condition is set, streams will be matched by ids if
+ *                      all source stream ids are non-zero and unique, else by index.
+ *
+ * @return  >= 0 in case of success, Error EEXIST if target already has program with same ID
+ *          and overwrite flag isn't set, else a negative AVERROR code in case of other
+ *          failures.
+ */
+int av_program_copy(AVFormatContext *dst, const AVFormatContext *src, int progid, int flags);
+
 /**
  * @}
  */
@@ -2229,6 +2316,19 @@ int avformat_find_stream_info(AVFormatContext *ic, AVDictionary **options);
 AVProgram *av_find_program_from_stream(AVFormatContext *ic, AVProgram *last, int s);
 
 void av_program_add_stream_index(AVFormatContext *ac, int progid, unsigned int idx);
+
+/**
+ * Add the supplied index of a stream to the AVProgram with matching id.
+ *
+ * @param ac      the format context which contains the target AVProgram
+ * @param progid  the ID of the AVProgram whose stream index is to be updated
+ * @param idx     the index of the stream to be added
+ *
+ * @return >=0 upon successful addition or if index was already present,
+ *         AVERROR if no matching program is found or stream index is invalid or
+ *         the stream index array reallocation failed.
+ */
+int av_program_add_stream_index2(AVFormatContext *ac, int progid, unsigned int idx);
 
 /**
  * Find the "best" stream in the file.
@@ -3084,32 +3184,6 @@ int avformat_match_stream_specifier(AVFormatContext *s, AVStream *st,
                                     const char *spec);
 
 int avformat_queue_attached_pictures(AVFormatContext *s);
-
-#if FF_API_INTERNAL_TIMING
-enum AVTimebaseSource {
-    AVFMT_TBCF_AUTO = -1,
-    AVFMT_TBCF_DECODER,
-    AVFMT_TBCF_DEMUXER,
-#if FF_API_R_FRAME_RATE
-    AVFMT_TBCF_R_FRAMERATE,
-#endif
-};
-
-/**
- * @deprecated do not call this function
- */
-attribute_deprecated
-int avformat_transfer_internal_stream_timing_info(const AVOutputFormat *ofmt,
-                                                  AVStream *ost, const AVStream *ist,
-                                                  enum AVTimebaseSource copy_tb);
-
-/**
- * @deprecated do not call this function
- */
-attribute_deprecated
-AVRational av_stream_get_codec_timebase(const AVStream *st);
-#endif
-
 
 /**
  * @}

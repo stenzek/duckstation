@@ -93,22 +93,42 @@ typedef enum SwsAlphaBlend {
     SWS_ALPHA_BLEND_MAX_ENUM = 0x7FFFFFFF, /* force size to 32 bits, not a valid blend mode */
 } SwsAlphaBlend;
 
-typedef enum SwsFlags {
-    /**
-     * Scaler selection options. Only one may be active at a time.
-     */
-    SWS_FAST_BILINEAR = 1 <<  0, ///< fast bilinear filtering
-    SWS_BILINEAR      = 1 <<  1, ///< bilinear filtering
-    SWS_BICUBIC       = 1 <<  2, ///< 2-tap cubic B-spline
-    SWS_X             = 1 <<  3, ///< experimental
-    SWS_POINT         = 1 <<  4, ///< nearest neighbor
-    SWS_AREA          = 1 <<  5, ///< area averaging
-    SWS_BICUBLIN      = 1 <<  6, ///< bicubic luma, bilinear chroma
-    SWS_GAUSS         = 1 <<  7, ///< gaussian approximation
-    SWS_SINC          = 1 <<  8, ///< unwindowed sinc
-    SWS_LANCZOS       = 1 <<  9, ///< 3-tap sinc/sinc
-    SWS_SPLINE        = 1 << 10, ///< cubic Keys spline
+typedef enum SwsScaler {
+    SWS_SCALE_AUTO = 0,
+    SWS_SCALE_BILINEAR, ///< bilinear filtering
+    SWS_SCALE_BICUBIC,  ///< 2-tap cubic BC-spline
+    SWS_SCALE_POINT,    ///< nearest neighbor (point sampling)
+    SWS_SCALE_AREA,     ///< area averaging
+    SWS_SCALE_GAUSSIAN, ///< 2-tap gaussian approximation
+    SWS_SCALE_SINC,     ///< unwindowed sinc
+    SWS_SCALE_LANCZOS,  ///< 3-tap sinc/sinc
+    SWS_SCALE_SPLINE,   ///< unwindowned natural cubic spline
+    SWS_SCALE_NB,       ///< not part of the ABI
+    SWS_SCALE_MAX_ENUM = 0x7FFFFFFF, ///< force size to 32 bits, not a valid filter type
+} SwsScaler;
 
+typedef enum SwsBackend {
+    /* Stable backends */
+    SWS_BACKEND_LEGACY      = (1 << 0), ///< Legacy bespoke format-specific code
+    SWS_BACKEND_STABLE      = SWS_BACKEND_LEGACY,
+
+    /* Unstable backends (auto-selected only if SWS_UNSTABLE is enabled) */
+    SWS_BACKEND_C           = (1 << 1), ///< Template-based C reference implementation
+    SWS_BACKEND_MEMCPY      = (1 << 2), ///< Fast path using libc memcpy() / memset()
+    SWS_BACKEND_X86         = (1 << 3), ///< Chained x86 SIMD kernels
+    SWS_BACKEND_AARCH64     = (1 << 4), ///< Chained AArch64 NEON kernels
+    SWS_BACKEND_SPIRV       = (1 << 5), ///< Vulkan SPIR-V backend
+    SWS_BACKEND_UNSTABLE    = SWS_BACKEND_C |
+                              SWS_BACKEND_MEMCPY |
+                              SWS_BACKEND_X86 |
+                              SWS_BACKEND_AARCH64 |
+                              SWS_BACKEND_SPIRV,
+
+    SWS_BACKEND_ALL = SWS_BACKEND_STABLE | SWS_BACKEND_UNSTABLE,
+    SWS_BACKEND_MAX_ENUM = 0x7FFFFFFF, ///< force size to 32 bits, not a valid backend
+} SwsBackend;
+
+typedef enum SwsFlags {
     /**
      * Return an error on underspecified conversions. Without this flag,
      * unspecified fields are defaulted to sensible values.
@@ -158,9 +178,9 @@ typedef enum SwsFlags {
     SWS_BITEXACT       = 1 << 19,
 
     /**
-     * Allow using experimental new code paths. This may be faster, slower,
-     * or produce different output, with semantics subject to change at any
-     * point in time. For testing and debugging purposes only.
+     * Allow/prefer using experimental new code paths. This may be faster,
+     * slower, or produce different output, with semantics subject to change
+     * at any point in time. For testing and debugging purposes only.
      */
     SWS_UNSTABLE = 1 << 20,
 
@@ -169,6 +189,22 @@ typedef enum SwsFlags {
      */
     SWS_DIRECT_BGR      = 1 << 15, ///< This flag has no effect
     SWS_ERROR_DIFFUSION = 1 << 23, ///< Set `SwsContext.dither` instead
+
+    /**
+     * Scaler selection options. Only one may be active at a time.
+     * Deprecated in favor of `SwsContext.scaler`.
+     */
+    SWS_FAST_BILINEAR = 1 <<  0, ///< fast bilinear filtering
+    SWS_BILINEAR      = 1 <<  1, ///< bilinear filtering
+    SWS_BICUBIC       = 1 <<  2, ///< 2-tap cubic B-spline
+    SWS_X             = 1 <<  3, ///< experimental
+    SWS_POINT         = 1 <<  4, ///< nearest neighbor
+    SWS_AREA          = 1 <<  5, ///< area averaging
+    SWS_BICUBLIN      = 1 <<  6, ///< bicubic luma, bilinear chroma
+    SWS_GAUSS         = 1 <<  7, ///< gaussian approximation
+    SWS_SINC          = 1 <<  8, ///< unwindowed sinc
+    SWS_LANCZOS       = 1 <<  9, ///< 3-tap sinc/sinc
+    SWS_SPLINE        = 1 << 10, ///< unwindowed natural cubic spline
 } SwsFlags;
 
 typedef enum SwsIntent {
@@ -204,7 +240,8 @@ typedef struct SwsContext {
     /**
      * Extra parameters for fine-tuning certain scalers.
      */
-    double scaler_params[2];
+#define SWS_NUM_SCALER_PARAMS 2
+    double scaler_params[SWS_NUM_SCALER_PARAMS];
 
     /**
      * How many threads to use for processing, or 0 for automatic selection.
@@ -248,6 +285,32 @@ typedef struct SwsContext {
      */
     int intent;
 
+    /**
+     * Scaling filter. If set to something other than SWS_SCALE_AUTO, this will
+     * override the filter implied by `SwsContext.flags`.
+     *
+     * Note: Does not affect the legacy (stateful) API.
+     */
+    SwsScaler scaler;
+
+    /**
+     * Scaler used specifically for up/downsampling subsampled (chroma) planes.
+     * If set to something other than SWS_SCALE_AUTO, this will override the
+     * filter implied by `SwsContext.scaler`. Otherwise, the same filter
+     * will be used for both main scaling and chroma subsampling.
+     */
+    SwsScaler scaler_sub;
+
+    /**
+     * Bitmask of SWS_BACKEND_*. If non-zero, this will restrict the available
+     * backends to the specified set. If left as zero, a default set of
+     * backends will be selected automatically (based on SWS_UNSTABLE).
+     *
+     * Note: This is only relevant for the new API (sws_scale_frame()). The
+     * stateful legacy API always implies SWS_BACKEND_LEGACY.
+     */
+    SwsBackend backends;
+
     /* Remember to add new fields to graph.c:opts_equal() */
 } SwsContext;
 
@@ -267,7 +330,8 @@ void sws_free_context(SwsContext **ctx);
  ***************************/
 
 /**
- * Test if a given (software) pixel format is supported.
+ * Test if a given (software) pixel format is supported by any backend,
+ * excluding unstable backends.
  *
  * @param output  If 0, test if compatible with the source/input frame;
  *                otherwise, with the destination/output frame.
@@ -278,7 +342,8 @@ void sws_free_context(SwsContext **ctx);
 int sws_test_format(enum AVPixelFormat format, int output);
 
 /**
- * Test if a given hardware pixel format is supported.
+ * Test if a given hardware pixel format is supported by any backend,
+ * excluding unstable backends.
  *
  * @param format  The hardware format to check, or AV_PIX_FMT_NONE.
  *
@@ -373,6 +438,14 @@ int sws_is_noop(const AVFrame *dst, const AVFrame *src);
  */
 int sws_scale_frame(SwsContext *c, AVFrame *dst, const AVFrame *src);
 
+/**
+ * Filter kernel cut-off value. Values below this (absolute) magnitude
+ * are cut off from the main filter kernel. Note that the window is
+ * always adjusted to the new filter radius, so there will never be
+ * any spectral leakage (for suitably windowed filters).
+ */
+#define SWS_MAX_REDUCE_CUTOFF 0.002
+
 /*************************
  * Legacy (stateful) API *
  *************************/
@@ -381,8 +454,6 @@ int sws_scale_frame(SwsContext *c, AVFrame *dst, const AVFrame *src);
 #define SWS_SRC_V_CHR_DROP_SHIFT    16
 
 #define SWS_PARAM_DEFAULT           123456
-
-#define SWS_MAX_REDUCE_CUTOFF 0.002
 
 #define SWS_CS_ITU709         1
 #define SWS_CS_FCC            4

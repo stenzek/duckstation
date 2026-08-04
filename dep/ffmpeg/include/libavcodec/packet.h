@@ -369,6 +369,21 @@ enum AVPacketSideDataType {
      AV_PKT_DATA_EXIF,
 
     /**
+     * HDR dynamic metadata associated with a video frame. The payload is an
+     * AVDynamicHDRSmpte2094App5 type and contains information for color volume
+     * transform as specified in the SMPTE 2094-50 standard.
+     */
+    AV_PKT_DATA_DYNAMIC_HDR_SMPTE_2094_APP5,
+
+    /**
+     * Dolby Vision enhancement-layer HEVC decoder configuration.
+     * Parsed from the @c hvcE box in ISOM-based containers or the
+     * corresponding BlockAdditionMapping in Matroska. The data is a raw
+     * HEVCDecoderConfigurationRecord as defined in ISO 14496-15.
+     */
+    AV_PKT_DATA_HEVC_CONF,
+
+    /**
      * The number of side data types.
      * This is not part of the public API/ABI in the sense that it may
      * change when new side data types are added.
@@ -632,14 +647,6 @@ typedef struct AVPacket {
     AVRational time_base;
 } AVPacket;
 
-#if FF_API_INIT_PACKET
-attribute_deprecated
-typedef struct AVPacketList {
-    AVPacket pkt;
-    struct AVPacketList *next;
-} AVPacketList;
-#endif
-
 #define AV_PKT_FLAG_KEY     0x0001 ///< The packet contains a keyframe
 #define AV_PKT_FLAG_CORRUPT 0x0002 ///< The packet content is corrupted
 /**
@@ -817,7 +824,7 @@ uint8_t* av_packet_get_side_data(const AVPacket *pkt, enum AVPacketSideDataType 
  * @param size pointer to store the size of the returned data
  * @return pointer to data if successful, NULL otherwise
  */
-uint8_t *av_packet_pack_dictionary(AVDictionary *dict, size_t *size);
+uint8_t *av_packet_pack_dictionary(const AVDictionary *dict, size_t *size);
 /**
  * Unpack a dictionary from side_data.
  *
