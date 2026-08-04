@@ -66,7 +66,7 @@ bool PlayStationMouse::DoState(StateWrapper& sw, bool apply_input_state)
     m_delta_y = delta_y;
   }
 
-  sw.Do(&m_transfer_state);
+  sw.Do(&m_transfer_state, TransferState::DeltaY);
   return true;
 }
 

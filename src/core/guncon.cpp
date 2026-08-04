@@ -67,7 +67,7 @@ bool GunCon::DoState(StateWrapper& sw, bool apply_input_state)
     m_position_y = position_y;
   }
 
-  sw.Do(&m_transfer_state);
+  sw.Do(&m_transfer_state, TransferState::YMSB);
   return true;
 }
 

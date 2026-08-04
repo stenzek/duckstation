@@ -2329,7 +2329,7 @@ bool System::DoState(StateWrapper& sw, bool update_display)
   }
   else
   {
-    sw.Do(&s_state.region);
+    sw.Do(&s_state.region, ConsoleRegion::PAL);
   }
 
   u32 state_taints = s_state.taints;

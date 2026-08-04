@@ -489,7 +489,7 @@ bool Pad::DoState(StateWrapper& sw, bool is_memory_state)
     }
   }
 
-  sw.Do(&s_state.state);
+  sw.Do(&s_state.state, State::WaitingForACK);
   sw.Do(&s_state.JOY_CTRL.bits);
   sw.Do(&s_state.JOY_STAT.bits);
   sw.Do(&s_state.JOY_MODE.bits);

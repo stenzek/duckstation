@@ -92,7 +92,7 @@ bool Justifier::DoState(StateWrapper& sw, bool apply_input_state)
   }
 
   sw.DoEx(&m_irq_enabled, 82, true);
-  sw.Do(&m_transfer_state);
+  sw.Do(&m_transfer_state, TransferState::YMSB);
 
   if (sw.IsReading())
     UpdateIRQEvent();

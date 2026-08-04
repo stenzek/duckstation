@@ -192,7 +192,7 @@ bool MDEC::DoState(StateWrapper& sw)
   sw.Do(&s_state.enable_dma_out);
   sw.Do(&s_state.data_in_fifo);
   sw.Do(&s_state.data_out_fifo);
-  sw.Do(&s_state.state);
+  sw.Do(&s_state.state, State::NoCommand);
   sw.Do(&s_state.remaining_halfwords);
   sw.Do(&s_state.iq_uv);
   sw.Do(&s_state.iq_y);

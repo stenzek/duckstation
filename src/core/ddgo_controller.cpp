@@ -60,7 +60,7 @@ bool DDGoController::DoState(StateWrapper& sw, bool apply_input_state)
     UpdateBrakeBits();
   }
 
-  sw.Do(&m_transfer_state);
+  sw.Do(&m_transfer_state, TransferState::ButtonsMSB);
   return true;
 }
 

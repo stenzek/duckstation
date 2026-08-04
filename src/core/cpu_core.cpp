@@ -269,9 +269,9 @@ bool CPU::DoState(StateWrapper& sw)
     bool interrupt_delay;
     sw.Do(&interrupt_delay);
   }
-  sw.Do(&g_state.load_delay_reg);
+  sw.Do(&g_state.load_delay_reg, Reg::count);
   sw.Do(&g_state.load_delay_value);
-  sw.Do(&g_state.next_load_delay_reg);
+  sw.Do(&g_state.next_load_delay_reg, Reg::count);
   sw.Do(&g_state.next_load_delay_value);
 
   // Compatibility with old states.

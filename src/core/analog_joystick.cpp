@@ -61,7 +61,7 @@ bool AnalogJoystick::DoState(StateWrapper& sw, bool apply_input_state)
     m_axis_state = axis_state;
   }
 
-  sw.Do(&m_transfer_state);
+  sw.Do(&m_transfer_state, TransferState::LeftAxisY);
 
   if (sw.IsReading() && (old_analog_mode != m_analog_mode))
   {

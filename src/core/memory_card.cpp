@@ -68,7 +68,7 @@ bool MemoryCard::DoState(StateWrapper& sw)
   if (sw.IsReading())
     SaveIfChanged(true);
 
-  sw.Do(&m_state);
+  sw.Do(&m_state, State::GetID4);
   sw.Do(&m_FLAG.bits);
   sw.Do(&m_address);
   sw.Do(&m_sector_offset);

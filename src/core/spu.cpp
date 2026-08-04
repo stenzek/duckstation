@@ -713,7 +713,7 @@ bool SPU::DoCompatibleState(StateWrapper& sw)
     do_compatible_volume_sweep(sw, &v.left_volume);
     do_compatible_volume_sweep(sw, &v.right_volume);
     do_compatible_volume_envelope(sw, &v.adsr_envelope);
-    sw.Do(&v.adsr_phase);
+    sw.Do(&v.adsr_phase, ADSRPhase::Release);
     sw.Do(&v.adsr_target);
     sw.Do(&v.has_samples);
     sw.Do(&v.ignore_loop_address);

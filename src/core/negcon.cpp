@@ -49,7 +49,7 @@ bool NeGcon::DoState(StateWrapper& sw, bool apply_input_state)
   if (apply_input_state)
     m_button_state = button_state;
 
-  sw.Do(&m_transfer_state);
+  sw.Do(&m_transfer_state, TransferState::AnalogL);
   return true;
 }
 

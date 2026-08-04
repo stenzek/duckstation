@@ -72,6 +72,27 @@ public:
     }
   }
 
+  /// Overload for enum types. Uses the underlying type, and sanitizes the value to the enum range.
+  template<typename T,
+           std::enable_if_t<std::is_enum_v<T> && std::is_unsigned_v<typename std::underlying_type_t<T>>, int> = 0>
+  void Do(T* value_ptr, T max_value)
+  {
+    using TType = std::underlying_type_t<T>;
+    if (m_mode == Mode::Read)
+    {
+      TType temp;
+      if (!ReadData(&temp, sizeof(temp))) [[unlikely]]
+        temp = static_cast<TType>(0);
+
+      *value_ptr = (temp <= static_cast<TType>(max_value)) ? static_cast<T>(temp) : max_value;
+    }
+    else
+    {
+      const TType temp = static_cast<TType>(*value_ptr);
+      WriteData(&temp, sizeof(temp));
+    }
+  }
+
   /// Overload for POD types, such as structs.
   template<typename T, std::enable_if_t<std::is_standard_layout_v<T> && std::is_trivial_v<T>, int> = 0>
   void DoPOD(T* value_ptr)

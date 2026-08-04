@@ -830,7 +830,7 @@ void PIO::Reset()
 bool PIO::DoState(StateWrapper& sw)
 {
   PIODeviceType device_type = g_settings.pio_device_type;
-  sw.Do(&device_type);
+  sw.Do(&device_type, PIODeviceType::XplorerCart);
 
   const size_t pio_state_pos = sw.GetPosition();
   u32 pio_state_size = 0;

@@ -41,7 +41,7 @@ void Multitap::SetEnable(bool enable, u32 base_index)
 
 bool Multitap::DoState(StateWrapper& sw)
 {
-  sw.Do(&m_transfer_state);
+  sw.Do(&m_transfer_state, TransferState::AllControllers);
   sw.Do(&m_selected_slot);
   sw.Do(&m_controller_transfer_step);
   sw.Do(&m_invalid_transfer_all_command);

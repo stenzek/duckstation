@@ -638,7 +638,7 @@ bool GPU::DoState(StateWrapper& sw)
   sw.Do(&s_locals.crtc_state.interlaced_display_field);
   sw.Do(&s_locals.crtc_state.active_line_lsb);
 
-  sw.Do(&s_locals.blitter_state);
+  sw.Do(&s_locals.blitter_state, BlitterState::DrawingPolyLine);
   sw.Do(&s_locals.pending_command_ticks);
   sw.Do(&s_locals.command_total_words);
   sw.Do(&s_locals.GPUREAD_latch);
