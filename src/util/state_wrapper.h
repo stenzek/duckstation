@@ -133,11 +133,16 @@ public:
 
     if (m_mode == Mode::Read)
     {
-      T* temp = new T[size];
-      DoArray(temp, size);
       data->Clear();
-      data->PushRange(temp, size);
-      delete[] temp;
+      if (size == 0)
+        return;
+
+      const u32 bytes = size * sizeof(T);
+      if ((m_error = (m_error || size > CAPACITY || ((m_size - m_pos) < bytes)))) [[unlikely]]
+        return;
+
+      data->PushRange(reinterpret_cast<const T*>(&m_data[m_pos]), size);
+      m_pos += bytes;
     }
     else
     {
