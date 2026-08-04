@@ -41,11 +41,11 @@ public:
   void Format();
 
 private:
-  enum : u32
-  {
-    // save in three seconds, that should be long enough for everything to finish writing
-    SAVE_DELAY_IN_SECONDS = 5,
-  };
+  static constexpr u16 ADDRESS_MASK = 0x3FF;
+  static constexpr u8 OFFSET_MASK = 0x7F;
+
+  // save in three seconds, that should be long enough for everything to finish writing
+  static constexpr u32 SAVE_DELAY_IN_SECONDS = 5;
 
   union FLAG
   {

@@ -77,6 +77,12 @@ bool MemoryCard::DoState(StateWrapper& sw)
   sw.Do(&m_data);
   sw.Do(&m_changed);
 
+  if (sw.IsReading())
+  {
+    m_address &= ADDRESS_MASK;
+    m_sector_offset &= OFFSET_MASK;
+  }
+
   return !sw.HasError();
 }
 
@@ -126,7 +132,7 @@ bool MemoryCard::Transfer(const u8 data_in, u8* data_out)
   {                                                                                                                    \
     *data_out = 0x00;                                                                                                  \
     ack = true;                                                                                                        \
-    m_address = ((m_address & u16(0x00FF)) | (ZeroExtend16(data_in) << 8)) & 0x3FF;                                    \
+    m_address = ((m_address & u16(0x00FF)) | (ZeroExtend16(data_in) << 8)) & ADDRESS_MASK;                             \
     m_state = next_state;                                                                                              \
   }                                                                                                                    \
   break;
@@ -136,7 +142,7 @@ bool MemoryCard::Transfer(const u8 data_in, u8* data_out)
   {                                                                                                                    \
     *data_out = m_last_byte;                                                                                           \
     ack = true;                                                                                                        \
-    m_address = ((m_address & u16(0xFF00)) | ZeroExtend16(data_in)) & 0x3FF;                                           \
+    m_address = ((m_address & u16(0xFF00)) | ZeroExtend16(data_in)) & ADDRESS_MASK;                                    \
     m_sector_offset = 0;                                                                                               \
     m_state = next_state;                                                                                              \
   }                                                                                                                    \
