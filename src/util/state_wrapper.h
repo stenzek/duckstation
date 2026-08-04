@@ -146,10 +146,30 @@ public:
     }
     else
     {
-      for (u32 i = 0; i < size; i++)
+      if (size == 0)
+        return;
+      if ((m_error = (m_error || ((m_size - m_pos) < (size * sizeof(T)))))) [[unlikely]]
+        return;
+
+      if constexpr (std::is_standard_layout_v<T> && std::is_trivial_v<T>)
       {
-        T temp(data->Peek(i));
-        Do(&temp);
+        const u32 contig_size = data->GetContiguousSize();
+        if (contig_size > 0)
+        {
+          const u32 contig_bytes = contig_size * sizeof(T);
+          std::memcpy(&m_data[m_pos], data->GetReadPointer(), contig_bytes);
+          m_pos += contig_bytes;
+        }
+        for (u32 i = contig_size; i < size; i++)
+        {
+          std::memcpy(&m_data[m_pos], &data->Peek(i), sizeof(T));
+          m_pos += sizeof(T);
+        }
+      }
+      else
+      {
+        for (u32 i = 0; i < size; i++)
+          Do(const_cast<T*>(&data->Peek(i)));
       }
     }
   }
