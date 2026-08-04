@@ -116,6 +116,8 @@ public:
       m_head = (m_head + 1) % CAPACITY;
       m_size--;
     }
+    m_head = (m_size == 0) ? 0 : m_head;
+    m_tail = (m_size == 0) ? 0 : m_tail;
   }
 
   void RemoveOne()
@@ -124,6 +126,8 @@ public:
     m_ptr[m_head].~T();
     m_head = (m_head + 1) % CAPACITY;
     m_size--;
+    m_head = (m_size == 0) ? 0 : m_head;
+    m_tail = (m_size == 0) ? 0 : m_tail;
   }
 
   // removes and returns moved value
@@ -134,6 +138,8 @@ public:
     m_ptr[m_head].~T();
     m_head = (m_head + 1) % CAPACITY;
     m_size--;
+    m_head = (m_size == 0) ? 0 : m_head;
+    m_tail = (m_size == 0) ? 0 : m_tail;
     return val;
   }
 
@@ -150,6 +156,8 @@ public:
       m_size -= contig_count;
       count -= contig_count;
     } while (count > 0);
+    m_head = (m_size == 0) ? 0 : m_head;
+    m_tail = (m_size == 0) ? 0 : m_tail;
   }
 
   template<class Y = T, std::enable_if_t<!std::is_standard_layout_v<Y> || !std::is_trivial_v<Y>, int> = 0>
@@ -163,6 +171,8 @@ public:
       m_head = (m_head + 1) % CAPACITY;
       m_size--;
     }
+    m_head = (m_size == 0) ? 0 : m_head;
+    m_tail = (m_size == 0) ? 0 : m_tail;
   }
 
   template<u32 QUEUE_CAPACITY>
