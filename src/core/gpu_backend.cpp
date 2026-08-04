@@ -568,6 +568,10 @@ void GPUBackend::HandleUpdateDisplayCommand(const GPUBackendUpdateDisplayCommand
 
 void GPUBackend::HandleSubmitFrameCommand(const GPUBackendFramePresentationParameters* cmd)
 {
+  // Runahead splits the display update and frame submission, and another draw could come in inbetween.
+  if (cmd->media_capture || cmd->present_frame)
+    FlushRender();
+
   // For regtest.
   Host::FrameDoneOnVideoThread(this, cmd->frame_number);
 
