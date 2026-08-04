@@ -184,7 +184,7 @@ public:
       return;
     }
 
-    m_error = (m_error || (m_pos + count) > m_size);
+    m_error = (m_error || (m_size - m_pos) < count);
     if (!m_error) [[likely]]
       m_pos += count;
   }

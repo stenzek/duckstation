@@ -50,13 +50,13 @@ void StateWrapper::Do(bool* value_ptr)
   if (m_mode == Mode::Read)
   {
     u8 value = 0;
-    if (!(m_error = m_error || (m_pos + 1) > m_size)) [[likely]]
+    if (!(m_error = m_error || m_pos >= m_size)) [[likely]]
       value = m_data[m_pos++];
     *value_ptr = (value != 0);
   }
   else
   {
-    if (!(m_error = m_error || (m_pos + 1) > m_size)) [[likely]]
+    if (!(m_error = m_error || m_pos >= m_size)) [[likely]]
       m_data[m_pos++] = static_cast<u8>(*value_ptr);
   }
 }
@@ -67,7 +67,7 @@ void StateWrapper::Do(std::string* value_ptr)
   Do(&length);
   if (m_mode == Mode::Read)
   {
-    if ((m_error = (m_error || ((m_pos + length) > m_size)))) [[unlikely]]
+    if ((m_error = (m_error || ((m_size - m_pos) < length)))) [[unlikely]]
       return;
     value_ptr->resize(length);
   }
@@ -81,7 +81,7 @@ void StateWrapper::Do(SmallStringBase* value_ptr)
   Do(&length);
   if (m_mode == Mode::Read)
   {
-    if ((m_error = (m_error || ((m_pos + length) > m_size)))) [[unlikely]]
+    if ((m_error = (m_error || ((m_size - m_pos) < length)))) [[unlikely]]
       return;
     value_ptr->resize(length);
   }
@@ -121,7 +121,7 @@ bool StateWrapper::DoMarkerEx(const char* marker, u32 version_introduced)
 
 std::span<u8> StateWrapper::GetDeferredBytes(size_t size)
 {
-  if ((m_error = (m_error || (m_pos + size) > m_size))) [[unlikely]]
+  if ((m_error = (m_error || ((m_size - m_pos) < size)))) [[unlikely]]
     return {};
 
   const std::span<u8> ret(&m_data[m_pos], size);
@@ -131,7 +131,7 @@ std::span<u8> StateWrapper::GetDeferredBytes(size_t size)
 
 bool StateWrapper::ReadData(void* buf, size_t size)
 {
-  if ((m_error = (m_error || (m_pos + size) > m_size))) [[unlikely]]
+  if ((m_error = (m_error || ((m_size - m_pos) < size)))) [[unlikely]]
     return false;
 
   std::memcpy(buf, &m_data[m_pos], size);
@@ -141,7 +141,7 @@ bool StateWrapper::ReadData(void* buf, size_t size)
 
 bool StateWrapper::WriteData(const void* buf, size_t size)
 {
-  if ((m_error = (m_error || (m_pos + size) > m_size))) [[unlikely]]
+  if ((m_error = (m_error || ((m_size - m_pos) < size)))) [[unlikely]]
     return false;
 
   std::memcpy(&m_data[m_pos], buf, size);
