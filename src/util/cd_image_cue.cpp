@@ -887,7 +887,8 @@ std::optional<CDImage::TrackMode> CDImageCueSheet::DetectSingleFileTrackMode(Tra
   }
 
   std::array<u8, 16> sector_header;
-  if (file_size < sector_header.size() || !fi->Read(sector_header.data(), 0, sector_header.size(), error))
+  if (file_size < sector_header.size() ||
+      !fi->Read(sector_header.data(), 0, static_cast<u32>(sector_header.size()), error))
   {
     Error::SetStringFmt(error, "Unable to determine sector format for '{}'", Path::GetFileName(path));
     return std::nullopt;
