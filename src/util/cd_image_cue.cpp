@@ -623,12 +623,15 @@ bool CDImageCueSheet::OpenAndParseCueSheet(const char* path, Error* error)
         WAVReader reader;
         if (reader.Open(track_full_path.c_str(), error))
         {
-          if (reader.GetNumChannels() != AUDIO_CHANNELS || reader.GetSampleRate() != AUDIO_SAMPLE_RATE)
+          if (reader.GetNumChannels() != AUDIO_CHANNELS || reader.GetSampleRate() != AUDIO_SAMPLE_RATE ||
+              reader.GetBitsPerSample() != 16)
           {
             Error::SetStringFmt(error,
-                                TRANSLATE_FS("CDImage", "{0} uses a sample rate of {1}hz and has {2} channels.\n"
-                                                        "WAV files must be stereo and use a sample rate of 44100hz."),
-                                Path::GetFileName(track_filename), reader.GetSampleRate(), reader.GetNumChannels());
+                                TRANSLATE_FS("CDImage",
+                                             "{0} is {1}-bit with {2} channels at {3}hz.\n"
+                                             "WAV files must be 16-bit stereo and use a sample rate of 44100hz."),
+                                Path::GetFileName(track_filename), reader.GetBitsPerSample(), reader.GetNumChannels(),
+                                reader.GetSampleRate());
             return false;
           }
 
