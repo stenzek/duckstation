@@ -233,7 +233,7 @@ std::vector<MemoryCardImage::FileInfo> MemoryCardImage::EnumerateFiles(const Dat
 
   std::vector<FileInfo> files;
 
-  for (u32 dir_frame = 1; dir_frame < FRAMES_PER_BLOCK; dir_frame++)
+  for (u32 dir_frame = 1; dir_frame < NUM_BLOCKS; dir_frame++)
   {
     const DirectoryFrame* df = GetFramePtr<DirectoryFrame>(data, 0, dir_frame);
     if (df->block_allocation_state != 0x51 &&
@@ -255,13 +255,13 @@ std::vector<MemoryCardImage::FileInfo> MemoryCardImage::EnumerateFiles(const Dat
     fi.deleted = (df->block_allocation_state != 0x51);
 
     const DirectoryFrame* next_df = df;
-    while (next_df->next_block_number < (NUM_BLOCKS - 1) && fi.num_blocks < FRAMES_PER_BLOCK)
+    while (next_df->next_block_number < (NUM_BLOCKS - 1) && fi.num_blocks < NUM_BLOCKS)
     {
       fi.num_blocks++;
       next_df = GetFramePtr<DirectoryFrame>(data, 0, next_df->next_block_number + 1);
     }
 
-    if (fi.num_blocks == FRAMES_PER_BLOCK)
+    if (fi.num_blocks == NUM_BLOCKS)
     {
       // invalid
       WARNING_LOG("Invalid block chain in block {}", dir_frame);
