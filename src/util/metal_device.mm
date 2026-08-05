@@ -350,8 +350,8 @@ bool MetalDevice::CreateDeviceAndMainSwapChain(std::string_view adapter, CreateF
 
     if (!wi.IsSurfaceless())
     {
-      m_main_swap_chain = CreateSwapChain(wi, vsync_mode, exclusive_fullscreen_mode,
-                                          exclusive_fullscreen_control, error);
+      m_main_swap_chain =
+        CreateSwapChain(wi, vsync_mode, exclusive_fullscreen_mode, exclusive_fullscreen_control, error);
       if (!m_main_swap_chain)
       {
         Error::SetStringView(error, "Failed to create layer.");
@@ -439,7 +439,7 @@ bool MetalDevice::LoadShaders(Error* error)
       return false;
     }
 
-    m_shaders = [lib retain];
+    m_shaders = lib;
     return true;
   }
 }
@@ -617,12 +617,13 @@ std::unique_ptr<GPUShader> MetalDevice::CreateShaderFromMSL(GPUShaderStage stage
     id<MTLFunction> function = [library newFunctionWithName:CocoaTools::StringViewToNSString(entry_point)];
     if (!function)
     {
+      [library release];
       ERROR_LOG("Failed to get main function in compiled library");
       Error::SetStringView(error, "Failed to get main function in compiled library");
       return {};
     }
 
-    return std::unique_ptr<MetalShader>(new MetalShader(stage, [library retain], [function retain]));
+    return std::unique_ptr<MetalShader>(new MetalShader(stage, library, function));
   }
 }
 
@@ -1159,7 +1160,7 @@ std::unique_ptr<GPUTexture> MetalDevice::CreateTexture(u32 width, u32 height, u3
 
     // This one can *definitely* go on the upload buffer.
     std::unique_ptr<GPUTexture> gtex(
-      new MetalTexture([tex retain], width, height, layers, levels, samples, type, format, flags));
+      new MetalTexture(tex, width, height, layers, levels, samples, type, format, flags));
     if (data)
     {
       // TODO: handle multi-level uploads...
@@ -1181,7 +1182,7 @@ MetalDownloadTexture::MetalDownloadTexture(u32 width, u32 height, GPUTextureForm
 
 MetalDownloadTexture::~MetalDownloadTexture()
 {
-  [m_buffer release];
+  MetalDevice::DeferRelease(m_copy_fence_counter, m_buffer);
 }
 
 std::unique_ptr<MetalDownloadTexture> MetalDownloadTexture::Create(u32 width, u32 height, GPUTextureFormat format,
@@ -1204,7 +1205,7 @@ std::unique_ptr<MetalDownloadTexture> MetalDownloadTexture::Create(u32 width, u3
     {
       map_pitch = Common::AlignUpPow2(GPUTexture::CalcUploadPitch(format, width), TEXTURE_UPLOAD_PITCH_ALIGNMENT);
       buffer_size = height * map_pitch;
-      buffer = [[dev.m_device newBufferWithLength:buffer_size options:options] retain];
+      buffer = [dev.m_device newBufferWithLength:buffer_size options:options];
       if (buffer == nil)
       {
         Error::SetStringFmt(error, "Failed to create {} byte buffer", buffer_size);
@@ -1226,10 +1227,10 @@ std::unique_ptr<MetalDownloadTexture> MetalDownloadTexture::Create(u32 width, u3
       const size_t page_aligned_size = Common::AlignUpPow2(page_offset + memory_size, HOST_PAGE_SIZE);
       DEV_LOG("Trying to import {} bytes of memory at {} for download texture", page_aligned_memory, page_aligned_size);
 
-      buffer = [[dev.m_device newBufferWithBytesNoCopy:page_aligned_memory
-                                                length:page_aligned_size
-                                               options:options
-                                           deallocator:nil] retain];
+      buffer = [dev.m_device newBufferWithBytesNoCopy:page_aligned_memory
+                                               length:page_aligned_size
+                                              options:options
+                                          deallocator:nil];
       if (buffer == nil)
       {
         Error::SetStringFmt(error, "Failed to import {} byte buffer", page_aligned_size);
@@ -1340,7 +1341,10 @@ MetalSampler::MetalSampler(id<MTLSamplerState> ss) : m_ss(ss)
 {
 }
 
-MetalSampler::~MetalSampler() = default;
+MetalSampler::~MetalSampler()
+{
+  MetalDevice::DeferRelease(m_ss);
+}
 
 #ifdef ENABLE_GPU_OBJECT_NAMES
 
@@ -1422,7 +1426,7 @@ std::unique_ptr<GPUSampler> MetalDevice::CreateSampler(const GPUSampler::Config&
       return {};
     }
 
-    return std::unique_ptr<GPUSampler>(new MetalSampler([ss retain]));
+    return std::unique_ptr<GPUSampler>(new MetalSampler(ss));
   }
 }
 
@@ -1537,11 +1541,11 @@ void MetalDevice::ResolveTextureRegion(GPUTexture* dst, u32 dst_x, u32 dst_y, u3
     {
       const bool is_depth = GPUTexture::IsDepthFormat(src_format);
       id<MTLFunction> function =
-        [GetFunctionFromLibrary(m_shaders, is_depth ? @"depthResolveKernel" : @"colorResolveKernel") autorelease];
+        GetFunctionFromLibrary(m_shaders, is_depth ? @"depthResolveKernel" : @"colorResolveKernel");
       if (function == nil)
         Panic("Failed to get resolve kernel");
 
-      MetalShader temp_shader(GPUShaderStage::Compute, m_shaders, function);
+      MetalShader temp_shader(GPUShaderStage::Compute, [m_shaders retain], function);
       GPUPipeline::ComputeConfig config;
       config.layout = GPUPipeline::Layout::ComputeMultiTextureAndPushConstants;
       config.compute_shader = &temp_shader;
