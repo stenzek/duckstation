@@ -400,6 +400,12 @@ void MDEC::WriteCommandRegister(u32 value)
 {
   TRACE_LOG("MDEC command/data register <- 0x{:08X}", value);
 
+  if (s_state.data_in_fifo.GetSpace() < 2) [[unlikely]]
+  {
+    ERROR_LOG("Writing 0x{:08X} to full MDEC FIFO", value);
+    return;
+  }
+
   s_state.data_in_fifo.Push(Truncate16(value));
   s_state.data_in_fifo.Push(Truncate16(value >> 16));
 
