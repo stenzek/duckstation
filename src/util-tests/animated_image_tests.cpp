@@ -6,6 +6,7 @@
 #include "common/error.h"
 
 #include <gtest/gtest.h>
+#include <limits>
 #include <vector>
 
 namespace {
@@ -439,6 +440,31 @@ TEST_F(AnimatedImageTest, CalculatePitch)
 {
   EXPECT_EQ(AnimatedImage::CalculatePitch(10, 5), 10 * sizeof(u32));
   EXPECT_EQ(AnimatedImage::CalculatePitch(100, 200), 100 * sizeof(u32));
+}
+
+TEST_F(AnimatedImageTest, OversizedDimensions)
+{
+  constexpr u32 max_u32 = std::numeric_limits<u32>::max();
+
+  EXPECT_EQ(AnimatedImage::CalculatePitch(max_u32, 1), 0u);
+  EXPECT_EQ(AnimatedImage::CalculatePitch(1, 0), 0u);
+
+  AnimatedImage pitch_overflow(max_u32, 1, 1, {1, 10});
+  EXPECT_FALSE(pitch_overflow.IsValid());
+
+  AnimatedImage frame_size_overflow(65536, 65536, 1, {1, 10});
+  EXPECT_FALSE(frame_size_overflow.IsValid());
+
+  AnimatedImage resized = CreateTestImage(8, 8);
+  resized.Resize(65536, 65536, 1, {1, 10}, true);
+  EXPECT_FALSE(resized.IsValid());
+
+  if constexpr (sizeof(size_t) == sizeof(u32))
+  {
+    constexpr u32 overflowing_pixel_count = (max_u32 / sizeof(AnimatedImage::PixelType)) + 1;
+    AnimatedImage storage_size_overflow(1, 1, overflowing_pixel_count, {1, 10});
+    EXPECT_FALSE(storage_size_overflow.IsValid());
+  }
 }
 
 // Multiple frame handling and frame delay tests

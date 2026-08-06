@@ -12,6 +12,7 @@
 #include "common/scoped_guard.h"
 #include "common/string_util.h"
 
+#include <limits>
 #include <png.h>
 
 // clang-format off
@@ -27,6 +28,8 @@ static bool PNGBufferSaver(const AnimatedImage& image, DynamicHeapArray<u8>* dat
 static bool PNGFileLoader(AnimatedImage* image, std::string_view filename, std::FILE* fp, Error* error);
 static bool PNGFileSaver(const AnimatedImage& image, std::string_view filename, std::FILE* fp, u8 quality,
                          Error* error);
+
+static bool CalculateAnimatedImageLayout(u32 width, u32 height, u32 frames, u32* frame_size, size_t* pixel_count);
 
 namespace {
 struct FormatHandler
@@ -54,6 +57,25 @@ static const FormatHandler* GetFormatHandler(std::string_view extension)
   return nullptr;
 }
 
+static bool CalculateAnimatedImageLayout(u32 width, u32 height, u32 frames, u32* frame_size, size_t* pixel_count)
+{
+  const u32 pitch = AnimatedImage::CalculatePitch(width, height);
+  if (pitch == 0 || frames == 0 || height > (std::numeric_limits<u32>::max() / width))
+    return false;
+
+  const u32 calculated_frame_size = width * height;
+  if (frames > (std::numeric_limits<size_t>::max() / calculated_frame_size))
+    return false;
+
+  const size_t calculated_pixel_count = static_cast<size_t>(calculated_frame_size) * frames;
+  if (calculated_pixel_count > (std::numeric_limits<size_t>::max() / sizeof(AnimatedImage::PixelType)))
+    return false;
+
+  *frame_size = calculated_frame_size;
+  *pixel_count = calculated_pixel_count;
+  return true;
+}
+
 AnimatedImage::AnimatedImage() = default;
 
 AnimatedImage::AnimatedImage(const AnimatedImage& copy)
@@ -73,41 +95,48 @@ AnimatedImage::AnimatedImage(AnimatedImage&& move)
 }
 
 AnimatedImage::AnimatedImage(u32 width, u32 height, u32 frames, const FrameDelay& default_delay)
-  : m_width(width), m_height(height), m_frame_size(width * height), m_frames(frames), m_pixels(frames * width * height),
-    m_frame_delay(frames)
 {
-  for (FrameDelay& delay : m_frame_delay)
-    delay = default_delay;
+  Resize(width, height, frames, default_delay, false);
 }
 
 void AnimatedImage::Resize(u32 new_width, u32 new_height, u32 num_frames, const FrameDelay& default_delay,
                            bool preserve)
 {
-  DebugAssert(new_width > 0 && new_height > 0 && num_frames > 0);
   if (m_width == new_width && m_height == new_height && num_frames == m_frames)
     return;
+
+  u32 new_frame_size;
+  size_t new_pixel_count;
+  if (!CalculateAnimatedImageLayout(new_width, new_height, num_frames, &new_frame_size, &new_pixel_count))
+  {
+    Invalidate();
+    return;
+  }
 
   if (!preserve)
     m_pixels.deallocate();
 
-  const u32 new_frame_size = new_width * new_height;
-
   PixelStorage new_pixels;
-  new_pixels.resize(new_frame_size * num_frames);
-  std::memset(new_pixels.data(), 0, new_pixels.size() * sizeof(u32));
+  new_pixels.resize(new_pixel_count);
+  std::memset(new_pixels.data(), 0, new_pixels.size_bytes());
   m_frame_delay.resize(num_frames);
   if (preserve && !m_pixels.empty())
   {
     const u32 copy_frames = std::min(num_frames, m_frames);
     for (u32 i = 0; i < copy_frames; i++)
     {
-      StringUtil::StrideMemCpy(new_pixels.data() + i * new_frame_size, new_width * sizeof(u32),
-                               m_pixels.data() + i * m_frame_size, m_width * sizeof(u32),
+      StringUtil::StrideMemCpy(new_pixels.data() + static_cast<size_t>(i) * new_frame_size, new_width * sizeof(u32),
+                               m_pixels.data() + static_cast<size_t>(i) * m_frame_size, m_width * sizeof(u32),
                                std::min(new_width, m_width) * sizeof(u32), std::min(new_height, m_height));
     }
 
     for (u32 i = m_frames; i < num_frames; i++)
       m_frame_delay[i] = default_delay;
+  }
+  else
+  {
+    for (FrameDelay& delay : m_frame_delay)
+      delay = default_delay;
   }
 
   m_width = new_width;
@@ -141,19 +170,22 @@ AnimatedImage& AnimatedImage::operator=(AnimatedImage&& move)
 
 u32 AnimatedImage::CalculatePitch(u32 width, u32 height)
 {
+  if (width == 0 || height == 0 || width > (std::numeric_limits<u32>::max() / sizeof(u32)))
+    return 0;
+
   return width * sizeof(u32);
 }
 
 std::span<const AnimatedImage::PixelType> AnimatedImage::GetPixelsSpan(u32 frame) const
 {
   DebugAssert(frame < m_frames);
-  return m_pixels.cspan(frame * m_frame_size, m_frame_size);
+  return m_pixels.cspan(frame * static_cast<size_t>(m_frame_size), m_frame_size);
 }
 
 std::span<AnimatedImage::PixelType> AnimatedImage::GetPixelsSpan(u32 frame)
 {
   DebugAssert(frame < m_frames);
-  return m_pixels.span(frame * m_frame_size, m_frame_size);
+  return m_pixels.span(frame * static_cast<size_t>(m_frame_size), m_frame_size);
 }
 
 void AnimatedImage::Clear()
@@ -338,6 +370,9 @@ static bool PNGCommonLoader(AnimatedImage* image, png_structp png_ptr, png_infop
 
   DebugAssert(num_frames > 0);
   image->Resize(width, height, num_frames, {1, 10}, false);
+  if (!image->IsValid())
+    png_error(png_ptr, "Image dimensions are too large");
+
   if (num_frames > 1)
   {
     for (u32 i = 0; i < num_frames; i++)
@@ -447,12 +482,11 @@ bool PNGBufferLoader(AnimatedImage* image, std::span<const u8> data, Error* erro
 
   png_set_read_fn(png_ptr, &iodata, [](png_structp png_ptr, png_bytep data_ptr, png_size_t size) {
     IOData* data = static_cast<IOData*>(png_get_io_ptr(png_ptr));
-    const size_t read_size = std::min<size_t>(data->buffer.size() - data->buffer_pos, size);
-    if (read_size > 0)
-    {
-      std::memcpy(data_ptr, &data->buffer[data->buffer_pos], read_size);
-      data->buffer_pos += read_size;
-    }
+    if (data->buffer_pos > data->buffer.size() || size > (data->buffer.size() - data->buffer_pos))
+      png_error(png_ptr, "Unexpected end of PNG data");
+
+    std::memcpy(data_ptr, data->buffer.data() + data->buffer_pos, size);
+    data->buffer_pos += size;
   });
 
   return PNGCommonLoader(image, png_ptr, info_ptr);
@@ -564,7 +598,7 @@ bool PNGBufferSaver(const AnimatedImage& image, DynamicHeapArray<u8>* data, u8 q
   };
   IOData iodata = {data, 0};
 
-  data->resize(image.GetWidth() * image.GetHeight() * 2);
+  data->resize(static_cast<size_t>(image.GetFrameSize()) * 2);
 
   PNGSetErrorFunction(png_ptr, error);
   if (setjmp(png_jmpbuf(png_ptr)))
@@ -574,11 +608,22 @@ bool PNGBufferSaver(const AnimatedImage& image, DynamicHeapArray<u8>* data, u8 q
     png_ptr, &iodata,
     [](png_structp png_ptr, png_bytep data_ptr, png_size_t size) {
       IOData* iodata = static_cast<IOData*>(png_get_io_ptr(png_ptr));
+      if (size > (std::numeric_limits<size_t>::max() - iodata->buffer_pos))
+        png_error(png_ptr, "PNG output is too large");
+
       const size_t new_pos = iodata->buffer_pos + size;
       if (new_pos > iodata->buffer->size())
-        iodata->buffer->resize(std::max(new_pos, iodata->buffer->size() * 2));
+      {
+        // try to allocate 2 * current_buffer_size
+        const size_t current_size = iodata->buffer->size();
+        const size_t growth = std::min(current_size, std::numeric_limits<size_t>::max() - current_size);
+        iodata->buffer->resize(std::max(new_pos, current_size + growth));
+      }
+      if (iodata->buffer_pos > iodata->buffer->size() || size > (iodata->buffer->size() - iodata->buffer_pos))
+        png_error(png_ptr, "PNG output buffer is too small");
+
       std::memcpy(iodata->buffer->data() + iodata->buffer_pos, data_ptr, size);
-      iodata->buffer_pos += size;
+      iodata->buffer_pos = new_pos;
     },
     [](png_structp png_ptr) {});
 

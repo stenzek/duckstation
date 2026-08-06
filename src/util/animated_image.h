@@ -42,16 +42,19 @@ public:
   ALWAYS_INLINE bool IsValid() const { return (m_width > 0 && m_height > 0); }
   ALWAYS_INLINE u32 GetWidth() const { return m_width; }
   ALWAYS_INLINE u32 GetHeight() const { return m_height; }
-  ALWAYS_INLINE u32 GetPitch() const { return (m_width * sizeof(u32)); }
+  ALWAYS_INLINE u32 GetPitch() const { return CalculatePitch(m_width, m_height); }
   ALWAYS_INLINE u32 GetFrames() const { return m_frames; }
   ALWAYS_INLINE u32 GetFrameSize() const { return m_frame_size; }
-  ALWAYS_INLINE const u32* GetPixels(u32 frame) const { return &m_pixels[frame * m_frame_size]; }
-  ALWAYS_INLINE PixelType* GetPixels(u32 frame) { return &m_pixels[frame * m_frame_size]; }
+  ALWAYS_INLINE const u32* GetPixels(u32 frame) const { return &m_pixels[static_cast<size_t>(frame) * m_frame_size]; }
+  ALWAYS_INLINE PixelType* GetPixels(u32 frame) { return &m_pixels[static_cast<size_t>(frame) * m_frame_size]; }
   ALWAYS_INLINE const PixelType* GetRowPixels(u32 frame, u32 y) const
   {
-    return &m_pixels[frame * m_frame_size + y * m_width];
+    return &m_pixels[static_cast<size_t>(frame) * m_frame_size + static_cast<size_t>(y) * m_width];
   }
-  ALWAYS_INLINE PixelType* GetRowPixels(u32 frame, u32 y) { return &m_pixels[frame * m_frame_size + y * m_width]; }
+  ALWAYS_INLINE PixelType* GetRowPixels(u32 frame, u32 y)
+  {
+    return &m_pixels[static_cast<size_t>(frame) * m_frame_size + static_cast<size_t>(y) * m_width];
+  }
   ALWAYS_INLINE const FrameDelay& GetFrameDelay(u32 frame) const { return m_frame_delay[frame]; }
 
   std::span<const PixelType> GetPixelsSpan(u32 frame) const;
