@@ -200,7 +200,7 @@ static bool LoadOneRewindState();
 static bool LoadStateFromBuffer(const SaveStateBuffer& buffer, Error* error, bool update_display);
 static bool LoadStateBufferFromFile(SaveStateBuffer* buffer, std::FILE* fp, Error* error, bool read_title,
                                     bool read_media_path, bool read_screenshot, bool read_data);
-static bool ReadAndDecompressStateData(std::FILE* fp, std::span<u8> dst, u32 file_offset, u32 compressed_size,
+static bool ReadAndDecompressStateData(std::FILE* fp, std::span<u8> dst, u32 file_offset, size_t compressed_size,
                                        SAVE_STATE_HEADER::CompressionType method, Error* error);
 static bool SaveStateToBuffer(SaveStateBuffer* buffer, Error* error, u32 screenshot_size = 256);
 static bool SaveStateBufferToFile(const SaveStateBuffer& buffer, std::FILE* fp, Error* error,
@@ -2999,7 +2999,7 @@ bool System::LoadStateBufferFromFile(SaveStateBuffer* buffer, std::FILE* fp, Err
   if (read_screenshot)
   {
     buffer->screenshot.Resize(header.screenshot_width, header.screenshot_height, ImageFormat::RGBA8, true);
-    const u32 compressed_size =
+    const size_t compressed_size =
       (header.version >= 69) ? header.screenshot_compressed_size : buffer->screenshot.GetStorageSize();
     const SAVE_STATE_HEADER::CompressionType compression_type =
       (header.version >= 69) ? static_cast<SAVE_STATE_HEADER::CompressionType>(header.screenshot_compression_type) :
@@ -3029,7 +3029,7 @@ bool System::LoadStateBufferFromFile(SaveStateBuffer* buffer, std::FILE* fp, Err
   return true;
 }
 
-bool System::ReadAndDecompressStateData(std::FILE* fp, std::span<u8> dst, u32 file_offset, u32 compressed_size,
+bool System::ReadAndDecompressStateData(std::FILE* fp, std::span<u8> dst, u32 file_offset, size_t compressed_size,
                                         SAVE_STATE_HEADER::CompressionType method, Error* error)
 {
   if (!FileSystem::FSeek64(fp, file_offset, SEEK_SET, error))
