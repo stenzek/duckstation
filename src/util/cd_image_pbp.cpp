@@ -11,8 +11,8 @@
 #include "common/path.h"
 #include "common/string_util.h"
 
-#include "fmt/format.h"
-#include "zlib.h"
+#include <fmt/format.h>
+#include <zlib.h>
 
 #include <array>
 #include <cstdio>
@@ -26,14 +26,12 @@ LOG_CHANNEL(CDImage);
 
 namespace {
 
-enum : u32
-{
-  PBP_HEADER_OFFSET_COUNT = 8u,
-  TOC_NUM_ENTRIES = 102u,
-  BLOCK_TABLE_NUM_ENTRIES = 32256u,
-  DISC_TABLE_NUM_ENTRIES = 5u,
-  DECOMPRESSED_BLOCK_SIZE = 37632u // 2352 bytes per sector * 16 sectors per block
-};
+static constexpr size_t PBP_HEADER_OFFSET_COUNT = 8u;
+static constexpr size_t TOC_NUM_ENTRIES = 102u;
+static constexpr size_t BLOCK_TABLE_NUM_ENTRIES = 32256u;
+static constexpr size_t DISC_TABLE_NUM_ENTRIES = 5u;
+static constexpr size_t DECOMPRESSED_BLOCK_SIZE = 37632u; // 2352 bytes per sector * 16 sectors per block
+static constexpr size_t SFO_TABLE_MAX_ENTRIES = 16384;    // no idea what this max is? but keep it sane
 
 #pragma pack(push, 1)
 
@@ -254,6 +252,13 @@ bool CDImagePBP::LoadSFOHeader(Error* error)
 
 bool CDImagePBP::LoadSFOIndexTable(Error* error)
 {
+  if (m_sfo_header.num_table_entries > SFO_TABLE_MAX_ENTRIES)
+  {
+    Error::SetStringFmt(error, "Too many SFO index table entries (has {}, maximum {})", m_sfo_header.num_table_entries,
+                        SFO_TABLE_MAX_ENTRIES);
+    return false;
+  }
+
   m_sfo_index_table.clear();
   m_sfo_index_table.resize(m_sfo_header.num_table_entries);
 
