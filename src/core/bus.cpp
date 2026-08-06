@@ -141,6 +141,7 @@ std::array<TickCount, 3> g_spu_access_time = {};
 static MEMCTRL s_MEMCTRL = {};
 static RAM_SIZE_REG s_RAM_SIZE = {};
 
+static constexpr size_t MAX_TTY_LINE_LENGTH = 512;
 static std::string s_tty_line_buffer;
 
 #ifdef ENABLE_MMAP_FASTMEM
@@ -947,7 +948,7 @@ void Bus::AddTTYCharacter(char ch)
   if (ch == '\r')
   {
   }
-  else if (ch == '\n')
+  else if (ch == '\n' || s_tty_line_buffer.length() >= MAX_TTY_LINE_LENGTH)
   {
     if (!s_tty_line_buffer.empty())
     {
