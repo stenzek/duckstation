@@ -95,6 +95,11 @@ static constexpr u16 SERVER_CALL_TIMEOUT = 60;
 static constexpr s64 GAME_LIST_MAX_AGE_SECONDS = 365 * 24 * 60 * 60;
 static constexpr const char* GAME_LIST_LAST_UPDATED_METADATA_KEY = "game_list_last_updated";
 
+static constexpr u32 MEMORY_RAM_SIZE = Bus::RAM_2MB_SIZE;
+static constexpr u32 MEMORY_SCRATCHPAD_SIZE = CPU::SCRATCHPAD_SIZE;
+static constexpr u32 MEMORY_SCRATCHPAD_OFFSET = MEMORY_RAM_SIZE;
+static constexpr u32 TOTAL_MEMORY_SIZE = MEMORY_RAM_SIZE + MEMORY_SCRATCHPAD_SIZE;
+
 namespace {
 
 struct LoginWithPasswordParameters
@@ -788,10 +793,10 @@ void Achievements::ClientMessageCallback(const char* message, const rc_client_t*
 
 uint32_t Achievements::ClientReadMemory(uint32_t address, uint8_t* buffer, uint32_t num_bytes, rc_client_t* client)
 {
-  if ((address + num_bytes) > 0x200400U) [[unlikely]]
+  if ((static_cast<u64>(address) + num_bytes) > TOTAL_MEMORY_SIZE) [[unlikely]]
     return 0;
 
-  const u8* src = (address >= 0x200000U) ? CPU::g_state.scratchpad.data() : Bus::g_ram;
+  const u8* src = (address >= MEMORY_SCRATCHPAD_OFFSET) ? CPU::g_state.scratchpad.data() : Bus::g_ram;
   const u32 offset = (address & Bus::RAM_2MB_MASK); // size guarded by check above
 
   switch (num_bytes)
@@ -3662,13 +3667,13 @@ void Achievements::RAIntegrationEventHandler(const rc_client_raintegration_event
 void Achievements::RAIntegrationWriteMemoryCallback(uint32_t address, uint8_t* buffer, uint32_t num_bytes,
                                                     rc_client_t* client)
 {
-  if ((address + num_bytes) > 0x200400U) [[unlikely]]
+  if ((static_cast<u64>(address) + num_bytes) > TOTAL_MEMORY_SIZE) [[unlikely]]
     return;
 
   // This can be called on the UI thread, so always queue it.
   llvm::SmallVector<u8, 16> data(buffer, buffer + num_bytes);
   Host::RunOnCoreThread([address, data = std::move(data)]() {
-    u8* src = (address >= 0x200000U) ? CPU::g_state.scratchpad.data() : Bus::g_ram;
+    u8* src = (address >= MEMORY_SCRATCHPAD_OFFSET) ? CPU::g_state.scratchpad.data() : Bus::g_ram;
     const u32 offset = (address & Bus::RAM_2MB_MASK); // size guarded by check above
 
     switch (data.size())
