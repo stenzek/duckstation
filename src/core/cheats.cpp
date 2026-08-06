@@ -2677,6 +2677,12 @@ void Cheats::GamesharkCheatCode::Apply() const
 
       case InstructionCode::ExtConstantForceRange16:
       {
+        if ((index + 1) >= count) [[unlikely]]
+        {
+          ERROR_LOG("Incomplete ExtConstantForceRange16 instruction");
+          return;
+        }
+
         const u16 min = Truncate16(inst.value32 & 0x0000FFFFu);
         const u16 max = Truncate16((inst.value32 & 0xFFFF0000u) >> 16);
         const u16 value = DoMemoryRead<u16>(inst.address);
@@ -2708,12 +2714,12 @@ void Cheats::GamesharkCheatCode::Apply() const
 
       case InstructionCode::ExtFindAndReplace:
       {
-
-        if ((index + 4) >= instructions.size())
+        if ((index + 4) >= count) [[unlikely]]
         {
-          ERROR_LOG("Incomplete find/replace instruction");
+          ERROR_LOG("Incomplete ExtFindAndReplace instruction");
           return;
         }
+
         const Instruction& inst2 = instructions[index + 1];
         const Instruction& inst3 = instructions[index + 2];
         const Instruction& inst4 = instructions[index + 3];
@@ -3132,70 +3138,60 @@ void Cheats::GamesharkCheatCode::Apply() const
               {
                 conditions_check = true;
 
-                for (int i = 1; totalConds >= i; index++, i++)
+                for (int i = 1; totalConds >= i && index < count; index++, i++)
                 {
-                  switch (instructions[index].code)
+                  const Instruction& nexti = instructions[index];
+                  switch (nexti.code)
                   {
                     case InstructionCode::CompareEqual16: // D0
-                      conditions_check &=
-                        (DoMemoryRead<u16>(instructions[index].address) == instructions[index].value16);
+                      conditions_check &= (DoMemoryRead<u16>(nexti.address) == nexti.value16);
                       break;
                     case InstructionCode::CompareNotEqual16: // D1
-                      conditions_check &=
-                        (DoMemoryRead<u16>(instructions[index].address) != instructions[index].value16);
+                      conditions_check &= (DoMemoryRead<u16>(nexti.address) != nexti.value16);
                       break;
                     case InstructionCode::CompareLess16: // D2
-                      conditions_check &=
-                        (DoMemoryRead<u16>(instructions[index].address) < instructions[index].value16);
+                      conditions_check &= (DoMemoryRead<u16>(nexti.address) < nexti.value16);
                       break;
                     case InstructionCode::CompareGreater16: // D3
-                      conditions_check &=
-                        (DoMemoryRead<u16>(instructions[index].address) > instructions[index].value16);
+                      conditions_check &= (DoMemoryRead<u16>(nexti.address) > nexti.value16);
                       break;
                     case InstructionCode::CompareEqual8: // E0
-                      conditions_check &= (DoMemoryRead<u8>(instructions[index].address) == instructions[index].value8);
+                      conditions_check &= (DoMemoryRead<u8>(nexti.address) == nexti.value8);
                       break;
                     case InstructionCode::CompareNotEqual8: // E1
-                      conditions_check &= (DoMemoryRead<u8>(instructions[index].address) != instructions[index].value8);
+                      conditions_check &= (DoMemoryRead<u8>(nexti.address) != nexti.value8);
                       break;
                     case InstructionCode::CompareLess8: // E2
-                      conditions_check &= (DoMemoryRead<u8>(instructions[index].address) < instructions[index].value8);
+                      conditions_check &= (DoMemoryRead<u8>(nexti.address) < nexti.value8);
                       break;
                     case InstructionCode::CompareGreater8: // E3
-                      conditions_check &= (DoMemoryRead<u8>(instructions[index].address) > instructions[index].value8);
+                      conditions_check &= (DoMemoryRead<u8>(nexti.address) > nexti.value8);
                       break;
                     case InstructionCode::ExtCompareEqual32: // A0
-                      conditions_check &=
-                        (DoMemoryRead<u32>(instructions[index].address) == instructions[index].value32);
+                      conditions_check &= (DoMemoryRead<u32>(nexti.address) == nexti.value32);
                       break;
                     case InstructionCode::ExtCompareNotEqual32: // A1
-                      conditions_check &=
-                        (DoMemoryRead<u32>(instructions[index].address) != instructions[index].value32);
+                      conditions_check &= (DoMemoryRead<u32>(nexti.address) != nexti.value32);
                       break;
                     case InstructionCode::ExtCompareLess32: // A2
-                      conditions_check &=
-                        (DoMemoryRead<u32>(instructions[index].address) < instructions[index].value32);
+                      conditions_check &= (DoMemoryRead<u32>(nexti.address) < nexti.value32);
                       break;
                     case InstructionCode::ExtCompareGreater32: // A3
-                      conditions_check &=
-                        (DoMemoryRead<u32>(instructions[index].address) > instructions[index].value32);
+                      conditions_check &= (DoMemoryRead<u32>(nexti.address) > nexti.value32);
                       break;
                     case InstructionCode::ExtCompareBitsSet8: // E4 Internal to F6
-                      conditions_check &=
-                        (instructions[index].value8 ==
-                         (DoMemoryRead<u8>(instructions[index].address) & instructions[index].value8));
+                      conditions_check &= (nexti.value8 == (DoMemoryRead<u8>(nexti.address) & nexti.value8));
                       break;
                     case InstructionCode::ExtCompareBitsClear8: // E5 Internal to F6
-                      conditions_check &=
-                        ((DoMemoryRead<u8>(instructions[index].address) & instructions[index].value8) == 0);
+                      conditions_check &= ((DoMemoryRead<u8>(nexti.address) & nexti.value8) == 0);
                       break;
                     case InstructionCode::ExtBitCompareButtons: // D7
                     {
-                      const u32 frame_compare_value = instructions[index].address & 0xFFFFu;
-                      const u8 cht_reg_no = Truncate8((instructions[index].value32 & 0xFF000000u) >> 24);
-                      const bool bit_comparison_type = ((instructions[index].address & 0x100000u) >> 20);
-                      const u8 frame_comparison = Truncate8((instructions[index].address & 0xF0000u) >> 16);
-                      const u32 check_value = (instructions[index].value32 & 0xFFFFFFu);
+                      const u32 frame_compare_value = nexti.address & 0xFFFFu;
+                      const u8 cht_reg_no = Truncate8((nexti.value32 & 0xFF000000u) >> 24);
+                      const bool bit_comparison_type = ((nexti.address & 0x100000u) >> 20);
+                      const u8 frame_comparison = Truncate8((nexti.address & 0xF0000u) >> 16);
+                      const u32 check_value = (nexti.value32 & 0xFFFFFFu);
                       const u32 value1 = GetControllerButtonBits();
                       const u32 value2 = GetControllerAnalogBits();
                       u32 value = value1 | value2;
@@ -3205,22 +3201,24 @@ void Cheats::GamesharkCheatCode::Apply() const
                           (bit_comparison_type == true && check_value != (value & check_value))) // Check Bits are clear
                       {
                         cht_register[cht_reg_no] += 1;
+
+                        const u32 cht_register_value = cht_register[cht_reg_no];
                         switch (frame_comparison)
                         {
                           case 0x0: // No comparison on frame count, just do it
                             conditions_check &= true;
                             break;
                           case 0x1: // Check if frame_compare_value == current count
-                            conditions_check &= (cht_register[cht_reg_no] == frame_compare_value);
+                            conditions_check &= (cht_register_value == frame_compare_value);
                             break;
                           case 0x2: // Check if frame_compare_value < current count
-                            conditions_check &= (cht_register[cht_reg_no] < frame_compare_value);
+                            conditions_check &= (cht_register_value < frame_compare_value);
                             break;
                           case 0x3: // Check if frame_compare_value > current count
-                            conditions_check &= (cht_register[cht_reg_no] > frame_compare_value);
+                            conditions_check &= (cht_register_value > frame_compare_value);
                             break;
                           case 0x4: // Check if frame_compare_value != current count
-                            conditions_check &= (cht_register[cht_reg_no] != frame_compare_value);
+                            conditions_check &= (cht_register_value != frame_compare_value);
                             break;
                           default:
                             conditions_check &= false;
@@ -3244,70 +3242,60 @@ void Cheats::GamesharkCheatCode::Apply() const
               {
                 conditions_check = false;
 
-                for (int i = 1; totalConds >= i; index++, i++)
+                for (int i = 1; totalConds >= i && index < count; index++, i++)
                 {
-                  switch (instructions[index].code)
+                  const Instruction& nexti = instructions[index];
+                  switch (nexti.code)
                   {
                     case InstructionCode::CompareEqual16: // D0
-                      conditions_check |=
-                        (DoMemoryRead<u16>(instructions[index].address) == instructions[index].value16);
+                      conditions_check |= (DoMemoryRead<u16>(nexti.address) == nexti.value16);
                       break;
                     case InstructionCode::CompareNotEqual16: // D1
-                      conditions_check |=
-                        (DoMemoryRead<u16>(instructions[index].address) != instructions[index].value16);
+                      conditions_check |= (DoMemoryRead<u16>(nexti.address) != nexti.value16);
                       break;
                     case InstructionCode::CompareLess16: // D2
-                      conditions_check |=
-                        (DoMemoryRead<u16>(instructions[index].address) < instructions[index].value16);
+                      conditions_check |= (DoMemoryRead<u16>(nexti.address) < nexti.value16);
                       break;
                     case InstructionCode::CompareGreater16: // D3
-                      conditions_check |=
-                        (DoMemoryRead<u16>(instructions[index].address) > instructions[index].value16);
+                      conditions_check |= (DoMemoryRead<u16>(nexti.address) > nexti.value16);
                       break;
                     case InstructionCode::CompareEqual8: // E0
-                      conditions_check |= (DoMemoryRead<u8>(instructions[index].address) == instructions[index].value8);
+                      conditions_check |= (DoMemoryRead<u8>(nexti.address) == nexti.value8);
                       break;
                     case InstructionCode::CompareNotEqual8: // E1
-                      conditions_check |= (DoMemoryRead<u8>(instructions[index].address) != instructions[index].value8);
+                      conditions_check |= (DoMemoryRead<u8>(nexti.address) != nexti.value8);
                       break;
                     case InstructionCode::CompareLess8: // E2
-                      conditions_check |= (DoMemoryRead<u8>(instructions[index].address) < instructions[index].value8);
+                      conditions_check |= (DoMemoryRead<u8>(nexti.address) < nexti.value8);
                       break;
                     case InstructionCode::CompareGreater8: // E3
-                      conditions_check |= (DoMemoryRead<u8>(instructions[index].address) > instructions[index].value8);
+                      conditions_check |= (DoMemoryRead<u8>(nexti.address) > nexti.value8);
                       break;
                     case InstructionCode::ExtCompareEqual32: // A0
-                      conditions_check |=
-                        (DoMemoryRead<u32>(instructions[index].address) == instructions[index].value32);
+                      conditions_check |= (DoMemoryRead<u32>(nexti.address) == nexti.value32);
                       break;
                     case InstructionCode::ExtCompareNotEqual32: // A1
-                      conditions_check |=
-                        (DoMemoryRead<u32>(instructions[index].address) != instructions[index].value32);
+                      conditions_check |= (DoMemoryRead<u32>(nexti.address) != nexti.value32);
                       break;
                     case InstructionCode::ExtCompareLess32: // A2
-                      conditions_check |=
-                        (DoMemoryRead<u32>(instructions[index].address) < instructions[index].value32);
+                      conditions_check |= (DoMemoryRead<u32>(nexti.address) < nexti.value32);
                       break;
                     case InstructionCode::ExtCompareGreater32: // A3
-                      conditions_check |=
-                        (DoMemoryRead<u32>(instructions[index].address) > instructions[index].value32);
+                      conditions_check |= (DoMemoryRead<u32>(nexti.address) > nexti.value32);
                       break;
                     case InstructionCode::ExtCompareBitsSet8: // E4 Internal to F6
-                      conditions_check |=
-                        (instructions[index].value8 ==
-                         (DoMemoryRead<u8>(instructions[index].address) & instructions[index].value8));
+                      conditions_check |= (nexti.value8 == (DoMemoryRead<u8>(nexti.address) & nexti.value8));
                       break;
                     case InstructionCode::ExtCompareBitsClear8: // E5 Internal to F6
-                      conditions_check |=
-                        ((DoMemoryRead<u8>(instructions[index].address) & instructions[index].value8) == 0);
+                      conditions_check |= ((DoMemoryRead<u8>(nexti.address) & nexti.value8) == 0);
                       break;
                     case InstructionCode::ExtBitCompareButtons: // D7
                     {
-                      const u32 frame_compare_value = instructions[index].address & 0xFFFFu;
-                      const u8 cht_reg_no = Truncate8((instructions[index].value32 & 0xFF000000u) >> 24);
-                      const bool bit_comparison_type = ((instructions[index].address & 0x100000u) >> 20);
-                      const u8 frame_comparison = Truncate8((instructions[index].address & 0xF0000u) >> 16);
-                      const u32 check_value = (instructions[index].value32 & 0xFFFFFFu);
+                      const u32 frame_compare_value = nexti.address & 0xFFFFu;
+                      const u8 cht_reg_no = Truncate8((nexti.value32 & 0xFF000000u) >> 24);
+                      const bool bit_comparison_type = ((nexti.address & 0x100000u) >> 20);
+                      const u8 frame_comparison = Truncate8((nexti.address & 0xF0000u) >> 16);
+                      const u32 check_value = (nexti.value32 & 0xFFFFFFu);
                       const u32 value1 = GetControllerButtonBits();
                       const u32 value2 = GetControllerAnalogBits();
                       u32 value = value1 | value2;
@@ -3317,22 +3305,24 @@ void Cheats::GamesharkCheatCode::Apply() const
                           (bit_comparison_type == true && check_value != (value & check_value))) // Check Bits are clear
                       {
                         cht_register[cht_reg_no] += 1;
+
+                        const u32 cht_register_value = cht_register[cht_reg_no];
                         switch (frame_comparison)
                         {
                           case 0x0: // No comparison on frame count, just do it
                             conditions_check |= true;
                             break;
                           case 0x1: // Check if frame_compare_value == current count
-                            conditions_check |= (cht_register[cht_reg_no] == frame_compare_value);
+                            conditions_check |= (cht_register_value == frame_compare_value);
                             break;
                           case 0x2: // Check if frame_compare_value < current count
-                            conditions_check |= (cht_register[cht_reg_no] < frame_compare_value);
+                            conditions_check |= (cht_register_value < frame_compare_value);
                             break;
                           case 0x3: // Check if frame_compare_value > current count
-                            conditions_check |= (cht_register[cht_reg_no] > frame_compare_value);
+                            conditions_check |= (cht_register_value > frame_compare_value);
                             break;
                           case 0x4: // Check if frame_compare_value != current count
-                            conditions_check |= (cht_register[cht_reg_no] != frame_compare_value);
+                            conditions_check |= (cht_register_value != frame_compare_value);
                             break;
                           default:
                             conditions_check |= false;
@@ -3374,6 +3364,9 @@ void Cheats::GamesharkCheatCode::Apply() const
                   const u64 bits = instructions[index++].bits;
                   if (bits == separator_value)
                   {
+                    if (index >= count) [[unlikely]]
+                      break;
+
                     const u64 bits_ahead = instructions[index].bits;
                     if ((bits_ahead & 0xFFFFFF00u) == elseif_value)
                     {
@@ -3997,9 +3990,9 @@ void Cheats::GamesharkCheatCode::Apply() const
 
       case InstructionCode::Slide:
       {
-        if ((index + 1) >= instructions.size())
+        if ((index + 1) >= count) [[unlikely]]
         {
-          ERROR_LOG("Incomplete slide instruction");
+          ERROR_LOG("Incomplete Slide instruction");
           return;
         }
 
@@ -4049,9 +4042,9 @@ void Cheats::GamesharkCheatCode::Apply() const
 
       case InstructionCode::ExtImprovedSlide:
       {
-        if ((index + 1) >= instructions.size())
+        if ((index + 1) >= count) [[unlikely]]
         {
-          ERROR_LOG("Incomplete slide instruction");
+          ERROR_LOG("Incomplete ExtImprovedSlide instruction");
           return;
         }
 
@@ -4217,9 +4210,9 @@ void Cheats::GamesharkCheatCode::Apply() const
 
       case InstructionCode::MemoryCopy:
       {
-        if ((index + 1) >= instructions.size())
+        if ((index + 1) >= count)
         {
-          ERROR_LOG("Incomplete memory copy instruction");
+          ERROR_LOG("Incomplete MemoryCopy instruction");
           return;
         }
 
