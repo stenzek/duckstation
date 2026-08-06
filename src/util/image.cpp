@@ -18,6 +18,7 @@
 #include "common/string_util.h"
 
 #include <jpeglib.h>
+#include <limits>
 #include <plutosvg.h>
 #include <png.h>
 #include <webp/decode.h>
@@ -82,6 +83,22 @@ static const FormatHandler* GetFormatHandler(std::string_view extension)
 static void SwapBGRAToRGBA(void* RESTRICT pixels_out, u32 pixels_out_pitch, const void* RESTRICT pixels_in,
                            u32 pixels_in_pitch, u32 width, u32 height);
 
+static bool CalculateImageLayout(u32 width, u32 height, ImageFormat format, u32* pitch, size_t* storage_size)
+{
+  if (width == 0 || height == 0 || format == ImageFormat::None || format >= ImageFormat::MaxCount)
+    return false;
+
+  const bool compressed = Image::IsCompressedFormat(format);
+  const size_t blocks_high = compressed ? ((height / 4) + ((height % 4) != 0)) : height;
+  const u32 calculated_pitch = Image::CalculatePitch(width, height, format);
+  if (calculated_pitch == 0 || blocks_high > (std::numeric_limits<size_t>::max() / calculated_pitch))
+    return false;
+
+  *pitch = calculated_pitch;
+  *storage_size = static_cast<size_t>(calculated_pitch) * blocks_high;
+  return true;
+}
+
 Image::Image() = default;
 
 Image::Image(const Image& copy)
@@ -95,8 +112,8 @@ Image::Image(u32 width, u32 height, ImageFormat format, const void* pixels, u32 
 }
 
 Image::Image(u32 width, u32 height, ImageFormat format, PixelStorage pixels, u32 pitch)
-  : m_width(width), m_height(height), m_pitch(pitch), m_format(format), m_pixels(std::move(pixels))
 {
+  SetPixels(width, height, format, std::move(pixels), pitch);
 }
 
 Image::Image(u32 width, u32 height, ImageFormat format)
@@ -123,7 +140,9 @@ void Image::Resize(u32 new_width, u32 new_height, ImageFormat format, bool prese
   if (m_width == new_width && m_height == new_height && m_format == format)
     return;
 
-  if (new_width == 0 || new_height == 0)
+  u32 new_pitch;
+  size_t new_storage_size;
+  if (!CalculateImageLayout(new_width, new_height, format, &new_pitch, &new_storage_size))
   {
     Invalidate();
     return;
@@ -135,13 +154,12 @@ void Image::Resize(u32 new_width, u32 new_height, ImageFormat format, bool prese
   const u32 old_blocks_y = GetBlocksHigh();
   const u32 old_pitch = m_pitch;
   PixelStorage old_pixels =
-    std::exchange(m_pixels, Common::make_unique_aligned_for_overwrite<u8[]>(
-                              VECTOR_ALIGNMENT, CalculateStorageSize(new_width, new_height, format)));
+    std::exchange(m_pixels, Common::make_unique_aligned_for_overwrite<u8[]>(VECTOR_ALIGNMENT, new_storage_size));
 
   m_width = new_width;
   m_height = new_height;
   m_format = format;
-  m_pitch = CalculatePitch(new_width, new_height, format);
+  m_pitch = new_pitch;
   if (preserve && old_pixels)
   {
     StringUtil::StrideMemCpy(m_pixels.get(), m_pitch, old_pixels.get(), old_pitch, std::min(old_pitch, m_pitch),
@@ -211,45 +229,51 @@ bool Image::IsCompressedFormat(ImageFormat format)
 
 u32 Image::CalculatePitch(u32 width, u32 height, ImageFormat format)
 {
-  const u32 pixel_size = GetPixelSize(format);
-  if (!IsCompressedFormat(format))
-    return Common::AlignUpPow2(width * pixel_size, 4);
+  if (width == 0 || height == 0 || format == ImageFormat::None || format >= ImageFormat::MaxCount)
+    return 0;
 
-  // All compressed formats use a block size of 4.
-  const u32 blocks_wide = Common::AlignUpPow2(width, 4) / 4;
-  return blocks_wide * pixel_size;
+  const size_t pixel_size = GetPixelSize(format);
+  const bool compressed = IsCompressedFormat(format);
+  const size_t blocks_wide = compressed ? ((width / 4) + ((width % 4) != 0)) : width;
+  if (blocks_wide > (std::numeric_limits<u32>::max() / pixel_size))
+    return 0;
+
+  const size_t row_size = blocks_wide * pixel_size;
+  if (!compressed && row_size > (std::numeric_limits<u32>::max() - 3))
+    return 0;
+
+  return static_cast<u32>(compressed ? row_size : Common::AlignUpPow2(row_size, static_cast<size_t>(4)));
 }
 
-u32 Image::CalculateStorageSize(u32 width, u32 height, ImageFormat format)
+size_t Image::CalculateStorageSize(u32 width, u32 height, ImageFormat format)
 {
-  const u32 pixel_size = GetPixelSize(format);
-  if (!IsCompressedFormat(format))
-    return Common::AlignUpPow2(width * pixel_size, 4) * height;
-
-  const u32 blocks_wide = Common::AlignUpPow2(width, 4) / 4;
-  const u32 blocks_high = Common::AlignUpPow2(height, 4) / 4;
-  return (blocks_wide * pixel_size) * blocks_high;
+  u32 pitch;
+  size_t storage_size;
+  return CalculateImageLayout(width, height, format, &pitch, &storage_size) ? storage_size : 0;
 }
 
-u32 Image::CalculateStorageSize(u32 width, u32 height, u32 pitch, ImageFormat format)
+size_t Image::CalculateStorageSize(u32 width, u32 height, u32 pitch, ImageFormat format)
 {
-  height = IsCompressedFormat(format) ? (Common::AlignUpPow2(height, 4) / 4) : height;
-  return pitch * height;
+  if (width == 0 || height == 0 || format == ImageFormat::None || format >= ImageFormat::MaxCount)
+    return 0;
+
+  const size_t blocks_high = IsCompressedFormat(format) ? ((height / 4) + ((height % 4) != 0)) : height;
+  return (blocks_high > (std::numeric_limits<size_t>::max() / pitch)) ? 0 : (static_cast<size_t>(pitch) * blocks_high);
 }
 
 u32 Image::GetBlocksWide() const
 {
-  return IsCompressedFormat(m_format) ? (Common::AlignUpPow2(m_width, 4) / 4) : m_width;
+  return IsCompressedFormat(m_format) ? ((m_width / 4) + ((m_width % 4) != 0)) : m_width;
 }
 
 u32 Image::GetBlocksHigh() const
 {
-  return IsCompressedFormat(m_format) ? (Common::AlignUpPow2(m_height, 4) / 4) : m_height;
+  return IsCompressedFormat(m_format) ? ((m_height / 4) + ((m_height % 4) != 0)) : m_height;
 }
 
-u32 Image::GetStorageSize() const
+size_t Image::GetStorageSize() const
 {
-  return GetBlocksHigh() * m_pitch;
+  return static_cast<size_t>(GetBlocksHigh()) * m_pitch;
 }
 
 std::span<const u8> Image::GetPixelsSpan() const
@@ -278,6 +302,13 @@ void Image::Invalidate()
 
 void Image::SetPixels(u32 width, u32 height, ImageFormat format, const void* pixels, u32 pitch)
 {
+  const u32 required_pitch = CalculatePitch(width, height, format);
+  if (required_pitch == 0 || pitch < required_pitch)
+  {
+    Invalidate();
+    return;
+  }
+
   Resize(width, height, format, false);
   if (m_pixels)
     StringUtil::StrideMemCpy(m_pixels.get(), m_pitch, pixels, pitch, m_pitch, GetBlocksHigh());
@@ -285,6 +316,13 @@ void Image::SetPixels(u32 width, u32 height, ImageFormat format, const void* pix
 
 void Image::SetPixels(u32 width, u32 height, ImageFormat format, PixelStorage pixels, u32 pitch)
 {
+  const u32 required_pitch = CalculatePitch(width, height, format);
+  if (required_pitch == 0 || pitch < required_pitch || CalculateStorageSize(width, height, pitch, format) == 0)
+  {
+    Invalidate();
+    return;
+  }
+
   m_width = width;
   m_height = height;
   m_format = format;
@@ -457,8 +495,15 @@ bool Image::RasterizeSVG(const std::span<const u8> data, u32 width, u32 height,
 
   // pad out canvas if we're positioning it
   Resize(canvas_width, canvas_height, ImageFormat::RGBA8, false);
-  if (canvas_width != width || canvas_height != height)
+  if (!IsValid())
+  {
+    Error::SetStringFmt(error, "Image dimensions are too large: {}x{}", canvas_width, canvas_height);
+    return false;
+  }
+  else if (canvas_width != width || canvas_height != height)
+  {
     Clear();
+  }
 
   // lunasvg works in BGRA, swap to RGBA
   SwapBGRAToRGBA(m_pixels.get() + (canvas_offset_y * m_pitch) + (canvas_offset_x * sizeof(u32)), m_pitch,
@@ -946,6 +991,11 @@ static bool PNGCommonLoader(Image* image, png_structp png_ptr, png_infop info_pt
   png_read_update_info(png_ptr, info_ptr);
 
   image->Resize(width, height, ImageFormat::RGBA8, false);
+  if (!image->IsValid())
+  {
+    png_error(png_ptr, "Image dimensions are too large");
+    return false;
+  }
 
   const int passes = png_set_interlace_handling(png_ptr);
   for (int pass = 0; pass < passes; pass++)
@@ -1118,7 +1168,7 @@ bool PNGBufferSaver(const Image& image, DynamicHeapArray<u8>* data, u8 quality, 
   };
   IOData iodata = {data, 0};
 
-  data->resize(image.GetWidth() * image.GetHeight() * 2);
+  data->resize(image.GetStorageSize() / 2);
 
   PNGSetErrorFunction(png_ptr, error);
   if (setjmp(png_jmpbuf(png_ptr)))
@@ -1209,7 +1259,13 @@ static bool WrapJPEGDecompress(Image* image, Error* error, T setup_func)
   }
 
   image->Resize(info.image_width, info.image_height, ImageFormat::RGBA8, false);
-  scanline.resize(info.image_width * 3);
+  if (!image->IsValid())
+  {
+    Error::SetStringFmt(error, "Image dimensions are too large: {}x{}", info.image_width, info.image_height);
+    jpeg_destroy_decompress(&info);
+    return false;
+  }
+  scanline.resize(static_cast<size_t>(info.image_width) * 3);
 
   u8* scanline_buffer[1] = {scanline.data()};
   bool result = true;
@@ -1339,7 +1395,7 @@ static bool WrapJPEGCompress(const Image& image, u8 quality, Error* error, T set
   jpeg_set_quality(&info, quality, TRUE);
   jpeg_start_compress(&info, TRUE);
 
-  scanline.resize(image.GetWidth() * 3);
+  scanline.resize(static_cast<size_t>(image.GetWidth()) * 3);
   u8* scanline_buffer[1] = {scanline.data()};
   bool result = true;
   for (u32 y = 0; y < info.image_height; y++)
@@ -1373,7 +1429,7 @@ static bool WrapJPEGCompress(const Image& image, u8 quality, Error* error, T set
 bool JPEGBufferSaver(const Image& image, DynamicHeapArray<u8>* buffer, u8 quality, Error* error)
 {
   // give enough space to avoid reallocs
-  buffer->resize(image.GetWidth() * image.GetHeight() * 2);
+  buffer->resize(image.GetStorageSize() / 2);
 
   struct MemCallback
   {
@@ -1475,6 +1531,12 @@ bool WebPBufferLoader(Image* image, std::span<const u8> data, Error* error)
   }
 
   image->Resize(static_cast<u32>(width), static_cast<u32>(height), ImageFormat::RGBA8, false);
+  if (!image->IsValid())
+  {
+    Error::SetStringFmt(error, "Image dimensions are too large: {}x{}", width, height);
+    return false;
+  }
+
   if (!WebPDecodeRGBAInto(data.data(), data.size(), image->GetPixels(), image->GetStorageSize(), image->GetPitch()))
   {
     Error::SetStringView(error, "WebPDecodeRGBAInto() failed");
@@ -1878,6 +1940,12 @@ bool DDSFileLoader(Image* image, std::string_view path, std::FILE* fp, Error* er
     return false;
 
   image->Resize(info.width, info.height, info.format, false);
+  if (!image->IsValid())
+  {
+    Error::SetStringFmt(error, "Image dimensions are too large: {}x{}", info.width, info.height);
+    return false;
+  }
+
   const u32 blocks = image->GetBlocksHigh();
   if (image->GetPitch() != info.base_image_pitch)
   {
@@ -1892,7 +1960,7 @@ bool DDSFileLoader(Image* image, std::string_view path, std::FILE* fp, Error* er
   }
   else
   {
-    if (std::fread(image->GetPixels(), info.base_image_pitch * blocks, 1, fp) != 1)
+    if (std::fread(image->GetPixels(), static_cast<size_t>(info.base_image_pitch) * blocks, 1, fp) != 1)
     {
       Error::SetErrno(error, "fread() failed: ", errno);
       return false;
@@ -1932,6 +2000,11 @@ bool DDSBufferLoader(Image* image, std::span<const u8> data, Error* error)
 
   image->SetPixels(info.width, info.height, info.format, &data[static_cast<size_t>(info.base_image_offset)],
                    info.base_image_pitch);
+  if (!image->IsValid())
+  {
+    Error::SetStringFmt(error, "Image dimensions are too large: {}x{}", info.width, info.height);
+    return false;
+  }
 
   if (info.clear_alpha)
     image->SetAllPixelsOpaque();

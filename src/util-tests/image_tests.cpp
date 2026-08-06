@@ -7,6 +7,7 @@
 
 #include "gtest/gtest.h"
 
+#include <limits>
 #include <type_traits>
 
 namespace {
@@ -444,7 +445,7 @@ TEST_F(ImageTest, PitchAndStorage)
   const u32 rgba_pitch = Image::CalculatePitch(width, height, ImageFormat::RGBA8);
   EXPECT_EQ(rgba_pitch, width * 4); // 4 bytes per pixel
 
-  const u32 rgba_storage = Image::CalculateStorageSize(width, height, ImageFormat::RGBA8);
+  const size_t rgba_storage = Image::CalculateStorageSize(width, height, ImageFormat::RGBA8);
   EXPECT_EQ(rgba_storage, rgba_pitch * height);
 
   // Test compressed format (BC1)
@@ -452,9 +453,27 @@ TEST_F(ImageTest, PitchAndStorage)
   // BC1 uses 8 bytes per 4x4 block
   EXPECT_EQ(bc1_pitch, (width / 4) * 8);
 
-  const u32 bc1_storage = Image::CalculateStorageSize(width, height, ImageFormat::BC1);
+  const size_t bc1_storage = Image::CalculateStorageSize(width, height, ImageFormat::BC1);
   // Storage should be pitch * number of blocks high
   EXPECT_EQ(bc1_storage, bc1_pitch * (height / 4));
+}
+
+TEST_F(ImageTest, OversizedDimensions)
+{
+  constexpr u32 max_u32 = std::numeric_limits<u32>::max();
+
+  EXPECT_EQ(Image::CalculatePitch(max_u32, 1, ImageFormat::RGBA8), 0u);
+  EXPECT_EQ(Image::CalculateStorageSize(max_u32, 1, ImageFormat::RGBA8), 0u);
+  EXPECT_EQ(Image::CalculatePitch(max_u32, 1, ImageFormat::BC7), 0u);
+
+  EXPECT_EQ(Image::CalculatePitch(1, max_u32, ImageFormat::RGBA8), 4u);
+  if constexpr (sizeof(size_t) == sizeof(u32))
+    EXPECT_EQ(Image::CalculateStorageSize(1, max_u32, ImageFormat::RGBA8), 0u);
+  else
+    EXPECT_EQ(Image::CalculateStorageSize(1, max_u32, ImageFormat::RGBA8), static_cast<size_t>(max_u32) * 4);
+
+  m_test_image.Resize(max_u32, 1, ImageFormat::RGBA8, false);
+  EXPECT_FALSE(m_test_image.IsValid());
 }
 
 // Test flip Y operation

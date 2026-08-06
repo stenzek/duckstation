@@ -53,8 +53,8 @@ public:
   static u32 GetPixelSize(ImageFormat format);
   static bool IsCompressedFormat(ImageFormat format);
   static u32 CalculatePitch(u32 width, u32 height, ImageFormat format);
-  static u32 CalculateStorageSize(u32 width, u32 height, ImageFormat format);
-  static u32 CalculateStorageSize(u32 width, u32 height, u32 pitch, ImageFormat format);
+  static size_t CalculateStorageSize(u32 width, u32 height, ImageFormat format);
+  static size_t CalculateStorageSize(u32 width, u32 height, u32 pitch, ImageFormat format);
 
   ALWAYS_INLINE bool IsValid() const { return (m_width > 0 && m_height > 0); }
   ALWAYS_INLINE u32 GetWidth() const { return m_width; }
@@ -63,12 +63,12 @@ public:
   ALWAYS_INLINE ImageFormat GetFormat() const { return m_format; }
   ALWAYS_INLINE const u8* GetPixels() const { return std::assume_aligned<VECTOR_ALIGNMENT>(m_pixels.get()); }
   ALWAYS_INLINE u8* GetPixels() { return std::assume_aligned<VECTOR_ALIGNMENT>(m_pixels.get()); }
-  ALWAYS_INLINE const u8* GetRowPixels(u32 y) const { return &m_pixels[y * m_pitch]; }
-  ALWAYS_INLINE u8* GetRowPixels(u32 y) { return &m_pixels[y * m_pitch]; }
+  ALWAYS_INLINE const u8* GetRowPixels(u32 y) const { return &m_pixels[static_cast<size_t>(y) * m_pitch]; }
+  ALWAYS_INLINE u8* GetRowPixels(u32 y) { return &m_pixels[static_cast<size_t>(y) * m_pitch]; }
 
   u32 GetBlocksWide() const;
   u32 GetBlocksHigh() const;
-  u32 GetStorageSize() const;
+  size_t GetStorageSize() const;
 
   std::span<const u8> GetPixelsSpan() const;
   std::span<u8> GetPixelsSpan();
