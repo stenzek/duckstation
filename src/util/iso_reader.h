@@ -138,7 +138,10 @@ public:
     u8 filename_length;
 
     ALWAYS_INLINE bool IsDirectory() const { return (flags & ISODirectoryEntryFlag_Directory); }
-    ALWAYS_INLINE u32 GetSizeInSectors() const { return (length_le + (SECTOR_SIZE - 1)) / SECTOR_SIZE; }
+    ALWAYS_INLINE u32 GetSizeInSectors() const
+    {
+      return (length_le / SECTOR_SIZE) + static_cast<u32>((length_le % SECTOR_SIZE) != 0);
+    }
   };
 
 #pragma pack(pop)
