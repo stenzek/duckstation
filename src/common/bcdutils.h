@@ -14,11 +14,11 @@ ALWAYS_INLINE constexpr u8 PackedBCDToBinary(u8 value)
 {
   return ((value >> 4) * 10) + (value % 16);
 }
-ALWAYS_INLINE constexpr u8 IsValidBCDDigit(u8 digit)
+ALWAYS_INLINE constexpr bool IsValidBCDDigit(u8 digit)
 {
   return (digit <= 9);
 }
-ALWAYS_INLINE constexpr u8 IsValidPackedBCD(u8 value)
+ALWAYS_INLINE constexpr bool IsValidPackedBCD(u8 value)
 {
   return IsValidBCDDigit(value & 0x0F) && IsValidBCDDigit(value >> 4);
 }
