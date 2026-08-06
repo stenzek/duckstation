@@ -34,11 +34,12 @@ STRIP=strip
 
 declare -a MANUAL_LIBS=(
 	"libz.so.1"
-	"libavcodec.so.62"
-	"libavformat.so.62"
-	"libavutil.so.60"
-	"libswscale.so.9"
-	"libswresample.so.6"
+	"libavcodec.so.63"
+	"libavformat.so.63"
+	"libavutil.so.61"
+	"libswscale.so.10"
+	"libswresample.so.7"
+	"libopenh264.so.8"
 	"libharfbuzz.so"
 	"libfreetype.so.6"
 )

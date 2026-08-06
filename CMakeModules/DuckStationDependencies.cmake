@@ -58,15 +58,15 @@ find_package(WebP 1.6.0 REQUIRED
              NO_DEFAULT_PATH PATHS "${DEPS_PATH}/share/WebP/cmake")
 find_package(PNG 1.6.58 REQUIRED
              NO_DEFAULT_PATH PATHS "${DEPS_PATH}/lib/cmake/PNG")
-find_package(libjpeg-turbo 3.1.4.1 REQUIRED
+find_package(libjpeg-turbo 3.2.0 REQUIRED
              NO_DEFAULT_PATH PATHS "${DEPS_PATH}/lib/cmake/libjpeg-turbo")
 find_package(freetype 2.14.3 REQUIRED
              NO_DEFAULT_PATH PATHS "${DEPS_PATH}/lib/cmake/freetype")
 find_package(harfbuzz REQUIRED
              NO_DEFAULT_PATH PATHS "${DEPS_PATH}/lib/cmake/harfbuzz")
-find_package(SQLite3 3.53.3 REQUIRED
+find_package(SQLite3 3.53.4 REQUIRED
              NO_DEFAULT_PATH PATHS "${DEPS_PATH}/lib/cmake/SQLite3")
-find_package(plutosvg 0.0.7 REQUIRED
+find_package(plutosvg 0.0.8 REQUIRED
              NO_DEFAULT_PATH PATHS "${DEPS_PATH}/lib/cmake/plutosvg")
 find_package(cpuinfo REQUIRED
              NO_DEFAULT_PATH PATHS "${DEPS_PATH}/lib/cmake/cpuinfo")
@@ -76,11 +76,11 @@ find_package(SoundTouch 2.3.3 REQUIRED
              NO_DEFAULT_PATH PATHS "${DEPS_PATH}/lib/cmake/SoundTouch")
 find_package(libzip 1.11.4 REQUIRED
              NO_DEFAULT_PATH PATHS "${DEPS_PATH}/lib/cmake/libzip")
-find_package(Shaderc 2026.1 REQUIRED
+find_package(Shaderc 2026.3 REQUIRED
              NO_DEFAULT_PATH PATHS "${DEPS_PATH}/lib/cmake/Shaderc")
 find_package(spirv_cross_c_shared REQUIRED
              NO_DEFAULT_PATH PATHS "${DEPS_PATH}/share/spirv_cross_c_shared/cmake")
-find_package(SDL3 3.4.12 REQUIRED
+find_package(SDL3 3.4.14 REQUIRED
              NO_DEFAULT_PATH PATHS "${DEPS_PATH}/lib/cmake/SDL3")
 
 # All our builds include Qt, so this is not a problem.
@@ -125,7 +125,7 @@ if(NOT APPLE)
   endif()
 endif()
 
-find_package(FFMPEG 8.1.1 COMPONENTS avcodec avformat avutil swresample swscale)
+find_package(FFMPEG 9.0 COMPONENTS avcodec avformat avutil swresample swscale)
 if(NOT FFMPEG_FOUND)
   message(WARNING "FFmpeg not found, using bundled headers.")
   set(FFMPEG_INCLUDE_DIRS "${CMAKE_SOURCE_DIR}/dep/ffmpeg/include")
