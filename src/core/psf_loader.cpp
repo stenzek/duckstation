@@ -70,7 +70,7 @@ float PSFLoader::File::GetTagFloat(const char* tag_name, float default_value) co
 bool PSFLoader::File::Load(const char* path, Error* error)
 {
   std::optional<DynamicHeapArray<u8>> file_data(FileSystem::ReadBinaryFile(path, error));
-  if (!file_data.has_value() || file_data->empty())
+  if (!file_data.has_value() || file_data->size() < sizeof(PSFHeader))
     return false;
 
   const u8* file_pointer = file_data->data();
@@ -122,6 +122,13 @@ bool PSFLoader::File::Load(const char* path, Error* error)
   m_program_data.resize(strm.total_out);
   file_pointer += header.compressed_program_size;
   inflateEnd(&strm);
+
+  // Check program data size before bothering to parse the rest.
+  if (m_program_data.size() < sizeof(BIOS::PSEXEHeader))
+  {
+    Error::SetStringView(error, "File is missing PS-EXE header.");
+    return false;
+  }
 
   u32 remaining_tag_data = static_cast<u32>(file_pointer_end - file_pointer);
   static constexpr char tag_signature[] = {'[', 'T', 'A', 'G', ']'};
