@@ -12,6 +12,7 @@ add_executable(util-tests
   image_tests.cpp
   ini_settings_interface_tests.cpp
   object_archive_tests.cpp
+  shiftjis_tests.cpp
   stub_host.cpp
 )
 
