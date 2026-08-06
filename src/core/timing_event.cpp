@@ -17,6 +17,8 @@ LOG_CHANNEL(TimingEvents);
 
 namespace TimingEvents {
 
+static constexpr size_t MAX_NAME_LENGTH = 128;
+
 static GlobalTicks GetTimestampForNewEvent();
 
 static void SortEvent(TimingEvent* event);
@@ -422,7 +424,7 @@ bool TimingEvents::DoState(StateWrapper& sw)
     {
       TinyString event_name;
       TickCount downcount, time_since_last_run, period, interval;
-      sw.Do(&event_name);
+      sw.Do(&event_name, MAX_NAME_LENGTH);
       sw.Do(&downcount);
       sw.Do(&time_since_last_run);
       sw.Do(&period);
@@ -477,7 +479,7 @@ bool TimingEvents::DoState(StateWrapper& sw)
         TinyString event_name;
         GlobalTicks next_run_time, last_run_time;
         TickCount period, interval;
-        sw.Do(&event_name);
+        sw.Do(&event_name, MAX_NAME_LENGTH);
         sw.Do(&next_run_time);
         sw.Do(&last_run_time);
         sw.Do(&period);

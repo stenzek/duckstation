@@ -671,11 +671,11 @@ bool GPU::DoState(StateWrapper& sw)
   sw.Do(&s_locals.vram_transfer.row);
 
   sw.Do(&s_locals.fifo);
-  sw.Do(&s_locals.blit_buffer);
+  sw.Do(&s_locals.blit_buffer, MAX_BLIT_BUFFER_SIZE);
   sw.Do(&s_locals.blit_remaining_words);
   sw.Do(&s_locals.render_command.bits);
   if (sw.GetVersion() >= 85)
-    sw.Do(&s_locals.polyline_buffer);
+    sw.Do(&s_locals.polyline_buffer, MAX_POLYLINE_BUFFER_SIZE);
   else
     s_locals.polyline_buffer.clear();
 
@@ -756,10 +756,10 @@ void GPU::DoMemoryState(StateWrapper& sw, System::MemorySaveState& mss)
   sw.DoBytes(&s_locals.vram_transfer, sizeof(s_locals.vram_transfer));
 
   sw.Do(&s_locals.fifo);
-  sw.Do(&s_locals.blit_buffer);
+  sw.Do(&s_locals.blit_buffer, MAX_BLIT_BUFFER_SIZE);
   sw.Do(&s_locals.blit_remaining_words);
   sw.Do(&s_locals.render_command.bits);
-  sw.Do(&s_locals.polyline_buffer);
+  sw.Do(&s_locals.polyline_buffer, MAX_POLYLINE_BUFFER_SIZE);
 
   if (sw.IsReading())
   {

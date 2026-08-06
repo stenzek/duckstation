@@ -463,7 +463,7 @@ bool Bus::DoState(StateWrapper& sw)
   if (s_RAM_SIZE.memory_window != old_ram_size_reg.memory_window)
     UpdateMappedRAMSize();
 
-  sw.Do(&s_tty_line_buffer);
+  sw.Do(&s_tty_line_buffer, MAX_TTY_LINE_LENGTH);
 
   sw.DoEx(&s_kernel_initialize_hook_run, 68, true);
 

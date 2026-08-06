@@ -8,6 +8,8 @@
 #include <cstring>
 LOG_CHANNEL(StateWrapper);
 
+static constexpr size_t MAX_MARKER_LEN = 128;
+
 StateWrapper::StateWrapper(std::span<u8> data, Mode mode, u32 version)
   : m_data(data.data()), m_size(data.size()), m_mode(mode), m_version(version)
 {
@@ -61,13 +63,13 @@ void StateWrapper::Do(bool* value_ptr)
   }
 }
 
-void StateWrapper::Do(std::string* value_ptr)
+void StateWrapper::Do(std::string* value_ptr, size_t max_length)
 {
   u32 length = static_cast<u32>(value_ptr->length());
   Do(&length);
   if (m_mode == Mode::Read)
   {
-    if ((m_error = (m_error || ((m_size - m_pos) < length)))) [[unlikely]]
+    if ((m_error = (m_error || length > max_length || ((m_size - m_pos) < length)))) [[unlikely]]
       return;
     value_ptr->resize(length);
   }
@@ -75,13 +77,13 @@ void StateWrapper::Do(std::string* value_ptr)
   value_ptr->resize(std::strlen(&(*value_ptr)[0]));
 }
 
-void StateWrapper::Do(SmallStringBase* value_ptr)
+void StateWrapper::Do(SmallStringBase* value_ptr, size_t max_length)
 {
   u32 length = static_cast<u32>(value_ptr->length());
   Do(&length);
   if (m_mode == Mode::Read)
   {
-    if ((m_error = (m_error || ((m_size - m_pos) < length)))) [[unlikely]]
+    if ((m_error = (m_error || length > max_length || ((m_size - m_pos) < length)))) [[unlikely]]
       return;
     value_ptr->resize(length);
   }
@@ -91,7 +93,9 @@ void StateWrapper::Do(SmallStringBase* value_ptr)
 
 void StateWrapper::Do(std::string_view* value_ptr)
 {
-  DebugAssert(m_mode == Mode::Write);
+  if (m_mode != Mode::Write)
+    Panic("Trying to write to std::string_view");
+
   u32 length = static_cast<u32>(value_ptr->length());
   Do(&length);
   DoBytes(const_cast<char*>(value_ptr->data()), length);
@@ -100,7 +104,7 @@ void StateWrapper::Do(std::string_view* value_ptr)
 bool StateWrapper::DoMarker(const char* marker)
 {
   SmallString file_value(marker);
-  Do(&file_value);
+  Do(&file_value, MAX_MARKER_LEN);
   if (m_error)
     return false;
 

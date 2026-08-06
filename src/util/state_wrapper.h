@@ -126,9 +126,9 @@ public:
   void DoBytesEx(void* data, size_t length, u32 version_introduced, const void* default_value);
 
   void Do(bool* value_ptr);
-  void Do(std::string* value_ptr);
+  void Do(std::string* value_ptr, size_t max_length);
   void Do(std::string_view* value_ptr);
-  void Do(SmallStringBase* value_ptr);
+  void Do(SmallStringBase* value_ptr, size_t max_length);
 
   template<typename T, size_t N>
   void Do(std::array<T, N>* data)
@@ -137,12 +137,18 @@ public:
   }
 
   template<typename T>
-  void Do(std::vector<T>* data)
+  void Do(std::vector<T>* data, size_t max_size)
   {
     u32 length = static_cast<u32>(data->size());
     Do(&length);
     if (m_mode == Mode::Read)
+    {
+      if ((m_error = (m_error || length > max_size || (((m_size - m_pos) / sizeof(T)) < length)))) [[unlikely]]
+        return;
+
       data->resize(length);
+    }
+
     DoArray(data->data(), data->size());
   }
 
