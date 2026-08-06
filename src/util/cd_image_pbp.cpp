@@ -102,6 +102,8 @@ struct TOCEntry
     u8 m;
     u8 s;
     u8 f;
+
+    ALWAYS_INLINE bool IsValid() const { return (IsValidPackedBCD(m) && IsValidPackedBCD(s) && IsValidPackedBCD(f)); }
   };
 
   u8 type;
@@ -581,7 +583,12 @@ bool CDImagePBP::OpenDisc(u32 index, Error* error)
   // valid. Not sure what m_toc[0].userdata_start.s encodes on homebrew EBOOTs though, so ignore that
   if (m_toc[0].point != 0xA0 || m_toc[1].point != 0xA1 || m_toc[2].point != 0xA2)
   {
-    ERROR_LOG("Invalid points on information tracks");
+    Error::SetStringView(error, "Invalid points on information tracks");
+    return false;
+  }
+  else if (!m_toc[0].userdata_start.IsValid() || !m_toc[1].userdata_start.IsValid())
+  {
+    Error::SetStringFmt(error, "Invalid BCD in TOC entry 0/1");
     return false;
   }
 
@@ -592,7 +599,7 @@ bool CDImagePBP::OpenDisc(u32 index, Error* error)
 
   if (first_track != 1 || last_track < first_track)
   {
-    ERROR_LOG("Invalid starting track number or track count");
+    Error::SetStringFmt(error, "Invalid starting track number or track count");
     return false;
   }
 
@@ -608,6 +615,12 @@ bool CDImagePBP::OpenDisc(u32 index, Error* error)
   {
     // Load in all the user stuff to m_tracks and m_indices
     const TOCEntry& t = m_toc[static_cast<size_t>(curr_track) + 2];
+    if (!IsValidPackedBCD(t.point) || !t.userdata_start.IsValid())
+    {
+      Error::SetStringFmt(error, "Invalid BCD in TOC entry {}", curr_track + 2);
+      return false;
+    }
+
     const u8 track_num = PackedBCDToBinary(t.point);
     if (track_num != curr_track)
       WARNING_LOG("Mismatched TOC track number, expected {} but got {}", curr_track, track_num);
@@ -630,8 +643,8 @@ bool CDImagePBP::OpenDisc(u32 index, Error* error)
     {
       if (!is_first_track || is_audio_track)
       {
-        ERROR_LOG("Invalid TOC entry at index {}, user data ({}) should not start before pregap ({})", curr_track,
-                  userdata_start, pregap_start);
+        Error::SetStringFmt(error, "Invalid TOC entry at index {}, user data ({}) should not start before pregap ({})",
+                            curr_track, userdata_start, pregap_start);
         return false;
       }
 
@@ -696,6 +709,12 @@ bool CDImagePBP::OpenDisc(u32 index, Error* error)
     else
     {
       const TOCEntry& next_track = m_toc[static_cast<size_t>(curr_track) + 3];
+      if (!IsValidPackedBCD(next_track.point) || !next_track.userdata_start.IsValid())
+      {
+        Error::SetStringFmt(error, "Invalid BCD in TOC entry {}", curr_track + 2);
+        return false;
+      }
+
       const LBA next_track_start =
         Position::FromBCD(next_track.pregap_start.m, next_track.pregap_start.s, next_track.pregap_start.f).ToLBA();
       const u8 next_track_num = PackedBCDToBinary(next_track.point);
