@@ -555,6 +555,7 @@ void GPU::SoftReset()
   s_locals.vram_transfer = {};
   s_locals.fifo.Clear();
   s_locals.blit_buffer.clear();
+  s_locals.polyline_buffer.clear();
   s_locals.blit_remaining_words = 0;
   s_locals.texture_window_reg = 0xFFFFFFFFu;
   SetDrawMode(0);
@@ -670,6 +671,10 @@ bool GPU::DoState(StateWrapper& sw)
   sw.Do(&s_locals.blit_buffer);
   sw.Do(&s_locals.blit_remaining_words);
   sw.Do(&s_locals.render_command.bits);
+  if (sw.GetVersion() >= 85)
+    sw.Do(&s_locals.polyline_buffer);
+  else
+    s_locals.polyline_buffer.clear();
 
   if (sw.GetVersion() < 83) [[unlikely]]
   {
@@ -751,6 +756,7 @@ void GPU::DoMemoryState(StateWrapper& sw, System::MemorySaveState& mss)
   sw.Do(&s_locals.blit_buffer);
   sw.Do(&s_locals.blit_remaining_words);
   sw.Do(&s_locals.render_command.bits);
+  sw.Do(&s_locals.polyline_buffer);
 
   if (sw.IsReading())
   {
@@ -1949,6 +1955,7 @@ void GPU::WriteGP1(u32 value)
       s_locals.vram_transfer = {};
       s_locals.fifo.Clear();
       s_locals.blit_buffer.clear();
+      s_locals.polyline_buffer.clear();
       s_locals.blit_remaining_words = 0;
       s_locals.pending_command_ticks = 0;
       s_locals.command_tick_event.Deactivate();
