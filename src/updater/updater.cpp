@@ -213,8 +213,11 @@ bool Updater::ParseZip()
     }
 
     // should never have a leading slash. just in case.
-    while (zip_filename_buffer[0] == FS_OSPATH_SEPARATOR_CHARACTER)
-      std::memmove(&zip_filename_buffer[1], &zip_filename_buffer[0], --len);
+    while (len > 0 && zip_filename_buffer[0] == FS_OSPATH_SEPARATOR_CHARACTER)
+    {
+      std::memmove(&zip_filename_buffer[0], &zip_filename_buffer[1], --len);
+      zip_filename_buffer[len] = '\0';
+    }
 
 #ifdef _WIN32
     entry.file_mode = 0;
