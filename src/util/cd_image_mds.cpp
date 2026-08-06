@@ -103,7 +103,7 @@ bool CDImageMDS::OpenAndParse(const char* filename, Error* error)
 
   u32 session_offset;
   std::memcpy(&session_offset, &mds[0x50], sizeof(session_offset));
-  if ((session_offset + 24) > mds.size())
+  if (session_offset >= mds.size() || (mds.size() - session_offset) < 24)
   {
     ERROR_LOG("Invalid session offset in '{}'", Path::GetFileName(filename));
     Error::SetStringFmt(error, "Invalid session offset in '{}'", Path::GetFileName(filename));
@@ -122,8 +122,14 @@ bool CDImageMDS::OpenAndParse(const char* filename, Error* error)
     return false;
   }
 
-  while ((track_offset + sizeof(TrackEntry)) <= mds.size())
+  for (;;)
   {
+    if (track_offset >= mds.size() || (mds.size() - track_offset) < sizeof(TrackEntry))
+    {
+      Error::SetStringFmt(error, "End of file when reading track at offset {}", track_offset);
+      return false;
+    }
+
     TrackEntry track;
     std::memcpy(&track, &mds[track_offset], sizeof(track));
     if (track.track_number < 0xA0)
@@ -134,10 +140,9 @@ bool CDImageMDS::OpenAndParse(const char* filename, Error* error)
 
   for (u32 track_number = 1; track_number <= track_count; track_number++)
   {
-    if ((track_offset + sizeof(TrackEntry)) > mds.size())
+    if (track_offset >= mds.size() || (mds.size() - track_offset) < sizeof(TrackEntry))
     {
-      ERROR_LOG("End of file in '{}' at track {}", Path::GetFileName(filename), track_number);
-      Error::SetStringFmt(error, "End of file in '{}' at track {}", Path::GetFileName(filename), track_number);
+      Error::SetStringFmt(error, "End of file when reading track {} at offset {}", track_number, track_offset);
       return false;
     }
 
@@ -145,7 +150,7 @@ bool CDImageMDS::OpenAndParse(const char* filename, Error* error)
     std::memcpy(&track, &mds[track_offset], sizeof(track));
     track_offset += sizeof(TrackEntry);
 
-    if (PackedBCDToBinary(track.track_number) != track_number)
+    if (!IsValidPackedBCD(track.track_number) || PackedBCDToBinary(track.track_number) != track_number)
     {
       ERROR_LOG("Unexpected track number 0x{:02X} in track {}", track.track_number, track_number);
       Error::SetStringFmt(error, "Unexpected track number 0x{:02X} in track {}", track.track_number, track_number);
@@ -156,7 +161,7 @@ bool CDImageMDS::OpenAndParse(const char* filename, Error* error)
     const u32 track_sector_size = (contains_subchannel ? 2448 : RAW_SECTOR_SIZE);
     const TrackMode mode = (track.track_type == 0xA9) ? TrackMode::Audio : TrackMode::Mode2Raw;
 
-    if ((track.extra_offset + sizeof(u32) + sizeof(u32)) > mds.size())
+    if (track.extra_offset >= mds.size() || (mds.size() - track.extra_offset) < (sizeof(u32) + sizeof(u32)))
     {
       ERROR_LOG("Invalid extra offset {} in track {}", track.extra_offset, track_number);
       Error::SetStringFmt(error, "Invalid extra offset {} in track {}", track.extra_offset, track_number);
