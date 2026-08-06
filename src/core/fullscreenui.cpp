@@ -705,14 +705,29 @@ void FullscreenUI::DoStartPath(std::string path, std::string state, std::optiona
 
     // This can "fail" if HC mode is enabled and the user cancels, or other startup cancel paths.
     Error error;
-    if (!System::BootSystem(std::move(params), &error))
+    if (const System::BootResult result = System::BootSystem(std::move(params), &error);
+        result != System::BootResult::Success)
     {
-      VideoThread::RunOnThread([error_desc = error.TakeDescription()]() {
+      VideoThread::RunOnThread([error_desc = error.TakeDescription(), result]() {
         if (!IsInitialized())
           return;
 
-        OpenInfoMessageDialog(ICON_EMOJI_NO_ENTRY_SIGN, TRANSLATE_STR("System", "Error"),
-                              fmt::format(TRANSLATE_FS("System", "Failed to boot system: {}"), error_desc));
+        std::string title = TRANSLATE_STR("System", "Error");
+        std::string message = fmt::format("{}\n\n{}", TRANSLATE_SV("System", "Failed to boot system:"), error_desc);
+        if (result == System::BootResult::MissingBIOS)
+        {
+          fmt::format_to(std::back_inserter(message), "\n\n{}",
+                         TRANSLATE_SV("System", "Do you want to install a BIOS file now?"));
+          OpenConfirmMessageDialog(ICON_EMOJI_NO_ENTRY_SIGN, std::move(title), std::move(message), [](bool result) {
+            if (result)
+              StartInstallBIOS();
+          });
+        }
+        else
+        {
+          OpenInfoMessageDialog(ICON_EMOJI_NO_ENTRY_SIGN, std::move(title), std::move(message));
+        }
+
         ClearSaveStateEntryList();
         UpdateRunIdleState();
       });

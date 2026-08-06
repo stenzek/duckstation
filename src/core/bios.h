@@ -96,7 +96,7 @@ bool IsValidPSExeHeader(const PSEXEHeader& header, size_t file_size);
 DiscRegion GetPSExeDiscRegion(const PSEXEHeader& header);
 
 /// Loads the BIOS image for the specified region.
-std::optional<Image> GetBIOSImage(ConsoleRegion region, Error* error);
+std::optional<Image> GetBIOSImage(ConsoleRegion region, bool* using_auto_select, Error* error);
 
 /// Searches for a BIOS image for the specified region in the specified directory. If no match is found, the first
 /// BIOS image within 512KB and 4MB will be used.

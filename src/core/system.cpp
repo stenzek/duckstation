@@ -158,8 +158,8 @@ static void LogUnsafeSettingsToConsole(const SmallStringBase& messages);
 
 static bool Initialize(std::unique_ptr<CDImage> disc, DiscRegion disc_region, bool force_software_renderer,
                        std::optional<bool> start_fullscreen, Error* error);
-static bool LoadBIOS(Error* error);
-static bool SetBootMode(BootMode new_boot_mode, DiscRegion disc_region, Error* error);
+static bool LoadBIOS(bool* using_auto_select, Error* error);
+static bool SetBootMode(BootMode new_boot_mode, DiscRegion disc_region, bool* missing_bios, Error* error);
 static void InternalReset();
 static void ClearRunningGame();
 static void DestroySystem();
@@ -1447,7 +1447,7 @@ void System::ResetSystem()
   const BootMode new_boot_mode = (s_state.boot_mode == BootMode::BootEXE || s_state.boot_mode == BootMode::BootPSF) ?
                                    s_state.boot_mode :
                                    (g_settings.bios_patch_fast_boot ? BootMode::FastBoot : BootMode::FullBoot);
-  if (Error error; !SetBootMode(new_boot_mode, CDROM::GetDiscRegion(), &error))
+  if (Error error; !SetBootMode(new_boot_mode, CDROM::GetDiscRegion(), nullptr, &error))
     ERROR_LOG("Failed to reload BIOS on boot mode change, the system may be unstable: {}", error.GetDescription());
 
   // Have to turn on turbo if fast forwarding boot.
@@ -1544,7 +1544,7 @@ bool System::SaveResumeState(Error* error)
   return SaveState(std::move(path), error, false, true);
 }
 
-bool System::BootSystem(SystemBootParameters parameters, Error* error)
+System::BootResult System::BootSystem(SystemBootParameters parameters, Error* error)
 {
   Timer boot_timer;
 
@@ -1584,7 +1584,7 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
     {
       gpu_dump = GPUDump::Player::Open(parameters.path, error);
       if (!gpu_dump)
-        return false;
+        return BootResult::Failure;
 
       boot_mode = BootMode::ReplayGPUDump;
     }
@@ -1603,7 +1603,7 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
       if (!disc)
       {
         Error::AddPrefixFmt(error, "Failed to open CD image '{}':\n", Path::GetFileName(parameters.path));
-        return false;
+        return BootResult::Failure;
       }
 
       disc_region = GameList::GetCustomRegionForPath(parameters.path).value_or(GetRegionForImage(disc.get()));
@@ -1619,7 +1619,7 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
   {
     Error::AddPrefixFmt(error, "Failed to switch to subimage {} in '{}':\n", parameters.media_playlist_index,
                         Path::GetFileName(parameters.path));
-    return false;
+    return BootResult::Failure;
   }
 
   // Can't early cancel without destroying past this point.
@@ -1648,7 +1648,7 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
                           Path::GetFileName(parameters.override_exe));
       Host::OnSystemStopping();
       DestroySystem();
-      return false;
+      return BootResult::Failure;
     }
 
     INFO_LOG("Overriding boot executable: '{}'", parameters.override_exe);
@@ -1676,7 +1676,7 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
       // Technically a failure, but user-initiated. Returning false here would try to display a non-existent error.
       Host::OnSystemStopping();
       DestroySystem();
-      return true;
+      return BootResult::Success;
     }
   }
 
@@ -1687,23 +1687,30 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
     boot_mode = BootMode::FastBoot;
   }
 
-  // Load BIOS image, component setup, check for subchannel in games that need it.
+  // Load BIOS image.
   const std::optional<bool> start_fullscreen = parameters.override_fullscreen.has_value() ?
                                                  std::optional<bool>(parameters.override_fullscreen.value()) :
                                                  (ShouldStartFullscreen() ? std::optional<bool>(true) : std::nullopt);
-  if (!SetBootMode(boot_mode, disc_region, error) ||
-      !Initialize(std::move(disc), disc_region, parameters.force_software_renderer, start_fullscreen, error))
+  if (bool missing_bios = false; !SetBootMode(boot_mode, disc_region, &missing_bios, error))
   {
     Host::OnSystemStopping();
     DestroySystem();
-    return false;
+    return missing_bios ? BootResult::MissingBIOS : BootResult::Failure;
+  }
+
+  // Component setup.
+  if (!Initialize(std::move(disc), disc_region, parameters.force_software_renderer, start_fullscreen, error))
+  {
+    Host::OnSystemStopping();
+    DestroySystem();
+    return BootResult::Failure;
   }
 
   // Check for required subchannel data.
   // Annoyingly we can't do this before initializing, because subchannel data can be loaded from outside the image.
   if (!parameters.ignore_missing_subchannel && !CheckForRequiredSubQ(error))
   {
-    bool result = false;
+    BootResult result = BootResult::Failure;
     if (Core::GetBoolSettingValue("CDROM", "AllowBootingWithoutSBIFile", false))
     {
       Host::ConfirmMessageAsync(
@@ -1723,7 +1730,8 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
           }
         });
 
-      result = true;
+      // Prevent this boot from going through, but don't treat it as a failure. The user can choose to continue or not.
+      result = BootResult::Success;
     }
 
     Host::OnSystemStopping();
@@ -1753,7 +1761,7 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
                         Path::GetFileName(parameters.save_state));
     Host::OnSystemStopping();
     DestroySystem();
-    return false;
+    return BootResult::Failure;
   }
 
   InputManager::UpdateHostMouseMode();
@@ -1784,7 +1792,7 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
   INFO_LOG("System booted in {:.2f}ms", boot_timer.GetTimeMilliseconds());
   PerformanceCounters::Reset();
   ResetThrottler();
-  return true;
+  return BootResult::Success;
 }
 
 bool System::Initialize(std::unique_ptr<CDImage> disc, DiscRegion disc_region, bool force_software_renderer,
@@ -2666,9 +2674,9 @@ void System::DoMemoryState(StateWrapper& sw, MemorySaveState& mss, bool update_d
     GPU::UpdateDisplay(false);
 }
 
-bool System::LoadBIOS(Error* error)
+bool System::LoadBIOS(bool* using_auto_select, Error* error)
 {
-  std::optional<BIOS::Image> bios_image = BIOS::GetBIOSImage(s_state.region, error);
+  std::optional<BIOS::Image> bios_image = BIOS::GetBIOSImage(s_state.region, using_auto_select, error);
   if (!bios_image.has_value())
     return false;
 
@@ -2720,7 +2728,7 @@ void System::InternalReset()
   s_state.internal_frame_number = 0;
 }
 
-bool System::SetBootMode(BootMode new_boot_mode, DiscRegion disc_region, Error* error)
+bool System::SetBootMode(BootMode new_boot_mode, DiscRegion disc_region, bool* missing_bios, Error* error)
 {
   // Can we actually fast boot? If starting, s_bios_image_info won't be valid.
   const bool can_fast_boot =
@@ -2735,7 +2743,7 @@ bool System::SetBootMode(BootMode new_boot_mode, DiscRegion disc_region, Error* 
     return true;
 
   // Need to reload the BIOS to wipe out the patching.
-  if (new_boot_mode != BootMode::ReplayGPUDump && !LoadBIOS(error))
+  if (new_boot_mode != BootMode::ReplayGPUDump && !LoadBIOS(missing_bios, error))
     return false;
 
   // Handle the case of BIOSes not being able to full boot.

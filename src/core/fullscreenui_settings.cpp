@@ -3183,10 +3183,7 @@ void FullscreenUI::DrawBIOSSettingsPage()
   if (MenuButton(FSUI_ICONVSTR(ICON_FA_FILE_IMPORT, "Install BIOS"),
                  FSUI_VSTR("Copies a BIOS image to the configured global BIOS directory.")))
   {
-    OpenFileSelector(FSUI_ICONVSTR(ICON_FA_FILE_IMPORT, "Select BIOS Image"), {}, {}, [](std::string path) {
-      if (!path.empty())
-        InstallBIOS(std::move(path), false);
-    });
+    StartInstallBIOS();
   }
 
   DrawFolderSetting(bsi, FSUI_ICONVSTR(ICON_FA_FOLDER, "BIOS Directory"), "BIOS", "SearchDirectory", EmuFolders::Bios);
@@ -3196,6 +3193,14 @@ void FullscreenUI::DrawBIOSSettingsPage()
                     "TTYLogging", false);
 
   EndMenuButtons();
+}
+
+void FullscreenUI::StartInstallBIOS()
+{
+  OpenFileSelector(FSUI_ICONVSTR(ICON_FA_FILE_IMPORT, "Select BIOS Image"), {}, {}, [](std::string path) {
+    if (!path.empty())
+      InstallBIOS(std::move(path), false);
+  });
 }
 
 void FullscreenUI::InstallBIOS(std::string source_path, bool replace)

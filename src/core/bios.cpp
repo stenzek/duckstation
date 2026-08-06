@@ -348,7 +348,7 @@ DiscRegion BIOS::GetPSExeDiscRegion(const PSEXEHeader& header)
     return DiscRegion::Other;
 }
 
-std::optional<BIOS::Image> BIOS::GetBIOSImage(ConsoleRegion region, Error* error)
+std::optional<BIOS::Image> BIOS::GetBIOSImage(ConsoleRegion region, bool* using_auto_select, Error* error)
 {
   std::string bios_name;
   switch (region)
@@ -369,7 +369,10 @@ std::optional<BIOS::Image> BIOS::GetBIOSImage(ConsoleRegion region, Error* error
 
   std::optional<Image> image;
 
-  if (bios_name.empty())
+  const bool auto_select = bios_name.empty();
+  if (using_auto_select)
+    *using_auto_select = auto_select;
+  if (auto_select)
   {
     // auto-detect
     image = FindBIOSImageInDirectory(region, EmuFolders::Bios.c_str(), error);
@@ -436,18 +439,13 @@ std::optional<BIOS::Image> BIOS::FindBIOSImageInDirectory(ConsoleRegion region, 
     if (Error::IsValid(error))
       Error::AddSuffix(error, "\n\n");
 
-#ifndef __ANDROID__
     Error::AddSuffixFmt(
       error,
-      TRANSLATE_FS("System", "No BIOS image found for {} region.\n\nDuckStation requires a PS1 or PS2 BIOS in order to "
-                             "run.\n\nFor legal reasons, you *must* obtain a BIOS from an actual PS1 unit that you own "
-                             "(borrowing doesn't count).\n\nOnce dumped, this BIOS image should be placed in the bios "
-                             "folder within the data directory (Tools Menu -> Open Data Directory)."),
+      TRANSLATE_FS(
+        "System",
+        "No BIOS image found for {} region.\n\nDuckStation requires a PS1 or PS2 BIOS in order to run.\n\nFor legal "
+        "reasons, you must obtain a BIOS from an actual PS1/PS2 unit that you own (borrowing doesn't count)."),
       Settings::GetConsoleRegionName(region));
-#else
-    Error::AddSuffixFmt(error, TRANSLATE_FS("System", "No BIOS image found for {} region."),
-                        Settings::GetConsoleRegionName(region));
-#endif
     return image;
   }
 

@@ -117,6 +117,13 @@ enum class BootMode : u8
   ReplayGPUDump,
 };
 
+enum class BootResult : u8
+{
+  Success,
+  Failure,
+  MissingBIOS,
+};
+
 enum class Taint : u8
 {
   CPUOverclock,
@@ -276,7 +283,7 @@ void ReloadInputBindings();
 /// Reloads only controller settings.
 void UpdateControllerSettings();
 
-bool BootSystem(SystemBootParameters parameters, Error* error);
+BootResult BootSystem(SystemBootParameters parameters, Error* error);
 void PauseSystem(bool paused);
 void ResetSystem();
 

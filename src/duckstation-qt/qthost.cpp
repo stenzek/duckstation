@@ -3,6 +3,7 @@
 
 #include "qthost.h"
 #include "autoupdaterdialog.h"
+#include "biossettingswidget.h"
 #include "displaywidget.h"
 #include "logwindow.h"
 #include "mainwindow.h"
@@ -1089,10 +1090,29 @@ void CoreThread::bootSystem(std::shared_ptr<SystemBootParameters> params)
     return;
 
   Error error;
-  if (!System::BootSystem(std::move(*params), &error))
+  if (const System::BootResult result = System::BootSystem(std::move(*params), &error);
+      result != System::BootResult::Success)
   {
-    emit errorReported(tr("Error"),
-                       tr("Failed to boot system: %1").arg(QString::fromStdString(error.GetDescription())));
+    std::string message =
+      fmt::format("{}\n\n{}", TRANSLATE_SV("System", "Failed to boot system:"), error.GetDescription());
+    Host::RunOnUIThread([message = QString::fromStdString(message), result]() {
+      const QString title = QCoreApplication::translate("System", "Error");
+      if (result == System::BootResult::MissingBIOS)
+      {
+        QMessageBox* const mbox = QtUtils::NewMessageBox(
+          g_main_window, QMessageBox::Critical, title,
+          QStringLiteral("%1\n\n%2")
+            .arg(message)
+            .arg(QCoreApplication::translate("System", "Do you want to install a BIOS file now?")),
+          QMessageBox::Yes | QMessageBox::No);
+        connect(mbox, &QMessageBox::accepted, g_main_window, []() { BIOSSettingsWidget::installBIOS(g_main_window); });
+        mbox->open();
+      }
+      else
+      {
+        QtUtils::AsyncMessageBox(g_main_window, QMessageBox::Critical, title, message);
+      }
+    });
   }
 }
 
