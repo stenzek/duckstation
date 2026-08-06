@@ -105,6 +105,9 @@ enum : u16
   PAL_OVERSCAN_VERTICAL_ACTIVE_END = 298,
 };
 
+static constexpr size_t MAX_BLIT_BUFFER_SIZE = ((VRAM_WIDTH * VRAM_HEIGHT) / 2); // blit buffer is in words
+static constexpr size_t MAX_POLYLINE_BUFFER_SIZE = 0x200000; // this is more of just a sanity check...
+
 } // namespace
 
 /// Returns true if no data is being sent from VRAM to the DAC or that no portion of VRAM would be visible on screen.
@@ -2772,13 +2775,23 @@ void GPU::TryExecuteCommands()
             break;
         }
 
+        // TODO: get rid of this whole thing. polyline draws should consume ticks, and be drawn immediately and not
+        // buffered there's some really trivial size checks here to avoid buggy MIPS code from overflowing the buffer.
         const bool found_terminator = (terminator_index < s_locals.fifo.GetSize());
         const u32 words_to_copy = std::min(terminator_index, s_locals.fifo.GetSize());
         if (words_to_copy > 0)
         {
-          s_locals.polyline_buffer.reserve(s_locals.polyline_buffer.size() + words_to_copy);
-          for (u32 i = 0; i < words_to_copy; i++)
+          s_locals.polyline_buffer.reserve(
+            std::min(s_locals.polyline_buffer.size() + words_to_copy, MAX_POLYLINE_BUFFER_SIZE));
+
+          u32 i;
+          for (i = 0; i < words_to_copy && s_locals.polyline_buffer.size() < MAX_POLYLINE_BUFFER_SIZE; i++)
             s_locals.polyline_buffer.push_back(s_locals.fifo.Pop());
+          if (i < words_to_copy) [[unlikely]]
+          {
+            ERROR_LOG("Polyline buffer overflow by {} words", words_to_copy - i);
+            s_locals.fifo.Remove(words_to_copy - i);
+          }
         }
 
         DEBUG_LOG("Added {} words to polyline", words_to_copy);
