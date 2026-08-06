@@ -515,7 +515,7 @@ ALWAYS_INLINE_RELEASE bool DMA::CheckForBusError(Channel channel, ChannelState& 
                                                  u32 size)
 {
   // Relying on a transfer partially happening at the end of RAM, then hitting a bus error would be pretty silly.
-  if ((address + size) >= Bus::g_ram_mapped_size) [[unlikely]]
+  if ((address + size) >= g_bus.ram_mapped_size) [[unlikely]]
   {
     DEBUG_LOG("DMA bus error on channel {} at address 0x{:08X} size {}", channel, address, size);
     cs.channel_control.enable_busy = false;
@@ -608,8 +608,8 @@ bool DMA::TransferChannel()
       DEBUG_LOG("DMA[{}]: Copying linked list starting at 0x{:08X} to device", channel, current_address);
 
       // Prove to the compiler that nothing's going to modify these.
-      const u8* const ram_ptr = Bus::g_ram;
-      const u32 mask = Bus::g_ram_mask;
+      const u8* const ram_ptr = g_bus.ram;
+      const u32 mask = g_bus.ram_mask;
 
       const TickCount slice_ticks = GetMaxSliceTicks<channel>(g_settings.dma_max_slice_ticks);
       TickCount remaining_ticks = slice_ticks;
@@ -790,7 +790,7 @@ void DMA::UnhaltTransfer(void*, TickCount ticks)
 template<DMA::Channel channel>
 TickCount DMA::TransferMemoryToDevice(u32 address, u32 increment, u32 word_count)
 {
-  const u32 mask = Bus::g_ram_mask;
+  const u32 mask = g_bus.ram_mask;
 #if defined(_DEBUG) || defined(_DEVEL)
   if ((address & mask) != address)
     DEBUG_LOG("DMA TO {} from masked RAM address 0x{:08X} => 0x{:08X}", channel, address, (address & mask));
@@ -798,7 +798,7 @@ TickCount DMA::TransferMemoryToDevice(u32 address, u32 increment, u32 word_count
 
   address &= mask;
 
-  const u32* src_pointer = reinterpret_cast<u32*>(Bus::g_ram + address);
+  const u32* src_pointer = reinterpret_cast<u32*>(g_bus.ram + address);
   if (static_cast<s32>(increment) < 0 || ((address + (increment * word_count)) & mask) <= address) [[unlikely]]
   {
     // Use temp buffer if it's wrapping around
@@ -806,7 +806,7 @@ TickCount DMA::TransferMemoryToDevice(u32 address, u32 increment, u32 word_count
       s_state.transfer_buffer.resize(word_count);
     src_pointer = s_state.transfer_buffer.data();
 
-    u8* ram_pointer = Bus::g_ram;
+    u8* ram_pointer = g_bus.ram;
     for (u32 i = 0; i < word_count; i++)
     {
       std::memcpy(&s_state.transfer_buffer[i], &ram_pointer[address], sizeof(u32));
@@ -842,7 +842,7 @@ TickCount DMA::TransferMemoryToDevice(u32 address, u32 increment, u32 word_count
 template<DMA::Channel channel>
 TickCount DMA::TransferDeviceToMemory(u32 address, u32 increment, u32 word_count)
 {
-  const u32 mask = Bus::g_ram_mask;
+  const u32 mask = g_bus.ram_mask;
 #if defined(_DEBUG) || defined(_DEVEL)
   if ((address & mask) != address)
     DEBUG_LOG("DMA FROM {} to masked RAM address 0x{:08X} => 0x{:08X}", channel, address, (address & mask));
@@ -854,7 +854,7 @@ TickCount DMA::TransferDeviceToMemory(u32 address, u32 increment, u32 word_count
   if constexpr (channel == Channel::OTC)
   {
     // clear ordering table
-    u8* ram_pointer = Bus::g_ram;
+    u8* ram_pointer = g_bus.ram;
     const u32 word_count_less_1 = word_count - 1;
     for (u32 i = 0; i < word_count_less_1; i++)
     {
@@ -868,7 +868,7 @@ TickCount DMA::TransferDeviceToMemory(u32 address, u32 increment, u32 word_count
     return Bus::GetDMARAMTickCount(word_count);
   }
 
-  u32* dest_pointer = reinterpret_cast<u32*>(&Bus::g_ram[address]);
+  u32* dest_pointer = reinterpret_cast<u32*>(&g_bus.ram[address]);
   if (static_cast<s32>(increment) < 0 || ((address + (increment * word_count)) & mask) <= address) [[unlikely]]
   {
     // Use temp buffer if it's wrapping around
@@ -913,7 +913,7 @@ TickCount DMA::TransferDeviceToMemory(u32 address, u32 increment, u32 word_count
 
   if (dest_pointer == s_state.transfer_buffer.data()) [[unlikely]]
   {
-    u8* ram_pointer = Bus::g_ram;
+    u8* ram_pointer = g_bus.ram;
     for (u32 i = 0; i < word_count; i++)
     {
       std::memcpy(&ram_pointer[address], &s_state.transfer_buffer[i], sizeof(u32));

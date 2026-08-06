@@ -112,6 +112,33 @@ enum : u32
 inline constexpr size_t FASTMEM_ARENA_SIZE = UINT64_C(0x100000000);
 #endif
 
+struct Globals
+{
+  u8* ram;             // 2MB-8MB RAM
+  u8* unprotected_ram; // RAM without page protection, use for debugger access.
+  u8* bios;            // 512K BIOS ROM
+  u32 ram_size;        // Active size of RAM.
+  u32 ram_mapped_size; // Maximum mapped address for RAM, determined by RAM size register.
+  u32 ram_mask;        // Active address bits for RAM.
+
+  std::bitset<RAM_8MB_CODE_PAGE_COUNT> ram_code_bits;
+
+  std::array<TickCount, 3> exp1_access_time;
+  std::array<TickCount, 3> exp2_access_time;
+  std::array<TickCount, 3> bios_access_time;
+  std::array<TickCount, 3> cdrom_access_time;
+  std::array<TickCount, 3> spu_access_time;
+
+  void** memory_handlers = nullptr;
+  void** memory_handlers_isc = nullptr;
+};
+
+} // namespace Bus
+
+extern Bus::Globals g_bus;
+
+namespace Bus {
+
 bool AllocateMemory(bool export_shared_memory, Error* error);
 void ReleaseMemory();
 
@@ -144,19 +171,6 @@ void* GetFastmemBase(bool isc);
 void RemapFastmemViews();
 bool CanUseFastmemForAddress(VirtualMemoryAddress address);
 
-extern std::bitset<RAM_8MB_CODE_PAGE_COUNT> g_ram_code_bits;
-extern u8* g_ram;             // 2MB-8MB RAM
-extern u8* g_unprotected_ram; // RAM without page protection, use for debugger access.
-extern u32 g_ram_size;        // Active size of RAM.
-extern u32 g_ram_mapped_size; // Maximum mapped address for RAM, determined by RAM size register.
-extern u32 g_ram_mask;        // Active address bits for RAM.
-extern u8* g_bios;            // 512K BIOS ROM
-extern std::array<TickCount, 3> g_exp1_access_time;
-extern std::array<TickCount, 3> g_exp2_access_time;
-extern std::array<TickCount, 3> g_bios_access_time;
-extern std::array<TickCount, 3> g_cdrom_access_time;
-extern std::array<TickCount, 3> g_spu_access_time;
-
 /// Returns true if the address specified is writable (RAM).
 ALWAYS_INLINE bool IsRAMAddress(PhysicalMemoryAddress address)
 {
@@ -166,13 +180,13 @@ ALWAYS_INLINE bool IsRAMAddress(PhysicalMemoryAddress address)
 /// Returns the code page index for a RAM address.
 ALWAYS_INLINE u32 GetRAMCodePageIndex(PhysicalMemoryAddress address)
 {
-  return (address & g_ram_mask) >> HOST_PAGE_SHIFT;
+  return (address & g_bus.ram_mask) >> HOST_PAGE_SHIFT;
 }
 
 /// Returns true if the specified page contains code.
 ALWAYS_INLINE bool IsRAMCodePage(u32 index)
 {
-  return g_ram_code_bits[index];
+  return g_bus.ram_code_bits[index];
 }
 
 /// Flags a RAM region as code, so we know when to invalidate blocks.

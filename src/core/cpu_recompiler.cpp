@@ -75,7 +75,7 @@ void CPU::Recompiler::Recompiler::BeginBlock()
   if (m_block->protection == CodeCache::PageProtectionMode::ManualCheck)
   {
     DEBUG_LOG("Generate manual protection for PC {:08X}", m_block->pc);
-    const u8* ram_ptr = Bus::g_ram + VirtualAddressToPhysical(m_block->pc);
+    const u8* ram_ptr = g_bus.ram + VirtualAddressToPhysical(m_block->pc);
     const u8* shadow_ptr = reinterpret_cast<const u8*>(m_block->Instructions());
     GenerateBlockProtectCheck(ram_ptr, shadow_ptr, m_block->size * sizeof(Instruction));
   }
@@ -2410,8 +2410,8 @@ CPU::Recompiler::Recompiler::SpecValue CPU::Recompiler::Recompiler::SpecReadMem(
 
   if (CPU::CodeCache::AddressInRAM(address))
   {
-    u32 ram_offset = address & Bus::g_ram_mask;
-    std::memcpy(&value, &Bus::g_ram[ram_offset], sizeof(value));
+    u32 ram_offset = address & g_bus.ram_mask;
+    std::memcpy(&value, &g_bus.ram[ram_offset], sizeof(value));
     return value;
   }
 
@@ -2430,7 +2430,7 @@ void CPU::Recompiler::Recompiler::SpecWriteMem(u32 address, SpecValue value)
   if ((address & SCRATCHPAD_ADDR_MASK) == SCRATCHPAD_ADDR)
     m_speculative_constants.memory.emplace(address, value);
   else if (CPU::CodeCache::AddressInRAM(address))
-    m_speculative_constants.memory.emplace(address & Bus::g_ram_mask, value);
+    m_speculative_constants.memory.emplace(address & g_bus.ram_mask, value);
 }
 
 void CPU::Recompiler::Recompiler::SpecInvalidateMem(VirtualMemoryAddress address)

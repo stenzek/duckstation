@@ -2831,7 +2831,7 @@ ALWAYS_INLINE_RELEASE bool CPU::DoInstructionRead(PhysicalMemoryAddress address,
 
   if (address < RAM_MIRROR_END)
   {
-    std::memcpy(data, &g_ram[address & g_ram_mask], sizeof(u32) * word_count);
+    std::memcpy(data, &g_bus.ram[address & g_bus.ram_mask], sizeof(u32) * word_count);
     if constexpr (add_ticks)
       g_state.pending_ticks += (icache_read ? 1 : RAM_READ_TICKS) * word_count;
 
@@ -2839,9 +2839,9 @@ ALWAYS_INLINE_RELEASE bool CPU::DoInstructionRead(PhysicalMemoryAddress address,
   }
   else if (address >= BIOS_BASE && address < (BIOS_BASE + BIOS_SIZE))
   {
-    std::memcpy(data, &g_bios[(address - BIOS_BASE) & BIOS_MASK], sizeof(u32) * word_count);
+    std::memcpy(data, &g_bus.bios[(address - BIOS_BASE) & BIOS_MASK], sizeof(u32) * word_count);
     if constexpr (add_ticks)
-      g_state.pending_ticks += g_bios_access_time[static_cast<u32>(MemoryAccessSize::Word)] * word_count;
+      g_state.pending_ticks += g_bus.bios_access_time[static_cast<u32>(MemoryAccessSize::Word)] * word_count;
 
     return true;
   }
@@ -2849,7 +2849,7 @@ ALWAYS_INLINE_RELEASE bool CPU::DoInstructionRead(PhysicalMemoryAddress address,
   {
     g_pio_device->CodeReadHandler(address & EXP1_MASK, data, word_count);
     if constexpr (add_ticks)
-      g_state.pending_ticks += g_exp1_access_time[static_cast<u32>(MemoryAccessSize::Word)] * word_count;
+      g_state.pending_ticks += g_bus.exp1_access_time[static_cast<u32>(MemoryAccessSize::Word)] * word_count;
 
     return true;
   }
@@ -2879,7 +2879,7 @@ TickCount CPU::GetInstructionReadTicks(VirtualMemoryAddress address)
   }
   else if (address >= BIOS_BASE && address < (BIOS_BASE + BIOS_MIRROR_SIZE))
   {
-    return g_bios_access_time[static_cast<u32>(MemoryAccessSize::Word)];
+    return g_bus.bios_access_time[static_cast<u32>(MemoryAccessSize::Word)];
   }
   else
   {
@@ -2900,7 +2900,7 @@ TickCount CPU::GetICacheFillTicks(VirtualMemoryAddress address)
   }
   else if (address >= BIOS_BASE && address < (BIOS_BASE + BIOS_MIRROR_SIZE))
   {
-    return g_bios_access_time[static_cast<u32>(MemoryAccessSize::Word)] *
+    return g_bus.bios_access_time[static_cast<u32>(MemoryAccessSize::Word)] *
            ((ICACHE_LINE_SIZE - (address & (ICACHE_LINE_SIZE - 1))) / sizeof(u32));
   }
   else
@@ -3190,22 +3190,22 @@ ALWAYS_INLINE bool CPU::DoSafeMemoryAccess(VirtualMemoryAddress address, u32& va
 
   if (address < RAM_MIRROR_END)
   {
-    const u32 offset = address & g_ram_mask;
+    const u32 offset = address & g_bus.ram_mask;
     if constexpr (type == MemoryAccessType::Read)
     {
       if constexpr (size == MemoryAccessSize::Byte)
       {
-        value = g_unprotected_ram[offset];
+        value = g_bus.unprotected_ram[offset];
       }
       else if constexpr (size == MemoryAccessSize::HalfWord)
       {
         u16 temp;
-        std::memcpy(&temp, &g_unprotected_ram[offset], sizeof(temp));
+        std::memcpy(&temp, &g_bus.unprotected_ram[offset], sizeof(temp));
         value = ZeroExtend32(temp);
       }
       else if constexpr (size == MemoryAccessSize::Word)
       {
-        std::memcpy(&value, &g_unprotected_ram[offset], sizeof(u32));
+        std::memcpy(&value, &g_bus.unprotected_ram[offset], sizeof(u32));
       }
     }
     else
@@ -3214,10 +3214,10 @@ ALWAYS_INLINE bool CPU::DoSafeMemoryAccess(VirtualMemoryAddress address, u32& va
 
       if constexpr (size == MemoryAccessSize::Byte)
       {
-        if (g_unprotected_ram[offset] != Truncate8(value))
+        if (g_bus.unprotected_ram[offset] != Truncate8(value))
         {
-          g_unprotected_ram[offset] = Truncate8(value);
-          if (g_ram_code_bits[page_index])
+          g_bus.unprotected_ram[offset] = Truncate8(value);
+          if (g_bus.ram_code_bits[page_index])
             CPU::CodeCache::InvalidateBlocksWithPageIndex(page_index);
         }
       }
@@ -3225,22 +3225,22 @@ ALWAYS_INLINE bool CPU::DoSafeMemoryAccess(VirtualMemoryAddress address, u32& va
       {
         const u16 new_value = Truncate16(value);
         u16 old_value;
-        std::memcpy(&old_value, &g_unprotected_ram[offset], sizeof(old_value));
+        std::memcpy(&old_value, &g_bus.unprotected_ram[offset], sizeof(old_value));
         if (old_value != new_value)
         {
-          std::memcpy(&g_unprotected_ram[offset], &new_value, sizeof(u16));
-          if (g_ram_code_bits[page_index])
+          std::memcpy(&g_bus.unprotected_ram[offset], &new_value, sizeof(u16));
+          if (g_bus.ram_code_bits[page_index])
             CPU::CodeCache::InvalidateBlocksWithPageIndex(page_index);
         }
       }
       else if constexpr (size == MemoryAccessSize::Word)
       {
         u32 old_value;
-        std::memcpy(&old_value, &g_unprotected_ram[offset], sizeof(u32));
+        std::memcpy(&old_value, &g_bus.unprotected_ram[offset], sizeof(u32));
         if (old_value != value)
         {
-          std::memcpy(&g_unprotected_ram[offset], &value, sizeof(u32));
-          if (g_ram_code_bits[page_index])
+          std::memcpy(&g_bus.unprotected_ram[offset], &value, sizeof(u32));
+          if (g_bus.ram_code_bits[page_index])
             CPU::CodeCache::InvalidateBlocksWithPageIndex(page_index);
         }
       }
@@ -3255,17 +3255,17 @@ ALWAYS_INLINE bool CPU::DoSafeMemoryAccess(VirtualMemoryAddress address, u32& va
       const u32 offset = (address & BIOS_MASK);
       if constexpr (size == MemoryAccessSize::Byte)
       {
-        value = ZeroExtend32(g_bios[offset]);
+        value = ZeroExtend32(g_bus.bios[offset]);
       }
       else if constexpr (size == MemoryAccessSize::HalfWord)
       {
         u16 halfword;
-        std::memcpy(&halfword, &g_bios[offset], sizeof(u16));
+        std::memcpy(&halfword, &g_bus.bios[offset], sizeof(u16));
         value = ZeroExtend32(halfword);
       }
       else
       {
-        std::memcpy(&value, &g_bios[offset], sizeof(u32));
+        std::memcpy(&value, &g_bus.bios[offset], sizeof(u32));
       }
 
       return true;
@@ -3369,7 +3369,7 @@ bool CPU::SafeReadMemoryBytes(VirtualMemoryAddress addr, void* data, u32 length)
 
   const u32 seg = (addr >> 29);
   if ((seg != 0 && seg != 4 && seg != 5) || (((addr + length) & KSEG_MASK) >= RAM_MIRROR_END) ||
-      (((addr & g_ram_mask) + length) > g_ram_size))
+      (((addr & g_bus.ram_mask) + length) > g_bus.ram_size))
   {
     u8* ptr = static_cast<u8*>(data);
     u8* const ptr_end = ptr + length;
@@ -3383,7 +3383,7 @@ bool CPU::SafeReadMemoryBytes(VirtualMemoryAddress addr, void* data, u32 length)
   }
 
   // Fast path: all in RAM, no wraparound.
-  std::memcpy(data, &g_ram[addr & g_ram_mask], length);
+  std::memcpy(data, &g_bus.ram[addr & g_bus.ram_mask], length);
   return true;
 }
 
@@ -3393,7 +3393,7 @@ bool CPU::SafeWriteMemoryBytes(VirtualMemoryAddress addr, const void* data, u32 
 
   const u32 seg = (addr >> 29);
   if ((seg != 0 && seg != 4 && seg != 5) || (((addr + length) & KSEG_MASK) >= RAM_MIRROR_END) ||
-      (((addr & g_ram_mask) + length) > g_ram_size))
+      (((addr & g_bus.ram_mask) + length) > g_bus.ram_size))
   {
     const u8* ptr = static_cast<const u8*>(data);
     const u8* const ptr_end = ptr + length;
@@ -3407,7 +3407,7 @@ bool CPU::SafeWriteMemoryBytes(VirtualMemoryAddress addr, const void* data, u32 
   }
 
   // Fast path: all in RAM, no wraparound.
-  std::memcpy(&g_ram[addr & g_ram_mask], data, length);
+  std::memcpy(&g_bus.ram[addr & g_bus.ram_mask], data, length);
   return true;
 }
 
@@ -3422,7 +3422,7 @@ bool CPU::SafeZeroMemoryBytes(VirtualMemoryAddress addr, u32 length)
 
   const u32 seg = (addr >> 29);
   if ((seg != 0 && seg != 4 && seg != 5) || (((addr + length) & KSEG_MASK) >= RAM_MIRROR_END) ||
-      (((addr & g_ram_mask) + length) > g_ram_size))
+      (((addr & g_bus.ram_mask) + length) > g_bus.ram_size))
   {
     while ((addr & 3u) != 0 && length > 0)
     {
@@ -3453,7 +3453,7 @@ bool CPU::SafeZeroMemoryBytes(VirtualMemoryAddress addr, u32 length)
   }
 
   // Fast path: all in RAM, no wraparound.
-  std::memset(&g_ram[addr & g_ram_mask], 0, length);
+  std::memset(&g_bus.ram[addr & g_bus.ram_mask], 0, length);
   return true;
 }
 
@@ -3471,7 +3471,7 @@ void* CPU::GetDirectReadMemoryPointer(VirtualMemoryAddress address, MemoryAccess
     if (read_ticks)
       *read_ticks = RAM_READ_TICKS;
 
-    return &g_ram[paddr & g_ram_mask];
+    return &g_bus.ram[paddr & g_bus.ram_mask];
   }
 
   if ((paddr & SCRATCHPAD_ADDR_MASK) == SCRATCHPAD_ADDR)
@@ -3485,9 +3485,9 @@ void* CPU::GetDirectReadMemoryPointer(VirtualMemoryAddress address, MemoryAccess
   if (paddr >= BIOS_BASE && paddr < (BIOS_BASE + BIOS_SIZE))
   {
     if (read_ticks)
-      *read_ticks = g_bios_access_time[static_cast<u32>(size)];
+      *read_ticks = g_bus.bios_access_time[static_cast<u32>(size)];
 
-    return &g_bios[paddr & BIOS_MASK];
+    return &g_bus.bios[paddr & BIOS_MASK];
   }
 
   return nullptr;
@@ -3504,7 +3504,7 @@ void* CPU::GetDirectWriteMemoryPointer(VirtualMemoryAddress address, MemoryAcces
   const PhysicalMemoryAddress paddr = address & KSEG_MASK;
 
   if (paddr < RAM_MIRROR_END)
-    return &g_ram[paddr & g_ram_mask];
+    return &g_bus.ram[paddr & g_bus.ram_mask];
 
   if ((paddr & SCRATCHPAD_ADDR_MASK) == SCRATCHPAD_ADDR)
     return &g_state.scratchpad[paddr & SCRATCHPAD_OFFSET_MASK];

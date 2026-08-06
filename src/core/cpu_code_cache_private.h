@@ -191,7 +191,7 @@ static_assert(sizeof(LoadstoreBackpatchInfo) == 24);
 
 static inline bool AddressInRAM(VirtualMemoryAddress pc)
 {
-  return VirtualAddressToPhysical(pc) < Bus::g_ram_size;
+  return VirtualAddressToPhysical(pc) < g_bus.ram_size;
 }
 
 struct PageProtectionInfo

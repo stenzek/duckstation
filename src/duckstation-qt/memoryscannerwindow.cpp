@@ -96,7 +96,7 @@ MemoryScannerWindow::MemoryScannerWindow() : QWidget()
   connectUi();
 
   m_ui.cheatEngineAddress->setText(tr("Address of RAM for HxD Usage: 0x%1")
-                                     .arg(reinterpret_cast<qulonglong>(Bus::g_unprotected_ram), 16, 16, QChar('0')));
+                                     .arg(reinterpret_cast<qulonglong>(g_bus.unprotected_ram), 16, 16, QChar('0')));
 }
 
 MemoryScannerWindow::~MemoryScannerWindow() = default;
@@ -149,7 +149,7 @@ void MemoryScannerWindow::connectUi()
     if (index == 0)
     {
       m_ui.scanStartAddress->setText(formatHexValue(0, MemoryAccessSize::Word));
-      m_ui.scanEndAddress->setText(formatHexValue(Bus::g_ram_size, MemoryAccessSize::Word));
+      m_ui.scanEndAddress->setText(formatHexValue(g_bus.ram_size, MemoryAccessSize::Word));
     }
     else if (index == 1)
     {

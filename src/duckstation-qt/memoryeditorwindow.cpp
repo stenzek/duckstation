@@ -511,7 +511,7 @@ void MemoryEditorWindow::updateMemoryViewRegion()
 
   static constexpr auto edit_ram_callback = [](size_t offset, size_t count) {
     // shouldn't happen
-    if (offset > Bus::g_ram_size)
+    if (offset > g_bus.ram_size)
       return;
 
     const u32 start_page = static_cast<u32>(offset) >> HOST_PAGE_SHIFT;
@@ -519,7 +519,7 @@ void MemoryEditorWindow::updateMemoryViewRegion()
     Host::RunOnCoreThread([start_page, end_page]() {
       for (u32 i = start_page; i <= end_page; i++)
       {
-        if (Bus::g_ram_code_bits[i])
+        if (g_bus.ram_code_bits[i])
           CPU::CodeCache::InvalidateBlocksWithPageIndex(i);
       }
     });

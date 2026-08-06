@@ -939,7 +939,7 @@ void GPU::DMAWrite(const u32* RESTRICT words, u32 address, u32 increment, u32 wo
     dump->EndGP0Packet();
   }
 
-  const u32 mask = Bus::g_ram_mask;
+  const u32 mask = g_bus.ram_mask;
   if (const u32 contig_words = std::min(word_count, s_locals.fifo.GetContiguousSpace()); contig_words > 0)
   {
     const u32* RESTRICT const contig_words_end = words + contig_words;

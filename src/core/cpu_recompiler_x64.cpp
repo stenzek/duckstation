@@ -251,9 +251,9 @@ static ZyanStatus ZydisFormatterPrintAddressAbsolute(const ZydisFormatter* forma
 
 #define A(x) static_cast<ZyanU64>(reinterpret_cast<uintptr_t>(x))
 
-  if (address >= A(Bus::g_ram) && address < A(Bus::g_ram + Bus::g_ram_size))
+  if (address >= A(g_bus.ram) && address < A(g_bus.ram + g_bus.ram_size))
   {
-    len = snprintf(buf, sizeof(buf), "g_ram+0x%08X", static_cast<u32>(address - A(Bus::g_ram)));
+    len = snprintf(buf, sizeof(buf), "g_ram+0x%08X", static_cast<u32>(address - A(g_bus.ram)));
   }
   else if (address >= A(&g_state.regs) &&
            address < A(reinterpret_cast<const u8*>(&g_state.regs) + sizeof(CPU::Registers)))

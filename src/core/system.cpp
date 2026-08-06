@@ -2693,7 +2693,7 @@ bool System::LoadBIOS(bool* using_auto_select, Error* error)
     WARNING_LOG("Using an unknown BIOS: {}", BIOS::ImageInfo::GetHashString(s_state.bios_hash));
   }
 
-  std::memcpy(Bus::g_bios, bios_image->data.data(), Bus::BIOS_SIZE);
+  std::memcpy(g_bus.bios, bios_image->data.data(), Bus::BIOS_SIZE);
   return true;
 }
 
@@ -2757,7 +2757,7 @@ bool System::SetBootMode(BootMode new_boot_mode, DiscRegion disc_region, bool* m
     {
       // Patch BIOS, this sucks.
       INFO_LOG("Patching BIOS for fast boot.");
-      if (!BIOS::PatchBIOSFastBoot(Bus::g_bios, Bus::BIOS_SIZE, s_state.bios_image_info->fastboot_patch))
+      if (!BIOS::PatchBIOSFastBoot(g_bus.bios, Bus::BIOS_SIZE, s_state.bios_image_info->fastboot_patch))
         s_state.boot_mode = BootMode::FullBoot;
     }
     else
@@ -3319,7 +3319,7 @@ bool System::SaveStateToBuffer(SaveStateBuffer* buffer, Error* error, u32 screen
 
   // write data
   if (buffer->state_data.empty())
-    buffer->state_data.resize(GetMaxSaveStateSize(Bus::g_ram_size > Bus::RAM_2MB_SIZE));
+    buffer->state_data.resize(GetMaxSaveStateSize(g_bus.ram_size > Bus::RAM_2MB_SIZE));
 
   return SaveStateDataToBuffer(buffer->state_data, &buffer->state_size, error);
 }
@@ -3953,7 +3953,7 @@ bool System::DumpRAM(std::string path, Error* error)
     return false;
   }
 
-  return FileSystem::WriteAtomicRenamedFile(std::move(path), Bus::g_unprotected_ram, Bus::g_ram_size, error);
+  return FileSystem::WriteAtomicRenamedFile(std::move(path), g_bus.unprotected_ram, g_bus.ram_size, error);
 }
 
 bool System::DumpVRAM(std::string path, Error* error)

@@ -717,7 +717,7 @@ void RegTestHost::DumpSystemStateHashes()
     INFO_LOG("Save State Hash: {}",
              SHA256Digest::DigestToString(SHA256Digest::GetDigest(state_data.cspan(0, state_data_size))));
     INFO_LOG("RAM Hash: {}",
-             SHA256Digest::DigestToString(SHA256Digest::GetDigest(std::span<const u8>(Bus::g_ram, Bus::g_ram_size))));
+             SHA256Digest::DigestToString(SHA256Digest::GetDigest(std::span<const u8>(g_bus.ram, g_bus.ram_size))));
     INFO_LOG("SPU RAM Hash: {}", SHA256Digest::DigestToString(SHA256Digest::GetDigest(SPU::GetRAM())));
   }
 

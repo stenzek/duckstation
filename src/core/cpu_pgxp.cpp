@@ -132,7 +132,7 @@ static std::FILE* s_log;
 
 size_t CPU::PGXP::GetMemoryValueCount()
 {
-  return (PGXP_SCRATCH_VALUE_COUNT + (Bus::g_ram_size / 4u));
+  return (PGXP_SCRATCH_VALUE_COUNT + (g_bus.ram_size / 4u));
 }
 
 void CPU::PGXP::Initialize()
@@ -307,7 +307,7 @@ ALWAYS_INLINE_RELEASE CPU::PGXPValue* CPU::PGXP::GetPtr(u32 addr)
   // Don't worry about >512MB here for performance reasons.
   const u32 paddr = (addr & KSEG_MASK);
   if (paddr < Bus::RAM_MIRROR_END)
-    return &s_mem[PGXP_MEM_RAM_OFFSET + ((paddr & Bus::g_ram_mask) >> 2)];
+    return &s_mem[PGXP_MEM_RAM_OFFSET + ((paddr & g_bus.ram_mask) >> 2)];
   else
     return nullptr;
 }
