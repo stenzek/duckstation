@@ -202,6 +202,16 @@ bool Updater::ParseZip()
         zip_filename_buffer[i] = FS_OSPATH_SEPARATOR_CHARACTER;
     }
 
+    // check for parent directory in zip path, it should never contain any and since we use this
+    // as a destination path, if not checked could lead to path traversal
+    if (Path::IsAbsolute(zip_filename_buffer) ||
+        std::ranges::any_of(Path::SplitNativePath(zip_filename_buffer),
+                            [](const std::string_view& s) { return (s == ".."); }))
+    {
+      m_progress->FormatModalError("Invalid path '{}' in update archive", zip_filename_buffer);
+      return false;
+    }
+
     // should never have a leading slash. just in case.
     while (zip_filename_buffer[0] == FS_OSPATH_SEPARATOR_CHARACTER)
       std::memmove(&zip_filename_buffer[1], &zip_filename_buffer[0], --len);
