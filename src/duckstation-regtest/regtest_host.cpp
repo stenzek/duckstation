@@ -1000,7 +1000,7 @@ int main(int argc, char* argv[])
 
   int result = -1;
   INFO_LOG("Trying to boot '{}'...", autoboot->path);
-  if (!System::BootSystem(std::move(autoboot.value()), &error))
+  if (System::BootSystem(std::move(autoboot.value()), &error) != System::BootResult::Success)
   {
     ERROR_LOG("Failed to boot system: {}", error.GetDescription());
     goto cleanup;
