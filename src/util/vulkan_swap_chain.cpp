@@ -20,27 +20,6 @@
 
 LOG_CHANNEL(GPUDevice);
 
-static VkFormat GetLinearFormat(VkFormat format)
-{
-  switch (format)
-  {
-    case VK_FORMAT_R8_SRGB:
-      return VK_FORMAT_R8_UNORM;
-    case VK_FORMAT_R8G8_SRGB:
-      return VK_FORMAT_R8G8_UNORM;
-    case VK_FORMAT_R8G8B8_SRGB:
-      return VK_FORMAT_R8G8B8_UNORM;
-    case VK_FORMAT_R8G8B8A8_SRGB:
-      return VK_FORMAT_R8G8B8A8_UNORM;
-    case VK_FORMAT_B8G8R8_SRGB:
-      return VK_FORMAT_B8G8R8_UNORM;
-    case VK_FORMAT_B8G8R8A8_SRGB:
-      return VK_FORMAT_B8G8R8A8_UNORM;
-    default:
-      return format;
-  }
-}
-
 static const char* PresentModeToString(VkPresentModeKHR mode)
 {
   switch (mode)
@@ -219,23 +198,31 @@ std::optional<VkSurfaceFormatKHR> VulkanSwapChain::SelectSurfaceFormat(VkPhysica
 
   std::vector<VkSurfaceFormatKHR> surface_formats(format_count);
   res = vkGetPhysicalDeviceSurfaceFormatsKHR(physdev, m_surface, &format_count, surface_formats.data());
-  Assert(res == VK_SUCCESS);
+  if (res != VK_SUCCESS)
+  {
+    Vulkan::SetErrorObject(error, "vkGetPhysicalDeviceSurfaceFormatsKHR failed: ", res);
+    return std::nullopt;
+  }
+  surface_formats.resize(format_count);
 
   // If there is a single undefined surface format, the device doesn't care, so we'll just use RGBA
-  const auto has_format = [&surface_formats](VkFormat fmt) {
-    return std::any_of(surface_formats.begin(), surface_formats.end(), [fmt](const VkSurfaceFormatKHR& sf) {
-      return (sf.format == fmt || GetLinearFormat(sf.format) == fmt);
-    });
-  };
-  if (has_format(VK_FORMAT_UNDEFINED))
-    return VkSurfaceFormatKHR{VK_FORMAT_R8G8B8A8_UNORM, VK_COLOR_SPACE_SRGB_NONLINEAR_KHR};
+  // NOTE: This is prehistoric shit, Vulkan 1.1+ drivers not allowed to return UNDEFINED.
+  if (surface_formats.size() == 1 && surface_formats[0].format == VK_FORMAT_UNDEFINED)
+    return VkSurfaceFormatKHR{VK_FORMAT_R8G8B8A8_UNORM, surface_formats[0].colorSpace};
 
-  // Prefer 8-bit formats.
-  for (VkFormat format : {VK_FORMAT_R8G8B8A8_UNORM, VK_FORMAT_B8G8R8A8_UNORM, VK_FORMAT_R5G6B5_UNORM_PACK16,
-                          VK_FORMAT_R5G5B5A1_UNORM_PACK16})
+  // Prefer 8-bit formats. Fall back to an advertised sRGB counterpart when no preferred linear format is available.
+  for (const VkFormat format : {VK_FORMAT_R8G8B8A8_UNORM, VK_FORMAT_B8G8R8A8_UNORM, VK_FORMAT_R5G6B5_UNORM_PACK16,
+                                VK_FORMAT_R5G5B5A1_UNORM_PACK16, VK_FORMAT_R8G8B8A8_SRGB, VK_FORMAT_B8G8R8A8_SRGB})
   {
-    if (has_format(format))
-      return VkSurfaceFormatKHR{format, VK_COLOR_SPACE_SRGB_NONLINEAR_KHR};
+    const auto it =
+      std::ranges::find_if(surface_formats, [format](const VkSurfaceFormatKHR& sf) { return sf.format == format; });
+    if (it != surface_formats.end())
+    {
+      if (format == VK_FORMAT_R8G8B8A8_SRGB || format == VK_FORMAT_B8G8R8A8_SRGB) [[unlikely]]
+        WARNING_LOG("Using SRGB output format {}", static_cast<u32>(format));
+
+      return *it;
+    }
   }
 
   SmallString errormsg("Failed to find a suitable format for swap chain buffers. Available formats were:");
