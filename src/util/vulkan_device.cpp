@@ -3154,12 +3154,15 @@ void VulkanDevice::SetInitialPipelineState()
   DebugAssert(m_current_pipeline);
   m_dirty_flags &= ~DIRTY_FLAG_INITIAL;
 
+  m_current_pipeline_layout = m_current_pipeline->GetLayout();
+  const bool is_compute = IsComputeLayout(m_current_pipeline_layout);
+  vkCmdBindPipeline(m_current_command_buffer,
+                    is_compute ? VK_PIPELINE_BIND_POINT_COMPUTE : VK_PIPELINE_BIND_POINT_GRAPHICS,
+                    m_current_pipeline->GetPipeline());
+
   const VkDeviceSize offset = 0;
   vkCmdBindVertexBuffers(m_current_command_buffer, 0, 1, m_vertex_buffer.GetBufferPtr(), &offset);
   vkCmdBindIndexBuffer(m_current_command_buffer, m_index_buffer.GetBuffer(), 0, VK_INDEX_TYPE_UINT16);
-
-  m_current_pipeline_layout = m_current_pipeline->GetLayout();
-  vkCmdBindPipeline(m_current_command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_current_pipeline->GetPipeline());
 
   const VkViewport vp = {static_cast<float>(m_current_viewport.left),
                          static_cast<float>(m_current_viewport.top),
