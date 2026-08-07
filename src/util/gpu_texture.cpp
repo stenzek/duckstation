@@ -409,11 +409,11 @@ u32 GPUDownloadTexture::GetTransferPitch(u32 width, u32 pitch_align) const
 }
 
 void GPUDownloadTexture::GetTransferSize(u32 x, u32 y, u32 width, u32 height, u32 pitch, u32* copy_offset,
-                                         u32* copy_size, u32* copy_rows) const
+                                         u32* copy_row_size, u32* copy_rows) const
 {
   const u32 bytes_per_pixel = GPUTexture::GetPixelSize(m_format);
   *copy_offset = (y * pitch) + (x * bytes_per_pixel);
-  *copy_size = width * bytes_per_pixel;
+  *copy_row_size = width * bytes_per_pixel;
   *copy_rows = height;
 }
 

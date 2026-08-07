@@ -201,7 +201,7 @@ public:
   u32 GetTransferPitch(u32 width, u32 pitch_align) const;
 
   /// Calculates the size of the data you should transfer.
-  void GetTransferSize(u32 x, u32 y, u32 width, u32 height, u32 pitch, u32* copy_offset, u32* copy_size,
+  void GetTransferSize(u32 x, u32 y, u32 width, u32 height, u32 pitch, u32* copy_offset, u32* copy_row_size,
                        u32* copy_rows) const;
 
   /// Queues a copy from the specified texture to this buffer.
