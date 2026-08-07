@@ -396,7 +396,7 @@ void VulkanTexture::Unmap()
 {
   VulkanDevice& dev = VulkanDevice::GetInstance();
   VulkanStreamBuffer& sb = dev.GetTextureUploadBuffer();
-  const u32 aligned_pitch = Common::AlignUpPow2(CalcUploadPitch(m_width), dev.GetBufferCopyRowPitchAlignment());
+  const u32 aligned_pitch = Common::AlignUpPow2(CalcUploadPitch(m_map_width), dev.GetBufferCopyRowPitchAlignment());
   const u32 req_size = CalcUploadSize(m_map_height, aligned_pitch);
   const u32 offset = sb.GetCurrentOffset();
   sb.CommitMemory(req_size);
