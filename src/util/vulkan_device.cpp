@@ -2393,7 +2393,7 @@ bool VulkanDevice::CreatePipelineLayouts()
 
   {
     dslb.AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1,
-                    VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
+                    VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT | VK_SHADER_STAGE_COMPUTE_BIT);
     if ((m_ubo_ds_layout = dslb.Create(m_device)) == VK_NULL_HANDLE)
       return false;
     Vulkan::SetObjectName(m_device, m_ubo_ds_layout, "UBO Descriptor Set Layout");
@@ -2421,8 +2421,10 @@ bool VulkanDevice::CreatePipelineLayouts()
     if (m_optional_extensions.vk_khr_push_descriptor)
       dslb.SetPushFlag();
     for (u32 i = 0; i < MAX_TEXTURE_SAMPLERS; i++)
+    {
       dslb.AddBinding(i, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1,
                       VK_SHADER_STAGE_FRAGMENT_BIT | VK_SHADER_STAGE_COMPUTE_BIT);
+    }
     if ((m_multi_texture_ds_layout = dslb.Create(m_device)) == VK_NULL_HANDLE)
       return false;
     Vulkan::SetObjectName(m_device, m_multi_texture_ds_layout, "Multi Texture Descriptor Set Layout");
@@ -2438,9 +2440,7 @@ bool VulkanDevice::CreatePipelineLayouts()
   }
 
   for (u32 i = 0; i < MAX_IMAGE_RENDER_TARGETS; i++)
-  {
     dslb.AddBinding(i, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1, VK_SHADER_STAGE_FRAGMENT_BIT | VK_SHADER_STAGE_COMPUTE_BIT);
-  }
   if ((m_image_ds_layout = dslb.Create(m_device)) == VK_NULL_HANDLE)
     return false;
   Vulkan::SetObjectName(m_device, m_image_ds_layout, "ROV Descriptor Set Layout");
@@ -3364,6 +3364,10 @@ bool VulkanDevice::UpdateDescriptorSetsForLayout(u32 dirty)
   [[maybe_unused]] bool new_dynamic_offsets = false;
 
   constexpr bool is_compute = IsComputeLayout(layout);
+  constexpr bool has_ubo =
+    (layout == GPUPipeline::Layout::SingleTextureAndUBO || layout == GPUPipeline::Layout::MultiTextureAndUBO ||
+     layout == GPUPipeline::Layout::MultiTextureAndUBOAndPushConstants ||
+     layout == GPUPipeline::Layout::ComputeMultiTextureAndUBO);
   constexpr VkPipelineBindPoint vk_bind_point =
     (is_compute ? VK_PIPELINE_BIND_POINT_COMPUTE : VK_PIPELINE_BIND_POINT_GRAPHICS);
   const VkPipelineLayout vk_pipeline_layout = GetCurrentVkPipelineLayout(is_compute);
@@ -3371,10 +3375,7 @@ bool VulkanDevice::UpdateDescriptorSetsForLayout(u32 dirty)
   u32 first_ds = 0;
   u32 num_ds = 0;
 
-  if constexpr (layout == GPUPipeline::Layout::SingleTextureAndUBO ||
-                layout == GPUPipeline::Layout::MultiTextureAndUBO ||
-                layout == GPUPipeline::Layout::MultiTextureAndUBOAndPushConstants ||
-                layout == GPUPipeline::Layout::ComputeMultiTextureAndUBO)
+  if constexpr (has_ubo)
   {
     new_dynamic_offsets = ((dirty & DIRTY_FLAG_DYNAMIC_OFFSETS) != 0);
 
@@ -3421,13 +3422,8 @@ bool VulkanDevice::UpdateDescriptorSetsForLayout(u32 dirty)
                                                     tex->GetVkLayout());
       }
 
-      const u32 set = (layout == GPUPipeline::Layout::MultiTextureAndUBO ||
-                       layout == GPUPipeline::Layout::MultiTextureAndUBOAndPushConstants) ?
-                        1 :
-                        0;
-      dsub.PushUpdate(m_current_command_buffer, vk_bind_point, vk_pipeline_layout, set);
-      if (num_ds == 0)
-        return true;
+      // set 1 if we have UBO, otherwise the push (texture) set is the first
+      dsub.PushUpdate(m_current_command_buffer, vk_bind_point, vk_pipeline_layout, has_ubo ? 1 : 0);
     }
     else
     {
@@ -3460,6 +3456,7 @@ bool VulkanDevice::UpdateDescriptorSetsForLayout(u32 dirty)
       if (ids == VK_NULL_HANDLE)
         return false;
 
+      // textures should have always been updated, so first_ds will correctly be either be 1 or 0
       ds[num_ds++] = ids;
 
       Vulkan::DescriptorSetUpdateBuilder dsub;
@@ -3492,7 +3489,12 @@ bool VulkanDevice::UpdateDescriptorSetsForLayout(u32 dirty)
     }
   }
 
-  DebugAssert(num_ds > 0);
+  if (num_ds == 0)
+  {
+    // this can happen when there's no UBO and we're using push descriptors, it's fine.
+    return true;
+  }
+
   vkCmdBindDescriptorSets(m_current_command_buffer, vk_bind_point, vk_pipeline_layout, first_ds, num_ds, ds.data(),
                           static_cast<u32>(new_dynamic_offsets),
                           new_dynamic_offsets ? &m_uniform_buffer_position : nullptr);
