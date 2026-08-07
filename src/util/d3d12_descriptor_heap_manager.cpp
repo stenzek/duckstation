@@ -37,15 +37,27 @@ bool D3D12DescriptorHeapManager::Create(ID3D12Device* device, D3D12_DESCRIPTOR_H
   for (BitSetType& bs : m_free_slots)
     bs.flip();
 
+  // Mark unused tail bits unavailable so partial descriptor heaps cannot return out-of-range handles.
+  if (!m_free_slots.empty())
+  {
+    const u32 remainder = num_descriptors % BITSET_SIZE;
+    if (remainder != 0)
+    {
+      BitSetType& last = m_free_slots.back();
+      for (u32 bit = remainder; bit < BITSET_SIZE; bit++)
+        last.reset(bit);
+    }
+  }
+
   return true;
 }
 
 void D3D12DescriptorHeapManager::Destroy()
 {
 #if defined(_DEBUG) || defined(_DEVEL)
-  for (BitSetType& bs : m_free_slots)
+  for (u32 index = 0; index < m_num_descriptors; index++)
   {
-    DebugAssert(bs.all());
+    DebugAssert(m_free_slots[index / BITSET_SIZE][index % BITSET_SIZE]);
   }
 #endif
 
@@ -107,7 +119,8 @@ void D3D12DescriptorHeapManager::Free(D3D12DescriptorHandle* handle)
 D3D12DescriptorAllocator::D3D12DescriptorAllocator() = default;
 D3D12DescriptorAllocator::~D3D12DescriptorAllocator() = default;
 
-bool D3D12DescriptorAllocator::Create(ID3D12Device* device, D3D12_DESCRIPTOR_HEAP_TYPE type, u32 num_descriptors, Error* error)
+bool D3D12DescriptorAllocator::Create(ID3D12Device* device, D3D12_DESCRIPTOR_HEAP_TYPE type, u32 num_descriptors,
+                                      Error* error)
 {
   const D3D12_DESCRIPTOR_HEAP_DESC desc = {type, static_cast<UINT>(num_descriptors),
                                            D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE, 0u};
