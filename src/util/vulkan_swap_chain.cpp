@@ -818,7 +818,7 @@ bool VulkanSwapChain::ResizeBuffers(u32 new_width, u32 new_height, Error* error)
     return true;
 
   VulkanDevice& dev = VulkanDevice::GetInstance();
-  dev.SubmitCommandBuffer(true);
+  dev.WaitForGPUIdle();
 
   if (new_width != 0 && new_height != 0)
   {
@@ -887,7 +887,7 @@ bool VulkanSwapChain::SetVSyncMode(GPUVSyncMode mode, Error* error)
   if (m_present_mode == new_present_mode.value())
     return true;
 
-  dev.SubmitCommandBuffer(true);
+  dev.WaitForGPUIdle();
 
   // TODO: Use the maintenance extension to change it without recreating...
   // Recreate the swap chain with the new present mode.

@@ -1881,6 +1881,13 @@ void VulkanDevice::FlushCommands()
 void VulkanDevice::WaitForGPUIdle()
 {
   SubmitCommandBuffer(true);
+
+  const VkResult res = vkDeviceWaitIdle(m_device);
+  if (res != VK_SUCCESS)
+  {
+    LOG_VULKAN_ERROR(res, "vkDeviceWaitIdle() failed: ");
+    m_device_was_lost |= (res == VK_ERROR_DEVICE_LOST);
+  }
 }
 
 GPUPresentResult VulkanDevice::BeginPresent(GPUSwapChain* swap_chain, u32 clear_color)
