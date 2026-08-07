@@ -932,6 +932,7 @@ void D3D12DownloadTexture::CopyFromTexture(u32 dst_x, u32 dst_y, GPUTexture* src
   if (dev.InRenderPass())
     dev.EndRenderPass();
   src12->CommitClear();
+  src12->SetUseFenceValue(dev.GetCurrentFenceValue());
 
   if (IsMapped())
     Unmap();
@@ -958,8 +959,9 @@ void D3D12DownloadTexture::CopyFromTexture(u32 dst_x, u32 dst_y, GPUTexture* src
   Assert(Common::IsAlignedPow2(dstloc.PlacedFootprint.Offset, D3D12_TEXTURE_DATA_PLACEMENT_ALIGNMENT));
 
   const D3D12_RESOURCE_STATES old_layout = src12->GetResourceState();
+  const u32 src_subresource = src12->CalculateSubresource(src_layer, src_level);
   if (old_layout != D3D12_RESOURCE_STATE_COPY_SOURCE)
-    src12->TransitionSubresourceToState(cmdlist, src_level, old_layout, D3D12_RESOURCE_STATE_COPY_SOURCE);
+    src12->TransitionSubresourceToState(cmdlist, src_subresource, old_layout, D3D12_RESOURCE_STATE_COPY_SOURCE);
 
   // TODO: Rules for depth buffers here?
   const D3D12_BOX srcbox{static_cast<UINT>(src_x),         static_cast<UINT>(src_y),          0u,
@@ -967,7 +969,7 @@ void D3D12DownloadTexture::CopyFromTexture(u32 dst_x, u32 dst_y, GPUTexture* src
   cmdlist->CopyTextureRegion(&dstloc, dst_x, dst_y, 0, &srcloc, &srcbox);
 
   if (old_layout != D3D12_RESOURCE_STATE_COPY_SOURCE)
-    src12->TransitionSubresourceToState(cmdlist, src_level, D3D12_RESOURCE_STATE_COPY_SOURCE, old_layout);
+    src12->TransitionSubresourceToState(cmdlist, src_subresource, D3D12_RESOURCE_STATE_COPY_SOURCE, old_layout);
 
   m_copy_fence_value = dev.GetCurrentFenceValue();
   m_needs_flush = true;
