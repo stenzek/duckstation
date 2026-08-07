@@ -1446,22 +1446,23 @@ VkRenderPass VulkanDevice::CreateCachedRenderPass(RenderPassCacheKey key)
         VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
     const RenderPassCacheKey::RenderTarget key_rt = key.color[i];
-    attachments[num_attachments] = {i,
-                                    TEXTURE_FORMAT_MAPPING[key_rt.format],
-                                    static_cast<VkSampleCountFlagBits>(key.samples),
-                                    static_cast<VkAttachmentLoadOp>(key_rt.load_op),
-                                    static_cast<VkAttachmentStoreOp>(key_rt.store_op),
-                                    VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-                                    VK_ATTACHMENT_STORE_OP_DONT_CARE,
-                                    layout,
-                                    layout};
+    attachments[num_attachments] = {
+      0u,                                                // VkAttachmentDescriptionFlags flags
+      TEXTURE_FORMAT_MAPPING[key_rt.format],             // VkFormat format
+      static_cast<VkSampleCountFlagBits>(key.samples),   // VkSampleCountFlagBits samples
+      static_cast<VkAttachmentLoadOp>(key_rt.load_op),   // VkAttachmentLoadOp loadOp
+      static_cast<VkAttachmentStoreOp>(key_rt.store_op), // VkAttachmentStoreOp storeOp
+      VK_ATTACHMENT_LOAD_OP_DONT_CARE,                   // VkAttachmentLoadOp stencilLoadOp
+      VK_ATTACHMENT_STORE_OP_DONT_CARE,                  // VkAttachmentStoreOp stencilStoreOp
+      layout,                                            // VkImageLayout initialLayout
+      layout,                                            // VkImageLayout finalLayout
+    };
     color_references[num_attachments].attachment = num_attachments;
     color_references[num_attachments].layout = layout;
     color_reference_ptr = color_references.data();
 
-    if (key.feedback_loop & GPUPipeline::ColorFeedbackLoop)
+    if ((key.feedback_loop & GPUPipeline::ColorFeedbackLoop) && i == 0)
     {
-      DebugAssert(i == 0);
       input_reference.attachment = num_attachments;
       input_reference.layout = layout;
       input_reference_ptr = &input_reference;
@@ -1512,7 +1513,7 @@ VkRenderPass VulkanDevice::CreateCachedRenderPass(RenderPassCacheKey key)
       0;
   const VkSubpassDescription subpass = {subpass_flags,
                                         VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                        input_reference_ptr ? num_rts : 0u,
+                                        input_reference_ptr ? 1u : 0u,
                                         input_reference_ptr,
                                         num_rts,
                                         color_reference_ptr,
