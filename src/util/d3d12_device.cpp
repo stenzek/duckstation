@@ -1227,6 +1227,7 @@ GPUPresentResult D3D12Device::BeginPresent(GPUSwapChain* swap_chain, u32 clear_c
   D3D12_RENDER_PASS_RENDER_TARGET_DESC rt_desc = {swap_chain_buf.second,
                                                   {D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_CLEAR, {}},
                                                   {D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE, {}}};
+  rt_desc.BeginningAccess.Clear.ClearValue.Format = D3DCommon::GetFormatMapping(s_swap_chain_format).rtv_format;
   GSVector4::store<false>(rt_desc.BeginningAccess.Clear.ClearValue.Color, GSVector4::unorm8(clear_color));
   cmdlist->BeginRenderPass(1, &rt_desc, nullptr, D3D12_RENDER_PASS_FLAG_NONE);
 
@@ -1862,8 +1863,8 @@ void D3D12Device::BeginRenderPass()
 {
   DebugAssert(!InRenderPass());
 
-  std::array<D3D12_RENDER_PASS_RENDER_TARGET_DESC, MAX_RENDER_TARGETS> rt_desc;
-  D3D12_RENDER_PASS_DEPTH_STENCIL_DESC ds_desc;
+  std::array<D3D12_RENDER_PASS_RENDER_TARGET_DESC, MAX_RENDER_TARGETS> rt_desc = {};
+  D3D12_RENDER_PASS_DEPTH_STENCIL_DESC ds_desc = {};
 
   D3D12_RENDER_PASS_RENDER_TARGET_DESC* rt_desc_p = nullptr;
   D3D12_RENDER_PASS_DEPTH_STENCIL_DESC* ds_desc_p = nullptr;
@@ -1890,6 +1891,8 @@ void D3D12Device::BeginRenderPass()
           case GPUTexture::State::Cleared:
           {
             desc.BeginningAccess.Type = D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_CLEAR;
+            desc.BeginningAccess.Clear.ClearValue.Format =
+              D3DCommon::GetFormatMapping(rt->GetFormat()).rtv_format;
             std::memcpy(desc.BeginningAccess.Clear.ClearValue.Color, rt->GetUNormClearColor().data(),
                         sizeof(desc.BeginningAccess.Clear.ClearValue.Color));
             rt->SetState(GPUTexture::State::Dirty);
@@ -1945,6 +1948,8 @@ void D3D12Device::BeginRenderPass()
         case GPUTexture::State::Cleared:
         {
           ds_desc.DepthBeginningAccess.Type = D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_CLEAR;
+          ds_desc.DepthBeginningAccess.Clear.ClearValue.Format =
+            D3DCommon::GetFormatMapping(ds->GetFormat()).dsv_format;
           ds_desc.DepthBeginningAccess.Clear.ClearValue.DepthStencil.Depth = ds->GetClearDepth();
           ds->SetState(GPUTexture::State::Dirty);
         }
