@@ -363,7 +363,7 @@ bool VulkanSwapChain::CreateSwapChain(VulkanDevice& dev, Error* error)
   // determines window size? Android sometimes lags updating currentExtent, so don't use it.
   // We want to avoid the system-level downsampling with fractional scaling on MacOS too.
   VkExtent2D size = surface_caps.surfaceCapabilities.currentExtent;
-#if defined(__ANDROID__) && !defined(__APPLE__)
+#if !defined(__ANDROID__) && !defined(__APPLE__)
   if (size.width == UINT32_MAX)
 #endif
   {
