@@ -90,10 +90,10 @@ std::unique_ptr<VulkanTexture> VulkanTexture::Create(u32 width, u32 height, u32 
                                nullptr,
                                0,
                                VK_NULL_HANDLE,
-                               VK_IMAGE_VIEW_TYPE_2D,
+                               (layers > 1) ? VK_IMAGE_VIEW_TYPE_2D_ARRAY : VK_IMAGE_VIEW_TYPE_2D,
                                vk_format,
                                s_identity_swizzle,
-                               {VK_IMAGE_ASPECT_COLOR_BIT, 0, static_cast<u32>(levels), 0, 1}};
+                               {VK_IMAGE_ASPECT_COLOR_BIT, 0, static_cast<u32>(levels), 0, layers}};
 
   switch (type)
   {
@@ -280,7 +280,7 @@ void VulkanTexture::UpdateFromBuffer(VkCommandBuffer cmdbuf, u32 x, u32 y, u32 w
   const VkBufferImageCopy bic = {static_cast<VkDeviceSize>(buffer_offset),
                                  row_length,
                                  height,
-                                 {VK_IMAGE_ASPECT_COLOR_BIT, static_cast<u32>(level), 0u, 1u},
+                                 {VK_IMAGE_ASPECT_COLOR_BIT, static_cast<u32>(level), layer, 1u},
                                  {static_cast<s32>(x), static_cast<s32>(y), 0},
                                  {width, height, 1u}};
 
@@ -356,10 +356,8 @@ bool VulkanTexture::Update(u32 x, u32 y, u32 width, u32 height, const void* data
 bool VulkanTexture::Map(void** map, u32* map_stride, u32 x, u32 y, u32 width, u32 height, u32 layer, u32 level)
 {
   // TODO: linear textures for dynamic?
-  if ((x + width) > GetMipWidth(level) || (y + height) > GetMipHeight(level) || layer > m_layers || level > m_levels)
-  {
+  if ((x + width) > GetMipWidth(level) || (y + height) > GetMipHeight(level) || layer >= m_layers || level >= m_levels)
     return false;
-  }
 
   VulkanDevice& dev = VulkanDevice::GetInstance();
   if (m_state == GPUTexture::State::Cleared && (x != 0 || y != 0 || width != m_width || height != m_height))
@@ -738,9 +736,9 @@ void VulkanTexture::GenerateMipmaps()
       TransitionSubresourcesToLayout(cmdbuf, layer, 1, dst_level, 1, m_layout, Layout::TransferDst);
 
       const VkImageBlit blit = {
-        {VK_IMAGE_ASPECT_COLOR_BIT, src_level, 0u, 1u},                              // srcSubresource
+        {VK_IMAGE_ASPECT_COLOR_BIT, src_level, layer, 1u},                           // srcSubresource
         {{0, 0, 0}, {static_cast<s32>(src_width), static_cast<s32>(src_height), 1}}, // srcOffsets
-        {VK_IMAGE_ASPECT_COLOR_BIT, dst_level, 0u, 1u},                              // dstSubresource
+        {VK_IMAGE_ASPECT_COLOR_BIT, dst_level, layer, 1u},                           // dstSubresource
         {{0, 0, 0}, {static_cast<s32>(dst_width), static_cast<s32>(dst_height), 1}}  // dstOffsets
       };
 
