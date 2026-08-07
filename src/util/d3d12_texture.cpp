@@ -926,9 +926,7 @@ void D3D12DownloadTexture::CopyFromTexture(u32 dst_x, u32 dst_y, GPUTexture* src
   DebugAssert((dst_x + width) <= m_width && (dst_y + height) <= m_height);
   DebugAssert((dst_x == 0 && dst_y == 0) || !use_transfer_pitch);
 
-  u32 copy_offset, copy_size, copy_rows;
   m_current_pitch = GetTransferPitch(use_transfer_pitch ? width : m_width, D3D12_TEXTURE_DATA_PITCH_ALIGNMENT);
-  GetTransferSize(dst_x, dst_y, width, height, m_current_pitch, &copy_offset, &copy_size, &copy_rows);
 
   dev.GetStatistics().num_downloads++;
   if (dev.InRenderPass())
@@ -949,12 +947,15 @@ void D3D12DownloadTexture::CopyFromTexture(u32 dst_x, u32 dst_y, GPUTexture* src
   D3D12_TEXTURE_COPY_LOCATION dstloc;
   dstloc.pResource = m_buffer.Get();
   dstloc.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
-  dstloc.PlacedFootprint.Offset = copy_offset;
+  dstloc.PlacedFootprint.Offset = dst_y * m_current_pitch;
   dstloc.PlacedFootprint.Footprint.Format = src12->GetDXGIFormat();
-  dstloc.PlacedFootprint.Footprint.Width = width;
-  dstloc.PlacedFootprint.Footprint.Height = height;
+  dstloc.PlacedFootprint.Footprint.Width = use_transfer_pitch ? width : m_width;
+  dstloc.PlacedFootprint.Footprint.Height = use_transfer_pitch ? height : m_height;
   dstloc.PlacedFootprint.Footprint.Depth = 1;
   dstloc.PlacedFootprint.Footprint.RowPitch = m_current_pitch;
+
+  // Has to be 512-byte aligned.
+  Assert(Common::IsAlignedPow2(dstloc.PlacedFootprint.Offset, D3D12_TEXTURE_DATA_PLACEMENT_ALIGNMENT));
 
   const D3D12_RESOURCE_STATES old_layout = src12->GetResourceState();
   if (old_layout != D3D12_RESOURCE_STATE_COPY_SOURCE)
@@ -963,7 +964,7 @@ void D3D12DownloadTexture::CopyFromTexture(u32 dst_x, u32 dst_y, GPUTexture* src
   // TODO: Rules for depth buffers here?
   const D3D12_BOX srcbox{static_cast<UINT>(src_x),         static_cast<UINT>(src_y),          0u,
                          static_cast<UINT>(src_x + width), static_cast<UINT>(src_y + height), 1u};
-  cmdlist->CopyTextureRegion(&dstloc, 0, 0, 0, &srcloc, &srcbox);
+  cmdlist->CopyTextureRegion(&dstloc, dst_x, dst_y, 0, &srcloc, &srcbox);
 
   if (old_layout != D3D12_RESOURCE_STATE_COPY_SOURCE)
     src12->TransitionSubresourceToState(cmdlist, src_level, D3D12_RESOURCE_STATE_COPY_SOURCE, old_layout);
