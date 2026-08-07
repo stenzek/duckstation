@@ -550,7 +550,7 @@ void VulkanTexture::TransitionSubresourcesToLayout(VkCommandBuffer command_buffe
     case Layout::ShaderReadOnly:
       // Image was being used as a shader resource, make sure all reads have finished.
       barrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
-      srcStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+      srcStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
       break;
 
     case Layout::ClearDst:
@@ -625,7 +625,7 @@ void VulkanTexture::TransitionSubresourcesToLayout(VkCommandBuffer command_buffe
 
     case Layout::ShaderReadOnly:
       barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-      dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+      dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
       break;
 
     case Layout::ClearDst:

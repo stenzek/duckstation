@@ -3334,7 +3334,7 @@ void VulkanDevice::PreDispatchCheck()
     if (rt->GetState() == GPUTexture::State::Cleared)
       rt->CommitClear(m_current_command_buffer);
     rt->SetState(GPUTexture::State::Dirty);
-    rt->TransitionToLayout(m_current_command_buffer, VulkanTexture::Layout::ReadWriteImage);
+    rt->TransitionToLayout(m_current_command_buffer, VulkanTexture::Layout::ComputeReadWriteImage);
     rt->SetUseFenceCounter(GetCurrentFenceCounter());
   }
 
