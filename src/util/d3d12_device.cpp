@@ -1891,8 +1891,7 @@ void D3D12Device::BeginRenderPass()
           case GPUTexture::State::Cleared:
           {
             desc.BeginningAccess.Type = D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_CLEAR;
-            desc.BeginningAccess.Clear.ClearValue.Format =
-              D3DCommon::GetFormatMapping(rt->GetFormat()).rtv_format;
+            desc.BeginningAccess.Clear.ClearValue.Format = D3DCommon::GetFormatMapping(rt->GetFormat()).rtv_format;
             std::memcpy(desc.BeginningAccess.Clear.ClearValue.Color, rt->GetUNormClearColor().data(),
                         sizeof(desc.BeginningAccess.Clear.ClearValue.Color));
             rt->SetState(GPUTexture::State::Dirty);
@@ -2483,6 +2482,20 @@ void D3D12Device::PreDispatchCheck()
       rt->CommitClear(cmdlist);
       rt->TransitionToState(cmdlist, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
       rt->SetState(GPUTexture::State::Dirty);
+    }
+
+    for (u32 i = 0; i < m_num_current_render_targets; i++)
+    {
+      D3D12Texture* const rt = m_current_render_targets[i];
+      if (!rt)
+        continue;
+
+      const D3D12_RESOURCE_BARRIER barrier = {
+        .Type = D3D12_RESOURCE_BARRIER_TYPE_UAV,
+        .Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE,
+        .UAV = {.pResource = rt->GetResource()},
+      };
+      cmdlist->ResourceBarrier(1, &barrier);
     }
   }
 
