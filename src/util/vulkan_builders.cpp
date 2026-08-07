@@ -785,6 +785,9 @@ void Vulkan::DescriptorSetUpdateBuilder::Clear()
 {
   m_writes = {};
   m_num_writes = 0;
+  m_num_buffer_infos = 0;
+  m_num_image_infos = 0;
+  m_num_views = 0;
 }
 
 void Vulkan::DescriptorSetUpdateBuilder::Update(VkDevice device, bool clear /*= true*/)
