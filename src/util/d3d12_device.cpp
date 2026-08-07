@@ -2458,8 +2458,8 @@ void D3D12Device::PreDispatchCheck()
     {
       D3D12Texture* const rt = m_current_render_targets[i];
       rt->SetUseFenceValue(GetCurrentFenceValue());
-      rt->TransitionToState(cmdlist, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
       rt->CommitClear(cmdlist);
+      rt->TransitionToState(cmdlist, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
       rt->SetState(GPUTexture::State::Dirty);
     }
   }
