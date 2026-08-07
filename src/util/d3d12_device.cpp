@@ -2228,7 +2228,7 @@ void D3D12Device::UnbindTextureBuffer(D3D12TextureBuffer* buf)
     m_dirty_flags |= DIRTY_FLAG_TEXTURES;
 }
 
-void D3D12Device::RenderTextureMipmap(D3D12Texture* texture, u32 dst_level, u32 dst_width, u32 dst_height,
+void D3D12Device::RenderTextureMipmap(D3D12Texture* texture, u32 layer, u32 dst_level, u32 dst_width, u32 dst_height,
                                       u32 src_level, u32 src_width, u32 src_height)
 {
   ComPtr<ID3D12PipelineState>& pipeline = m_mipmap_render_pipelines[static_cast<size_t>(texture->GetFormat())];
@@ -2304,29 +2304,46 @@ void D3D12Device::RenderTextureMipmap(D3D12Texture* texture, u32 dst_level, u32 
   }
 
   // Setup views. This will be a partial view for the SRV.
-  const D3D12_RENDER_TARGET_VIEW_DESC rtv_desc = {.Format = texture->GetDXGIFormat(),
-                                                  .ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D,
-                                                  .Texture2D = {.MipSlice = dst_level, .PlaneSlice = 0}};
+  const D3D12_RENDER_TARGET_VIEW_DESC rtv_desc =
+    (texture->GetLayers() > 1) ?
+      D3D12_RENDER_TARGET_VIEW_DESC{
+        .Format = texture->GetDXGIFormat(),
+        .ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2DARRAY,
+        .Texture2DArray = {.MipSlice = dst_level, .FirstArraySlice = layer, .ArraySize = 1, .PlaneSlice = 0}} :
+      D3D12_RENDER_TARGET_VIEW_DESC{.Format = texture->GetDXGIFormat(),
+                                    .ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D,
+                                    .Texture2D = {.MipSlice = dst_level, .PlaneSlice = 0}};
   m_device->CreateRenderTargetView(texture->GetResource(), &rtv_desc, rtv_handle);
 
-  const D3D12_SHADER_RESOURCE_VIEW_DESC srv_desc = {
-    .Format = texture->GetDXGIFormat(),
-    .ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D,
-    .Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING,
-    .Texture2D = {.MostDetailedMip = src_level, .MipLevels = 1, .PlaneSlice = 0, .ResourceMinLODClamp = 0.0f}};
+  const D3D12_SHADER_RESOURCE_VIEW_DESC srv_desc =
+    (texture->GetLayers() > 1) ?
+      D3D12_SHADER_RESOURCE_VIEW_DESC{.Format = texture->GetDXGIFormat(),
+                                      .ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2DARRAY,
+                                      .Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING,
+                                      .Texture2DArray = {.MostDetailedMip = src_level,
+                                                         .MipLevels = 1,
+                                                         .FirstArraySlice = layer,
+                                                         .ArraySize = 1,
+                                                         .PlaneSlice = 0,
+                                                         .ResourceMinLODClamp = 0.0f}} :
+      D3D12_SHADER_RESOURCE_VIEW_DESC{
+        .Format = texture->GetDXGIFormat(),
+        .ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D,
+        .Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING,
+        .Texture2D = {.MostDetailedMip = src_level, .MipLevels = 1, .PlaneSlice = 0, .ResourceMinLODClamp = 0.0f}};
   m_device->CreateShaderResourceView(texture->GetResource(), &srv_desc, srv_handle);
 
   // *now* we don't have to worry about running out of anything.
   ID3D12GraphicsCommandList4* cmdlist = GetCommandList();
   if (texture->GetResourceState() != D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE)
   {
-    texture->TransitionSubresourceToState(cmdlist, src_level, texture->GetResourceState(),
-                                          D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+    texture->TransitionSubresourceToState(cmdlist, texture->CalculateSubresource(layer, src_level),
+                                          texture->GetResourceState(), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
   }
   if (texture->GetResourceState() != D3D12_RESOURCE_STATE_RENDER_TARGET)
   {
-    texture->TransitionSubresourceToState(cmdlist, dst_level, texture->GetResourceState(),
-                                          D3D12_RESOURCE_STATE_RENDER_TARGET);
+    texture->TransitionSubresourceToState(cmdlist, texture->CalculateSubresource(layer, dst_level),
+                                          texture->GetResourceState(), D3D12_RESOURCE_STATE_RENDER_TARGET);
   }
 
   const D3D12_RENDER_PASS_RENDER_TARGET_DESC rt_desc = {
@@ -2351,13 +2368,13 @@ void D3D12Device::RenderTextureMipmap(D3D12Texture* texture, u32 dst_level, u32 
 
   if (texture->GetResourceState() != D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE)
   {
-    texture->TransitionSubresourceToState(cmdlist, src_level, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
-                                          texture->GetResourceState());
+    texture->TransitionSubresourceToState(cmdlist, texture->CalculateSubresource(layer, src_level),
+                                          D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, texture->GetResourceState());
   }
   if (texture->GetResourceState() != D3D12_RESOURCE_STATE_RENDER_TARGET)
   {
-    texture->TransitionSubresourceToState(cmdlist, dst_level, D3D12_RESOURCE_STATE_RENDER_TARGET,
-                                          texture->GetResourceState());
+    texture->TransitionSubresourceToState(cmdlist, texture->CalculateSubresource(layer, dst_level),
+                                          D3D12_RESOURCE_STATE_RENDER_TARGET, texture->GetResourceState());
   }
 
   // Must destroy after current cmdlist.

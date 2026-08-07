@@ -198,8 +198,8 @@ public:
   void UnbindTexture(D3D12Texture* tex);
   void UnbindTextureBuffer(D3D12TextureBuffer* buf);
 
-  void RenderTextureMipmap(D3D12Texture* texture, u32 dst_level, u32 dst_width, u32 dst_height, u32 src_level,
-                           u32 src_width, u32 src_height);
+  void RenderTextureMipmap(D3D12Texture* texture, u32 layer, u32 dst_level, u32 dst_width, u32 dst_height,
+                           u32 src_level, u32 src_width, u32 src_height);
 
 protected:
   bool CreateDeviceAndMainSwapChain(std::string_view adapter, CreateFlags create_flags, const WindowInfo& wi,
@@ -271,8 +271,8 @@ private:
                            Error* error);
   bool CreateDSVDescriptor(ID3D12Resource* resource, u32 samples, DXGI_FORMAT format, D3D12DescriptorHandle* dh,
                            Error* error);
-  bool CreateUAVDescriptor(ID3D12Resource* resource, u32 samples, DXGI_FORMAT format, D3D12DescriptorHandle* dh,
-                           Error* error);
+  bool CreateUAVDescriptor(ID3D12Resource* resource, u32 layers, u32 samples, DXGI_FORMAT format,
+                           D3D12DescriptorHandle* dh, Error* error);
 
   bool IsRenderTargetBound(const GPUTexture* tex) const;
 

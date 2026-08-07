@@ -50,7 +50,7 @@ std::unique_ptr<GPUTexture> D3D12Device::CreateTexture(u32 width, u32 height, u3
   desc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
   desc.Width = width;
   desc.Height = height;
-  desc.DepthOrArraySize = 1;
+  desc.DepthOrArraySize = static_cast<u16>(layers);
   desc.MipLevels = static_cast<u8>(levels);
   desc.Format = fm.resource_format;
   desc.SampleDesc.Count = samples;
@@ -161,7 +161,7 @@ std::unique_ptr<GPUTexture> D3D12Device::CreateTexture(u32 width, u32 height, u3
 
   if ((flags & GPUTexture::Flags::AllowBindAsImage) != GPUTexture::Flags::None)
   {
-    if (!CreateUAVDescriptor(resource.Get(), samples, fm.srv_format, &uav_descriptor, error))
+    if (!CreateUAVDescriptor(resource.Get(), layers, samples, fm.srv_format, &uav_descriptor, error))
     {
       if (write_descriptor_type != D3D12Texture::WriteDescriptorType::None)
         m_descriptor_heap_manager.Free(&write_descriptor);
@@ -264,7 +264,7 @@ bool D3D12Device::CreateDSVDescriptor(ID3D12Resource* resource, u32 samples, DXG
   return true;
 }
 
-bool D3D12Device::CreateUAVDescriptor(ID3D12Resource* resource, u32 samples, DXGI_FORMAT format,
+bool D3D12Device::CreateUAVDescriptor(ID3D12Resource* resource, u32 layers, u32 samples, DXGI_FORMAT format,
                                       D3D12DescriptorHandle* dh, Error* error)
 {
   if (!m_descriptor_heap_manager.Allocate(dh))
@@ -274,7 +274,12 @@ bool D3D12Device::CreateUAVDescriptor(ID3D12Resource* resource, u32 samples, DXG
   }
 
   DebugAssert(samples == 1);
-  const D3D12_UNORDERED_ACCESS_VIEW_DESC desc = {format, D3D12_UAV_DIMENSION_TEXTURE2D, {}};
+  const D3D12_UNORDERED_ACCESS_VIEW_DESC desc =
+    (layers > 1) ? D3D12_UNORDERED_ACCESS_VIEW_DESC{.Format = format,
+                                                    .ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2DARRAY,
+                                                    .Texture2DArray = {0u, 0u, layers, 0u}} :
+                   D3D12_UNORDERED_ACCESS_VIEW_DESC{
+                     .Format = format, .ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2D, .Texture2D = {}};
   m_device->CreateUnorderedAccessView(resource, nullptr, &desc, dh->cpu_handle);
   return true;
 }
@@ -576,8 +581,8 @@ void D3D12Texture::GenerateMipmaps()
       const u32 dst_width = std::max<u32>(m_width >> dst_level, 1u);
       const u32 dst_height = std::max<u32>(m_height >> dst_level, 1u);
 
-      D3D12Device::GetInstance().RenderTextureMipmap(this, dst_level, dst_width, dst_height, src_level, src_width,
-                                                     src_height);
+      D3D12Device::GetInstance().RenderTextureMipmap(this, layer, dst_level, dst_width, dst_height, src_level,
+                                                     src_width, src_height);
     }
   }
 
