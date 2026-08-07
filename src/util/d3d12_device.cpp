@@ -2344,6 +2344,7 @@ void D3D12Device::RenderTextureMipmap(D3D12Texture* texture, u32 dst_level, u32 
   cmdlist->SetPipelineState(pipeline.Get());
   cmdlist->SetGraphicsRootSignature(m_mipmap_render_root_signature.Get());
   cmdlist->SetGraphicsRootDescriptorTable(0, srv_handle);
+  cmdlist->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
   cmdlist->DrawInstanced(3, 1, 0, 0);
 
   cmdlist->EndRenderPass();
@@ -2363,8 +2364,15 @@ void D3D12Device::RenderTextureMipmap(D3D12Texture* texture, u32 dst_level, u32 
   DeferDescriptorDestruction(m_rtv_heap_manager, &rtv_handle);
 
   // Restore for next normal draw.
-  SetViewport(GetCommandList());
-  SetScissor(GetCommandList());
+  SetViewport(cmdlist);
+  SetScissor(cmdlist);
+  if (m_current_pipeline)
+  {
+    cmdlist->SetPipelineState(m_current_pipeline->GetPipeline());
+    if (m_current_pipeline->GetTopology() != D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST)
+      cmdlist->IASetPrimitiveTopology(m_current_pipeline->GetTopology());
+  }
+
   m_dirty_flags |= LAYOUT_DEPENDENT_DIRTY_STATE;
 }
 
