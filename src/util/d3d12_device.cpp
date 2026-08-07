@@ -1626,7 +1626,7 @@ void D3D12Device::PushUniformBuffer(ID3D12GraphicsCommandList4* const cmdlist, b
   s_stats.buffer_streamed += data_size;
 
   const u32 push_param =
-    push_parameters[static_cast<u8>(m_current_pipeline_layout)] + BoolToUInt8(IsUsingROVRootSignature());
+    push_parameters[static_cast<u8>(m_current_pipeline_layout)] + BoolToUInt8(!compute && IsUsingROVRootSignature());
   if (!compute)
     cmdlist->SetGraphicsRoot32BitConstants(push_param, data_size / 4u, data, 0);
   else
