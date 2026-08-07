@@ -7,6 +7,7 @@
 #include "common/error.h"
 #include "common/log.h"
 
+#include <cstring>
 #include <limits>
 
 void Vulkan::AddPointerToChain(void* head, const void* ptr)
@@ -698,6 +699,8 @@ void Vulkan::ComputePipelineBuilder::SetSpecializationBool(u32 index, bool value
 
 void Vulkan::ComputePipelineBuilder::SetSpecializationValue(u32 index, u32 value)
 {
+  DebugAssert(m_si.mapEntryCount < MAX_SPECIALIZATION_CONSTANTS);
+
   if (m_si.mapEntryCount == 0)
   {
     m_si.pMapEntries = m_smap_entries.data();
@@ -705,8 +708,11 @@ void Vulkan::ComputePipelineBuilder::SetSpecializationValue(u32 index, u32 value
     m_ci.stage.pSpecializationInfo = &m_si;
   }
 
-  m_smap_entries[m_si.mapEntryCount++] = {index, index * SPECIALIZATION_CONSTANT_SIZE, SPECIALIZATION_CONSTANT_SIZE};
-  m_si.dataSize += SPECIALIZATION_CONSTANT_SIZE;
+  const u32 entry_index = m_si.mapEntryCount++;
+  const u32 offset = entry_index * SPECIALIZATION_CONSTANT_SIZE;
+  m_smap_entries[entry_index] = {index, offset, SPECIALIZATION_CONSTANT_SIZE};
+  std::memcpy(&m_smap_constants[offset], &value, sizeof(value));
+  m_si.dataSize = offset + SPECIALIZATION_CONSTANT_SIZE;
 }
 
 Vulkan::SamplerBuilder::SamplerBuilder()
