@@ -2651,45 +2651,6 @@ bool VulkanDevice::TryImportHostMemory(void* data, size_t data_size, VkBufferUsa
   // Full amount of data that must be imported, including the pages
   const size_t data_size_aligned = Common::AlignUpPow2(data_offset + data_size, HOST_PAGE_SIZE);
 
-  VkMemoryHostPointerPropertiesEXT pointer_properties = {VK_STRUCTURE_TYPE_MEMORY_HOST_POINTER_PROPERTIES_EXT, nullptr,
-                                                         0};
-  VkResult res = vkGetMemoryHostPointerPropertiesEXT(m_device, VK_EXTERNAL_MEMORY_HANDLE_TYPE_HOST_ALLOCATION_BIT_EXT,
-                                                     data_aligned, &pointer_properties);
-  if (res != VK_SUCCESS || pointer_properties.memoryTypeBits == 0)
-  {
-    Vulkan::SetErrorObject(error, "vkGetMemoryHostPointerPropertiesEXT() failed: ", res);
-    return false;
-  }
-
-  VmaAllocationCreateInfo vma_alloc_info = {};
-  vma_alloc_info.preferredFlags =
-    VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT | VK_MEMORY_PROPERTY_HOST_CACHED_BIT;
-  vma_alloc_info.memoryTypeBits = pointer_properties.memoryTypeBits;
-
-  u32 memory_index = 0;
-  res = vmaFindMemoryTypeIndex(m_allocator, pointer_properties.memoryTypeBits, &vma_alloc_info, &memory_index);
-  if (res != VK_SUCCESS)
-  {
-    Vulkan::SetErrorObject(error, "vmaFindMemoryTypeIndex() failed: ", res);
-    return false;
-  }
-
-  const VkImportMemoryHostPointerInfoEXT import_info = {VK_STRUCTURE_TYPE_IMPORT_MEMORY_HOST_POINTER_INFO_EXT, nullptr,
-                                                        VK_EXTERNAL_MEMORY_HANDLE_TYPE_HOST_ALLOCATION_BIT_EXT,
-                                                        const_cast<void*>(data_aligned)};
-
-  const VkMemoryAllocateInfo alloc_info = {VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO, &import_info, data_size_aligned,
-                                           memory_index};
-
-  VkDeviceMemory imported_memory = VK_NULL_HANDLE;
-
-  res = vkAllocateMemory(m_device, &alloc_info, nullptr, &imported_memory);
-  if (res != VK_SUCCESS)
-  {
-    Vulkan::SetErrorObject(error, "vkAllocateMemory() failed: ", res);
-    return false;
-  }
-
   const VkExternalMemoryBufferCreateInfo external_info = {VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_BUFFER_CREATE_INFO, nullptr,
                                                           VK_EXTERNAL_MEMORY_HANDLE_TYPE_HOST_ALLOCATION_BIT_EXT};
 
@@ -2703,17 +2664,98 @@ bool VulkanDevice::TryImportHostMemory(void* data, size_t data_size, VkBufferUsa
                                           nullptr};
 
   VkBuffer imported_buffer = VK_NULL_HANDLE;
-  res = vkCreateBuffer(m_device, &buffer_info, nullptr, &imported_buffer);
+  VkResult res = vkCreateBuffer(m_device, &buffer_info, nullptr, &imported_buffer);
   if (res != VK_SUCCESS)
   {
     Vulkan::SetErrorObject(error, "vkCreateBuffer() failed: ", res);
-    if (imported_memory != VK_NULL_HANDLE)
-      vkFreeMemory(m_device, imported_memory, nullptr);
-
     return false;
   }
 
-  vkBindBufferMemory(m_device, imported_buffer, imported_memory, 0);
+  VkMemoryDedicatedRequirements dedicated_requirements = {VK_STRUCTURE_TYPE_MEMORY_DEDICATED_REQUIREMENTS, nullptr,
+                                                          VK_FALSE, VK_FALSE};
+  VkMemoryRequirements buffer_requirements;
+  if (vkGetBufferMemoryRequirements2)
+  {
+    const VkBufferMemoryRequirementsInfo2 requirements_info = {VK_STRUCTURE_TYPE_BUFFER_MEMORY_REQUIREMENTS_INFO_2,
+                                                               nullptr, imported_buffer};
+    VkMemoryRequirements2 requirements = {VK_STRUCTURE_TYPE_MEMORY_REQUIREMENTS_2, &dedicated_requirements, {}};
+    vkGetBufferMemoryRequirements2(m_device, &requirements_info, &requirements);
+    buffer_requirements = requirements.memoryRequirements;
+  }
+  else
+  {
+    vkGetBufferMemoryRequirements(m_device, imported_buffer, &buffer_requirements);
+  }
+
+  if (buffer_requirements.size > data_size_aligned)
+  {
+    Error::SetStringFmt(error, "Imported host allocation is too small for buffer requirements ({} < {}).",
+                        data_size_aligned, buffer_requirements.size);
+    vkDestroyBuffer(m_device, imported_buffer, nullptr);
+    return false;
+  }
+
+  VkMemoryHostPointerPropertiesEXT pointer_properties = {VK_STRUCTURE_TYPE_MEMORY_HOST_POINTER_PROPERTIES_EXT, nullptr,
+                                                         0};
+  res = vkGetMemoryHostPointerPropertiesEXT(m_device, VK_EXTERNAL_MEMORY_HANDLE_TYPE_HOST_ALLOCATION_BIT_EXT,
+                                            data_aligned, &pointer_properties);
+  if (res != VK_SUCCESS || pointer_properties.memoryTypeBits == 0)
+  {
+    Vulkan::SetErrorObject(error, "vkGetMemoryHostPointerPropertiesEXT() failed: ", res);
+    vkDestroyBuffer(m_device, imported_buffer, nullptr);
+    return false;
+  }
+
+  const u32 memory_type_bits = pointer_properties.memoryTypeBits & buffer_requirements.memoryTypeBits;
+  if (memory_type_bits == 0)
+  {
+    Error::SetStringView(error, "Imported host allocation has no buffer-compatible memory type.");
+    vkDestroyBuffer(m_device, imported_buffer, nullptr);
+    return false;
+  }
+
+  VmaAllocationCreateInfo vma_alloc_info = {};
+  vma_alloc_info.requiredFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
+  vma_alloc_info.preferredFlags = VK_MEMORY_PROPERTY_HOST_CACHED_BIT;
+  vma_alloc_info.memoryTypeBits = memory_type_bits;
+
+  u32 memory_index = 0;
+  res = vmaFindMemoryTypeIndex(m_allocator, memory_type_bits, &vma_alloc_info, &memory_index);
+  if (res != VK_SUCCESS)
+  {
+    Vulkan::SetErrorObject(error, "vmaFindMemoryTypeIndex() failed: ", res);
+    vkDestroyBuffer(m_device, imported_buffer, nullptr);
+    return false;
+  }
+
+  const VkMemoryDedicatedAllocateInfo dedicated_info = {VK_STRUCTURE_TYPE_MEMORY_DEDICATED_ALLOCATE_INFO, nullptr,
+                                                        VK_NULL_HANDLE, imported_buffer};
+  const VkImportMemoryHostPointerInfoEXT import_info = {
+    VK_STRUCTURE_TYPE_IMPORT_MEMORY_HOST_POINTER_INFO_EXT,
+    dedicated_requirements.requiresDedicatedAllocation ? &dedicated_info : nullptr,
+    VK_EXTERNAL_MEMORY_HANDLE_TYPE_HOST_ALLOCATION_BIT_EXT, const_cast<void*>(data_aligned)};
+
+  const VkMemoryAllocateInfo alloc_info = {VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO, &import_info, data_size_aligned,
+                                           memory_index};
+
+  VkDeviceMemory imported_memory = VK_NULL_HANDLE;
+
+  res = vkAllocateMemory(m_device, &alloc_info, nullptr, &imported_memory);
+  if (res != VK_SUCCESS)
+  {
+    Vulkan::SetErrorObject(error, "vkAllocateMemory() failed: ", res);
+    vkDestroyBuffer(m_device, imported_buffer, nullptr);
+    return false;
+  }
+
+  res = vkBindBufferMemory(m_device, imported_buffer, imported_memory, 0);
+  if (res != VK_SUCCESS)
+  {
+    Vulkan::SetErrorObject(error, "vkBindBufferMemory() failed: ", res);
+    vkFreeMemory(m_device, imported_memory, nullptr);
+    vkDestroyBuffer(m_device, imported_buffer, nullptr);
+    return false;
+  }
 
   *out_memory = imported_memory;
   *out_buffer = imported_buffer;
