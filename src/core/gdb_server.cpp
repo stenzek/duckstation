@@ -16,6 +16,7 @@
 #include "common/small_string.h"
 #include "common/string_util.h"
 #include "common/thirdparty/SmallVector.h"
+#include "common/timer.h"
 
 #include "util/sockets.h"
 
@@ -1038,10 +1039,30 @@ bool GDBServer::HasAnyClients()
   return !s_locals.clients.empty();
 }
 
-void GDBServer::Poll(u32 timeout_ms)
+void GDBServer::PollUntil(u64 max_poll_time)
 {
-  if (s_locals.multiplexer)
-    s_locals.multiplexer->PollEventsWithTimeout(timeout_ms);
+  if (!s_locals.multiplexer)
+    return;
+
+  if (max_poll_time == 0)
+  {
+    s_locals.multiplexer->PollEventsWithTimeout(0);
+    return;
+  }
+
+  // Keep polling until we time out, because there could be multiple back<->forth packets.
+  // Break out if our pause state changes, because we'll probably need to run a frame.
+  const bool was_running = System::IsRunning();
+  const bool exact = (was_running && g_settings.display_optimal_frame_pacing);
+  Timer::Value poll_start_time = Timer::GetCurrentValue();
+  for (;;)
+  {
+    const u32 sleep_ms = static_cast<u32>(Timer::ConvertValueToMilliseconds(max_poll_time - poll_start_time));
+    s_locals.multiplexer->PollEventsWithTimeout(sleep_ms);
+    poll_start_time = Timer::GetCurrentValue();
+    if (poll_start_time >= max_poll_time || System::IsRunning() != was_running || (!exact && sleep_ms == 0))
+      break;
+  }
 }
 
 void GDBServer::Shutdown()

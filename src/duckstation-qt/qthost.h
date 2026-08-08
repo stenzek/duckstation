@@ -183,6 +183,7 @@ public:
   void startControllerTest();
   void openGamePropertiesForCurrentGame(const QString& category = {});
   void setHTTPDownloaderActive(bool active);
+  void setGDBActiveClients(bool active);
   void setVideoThreadRunIdle(bool active);
   void updateFullscreenUITheme();
   void runOnCoreThread(const std::function<void()>& callback);
@@ -205,6 +206,7 @@ private:
 
   void createIdleUpdateTimer();
   void destroyIdleUpdateTimer();
+  void onIdleUpdateTimer();
 
   void bootOrLoadState(std::string path);
 
@@ -218,6 +220,7 @@ private:
 
   bool m_shutdown_flag = false;
   bool m_http_downloader_active = false;
+  bool m_has_gdb_clients = false;
   bool m_video_thread_run_idle = false;
   bool m_is_fullscreen_ui_started = false;
   bool m_was_paused_by_focus_loss = false;

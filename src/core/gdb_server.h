@@ -16,7 +16,7 @@ namespace GDBServer {
 
 bool Initialize(u16 port);
 bool HasAnyClients();
-void Poll(u32 timeout_ms);
+void PollUntil(u64 max_poll_time);
 void Shutdown();
 
 void OnSystemPaused();

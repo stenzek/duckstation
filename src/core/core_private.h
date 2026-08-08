@@ -48,7 +48,7 @@ bool CoreThreadInitialize(bool disable_worker_threads, Error* error);
 void CoreThreadShutdown();
 
 /// Called to poll input when the session is not running.
-void IdleUpdate();
+void IdleUpdate(u64 max_poll_time);
 
 } // namespace Core
 

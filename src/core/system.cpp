@@ -2044,7 +2044,7 @@ void System::FrameDone()
 #endif
 
 #ifdef ENABLE_GDB_SERVER
-  GDBServer::Poll(0);
+  GDBServer::PollUntil(0);
 #endif
 
   // Save states for rewind and runahead.
@@ -2261,15 +2261,7 @@ void System::Throttle(Timer::Value current_time, Timer::Value sleep_until)
   // That way in a query->response->query->response chain, we don't process only one message per frame.
   if (GDBServer::HasAnyClients())
   {
-    Timer::Value poll_start_time = current_time;
-    for (;;)
-    {
-      const u32 sleep_ms = static_cast<u32>(Timer::ConvertValueToMilliseconds(sleep_until - poll_start_time));
-      GDBServer::Poll(sleep_ms);
-      poll_start_time = Timer::GetCurrentValue();
-      if (poll_start_time >= sleep_until || (!g_settings.display_optimal_frame_pacing && sleep_ms == 0))
-        break;
-    }
+    GDBServer::PollUntil(sleep_until);
   }
   else
 #endif
@@ -5152,7 +5144,7 @@ void System::DoRewind()
   VideoThread::PresentCurrentFrame();
 
   Host::PumpMessagesOnCoreThread();
-  Core::IdleUpdate();
+  Core::IdleUpdate(s_state.next_frame_time);
 
   // get back into it straight away if we're no longer rewinding
   if (!IsRewinding())
