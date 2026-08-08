@@ -24,4 +24,11 @@ void OnSystemResumed();
 
 } // namespace GDBServer
 
+namespace Host {
+
+// Called when a GDB client connects or disconnects.
+void OnGDBServerActiveClientsChanged(bool has_clients);
+
+} // namespace Host
+
 #endif // ENABLE_GDB_SERVER

@@ -2212,6 +2212,11 @@ void Host::OnHTTPDownloaderActiveChanged(bool active)
   g_core_thread->setHTTPDownloaderActive(active);
 }
 
+void Host::OnGDBServerActiveClientsChanged(bool has_clients)
+{
+  g_core_thread->updateBackgroundControllerPollInterval();
+}
+
 void CoreThread::stop()
 {
   Assert(isRunning() && !isCurrentThread() && g_core_thread == this);

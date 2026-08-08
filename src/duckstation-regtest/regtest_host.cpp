@@ -9,6 +9,7 @@
 #include "core/fullscreenui.h"
 #include "core/fullscreenui_widgets.h"
 #include "core/game_list.h"
+#include "core/gdb_server.h"
 #include "core/gpu.h"
 #include "core/gpu_backend.h"
 #include "core/host.h"
@@ -315,6 +316,11 @@ void Host::OnMediaCaptureStopped()
 }
 
 void Host::OnHTTPDownloaderActiveChanged(bool active)
+{
+  //
+}
+
+void Host::OnGDBServerActiveClientsChanged(bool has_clients)
 {
   //
 }

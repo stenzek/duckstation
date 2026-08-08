@@ -653,13 +653,17 @@ void GDBServer::ClientSocket::OnConnected()
 {
   INFO_LOG("Client {} connected.", GetRemoteAddress().ToString());
 
-  if (s_locals.clients.empty())
+  const size_t previous_clients = s_locals.clients.size();
+  if (previous_clients == 0)
     s_locals.resume_on_last_disconnect = System::IsRunning();
 
   m_seen_resume = System::IsPaused();
   System::PauseSystem(true);
 
   s_locals.clients.push_back(std::static_pointer_cast<ClientSocket>(shared_from_this()));
+
+  if (previous_clients == 0)
+    Host::OnGDBServerActiveClientsChanged(true);
 }
 
 void GDBServer::ClientSocket::OnDisconnected(const Error& error)
@@ -680,6 +684,8 @@ void GDBServer::ClientSocket::OnDisconnected(const Error& error)
     const bool resume_system = std::exchange(s_locals.resume_on_last_disconnect, false);
     if (resume_system)
       System::PauseSystem(false);
+
+    Host::OnGDBServerActiveClientsChanged(false);
   }
 }
 
