@@ -86,9 +86,9 @@ public:
   void connectRenderWindowSignals(DisplayWidget* widget);
   void releaseRenderWindow();
 
-  void startBackgroundControllerPollTimer();
-  void stopBackgroundControllerPollTimer();
-  void updateBackgroundControllerPollInterval();
+  void startIdleUpdateTimer();
+  void stopIdleUpdateTimer();
+  void updateIdleTimerInterval();
   void wakeThread();
 
   void updatePerformanceCounters(const GPUBackend* gpu_backend);
@@ -123,7 +123,8 @@ Q_SIGNALS:
   void mouseModeRequested(bool relative, bool hide_cursor, bool ignore_double_click);
   void fullscreenUIStartedOrStopped(bool running);
   void achievementsLoginRequested(Achievements::LoginRequestReason reason);
-  void achievementsLoginSuccess(const QString& username, quint32 points, quint32 casual_points, quint32 unread_messages);
+  void achievementsLoginSuccess(const QString& username, quint32 points, quint32 casual_points,
+                                quint32 unread_messages);
   void achievementsActiveChanged(bool active);
   void achievementsHardcoreModeChanged(bool enabled);
   void mediaCaptureStarted(MediaCaptureMode mode);
@@ -202,8 +203,8 @@ private:
   void processAuxiliaryRenderWindowInputEvent(void* userdata, quint32 event, quint32 param1, quint32 param2,
                                               quint32 param3);
 
-  void createBackgroundControllerPollTimer();
-  void destroyBackgroundControllerPollTimer();
+  void createIdleUpdateTimer();
+  void destroyIdleUpdateTimer();
 
   void bootOrLoadState(std::string path);
 
@@ -212,7 +213,7 @@ private:
 
   QThread* m_ui_thread;
   QEventLoop* m_event_loop = nullptr;
-  QTimer* m_background_controller_polling_timer = nullptr;
+  QTimer* m_idle_update_timer = nullptr;
   std::unique_ptr<InputDeviceListModel> m_input_device_list_model;
 
   bool m_shutdown_flag = false;

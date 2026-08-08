@@ -105,17 +105,17 @@ Q_IMPORT_PLUGIN(SVGImageHandlerPlugin);
 static constexpr u32 SETTINGS_SAVE_DELAY = 1000;
 
 /// Interval at which the controllers are polled when the system is not active.
-static constexpr int BACKGROUND_CONTROLLER_POLLING_INTERVAL_WITH_DEVICES = 100;
-static constexpr int BACKGROUND_CONTROLLER_POLLING_INTERVAL_WITHOUT_DEVICES = 1000;
+static constexpr int IDLE_UPDATE_INTERVAL_WITH_CONTROLLERS = 100;
+static constexpr int IDLE_UPDATE_INTERVAL_WITHOUT_CONTROLLERS = 1000;
 
 /// Poll at half the vsync rate for FSUI to reduce the chance of getting a press+release in the same frame.
-static constexpr int FULLSCREEN_UI_CONTROLLER_POLLING_INTERVAL = 8;
+static constexpr int IDLE_UPDATE_INTERVAL_WITH_FULLSCREEN_UI = 8;
 
 /// Poll at 10ms when downloads are active to ensure the speed is not impacted.
-static constexpr int DOWNLOAD_CONTROLLER_POLLING_INTERVAL = 10;
+static constexpr int IDLE_UPDATE_INTERVAL_WHILE_DOWNLOADING = 10;
 
 /// Poll at 1ms when running GDB server. We can get rid of this once we move networking to its own thread.
-static constexpr int GDB_SERVER_POLLING_INTERVAL = 1;
+static constexpr int IDLE_UPDATE_INTERVAL_WITH_GDB_CLIENTS = 1;
 
 //////////////////////////////////////////////////////////////////////////
 // Local function declarations
@@ -1335,7 +1335,7 @@ void Host::OnSystemStarting()
 
 void Host::OnSystemStarted()
 {
-  g_core_thread->stopBackgroundControllerPollTimer();
+  g_core_thread->stopIdleUpdateTimer();
   g_core_thread->wakeThread();
 
   emit g_core_thread->systemStarted();
@@ -1344,7 +1344,7 @@ void Host::OnSystemStarted()
 void Host::OnSystemPaused()
 {
   emit g_core_thread->systemPaused();
-  g_core_thread->startBackgroundControllerPollTimer();
+  g_core_thread->startIdleUpdateTimer();
 }
 
 void Host::OnSystemResumed()
@@ -1352,7 +1352,7 @@ void Host::OnSystemResumed()
   emit g_core_thread->systemResumed();
   g_core_thread->wakeThread();
 
-  g_core_thread->stopBackgroundControllerPollTimer();
+  g_core_thread->stopIdleUpdateTimer();
 }
 
 void Host::OnSystemStopping()
@@ -1363,7 +1363,7 @@ void Host::OnSystemStopping()
 void Host::OnSystemDestroyed()
 {
   g_core_thread->resetPerformanceCounters();
-  g_core_thread->startBackgroundControllerPollTimer();
+  g_core_thread->startIdleUpdateTimer();
   emit g_core_thread->systemDestroyed();
 }
 
@@ -2086,60 +2086,60 @@ void CoreThread::processAuxiliaryRenderWindowInputEvent(void* userdata, quint32 
   });
 }
 
-void CoreThread::createBackgroundControllerPollTimer()
+void CoreThread::createIdleUpdateTimer()
 {
-  DebugAssert(!m_background_controller_polling_timer);
-  m_background_controller_polling_timer = new QTimer(this);
-  m_background_controller_polling_timer->setSingleShot(false);
-  m_background_controller_polling_timer->setTimerType(Qt::CoarseTimer);
-  connect(m_background_controller_polling_timer, &QTimer::timeout, &Core::IdleUpdate);
+  DebugAssert(!m_idle_update_timer);
+  m_idle_update_timer = new QTimer(this);
+  m_idle_update_timer->setSingleShot(false);
+  m_idle_update_timer->setTimerType(Qt::CoarseTimer);
+  connect(m_idle_update_timer, &QTimer::timeout, &Core::IdleUpdate);
 }
 
-void CoreThread::destroyBackgroundControllerPollTimer()
+void CoreThread::destroyIdleUpdateTimer()
 {
-  delete m_background_controller_polling_timer;
-  m_background_controller_polling_timer = nullptr;
+  delete m_idle_update_timer;
+  m_idle_update_timer = nullptr;
 }
 
-void CoreThread::startBackgroundControllerPollTimer()
+void CoreThread::startIdleUpdateTimer()
 {
-  if (m_background_controller_polling_timer->isActive())
+  if (m_idle_update_timer->isActive())
   {
-    updateBackgroundControllerPollInterval();
+    updateIdleTimerInterval();
     return;
   }
 
   const int interval = getBackgroundControllerPollInterval();
   DEV_LOG("Starting background controller polling timer with interval {} ms", interval);
-  m_background_controller_polling_timer->start(interval);
+  m_idle_update_timer->start(interval);
 }
 
-void CoreThread::stopBackgroundControllerPollTimer()
+void CoreThread::stopIdleUpdateTimer()
 {
-  if (!m_background_controller_polling_timer->isActive())
+  if (!m_idle_update_timer->isActive())
     return;
 
   DEV_LOG("Stopping background controller polling timer");
-  m_background_controller_polling_timer->stop();
+  m_idle_update_timer->stop();
 }
 
-void CoreThread::updateBackgroundControllerPollInterval()
+void CoreThread::updateIdleTimerInterval()
 {
   if (!isCurrentThread())
   {
-    QMetaObject::invokeMethod(this, &CoreThread::updateBackgroundControllerPollInterval, Qt::QueuedConnection);
+    QMetaObject::invokeMethod(this, &CoreThread::updateIdleTimerInterval, Qt::QueuedConnection);
     return;
   }
 
-  if (!m_background_controller_polling_timer || !m_background_controller_polling_timer->isActive())
+  if (!m_idle_update_timer || !m_idle_update_timer->isActive())
     return;
 
-  const int current_interval = m_background_controller_polling_timer->interval();
+  const int current_interval = m_idle_update_timer->interval();
   const int new_interval = getBackgroundControllerPollInterval();
   if (current_interval != new_interval)
   {
-    WARNING_LOG("Changed background polling interval from {} ms to {} ms", current_interval, new_interval);
-    m_background_controller_polling_timer->setInterval(new_interval);
+    WARNING_LOG("Changed idle update interval from {} ms to {} ms", current_interval, new_interval);
+    m_idle_update_timer->setInterval(new_interval);
   }
 }
 
@@ -2147,17 +2147,17 @@ int CoreThread::getBackgroundControllerPollInterval() const
 {
 #ifdef ENABLE_GDB_SERVER
   if (GDBServer::HasAnyClients())
-    return GDB_SERVER_POLLING_INTERVAL;
+    return IDLE_UPDATE_INTERVAL_WITH_GDB_CLIENTS;
 #endif
 
   if (m_video_thread_run_idle)
-    return FULLSCREEN_UI_CONTROLLER_POLLING_INTERVAL;
+    return IDLE_UPDATE_INTERVAL_WITH_FULLSCREEN_UI;
   else if (m_http_downloader_active)
-    return DOWNLOAD_CONTROLLER_POLLING_INTERVAL;
+    return IDLE_UPDATE_INTERVAL_WHILE_DOWNLOADING;
   else if (InputManager::GetPollableDeviceCount() > 0)
-    return BACKGROUND_CONTROLLER_POLLING_INTERVAL_WITH_DEVICES;
+    return IDLE_UPDATE_INTERVAL_WITH_CONTROLLERS;
   else
-    return BACKGROUND_CONTROLLER_POLLING_INTERVAL_WITHOUT_DEVICES;
+    return IDLE_UPDATE_INTERVAL_WITHOUT_CONTROLLERS;
 }
 
 void CoreThread::setHTTPDownloaderActive(bool active)
@@ -2170,7 +2170,7 @@ void CoreThread::setHTTPDownloaderActive(bool active)
 
   DEV_LOG("HTTP Downloader now {}", active ? "active" : "inactive");
   m_http_downloader_active = active;
-  updateBackgroundControllerPollInterval();
+  updateIdleTimerInterval();
 }
 
 void CoreThread::setVideoThreadRunIdle(bool active)
@@ -2188,10 +2188,10 @@ void CoreThread::setVideoThreadRunIdle(bool active)
     m_event_loop->quit();
 
   // adjust the timer speed to pick up controller input faster
-  if (!m_background_controller_polling_timer->isActive())
+  if (!m_idle_update_timer->isActive())
     return;
 
-  g_core_thread->updateBackgroundControllerPollInterval();
+  g_core_thread->updateIdleTimerInterval();
 }
 
 void CoreThread::updateFullscreenUITheme()
@@ -2214,7 +2214,7 @@ void Host::OnHTTPDownloaderActiveChanged(bool active)
 
 void Host::OnGDBServerActiveClientsChanged(bool has_clients)
 {
-  g_core_thread->updateBackgroundControllerPollInterval();
+  g_core_thread->updateIdleTimerInterval();
 }
 
 void CoreThread::stop()
@@ -2262,8 +2262,8 @@ void CoreThread::run()
   m_input_device_list_model->enumerateDevices();
 
   // start background input polling
-  createBackgroundControllerPollTimer();
-  startBackgroundControllerPollTimer();
+  createIdleUpdateTimer();
+  startIdleUpdateTimer();
 
   // main loop
   while (!m_shutdown_flag)
@@ -2289,7 +2289,7 @@ void CoreThread::run()
   if (System::IsValid())
     System::ShutdownSystem(false);
 
-  destroyBackgroundControllerPollTimer();
+  destroyIdleUpdateTimer();
 
   // and tidy up everything left
   Core::CoreThreadShutdown();
@@ -2999,14 +2999,14 @@ void Host::OnInputDeviceConnected(InputBindingKey key, std::string_view identifi
   QMetaObject::invokeMethod(g_core_thread->getInputDeviceListModel(), &InputDeviceListModel::onDeviceConnected,
                             Qt::QueuedConnection, key, QtUtils::StringViewToQString(identifier),
                             QtUtils::StringViewToQString(device_name), qeffect_list);
-  g_core_thread->updateBackgroundControllerPollInterval();
+  g_core_thread->updateIdleTimerInterval();
 }
 
 void Host::OnInputDeviceDisconnected(InputBindingKey key, std::string_view identifier)
 {
   QMetaObject::invokeMethod(g_core_thread->getInputDeviceListModel(), &InputDeviceListModel::onDeviceDisconnected,
                             Qt::QueuedConnection, key, QtUtils::StringViewToQString(identifier));
-  g_core_thread->updateBackgroundControllerPollInterval();
+  g_core_thread->updateIdleTimerInterval();
 }
 
 void Host::AddFixedInputBindings(const SettingsInterface& si)
