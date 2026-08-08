@@ -653,6 +653,9 @@ void GDBServer::ClientSocket::OnConnected()
 {
   INFO_LOG("Client {} connected.", GetRemoteAddress().ToString());
 
+  if (Error error; !SetNagleBuffering(false, &error)) [[unlikely]]
+    ERROR_LOG("Failed to disable nagle buffering for {}: {}", GetRemoteAddress().ToString(), error.GetDescription());
+
   const size_t previous_clients = s_locals.clients.size();
   if (previous_clients == 0)
     s_locals.resume_on_last_disconnect = System::IsRunning();
