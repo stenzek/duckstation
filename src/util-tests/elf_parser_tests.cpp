@@ -141,6 +141,48 @@ ELFFile::DataArray CreateOutOfRangeProgramHeaderELFData()
   return data;
 }
 
+ELFFile::DataArray CreateELFDataWithEmbeddedPSXExecutableHeader()
+{
+  auto data = CreateValidELFData();
+  data.resize(0x400);
+  auto* ehdr = reinterpret_cast<ELFFile::Elf32_Ehdr*>(data.data());
+  auto* phdr = reinterpret_cast<ELFFile::Elf32_Phdr*>(data.data() + ehdr->e_phoff);
+
+  // Make the first loadable segment contain an embedded PS-X EXE header, as produced by some PS1 linker scripts.
+  phdr[0].p_offset = 0;
+  phdr[0].p_vaddr = 0x80000000;
+  phdr[0].p_filesz = 0x100;
+  phdr[0].p_memsz = 0x100;
+  phdr[1].p_type = ELFFile::PT_LOAD;
+  phdr[1].p_offset = 0x100;
+  phdr[1].p_vaddr = 0x80010000;
+  phdr[1].p_filesz = 0x100;
+  phdr[1].p_memsz = 0x100;
+
+  ehdr->e_shoff = 0x300;
+  ehdr->e_shnum = 4;
+  auto* shdr = reinterpret_cast<ELFFile::Elf32_Shdr*>(data.data() + ehdr->e_shoff);
+  std::memset(shdr, 0, sizeof(ELFFile::Elf32_Shdr) * ehdr->e_shnum);
+  shdr[1].sh_name = 1;
+  shdr[1].sh_type = ELFFile::SHT_PROGBITS;
+  shdr[1].sh_addr = 0x80010000;
+  shdr[1].sh_offset = 0x100;
+  shdr[1].sh_size = 0x100;
+  shdr[2].sh_name = 7;
+  shdr[2].sh_type = ELFFile::SHT_STRTAB;
+  shdr[2].sh_offset = 0x200;
+  shdr[2].sh_size = 0x30;
+  shdr[3].sh_name = 17;
+  shdr[3].sh_type = ELFFile::SHT_PROGBITS;
+  shdr[3].sh_addr = 0x80000000;
+  shdr[3].sh_offset = 0;
+  shdr[3].sh_size = 0x100;
+
+  char* strtab = reinterpret_cast<char*>(data.data() + shdr[2].sh_offset);
+  strcpy(strtab + 17, ".PSX_EXE_Header");
+  return data;
+}
+
 class ELFParserTest : public ::testing::Test
 {
 protected:
@@ -365,6 +407,24 @@ TEST_F(ELFParserTest, LoadExecutableSections)
   EXPECT_EQ(loaded_sections[0].data[0], 0xAAu); // Check first byte of our fake code
 }
 
+TEST_F(ELFParserTest, SkipsEmbeddedPSXExecutableHeader)
+{
+  ELFFile elf;
+  Error error;
+  ASSERT_TRUE(elf.Open(CreateELFDataWithEmbeddedPSXExecutableHeader(), &error));
+
+  std::vector<u32> loaded_addresses;
+  ASSERT_TRUE(elf.LoadExecutableSections(
+    [&loaded_addresses](std::span<const u8>, u32 dest_vaddr, u32, Error*) {
+      loaded_addresses.push_back(dest_vaddr);
+      return true;
+    },
+    &error));
+
+  ASSERT_EQ(loaded_addresses.size(), 1u);
+  EXPECT_EQ(loaded_addresses[0], 0x80010000u);
+}
+
 TEST_F(ELFParserTest, MissingEntryPoint)
 {
   ELFFile elf;
@@ -388,5 +448,35 @@ TEST_F(ELFParserTest, OutOfRangeProgramHeader)
     [](std::span<const u8> data, u32 dest_vaddr, u32 dest_size, Error* error) { return true; }, &error);
 
   EXPECT_FALSE(result);
+  EXPECT_TRUE(error.IsValid());
+}
+
+TEST_F(ELFParserTest, RejectsProgramHeaderWithSmallerMemorySize)
+{
+  auto data = CreateValidELFData();
+  const auto* ehdr = reinterpret_cast<const ELFFile::Elf32_Ehdr*>(data.data());
+  auto* phdr = reinterpret_cast<ELFFile::Elf32_Phdr*>(data.data() + ehdr->e_phoff);
+  phdr[0].p_memsz = phdr[0].p_filesz - 1;
+
+  ELFFile elf;
+  Error error;
+  ASSERT_TRUE(elf.Open(std::move(data), &error));
+  EXPECT_FALSE(elf.LoadExecutableSections([](std::span<const u8>, u32, u32, Error*) { return true; }, &error));
+  EXPECT_TRUE(error.IsValid());
+}
+
+TEST_F(ELFParserTest, RejectsProgramHeaderAddressOverflow)
+{
+  auto data = CreateValidELFData();
+  const auto* ehdr = reinterpret_cast<const ELFFile::Elf32_Ehdr*>(data.data());
+  auto* phdr = reinterpret_cast<ELFFile::Elf32_Phdr*>(data.data() + ehdr->e_phoff);
+  phdr[0].p_vaddr = 0xFFFFFFF0;
+  phdr[0].p_memsz = 0x20;
+  phdr[0].p_filesz = 0x20;
+
+  ELFFile elf;
+  Error error;
+  ASSERT_TRUE(elf.Open(std::move(data), &error));
+  EXPECT_FALSE(elf.LoadExecutableSections([](std::span<const u8>, u32, u32, Error*) { return true; }, &error));
   EXPECT_TRUE(error.IsValid());
 }

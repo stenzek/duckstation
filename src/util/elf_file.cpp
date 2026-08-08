@@ -7,10 +7,13 @@
 #include "common/file_system.h"
 #include "common/log.h"
 
+#include <limits>
+
 LOG_CHANNEL(FileLoader);
 
 static constexpr const u8 EXPECTED_ELF_HEADER[4] = {'\177', 'E', 'L', 'F'};
 static constexpr s64 MAX_ELF_FILE_SIZE = 32 * 1024 * 1024;
+static constexpr std::string_view PSX_EXE_HEADER_SECTION_NAME = ".PSX_EXE_Header";
 
 ELFFile::ELFFile() = default;
 
@@ -175,10 +178,47 @@ bool ELFFile::LoadExecutableSections(const LoadExecutableSectionCallback& callba
       continue;
     }
 
+    // Some PS1 linker scripts place an embedded PS-X EXE header in a PT_LOAD segment at the start of the ELF. This
+    // segment is metadata for a standalone PS-X EXE and must not overwrite the already-running kernel when sideloading.
+    if (phdr->p_offset == 0)
+    {
+      bool contains_psx_exe_header = false;
+      for (u32 section_index = 0; section_index < GetSectionCount(); section_index++)
+      {
+        const Elf32_Shdr* shdr = GetSectionHeader(section_index);
+        if (!shdr || GetSectionName(*shdr) != PSX_EXE_HEADER_SECTION_NAME || shdr->sh_offset >= phdr->p_filesz ||
+            shdr->sh_size > (phdr->p_filesz - shdr->sh_offset))
+        {
+          continue;
+        }
+
+        contains_psx_exe_header = true;
+        break;
+      }
+
+      if (contains_psx_exe_header)
+      {
+        DEV_LOG("Skipping embedded PS-X EXE header segment at 0x{:08X}", phdr->p_vaddr);
+        continue;
+      }
+    }
+
+    if (phdr->p_memsz < phdr->p_filesz)
+    {
+      Error::SetStringFmt(error, "Program header {} has a memory size smaller than its file size.", i);
+      return false;
+    }
+
+    if (phdr->p_memsz > 0 && phdr->p_vaddr > (std::numeric_limits<u32>::max() - (phdr->p_memsz - 1)))
+    {
+      Error::SetStringFmt(error, "Program header {} address range overflows.", i);
+      return false;
+    }
+
     std::span<const u8> data;
     if (phdr->p_filesz > 0)
     {
-      if ((phdr->p_offset + static_cast<size_t>(phdr->p_filesz)) > m_data.size())
+      if (phdr->p_offset > m_data.size() || phdr->p_filesz > (m_data.size() - phdr->p_offset))
       {
         Error::SetStringFmt(error, "Program header {} is out of file range {} {} {}", i, phdr->p_offset, phdr->p_filesz,
                             m_data.size());
@@ -188,10 +228,10 @@ bool ELFFile::LoadExecutableSections(const LoadExecutableSectionCallback& callba
       data = m_data.cspan(phdr->p_offset, phdr->p_filesz);
     }
 
-    if (!callback(data, phdr->p_vaddr, std::max(phdr->p_memsz, phdr->p_filesz), error))
+    if (!callback(data, phdr->p_vaddr, phdr->p_memsz, error))
       return false;
 
-    loaded_entry |= (entry >= phdr->p_vaddr && entry < (phdr->p_vaddr + phdr->p_memsz));
+    loaded_entry |= (entry >= phdr->p_vaddr && (entry - phdr->p_vaddr) < phdr->p_memsz);
   }
 
   if (!loaded_entry)
