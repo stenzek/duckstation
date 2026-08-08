@@ -863,7 +863,9 @@ void Settings::Save(SettingsInterface& si, bool ignore_user_prefs, bool for_copy
                       Controller::GetControllerInfo(controller_types[i]).name);
 
     skey.format("Card{}Type", i + 1);
-    si.SetStringValue("MemoryCards", skey, GetMemoryCardTypeName(memory_card_types[0]));
+    si.SetStringValue("MemoryCards", skey, GetMemoryCardTypeName(memory_card_types[i]));
+
+    skey.format("Card{}Path", i + 1);
     if (!memory_card_paths[i].empty())
       si.SetStringValue("MemoryCards", skey, memory_card_paths[i].c_str());
     else
