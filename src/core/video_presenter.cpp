@@ -1656,7 +1656,7 @@ bool VideoPresenter::RenderScreenshotToBuffer(u32 width, u32 height, bool postfx
     }
   }
 
-  dltex->CopyFromTexture(0, 0, render_texture.get(), 0, 0, width, height, 0, 0, false);
+  dltex->CopyFromTexture(0, 0, render_texture.get(), 0, 0, width, height, 0, 0, !dltex->IsImported());
   if (!dltex->ReadTexels(0, 0, width, height, image.GetPixels(), image.GetPitch()))
     return false;
 
