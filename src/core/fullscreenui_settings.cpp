@@ -4278,10 +4278,9 @@ void FullscreenUI::DrawMemoryCardSettingsPage()
           .c_str())
         .value_or(default_type);
     const bool is_shared = (effective_type == MemoryCardType::Shared);
-    std::optional<SmallString> path_value(bsi->GetOptionalSmallStringValue(
+    std::optional<SmallString> path_value = bsi->GetOptionalSmallStringValue(
       "MemoryCards", path_keys[i],
-      IsEditingGameSettings(bsi) ? std::nullopt :
-                                   std::optional<const char*>((i == 0) ? "shared_card_1.mcd" : "shared_card_2.mcd")));
+      IsEditingGameSettings(bsi) ? std::nullopt : std::make_optional(Settings::GetDefaultSharedMemoryCardName(i)));
 
     TinyString title;
     title.format("{}##card_name_{}", FSUI_ICONVSTR(ICON_FA_FILE, "Shared Card Name"), i);
@@ -4290,12 +4289,11 @@ void FullscreenUI::DrawMemoryCardSettingsPage()
     {
       ChoiceDialogOptions options;
       std::vector<std::string> names;
+      bool current_value_added = false;
       if (IsEditingGameSettings(bsi))
-        options.emplace_back("Use Global Setting", !path_value.has_value());
-      if (path_value.has_value() && !path_value->empty())
       {
-        options.emplace_back(fmt::format("{} (Current)", path_value.value()), true);
-        names.emplace_back(path_value.value().view());
+        current_value_added |= !path_value.has_value();
+        options.emplace_back(FSUI_STR("Use Global Setting"), !path_value.has_value());
       }
 
       FileSystem::FindResultsArray results;
@@ -4305,29 +4303,39 @@ void FullscreenUI::DrawMemoryCardSettingsPage()
       for (FILESYSTEM_FIND_DATA& ffd : results)
       {
         const bool selected = (path_value.has_value() && path_value.value() == ffd.FileName);
-        options.emplace_back(std::move(ffd.FileName), selected);
+        current_value_added |= selected;
+        options.emplace_back(ffd.FileName, selected);
+        names.push_back(std::move(ffd.FileName));
       }
 
-      OpenChoiceDialog(
-        title, false, std::move(options),
-        [game_settings = IsEditingGameSettings(bsi), i](s32 index, const std::string& title, bool checked) {
-          if (index < 0)
-            return;
+      // add current entry if it's missing, e.g. the file was removed
+      if (!current_value_added && path_value.has_value() && !path_value->empty())
+      {
+        options.emplace_back(fmt::format(FSUI_FSTR("{0} (Missing)"), Path::GetFileName(path_value.value())), true);
+        names.emplace_back(path_value.value().view());
+      }
 
-          const auto lock = Core::GetSettingsLock();
-          SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
-          if (game_settings && index == 0)
-          {
-            bsi->DeleteValue("MemoryCards", path_keys[i]);
-          }
-          else
-          {
-            if (game_settings)
-              index--;
-            bsi->SetStringValue("MemoryCards", path_keys[i], title.c_str());
-          }
-          SetSettingsChanged(bsi);
-        });
+      OpenChoiceDialog(title, false, std::move(options),
+                       [names = std::move(names), i,
+                        game_settings = IsEditingGameSettings(bsi)](s32 index, const std::string& title, bool checked) {
+                         if (index < 0)
+                           return;
+
+                         const auto lock = Core::GetSettingsLock();
+                         SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
+                         if (game_settings && index == 0)
+                         {
+                           bsi->DeleteValue("MemoryCards", path_keys[i]);
+                         }
+                         else
+                         {
+                           if (game_settings)
+                             index--;
+                           bsi->SetStringValue("MemoryCards", path_keys[i],
+                                               Path::MakeRelative(names[index], EmuFolders::MemoryCards).c_str());
+                         }
+                         SetSettingsChanged(bsi);
+                       });
     }
   }
 

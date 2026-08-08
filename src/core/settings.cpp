@@ -2599,9 +2599,19 @@ const char* Settings::GetMemoryCardTypeDisplayName(MemoryCardType type)
                                   "MemoryCardType");
 }
 
-std::string Settings::GetDefaultSharedMemoryCardName(u32 slot)
+const char* Settings::GetDefaultSharedMemoryCardName(u32 slot)
 {
-  return fmt::format("shared_card_{}.mcd", slot + 1);
+  static constexpr std::array<const char*, NUM_CONTROLLER_AND_CARD_PORTS> default_names = {{
+    "shared_card_1.mcd",
+    "shared_card_2.mcd",
+    "shared_card_3.mcd",
+    "shared_card_4.mcd",
+    "shared_card_5.mcd",
+    "shared_card_6.mcd",
+    "shared_card_7.mcd",
+    "shared_card_8.mcd",
+  }};
+  return default_names[std::min(slot, NUM_CONTROLLER_AND_CARD_PORTS - 1)];
 }
 
 std::string Settings::GetSharedMemoryCardPath(u32 slot) const

@@ -5817,7 +5817,7 @@ std::string System::GetGameMemoryCardPath(std::string_view custom_title, std::st
     {
       const TinyString path_key = TinyString::from_format("Card{}Path", slot + 1);
       std::string global_path =
-        Core::GetBaseStringSettingValue(section, path_key, Settings::GetDefaultSharedMemoryCardName(slot + 1).c_str());
+        Core::GetBaseStringSettingValue(section, path_key, Settings::GetDefaultSharedMemoryCardName(slot + 1));
       if (ini && ini->ContainsValue(section, path_key))
         ret = ini->GetStringValue(section, path_key, global_path.c_str());
       else

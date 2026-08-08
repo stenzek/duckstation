@@ -309,7 +309,7 @@ void MemoryCardSettingsWidget::onResetMemoryCardPathClicked(u32 index)
   if (m_dialog->isPerGameSettings())
     m_dialog->removeSettingValue("MemoryCards", key);
   else
-    m_dialog->setStringSettingValue("MemoryCards", key, Settings::GetDefaultSharedMemoryCardName(index).c_str());
+    m_dialog->setStringSettingValue("MemoryCards", key, Settings::GetDefaultSharedMemoryCardName(index));
 
   updateMemoryCardPath(index);
 }
@@ -318,7 +318,7 @@ void MemoryCardSettingsWidget::updateMemoryCardPath(u32 index)
 {
   const auto key = TinyString::from_format("Card{}Path", index + 1);
   std::string path(
-    m_dialog->getEffectiveStringValue("MemoryCards", key, Settings::GetDefaultSharedMemoryCardName(index).c_str()));
+    m_dialog->getEffectiveStringValue("MemoryCards", key, Settings::GetDefaultSharedMemoryCardName(index)));
   if (!Path::IsAbsolute(path))
     path = Path::Canonicalize(Path::Combine(EmuFolders::MemoryCards, path));
 

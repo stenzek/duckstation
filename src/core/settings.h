@@ -423,7 +423,7 @@ struct Settings : public GPUSettings
   bool HasAnyPerGameMemoryCards() const;
 
   /// Returns the default path to a memory card.
-  static std::string GetDefaultSharedMemoryCardName(u32 slot);
+  static const char* GetDefaultSharedMemoryCardName(u32 slot);
   std::string GetSharedMemoryCardPath(u32 slot) const;
 
   /// Returns the default path to a memory card for a specific game.
