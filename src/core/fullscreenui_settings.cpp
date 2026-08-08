@@ -4297,7 +4297,8 @@ void FullscreenUI::DrawMemoryCardSettingsPage()
     TinyString title;
     title.format("{}##card_name_{}", FSUI_ICONVSTR(ICON_FA_FILE, "Shared Card Name"), i);
     if (MenuActionButton(title, FSUI_VSTR("The selected memory card image will be used in shared mode for this slot."),
-                         path_value.has_value() ? path_value->view() : FSUI_VSTR("Use Global Setting"), is_shared))
+                         path_value.has_value() ? path_value->view() : FSUI_VSTR("Use Global Setting"), false,
+                         is_shared))
     {
       ChoiceDialogOptions options;
       std::vector<std::string> names;
