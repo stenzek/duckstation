@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com> and contributors.
+// SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com> and contributors.
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #pragma once
@@ -125,6 +125,7 @@ private:
   u16 m_button_state = UINT16_C(0xFFFF);
 
   TransferState m_transfer_state = TransferState::Idle;
+  bool m_disable_socd = false;
 
   AxisModifier m_steering_modifier = DEFAULT_STEERING_MODIFIER;
   std::array<AxisModifier, 3> m_half_axis_modifiers = {

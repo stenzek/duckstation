@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com> and contributors.
+// SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com> and contributors.
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #pragma once
@@ -136,8 +136,9 @@ private:
   u8 m_invert_left_stick = 0;
   u8 m_invert_right_stick = 0;
 
-  bool m_force_analog_on_reset = false;
-  bool m_analog_dpad_in_digital_mode = false;
+  bool m_force_analog_on_reset : 1 = false;
+  bool m_analog_dpad_in_digital_mode : 1 = false;
+  bool m_disable_socd : 1 = false;
   u8 m_analog_shoulder_buttons = 0;
   u8 m_analog_trigger_buttons = 0;
 

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com> and contributors.
+// SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com> and contributors.
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "negcon_rumble.h"
@@ -62,12 +62,9 @@ void NeGconRumble::Reset()
 
   m_status_byte = 0x5A;
 
-  if (m_force_analog_on_reset)
-  {
-    // NOTE: Should be NeGconRumble, but we don't want to break it for games that haven't opted in.
-    if (CanStartInAnalogMode(ControllerType::AnalogController))
-      SetAnalogMode(true, false);
-  }
+  // NOTE: Should be NeGconRumble, but we don't want to break it for games that haven't opted in.
+  if (CanStartInAnalogMode(ControllerType::AnalogController))
+    SetAnalogMode(true, false);
 }
 
 bool NeGconRumble::DoState(StateWrapper& sw, bool apply_input_state)
@@ -293,11 +290,6 @@ float NeGconRumble::GetMotorStrength(u32 motor) const
   return (state != 0) ? static_cast<float>(strength / 65535.0) : 0.0f;
 }
 
-u8 NeGconRumble::GetExtraButtonMaskLSB() const
-{
-  return 0xFF;
-}
-
 void NeGconRumble::ResetRumbleConfig()
 {
   m_rumble_config.fill(0xFF);
@@ -446,7 +438,8 @@ bool NeGconRumble::Transfer(const u8 data_in, u8* data_out)
       {
         case 2:
         {
-          m_tx_buffer[m_command_step] = Truncate8(m_button_state) & GetExtraButtonMaskLSB();
+          m_tx_buffer[m_command_step] =
+            Truncate8(m_disable_socd ? ControllerHelpers::RemoveOpposingDirections(m_button_state) : m_button_state);
 
           if (m_dualshock_enabled)
             SetMotorStateForConfigIndex(rumble_index, data_in);
@@ -525,7 +518,8 @@ bool NeGconRumble::Transfer(const u8 data_in, u8* data_out)
         {
           case 2:
           {
-            m_tx_buffer[m_command_step] = Truncate8(m_button_state) & GetExtraButtonMaskLSB();
+            m_tx_buffer[m_command_step] =
+              Truncate8(m_disable_socd ? ControllerHelpers::RemoveOpposingDirections(m_button_state) : m_button_state);
           }
           break;
 
@@ -752,7 +746,11 @@ constinit const Controller::ControllerBindingInfo NeGconRumble::s_binding_info[]
 #undef BUTTON
 };
 
-static const SettingInfo s_settings[] = {
+static constexpr SettingInfo s_settings[] = {
+  {SettingInfo::Type::Boolean, "DisableSOCD",
+   TRANSLATE_NOOP("NeGconRumble", "Disable Simultaneous Opposing Cardinal Directions"),
+   TRANSLATE_NOOP("NeGconRumble", "Prevents concurrent left/right or up/down inputs from being presented to the game."),
+   "false", nullptr, nullptr, nullptr, nullptr, nullptr, 0.0f},
   {SettingInfo::Type::Float, "SteeringDeadzone", TRANSLATE_NOOP("NeGconRumble", "Steering Axis Deadzone"),
    TRANSLATE_NOOP("NeGconRumble", "Sets deadzone size for steering axis."), "0", "0", "0.99", "0.01", "%.0f%%", nullptr,
    100.0f},
@@ -781,9 +779,9 @@ const Controller::ControllerInfo NeGconRumble::INFO = {ControllerType::NeGconRum
 
 void NeGconRumble::LoadSettings(const SettingsInterface& si, const char* section, bool initial)
 {
-  Controller::LoadSettings(si, section, initial);
   m_steering_deadzone = si.GetFloatValue(section, "SteeringDeadzone", 0.10f);
   m_steering_sensitivity = si.GetFloatValue(section, "SteeringSensitivity", 1.00f);
+  m_disable_socd = si.GetBoolValue(section, "DisableSOCD", false);
   m_vibration_bias[0] = static_cast<s16>(
     std::clamp(si.GetIntValue(section, "LargeMotorVibrationBias", DEFAULT_LARGE_MOTOR_VIBRATION_BIAS), -255, 255));
   m_vibration_bias[1] = static_cast<s16>(

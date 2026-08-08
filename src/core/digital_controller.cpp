@@ -1,7 +1,8 @@
-// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "digital_controller.h"
+#include "controller_helpers.h"
 #include "system.h"
 
 #include "util/state_wrapper.h"
@@ -11,6 +12,7 @@
 
 #include "common/assert.h"
 #include "common/bitutils.h"
+#include "common/settings_interface.h"
 
 DigitalController::DigitalController(u32 index, u16 button_mask) : Controller(index), m_button_mask(button_mask)
 {
@@ -127,19 +129,30 @@ bool DigitalController::Transfer(const u8 data_in, u8* data_out)
 
     case TransferState::ButtonsLSB:
     {
-      *data_out = Truncate8(m_button_state & m_button_mask);
+      *data_out =
+        Truncate8((m_disable_socd ? ControllerHelpers::RemoveOpposingDirections(m_button_state) : m_button_state) &
+                  m_button_mask);
       m_transfer_state = TransferState::ButtonsMSB;
       return true;
     }
 
     case TransferState::ButtonsMSB:
-      *data_out = Truncate8((m_button_state & m_button_mask) >> 8);
+    {
+      // Can skip opposing directions here since they're all in the LSB.
+      const u16 buttons_to_send = m_button_state & m_button_mask;
+      *data_out = Truncate8(buttons_to_send >> 8);
       m_transfer_state = TransferState::Idle;
       return false;
+    }
 
     default:
       UnreachableCode();
   }
+}
+
+void DigitalController::LoadSettings(const SettingsInterface& si, const char* section, bool initial)
+{
+  m_disable_socd = si.GetBoolValue(section, "DisableSOCD", false);
 }
 
 std::unique_ptr<DigitalController> DigitalController::Create(u32 index, ControllerType type)
@@ -155,6 +168,14 @@ std::unique_ptr<DigitalController> DigitalController::Create(u32 index, Controll
 
   return std::make_unique<DigitalController>(index, mask);
 }
+
+static constexpr SettingInfo s_settings[] = {
+  {SettingInfo::Type::Boolean, "DisableSOCD",
+   TRANSLATE_NOOP("DigitalController", "Disable Simultaneous Opposing Cardinal Directions"),
+   TRANSLATE_NOOP("DigitalController",
+                  "Prevents concurrent left/right or up/down inputs from being presented to the game."),
+   "false", nullptr, nullptr, nullptr, nullptr, nullptr, 0.0f},
+};
 
 static const Controller::ControllerBindingInfo s_binding_info[] = {
 #define BUTTON(name, display_name, icon_name, button, genb)                                                            \
@@ -180,13 +201,15 @@ static const Controller::ControllerBindingInfo s_binding_info[] = {
 #undef BUTTON
 };
 
-const Controller::ControllerInfo DigitalController::INFO = {ControllerType::DigitalController,
-                                                            "DigitalController",
-                                                            TRANSLATE_NOOP("ControllerType", "Digital Controller"),
-                                                            ICON_PF_GAMEPAD_ALT,
-                                                            "images/controllers/digital_controller.svg",
-                                                            s_binding_info,
-                                                            {}};
+const Controller::ControllerInfo DigitalController::INFO = {
+  ControllerType::DigitalController,
+  "DigitalController",
+  TRANSLATE_NOOP("ControllerType", "Digital Controller"),
+  ICON_PF_GAMEPAD_ALT,
+  "images/controllers/digital_controller.svg",
+  s_binding_info,
+  s_settings,
+};
 
 static const Controller::ControllerBindingInfo s_popn_binding_info[] = {
 #define BUTTON(name, display_name, icon_name, button, genb)                                                            \
@@ -209,10 +232,12 @@ static const Controller::ControllerBindingInfo s_popn_binding_info[] = {
 #undef BUTTON
 };
 
-const Controller::ControllerInfo DigitalController::INFO_POPN = {ControllerType::PopnController,
-                                                                 "PopnController",
-                                                                 TRANSLATE_NOOP("ControllerType", "Pop'n Controller"),
-                                                                 ICON_PF_POPN_CONTROLLER,
-                                                                 nullptr,
-                                                                 s_popn_binding_info,
-                                                                 {}};
+const Controller::ControllerInfo DigitalController::INFO_POPN = {
+  ControllerType::PopnController,
+  "PopnController",
+  TRANSLATE_NOOP("ControllerType", "Pop'n Controller"),
+  ICON_PF_POPN_CONTROLLER,
+  nullptr,
+  s_popn_binding_info,
+  {},
+};

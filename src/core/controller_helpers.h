@@ -6,6 +6,7 @@
 #include "common/types.h"
 
 #include <cmath>
+#include <type_traits>
 
 namespace ControllerHelpers {
 
@@ -31,6 +32,23 @@ ALWAYS_INLINE float MergeHalfAxesToFloat(u8 neg_value, u8 pos_value, bool invert
 {
   const float result = (static_cast<s32>(pos_value) - static_cast<s32>(neg_value)) / 255.0f;
   return (invert ? -result : result);
+}
+
+/// Removes opposing directions (left/right and up/down), preventing these buttons from being pressed concurrently.
+/// Note: Assumes up is bit 4, right is bit 5, down is bit 6, and left is bit 7, which is the case for all PSX pads.
+template<typename T>
+  requires(std::is_integral_v<T> || std::is_enum_v<T>)
+ALWAYS_INLINE T RemoveOpposingDirections(T state)
+{
+  using BitsType = std::make_unsigned_t<
+    typename std::conditional_t<std::is_enum_v<T>, std::underlying_type<T>, std::type_identity<T>>::type>;
+
+  const BitsType bits = static_cast<BitsType>(state);
+  const BitsType conflicts = static_cast<BitsType>(~(bits | (bits >> 2))) & static_cast<BitsType>(0x0030u);
+
+  // Active-low, so setting both conflicting bits releases them.
+  // Prefer Up (bit 4) over Down (bit 6), and Right (bit 5) over Left (bit 7).
+  return static_cast<T>(bits | (conflicts << 2));
 }
 
 } // namespace ControllerHelpers

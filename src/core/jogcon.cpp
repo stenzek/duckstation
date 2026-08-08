@@ -564,8 +564,6 @@ bool JogCon::Transfer(const u8 data_in, u8* data_out)
 
 void JogCon::LoadSettings(const SettingsInterface& si, const char* section, bool initial)
 {
-  Controller::LoadSettings(si, section, initial);
-
   m_analog_deadzone = std::clamp(si.GetFloatValue(section, "AnalogDeadzone", DEFAULT_STICK_DEADZONE), 0.0f, 1.0f);
   m_analog_sensitivity =
     std::clamp(si.GetFloatValue(section, "AnalogSensitivity", DEFAULT_STICK_SENSITIVITY), 0.01f, 3.0f);

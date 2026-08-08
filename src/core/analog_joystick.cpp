@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com> and contributors.
+// SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com> and contributors.
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "analog_joystick.h"
@@ -273,7 +273,8 @@ bool AnalogJoystick::Transfer(const u8 data_in, u8* data_out)
 
     case TransferState::ButtonsLSB:
     {
-      *data_out = Truncate8(m_button_state);
+      *data_out =
+        Truncate8(m_disable_socd ? ControllerHelpers::RemoveOpposingDirections(m_button_state) : m_button_state);
       m_transfer_state = TransferState::ButtonsMSB;
       return true;
     }
@@ -381,7 +382,12 @@ static constexpr const char* s_invert_settings[] = {
   TRANSLATE_NOOP("AnalogJoystick", "Invert Up/Down"), TRANSLATE_NOOP("AnalogJoystick", "Invert Left/Right + Up/Down"),
   nullptr};
 
-static const SettingInfo s_settings[] = {
+static constexpr SettingInfo s_settings[] = {
+  {SettingInfo::Type::Boolean, "DisableSOCD",
+   TRANSLATE_NOOP("AnalogJoystick", "Disable Simultaneous Opposing Cardinal Directions"),
+   TRANSLATE_NOOP("AnalogJoystick",
+                  "Prevents concurrent left/right or up/down inputs from being presented to the game."),
+   "false", nullptr, nullptr, nullptr, nullptr, nullptr, 0.0f},
   {SettingInfo::Type::Float, "AnalogDeadzone", TRANSLATE_NOOP("AnalogJoystick", "Analog Deadzone"),
    TRANSLATE_NOOP("AnalogJoystick",
                   "Sets the analog stick deadzone, i.e. the fraction of the stick movement which will be ignored."),
@@ -416,4 +422,5 @@ void AnalogJoystick::LoadSettings(const SettingsInterface& si, const char* secti
     std::clamp(si.GetFloatValue(section, "AnalogSensitivity", DEFAULT_STICK_SENSITIVITY), 0.01f, 3.0f);
   m_invert_left_stick = static_cast<u8>(si.GetIntValue(section, "InvertLeftStick", 0));
   m_invert_right_stick = static_cast<u8>(si.GetIntValue(section, "InvertRightStick", 0));
+  m_disable_socd = si.GetBoolValue(section, "DisableSOCD", false);
 }

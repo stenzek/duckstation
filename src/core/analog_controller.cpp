@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com> and contributors.
+// SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com> and contributors.
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "analog_controller.h"
@@ -464,7 +464,8 @@ void AnalogController::Poll()
   m_tx_buffer[0] = GetIDByte();
   m_tx_buffer[1] = m_status_byte;
 
-  const u16 button_state = m_button_state & GetExtraButtonMask();
+  const u16 button_mask = m_button_state & GetExtraButtonMask();
+  const u16 button_state = m_disable_socd ? ControllerHelpers::RemoveOpposingDirections(button_mask) : button_mask;
   m_tx_buffer[2] = Truncate8(button_state);
   m_tx_buffer[3] = Truncate8(button_state >> 8);
 
@@ -813,7 +814,7 @@ static constexpr const char* s_shoulder_settings[] = {
   TRANSLATE_NOOP("AnalogController", "Never"), TRANSLATE_NOOP("AnalogController", "Digital Mode Only"),
   TRANSLATE_NOOP("AnalogController", "Analog and Digital Modes"), nullptr};
 
-static const SettingInfo s_settings[] = {
+static constexpr SettingInfo s_settings[] = {
   {SettingInfo::Type::Boolean, "ForceAnalogOnReset",
    TRANSLATE_NOOP("AnalogController", "Automatically Enable Analog Mode"),
    TRANSLATE_NOOP("AnalogController", "Forces the controller to analog mode when the game is started/restarted."),
@@ -824,6 +825,11 @@ static const SettingInfo s_settings[] = {
      "AnalogController",
      "Allows you to use the left analog stick to control the d-pad in digital mode, as well as the buttons."),
    "true", nullptr, nullptr, nullptr, nullptr, nullptr, 0.0f},
+  {SettingInfo::Type::Boolean, "DisableSOCD",
+   TRANSLATE_NOOP("AnalogController", "Disable Simultaneous Opposing Cardinal Directions"),
+   TRANSLATE_NOOP("AnalogController",
+                  "Prevents concurrent left/right or up/down inputs from being presented to the game."),
+   "false", nullptr, nullptr, nullptr, nullptr, nullptr, 0.0f},
   {SettingInfo::Type::IntegerList, "AnalogShoulderButtons",
    TRANSLATE_NOOP("AnalogController", "Use Right Analog for Shoulder Buttons"),
    TRANSLATE_NOOP(
@@ -880,9 +886,9 @@ const Controller::ControllerInfo AnalogController::INFO = {ControllerType::Analo
 
 void AnalogController::LoadSettings(const SettingsInterface& si, const char* section, bool initial)
 {
-  Controller::LoadSettings(si, section, initial);
   m_force_analog_on_reset = si.GetBoolValue(section, "ForceAnalogOnReset", true);
   m_analog_dpad_in_digital_mode = si.GetBoolValue(section, "AnalogDPadInDigitalMode", true);
+  m_disable_socd = si.GetBoolValue(section, "DisableSOCD", false);
   m_analog_shoulder_buttons = static_cast<u8>(si.GetUIntValue(section, "AnalogShoulderButtons", 0u));
   m_analog_trigger_buttons = static_cast<u8>(si.GetUIntValue(section, "AnalogTriggerButtons", 0u));
   m_analog_deadzone = std::clamp(si.GetFloatValue(section, "AnalogDeadzone", DEFAULT_STICK_DEADZONE), 0.0f, 1.0f);

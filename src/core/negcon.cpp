@@ -1,7 +1,8 @@
-// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com> and contributors.
+// SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com> and contributors.
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "negcon.h"
+#include "controller_helpers.h"
 #include "host.h"
 #include "system.h"
 
@@ -208,7 +209,8 @@ bool NeGcon::Transfer(const u8 data_in, u8* data_out)
 
     case TransferState::ButtonsLSB:
     {
-      *data_out = Truncate8(m_button_state);
+      *data_out =
+        Truncate8(m_disable_socd ? ControllerHelpers::RemoveOpposingDirections(m_button_state) : m_button_state);
       m_transfer_state = TransferState::ButtonsMSB;
       return true;
     }
@@ -292,7 +294,11 @@ static const Controller::ControllerBindingInfo s_binding_info[] = {
 #undef BUTTON
 };
 
-static const SettingInfo s_settings[] = {
+static constexpr SettingInfo s_settings[] = {
+  {SettingInfo::Type::Boolean, "DisableSOCD",
+   TRANSLATE_NOOP("NeGcon", "Disable Simultaneous Opposing Cardinal Directions"),
+   TRANSLATE_NOOP("NeGcon", "Prevents concurrent left/right or up/down inputs from being presented to the game."),
+   "false", nullptr, nullptr, nullptr, nullptr, nullptr, 0.0f},
   {SettingInfo::Type::Float, "SteeringDeadzone", TRANSLATE_NOOP("NeGcon", "Steering Axis Deadzone"),
    TRANSLATE_NOOP("NeGcon", "Sets deadzone for steering axis."), "0", "0", "0.99", "0.01", "%.0f%%", nullptr, 100.0f},
   {SettingInfo::Type::Float, "SteeringSaturation", TRANSLATE_NOOP("NeGcon", "Steering Axis Saturation"),
@@ -337,7 +343,7 @@ const Controller::ControllerInfo NeGcon::INFO = {ControllerType::NeGcon,
 
 void NeGcon::LoadSettings(const SettingsInterface& si, const char* section, bool initial)
 {
-  Controller::LoadSettings(si, section, initial);
+  m_disable_socd = si.GetBoolValue(section, "DisableSOCD", false);
   m_steering_modifier = {
     .deadzone = si.GetFloatValue(section, "SteeringDeadzone", DEFAULT_STEERING_MODIFIER.deadzone),
     .saturation = si.GetFloatValue(section, "SteeringSaturation", DEFAULT_STEERING_MODIFIER.saturation),

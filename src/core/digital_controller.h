@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #pragma once
@@ -52,6 +52,8 @@ public:
   void ResetTransferState() override;
   bool Transfer(const u8 data_in, u8* data_out) override;
 
+  void LoadSettings(const SettingsInterface& si, const char* section, bool initial) override;
+
 private:
   enum class TransferState : u8
   {
@@ -67,4 +69,5 @@ private:
   u16 m_button_mask = UINT16_C(0xFFFF);
 
   TransferState m_transfer_state = TransferState::Idle;
+  bool m_disable_socd = false;
 };

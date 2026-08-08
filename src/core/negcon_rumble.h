@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com> and contributors.
+// SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com> and contributors.
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #pragma once
@@ -97,7 +97,7 @@ private:
   static const Controller::ControllerBindingInfo s_binding_info[];
 
   std::array<s16, NUM_MOTORS> m_vibration_bias{DEFAULT_LARGE_MOTOR_VIBRATION_BIAS, DEFAULT_SMALL_MOTOR_VIBRATION_BIAS};
-  bool m_force_analog_on_reset = true;
+  bool m_disable_socd = false;
 
   bool m_analog_mode = false;
   bool m_analog_locked = false;
@@ -146,7 +146,6 @@ private:
   void ProcessAnalogModeToggle();
   void SetMotorState(u32 motor, u8 value);
   float GetMotorStrength(u32 motor) const;
-  u8 GetExtraButtonMaskLSB() const;
   void ResetRumbleConfig();
   void SetMotorStateForConfigIndex(int index, u8 value);
 
