@@ -216,7 +216,7 @@ bool GDBServer::Cmd$g(ClientSocket* client, std::string_view data)
 
   // Pad with dummy data (FP registers stuff).
   for (int i = 0; i < NUM_GDB_REGISTERS - static_cast<int>(REGISTERS.size()); i++)
-    reply.append("00000000");
+    reply.append("xxxxxxxx");
 
   client->SendReplyWithAck(reply);
   return true;
