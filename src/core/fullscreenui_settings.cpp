@@ -150,6 +150,7 @@ static void DoLoadInputProfile();
 static void DoSaveInputProfile();
 static void DoSaveNewInputProfile();
 static void DoSaveInputProfile(const std::string& name);
+static MultitapMode GetEffectiveMultitapMode(SettingsInterface* bsi);
 
 static bool DrawToggleSetting(SettingsInterface* bsi, std::string_view title, std::string_view summary,
                               const char* section, const char* key, bool default_value, bool enabled = true,
@@ -3757,6 +3758,12 @@ void FullscreenUI::BeginResetControllerSettings()
                            });
 }
 
+MultitapMode FullscreenUI::GetEffectiveMultitapMode(SettingsInterface* bsi)
+{
+  return Settings::ParseMultitapModeName(bsi->GetTinyStringValue("ControllerPorts", "MultitapMode").c_str())
+    .value_or(Settings::DEFAULT_MULTITAP_MODE);
+}
+
 void FullscreenUI::DrawControllerSettingsPage()
 {
   SettingsInterface* bsi = GetEditingSettingsInterface();
@@ -3783,12 +3790,8 @@ void FullscreenUI::DrawControllerSettingsPage()
   }
 
   // load mtap settings
-  const MultitapMode mtap_mode =
-    Settings::ParseMultitapModeName(bsi->GetTinyStringValue("ControllerPorts", "MultitapMode").c_str())
-      .value_or(Settings::DEFAULT_MULTITAP_MODE);
-  const std::array<bool, 2> mtap_enabled = {
-    {(mtap_mode == MultitapMode::Port1Only || mtap_mode == MultitapMode::BothPorts),
-     (mtap_mode == MultitapMode::Port2Only || mtap_mode == MultitapMode::BothPorts)}};
+  const MultitapMode mtap_mode = GetEffectiveMultitapMode(bsi);
+  const std::array<bool, 2> mtap_enabled = Controller::GetMultitapEnabledPorts(mtap_mode);
 
   if (!empty_game_settings)
   {
@@ -4252,34 +4255,43 @@ void FullscreenUI::DrawControllerSettingsPage()
 
 void FullscreenUI::DrawMemoryCardSettingsPage()
 {
-  static constexpr const std::array type_keys = {"Card1Type", "Card2Type"};
-  static constexpr const std::array path_keys = {"Card1Path", "Card2Path"};
-
   SettingsInterface* bsi = GetEditingSettingsInterface();
 
   BeginMenuButtons();
   ResetFocusHere();
 
-  for (u32 i = 0; i < 2; i++)
+  const MultitapMode mtap_mode = GetEffectiveMultitapMode(bsi);
+  const auto mtap_enabled = Controller::GetMultitapEnabledPorts(mtap_mode);
+  TinyString skey;
+  for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
   {
-    MenuHeading(TinyString::from_format(FSUI_FSTR("Memory Card Port {}"), i + 1));
+    if (Controller::PadIsMultitapSlot(i))
+    {
+      const auto [port, slot] = Controller::ConvertPadToPortAndSlot(i);
+      if (!mtap_enabled[port])
+        continue;
+    }
+
+    MenuHeading(
+      TinyString::from_format(FSUI_FSTR("Memory Card Port {}"), Controller::GetPortDisplayName(i, mtap_mode)));
 
     const MemoryCardType default_type =
       (i == 0) ? Settings::DEFAULT_MEMORY_CARD_1_TYPE : Settings::DEFAULT_MEMORY_CARD_2_TYPE;
+    skey.format("Card{}Type", i + 1);
     DrawEnumSetting(
       bsi, TinyString::from_format(fmt::runtime(FSUI_ICONVSTR(ICON_PF_MEMORY_CARD, "Memory Card {} Type")), i + 1),
       SmallString::from_format(FSUI_FSTR("Sets which sort of memory card image will be used for slot {}."), i + 1),
-      "MemoryCards", type_keys[i], default_type, &Settings::ParseMemoryCardTypeName, &Settings::GetMemoryCardTypeName,
+      "MemoryCards", skey, default_type, &Settings::ParseMemoryCardTypeName, &Settings::GetMemoryCardTypeName,
       &Settings::GetMemoryCardTypeDisplayName, MemoryCardType::Count);
 
     const MemoryCardType effective_type =
       Settings::ParseMemoryCardTypeName(
-        GetEffectiveTinyStringSetting(bsi, "MemoryCards", type_keys[i], Settings::GetMemoryCardTypeName(default_type))
-          .c_str())
+        GetEffectiveTinyStringSetting(bsi, "MemoryCards", skey, Settings::GetMemoryCardTypeName(default_type)).c_str())
         .value_or(default_type);
     const bool is_shared = (effective_type == MemoryCardType::Shared);
+    skey.format("Card{}Path", i + 1);
     std::optional<SmallString> path_value = bsi->GetOptionalSmallStringValue(
-      "MemoryCards", path_keys[i],
+      "MemoryCards", skey,
       IsEditingGameSettings(bsi) ? std::nullopt : std::make_optional(Settings::GetDefaultSharedMemoryCardName(i)));
 
     TinyString title;
@@ -4323,15 +4335,16 @@ void FullscreenUI::DrawMemoryCardSettingsPage()
 
                          const auto lock = Core::GetSettingsLock();
                          SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
+                         const TinyString key = TinyString::from_format("Card{}Path", i + 1);
                          if (game_settings && index == 0)
                          {
-                           bsi->DeleteValue("MemoryCards", path_keys[i]);
+                           bsi->DeleteValue("MemoryCards", key);
                          }
                          else
                          {
                            if (game_settings)
                              index--;
-                           bsi->SetStringValue("MemoryCards", path_keys[i],
+                           bsi->SetStringValue("MemoryCards", key,
                                                Path::MakeRelative(names[index], EmuFolders::MemoryCards).c_str());
                          }
                          SetSettingsChanged(bsi);
