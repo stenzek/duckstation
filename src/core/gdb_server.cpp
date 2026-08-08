@@ -610,8 +610,9 @@ void GDBServer::InvalidateMemoryWrite(VirtualMemoryAddress address, u32 length)
 CPU::BreakpointCallbackAction GDBServer::OnBreakpointHit(CPU::BreakpointType type, VirtualMemoryAddress,
                                                          VirtualMemoryAddress address)
 {
-  for (auto& it : s_locals.clients)
-    it->OnBreakpointHit(type, address);
+  // Must use indexing to avoid the shared_ptr refcount increment, in case write fails.
+  for (size_t i = 0; i < s_locals.clients.size(); i++)
+    s_locals.clients[i]->OnBreakpointHit(type, address);
 
   return s_locals.clients.empty() ? CPU::BreakpointCallbackAction::Continue : CPU::BreakpointCallbackAction::Pause;
 }
@@ -1064,14 +1065,16 @@ void GDBServer::Shutdown()
 
 void GDBServer::OnSystemPaused()
 {
-  for (auto& it : s_locals.clients)
-    it->OnSystemPaused(s_locals.pending_stop_signal);
+  // Must use indexing to avoid the shared_ptr refcount increment, in case write fails.
+  for (size_t i = 0; i < s_locals.clients.size(); i++)
+    s_locals.clients[i]->OnSystemPaused(s_locals.pending_stop_signal);
 }
 
 void GDBServer::OnSystemResumed()
 {
-  for (auto& it : s_locals.clients)
-    it->OnSystemResumed();
+  // Must use indexing to avoid the shared_ptr refcount increment, in case write fails.
+  for (size_t i = 0; i < s_locals.clients.size(); i++)
+    s_locals.clients[i]->OnSystemResumed();
 }
 
 #endif // ENABLE_GDB_SERVER
