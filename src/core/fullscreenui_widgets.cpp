@@ -136,6 +136,7 @@ using ControllerButtonMappingTable = std::array<std::pair<const char*, const cha
 static constexpr ControllerButtonMappingTable GetButtonMapping(bool ps_buttons, bool swap_south_east)
 {
   return ControllerButtonMappingTable{{
+    {ICON_PF_XBOX, ps_buttons ? ICON_PF_PLAYSTATION : ICON_PF_XBOX},
     {ICON_PF_LEFT_TRIGGER_LT, ps_buttons ? ICON_PF_LEFT_TRIGGER_L2 : ICON_PF_LEFT_TRIGGER_LT},
     {ICON_PF_LEFT_TRIGGER_LT ICON_PF_RIGHT_TRIGGER_RT,
      ps_buttons ? ICON_PF_LEFT_TRIGGER_L2 ICON_PF_RIGHT_TRIGGER_R2 : ICON_PF_LEFT_TRIGGER_LT ICON_PF_RIGHT_TRIGGER_RT},
@@ -156,7 +157,6 @@ static constexpr ControllerButtonMappingTable GetButtonMapping(bool ps_buttons, 
     {ICON_PF_XBOX_DPAD_DOWN, ps_buttons ? ICON_PF_DPAD_DOWN : ICON_PF_XBOX_DPAD_DOWN},
     {ICON_PF_XBOX_DPAD_LEFT_RIGHT, ps_buttons ? ICON_PF_DPAD_LEFT_RIGHT : ICON_PF_XBOX_DPAD_LEFT_RIGHT},
     {ICON_PF_XBOX_DPAD_UP_DOWN, ps_buttons ? ICON_PF_DPAD_UP_DOWN : ICON_PF_XBOX_DPAD_UP_DOWN},
-    {ICON_PF_XBOX, ps_buttons ? ICON_PF_PLAYSTATION : ICON_PF_XBOX},
   }};
 }
 static constexpr const ControllerButtonMappingTable s_button_mapping[2][2] = {
