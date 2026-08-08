@@ -925,7 +925,7 @@ void GDBServer::ClientSocket::OnBreakpointHit(CPU::BreakpointType type, VirtualM
     return;
 
   const PhysicalMemoryAddress hit_address = CPU::VirtualAddressToPhysical(address);
-  const auto it = std::ranges::find_if(m_breakpoints, [&type, &address, &hit_address](const ClientBreakpoint& bp) {
+  const auto it = std::ranges::find_if(m_breakpoints, [&type, &hit_address](const ClientBreakpoint& bp) {
     if (bp.type == GDBBreakpointType::Software || bp.type == GDBBreakpointType::Hardware)
       return false;
     if (bp.type == GDBBreakpointType::Read && type != CPU::BreakpointType::Read)
