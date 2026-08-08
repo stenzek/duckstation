@@ -105,7 +105,6 @@ private:
     MAX_VERTICES_FOR_RECTANGLE = 6 * (((MAX_PRIMITIVE_WIDTH + (TEXTURE_PAGE_WIDTH - 1)) / TEXTURE_PAGE_WIDTH) + 1u) *
                                  (((MAX_PRIMITIVE_HEIGHT + (TEXTURE_PAGE_HEIGHT - 1)) / TEXTURE_PAGE_HEIGHT) + 1u),
     NUM_TEXTURE_MODES = static_cast<u32>(BatchTextureMode::MaxCount),
-    INVALID_DRAW_MODE_BITS = 0xFFFFFFFFu,
   };
   enum : u8
   {
@@ -114,6 +113,8 @@ private:
     TEXPAGE_DIRTY_PAGE_RECT = (1 << 2),
     TEXPAGE_DIRTY_ONLY_UV_RECT = (1 << 3),
   };
+  static constexpr u32 INVALID_DRAW_MODE_TEXTURE_BITS = 0xFFFFu;
+  static constexpr u32 INVALID_DRAW_MODE_BITS = 0xFFFFFFFFu;
 
   static_assert(GPUDevice::MIN_TEXEL_BUFFER_ELEMENTS >= (VRAM_WIDTH * VRAM_HEIGHT));
 

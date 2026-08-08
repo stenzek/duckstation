@@ -2049,6 +2049,13 @@ void GPU_HW::UpdateVRAMReadTexture(bool drawn, bool written)
     }
 
     update(m_vram_dirty_draw_rect, dbits);
+
+    // Clear the cached draw mode bit, because since we're wiping out the texpage dirty bit, the page that
+    // we're currently rendering to might still be the texture page (game doesn't need to change it), and
+    // we need to detect if there is an intersection with the UVs. Same for the palette, those can be
+    // recursive too, although on real hardware it would require a cache flush to reload so we only
+    // clear out the texture page bits here.
+    m_draw_mode.mode_reg.bits = INVALID_DRAW_MODE_TEXTURE_BITS;
   }
   if (written)
   {
@@ -3784,17 +3791,13 @@ void GPU_HW::PrepareDraw(const GPUBackendDrawCommand* cmd)
         texture_mode == BatchTextureMode::Disabled)
 
     {
-      m_draw_mode.mode_reg.bits = cmd->draw_mode.bits;
-      m_draw_mode.palette_reg.bits = cmd->palette.bits;
-
       // start by assuming we can use the TC
       bool use_texture_cache = m_use_texture_cache;
 
       // check that the palette isn't in a drawn area
-      if (m_draw_mode.mode_reg.IsUsingPalette())
+      if (cmd->draw_mode.IsUsingPalette())
       {
-        const GSVector4i palette_rect =
-          GetPaletteRect(m_draw_mode.palette_reg, m_draw_mode.mode_reg.texture_mode, use_texture_cache);
+        const GSVector4i palette_rect = GetPaletteRect(cmd->palette, cmd->draw_mode.texture_mode, use_texture_cache);
         if (!use_texture_cache || GPUTextureCache::IsRectDrawn(palette_rect))
         {
           if (use_texture_cache)
@@ -3814,6 +3817,9 @@ void GPU_HW::PrepareDraw(const GPUBackendDrawCommand* cmd)
         }
       }
 
+      // UpdateVRAMReadTexture() can reset m_draw_mode, needs to be down here.
+      m_draw_mode.mode_reg.bits = cmd->draw_mode.bits;
+      m_draw_mode.palette_reg.bits = cmd->palette.bits;
       m_compute_uv_range = (m_clamp_uvs || m_texture_dumping);
 
       const GPUTextureMode gpu_texture_mode =
