@@ -1642,7 +1642,7 @@ public:
     DebugAssert(source_row >= 0);
 
     const std::string icon_path = GameList::GetGameIconPath(entry);
-    if (icon_path.empty())
+    if (icon_path.empty() || HTTPCache::IsHTTPURL(icon_path))
     {
       clearEntry();
       return false;
