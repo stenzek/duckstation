@@ -43,9 +43,6 @@ void AnalogJoystick::Reset()
 
 bool AnalogJoystick::DoState(StateWrapper& sw, bool apply_input_state)
 {
-  if (!Controller::DoState(sw, apply_input_state))
-    return false;
-
   const bool old_analog_mode = m_analog_mode;
 
   sw.Do(&m_analog_mode);
@@ -416,7 +413,6 @@ const Controller::ControllerInfo AnalogJoystick::INFO = {ControllerType::AnalogJ
 
 void AnalogJoystick::LoadSettings(const SettingsInterface& si, const char* section, bool initial)
 {
-  Controller::LoadSettings(si, section, initial);
   m_analog_deadzone = std::clamp(si.GetFloatValue(section, "AnalogDeadzone", DEFAULT_STICK_DEADZONE), 0.0f, 1.0f);
   m_analog_sensitivity =
     std::clamp(si.GetFloatValue(section, "AnalogSensitivity", DEFAULT_STICK_SENSITIVITY), 0.01f, 3.0f);

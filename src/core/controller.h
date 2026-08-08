@@ -62,29 +62,29 @@ public:
   /// Returns the type of controller.
   virtual ControllerType GetType() const = 0;
 
-  virtual void Reset();
-  virtual bool DoState(StateWrapper& sw, bool apply_input_state);
+  virtual void Reset() = 0;
+  virtual bool DoState(StateWrapper& sw, bool apply_input_state) = 0;
 
   // Resets all state for the transferring to/from the device.
-  virtual void ResetTransferState();
+  virtual void ResetTransferState() = 0;
 
   // Returns the value of ACK, as well as filling out_data.
-  virtual bool Transfer(const u8 data_in, u8* data_out);
+  virtual bool Transfer(const u8 data_in, u8* data_out) = 0;
 
   /// Changes the specified axis state. Values are normalized from -1..1.
-  virtual float GetBindState(u32 index) const;
+  virtual float GetBindState(u32 index) const = 0;
 
   /// Changes the specified bind state. Values are normalized from -1..1.
-  virtual void SetBindState(u32 index, float value);
+  virtual void SetBindState(u32 index, float value) = 0;
 
   /// Returns a bitmask of the current button states, 1 = on.
-  virtual u32 GetButtonStateBits() const;
+  virtual u32 GetButtonStateBits() const = 0;
 
   /// Returns analog input bytes packed as a u32. Values are specific to controller type.
   virtual std::optional<u32> GetAnalogInputBytes() const;
 
   /// Loads/refreshes any per-controller settings.
-  virtual void LoadSettings(const SettingsInterface& si, const char* section, bool initial);
+  virtual void LoadSettings(const SettingsInterface& si, const char* section, bool initial) = 0;
 
   /// Creates a new controller of the specified type.
   static std::unique_ptr<Controller> Create(ControllerType type, u32 index);

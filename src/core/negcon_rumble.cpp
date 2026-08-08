@@ -69,9 +69,6 @@ void NeGconRumble::Reset()
 
 bool NeGconRumble::DoState(StateWrapper& sw, bool apply_input_state)
 {
-  if (!Controller::DoState(sw, apply_input_state))
-    return false;
-
   const bool old_analog_mode = m_analog_mode;
 
   sw.Do(&m_analog_mode);

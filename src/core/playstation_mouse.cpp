@@ -40,9 +40,6 @@ void PlayStationMouse::Reset()
 
 bool PlayStationMouse::DoState(StateWrapper& sw, bool apply_input_state)
 {
-  if (!Controller::DoState(sw, apply_input_state))
-    return false;
-
   u16 button_state = m_button_state;
   float delta_x = m_delta_x;
   float delta_y = m_delta_y;
@@ -95,6 +92,11 @@ void PlayStationMouse::SetBindState(u32 index, float value)
     m_button_state &= ~(u16(1) << s_button_indices[index]);
   else
     m_button_state |= u16(1) << s_button_indices[index];
+}
+
+u32 PlayStationMouse::GetButtonStateBits() const
+{
+  return m_button_state;
 }
 
 void PlayStationMouse::ResetTransferState()
@@ -183,8 +185,6 @@ bool PlayStationMouse::Transfer(const u8 data_in, u8* data_out)
 
 void PlayStationMouse::LoadSettings(const SettingsInterface& si, const char* section, bool initial)
 {
-  Controller::LoadSettings(si, section, initial);
-
   m_sensitivity_x = si.GetFloatValue(section, "SensitivityX", 1.0f);
   m_sensitivity_y = si.GetFloatValue(section, "SensitivityY", 1.0f);
 }

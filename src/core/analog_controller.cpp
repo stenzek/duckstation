@@ -66,9 +66,6 @@ void AnalogController::Reset()
 
 bool AnalogController::DoState(StateWrapper& sw, bool apply_input_state)
 {
-  if (!Controller::DoState(sw, apply_input_state))
-    return false;
-
   const bool old_analog_mode = m_analog_mode;
   MotorState motor_state = m_motor_state;
 

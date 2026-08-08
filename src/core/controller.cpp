@@ -63,46 +63,9 @@ Controller::Controller(u32 index) : m_index(index)
 
 Controller::~Controller() = default;
 
-void Controller::Reset()
-{
-}
-
-bool Controller::DoState(StateWrapper& sw, bool apply_input_state)
-{
-  return !sw.HasError();
-}
-
-void Controller::ResetTransferState()
-{
-}
-
-bool Controller::Transfer(const u8 data_in, u8* data_out)
-{
-  *data_out = 0xFF;
-  return false;
-}
-
-float Controller::GetBindState(u32 index) const
-{
-  return 0.0f;
-}
-
-void Controller::SetBindState(u32 index, float value)
-{
-}
-
-u32 Controller::GetButtonStateBits() const
-{
-  return 0;
-}
-
 std::optional<u32> Controller::GetAnalogInputBytes() const
 {
   return std::nullopt;
-}
-
-void Controller::LoadSettings(const SettingsInterface& si, const char* section, bool initial)
-{
 }
 
 std::unique_ptr<Controller> Controller::Create(ControllerType type, u32 index)

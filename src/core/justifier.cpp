@@ -64,9 +64,6 @@ void Justifier::Reset()
 
 bool Justifier::DoState(StateWrapper& sw, bool apply_input_state)
 {
-  if (!Controller::DoState(sw, apply_input_state))
-    return false;
-
   u16 irq_first_line = m_irq_first_line;
   u16 irq_last_line = m_irq_last_line;
   u16 irq_tick = m_irq_tick;
@@ -137,6 +134,11 @@ void Justifier::SetBindState(u32 index, float value)
     m_button_state &= ~(u16(1) << s_button_indices[static_cast<u8>(index)]);
   else
     m_button_state |= u16(1) << s_button_indices[static_cast<u8>(index)];
+}
+
+u32 Justifier::GetButtonStateBits() const
+{
+  return m_button_state;
 }
 
 void Justifier::ResetTransferState()
@@ -405,8 +407,6 @@ const Controller::ControllerInfo Justifier::INFO = {ControllerType::Justifier,
 
 void Justifier::LoadSettings(const SettingsInterface& si, const char* section, bool initial)
 {
-  Controller::LoadSettings(si, section, initial);
-
   m_x_scale = si.GetFloatValue(section, "XScale", 1.0f);
 
   std::string cursor_path = si.GetStringValue(section, "CrosshairImagePath", DEFAULT_CROSSHAIR_PATH);

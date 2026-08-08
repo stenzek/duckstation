@@ -35,9 +35,6 @@ void DDGoController::Reset()
 
 bool DDGoController::DoState(StateWrapper& sw, bool apply_input_state)
 {
-  if (!Controller::DoState(sw, apply_input_state))
-    return false;
-
   u16 button_state = m_button_state;
   u8 power_level = m_power_level;
   u8 power_transition_frames_remaining = m_power_transition_frames_remaining;
@@ -285,7 +282,6 @@ void DDGoController::UpdateBrakeBits()
 
 void DDGoController::LoadSettings(const SettingsInterface& si, const char* section, bool initial)
 {
-  Controller::LoadSettings(si, section, initial);
   m_analog_deadzone = std::clamp(si.GetFloatValue(section, "AnalogDeadzone", DEFAULT_STICK_DEADZONE), 0.0f, 1.0f);
   m_analog_sensitivity =
     std::clamp(si.GetFloatValue(section, "AnalogSensitivity", DEFAULT_STICK_SENSITIVITY), 0.01f, 3.0f);

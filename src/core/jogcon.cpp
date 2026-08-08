@@ -41,9 +41,6 @@ void JogCon::Reset()
 
 bool JogCon::DoState(StateWrapper& sw, bool apply_input_state)
 {
-  if (!Controller::DoState(sw, apply_input_state))
-    return false;
-
   u16 button_state = m_button_state;
   s8 steering_state = m_steering_state;
   sw.Do(&button_state);

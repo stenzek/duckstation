@@ -42,9 +42,6 @@ void NeGcon::Reset()
 
 bool NeGcon::DoState(StateWrapper& sw, bool apply_input_state)
 {
-  if (!Controller::DoState(sw, apply_input_state))
-    return false;
-
   u16 button_state = m_button_state;
   sw.Do(&button_state);
   if (apply_input_state)

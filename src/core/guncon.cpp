@@ -51,9 +51,6 @@ void GunCon::Reset()
 
 bool GunCon::DoState(StateWrapper& sw, bool apply_input_state)
 {
-  if (!Controller::DoState(sw, apply_input_state))
-    return false;
-
   u16 button_state = m_button_state;
   u16 position_x = m_position_x;
   u16 position_y = m_position_y;
@@ -111,6 +108,11 @@ void GunCon::SetBindState(u32 index, float value)
     m_button_state &= ~(u16(1) << s_button_indices[static_cast<u8>(index)]);
   else
     m_button_state |= u16(1) << s_button_indices[static_cast<u8>(index)];
+}
+
+u32 GunCon::GetButtonStateBits() const
+{
+  return m_button_state;
 }
 
 void GunCon::ResetTransferState()
@@ -325,8 +327,6 @@ const Controller::ControllerInfo GunCon::INFO = {ControllerType::GunCon,
 
 void GunCon::LoadSettings(const SettingsInterface& si, const char* section, bool initial)
 {
-  Controller::LoadSettings(si, section, initial);
-
   m_x_scale = si.GetFloatValue(section, "XScale", 1.0f);
 
   std::string cursor_path = si.GetStringValue(section, "CrosshairImagePath", DEFAULT_CROSSHAIR_PATH);
