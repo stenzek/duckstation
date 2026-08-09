@@ -17,6 +17,9 @@
 #include "common/log.h"
 
 #include <QtCore/QDebug>
+#ifdef __APPLE__
+#include <QtCore/QCoreApplication>
+#endif
 #include <QtGui/QGuiApplication>
 #include <QtGui/QKeyEvent>
 #include <QtGui/QScreen>
@@ -50,9 +53,24 @@ DisplayWidget::DisplayWidget(QWidget* parent) : QWidget(parent)
   setAttribute(Qt::WA_KeyCompression, false);
   setFocusPolicy(Qt::StrongFocus);
   setMouseTracking(true);
+
+#ifdef __APPLE__
+  // QWidget::nativeEvent() does not receive mouse NSEvents from Qt's Cocoa platform plugin, and translated
+  // QMouseEvents do not retain the native movement deltas needed for relative mode. Native event filters can only be
+  // installed application-wide, so filter out unrelated events in nativeEventFilter().
+  QCoreApplication::instance()->installNativeEventFilter(this);
+#endif
 }
 
-DisplayWidget::~DisplayWidget() = default;
+DisplayWidget::~DisplayWidget()
+{
+  if (m_relative_mouse_enabled)
+    updateRelativeMode(false);
+
+#ifdef __APPLE__
+  QCoreApplication::instance()->removeNativeEventFilter(this);
+#endif
+}
 
 void DisplayWidget::connectScreenChangedEvent()
 {
@@ -148,6 +166,7 @@ void DisplayWidget::checkForSizeChange(bool update_refresh_rate)
   updateCenterPos();
 }
 
+#ifndef __APPLE__
 void DisplayWidget::updateRelativeMode(bool enabled)
 {
 #ifdef _WIN32
@@ -187,6 +206,7 @@ void DisplayWidget::updateRelativeMode(bool enabled)
     releaseMouse();
   }
 }
+#endif
 
 void DisplayWidget::updateCursor(bool hidden)
 {
@@ -228,11 +248,6 @@ void DisplayWidget::handleCloseEvent(QCloseEvent* event)
 void DisplayWidget::destroy()
 {
   m_destroying = true;
-
-#ifdef _WIN32
-  if (m_clip_mouse_enabled)
-    ClipCursor(nullptr);
-#endif
 
 #ifdef __APPLE__
   // See Qt documentation, entire application is in full screen state, and the main
@@ -298,6 +313,8 @@ void DisplayWidget::updateCenterPos()
       SetCursorPos(m_relative_mouse_center_pos.x(), m_relative_mouse_center_pos.y());
     }
   }
+#elif defined(__APPLE__)
+  // Relative movement is supplied by the native event filter without repeatedly warping the cursor.
 #else
   if (m_relative_mouse_enabled)
   {
@@ -379,10 +396,11 @@ bool DisplayWidget::event(QEvent* event)
       }
       else
       {
+        // On macos, relative movement is emitted directly from the native event filter.
+#ifndef __APPLE__
         // On windows, we use winapi here. The reason being that the coordinates in QCursor
         // are un-dpi-scaled, so we lose precision at higher desktop scalings.
         float dx = 0.0f, dy = 0.0f;
-
 #ifndef _WIN32
         const QPoint mouse_pos = QCursor::pos();
         if (mouse_pos != m_relative_mouse_center_pos)
@@ -399,10 +417,11 @@ bool DisplayWidget::event(QEvent* event)
           dy = static_cast<float>(mouse_pos.y - m_relative_mouse_center_pos.y());
           SetCursorPos(m_relative_mouse_center_pos.x(), m_relative_mouse_center_pos.y());
         }
-#endif
+#endif // _WIN32
 
         if ((dx != 0.0f || dy != 0.0f) && !InputManager::IsUsingRawInput())
           emit windowMouseMoveRelativeEvent(dx, dy);
+#endif // __APPLE__
       }
 
       return true;

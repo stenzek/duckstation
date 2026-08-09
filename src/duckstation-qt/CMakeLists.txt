@@ -240,6 +240,13 @@ target_sources(duckstation-qt PRIVATE ${UI_SRCS})
 target_include_directories(duckstation-qt PRIVATE "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>")
 
 if(APPLE)
+  target_sources(duckstation-qt PRIVATE
+    displaywidget_mac.mm
+  )
+  set_source_files_properties(displaywidget_mac.mm PROPERTIES SKIP_PRECOMPILE_HEADERS TRUE)
+  find_library(COREGRAPHICS_LIBRARY CoreGraphics REQUIRED)
+  target_link_libraries(duckstation-qt PRIVATE ${COREGRAPHICS_LIBRARY})
+
   # Don't generate a bundle for XCode, it makes code signing fail...
   get_scm_version()
   set(BUNDLE_PATH ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DuckStation.app)

@@ -8,6 +8,9 @@
 
 #include "common/types.h"
 
+#ifdef __APPLE__
+#include <QtCore/QAbstractNativeEventFilter>
+#endif
 #include <QtWidgets/QStackedWidget>
 #include <QtWidgets/QWidget>
 #include <optional>
@@ -19,6 +22,10 @@ enum class RenderAPI : u8;
 class QCloseEvent;
 
 class DisplayWidget final : public QWidget
+#ifdef __APPLE__
+  ,
+                            public QAbstractNativeEventFilter
+#endif
 {
   Q_OBJECT
 
@@ -67,6 +74,10 @@ private:
   bool isActuallyFullscreen() const;
   void updateCenterPos();
 
+#ifdef __APPLE__
+  bool nativeEventFilter(const QByteArray& event_type, void* message, qintptr* result) override;
+#endif
+
   std::vector<int> m_keys_pressed_with_modifiers;
 
   QPoint m_relative_mouse_start_pos{};
@@ -74,6 +85,10 @@ private:
   bool m_relative_mouse_enabled = false;
 #ifdef _WIN32
   bool m_clip_mouse_enabled = false;
+#elif defined(__APPLE__)
+  float m_mac_warp_delta_x = 0.0f;
+  float m_mac_warp_delta_y = 0.0f;
+  bool m_mac_has_warp_delta = false;
 #endif
   bool m_cursor_hidden = false;
   bool m_destroying = false;

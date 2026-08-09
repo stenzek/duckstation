@@ -201,6 +201,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="svgiconengine.json" />
+    <None Include="displaywidget_mac.mm" />
   </ItemGroup>
   <ItemGroup>
     <QtTs Include="translations\duckstation-qt_de.ts">
