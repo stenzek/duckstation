@@ -160,11 +160,7 @@ private:
 
   static constexpr GLenum UPDATE_TEXTURE_UNIT = GL_TEXTURE8;
 
-  static constexpr u32 VERTEX_BUFFER_SIZE = 8 * 1024 * 1024;
-  static constexpr u32 INDEX_BUFFER_SIZE = 4 * 1024 * 1024;
-  static constexpr u32 UNIFORM_BUFFER_SIZE = 2 * 1024 * 1024;
   static constexpr u32 PUSH_CONSTANT_BUFFER_SIZE = 1 * 1024 * 1024;
-  static constexpr u32 TEXTURE_STREAM_BUFFER_SIZE = 16 * 1024 * 1024;
 
   bool CheckFeatures(CreateFlags create_flags);
   bool CreateBuffers();

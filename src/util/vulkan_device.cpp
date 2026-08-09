@@ -60,12 +60,6 @@ enum : u32
   MAX_DESCRIPTOR_SETS_PER_FRAME = MAX_DRAW_CALLS_PER_FRAME,
   MAX_SAMPLER_DESCRIPTORS = 8192,
 
-  VERTEX_BUFFER_SIZE = 32 * 1024 * 1024,
-  INDEX_BUFFER_SIZE = 16 * 1024 * 1024,
-  VERTEX_UNIFORM_BUFFER_SIZE = 8 * 1024 * 1024,
-  FRAGMENT_UNIFORM_BUFFER_SIZE = 8 * 1024 * 1024,
-  TEXTURE_BUFFER_SIZE = 64 * 1024 * 1024,
-
   UNIFORM_PUSH_CONSTANTS_STAGES = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
   UNIFORM_PUSH_CONSTANTS_SIZE = 128,
 
@@ -2260,13 +2254,13 @@ bool VulkanDevice::CreateBuffers()
     return false;
   }
 
-  if (!m_uniform_buffer.Create(VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VERTEX_UNIFORM_BUFFER_SIZE))
+  if (!m_uniform_buffer.Create(VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, UNIFORM_BUFFER_SIZE))
   {
     ERROR_LOG("Failed to allocate uniform buffer");
     return false;
   }
 
-  if (!m_texture_upload_buffer.Create(VK_BUFFER_USAGE_TRANSFER_SRC_BIT, TEXTURE_BUFFER_SIZE))
+  if (!m_texture_upload_buffer.Create(VK_BUFFER_USAGE_TRANSFER_SRC_BIT, LARGE_TEXTURE_BUFFER_SIZE))
   {
     ERROR_LOG("Failed to allocate texture upload buffer");
     return false;

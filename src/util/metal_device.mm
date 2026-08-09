@@ -526,7 +526,7 @@ bool MetalDevice::CreateBuffers(Error* error)
   if (!m_vertex_buffer.Create(m_device, VERTEX_BUFFER_SIZE, error) ||
       !m_index_buffer.Create(m_device, INDEX_BUFFER_SIZE, error) ||
       !m_uniform_buffer.Create(m_device, UNIFORM_BUFFER_SIZE, error) ||
-      !m_texture_upload_buffer.Create(m_device, TEXTURE_STREAM_BUFFER_SIZE, error))
+      !m_texture_upload_buffer.Create(m_device, LARGE_TEXTURE_BUFFER_SIZE, error))
   {
     Error::AddPrefix(error, "Failed to create vertex/index/uniform buffers: ");
     return false;

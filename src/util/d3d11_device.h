@@ -136,9 +136,6 @@ private:
   using InputLayoutMap =
     std::unordered_map<GPUPipeline::InputLayout, ComPtr<ID3D11InputLayout>, GPUPipeline::InputLayoutHash>;
 
-  static constexpr u32 VERTEX_BUFFER_SIZE = 8 * 1024 * 1024;
-  static constexpr u32 INDEX_BUFFER_SIZE = 4 * 1024 * 1024;
-  static constexpr u32 MAX_UNIFORM_BUFFER_SIZE = 2 * 1024 * 1024;
   static constexpr u32 MIN_UNIFORM_BUFFER_SIZE = 16;
   static constexpr u32 UNIFORM_BUFFER_ALIGNMENT = 256;
   static constexpr u32 UNIFORM_BUFFER_ALIGNMENT_DISCARD = 16;

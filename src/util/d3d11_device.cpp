@@ -535,7 +535,7 @@ bool D3D11Device::CreateBuffers(Error* error)
 {
   if (!m_vertex_buffer.Create(D3D11_BIND_VERTEX_BUFFER, VERTEX_BUFFER_SIZE, VERTEX_BUFFER_SIZE, error) ||
       !m_index_buffer.Create(D3D11_BIND_INDEX_BUFFER, INDEX_BUFFER_SIZE, INDEX_BUFFER_SIZE, error) ||
-      !m_uniform_buffer.Create(D3D11_BIND_CONSTANT_BUFFER, MIN_UNIFORM_BUFFER_SIZE, MAX_UNIFORM_BUFFER_SIZE, error))
+      !m_uniform_buffer.Create(D3D11_BIND_CONSTANT_BUFFER, MIN_UNIFORM_BUFFER_SIZE, UNIFORM_BUFFER_SIZE, error))
   {
     ERROR_LOG("Failed to create vertex/index/uniform buffers.");
     return false;

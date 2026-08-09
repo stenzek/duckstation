@@ -741,7 +741,7 @@ bool OpenGLDevice::CreateBuffers()
 
   if (!m_disable_pbo)
   {
-    if (!(m_texture_stream_buffer = OpenGLStreamBuffer::Create(GL_PIXEL_UNPACK_BUFFER, TEXTURE_STREAM_BUFFER_SIZE)))
+    if (!(m_texture_stream_buffer = OpenGLStreamBuffer::Create(GL_PIXEL_UNPACK_BUFFER, SMALL_TEXTURE_BUFFER_SIZE)))
       [[unlikely]]
     {
       ERROR_LOG("Failed to create texture stream buffer");

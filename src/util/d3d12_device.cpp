@@ -40,12 +40,6 @@ enum : u32
   MAX_PERSISTENT_DSVS = 128,
   MAX_PERSISTENT_SAMPLERS = 512,
 
-  VERTEX_BUFFER_SIZE = 32 * 1024 * 1024,
-  INDEX_BUFFER_SIZE = 16 * 1024 * 1024,
-  VERTEX_UNIFORM_BUFFER_SIZE = 8 * 1024 * 1024,
-  FRAGMENT_UNIFORM_BUFFER_SIZE = 8 * 1024 * 1024,
-  TEXTURE_BUFFER_SIZE = 64 * 1024 * 1024,
-
   UNIFORM_PUSH_CONSTANTS_SIZE = 128,
 
   MAX_UNIFORM_BUFFER_SIZE = 1024,
@@ -1541,13 +1535,13 @@ bool D3D12Device::CreateBuffers(Error* error)
     return false;
   }
 
-  if (!m_uniform_buffer.Create(VERTEX_UNIFORM_BUFFER_SIZE, error))
+  if (!m_uniform_buffer.Create(UNIFORM_BUFFER_SIZE, error))
   {
     ERROR_LOG("Failed to allocate uniform buffer");
     return false;
   }
 
-  if (!m_texture_upload_buffer.Create(TEXTURE_BUFFER_SIZE, error))
+  if (!m_texture_upload_buffer.Create(LARGE_TEXTURE_BUFFER_SIZE, error))
   {
     ERROR_LOG("Failed to allocate texture upload buffer");
     return false;

@@ -345,11 +345,7 @@ protected:
   void DestroyDevice() override;
 
 private:
-  static constexpr u32 VERTEX_BUFFER_SIZE = 8 * 1024 * 1024;
-  static constexpr u32 INDEX_BUFFER_SIZE = 4 * 1024 * 1024;
-  static constexpr u32 UNIFORM_BUFFER_SIZE = 2 * 1024 * 1024;
   static constexpr u32 UNIFORM_BUFFER_ALIGNMENT = 256;
-  static constexpr u32 TEXTURE_STREAM_BUFFER_SIZE = 64 * 1024 * 1024; // TODO reduce after separate allocations
   static constexpr u8 NUM_TIMESTAMP_QUERIES = 3;
   static constexpr u32 VERTEX_BINDING_UBO = 0;
   static constexpr u32 VERTEX_BINDING_VBO = 1;

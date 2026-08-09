@@ -606,6 +606,11 @@ public:
   static constexpr u32 DEFAULT_CLEAR_COLOR = 0xFF000000u;
   static constexpr u32 PIPELINE_CACHE_HASH_SIZE = 20;
   static constexpr u32 BASE_UNIFORM_BUFFER_ALIGNMENT = 16;
+  static constexpr u32 VERTEX_BUFFER_SIZE = 32 * 1024 * 1024;
+  static constexpr u32 INDEX_BUFFER_SIZE = 16 * 1024 * 1024;
+  static constexpr u32 UNIFORM_BUFFER_SIZE = 8 * 1024 * 1024;
+  static constexpr u32 SMALL_TEXTURE_BUFFER_SIZE = 16 * 1024 * 1024;
+  static constexpr u32 LARGE_TEXTURE_BUFFER_SIZE = 64 * 1024 * 1024;
   static_assert(sizeof(GPUPipeline::GraphicsConfig::color_formats) == sizeof(GPUTextureFormat) * MAX_RENDER_TARGETS);
 
   GPUDevice();
