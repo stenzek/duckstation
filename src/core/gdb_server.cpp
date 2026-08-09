@@ -35,6 +35,121 @@ static constexpr u32 MAX_FRAMED_PACKET_SIZE = MAX_PACKET_SIZE + 4;
 static constexpr u32 MAX_MEMORY_READ_SIZE = MAX_PACKET_SIZE / 2;
 static constexpr u32 MAX_WATCHPOINT_LENGTH = 256;
 
+static constexpr std::string_view TARGET_XML = R"(<?xml version="1.0"?>
+<!DOCTYPE target SYSTEM "gdb-target.dtd">
+<target version="1.0">
+  <architecture>mips:3000</architecture>
+  <feature name="org.gnu.gdb.mips.cpu">
+    <reg name="r0" bitsize="32" regnum="0"/>
+    <reg name="r1" bitsize="32"/>
+    <reg name="r2" bitsize="32"/>
+    <reg name="r3" bitsize="32"/>
+    <reg name="r4" bitsize="32"/>
+    <reg name="r5" bitsize="32"/>
+    <reg name="r6" bitsize="32"/>
+    <reg name="r7" bitsize="32"/>
+    <reg name="r8" bitsize="32"/>
+    <reg name="r9" bitsize="32"/>
+    <reg name="r10" bitsize="32"/>
+    <reg name="r11" bitsize="32"/>
+    <reg name="r12" bitsize="32"/>
+    <reg name="r13" bitsize="32"/>
+    <reg name="r14" bitsize="32"/>
+    <reg name="r15" bitsize="32"/>
+    <reg name="r16" bitsize="32"/>
+    <reg name="r17" bitsize="32"/>
+    <reg name="r18" bitsize="32"/>
+    <reg name="r19" bitsize="32"/>
+    <reg name="r20" bitsize="32"/>
+    <reg name="r21" bitsize="32"/>
+    <reg name="r22" bitsize="32"/>
+    <reg name="r23" bitsize="32"/>
+    <reg name="r24" bitsize="32"/>
+    <reg name="r25" bitsize="32"/>
+    <reg name="r26" bitsize="32"/>
+    <reg name="r27" bitsize="32"/>
+    <reg name="r28" bitsize="32"/>
+    <reg name="r29" bitsize="32"/>
+    <reg name="r30" bitsize="32"/>
+    <reg name="r31" bitsize="32"/>
+    <reg name="lo" bitsize="32" regnum="33"/>
+    <reg name="hi" bitsize="32" regnum="34"/>
+    <reg name="pc" bitsize="32" regnum="37"/>
+  </feature>
+  <feature name="org.gnu.gdb.mips.cp0">
+    <reg name="status" bitsize="32" regnum="32"/>
+    <reg name="badvaddr" bitsize="32" regnum="35"/>
+    <reg name="cause" bitsize="32" regnum="36"/>
+  </feature>
+  <feature name="org.gnu.gdb.mips.fpu">
+    <reg name="f0" bitsize="32" type="ieee_single" regnum="38"/>
+    <reg name="f1" bitsize="32" type="ieee_single"/>
+    <reg name="f2" bitsize="32" type="ieee_single"/>
+    <reg name="f3" bitsize="32" type="ieee_single"/>
+    <reg name="f4" bitsize="32" type="ieee_single"/>
+    <reg name="f5" bitsize="32" type="ieee_single"/>
+    <reg name="f6" bitsize="32" type="ieee_single"/>
+    <reg name="f7" bitsize="32" type="ieee_single"/>
+    <reg name="f8" bitsize="32" type="ieee_single"/>
+    <reg name="f9" bitsize="32" type="ieee_single"/>
+    <reg name="f10" bitsize="32" type="ieee_single"/>
+    <reg name="f11" bitsize="32" type="ieee_single"/>
+    <reg name="f12" bitsize="32" type="ieee_single"/>
+    <reg name="f13" bitsize="32" type="ieee_single"/>
+    <reg name="f14" bitsize="32" type="ieee_single"/>
+    <reg name="f15" bitsize="32" type="ieee_single"/>
+    <reg name="f16" bitsize="32" type="ieee_single"/>
+    <reg name="f17" bitsize="32" type="ieee_single"/>
+    <reg name="f18" bitsize="32" type="ieee_single"/>
+    <reg name="f19" bitsize="32" type="ieee_single"/>
+    <reg name="f20" bitsize="32" type="ieee_single"/>
+    <reg name="f21" bitsize="32" type="ieee_single"/>
+    <reg name="f22" bitsize="32" type="ieee_single"/>
+    <reg name="f23" bitsize="32" type="ieee_single"/>
+    <reg name="f24" bitsize="32" type="ieee_single"/>
+    <reg name="f25" bitsize="32" type="ieee_single"/>
+    <reg name="f26" bitsize="32" type="ieee_single"/>
+    <reg name="f27" bitsize="32" type="ieee_single"/>
+    <reg name="f28" bitsize="32" type="ieee_single"/>
+    <reg name="f29" bitsize="32" type="ieee_single"/>
+    <reg name="f30" bitsize="32" type="ieee_single"/>
+    <reg name="f31" bitsize="32" type="ieee_single"/>
+    <reg name="fcsr" bitsize="32" group="float"/>
+    <reg name="fir" bitsize="32" group="float"/>
+  </feature>
+  <feature name="org.duckstation.gdb.mips">
+    <reg name="unused" bitsize="32" regnum="72" save-restore="no"/>
+  </feature>
+</target>
+)";
+
+static constexpr std::string_view MEMORY_MAP_XML = R"(<?xml version="1.0"?>
+<!DOCTYPE memory-map PUBLIC "+//IDN gnu.org//DTD GDB Memory Map V1.0//EN"
+  "http://sourceware.org/gdb/gdb-memory-map.dtd">
+<memory-map>
+  <memory type="ram" start="0x00000000" length="0x00800000"/>
+  <memory type="rom" start="0x1f000000" length="0x00800000"/>
+  <memory type="ram" start="0x1f800000" length="0x00000400"/>
+  <memory type="rom" start="0x1fc00000" length="0x00080000"/>
+  <memory type="ram" start="0x80000000" length="0x00800000"/>
+  <memory type="rom" start="0x9f000000" length="0x00800000"/>
+  <memory type="ram" start="0x9f800000" length="0x00000400"/>
+  <memory type="rom" start="0x9fc00000" length="0x00080000"/>
+  <memory type="ram" start="0xa0000000" length="0x00800000"/>
+  <memory type="rom" start="0xbf000000" length="0x00800000"/>
+  <memory type="ram" start="0xbf800000" length="0x00000400"/>
+  <memory type="rom" start="0xbfc00000" length="0x00080000"/>
+  <memory type="ram" start="0xffffffff80000000" length="0x00800000"/>
+  <memory type="rom" start="0xffffffff9f000000" length="0x00800000"/>
+  <memory type="ram" start="0xffffffff9f800000" length="0x00000400"/>
+  <memory type="rom" start="0xffffffff9fc00000" length="0x00080000"/>
+  <memory type="ram" start="0xffffffffa0000000" length="0x00800000"/>
+  <memory type="rom" start="0xffffffffbf000000" length="0x00800000"/>
+  <memory type="ram" start="0xffffffffbf800000" length="0x00000400"/>
+  <memory type="rom" start="0xffffffffbfc00000" length="0x00080000"/>
+</memory-map>
+)";
+
 namespace {
 
 enum class GDBBreakpointType : u8
@@ -122,10 +237,14 @@ template<bool add_breakpoint>
 static bool Cmd$z(ClientSocket* client, std::string_view data);
 static bool Cmd$vMustReplyEmpty(ClientSocket* client, std::string_view data);
 static bool Cmd$qSupported(ClientSocket* client, std::string_view data);
+static bool Cmd$qXferFeaturesRead(ClientSocket* client, std::string_view data);
+static bool Cmd$qXferMemoryMapRead(ClientSocket* client, std::string_view data);
 
 static bool ParseOptionalAddress(std::string_view data, std::optional<VirtualMemoryAddress>* address);
 static bool ParseSignalAndOptionalAddress(std::string_view data, u8* signal,
                                           std::optional<VirtualMemoryAddress>* address);
+static bool SendXferRead(ClientSocket* client, std::string_view data, std::string_view expected_annex,
+                         std::string_view contents);
 static void InvalidateMemoryWrite(VirtualMemoryAddress address, u32 length);
 static CPU::BreakpointCallbackAction OnBreakpointHit(CPU::BreakpointType type, VirtualMemoryAddress pc,
                                                      VirtualMemoryAddress address);
@@ -200,6 +319,8 @@ static constexpr std::pair<std::string_view, bool (*)(ClientSocket*, std::string
   {"z", Cmd$z<false>},
   {"Z", Cmd$z<true>},
   {"vMustReplyEmpty", Cmd$vMustReplyEmpty},
+  {"qXfer:features:read:", Cmd$qXferFeaturesRead},
+  {"qXfer:memory-map:read:", Cmd$qXferMemoryMapRead},
   {"qSupported", Cmd$qSupported},
 };
 
@@ -552,7 +673,63 @@ bool GDBServer::Cmd$vMustReplyEmpty(ClientSocket* client, std::string_view data)
 
 bool GDBServer::Cmd$qSupported(ClientSocket* client, std::string_view data)
 {
-  client->SendReplyWithAck(TinyString::from_format("PacketSize={:x}", MAX_PACKET_SIZE));
+  client->SendReplyWithAck(
+    TinyString::from_format("PacketSize={:x};qXfer:features:read+;qXfer:memory-map:read+", MAX_PACKET_SIZE));
+  return true;
+}
+
+bool GDBServer::Cmd$qXferFeaturesRead(ClientSocket* client, std::string_view data)
+{
+  return SendXferRead(client, data, "target.xml", TARGET_XML);
+}
+
+bool GDBServer::Cmd$qXferMemoryMapRead(ClientSocket* client, std::string_view data)
+{
+  return SendXferRead(client, data, {}, MEMORY_MAP_XML);
+}
+
+bool GDBServer::SendXferRead(ClientSocket* client, std::string_view data, std::string_view expected_annex,
+                             std::string_view contents)
+{
+  const size_t annex_end = data.find(':');
+  if (annex_end == std::string_view::npos)
+  {
+    ERROR_LOG("Invalid qXfer read packet: {}", data);
+    client->SendReplyWithAck("E01");
+    return true;
+  }
+
+  if (data.substr(0, annex_end) != expected_annex)
+  {
+    client->SendReplyWithAck();
+    return true;
+  }
+
+  std::string_view caret = data.substr(annex_end + 1);
+  std::optional<u64> offset;
+  std::optional<u32> length;
+  if (!(offset = StringUtil::FromChars<u64>(caret, 16, &caret)).has_value() || caret.empty() || caret[0] != ',' ||
+      !(length = StringUtil::FromChars<u32>(caret.substr(1), 16, &caret)).has_value() || !caret.empty() ||
+      length.value() == 0)
+  {
+    ERROR_LOG("Invalid qXfer read packet: {}", data);
+    client->SendReplyWithAck("E01");
+    return true;
+  }
+
+  if (offset.value() >= contents.size())
+  {
+    client->SendReplyWithAck("l");
+    return true;
+  }
+
+  const size_t remaining = contents.size() - static_cast<size_t>(offset.value());
+  const size_t transfer_size = std::min<size_t>({length.value(), MAX_PACKET_SIZE - 1, remaining});
+
+  SmallString reply;
+  reply.push_back((transfer_size < remaining) ? 'm' : 'l');
+  reply.append(contents.substr(static_cast<size_t>(offset.value()), transfer_size));
+  client->SendReplyWithAck(reply);
   return true;
 }
 
