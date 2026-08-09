@@ -17,9 +17,6 @@
 #include "common/log.h"
 
 #include <QtCore/QDebug>
-#ifdef __APPLE__
-#include <QtCore/QCoreApplication>
-#endif
 #include <QtGui/QGuiApplication>
 #include <QtGui/QKeyEvent>
 #include <QtGui/QScreen>
@@ -53,23 +50,12 @@ DisplayWidget::DisplayWidget(QWidget* parent) : QWidget(parent)
   setAttribute(Qt::WA_KeyCompression, false);
   setFocusPolicy(Qt::StrongFocus);
   setMouseTracking(true);
-
-#ifdef __APPLE__
-  // QWidget::nativeEvent() does not receive mouse NSEvents from Qt's Cocoa platform plugin, and translated
-  // QMouseEvents do not retain the native movement deltas needed for relative mode. Native event filters can only be
-  // installed application-wide, so filter out unrelated events in nativeEventFilter().
-  QCoreApplication::instance()->installNativeEventFilter(this);
-#endif
 }
 
 DisplayWidget::~DisplayWidget()
 {
   if (m_relative_mouse_enabled)
     updateRelativeMode(false);
-
-#ifdef __APPLE__
-  QCoreApplication::instance()->removeNativeEventFilter(this);
-#endif
 }
 
 void DisplayWidget::connectScreenChangedEvent()
@@ -167,15 +153,35 @@ void DisplayWidget::checkForSizeChange(bool update_refresh_rate)
 }
 
 #ifndef __APPLE__
+
 void DisplayWidget::updateRelativeMode(bool enabled)
 {
+  // Relative mode remains enabled while capture is temporarily inactive because another top-level window has focus.
+  const bool request_changed = (m_relative_mouse_enabled != enabled);
+  if (request_changed)
+  {
+    if (enabled)
+    {
+      connect(qApp, &QGuiApplication::focusWindowChanged, this, &DisplayWidget::onFocusWindowChanged);
+      m_relative_mouse_enabled = true;
+    }
+    else
+    {
+      disconnect(qApp, &QGuiApplication::focusWindowChanged, this, &DisplayWidget::onFocusWindowChanged);
+    }
+  }
+
+  const bool activate = enabled && window()->isActiveWindow();
 #ifdef _WIN32
   // prefer ClipCursor() over warping movement when we're using raw input
-  bool clip_cursor = enabled && InputManager::IsUsingRawInput();
-  if (m_relative_mouse_enabled == enabled && m_clip_mouse_enabled == clip_cursor)
+  const bool clip_cursor = activate && InputManager::IsUsingRawInput();
+  if (m_relative_mouse_active == activate && m_clip_mouse_enabled == clip_cursor)
+  {
+    m_relative_mouse_enabled = enabled;
     return;
+  }
 
-  INFO_LOG("updateRelativeMode(): relative={}, clip={}", enabled ? "yes" : "no", clip_cursor ? "yes" : "no");
+  INFO_LOG("updateRelativeMode(): enabled={}, active={}, clip={}", enabled, activate, clip_cursor);
 
   if (!clip_cursor && m_clip_mouse_enabled)
   {
@@ -183,15 +189,18 @@ void DisplayWidget::updateRelativeMode(bool enabled)
     ClipCursor(nullptr);
   }
 #else
-  if (m_relative_mouse_enabled == enabled)
+  if (m_relative_mouse_active == activate)
+  {
+    m_relative_mouse_enabled = enabled;
     return;
+  }
 
-  INFO_LOG("updateRelativeMode(): relative={}", enabled ? "yes" : "no");
+  INFO_LOG("updateRelativeMode(): enabled={}, relative={}", enabled, activate);
 #endif
 
-  if (enabled)
+  if (activate)
   {
-    m_relative_mouse_enabled = true;
+    m_relative_mouse_active = true;
 #ifdef _WIN32
     m_clip_mouse_enabled = clip_cursor;
 #endif
@@ -199,14 +208,23 @@ void DisplayWidget::updateRelativeMode(bool enabled)
     updateCenterPos();
     grabMouse();
   }
-  else if (m_relative_mouse_enabled)
+  else if (m_relative_mouse_active)
   {
-    m_relative_mouse_enabled = false;
     QCursor::setPos(m_relative_mouse_start_pos);
+    m_relative_mouse_active = false;
     releaseMouse();
   }
+
+  m_relative_mouse_enabled = enabled;
 }
+
 #endif
+
+void DisplayWidget::onFocusWindowChanged(QWindow* window)
+{
+  Q_UNUSED(window);
+  updateRelativeMode(m_relative_mouse_enabled);
+}
 
 void DisplayWidget::updateCursor(bool hidden)
 {
@@ -303,7 +321,7 @@ void DisplayWidget::updateCenterPos()
     if (GetWindowRect(reinterpret_cast<HWND>(winId()), &rc))
       ClipCursor(&rc);
   }
-  else if (m_relative_mouse_enabled)
+  else if (m_relative_mouse_active)
   {
     RECT rc;
     if (GetWindowRect(reinterpret_cast<HWND>(winId()), &rc))
@@ -316,7 +334,7 @@ void DisplayWidget::updateCenterPos()
 #elif defined(__APPLE__)
   // Relative movement is supplied by the native event filter without repeatedly warping the cursor.
 #else
-  if (m_relative_mouse_enabled)
+  if (m_relative_mouse_active)
   {
     // we do a round trip here because these coordinates are dpi-unscaled
     m_relative_mouse_center_pos = mapToGlobal(QPoint((width() + 1) / 2, (height() + 1) / 2));
@@ -385,7 +403,7 @@ bool DisplayWidget::event(QEvent* event)
 
     case QEvent::MouseMove:
     {
-      if (!m_relative_mouse_enabled)
+      if (!m_relative_mouse_active)
       {
         const float surface_scale =
           m_window_info.has_value() ? m_window_info->surface_scale : static_cast<float>(devicePixelRatio());
@@ -430,7 +448,7 @@ bool DisplayWidget::event(QEvent* event)
     case QEvent::MouseButtonPress:
     case QEvent::MouseButtonRelease:
     {
-      if (!m_relative_mouse_enabled || !InputManager::IsUsingRawInput())
+      if (!m_relative_mouse_active || !InputManager::IsUsingRawInput())
       {
         const u32 button_index = CountTrailingZeros(static_cast<u32>(static_cast<const QMouseEvent*>(event)->button()));
         emit windowMouseButtonEvent(static_cast<int>(button_index), event->type() != QEvent::MouseButtonRelease);
@@ -442,7 +460,7 @@ bool DisplayWidget::event(QEvent* event)
     case QEvent::MouseButtonDblClick:
     {
       // we don't get press events for double-click, the dblclick event is substituted instead
-      if (!m_relative_mouse_enabled || !InputManager::IsUsingRawInput())
+      if (!m_relative_mouse_active || !InputManager::IsUsingRawInput())
       {
         const u32 button_index = CountTrailingZeros(static_cast<u32>(static_cast<const QMouseEvent*>(event)->button()));
         emit windowMouseButtonEvent(static_cast<int>(button_index), true);
@@ -450,7 +468,7 @@ bool DisplayWidget::event(QEvent* event)
 
       // don't toggle fullscreen when we're bound.. that wouldn't end well.
       if (static_cast<const QMouseEvent*>(event)->button() == Qt::LeftButton && QtHost::IsSystemValid() &&
-          ((!QtHost::IsSystemPaused() && !m_relative_mouse_enabled && !m_ignore_double_click) ||
+          ((!QtHost::IsSystemPaused() && !m_relative_mouse_active && !m_ignore_double_click) ||
            (QtHost::IsSystemPaused() && !ImGuiManager::WantsMouseInput())) &&
           Core::GetBoolSettingValue("Main", "DoubleClickTogglesFullscreen", true))
       {
