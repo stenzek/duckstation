@@ -9,6 +9,7 @@
 #include "cpu_code_cache.h"
 #include "cpu_core.h"
 #include "cpu_core_private.h"
+#include "gte.h"
 #include "system.h"
 
 #include "common/assert.h"
@@ -120,6 +121,74 @@ static constexpr std::string_view TARGET_XML = R"(<?xml version="1.0"?>
   <feature name="org.duckstation.gdb.mips">
     <reg name="unused" bitsize="32" regnum="72" save-restore="no"/>
   </feature>
+  <feature name="org.duckstation.gte.data">
+    <reg name="gte_v0_xy" bitsize="32" regnum="73" save-restore="no" group="gte-data"/>
+    <reg name="gte_v0_z" bitsize="32" save-restore="no" group="gte-data"/>
+    <reg name="gte_v1_xy" bitsize="32" save-restore="no" group="gte-data"/>
+    <reg name="gte_v1_z" bitsize="32" save-restore="no" group="gte-data"/>
+    <reg name="gte_v2_xy" bitsize="32" save-restore="no" group="gte-data"/>
+    <reg name="gte_v2_z" bitsize="32" save-restore="no" group="gte-data"/>
+    <reg name="gte_rgbc" bitsize="32" save-restore="no" group="gte-data"/>
+    <reg name="gte_otz" bitsize="32" save-restore="no" group="gte-data"/>
+    <reg name="gte_ir0" bitsize="32" save-restore="no" group="gte-data"/>
+    <reg name="gte_ir1" bitsize="32" save-restore="no" group="gte-data"/>
+    <reg name="gte_ir2" bitsize="32" save-restore="no" group="gte-data"/>
+    <reg name="gte_ir3" bitsize="32" save-restore="no" group="gte-data"/>
+    <reg name="gte_sxy0" bitsize="32" save-restore="no" group="gte-data"/>
+    <reg name="gte_sxy1" bitsize="32" save-restore="no" group="gte-data"/>
+    <reg name="gte_sxy2" bitsize="32" save-restore="no" group="gte-data"/>
+    <reg name="gte_sxyp" bitsize="32" save-restore="no" group="gte-data"/>
+    <reg name="gte_sz0" bitsize="32" save-restore="no" group="gte-data"/>
+    <reg name="gte_sz1" bitsize="32" save-restore="no" group="gte-data"/>
+    <reg name="gte_sz2" bitsize="32" save-restore="no" group="gte-data"/>
+    <reg name="gte_sz3" bitsize="32" save-restore="no" group="gte-data"/>
+    <reg name="gte_rgb0" bitsize="32" save-restore="no" group="gte-data"/>
+    <reg name="gte_rgb1" bitsize="32" save-restore="no" group="gte-data"/>
+    <reg name="gte_rgb2" bitsize="32" save-restore="no" group="gte-data"/>
+    <reg name="gte_res1" bitsize="32" save-restore="no" group="gte-data"/>
+    <reg name="gte_mac0" bitsize="32" save-restore="no" group="gte-data"/>
+    <reg name="gte_mac1" bitsize="32" save-restore="no" group="gte-data"/>
+    <reg name="gte_mac2" bitsize="32" save-restore="no" group="gte-data"/>
+    <reg name="gte_mac3" bitsize="32" save-restore="no" group="gte-data"/>
+    <reg name="gte_irgb" bitsize="32" save-restore="no" group="gte-data"/>
+    <reg name="gte_orgb" bitsize="32" save-restore="no" group="gte-data"/>
+    <reg name="gte_lzcs" bitsize="32" save-restore="no" group="gte-data"/>
+    <reg name="gte_lzcr" bitsize="32" save-restore="no" group="gte-data"/>
+  </feature>
+  <feature name="org.duckstation.gte.control">
+    <reg name="gte_rt_0" bitsize="32" save-restore="no" group="gte-control"/>
+    <reg name="gte_rt_1" bitsize="32" save-restore="no" group="gte-control"/>
+    <reg name="gte_rt_2" bitsize="32" save-restore="no" group="gte-control"/>
+    <reg name="gte_rt_3" bitsize="32" save-restore="no" group="gte-control"/>
+    <reg name="gte_rt_4" bitsize="32" save-restore="no" group="gte-control"/>
+    <reg name="gte_trx" bitsize="32" save-restore="no" group="gte-control"/>
+    <reg name="gte_try" bitsize="32" save-restore="no" group="gte-control"/>
+    <reg name="gte_trz" bitsize="32" save-restore="no" group="gte-control"/>
+    <reg name="gte_llm_0" bitsize="32" save-restore="no" group="gte-control"/>
+    <reg name="gte_llm_1" bitsize="32" save-restore="no" group="gte-control"/>
+    <reg name="gte_llm_2" bitsize="32" save-restore="no" group="gte-control"/>
+    <reg name="gte_llm_3" bitsize="32" save-restore="no" group="gte-control"/>
+    <reg name="gte_llm_4" bitsize="32" save-restore="no" group="gte-control"/>
+    <reg name="gte_rbk" bitsize="32" save-restore="no" group="gte-control"/>
+    <reg name="gte_gbk" bitsize="32" save-restore="no" group="gte-control"/>
+    <reg name="gte_bbk" bitsize="32" save-restore="no" group="gte-control"/>
+    <reg name="gte_lcm_0" bitsize="32" save-restore="no" group="gte-control"/>
+    <reg name="gte_lcm_1" bitsize="32" save-restore="no" group="gte-control"/>
+    <reg name="gte_lcm_2" bitsize="32" save-restore="no" group="gte-control"/>
+    <reg name="gte_lcm_3" bitsize="32" save-restore="no" group="gte-control"/>
+    <reg name="gte_lcm_4" bitsize="32" save-restore="no" group="gte-control"/>
+    <reg name="gte_rfc" bitsize="32" save-restore="no" group="gte-control"/>
+    <reg name="gte_gfc" bitsize="32" save-restore="no" group="gte-control"/>
+    <reg name="gte_bfc" bitsize="32" save-restore="no" group="gte-control"/>
+    <reg name="gte_ofx" bitsize="32" save-restore="no" group="gte-control"/>
+    <reg name="gte_ofy" bitsize="32" save-restore="no" group="gte-control"/>
+    <reg name="gte_h" bitsize="32" save-restore="no" group="gte-control"/>
+    <reg name="gte_dqa" bitsize="32" save-restore="no" group="gte-control"/>
+    <reg name="gte_dqb" bitsize="32" save-restore="no" group="gte-control"/>
+    <reg name="gte_zsf3" bitsize="32" save-restore="no" group="gte-control"/>
+    <reg name="gte_zsf4" bitsize="32" save-restore="no" group="gte-control"/>
+    <reg name="gte_flag" bitsize="32" save-restore="no" group="gte-control"/>
+  </feature>
 </target>
 )";
 
@@ -201,6 +270,9 @@ public:
   void SendReplyWithAck(std::string_view reply = std::string_view());
   void ResendLastReply();
 
+  void SetUseTargetDescription() { m_use_target_description = true; }
+  bool IsUsingTargetDescription() const { return m_use_target_description; }
+
   void AddBreakpoint(GDBBreakpointType type, VirtualMemoryAddress address, u32 kind);
   void RemoveBreakpoint(GDBBreakpointType type, VirtualMemoryAddress address, u32 kind);
   void ClearBreakpoints();
@@ -214,6 +286,7 @@ private:
   void SendPacket(std::string_view sv);
 
   bool m_seen_resume = false;
+  bool m_use_target_description = false;
   SmallString m_last_stop_reply;
   SmallString m_last_reply;
   std::vector<ClientBreakpoint> m_breakpoints;
@@ -226,6 +299,8 @@ static u8 ComputeChecksum(std::string_view str);
 static bool Cmd$_questionMark(ClientSocket* client, std::string_view data);
 static bool Cmd$g(ClientSocket* client, std::string_view data);
 static bool Cmd$G(ClientSocket* client, std::string_view data);
+static bool Cmd$p(ClientSocket* client, std::string_view data);
+static bool Cmd$P(ClientSocket* client, std::string_view data);
 static bool Cmd$H(ClientSocket* client, std::string_view data);
 static bool Cmd$m(ClientSocket* client, std::string_view data);
 static bool Cmd$M(ClientSocket* client, std::string_view data);
@@ -245,6 +320,11 @@ static bool ParseSignalAndOptionalAddress(std::string_view data, u8* signal,
                                           std::optional<VirtualMemoryAddress>* address);
 static bool SendXferRead(ClientSocket* client, std::string_view data, std::string_view expected_annex,
                          std::string_view contents);
+static void AppendRegisterValue(SmallStringBase* reply, u32 value);
+static bool DecodeRegisterValue(std::string_view data, std::optional<u32>* value);
+static std::optional<u32> ReadRegisterValue(u32 index);
+static bool IsGTERegisterWritable(u32 index);
+static bool WriteRegisterValue(u32 index, u32 value);
 static void InvalidateMemoryWrite(VirtualMemoryAddress address, u32 length);
 static CPU::BreakpointCallbackAction OnBreakpointHit(CPU::BreakpointType type, VirtualMemoryAddress pc,
                                                      VirtualMemoryAddress address);
@@ -255,13 +335,12 @@ static bool IsPacketInterrupt(std::string_view data);
 static bool IsPacketComplete(std::string_view data);
 static bool ProcessPacket(ClientSocket* socket, std::string_view data);
 
-/// yikes, lots of stack space
-using LargeReplyPacket = SmallStackString<768>;
+/// Number of registers in the legacy GDB remote protocol packet for MIPS I.
+static constexpr u32 NUM_GDB_REGISTERS = 73;
+static constexpr u32 FIRST_GTE_GDB_REGISTER = NUM_GDB_REGISTERS;
+static constexpr u32 NUM_EXTENDED_GDB_REGISTERS = NUM_GDB_REGISTERS + GTE::NUM_REGS;
 
-/// Number of registers in GDB remote protocol for MIPS III.
-static constexpr int NUM_GDB_REGISTERS = 73;
-
-/// List of GDB remote protocol registers for MIPS III (excluding FP).
+/// List of GDB remote protocol registers for MIPS I (excluding FP).
 static constexpr std::array<u32*, 38> REGISTERS{
   &CPU::g_state.regs.r[0],
   &CPU::g_state.regs.r[1],
@@ -309,6 +388,8 @@ static constexpr std::pair<std::string_view, bool (*)(ClientSocket*, std::string
   {"?", Cmd$_questionMark},
   {"g", Cmd$g},
   {"G", Cmd$G},
+  {"p", Cmd$p},
+  {"P", Cmd$P},
   {"H", Cmd$H},
   {"m", Cmd$m},
   {"M", Cmd$M},
@@ -362,6 +443,117 @@ bool GDBServer::Cmd$_questionMark(ClientSocket* client, std::string_view data)
   return true;
 }
 
+void GDBServer::AppendRegisterValue(SmallStringBase* reply, u32 value)
+{
+  // Data is in target order (little endian).
+  reply->append_format("{:02x}{:02x}{:02x}{:02x}", value & 0xFFu, (value >> 8) & 0xFFu, (value >> 16) & 0xFFu,
+                       value >> 24);
+}
+
+bool GDBServer::DecodeRegisterValue(std::string_view data, std::optional<u32>* value)
+{
+  value->reset();
+  if (data.size() != (sizeof(u32) * 2))
+    return false;
+
+  if (data.find_first_not_of("xX") == std::string_view::npos)
+    return true;
+
+  std::array<u8, sizeof(u32)> bytes;
+  if (StringUtil::DecodeHex(bytes, data) != bytes.size())
+    return false;
+
+  *value = ZeroExtend32(bytes[0]) | (ZeroExtend32(bytes[1]) << 8) | (ZeroExtend32(bytes[2]) << 16) |
+           (ZeroExtend32(bytes[3]) << 24);
+  return true;
+}
+
+std::optional<u32> GDBServer::ReadRegisterValue(u32 index)
+{
+  if (index < REGISTERS.size())
+    return *REGISTERS[index];
+
+  if (index >= FIRST_GTE_GDB_REGISTER && index < NUM_EXTENDED_GDB_REGISTERS)
+    return GTE::ReadRegister(index - FIRST_GTE_GDB_REGISTER);
+
+  return std::nullopt;
+}
+
+bool GDBServer::IsGTERegisterWritable(u32 index)
+{
+  switch (index)
+  {
+    case 15: // SXYP: pushes the SXY FIFO.
+    case 28: // IRGB: updates IR1, IR2, and IR3.
+    case 29: // ORGB: read-only.
+    case 30: // LZCS: updates LZCR.
+    case 31: // LZCR: read-only.
+      return false;
+
+    default:
+      return true;
+  }
+}
+
+bool GDBServer::WriteRegisterValue(u32 index, u32 value)
+{
+  if (index < 32)
+  {
+    if (index != 0)
+      CPU::g_state.regs.r[index] = value;
+    return true;
+  }
+
+  switch (index)
+  {
+    case 32:
+      CPU::g_state.cop0_regs.sr.bits = (CPU::g_state.cop0_regs.sr.bits & ~CPU::Cop0Registers::SR::WRITE_MASK) |
+                                       (value & CPU::Cop0Registers::SR::WRITE_MASK);
+      CPU::UpdateMemoryPointers();
+      return true;
+
+    case 33:
+      CPU::g_state.regs.lo = value;
+      return true;
+
+    case 34:
+      CPU::g_state.regs.hi = value;
+      return true;
+
+    case 35:
+      // BadVaddr is read-only.
+      return true;
+
+    case 36:
+      CPU::g_state.cop0_regs.cause.bits = (CPU::g_state.cop0_regs.cause.bits & ~CPU::Cop0Registers::CAUSE::WRITE_MASK) |
+                                          (value & CPU::Cop0Registers::CAUSE::WRITE_MASK);
+      CPU::CheckForPendingInterrupt();
+      return true;
+
+    case 37:
+      if ((value & 3u) != 0)
+        return false;
+      if (value != CPU::g_state.pc)
+        CPU::SetPC(value);
+      return true;
+
+    default:
+      break;
+  }
+
+  if (index >= FIRST_GTE_GDB_REGISTER && index < NUM_EXTENDED_GDB_REGISTERS)
+  {
+    const u32 gte_index = index - FIRST_GTE_GDB_REGISTER;
+    if (!IsGTERegisterWritable(gte_index))
+      return false;
+
+    GTE::WriteRegister(gte_index, value);
+    return true;
+  }
+
+  return false;
+}
+
 /// Get general registers.
 bool GDBServer::Cmd$g(ClientSocket* client, std::string_view data)
 {
@@ -371,18 +563,20 @@ bool GDBServer::Cmd$g(ClientSocket* client, std::string_view data)
     return true;
   }
 
-  LargeReplyPacket reply;
+  SmallStackString<(NUM_EXTENDED_GDB_REGISTERS * sizeof(u32) * 2) + 1> reply;
 
   for (const u32* reg : REGISTERS)
-  {
-    // Data is in host order (little endian).
-    reply.append_format("{:02x}{:02x}{:02x}{:02x}", *reg & 0xFFu, (*reg >> 8) & 0xFFu, (*reg >> 16) & 0xFFu,
-                        (*reg >> 24));
-  }
+    AppendRegisterValue(&reply, *reg);
 
   // Pad with dummy data (FP registers stuff).
-  for (int i = 0; i < NUM_GDB_REGISTERS - static_cast<int>(REGISTERS.size()); i++)
+  for (u32 i = static_cast<u32>(REGISTERS.size()); i < NUM_GDB_REGISTERS; i++)
     reply.append("xxxxxxxx");
+
+  if (client->IsUsingTargetDescription())
+  {
+    for (u32 i = 0; i < GTE::NUM_REGS; i++)
+      AppendRegisterValue(&reply, GTE::ReadRegister(i));
+  }
 
   client->SendReplyWithAck(reply);
   return true;
@@ -391,23 +585,36 @@ bool GDBServer::Cmd$g(ClientSocket* client, std::string_view data)
 /// Set general registers.
 bool GDBServer::Cmd$G(ClientSocket* client, std::string_view data)
 {
-  std::array<u8, NUM_GDB_REGISTERS * sizeof(u32)> bytes;
-  if (data.size() != bytes.size() * 2 || StringUtil::DecodeHex(bytes, data) != bytes.size())
+  const u32 num_registers = client->IsUsingTargetDescription() ? NUM_EXTENDED_GDB_REGISTERS : NUM_GDB_REGISTERS;
+  if (data.size() != (num_registers * sizeof(u32) * 2))
   {
-    ERROR_LOG("Invalid payload for 'G' command, expected {} hex digits", bytes.size() * 2);
+    ERROR_LOG("Invalid payload for 'G' command, expected {} hex digits", num_registers * sizeof(u32) * 2);
     client->SendReplyWithAck("E01");
     return true;
   }
 
-  std::array<u32, NUM_GDB_REGISTERS> values;
-  for (size_t i = 0; i < values.size(); i++)
+  std::array<std::optional<u32>, NUM_EXTENDED_GDB_REGISTERS> values;
+  for (u32 i = 0; i < num_registers; i++)
   {
-    const size_t offset = i * sizeof(u32);
-    values[i] = ZeroExtend32(bytes[offset]) | (ZeroExtend32(bytes[offset + 1]) << 8) |
-                (ZeroExtend32(bytes[offset + 2]) << 16) | (ZeroExtend32(bytes[offset + 3]) << 24);
+    if (!DecodeRegisterValue(data.substr(i * sizeof(u32) * 2, sizeof(u32) * 2), &values[i]))
+    {
+      ERROR_LOG("Invalid register {} in 'G' command", i);
+      client->SendReplyWithAck("E01");
+      return true;
+    }
   }
 
-  const u32 new_pc = values[37];
+  for (u32 i = 0; i < REGISTERS.size(); i++)
+  {
+    if (!values[i].has_value())
+    {
+      ERROR_LOG("Required register {} is unavailable in 'G' command", i);
+      client->SendReplyWithAck("E01");
+      return true;
+    }
+  }
+
+  const u32 new_pc = values[37].value();
   if ((new_pc & 3u) != 0)
   {
     ERROR_LOG("Invalid PC 0x{:08X} in 'G' command", new_pc);
@@ -417,21 +624,83 @@ bool GDBServer::Cmd$G(ClientSocket* client, std::string_view data)
 
   CPU::g_state.regs.r[0] = 0;
   for (size_t i = 1; i < 32; i++)
-    CPU::g_state.regs.r[i] = values[i];
+    CPU::g_state.regs.r[i] = values[i].value();
 
   CPU::g_state.cop0_regs.sr.bits = (CPU::g_state.cop0_regs.sr.bits & ~CPU::Cop0Registers::SR::WRITE_MASK) |
-                                   (values[32] & CPU::Cop0Registers::SR::WRITE_MASK);
+                                   (values[32].value() & CPU::Cop0Registers::SR::WRITE_MASK);
   CPU::UpdateMemoryPointers();
 
-  CPU::g_state.regs.lo = values[33];
-  CPU::g_state.regs.hi = values[34];
+  CPU::g_state.regs.lo = values[33].value();
+  CPU::g_state.regs.hi = values[34].value();
 
   CPU::g_state.cop0_regs.cause.bits = (CPU::g_state.cop0_regs.cause.bits & ~CPU::Cop0Registers::CAUSE::WRITE_MASK) |
-                                      (values[36] & CPU::Cop0Registers::CAUSE::WRITE_MASK);
+                                      (values[36].value() & CPU::Cop0Registers::CAUSE::WRITE_MASK);
   CPU::CheckForPendingInterrupt();
 
   if (new_pc != CPU::g_state.pc)
     CPU::SetPC(new_pc);
+
+  if (client->IsUsingTargetDescription())
+  {
+    for (u32 i = 0; i < GTE::NUM_REGS; i++)
+    {
+      const std::optional<u32>& value = values[FIRST_GTE_GDB_REGISTER + i];
+      if (value.has_value() && IsGTERegisterWritable(i) && value.value() != GTE::ReadRegister(i))
+        GTE::WriteRegister(i, value.value());
+    }
+  }
+
+  client->SendReplyWithAck("OK");
+  return true;
+}
+
+/// Get one register.
+bool GDBServer::Cmd$p(ClientSocket* client, std::string_view data)
+{
+  std::string_view end;
+  const std::optional<u32> index = StringUtil::FromChars<u32>(data, 16, &end);
+  const u32 num_registers = client->IsUsingTargetDescription() ? NUM_EXTENDED_GDB_REGISTERS : NUM_GDB_REGISTERS;
+  if (!index.has_value() || !end.empty() || index.value() >= num_registers)
+  {
+    ERROR_LOG("Invalid register in 'p' command: {}", data);
+    client->SendReplyWithAck("E01");
+    return true;
+  }
+
+  const std::optional<u32> value = ReadRegisterValue(index.value());
+  if (!value.has_value())
+  {
+    client->SendReplyWithAck("xxxxxxxx");
+    return true;
+  }
+
+  TinyString reply;
+  AppendRegisterValue(&reply, value.value());
+  client->SendReplyWithAck(reply);
+  return true;
+}
+
+/// Set one register.
+bool GDBServer::Cmd$P(ClientSocket* client, std::string_view data)
+{
+  std::string_view caret;
+  const std::optional<u32> index = StringUtil::FromChars<u32>(data, 16, &caret);
+  const u32 num_registers = client->IsUsingTargetDescription() ? NUM_EXTENDED_GDB_REGISTERS : NUM_GDB_REGISTERS;
+  if (!index.has_value() || caret.empty() || caret[0] != '=' || index.value() >= num_registers)
+  {
+    ERROR_LOG("Invalid register in 'P' command: {}", data);
+    client->SendReplyWithAck("E01");
+    return true;
+  }
+
+  std::optional<u32> value;
+  if (!DecodeRegisterValue(caret.substr(1), &value) || !value.has_value() ||
+      !WriteRegisterValue(index.value(), value.value()))
+  {
+    ERROR_LOG("Invalid register value in 'P' command: {}", data);
+    client->SendReplyWithAck("E01");
+    return true;
+  }
 
   client->SendReplyWithAck("OK");
   return true;
@@ -680,6 +949,9 @@ bool GDBServer::Cmd$qSupported(ClientSocket* client, std::string_view data)
 
 bool GDBServer::Cmd$qXferFeaturesRead(ClientSocket* client, std::string_view data)
 {
+  if (data.starts_with("target.xml:"))
+    client->SetUseTargetDescription();
+
   return SendXferRead(client, data, "target.xml", TARGET_XML);
 }
 
