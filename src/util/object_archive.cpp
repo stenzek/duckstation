@@ -11,7 +11,7 @@
 #include "common/timer.h"
 
 #include <algorithm>
-#include <fmt/core.h>
+#include <fmt/format.h>
 
 LOG_CHANNEL(HTTPCache);
 
