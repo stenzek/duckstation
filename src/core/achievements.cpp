@@ -197,6 +197,26 @@ static void SetAchievementPinnedInDatabase(u32 achievement_id, bool pinned);
 static void BeginLoadRAIntegration();
 static void UnloadRAIntegration(std::unique_lock<std::recursive_mutex>& lock);
 
+// Just to make things even more annoying, RAIntegration callbacks on a worker thread.
+static void RAIntegrationClientLoginWithTokenCallback(int result, const char* error_message, rc_client_t* client,
+                                                      void* userdata);
+static void RAIntegrationClientLoginWithPasswordCallback(int result, const char* error_message, rc_client_t* client,
+                                                         void* userdata);
+static void RAIntegrationClientLoadGameCallback(int result, const char* error_message, rc_client_t* client,
+                                                void* userdata);
+static void RAIntegrationFetchGameListCallback(int result, const char* error_message, rc_client_game_list_t* game_list,
+                                               rc_client_t* client, void* callback_userdata);
+static void RAIntegrationFetchAllProgressCallback(int result, const char* error_message,
+                                                  rc_client_all_user_progress_t* list, rc_client_t* client,
+                                                  void* callback_userdata);
+
+// Macro which directs callbacks to a trampoline which executes on the core thread.
+#define RESOLVE_CLIENT_CALLBACK(name) (IsUsingRAIntegration() ? RAIntegration##name : name)
+
+#else
+
+#define RESOLVE_CLIENT_CALLBACK(name) (name)
+
 #endif
 
 namespace {
@@ -666,8 +686,9 @@ bool Achievements::TryLoggingInWithToken()
   // If we can't decrypt the token, it was an old config and we need to re-login.
   if (const TinyString decrypted_api_token = DecryptLoginToken(api_token, username); !decrypted_api_token.empty())
   {
-    s_state.login_request = rc_client_begin_login_with_token(
-      s_state.client, username.c_str(), decrypted_api_token.c_str(), ClientLoginWithTokenCallback, nullptr);
+    s_state.login_request =
+      rc_client_begin_login_with_token(s_state.client, username.c_str(), decrypted_api_token.c_str(),
+                                       RESOLVE_CLIENT_CALLBACK(ClientLoginWithTokenCallback), nullptr);
     if (!s_state.login_request)
     {
       WARNING_LOG("Creating login request failed.");
@@ -1123,9 +1144,9 @@ void Achievements::SetGameHash(const std::optional<GameHash>& hash)
     s_state.load_game_request = nullptr;
   }
 
-  s_state.load_game_request =
-    rc_client_begin_change_media_from_hash(s_state.client, GameHashToString(s_state.game_hash).c_str(),
-                                           ClientLoadGameCallback, reinterpret_cast<void*>(static_cast<uintptr_t>(1)));
+  s_state.load_game_request = rc_client_begin_change_media_from_hash(
+    s_state.client, GameHashToString(s_state.game_hash).c_str(), RESOLVE_CLIENT_CALLBACK(ClientLoadGameCallback),
+    reinterpret_cast<void*>(static_cast<uintptr_t>(1)));
 
   // Flag the disc change. That way we reload the game on reset instead of treating it as a swap.
   s_state.reload_game_on_reset = true;
@@ -1147,7 +1168,7 @@ void Achievements::BeginLoadGame()
   }
 
   s_state.load_game_request = rc_client_begin_load_game(s_state.client, GameHashToString(s_state.game_hash).c_str(),
-                                                        ClientLoadGameCallback, nullptr);
+                                                        RESOLVE_CLIENT_CALLBACK(ClientLoadGameCallback), nullptr);
 }
 
 void Achievements::ClientLoadGameCallback(int result, const char* error_message, rc_client_t* client, void* userdata)
@@ -1989,8 +2010,8 @@ bool Achievements::LoginAsync(const char* username, const char* password, Error*
   }
 
   LoginCompletionCallback* const callback_copy = new LoginCompletionCallback(std::move(callback));
-  if (!rc_client_begin_login_with_password(s_state.client, username, password, ClientLoginWithPasswordCallback,
-                                           callback_copy))
+  if (!rc_client_begin_login_with_password(s_state.client, username, password,
+                                           RESOLVE_CLIENT_CALLBACK(ClientLoginWithPasswordCallback), callback_copy))
   {
     Error::SetString(error, "Failed to create login request.");
     delete callback_copy;
@@ -2433,8 +2454,8 @@ bool Achievements::BeginFetchGameListRequest(Error* error)
     return false;
   }
 
-  s_state.fetch_game_list_request =
-    rc_client_begin_fetch_game_list(s_state.client, RC_CONSOLE_PLAYSTATION, FetchGameListCallback, error);
+  s_state.fetch_game_list_request = rc_client_begin_fetch_game_list(
+    s_state.client, RC_CONSOLE_PLAYSTATION, RESOLVE_CLIENT_CALLBACK(FetchGameListCallback), error);
   if (!s_state.fetch_game_list_request)
   {
     Error::SetStringView(error, "rc_client_begin_fetch_game_list() failed");
@@ -2514,8 +2535,8 @@ bool Achievements::BeginFetchAllProgressRequest(Error* error)
     return false;
   }
 
-  s_state.fetch_all_progress_request =
-    rc_client_begin_fetch_all_user_progress(s_state.client, RC_CONSOLE_PLAYSTATION, FetchAllProgressCallback, error);
+  s_state.fetch_all_progress_request = rc_client_begin_fetch_all_user_progress(
+    s_state.client, RC_CONSOLE_PLAYSTATION, RESOLVE_CLIENT_CALLBACK(FetchAllProgressCallback), error);
   if (!s_state.fetch_all_progress_request)
   {
     Error::SetStringView(error, "rc_client_begin_fetch_all_user_progress() failed");
@@ -3623,6 +3644,96 @@ void Achievements::UnloadRAIntegration(std::unique_lock<std::recursive_mutex>& l
   });
 
   Host::OnRAIntegrationMenuChanged();
+}
+
+void Achievements::RAIntegrationClientLoginWithTokenCallback(int result, const char* error_message, rc_client_t* client,
+                                                             void* userdata)
+{
+  // Just in case this changes in the future...
+  if (Host::IsOnCoreThread())
+  {
+    ClientLoginWithTokenCallback(result, error_message, client, userdata);
+    return;
+  }
+
+  Host::RunOnCoreThread(
+    [result, error_message = error_message ? std::string(error_message) : std::string(), userdata]() {
+      const auto lock = GetLock();
+      if (s_state.client)
+        ClientLoginWithTokenCallback(result, error_message.c_str(), s_state.client, userdata);
+    });
+}
+
+void Achievements::RAIntegrationClientLoginWithPasswordCallback(int result, const char* error_message,
+                                                                rc_client_t* client, void* userdata)
+{
+  if (Host::IsOnCoreThread())
+  {
+    ClientLoginWithPasswordCallback(result, error_message, client, userdata);
+    return;
+  }
+
+  Host::RunOnCoreThread(
+    [result, error_message = error_message ? std::string(error_message) : std::string(), userdata]() {
+      const auto lock = GetLock();
+      if (s_state.client)
+        ClientLoginWithPasswordCallback(result, error_message.c_str(), s_state.client, userdata);
+      else
+        delete static_cast<LoginCompletionCallback*>(userdata);
+    });
+}
+
+void Achievements::RAIntegrationClientLoadGameCallback(int result, const char* error_message, rc_client_t* client,
+                                                       void* userdata)
+{
+  if (Host::IsOnCoreThread())
+  {
+    ClientLoadGameCallback(result, error_message, client, userdata);
+    return;
+  }
+
+  Host::RunOnCoreThread(
+    [result, error_message = error_message ? std::string(error_message) : std::string(), userdata]() {
+      const auto lock = GetLock();
+      if (s_state.client)
+        ClientLoadGameCallback(result, error_message.c_str(), s_state.client, userdata);
+    });
+}
+
+void Achievements::RAIntegrationFetchGameListCallback(int result, const char* error_message,
+                                                      rc_client_game_list_t* game_list, rc_client_t* client,
+                                                      void* callback_userdata)
+{
+  if (Host::IsOnCoreThread())
+  {
+    FetchGameListCallback(result, error_message, game_list, client, callback_userdata);
+    return;
+  }
+
+  Host::RunOnCoreThread([result, error_message = error_message ? std::string(error_message) : std::string(), game_list,
+                         callback_userdata]() {
+    const auto lock = GetLock();
+    if (s_state.client)
+      FetchGameListCallback(result, error_message.c_str(), game_list, s_state.client, callback_userdata);
+  });
+}
+
+void Achievements::RAIntegrationFetchAllProgressCallback(int result, const char* error_message,
+                                                         rc_client_all_user_progress_t* list, rc_client_t* client,
+                                                         void* callback_userdata)
+{
+  if (Host::IsOnCoreThread())
+  {
+    FetchAllProgressCallback(result, error_message, list, client, callback_userdata);
+    return;
+  }
+
+  Host::RunOnCoreThread(
+    [result, error_message = error_message ? std::string(error_message) : std::string(), list, callback_userdata]() {
+      const auto lock = GetLock();
+      if (s_state.client)
+        FetchAllProgressCallback(result, error_message.c_str(), list, s_state.client, callback_userdata);
+    });
 }
 
 void Achievements::RAIntegrationEventHandler(const rc_client_raintegration_event_t* event, rc_client_t* client)
