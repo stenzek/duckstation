@@ -87,6 +87,7 @@ enum class LanguageFont : u8
   Chinese,
   Japanese,
   Korean,
+  Hebrew,
   MaxCount
 };
 

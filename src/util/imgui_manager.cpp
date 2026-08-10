@@ -122,10 +122,11 @@ static constexpr float OSD_FADE_IN_TIME = 0.1f;
 static constexpr float OSD_FADE_OUT_TIME = 0.4f;
 
 static constexpr std::array<const char*, static_cast<size_t>(LanguageFont::MaxCount)> LANGUAGE_FONT_NAMES = {{
-  nullptr,                            // Default
-  "NotoSansSC-VariableFont_wght.ttf", // Chinese
-  "NotoSansJP-VariableFont_wght.ttf", // Japanese
-  "NotoSansKR-VariableFont_wght.ttf", // Korean
+  nullptr,                                     // Default
+  "NotoSansSC-VariableFont_wght.ttf",          // Chinese
+  "NotoSansJP-VariableFont_wght.ttf",          // Japanese
+  "NotoSansKR-VariableFont_wght.ttf",          // Korean
+  "NotoSansHebrew-VariableFont_wdth,wght.ttf", // Hebrew
 }};
 
 #define ENUMERATE_TEXT_FONT_NAMES(X)                                                                                   \
@@ -258,7 +259,8 @@ static State s_state;
 
 ImGuiManager::LanguageFontOrder ImGuiManager::GetLanguageTextFontOrder()
 {
-  return {LanguageFont::Default, LanguageFont::Japanese, LanguageFont::Chinese, LanguageFont::Korean};
+  return {LanguageFont::Default, LanguageFont::Japanese, LanguageFont::Chinese, LanguageFont::Korean,
+          LanguageFont::Default};
 }
 
 void ImGuiManager::SetLanguageFontOrder(const LanguageFontOrder& order)

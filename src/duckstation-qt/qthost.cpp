@@ -2798,11 +2798,13 @@ void QtHost::UpdateFontOrder(std::string_view language)
   ImGuiManager::LanguageFontOrder font_order;
 #define TF(name) ImGuiManager::LanguageFont::name
   if (language == "ja")
-    font_order = {TF(Default), TF(Japanese), TF(Chinese), TF(Korean)};
+    font_order = {TF(Default), TF(Japanese), TF(Chinese), TF(Korean), TF(Default)};
   else if (language == "ko")
-    font_order = {TF(Default), TF(Korean), TF(Japanese), TF(Chinese)};
+    font_order = {TF(Default), TF(Korean), TF(Japanese), TF(Chinese), TF(Default)};
   else if (language == "zh-CN")
-    font_order = {TF(Default), TF(Chinese), TF(Japanese), TF(Korean)};
+    font_order = {TF(Default), TF(Chinese), TF(Japanese), TF(Korean), TF(Default)};
+  else if (language == "he")
+    font_order = {TF(Default), TF(Hebrew), TF(Japanese), TF(Chinese), TF(Korean)};
   else
     font_order = ImGuiManager::GetLanguageTextFontOrder();
 #undef TF
