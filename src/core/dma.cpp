@@ -88,12 +88,14 @@ struct ChannelState
 
     static constexpr u32 WRITE_MASK = 0b01110001'01110111'00000111'00000011;
 
-    // Only bits 24, 28 and 30 can be set in OTC. All other bits are hardwired to zero.
-    static constexpr u32 OTC_MASK = 0b01010001'00000000'00000000'00000000;
+    // Only bits 24, 28 and 30 can be set in OTC. All other bits are hardwired to zero, except bit 1 which is 1.
+    static constexpr u32 OTC_WRITE_MASK = 0b01010001'00000000'00000000'00000000;
+    static constexpr u32 OTC_FIXED_BITS = 0b00000000'00000000'00000000'00000010;
   } channel_control = {};
 
   bool request = false;
 };
+static_assert(std::is_trivially_copyable_v<ChannelState>, "ChannelState is trivially copyable");
 
 union DPCRRegister
 {
@@ -122,6 +124,7 @@ union DPCRRegister
     return ConvertToBoolUnchecked((bits >> (static_cast<u8>(channel) * 4 + 3)) & u32(1));
   }
 };
+static_assert(std::is_trivially_copyable_v<DPCRRegister>, "DPCRRegister is trivially copyable");
 
 static constexpr u32 DICR_WRITE_MASK = 0b00000000'11111111'10000000'01111111;
 static constexpr u32 DICR_RESET_MASK = 0b01111111'00000000'00000000'00000000;
@@ -172,6 +175,8 @@ union DICRRegister
        (((bits & (1u << 23)) != 0u) != 0u && (bits & (0b1111111u << 24)) != 0u)); // master enable + irq on any channel
   }
 };
+static_assert(std::is_trivially_copyable_v<DICRRegister>, "DICRRegister is trivially copyable");
+
 } // namespace
 
 static void ClearState();
@@ -262,14 +267,8 @@ void DMA::Reset()
 
 void DMA::ClearState()
 {
-  for (u32 i = 0; i < NUM_CHANNELS; i++)
-  {
-    ChannelState& cs = s_state.channels[i];
-    cs.base_address = 0;
-    cs.block_control.bits = 0;
-    cs.channel_control.bits = 0;
-    cs.request = false;
-  }
+  s_state.channels = {};
+  s_state.channels[static_cast<u32>(Channel::OTC)].channel_control.bits = ChannelState::ChannelControl::OTC_FIXED_BITS;
 
   s_state.DPCR.bits = 0x07654321;
   s_state.DICR.bits = 0;
@@ -295,6 +294,15 @@ bool DMA::DoState(StateWrapper& sw)
 
   if (sw.IsReading())
   {
+    // Fix up missing OTC bits which old save states were not forcing to 1.
+    if (sw.GetVersion() < 85) [[unlikely]]
+    {
+      s_state.channels[static_cast<u32>(Channel::OTC)].channel_control.bits =
+        (s_state.channels[static_cast<u32>(Channel::OTC)].channel_control.bits &
+         ChannelState::ChannelControl::OTC_WRITE_MASK) |
+        ChannelState::ChannelControl::OTC_FIXED_BITS;
+    }
+
     if (s_state.halt_ticks_remaining > 0)
       s_state.unhalt_event.SetIntervalAndSchedule(s_state.halt_ticks_remaining);
     else
@@ -379,12 +387,10 @@ void DMA::WriteRegister(u32 offset, u32 value)
         // transfer is happening, and the SPU transfer gets delayed until the GPU transfer unhalts and finishes, and
         // breaks the interrupt.
         const bool ignore_halt = !state.channel_control.enable_busy && (value & (1u << 24));
-
-        state.channel_control.bits = (state.channel_control.bits & ~ChannelState::ChannelControl::WRITE_MASK) |
-                                     (value & ChannelState::ChannelControl::WRITE_MASK);
-        state.channel_control.bits = (static_cast<Channel>(channel_index) == Channel::OTC) ?
-                                       (state.channel_control.bits & ChannelState::ChannelControl::OTC_MASK) :
-                                       state.channel_control.bits;
+        const u32 write_mask = (static_cast<Channel>(channel_index) != Channel::OTC) ?
+                                 ChannelState::ChannelControl::WRITE_MASK :
+                                 ChannelState::ChannelControl::OTC_WRITE_MASK;
+        state.channel_control.bits = (state.channel_control.bits & ~write_mask) | (value & write_mask);
         TRACE_LOG("DMA channel {} channel control <- 0x{:08X}", static_cast<Channel>(channel_index),
                   state.channel_control.bits);
 
