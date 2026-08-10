@@ -1400,6 +1400,17 @@ void Achievements::DisplayHardcoreDeferredMessage()
 
 void Achievements::HandleResetEvent(const rc_client_event_t* event)
 {
+#ifdef RC_CLIENT_SUPPORTS_RAINTEGRATION
+  // If RAIntegration is enabled, we can receive this when the user toggles hardcore mode.
+  // Of course it comes through on the UI thread...
+  if (IsUsingRAIntegration())
+  {
+    INFO_LOG("Resetting system from RC_CLIENT_EVENT_RESET request.");
+    Host::RunOnCoreThread(&System::ResetSystem);
+    return;
+  }
+#endif
+
   WARNING_LOG("Ignoring RC_CLIENT_EVENT_RESET.");
 }
 
