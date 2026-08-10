@@ -572,7 +572,7 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
   };
   const auto append_message_fmt = [&messages]<typename... T>(fmt::format_string<T...> fmt, T&&... args) {
     messages.append(" \u2022 ");
-    messages.append_vformat(fmt, fmt::make_format_args(args...));
+    messages.append_vformat(fmt.get(), fmt::make_format_args(args...));
     messages.append('\n');
   };
 

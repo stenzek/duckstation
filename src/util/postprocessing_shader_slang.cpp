@@ -499,14 +499,14 @@ std::string_view PostProcessing::StripCommentsAndWhitespace(std::string_view lin
 template<typename... T>
 inline void PostProcessing::SlangShaderPreprocessor::Write(fmt::format_string<T...> fmt, T&&... args)
 {
-  fmt::vformat_to(std::back_inserter(m_shader_code[m_current_stage]), fmt, fmt::make_format_args(args...));
+  fmt::vformat_to(std::back_inserter(m_shader_code[m_current_stage]), fmt.get(), fmt::make_format_args(args...));
 }
 
 template<typename... T>
 inline void PostProcessing::SlangShaderPreprocessor::SetError(fmt::format_string<T...> fmt, T&&... args)
 {
   std::string msg = fmt::format("{}:{}: {}", GetCurrentFilename(), m_current_line_number,
-                                fmt::vformat(fmt, fmt::make_format_args(args...)));
+                                fmt::vformat(fmt.get(), fmt::make_format_args(args...)));
   ERROR_LOG(msg);
   Error::SetString(m_error, std::move(msg));
 }

@@ -23,7 +23,7 @@ template<typename... T>
 static void SetError(u32 line_number, Error* error, fmt::format_string<T...> fmt, T&&... args)
 {
   SmallString str;
-  str.vformat(fmt, fmt::make_format_args(args...));
+  str.vformat(fmt.get(), fmt::make_format_args(args...));
 
   ERROR_LOG("Cue parse error at line {}: {}", line_number, str);
   Error::SetStringFmt(error, "Cue parse error at line {}: {}", line_number, str);

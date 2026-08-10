@@ -142,14 +142,14 @@ void WriteFuncNameFmtArgs(MessageCategory cat, const char* function_name, fmt::s
 template<typename... T>
 ALWAYS_INLINE void Write(MessageCategory cat, fmt::format_string<T...> fmt, T&&... args)
 {
-  WriteFmtArgs(cat, fmt, fmt::make_format_args(args...));
+  WriteFmtArgs(cat, fmt.get(), fmt::make_format_args(args...));
 }
 
 template<typename... T>
 ALWAYS_INLINE void WriteFuncName(MessageCategory cat, const char* function_name, fmt::format_string<T...> fmt,
                                  T&&... args)
 {
-  WriteFuncNameFmtArgs(cat, function_name, fmt, fmt::make_format_args(args...));
+  WriteFuncNameFmtArgs(cat, function_name, fmt.get(), fmt::make_format_args(args...));
 }
 
 } // namespace Log

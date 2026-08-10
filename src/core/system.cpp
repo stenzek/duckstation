@@ -4829,7 +4829,7 @@ void System::WarnAboutUnsafeSettings()
   };
   const auto append_format = [&messages]<typename... T>(fmt::format_string<T...> fmt, T&&... args) {
     messages.append(" \u2022 ");
-    messages.append_vformat(fmt, fmt::make_format_args(args...));
+    messages.append_vformat(fmt.get(), fmt::make_format_args(args...));
     messages.append('\n');
   };
   const auto has_trait = [](GameDatabase::Trait trait) {

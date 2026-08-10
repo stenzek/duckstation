@@ -83,13 +83,13 @@ public:
   {
     if (!stop_on_error)
     {
-      Log::WriteFmtArgs(Log::PackCategory(Log::Channel::Cheats, Log::Level::Warning, Log::Color::StrongOrange), fmt,
-                        fmt::make_format_args(args...));
+      Log::WriteFmtArgs(Log::PackCategory(Log::Channel::Cheats, Log::Level::Warning, Log::Color::StrongOrange),
+                        fmt.get(), fmt::make_format_args(args...));
       return true;
     }
 
     if (error)
-      error->SetString(fmt::vformat(fmt, fmt::make_format_args(args...)));
+      error->SetString(fmt::vformat(fmt.get(), fmt::make_format_args(args...)));
 
     return false;
   }

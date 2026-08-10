@@ -24,7 +24,7 @@ public:
   void from(fmt::format_string<T...> fmt, T&&... args)                                                                 \
   {                                                                                                                    \
     TinyString str;                                                                                                    \
-    fmt::vformat_to(std::back_inserter(str), fmt, fmt::make_format_args(args...));                                     \
+    fmt::vformat_to(std::back_inserter(str), fmt.get(), fmt::make_format_args(args...));                               \
     to(str.view());                                                                                                    \
   }
 

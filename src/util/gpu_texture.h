@@ -156,7 +156,7 @@ public:
   template<typename... T>
   void SetDebugName(fmt::format_string<T...> fmt, T&&... args)
   {
-    SetDebugName(TinyString::from_vformat(fmt, fmt::make_format_args(args...)));
+    SetDebugName(TinyString::from_vformat(fmt.get(), fmt::make_format_args(args...)));
   }
 #endif
 
@@ -232,7 +232,7 @@ public:
   template<typename... T>
   void SetDebugName(fmt::format_string<T...> fmt, T&&... args)
   {
-    SetDebugName(TinyString::from_vformat(fmt, fmt::make_format_args(args...)));
+    SetDebugName(TinyString::from_vformat(fmt.get(), fmt::make_format_args(args...)));
   }
 #endif
 

@@ -90,7 +90,7 @@ public:
   template<typename... T>
   void SetDebugName(fmt::format_string<T...> fmt, T&&... args)
   {
-    SetDebugName(TinyString::from_vformat(fmt, fmt::make_format_args(args...)));
+    SetDebugName(TinyString::from_vformat(fmt.get(), fmt::make_format_args(args...)));
   }
 #endif
 
@@ -113,7 +113,7 @@ public:
   template<typename... T>
   void SetDebugName(fmt::format_string<T...> fmt, T&&... args)
   {
-    SetDebugName(TinyString::from_vformat(fmt, fmt::make_format_args(args...)));
+    SetDebugName(TinyString::from_vformat(fmt.get(), fmt::make_format_args(args...)));
   }
 #endif
 
@@ -411,7 +411,7 @@ public:
   template<typename... T>
   void SetDebugName(fmt::format_string<T...> fmt, T&&... args)
   {
-    SetDebugName(TinyString::from_vformat(fmt, fmt::make_format_args(args...)));
+    SetDebugName(TinyString::from_vformat(fmt.get(), fmt::make_format_args(args...)));
   }
 #endif
 };
@@ -778,12 +778,12 @@ public:
   template<typename... T>
   void PushDebugGroup(fmt::format_string<T...> fmt, T&&... args)
   {
-    PushDebugGroup(TinyString::from_vformat(fmt, fmt::make_format_args(args...)));
+    PushDebugGroup(TinyString::from_vformat(fmt.get(), fmt::make_format_args(args...)));
   }
   template<typename... T>
   void InsertDebugMessage(fmt::format_string<T...> fmt, T&&... args)
   {
-    InsertDebugMessage(TinyString::from_vformat(fmt, fmt::make_format_args(args...)));
+    InsertDebugMessage(TinyString::from_vformat(fmt.get(), fmt::make_format_args(args...)));
   }
 #endif
 
@@ -1004,7 +1004,7 @@ struct GLAutoPop
   GLAutoPop(fmt::format_string<T...> fmt, T&&... args)
   {
     if (g_gpu_device->IsDebugDevice()) [[unlikely]]
-      g_gpu_device->PushDebugGroup(SmallString::from_vformat(fmt, fmt::make_format_args(args...)));
+      g_gpu_device->PushDebugGroup(SmallString::from_vformat(fmt.get(), fmt::make_format_args(args...)));
   }
 
   ~GLAutoPop()

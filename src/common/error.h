@@ -87,7 +87,7 @@ public:
   template<typename... T>
   void SetStringFmt(fmt::format_string<T...> fmt, T&&... args)
   {
-    SetStringFmtArgs(fmt, fmt::make_format_args(args...));
+    SetStringFmtArgs(fmt.get(), fmt::make_format_args(args...));
   }
 
   void AddPrefix(std::string_view prefix);
@@ -95,7 +95,7 @@ public:
   template<typename... T>
   void AddPrefixFmt(fmt::format_string<T...> fmt, T&&... args)
   {
-    AddPrefixFmtArgs(fmt, fmt::make_format_args(args...));
+    AddPrefixFmtArgs(fmt.get(), fmt::make_format_args(args...));
   }
 
   void AddSuffix(std::string_view suffix);
@@ -103,7 +103,7 @@ public:
   template<typename... T>
   void AddSuffixFmt(fmt::format_string<T...> fmt, T&&... args)
   {
-    AddSuffixFmtArgs(fmt, fmt::make_format_args(args...));
+    AddSuffixFmtArgs(fmt.get(), fmt::make_format_args(args...));
   }
 
   /// Sets a formatted message.
@@ -111,7 +111,7 @@ public:
   static void SetStringFmt(Error* errptr, fmt::format_string<T...> fmt, T&&... args)
   {
     if (errptr)
-      errptr->SetStringFmtArgs(fmt, fmt::make_format_args(args...));
+      errptr->SetStringFmtArgs(fmt.get(), fmt::make_format_args(args...));
   }
 
   static void AddPrefix(Error* errptr, std::string_view prefix);
@@ -120,7 +120,7 @@ public:
   static void AddPrefixFmt(Error* errptr, fmt::format_string<T...> fmt, T&&... args)
   {
     if (errptr)
-      errptr->AddPrefixFmtArgs(fmt, fmt::make_format_args(args...));
+      errptr->AddPrefixFmtArgs(fmt.get(), fmt::make_format_args(args...));
   }
 
   static void AddSuffix(Error* errptr, std::string_view prefix);
@@ -129,7 +129,7 @@ public:
   static void AddSuffixFmt(Error* errptr, fmt::format_string<T...> fmt, T&&... args)
   {
     if (errptr)
-      errptr->AddSuffixFmtArgs(fmt, fmt::make_format_args(args...));
+      errptr->AddSuffixFmtArgs(fmt.get(), fmt::make_format_args(args...));
   }
 
   Error& operator=(const Error& e);
