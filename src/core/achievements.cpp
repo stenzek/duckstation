@@ -100,19 +100,6 @@ static constexpr u32 MEMORY_SCRATCHPAD_SIZE = CPU::SCRATCHPAD_SIZE;
 static constexpr u32 MEMORY_SCRATCHPAD_OFFSET = MEMORY_RAM_SIZE;
 static constexpr u32 TOTAL_MEMORY_SIZE = MEMORY_RAM_SIZE + MEMORY_SCRATCHPAD_SIZE;
 
-namespace {
-
-struct LoginWithPasswordParameters
-{
-  const char* username;
-  Error* error;
-  rc_client_async_handle_t* request;
-  bool is_temporary_client;
-  bool result;
-};
-
-} // namespace
-
 static void ReportError(std::string_view sv);
 template<typename... T>
 static void ReportFmtError(fmt::format_string<T...> fmt, T&&... args);
@@ -1989,39 +1976,82 @@ bool Achievements::IsLoggedInOrLoggingIn()
   return (IsLoggedIn() || s_state.login_request);
 }
 
-bool Achievements::Login(const char* username, const char* password, Error* error)
+bool Achievements::LoginAsync(const char* username, const char* password, Error* error,
+                              LoginCompletionCallback callback)
 {
   auto lock = GetLock();
 
   // We need to use a temporary client if achievements aren't currently active.
-  const bool is_temporary_client = (s_state.client == nullptr);
-  if (is_temporary_client && !CreateClient(lock, true))
+  if (!s_state.client && !CreateClient(lock, true))
   {
     Error::SetString(error, "Failed to create client.");
     return false;
   }
 
-  LoginWithPasswordParameters params = {username, error, nullptr, is_temporary_client, false};
-  params.request =
-    rc_client_begin_login_with_password(s_state.client, username, password, ClientLoginWithPasswordCallback, &params);
-  if (!params.request)
+  LoginCompletionCallback* const callback_copy = new LoginCompletionCallback(std::move(callback));
+  if (!rc_client_begin_login_with_password(s_state.client, username, password, ClientLoginWithPasswordCallback,
+                                           callback_copy))
   {
     Error::SetString(error, "Failed to create login request.");
+    delete callback_copy;
     return false;
   }
 
-  // Wait until the login request completes.
-  WaitForServerCallsWithYield(lock);
-  Assert(!params.request);
+  // Login attempt started.
+  return true;
+}
 
-  // Did we get enabled and disabled in the meantime?
-  if (!s_state.client)
-    return params.result;
+void Achievements::ClientLoginWithPasswordCallback(int result, const char* error_message, rc_client_t* client,
+                                                   void* userdata)
+{
+  // NOTE: This runs with the achievements lock held.
+  bool callback_result;
+  std::string callback_error_message;
+  if (result == RC_OK)
+  {
+    // Grab the token from the client, and save it to the config.
+    const rc_client_user_t* user = rc_client_get_user_info(client);
+    if (user && user->username && user->token)
+    {
+      // Store configuration.
+      Core::SetBaseStringSettingValue("Cheevos", "Username", user->username);
+      Core::SetBaseStringSettingValue("Cheevos", "Token", EncryptLoginToken(user->token, user->username));
+      Core::SetBaseStringSettingValue("Cheevos", "LoginTimestamp", fmt::format("{}", std::time(nullptr)).c_str());
+      Host::CommitBaseSettingChanges();
+      s_state.has_saved_credentials = true;
+      callback_result = true;
+    }
+    else
+    {
+      ERROR_LOG("rc_client_get_user_info() returned NULL");
+      callback_error_message = "rc_client_get_user_info() returned NULL";
+      callback_result = false;
+    }
+  }
+  else
+  {
+    ERROR_LOG("Login failed: {}: {}", rc_error_str(result), error_message ? error_message : "Unknown");
+    callback_error_message = fmt::format("{}: {}", rc_error_str(result), error_message ? error_message : "Unknown");
+    callback_result = false;
+  }
 
   // Did we get enabled? Leave the client if so
   if (!g_settings.achievements_enabled)
   {
-    DestroyClient(lock);
+    // Annoyingly since the lock is already held, we need to defer this
+    Host::RunOnCoreThread([]() {
+      auto lock = GetLock();
+      if (!g_settings.achievements_enabled)
+      {
+        INFO_LOG("Destroying temporary client");
+        DestroyClient(lock);
+      }
+      else
+      {
+        FinishLogin();
+        FinishInitialize();
+      }
+    });
   }
   else
   {
@@ -2029,45 +2059,9 @@ bool Achievements::Login(const char* username, const char* password, Error* erro
     FinishInitialize();
   }
 
-  // Success? Assume the callback set the error message.
-  return params.result;
-}
-
-void Achievements::ClientLoginWithPasswordCallback(int result, const char* error_message, rc_client_t* client,
-                                                   void* userdata)
-{
-  Assert(userdata);
-
-  LoginWithPasswordParameters* params = static_cast<LoginWithPasswordParameters*>(userdata);
-  params->request = nullptr;
-
-  if (result != RC_OK)
-  {
-    ERROR_LOG("Login failed: {}: {}", rc_error_str(result), error_message ? error_message : "Unknown");
-    Error::SetString(params->error,
-                     fmt::format("{}: {}", rc_error_str(result), error_message ? error_message : "Unknown"));
-    params->result = false;
-    return;
-  }
-
-  // Grab the token from the client, and save it to the config.
-  const rc_client_user_t* user = rc_client_get_user_info(client);
-  if (!user || !user->token)
-  {
-    ERROR_LOG("rc_client_get_user_info() returned NULL");
-    Error::SetString(params->error, "rc_client_get_user_info() returned NULL");
-    params->result = false;
-    return;
-  }
-
-  params->result = true;
-
-  // Store configuration.
-  Core::SetBaseStringSettingValue("Cheevos", "Username", params->username);
-  Core::SetBaseStringSettingValue("Cheevos", "Token", EncryptLoginToken(user->token, params->username));
-  Core::SetBaseStringSettingValue("Cheevos", "LoginTimestamp", fmt::format("{}", std::time(nullptr)).c_str());
-  Host::CommitBaseSettingChanges();
-  s_state.has_saved_credentials = true;
+  LoginCompletionCallback* const callback = static_cast<LoginCompletionCallback*>(userdata);
+  if (*callback)
+    (*callback)(callback_result, std::move(callback_error_message));
 }
 
 void Achievements::ClientLoginWithTokenCallback(int result, const char* error_message, rc_client_t* client,

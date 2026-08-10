@@ -6,10 +6,14 @@
 
 #include "core/achievements.h"
 #include "core/core.h"
+#include "core/host.h"
 
+#include "common/assert.h"
 #include "common/error.h"
 
 #include "moc_achievementlogindialog.cpp"
+
+#include <QtCore/QPointer>
 
 AchievementLoginDialog::AchievementLoginDialog(QWidget* parent, Achievements::LoginRequestReason reason)
   : QDialog(parent), m_reason(reason)
@@ -47,12 +51,20 @@ void AchievementLoginDialog::loginClicked()
   m_ui.status->setText(tr("Logging in..."));
   enableUI(false);
 
-  Host::RunOnCoreThread([this, username, password]() {
-    Error error;
-    const bool result = Achievements::Login(username.toUtf8().constData(), password.toUtf8().constData(), &error);
-    const QString message = QString::fromStdString(error.GetDescription());
-    QMetaObject::invokeMethod(this, &AchievementLoginDialog::processLoginResult, Qt::QueuedConnection, result, message);
-  });
+  // Use QPointer<> to safely check if the dialog still exists when the login finishes, since the callback
+  // runs on the core thread and we need to queue it back to the UI thread.
+  if (Error error; !Achievements::LoginAsync(
+        username.toUtf8().constData(), password.toUtf8().constData(), &error,
+        [dialog = QPointer(this)](bool result, std::string&& error_message) mutable {
+          DebugAssert(Host::IsOnCoreThread());
+          Host::RunOnUIThread([dialog = std::move(dialog), error_message = std::move(error_message), result]() {
+            if (dialog)
+              dialog->processLoginResult(result, QString::fromStdString(error_message));
+          });
+        }))
+  {
+    processLoginResult(false, QString::fromStdString(error.GetDescription()));
+  }
 }
 
 void AchievementLoginDialog::cancelClicked()

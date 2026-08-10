@@ -5844,24 +5844,31 @@ void FullscreenUI::DrawAchievementsLoginWindow()
   {
     OpenBackgroundProgressDialog(LOGIN_PROGRESS_NAME, FSUI_STR("Logging in to RetroAchievements..."), 0, 0, 0);
 
-    Host::RunOnCoreThread([username = std::string(s_settings_locals.achievements_login_username),
-                           password = std::string(s_settings_locals.achievements_login_password)]() {
-      Error error;
-      const bool result = Achievements::Login(username.c_str(), password.c_str(), &error);
-      VideoThread::RunOnThread([result, error = std::move(error)]() {
-        CloseBackgroundProgressDialog(LOGIN_PROGRESS_NAME);
+    static constexpr auto set_error = [](const std::string& description) {
+      s_settings_locals.achievements_login_error = std::make_unique<std::string>(fmt::format(
+        FSUI_FSTR("Login Failed.\nError: {}\nPlease check your username and password, and try again."), description));
+    };
 
-        if (result)
-        {
-          CloseFixedPopupDialog();
-          return;
-        }
+    if (Error error; !Achievements::LoginAsync(
+          s_settings_locals.achievements_login_username, s_settings_locals.achievements_login_password, &error,
+          [](bool result, std::string&& error_message) {
+            // callback runs on core thread
+            DebugAssert(Host::IsOnCoreThread());
+            VideoThread::RunOnThread([result, error_message = std::move(error_message)]() {
+              CloseBackgroundProgressDialog(LOGIN_PROGRESS_NAME);
 
-        s_settings_locals.achievements_login_error = std::make_unique<std::string>(
-          fmt::format(FSUI_FSTR("Login Failed.\nError: {}\nPlease check your username and password, and try again."),
-                      error.GetDescription()));
-      });
-    });
+              if (result)
+              {
+                CloseFixedPopupDialog();
+                return;
+              }
+
+              set_error(error_message);
+            });
+          }))
+    {
+      set_error(error.GetDescription());
+    }
   }
 
   if (HorizontalMenuButton(FSUI_ICONVSTR(ICON_FA_XMARK, "Cancel"), !is_logging_in))
