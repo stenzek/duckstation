@@ -18,6 +18,7 @@
 #include "common/string_util.h"
 
 #include <QtCore/QDateTime>
+#include <QtCore/QPointer>
 
 #include "moc_achievementsettingswidget.cpp"
 
@@ -347,13 +348,11 @@ void AchievementSettingsWidget::onLogoutPressed()
   if (Core::GetBaseStringSettingValue("Cheevos", "Username").empty())
     return;
 
-  Host::RunOnCoreThread([]() {
+  Host::RunOnCoreThread([widget = QPointer<AchievementSettingsWidget>(this)]() mutable {
     Achievements::Logout();
-    Host::RunOnUIThread([]() {
-      SettingsWindow* settings = g_main_window ? g_main_window->getSettingsWindow() : nullptr;
-      AchievementSettingsWidget* achievement_settings = settings ? settings->getAchievementSettingsWidget() : nullptr;
-      if (achievement_settings)
-        achievement_settings->updateLoginState();
+    Host::RunOnUIThread([widget = std::move(widget)]() mutable {
+      if (widget)
+        widget->updateLoginState();
     });
   });
 }

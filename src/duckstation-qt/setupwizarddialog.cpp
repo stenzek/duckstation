@@ -29,6 +29,7 @@
 #include "fmt/format.h"
 
 #include <QtCore/QItemSelectionModel>
+#include <QtCore/QPointer>
 #include <QtWidgets/QButtonGroup>
 
 #include "moc_setupwizarddialog.cpp"
@@ -654,9 +655,13 @@ void SetupWizardDialog::onAchievementsLogoutPressed()
   if (Core::GetBaseStringSettingValue("Cheevos", "Username").empty())
     return;
 
-  // Really should do this on the core thread, but it's luckily not doing anything at this point.
-  Achievements::Logout();
-  updateAchievementsLoginState();
+  Host::RunOnCoreThread([widget = QPointer(this)]() mutable {
+    Achievements::Logout();
+    Host::RunOnUIThread([widget = std::move(widget)]() mutable {
+      if (widget)
+        widget->updateAchievementsLoginState();
+    });
+  });
 }
 
 void SetupWizardDialog::onAchievementsLoginCompleted()
