@@ -1358,6 +1358,14 @@ Ungelesene Nachrichten: {}</translation>
         <translation>Ermöglicht die Verwendung des linken Analogsticks zur Steuerung des Steuerkreuzes im Digitalmodus sowie der Tasten.</translation>
     </message>
     <message>
+        <source>Disable Simultaneous Opposing Cardinal Directions</source>
+        <translation>Gleichzeitige Eingabe entgegengesetzter Richtungen deaktivieren</translation>
+    </message>
+    <message>
+        <source>Prevents concurrent left/right or up/down inputs from being presented to the game.</source>
+        <translation>Verhindert, dass gleichzeitige Eingaben nach links/rechts oder oben/unten an das Spiel übermittelt werden.</translation>
+    </message>
+    <message>
         <source>Use Right Analog for Shoulder Buttons</source>
         <translation>Rechten Analogstick für Schultertasten verwenden</translation>
     </message>
@@ -1539,6 +1547,14 @@ Ungelesene Nachrichten: {}</translation>
     <message>
         <source>Invert Left/Right + Up/Down</source>
         <translation>Links/Rechts + Oben/Unten invertieren</translation>
+    </message>
+    <message>
+        <source>Disable Simultaneous Opposing Cardinal Directions</source>
+        <translation>Gleichzeitige Eingabe entgegengesetzter Richtungen deaktivieren</translation>
+    </message>
+    <message>
+        <source>Prevents concurrent left/right or up/down inputs from being presented to the game.</source>
+        <translation>Verhindert, dass gleichzeitige Eingaben nach links/rechts oder oben/unten an das Spiel übermittelt werden.</translation>
     </message>
     <message>
         <source>Analog Deadzone</source>
@@ -2217,12 +2233,6 @@ Sie können DuckStation manuell aktualisieren, indem Sie die neueste Version ern
         </translation>
     </message>
     <message>
-        <source>{0} uses a sample rate of {1}hz and has {2} channels.
-WAV files must be stereo and use a sample rate of 44100hz.</source>
-        <translation>{0} verwendet eine Abtastrate von {1} Hz und hat {2} Kanäle.
-WAV-Dateien müssen stereo sein und eine Abtastrate von 44100 Hz verwenden.</translation>
-    </message>
-    <message>
         <source>Preload Image To RAM</source>
         <translation>Image in RAM vorladen</translation>
     </message>
@@ -2233,6 +2243,12 @@ WAV-Dateien müssen stereo sein und eine Abtastrate von 44100 Hz verwenden.</tra
     <message>
         <source>Loading Track {0} ({1})...</source>
         <translation>Track {0} ({1}) wird geladen...</translation>
+    </message>
+    <message>
+        <source>{0} is {1}-bit with {2} channels at {3}hz.
+WAV files must be 16-bit stereo and use a sample rate of 44100hz.</source>
+        <translation>{0} ist {1}-Bit mit {2} Kanälen bei {3} Hz.
+WAV-Dateien müssen 16-Bit-Stereo sein und eine Abtastrate von 44100 Hz verwenden.</translation>
     </message>
 </context>
 <context>
@@ -3983,10 +3999,6 @@ Alle Zuordnungen und Einstellungen gehen verloren. Sie können diese Aktion nich
         <translation>Fehler</translation>
     </message>
     <message>
-        <source>Failed to boot system: %1</source>
-        <translation>System konnte nicht gestartet werden: %1</translation>
-    </message>
-    <message>
         <source>Cannot change GPU dump state without restarting the system.</source>
         <translation>GPU-Dump-Status kann ohne Neustart des Systems nicht geändert werden.</translation>
     </message>
@@ -4799,6 +4811,14 @@ Diese Datei kann mehrere Gigabyte groß sein, achte also auf die Abnutzung der S
     <message>
         <source>Circle</source>
         <translation>Kreis</translation>
+    </message>
+    <message>
+        <source>Disable Simultaneous Opposing Cardinal Directions</source>
+        <translation>Gleichzeitige Eingabe entgegengesetzter Richtungen deaktivieren</translation>
+    </message>
+    <message>
+        <source>Prevents concurrent left/right or up/down inputs from being presented to the game.</source>
+        <translation>Verhindert, dass gleichzeitige Eingaben nach links/rechts oder oben/unten an das Spiel übermittelt werden.</translation>
     </message>
     <message>
         <source>D-Pad Up</source>
@@ -7742,6 +7762,10 @@ Bitte überprüfen Sie Ihren Benutzernamen und Ihr Passwort und versuchen Sie es
     <message>
         <source>Yes, {} now and risk memory card corruption.</source>
         <translation>Ja, jetzt {} und Risiko einer Beschädigung der Speicherkarte eingehen.</translation>
+    </message>
+    <message>
+        <source>{0} (Missing)</source>
+        <translation>{0} (Fehlt)</translation>
     </message>
     <message>
         <source>{} of {}</source>
@@ -14984,6 +15008,14 @@ Fehler: {1}</translation>
         <translation>Lenkung (Drehung) rechts</translation>
     </message>
     <message>
+        <source>Disable Simultaneous Opposing Cardinal Directions</source>
+        <translation>Gleichzeitige Eingabe entgegengesetzter Richtungen deaktivieren</translation>
+    </message>
+    <message>
+        <source>Prevents concurrent left/right or up/down inputs from being presented to the game.</source>
+        <translation>Verhindert, dass gleichzeitige Eingaben nach links/rechts oder oben/unten an das Spiel übermittelt werden.</translation>
+    </message>
+    <message>
         <source>Steering Axis Deadzone</source>
         <translation>Tote Zone der Lenkachsen</translation>
     </message>
@@ -15169,6 +15201,14 @@ Fehler: {1}</translation>
     <message>
         <source>Analog Toggle</source>
         <translation>Analog-Umschalter</translation>
+    </message>
+    <message>
+        <source>Disable Simultaneous Opposing Cardinal Directions</source>
+        <translation>Gleichzeitige Eingabe entgegengesetzter Richtungen deaktivieren</translation>
+    </message>
+    <message>
+        <source>Prevents concurrent left/right or up/down inputs from being presented to the game.</source>
+        <translation>Verhindert, dass gleichzeitige Eingaben nach links/rechts oder oben/unten an das Spiel übermittelt werden.</translation>
     </message>
     <message>
         <source>Steering Axis Deadzone</source>
@@ -18082,12 +18122,16 @@ Token erstellt am %2</translation>
 <context>
     <name>System</name>
     <message>
+        <source>Failed to boot system:</source>
+        <translation>Fehler beim Starten des Systems:</translation>
+    </message>
+    <message>
         <source>Error</source>
         <translation>Fehler</translation>
     </message>
     <message>
-        <source>Failed to boot system: {}</source>
-        <translation>Systemstart fehlgeschlagen: {}</translation>
+        <source>Do you want to install a BIOS file now?</source>
+        <translation>Möchten Sie jetzt eine BIOS-Datei installieren?</translation>
     </message>
     <message>
         <source>Using disc-specific memory card &apos;{}&apos; instead of per-game card.</source>
@@ -18545,26 +18589,6 @@ Der Name der SBI-Datei muss mit dem Namen des Disc-Images übereinstimmen.</tran
         <translation>8 MB RAM ist aktiviert; dies ist möglicherweise mit einigen Spielen inkompatibel.</translation>
     </message>
     <message>
-        <source>No BIOS image found for {} region.
-
-DuckStation requires a PS1 or PS2 BIOS in order to run.
-
-For legal reasons, you *must* obtain a BIOS from an actual PS1 unit that you own (borrowing doesn&apos;t count).
-
-Once dumped, this BIOS image should be placed in the bios folder within the data directory (Tools Menu -&gt; Open Data Directory).</source>
-        <translation>Kein BIOS-Abbild für die Region {} gefunden.
-
-DuckStation benötigt zum Ausführen ein PS1- oder PS2-BIOS.
-
-Aus rechtlichen Gründen *müssen* Sie ein BIOS von einer tatsächlichen PS1-Konsole in Ihrem Besitz beziehen (Ausleihen zählt nicht).
-
-Nachdem es ausgelesen wurde, sollte dieses BIOS-Abbild im bios-Ordner innerhalb des Datenverzeichnisses abgelegt werden (Werkzeuge-Menü -&gt; Datenverzeichnis öffnen).</translation>
-    </message>
-    <message>
-        <source>No BIOS image found for {} region.</source>
-        <translation>Kein BIOS-Abbild für die Region {} gefunden.</translation>
-    </message>
-    <message>
         <source>Startup was cancelled.</source>
         <translation>Startvorgang wurde abgebrochen.</translation>
     </message>
@@ -18587,6 +18611,18 @@ This may be due to your GPU not supporting the chosen renderer ({1}), or because
 {0}
 
 Dies kann daran liegen, dass Ihre GPU den gewählten Renderer ({1}) nicht unterstützt, oder daran, dass Ihre Grafiktreiber aktualisiert werden müssen.</translation>
+    </message>
+    <message>
+        <source>No BIOS image found for {} region.
+
+DuckStation requires a PS1 or PS2 BIOS in order to run.
+
+For legal reasons, you must obtain a BIOS from an actual PS1/PS2 unit that you own (borrowing doesn&apos;t count).</source>
+        <translation>Kein BIOS-Abbild für die Region {} gefunden.
+
+DuckStation benötigt ein PS1- oder PS2-BIOS, um ausgeführt zu werden.
+
+Aus rechtlichen Gründen müssen Sie ein BIOS von einem echten PS1/PS2-Gerät, das Ihnen gehört, beziehen (Ausleihen zählt nicht).</translation>
     </message>
 </context>
 <context>

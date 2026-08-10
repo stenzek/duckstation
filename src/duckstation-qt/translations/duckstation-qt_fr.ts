@@ -1349,6 +1349,14 @@ Messages non lus : {}</translation>
         <translation>Permet d&apos;utiliser le joystick analogique gauche pour contrôler la croix directionnelle en mode numérique, en plus des boutons.</translation>
     </message>
     <message>
+        <source>Disable Simultaneous Opposing Cardinal Directions</source>
+        <translation>Désactiver les directions opposées simultanées</translation>
+    </message>
+    <message>
+        <source>Prevents concurrent left/right or up/down inputs from being presented to the game.</source>
+        <translation>Empêche que des entrées gauche/droite ou haut/bas simultanées soient transmises au jeu.</translation>
+    </message>
+    <message>
         <source>Use Right Analog for Shoulder Buttons</source>
         <translation>Utiliser le joystick analogique droit pour les boutons d&apos;épaule</translation>
     </message>
@@ -1498,6 +1506,14 @@ Messages non lus : {}</translation>
     <message>
         <source>Invert Left/Right + Up/Down</source>
         <translation>Inverser gauche/droite + haut/bas</translation>
+    </message>
+    <message>
+        <source>Disable Simultaneous Opposing Cardinal Directions</source>
+        <translation>Désactiver les directions opposées simultanées</translation>
+    </message>
+    <message>
+        <source>Prevents concurrent left/right or up/down inputs from being presented to the game.</source>
+        <translation>Empêche que des entrées gauche/droite ou haut/bas simultanées soient transmises au jeu.</translation>
     </message>
     <message>
         <source>Analog Deadzone</source>
@@ -2160,11 +2176,6 @@ Vous pouvez mettre à jour DuckStation manuellement en téléchargeant à nouvea
 <context>
     <name>CDImage</name>
     <message>
-        <source>{0} uses a sample rate of {1}hz and has {2} channels.
-WAV files must be stereo and use a sample rate of 44100hz.</source>
-        <translation>{0} utilise un taux d&apos;échantillonnage de {1}hz et possède {2} canaux.&lt;br/&gt;Les fichiers WAV doivent être stéréo et utiliser un taux d&apos;échantillonnage de 44100hz.</translation>
-    </message>
-    <message>
         <source>Audio</source>
         <comment>TrackMode</comment>
         <translation>Audio</translation>
@@ -2223,6 +2234,12 @@ WAV files must be stereo and use a sample rate of 44100hz.</source>
     <message>
         <source>Loading Track {0} ({1})...</source>
         <translation>Chargement de la piste {0} ({1})...</translation>
+    </message>
+    <message>
+        <source>{0} is {1}-bit with {2} channels at {3}hz.
+WAV files must be 16-bit stereo and use a sample rate of 44100hz.</source>
+        <translation>{0} est en {1} bits avec {2} canaux à {3} Hz.
+Les fichiers WAV doivent être en stéréo 16 bits et utiliser une fréquence d&apos;échantillonnage de 44100 Hz.</translation>
     </message>
 </context>
 <context>
@@ -3980,10 +3997,6 @@ Toutes les affectations et la configuration seront perdues. Vous ne pouvez pas a
         <translation>Erreur</translation>
     </message>
     <message>
-        <source>Failed to boot system: %1</source>
-        <translation>Échec du démarrage du système : %1</translation>
-    </message>
-    <message>
         <source>Cannot change GPU dump state without restarting the system.</source>
         <translation>Impossible de modifier l&apos;état de vidage GPU sans redémarrer le système.</translation>
     </message>
@@ -4799,6 +4812,14 @@ Ce fichier peut faire plusieurs gigaoctets, alors attention à l&apos;usure SSD.
     <message>
         <source>Circle</source>
         <translation>Rond</translation>
+    </message>
+    <message>
+        <source>Disable Simultaneous Opposing Cardinal Directions</source>
+        <translation>Désactiver les directions opposées simultanées</translation>
+    </message>
+    <message>
+        <source>Prevents concurrent left/right or up/down inputs from being presented to the game.</source>
+        <translation>Empêche que des entrées gauche/droite ou haut/bas simultanées soient transmises au jeu.</translation>
     </message>
     <message>
         <source>D-Pad Up</source>
@@ -8879,6 +8900,10 @@ Voulez-vous {0} quand même ?</translation>
     <message>
         <source>shut down</source>
         <translation>éteindre</translation>
+    </message>
+    <message>
+        <source>{0} (Missing)</source>
+        <translation>{0} (Manquant)</translation>
     </message>
     <message>
         <source>{0} achievement unlocks have not been confirmed by the server. Continuing to {1} will result in loss of these unlocks. Once network connectivity has been re-established, these unlocks will be confirmed automatically.
@@ -14975,6 +15000,14 @@ Erreur : {1}</translation>
         <translation>Direction (Rotation) Droite</translation>
     </message>
     <message>
+        <source>Disable Simultaneous Opposing Cardinal Directions</source>
+        <translation>Désactiver les directions opposées simultanées</translation>
+    </message>
+    <message>
+        <source>Prevents concurrent left/right or up/down inputs from being presented to the game.</source>
+        <translation>Empêche que des entrées gauche/droite ou haut/bas simultanées soient transmises au jeu.</translation>
+    </message>
+    <message>
         <source>Steering Axis Deadzone</source>
         <translation>Zone morte de l&apos;axe de direction</translation>
     </message>
@@ -15160,6 +15193,14 @@ Erreur : {1}</translation>
     <message>
         <source>Analog Toggle</source>
         <translation>Commutateur analogique</translation>
+    </message>
+    <message>
+        <source>Disable Simultaneous Opposing Cardinal Directions</source>
+        <translation>Désactiver les directions opposées simultanées</translation>
+    </message>
+    <message>
+        <source>Prevents concurrent left/right or up/down inputs from being presented to the game.</source>
+        <translation>Empêche que des entrées gauche/droite ou haut/bas simultanées soient transmises au jeu.</translation>
     </message>
     <message>
         <source>Steering Axis Deadzone</source>
@@ -18073,12 +18114,16 @@ Jeton généré à %2</translation>
 <context>
     <name>System</name>
     <message>
+        <source>Failed to boot system:</source>
+        <translation>Échec du démarrage du système :</translation>
+    </message>
+    <message>
         <source>Error</source>
         <translation>Erreur</translation>
     </message>
     <message>
-        <source>Failed to boot system: {}</source>
-        <translation>Échec du démarrage du système : {}</translation>
+        <source>Do you want to install a BIOS file now?</source>
+        <translation>Voulez-vous installer un fichier BIOS maintenant ?</translation>
     </message>
     <message>
         <source>Using disc-specific memory card &apos;{}&apos; instead of per-game card.</source>
@@ -18536,26 +18581,6 @@ Utilisation de la carte partagée à la place.</translation>
         <translation>8 Mo de RAM sont activés, cela peut être incompatible avec certains jeux.</translation>
     </message>
     <message>
-        <source>No BIOS image found for {} region.
-
-DuckStation requires a PS1 or PS2 BIOS in order to run.
-
-For legal reasons, you *must* obtain a BIOS from an actual PS1 unit that you own (borrowing doesn&apos;t count).
-
-Once dumped, this BIOS image should be placed in the bios folder within the data directory (Tools Menu -&gt; Open Data Directory).</source>
-        <translation>Aucune image de BIOS trouvée pour la région {}.
-
-DuckStation nécessite un BIOS PS1 ou PS2 pour fonctionner.
-
-Pour des raisons légales, vous *devez* obtenir un BIOS à partir d&apos;une unité PS1 réelle que vous possédez (l&apos;emprunt ne compte pas).
-
-Une fois extrait, ce fichier BIOS doit être placé dans le dossier bios situé dans le répertoire de données (Menu Outils -&gt; Ouvrir le répertoire de données).</translation>
-    </message>
-    <message>
-        <source>No BIOS image found for {} region.</source>
-        <translation>Aucune image de BIOS trouvée pour la région {}.</translation>
-    </message>
-    <message>
         <source>Startup was cancelled.</source>
         <translation>Le démarrage a été annulé.</translation>
     </message>
@@ -18578,6 +18603,18 @@ This may be due to your GPU not supporting the chosen renderer ({1}), or because
 {0}
 
 Cela peut être dû au fait que votre GPU ne prend pas en charge le moteur de rendu choisi ({1}), ou que vos pilotes graphiques doivent être mis à jour.</translation>
+    </message>
+    <message>
+        <source>No BIOS image found for {} region.
+
+DuckStation requires a PS1 or PS2 BIOS in order to run.
+
+For legal reasons, you must obtain a BIOS from an actual PS1/PS2 unit that you own (borrowing doesn&apos;t count).</source>
+        <translation>Aucune image BIOS trouvée pour la région {}.
+
+DuckStation nécessite un BIOS PS1 ou PS2 pour fonctionner.
+
+Pour des raisons légales, vous devez obtenir un BIOS à partir d&apos;une véritable console PS1/PS2 que vous possédez (un emprunt ne compte pas).</translation>
     </message>
 </context>
 <context>

@@ -1339,6 +1339,14 @@ Unread messages: {}</source>
         <translation>デジタルモードで、ボタンに加えて左アナログスティックでも方向キーを操作できるようにします。</translation>
     </message>
     <message>
+        <source>Disable Simultaneous Opposing Cardinal Directions</source>
+        <translation>反対方向の同時入力を無効化</translation>
+    </message>
+    <message>
+        <source>Prevents concurrent left/right or up/down inputs from being presented to the game.</source>
+        <translation>左右または上下の同時入力がゲームに入力されないようにします。</translation>
+    </message>
+    <message>
         <source>Use Right Analog for Shoulder Buttons</source>
         <translation>右アナログスティックをショルダーボタンに使用</translation>
     </message>
@@ -1536,6 +1544,14 @@ Unread messages: {}</source>
     <message>
         <source>Invert Left/Right + Up/Down</source>
         <translation>左右と上下を反転</translation>
+    </message>
+    <message>
+        <source>Disable Simultaneous Opposing Cardinal Directions</source>
+        <translation>反対方向の同時入力を無効化</translation>
+    </message>
+    <message>
+        <source>Prevents concurrent left/right or up/down inputs from being presented to the game.</source>
+        <translation>左右または上下の同時入力がゲームに入力されないようにします。</translation>
     </message>
     <message>
         <source>Analog Deadzone</source>
@@ -2197,12 +2213,6 @@ You can manually update DuckStation by re-downloading the latest release. Do you
         </translation>
     </message>
     <message>
-        <source>{0} uses a sample rate of {1}hz and has {2} channels.
-WAV files must be stereo and use a sample rate of 44100hz.</source>
-        <translation>{0} のサンプルレートは {1} Hz、チャンネル数は {2} です。
-WAV ファイルはステレオかつサンプルレート 44100 Hz である必要があります。</translation>
-    </message>
-    <message>
         <source>Preload Image To RAM</source>
         <translation>RAM にイメージを先読みする</translation>
     </message>
@@ -2213,6 +2223,12 @@ WAV ファイルはステレオかつサンプルレート 44100 Hz である必
     <message>
         <source>Loading Track {0} ({1})...</source>
         <translation>トラック {0}（{1}）を読み込んでいます...</translation>
+    </message>
+    <message>
+        <source>{0} is {1}-bit with {2} channels at {3}hz.
+WAV files must be 16-bit stereo and use a sample rate of 44100hz.</source>
+        <translation>{0} は {1} ビット、{2} チャンネル、{3} Hz です。
+WAV ファイルは 16 ビットのステレオで、サンプルレート 44100 Hz を使用する必要があります。</translation>
     </message>
 </context>
 <context>
@@ -3959,10 +3975,6 @@ All bindings and configuration will be lost. You cannot undo this action.</sourc
         <translation>エラー</translation>
     </message>
     <message>
-        <source>Failed to boot system: %1</source>
-        <translation>システムの起動に失敗しました: %1</translation>
-    </message>
-    <message>
         <source>Cannot change GPU dump state without restarting the system.</source>
         <translation>システムを再起動せずに GPU ダンプの状態を変更することはできません。</translation>
     </message>
@@ -4764,6 +4776,14 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
 </context>
 <context>
     <name>DigitalController</name>
+    <message>
+        <source>Disable Simultaneous Opposing Cardinal Directions</source>
+        <translation>反対方向の同時入力を無効化</translation>
+    </message>
+    <message>
+        <source>Prevents concurrent left/right or up/down inputs from being presented to the game.</source>
+        <translation>左右または上下の同時入力がゲームに入力されないようにします。</translation>
+    </message>
     <message>
         <source>D-Pad Up</source>
         <translation>方向キー上</translation>
@@ -8873,6 +8893,10 @@ Do you want to {0} anyway?</source>
     <message>
         <source>shut down</source>
         <translation>シャットダウン</translation>
+    </message>
+    <message>
+        <source>{0} (Missing)</source>
+        <translation>{0} (見つかりません)</translation>
     </message>
     <message>
         <source>{} Frames</source>
@@ -14952,6 +14976,14 @@ Error: {1}</source>
         <translation>ステアリング (ねじり) 右</translation>
     </message>
     <message>
+        <source>Disable Simultaneous Opposing Cardinal Directions</source>
+        <translation>反対方向の同時入力を無効化</translation>
+    </message>
+    <message>
+        <source>Prevents concurrent left/right or up/down inputs from being presented to the game.</source>
+        <translation>左右または上下の同時入力がゲームに入力されないようにします。</translation>
+    </message>
+    <message>
         <source>Steering Axis Deadzone</source>
         <translation>ねじり軸遊び量</translation>
     </message>
@@ -15137,6 +15169,14 @@ Error: {1}</source>
     <message>
         <source>Analog Toggle</source>
         <translation>アナログ切り替え</translation>
+    </message>
+    <message>
+        <source>Disable Simultaneous Opposing Cardinal Directions</source>
+        <translation>反対方向の同時入力を無効化</translation>
+    </message>
+    <message>
+        <source>Prevents concurrent left/right or up/down inputs from being presented to the game.</source>
+        <translation>左右または上下の同時入力がゲームに入力されないようにします。</translation>
     </message>
     <message>
         <source>Steering Axis Deadzone</source>
@@ -18049,12 +18089,16 @@ Token generated at %2</source>
 <context>
     <name>System</name>
     <message>
+        <source>Failed to boot system:</source>
+        <translation>システムの起動に失敗しました:</translation>
+    </message>
+    <message>
         <source>Error</source>
         <translation>エラー</translation>
     </message>
     <message>
-        <source>Failed to boot system: {}</source>
-        <translation>システムの起動に失敗しました: {}</translation>
+        <source>Do you want to install a BIOS file now?</source>
+        <translation>今すぐ BIOS ファイルをインストールしますか？</translation>
     </message>
     <message>
         <source>Compatibility settings are not enabled. Some games may not function correctly.</source>
@@ -18511,26 +18555,6 @@ Using shared card instead.</source>
         <translation>再開用ステートを保存できませんでした: {}</translation>
     </message>
     <message>
-        <source>No BIOS image found for {} region.
-
-DuckStation requires a PS1 or PS2 BIOS in order to run.
-
-For legal reasons, you *must* obtain a BIOS from an actual PS1 unit that you own (borrowing doesn&apos;t count).
-
-Once dumped, this BIOS image should be placed in the bios folder within the data directory (Tools Menu -&gt; Open Data Directory).</source>
-        <translation>{}リージョンのBIOSイメージが見つかりません。
-
-DuckStationを実行するにはPS1またはPS2のBIOSが必要です。
-
-法的な理由により、BIOSはご自身が所有する実機のPS1から入手する必要があります（借りた本体は認められません）。
-
-ダンプしたBIOSイメージは、データディレクトリ内のbiosフォルダーに配置してください（ツールメニュー -&gt; データディレクトリを開く）。</translation>
-    </message>
-    <message>
-        <source>No BIOS image found for {} region.</source>
-        <translation>{}リージョンのBIOSイメージが見つかりません。</translation>
-    </message>
-    <message>
         <source>Failed to create render device:
 
 {0}
@@ -18553,6 +18577,18 @@ This may be due to your GPU not supporting the chosen renderer ({1}), or because
     <message>
         <source>Rewind and runahead cannot be used at the same time.</source>
         <translation>巻き戻しと先行実行は同時に使用できません。</translation>
+    </message>
+    <message>
+        <source>No BIOS image found for {} region.
+
+DuckStation requires a PS1 or PS2 BIOS in order to run.
+
+For legal reasons, you must obtain a BIOS from an actual PS1/PS2 unit that you own (borrowing doesn&apos;t count).</source>
+        <translation>{} リージョン用の BIOS イメージが見つかりません。
+
+DuckStationを実行するには、PS1またはPS2のBIOSが必要です。
+
+法的な理由により、所有している実機のPS1/PS2からBIOSを取得する必要があります（借りたものは使用できません）。</translation>
     </message>
 </context>
 <context>

@@ -1378,6 +1378,14 @@ Nieprzeczytane wiadomości: {}</translation>
         <translation>Pozwala używać lewej gałki analogowej do sterowania krzyżakiem w trybie cyfrowym, a także przyciskami.</translation>
     </message>
     <message>
+        <source>Disable Simultaneous Opposing Cardinal Directions</source>
+        <translation>Wyłącz jednoczesne przeciwne kierunki</translation>
+    </message>
+    <message>
+        <source>Prevents concurrent left/right or up/down inputs from being presented to the game.</source>
+        <translation>Zapobiega przekazywaniu do gry jednoczesnych wejść w lewo/prawo lub górę/dół.</translation>
+    </message>
+    <message>
         <source>Use Right Analog for Shoulder Buttons</source>
         <translation>Używaj prawej gałki analogowej do przycisków naramiennych</translation>
     </message>
@@ -1575,6 +1583,14 @@ Nieprzeczytane wiadomości: {}</translation>
     <message>
         <source>Invert Left/Right + Up/Down</source>
         <translation>Odwróć lewo/prawo + górę/dół</translation>
+    </message>
+    <message>
+        <source>Disable Simultaneous Opposing Cardinal Directions</source>
+        <translation>Wyłącz jednoczesne przeciwne kierunki</translation>
+    </message>
+    <message>
+        <source>Prevents concurrent left/right or up/down inputs from being presented to the game.</source>
+        <translation>Zapobiega przekazywaniu do gry jednoczesnych wejść w lewo/prawo lub górę/dół.</translation>
     </message>
     <message>
         <source>Analog Deadzone</source>
@@ -2238,12 +2254,6 @@ Możesz ręcznie zaktualizować DuckStation, ponownie pobierając najnowsze wyda
         </translation>
     </message>
     <message>
-        <source>{0} uses a sample rate of {1}hz and has {2} channels.
-WAV files must be stereo and use a sample rate of 44100hz.</source>
-        <translation>{0} używa częstotliwości próbkowania {1} Hz i ma {2} kanały.
-Pliki WAV muszą być stereofoniczne i używać częstotliwości próbkowania 44100 Hz.</translation>
-    </message>
-    <message>
         <source>Preload Image To RAM</source>
         <translation>Wstępnie załaduj obraz do pamięci RAM</translation>
     </message>
@@ -2254,6 +2264,12 @@ Pliki WAV muszą być stereofoniczne i używać częstotliwości próbkowania 44
     <message>
         <source>Loading Track {0} ({1})...</source>
         <translation>Wczytywanie ścieżki {0} ({1})...</translation>
+    </message>
+    <message>
+        <source>{0} is {1}-bit with {2} channels at {3}hz.
+WAV files must be 16-bit stereo and use a sample rate of 44100hz.</source>
+        <translation>{0} ma {1} bitów, {2} kanałów i częstotliwość {3} Hz.
+Pliki WAV muszą być 16-bitowe, stereofoniczne i używać częstotliwości próbkowania 44100 Hz.</translation>
     </message>
 </context>
 <context>
@@ -4009,10 +4025,6 @@ Wszystkie powiązania i konfiguracja zostaną utracone. Tej operacji nie można 
         <translation>Błąd</translation>
     </message>
     <message>
-        <source>Failed to boot system: %1</source>
-        <translation>Nie udało się uruchomić systemu: %1</translation>
-    </message>
-    <message>
         <source>Cannot change GPU dump state without restarting the system.</source>
         <translation>Nie można zmienić stanu zrzutu GPU bez ponownego uruchomienia systemu.</translation>
     </message>
@@ -4814,6 +4826,14 @@ Ten plik może mieć kilka gigabajtów, więc pamiętaj o zużyciu dysku SSD.</t
 </context>
 <context>
     <name>DigitalController</name>
+    <message>
+        <source>Disable Simultaneous Opposing Cardinal Directions</source>
+        <translation>Wyłącz jednoczesne przeciwne kierunki</translation>
+    </message>
+    <message>
+        <source>Prevents concurrent left/right or up/down inputs from being presented to the game.</source>
+        <translation>Zapobiega przekazywaniu do gry jednoczesnych wejść w lewo/prawo lub górę/dół.</translation>
+    </message>
     <message>
         <source>D-Pad Up</source>
         <translation>Krzyżak w górę</translation>
@@ -8157,6 +8177,10 @@ Sprawdź nazwę użytkownika i hasło, a następnie spróbuj ponownie.</translat
     <message>
         <source>restart</source>
         <translation>uruchom ponownie</translation>
+    </message>
+    <message>
+        <source>{0} (Missing)</source>
+        <translation>{0} (brak)</translation>
     </message>
     <message>
         <source>{0} achievement unlocks have not been confirmed by the server. Continuing to {1} will result in loss of these unlocks. Once network connectivity has been re-established, these unlocks will be confirmed automatically.
@@ -15026,6 +15050,14 @@ Błąd: {1}</translation>
         <translation>Kierownica (skręt) w prawo</translation>
     </message>
     <message>
+        <source>Disable Simultaneous Opposing Cardinal Directions</source>
+        <translation>Wyłącz jednoczesne przeciwne kierunki</translation>
+    </message>
+    <message>
+        <source>Prevents concurrent left/right or up/down inputs from being presented to the game.</source>
+        <translation>Zapobiega przekazywaniu do gry jednoczesnych wejść w lewo/prawo lub górę/dół.</translation>
+    </message>
+    <message>
         <source>Steering Axis Deadzone</source>
         <translation>Strefa martwa osi kierownicy</translation>
     </message>
@@ -15211,6 +15243,14 @@ Błąd: {1}</translation>
     <message>
         <source>Analog Toggle</source>
         <translation>Przełącznik trybu analogowego</translation>
+    </message>
+    <message>
+        <source>Disable Simultaneous Opposing Cardinal Directions</source>
+        <translation>Wyłącz jednoczesne przeciwne kierunki</translation>
+    </message>
+    <message>
+        <source>Prevents concurrent left/right or up/down inputs from being presented to the game.</source>
+        <translation>Zapobiega przekazywaniu do gry jednoczesnych wejść w lewo/prawo lub górę/dół.</translation>
     </message>
     <message>
         <source>Steering Axis Deadzone</source>
@@ -18125,12 +18165,16 @@ Token wygenerowano: %2</translation>
 <context>
     <name>System</name>
     <message>
+        <source>Failed to boot system:</source>
+        <translation>Nie udało się uruchomić systemu:</translation>
+    </message>
+    <message>
         <source>Error</source>
         <translation>Błąd</translation>
     </message>
     <message>
-        <source>Failed to boot system: {}</source>
-        <translation>Nie udało się uruchomić systemu: {}</translation>
+        <source>Do you want to install a BIOS file now?</source>
+        <translation>Czy chcesz teraz zainstalować plik BIOS-u?</translation>
     </message>
     <message>
         <source>Compatibility settings are not enabled. Some games may not function correctly.</source>
@@ -18589,26 +18633,6 @@ Zostanie użyta karta współdzielona.</translation>
         <translation>Nie udało się zapisać stanu wznowienia: {}</translation>
     </message>
     <message>
-        <source>No BIOS image found for {} region.
-
-DuckStation requires a PS1 or PS2 BIOS in order to run.
-
-For legal reasons, you *must* obtain a BIOS from an actual PS1 unit that you own (borrowing doesn&apos;t count).
-
-Once dumped, this BIOS image should be placed in the bios folder within the data directory (Tools Menu -&gt; Open Data Directory).</source>
-        <translation>Nie znaleziono obrazu BIOS dla regionu {}.
-
-DuckStation wymaga BIOS-u PS1 lub PS2 do działania.
-
-Ze względów prawnych musisz uzyskać BIOS z faktycznej konsoli PS1, którą posiadasz (pożyczanie nie wchodzi w grę).
-
-Po zrzuceniu, obraz BIOS powinien zostać umieszczony w folderze bios w katalogu danych (Menu Narzędzi -&gt; Otwórz katalog emulatora).</translation>
-    </message>
-    <message>
-        <source>No BIOS image found for {} region.</source>
-        <translation>Nie znaleziono obrazu BIOS dla regionu: {} .</translation>
-    </message>
-    <message>
         <source>Failed to create render device:
 
 {0}
@@ -18631,6 +18655,18 @@ Może to być spowodowane tym, że twoja karta graficzna nie wspiera wybranego s
     <message>
         <source>Rewind and runahead cannot be used at the same time.</source>
         <translation>Przewijanie do tyłu i przyśpieszenie nie mogą być używane jednocześnie.</translation>
+    </message>
+    <message>
+        <source>No BIOS image found for {} region.
+
+DuckStation requires a PS1 or PS2 BIOS in order to run.
+
+For legal reasons, you must obtain a BIOS from an actual PS1/PS2 unit that you own (borrowing doesn&apos;t count).</source>
+        <translation>Nie znaleziono obrazu BIOS-u dla regionu {}.
+
+Do działania DuckStation wymaga BIOS-u PS1 lub PS2.
+
+Ze względów prawnych musisz uzyskać BIOS z posiadanej przez siebie konsoli PS1/PS2 (pożyczenie się nie liczy).</translation>
     </message>
 </context>
 <context>

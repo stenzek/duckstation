@@ -1391,6 +1391,14 @@ Unread messages: {}</source>
         <translation>小电机</translation>
     </message>
     <message>
+        <source>Disable Simultaneous Opposing Cardinal Directions</source>
+        <translation>禁止同时输入相反方向</translation>
+    </message>
+    <message>
+        <source>Prevents concurrent left/right or up/down inputs from being presented to the game.</source>
+        <translation>防止将同时输入的左/右或上/下方向传递给游戏。</translation>
+    </message>
+    <message>
         <source>Analog Sensitivity</source>
         <translation>模拟灵敏度</translation>
     </message>
@@ -1552,6 +1560,14 @@ Unread messages: {}</source>
     <message>
         <source>Mode LED</source>
         <translation>模式指示灯</translation>
+    </message>
+    <message>
+        <source>Disable Simultaneous Opposing Cardinal Directions</source>
+        <translation>禁止同时输入相反方向</translation>
+    </message>
+    <message>
+        <source>Prevents concurrent left/right or up/down inputs from being presented to the game.</source>
+        <translation>防止将同时输入的左/右或上/下方向传递给游戏。</translation>
     </message>
     <message>
         <source>Analog Sensitivity</source>
@@ -2150,12 +2166,6 @@ You can manually update DuckStation by re-downloading the latest release. Do you
 <context>
     <name>CDImage</name>
     <message>
-        <source>{0} uses a sample rate of {1}hz and has {2} channels.
-WAV files must be stereo and use a sample rate of 44100hz.</source>
-        <translation>{0}使用{1}hz的采样率，并具有{2}个通道。
-WAV文件必须是立体声，并使用44100hz的采样率。</translation>
-    </message>
-    <message>
         <source>Audio</source>
         <comment>TrackMode</comment>
         <translation>声音</translation>
@@ -2213,6 +2223,12 @@ WAV文件必须是立体声，并使用44100hz的采样率。</translation>
     <message>
         <source>Loading Track {0} ({1})...</source>
         <translation>正在加载轨道 {0}（{1}）……</translation>
+    </message>
+    <message>
+        <source>{0} is {1}-bit with {2} channels at {3}hz.
+WAV files must be 16-bit stereo and use a sample rate of 44100hz.</source>
+        <translation>{0} 为 {1} 位，具有 {2} 个声道，采样率为 {3}Hz。
+WAV 文件必须为 16 位立体声，且采样率为 44100Hz。</translation>
     </message>
 </context>
 <context>
@@ -3962,10 +3978,6 @@ All bindings and configuration will be lost. You cannot undo this action.</sourc
         <translation>错误</translation>
     </message>
     <message>
-        <source>Failed to boot system: %1</source>
-        <translation>无法启动系统: %1</translation>
-    </message>
-    <message>
         <source>Cannot change GPU dump state without restarting the system.</source>
         <translation>不重启系统便无法更改GPU转储状态。</translation>
     </message>
@@ -4790,6 +4802,14 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <source>D-Pad Up</source>
         <translation>十字方向键 上</translation>
+    </message>
+    <message>
+        <source>Disable Simultaneous Opposing Cardinal Directions</source>
+        <translation>禁止同时输入相反方向</translation>
+    </message>
+    <message>
+        <source>Prevents concurrent left/right or up/down inputs from being presented to the game.</source>
+        <translation>防止将同时输入的左/右或上/下方向传递给游戏。</translation>
     </message>
     <message>
         <source>D-Pad Right</source>
@@ -8580,6 +8600,10 @@ Please check your username and password, and try again.</source>
     <message>
         <source>restart</source>
         <translation>重启</translation>
+    </message>
+    <message>
+        <source>{0} (Missing)</source>
+        <translation>{0} (缺失)</translation>
     </message>
     <message>
         <source>{0} achievement unlocks have not been confirmed by the server. Continuing to {1} will result in loss of these unlocks. Once network connectivity has been re-established, these unlocks will be confirmed automatically.
@@ -14945,6 +14969,14 @@ Error: {1}</source>
         <translation>转向 (扭转) 右</translation>
     </message>
     <message>
+        <source>Disable Simultaneous Opposing Cardinal Directions</source>
+        <translation>禁止同时输入相反方向</translation>
+    </message>
+    <message>
+        <source>Prevents concurrent left/right or up/down inputs from being presented to the game.</source>
+        <translation>防止将同时输入的左/右或上/下方向传递给游戏。</translation>
+    </message>
+    <message>
         <source>Sets deadzone for steering axis.</source>
         <translation>设置转向轴的死区。</translation>
     </message>
@@ -15130,6 +15162,14 @@ Error: {1}</source>
     <message>
         <source>Analog Toggle</source>
         <translation>模拟切换</translation>
+    </message>
+    <message>
+        <source>Disable Simultaneous Opposing Cardinal Directions</source>
+        <translation>禁止同时输入相反方向</translation>
+    </message>
+    <message>
+        <source>Prevents concurrent left/right or up/down inputs from being presented to the game.</source>
+        <translation>防止将同时输入的左/右或上/下方向传递给游戏。</translation>
     </message>
     <message>
         <source>Steering Axis Deadzone</source>
@@ -18042,12 +18082,16 @@ Are you sure you want to continue?</source>
 <context>
     <name>System</name>
     <message>
+        <source>Failed to boot system:</source>
+        <translation>系统启动失败：</translation>
+    </message>
+    <message>
         <source>Error</source>
         <translation>错误</translation>
     </message>
     <message>
-        <source>Failed to boot system: {}</source>
-        <translation>无法启动系统: {}</translation>
+        <source>Do you want to install a BIOS file now?</source>
+        <translation>您要现在安装 BIOS 文件吗？</translation>
     </message>
     <message>
         <source>Compatibility settings are not enabled. Some games may not function correctly.</source>
@@ -18504,26 +18548,6 @@ Using shared card instead.</source>
         <translation>停止{0}: {1}。</translation>
     </message>
     <message>
-        <source>No BIOS image found for {} region.
-
-DuckStation requires a PS1 or PS2 BIOS in order to run.
-
-For legal reasons, you *must* obtain a BIOS from an actual PS1 unit that you own (borrowing doesn&apos;t count).
-
-Once dumped, this BIOS image should be placed in the bios folder within the data directory (Tools Menu -&gt; Open Data Directory).</source>
-        <translation>没有找到适用{}区域的BIOS文件。
-
-DuckStation需要PS1或PS2 BIOS才能够运行。
-
-出于法律原因，您*必须*从您拥有的实体PS1设备获取BIOS (借用不算)。
-
-一旦转储后，该BIOS文件应当放置在数据目录内的bios文件夹中 (工具菜单-&gt;打开数据目录)。</translation>
-    </message>
-    <message>
-        <source>No BIOS image found for {} region.</source>
-        <translation>没有找到适用{}区域的BIOS文件。</translation>
-    </message>
-    <message>
         <source>Failed to create render device:
 
 {0}
@@ -18546,6 +18570,18 @@ This may be due to your GPU not supporting the chosen renderer ({1}), or because
     <message>
         <source>Rewind and runahead cannot be used at the same time.</source>
         <translation>倒带和超前运行不能同时使用。</translation>
+    </message>
+    <message>
+        <source>No BIOS image found for {} region.
+
+DuckStation requires a PS1 or PS2 BIOS in order to run.
+
+For legal reasons, you must obtain a BIOS from an actual PS1/PS2 unit that you own (borrowing doesn&apos;t count).</source>
+        <translation>未找到 {} 区域的 BIOS 镜像。
+
+DuckStation 需要 PS1 或 PS2 BIOS 才能运行。
+
+出于法律原因，您必须从自己拥有的实际 PS1/PS2 主机中获取 BIOS（借用的主机不算）。</translation>
     </message>
 </context>
 <context>

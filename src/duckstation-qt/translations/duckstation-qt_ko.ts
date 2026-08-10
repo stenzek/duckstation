@@ -1291,6 +1291,14 @@ Error: {}</source>
         <translation>게임을 시작하거나 다시 시작할 때 컨트롤러를 아날로그 모드로 강제합니다.</translation>
     </message>
     <message>
+        <source>Disable Simultaneous Opposing Cardinal Directions</source>
+        <translation>동시 반대 방향 입력 비활성화</translation>
+    </message>
+    <message>
+        <source>Prevents concurrent left/right or up/down inputs from being presented to the game.</source>
+        <translation>왼쪽/오른쪽 또는 위쪽/아래쪽 입력이 동시에 게임에 전달되는 것을 방지합니다.</translation>
+    </message>
+    <message>
         <source>Allows you to use the right analog stick to control the shoulder buttons (L1/R1), as well as the buttons.</source>
         <translation>오른쪽 아날로그 스틱으로 버튼뿐 아니라 숄더 버튼(L1/R1)도 조작할 수 있습니다.</translation>
     </message>
@@ -1496,6 +1504,14 @@ Error: {}</source>
     <message>
         <source>Invert Left/Right + Up/Down</source>
         <translation>상하좌우 반전</translation>
+    </message>
+    <message>
+        <source>Disable Simultaneous Opposing Cardinal Directions</source>
+        <translation>동시 반대 방향 입력 비활성화</translation>
+    </message>
+    <message>
+        <source>Prevents concurrent left/right or up/down inputs from being presented to the game.</source>
+        <translation>왼쪽/오른쪽 또는 위쪽/아래쪽 입력이 동시에 게임에 전달되는 것을 방지합니다.</translation>
     </message>
     <message>
         <source>Analog Deadzone</source>
@@ -2163,12 +2179,6 @@ You can manually update DuckStation by re-downloading the latest release. Do you
 <context>
     <name>CDImage</name>
     <message>
-        <source>{0} uses a sample rate of {1}hz and has {2} channels.
-WAV files must be stereo and use a sample rate of 44100hz.</source>
-        <translation>{0}은 {1}Hz의 샘플링 속도를 사용하고 {2}개의 채널을 갖습니다.
-WAV 파일은 스테레오 형식이어야 하며 44100Hz의 샘플링 속도를 사용해야 합니다.</translation>
-    </message>
-    <message>
         <source>Audio</source>
         <comment>TrackMode</comment>
         <translation>음향</translation>
@@ -2226,6 +2236,12 @@ WAV 파일은 스테레오 형식이어야 하며 44100Hz의 샘플링 속도를
     <message>
         <source>Loading Track {0} ({1})...</source>
         <translation>트랙 {0}({1})을(를) 불러오는 중...</translation>
+    </message>
+    <message>
+        <source>{0} is {1}-bit with {2} channels at {3}hz.
+WAV files must be 16-bit stereo and use a sample rate of 44100hz.</source>
+        <translation>{0}은(는) {1}비트, {2}채널, {3}Hz입니다.
+WAV 파일은 16비트 스테레오이며 샘플 레이트는 44100Hz여야 합니다.</translation>
     </message>
 </context>
 <context>
@@ -3972,10 +3988,6 @@ All bindings and configuration will be lost. You cannot undo this action.</sourc
         <translation>오류</translation>
     </message>
     <message>
-        <source>Failed to boot system: %1</source>
-        <translation>시스템 부팅 실패 : %1</translation>
-    </message>
-    <message>
         <source>Cannot change GPU dump state without restarting the system.</source>
         <translation>시스템을 다시 시작하지 않으면 GPU 덤프 상태를 변경할 수 없습니다.</translation>
     </message>
@@ -4805,6 +4817,14 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <source>Circle</source>
         <translation>○</translation>
+    </message>
+    <message>
+        <source>Disable Simultaneous Opposing Cardinal Directions</source>
+        <translation>동시 반대 방향 입력 비활성화</translation>
+    </message>
+    <message>
+        <source>Prevents concurrent left/right or up/down inputs from being presented to the game.</source>
+        <translation>왼쪽/오른쪽 또는 위쪽/아래쪽 입력이 동시에 게임에 전달되는 것을 방지합니다.</translation>
     </message>
     <message>
         <source>D-Pad Up</source>
@@ -8888,6 +8908,10 @@ Do you want to {0} anyway?</source>
     <message>
         <source>shut down</source>
         <translation>종료</translation>
+    </message>
+    <message>
+        <source>{0} (Missing)</source>
+        <translation>{0} (없음)</translation>
     </message>
     <message>
         <source>{0} achievement unlocks have not been confirmed by the server. Continuing to {1} will result in loss of these unlocks. Once network connectivity has been re-established, these unlocks will be confirmed automatically.
@@ -15005,6 +15029,14 @@ Error: {1}</source>
         <translation>스티어링 축(비틀기) 우측</translation>
     </message>
     <message>
+        <source>Disable Simultaneous Opposing Cardinal Directions</source>
+        <translation>동시 반대 방향 입력 비활성화</translation>
+    </message>
+    <message>
+        <source>Prevents concurrent left/right or up/down inputs from being presented to the game.</source>
+        <translation>왼쪽/오른쪽 또는 위쪽/아래쪽 입력이 동시에 게임에 전달되는 것을 방지합니다.</translation>
+    </message>
+    <message>
         <source>Steering Axis Deadzone</source>
         <translation>스티어링 축 데드 존</translation>
     </message>
@@ -15190,6 +15222,14 @@ Error: {1}</source>
     <message>
         <source>Analog Toggle</source>
         <translation>아날로그 전환</translation>
+    </message>
+    <message>
+        <source>Disable Simultaneous Opposing Cardinal Directions</source>
+        <translation>동시 반대 방향 입력 비활성화</translation>
+    </message>
+    <message>
+        <source>Prevents concurrent left/right or up/down inputs from being presented to the game.</source>
+        <translation>왼쪽/오른쪽 또는 위쪽/아래쪽 입력이 동시에 게임에 전달되는 것을 방지합니다.</translation>
     </message>
     <message>
         <source>Steering Axis Deadzone</source>
@@ -18126,12 +18166,16 @@ Token generated at %2</source>
 <context>
     <name>System</name>
     <message>
+        <source>Failed to boot system:</source>
+        <translation>시스템 부팅 실패:</translation>
+    </message>
+    <message>
         <source>Error</source>
         <translation>오류</translation>
     </message>
     <message>
-        <source>Failed to boot system: {}</source>
-        <translation>시스템 부팅 실패 : {}</translation>
+        <source>Do you want to install a BIOS file now?</source>
+        <translation>지금 BIOS 파일을 설치하시겠습니까?</translation>
     </message>
     <message>
         <source>Compatibility settings are not enabled. Some games may not function correctly.</source>
@@ -18591,26 +18635,6 @@ Using shared card instead.</source>
         <translation>게임별 카드 대신 디스크별 메모리 카드 &apos;{}&apos; 사용.</translation>
     </message>
     <message>
-        <source>No BIOS image found for {} region.
-
-DuckStation requires a PS1 or PS2 BIOS in order to run.
-
-For legal reasons, you *must* obtain a BIOS from an actual PS1 unit that you own (borrowing doesn&apos;t count).
-
-Once dumped, this BIOS image should be placed in the bios folder within the data directory (Tools Menu -&gt; Open Data Directory).</source>
-        <translation>{} 지역의 바이오스 이미지를 찾을 수 없습니다.
-
-DuckStation을 실행하려면 PS1 또는 PS2 바이오스가 필요합니다.
-
-법적 이유로 인해 귀하는 소유하고 있는 실제 PS1 장치에서 바이오스를 *반드시* 얻어야 합니다(대여는 해당하지 않음).
-
-덤프한 후, 이 바이오스 이미지는 데이터 디렉토리(도구 메뉴 -&gt; 데이터 디렉터리 열기) 내의 bios 폴더에 저장해야 합니다.</translation>
-    </message>
-    <message>
-        <source>No BIOS image found for {} region.</source>
-        <translation>{} 지역의 바이오스 이미지를 찾을 수 없습니다.</translation>
-    </message>
-    <message>
         <source>Failed to create render device:
 
 {0}
@@ -18629,6 +18653,18 @@ This may be due to your GPU not supporting the chosen renderer ({1}), or because
     <message>
         <source>Rewind and runahead cannot be used at the same time.</source>
         <translation>되감기와 선행 실행은 동시에 사용할 수 없습니다.</translation>
+    </message>
+    <message>
+        <source>No BIOS image found for {} region.
+
+DuckStation requires a PS1 or PS2 BIOS in order to run.
+
+For legal reasons, you must obtain a BIOS from an actual PS1/PS2 unit that you own (borrowing doesn&apos;t count).</source>
+        <translation>{} 지역의 BIOS 이미지를 찾을 수 없습니다.
+
+DuckStation을 실행하려면 PS1 또는 PS2 BIOS가 필요합니다.
+
+법적인 이유로, 소유한 실제 PS1/PS2 본체에서 BIOS를 얻어야 합니다(본체를 빌리는 것은 해당하지 않습니다).</translation>
     </message>
 </context>
 <context>

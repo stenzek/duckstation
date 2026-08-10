@@ -520,13 +520,6 @@ Fel: {}</translation>
         </translation>
     </message>
     <message>
-        <source>Score: {} ({} softcore)
-Unread messages: {}</source>
-        <extracomment>Summary for login notification.</extracomment>
-        <translation>Poäng: {} ({} softcore)
-Olästa meddelanden: {}</translation>
-    </message>
-    <message>
         <source>Confirm Hardcore Mode Disable</source>
         <translation>Bekräfta inaktivering av Hardcore-läget</translation>
     </message>
@@ -553,6 +546,10 @@ Olästa meddelanden: {}</translation>
     <message>
         <source>Recently Unlocked</source>
         <translation>Senast upplåsta</translation>
+    </message>
+    <message>
+        <source>Unlocked in Casual</source>
+        <translation>Upplåst i avslappnat läge</translation>
     </message>
     <message>
         <source>Change Selection</source>
@@ -747,11 +744,6 @@ Olästa meddelanden: {}</translation>
         <translation>Uppdatering av alla framsteg misslyckades</translation>
     </message>
     <message>
-        <source>Score: {} ({} softcore)</source>
-        <extracomment>Score summary, shown in Big Picture mode.</extracomment>
-        <translation>Poäng: {} ({} softcore)</translation>
-    </message>
-    <message>
         <source>Unsupported Achievements</source>
         <translation>Prestationer som inte stöds</translation>
     </message>
@@ -795,14 +787,6 @@ Olästa meddelanden: {}</translation>
         <source>Last Progress Update</source>
         <comment>Pause Menu</comment>
         <translation>Senaste framstegsuppdatering</translation>
-    </message>
-    <message>
-        <source>Failed to read executable from disc.</source>
-        <translation>Misslyckades med att läsa körbar fil från skiva.</translation>
-    </message>
-    <message>
-        <source>Achievements have been disabled.</source>
-        <translation>Prestationer har inaktiverats.</translation>
     </message>
     <message>
         <source>Spectator mode enabled.</source>
@@ -849,6 +833,18 @@ Vi kommer att fortsätta försöka skicka in begäran.</translation>
     <message>
         <source>Restrictions are no longer active.</source>
         <translation>Begränsningar är inte längre aktiva.</translation>
+    </message>
+    <message>
+        <source>Score: {} ({} casual)
+Unread messages: {}</source>
+        <extracomment>Summary for login notification.</extracomment>
+        <translation>Poäng: {} ({} avslappnat)
+Olästa meddelanden: {}</translation>
+    </message>
+    <message>
+        <source>Score: {} ({} casual)</source>
+        <extracomment>Score summary, shown in Big Picture mode.</extracomment>
+        <translation>Poäng: {} ({} avslappnat)</translation>
     </message>
     <message>
         <source>Refreshing game database...</source>
@@ -950,10 +946,6 @@ Vi kommer att fortsätta försöka skicka in begäran.</translation>
     <message>
         <source>Not Confirmed</source>
         <translation>Inte bekräftad</translation>
-    </message>
-    <message>
-        <source>Unlocked in Softcore</source>
-        <translation>Upplåst i softcore-läge</translation>
     </message>
     <message>
         <source>Pin Achievement</source>
@@ -1334,6 +1326,14 @@ Vi kommer att fortsätta försöka skicka in begäran.</translation>
         <translation>Invertera vänster/höger + upp/ner</translation>
     </message>
     <message>
+        <source>Disable Simultaneous Opposing Cardinal Directions</source>
+        <translation>Inaktivera samtidiga motsatta riktningar</translation>
+    </message>
+    <message>
+        <source>Prevents concurrent left/right or up/down inputs from being presented to the game.</source>
+        <translation>Förhindrar att samtidiga inmatningar åt vänster/höger eller upp/ner presenteras för spelet.</translation>
+    </message>
+    <message>
         <source>Allows you to use the right analog stick to control the shoulder buttons (L1/R1), as well as the buttons.</source>
         <translation>Låter dig använda höger analogspak för att styra axelknapparna (L1/R1) samt knapparna.</translation>
     </message>
@@ -1559,6 +1559,14 @@ Vi kommer att fortsätta försöka skicka in begäran.</translation>
     <message>
         <source>Invert Left/Right + Up/Down</source>
         <translation>Invertera vänster/höger + Upp/Ner</translation>
+    </message>
+    <message>
+        <source>Disable Simultaneous Opposing Cardinal Directions</source>
+        <translation>Inaktivera samtidiga motsatta riktningar</translation>
+    </message>
+    <message>
+        <source>Prevents concurrent left/right or up/down inputs from being presented to the game.</source>
+        <translation>Förhindrar att samtidiga inmatningar åt vänster/höger eller upp/ner presenteras för spelet.</translation>
     </message>
     <message>
         <source>Analog Deadzone</source>
@@ -2006,10 +2014,6 @@ Du kan uppdatera DuckStation manuellt genom att hämta ner den senaste utgåvan 
         <translation>BIOS-katalog</translation>
     </message>
     <message>
-        <source>Refresh BIOS List</source>
-        <translation>Uppdatera BIOS-listan</translation>
-    </message>
-    <message>
         <source>Browse...</source>
         <translation>Bläddra...</translation>
     </message>
@@ -2032,6 +2036,14 @@ Du kan uppdatera DuckStation manuellt genom att hämta ner den senaste utgåvan 
     <message>
         <source>DuckStation will search for BIOS images in this directory.</source>
         <translation>DuckStation kommer att söka efter BIOS-avbilder i denna katalog.</translation>
+    </message>
+    <message>
+        <source>Install BIOS</source>
+        <translation>Installera BIOS</translation>
+    </message>
+    <message>
+        <source>Refresh List</source>
+        <translation>Uppdatera lista</translation>
     </message>
     <message>
         <source>Open...</source>
@@ -2078,6 +2090,14 @@ Du kan uppdatera DuckStation manuellt genom att hämta ner den senaste utgåvan 
         <translation>Enhetstyp</translation>
     </message>
     <message>
+        <source>Refreshes the list of BIOS images that can be selected.</source>
+        <translation>Uppdaterar listan över BIOS-avbilder som kan väljas.</translation>
+    </message>
+    <message>
+        <source>Installs a new BIOS image into the emulator&apos;s BIOS directory.</source>
+        <translation>Installerar en ny BIOS-avbild i emulatorns BIOS-katalog.</translation>
+    </message>
+    <message>
         <source>None</source>
         <translation>Ingen</translation>
     </message>
@@ -2114,6 +2134,30 @@ Du kan uppdatera DuckStation manuellt genom att hämta ner den senaste utgåvan 
         <translation>Välj BIOS-katalog</translation>
     </message>
     <message>
+        <source>Select BIOS Image</source>
+        <translation>Välj BIOS-avbild</translation>
+    </message>
+    <message>
+        <source>BIOS Install Error</source>
+        <translation>Fel vid BIOS-installation</translation>
+    </message>
+    <message>
+        <source>BIOS Already Installed</source>
+        <translation>BIOS redan installerad</translation>
+    </message>
+    <message>
+        <source>The BIOS file &apos;%1&apos; is already installed. Do you want to overwrite it?</source>
+        <translation>BIOS-filen &apos;%1&apos; är redan installerad. Vill du skriva över den?</translation>
+    </message>
+    <message>
+        <source>BIOS Installed</source>
+        <translation>BIOS installerad</translation>
+    </message>
+    <message>
+        <source>BIOS &apos;%1&apos; installed as &apos;%2&apos;.</source>
+        <translation>BIOS &apos;%1&apos; installerad som &apos;%2&apos;.</translation>
+    </message>
+    <message>
         <source>Use Global Setting</source>
         <translation>Använd global inställning</translation>
     </message>
@@ -2140,12 +2184,6 @@ Du kan uppdatera DuckStation manuellt genom att hämta ner den senaste utgåvan 
 </context>
 <context>
     <name>CDImage</name>
-    <message>
-        <source>{0} uses a sample rate of {1}hz and has {2} channels.
-WAV files must be stereo and use a sample rate of 44100hz.</source>
-        <translation>{0} använder en samplingsfrekvens på {1}hz och har {2} kanaler.
-WAV-filer måste vara stereo och använda en samplingsfrekvens på 44100hz.</translation>
-    </message>
     <message>
         <source>Audio</source>
         <comment>TrackMode</comment>
@@ -2193,6 +2231,24 @@ WAV-filer måste vara stereo och använda en samplingsfrekvens på 44100hz.</tra
             <numerusform>%n spår som omfattar {0} MB ({1} MB på disken)</numerusform>
             <numerusform>%n spår som omfattar {0} MB ({1} MB på disken)</numerusform>
         </translation>
+    </message>
+    <message>
+        <source>{0} is {1}-bit with {2} channels at {3}hz.
+WAV files must be 16-bit stereo and use a sample rate of 44100hz.</source>
+        <translation>{0} är {1}-bitars med {2} kanaler vid {3} Hz.
+WAV-filer måste vara 16-bitars stereo och använda en samplingsfrekvens på 44100 Hz.</translation>
+    </message>
+    <message>
+        <source>Preload Image To RAM</source>
+        <translation>Läs in avbild först till RAM</translation>
+    </message>
+    <message>
+        <source>Allocating {} MB memory for precaching...</source>
+        <translation>Allokerar {} MB minne för förinläsning...</translation>
+    </message>
+    <message>
+        <source>Loading Track {0} ({1})...</source>
+        <translation>Läser in spår {0} ({1})...</translation>
     </message>
 </context>
 <context>
@@ -2264,14 +2320,6 @@ Din dump kan vara skadad eller så är den fysiska skivan repad.</translation>
     <message>
         <source>Container:</source>
         <translation>Container:</translation>
-    </message>
-    <message>
-        <source>Capture Video</source>
-        <translation>Fånga video</translation>
-    </message>
-    <message>
-        <source>Capture Audio</source>
-        <translation>Fånga ljud</translation>
     </message>
     <message>
         <source>Codec:</source>
@@ -2371,20 +2419,20 @@ Din dump kan vara skadad eller så är den fysiska skivan repad.</translation>
         <translation>Container</translation>
     </message>
     <message>
-        <source>Determines the file format used to contain the captured audio/video.</source>
-        <translation>Bestämmer filformatet som används för att lagra fångad ljud/video.</translation>
+        <source>Determines the file format used to contain the captured video.</source>
+        <translation>Bestämmer filformatet för den inspelade videon.</translation>
+    </message>
+    <message>
+        <source>Determines the file format used to contain the captured audio.</source>
+        <translation>Bestämmer filformatet för det inspelade ljudet.</translation>
+    </message>
+    <message>
+        <source>%1 (Unknown)</source>
+        <translation>%1 (Okänd)</translation>
     </message>
     <message>
         <source>Specifies the directory where media capture (video/audio) will be saved.</source>
         <translation>Anger katalogen där mediafångster (video/ljud) ska sparas.</translation>
-    </message>
-    <message>
-        <source>Checked</source>
-        <translation>Markerat</translation>
-    </message>
-    <message>
-        <source>Captures video to the chosen file when media capture is started. If unchecked, the file will only contain audio.</source>
-        <translation>Fångar video till vald fil när mediafångst startas. Om inte markerad kommer filen endast innehålla ljud.</translation>
     </message>
     <message>
         <source>Video Codec</source>
@@ -2437,10 +2485,6 @@ Din dump kan vara skadad eller så är den fysiska skivan repad.</translation>
     <message>
         <source>Parameters passed to the selected video codec.&lt;br&gt;&lt;b&gt;You must use &apos;=&apos; to separate key from value and &apos;:&apos; to separate two pairs from each other.&lt;/b&gt;&lt;br&gt;For example: &quot;crf = 21 : preset = veryfast&quot;</source>
         <translation>Parametrar som skickas till den valda videokodeken.&lt;br&gt;&lt;b&gt;Du måste använda &apos;=&apos; för att skilja nyckel från värde och &apos;:&apos; för att skilja två par från varandra.&lt;/b&gt;&lt;br&gt;Till exempel: &quot;crf = 21 : preset = veryfast&quot;</translation>
-    </message>
-    <message>
-        <source>Captures audio to the chosen file when media capture is started. If unchecked, the file will only contain video.</source>
-        <translation>Fångar ljudet till vald fil när mediafångst startas. Om inte markerad kommer filen endast innehålla video.</translation>
     </message>
     <message>
         <source>Audio Codec</source>
@@ -3959,10 +4003,6 @@ Alla bindningar och konfigurationen kommer att förloras . Du kan inte ångra de
         <translation>Fel</translation>
     </message>
     <message>
-        <source>Failed to boot system: %1</source>
-        <translation>Misslyckades med att starta upp systemet: %1</translation>
-    </message>
-    <message>
         <source>Cannot change GPU dump state without restarting the system.</source>
         <translation>GPU-dumpens tillstånd kan inte ändras utan att systemet startas om.</translation>
     </message>
@@ -4760,6 +4800,14 @@ Denna fil kan bli flera gigabytes så tänk på diskutrymmet.</translation>
 </context>
 <context>
     <name>DigitalController</name>
+    <message>
+        <source>Disable Simultaneous Opposing Cardinal Directions</source>
+        <translation>Inaktivera samtidiga motsatta riktningar</translation>
+    </message>
+    <message>
+        <source>Prevents concurrent left/right or up/down inputs from being presented to the game.</source>
+        <translation>Förhindrar att samtidiga inmatningar åt vänster/höger eller upp/ner presenteras för spelet.</translation>
+    </message>
     <message>
         <source>D-Pad Up</source>
         <translation>Riktningsknapp upp</translation>
@@ -5883,8 +5931,24 @@ Alla bindningar och konfigurationen kommer att förloras . Du kan inte ångra de
         <translation>Undviker anrop till C++-kod, snabbar upp omkompileraren avsevärt.</translation>
     </message>
     <message>
+        <source>BIOS &apos;{}&apos; installed as &apos;{}&apos;.</source>
+        <translation>BIOS &apos;{}&apos; installerad som &apos;{}&apos;.</translation>
+    </message>
+    <message>
+        <source>BIOS Already Installed</source>
+        <translation>BIOS redan installerad</translation>
+    </message>
+    <message>
         <source>BIOS Directory</source>
         <translation>BIOS-katalog</translation>
+    </message>
+    <message>
+        <source>BIOS Install Error</source>
+        <translation>Fel vid BIOS-installation</translation>
+    </message>
+    <message>
+        <source>BIOS Installed</source>
+        <translation>BIOS installerad</translation>
     </message>
     <message>
         <source>BIOS Selection</source>
@@ -6017,6 +6081,10 @@ Alla bindningar och konfigurationen kommer att förloras . Du kan inte ångra de
     <message>
         <source>Controls the volume of the audio played on the host.</source>
         <translation>Styr volymen för ljudet som spelas på värden.</translation>
+    </message>
+    <message>
+        <source>Copies a BIOS image to the configured global BIOS directory.</source>
+        <translation>Kopierar en BIOS-avbild till den konfigurerade globala BIOS-katalogen.</translation>
     </message>
     <message>
         <source>Copies the current global settings to this game.</source>
@@ -6595,6 +6663,10 @@ Felet var:</translation>
     <message>
         <source>Inhibit Screensaver</source>
         <translation>Förhindra skärmsläckare</translation>
+    </message>
+    <message>
+        <source>Install BIOS</source>
+        <translation>Installera BIOS</translation>
     </message>
     <message>
         <source>Language: </source>
@@ -7193,6 +7265,10 @@ Kontrollera ditt användarnamn och lösenord. Försök igen.</translation>
         <translation>Snabba upp sökning</translation>
     </message>
     <message>
+        <source>Select BIOS Image</source>
+        <translation>Välj BIOS-avbild</translation>
+    </message>
+    <message>
         <source>Select Disc</source>
         <translation>Välj skiva</translation>
     </message>
@@ -7459,6 +7535,10 @@ Kontrollera ditt användarnamn och lösenord. Försök igen.</translation>
     <message>
         <source>Textures Directory</source>
         <translation>Texturkatalog</translation>
+    </message>
+    <message>
+        <source>The BIOS file &apos;{}&apos; is already installed. Do you want to overwrite it?</source>
+        <translation>BIOS-filen &apos;{}&apos; är redan installerad. Vill du skriva över den?</translation>
     </message>
     <message>
         <source>The SDL input source supports most controllers.</source>
@@ -8858,6 +8938,10 @@ Vill du ta bort det sparade tillståndet och starta spelet ändå?</translation>
         <translation>Använder spelspecifik konfiguration för inmatningskällor. Om den är inaktiverad kommer den globala konfigurationen att användas.</translation>
     </message>
     <message>
+        <source>{0} (Missing)</source>
+        <translation>{0} (saknas)</translation>
+    </message>
+    <message>
         <source>{} pinned.</source>
         <translation>{} har fästs.</translation>
     </message>
@@ -9107,10 +9191,6 @@ Vill du ta bort det sparade tillståndet och starta spelet ändå?</translation>
     <message>
         <source>Enable Cheats</source>
         <translation>Aktivera fusk</translation>
-    </message>
-    <message>
-        <source>Search...</source>
-        <translation>Sök...</translation>
     </message>
     <message>
         <source>Sort Alphabetically</source>
@@ -10024,10 +10104,6 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
     <message>
         <source>All Regions</source>
         <translation>Alla regioner</translation>
-    </message>
-    <message>
-        <source>Search...</source>
-        <translation>Sök...</translation>
     </message>
     <message>
         <source>Show Localized Icons</source>
@@ -11248,13 +11324,6 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
     </message>
 </context>
 <context>
-    <name>HotkeySettingsWidget</name>
-    <message>
-        <source>Search...</source>
-        <translation>Sök...</translation>
-    </message>
-</context>
-<context>
     <name>Hotkeys</name>
     <message>
         <source>Graphics</source>
@@ -11387,6 +11456,14 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
     <message>
         <source>Restart Game</source>
         <translation>Starta om spelet</translation>
+    </message>
+    <message>
+        <source>Toggle Audio Capture</source>
+        <translation>Växla ljudfångst</translation>
+    </message>
+    <message>
+        <source>Toggle Video Capture</source>
+        <translation>Växla videofångst</translation>
     </message>
     <message>
         <source>Rotate Display Clockwise</source>
@@ -12889,6 +12966,14 @@ Skift-klicka för att ställa in flera bindningar.</translation>
         <translation>%1x skala</translation>
     </message>
     <message>
+        <source>RA: Logged in as %1 (%2, %3 casual). %4 unread messages.</source>
+        <translation>RA: Inloggad som %1 (%2, %3 avslappnat). %4 olästa meddelanden.</translation>
+    </message>
+    <message>
+        <source>No containers are available for the current backend.</source>
+        <translation>Inga containrar är tillgängliga för den aktuella bakänden.</translation>
+    </message>
+    <message>
         <source>%1 Files (*.%2)</source>
         <translation>%1 filer (*.%2)</translation>
     </message>
@@ -13015,10 +13100,6 @@ Skift-klicka för att ställa in flera bindningar.</translation>
     <message>
         <source>Memory card &apos;%1&apos; could not be found. Try starting the game and saving to create it.</source>
         <translation>Minneskortet &apos;%1&apos; kunde inte hittas. Prova att starta spelet och spara för att skapa det.</translation>
-    </message>
-    <message>
-        <source>RA: Logged in as %1 (%2, %3 softcore). %4 unread messages.</source>
-        <translation>RA: Inloggad som %1 (%2, %3 softcore). %4 olästa meddelanden.</translation>
     </message>
     <message>
         <source>RA: Updated achievement game database.</source>
@@ -13311,6 +13392,10 @@ Vill du ta bort det sparade tillståndet och starta spelet ändå?</translation>
     <message>
         <source>Sort B&amp;y</source>
         <translation>Sortera e&amp;fter</translation>
+    </message>
+    <message>
+        <source>Allows you to record audio and/or video from the content.</source>
+        <translation>Gör det möjligt att spela in ljud och/eller video från innehållet.</translation>
     </message>
     <message>
         <source>Starts a new session using the selected file.</source>
@@ -13609,6 +13694,34 @@ Vill du ta bort det sparade tillståndet och starta spelet ändå?</translation>
         <translation>Slår samman flera skivor som tillhör samma spel till ett enda objekt i spellistan.</translation>
     </message>
     <message>
+        <source>Start &amp;Capture</source>
+        <translation>Starta &amp;fångst</translation>
+    </message>
+    <message>
+        <source>Starts recording audio and video.</source>
+        <translation>Startar inspelning av ljud och video.</translation>
+    </message>
+    <message>
+        <source>Stop &amp;Capture</source>
+        <translation>Stoppa &amp;fångst</translation>
+    </message>
+    <message>
+        <source>Start &amp;Video-Only Capture</source>
+        <translation>Starta &amp;videofångst (endast video)</translation>
+    </message>
+    <message>
+        <source>Starts a video-only recording.</source>
+        <translation>Startar en inspelning med endast video.</translation>
+    </message>
+    <message>
+        <source>Start &amp;Audio-Only Capture</source>
+        <translation>Starta &amp;ljudfångst (endast ljud)</translation>
+    </message>
+    <message>
+        <source>Starts an audio-only recording.</source>
+        <translation>Startar en inspelning med endast ljud.</translation>
+    </message>
+    <message>
         <source>Automatic</source>
         <translation>Automatisk</translation>
     </message>
@@ -13872,26 +13985,6 @@ Vill du ta bort det sparade tillståndet och starta spelet ändå?</translation>
         <translation>HEVC med maskinvarukodning</translation>
     </message>
     <message>
-        <source>VP9 with Software Encoding</source>
-        <comment>VideoCodec</comment>
-        <translation>VP9 med programvarukodning</translation>
-    </message>
-    <message>
-        <source>VP9 with Hardware Encoding</source>
-        <comment>VideoCodec</comment>
-        <translation>VP9 med maskinvarukodning</translation>
-    </message>
-    <message>
-        <source>AV1 with Software Encoding</source>
-        <comment>VideoCodec</comment>
-        <translation>AV1 med programvarukodning</translation>
-    </message>
-    <message>
-        <source>AV1 with Hardware Encoding</source>
-        <comment>VideoCodec</comment>
-        <translation>AV1 med maskinvarukodning</translation>
-    </message>
-    <message>
         <source>Advanced Audio Coding</source>
         <comment>AudioCodec</comment>
         <translation>Avancerad ljudkodning</translation>
@@ -13949,6 +14042,10 @@ libavutil: {}
 libswscale: {}
 libswresample: {}
 </translation>
+    </message>
+    <message>
+        <source>Audio codec &apos;{0}&apos; does not support {1} Hz samples, using {2} Hz.</source>
+        <translation>Ljudkodeken &apos;{0}&apos; stöder inte sampling med {1} Hz, använder {2} Hz.</translation>
     </message>
     <message>
         <source>Matroska Media Container</source>
@@ -14144,14 +14241,6 @@ Fel: {1}</translation>
         <translation>Exportera fil</translation>
     </message>
     <message>
-        <source>&lt;&lt;</source>
-        <translation>&lt;&lt;</translation>
-    </message>
-    <message>
-        <source>&gt;&gt;</source>
-        <translation>&gt;&gt;</translation>
-    </message>
-    <message>
         <source>New Card...</source>
         <translation>Nytt kort...</translation>
     </message>
@@ -14188,6 +14277,18 @@ Fel: {1}</translation>
         <translation> (borttaget)</translation>
     </message>
     <message>
+        <source>PNG Images (*.png);;JPEG Images (*.jpg *.jpeg);;WebP Images (*.webp)</source>
+        <translation>PNG-bilder (*.png);;JPEG-bilder (*.jpg *.jpeg);;WebP-bilder (*.webp)</translation>
+    </message>
+    <message>
+        <source>Animated PNG Images (*.png)</source>
+        <translation>Animerade PNG-bilder (*.png)</translation>
+    </message>
+    <message>
+        <source>Extract Icon</source>
+        <translation>Extrahera ikon</translation>
+    </message>
+    <message>
         <source>Select Memory Card</source>
         <translation>Välj minneskort</translation>
     </message>
@@ -14214,6 +14315,22 @@ Fel: {1}</translation>
     <message>
         <source>Select Single Savefile</source>
         <translation>Välj enstaka sparad fil</translation>
+    </message>
+    <message>
+        <source>Extract Animated Icon</source>
+        <translation>Extrahera animerad ikon</translation>
+    </message>
+    <message>
+        <source>Failed to extract icon from save file %1:
+%2</source>
+        <translation>Misslyckades med att extrahera ikon från sparfilen %1:
+%2</translation>
+    </message>
+    <message>
+        <source>Failed to extract animated icon from save file %1:
+%2</source>
+        <translation>Misslyckades med att extrahera animerad ikon från sparfilen %1:
+%2</translation>
     </message>
     <message>
         <source>Failed to rename save file %1:
@@ -14891,6 +15008,14 @@ Fel: {1}</translation>
         <translation>Styrning (Twist) höger</translation>
     </message>
     <message>
+        <source>Disable Simultaneous Opposing Cardinal Directions</source>
+        <translation>Inaktivera samtidiga motsatta riktningar</translation>
+    </message>
+    <message>
+        <source>Prevents concurrent left/right or up/down inputs from being presented to the game.</source>
+        <translation>Förhindrar att samtidiga inmatningar åt vänster/höger eller upp/ner presenteras för spelet.</translation>
+    </message>
+    <message>
         <source>Steering Axis Deadzone</source>
         <translation>Dödläge för styraxlar</translation>
     </message>
@@ -15076,6 +15201,14 @@ Fel: {1}</translation>
     <message>
         <source>Analog Toggle</source>
         <translation>Analog växlingsknapp</translation>
+    </message>
+    <message>
+        <source>Disable Simultaneous Opposing Cardinal Directions</source>
+        <translation>Inaktivera samtidiga motsatta riktningar</translation>
+    </message>
+    <message>
+        <source>Prevents concurrent left/right or up/down inputs from being presented to the game.</source>
+        <translation>Förhindrar att samtidiga inmatningar åt vänster/höger eller upp/ner presenteras för spelet.</translation>
     </message>
     <message>
         <source>Steering Axis Deadzone</source>
@@ -15765,6 +15898,10 @@ Fel: {1}</translation>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Ett kantöverlägg är en bild som ritas runt systemskärmen. Kantöverlägg appliceras efter efterbearbetning. Du kan välja från listan nedan eller manuellt konfigurera en anpassad kant.&lt;/p&gt;&lt;p&gt;Fler förval för kanter kan läggas till i mappen &lt;span style=&quot; font-weight:700;&quot;&gt;resources\overlays&lt;/span&gt; i datakatalogen.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
+        <source>Refresh Overlay List</source>
+        <translation>Uppdatera överläggslista</translation>
+    </message>
+    <message>
         <source>Custom Configuration</source>
         <translation>Anpassad konfiguration</translation>
     </message>
@@ -15878,10 +16015,6 @@ Fel: {1}</translation>
     <message>
         <source>Select Shader</source>
         <translation>Välj shader</translation>
-    </message>
-    <message>
-        <source>Search...</source>
-        <translation>Sök...</translation>
     </message>
     <message>
         <source>All</source>
@@ -16460,6 +16593,13 @@ Vill du uppdatera genvägen så att den pekar på den aktuella platsen?</transla
     <message>
         <source>Save Slot {0} selected.</source>
         <translation>Sparningsplats {0} vald.</translation>
+    </message>
+</context>
+<context>
+    <name>SearchBox</name>
+    <message>
+        <source>Search...</source>
+        <translation>Sök...</translation>
     </message>
 </context>
 <context>
@@ -17588,10 +17728,6 @@ Du kan inte ångra den här åtgärden.</translation>
         <translation>Aktivera automatiska uppdateringar</translation>
     </message>
     <message>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DuckStation requires a PS1 or PS2 BIOS in order to run.&lt;/p&gt;&lt;p&gt;For legal reasons, you must obtain a BIOS &lt;span style=&quot; font-weight:700;&quot;&gt;from an actual PS1 unit that you own&lt;/span&gt; (borrowing doesn&apos;t count). You should use Caetla or another utility to create an image from your console&apos;s BIOS ROM on your PC.&lt;/p&gt;&lt;p&gt;Once dumped, this BIOS image should be placed in the bios folder within the data directory shown below, or you can instruct DuckStation to scan an alternative directory.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DuckStation kräver ett PS1 eller PS2 BIOS för att kunna starta.&lt;/p&gt;&lt;p&gt;Av juridiska skäl så måste du skaffa ett BIOS &lt;span style=&quot; font-weight:700;&quot;&gt;från en riktig PS1-enhet som du äger&lt;/span&gt; (låna räcker inte). Du bör använda Caetla eller andra verktyg för att skapa en avbild från din konsols BIOS ROM på din PC.&lt;/p&gt;&lt;p&gt;När den har dumpats så ska BIOS-avbilden placeras i bios-mappen i datakatalogen som visas nedan, eller så kan du ställa in att DuckStation ska leta igenom en alternativ katalog.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
-    </message>
-    <message>
         <source>NTSC-J (Japan):</source>
         <translation>NTSC-J (Japan):</translation>
     </message>
@@ -17654,6 +17790,18 @@ Du kan ändra detta senare med verktygsfältet i skrivbordsläget eller snabbkom
     <message>
         <source>BIOS Directory:</source>
         <translation>BIOS-katalog:</translation>
+    </message>
+    <message>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DuckStation requires a PS1 or PS2 BIOS in order to run.&lt;/p&gt;&lt;p&gt;For legal reasons, you must obtain a BIOS &lt;span style=&quot; font-weight:700;&quot;&gt;from an actual PS1/PS2 unit that you own&lt;/span&gt; (borrowing doesn&apos;t count). You should use Caetla or another utility to create an image from your console&apos;s BIOS ROM on your PC.&lt;/p&gt;&lt;p&gt;Once you have dumped the BIOS from your console, you can click the &amp;quot;Install BIOS&amp;quot; button below to add this image to DuckStation.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DuckStation kräver ett PS1- eller PS2-BIOS för att köras.&lt;/p&gt;&lt;p&gt;Av juridiska skäl måste du skaffa ett BIOS &lt;span style=&quot; font-weight:700;&quot;&gt;från en faktisk PS1-/PS2-enhet som du äger&lt;/span&gt; (det räknas inte att låna en). Du bör använda Caetla eller ett annat verktyg för att skapa en avbild från konsolens BIOS-ROM på datorn.&lt;/p&gt;&lt;p&gt;När du har dumpat BIOS från konsolen kan du klicka på knappen &amp;quot;Installera BIOS&amp;quot; nedan för att lägga till avbilden i DuckStation.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+    </message>
+    <message>
+        <source>Install BIOS...</source>
+        <translation>Installera BIOS...</translation>
+    </message>
+    <message>
+        <source>Advanced Settings</source>
+        <translation>Avancerade inställningar</translation>
     </message>
     <message>
         <source>Browse...</source>
@@ -17758,6 +17906,18 @@ Any changes have been saved, and the wizard will run again next time you start D
     <message>
         <source>Cancel Setup</source>
         <translation>Avbryt konfiguration</translation>
+    </message>
+    <message>
+        <source>No BIOS images found. Please install one to continue.</source>
+        <translation>Inga BIOS-avbilder hittades. Installera en för att fortsätta.</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n BIOS images found. You can install additional BIOS images if desired.</source>
+        <comment>BIOS Count</comment>
+        <translation>
+            <numerusform>%n BIOS-avbilder hittades. Du kan installera ytterligare BIOS-avbilder om du vill.</numerusform>
+            <numerusform>%n BIOS-avbilder hittades. Du kan installera ytterligare BIOS-avbilder om du vill.</numerusform>
+        </translation>
     </message>
     <message>
         <source>Open Directory...</source>
@@ -17962,12 +18122,16 @@ Token genererades %2</translation>
 <context>
     <name>System</name>
     <message>
+        <source>Failed to boot system:</source>
+        <translation>Misslyckades med att starta systemet:</translation>
+    </message>
+    <message>
         <source>Error</source>
         <translation>Fel</translation>
     </message>
     <message>
-        <source>Failed to boot system: {}</source>
-        <translation>Misslyckades med att starta upp system: {}</translation>
+        <source>Do you want to install a BIOS file now?</source>
+        <translation>Vill du installera en BIOS-fil nu?</translation>
     </message>
     <message>
         <source>Startup was cancelled.</source>
@@ -18257,26 +18421,6 @@ Namnet på SBI-filen måste matcha namnet på skivavbilden.</translation>
         <translation>Det gick inte att ändra GPU-dump: {}</translation>
     </message>
     <message>
-        <source>No BIOS image found for {} region.
-
-DuckStation requires a PS1 or PS2 BIOS in order to run.
-
-For legal reasons, you *must* obtain a BIOS from an actual PS1 unit that you own (borrowing doesn&apos;t count).
-
-Once dumped, this BIOS image should be placed in the bios folder within the data directory (Tools Menu -&gt; Open Data Directory).</source>
-        <translation>Ingen BIOS-avbild hittades för regionen {}.
-
-DuckStation kräver ett BIOS för PS1 eller PS2 för kunna köra.
-
-Av juridiska skäl så *måste* du skaffa ett BIOS från en faktisk PS1-enhet som du äger (räcker inte att låna).
-
-När du har dumpat det så kan denna BIOS-avbild placeras i bios-mappen i datakatalogen (Verktygsmenyn -&gt; Öppna datakatalog).</translation>
-    </message>
-    <message>
-        <source>No BIOS image found for {} region.</source>
-        <translation>Ingen BIOS-avbild hittades för regionen {}.</translation>
-    </message>
-    <message>
         <source>Failed to create render device:
 
 {0}
@@ -18467,6 +18611,18 @@ Använder istället ett delat kort.</translation>
 You must save to a memory card and reset the game to clear any effects.</source>
         <translation>Detta sparade tillståndet skapades med följande felaktiga alternativ och kan vara instabilt.
 Du måste spara till ett minneskort och starta om spelet för att ta bort eventuella effekter.</translation>
+    </message>
+    <message>
+        <source>No BIOS image found for {} region.
+
+DuckStation requires a PS1 or PS2 BIOS in order to run.
+
+For legal reasons, you must obtain a BIOS from an actual PS1/PS2 unit that you own (borrowing doesn&apos;t count).</source>
+        <translation>Ingen BIOS-avbild hittades för regionen {}.
+
+DuckStation kräver ett PS1- eller PS2-BIOS för att köras.
+
+Av juridiska skäl måste du skaffa ett BIOS från en faktisk PS1-/PS2-enhet som du äger (det räknas inte att låna en).</translation>
     </message>
 </context>
 <context>

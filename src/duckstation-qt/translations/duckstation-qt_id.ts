@@ -1331,6 +1331,14 @@ Pesan belum dibaca: {}</translation>
         <translation>Memaksa pengontrol ke mode analog saat permainan dimulai/dimulai ulang.</translation>
     </message>
     <message>
+        <source>Disable Simultaneous Opposing Cardinal Directions</source>
+        <translation>Nonaktifkan Input Arah Berlawanan Secara Bersamaan</translation>
+    </message>
+    <message>
+        <source>Prevents concurrent left/right or up/down inputs from being presented to the game.</source>
+        <translation>Mencegah input kiri/kanan atau atas/bawah secara bersamaan diteruskan ke game.</translation>
+    </message>
+    <message>
         <source>Allows you to use the right analog stick to control the shoulder buttons (L1/R1), as well as the buttons.</source>
         <translation>Memungkinkan Anda menggunakan stik analog kanan untuk mengendalikan tombol bahu (L1/R1), serta tombol-tombol lainnya.</translation>
     </message>
@@ -1536,6 +1544,14 @@ Pesan belum dibaca: {}</translation>
     <message>
         <source>Invert Left/Right + Up/Down</source>
         <translation>Balikkan Kiri/Kanan + Atas/Bawah</translation>
+    </message>
+    <message>
+        <source>Disable Simultaneous Opposing Cardinal Directions</source>
+        <translation>Nonaktifkan Input Arah Berlawanan Secara Bersamaan</translation>
+    </message>
+    <message>
+        <source>Prevents concurrent left/right or up/down inputs from being presented to the game.</source>
+        <translation>Mencegah input kiri/kanan atau atas/bawah secara bersamaan diteruskan ke game.</translation>
     </message>
     <message>
         <source>Analog Deadzone</source>
@@ -2197,12 +2213,6 @@ Anda dapat memperbarui DuckStation secara manual dengan mengunduh ulang rilis te
         </translation>
     </message>
     <message>
-        <source>{0} uses a sample rate of {1}hz and has {2} channels.
-WAV files must be stereo and use a sample rate of 44100hz.</source>
-        <translation>{0} menggunakan laju sampel {1}hz dan memiliki {2} kanal.
-Berkas WAV harus stereo dan menggunakan laju sampel 44100hz.</translation>
-    </message>
-    <message>
         <source>Preload Image To RAM</source>
         <translation>Muat Image Ke RAM</translation>
     </message>
@@ -2213,6 +2223,12 @@ Berkas WAV harus stereo dan menggunakan laju sampel 44100hz.</translation>
     <message>
         <source>Loading Track {0} ({1})...</source>
         <translation>Memuat Trek {0} ({1})...</translation>
+    </message>
+    <message>
+        <source>{0} is {1}-bit with {2} channels at {3}hz.
+WAV files must be 16-bit stereo and use a sample rate of 44100hz.</source>
+        <translation>{0} memiliki format {1} bit dengan {2} saluran pada {3} Hz.
+Berkas WAV harus berupa stereo 16 bit dan menggunakan laju sampel 44100 Hz.</translation>
     </message>
 </context>
 <context>
@@ -3962,10 +3978,6 @@ Semua pemetaan dan konfigurasi akan hilang. Tindakan ini tidak dapat dibatalkan.
         <translation>%1x%2</translation>
     </message>
     <message>
-        <source>Failed to boot system: %1</source>
-        <translation>Gagal menjalankan sistem: %1</translation>
-    </message>
-    <message>
         <source>Cannot change GPU dump state without restarting the system.</source>
         <translation>Tidak dapat mengubah status dump GPU tanpa memulai ulang sistem.</translation>
     </message>
@@ -4763,6 +4775,14 @@ Berkas ini dapat berukuran beberapa gigabita, jadi perhatikan keausan SSD.</tran
 </context>
 <context>
     <name>DigitalController</name>
+    <message>
+        <source>Disable Simultaneous Opposing Cardinal Directions</source>
+        <translation>Nonaktifkan Input Arah Berlawanan Secara Bersamaan</translation>
+    </message>
+    <message>
+        <source>Prevents concurrent left/right or up/down inputs from being presented to the game.</source>
+        <translation>Mencegah input kiri/kanan atau atas/bawah secara bersamaan diteruskan ke game.</translation>
+    </message>
     <message>
         <source>D-Pad Up</source>
         <translation>D-Pad Atas</translation>
@@ -8554,6 +8574,10 @@ Apakah Anda ingin menghapus status simpanan tersebut dan tetap mem-boot game?</t
         <translation>Tipe</translation>
     </message>
     <message>
+        <source>{0} (Missing)</source>
+        <translation>{0} (Hilang)</translation>
+    </message>
+    <message>
         <source>{} of {}</source>
         <translation>{} dari {}</translation>
     </message>
@@ -10437,7 +10461,7 @@ Pemindaian rekursif akan membuat proses pencarian menjadi lebih lama, namun dapa
     </message>
     <message>
         <source>Determines how much of the area typically not visible on a consumer TV set to crop/hide. Some games display content in the overscan area, or use it for screen effects. May not display correctly with the &quot;All Borders&quot; setting. &quot;Only Overscan&quot; offers a good compromise between stability and hiding black borders.</source>
-        <translation>Menentukan seberapa banyak area yang biasanya tidak terlihat pada TV konsumen untuk dipotong/disembunyikan. Beberapa game menampilkan konten di area overscan atau menggunakannya untuk efek layar. Tampilan mungkin tidak benar dengan pengaturan "Semua Batas". "Hanya Overscan" memberikan kompromi yang baik antara stabilitas dan penyembunyian batas hitam.</translation>
+        <translation>Menentukan seberapa banyak area yang biasanya tidak terlihat pada TV konsumen untuk dipotong/disembunyikan. Beberapa game menampilkan konten di area overscan atau menggunakannya untuk efek layar. Tampilan mungkin tidak benar dengan pengaturan &quot;Semua Batas&quot;. &quot;Hanya Overscan&quot; memberikan kompromi yang baik antara stabilitas dan penyembunyian batas hitam.</translation>
     </message>
     <message>
         <source>Scaling</source>
@@ -10461,7 +10485,7 @@ Pemindaian rekursif akan membuat proses pencarian menjadi lebih lama, namun dapa
     </message>
     <message>
         <source>Reduces &quot;wobbly&quot; polygons and &quot;warping&quot; textures that are common in PS1 games. &lt;strong&gt;May not be compatible with all games.&lt;/strong&gt;</source>
-        <translation>Mengurangi poligon yang "bergoyang" dan tekstur yang "melengkung" yang umum pada game PS1. &lt;strong&gt;Mungkin tidak kompatibel dengan semua game.&lt;/strong&gt;</translation>
+        <translation>Mengurangi poligon yang &quot;bergoyang&quot; dan tekstur yang &quot;melengkung&quot; yang umum pada game PS1. &lt;strong&gt;Mungkin tidak kompatibel dengan semua game.&lt;/strong&gt;</translation>
     </message>
     <message>
         <source>PGXP Depth Buffer</source>
@@ -10557,7 +10581,7 @@ Pemindaian rekursif akan membuat proses pencarian menjadi lebih lama, namun dapa
     </message>
     <message>
         <source>Crops vertex colours to 5:5:5 before modulating with the texture colour, which typically results in more visible banding. This is a characteristic of the &quot;old&quot; GPUs found in early model consoles.</source>
-        <translation>Memotong warna vertex menjadi 5:5:5 sebelum memodulasinya dengan warna tekstur, yang biasanya menghasilkan banding yang lebih terlihat. Ini adalah karakteristik GPU "lama" yang ditemukan pada konsol model awal.</translation>
+        <translation>Memotong warna vertex menjadi 5:5:5 sebelum memodulasinya dengan warna tekstur, yang biasanya menghasilkan banding yang lebih terlihat. Ini adalah karakteristik GPU &quot;lama&quot; yang ditemukan pada konsol model awal.</translation>
     </message>
     <message>
         <source>Geometry Tolerance</source>
@@ -12114,7 +12138,7 @@ Shift-click ke set multiple bindings.</translation>
     </message>
     <message>
         <source>Disables the use of style sheets in the application, reverting to the original &apos;Fusion&apos; style but retaining the color scheme.</source>
-        <translation>Menonaktifkan penggunaan lembar gaya dalam aplikasi, mengembalikannya ke gaya "Fusion" asli dengan tetap mempertahankan skema warna.</translation>
+        <translation>Menonaktifkan penggunaan lembar gaya dalam aplikasi, mengembalikannya ke gaya &quot;Fusion&quot; asli dengan tetap mempertahankan skema warna.</translation>
     </message>
     <message>
         <source>%1 (%2)</source>
@@ -13058,7 +13082,7 @@ Shift-click ke set multiple bindings.</translation>
     </message>
     <message>
         <source>Opens or closes the controller-based &quot;big picture&quot; mode.</source>
-        <translation>Membuka atau menutup mode "big picture" berbasis kontroler.</translation>
+        <translation>Membuka atau menutup mode &quot;big picture&quot; berbasis kontroler.</translation>
     </message>
     <message>
         <source>Opens the cover downloader window.</source>
@@ -13666,15 +13690,15 @@ Shift-click ke set multiple bindings.</translation>
     </message>
     <message>
         <source>Memory card &apos;%1&apos; does not exist. Do you want to create an empty memory card?</source>
-        <translation>Kartu memori '%1' tidak ada. Apakah Anda ingin membuat kartu memori kosong?</translation>
+        <translation>Kartu memori &apos;%1&apos; tidak ada. Apakah Anda ingin membuat kartu memori kosong?</translation>
     </message>
     <message>
         <source>Failed to create memory card &apos;%1&apos;: %2</source>
-        <translation>Gagal membuat kartu memori '%1': %2</translation>
+        <translation>Gagal membuat kartu memori &apos;%1&apos;: %2</translation>
     </message>
     <message>
         <source>Memory card &apos;%1&apos; could not be found. Try starting the game and saving to create it.</source>
-        <translation>Kartu memori '%1' tidak dapat ditemukan. Coba mulai game dan simpan untuk membuatnya.</translation>
+        <translation>Kartu memori &apos;%1&apos; tidak dapat ditemukan. Coba mulai game dan simpan untuk membuatnya.</translation>
     </message>
     <message>
         <source>RA: Updated achievement progress database.</source>
@@ -14945,6 +14969,14 @@ Kesalahan: {1}</translation>
         <translation>Kemudi (Putar) Kanan</translation>
     </message>
     <message>
+        <source>Disable Simultaneous Opposing Cardinal Directions</source>
+        <translation>Nonaktifkan Input Arah Berlawanan Secara Bersamaan</translation>
+    </message>
+    <message>
+        <source>Prevents concurrent left/right or up/down inputs from being presented to the game.</source>
+        <translation>Mencegah input kiri/kanan atau atas/bawah secara bersamaan diteruskan ke game.</translation>
+    </message>
+    <message>
         <source>Steering Axis Deadzone</source>
         <translation>Zona Mati Sumbu Kemudi</translation>
     </message>
@@ -15130,6 +15162,14 @@ Kesalahan: {1}</translation>
     <message>
         <source>Analog Toggle</source>
         <translation>Tombol Analog</translation>
+    </message>
+    <message>
+        <source>Disable Simultaneous Opposing Cardinal Directions</source>
+        <translation>Nonaktifkan Input Arah Berlawanan Secara Bersamaan</translation>
+    </message>
+    <message>
+        <source>Prevents concurrent left/right or up/down inputs from being presented to the game.</source>
+        <translation>Mencegah input kiri/kanan atau atas/bawah secara bersamaan diteruskan ke game.</translation>
     </message>
     <message>
         <source>Steering Axis Deadzone</source>
@@ -18048,32 +18088,16 @@ Token dibuat pada %2</translation>
 <context>
     <name>System</name>
     <message>
-        <source>No BIOS image found for {} region.
-
-DuckStation requires a PS1 or PS2 BIOS in order to run.
-
-For legal reasons, you *must* obtain a BIOS from an actual PS1 unit that you own (borrowing doesn&apos;t count).
-
-Once dumped, this BIOS image should be placed in the bios folder within the data directory (Tools Menu -&gt; Open Data Directory).</source>
-        <translation>Tidak ditemukan citra BIOS untuk wilayah {}.
-
-DuckStation memerlukan BIOS PS1 atau PS2 agar dapat berjalan.
-
-Demi alasan hukum, Anda *harus* memperoleh BIOS dari unit PS1 yang benar-benar Anda miliki (meminjam tidak dihitung).
-
-Setelah dibuang, citra BIOS ini harus ditempatkan di folder bios dalam direktori data (Menu Alat -&gt; Buka Direktori Data).</translation>
-    </message>
-    <message>
-        <source>No BIOS image found for {} region.</source>
-        <translation>Tidak ditemukan citra BIOS untuk wilayah {}.</translation>
+        <source>Failed to boot system:</source>
+        <translation>Gagal mem-boot sistem:</translation>
     </message>
     <message>
         <source>Error</source>
         <translation>Kesalahan</translation>
     </message>
     <message>
-        <source>Failed to boot system: {}</source>
-        <translation>Gagal mem-boot sistem: {}</translation>
+        <source>Do you want to install a BIOS file now?</source>
+        <translation>Apakah Anda ingin memasang berkas BIOS sekarang?</translation>
     </message>
     <message>
         <source>Startup was cancelled.</source>
@@ -18552,6 +18576,18 @@ Menggunakan kartu bersama sebagai gantinya.</translation>
     <message>
         <source>Rewind and runahead cannot be used at the same time.</source>
         <translation>Rewind dan runahead tidak dapat digunakan secara bersamaan.</translation>
+    </message>
+    <message>
+        <source>No BIOS image found for {} region.
+
+DuckStation requires a PS1 or PS2 BIOS in order to run.
+
+For legal reasons, you must obtain a BIOS from an actual PS1/PS2 unit that you own (borrowing doesn&apos;t count).</source>
+        <translation>Citra BIOS untuk wilayah {} tidak ditemukan.
+
+DuckStation memerlukan BIOS PS1 atau PS2 agar dapat berjalan.
+
+Untuk alasan hukum, Anda harus mendapatkan BIOS dari unit PS1/PS2 asli yang Anda miliki (meminjam tidak dianggap sebagai kepemilikan).</translation>
     </message>
 </context>
 <context>
