@@ -107,7 +107,7 @@ bool DoState(StateWrapper& sw);
 /// Attempts to log in to RetroAchievements using the specified credentials.
 /// If the login is successful, the token returned by the server will be saved.
 using LoginCompletionCallback = std::function<void(bool result, std::string&& error_message)>;
-bool LoginAsync(const char* username, const char* password, Error* error, LoginCompletionCallback callback);
+void LoginAsync(const char* username, const char* password, LoginCompletionCallback callback);
 
 /// Logs out of RetroAchievements, clearing any credentials.
 void Logout();

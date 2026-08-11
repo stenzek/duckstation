@@ -2008,29 +2008,21 @@ bool Achievements::IsLoggedInOrLoggingIn()
   return (IsLoggedIn() || s_state.login_request);
 }
 
-bool Achievements::LoginAsync(const char* username, const char* password, Error* error,
-                              LoginCompletionCallback callback)
+void Achievements::LoginAsync(const char* username, const char* password, LoginCompletionCallback callback)
 {
   auto lock = GetLock();
 
   // We need to use a temporary client if achievements aren't currently active.
   if (!s_state.client && !CreateClient(lock, true))
   {
-    Error::SetString(error, "Failed to create client.");
-    return false;
+    callback(false, "Failed to create client.");
+    return;
   }
 
+  // Callback always runs regardless of whether an async request was created.
   LoginCompletionCallback* const callback_copy = new LoginCompletionCallback(std::move(callback));
-  if (!rc_client_begin_login_with_password(s_state.client, username, password,
-                                           RESOLVE_CLIENT_CALLBACK(ClientLoginWithPasswordCallback), callback_copy))
-  {
-    Error::SetString(error, "Failed to create login request.");
-    delete callback_copy;
-    return false;
-  }
-
-  // Login attempt started.
-  return true;
+  rc_client_begin_login_with_password(s_state.client, username, password,
+                                      RESOLVE_CLIENT_CALLBACK(ClientLoginWithPasswordCallback), callback_copy);
 }
 
 void Achievements::ClientLoginWithPasswordCallback(int result, const char* error_message, rc_client_t* client,
