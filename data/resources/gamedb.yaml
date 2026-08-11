@@ -11119,6 +11119,9 @@ SLPS-01862:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - DisablePGXPCulling # Stops crashes in first mission.
+    - DisableWidescreen # Stops crashes in first mission.
   metadata:
     publisher: "Jaleco Entertainment"
     developer: "Asmik Ace Enterainment"
@@ -189828,6 +189831,9 @@ SLUS-01035:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - DisablePGXPCulling # Stops crashes in first mission.
+    - DisableWidescreen # Stops crashes in first mission.
   metadata:
     publisher: "Jaleco Entertainment"
     developer: "Asmik Ace Enterainment"
