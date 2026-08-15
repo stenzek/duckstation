@@ -149,7 +149,7 @@ static constexpr std::array s_theme_names = {
 
 // [0] = Mapping from Xbox button icons to PlayStation button icons.
 // [1] = Swapped south/east face buttons.
-using ControllerButtonMappingTable = std::array<std::pair<const char*, const char*>, 18>;
+using ControllerButtonMappingTable = std::array<std::pair<const char*, const char*>, 19>;
 static constexpr ControllerButtonMappingTable GetButtonMapping(bool ps_buttons, bool swap_south_east)
 {
   return ControllerButtonMappingTable{{
@@ -174,6 +174,7 @@ static constexpr ControllerButtonMappingTable GetButtonMapping(bool ps_buttons, 
     {ICON_PF_XBOX_DPAD_DOWN, ps_buttons ? ICON_PF_DPAD_DOWN : ICON_PF_XBOX_DPAD_DOWN},
     {ICON_PF_XBOX_DPAD_LEFT_RIGHT, ps_buttons ? ICON_PF_DPAD_LEFT_RIGHT : ICON_PF_XBOX_DPAD_LEFT_RIGHT},
     {ICON_PF_XBOX_DPAD_UP_DOWN, ps_buttons ? ICON_PF_DPAD_UP_DOWN : ICON_PF_XBOX_DPAD_UP_DOWN},
+    {ICON_PF_XBOX_DPAD, ps_buttons ? ICON_PF_DPAD : ICON_PF_XBOX_DPAD},
   }};
 }
 static constexpr const ControllerButtonMappingTable s_button_mapping[2][2] = {
