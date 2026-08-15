@@ -1935,6 +1935,13 @@ bool Cheats::ImportLibretroFile(CodeInfoList* dst, const std::string_view file_c
     return nullptr;
   };
 
+  static constexpr auto RemoveQuotes = [](const std::string_view sv) {
+    if (sv.length() >= 2 && sv.front() == '"' && sv.back() == '"')
+      return sv.substr(1, sv.length() - 2);
+    else
+      return sv;
+  };
+
   CheatFileReader reader(file_contents);
   std::string_view line;
   while (reader.GetLine(&line))
@@ -1956,6 +1963,10 @@ bool Cheats::ImportLibretroFile(CodeInfoList* dst, const std::string_view file_c
       continue;
     }
 
+    // remove quotes
+    key = RemoveQuotes(key);
+    value = RemoveQuotes(value);
+
     kvp.emplace_back(key, value);
   }
 
@@ -1970,15 +1981,15 @@ bool Cheats::ImportLibretroFile(CodeInfoList* dst, const std::string_view file_c
   if (num_cheats == 0)
     return false;
 
+  u32 num_cheats_added = 0;
   for (u32 i = 0; i < num_cheats; i++)
   {
     const std::string_view* desc = FindKey(kvp, TinyString::from_format("cheat{}_desc", i));
     const std::string_view* code = FindKey(kvp, TinyString::from_format("cheat{}_code", i));
     if (!desc || desc->empty() || !code || code->empty())
     {
-      if (!reader.LogError(error, stop_on_error, "Missing desc/code for cheat {}", i))
-        return false;
-
+      // Some file exporters have fewer cheats in the file than the count key (e.g. gamehacking.org).
+      WARNING_LOG("Missing desc/code for cheat {}", i);
       continue;
     }
 
@@ -1986,13 +1997,14 @@ bool Cheats::ImportLibretroFile(CodeInfoList* dst, const std::string_view file_c
     CodeInfo info;
     info.name = *desc;
     info.body = StringUtil::ReplaceAll(*code, '+', '\n');
-    info.file_offset_start = 0;
-    info.file_offset_end = 0;
-    info.file_offset_body_start = 0;
-    info.type = CodeType::Gameshark;
-    info.activation = CodeActivation::EndFrame;
-    info.from_database = false;
     AppendCheatToList(dst, std::move(info));
+    num_cheats_added++;
+  }
+
+  if (num_cheats_added == 0)
+  {
+    Error::SetStringView(error, "No cheats found.");
+    return false;
   }
 
   return true;
