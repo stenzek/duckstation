@@ -2013,25 +2013,6 @@ void Host::OnAchievementsHardcoreModeChanged(bool enabled)
   emit g_core_thread->achievementsHardcoreModeChanged(enabled);
 }
 
-void Host::BeginTextInput()
-{
-  DEV_LOG("Host::BeginTextInput()");
-
-  // NOTE: Called on GPU thread.
-  QInputMethod* method = qApp->inputMethod();
-  if (method)
-    QMetaObject::invokeMethod(method, &QInputMethod::show, Qt::QueuedConnection);
-}
-
-void Host::EndTextInput()
-{
-  DEV_LOG("Host::EndTextInput()");
-
-  QInputMethod* method = qApp->inputMethod();
-  if (method)
-    QMetaObject::invokeMethod(method, &QInputMethod::hide, Qt::QueuedConnection);
-}
-
 bool Host::CreateAuxiliaryRenderWindow(s32 x, s32 y, u32 width, u32 height, std::string_view title,
                                        std::string_view icon_name, AuxiliaryRenderWindowUserData userdata,
                                        AuxiliaryRenderWindowHandle* handle, WindowInfo* wi, Error* error)

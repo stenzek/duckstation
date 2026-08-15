@@ -210,7 +210,6 @@ struct ALIGN_TO_CACHE_LINE State
   // cached copies of WantCaptureKeyboard/Mouse, used to know when to dispatch events
   std::atomic_bool imgui_wants_keyboard{false};
   std::atomic_bool imgui_wants_mouse{false};
-  std::atomic_bool imgui_wants_text{false};
 
   std::array<ImGuiManager::SoftwareCursor, InputManager::MAX_SOFTWARE_CURSORS> software_cursors = {};
 
@@ -562,16 +561,6 @@ void ImGuiManager::NewFrame(u64 current_time)
   ImGui::GetCurrentWindowRead()->Flags |= ImGuiWindowFlags_NoNavInputs;
   s_state.imgui_wants_keyboard.store(io.WantCaptureKeyboard, std::memory_order_relaxed);
   s_state.imgui_wants_mouse.store(io.WantCaptureMouse, std::memory_order_release);
-
-  const bool wants_text_input = io.WantTextInput;
-  if (s_state.imgui_wants_text.load(std::memory_order_relaxed) != wants_text_input)
-  {
-    s_state.imgui_wants_text.store(wants_text_input, std::memory_order_release);
-    if (wants_text_input)
-      Host::BeginTextInput();
-    else
-      Host::EndTextInput();
-  }
 }
 
 bool ImGuiManager::CompilePipelines(Error* error)
