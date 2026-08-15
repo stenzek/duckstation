@@ -29,7 +29,7 @@
     </message>
     <message>
         <source>Icon by</source>
-        <translation>アイコン</translation>
+        <translation>アイコン提供：</translation>
     </message>
     <message>
         <source>License</source>
@@ -70,11 +70,11 @@
     </message>
     <message>
         <source>Ready...</source>
-        <translation>準備中...</translation>
+        <translation>準備完了...</translation>
     </message>
     <message>
         <source>&lt;strong&gt;Your RetroAchievements login token is no longer valid.&lt;/strong&gt; You must re-enter your credentials for achievements to be tracked. Your password will not be saved in DuckStation, an access token will be generated and used instead.</source>
-        <translation>&lt;strong&gt;RetroAchievementsのログイントークンが無効になりました。&lt;/strong&gt;実績を有効にするには、認証情報を再入力する必要があります。パスワードはDuckStationに保存されず、代わりにアクセストークンが生成され使用されます。</translation>
+        <translation>&lt;strong&gt;RetroAchievements のログイントークンが無効になりました。&lt;/strong&gt;実績を追跡するには、認証情報を再入力する必要があります。パスワードは DuckStation に保存されず、代わりにアクセストークンが生成されて使用されます。</translation>
     </message>
     <message>
         <source>&amp;Login</source>
@@ -385,7 +385,7 @@ Token generated at %2</source>
     </message>
     <message>
         <source>Checked</source>
-        <translation>チェックする</translation>
+        <translation>オン</translation>
     </message>
     <message>
         <source>Shows a timer in the selected location when leaderboard challenges are active.</source>
@@ -393,7 +393,7 @@ Token generated at %2</source>
     </message>
     <message>
         <source>Plays sound effects for events such as achievement unlocks and leaderboard submissions.</source>
-        <translation>実績のロック解除やリーダーボードの提出などのイベントの効果音を再生します。</translation>
+        <translation>実績の解除やリーダーボードへのスコア送信などのイベント時に効果音を再生します。</translation>
     </message>
     <message numerus="yes">
         <source>%n seconds</source>
@@ -414,7 +414,7 @@ Token generated at %2</source>
     <name>Achievements</name>
     <message>
         <source>Overriding executable</source>
-        <translation>実行ファイルを上書きしています</translation>
+        <translation>実行ファイルのオーバーライド</translation>
     </message>
     <message>
         <source>Loading state</source>
@@ -438,11 +438,11 @@ Token generated at %2</source>
     </message>
     <message>
         <source>Achievements Disconnected</source>
-        <translation>実績から切断されました</translation>
+        <translation>実績サービスとの接続が切れました</translation>
     </message>
     <message>
         <source>Achievements Reconnected</source>
-        <translation>実績に再接続しました</translation>
+        <translation>実績サービスに再接続しました</translation>
     </message>
     <message>
         <source>All pending unlock requests have completed.</source>
@@ -997,7 +997,7 @@ Unread messages: {}</source>
     <name>AdvancedSettingsWidget</name>
     <message>
         <source>Logging</source>
-        <translation>ログ保存</translation>
+        <translation>ログ</translation>
     </message>
     <message>
         <source>Log Level:</source>
@@ -1065,7 +1065,7 @@ Unread messages: {}</source>
     </message>
     <message>
         <source>Used for storing covers in the game grid/Big Picture UIs.</source>
-        <translation>ゲームグリッド/大画面 UI に表示するカバー画像の保存に使用します。</translation>
+        <translation>ゲームグリッド／ビッグピクチャー UI に表示するカバー画像の保存に使用します。</translation>
     </message>
     <message>
         <source>Web Cache</source>
@@ -1208,7 +1208,7 @@ Unread messages: {}</source>
     </message>
     <message>
         <source>Cross</source>
-        <translation>Ｘ</translation>
+        <translation>×</translation>
     </message>
     <message>
         <source>Square</source>
@@ -1312,7 +1312,7 @@ Unread messages: {}</source>
     </message>
     <message>
         <source>Never</source>
-        <translation>未プレイ</translation>
+        <translation>しない</translation>
     </message>
     <message>
         <source>Digital Mode Only</source>
@@ -1766,7 +1766,7 @@ Unread messages: {}</source>
     </message>
     <message>
         <source>When running outside of 100% speed, adjusts the tempo on audio instead of dropping frames. Produces much nicer fast forward/slowdown audio at a small cost to performance.</source>
-        <translation>100% の速度を超えて実行している場合、フレームをドロップする代わりにオーディオのテンポを調整します。パフォーマンスへのわずかなコストで、はるかに優れた早送り/スローダウン音声を生成します。</translation>
+        <translation>100% 以外の速度で実行している場合、フレームをドロップする代わりに音声のテンポを調整します。わずかな性能低下と引き換えに、早送り時やスローダウン時の音声が大幅に改善されます。</translation>
     </message>
     <message>
         <source>Resets volume back to the global/inherited setting.</source>
@@ -1774,7 +1774,7 @@ Unread messages: {}</source>
     </message>
     <message>
         <source>Resets volume back to the default, i.e. full.</source>
-        <translation>音量をデフォルトに戻します。</translation>
+        <translation>音量をデフォルト（最大）に戻します。</translation>
     </message>
     <message>
         <source>Stretch Sequence Length</source>
@@ -1932,7 +1932,7 @@ You can manually update DuckStation by re-downloading the latest release. Do you
     </message>
     <message>
         <source>No updates are currently available. Please try again later.</source>
-        <translation>現在利用可能な更新はありません。後でもう一度行ってください。</translation>
+        <translation>現在利用可能な更新はありません。後でもう一度お試しください。</translation>
     </message>
     <message>
         <source>%1 (%2)</source>
@@ -1952,7 +1952,7 @@ You can manually update DuckStation by re-downloading the latest release. Do you
     </message>
     <message>
         <source>&lt;h2&gt;Save State Warning&lt;/h2&gt;&lt;p&gt;Installing this update will make your save states &lt;b&gt;incompatible&lt;/b&gt;. Please ensure you have saved your games to memory card before installing this update or you will lose progress.&lt;/p&gt;</source>
-        <translation>&lt;h2&gt;ステートセーブについての警告&lt;/h2&gt;&lt;p&gt;この更新をインストールすると、ステートセーブの&lt;b&gt;互換性がなくなります&lt;/b&gt;。&lt;br&gt;この更新をインストールする前に、ゲームをメモリーカードに保存したことを確認してください。保存していないと、進行状況が失われます。&lt;/p&gt;</translation>
+        <translation>&lt;h2&gt;ステートセーブについての警告&lt;/h2&gt;&lt;p&gt;この更新をインストールすると、ステートセーブの&lt;b&gt;互換性がなくなります&lt;/b&gt;。この更新をインストールする前に、ゲームの進行状況をメモリーカードにセーブしてください。セーブしていない場合、進行状況が失われます。&lt;/p&gt;</translation>
     </message>
     <message>
         <source>Updater Warning</source>
@@ -2247,7 +2247,7 @@ WAV ファイルは 16 ビットのステレオで、サンプルレート 44100
     <message>
         <source>The game will probably crash now.
 Your dump may be corrupted, or the physical disc is scratched.</source>
-        <translation>ゲームがクラッシュする可能性があります。
+        <translation>ゲームはこのままクラッシュする可能性が高いです。
 ダンプが破損しているか、物理ディスクに傷がある可能性があります。</translation>
     </message>
 </context>
@@ -2553,7 +2553,7 @@ Trying to use this cheat will not work as expected. Do you want to continue?</so
     </message>
     <message>
         <source>New...</source>
-        <translation>Nouveau...</translation>
+        <translation>新規...</translation>
     </message>
 </context>
 <context>
@@ -2572,7 +2572,7 @@ Trying to use this cheat will not work as expected. Do you want to continue?</so
     </message>
     <message>
         <source>Automatic (Frame End)</source>
-        <translation>自動 (Frame End)</translation>
+        <translation>自動（フレーム終了時）</translation>
     </message>
     <message numerus="yes">
         <source>%n game patches are active.</source>
@@ -2658,7 +2658,7 @@ Trying to use this cheat will not work as expected. Do you want to continue?</so
     </message>
     <message>
         <source>Fast Forward Boot</source>
-        <translation>高速起動</translation>
+        <translation>起動処理を早送り</translation>
     </message>
     <message>
         <source>CPU Emulation</source>
@@ -2686,7 +2686,7 @@ Trying to use this cheat will not work as expected. Do you want to continue?</so
     </message>
     <message>
         <source>CD-ROM Emulation</source>
-        <translation>CD-ROM エミュレーション (注: 読み込み高速化は不具合が出る場合があります)</translation>
+        <translation>CD-ROM エミュレーション</translation>
     </message>
     <message>
         <source>Read Speedup:</source>
@@ -2718,7 +2718,7 @@ Trying to use this cheat will not work as expected. Do you want to continue?</so
     </message>
     <message>
         <source>Maximum (Safer)</source>
-        <translation>最大 (安全)</translation>
+        <translation>最大 (より安全)</translation>
     </message>
     <message>
         <source>Switch to Next Disc on Stop</source>
@@ -2858,7 +2858,7 @@ Trying to use this cheat will not work as expected. Do you want to continue?</so
     </message>
     <message>
         <source>Reduces the simulated time for the CD-ROM sled to move to different areas of the disc. Can improve loading times, but crash games which do not expect the CD-ROM to operate faster.</source>
-        <translation>CD-ROM ピックアップレンズがディスクのさまざまな領域に移動(シーク)するためのシミュレーション時間を短縮します。&lt;br&gt;読み込み時間を改善できますが、CD-ROM の動作が速くなることを期待しないでください。クラッシュするゲームもあります。</translation>
+        <translation>CD-ROM のピックアップがディスク上の別の領域へ移動するシミュレーション時間を短縮します。読み込み時間を改善できますが、CD-ROM の高速動作を想定していないゲームはクラッシュする可能性があります。</translation>
     </message>
     <message>
         <source>Automatically applies patches to disc images when they are present in the same directory. Currently only PPF patches are supported with this option.</source>
@@ -2878,11 +2878,11 @@ Trying to use this cheat will not work as expected. Do you want to continue?</so
 By enabling this option you are agreeing to not create any bug reports unless you have confirmed the bug also occurs with overclocking disabled.
 
 This warning will only be shown once.</source>
-        <translation>CPU オーバークロックを有効にすると、ゲームの中断やバグの発生、パフォーマンスの低下などが生じ、システム要件も大幅に増加する可能性があります。
+        <translation>CPU オーバークロックを有効にすると、ゲームが正常に動作しなくなったり、バグが発生したり、パフォーマンスが低下したりするほか、システム要件が大幅に高くなる可能性があります。
 
-このオプションを有効にすると、オーバークロックを無効にしてもバグが発生することを確認しない限り、バグレポートを作成しないことに同意したことになります。
+このオプションを有効にすると、オーバークロックを無効にした状態でもバグが発生することを確認しない限り、バグレポートを作成しないことに同意したものとみなされます。
 
-この警告は1回だけ表示されます。</translation>
+この警告は一度だけ表示されます。</translation>
     </message>
     <message>
         <source>Yes, I will confirm bugs without overclocking before reporting.</source>
@@ -3990,9 +3990,9 @@ All bindings and configuration will be lost. You cannot undo this action.</sourc
         <source>WARNING: Your game is still saving to the memory card. Continuing to %1 may IRREVERSIBLY DESTROY YOUR MEMORY CARD. We recommend resuming your game and waiting 5 seconds for it to finish saving.
 
 Do you want to %1 anyway?</source>
-        <translation>警告：ゲームはまだメモリーカードに保存中です。このまま %1 を続けると、メモリーカードが破壊される可能性があります。ゲームを再開し、保存が終了するまで5秒間待つことをお勧めします。
+        <translation>警告：ゲームはまだメモリーカードにセーブ中です。このまま %1 すると、メモリーカードが修復不能な状態になる可能性があります。ゲームを再開し、セーブが完了するまで 5 秒間待つことをお勧めします。
 
-とにかく%1しますか?</translation>
+それでも %1 しますか？</translation>
     </message>
     <message>
         <source>Achievement Unlocks Unconfirmed</source>
@@ -4498,7 +4498,7 @@ This file is approximately 206KB, do you want to download it now?</source>
     </message>
     <message>
         <source>Trace</source>
-        <translation>Trace</translation>
+        <translation>トレース</translation>
     </message>
     <message>
         <source>&amp;Trace</source>
@@ -5055,7 +5055,7 @@ Clicking Reset will restore the serial back to the value scanned from in the dis
     </message>
     <message>
         <source>Sets the target emulation speed. It is not guaranteed that this speed will be reached, and if not, the emulator will run as fast as it can manage.</source>
-        <translation>エミュレーション目標速度を設定します。この速度に到達することは保証されていません。到達しない場合、エミュレーターは管理可能な速度で実行されます。</translation>
+        <translation>エミュレーションの目標速度を設定します。この速度に到達できるとは限りません。到達できない場合、エミュレーターは可能な限り高速で動作します。</translation>
     </message>
     <message>
         <source>Fast Forward Speed</source>
@@ -5083,11 +5083,11 @@ Clicking Reset will restore the serial back to the value scanned from in the dis
     </message>
     <message>
         <source>Synchronizes presentation of the console&apos;s frames to the host. Enabling may result in smoother animations, at the cost of increased input lag. &lt;strong&gt;GSync/FreeSync users should enable Optimal Frame Pacing instead.&lt;/strong&gt;</source>
-        <translation>コンソールのフレームをホストに同期して表示します。有効にすると、入力ラグが増加しますが、アニメーションがより滑らかになります。&lt;strong&gt;GSync/FreeSyncユーザーは、代わりにOptimal Frame Pacingを有効にしてください。&lt;/strong&gt;</translation>
+        <translation>コンソールのフレーム表示をホストに同期します。有効にすると、入力遅延が増える代わりに、アニメーションが滑らかになる場合があります。&lt;strong&gt;GSync/FreeSync を使用している場合は、代わりに「最適なフレームペーシング」を有効にしてください。&lt;/strong&gt;</translation>
     </message>
     <message>
         <source>Adjusts the emulation speed so the console&apos;s refresh rate matches the host&apos;s refresh rate when VSync is enabled. This results in the smoothest animations possible, at the cost of potentially increasing the emulation speed by less than 1%. Sync To Host Refresh Rate will not take effect if the console&apos;s refresh rate is too far from the host&apos;s refresh rate. Users with variable refresh rate displays should disable this option.</source>
-        <translation>VSyncが有効な場合、コンソールのリフレッシュレートがホストのリフレッシュレートに一致するように、エミュレーション速度を調整します。これにより、エミュレーション速度が1%未満しか向上しない可能性がありますが、可能な限りスムーズなアニメーションが得られます。コンソールのリフレッシュレートがホストのリフレッシュレートから離れすぎている場合、ホストとのリフレッシュレートの同期は有効になりません。可変リフレッシュレートのディスプレイを使用しているユーザーは、このオプションを無効にしてください。</translation>
+        <translation>VSync が有効な場合、コンソールのリフレッシュレートがホストのリフレッシュレートと一致するようにエミュレーション速度を調整します。エミュレーション速度が 1% 未満速くなる場合がありますが、可能な限り滑らかなアニメーションになります。コンソールとホストのリフレッシュレートが大きく異なる場合、「ホストのリフレッシュレートに同期」は機能しません。可変リフレッシュレート対応ディスプレイを使用している場合は、このオプションを無効にしてください。</translation>
     </message>
     <message>
         <source>Checked</source>
@@ -5099,7 +5099,7 @@ Clicking Reset will restore the serial back to the value scanned from in the dis
     </message>
     <message>
         <source>Reduces input latency by delaying the start of frame until closer to the presentation time. This may cause dropped frames on slower systems with higher frame time variance, if the buffer size is not sufficient.</source>
-        <translation>フレームの開始を提示時間の近くまで遅延させることにより、入力待ち時間を短縮する。このため、バッファサイズが十分でない場合、フレーム時間のばらつきが大きい低速のシステムでは、フレームのドロップが発生する可能性があります。</translation>
+        <translation>フレームの処理開始を画面への表示時刻に近づけることで遅らせ、入力遅延を短縮します。バッファサイズが不十分な場合、フレーム時間のばらつきが大きい低速なシステムではフレームが欠落することがあります。</translation>
     </message>
     <message>
         <source>Frame Time Buffer</source>
@@ -5115,7 +5115,7 @@ Clicking Reset will restore the serial back to the value scanned from in the dis
     </message>
     <message>
         <source>Skips the presentation/display of frames that are not unique. Can be combined with driver-level frame generation to increase perceptible frame rate. Can result in worse frame pacing, and is not compatible with syncing to host refresh.</source>
-        <translation>ユニークでないフレームの表示/ディスプレイをスキップします。知覚可能なフレームレートを上げるために、ドライバレベルのフレーム生成と組み合わせることができます。フレームレートが悪化する可能性があり、ホストのリフレッシュとの同期とは互換性がありません。</translation>
+        <translation>重複しているフレームの表示をスキップします。ドライバーレベルのフレーム生成と組み合わせることで、見かけ上のフレームレートを高められます。フレームペーシングが悪化する可能性があり、ホストのリフレッシュレートへの同期とは併用できません。</translation>
     </message>
     <message>
         <source>Rewinding</source>
@@ -5520,7 +5520,7 @@ You cannot undo this action.</source>
     </message>
     <message>
         <source>CD-ROM Emulation</source>
-        <translation>CD-ROM エミュレーション (注: 読み込み高速化は不具合が出る場合があります)</translation>
+        <translation>CD-ROM エミュレーション</translation>
     </message>
     <message>
         <source>CPU Emulation</source>
@@ -5844,11 +5844,11 @@ You cannot undo this action.</source>
     </message>
     <message>
         <source>Displays popup messages on events such as achievement unlocks and leaderboard submissions.</source>
-        <translation>実績のロック解除やリーダーボードの送信などのイベントに関するポップアップ メッセージを表示します。</translation>
+        <translation>実績の解除やリーダーボードへのスコア送信などのイベント時に、ポップアップメッセージを表示します。</translation>
     </message>
     <message>
         <source>Displays popup messages when starting, submitting, or failing a leaderboard challenge.</source>
-        <translation>リーダーボードチャレンジの開始、送信、失敗時にポップアップメッセージを表示します。</translation>
+        <translation>リーダーボードチャレンジの開始時、スコア送信時、または失敗時にポップアップメッセージを表示します。</translation>
     </message>
     <message>
         <source>Dithering</source>
@@ -6314,7 +6314,7 @@ Please check your username and password, and try again.</source>
     </message>
     <message>
         <source>Logs BIOS calls to printf(). Not all games contain debugging messages.</source>
-        <translation>BIOS 呼び出しを printf() にログ出力します。すべてのゲームにデバッグメッセージが含まれているわけではありません。</translation>
+        <translation>BIOS による printf() の呼び出しをログに記録します。すべてのゲームにデバッグメッセージが含まれているわけではありません。</translation>
     </message>
     <message>
         <source>Logs messages to duckstation.log in the user directory.</source>
@@ -6986,7 +6986,7 @@ You cannot undo this action.</source>
     </message>
     <message>
         <source>Show Nearby</source>
-        <translation>近くに表示</translation>
+        <translation>周辺順位を表示</translation>
     </message>
     <message>
         <source>Shows on-screen-display messages when events occur. Errors and warnings are still displayed regardless of this setting.</source>
@@ -7218,7 +7218,7 @@ Do you want to {1} anyway?</source>
     </message>
     <message>
         <source>Enable VRAM Write Replacement</source>
-        <translation>VRAM 書き換えを有効にする</translation>
+        <translation>VRAM 書き込み置換を有効にする</translation>
     </message>
     <message>
         <source>Enable/Disable the Player LED on DualSense controllers.</source>
@@ -7306,11 +7306,11 @@ Do you want to {1} anyway?</source>
     </message>
     <message>
         <source>Exits Big Picture mode, returning to the desktop interface.</source>
-        <translation>大画面モードを終了し、デスクトップ・インターフェースに戻ります。</translation>
+        <translation>ビッグピクチャーモードを終了し、デスクトップインターフェースに戻ります。</translation>
     </message>
     <message>
         <source>Forces the use of FIFO over Mailbox presentation, i.e. double buffering instead of triple buffering. Usually results in worse frame pacing.</source>
-        <translation>Mailbox presentationではなく、FIFOの使用を強制します。すなわち、トリプルバッファリングではなくダブルバッファリングを行います。通常、フレームレートが悪化します。</translation>
+        <translation>Mailbox プレゼンテーションの代わりに FIFO の使用を強制します。つまり、トリプルバッファリングではなくダブルバッファリングを使用します。通常、フレームペーシングが悪化します。</translation>
     </message>
     <message>
         <source>Frame Rate</source>
@@ -7642,7 +7642,7 @@ Do you want to {1} anyway?</source>
     </message>
     <message>
         <source>Open Containing Directory</source>
-        <translation>含まれるディレクトリを開く</translation>
+        <translation>格納先のディレクトリを開く</translation>
     </message>
     <message>
         <source>Open To Game List</source>
@@ -7678,7 +7678,7 @@ Do you want to {1} anyway?</source>
     </message>
     <message>
         <source>Overclocking Percentage</source>
-        <translation>CPU オーバークロック倍率</translation>
+        <translation>CPU オーバークロック率</translation>
     </message>
     <message>
         <source>Overlay Font</source>
@@ -7730,7 +7730,7 @@ Do you want to {1} anyway?</source>
     </message>
     <message>
         <source>Pauses the emulator when a controller with bindings is disconnected.</source>
-        <translation>接続されているコントローラが切断されると、エミュレータを一時停止します。</translation>
+        <translation>入力が割り当てられているコントローラーが切断されると、エミュレーターを一時停止します。</translation>
     </message>
     <message>
         <source>Pauses the emulator when a game is started.</source>
@@ -7746,7 +7746,7 @@ Do you want to {1} anyway?</source>
     </message>
     <message>
         <source>Per-game controller configuration initialized with global settings.</source>
-        <translation>グローバル設定で初期化されたゲームごとのコントローラ設定。</translation>
+        <translation>ゲームごとのコントローラー設定をグローバル設定で初期化しました。</translation>
     </message>
     <message>
         <source>Performance enhancement - jumps directly between blocks instead of returning to the dispatcher.</source>
@@ -7774,7 +7774,7 @@ Do you want to {1} anyway?</source>
     </message>
     <message>
         <source>Plays sound effects for events such as achievement unlocks and leaderboard submissions.</source>
-        <translation>実績のロック解除やリーダーボードの提出などのイベントの効果音を再生します。</translation>
+        <translation>実績の解除やリーダーボードへのスコア送信などのイベント時に効果音を再生します。</translation>
     </message>
     <message>
         <source>Plays sound effects when navigating and activating menus.</source>
@@ -7814,7 +7814,7 @@ Do you want to {1} anyway?</source>
     </message>
     <message>
         <source>Preload Replacement Textures</source>
-        <translation>テクスチャ置換をプリロードする</translation>
+        <translation>置換テクスチャをプリロード</translation>
     </message>
     <message>
         <source>Preserve Projection Precision</source>
@@ -7842,7 +7842,7 @@ Do you want to {1} anyway?</source>
     </message>
     <message>
         <source>Prevents the screen saver from activating and the host from sleeping while emulation is running.</source>
-        <translation>エミュレーションの実行中にスクリーンセーバーが起動し、ホストがスリープしないようにします。</translation>
+        <translation>エミュレーションの実行中に、スクリーンセーバーの起動とホストのスリープを防ぎます。</translation>
     </message>
     <message>
         <source>Progress Indicators</source>
@@ -8428,11 +8428,11 @@ Do you want to {1} anyway?</source>
     </message>
     <message>
         <source>Shows the number of frames (or v-syncs) displayed per second by the system in the top-right corner of the display.</source>
-        <translation>ディスプレイの右上に、システムが1秒間に表示するフレーム数を表示します。</translation>
+        <translation>システムが 1 秒間に表示するフレーム数（または VSync 回数）を、ディスプレイの右上に表示します。</translation>
     </message>
     <message>
         <source>Simulates the region check present in original, unmodified consoles.</source>
-        <translation>元の変更されていないコンソールに存在するリージョンチェックをシミュレートします。</translation>
+        <translation>改造されていない実機と同じリージョンチェックを再現します。</translation>
     </message>
     <message>
         <source>Simulates the system ahead of time and rolls back/replays to reduce input lag. Very high system requirements.</source>
@@ -10343,7 +10343,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>Per-game controller configuration initialized with global settings.</source>
-        <translation>グローバル設定で初期化されたゲームごとのコントローラ設定。</translation>
+        <translation>ゲームごとのコントローラー設定をグローバル設定で初期化しました。</translation>
     </message>
     <message>
         <source>Verifying Image</source>
@@ -10610,7 +10610,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>Enable VRAM Write Replacement</source>
-        <translation>VRAM 書き換えを有効にする</translation>
+        <translation>VRAM 書き込み置換を有効にする</translation>
     </message>
     <message>
         <source>Preload Texture Replacements</source>
@@ -10802,7 +10802,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>Downsamples the rendered image prior to displaying it. Can improve overall image quality in mixed 2D/3D games, but should be disabled for pure 3D games.</source>
-        <translation>レンダリングされた画像を表示する前にダウンサンプリングします。2D/3D混合ゲームでは全体的な画質を向上させることができますが、純粋な3Dゲームでは無効にする必要があります。</translation>
+        <translation>レンダリングされた画像を表示前にダウンサンプリングします。2D/3D 混在ゲームでは全体的な画質が向上する場合がありますが、純粋な 3D ゲームでは無効にすることを推奨します。</translation>
     </message>
     <message>
         <source>Down-Sampling Display Scale</source>
@@ -10906,7 +10906,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>Determines how much of the area typically not visible on a consumer TV set to crop/hide. Some games display content in the overscan area, or use it for screen effects. May not display correctly with the &quot;All Borders&quot; setting. &quot;Only Overscan&quot; offers a good compromise between stability and hiding black borders.</source>
-        <translation>民生用テレビで通常表示されない領域をどの程度クロップ/非表示にするかを決定します。ゲームによっては、オーバースキャン領域にコンテンツを表示したり、画面効果に使用したりするものもあります。すべての境界線」設定では正しく表示されない場合があります。&quot;オーバースキャンのみ &quot;は、安定性と黒枠を隠すことの間の良い妥協点を提供します。</translation>
+        <translation>一般的なテレビでは通常見えない領域を、どの程度クロップして隠すかを指定します。一部のゲームはオーバースキャン領域にコンテンツを表示したり、画面効果に使用したりします。「すべてのボーダー」設定では正しく表示されない場合があります。「オーバースキャン領域のみ」は、安定性を保ちながら黒い縁を隠すのに適した設定です。</translation>
     </message>
     <message>
         <source>Scaling</source>
@@ -10946,7 +10946,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>Checked</source>
-        <translation>チェックする</translation>
+        <translation>オン</translation>
     </message>
     <message>
         <source>Unchecked</source>
@@ -10958,7 +10958,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>Reduces &quot;wobbly&quot; polygons and &quot;warping&quot; textures that are common in PS1 games. &lt;strong&gt;May not be compatible with all games.&lt;/strong&gt;</source>
-        <translation>PS1のゲームにありがちなポリゴンの &quot;ガクガク &quot;やテクスチャの &quot;ゆがみ &quot;を軽減します。&lt;strong&gt;すべてのゲームに対応するわけではありません。&lt;/strong&gt;</translation>
+        <translation>PS1 ゲームでよく見られるポリゴンの「揺れ」やテクスチャの「歪み」を軽減します。&lt;strong&gt;すべてのゲームと互換性があるとは限りません。&lt;/strong&gt;</translation>
     </message>
     <message>
         <source>PGXP Depth Buffer</source>
@@ -10990,7 +10990,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>Exclusive Fullscreen Control</source>
-        <translation>排他的なルスクリーン制御</translation>
+        <translation>排他的フルスクリーン制御</translation>
     </message>
     <message>
         <source>Automatic</source>
@@ -11010,7 +11010,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>Forces the use of FIFO over Mailbox presentation, i.e. double buffering instead of triple buffering. Usually results in worse frame pacing.</source>
-        <translation>Mailbox presentationではなく、FIFOの使用を強制します。すなわち、トリプルバッファリングではなくダブルバッファリングを行います。通常、フレームレートが悪化します。</translation>
+        <translation>Mailbox プレゼンテーションの代わりに FIFO の使用を強制します。つまり、トリプルバッファリングではなくダブルバッファリングを使用します。通常、フレームペーシングが悪化します。</translation>
     </message>
     <message>
         <source>Uses a blit presentation model instead of flipping when using the Direct3D 11 renderer. This usually results in slower performance, but may be required for some streaming applications, or to uncap framerates on some systems.</source>
@@ -11054,7 +11054,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>Determines the increase in depth that will result in the depth buffer being cleared. Can help with depth issues in some games, but is still a hack/workaround.</source>
-        <translation>深度バッファがクリアされる深度を増加させます。ゲームによっては奥行きの問題に役立ちますが、まだハック/回避策です。</translation>
+        <translation>深度バッファのクリアを引き起こす深度の増加量を指定します。一部のゲームの深度問題を改善できますが、あくまで暫定的な回避策です。</translation>
     </message>
     <message>
         <source>Uses perspective-correct interpolation for texture coordinates, straightening out warped textures. Requires geometry correction enabled.</source>
@@ -11257,7 +11257,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>Scale of crosshair image on screen.</source>
-        <translation>画面上の十字画像のスケールを指定します。</translation>
+        <translation>画面上の照準画像のスケールを指定します。</translation>
     </message>
     <message>
         <source>Cursor Color</source>
@@ -11285,7 +11285,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>Tick Offset</source>
-        <translation>目盛りオフセット</translation>
+        <translation>ティックオフセット</translation>
     </message>
     <message>
         <source>Offset applied to lightgun horizontal position.</source>
