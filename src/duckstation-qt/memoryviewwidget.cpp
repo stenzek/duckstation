@@ -285,9 +285,9 @@ void MemoryViewWidget::paintEvent(QPaintEvent* event)
     const size_t data_offset = m_start_offset + (row * m_bytes_per_line);
     const unsigned row_address = static_cast<unsigned>(m_address_offset + data_offset);
     const int draw_x = m_char_width / 2 - offsetX;
-    if (RangesOverlap(data_offset, data_offset + m_bytes_per_line, m_selected_address, m_selected_address + 1))
+    if (RangesOverlap(data_offset, data_offset + m_bytes_per_line - 1, m_selected_address, m_selected_address + 1))
       painter.fillRect(0, y - m_char_height + 3, addressWidth(), m_char_height, selected_color);
-    else if (RangesOverlap(data_offset, data_offset + m_bytes_per_line, m_highlight_start, m_highlight_end))
+    else if (RangesOverlap(data_offset, data_offset + m_bytes_per_line - 1, m_highlight_start, m_highlight_end))
       painter.fillRect(0, y - m_char_height + 3, addressWidth(), m_char_height, highlight_color);
 
     const QString address_text(QString::asprintf("%08X", row_address));
