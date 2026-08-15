@@ -561,8 +561,10 @@ void GameCheatSettingsWidget::expandAllItems()
 void GameCheatSettingsWidget::onImportClicked()
 {
   QMenu* const menu = QtUtils::NewPopupMenu(this);
-  menu->addAction(tr("From File..."), this, &GameCheatSettingsWidget::onImportFromFileTriggered);
-  menu->addAction(tr("From Text..."), this, &GameCheatSettingsWidget::onImportFromTextTriggered);
+  menu->addAction(QIcon(u":/icons/monochrome/svg/folder-open-line.svg"_s), tr("From File..."), this,
+                  &GameCheatSettingsWidget::onImportFromFileTriggered);
+  menu->addAction(QIcon(u":/icons/monochrome/svg/file-list-line.svg"_s), tr("From Text..."), this,
+                  &GameCheatSettingsWidget::onImportFromTextTriggered);
   menu->popup(QCursor::pos());
 }
 
