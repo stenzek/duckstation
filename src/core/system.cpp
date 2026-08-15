@@ -1781,8 +1781,8 @@ System::BootResult System::BootSystem(SystemBootParameters parameters, Error* er
   if (parameters.load_image_to_ram || g_settings.cdrom_load_image_to_ram)
     CDROM::PrecacheMedia();
 
-  if (parameters.start_media_capture)
-    StartMediaCapture({});
+  if (parameters.start_media_capture.has_value())
+    StartMediaCapture(parameters.start_media_capture.value());
 
   if (start_paused)
     PauseSystem(true);
