@@ -1014,6 +1014,7 @@ void FullscreenUI::DrawFloatSpinBoxSetting(SettingsInterface* bsi, std::string_v
                                          SmallString(FSUI_VSTR("Use Global Setting"));
 
   static bool manual_input = false;
+  static bool activate_manual_input = false;
 
   const bool pressed = MenuActionButton(title, summary, sstr, false, enabled);
 
@@ -1023,6 +1024,7 @@ void FullscreenUI::DrawFloatSpinBoxSetting(SettingsInterface* bsi, std::string_v
   {
     OpenFixedPopupDialog(sstr);
     manual_input = false;
+    activate_manual_input = false;
   }
 
   if (!IsFixedPopupDialogOpen(sstr) ||
@@ -1076,11 +1078,15 @@ void FullscreenUI::DrawFloatSpinBoxSetting(SettingsInterface* bsi, std::string_v
     ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, LayoutScale(LAYOUT_WIDGET_FRAME_ROUNDING));
     ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
 
-    if (ImGui::InputText("##value", str_value, std::size(str_value), ImGuiInputTextFlags_CharsDecimal))
+    const ImGuiInputTextFlags input_flags =
+      ImGuiInputTextFlags_CharsDecimal |
+      (std::exchange(activate_manual_input, false) ? ImGuiInputTextFlags_AlwaysActivate : ImGuiInputTextFlags_None);
+    if (ImGui::InputText("##value", str_value, std::size(str_value), input_flags))
     {
       dlg_value = StringUtil::FromChars<float>(str_value).value_or(dlg_value);
       dlg_value_changed = true;
     }
+    HandleOnScreenKeyboard(OnScreenKeyboardMode::Numeric, true, min_value < 0.0f);
 
     ImGui::PopStyleVar(2);
 
@@ -1099,7 +1105,11 @@ void FullscreenUI::DrawFloatSpinBoxSetting(SettingsInterface* bsi, std::string_v
       step = -step_value;
     ImGui::PopItemFlag();
     if (HorizontalMenuButton(ICON_FA_KEYBOARD))
+    {
       manual_input = true;
+      activate_manual_input = true;
+      QueueResetFocus(FocusResetType::Other);
+    }
     if (HorizontalMenuButton(ICON_FA_ARROW_ROTATE_LEFT))
     {
       dlg_value = default_value * multiplier;
@@ -1279,6 +1289,7 @@ void FullscreenUI::DrawIntSpinBoxSetting(SettingsInterface* bsi, std::string_vie
     sstr = FSUI_VSTR("Use Global Setting");
 
   static bool manual_input = false;
+  static bool activate_manual_input = false;
 
   const bool pressed = MenuActionButton(title, summary, sstr, false, enabled);
 
@@ -1288,6 +1299,7 @@ void FullscreenUI::DrawIntSpinBoxSetting(SettingsInterface* bsi, std::string_vie
   {
     OpenFixedPopupDialog(sstr);
     manual_input = false;
+    activate_manual_input = false;
   }
 
   if (!IsFixedPopupDialogOpen(sstr) ||
@@ -1335,11 +1347,15 @@ void FullscreenUI::DrawIntSpinBoxSetting(SettingsInterface* bsi, std::string_vie
     ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
 
     std::snprintf(str_value, std::size(str_value), "%d", dlg_value);
-    if (ImGui::InputText("##value", str_value, std::size(str_value), ImGuiInputTextFlags_CharsDecimal))
+    const ImGuiInputTextFlags input_flags =
+      ImGuiInputTextFlags_CharsDecimal |
+      (std::exchange(activate_manual_input, false) ? ImGuiInputTextFlags_AlwaysActivate : ImGuiInputTextFlags_None);
+    if (ImGui::InputText("##value", str_value, std::size(str_value), input_flags))
     {
       dlg_value = StringUtil::FromChars<s32>(str_value).value_or(dlg_value);
       dlg_value_changed = true;
     }
+    HandleOnScreenKeyboard(OnScreenKeyboardMode::Numeric, false, min_value < 0);
 
     ImGui::PopStyleVar(2);
 
@@ -1358,7 +1374,11 @@ void FullscreenUI::DrawIntSpinBoxSetting(SettingsInterface* bsi, std::string_vie
       step = -step_value;
     ImGui::PopItemFlag();
     if (HorizontalMenuButton(ICON_FA_KEYBOARD))
+    {
       manual_input = true;
+      activate_manual_input = true;
+      QueueResetFocus(FocusResetType::Other);
+    }
     if (HorizontalMenuButton(ICON_FA_ARROW_ROTATE_LEFT))
     {
       dlg_value = default_value;
@@ -3040,6 +3060,7 @@ void FullscreenUI::DrawCoverDownloaderWindow()
   ImGui::InputTextMultiline("##templates", s_settings_locals.cover_downloader_template_urls,
                             sizeof(s_settings_locals.cover_downloader_template_urls),
                             ImVec2(ImGui::GetCurrentWindow()->WorkRect.GetWidth(), LayoutScale(175.0f)));
+  HandleOnScreenKeyboard(OnScreenKeyboardMode::Alphanumeric, true);
 
   ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(5.0f));
 
@@ -3388,6 +3409,7 @@ void FullscreenUI::DrawSpeedSelectorSetting(SettingsInterface* bsi, std::string_
     value_text.format("{:.0f}%", value.value() * 100.0f);
 
   static bool manual_input = false;
+  static bool activate_manual_input = false;
 
   const bool pressed = MenuActionButton(title, summary, value_text, false, enabled);
 
@@ -3397,6 +3419,7 @@ void FullscreenUI::DrawSpeedSelectorSetting(SettingsInterface* bsi, std::string_
   {
     OpenFixedPopupDialog(value_text);
     manual_input = false;
+    activate_manual_input = false;
   }
 
   if (!IsFixedPopupDialogOpen(value_text) ||
@@ -3440,11 +3463,15 @@ void FullscreenUI::DrawSpeedSelectorSetting(SettingsInterface* bsi, std::string_
 
     ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, LayoutScale(LAYOUT_WIDGET_FRAME_ROUNDING));
     ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
-    if (InputTextWithSuffix("##value", "%", str_value, std::size(str_value), ImGuiInputTextFlags_CharsDecimal))
+    if (InputTextWithSuffix("##value", "%", str_value, std::size(str_value),
+                            ImGuiInputTextFlags_CharsDecimal |
+                              (std::exchange(activate_manual_input, false) ? ImGuiInputTextFlags_AlwaysActivate :
+                                                                             ImGuiInputTextFlags_None)))
     {
       dlg_value = std::max(MIN_VALUE, StringUtil::FromChars<int>(str_value).value_or(dlg_value));
       dlg_value_changed = true;
     }
+    HandleOnScreenKeyboard(OnScreenKeyboardMode::Numeric, false, false);
     ImGui::PopStyleVar(2);
 
     ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(10.0f));
@@ -3467,7 +3494,11 @@ void FullscreenUI::DrawSpeedSelectorSetting(SettingsInterface* bsi, std::string_
     }
     ImGui::PopItemFlag();
     if (HorizontalMenuButton(ICON_FA_KEYBOARD, !unlimited))
+    {
       manual_input = true;
+      activate_manual_input = true;
+      QueueResetFocus(FocusResetType::Other);
+    }
 
     EndHorizontalMenuButtons(10.0f);
   }

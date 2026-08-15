@@ -547,6 +547,18 @@ bool WasSplitWindowChanged();
 void FocusSplitWindowContent();
 bool SplitWindowIsNavWindow();
 
+enum class OnScreenKeyboardMode : u8
+{
+  Alphanumeric,
+  Numeric,
+};
+
+/// Registers the previously submitted InputText item for gamepad keyboard handling.
+/// Returns true when the keyboard was closed with its Confirm action.
+bool HandleOnScreenKeyboard(OnScreenKeyboardMode mode = OnScreenKeyboardMode::Alphanumeric, bool allow_decimal = false,
+                            bool allow_negative = false, bool allow_newline = false);
+bool IsOnScreenKeyboardOpen();
+
 bool InputTextWithIcon(const char* str_id, std::string_view icon, const char* hint, char* buf, size_t buf_size,
                        float width, float font_size, float font_weight, ImGuiInputTextFlags flags = 0,
                        ImGuiInputTextCallback callback = nullptr, void* user_data = nullptr);

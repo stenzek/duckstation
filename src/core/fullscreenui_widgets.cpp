@@ -46,6 +46,7 @@
 #include <condition_variable>
 #include <deque>
 #include <mutex>
+#include <numeric>
 #include <utility>
 #include <variant>
 
@@ -54,6 +55,10 @@ using namespace std::string_view_literals;
 LOG_CHANNEL(FullscreenUI);
 
 namespace FullscreenUI {
+
+namespace {
+struct OnScreenKeyboardKey;
+}
 
 static constexpr float MENU_BACKGROUND_ANIMATION_TIME = 0.25f;
 static constexpr float SMOOTH_SCROLLING_SPEED = 3.5f;
@@ -67,6 +72,10 @@ static constexpr int NUM_MENU_BUTTON_SPLIT_LAYERS = 3;
 // Render to a 720p-sized texture for consistent blur across all resolutions.
 static constexpr u32 BLUR_TARGET_WIDTH = 1280;
 static constexpr u32 BLUR_TARGET_HEIGHT = 720;
+
+static constexpr const char* ON_SCREEN_KEYBOARD_ID = "##on_screen_keyboard";
+static constexpr float ON_SCREEN_KEYBOARD_OPEN_TIME = 0.2f;
+static constexpr float ON_SCREEN_KEYBOARD_CLOSE_TIME = 0.1f;
 
 enum class SplitWindowFocusChange : u8
 {
@@ -118,6 +127,14 @@ static void DrawToast(float& current_y);
 static void DrawLoadingScreen();
 
 static ImGuiID GetBackgroundProgressID(std::string_view str_id);
+
+static void UpdateOnScreenKeyboardInput();
+static void ActivateOnScreenKeyboardKey(const OnScreenKeyboardKey& key);
+static void DrawOnScreenKeyboard();
+static void FinishOnScreenKeyboard();
+static void CloseOnScreenKeyboard(bool set_pending_confirmed);
+static std::span<const std::span<const OnScreenKeyboardKey>> GetOnScreenKeyboardRows();
+static bool IsOnScreenKeyboardKeyEnabled(const OnScreenKeyboardKey& key);
 
 static constexpr std::array s_theme_display_names = {
   FSUI_NSTR("Automatic"),  FSUI_NSTR("Dark"),        FSUI_NSTR("Light"),       FSUI_NSTR("AMOLED"),
@@ -189,6 +206,44 @@ enum class CloseButtonState : u8
   GamepadPressed,
   AnyReleased,
   Cancelled,
+};
+
+enum class OnScreenKeyboardAction : u8
+{
+  Character,
+  ToggleCase,
+  TogglePage,
+  CursorLeft,
+  CursorRight,
+  Backspace,
+  NewLine,
+  Confirm,
+};
+
+struct OnScreenKeyboardKey
+{
+  const char* label;
+  OnScreenKeyboardAction action;
+  u8 width;
+  char character;
+};
+
+struct OnScreenKeyboardState
+{
+  ImGuiID target_id = 0;
+  ImGuiID confirmed_id = 0;
+  float animation_time_remaining = 0.0f;
+  OnScreenKeyboardMode mode = OnScreenKeyboardMode::Alphanumeric;
+  s8 selected_row = 0;
+  s8 selected_column = 0;
+  bool allow_decimal = false;
+  bool allow_negative = false;
+  bool allow_newline = false;
+  bool uppercase = false;
+  bool symbols = false;
+  bool open = false;
+  bool closing = false;
+  bool active = false;
 };
 
 struct BackgroundProgressDialogData
@@ -486,6 +541,7 @@ struct WidgetsState
   ImAnimatedVec2 menu_button_frame_max_animated;
 
   // TODO: Make these dynamic rather than global state.
+  OnScreenKeyboardState on_screen_keyboard;
   ChoiceDialog choice_dialog;
   DropdownDialog dropdown_dialog;
   FileSelectorDialog file_selector_dialog;
@@ -583,6 +639,7 @@ void FullscreenUI::ShutdownWidgets()
     s_state.left_fullscreen_footer_text.clear();
     s_state.last_left_fullscreen_footer_text.clear();
     s_state.fullscreen_text_change_time = 0.0f;
+    s_state.on_screen_keyboard = {};
     s_state.input_string_dialog.ClearState();
     s_state.message_dialog.ClearState();
     s_state.choice_dialog.ClearState();
@@ -1795,6 +1852,8 @@ ImRect FullscreenUI::FitImage(const ImVec2& fit_size, const ImVec2& image_size)
 
 void FullscreenUI::BeginLayout()
 {
+  UpdateOnScreenKeyboardInput();
+
   // we evict from the texture cache at the start of the frame, in case we go over mid-frame,
   // we need to keep all those textures alive until the end of the frame
   s_state.texture_cache.ManualEvict();
@@ -1811,6 +1870,9 @@ void FullscreenUI::EndLayout()
   s_state.input_string_dialog.Draw();
   s_state.progress_dialog.Draw();
   s_state.message_dialog.Draw();
+
+  if (s_state.on_screen_keyboard.open)
+    FinishOnScreenKeyboard();
 
 #if 0
   if (HasActiveWindow())
@@ -4821,12 +4883,15 @@ bool FullscreenUI::InputTextWithIcon(const char* str_id, std::string_view icon, 
   ImGui::PushFont(UIStyle.Font, font_size, font_weight);
 
   const bool result = ImGui::InputTextWithHint(str_id, hint, buf, buf_size, flags, callback, user_data);
+  bool on_screen_keyboard_confirmed = false;
+  if (!(flags & ImGuiInputTextFlags_ReadOnly))
+    on_screen_keyboard_confirmed = HandleOnScreenKeyboard();
 
   ImGui::PopFont();
   ImGui::PopStyleColor(2);
   ImGui::PopStyleVar(3);
 
-  return result;
+  return (result || (on_screen_keyboard_confirmed && (flags & ImGuiInputTextFlags_EnterReturnsTrue)));
 }
 
 bool FullscreenUI::InputTextWithSuffix(const char* str_id, std::string_view suffix, char* buf, size_t buf_size,
@@ -5875,6 +5940,7 @@ void FullscreenUI::InputStringDialog::Draw()
   }
   ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, LayoutScale(LAYOUT_WIDGET_FRAME_ROUNDING));
   ImGui::InputText("##input", &m_text);
+  HandleOnScreenKeyboard();
   ImGui::PopStyleVar();
 
   ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(10.0f));
@@ -6392,14 +6458,15 @@ std::unique_ptr<ProgressCallbackWithPrompt> FullscreenUI::OpenModalProgressDialo
 
 bool FullscreenUI::AreAnyWidgetsDialogOpen()
 {
-  return (s_state.choice_dialog.IsOpen() || s_state.dropdown_dialog.IsOpen() || s_state.file_selector_dialog.IsOpen() ||
-          s_state.input_string_dialog.IsOpen() || s_state.fixed_popup_dialog.IsOpen() ||
-          s_state.progress_dialog.IsOpen() || s_state.message_dialog.IsOpen());
+  return (s_state.on_screen_keyboard.open || s_state.choice_dialog.IsOpen() || s_state.dropdown_dialog.IsOpen() ||
+          s_state.file_selector_dialog.IsOpen() || s_state.input_string_dialog.IsOpen() ||
+          s_state.fixed_popup_dialog.IsOpen() || s_state.progress_dialog.IsOpen() || s_state.message_dialog.IsOpen());
 }
 
 bool FullscreenUI::AreAnyWidgetsDialogInteractable()
 {
-  return (s_state.choice_dialog.IsInteractable() || s_state.dropdown_dialog.IsInteractable() ||
+  return ((s_state.on_screen_keyboard.open && !s_state.on_screen_keyboard.closing) ||
+          s_state.choice_dialog.IsInteractable() || s_state.dropdown_dialog.IsInteractable() ||
           s_state.file_selector_dialog.IsInteractable() || s_state.input_string_dialog.IsInteractable() ||
           s_state.fixed_popup_dialog.IsInteractable() || s_state.progress_dialog.IsInteractable() ||
           s_state.message_dialog.IsInteractable());
@@ -7379,6 +7446,756 @@ void FullscreenUI::DrawToast(float& current_y)
                               text_col, s_state.toast_message, &message_size, ImVec2(0.0f, 0.0f), max_width,
                               &message_bb);
   }
+}
+
+std::span<const std::span<const FullscreenUI::OnScreenKeyboardKey>> FullscreenUI::GetOnScreenKeyboardRows()
+{
+  static constexpr const std::array<OnScreenKeyboardKey, 10> osk_number_row = {{
+    {nullptr, OnScreenKeyboardAction::Character, 1, '1'},
+    {nullptr, OnScreenKeyboardAction::Character, 1, '2'},
+    {nullptr, OnScreenKeyboardAction::Character, 1, '3'},
+    {nullptr, OnScreenKeyboardAction::Character, 1, '4'},
+    {nullptr, OnScreenKeyboardAction::Character, 1, '5'},
+    {nullptr, OnScreenKeyboardAction::Character, 1, '6'},
+    {nullptr, OnScreenKeyboardAction::Character, 1, '7'},
+    {nullptr, OnScreenKeyboardAction::Character, 1, '8'},
+    {nullptr, OnScreenKeyboardAction::Character, 1, '9'},
+    {nullptr, OnScreenKeyboardAction::Character, 1, '0'},
+  }};
+
+  static constexpr const std::array<OnScreenKeyboardKey, 10> osk_qwerty_row = {{
+    {nullptr, OnScreenKeyboardAction::Character, 1, 'q'},
+    {nullptr, OnScreenKeyboardAction::Character, 1, 'w'},
+    {nullptr, OnScreenKeyboardAction::Character, 1, 'e'},
+    {nullptr, OnScreenKeyboardAction::Character, 1, 'r'},
+    {nullptr, OnScreenKeyboardAction::Character, 1, 't'},
+    {nullptr, OnScreenKeyboardAction::Character, 1, 'y'},
+    {nullptr, OnScreenKeyboardAction::Character, 1, 'u'},
+    {nullptr, OnScreenKeyboardAction::Character, 1, 'i'},
+    {nullptr, OnScreenKeyboardAction::Character, 1, 'o'},
+    {nullptr, OnScreenKeyboardAction::Character, 1, 'p'},
+  }};
+
+  static constexpr const std::array<OnScreenKeyboardKey, 10> osk_home_row = {{
+    {nullptr, OnScreenKeyboardAction::Character, 1, 'a'},
+    {nullptr, OnScreenKeyboardAction::Character, 1, 's'},
+    {nullptr, OnScreenKeyboardAction::Character, 1, 'd'},
+    {nullptr, OnScreenKeyboardAction::Character, 1, 'f'},
+    {nullptr, OnScreenKeyboardAction::Character, 1, 'g'},
+    {nullptr, OnScreenKeyboardAction::Character, 1, 'h'},
+    {nullptr, OnScreenKeyboardAction::Character, 1, 'j'},
+    {nullptr, OnScreenKeyboardAction::Character, 1, 'k'},
+    {nullptr, OnScreenKeyboardAction::Character, 1, 'l'},
+    {ICON_FA_ARROW_TURN_DOWN, OnScreenKeyboardAction::NewLine, 1, 0},
+  }};
+
+  static constexpr const std::array<OnScreenKeyboardKey, 10> osk_bottom_row = {{
+    {ICON_FA_ARROW_UP_A_Z, OnScreenKeyboardAction::ToggleCase, 1, 0},
+    {nullptr, OnScreenKeyboardAction::Character, 1, 'z'},
+    {nullptr, OnScreenKeyboardAction::Character, 1, 'x'},
+    {nullptr, OnScreenKeyboardAction::Character, 1, 'c'},
+    {nullptr, OnScreenKeyboardAction::Character, 1, 'v'},
+    {nullptr, OnScreenKeyboardAction::Character, 1, 'b'},
+    {nullptr, OnScreenKeyboardAction::Character, 1, 'n'},
+    {nullptr, OnScreenKeyboardAction::Character, 1, 'm'},
+    {nullptr, OnScreenKeyboardAction::Character, 1, ','},
+    {ICON_FA_DELETE_LEFT, OnScreenKeyboardAction::Backspace, 1, 0},
+  }};
+
+  static constexpr const std::array<OnScreenKeyboardKey, 6> osk_alpha_controls = {{
+    {"#+=", OnScreenKeyboardAction::TogglePage, 1, 0},
+    {ICON_FA_CARET_LEFT, OnScreenKeyboardAction::CursorLeft, 1, 0},
+    {ICON_FA_CARET_RIGHT, OnScreenKeyboardAction::CursorRight, 1, 0},
+    {ICON_FA_GRIP_LINES, OnScreenKeyboardAction::Character, 4, ' '},
+    {nullptr, OnScreenKeyboardAction::Character, 1, '.'},
+    {ICON_FA_CHECK, OnScreenKeyboardAction::Confirm, 2, 0},
+  }};
+
+  static constexpr const std::array<const std::span<const OnScreenKeyboardKey>, 5> osk_alpha_rows = {{
+    osk_number_row,
+    osk_qwerty_row,
+    osk_home_row,
+    osk_bottom_row,
+    osk_alpha_controls,
+  }};
+
+  static constexpr const std::array<OnScreenKeyboardKey, 10> osk_symbol_row_1 = {{
+    {nullptr, OnScreenKeyboardAction::Character, 1, '!'},
+    {nullptr, OnScreenKeyboardAction::Character, 1, '@'},
+    {nullptr, OnScreenKeyboardAction::Character, 1, '#'},
+    {nullptr, OnScreenKeyboardAction::Character, 1, '$'},
+    {nullptr, OnScreenKeyboardAction::Character, 1, '%'},
+    {nullptr, OnScreenKeyboardAction::Character, 1, '^'},
+    {nullptr, OnScreenKeyboardAction::Character, 1, '&'},
+    {nullptr, OnScreenKeyboardAction::Character, 1, '*'},
+    {nullptr, OnScreenKeyboardAction::Character, 1, '('},
+    {nullptr, OnScreenKeyboardAction::Character, 1, ')'},
+  }};
+
+  static constexpr const std::array<OnScreenKeyboardKey, 10> osk_symbol_row_2 = {{
+    {nullptr, OnScreenKeyboardAction::Character, 1, '`'},
+    {nullptr, OnScreenKeyboardAction::Character, 1, '~'},
+    {nullptr, OnScreenKeyboardAction::Character, 1, '-'},
+    {nullptr, OnScreenKeyboardAction::Character, 1, '_'},
+    {nullptr, OnScreenKeyboardAction::Character, 1, '='},
+    {nullptr, OnScreenKeyboardAction::Character, 1, '+'},
+    {nullptr, OnScreenKeyboardAction::Character, 1, '['},
+    {nullptr, OnScreenKeyboardAction::Character, 1, ']'},
+    {nullptr, OnScreenKeyboardAction::Character, 1, '{'},
+    {nullptr, OnScreenKeyboardAction::Character, 1, '}'},
+  }};
+  static constexpr const std::array<OnScreenKeyboardKey, 10> osk_symbol_row_3 = {{
+    {nullptr, OnScreenKeyboardAction::Character, 1, ';'},
+    {nullptr, OnScreenKeyboardAction::Character, 1, ':'},
+    {nullptr, OnScreenKeyboardAction::Character, 1, '\''},
+    {nullptr, OnScreenKeyboardAction::Character, 1, '"'},
+    {nullptr, OnScreenKeyboardAction::Character, 1, '<'},
+    {nullptr, OnScreenKeyboardAction::Character, 1, '>'},
+    {nullptr, OnScreenKeyboardAction::Character, 1, '/'},
+    {nullptr, OnScreenKeyboardAction::Character, 1, '?'},
+    {nullptr, OnScreenKeyboardAction::Character, 1, ','},
+    {ICON_FA_DELETE_LEFT, OnScreenKeyboardAction::Backspace, 1, 0},
+  }};
+
+  static constexpr std::array<OnScreenKeyboardKey, 6> osk_symbol_controls = {{
+    {"ABC", OnScreenKeyboardAction::TogglePage, 1, 0},
+    {ICON_FA_CARET_LEFT, OnScreenKeyboardAction::CursorLeft, 1, 0},
+    {ICON_FA_CARET_RIGHT, OnScreenKeyboardAction::CursorRight, 1, 0},
+    {ICON_FA_GRIP_LINES, OnScreenKeyboardAction::Character, 4, ' '},
+    {nullptr, OnScreenKeyboardAction::Character, 1, '.'},
+    {ICON_FA_CHECK, OnScreenKeyboardAction::Confirm, 2, 0},
+  }};
+
+  static constexpr std::array<const std::span<const OnScreenKeyboardKey>, 5> s_osk_symbol_rows = {{
+    osk_number_row,
+    osk_symbol_row_1,
+    osk_symbol_row_2,
+    osk_symbol_row_3,
+    osk_symbol_controls,
+  }};
+
+  static constexpr std::array<OnScreenKeyboardKey, 3> osk_keypad_row_1 = {{
+    {"7", OnScreenKeyboardAction::Character, 2, '7'},
+    {"8", OnScreenKeyboardAction::Character, 2, '8'},
+    {"9", OnScreenKeyboardAction::Character, 2, '9'},
+  }};
+
+  static constexpr std::array<OnScreenKeyboardKey, 3> osk_keypad_row_2 = {{
+    {"4", OnScreenKeyboardAction::Character, 2, '4'},
+    {"5", OnScreenKeyboardAction::Character, 2, '5'},
+    {"6", OnScreenKeyboardAction::Character, 2, '6'},
+  }};
+
+  static constexpr std::array<OnScreenKeyboardKey, 3> osk_keypad_row_3 = {{
+    {"1", OnScreenKeyboardAction::Character, 2, '1'},
+    {"2", OnScreenKeyboardAction::Character, 2, '2'},
+    {"3", OnScreenKeyboardAction::Character, 2, '3'},
+  }};
+
+  static constexpr std::array<OnScreenKeyboardKey, 3> osk_keypad_row_4 = {{
+    {"0", OnScreenKeyboardAction::Character, 2, '0'},
+    {".", OnScreenKeyboardAction::Character, 2, '.'},
+    {ICON_FA_DELETE_LEFT, OnScreenKeyboardAction::Backspace, 2, 0},
+  }};
+
+  static constexpr std::array<OnScreenKeyboardKey, 4> osk_keypad_confirm_row = {{
+    {"-", OnScreenKeyboardAction::Character, 2, '-'},
+    {ICON_FA_CARET_LEFT, OnScreenKeyboardAction::CursorLeft, 1, 0},
+    {ICON_FA_CARET_RIGHT, OnScreenKeyboardAction::CursorRight, 1, 0},
+    {ICON_FA_CHECK, OnScreenKeyboardAction::Confirm, 2, 0},
+  }};
+
+  static constexpr std::array<const std::span<const OnScreenKeyboardKey>, 5> s_osk_keypad_rows = {{
+    osk_keypad_row_1,
+    osk_keypad_row_2,
+    osk_keypad_row_3,
+    osk_keypad_row_4,
+    osk_keypad_confirm_row,
+  }};
+
+  if (s_state.on_screen_keyboard.mode == OnScreenKeyboardMode::Numeric)
+    return s_osk_keypad_rows;
+  else if (s_state.on_screen_keyboard.symbols)
+    return s_osk_symbol_rows;
+  else
+    return osk_alpha_rows;
+}
+
+bool FullscreenUI::IsOnScreenKeyboardKeyEnabled(const OnScreenKeyboardKey& key)
+{
+  using namespace FullscreenUI;
+
+  if (key.action == OnScreenKeyboardAction::NewLine)
+    return s_state.on_screen_keyboard.allow_newline;
+  if (s_state.on_screen_keyboard.mode != OnScreenKeyboardMode::Numeric)
+    return true;
+  if (key.character == '.')
+    return s_state.on_screen_keyboard.allow_decimal;
+  if (key.character == '-')
+    return s_state.on_screen_keyboard.allow_negative;
+  return true;
+}
+
+void FullscreenUI::CloseOnScreenKeyboard(bool set_pending_confirmed)
+{
+  OnScreenKeyboardState& state = s_state.on_screen_keyboard;
+  if (!state.open || state.closing)
+    return;
+
+  if (GImGui->ActiveId == state.target_id)
+    ImGui::ClearActiveID();
+
+  state.confirmed_id = set_pending_confirmed ? state.target_id : 0;
+  state.animation_time_remaining = UIStyle.Animations ? ON_SCREEN_KEYBOARD_CLOSE_TIME : 0.0f;
+  state.closing = true;
+  if (state.animation_time_remaining <= 0.0f)
+  {
+    state.target_id = 0;
+    state.open = false;
+    state.closing = false;
+  }
+
+  QueueResetFocus(FocusResetType::PopupClosed);
+  CancelPendingMenuClose();
+  ForceKeyNavEnabled();
+}
+
+void FullscreenUI::UpdateOnScreenKeyboardInput()
+{
+  OnScreenKeyboardState& state = s_state.on_screen_keyboard;
+  if (!state.open)
+    return;
+
+  const ImGuiID id = ImGui::GetID(ON_SCREEN_KEYBOARD_ID);
+
+  // Lock keys to prevent other widgets from consuming the button presses
+  for (const ImGuiKey key : {ImGuiKey_GamepadDpadLeft, ImGuiKey_GamepadDpadRight, ImGuiKey_GamepadDpadUp,
+                             ImGuiKey_GamepadDpadDown, ImGuiKey_GamepadFaceDown, ImGuiKey_GamepadFaceRight})
+  {
+    ImGui::SetKeyOwner(key, id, ImGuiInputFlags_LockThisFrame);
+  }
+
+  ImGuiContext& g = *GImGui;
+  const bool move_left = ImGui::IsKeyPressed(ImGuiKey_GamepadDpadLeft, ImGuiInputFlags_Repeat, id);
+  const bool move_right = ImGui::IsKeyPressed(ImGuiKey_GamepadDpadRight, ImGuiInputFlags_Repeat, id);
+  const bool move_up = ImGui::IsKeyPressed(ImGuiKey_GamepadDpadUp, ImGuiInputFlags_Repeat, id);
+  const bool move_down = ImGui::IsKeyPressed(ImGuiKey_GamepadDpadDown, ImGuiInputFlags_Repeat, id);
+  const bool activate = ImGui::IsKeyPressed(ImGuiKey_NavGamepadActivate, 0, id);
+  const bool cancel = ImGui::IsKeyPressed(ImGuiKey_NavGamepadCancel, 0, id);
+
+  // ImGui navigation is updated before widgets are submitted. Discard any move generated before we claimed the keys.
+  g.NavMoveSubmitted = false;
+  g.NavMoveDir = ImGuiDir_None;
+  g.NavMoveFlags = ImGuiNavMoveFlags_None;
+  g.NavMoveScrollFlags = ImGuiScrollFlags_None;
+  g.NavMoveClipDir = ImGuiDir_None;
+  g.NavActivateId = 0;
+  g.NavActivateDownId = 0;
+  g.NavActivatePressedId = 0;
+  g.NavActivateFlags = ImGuiActivateFlags_None;
+  CancelPendingMenuClose();
+
+  if (state.closing)
+    return;
+
+  if (cancel)
+  {
+    EnqueueSoundEffect(SFX_NAV_BACK);
+    CloseOnScreenKeyboard(false);
+    return;
+  }
+
+  const auto rows = GetOnScreenKeyboardRows();
+
+  bool moved = false;
+  if (move_left || move_right)
+  {
+    const s8 direction = move_right ? 1 : -1;
+    const std::span<const OnScreenKeyboardKey> row = rows[state.selected_row];
+    do
+    {
+      state.selected_column += direction;
+      if (state.selected_column < 0)
+        state.selected_column = static_cast<s8>(row.size()) - 1;
+      else if (state.selected_column >= static_cast<s8>(row.size()))
+        state.selected_column = 0;
+    } while (!IsOnScreenKeyboardKeyEnabled(row[state.selected_column]));
+    moved = true;
+  }
+  else if (move_up || move_down)
+  {
+    // normalize the column to the count in the current row first
+    const auto& prev_row = rows[state.selected_row];
+    s8 normalized_column = 0;
+    for (s8 i = 0; i < state.selected_column; i++)
+      normalized_column += prev_row[i].width;
+
+    const s8 direction = move_down ? 1 : -1;
+    state.selected_row = (state.selected_row + direction + static_cast<s8>(rows.size())) % static_cast<s8>(rows.size());
+
+    // and denormalize in the new row
+    const auto& new_row = rows[state.selected_row];
+    state.selected_column = 0;
+    for (s8 i = 0; state.selected_column < (new_row.size() - 1); state.selected_column++)
+    {
+      // stop before the end of the current normalized width
+      const s8 new_normalized_width = i + new_row[state.selected_column].width;
+      if (new_normalized_width > normalized_column)
+        break;
+      i = new_normalized_width;
+    }
+
+    // ensure it's an enabled button
+    for (u32 i = 0; i < new_row.size() && !IsOnScreenKeyboardKeyEnabled(new_row[state.selected_column]); i++)
+    {
+      state.selected_column += direction;
+      if (state.selected_column < 0 || state.selected_column >= static_cast<s8>(new_row.size()))
+        state.selected_column = (direction > 0) ? 0 : (static_cast<s8>(new_row.size()) - 1);
+    }
+
+    moved = true;
+  }
+
+  if (moved)
+    EnqueueSoundEffect(SFX_NAV_MOVE);
+
+  // shortcut keys
+  ImGuiIO& io = ImGui::GetIO();
+  bool shortcut_activated = false;
+  if (ImGui::IsKeyPressed(ImGuiKey_NavGamepadMenu, ImGuiInputFlags_Repeat, id))
+  {
+    io.AddKeyEvent(ImGuiKey_Backspace, true);
+    io.AddKeyEvent(ImGuiKey_Backspace, false);
+    shortcut_activated = true;
+  }
+  if (ImGui::IsKeyPressed(ImGuiKey_NavGamepadContextMenu, 0, id))
+  {
+    state.uppercase = !state.uppercase;
+    shortcut_activated = true;
+  }
+  if (ImGui::IsKeyPressed(ImGuiKey_NavGamepadTweakSlow, 0, id))
+  {
+    io.AddKeyEvent(ImGuiKey_LeftArrow, true);
+    io.AddKeyEvent(ImGuiKey_LeftArrow, false);
+    shortcut_activated = true;
+  }
+  if (ImGui::IsKeyPressed(ImGuiKey_NavGamepadTweakFast, 0, id))
+  {
+    io.AddKeyEvent(ImGuiKey_RightArrow, true);
+    io.AddKeyEvent(ImGuiKey_RightArrow, false);
+    shortcut_activated = true;
+  }
+  if (shortcut_activated)
+    EnqueueSoundEffect(SFX_NAV_ACTIVATE);
+
+  if (!activate)
+    return;
+
+  ActivateOnScreenKeyboardKey(rows[state.selected_row][state.selected_column]);
+}
+
+void FullscreenUI::ActivateOnScreenKeyboardKey(const OnScreenKeyboardKey& key)
+{
+  if (!IsOnScreenKeyboardKeyEnabled(key))
+    return;
+
+  OnScreenKeyboardState& state = s_state.on_screen_keyboard;
+  ImGuiIO& io = ImGui::GetIO();
+  switch (key.action)
+  {
+    case OnScreenKeyboardAction::Character:
+    {
+      char character = key.character;
+      if (state.uppercase && character >= 'a' && character <= 'z')
+        character = static_cast<char>(character - ('a' - 'A'));
+
+      io.AddInputCharacter(static_cast<unsigned int>(character));
+    }
+    break;
+
+    case OnScreenKeyboardAction::ToggleCase:
+      state.uppercase = !state.uppercase;
+      break;
+
+    case OnScreenKeyboardAction::TogglePage:
+      state.symbols = !state.symbols;
+      state.selected_column = 0;
+      break;
+
+    case OnScreenKeyboardAction::CursorLeft:
+      io.AddKeyEvent(ImGuiKey_LeftArrow, true);
+      io.AddKeyEvent(ImGuiKey_LeftArrow, false);
+      break;
+
+    case OnScreenKeyboardAction::CursorRight:
+      io.AddKeyEvent(ImGuiKey_RightArrow, true);
+      io.AddKeyEvent(ImGuiKey_RightArrow, false);
+      break;
+
+    case OnScreenKeyboardAction::Backspace:
+      io.AddKeyEvent(ImGuiKey_Backspace, true);
+      io.AddKeyEvent(ImGuiKey_Backspace, false);
+      break;
+
+    case OnScreenKeyboardAction::NewLine:
+      io.AddKeyEvent(ImGuiKey_Enter, true);
+      io.AddKeyEvent(ImGuiKey_Enter, false);
+      break;
+
+    case OnScreenKeyboardAction::Confirm:
+      CloseOnScreenKeyboard(true);
+      break;
+  }
+
+  EnqueueSoundEffect(SFX_NAV_ACTIVATE);
+}
+
+bool FullscreenUI::HandleOnScreenKeyboard(OnScreenKeyboardMode mode /* = OnScreenKeyboardMode::Alphanumeric */,
+                                          bool allow_decimal /* = false */, bool allow_negative /* = false */,
+                                          bool allow_newline /* = false */)
+{
+  const ImGuiID id = ImGui::GetItemID();
+  OnScreenKeyboardState& state = s_state.on_screen_keyboard;
+  if (state.open)
+  {
+    if (state.target_id != id)
+      return false;
+
+    if (!state.closing)
+    {
+      state.mode = mode;
+      state.allow_decimal = allow_decimal;
+      state.allow_negative = allow_negative;
+      state.allow_newline = allow_newline;
+      ImGui::KeepAliveID(id);
+
+      // This is really horrible, but if we don't keep the text field as active, keys won't be directed to it.
+      ImGui::SetActiveID(id, ImGui::GetCurrentWindowRead());
+    }
+
+    // Still open.
+    DrawOnScreenKeyboard();
+    return false;
+  }
+
+  // IsItemActivated() handles initial and programmatic activation, including ImGuiInputTextFlags_AlwaysActivate. The
+  // explicit button check handles reactivating an input which is already active.
+  ImGuiContext& g = *GImGui;
+  const bool activated =
+    ImGui::IsItemActivated() || ImGui::IsKeyPressed(ImGuiKey_NavGamepadActivate, ImGuiInputFlags_None);
+  if (id == 0 || g.ActiveId != id || !IsGamepadInputSource() || !activated)
+  {
+    // Did we just confirm to close?
+    const bool confirmed = (state.confirmed_id == id);
+    state.confirmed_id = confirmed ? 0 : state.confirmed_id;
+    return confirmed;
+  }
+
+  // Select the entirety of the current text input when opening.
+  if (ImGuiInputTextState* input_state = ImGui::GetInputTextState(id))
+    input_state->SelectAll();
+
+  state.target_id = id;
+  state.mode = mode;
+  state.selected_row = 0;
+  state.selected_column = 0;
+  state.allow_decimal = allow_decimal;
+  state.allow_negative = allow_negative;
+  state.allow_newline = allow_newline;
+  state.uppercase = false;
+  state.symbols = false;
+  state.animation_time_remaining = UIStyle.Animations ? ON_SCREEN_KEYBOARD_OPEN_TIME : 0.0f;
+  state.open = true;
+  state.closing = false;
+  CancelPendingMenuClose();
+  DrawOnScreenKeyboard();
+  return false;
+}
+
+bool FullscreenUI::IsOnScreenKeyboardOpen()
+{
+  return s_state.on_screen_keyboard.open;
+}
+
+void FullscreenUI::DrawOnScreenKeyboard()
+{
+  OnScreenKeyboardState& state = s_state.on_screen_keyboard;
+
+  ImGuiWindow* top_modal = ImGui::GetTopMostAndVisiblePopupModal();
+
+  // When a modal exists, only submit the keyboard while that top-most modal is the current Begin() window.
+  if (!state.closing && top_modal && ImGui::GetCurrentWindowRead() != top_modal)
+    return;
+
+  // The target must remain the active, submitted InputText. The keyboard window deliberately has no ImGui items.
+  if (!state.closing && (GImGui->ActiveId != state.target_id || GImGui->ActiveIdIsAlive != state.target_id))
+  {
+    CloseOnScreenKeyboard(false);
+    if (!state.open)
+      return;
+  }
+
+  const ImGuiIO& io = ImGui::GetIO();
+
+  float alpha = 1.0f;
+  float position_offset = 0.0f;
+  if (state.animation_time_remaining > 0.0f)
+  {
+    state.animation_time_remaining -= io.DeltaTime;
+    if (state.animation_time_remaining <= 0.0f)
+    {
+      state.animation_time_remaining = 0.0f;
+      if (state.closing)
+      {
+        state.target_id = 0;
+        state.open = false;
+        state.closing = false;
+        return;
+      }
+    }
+    else if (state.closing)
+    {
+      const float fract = state.animation_time_remaining / ON_SCREEN_KEYBOARD_CLOSE_TIME;
+      alpha = fract;
+      position_offset = ImCeil(LayoutScale(20.0f) * (1.0f - fract));
+    }
+    else
+    {
+      const float fract = Easing::InExpo(state.animation_time_remaining / ON_SCREEN_KEYBOARD_OPEN_TIME);
+      alpha = 1.0f - fract;
+      position_offset = ImCeil(LayoutScale(50.0f) * fract);
+    }
+  }
+
+  const ImVec2 window_padding = LayoutScale(100.0f, 20.0f);
+  const float window_height = LayoutScale(350.0f);
+  const ImVec2 base_background_pos =
+    ImVec2(0.0f, io.DisplaySize.y - LayoutScale(LAYOUT_FOOTER_HEIGHT) - window_height - (window_padding.y * 2.0f));
+  const ImVec2 background_pos = base_background_pos + ImVec2(0.0f, position_offset);
+  const ImVec2 background_size =
+    ImVec2(io.DisplaySize.x, io.DisplaySize.y - LayoutScale(LAYOUT_FOOTER_HEIGHT) - base_background_pos.y);
+
+  constexpr ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
+                                            ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings |
+                                            ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse |
+                                            ImGuiWindowFlags_NoNavInputs | ImGuiWindowFlags_NoNavFocus |
+                                            ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoBackground;
+
+  ImGui::SetNextWindowPos(background_pos, ImGuiCond_Always);
+  ImGui::SetNextWindowSize(background_size, ImGuiCond_Always);
+  ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, window_padding);
+  ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, window_padding.y);
+  ImGui::PushStyleColor(ImGuiCol_ModalWindowDimBg, ImVec4());
+
+  if (!ImGui::Begin(ON_SCREEN_KEYBOARD_ID, nullptr, window_flags))
+  {
+    ImGui::End();
+    ImGui::PopStyleColor();
+    ImGui::PopStyleVar(2);
+    return;
+  }
+
+  state.active = true;
+
+  // we draw the background ourselves so we can round only the top
+  ImGuiWindow* window = ImGui::GetCurrentWindow();
+  ImGui::BringWindowToDisplayFront(window);
+  ImDrawList* const dl = window->DrawList;
+  dl->AddRectFilled(window->Pos, window->Pos + window->Size,
+                    ImGui::GetColorU32(MulAlpha(ModAlpha(UIStyle.PopupBackgroundColor, 0.98f), alpha)),
+                    window_padding.y, ImDrawFlags_RoundCornersTop);
+
+  ImVec2 content_pos = ImGui::GetCursorScreenPos();
+  ImVec2 content_size = ImGui::GetContentRegionAvail();
+
+  const float preview_height = LayoutScale(52.0f);
+  const float preview_spacing = LayoutScale(10.0f);
+  const ImRect preview_bb(content_pos, content_pos + ImVec2(content_size.x, preview_height));
+  dl->AddRectFilled(preview_bb.Min, preview_bb.Max,
+                    ImGui::GetColorU32(MulAlpha(UIStyle.PopupFrameBackgroundColor, alpha)),
+                    LayoutScale(LAYOUT_WIDGET_FRAME_ROUNDING));
+
+  if (ImGuiInputTextState* input_state = ImGui::GetInputTextState(state.target_id))
+  {
+    const char* const input_text = input_state->GetText();
+    const char* const input_text_end = input_text + input_state->TextLen;
+    const int cursor_pos = std::clamp(input_state->GetCursorPos(), 0, input_state->TextLen);
+
+    std::string password_text;
+    std::string_view preview_text;
+    size_t preview_cursor_pos;
+    size_t preview_selection_start;
+    size_t preview_selection_end;
+    bool preview_selection_includes_eol = false;
+    const int selection_start =
+      std::clamp(std::min(input_state->GetSelectionStart(), input_state->GetSelectionEnd()), 0, input_state->TextLen);
+    const int selection_end =
+      std::clamp(std::max(input_state->GetSelectionStart(), input_state->GetSelectionEnd()), 0, input_state->TextLen);
+    if (input_state->Flags & ImGuiInputTextFlags_Password)
+    {
+      const size_t character_count = static_cast<size_t>(ImTextCountCharsFromUtf8(input_text, input_text_end));
+      password_text.assign(character_count, '*');
+      preview_text = password_text;
+      preview_cursor_pos =
+        static_cast<size_t>(ImTextCountCharsFromUtf8(input_text, input_text + static_cast<size_t>(cursor_pos)));
+      preview_selection_start =
+        static_cast<size_t>(ImTextCountCharsFromUtf8(input_text, input_text + static_cast<size_t>(selection_start)));
+      preview_selection_end =
+        static_cast<size_t>(ImTextCountCharsFromUtf8(input_text, input_text + static_cast<size_t>(selection_end)));
+    }
+    else
+    {
+      const char* preview_text_begin = input_text;
+      const char* preview_text_end = input_text_end;
+      if (input_state->Flags & ImGuiInputTextFlags_Multiline)
+      {
+        const char* const cursor = input_text + cursor_pos;
+        preview_text_begin = cursor;
+        while (preview_text_begin > input_text && preview_text_begin[-1] != '\n' && preview_text_begin[-1] != '\r')
+          preview_text_begin--;
+        preview_text_end = cursor;
+        while (preview_text_end < input_text_end && preview_text_end[0] != '\n' && preview_text_end[0] != '\r')
+          preview_text_end++;
+      }
+
+      preview_text = std::string_view(preview_text_begin, static_cast<size_t>(preview_text_end - preview_text_begin));
+      preview_cursor_pos = static_cast<size_t>((input_text + cursor_pos) - preview_text_begin);
+      const int preview_text_offset = static_cast<int>(preview_text_begin - input_text);
+      preview_selection_start = static_cast<size_t>(
+        std::clamp(selection_start - preview_text_offset, 0, static_cast<int>(preview_text.size())));
+      preview_selection_end =
+        static_cast<size_t>(std::clamp(selection_end - preview_text_offset, 0, static_cast<int>(preview_text.size())));
+      const int preview_text_end_offset = static_cast<int>(preview_text_end - input_text);
+      preview_selection_includes_eol = preview_text_end < input_text_end &&
+                                       selection_start <= preview_text_end_offset &&
+                                       selection_end > preview_text_end_offset;
+    }
+
+    const ImRect preview_text_bb(preview_bb.Min + LayoutScale(18.0f, 8.0f), preview_bb.Max - LayoutScale(18.0f, 8.0f));
+    const float cursor_offset =
+      UIStyle.Font
+        ->CalcTextSizeA(UIStyle.LargeFontSize, UIStyle.NormalFontWeight, std::numeric_limits<float>::max(), 0.0f,
+                        preview_text.data(), preview_text.data() + preview_cursor_pos)
+        .x;
+    const float horizontal_scroll = std::max(cursor_offset - preview_text_bb.GetWidth() + LayoutScale(4.0f), 0.0f);
+    const ImVec2 text_pos =
+      ImVec2(preview_text_bb.Min.x - horizontal_scroll, preview_text_bb.GetCenter().y - UIStyle.LargeFontSize * 0.5f);
+
+    dl->PushClipRect(preview_text_bb.Min, preview_text_bb.Max, true);
+    if (preview_selection_start < preview_selection_end || preview_selection_includes_eol)
+    {
+      const float selection_offset =
+        UIStyle.Font
+          ->CalcTextSizeA(UIStyle.LargeFontSize, UIStyle.NormalFontWeight, std::numeric_limits<float>::max(), 0.0f,
+                          preview_text.data(), preview_text.data() + preview_selection_start)
+          .x;
+      float selection_width =
+        UIStyle.Font
+          ->CalcTextSizeA(UIStyle.LargeFontSize, UIStyle.NormalFontWeight, std::numeric_limits<float>::max(), 0.0f,
+                          preview_text.data() + preview_selection_start, preview_text.data() + preview_selection_end)
+          .x;
+      if (preview_selection_includes_eol)
+      {
+        selection_width += IM_TRUNC(
+          UIStyle.Font->GetFontBaked(UIStyle.LargeFontSize, UIStyle.NormalFontWeight)->GetCharAdvance(' ') * 0.5f);
+      }
+
+      const bool is_multiline = (input_state->Flags & ImGuiInputTextFlags_Multiline) != 0;
+      const float selection_offset_y = is_multiline ? 0.0f : -1.0f;
+      const float selection_height = UIStyle.LargeFontSize + (is_multiline ? 0.0f : 3.0f);
+      dl->AddRectFilled(text_pos + ImVec2(selection_offset, selection_offset_y),
+                        text_pos + ImVec2(selection_offset + selection_width, selection_offset_y + selection_height),
+                        MulAlpha(ImGui::GetColorU32(ImGuiCol_TextSelectedBg), alpha));
+    }
+    dl->AddText(UIStyle.Font, UIStyle.LargeFontSize, UIStyle.NormalFontWeight, text_pos,
+                ImGui::GetColorU32(MulAlpha(UIStyle.BackgroundTextColor, alpha)), IMSTR_START_END(preview_text));
+    const float cursor_x = text_pos.x + cursor_offset;
+    dl->AddLine(ImVec2(cursor_x, preview_text_bb.Min.y), ImVec2(cursor_x, preview_text_bb.Max.y),
+                ImGui::GetColorU32(MulAlpha(UIStyle.BackgroundTextColor, alpha)), LayoutScale(2.0f));
+    dl->PopClipRect();
+  }
+
+  content_pos.y = preview_bb.Max.y + preview_spacing;
+  content_size.y -= preview_height + preview_spacing;
+
+  const auto rows = GetOnScreenKeyboardRows();
+  const u32 row_count = static_cast<u32>(rows.size());
+  const float row_spacing = LayoutScale(7.0f);
+  const float key_spacing = LayoutScale(7.0f);
+  const float flex_column_count = std::accumulate(rows[0].begin(), rows[0].end(), 0.0f,
+                                                  [](const float& acc, const auto& it) { return (it.width + acc); });
+  const float unit_width = (content_size.x - key_spacing * (flex_column_count - 1.0f)) / flex_column_count;
+  const float row_height =
+    (content_size.y - row_spacing * static_cast<float>(row_count - 1)) / static_cast<float>(row_count);
+
+  const ImGuiID id = ImGui::GetID(ON_SCREEN_KEYBOARD_ID);
+  ImGuiContext& g = *GImGui;
+  const bool activating = ImGui::IsKeyPressed(ImGuiKey_NavGamepadActivate, 0, id);
+
+  const ImVec2 center_text = ImVec2(0.5f, 0.5f);
+  for (u32 row_index = 0; row_index < row_count; row_index++)
+  {
+    const std::span<const OnScreenKeyboardKey> row = rows[row_index];
+    float key_x = content_pos.x;
+    const float key_y = content_pos.y + static_cast<float>(row_index) * (row_height + row_spacing);
+
+    for (u32 column_index = 0; column_index < row.size(); column_index++)
+    {
+      const OnScreenKeyboardKey& key = row[column_index];
+      const ImRect bb(
+        ImVec2(key_x, key_y),
+        ImVec2(key_x + unit_width + ((unit_width + key_spacing) * (key.width - 1.0f)), key_y + row_height));
+      const bool enabled = IsOnScreenKeyboardKeyEnabled(key);
+      const bool highlighted = (key.action == OnScreenKeyboardAction::ToggleCase && state.uppercase) ||
+                               (key.action == OnScreenKeyboardAction::TogglePage && state.symbols);
+      const bool selected =
+        (state.selected_row == static_cast<s32>(row_index) && state.selected_column == static_cast<s32>(column_index));
+
+      const ImVec4 background =
+        enabled ? (selected ? DarkerColor(UIStyle.SecondaryStrongColor, activating ? 0.8f : 1.0f) :
+                              (highlighted ? UIStyle.PrimaryLightColor : UIStyle.PopupFrameBackgroundColor)) :
+                  DarkerColor(UIStyle.PopupBackgroundColor, 1.5f);
+      dl->AddRectFilled(bb.Min, bb.Max, ImGui::GetColorU32(MulAlpha(background, alpha)),
+                        LayoutScale(LAYOUT_MENU_ITEM_BORDER_ROUNDING));
+
+      char character_label[2] = {key.character, 0};
+      if (state.uppercase && character_label[0] >= 'a' && character_label[0] <= 'z')
+        character_label[0] = static_cast<char>(character_label[0] - ('a' - 'A'));
+
+      std::string_view label;
+      if (key.action == OnScreenKeyboardAction::Character && key.character != ' ')
+        label = character_label;
+      else
+        label = key.label;
+
+      RenderShadowedTextClipped(
+        dl, UIStyle.Font, UIStyle.LargeFontSize, UIStyle.BoldFontWeight, bb.Min, bb.Max,
+        ImGui::GetColorU32(MulAlpha(enabled ? UIStyle.BackgroundTextColor : UIStyle.DisabledColor, alpha)), label,
+        nullptr, center_text);
+      key_x = bb.Max.x + key_spacing;
+    }
+  }
+
+  ImGui::End();
+  ImGui::PopStyleColor();
+  ImGui::PopStyleVar(2);
+}
+
+void FullscreenUI::FinishOnScreenKeyboard()
+{
+  // Clear out unused on-screen keyboards.
+  if (!std::exchange(s_state.on_screen_keyboard.active, false))
+  {
+    CloseOnScreenKeyboard(false);
+    return;
+  }
+
+  // Override any dialog specific footer text. We have to do this here because the callers can override it before then.
+  SetFullscreenFooterText(std::array{
+    std::make_pair(ICON_PF_XBOX_DPAD, FSUI_VSTR("Select Key")),
+    std::make_pair(ICON_PF_LEFT_SHOULDER_LB ICON_PF_RIGHT_SHOULDER_RB, FSUI_VSTR("Move Cursor")),
+    std::make_pair(ICON_PF_BUTTON_Y, FSUI_VSTR("Toggle Case")), std::make_pair(ICON_PF_BUTTON_X, FSUI_VSTR("Delete")),
+    std::make_pair(ICON_PF_BUTTON_A, FSUI_VSTR("Select")), std::make_pair(ICON_PF_BUTTON_B, FSUI_VSTR("Cancel"))});
 }
 
 std::span<const char* const> FullscreenUI::GetThemeNames()
