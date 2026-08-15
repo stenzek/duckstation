@@ -1971,8 +1971,12 @@ void FullscreenUI::CloseFixedPopupDialogImmediately()
 
 bool FullscreenUI::BeginFixedPopupDialog(float scaled_window_padding /* = LayoutScale(20.0f) */,
                                          float scaled_window_rounding /* = LayoutScale(20.0f) */,
-                                         const ImVec2& scaled_window_size /* = ImVec2(0.0f, 0.0f) */)
+                                         const ImVec2& scaled_window_size /* = ImVec2() */,
+                                         const ImVec2& min_window_size /* = ImVec2() */)
 {
+  if (min_window_size.x > 0.0f || min_window_size.y > 0.0f)
+    ImGui::SetNextWindowSizeConstraints(min_window_size, ImVec2(FLT_MAX, FLT_MAX));
+
   if (!s_state.fixed_popup_dialog.Begin(scaled_window_padding, scaled_window_rounding, scaled_window_size))
   {
     s_state.fixed_popup_dialog.ClearState();

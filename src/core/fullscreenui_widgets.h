@@ -335,7 +335,7 @@ void CloseFixedPopupDialog();
 void CloseFixedPopupDialogImmediately();
 bool BeginFixedPopupDialog(float scaled_window_padding = LayoutScale(20.0f),
                            float scaled_window_rounding = LayoutScale(20.0f),
-                           const ImVec2& scaled_window_size = ImVec2(0.0f, 0.0f));
+                           const ImVec2& scaled_window_size = ImVec2(), const ImVec2& min_window_size = ImVec2());
 void EndFixedPopupDialog();
 
 void RenderOverlays();

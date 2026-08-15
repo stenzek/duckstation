@@ -2300,7 +2300,8 @@ bool FullscreenUI::OpenLoadStateSelectorForGameResume(const GameList::Entry* ent
 
 void FullscreenUI::DrawResumeStateSelector()
 {
-  if (!BeginFixedPopupDialog(LayoutScale(30.0f), LayoutScale(40.0f), ImVec2(LayoutScale(850.0f), 0.0f)))
+  if (!BeginFixedPopupDialog(LayoutScale(30.0f), LayoutScale(40.0f), ImVec2(LayoutScale(850.0f), 0.0f),
+                             LayoutScale(0.0, 300.0f)))
   {
     ClearSaveStateEntryList();
     return;
@@ -2400,7 +2401,7 @@ void FullscreenUI::CopyTextToClipboard(std::string title, std::string_view text)
 void FullscreenUI::DrawAboutWindow()
 {
   if (!BeginFixedPopupDialog(LayoutScale(LAYOUT_LARGE_POPUP_PADDING), LayoutScale(LAYOUT_LARGE_POPUP_ROUNDING),
-                             LayoutScale(1100.0f, 0.0f)))
+                             LayoutScale(1100.0f, 0.0f), LayoutScale(0.0, 400.0f)))
   {
     return;
   }

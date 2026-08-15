@@ -870,7 +870,7 @@ void FullscreenUI::DrawIntRangeSetting(SettingsInterface* bsi, std::string_view 
 
   if (!IsFixedPopupDialogOpen(sstr) ||
       !BeginFixedPopupDialog(LayoutScale(LAYOUT_SMALL_POPUP_PADDING), LayoutScale(LAYOUT_SMALL_POPUP_PADDING),
-                             LayoutScale(600.0f, 0.0f)))
+                             LayoutScale(600.0f, 0.0f), LayoutScale(0.0, 250.0f)))
   {
     return;
   }
@@ -944,7 +944,7 @@ void FullscreenUI::DrawFloatRangeSetting(SettingsInterface* bsi, std::string_vie
 
   if (!IsFixedPopupDialogOpen(sstr) ||
       !BeginFixedPopupDialog(LayoutScale(LAYOUT_SMALL_POPUP_PADDING), LayoutScale(LAYOUT_SMALL_POPUP_PADDING),
-                             LayoutScale(600.0f, 0.0f)))
+                             LayoutScale(600.0f, 0.0f), LayoutScale(0.0, 250.0f)))
   {
     return;
   }
@@ -1029,7 +1029,7 @@ void FullscreenUI::DrawFloatSpinBoxSetting(SettingsInterface* bsi, std::string_v
 
   if (!IsFixedPopupDialogOpen(sstr) ||
       !BeginFixedPopupDialog(LayoutScale(LAYOUT_SMALL_POPUP_PADDING), LayoutScale(LAYOUT_SMALL_POPUP_PADDING),
-                             LayoutScale(650.0f, 0.0f)))
+                             LayoutScale(650.0f, 0.0f), LayoutScale(0.0, 250.0f)))
   {
     return;
   }
@@ -1177,7 +1177,7 @@ bool FullscreenUI::DrawIntRectSetting(SettingsInterface* bsi, std::string_view t
 
   if (!IsFixedPopupDialogOpen(sstr) ||
       !BeginFixedPopupDialog(LayoutScale(LAYOUT_SMALL_POPUP_PADDING), LayoutScale(LAYOUT_SMALL_POPUP_PADDING),
-                             ImVec2(LayoutScale(500.0f), 0.0f)))
+                             ImVec2(LayoutScale(500.0f), 0.0f), LayoutScale(0.0, 250.0f)))
   {
     return false;
   }
@@ -1304,7 +1304,7 @@ void FullscreenUI::DrawIntSpinBoxSetting(SettingsInterface* bsi, std::string_vie
 
   if (!IsFixedPopupDialogOpen(sstr) ||
       !BeginFixedPopupDialog(LayoutScale(LAYOUT_SMALL_POPUP_PADDING), LayoutScale(LAYOUT_SMALL_POPUP_PADDING),
-                             LayoutScale(650.0f, 0.0f)))
+                             LayoutScale(650.0f, 0.0f), LayoutScale(0.0, 250.0f)))
   {
     return;
   }
@@ -3018,7 +3018,7 @@ void FullscreenUI::DrawGameListSettingsPage()
 void FullscreenUI::DrawCoverDownloaderWindow()
 {
   if (!BeginFixedPopupDialog(LayoutScale(LAYOUT_LARGE_POPUP_PADDING), LayoutScale(LAYOUT_LARGE_POPUP_ROUNDING),
-                             LayoutScale(1000.0f, 0.0f)))
+                             LayoutScale(1000.0f, 0.0f), LayoutScale(0.0, 400.0f)))
   {
     return;
   }
@@ -3424,7 +3424,7 @@ void FullscreenUI::DrawSpeedSelectorSetting(SettingsInterface* bsi, std::string_
 
   if (!IsFixedPopupDialogOpen(value_text) ||
       !BeginFixedPopupDialog(LayoutScale(LAYOUT_SMALL_POPUP_PADDING), LayoutScale(LAYOUT_SMALL_POPUP_PADDING),
-                             LayoutScale(650.0f, 0.0f)))
+                             LayoutScale(650.0f, 0.0f), LayoutScale(0.0, 250.0f)))
   {
     return;
   }
@@ -5794,7 +5794,7 @@ void FullscreenUI::DrawAchievementsLoginWindow()
   static constexpr const char* LOGIN_PROGRESS_NAME = "AchievementsLogin";
 
   if (!BeginFixedPopupDialog(LayoutScale(LAYOUT_LARGE_POPUP_PADDING), LayoutScale(LAYOUT_LARGE_POPUP_ROUNDING),
-                             LayoutScale(600.0f, 0.0f)))
+                             LayoutScale(600.0f, 0.0f), LayoutScale(0.0f, 250.0f)))
   {
     // NOTE: Deliberately memset()'ed because it's credentials.
     std::memset(s_settings_locals.achievements_login_username, 0,
@@ -5847,7 +5847,8 @@ void FullscreenUI::DrawAchievementsLoginWindow()
 
   const float item_width = LayoutScale(550.0f);
   const ImGuiInputTextFlags extra_username_flags =
-    (ResetFocusHere() ? ImGuiInputTextFlags_AlwaysActivate : 0) | (is_logging_in ? ImGuiInputTextFlags_ReadOnly : 0);
+    ((ImGui::IsWindowAppearing() && ResetFocusHere()) ? ImGuiInputTextFlags_AlwaysActivate : 0) |
+    (is_logging_in ? ImGuiInputTextFlags_ReadOnly : 0);
 
   ImGui::SetCursorPosX((ImGui::GetWindowWidth() - item_width) * 0.5f);
   InputTextWithIcon("##username", ICON_FA_ID_CARD, FSUI_CSTR("User Name"),
@@ -6179,7 +6180,7 @@ void FullscreenUI::DrawPatchesOrCheatsSettingsPage(bool cheats)
 
       if (IsFixedPopupDialogOpen(title) &&
           BeginFixedPopupDialog(LayoutScale(LAYOUT_SMALL_POPUP_PADDING), LayoutScale(LAYOUT_SMALL_POPUP_PADDING),
-                                LayoutScale(600.0f, 0.0f)))
+                                LayoutScale(600.0f, 0.0f), LayoutScale(0.0, 250.0f)))
       {
         bool range_value_changed = false;
 
