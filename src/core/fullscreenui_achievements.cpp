@@ -576,7 +576,6 @@ void FullscreenUI::DrawIndicators(NotificationLayout& layout)
   const float spacing = ImCeil(10.0f * scale);
   const ImVec2 padding = ImVec2(ImCeil(16.0f * scale), ImCeil(10.0f * scale));
   const float rounding = ImCeil(10.0f * scale);
-  const float image_size = ImCeil(50.0f * scale);
   const float font_size = ImCeil(LAYOUT_MEDIUM_FONT_SIZE * scale);
   const ImGuiIO& io = ImGui::GetIO();
   const bool blur_background = g_gpu_settings.display_blur_message_backgrounds && !FullscreenUI::HasActiveWindow() &&
@@ -588,6 +587,7 @@ void FullscreenUI::DrawIndicators(NotificationLayout& layout)
       (g_gpu_settings.achievements_challenge_indicator_mode == AchievementChallengeIndicatorMode::PersistentIcon ||
        g_gpu_settings.achievements_challenge_indicator_mode == AchievementChallengeIndicatorMode::TemporaryIcon))
   {
+    const float image_size = ImCeil(50.0f * scale);
     const bool use_time_remaining =
       (g_gpu_settings.achievements_challenge_indicator_mode == AchievementChallengeIndicatorMode::TemporaryIcon);
     const float x_advance = image_size + spacing;
@@ -924,6 +924,47 @@ void FullscreenUI::DrawIndicators(NotificationLayout& layout)
 
         pos.y += pinned_image_size + pinned_vertical_spacing;
       }
+    }
+  }
+
+  if (const std::string& rich_presence = Achievements::GetRichPresenceString();
+      g_gpu_settings.achievements_rich_presence_monitor && !rich_presence.empty())
+  {
+    const ImVec2 text_size =
+      UIStyle.Font->CalcTextSizeA(font_size, font_weight, FLT_MAX, 0.0f, IMSTR_START_END(rich_presence));
+
+    // If the measuring hasn't begun yet, we don't want to display nothing
+    if (text_size.x > 0.0f)
+    {
+      const ImVec4 left_background_color = DarkerColor(UIStyle.ToastBackgroundColor, 1.3f);
+      const ImVec4 right_background_color = DarkerColor(UIStyle.ToastBackgroundColor, 0.8f);
+      static constexpr float pinned_bg_opacity = 0.7f;
+
+      // Add image width
+      const ImVec2 image_size = ImVec2(font_size, font_size);
+      const float image_spacing = LayoutScale(8.0f);
+      const float box_padded_width = image_size.x + image_spacing + text_size.x + padding.x * 2.0f;
+      const float box_padded_height = std::max(text_size.y, image_size.y) + padding.y * 2.0f;
+      ImVec2 box_min = layout.GetFixedPosition(box_padded_width, box_padded_height);
+      ImVec2 box_max = box_min + ImVec2(box_padded_width, box_padded_height);
+
+      // NOTE: Not blurred since they're persistent.
+      DrawRoundedGradientRect(dl, box_min, box_max,
+                              ImGui::GetColorU32(ModAlpha(left_background_color, pinned_bg_opacity)),
+                              ImGui::GetColorU32(ModAlpha(right_background_color, pinned_bg_opacity)), rounding);
+
+      box_min += padding;
+      box_max -= padding;
+
+      if (GPUTexture* tex = FullscreenUI::GetCachedTexture(Achievements::RA_LOGO_SVG_ICON_NAME, image_size))
+        dl->AddImage(tex, box_min, box_min + image_size);
+
+      box_min.x += image_size.x + image_spacing;
+
+      const ImRect text_clip_rect(box_min, box_max);
+      RenderShadowedTextClipped(dl, UIStyle.Font, font_size, font_weight, box_min, box_max,
+                                ImGui::GetColorU32(UIStyle.ToastTextColor), rich_presence, &text_size,
+                                ImVec2(0.0f, 0.5f), 0.0f, &text_clip_rect);
     }
   }
 }

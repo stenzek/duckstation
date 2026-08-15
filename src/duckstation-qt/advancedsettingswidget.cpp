@@ -48,6 +48,7 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(SettingsWindow* dialog, QWidget* 
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showDebugMenu, "Main", "ShowDebugMenu", false);
   connect(m_ui.showDebugMenu, &QCheckBox::checkStateChanged, this,
           &AdvancedSettingsWidget::onShowDebugOptionsStateChanged);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.richPresenceMonitor, "Cheevos", "RichPresenceMonitor", false);
 
   SettingWidgetBinder::BindWidgetToFolderSetting(
     sif, m_ui.cacheDirectory, m_ui.cacheDirectoryBrowse, tr("Select Cache Directory"), m_ui.cacheDirectoryOpen,
@@ -77,6 +78,9 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(SettingsWindow* dialog, QWidget* 
                              tr("Includes the elapsed time since the application start in file logs."));
   dialog->registerWidgetHelp(m_ui.showDebugMenu, tr("Show Debug Menu"), tr("Unchecked"),
                              tr("Shows a debug menu bar with additional statistics and quick settings."));
+  dialog->registerWidgetHelp(
+    m_ui.richPresenceMonitor, tr("Rich Presence Monitor"), tr("Unchecked"),
+    tr("Always displays the current RetroAchievements rich presence string in the indicator area."));
 
   dialog->registerWidgetHelp(m_ui.cacheDirectory, tr("Cache Directory"), tr("Default"),
                              tr("Specifies the directory where compiled shaders and game list data will be stored."));

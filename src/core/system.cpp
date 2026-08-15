@@ -4576,6 +4576,7 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
              g_settings.display_osd_margin != old_settings.display_osd_margin ||
              g_settings.display_osd_message_duration != old_settings.display_osd_message_duration ||
              g_settings.display_osd_message_location != old_settings.display_osd_message_location ||
+             g_settings.achievements_rich_presence_monitor != old_settings.achievements_rich_presence_monitor ||
              g_settings.achievements_notification_location != old_settings.achievements_notification_location ||
              g_settings.achievements_indicator_location != old_settings.achievements_indicator_location ||
              g_settings.achievements_challenge_indicator_mode != old_settings.achievements_challenge_indicator_mode ||

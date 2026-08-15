@@ -121,6 +121,8 @@ struct GPUSettings
   bool display_show_enhancements : 1 = false;
   bool display_auto_resize_window : 1 = false;
 
+  bool achievements_rich_presence_monitor : 1 = false;
+
   NotificationLocation display_osd_message_location = DEFAULT_OSD_MESSAGE_LOCATION;
 
   // achievements
