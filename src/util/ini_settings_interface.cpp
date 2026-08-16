@@ -426,6 +426,12 @@ void INISettingsInterface::Clear(bool clear_memory /* = false */)
   }
 }
 
+void INISettingsInterface::ClearContentsAndDirty(bool clear_memory)
+{
+  Clear(clear_memory);
+  m_dirty = false;
+}
+
 void INISettingsInterface::ClearPathAndContents()
 {
   Clear(true);

@@ -314,6 +314,16 @@ void GameSummaryWidget::onSeparateDiscSettingsChanged(Qt::CheckState state)
     m_dialog->setBoolSettingValue("Main", "UseSeparateConfigForDiscSet", true);
   else
     m_dialog->removeSettingValue("Main", "UseSeparateConfigForDiscSet");
+
+  // Need to update for all discs when clearing separate-disc-settings.
+  if (state == Qt::Unchecked)
+  {
+    for (const std::string_view& serial : m_dialog->getDatabaseEntry()->disc_set->serials)
+    {
+      if (serial != m_dialog->getGameSerial())
+        System::ReloadSettingsForPath(System::GetGameSettingsPath(serial, true));
+    }
+  }
 }
 
 void GameSummaryWidget::onChangeSerialClicked()

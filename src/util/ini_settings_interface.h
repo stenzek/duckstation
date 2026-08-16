@@ -51,6 +51,7 @@ public:
   std::string SaveToString(SectionSaveOrder save_order = {}) const;
 
   void Clear(bool clear_memory = false);
+  void ClearContentsAndDirty(bool clear_memory);
   void ClearPathAndContents();
   void CompactStrings();
 

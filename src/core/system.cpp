@@ -1323,9 +1323,10 @@ void System::UpdateFolderPaths()
     return;
   }
 
-  const std::string old_gamesettings(EmuFolders::GameSettings);
-  const std::string old_inputprofiles(EmuFolders::InputProfiles);
-  const std::string old_memorycards(EmuFolders::MemoryCards);
+  const std::string old_cheats = EmuFolders::Cheats;
+  const std::string old_gamesettings = EmuFolders::GameSettings;
+  const std::string old_inputprofiles = EmuFolders::InputProfiles;
+  const std::string old_memorycards = EmuFolders::MemoryCards;
 
   // have to manually grab the lock here, because of the ReloadGameSettings() below.
   {
@@ -1337,7 +1338,17 @@ void System::UpdateFolderPaths()
   if (IsValid())
   {
     if (old_gamesettings != EmuFolders::GameSettings && UpdateGameSettingsLayer())
+    {
+      if (!IsReplayingGPUDump())
+        Cheats::ReloadCheats(old_cheats != EmuFolders::Cheats, true, false, true, false);
+
       ApplySettings(false);
+    }
+    else if (old_cheats != EmuFolders::Cheats)
+    {
+      if (!IsReplayingGPUDump())
+        Cheats::ReloadCheats(true, false, false, true, false);
+    }
 
     if (!s_state.input_profile_name.empty() && old_inputprofiles != EmuFolders::InputProfiles)
     {
@@ -1422,7 +1433,7 @@ bool System::GetGameSettingsInterface(INISettingsInterface* sif, const GameDatab
               ERROR_LOG("Failed to parse separate disc game settings ini '{}': {}", Path::GetFileName(sif->GetPath()),
                         error.GetDescription());
 
-              sif->Clear();
+              sif->ClearContentsAndDirty(true);
               return false;
             }
           }
@@ -1433,7 +1444,7 @@ bool System::GetGameSettingsInterface(INISettingsInterface* sif, const GameDatab
                              Path::GetFileName(sif->GetPath()));
 
             // return empty ini struct?
-            sif->Clear();
+            sif->ClearContentsAndDirty(true);
             return false;
           }
         }
@@ -1444,7 +1455,7 @@ bool System::GetGameSettingsInterface(INISettingsInterface* sif, const GameDatab
       ERROR_LOG("Failed to parse game settings ini '{}': {}", Path::GetFileName(sif->GetPath()),
                 error.GetDescription());
 
-      sif->Clear();
+      sif->ClearContentsAndDirty(true);
       return false;
     }
   }
@@ -1454,7 +1465,7 @@ bool System::GetGameSettingsInterface(INISettingsInterface* sif, const GameDatab
       INFO_COLOR_LOG(StrongCyan, "No game settings found (tried '{}')", Path::GetFileName(sif->GetPath()));
 
     // return empty ini struct?
-    sif->Clear();
+    sif->ClearContentsAndDirty(true);
     return false;
   }
 
@@ -1520,15 +1531,13 @@ void System::UpdateInputSettingsLayer(std::string input_profile_name, std::uniqu
       {
         ERROR_LOG("Failed to parse input profile ini '{}': {}",
                   Path::GetFileName(s_state.input_settings_interface.GetPath()), error.GetDescription());
-        s_state.input_settings_interface.ClearPathAndContents();
-        input_profile_name = {};
+        s_state.input_settings_interface.ClearContentsAndDirty(true);
       }
     }
     else
     {
       WARNING_LOG("No input profile found (tried '{}')", Path::GetFileName(s_state.input_settings_interface.GetPath()));
-      s_state.input_settings_interface.ClearPathAndContents();
-      input_profile_name = {};
+      s_state.input_settings_interface.ClearContentsAndDirty(true);
     }
   }
   else

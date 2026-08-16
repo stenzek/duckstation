@@ -116,8 +116,8 @@ ControllerSettingsWindow* ControllerSettingsWindow::editControllerSettingsForGam
   dlg->setWindowFlag(Qt::Window);
   dlg->setAttribute(Qt::WA_DeleteOnClose);
   dlg->setWindowModality(Qt::WindowModal);
-  dlg->setWindowTitle(parent->windowTitle());
-  dlg->setWindowIcon(parent->windowIcon());
+  dlg->setWindowTitle(parent->window()->windowTitle());
+  dlg->setWindowIcon(parent->window()->windowIcon());
   dlg->show();
   return dlg;
 }
