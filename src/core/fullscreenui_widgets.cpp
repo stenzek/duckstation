@@ -113,7 +113,7 @@ static void PostDrawMenuButtonFrame();
 static void DrawBackgroundProgressDialogs(float& current_y);
 static void UpdateLoadingScreenProgress(s32 progress_min, s32 progress_max, s32 progress_value);
 static bool GetLoadingScreenTimeEstimate(SmallString& out_str);
-static void DrawLoadingScreen(std::string_view image, std::string_view title, std::string_view caption,
+static void DrawLoadingScreen(ImDrawList* dl, std::string_view image, std::string_view title, std::string_view caption,
                               s32 progress_min, s32 progress_max, s32 progress_value, bool is_persistent);
 
 // Returns true if any overlay windows are active, such as notifications or toasts.
@@ -6662,13 +6662,24 @@ void FullscreenUI::RenderLoadingScreen(std::string_view image, std::string_view 
   if (!g_gpu_device || !g_gpu_device->HasMainSwapChain())
     return;
 
-  // eat the last imgui frame, it might've been partially rendered by the caller.
-  ImGui::EndFrame();
-  ImGui::NewFrame();
+  // Use a separate draw list for the loading screen, that way we don't mess with the main ImGui state.
+  // Otherwise window would get GC/reset, etc.
+  const ImGuiIO& io = ImGui::GetIO();
+  ImDrawList draw_list(ImGui::GetDrawListSharedData());
+  draw_list._OwnerName = "##LoadingScreen";
+  draw_list._ResetForNewFrame();
+  draw_list.PushTexture(io.Fonts->TexRef);
+  draw_list.PushClipRect(ImVec2(), io.DisplaySize, false);
 
-  DrawLoadingScreen(image, title, caption, progress_min, progress_max, progress_value, false);
+  DrawLoadingScreen(&draw_list, image, title, caption, progress_min, progress_max, progress_value, false);
 
-  ImGuiManager::CreateDrawLists();
+  ImDrawData draw_data;
+  draw_data.Valid = true;
+  draw_data.DisplaySize = io.DisplaySize;
+  draw_data.FramebufferScale = io.DisplayFramebufferScale;
+  draw_data.OwnerViewport = ImGui::GetMainViewport();
+  draw_data.Textures = &io.Fonts->TexList;
+  draw_data.AddDrawList(&draw_list);
 
   if (s_state.blur_active && !s_state.blur_valid)
   {
@@ -6683,11 +6694,9 @@ void FullscreenUI::RenderLoadingScreen(std::string_view image, std::string_view 
   GPUSwapChain* swap_chain = g_gpu_device->GetMainSwapChain();
   if (g_gpu_device->BeginPresent(swap_chain) == GPUPresentResult::OK)
   {
-    ImGuiManager::RenderDrawLists(swap_chain);
+    ImGuiManager::RenderDrawLists(&draw_data, swap_chain);
     g_gpu_device->EndPresent(swap_chain, false);
   }
-
-  ImGuiManager::NewFrame(Timer::GetCurrentValue());
 }
 
 void FullscreenUI::UpdateLoadingScreenRunIdle()
@@ -6747,8 +6756,9 @@ void FullscreenUI::DrawLoadingScreen()
   if (!s_state.loading_screen_open)
     return;
 
-  DrawLoadingScreen(s_state.loading_screen_image, s_state.loading_screen_title, s_state.loading_screen_caption,
-                    s_state.loading_screen_min, s_state.loading_screen_max, s_state.loading_screen_value, true);
+  DrawLoadingScreen(ImGui::GetBackgroundDrawList(), s_state.loading_screen_image, s_state.loading_screen_title,
+                    s_state.loading_screen_caption, s_state.loading_screen_min, s_state.loading_screen_max,
+                    s_state.loading_screen_value, true);
 }
 
 void FullscreenUI::CloseLoadingScreen()
@@ -6841,8 +6851,9 @@ bool FullscreenUI::GetLoadingScreenTimeEstimate(SmallString& out_str)
   return true;
 }
 
-void FullscreenUI::DrawLoadingScreen(std::string_view image, std::string_view title, std::string_view caption,
-                                     s32 progress_min, s32 progress_max, s32 progress_value, bool is_persistent)
+void FullscreenUI::DrawLoadingScreen(ImDrawList* dl, std::string_view image, std::string_view title,
+                                     std::string_view caption, s32 progress_min, s32 progress_max, s32 progress_value,
+                                     bool is_persistent)
 {
   const auto& io = ImGui::GetIO();
   const bool has_progress = (progress_min < progress_max);
@@ -6889,8 +6900,6 @@ void FullscreenUI::DrawLoadingScreen(std::string_view image, std::string_view ti
                              (has_progress ? (item_spacing + estimate_font_size) : 0.0f);
   const ImVec2 image_pos =
     ImVec2(ImCeil((io.DisplaySize.x - image_width) * 0.5f), ImCeil(((io.DisplaySize.y - total_height) * 0.5f)));
-  ImDrawList* const dl = ImGui::GetBackgroundDrawList();
-
   if (VideoPresenter::HasDisplayTexture())
   {
     if (UIStyle.BlurMenuBackground && BeginBlurBackground(dl, ImVec2(), io.DisplaySize))

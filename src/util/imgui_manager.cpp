@@ -97,8 +97,9 @@ static bool LoadFontData(Error* error);
 static void ReloadFontDataIfActive();
 static bool CreateFontAtlas(Error* error);
 static bool CompilePipelines(Error* error);
-static void RenderDrawLists(u32 window_width, u32 window_height, WindowInfoPrerotation prerotation);
-static void UpdateTextures();
+static void RenderDrawLists(const ImDrawData* draw_data, u32 window_width, u32 window_height,
+                            WindowInfoPrerotation prerotation);
+static void UpdateTextures(const ImDrawData* draw_data);
 static void DestroyTextures(bool recycle);
 static void SetCommonIOOptions(ImGuiIO& io, ImGuiPlatformIO& pio);
 static void SetImKeyState(ImGuiIO& io, ImGuiKey imkey, bool pressed);
@@ -621,12 +622,14 @@ void ImGuiManager::CreateDrawLists()
 {
   ImGui::EndFrame();
   ImGui::Render();
-  UpdateTextures();
+  UpdateTextures(ImGui::GetDrawData());
 }
 
-void ImGuiManager::RenderDrawLists(u32 window_width, u32 window_height, WindowInfoPrerotation prerotation)
+void ImGuiManager::RenderDrawLists(const ImDrawData* draw_data, u32 window_width, u32 window_height,
+                                   WindowInfoPrerotation prerotation)
 {
-  const ImDrawData* draw_data = ImGui::GetDrawData();
+  UpdateTextures(draw_data);
+
   if (draw_data->CmdListsCount == 0)
     return;
 
@@ -691,19 +694,19 @@ void ImGuiManager::RenderDrawLists(u32 window_width, u32 window_height, WindowIn
   }
 }
 
-void ImGuiManager::RenderDrawLists(GPUSwapChain* swap_chain)
+void ImGuiManager::RenderDrawLists(const ImDrawData* draw_data, GPUSwapChain* swap_chain)
 {
-  RenderDrawLists(swap_chain->GetWidth(), swap_chain->GetHeight(), swap_chain->GetPreRotation());
+  RenderDrawLists(draw_data, swap_chain->GetWidth(), swap_chain->GetHeight(), swap_chain->GetPreRotation());
 }
 
-void ImGuiManager::RenderDrawLists(GPUTexture* texture)
+void ImGuiManager::RenderDrawLists(const ImDrawData* draw_data, GPUTexture* texture)
 {
-  RenderDrawLists(texture->GetWidth(), texture->GetHeight(), WindowInfoPrerotation::Identity);
+  RenderDrawLists(draw_data, texture->GetWidth(), texture->GetHeight(), WindowInfoPrerotation::Identity);
 }
 
-void ImGuiManager::UpdateTextures()
+void ImGuiManager::UpdateTextures(const ImDrawData* draw_data)
 {
-  for (ImTextureData* const tex : s_state.imgui_context->IO.Fonts->TexList)
+  for (ImTextureData* const tex : *draw_data->Textures)
   {
     switch (tex->Status)
     {
@@ -2225,7 +2228,7 @@ bool ImGuiManager::RenderAuxiliaryRenderWindow(AuxiliaryRenderWindowState* state
   const GPUPresentResult pres = g_gpu_device->BeginPresent(state->swap_chain.get());
   if (pres == GPUPresentResult::OK)
   {
-    RenderDrawLists(state->swap_chain.get());
+    RenderDrawLists(ImGui::GetDrawData(), state->swap_chain.get());
     g_gpu_device->EndPresent(state->swap_chain.get(), false);
   }
 

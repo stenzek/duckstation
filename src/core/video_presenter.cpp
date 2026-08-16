@@ -1537,7 +1537,7 @@ bool VideoPresenter::PresentFrame(GPUBackend* backend, u64 present_time)
     }
 
     g_gpu_device->SetRenderTarget(transition_target);
-    ImGuiManager::RenderDrawLists(transition_target);
+    ImGuiManager::RenderDrawLists(ImGui::GetDrawData(), transition_target);
 
     if ((pres = g_gpu_device->BeginPresent(swap_chain)) == GPUPresentResult::OK)
       FullscreenUI::RenderTransitionBlend(swap_chain, transition_target);
@@ -1547,7 +1547,7 @@ bool VideoPresenter::PresentFrame(GPUBackend* backend, u64 present_time)
     if ((pres = blur_target ? DrawDisplayCopy(blur_target, nullptr, swap_chain) :
                               RenderDisplay(nullptr, swap_chain->GetSizeVec(), true, true)) == GPUPresentResult::OK)
     {
-      ImGuiManager::RenderDrawLists(swap_chain);
+      ImGuiManager::RenderDrawLists(ImGui::GetDrawData(), swap_chain);
     }
   }
 

@@ -19,6 +19,7 @@ class GPUTexture;
 enum class GPUTextureFormat : u8;
 
 struct ImGuiContext;
+struct ImDrawData;
 struct ImFont;
 
 union InputBindingKey;
@@ -144,8 +145,8 @@ void NewFrame(u64 current_time);
 void CreateDrawLists();
 
 /// Renders ImGui screen elements. Call before EndPresent().
-void RenderDrawLists(GPUSwapChain* swap_chain);
-void RenderDrawLists(GPUTexture* texture);
+void RenderDrawLists(const ImDrawData* draw_data, GPUSwapChain* swap_chain);
+void RenderDrawLists(const ImDrawData* draw_data, GPUTexture* texture);
 
 /// Renders any on-screen display elements.
 void RenderOSDMessages();
