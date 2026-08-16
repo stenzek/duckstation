@@ -289,16 +289,13 @@ void InputBindingWidget::setNewBinding()
     if (m_sif)
     {
       m_sif->SetStringValue(m_section_name.c_str(), m_key_name.c_str(), new_binding.c_str());
-      QtHost::SaveGameSettings(m_sif, false);
-      g_core_thread->reloadGameSettings();
+      QtHost::SaveSettingsInterface(m_sif, false, true);
     }
     else
     {
       Core::SetBaseStringSettingValue(m_section_name.c_str(), m_key_name.c_str(), new_binding.c_str());
       Host::CommitBaseSettingChanges();
-      if (m_bind_type == InputBindingInfo::Type::Pointer)
-        g_core_thread->updateControllerSettings();
-      g_core_thread->reloadInputBindings();
+      g_core_thread->applySettings();
     }
   }
 
@@ -312,16 +309,13 @@ void InputBindingWidget::clearBinding()
   if (m_sif)
   {
     m_sif->DeleteValue(m_section_name.c_str(), m_key_name.c_str());
-    QtHost::SaveGameSettings(m_sif, false);
-    g_core_thread->reloadGameSettings();
+    QtHost::SaveSettingsInterface(m_sif, false, true);
   }
   else
   {
     Core::DeleteBaseSettingValue(m_section_name.c_str(), m_key_name.c_str());
     Host::CommitBaseSettingChanges();
-    if (m_bind_type == InputBindingInfo::Type::Pointer)
-      g_core_thread->updateControllerSettings();
-    g_core_thread->reloadInputBindings();
+    g_core_thread->applySettings();
   }
   reloadBinding();
 }
@@ -585,16 +579,13 @@ void InputBindingWidget::showEffectBindingDialog()
   if (m_sif)
   {
     m_sif->SetStringList(m_section_name.c_str(), m_key_name.c_str(), m_bindings);
-    QtHost::SaveGameSettings(m_sif, false);
-    g_core_thread->reloadGameSettings();
+    QtHost::SaveSettingsInterface(m_sif, false, true);
   }
   else
   {
     Core::SetBaseStringListSettingValue(m_section_name.c_str(), m_key_name.c_str(), m_bindings);
     Host::CommitBaseSettingChanges();
-    if (m_bind_type == InputBindingInfo::Type::Pointer)
-      g_core_thread->updateControllerSettings();
-    g_core_thread->reloadInputBindings();
+    g_core_thread->applySettings();
   }
 
   reloadBinding();

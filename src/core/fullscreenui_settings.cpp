@@ -1592,7 +1592,7 @@ void FullscreenUI::DrawFolderSetting(SettingsInterface* bsi, std::string_view ti
                             bsi->SetStringValue(section.c_str(), key.c_str(), relative_path.c_str());
                             SetSettingsChanged(bsi);
 
-                            Host::RunOnCoreThread(&EmuFolders::Update);
+                            Host::RunOnCoreThread(&System::UpdateFolderPaths);
                             if (key == "Covers")
                               RemoveCoverCacheEntry({});
                           });
@@ -2165,8 +2165,7 @@ void FullscreenUI::DrawSettingsWindow()
         }
       }
 
-      if (VideoThread::HasGPUBackend())
-        Host::RunOnCoreThread([]() { System::ReloadGameSettings(false); });
+      System::ReloadSettingsForPath(s_settings_locals.game_settings_interface->GetPath());
     }
   }
 }

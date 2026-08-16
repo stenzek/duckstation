@@ -234,7 +234,7 @@ void GameCheatSettingsWidget::setCodeOption(const std::string_view name, u32 val
     return;
 
   m_dialog->getSettingsInterface()->SetUIntValue("Cheats", info->name.c_str(), value);
-  m_dialog->saveAndReloadGameSettings();
+  m_dialog->saveGameSettings();
 }
 
 std::string GameCheatSettingsWidget::getPathForSavingCheats() const
@@ -271,7 +271,7 @@ void GameCheatSettingsWidget::onEnableCheatsChanged(Qt::CheckState state)
     m_dialog->getSettingsInterface()->SetBoolValue("Cheats", "EnableCheats", true);
   else
     m_dialog->getSettingsInterface()->DeleteValue("Cheats", "EnableCheats");
-  m_dialog->saveAndReloadGameSettings();
+  m_dialog->saveGameSettings();
 }
 
 void GameCheatSettingsWidget::onSortCheatsClicked(bool checked)
@@ -283,7 +283,7 @@ void GameCheatSettingsWidget::onSortCheatsClicked(bool checked)
   else
     m_dialog->getSettingsInterface()->DeleteValue("Cheats", "SortList");
 
-  m_dialog->saveAndReloadGameSettings();
+  m_dialog->saveGameSettings();
 }
 
 void GameCheatSettingsWidget::onSearchFilterChanged(const QString& text)
@@ -302,7 +302,7 @@ void GameCheatSettingsWidget::onLoadDatabaseCheatsChanged(Qt::CheckState state)
     m_dialog->getSettingsInterface()->DeleteValue("Cheats", "LoadCheatsFromDatabase");
   else
     m_dialog->getSettingsInterface()->SetBoolValue("Cheats", "LoadCheatsFromDatabase", false);
-  m_dialog->saveAndReloadGameSettings();
+  m_dialog->saveGameSettings();
   reloadList();
 }
 
@@ -382,7 +382,7 @@ void GameCheatSettingsWidget::onRemoveCodeClicked()
 void GameCheatSettingsWidget::onReloadClicked()
 {
   reloadList();
-  g_core_thread->reloadCheats(true, false, true, true);
+  QtHost::ReloadCheatFiles(m_dialog->getGameSerial(), true, true);
 }
 
 bool GameCheatSettingsWidget::shouldLoadFromDatabase() const
@@ -478,13 +478,13 @@ void GameCheatSettingsWidget::setCheatEnabled(std::string name, bool enabled, bo
   }
 
   if (save_and_reload_settings)
-    m_dialog->saveAndReloadGameSettings();
+    m_dialog->saveGameSettings();
 }
 
 void GameCheatSettingsWidget::setStateForAll(bool enabled)
 {
   setStateRecursively(m_codes_model->invisibleRootItem(), enabled);
-  m_dialog->saveAndReloadGameSettings();
+  m_dialog->saveGameSettings();
 }
 
 void GameCheatSettingsWidget::setStateRecursively(QStandardItem* parent, bool enabled)
@@ -617,7 +617,7 @@ void GameCheatSettingsWidget::importCodes(const std::string& file_contents)
   }
 
   reloadList();
-  g_core_thread->reloadCheats(true, false, false, true);
+  QtHost::ReloadCheatFiles(m_dialog->getGameSerial(), false, true);
 }
 
 void GameCheatSettingsWidget::newCode()
@@ -628,7 +628,7 @@ void GameCheatSettingsWidget::newCode()
   connect(dlg, &QDialog::accepted, this, [this] {
     // no need to reload cheats yet, it's not active. just refresh the list
     reloadList();
-    g_core_thread->reloadCheats(true, false, false, true);
+    QtHost::ReloadCheatFiles(m_dialog->getGameSerial(), false, true);
   });
 
   dlg->open();
@@ -645,7 +645,7 @@ void GameCheatSettingsWidget::editCode(const std::string_view code_name)
 
   connect(dlg, &QDialog::accepted, this, [this] {
     reloadList();
-    g_core_thread->reloadCheats(true, true, false, true);
+    QtHost::ReloadCheatFiles(m_dialog->getGameSerial(), false, true);
   });
 
   dlg->open();
@@ -675,6 +675,10 @@ void GameCheatSettingsWidget::removeCode(const std::string_view code_name, bool 
     return;
   }
 
+  // disable if it was enabled
+  if (std::ranges::find(m_enabled_codes, code->name) != m_enabled_codes.end())
+    setCheatEnabled(code->name, false, true);
+
   Error error;
   if (!Cheats::UpdateCodeInFile(getPathForSavingCheats().c_str(), code->name, nullptr, &error))
   {
@@ -684,7 +688,7 @@ void GameCheatSettingsWidget::removeCode(const std::string_view code_name, bool 
   }
 
   reloadList();
-  g_core_thread->reloadCheats(true, true, false, true);
+  QtHost::ReloadCheatFiles(m_dialog->getGameSerial(), false, true);
 }
 
 void GameCheatSettingsWidget::onExportClicked()

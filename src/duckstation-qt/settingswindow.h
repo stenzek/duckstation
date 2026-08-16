@@ -82,7 +82,7 @@ public:
   void setStringSettingValue(const char* section, const char* key, std::optional<const char*> value);
   bool containsSettingValue(const char* section, const char* key) const;
   void removeSettingValue(const char* section, const char* key);
-  void saveAndReloadGameSettings();
+  void saveGameSettings();
 
   void setGameTitle(std::string_view title);
   bool hasGameTrait(GameDatabase::Trait trait);

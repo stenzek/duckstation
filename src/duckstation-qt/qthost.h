@@ -139,12 +139,6 @@ Q_SIGNALS:
 public:
   void setDefaultSettings(bool host, bool system, bool controller);
   void applySettings(bool display_osd_messages = false);
-  void reloadGameSettings(bool display_osd_messages = false);
-  void reloadInputProfile(bool display_osd_messages = false);
-  void reloadCheats(bool reload_files, bool reload_enabled_list, bool verbose, bool verbose_if_changed);
-  void updateEmuFolders();
-  void updateControllerSettings();
-  void reloadInputBindings();
   void startFullscreenUI();
   void stopFullscreenUI();
   void exitFullscreenUI();
@@ -379,7 +373,13 @@ const QStringList& GetRobotoFontFamilies();
 const QFont& GetFixedFont();
 
 /// Saves a game settings interface.
-bool SaveGameSettings(SettingsInterface* sif, bool delete_if_empty);
+bool SaveSettingsInterface(SettingsInterface* sif, bool delete_if_empty, bool reload_if_needed);
+
+/// Reloads cheats if the current game matches.
+void ReloadCheatFiles(const std::string& serial, bool verbose, bool verbose_if_changed);
+
+/// Reloads folder paths.
+void UpdateFolderPaths();
 
 /// Formats a number according to the current locale.
 QString FormatNumber(Host::NumberFormatType type, s64 value);

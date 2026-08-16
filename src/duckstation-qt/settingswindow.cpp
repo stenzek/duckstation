@@ -359,7 +359,8 @@ void SettingsWindow::onCopyGlobalSettingsClicked()
     temp.Load(*Core::GetBaseSettingsLayer(), *Core::GetBaseSettingsLayer());
     temp.Save(*m_sif.get(), true, true);
   }
-  saveAndReloadGameSettings();
+
+  QtHost::SaveSettingsInterface(m_sif.get(), true, true);
 
   reloadPages();
 
@@ -381,7 +382,7 @@ void SettingsWindow::onClearSettingsClicked()
   }
 
   m_sif->Clear();
-  saveAndReloadGameSettings();
+  QtHost::SaveSettingsInterface(m_sif.get(), true, true);
 
   reloadPages();
 
@@ -616,7 +617,7 @@ void SettingsWindow::setBoolSettingValue(const char* section, const char* key, s
   if (m_sif)
   {
     value.has_value() ? m_sif->SetBoolValue(section, key, value.value()) : m_sif->DeleteValue(section, key);
-    saveAndReloadGameSettings();
+    QtHost::SaveSettingsInterface(m_sif.get(), true, true);
   }
   else
   {
@@ -632,7 +633,7 @@ void SettingsWindow::setIntSettingValue(const char* section, const char* key, st
   if (m_sif)
   {
     value.has_value() ? m_sif->SetIntValue(section, key, value.value()) : m_sif->DeleteValue(section, key);
-    saveAndReloadGameSettings();
+    QtHost::SaveSettingsInterface(m_sif.get(), true, true);
   }
   else
   {
@@ -648,7 +649,7 @@ void SettingsWindow::setFloatSettingValue(const char* section, const char* key, 
   if (m_sif)
   {
     value.has_value() ? m_sif->SetFloatValue(section, key, value.value()) : m_sif->DeleteValue(section, key);
-    saveAndReloadGameSettings();
+    QtHost::SaveSettingsInterface(m_sif.get(), true, true);
   }
   else
   {
@@ -664,7 +665,7 @@ void SettingsWindow::setStringSettingValue(const char* section, const char* key,
   if (m_sif)
   {
     value.has_value() ? m_sif->SetStringValue(section, key, value.value()) : m_sif->DeleteValue(section, key);
-    saveAndReloadGameSettings();
+    QtHost::SaveSettingsInterface(m_sif.get(), true, true);
   }
   else
   {
@@ -688,7 +689,7 @@ void SettingsWindow::removeSettingValue(const char* section, const char* key)
   if (m_sif)
   {
     m_sif->DeleteValue(section, key);
-    saveAndReloadGameSettings();
+    QtHost::SaveSettingsInterface(m_sif.get(), true, true);
   }
   else
   {
@@ -698,11 +699,10 @@ void SettingsWindow::removeSettingValue(const char* section, const char* key)
   }
 }
 
-void SettingsWindow::saveAndReloadGameSettings()
+void SettingsWindow::saveGameSettings()
 {
   DebugAssert(m_sif);
-  QtHost::SaveGameSettings(m_sif.get(), true);
-  g_core_thread->reloadGameSettings(false);
+  QtHost::SaveSettingsInterface(m_sif.get(), true, true);
 }
 
 void SettingsWindow::setGameTitle(std::string_view title)

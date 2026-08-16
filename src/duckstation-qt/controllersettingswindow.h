@@ -69,7 +69,6 @@ public:
   void setIntValue(const char* section, const char* key, s32 value);
   void setStringValue(const char* section, const char* key, const char* value);
   void clearSettingValue(const char* section, const char* key);
-  void saveAndReloadGameSettings();
 
   static constexpr u32 CATEGORY_GLOBAL_SETTINGS = 0;
   static constexpr u32 CATEGORY_FIRST_CONTROLLER_SETTINGS = 1;

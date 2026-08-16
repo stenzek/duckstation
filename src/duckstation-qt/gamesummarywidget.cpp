@@ -547,7 +547,7 @@ void GameSummaryWidget::onInputProfileChanged(int index)
     sif->DeleteValue("ControllerPorts", "UseGameSettingsForController");
   }
 
-  m_dialog->saveAndReloadGameSettings();
+  m_dialog->saveGameSettings();
   m_dialog->onMultitapModeChanged(m_dialog->getEffectiveMultitapMode());
   m_ui.editInputProfile->setEnabled(index > 0);
 }

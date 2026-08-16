@@ -956,8 +956,7 @@ void GraphicsSettingsWidget::createAspectRatioSetting(QComboBox* const cb, QSpin
         sif->DeleteValue(CONFIG_SECTION, CONFIG_KEY);
       }
 
-      QtHost::SaveGameSettings(sif, true);
-      g_core_thread->reloadGameSettings();
+      QtHost::SaveSettingsInterface(sif, true, true);
     }
     else
     {

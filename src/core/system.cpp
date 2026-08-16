@@ -190,6 +190,7 @@ static std::string_view GetCurrentGameSaveTitle();
 
 static void UpdateControllers();
 static void ResetControllers();
+static void UpdateMemoryCards();
 static std::string GetMemoryCardPathForSlot(u32 slot, MemoryCardType type);
 static void UpdateMultitaps();
 
@@ -1243,38 +1244,112 @@ void System::ApplySettings(bool display_osd_messages)
   Host::OnSettingsReloaded();
 }
 
-void System::ReloadGameSettings(bool display_osd_messages)
+void System::ReloadSettingsForPath(std::string_view path)
 {
-  if (!IsValid() || !UpdateGameSettingsLayer())
+  auto lock = Core::GetSettingsLock();
+
+  // NOTE: android needs base settings checked too
+
+  // protected by settings lock if called off-thread
+  if (INISettingsInterface* gsi = static_cast<INISettingsInterface*>(Core::GetGameSettingsLayer());
+      gsi && gsi->GetPath() == path)
+  {
+    if (Host::IsOnCoreThread())
+    {
+      lock.unlock();
+      if (IsValid() && UpdateGameSettingsLayer())
+      {
+        if (!IsReplayingGPUDump())
+          Cheats::ReloadCheats(false, true, false, true, true);
+
+        ApplySettings(false);
+      }
+    }
+    else
+    {
+      Host::RunOnCoreThread([]() {
+        if (IsValid() && UpdateGameSettingsLayer())
+        {
+          if (!IsReplayingGPUDump())
+            Cheats::ReloadCheats(false, true, false, true, true);
+
+          ApplySettings(false);
+        }
+      });
+    }
+
     return;
+  }
 
-  if (!IsReplayingGPUDump())
-    Cheats::ReloadCheats(false, true, false, true, true);
+  if (INISettingsInterface* isi = static_cast<INISettingsInterface*>(Core::GetInputSettingsLayer());
+      isi && isi->GetPath() == path)
+  {
+    if (Host::IsOnCoreThread())
+    {
+      if (IsValid())
+      {
+        UpdateInputSettingsLayer(s_state.input_profile_name, lock);
+        lock.unlock();
+        ApplySettings(false);
+      }
+    }
+    else
+    {
+      Host::RunOnCoreThread([]() {
+        if (IsValid())
+        {
+          auto lock = Core::GetSettingsLock();
+          UpdateInputSettingsLayer(s_state.input_profile_name, lock);
+          lock.unlock();
+          ApplySettings(false);
+        }
+      });
+    }
 
-  ApplySettings(display_osd_messages);
+    return;
+  }
 }
 
-void System::ReloadInputProfile(bool display_osd_messages)
+void System::UpdateFolderPaths()
 {
-  if (!IsValid() || !s_state.game_settings_interface)
+  if (!IsValid())
+  {
+    // easier when not running
+    const auto lock = Core::GetSettingsLock();
+    EmuFolders::LoadConfig(*Core::GetBaseSettingsLayer());
+    EmuFolders::EnsureFoldersExist();
     return;
-
-  // per-game configuration?
-  if (s_state.game_settings_interface->GetBoolValue("ControllerPorts", "UseGameSettingsForController", false))
-  {
-    // update the whole game settings layer.
-    UpdateGameSettingsLayer();
-  }
-  else if (std::string profile_name =
-             s_state.game_settings_interface->GetStringValue("ControllerPorts", "InputProfileName");
-           !profile_name.empty())
-  {
-    // only have to reload the input layer
-    auto lock = Core::GetSettingsLock();
-    UpdateInputSettingsLayer(std::move(profile_name), lock);
   }
 
-  ApplySettings(display_osd_messages);
+  const std::string old_gamesettings(EmuFolders::GameSettings);
+  const std::string old_inputprofiles(EmuFolders::InputProfiles);
+  const std::string old_memorycards(EmuFolders::MemoryCards);
+
+  // have to manually grab the lock here, because of the ReloadGameSettings() below.
+  {
+    const auto lock = Core::GetSettingsLock();
+    EmuFolders::LoadConfig(*Core::GetBaseSettingsLayer());
+    EmuFolders::EnsureFoldersExist();
+  }
+
+  if (IsValid())
+  {
+    if (old_gamesettings != EmuFolders::GameSettings && UpdateGameSettingsLayer())
+      ApplySettings(false);
+
+    if (!s_state.input_profile_name.empty() && old_inputprofiles != EmuFolders::InputProfiles)
+    {
+      {
+        auto lock = Core::GetSettingsLock();
+        UpdateInputSettingsLayer(s_state.input_profile_name, lock);
+      }
+
+      ApplySettings(false);
+    }
+
+    if (old_memorycards != EmuFolders::MemoryCards)
+      UpdateMemoryCards();
+  }
 }
 
 std::string System::GetInputProfilePath(std::string_view name)

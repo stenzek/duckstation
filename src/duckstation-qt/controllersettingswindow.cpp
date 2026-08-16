@@ -320,7 +320,7 @@ void ControllerSettingsWindow::onCopyGlobalSettingsClicked()
                                     false);
   }
 
-  saveAndReloadGameSettings();
+  QtHost::SaveSettingsInterface(m_editing_settings_interface, false, true);
   createWidgets();
 
   QtUtils::AsyncMessageBox(this, QMessageBox::Information, tr("DuckStation Controller Settings"),
@@ -360,7 +360,7 @@ void ControllerSettingsWindow::setBoolValue(const char* section, const char* key
   if (m_editing_settings_interface)
   {
     m_editing_settings_interface->SetBoolValue(section, key, value);
-    saveAndReloadGameSettings();
+    QtHost::SaveSettingsInterface(m_editing_settings_interface, false, true);
   }
   else
   {
@@ -375,7 +375,7 @@ void ControllerSettingsWindow::setIntValue(const char* section, const char* key,
   if (m_editing_settings_interface)
   {
     m_editing_settings_interface->SetIntValue(section, key, value);
-    saveAndReloadGameSettings();
+    QtHost::SaveSettingsInterface(m_editing_settings_interface, false, true);
   }
   else
   {
@@ -390,7 +390,7 @@ void ControllerSettingsWindow::setStringValue(const char* section, const char* k
   if (m_editing_settings_interface)
   {
     m_editing_settings_interface->SetStringValue(section, key, value);
-    saveAndReloadGameSettings();
+    QtHost::SaveSettingsInterface(m_editing_settings_interface, false, true);
   }
   else
   {
@@ -400,19 +400,12 @@ void ControllerSettingsWindow::setStringValue(const char* section, const char* k
   }
 }
 
-void ControllerSettingsWindow::saveAndReloadGameSettings()
-{
-  DebugAssert(m_editing_settings_interface);
-  QtHost::SaveGameSettings(m_editing_settings_interface, false);
-  g_core_thread->reloadGameSettings(false);
-}
-
 void ControllerSettingsWindow::clearSettingValue(const char* section, const char* key)
 {
   if (m_editing_settings_interface)
   {
     m_editing_settings_interface->DeleteValue(section, key);
-    saveAndReloadGameSettings();
+    QtHost::SaveSettingsInterface(m_editing_settings_interface, false, true);
   }
   else
   {

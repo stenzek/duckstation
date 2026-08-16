@@ -268,11 +268,11 @@ void SetDefaultSettings(SettingsInterface& si, bool ignore_user_prefs);
 /// Reloads settings, and applies any changes present.
 void ApplySettings(bool display_osd_messages);
 
-/// Reloads game specific settings, and applys any changes present.
-void ReloadGameSettings(bool display_osd_messages);
+/// Reloads settings if the given path matches any of the currently active layers.
+void ReloadSettingsForPath(std::string_view path);
 
-/// Reloads input profile, depending on whether it is a specific profile or game configuration.
-void ReloadInputProfile(bool display_osd_messages);
+/// Updates the variables in the EmuFolders namespace, reloading subsystems if needed.
+void UpdateFolderPaths();
 
 /// Reloads input sources.
 void ReloadInputSources();
@@ -330,7 +330,6 @@ void SetVideoFrameRate(float frequency);
 
 // Access controllers for simulating input.
 Controller* GetController(u32 slot);
-void UpdateMemoryCards();
 bool HasMemoryCard(u32 slot);
 bool IsSavingMemoryCards();
 

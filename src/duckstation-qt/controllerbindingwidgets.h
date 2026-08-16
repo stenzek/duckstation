@@ -44,7 +44,6 @@ private:
   void bindBindingWidgets(QWidget* parent);
   void updateHeaderToolButtons();
   void doDeviceAutomaticBinding(const QString& device);
-  void saveAndRefresh();
 
   void onTypeChanged();
   void onAutomaticBindingClicked();

@@ -285,8 +285,7 @@ void InputBindingDialog::saveListToSettings()
       m_sif->SetStringList(m_section_name.c_str(), m_key_name.c_str(), m_bindings);
     else
       m_sif->DeleteValue(m_section_name.c_str(), m_key_name.c_str());
-    QtHost::SaveGameSettings(m_sif, false);
-    g_core_thread->reloadGameSettings();
+    QtHost::SaveSettingsInterface(m_sif, false, true);
   }
   else
   {
@@ -295,9 +294,7 @@ void InputBindingDialog::saveListToSettings()
     else
       Core::DeleteBaseSettingValue(m_section_name.c_str(), m_key_name.c_str());
     Host::CommitBaseSettingChanges();
-    if (m_bind_type == InputBindingInfo::Type::Pointer)
-      g_core_thread->updateControllerSettings();
-    g_core_thread->reloadInputBindings();
+    g_core_thread->applySettings();
   }
 }
 
@@ -374,8 +371,7 @@ void InputBindingDialog::onResetDeadzoneClicked()
   if (m_sif)
   {
     m_sif->DeleteValue(m_section_name.c_str(), key);
-    QtHost::SaveGameSettings(m_sif, false);
-    g_core_thread->reloadGameSettings(false);
+    QtHost::SaveSettingsInterface(m_sif, false, true);
   }
   else
   {
@@ -399,8 +395,7 @@ void InputBindingDialog::onResetSensitivityClicked()
   if (m_sif)
   {
     m_sif->DeleteValue(m_section_name.c_str(), key);
-    QtHost::SaveGameSettings(m_sif, false);
-    g_core_thread->reloadGameSettings(false);
+    QtHost::SaveSettingsInterface(m_sif, false, true);
   }
   else
   {

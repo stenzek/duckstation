@@ -753,8 +753,7 @@ inline void BindWidgetToBoolSetting(SettingsInterface* sif, WidgetType* widget, 
       else
         sif->DeleteValue(section.c_str(), key.c_str());
 
-      QtHost::SaveGameSettings(sif, true);
-      g_core_thread->reloadGameSettings();
+      QtHost::SaveSettingsInterface(sif, true, true);
     });
   }
   else
@@ -796,8 +795,7 @@ inline void BindWidgetToIntSetting(SettingsInterface* sif, WidgetType* widget, s
         else
           sif->DeleteValue(section.c_str(), key.c_str());
 
-        QtHost::SaveGameSettings(sif, true);
-        g_core_thread->reloadGameSettings();
+        QtHost::SaveSettingsInterface(sif, true, true);
       });
   }
   else
@@ -848,8 +846,7 @@ inline void BindWidgetToIntSetting(SettingsInterface* sif, WidgetType* widget, s
       else
         sif->DeleteValue(section.c_str(), key.c_str());
 
-      QtHost::SaveGameSettings(sif, true);
-      g_core_thread->reloadGameSettings();
+      QtHost::SaveSettingsInterface(sif, true, true);
     });
   }
   else
@@ -922,8 +919,7 @@ inline void BindWidgetAndLabelToIntSetting(SettingsInterface* sif, WidgetType* w
         }
       }
 
-      QtHost::SaveGameSettings(sif, true);
-      g_core_thread->reloadGameSettings();
+      QtHost::SaveSettingsInterface(sif, true, true);
     });
   }
   else
@@ -970,8 +966,7 @@ inline void BindWidgetToFloatSetting(SettingsInterface* sif, WidgetType* widget,
       else
         sif->DeleteValue(section.c_str(), key.c_str());
 
-      QtHost::SaveGameSettings(sif, true);
-      g_core_thread->reloadGameSettings();
+      QtHost::SaveSettingsInterface(sif, true, true);
     });
   }
   else
@@ -1011,8 +1006,7 @@ inline void BindWidgetToNormalizedSetting(SettingsInterface* sif, WidgetType* wi
       else
         sif->DeleteValue(section.c_str(), key.c_str());
 
-      QtHost::SaveGameSettings(sif, true);
-      g_core_thread->reloadGameSettings();
+      QtHost::SaveSettingsInterface(sif, true, true);
     });
   }
   else
@@ -1053,8 +1047,7 @@ inline void BindWidgetToStringSetting(SettingsInterface* sif, WidgetType* widget
       else
         sif->DeleteValue(section.c_str(), key.c_str());
 
-      QtHost::SaveGameSettings(sif, true);
-      g_core_thread->reloadGameSettings();
+      QtHost::SaveSettingsInterface(sif, true, true);
     });
   }
   else
@@ -1114,8 +1107,7 @@ inline void BindWidgetToEnumSetting(SettingsInterface* sif, WidgetType* widget, 
           sif->DeleteValue(section.c_str(), key.c_str());
         }
 
-        QtHost::SaveGameSettings(sif, true);
-        g_core_thread->reloadGameSettings();
+        QtHost::SaveSettingsInterface(sif, true, true);
       });
   }
   else
@@ -1196,8 +1188,7 @@ inline void BindWidgetToEnumSetting(SettingsInterface* sif, WidgetType* widget, 
           sif->DeleteValue(section.c_str(), key.c_str());
         }
 
-        QtHost::SaveGameSettings(sif, true);
-        g_core_thread->reloadGameSettings();
+        QtHost::SaveSettingsInterface(sif, true, true);
       });
   }
   else
@@ -1313,7 +1304,7 @@ inline void BindWidgetToFolderSetting(SettingsInterface* sif, QLineEdit* widget,
         }
 
         Host::CommitBaseSettingChanges();
-        g_core_thread->updateEmuFolders();
+        QtHost::UpdateFolderPaths();
         return;
       }
     }

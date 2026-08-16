@@ -696,9 +696,6 @@ void Save(SettingsInterface& si);
 // Returns the default path for the given settings key.
 std::string GetDefaultPath(const std::string* ref_folder);
 
-/// Updates the variables in the EmuFolders namespace, reloading subsystems if needed.
-void Update();
-
 /// Returns the path to a resource file, allowing the user to override it.
 std::string GetOverridableResourcePath(std::string_view name);
 

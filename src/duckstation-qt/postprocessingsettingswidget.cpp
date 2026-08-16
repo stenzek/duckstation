@@ -69,7 +69,7 @@ SettingsInterface& PostProcessingChainConfigWidget::getSettingsInterfaceToUpdate
 void PostProcessingChainConfigWidget::commitSettingsUpdate()
 {
   if (m_dialog->isPerGameSettings())
-    m_dialog->saveAndReloadGameSettings();
+    m_dialog->saveGameSettings();
   else
     Host::CommitBaseSettingChanges();
 

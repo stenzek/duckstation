@@ -261,8 +261,7 @@ void ControllerBindingWidget::onTypeChanged()
   if (sif)
   {
     sif->SetStringValue(m_config_section.c_str(), "Type", m_controller_info->name);
-    QtHost::SaveGameSettings(sif, false);
-    g_core_thread->reloadGameSettings();
+    QtHost::SaveSettingsInterface(sif, false, true);
   }
   else
   {
@@ -316,13 +315,16 @@ void ControllerBindingWidget::onClearBindingsClicked()
   {
     const auto lock = Core::GetSettingsLock();
     InputManager::ClearPortBindings(*Core::GetBaseSettingsLayer(), m_port_number);
+    Host::CommitBaseSettingChanges();
+    g_core_thread->applySettings();
   }
   else
   {
     InputManager::ClearPortBindings(*m_dialog->getEditingSettingsInterface(), m_port_number);
+    QtHost::SaveSettingsInterface(m_dialog->getEditingSettingsInterface(), false, true);
   }
 
-  saveAndRefresh();
+  populateWidgets();
 }
 
 void ControllerBindingWidget::onBindingsClicked()
@@ -367,17 +369,18 @@ void ControllerBindingWidget::doDeviceAutomaticBinding(const QString& device)
   {
     const auto lock = Core::GetSettingsLock();
     result = InputManager::MapController(*Core::GetBaseSettingsLayer(), m_port_number, mapping, true);
+    Host::CommitBaseSettingChanges();
+    g_core_thread->applySettings();
   }
   else
   {
     result = InputManager::MapController(*m_dialog->getEditingSettingsInterface(), m_port_number, mapping, true);
-    QtHost::SaveGameSettings(m_dialog->getEditingSettingsInterface(), false);
-    g_core_thread->reloadInputBindings();
+    QtHost::SaveSettingsInterface(m_dialog->getEditingSettingsInterface(), false, true);
   }
 
   // force a refresh after mapping
   if (result)
-    saveAndRefresh();
+    populateWidgets();
 }
 
 void ControllerBindingWidget::onMultipleDeviceAutomaticBindingTriggered()
@@ -386,16 +389,9 @@ void ControllerBindingWidget::onMultipleDeviceAutomaticBindingTriggered()
   dialog->setAttribute(Qt::WA_DeleteOnClose);
 
   // force a refresh after mapping
-  connect(dialog, &QDialog::accepted, this, [this] { onTypeChanged(); });
+  connect(dialog, &QDialog::accepted, this, &ControllerBindingWidget::populateWidgets);
 
   dialog->open();
-}
-
-void ControllerBindingWidget::saveAndRefresh()
-{
-  onTypeChanged();
-  QtHost::QueueSettingsSave();
-  g_core_thread->applySettings();
 }
 
 void ControllerBindingWidget::createBindingWidgets(QWidget* parent)
@@ -1106,14 +1102,14 @@ void MultipleDeviceAutobindDialog::doAutomaticBinding()
   {
     if (global)
     {
-      QtHost::QueueSettingsSave();
-      g_core_thread->reloadInputBindings();
+      Host::CommitBaseSettingChanges();
+      g_core_thread->applySettings();
     }
     else
     {
-      QtHost::SaveGameSettings(si, false);
-      g_core_thread->reloadGameSettings(false);
+      QtHost::SaveSettingsInterface(si, false, true);
     }
+
     accept();
   }
   else

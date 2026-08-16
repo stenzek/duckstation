@@ -2929,26 +2929,6 @@ void EmuFolders::Save(SettingsInterface& si)
   si.SetStringValue("Folders", "Videos", Path::MakeRelative(Videos, DataRoot).c_str());
 }
 
-void EmuFolders::Update()
-{
-  const std::string old_gamesettings(EmuFolders::GameSettings);
-  const std::string old_inputprofiles(EmuFolders::InputProfiles);
-  const std::string old_memorycards(EmuFolders::MemoryCards);
-
-  // have to manually grab the lock here, because of the ReloadGameSettings() below.
-  {
-    const auto lock = Core::GetSettingsLock();
-    LoadConfig(*Core::GetBaseSettingsLayer());
-    EnsureFoldersExist();
-  }
-
-  if (old_gamesettings != EmuFolders::GameSettings || old_inputprofiles != EmuFolders::InputProfiles)
-    System::ReloadGameSettings(false);
-
-  if (System::IsValid() && old_memorycards != EmuFolders::MemoryCards)
-    System::UpdateMemoryCards();
-}
-
 void EmuFolders::EnsureFolderExists(const std::string& path)
 {
   Error error;

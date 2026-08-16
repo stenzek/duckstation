@@ -674,7 +674,7 @@ QString QtHost::GetResourcesBasePath()
   return QString::fromStdString(EmuFolders::Resources);
 }
 
-bool QtHost::SaveGameSettings(SettingsInterface* sif, bool delete_if_empty)
+bool QtHost::SaveSettingsInterface(SettingsInterface* sif, bool delete_if_empty, bool reload_if_needed)
 {
   INISettingsInterface* ini = static_cast<INISettingsInterface*>(sif);
   Error error;
@@ -699,25 +699,47 @@ bool QtHost::SaveGameSettings(SettingsInterface* sif, bool delete_if_empty)
                     error.GetDescription()));
       return false;
     }
-
-    return true;
   }
-
-  // clean unused sections, stops the file being bloated
-  sif->RemoveEmptySections();
-
-  // see above
-  const auto lock = Core::GetSettingsLock();
-
-  if (!ini->Save(&error, Settings::GetSectionSaveOrder()))
+  else
   {
-    Host::ReportErrorAsync(
-      TRANSLATE_SV("QtHost", "Error"),
-      fmt::format(TRANSLATE_FS("QtHost", "An error occurred while saving game settings:\n{}"), error.GetDescription()));
-    return false;
+    // clean unused sections, stops the file being bloated
+    sif->RemoveEmptySections();
+
+    // see above
+    const auto lock = Core::GetSettingsLock();
+
+    if (!ini->Save(&error, Settings::GetSectionSaveOrder()))
+    {
+      Host::ReportErrorAsync(TRANSLATE_SV("QtHost", "Error"),
+                             fmt::format(TRANSLATE_FS("QtHost", "An error occurred while saving game settings:\n{}"),
+                                         error.GetDescription()));
+      return false;
+    }
   }
+
+  if (reload_if_needed)
+    System::ReloadSettingsForPath(ini->GetPath());
 
   return true;
+}
+
+void QtHost::ReloadCheatFiles(const std::string& serial, bool verbose, bool verbose_if_changed)
+{
+  DebugAssert(!Host::IsOnCoreThread());
+  if (QtHost::IsSystemValid() && QtHost::GetCurrentGameSerial() == QUtf8StringView(serial))
+  {
+    Host::RunOnCoreThread([verbose, verbose_if_changed]() {
+      if (!System::IsValid())
+        return;
+
+      Cheats::ReloadCheats(true, false, verbose, verbose_if_changed, verbose);
+    });
+  }
+}
+
+void QtHost::UpdateFolderPaths()
+{
+  Host::RunOnCoreThread(&System::UpdateFolderPaths);
 }
 
 const QIcon& QtHost::GetAppIcon()
@@ -951,53 +973,6 @@ void CoreThread::applySettings(bool display_osd_messages /* = false */)
   }
 
   System::ApplySettings(display_osd_messages);
-}
-
-void CoreThread::reloadGameSettings(bool display_osd_messages /* = false */)
-{
-  if (!isCurrentThread())
-  {
-    QMetaObject::invokeMethod(this, &CoreThread::reloadGameSettings, Qt::QueuedConnection, display_osd_messages);
-    return;
-  }
-
-  System::ReloadGameSettings(display_osd_messages);
-}
-
-void CoreThread::reloadInputProfile(bool display_osd_messages /*= false*/)
-{
-  if (!isCurrentThread())
-  {
-    QMetaObject::invokeMethod(this, &CoreThread::reloadInputProfile, Qt::QueuedConnection, display_osd_messages);
-    return;
-  }
-
-  System::ReloadInputProfile(display_osd_messages);
-}
-
-void CoreThread::updateEmuFolders()
-{
-  if (!isCurrentThread())
-  {
-    QMetaObject::invokeMethod(this, &CoreThread::updateEmuFolders, Qt::QueuedConnection);
-    return;
-  }
-
-  EmuFolders::Update();
-}
-
-void CoreThread::updateControllerSettings()
-{
-  if (!isCurrentThread())
-  {
-    QMetaObject::invokeMethod(this, &CoreThread::updateControllerSettings, Qt::QueuedConnection);
-    return;
-  }
-
-  if (!System::IsValid())
-    return;
-
-  System::UpdateControllerSettings();
 }
 
 void CoreThread::startFullscreenUI()
@@ -1384,17 +1359,6 @@ void Host::OnVideoThreadRunIdleChanged(bool is_active)
   g_core_thread->setVideoThreadRunIdle(is_active);
 }
 
-void CoreThread::reloadInputBindings()
-{
-  if (!isCurrentThread())
-  {
-    QMetaObject::invokeMethod(this, &CoreThread::reloadInputBindings, Qt::QueuedConnection);
-    return;
-  }
-
-  System::ReloadInputBindings();
-}
-
 void CoreThread::confirmActionWithSafetyCheck(const QString& action, bool check_achievements,
                                               bool cancel_resume_on_accept, std::function<void(bool)> callback) const
 {
@@ -1558,24 +1522,6 @@ void CoreThread::setLidState(bool manual_control, bool manual_state)
     return;
 
   CDROM::SetLidState(manual_control, manual_state);
-}
-
-void CoreThread::reloadCheats(bool reload_files, bool reload_enabled_list, bool verbose, bool verbose_if_changed)
-{
-  if (!isCurrentThread())
-  {
-    QMetaObject::invokeMethod(this, &CoreThread::reloadCheats, Qt::QueuedConnection, reload_files, reload_enabled_list,
-                              verbose, verbose_if_changed);
-    return;
-  }
-
-  if (System::IsValid())
-  {
-    // If the reloaded list is being enabled, we also need to reload the gameini file.
-    if (reload_enabled_list)
-      System::ReloadGameSettings(verbose);
-    Cheats::ReloadCheats(reload_files, reload_enabled_list, verbose, verbose_if_changed, verbose);
-  }
 }
 
 void CoreThread::applyCheat(const QString& name)
