@@ -50,7 +50,7 @@ public:
   bool Save(Error* error = nullptr, SectionSaveOrder save_order = {});
   std::string SaveToString(SectionSaveOrder save_order = {}) const;
 
-  void Clear();
+  void Clear(bool clear_memory = false);
   void ClearPathAndContents();
   void CompactStrings();
 

@@ -1779,7 +1779,7 @@ void FullscreenUI::SwitchToGameSettings(const GameList::Entry* entry, SettingsPa
 {
   s_settings_locals.game_settings_entry = std::make_unique<GameList::Entry>(*entry);
   s_settings_locals.game_settings_interface = System::GetGameSettingsInterface(
-    s_settings_locals.game_settings_entry->dbentry, s_settings_locals.game_settings_entry->serial, true, false);
+    s_settings_locals.game_settings_entry->dbentry, s_settings_locals.game_settings_entry->serial, false);
   PopulateImageTrackList();
   PopulatePatchesAndCheatsList();
   PopulatePostProcessingChain(*s_settings_locals.game_settings_interface,

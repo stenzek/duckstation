@@ -412,15 +412,23 @@ bool INISettingsInterface::Save(Error* error /* = nullptr */, SectionSaveOrder s
   return true;
 }
 
-void INISettingsInterface::Clear()
+void INISettingsInterface::Clear(bool clear_memory /* = false */)
 {
-  m_string_pool.Clear();
-  m_sections.clear();
+  if (clear_memory)
+  {
+    m_string_pool = BumpUniqueStringPool();
+    m_sections = SectionList();
+  }
+  else
+  {
+    m_string_pool.Clear();
+    m_sections.clear();
+  }
 }
 
 void INISettingsInterface::ClearPathAndContents()
 {
-  Clear();
+  Clear(true);
   m_path = {};
   m_dirty = false;
 }

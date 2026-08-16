@@ -181,6 +181,7 @@ static void AccumulatePreFrameSleepTime(Timer::Value current_time);
 static void UpdateDisplayVSync();
 static void InhibitScreensaver(bool inhibit);
 
+static void ClearSettingsLayers();
 static bool UpdateGameSettingsLayer();
 static void UpdateInputSettingsLayer(std::string input_profile_name, std::unique_lock<std::mutex>& lock);
 static void UpdateRunningGame(const std::string& path, CDImage* image, bool booting);
@@ -296,8 +297,8 @@ struct StateVars
 
   std::atomic_bool startup_cancelled{false};
 
-  std::unique_ptr<INISettingsInterface> game_settings_interface;
-  std::unique_ptr<INISettingsInterface> input_settings_interface;
+  INISettingsInterface game_settings_interface;
+  INISettingsInterface input_settings_interface;
   std::string input_profile_name;
 
   // temporary save state, created when loading, used to undo load state
@@ -1246,13 +1247,15 @@ void System::ApplySettings(bool display_osd_messages)
 
 void System::ReloadSettingsForPath(std::string_view path)
 {
+  if (path.empty())
+    return;
+
   auto lock = Core::GetSettingsLock();
 
   // NOTE: android needs base settings checked too
 
   // protected by settings lock if called off-thread
-  if (INISettingsInterface* gsi = static_cast<INISettingsInterface*>(Core::GetGameSettingsLayer());
-      gsi && gsi->GetPath() == path)
+  if (s_state.game_settings_interface.GetPath() == path)
   {
     if (Host::IsOnCoreThread())
     {
@@ -1281,8 +1284,7 @@ void System::ReloadSettingsForPath(std::string_view path)
     return;
   }
 
-  if (INISettingsInterface* isi = static_cast<INISettingsInterface*>(Core::GetInputSettingsLayer());
-      isi && isi->GetPath() == path)
+  if (s_state.input_settings_interface.GetPath() == path)
   {
     if (Host::IsOnCoreThread())
     {
@@ -1352,6 +1354,19 @@ void System::UpdateFolderPaths()
   }
 }
 
+void System::ClearSettingsLayers()
+{
+  {
+    auto lock = Core::GetSettingsLock();
+    Core::SetInputSettingsLayer(nullptr, lock);
+    Core::SetGameSettingsLayer(nullptr, lock);
+    s_state.input_settings_interface.ClearPathAndContents();
+    s_state.game_settings_interface.ClearPathAndContents();
+  }
+
+  ApplySettings(false);
+}
+
 std::string System::GetInputProfilePath(std::string_view name)
 {
   return Path::Combine(EmuFolders::InputProfiles, fmt::format("{}.ini", name));
@@ -1373,25 +1388,24 @@ bool System::ShouldUseSeparateDiscSettingsForSerial(std::string_view game_serial
   return ini.GetBoolValue("Main", "UseSeparateConfigForDiscSet", false);
 }
 
-std::unique_ptr<INISettingsInterface> System::GetGameSettingsInterface(const GameDatabase::Entry* dbentry,
-                                                                       std::string_view serial, bool create, bool quiet)
+bool System::GetGameSettingsInterface(INISettingsInterface* sif, const GameDatabase::Entry* dbentry,
+                                      std::string_view serial, bool quiet)
 {
-  std::unique_ptr<INISettingsInterface> ret;
-  std::string path = GetGameSettingsPath(serial, false);
+  if (std::string path = GetGameSettingsPath(serial, false); sif->GetPath() != path)
+    sif->SetPath(std::move(path));
 
-  if (FileSystem::FileExists(path.c_str()))
+  if (FileSystem::FileExists(sif->GetPath().c_str()))
   {
     if (!quiet)
-      INFO_COLOR_LOG(StrongCyan, "Loading game settings from '{}'...", Path::GetFileName(path));
+      INFO_COLOR_LOG(StrongCyan, "Loading game settings from '{}'...", Path::GetFileName(sif->GetPath()));
 
     Error error;
-    ret = std::make_unique<INISettingsInterface>(std::move(path));
-    if (ret->Load(&error))
+    if (sif->Load(&error))
     {
       // Check for separate disc configuration.
       if (dbentry && !dbentry->IsFirstDiscInSet())
       {
-        if (ret->GetBoolValue("Main", "UseSeparateConfigForDiscSet", false))
+        if (sif->GetBoolValue("Main", "UseSeparateConfigForDiscSet", false))
         {
           if (!quiet)
           {
@@ -1400,112 +1414,134 @@ std::unique_ptr<INISettingsInterface> System::GetGameSettingsInterface(const Gam
           }
 
           // Load the disc specific ini.
-          path = GetGameSettingsPath(serial, true);
-          if (FileSystem::FileExists(path.c_str()))
+          sif->SetPath(GetGameSettingsPath(serial, true));
+          if (FileSystem::FileExists(sif->GetPath().c_str()))
           {
-            if (!ret->Load(std::move(path), &error))
+            if (!sif->Load(&error))
             {
-              if (!quiet)
-              {
-                ERROR_LOG("Failed to parse separate disc game settings ini '{}': {}", Path::GetFileName(ret->GetPath()),
-                          error.GetDescription());
-              }
+              ERROR_LOG("Failed to parse separate disc game settings ini '{}': {}", Path::GetFileName(sif->GetPath()),
+                        error.GetDescription());
 
-              if (create)
-                ret->Clear();
-              else
-                ret.reset();
+              sif->Clear();
+              return false;
             }
           }
           else
           {
             if (!quiet)
-              INFO_COLOR_LOG(StrongCyan, "No separate disc game settings found (tried '{}')", Path::GetFileName(path));
-
-            ret.reset();
+              INFO_COLOR_LOG(StrongCyan, "No separate disc game settings found (tried '{}')",
+                             Path::GetFileName(sif->GetPath()));
 
             // return empty ini struct?
-            if (create)
-              ret = std::make_unique<INISettingsInterface>(std::move(path));
+            sif->Clear();
+            return false;
           }
         }
       }
     }
     else
     {
-      if (!quiet)
-      {
-        ERROR_LOG("Failed to parse game settings ini '{}': {}", Path::GetFileName(ret->GetPath()),
-                  error.GetDescription());
-      }
+      ERROR_LOG("Failed to parse game settings ini '{}': {}", Path::GetFileName(sif->GetPath()),
+                error.GetDescription());
 
-      if (!create)
-        ret.reset();
+      sif->Clear();
+      return false;
     }
   }
   else
   {
     if (!quiet)
-      INFO_COLOR_LOG(StrongCyan, "No game settings found (tried '{}')", Path::GetFileName(path));
+      INFO_COLOR_LOG(StrongCyan, "No game settings found (tried '{}')", Path::GetFileName(sif->GetPath()));
 
     // return empty ini struct?
-    if (create)
-      ret = std::make_unique<INISettingsInterface>(std::move(path));
+    sif->Clear();
+    return false;
   }
 
-  return ret;
+  return true;
+}
+
+std::unique_ptr<INISettingsInterface> System::GetGameSettingsInterface(const GameDatabase::Entry* dbentry,
+                                                                       std::string_view serial, bool quiet)
+{
+  std::unique_ptr<INISettingsInterface> ini = std::make_unique<INISettingsInterface>();
+  GetGameSettingsInterface(ini.get(), dbentry, serial, quiet);
+  return ini;
 }
 
 bool System::UpdateGameSettingsLayer()
 {
-  std::unique_ptr<INISettingsInterface> new_interface;
-  if (g_settings.apply_game_settings && !s_state.running_game_serial.empty())
-    new_interface = GetGameSettingsInterface(s_state.running_game_entry, s_state.running_game_serial, false, false);
+  auto lock = Core::GetSettingsLock();
+  const bool was_valid = (Core::GetGameSettingsLayer() == &s_state.game_settings_interface);
 
-  std::string input_profile_name;
-  if (new_interface)
+  bool valid;
+  if (g_settings.apply_game_settings && !s_state.running_game_serial.empty())
   {
-    if (!new_interface->GetBoolValue("ControllerPorts", "UseGameSettingsForController", false))
-      input_profile_name = new_interface->GetStringValue("ControllerPorts", "InputProfileName");
+    // ignore empty files
+    valid = (GetGameSettingsInterface(&s_state.game_settings_interface, s_state.running_game_entry,
+                                      s_state.running_game_serial, false) &&
+             !s_state.game_settings_interface.IsEmpty());
+  }
+  else
+  {
+    s_state.game_settings_interface.ClearPathAndContents();
+    valid = false;
   }
 
-  if (!s_state.game_settings_interface && !new_interface && s_state.input_profile_name == input_profile_name)
+  std::string input_profile_name;
+  if (valid)
+  {
+    if (!s_state.game_settings_interface.GetBoolValue("ControllerPorts", "UseGameSettingsForController", false))
+      input_profile_name = s_state.game_settings_interface.GetStringValue("ControllerPorts", "InputProfileName");
+  }
+
+  if (!valid && !was_valid && s_state.input_profile_name == input_profile_name)
     return false;
 
-  auto lock = Core::GetSettingsLock();
-  Core::SetGameSettingsLayer(new_interface.get(), lock);
-  s_state.game_settings_interface = std::move(new_interface);
+  if (valid != was_valid)
+    VERBOSE_LOG("Game settings layer is now {}", valid ? "active" : "inactive");
 
+  Core::SetGameSettingsLayer(valid ? &s_state.game_settings_interface : nullptr, lock);
   UpdateInputSettingsLayer(std::move(input_profile_name), lock);
   return true;
 }
 
 void System::UpdateInputSettingsLayer(std::string input_profile_name, std::unique_lock<std::mutex>& lock)
 {
-  std::unique_ptr<INISettingsInterface> input_interface;
   if (!input_profile_name.empty())
   {
-    std::string filename = GetInputProfilePath(input_profile_name);
-    if (FileSystem::FileExists(filename.c_str()))
+    if (std::string path = GetInputProfilePath(input_profile_name); s_state.input_settings_interface.GetPath() != path)
+      s_state.input_settings_interface.SetPath(std::move(path));
+
+    if (FileSystem::FileExists(s_state.input_settings_interface.GetPath().c_str()))
     {
-      INFO_LOG("Loading input profile from '{}'...", Path::GetFileName(filename));
-      input_interface = std::make_unique<INISettingsInterface>(std::move(filename));
-      if (!input_interface->Load())
+      INFO_LOG("Loading input profile from '{}'...", Path::GetFileName(s_state.input_settings_interface.GetPath()));
+      if (Error error; !s_state.input_settings_interface.Load(&error))
       {
-        ERROR_LOG("Failed to parse input profile ini '{}'", Path::GetFileName(input_interface->GetPath()));
-        input_interface.reset();
+        ERROR_LOG("Failed to parse input profile ini '{}': {}",
+                  Path::GetFileName(s_state.input_settings_interface.GetPath()), error.GetDescription());
+        s_state.input_settings_interface.ClearPathAndContents();
         input_profile_name = {};
       }
     }
     else
     {
-      WARNING_LOG("No input profile found (tried '{}')", Path::GetFileName(filename));
+      WARNING_LOG("No input profile found (tried '{}')", Path::GetFileName(s_state.input_settings_interface.GetPath()));
+      s_state.input_settings_interface.ClearPathAndContents();
       input_profile_name = {};
     }
   }
+  else
+  {
+    s_state.input_settings_interface.ClearPathAndContents();
+  }
 
-  Core::SetInputSettingsLayer(input_interface.get(), lock);
-  s_state.input_settings_interface = std::move(input_interface);
+  const bool was_valid = (Core::GetInputSettingsLayer() == &s_state.input_settings_interface);
+  const bool valid = !s_state.input_settings_interface.IsEmpty();
+  if (valid != was_valid)
+    VERBOSE_LOG("Input settings layer is now {}", valid ? "active" : "inactive");
+
+  Core::SetInputSettingsLayer(valid ? &s_state.input_settings_interface : nullptr, lock);
   s_state.input_profile_name = std::move(input_profile_name);
 }
 
@@ -2020,8 +2056,7 @@ void System::DestroySystem()
   Host::OnSystemDestroyed();
 
   // Revert to global settings.
-  UpdateGameSettingsLayer();
-  ApplySettings(true);
+  ClearSettingsLayers();
 }
 
 void System::AbnormalShutdown(const std::string_view reason)
@@ -5855,14 +5890,17 @@ std::string System::GetGameMemoryCardPath(std::string_view custom_title, std::st
       .value_or(default_type);
 
   MemoryCardType type = global_type;
-  std::unique_ptr<INISettingsInterface> ini;
+  std::optional<INISettingsInterface> ini;
   if (!serial.empty())
   {
-    ini = GetGameSettingsInterface(GameDatabase::GetEntryForSerial(serial), serial, false, true);
-    if (ini && ini->ContainsValue(section, type_key))
+    if (!GetGameSettingsInterface(&ini.emplace(), GameDatabase::GetEntryForSerial(serial), serial, true))
+    {
+      ini.reset();
+    }
+    else if (ini->ContainsValue(section, type_key))
     {
       type = Settings::ParseMemoryCardTypeName(
-               ini->GetTinyStringValue(section, type_key, Settings::GetMemoryCardTypeName(global_type)))
+               ini->GetStringViewValue(section, type_key, Settings::GetMemoryCardTypeName(global_type)))
                .value_or(global_type);
     }
   }
@@ -5886,7 +5924,7 @@ std::string System::GetGameMemoryCardPath(std::string_view custom_title, std::st
       const TinyString path_key = TinyString::from_format("Card{}Path", slot + 1);
       std::string global_path =
         Core::GetBaseStringSettingValue(section, path_key, Settings::GetDefaultSharedMemoryCardName(slot + 1));
-      if (ini && ini->ContainsValue(section, path_key))
+      if (ini.has_value() && ini->ContainsValue(section, path_key))
         ret = ini->GetStringValue(section, path_key, global_path.c_str());
       else
         ret = std::move(global_path);
@@ -5914,8 +5952,9 @@ std::string System::GetGameMemoryCardPath(std::string_view custom_title, std::st
       if (disc_card_path != ret)
       {
         const bool global_use_playlist_title = Core::GetBaseBoolSettingValue(section, "UsePlaylistTitle", true);
-        const bool use_playlist_title =
-          ini ? ini->GetBoolValue(section, "UsePlaylistTitle", global_use_playlist_title) : global_use_playlist_title;
+        const bool use_playlist_title = ini.has_value() ?
+                                          ini->GetBoolValue(section, "UsePlaylistTitle", global_use_playlist_title) :
+                                          global_use_playlist_title;
         if (ret.empty() || !use_playlist_title || FileSystem::FileExists(disc_card_path.c_str()))
           ret = std::move(disc_card_path);
       }

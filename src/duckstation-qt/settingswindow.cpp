@@ -761,8 +761,7 @@ void SettingsWindow::onMultitapModeChanged(MultitapMode mode)
 SettingsWindow* SettingsWindow::openGamePropertiesDialog(const GameList::Entry* entry,
                                                          const char* category /* = nullptr */)
 {
-  std::unique_ptr<INISettingsInterface> sif =
-    System::GetGameSettingsInterface(entry->dbentry, entry->serial, true, false);
+  std::unique_ptr<INISettingsInterface> sif = System::GetGameSettingsInterface(entry->dbentry, entry->serial, false);
 
   // check for an existing dialog with this serial
   SettingsWindow* sif_window = nullptr;
@@ -789,19 +788,4 @@ void SettingsWindow::closeGamePropertiesDialogs()
 {
   for (SettingsWindow* dialog : s_open_game_properties_dialogs)
     dialog->close();
-}
-
-bool SettingsWindow::setGameSettingsBoolForSerial(const std::string& serial, const char* section, const char* key,
-                                                  bool value)
-{
-  if (serial.empty())
-    return false;
-
-  std::unique_ptr<INISettingsInterface> sif =
-    System::GetGameSettingsInterface(GameDatabase::GetEntryForSerial(serial), serial, true, false);
-  if (!sif)
-    return false;
-
-  sif->SetBoolValue(section, key, value);
-  return sif->Save();
 }

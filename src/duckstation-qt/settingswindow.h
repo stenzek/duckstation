@@ -44,9 +44,6 @@ public:
   static SettingsWindow* openGamePropertiesDialog(const GameList::Entry* entry, const char* category = nullptr);
   static void closeGamePropertiesDialogs();
 
-  // Helper for externally setting fields in game settings ini.
-  static bool setGameSettingsBoolForSerial(const std::string& serial, const char* section, const char* key, bool value);
-
   ALWAYS_INLINE bool isPerGameSettings() const { return static_cast<bool>(m_sif); }
   ALWAYS_INLINE INISettingsInterface* getSettingsInterface() const { return m_sif.get(); }
   ALWAYS_INLINE const std::string& getGameTitle() const { return m_title; }

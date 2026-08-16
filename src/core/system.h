@@ -178,10 +178,12 @@ std::string GetGameSettingsPath(std::string_view game_serial, bool ignore_disc_s
 /// Returns true if separate disc settings should be used for the specified serial.
 bool ShouldUseSeparateDiscSettingsForSerial(std::string_view game_serial);
 
-/// Returns the loaded interface for the game settings ini file for the specified serial. If create is true, an empty
-/// ini reader will be returned if the file does not exist. If quit is true, no log messages will be emitted.
+/// Returns the loaded interface for the game settings ini file for the specified serial.
+/// If quiet is true, no log messages will be emitted.
+bool GetGameSettingsInterface(INISettingsInterface* sif, const GameDatabase::Entry* dbentry, std::string_view serial,
+                              bool quiet);
 std::unique_ptr<INISettingsInterface> GetGameSettingsInterface(const GameDatabase::Entry* dbentry,
-                                                               std::string_view serial, bool create, bool quiet);
+                                                               std::string_view serial, bool quiet);
 
 /// Returns the path for the input profile ini file with the specified name (may not exist).
 std::string GetInputProfilePath(std::string_view name);
