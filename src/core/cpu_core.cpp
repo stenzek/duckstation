@@ -90,6 +90,7 @@ static bool FetchInstruction();
 static bool FetchInstructionForInterpreterFallback();
 template<bool add_ticks, bool icache_read = false, u32 word_count = 1, bool raise_exceptions>
 static bool DoInstructionRead(PhysicalMemoryAddress address, u32* data);
+static void DoSafeInvalidateRAMCodePage(VirtualMemoryAddress ram_offset);
 template<MemoryAccessType type, MemoryAccessSize size>
 static bool DoSafeMemoryAccess(VirtualMemoryAddress address, u32& value);
 template<MemoryAccessType type, MemoryAccessSize size>
@@ -3131,6 +3132,26 @@ bool CPU::SafeReadInstruction(VirtualMemoryAddress addr, u32* value)
   }
 }
 
+ALWAYS_INLINE void CPU::DoSafeInvalidateRAMCodePage(VirtualMemoryAddress ram_offset)
+{
+  const u32 page_index = ram_offset >> HOST_PAGE_SHIFT;
+  if (g_bus.ram_code_bits[page_index]) // NOTE: Racey read.
+  {
+    // Queue when called off-thread.
+    if (Host::IsOnCoreThread())
+    {
+      CPU::CodeCache::InvalidateBlocksWithPageIndex(page_index);
+    }
+    else
+    {
+      Host::RunOnCoreThread([page_index]() {
+        if (System::IsValid() && g_bus.ram_code_bits[page_index])
+          CPU::CodeCache::InvalidateBlocksWithPageIndex(page_index);
+      });
+    }
+  }
+}
+
 template<MemoryAccessType type, MemoryAccessSize size>
 ALWAYS_INLINE bool CPU::DoSafeMemoryAccess(VirtualMemoryAddress address, u32& value)
 {
@@ -3224,15 +3245,12 @@ ALWAYS_INLINE bool CPU::DoSafeMemoryAccess(VirtualMemoryAddress address, u32& va
     }
     else
     {
-      const u32 page_index = offset >> HOST_PAGE_SHIFT;
-
       if constexpr (size == MemoryAccessSize::Byte)
       {
         if (g_bus.unprotected_ram[offset] != Truncate8(value))
         {
           g_bus.unprotected_ram[offset] = Truncate8(value);
-          if (g_bus.ram_code_bits[page_index])
-            CPU::CodeCache::InvalidateBlocksWithPageIndex(page_index);
+          DoSafeInvalidateRAMCodePage(offset);
         }
       }
       else if constexpr (size == MemoryAccessSize::HalfWord)
@@ -3243,8 +3261,7 @@ ALWAYS_INLINE bool CPU::DoSafeMemoryAccess(VirtualMemoryAddress address, u32& va
         if (old_value != new_value)
         {
           std::memcpy(&g_bus.unprotected_ram[offset], &new_value, sizeof(u16));
-          if (g_bus.ram_code_bits[page_index])
-            CPU::CodeCache::InvalidateBlocksWithPageIndex(page_index);
+          DoSafeInvalidateRAMCodePage(offset);
         }
       }
       else if constexpr (size == MemoryAccessSize::Word)
@@ -3254,8 +3271,7 @@ ALWAYS_INLINE bool CPU::DoSafeMemoryAccess(VirtualMemoryAddress address, u32& va
         if (old_value != value)
         {
           std::memcpy(&g_bus.unprotected_ram[offset], &value, sizeof(u32));
-          if (g_bus.ram_code_bits[page_index])
-            CPU::CodeCache::InvalidateBlocksWithPageIndex(page_index);
+          DoSafeInvalidateRAMCodePage(offset);
         }
       }
     }
