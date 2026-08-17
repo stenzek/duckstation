@@ -339,10 +339,10 @@ bool PageFaultHandler::Install(Error* error)
   sigemptyset(&sa.sa_mask);
   sa.sa_flags = SA_SIGINFO;
   sa.sa_sigaction = SignalHandler;
-#ifdef __linux__
+
   // Don't block the signal from executing recursively, we want to fire the original handler.
   sa.sa_flags |= SA_NODEFER;
-#endif
+
   if (sigaction(SIGSEGV, &sa, nullptr) != 0)
   {
     Error::SetErrno(error, "sigaction() for SIGSEGV failed: ", errno);
