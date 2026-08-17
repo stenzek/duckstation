@@ -85,6 +85,8 @@ static void SetCodeLUT(u32 pc, const void* function);
 static void InvalidateBlock(Block* block, BlockState new_state);
 static void ClearBlocks();
 
+static bool IsInCodeBuffer(const void* pc);
+
 static Block* LookupBlock(u32 pc);
 static Block* CreateBlock(u32 pc, const BlockInstructionList& instructions, const BlockMetadata& metadata);
 static bool HasBlockLUT(u32 pc);
@@ -186,6 +188,15 @@ bool CPU::CodeCache::IsUsingRecompiler()
 bool CPU::CodeCache::IsUsingFastmem()
 {
   return (g_settings.cpu_fastmem_mode != CPUFastmemMode::Disabled);
+}
+
+bool CPU::CodeCache::IsInCodeBuffer(const void* pc)
+{
+#ifdef USE_CODE_BUFFER_SECTION
+  return (pc >= s_code_buffer_storage && pc < (s_code_buffer_storage + RECOMPILER_CODE_CACHE_SIZE));
+#else
+  return (pc >= s_locals.code_buffer_ptr && pc < (s_locals.code_buffer_ptr + RECOMPILER_CODE_CACHE_SIZE));
+#endif
 }
 
 bool CPU::CodeCache::ProcessStartup(Error* error)
@@ -764,14 +775,24 @@ PageFaultHandler::HandlerResult PageFaultHandler::HandlePageFault(void* exceptio
   if (g_bus.ram && static_cast<const u8*>(fault_address) >= g_bus.ram &&
       static_cast<const u8*>(fault_address) < (g_bus.ram + Bus::RAM_8MB_SIZE))
   {
-    // Writing to protected RAM.
-    DebugAssert(is_write);
+    // Writing to protected RAM should only occur on the core thread.
+    // Writes can come from anywhere here (e.g. DMA).
+    Assert(is_write && Host::IsOnCoreThread());
+
     const u32 guest_address = static_cast<u32>(static_cast<const u8*>(fault_address) - g_bus.ram);
     const u32 page_index = Bus::GetRAMCodePageIndex(guest_address);
     DEV_LOG("Page fault on protected RAM @ 0x{:08X} (page #{}), invalidating code cache.", guest_address, page_index);
     CPU::CodeCache::InvalidateBlocksWithPageIndex(page_index);
     return PageFaultHandler::HandlerResult::ContinueExecution;
   }
+
+  // Fastmem exceptions should only occur within JIT code. Must also be on the core thread.
+  // If we're not, get out of here because it's probably a crash.
+  if (!CPU::CodeCache::IsInCodeBuffer(exception_pc))
+    return HandlerResult::ExecuteNextHandler;
+
+  // TODO: Remove the assertion eventually.
+  Assert(Host::IsOnCoreThread());
 
   return CPU::CodeCache::HandleFastmemException(exception_pc, fault_address, is_write);
 }
