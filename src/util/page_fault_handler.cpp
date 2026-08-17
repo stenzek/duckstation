@@ -8,10 +8,7 @@
 #include "common/error.h"
 #include "common/log.h"
 
-#include <algorithm>
 #include <cstring>
-#include <mutex>
-#include <vector>
 
 #if defined(_WIN32)
 #include "common/windows_headers.h"
@@ -185,16 +182,11 @@ static constexpr u64 ARM64_ESR_ISS_DA_WNR = (1u << 6);
 namespace PageFaultHandler {
 static LONG ExceptionHandler(PEXCEPTION_POINTERS exi);
 
-static std::recursive_mutex s_exception_handler_mutex;
-static bool s_in_exception_handler = false;
-static bool s_installed = false;
+static thread_local bool s_in_exception_handler = false;
 } // namespace PageFaultHandler
 
 LONG PageFaultHandler::ExceptionHandler(PEXCEPTION_POINTERS exi)
 {
-  // Executing the handler concurrently from multiple threads wouldn't go down well.
-  std::unique_lock lock(s_exception_handler_mutex);
-
   // Prevent recursive exception filtering.
   if (s_in_exception_handler)
     return EXCEPTION_CONTINUE_SEARCH;
@@ -225,9 +217,6 @@ LONG PageFaultHandler::ExceptionHandler(PEXCEPTION_POINTERS exi)
 
 bool PageFaultHandler::Install(Error* error)
 {
-  std::unique_lock lock(s_exception_handler_mutex);
-  AssertMsg(!s_installed, "Page fault handler has already been installed.");
-
   PVOID handle = AddVectoredExceptionHandler(1, ExceptionHandler);
   if (!handle)
   {
@@ -235,7 +224,6 @@ bool PageFaultHandler::Install(Error* error)
     return false;
   }
 
-  s_installed = true;
   return true;
 }
 
@@ -244,9 +232,7 @@ bool PageFaultHandler::Install(Error* error)
 namespace PageFaultHandler {
 static void SignalHandler(int sig, siginfo_t* info, void* ctx);
 
-static std::recursive_mutex s_exception_handler_mutex;
-static bool s_in_exception_handler = false;
-static bool s_installed = false;
+static thread_local bool s_in_exception_handler = false;
 } // namespace PageFaultHandler
 
 void PageFaultHandler::SignalHandler(int sig, siginfo_t* info, void* ctx)
@@ -310,9 +296,6 @@ void PageFaultHandler::SignalHandler(int sig, siginfo_t* info, void* ctx)
 
 #endif
 
-  // Executing the handler concurrently from multiple threads wouldn't go down well.
-  s_exception_handler_mutex.lock();
-
   // Prevent recursive exception filtering.
   HandlerResult result = HandlerResult::ExecuteNextHandler;
   if (!s_in_exception_handler)
@@ -321,8 +304,6 @@ void PageFaultHandler::SignalHandler(int sig, siginfo_t* info, void* ctx)
     result = HandlePageFault(exception_pc, exception_address, is_write);
     s_in_exception_handler = false;
   }
-
-  s_exception_handler_mutex.unlock();
 
   // Resumes execution right where we left off (re-executes instruction that caused the SIGSEGV).
   if (result == HandlerResult::ContinueExecution)
@@ -334,9 +315,6 @@ void PageFaultHandler::SignalHandler(int sig, siginfo_t* info, void* ctx)
 
 bool PageFaultHandler::Install(Error* error)
 {
-  std::unique_lock lock(s_exception_handler_mutex);
-  AssertMsg(!s_installed, "Page fault handler has already been installed.");
-
   struct sigaction sa;
 
   sigemptyset(&sa.sa_mask);
@@ -363,7 +341,6 @@ bool PageFaultHandler::Install(Error* error)
   task_set_exception_ports(mach_task_self(), EXC_MASK_BAD_ACCESS, MACH_PORT_NULL, EXCEPTION_DEFAULT, 0);
 #endif
 
-  s_installed = true;
   return true;
 }
 
