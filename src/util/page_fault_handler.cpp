@@ -31,6 +31,8 @@
 #endif
 
 #if defined(CPU_ARCH_ARM64)
+static constexpr u64 ARM64_ESR_ISS_DA_WNR = (1u << 6);
+
 [[maybe_unused]] static bool IsStoreInstruction(const void* ptr)
 {
   u32 bits;
@@ -280,9 +282,10 @@ void PageFaultHandler::SignalHandler(int sig, siginfo_t* info, void* ctx)
   void* const exception_pc = reinterpret_cast<void*>(static_cast<ucontext_t*>(ctx)->uc_mcontext->__ss.__rip);
   const bool is_write = (static_cast<ucontext_t*>(ctx)->uc_mcontext->__es.__err & 2) != 0;
 #elif defined(CPU_ARCH_ARM64)
-  void* const exception_address = reinterpret_cast<void*>(static_cast<ucontext_t*>(ctx)->uc_mcontext->__es.__far);
-  void* const exception_pc = reinterpret_cast<void*>(static_cast<ucontext_t*>(ctx)->uc_mcontext->__ss.__pc);
-  const bool is_write = IsStoreInstruction(exception_pc);
+  ucontext_t* const context = static_cast<ucontext_t*>(ctx);
+  void* const exception_address = reinterpret_cast<void*>(context->uc_mcontext->__es.__far);
+  void* const exception_pc = reinterpret_cast<void*>(context->uc_mcontext->__ss.__pc);
+  const bool is_write = (context->uc_mcontext->__es.__esr & ARM64_ESR_ISS_DA_WNR) != 0;
 #else
   void* const exception_address = reinterpret_cast<void*>(info->si_addr);
   void* const exception_pc = nullptr;
