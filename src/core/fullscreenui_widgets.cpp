@@ -7750,7 +7750,7 @@ void FullscreenUI::UpdateOnScreenKeyboardInput()
     // and denormalize in the new row
     const auto& new_row = rows[state.selected_row];
     state.selected_column = 0;
-    for (s8 i = 0; state.selected_column < (new_row.size() - 1); state.selected_column++)
+    for (s8 i = 0; state.selected_column < static_cast<s8>(new_row.size() - 1); state.selected_column++)
     {
       // stop before the end of the current normalized width
       const s8 new_normalized_width = i + new_row[state.selected_column].width;
