@@ -1130,14 +1130,8 @@ void SaveStateSelectorUI::ClearList()
 
 void SaveStateSelectorUI::DestroyTextures()
 {
+  // We don't cache the screenshots in memory, so just close completely and let it repopulate on open.
   CloseImmediately();
-
-  for (ListEntry& entry : s_state.slots)
-  {
-    if (entry.preview_texture)
-      g_gpu_device->RecycleTexture(std::move(entry.preview_texture));
-  }
-
   s_state.placeholder_texture.reset();
 }
 
