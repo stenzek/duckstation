@@ -1775,7 +1775,7 @@ TickCount CDROM::GetTicksForSeek(CDImage::LBA new_lba, bool ignore_speed_change)
 TickCount CDROM::GetTicksForPause()
 {
   if (!IsReadingOrPlaying())
-    return 27000;
+    return 7400;
 
   if (g_settings.cdrom_read_speedup == 0 && CanUseReadSpeedup())
   {
