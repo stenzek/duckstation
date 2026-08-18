@@ -1105,6 +1105,13 @@ void GPUDevice::RecycleTexture(std::unique_ptr<GPUTexture> texture)
   const u32 max_size = is_texture ? MAX_TEXTURE_POOL_SIZE : MAX_TARGET_POOL_SIZE;
   while (pool.size() > max_size)
   {
+    if (pool.front().use_counter == m_texture_pool_counter)
+    {
+      DEV_COLOR_LOG(StrongYellow, "Locked {} pool overflow, new size = {}", is_texture ? "texture" : "target",
+                    pool.size());
+      break;
+    }
+
     DEBUG_LOG("Trim {}x{} texture from pool", pool.front().texture->GetWidth(), pool.front().texture->GetHeight());
     pool.pop_front();
   }
