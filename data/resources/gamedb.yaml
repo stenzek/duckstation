@@ -150665,6 +150665,9 @@ SCPS-10015:
   saveName: "Sentou Kokka - Air Land Battle (Japan)"
   controllers:
     - DigitalController
+  settings:
+    dmaMaxSliceTicks: 100 # Needs tighter DMA timing.
+    dmaHaltTicks: 200 # Fixes texture corruption.
   metadata:
     publisher: "Sony Computer Entertainment"
     developer: "Soliton / Marionette"
