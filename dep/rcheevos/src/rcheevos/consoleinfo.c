@@ -174,6 +174,9 @@ const char* rc_console_name(uint32_t console_id)
     case RC_CONSOLE_PLAYSTATION_2:
       return "PlayStation 2";
 
+    case RC_CONSOLE_PLAYSTATION_3:
+      return "PlayStation 3";
+
     case RC_CONSOLE_PSP:
       return "PlayStation Portable";
 

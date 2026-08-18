@@ -318,8 +318,6 @@ void rc_client_enable_logging(rc_client_t* client, int level, rc_client_message_
 
 /* ===== Common ===== */
 
-static rc_clock_t rc_client_clock_get_now_millisecs(const rc_client_t* client)
-{
 #if defined(__APPLE__) && defined(__MACH__)
  #ifdef CLOCK_MONOTONIC
   /* clock_gettime() was added to Darwin in iOS 10.0 and macOS 10.12.
@@ -336,6 +334,8 @@ static rc_clock_t rc_client_clock_get_now_millisecs(const rc_client_t* client)
  #endif
 #endif
 
+static rc_clock_t rc_client_clock_get_now_millisecs(const rc_client_t* client)
+{
 #if defined(CLOCK_MONOTONIC)
   struct timespec now;
   (void)client;
@@ -719,6 +719,7 @@ static void rc_client_login_callback(const rc_api_server_response_t* server_resp
       client->user.display_name = rc_buffer_strcpy(&client->state.buffer, login_response.display_name);
 
     client->user.avatar_url = rc_buffer_strcpy(&client->state.buffer, login_response.avatar_url);
+    client->user.avatar_last_updated = login_response.avatar_last_updated;
     client->user.token = rc_buffer_strcpy(&client->state.buffer, login_response.api_token);
     client->user.score = login_response.score;
     client->user.score_softcore = login_response.score_softcore;

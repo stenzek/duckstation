@@ -221,6 +221,8 @@
         <DisplayString Condition="value==RC_OPERATOR_ADD">{RC_OPERATOR_ADD}</DisplayString>
         <DisplayString Condition="value==RC_OPERATOR_SUB">{RC_OPERATOR_SUB}</DisplayString>
         <DisplayString Condition="value==RC_OPERATOR_SUB_PARENT">{RC_OPERATOR_SUB_PARENT}</DisplayString>
+        <DisplayString Condition="value==RC_OPERATOR_ADD_ACCUMULATOR">{RC_OPERATOR_ADD_ACCUMULATOR}</DisplayString>
+        <DisplayString Condition="value==RC_OPERATOR_SUB_ACCUMULATOR">{RC_OPERATOR_SUB_ACCUMULATOR}</DisplayString>
         <DisplayString Condition="value==RC_OPERATOR_INDIRECT_READ">{RC_OPERATOR_INDIRECT_READ}</DisplayString>
         <DisplayString>unknown ({value})</DisplayString>
     </Type>
@@ -281,6 +283,8 @@
     <Type Name="rc_modified_memref_t">
         <DisplayString Condition="modifier_type==RC_OPERATOR_INDIRECT_READ">$({parent} + {modifier})</DisplayString>
         <DisplayString Condition="modifier_type==RC_OPERATOR_SUB_PARENT">({modifier} - {parent})</DisplayString>
+        <DisplayString Condition="modifier_type==RC_OPERATOR_ADD_ACCUMULATOR">({parent} + {modifier})</DisplayString>
+        <DisplayString Condition="modifier_type==RC_OPERATOR_SUB_ACCUMULATOR">({parent} - {modifier})</DisplayString>
         <DisplayString>({parent} {*((__rc_operator_enum_str_t*)&amp;modifier_type)} {modifier})</DisplayString>
         <Expand>
             <Item Name="value">memref.value</Item>

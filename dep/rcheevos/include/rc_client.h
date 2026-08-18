@@ -195,6 +195,8 @@ typedef struct rc_client_user_t {
   uint32_t num_unread_messages;
   /* minimum version: 12.0 */
   const char* avatar_url;
+  /* minimum version: 12.4 */
+  time_t avatar_last_updated;
 } rc_client_user_t;
 
 /**
@@ -456,7 +458,7 @@ RC_EXPORT rc_client_async_handle_t* RC_CCONV rc_client_begin_fetch_game_titles(
 RC_EXPORT void RC_CCONV rc_client_destroy_game_title_list(rc_client_game_title_list_t* list);
 
 /*****************************************************************************\
-| Fetch Games List|
+| Fetch Games List                                                            |
 \*****************************************************************************/
 
 typedef struct rc_client_game_list_entry_t {
@@ -498,14 +500,15 @@ typedef void(RC_CCONV* rc_client_fetch_game_list_callback_t)(int result, const c
 
 /**
  * Starts an asynchronous request for all games for the given console.
- * This request returns a mapping from hashes to the game's unique identifier. A single game may have multiple
- * hashes in the case of multi-disc games, or variants that are still compatible with the same achievement set.
+ * This request returns the game metadata and supported/unsupported hashes for each game on the console,
+ * described by the rc_client_game_list_entry_t struct. After use, the list should be freed by calling
+ * the rc_client_destroy_game_list() function.
  */
 RC_EXPORT rc_client_async_handle_t* RC_CCONV rc_client_begin_fetch_game_list(
   rc_client_t* client, uint32_t console_id, rc_client_fetch_game_list_callback_t callback, void* callback_userdata);
 
 /**
- * Destroys a previously-allocated result from the rc_client_destroy_game_list() callback.
+ * Destroys a previously-allocated result from the rc_client_begin_fetch_game_list() callback.
  */
 RC_EXPORT void RC_CCONV rc_client_destroy_game_list(rc_client_game_list_t* list);
 

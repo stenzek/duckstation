@@ -411,10 +411,23 @@ void rc_condition_update_parse_state(rc_condition_t* condition, rc_parse_state_t
           negate = rc_alloc_modified_memref(parse, new_size, &parse->addsource_parent, RC_OPERATOR_SUB_PARENT, &zero);
           parse->addsource_parent.value.memref = (rc_memref_t*)negate;
           parse->addsource_parent.size = zero.size;
+
+          if (parse->addsource_parent.type == RC_OPERAND_CONST) {
+            parse->addsource_parent.value.num = rc_get_modified_memref_value(negate, NULL, NULL);
+          }
+          else if (parse->addsource_parent.type == RC_OPERAND_FP) {
+            rc_typed_value_t typed_value;
+            typed_value.value.u32 = rc_get_modified_memref_value(negate, NULL, NULL);
+            parse->addsource_parent.value.dbl = (double)typed_value.value.f32;
+          }
+          else {
+            /* not actually an address, just a non-delta memref read */
+            parse->addsource_parent.type = parse->addsource_parent.memref_access_type = RC_OPERAND_ADDRESS;
+          }
         }
 
         /* subtract the condition from the chain */
-        parse->addsource_oper = rc_operand_is_memref(&parse->addsource_parent) ? RC_OPERATOR_SUB_ACCUMULATOR : RC_OPERATOR_SUB_PARENT;
+        parse->addsource_oper = RC_OPERATOR_SUB_ACCUMULATOR;
         rc_condition_convert_to_operand(condition, &cond_operand, parse);
         rc_operand_addsource(&cond_operand, parse, new_size);
         memcpy(&parse->addsource_parent, &cond_operand, sizeof(cond_operand));
