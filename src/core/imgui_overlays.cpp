@@ -944,11 +944,14 @@ static void InitializeListEntry(ListEntry* li, ExtendedSaveStateInfo* ssi, const
 
 static void DestroyTextures();
 static void RefreshHotkeyLegend();
+static void CloseImmediately();
 static void Draw();
 static void ShowSlotOSDMessage();
 
 static constexpr const char* DATE_TIME_FORMAT =
   TRANSLATE_NOOP("SaveStateSelectorUI", "Saved at {0:%H:%M} on {0:%a} {0:%Y/%m/%d}.");
+static constexpr float OPEN_ANIMATION_TIME = 0.2f;
+static constexpr float CLOSE_ANIMATION_TIME = 0.1f;
 
 namespace {
 
@@ -968,11 +971,13 @@ struct State
 
   float open_time = 0.0f;
   float close_time = 0.0f;
+  float animation_time_remaining = 0.0f;
 
   ImAnimatedFloat scroll_animated;
   ImAnimatedFloat background_animated;
 
   bool is_open = false;
+  bool is_closing = false;
 };
 
 } // namespace
@@ -992,12 +997,23 @@ void SaveStateSelectorUI::Open(float open_time /* = DEFAULT_OPEN_TIME */)
   s_state.close_time = open_time;
 
   if (s_state.is_open)
+  {
+    // Abort close.
+    if (s_state.is_closing)
+    {
+      s_state.animation_time_remaining = 0.0f;
+      s_state.is_closing = false;
+    }
+
     return;
+  }
 
   if (!s_state.placeholder_texture)
     s_state.placeholder_texture = FullscreenUI::LoadTexture("no-save.png");
 
   s_state.is_open = true;
+  s_state.is_closing = false;
+  s_state.animation_time_remaining = FullscreenUI::UIStyle.Animations ? OPEN_ANIMATION_TIME : 0.0f;
   s_state.global_slots_enabled = System::AreGlobalSaveStatesEnabled();
   RefreshList();
   RefreshHotkeyLegend();
@@ -1006,14 +1022,27 @@ void SaveStateSelectorUI::Open(float open_time /* = DEFAULT_OPEN_TIME */)
   {
     FullscreenUI::ShowToast(OSDMessageType::Info, {},
                             TRANSLATE_STR("SaveStateSelectorUI", "No save state slots available."));
-    Close();
+    CloseImmediately();
   }
 }
 
 void SaveStateSelectorUI::Close()
 {
+  if (!s_state.is_open || s_state.is_closing)
+    return;
+
+  s_state.animation_time_remaining = FullscreenUI::UIStyle.Animations ? CLOSE_ANIMATION_TIME : 0.0f;
+  s_state.is_closing = true;
+  if (s_state.animation_time_remaining <= 0.0f)
+    CloseImmediately();
+}
+
+void SaveStateSelectorUI::CloseImmediately()
+{
   ClearList();
   s_state.is_open = false;
+  s_state.is_closing = false;
+  s_state.animation_time_remaining = 0.0f;
   s_state.load_legend = {};
   s_state.save_legend = {};
   s_state.prev_legend = {};
@@ -1101,7 +1130,7 @@ void SaveStateSelectorUI::ClearList()
 
 void SaveStateSelectorUI::DestroyTextures()
 {
-  Close();
+  CloseImmediately();
 
   for (ListEntry& entry : s_state.slots)
   {
@@ -1146,7 +1175,14 @@ void SaveStateSelectorUI::SelectNextSlot(bool open_selector)
     if (!s_state.is_open)
       Open();
     else
+    {
       s_state.open_time = 0.0f; // stay open for the full duration
+      if (s_state.is_closing)
+      {
+        s_state.animation_time_remaining = 0.0f;
+        s_state.is_closing = false;
+      }
+    }
   }
   else
   {
@@ -1170,7 +1206,14 @@ void SaveStateSelectorUI::SelectPreviousSlot(bool open_selector)
     if (!s_state.is_open)
       Open();
     else
+    {
       s_state.open_time = 0.0f; // stay open for the full duration
+      if (s_state.is_closing)
+      {
+        s_state.animation_time_remaining = 0.0f;
+        s_state.is_closing = false;
+      }
+    }
   }
   else
   {
@@ -1232,7 +1275,36 @@ void SaveStateSelectorUI::Draw()
   const float width = LayoutScale(640.0f);
   const float height = LayoutScale(480.0f);
 
+  float alpha = 1.0f;
+  float position_offset = 0.0f;
+  if (s_state.animation_time_remaining > 0.0f)
+  {
+    s_state.animation_time_remaining -= io.DeltaTime;
+    if (s_state.animation_time_remaining <= 0.0f)
+    {
+      s_state.animation_time_remaining = 0.0f;
+      if (s_state.is_closing)
+      {
+        CloseImmediately();
+        return;
+      }
+    }
+    else if (s_state.is_closing)
+    {
+      const float fract = s_state.animation_time_remaining / CLOSE_ANIMATION_TIME;
+      alpha = fract;
+      position_offset = ImCeil(LayoutScale(20.0f) * (1.0f - fract));
+    }
+    else
+    {
+      const float fract = Easing::InExpo(s_state.animation_time_remaining / OPEN_ANIMATION_TIME);
+      alpha = 1.0f - fract;
+      position_offset = ImCeil(LayoutScale(50.0f) * fract);
+    }
+  }
+
   const float padding_and_rounding = LayoutScale(18.0f);
+  ImGui::PushStyleVar(ImGuiStyleVar_Alpha, alpha);
   ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, padding_and_rounding);
   ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(padding_and_rounding, padding_and_rounding));
   ImGui::PushStyleVar(ImGuiStyleVar_ScrollbarSize, LayoutScale(14.0f));
@@ -1244,7 +1316,7 @@ void SaveStateSelectorUI::Draw()
   ImGui::PushStyleColor(ImGuiCol_WindowBg, DarkerColor(UIStyle.PopupBackgroundColor));
   ImGui::PushStyleColor(ImGuiCol_Text, UIStyle.BackgroundTextColor);
   ImGui::SetNextWindowSize(ImVec2(width, height), ImGuiCond_Always);
-  ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f), ImGuiCond_Always,
+  ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f + position_offset), ImGuiCond_Always,
                           ImVec2(0.5f, 0.5f));
 
   if (FullscreenUI::BeginBlurWindow("##save_state_selector", nullptr,
@@ -1391,20 +1463,23 @@ void SaveStateSelectorUI::Draw()
   }
   ImGui::End();
 
-  ImGui::PopStyleVar(6);
+  ImGui::PopStyleVar(7);
   ImGui::PopStyleColor(4);
 
   // auto-close
-  s_state.open_time += io.DeltaTime;
-  if (s_state.open_time >= s_state.close_time)
+  if (!s_state.is_closing)
   {
-    Close();
-  }
-  else if (ImGui::IsKeyPressed(ImGuiKey_Escape))
-  {
-    // Need to cancel the hotkey bindings, otherwise the pause menu will open.
-    InputManager::ClearBindStateFromSource(InputManager::MakeHostKeyboardKey(0));
-    Close();
+    s_state.open_time += io.DeltaTime;
+    if (s_state.open_time >= s_state.close_time)
+    {
+      Close();
+    }
+    else if (ImGui::IsKeyPressed(ImGuiKey_Escape))
+    {
+      // Need to cancel the hotkey bindings, otherwise the pause menu will open.
+      InputManager::ClearBindStateFromSource(InputManager::MakeHostKeyboardKey(0));
+      Close();
+    }
   }
 }
 
