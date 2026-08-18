@@ -1012,6 +1012,7 @@ void SaveStateSelectorUI::Open(float open_time /* = DEFAULT_OPEN_TIME */)
 
 void SaveStateSelectorUI::Close()
 {
+  ClearList();
   s_state.is_open = false;
   s_state.load_legend = {};
   s_state.save_legend = {};
