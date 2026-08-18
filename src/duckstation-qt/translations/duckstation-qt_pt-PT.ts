@@ -17,7 +17,7 @@
     </message>
     <message>
         <source>DuckStation is a free simulator/emulator of the Sony PlayStation&lt;span style=&quot;vertical-align:super;&quot;&gt;TM&lt;/span&gt; console, focusing on playability, speed, and long-term maintainability.</source>
-        <translation>O DuckStation é um simulador/emulador gratuito da consola Sony PlayStation&lt;span style="vertical-align:super;"&gt;TM&lt;/span&gt;, focado na jogabilidade, velocidade e manutenção a longo prazo.</translation>
+        <translation>O DuckStation é um simulador/emulador gratuito da consola Sony PlayStation&lt;span style=&quot;vertical-align:super;&quot;&gt;TM&lt;/span&gt;, focado na jogabilidade, velocidade e manutenção a longo prazo.</translation>
     </message>
     <message>
         <source>Authors</source>
@@ -1057,6 +1057,10 @@ Mensagens não lidas: {}</translation>
         <translation>Definições da Interface</translation>
     </message>
     <message>
+        <source>Rich Presence Monitor</source>
+        <translation>Monitor de presença avançada</translation>
+    </message>
+    <message>
         <source>Enable RAIntegration</source>
         <translation>Ativar RAIntegration</translation>
     </message>
@@ -1159,6 +1163,10 @@ Mensagens não lidas: {}</translation>
     <message>
         <source>Shows a debug menu bar with additional statistics and quick settings.</source>
         <translation>Mostra uma barra de menu de depuração com estatísticas adicionais e configurações rápidas.</translation>
+    </message>
+    <message>
+        <source>Always displays the current RetroAchievements rich presence string in the indicator area.</source>
+        <translation>Apresenta sempre a cadeia de caracteres de presença avançada atual do RetroAchievements na área de indicadores.</translation>
     </message>
     <message>
         <source>Default</source>
@@ -1989,7 +1997,7 @@ Pode atualizar manualmente o DuckStation transferindo novamente a versão mais r
     </message>
     <message>
         <source>&lt;h1&gt;Inconsistent Application State&lt;/h1&gt;&lt;h3&gt;The update zip is missing the current executable:&lt;/h3&gt;&lt;div align=&quot;center&quot;&gt;&lt;pre&gt;%1&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;strong&gt;This is usually a result of manually renaming the file.&lt;/strong&gt; Continuing to install this update may result in a broken installation if the renamed executable is used. The DuckStation executable should be named:&lt;/p&gt;&lt;div align=&quot;center&quot;&gt;&lt;pre&gt;%2&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Do you want to continue anyway?&lt;/p&gt;</source>
-        <translation>&lt;h1&gt;Estado inconsistente da aplicação&lt;/h1&gt;&lt;h3&gt;O zip da atualização não contém o executável atual:&lt;/h3&gt;&lt;div align="center"&gt;&lt;pre&gt;%1&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;strong&gt;Isto costuma resultar de mudar manualmente o nome do ficheiro.&lt;/strong&gt; Continuar a instalar esta atualização pode resultar numa instalação danificada se o executável com o nome alterado for utilizado. O executável do DuckStation deve chamar-se:&lt;/p&gt;&lt;div align="center"&gt;&lt;pre&gt;%2&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Quer continuar mesmo assim?&lt;/p&gt;</translation>
+        <translation>&lt;h1&gt;Estado inconsistente da aplicação&lt;/h1&gt;&lt;h3&gt;O zip da atualização não contém o executável atual:&lt;/h3&gt;&lt;div align=&quot;center&quot;&gt;&lt;pre&gt;%1&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;strong&gt;Isto costuma resultar de mudar manualmente o nome do ficheiro.&lt;/strong&gt; Continuar a instalar esta atualização pode resultar numa instalação danificada se o executável com o nome alterado for utilizado. O executável do DuckStation deve chamar-se:&lt;/p&gt;&lt;div align=&quot;center&quot;&gt;&lt;pre&gt;%2&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Quer continuar mesmo assim?&lt;/p&gt;</translation>
     </message>
     <message>
         <source>Failed to remove updater exe after update:
@@ -2101,7 +2109,7 @@ Pode atualizar manualmente o DuckStation transferindo novamente a versão mais r
     </message>
     <message>
         <source>The BIOS file &apos;%1&apos; is already installed. Do you want to overwrite it?</source>
-        <translation>O ficheiro da BIOS '%1' já está instalado. Quer substituí-lo?</translation>
+        <translation>O ficheiro da BIOS &apos;%1&apos; já está instalado. Quer substituí-lo?</translation>
     </message>
     <message>
         <source>BIOS Installed</source>
@@ -2109,7 +2117,7 @@ Pode atualizar manualmente o DuckStation transferindo novamente a versão mais r
     </message>
     <message>
         <source>BIOS &apos;%1&apos; installed as &apos;%2&apos;.</source>
-        <translation>A BIOS '%1' foi instalada como '%2'.</translation>
+        <translation>A BIOS &apos;%1&apos; foi instalada como &apos;%2&apos;.</translation>
     </message>
     <message>
         <source>Auto-Detect</source>
@@ -2478,7 +2486,7 @@ A sua cópia pode estar corrompida ou o disco físico está riscado.</translatio
     </message>
     <message>
         <source>Parameters passed to the selected video codec.&lt;br&gt;&lt;b&gt;You must use &apos;=&apos; to separate key from value and &apos;:&apos; to separate two pairs from each other.&lt;/b&gt;&lt;br&gt;For example: &quot;crf = 21 : preset = veryfast&quot;</source>
-        <translation>Parâmetros passados ao codec de vídeo selecionado.&lt;br&gt;&lt;b&gt;Tem de utilizar '=' para separar a chave do valor e ':' para separar dois pares.&lt;/b&gt;&lt;br&gt;Por exemplo: "crf = 21 : preset = veryfast"</translation>
+        <translation>Parâmetros passados ao codec de vídeo selecionado.&lt;br&gt;&lt;b&gt;Tem de utilizar &apos;=&apos; para separar a chave do valor e &apos;:&apos; para separar dois pares.&lt;/b&gt;&lt;br&gt;Por exemplo: &quot;crf = 21 : preset = veryfast&quot;</translation>
     </message>
     <message>
         <source>Determines the file format used to contain the captured audio.</source>
@@ -2514,7 +2522,7 @@ A sua cópia pode estar corrompida ou o disco físico está riscado.</translatio
     </message>
     <message>
         <source>Parameters passed to the selected audio codec.&lt;br&gt;&lt;b&gt;You must use &apos;=&apos; to separate key from value and &apos;:&apos; to separate two pairs from each other.&lt;/b&gt;&lt;br&gt;For example: &quot;compression_level = 4 : joint_stereo = 1&quot;</source>
-        <translation>Parâmetros passados ao codec de áudio selecionado.&lt;br&gt;&lt;b&gt;Tem de utilizar '=' para separar a chave do valor e ':' para separar dois pares.&lt;/b&gt;&lt;br&gt;Por exemplo: "compression_level = 4 : joint_stereo = 1"</translation>
+        <translation>Parâmetros passados ao codec de áudio selecionado.&lt;br&gt;&lt;b&gt;Tem de utilizar &apos;=&apos; para separar a chave do valor e &apos;:&apos; para separar dois pares.&lt;/b&gt;&lt;br&gt;Por exemplo: &quot;compression_level = 4 : joint_stereo = 1&quot;</translation>
     </message>
     <message>
         <source>%1 (%2)</source>
@@ -2561,7 +2569,7 @@ A utilização desta batota não funcionará como esperado. Quer continuar?</tra
     </message>
     <message>
         <source>A code with the name &apos;%1&apos; already exists.</source>
-        <translation>Já existe um código com o nome '%1'.</translation>
+        <translation>Já existe um código com o nome &apos;%1&apos;.</translation>
     </message>
     <message>
         <source>Failed to save cheat code:
@@ -2646,7 +2654,7 @@ A utilização desta batota não funcionará como esperado. Quer continuar?</tra
     </message>
     <message>
         <source>Cheat &apos;{}&apos; applied.</source>
-        <translation>Batota '{}' aplicada.</translation>
+        <translation>Batota &apos;{}&apos; aplicada.</translation>
     </message>
     <message>
         <source>Failed to parse cheat code</source>
@@ -3275,7 +3283,7 @@ Este aviso só será mostrado uma vez.</translation>
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;By default, lightguns will use the mouse pointer. To use the mouse, you &lt;span style=&quot; font-weight:700;&quot;&gt;do not&lt;/span&gt; need to configure any bindings apart from the trigger and buttons. Aiming only needs to be set when you want to use multiple mice.&lt;/p&gt;&lt;p&gt;If you want to use a controller, or lightgun which simulates a controller instead of a mouse, then you should bind it to Relative Aiming. Otherwise, Relative Aiming should be &lt;span style=&quot; font-weight:700;&quot;&gt;left unbound&lt;/span&gt;.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;NOTE: &lt;/span&gt;Mouse mapping must be enabled in Global Settings to bind your PC&apos;s mouse.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Por predefinição, as pistolas de luz utilizarão o cursor do rato. Para utilizar o rato, &lt;span style=" font-weight:700;"&gt;não&lt;/span&gt; precisa de configurar nenhum mapeamento além do gatilho e dos botões. Só precisa de configurar a mira quando quiser utilizar vários ratos.&lt;/p&gt;&lt;p&gt;Se quiser utilizar um comando ou uma pistola de luz que simule um comando em vez de um rato, deve mapeá-lo para Mira relativa. Caso contrário, Mira relativa deve ficar &lt;span style=" font-weight:700;"&gt;sem mapeamento&lt;/span&gt;.&lt;/p&gt;&lt;p&gt;&lt;span style=" font-weight:700;"&gt;NOTA: &lt;/span&gt;O mapeamento do rato tem de estar ativado nas Definições globais para poder mapear o rato do PC.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Por predefinição, as pistolas de luz utilizarão o cursor do rato. Para utilizar o rato, &lt;span style=&quot; font-weight:700;&quot;&gt;não&lt;/span&gt; precisa de configurar nenhum mapeamento além do gatilho e dos botões. Só precisa de configurar a mira quando quiser utilizar vários ratos.&lt;/p&gt;&lt;p&gt;Se quiser utilizar um comando ou uma pistola de luz que simule um comando em vez de um rato, deve mapeá-lo para Mira relativa. Caso contrário, Mira relativa deve ficar &lt;span style=&quot; font-weight:700;&quot;&gt;sem mapeamento&lt;/span&gt;.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;NOTA: &lt;/span&gt;O mapeamento do rato tem de estar ativado nas Definições globais para poder mapear o rato do PC.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>Down</source>
@@ -3326,7 +3334,7 @@ Este aviso só será mostrado uma vez.</translation>
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;By default, lightguns will use the mouse pointer. To use the mouse, you &lt;span style=&quot; font-weight:700;&quot;&gt;do not&lt;/span&gt; need to configure any bindings apart from the trigger and buttons. Aiming only needs to be set when you want to use multiple mice.&lt;/p&gt;&lt;p&gt;If you want to use a controller, or lightgun which simulates a controller instead of a mouse, then you should bind it to Relative Aiming. Otherwise, Relative Aiming should be &lt;span style=&quot; font-weight:700;&quot;&gt;left unbound&lt;/span&gt;.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;NOTE: &lt;/span&gt;Mouse mapping must be enabled in Global Settings to bind your PC&apos;s mouse.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Por predefinição, as pistolas de luz utilizarão o cursor do rato. Para utilizar o rato, &lt;span style=" font-weight:700;"&gt;não&lt;/span&gt; precisa de configurar nenhum mapeamento além do gatilho e dos botões. Só precisa de configurar a mira quando quiser utilizar vários ratos.&lt;/p&gt;&lt;p&gt;Se quiser utilizar um comando ou uma pistola de luz que simule um comando em vez de um rato, deve mapeá-lo para Mira relativa. Caso contrário, Mira relativa deve ficar &lt;span style=" font-weight:700;"&gt;sem mapeamento&lt;/span&gt;.&lt;/p&gt;&lt;p&gt;&lt;span style=" font-weight:700;"&gt;NOTA: &lt;/span&gt;O mapeamento do rato tem de estar ativado nas Definições globais para poder mapear o rato do PC.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Por predefinição, as pistolas de luz utilizarão o cursor do rato. Para utilizar o rato, &lt;span style=&quot; font-weight:700;&quot;&gt;não&lt;/span&gt; precisa de configurar nenhum mapeamento além do gatilho e dos botões. Só precisa de configurar a mira quando quiser utilizar vários ratos.&lt;/p&gt;&lt;p&gt;Se quiser utilizar um comando ou uma pistola de luz que simule um comando em vez de um rato, deve mapeá-lo para Mira relativa. Caso contrário, Mira relativa deve ficar &lt;span style=&quot; font-weight:700;&quot;&gt;sem mapeamento&lt;/span&gt;.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;NOTA: &lt;/span&gt;O mapeamento do rato tem de estar ativado nas Definições globais para poder mapear o rato do PC.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>Relative Aiming</source>
@@ -3382,7 +3390,7 @@ Este aviso só será mostrado uma vez.</translation>
     <name>ControllerBindingWidget_Mouse</name>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;NOTE: &lt;/span&gt;Mouse mapping must be enabled in Global Settings to bind your PC&apos;s mouse.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=" font-weight:700;"&gt;NOTA: &lt;/span&gt;O mapeamento do rato tem de estar ativado nas Definições globais para poder mapear o rato do PC.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;NOTA: &lt;/span&gt;O mapeamento do rato tem de estar ativado nas Definições globais para poder mapear o rato do PC.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>Pointer</source>
@@ -3594,7 +3602,7 @@ Este aviso só será mostrado uma vez.</translation>
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Allows rumble and LED effects for DualShock 4 / DualSense controllers in Bluetooth mode. This option is not required for wired connections.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Enabling enhanced reports may result in your controller being unusable in other applications until it is turned off and on again.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Permite efeitos de vibração e LED para comandos DualShock 4 / DualSense no modo Bluetooth. Esta opção não é necessária para ligações com fios.&lt;/p&gt;&lt;p&gt;&lt;span style=" font-weight:700;"&gt;Ativar relatórios melhorados pode fazer com que o comando deixe de funcionar noutras aplicações até ser desligado e ligado novamente.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Permite efeitos de vibração e LED para comandos DualShock 4 / DualSense no modo Bluetooth. Esta opção não é necessária para ligações com fios.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Ativar relatórios melhorados pode fazer com que o comando deixe de funcionar noutras aplicações até ser desligado e ligado novamente.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>DualShock 4 / DualSense Enhanced Mode (Bluetooth Only)</source>
@@ -3602,7 +3610,7 @@ Este aviso só será mostrado uma vez.</translation>
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The SDL input source supports most controllers, and is the preferred option. Enhanced mode may be required for the Vibration/LED functionality of DualShock 4 / DualSense pads in Bluetooth mode. You can also edit &lt;a href=&quot;ADVANCED_SDL_OPTIONS&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#99ebff;&quot;&gt;advanced options&lt;/span&gt;&lt;/a&gt; which control device-specific behavior.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;A fonte de entrada SDL é compatível com a maioria dos comandos e é a opção preferida. O modo melhorado poderá ser necessário para a funcionalidade de vibração/LED dos comandos DualShock 4 / DualSense no modo Bluetooth. Também pode editar as &lt;a href="ADVANCED_SDL_OPTIONS"&gt;&lt;span style=" text-decoration: underline; color:#99ebff;"&gt;opções avançadas&lt;/span&gt;&lt;/a&gt;, que controlam o comportamento específico de cada dispositivo.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;A fonte de entrada SDL é compatível com a maioria dos comandos e é a opção preferida. O modo melhorado poderá ser necessário para a funcionalidade de vibração/LED dos comandos DualShock 4 / DualSense no modo Bluetooth. Também pode editar as &lt;a href=&quot;ADVANCED_SDL_OPTIONS&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#99ebff;&quot;&gt;opções avançadas&lt;/span&gt;&lt;/a&gt;, que controlam o comportamento específico de cada dispositivo.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>Allows use of the touchpad for DualShock 4 / DualSense controllers as a pointer, for use with lightguns.</source>
@@ -3614,7 +3622,7 @@ Este aviso só será mostrado uma vez.</translation>
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The XInput source provides support for controllers that use the XInput protocol. This source should &lt;span style=&quot; font-weight:700;&quot;&gt;only&lt;/span&gt; be used if you are using a XInput wrapper library.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;A fonte XInput oferece suporte para comandos que utilizam o protocolo XInput. Esta fonte deve ser utilizada &lt;span style=" font-weight:700;"&gt;apenas&lt;/span&gt; se estiver a utilizar uma biblioteca wrapper de XInput.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;A fonte XInput oferece suporte para comandos que utilizam o protocolo XInput. Esta fonte deve ser utilizada &lt;span style=&quot; font-weight:700;&quot;&gt;apenas&lt;/span&gt; se estiver a utilizar uma biblioteca wrapper de XInput.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>Enable XInput Source</source>
@@ -3716,7 +3724,7 @@ Este aviso só será mostrado uma vez.</translation>
         <source>&lt;strong&gt;Controller LED Settings&lt;/strong&gt;&lt;br&gt;
 The &quot;alternate&quot; color is used when analog mode is active.</source>
         <translation>&lt;strong&gt;Definições do LED do comando&lt;/strong&gt;&lt;br&gt;
-A cor "alternativa" é utilizada quando o modo analógico está ativo.</translation>
+A cor &quot;alternativa&quot; é utilizada quando o modo analógico está ativo.</translation>
     </message>
     <message>
         <source>Alternate Mode:</source>
@@ -3874,7 +3882,7 @@ A cor "alternativa" é utilizada quando o modo analógico está ativo.</translat
     </message>
     <message>
         <source>A preset with the name &apos;%1&apos; already exists.</source>
-        <translation>Já existe uma predefinição com o nome '%1'.</translation>
+        <translation>Já existe uma predefinição com o nome &apos;%1&apos;.</translation>
     </message>
     <message>
         <source>Do you want to copy all bindings from the currently-selected preset to the new preset? Selecting No will create a completely empty preset.</source>
@@ -3894,7 +3902,7 @@ A cor "alternativa" é utilizada quando o modo analógico está ativo.</translat
 All current global bindings will be removed, and the preset bindings loaded.
 
 You cannot undo this action.</source>
-        <translation>Tem a certeza de que pretende aplicar a predefinição de comando denominada '%1'?
+        <translation>Tem a certeza de que pretende aplicar a predefinição de comando denominada &apos;%1&apos;?
 
 Todos os mapeamentos globais atuais serão removidos e os mapeamentos da predefinição serão carregados.
 
@@ -3908,7 +3916,7 @@ Não pode anular esta ação.</translation>
         <source>Are you sure you want to delete the controller preset named &apos;%1&apos;?
 
 You cannot undo this action.</source>
-        <translation>Tem a certeza de que pretende eliminar a predefinição de comando denominada '%1'?
+        <translation>Tem a certeza de que pretende eliminar a predefinição de comando denominada &apos;%1&apos;?
 
 Não pode anular esta ação.</translation>
     </message>
@@ -3940,7 +3948,7 @@ Todos os mapeamentos e a configuração serão perdidos. Não pode anular esta a
     </message>
     <message>
         <source>The controller preset named &apos;%1&apos; cannot be found.</source>
-        <translation>Não foi possível encontrar a predefinição de comando denominada '%1'.</translation>
+        <translation>Não foi possível encontrar a predefinição de comando denominada &apos;%1&apos;.</translation>
     </message>
 </context>
 <context>
@@ -3951,7 +3959,7 @@ Todos os mapeamentos e a configuração serão perdidos. Não pode anular esta a
     </message>
     <message>
         <source>Pop&apos;n Controller</source>
-        <translation>Comando Pop'n</translation>
+        <translation>Comando Pop&apos;n</translation>
     </message>
     <message>
         <source>Analog Joystick</source>
@@ -4101,11 +4109,11 @@ Este ficheiro tem aproximadamente 206 KB. Quer descarregá-lo agora?</translatio
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Depending on your jurisdiction, &lt;span style=&quot; font-weight:700;&quot;&gt;game covers may be copyrighted&lt;/span&gt;. You are only authorized to use this tool with &lt;span style=&quot; font-weight:700;&quot;&gt;your own servers and images&lt;/span&gt;.&lt;/p&gt;&lt;p&gt;In the box below, specify the URLs to download covers from, with one template URL per line. The following variables are available:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${title}:&lt;/span&gt; Title of the game.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${savetitle}:&lt;/span&gt; Title of the game including the region.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${localizedtitle}:&lt;/span&gt; Localized (native language) title of the game.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${filetitle}:&lt;/span&gt; Name component of the game&apos;s filename.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${serial}:&lt;/span&gt; Serial of the game.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Example:&lt;/span&gt; https://www.example-not-a-real-domain.com/covers/${serial}.jpg&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Dependendo da sua jurisdição, &lt;span style=" font-weight:700;"&gt;as capas de jogos podem estar protegidas por direitos de autor&lt;/span&gt;. Só está autorizado a utilizar esta ferramenta com &lt;span style=" font-weight:700;"&gt;os seus próprios servidores e imagens&lt;/span&gt;.&lt;/p&gt;&lt;p&gt;Na caixa abaixo, especifique os URLs de onde descarregar as capas, com um URL de modelo por linha. Estão disponíveis as seguintes variáveis:&lt;/p&gt;&lt;p&gt;&lt;span style=" font-style:italic;"&gt;${title}:&lt;/span&gt; Título do jogo.&lt;br/&gt;&lt;span style=" font-style:italic;"&gt;${savetitle}:&lt;/span&gt; Título do jogo, incluindo a região.&lt;br/&gt;&lt;span style=" font-style:italic;"&gt;${localizedtitle}:&lt;/span&gt; Título localizado (no idioma nativo) do jogo.&lt;br/&gt;&lt;span style=" font-style:italic;"&gt;${filetitle}:&lt;/span&gt; Componente do nome do ficheiro do jogo.&lt;br/&gt;&lt;span style=" font-style:italic;"&gt;${serial}:&lt;/span&gt; Número de série do jogo.&lt;/p&gt;&lt;p&gt;&lt;span style=" font-weight:700;"&gt;Exemplo:&lt;/span&gt; https://www.example-not-a-real-domain.com/covers/${serial}.jpg&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Dependendo da sua jurisdição, &lt;span style=&quot; font-weight:700;&quot;&gt;as capas de jogos podem estar protegidas por direitos de autor&lt;/span&gt;. Só está autorizado a utilizar esta ferramenta com &lt;span style=&quot; font-weight:700;&quot;&gt;os seus próprios servidores e imagens&lt;/span&gt;.&lt;/p&gt;&lt;p&gt;Na caixa abaixo, especifique os URLs de onde descarregar as capas, com um URL de modelo por linha. Estão disponíveis as seguintes variáveis:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${title}:&lt;/span&gt; Título do jogo.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${savetitle}:&lt;/span&gt; Título do jogo, incluindo a região.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${localizedtitle}:&lt;/span&gt; Título localizado (no idioma nativo) do jogo.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${filetitle}:&lt;/span&gt; Componente do nome do ficheiro do jogo.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${serial}:&lt;/span&gt; Número de série do jogo.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Exemplo:&lt;/span&gt; https://www.example-not-a-real-domain.com/covers/${serial}.jpg&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>By default, the downloaded covers will be saved with the game&apos;s title. If this is not desired, you can check the &quot;Use Serial File Names&quot; box below. Using serials instead of game titles will prevent conflicts when multiple regions of the same game are used.</source>
-        <translation>Por predefinição, as capas descarregadas serão guardadas com o título do jogo. Se não quiser este comportamento, pode assinalar a caixa "Usar nomes de ficheiro com número de série" abaixo. Utilizar números de série em vez dos títulos dos jogos evita conflitos quando são utilizadas várias regiões do mesmo jogo.</translation>
+        <translation>Por predefinição, as capas descarregadas serão guardadas com o título do jogo. Se não quiser este comportamento, pode assinalar a caixa &quot;Usar nomes de ficheiro com número de série&quot; abaixo. Utilizar números de série em vez dos títulos dos jogos evita conflitos quando são utilizadas várias regiões do mesmo jogo.</translation>
     </message>
     <message>
         <source>Use Serial File Names</source>
@@ -4641,7 +4649,7 @@ Este ficheiro pode ter vários gigabytes, portanto, têm em atenção o desgaste
     <name>DebuggingSettingsWidget</name>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Changing these settings may cause games to become unstable or crash.&lt;/span&gt; Do not change any settings on this page if you do not know what you are doing, or understand what the impact of the change will be.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=" font-weight:700;"&gt;A alteração destas definições pode tornar os jogos instáveis ou fazer com que falhem.&lt;/span&gt; Não altere nenhuma definição nesta página se não souber o que está a fazer ou não compreender o impacto da alteração.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;A alteração destas definições pode tornar os jogos instáveis ou fazer com que falhem.&lt;/span&gt; Não altere nenhuma definição nesta página se não souber o que está a fazer ou não compreender o impacto da alteração.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>Reset To Default</source>
@@ -6384,7 +6392,7 @@ Não é possível anular esta ação.</translation>
     </message>
     <message>
         <source>BIOS &apos;{}&apos; installed as &apos;{}&apos;.</source>
-        <translation>BIOS '{}' instalada como '{}'.</translation>
+        <translation>BIOS &apos;{}&apos; instalada como &apos;{}&apos;.</translation>
     </message>
     <message>
         <source>BIOS Already Installed</source>
@@ -6520,11 +6528,11 @@ Não é possível anular esta ação.</translation>
     </message>
     <message>
         <source>Controller preset &apos;{}&apos; loaded.</source>
-        <translation>Predefinição do comando '{}' carregada.</translation>
+        <translation>Predefinição do comando &apos;{}&apos; carregada.</translation>
     </message>
     <message>
         <source>Controller preset &apos;{}&apos; saved.</source>
-        <translation>Predefinição do comando '{}' guardada.</translation>
+        <translation>Predefinição do comando &apos;{}&apos; guardada.</translation>
     </message>
     <message>
         <source>Controls how dithering is applied in the emulated GPU. True Color disables dithering and produces the nicest looking gradients.</source>
@@ -6605,6 +6613,10 @@ Não é possível anular esta ação.</translation>
     <message>
         <source>Deinterlacing Mode</source>
         <translation>Modo de desentrelaçamento</translation>
+    </message>
+    <message>
+        <source>Delete</source>
+        <translation>Eliminar</translation>
     </message>
     <message>
         <source>Delete And Boot</source>
@@ -6944,7 +6956,7 @@ Não é possível anular esta ação.</translation>
     </message>
     <message>
         <source>Failed to save controller preset &apos;{}&apos;.</source>
-        <translation>Falha ao guardar a predefinição do comando '{}'.</translation>
+        <translation>Falha ao guardar a predefinição do comando &apos;{}&apos;.</translation>
     </message>
     <message>
         <source>Failed to save custom serial.</source>
@@ -7249,6 +7261,10 @@ Verifique o seu nome de utilizador e palavra-passe e tente novamente.</translati
     <message>
         <source>Message Location</source>
         <translation>Localização das mensagens</translation>
+    </message>
+    <message>
+        <source>Move Cursor</source>
+        <translation>Mover cursor</translation>
     </message>
     <message>
         <source>N/A</source>
@@ -7575,6 +7591,10 @@ Verifique o seu nome de utilizador e palavra-passe e tente novamente.</translati
         <translation>Pesquisar</translation>
     </message>
     <message>
+        <source>Select Key</source>
+        <translation>Selecionar tecla</translation>
+    </message>
+    <message>
         <source>Settings reset to default.</source>
         <translation>As definições foram repostas nos valores predefinidos.</translation>
     </message>
@@ -7657,6 +7677,10 @@ Verifique o seu nome de utilizador e palavra-passe e tente novamente.</translati
     <message>
         <source>Time Played: </source>
         <translation>Tempo jogado: </translation>
+    </message>
+    <message>
+        <source>Toggle Case</source>
+        <translation>Alternar maiúsculas/minúsculas</translation>
     </message>
     <message>
         <source>Toggles the macro when the button is pressed, instead of held.</source>
@@ -8620,7 +8644,7 @@ Verifique o seu nome de utilizador e palavra-passe e tente novamente.</translati
     </message>
     <message>
         <source>The BIOS file &apos;{}&apos; is already installed. Do you want to overwrite it?</source>
-        <translation>O ficheiro BIOS '{}' já está instalado. Pretende substituí-lo?</translation>
+        <translation>O ficheiro BIOS &apos;{}&apos; já está instalado. Pretende substituí-lo?</translation>
     </message>
     <message>
         <source>The SDL input source supports most controllers.</source>
@@ -8963,11 +8987,11 @@ Pretende {1} mesmo assim?</translation>
     </message>
     <message>
         <source>Saving {0} frame GPU trace to &apos;{1}&apos;.</source>
-        <translation>A guardar o rastreio da GPU de {0} fotogramas em '{1}'.</translation>
+        <translation>A guardar o rastreio da GPU de {0} fotogramas em &apos;{1}&apos;.</translation>
     </message>
     <message>
         <source>Saving multi-frame frame GPU trace to &apos;{1}&apos;.</source>
-        <translation>A guardar o rastreio da GPU de vários fotogramas em '{1}'.</translation>
+        <translation>A guardar o rastreio da GPU de vários fotogramas em &apos;{1}&apos;.</translation>
     </message>
     <message>
         <source>Failed to close GPU trace:</source>
@@ -8975,15 +8999,15 @@ Pretende {1} mesmo assim?</translation>
     </message>
     <message>
         <source>Saved GPU trace to &apos;{}&apos;.</source>
-        <translation>Rastreio da GPU guardado em '{}'.</translation>
+        <translation>Rastreio da GPU guardado em &apos;{}&apos;.</translation>
     </message>
     <message>
         <source>Compressing GPU trace &apos;{}&apos;...</source>
-        <translation>A comprimir o rastreio da GPU '{}'...</translation>
+        <translation>A comprimir o rastreio da GPU &apos;{}&apos;...</translation>
     </message>
     <message>
         <source>Failed to save GPU trace to &apos;{}&apos;:</source>
-        <translation>Falha ao guardar o rastreio da GPU em '{}':</translation>
+        <translation>Falha ao guardar o rastreio da GPU em &apos;{}&apos;:</translation>
     </message>
     <message>
         <source>Failed to save screenshot:
@@ -8993,15 +9017,15 @@ Pretende {1} mesmo assim?</translation>
     </message>
     <message>
         <source>Saving screenshot to &apos;{}&apos;.</source>
-        <translation>A guardar a captura de ecrã em '{}'.</translation>
+        <translation>A guardar a captura de ecrã em &apos;{}&apos;.</translation>
     </message>
     <message>
         <source>Saved screenshot to &apos;{}&apos;.</source>
-        <translation>Captura de ecrã guardada em '{}'.</translation>
+        <translation>Captura de ecrã guardada em &apos;{}&apos;.</translation>
     </message>
     <message>
         <source>Failed to save screenshot to &apos;{}&apos;.</source>
-        <translation>Falha ao guardar a captura de ecrã em '{}'.</translation>
+        <translation>Falha ao guardar a captura de ecrã em &apos;{}&apos;.</translation>
     </message>
 </context>
 <context>
@@ -9040,7 +9064,7 @@ Pretende {1} mesmo assim?</translation>
     </message>
     <message>
         <source>Texture filter &apos;{}/{}&apos; is not supported with the current renderer.</source>
-        <translation>O filtro de texturas '{}/{}' não é suportado pelo renderizador atual.</translation>
+        <translation>O filtro de texturas &apos;{}/{}&apos; não é suportado pelo renderizador atual.</translation>
     </message>
     <message>
         <source>Shader blending is not supported by your current GPU.</source>
@@ -9133,11 +9157,11 @@ Pretende {1} mesmo assim?</translation>
     </message>
     <message>
         <source>The option &apos;%1&apos; is defined twice.</source>
-        <translation>A opção '%1' está definida duas vezes.</translation>
+        <translation>A opção &apos;%1&apos; está definida duas vezes.</translation>
     </message>
     <message>
         <source>The option &apos;%1&apos; does not have a valid value. It must be a number.</source>
-        <translation>A opção '%1' não tem um valor válido. Tem de ser um número.</translation>
+        <translation>A opção &apos;%1&apos; não tem um valor válido. Tem de ser um número.</translation>
     </message>
 </context>
 <context>
@@ -9293,7 +9317,7 @@ Pretende ativar as batotas agora?</translation>
     </message>
     <message>
         <source>This code is from the built-in cheat database, and cannot be removed. To hide this code, uncheck the &quot;Load Database Cheats&quot; option.</source>
-        <translation>Este código provém da base de dados de batotas integrada e não pode ser removido. Para ocultar este código, desmarque a opção "Carregar batotas da base de dados".</translation>
+        <translation>Este código provém da base de dados de batotas integrada e não pode ser removido. Para ocultar este código, desmarque a opção &quot;Carregar batotas da base de dados&quot;.</translation>
     </message>
     <message>
         <source>Confirm Removal</source>
@@ -9301,7 +9325,7 @@ Pretende ativar as batotas agora?</translation>
     </message>
     <message>
         <source>You are removing the code named &apos;%1&apos;. You cannot undo this action, are you sure you wish to delete this code?</source>
-        <translation>Está a remover o código com o nome '%1'. Não pode anular esta ação. Tem a certeza de que pretende eliminar este código?</translation>
+        <translation>Está a remover o código com o nome &apos;%1&apos;. Não pode anular esta ação. Tem a certeza de que pretende eliminar este código?</translation>
     </message>
     <message>
         <source>Failed to save file:
@@ -9331,7 +9355,7 @@ Any database cheats will still be loaded and present unless you uncheck the &quo
 Are you sure you want to continue?</source>
         <translation>Está a remover todas as batotas adicionadas manualmente para este jogo. Esta ação não pode ser revertida.
 
-As batotas da base de dados continuarão a ser carregadas e estarão presentes, a menos que desmarque a opção "Carregar Batotas da Base de Dados".
+As batotas da base de dados continuarão a ser carregadas e estarão presentes, a menos que desmarque a opção &quot;Carregar Batotas da Base de Dados&quot;.
 
 Tem a certeza de que pretende continuar?</translation>
     </message>
@@ -9877,11 +9901,11 @@ Tem a certeza de que pretende continuar?</translation>
     </message>
     <message>
         <source>Scanning directory &apos;{}&apos;...</source>
-        <translation>A analisar o diretório '{}'...</translation>
+        <translation>A analisar o diretório &apos;{}&apos;...</translation>
     </message>
     <message>
         <source>Scanning &apos;{}&apos;...</source>
-        <translation>A analisar '{}'...</translation>
+        <translation>A analisar &apos;{}&apos;...</translation>
     </message>
     <message>
         <source>Unknown</source>
@@ -10148,7 +10172,7 @@ Analisar de forma recorrente demora mais tempo, mas irá identificar ficheiros e
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Author: &lt;/span&gt;Patch Author&lt;/p&gt;&lt;p&gt;Description would go here&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=" font-weight:700;"&gt;Autor: &lt;/span&gt;Autor do Patch&lt;/p&gt;&lt;p&gt;A descrição seria apresentada aqui&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Autor: &lt;/span&gt;Autor do Patch&lt;/p&gt;&lt;p&gt;A descrição seria apresentada aqui&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>Patch Title</source>
@@ -10559,7 +10583,7 @@ Analisar de forma recorrente demora mais tempo, mas irá identificar ficheiros e
     </message>
     <message>
         <source>Texture Modulation Cropping (&quot;Old/v0 GPU&quot;)</source>
-        <translation>Recorte de Modulação de Texturas ("GPU Antiga/v0")</translation>
+        <translation>Recorte de Modulação de Texturas (&quot;GPU Antiga/v0&quot;)</translation>
     </message>
     <message>
         <source>Scaled Interlacing</source>
@@ -10871,7 +10895,7 @@ Analisar de forma recorrente demora mais tempo, mas irá identificar ficheiros e
     </message>
     <message>
         <source>Determines how much of the area typically not visible on a consumer TV set to crop/hide. Some games display content in the overscan area, or use it for screen effects. May not display correctly with the &quot;All Borders&quot; setting. &quot;Only Overscan&quot; offers a good compromise between stability and hiding black borders.</source>
-        <translation>Determina a quantidade da área normalmente invisível num televisor doméstico a recortar/ocultar. Alguns jogos apresentam conteúdo na área de overscan ou utilizam-na para efeitos de ecrã. Pode não ser apresentada corretamente com a definição "Todas as Margens". "Apenas Overscan" oferece um bom compromisso entre estabilidade e ocultação das margens pretas.</translation>
+        <translation>Determina a quantidade da área normalmente invisível num televisor doméstico a recortar/ocultar. Alguns jogos apresentam conteúdo na área de overscan ou utilizam-na para efeitos de ecrã. Pode não ser apresentada corretamente com a definição &quot;Todas as Margens&quot;. &quot;Apenas Overscan&quot; oferece um bom compromisso entre estabilidade e ocultação das margens pretas.</translation>
     </message>
     <message>
         <source>Scaling</source>
@@ -10903,7 +10927,7 @@ Analisar de forma recorrente demora mais tempo, mas irá identificar ficheiros e
     </message>
     <message>
         <source>Reduces &quot;wobbly&quot; polygons and &quot;warping&quot; textures that are common in PS1 games. &lt;strong&gt;May not be compatible with all games.&lt;/strong&gt;</source>
-        <translation>Reduz os polígonos "instáveis" e as texturas "distorcidas" comuns nos jogos de PS1. &lt;strong&gt;Pode não ser compatível com todos os jogos.&lt;/strong&gt;</translation>
+        <translation>Reduz os polígonos &quot;instáveis&quot; e as texturas &quot;distorcidas&quot; comuns nos jogos de PS1. &lt;strong&gt;Pode não ser compatível com todos os jogos.&lt;/strong&gt;</translation>
     </message>
     <message>
         <source>PGXP Depth Buffer</source>
@@ -11003,11 +11027,11 @@ Analisar de forma recorrente demora mais tempo, mas irá identificar ficheiros e
     </message>
     <message>
         <source>Texture Modulation Cropping (&quot;Old/v0&quot; GPU)</source>
-        <translation>Recorte da Modulação de Texturas (GPU "Antiga/v0")</translation>
+        <translation>Recorte da Modulação de Texturas (GPU &quot;Antiga/v0&quot;)</translation>
     </message>
     <message>
         <source>Crops vertex colours to 5:5:5 before modulating with the texture colour, which typically results in more visible banding. This is a characteristic of the &quot;old&quot; GPUs found in early model consoles.</source>
-        <translation>Recorta as cores dos vértices para 5:5:5 antes de as modular com a cor da textura, o que normalmente resulta em bandas mais visíveis. Esta é uma característica das GPUs "antigas" encontradas nas consolas dos primeiros modelos.</translation>
+        <translation>Recorta as cores dos vértices para 5:5:5 antes de as modular com a cor da textura, o que normalmente resulta em bandas mais visíveis. Esta é uma característica das GPUs &quot;antigas&quot; encontradas nas consolas dos primeiros modelos.</translation>
     </message>
     <message>
         <source>Scales line skipping in interlaced rendering to the internal resolution. This makes the combing less obvious at higher resolutions. Usually safe to enable.</source>
@@ -12169,7 +12193,7 @@ Clique com Shift para definir vários atalhos.</translation>
     </message>
     <message>
         <source>Disables the use of style sheets in the application, reverting to the original &apos;Fusion&apos; style but retaining the color scheme.</source>
-        <translation>Desativa a utilização de folhas de estilo na aplicação, revertendo para o estilo "Fusion" original, mas mantendo o esquema de cores.</translation>
+        <translation>Desativa a utilização de folhas de estilo na aplicação, revertendo para o estilo &quot;Fusion&quot; original, mas mantendo o esquema de cores.</translation>
     </message>
     <message>
         <source>%1 (%2)</source>
@@ -12726,7 +12750,7 @@ Clique com Shift para definir vários atalhos.</translation>
     </message>
     <message>
         <source>Opens or closes the controller-based &quot;big picture&quot; mode.</source>
-        <translation>Abre ou fecha o modo "big picture" baseado no comando.</translation>
+        <translation>Abre ou fecha o modo &quot;big picture&quot; baseado no comando.</translation>
     </message>
     <message>
         <source>Big Picture</source>
@@ -13746,7 +13770,7 @@ Esta ação não pode ser desfeita.</translation>
     </message>
     <message>
         <source>Failed to create memory card &apos;%1&apos;: %2</source>
-        <translation>Falha ao criar o cartão de memória '%1': %2</translation>
+        <translation>Falha ao criar o cartão de memória &apos;%1&apos;: %2</translation>
     </message>
     <message>
         <source>RA: Logged in as %1 (%2, %3 casual). %4 unread messages.</source>
@@ -14048,7 +14072,7 @@ Esta compilação do DuckStation requer o FFmpeg v{}, com as versões das biblio
     </message>
     <message>
         <source>Audio codec &apos;{0}&apos; does not support {1} Hz samples, using {2} Hz.</source>
-        <translation>O codec de áudio '{0}' não suporta amostras de {1} Hz; a usar {2} Hz.</translation>
+        <translation>O codec de áudio &apos;{0}&apos; não suporta amostras de {1} Hz; a usar {2} Hz.</translation>
     </message>
     <message>
         <source>Matroska Media Container</source>
@@ -14103,7 +14127,7 @@ Erro: {1}</translation>
     </message>
     <message>
         <source>Saved card to &apos;{}&apos;.</source>
-        <translation>Cartão guardado em '{}'.</translation>
+        <translation>Cartão guardado em &apos;{}&apos;.</translation>
     </message>
     <message>
         <source>Buffer is empty.</source>
@@ -14119,7 +14143,7 @@ Erro: {1}</translation>
     </message>
     <message>
         <source>Save file with the same name &apos;{}&apos; already exists in memory card.</source>
-        <translation>Já existe um ficheiro de gravação com o mesmo nome '{}' no cartão de memória.</translation>
+        <translation>Já existe um ficheiro de gravação com o mesmo nome &apos;{}&apos; no cartão de memória.</translation>
     </message>
     <message>
         <source>File is incorrect size, expected {} bytes, got {} bytes.</source>
@@ -14139,7 +14163,7 @@ Erro: {1}</translation>
     </message>
     <message>
         <source>Unknown extension &apos;{}&apos;.</source>
-        <translation>Extensão desconhecida '{}'.</translation>
+        <translation>Extensão desconhecida &apos;{}&apos;.</translation>
     </message>
     <message>
         <source>Invalid size for save file.</source>
@@ -14397,7 +14421,7 @@ Erro: {1}</translation>
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;WARNING: &lt;/span&gt;Renaming memory card files may result in saves becoming inaccessible or corrupted. Be sure to make backups first.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=" font-weight:700;"&gt;AVISO: &lt;/span&gt;Mudar o nome dos ficheiros do cartão de memória pode tornar as gravações inacessíveis ou corrompê-las. Certifique-se de que cria cópias de segurança primeiro.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;AVISO: &lt;/span&gt;Mudar o nome dos ficheiros do cartão de memória pode tornar as gravações inacessíveis ou corrompê-las. Certifique-se de que cria cópias de segurança primeiro.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>Original Name:</source>
@@ -14750,7 +14774,7 @@ Erro: {1}</translation>
     </message>
     <message>
         <source>Any Value (&apos;New Search&apos; or &apos;Reset Result Value&apos;)</source>
-        <translation>Qualquer valor ('Nova pesquisa' ou 'Repor valor do resultado')</translation>
+        <translation>Qualquer valor (&apos;Nova pesquisa&apos; ou &apos;Repor valor do resultado&apos;)</translation>
     </message>
     <message>
         <source>Less Than Previous Result</source>
@@ -14949,7 +14973,7 @@ Erro: {1}</translation>
     </message>
     <message>
         <source>No generic bindings were generated for device &apos;%1&apos;. The controller/source may not support automatic mapping.</source>
-        <translation>Não foram geradas associações genéricas para o dispositivo '%1'. O comando ou a origem pode não suportar o mapeamento automático.</translation>
+        <translation>Não foram geradas associações genéricas para o dispositivo &apos;%1&apos;. O comando ou a origem pode não suportar o mapeamento automático.</translation>
     </message>
     <message>
         <source>No devices were selected.</source>
@@ -15432,7 +15456,7 @@ Erro: {1}</translation>
     </message>
     <message>
         <source>CD image preloading not available for multi-disc image &apos;{}&apos;</source>
-        <translation>O pré-carregamento de imagens de CD não está disponível para a imagem com vários discos '{}'</translation>
+        <translation>O pré-carregamento de imagens de CD não está disponível para a imagem com vários discos &apos;{}&apos;</translation>
     </message>
     <message>
         <source>Precaching CD image failed, it may be unreliable.</source>
@@ -15629,7 +15653,7 @@ Erro: {1}</translation>
     </message>
     <message>
         <source>Shows indicators on screen when the system is not running in its &quot;normal&quot; state. For example, fast forwarding, or being paused.</source>
-        <translation>Mostra indicadores no ecrã quando o sistema não está no seu estado "normal". Por exemplo, durante o avanço rápido ou quando está pausado.</translation>
+        <translation>Mostra indicadores no ecrã quando o sistema não está no seu estado &quot;normal&quot;. Por exemplo, durante o avanço rápido ou quando está pausado.</translation>
     </message>
     <message>
         <source>Enables animation for on-screen messages when they appear and disappear.</source>
@@ -15894,7 +15918,7 @@ Erro: {1}</translation>
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;A border overlay is an image that is drawn around the system display. Border overlays are applied after post-processing. You can choose from the border list below, or manually configure a custom border.&lt;/p&gt;&lt;p&gt;Additional preset borders can be added to the &lt;span style=&quot; font-weight:700;&quot;&gt;resources\overlays&lt;/span&gt; folder within in the data directory.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Uma sobreposição de moldura é uma imagem desenhada em torno do ecrã do sistema. As sobreposições de moldura são aplicadas depois do pós-processamento. Pode escolher uma moldura da lista abaixo ou configurar manualmente uma moldura personalizada.&lt;/p&gt;&lt;p&gt;Podem ser adicionadas molduras predefinidas adicionais à pasta &lt;span style=" font-weight:700;"&gt;resources\\overlays&lt;/span&gt; dentro do diretório de dados.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Uma sobreposição de moldura é uma imagem desenhada em torno do ecrã do sistema. As sobreposições de moldura são aplicadas depois do pós-processamento. Pode escolher uma moldura da lista abaixo ou configurar manualmente uma moldura personalizada.&lt;/p&gt;&lt;p&gt;Podem ser adicionadas molduras predefinidas adicionais à pasta &lt;span style=&quot; font-weight:700;&quot;&gt;resources\\overlays&lt;/span&gt; dentro do diretório de dados.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>Selected Preset:</source>
@@ -16491,7 +16515,7 @@ Deseja atualizar o atalho para apontar para a localização atual?</translation>
     </message>
     <message>
         <source>Forces joysticks to always treat &apos;hat&apos; axis inputs (ABS_HAT0X - ABS_HAT3Y) as 8-way digital hats without checking whether they may be analog.</source>
-        <translation>Força os joysticks a tratarem sempre as entradas de eixo 'hat' (ABS_HAT0X - ABS_HAT3Y) como direções digitais de 8 vias, sem verificar se podem ser analógicas.</translation>
+        <translation>Força os joysticks a tratarem sempre as entradas de eixo &apos;hat&apos; (ABS_HAT0X - ABS_HAT3Y) como direções digitais de 8 vias, sem verificar se podem ser analógicas.</translation>
     </message>
     <message>
         <source>SDL-{0}  {1}</source>
@@ -17565,11 +17589,11 @@ Deseja criar esse diretório?</translation>
     </message>
     <message>
         <source>&lt;strong&gt;Post-Processing Settings&lt;/strong&gt;&lt;hr&gt;Post processing allows you to alter the appearance of the image displayed on the screen with various filters. Shaders will be executed in sequence. Additional shaders can be downloaded from &lt;a href=&quot;%1&quot;&gt;%1&lt;/a&gt;.</source>
-        <translation>&lt;strong&gt;Definições de Pós-processamento&lt;/strong&gt;&lt;hr&gt;O pós-processamento permite alterar o aspeto da imagem apresentada no ecrã através de vários filtros. Os shaders serão executados em sequência. Pode transferir shaders adicionais a partir de &lt;a href="%1"&gt;%1&lt;/a&gt;.</translation>
+        <translation>&lt;strong&gt;Definições de Pós-processamento&lt;/strong&gt;&lt;hr&gt;O pós-processamento permite alterar o aspeto da imagem apresentada no ecrã através de vários filtros. Os shaders serão executados em sequência. Pode transferir shaders adicionais a partir de &lt;a href=&quot;%1&quot;&gt;%1&lt;/a&gt;.</translation>
     </message>
     <message>
         <source>&lt;strong&gt;Achievement Settings&lt;/strong&gt;&lt;hr&gt;DuckStation uses RetroAchievements as an achievement database and for tracking progress. To use achievements, please sign up for an account at &lt;a href=&quot;%1&quot;&gt;%1&lt;/a&gt;. To view the achievement list in-game, press the hotkey for &lt;strong&gt;Open Pause Menu&lt;/strong&gt; and select &lt;strong&gt;Achievements&lt;/strong&gt; from the menu. Mouse over an option for additional information, and Shift+Wheel to scroll this panel.</source>
-        <translation>&lt;strong&gt;Definições de Conquistas&lt;/strong&gt;&lt;hr&gt;O DuckStation utiliza o RetroAchievements como base de dados de conquistas e para acompanhar o progresso. Para utilizar conquistas, registe uma conta em &lt;a href="%1"&gt;%1&lt;/a&gt;. Para ver a lista de conquistas no jogo, prima a tecla de atalho para &lt;strong&gt;Abrir o Menu de Pausa&lt;/strong&gt; e selecione &lt;strong&gt;Conquistas&lt;/strong&gt; no menu. Passe o rato sobre uma opção para obter informações adicionais e utilize Shift+Roda para percorrer este painel.</translation>
+        <translation>&lt;strong&gt;Definições de Conquistas&lt;/strong&gt;&lt;hr&gt;O DuckStation utiliza o RetroAchievements como base de dados de conquistas e para acompanhar o progresso. Para utilizar conquistas, registe uma conta em &lt;a href=&quot;%1&quot;&gt;%1&lt;/a&gt;. Para ver a lista de conquistas no jogo, prima a tecla de atalho para &lt;strong&gt;Abrir o Menu de Pausa&lt;/strong&gt; e selecione &lt;strong&gt;Conquistas&lt;/strong&gt; no menu. Passe o rato sobre uma opção para obter informações adicionais e utilize Shift+Roda para percorrer este painel.</translation>
     </message>
     <message>
         <source>Capture</source>
@@ -17771,7 +17795,7 @@ Pretende continuar?</translation>
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DuckStation requires a PS1 or PS2 BIOS in order to run.&lt;/p&gt;&lt;p&gt;For legal reasons, you must obtain a BIOS &lt;span style=&quot; font-weight:700;&quot;&gt;from an actual PS1/PS2 unit that you own&lt;/span&gt; (borrowing doesn&apos;t count). You should use Caetla or another utility to create an image from your console&apos;s BIOS ROM on your PC.&lt;/p&gt;&lt;p&gt;Once you have dumped the BIOS from your console, you can click the &amp;quot;Install BIOS&amp;quot; button below to add this image to DuckStation.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;O DuckStation requer uma BIOS de PS1 ou PS2 para funcionar.&lt;/p&gt;&lt;p&gt;Por motivos legais, deve obter uma BIOS &lt;span style=" font-weight:700;"&gt;de uma unidade PS1/PS2 que lhe pertença&lt;/span&gt; (pedir emprestada não conta). Deve utilizar o Caetla ou outro utilitário para criar uma imagem da ROM da BIOS da sua consola no PC.&lt;/p&gt;&lt;p&gt;Depois de extrair a BIOS da consola, pode clicar no botão &amp;quot;Instalar BIOS&amp;quot; abaixo para adicionar esta imagem ao DuckStation.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;O DuckStation requer uma BIOS de PS1 ou PS2 para funcionar.&lt;/p&gt;&lt;p&gt;Por motivos legais, deve obter uma BIOS &lt;span style=&quot; font-weight:700;&quot;&gt;de uma unidade PS1/PS2 que lhe pertença&lt;/span&gt; (pedir emprestada não conta). Deve utilizar o Caetla ou outro utilitário para criar uma imagem da ROM da BIOS da sua consola no PC.&lt;/p&gt;&lt;p&gt;Depois de extrair a BIOS da consola, pode clicar no botão &amp;quot;Instalar BIOS&amp;quot; abaixo para adicionar esta imagem ao DuckStation.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>Install BIOS...</source>
@@ -17787,7 +17811,7 @@ Pretende continuar?</translation>
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;By default, DuckStation will map your keyboard to the virtual controller. &lt;span style=&quot; font-weight:700;&quot;&gt;To use an external controller, you must map it first. &lt;/span&gt;On this screen, you can automatically map any controller which is currently connected. If your controller is not currently connected, you can plug it in now.&lt;/p&gt;&lt;p&gt;To change controller bindings in more detail, or use multi-tap, open the Settings menu and choose Controllers once you have completed the Setup Wizard.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Por predefinição, o DuckStation irá mapear o teclado para o comando virtual. &lt;span style=" font-weight:700;"&gt;Para utilizar um comando externo, tem de o mapear primeiro. &lt;/span&gt;Neste ecrã, pode mapear automaticamente qualquer comando que esteja atualmente ligado. Se o seu comando não estiver ligado, pode ligá-lo agora.&lt;/p&gt;&lt;p&gt;Para alterar as associações dos comandos com mais detalhe ou utilizar um multitap, abra o menu Configurações e selecione Comandos depois de concluir o Assistente de Configuração.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Por predefinição, o DuckStation irá mapear o teclado para o comando virtual. &lt;span style=&quot; font-weight:700;&quot;&gt;Para utilizar um comando externo, tem de o mapear primeiro. &lt;/span&gt;Neste ecrã, pode mapear automaticamente qualquer comando que esteja atualmente ligado. Se o seu comando não estiver ligado, pode ligá-lo agora.&lt;/p&gt;&lt;p&gt;Para alterar as associações dos comandos com mais detalhe ou utilizar um multitap, abra o menu Configurações e selecione Comandos depois de concluir o Assistente de Configuração.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>Default (Keyboard)</source>
@@ -17811,7 +17835,7 @@ Pretende continuar?</translation>
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This page includes some of the commonly set graphics options in DuckStation.&lt;/p&gt;&lt;p&gt;These options are generally safe to enable, and compatible with most games. Changing the internal resolution and enabling PGXP geometry correction will significantly improve the graphical fidelity of most games.&lt;/p&gt;&lt;p&gt;You can change these options and others in &lt;span style=&quot; font-weight:700;&quot;&gt;Graphics Settings &lt;/span&gt;after completing setup.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Esta página inclui algumas das opções gráficas mais utilizadas no DuckStation.&lt;/p&gt;&lt;p&gt;Estas opções são geralmente seguras de ativar e compatíveis com a maioria dos jogos. Alterar a resolução interna e ativar a correção geométrica PGXP irá melhorar significativamente a qualidade gráfica da maioria dos jogos.&lt;/p&gt;&lt;p&gt;Pode alterar estas e outras opções nas &lt;span style=" font-weight:700;"&gt;Configurações Gráficas &lt;/span&gt;depois de concluir a configuração.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Esta página inclui algumas das opções gráficas mais utilizadas no DuckStation.&lt;/p&gt;&lt;p&gt;Estas opções são geralmente seguras de ativar e compatíveis com a maioria dos jogos. Alterar a resolução interna e ativar a correção geométrica PGXP irá melhorar significativamente a qualidade gráfica da maioria dos jogos.&lt;/p&gt;&lt;p&gt;Pode alterar estas e outras opções nas &lt;span style=&quot; font-weight:700;&quot;&gt;Configurações Gráficas &lt;/span&gt;depois de concluir a configuração.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>Internal Resolution:</source>
@@ -17863,7 +17887,7 @@ Pretende continuar?</translation>
     </message>
     <message>
         <source>Determines how much of the area typically not visible on a consumer TV set to crop/hide. Some games display content in the overscan area, or use it for screen effects. May not display correctly with the &quot;All Borders&quot; setting. &quot;Only Overscan&quot; offers a good compromise between stability and hiding black borders.</source>
-        <translation>Determina a quantidade da área normalmente não visível num televisor doméstico a cortar/ocultar. Alguns jogos apresentam conteúdo na área de overscan ou utilizam-na para efeitos no ecrã. Pode não ser apresentado corretamente com a configuração "Todas as Margens". "Apenas Overscan" oferece um bom compromisso entre estabilidade e ocultação das margens pretas.</translation>
+        <translation>Determina a quantidade da área normalmente não visível num televisor doméstico a cortar/ocultar. Alguns jogos apresentam conteúdo na área de overscan ou utilizam-na para efeitos no ecrã. Pode não ser apresentado corretamente com a configuração &quot;Todas as Margens&quot;. &quot;Apenas Overscan&quot; oferece um bom compromisso entre estabilidade e ocultação das margens pretas.</translation>
     </message>
     <message>
         <source>Scaling:</source>
@@ -17879,7 +17903,7 @@ Pretende continuar?</translation>
     </message>
     <message>
         <source>Reduces &quot;wobbly&quot; polygons and &quot;warping&quot; textures that are common in PS1 games. &lt;strong&gt;May not be compatible with all games.&lt;/strong&gt;</source>
-        <translation>Reduz os polígonos "instáveis" e as texturas "deformadas" comuns nos jogos de PS1. &lt;strong&gt;Pode não ser compatível com todos os jogos.&lt;/strong&gt;</translation>
+        <translation>Reduz os polígonos &quot;instáveis&quot; e as texturas &quot;deformadas&quot; comuns nos jogos de PS1. &lt;strong&gt;Pode não ser compatível com todos os jogos.&lt;/strong&gt;</translation>
     </message>
     <message>
         <source>PGXP Geometry Correction</source>
@@ -17900,7 +17924,7 @@ Pretende continuar?</translation>
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DuckStation supports earning achievements and leaderboard tracking with RetroAchievements.&lt;/p&gt;&lt;p&gt;If you have a RetroAchievements account, you can use the form below to log in. If not, you can register by clicking the Register button below.&lt;/p&gt;&lt;p&gt;A RetroAchievements account is &lt;span style=&quot; font-weight:700;&quot;&gt;not&lt;/span&gt; required to use DuckStation.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;O DuckStation suporta a obtenção de conquistas e o acompanhamento de classificações através do RetroAchievements.&lt;/p&gt;&lt;p&gt;Se tiver uma conta RetroAchievements, pode utilizar o formulário abaixo para iniciar sessão. Caso contrário, pode registar-se clicando no botão Registar abaixo.&lt;/p&gt;&lt;p&gt;Uma conta RetroAchievements &lt;span style=" font-weight:700;"&gt;não&lt;/span&gt; é necessária para utilizar o DuckStation.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;O DuckStation suporta a obtenção de conquistas e o acompanhamento de classificações através do RetroAchievements.&lt;/p&gt;&lt;p&gt;Se tiver uma conta RetroAchievements, pode utilizar o formulário abaixo para iniciar sessão. Caso contrário, pode registar-se clicando no botão Registar abaixo.&lt;/p&gt;&lt;p&gt;Uma conta RetroAchievements &lt;span style=&quot; font-weight:700;&quot;&gt;não&lt;/span&gt; é necessária para utilizar o DuckStation.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>Register</source>
@@ -17936,7 +17960,7 @@ Pretende continuar?</translation>
 You can change this at a later time by toggling the &quot;Start In Big Picture Mode&quot; setting in Interface Settings.</source>
         <translation>Escolha a interface que o DuckStation deve apresentar ao iniciar. O Modo de Ambiente de Trabalho foi concebido para utilização com rato e teclado, enquanto o Modo de Imagem Grande está otimizado para navegação com um comando num televisor.
 
-Pode alterar esta opção mais tarde, ativando ou desativando a configuração "Iniciar no Modo de Imagem Grande" nas Configurações da Interface.</translation>
+Pode alterar esta opção mais tarde, ativando ou desativando a configuração &quot;Iniciar no Modo de Imagem Grande&quot; nas Configurações da Interface.</translation>
     </message>
     <message>
         <source>Desktop Mode</source>
@@ -18248,7 +18272,7 @@ A utilizar a imagem de CD atual; isto pode causar instabilidade.</translation>
     <message>
         <source>Failed to open CD image &apos;{}&apos; used by save state:
 </source>
-        <translation>Falha ao abrir a imagem de CD '{}' utilizada pelo estado guardado:
+        <translation>Falha ao abrir a imagem de CD &apos;{}&apos; utilizada pelo estado guardado:
 </translation>
     </message>
     <message>
@@ -18345,11 +18369,11 @@ O nome do ficheiro SBI tem de corresponder ao nome da imagem de disco.</translat
     </message>
     <message>
         <source>Failed to switch to subimage {} in &apos;{}&apos;: {}.</source>
-        <translation>Falha ao mudar para a subimagem {} em '{}': {}.</translation>
+        <translation>Falha ao mudar para a subimagem {} em &apos;{}&apos;: {}.</translation>
     </message>
     <message>
         <source>Switched to sub-image {} ({}) in &apos;{}&apos;.</source>
-        <translation>Mudou para a subimagem {} ({}) em '{}'.</translation>
+        <translation>Mudou para a subimagem {} ({}) em &apos;{}&apos;.</translation>
     </message>
     <message>
         <source>Current game does not have multiple discs.</source>
@@ -18561,11 +18585,11 @@ Tem de guardar num cartão de memória e reiniciar o jogo para eliminar quaisque
     </message>
     <message>
         <source>Starting {0} to &apos;{1}&apos;.</source>
-        <translation>A iniciar {0} em '{1}'.</translation>
+        <translation>A iniciar {0} em &apos;{1}&apos;.</translation>
     </message>
     <message>
         <source>Stopped {0} to &apos;{1}&apos;.</source>
-        <translation>{0} parado em '{1}'.</translation>
+        <translation>{0} parado em &apos;{1}&apos;.</translation>
     </message>
     <message>
         <source>Stopped {0}: {1}.</source>
@@ -18642,7 +18666,7 @@ Isto pode dever-se ao facto de a sua GPU não suportar o renderizador escolhido 
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Texture Replacement Settings&lt;/span&gt;&lt;br/&gt;These settings fine-tune the behavior of the texture replacement system. You can also export a game-specific configuration file. Each of the options is explained in the configuration file, and at &lt;a href=&quot;https://github.com/stenzek/duckstation/wiki/Texture-Replacement&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0078d4;&quot;&gt;https://github.com/stenzek/duckstation/wiki/Texture-Replacement&lt;/span&gt;&lt;/a&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=" font-weight:700;"&gt;Configurações de Substituição de Texturas&lt;/span&gt;&lt;br/&gt;Estas configurações permitem ajustar o comportamento do sistema de substituição de texturas. Também pode exportar um ficheiro de configuração específico do jogo. Cada opção é explicada no ficheiro de configuração e em &lt;a href="https://github.com/stenzek/duckstation/wiki/Texture-Replacement"&gt;&lt;span style=" text-decoration: underline; color:#0078d4;"&gt;https://github.com/stenzek/duckstation/wiki/Texture-Replacement&lt;/span&gt;&lt;/a&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Configurações de Substituição de Texturas&lt;/span&gt;&lt;br/&gt;Estas configurações permitem ajustar o comportamento do sistema de substituição de texturas. Também pode exportar um ficheiro de configuração específico do jogo. Cada opção é explicada no ficheiro de configuração e em &lt;a href=&quot;https://github.com/stenzek/duckstation/wiki/Texture-Replacement&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0078d4;&quot;&gt;https://github.com/stenzek/duckstation/wiki/Texture-Replacement&lt;/span&gt;&lt;/a&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>Texture Dumping Mode</source>

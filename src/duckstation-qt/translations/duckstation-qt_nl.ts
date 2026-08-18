@@ -1056,6 +1056,10 @@ Ongelezen berichten: {}</translation>
         <translation>Interface-instellingen</translation>
     </message>
     <message>
+        <source>Rich Presence Monitor</source>
+        <translation>Rich Presence-monitor</translation>
+    </message>
+    <message>
         <source>Enable RAIntegration</source>
         <translation>RAIntegration inschakelen</translation>
     </message>
@@ -1158,6 +1162,10 @@ Ongelezen berichten: {}</translation>
     <message>
         <source>Shows a debug menu bar with additional statistics and quick settings.</source>
         <translation>Toont een foutopsporingsmenubalk met aanvullende statistieken en snelle instellingen.</translation>
+    </message>
+    <message>
+        <source>Always displays the current RetroAchievements rich presence string in the indicator area.</source>
+        <translation>Geeft de huidige rich-presence-tekenreeks van RetroAchievements altijd weer in het indicatiegebied.</translation>
     </message>
     <message>
         <source>Default</source>
@@ -6607,6 +6615,10 @@ U kunt deze actie niet ongedaan maken.</translation>
         <translation>Deïnterlacemodus</translation>
     </message>
     <message>
+        <source>Delete</source>
+        <translation>Verwijderen</translation>
+    </message>
+    <message>
         <source>Delete And Boot</source>
         <translation>Verwijderen en opstarten</translation>
     </message>
@@ -7251,6 +7263,10 @@ Controleer uw gebruikersnaam en wachtwoord en probeer het opnieuw.</translation>
         <translation>Locatie van bericht</translation>
     </message>
     <message>
+        <source>Move Cursor</source>
+        <translation>Cursor verplaatsen</translation>
+    </message>
+    <message>
         <source>N/A</source>
         <translation>N/A</translation>
     </message>
@@ -7575,6 +7591,10 @@ Controleer uw gebruikersnaam en wachtwoord en probeer het opnieuw.</translation>
         <translation>Zoeken</translation>
     </message>
     <message>
+        <source>Select Key</source>
+        <translation>Toets selecteren</translation>
+    </message>
+    <message>
         <source>Settings reset to default.</source>
         <translation>Instellingen teruggezet naar de standaardwaarden.</translation>
     </message>
@@ -7657,6 +7677,10 @@ Controleer uw gebruikersnaam en wachtwoord en probeer het opnieuw.</translation>
     <message>
         <source>Time Played: </source>
         <translation>Gespeelde tijd: </translation>
+    </message>
+    <message>
+        <source>Toggle Case</source>
+        <translation>Hoofd-/kleine letters wisselen</translation>
     </message>
     <message>
         <source>Toggles the macro when the button is pressed, instead of held.</source>

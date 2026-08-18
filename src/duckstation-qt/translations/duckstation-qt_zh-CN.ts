@@ -9,7 +9,7 @@
     </message>
     <message>
         <source>License</source>
-        <translation>License</translation>
+        <translation>许可证</translation>
     </message>
     <message>
         <source>DuckStation Third-Party Notices</source>
@@ -371,7 +371,7 @@ Token generated at %2</source>
     </message>
     <message>
         <source>Checked</source>
-        <translation>勾选</translation>
+        <translation>已勾选</translation>
     </message>
     <message>
         <source>(Customize)</source>
@@ -379,7 +379,7 @@ Token generated at %2</source>
     </message>
     <message>
         <source>Unchecked</source>
-        <translation>不勾选</translation>
+        <translation>未勾选</translation>
     </message>
     <message>
         <source>Challenge Indicators</source>
@@ -391,7 +391,7 @@ Token generated at %2</source>
     </message>
     <message>
         <source>Enable Encore Mode</source>
-        <translation>启用回演模式</translation>
+        <translation>启用再来一遍模式</translation>
     </message>
     <message>
         <source>When enabled, DuckStation will list achievements from unofficial sets. Please note that these achievements are not tracked by RetroAchievements, so they unlock every time.</source>
@@ -1001,7 +1001,7 @@ Unread messages: {}</source>
     </message>
     <message>
         <source>Log To System Console</source>
-        <translation>日志记录到系统游戏机</translation>
+        <translation>记录日志到系统控制台</translation>
     </message>
     <message>
         <source>Logging</source>
@@ -1013,7 +1013,7 @@ Unread messages: {}</source>
     </message>
     <message>
         <source>Logs messages to the debug console where supported.</source>
-        <translation>将消息记录到所支持的调试游戏机。</translation>
+        <translation>在支持的平台上将消息记录到调试控制台。</translation>
     </message>
     <message>
         <source>Select Cache Directory</source>
@@ -1030,6 +1030,10 @@ Unread messages: {}</source>
     <message>
         <source>Includes the elapsed time since the application start in file logs.</source>
         <translation>在文件日志中包含本应用程序自启动以后经过的时间。</translation>
+    </message>
+    <message>
+        <source>Always displays the current RetroAchievements rich presence string in the indicator area.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Default</source>
@@ -1080,6 +1084,10 @@ Unread messages: {}</source>
         <translation>界面设置</translation>
     </message>
     <message>
+        <source>Rich Presence Monitor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <source>Enable RAIntegration</source>
         <translation>启用RAIntegration</translation>
     </message>
@@ -1125,7 +1133,7 @@ Unread messages: {}</source>
     </message>
     <message>
         <source>Log To Debug Console</source>
-        <translation>日志记录到调试游戏机</translation>
+        <translation>记录日志到调试控制台</translation>
     </message>
     <message>
         <source>Sets the verbosity of messages logged. Higher levels will log more messages.</source>
@@ -1145,7 +1153,7 @@ Unread messages: {}</source>
     </message>
     <message>
         <source>Unchecked</source>
-        <translation>不勾选</translation>
+        <translation>未勾选</translation>
     </message>
     <message>
         <source>Shows a debug menu bar with additional statistics and quick settings.</source>
@@ -1212,7 +1220,7 @@ Unread messages: {}</source>
     </message>
     <message>
         <source>Use Right Analog for Trigger Buttons</source>
-        <translation>使用右模拟摇杆控制肩部按钮</translation>
+        <translation>使用右模拟摇杆控制扳机按钮</translation>
     </message>
     <message>
         <source>Allows you to use the right analog stick to control the trigger buttons (L2/R2), as well as the buttons.</source>
@@ -1766,7 +1774,7 @@ Unread messages: {}</source>
     </message>
     <message>
         <source>Checked</source>
-        <translation>勾选</translation>
+        <translation>已勾选</translation>
     </message>
     <message>
         <source>Enables the quick seeking algorithm in the time-stretch routine. Reduces CPU usage at a minor cost to audio quality.</source>
@@ -2004,7 +2012,7 @@ You can manually update DuckStation by re-downloading the latest release. Do you
     </message>
     <message>
         <source>Image Path</source>
-        <translation>图像路径</translation>
+        <translation>镜像路径</translation>
     </message>
     <message>
         <source>Empty</source>
@@ -2012,11 +2020,11 @@ You can manually update DuckStation by re-downloading the latest release. Do you
     </message>
     <message>
         <source>Sets the path to the image used for flash cartridges.</source>
-        <translation>设置闪存盒卡所用图像的路径。</translation>
+        <translation>设置闪存盒卡所用镜像的路径。</translation>
     </message>
     <message>
         <source>Checked</source>
-        <translation>勾选</translation>
+        <translation>已勾选</translation>
     </message>
     <message>
         <source>Simulates the position of the switch on the cartridge. Most cartridges require the switch to be on for it to activate on startup.</source>
@@ -2148,7 +2156,7 @@ You can manually update DuckStation by re-downloading the latest release. Do you
     </message>
     <message>
         <source>Unchecked</source>
-        <translation>不勾选</translation>
+        <translation>未勾选</translation>
     </message>
     <message>
         <source>Logs BIOS calls to printf(). Not all games contain debugging messages.</source>
@@ -2440,7 +2448,7 @@ Your dump may be corrupted, or the physical disc is scratched.</source>
     </message>
     <message>
         <source>Unchecked</source>
-        <translation>不勾选</translation>
+        <translation>未勾选</translation>
     </message>
     <message>
         <source>When checked, the video capture resolution will follows the internal resolution of the running game. &lt;b&gt;Be careful when using this setting especially when you are upscaling, as higher internal resolutions (above 4x) can cause system slowdown.&lt;/b&gt;</source>
@@ -2806,7 +2814,7 @@ This warning will only be shown once.</source>
     </message>
     <message>
         <source>Unchecked</source>
-        <translation>不勾选</translation>
+        <translation>未勾选</translation>
     </message>
     <message>
         <source>Preload Image To RAM</source>
@@ -3039,11 +3047,11 @@ This warning will only be shown once.</source>
     </message>
     <message>
         <source>Right Analog</source>
-        <translation>右模拟</translation>
+        <translation>右摇杆</translation>
     </message>
     <message>
         <source>Left Analog</source>
-        <translation>左模拟</translation>
+        <translation>左摇杆</translation>
     </message>
     <message>
         <source>Analog</source>
@@ -3138,11 +3146,11 @@ This warning will only be shown once.</source>
     </message>
     <message>
         <source>Right Analog</source>
-        <translation>右模拟</translation>
+        <translation>右摇杆</translation>
     </message>
     <message>
         <source>Left Analog</source>
-        <translation>左模拟</translation>
+        <translation>左摇杆</translation>
     </message>
     <message>
         <source>Circle</source>
@@ -3532,7 +3540,7 @@ This warning will only be shown once.</source>
     </message>
     <message>
         <source>Detected Devices</source>
-        <translation>检测设备</translation>
+        <translation>已检测到的设备</translation>
     </message>
     <message>
         <source>The multitap enables up to 8 controllers to be connected to the console. Each multitap provides 4 ports. Multitap is not supported by all games.</source>
@@ -3544,7 +3552,7 @@ This warning will only be shown once.</source>
     </message>
     <message>
         <source>Enable DualSense Player LED</source>
-        <translation>启用双感应手柄玩家指示灯</translation>
+        <translation>启用DualSense玩家指示灯</translation>
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The XInput source provides support for controllers that use the XInput protocol. This source should &lt;span style=&quot; font-weight:700;&quot;&gt;only&lt;/span&gt; be used if you are using a XInput wrapper library.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
@@ -3584,7 +3592,7 @@ This warning will only be shown once.</source>
     </message>
     <message>
         <source>Controller Multitap</source>
-        <translation>多接头控制器</translation>
+        <translation>控制器多接头</translation>
     </message>
     <message>
         <source>Use Raw Input</source>
@@ -3755,7 +3763,7 @@ The &quot;alternate&quot; color is used when analog mode is active.</source>
     </message>
     <message>
         <source>Macro will toggle every N frames.</source>
-        <translation>宏将每N帧触发一次。</translation>
+        <translation>宏将每隔N帧切换一次。</translation>
     </message>
     <message>
         <source>Not Configured</source>
@@ -3819,7 +3827,7 @@ The &quot;alternate&quot; color is used when analog mode is active.</source>
     </message>
     <message>
         <source>Copy Global Settings</source>
-        <translation>套用全局设置</translation>
+        <translation>复制全局设置</translation>
     </message>
     <message>
         <source>Restore Defaults</source>
@@ -3964,7 +3972,7 @@ All bindings and configuration will be lost. You cannot undo this action.</sourc
     </message>
     <message>
         <source>NeGcon (Rumble)</source>
-        <translation>NeGcon (隆响声)</translation>
+        <translation>NeGcon（震动）</translation>
     </message>
 </context>
 <context>
@@ -3987,7 +3995,7 @@ All bindings and configuration will be lost. You cannot undo this action.</sourc
     </message>
     <message>
         <source>Memory Card Busy</source>
-        <translation>记忆卡无空闲</translation>
+        <translation>记忆卡正忙</translation>
     </message>
     <message>
         <source>WARNING: Your game is still saving to the memory card. Continuing to %1 may IRREVERSIBLY DESTROY YOUR MEMORY CARD. We recommend resuming your game and waiting 5 seconds for it to finish saving.
@@ -4333,11 +4341,11 @@ This file is approximately 206KB, do you want to download it now?</source>
     </message>
     <message>
         <source>Go To PC</source>
-        <translation>转到电脑</translation>
+        <translation>转到程序计数器</translation>
     </message>
     <message>
         <source>&amp;Go To PC</source>
-        <translation>转到电脑(&amp;G)</translation>
+        <translation>转到程序计数器(&amp;G)</translation>
     </message>
     <message>
         <source>Invalid search pattern. It should contain hex digits or question marks.</source>
@@ -4417,7 +4425,7 @@ This file is approximately 206KB, do you want to download it now?</source>
     </message>
     <message>
         <source>Hit Count</source>
-        <translation>响应次数</translation>
+        <translation>命中次数</translation>
     </message>
     <message>
         <source>Clear Breakpoints</source>
@@ -4906,7 +4914,7 @@ Clicking Reset will restore the serial back to the value scanned from in the dis
     </message>
     <message>
         <source>Checked</source>
-        <translation>勾选</translation>
+        <translation>已勾选</translation>
     </message>
     <message>
         <source>Enabling this option will ensure every frame the console renders is displayed to the screen, at a consistent rate, for optimal frame pacing. If you have a GSync/FreeSync display, enable this option. If you are having difficulties maintaining full speed, or are getting audio glitches, try disabling this option.</source>
@@ -5086,7 +5094,7 @@ Clicking Reset will restore the serial back to the value scanned from in the dis
     </message>
     <message>
         <source>Unchecked</source>
-        <translation>不勾选</translation>
+        <translation>未勾选</translation>
     </message>
     <message numerus="yes">
         <source>Rewind for %n frame(s), lasting %1 second(s) will require %2MB of RAM and %3MB of VRAM.</source>
@@ -5441,7 +5449,7 @@ Clicking Reset will restore the serial back to the value scanned from in the dis
     </message>
     <message>
         <source>Memory Card Busy</source>
-        <translation>记忆卡无空闲</translation>
+        <translation>记忆卡正忙</translation>
     </message>
     <message>
         <source>Merge Multi-Disc Games</source>
@@ -6595,11 +6603,11 @@ Error was:</source>
     </message>
     <message>
         <source>Toggle every %d frames</source>
-        <translation>每%d帧触发一次</translation>
+        <translation>每隔%d帧切换一次</translation>
     </message>
     <message>
         <source>Global Slot {0} - {1}##global_slot_{0}</source>
-        <translation>全局档位{0} - {1}##全局_档位_{0}</translation>
+        <translation>全局档位{0} - {1}##global_slot_{0}</translation>
     </message>
     <message>
         <source>Move Up</source>
@@ -6707,7 +6715,7 @@ Error was:</source>
     </message>
     <message>
         <source>Toggle Fast Forward</source>
-        <translation>快进开关</translation>
+        <translation>切换快进</translation>
     </message>
     <message>
         <source>Post-processing shaders reloaded.</source>
@@ -6943,7 +6951,7 @@ Error was:</source>
     </message>
     <message>
         <source>Copy Settings</source>
-        <translation>套用设置</translation>
+        <translation>复制设置</translation>
     </message>
     <message>
         <source>Back To Pause Menu</source>
@@ -7027,7 +7035,7 @@ Error was:</source>
     </message>
     <message>
         <source>Post-processing chain cleared.</source>
-        <translation>后处理链清理。</translation>
+        <translation>后处理链已清除。</translation>
     </message>
     <message>
         <source>Rescan All Games</source>
@@ -7431,7 +7439,7 @@ Error was:</source>
     </message>
     <message>
         <source>Push a controller button or axis now.</source>
-        <translation>现在按下控制器按钮或轴。</translation>
+        <translation>现在请按下控制器按钮或移动摇杆轴。</translation>
     </message>
     <message>
         <source>Selects the GPU to use for rendering.</source>
@@ -7531,7 +7539,7 @@ Error was:</source>
     </message>
     <message>
         <source>Global Slot {0}##global_slot_{0}</source>
-        <translation>全局档位{0}##全局_档位_{0}</translation>
+        <translation>全局档位{0}##global_slot_{0}</translation>
     </message>
     <message>
         <source>Increases the precision of polygon culling, reducing the number of holes in geometry.</source>
@@ -7574,6 +7582,10 @@ Error was:</source>
         <translation>将 BIOS 镜像复制到配置的全局 BIOS 目录。</translation>
     </message>
     <message>
+        <source>Delete</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <source>Depth Clear Threshold</source>
         <translation>深度清除阈值</translation>
     </message>
@@ -7611,7 +7623,7 @@ Error was:</source>
     </message>
     <message>
         <source>Disable on 2D Polygons</source>
-        <translation>禁用在2D多边形</translation>
+        <translation>在 2D 多边形上禁用</translation>
     </message>
     <message>
         <source>Display Area</source>
@@ -7903,11 +7915,11 @@ Please check your username and password, and try again.</source>
     </message>
     <message>
         <source>Maximum Read Speedup Cycles</source>
-        <translation>最大化读取加速周期</translation>
+        <translation>最大读取加速周期</translation>
     </message>
     <message>
         <source>Maximum Seek Speedup Cycles</source>
-        <translation>最大化搜寻加速周期</translation>
+        <translation>最大寻道加速周期</translation>
     </message>
     <message>
         <source>Menu Background</source>
@@ -7920,6 +7932,10 @@ Please check your username and password, and try again.</source>
     <message>
         <source>Message Location</source>
         <translation>消息位置</translation>
+    </message>
+    <message>
+        <source>Move Cursor</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>N/A</source>
@@ -8127,7 +8143,7 @@ Please check your username and password, and try again.</source>
     </message>
     <message>
         <source>Resume Last Session</source>
-        <translation>继续前次节点</translation>
+        <translation>继续上次会话</translation>
     </message>
     <message>
         <source>Return To Game</source>
@@ -8264,6 +8280,10 @@ Please check your username and password, and try again.</source>
     <message>
         <source>Select Game</source>
         <translation>选择游戏</translation>
+    </message>
+    <message>
+        <source>Select Key</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Select State</source>
@@ -8514,6 +8534,10 @@ Please check your username and password, and try again.</source>
         <translation>要使用成就，请使用您的retroachievements.org帐户登录。</translation>
     </message>
     <message>
+        <source>Toggle Case</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <source>Toggle Fullscreen</source>
         <translation>全屏开关</translation>
     </message>
@@ -8639,7 +8663,7 @@ Do you want to {1} anyway?</source>
     </message>
     <message>
         <source>Yes, {} now and risk memory card corruption.</source>
-        <translation>是的，{}现在，接受存储卡有可能损坏的风险。</translation>
+        <translation>是，立即{}，并承担记忆卡损坏的风险。</translation>
     </message>
     <message>
         <source>change disc</source>
@@ -9316,7 +9340,7 @@ Are you sure you want to continue?</source>
     </message>
     <message>
         <source>Deinterlacing set to {}.</source>
-        <translation>逐行扫描设置为{}。</translation>
+        <translation>去隔行设置为{}。</translation>
     </message>
     <message>
         <source>CPU recompiler disabled.</source>
@@ -9375,7 +9399,7 @@ Are you sure you want to continue?</source>
     <message>
         <source>Force Deinterlacing</source>
         <comment>GameDatabase::Trait</comment>
-        <translation>强制逐行扫描</translation>
+        <translation>强制去隔行</translation>
     </message>
     <message>
         <source>Force Full Boot</source>
@@ -9475,7 +9499,7 @@ Are you sure you want to continue?</source>
     <message>
         <source>Disable PGXP on 2D Polygons</source>
         <comment>GameDatabase::Trait</comment>
-        <translation>禁用PGXP在2D多边形</translation>
+        <translation>在 2D 多边形上禁用 PGXP</translation>
     </message>
     <message>
         <source>Force PGXP Vertex Cache</source>
@@ -9610,7 +9634,7 @@ Are you sure you want to continue?</source>
     </message>
     <message>
         <source>PGXP disabled on 2D polygons.</source>
-        <translation>PGXP已禁用在2D多边形。</translation>
+        <translation>PGXP 已在 2D 多边形上禁用。</translation>
     </message>
     <message>
         <source>Compatibility settings for this game have been applied.</source>
@@ -9780,7 +9804,7 @@ Are you sure you want to continue?</source>
     </message>
     <message>
         <source>Disc Set</source>
-        <translation>光盘设置</translation>
+        <translation>光盘组</translation>
     </message>
 </context>
 <context>
@@ -9805,7 +9829,7 @@ Are you sure you want to continue?</source>
     <message>
         <source>Disc Set</source>
         <comment>EntryType</comment>
-        <translation>光盘设置</translation>
+        <translation>光盘组</translation>
     </message>
     <message>
         <source>PS-EXE</source>
@@ -10143,7 +10167,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>Reload Patches</source>
-        <translation>重载加载补丁</translation>
+        <translation>重新加载补丁</translation>
     </message>
     <message>
         <source>No patches are available for this game.</source>
@@ -10729,7 +10753,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>Disable Memory Import</source>
-        <translation>禁用记忆卡导入</translation>
+        <translation>禁用内存导入</translation>
     </message>
     <message>
         <source>Disable Rasterizer Order Views</source>
@@ -10841,11 +10865,11 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>Unchecked</source>
-        <translation>不勾选</translation>
+        <translation>未勾选</translation>
     </message>
     <message>
         <source>Checked</source>
-        <translation>勾选</translation>
+        <translation>已勾选</translation>
     </message>
     <message>
         <source>Scales vertex positions in screen-space to a widescreen aspect ratio, essentially increasing the field of view from 4:3 to the chosen display aspect ratio in 3D games. &lt;b&gt;&lt;u&gt;May not be compatible with all games.&lt;/u&gt;&lt;/b&gt;</source>
@@ -11272,7 +11296,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>Tick Offset</source>
-        <translation>时数偏移量</translation>
+        <translation>时钟周期偏移</translation>
     </message>
     <message>
         <source>Offset applied to lightgun horizontal position.</source>
@@ -12118,7 +12142,7 @@ Shift-click to set multiple bindings.</source>
     </message>
     <message>
         <source>Unchecked</source>
-        <translation>不勾选</translation>
+        <translation>未勾选</translation>
     </message>
     <message>
         <source>Disable Window Rounded Corners</source>
@@ -14403,7 +14427,7 @@ Error: {1}</source>
     </message>
     <message>
         <source>Checked</source>
-        <translation>勾选</translation>
+        <translation>已勾选</translation>
     </message>
     <message>
         <source>Use Single Card For Multi-Disc Games</source>
@@ -14475,7 +14499,7 @@ Error: {1}</source>
     </message>
     <message>
         <source>Unchecked</source>
-        <translation>不勾选</translation>
+        <translation>未勾选</translation>
     </message>
     <message>
         <source>When enabled, the legacy global save state slots will be available. These slots are independent of the current game.</source>
@@ -15579,7 +15603,7 @@ Error: {1}</source>
     </message>
     <message>
         <source>Checked</source>
-        <translation>勾选</translation>
+        <translation>已勾选</translation>
     </message>
     <message>
         <source>Shows on-screen-display messages when events occur such as save states being created/loaded, screenshots being taken, etc. Errors and warnings are still displayed regardless of this setting.</source>
@@ -15607,7 +15631,7 @@ Error: {1}</source>
     </message>
     <message>
         <source>Unchecked</source>
-        <translation>不勾选</translation>
+        <translation>未勾选</translation>
     </message>
     <message>
         <source>Shows the resolution of the game in the top-right corner of the display.</source>
@@ -15936,7 +15960,7 @@ Error: {1}</source>
     </message>
     <message>
         <source>Unchecked</source>
-        <translation>不勾选</translation>
+        <translation>未勾选</translation>
     </message>
     <message>
         <source>If checked, the overlay image will be alpha blended with the framebuffer, i.e. transparency will be applied.</source>
@@ -16679,7 +16703,7 @@ Do you want to create this directory?</source>
     <message>
         <source>Developer</source>
         <comment>LogLevel</comment>
-        <translation>开发商</translation>
+        <translation>开发者</translation>
     </message>
     <message>
         <source>Debug</source>
@@ -16784,7 +16808,7 @@ Do you want to create this directory?</source>
     <message>
         <source>Metal</source>
         <comment>GPURenderer</comment>
-        <translation>金属</translation>
+        <translation>Metal</translation>
     </message>
     <message>
         <source>Vulkan</source>
@@ -17595,7 +17619,7 @@ You cannot undo this action.</source>
     </message>
     <message>
         <source>Unchecked</source>
-        <translation>不勾选</translation>
+        <translation>未勾选</translation>
     </message>
     <message>
         <source>Disables all enhancement options, simulating the system as accurately as possible. Use to quickly determine whether an enhancement is responsible for game bugs.</source>
@@ -18640,7 +18664,7 @@ DuckStation 需要 PS1 或 PS2 BIOS 才能运行。
     </message>
     <message>
         <source>Convert Copies To Writes</source>
-        <translation>转换副本到写入</translation>
+        <translation>将复制操作转换为写入操作</translation>
     </message>
     <message>
         <source>Bilinear Replacement Scaling</source>

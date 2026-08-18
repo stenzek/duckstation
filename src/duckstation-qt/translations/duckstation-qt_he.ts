@@ -1059,6 +1059,10 @@ Unread messages: {}</source>
         <translation>הצגת תפריט ניפוי באגים</translation>
     </message>
     <message>
+        <source>Rich Presence Monitor</source>
+        <translation>מעקב Rich Presence</translation>
+    </message>
+    <message>
         <source>Enable RAIntegration</source>
         <translation>הפעלת RAIntegration</translation>
     </message>
@@ -1157,6 +1161,10 @@ Unread messages: {}</source>
     <message>
         <source>Shows a debug menu bar with additional statistics and quick settings.</source>
         <translation>מציג שורת תפריטים של ניפוי באגים עם נתונים סטטיסטיים נוספים והגדרות מהירות.</translation>
+    </message>
+    <message>
+        <source>Always displays the current RetroAchievements rich presence string in the indicator area.</source>
+        <translation>מציג תמיד את מחרוזת ה־Rich Presence הנוכחית של RetroAchievements באזור המחוונים.</translation>
     </message>
     <message>
         <source>Default</source>
@@ -6605,6 +6613,10 @@ You cannot undo this action.</source>
         <translation>מצב ביטול שזירה</translation>
     </message>
     <message>
+        <source>Delete</source>
+        <translation>מחיקה</translation>
+    </message>
+    <message>
         <source>Delete And Boot</source>
         <translation>מחיקה ואתחול</translation>
     </message>
@@ -7249,6 +7261,10 @@ Please check your username and password, and try again.</source>
         <translation>מיקום הודעה</translation>
     </message>
     <message>
+        <source>Move Cursor</source>
+        <translation>הזזת סמן</translation>
+    </message>
+    <message>
         <source>N/A</source>
         <translation>N/A</translation>
     </message>
@@ -7573,6 +7589,10 @@ Please check your username and password, and try again.</source>
         <translation>חיפוש</translation>
     </message>
     <message>
+        <source>Select Key</source>
+        <translation>בחירת מקש</translation>
+    </message>
+    <message>
         <source>Settings reset to default.</source>
         <translation>ההגדרות אופסו לברירת המחדל.</translation>
     </message>
@@ -7655,6 +7675,10 @@ Please check your username and password, and try again.</source>
     <message>
         <source>Time Played: </source>
         <translation>זמן משחק: </translation>
+    </message>
+    <message>
+        <source>Toggle Case</source>
+        <translation>החלפת רישיות</translation>
     </message>
     <message>
         <source>Toggles the macro when the button is pressed, instead of held.</source>

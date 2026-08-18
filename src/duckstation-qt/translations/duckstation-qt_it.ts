@@ -1055,6 +1055,10 @@ Messaggi non letti: {}</translation>
         <translation>Impostazioni Interfaccia</translation>
     </message>
     <message>
+        <source>Rich Presence Monitor</source>
+        <translation>Monitor della Rich Presence</translation>
+    </message>
+    <message>
         <source>Enable RAIntegration</source>
         <translation>Abilita RAIntegration</translation>
     </message>
@@ -1157,6 +1161,10 @@ Messaggi non letti: {}</translation>
     <message>
         <source>Unchecked</source>
         <translation>Deselezionato</translation>
+    </message>
+    <message>
+        <source>Always displays the current RetroAchievements rich presence string in the indicator area.</source>
+        <translation>Mostra sempre la stringa di Rich Presence corrente di RetroAchievements nell'area degli indicatori.</translation>
     </message>
     <message>
         <source>Default</source>
@@ -6580,6 +6588,10 @@ Questa azione non può essere annullata.</translation>
         <translation>Modalità Deinterlacciamento</translation>
     </message>
     <message>
+        <source>Delete</source>
+        <translation>Elimina</translation>
+    </message>
+    <message>
         <source>Delete And Boot</source>
         <translation>Elimina e Avvia</translation>
     </message>
@@ -7228,6 +7240,10 @@ Controlla il nome utente e la password, quindi riprova.</translation>
         <translation>Latenza di Output Minima</translation>
     </message>
     <message>
+        <source>Move Cursor</source>
+        <translation>Sposta cursore</translation>
+    </message>
+    <message>
         <source>Move Down</source>
         <translation>Sposta Giù</translation>
     </message>
@@ -7436,6 +7452,10 @@ Controlla il nome utente e la password, quindi riprova.</translation>
         <translation>Formato dei nomi dei file degli screenshot</translation>
     </message>
     <message>
+        <source>Select Key</source>
+        <translation>Seleziona tasto</translation>
+    </message>
+    <message>
         <source>Settings reset to default.</source>
         <translation>Impostazioni reimpostate sui valori predefiniti.</translation>
     </message>
@@ -7490,6 +7510,10 @@ Controlla il nome utente e la password, quindi riprova.</translation>
     <message>
         <source>Time Played: </source>
         <translation>Tempo giocato: </translation>
+    </message>
+    <message>
+        <source>Toggle Case</source>
+        <translation>Alterna maiuscole/minuscole</translation>
     </message>
     <message>
         <source>Toggles the macro when the button is pressed, instead of held.</source>

@@ -1043,6 +1043,10 @@ Olästa meddelanden: {}</translation>
         <translation>Gränssnittsinställningar</translation>
     </message>
     <message>
+        <source>Rich Presence Monitor</source>
+        <translation>Rich Presence-övervakare</translation>
+    </message>
+    <message>
         <source>Enable RAIntegration</source>
         <translation>Aktivera RAIntegration</translation>
     </message>
@@ -1141,6 +1145,10 @@ Olästa meddelanden: {}</translation>
     <message>
         <source>Shows a debug menu bar with additional statistics and quick settings.</source>
         <translation>Visar en felsökningsmenyrad med ytterligare statistik och snabbinställningar.</translation>
+    </message>
+    <message>
+        <source>Always displays the current RetroAchievements rich presence string in the indicator area.</source>
+        <translation>Visar alltid den aktuella RetroAchievements Rich Presence-strängen i indikatorområdet.</translation>
     </message>
     <message>
         <source>Default</source>
@@ -6155,6 +6163,10 @@ Alla bindningar och konfigurationen kommer att förloras . Du kan inte ångra de
         <translation>Deinterlacing-läge</translation>
     </message>
     <message>
+        <source>Delete</source>
+        <translation>Ta bort</translation>
+    </message>
+    <message>
         <source>Delete Save</source>
         <translation>Ta bort sparning</translation>
     </message>
@@ -6817,6 +6829,10 @@ Kontrollera ditt användarnamn och lösenord. Försök igen.</translation>
         <translation>Minimal utdatalatens</translation>
     </message>
     <message>
+        <source>Move Cursor</source>
+        <translation>Flytta markören</translation>
+    </message>
+    <message>
         <source>Move Down</source>
         <translation>Flytta ner</translation>
     </message>
@@ -7273,6 +7289,10 @@ Kontrollera ditt användarnamn och lösenord. Försök igen.</translation>
         <translation>Välj skiva</translation>
     </message>
     <message>
+        <source>Select Key</source>
+        <translation>Välj tangent</translation>
+    </message>
+    <message>
         <source>Select Macro {} Binds</source>
         <translation>Välj bindning för makro {}</translation>
     </message>
@@ -7567,6 +7587,10 @@ Kontrollera ditt användarnamn och lösenord. Försök igen.</translation>
     <message>
         <source>Toggle Analog</source>
         <translation>Växla analog</translation>
+    </message>
+    <message>
+        <source>Toggle Case</source>
+        <translation>Växla skiftläge</translation>
     </message>
     <message>
         <source>Toggle Fast Forward</source>

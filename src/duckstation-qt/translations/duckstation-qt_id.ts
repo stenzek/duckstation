@@ -33,7 +33,7 @@
     </message>
     <message>
         <source>Missing thirdparty.html file. You should request it from where-ever you obtained DuckStation.</source>
-        <translation>File thirdparty.html tidak dapat ditemukan. Anda sebaiknya meminta file tersebut di mana anda mendapatkan DuckStation.</translation>
+        <translation>File thirdparty.html tidak ditemukan. Anda sebaiknya memintanya dari tempat Anda memperoleh DuckStation.</translation>
     </message>
     <message>
         <source>About DuckStation</source>
@@ -70,7 +70,7 @@
     </message>
     <message>
         <source>Ready...</source>
-        <translation>Menunggu...</translation>
+        <translation>Siap...</translation>
     </message>
     <message>
         <source>&lt;strong&gt;Your RetroAchievements login token is no longer valid.&lt;/strong&gt; You must re-enter your credentials for achievements to be tracked. Your password will not be saved in DuckStation, an access token will be generated and used instead.</source>
@@ -93,10 +93,10 @@
 Error: %1
 
 Please check your username and password, and try again.</source>
-        <translation>Gagal masuk. 
-Error: %1
+        <translation>Gagal masuk.
+Kesalahan: %1
 
-Silakan periksa nama pengguna dan kata sandi anda, lalu coba lagi.</translation>
+Silakan periksa nama pengguna dan kata sandi Anda, lalu coba lagi.</translation>
     </message>
     <message>
         <source>Login failed.</source>
@@ -110,7 +110,7 @@ Silakan periksa nama pengguna dan kata sandi anda, lalu coba lagi.</translation>
         <source>Achievement tracking is not currently enabled. Your login will have no effect until after tracking is enabled.
 
 Do you want to enable tracking now?</source>
-        <translation>Pelacakan prestasi saat ini tidak diaktifkan. Login Anda tidak akan berpengaruh hingga pelacakan diaktifkan.
+        <translation>Pelacakan pencapaian saat ini tidak diaktifkan. Login Anda tidak akan berpengaruh hingga pelacakan diaktifkan.
 
 Apakah Anda ingin mengaktifkan pelacakan sekarang?</translation>
     </message>
@@ -124,7 +124,7 @@ Apakah Anda ingin mengaktifkan pelacakan sekarang?</translation>
 However, hardcore mode also prevents the usage of save states, cheats and slowdown functionality.
 
 Do you want to enable hardcore mode?</source>
-        <translation>Mode hardcore saat ini tidak aktif. Mengaktifkan mode hardcore akan dapat mengirimkan waktu, skor, dan ikut serta papan peringkat permainan tertentu.
+        <translation>Mode hardcore saat ini tidak aktif. Mengaktifkan mode hardcore memungkinkan Anda mencatat waktu, skor, dan berpartisipasi dalam papan peringkat khusus game.
 
 Saat Mode Hardcore aktif; fungsi save state, cheat, dan gerak lambat tidak dapat Anda gunakan.
 
@@ -255,7 +255,7 @@ Apakah ingin mengaktifkan Mode Hardcore?</translation>
     </message>
     <message>
         <source>Plays sound effects for events such as achievement unlocks and leaderboard submissions.</source>
-        <translation>Putar efek suara untuk aktivitas seperti pencapaian dan peningkatan di papan peringkat.</translation>
+        <translation>Memutar efek suara untuk peristiwa seperti pembukaan pencapaian dan pengiriman skor ke papan peringkat.</translation>
     </message>
     <message>
         <source>Downloads all locked achievement badges while starting the game. This will reduce delays in the images being shown when unlocking achievements.</source>
@@ -307,7 +307,7 @@ Apakah ingin mengaktifkan Mode Hardcore?</translation>
     </message>
     <message>
         <source>Shows a notification or icons in the selected location when a challenge/primed achievement is active.</source>
-        <translation>Menampilkan notifikasi atau ikon di lokasi yang dipilih saat tantangan/pencapaian utama aktif.</translation>
+        <translation>Menampilkan notifikasi atau ikon di lokasi yang dipilih saat tantangan/pencapaian siap dibuka aktif.</translation>
     </message>
     <message>
         <source>Indicator Location</source>
@@ -373,7 +373,7 @@ Token dibuat pada %2</translation>
     </message>
     <message>
         <source>Displays popup messages when starting, submitting, or failing a leaderboard challenge.</source>
-        <translation>Tampilkan pesan popup ketika memulai, mengirimkan, atau gagal dalam tantangan papan peringkat.</translation>
+        <translation>Menampilkan pesan pop-up saat memulai, mengirimkan, atau gagal dalam tantangan papan peringkat.</translation>
     </message>
     <message>
         <source>When enabled and logged in, DuckStation will scan for achievements on startup.</source>
@@ -445,7 +445,7 @@ Kesalahan: {}</translation>
         <source>Prefetching achievement badges (%n remaining)...</source>
         <comment>Achievement badge prefetch count</comment>
         <translation>
-            <numerusform>Mengambil awal lencana pencapaian (%n tersisa)...</numerusform>
+            <numerusform>Mengambil lencana pencapaian terlebih dahulu (%n tersisa)...</numerusform>
         </translation>
     </message>
     <message>
@@ -784,7 +784,7 @@ Pesan belum dibaca: {}</translation>
         <source>This game has %n leaderboards.</source>
         <comment>Leaderboard count</comment>
         <translation>
-            <numerusform>Permainan ini memiliki %n papan pencapaian.</numerusform>
+            <numerusform>Game ini memiliki %n papan peringkat.</numerusform>
         </translation>
     </message>
     <message>
@@ -851,7 +851,7 @@ Pesan belum dibaca: {}</translation>
     </message>
     <message>
         <source>Leaderboard download failed</source>
-        <translation>Pengunduhan papan pencapaian gagal</translation>
+        <translation>Pengunduhan papan peringkat gagal.</translation>
     </message>
     <message>
         <source>User is not logged in.</source>
@@ -871,11 +871,11 @@ Pesan belum dibaca: {}</translation>
     </message>
     <message>
         <source>Progress is already being updated.</source>
-        <translation>Perkembangan sedang di perbaharui.</translation>
+        <translation>Kemajuan sedang diperbarui.</translation>
     </message>
     <message>
         <source>Refresh all progress failed</source>
-        <translation>Penyegaran semua pencapaian gagal</translation>
+        <translation>Gagal menyegarkan semua kemajuan.</translation>
     </message>
     <message>
         <source> (Hardcore Mode)</source>
@@ -966,7 +966,7 @@ Pesan belum dibaca: {}</translation>
     </message>
     <message>
         <source>Open Leaderboard</source>
-        <translation>Buka Papan Pencapaian</translation>
+        <translation>Buka Papan Peringkat.</translation>
     </message>
     <message>
         <source>Downloading leaderboard data, please wait...</source>
@@ -1052,6 +1052,10 @@ Pesan belum dibaca: {}</translation>
         <translation>Menampilkan bilah menu debug dengan statistik tambahan dan pengaturan cepat.</translation>
     </message>
     <message>
+        <source>Always displays the current RetroAchievements rich presence string in the indicator area.</source>
+        <translation>Selalu menampilkan string rich presence RetroAchievements saat ini di area indikator.</translation>
+    </message>
+    <message>
         <source>Default</source>
         <translation>Bawaan</translation>
     </message>
@@ -1106,6 +1110,10 @@ Pesan belum dibaca: {}</translation>
     <message>
         <source>Interface Settings</source>
         <translation>Pengaturan Antarmuka</translation>
+    </message>
+    <message>
+        <source>Rich Presence Monitor</source>
+        <translation>Monitor Rich Presence</translation>
     </message>
     <message>
         <source>Enable RAIntegration</source>
@@ -1224,7 +1232,7 @@ Pesan belum dibaca: {}</translation>
     </message>
     <message>
         <source>Analog Toggle</source>
-        <translation>Tombol Analog</translation>
+        <translation>Alihkan Mode Analog</translation>
     </message>
     <message>
         <source>L1</source>
@@ -1284,11 +1292,11 @@ Pesan belum dibaca: {}</translation>
     </message>
     <message>
         <source>Large Motor</source>
-        <translation>Mesin Besar</translation>
+        <translation>Motor Besar</translation>
     </message>
     <message>
         <source>Small Motor</source>
-        <translation>Mesin Kecil</translation>
+        <translation>Motor Kecil</translation>
     </message>
     <message>
         <source>Analog LED</source>
@@ -1614,7 +1622,7 @@ Pesan belum dibaca: {}</translation>
     </message>
     <message>
         <source>Output Volume:</source>
-        <translation>Keluaran Volume:</translation>
+        <translation>Volume Keluaran:</translation>
     </message>
     <message>
         <source>100%</source>
@@ -1650,7 +1658,7 @@ Pesan belum dibaca: {}</translation>
     </message>
     <message>
         <source>Maximum Latency: 0 ms (0 ms stretch + 0 ms buffer + 0 ms output)</source>
-        <translation>Latensi Maksimum: 0 md (0 md peregangan + 0 md buffer + 0 md output)</translation>
+        <translation>Latensi Maksimum: 0 ms (0 ms peregangan + 0 ms buffer + 0 ms output)</translation>
     </message>
     <message>
         <source>Sequence Length:</source>
@@ -1754,11 +1762,11 @@ Pesan belum dibaca: {}</translation>
     </message>
     <message>
         <source>Maximum Latency: %1 ms (%2 ms stretch + %3 ms buffer + %4 ms output)</source>
-        <translation>Latensi Maksimum: %1 md (%2 md peregangan + %3 md buffer + %4 md output)</translation>
+        <translation>Latensi Maksimum: %1 ms (%2 ms peregangan + %3 ms buffer + %4 ms output)</translation>
     </message>
     <message>
         <source>Maximum Latency: %1 ms (%2 ms stretch + %3 ms buffer, minimum output latency unknown)</source>
-        <translation>Latensi Maksimum: %1 md (%2 md peregangan + %3 md buffer, latensi output minimum tidak diketahui)</translation>
+        <translation>Latensi Maksimum: %1 ms (%2 ms peregangan + %3 ms buffer, latensi output minimum tidak diketahui)</translation>
     </message>
     <message>
         <source>%1%</source>
@@ -2032,7 +2040,7 @@ Anda dapat memperbarui DuckStation secara manual dengan mengunduh ulang rilis te
     </message>
     <message>
         <source>Parallel Port</source>
-        <translation>Port Parallel</translation>
+        <translation>Port Paralel</translation>
     </message>
     <message>
         <source>Device Type:</source>
@@ -2214,7 +2222,7 @@ Anda dapat memperbarui DuckStation secara manual dengan mengunduh ulang rilis te
     </message>
     <message>
         <source>Preload Image To RAM</source>
-        <translation>Muat Image Ke RAM</translation>
+        <translation>Muat Citra ke RAM</translation>
     </message>
     <message>
         <source>Allocating {} MB memory for precaching...</source>
@@ -2332,7 +2340,7 @@ Dump Anda mungkin rusak, atau disk fisiknya tergores.</translation>
     </message>
     <message>
         <source>Select Screenshots Directory</source>
-        <translation>Pilih Directory Tangkapan Layar</translation>
+        <translation>Pilih Direktori Tangkapan Layar</translation>
     </message>
     <message>
         <source>Select Media Capture Directory</source>
@@ -2348,7 +2356,7 @@ Dump Anda mungkin rusak, atau disk fisiknya tergores.</translation>
     </message>
     <message>
         <source>Determines the resolution at which screenshots will be saved. Internal resolutions preserve more detail at the cost of file size.</source>
-        <translation>Menentukan resolusi tangkapan layar akan disimpan. Resolusi internal memiliki detail paling baik namun ukuran file-nya lebih besar.</translation>
+        <translation>Menentukan resolusi tempat tangkapan layar akan disimpan. Resolusi internal mempertahankan lebih banyak detail dengan konsekuensi ukuran berkas yang lebih besar.</translation>
     </message>
     <message>
         <source>Save Location</source>
@@ -3273,7 +3281,7 @@ Peringatan ini hanya akan ditampilkan sekali.</translation>
     </message>
     <message>
         <source>Fire Offscreen</source>
-        <translation>Tembak Diluar Layar</translation>
+        <translation>Tembak di Luar Layar</translation>
     </message>
     <message>
         <source>Fire</source>
@@ -3333,7 +3341,7 @@ Peringatan ini hanya akan ditampilkan sekali.</translation>
     </message>
     <message>
         <source>Fire Offscreen</source>
-        <translation>Tembak Diluar Layar</translation>
+        <translation>Tembak di Luar Layar</translation>
     </message>
     <message>
         <source>Fire</source>
@@ -3662,7 +3670,7 @@ Warna &quot;alternatif&quot; digunakan saat mode analog aktif.</translation>
     </message>
     <message>
         <source>Mouse/Pointer Source</source>
-        <translation>Sumber Mouse</translation>
+        <translation>Sumber Mouse/Penunjuk</translation>
     </message>
     <message>
         <source>Mapping Settings</source>
@@ -3709,11 +3717,11 @@ Warna &quot;alternatif&quot; digunakan saat mode analog aktif.</translation>
     <name>ControllerMacroEditWidget</name>
     <message>
         <source>Binds/Buttons</source>
-        <translation>Tombol</translation>
+        <translation>Pengikatan/Tombol</translation>
     </message>
     <message>
         <source>Select the buttons which you want to trigger with this macro. All buttons are activated concurrently.</source>
-        <translation>Pilih tombol yang ingin anda aktifkan dengan makro ini. Semua tombol akan diaktifkan secara bersamaan.</translation>
+        <translation>Pilih tombol yang ingin Anda aktifkan dengan makro ini. Semua tombol akan diaktifkan secara bersamaan.</translation>
     </message>
     <message>
         <source>Pressure</source>
@@ -3733,11 +3741,11 @@ Warna &quot;alternatif&quot; digunakan saat mode analog aktif.</translation>
     </message>
     <message>
         <source>Select the trigger to activate this macro. This can be a single button, or combination of buttons (chord). Shift-click for multiple triggers.</source>
-        <translation>Atur tombol pintas untuk mengaktifkan makro ini. Boleh satu tombol atau gabungan tombol (bersamaan). Tekan tombol dan Shift untuk mengatur kombo.</translation>
+        <translation>Pilih pemicu untuk mengaktifkan makro ini. Ini dapat berupa satu tombol atau kombinasi tombol (chord). Shift-klik untuk beberapa pemicu.</translation>
     </message>
     <message>
         <source>Press To Toggle</source>
-        <translation>Tekan Untuk Aktifkan</translation>
+        <translation>Tekan untuk Alihkan</translation>
     </message>
     <message>
         <source>Deadzone:</source>
@@ -3749,7 +3757,7 @@ Warna &quot;alternatif&quot; digunakan saat mode analog aktif.</translation>
     </message>
     <message>
         <source>Macro will toggle every N frames.</source>
-        <translation>Makro akan aktif setiap N frame.</translation>
+        <translation>Makro akan diaktifkan/dinonaktifkan setiap N frame.</translation>
     </message>
     <message>
         <source>Controller %1 Macro %2</source>
@@ -3778,7 +3786,7 @@ Warna &quot;alternatif&quot; digunakan saat mode analog aktif.</translation>
     <message numerus="yes">
         <source>Macro will toggle buttons every %n frame(s).</source>
         <translation>
-            <numerusform>Makro akan mengganti tombol setiap %n frame.</numerusform>
+            <numerusform>Makro akan mengaktifkan/menonaktifkan tombol setiap %n frame.</numerusform>
         </translation>
     </message>
 </context>
@@ -4213,7 +4221,7 @@ Ukuran file ini sekitar 206 KB. Apakah Anda ingin mengunduhnya sekarang?</transl
     </message>
     <message>
         <source>Sets the analog stick axis scaling factor. A value between 130% and 140% is recommended when using recent controllers, e.g. DualShock 4, Xbox One Controller.</source>
-        <translation>Mengatur faktor penskalaan sumbu analog stik. Untuk kontroler modern seperti DualShock4 dan kontroler Xbox One, nilai antara 130% hingga 140% disarankan.</translation>
+        <translation>Mengatur faktor penskalaan sumbu analog stik. Untuk kontroler modern seperti DualShock 4 dan kontroler Xbox One, nilai antara 130% hingga 140% disarankan.</translation>
     </message>
     <message>
         <source>Power Transition Frames</source>
@@ -4389,11 +4397,11 @@ Ukuran file ini sekitar 206 KB. Apakah Anda ingin mengunduhnya sekarang?</transl
     </message>
     <message>
         <source>Step &amp;Over</source>
-        <translation>Langkahi &amp;Atas</translation>
+        <translation>Lewati &amp;Langkah</translation>
     </message>
     <message>
         <source>Step Over</source>
-        <translation>Langkahi Atas</translation>
+        <translation>Lewati Langkah</translation>
     </message>
     <message>
         <source>F10</source>
@@ -4489,7 +4497,7 @@ Ukuran file ini sekitar 206 KB. Apakah Anda ingin mengunduhnya sekarang?</transl
     </message>
     <message>
         <source>&amp;Dump Address</source>
-        <translation>&amp;Buang Alamat</translation>
+        <translation>&amp;Tampilkan Alamat dalam Dump</translation>
     </message>
     <message>
         <source>Ctrl+D</source>
@@ -4978,7 +4986,7 @@ Mengklik Atur Ulang akan mengembalikan nomor seri ke nilai yang dipindai dari ci
     </message>
     <message>
         <source>3 Frames</source>
-        <translation>3 Frame</translation>
+        <translation>3 Bingkai</translation>
     </message>
     <message>
         <source>4 Frames</source>
@@ -5102,7 +5110,7 @@ Mengklik Atur Ulang akan mengembalikan nomor seri ke nilai yang dipindai dari ci
     </message>
     <message>
         <source>&lt;b&gt;Enable Rewinding:&lt;/b&gt; Saves state periodically so you can rewind any mistakes while playing.&lt;br&gt; &lt;b&gt;Rewind Save Frequency:&lt;/b&gt; How often a rewind state will be created. Higher frequencies have greater system requirements.&lt;br&gt; &lt;b&gt;Rewind Buffer Size:&lt;/b&gt; How many saves will be kept for rewinding. Higher values have greater memory requirements.</source>
-        <translation>&lt;b&gt;Aktifkan Putar Mundur:&lt;/b&gt; Menyimpan state secara berkala agar Anda dapat memutar mundur kesalahan saat bermain.&lt;br&gt; &lt;b&gt;Frekuensi Simpan Putar Mundur:&lt;/b&gt; Seberapa sering state putar mundur dibuat. Frekuensi lebih tinggi memerlukan sumber daya sistem lebih besar.&lt;br&gt; &lt;b&gt;Ukuran Buffer Putar Mundur:&lt;/b&gt; Jumlah simpanan yang akan disimpan untuk putar mundur. Nilai lebih tinggi memerlukan memori lebih besar.</translation>
+        <translation>&lt;b&gt;Aktifkan Putar Mundur:&lt;/b&gt; Menyimpan state secara berkala agar Anda dapat memundurkan permainan setelah melakukan kesalahan saat bermain.&lt;br&gt; &lt;b&gt;Frekuensi Simpan Putar Mundur:&lt;/b&gt; Seberapa sering state putar mundur dibuat. Frekuensi lebih tinggi memerlukan sumber daya sistem lebih besar.&lt;br&gt; &lt;b&gt;Ukuran Buffer Putar Mundur:&lt;/b&gt; Jumlah simpanan yang akan disimpan untuk putar mundur. Nilai lebih tinggi memerlukan memori lebih besar.</translation>
     </message>
     <message>
         <source>Uses the software renderer when creating rewind states to prevent additional VRAM usage. Especially useful when upscaling, as this will significantly reduce the system requirements for rewinding.</source>
@@ -5115,13 +5123,13 @@ Mengklik Atur Ulang akan mengembalikan nomor seri ke nilai yang dipindai dari ci
     <message numerus="yes">
         <source>Rewind for %n frame(s), lasting %1 second(s) will require %2MB of RAM and %3MB of VRAM.</source>
         <translation>
-            <numerusform>Memutar ulang %n frame selama %1 detik akan membutuhkan %2 MB RAM dan %3 MB VRAM.</numerusform>
+            <numerusform>Memutar mundur selama %n frame, berdurasi %1 detik, akan membutuhkan %2 MB RAM dan %3 MB VRAM.</numerusform>
         </translation>
     </message>
     <message numerus="yes">
         <source>Rewind for %n frame(s), lasting %1 second(s) will require %2MB of RAM.</source>
         <translation>
-            <numerusform>Memutar ulang %n frame selama %1 detik akan membutuhkan %2 MB RAM.</numerusform>
+            <numerusform>Memutar mundur selama %n frame, berdurasi %1 detik, akan membutuhkan %2 MB RAM.</numerusform>
         </translation>
     </message>
     <message>
@@ -5138,7 +5146,7 @@ Mengklik Atur Ulang akan mengembalikan nomor seri ke nilai yang dipindai dari ci
     </message>
     <message>
         <source>Rewind is disabled because runahead is enabled. Runahead will significantly increase system requirements.</source>
-        <translation>Mundur dinonaktifkan karena runahead diaktifkan. Runahead akan meningkatkan kebutuhan sistem secara signifikan.</translation>
+        <translation>Putar Mundur dinonaktifkan karena runahead diaktifkan. Runahead akan meningkatkan kebutuhan sistem secara signifikan.</translation>
     </message>
     <message>
         <source>Rewind is not enabled. Please note that enabling rewind may significantly increase system requirements.</source>
@@ -5185,7 +5193,7 @@ Mengklik Atur Ulang akan mengembalikan nomor seri ke nilai yang dipindai dari ci
     </message>
     <message>
         <source>Game region copied to clipboard.</source>
-        <translation>Region game telah disalin ke clipboard.</translation>
+        <translation>Wilayah game telah disalin ke clipboard.</translation>
     </message>
     <message>
         <source>Game path copied to clipboard.</source>
@@ -5193,7 +5201,7 @@ Mengklik Atur Ulang akan mengembalikan nomor seri ke nilai yang dipindai dari ci
     </message>
     <message>
         <source>Controller settings reset to default.</source>
-        <translation>Pengaturan kontroller dikembalikan ke default.</translation>
+        <translation>Pengaturan pengontrol dikembalikan ke bawaan.</translation>
     </message>
     <message>
         <source>Create New...</source>
@@ -5201,7 +5209,7 @@ Mengklik Atur Ulang akan mengembalikan nomor seri ke nilai yang dipindai dari ci
     </message>
     <message>
         <source>No save present in this slot.</source>
-        <translation>Tidak ada savesate pada slot ini.</translation>
+        <translation>Tidak ada status simpan di slot ini.</translation>
     </message>
     <message>
         <source>No save states found.</source>
@@ -5225,7 +5233,7 @@ ${serial}: Nomor seri permainan.</translation>
     </message>
     <message>
         <source>%.1f ms</source>
-        <translation>%.1f md</translation>
+        <translation>%.1f ms</translation>
     </message>
     <message>
         <source>%.2f Seconds</source>
@@ -5748,6 +5756,10 @@ Tindakan ini tidak dapat dibatalkan.</translation>
         <translation>Mode Deinterlacing</translation>
     </message>
     <message>
+        <source>Delete</source>
+        <translation>Hapus</translation>
+    </message>
+    <message>
         <source>Delete And Boot</source>
         <translation>Hapus dan Boot</translation>
     </message>
@@ -6073,7 +6085,7 @@ Tindakan ini tidak dapat dibatalkan.</translation>
     </message>
     <message>
         <source>Failed to copy text to clipboard.</source>
-        <translation>Gagal menyalin teks ke cliipboard.</translation>
+        <translation>Gagal menyalin teks ke papan klip.</translation>
     </message>
     <message>
         <source>Failed to delete existing cover: {}</source>
@@ -6203,7 +6215,7 @@ Kesalahannya:</translation>
     </message>
     <message>
         <source>Image Path</source>
-        <translation>Lokasi Image</translation>
+        <translation>Lokasi Citra</translation>
     </message>
     <message>
         <source>Increases the field of view from 4:3 to the chosen display aspect ratio in 3D games.</source>
@@ -6342,6 +6354,10 @@ Silakan periksa nama pengguna dan kata sandi Anda, lalu coba lagi.</translation>
         <translation>Menggabungkan game multi-disc menjadi satu item dalam daftar game.</translation>
     </message>
     <message>
+        <source>Move Cursor</source>
+        <translation>Pindahkan Kursor</translation>
+    </message>
+    <message>
         <source>Move Down</source>
         <translation>Pindah ke Bawah</translation>
     </message>
@@ -6391,7 +6407,7 @@ Silakan periksa nama pengguna dan kata sandi Anda, lalu coba lagi.</translation>
     </message>
     <message>
         <source>Open Containing Directory</source>
-        <translation>Buka Direktori Asal</translation>
+        <translation>Buka Direktori yang Memuatnya</translation>
     </message>
     <message>
         <source>Open To Game List</source>
@@ -6623,7 +6639,7 @@ Silakan periksa nama pengguna dan kata sandi Anda, lalu coba lagi.</translation>
     </message>
     <message>
         <source>Save State Compression</source>
-        <translation>Kompresi Status Simpanan</translation>
+        <translation>Kompresi Save State</translation>
     </message>
     <message>
         <source>Saved {}</source>
@@ -6668,6 +6684,10 @@ Silakan periksa nama pengguna dan kata sandi Anda, lalu coba lagi.</translation>
     <message>
         <source>Select Disc for {}</source>
         <translation>Pilih Disc untuk {}</translation>
+    </message>
+    <message>
+        <source>Select Key</source>
+        <translation>Pilih Tombol</translation>
     </message>
     <message>
         <source>Select from the list of preset borders, or manually specify a custom configuration.</source>
@@ -6727,7 +6747,7 @@ Silakan periksa nama pengguna dan kata sandi Anda, lalu coba lagi.</translation>
     </message>
     <message>
         <source>Sets the fast forward speed. It is not guaranteed that this speed will be reached on all systems.</source>
-        <translation>Menetapkan kecepatan percepatan. Kecepatan ini tidak dijamin tercapai pada semua sistem.</translation>
+        <translation>Menetapkan kecepatan maju cepat. Kecepatan ini tidak dijamin akan tercapai pada semua sistem.</translation>
     </message>
     <message>
         <source>Sets the minimum delay for the &apos;Maximum&apos; read speedup level.</source>
@@ -6943,11 +6963,11 @@ Silakan periksa nama pengguna dan kata sandi Anda, lalu coba lagi.</translation>
     </message>
     <message>
         <source>Launch a game from images scanned from your game directories.</source>
-        <translation>Jalankan game dari image yang telah dipindai dari direktori game anda.</translation>
+        <translation>Jalankan game dari citra yang dipindai dari direktori game Anda.</translation>
     </message>
     <message>
         <source>Launch a game by selecting a file/disc image.</source>
-        <translation>Memulai permainan dengan memilih file/disc image.</translation>
+        <translation>Jalankan game dengan memilih berkas atau citra disk.</translation>
     </message>
     <message>
         <source>Start the console without any disc inserted.</source>
@@ -6959,7 +6979,7 @@ Silakan periksa nama pengguna dan kata sandi Anda, lalu coba lagi.</translation>
     </message>
     <message>
         <source>Push a controller button or axis now.</source>
-        <translation>Harap tekan tombol controller sekarang.</translation>
+        <translation>Tekan tombol atau sumbu kontroler sekarang.</translation>
     </message>
     <message>
         <source>Unknown</source>
@@ -6991,7 +7011,7 @@ Silakan periksa nama pengguna dan kata sandi Anda, lalu coba lagi.</translation>
     </message>
     <message>
         <source>Prevents the screen saver from activating and the host from sleeping while emulation is running.</source>
-        <translation>Mencegah screen saver aktif saat emulasi berjalan.</translation>
+        <translation>Mencegah screen saver aktif dan host memasuki mode tidur saat emulasi berjalan.</translation>
     </message>
     <message>
         <source>Pauses the emulator when a game is started.</source>
@@ -7023,7 +7043,7 @@ Silakan periksa nama pengguna dan kata sandi Anda, lalu coba lagi.</translation>
     </message>
     <message>
         <source>Shows the host&apos;s GPU usage in the top-right corner of the display.</source>
-        <translation>Menunjukkan host dan &apos;s pemakaian GPU di ujung atas kanan display.</translation>
+        <translation>Menampilkan penggunaan GPU host di sudut kanan atas layar.</translation>
     </message>
     <message>
         <source>Shows the current controller state of the system in the bottom-left corner of the display.</source>
@@ -7079,7 +7099,7 @@ Silakan periksa nama pengguna dan kata sandi Anda, lalu coba lagi.</translation>
     </message>
     <message>
         <source>Selects the quality at which screenshots will be compressed.</source>
-        <translation>Pilih kualitas screenshot yang mana akan di kecilkan/compressed.</translation>
+        <translation>Memilih kualitas kompresi tangkapan layar.</translation>
     </message>
     <message>
         <source>Rendering</source>
@@ -7099,7 +7119,7 @@ Silakan periksa nama pengguna dan kata sandi Anda, lalu coba lagi.</translation>
     </message>
     <message>
         <source>Shows a visual history of frame times in the upper-left corner of the display.</source>
-        <translation>Menampilkan riwayat visual dari frame times di sudut kiri atas di layar.</translation>
+        <translation>Menampilkan riwayat visual waktu bingkai di sudut kiri atas layar.</translation>
     </message>
     <message>
         <source>%d ms</source>
@@ -7159,7 +7179,7 @@ Silakan periksa nama pengguna dan kata sandi Anda, lalu coba lagi.</translation>
     </message>
     <message>
         <source>Toggle Fullscreen</source>
-        <translation>Layar Penuh</translation>
+        <translation>Aktifkan/Nonaktifkan Layar Penuh</translation>
     </message>
     <message>
         <source>Navigate</source>
@@ -7211,11 +7231,11 @@ Silakan periksa nama pengguna dan kata sandi Anda, lalu coba lagi.</translation>
     </message>
     <message>
         <source>Launch a game from a file, disc, or starts the console without any disc inserted.</source>
-        <translation>Jalankan game dari file, disk, atau memulai konsol tanpa memasukkan disk apa pun.</translation>
+        <translation>Jalankan game dari berkas atau disk, atau jalankan konsol tanpa disk yang dimasukkan.</translation>
     </message>
     <message>
         <source>Changes settings for the application.</source>
-        <translation>Ubah pengaturan dari aplikasi.</translation>
+        <translation>Mengubah pengaturan untuk aplikasi.</translation>
     </message>
     <message>
         <source>Return to desktop mode, or exit the application.</source>
@@ -7239,7 +7259,7 @@ Silakan periksa nama pengguna dan kata sandi Anda, lalu coba lagi.</translation>
     </message>
     <message>
         <source>Exits Big Picture mode, returning to the desktop interface.</source>
-        <translation>Keluar dari mode Big Picture dan kembali ke antarmuka utama.</translation>
+        <translation>Keluar dari mode Big Picture dan kembali ke antarmuka desktop.</translation>
     </message>
     <message>
         <source>Resets all configuration to defaults (including bindings).</source>
@@ -7331,7 +7351,7 @@ Silakan periksa nama pengguna dan kata sandi Anda, lalu coba lagi.</translation>
     </message>
     <message>
         <source>Reverses the game list sort order from the default (usually ascending to descending).</source>
-        <translation>Membalikkan urutan daftar game dari default (biasanya atas ke bawah).</translation>
+        <translation>Membalikkan urutan pengurutan daftar game dari bawaan (biasanya dari menaik ke menurun).</translation>
     </message>
     <message>
         <source>Cover Settings</source>
@@ -7339,7 +7359,7 @@ Silakan periksa nama pengguna dan kata sandi Anda, lalu coba lagi.</translation>
     </message>
     <message>
         <source>Downloads covers from a user-specified URL template.</source>
-        <translation>Mengunduh sampul dari URL yang ditentukan pengguna.</translation>
+        <translation>Mengunduh sampul dari templat URL yang ditentukan pengguna.</translation>
     </message>
     <message>
         <source>Operations</source>
@@ -7363,11 +7383,11 @@ Silakan periksa nama pengguna dan kata sandi Anda, lalu coba lagi.</translation>
     </message>
     <message>
         <source>Displays popup messages on events such as achievement unlocks and leaderboard submissions.</source>
-        <translation>Menampilkan pesan popup untuk aktivitas seperti pencapaian dan peningkatan di papan peringkat.</translation>
+        <translation>Menampilkan pesan pop-up untuk peristiwa seperti pencapaian yang terbuka dan pengiriman ke papan peringkat.</translation>
     </message>
     <message>
         <source>Plays sound effects for events such as achievement unlocks and leaderboard submissions.</source>
-        <translation>Memainkan efek suara untuk aktivitas seperti pencapaian dan peningkatan di papan peringkat.</translation>
+        <translation>Memainkan efek suara untuk peristiwa seperti pencapaian yang terbuka dan pengiriman ke papan peringkat.</translation>
     </message>
     <message>
         <source>Error</source>
@@ -7375,7 +7395,7 @@ Silakan periksa nama pengguna dan kata sandi Anda, lalu coba lagi.</translation>
     </message>
     <message>
         <source>Pauses the emulator when a controller with bindings is disconnected.</source>
-        <translation>Menjeda emulator saat kontroler terputus.</translation>
+        <translation>Menjeda emulator saat kontroler yang memiliki pemetaan terputus.</translation>
     </message>
     <message>
         <source>Vertical Sync (VSync)</source>
@@ -7383,7 +7403,7 @@ Silakan periksa nama pengguna dan kata sandi Anda, lalu coba lagi.</translation>
     </message>
     <message>
         <source>Disable Mailbox Presentation</source>
-        <translation>Nonaktifkan Mailbox Presentation</translation>
+        <translation>Nonaktifkan Presentasi Mailbox</translation>
     </message>
     <message>
         <source>Forces the use of FIFO over Mailbox presentation, i.e. double buffering instead of triple buffering. Usually results in worse frame pacing.</source>
@@ -7563,7 +7583,7 @@ Silakan periksa nama pengguna dan kata sandi Anda, lalu coba lagi.</translation>
     </message>
     <message>
         <source>Uses screen positions to resolve PGXP data. May improve visuals in some games.</source>
-        <translation>Menggunakan posisi layar untuk mengatasi data PGXP. Dapat meningkatkan visual pada beberapa game.</translation>
+        <translation>Menggunakan posisi layar untuk menyelesaikan data PGXP. Dapat meningkatkan visual pada beberapa game.</translation>
     </message>
     <message>
         <source>Uses separate game settings for each disc of multi-disc games. Can only be set on the first/main disc.</source>
@@ -7659,7 +7679,7 @@ Apakah Anda tetap ingin {0}?</translation>
     </message>
     <message>
         <source>When enabled, each session will behave as if no achievements have been unlocked.</source>
-        <translation>Ketika diaktifkan, setiap sesi akan berperilaku seolah-olah tidak ada pencapaian yang belum dibuka.</translation>
+        <translation>Saat diaktifkan, setiap sesi akan berperilaku seolah-olah tidak ada pencapaian yang telah dibuka.</translation>
     </message>
     <message>
         <source>An error occurred while deleting empty game settings:
@@ -7723,7 +7743,7 @@ Apakah Anda tetap ingin {0}?</translation>
     </message>
     <message>
         <source>Yes, {} now and risk memory card corruption.</source>
-        <translation>Ya, {0} sekarang dan berisiko merusak kartu memori.</translation>
+        <translation>Ya, {} sekarang dan berisiko merusak kartu memori.</translation>
     </message>
     <message>
         <source>&quot;PlayStation&quot; and &quot;PSX&quot; are registered trademarks of Sony Interactive Entertainment Europe Limited. This software is not affiliated in any way with Sony Interactive Entertainment.</source>
@@ -7843,11 +7863,11 @@ Apakah Anda tetap ingin {0}?</translation>
     </message>
     <message>
         <source>2 Frames</source>
-        <translation>2 Frame</translation>
+        <translation>2 Bingkai</translation>
     </message>
     <message>
         <source>3 Frames</source>
-        <translation>3 Frame</translation>
+        <translation>3 Bingkai</translation>
     </message>
     <message>
         <source>None</source>
@@ -7883,7 +7903,7 @@ Apakah Anda tetap ingin {0}?</translation>
     </message>
     <message>
         <source>Press To Toggle</source>
-        <translation>Tekan Untuk Aktifkan</translation>
+        <translation>Tekan untuk Alihkan</translation>
     </message>
     <message>
         <source>Deadzone</source>
@@ -7895,7 +7915,7 @@ Apakah Anda tetap ingin {0}?</translation>
     </message>
     <message>
         <source>Leaderboard Notifications</source>
-        <translation>Tampilkan Pemberitahuan Papan Peringkat</translation>
+        <translation>Notifikasi Papan Peringkat</translation>
     </message>
     <message>
         <source>Encore Mode</source>
@@ -7927,7 +7947,7 @@ Apakah Anda tetap ingin {1}?</translation>
     </message>
     <message>
         <source>{} Frames</source>
-        <translation>{} Frame</translation>
+        <translation>{} Bingkai</translation>
     </message>
     <message>
         <source>Game Grid</source>
@@ -8011,7 +8031,7 @@ Apakah Anda ingin menghapus status simpanan tersebut dan tetap mem-boot game?</t
     </message>
     <message>
         <source>Determines whether a prompt will be displayed to confirm closing the game.</source>
-        <translation>Menentukan apakah perintah akan ditampilkan untuk mengonfirmasi penutupan game.</translation>
+        <translation>Menentukan apakah dialog konfirmasi akan ditampilkan saat menutup game.</translation>
     </message>
     <message>
         <source>Disable Background Input</source>
@@ -8463,7 +8483,7 @@ Apakah Anda ingin menghapus status simpanan tersebut dan tetap mem-boot game?</t
     </message>
     <message>
         <source>Shows a notification or icons in the selected location when a challenge/primed achievement is active.</source>
-        <translation>Menampilkan notifikasi atau ikon di lokasi yang dipilih saat tantangan/pencapaian utama aktif.</translation>
+        <translation>Menampilkan notifikasi atau ikon di lokasi yang dipilih saat tantangan/pencapaian siap dibuka aktif.</translation>
     </message>
     <message>
         <source>Shows a popup in the selected location when progress towards a measured achievement changes.</source>
@@ -8544,6 +8564,10 @@ Apakah Anda ingin menghapus status simpanan tersebut dan tetap mem-boot game?</t
     <message>
         <source>Toggle Analog</source>
         <translation>Aktifkan/Nonaktifkan Analog</translation>
+    </message>
+    <message>
+        <source>Toggle Case</source>
+        <translation>Ganti Huruf Besar/Kecil</translation>
     </message>
     <message>
         <source>Toggle Fast Forward</source>
@@ -8639,7 +8663,7 @@ Apakah Anda ingin menghapus status simpanan tersebut dan tetap mem-boot game?</t
     </message>
     <message>
         <source>Set Input Binding</source>
-        <translation>Atur Input Penetapan Tombol</translation>
+        <translation>Atur Pengikatan Input</translation>
     </message>
     <message>
         <source>Region</source>
@@ -8679,7 +8703,7 @@ Apakah Anda ingin menghapus status simpanan tersebut dan tetap mem-boot game?</t
     </message>
     <message>
         <source>Double-Click Toggles Fullscreen</source>
-        <translation>Layar Penuh Dengan Klik Ganda</translation>
+        <translation>Klik Ganda untuk Mengaktifkan/menonaktifkan Layar Penuh</translation>
     </message>
     <message>
         <source>Hide Cursor In Fullscreen</source>
@@ -8743,7 +8767,7 @@ Apakah Anda ingin menghapus status simpanan tersebut dan tetap mem-boot game?</t
     </message>
     <message>
         <source>SDL DualShock 4 / DualSense Enhanced Mode</source>
-        <translation>Mode Enhanced DualShock 4 / DualSense SDL</translation>
+        <translation>Mode Ditingkatkan SDL DualShock 4 / DualSense</translation>
     </message>
     <message>
         <source>Enable XInput Input Source</source>
@@ -8783,7 +8807,7 @@ Apakah Anda ingin menghapus status simpanan tersebut dan tetap mem-boot game?</t
     </message>
     <message>
         <source>Game Properties</source>
-        <translation>Pengaturan Game</translation>
+        <translation>Properti Game</translation>
     </message>
     <message>
         <source>Achievements</source>
@@ -9389,7 +9413,7 @@ Apakah Anda yakin ingin melanjutkan?</translation>
     <message>
         <source>Disable Fast Forward Memory Card Access</source>
         <comment>GameDatabase::Trait</comment>
-        <translation>Nonaktifkan Akses Kartu Memori Percepatan</translation>
+        <translation>Nonaktifkan Percepatan Akses Kartu Memori</translation>
     </message>
     <message>
         <source>Disable CD-ROM Read Speedup</source>
@@ -9524,7 +9548,7 @@ Apakah Anda yakin ingin melanjutkan?</translation>
     </message>
     <message>
         <source>Fast forward memory card access disabled.</source>
-        <translation>Akses kartu memori percepatan dinonaktifkan.</translation>
+        <translation>Percepatan akses kartu memori dinonaktifkan.</translation>
     </message>
     <message>
         <source>CD-ROM read speedup disabled.</source>
@@ -9986,7 +10010,7 @@ Apakah Anda yakin ingin melanjutkan?</translation>
     <name>GameListSettingsWidget</name>
     <message>
         <source>Search Directories (will be scanned for games)</source>
-        <translation>Direktori Pencarian (akan di pindai untuk game)</translation>
+        <translation>Direktori Pencarian (akan dipindai untuk game)</translation>
     </message>
     <message>
         <source>Add</source>
@@ -10077,7 +10101,7 @@ Pemindaian rekursif akan membuat proses pencarian menjadi lebih lama, namun dapa
     </message>
     <message>
         <source>All Regions</source>
-        <translation>Semua Region</translation>
+        <translation>Semua Wilayah</translation>
     </message>
     <message>
         <source>.cue (Cue Sheets)
@@ -10290,7 +10314,7 @@ Pemindaian rekursif akan membuat proses pencarian menjadi lebih lama, namun dapa
     </message>
     <message>
         <source>Use Global Settings</source>
-        <translation>Gunakan Global Pengaturan</translation>
+        <translation>Gunakan Pengaturan Global</translation>
     </message>
     <message>
         <source>Game Specific Configuration</source>
@@ -10311,13 +10335,13 @@ Pemindaian rekursif akan membuat proses pencarian menjadi lebih lama, namun dapa
     <message numerus="yes">
         <source>%n player(s)</source>
         <translation>
-            <numerusform>%n player</numerusform>
+            <numerusform>%n pemain</numerusform>
         </translation>
     </message>
     <message numerus="yes">
         <source>%n memory card block(s)</source>
         <translation>
-            <numerusform>%n memory card block</numerusform>
+            <numerusform>%n blok kartu memori</numerusform>
         </translation>
     </message>
     <message>
@@ -10857,7 +10881,7 @@ Pemindaian rekursif akan membuat proses pencarian menjadi lebih lama, namun dapa
     </message>
     <message>
         <source>Texture Modulation Cropping (&quot;Old/v0 GPU&quot;)</source>
-        <translation>Tekstur Modulation Cropping (&quot;Old/v0 GPU&quot;)</translation>
+        <translation>Pemotongan Modulasi Tekstur (GPU &quot;Old/v0&quot;)</translation>
     </message>
     <message>
         <source>Reset Geometry Tolerance</source>
@@ -10877,7 +10901,7 @@ Pemindaian rekursif akan membuat proses pencarian menjadi lebih lama, namun dapa
     </message>
     <message>
         <source>Enable Texture Replacement</source>
-        <translation>Aktifkan Tekstur Replacement</translation>
+        <translation>Aktifkan Penggantian Tekstur</translation>
     </message>
     <message>
         <source>Enable Texture Dumping</source>
@@ -10921,7 +10945,7 @@ Pemindaian rekursif akan membuat proses pencarian menjadi lebih lama, namun dapa
     </message>
     <message>
         <source>Disable Mailbox Presentation</source>
-        <translation>Nonaktifkan Mailbox Presentation</translation>
+        <translation>Nonaktifkan Presentasi Mailbox</translation>
     </message>
     <message>
         <source>Disable Shader Cache</source>
@@ -11089,7 +11113,7 @@ Pemindaian rekursif akan membuat proses pencarian menjadi lebih lama, namun dapa
     </message>
     <message>
         <source>Use GPU-Based Validation</source>
-        <translation>Gunakan GPU-Based Validation</translation>
+        <translation>Gunakan Validasi Berbasis GPU</translation>
     </message>
     <message>
         <source>Prefer OpenGL ES Context</source>
@@ -11097,7 +11121,7 @@ Pemindaian rekursif akan membuat proses pencarian menjadi lebih lama, namun dapa
     </message>
     <message>
         <source>Disable Compressed Textures</source>
-        <translation>Nonaktifkan Compressed Tekstur</translation>
+        <translation>Nonaktifkan Tekstur Terkompresi</translation>
     </message>
     <message>
         <source>Disable Dual-Source Blending</source>
@@ -11105,7 +11129,7 @@ Pemindaian rekursif akan membuat proses pencarian menjadi lebih lama, namun dapa
     </message>
     <message>
         <source>Disable Texture Buffers</source>
-        <translation>Nonaktifkan Tekstur Buffers</translation>
+        <translation>Nonaktifkan Buffer Tekstur</translation>
     </message>
     <message>
         <source>Disable Texture Copy To Self</source>
@@ -11113,7 +11137,7 @@ Pemindaian rekursif akan membuat proses pencarian menjadi lebih lama, namun dapa
     </message>
     <message>
         <source>Disable Memory Import</source>
-        <translation>Nonaktifkan Memory Import</translation>
+        <translation>Nonaktifkan Impor Memori</translation>
     </message>
     <message>
         <source>Disable Rasterizer Order Views</source>
@@ -11299,11 +11323,11 @@ Pemindaian rekursif akan membuat proses pencarian menjadi lebih lama, namun dapa
     </message>
     <message>
         <source>Toggle Software Rendering</source>
-        <translation>Ubah Perender Software</translation>
+        <translation>Alihkan Perender Perangkat Lunak</translation>
     </message>
     <message>
         <source>Toggle On-Screen Display</source>
-        <translation>On-Screen Display</translation>
+        <translation>Alihkan Tampilan Pada Layar</translation>
     </message>
     <message>
         <source>Reload Texture Replacements</source>
@@ -11319,7 +11343,7 @@ Pemindaian rekursif akan membuat proses pencarian menjadi lebih lama, namun dapa
     </message>
     <message>
         <source>Toggle Pause</source>
-        <translation>Jeda</translation>
+        <translation>Aktifkan/Nonaktifkan Jeda</translation>
     </message>
     <message>
         <source>Toggle Fullscreen</source>
@@ -11379,7 +11403,7 @@ Pemindaian rekursif akan membuat proses pencarian menjadi lebih lama, namun dapa
     </message>
     <message>
         <source>Rewind</source>
-        <translation>Putar Balik</translation>
+        <translation>Putar Mundur</translation>
     </message>
     <message>
         <source>Frame Step</source>
@@ -11743,7 +11767,7 @@ Pemindaian rekursif akan membuat proses pencarian menjadi lebih lama, namun dapa
     </message>
     <message>
         <source>Toggle PGXP Preserve Projection Precision</source>
-        <translation>Aktifkan/Nonaktifkan Pertahankan Presisi Proyeksi PGXP</translation>
+        <translation>Aktifkan/Nonaktifkan Pelestarian Presisi Proyeksi PGXP</translation>
     </message>
     <message>
         <source>Toggle VRAM View</source>
@@ -11826,7 +11850,7 @@ Pemindaian rekursif akan membuat proses pencarian menjadi lebih lama, namun dapa
     </message>
     <message>
         <source>Extracting {}...</source>
-        <translation>Ekstraking {}...</translation>
+        <translation>Mengekstrak {}...</translation>
     </message>
     <message>
         <source>%1 KB</source>
@@ -11834,7 +11858,7 @@ Pemindaian rekursif akan membuat proses pencarian menjadi lebih lama, namun dapa
     </message>
     <message>
         <source>&lt;Parent Directory&gt;</source>
-        <translation>&lt;Parent Direktori&gt;</translation>
+        <translation>&lt;Direktori Induk&gt;</translation>
     </message>
 </context>
 <context>
@@ -11897,8 +11921,8 @@ Pemindaian rekursif akan membuat proses pencarian menjadi lebih lama, namun dapa
     <message>
         <source>Left-click to change binding.
 Shift-click to set multiple bindings.</source>
-        <translation>Kiri-click ke change binding.
-Shift-click ke set multiple bindings.</translation>
+        <translation>Klik kiri untuk mengubah penetapan.
+Shift-klik untuk menetapkan beberapa penetapan.</translation>
     </message>
     <message>
         <source>Right-click to remove binding.</source>
@@ -11911,7 +11935,7 @@ Shift-click ke set multiple bindings.</translation>
     <message numerus="yes">
         <source>%n bindings</source>
         <translation>
-            <numerusform>%n tombol</numerusform>
+            <numerusform>%n penetapan</numerusform>
         </translation>
     </message>
     <message>
@@ -12030,7 +12054,7 @@ Shift-click ke set multiple bindings.</translation>
     </message>
     <message>
         <source>Double-Click Toggles Fullscreen</source>
-        <translation>Layar Penuh Dengan Klik Ganda</translation>
+        <translation>Klik Ganda untuk Mengaktifkan/menonaktifkan Layar Penuh</translation>
     </message>
     <message>
         <source>Render To Separate Window</source>
@@ -12118,11 +12142,11 @@ Shift-click ke set multiple bindings.</translation>
     </message>
     <message>
         <source>Disable Window Rounded Corners</source>
-        <translation>Nonaktifkan Jendela Rounded Corners</translation>
+        <translation>Nonaktifkan Sudut Jendela Membulat</translation>
     </message>
     <message>
         <source>Use Fractional Window Scale</source>
-        <translation>Gunakan Fractional Jendela Scale</translation>
+        <translation>Gunakan Skala Jendela Pecahan</translation>
     </message>
     <message>
         <source>Use System Font</source>
@@ -12146,7 +12170,7 @@ Shift-click ke set multiple bindings.</translation>
     </message>
     <message>
         <source>Determines whether a prompt will be displayed to confirm closing the game.</source>
-        <translation>Menentukan apakah perintah akan ditampilkan untuk mengonfirmasi penutupan game.</translation>
+        <translation>Menentukan apakah dialog konfirmasi akan ditampilkan saat menutup game.</translation>
     </message>
     <message>
         <source>Automatically saves the system state when closing the game or exiting. You can then resume directly from where you left off next time.</source>
@@ -12154,7 +12178,7 @@ Shift-click ke set multiple bindings.</translation>
     </message>
     <message>
         <source>Prevents the screen saver from activating and the host from sleeping while emulation is running.</source>
-        <translation>Mencegah screen saver aktif saat emulasi berjalan.</translation>
+        <translation>Mencegah screen saver aktif dan host memasuki mode tidur saat emulasi berjalan.</translation>
     </message>
     <message>
         <source>Prevents inputs from being processed when another application is active.</source>
@@ -12162,7 +12186,7 @@ Shift-click ke set multiple bindings.</translation>
     </message>
     <message>
         <source>Pauses the emulator when a controller with bindings is disconnected.</source>
-        <translation>Menjeda emulator saat kontroler terputus.</translation>
+        <translation>Menjeda emulator saat kontroler yang memiliki pemetaan terputus.</translation>
     </message>
     <message>
         <source>Hides the main window of the application while the game is displayed in a separate window.</source>
@@ -12234,7 +12258,7 @@ Shift-click ke set multiple bindings.</translation>
     </message>
     <message>
         <source>Switches between full screen and windowed when the window is double-clicked.</source>
-        <translation>Mengganti antara full screen dan windowed saat window di double click.</translation>
+        <translation>Beralih antara mode layar penuh dan berjendela saat jendela diklik dua kali.</translation>
     </message>
     <message>
         <source>Hides the mouse pointer/cursor when the emulator is in fullscreen mode.</source>
@@ -12250,7 +12274,7 @@ Shift-click ke set multiple bindings.</translation>
     <message>
         <source>Failed to create force feedback device for Port {}:
 {}</source>
-        <translation>Gagal membuat perangkat umpan balik gaya untuk Porta {}:
+        <translation>Gagal membuat perangkat umpan balik gaya untuk Port {}:
 {}</translation>
     </message>
     <message>
@@ -12678,7 +12702,7 @@ Shift-click ke set multiple bindings.</translation>
     </message>
     <message>
         <source>From File...</source>
-        <translation>Dari File...</translation>
+        <translation>Dari Perangkat...</translation>
     </message>
     <message>
         <source>From Device...</source>
@@ -12826,7 +12850,7 @@ Shift-click ke set multiple bindings.</translation>
     </message>
     <message>
         <source>On-&amp;Screen Display</source>
-        <translation>On-&amp;Layar Tampilan</translation>
+        <translation>Tampilan Pada &amp;Layar</translation>
     </message>
     <message>
         <source>These options determine the behavior of the messages that are displayed while content is running.</source>
@@ -12966,7 +12990,7 @@ Shift-click ke set multiple bindings.</translation>
     </message>
     <message>
         <source>Loc&amp;k Toolbar</source>
-        <translation>&amp;Toolbar</translation>
+        <translation>&amp;Kunci Bilah Alat</translation>
     </message>
     <message>
         <source>Controls whether the toolbar can be moved.</source>
@@ -13174,7 +13198,7 @@ Shift-click ke set multiple bindings.</translation>
     </message>
     <message>
         <source>Controller Test</source>
-        <translation>&amp;Kontroler</translation>
+        <translation>Uji Kontroler</translation>
     </message>
     <message>
         <source>Allows you to test emulated controller mappings.</source>
@@ -13290,15 +13314,15 @@ Shift-click ke set multiple bindings.</translation>
     </message>
     <message>
         <source>Closed</source>
-        <translation>Tutup</translation>
+        <translation>Tertutup</translation>
     </message>
     <message>
         <source>Open</source>
-        <translation>Buka</translation>
+        <translation>Terbuka</translation>
     </message>
     <message>
         <source>Refresh Achievement &amp;Progress</source>
-        <translation>Segarkan Kemajuan Pencapaian &amp;Progress</translation>
+        <translation>Segarkan Kemajuan &amp;Pencapaian</translation>
     </message>
     <message>
         <source>Start &amp;File...</source>
@@ -13446,7 +13470,7 @@ Shift-click ke set multiple bindings.</translation>
     </message>
     <message>
         <source>Game &amp;Properties</source>
-        <translation>&amp;Pengaturan Game</translation>
+        <translation>&amp;Properti Game</translation>
     </message>
     <message>
         <source>Memory &amp;Card Editor</source>
@@ -13578,7 +13602,7 @@ Shift-click ke set multiple bindings.</translation>
     </message>
     <message>
         <source>Properties...</source>
-        <translation>Pengaturan Game...</translation>
+        <translation>Properti...</translation>
     </message>
     <message>
         <source>Open Containing Directory...</source>
@@ -13594,7 +13618,7 @@ Shift-click ke set multiple bindings.</translation>
     </message>
     <message>
         <source>Exclude From List</source>
-        <translation>Hapus Dari Daftar Game</translation>
+        <translation>Kecualikan Dari Daftar</translation>
     </message>
     <message>
         <source>Reset Play Time</source>
@@ -13734,7 +13758,7 @@ Shift-click ke set multiple bindings.</translation>
     </message>
     <message>
         <source>Copy Error</source>
-        <translation>Salin Error</translation>
+        <translation>Kesalahan Penyalinan</translation>
     </message>
     <message>
         <source>Top</source>
@@ -13802,7 +13826,7 @@ Apakah Anda ingin menghapus status simpanan tersebut dan tetap menjalankan game?
     </message>
     <message>
         <source>Confirm Reset</source>
-        <translation>Konfirmasi Reset</translation>
+        <translation>Konfirmasi Atur Ulang</translation>
     </message>
     <message>
         <source>You must select a different file to the current cover image.</source>
@@ -13922,7 +13946,7 @@ Save State tidak akan dapat dipulihkan.</translation>
     </message>
     <message>
         <source>Checking for updates...</source>
-        <translation>Periksa &amp;Update...</translation>
+        <translation>Memeriksa pembaruan...</translation>
     </message>
 </context>
 <context>
@@ -15161,7 +15185,7 @@ Kesalahan: {1}</translation>
     </message>
     <message>
         <source>Analog Toggle</source>
-        <translation>Tombol Analog</translation>
+        <translation>Alihkan Mode Analog</translation>
     </message>
     <message>
         <source>Disable Simultaneous Opposing Cardinal Directions</source>
@@ -15306,11 +15330,11 @@ Kesalahan: {1}</translation>
     </message>
     <message>
         <source>PGXP Preserve Projection Precision is now enabled.</source>
-        <translation>Pertahankan Presisi Proyeksi PGXP kini diaktifkan.</translation>
+        <translation>Preservasi Presisi Proyeksi PGXP kini diaktifkan.</translation>
     </message>
     <message>
         <source>PGXP Preserve Projection Precision is now disabled.</source>
-        <translation>Pertahankan Presisi Proyeksi PGXP kini dinonaktifkan.</translation>
+        <translation>Preservasi Presisi Proyeksi PGXP kini dinonaktifkan.</translation>
     </message>
     <message>
         <source>Now showing VRAM.</source>
@@ -15801,7 +15825,7 @@ Kesalahan: {1}</translation>
     <name>PostProcessingChainConfigWidget</name>
     <message>
         <source>Enable Post Processing</source>
-        <translation>Aktifkan Pemrosesan Pascaproses</translation>
+        <translation>Aktifkan Pascapemrosesan</translation>
     </message>
     <message>
         <source>Open Directory</source>
@@ -15813,7 +15837,7 @@ Kesalahan: {1}</translation>
     </message>
     <message>
         <source>Post Processing Chain</source>
-        <translation>Rantai Pascaproses</translation>
+        <translation>Rantai Pascapemrosesan</translation>
     </message>
     <message>
         <source>Add</source>
@@ -15916,7 +15940,7 @@ Kesalahan: {1}</translation>
     </message>
     <message>
         <source>Image Path</source>
-        <translation>Lokasi Image</translation>
+        <translation>Lokasi Citra</translation>
     </message>
     <message>
         <source>Unspecified</source>
@@ -16529,7 +16553,7 @@ Apakah Anda ingin memperbarui pintasan agar mengarah ke lokasi saat ini?</transl
     </message>
     <message>
         <source>No save present in this slot.</source>
-        <translation>Tidak ada savesate pada slot ini.</translation>
+        <translation>Tidak ada simpanan pada slot ini.</translation>
     </message>
     <message>
         <source>Unknown error.</source>
@@ -16620,9 +16644,7 @@ Apakah Anda ingin memperbarui pintasan agar mengarah ke lokasi saat ini?</transl
 Do you want to create this directory?</source>
         <translation>Direktori yang dipilih saat ini tidak ada:
 
-
 %1
-
 
 Apakah Anda ingin membuat direktori ini?</translation>
     </message>
@@ -16991,7 +17013,7 @@ Apakah Anda ingin membuat direktori ini?</translation>
     <message>
         <source>Blend (Blur)</source>
         <comment>DisplayDeinterlacingMode</comment>
-        <translation>Ba&apos;ur (Buram)</translation>
+        <translation>Baur (Buram)</translation>
     </message>
     <message>
         <source>Adaptive (FastMAD)</source>
@@ -17569,7 +17591,7 @@ Apakah Anda ingin membuat direktori ini?</translation>
     </message>
     <message>
         <source>Post-Processing</source>
-        <translation>Post Processing</translation>
+        <translation>Pascapemrosesan</translation>
     </message>
     <message>
         <source>&lt;strong&gt;Post-Processing Settings&lt;/strong&gt;&lt;hr&gt;Post processing allows you to alter the appearance of the image displayed on the screen with various filters. Shaders will be executed in sequence. Additional shaders can be downloaded from &lt;a href=&quot;%1&quot;&gt;%1&lt;/a&gt;.</source>
@@ -17645,7 +17667,7 @@ Apakah Anda ingin melanjutkan?</translation>
     </message>
     <message>
         <source>Recommended Value</source>
-        <translation>Disarankan</translation>
+        <translation>Nilai yang Disarankan</translation>
     </message>
     <message>
         <source>%1 [%2]</source>
@@ -17664,7 +17686,7 @@ Apakah Anda ingin melanjutkan?</translation>
     </message>
     <message>
         <source>BIOS Image</source>
-        <translation>Image BIOS</translation>
+        <translation>Citra BIOS</translation>
     </message>
     <message>
         <source>Game Directories</source>
@@ -18082,7 +18104,7 @@ Token dibuat pada %2</translation>
     </message>
     <message>
         <source>No generic bindings were generated for device &apos;%1&apos;. The controller/source may not support automatic mapping.</source>
-        <translation>Tidak ada atur tombol generik untuk perangkat &apos;%1&apos;. Kontroler/sumber mungkin tidak mendukung pemetaan otomatis.</translation>
+        <translation>Tidak ada pemetaan generik yang dibuat untuk perangkat &apos;%1&apos;. Kontroler/sumber mungkin tidak mendukung pemetaan otomatis.</translation>
     </message>
 </context>
 <context>
@@ -18161,7 +18183,7 @@ Hal ini mungkin disebabkan GPU Anda tidak mendukung perender yang dipilih ({1}),
     <message>
         <source>Failed to open CD image &apos;{}&apos; used by save state:
 </source>
-        <translation>Gagal membuka citra CD yang digunakan oleh status simpanan &apos;{}&apos;:
+        <translation>Gagal membuka citra CD &apos;{}&apos; yang digunakan oleh status simpanan:
 </translation>
     </message>
     <message>
@@ -18467,7 +18489,7 @@ Anda harus menyimpan ke kartu memori dan mengatur ulang game untuk menghapus sem
     </message>
     <message>
         <source>Mute CD-ROM audio disabled.</source>
-        <translation>Penonaktifan audio CD-ROM dinonaktifkan.</translation>
+        <translation>Pembisuan audio CD-ROM dinonaktifkan.</translation>
     </message>
     <message>
         <source>VRAM write texture replacements disabled.</source>
@@ -18545,7 +18567,7 @@ Anda harus menyimpan ke kartu memori dan mengatur ulang game untuk menghapus sem
     </message>
     <message>
         <source>Failed to create media capture: {0}</source>
-        <translation>Gagal membuat tangkapan media: {0}</translation>
+        <translation>Gagal membuat pengambilan media: {0}</translation>
     </message>
     <message>
         <source>Starting {0} to &apos;{1}&apos;.</source>
@@ -18571,11 +18593,11 @@ Menggunakan kartu bersama sebagai gantinya.</translation>
     </message>
     <message>
         <source>Rewind has been disabled.</source>
-        <translation>Rewind telah dinonaktifkan.</translation>
+        <translation>Putar Mundur telah dinonaktifkan.</translation>
     </message>
     <message>
         <source>Rewind and runahead cannot be used at the same time.</source>
-        <translation>Rewind dan runahead tidak dapat digunakan secara bersamaan.</translation>
+        <translation>Putar Mundur dan runahead tidak dapat digunakan secara bersamaan.</translation>
     </message>
     <message>
         <source>No BIOS image found for {} region.

@@ -1099,6 +1099,10 @@ La petición seguirá reenviándose.</translation>
         <translation>Configuración de la interfaz</translation>
     </message>
     <message>
+        <source>Rich Presence Monitor</source>
+        <translation>Monitor de presencia enriquecida</translation>
+    </message>
+    <message>
         <source>Enable RAIntegration</source>
         <translation>Activar RAIntegration</translation>
     </message>
@@ -1157,6 +1161,10 @@ La petición seguirá reenviándose.</translation>
     <message>
         <source>Select Covers Directory</source>
         <translation>Seleccionar directorio de carátulas</translation>
+    </message>
+    <message>
+        <source>Always displays the current RetroAchievements rich presence string in the indicator area.</source>
+        <translation>Muestra siempre la cadena de presencia enriquecida actual de RetroAchievements en el área de indicadores.</translation>
     </message>
     <message>
         <source>Default</source>
@@ -6776,6 +6784,10 @@ Comprueba el nombre de usuario y contraseña e intenta de nuevo.</translation>
         <translation>%.1f ms</translation>
     </message>
     <message>
+        <source>Delete</source>
+        <translation>Eliminar</translation>
+    </message>
+    <message>
         <source>Determines quality of audio when not running at 100% speed.</source>
         <translation>Determina la calidad del audio cuando la emulación no se ejecute al 100 % de velocidad.</translation>
     </message>
@@ -6790,6 +6802,10 @@ Comprueba el nombre de usuario y contraseña e intenta de nuevo.</translation>
     <message>
         <source>Load Preset</source>
         <translation>Cargar perfil</translation>
+    </message>
+    <message>
+        <source>Move Cursor</source>
+        <translation>Mover cursor</translation>
     </message>
     <message>
         <source>Move Down</source>
@@ -7236,6 +7252,10 @@ Comprueba el nombre de usuario y contraseña e intenta de nuevo.</translation>
         <translation>Seleccionar juego</translation>
     </message>
     <message>
+        <source>Select Key</source>
+        <translation>Seleccionar tecla</translation>
+    </message>
+    <message>
         <source>Select Macro {} Binds</source>
         <translation>Seleccionar asignaciones del macro {}</translation>
     </message>
@@ -7590,6 +7610,10 @@ Comprueba el nombre de usuario y contraseña e intenta de nuevo.</translation>
     <message>
         <source>Toggle Analog</source>
         <translation>Alternar analógico</translation>
+    </message>
+    <message>
+        <source>Toggle Case</source>
+        <translation>Alternar mayúsculas/minúsculas</translation>
     </message>
     <message>
         <source>Toggle Fast Forward</source>
@@ -14379,9 +14403,8 @@ Error: {1}</translation>
     <message numerus="yes">
         <source>%n block(s) free</source>
         <translation>
-            <numerusform>
-            </numerusform>
-            <numerusform></numerusform>
+            <numerusform>%n bloque libre</numerusform>
+            <numerusform>%n bloques libres</numerusform>
         </translation>
     </message>
 </context>
@@ -17842,9 +17865,8 @@ Podrás cambiar este ajuste más adelante en la barra de herramientas del modo e
         <source>%n BIOS images found. You can install additional BIOS images if desired.</source>
         <comment>BIOS Count</comment>
         <translation>
-            <numerusform>
-            </numerusform>
-            <numerusform></numerusform>
+            <numerusform>Se ha encontrado %n imagen de BIOS. Puedes instalar imágenes de BIOS adicionales si lo deseas.</numerusform>
+            <numerusform>Se han encontrado %n imágenes de BIOS. Puedes instalar imágenes de BIOS adicionales si lo deseas.</numerusform>
         </translation>
     </message>
     <message>
@@ -18387,9 +18409,8 @@ Deberás guardar tus avances en una Memory Card y reiniciar el sistema para elim
     <message numerus="yes">
         <source>You cannot pause until another %n second(s) have passed.</source>
         <translation>
-            <numerusform>
-            </numerusform>
-            <numerusform></numerusform>
+            <numerusform>No puedes pausar hasta que haya transcurrido %n segundo más.</numerusform>
+            <numerusform>No puedes pausar hasta que hayan transcurrido %n segundos más.</numerusform>
         </translation>
     </message>
     <message>

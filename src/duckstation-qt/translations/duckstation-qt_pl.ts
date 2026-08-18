@@ -1075,6 +1075,10 @@ Nieprzeczytane wiadomości: {}</translation>
         <translation>Ustawienia interfejsu</translation>
     </message>
     <message>
+        <source>Rich Presence Monitor</source>
+        <translation>Monitor Rich Presence</translation>
+    </message>
+    <message>
         <source>Enable RAIntegration</source>
         <translation>Enable RAIntegration</translation>
     </message>
@@ -1177,6 +1181,10 @@ Nieprzeczytane wiadomości: {}</translation>
     <message>
         <source>Shows a debug menu bar with additional statistics and quick settings.</source>
         <translation>Pokazuje pasek menu debugowania z dodatkowymi statystykami i opcjami.</translation>
+    </message>
+    <message>
+        <source>Always displays the current RetroAchievements rich presence string in the indicator area.</source>
+        <translation>Zawsze wyświetla bieżący ciąg Rich Presence RetroAchievements w obszarze wskaźników.</translation>
     </message>
     <message>
         <source>Default</source>
@@ -7387,6 +7395,10 @@ Tej operacji nie można cofnąć.</translation>
         <translation>Wartość domyślna</translation>
     </message>
     <message>
+        <source>Delete</source>
+        <translation>Usuń</translation>
+    </message>
+    <message>
         <source>Delete And Boot</source>
         <translation>Usuń stan i uruchom od nowa</translation>
     </message>
@@ -7911,6 +7923,10 @@ Sprawdź nazwę użytkownika i hasło, a następnie spróbuj ponownie.</translat
         <translation>Położenie komunikatu</translation>
     </message>
     <message>
+        <source>Move Cursor</source>
+        <translation>Przesuń kursor</translation>
+    </message>
+    <message>
         <source>N/A</source>
         <translation>Nie dotyczy</translation>
     </message>
@@ -8161,6 +8177,14 @@ Sprawdź nazwę użytkownika i hasło, a następnie spróbuj ponownie.</translat
     <message>
         <source>Quick Save</source>
         <translation>Szybki zapis</translation>
+    </message>
+    <message>
+        <source>Select Key</source>
+        <translation>Wybierz klawisz</translation>
+    </message>
+    <message>
+        <source>Toggle Case</source>
+        <translation>Przełącz wielkość liter</translation>
     </message>
     <message>
         <source>Writes backgrounds that can be replaced to the dump directory.</source>

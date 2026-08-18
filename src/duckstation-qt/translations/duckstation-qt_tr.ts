@@ -1028,8 +1028,12 @@ Okunmamış mesajlar: {}</translation>
         <translation>Arayüz Ayarları</translation>
     </message>
     <message>
+        <source>Rich Presence Monitor</source>
+        <translation>Rich Presence İzleyicisi</translation>
+    </message>
+    <message>
         <source>Enable RAIntegration</source>
-        <translation>RAIntegration'ı Etkinleştir</translation>
+        <translation>RAIntegration&apos;ı Etkinleştir</translation>
     </message>
     <message>
         <source>Cache Directory</source>
@@ -1140,6 +1144,10 @@ Okunmamış mesajlar: {}</translation>
         <translation>Shows a debug menu bar with additional statistics and quick settings.</translation>
     </message>
     <message>
+        <source>Always displays the current RetroAchievements rich presence string in the indicator area.</source>
+        <translation>Gösterge alanında geçerli RetroAchievements rich presence dizesini her zaman gösterir.</translation>
+    </message>
+    <message>
         <source>Default</source>
         <translation>Varsayılan</translation>
     </message>
@@ -1153,11 +1161,11 @@ Okunmamış mesajlar: {}</translation>
     </message>
     <message>
         <source>Enable RAIntegration (Development Only)</source>
-        <translation>RAIntegration'ı Etkinleştir (Yalnızca Geliştirme İçin)</translation>
+        <translation>RAIntegration&apos;ı Etkinleştir (Yalnızca Geliştirme İçin)</translation>
     </message>
     <message>
         <source>When enabled, DuckStation will load the RAIntegration DLL which allows for achievement development.&lt;br&gt;The RA_Integration.dll file must be placed in the same directory as the DuckStation executable.</source>
-        <translation>Etkinleştirildiğinde DuckStation, başarım geliştirmeye olanak tanıyan RAIntegration DLL'sini yükler.&lt;br&gt;RA_Integration.dll dosyası DuckStation çalıştırılabilir dosyasıyla aynı dizine yerleştirilmelidir.</translation>
+        <translation>Etkinleştirildiğinde DuckStation, başarım geliştirmeye olanak tanıyan RAIntegration DLL&apos;sini yükler.&lt;br&gt;RA_Integration.dll dosyası DuckStation çalıştırılabilir dosyasıyla aynı dizine yerleştirilmelidir.</translation>
     </message>
     <message>
         <source>Current Cache Size: %1 MB (%2 MB in %3 objects)</source>
@@ -1420,7 +1428,7 @@ Okunmamış mesajlar: {}</translation>
     </message>
     <message>
         <source>Mode LED</source>
-        <translation>Mod LED'i</translation>
+        <translation>Mod LED&apos;i</translation>
     </message>
 </context>
 <context>
@@ -1479,7 +1487,7 @@ Okunmamış mesajlar: {}</translation>
     </message>
     <message>
         <source>Mode LED</source>
-        <translation>Mod LED'i</translation>
+        <translation>Mod LED&apos;i</translation>
     </message>
     <message>
         <source>Not Inverted</source>
@@ -1730,7 +1738,7 @@ Okunmamış mesajlar: {}</translation>
     </message>
     <message>
         <source>Determines how much latency there is between the audio being picked up by the host API, and played through speakers.</source>
-        <translation>Ana bilgisayar API'si tarafından alınan ses ile hoparlörlerden çalınması arasındaki gecikmeyi belirler.</translation>
+        <translation>Ana bilgisayar API&apos;si tarafından alınan ses ile hoparlörlerden çalınması arasındaki gecikmeyi belirler.</translation>
     </message>
     <message>
         <source>Minimal Output Latency</source>
@@ -1738,7 +1746,7 @@ Okunmamış mesajlar: {}</translation>
     </message>
     <message>
         <source>When enabled, the minimum supported output latency will be used for the host API.</source>
-        <translation>Etkinleştirildiğinde ana bilgisayar API'si için desteklenen en düşük çıkış gecikmesi kullanılır.</translation>
+        <translation>Etkinleştirildiğinde ana bilgisayar API&apos;si için desteklenen en düşük çıkış gecikmesi kullanılır.</translation>
     </message>
     <message>
         <source>Output Volume</source>
@@ -1932,7 +1940,7 @@ You can manually update DuckStation by re-downloading the latest release. Do you
 
 %1
 
-DuckStation'ı en son sürümü yeniden indirerek elle güncelleyebilirsiniz. İndirme sayfasını şimdi açmak istiyor musunuz?</translation>
+DuckStation&apos;ı en son sürümü yeniden indirerek elle güncelleyebilirsiniz. İndirme sayfasını şimdi açmak istiyor musunuz?</translation>
     </message>
     <message>
         <source>Updater Error</source>
@@ -1956,7 +1964,7 @@ DuckStation'ı en son sürümü yeniden indirerek elle güncelleyebilirsiniz. İ
     </message>
     <message>
         <source>&lt;h1&gt;Inconsistent Application State&lt;/h1&gt;&lt;h3&gt;The update zip is missing the current executable:&lt;/h3&gt;&lt;div align=&quot;center&quot;&gt;&lt;pre&gt;%1&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;strong&gt;This is usually a result of manually renaming the file.&lt;/strong&gt; Continuing to install this update may result in a broken installation if the renamed executable is used. The DuckStation executable should be named:&lt;/p&gt;&lt;div align=&quot;center&quot;&gt;&lt;pre&gt;%2&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Do you want to continue anyway?&lt;/p&gt;</source>
-        <translation>&lt;h1&gt;Tutarsız Uygulama Durumu&lt;/h1&gt;&lt;h3&gt;Güncelleme zip dosyasında mevcut çalıştırılabilir dosya eksik:&lt;/h3&gt;&lt;div align="center"&gt;&lt;pre&gt;%1&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;strong&gt;Bu genellikle dosyanın elle yeniden adlandırılmasından kaynaklanır.&lt;/strong&gt; Yeniden adlandırılmış çalıştırılabilir dosya kullanılırsa bu güncellemenin yüklenmeye devam edilmesi kurulumun bozulmasına neden olabilir. DuckStation çalıştırılabilir dosyasının adı şu olmalıdır:&lt;/p&gt;&lt;div align="center"&gt;&lt;pre&gt;%2&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Yine de devam etmek istiyor musunuz?&lt;/p&gt;</translation>
+        <translation>&lt;h1&gt;Tutarsız Uygulama Durumu&lt;/h1&gt;&lt;h3&gt;Güncelleme zip dosyasında mevcut çalıştırılabilir dosya eksik:&lt;/h3&gt;&lt;div align=&quot;center&quot;&gt;&lt;pre&gt;%1&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;strong&gt;Bu genellikle dosyanın elle yeniden adlandırılmasından kaynaklanır.&lt;/strong&gt; Yeniden adlandırılmış çalıştırılabilir dosya kullanılırsa bu güncellemenin yüklenmeye devam edilmesi kurulumun bozulmasına neden olabilir. DuckStation çalıştırılabilir dosyasının adı şu olmalıdır:&lt;/p&gt;&lt;div align=&quot;center&quot;&gt;&lt;pre&gt;%2&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Yine de devam etmek istiyor musunuz?&lt;/p&gt;</translation>
     </message>
     <message>
         <source>Loading...</source>
@@ -2020,7 +2028,7 @@ DuckStation'ı en son sürümü yeniden indirerek elle güncelleyebilirsiniz. İ
     </message>
     <message>
         <source>Install BIOS</source>
-        <translation>BIOS'u Kur</translation>
+        <translation>BIOS&apos;u Kur</translation>
     </message>
     <message>
         <source>Browse...</source>
@@ -2128,7 +2136,7 @@ DuckStation'ı en son sürümü yeniden indirerek elle güncelleyebilirsiniz. İ
     </message>
     <message>
         <source>The BIOS file &apos;%1&apos; is already installed. Do you want to overwrite it?</source>
-        <translation>'%1' BIOS dosyası zaten kurulu. Üzerine yazmak istiyor musunuz?</translation>
+        <translation>&apos;%1&apos; BIOS dosyası zaten kurulu. Üzerine yazmak istiyor musunuz?</translation>
     </message>
     <message>
         <source>BIOS Installed</source>
@@ -2136,7 +2144,7 @@ DuckStation'ı en son sürümü yeniden indirerek elle güncelleyebilirsiniz. İ
     </message>
     <message>
         <source>BIOS &apos;%1&apos; installed as &apos;%2&apos;.</source>
-        <translation>'%1' BIOS'u '%2' olarak kuruldu.</translation>
+        <translation>&apos;%1&apos; BIOS&apos;u &apos;%2&apos; olarak kuruldu.</translation>
     </message>
     <message>
         <source>Auto-Detect</source>
@@ -2215,12 +2223,12 @@ DuckStation'ı en son sürümü yeniden indirerek elle güncelleyebilirsiniz. İ
     <message>
         <source>{0} is {1}-bit with {2} channels at {3}hz.
 WAV files must be 16-bit stereo and use a sample rate of 44100hz.</source>
-        <translation>{0}, {1} bit, {2} kanallı ve {3} Hz'dir.
+        <translation>{0}, {1} bit, {2} kanallı ve {3} Hz&apos;dir.
 WAV dosyaları 16 bit stereo olmalı ve 44100 Hz örnekleme hızı kullanmalıdır.</translation>
     </message>
     <message>
         <source>Preload Image To RAM</source>
-        <translation>Görüntüyü RAM'e Önceden Yükle</translation>
+        <translation>Görüntüyü RAM&apos;e Önceden Yükle</translation>
     </message>
     <message>
         <source>Allocating {} MB memory for precaching...</source>
@@ -2456,7 +2464,7 @@ Dökümünüz bozulmuş olabilir veya fiziksel disk çizilmiştir.</translation>
     </message>
     <message>
         <source>Parameters passed to the selected video codec.&lt;br&gt;&lt;b&gt;You must use &apos;=&apos; to separate key from value and &apos;:&apos; to separate two pairs from each other.&lt;/b&gt;&lt;br&gt;For example: &quot;crf = 21 : preset = veryfast&quot;</source>
-        <translation>Seçilen video kodeğine aktarılan parametreler.&lt;br&gt;&lt;b&gt;Anahtarı değerden ayırmak için '=' ve iki çifti birbirinden ayırmak için ':' kullanmalısınız.&lt;/b&gt;&lt;br&gt;Örneğin: "crf = 21 : preset = veryfast"</translation>
+        <translation>Seçilen video kodeğine aktarılan parametreler.&lt;br&gt;&lt;b&gt;Anahtarı değerden ayırmak için &apos;=&apos; ve iki çifti birbirinden ayırmak için &apos;:&apos; kullanmalısınız.&lt;/b&gt;&lt;br&gt;Örneğin: &quot;crf = 21 : preset = veryfast&quot;</translation>
     </message>
     <message>
         <source>Determines the file format used to contain the captured audio.</source>
@@ -2492,7 +2500,7 @@ Dökümünüz bozulmuş olabilir veya fiziksel disk çizilmiştir.</translation>
     </message>
     <message>
         <source>Parameters passed to the selected audio codec.&lt;br&gt;&lt;b&gt;You must use &apos;=&apos; to separate key from value and &apos;:&apos; to separate two pairs from each other.&lt;/b&gt;&lt;br&gt;For example: &quot;compression_level = 4 : joint_stereo = 1&quot;</source>
-        <translation>Seçilen ses kodeğine aktarılan parametreler.&lt;br&gt;&lt;b&gt;Anahtarı değerden ayırmak için '=' ve iki çifti birbirinden ayırmak için ':' kullanmalısınız.&lt;/b&gt;&lt;br&gt;Örneğin: "compression_level = 4 : joint_stereo = 1"</translation>
+        <translation>Seçilen ses kodeğine aktarılan parametreler.&lt;br&gt;&lt;b&gt;Anahtarı değerden ayırmak için &apos;=&apos; ve iki çifti birbirinden ayırmak için &apos;:&apos; kullanmalısınız.&lt;/b&gt;&lt;br&gt;Örneğin: &quot;compression_level = 4 : joint_stereo = 1&quot;</translation>
     </message>
     <message>
         <source>%1 (%2)</source>
@@ -3277,7 +3285,7 @@ Bu son uyarıdır.</translation>
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;By default, lightguns will use the mouse pointer. To use the mouse, you &lt;span style=&quot; font-weight:700;&quot;&gt;do not&lt;/span&gt; need to configure any bindings apart from the trigger and buttons. Aiming only needs to be set when you want to use multiple mice.&lt;/p&gt;&lt;p&gt;If you want to use a controller, or lightgun which simulates a controller instead of a mouse, then you should bind it to Relative Aiming. Otherwise, Relative Aiming should be &lt;span style=&quot; font-weight:700;&quot;&gt;left unbound&lt;/span&gt;.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;NOTE: &lt;/span&gt;Mouse mapping must be enabled in Global Settings to bind your PC&apos;s mouse.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Varsayılan olarak ışık tabancaları fare işaretçisini kullanır. Fareyi kullanmak için tetik ve düğmeler dışında herhangi bir eşleme yapılandırmanız &lt;span style=" font-weight:700;"&gt;gerekmez&lt;/span&gt;. Nişan alma yalnızca birden fazla fare kullanmak istediğinizde ayarlanmalıdır.&lt;/p&gt;&lt;p&gt;Fare yerine denetleyiciyi taklit eden bir denetleyici veya ışık tabancası kullanmak istiyorsanız, bunu Göreli Nişan Alma'ya eşlemelisiniz. Aksi halde Göreli Nişan Alma &lt;span style=" font-weight:700;"&gt;boş bırakılmalıdır&lt;/span&gt;.&lt;/p&gt;&lt;p&gt;&lt;span style=" font-weight:700;"&gt;NOT: &lt;/span&gt;Bilgisayarınızın faresini eşlemek için Genel Ayarlar'da fare eşleme etkinleştirilmelidir.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Varsayılan olarak ışık tabancaları fare işaretçisini kullanır. Fareyi kullanmak için tetik ve düğmeler dışında herhangi bir eşleme yapılandırmanız &lt;span style=&quot; font-weight:700;&quot;&gt;gerekmez&lt;/span&gt;. Nişan alma yalnızca birden fazla fare kullanmak istediğinizde ayarlanmalıdır.&lt;/p&gt;&lt;p&gt;Fare yerine denetleyiciyi taklit eden bir denetleyici veya ışık tabancası kullanmak istiyorsanız, bunu Göreli Nişan Alma&apos;ya eşlemelisiniz. Aksi halde Göreli Nişan Alma &lt;span style=&quot; font-weight:700;&quot;&gt;boş bırakılmalıdır&lt;/span&gt;.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;NOT: &lt;/span&gt;Bilgisayarınızın faresini eşlemek için Genel Ayarlar&apos;da fare eşleme etkinleştirilmelidir.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>Aiming</source>
@@ -3329,7 +3337,7 @@ Bu son uyarıdır.</translation>
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;By default, lightguns will use the mouse pointer. To use the mouse, you &lt;span style=&quot; font-weight:700;&quot;&gt;do not&lt;/span&gt; need to configure any bindings apart from the trigger and buttons. Aiming only needs to be set when you want to use multiple mice.&lt;/p&gt;&lt;p&gt;If you want to use a controller, or lightgun which simulates a controller instead of a mouse, then you should bind it to Relative Aiming. Otherwise, Relative Aiming should be &lt;span style=&quot; font-weight:700;&quot;&gt;left unbound&lt;/span&gt;.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;NOTE: &lt;/span&gt;Mouse mapping must be enabled in Global Settings to bind your PC&apos;s mouse.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Varsayılan olarak ışık tabancaları fare işaretçisini kullanır. Fareyi kullanmak için tetik ve düğmeler dışında herhangi bir eşleme yapılandırmanız &lt;span style=" font-weight:700;"&gt;gerekmez&lt;/span&gt;. Nişan alma yalnızca birden fazla fare kullanmak istediğinizde ayarlanmalıdır.&lt;/p&gt;&lt;p&gt;Fare yerine denetleyiciyi taklit eden bir denetleyici veya ışık tabancası kullanmak istiyorsanız, bunu Göreli Nişan Alma'ya eşlemelisiniz. Aksi halde Göreli Nişan Alma &lt;span style=" font-weight:700;"&gt;boş bırakılmalıdır&lt;/span&gt;.&lt;/p&gt;&lt;p&gt;&lt;span style=" font-weight:700;"&gt;NOT: &lt;/span&gt;Bilgisayarınızın faresini eşlemek için Genel Ayarlar'da fare eşleme etkinleştirilmelidir.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Varsayılan olarak ışık tabancaları fare işaretçisini kullanır. Fareyi kullanmak için tetik ve düğmeler dışında herhangi bir eşleme yapılandırmanız &lt;span style=&quot; font-weight:700;&quot;&gt;gerekmez&lt;/span&gt;. Nişan alma yalnızca birden fazla fare kullanmak istediğinizde ayarlanmalıdır.&lt;/p&gt;&lt;p&gt;Fare yerine denetleyiciyi taklit eden bir denetleyici veya ışık tabancası kullanmak istiyorsanız, bunu Göreli Nişan Alma&apos;ya eşlemelisiniz. Aksi halde Göreli Nişan Alma &lt;span style=&quot; font-weight:700;&quot;&gt;boş bırakılmalıdır&lt;/span&gt;.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;NOT: &lt;/span&gt;Bilgisayarınızın faresini eşlemek için Genel Ayarlar&apos;da fare eşleme etkinleştirilmelidir.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>Down</source>
@@ -3356,7 +3364,7 @@ Bu son uyarıdır.</translation>
     <name>ControllerBindingWidget_Mouse</name>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;NOTE: &lt;/span&gt;Mouse mapping must be enabled in Global Settings to bind your PC&apos;s mouse.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=" font-weight:700;"&gt;NOT: &lt;/span&gt;Bilgisayarınızın faresini eşlemek için Genel Ayarlar'da fare eşleme etkinleştirilmelidir.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;NOT: &lt;/span&gt;Bilgisayarınızın faresini eşlemek için Genel Ayarlar&apos;da fare eşleme etkinleştirilmelidir.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>Buttons</source>
@@ -3556,11 +3564,11 @@ Bu son uyarıdır.</translation>
     </message>
     <message>
         <source>Enables the player LED on DualSense controllers.</source>
-        <translation>DualSense denetleyicilerindeki oyuncu LED'ini etkinleştirir.</translation>
+        <translation>DualSense denetleyicilerindeki oyuncu LED&apos;ini etkinleştirir.</translation>
     </message>
     <message>
         <source>Adjusts LED settings for controllers with configurable LEDs.</source>
-        <translation>Yapılandırılabilir LED'lere sahip denetleyicilerin LED ayarlarını düzenler.</translation>
+        <translation>Yapılandırılabilir LED&apos;lere sahip denetleyicilerin LED ayarlarını düzenler.</translation>
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enables the SDL input source and detection of controllers.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
@@ -3568,7 +3576,7 @@ Bu son uyarıdır.</translation>
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Allows rumble and LED effects for DualShock 4 / DualSense controllers in Bluetooth mode. This option is not required for wired connections.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Enabling enhanced reports may result in your controller being unusable in other applications until it is turned off and on again.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Bluetooth modundaki DualShock 4 / DualSense denetleyicileri için titreşim ve LED efektlerine izin verir. Bu seçenek kablolu bağlantılar için gerekli değildir.&lt;/p&gt;&lt;p&gt;&lt;span style=" font-weight:700;"&gt;Geliştirilmiş raporların etkinleştirilmesi, denetleyiciniz tekrar kapatılıp açılana kadar diğer uygulamalarda kullanılamamasına neden olabilir.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Bluetooth modundaki DualShock 4 / DualSense denetleyicileri için titreşim ve LED efektlerine izin verir. Bu seçenek kablolu bağlantılar için gerekli değildir.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Geliştirilmiş raporların etkinleştirilmesi, denetleyiciniz tekrar kapatılıp açılana kadar diğer uygulamalarda kullanılamamasına neden olabilir.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>DualShock 4 / DualSense Enhanced Mode (Bluetooth Only)</source>
@@ -3576,7 +3584,7 @@ Bu son uyarıdır.</translation>
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The SDL input source supports most controllers, and is the preferred option. Enhanced mode may be required for the Vibration/LED functionality of DualShock 4 / DualSense pads in Bluetooth mode. You can also edit &lt;a href=&quot;ADVANCED_SDL_OPTIONS&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#99ebff;&quot;&gt;advanced options&lt;/span&gt;&lt;/a&gt; which control device-specific behavior.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;SDL giriş kaynağı çoğu denetleyiciyi destekler ve tercih edilen seçenektir. Bluetooth modundaki DualShock 4 / DualSense kollarında Titreşim/LED işlevi için geliştirilmiş mod gerekebilir. Ayrıca cihaza özgü davranışı denetleyen &lt;a href="ADVANCED_SDL_OPTIONS"&gt;&lt;span style=" text-decoration: underline; color:#99ebff;"&gt;gelişmiş seçenekleri&lt;/span&gt;&lt;/a&gt; düzenleyebilirsiniz.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;SDL giriş kaynağı çoğu denetleyiciyi destekler ve tercih edilen seçenektir. Bluetooth modundaki DualShock 4 / DualSense kollarında Titreşim/LED işlevi için geliştirilmiş mod gerekebilir. Ayrıca cihaza özgü davranışı denetleyen &lt;a href=&quot;ADVANCED_SDL_OPTIONS&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#99ebff;&quot;&gt;gelişmiş seçenekleri&lt;/span&gt;&lt;/a&gt; düzenleyebilirsiniz.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>Allows use of the touchpad for DualShock 4 / DualSense controllers as a pointer, for use with lightguns.</source>
@@ -3596,7 +3604,7 @@ Bu son uyarıdır.</translation>
     </message>
     <message>
         <source>The DirectInput source provides support for legacy controllers which do not support XInput. Accessing these controllers via SDL is recommended instead.</source>
-        <translation>DirectInput kaynağı, XInput'u desteklemeyen eski denetleyiciler için destek sağlar. Bunun yerine bu denetleyicilere SDL üzerinden erişilmesi önerilir.</translation>
+        <translation>DirectInput kaynağı, XInput&apos;u desteklemeyen eski denetleyiciler için destek sağlar. Bunun yerine bu denetleyicilere SDL üzerinden erişilmesi önerilir.</translation>
     </message>
     <message>
         <source>Enable DirectInput Source</source>
@@ -3690,7 +3698,7 @@ Bu son uyarıdır.</translation>
         <source>&lt;strong&gt;Controller LED Settings&lt;/strong&gt;&lt;br&gt;
 The &quot;alternate&quot; color is used when analog mode is active.</source>
         <translation>&lt;strong&gt;Denetleyici LED Ayarları&lt;/strong&gt;&lt;br&gt;
-"alternatif" renk analog mod etkin olduğunda kullanılır.</translation>
+&quot;alternatif&quot; renk analog mod etkin olduğunda kullanılır.</translation>
     </message>
     <message>
         <source>Alternate Mode:</source>
@@ -4074,11 +4082,11 @@ Bu dosya aşşağı yukarı 206KB&apos;dır. Şimdi indirmek ister misiniz?</tra
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Depending on your jurisdiction, &lt;span style=&quot; font-weight:700;&quot;&gt;game covers may be copyrighted&lt;/span&gt;. You are only authorized to use this tool with &lt;span style=&quot; font-weight:700;&quot;&gt;your own servers and images&lt;/span&gt;.&lt;/p&gt;&lt;p&gt;In the box below, specify the URLs to download covers from, with one template URL per line. The following variables are available:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${title}:&lt;/span&gt; Title of the game.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${savetitle}:&lt;/span&gt; Title of the game including the region.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${localizedtitle}:&lt;/span&gt; Localized (native language) title of the game.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${filetitle}:&lt;/span&gt; Name component of the game&apos;s filename.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${serial}:&lt;/span&gt; Serial of the game.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Example:&lt;/span&gt; https://www.example-not-a-real-domain.com/covers/${serial}.jpg&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Yargı alanınıza bağlı olarak &lt;span style=" font-weight:700;"&gt;oyun kapakları telif hakkına tabi olabilir&lt;/span&gt;. Bu aracı yalnızca &lt;span style=" font-weight:700;"&gt;kendi sunucularınız ve görsellerinizle&lt;/span&gt; kullanmaya yetkilisiniz.&lt;/p&gt;&lt;p&gt;Aşağıdaki kutuya kapakların indirileceği URL'leri, her satıra bir şablon URL gelecek şekilde belirtin. Aşağıdaki değişkenler kullanılabilir:&lt;/p&gt;&lt;p&gt;&lt;span style=" font-style:italic;"&gt;${title}:&lt;/span&gt; Oyunun adı.&lt;br/&gt;&lt;span style=" font-style:italic;"&gt;${savetitle}:&lt;/span&gt; Bölge bilgisi dahil oyunun adı.&lt;br/&gt;&lt;span style=" font-style:italic;"&gt;${localizedtitle}:&lt;/span&gt; Oyunun yerelleştirilmiş (yerel dildeki) adı.&lt;br/&gt;&lt;span style=" font-style:italic;"&gt;${filetitle}:&lt;/span&gt; Oyunun dosya adındaki ad bileşeni.&lt;br/&gt;&lt;span style=" font-style:italic;"&gt;${serial}:&lt;/span&gt; Oyunun seri numarası.&lt;/p&gt;&lt;p&gt;&lt;span style=" font-weight:700;"&gt;Örnek:&lt;/span&gt; https://www.example-not-a-real-domain.com/covers/${serial}.jpg&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Yargı alanınıza bağlı olarak &lt;span style=&quot; font-weight:700;&quot;&gt;oyun kapakları telif hakkına tabi olabilir&lt;/span&gt;. Bu aracı yalnızca &lt;span style=&quot; font-weight:700;&quot;&gt;kendi sunucularınız ve görsellerinizle&lt;/span&gt; kullanmaya yetkilisiniz.&lt;/p&gt;&lt;p&gt;Aşağıdaki kutuya kapakların indirileceği URL&apos;leri, her satıra bir şablon URL gelecek şekilde belirtin. Aşağıdaki değişkenler kullanılabilir:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${title}:&lt;/span&gt; Oyunun adı.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${savetitle}:&lt;/span&gt; Bölge bilgisi dahil oyunun adı.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${localizedtitle}:&lt;/span&gt; Oyunun yerelleştirilmiş (yerel dildeki) adı.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${filetitle}:&lt;/span&gt; Oyunun dosya adındaki ad bileşeni.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${serial}:&lt;/span&gt; Oyunun seri numarası.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Örnek:&lt;/span&gt; https://www.example-not-a-real-domain.com/covers/${serial}.jpg&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>By default, the downloaded covers will be saved with the game&apos;s title. If this is not desired, you can check the &quot;Use Serial File Names&quot; box below. Using serials instead of game titles will prevent conflicts when multiple regions of the same game are used.</source>
-        <translation>Varsayılan olarak indirilen kapaklar oyunun adıyla kaydedilir. Bu istenmiyorsa aşağıdaki "Seri Numaralı Dosya Adlarını Kullan" kutusunu işaretleyebilirsiniz. Oyun adları yerine seri numaralarının kullanılması, aynı oyunun birden fazla bölge sürümü kullanıldığında oluşabilecek çakışmaları önler.</translation>
+        <translation>Varsayılan olarak indirilen kapaklar oyunun adıyla kaydedilir. Bu istenmiyorsa aşağıdaki &quot;Seri Numaralı Dosya Adlarını Kullan&quot; kutusunu işaretleyebilirsiniz. Oyun adları yerine seri numaralarının kullanılması, aynı oyunun birden fazla bölge sürümü kullanıldığında oluşabilecek çakışmaları önler.</translation>
     </message>
     <message>
         <source>Use Serial File Names</source>
@@ -4614,7 +4622,7 @@ This file can be several gigabytes, so be aware of SSD wear.</translation>
     <name>DebuggingSettingsWidget</name>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Changing these settings may cause games to become unstable or crash.&lt;/span&gt; Do not change any settings on this page if you do not know what you are doing, or understand what the impact of the change will be.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=" font-weight:700;"&gt;Bu ayarların değiştirilmesi oyunların kararsızlaşmasına veya çökmesine neden olabilir.&lt;/span&gt; Ne yaptığınızı veya değişikliğin etkisinin ne olacağını bilmiyorsanız bu sayfadaki hiçbir ayarı değiştirmeyin.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Bu ayarların değiştirilmesi oyunların kararsızlaşmasına veya çökmesine neden olabilir.&lt;/span&gt; Ne yaptığınızı veya değişikliğin etkisinin ne olacağını bilmiyorsanız bu sayfadaki hiçbir ayarı değiştirmeyin.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>Reset To Default</source>
@@ -4726,7 +4734,7 @@ This file can be several gigabytes, so be aware of SSD wear.</translation>
     </message>
     <message>
         <source>CD-ROM Disable Speedup on MDEC</source>
-        <translation>CD-ROM MDEC'te Hızlandırmayı Devre Dışı Bırak</translation>
+        <translation>CD-ROM MDEC&apos;te Hızlandırmayı Devre Dışı Bırak</translation>
     </message>
     <message>
         <source>CD-ROM Region Check</source>
@@ -4758,11 +4766,11 @@ This file can be several gigabytes, so be aware of SSD wear.</translation>
     </message>
     <message>
         <source>Redirect SIO to TTY</source>
-        <translation>SIO'yu TTY'ye Yönlendir</translation>
+        <translation>SIO&apos;yu TTY&apos;ye Yönlendir</translation>
     </message>
     <message>
         <source>Enable PCDrv</source>
-        <translation>PCDrv'yi Etkinleştir</translation>
+        <translation>PCDrv&apos;yi Etkinleştir</translation>
     </message>
     <message>
         <source>Enable PCDrv Writes</source>
@@ -4852,7 +4860,7 @@ This file can be several gigabytes, so be aware of SSD wear.</translation>
 Clicking Reset will restore the serial back to the value scanned from in the disc image.</source>
         <translation>Bir oyunun seri numarasını değiştirmek, oyunun farklı bir oyun olarak görünmesine neden olur; orijinal oyunla kayıt verilerini veya ayarları paylaşmaz.
 
-Sıfırla'ya tıklamak, seri numarasını disk görüntüsünden taranan değere geri döndürür.</translation>
+Sıfırla&apos;ya tıklamak, seri numarasını disk görüntüsünden taranan değere geri döndürür.</translation>
     </message>
     <message>
         <source>Path:</source>
@@ -5681,7 +5689,7 @@ Bu işlemi geri alamazsınız.</translation>
     </message>
     <message>
         <source>Crops vertex colours to 5:5:5 before modulating with the texture colour, which typically results in more visible banding.</source>
-        <translation>Doku rengiyle modüle edilmeden önce köşe renklerini 5:5:5'e kırpar; bu genellikle daha belirgin renk bantlanmasına neden olur.</translation>
+        <translation>Doku rengiyle modüle edilmeden önce köşe renklerini 5:5:5&apos;e kırpar; bu genellikle daha belirgin renk bantlanmasına neden olur.</translation>
     </message>
     <message>
         <source>Culling Correction</source>
@@ -5746,6 +5754,10 @@ Bu işlemi geri alamazsınız.</translation>
     <message>
         <source>Default: Enabled</source>
         <translation>Varsayılan: Açık</translation>
+    </message>
+    <message>
+        <source>Delete</source>
+        <translation>Sil</translation>
     </message>
     <message>
         <source>Delete And Boot</source>
@@ -6290,6 +6302,10 @@ Hata şuydu:</translation>
         <translation>Birden çok CD kullanan oyunları listede tek olacak şekilde birleştirir.</translation>
     </message>
     <message>
+        <source>Move Cursor</source>
+        <translation>İmleci Taşı</translation>
+    </message>
+    <message>
         <source>No Vibration</source>
         <translation>Titreşimsiz</translation>
     </message>
@@ -6543,7 +6559,7 @@ Hata şuydu:</translation>
     </message>
     <message>
         <source>Determines the scaling algorithm used when 24-bit content is active, typically FMVs.</source>
-        <translation>24 bit içerik etkin olduğunda (genellikle FMV'ler) kullanılan ölçekleme algoritmasını belirler.</translation>
+        <translation>24 bit içerik etkin olduğunda (genellikle FMV&apos;ler) kullanılan ölçekleme algoritmasını belirler.</translation>
     </message>
     <message>
         <source>Determines the size of achievement notification popups.</source>
@@ -6575,7 +6591,7 @@ Hata şuydu:</translation>
     </message>
     <message>
         <source>Disable Speedup on MDEC</source>
-        <translation>MDEC'te Hızlandırmayı Devre Dışı Bırak</translation>
+        <translation>MDEC&apos;te Hızlandırmayı Devre Dışı Bırak</translation>
     </message>
     <message>
         <source>Disable Textures</source>
@@ -6791,7 +6807,7 @@ Hata şuydu:</translation>
     </message>
     <message>
         <source>Search on redump.info</source>
-        <translation>redump.info'da ara</translation>
+        <translation>redump.info&apos;da ara</translation>
     </message>
     <message>
         <source>Select BIOS Image</source>
@@ -6963,7 +6979,7 @@ Hata şuydu:</translation>
     </message>
     <message>
         <source>Swaps the confirm/cancel buttons on the gamepad, using {0} for confirming and {1} for cancelling.</source>
-        <translation>Gamepad'deki onaylama/iptal düğmelerini değiştirir; onaylama için {0}, iptal için {1} kullanılır.</translation>
+        <translation>Gamepad&apos;deki onaylama/iptal düğmelerini değiştirir; onaylama için {0}, iptal için {1} kullanılır.</translation>
     </message>
     <message>
         <source>Switch to Next Disc on Stop</source>
@@ -6975,7 +6991,7 @@ Hata şuydu:</translation>
     </message>
     <message>
         <source>Texture Modulation Cropping (&quot;Old/v0&quot; GPU)</source>
-        <translation>Doku Modülasyonu Kırpması ("Eski/v0" GPU)</translation>
+        <translation>Doku Modülasyonu Kırpması (&quot;Eski/v0&quot; GPU)</translation>
     </message>
     <message>
         <source>Textures Directory</source>
@@ -6983,7 +6999,7 @@ Hata şuydu:</translation>
     </message>
     <message>
         <source>The BIOS file &apos;{}&apos; is already installed. Do you want to overwrite it?</source>
-        <translation>BIOS dosyası '{}' zaten kurulu. Üzerine yazmak istiyor musunuz?</translation>
+        <translation>BIOS dosyası &apos;{}&apos; zaten kurulu. Üzerine yazmak istiyor musunuz?</translation>
     </message>
     <message>
         <source>Theme</source>
@@ -7027,7 +7043,7 @@ Hata şuydu:</translation>
     </message>
     <message>
         <source>Tries to detect FMVs and disable read speedup during games that don&apos;t use XA streaming audio.</source>
-        <translation>XA akış sesini kullanmayan oyunlarda FMV'leri algılamaya ve okuma hızlandırmasını devre dışı bırakmaya çalışır.</translation>
+        <translation>XA akış sesini kullanmayan oyunlarda FMV&apos;leri algılamaya ve okuma hızlandırmasını devre dışı bırakmaya çalışır.</translation>
     </message>
     <message>
         <source>Trigger</source>
@@ -7039,7 +7055,7 @@ Hata şuydu:</translation>
     </message>
     <message>
         <source>Unpin from OSD</source>
-        <translation>OSD'den Sabitlemeyi Kaldır</translation>
+        <translation>OSD&apos;den Sabitlemeyi Kaldır</translation>
     </message>
     <message>
         <source>Update Database</source>
@@ -7223,7 +7239,7 @@ Durum kaydını silip oyunu yine de başlatmak istiyor musunuz?</translation>
     </message>
     <message>
         <source>BIOS &apos;{}&apos; installed as &apos;{}&apos;.</source>
-        <translation>BIOS '{}' '{}' olarak kuruldu.</translation>
+        <translation>BIOS &apos;{}&apos; &apos;{}&apos; olarak kuruldu.</translation>
     </message>
     <message>
         <source>BIOS Already Installed</source>
@@ -7591,11 +7607,11 @@ Hata: {}
     </message>
     <message>
         <source>Disables texture emulation in the GPU, forcing all primitives to only show vertex colours.</source>
-        <translation>GPU'da doku emülasyonunu devre dışı bırakır; tüm temel şekillerin yalnızca köşe renklerini göstermesini sağlar.</translation>
+        <translation>GPU&apos;da doku emülasyonunu devre dışı bırakır; tüm temel şekillerin yalnızca köşe renklerini göstermesini sağlar.</translation>
     </message>
     <message>
         <source>Disables vertex lighting in the GPU, forcing all primitives to only show raw texture colours.</source>
-        <translation>GPU'da köşe aydınlatmasını devre dışı bırakır; tüm temel şekillerin yalnızca ham doku renklerini göstermesini sağlar.</translation>
+        <translation>GPU&apos;da köşe aydınlatmasını devre dışı bırakır; tüm temel şekillerin yalnızca ham doku renklerini göstermesini sağlar.</translation>
     </message>
     <message>
         <source>Disc Set Title</source>
@@ -7747,7 +7763,7 @@ Hata: {}
     </message>
     <message>
         <source>In the form below, specify the URLs to download covers from, with one template URL per line. The following variables are available:</source>
-        <translation>Aşağıdaki formda kapakların indirileceği URL'leri, her satıra bir şablon URL gelecek şekilde belirtin. Aşağıdaki değişkenler kullanılabilir:</translation>
+        <translation>Aşağıdaki formda kapakların indirileceği URL&apos;leri, her satıra bir şablon URL gelecek şekilde belirtin. Aşağıdaki değişkenler kullanılabilir:</translation>
     </message>
     <message>
         <source>Includes the elapsed time since the application start in file logs.</source>
@@ -7827,7 +7843,7 @@ Hata: {}
     </message>
     <message>
         <source>No devices with LEDs were detected.</source>
-        <translation>LED'li hiçbir cihaz algılanmadı.</translation>
+        <translation>LED&apos;li hiçbir cihaz algılanmadı.</translation>
     </message>
     <message>
         <source>No patches are available for this game.</source>
@@ -7915,7 +7931,7 @@ Hata: {}
     </message>
     <message>
         <source>Open on RetroAchievements</source>
-        <translation>RetroAchievements'te Aç</translation>
+        <translation>RetroAchievements&apos;te Aç</translation>
     </message>
     <message>
         <source>Operations</source>
@@ -8011,7 +8027,7 @@ Hata: {}
     </message>
     <message>
         <source>Pin to OSD</source>
-        <translation>OSD'ye Sabitle</translation>
+        <translation>OSD&apos;ye Sabitle</translation>
     </message>
     <message>
         <source>Pinky Pals</source>
@@ -8325,6 +8341,10 @@ Yine de {1} işlemine devam etmek istiyor musunuz?</translation>
     <message>
         <source>Select Game</source>
         <translation>Oyun Seç</translation>
+    </message>
+    <message>
+        <source>Select Key</source>
+        <translation>Tuş Seç</translation>
     </message>
     <message>
         <source>Select Macro {} Binds</source>
@@ -8683,6 +8703,10 @@ Yine de {1} işlemine devam etmek istiyor musunuz?</translation>
         <translation>Analog Aç Kapat</translation>
     </message>
     <message>
+        <source>Toggle Case</source>
+        <translation>Büyük/Küçük Harf Değiştir</translation>
+    </message>
+    <message>
         <source>Toggle Fast Forward</source>
         <translation>İleri Sarmayı Aç/Kapa</translation>
     </message>
@@ -9014,7 +9038,7 @@ Yinede işleminize {0} devam etmek istiyor musunuz?</translation>
     </message>
     <message>
         <source>Shader blending is not supported by your current GPU.</source>
-        <translation>Gölgelendirici harmanlama mevcut GPU'nuz tarafından desteklenmiyor.</translation>
+        <translation>Gölgelendirici harmanlama mevcut GPU&apos;nuz tarafından desteklenmiyor.</translation>
     </message>
     <message>
         <source>It requires framebuffer fetch, feedback loops, or rasterizer order views.</source>
@@ -9022,7 +9046,7 @@ Yinede işleminize {0} devam etmek istiyor musunuz?</translation>
     </message>
     <message>
         <source>PGXP depth buffer is not supported by your current GPU or renderer.</source>
-        <translation>PGXP derinlik arabelleği mevcut GPU'nuz veya oluşturucunuz tarafından desteklenmiyor.</translation>
+        <translation>PGXP derinlik arabelleği mevcut GPU&apos;nuz veya oluşturucunuz tarafından desteklenmiyor.</translation>
     </message>
     <message>
         <source>Multisample anti-aliasing is not supported when using shader blending.</source>
@@ -9465,7 +9489,7 @@ Devam etmekten emin misiniz?</translation>
     <message>
         <source>Disable CD-ROM Speedup on MDEC</source>
         <comment>GameDatabase::Trait</comment>
-        <translation>MDEC'te CD-ROM Hızlandırmasını Devre Dışı Bırak</translation>
+        <translation>MDEC&apos;te CD-ROM Hızlandırmasını Devre Dışı Bırak</translation>
     </message>
     <message>
         <source>Disable True Color</source>
@@ -9589,7 +9613,7 @@ Devam etmekten emin misiniz?</translation>
     </message>
     <message>
         <source>Disable CD-ROM speedup on MDEC is enabled, but it is not required for this game.</source>
-        <translation>MDEC'te CD-ROM hızlandırmasını devre dışı bırakma etkin, ancak bu oyun için gerekli değil.</translation>
+        <translation>MDEC&apos;te CD-ROM hızlandırmasını devre dışı bırakma etkin, ancak bu oyun için gerekli değil.</translation>
     </message>
     <message>
         <source>Dithering set to {}.</source>
@@ -9669,7 +9693,7 @@ Devam etmekten emin misiniz?</translation>
     </message>
     <message>
         <source>This game does not support multitap, but multitap is enabled.</source>
-        <translation>Bu oyun multitap'i desteklemiyor, ancak multitap etkin.</translation>
+        <translation>Bu oyun multitap&apos;i desteklemiyor, ancak multitap etkin.</translation>
     </message>
     <message>
         <source>This may result in dropped controller inputs.</source>
@@ -10195,7 +10219,7 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
     </message>
     <message>
         <source>Hashes:</source>
-        <translation>Hash'ler:</translation>
+        <translation>Hash&apos;ler:</translation>
     </message>
     <message>
         <source>Metadata:</source>
@@ -10331,7 +10355,7 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
     </message>
     <message>
         <source>Search on redump.info</source>
-        <translation>redump.info'da ara</translation>
+        <translation>redump.info&apos;da ara</translation>
     </message>
     <message>
         <source>Track %1</source>
@@ -10658,7 +10682,7 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
     </message>
     <message>
         <source>Texture Modulation Cropping (&quot;Old/v0 GPU&quot;)</source>
-        <translation>Doku Modülasyonu Kırpması ("Eski/v0 GPU")</translation>
+        <translation>Doku Modülasyonu Kırpması (&quot;Eski/v0 GPU&quot;)</translation>
     </message>
     <message>
         <source>Reset Geometry Tolerance</source>
@@ -10830,7 +10854,7 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
     </message>
     <message>
         <source>Determines the scaling algorithm used when 24-bit content is active, typically FMVs.</source>
-        <translation>24 bit içerik etkin olduğunda, genellikle FMV'ler için kullanılan ölçeklendirme algoritmasını belirler.</translation>
+        <translation>24 bit içerik etkin olduğunda, genellikle FMV&apos;ler için kullanılan ölçeklendirme algoritmasını belirler.</translation>
     </message>
     <message>
         <source>Fine Crop Mode</source>
@@ -11018,11 +11042,11 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
     </message>
     <message>
         <source>Texture Modulation Cropping (&quot;Old/v0&quot; GPU)</source>
-        <translation>Doku Modülasyonu Kırpması ("Eski/v0" GPU)</translation>
+        <translation>Doku Modülasyonu Kırpması (&quot;Eski/v0&quot; GPU)</translation>
     </message>
     <message>
         <source>Crops vertex colours to 5:5:5 before modulating with the texture colour, which typically results in more visible banding. This is a characteristic of the &quot;old&quot; GPUs found in early model consoles.</source>
-        <translation>Doku rengiyle modüle etmeden önce köşe renklerini 5:5:5'e kırpar; bu genellikle daha belirgin bantlaşmaya neden olur. Bu, ilk model konsollarda bulunan "eski" GPU'ların bir özelliğidir.</translation>
+        <translation>Doku rengiyle modüle etmeden önce köşe renklerini 5:5:5&apos;e kırpar; bu genellikle daha belirgin bantlaşmaya neden olur. Bu, ilk model konsollarda bulunan &quot;eski&quot; GPU&apos;ların bir özelliğidir.</translation>
     </message>
     <message>
         <source>Scales line skipping in interlaced rendering to the internal resolution. This makes the combing less obvious at higher resolutions. Usually safe to enable.</source>
@@ -11062,11 +11086,11 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
     </message>
     <message>
         <source>Disables texture emulation in the GPU, forcing all primitives to only show vertex colours.</source>
-        <translation>GPU'daki doku öykünmesini devre dışı bırakarak tüm ilkellerin yalnızca köşe renklerini göstermesini sağlar.</translation>
+        <translation>GPU&apos;daki doku öykünmesini devre dışı bırakarak tüm ilkellerin yalnızca köşe renklerini göstermesini sağlar.</translation>
     </message>
     <message>
         <source>Disables vertex lighting in the GPU, forcing all primitives to only show raw texture colours.</source>
-        <translation>GPU'daki köşe aydınlatmasını devre dışı bırakarak tüm ilkellerin yalnızca ham doku renklerini göstermesini sağlar.</translation>
+        <translation>GPU&apos;daki köşe aydınlatmasını devre dışı bırakarak tüm ilkellerin yalnızca ham doku renklerini göstermesini sağlar.</translation>
     </message>
     <message>
         <source>Enable debugging when supported by the host&apos;s renderer API. &lt;strong&gt;Only for developer use.&lt;/strong&gt;</source>
@@ -11126,7 +11150,7 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
     </message>
     <message>
         <source>PGXP is not enabled. Increasing the resolution without enabling PGXP will result in visible polygon glitches.</source>
-        <translation>PGXP etkin değil. PGXP'yi etkinleştirmeden çözünürlüğü artırmak, görünür çokgen hatalarına neden olur.</translation>
+        <translation>PGXP etkin değil. PGXP&apos;yi etkinleştirmeden çözünürlüğü artırmak, görünür çokgen hatalarına neden olur.</translation>
     </message>
     <message>
         <source>Automatic (Based on Window Size)</source>
@@ -11929,7 +11953,7 @@ Shift&apos;e basılı tutarak birden çok atama yapın.</translation>
     </message>
     <message>
         <source>No devices with LEDs were detected.</source>
-        <translation>LED'li bir cihaz bulunamadı.</translation>
+        <translation>LED&apos;li bir cihaz bulunamadı.</translation>
     </message>
     <message>
         <source>&lt;strong&gt;%1&lt;/strong&gt;&lt;br&gt;Select the device and effect to map this bind to.</source>
@@ -12147,7 +12171,7 @@ Shift&apos;e basılı tutarak birden çok atama yapın.</translation>
     </message>
     <message>
         <source>Disables the use of style sheets in the application, reverting to the original &apos;Fusion&apos; style but retaining the color scheme.</source>
-        <translation>Uygulamada stil sayfalarının kullanımını devre dışı bırakır; renk düzenini korurken özgün 'Fusion' stiline geri döner.</translation>
+        <translation>Uygulamada stil sayfalarının kullanımını devre dışı bırakır; renk düzenini korurken özgün &apos;Fusion&apos; stiline geri döner.</translation>
     </message>
     <message>
         <source>Determines whether a prompt will be displayed to confirm closing the game.</source>
@@ -12203,7 +12227,7 @@ Shift&apos;e basılı tutarak birden çok atama yapın.</translation>
     </message>
     <message>
         <source>Disables the rounding of windows automatically applied in Windows 11, which may obscure parts of the content.</source>
-        <translation>Windows 11'de otomatik olarak uygulanan ve içeriğin bazı kısımlarını gizleyebilen pencere yuvarlaklaştırmasını devre dışı bırakır.</translation>
+        <translation>Windows 11&apos;de otomatik olarak uygulanan ve içeriğin bazı kısımlarını gizleyebilen pencere yuvarlaklaştırmasını devre dışı bırakır.</translation>
     </message>
     <message>
         <source>Calculates the true scaling factor for your display, avoiding the downsampling applied by MacOS.</source>
@@ -12324,7 +12348,7 @@ Shift&apos;e basılı tutarak birden çok atama yapın.</translation>
     </message>
     <message>
         <source>Mode LED</source>
-        <translation>Mod LED'i</translation>
+        <translation>Mod LED&apos;i</translation>
     </message>
     <message>
         <source>Vibration Motor</source>
@@ -13063,7 +13087,7 @@ Shift&apos;e basılı tutarak birden çok atama yapın.</translation>
     </message>
     <message>
         <source>Opens or closes the controller-based &quot;big picture&quot; mode.</source>
-        <translation>Kol tabanlı "büyük resim" modunu açar veya kapatır.</translation>
+        <translation>Kol tabanlı &quot;büyük resim&quot; modunu açar veya kapatır.</translation>
     </message>
     <message>
         <source>Opens the cover downloader window.</source>
@@ -13527,7 +13551,7 @@ Shift&apos;e basılı tutarak birden çok atama yapın.</translation>
     </message>
     <message>
         <source>All File Types (*.bin *.img *.iso *.cue *.chd *.cpe *.ecm *.mds *.pbp *.ccd *.elf *.exe *.psexe *.ps-exe *.psx *.psf *.minipsf *.m3u *.psxgpu);;Single-Track Raw Images (*.bin *.img *.iso);;Cue Sheets (*.cue);;MAME CHD Images (*.chd);;Error Code Modeler Images (*.ecm);;Media Descriptor Sidecar Images (*.mds);;CloneCD Images (*.ccd);;PlayStation EBOOTs (*.pbp *.PBP);;PlayStation Executables (*.cpe *.elf *.exe *.psexe *.ps-exe, *.psx);;Portable Sound Format Files (*.psf *.minipsf);;Playlists (*.m3u);;PSX GPU Dumps (*.psxgpu *.psxgpu.zst *.psxgpu.xz)</source>
-        <translation>Tüm Dosya Türleri (*.bin *.img *.iso *.cue *.chd *.cpe *.ecm *.mds *.pbp *.ccd *.elf *.exe *.psexe *.ps-exe *.psx *.psf *.minipsf *.m3u *.psxgpu);;Tek Parçalı Ham Görüntüler (*.bin *.img *.iso);;Cue Sayfaları (*.cue);;MAME CHD Görüntüleri (*.chd);;Error Code Modeler Görüntüleri (*.ecm);;Media Descriptor Yan Görüntüleri (*.mds);;CloneCD Görüntüleri (*.ccd);;PlayStation EBOOT'ları (*.pbp *.PBP);;PlayStation Yürütülebilir Dosyaları (*.cpe *.elf *.exe *.psexe *.ps-exe, *.psx);;Taşınabilir Ses Biçimi Dosyaları (*.psf *.minipsf);;Çalma Listeleri (*.m3u);;PSX GPU Dökümleri (*.psxgpu *.psxgpu.zst *.psxgpu.xz)</translation>
+        <translation>Tüm Dosya Türleri (*.bin *.img *.iso *.cue *.chd *.cpe *.ecm *.mds *.pbp *.ccd *.elf *.exe *.psexe *.ps-exe *.psx *.psf *.minipsf *.m3u *.psxgpu);;Tek Parçalı Ham Görüntüler (*.bin *.img *.iso);;Cue Sayfaları (*.cue);;MAME CHD Görüntüleri (*.chd);;Error Code Modeler Görüntüleri (*.ecm);;Media Descriptor Yan Görüntüleri (*.mds);;CloneCD Görüntüleri (*.ccd);;PlayStation EBOOT&apos;ları (*.pbp *.PBP);;PlayStation Yürütülebilir Dosyaları (*.cpe *.elf *.exe *.psexe *.ps-exe, *.psx);;Taşınabilir Ses Biçimi Dosyaları (*.psf *.minipsf);;Çalma Listeleri (*.m3u);;PSX GPU Dökümleri (*.psxgpu *.psxgpu.zst *.psxgpu.xz)</translation>
     </message>
     <message>
         <source>Delete Save States</source>
@@ -13998,8 +14022,8 @@ This build of DuckStation requires FFmpeg v{}, with library versions:
   libswresample: {}
 </source>
         <translation>FFmpeg bulunamadı veya doğru sürüm değil.
-FFmpeg'i {} adresinden indirebilirsiniz.
-DuckStation'ın bu derlemesi, şu kitaplık sürümleriyle FFmpeg v{} gerektirir:
+FFmpeg&apos;i {} adresinden indirebilirsiniz.
+DuckStation&apos;ın bu derlemesi, şu kitaplık sürümleriyle FFmpeg v{} gerektirir:
   libavcodec: {}
   libavformat: {}
   libavutil: {}
@@ -14009,7 +14033,7 @@ DuckStation'ın bu derlemesi, şu kitaplık sürümleriyle FFmpeg v{} gerektirir
     </message>
     <message>
         <source>Audio codec &apos;{0}&apos; does not support {1} Hz samples, using {2} Hz.</source>
-        <translation>'{0}' ses codec'i {1} Hz örneklerini desteklemiyor, {2} Hz kullanılıyor.</translation>
+        <translation>&apos;{0}&apos; ses codec&apos;i {1} Hz örneklerini desteklemiyor, {2} Hz kullanılıyor.</translation>
     </message>
     <message>
         <source>Matroska Media Container</source>
@@ -14136,7 +14160,7 @@ Hata: {1}</translation>
     </message>
     <message>
         <source>Saved card to &apos;{}&apos;.</source>
-        <translation>Kart '{}' konumuna kaydedildi.</translation>
+        <translation>Kart &apos;{}&apos; konumuna kaydedildi.</translation>
     </message>
 </context>
 <context>
@@ -14908,7 +14932,7 @@ Hata: {1}</translation>
     </message>
     <message>
         <source>No generic bindings were generated for device &apos;%1&apos;. The controller/source may not support automatic mapping.</source>
-        <translation>'%1' cihazı için genel tuş atamaları yapılamadı. Bu kol/kaynak otomatik tuş atamasını desteklemiyor olabilir.</translation>
+        <translation>&apos;%1&apos; cihazı için genel tuş atamaları yapılamadı. Bu kol/kaynak otomatik tuş atamasını desteklemiyor olabilir.</translation>
     </message>
     <message>
         <source>No devices were selected.</source>
@@ -15588,7 +15612,7 @@ Hata: {1}</translation>
     </message>
     <message>
         <source>Shows indicators on screen when the system is not running in its &quot;normal&quot; state. For example, fast forwarding, or being paused.</source>
-        <translation>Sistem "normal" durumunda çalışmadığında ekranda göstergeler gösterir. Örneğin hızlı ileri sarma veya duraklatma sırasında.</translation>
+        <translation>Sistem &quot;normal&quot; durumunda çalışmadığında ekranda göstergeler gösterir. Örneğin hızlı ileri sarma veya duraklatma sırasında.</translation>
     </message>
     <message>
         <source>Enables animation for on-screen messages when they appear and disappear.</source>
@@ -15791,11 +15815,11 @@ Hata: {1}</translation>
     </message>
     <message>
         <source>Failed to compile post-processing shader &apos;{}&apos;.</source>
-        <translation>İşleme sonrası '{}' gölgelendiricisi derlenemedi.</translation>
+        <translation>İşleme sonrası &apos;{}&apos; gölgelendiricisi derlenemedi.</translation>
     </message>
     <message>
         <source>Failed to resize post-processing shader &apos;{}&apos;.</source>
-        <translation>İşleme sonrası '{}' gölgelendiricisi yeniden boyutlandırılamadı.</translation>
+        <translation>İşleme sonrası &apos;{}&apos; gölgelendiricisi yeniden boyutlandırılamadı.</translation>
     </message>
 </context>
 <context>
@@ -16088,7 +16112,7 @@ The shortcut will be created at:
 %1</source>
         <translation>DuckStation için bir başlatıcı kısayolu oluşturmak ister misiniz?
 
-Bu, DuckStation'ı uygulama menünüze ekleyerek daha kolay başlatmanızı sağlar.
+Bu, DuckStation&apos;ı uygulama menünüze ekleyerek daha kolay başlatmanızı sağlar.
 
 Kısayol şu konumda oluşturulacak:
 %1</translation>
@@ -16109,7 +16133,7 @@ Kısayol şu konumda oluşturulacak:
 You can find DuckStation in your application menu.</source>
         <translation>Başlatıcı kısayolu başarıyla oluşturuldu.
 
-DuckStation'ı uygulama menünüzde bulabilirsiniz.</translation>
+DuckStation&apos;ı uygulama menünüzde bulabilirsiniz.</translation>
     </message>
     <message>
         <source>The existing launcher shortcut points to a different location:
@@ -16450,7 +16474,7 @@ Kısayol, mevcut konumu gösterecek şekilde güncellensin mi?</translation>
     </message>
     <message>
         <source>Forces joysticks to always treat &apos;hat&apos; axis inputs (ABS_HAT0X - ABS_HAT3Y) as 8-way digital hats without checking whether they may be analog.</source>
-        <translation>Analog olabileceklerini denetlemeden, oyun çubuklarını 'hat' ekseni girişlerini (ABS_HAT0X - ABS_HAT3Y) her zaman 8 yönlü dijital hat olarak değerlendirmeye zorlar.</translation>
+        <translation>Analog olabileceklerini denetlemeden, oyun çubuklarını &apos;hat&apos; ekseni girişlerini (ABS_HAT0X - ABS_HAT3Y) her zaman 8 yönlü dijital hat olarak değerlendirmeye zorlar.</translation>
     </message>
     <message>
         <source>SDL-{0}  {1}</source>
@@ -17528,7 +17552,7 @@ Bu dizini oluşturmak istiyor musunuz?</translation>
     </message>
     <message>
         <source>&lt;strong&gt;Achievement Settings&lt;/strong&gt;&lt;hr&gt;DuckStation uses RetroAchievements as an achievement database and for tracking progress. To use achievements, please sign up for an account at &lt;a href=&quot;%1&quot;&gt;%1&lt;/a&gt;. To view the achievement list in-game, press the hotkey for &lt;strong&gt;Open Pause Menu&lt;/strong&gt; and select &lt;strong&gt;Achievements&lt;/strong&gt; from the menu. Mouse over an option for additional information, and Shift+Wheel to scroll this panel.</source>
-        <translation>&lt;strong&gt;Başarım Ayarları&lt;/strong&gt;&lt;hr&gt;DuckStation, başarım veritabanı olarak ve ilerlemeyi takip etmek için RetroAchievements'ı kullanır. Başarımları kullanmak için &lt;a href="%1"&gt;%1&lt;/a&gt; adresinden bir hesap açın. Oyun içindeki başarım listesini görmek için &lt;strong&gt;Duraklama Menüsünü Aç&lt;/strong&gt; kısayoluna basın ve menüden &lt;strong&gt;Başarımlar&lt;/strong&gt;'ı seçin. Ek bilgi için bir seçeneğin üzerine fareyle gelin; bu paneli kaydırmak için Shift+Tekerlek kullanın.</translation>
+        <translation>&lt;strong&gt;Başarım Ayarları&lt;/strong&gt;&lt;hr&gt;DuckStation, başarım veritabanı olarak ve ilerlemeyi takip etmek için RetroAchievements&apos;ı kullanır. Başarımları kullanmak için &lt;a href=&quot;%1&quot;&gt;%1&lt;/a&gt; adresinden bir hesap açın. Oyun içindeki başarım listesini görmek için &lt;strong&gt;Duraklama Menüsünü Aç&lt;/strong&gt; kısayoluna basın ve menüden &lt;strong&gt;Başarımlar&lt;/strong&gt;&apos;ı seçin. Ek bilgi için bir seçeneğin üzerine fareyle gelin; bu paneli kaydırmak için Shift+Tekerlek kullanın.</translation>
     </message>
     <message>
         <source>Capture</source>
@@ -17727,11 +17751,11 @@ Devam etmek istiyor musunuz?</translation>
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DuckStation requires a PS1 or PS2 BIOS in order to run.&lt;/p&gt;&lt;p&gt;For legal reasons, you must obtain a BIOS &lt;span style=&quot; font-weight:700;&quot;&gt;from an actual PS1/PS2 unit that you own&lt;/span&gt; (borrowing doesn&apos;t count). You should use Caetla or another utility to create an image from your console&apos;s BIOS ROM on your PC.&lt;/p&gt;&lt;p&gt;Once you have dumped the BIOS from your console, you can click the &amp;quot;Install BIOS&amp;quot; button below to add this image to DuckStation.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DuckStation'ın çalışması için bir PS1 veya PS2 BIOS'u gerekir.&lt;/p&gt;&lt;p&gt;Yasal nedenlerle bir BIOS'u &lt;span style=" font-weight:700;"&gt;sahip olduğunuz gerçek bir PS1/PS2 konsolundan&lt;/span&gt; edinmelisiniz (ödünç almak sayılmaz). Konsolunuzun BIOS ROM'undan bilgisayarınızda bir görüntü oluşturmak için Caetla veya başka bir yardımcı program kullanmalısınız.&lt;/p&gt;&lt;p&gt;BIOS'u konsolunuzdan döktükten sonra bu görüntüyü DuckStation'a eklemek için aşağıdaki &amp;quot;BIOS'u Kur&amp;quot; düğmesine tıklayabilirsiniz.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DuckStation&apos;ın çalışması için bir PS1 veya PS2 BIOS&apos;u gerekir.&lt;/p&gt;&lt;p&gt;Yasal nedenlerle bir BIOS&apos;u &lt;span style=&quot; font-weight:700;&quot;&gt;sahip olduğunuz gerçek bir PS1/PS2 konsolundan&lt;/span&gt; edinmelisiniz (ödünç almak sayılmaz). Konsolunuzun BIOS ROM&apos;undan bilgisayarınızda bir görüntü oluşturmak için Caetla veya başka bir yardımcı program kullanmalısınız.&lt;/p&gt;&lt;p&gt;BIOS&apos;u konsolunuzdan döktükten sonra bu görüntüyü DuckStation&apos;a eklemek için aşağıdaki &amp;quot;BIOS&apos;u Kur&amp;quot; düğmesine tıklayabilirsiniz.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>Install BIOS...</source>
-        <translation>BIOS'u Kur...</translation>
+        <translation>BIOS&apos;u Kur...</translation>
     </message>
     <message>
         <source>Advanced Settings</source>
@@ -17743,7 +17767,7 @@ Devam etmek istiyor musunuz?</translation>
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;By default, DuckStation will map your keyboard to the virtual controller. &lt;span style=&quot; font-weight:700;&quot;&gt;To use an external controller, you must map it first. &lt;/span&gt;On this screen, you can automatically map any controller which is currently connected. If your controller is not currently connected, you can plug it in now.&lt;/p&gt;&lt;p&gt;To change controller bindings in more detail, or use multi-tap, open the Settings menu and choose Controllers once you have completed the Setup Wizard.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DuckStation varsayılan olarak klavyenizi sanal kola eşler. &lt;span style=" font-weight:700;"&gt;Harici bir kol kullanmak için önce onu eşlemelisiniz. &lt;/span&gt;Bu ekranda, şu anda bağlı olan tüm kolları otomatik olarak eşleyebilirsiniz. Kolunuz şu anda bağlı değilse şimdi bağlayabilirsiniz.&lt;/p&gt;&lt;p&gt;Kol atamalarını daha ayrıntılı değiştirmek veya multitap kullanmak için Kurulum Sihirbazı'nı tamamladıktan sonra Ayarlar menüsünü açın ve Kollar'ı seçin.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DuckStation varsayılan olarak klavyenizi sanal kola eşler. &lt;span style=&quot; font-weight:700;&quot;&gt;Harici bir kol kullanmak için önce onu eşlemelisiniz. &lt;/span&gt;Bu ekranda, şu anda bağlı olan tüm kolları otomatik olarak eşleyebilirsiniz. Kolunuz şu anda bağlı değilse şimdi bağlayabilirsiniz.&lt;/p&gt;&lt;p&gt;Kol atamalarını daha ayrıntılı değiştirmek veya multitap kullanmak için Kurulum Sihirbazı&apos;nı tamamladıktan sonra Ayarlar menüsünü açın ve Kollar&apos;ı seçin.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>Default (Keyboard)</source>
@@ -17828,7 +17852,7 @@ Devam etmek istiyor musunuz?</translation>
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DuckStation supports earning achievements and leaderboard tracking with RetroAchievements.&lt;/p&gt;&lt;p&gt;If you have a RetroAchievements account, you can use the form below to log in. If not, you can register by clicking the Register button below.&lt;/p&gt;&lt;p&gt;A RetroAchievements account is &lt;span style=&quot; font-weight:700;&quot;&gt;not&lt;/span&gt; required to use DuckStation.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DuckStation, RetroAchievements ile başarım kazanmayı ve liderlik tablosu takibini destekler.&lt;/p&gt;&lt;p&gt;Bir RetroAchievements hesabınız varsa aşağıdaki formu kullanarak giriş yapabilirsiniz. Yoksa aşağıdaki Kayıt Ol düğmesine tıklayarak kaydolabilirsiniz.&lt;/p&gt;&lt;p&gt;DuckStation'ı kullanmak için bir RetroAchievements hesabı &lt;span style=" font-weight:700;"&gt;gerekli değildir&lt;/span&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DuckStation, RetroAchievements ile başarım kazanmayı ve liderlik tablosu takibini destekler.&lt;/p&gt;&lt;p&gt;Bir RetroAchievements hesabınız varsa aşağıdaki formu kullanarak giriş yapabilirsiniz. Yoksa aşağıdaki Kayıt Ol düğmesine tıklayarak kaydolabilirsiniz.&lt;/p&gt;&lt;p&gt;DuckStation&apos;ı kullanmak için bir RetroAchievements hesabı &lt;span style=&quot; font-weight:700;&quot;&gt;gerekli değildir&lt;/span&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>Register</source>
@@ -17848,7 +17872,7 @@ Devam etmek istiyor musunuz?</translation>
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This page includes some of the commonly set graphics options in DuckStation.&lt;/p&gt;&lt;p&gt;These options are generally safe to enable, and compatible with most games. Changing the internal resolution and enabling PGXP geometry correction will significantly improve the graphical fidelity of most games.&lt;/p&gt;&lt;p&gt;You can change these options and others in &lt;span style=&quot; font-weight:700;&quot;&gt;Graphics Settings &lt;/span&gt;after completing setup.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Bu sayfa, DuckStation'da yaygın olarak ayarlanan bazı grafik seçeneklerini içerir.&lt;/p&gt;&lt;p&gt;Bu seçeneklerin etkinleştirilmesi genellikle güvenlidir ve çoğu oyunla uyumludur. Dahili çözünürlüğü değiştirmek ve PGXP geometri düzeltmesini etkinleştirmek, çoğu oyunun grafik doğruluğunu önemli ölçüde artırır.&lt;/p&gt;&lt;p&gt;Kurulumu tamamladıktan sonra bu seçenekleri ve diğerlerini &lt;span style=" font-weight:700;"&gt;Grafik Ayarları &lt;/span&gt;bölümünden değiştirebilirsiniz.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Bu sayfa, DuckStation&apos;da yaygın olarak ayarlanan bazı grafik seçeneklerini içerir.&lt;/p&gt;&lt;p&gt;Bu seçeneklerin etkinleştirilmesi genellikle güvenlidir ve çoğu oyunla uyumludur. Dahili çözünürlüğü değiştirmek ve PGXP geometri düzeltmesini etkinleştirmek, çoğu oyunun grafik doğruluğunu önemli ölçüde artırır.&lt;/p&gt;&lt;p&gt;Kurulumu tamamladıktan sonra bu seçenekleri ve diğerlerini &lt;span style=&quot; font-weight:700;&quot;&gt;Grafik Ayarları &lt;/span&gt;bölümünden değiştirebilirsiniz.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>PGXP Geometry Correction</source>
@@ -17886,9 +17910,9 @@ Devam etmek istiyor musunuz?</translation>
         <source>Choose the interface DuckStation should show when it starts. Desktop Mode is designed for mouse and keyboard use, while Big Picture Mode is optimized for navigation with a controller on a TV.
 
 You can change this at a later time by toggling the &quot;Start In Big Picture Mode&quot; setting in Interface Settings.</source>
-        <translation>DuckStation başlatıldığında göstermesi gereken arayüzü seçin. Masaüstü Modu fare ve klavye kullanımı için tasarlanmıştır; Büyük Resim Modu ise TV'de kolla gezinmek için optimize edilmiştir.
+        <translation>DuckStation başlatıldığında göstermesi gereken arayüzü seçin. Masaüstü Modu fare ve klavye kullanımı için tasarlanmıştır; Büyük Resim Modu ise TV&apos;de kolla gezinmek için optimize edilmiştir.
 
-Bunu daha sonra Arayüz Ayarları'ndaki "Büyük Resim Modunda Başlat" ayarını değiştirerek değiştirebilirsiniz.</translation>
+Bunu daha sonra Arayüz Ayarları&apos;ndaki &quot;Büyük Resim Modunda Başlat&quot; ayarını değiştirerek değiştirebilirsiniz.</translation>
     </message>
     <message>
         <source>Desktop Mode</source>
@@ -18055,7 +18079,7 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
     </message>
     <message>
         <source>PGXP is not enabled. Increasing the resolution without enabling PGXP will result in visible polygon glitches.</source>
-        <translation>PGXP etkin değil. PGXP'yi etkinleştirmeden çözünürlüğü artırmak, görünür çokgen hatalarına neden olur.</translation>
+        <translation>PGXP etkin değil. PGXP&apos;yi etkinleştirmeden çözünürlüğü artırmak, görünür çokgen hatalarına neden olur.</translation>
     </message>
     <message>
         <source>Logged in as %1
@@ -18572,7 +18596,7 @@ DuckStation requires a PS1 or PS2 BIOS in order to run.
 For legal reasons, you must obtain a BIOS from an actual PS1/PS2 unit that you own (borrowing doesn&apos;t count).</source>
         <translation>{} bölgesi için BIOS görüntüsü bulunamadı.
 
-DuckStation'ın çalışması için bir PS1 veya PS2 BIOS'u gerekir.
+DuckStation&apos;ın çalışması için bir PS1 veya PS2 BIOS&apos;u gerekir.
 
 Yasal nedenlerle, size ait gerçek bir PS1/PS2 biriminden BIOS edinmelisiniz (ödünç almak sayılmaz).</translation>
     </message>

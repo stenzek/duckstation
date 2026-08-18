@@ -9,7 +9,7 @@
     </message>
     <message>
         <source>DuckStation</source>
-        <translation>DuckStation&lt;br&gt;&lt;i&gt;[한글화 : &lt;a href=&quot;https://blog.naver.com/jhacker&quot;&gt;Hack茶ん&lt;/a&gt;]&lt;/i&gt;</translation>
+        <translation>DuckStation</translation>
     </message>
     <message>
         <source>%1 (%2)</source>
@@ -41,7 +41,7 @@
     </message>
     <message>
         <source>Missing thirdparty.html file. You should request it from where-ever you obtained DuckStation.</source>
-        <translation>thirdparty.html 파일이 없습니다. DuckStation을 구입한 곳에서 이 파일을 요청해야 합니다.</translation>
+        <translation>thirdparty.html 파일이 없습니다. DuckStation을 입수한 곳에 이 파일을 요청해야 합니다.</translation>
     </message>
 </context>
 <context>
@@ -132,7 +132,7 @@ Do you want to enable hardcore mode?</source>
     </message>
     <message>
         <source>Logging in...</source>
-        <translation>로그 기록중...</translation>
+        <translation>로그인하는 중...</translation>
     </message>
     <message>
         <source>Login failed.</source>
@@ -282,7 +282,7 @@ Do you want to enable hardcore mode?</source>
     </message>
     <message>
         <source>Checked</source>
-        <translation>선택</translation>
+        <translation>선택됨</translation>
     </message>
     <message>
         <source>Plays sound effects for events such as achievement unlocks and leaderboard submissions.</source>
@@ -500,7 +500,7 @@ Token generated at %2</source>
     </message>
     <message>
         <source>Your Time: {0} (Best: {1})</source>
-        <translation>사용 시간 : {0}(최고 기록 : {1})</translation>
+        <translation>내 시간: {0} (최고 기록: {1})</translation>
     </message>
     <message>
         <source>Your Score: {0} (Best: {1})</source>
@@ -512,7 +512,7 @@ Token generated at %2</source>
     </message>
     <message>
         <source>Leaderboard Position: {0} of {1}</source>
-        <translation>순위표 위치 : {0}의 {1}</translation>
+        <translation>순위표 순위: 총 {1}개 중 {0}위</translation>
     </message>
     <message>
         <source>Challenge Failed: {}</source>
@@ -550,7 +550,7 @@ Unread messages: {}</source>
     </message>
     <message>
         <source>Achievements Reconnected</source>
-        <translation>다시 연결된 도전 과제</translation>
+        <translation>도전 과제가 다시 연결되었습니다</translation>
     </message>
     <message>
         <source>All pending unlock requests have completed.</source>
@@ -658,7 +658,7 @@ Error: {}</source>
     </message>
     <message>
         <source>Active Challenges</source>
-        <translation>도전 과제 활성화</translation>
+        <translation>진행 중인 도전 과제</translation>
     </message>
     <message>
         <source>Almost There</source>
@@ -816,11 +816,11 @@ Error: {}</source>
     </message>
     <message>
         <source>Hardcore mode is enabled. Cheats and save states are unavailable.</source>
-        <translation>하드코어 모드가 활성화되었습니다. 치트와 저장 기능은 사용할 수 없습니다.</translation>
+        <translation>하드코어 모드가 활성화되었습니다. 치트와 저장 상태는 사용할 수 없습니다.</translation>
     </message>
     <message>
         <source>This game has no achievements.</source>
-        <translation>이 게임에는 순위표가 있습니다.</translation>
+        <translation>이 게임에는 도전 과제가 없습니다.</translation>
     </message>
     <message>
         <source>Unsupported Achievements</source>
@@ -870,7 +870,7 @@ Error: {}</source>
     <message>
         <source>Nearest Completion</source>
         <comment>Pause Menu</comment>
-        <translation>가장 최근 완료</translation>
+        <translation>완료에 가장 가까운 항목</translation>
     </message>
     <message>
         <source>Last Progress Update</source>
@@ -1028,6 +1028,10 @@ Error: {}</source>
         <translation>인터페이스 설정</translation>
     </message>
     <message>
+        <source>Rich Presence Monitor</source>
+        <translation>리치 프레즌스 모니터</translation>
+    </message>
+    <message>
         <source>Enable RAIntegration</source>
         <translation>RAIntegration 활성화</translation>
     </message>
@@ -1137,7 +1141,7 @@ Error: {}</source>
     </message>
     <message>
         <source>Includes the elapsed time since the application start in file logs.</source>
-        <translation>앱이 파일 로그에 시작된 이후 경과된 시간을 포함합니다.</translation>
+        <translation>파일 로그에 앱 시작 이후의 경과 시간을 포함합니다.</translation>
     </message>
     <message>
         <source>Unchecked</source>
@@ -1146,6 +1150,10 @@ Error: {}</source>
     <message>
         <source>Shows a debug menu bar with additional statistics and quick settings.</source>
         <translation>추가 통계 및 빠른 설정이 포함된 디버그 메뉴 표시줄을 표시합니다.</translation>
+    </message>
+    <message>
+        <source>Always displays the current RetroAchievements rich presence string in the indicator area.</source>
+        <translation>항상 표시기 영역에 현재 RetroAchievements 리치 프레즌스 문자열을 표시합니다.</translation>
     </message>
     <message>
         <source>Default</source>
@@ -1316,7 +1324,7 @@ Error: {}</source>
     </message>
     <message>
         <source>Allows you to use the left analog stick to control the d-pad in digital mode, as well as the buttons.</source>
-        <translation>좌측 아날로그 스틱을 사용하여 디지털 모드에서 십자 버튼을 제어할 수 있습니다.</translation>
+        <translation>좌측 아날로그 스틱으로 버튼뿐 아니라 디지털 모드의 십자 버튼도 조작할 수 있습니다.</translation>
     </message>
     <message>
         <source>Use Right Analog for Shoulder Buttons</source>
@@ -1531,7 +1539,7 @@ Error: {}</source>
     </message>
     <message>
         <source>Invert Left Stick</source>
-        <translation>우측 스틱 반전</translation>
+        <translation>좌측 스틱 반전</translation>
     </message>
     <message>
         <source>Inverts the direction of the left analog stick.</source>
@@ -1630,7 +1638,7 @@ Error: {}</source>
     </message>
     <message>
         <source>Controls</source>
-        <translation>컨트롤러</translation>
+        <translation>제어</translation>
     </message>
     <message>
         <source>Output Volume:</source>
@@ -1734,7 +1742,7 @@ Error: {}</source>
     </message>
     <message>
         <source>Time Stretching</source>
-        <translation>시간 관리</translation>
+        <translation>시간 스트레칭</translation>
     </message>
     <message>
         <source>When running outside of 100% speed, adjusts the tempo on audio instead of dropping frames. Produces much nicer fast forward/slowdown audio at a small cost to performance.</source>
@@ -1913,7 +1921,7 @@ Error: {}</source>
     </message>
     <message>
         <source>Download and Install...</source>
-        <translation>바로 설치...</translation>
+        <translation>다운로드 및 설치...</translation>
     </message>
     <message>
         <source>Skip This Update</source>
@@ -2013,7 +2021,7 @@ You can manually update DuckStation by re-downloading the latest release. Do you
     </message>
     <message>
         <source>NTSC-J (Japan):</source>
-        <translation>NTSC-J(한국/일본) :</translation>
+        <translation>NTSC-J(일본):</translation>
     </message>
     <message>
         <source>NTSC-U/C (US/Canada):</source>
@@ -2113,7 +2121,7 @@ You can manually update DuckStation by re-downloading the latest release. Do you
     </message>
     <message>
         <source>Checked</source>
-        <translation>확인 완료</translation>
+        <translation>선택됨</translation>
     </message>
     <message>
         <source>Simulates the position of the switch on the cartridge. Most cartridges require the switch to be on for it to activate on startup.</source>
@@ -2644,7 +2652,7 @@ Trying to use this cheat will not work as expected. Do you want to continue?</so
     <name>ColorPickerButton</name>
     <message>
         <source>Select LED Color</source>
-        <translation>LED  색상 선택</translation>
+        <translation>LED 색상 선택</translation>
     </message>
 </context>
 <context>
@@ -2663,7 +2671,7 @@ Trying to use this cheat will not work as expected. Do you want to continue?</so
     </message>
     <message>
         <source>Fast Forward Boot</source>
-        <translation>빨리 감기 부팅</translation>
+        <translation>고속 부팅</translation>
     </message>
     <message>
         <source>Fast Forward Memory Card Access</source>
@@ -2819,7 +2827,7 @@ Trying to use this cheat will not work as expected. Do you want to continue?</so
     </message>
     <message>
         <source>Fast forwards through memory card access, both loading and saving. Can reduce waiting times in games that frequently access memory cards.</source>
-        <translation>메모리 카드에 접근하여 불러오기과 저장을 빠르게 진행합니다. 메모리 카드를 자주 사용하는 게임에서 대기 시간을 줄일 수 있습니다.</translation>
+        <translation>메모리 카드 액세스 시 불러오기와 저장을 빠르게 진행합니다. 메모리 카드를 자주 사용하는 게임에서 대기 시간을 줄일 수 있습니다.</translation>
     </message>
     <message>
         <source>Execution Mode</source>
@@ -2863,7 +2871,7 @@ Trying to use this cheat will not work as expected. Do you want to continue?</so
     </message>
     <message>
         <source>CD-ROM Seek Speedup</source>
-        <translation>CD-ROM 쓰기 속도 향상</translation>
+        <translation>CD-ROM 탐색 속도 향상</translation>
     </message>
     <message>
         <source>Reduces the simulated time for the CD-ROM sled to move to different areas of the disc. Can improve loading times, but crash games which do not expect the CD-ROM to operate faster.</source>
@@ -3759,7 +3767,7 @@ The &quot;alternate&quot; color is used when analog mode is active.</source>
     </message>
     <message>
         <source>Frequency</source>
-        <translation>주사율</translation>
+        <translation>빈도</translation>
     </message>
     <message>
         <source>Macro will toggle every N frames.</source>
@@ -3779,11 +3787,11 @@ The &quot;alternate&quot; color is used when analog mode is active.</source>
     </message>
     <message>
         <source>Set Frequency</source>
-        <translation>주사율 설정</translation>
+        <translation>빈도 설정</translation>
     </message>
     <message>
         <source>Frequency: </source>
-        <translation>주사율 : </translation>
+        <translation>빈도: </translation>
     </message>
     <message>
         <source>Macro will not repeat.</source>
@@ -4086,7 +4094,7 @@ This file is approximately 206KB, do you want to download it now?</source>
     <message>
         <source>DuckStation can automatically download covers for games which do not currently have a cover set. We do not host any cover images, the user must provide their own source for images.</source>
         <oldsource>DuckStation can automatically download covers for games which do not currently have a cover set. We do not host any cover images, the user must provide their own source for images.</oldsource>
-        <translation>DuckStation은 현재 커버가 없는 게임 표지를 자동으로 내려받기할 수 있습니다. DuckStation은 어떠한 커버 이미지도 호스팅하지 않으며, 사용자가 직접 이미지 소스를 제공해야 합니다.</translation>
+        <translation>DuckStation은 현재 커버가 없는 게임 표지를 자동으로 내려받을 수 있습니다. DuckStation은 어떠한 커버 이미지도 호스팅하지 않으며, 사용자가 직접 이미지 소스를 제공해야 합니다.</translation>
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Depending on your jurisdiction, &lt;span style=&quot; font-weight:700;&quot;&gt;game covers may be copyrighted&lt;/span&gt;. You are only authorized to use this tool with &lt;span style=&quot; font-weight:700;&quot;&gt;your own servers and images&lt;/span&gt;.&lt;/p&gt;&lt;p&gt;In the box below, specify the URLs to download covers from, with one template URL per line. The following variables are available:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${title}:&lt;/span&gt; Title of the game.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${savetitle}:&lt;/span&gt; Title of the game including the region.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${localizedtitle}:&lt;/span&gt; Localized (native language) title of the game.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${filetitle}:&lt;/span&gt; Name component of the game&apos;s filename.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${serial}:&lt;/span&gt; Serial of the game.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Example:&lt;/span&gt; https://www.example-not-a-real-domain.com/covers/${serial}.jpg&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
@@ -4100,7 +4108,7 @@ This file is approximately 206KB, do you want to download it now?</source>
     <message>
         <source>Use Serial File Names</source>
         <oldsource>Use Serial File Names</oldsource>
-        <translation>직렬 파일 이름 사용</translation>
+        <translation>시리얼 파일 이름 사용</translation>
     </message>
     <message>
         <source>Waiting to start...</source>
@@ -4204,7 +4212,7 @@ This file is approximately 206KB, do you want to download it now?</source>
     </message>
     <message>
         <source>Brake Emergency</source>
-        <translation>브레이크 긴급 상황</translation>
+        <translation>비상 제동</translation>
     </message>
     <message>
         <source>Power</source>
@@ -4286,7 +4294,7 @@ This file is approximately 206KB, do you want to download it now?</source>
     <name>DebuggerRegistersModel</name>
     <message>
         <source>Register</source>
-        <translation>등록하기</translation>
+        <translation>레지스터</translation>
     </message>
     <message>
         <source>Value</source>
@@ -4332,7 +4340,7 @@ This file is approximately 206KB, do you want to download it now?</source>
     </message>
     <message>
         <source>Registers</source>
-        <translation>등록정보</translation>
+        <translation>레지스터</translation>
     </message>
     <message>
         <source>Memory</source>
@@ -4344,7 +4352,7 @@ This file is approximately 206KB, do you want to download it now?</source>
     </message>
     <message>
         <source>Scratchpad</source>
-        <translation>스크레치패드</translation>
+        <translation>스크래치패드</translation>
     </message>
     <message>
         <source>EXP1</source>
@@ -4380,7 +4388,7 @@ This file is approximately 206KB, do you want to download it now?</source>
     </message>
     <message>
         <source>Hit Count</source>
-        <translation>조회수</translation>
+        <translation>적중 횟수</translation>
     </message>
     <message>
         <source>Stack</source>
@@ -4400,11 +4408,11 @@ This file is approximately 206KB, do you want to download it now?</source>
     </message>
     <message>
         <source>Step Into</source>
-        <translation>시작하기</translation>
+        <translation>한 단계 실행</translation>
     </message>
     <message>
         <source>&amp;Step Into</source>
-        <translation>시작하기(&amp;S)</translation>
+        <translation>한 단계 실행(&amp;S)</translation>
     </message>
     <message>
         <source>F11</source>
@@ -4412,11 +4420,11 @@ This file is approximately 206KB, do you want to download it now?</source>
     </message>
     <message>
         <source>Step Over</source>
-        <translation>다음 단계로</translation>
+        <translation>한 단계 건너뛰기</translation>
     </message>
     <message>
         <source>Step &amp;Over</source>
-        <translation>다음 단계로(&amp;O)</translation>
+        <translation>한 단계 건너뛰기(&amp;O)</translation>
     </message>
     <message>
         <source>F10</source>
@@ -4440,11 +4448,11 @@ This file is approximately 206KB, do you want to download it now?</source>
     </message>
     <message>
         <source>Step Out</source>
-        <translation>나가기</translation>
+        <translation>함수에서 빠져나가기</translation>
     </message>
     <message>
         <source>Step O&amp;ut</source>
-        <translation>나가기(&amp;U)</translation>
+        <translation>함수에서 빠져나가기(&amp;U)</translation>
     </message>
     <message>
         <source>Ctrl+F11</source>
@@ -4578,7 +4586,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     </message>
     <message>
         <source>&amp;Follow Load/Store</source>
-        <translation>불러오기/저장하기 따라하기(&amp;F)</translation>
+        <translation>로드/스토어 따라가기(&amp;F)</translation>
     </message>
     <message>
         <source>Failed to read the instruction at 0x%1.</source>
@@ -4894,7 +4902,7 @@ Clicking Reset will restore the serial back to the value scanned from in the dis
     <name>EmptyGameListWidget</name>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;No games in supported formats were found.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Please add a directory with games to begin.&lt;/p&gt;&lt;p&gt;Game dumps in the following formats will be scanned and listed:&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;지원되는 게임을 찾을 수 없습니다.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;시작하려면 게임이 있는 디렉터리를 추가하세요.&lt;/p&gt;&lt;p&gt;다음 형식의 게임 덤프가 검색되어 나열 :&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;지원되는 게임을 찾을 수 없습니다.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;시작하려면 게임이 있는 디렉터리를 추가하세요.&lt;/p&gt;&lt;p&gt;다음 형식의 게임 덤프를 검색하여 나열합니다:&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>Add Game Directory...</source>
@@ -4933,7 +4941,7 @@ Clicking Reset will restore the serial back to the value scanned from in the dis
     </message>
     <message>
         <source>Optimal Frame Pacing</source>
-        <translation>최적의 프레임 속도</translation>
+        <translation>최적 프레임 페이싱</translation>
     </message>
     <message>
         <source>Reduce Input Latency</source>
@@ -4957,7 +4965,7 @@ Clicking Reset will restore the serial back to the value scanned from in the dis
     </message>
     <message>
         <source>Rewind Save Frequency:</source>
-        <translation>저장 빈도 되감기 :</translation>
+        <translation>되감기 저장 빈도:</translation>
     </message>
     <message>
         <source> Seconds</source>
@@ -5085,7 +5093,7 @@ Clicking Reset will restore the serial back to the value scanned from in the dis
     </message>
     <message>
         <source>Turbo Speed</source>
-        <translation>터버 속도</translation>
+        <translation>터보 속도</translation>
     </message>
     <message>
         <source>Sets the turbo speed. This speed will be used when the turbo hotkey is pressed/toggled. Turboing will take priority over fast forwarding if both hotkeys are pressed/toggled.</source>
@@ -5701,7 +5709,7 @@ You cannot undo this action.</source>
     </message>
     <message>
         <source>Controls</source>
-        <translation>컨트롤러</translation>
+        <translation>제어</translation>
     </message>
     <message>
         <source>Controls how dithering is applied in the emulated GPU. True Color disables dithering and produces the nicest looking gradients.</source>
@@ -5742,7 +5750,7 @@ You cannot undo this action.</source>
     </message>
     <message>
         <source>Cover set.</source>
-        <translation>커버 설정.</translation>
+        <translation>커버가 설정되었습니다.</translation>
     </message>
     <message>
         <source>Covers Directory</source>
@@ -5798,7 +5806,7 @@ You cannot undo this action.</source>
     </message>
     <message>
         <source>Default View</source>
-        <translation>기본값 : 표시</translation>
+        <translation>기본 보기</translation>
     </message>
     <message>
         <source>Default: Disabled</source>
@@ -5807,6 +5815,10 @@ You cannot undo this action.</source>
     <message>
         <source>Default: Enabled</source>
         <translation>기본값 : 활성화</translation>
+    </message>
+    <message>
+        <source>Delete</source>
+        <translation>삭제</translation>
     </message>
     <message>
         <source>Delete Save</source>
@@ -5986,7 +5998,7 @@ You cannot undo this action.</source>
     </message>
     <message>
         <source>Enable Discord Presence</source>
-        <translation>디스코드 참석 활성화</translation>
+        <translation>디스코드 상태 표시 활성화</translation>
     </message>
     <message>
         <source>Enable Fast Boot</source>
@@ -6149,7 +6161,7 @@ Error was:</source>
     </message>
     <message>
         <source>Fast Forward Boot</source>
-        <translation>빨리 감기 부팅</translation>
+        <translation>고속 부팅</translation>
     </message>
     <message>
         <source>Fast Forward Memory Card Access</source>
@@ -6177,7 +6189,7 @@ Error was:</source>
     </message>
     <message>
         <source>Frequency</source>
-        <translation>주사율</translation>
+        <translation>빈도</translation>
     </message>
     <message>
         <source>Game Display</source>
@@ -6223,11 +6235,11 @@ Error was:</source>
     </message>
     <message>
         <source>In the form below, specify the URLs to download covers from, with one template URL per line. The following variables are available:</source>
-        <translation>아래 양식에 커버를 내려받기할 URL을 한 줄당 하나의 템플릿 URL로 지정합니다. 다음 변수 사용 가능 :</translation>
+        <translation>아래 양식에 커버를 내려받을 URL을 한 줄당 하나의 템플릿 URL로 지정합니다. 다음 변수를 사용할 수 있습니다:</translation>
     </message>
     <message>
         <source>Includes the elapsed time since the application start in file logs.</source>
-        <translation>앱이 파일 로그에 시작된 이후 경과된 시간을 포함합니다.</translation>
+        <translation>파일 로그에 앱 시작 이후의 경과 시간을 포함합니다.</translation>
     </message>
     <message>
         <source>Includes the elapsed time since the application start in window and console logs.</source>
@@ -6319,6 +6331,10 @@ Please check your username and password, and try again.</source>
         <translation>메뉴 배경</translation>
     </message>
     <message>
+        <source>Move Cursor</source>
+        <translation>커서 이동</translation>
+    </message>
+    <message>
         <source>Navigate</source>
         <translation>탐색</translation>
     </message>
@@ -6369,7 +6385,7 @@ Please check your username and password, and try again.</source>
     </message>
     <message>
         <source>Removes all bindings for this controller port.</source>
-        <translation>이 컨트롤러 포트에 대한 모든 연결을 제거합니다.</translation>
+        <translation>이 컨트롤러 포트의 모든 바인딩을 제거합니다.</translation>
     </message>
     <message>
         <source>Replaces these settings with a previously saved controller preset.</source>
@@ -6385,7 +6401,7 @@ Please check your username and password, and try again.</source>
     </message>
     <message>
         <source>Return To Game</source>
-        <translation>개임을 재개</translation>
+        <translation>게임으로 돌아가기</translation>
     </message>
     <message>
         <source>Return to desktop mode, or exit the application.</source>
@@ -6450,6 +6466,10 @@ Please check your username and password, and try again.</source>
     <message>
         <source>Select Game</source>
         <translation>게임 선택</translation>
+    </message>
+    <message>
+        <source>Select Key</source>
+        <translation>키 선택</translation>
     </message>
     <message>
         <source>Select State</source>
@@ -6560,6 +6580,10 @@ Please check your username and password, and try again.</source>
         <translation>{:.0f}초 후 시간 초과...</translation>
     </message>
     <message>
+        <source>Toggle Case</source>
+        <translation>대/소문자 전환</translation>
+    </message>
+    <message>
         <source>Toggle Fullscreen</source>
         <translation>전체 화면 전환</translation>
     </message>
@@ -6637,7 +6661,7 @@ Please check your username and password, and try again.</source>
     </message>
     <message>
         <source>%d sectors</source>
-        <translation>%d초</translation>
+        <translation>%d섹터</translation>
     </message>
     <message>
         <source>%u MB</source>
@@ -6657,11 +6681,11 @@ Please check your username and password, and try again.</source>
     </message>
     <message>
         <source>Alpha Blending</source>
-        <translation>불투명도</translation>
+        <translation>알파 블렌딩</translation>
     </message>
     <message>
         <source>Always Track Uploads</source>
-        <translation>항상 올리기 추적</translation>
+        <translation>업로드 항상 추적</translation>
     </message>
     <message>
         <source>An error occurred while deleting empty game settings:
@@ -7089,7 +7113,7 @@ Please check your username and password, and try again.</source>
     </message>
     <message>
         <source>Makes games run closer to their console framerate, at a small cost to performance.</source>
-        <translation>성능 저하 없이 게임을 콘솔 프레임 속도에 가깝게 실행할 수 있습니다.</translation>
+        <translation>약간의 성능 저하를 감수하고 게임을 콘솔 프레임 속도에 더 가깝게 실행합니다.</translation>
     </message>
     <message>
         <source>Maximum Read Speedup Cycles</source>
@@ -7233,7 +7257,7 @@ Please check your username and password, and try again.</source>
     </message>
     <message>
         <source>Optimal Frame Pacing</source>
-        <translation>최적의 프레임 속도</translation>
+        <translation>최적 프레임 페이싱</translation>
     </message>
     <message>
         <source>Options</source>
@@ -7357,7 +7381,7 @@ Please check your username and password, and try again.</source>
     </message>
     <message>
         <source>Preload Replacement Textures</source>
-        <translation>미리 불러오기 대체 텍스처</translation>
+        <translation>대체 텍스처 미리 불러오기</translation>
     </message>
     <message>
         <source>Progress Indicators</source>
@@ -7415,7 +7439,7 @@ Please check your username and password, and try again.</source>
     <message>
         <source>Save as Serial File Names</source>
         <oldsource>Use Serial File Names</oldsource>
-        <translation>직렬 파일 이름으로 저장</translation>
+        <translation>시리얼 파일 이름으로 저장</translation>
     </message>
     <message>
         <source>Scaled Interlacing</source>
@@ -7431,7 +7455,7 @@ Please check your username and password, and try again.</source>
     </message>
     <message>
         <source>Selects the backend to use for rendering the console/game visuals.</source>
-        <translation>콘솔/게임 시각적 렌더링에 사용할 후단부를 선택합니다.</translation>
+        <translation>콘솔/게임 화면을 렌더링하는 데 사용할 백엔드를 선택합니다.</translation>
     </message>
     <message>
         <source>Selects the color style to be used for Big Picture UI.</source>
@@ -8023,7 +8047,7 @@ Do you want to delete the save state and boot the game anyway?</source>
     </message>
     <message>
         <source>Push a controller button or axis now.</source>
-        <translation>컨트롤러 버튼이나 축을 누릅니다.</translation>
+        <translation>지금 컨트롤러 버튼이나 축을 누르세요.</translation>
     </message>
     <message>
         <source>Quick Message Duration</source>
@@ -8043,7 +8067,7 @@ Do you want to delete the save state and boot the game anyway?</source>
     </message>
     <message>
         <source>Recompiler Fast Memory Access</source>
-        <translation>고속 메모리 액세스 리컴파일러</translation>
+        <translation>리컴파일러 고속 메모리 액세스</translation>
     </message>
     <message>
         <source>Reduce Input Latency</source>
@@ -8167,19 +8191,19 @@ Do you want to delete the save state and boot the game anyway?</source>
     </message>
     <message>
         <source>Rewind Save Frequency</source>
-        <translation>저장 빈도 되감기</translation>
+        <translation>되감기 저장 빈도</translation>
     </message>
     <message>
         <source>Rewind Save Slots</source>
-        <translation>저장 슬롯 되감기</translation>
+        <translation>되감기 저장 슬롯</translation>
     </message>
     <message>
         <source>Round Upscaled Texture Coordinates</source>
-        <translation>라운드 업스케일 텍스처 좌표</translation>
+        <translation>업스케일된 텍스처 좌표 반올림</translation>
     </message>
     <message>
         <source>Runahead</source>
-        <translation>빨리 감기</translation>
+        <translation>선행 실행</translation>
     </message>
     <message>
         <source>Runahead for Analog Input</source>
@@ -8187,7 +8211,7 @@ Do you want to delete the save state and boot the game anyway?</source>
     </message>
     <message>
         <source>Runahead/Rewind</source>
-        <translation>빨리 감기/되감기</translation>
+        <translation>선행 실행/되감기</translation>
     </message>
     <message>
         <source>SDL DualSense Player LED</source>
@@ -8283,7 +8307,7 @@ Do you want to delete the save state and boot the game anyway?</source>
     </message>
     <message>
         <source>Seek Speedup</source>
-        <translation>속도 향상</translation>
+        <translation>탐색 속도 향상</translation>
     </message>
     <message>
         <source>Select BIOS Image</source>
@@ -8407,7 +8431,7 @@ Do you want to delete the save state and boot the game anyway?</source>
     </message>
     <message>
         <source>Setting {} binding {}.</source>
-        <translation>할당 {} 설정 {}.</translation>
+        <translation>{}의 할당 {}을(를) 설정하는 중입니다.</translation>
     </message>
     <message>
         <source>Settings</source>
@@ -8635,7 +8659,7 @@ Do you want to delete the save state and boot the game anyway?</source>
     </message>
     <message>
         <source>Texture Filtering</source>
-        <translation>택스처 필터링</translation>
+        <translation>텍스처 필터링</translation>
     </message>
     <message>
         <source>Texture Modulation Cropping (&quot;Old/v0&quot; GPU)</source>
@@ -8799,11 +8823,11 @@ Do you want to delete the save state and boot the game anyway?</source>
     </message>
     <message>
         <source>Uses perspective-correct interpolation for colors, which can improve visuals in some games.</source>
-        <translation>색상에 원근 보간 보간을 사용하여 일부 게임에서 시각적 효과를 개선할 수 있습니다.</translation>
+        <translation>색상에 원근 보정 보간을 사용하여 일부 게임에서 시각적 효과를 개선할 수 있습니다.</translation>
     </message>
     <message>
         <source>Uses perspective-correct interpolation for texture coordinates, straightening out warped textures.</source>
-        <translation>텍스처 좌표에 원근 보간 보간을 사용하여 뒤틀린 텍스처를 바로잡습니다.</translation>
+        <translation>텍스처 좌표에 원근 보정 보간을 사용하여 뒤틀린 텍스처를 바로잡습니다.</translation>
     </message>
     <message>
         <source>Uses screen positions to resolve PGXP data. May improve visuals in some games.</source>
@@ -8829,7 +8853,7 @@ Do you want to delete the save state and boot the game anyway?</source>
         <source>WARNING: Your game is still saving to the memory card. Continuing to {0} may IRREVERSIBLY DESTROY YOUR MEMORY CARD. We recommend resuming your game and waiting 5 seconds for it to finish saving.
 
 Do you want to {0} anyway?</source>
-        <translation>경고: 게임이 여전히 메모리 카드에 저장되고 있습니다. {0}을(를) 계속하면 메모리 카드가 영구적으로 손상될 수 있습니다. 게임을 재개하고 저장이 완료될 때까지 5초 동안 기다리는 것이 좋습니다.
+        <translation>경고: 게임이 여전히 메모리 카드에 저장되고 있습니다. {0}을(를) 계속하면 메모리 카드가 돌이킬 수 없게 파괴될 수 있습니다. 게임을 재개하고 저장이 완료될 때까지 5초 동안 기다리는 것이 좋습니다.
 
 그래도 {0}을(를) 하시겠습니까?</translation>
     </message>
@@ -8943,7 +8967,7 @@ Do you want to {1} anyway?</source>
     </message>
     <message>
         <source>Load Resume State</source>
-        <translation>상태 재개 불러오기</translation>
+        <translation>이어하기 상태 불러오기</translation>
     </message>
     <message numerus="yes">
         <source>%n seconds remaining</source>
@@ -9522,7 +9546,7 @@ Are you sure you want to continue?</source>
     <message>
         <source>Disable PGXP</source>
         <comment>GameDatabase::Trait</comment>
-        <translation>DXGP 비활성화</translation>
+        <translation>PGXP 비활성화</translation>
     </message>
     <message>
         <source>Disable PGXP Culling</source>
@@ -9803,7 +9827,7 @@ Are you sure you want to continue?</source>
     </message>
     <message>
         <source>GPU Max Runahead</source>
-        <translation>GPU 최대 운행</translation>
+        <translation>GPU 최대 런어헤드</translation>
     </message>
     <message>
         <source>GPU Line Detect Mode</source>
@@ -10033,7 +10057,7 @@ Are you sure you want to continue?</source>
     <name>GameListSettingsWidget</name>
     <message>
         <source>Search Directories (will be scanned for games)</source>
-        <translation>디렉터리 검색(게임 검색 시)</translation>
+        <translation>검색 디렉터리(게임을 검색할 위치)</translation>
     </message>
     <message>
         <source>Add</source>
@@ -10069,7 +10093,7 @@ Are you sure you want to continue?</source>
     </message>
     <message>
         <source>Select Search Directory</source>
-        <translation>디렉터리 검색 선택</translation>
+        <translation>검색 디렉터리 선택</translation>
     </message>
     <message>
         <source>Scan Recursively?</source>
@@ -10410,7 +10434,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <name>GraphicsSettingsWidget</name>
     <message>
         <source>Renderer:</source>
-        <translation>할당 :</translation>
+        <translation>렌더러:</translation>
     </message>
     <message>
         <source>Adapter:</source>
@@ -10430,7 +10454,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>Dithering:</source>
-        <translation>인터레이스 제거 :</translation>
+        <translation>디더링 :</translation>
     </message>
     <message>
         <source>Crop:</source>
@@ -10442,7 +10466,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>Internal Resolution:</source>
-        <translation>내부 해결책 :</translation>
+        <translation>내부 해상도 :</translation>
     </message>
     <message>
         <source>1x</source>
@@ -10490,7 +10514,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>Display Options</source>
-        <translation>옵션 표시</translation>
+        <translation>표시 옵션</translation>
     </message>
     <message>
         <source>Exclusive Fullscreen:</source>
@@ -10658,7 +10682,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>Round Upscaled Texture Coordinates</source>
-        <translation>라운드 업스케일 텍스처 좌표</translation>
+        <translation>업스케일된 텍스처 좌표 반올림</translation>
     </message>
     <message>
         <source>Geometry Tolerance:</source>
@@ -10715,7 +10739,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>Always Track Uploads</source>
-        <translation>항상 올리기 추적</translation>
+        <translation>업로드 항상 추적</translation>
     </message>
     <message>
         <source>Prefer OpenGL ES Context</source>
@@ -10791,7 +10815,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>Disable Rasterizer Order Views</source>
-        <translation>래스터라이저 주문 보기 비활성화</translation>
+        <translation>래스터라이저 순서 뷰 비활성화</translation>
     </message>
     <message>
         <source>Disable Texture Copy To Self</source>
@@ -10875,7 +10899,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>Setting this beyond 1x will enhance the resolution of rendered 3D polygons and lines. Only applies to the hardware backends. &lt;br&gt;This option is usually safe, with most games looking fine at higher resolutions. Higher resolutions require a more powerful GPU.</source>
-        <translation>이 값을 1배 이상으로 설정하면 렌더링된 3D 폴리곤과 선의 해상도가 향상됩니다. 하드웨어 후단부에만 적용됩니다. &lt;/br&gt;이 옵션은 일반적으로 안전하며, 대부분의 게임은 더 높은 해상도에서 정상적으로 보입니다. 해상도가 높을수록 더 강력한 GPU가 필요합니다.</translation>
+        <translation>이 값을 1배 이상으로 설정하면 렌더링된 3D 폴리곤과 선의 해상도가 향상됩니다. 하드웨어 후단부에만 적용됩니다. &lt;br&gt;이 옵션은 일반적으로 안전하며, 대부분의 게임은 더 높은 해상도에서 정상적으로 보입니다. 해상도가 높을수록 더 강력한 GPU가 필요합니다.</translation>
     </message>
     <message>
         <source>Reduces &quot;wobbly&quot; polygons and &quot;warping&quot; textures that are common in PS1 games. &lt;strong&gt;May not be compatible with all games.&lt;/strong&gt;</source>
@@ -10919,7 +10943,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>Texture Filtering</source>
-        <translation>택스처 필터링</translation>
+        <translation>텍스처 필터링</translation>
     </message>
     <message>
         <source>Smooths out the blockiness of magnified textures on 3D objects by using filtering. &lt;br&gt;Will have a greater effect on higher resolution scales.</source>
@@ -10944,7 +10968,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>Checked</source>
-        <translation>선택</translation>
+        <translation>선택됨</translation>
     </message>
     <message>
         <source>Scales vertex positions in screen-space to a widescreen aspect ratio, essentially increasing the field of view from 4:3 to the chosen display aspect ratio in 3D games. &lt;b&gt;&lt;u&gt;May not be compatible with all games.&lt;/u&gt;&lt;/b&gt;</source>
@@ -11116,11 +11140,11 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>Uses perspective-correct interpolation for texture coordinates, straightening out warped textures. Requires geometry correction enabled.</source>
-        <translation>텍스처 좌표에 원근 보간 보간을 사용하여 뒤틀린 텍스처를 바로잡습니다. 기하학 보정을 활성화해야 합니다.</translation>
+        <translation>텍스처 좌표에 원근 보정 보간을 사용하여 뒤틀린 텍스처를 바로잡습니다. 기하학 보정을 활성화해야 합니다.</translation>
     </message>
     <message>
         <source>Uses perspective-correct interpolation for vertex colors, which can improve visuals in some games, but cause rendering errors in others. Requires geometry correction enabled.</source>
-        <translation>버텍스 색상에 원근 보간 보간을 사용하여 일부 게임에서는 비주얼을 개선할 수 있지만 다른 게임에서는 렌더링 오류가 발생할 수 있습니다. 기하학 보정을 활성화해야 합니다.</translation>
+        <translation>버텍스 색상에 원근 보정 보간을 사용하여 일부 게임에서는 비주얼을 개선할 수 있지만 다른 게임에서는 렌더링 오류가 발생할 수 있습니다. 기하학 보정을 활성화해야 합니다.</translation>
     </message>
     <message>
         <source>Increases the precision of polygon culling, reducing the number of holes in geometry. Requires geometry correction enabled.</source>
@@ -11275,19 +11299,19 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>Relative Left</source>
-        <translation>Relative ←</translation>
+        <translation>상대 ←</translation>
     </message>
     <message>
         <source>Relative Right</source>
-        <translation>Relative →</translation>
+        <translation>상대 →</translation>
     </message>
     <message>
         <source>Relative Up</source>
-        <translation>Relative ↑</translation>
+        <translation>상대 ↑</translation>
     </message>
     <message>
         <source>Relative Down</source>
-        <translation>Relative ↓</translation>
+        <translation>상대 ↓</translation>
     </message>
     <message>
         <source>Crosshair Image Path</source>
@@ -11454,11 +11478,11 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>Reload Texture Replacements</source>
-        <translation>텍스처 대체 미리 불러오기</translation>
+        <translation>텍스처 대체 다시 불러오기</translation>
     </message>
     <message>
         <source>Toggle Widescreen</source>
-        <translation>와일드스크린 전환</translation>
+        <translation>와이드스크린 전환</translation>
     </message>
     <message>
         <source>Debugging</source>
@@ -11478,7 +11502,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>Fast Forward (Hold)</source>
-        <translation>빨리 감기(고정)</translation>
+        <translation>빨리 감기(누르고 있는 동안)</translation>
     </message>
     <message>
         <source>Fast Forward (Toggle)</source>
@@ -11486,7 +11510,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>Turbo (Hold)</source>
-        <translation>터버(고정)</translation>
+        <translation>터보(누르고 있는 동안)</translation>
     </message>
     <message>
         <source>Turbo (Toggle)</source>
@@ -11618,7 +11642,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>Load Game State 1</source>
-        <translation>게임 구역1을 불러오기</translation>
+        <translation>게임 상태 1 불러오기</translation>
     </message>
     <message>
         <source>Load Game State 2</source>
@@ -11626,7 +11650,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>Load Game State 3</source>
-        <translation>게임 구역3을 불러오기</translation>
+        <translation>게임 상태 3 불러오기</translation>
     </message>
     <message>
         <source>Load Game State 4</source>
@@ -12065,7 +12089,7 @@ Shift 키를 누른 채 클릭하면 여러 결합을 설정할 수 있습니다
     </message>
     <message>
         <source>Enable Discord Presence</source>
-        <translation>디스코드 참석 활성화</translation>
+        <translation>디스코드 상태 표시 활성화</translation>
     </message>
     <message>
         <source>Pause On Controller Disconnection</source>
@@ -12157,7 +12181,7 @@ Shift 키를 누른 채 클릭하면 여러 결합을 설정할 수 있습니다
     </message>
     <message>
         <source>Checked</source>
-        <translation>선택</translation>
+        <translation>선택됨</translation>
     </message>
     <message>
         <source>Unchecked</source>
@@ -12761,7 +12785,7 @@ Shift 키를 누른 채 클릭하면 여러 결합을 설정할 수 있습니다
     </message>
     <message>
         <source>Enable Safe Mode</source>
-        <translation>하드코어 모드 활성화</translation>
+        <translation>안전 모드 활성화</translation>
     </message>
     <message>
         <source>&amp;Memory Cards</source>
@@ -13509,7 +13533,7 @@ Shift 키를 누른 채 클릭하면 여러 결합을 설정할 수 있습니다
     </message>
     <message>
         <source>Reload Texture Replacements</source>
-        <translation>텍스처 대체 미리 불러오기</translation>
+        <translation>텍스처 대체 다시 불러오기</translation>
     </message>
     <message>
         <source>System &amp;Display</source>
@@ -13561,7 +13585,7 @@ Shift 키를 누른 채 클릭하면 여러 결합을 설정할 수 있습니다
     </message>
     <message>
         <source>Resume (%1)</source>
-        <translation>확인(%1)</translation>
+        <translation>재개(%1)</translation>
     </message>
     <message>
         <source>Game Save %1 (%2)</source>
@@ -13589,7 +13613,7 @@ The saves will not be recoverable.</source>
     </message>
     <message>
         <source>Select Save State File</source>
-        <translation>상태 파일 저장을 선택</translation>
+        <translation>저장 상태 파일 선택</translation>
     </message>
     <message>
         <source>Save States (*.sav)</source>
@@ -13641,7 +13665,7 @@ The saves will not be recoverable.</source>
     </message>
     <message>
         <source>Load Resume State</source>
-        <translation>상태 재개 불러오기</translation>
+        <translation>이어하기 상태 불러오기</translation>
     </message>
     <message>
         <source>Fresh Boot</source>
@@ -14502,7 +14526,7 @@ Error: {1}</source>
     </message>
     <message>
         <source>Checked</source>
-        <translation>선택</translation>
+        <translation>선택됨</translation>
     </message>
     <message>
         <source>Memory Card Type:</source>
@@ -14724,7 +14748,7 @@ Error: {1}</source>
     </message>
     <message>
         <source>Search Parameters</source>
-        <translation>매개변수 찾기</translation>
+        <translation>검색 매개변수</translation>
     </message>
     <message>
         <source>Value:</source>
@@ -14732,11 +14756,11 @@ Error: {1}</source>
     </message>
     <message>
         <source>Signed</source>
-        <translation>서명함</translation>
+        <translation>부호 있음</translation>
     </message>
     <message>
         <source>Unsigned</source>
-        <translation>서명되지 않음</translation>
+        <translation>부호 없음</translation>
     </message>
     <message>
         <source>Decimal</source>
@@ -14756,15 +14780,15 @@ Error: {1}</source>
     </message>
     <message>
         <source>Halfword (2 bytes)</source>
-        <translation>반어(2바이트)</translation>
+        <translation>하프워드(2바이트)</translation>
     </message>
     <message>
         <source>Word (4 bytes)</source>
-        <translation>단어(4바이트)</translation>
+        <translation>워드(4바이트)</translation>
     </message>
     <message>
         <source>Operator:</source>
-        <translation>운영자 :</translation>
+        <translation>연산자:</translation>
     </message>
     <message>
         <source>Equal to Value</source>
@@ -14800,15 +14824,15 @@ Error: {1}</source>
     </message>
     <message>
         <source>Increased By Value</source>
-        <translation>가치 증가</translation>
+        <translation>값만큼 증가</translation>
     </message>
     <message>
         <source>Decreased By Value</source>
-        <translation>가치 감소</translation>
+        <translation>값만큼 감소</translation>
     </message>
     <message>
         <source>Changed By Value</source>
-        <translation>가치 변경</translation>
+        <translation>값만큼 변경</translation>
     </message>
     <message>
         <source>Equal to Previous Result (Unchanged Value)</source>
@@ -14900,11 +14924,11 @@ Error: {1}</source>
     </message>
     <message>
         <source>Load Watch</source>
-        <translation>시계 불러오기</translation>
+        <translation>관심 목록 불러오기</translation>
     </message>
     <message>
         <source>Save Watch</source>
-        <translation>시계 저장하기</translation>
+        <translation>관심 목록 저장</translation>
     </message>
     <message>
         <source>Add Manual Address</source>
@@ -14916,23 +14940,23 @@ Error: {1}</source>
     </message>
     <message>
         <source>Halfword</source>
-        <translation>반어</translation>
+        <translation>하프워드</translation>
     </message>
     <message>
         <source>Word</source>
-        <translation>단어</translation>
+        <translation>워드</translation>
     </message>
     <message>
         <source>Signed Byte</source>
-        <translation>서명된 바이트</translation>
+        <translation>부호 있는 바이트</translation>
     </message>
     <message>
         <source>Signed Halfword</source>
-        <translation>서명된 반어</translation>
+        <translation>부호 있는 하프워드</translation>
     </message>
     <message>
         <source>Signed Word</source>
-        <translation>서명된 단어</translation>
+        <translation>부호 있는 워드</translation>
     </message>
     <message>
         <source>Address of RAM for HxD Usage: 0x%1</source>
@@ -15364,11 +15388,11 @@ Error: {1}</source>
     </message>
     <message>
         <source>CD Audio Muted.</source>
-        <translation>CD 음향이 소거되었습니다.</translation>
+        <translation>CD 음향이 음소거되었습니다.</translation>
     </message>
     <message>
         <source>CD Audio Unmuted.</source>
-        <translation>CD 음향 소거가 해제되었습니다.</translation>
+        <translation>CD 음향 음소거가 해제되었습니다.</translation>
     </message>
     <message>
         <source>Swapped memory card ports. Both ports have a memory card.</source>
@@ -15450,7 +15474,7 @@ Error: {1}</source>
     </message>
     <message>
         <source>Switching to {} audio backend.</source>
-        <translation>{} 음향 후처리로 전환 중입니다.</translation>
+        <translation>{} 오디오 백엔드로 전환 중입니다.</translation>
     </message>
     <message>
         <source>Switching to {} CPU execution mode.</source>
@@ -15757,11 +15781,11 @@ Error: {1}</source>
     <name>PlayStationMouse</name>
     <message>
         <source>Left Button</source>
-        <translation>←</translation>
+        <translation>왼쪽 버튼</translation>
     </message>
     <message>
         <source>Right Button</source>
-        <translation>→</translation>
+        <translation>오른쪽 버튼</translation>
     </message>
     <message>
         <source>Horizontal Sensitivity</source>
@@ -15962,7 +15986,7 @@ Error: {1}</source>
     </message>
     <message>
         <source>Alpha Blending</source>
-        <translation>알파 블랜딩</translation>
+        <translation>알파 블렌딩</translation>
     </message>
     <message>
         <source>Export...</source>
@@ -16618,7 +16642,7 @@ Would you like to update the shortcut to point to the current location?</source>
     </message>
     <message>
         <source>Global Slot {}</source>
-        <translation>게임 슬롯 {}</translation>
+        <translation>전역 슬롯 {}</translation>
     </message>
     <message>
         <source>Game Slot {}</source>
@@ -16773,7 +16797,7 @@ Do you want to create this directory?</source>
     <message>
         <source>NTSC-J (Japan)</source>
         <comment>ConsoleRegion</comment>
-        <translation>NTSC-J(한국/일본)</translation>
+        <translation>NTSC-J(일본)</translation>
     </message>
     <message>
         <source>NTSC-U/C (US, Canada)</source>
@@ -16788,7 +16812,7 @@ Do you want to create this directory?</source>
     <message>
         <source>NTSC-J (Japan)</source>
         <comment>DiscRegion</comment>
-        <translation>NTSC-J(한국/일본)</translation>
+        <translation>NTSC-J(일본)</translation>
     </message>
     <message>
         <source>NTSC-U/C (US, Canada)</source>
@@ -17023,17 +17047,17 @@ Do you want to create this directory?</source>
     <message>
         <source>Zstandard (Low)</source>
         <comment>GPUDumpCompressionMode</comment>
-        <translation>Z표준(낮음)</translation>
+        <translation>Zstandard(낮음)</translation>
     </message>
     <message>
         <source>Zstandard (Default)</source>
         <comment>GPUDumpCompressionMode</comment>
-        <translation>Z표준(기본)</translation>
+        <translation>Zstandard(기본)</translation>
     </message>
     <message>
         <source>Zstandard (High)</source>
         <comment>GPUDumpCompressionMode</comment>
-        <translation>Z표준(높음)</translation>
+        <translation>Zstandard(높음)</translation>
     </message>
     <message>
         <source>XZ (Low)</source>
@@ -17058,7 +17082,7 @@ Do you want to create this directory?</source>
     <message>
         <source>Weave (Combing)</source>
         <comment>DisplayDeinterlacingMode</comment>
-        <translation>위브(빗질)</translation>
+        <translation>위브(코밍)</translation>
     </message>
     <message>
         <source>Blend (Blur)</source>
@@ -17098,7 +17122,7 @@ Do you want to create this directory?</source>
     <message>
         <source>All Borders (Aspect Uncorrected)</source>
         <comment>DisplayCropMode</comment>
-        <translation>모든 외곽선(측면 비보정)</translation>
+        <translation>모든 외곽선(종횡비 비보정)</translation>
     </message>
     <message>
         <source>None</source>
@@ -17248,7 +17272,7 @@ Do you want to create this directory?</source>
     <message>
         <source>Internal Resolution (Aspect Uncorrected)</source>
         <comment>DisplayScreenshotMode</comment>
-        <translation>내부 해상도(화면 보정 안 됨)</translation>
+        <translation>내부 해상도(종횡비 비보정)</translation>
     </message>
     <message>
         <source>PNG</source>
@@ -17411,32 +17435,32 @@ Do you want to create this directory?</source>
     <message>
         <source>Deflate (Low)</source>
         <comment>SaveStateCompressionMode</comment>
-        <translation>수축(낮음)</translation>
+        <translation>Deflate(낮음)</translation>
     </message>
     <message>
         <source>Deflate (Default)</source>
         <comment>SaveStateCompressionMode</comment>
-        <translation>수축(기본)</translation>
+        <translation>Deflate(기본)</translation>
     </message>
     <message>
         <source>Deflate (High)</source>
         <comment>SaveStateCompressionMode</comment>
-        <translation>수축(높음)</translation>
+        <translation>Deflate(높음)</translation>
     </message>
     <message>
         <source>Zstandard (Low)</source>
         <comment>SaveStateCompressionMode</comment>
-        <translation>Z표준(낮음)</translation>
+        <translation>Zstandard(낮음)</translation>
     </message>
     <message>
         <source>Zstandard (Default)</source>
         <comment>SaveStateCompressionMode</comment>
-        <translation>Z표준(기본)</translation>
+        <translation>Zstandard(기본)</translation>
     </message>
     <message>
         <source>Zstandard (High)</source>
         <comment>SaveStateCompressionMode</comment>
-        <translation>Z표준(높음)</translation>
+        <translation>Zstandard(높음)</translation>
     </message>
     <message>
         <source>XZ (Low)</source>
@@ -17606,7 +17630,7 @@ Do you want to create this directory?</source>
     </message>
     <message>
         <source>&lt;strong&gt;Post-Processing Settings&lt;/strong&gt;&lt;hr&gt;Post processing allows you to alter the appearance of the image displayed on the screen with various filters. Shaders will be executed in sequence. Additional shaders can be downloaded from &lt;a href=&quot;%1&quot;&gt;%1&lt;/a&gt;.</source>
-        <translation>&lt;strong&gt;후처리 설정&lt;/strong&gt;&lt;hr&gt;후처리를 사용하면 다양한 필터를 사용하여 화면에 표시되는 이미지의 모양을 변경할 수 있습니다. 셰이더는 순차적으로 실행됩니다. 추가 셰이더는 &lt;a href=“%1”&gt;%1&lt;/a&gt;에서 내려받을 수 있습니다.</translation>
+        <translation>&lt;strong&gt;후처리 설정&lt;/strong&gt;&lt;hr&gt;후처리를 사용하면 다양한 필터를 사용하여 화면에 표시되는 이미지의 모양을 변경할 수 있습니다. 셰이더는 순차적으로 실행됩니다. 추가 셰이더는 &lt;a href=&quot;%1&quot;&gt;%1&lt;/a&gt;에서 내려받을 수 있습니다.</translation>
     </message>
     <message>
         <source>&lt;strong&gt;Achievement Settings&lt;/strong&gt;&lt;hr&gt;DuckStation uses RetroAchievements as an achievement database and for tracking progress. To use achievements, please sign up for an account at &lt;a href=&quot;%1&quot;&gt;%1&lt;/a&gt;. To view the achievement list in-game, press the hotkey for &lt;strong&gt;Open Pause Menu&lt;/strong&gt; and select &lt;strong&gt;Achievements&lt;/strong&gt; from the menu. Mouse over an option for additional information, and Shift+Wheel to scroll this panel.</source>
@@ -17777,7 +17801,7 @@ Do you want to continue?</source>
     </message>
     <message>
         <source>NTSC-J (Japan):</source>
-        <translation>NTSC-J(한국/일본) :</translation>
+        <translation>NTSC-J(일본):</translation>
     </message>
     <message>
         <source>NTSC-U/C (US/Canada):</source>
@@ -17797,7 +17821,7 @@ Do you want to continue?</source>
     </message>
     <message>
         <source>Search Directories (will be scanned for games)</source>
-        <translation>디렉터리 검색(게임 검색 시)</translation>
+        <translation>검색 디렉터리(게임을 검색할 위치)</translation>
     </message>
     <message>
         <source>Add...</source>
@@ -17857,7 +17881,7 @@ Do you want to continue?</source>
     </message>
     <message>
         <source>Texture Filtering:</source>
-        <translation>택스처 필터링 :</translation>
+        <translation>텍스처 필터링 :</translation>
     </message>
     <message>
         <source>Smooths out the blockiness of magnified textures on 3D objects by using filtering. &lt;br&gt;Will have a greater effect on higher resolution scales.</source>
@@ -17913,7 +17937,7 @@ Do you want to continue?</source>
     </message>
     <message>
         <source>Register</source>
-        <translation>등록하기</translation>
+        <translation>레지스터</translation>
     </message>
     <message>
         <source>Reduces &quot;wobbly&quot; polygons and &quot;warping&quot; textures that are common in PS1 games. &lt;strong&gt;May not be compatible with all games.&lt;/strong&gt;</source>
@@ -18007,7 +18031,7 @@ You can change this option at a later time by using the toolbar in Desktop Mode 
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;h1 style=&quot; margin-top:18px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:xx-large; font-weight:700;&quot;&gt;Setup Complete!&lt;/span&gt;&lt;/h1&gt;&lt;p&gt;You are now ready to run games.&lt;/p&gt;&lt;p&gt;Further options are available under the settings menu. You can also use the Big Picture UI for navigation entirely with a gamepad.&lt;/p&gt;&lt;p&gt;We hope you enjoy using DuckStation.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;h1 style=&quot; margin-top:18px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text- indent:0px;&quot;&gt;&lt;span style=&quot;font-size:xx-large;font-weight:700;&quot;&gt;설정이 완료되었습니다!&lt;/span&gt;&lt;/h1&gt;&lt;p&gt;이제 게임을 실행할 준비가 되었습니다.&lt; /p&gt;&lt;p&gt;설정 메뉴에서 추가 옵션을 사용할 수 있습니다. 빅피처 UI를 사용하여 게임패드만으로 탐색할 수도 있습니다.&lt;/p&gt;&lt;p&gt;DuckStation을 즐겁게 사용하시기 바랍니다.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;h1 style=&quot; margin-top:18px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:xx-large; font-weight:700;&quot;&gt;설정이 완료되었습니다!&lt;/span&gt;&lt;/h1&gt;&lt;p&gt;이제 게임을 실행할 준비가 되었습니다.&lt;/p&gt;&lt;p&gt;설정 메뉴에서 추가 옵션을 사용할 수 있습니다. 빅피처 UI를 사용하여 게임패드만으로 탐색할 수도 있습니다.&lt;/p&gt;&lt;p&gt;DuckStation을 즐겁게 사용하시기 바랍니다.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>Language</source>
@@ -18110,7 +18134,7 @@ Any changes have been saved, and the wizard will run again next time you start D
     </message>
     <message>
         <source>Select Search Directory</source>
-        <translation>디렉터리 검색 선택</translation>
+        <translation>검색 디렉터리 선택</translation>
     </message>
     <message>
         <source>Scan Recursively?</source>
@@ -18604,7 +18628,7 @@ Using shared card instead.</source>
     <message>
         <source>CD-ROM Seek Speedup</source>
         <comment>Taint</comment>
-        <translation>CD-ROM 쓰기 속도 향상</translation>
+        <translation>CD-ROM 탐색 속도 향상</translation>
     </message>
     <message>
         <source>Force Frame Timings</source>
@@ -18703,7 +18727,7 @@ DuckStation을 실행하려면 PS1 또는 PS2 BIOS가 필요합니다.
     </message>
     <message>
         <source>Write Tracking Options</source>
-        <translation>추적 옵션 쓰기</translation>
+        <translation>쓰기 추적 옵션</translation>
     </message>
     <message>
         <source>Maximum Write Coalesce Size:</source>

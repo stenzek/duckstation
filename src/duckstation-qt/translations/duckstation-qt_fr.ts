@@ -1046,6 +1046,10 @@ Messages non lus : {}</translation>
         <translation>Paramètres de l&apos;interface</translation>
     </message>
     <message>
+        <source>Rich Presence Monitor</source>
+        <translation>Moniteur de présence enrichie</translation>
+    </message>
+    <message>
         <source>Enable RAIntegration</source>
         <translation>Activer l&apos;intégration RA</translation>
     </message>
@@ -1148,6 +1152,10 @@ Messages non lus : {}</translation>
     <message>
         <source>Shows a debug menu bar with additional statistics and quick settings.</source>
         <translation>Affiche une barre de menu de débogage avec des statistiques additionnelles et des paramètres rapides.</translation>
+    </message>
+    <message>
+        <source>Always displays the current RetroAchievements rich presence string in the indicator area.</source>
+        <translation>Affiche toujours la chaîne de présence enrichie RetroAchievements actuelle dans la zone des indicateurs.</translation>
     </message>
     <message>
         <source>Default</source>
@@ -6924,6 +6932,10 @@ Vous ne pouvez pas annuler cette action.</translation>
         <translation>Mode de désentrelacement</translation>
     </message>
     <message>
+        <source>Delete</source>
+        <translation>Supprimer</translation>
+    </message>
+    <message>
         <source>Delete And Boot</source>
         <translation>Supprimer et démarrer</translation>
     </message>
@@ -7654,6 +7666,10 @@ Veuillez vérifier votre nom d&apos;utilisateur et votre mot de passe, puis rée
         <translation>Latence de sortie minimale</translation>
     </message>
     <message>
+        <source>Move Cursor</source>
+        <translation>Déplacer le curseur</translation>
+    </message>
+    <message>
         <source>Move Down</source>
         <translation>Déplacer vers le bas</translation>
     </message>
@@ -8214,6 +8230,10 @@ Veuillez vérifier votre nom d&apos;utilisateur et votre mot de passe, puis rée
         <translation>Sélectionner un jeu</translation>
     </message>
     <message>
+        <source>Select Key</source>
+        <translation>Sélectionner une touche</translation>
+    </message>
+    <message>
         <source>Select Macro {} Binds</source>
         <translation>Sélectionner les raccourcis de macro {}</translation>
     </message>
@@ -8672,6 +8692,10 @@ Veuillez vérifier votre nom d&apos;utilisateur et votre mot de passe, puis rée
     <message>
         <source>Toggle Analog</source>
         <translation>Basculer l&apos;analogique</translation>
+    </message>
+    <message>
+        <source>Toggle Case</source>
+        <translation>Basculer la casse</translation>
     </message>
     <message>
         <source>Toggle Fast Forward</source>

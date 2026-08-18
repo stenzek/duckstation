@@ -1036,6 +1036,10 @@ Unread messages: {}</source>
         <translation>インターフェース設定</translation>
     </message>
     <message>
+        <source>Rich Presence Monitor</source>
+        <translation>リッチプレゼンスモニター</translation>
+    </message>
+    <message>
         <source>Enable RAIntegration</source>
         <translation>RAIntegration を有効にする</translation>
     </message>
@@ -1130,6 +1134,10 @@ Unread messages: {}</source>
     <message>
         <source>Shows a debug menu bar with additional statistics and quick settings.</source>
         <translation>追加の統計とクイック設定を含むデバッグメニューバーを表示します。</translation>
+    </message>
+    <message>
+        <source>Always displays the current RetroAchievements rich presence string in the indicator area.</source>
+        <translation>現在のRetroAchievementsリッチプレゼンス文字列を常にインジケーター領域に表示します。</translation>
     </message>
     <message>
         <source>Default</source>
@@ -5715,6 +5723,10 @@ You cannot undo this action.</source>
         <translation>デフォルト: 有効</translation>
     </message>
     <message>
+        <source>Delete</source>
+        <translation>削除</translation>
+    </message>
+    <message>
         <source>Delete Save</source>
         <translation>セーブを削除</translation>
     </message>
@@ -8009,6 +8021,10 @@ Do you want to {1} anyway?</source>
         <translation>ゲームを続ける</translation>
     </message>
     <message>
+        <source>Move Cursor</source>
+        <translation>カーソルを移動</translation>
+    </message>
+    <message>
         <source>Resume Last Session</source>
         <translation>前回のセッションを再開する</translation>
     </message>
@@ -8153,6 +8169,10 @@ Do you want to {1} anyway?</source>
     <message>
         <source>Select Game</source>
         <translation>ゲームを選択</translation>
+    </message>
+    <message>
+        <source>Select Key</source>
+        <translation>キーを選択</translation>
     </message>
     <message>
         <source>Select Macro {} Binds</source>
@@ -8645,6 +8665,10 @@ Do you want to {1} anyway?</source>
     <message>
         <source>Toggle Analog</source>
         <translation>アナログを切り替え</translation>
+    </message>
+    <message>
+        <source>Toggle Case</source>
+        <translation>大文字と小文字を切り替え</translation>
     </message>
     <message>
         <source>Toggle Fast Forward</source>
@@ -12111,11 +12135,11 @@ Shift+クリックで複数のバインドを設定します。</translation>
     </message>
     <message>
         <source>Checked</source>
-        <translation>チェック</translation>
+        <translation>チェック済み</translation>
     </message>
     <message>
         <source>Unchecked</source>
-        <translation>チェックしない</translation>
+        <translation>未チェック</translation>
     </message>
     <message>
         <source>Automatically switches to fullscreen mode when a game is started.</source>
@@ -12183,7 +12207,7 @@ Shift+クリックで複数のバインドを設定します。</translation>
     </message>
     <message>
         <source>Pauses the emulator when a controller with bindings is disconnected.</source>
-        <translation>接続されているコントローラが切断されると、エミュレータを一時停止します。</translation>
+        <translation>割り当てが設定されたコントローラーが切断されると、エミュレーターを一時停止します。</translation>
     </message>
     <message>
         <source>Shows the game you are currently playing as part of your profile in Discord.</source>
@@ -12671,11 +12695,11 @@ Shift+クリックで複数のバインドを設定します。</translation>
     </message>
     <message>
         <source>Start Big Picture Mode</source>
-        <translation>大画面モードを開始</translation>
+        <translation>ビッグピクチャーモードを開始</translation>
     </message>
     <message>
         <source>Big Picture</source>
-        <translation>大画面</translation>
+        <translation>ビッグピクチャー</translation>
     </message>
     <message>
         <source>Start &amp;Disc...</source>
@@ -12899,7 +12923,7 @@ Shift+クリックで複数のバインドを設定します。</translation>
     </message>
     <message>
         <source>View Third-Party Notices...</source>
-        <translation>サードパーティーの通知を見る...</translation>
+        <translation>サードパーティーに関する告知を表示...</translation>
     </message>
     <message>
         <source>Shows copyright and license notices for third-party libraries included with the application.</source>
@@ -13483,7 +13507,7 @@ Shift+クリックで複数のバインドを設定します。</translation>
     </message>
     <message>
         <source>Could not find any CD-ROM devices. Please ensure you have a CD-ROM drive connected and sufficient permissions to access it.</source>
-        <translation>CD-ROM デバイスが見つかりませんでした。CD-ROM ドライブが接続されており、&lt;br&gt;それにアクセスするための十分な権限があることを確認してください。</translation>
+        <translation>CD-ROM デバイスが見つかりませんでした。CD-ROM ドライブが接続されており、それにアクセスするための十分な権限があることを確認してください。</translation>
     </message>
     <message>
         <source>Error</source>
@@ -13875,7 +13899,7 @@ This action cannot be undone.</source>
     </message>
     <message>
         <source>Darker Fusion</source>
-        <translation>ダーク Fusion</translation>
+        <translation>より暗い Fusion</translation>
     </message>
     <message>
         <source>AMOLED</source>
@@ -13923,8 +13947,7 @@ This action cannot be undone.</source>
     </message>
     <message>
         <source>Memory card &apos;%1&apos; does not exist. Do you want to create an empty memory card?</source>
-        <translation>メモリーカード&lt;br&gt;&apos;%1&apos;&lt;br&gt;は存在しません。
-空のメモリーカードを作成しますか？</translation>
+        <translation>メモリーカード「%1」は存在しません。空のメモリーカードを作成しますか？</translation>
     </message>
     <message>
         <source>Memory card &apos;%1&apos; could not be found. Try starting the game and saving to create it.</source>
@@ -14156,7 +14179,7 @@ Error: {1}</source>
     </message>
     <message>
         <source>Title</source>
-        <translation>ゲーム名</translation>
+        <translation>タイトル</translation>
     </message>
     <message>
         <source>File Name</source>
@@ -14180,7 +14203,7 @@ Error: {1}</source>
     </message>
     <message>
         <source>New...</source>
-        <translation>Nouveau...</translation>
+        <translation>新規作成...</translation>
     </message>
     <message>
         <source>Open...</source>
@@ -14267,7 +14290,7 @@ Error: {1}</source>
     </message>
     <message>
         <source> (Deleted)</source>
-        <translation> (削&#x3000;除)</translation>
+        <translation> (削除済み)</translation>
     </message>
     <message>
         <source>PNG Images (*.png);;JPEG Images (*.jpg *.jpeg);;WebP Images (*.webp)</source>
@@ -14291,7 +14314,7 @@ Error: {1}</source>
     </message>
     <message>
         <source>Memory card &apos;%1&apos; is not saved, do you want to save before closing?</source>
-        <translation>メモリーカード&lt;br&gt;&apos;%1&apos;&lt;br&gt;は保存されていません。閉じる前に保存しますか？</translation>
+        <translation>メモリーカード「%1」は保存されていません。閉じる前に保存しますか？</translation>
     </message>
     <message>
         <source>Destination memory card already contains a save file with the same name (%1) as the one you are attempting to copy. Please delete this file from the destination memory card before copying.</source>
@@ -14406,7 +14429,7 @@ Error: {1}</source>
     </message>
     <message>
         <source>Checked</source>
-        <translation>チェックする</translation>
+        <translation>オン</translation>
     </message>
     <message>
         <source>The number of memory cards that can be used is dependent on multitap and game support.</source>
@@ -14671,7 +14694,7 @@ Error: {1}</source>
     </message>
     <message>
         <source>Search Parameters</source>
-        <translation>パラメータ検索</translation>
+        <translation>検索パラメータ</translation>
     </message>
     <message>
         <source>Value:</source>
@@ -14715,7 +14738,7 @@ Error: {1}</source>
     </message>
     <message>
         <source>Any Value (&apos;New Search&apos; or &apos;Reset Result Value&apos;)</source>
-        <translation>任意の値</translation>
+        <translation>任意の値（「新規検索」または「結果値をリセット」）</translation>
     </message>
     <message>
         <source>Less Than Previous Result</source>
@@ -17311,7 +17334,7 @@ Do you want to create this directory?</source>
     <message>
         <source>Non-Persistent Card (Do Not Save)</source>
         <comment>MemoryCardType</comment>
-        <translation>非永続カード (セーブしないでください)</translation>
+        <translation>非永続カード（保存しない）</translation>
     </message>
     <message>
         <source>Disabled</source>
@@ -17646,7 +17669,7 @@ Do you want to continue?</source>
     </message>
     <message>
         <source>Recommended Value</source>
-        <translation>推奨</translation>
+        <translation>推奨値</translation>
     </message>
     <message>
         <source>%1 [%2]</source>
@@ -17661,7 +17684,7 @@ Do you want to continue?</source>
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;h1 style=&quot; margin-top:18px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:xx-large; font-weight:700;&quot;&gt;Welcome to DuckStation!&lt;/span&gt;&lt;/h1&gt;&lt;p&gt;This wizard will help guide you through the configuration steps required to use the application. It is recommended if this is your first time installing DuckStation that you view the setup guide at &lt;a href=&quot;https://github.com/stenzek/duckstation#downloading-and-running&quot;&gt;https://github.com/stenzek/duckstation#downloading-and-running&lt;/a&gt;.&lt;/p&gt;&lt;p&gt;By default, DuckStation will connect to the server at &lt;a href=&quot;https://github.com/&quot;&gt;github.com&lt;/a&gt; to check for updates, and if available and confirmed, download update packages from &lt;a href=&quot;https://github.com/&quot;&gt;github.com&lt;/a&gt;. If you do not wish for DuckStation to make any network connections on startup, you should uncheck the Automatic Updates option now. The Automatic Update setting can be changed later at any time in Interface Settings.&lt;/p&gt;&lt;p&gt;Please choose a language and theme to begin.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;h1 style=&quot; margin-top:18px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:xx-large; font-weight:700;&quot;&gt;DuckStationへようこそ!&lt;/span&gt;&lt;/h1&gt;&lt;p&gt;このウィザードは、アプリケーションを使用するために必要な設定手順をガイドします。初めてDuckStationをインストールする場合は、&lt;a href=&quot;https://github.com/stenzek/duckstation#downloading-and-running&quot;&gt;https://github.com/stenzek/duckstation#downloading-and-running&lt;/a&gt;のセットアップガイドをご覧になることをお勧めします。&lt;/p&gt;&lt;p&gt;デフォルトではDuckStationは&lt;a href=&quot;https://github.com/&quot;&gt;github.com&lt;/a&gt;サーバーにアップデートがあるか確認するために接続し、可能な場合、アップデートパッケージを&lt;a href=&quot;https://github.com/&quot;&gt;github.com&lt;/a&gt;よりダウンロードします。DuckStationの起動時にネットワーク接続を行いたくない場合は、「自動更新」のチェックを外してください。自動アップデートの設定は、インターフェイス設定でいつでも変更することができます。&lt;/p&gt;&lt;p&gt;まずは言語とテーマを選択してください。&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;h1 style=&quot; margin-top:18px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:xx-large; font-weight:700;&quot;&gt;DuckStationへようこそ!&lt;/span&gt;&lt;/h1&gt;&lt;p&gt;このウィザードは、アプリケーションを使用するために必要な設定手順をガイドします。初めてDuckStationをインストールする場合は、&lt;a href=&quot;https://github.com/stenzek/duckstation#downloading-and-running&quot;&gt;https://github.com/stenzek/duckstation#downloading-and-running&lt;/a&gt;のセットアップガイドをご覧になることをお勧めします。&lt;/p&gt;&lt;p&gt;デフォルトではDuckStationは&lt;a href=&quot;https://github.com/&quot;&gt;github.com&lt;/a&gt;サーバーに更新を確認するために接続し、更新が利用可能で確認された場合は、&lt;a href=&quot;https://github.com/&quot;&gt;github.com&lt;/a&gt;から更新パッケージをダウンロードします。DuckStationの起動時にネットワーク接続を行いたくない場合は、「自動更新」のチェックを外してください。自動アップデートの設定は、インターフェイス設定でいつでも変更することができます。&lt;/p&gt;&lt;p&gt;まずは言語とテーマを選択してください。&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>Language:</source>
@@ -17709,7 +17732,7 @@ Do you want to continue?</source>
     </message>
     <message>
         <source>Search Directories (will be scanned for games)</source>
-        <translation>検索ディレクトリ (ゲームがスキャンされます)</translation>
+        <translation>検索ディレクトリ（ゲームをスキャンします）</translation>
     </message>
     <message>
         <source>Add...</source>
@@ -17817,7 +17840,7 @@ Do you want to continue?</source>
     </message>
     <message>
         <source>Determines how much of the area typically not visible on a consumer TV set to crop/hide. Some games display content in the overscan area, or use it for screen effects. May not display correctly with the &quot;All Borders&quot; setting. &quot;Only Overscan&quot; offers a good compromise between stability and hiding black borders.</source>
-        <translation>民生用テレビで通常表示されない領域をどの程度クロップ/非表示にするかを決定します。ゲームによっては、オーバースキャン領域にコンテンツを表示したり、画面効果に使用したりするものもあります。すべての境界線」設定では正しく表示されない場合があります。&quot;オーバースキャンのみ &quot;は、安定性と黒枠を隠すことの間の良い妥協点を提供します。</translation>
+        <translation>一般的なテレビでは通常見えない領域を、どの程度クロップして隠すかを指定します。一部のゲームはオーバースキャン領域にコンテンツを表示したり、画面効果に使用したりします。「すべての境界」設定では正しく表示されない場合があります。「オーバースキャン領域のみ」は、安定性と黒枠を隠すことの間の適切な妥協点です。</translation>
     </message>
     <message>
         <source>Scaling:</source>
@@ -17854,7 +17877,7 @@ Do you want to continue?</source>
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DuckStation supports earning achievements and leaderboard tracking with RetroAchievements.&lt;/p&gt;&lt;p&gt;If you have a RetroAchievements account, you can use the form below to log in. If not, you can register by clicking the Register button below.&lt;/p&gt;&lt;p&gt;A RetroAchievements account is &lt;span style=&quot; font-weight:700;&quot;&gt;not&lt;/span&gt; required to use DuckStation.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DuckStation は RetroAchievements による実績の獲得とリーダーボードの追跡に対応しています。&lt;/p&gt;&lt;p&gt;RetroAchievementsのアカウントをお持ちの場合は、以下のフォームからログインしてください。アカウントをお持ちでない場合は、下の「登録」ボタンをクリックして登録してください。。&lt;/p&gt;&lt;p&gt;DuckStation の使用に RetroAchievements アカウントは&lt;span style=&quot; font-weight:700;&quot;&gt;必要ありません&lt;/span&gt;。&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DuckStation は RetroAchievements による実績の獲得とリーダーボードの追跡に対応しています。&lt;/p&gt;&lt;p&gt;RetroAchievementsのアカウントをお持ちの場合は、以下のフォームからログインしてください。アカウントをお持ちでない場合は、下の「登録」ボタンをクリックして登録してください。&lt;/p&gt;&lt;p&gt;DuckStation の使用に RetroAchievements アカウントは&lt;span style=&quot; font-weight:700;&quot;&gt;必要ありません&lt;/span&gt;。&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>Register</source>

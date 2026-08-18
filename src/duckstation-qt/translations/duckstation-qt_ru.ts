@@ -1071,6 +1071,10 @@ We will keep trying to submit this request.</source>
         <translation>Настройки интерфейса</translation>
     </message>
     <message>
+        <source>Rich Presence Monitor</source>
+        <translation>Монитор Rich Presence</translation>
+    </message>
+    <message>
         <source>Enable RAIntegration</source>
         <translation>Включить RAIntegration</translation>
     </message>
@@ -1190,6 +1194,10 @@ We will keep trying to submit this request.</source>
     <message>
         <source>Shows a debug menu bar with additional statistics and quick settings.</source>
         <translation>Показывает строку меню отладки с дополнительной статистикой и быстрыми настройками.</translation>
+    </message>
+    <message>
+        <source>Always displays the current RetroAchievements rich presence string in the indicator area.</source>
+        <translation>Всегда отображает текущую строку Rich Presence RetroAchievements в области индикаторов.</translation>
     </message>
     <message>
         <source>Default</source>
@@ -6060,6 +6068,10 @@ You cannot undo this action.</source>
         <translation>По умолчанию: включено</translation>
     </message>
     <message>
+        <source>Delete</source>
+        <translation>Удалить</translation>
+    </message>
+    <message>
         <source>Delete And Boot</source>
         <translation>Удалить и загрузить</translation>
     </message>
@@ -6687,6 +6699,10 @@ Please check your username and password, and try again.</source>
         <translation>Границы меню</translation>
     </message>
     <message>
+        <source>Move Cursor</source>
+        <translation>Переместить курсор</translation>
+    </message>
+    <message>
         <source>Multitap</source>
         <translation>Мультитап</translation>
     </message>
@@ -6915,6 +6931,10 @@ Please check your username and password, and try again.</source>
         <translation>Выбрать игру</translation>
     </message>
     <message>
+        <source>Select Key</source>
+        <translation>Выбрать клавишу</translation>
+    </message>
+    <message>
         <source>Select State</source>
         <translatorcomment>Подсказка внизу</translatorcomment>
         <translation>Выбрать состояние</translation>
@@ -7085,6 +7105,10 @@ Please check your username and password, and try again.</source>
         <source>To use achievements, please log in with your retroachievements.org account.</source>
         <translatorcomment>*войдите в систему,</translatorcomment>
         <translation>Чтобы использовать достижения, авторизуйтесь, используя свою учетную запись на сайте retroachievements.org.</translation>
+    </message>
+    <message>
+        <source>Toggle Case</source>
+        <translation>Переключить регистр</translation>
     </message>
     <message>
         <source>Toggle Fullscreen</source>

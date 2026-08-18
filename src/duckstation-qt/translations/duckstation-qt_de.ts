@@ -1055,6 +1055,10 @@ Ungelesene Nachrichten: {}</translation>
         <translation>Schnittstelleneinstellungen</translation>
     </message>
     <message>
+        <source>Rich Presence Monitor</source>
+        <translation>Rich-Presence-Monitor</translation>
+    </message>
+    <message>
         <source>Enable RAIntegration</source>
         <translation>RAIntegration aktivieren</translation>
     </message>
@@ -1159,6 +1163,10 @@ Ungelesene Nachrichten: {}</translation>
         <translation>Zeigt ein Debugmenü mit zusätzlichen Informationen und Schnelleinstellungen an.</translation>
     </message>
     <message>
+        <source>Always displays the current RetroAchievements rich presence string in the indicator area.</source>
+        <translation>Zeigt im Anzeigebereich stets den aktuellen Rich-Presence-String von RetroAchievements an.</translation>
+    </message>
+    <message>
         <source>Default</source>
         <translation>Standard</translation>
     </message>
@@ -1235,7 +1243,7 @@ Ungelesene Nachrichten: {}</translation>
     </message>
     <message>
         <source>Select</source>
-        <translation>Select</translation>
+        <translation>Auswählen</translation>
     </message>
     <message>
         <source>Start</source>
@@ -1979,7 +1987,7 @@ Sie können DuckStation manuell aktualisieren, indem Sie die neueste Version ern
     </message>
     <message>
         <source>&lt;h2&gt;Save State Warning&lt;/h2&gt;&lt;p&gt;Installing this update will make your save states &lt;b&gt;incompatible&lt;/b&gt;. Please ensure you have saved your games to memory card before installing this update or you will lose progress.&lt;/p&gt;</source>
-        <translation>&lt;h2&gt;Spielstand-Warnung&lt;/h2&gt;&lt;p&gt;Die Installation dieses Updates verursacht &lt;b&gt;inkompatibele&lt;/b&gt; Spielstände. Bitte stelle sicher, dass deine Spiele auf eine Memory Card gespeichert wurden, bevor du dieses Update installierst, sonst geht dein Spielfortschritt verloren.&lt;/p&gt;</translation>
+        <translation>&lt;h2&gt;Spielstand-Warnung&lt;/h2&gt;&lt;p&gt;Durch die Installation dieses Updates werden deine Spielstände &lt;b&gt;inkompatibel&lt;/b&gt;. Bitte stelle sicher, dass deine Spiele auf einer Memory Card gespeichert wurden, bevor du dieses Update installierst, sonst geht dein Spielfortschritt verloren.&lt;/p&gt;</translation>
     </message>
     <message>
         <source>Updater Warning</source>
@@ -2850,7 +2858,7 @@ Wenn Sie diesen Cheat verwenden, wird er nicht wie erwartet funktionieren. Möch
     </message>
     <message>
         <source>When this option is chosen, the clock speed set below will be used.</source>
-        <translation>Wenn diese Option aktiviert ist, wird die unten eingestellte Taktfrequenz verwendet.</translation>
+        <translation>Wenn diese Option ausgewählt ist, wird die unten eingestellte Taktfrequenz verwendet.</translation>
     </message>
     <message>
         <source>Overclocking Percentage</source>
@@ -2878,7 +2886,7 @@ Wenn Sie diesen Cheat verwenden, wird er nicht wie erwartet funktionieren. Möch
     </message>
     <message>
         <source>Speeds up CD-ROM reads by the specified factor. Only applies to double-speed reads, and is ignored when audio is playing. May improve loading speeds in some games, at the cost of breaking others.</source>
-        <translation>Beschleunigt das Lesen von CD-ROMs um den angegebenen Faktor - wird allerdings bei der Audiowiedergabe ignoriert. Dies kann die Ladezeiten in Spielen verkürzen, aber unter Umständen auch verschlechtern.</translation>
+        <translation>Beschleunigt CD-ROM-Lesevorgänge um den angegebenen Faktor. Gilt nur für Lesevorgänge mit doppelter Geschwindigkeit und wird bei Audiowiedergabe ignoriert. Kann die Ladezeiten in einigen Spielen verkürzen, andere jedoch beeinträchtigen.</translation>
     </message>
     <message>
         <source>Reduces the simulated time for the CD-ROM sled to move to different areas of the disc. Can improve loading times, but crash games which do not expect the CD-ROM to operate faster.</source>
@@ -2886,7 +2894,7 @@ Wenn Sie diesen Cheat verwenden, wird er nicht wie erwartet funktionieren. Möch
     </message>
     <message>
         <source>Automatically applies patches to disc images when they are present in the same directory. Currently only PPF patches are supported with this option.</source>
-        <translation>Automatische Anwendung von Patches auf CDs an, wenn sie sich im gleichen Verzeichnis befinden. Derzeit werden nur PPF-Patches mit dieser Option unterstützt.</translation>
+        <translation>Wendet Patches automatisch auf Disc-Images an, wenn sie sich im selben Verzeichnis befinden. Derzeit werden mit dieser Option nur PPF-Patches unterstützt.</translation>
     </message>
     <message>
         <source>Automatically switches to the next disc in the game when the game stops the CD-ROM motor. No switch will occur if the last disc in the game is already selected. &lt;strong&gt;Does not work for all games.&lt;/strong&gt;</source>
@@ -3249,7 +3257,7 @@ Diese Warnung wird nur einmal angezeigt.</translation>
     </message>
     <message>
         <source>Select</source>
-        <translation>Select</translation>
+        <translation>Auswählen</translation>
     </message>
     <message>
         <source>Start</source>
@@ -3753,7 +3761,7 @@ Die &quot;alternative&quot; Farbe wird verwendet, wenn der Analogmodus aktiv ist
     </message>
     <message>
         <source>Trigger</source>
-        <translation>Trigger</translation>
+        <translation>Auslöser</translation>
     </message>
     <message>
         <source>Select the trigger to activate this macro. This can be a single button, or combination of buttons (chord). Shift-click for multiple triggers.</source>
@@ -3934,7 +3942,7 @@ Alle Zuordnungen und Einstellungen gehen verloren. Sie können diese Aktion nich
     </message>
     <message>
         <source>Hotkeys</source>
-        <translation>Hotkeys</translation>
+        <translation>Tastenkürzel</translation>
     </message>
     <message>
         <source>The controller preset named &apos;%1&apos; cannot be found.</source>
@@ -4004,7 +4012,7 @@ Alle Zuordnungen und Einstellungen gehen verloren. Sie können diese Aktion nich
     </message>
     <message>
         <source>Failed to load state: %1</source>
-        <translation>Status konnte nicht geladen werden: %1</translation>
+        <translation>Spielstand konnte nicht geladen werden: %1</translation>
     </message>
     <message>
         <source>Memory Card Busy</source>
@@ -4064,11 +4072,11 @@ Diese Datei ist ungefähr 206 KB groß. Möchten Sie sie jetzt herunterladen?</t
     </message>
     <message>
         <source>State saved to %1.</source>
-        <translation>Status in %1 gespeichert.</translation>
+        <translation>Spielstand in %1 gespeichert.</translation>
     </message>
     <message>
         <source>Failed to save state: %1</source>
-        <translation>Status konnte nicht gespeichert werden: %1</translation>
+        <translation>Spielstand konnte nicht gespeichert werden: %1</translation>
     </message>
     <message>
         <source>%1x%2</source>
@@ -4134,7 +4142,7 @@ Diese Datei ist ungefähr 206 KB groß. Möchten Sie sie jetzt herunterladen?</t
     <name>DDGoController</name>
     <message>
         <source>Select</source>
-        <translation>Select</translation>
+        <translation>Auswählen</translation>
     </message>
     <message>
         <source>Start</source>
@@ -4242,7 +4250,7 @@ Diese Datei ist ungefähr 206 KB groß. Möchten Sie sie jetzt herunterladen?</t
     </message>
     <message>
         <source>Power Transition Frames</source>
-        <translation>Rahmen für Stromübergang</translation>
+        <translation>Bilder für Stromübergang</translation>
     </message>
     <message>
         <source>Sets the number of frames that the controller will report the transitioning/inbetween state when changing power level.</source>
@@ -4250,7 +4258,7 @@ Diese Datei ist ungefähr 206 KB groß. Möchten Sie sie jetzt herunterladen?</t
     </message>
     <message>
         <source>Brake Transition Frames</source>
-        <translation>Rahmen für Bremsübergang</translation>
+        <translation>Bilder für Bremsübergang</translation>
     </message>
     <message>
         <source>Sets the number of frames that the controller will report the transitioning/inbetween state when changing brake level.</source>
@@ -4303,7 +4311,7 @@ Diese Datei ist ungefähr 206 KB groß. Möchten Sie sie jetzt herunterladen?</t
     </message>
     <message>
         <source>Address</source>
-        <translation>Addresse</translation>
+        <translation>Adresse</translation>
     </message>
     <message>
         <source>Value</source>
@@ -4374,7 +4382,7 @@ Diese Datei ist ungefähr 206 KB groß. Möchten Sie sie jetzt herunterladen?</t
     </message>
     <message>
         <source>Address</source>
-        <translation>Addresse</translation>
+        <translation>Adresse</translation>
     </message>
     <message>
         <source>Type</source>
@@ -4386,7 +4394,7 @@ Diese Datei ist ungefähr 206 KB groß. Möchten Sie sie jetzt herunterladen?</t
     </message>
     <message>
         <source>Stack</source>
-        <translation>Stack</translation>
+        <translation>Stapel</translation>
     </message>
     <message>
         <source>Pause/Continue</source>
@@ -4514,7 +4522,7 @@ Diese Datei ist ungefähr 206 KB groß. Möchten Sie sie jetzt herunterladen?</t
     </message>
     <message>
         <source>&amp;Dump Address</source>
-        <translation>&amp;Addresse dumpen</translation>
+        <translation>&amp;Adresse ausgeben</translation>
     </message>
     <message>
         <source>Ctrl+D</source>
@@ -4608,7 +4616,7 @@ Diese Datei kann mehrere Gigabyte groß sein, achte also auf die Abnutzung der S
     </message>
     <message>
         <source>&amp;Nop Instruction</source>
-        <translation>Anweisung &amp;noppen</translation>
+        <translation>&amp;NOP-Anweisung</translation>
     </message>
     <message>
         <source>View in &amp;Dump</source>
@@ -4616,19 +4624,19 @@ Diese Datei kann mehrere Gigabyte groß sein, achte also auf die Abnutzung der S
     </message>
     <message>
         <source>Invalid search pattern. It should contain hex digits or question marks.</source>
-        <translation>Ungültige Suchstruktur. Es sollte Hex-Ziffern oder Fragezeichen enthalten.</translation>
+        <translation>Ungültiges Suchmuster. Es sollte Hex-Ziffern oder Fragezeichen enthalten.</translation>
     </message>
     <message>
         <source>Pattern not found.</source>
-        <translation>Struktur nicht gefunden.</translation>
+        <translation>Suchmuster nicht gefunden.</translation>
     </message>
     <message>
         <source>Pattern found at 0x%1 (passed the end of memory).</source>
-        <translation>Struktur bei 0x%1 gefunden (Überschreitung des Speicherendes).</translation>
+        <translation>Suchmuster bei 0x%1 gefunden (Speicherende überschritten).</translation>
     </message>
     <message>
         <source>Pattern found at 0x%1.</source>
-        <translation>Struktur bei 0x%1 gefunden.</translation>
+        <translation>Suchmuster bei 0x%1 gefunden.</translation>
     </message>
     <message>
         <source>Invalid address. It should be in hex (0x12345678 or 12345678)</source>
@@ -4995,7 +5003,7 @@ Wenn Sie auf Zurücksetzen klicken, wird die Seriennummer wieder auf den aus dem
     </message>
     <message>
         <source> Frames</source>
-        <translation> Frames</translation>
+        <translation> Bilder</translation>
     </message>
     <message>
         <source>Use Software Renderer (Low VRAM Mode)</source>
@@ -5011,43 +5019,43 @@ Wenn Sie auf Zurücksetzen klicken, wird die Seriennummer wieder auf den aus dem
     </message>
     <message>
         <source>1 Frame</source>
-        <translation>1 Frame</translation>
+        <translation>1 Bild</translation>
     </message>
     <message>
         <source>2 Frames</source>
-        <translation>2 Frames</translation>
+        <translation>2 Bilder</translation>
     </message>
     <message>
         <source>3 Frames</source>
-        <translation>3 Frames</translation>
+        <translation>3 Bilder</translation>
     </message>
     <message>
         <source>4 Frames</source>
-        <translation>4 Frames</translation>
+        <translation>4 Bilder</translation>
     </message>
     <message>
         <source>5 Frames</source>
-        <translation>5 Frames</translation>
+        <translation>5 Bilder</translation>
     </message>
     <message>
         <source>6 Frames</source>
-        <translation>6 Frames</translation>
+        <translation>6 Bilder</translation>
     </message>
     <message>
         <source>7 Frames</source>
-        <translation>7 Frames</translation>
+        <translation>7 Bilder</translation>
     </message>
     <message>
         <source>8 Frames</source>
-        <translation>8 Frames</translation>
+        <translation>8 Bilder</translation>
     </message>
     <message>
         <source>9 Frames</source>
-        <translation>9 Frames</translation>
+        <translation>9 Bilder</translation>
     </message>
     <message>
         <source>10 Frames</source>
-        <translation>10 Frames</translation>
+        <translation>10 Bilder</translation>
     </message>
     <message>
         <source>Enable for Analog Input</source>
@@ -5067,7 +5075,7 @@ Wenn Sie auf Zurücksetzen klicken, wird die Seriennummer wieder auf den aus dem
     </message>
     <message>
         <source>Sets the target emulation speed. It is not guaranteed that this speed will be reached, and if not, the emulator will run as fast as it can manage.</source>
-        <translation>Legt die Emulationsgeschwindigkeit fest. Es kann nicht garantiert werden, dass diese Geschwindigkeit erreicht wird.&lt;br&gt;Wenn die Option &quot;Unbeschränkt&quot; ausgewählt ist, wird der Emulator so schnell wie möglich ausgeführt.</translation>
+        <translation>Legt die Zielgeschwindigkeit der Emulation fest. Es kann nicht garantiert werden, dass diese Geschwindigkeit erreicht wird; andernfalls läuft der Emulator so schnell wie möglich.</translation>
     </message>
     <message>
         <source>Fast Forward Speed</source>
@@ -5079,7 +5087,7 @@ Wenn Sie auf Zurücksetzen klicken, wird die Seriennummer wieder auf den aus dem
     </message>
     <message>
         <source>Sets the fast forward speed. This speed will be used when the fast forward hotkey is pressed/toggled.</source>
-        <translation>Legt die Schnellvorlaufgeschwindigkeit fest. Diese Geschwindigkeit wird benutzt, wenn das Schnellvorlauf-Tastenkürzel gedrückt wird.&lt;br&gt;Wenn die Option &quot;Unbeschränkt&quot; ausgewählt ist, wird der Schnellvorlauf so schnell wie möglich ausgeführt.</translation>
+        <translation>Legt die Schnellvorlaufgeschwindigkeit fest. Diese Geschwindigkeit wird verwendet, wenn das Schnellvorlauf-Tastenkürzel gedrückt oder umgeschaltet wird.</translation>
     </message>
     <message>
         <source>Turbo Speed</source>
@@ -5087,7 +5095,7 @@ Wenn Sie auf Zurücksetzen klicken, wird die Seriennummer wieder auf den aus dem
     </message>
     <message>
         <source>Sets the turbo speed. This speed will be used when the turbo hotkey is pressed/toggled. Turboing will take priority over fast forwarding if both hotkeys are pressed/toggled.</source>
-        <translation>Legt die Turbogeschwindigkeit fest. Diese Geschwindigkeit wird benutzt, wenn das Turbo-Tastenkürzel gedrückt wird. Der Turbobetrieb hat gegenüber dem Schnellvorlauf Vorrang, wenn beide Tasten gedrückt werden.&lt;br&gt;Wenn die Option &quot;Unbeschränkt&quot; ausgewählt ist, wird der Turbo so schnell wie möglich ausgeführt.</translation>
+        <translation>Legt die Turbogeschwindigkeit fest. Diese Geschwindigkeit wird verwendet, wenn das Turbo-Tastenkürzel gedrückt oder umgeschaltet wird. Turbo hat Vorrang vor dem Schnellvorlauf, wenn beide Tastenkürzel gedrückt oder umgeschaltet werden.</translation>
     </message>
     <message>
         <source>Unchecked</source>
@@ -5206,11 +5214,11 @@ ${serial}: Seriennummer des Spiels.</translation>
     </message>
     <message>
         <source>1 Frame</source>
-        <translation>1 Frame</translation>
+        <translation>1 Bild</translation>
     </message>
     <message>
         <source>10 Frames</source>
-        <translation>10 Frames</translation>
+        <translation>10 Bilder</translation>
     </message>
     <message>
         <source>10x</source>
@@ -5246,7 +5254,7 @@ ${serial}: Seriennummer des Spiels.</translation>
     </message>
     <message>
         <source>2 Frames</source>
-        <translation>2 Frames</translation>
+        <translation>2 Bilder</translation>
     </message>
     <message>
         <source>2x</source>
@@ -5258,7 +5266,7 @@ ${serial}: Seriennummer des Spiels.</translation>
     </message>
     <message>
         <source>3 Frames</source>
-        <translation>3 Frames</translation>
+        <translation>3 Bilder</translation>
     </message>
     <message>
         <source>3x</source>
@@ -5274,7 +5282,7 @@ ${serial}: Seriennummer des Spiels.</translation>
     </message>
     <message>
         <source>4 Frames</source>
-        <translation>4 Frames</translation>
+        <translation>4 Bilder</translation>
     </message>
     <message>
         <source>4x</source>
@@ -5286,7 +5294,7 @@ ${serial}: Seriennummer des Spiels.</translation>
     </message>
     <message>
         <source>5 Frames</source>
-        <translation>5 Frames</translation>
+        <translation>5 Bilder</translation>
     </message>
     <message>
         <source>5x</source>
@@ -5302,7 +5310,7 @@ ${serial}: Seriennummer des Spiels.</translation>
     </message>
     <message>
         <source>6 Frames</source>
-        <translation>6 Frames</translation>
+        <translation>6 Bilder</translation>
     </message>
     <message>
         <source>6x</source>
@@ -5318,7 +5326,7 @@ ${serial}: Seriennummer des Spiels.</translation>
     </message>
     <message>
         <source>7 Frames</source>
-        <translation>7 Frames</translation>
+        <translation>7 Bilder</translation>
     </message>
     <message>
         <source>7x</source>
@@ -5326,7 +5334,7 @@ ${serial}: Seriennummer des Spiels.</translation>
     </message>
     <message>
         <source>8 Frames</source>
-        <translation>8 Frames</translation>
+        <translation>8 Bilder</translation>
     </message>
     <message>
         <source>8x</source>
@@ -5334,7 +5342,7 @@ ${serial}: Seriennummer des Spiels.</translation>
     </message>
     <message>
         <source>9 Frames</source>
-        <translation>9 Frames</translation>
+        <translation>9 Bilder</translation>
     </message>
     <message>
         <source>9x (for 4K)</source>
@@ -5518,7 +5526,7 @@ ${serial}: Seriennummer des Spiels.</translation>
     </message>
     <message>
         <source>Clean Boot</source>
-        <translation>Clean Boot</translation>
+        <translation>Sauberer Start</translation>
     </message>
     <message>
         <source>Clear Settings</source>
@@ -5933,7 +5941,7 @@ Fehler war:
     </message>
     <message>
         <source>Game Grid</source>
-        <translation>Spielfeld</translation>
+        <translation>Spielraster</translation>
     </message>
     <message>
         <source>Game List</source>
@@ -6213,7 +6221,7 @@ Fehler war:
     </message>
     <message>
         <source>%d Frames</source>
-        <translation>%d Frames</translation>
+        <translation>%d Bilder</translation>
     </message>
     <message>
         <source>%d cycles</source>
@@ -6608,6 +6616,10 @@ Diese Aktion kann nicht rückgängig gemacht werden.</translation>
         <translation>Deinterlacing-Modus</translation>
     </message>
     <message>
+        <source>Delete</source>
+        <translation>Löschen</translation>
+    </message>
+    <message>
         <source>Delete And Boot</source>
         <translation>Löschen und starten</translation>
     </message>
@@ -6745,7 +6757,7 @@ Diese Aktion kann nicht rückgängig gemacht werden.</translation>
     </message>
     <message>
         <source>Disc</source>
-        <translation>Disc</translation>
+        <translation>Datenträger</translation>
     </message>
     <message>
         <source>Disc Set Title</source>
@@ -7073,7 +7085,7 @@ Diese Aktion kann nicht rückgängig gemacht werden.</translation>
     </message>
     <message>
         <source>Hotkeys</source>
-        <translation>Hotkeys</translation>
+        <translation>Tastenkürzel</translation>
     </message>
     <message>
         <source>If disabled, the shader in this stage will not be applied.</source>
@@ -7252,6 +7264,10 @@ Bitte überprüfen Sie Ihren Benutzernamen und Ihr Passwort und versuchen Sie es
         <translation>Nachrichtenposition</translation>
     </message>
     <message>
+        <source>Move Cursor</source>
+        <translation>Cursor bewegen</translation>
+    </message>
+    <message>
         <source>N/A</source>
         <translation>k. A.</translation>
     </message>
@@ -7409,7 +7425,7 @@ Bitte überprüfen Sie Ihren Benutzernamen und Ihr Passwort und versuchen Sie es
     </message>
     <message>
         <source>PGXP (Precision Geometry Transform Pipeline)</source>
-        <translation>PGXP (ermöglicht 3D-Geometrie, zu der die ursprüngliche Konsole nicht fähig war)</translation>
+        <translation>PGXP (Precision Geometry Transform Pipeline)</translation>
     </message>
     <message>
         <source>PGXP Depth Buffer</source>
@@ -7580,6 +7596,10 @@ Bitte überprüfen Sie Ihren Benutzernamen und Ihr Passwort und versuchen Sie es
         <translation>BIOS-Image auswählen</translation>
     </message>
     <message>
+        <source>Select Key</source>
+        <translation>Taste auswählen</translation>
+    </message>
+    <message>
         <source>Settings reset to default.</source>
         <translation>Einstellungen auf Standardwerte zurückgesetzt.</translation>
     </message>
@@ -7666,6 +7686,10 @@ Bitte überprüfen Sie Ihren Benutzernamen und Ihr Passwort und versuchen Sie es
     <message>
         <source>Time Played: </source>
         <translation>Spielzeit: </translation>
+    </message>
+    <message>
+        <source>Toggle Case</source>
+        <translation>Groß-/Kleinschreibung umschalten</translation>
     </message>
     <message>
         <source>Toggles the macro when the button is pressed, instead of held.</source>
@@ -7969,7 +7993,7 @@ Bitte überprüfen Sie Ihren Benutzernamen und Ihr Passwort und versuchen Sie es
     </message>
     <message>
         <source>Recompiler Fast Memory Access</source>
-        <translation>Recompiler Fast Memory Access</translation>
+        <translation>Schneller Speicherzugriff des Recompilers</translation>
     </message>
     <message>
         <source>Reduce Input Latency</source>
@@ -8517,7 +8541,7 @@ Bitte überprüfen Sie Ihren Benutzernamen und Ihr Passwort und versuchen Sie es
     </message>
     <message>
         <source>Speeds up CD-ROM reads by the specified factor. May improve loading speeds in some games, and break others.</source>
-        <translation>Beschleunigt CD-ROM-Lesefehler um den angegebenen Faktor. Kann die Ladegeschwindigkeit in einigen Spielen verbessern, andere jedoch beeinträchtigen.</translation>
+        <translation>Beschleunigt CD-ROM-Lesevorgänge um den angegebenen Faktor. Kann die Ladezeiten in einigen Spielen verbessern, andere jedoch beeinträchtigen.</translation>
     </message>
     <message>
         <source>Speeds up CD-ROM seeks by the specified factor. May improve loading speeds in some games, and break others.</source>
@@ -8697,7 +8721,7 @@ Bitte überprüfen Sie Ihren Benutzernamen und Ihr Passwort und versuchen Sie es
     </message>
     <message>
         <source>Undo Load State</source>
-        <translation>Ladestatus rückgängig machen</translation>
+        <translation>Laden eines Spielstands rückgängig machen</translation>
     </message>
     <message>
         <source>Ungrouped</source>
@@ -8885,11 +8909,11 @@ Möchten Sie trotzdem {0}?</translation>
     </message>
     <message>
         <source>When playing a multi-disc game and using per-game (title) memory cards, use a single memory card for all discs.</source>
-        <translation>Wenn bei Spielen mit mehreren Discs und Speicherkarten pro Spiel (Titel) eine einzige Speicherkarte für alle Discs verwendet wird.</translation>
+        <translation>Bei Mehrdisc-Spielen mit spielbezogenen Speicherkarten (Titel) wird eine einzige Speicherkarte für alle Discs verwendet.</translation>
     </message>
     <message>
         <source>When this option is chosen, the clock speed set below will be used.</source>
-        <translation>Wenn diese Option aktiviert ist, wird die unten eingestellte Taktfrequenz verwendet.</translation>
+        <translation>Wenn diese Option ausgewählt ist, wird die unten eingestellte Taktfrequenz verwendet.</translation>
     </message>
     <message>
         <source>Wireframe Rendering</source>
@@ -8925,7 +8949,7 @@ Möchten Sie trotzdem {1}?</translation>
     </message>
     <message>
         <source>{} Frames</source>
-        <translation>{} Frames</translation>
+        <translation>{} Bilder</translation>
     </message>
     <message>
         <source>{} deleted.</source>
@@ -9854,7 +9878,7 @@ Möchten Sie fortfahren?</translation>
     <message>
         <source>Disc</source>
         <comment>EntryType</comment>
-        <translation>Disc</translation>
+        <translation>Datenträger</translation>
     </message>
     <message>
         <source>Disc Set</source>
@@ -9952,7 +9976,7 @@ Möchten Sie fortfahren?</translation>
     </message>
     <message>
         <source>Publisher</source>
-        <translation>Publisher</translation>
+        <translation>Herausgeber</translation>
     </message>
     <message>
         <source>Genre</source>
@@ -10034,7 +10058,7 @@ Möchten Sie fortfahren?</translation>
     </message>
     <message>
         <source>Excluded Paths (will not be scanned)</source>
-        <translation>Unzulässige Pfade (diese werden nicht durchsucht)</translation>
+        <translation>Ausgeschlossene Pfade (diese werden nicht durchsucht)</translation>
     </message>
     <message>
         <source>File...</source>
@@ -10089,7 +10113,7 @@ Rekursives Durchsuchen benötigt mehr Zeit, erkennt allerdings auch Dateien in U
     </message>
     <message>
         <source>Game Grid</source>
-        <translation>Spielfeld</translation>
+        <translation>Spielraster</translation>
     </message>
     <message>
         <source>Merge Multi-Disc Games</source>
@@ -10380,7 +10404,7 @@ Rekursives Durchsuchen benötigt mehr Zeit, erkennt allerdings auch Dateien in U
     </message>
     <message>
         <source>Verifying Image</source>
-        <translation>Image wird überprüft</translation>
+        <translation>Datenträgerabbild wird überprüft</translation>
     </message>
     <message>
         <source>Hash Calculation Failed</source>
@@ -10603,7 +10627,7 @@ Rekursives Durchsuchen benötigt mehr Zeit, erkennt allerdings auch Dateien in U
     </message>
     <message>
         <source>Preserve Projection Precision</source>
-        <translation>Darstellungsgenauigkeit festlegen</translation>
+        <translation>Projektionsgenauigkeit beibehalten</translation>
     </message>
     <message>
         <source>CPU Mode</source>
@@ -11461,7 +11485,7 @@ Rekursives Durchsuchen benötigt mehr Zeit, erkennt allerdings auch Dateien in U
     </message>
     <message>
         <source>Undo Load State</source>
-        <translation>Ladestatus rückgängig machen</translation>
+        <translation>Laden eines Spielstands rückgängig machen</translation>
     </message>
     <message>
         <source>Load Game State 1</source>
@@ -12326,7 +12350,7 @@ Mit Umschalt+Klick mehrere Belegungen festlegen.</translation>
     </message>
     <message>
         <source>Select</source>
-        <translation>Select</translation>
+        <translation>Auswählen</translation>
     </message>
     <message>
         <source>Start</source>
@@ -13167,7 +13191,7 @@ Mit Umschalt+Klick mehrere Belegungen festlegen.</translation>
     </message>
     <message>
         <source>Automatic</source>
-        <translation>Automatic</translation>
+        <translation>Automatisch</translation>
     </message>
     <message>
         <source>Closed</source>
@@ -13263,7 +13287,7 @@ Mit Umschalt+Klick mehrere Belegungen festlegen.</translation>
     </message>
     <message>
         <source>&amp;Screenshot</source>
-        <translation>&amp;Screenshot</translation>
+        <translation>&amp;Bildschirmfoto</translation>
     </message>
     <message>
         <source>&amp;Memory Cards</source>
@@ -13359,7 +13383,7 @@ Mit Umschalt+Klick mehrere Belegungen festlegen.</translation>
     </message>
     <message>
         <source>Debuggi&amp;ng</source>
-        <translation>Debuggi&amp;ng</translation>
+        <translation>&amp;Fehlersuche</translation>
     </message>
     <message>
         <source>Configures internal options for the application.</source>
@@ -13763,7 +13787,7 @@ Die Spielstände können nicht wiederhergestellt werden.</translation>
     </message>
     <message>
         <source>Undo Load State</source>
-        <translation>Ladestatus rückgängig machen</translation>
+        <translation>Laden eines Spielstands rückgängig machen</translation>
     </message>
     <message>
         <source>Game Save %1 (Empty)</source>
@@ -14199,7 +14223,7 @@ Fehler: {1}</translation>
     </message>
     <message>
         <source>Memory Card 2:</source>
-        <translation>Memory Card 2:</translation>
+        <translation>Speicherkarte 2:</translation>
     </message>
     <message>
         <source>Card Modified</source>
@@ -14207,7 +14231,7 @@ Fehler: {1}</translation>
     </message>
     <message>
         <source>Memory Card 1:</source>
-        <translation>Memory Card 1:</translation>
+        <translation>Speicherkarte 1:</translation>
     </message>
     <message>
         <source>New...</source>
@@ -14238,7 +14262,7 @@ Fehler: {1}</translation>
     </message>
     <message>
         <source>DuckStation Memory Card (*.mcd)</source>
-        <translation>DuckStation Memory Card (*.mcd)</translation>
+        <translation>DuckStation-Speicherkarte (*.mcd)</translation>
     </message>
     <message>
         <source>All Importable Memory Card Types (*.mcd *.mcr *.mc *.gme *.srm *.psm *.ps *.ddf *.mem *.vgs *.psx)</source>
@@ -14485,7 +14509,7 @@ Fehler: {1}</translation>
     </message>
     <message>
         <source>Settings</source>
-        <translation>Settings</translation>
+        <translation>Einstellungen</translation>
     </message>
     <message>
         <source>Create Save State Backups</source>
@@ -14505,7 +14529,7 @@ Fehler: {1}</translation>
     </message>
     <message>
         <source>When enabled, the legacy global save state slots will be available. These slots are independent of the current game.</source>
-        <translation>When enabled, the legacy global save state slots will be available. These slots are independent of the current game.</translation>
+        <translation>Wenn aktiviert, sind die alten globalen Speicherstand-Slots verfügbar. Diese Slots sind unabhängig vom aktuellen Spiel.</translation>
     </message>
     <message>
         <source>Use Single Card For Multi-Disc Games</source>
@@ -14664,7 +14688,7 @@ Fehler: {1}</translation>
     </message>
     <message>
         <source>Invalid search pattern. It should contain hex digits or question marks.</source>
-        <translation>Ungültige Suchstruktur. Es sollte Hex-Ziffern oder Fragezeichen enthalten.</translation>
+        <translation>Ungültiges Suchmuster. Es sollte Hex-Ziffern oder Fragezeichen enthalten.</translation>
     </message>
     <message>
         <source>Pattern not found in memory.</source>
@@ -14672,11 +14696,11 @@ Fehler: {1}</translation>
     </message>
     <message>
         <source>Pattern found at 0x%1 (passed the end of memory).</source>
-        <translation>Struktur bei 0x%1 gefunden (Überschreitung des Speicherendes).</translation>
+        <translation>Suchmuster bei 0x%1 gefunden (Speicherende überschritten).</translation>
     </message>
     <message>
         <source>Pattern found at 0x%1.</source>
-        <translation>Struktur bei 0x%1 gefunden.</translation>
+        <translation>Suchmuster bei 0x%1 gefunden.</translation>
     </message>
 </context>
 <context>
@@ -15510,7 +15534,7 @@ Fehler: {1}</translation>
     </message>
     <message>
         <source> seconds</source>
-        <translation> seconds</translation>
+        <translation> Sekunden</translation>
     </message>
     <message>
         <source>Warning Duration:</source>
@@ -16216,27 +16240,27 @@ Möchten Sie die Verknüpfung auf den aktuellen Speicherort aktualisieren?</tran
     <name>SDLInputSource</name>
     <message>
         <source>LeftX</source>
-        <translation>LeftX</translation>
+        <translation>Linkes X</translation>
     </message>
     <message>
         <source>LeftY</source>
-        <translation>LeftY</translation>
+        <translation>Linkes Y</translation>
     </message>
     <message>
         <source>RightX</source>
-        <translation>RightX</translation>
+        <translation>Rechtes X</translation>
     </message>
     <message>
         <source>RightY</source>
-        <translation>RightY</translation>
+        <translation>Rechtes Y</translation>
     </message>
     <message>
         <source>LeftTrigger</source>
-        <translation>LeftTrigger</translation>
+        <translation>Linker Trigger</translation>
     </message>
     <message>
         <source>RightTrigger</source>
-        <translation>RightTrigger</translation>
+        <translation>Rechter Trigger</translation>
     </message>
     <message>
         <source>L2</source>
@@ -16264,7 +16288,7 @@ Möchten Sie die Verknüpfung auf den aktuellen Speicherort aktualisieren?</tran
     </message>
     <message>
         <source>Back</source>
-        <translation>Back</translation>
+        <translation>Zurück</translation>
     </message>
     <message>
         <source>Guide</source>
@@ -16276,55 +16300,55 @@ Möchten Sie die Verknüpfung auf den aktuellen Speicherort aktualisieren?</tran
     </message>
     <message>
         <source>LeftStick</source>
-        <translation>LeftStick</translation>
+        <translation>Linker Stick</translation>
     </message>
     <message>
         <source>RightStick</source>
-        <translation>RightStick</translation>
+        <translation>Rechter Stick</translation>
     </message>
     <message>
         <source>LeftShoulder</source>
-        <translation>LeftShoulder</translation>
+        <translation>Linke Schultertaste</translation>
     </message>
     <message>
         <source>RightShoulder</source>
-        <translation>RightShoulder</translation>
+        <translation>Rechte Schultertaste</translation>
     </message>
     <message>
         <source>DPadUp</source>
-        <translation>DPadUp</translation>
+        <translation>Steuerkreuz hoch</translation>
     </message>
     <message>
         <source>DPadDown</source>
-        <translation>DPadDown</translation>
+        <translation>Steuerkreuz runter</translation>
     </message>
     <message>
         <source>DPadLeft</source>
-        <translation>DPadLeft</translation>
+        <translation>Steuerkreuz links</translation>
     </message>
     <message>
         <source>DPadRight</source>
-        <translation>DPadRight</translation>
+        <translation>Steuerkreuz rechts</translation>
     </message>
     <message>
         <source>Misc1</source>
-        <translation>Misc1</translation>
+        <translation>Sonstiges 1</translation>
     </message>
     <message>
         <source>RightPaddle1</source>
-        <translation>RightPaddle1</translation>
+        <translation>Rechtes Paddle 1</translation>
     </message>
     <message>
         <source>LeftPaddle1</source>
-        <translation>LeftPaddle1</translation>
+        <translation>Linkes Paddle 1</translation>
     </message>
     <message>
         <source>RightPaddle2</source>
-        <translation>RightPaddle2</translation>
+        <translation>Rechtes Paddle 2</translation>
     </message>
     <message>
         <source>LeftPaddle2</source>
-        <translation>LeftPaddle2</translation>
+        <translation>Linkes Paddle 2</translation>
     </message>
     <message>
         <source>Touchpad</source>
@@ -16332,23 +16356,23 @@ Möchten Sie die Verknüpfung auf den aktuellen Speicherort aktualisieren?</tran
     </message>
     <message>
         <source>Misc2</source>
-        <translation>Misc2</translation>
+        <translation>Sonstiges 2</translation>
     </message>
     <message>
         <source>Misc3</source>
-        <translation>Misc3</translation>
+        <translation>Sonstiges 3</translation>
     </message>
     <message>
         <source>Misc4</source>
-        <translation>Misc4</translation>
+        <translation>Sonstiges 4</translation>
     </message>
     <message>
         <source>Misc5</source>
-        <translation>Misc5</translation>
+        <translation>Sonstiges 5</translation>
     </message>
     <message>
         <source>Misc6</source>
-        <translation>Misc6</translation>
+        <translation>Sonstiges 6</translation>
     </message>
     <message>
         <source>Cross</source>
@@ -16396,15 +16420,15 @@ Möchten Sie die Verknüpfung auf den aktuellen Speicherort aktualisieren?</tran
     </message>
     <message>
         <source>North</source>
-        <translation>North</translation>
+        <translation>Nord</translation>
     </message>
     <message>
         <source>East</source>
-        <translation>East</translation>
+        <translation>Ost</translation>
     </message>
     <message>
         <source>South</source>
-        <translation>South</translation>
+        <translation>Süd</translation>
     </message>
     <message>
         <source>West</source>
@@ -16412,11 +16436,11 @@ Möchten Sie die Verknüpfung auf den aktuellen Speicherort aktualisieren?</tran
     </message>
     <message>
         <source>Turn</source>
-        <translation>Turn</translation>
+        <translation>Drehen</translation>
     </message>
     <message>
         <source>Tilt</source>
-        <translation>Tilt</translation>
+        <translation>Neigen</translation>
     </message>
     <message>
         <source>Enable XBox HIDAPI Driver</source>
@@ -16504,19 +16528,19 @@ Möchten Sie die Verknüpfung auf den aktuellen Speicherort aktualisieren?</tran
     </message>
     <message>
         <source>SmallMotor</source>
-        <translation>SmallMotor</translation>
+        <translation>Kleiner Motor</translation>
     </message>
     <message>
         <source>LargeMotor</source>
-        <translation>LargeMotor</translation>
+        <translation>Großer Motor</translation>
     </message>
     <message>
         <source>Haptic</source>
-        <translation>Haptic</translation>
+        <translation>Haptik</translation>
     </message>
     <message>
         <source>MuteLED</source>
-        <translation>MuteLED</translation>
+        <translation>Stummschalt-LED</translation>
     </message>
     <message>
         <source>RGBLED</source>
@@ -16610,7 +16634,7 @@ Möchten Sie die Verknüpfung auf den aktuellen Speicherort aktualisieren?</tran
     </message>
     <message>
         <source>Disc</source>
-        <translation>Disc</translation>
+        <translation>Datenträger</translation>
     </message>
     <message>
         <source>File Name</source>
@@ -16923,7 +16947,7 @@ Möchten Sie dieses Verzeichnis erstellen?</translation>
     <message>
         <source>True Color</source>
         <comment>GPUDitheringMode</comment>
-        <translation>True Color</translation>
+        <translation>Echtfarben</translation>
     </message>
     <message>
         <source>True Color (Full)</source>
@@ -18506,7 +18530,7 @@ Sie müssen auf eine Speicherkarte speichern und das Spiel zurücksetzen, um etw
     </message>
     <message>
         <source>Undo Load State</source>
-        <translation>Ladestatus rückgängig machen</translation>
+        <translation>Laden eines Spielstands rückgängig machen</translation>
     </message>
     <message>
         <source>Failed to load undo state, restarting game.
@@ -18748,43 +18772,43 @@ Aus rechtlichen Gründen müssen Sie ein BIOS von einem echten PS1/PS2-Gerät, d
     <name>XInputSource</name>
     <message>
         <source>LeftX</source>
-        <translation>LeftX</translation>
+        <translation>Linkes X</translation>
     </message>
     <message>
         <source>LeftY</source>
-        <translation>LeftY</translation>
+        <translation>Linkes Y</translation>
     </message>
     <message>
         <source>RightX</source>
-        <translation>RightX</translation>
+        <translation>Rechtes X</translation>
     </message>
     <message>
         <source>RightY</source>
-        <translation>RightY</translation>
+        <translation>Rechtes Y</translation>
     </message>
     <message>
         <source>LeftTrigger</source>
-        <translation>LeftTrigger</translation>
+        <translation>Linker Trigger</translation>
     </message>
     <message>
         <source>RightTrigger</source>
-        <translation>RightTrigger</translation>
+        <translation>Rechter Trigger</translation>
     </message>
     <message>
         <source>DPadUp</source>
-        <translation>DPadUp</translation>
+        <translation>Steuerkreuz hoch</translation>
     </message>
     <message>
         <source>DPadDown</source>
-        <translation>DPadDown</translation>
+        <translation>Steuerkreuz runter</translation>
     </message>
     <message>
         <source>DPadLeft</source>
-        <translation>DPadLeft</translation>
+        <translation>Steuerkreuz links</translation>
     </message>
     <message>
         <source>DPadRight</source>
-        <translation>DPadRight</translation>
+        <translation>Steuerkreuz rechts</translation>
     </message>
     <message>
         <source>Start</source>
@@ -18792,23 +18816,23 @@ Aus rechtlichen Gründen müssen Sie ein BIOS von einem echten PS1/PS2-Gerät, d
     </message>
     <message>
         <source>Back</source>
-        <translation>Back</translation>
+        <translation>Zurück</translation>
     </message>
     <message>
         <source>LeftStick</source>
-        <translation>LeftStick</translation>
+        <translation>Linker Stick</translation>
     </message>
     <message>
         <source>RightStick</source>
-        <translation>RightStick</translation>
+        <translation>Rechter Stick</translation>
     </message>
     <message>
         <source>LeftShoulder</source>
-        <translation>LeftShoulder</translation>
+        <translation>Linke Schultertaste</translation>
     </message>
     <message>
         <source>RightShoulder</source>
-        <translation>RightShoulder</translation>
+        <translation>Rechte Schultertaste</translation>
     </message>
     <message>
         <source>A</source>
@@ -18844,11 +18868,11 @@ Aus rechtlichen Gründen müssen Sie ein BIOS von einem echten PS1/PS2-Gerät, d
     </message>
     <message>
         <source>SmallMotor</source>
-        <translation>SmallMotor</translation>
+        <translation>Kleiner Motor</translation>
     </message>
     <message>
         <source>LargeMotor</source>
-        <translation>LargeMotor</translation>
+        <translation>Großer Motor</translation>
     </message>
 </context>
 </TS>
