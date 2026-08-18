@@ -1087,7 +1087,8 @@ bool Bus::InjectCPE(std::span<const u8> buffer, bool set_pc, Error* error)
       case 0x02:
       {
         // Run address, ignored
-        DEV_LOG("Ignoring run address 0x{:X}", reader.ReadU32());
+        const u32 run_address = reader.ReadU32();
+        DEV_LOG("Ignoring run address 0x{:X}", run_address);
       }
       break;
 
@@ -1131,14 +1132,16 @@ bool Bus::InjectCPE(std::span<const u8> buffer, bool set_pc, Error* error)
       case 0x07:
       {
         // Select workspace
-        DEV_LOG("Ignoring set workspace 0x{:X}", reader.ReadU32());
+        const u32 workspace = reader.ReadU32();
+        DEV_LOG("Ignoring set workspace 0x{:X}", workspace);
       }
       break;
 
       case 0x08:
       {
         // Select unit
-        DEV_LOG("Ignoring select unit 0x{:X}", reader.ReadU8());
+        const u8 unit = reader.ReadU8();
+        DEV_LOG("Ignoring select unit 0x{:X}", unit);
       }
       break;
 
