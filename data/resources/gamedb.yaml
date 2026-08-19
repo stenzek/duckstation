@@ -15983,6 +15983,9 @@ SCPS-10014:
   saveName: "Beyond the Beyond - Harukanaru Kanaan he (Japan)"
   controllers:
     - DigitalController
+  codes:
+    - SCPS-10014
+    - HASH-F5755D7F8AF0C3DE
   metadata:
     publisher: "SONY Computer Entertainment America Inc"
     developer: "CAMELOT Software Planning"
