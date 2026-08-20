@@ -3,10 +3,24 @@
 
 #pragma once
 #include "heterogeneous_containers.h"
+#include "types.h"
 #include <cstdint>
 #include <map>
+#include <memory>
+#include <type_traits>
+#include <utility>
 
-template<class K, class V>
+template<class V>
+struct LRUCacheDefaultDeleter
+{
+  void operator()(V&& value) const noexcept
+  {
+    if constexpr (std::is_pointer_v<V>)
+      std::default_delete<std::remove_pointer_t<V>>{}(value);
+  }
+};
+
+template<class K, class V, class Deleter = LRUCacheDefaultDeleter<V>>
 class LRUCache
 {
   using CounterType = std::uint64_t;
@@ -20,16 +34,24 @@ class LRUCache
   using MapType = std::conditional_t<std::is_same_v<K, std::string>, StringMap<Item>, std::map<K, Item>>;
 
 public:
-  LRUCache(std::size_t max_capacity = 16, bool manual_evict = false)
-    : m_max_capacity(max_capacity), m_manual_evict(manual_evict)
+  LRUCache(std::size_t max_capacity = 16, bool manual_evict = false, Deleter deleter = Deleter())
+    : m_max_capacity(max_capacity), m_deleter(std::move(deleter)), m_manual_evict(manual_evict)
   {
   }
-  ~LRUCache() = default;
+  ~LRUCache()
+  {
+    Clear();
+  }
 
   std::size_t GetSize() const { return m_items.size(); }
   std::size_t GetMaxCapacity() const { return m_max_capacity; }
 
-  void Clear() { m_items.clear(); }
+  void Clear()
+  {
+    for (auto it = m_items.rbegin(); it != m_items.rend(); ++it)
+      m_deleter(std::move(it->second.value));
+    m_items.clear();
+  }
 
   void SetMaxCapacity(std::size_t capacity)
   {
@@ -51,17 +73,18 @@ public:
 
   V* Insert(K key, V value)
   {
-    ShrinkForNewItem();
-
     auto iter = m_items.find(key);
     if (iter != m_items.end())
     {
+      m_deleter(std::move(iter->second.value));
       iter->second.value = std::move(value);
       iter->second.last_access = ++m_last_counter;
       return &iter->second.value;
     }
     else
     {
+      ShrinkForNewItem();
+
       Item it;
       it.last_access = ++m_last_counter;
       it.value = std::move(value);
@@ -80,6 +103,7 @@ public:
         if (lowest == m_items.end() || iter->second.last_access < lowest->second.last_access)
           lowest = iter;
       }
+      m_deleter(std::move(lowest->second.value));
       m_items.erase(lowest);
       count--;
     }
@@ -93,6 +117,7 @@ public:
     {
       if (pred(iter->first))
       {
+        m_deleter(std::move(iter->second.value));
         iter = m_items.erase(iter);
         removed_count++;
       }
@@ -110,6 +135,7 @@ public:
     auto iter = m_items.find(key);
     if (iter == m_items.end())
       return false;
+    m_deleter(std::move(iter->second.value));
     m_items.erase(iter);
     return true;
   }
@@ -136,7 +162,7 @@ public:
 private:
   void ShrinkForNewItem()
   {
-    if (m_items.size() < m_max_capacity)
+    if (m_manual_evict || m_items.size() < m_max_capacity)
       return;
 
     Evict(m_items.size() - (m_max_capacity - 1));
@@ -145,5 +171,6 @@ private:
   MapType m_items;
   CounterType m_last_counter = 0;
   std::size_t m_max_capacity = 0;
+  NO_UNIQUE_ADDRESS Deleter m_deleter;
   bool m_manual_evict = false;
 };

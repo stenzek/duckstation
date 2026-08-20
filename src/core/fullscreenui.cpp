@@ -2316,7 +2316,7 @@ void FullscreenUI::DrawResumeStateSelector()
   TextAlignedMultiLine(0.5f, IMSTR_START_END(sick));
   ImGui::PopFont();
 
-  const GPUTexture* image = entry.preview_texture ? entry.preview_texture.get() : GetPlaceholderTexture().get();
+  const GPUTexture* image = entry.preview_texture ? entry.preview_texture.get() : GetPlaceholderTexture();
   const float image_height = LayoutScale(400.0f);
   const float image_width =
     image_height * (static_cast<float>(image->GetWidth()) / static_cast<float>(image->GetHeight()));
@@ -2324,7 +2324,7 @@ void FullscreenUI::DrawResumeStateSelector()
                    ImVec2((ImGui::GetCurrentWindow()->WorkRect.GetWidth() - image_width) * 0.5f, LayoutScale(20.0f)));
   const ImRect image_bb(pos, pos + ImVec2(image_width, image_height));
   ImGui::GetWindowDrawList()->AddImage(
-    static_cast<ImTextureID>(entry.preview_texture ? entry.preview_texture.get() : GetPlaceholderTexture().get()),
+    static_cast<ImTextureID>(entry.preview_texture ? entry.preview_texture.get() : GetPlaceholderTexture()),
     image_bb.Min, image_bb.Max, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f),
     ImGui::GetColorU32(IM_COL32(255, 255, 255, 255)));
 

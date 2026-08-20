@@ -12,6 +12,7 @@ add_executable(common-tests
   gsvector_yuvtorgb_test.cpp
   hash_tests.cpp
   heap_array_tests.cpp
+  lru_cache_tests.cpp
   misc_tests.cpp
   path_tests.cpp
   rectangle_tests.cpp

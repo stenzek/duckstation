@@ -1161,7 +1161,7 @@ GPUTexture* FullscreenUI::GetGameListCoverTrophy(const GameList::Entry* entry, c
                           static_cast<u32>(trophy_size.x), static_cast<u32>(trophy_size.y));
 
   // don't draw the placeholder, it's way too large
-  return (texture == GetPlaceholderTexture().get()) ? nullptr : texture;
+  return (texture == GetPlaceholderTexture()) ? nullptr : texture;
 }
 
 std::string_view FullscreenUI::GetKeyForGameListEntry(const GameList::Entry* entry)
