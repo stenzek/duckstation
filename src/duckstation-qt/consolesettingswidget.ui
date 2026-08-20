@@ -278,7 +278,7 @@
         <item row="0" column="0">
          <widget class="QCheckBox" name="cdromLoadImageToRAM">
           <property name="text">
-           <string>Preload Image To RAM</string>
+           <string>Preload Image to RAM</string>
           </property>
          </widget>
         </item>

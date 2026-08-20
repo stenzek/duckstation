@@ -93,7 +93,10 @@
 Error: %1
 
 Please check your username and password, and try again.</source>
-        <translation>Échec de la connexion.&lt;br/&gt;Erreur : %1&lt;br/&gt;&lt;br/&gt;Veuillez vérifier votre nom d&apos;utilisateur et votre mot de passe, puis réessayer.</translation>
+        <translation>Échec de la connexion.
+Erreur: %1
+
+Veuillez vérifier votre nom d&apos;utilisateur et votre mot de passe, puis réessayer.</translation>
     </message>
     <message>
         <source>Enable Achievements</source>
@@ -103,7 +106,9 @@ Please check your username and password, and try again.</source>
         <source>Achievement tracking is not currently enabled. Your login will have no effect until after tracking is enabled.
 
 Do you want to enable tracking now?</source>
-        <translation>Le suivi des succès n&apos;est pas activé actuellement. Votre connexion n&apos;aura aucun effet avant que le suivi ne soit activé.&lt;br/&gt;&lt;br/&gt;Voulez-vous activer le suivi maintenant ?</translation>
+        <translation>Le suivi des succès n&apos;est pas activé actuellement. Votre connexion n&apos;aura aucun effet avant que le suivi ne soit activé.
+
+Voulez-vous activer le suivi maintenant ?</translation>
     </message>
     <message>
         <source>Enable Hardcore Mode</source>
@@ -115,7 +120,11 @@ Do you want to enable tracking now?</source>
 However, hardcore mode also prevents the usage of save states, cheats and slowdown functionality.
 
 Do you want to enable hardcore mode?</source>
-        <translation>Le mode Hardcore n&apos;est pas activé actuellement. L&apos;activation du mode Hardcore vous permet de définir des temps, des scores et de participer à des classements spécifiques au jeu.&lt;br/&gt;&lt;br/&gt;Cependant, le mode Hardcore empêche également l&apos;utilisation des états de sauvegarde, des codes de triche et de la fonctionnalité de ralentissement.&lt;br/&gt;&lt;br/&gt;Voulez-vous activer le mode Hardcore ?</translation>
+        <translation>Le mode Hardcore n&apos;est pas activé actuellement. L&apos;activation du mode Hardcore vous permet de définir des temps, des scores et de participer à des classements spécifiques au jeu.
+
+Cependant, le mode Hardcore empêche également l&apos;utilisation des états de sauvegarde, des codes de triche et de la fonctionnalité de ralentissement.
+
+Voulez-vous activer le mode Hardcore?</translation>
     </message>
     <message>
         <source>Restart Game</source>
@@ -2266,7 +2275,8 @@ Les fichiers WAV doivent être en stéréo 16 bits et utiliser une fréquence d&
     <message>
         <source>The game will probably crash now.
 Your dump may be corrupted, or the physical disc is scratched.</source>
-        <translation>Le jeu va probablement planter maintenant.&lt;br/&gt;Votre dump peut être corrompu, ou le disque physique est rayé.</translation>
+        <translation>Le jeu va probablement planter maintenant.
+Votre dump peut être corrompu, ou le disque physique est rayé.</translation>
     </message>
 </context>
 <context>
@@ -2681,10 +2691,6 @@ L&apos;utilisation de ce code de triche ne fonctionnera pas comme prévu. Voulez
     <message>
         <source>CD-ROM Emulation</source>
         <translation>Emulation du CD-ROM</translation>
-    </message>
-    <message>
-        <source>Preload Image To RAM</source>
-        <translation>Précharger l&apos;image disque dans la RAM</translation>
     </message>
     <message>
         <source>Read Speedup:</source>
@@ -9932,18 +9938,7 @@ Les codes de la base de données seront toujours chargés et présents, sauf si 
     </message>
 </context>
 <context>
-    <name>GameListListView</name>
-    <message>
-        <source>Unknown</source>
-        <translation>Inconnu</translation>
-    </message>
-</context>
-<context>
     <name>GameListModel</name>
-    <message>
-        <source>Unknown</source>
-        <translation>Inconnu</translation>
-    </message>
     <message>
         <source>Serial</source>
         <translation>Numéro de série</translation>
@@ -10110,8 +10105,8 @@ L&apos;analyse récursive prend plus de temps, mais elle permet d&apos;identifie
         <translation>Fusionner les jeux multi-disques</translation>
     </message>
     <message>
-        <source>Show Localized Icons</source>
-        <translation>Afficher les icônes localisées</translation>
+        <source>Show Localized Titles</source>
+        <translation type="unfinished">Afficher les titres localisés</translation>
     </message>
     <message>
         <source>Show Game Icons</source>
@@ -15751,6 +15746,10 @@ Erreur : {1}</translation>
 <context>
     <name>PlayStationMouse</name>
     <message>
+        <source>Pointer</source>
+        <translation>Pointeur</translation>
+    </message>
+    <message>
         <source>Left Button</source>
         <translation>Bouton gauche</translation>
     </message>
@@ -15769,13 +15768,6 @@ Erreur : {1}</translation>
     <message>
         <source>Vertical Sensitivity</source>
         <translation>Sensibilité verticale</translation>
-    </message>
-</context>
-<context>
-    <name>PlaystationMouse</name>
-    <message>
-        <source>Pointer</source>
-        <translation>Pointeur</translation>
     </message>
 </context>
 <context>
@@ -17157,12 +17149,12 @@ Voulez-vous créer ce répertoire ?</translation>
         <translation>Détection automatique</translation>
     </message>
     <message>
-        <source>NTSC (60hz)</source>
+        <source>NTSC (60 Hz)</source>
         <comment>ForceVideoTiming</comment>
         <translation>NTSC (60 Hz)</translation>
     </message>
     <message>
-        <source>PAL (50hz)</source>
+        <source>PAL (50 Hz)</source>
         <comment>ForceVideoTiming</comment>
         <translation>PAL (50 Hz)</translation>
     </message>
