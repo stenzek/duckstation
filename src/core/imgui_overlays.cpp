@@ -948,8 +948,6 @@ static void CloseImmediately();
 static void Draw();
 static void ShowSlotOSDMessage();
 
-static constexpr const char* DATE_TIME_FORMAT =
-  TRANSLATE_NOOP("SaveStateSelectorUI", "Saved at {0:%H:%M} on {0:%a} {0:%Y/%m/%d}.");
 static constexpr float OPEN_ANIMATION_TIME = 0.2f;
 static constexpr float CLOSE_ANIMATION_TIME = 0.1f;
 
@@ -1221,8 +1219,8 @@ void SaveStateSelectorUI::InitializeListEntry(ListEntry* li, ExtendedSaveStateIn
   if (global)
     li->game_details = fmt::format(TRANSLATE_FS("SaveStateSelectorUI", "{} ({})"), ssi->title, ssi->serial);
 
-  li->summary = fmt::format(TRANSLATE_FS("SaveStateSelectorUI", DATE_TIME_FORMAT),
-                            Common::LocalTime(static_cast<std::time_t>(ssi->timestamp)).value_or(std::tm{}));
+  li->summary = fmt::format(TRANSLATE_FS("SaveStateSelectorUI", "Saved {}"),
+                            Host::FormatRelativeDateTime(ssi->timestamp, false, false));
   li->filename = Path::GetFileName(path);
   li->slot = slot;
   li->global = global;
@@ -1514,8 +1512,8 @@ void SaveStateSelectorUI::ShowSlotOSDMessage()
   std::string date;
   if (!path.empty() && FileSystem::StatFile(path.c_str(), &sd))
   {
-    date = fmt::format(TRANSLATE_FS("SaveStateSelectorUI", DATE_TIME_FORMAT),
-                       Common::LocalTime(sd.ModificationTime).value_or(std::tm{}));
+    date = fmt::format(TRANSLATE_FS("SaveStateSelectorUI", "Saved {}"),
+                       Host::FormatRelativeDateTime(sd.ModificationTime, false, false));
   }
   else
   {

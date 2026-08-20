@@ -241,6 +241,33 @@ QString QtUtils::NormalizeLineEndings(QString str)
   return str;
 }
 
+template<class T>
+ALWAYS_INLINE static T QStringToSmallStringT(const QString& str)
+{
+  T ret;
+
+#ifdef _WIN32
+  // Cheeky way to avoid heap allocations.
+  static_assert(sizeof(*str.utf16()) == sizeof(wchar_t));
+  ret.assign(std::wstring_view(reinterpret_cast<const wchar_t*>(str.utf16()), str.length()));
+#else
+  const QByteArray utf8 = str.toUtf8();
+  ret.assign(utf8.constData(), utf8.length());
+#endif
+
+  return ret;
+}
+
+TinyString QtUtils::QStringToTinyString(const QString& str)
+{
+  return QStringToSmallStringT<TinyString>(str);
+}
+
+SmallString QtUtils::QStringToSmallString(const QString& str)
+{
+  return QStringToSmallStringT<SmallString>(str);
+}
+
 void QtUtils::SetWidgetFontForInheritedSetting(QWidget* widget, bool inherited)
 {
   if (widget->font().italic() != inherited)

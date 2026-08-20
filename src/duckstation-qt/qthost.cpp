@@ -45,6 +45,7 @@
 #include "common/scoped_guard.h"
 #include "common/string_util.h"
 #include "common/threading.h"
+#include "common/time_helpers.h"
 
 #include "util/http_cache.h"
 #include "util/http_downloader.h"
@@ -2450,80 +2451,6 @@ bool Host::CopyTextToClipboard(std::string_view text)
   return true;
 }
 
-QString QtHost::FormatNumber(Host::NumberFormatType type, s64 value)
-{
-  QString ret;
-
-  if (type >= Host::NumberFormatType::ShortDate && type <= Host::NumberFormatType::LongDateTime)
-  {
-    QString format;
-    switch (type)
-    {
-      case Host::NumberFormatType::ShortDate:
-      case Host::NumberFormatType::LongDate:
-      {
-        format = s_state.app_locale.dateFormat((type == Host::NumberFormatType::LongDate) ? QLocale::LongFormat :
-                                                                                            QLocale::ShortFormat);
-      }
-      break;
-
-      case Host::NumberFormatType::ShortTime:
-      case Host::NumberFormatType::LongTime:
-      {
-        format = s_state.app_locale.timeFormat((type == Host::NumberFormatType::LongTime) ? QLocale::LongFormat :
-                                                                                            QLocale::ShortFormat);
-      }
-      break;
-
-      case Host::NumberFormatType::ShortDateTime:
-      case Host::NumberFormatType::LongDateTime:
-      {
-        format = s_state.app_locale.dateTimeFormat(
-          (type == Host::NumberFormatType::LongDateTime) ? QLocale::LongFormat : QLocale::ShortFormat);
-
-        // Remove time zone specifiers 't', 'tt', 'ttt', 'tttt'.
-        format.remove(QRegularExpression("\\s*t+\\s*"));
-      }
-      break;
-
-        DefaultCaseIsUnreachable();
-    }
-
-    ret = QDateTime::fromSecsSinceEpoch(value, QTimeZone::utc()).toLocalTime().toString(format);
-  }
-  else
-  {
-    ret = s_state.app_locale.toString(value);
-  }
-
-  return ret;
-}
-
-std::string Host::FormatNumber(NumberFormatType type, s64 value)
-{
-  return QtHost::FormatNumber(type, value).toStdString();
-}
-
-QString QtHost::FormatNumber(Host::NumberFormatType type, double value)
-{
-  QString ret;
-
-  switch (type)
-  {
-    case Host::NumberFormatType::Number:
-    default:
-      ret = s_state.app_locale.toString(value);
-      break;
-  }
-
-  return ret;
-}
-
-std::string Host::FormatNumber(NumberFormatType type, double value)
-{
-  return QtHost::FormatNumber(type, value).toStdString();
-}
-
 void QtHost::UpdateApplicationLanguage(QWidget* dialog_parent)
 {
   for (QTranslator* translator : s_state.translators)
@@ -2629,22 +2556,40 @@ std::string Host::TranslatePluralToString(const char* context, const char* msg, 
   return QCoreApplication::translate(context, msg, disambiguation, count).toStdString();
 }
 
+TinyString Host::TranslatePluralToTinyString(const char* context, const char* msg, const char* disambiguation,
+                                             int count)
+{
+  return QtUtils::QStringToTinyString(QCoreApplication::translate(context, msg, disambiguation, count));
+}
+
 SmallString Host::TranslatePluralToSmallString(const char* context, const char* msg, const char* disambiguation,
                                                int count)
 {
-  const QString qstr = QCoreApplication::translate(context, msg, disambiguation, count);
-  SmallString ret;
+  return QtUtils::QStringToSmallString(QCoreApplication::translate(context, msg, disambiguation, count));
+}
 
-#ifdef _WIN32
-  // Cheeky way to avoid heap allocations.
-  static_assert(sizeof(*qstr.utf16()) == sizeof(wchar_t));
-  ret.assign(std::wstring_view(reinterpret_cast<const wchar_t*>(qstr.utf16()), qstr.length()));
-#else
-  const QByteArray utf8 = qstr.toUtf8();
-  ret.assign(utf8.constData(), utf8.length());
-#endif
+TinyString Host::FormatDate(std::time_t timestamp, bool long_format /* = false */)
+{
+  const QString format =
+    QtHost::s_state.app_locale.dateFormat(long_format ? QLocale::LongFormat : QLocale::ShortFormat);
+  return QtUtils::QStringToTinyString(
+    QDateTime::fromSecsSinceEpoch(static_cast<qint64>(timestamp), QTimeZone::utc()).toLocalTime().toString(format));
+}
 
-  return ret;
+TinyString Host::FormatTime(std::time_t timestamp, bool long_format /* = false */)
+{
+  const QString format =
+    QtHost::s_state.app_locale.timeFormat(long_format ? QLocale::LongFormat : QLocale::ShortFormat);
+  return QtUtils::QStringToTinyString(
+    QDateTime::fromSecsSinceEpoch(static_cast<qint64>(timestamp), QTimeZone::utc()).toLocalTime().toString(format));
+}
+
+TinyString Host::FormatDateTime(std::time_t timestamp, bool long_format /* = false */)
+{
+  const QString format =
+    QtHost::s_state.app_locale.dateTimeFormat(long_format ? QLocale::LongFormat : QLocale::ShortFormat);
+  return QtUtils::QStringToTinyString(
+    QDateTime::fromSecsSinceEpoch(static_cast<qint64>(timestamp), QTimeZone::utc()).toLocalTime().toString(format));
 }
 
 std::span<const std::pair<const char*, const char*>> Host::GetAvailableLanguageList()

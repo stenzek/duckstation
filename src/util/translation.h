@@ -14,22 +14,6 @@
 
 namespace Host {
 
-/// Formats a number according to the current locale.
-enum class NumberFormatType : u8
-{
-  ShortDate,     // Date formatting
-  LongDate,      // Date formatting
-  ShortTime,     // Time formatting
-  LongTime,      // Time formatting
-  ShortDateTime, // Date and time formatting
-  LongDateTime,  // Date and time formatting
-  Number,        // Number formatting
-
-  MaxCount,
-};
-std::string FormatNumber(NumberFormatType type, s64 value);
-std::string FormatNumber(NumberFormatType type, double value);
-
 /// Returns a localized version of the specified string within the specified context.
 /// The pointer is guaranteed to be valid until the next language change.
 const char* TranslateToCString(std::string_view context, std::string_view msg, std::string_view disambiguation = {});
@@ -46,10 +30,23 @@ std::string TranslateToString(std::string_view context, std::string_view msg, st
 
 /// Returns a localized version of the specified string within the specified context, adjusting for plurals using %n.
 std::string TranslatePluralToString(const char* context, const char* msg, const char* disambiguation, int count);
+TinyString TranslatePluralToTinyString(const char* context, const char* msg, const char* disambiguation, int count);
 SmallString TranslatePluralToSmallString(const char* context, const char* msg, const char* disambiguation, int count);
 
 /// Clears the translation cache. All previously used strings should be considered invalid.
 void ClearTranslationCache();
+
+/// Formats a timestamp to an absolute time.
+TinyString FormatDate(std::time_t timestamp, bool long_format);
+TinyString FormatTime(std::time_t timestamp, bool long_format);
+TinyString FormatDateTime(std::time_t timestamp, bool long_format);
+
+/// Formats a timestamp to something human readable (e.g. Today, Yesterday, 10/11/12).
+TinyString FormatRelativeDate(std::time_t timestamp, bool long_format, bool for_title);
+TinyString FormatRelativeDateTime(std::time_t timestamp, bool long_format, bool for_title);
+
+/// Formats a timespan to something human readable (e.g. 1h2m3s or 1 hour).
+TinyString FormatTimespan(std::time_t timespan, bool long_format);
 
 namespace Internal {
 /// Implementation to retrieve a translated string.

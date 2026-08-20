@@ -193,6 +193,14 @@ std::string Host::TranslatePluralToString(const char* context, const char* msg, 
   return ret;
 }
 
+TinyString Host::TranslatePluralToTinyString(const char* context, const char* msg, const char* disambiguation,
+                                             int count)
+{
+  TinyString ret(msg);
+  ret.replace("%n", TinyString::from_format("{}", count));
+  return ret;
+}
+
 SmallString Host::TranslatePluralToSmallString(const char* context, const char* msg, const char* disambiguation,
                                                int count)
 {
@@ -541,57 +549,30 @@ bool Host::CopyTextToClipboard(std::string_view text)
   return false;
 }
 
-std::string Host::FormatNumber(NumberFormatType type, s64 value)
+static TinyString FormatDateOrTime(const char* format, std::time_t timestamp)
 {
-  std::string ret;
-
-  if (type >= NumberFormatType::ShortDate && type <= NumberFormatType::LongDateTime)
-  {
-    const char* format;
-    switch (type)
-    {
-      case NumberFormatType::ShortDate:
-        format = "%x";
-        break;
-
-      case NumberFormatType::LongDate:
-        format = "%A %B %e %Y";
-        break;
-
-      case NumberFormatType::ShortTime:
-      case NumberFormatType::LongTime:
-        format = "%X";
-        break;
-
-      case NumberFormatType::ShortDateTime:
-        format = "%X %x";
-        break;
-
-      case NumberFormatType::LongDateTime:
-        format = "%c";
-        break;
-
-        DefaultCaseIsUnreachable();
-    }
-
-    ret.resize(128);
-
-    if (const std::optional<std::tm> ltime = Common::LocalTime(static_cast<std::time_t>(value)))
-      ret.resize(std::strftime(ret.data(), ret.size(), format, &ltime.value()));
-    else
-      ret = "Invalid";
-  }
+  TinyString ret;
+  if (const std::optional<std::tm> ltime = Common::LocalTime(timestamp))
+    ret.resize(static_cast<u32>(std::strftime(ret.data(), ret.buffer_size(), format, &ltime.value())));
   else
-  {
-    ret = fmt::format("{}", value);
-  }
+    ret = "Invalid";
 
   return ret;
 }
 
-std::string Host::FormatNumber(NumberFormatType type, double value)
+TinyString Host::FormatDate(std::time_t timestamp, bool long_format)
 {
-  return fmt::format("{}", value);
+  return FormatDateOrTime(long_format ? "%A %B %e %Y" : "%x", timestamp);
+}
+
+TinyString Host::FormatTime(std::time_t timestamp, bool long_format)
+{
+  return FormatDateOrTime("%X", timestamp);
+}
+
+TinyString Host::FormatDateTime(std::time_t timestamp, bool long_format)
+{
+  return FormatDateOrTime(long_format ? "%c" : "%X %x", timestamp);
 }
 
 void Host::SetMouseMode(bool relative, bool hide_cursor)

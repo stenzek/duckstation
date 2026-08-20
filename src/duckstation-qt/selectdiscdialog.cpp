@@ -6,6 +6,8 @@
 
 #include "core/game_list.h"
 
+#include "util/translation.h"
+
 #include "common/assert.h"
 #include "common/path.h"
 
@@ -72,7 +74,8 @@ void SelectDiscDialog::populateList(const GameDatabase::DiscSetEntry* dsentry, b
     item->setIcon(0, QtUtils::GetIconForEntryType(GameList::EntryType::Disc));
     item->setText(0, QString::number(entry->disc_set_index + 1));
     item->setText(1, QtUtils::StringViewToQString(Path::GetFileName(entry->path)));
-    item->setText(2, QtUtils::StringViewToQString(GameList::FormatTimestamp(entry->last_played_time)));
+    item->setText(2, QtUtils::StringViewToQString(QtUtils::StringViewToQStringView(
+                       Host::FormatRelativeDateTime(entry->last_played_time, false, true))));
     m_ui.discList->addTopLevelItem(item);
 
     if (!last_played_entry ||

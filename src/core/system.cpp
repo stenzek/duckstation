@@ -5435,9 +5435,8 @@ void System::UndoLoadState()
   INFO_LOG("Loaded undo save state.");
 
   Host::AddIconOSDMessage(OSDMessageType::Info, std::move(osd_key), ICON_FA_ARROW_ROTATE_LEFT, std::move(osd_title),
-                          fmt::format(TRANSLATE_FS("System", "Loaded undo save state created at {}."),
-                                      Host::FormatNumber(Host::NumberFormatType::ShortTime,
-                                                         static_cast<s64>(s_state.undo_load_state->timestamp))));
+                          fmt::format(TRANSLATE_FS("System", "Loaded undo save state created {}."),
+                                      Host::FormatRelativeDateTime(s_state.undo_load_state->timestamp, false, false)));
 
   s_state.undo_load_state.reset();
   Host::OnSystemUndoStateAvailabilityChanged(false, 0);

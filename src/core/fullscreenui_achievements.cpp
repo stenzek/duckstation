@@ -2004,39 +2004,36 @@ void FullscreenUI::DrawAchievementsWindow()
 
       if (summary.beaten_time > 0)
       {
-        const std::string beaten_time =
-          Host::FormatNumber(Host::NumberFormatType::ShortDate, static_cast<s64>(summary.beaten_time));
+        const TinyString beaten_time = Host::FormatRelativeDateTime(summary.beaten_time, false, false);
         if (summary.completed_time > 0)
         {
-          const std::string completion_time =
-            Host::FormatNumber(Host::NumberFormatType::ShortDate, static_cast<s64>(summary.completed_time));
+          const TinyString completion_time = Host::FormatRelativeDateTime(summary.completed_time, false, false);
           if (is_core_subset)
           {
-            text.append_format(TRANSLATE_FS("Achievements", "Game was beaten on {0}, and completed on {1}."),
-                               beaten_time, completion_time);
+            text.append_format(TRANSLATE_FS("Achievements", "Game was beaten {0}, and completed {1}."), beaten_time,
+                               completion_time);
           }
           else
           {
-            text.append_format(TRANSLATE_FS("Achievements", "Subset was beaten on {0}, and completed on {1}."),
-                               beaten_time, completion_time);
+            text.append_format(TRANSLATE_FS("Achievements", "Subset was beaten {0}, and completed {1}."), beaten_time,
+                               completion_time);
           }
         }
         else
         {
           if (is_core_subset)
-            text.append_format(TRANSLATE_FS("Achievements", "Game was beaten on {0}."), beaten_time);
+            text.append_format(TRANSLATE_FS("Achievements", "Game was beaten {0}."), beaten_time);
           else
-            text.append_format(TRANSLATE_FS("Achievements", "Subset was beaten on {0}."), beaten_time);
+            text.append_format(TRANSLATE_FS("Achievements", "Subset was beaten {0}."), beaten_time);
         }
       }
       else
       {
-        const std::string completion_time =
-          Host::FormatNumber(Host::NumberFormatType::ShortDate, static_cast<s64>(summary.completed_time));
+        const TinyString completion_time = Host::FormatRelativeDateTime(summary.completed_time, false, false);
         if (is_core_subset)
-          text.append_format(TRANSLATE_FS("Achievements", "Game was completed on {0}."), completion_time);
+          text.append_format(TRANSLATE_FS("Achievements", "Game was completed {0}."), completion_time);
         else
-          text.append_format(TRANSLATE_FS("Achievements", "Subset was completed on {0}."), completion_time);
+          text.append_format(TRANSLATE_FS("Achievements", "Subset was completed {0}."), completion_time);
       }
 
       const ImRect beaten_bb(ImVec2(left, top), ImVec2(right, top + UIStyle.MediumFontSize));
@@ -2386,9 +2383,8 @@ void FullscreenUI::DrawAchievement(const rc_client_achievement_t* cheevo, const 
   const u32 rarity_color = ImGui::GetColorU32(DarkerColor(DarkerColor(UIStyle.SecondaryTextColor)));
   if (is_unlocked)
   {
-    const std::string date =
-      Host::FormatNumber(Host::NumberFormatType::LongDateTime, static_cast<s64>(cheevo->unlock_time));
-    text.format(TRANSLATE_FS("Achievements", "Unlocked: {} | {:.1f}% of players have this achievement"), date,
+    const TinyString date = Host::FormatRelativeDateTime(cheevo->unlock_time, false, false);
+    text.format(TRANSLATE_FS("Achievements", "Unlocked {} | {:.1f}% of players have this achievement"), date,
                 rarity_to_display);
 
     RenderShadowedTextClipped(dl, UIStyle.Font, subtitle_font_size, subtitle_font_weight, rarity_bb.Min, rarity_bb.Max,
@@ -3047,8 +3043,7 @@ bool FullscreenUI::DrawLeaderboardEntry(const rc_client_leaderboard_entry_t& ent
 
   if (time_bb.Contains(ImGui::GetIO().MousePos) && ImGui::BeginItemTooltip())
   {
-    const std::string submit_time =
-      Host::FormatNumber(Host::NumberFormatType::LongDateTime, static_cast<s64>(entry.submitted));
+    const TinyString submit_time = Host::FormatRelativeDateTime(entry.submitted, false, false);
     ImGui::PushFont(UIStyle.Font, UIStyle.MediumLargeFontSize, UIStyle.NormalFontWeight);
     ImGui::Text(ICON_EMOJI_CLOCK_FIVE_OCLOCK " %s", submit_time.c_str());
     ImGui::PopFont();

@@ -601,32 +601,32 @@ void SetupWizardDialog::updateAchievementsLoginState()
 {
   m_ui.achievementsUserBadge->setPixmap(QPixmap(QtHost::GetResourceQPath("images/ra-generic-user.png", true)));
 
-  QString qusername;
-  QString qbadge_path;
+  std::string username;
 
   {
     const auto lock = Achievements::GetLock();
     if (Achievements::IsLoggedIn())
     {
-      qusername = QString::fromStdString(Achievements::GetLoggedInUserName());
+      username = Achievements::GetLoggedInUserName();
       QtUtils::SetLabelPixmapPathOrURL(m_ui.achievementsUserBadge, Achievements::GetLoggedInUserIconURL(), true);
     }
     else
     {
-      qusername = QString::fromStdString(Core::GetBaseStringSettingValue("Cheevos", "Username"));
+      username = Core::GetBaseStringSettingValue("Cheevos", "Username");
     }
   }
 
-  const bool logged_in = !qusername.isEmpty();
+  const bool logged_in = !username.empty();
 
   if (logged_in)
   {
     const u64 login_unix_timestamp =
       StringUtil::FromChars<u64>(Core::GetBaseStringSettingValue("Cheevos", "LoginTimestamp", "0")).value_or(0);
-    const QString login_timestamp =
-      QtHost::FormatNumber(Host::NumberFormatType::ShortDateTime, static_cast<s64>(login_unix_timestamp));
-    m_ui.achievementsLoginStatus->setText(
-      tr("Logged in as %1\nToken generated at %2").arg(qusername).arg(login_timestamp));
+    const TinyString login_timestamp =
+      Host::FormatRelativeDateTime(static_cast<std::time_t>(login_unix_timestamp), false, false);
+    m_ui.achievementsLoginStatus->setText(tr("Logged in as %1\nToken generated %2")
+                                            .arg(QtUtils::StringViewToQStringView(username))
+                                            .arg(QtUtils::StringViewToQStringView(login_timestamp)));
   }
   else
   {

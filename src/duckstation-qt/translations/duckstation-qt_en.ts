@@ -262,30 +262,6 @@
     </message>
 </context>
 <context>
-    <name>GameList</name>
-    <message numerus="yes">
-        <source>%n seconds</source>
-        <translation>
-            <numerusform>%n second</numerusform>
-            <numerusform>%n seconds</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <source>%n hours</source>
-        <translation>
-            <numerusform>%n hour</numerusform>
-            <numerusform>%n hours</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <source>%n minutes</source>
-        <translation>
-            <numerusform>%n minute</numerusform>
-            <numerusform>%n minutes</numerusform>
-        </translation>
-    </message>
-</context>
-<context>
     <name>GameSummaryWidget</name>
     <message numerus="yes">
         <source>%n player(s)</source>
@@ -299,6 +275,30 @@
         <translation>
             <numerusform>%n memory card block</numerusform>
             <numerusform>%n memory card blocks</numerusform>
+        </translation>
+    </message>
+</context>
+<context>
+    <name>Host</name>
+    <message numerus="yes">
+        <source>%n seconds</source>
+        <translation>
+            <numerusform>%n second</numerusform>
+            <numerusform>%n seconds</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n minutes</source>
+        <translation>
+            <numerusform>%n minute</numerusform>
+            <numerusform>%n minutes</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n hours</source>
+        <translation>
+            <numerusform>%n hour</numerusform>
+            <numerusform>%n hours</numerusform>
         </translation>
     </message>
 </context>

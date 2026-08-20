@@ -7,6 +7,7 @@
 #include "common/heterogeneous_containers.h"
 #include "common/log.h"
 #include "common/string_util.h"
+#include "common/time_helpers.h"
 
 #include <cstdarg>
 #include <shared_mutex>
@@ -143,4 +144,120 @@ void Host::ClearTranslationCache()
   s_locals.translation_string_map.clear();
   s_locals.translation_string_cache_pos = 0;
   s_locals.translation_string_mutex.unlock();
+}
+
+TinyString Host::FormatRelativeDate(std::time_t timestamp, bool long_format /* = false */, bool for_title /* = false */)
+{
+  // Hack for zero.
+  if (timestamp == 0)
+    return TinyString(TranslateToStringView("Host", TRANSLATE_NOOP("Host", "Never")));
+
+  // Avoid localtime call when more than two days have passed.
+  const s64 current_time = static_cast<s64>(std::time(nullptr));
+  if (current_time >= timestamp)
+  {
+    const s64 delta = current_time - timestamp;
+    if (delta <= (2 * 24 * 60 * 60))
+    {
+      const std::optional<std::tm> ctime = Common::LocalTime(static_cast<std::time_t>(current_time));
+      const std::optional<std::tm> ttime = Common::LocalTime(static_cast<std::time_t>(timestamp));
+      if (ctime.has_value() && ttime.has_value() && ctime->tm_year == ttime->tm_year &&
+          ctime->tm_yday == ttime->tm_yday)
+      {
+        return TinyString(
+          TranslateToStringView("Host", for_title ? TRANSLATE_NOOP("Host", "Today") : TRANSLATE_NOOP("Host", "today")));
+      }
+      else if (ctime.has_value() && ttime.has_value() &&
+               ((ctime->tm_year == ttime->tm_year && ctime->tm_yday == (ttime->tm_yday + 1)) ||
+                (ctime->tm_yday == 0 && ctime->tm_mon == 0 && (ctime->tm_year - 1) == ttime->tm_year &&
+                 ttime->tm_mon == 11 && ttime->tm_mday == 31)))
+      {
+        return TinyString(TranslateToStringView("Host", for_title ? TRANSLATE_NOOP("Host", "Yesterday") :
+                                                                    TRANSLATE_NOOP("Host", "yesterday")));
+      }
+    }
+    else if (delta < 7 * 24 * 60 * 60)
+    {
+      return TranslatePluralToTinyString("Host", TRANSLATE_DISAMBIG_NOOP("Host", "%n days ago", "Date difference"),
+                                         "Date difference", static_cast<int>(delta) / (24 * 60 * 60));
+    }
+  }
+
+  if (for_title)
+    return FormatDate(timestamp, long_format);
+  else
+    return TinyString::from_format(TRANSLATE_FS("Host", "on {}"), FormatDate(timestamp, long_format));
+}
+
+TinyString Host::FormatRelativeDateTime(std::time_t timestamp, bool long_format /* = false */,
+                                        bool for_title /* = false */)
+{
+  // Hack for zero.
+  if (timestamp == 0)
+    return TinyString(TranslateToStringView("Host", TRANSLATE_NOOP("Host", "Never")));
+
+  const s64 current_time = static_cast<s64>(std::time(nullptr));
+  const s64 delta = current_time - timestamp;
+  if (delta < 5)
+  {
+    return TinyString(
+      TranslateToStringView("Host", for_title ? TRANSLATE_NOOP("Host", "Now") : TRANSLATE_NOOP("Host", "now")));
+  }
+  else if (delta < 60)
+  {
+    return TranslatePluralToTinyString("Host", TRANSLATE_DISAMBIG_NOOP("Host", "%n seconds ago", "Time difference"),
+                                       "Time difference", static_cast<int>(delta));
+  }
+  else if (delta < 60 * 60)
+  {
+    return TranslatePluralToTinyString("Host", TRANSLATE_DISAMBIG_NOOP("Host", "%n minutes ago", "Time difference"),
+                                       "Time difference", static_cast<int>(delta) / 60);
+  }
+  else if (delta < 12 * 60 * 60)
+  {
+    return TranslatePluralToTinyString("Host", TRANSLATE_DISAMBIG_NOOP("Host", "%n hours ago", "Time difference"),
+                                       "Time difference", static_cast<int>(delta) / (60 * 60));
+  }
+
+  if (for_title)
+  {
+    return FormatDateTime(timestamp, long_format);
+  }
+  else
+  {
+    return TinyString::from_format(TRANSLATE_FS("Host", "{} at {}"), FormatRelativeDate(timestamp, long_format, false),
+                                   FormatTime(timestamp, long_format));
+  }
+}
+
+TinyString Host::FormatTimespan(std::time_t timespan, bool long_format /*= false*/)
+{
+  const u32 hours = static_cast<u32>(timespan / 3600);
+  const u32 minutes = static_cast<u32>((timespan % 3600) / 60);
+  const u32 seconds = static_cast<u32>((timespan % 3600) % 60);
+
+  if (!long_format)
+  {
+    if (hours >= 100)
+      return TinyString::from_format(TRANSLATE_FS("Host", "{}h {}m"), hours, minutes);
+    else if (hours > 0)
+      return TinyString::from_format(TRANSLATE_FS("Host", "{}h {}m {}s"), hours, minutes, seconds);
+    else if (minutes > 0)
+      return TinyString::from_format(TRANSLATE_FS("Host", "{}m {}s"), minutes, seconds);
+    else if (seconds > 0)
+      return TinyString::from_format(TRANSLATE_FS("Host", "{}s"), seconds);
+    else
+      return TinyString(TRANSLATE_SV("Host", "None"));
+  }
+  else
+  {
+    if (hours > 0)
+      return TRANSLATE_PLURAL_SSTR("Host", "%n hours", "", hours);
+    else if (minutes > 0)
+      return TRANSLATE_PLURAL_SSTR("Host", "%n minutes", "", minutes);
+    else if (seconds > 0)
+      return TRANSLATE_PLURAL_SSTR("Host", "%n seconds", "", seconds);
+    else
+      return TinyString(TRANSLATE_SV("Host", "None"));
+  }
 }

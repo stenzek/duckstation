@@ -725,14 +725,14 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
       ImGui::PopFont();
       ImGui::SameLine();
       ImGui::PushStyleColor(ImGuiCol_Text, subtitle_text_color);
-      ImGui::TextUnformatted(GameList::FormatTimespan(selected_entry->total_played_time).c_str());
+      ImGui::TextUnformatted(Host::FormatTimespan(selected_entry->total_played_time, true).c_str());
       ImGui::PopStyleColor();
       ImGui::PushFont(UIStyle.Font, UIStyle.MediumFontSize, UIStyle.BoldFontWeight);
       TextUnformatted(FSUI_ICONSTR(ICON_EMOJI_CLOCK_FIVE_OCLOCK, FSUI_CSTR("Last Played: ")));
       ImGui::PopFont();
       ImGui::SameLine();
       ImGui::PushStyleColor(ImGuiCol_Text, subtitle_text_color);
-      ImGui::TextUnformatted(GameList::FormatTimestamp(selected_entry->last_played_time).c_str());
+      ImGui::TextUnformatted(Host::FormatRelativeDate(selected_entry->last_played_time, false, true).c_str());
       ImGui::PopStyleColor();
 
       // size

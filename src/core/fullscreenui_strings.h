@@ -287,7 +287,7 @@ TRANSLATE_NOOP("FullscreenUI", "Displays only the game title in the list, instea
 TRANSLATE_NOOP("FullscreenUI", "Displays popup messages on events such as achievement unlocks and leaderboard submissions.");
 TRANSLATE_NOOP("FullscreenUI", "Displays popup messages when starting, submitting, or failing a leaderboard challenge.");
 TRANSLATE_NOOP("FullscreenUI", "Dithering");
-TRANSLATE_NOOP("FullscreenUI", "Do you want to continue from the automatic save created at {}?");
+TRANSLATE_NOOP("FullscreenUI", "Do you want to continue from the automatic save created {}?");
 TRANSLATE_NOOP("FullscreenUI", "Double-Click Toggles Fullscreen");
 TRANSLATE_NOOP("FullscreenUI", "Download Covers");
 TRANSLATE_NOOP("FullscreenUI", "Downloads all locked achievement badges while starting the game. This will reduce delays in the images being shown when unlocking achievements.");
@@ -492,7 +492,7 @@ TRANSLATE_NOOP("FullscreenUI", "Logging Settings");
 TRANSLATE_NOOP("FullscreenUI", "Logging in to RetroAchievements...");
 TRANSLATE_NOOP("FullscreenUI", "Login");
 TRANSLATE_NOOP("FullscreenUI", "Login Failed.\nError: {}\nPlease check your username and password, and try again.");
-TRANSLATE_NOOP("FullscreenUI", "Login token generated on {}");
+TRANSLATE_NOOP("FullscreenUI", "Login token generated {}");
 TRANSLATE_NOOP("FullscreenUI", "Logout");
 TRANSLATE_NOOP("FullscreenUI", "Logs BIOS calls to printf(). Not all games contain debugging messages.");
 TRANSLATE_NOOP("FullscreenUI", "Logs messages to duckstation.log in the user directory.");

@@ -900,26 +900,25 @@ void MainWindow::populateGameListContextMenu(const GameList::Entry* entry, QWidg
     if (!entry->serial.empty())
     {
       std::vector<SaveStateInfo> available_states(System::GetAvailableSaveStates(entry->serial));
-      const QString timestamp_format = QtHost::GetApplicationLocale().dateTimeFormat(QLocale::ShortFormat);
       for (SaveStateInfo& ssi : available_states)
       {
         if (ssi.global)
           continue;
 
         const s32 slot = ssi.slot;
-        const QString timestamp_str =
-          QtHost::FormatNumber(Host::NumberFormatType::ShortDateTime, static_cast<s64>(ssi.timestamp));
+        const TinyString timestamp_str = Host::FormatRelativeDateTime(ssi.timestamp, false, true);
 
         QAction* action;
         if (slot < 0)
         {
-          resume_action->setText(tr("Resume (%1)").arg(timestamp_str));
+          resume_action->setText(tr("Resume (%1)").arg(QtUtils::StringViewToQStringView(timestamp_str)));
           action = resume_action;
         }
         else
         {
           load_state_menu->setEnabled(true);
-          action = load_state_menu->addAction(tr("Game Save %1 (%2)").arg(slot).arg(timestamp_str));
+          action = load_state_menu->addAction(
+            tr("Game Save %1 (%2)").arg(slot).arg(QtUtils::StringViewToQStringView(timestamp_str)));
         }
 
         action->setDisabled(s_locals.achievements_hardcore_mode);
@@ -971,10 +970,9 @@ void MainWindow::populateLoadStateMenu(std::string_view game_serial, QMenu* menu
                                s32 slot) {
     std::optional<SaveStateInfo> ssi = System::GetSaveStateInfo(serial, slot);
 
-    const QString menu_title = ssi.has_value() ?
-                                 title.arg(slot).arg(QtHost::FormatNumber(Host::NumberFormatType::ShortDateTime,
-                                                                          static_cast<s64>(ssi->timestamp))) :
-                                 empty_title.arg(slot);
+    const QString menu_title = ssi.has_value() ? title.arg(slot).arg(QtUtils::StringViewToQStringView(
+                                                   Host::FormatRelativeDateTime(ssi->timestamp, false, true))) :
+                                                 empty_title.arg(slot);
 
     QAction* load_action = menu->addAction(menu_title);
     load_action->setEnabled(ssi.has_value());
@@ -995,12 +993,11 @@ void MainWindow::populateLoadStateMenu(std::string_view game_serial, QMenu* menu
 
     g_core_thread->loadState(path);
   });
-  QAction* load_from_state =
-    menu->addAction(s_locals.undo_state_timestamp.has_value() ?
-                      tr("Undo Load State (%1)")
-                        .arg(QtHost::FormatNumber(Host::NumberFormatType::ShortDateTime,
-                                                  static_cast<s64>(s_locals.undo_state_timestamp.value()))) :
-                      tr("Undo Load State"));
+  QAction* load_from_state = menu->addAction(s_locals.undo_state_timestamp.has_value() ?
+                                               tr("Undo Load State (%1)")
+                                                 .arg(QtUtils::StringViewToQStringView(Host::FormatRelativeDateTime(
+                                                   s_locals.undo_state_timestamp.value(), false, true))) :
+                                               tr("Undo Load State"));
   load_from_state->setEnabled(s_locals.undo_state_timestamp.has_value());
   connect(load_from_state, &QAction::triggered, g_core_thread, &CoreThread::undoLoadState);
 
@@ -1027,10 +1024,9 @@ void MainWindow::populateSaveStateMenu(std::string_view game_serial, QMenu* menu
   auto add_slot = [menu](const QString& title, const QString& empty_title, const std::string_view& serial, s32 slot) {
     std::optional<SaveStateInfo> ssi = System::GetSaveStateInfo(serial, slot);
 
-    const QString menu_title = ssi.has_value() ?
-                                 title.arg(slot).arg(QtHost::FormatNumber(Host::NumberFormatType::ShortDateTime,
-                                                                          static_cast<s64>(ssi->timestamp))) :
-                                 empty_title.arg(slot);
+    const QString menu_title = ssi.has_value() ? title.arg(slot).arg(QtUtils::StringViewToQStringView(
+                                                   Host::FormatRelativeDateTime(ssi->timestamp, false, true))) :
+                                                 empty_title.arg(slot);
 
     QAction* save_action = menu->addAction(menu_title);
     connect(save_action, &QAction::triggered,
@@ -1220,8 +1216,8 @@ bool MainWindow::openResumeStateDialog(const std::string& path, std::string save
 
   QLabel* const timestamp_label = new QLabel(dlg);
   timestamp_label->setText(
-    tr("Save was created on %1.")
-      .arg(QtHost::FormatNumber(Host::NumberFormatType::LongDateTime, static_cast<s64>(ssi->timestamp))));
+    tr("Save was created %1.")
+      .arg(QtUtils::StringViewToQStringView(Host::FormatRelativeDateTime(ssi->timestamp, false, false))));
   timestamp_label->setWordWrap(true);
   timestamp_label->setAlignment(Qt::AlignHCenter);
   main_layout->addWidget(timestamp_label);

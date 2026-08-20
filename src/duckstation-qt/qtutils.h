@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "common/small_string.h"
 #include "common/types.h"
 
 #include <QtCore/QByteArray>
@@ -116,6 +117,10 @@ QUtf8StringView StringViewToQStringView(std::string_view str);
 
 /// Ensures line endings are normalized in \n format.
 QString NormalizeLineEndings(QString str);
+
+/// Converts a QString to small string types.
+TinyString QStringToTinyString(const QString& str);
+SmallString QStringToSmallString(const QString& str);
 
 /// Sets a widget to italics if the setting value is inherited.
 void SetWidgetFontForInheritedSetting(QWidget* widget, bool inherited);

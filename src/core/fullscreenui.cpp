@@ -680,7 +680,7 @@ void FullscreenUI::UpdateCurrentTimeString()
 
   s_locals.current_time = current_time;
   s_locals.current_time_string = {};
-  s_locals.current_time_string = Host::FormatNumber(Host::NumberFormatType::ShortTime, static_cast<s64>(current_time));
+  s_locals.current_time_string = Host::FormatTime(current_time, false);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1658,7 +1658,7 @@ void FullscreenUI::DrawPauseMenu()
       const std::time_t cached_played_time = GameList::GetCachedPlayedTimeForSerial(game_serial);
       const std::time_t session_time = static_cast<std::time_t>(System::GetSessionPlayedTime());
 
-      buffer.format(FSUI_FSTR("Session: {}"), GameList::FormatTimespan(session_time, true));
+      buffer.format(FSUI_FSTR("Session: {}"), Host::FormatTimespan(session_time, true));
       text_size =
         UIStyle.Font->CalcTextSizeA(UIStyle.MediumFontSize, UIStyle.NormalFontWeight, std::numeric_limits<float>::max(),
                                     -1.0f, buffer.c_str(), buffer.end_ptr());
@@ -1667,7 +1667,7 @@ void FullscreenUI::DrawPauseMenu()
                                 display_size, text_color, buffer);
       text_pos.y += UIStyle.MediumFontSize + scaled_text_spacing;
 
-      buffer.format(FSUI_FSTR("All Time: {}"), GameList::FormatTimespan(cached_played_time + session_time, true));
+      buffer.format(FSUI_FSTR("All Time: {}"), Host::FormatTimespan(cached_played_time + session_time, true));
       text_size = UIStyle.Font->CalcTextSizeA(UIStyle.MediumFontSize, UIStyle.NormalFontWeight,
                                               std::numeric_limits<float>::max(), -1.0f, IMSTR_START_END(buffer));
       text_pos.x = display_size.x - scaled_top_bar_padding - text_size.x;
@@ -1893,8 +1893,7 @@ bool FullscreenUI::InitializeSaveStateListEntryFromPath(SaveStateListEntry* li, 
     li->title = (slot > 0) ? fmt::format(FSUI_FSTR("Game Slot {0}##game_slot_{0}"), slot) : FSUI_STR("Game Quick Save");
   }
 
-  li->summary = fmt::format(
-    FSUI_FSTR("Saved {}"), Host::FormatNumber(Host::NumberFormatType::ShortDateTime, static_cast<s64>(ssi->timestamp)));
+  li->summary = fmt::format(FSUI_FSTR("Saved {}"), Host::FormatRelativeDateTime(ssi->timestamp, false, false));
   li->timestamp = ssi->timestamp;
   li->slot = slot;
   li->game_path = std::move(ssi->media_path);
@@ -1921,8 +1920,8 @@ u32 FullscreenUI::PopulateSaveStateListEntries(const std::string& serial,
   {
     SaveStateListEntry li;
     li.title = FSUI_STR("Undo Load State");
-    li.summary = fmt::format(FSUI_FSTR("Saved {}"), Host::FormatNumber(Host::NumberFormatType::ShortDateTime,
-                                                                       static_cast<s64>(undo_save_state->timestamp)));
+    li.summary =
+      fmt::format(FSUI_FSTR("Saved {}"), Host::FormatRelativeDateTime(undo_save_state->timestamp, false, false));
     if (undo_save_state->screenshot.IsValid())
       li.preview_texture = g_gpu_device->FetchAndUploadTextureImage(undo_save_state->screenshot);
     s_locals.save_state_selector_slots.push_back(std::move(li));
@@ -2310,8 +2309,8 @@ void FullscreenUI::DrawResumeStateSelector()
   SaveStateListEntry& entry = s_locals.save_state_selector_slots.front();
 
   SmallString sick;
-  sick.format(FSUI_FSTR("Do you want to continue from the automatic save created at {}?"),
-              Host::FormatNumber(Host::NumberFormatType::LongDateTime, static_cast<s64>(entry.timestamp)));
+  sick.format(FSUI_FSTR("Do you want to continue from the automatic save created {}?"),
+              Host::FormatRelativeDateTime(entry.timestamp, false, false));
   ImGui::PushFont(nullptr, 0.0f, UIStyle.BoldFontWeight);
   TextAlignedMultiLine(0.5f, IMSTR_START_END(sick));
   ImGui::PopFont();

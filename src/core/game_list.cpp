@@ -1446,7 +1446,7 @@ std::string GameList::Entry::GetReleaseDateString() const
   if (!dbentry || dbentry->release_date == 0)
     ret = TRANSLATE_STR("GameList", "Unknown");
   else
-    ret = Host::FormatNumber(Host::NumberFormatType::LongDate, static_cast<s64>(dbentry->release_date));
+    ret = Host::FormatDate(static_cast<std::time_t>(dbentry->release_date), false);
 
   return ret;
 }
@@ -1689,71 +1689,6 @@ std::time_t GameList::GetCachedPlayedTimeForSerial(const std::string& serial)
   }
 
   return 0;
-}
-
-std::string GameList::FormatTimestamp(std::time_t timestamp)
-{
-  if (timestamp == 0)
-  {
-    return TRANSLATE_STR("GameList", "Never");
-  }
-  else
-  {
-    const std::time_t current_time = std::time(nullptr);
-
-    // Avoid localtime call when more than two days have passed.
-    if (current_time < timestamp || (current_time - timestamp) <= (2 * 24 * 60 * 60))
-    {
-      const std::optional<std::tm> ctime = Common::LocalTime(current_time);
-      const std::optional<std::tm> ttime = Common::LocalTime(timestamp);
-      if (ctime.has_value() && ttime.has_value() && ctime->tm_year == ttime->tm_year &&
-          ctime->tm_yday == ttime->tm_yday)
-      {
-        return TRANSLATE_STR("GameList", "Today");
-      }
-      else if (ctime.has_value() && ttime.has_value() &&
-               ((ctime->tm_year == ttime->tm_year && ctime->tm_yday == (ttime->tm_yday + 1)) ||
-                (ctime->tm_yday == 0 && ctime->tm_mon == 0 && (ctime->tm_year - 1) == ttime->tm_year &&
-                 ttime->tm_mon == 11 && ttime->tm_mday == 31)))
-      {
-        return TRANSLATE_STR("GameList", "Yesterday");
-      }
-    }
-
-    return Host::FormatNumber(Host::NumberFormatType::ShortDate, static_cast<s64>(timestamp));
-  }
-}
-
-TinyString GameList::FormatTimespan(std::time_t timespan, bool long_format)
-{
-  const u32 hours = static_cast<u32>(timespan / 3600);
-  const u32 minutes = static_cast<u32>((timespan % 3600) / 60);
-  const u32 seconds = static_cast<u32>((timespan % 3600) % 60);
-
-  if (!long_format)
-  {
-    if (hours >= 100)
-      return TinyString::from_format(TRANSLATE_FS("GameList", "{}h {}m"), hours, minutes);
-    else if (hours > 0)
-      return TinyString::from_format(TRANSLATE_FS("GameList", "{}h {}m {}s"), hours, minutes, seconds);
-    else if (minutes > 0)
-      return TinyString::from_format(TRANSLATE_FS("GameList", "{}m {}s"), minutes, seconds);
-    else if (seconds > 0)
-      return TinyString::from_format(TRANSLATE_FS("GameList", "{}s"), seconds);
-    else
-      return TinyString(TRANSLATE_SV("GameList", "None"));
-  }
-  else
-  {
-    if (hours > 0)
-      return TRANSLATE_PLURAL_SSTR("GameList", "%n hours", "", hours);
-    else if (minutes > 0)
-      return TRANSLATE_PLURAL_SSTR("GameList", "%n minutes", "", minutes);
-    else if (seconds > 0)
-      return TRANSLATE_PLURAL_SSTR("GameList", "%n seconds", "", seconds);
-    else
-      return TinyString(TRANSLATE_SV("GameList", "None"));
-  }
 }
 
 std::vector<std::pair<std::string_view, const GameList::Entry*>>

@@ -5764,10 +5764,11 @@ void FullscreenUI::DrawAchievementsSettingsPage(std::unique_lock<std::mutex>& se
 
     if (bsi->ContainsValue("Cheevos", "Token"))
     {
-      const std::string ts_string = Host::FormatNumber(
-        Host::NumberFormatType::LongDateTime,
-        StringUtil::FromChars<s64>(bsi->GetTinyStringValue("Cheevos", "LoginTimestamp", "0")).value_or(0));
-      str.format(fmt::runtime(FSUI_ICONVSTR(ICON_FA_USER_CLOCK, "Login token generated on {}")), ts_string);
+      const TinyString ts_string = Host::FormatRelativeDateTime(
+        static_cast<std::time_t>(
+          StringUtil::FromChars<s64>(bsi->GetTinyStringValue("Cheevos", "LoginTimestamp", "0")).value_or(0)),
+        false, false);
+      str.format(fmt::runtime(FSUI_ICONVSTR(ICON_FA_USER_CLOCK, "Login token generated {}")), ts_string);
       MenuButtonWithoutSummary(str, false);
     }
 

@@ -964,11 +964,11 @@ QVariant GameListModel::data(const QModelIndex& index, int role) const
           if (ge->total_played_time == 0)
             return {};
           else
-            return QtUtils::StringViewToQString(GameList::FormatTimespan(ge->total_played_time, true));
+            return QtUtils::StringViewToQString(Host::FormatTimespan(ge->total_played_time, true));
         }
 
         case Column_LastPlayed:
-          return QtUtils::StringViewToQString(GameList::FormatTimestamp(ge->last_played_time));
+          return QtUtils::StringViewToQString(Host::FormatRelativeDate(ge->last_played_time, false, true));
 
         default:
           return {};
@@ -1071,7 +1071,7 @@ QVariant GameListModel::data(const QModelIndex& index, int role) const
           if (ge->total_played_time == 0)
             return {};
           else
-            return QtUtils::StringViewToQString(GameList::FormatTimespan(ge->total_played_time, false));
+            return QtUtils::StringViewToQString(Host::FormatTimespan(ge->total_played_time, false));
         }
 
         case Column_LastPlayed:
@@ -1079,7 +1079,7 @@ QVariant GameListModel::data(const QModelIndex& index, int role) const
           if (ge->last_played_time == 0)
             return {};
           else
-            return QtHost::FormatNumber(Host::NumberFormatType::LongDateTime, static_cast<s64>(ge->last_played_time));
+            return QtUtils::StringViewToQString(Host::FormatDateTime(static_cast<s64>(ge->last_played_time), true));
         }
 
         case Column_Achievements:
@@ -2508,18 +2508,17 @@ void GameListListView::updateFixedColumnWidths()
 
   // Played time is a little trickier, since some locales might have longer words for "hours" and "minutes".
   setFixedColumnWidth(fm, GameListModel::Column_TimePlayed,
-                      std::max({width_for(QCoreApplication::translate("GameList", "%n seconds", "", 59)),
-                                width_for(QCoreApplication::translate("GameList", "%n minutes", "", 59)),
-                                width_for(QCoreApplication::translate("GameList", "%n hours", "", 1000))}));
+                      std::max({width_for(QCoreApplication::translate("Host", "%n seconds", "", 59)),
+                                width_for(QCoreApplication::translate("Host", "%n minutes", "", 59)),
+                                width_for(QCoreApplication::translate("Host", "%n hours", "", 1000))}));
 
   // And this is a monstrosity.
   setFixedColumnWidth(
     fm, GameListModel::Column_LastPlayed,
-    std::max({width_for(QCoreApplication::translate("GameList", "Today")),
-              width_for(QCoreApplication::translate("GameList", "Yesterday")),
-              width_for(QCoreApplication::translate("GameList", "Never")),
-              width_for(QtHost::FormatNumber(Host::NumberFormatType::ShortDate,
-                                             static_cast<s64>(QDateTime::currentSecsSinceEpoch())))}));
+    std::max({width_for(QCoreApplication::translate("Host", "Today")),
+              width_for(QCoreApplication::translate("Host", "Yesterday")),
+              width_for(QCoreApplication::translate("Host", "Never")),
+              width_for(QtUtils::StringViewToQString(Host::FormatRelativeDate(std::time(nullptr), false, true)))}));
 
   // Assume 8 is the widest digit.
   const int size_width = std::max(width_for(QStringLiteral("%1 MB").arg(8888)), width_for(tr("Unknown")));

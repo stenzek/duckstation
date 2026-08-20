@@ -381,10 +381,6 @@ void ReloadCheatFiles(const std::string& serial, bool verbose, bool verbose_if_c
 /// Reloads folder paths.
 void UpdateFolderPaths();
 
-/// Formats a number according to the current locale.
-QString FormatNumber(Host::NumberFormatType type, s64 value);
-QString FormatNumber(Host::NumberFormatType type, double value);
-
 /// Downloads the specified URL to the provided path.
 void DownloadFile(QWidget* parent, std::string url, std::string path,
                   std::function<void(bool result, std::string path, const Error& error)> completion_callback);

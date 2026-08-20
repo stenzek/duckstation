@@ -452,20 +452,22 @@ void AutoUpdaterDialog::getLatestReleaseComplete(s32 status_code, Error& error, 
       {
         emit updateCheckAboutToComplete();
 
-        const QString current_date = QtHost::FormatNumber(
-          Host::NumberFormatType::ShortDateTime,
-          static_cast<s64>(
-            QDateTime::fromString(QString::fromUtf8(g_scm_date_str), Qt::DateFormat::ISODate).toSecsSinceEpoch()));
-        const QString release_date = QtHost::FormatNumber(
-          Host::NumberFormatType::ShortDateTime,
-          static_cast<s64>(
-            QDateTime::fromString(doc_object["published_at"].toString(), Qt::DateFormat::ISODate).toSecsSinceEpoch()));
+        const TinyString current_date = Host::FormatDate(
+          static_cast<std::time_t>(
+            QDateTime::fromString(QString::fromUtf8(g_scm_date_str), Qt::DateFormat::ISODate).toSecsSinceEpoch()),
+          false);
+        const TinyString release_date = Host::FormatDate(
+          static_cast<std::time_t>(
+            QDateTime::fromString(doc_object["published_at"].toString(), Qt::DateFormat::ISODate).toSecsSinceEpoch()),
+          false);
 
         m_ui.currentVersion->setText(tr("%1 (%2)")
                                        .arg(QtUtils::StringViewToQString(
                                          TinyString::from_format("{}/{}", g_scm_version_str, UPDATER_RELEASE_CHANNEL)))
-                                       .arg(current_date));
-        m_ui.newVersion->setText(tr("%1 (%2)").arg(QString::fromStdString(getCurrentUpdateTag())).arg(release_date));
+                                       .arg(QtUtils::StringViewToQStringView(current_date)));
+        m_ui.newVersion->setText(tr("%1 (%2)")
+                                   .arg(QtUtils::StringViewToQStringView(getCurrentUpdateTag()))
+                                   .arg(QtUtils::StringViewToQStringView(release_date)));
         m_ui.downloadSize->setText(tr("%1 MB").arg(static_cast<double>(m_download_size) / 1000000.0, 0, 'f', 2));
 
         m_ui.downloadAndInstall->setEnabled(true);
