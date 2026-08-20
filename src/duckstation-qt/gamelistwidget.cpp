@@ -219,7 +219,7 @@ static QString sizeToString(s64 size)
 {
   static constexpr s64 one_mb = 1024 * 1024;
   return (size >= 0) ? QStringLiteral("%1 MB").arg((size + (one_mb - 1)) / one_mb) :
-                       QCoreApplication::translate("GameListModel", "Unknown");
+                       QCoreApplication::translate("GameList", "Unknown");
 }
 
 std::optional<GameListModel::Column> GameListModel::getColumnIdForName(std::string_view name)
@@ -2522,7 +2522,8 @@ void GameListListView::updateFixedColumnWidths()
                                              static_cast<s64>(QDateTime::currentSecsSinceEpoch())))}));
 
   // Assume 8 is the widest digit.
-  const int size_width = std::max(width_for(QStringLiteral("%1 MB").arg(8888)), width_for(tr("Unknown")));
+  const int size_width = std::max(width_for(QStringLiteral("%1 MB").arg(8888)),
+                                  width_for(sizeToString(-1))); // Unknown size
   setFixedColumnWidth(fm, GameListModel::Column_FileSize, size_width);
   setFixedColumnWidth(fm, GameListModel::Column_DataSize, size_width);
 

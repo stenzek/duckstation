@@ -109,7 +109,7 @@
         </size>
        </property>
        <property name="text">
-        <string>Show Localized Icons</string>
+        <string>Show Localized Titles</string>
        </property>
        <property name="checkable">
         <bool>true</bool>
