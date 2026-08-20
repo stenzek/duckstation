@@ -136,7 +136,7 @@ public:
 private:
   void ShrinkForNewItem()
   {
-    if (m_items.size() < m_max_capacity)
+    if (m_manual_evict || m_items.size() < m_max_capacity)
       return;
 
     Evict(m_items.size() - (m_max_capacity - 1));
