@@ -256,11 +256,11 @@ void SetFont(ImFont* ui_font);
 bool UpdateLayoutScale();
 
 /// Texture cache.
-const std::shared_ptr<GPUTexture>& GetPlaceholderTexture();
-std::shared_ptr<GPUTexture> LoadTexture(std::string_view path);
-std::shared_ptr<GPUTexture> LoadTexture(std::string_view path, std::string_view name);
-std::shared_ptr<GPUTexture> LoadTexture(std::string_view path, u32 svg_width, u32 svg_height);
-std::shared_ptr<GPUTexture> LoadTexture(std::string_view path, const ImVec2& size);
+GPUTexture* GetPlaceholderTexture();
+std::unique_ptr<GPUTexture> LoadTexture(std::string_view path);
+std::unique_ptr<GPUTexture> LoadTexture(std::string_view path, std::string_view name);
+std::unique_ptr<GPUTexture> LoadTexture(std::string_view path, u32 svg_width, u32 svg_height);
+std::unique_ptr<GPUTexture> LoadTexture(std::string_view path, const ImVec2& size);
 GPUTexture* FindCachedTexture(std::string_view name);
 GPUTexture* FindCachedTexture(std::string_view name, u32 svg_width, u32 svg_height);
 GPUTexture* FindCachedTexture(std::string_view name, const ImVec2& size);

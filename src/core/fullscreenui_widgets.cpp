@@ -87,11 +87,11 @@ enum class SplitWindowFocusChange : u8
 static std::optional<Image> LoadTextureImage(std::string_view path, u32 svg_width, u32 svg_height);
 static std::optional<Image> LoadTextureImage(std::string_view filename, std::span<const u8> buffer, u32 svg_width,
                                              u32 svg_height);
-static std::shared_ptr<GPUTexture> UploadTexture(std::string_view path, const Image& image);
+static std::unique_ptr<GPUTexture> UploadTexture(std::string_view path, const Image& image);
 static void QueueTextureUploadFromBuffer(std::string_view filename, const std::span<const u8>& buffer,
                                          std::string&& insert_name, u32 svg_width, u32 svg_height,
                                          bool use_task_for_decode);
-static std::shared_ptr<GPUTexture> LoadTexture(std::string_view path, std::string_view name, u32 svg_width,
+static std::unique_ptr<GPUTexture> LoadTexture(std::string_view path, std::string_view name, u32 svg_width,
                                                u32 svg_height);
 static GPUTexture* LookupCachedTextureAsync(std::string_view path, std::string_view name, u32 svg_width,
                                             u32 svg_height);
@@ -495,8 +495,8 @@ struct WidgetsState
 
   ImVec2 horizontal_menu_button_size = {};
 
-  LRUCache<std::string, std::shared_ptr<GPUTexture>> texture_cache{128, true};
-  std::shared_ptr<GPUTexture> placeholder_texture;
+  LRUCache<std::string, GPUTexture*, GPUDevice::PooledTextureDeleter> texture_cache{128, true};
+  std::unique_ptr<GPUTexture> placeholder_texture;
   std::deque<std::pair<std::string, Image>> texture_upload_queue;
   std::vector<std::unique_ptr<GPUTexture>> texture_recycle_queue;
 
@@ -732,9 +732,9 @@ GPUPipeline* FullscreenUI::GetPresentCopyPipeline()
   return s_state.present_copy_pipeline.get();
 }
 
-const std::shared_ptr<GPUTexture>& FullscreenUI::GetPlaceholderTexture()
+GPUTexture* FullscreenUI::GetPlaceholderTexture()
 {
-  return s_state.placeholder_texture;
+  return s_state.placeholder_texture.get();
 }
 
 std::optional<Image> FullscreenUI::LoadTextureImage(std::string_view path, u32 svg_width, u32 svg_height)
@@ -831,7 +831,7 @@ std::optional<Image> FullscreenUI::LoadTextureImage(std::string_view filename, s
   return image;
 }
 
-std::shared_ptr<GPUTexture> FullscreenUI::UploadTexture(std::string_view path, const Image& image)
+std::unique_ptr<GPUTexture> FullscreenUI::UploadTexture(std::string_view path, const Image& image)
 {
   Error error;
   std::unique_ptr<GPUTexture> texture =
@@ -843,7 +843,7 @@ std::shared_ptr<GPUTexture> FullscreenUI::UploadTexture(std::string_view path, c
   }
 
   DEV_LOG("Uploaded texture resource '{}' ({}x{})", path, image.GetWidth(), image.GetHeight());
-  return std::shared_ptr<GPUTexture>(texture.release(), GPUDevice::PooledTextureDeleter());
+  return texture;
 }
 
 void FullscreenUI::QueueTextureUploadFromBuffer(std::string_view filename, const std::span<const u8>& buffer,
@@ -873,7 +873,7 @@ void FullscreenUI::QueueTextureUploadFromBuffer(std::string_view filename, const
   s_state.texture_upload_queue.emplace_back(std::move(insert_name), std::move(image.value()));
 }
 
-std::shared_ptr<GPUTexture> FullscreenUI::LoadTexture(std::string_view path, std::string_view name, u32 svg_width,
+std::unique_ptr<GPUTexture> FullscreenUI::LoadTexture(std::string_view path, std::string_view name, u32 svg_width,
                                                       u32 svg_height)
 {
   if (HTTPCache::IsHTTPURL(path))
@@ -900,11 +900,7 @@ std::shared_ptr<GPUTexture> FullscreenUI::LoadTexture(std::string_view path, std
       {
         const std::optional<Image> image = LoadTextureImage(filename, result.value().cspan(), svg_width, svg_height);
         if (image.has_value())
-        {
-          std::shared_ptr<GPUTexture> ret = UploadTexture(path, image.value());
-          if (ret)
-            return ret;
-        }
+          return UploadTexture(path, image.value());
       }
       break;
 
@@ -923,31 +919,27 @@ std::shared_ptr<GPUTexture> FullscreenUI::LoadTexture(std::string_view path, std
         DefaultCaseIsUnreachable();
     }
 
-    return s_state.placeholder_texture;
+    return nullptr;
   }
 
   std::optional<Image> image(LoadTextureImage(path, svg_width, svg_height));
   if (image.has_value())
-  {
-    std::shared_ptr<GPUTexture> ret(UploadTexture(path, image.value()));
-    if (ret)
-      return ret;
-  }
+    return UploadTexture(path, image.value());
 
-  return s_state.placeholder_texture;
+  return nullptr;
 }
 
-std::shared_ptr<GPUTexture> FullscreenUI::LoadTexture(std::string_view name)
+std::unique_ptr<GPUTexture> FullscreenUI::LoadTexture(std::string_view name)
 {
   return LoadTexture(name, {}, 0, 0);
 }
 
-std::shared_ptr<GPUTexture> FullscreenUI::LoadTexture(std::string_view path, std::string_view name)
+std::unique_ptr<GPUTexture> FullscreenUI::LoadTexture(std::string_view path, std::string_view name)
 {
   return LoadTexture(path, name, 0, 0);
 }
 
-std::shared_ptr<GPUTexture> FullscreenUI::LoadTexture(std::string_view name, u32 svg_width, u32 svg_height)
+std::unique_ptr<GPUTexture> FullscreenUI::LoadTexture(std::string_view name, u32 svg_width, u32 svg_height)
 {
   // ignore size hints if it's not needed, don't duplicate
   if (!TextureNeedsSVGDimensions(name))
@@ -957,15 +949,16 @@ std::shared_ptr<GPUTexture> FullscreenUI::LoadTexture(std::string_view name, u32
   return LoadTexture(name, wh_name, svg_width, svg_height);
 }
 
-std::shared_ptr<GPUTexture> FullscreenUI::LoadTexture(std::string_view name, const ImVec2& size)
+std::unique_ptr<GPUTexture> FullscreenUI::LoadTexture(std::string_view name, const ImVec2& size)
 {
   return LoadTexture(name, name, static_cast<u32>(size.x), static_cast<u32>(size.y));
 }
 
 GPUTexture* FullscreenUI::FindCachedTexture(std::string_view name)
 {
-  std::shared_ptr<GPUTexture>* tex_ptr = s_state.texture_cache.Lookup(name);
-  return tex_ptr ? tex_ptr->get() : nullptr;
+  // We want to return the placeholder if it's currently async loading.
+  GPUTexture** tex_ptr = s_state.texture_cache.Lookup(name);
+  return !tex_ptr ? nullptr : (*tex_ptr ? *tex_ptr : s_state.placeholder_texture.get());
 }
 
 GPUTexture* FullscreenUI::FindCachedTexture(std::string_view name, u32 svg_width, u32 svg_height)
@@ -975,8 +968,8 @@ GPUTexture* FullscreenUI::FindCachedTexture(std::string_view name, u32 svg_width
     return FindCachedTexture(name);
 
   const SmallString wh_name = SmallString::from_format("{}#{}x{}", name, svg_width, svg_height);
-  std::shared_ptr<GPUTexture>* tex_ptr = s_state.texture_cache.Lookup(wh_name.view());
-  return tex_ptr ? tex_ptr->get() : nullptr;
+  GPUTexture** tex_ptr = s_state.texture_cache.Lookup(wh_name.view());
+  return !tex_ptr ? nullptr : (*tex_ptr ? *tex_ptr : s_state.placeholder_texture.get());
 }
 
 GPUTexture* FullscreenUI::FindCachedTexture(std::string_view name, const ImVec2& size)
@@ -991,14 +984,15 @@ GPUTexture* FullscreenUI::GetCachedTexture(std::string_view name)
 
 GPUTexture* FullscreenUI::GetCachedTexture(std::string_view path, std::string_view name)
 {
-  std::shared_ptr<GPUTexture>* tex_ptr = s_state.texture_cache.Lookup(name);
+  GPUTexture** tex_ptr = s_state.texture_cache.Lookup(name);
   if (!tex_ptr)
   {
-    std::shared_ptr<GPUTexture> tex = LoadTexture(path);
-    tex_ptr = s_state.texture_cache.Insert(std::string(name), std::move(tex));
+    std::unique_ptr<GPUTexture> tex = LoadTexture(path);
+    if (tex)
+      tex_ptr = s_state.texture_cache.Insert(std::string(name), tex.release());
   }
 
-  return tex_ptr->get();
+  return tex_ptr ? *tex_ptr : s_state.placeholder_texture.get();
 }
 
 GPUTexture* FullscreenUI::GetCachedTexture(std::string_view name, u32 svg_width, u32 svg_height)
@@ -1008,14 +1002,15 @@ GPUTexture* FullscreenUI::GetCachedTexture(std::string_view name, u32 svg_width,
     return GetCachedTexture(name);
 
   const SmallString wh_name = SmallString::from_format("{}#{}x{}", name, svg_width, svg_height);
-  std::shared_ptr<GPUTexture>* tex_ptr = s_state.texture_cache.Lookup(wh_name.view());
+  GPUTexture** tex_ptr = s_state.texture_cache.Lookup(wh_name.view());
   if (!tex_ptr)
   {
-    std::shared_ptr<GPUTexture> tex = LoadTexture(name, svg_width, svg_height);
-    tex_ptr = s_state.texture_cache.Insert(std::string(wh_name.view()), std::move(tex));
+    std::unique_ptr<GPUTexture> tex = LoadTexture(name, svg_width, svg_height);
+    if (tex)
+      tex_ptr = s_state.texture_cache.Insert(std::string(wh_name.view()), tex.release());
   }
 
-  return tex_ptr->get();
+  return tex_ptr ? *tex_ptr : s_state.placeholder_texture.get();
 }
 
 GPUTexture* FullscreenUI::GetCachedTexture(std::string_view name, const ImVec2& size)
@@ -1027,12 +1022,12 @@ GPUTexture* FullscreenUI::LookupCachedTextureAsync(std::string_view path, std::s
                                                    u32 svg_height)
 {
   const std::string_view lookup_name = name.empty() ? path : name;
-  std::shared_ptr<GPUTexture>* tex_ptr = s_state.texture_cache.Lookup(lookup_name);
+  GPUTexture** tex_ptr = s_state.texture_cache.Lookup(lookup_name);
   if (tex_ptr)
-    return tex_ptr->get();
+    return *tex_ptr ? *tex_ptr : s_state.placeholder_texture.get();
 
-  // insert the placeholder
-  tex_ptr = s_state.texture_cache.Insert(std::string(lookup_name), s_state.placeholder_texture);
+  // insert the placeholder so the load won't insert if it's already evicted
+  s_state.texture_cache.Insert(std::string(lookup_name), nullptr);
 
   // queue load
   Host::QueueAsyncTask([path = std::string(path), name = std::string(name), svg_width, svg_height]() mutable {
@@ -1078,7 +1073,7 @@ GPUTexture* FullscreenUI::LookupCachedTextureAsync(std::string_view path, std::s
     }
   });
 
-  return tex_ptr->get();
+  return s_state.placeholder_texture.get();
 }
 
 GPUTexture* FullscreenUI::GetCachedTextureAsync(std::string_view name)
@@ -1127,9 +1122,13 @@ void FullscreenUI::UploadAsyncTextures()
     s_state.texture_upload_queue.pop_front();
     lock.unlock();
 
-    std::shared_ptr<GPUTexture> tex = UploadTexture(it.first.c_str(), it.second);
-    if (tex)
-      s_state.texture_cache.Insert(std::move(it.first), std::move(tex));
+    // did it get evicted in the meantime? if so, don't bother uploading it
+    GPUTexture** tex_ptr = s_state.texture_cache.Lookup(it.first);
+    if (tex_ptr && !*tex_ptr)
+    {
+      std::unique_ptr<GPUTexture> tex = UploadTexture(it.first.c_str(), it.second);
+      *tex_ptr = *s_state.texture_cache.Insert(std::move(it.first), tex.release());
+    }
 
     lock.lock();
   }
