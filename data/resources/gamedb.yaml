@@ -8619,6 +8619,8 @@ SCPS-91302:
   name: "Arc the Lad [PSOne Books]"
   controllers:
     - DigitalController
+  codes:
+    - HASH-39247B554F59E6EC
   metadata:
     publisher: "Sony"
     developer: "G-Craft"
@@ -19641,6 +19643,8 @@ SLPS-00033:
   saveName: "Boxer's Road (Japan)"
   controllers:
     - DigitalController
+  codes:
+    - HASH-2C042CCC58888012
   metadata:
     publisher: "New"
     developer: "New"
@@ -31397,6 +31401,8 @@ SLPS-00009:
   saveName: "Cosmic Race (Japan)"
   controllers:
     - DigitalController
+  codes:
+    - HASH-BBE08E67B1AA3C75
   metadata:
     publisher: "Neorex"
     developer: "Neorex"
@@ -34263,6 +34269,7 @@ SLPS-00133:
   codes:
     - SLPS-00133
     - SLPS-91072
+    - HASH-E2E9F37688754BC5
   metadata:
     publisher: "Acclaim"
     developer: "Warp"
@@ -34286,6 +34293,7 @@ SLPS-00134:
   codes:
     - SLPS-00134
     - SLPS-91073
+    - HASH-1F26934ABD650F4A
   metadata:
     publisher: "Acclaim"
     developer: "Warp"
@@ -34309,6 +34317,7 @@ SLPS-00135:
   codes:
     - SLPS-00135
     - SLPS-91074
+    - HASH-8F26DB7A51A4C8E9
   metadata:
     publisher: "Acclaim"
     developer: "Warp"
@@ -39346,6 +39355,8 @@ SLPS-01503:
   controllers:
     - AnalogController
     - DigitalController
+  codes:
+    - HASH-24A924196915E8EC
   metadata:
     publisher: "Athena"
     developer: "Athena"
@@ -46596,6 +46607,8 @@ SLPS-00077:
   saveName: "Douga de Puzzle da! Puppukupuu (Japan)"
   controllers:
     - DigitalController
+  codes:
+    - HASH-38FFAD2DAC732DBB
   metadata:
     publisher: "Argent"
     developer: "Agenda"
@@ -71619,6 +71632,8 @@ SLPS-00615:
   saveName: "Gritz - The Pyramid Adventure (Japan)"
   controllers:
     - DigitalController
+  codes:
+    - HASH-AA4A0B201DC32A50
   metadata:
     publisher: "Sanyo"
     developer: "Sanyo"
@@ -71743,6 +71758,8 @@ SLPS-00088:
   saveName: "Ground Stroke - Advanced Tennis Game (Japan)"
   controllers:
     - DigitalController
+  codes:
+    - HASH-3461B3B2B71C9B91
   metadata:
     publisher: "SPS"
     developer: "SPS"
@@ -77933,6 +77950,8 @@ SLPS-00020:
   controllers:
     - DigitalController
     - PlayStationMouse
+  codes:
+    - HASH-86F95D4F24595F16
   metadata:
     publisher: "Asmik Ace Entertainment, Inc"
     developer: "Copya System"
@@ -82265,6 +82284,8 @@ SLPS-00068:
   saveName: "J.League Jikkyou Winning Eleven (Japan)"
   controllers:
     - DigitalController
+  codes:
+    - HASH-826DC8BDBB8A9931
   metadata:
     publisher: "Konami"
     developer: "KCE Sapporo"
@@ -83588,6 +83609,8 @@ SLPS-00028:
     - AnalogController
     - DigitalController
     - PlayStationMouse
+  codes:
+    - HASH-3EC651FAA1EB1854
   metadata:
     publisher: "Nippon Ichi Software"
     developer: "Nippon Ichi Software Inc"
@@ -89286,6 +89309,8 @@ SLPS-00027:
   saveName: "Kileak, The Blood (Japan)"
   controllers:
     - DigitalController
+  codes:
+    - HASH-E608902697EB1AA4
   metadata:
     publisher: "Sony"
     developer: "Genki"
@@ -108933,6 +108958,7 @@ SLPS-00035:
   codes:
     - SLPS-00035
     - SLPS-91011
+    - HASH-78A35B5422C4E656
   metadata:
     publisher: "Bandai"
     developer: "BEC"
@@ -120003,6 +120029,8 @@ SLPS-00038:
   saveName: "Nichibutsu Mahjong - Joshikou Meijinsen (Japan)"
   controllers:
     - DigitalController
+  codes:
+    - HASH-C09DF46763D31EBC
   metadata:
     publisher: "Nichibutsu"
     developer: "Nichibutsu"
@@ -121775,6 +121803,8 @@ SLPS-00337:
   saveName: "Nobunaga Shippuuki - Kirameki (Japan)"
   controllers:
     - DigitalController
+  codes:
+    - HASH-7D05A6E996FB7B7
   metadata:
     publisher: "Bullet Proof Software"
     developer: "Bullet Proof Software"
@@ -130776,6 +130806,8 @@ SCPS-10009:
   saveName: "Philosoma (Japan)"
   controllers:
     - DigitalController
+  codes:
+    - HASH-F582995D5D6E617A
   metadata:
     publisher: "Sony Computer Entertainment"
     developer: "G-Artists / Sugar & Rockets"
@@ -132923,6 +132955,29 @@ SCPS-10023:
   codes:
     - HASH-72E54F40E1FCDE62
     - HASH-670BF5FA849D6979
+    - HASH-5F4BFE190FA4712D
+  metadata:
+    publisher: "Sony"
+    developer: "G-Artists / Sugar & Rockets"
+    releaseDate: "1996-07-12"
+    genre: "Tactical RPG"
+    languages:
+      - Japanese
+    minPlayers: 1
+    maxPlayers: 1
+    minBlocks: 1
+    maxBlocks: 5
+    vibration: false
+    multitap: false
+    linkCable: false
+SCPS-91030:
+  name: "PoPoLoCrois Monogatari"
+  localizedName: "ポポロクロイス物語"
+  saveName: "PoPoLoCrois Monogatari (Japan) (Rev 1)"
+  controllers:
+    - DigitalController
+  codes:
+    - HASH-C3E1C56744DE2E48
   metadata:
     publisher: "Sony"
     developer: "G-Artists / Sugar & Rockets"
@@ -133034,6 +133089,7 @@ SCPS-10050:
   codes:
     - HASH-E6F9616D27744F0F
     - HASH-6796D79E4BC5E282
+    - HASH-D6E609CC87C42F0E
   metadata:
     publisher: "Sony"
     developer: "G-Artists / Sugar & Rockets"
@@ -139243,6 +139299,7 @@ SLPS-00013:
   codes:
     - SLPS-00013
     - SLPS-91002
+    - HASH-46F780CA6542FD1E
   metadata:
     publisher: "Seibu Kaihatsu"
     developer: "Seibu Kaihatsu"
@@ -153836,6 +153893,8 @@ SLPS-00336:
   saveName: "Sid Meier's Civilization - Shin Sekai Shichidai Bunmei (Japan)"
   controllers:
     - DigitalController
+  codes:
+    - HASH-E5C43EC212FDCC8A
   metadata:
     publisher: "Asmik Ace Entertainment, Inc"
     developer: "Microprose"
@@ -160070,6 +160129,8 @@ SLPS-00113:
   saveName: "Sotsugyou II - Neo Generation (Japan)"
   controllers:
     - DigitalController
+  codes:
+    - HASH-D714203BA7340257
   metadata:
     publisher: "Riverhill Soft"
     developer: "Crosstalk"
@@ -178557,6 +178618,8 @@ SLPS-00053:
   saveName: "Thoroughbred Breeder II Plus (Japan)"
   controllers:
     - DigitalController
+  codes:
+    - HASH-3B3B1D93D97B310A
   metadata:
     publisher: "Hect"
     developer: "Hect"
@@ -196567,6 +196630,8 @@ SCPS-10010:
   saveName: "Wizardry VII - Guardia no Houju (Japan)"
   controllers:
     - DigitalController
+  codes:
+    - HASH-7DE2B8945812FF3D
   metadata:
     publisher: "Sony"
     developer: "Locus"
