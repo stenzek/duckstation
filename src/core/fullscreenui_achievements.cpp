@@ -3043,7 +3043,7 @@ bool FullscreenUI::DrawLeaderboardEntry(const rc_client_leaderboard_entry_t& ent
 
   if (time_bb.Contains(ImGui::GetIO().MousePos) && ImGui::BeginItemTooltip())
   {
-    const TinyString submit_time = Host::FormatRelativeDateTime(entry.submitted, false, false);
+    const TinyString submit_time = Host::FormatRelativeDateTime(entry.submitted, false, true);
     ImGui::PushFont(UIStyle.Font, UIStyle.MediumLargeFontSize, UIStyle.NormalFontWeight);
     ImGui::Text(ICON_EMOJI_CLOCK_FIVE_OCLOCK " %s", submit_time.c_str());
     ImGui::PopFont();
