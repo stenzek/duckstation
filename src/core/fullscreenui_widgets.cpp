@@ -2417,6 +2417,9 @@ void FullscreenUI::CreateFooterTextString(SmallStringBase& dest,
   dest.clear();
   for (const auto& [icon, text] : items)
   {
+    if (!icon || text.empty())
+      continue;
+
     if (!dest.empty())
       dest.append("     ");
 
