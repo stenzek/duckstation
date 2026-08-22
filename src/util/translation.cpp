@@ -190,7 +190,7 @@ TinyString Host::FormatRelativeDate(std::time_t timestamp, bool long_format /* =
 }
 
 TinyString Host::FormatRelativeDateTime(std::time_t timestamp, bool long_format /* = false */,
-                                        bool for_title /* = false */)
+                                        bool for_title /* = false */, bool use_extended_relative_time /* = false */)
 {
   // Hack for zero.
   if (timestamp == 0)
@@ -198,6 +198,7 @@ TinyString Host::FormatRelativeDateTime(std::time_t timestamp, bool long_format 
 
   const s64 current_time = static_cast<s64>(std::time(nullptr));
   const s64 delta = current_time - timestamp;
+  constexpr s64 WEEK = 7 * 24 * 60 * 60;
   if (delta < 5)
   {
     return TinyString(
@@ -217,6 +218,49 @@ TinyString Host::FormatRelativeDateTime(std::time_t timestamp, bool long_format 
   {
     return TranslatePluralToTinyString("Host", TRANSLATE_PLURAL_NOOP("Host", "%n hours ago", "Time difference"),
                                        "Time difference", static_cast<int>(delta) / (60 * 60));
+  }
+  else if (use_extended_relative_time && delta >= WEEK)
+  {
+    const std::tm current_tm = Common::LocalTime(static_cast<std::time_t>(current_time)).value_or(std::tm{});
+    const std::optional<std::tm> timestamp_tm = Common::LocalTime(timestamp);
+    if (!timestamp_tm.has_value())
+      return TinyString();
+
+    const int year_diff = current_tm.tm_year - timestamp_tm->tm_year;
+    const int month_diff = current_tm.tm_mon - timestamp_tm->tm_mon;
+    const int total_months = year_diff * 12 + month_diff;
+
+    if (total_months == 0)
+    {
+      // Less than a month - use weeks
+      const int weeks = static_cast<int>(delta / WEEK);
+      return TranslatePluralToTinyString("Host", TRANSLATE_PLURAL_NOOP("Host", "%n weeks ago", "Time difference"),
+                                         "Time difference", weeks);
+    }
+
+    if (total_months < 12)
+    {
+      return TranslatePluralToTinyString("Host", TRANSLATE_PLURAL_NOOP("Host", "%n months ago", "Time difference"),
+                                         "Time difference", total_months);
+    }
+
+    // For years, adjust if we haven't reached the anniversary yet
+    int years = year_diff;
+    if (current_tm.tm_mon < timestamp_tm->tm_mon ||
+        (current_tm.tm_mon == timestamp_tm->tm_mon && current_tm.tm_mday < timestamp_tm->tm_mday))
+    {
+      years--;
+    }
+
+    // Edge case: less than a full year but more than 11 months
+    if (years < 1)
+    {
+      return TranslatePluralToTinyString("Host", TRANSLATE_PLURAL_NOOP("Host", "%n months ago", "Time difference"),
+                                         "Time difference", total_months);
+    }
+
+    return TranslatePluralToTinyString("Host", TRANSLATE_PLURAL_NOOP("Host", "%n years ago", "Time difference"),
+                                       "Time difference", years);
   }
 
   if (for_title)
