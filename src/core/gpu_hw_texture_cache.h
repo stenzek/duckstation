@@ -20,6 +20,9 @@ class GPU_HW;
 //////////////////////////////////////////////////////////////////////////
 namespace GPUTextureCache {
 
+// Amount of save state space to reserve, 1MB should be enough. Large games will overflow it, we don't save there.
+inline constexpr u32 MAX_SAVE_STATE_DATA_SIZE = 1 * 1024 * 1024;
+
 /// 4 pages in C16 mode, 2+4 pages in P8 mode, 1+1 pages in P4 mode.
 inline constexpr u32 MAX_PAGE_REFS_PER_SOURCE = 6;
 
