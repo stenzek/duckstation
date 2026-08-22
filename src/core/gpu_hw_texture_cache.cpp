@@ -41,6 +41,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <limits>
 #include <numeric>
 #include <unordered_set>
 
@@ -53,10 +54,12 @@ LOG_CHANNEL(GPU_HW);
 namespace GPUTextureCache {
 static constexpr u32 MAX_CLUT_SIZE = 256;
 static constexpr u32 NUM_PAGE_DRAW_RECTS = 4;
+static constexpr u32 INVALID_VRAM_WRITE_INDEX = std::numeric_limits<u32>::max();
 static constexpr const GSVector4i& INVALID_RECT = GPU_HW::INVALID_RECT;
 static constexpr const GPUTextureFormat REPLACEMENT_TEXTURE_FORMAT = GPUTextureFormat::RGBA8;
 static constexpr const char LOCAL_CONFIG_FILENAME[] = "config.yaml";
 
+static constexpr u32 STATE_VRAM_WRITE_SIZE = sizeof(GSVector4i) * 2 + sizeof(HashType) + sizeof(u32);
 static constexpr u32 STATE_PALETTE_RECORD_SIZE =
   sizeof(GSVector4i) + sizeof(SourceKey) + sizeof(PaletteRecordFlags) + sizeof(HashType) + sizeof(u16) * MAX_CLUT_SIZE;
 
@@ -666,12 +669,13 @@ bool GPUTextureCache::GetStateSize(StateWrapper& sw, u32* size)
   if (!sw.DoMarker("GPUTextureCache")) [[unlikely]]
     return false;
 
-  u32 num_vram_writes = 0;
+  u32 num_vram_writes = 0, last_vram_write_index = 0;
   sw.Do(&num_vram_writes);
+  sw.DoEx(&last_vram_write_index, 86, INVALID_VRAM_WRITE_INDEX);
 
   for (u32 i = 0; i < num_vram_writes; i++)
   {
-    sw.SkipBytes(sizeof(GSVector4i) * 2 + sizeof(HashType));
+    sw.SkipBytes((sw.GetVersion() < 86) ? (STATE_VRAM_WRITE_SIZE - 4) : STATE_VRAM_WRITE_SIZE);
 
     u32 num_palette_records = 0;
     sw.Do(&num_palette_records);
@@ -704,30 +708,33 @@ bool GPUTextureCache::DoState(StateWrapper& sw, bool skip)
     if (!skip)
       Invalidate();
 
-    u32 num_vram_writes = 0;
+    u32 num_vram_writes = 0, last_vram_write_index = 0;
     sw.Do(&num_vram_writes);
+    sw.DoEx(&last_vram_write_index, 86, INVALID_VRAM_WRITE_INDEX);
 
     const bool skip_writes = (skip || !s_state.track_vram_writes);
 
     for (u32 i = 0; i < num_vram_writes; i++)
     {
-      static constexpr u32 PALETTE_RECORD_SIZE = sizeof(GSVector4i) + sizeof(SourceKey) + sizeof(PaletteRecordFlags) +
-                                                 sizeof(HashType) + sizeof(u16) * MAX_CLUT_SIZE;
-
       if (skip_writes)
       {
-        sw.SkipBytes(sizeof(GSVector4i) * 2 + sizeof(HashType));
+        // pre-v86 states are missing num_splits.
+        sw.SkipBytes((sw.GetVersion() < 86) ? (STATE_VRAM_WRITE_SIZE - 4) : STATE_VRAM_WRITE_SIZE);
 
         u32 num_palette_records = 0;
         sw.Do(&num_palette_records);
-        sw.SkipBytes(num_palette_records * PALETTE_RECORD_SIZE);
+        sw.SkipBytes(num_palette_records * STATE_PALETTE_RECORD_SIZE);
       }
       else
       {
         VRAMWrite* vrw = new VRAMWrite();
+        if (i == last_vram_write_index)
+          s_state.last_vram_write = vrw;
+
         DoStateVector(sw, &vrw->active_rect);
         DoStateVector(sw, &vrw->write_rect);
         sw.Do(&vrw->hash);
+        sw.DoEx(&vrw->num_splits, 86, 0u);
 
         u32 num_palette_records = 0;
         sw.Do(&num_palette_records);
@@ -748,7 +755,7 @@ bool GPUTextureCache::DoState(StateWrapper& sw, bool skip)
         }
         else
         {
-          sw.SkipBytes(num_palette_records * PALETTE_RECORD_SIZE);
+          sw.SkipBytes(num_palette_records * STATE_PALETTE_RECORD_SIZE);
         }
 
         if (sw.HasError())
@@ -793,11 +800,22 @@ bool GPUTextureCache::DoState(StateWrapper& sw, bool skip)
 
     u32 num_vram_writes = static_cast<u32>(s_state.temp_vram_write_list.size());
     sw.Do(&num_vram_writes);
+
+    u32 last_vram_write_index = INVALID_VRAM_WRITE_INDEX;
+    if (s_state.last_vram_write)
+    {
+      const auto iter = std::ranges::find(s_state.temp_vram_write_list, s_state.last_vram_write);
+      if (iter != s_state.temp_vram_write_list.end())
+        last_vram_write_index = static_cast<u32>(std::distance(s_state.temp_vram_write_list.begin(), iter));
+    }
+    sw.Do(&last_vram_write_index);
+
     for (VRAMWrite* vrw : s_state.temp_vram_write_list)
     {
       DoStateVector(sw, &vrw->active_rect);
       DoStateVector(sw, &vrw->write_rect);
       sw.Do(&vrw->hash);
+      sw.Do(&vrw->num_splits);
 
       u32 num_palette_records = static_cast<u32>(vrw->palette_records.size());
       sw.Do(&num_palette_records);
