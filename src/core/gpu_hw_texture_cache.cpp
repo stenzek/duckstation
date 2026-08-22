@@ -783,7 +783,7 @@ bool GPUTextureCache::DoState(StateWrapper& sw, bool skip)
           }
 
           // try not to lose data... pull it from the sources
-          if (g_settings.texture_replacements.dump_textures)
+          if (g_gpu_settings.texture_replacements.dump_textures)
             SyncVRAMWritePaletteRecords(vrw);
 
           s_state.temp_vram_write_list.push_back(vrw);
