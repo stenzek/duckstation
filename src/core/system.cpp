@@ -2610,7 +2610,8 @@ bool System::AllocateMemoryStates(size_t state_count, bool recycle_old_textures)
 
   // Allocate CPU buffers.
   // TODO: Maybe look at host memory limits here...
-  const size_t size = GetMaxMemorySaveStateSize(g_settings.cpu_enable_8mb_ram, CPU::PGXP::ShouldSavePGXPState());
+  const size_t size = GetMaxMemorySaveStateSize(g_settings.cpu_enable_8mb_ram, CPU::PGXP::ShouldSavePGXPState(),
+                                                g_settings.gpu_texture_cache);
   for (MemorySaveState& mss : s_state.memory_save_states)
   {
     mss.state_size = 0;
@@ -2893,17 +2894,19 @@ bool System::SetBootMode(BootMode new_boot_mode, DiscRegion disc_region, bool* m
   return true;
 }
 
-size_t System::GetMaxSaveStateSize(bool enable_8mb_ram)
+size_t System::GetMaxSaveStateSize(bool enable_8mb_ram, bool enable_texture_cache)
 {
   // 5 megabytes is sufficient for now, at the moment they're around 4.3MB, or 10.3MB with 8MB RAM enabled.
   static constexpr u32 MAX_2MB_SAVE_STATE_SIZE = 5 * 1024 * 1024;
   static constexpr u32 MAX_8MB_SAVE_STATE_SIZE = 11 * 1024 * 1024;
-  return enable_8mb_ram ? MAX_8MB_SAVE_STATE_SIZE : MAX_2MB_SAVE_STATE_SIZE;
+  return (enable_8mb_ram ? MAX_8MB_SAVE_STATE_SIZE : MAX_2MB_SAVE_STATE_SIZE) +
+         (enable_texture_cache ? GPUTextureCache::MAX_SAVE_STATE_DATA_SIZE : 0);
 }
 
-size_t System::GetMaxMemorySaveStateSize(bool enable_8mb_ram, bool pgxp)
+size_t System::GetMaxMemorySaveStateSize(bool enable_8mb_ram, bool pgxp, bool enable_texture_cache)
 {
-  return GetMaxSaveStateSize(enable_8mb_ram) + (pgxp ? CPU::PGXP::GetStateSize(enable_8mb_ram) : 0);
+  return GetMaxSaveStateSize(enable_8mb_ram, enable_texture_cache) +
+         (pgxp ? CPU::PGXP::GetStateSize(enable_8mb_ram) : 0);
 }
 
 std::string System::GetMediaPathFromSaveState(const char* path)
@@ -3432,7 +3435,7 @@ bool System::SaveStateToBuffer(SaveStateBuffer* buffer, Error* error, u32 screen
 
   // write data
   if (buffer->state_data.empty())
-    buffer->state_data.resize(GetMaxSaveStateSize(g_bus.ram_size > Bus::RAM_2MB_SIZE));
+    buffer->state_data.resize(GetMaxSaveStateSize(g_bus.ram_size > Bus::RAM_2MB_SIZE, g_settings.gpu_texture_cache));
 
   return SaveStateDataToBuffer(buffer->state_data, &buffer->state_size, error);
 }
@@ -5125,11 +5128,11 @@ void System::LogUnsafeSettingsToConsole(const SmallStringBase& messages)
 }
 
 void System::CalculateRewindMemoryUsage(u32 num_saves, u32 resolution_scale, u32 multisamples,
-                                        bool use_software_renderer, bool enable_8mb_ram, u64* ram_usage,
-                                        u64* vram_usage)
+                                        bool use_software_renderer, bool enable_8mb_ram, bool gpu_texture_cache,
+                                        u64* ram_usage, u64* vram_usage)
 {
   const u32 real_resolution_scale = std::max<u32>(resolution_scale, 1u);
-  *ram_usage = GetMaxMemorySaveStateSize(enable_8mb_ram, false) * static_cast<u64>(num_saves);
+  *ram_usage = GetMaxMemorySaveStateSize(enable_8mb_ram, false, gpu_texture_cache) * static_cast<u64>(num_saves);
   *vram_usage = use_software_renderer ? 0 :
                                         ((static_cast<u64>(VRAM_WIDTH * real_resolution_scale) *
                                           static_cast<u64>(VRAM_HEIGHT * real_resolution_scale) * 4) *
@@ -5159,7 +5162,7 @@ void System::UpdateMemorySaveStateSettings()
     u64 ram_usage, vram_usage;
     CalculateRewindMemoryUsage(g_settings.rewind_save_slots, g_settings.gpu_resolution_scale,
                                g_settings.gpu_multisamples, g_settings.gpu_use_software_renderer_for_memory_states,
-                               g_settings.cpu_enable_8mb_ram, &ram_usage, &vram_usage);
+                               g_settings.cpu_enable_8mb_ram, g_settings.gpu_texture_cache, &ram_usage, &vram_usage);
     INFO_LOG("Rewind is enabled, saving every {} frames, with {} slots and {}MB RAM and {}MB VRAM usage",
              std::max(s_state.rewind_save_frequency, 1), g_settings.rewind_save_slots, ram_usage / 1048576,
              vram_usage / 1048576);
