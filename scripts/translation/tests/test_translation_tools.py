@@ -549,6 +549,18 @@ class TranslationToolTests(unittest.TestCase):
             strict = self.run_validator(catalog, "--strict-required-tags", expect=1)
             self.assertIn("missing rich-text tags", strict.stdout)
 
+    def test_validation_can_reject_locations_and_old_messages(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            catalog = Path(directory) / "catalog.ts"
+            catalog.write_text(FIXTURE, encoding="utf-8")
+
+            locations = self.run_validator(catalog, "--reject-locations", expect=1)
+            self.assertIn("source location information is not permitted", locations.stdout)
+
+            obsolete = self.run_validator(catalog, "--reject-obsolete", expect=1)
+            self.assertIn("vanished message is not permitted", obsolete.stdout)
+            self.assertIn("obsolete message is not permitted", obsolete.stdout)
+
 
 if __name__ == "__main__":
     unittest.main()
