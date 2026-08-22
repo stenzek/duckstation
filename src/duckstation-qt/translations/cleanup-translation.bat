@@ -1,0 +1,33 @@
+@ECHO OFF
+SETLOCAL
+
+IF "%~1"=="" GOTO usage
+IF NOT "%~2"=="" GOTO usage
+IF /I NOT "%~x1"==".ts" GOTO badfile
+IF NOT EXIST "%~f1" GOTO badfile
+
+SET "linguist=%~dp0..\..\..\dep\prebuilt\windows-x64\bin"
+SET "context=.././ ../../core/ ../../util/ -tr-function-alias QT_TRANSLATE_NOOP+=TRANSLATE,QT_TRANSLATE_NOOP+=TRANSLATE_SV,QT_TRANSLATE_NOOP+=TRANSLATE_STR,QT_TRANSLATE_NOOP+=TRANSLATE_FS,QT_TRANSLATE_NOOP3+=TRANSLATE_DISAMBIG,QT_TRANSLATE_NOOP3+=TRANSLATE_DISAMBIG_SV,QT_TRANSLATE_NOOP3+=TRANSLATE_DISAMBIG_STR,QT_TRANSLATE_NOOP3+=TRANSLATE_DISAMBIG_FS,QT_TRANSLATE_N_NOOP3+=TRANSLATE_PLURAL_NOOP,QT_TRANSLATE_NOOP+=TRANSLATE_NOOP,QT_TRANSLATE_NOOP3+=TRANSLATE_DISAMBIG_NOOP,translate+=TRANSLATE_PLURAL_STR,translate+=TRANSLATE_PLURAL_SSTR,translate+=TRANSLATE_PLURAL_FS -no-obsolete -locations none"
+
+ECHO Cleaning %~nx1...
+PUSHD "%~dp0"
+"%linguist%\lupdate.exe" %context% -ts "%~f1"
+SET "result=%ERRORLEVEL%"
+POPD
+IF NOT "%result%"=="0" (
+	PAUSE
+	EXIT /B %result%
+)
+ECHO %~nx1 cleanup completed, ready for pull request.
+PAUSE
+EXIT /B 0
+
+:badfile
+ECHO Error: "%~1" is not an existing .ts file.
+PAUSE
+EXIT /B 1
+
+:usage
+ECHO Usage: %~nx0 translation.ts
+PAUSE
+EXIT /B 1
