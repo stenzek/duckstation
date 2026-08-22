@@ -58516,6 +58516,8 @@ SLES-00940:
   saveName: "Felony 11-79 (Europe) (En,Fr,De)"
   controllers:
     - DigitalController
+  traits:
+    - ForcePGXPCPUMode # PGXP ineffective without CPU mode.
   metadata:
     publisher: "ASCII Entertainment Software, Inc"
     developer: "Climax Entertainment"
@@ -58537,6 +58539,8 @@ SLUS-00533:
   saveName: "Felony 11-79 (USA)"
   controllers:
     - DigitalController
+  traits:
+    - ForcePGXPCPUMode # PGXP ineffective without CPU mode.
   metadata:
     publisher: "ASCII Entertainment Software, Inc"
     developer: "Climax Entertainment"
@@ -64058,7 +64062,7 @@ SCPS-10101:
     - NeGcon
   traits:
     - ForceInterpreter # Stale code execution from ICache.
-    - ForcePGXPCPUMode # Fixes skybox jitter.- ForceInterpreter
+    - ForcePGXPCPUMode # Fixes skybox jitter.
   codes:
     - HASH-E379E77CF0C4F433
   metadata:
@@ -146573,6 +146577,8 @@ SLPS-00857:
   saveName: "Runabout (Japan)"
   controllers:
     - DigitalController
+  traits:
+    - ForcePGXPCPUMode # PGXP ineffective without CPU mode.
   codes:
     - SLPS-00857
     - SLPS-91059
@@ -146594,6 +146600,8 @@ SLPM-80104:
   name: "Runabout (Demo)"
   localizedName: "ランナバウト"
   saveName: "Runabout (Japan) (Demo)"
+  traits:
+    - ForcePGXPCPUMode # PGXP ineffective without CPU mode.
   metadata:
     genre: "** DEMO **"
 SLES-04015:
@@ -146692,6 +146700,8 @@ SCPS-45272:
   name: "Runabout [Playstation the Best]"
   controllers:
     - DigitalController
+  traits:
+    - ForcePGXPCPUMode # PGXP ineffective without CPU mode.
   metadata:
     publisher: "Yanoman Games"
     developer: "Climax Entertainment"
@@ -146710,6 +146720,8 @@ SLPM-86875:
   name: "Runabout [Rerelease]"
   controllers:
     - DigitalController
+  traits:
+    - ForcePGXPCPUMode # PGXP ineffective without CPU mode.
   metadata:
     publisher: "Cyclone (Four Winds)"
     developer: "Climax Entertainment"
