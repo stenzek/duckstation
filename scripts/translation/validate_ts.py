@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate Qt TS structure, completeness, placeholders, plurals, and rich text."""
+"""Validate Qt TS structure, metadata, completeness, placeholders, plurals, and rich text."""
 
 from __future__ import annotations
 
@@ -44,6 +44,16 @@ def parse_args() -> argparse.Namespace:
         help="treat missing or unbalanced rich-text tags as errors",
     )
     parser.add_argument("--strict-extra-tags", action="store_true", help="treat added rich-text tags as errors")
+    parser.add_argument(
+        "--reject-obsolete",
+        action="store_true",
+        help="fail if the catalog contains obsolete or vanished messages",
+    )
+    parser.add_argument(
+        "--reject-locations",
+        action="store_true",
+        help="fail if the catalog contains source location information",
+    )
     return parser.parse_args()
 
 
@@ -90,12 +100,16 @@ def main() -> int:
     type_counts: collections.Counter[str] = collections.Counter()
     for message in messages:
         type_counts[message.translation_type] += 1
+        label = diagnostic_label(args.catalog, message)
+        if args.reject_obsolete and message.translation_type in SKIPPED_TYPES:
+            errors.append(f"{label}: {message.translation_type} message is not permitted")
+        if args.reject_locations and message.locations:
+            errors.append(f"{label}: source location information is not permitted")
         if message.translation_type in SKIPPED_TYPES:
             continue
         if selected_ids is not None and message.identifier not in selected_ids:
             continue
         checked += 1
-        label = diagnostic_label(args.catalog, message)
         if not args.placeholders_only:
             if message.identity.numerus and not message.plural_translations:
                 errors.append(f"{label}: numerus message has no <numerusform> forms")

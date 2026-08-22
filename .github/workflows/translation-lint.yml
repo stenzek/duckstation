@@ -4,14 +4,20 @@ on:
   pull_request:
     paths:
       - 'src/duckstation-qt/translations/*.ts'
+      - 'src/duckstation-qt/translations/*.sh'
+      - 'src/duckstation-qt/translations/*.bat'
       - 'scripts/translation/**'
+      - '.github/workflows/translation-lint.yml'
   push:
     branches:
       - master
       - dev
     paths:
       - 'src/duckstation-qt/translations/*.ts'
+      - 'src/duckstation-qt/translations/*.sh'
+      - 'src/duckstation-qt/translations/*.bat'
       - 'scripts/translation/**'
+      - '.github/workflows/translation-lint.yml'
   workflow_dispatch:
 
 permissions:
@@ -29,20 +35,27 @@ jobs:
     - name: Test Translation Tools
       run: python -m unittest discover -s scripts/translation/tests -v
 
-    - name: Check Translation Placeholders
+    - name: Check Translation Catalogs
       shell: bash
       env:
         EVENT_NAME: ${{ github.event_name }}
         BASE_SHA: ${{ github.event.pull_request.base.sha }}
         HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        BEFORE_SHA: ${{ github.event.before }}
+        AFTER_SHA: ${{ github.sha }}
       run: |
         if [[ "$EVENT_NAME" == "pull_request" ]]; then
           mapfile -t files < <(
             git diff --name-only --diff-filter=ACMRT "$BASE_SHA...$HEAD_SHA" -- \
               'src/duckstation-qt/translations/*.ts'
           )
+        elif [[ "$EVENT_NAME" == "push" ]]; then
+          mapfile -t files < <(
+            git diff --name-only --diff-filter=ACMRT "$BEFORE_SHA..$AFTER_SHA" -- \
+              'src/duckstation-qt/translations/*.ts'
+          )
         else
-          files=(src/duckstation-qt/translations/*.ts)
+          files=()
         fi
 
         if (( ${#files[@]} == 0 )); then
@@ -51,5 +64,6 @@ jobs:
         fi
 
         for file in "${files[@]}"; do
-          python scripts/translation/validate_ts.py "$file"
+          python scripts/translation/validate_ts.py \
+            --reject-obsolete --reject-locations "$file"
         done
