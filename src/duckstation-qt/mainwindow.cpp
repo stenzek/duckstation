@@ -3323,7 +3323,7 @@ void MainWindow::onAchievementsLoginRequested(Achievements::LoginRequestReason r
 void MainWindow::onAchievementsLoginSuccess(const QString& username, quint32 points, quint32 casual_points,
                                             quint32 unread_messages)
 {
-  m_ui.statusBar->showMessage(tr("RA: Logged in as %1 (%2, %3 casual). %4 unread messages.")
+  m_ui.statusBar->showMessage(tr("RA: Logged in as %1 (%2 points, %3 casual). %4 unread messages.")
                                 .arg(username)
                                 .arg(points)
                                 .arg(casual_points)
