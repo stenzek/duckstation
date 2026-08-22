@@ -84,6 +84,12 @@ bool IsAchievementPinned(u32 achievement_id);
 /// Pins or unpins the specified achievement.
 void SetAchievementPinned(u32 achievement_id, bool pinned);
 
+/// Resets a locally tracked unofficial achievement unlock.
+void ResetUnofficialAchievementUnlock(u32 achievement_id);
+
+/// Resets all locally tracked unofficial achievement unlocks for the current game.
+void ResetAllUnofficialAchievementUnlocks();
+
 /// Returns the URL for the badge of the specified achievement, using the locked or unlocked version as appropriate.
 std::string_view GetAchievementBadgeURL(const rc_client_achievement_t* achievement, bool locked);
 

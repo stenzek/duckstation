@@ -189,6 +189,10 @@ static bool WriteAllProgressToDatabase(const rc_client_all_user_progress_t* allp
 static void UpdateProgressDatabaseFromCurrentGame();
 static void ClearProgressDatabase();
 
+static void LoadUnofficialAchievementUnlocks();
+static bool StoreUnofficialAchievementUnlockInDatabase(const rc_client_achievement_t* achievement);
+static void ClearUnofficialAchievementUnlocksDatabase();
+
 static void LoadPinnedAchievements();
 static void SetAchievementPinnedInDatabase(u32 achievement_id, bool pinned);
 
@@ -603,7 +607,7 @@ bool Achievements::CreateClient(std::unique_lock<std::recursive_mutex>& lock, bo
 
   // Hardcore starts off. We enable it on first boot.
   rc_client_set_hardcore_enabled(s_state.client, false);
-  rc_client_set_unofficial_enabled(s_state.client, g_settings.achievements_unofficial_test_mode);
+  rc_client_set_unofficial_enabled(s_state.client, g_settings.achievements_track_unofficial);
   rc_client_set_spectator_mode_enabled(s_state.client, g_settings.achievements_spectator_mode);
   rc_client_set_encore_mode_enabled(s_state.client,
                                     !g_settings.achievements_spectator_mode && g_settings.achievements_encore_mode);
@@ -749,7 +753,7 @@ void Achievements::UpdateSettings(const Settings& old_config)
   // NOTE: Can't change spectator mode while game is loaded.
   if (HasActiveGame() && (g_settings.achievements_encore_mode != old_config.achievements_encore_mode ||
                           g_settings.achievements_spectator_mode != old_config.achievements_spectator_mode ||
-                          g_settings.achievements_unofficial_test_mode != old_config.achievements_unofficial_test_mode))
+                          g_settings.achievements_track_unofficial != old_config.achievements_track_unofficial))
   {
     // Save and restore state to preserve progress.
     const DynamicHeapArray<u8> state_data = SaveStateToBuffer();
@@ -781,8 +785,8 @@ void Achievements::UpdateModeSettings(const Settings& old_config)
                                       !g_settings.achievements_spectator_mode && g_settings.achievements_encore_mode);
     rc_client_set_spectator_mode_enabled(s_state.client, g_settings.achievements_spectator_mode);
   }
-  if (g_settings.achievements_unofficial_test_mode != old_config.achievements_unofficial_test_mode)
-    rc_client_set_unofficial_enabled(s_state.client, g_settings.achievements_unofficial_test_mode);
+  if (g_settings.achievements_track_unofficial != old_config.achievements_track_unofficial)
+    rc_client_set_unofficial_enabled(s_state.client, g_settings.achievements_track_unofficial);
 }
 
 void Achievements::Shutdown()
@@ -1250,6 +1254,9 @@ void Achievements::ClientLoadGameCallback(int result, const char* error_message,
   if (!s_state.game_badge_url.empty())
     HTTPCache::Prefetch(s_state.game_badge_url);
 
+  // Restore locally tracked unofficial unlocks before calculating summaries and building UI state.
+  LoadUnofficialAchievementUnlocks();
+
   // update progress database on first load, in case it was played on another PC
   UpdateGameSummary();
 
@@ -1420,6 +1427,9 @@ void Achievements::HandleUnlockEvent(const rc_client_event_t* event)
   DebugAssert(cheevo);
 
   INFO_LOG("Achievement {} ({}) for game {} unlocked", cheevo->id, cheevo->title, s_state.game_id);
+  if (cheevo->category == RC_CLIENT_ACHIEVEMENT_CATEGORY_UNOFFICIAL && !IsUsingRAIntegration())
+    StoreUnofficialAchievementUnlockInDatabase(cheevo);
+
   UpdateGameSummary();
   UpdateProgressDatabaseFromCurrentGame();
   SetAchievementPinned(cheevo->id, false);
@@ -2233,6 +2243,7 @@ void Achievements::Logout()
   Host::CommitBaseSettingChanges();
 
   ClearProgressDatabase();
+  ClearUnofficialAchievementUnlocksDatabase();
 }
 
 void Achievements::ConfirmHardcoreModeDisableAsync(std::string_view trigger, std::function<void(bool)> callback)
@@ -2626,6 +2637,14 @@ CREATE TABLE IF NOT EXISTS pinned_achievements (
   PRIMARY KEY (game_id, achievement_id)
 );
 CREATE INDEX IF NOT EXISTS idx_pinned_achievements_game_id ON pinned_achievements (game_id);
+CREATE TABLE IF NOT EXISTS unofficial_achievement_unlocks (
+  game_id INTEGER NOT NULL,
+  achievement_id INTEGER NOT NULL,
+  unlock_state INTEGER NOT NULL,
+  unlock_time_softcore INTEGER NOT NULL,
+  unlock_time_hardcore INTEGER NOT NULL,
+  PRIMARY KEY (game_id, achievement_id)
+) WITHOUT ROWID;
 )";
 
   if (!SQLiteHelpers::Execute(s_state.achievements_db, schema_sql, &lerror))
@@ -3248,6 +3267,267 @@ void Achievements::ClearProgressDatabase()
     INFO_LOG("Cleared progress database");
 
   Host::RunOnCoreThread(&GameList::UpdateAllAchievementData);
+}
+
+void Achievements::LoadUnofficialAchievementUnlocks()
+{
+  if (!g_settings.achievements_track_unofficial || IsUsingRAIntegration() || s_state.game_id == 0 ||
+      !EnsureAchievementsDatabaseOpen())
+  {
+    return;
+  }
+
+  Error error;
+  SQLitePreparedStatement query_stmt;
+  if (!query_stmt.Prepare(s_state.achievements_db,
+                          "SELECT achievement_id, unlock_state, unlock_time_softcore, unlock_time_hardcore "
+                          "FROM unofficial_achievement_unlocks WHERE game_id = ?",
+                          &error))
+  {
+    ERROR_LOG("Failed to prepare unofficial achievement unlock query: {}", error.GetDescription());
+    return;
+  }
+
+  query_stmt.BindInt(1, static_cast<int>(s_state.game_id));
+  u32 loaded_count = 0;
+  for (;;)
+  {
+    const int step_result = query_stmt.Step();
+    if (step_result == SQLITE_DONE)
+      break;
+    if (step_result != SQLITE_ROW)
+    {
+      SQLiteHelpers::SetError(&error, s_state.achievements_db);
+      ERROR_LOG("Failed to read unofficial achievement unlocks: {}", error.GetDescription());
+      return;
+    }
+
+    const u32 achievement_id = static_cast<u32>(query_stmt.ColumnInt(0));
+    const int stored_unlock_state = query_stmt.ColumnInt(1);
+    if (stored_unlock_state < RC_CLIENT_ACHIEVEMENT_UNLOCKED_NONE ||
+        stored_unlock_state > RC_CLIENT_ACHIEVEMENT_UNLOCKED_BOTH)
+    {
+      ERROR_LOG("Invalid unofficial achievement {} unlock state {}", achievement_id, stored_unlock_state);
+      continue;
+    }
+
+    const u8 unlock_state = static_cast<u8>(stored_unlock_state);
+    const time_t unlock_time_softcore = static_cast<time_t>(query_stmt.ColumnInt64(2));
+    const time_t unlock_time_hardcore = static_cast<time_t>(query_stmt.ColumnInt64(3));
+    const int result = rc_client_set_unofficial_achievement_unlock_state(s_state.client, achievement_id, unlock_state,
+                                                                         unlock_time_softcore, unlock_time_hardcore);
+    if (result == RC_NOT_FOUND)
+    {
+      SQLitePreparedStatement delete_stmt;
+      if (!delete_stmt.Prepare(s_state.achievements_db,
+                               "DELETE FROM unofficial_achievement_unlocks WHERE game_id = ? AND achievement_id = ?",
+                               &error))
+      {
+        ERROR_LOG("Failed to prepare stale unofficial achievement deletion: {}", error.GetDescription());
+        continue;
+      }
+
+      delete_stmt.BindInt(1, static_cast<int>(s_state.game_id));
+      delete_stmt.BindInt(2, static_cast<int>(achievement_id));
+      if (!delete_stmt.Execute(s_state.achievements_db, &error))
+      {
+        ERROR_LOG("Failed to delete stale unofficial achievement {}: {}", achievement_id, error.GetDescription());
+        continue;
+      }
+
+      INFO_LOG("Removed stale unofficial achievement unlock {} for game {}", achievement_id, s_state.game_id);
+      continue;
+    }
+    else if (result != RC_OK)
+    {
+      ERROR_LOG("Failed to restore unofficial achievement {}: {}", achievement_id, rc_error_str(result));
+      continue;
+    }
+
+    loaded_count++;
+  }
+
+  INFO_LOG("Restored {} unofficial achievement unlocks for game {}", loaded_count, s_state.game_id);
+}
+
+bool Achievements::StoreUnofficialAchievementUnlockInDatabase(const rc_client_achievement_t* achievement)
+{
+  DebugAssert(achievement && achievement->category == RC_CLIENT_ACHIEVEMENT_CATEGORY_UNOFFICIAL);
+  if (!achievement || s_state.game_id == 0 || !EnsureAchievementsDatabaseOpen())
+    return false;
+
+  Error error;
+  time_t unlock_time_softcore = 0;
+  time_t unlock_time_hardcore = 0;
+
+  SQLitePreparedStatement query_stmt;
+  if (!query_stmt.Prepare(s_state.achievements_db,
+                          "SELECT unlock_time_softcore, unlock_time_hardcore FROM unofficial_achievement_unlocks "
+                          "WHERE game_id = ? AND achievement_id = ?",
+                          &error))
+  {
+    ERROR_LOG("Failed to prepare existing unofficial achievement query: {}", error.GetDescription());
+    return false;
+  }
+  query_stmt.BindInt(1, static_cast<int>(s_state.game_id));
+  query_stmt.BindInt(2, static_cast<int>(achievement->id));
+  const int query_result = query_stmt.Step();
+  if (query_result == SQLITE_ROW)
+  {
+    unlock_time_softcore = static_cast<time_t>(query_stmt.ColumnInt64(0));
+    unlock_time_hardcore = static_cast<time_t>(query_stmt.ColumnInt64(1));
+  }
+  else if (query_result != SQLITE_DONE)
+  {
+    SQLiteHelpers::SetError(&error, s_state.achievements_db);
+    ERROR_LOG("Failed to read existing unofficial achievement unlock: {}", error.GetDescription());
+    return false;
+  }
+
+  // This is a bit yuck, but we have to guess because the unlock time for the mode is private to rc_client.
+  if (rc_client_get_hardcore_enabled(s_state.client))
+  {
+    unlock_time_hardcore = achievement->unlock_time;
+    if (!unlock_time_softcore && (achievement->unlocked & RC_CLIENT_ACHIEVEMENT_UNLOCKED_SOFTCORE))
+      unlock_time_softcore = achievement->unlock_time;
+  }
+  else
+  {
+    unlock_time_softcore = achievement->unlock_time;
+  }
+
+  SQLitePreparedStatement upsert_stmt;
+  if (!upsert_stmt.Prepare(
+        s_state.achievements_db,
+        "INSERT INTO unofficial_achievement_unlocks "
+        "(game_id, achievement_id, unlock_state, unlock_time_softcore, unlock_time_hardcore) VALUES (?, ?, ?, ?, ?) "
+        "ON CONFLICT(game_id, achievement_id) DO UPDATE SET unlock_state=excluded.unlock_state, "
+        "unlock_time_softcore=excluded.unlock_time_softcore, unlock_time_hardcore=excluded.unlock_time_hardcore",
+        &error))
+  {
+    ERROR_LOG("Failed to prepare unofficial achievement unlock upsert: {}", error.GetDescription());
+    return false;
+  }
+
+  upsert_stmt.BindInt(1, static_cast<int>(s_state.game_id));
+  upsert_stmt.BindInt(2, static_cast<int>(achievement->id));
+  upsert_stmt.BindInt(3, achievement->unlocked);
+  upsert_stmt.BindInt64(4, static_cast<s64>(unlock_time_softcore));
+  upsert_stmt.BindInt64(5, static_cast<s64>(unlock_time_hardcore));
+  if (!upsert_stmt.Execute(s_state.achievements_db, &error))
+  {
+    ERROR_LOG("Failed to store unofficial achievement unlock: {}", error.GetDescription());
+    return false;
+  }
+
+  INFO_LOG("Stored unofficial achievement {} unlock state {} for game {}", achievement->id, achievement->unlocked,
+           s_state.game_id);
+  return true;
+}
+
+void Achievements::ClearUnofficialAchievementUnlocksDatabase()
+{
+  if (!EnsureAchievementsDatabaseOpen())
+    return;
+
+  if (Error error;
+      !SQLiteHelpers::Execute(s_state.achievements_db, "DELETE FROM unofficial_achievement_unlocks;", &error))
+  {
+    ERROR_LOG("Failed to clear unofficial achievement unlocks: {}", error.GetDescription());
+  }
+}
+
+void Achievements::ResetUnofficialAchievementUnlock(u32 achievement_id)
+{
+  const auto lock = GetLock();
+  if (IsUsingRAIntegration() || !HasActiveGame() || !EnsureAchievementsDatabaseOpen())
+    return;
+
+  const rc_client_achievement_t* achievement = rc_client_get_achievement_info(s_state.client, achievement_id);
+  if (!achievement || achievement->category != RC_CLIENT_ACHIEVEMENT_CATEGORY_UNOFFICIAL ||
+      achievement->unlocked == RC_CLIENT_ACHIEVEMENT_UNLOCKED_NONE)
+  {
+    return;
+  }
+
+  Error error;
+  SQLitePreparedStatement delete_stmt;
+  if (!delete_stmt.Prepare(s_state.achievements_db,
+                           "DELETE FROM unofficial_achievement_unlocks WHERE game_id = ? AND achievement_id = ?",
+                           &error))
+  {
+    ERROR_LOG("Failed to prepare unofficial achievement reset: {}", error.GetDescription());
+    return;
+  }
+  delete_stmt.BindInt(1, static_cast<int>(s_state.game_id));
+  delete_stmt.BindInt(2, static_cast<int>(achievement_id));
+  if (!delete_stmt.Execute(s_state.achievements_db, &error))
+  {
+    ERROR_LOG("Failed to delete unofficial achievement unlock: {}", error.GetDescription());
+    return;
+  }
+
+  const int result = rc_client_set_unofficial_achievement_unlock_state(s_state.client, achievement_id,
+                                                                       RC_CLIENT_ACHIEVEMENT_UNLOCKED_NONE, 0, 0);
+  if (result != RC_OK)
+  {
+    ERROR_LOG("Failed to reset unofficial achievement {}: {}", achievement_id, rc_error_str(result));
+    return;
+  }
+
+  UpdateGameSummary();
+  INFO_LOG("Reset unofficial achievement {} for game {}", achievement_id, s_state.game_id);
+}
+
+void Achievements::ResetAllUnofficialAchievementUnlocks()
+{
+  const auto lock = GetLock();
+  if (IsUsingRAIntegration() || s_state.game_id == 0 || !EnsureAchievementsDatabaseOpen())
+    return;
+
+  Error error;
+  SQLitePreparedStatement delete_stmt;
+  if (!delete_stmt.Prepare(s_state.achievements_db, "DELETE FROM unofficial_achievement_unlocks WHERE game_id = ?",
+                           &error))
+  {
+    ERROR_LOG("Failed to prepare unofficial achievement resets: {}", error.GetDescription());
+    return;
+  }
+  delete_stmt.BindInt(1, static_cast<int>(s_state.game_id));
+  if (!delete_stmt.Execute(s_state.achievements_db, &error))
+  {
+    ERROR_LOG("Failed to delete unofficial achievement unlocks: {}", error.GetDescription());
+    return;
+  }
+
+  std::vector<u32> achievement_ids;
+  rc_client_achievement_list_t* list = rc_client_create_achievement_list(
+    s_state.client, RC_CLIENT_ACHIEVEMENT_CATEGORY_UNOFFICIAL, RC_CLIENT_ACHIEVEMENT_LIST_GROUPING_SUBSET_BUCKETS);
+  if (list)
+  {
+    for (const rc_client_achievement_bucket_t& bucket :
+         std::span<const rc_client_achievement_bucket_t>(list->buckets, list->num_buckets))
+    {
+      for (const rc_client_achievement_t* achievement :
+           std::span<const rc_client_achievement_t*>(bucket.achievements, bucket.num_achievements))
+      {
+        if (achievement->unlocked != RC_CLIENT_ACHIEVEMENT_UNLOCKED_NONE)
+          achievement_ids.push_back(achievement->id);
+      }
+    }
+    rc_client_destroy_achievement_list(list);
+  }
+
+  for (const u32 achievement_id : achievement_ids)
+  {
+    const int rc_result = rc_client_set_unofficial_achievement_unlock_state(s_state.client, achievement_id,
+                                                                            RC_CLIENT_ACHIEVEMENT_UNLOCKED_NONE, 0, 0);
+    if (rc_result != RC_OK)
+      ERROR_LOG("Failed to reset unofficial achievement {}: {}", achievement_id, rc_error_str(rc_result));
+  }
+
+  UpdateGameSummary();
+  INFO_LOG("Reset {} unofficial achievements for game {}", achievement_ids.size(), s_state.game_id);
 }
 
 Achievements::ProgressDatabase::ProgressDatabase() = default;

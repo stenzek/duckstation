@@ -530,7 +530,7 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
   achievements_hardcore_mode = si.GetBoolValue("Cheevos", "ChallengeMode", false);
   achievements_encore_mode = si.GetBoolValue("Cheevos", "EncoreMode", false);
   achievements_spectator_mode = si.GetBoolValue("Cheevos", "SpectatorMode", false);
-  achievements_unofficial_test_mode = si.GetBoolValue("Cheevos", "UnofficialTestMode", false);
+  achievements_track_unofficial = si.GetBoolValue("Cheevos", "UnofficialTestMode", false);
   achievements_use_raintegration = si.GetBoolValue("Cheevos", "UseRAIntegration", false);
   achievements_notifications = si.GetBoolValue("Cheevos", "Notifications", true);
   achievements_leaderboard_notifications = si.GetBoolValue("Cheevos", "LeaderboardNotifications", true);
@@ -882,7 +882,7 @@ void Settings::Save(SettingsInterface& si, bool ignore_user_prefs, bool for_copy
   si.SetBoolValue("Cheevos", "ChallengeMode", achievements_hardcore_mode);
   si.SetBoolValue("Cheevos", "EncoreMode", achievements_encore_mode);
   si.SetBoolValue("Cheevos", "SpectatorMode", achievements_spectator_mode);
-  si.SetBoolValue("Cheevos", "UnofficialTestMode", achievements_unofficial_test_mode);
+  si.SetBoolValue("Cheevos", "UnofficialTestMode", achievements_track_unofficial);
   si.SetBoolValue("Cheevos", "UseRAIntegration", achievements_use_raintegration);
   si.SetBoolValue("Cheevos", "Notifications", achievements_notifications);
   si.SetBoolValue("Cheevos", "LeaderboardNotifications", achievements_leaderboard_notifications);

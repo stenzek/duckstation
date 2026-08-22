@@ -372,7 +372,7 @@ struct Settings : public GPUSettings
   bool achievements_hardcore_mode : 1 = false;
   bool achievements_encore_mode : 1 = false;
   bool achievements_spectator_mode : 1 = false;
-  bool achievements_unofficial_test_mode : 1 = false;
+  bool achievements_track_unofficial : 1 = false;
   bool achievements_use_raintegration : 1 = false;
   bool achievements_notifications : 1 = true;
   bool achievements_leaderboard_notifications : 1 = true;

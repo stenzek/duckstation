@@ -83,10 +83,9 @@ AchievementSettingsWidget::AchievementSettingsWidget(SettingsWindow* dialog, QWi
   dialog->registerWidgetHelp(m_ui.spectatorMode, tr("Enable Spectator Mode"), tr("Unchecked"),
                              tr("When enabled, DuckStation will assume all achievements are locked and not send any "
                                 "unlock notifications to the server."));
-  dialog->registerWidgetHelp(
-    m_ui.unofficialAchievements, tr("Test Unofficial Achievements"), tr("Unchecked"),
-    tr("When enabled, DuckStation will list achievements from unofficial sets. Please note that these achievements are "
-       "not tracked by RetroAchievements, so they unlock every time."));
+  dialog->registerWidgetHelp(m_ui.unofficialAchievements, tr("Test Unofficial Achievements"), tr("Unchecked"),
+                             tr("When enabled, DuckStation will track unofficial achievements. Unlocks will be saved "
+                                "locally and not sent to RetroAchievements."));
   dialog->registerWidgetHelp(m_ui.achievementNotifications, tr("Show Achievement Notifications"), tr("Checked"),
                              tr("Displays popup messages on events such as achievement unlocks and game completion."));
   dialog->registerWidgetHelp(
