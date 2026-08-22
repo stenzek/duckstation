@@ -93,17 +93,17 @@
         <translation>Pronto...</translation>
     </message>
     <message>
-        <location filename="../achievementlogindialog.cpp" line="29"/>
+        <location filename="../achievementlogindialog.cpp" line="33"/>
         <source>&lt;strong&gt;Your RetroAchievements login token is no longer valid.&lt;/strong&gt; You must re-enter your credentials for achievements to be tracked. Your password will not be saved in DuckStation, an access token will be generated and used instead.</source>
         <translation>&lt;strong&gt;Seu token de login do RetroAchievements não é mais válido.&lt;/strong&gt; Você deve inserir novamente suas credenciais para que as conquistas sejam registradas. Sua senha não será salva no DuckStation; Um token de acesso será gerado e usado no lugar.</translation>
     </message>
     <message>
-        <location filename="../achievementlogindialog.cpp" line="34"/>
+        <location filename="../achievementlogindialog.cpp" line="38"/>
         <source>&amp;Login</source>
         <translation>&amp;Entrar</translation>
     </message>
     <message>
-        <location filename="../achievementlogindialog.cpp" line="78"/>
+        <location filename="../achievementlogindialog.cpp" line="87"/>
         <source>Login failed.
 Error: %1
 
@@ -114,12 +114,12 @@ Erro: %1
 Verifique seu nome de usuário e senha e tente novamente.</translation>
     </message>
     <message>
-        <location filename="../achievementlogindialog.cpp" line="103"/>
+        <location filename="../achievementlogindialog.cpp" line="112"/>
         <source>Enable Achievements</source>
         <translation>Ativar conquistas</translation>
     </message>
     <message>
-        <location filename="../achievementlogindialog.cpp" line="104"/>
+        <location filename="../achievementlogindialog.cpp" line="113"/>
         <source>Achievement tracking is not currently enabled. Your login will have no effect until after tracking is enabled.
 
 Do you want to enable tracking now?</source>
@@ -128,12 +128,12 @@ Do you want to enable tracking now?</source>
 Deseja ativar o registro agora?</translation>
     </message>
     <message>
-        <location filename="../achievementlogindialog.cpp" line="126"/>
+        <location filename="../achievementlogindialog.cpp" line="135"/>
         <source>Enable Hardcore Mode</source>
         <translation>Ativar modo hardcore</translation>
     </message>
     <message>
-        <location filename="../achievementlogindialog.cpp" line="127"/>
+        <location filename="../achievementlogindialog.cpp" line="136"/>
         <source>Hardcore mode is not currently enabled. Enabling hardcore mode allows you to set times, scores, and participate in game-specific leaderboards.
 
 However, hardcore mode also prevents the usage of save states, cheats and slowdown functionality.
@@ -146,12 +146,12 @@ No entanto, o modo hardcore também impede o uso de salvamentos rápidos, trapa�
 Deseja ativar o modo hardcore?</translation>
     </message>
     <message>
-        <location filename="../achievementlogindialog.cpp" line="150"/>
+        <location filename="../achievementlogindialog.cpp" line="159"/>
         <source>Restart Game</source>
         <translation>Reinicializar jogo</translation>
     </message>
     <message>
-        <location filename="../achievementlogindialog.cpp" line="151"/>
+        <location filename="../achievementlogindialog.cpp" line="160"/>
         <source>Hardcore mode will not be enabled until the game is restarted. Do you want to restart the game now?</source>
         <translation>O modo hardcore não será ativado até que o jogo seja reiniciado. Você quer reinicializar o jogo agora?</translation>
     </message>
@@ -164,17 +164,17 @@ Deseja ativar o modo hardcore?</translation>
         <translation type="vanished">O modo hardcore não será ativado até que o sistema seja reiniciado. Deseja reiniciar o sistema agora?</translation>
     </message>
     <message>
-        <location filename="../achievementlogindialog.cpp" line="77"/>
+        <location filename="../achievementlogindialog.cpp" line="86"/>
         <source>Login Error</source>
         <translation>Erro ao iniciar sessão</translation>
     </message>
     <message>
-        <location filename="../achievementlogindialog.cpp" line="47"/>
+        <location filename="../achievementlogindialog.cpp" line="51"/>
         <source>Logging in...</source>
         <translation>Entrando...</translation>
     </message>
     <message>
-        <location filename="../achievementlogindialog.cpp" line="79"/>
+        <location filename="../achievementlogindialog.cpp" line="88"/>
         <source>Login failed.</source>
         <translation>Falha na entrada.</translation>
     </message>
@@ -183,13 +183,13 @@ Deseja ativar o modo hardcore?</translation>
     <name>AchievementSettingsWidget</name>
     <message>
         <location filename="../achievementsettingswidget.ui" line="120"/>
-        <location filename="../achievementsettingswidget.cpp" line="75"/>
+        <location filename="../achievementsettingswidget.cpp" line="76"/>
         <source>Enable Achievements</source>
         <translation>Ativar conquistas</translation>
     </message>
     <message>
         <location filename="../achievementsettingswidget.ui" line="275"/>
-        <location filename="../achievementsettingswidget.cpp" line="97"/>
+        <location filename="../achievementsettingswidget.cpp" line="98"/>
         <source>Enable Sound Effects</source>
         <translation>Ativar efeitos sonoros</translation>
     </message>
@@ -204,19 +204,19 @@ Deseja ativar o modo hardcore?</translation>
     </message>
     <message>
         <location filename="../achievementsettingswidget.ui" line="134"/>
-        <location filename="../achievementsettingswidget.cpp" line="82"/>
+        <location filename="../achievementsettingswidget.cpp" line="83"/>
         <source>Enable Spectator Mode</source>
         <translation>Ativar o modo espectador</translation>
     </message>
     <message>
         <location filename="../achievementsettingswidget.ui" line="148"/>
-        <location filename="../achievementsettingswidget.cpp" line="86"/>
+        <location filename="../achievementsettingswidget.cpp" line="87"/>
         <source>Test Unofficial Achievements</source>
         <translation>Testar as conquistas não oficiais</translation>
     </message>
     <message>
         <location filename="../achievementsettingswidget.ui" line="155"/>
-        <location filename="../achievementsettingswidget.cpp" line="99"/>
+        <location filename="../achievementsettingswidget.cpp" line="100"/>
         <source>Prefetch Badges</source>
         <translation>Recuperar emblemas</translation>
     </message>
@@ -253,7 +253,7 @@ Deseja ativar o modo hardcore?</translation>
     </message>
     <message>
         <location filename="../achievementsettingswidget.ui" line="263"/>
-        <location filename="../achievementsettingswidget.cpp" line="94"/>
+        <location filename="../achievementsettingswidget.cpp" line="95"/>
         <source>Show Leaderboard Trackers</source>
         <translation>Mostrar tabelas de classificação registradas</translation>
     </message>
@@ -296,7 +296,7 @@ Deseja ativar o modo hardcore?</translation>
     </message>
     <message>
         <location filename="../achievementsettingswidget.ui" line="141"/>
-        <location filename="../achievementsettingswidget.cpp" line="80"/>
+        <location filename="../achievementsettingswidget.cpp" line="81"/>
         <source>Enable Encore Mode</source>
         <translation>Ativar modo de repetição</translation>
     </message>
@@ -317,13 +317,13 @@ Deseja ativar o modo hardcore?</translation>
     </message>
     <message>
         <location filename="../achievementsettingswidget.ui" line="171"/>
-        <location filename="../achievementsettingswidget.cpp" line="89"/>
+        <location filename="../achievementsettingswidget.cpp" line="90"/>
         <source>Show Achievement Notifications</source>
         <translation>Mostrar notificações de conquistas</translation>
     </message>
     <message>
         <location filename="../achievementsettingswidget.ui" line="217"/>
-        <location filename="../achievementsettingswidget.cpp" line="92"/>
+        <location filename="../achievementsettingswidget.cpp" line="93"/>
         <source>Show Leaderboard Notifications</source>
         <translation>Mostrar notificações de placar</translation>
     </message>
@@ -339,7 +339,7 @@ Token de login gerado em:</translation>
     </message>
     <message>
         <location filename="../achievementsettingswidget.ui" line="127"/>
-        <location filename="../achievementsettingswidget.cpp" line="77"/>
+        <location filename="../achievementsettingswidget.cpp" line="78"/>
         <source>Enable Hardcore Mode</source>
         <translation>Ativar modo hardcore</translation>
     </message>
@@ -348,174 +348,180 @@ Token de login gerado em:</translation>
         <translation type="vanished">Informações do jogo</translation>
     </message>
     <message>
-        <location filename="../achievementsettingswidget.cpp" line="73"/>
+        <location filename="../achievementsettingswidget.cpp" line="74"/>
         <source>(Customize)</source>
         <translation>(Personalizar)</translation>
     </message>
     <message>
-        <location filename="../achievementsettingswidget.cpp" line="75"/>
-        <location filename="../achievementsettingswidget.cpp" line="77"/>
-        <location filename="../achievementsettingswidget.cpp" line="80"/>
-        <location filename="../achievementsettingswidget.cpp" line="82"/>
-        <location filename="../achievementsettingswidget.cpp" line="86"/>
+        <location filename="../achievementsettingswidget.cpp" line="76"/>
+        <location filename="../achievementsettingswidget.cpp" line="78"/>
+        <location filename="../achievementsettingswidget.cpp" line="81"/>
+        <location filename="../achievementsettingswidget.cpp" line="83"/>
+        <location filename="../achievementsettingswidget.cpp" line="87"/>
         <source>Unchecked</source>
         <translation>Desmarcado</translation>
     </message>
     <message>
-        <location filename="../achievementsettingswidget.cpp" line="76"/>
+        <location filename="../achievementsettingswidget.cpp" line="77"/>
         <source>When enabled and logged in, DuckStation will scan for achievements on startup.</source>
         <translation>Quando ativado e conectado o DuckStation irá buscar por conquistas assim que o jogo for iniciado.</translation>
     </message>
     <message>
-        <location filename="../achievementsettingswidget.cpp" line="90"/>
+        <location filename="../achievementsettingswidget.cpp" line="91"/>
         <source>Displays popup messages on events such as achievement unlocks and game completion.</source>
         <translation>Exibe mensagens de alerta em eventos como no desbloqueio de conquistas e na conclusão de jogos.</translation>
     </message>
     <message>
-        <location filename="../achievementsettingswidget.cpp" line="93"/>
+        <location filename="../achievementsettingswidget.cpp" line="94"/>
         <source>Displays popup messages when starting, submitting, or failing a leaderboard challenge.</source>
         <translation>Exibe mensagens de alerta ao iniciar, enviar ou em caso de falha em um desafio da tabela de líderes.</translation>
     </message>
     <message>
-        <location filename="../achievementsettingswidget.cpp" line="95"/>
+        <location filename="../achievementsettingswidget.cpp" line="96"/>
         <source>Shows a timer in the selected location when leaderboard challenges are active.</source>
         <translation>Mostra um cronômetro no local selecionado quando os desafios da tabela de classificação estão ativos.</translation>
     </message>
     <message>
-        <location filename="../achievementsettingswidget.cpp" line="100"/>
+        <location filename="../achievementsettingswidget.cpp" line="101"/>
         <source>Downloads all locked achievement badges while starting the game. This will reduce delays in the images being shown when unlocking achievements.</source>
         <translation>Baixa todos os ícones de conquistas bloqueadas ao iniciar o jogo. Isso reduzirá os atrasos para exibir as imagens ao desbloquear conquistas.</translation>
     </message>
     <message>
-        <location filename="../achievementsettingswidget.cpp" line="102"/>
+        <location filename="../achievementsettingswidget.cpp" line="103"/>
         <source>Notification Location</source>
         <translation>Local da notificação</translation>
     </message>
     <message>
-        <location filename="../achievementsettingswidget.cpp" line="102"/>
+        <location filename="../achievementsettingswidget.cpp" line="103"/>
         <source>Top Left</source>
         <translation>Canto superior esquerdo</translation>
     </message>
     <message>
-        <location filename="../achievementsettingswidget.cpp" line="103"/>
+        <location filename="../achievementsettingswidget.cpp" line="104"/>
         <source>Selects the screen location for achievement and leaderboard notifications.</source>
         <translation>Seleciona o local da tela para notificações de conquistas e placares.</translation>
     </message>
     <message>
-        <location filename="../achievementsettingswidget.cpp" line="104"/>
+        <location filename="../achievementsettingswidget.cpp" line="105"/>
         <source>Notification Size</source>
         <translation>Tamanho da notificação</translation>
     </message>
     <message>
-        <location filename="../achievementsettingswidget.cpp" line="104"/>
-        <location filename="../achievementsettingswidget.cpp" line="115"/>
-        <location filename="../achievementsettingswidget.cpp" line="169"/>
-        <location filename="../achievementsettingswidget.cpp" line="172"/>
+        <location filename="../achievementsettingswidget.cpp" line="105"/>
+        <location filename="../achievementsettingswidget.cpp" line="116"/>
+        <location filename="../achievementsettingswidget.cpp" line="170"/>
+        <location filename="../achievementsettingswidget.cpp" line="173"/>
         <source>Automatic</source>
         <translation>Automático</translation>
     </message>
     <message>
-        <location filename="../achievementsettingswidget.cpp" line="105"/>
+        <location filename="../achievementsettingswidget.cpp" line="106"/>
         <source>Determines the size of achievement notification popups. Automatic will use the same scaling as the Big Picture UI.</source>
         <translation>Define o tamanho dos pop-ups de notificação de conquistas. Automático usará a mesma escala da interface no modo tela cheia.</translation>
     </message>
     <message>
-        <location filename="../achievementsettingswidget.cpp" line="107"/>
+        <location filename="../achievementsettingswidget.cpp" line="108"/>
         <source>Custom Notification Scale</source>
         <translation>Escala personalizada das notificações</translation>
     </message>
     <message>
-        <location filename="../achievementsettingswidget.cpp" line="107"/>
-        <location filename="../achievementsettingswidget.cpp" line="118"/>
+        <location filename="../achievementsettingswidget.cpp" line="108"/>
+        <location filename="../achievementsettingswidget.cpp" line="119"/>
         <source>100%</source>
         <translation>100%</translation>
     </message>
     <message>
-        <location filename="../achievementsettingswidget.cpp" line="108"/>
+        <location filename="../achievementsettingswidget.cpp" line="109"/>
         <source>Sets the custom scale percentage for achievement notifications.</source>
         <translation>Define a porcentagem de escala personalizada para as notificações de conquistas.</translation>
     </message>
     <message>
-        <location filename="../achievementsettingswidget.cpp" line="111"/>
+        <location filename="../achievementsettingswidget.cpp" line="112"/>
         <source>Shows a notification or icons in the selected location when a challenge/primed achievement is active.</source>
         <translation>Mostra uma notificação ou ícones no local selecionado quando um desafio/conquista foi ativada.</translation>
     </message>
     <message>
-        <location filename="../achievementsettingswidget.cpp" line="113"/>
+        <location filename="../achievementsettingswidget.cpp" line="114"/>
         <source>Indicator Location</source>
         <translation>Localização do indicador</translation>
     </message>
     <message>
-        <location filename="../achievementsettingswidget.cpp" line="113"/>
+        <location filename="../achievementsettingswidget.cpp" line="114"/>
         <source>Bottom Right</source>
         <translation>Canto inferior direito</translation>
     </message>
     <message>
-        <location filename="../achievementsettingswidget.cpp" line="114"/>
+        <location filename="../achievementsettingswidget.cpp" line="115"/>
         <source>Selects the screen location for challenge/progress indicators, and leaderboard trackers.</source>
         <translation>Seleciona a localização na tela para indicadores de desafio/progresso e registros de placares.</translation>
     </message>
     <message>
-        <location filename="../achievementsettingswidget.cpp" line="115"/>
+        <location filename="../achievementsettingswidget.cpp" line="116"/>
         <source>Indicator Size</source>
         <translation>Tamanho do indicador</translation>
     </message>
     <message>
-        <location filename="../achievementsettingswidget.cpp" line="116"/>
+        <location filename="../achievementsettingswidget.cpp" line="117"/>
         <source>Determines the size of challenge/progress indicators. Automatic will use the same scaling as the Big Picture UI.</source>
         <translation>Define o tamanho dos indicadores de desafio/progresso. Automático usará a mesma escala da interface no modo tela cheia.</translation>
     </message>
     <message>
-        <location filename="../achievementsettingswidget.cpp" line="118"/>
+        <location filename="../achievementsettingswidget.cpp" line="119"/>
         <source>Custom Indicator Scale</source>
         <translation>Escala personalizada dos indicadores</translation>
     </message>
     <message>
-        <location filename="../achievementsettingswidget.cpp" line="119"/>
+        <location filename="../achievementsettingswidget.cpp" line="120"/>
         <source>Sets the custom scale percentage for challenge/progress indicators.</source>
         <translation>Define a porcentagem de escala personalizada para os indicadores de desafio/progresso.</translation>
     </message>
     <message>
-        <location filename="../achievementsettingswidget.cpp" line="121"/>
+        <location filename="../achievementsettingswidget.cpp" line="122"/>
         <source>Progress Indicators</source>
         <translation>Indicadores de progresso</translation>
     </message>
     <message>
-        <location filename="../achievementsettingswidget.cpp" line="122"/>
+        <location filename="../achievementsettingswidget.cpp" line="123"/>
         <source>Shows a popup in the selected location when progress towards a measured achievement changes.</source>
         <translation>Mostra um pop-up no local selecionado quando o progresso em direção a uma conquista muda.</translation>
     </message>
     <message>
-        <location filename="../achievementsettingswidget.cpp" line="169"/>
-        <location filename="../achievementsettingswidget.cpp" line="173"/>
+        <location filename="../achievementsettingswidget.cpp" line="170"/>
+        <location filename="../achievementsettingswidget.cpp" line="174"/>
         <source>Use OSD Scale</source>
         <translation>Usar escalonamento do OSD</translation>
     </message>
     <message>
-        <location filename="../achievementsettingswidget.cpp" line="169"/>
-        <location filename="../achievementsettingswidget.cpp" line="174"/>
+        <location filename="../achievementsettingswidget.cpp" line="170"/>
+        <location filename="../achievementsettingswidget.cpp" line="175"/>
         <source>Custom</source>
         <translation>Personalizado</translation>
     </message>
     <message>
-        <location filename="../achievementsettingswidget.cpp" line="272"/>
+        <location filename="../achievementsettingswidget.cpp" line="273"/>
         <source>Restart Game</source>
         <translation>Reiniciar o jogo</translation>
     </message>
     <message>
-        <location filename="../achievementsettingswidget.cpp" line="273"/>
+        <location filename="../achievementsettingswidget.cpp" line="274"/>
         <source>Hardcore mode will not be enabled until the game is restarted. Do you want to restart the game now?</source>
         <translation>O modo hardcore não será ativado até que o jogo seja reiniciado. Deseja reiniciar o jogo agora?</translation>
     </message>
     <message>
         <location filename="../achievementsettingswidget.cpp" line="321"/>
         <source>Logged in as %1
-Token generated at %2</source>
+Token generated %2</source>
         <translation>Conectado como %1
 Token gerado em %2</translation>
     </message>
     <message>
-        <location filename="../achievementsettingswidget.cpp" line="81"/>
+        <source>Logged in as %1
+Token generated at %2</source>
+        <translation type="vanished">Conectado como %1
+Token gerado em %2</translation>
+    </message>
+    <message>
+        <location filename="../achievementsettingswidget.cpp" line="82"/>
         <source>When enabled, each session will behave as if no achievements have been unlocked.</source>
         <translation>Quando ativada, cada sessão se comportará como se nenhuma conquista tivesse sido desbloqueada.</translation>
     </message>
@@ -524,12 +530,12 @@ Token gerado em %2</translation>
         <translation type="vanished">Alterar sons</translation>
     </message>
     <message>
-        <location filename="../achievementsettingswidget.cpp" line="83"/>
+        <location filename="../achievementsettingswidget.cpp" line="84"/>
         <source>When enabled, DuckStation will assume all achievements are locked and not send any unlock notifications to the server.</source>
         <translation>Quando ativado, o DuckStation entenderá que todas as conquistas deverão ficar travadas e não enviará nenhuma notificação de desbloqueio ao servidor.</translation>
     </message>
     <message>
-        <location filename="../achievementsettingswidget.cpp" line="87"/>
+        <location filename="../achievementsettingswidget.cpp" line="88"/>
         <source>When enabled, DuckStation will list achievements from unofficial sets. Please note that these achievements are not tracked by RetroAchievements, so they unlock every time.</source>
         <translation>Quando ativado, DuckStation irá listar conquistas não oficiais. Por favor saiba que essas conquistas não são rastreadas pelo RetroAchievements, portanto serão desbloqueadas sempre.</translation>
     </message>
@@ -538,17 +544,17 @@ Token gerado em %2</translation>
         <translation type="vanished">Quando ativado, o primeiro disco em uma lista de reprodução será usado para conquistas, independente de qual disco está ativo.</translation>
     </message>
     <message>
-        <location filename="../achievementsettingswidget.cpp" line="78"/>
+        <location filename="../achievementsettingswidget.cpp" line="79"/>
         <source>&quot;Challenge&quot; mode for achievements, including leaderboard tracking. Disables save state, cheats, and slowdown functions.</source>
         <translation>Desativa salvamentos rápidos, carregamento de trapaças e funções de velocidade.</translation>
     </message>
     <message>
-        <location filename="../achievementsettingswidget.cpp" line="89"/>
-        <location filename="../achievementsettingswidget.cpp" line="92"/>
-        <location filename="../achievementsettingswidget.cpp" line="94"/>
-        <location filename="../achievementsettingswidget.cpp" line="97"/>
-        <location filename="../achievementsettingswidget.cpp" line="99"/>
-        <location filename="../achievementsettingswidget.cpp" line="121"/>
+        <location filename="../achievementsettingswidget.cpp" line="90"/>
+        <location filename="../achievementsettingswidget.cpp" line="93"/>
+        <location filename="../achievementsettingswidget.cpp" line="95"/>
+        <location filename="../achievementsettingswidget.cpp" line="98"/>
+        <location filename="../achievementsettingswidget.cpp" line="100"/>
+        <location filename="../achievementsettingswidget.cpp" line="122"/>
         <source>Checked</source>
         <translation>Marcado</translation>
     </message>
@@ -557,7 +563,7 @@ Token gerado em %2</translation>
         <translation type="vanished">Mostra um cronômetro no canto inferior direito da tela quando os desafios da tabela de classificação estiverem ativos.</translation>
     </message>
     <message>
-        <location filename="../achievementsettingswidget.cpp" line="98"/>
+        <location filename="../achievementsettingswidget.cpp" line="99"/>
         <source>Plays sound effects for events such as achievement unlocks and leaderboard submissions.</source>
         <translation>Reproduz efeitos sonoros para eventos como desbloqueios de conquistas e envios de placar.</translation>
     </message>
@@ -566,7 +572,7 @@ Token gerado em %2</translation>
         <translation type="vanished">Mostra ícones no canto inferior direito da tela quando um desafio/conquista está ativa.</translation>
     </message>
     <message>
-        <location filename="../achievementsettingswidget.cpp" line="110"/>
+        <location filename="../achievementsettingswidget.cpp" line="111"/>
         <source>Challenge Indicators</source>
         <translation>Indicadores de desafios</translation>
     </message>
@@ -575,7 +581,7 @@ Token gerado em %2</translation>
         <translation type="vanished">Mostrar ícones persistentes</translation>
     </message>
     <message>
-        <location filename="../achievementsettingswidget.cpp" line="110"/>
+        <location filename="../achievementsettingswidget.cpp" line="111"/>
         <source>Show Notifications</source>
         <translation>Mostrar notificações</translation>
     </message>
@@ -600,8 +606,8 @@ Token gerado em %2</translation>
         <translation type="vanished">O modo dificílimo não será ativado até que o sistema seja reiniciado. Deseja reiniciar o sistema agora?</translation>
     </message>
     <message numerus="yes">
-        <location filename="../achievementsettingswidget.cpp" line="283"/>
-        <location filename="../achievementsettingswidget.cpp" line="290"/>
+        <location filename="../achievementsettingswidget.cpp" line="284"/>
+        <location filename="../achievementsettingswidget.cpp" line="291"/>
         <source>%n seconds</source>
         <translation>
             <numerusform>%n segundos</numerusform>
@@ -620,7 +626,7 @@ Token gerado %2.</translation>
         <translation>Sair</translation>
     </message>
     <message>
-        <location filename="../achievementsettingswidget.cpp" line="325"/>
+        <location filename="../achievementsettingswidget.cpp" line="327"/>
         <source>Not Logged In.</source>
         <translation>Não conectado.</translation>
     </message>
@@ -628,17 +634,17 @@ Token gerado %2.</translation>
 <context>
     <name>Achievements</name>
     <message>
-        <location filename="../../core/system.cpp" line="1666"/>
+        <location filename="../../core/system.cpp" line="1786"/>
         <source>Overriding executable</source>
         <translation>Substituindo o executável</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2803"/>
+        <location filename="../../core/system.cpp" line="2928"/>
         <source>Loading state</source>
         <translation>Carregando estado</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1665"/>
+        <location filename="../../core/system.cpp" line="1785"/>
         <source>Resuming state</source>
         <translation>Retomando estado</translation>
     </message>
@@ -647,21 +653,21 @@ Token gerado %2.</translation>
         <translation type="vanished">Modo dificílimo será ligado assim que o sistema for reiniciado.</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1407"/>
+        <location filename="../../core/achievements.cpp" line="1431"/>
         <source>{} (Unofficial)</source>
         <translation>{} (Não oficial)</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1438"/>
+        <location filename="../../core/achievements.cpp" line="1462"/>
         <source>Game complete.
 {0} and {1}.</source>
         <translation>Jogo concluído.
 {0} e {1}.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/achievements.cpp" line="1441"/>
-        <location filename="../../core/achievements.cpp" line="1463"/>
-        <location filename="../../core/fullscreenui_achievements.cpp" line="2396"/>
+        <location filename="../../core/achievements.cpp" line="1465"/>
+        <location filename="../../core/achievements.cpp" line="1487"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="2433"/>
         <source>%n points</source>
         <comment>Achievement points</comment>
         <translation>
@@ -670,39 +676,39 @@ Token gerado %2.</translation>
         </translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1460"/>
+        <location filename="../../core/achievements.cpp" line="1484"/>
         <source>Subset complete.
 {0} and {1}.</source>
         <translation>Subgrupo concluído.
 {0} e {1}.</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1480"/>
+        <location filename="../../core/achievements.cpp" line="1504"/>
         <source>Leaderboard attempt started.</source>
         <translation>Placar de líderes inciado.</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1494"/>
+        <location filename="../../core/achievements.cpp" line="1518"/>
         <source>Leaderboard attempt failed.</source>
         <translation>Placar de líderes falhou.</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1552"/>
+        <location filename="../../core/achievements.cpp" line="1576"/>
         <source>Your Time: {0} (Best: {1})</source>
         <translation>Seu tempo: {0} (melhor: {1})</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1553"/>
+        <location filename="../../core/achievements.cpp" line="1577"/>
         <source>Your Score: {0} (Best: {1})</source>
         <translation>Sua pontuação: {0} (melhor: {1})</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1554"/>
+        <location filename="../../core/achievements.cpp" line="1578"/>
         <source>Your Value: {0} (Best: {1})</source>
         <translation>Sua pontuação: {0} (melhor: {1})</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1564"/>
+        <location filename="../../core/achievements.cpp" line="1588"/>
         <source>Leaderboard Position: {0} of {1}</source>
         <translation>Posição na tabela de classificação: {0} de {1}</translation>
     </message>
@@ -713,7 +719,7 @@ Token gerado %2.</translation>
 {}</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1756"/>
+        <location filename="../../core/achievements.cpp" line="1780"/>
         <source>Achievements Disconnected</source>
         <translation>Conquistas desconectadas</translation>
     </message>
@@ -722,34 +728,34 @@ Token gerado %2.</translation>
         <translation type="vanished">Não foi possível concluir sua solicitação de desbloqueio. Continuaremos tentando enviar esta solicitação.</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1766"/>
+        <location filename="../../core/achievements.cpp" line="1790"/>
         <source>Achievements Reconnected</source>
         <translation>Conquistas reconectadas</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1767"/>
+        <location filename="../../core/achievements.cpp" line="1791"/>
         <source>All pending unlock requests have completed.</source>
         <translation>Todas as solicitações de desbloqueio pendentes foram concluídas.</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1844"/>
+        <location filename="../../core/achievements.cpp" line="1868"/>
         <source>Downloading achievements data...</source>
         <translation>Baixando informações de conquistas...</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2090"/>
+        <location filename="../../core/achievements.cpp" line="2113"/>
         <source>Achievement unlocks will not be submitted for this session.
 Error: {}</source>
         <translation>Conquistas desbloqueadas não serão enviados para esta sessão.
 Erro: {}</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2088"/>
+        <location filename="../../core/achievements.cpp" line="2111"/>
         <source>RetroAchievements Login Failed</source>
         <translation>Falha na conexão no RetroAchievements</translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/achievements.cpp" line="459"/>
+        <location filename="../../core/achievements.cpp" line="471"/>
         <source>Prefetching achievement badges (%n remaining)...</source>
         <comment>Achievement badge prefetch count</comment>
         <translation>
@@ -766,11 +772,10 @@ Erro: {}</translation>
         <translation type="vanished">Conquistas desativadas.</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2125"/>
         <source>Score: {} ({} softcore)
 Unread messages: {}</source>
         <extracomment>Summary for login notification.</extracomment>
-        <translation>Pontuação: {} ({} normal)
+        <translation type="vanished">Pontuação: {} ({} normal)
 Mensagens não lidas: {}</translation>
     </message>
     <message>
@@ -778,7 +783,7 @@ Mensagens não lidas: {}</translation>
         <translation type="vanished">Confirmar modo dificílimo</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2219"/>
+        <location filename="../../core/achievements.cpp" line="2242"/>
         <source>{0} cannot be performed while hardcore mode is active. Do you want to disable hardcore mode? {0} will be cancelled if you select No.</source>
         <translation>{0} não é possível no momento enquanto o modo dificílimo estiver ligado. Deseja desativar o dificílimo? {0} será cancelado se você escolher Não.</translation>
     </message>
@@ -799,12 +804,12 @@ Mensagens não lidas: {}</translation>
         <translation type="vanished">Conquistas ativadas</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_achievements.cpp" line="1886"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="1927"/>
         <source> (Hardcore Mode)</source>
         <translation> (Modo hardcore)</translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/fullscreenui_achievements.cpp" line="1901"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="1942"/>
         <source>You have unlocked all achievements and earned %n points!</source>
         <comment>Point count</comment>
         <translation>
@@ -813,105 +818,104 @@ Mensagens não lidas: {}</translation>
         </translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_achievements.cpp" line="1907"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="1948"/>
         <source>You have unlocked {0} of {1} achievements, earning {2} of {3} possible points.</source>
         <translation>Você desbloqueou {0} de {1} conquistas, ganhando {2} de {3} pontos possíveis.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_achievements.cpp" line="2072"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="2110"/>
         <source>Unknown</source>
         <translation>Desconhecido</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_achievements.cpp" line="2073"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="2111"/>
         <source>Locked</source>
         <translation>Bloqueado</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_achievements.cpp" line="2074"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="2112"/>
         <source>Unlocked</source>
         <translation>Desbloqueado</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_achievements.cpp" line="2075"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="2113"/>
         <source>Unsupported</source>
         <translation>Sem suporte</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_achievements.cpp" line="2076"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="2114"/>
         <source>Unofficial</source>
         <translation>Não oficial</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_achievements.cpp" line="2077"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="2115"/>
         <source>Recently Unlocked</source>
         <translation>Desbloqueado recentemente</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_achievements.cpp" line="2078"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="2116"/>
         <source>Active Challenges</source>
         <translation>Desafios ativos</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_achievements.cpp" line="2079"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="2117"/>
         <source>Almost There</source>
         <translation>Quase lá</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_achievements.cpp" line="2080"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="2118"/>
         <source>Not Confirmed</source>
         <translation>Não confirmado</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_achievements.cpp" line="2081"/>
         <source>Unlocked in Softcore</source>
-        <translation>Desbloqueado no modo Softcore</translation>
+        <translation type="vanished">Desbloqueado no modo Softcore</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_achievements.cpp" line="2135"/>
-        <location filename="../../core/fullscreenui_achievements.cpp" line="2143"/>
-        <location filename="../../core/fullscreenui_achievements.cpp" line="2155"/>
-        <location filename="../../core/fullscreenui_achievements.cpp" line="2162"/>
-        <location filename="../../core/fullscreenui_achievements.cpp" line="2736"/>
-        <location filename="../../core/fullscreenui_achievements.cpp" line="2743"/>
-        <location filename="../../core/fullscreenui_achievements.cpp" line="2754"/>
-        <location filename="../../core/fullscreenui_achievements.cpp" line="2761"/>
-        <location filename="../../core/fullscreenui_achievements.cpp" line="2921"/>
-        <location filename="../../core/fullscreenui_achievements.cpp" line="2929"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="2173"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="2181"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="2193"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="2200"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="2773"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="2780"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="2791"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="2798"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="2958"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="2966"/>
         <source>Change Selection</source>
         <translation>Alterar seleção</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_achievements.cpp" line="2136"/>
-        <location filename="../../core/fullscreenui_achievements.cpp" line="2144"/>
-        <location filename="../../core/fullscreenui_achievements.cpp" line="2163"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="2174"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="2182"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="2201"/>
         <source>Pin Achievement</source>
         <translation>Fixar conquista</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_achievements.cpp" line="2137"/>
-        <location filename="../../core/fullscreenui_achievements.cpp" line="2145"/>
-        <location filename="../../core/fullscreenui_achievements.cpp" line="2156"/>
-        <location filename="../../core/fullscreenui_achievements.cpp" line="2164"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="2175"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="2183"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="2194"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="2202"/>
         <source>View Details</source>
         <translation>Ver detalhes</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_achievements.cpp" line="2138"/>
-        <location filename="../../core/fullscreenui_achievements.cpp" line="2146"/>
-        <location filename="../../core/fullscreenui_achievements.cpp" line="2157"/>
-        <location filename="../../core/fullscreenui_achievements.cpp" line="2165"/>
-        <location filename="../../core/fullscreenui_achievements.cpp" line="2738"/>
-        <location filename="../../core/fullscreenui_achievements.cpp" line="2745"/>
-        <location filename="../../core/fullscreenui_achievements.cpp" line="2756"/>
-        <location filename="../../core/fullscreenui_achievements.cpp" line="2763"/>
-        <location filename="../../core/fullscreenui_achievements.cpp" line="2923"/>
-        <location filename="../../core/fullscreenui_achievements.cpp" line="2931"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="2176"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="2184"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="2195"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="2203"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="2775"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="2782"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="2793"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="2800"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="2960"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="2968"/>
         <source>Back</source>
         <translation>Voltar</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_achievements.cpp" line="2238"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="2276"/>
         <source>XXX points</source>
         <translation>XXX pontos</translation>
     </message>
@@ -920,26 +924,66 @@ Mensagens não lidas: {}</translation>
         <translation type="vanished">Desbloqueado: {}</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_achievements.cpp" line="2737"/>
-        <location filename="../../core/fullscreenui_achievements.cpp" line="2744"/>
-        <location filename="../../core/fullscreenui_achievements.cpp" line="2755"/>
-        <location filename="../../core/fullscreenui_achievements.cpp" line="2762"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="2774"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="2781"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="2792"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="2799"/>
         <source>Open Leaderboard</source>
         <translation>Abrir lista de classificação</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_achievements.cpp" line="3033"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="3069"/>
         <source>Loading...</source>
         <translation>Carregando...</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_achievements.cpp" line="2920"/>
-        <location filename="../../core/fullscreenui_achievements.cpp" line="2928"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="2957"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="2965"/>
         <source>Change Page</source>
         <translation>Mudar de página</translation>
     </message>
+    <message>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="2013"/>
+        <source>Game was beaten {0}, and completed {1}.</source>
+        <translation>O jogo foi zerado em {0} e concluído em {1}.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="2018"/>
+        <source>Subset was beaten {0}, and completed {1}.</source>
+        <translation>Subgrupo foi zerado em {0}, e concluído em {1}.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="2025"/>
+        <source>Game was beaten {0}.</source>
+        <translation>O jogo foi zerado em {0}.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="2027"/>
+        <source>Subset was beaten {0}.</source>
+        <translation>Subgrupo zerado em {0}.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="2034"/>
+        <source>Game was completed {0}.</source>
+        <translation>O jogo foi concluído em {0}.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="2036"/>
+        <source>Subset was completed {0}.</source>
+        <translation>Subgrupo concluído em {0}.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="2119"/>
+        <source>Unlocked in Casual</source>
+        <translation>Desbloqueado no modo casual</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="2387"/>
+        <source>Unlocked {} | {:.1f}% of players have this achievement</source>
+        <translation>Desbloqueou {} | {:.1f}% dos jogadores têm esta conquista</translation>
+    </message>
     <message numerus="yes">
-        <location filename="../../core/fullscreenui_achievements.cpp" line="2608"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="2645"/>
         <source>This game has %n leaderboards.</source>
         <comment>Leaderboard count</comment>
         <translation>
@@ -948,18 +992,18 @@ Mensagens não lidas: {}</translation>
         </translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_achievements.cpp" line="2922"/>
-        <location filename="../../core/fullscreenui_achievements.cpp" line="2930"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="2959"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="2967"/>
         <source>View Profile</source>
         <translation>Ver perfil</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_achievements.cpp" line="3073"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="3109"/>
         <source>Just now</source>
         <translation>Agora</translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/fullscreenui_achievements.cpp" line="3078"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="3114"/>
         <source>%n minutes ago</source>
         <comment>Relative time</comment>
         <translation>
@@ -968,7 +1012,7 @@ Mensagens não lidas: {}</translation>
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/fullscreenui_achievements.cpp" line="3084"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="3120"/>
         <source>%n hours ago</source>
         <comment>Relative time</comment>
         <translation>
@@ -977,17 +1021,17 @@ Mensagens não lidas: {}</translation>
         </translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_achievements.cpp" line="3094"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="3130"/>
         <source>Today</source>
         <translation>Hoje</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_achievements.cpp" line="3097"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="3133"/>
         <source>Yesterday</source>
         <translation>Ontem</translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/fullscreenui_achievements.cpp" line="3103"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="3139"/>
         <source>%n days ago</source>
         <comment>Relative time</comment>
         <translation>
@@ -996,7 +1040,7 @@ Mensagens não lidas: {}</translation>
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/fullscreenui_achievements.cpp" line="3118"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="3154"/>
         <source>%n weeks ago</source>
         <comment>Relative time</comment>
         <translation>
@@ -1005,8 +1049,8 @@ Mensagens não lidas: {}</translation>
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/fullscreenui_achievements.cpp" line="3122"/>
-        <location filename="../../core/fullscreenui_achievements.cpp" line="3134"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="3158"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="3170"/>
         <source>%n months ago</source>
         <comment>Relative time</comment>
         <translation>
@@ -1015,7 +1059,7 @@ Mensagens não lidas: {}</translation>
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/fullscreenui_achievements.cpp" line="3136"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="3172"/>
         <source>%n years ago</source>
         <comment>Relative time</comment>
         <translation>
@@ -1024,8 +1068,8 @@ Mensagens não lidas: {}</translation>
         </translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_achievements.cpp" line="3187"/>
-        <location filename="../../core/fullscreenui_achievements.cpp" line="3210"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="3223"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="3246"/>
         <source>Leaderboard download failed</source>
         <translation>Falha ao baixar os placares de líderes</translation>
     </message>
@@ -1034,7 +1078,7 @@ Mensagens não lidas: {}</translation>
         <translation type="vanished">O modo Hardcore está ativado.</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1323"/>
+        <location filename="../../core/achievements.cpp" line="1336"/>
         <source>Hardcore mode is disabled. Leaderboards will not be tracked.</source>
         <translation>O modo hardcore está desativado. As tabelas de classificação não serão rastreadas.</translation>
     </message>
@@ -1045,17 +1089,17 @@ Mensagens não lidas: {}</translation>
 {0}, {1}.</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1517"/>
+        <location filename="../../core/achievements.cpp" line="1541"/>
         <source>Your Time: {}</source>
         <translation>Seu tempo: {}</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1518"/>
+        <location filename="../../core/achievements.cpp" line="1542"/>
         <source>Your Score: {}</source>
         <translation>Sua pontuação: {}</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1519"/>
+        <location filename="../../core/achievements.cpp" line="1543"/>
         <source>Your Value: {}</source>
         <translation>Sua pontuação: {}</translation>
     </message>
@@ -1076,12 +1120,12 @@ Mensagens não lidas: {}</translation>
         <translation type="vanished">Falha ao ler o executável do disco. Conquistas desativadas.</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1307"/>
+        <location filename="../../core/achievements.cpp" line="1320"/>
         <source>{0}, {1}.</source>
         <translation></translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/achievements.cpp" line="1308"/>
+        <location filename="../../core/achievements.cpp" line="1321"/>
         <source>You have unlocked {} of %n achievements</source>
         <comment>Achievement popup</comment>
         <translation>
@@ -1090,7 +1134,7 @@ Mensagens não lidas: {}</translation>
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/achievements.cpp" line="1311"/>
+        <location filename="../../core/achievements.cpp" line="1324"/>
         <source>and earned {} of %n points</source>
         <comment>Achievement popup</comment>
         <translation>
@@ -1099,24 +1143,24 @@ Mensagens não lidas: {}</translation>
         </translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1319"/>
+        <location filename="../../core/achievements.cpp" line="1332"/>
         <source>Hardcore mode is enabled. Cheats and save states are unavailable.</source>
         <translation>O modo hardcore está ativado. Trapaças e save states não ficam disponíveis.</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1328"/>
-        <location filename="../../core/fullscreenui_achievements.cpp" line="1563"/>
-        <location filename="../../core/fullscreenui_achievements.cpp" line="1934"/>
+        <location filename="../../core/achievements.cpp" line="1341"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="1604"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="1975"/>
         <source>This game has no achievements.</source>
         <translation>Este jogo não possui conquistas.</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1340"/>
+        <location filename="../../core/achievements.cpp" line="1353"/>
         <source>Unsupported Achievements</source>
         <translation>Conquistas não suportadas</translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/achievements.cpp" line="1341"/>
+        <location filename="../../core/achievements.cpp" line="1354"/>
         <source>%n achievements are not supported by DuckStation.</source>
         <comment>Achievement popup</comment>
         <translation>
@@ -1125,34 +1169,34 @@ Mensagens não lidas: {}</translation>
         </translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1356"/>
+        <location filename="../../core/achievements.cpp" line="1369"/>
         <source>Spectator mode enabled.</source>
         <translation>Modo espectador ativado.</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1357"/>
+        <location filename="../../core/achievements.cpp" line="1370"/>
         <source>All achievements are locked, and unlocks will not be recorded in your account.</source>
         <translation>Todas as conquistas estão bloqueadas, e os desbloqueios não serão registrados na sua conta.</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1363"/>
+        <location filename="../../core/achievements.cpp" line="1376"/>
         <source>Encore mode enabled.</source>
         <translation>Modo de repetição ativado.</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1364"/>
+        <location filename="../../core/achievements.cpp" line="1377"/>
         <source>All achievements are locked, but unlocks will still be recorded in your account.</source>
         <translation>Todas as conquistas estão bloqueadas, mas os desbloqueios continuarão sendo registrados na sua conta.</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1377"/>
-        <location filename="../../core/achievements.cpp" line="1382"/>
+        <location filename="../../core/achievements.cpp" line="1390"/>
+        <location filename="../../core/achievements.cpp" line="1395"/>
         <source>Hardcore mode will be enabled on game restart.</source>
         <translation>Modo hardcore será ativado ao iniciar o jogo.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/achievements.cpp" line="1439"/>
-        <location filename="../../core/achievements.cpp" line="1461"/>
+        <location filename="../../core/achievements.cpp" line="1463"/>
+        <location filename="../../core/achievements.cpp" line="1485"/>
         <source>%n achievements</source>
         <comment>Mastery popup</comment>
         <translation>
@@ -1161,50 +1205,64 @@ Mensagens não lidas: {}</translation>
         </translation>
     </message>
     <message>
+        <location filename="../../core/achievements.cpp" line="2148"/>
+        <source>Score: {} ({} casual)
+Unread messages: {}</source>
+        <extracomment>Summary for login notification.</extracomment>
+        <translation>Pontuação: {} ({} casual)
+Mensagens não lidas: {}</translation>
+    </message>
+    <message>
+        <location filename="../../core/achievements.cpp" line="2176"/>
+        <source>Score: {} ({} casual)</source>
+        <extracomment>Score summary, shown in Big Picture mode.</extracomment>
+        <translation>Pontuação: {} ({} casual)</translation>
+    </message>
+    <message>
         <source>Subset complete.
 {0}, {1}.</source>
         <translation type="vanished">Subconjunto concluído.
 {0}, {1}.</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1648"/>
+        <location filename="../../core/achievements.cpp" line="1672"/>
         <source>Challenge Started: {}</source>
         <translation>Desafio iniciado: {}</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1678"/>
+        <location filename="../../core/achievements.cpp" line="1702"/>
         <source>Challenge Failed: {}</source>
         <translation>Falha no desafio: {}</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1745"/>
+        <location filename="../../core/achievements.cpp" line="1769"/>
         <source>Server error in {}</source>
         <translation>Erro do servidor em {}</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1757"/>
+        <location filename="../../core/achievements.cpp" line="1781"/>
         <source>An unlock request could not be completed.
 We will keep trying to submit this request.</source>
         <translation>Não foi possível concluir a solicitação de desbloqueio.
 Continuaremos tentando enviar essa solicitação.</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1800"/>
+        <location filename="../../core/achievements.cpp" line="1824"/>
         <source>Hardcore mode enabled.</source>
         <translation>Modo hardcore ativado.</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1801"/>
+        <location filename="../../core/achievements.cpp" line="1825"/>
         <source>Hardcore mode disabled.</source>
         <translation>Modo Hardcore desligado.</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1802"/>
+        <location filename="../../core/achievements.cpp" line="1826"/>
         <source>Restrictions are now active.</source>
         <translation>As restrições estão em vigor.</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1803"/>
+        <location filename="../../core/achievements.cpp" line="1827"/>
         <source>Restrictions are no longer active.</source>
         <translation>As restrições já não estão em vigor.</translation>
     </message>
@@ -1213,10 +1271,9 @@ Continuaremos tentando enviar essa solicitação.</translation>
         <translation type="vanished">Erro ao carregar os títulos dos jogos (código {}).</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2153"/>
         <source>Score: {} ({} softcore)</source>
         <extracomment>Score summary, shown in Big Picture mode.</extracomment>
-        <translation>Pontuação: {} ({} softcore)</translation>
+        <translation type="vanished">Pontuação: {} ({} softcore)</translation>
     </message>
     <message>
         <source>All available icons have already been downloaded.</source>
@@ -1247,38 +1304,38 @@ Continuaremos tentando enviar essa solicitação.</translation>
         <translation type="vanished">Baixando ícones dos jogos...</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2218"/>
+        <location filename="../../core/achievements.cpp" line="2241"/>
         <source>Confirm Hardcore Mode Disable</source>
         <translation>Confirmar desligamento do modo hardcore</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2405"/>
+        <location filename="../../core/achievements.cpp" line="2428"/>
         <source>Refreshing game database...</source>
         <translation>Atualizando banco de dados dos jogos...</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2433"/>
+        <location filename="../../core/achievements.cpp" line="2456"/>
         <source>Game database is already being updated.</source>
         <translation>O banco de dados dos jogos já está sendo atualizado.</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2466"/>
+        <location filename="../../core/achievements.cpp" line="2489"/>
         <source>Refresh game list failed</source>
         <translation>Falha ao atualizar a lista de jogos</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2486"/>
+        <location filename="../../core/achievements.cpp" line="2509"/>
         <source>Refreshing achievement progress...</source>
         <translation>Atualizando o progresso das conquistas...</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_achievements.cpp" line="1152"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="1193"/>
         <source>Achievements Unlocked</source>
         <comment>Pause Menu</comment>
         <translation>Conquistas desbloqueadas</translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/fullscreenui_achievements.cpp" line="1190"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="1231"/>
         <source>%n unlocks have not been confirmed by the server.</source>
         <comment>Pause Menu</comment>
         <translation>
@@ -1287,58 +1344,58 @@ Continuaremos tentando enviar essa solicitação.</translation>
         </translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_achievements.cpp" line="1353"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="1394"/>
         <source>Most Recent</source>
         <comment>Pause Menu</comment>
         <translation>Mais recente</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_achievements.cpp" line="1369"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="1410"/>
         <source>Nearest Completion</source>
         <comment>Pause Menu</comment>
         <translation>Próxima de completar</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_achievements.cpp" line="1385"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="1426"/>
         <source>Last Progress Update</source>
         <comment>Pause Menu</comment>
         <translation>Última atualização do progresso</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_achievements.cpp" line="1428"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="1469"/>
         <source>Active Challenge Achievements</source>
         <comment>Pause Menu</comment>
         <translation>Conquistas ativas</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_achievements.cpp" line="1496"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="1537"/>
         <source>Active Leaderboard Attempts</source>
         <comment>Pause Menu</comment>
         <translation>Tentativas ativas no placar</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_achievements.cpp" line="1561"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="1602"/>
         <source>Achievements are not available.</source>
         <translation>As conquistas não estão disponíveis.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_achievements.cpp" line="1564"/>
-        <location filename="../../core/fullscreenui_achievements.cpp" line="2486"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="1605"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="2523"/>
         <source>Achievements are disabled in settings.</source>
         <translation>As conquistas estão desativadas nas configurações.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_achievements.cpp" line="1589"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="1630"/>
         <source>Core</source>
         <translation>Núcleo</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_achievements.cpp" line="1602"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="1643"/>
         <source>{0} - {1}</source>
         <translation>{0} - {1}</translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/fullscreenui_achievements.cpp" line="1917"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="1958"/>
         <source>You have unlocked all achievements in this subset and earned %n points!</source>
         <comment>Point count</comment>
         <translation>
@@ -1347,17 +1404,17 @@ Continuaremos tentando enviar essa solicitação.</translation>
         </translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_achievements.cpp" line="1924"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="1965"/>
         <source>You have unlocked {0} of {1} achievements in this subset, earning {2} of {3} possible points.</source>
         <translation>Você desbloqueou {0} de {1} conquistas neste subconjunto, ganhando {2} de {3} pontos possíveis.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_achievements.cpp" line="1935"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="1976"/>
         <source>This subset has no achievements.</source>
         <translation>Este subgrupo não possui conquistas.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/fullscreenui_achievements.cpp" line="1947"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="1988"/>
         <source>%n achievements are not supported by DuckStation and cannot be unlocked.</source>
         <comment>Unsupported achievement count</comment>
         <translation>
@@ -1366,84 +1423,77 @@ Continuaremos tentando enviar essa solicitação.</translation>
         </translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_achievements.cpp" line="1974"/>
         <source>Game was beaten on {0}, and completed on {1}.</source>
-        <translation>O jogo foi zerado em {0} e concluído em {1}.</translation>
+        <translation type="vanished">O jogo foi zerado em {0} e concluído em {1}.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_achievements.cpp" line="1979"/>
         <source>Subset was beaten on {0}, and completed on {1}.</source>
-        <translation>Subgrupo foi zerado em {0}, e concluído em {1}.</translation>
+        <translation type="vanished">Subgrupo foi zerado em {0}, e concluído em {1}.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_achievements.cpp" line="1986"/>
         <source>Game was beaten on {0}.</source>
-        <translation>O jogo foi zerado em {0}.</translation>
+        <translation type="vanished">O jogo foi zerado em {0}.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_achievements.cpp" line="1988"/>
         <source>Subset was beaten on {0}.</source>
-        <translation>Subgrupo zerado em {0}.</translation>
+        <translation type="vanished">Subgrupo zerado em {0}.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_achievements.cpp" line="1996"/>
         <source>Game was completed on {0}.</source>
-        <translation>O jogo foi concluído em {0}.</translation>
+        <translation type="vanished">O jogo foi concluído em {0}.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_achievements.cpp" line="1998"/>
         <source>Subset was completed on {0}.</source>
-        <translation>Subgrupo concluído em {0}.</translation>
+        <translation type="vanished">Subgrupo concluído em {0}.</translation>
     </message>
     <message>
         <source>Unsynchronized</source>
         <translation type="vanished">Não sincronizado</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_achievements.cpp" line="2201"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="2239"/>
         <source>Missable</source>
         <translation>Perdível</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_achievements.cpp" line="2206"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="2244"/>
         <source>Progression</source>
         <translation>Progressão</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_achievements.cpp" line="2211"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="2249"/>
         <source>Win Condition</source>
         <translation>Condição de vitória</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_achievements.cpp" line="2134"/>
-        <location filename="../../core/fullscreenui_achievements.cpp" line="2154"/>
-        <location filename="../../core/fullscreenui_achievements.cpp" line="2735"/>
-        <location filename="../../core/fullscreenui_achievements.cpp" line="2753"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="2172"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="2192"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="2772"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="2790"/>
         <source>Change Subset</source>
         <translation>Mudar subgrupo</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_achievements.cpp" line="2350"/>
         <source>Unlocked: {} | {:.1f}% of players have this achievement</source>
-        <translation>Desbloqueado: {} | {:.1f}% dos jogadores têm esta conquista</translation>
+        <translation type="vanished">Desbloqueado: {} | {:.1f}% dos jogadores têm esta conquista</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_achievements.cpp" line="2358"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="2395"/>
         <source>{:.1f}% of players have this achievement</source>
         <translation>{:.1f}% dos jogadores têm esta conquista</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_achievements.cpp" line="2483"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="2520"/>
         <source>Leaderboards are not available.</source>
         <translation>Os placares não estão disponíveis.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_achievements.cpp" line="2485"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="2522"/>
         <source>This game has no leaderboards.</source>
         <translation>Este jogo não tem tabelas de classificação.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/fullscreenui_achievements.cpp" line="2610"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="2647"/>
         <source>This subset has %n leaderboards.</source>
         <comment>Leaderboard count</comment>
         <translation>
@@ -1452,7 +1502,7 @@ Continuaremos tentando enviar essa solicitação.</translation>
         </translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_achievements.cpp" line="2628"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="2665"/>
         <source>Submitting scores is disabled because hardcore mode is off. Leaderboards are read-only.</source>
         <translation>O envio de pontuações está desligado porque o modo dificílimo está desativado. As tabelas de classificação são somente leitura.</translation>
     </message>
@@ -1465,48 +1515,48 @@ Continuaremos tentando enviar essa solicitação.</translation>
         <translation type="vanished">Mostrar nas redondezas</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_achievements.cpp" line="2803"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="2840"/>
         <source>Rank</source>
         <translation>Classificação</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_achievements.cpp" line="2809"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="2846"/>
         <source>Name</source>
         <translation>Nome</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_achievements.cpp" line="2814"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="2851"/>
         <source>Time</source>
         <translation>Tempo</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_achievements.cpp" line="2815"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="2852"/>
         <source>Score</source>
         <translation>Placar</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_achievements.cpp" line="2816"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="2853"/>
         <source>Value</source>
         <translation>Valor</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_achievements.cpp" line="2830"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="2867"/>
         <source>Date Submitted</source>
         <translation>Data do envio</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_achievements.cpp" line="3034"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="3070"/>
         <source>Downloading leaderboard data, please wait...</source>
         <translation>Baixando informações de placares, por favor aguarde...</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2427"/>
-        <location filename="../../core/achievements.cpp" line="2508"/>
+        <location filename="../../core/achievements.cpp" line="2450"/>
+        <location filename="../../core/achievements.cpp" line="2531"/>
         <source>User is not logged in.</source>
         <translation>Usuário não está conectado.</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2514"/>
+        <location filename="../../core/achievements.cpp" line="2537"/>
         <source>Progress is already being updated.</source>
         <translation>O progresso já está sendo atualizado.</translation>
     </message>
@@ -1515,7 +1565,7 @@ Continuaremos tentando enviar essa solicitação.</translation>
         <translation type="vanished">Erro</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2547"/>
+        <location filename="../../core/achievements.cpp" line="2570"/>
         <source>Refresh all progress failed</source>
         <translation>Falha na atualização de todo o progresso</translation>
     </message>
@@ -1547,37 +1597,37 @@ Continuaremos tentando enviar essa solicitação.</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.ui" line="65"/>
-        <location filename="../advancedsettingswidget.cpp" line="66"/>
+        <location filename="../advancedsettingswidget.cpp" line="67"/>
         <source>Log To System Console</source>
         <translation>Carregar para console</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.ui" line="79"/>
-        <location filename="../advancedsettingswidget.cpp" line="70"/>
+        <location filename="../advancedsettingswidget.cpp" line="71"/>
         <source>Log To Window</source>
         <translation>Carregar para janela</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.ui" line="72"/>
-        <location filename="../advancedsettingswidget.cpp" line="68"/>
+        <location filename="../advancedsettingswidget.cpp" line="69"/>
         <source>Log To Debug Console</source>
         <translation>Carregar para console de depuração</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.ui" line="86"/>
-        <location filename="../advancedsettingswidget.cpp" line="72"/>
+        <location filename="../advancedsettingswidget.cpp" line="73"/>
         <source>Log To File</source>
         <translation>Carregar para arquivo</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.ui" line="93"/>
-        <location filename="../advancedsettingswidget.cpp" line="74"/>
+        <location filename="../advancedsettingswidget.cpp" line="75"/>
         <source>Log Timestamps</source>
         <translation>Marcações de registros</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.ui" line="100"/>
-        <location filename="../advancedsettingswidget.cpp" line="76"/>
+        <location filename="../advancedsettingswidget.cpp" line="77"/>
         <source>Log File Timestamps</source>
         <translation>Marcações de registro de arquivo</translation>
     </message>
@@ -1588,61 +1638,67 @@ Continuaremos tentando enviar essa solicitação.</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.ui" line="125"/>
+        <location filename="../advancedsettingswidget.cpp" line="82"/>
+        <source>Rich Presence Monitor</source>
+        <translation>Monitor de presença conectada</translation>
+    </message>
+    <message>
+        <location filename="../advancedsettingswidget.ui" line="132"/>
         <source>Enable RAIntegration</source>
         <translation>Ativar integração com o RetroAchievements</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.ui" line="135"/>
-        <location filename="../advancedsettingswidget.cpp" line="81"/>
+        <location filename="../advancedsettingswidget.ui" line="142"/>
+        <location filename="../advancedsettingswidget.cpp" line="85"/>
         <source>Cache Directory</source>
         <translation>Diretório de cache</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.ui" line="141"/>
+        <location filename="../advancedsettingswidget.ui" line="148"/>
         <source>Used for storing compiled shaders and game list data.</source>
         <translation>Utilizado para armazenar sombreadores compilados e dados da lista de jogos.</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.ui" line="151"/>
-        <location filename="../advancedsettingswidget.ui" line="203"/>
+        <location filename="../advancedsettingswidget.ui" line="158"/>
+        <location filename="../advancedsettingswidget.ui" line="210"/>
         <source>Browse...</source>
         <translation>Buscar...</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.ui" line="162"/>
-        <location filename="../advancedsettingswidget.ui" line="214"/>
+        <location filename="../advancedsettingswidget.ui" line="169"/>
+        <location filename="../advancedsettingswidget.ui" line="221"/>
         <source>Open...</source>
         <translation>Abrir...</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.ui" line="173"/>
-        <location filename="../advancedsettingswidget.ui" line="225"/>
+        <location filename="../advancedsettingswidget.ui" line="180"/>
+        <location filename="../advancedsettingswidget.ui" line="232"/>
         <source>Reset</source>
         <translation>Redefinir</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.ui" line="187"/>
-        <location filename="../advancedsettingswidget.cpp" line="83"/>
+        <location filename="../advancedsettingswidget.ui" line="194"/>
+        <location filename="../advancedsettingswidget.cpp" line="87"/>
         <source>Covers Directory</source>
         <translation>Diretório de capas</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.ui" line="193"/>
+        <location filename="../advancedsettingswidget.ui" line="200"/>
         <source>Used for storing covers in the game grid/Big Picture UIs.</source>
         <translation>Usado para armazenar capas no modo grade e no modo tela grande.</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.ui" line="239"/>
+        <location filename="../advancedsettingswidget.ui" line="246"/>
         <source>Web Cache</source>
         <translation>Cachê da Web</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.ui" line="252"/>
+        <location filename="../advancedsettingswidget.ui" line="259"/>
         <source>Refresh</source>
         <translation>Atualizar</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.ui" line="263"/>
+        <location filename="../advancedsettingswidget.ui" line="270"/>
         <source>Clear</source>
         <translation>Limpar</translation>
     </message>
@@ -1700,7 +1756,7 @@ Continuaremos tentando enviar essa solicitação.</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.ui" line="118"/>
-        <location filename="../advancedsettingswidget.cpp" line="78"/>
+        <location filename="../advancedsettingswidget.cpp" line="79"/>
         <source>Show Debug Menu</source>
         <translation>Mostrar menu de depuração</translation>
     </message>
@@ -1753,7 +1809,7 @@ Continuaremos tentando enviar essa solicitação.</translation>
         <translation type="vanished">Inicializar jogos sem arquivo SBI</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="64"/>
+        <location filename="../advancedsettingswidget.cpp" line="65"/>
         <source>Log Level</source>
         <translation>Nivel do registro</translation>
     </message>
@@ -1762,104 +1818,110 @@ Continuaremos tentando enviar essa solicitação.</translation>
         <translation type="vanished">Escolha a pasta para %1</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="53"/>
+        <location filename="../advancedsettingswidget.cpp" line="54"/>
         <source>Select Cache Directory</source>
         <translation>Selecione o diretório de cache</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="56"/>
+        <location filename="../advancedsettingswidget.cpp" line="57"/>
         <source>Select Covers Directory</source>
         <translation>Selecione o diretório de capas</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="64"/>
+        <location filename="../advancedsettingswidget.cpp" line="65"/>
         <source>Information</source>
         <translation>Informação</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="65"/>
+        <location filename="../advancedsettingswidget.cpp" line="66"/>
         <source>Sets the verbosity of messages logged. Higher levels will log more messages.</source>
         <translation>Configura o nível detalhado de mensagens que serão armazenadas. Níveis mais altos terão mensagens maiores.</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="66"/>
-        <location filename="../advancedsettingswidget.cpp" line="68"/>
-        <location filename="../advancedsettingswidget.cpp" line="70"/>
-        <location filename="../advancedsettingswidget.cpp" line="72"/>
-        <location filename="../advancedsettingswidget.cpp" line="74"/>
-        <location filename="../advancedsettingswidget.cpp" line="76"/>
+        <location filename="../advancedsettingswidget.cpp" line="67"/>
+        <location filename="../advancedsettingswidget.cpp" line="69"/>
+        <location filename="../advancedsettingswidget.cpp" line="71"/>
+        <location filename="../advancedsettingswidget.cpp" line="73"/>
+        <location filename="../advancedsettingswidget.cpp" line="75"/>
+        <location filename="../advancedsettingswidget.cpp" line="77"/>
         <source>User Preference</source>
         <translation>Preferência do usuário</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="67"/>
+        <location filename="../advancedsettingswidget.cpp" line="68"/>
         <source>Logs messages to the console window.</source>
         <translation>Mostra mensagens na janela de console.</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="69"/>
+        <location filename="../advancedsettingswidget.cpp" line="70"/>
         <source>Logs messages to the debug console where supported.</source>
         <translation>Mostra mensagens no console de depuração quando suportado.</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="71"/>
+        <location filename="../advancedsettingswidget.cpp" line="72"/>
         <source>Logs messages to the window.</source>
         <translation>Mostra o registro em tela.</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="73"/>
+        <location filename="../advancedsettingswidget.cpp" line="74"/>
         <source>Logs messages to duckstation.log in the user directory.</source>
         <translation>Cria um arquivo de registro (duckstation.log) no diretório do usuário.</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="75"/>
+        <location filename="../advancedsettingswidget.cpp" line="76"/>
         <source>Includes the elapsed time since the application start in window and console logs.</source>
         <translation>Inclui o tempo decorrido desde o início do aplicativo nos registros da janela e do console.</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="77"/>
+        <location filename="../advancedsettingswidget.cpp" line="78"/>
         <source>Includes the elapsed time since the application start in file logs.</source>
         <translation>Inclui o tempo decorrido desde o início do aplicativo nos registros de arquivo.</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="78"/>
-        <location filename="../advancedsettingswidget.cpp" line="95"/>
+        <location filename="../advancedsettingswidget.cpp" line="79"/>
+        <location filename="../advancedsettingswidget.cpp" line="82"/>
+        <location filename="../advancedsettingswidget.cpp" line="99"/>
         <source>Unchecked</source>
         <translation>Desmarcado</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="79"/>
+        <location filename="../advancedsettingswidget.cpp" line="80"/>
         <source>Shows a debug menu bar with additional statistics and quick settings.</source>
         <translation>Mosta a opção depuração com estatísticas adicionais e configurações rápidas.</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="81"/>
         <location filename="../advancedsettingswidget.cpp" line="83"/>
+        <source>Always displays the current RetroAchievements rich presence string in the indicator area.</source>
+        <translation>Exibe sempre o texto de presença atual do RetroAchievements na área do indicador.</translation>
+    </message>
+    <message>
+        <location filename="../advancedsettingswidget.cpp" line="85"/>
+        <location filename="../advancedsettingswidget.cpp" line="87"/>
         <source>Default</source>
         <translation>Padrão</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="82"/>
+        <location filename="../advancedsettingswidget.cpp" line="86"/>
         <source>Specifies the directory where compiled shaders and game list data will be stored.</source>
         <translation>Especifica o diretório onde os sombreadores compilados e os dados da lista de jogos serão armazenados.</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="84"/>
+        <location filename="../advancedsettingswidget.cpp" line="88"/>
         <source>Specifies the directory where game cover images that are used in the game grid and Big Picture UI will be stored.</source>
         <translation>Especifica o diretório onde serão armazenadas as imagens de capa dos jogos utilizadas na grade de jogos e na interface Big Picture.</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="95"/>
+        <location filename="../advancedsettingswidget.cpp" line="99"/>
         <source>Enable RAIntegration (Development Only)</source>
         <translation>Ativar integração com RA (somente para desenvolvimento)</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="96"/>
+        <location filename="../advancedsettingswidget.cpp" line="100"/>
         <source>When enabled, DuckStation will load the RAIntegration DLL which allows for achievement development.&lt;br&gt;The RA_Integration.dll file must be placed in the same directory as the DuckStation executable.</source>
         <translation>Quando ativado, o DuckStation carregará a DLL, que permite o desenvolvimento de conquistas.&lt;br&gt; O arquivo RA_Integration.dll deve ser colocado no mesmo diretório que o executável do DuckStation.</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="139"/>
+        <location filename="../advancedsettingswidget.cpp" line="143"/>
         <source>Current Cache Size: %1 MB (%2 MB in %3 objects)</source>
         <translation>Tamanho atual do cache: %1 MB (%2 MB em %3 objetos)</translation>
     </message>
@@ -1951,168 +2013,178 @@ Continuaremos tentando enviar essa solicitação.</translation>
 <context>
     <name>AnalogController</name>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="141"/>
-        <location filename="../../core/negcon_rumble.cpp" line="111"/>
+        <location filename="../../core/analog_controller.cpp" line="138"/>
+        <location filename="../../core/negcon_rumble.cpp" line="105"/>
         <source>Controller {} switched to analog mode.</source>
         <translation>Controle {} alterado para o modo analógico.</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="142"/>
-        <location filename="../../core/negcon_rumble.cpp" line="112"/>
+        <location filename="../../core/analog_controller.cpp" line="139"/>
+        <location filename="../../core/negcon_rumble.cpp" line="106"/>
         <source>Controller {} switched to digital mode.</source>
         <translation>Controle {} alterado para o modo digital.</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="331"/>
-        <location filename="../../core/negcon_rumble.cpp" line="258"/>
+        <location filename="../../core/analog_controller.cpp" line="328"/>
+        <location filename="../../core/negcon_rumble.cpp" line="252"/>
         <source>Controller {} is locked to analog mode by the game.</source>
         <translation>Controle {} está travado no modo analógico pelo jogo.</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="332"/>
-        <location filename="../../core/negcon_rumble.cpp" line="259"/>
+        <location filename="../../core/analog_controller.cpp" line="329"/>
+        <location filename="../../core/negcon_rumble.cpp" line="253"/>
         <source>Controller {} is locked to digital mode by the game.</source>
         <translation>Controle {} está travado no modo digital pelo jogo.</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="767"/>
+        <location filename="../../core/analog_controller.cpp" line="765"/>
         <source>D-Pad Up</source>
         <translation>D-Pad para cima</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="768"/>
+        <location filename="../../core/analog_controller.cpp" line="766"/>
         <source>D-Pad Right</source>
         <translation>D-Pad para a direita</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="769"/>
+        <location filename="../../core/analog_controller.cpp" line="767"/>
         <source>D-Pad Down</source>
         <translation>D-Pad para baixo</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="770"/>
+        <location filename="../../core/analog_controller.cpp" line="768"/>
         <source>D-Pad Left</source>
         <translation>D-Pad para a esquerda</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="777"/>
+        <location filename="../../core/analog_controller.cpp" line="775"/>
         <source>Analog Toggle</source>
         <translation>Alternância do analógico</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="785"/>
+        <location filename="../../core/analog_controller.cpp" line="783"/>
         <source>Left Stick Left</source>
         <translation>Analógico esquerdo (esquerda)</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="786"/>
+        <location filename="../../core/analog_controller.cpp" line="784"/>
         <source>Left Stick Right</source>
         <translation>Analógico esquerdo (direita)</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="787"/>
+        <location filename="../../core/analog_controller.cpp" line="785"/>
         <source>Left Stick Down</source>
         <translation>Analógico esquerdo(baixo)</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="788"/>
+        <location filename="../../core/analog_controller.cpp" line="786"/>
         <source>Left Stick Up</source>
         <translation>Analógico para cima</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="789"/>
+        <location filename="../../core/analog_controller.cpp" line="787"/>
         <source>Right Stick Left</source>
         <translation>Analógico direito (direita)</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="790"/>
+        <location filename="../../core/analog_controller.cpp" line="788"/>
         <source>Right Stick Right</source>
         <translation>Analógico esquerdo (esquerda)</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="791"/>
+        <location filename="../../core/analog_controller.cpp" line="789"/>
         <source>Right Stick Down</source>
         <translation>Analógico para baixo</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="792"/>
+        <location filename="../../core/analog_controller.cpp" line="790"/>
         <source>Right Stick Up</source>
         <translation>Analógico direito(cima)</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="794"/>
-        <location filename="../../core/negcon_rumble.cpp" line="744"/>
+        <location filename="../../core/analog_controller.cpp" line="792"/>
+        <location filename="../../core/negcon_rumble.cpp" line="735"/>
         <source>Large Motor</source>
         <translation>Motor maior</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="795"/>
-        <location filename="../../core/negcon_rumble.cpp" line="745"/>
+        <location filename="../../core/analog_controller.cpp" line="793"/>
+        <location filename="../../core/negcon_rumble.cpp" line="736"/>
         <source>Small Motor</source>
         <translation>Motor menor</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="797"/>
+        <location filename="../../core/analog_controller.cpp" line="795"/>
         <source>Analog LED</source>
         <translation>LED analógico</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="808"/>
+        <location filename="../../core/analog_controller.cpp" line="806"/>
         <source>Not Inverted</source>
         <translation>Não invertido</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="808"/>
+        <location filename="../../core/analog_controller.cpp" line="806"/>
         <source>Invert Left/Right</source>
         <translation>Inverter Esquerda/Direita</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="809"/>
+        <location filename="../../core/analog_controller.cpp" line="807"/>
         <source>Invert Up/Down</source>
         <translation>Inverter para cima/para baixo</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="810"/>
+        <location filename="../../core/analog_controller.cpp" line="808"/>
         <source>Invert Left/Right + Up/Down</source>
         <translation>Inverter Esquerda/Direita + Cima/Baixo</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="813"/>
+        <location filename="../../core/analog_controller.cpp" line="811"/>
         <source>Never</source>
         <translation>Nunca</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="813"/>
+        <location filename="../../core/analog_controller.cpp" line="811"/>
         <source>Digital Mode Only</source>
         <translation>Somente modo digital</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="814"/>
+        <location filename="../../core/analog_controller.cpp" line="812"/>
         <source>Analog and Digital Modes</source>
         <translation>Modos analógico e digital</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="818"/>
+        <location filename="../../core/analog_controller.cpp" line="816"/>
         <source>Automatically Enable Analog Mode</source>
         <translation>Ativar modo analógico automaticamente</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="819"/>
+        <location filename="../../core/analog_controller.cpp" line="817"/>
         <source>Forces the controller to analog mode when the game is started/restarted.</source>
         <translation>Força o controle para o modo analógico quando o jogo é iniciado/reiniciado.</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="829"/>
+        <location filename="../../core/analog_controller.cpp" line="826"/>
+        <source>Disable Simultaneous Opposing Cardinal Directions</source>
+        <translation>Desativar direções opostas simultâneas</translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_controller.cpp" line="827"/>
+        <source>Prevents concurrent left/right or up/down inputs from being presented to the game.</source>
+        <translation>Impede que entradas simultâneas para esquerda/direita ou cima/baixo sejam enviadas ao jogo.</translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_controller.cpp" line="832"/>
         <source>Allows you to use the right analog stick to control the shoulder buttons (L1/R1), as well as the buttons.</source>
         <translation>Permite usar o analógico direito para controlar os botões de ombro (L1/R1), bem como os botões.</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="834"/>
+        <location filename="../../core/analog_controller.cpp" line="837"/>
         <source>Use Right Analog for Trigger Buttons</source>
         <translation>Usar analógico direito para botões de gatilho</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="835"/>
+        <location filename="../../core/analog_controller.cpp" line="838"/>
         <source>Allows you to use the right analog stick to control the trigger buttons (L2/R2), as well as the buttons.</source>
         <translation>Permite usar o analógico esquerdo para controlar os botões de ombro (L2/R2), bem como os botões.</translation>
     </message>
@@ -2121,17 +2193,17 @@ Continuaremos tentando enviar essa solicitação.</translation>
         <translation type="vanished">Força o controle a entrar no modo analógico quando o console é reiniciado/ligado.</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="822"/>
+        <location filename="../../core/analog_controller.cpp" line="820"/>
         <source>Use Left Analog for D-Pad in Digital Mode</source>
         <translation>Use o analógico esquerdo para o D-Pad no modo digital</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="823"/>
+        <location filename="../../core/analog_controller.cpp" line="821"/>
         <source>Allows you to use the left analog stick to control the d-pad in digital mode, as well as the buttons.</source>
         <translation>Permite que você use o analógico esquerdo para controlar o d-pad no modo digital, bem como os botões.</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="828"/>
+        <location filename="../../core/analog_controller.cpp" line="831"/>
         <source>Use Right Analog for Shoulder Buttons</source>
         <translation>Use o analógico direito para os botões de ombro</translation>
     </message>
@@ -2140,132 +2212,132 @@ Continuaremos tentando enviar essa solicitação.</translation>
         <translation type="vanished">Permite que você use o analógico direito para controlar os botões de ombro, bem como os botões frontais.</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="839"/>
+        <location filename="../../core/analog_controller.cpp" line="842"/>
         <source>Analog Deadzone</source>
         <translation>Zona morta do analógico</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="840"/>
+        <location filename="../../core/analog_controller.cpp" line="843"/>
         <source>Sets the analog stick deadzone, i.e. the fraction of the stick movement which will be ignored.</source>
         <translation>Define a zona morta do analógico, por exemplo:. a fração do movimento do analógico que será ignorada.</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="843"/>
+        <location filename="../../core/analog_controller.cpp" line="846"/>
         <source>Analog Sensitivity</source>
         <translation>Sensibilidade do analógico</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="844"/>
+        <location filename="../../core/analog_controller.cpp" line="847"/>
         <source>Sets the analog stick axis scaling factor. A value between 130% and 140% is recommended when using recent controllers, e.g. DualShock 4, Xbox One Controller.</source>
         <translation>Define o fator de escala do eixo do analógico. Um valor entre 130% e 140% é recomendável quando estiver usando controles mais recentes, por exemplo: Dualshock 4 e controles de Xbox One.</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="849"/>
+        <location filename="../../core/analog_controller.cpp" line="852"/>
         <source>Button/Trigger Deadzone</source>
         <translation>Botão/Gatilho zona morta</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="850"/>
+        <location filename="../../core/analog_controller.cpp" line="853"/>
         <source>Sets the deadzone for activating buttons/triggers, i.e. the fraction of the trigger which will be ignored.</source>
         <translation>Define a zona morta para acionamento de botões e gatilhos, ou seja, a fração do gatilho que será ignorada.</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="854"/>
+        <location filename="../../core/analog_controller.cpp" line="857"/>
         <source>Large Motor Vibration Bias</source>
         <translation>Direção de vibração do motor grande</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="855"/>
+        <location filename="../../core/analog_controller.cpp" line="858"/>
         <source>Sets the bias value for the large vibration motor. If vibration in some games is too weak or not functioning, try increasing this value. Negative values will decrease the intensity of vibration.</source>
         <translation>Define o valor de direcionamento para o motor grande. Se a vibração em alguns jogos estiver muito fraca ou não estiver funcionando, tente aumentar esse valor. Valores negativos diminuirão a intensidade da vibração.</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="860"/>
+        <location filename="../../core/analog_controller.cpp" line="863"/>
         <source>Small Motor Vibration Bias</source>
         <translation>Direção de vibração do motor pequeno</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="861"/>
+        <location filename="../../core/analog_controller.cpp" line="864"/>
         <source>Sets the bias value for the small vibration motor. If vibration in some games is too weak or not functioning, try increasing this value. Negative values will decrease the intensity of vibration.</source>
         <translation>Define o valor de direcionamento para o motor pequeno. Se a vibração em alguns jogos estiver muito fraca ou não estiver funcionando, tente aumentar esse valor. Valores negativos diminuirão a intensidade da vibração.</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="865"/>
+        <location filename="../../core/analog_controller.cpp" line="868"/>
         <source>Invert Left Stick</source>
         <translation>Inverter analógico esquerdo</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="866"/>
+        <location filename="../../core/analog_controller.cpp" line="869"/>
         <source>Inverts the direction of the left analog stick.</source>
         <translation>Inverte a direção do controle analógico esquerdo.</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="868"/>
+        <location filename="../../core/analog_controller.cpp" line="871"/>
         <source>Invert Right Stick</source>
         <translation>Inverter analógico direito</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="869"/>
+        <location filename="../../core/analog_controller.cpp" line="872"/>
         <source>Inverts the direction of the right analog stick.</source>
         <translation>Inverte a direção do controle analógico direito.</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="775"/>
+        <location filename="../../core/analog_controller.cpp" line="773"/>
         <source>Select</source>
         <translation>Select</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="776"/>
+        <location filename="../../core/analog_controller.cpp" line="774"/>
         <source>Start</source>
         <translation>Start</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="771"/>
+        <location filename="../../core/analog_controller.cpp" line="769"/>
         <source>Triangle</source>
         <translation>Triângulo</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="773"/>
+        <location filename="../../core/analog_controller.cpp" line="771"/>
         <source>Cross</source>
         <translation>Cruz</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="772"/>
+        <location filename="../../core/analog_controller.cpp" line="770"/>
         <source>Circle</source>
         <translation>Círculo</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="774"/>
+        <location filename="../../core/analog_controller.cpp" line="772"/>
         <source>Square</source>
         <translation>Quadrado</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="778"/>
+        <location filename="../../core/analog_controller.cpp" line="776"/>
         <source>L1</source>
         <translation>L1</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="780"/>
+        <location filename="../../core/analog_controller.cpp" line="778"/>
         <source>L2</source>
         <translation>L2</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="779"/>
+        <location filename="../../core/analog_controller.cpp" line="777"/>
         <source>R1</source>
         <translation>R1</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="781"/>
+        <location filename="../../core/analog_controller.cpp" line="779"/>
         <source>R2</source>
         <translation>R2</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="782"/>
+        <location filename="../../core/analog_controller.cpp" line="780"/>
         <source>L3</source>
         <translation>L3</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="783"/>
+        <location filename="../../core/analog_controller.cpp" line="781"/>
         <source>R3</source>
         <translation>R3</translation>
     </message>
@@ -2290,7 +2362,7 @@ Continuaremos tentando enviar essa solicitação.</translation>
         <translation type="vanished">Define valores de vibração. Se a vibração em alguns jogos estiver fraca ou não funcionar, tente aumentar estes valores.</translation>
     </message>
     <message>
-        <location filename="../../core/negcon_rumble.cpp" line="747"/>
+        <location filename="../../core/negcon_rumble.cpp" line="738"/>
         <source>Mode LED</source>
         <translation>Modo do LED</translation>
     </message>
@@ -2298,192 +2370,202 @@ Continuaremos tentando enviar essa solicitação.</translation>
 <context>
     <name>AnalogJoystick</name>
     <message>
-        <location filename="../../core/analog_joystick.cpp" line="344"/>
+        <location filename="../../core/analog_joystick.cpp" line="342"/>
         <source>D-Pad Up</source>
         <translation>D-Pad para cima</translation>
     </message>
     <message>
-        <location filename="../../core/analog_joystick.cpp" line="345"/>
+        <location filename="../../core/analog_joystick.cpp" line="343"/>
         <source>D-Pad Right</source>
         <translation>D-Pad para a direita</translation>
     </message>
     <message>
-        <location filename="../../core/analog_joystick.cpp" line="346"/>
+        <location filename="../../core/analog_joystick.cpp" line="344"/>
         <source>D-Pad Down</source>
         <translation>D-Pad para baixo</translation>
     </message>
     <message>
-        <location filename="../../core/analog_joystick.cpp" line="347"/>
+        <location filename="../../core/analog_joystick.cpp" line="345"/>
         <source>D-Pad Left</source>
         <translation>D-Pad para a esquerda</translation>
     </message>
     <message>
-        <location filename="../../core/analog_joystick.cpp" line="354"/>
+        <location filename="../../core/analog_joystick.cpp" line="352"/>
         <source>Mode Toggle</source>
         <translation>Modo de alternância</translation>
     </message>
     <message>
-        <location filename="../../core/analog_joystick.cpp" line="362"/>
+        <location filename="../../core/analog_joystick.cpp" line="360"/>
         <source>Left Stick Left</source>
         <translation>Analógico esquerdo (esquerda)</translation>
     </message>
     <message>
-        <location filename="../../core/analog_joystick.cpp" line="363"/>
+        <location filename="../../core/analog_joystick.cpp" line="361"/>
         <source>Left Stick Right</source>
         <translation>Analógico esquerdo (direita)</translation>
     </message>
     <message>
-        <location filename="../../core/analog_joystick.cpp" line="364"/>
+        <location filename="../../core/analog_joystick.cpp" line="362"/>
         <source>Left Stick Down</source>
         <translation>Analógico esquerdo (baixo)</translation>
     </message>
     <message>
-        <location filename="../../core/analog_joystick.cpp" line="365"/>
+        <location filename="../../core/analog_joystick.cpp" line="363"/>
         <source>Left Stick Up</source>
         <translation>Analógico para cima</translation>
     </message>
     <message>
-        <location filename="../../core/analog_joystick.cpp" line="366"/>
+        <location filename="../../core/analog_joystick.cpp" line="364"/>
         <source>Right Stick Left</source>
         <translation>Analógico direito (direita)</translation>
     </message>
     <message>
-        <location filename="../../core/analog_joystick.cpp" line="367"/>
+        <location filename="../../core/analog_joystick.cpp" line="365"/>
         <source>Right Stick Right</source>
         <translation>Analógico esquerdo (esquerda)</translation>
     </message>
     <message>
-        <location filename="../../core/analog_joystick.cpp" line="368"/>
+        <location filename="../../core/analog_joystick.cpp" line="366"/>
         <source>Right Stick Down</source>
         <translation>Analógico para baixo</translation>
     </message>
     <message>
-        <location filename="../../core/analog_joystick.cpp" line="369"/>
+        <location filename="../../core/analog_joystick.cpp" line="367"/>
         <source>Right Stick Up</source>
         <translation>Analógico direito (cima)</translation>
     </message>
     <message>
-        <location filename="../../core/analog_joystick.cpp" line="371"/>
+        <location filename="../../core/analog_joystick.cpp" line="369"/>
         <source>Mode LED</source>
         <translation>Modo do LED</translation>
     </message>
     <message>
-        <location filename="../../core/analog_joystick.cpp" line="380"/>
+        <location filename="../../core/analog_joystick.cpp" line="378"/>
         <source>Not Inverted</source>
         <translation>Não invertido</translation>
     </message>
     <message>
-        <location filename="../../core/analog_joystick.cpp" line="380"/>
+        <location filename="../../core/analog_joystick.cpp" line="378"/>
         <source>Invert Left/Right</source>
         <translation>Inverter Esquerda/Direita</translation>
     </message>
     <message>
-        <location filename="../../core/analog_joystick.cpp" line="381"/>
+        <location filename="../../core/analog_joystick.cpp" line="379"/>
         <source>Invert Up/Down</source>
         <translation>Inverter para cima/para baixo</translation>
     </message>
     <message>
-        <location filename="../../core/analog_joystick.cpp" line="381"/>
+        <location filename="../../core/analog_joystick.cpp" line="379"/>
         <source>Invert Left/Right + Up/Down</source>
         <translation>Inverter Esquerda/Direita + Cima/Baixo</translation>
     </message>
     <message>
+        <location filename="../../core/analog_joystick.cpp" line="384"/>
+        <source>Disable Simultaneous Opposing Cardinal Directions</source>
+        <translation>Desativar direções opostas simultâneas</translation>
+    </message>
+    <message>
         <location filename="../../core/analog_joystick.cpp" line="385"/>
+        <source>Prevents concurrent left/right or up/down inputs from being presented to the game.</source>
+        <translation>Impede que entradas simultâneas para esquerda/direita ou cima/baixo sejam enviadas ao jogo.</translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_joystick.cpp" line="388"/>
         <source>Analog Deadzone</source>
         <translation>Zona morta do analógico</translation>
     </message>
     <message>
-        <location filename="../../core/analog_joystick.cpp" line="386"/>
+        <location filename="../../core/analog_joystick.cpp" line="389"/>
         <source>Sets the analog stick deadzone, i.e. the fraction of the stick movement which will be ignored.</source>
         <translation>Define a zona morta do analógico, por exemplo:. a fração do movimento do analógico que será ignorada.</translation>
     </message>
     <message>
-        <location filename="../../core/analog_joystick.cpp" line="389"/>
+        <location filename="../../core/analog_joystick.cpp" line="392"/>
         <source>Analog Sensitivity</source>
         <translation>Sensibilidade do analógico</translation>
     </message>
     <message>
-        <location filename="../../core/analog_joystick.cpp" line="390"/>
+        <location filename="../../core/analog_joystick.cpp" line="393"/>
         <source>Sets the analog stick axis scaling factor. A value between 130% and 140% is recommended when using recent controllers, e.g. DualShock 4, Xbox One Controller.</source>
         <translation>Define o fator de escala do eixo do analógico. Um valor entre 130% e 140% é recomendável quando estiver usando controles mais recentes, por exemplo: Dualshock 4 e controles de Xbox One.</translation>
     </message>
     <message>
-        <location filename="../../core/analog_joystick.cpp" line="395"/>
+        <location filename="../../core/analog_joystick.cpp" line="398"/>
         <source>Invert Left Stick</source>
         <translation>Inverter analógico Esquerdo</translation>
     </message>
     <message>
-        <location filename="../../core/analog_joystick.cpp" line="396"/>
+        <location filename="../../core/analog_joystick.cpp" line="399"/>
         <source>Inverts the direction of the left analog stick.</source>
         <translation>Inverte a direção do analógico esquerdo.</translation>
     </message>
     <message>
-        <location filename="../../core/analog_joystick.cpp" line="398"/>
+        <location filename="../../core/analog_joystick.cpp" line="401"/>
         <source>Invert Right Stick</source>
         <translation>Inverter analógico direito</translation>
     </message>
     <message>
-        <location filename="../../core/analog_joystick.cpp" line="399"/>
+        <location filename="../../core/analog_joystick.cpp" line="402"/>
         <source>Inverts the direction of the right analog stick.</source>
         <translation>Inverte a direção do analógico direito.</translation>
     </message>
     <message>
-        <location filename="../../core/analog_joystick.cpp" line="352"/>
+        <location filename="../../core/analog_joystick.cpp" line="350"/>
         <source>Select</source>
         <translation>Select</translation>
     </message>
     <message>
-        <location filename="../../core/analog_joystick.cpp" line="353"/>
+        <location filename="../../core/analog_joystick.cpp" line="351"/>
         <source>Start</source>
         <translation>Start</translation>
     </message>
     <message>
-        <location filename="../../core/analog_joystick.cpp" line="348"/>
+        <location filename="../../core/analog_joystick.cpp" line="346"/>
         <source>Triangle</source>
         <translation>Triângulo</translation>
     </message>
     <message>
-        <location filename="../../core/analog_joystick.cpp" line="350"/>
+        <location filename="../../core/analog_joystick.cpp" line="348"/>
         <source>Cross</source>
         <translation>Cruz</translation>
     </message>
     <message>
-        <location filename="../../core/analog_joystick.cpp" line="349"/>
+        <location filename="../../core/analog_joystick.cpp" line="347"/>
         <source>Circle</source>
         <translation>Círculo</translation>
     </message>
     <message>
-        <location filename="../../core/analog_joystick.cpp" line="351"/>
+        <location filename="../../core/analog_joystick.cpp" line="349"/>
         <source>Square</source>
         <translation>Quadrado</translation>
     </message>
     <message>
-        <location filename="../../core/analog_joystick.cpp" line="355"/>
+        <location filename="../../core/analog_joystick.cpp" line="353"/>
         <source>L1</source>
         <translation>L1</translation>
     </message>
     <message>
-        <location filename="../../core/analog_joystick.cpp" line="357"/>
+        <location filename="../../core/analog_joystick.cpp" line="355"/>
         <source>L2</source>
         <translation>L2</translation>
     </message>
     <message>
-        <location filename="../../core/analog_joystick.cpp" line="356"/>
+        <location filename="../../core/analog_joystick.cpp" line="354"/>
         <source>R1</source>
         <translation>R1</translation>
     </message>
     <message>
-        <location filename="../../core/analog_joystick.cpp" line="358"/>
+        <location filename="../../core/analog_joystick.cpp" line="356"/>
         <source>R2</source>
         <translation>R2</translation>
     </message>
     <message>
-        <location filename="../../core/analog_joystick.cpp" line="359"/>
+        <location filename="../../core/analog_joystick.cpp" line="357"/>
         <source>L3</source>
         <translation>L3</translation>
     </message>
     <message>
-        <location filename="../../core/analog_joystick.cpp" line="360"/>
+        <location filename="../../core/analog_joystick.cpp" line="358"/>
         <source>R3</source>
         <translation>R3</translation>
     </message>
@@ -3141,7 +3223,7 @@ Você pode atualizar manualmente o DuckStation baixando novamente a versão mais
     </message>
     <message>
         <location filename="../autoupdaterdialog.cpp" line="300"/>
-        <location filename="../autoupdaterdialog.cpp" line="842"/>
+        <location filename="../autoupdaterdialog.cpp" line="844"/>
         <source>Updater Error</source>
         <translation>Erro na atualização</translation>
     </message>
@@ -3157,27 +3239,27 @@ Você pode atualizar manualmente o DuckStation baixando novamente a versão mais
         <translation>%1 (%2)</translation>
     </message>
     <message>
-        <location filename="../autoupdaterdialog.cpp" line="469"/>
+        <location filename="../autoupdaterdialog.cpp" line="471"/>
         <source>%1 MB</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../autoupdaterdialog.cpp" line="472"/>
+        <location filename="../autoupdaterdialog.cpp" line="474"/>
         <source>Loading...</source>
         <translation>Carregando...</translation>
     </message>
     <message>
-        <location filename="../autoupdaterdialog.cpp" line="519"/>
+        <location filename="../autoupdaterdialog.cpp" line="521"/>
         <source>&lt;h2&gt;Changes:&lt;/h2&gt;</source>
         <translation>&lt;h2&gt;Mudanças:&lt;/h2&gt;</translation>
     </message>
     <message>
-        <location filename="../autoupdaterdialog.cpp" line="548"/>
+        <location filename="../autoupdaterdialog.cpp" line="550"/>
         <source>&lt;h2&gt;Save State Warning&lt;/h2&gt;&lt;p&gt;Installing this update will make your save states &lt;b&gt;incompatible&lt;/b&gt;. Please ensure you have saved your games to memory card before installing this update or you will lose progress.&lt;/p&gt;</source>
         <translation>&lt;h2&gt;Alerta para ESTADOS SALVOS&lt;/h2&gt;&lt;p&gt;Ao instalar esta atualização, seus ESTADOS SALVOS se tornarão&lt;b&gt; incompativeis&lt;/b&gt;. Tenha absoluta certeza de ter salvo todo o seu progresso no seu CARTÃO DE MEMÓRIA antes de instalar esta atualização ou você perderá todo o seu progresso.&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../autoupdaterdialog.cpp" line="739"/>
+        <location filename="../autoupdaterdialog.cpp" line="741"/>
         <source>&lt;h1&gt;Inconsistent Application State&lt;/h1&gt;&lt;h3&gt;The update zip is missing the current executable:&lt;/h3&gt;&lt;div align=&quot;center&quot;&gt;&lt;pre&gt;%1&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;strong&gt;This is usually a result of manually renaming the file.&lt;/strong&gt; Continuing to install this update may result in a broken installation if the renamed executable is used. The DuckStation executable should be named:&lt;/p&gt;&lt;div align=&quot;center&quot;&gt;&lt;pre&gt;%2&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Do you want to continue anyway?&lt;/p&gt;</source>
         <translation>&lt;h1&gt;Estado inconsistente da aplicação&lt;/h1&gt;&lt;h3&gt;O arquivo ZIP da atualização não contém o executável mais recente:&lt;/h3&gt;&lt;div align=&quot;center&quot;&gt;&lt;pre&gt;%1&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;strong&gt;Isso geralmente acontece porque o arquivo foi renomeado manualmente.&lt;/strong&gt; Continuar a instalar esta atualização pode resultar em uma instalação corrompida se o executável renomeado estiver sendo usado. O executável do emulador deve ter o seguinte nome:&lt;/p&gt;&lt;div align=&quot;center&quot;&gt;&lt;pre&gt;%2&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Deseja continuar mesmo assim?&lt;/p&gt;
 </translation>
@@ -3187,7 +3269,7 @@ Você pode atualizar manualmente o DuckStation baixando novamente a versão mais
         <translation type="vanished">&lt;h2&gt;Alerta sobre suas configurações&lt;/h2&gt;&lt;p&gt;Ao instalar esta atualização todas as suas configurações serão REDEFINIDAS para o padrão sendo assim, você terá de refazê-las novamente.&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../autoupdaterdialog.cpp" line="738"/>
+        <location filename="../autoupdaterdialog.cpp" line="740"/>
         <source>Updater Warning</source>
         <translation>Alerta do atualizador</translation>
     </message>
@@ -3196,7 +3278,7 @@ Você pode atualizar manualmente o DuckStation baixando novamente a versão mais
         <translation type="vanished">&lt;h1&gt;Estado inconsistente da aplicação&lt;/h1&gt;&lt;h3&gt; O zip de atualização não contém o executável atual:&lt;/h3&gt;&lt;div&gt;align=&quot;center&quot;&lt;pre&gt;%1&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;strong&gt; isso geralmente ocorre quando o arquivo é renomeado manualmente.&lt;/strong&gt; Continuar a instalar esta atualização pode resultar em uma instalação corrompida se o executável renomeado for usado. O executável do DuckStation deve ser nomeado:&lt;div align=&quot;center&quot;&gt;&lt;pre&gt;%2&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Deseja continuar mesmo assim?&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../autoupdaterdialog.cpp" line="843"/>
+        <location filename="../autoupdaterdialog.cpp" line="845"/>
         <source>Failed to remove updater exe after update:
 %1</source>
         <translation>Falha ao remover o executável do atualizador após esta atualização:
@@ -3248,12 +3330,12 @@ Você pode atualizar manualmente o DuckStation baixando novamente a versão mais
 <context>
     <name>AutoUpdaterWindow</name>
     <message>
-        <location filename="../autoupdaterdialog.cpp" line="584"/>
+        <location filename="../autoupdaterdialog.cpp" line="586"/>
         <source>Downloading Update...</source>
         <translation>Baixando atualização...</translation>
     </message>
     <message>
-        <location filename="../autoupdaterdialog.cpp" line="597"/>
+        <location filename="../autoupdaterdialog.cpp" line="599"/>
         <source>Processing Update...</source>
         <translation>Processando a atualização...</translation>
     </message>
@@ -3276,7 +3358,7 @@ Você pode atualizar manualmente o DuckStation baixando novamente a versão mais
         <translation>NTSC-J (Japão):</translation>
     </message>
     <message>
-        <location filename="../biossettingswidget.ui" line="62"/>
+        <location filename="../biossettingswidget.ui" line="52"/>
         <source>NTSC-U/C (US/Canada):</source>
         <translation>NTSC-U/C (EUA, Canadá):</translation>
     </message>
@@ -3285,8 +3367,10 @@ Você pode atualizar manualmente o DuckStation baixando novamente a versão mais
         <translation type="vanished">Abrir pasta...</translation>
     </message>
     <message>
+        <location filename="../biossettingswidget.ui" line="118"/>
+        <location filename="../biossettingswidget.cpp" line="109"/>
         <source>Refresh List</source>
-        <translation type="vanished">Atualizar lista</translation>
+        <translation>Atualizar lista</translation>
     </message>
     <message>
         <location filename="../biossettingswidget.ui" line="89"/>
@@ -3299,28 +3383,27 @@ Você pode atualizar manualmente o DuckStation baixando novamente a versão mais
         <translation>Duckstation procurará o BIOS no seguinte diretório.</translation>
     </message>
     <message>
-        <location filename="../biossettingswidget.ui" line="111"/>
         <source>Refresh BIOS List</source>
-        <translation>Atualizar lista de BIOS</translation>
+        <translation type="vanished">Atualizar lista de BIOS</translation>
     </message>
     <message>
-        <location filename="../biossettingswidget.ui" line="127"/>
-        <location filename="../biossettingswidget.ui" line="198"/>
+        <location filename="../biossettingswidget.ui" line="136"/>
+        <location filename="../biossettingswidget.ui" line="207"/>
         <source>Browse...</source>
         <translation>Buscar...</translation>
     </message>
     <message>
-        <location filename="../biossettingswidget.ui" line="138"/>
+        <location filename="../biossettingswidget.ui" line="147"/>
         <source>Open...</source>
         <translation>Abrir...</translation>
     </message>
     <message>
-        <location filename="../biossettingswidget.ui" line="149"/>
+        <location filename="../biossettingswidget.ui" line="158"/>
         <source>Reset</source>
         <translation>Redefinir</translation>
     </message>
     <message>
-        <location filename="../biossettingswidget.ui" line="230"/>
+        <location filename="../biossettingswidget.ui" line="239"/>
         <source>Options</source>
         <translation>Opções</translation>
     </message>
@@ -3333,8 +3416,8 @@ Você pode atualizar manualmente o DuckStation baixando novamente a versão mais
         <translation type="vanished">Início rápido</translation>
     </message>
     <message>
-        <location filename="../biossettingswidget.ui" line="236"/>
-        <location filename="../biossettingswidget.cpp" line="110"/>
+        <location filename="../biossettingswidget.ui" line="245"/>
+        <location filename="../biossettingswidget.cpp" line="126"/>
         <source>Enable TTY Logging</source>
         <translation>Habilitar registro TTY</translation>
     </message>
@@ -3343,84 +3426,100 @@ Você pode atualizar manualmente o DuckStation baixando novamente a versão mais
         <translation type="vanished">Inicialização rápida</translation>
     </message>
     <message>
-        <location filename="../biossettingswidget.ui" line="165"/>
+        <location filename="../biossettingswidget.ui" line="107"/>
+        <location filename="../biossettingswidget.cpp" line="111"/>
+        <source>Install BIOS</source>
+        <translation>Instalar BIOS</translation>
+    </message>
+    <message>
+        <location filename="../biossettingswidget.ui" line="174"/>
         <source>Parallel Port</source>
         <translation>Porta paralela</translation>
     </message>
     <message>
-        <location filename="../biossettingswidget.ui" line="171"/>
+        <location filename="../biossettingswidget.ui" line="180"/>
         <source>Device Type:</source>
         <translation>Tipo de dispositivo:</translation>
     </message>
     <message>
-        <location filename="../biossettingswidget.ui" line="188"/>
+        <location filename="../biossettingswidget.ui" line="197"/>
         <source>Image Path:</source>
         <translation>Caminho da imagem:</translation>
     </message>
     <message>
-        <location filename="../biossettingswidget.ui" line="211"/>
-        <location filename="../biossettingswidget.cpp" line="103"/>
+        <location filename="../biossettingswidget.ui" line="220"/>
+        <location filename="../biossettingswidget.cpp" line="119"/>
         <source>Cartridge Switch On</source>
         <translation>Chave do cartucho ligada</translation>
     </message>
     <message>
-        <location filename="../biossettingswidget.ui" line="218"/>
-        <location filename="../biossettingswidget.cpp" line="107"/>
+        <location filename="../biossettingswidget.ui" line="227"/>
+        <location filename="../biossettingswidget.cpp" line="123"/>
         <source>Allow Image Writes</source>
         <translation>Permitir gravação de imagens</translation>
     </message>
     <message>
-        <location filename="../biossettingswidget.cpp" line="111"/>
+        <location filename="../biossettingswidget.cpp" line="127"/>
         <source>Logs BIOS calls to printf(). Not all games contain debugging messages.</source>
         <translation>Registra chamadas do BIOS no console. Nem todos os jogos contêm mensagens de depuração.</translation>
     </message>
     <message>
-        <location filename="../biossettingswidget.cpp" line="98"/>
+        <location filename="../biossettingswidget.cpp" line="114"/>
         <source>Device Type</source>
         <translation>Tipo de dispositivo</translation>
     </message>
     <message>
-        <location filename="../biossettingswidget.cpp" line="98"/>
+        <location filename="../biossettingswidget.cpp" line="110"/>
+        <source>Refreshes the list of BIOS images that can be selected.</source>
+        <translation>Atualiza a lista de imagens de BIOS que podem ser selecionadas.</translation>
+    </message>
+    <message>
+        <location filename="../biossettingswidget.cpp" line="112"/>
+        <source>Installs a new BIOS image into the emulator&apos;s BIOS directory.</source>
+        <translation>Instala uma nova imagem de BIOS no diretório de BIOS do emulador.</translation>
+    </message>
+    <message>
+        <location filename="../biossettingswidget.cpp" line="114"/>
         <source>None</source>
         <translation>Nenhum</translation>
     </message>
     <message>
-        <location filename="../biossettingswidget.cpp" line="99"/>
+        <location filename="../biossettingswidget.cpp" line="115"/>
         <source>Simulates a device plugged into the console&apos;s parallel port. Usually these are flash cartridges, and require some sort of image dump to function.</source>
         <translation>Simula um dispositivo conectado à porta paralela do console. Geralmente são cartuchos que exigem algum tipo de despejo de imagem para funcionar.</translation>
     </message>
     <message>
-        <location filename="../biossettingswidget.cpp" line="101"/>
+        <location filename="../biossettingswidget.cpp" line="117"/>
         <source>Image Path</source>
         <translation>Caminho da imagem</translation>
     </message>
     <message>
-        <location filename="../biossettingswidget.cpp" line="101"/>
+        <location filename="../biossettingswidget.cpp" line="117"/>
         <source>Empty</source>
         <translation>Vazio</translation>
     </message>
     <message>
-        <location filename="../biossettingswidget.cpp" line="102"/>
+        <location filename="../biossettingswidget.cpp" line="118"/>
         <source>Sets the path to the image used for flash cartridges.</source>
         <translation>Define o caminho para a imagem usada nos cartuchos.</translation>
     </message>
     <message>
-        <location filename="../biossettingswidget.cpp" line="103"/>
+        <location filename="../biossettingswidget.cpp" line="119"/>
         <source>Checked</source>
         <translation>Marcado</translation>
     </message>
     <message>
-        <location filename="../biossettingswidget.cpp" line="104"/>
+        <location filename="../biossettingswidget.cpp" line="120"/>
         <source>Simulates the position of the switch on the cartridge. Most cartridges require the switch to be on for it to activate on startup.</source>
         <translation>Simula a posição do interruptor no cartucho. A maioria dos cartuchos exige que o interruptor esteja ligado para ser ativado na inicialização.</translation>
     </message>
     <message>
-        <location filename="../biossettingswidget.cpp" line="108"/>
+        <location filename="../biossettingswidget.cpp" line="124"/>
         <source>Stores any images made to the cartridge&apos;s flash storage back to the host&apos;s file system. &lt;strong&gt;This will overwrite your cartridge dump,&lt;/strong&gt; you should ensure you have a backup first.</source>
         <translation>Armazena todas as imagens feitas no cartucho de volta no sistema de arquivos do PC. &lt;strong&gt;Despejo do cartucho, atual será sobrescrito,&lt;/strong&gt;tenha certeza de que tem uma cópia de segurança.</translation>
     </message>
     <message>
-        <location filename="../biossettingswidget.cpp" line="80"/>
+        <location filename="../biossettingswidget.cpp" line="89"/>
         <source>Select BIOS Directory</source>
         <translation>Selecione o diretório do BIOS</translation>
     </message>
@@ -3433,28 +3532,60 @@ Você pode atualizar manualmente o DuckStation baixando novamente a versão mais
         <translation type="vanished">Avança rapidamente durante o processo de carregamento inicial, economizando tempo. Os resultados podem variar entre os jogos.</translation>
     </message>
     <message>
-        <location filename="../biossettingswidget.cpp" line="141"/>
+        <location filename="../biossettingswidget.cpp" line="208"/>
         <source>Auto-Detect</source>
         <translation>Detectar automaticamente</translation>
     </message>
     <message>
-        <location filename="../biossettingswidget.cpp" line="158"/>
+        <location filename="../biossettingswidget.cpp" line="178"/>
+        <location filename="../biossettingswidget.cpp" line="225"/>
         <source>Unknown</source>
         <translation>Desconhecido</translation>
     </message>
     <message>
-        <location filename="../biossettingswidget.cpp" line="183"/>
+        <location filename="../biossettingswidget.cpp" line="134"/>
+        <source>Select BIOS Image</source>
+        <translation>Escolha uma imagem de BIOS</translation>
+    </message>
+    <message>
+        <location filename="../biossettingswidget.cpp" line="143"/>
+        <location filename="../biossettingswidget.cpp" line="170"/>
+        <source>BIOS Install Error</source>
+        <translation>Erro de instalação do BIOS</translation>
+    </message>
+    <message>
+        <location filename="../biossettingswidget.cpp" line="157"/>
+        <source>BIOS Already Installed</source>
+        <translation>BIOS já instalado</translation>
+    </message>
+    <message>
+        <location filename="../biossettingswidget.cpp" line="158"/>
+        <source>The BIOS file &apos;%1&apos; is already installed. Do you want to overwrite it?</source>
+        <translation>O arquivo de BIOS &apos;%1&apos; já está instalado. Deseja substituí-lo?</translation>
+    </message>
+    <message>
+        <location filename="../biossettingswidget.cpp" line="176"/>
+        <source>BIOS Installed</source>
+        <translation>BIOS instalada</translation>
+    </message>
+    <message>
+        <location filename="../biossettingswidget.cpp" line="177"/>
+        <source>BIOS &apos;%1&apos; installed as &apos;%2&apos;.</source>
+        <translation>BIOS &apos;%1&apos; instalada como &apos;%2&apos;.</translation>
+    </message>
+    <message>
+        <location filename="../biossettingswidget.cpp" line="250"/>
         <source>%1 (Missing)</source>
         <translation>%1 (Faltando)</translation>
     </message>
     <message>
-        <location filename="../biossettingswidget.cpp" line="208"/>
+        <location filename="../biossettingswidget.cpp" line="275"/>
         <source>Select PIO Image</source>
         <translation>Selecionar imagem PIO</translation>
     </message>
     <message>
-        <location filename="../biossettingswidget.cpp" line="107"/>
-        <location filename="../biossettingswidget.cpp" line="110"/>
+        <location filename="../biossettingswidget.cpp" line="123"/>
+        <location filename="../biossettingswidget.cpp" line="126"/>
         <source>Unchecked</source>
         <translation>Desmarcado</translation>
     </message>
@@ -3463,7 +3594,7 @@ Você pode atualizar manualmente o DuckStation baixando novamente a versão mais
         <translation type="vanished">Pula a animação clássica de início do console ficando em tela preta por alguns segundos. Não funciona com todos os jogos, mas é seguro deixar marcado.</translation>
     </message>
     <message>
-        <location filename="../biossettingswidget.cpp" line="139"/>
+        <location filename="../biossettingswidget.cpp" line="206"/>
         <source>Use Global Setting</source>
         <translation>Usar configuração global</translation>
     </message>
@@ -3471,10 +3602,9 @@ Você pode atualizar manualmente o DuckStation baixando novamente a versão mais
 <context>
     <name>CDImage</name>
     <message>
-        <location filename="../../util/cd_image_cue.cpp" line="629"/>
         <source>{0} uses a sample rate of {1}hz and has {2} channels.
 WAV files must be stereo and use a sample rate of 44100hz.</source>
-        <translation>{0} usa uma taxa de amostragem de {1}hz e tem {2} canais.
+        <translation type="vanished">{0} usa uma taxa de amostragem de {1}hz e tem {2} canais.
 Os arquivos WAV devem ser estéreo e usar uma taxa de amostragem de 44100hz.</translation>
     </message>
     <message>
@@ -3549,6 +3679,14 @@ Os arquivos WAV devem ser estéreo e usar uma taxa de amostragem de 44100hz.</tr
         <location filename="../../util/cd_image_memory.cpp" line="101"/>
         <source>Loading Track {0} ({1})...</source>
         <translation>Carregando faixa {0} ({1})...</translation>
+    </message>
+    <message>
+        <location filename="../../util/cd_image_cue.cpp" line="630"/>
+        <source>{0} is {1}-bit with {2} channels at {3}hz.
+WAV files must be 16-bit stereo and use a sample rate of 44100hz.</source>
+        <translation>{0} é de {1} bits, com {2} canais, a {3} Hz.
+
+Os arquivos WAV devem ser estéreo de 16 bits e usar uma taxa de amostragem de 44100 Hz.</translation>
     </message>
 </context>
 <context>
@@ -4008,36 +4146,36 @@ Seu despejo pode estar corrompido ou o disco físico pode estar riscado.</transl
         <translation type="vanished">Ativação:</translation>
     </message>
     <message>
-        <location filename="../gamecheatsettingswidget.cpp" line="825"/>
+        <location filename="../gamecheatsettingswidget.cpp" line="831"/>
         <source>Enter Group Name</source>
         <translation>Inserir nome do grupo</translation>
     </message>
     <message>
-        <location filename="../gamecheatsettingswidget.cpp" line="825"/>
+        <location filename="../gamecheatsettingswidget.cpp" line="831"/>
         <source>Enter name for the code group. Using backslashes (\) will create sub-trees.</source>
         <translation>Digite o nome do grupo de códigos. O uso de barras invertidas (\) criará subárvores.</translation>
     </message>
     <message>
-        <location filename="../gamecheatsettingswidget.cpp" line="853"/>
-        <location filename="../gamecheatsettingswidget.cpp" line="860"/>
-        <location filename="../gamecheatsettingswidget.cpp" line="872"/>
-        <location filename="../gamecheatsettingswidget.cpp" line="892"/>
-        <location filename="../gamecheatsettingswidget.cpp" line="933"/>
+        <location filename="../gamecheatsettingswidget.cpp" line="859"/>
+        <location filename="../gamecheatsettingswidget.cpp" line="866"/>
+        <location filename="../gamecheatsettingswidget.cpp" line="878"/>
+        <location filename="../gamecheatsettingswidget.cpp" line="898"/>
+        <location filename="../gamecheatsettingswidget.cpp" line="939"/>
         <source>Error</source>
         <translation>Erro</translation>
     </message>
     <message>
-        <location filename="../gamecheatsettingswidget.cpp" line="853"/>
+        <location filename="../gamecheatsettingswidget.cpp" line="859"/>
         <source>Name cannot be empty.</source>
         <translation>O nome não pode ser vazio.</translation>
     </message>
     <message>
-        <location filename="../gamecheatsettingswidget.cpp" line="860"/>
+        <location filename="../gamecheatsettingswidget.cpp" line="866"/>
         <source>Instructions cannot be empty.</source>
         <translation>As instruções não podem ser vazias.</translation>
     </message>
     <message>
-        <location filename="../gamecheatsettingswidget.cpp" line="873"/>
+        <location filename="../gamecheatsettingswidget.cpp" line="879"/>
         <source>The entered cheat code is not valid:
 
 %1
@@ -4050,24 +4188,24 @@ Trying to use this cheat will not work as expected. Do you want to continue?</so
 Usar esta trapaça não funcionará como esperado. Deseja continuar?</translation>
     </message>
     <message>
-        <location filename="../gamecheatsettingswidget.cpp" line="893"/>
+        <location filename="../gamecheatsettingswidget.cpp" line="899"/>
         <source>A code with the name &apos;%1&apos; already exists.</source>
         <translation>Já existe um código com o nome &apos;%1&apos;.</translation>
     </message>
     <message>
-        <location filename="../gamecheatsettingswidget.cpp" line="934"/>
+        <location filename="../gamecheatsettingswidget.cpp" line="940"/>
         <source>Failed to save cheat code:
 %1</source>
         <translation>Falha ao salvar o código de trapaça:
 %1</translation>
     </message>
     <message>
-        <location filename="../gamecheatsettingswidget.cpp" line="982"/>
+        <location filename="../gamecheatsettingswidget.cpp" line="988"/>
         <source>Ungrouped</source>
         <translation>Não agrupado</translation>
     </message>
     <message>
-        <location filename="../gamecheatsettingswidget.cpp" line="987"/>
+        <location filename="../gamecheatsettingswidget.cpp" line="993"/>
         <source>New...</source>
         <translation>Novo...</translation>
     </message>
@@ -4570,9 +4708,8 @@ Usar esta trapaça não funcionará como esperado. Deseja continuar?</translatio
         <translation type="vanished">Antecipação de leitura assíncrona:</translation>
     </message>
     <message>
-        <location filename="../consolesettingswidget.ui" line="281"/>
         <source>Preload Image To RAM</source>
-        <translation>Carregar jogo para RAM</translation>
+        <translation type="vanished">Carregar jogo para RAM</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.cpp" line="87"/>
@@ -4589,6 +4726,7 @@ Usar esta trapaça não funcionará como esperado. Deseja continuar?</translatio
         <translation>Desmarcado</translation>
     </message>
     <message>
+        <location filename="../consolesettingswidget.ui" line="281"/>
         <location filename="../consolesettingswidget.cpp" line="123"/>
         <source>Preload Image to RAM</source>
         <translation>Pré-carregar jogo para RAM</translation>
@@ -4784,28 +4922,28 @@ This warning will only be shown once.</source>
 <context>
     <name>Controller</name>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="319"/>
-        <location filename="../../core/analog_joystick.cpp" line="70"/>
-        <location filename="../../core/analog_joystick.cpp" line="234"/>
-        <location filename="../../core/negcon_rumble.cpp" line="244"/>
+        <location filename="../../core/analog_controller.cpp" line="316"/>
+        <location filename="../../core/analog_joystick.cpp" line="67"/>
+        <location filename="../../core/analog_joystick.cpp" line="231"/>
+        <location filename="../../core/negcon_rumble.cpp" line="238"/>
         <source>Controller {} switched to analog mode.</source>
         <translation>Controle {} alterado para o modo analógico.</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="320"/>
-        <location filename="../../core/analog_joystick.cpp" line="71"/>
-        <location filename="../../core/analog_joystick.cpp" line="235"/>
-        <location filename="../../core/negcon_rumble.cpp" line="245"/>
+        <location filename="../../core/analog_controller.cpp" line="317"/>
+        <location filename="../../core/analog_joystick.cpp" line="68"/>
+        <location filename="../../core/analog_joystick.cpp" line="232"/>
+        <location filename="../../core/negcon_rumble.cpp" line="239"/>
         <source>Controller {} switched to digital mode.</source>
         <translation>Controle {} alterado para o modo digital.</translation>
     </message>
     <message>
-        <location filename="../../core/jogcon.cpp" line="182"/>
+        <location filename="../../core/jogcon.cpp" line="179"/>
         <source>Controller {} switched to JogCon mode.</source>
         <translation>O controle {} mudou para o modo JogCon.</translation>
     </message>
     <message>
-        <location filename="../../core/jogcon.cpp" line="183"/>
+        <location filename="../../core/jogcon.cpp" line="180"/>
         <source>Controller {} switched to Digital mode.</source>
         <translation>O controle {} mudou para o modo digital.</translation>
     </message>
@@ -4839,37 +4977,37 @@ This warning will only be shown once.</source>
     </message>
     <message>
         <location filename="../controllerbindingwidget.ui" line="128"/>
-        <location filename="../controllerbindingwidgets.cpp" line="308"/>
+        <location filename="../controllerbindingwidgets.cpp" line="307"/>
         <source>Clear Mapping</source>
         <translation>Limpar mapeamento</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidgets.cpp" line="293"/>
+        <location filename="../controllerbindingwidgets.cpp" line="292"/>
         <source>Multiple devices...</source>
         <translation>Múltiplos dispositivos...</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidgets.cpp" line="298"/>
+        <location filename="../controllerbindingwidgets.cpp" line="297"/>
         <source>No devices available</source>
         <translation>Nenhum dispositivo disponível</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidgets.cpp" line="309"/>
+        <location filename="../controllerbindingwidgets.cpp" line="308"/>
         <source>Are you sure you want to clear all mappings for this controller? This action cannot be undone.</source>
         <translation>Tem certeza de que deseja limpar todos as atribuições para este controle? Essa ação não pode ser desfeita.</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidgets.cpp" line="359"/>
+        <location filename="../controllerbindingwidgets.cpp" line="361"/>
         <source>Automatic Mapping Failed</source>
         <translation>Falha no mapeamento automático</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidgets.cpp" line="360"/>
+        <location filename="../controllerbindingwidgets.cpp" line="362"/>
         <source>No generic bindings were generated for device &apos;%1&apos;. The controller/source may not support automatic mapping.</source>
         <translation>Nenhuma atribuição genérica foi gerada para o dispositivo &apos;%1&apos;. O controle pode não suportar o mapeamento automático gerado pelo emulador.</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidgets.cpp" line="521"/>
+        <location filename="../controllerbindingwidgets.cpp" line="517"/>
         <source>Controller %1 %2</source>
         <translation>Controle %1 %2</translation>
     </message>
@@ -4882,7 +5020,7 @@ This warning will only be shown once.</source>
         <translation type="vanished">Nenhum dispositivo foi selecionado.</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidgets.cpp" line="431"/>
+        <location filename="../controllerbindingwidgets.cpp" line="427"/>
         <source>Axes</source>
         <translation>Eixo</translation>
     </message>
@@ -4899,7 +5037,7 @@ This warning will only be shown once.</source>
         <translation type="vanished">Motor menor</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidgets.cpp" line="462"/>
+        <location filename="../controllerbindingwidgets.cpp" line="458"/>
         <source>Buttons</source>
         <translation>Botões</translation>
     </message>
@@ -5610,17 +5748,17 @@ This warning will only be shown once.</source>
 <context>
     <name>ControllerCustomSettingsWidget</name>
     <message>
-        <location filename="../controllerbindingwidgets.cpp" line="982"/>
+        <location filename="../controllerbindingwidgets.cpp" line="978"/>
         <source>Restore Default Settings</source>
         <translation>Restaurar a configuração original</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidgets.cpp" line="866"/>
+        <location filename="../controllerbindingwidgets.cpp" line="862"/>
         <source>Browse...</source>
         <translation>Buscar...</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidgets.cpp" line="871"/>
+        <location filename="../controllerbindingwidgets.cpp" line="867"/>
         <source>Select File</source>
         <translation>Escolha o arquivo</translation>
     </message>
@@ -6026,38 +6164,38 @@ A cor &quot;alternativa&quot; é usada quando o modo analógico está ativo.</tr
         <translation type="vanished">Definir...</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidgets.cpp" line="640"/>
+        <location filename="../controllerbindingwidgets.cpp" line="636"/>
         <source>Controller %1 Macro %2</source>
         <translation>Controle %1 Macro %2</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidgets.cpp" line="659"/>
+        <location filename="../controllerbindingwidgets.cpp" line="655"/>
         <source>Not Configured</source>
         <translation>Não configurado</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidgets.cpp" line="664"/>
-        <location filename="../controllerbindingwidgets.cpp" line="669"/>
+        <location filename="../controllerbindingwidgets.cpp" line="660"/>
+        <location filename="../controllerbindingwidgets.cpp" line="665"/>
         <source>%1%</source>
         <translation>%1%</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidgets.cpp" line="675"/>
+        <location filename="../controllerbindingwidgets.cpp" line="671"/>
         <source>Set Frequency</source>
         <translation>Definir frequência</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidgets.cpp" line="675"/>
+        <location filename="../controllerbindingwidgets.cpp" line="671"/>
         <source>Frequency: </source>
         <translation>Frequência: </translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidgets.cpp" line="704"/>
+        <location filename="../controllerbindingwidgets.cpp" line="700"/>
         <source>Macro will not repeat.</source>
         <translation>O macro não se repetirá.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../controllerbindingwidgets.cpp" line="706"/>
+        <location filename="../controllerbindingwidgets.cpp" line="702"/>
         <source>Macro will toggle buttons every %n frame(s).</source>
         <translation>
             <numerusform>O macro alternará os botões a cada %n quadro(s).</numerusform>
@@ -6072,12 +6210,12 @@ A cor &quot;alternativa&quot; é usada quando o modo analógico está ativo.</tr
 <context>
     <name>ControllerMacroWidget</name>
     <message>
-        <location filename="../controllerbindingwidgets.cpp" line="533"/>
+        <location filename="../controllerbindingwidgets.cpp" line="529"/>
         <source>Controller Port %1 Macros</source>
         <translation>Porta do controle %1 Macros</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidgets.cpp" line="543"/>
+        <location filename="../controllerbindingwidgets.cpp" line="539"/>
         <source>Macro %1
 %2</source>
         <translation>Macro %1
@@ -6148,7 +6286,7 @@ A cor &quot;alternativa&quot; é usada quando o modo analógico está ativo.</tr
     </message>
     <message>
         <location filename="../controllersettingswindow.cpp" line="184"/>
-        <location filename="../controllersettingswindow.cpp" line="589"/>
+        <location filename="../controllersettingswindow.cpp" line="582"/>
         <source>Error</source>
         <translation>Erro</translation>
     </message>
@@ -6221,7 +6359,7 @@ Esta ação não poderá ser desfeita.</translation>
         <translation type="vanished">Redefine a configuração global de controle para a padrão.</translation>
     </message>
     <message>
-        <location filename="../controllersettingswindow.cpp" line="445"/>
+        <location filename="../controllersettingswindow.cpp" line="438"/>
         <source>Global Settings</source>
         <translation>Configurações globais</translation>
     </message>
@@ -6320,20 +6458,20 @@ Todos os vínculos e configurações serão perdidos. Não é possível desfazer
         <translation>Redefinição da predefinição do controle para as configurações globais.</translation>
     </message>
     <message>
-        <location filename="../controllersettingswindow.cpp" line="471"/>
-        <location filename="../controllersettingswindow.cpp" line="522"/>
+        <location filename="../controllersettingswindow.cpp" line="464"/>
+        <location filename="../controllersettingswindow.cpp" line="515"/>
         <source>Controller Port %1
 %2</source>
         <translation>Porta do controle %1
 %2</translation>
     </message>
     <message>
-        <location filename="../controllersettingswindow.cpp" line="484"/>
+        <location filename="../controllersettingswindow.cpp" line="477"/>
         <source>Hotkeys</source>
         <translation>Atalhos</translation>
     </message>
     <message>
-        <location filename="../controllersettingswindow.cpp" line="590"/>
+        <location filename="../controllersettingswindow.cpp" line="583"/>
         <source>The controller preset named &apos;%1&apos; cannot be found.</source>
         <translation>A predefinição do controle denominada &apos;%1&apos; não pôde ser encontrada.</translation>
     </message>
@@ -6349,37 +6487,37 @@ Todos os vínculos e configurações serão perdidos. Não é possível desfazer
 <context>
     <name>ControllerType</name>
     <message>
-        <location filename="../../core/digital_controller.cpp" line="185"/>
+        <location filename="../../core/digital_controller.cpp" line="204"/>
         <source>Digital Controller</source>
         <translation>Controle digital</translation>
     </message>
     <message>
-        <location filename="../../core/digital_controller.cpp" line="214"/>
+        <location filename="../../core/digital_controller.cpp" line="235"/>
         <source>Pop&apos;n Controller</source>
         <translation>Controle Pop&apos;n</translation>
     </message>
     <message>
-        <location filename="../../core/ddgo_controller.cpp" line="360"/>
+        <location filename="../../core/ddgo_controller.cpp" line="356"/>
         <source>Densha de Go! Controller</source>
         <translation>Controle Densha de Go!</translation>
     </message>
     <message>
-        <location filename="../../core/analog_joystick.cpp" line="405"/>
+        <location filename="../../core/analog_joystick.cpp" line="408"/>
         <source>Analog Joystick</source>
         <translation>Controle analógico</translation>
     </message>
     <message>
-        <location filename="../../core/negcon.cpp" line="332"/>
+        <location filename="../../core/negcon.cpp" line="335"/>
         <source>NeGcon</source>
         <translation>NeGcon</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="875"/>
+        <location filename="../../core/analog_controller.cpp" line="878"/>
         <source>Analog Controller</source>
         <translation>Controle analógico</translation>
     </message>
     <message>
-        <location filename="../../core/guncon.cpp" line="320"/>
+        <location filename="../../core/guncon.cpp" line="322"/>
         <source>GunCon</source>
         <translation>GunCon</translation>
     </message>
@@ -6393,7 +6531,7 @@ Todos os vínculos e configurações serão perdidos. Não é possível desfazer
         <translation type="vanished">NeGcon com vibração</translation>
     </message>
     <message>
-        <location filename="../../core/justifier.cpp" line="400"/>
+        <location filename="../../core/justifier.cpp" line="402"/>
         <source>Justifier</source>
         <translation></translation>
     </message>
@@ -6403,12 +6541,12 @@ Todos os vínculos e configurações serão perdidos. Não é possível desfazer
         <translation></translation>
     </message>
     <message>
-        <location filename="../../core/negcon_rumble.cpp" line="776"/>
+        <location filename="../../core/negcon_rumble.cpp" line="771"/>
         <source>NeGcon (Rumble)</source>
         <translation>NeGcon (vibração)</translation>
     </message>
     <message>
-        <location filename="../../core/jogcon.cpp" line="673"/>
+        <location filename="../../core/jogcon.cpp" line="668"/>
         <source>JogCon</source>
         <translation></translation>
     </message>
@@ -6416,28 +6554,26 @@ Todos os vínculos e configurações serão perdidos. Não é possível desfazer
 <context>
     <name>CoreThread</name>
     <message>
-        <location filename="../qthost.cpp" line="1094"/>
-        <location filename="../qthost.cpp" line="1119"/>
-        <location filename="../qthost.cpp" line="1144"/>
-        <location filename="../qthost.cpp" line="1526"/>
-        <location filename="../qthost.cpp" line="1658"/>
-        <location filename="../qthost.cpp" line="1689"/>
-        <location filename="../qthost.cpp" line="1801"/>
+        <location filename="../qthost.cpp" line="1115"/>
+        <location filename="../qthost.cpp" line="1140"/>
+        <location filename="../qthost.cpp" line="1511"/>
+        <location filename="../qthost.cpp" line="1625"/>
+        <location filename="../qthost.cpp" line="1656"/>
+        <location filename="../qthost.cpp" line="1768"/>
         <source>Error</source>
         <translation>Erro</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1095"/>
         <source>Failed to boot system: %1</source>
-        <translation>Falha ao iniciar o sistema: %1</translation>
+        <translation type="vanished">Falha ao iniciar o sistema: %1</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1119"/>
+        <location filename="../qthost.cpp" line="1115"/>
         <source>Cannot change GPU dump state without restarting the system.</source>
         <translation>Não é possível alterar o estado do despejo da GPU sem que o sistema seja reinicializado.</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1145"/>
+        <location filename="../qthost.cpp" line="1141"/>
         <source>Failed to load state: %1</source>
         <translation>Falha ao carregar o estado: %1</translation>
     </message>
@@ -6446,12 +6582,12 @@ Todos os vínculos e configurações serão perdidos. Não é possível desfazer
         <translation type="vanished">Salvamento rápido não encontrado.</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1404"/>
+        <location filename="../qthost.cpp" line="1389"/>
         <source>Memory Card Busy</source>
         <translation>Cartão de memória em uso</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1405"/>
+        <location filename="../qthost.cpp" line="1390"/>
         <source>WARNING: Your game is still saving to the memory card. Continuing to %1 may IRREVERSIBLY DESTROY YOUR MEMORY CARD. We recommend resuming your game and waiting 5 seconds for it to finish saving.
 
 Do you want to %1 anyway?</source>
@@ -6460,12 +6596,12 @@ Do you want to %1 anyway?</source>
 Deseja continuar para %1 mesmo assim?</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1414"/>
+        <location filename="../qthost.cpp" line="1399"/>
         <source>Achievement Unlocks Unconfirmed</source>
         <translation>Desbloqueios de conquistas não confirmados</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1415"/>
+        <location filename="../qthost.cpp" line="1400"/>
         <source>%1 achievement unlocks have not been confirmed by the server. Continuing to %2 will result in loss of these unlocks. Once network connectivity has been re-established, these unlocks will be confirmed automatically.
 
 Do you want to %2 anyway?</source>
@@ -6474,32 +6610,32 @@ Do you want to %2 anyway?</source>
 Deseja %2 mesmo assim?</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1441"/>
+        <location filename="../qthost.cpp" line="1426"/>
         <source>shut down</source>
         <translation>encerrar</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1463"/>
+        <location filename="../qthost.cpp" line="1448"/>
         <source>reset</source>
         <translation>reiniciar</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1495"/>
+        <location filename="../qthost.cpp" line="1480"/>
         <source>change disc</source>
         <translation>mudar disco</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1526"/>
+        <location filename="../qthost.cpp" line="1511"/>
         <source>Failed to switch to subimage %1</source>
         <translation>Falha ao alternar para a subimagem %1</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1648"/>
+        <location filename="../qthost.cpp" line="1615"/>
         <source>Confirm Download</source>
         <translation>Confirmar download</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1649"/>
+        <location filename="../qthost.cpp" line="1616"/>
         <source>Your DuckStation installation does not have the padtest application available.
 
 This file is approximately 206KB, do you want to download it now?</source>
@@ -6508,7 +6644,7 @@ This file is approximately 206KB, do you want to download it now?</source>
 Esse arquivo tem aproximadamente 206 KB. Deseja baixa-lo agora?</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1659"/>
+        <location filename="../qthost.cpp" line="1626"/>
         <source>Failed to download padtest application: %1</source>
         <translation>Falha ao baixar o aplicativo padtest: %1</translation>
     </message>
@@ -6517,12 +6653,12 @@ Esse arquivo tem aproximadamente 206 KB. Deseja baixa-lo agora?</translation>
         <translation type="vanished">Baixar arquivo</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1799"/>
+        <location filename="../qthost.cpp" line="1766"/>
         <source>State saved to %1.</source>
         <translation>Estado salvo em %1.</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1801"/>
+        <location filename="../qthost.cpp" line="1768"/>
         <source>Failed to save state: %1</source>
         <translation>Falha ao salvar o estado: %1</translation>
     </message>
@@ -6541,22 +6677,22 @@ Esse arquivo tem aproximadamente 206 KB. Deseja baixa-lo agora?</translation>
         <translation type="vanished">Jogo não carregado ou sem conquistas disponíveis.</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="3180"/>
+        <location filename="../qthost.cpp" line="3107"/>
         <source>%1x%2</source>
         <translation>%1x%2</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="3180"/>
+        <location filename="../qthost.cpp" line="3107"/>
         <source>No Image</source>
         <translation>Sem imagem</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="3190"/>
+        <location filename="../qthost.cpp" line="3117"/>
         <source>Game: %1 FPS</source>
         <translation>Jogo: %1 FPS</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="3199"/>
+        <location filename="../qthost.cpp" line="3126"/>
         <source>Video: %1 FPS (%2%)</source>
         <translation>Vídeo: %1 FPS (%2%)</translation>
     </message>
@@ -6669,157 +6805,157 @@ Esse arquivo tem aproximadamente 206 KB. Deseja baixa-lo agora?</translation>
 <context>
     <name>DDGoController</name>
     <message>
-        <location filename="../../core/ddgo_controller.cpp" line="308"/>
+        <location filename="../../core/ddgo_controller.cpp" line="304"/>
         <source>Select</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../core/ddgo_controller.cpp" line="309"/>
+        <location filename="../../core/ddgo_controller.cpp" line="305"/>
         <source>Start</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../core/ddgo_controller.cpp" line="310"/>
+        <location filename="../../core/ddgo_controller.cpp" line="306"/>
         <source>A</source>
         <translation>A</translation>
     </message>
     <message>
-        <location filename="../../core/ddgo_controller.cpp" line="311"/>
+        <location filename="../../core/ddgo_controller.cpp" line="307"/>
         <source>B</source>
         <translation>B</translation>
     </message>
     <message>
-        <location filename="../../core/ddgo_controller.cpp" line="312"/>
+        <location filename="../../core/ddgo_controller.cpp" line="308"/>
         <source>C</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../core/ddgo_controller.cpp" line="313"/>
+        <location filename="../../core/ddgo_controller.cpp" line="309"/>
         <source>Power Off</source>
         <translation>Desligar</translation>
     </message>
     <message>
-        <location filename="../../core/ddgo_controller.cpp" line="314"/>
+        <location filename="../../core/ddgo_controller.cpp" line="310"/>
         <source>Power 1</source>
         <translation>Potência 1</translation>
     </message>
     <message>
-        <location filename="../../core/ddgo_controller.cpp" line="315"/>
+        <location filename="../../core/ddgo_controller.cpp" line="311"/>
         <source>Power 2</source>
         <translation>Potência 2</translation>
     </message>
     <message>
-        <location filename="../../core/ddgo_controller.cpp" line="316"/>
+        <location filename="../../core/ddgo_controller.cpp" line="312"/>
         <source>Power 3</source>
         <translation>Potência 3</translation>
     </message>
     <message>
-        <location filename="../../core/ddgo_controller.cpp" line="317"/>
+        <location filename="../../core/ddgo_controller.cpp" line="313"/>
         <source>Power 4</source>
         <translation>Potência 4</translation>
     </message>
     <message>
-        <location filename="../../core/ddgo_controller.cpp" line="318"/>
+        <location filename="../../core/ddgo_controller.cpp" line="314"/>
         <source>Power 5</source>
         <translation>Potência 5</translation>
     </message>
     <message>
-        <location filename="../../core/ddgo_controller.cpp" line="319"/>
+        <location filename="../../core/ddgo_controller.cpp" line="315"/>
         <source>Brake Released</source>
         <translation>Liberar freio</translation>
     </message>
     <message>
-        <location filename="../../core/ddgo_controller.cpp" line="320"/>
+        <location filename="../../core/ddgo_controller.cpp" line="316"/>
         <source>Brake 1</source>
         <translation>Freio 1</translation>
     </message>
     <message>
-        <location filename="../../core/ddgo_controller.cpp" line="322"/>
+        <location filename="../../core/ddgo_controller.cpp" line="318"/>
         <source>Brake 3</source>
         <translation>Freio 3</translation>
     </message>
     <message>
-        <location filename="../../core/ddgo_controller.cpp" line="324"/>
+        <location filename="../../core/ddgo_controller.cpp" line="320"/>
         <source>Brake 5</source>
         <translation>Freio 5</translation>
     </message>
     <message>
-        <location filename="../../core/ddgo_controller.cpp" line="325"/>
+        <location filename="../../core/ddgo_controller.cpp" line="321"/>
         <source>Brake 6</source>
         <translation>Freio 6</translation>
     </message>
     <message>
-        <location filename="../../core/ddgo_controller.cpp" line="326"/>
+        <location filename="../../core/ddgo_controller.cpp" line="322"/>
         <source>Brake 7</source>
         <translation>Freio 7</translation>
     </message>
     <message>
-        <location filename="../../core/ddgo_controller.cpp" line="327"/>
+        <location filename="../../core/ddgo_controller.cpp" line="323"/>
         <source>Brake 8</source>
         <translation>Freio 8</translation>
     </message>
     <message>
-        <location filename="../../core/ddgo_controller.cpp" line="328"/>
+        <location filename="../../core/ddgo_controller.cpp" line="324"/>
         <source>Brake Emergency</source>
         <translation>Freio de emergência</translation>
     </message>
     <message>
-        <location filename="../../core/ddgo_controller.cpp" line="330"/>
+        <location filename="../../core/ddgo_controller.cpp" line="326"/>
         <source>Power</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../core/ddgo_controller.cpp" line="331"/>
+        <location filename="../../core/ddgo_controller.cpp" line="327"/>
         <source>Brake</source>
         <translation>Freio</translation>
     </message>
     <message>
-        <location filename="../../core/ddgo_controller.cpp" line="339"/>
+        <location filename="../../core/ddgo_controller.cpp" line="335"/>
         <source>Analog Deadzone</source>
         <translation>Zona morta do analógico</translation>
     </message>
     <message>
-        <location filename="../../core/ddgo_controller.cpp" line="340"/>
+        <location filename="../../core/ddgo_controller.cpp" line="336"/>
         <source>Sets the analog stick deadzone, i.e. the fraction of the stick movement which will be ignored.</source>
         <translation>Define a zona morta do analógico, por exemplo:. a fração do movimento do analógico que será ignorada.</translation>
     </message>
     <message>
-        <location filename="../../core/ddgo_controller.cpp" line="343"/>
+        <location filename="../../core/ddgo_controller.cpp" line="339"/>
         <source>Analog Sensitivity</source>
         <translation>Sensibilidade do analógico</translation>
     </message>
     <message>
-        <location filename="../../core/ddgo_controller.cpp" line="344"/>
+        <location filename="../../core/ddgo_controller.cpp" line="340"/>
         <source>Sets the analog stick axis scaling factor. A value between 130% and 140% is recommended when using recent controllers, e.g. DualShock 4, Xbox One Controller.</source>
         <translation>Define o fator de escala do eixo do analógico. Um valor entre 130% e 140% é recomendável quando estiver usando controles mais recentes, por exemplo: Dualshock 4 e controles de Xbox One.</translation>
     </message>
     <message>
-        <location filename="../../core/ddgo_controller.cpp" line="349"/>
+        <location filename="../../core/ddgo_controller.cpp" line="345"/>
         <source>Power Transition Frames</source>
         <translation>Quadros de transição de potência</translation>
     </message>
     <message>
-        <location filename="../../core/ddgo_controller.cpp" line="350"/>
+        <location filename="../../core/ddgo_controller.cpp" line="346"/>
         <source>Sets the number of frames that the controller will report the transitioning/inbetween state when changing power level.</source>
         <translation>Define o número de quadros em que o controle informará o estado de transição ao alterar o nível de força.</translation>
     </message>
     <message>
-        <location filename="../../core/ddgo_controller.cpp" line="353"/>
+        <location filename="../../core/ddgo_controller.cpp" line="349"/>
         <source>Brake Transition Frames</source>
         <translation>Quadros de transição de freio</translation>
     </message>
     <message>
-        <location filename="../../core/ddgo_controller.cpp" line="354"/>
+        <location filename="../../core/ddgo_controller.cpp" line="350"/>
         <source>Sets the number of frames that the controller will report the transitioning/inbetween state when changing brake level.</source>
         <translation>Define o número de quadros em que o controle informará o estado de transição ao alterar o nível de freio.</translation>
     </message>
     <message>
-        <location filename="../../core/ddgo_controller.cpp" line="321"/>
+        <location filename="../../core/ddgo_controller.cpp" line="317"/>
         <source>Brake 2</source>
         <translation>Freio 2</translation>
     </message>
     <message>
-        <location filename="../../core/ddgo_controller.cpp" line="323"/>
+        <location filename="../../core/ddgo_controller.cpp" line="319"/>
         <source>Brake 4</source>
         <translation>Freio 4</translation>
     </message>
@@ -7563,62 +7699,72 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
 <context>
     <name>DigitalController</name>
     <message>
-        <location filename="../../core/digital_controller.cpp" line="172"/>
+        <location filename="../../core/digital_controller.cpp" line="190"/>
         <source>Select</source>
         <translation>Select</translation>
     </message>
     <message>
-        <location filename="../../core/digital_controller.cpp" line="173"/>
+        <location filename="../../core/digital_controller.cpp" line="191"/>
         <source>Start</source>
         <translation>Start</translation>
     </message>
     <message>
-        <location filename="../../core/digital_controller.cpp" line="168"/>
+        <location filename="../../core/digital_controller.cpp" line="186"/>
         <source>Triangle</source>
         <translation>Triângulo</translation>
     </message>
     <message>
-        <location filename="../../core/digital_controller.cpp" line="170"/>
+        <location filename="../../core/digital_controller.cpp" line="188"/>
         <source>Cross</source>
         <translation>Cruz</translation>
     </message>
     <message>
-        <location filename="../../core/digital_controller.cpp" line="169"/>
+        <location filename="../../core/digital_controller.cpp" line="187"/>
         <source>Circle</source>
         <translation>Círculo</translation>
     </message>
     <message>
-        <location filename="../../core/digital_controller.cpp" line="164"/>
+        <location filename="../../core/digital_controller.cpp" line="171"/>
+        <source>Disable Simultaneous Opposing Cardinal Directions</source>
+        <translation>Desativar direções opostas simultâneas</translation>
+    </message>
+    <message>
+        <location filename="../../core/digital_controller.cpp" line="172"/>
+        <source>Prevents concurrent left/right or up/down inputs from being presented to the game.</source>
+        <translation>Impede que entradas simultâneas para esquerda/direita ou cima/baixo sejam enviadas ao jogo.</translation>
+    </message>
+    <message>
+        <location filename="../../core/digital_controller.cpp" line="182"/>
         <source>D-Pad Up</source>
         <translation>D-Pad para cima</translation>
     </message>
     <message>
-        <location filename="../../core/digital_controller.cpp" line="165"/>
+        <location filename="../../core/digital_controller.cpp" line="183"/>
         <source>D-Pad Right</source>
         <translation>D-Pad para a direita</translation>
     </message>
     <message>
-        <location filename="../../core/digital_controller.cpp" line="166"/>
+        <location filename="../../core/digital_controller.cpp" line="184"/>
         <source>D-Pad Down</source>
         <translation>D-Pad para baixo</translation>
     </message>
     <message>
-        <location filename="../../core/digital_controller.cpp" line="167"/>
+        <location filename="../../core/digital_controller.cpp" line="185"/>
         <source>D-Pad Left</source>
         <translation>D-Pad para a esquerda</translation>
     </message>
     <message>
-        <location filename="../../core/digital_controller.cpp" line="171"/>
+        <location filename="../../core/digital_controller.cpp" line="189"/>
         <source>Square</source>
         <translation>Quadrado</translation>
     </message>
     <message>
-        <location filename="../../core/digital_controller.cpp" line="174"/>
+        <location filename="../../core/digital_controller.cpp" line="192"/>
         <source>L1</source>
         <translation>L1</translation>
     </message>
     <message>
-        <location filename="../../core/digital_controller.cpp" line="176"/>
+        <location filename="../../core/digital_controller.cpp" line="194"/>
         <source>L2</source>
         <translation>L2</translation>
     </message>
@@ -7695,12 +7841,12 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <translation type="vanished">Freio 4</translation>
     </message>
     <message>
-        <location filename="../../core/digital_controller.cpp" line="175"/>
+        <location filename="../../core/digital_controller.cpp" line="193"/>
         <source>R1</source>
         <translation>R1</translation>
     </message>
     <message>
-        <location filename="../../core/digital_controller.cpp" line="177"/>
+        <location filename="../../core/digital_controller.cpp" line="195"/>
         <source>R2</source>
         <translation>R2</translation>
     </message>
@@ -8604,97 +8750,107 @@ Deseja carregar e continuar a partir desde dado ?</translation>
         <translation>Alterna automaticamente para o próximo disco quando o jogo interrompe o motor do CD-ROM. Não funciona em todos os jogos.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="162"/>
+        <location filename="../../core/fullscreenui_strings.h" line="166"/>
         <source>Clear Web Cache</source>
         <translation>Cachê da Web</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="164"/>
+        <location filename="../../core/fullscreenui_strings.h" line="168"/>
         <source>Clears all cached images in the web cache.</source>
         <translation>Limpa todas as imagens armazenadas no cache da web.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="172"/>
+        <location filename="../../core/fullscreenui_strings.h" line="176"/>
         <source>Compatibility</source>
         <translation>Compatibilidade</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="260"/>
+        <location filename="../../core/fullscreenui_strings.h" line="229"/>
+        <source>Delete</source>
+        <translation>Apagar</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreenui_strings.h" line="266"/>
         <source>Determines whether a prompt will be displayed to confirm closing the game.</source>
         <translation>Define se será exibida uma mensagem solicitando confirmação para fechar o jogo.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="263"/>
+        <location filename="../../core/fullscreenui_strings.h" line="269"/>
         <source>Disable Background Input</source>
         <translation>Desativar interações em segundo plano</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="265"/>
+        <location filename="../../core/fullscreenui_strings.h" line="271"/>
         <source>Disable Speedup on MDEC</source>
         <translation>Desativar aceleração no MDEC</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="267"/>
+        <location filename="../../core/fullscreenui_strings.h" line="273"/>
         <source>Disable Textures</source>
         <translation>Desativar texturas</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="268"/>
+        <location filename="../../core/fullscreenui_strings.h" line="274"/>
         <source>Disable Vertex Lighting</source>
         <translation>Desativar iluminação por Vértice</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="269"/>
+        <location filename="../../core/fullscreenui_strings.h" line="275"/>
         <source>Disable Window Resizing</source>
         <translation>Desativar o redimensionamento da janela</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="272"/>
+        <location filename="../../core/fullscreenui_strings.h" line="278"/>
         <source>Disables texture emulation in the GPU, forcing all primitives to only show vertex colours.</source>
         <translation>Desativa a emulação de texturas na GPU forçando a exibição apenas das cores da textura.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="273"/>
+        <location filename="../../core/fullscreenui_strings.h" line="279"/>
         <source>Disables vertex lighting in the GPU, forcing all primitives to only show raw texture colours.</source>
         <translation>Desativa a iluminação por vértice na GPU, forçando a exibição apenas das cores brutas da textura serem exibidas.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="274"/>
+        <location filename="../../core/fullscreenui_strings.h" line="280"/>
         <source>Disc</source>
         <translation>Disco</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="275"/>
+        <location filename="../../core/fullscreenui_strings.h" line="281"/>
         <source>Disc Set Title</source>
         <translation>Título da coleção de discos</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="276"/>
+        <location filename="../../core/fullscreenui_strings.h" line="282"/>
         <source>Disc Set Title (*)</source>
         <translation>Título da coleção de disco (*)</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="277"/>
+        <location filename="../../core/fullscreenui_strings.h" line="283"/>
         <source>Disc set title copied to clipboard.</source>
         <translation>Título do jogo copiado para a área de transferência.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="292"/>
+        <location filename="../../core/fullscreenui_strings.h" line="290"/>
+        <source>Do you want to continue from the automatic save created {}?</source>
+        <translation>Deseja continuar a partir do salvamento automático criado em {}?</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreenui_strings.h" line="298"/>
         <source>Draws a border around the currently-selected item for readability.</source>
         <translation>Desenha uma borda ao redor do item atual selecionado para facilitar a leitura.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="308"/>
+        <location filename="../../core/fullscreenui_strings.h" line="314"/>
         <source>Enable Global Save States</source>
         <translation>Ativar save states globais</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="337"/>
+        <location filename="../../core/fullscreenui_strings.h" line="343"/>
         <source>Enables manual fine cropping of the display area, while preserving the aspect ratio of the image. Useful for removing black borders in certain games.</source>
         <translation>Permite o recorte manual preciso da área de exibição, preservando a proporção da imagem. Útil para remover bordas pretas em determinados jogos.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="338"/>
+        <location filename="../../core/fullscreenui_strings.h" line="344"/>
         <source>Enables smooth scrolling of menus in the Big Picture UI.</source>
         <translation>Permite a rolagem suave dos menus na interface do usuário no modo tela cheia.</translation>
     </message>
@@ -8707,7 +8863,7 @@ Deseja carregar e continuar a partir desde dado ?</translation>
         <translation type="vanished">Tamanho do arquivo: </translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="414"/>
+        <location filename="../../core/fullscreenui_strings.h" line="420"/>
         <source>Genre: </source>
         <translation>Genêro: </translation>
     </message>
@@ -8974,151 +9130,171 @@ Esta ação não pode ser desfeita.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreenui_strings.h" line="122"/>
+        <source>BIOS &apos;{}&apos; installed as &apos;{}&apos;.</source>
+        <translation>BIOS &apos;{}&apos; instalado como &apos;{}&apos;.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreenui_strings.h" line="123"/>
+        <source>BIOS Already Installed</source>
+        <translation>BIOS já instalado</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreenui_strings.h" line="124"/>
         <source>BIOS Directory</source>
         <translation>Diretório do BIOS</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="123"/>
+        <location filename="../../core/fullscreenui_strings.h" line="125"/>
+        <source>BIOS Install Error</source>
+        <translation>Erro de instalação do BIOS</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreenui_strings.h" line="126"/>
+        <source>BIOS Installed</source>
+        <translation>BIOS instalado</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreenui_strings.h" line="127"/>
         <source>BIOS Selection</source>
         <translation>Seleção de BIOS</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="124"/>
+        <location filename="../../core/fullscreenui_strings.h" line="128"/>
         <source>BIOS Settings</source>
         <translation>Configurações de BIOS</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="125"/>
+        <location filename="../../core/fullscreenui_strings.h" line="129"/>
         <source>BIOS for {}</source>
         <translation>BIOS para {}</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="126"/>
+        <location filename="../../core/fullscreenui_strings.h" line="130"/>
         <source>BIOS to use when emulating {} consoles.</source>
         <translation>BIOS usada na emulação de consoles {}.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="127"/>
+        <location filename="../../core/fullscreenui_strings.h" line="131"/>
         <source>Back</source>
         <translation>Voltar</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="128"/>
+        <location filename="../../core/fullscreenui_strings.h" line="132"/>
         <source>Back To Pause Menu</source>
         <translation>Voltar ao menu Pausa</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="129"/>
+        <location filename="../../core/fullscreenui_strings.h" line="133"/>
         <source>Backend Settings</source>
         <translation>Configurações de backend</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="130"/>
+        <location filename="../../core/fullscreenui_strings.h" line="134"/>
         <source>Behavior</source>
         <translation>Comportamento</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="131"/>
+        <location filename="../../core/fullscreenui_strings.h" line="135"/>
         <source>Bindings</source>
         <translation>Atribuições</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="132"/>
+        <location filename="../../core/fullscreenui_strings.h" line="136"/>
         <source>Blur Backgrounds</source>
         <translation>Desfocar fundos</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="133"/>
+        <location filename="../../core/fullscreenui_strings.h" line="137"/>
         <source>Blur Message Backgrounds</source>
         <translation>Desfocar o fundo das mensagens</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="134"/>
+        <location filename="../../core/fullscreenui_strings.h" line="138"/>
         <source>Border Overlay</source>
         <translation>Sobreposição de borda</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="135"/>
+        <location filename="../../core/fullscreenui_strings.h" line="139"/>
         <source>Borderless Fullscreen</source>
         <translation>Tela cheia sem bordas</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="136"/>
+        <location filename="../../core/fullscreenui_strings.h" line="140"/>
         <source>Bottom: </source>
         <translation>Parte inferior: </translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="137"/>
+        <location filename="../../core/fullscreenui_strings.h" line="141"/>
         <source>Buffer Size</source>
         <translation>Tamanho do buffer</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="138"/>
+        <location filename="../../core/fullscreenui_strings.h" line="142"/>
         <source>Buttons</source>
         <translation>Botões</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="139"/>
+        <location filename="../../core/fullscreenui_strings.h" line="143"/>
         <source>CD-ROM Emulation</source>
         <translation>Emulação do CD-ROM</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="140"/>
+        <location filename="../../core/fullscreenui_strings.h" line="144"/>
         <source>CPU Emulation</source>
         <translation>Emulação de CPU</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="141"/>
+        <location filename="../../core/fullscreenui_strings.h" line="145"/>
         <source>CPU Mode</source>
         <translation>Modo CPU</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="142"/>
+        <location filename="../../core/fullscreenui_strings.h" line="146"/>
         <source>Cancel</source>
         <translation>Cancelar</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="143"/>
+        <location filename="../../core/fullscreenui_strings.h" line="147"/>
         <source>Capture</source>
         <translation>Captura</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="144"/>
+        <location filename="../../core/fullscreenui_strings.h" line="148"/>
         <source>Challenge Indicators</source>
         <translation>Indicadores de desafios</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="145"/>
+        <location filename="../../core/fullscreenui_strings.h" line="149"/>
         <source>Change Disc</source>
         <translation>Mudar disco</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="146"/>
+        <location filename="../../core/fullscreenui_strings.h" line="150"/>
         <source>Change Disc Set Title</source>
         <translation>Alterar o título do coleção de discos</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="147"/>
+        <location filename="../../core/fullscreenui_strings.h" line="151"/>
         <source>Change Game Serial</source>
         <translation>Alterar o número de série do jogo</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="148"/>
+        <location filename="../../core/fullscreenui_strings.h" line="152"/>
         <source>Change Game Title</source>
         <translation>Mudar título do jogo</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="151"/>
+        <location filename="../../core/fullscreenui_strings.h" line="155"/>
         <source>Change Serial</source>
         <translation>Alterar númro de série</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="152"/>
+        <location filename="../../core/fullscreenui_strings.h" line="156"/>
         <source>Change Title</source>
         <translation>Alterar título</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="155"/>
+        <location filename="../../core/fullscreenui_strings.h" line="159"/>
         <source>Changes the aspect ratio used to display the console&apos;s output to the screen.</source>
         <translation>Altera a proporção de aspecto usada para exibir a saída do console na tela.</translation>
     </message>
@@ -9131,32 +9307,32 @@ Esta ação não pode ser desfeita.</translation>
         <translation type="vanished">Escolhe o backend a ser usado para renderizar os visuais do console/jogo.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="157"/>
+        <location filename="../../core/fullscreenui_strings.h" line="161"/>
         <source>Chooses the language used for UI elements.</source>
         <translation>Escolhe o idioma usado para os elementos da interface do usuário.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="158"/>
+        <location filename="../../core/fullscreenui_strings.h" line="162"/>
         <source>Clean Boot</source>
         <translation>Inicialização padrão</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="160"/>
+        <location filename="../../core/fullscreenui_strings.h" line="164"/>
         <source>Clear Settings</source>
         <translation>Limpar configurações</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="161"/>
+        <location filename="../../core/fullscreenui_strings.h" line="165"/>
         <source>Clear Shaders</source>
         <translation>Limpar shaders</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="163"/>
+        <location filename="../../core/fullscreenui_strings.h" line="167"/>
         <source>Clears a shader from the chain.</source>
         <translation>Limpa um shader da lista.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="165"/>
+        <location filename="../../core/fullscreenui_strings.h" line="169"/>
         <source>Clears all settings set for this game.</source>
         <translation>Limpa todas as configurações definidas para esse jogo.</translation>
     </message>
@@ -9165,17 +9341,17 @@ Esta ação não pode ser desfeita.</translation>
         <translation type="vanished">Limpa o bit de máscara/transparência nos despejos de gravação de VRAM.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="166"/>
+        <location filename="../../core/fullscreenui_strings.h" line="170"/>
         <source>Close</source>
         <translation>Fechar</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="167"/>
+        <location filename="../../core/fullscreenui_strings.h" line="171"/>
         <source>Close Game</source>
         <translation>Fechar o jogo</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="168"/>
+        <location filename="../../core/fullscreenui_strings.h" line="172"/>
         <source>Close Menu</source>
         <translation>Fechar menu</translation>
     </message>
@@ -9184,12 +9360,12 @@ Esta ação não pode ser desfeita.</translation>
         <translation type="vanished">Classificação de compatibilidade</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="173"/>
+        <location filename="../../core/fullscreenui_strings.h" line="177"/>
         <source>Compatibility: </source>
         <translation>Compatibilidade: </translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="175"/>
+        <location filename="../../core/fullscreenui_strings.h" line="179"/>
         <source>Configuration</source>
         <translation>Configuração</translation>
     </message>
@@ -9198,12 +9374,12 @@ Esta ação não pode ser desfeita.</translation>
         <translation type="vanished">Confirmar ao fechar</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="177"/>
+        <location filename="../../core/fullscreenui_strings.h" line="181"/>
         <source>Console Settings</source>
         <translation>Configurações do console</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="179"/>
+        <location filename="../../core/fullscreenui_strings.h" line="183"/>
         <source>Controller Port {}</source>
         <translation>Porta de controle {}</translation>
     </message>
@@ -9228,132 +9404,137 @@ Esta ação não pode ser desfeita.</translation>
         <translation type="vanished">Portal de controle {}{} configurações</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="180"/>
+        <location filename="../../core/fullscreenui_strings.h" line="184"/>
         <source>Controller Settings</source>
         <translation>Configurações de controle</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="181"/>
+        <location filename="../../core/fullscreenui_strings.h" line="185"/>
         <source>Controller Type</source>
         <translation>Tipo de controle</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="182"/>
+        <location filename="../../core/fullscreenui_strings.h" line="186"/>
         <source>Controller mapping cleared.</source>
         <translation>O mapeamento do controle foi redefinido.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="183"/>
+        <location filename="../../core/fullscreenui_strings.h" line="187"/>
         <source>Controller preset &apos;{}&apos; loaded.</source>
         <translation>Predefinição do controle &apos;{}&apos; carregada.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="184"/>
+        <location filename="../../core/fullscreenui_strings.h" line="188"/>
         <source>Controller preset &apos;{}&apos; saved.</source>
         <translation>Predefinição do controle.“{}” salva.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="185"/>
+        <location filename="../../core/fullscreenui_strings.h" line="189"/>
         <source>Controller settings reset to default.</source>
         <translation>As configurações do controle foram redefinidas para o padrão.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="186"/>
+        <location filename="../../core/fullscreenui_strings.h" line="190"/>
         <source>Controls</source>
         <translation>Controles</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="187"/>
+        <location filename="../../core/fullscreenui_strings.h" line="191"/>
         <source>Controls how dithering is applied in the emulated GPU. True Color disables dithering and produces the nicest looking gradients.</source>
         <translation>Controla como o dithering é aplicado na GPU emulada. A função cores reais desativa o dithering e produz gradientes de melhor aparência.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="188"/>
+        <location filename="../../core/fullscreenui_strings.h" line="192"/>
         <source>Controls the volume of the audio played on the host when fast forwarding.</source>
         <translation>Controla o volume do áudio quando o avanço rápido é usado. Caso não queira escutar o som do jogo muito rápido ou distorcido diminua o volume. Valores medidos em porcentagem.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="189"/>
+        <location filename="../../core/fullscreenui_strings.h" line="193"/>
         <source>Controls the volume of the audio played on the host.</source>
         <translation>Controla o volume do áudio do emulador.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="190"/>
+        <location filename="../../core/fullscreenui_strings.h" line="194"/>
+        <source>Copies a BIOS image to the configured global BIOS directory.</source>
+        <translation>Copia uma imagem de BIOS para o diretório global de BIOS configurado.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreenui_strings.h" line="195"/>
         <source>Copies the current global settings to this game.</source>
         <translation>Copia as configurações globais atuais para este jogo.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="191"/>
+        <location filename="../../core/fullscreenui_strings.h" line="196"/>
         <source>Copies the global controller configuration to this game.</source>
         <translation>Copia a configuração do controle global para esse jogo.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="192"/>
+        <location filename="../../core/fullscreenui_strings.h" line="197"/>
         <source>Copy Global Settings</source>
         <translation>Copiar configurações globais</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="193"/>
+        <location filename="../../core/fullscreenui_strings.h" line="198"/>
         <source>Copy Serial</source>
         <translation>Copiar número de série</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="194"/>
+        <location filename="../../core/fullscreenui_strings.h" line="199"/>
         <source>Copy Settings</source>
         <translation>Copiar configurações</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="195"/>
+        <location filename="../../core/fullscreenui_strings.h" line="200"/>
         <source>Copy Title</source>
         <translation>Copiar título</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="197"/>
+        <location filename="../../core/fullscreenui_strings.h" line="202"/>
         <source>Cover Download Error</source>
         <translation>Erro ao baixar capa</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="198"/>
+        <location filename="../../core/fullscreenui_strings.h" line="203"/>
         <source>Cover Downloader</source>
         <translation>Baixar capas</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="199"/>
+        <location filename="../../core/fullscreenui_strings.h" line="204"/>
         <source>Cover Settings</source>
         <translation>Configurações da capa</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="200"/>
+        <location filename="../../core/fullscreenui_strings.h" line="205"/>
         <source>Cover set.</source>
         <translation>Conjunto de capas.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="201"/>
+        <location filename="../../core/fullscreenui_strings.h" line="206"/>
         <source>Covers Directory</source>
         <translation>Diretório de capas</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="202"/>
+        <location filename="../../core/fullscreenui_strings.h" line="207"/>
         <source>Create</source>
         <translation>Criar</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="204"/>
+        <location filename="../../core/fullscreenui_strings.h" line="209"/>
         <source>Create Save State Backups</source>
         <translation>Criar cópia de segurança de save states</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="205"/>
+        <location filename="../../core/fullscreenui_strings.h" line="210"/>
         <source>Crop Mode</source>
         <translation>Modo de corte</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="206"/>
+        <location filename="../../core/fullscreenui_strings.h" line="211"/>
         <source>Crops vertex colours to 5:5:5 before modulating with the texture colour, which typically results in more visible banding.</source>
         <translation>Corta as cores dos vértices para 5:5:5 antes de modular com a cor da textura, o que normalmente resulta em faixas mais visíveis.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="207"/>
+        <location filename="../../core/fullscreenui_strings.h" line="212"/>
         <source>Culling Correction</source>
         <translation>Correção de curvas</translation>
     </message>
@@ -9362,117 +9543,117 @@ Esta ação não pode ser desfeita.</translation>
         <translation type="vanished">Jogo atual</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="208"/>
+        <location filename="../../core/fullscreenui_strings.h" line="213"/>
         <source>Custom</source>
         <translation>Personalizado</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="209"/>
+        <location filename="../../core/fullscreenui_strings.h" line="214"/>
         <source>Custom Indicator Scale</source>
         <translation>Escala personalizada dos indicadores</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="210"/>
+        <location filename="../../core/fullscreenui_strings.h" line="215"/>
         <source>Custom Notification Scale</source>
         <translation>Escala personalizada das notificações</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="211"/>
+        <location filename="../../core/fullscreenui_strings.h" line="216"/>
         <source>Dark</source>
         <translation>Escuro</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="212"/>
+        <location filename="../../core/fullscreenui_strings.h" line="217"/>
         <source>Dark Ocean</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="213"/>
+        <location filename="../../core/fullscreenui_strings.h" line="218"/>
         <source>Dark Ruby</source>
         <translation>Rubi escuro</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="214"/>
+        <location filename="../../core/fullscreenui_strings.h" line="219"/>
         <source>Database updated.</source>
         <translation>Banco de dados atualizado.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="215"/>
+        <location filename="../../core/fullscreenui_strings.h" line="220"/>
         <source>Deadzone</source>
         <translation>Zona morta</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="216"/>
+        <location filename="../../core/fullscreenui_strings.h" line="221"/>
         <source>Debugging Settings</source>
         <translation>Configurações de depuração</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="217"/>
+        <location filename="../../core/fullscreenui_strings.h" line="222"/>
         <source>Default</source>
         <translation>Padrão</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="218"/>
+        <location filename="../../core/fullscreenui_strings.h" line="223"/>
         <source>Default Boot</source>
         <translation>Inicialização padrão</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="219"/>
+        <location filename="../../core/fullscreenui_strings.h" line="224"/>
         <source>Default Value</source>
         <translation>Valor padrão</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="220"/>
+        <location filename="../../core/fullscreenui_strings.h" line="225"/>
         <source>Default View</source>
         <translation>Exibição padrão</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="221"/>
+        <location filename="../../core/fullscreenui_strings.h" line="226"/>
         <source>Default: Disabled</source>
         <translation>Padrão: desativado</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="222"/>
+        <location filename="../../core/fullscreenui_strings.h" line="227"/>
         <source>Default: Enabled</source>
         <translation>Padrão: ativado</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="224"/>
+        <location filename="../../core/fullscreenui_strings.h" line="230"/>
         <source>Delete And Boot</source>
         <translation>Excluir e inicializar</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="225"/>
+        <location filename="../../core/fullscreenui_strings.h" line="231"/>
         <source>Delete Save</source>
         <translation>Apagar salvar</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="226"/>
+        <location filename="../../core/fullscreenui_strings.h" line="232"/>
         <source>Delete State</source>
         <translation>Apagar estado salvo</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="227"/>
+        <location filename="../../core/fullscreenui_strings.h" line="233"/>
         <source>Depending on your jurisdiction, game covers may be copyrighted. You are only authorized to use this tool with your own servers and images.</source>
         <translation>Dependendo da sua jurisdição local, as capas de jogos podem estar protegidas por direitos autorais. Você só está autorizado a usar esta ferramenta com seus próprios servidores e imagens.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="229"/>
+        <location filename="../../core/fullscreenui_strings.h" line="235"/>
         <source>Depth Test Transparent Polygons</source>
         <translation>Teste de profundidade de polígonos transparentes</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="230"/>
+        <location filename="../../core/fullscreenui_strings.h" line="236"/>
         <source>Desktop Mode</source>
         <translation>Modo desktop</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="231"/>
+        <location filename="../../core/fullscreenui_strings.h" line="237"/>
         <source>Destination Alpha Blending</source>
         <translation>Destino da combinação alfa</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="232"/>
+        <location filename="../../core/fullscreenui_strings.h" line="238"/>
         <source>Details</source>
         <translation>Detalhes</translation>
     </message>
@@ -9481,132 +9662,132 @@ Esta ação não pode ser desfeita.</translation>
         <translation type="vanished">Detalhes indisponíveis para o jogo não verificado na lista de jogos.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="233"/>
+        <location filename="../../core/fullscreenui_strings.h" line="239"/>
         <source>Determines how large the on-screen messages and monitor are.</source>
         <translation>Determina o tamanho das mensagens na tela e do monitor.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="234"/>
+        <location filename="../../core/fullscreenui_strings.h" line="240"/>
         <source>Determines how long action confirmation messages are displayed on screen.</source>
         <translation>Define por quanto tempo as mensagens de confirmação de ação são exibidas na tela.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="235"/>
+        <location filename="../../core/fullscreenui_strings.h" line="241"/>
         <source>Determines how long error messages are displayed on screen.</source>
         <translation>Define por quanto tempo as mensagens de erro são exibidas na tela.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="236"/>
+        <location filename="../../core/fullscreenui_strings.h" line="242"/>
         <source>Determines how long informational messages are displayed on screen.</source>
         <translation>Define por quanto tempo as mensagens de informação são exibidas na tela.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="237"/>
+        <location filename="../../core/fullscreenui_strings.h" line="243"/>
         <source>Determines how long warning messages are displayed on screen.</source>
         <translation>Define por quanto tempo as mensagens de alerta são exibidas na tela.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="238"/>
+        <location filename="../../core/fullscreenui_strings.h" line="244"/>
         <source>Determines how much button pressure is ignored before activating the macro.</source>
         <translation>Determina o quanto a pressão do botão é ignorada antes de ativar a macro.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="239"/>
+        <location filename="../../core/fullscreenui_strings.h" line="245"/>
         <source>Determines how much latency there is between the audio being picked up by the host API, and played through speakers.</source>
         <translation>Determina a latência entre a captação do áudio pela API do host e sua reprodução pelos alto-falantes.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="240"/>
+        <location filename="../../core/fullscreenui_strings.h" line="246"/>
         <source>Determines how much of the area typically not visible on a consumer TV set to crop/hide.</source>
         <translation>Determina quanto da área normalmente não visível em um aparelho de TV deve ser cortada/oculta.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="241"/>
+        <location filename="../../core/fullscreenui_strings.h" line="247"/>
         <source>Determines how much pressure is simulated when macro is active.</source>
         <translation>Determina a quantidade de pressão será emulada quando a macro está ativa.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="242"/>
+        <location filename="../../core/fullscreenui_strings.h" line="248"/>
         <source>Determines how much to crop the display area.</source>
         <translation>Determina o quanto cortar a área de exibição.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="243"/>
+        <location filename="../../core/fullscreenui_strings.h" line="249"/>
         <source>Determines how the emulated CPU executes instructions.</source>
         <translation>Determina como o CPU emulado executa suas instruções.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="244"/>
+        <location filename="../../core/fullscreenui_strings.h" line="250"/>
         <source>Determines how the emulated console&apos;s output is upscaled or downscaled to your monitor&apos;s resolution.</source>
         <translation>Determina como a imagem do console emulado é aumentada ou reduzida de acordo com a resolução do seu monitor.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="245"/>
+        <location filename="../../core/fullscreenui_strings.h" line="251"/>
         <source>Determines quality of audio when not running at 100% speed.</source>
         <translation>Determina a qualidade do áudio quando não está sendo executado a 100% da velocidade.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="246"/>
+        <location filename="../../core/fullscreenui_strings.h" line="252"/>
         <source>Determines that field that the game list will be sorted by.</source>
         <translation>Determina como a lista de jogos será classificada.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="247"/>
+        <location filename="../../core/fullscreenui_strings.h" line="253"/>
         <source>Determines the amount of audio buffered before being pulled by the host API.</source>
         <translation>Determina a quantidade de áudio armazenada antes de ser extraída pela API do host.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="248"/>
+        <location filename="../../core/fullscreenui_strings.h" line="254"/>
         <source>Determines the area of the overlay image that the display will be drawn within.</source>
         <translation>Determina a área da imagem de sobreposição na qual a moldura será desenhada.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="249"/>
+        <location filename="../../core/fullscreenui_strings.h" line="255"/>
         <source>Determines the emulated hardware type.</source>
         <translation>Determina o tipo de hardware emulado.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="250"/>
+        <location filename="../../core/fullscreenui_strings.h" line="256"/>
         <source>Determines the format of the screenshot file names.</source>
         <translation>Define o formato dos nomes dos arquivos das capturas de tela.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="251"/>
+        <location filename="../../core/fullscreenui_strings.h" line="257"/>
         <source>Determines the format that screenshots will be saved/compressed with.</source>
         <translation>Determina o formato em que as capturas de tela serão salvas/comprimidas.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="252"/>
+        <location filename="../../core/fullscreenui_strings.h" line="258"/>
         <source>Determines the frequency at which the macro will toggle the buttons on and off (aka auto fire).</source>
         <translation>Determina a frequência com que a macro ativará e desativará os botões (também conhecida como disparo automático).</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="253"/>
+        <location filename="../../core/fullscreenui_strings.h" line="259"/>
         <source>Determines the margin between the edge of the screen and on-screen messages.</source>
         <translation>Determina a margem entre a borda da tela e as mensagens na tela.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="254"/>
+        <location filename="../../core/fullscreenui_strings.h" line="260"/>
         <source>Determines the position on the screen when black borders must be added.</source>
         <translation>Determina a posição na tela quando as bordas pretas devem ser adicionadas.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="256"/>
+        <location filename="../../core/fullscreenui_strings.h" line="262"/>
         <source>Determines the scaling algorithm used when 24-bit content is active, typically FMVs.</source>
         <translation>Determina o algoritmo de escala usado quando o conteúdo de 24 bits está ativo, normalmente FMVs.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="257"/>
+        <location filename="../../core/fullscreenui_strings.h" line="263"/>
         <source>Determines the size of achievement notification popups.</source>
         <translation>Define o tamanho dos pop-ups de notificação de conquistas.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="258"/>
+        <location filename="../../core/fullscreenui_strings.h" line="264"/>
         <source>Determines the size of challenge/progress indicators.</source>
         <translation>Define o tamanho dos indicadores de desafio/progresso.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="259"/>
+        <location filename="../../core/fullscreenui_strings.h" line="265"/>
         <source>Determines the size of screenshots created by DuckStation.</source>
         <translation>Determina o tamanho das capturas de tela criadas pelo DuckStation.</translation>
     </message>
@@ -9615,7 +9796,7 @@ Esta ação não pode ser desfeita.</translation>
         <translation type="vanished">Mostra uma janela de confirmação ao tentar fechar o emulador ou jogo quando atalho é pressionado.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="262"/>
+        <location filename="../../core/fullscreenui_strings.h" line="268"/>
         <source>Device Settings</source>
         <translation>Configurações do dispositivo</translation>
     </message>
@@ -9628,22 +9809,22 @@ Esta ação não pode ser desfeita.</translation>
         <translation type="vanished">Desativar entrelaçamento</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="264"/>
+        <location filename="../../core/fullscreenui_strings.h" line="270"/>
         <source>Disable Mailbox Presentation</source>
         <translation>Desativar apresentação de entrada</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="266"/>
+        <location filename="../../core/fullscreenui_strings.h" line="272"/>
         <source>Disable Subdirectory Scanning</source>
         <translation>Desativar a verificação de subdiretórios</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="270"/>
+        <location filename="../../core/fullscreenui_strings.h" line="276"/>
         <source>Disable on 2D Polygons</source>
         <translation>Desativa PGXP em jogos com polígonos 2D</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="271"/>
+        <location filename="../../core/fullscreenui_strings.h" line="277"/>
         <source>Disabled</source>
         <translation>Desativado</translation>
     </message>
@@ -9656,7 +9837,7 @@ Esta ação não pode ser desfeita.</translation>
         <translation type="vanished">Desativa a renderização entrelaçada e a exibição na GPU. Alguns jogos podem ser renderizados em 480p, mas outros não funcionarão.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="278"/>
+        <location filename="../../core/fullscreenui_strings.h" line="284"/>
         <source>Discord Server</source>
         <translation>Servidor no Discord</translation>
     </message>
@@ -9665,47 +9846,47 @@ Esta ação não pode ser desfeita.</translation>
         <translation type="vanished">Opções de vídeo</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="281"/>
+        <location filename="../../core/fullscreenui_strings.h" line="287"/>
         <source>Displays popup messages on events such as achievement unlocks and leaderboard submissions.</source>
         <translation>Exibe mensagens de alerta em eventos como desbloqueios de conquistas e envios de placar.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="282"/>
+        <location filename="../../core/fullscreenui_strings.h" line="288"/>
         <source>Displays popup messages when starting, submitting, or failing a leaderboard challenge.</source>
         <translation>Exibe mensagens de alerta ao iniciar, enviar ou na falha em um desafio da tabela de classificação de líderes.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="285"/>
+        <location filename="../../core/fullscreenui_strings.h" line="291"/>
         <source>Double-Click Toggles Fullscreen</source>
         <translation>Duplo clique para alternar para tela cheia</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="286"/>
+        <location filename="../../core/fullscreenui_strings.h" line="292"/>
         <source>Download Covers</source>
         <translation>Baixar capas</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="288"/>
+        <location filename="../../core/fullscreenui_strings.h" line="294"/>
         <source>Downloads covers from a user-specified URL template.</source>
         <translation>Baixa capas de um modelo de URL especificado pelo usuário.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="289"/>
+        <location filename="../../core/fullscreenui_strings.h" line="295"/>
         <source>Downsamples the rendered image prior to displaying it. Can improve overall image quality in mixed 2D/3D games.</source>
         <translation>Reduz a amostragem da imagem renderizada antes de exibi-la. Pode melhorar a qualidade geral da imagem em jogos 2D/3D mistos.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="290"/>
+        <location filename="../../core/fullscreenui_strings.h" line="296"/>
         <source>Downsampling</source>
         <translation>Suavização</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="291"/>
+        <location filename="../../core/fullscreenui_strings.h" line="297"/>
         <source>Downsampling Display Scale</source>
         <translation>Escala de suavização da imagem</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="293"/>
+        <location filename="../../core/fullscreenui_strings.h" line="299"/>
         <source>Duck icon by icons8 (https://icons8.com/icon/74847/platforms.undefined.short-title)</source>
         <translation>Ícone do pato por : icons8 (https://icons8.com/icon/74847/platforms.undefined.short-title)</translation>
     </message>
@@ -9718,47 +9899,47 @@ Esta ação não pode ser desfeita.</translation>
         <translation type="vanished">Despejar texturas</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="298"/>
+        <location filename="../../core/fullscreenui_strings.h" line="304"/>
         <source>Emulation Settings</source>
         <translation>Configurações de emulação</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="299"/>
+        <location filename="../../core/fullscreenui_strings.h" line="305"/>
         <source>Emulation Speed</source>
         <translation>Velocidade da emulação</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="300"/>
+        <location filename="../../core/fullscreenui_strings.h" line="306"/>
         <source>Enable 8MB RAM</source>
         <translation>Ativar 8 MB de RAM</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="301"/>
+        <location filename="../../core/fullscreenui_strings.h" line="307"/>
         <source>Enable Achievements</source>
         <translation>Ativar conquistas</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="302"/>
+        <location filename="../../core/fullscreenui_strings.h" line="308"/>
         <source>Enable Achievements to see your user summary.</source>
         <translation>Ative as conquistas para ver o seu índice.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="304"/>
+        <location filename="../../core/fullscreenui_strings.h" line="310"/>
         <source>Enable Discord Presence</source>
         <translation>Ativar presença rica do Discord</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="305"/>
+        <location filename="../../core/fullscreenui_strings.h" line="311"/>
         <source>Enable Fast Boot</source>
         <translation>Ativar inicialização rápida</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="306"/>
+        <location filename="../../core/fullscreenui_strings.h" line="312"/>
         <source>Enable GPU-Based Validation</source>
         <translation>Habilitar validação baseada em GPU</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="307"/>
+        <location filename="../../core/fullscreenui_strings.h" line="313"/>
         <source>Enable GPU-based validation when supported by the host&apos;s renderer API. Only for developer use.</source>
         <translation>Habilita a validação baseada em GPU quando suportada pela API. &lt;strong&gt;do renderizador. Somente para uso do desenvolvedor.</translation>
     </message>
@@ -9767,117 +9948,117 @@ Esta ação não pode ser desfeita.</translation>
         <translation type="vanished">Ativar molduras no jogo</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="309"/>
+        <location filename="../../core/fullscreenui_strings.h" line="315"/>
         <source>Enable Overclocking</source>
         <translation>Ativar overclocking</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="310"/>
+        <location filename="../../core/fullscreenui_strings.h" line="316"/>
         <source>Enable Post Processing</source>
         <translation>Ativar pós-processamento</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="311"/>
+        <location filename="../../core/fullscreenui_strings.h" line="317"/>
         <source>Enable Recompiler Block Linking</source>
         <translation>Ativar conexão de bloco recompilador</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="312"/>
+        <location filename="../../core/fullscreenui_strings.h" line="318"/>
         <source>Enable Recompiler ICache</source>
         <translation>Ativar recompilador ICache</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="313"/>
+        <location filename="../../core/fullscreenui_strings.h" line="319"/>
         <source>Enable Recompiler Memory Exceptions</source>
         <translation>Habilitar exceções de memória</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="314"/>
+        <location filename="../../core/fullscreenui_strings.h" line="320"/>
         <source>Enable Region Check</source>
         <translation>Ativar verificaçao de região</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="315"/>
+        <location filename="../../core/fullscreenui_strings.h" line="321"/>
         <source>Enable Rewinding</source>
         <translation>Ativar retrocesso</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="316"/>
+        <location filename="../../core/fullscreenui_strings.h" line="322"/>
         <source>Enable SDL Input Source</source>
         <translation>Ativar fonte de entrada SDL</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="317"/>
+        <location filename="../../core/fullscreenui_strings.h" line="323"/>
         <source>Enable Stage</source>
         <translation>Ativar camada</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="318"/>
+        <location filename="../../core/fullscreenui_strings.h" line="324"/>
         <source>Enable Subdirectory Scanning</source>
         <translation>Ativar a verificação de subdiretórios</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="319"/>
+        <location filename="../../core/fullscreenui_strings.h" line="325"/>
         <source>Enable TTY Logging</source>
         <translation>Habilitar registro TTY</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="320"/>
+        <location filename="../../core/fullscreenui_strings.h" line="326"/>
         <source>Enable Texture Cache</source>
         <translation>Ativar armazenamento de textura</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="321"/>
+        <location filename="../../core/fullscreenui_strings.h" line="327"/>
         <source>Enable Texture Dumping</source>
         <translation>Ativar o despejo de textura</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="322"/>
+        <location filename="../../core/fullscreenui_strings.h" line="328"/>
         <source>Enable Texture Replacements</source>
         <translation>Ativar substituições de textura</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="323"/>
+        <location filename="../../core/fullscreenui_strings.h" line="329"/>
         <source>Enable VRAM Write Dumping</source>
         <translation>Ativar o despejo de gravação da VRAM</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="324"/>
+        <location filename="../../core/fullscreenui_strings.h" line="330"/>
         <source>Enable VRAM Write Replacement</source>
         <translation>Ativar a substituição de gravação na VRAM</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="327"/>
+        <location filename="../../core/fullscreenui_strings.h" line="333"/>
         <source>Enable/Disable the Player LED on DualSense controllers.</source>
         <translation>Ativar/desativar o LED indicador de jogador nos controladores DualSense.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="331"/>
+        <location filename="../../core/fullscreenui_strings.h" line="337"/>
         <source>Enables animation for on-screen messages when they appear and disappear.</source>
         <translation>Ativa a animação das mensagens na tela quando elas aparecem e desaparecem.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="332"/>
+        <location filename="../../core/fullscreenui_strings.h" line="338"/>
         <source>Enables caching of guest textures, required for texture replacement.</source>
         <translation>Permite o armazenamento em lote de texturas, necessário para a substituição de texturas.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="333"/>
+        <location filename="../../core/fullscreenui_strings.h" line="339"/>
         <source>Enables depth testing for semi-transparent polygons. Usually these include shadows, and tend to clip through the ground when depth testing is enabled.</source>
         <translation>Ativa o teste de profundidade para polígonos semitransparentes. Normalmente, esses polígonos incluem sombras e tendem a atravessar o solo quando o teste de profundidade está ativado.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="334"/>
+        <location filename="../../core/fullscreenui_strings.h" line="340"/>
         <source>Enables dumping of textures to image files, which can be replaced. Not compatible with all games.</source>
         <translation>Permite o despejo de texturas em arquivos de imagem, que podem ser substituídos. Não é compatível com todos os jogos.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="335"/>
+        <location filename="../../core/fullscreenui_strings.h" line="341"/>
         <source>Enables loading of cheats for this game from DuckStation&apos;s database.</source>
         <translation>Ativa o carregamento de trapaças para este jogo a partir do banco de dados do DuckStation.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="336"/>
+        <location filename="../../core/fullscreenui_strings.h" line="342"/>
         <source>Enables loading of replacement textures. Not compatible with all games.</source>
         <translation>Permite o carregamento de texturas de personalizadas. Não é compatível com todos os jogos.</translation>
     </message>
@@ -9886,138 +10067,138 @@ Esta ação não pode ser desfeita.</translation>
         <translation type="vanished">Ativa rolagem suave dos menus no modo tela cheia.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="339"/>
+        <location filename="../../core/fullscreenui_strings.h" line="345"/>
         <source>Enables the cheats that are selected below.</source>
         <translation>Ativa as trapaças selecionadas abaixo.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="340"/>
+        <location filename="../../core/fullscreenui_strings.h" line="346"/>
         <source>Enables the older, less accurate MDEC decoding routines. May be required for old replacement backgrounds to match/load.</source>
         <translation>Ativa as rotinas de decodificação MDEC mais antigas e menos precisas. Pode ser necessário para que os fundos de substituição antigos sejam compatíveis/carregados.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="342"/>
+        <location filename="../../core/fullscreenui_strings.h" line="348"/>
         <source>Encore Mode</source>
         <translation>Modo de repetição</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="343"/>
+        <location filename="../../core/fullscreenui_strings.h" line="349"/>
         <source>Ensures every frame generated is displayed for optimal pacing. Enable for variable refresh displays, such as GSync/FreeSync. Disable if you are having speed or sound issues.</source>
         <translation>Garante que todos os quadros gerados sejam exibidos para otimizar o ritmo da emulação. Ative esta opção caso tenha monitores com função de  atualização variável, como GSync/FreeSync. Desative se estiver tendo problemas de velocidade ou de som.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="344"/>
+        <location filename="../../core/fullscreenui_strings.h" line="350"/>
         <source>Enter Value</source>
         <translation>Insira um valor</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="345"/>
+        <location filename="../../core/fullscreenui_strings.h" line="351"/>
         <source>Enter a new serial for this game.</source>
         <translation>Insira um novo número de série para este jogo.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="346"/>
+        <location filename="../../core/fullscreenui_strings.h" line="352"/>
         <source>Enter a new title for this disc set.</source>
         <translation>Insira um novo título para esta coleção.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="347"/>
+        <location filename="../../core/fullscreenui_strings.h" line="353"/>
         <source>Enter a new title for this game.</source>
         <translation>Insira um novo título para este jogo.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="348"/>
+        <location filename="../../core/fullscreenui_strings.h" line="354"/>
         <source>Enter the name of the controller preset you wish to create.</source>
         <translation>Digite o nome da predefinição do controle que deseja criar.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="350"/>
+        <location filename="../../core/fullscreenui_strings.h" line="356"/>
         <source>Error Message Duration</source>
         <translation>Duração da mensagem de erro</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="351"/>
+        <location filename="../../core/fullscreenui_strings.h" line="357"/>
         <source>Example: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</source>
         <translation>Exemplo: https://www.exemplo-nao-eh-um-site.com/capas/${serial}.jpg</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="354"/>
+        <location filename="../../core/fullscreenui_strings.h" line="360"/>
         <source>Exit DuckStation</source>
         <translation>Sair do Duckstation</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="355"/>
+        <location filename="../../core/fullscreenui_strings.h" line="361"/>
         <source>Exits Big Picture mode, returning to the desktop interface.</source>
         <translation>Sai do modo Tela cheia, retornando à interface de área de trabalho.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="356"/>
+        <location filename="../../core/fullscreenui_strings.h" line="362"/>
         <source>FMV Chroma Smoothing</source>
         <translation>Suavização de croma do FMV</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="357"/>
+        <location filename="../../core/fullscreenui_strings.h" line="363"/>
         <source>FMV Scaling</source>
         <translation>Escalonamento FMV</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="358"/>
+        <location filename="../../core/fullscreenui_strings.h" line="364"/>
         <source>Failed to copy cover: {}</source>
         <translation>Falha ao copiar a capa: {}</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="360"/>
+        <location filename="../../core/fullscreenui_strings.h" line="366"/>
         <source>Failed to delete existing cover: {}</source>
         <translation>Falha ao excluir a capa existente: {}</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="364"/>
+        <location filename="../../core/fullscreenui_strings.h" line="370"/>
         <source>Failed to load resume save state info.</source>
         <translation>Falha ao carregar as informações do save state.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="365"/>
+        <location filename="../../core/fullscreenui_strings.h" line="371"/>
         <source>Failed to load shader {}. It may be invalid.
 Error was:</source>
         <translation>Falha ao carregar o shader {}. Erro:</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="366"/>
+        <location filename="../../core/fullscreenui_strings.h" line="372"/>
         <source>Failed to save controller preset &apos;{}&apos;.</source>
         <translation>Falha ao salvar a predefinição do controle &apos;{}&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="367"/>
+        <location filename="../../core/fullscreenui_strings.h" line="373"/>
         <source>Failed to save custom serial.</source>
         <translation>Falha ao salvar o número de série personalizado.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="368"/>
+        <location filename="../../core/fullscreenui_strings.h" line="374"/>
         <source>Failed to save custom title.</source>
         <translation>Falha ao salvar o novo título personalizado.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="370"/>
+        <location filename="../../core/fullscreenui_strings.h" line="376"/>
         <source>Fast Forward Boot</source>
         <translation>Inicialização rápida</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="371"/>
+        <location filename="../../core/fullscreenui_strings.h" line="377"/>
         <source>Fast Forward Memory Card Access</source>
         <translation>Acesso rápido ao cartão de memória</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="374"/>
+        <location filename="../../core/fullscreenui_strings.h" line="380"/>
         <source>Fast forwards through memory card access, both loading and saving. Can reduce waiting times in games that frequently access memory cards.</source>
         <translation>Avança rapidamente no acesso ao cartão de memória, tanto para carregar quanto para salvar. Pode reduzir o tempo de espera em jogos que acessam cartões de memória com frequência.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="375"/>
+        <location filename="../../core/fullscreenui_strings.h" line="381"/>
         <source>Fast forwards through the early loading process when fast booting, saving time. Results may vary between games.</source>
         <translation>Avança rapidamente durante o processo de carregamento inicial, economizando tempo. Os resultados podem variar entre os jogos.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="376"/>
+        <location filename="../../core/fullscreenui_strings.h" line="382"/>
         <source>File Size</source>
         <translation>Tamanho do arquivo</translation>
     </message>
@@ -10026,7 +10207,7 @@ Error was:</source>
         <translation type="vanished">Tamanho do arquivo: %.2f MB</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="381"/>
+        <location filename="../../core/fullscreenui_strings.h" line="387"/>
         <source>Force 4:3 For FMVs</source>
         <translation>Forçar 4:3 para FMVs</translation>
     </message>
@@ -10035,22 +10216,22 @@ Error was:</source>
         <translation type="vanished">Forçar modo NTSC</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="383"/>
+        <location filename="../../core/fullscreenui_strings.h" line="389"/>
         <source>Forces texture upload tracking to be enabled regardless of whether it is needed.</source>
         <translation>Força o carregamento de textura para o modo sempre ativado, independentemente se for preciso ou não.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="388"/>
+        <location filename="../../core/fullscreenui_strings.h" line="394"/>
         <source>Frequency</source>
         <translation>Frequência</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="393"/>
+        <location filename="../../core/fullscreenui_strings.h" line="399"/>
         <source>Game Display</source>
         <translation>Exibição</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="397"/>
+        <location filename="../../core/fullscreenui_strings.h" line="403"/>
         <source>Game Patches</source>
         <translation>Modificações de jogos</translation>
     </message>
@@ -10059,17 +10240,17 @@ Error was:</source>
         <translation type="vanished">Genêro: %.*s</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="421"/>
+        <location filename="../../core/fullscreenui_strings.h" line="427"/>
         <source>Graphics Settings</source>
         <translation>Configurações gráficas</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="422"/>
+        <location filename="../../core/fullscreenui_strings.h" line="428"/>
         <source>Green Giant</source>
         <translation>Gigante verde</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="423"/>
+        <location filename="../../core/fullscreenui_strings.h" line="429"/>
         <source>Grey Matter</source>
         <translation>Matéria cinza</translation>
     </message>
@@ -10078,152 +10259,152 @@ Error was:</source>
         <translation type="vanished">O modo hardcore não será ativado até que o sistema seja reiniciado. Deseja reiniciar o sistema agora?</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="429"/>
+        <location filename="../../core/fullscreenui_strings.h" line="435"/>
         <source>Hotkeys</source>
         <translation>Atalhos</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="433"/>
+        <location filename="../../core/fullscreenui_strings.h" line="439"/>
         <source>If disabled, the shader in this stage will not be applied.</source>
         <translation>Caso desatibado, o sombreador na camada atual não será aplicado.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="434"/>
+        <location filename="../../core/fullscreenui_strings.h" line="440"/>
         <source>If enabled, the display will be blended with the transparency of the overlay image.</source>
         <translation>Se ativada, a exibição será mesclada com a transparência da imagem de sobreposição de moldura.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="435"/>
+        <location filename="../../core/fullscreenui_strings.h" line="441"/>
         <source>If enabled, the transparency of the overlay image will be applied.</source>
         <translation>Se ativado, a transparência da imagem de sobreposição será aplicada.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="437"/>
+        <location filename="../../core/fullscreenui_strings.h" line="443"/>
         <source>Ignore Drive Subcode</source>
         <translation>Ignorar subfaixa de unidade óptica</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="438"/>
+        <location filename="../../core/fullscreenui_strings.h" line="444"/>
         <source>Ignores the subchannel provided by the drive when using physical discs, instead always generating subchannel data. Can improve read reliability on some drives.</source>
         <translation>Ignora o subcanal gerado pela unidade leitora de CD-rom ao usar discos físicos, e sempre gera dados de subcanal. Não funciona com jogos libcrypt (PAL/Europeus), mas pode melhorar a confiabilidade da leitura em algumas unidades.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="439"/>
+        <location filename="../../core/fullscreenui_strings.h" line="445"/>
         <source>Image Path</source>
         <translation>Caminho da imagem</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="440"/>
+        <location filename="../../core/fullscreenui_strings.h" line="446"/>
         <source>In the form below, specify the URLs to download covers from, with one template URL per line. The following variables are available:</source>
         <translation>No formulário abaixo, especifique os endereços dos quais deseja baixar as capas, sendo uma URL por linha. As seguintes variáveis estão disponíveis:</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="441"/>
+        <location filename="../../core/fullscreenui_strings.h" line="447"/>
         <source>Includes the elapsed time since the application start in file logs.</source>
         <translation>Inclui o tempo decorrido desde o início do aplicativo nos registros de arquivo.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="442"/>
+        <location filename="../../core/fullscreenui_strings.h" line="448"/>
         <source>Includes the elapsed time since the application start in window and console logs.</source>
         <translation>Inclui o tempo decorrido desde o início do aplicativo nos registros da janela do console.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="445"/>
+        <location filename="../../core/fullscreenui_strings.h" line="451"/>
         <source>Indicator Location</source>
         <translation>Localização do indicador</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="447"/>
+        <location filename="../../core/fullscreenui_strings.h" line="453"/>
         <source>Informational Message Duration</source>
         <translation>Duração da mensagem de informação</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="451"/>
+        <location filename="../../core/fullscreenui_strings.h" line="458"/>
         <source>Internal Resolution</source>
         <translation>Resolução interna</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="452"/>
+        <location filename="../../core/fullscreenui_strings.h" line="459"/>
         <source>Language</source>
         <translation>Idioma</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="453"/>
+        <location filename="../../core/fullscreenui_strings.h" line="460"/>
         <source>Language: </source>
         <translation>Idioma: </translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="455"/>
+        <location filename="../../core/fullscreenui_strings.h" line="462"/>
         <source>Last Played: </source>
         <translation>Jogou pela última vez: </translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="457"/>
+        <location filename="../../core/fullscreenui_strings.h" line="464"/>
         <source>Launch Options</source>
         <translation>Opções de inicialização</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="459"/>
+        <location filename="../../core/fullscreenui_strings.h" line="466"/>
         <source>Launch a game from a file, disc, or starts the console without any disc inserted.</source>
         <translation>Inicie um jogo a partir de um arquivo, disco ou inicie o console sem nenhum disco inserido.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="462"/>
+        <location filename="../../core/fullscreenui_strings.h" line="469"/>
         <source>Leaderboard Trackers</source>
         <translation>Tabelas de classificação</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="464"/>
+        <location filename="../../core/fullscreenui_strings.h" line="471"/>
         <source>Left: </source>
         <translation>Esquerdo: </translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="465"/>
+        <location filename="../../core/fullscreenui_strings.h" line="472"/>
         <source>Light</source>
         <translation>Claro</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="466"/>
+        <location filename="../../core/fullscreenui_strings.h" line="473"/>
         <source>Line Detection</source>
         <translation>Detecção de linha</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="467"/>
+        <location filename="../../core/fullscreenui_strings.h" line="474"/>
         <source>List Compact Mode</source>
         <translation>Modo de lista compacta</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="469"/>
+        <location filename="../../core/fullscreenui_strings.h" line="476"/>
         <source>Load Database Cheats</source>
         <translation>Carregar banco de dados de trapaças</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="471"/>
+        <location filename="../../core/fullscreenui_strings.h" line="478"/>
         <source>Load Global State</source>
         <translation>Carregar estado global</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="472"/>
+        <location filename="../../core/fullscreenui_strings.h" line="479"/>
         <source>Load Preset</source>
         <translation>Carregar predefinição</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="477"/>
+        <location filename="../../core/fullscreenui_strings.h" line="484"/>
         <source>Log File Timestamps</source>
         <translation>Marcações de registro de arquivo</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="479"/>
+        <location filename="../../core/fullscreenui_strings.h" line="486"/>
         <source>Log Timestamps</source>
         <translation>Marcações de registros</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="483"/>
+        <location filename="../../core/fullscreenui_strings.h" line="490"/>
         <source>Logging In...</source>
         <translation>Entrando...</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="485"/>
+        <location filename="../../core/fullscreenui_strings.h" line="492"/>
         <source>Logging in to RetroAchievements...</source>
         <translation>Conectando-se ao RetroAchievements...</translation>
     </message>
@@ -10232,7 +10413,7 @@ Error was:</source>
         <translation type="vanished">Erro ao iniciar sessão</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="487"/>
+        <location filename="../../core/fullscreenui_strings.h" line="494"/>
         <source>Login Failed.
 Error: {}
 Please check your username and password, and try again.</source>
@@ -10245,57 +10426,57 @@ Por favor verifique seu nome de usuário e senha, e tente novamente.</translatio
         <translation type="vanished">Máximo</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="504"/>
+        <location filename="../../core/fullscreenui_strings.h" line="511"/>
         <source>Menu Background</source>
         <translation>Plano de fundo do menu</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="519"/>
+        <location filename="../../core/fullscreenui_strings.h" line="527"/>
         <source>Navigate</source>
         <translation>Navegar</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="520"/>
+        <location filename="../../core/fullscreenui_strings.h" line="528"/>
         <source>No</source>
         <translation>Não</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="522"/>
+        <location filename="../../core/fullscreenui_strings.h" line="530"/>
         <source>No LED</source>
         <translation>Sem LED</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="523"/>
+        <location filename="../../core/fullscreenui_strings.h" line="531"/>
         <source>No Vibration</source>
         <translation>Sem vibração</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="524"/>
+        <location filename="../../core/fullscreenui_strings.h" line="532"/>
         <source>No cheats are available for this game.</source>
         <translation>Não há trapaças disponíveis para este jogo.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="527"/>
+        <location filename="../../core/fullscreenui_strings.h" line="535"/>
         <source>No devices with vibration motors were detected.</source>
         <translation>Nenhum dispositivo com motores de vibração foi detectado.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="528"/>
+        <location filename="../../core/fullscreenui_strings.h" line="536"/>
         <source>No patches are available for this game.</source>
         <translation>Não há modificações disponíveis para este jogo.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="533"/>
+        <location filename="../../core/fullscreenui_strings.h" line="541"/>
         <source>None</source>
         <translation>Nenhum</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="559"/>
+        <location filename="../../core/fullscreenui_strings.h" line="567"/>
         <source>PGXP Depth Buffer</source>
         <translation>PGXP Buffer de profundidade</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="561"/>
+        <location filename="../../core/fullscreenui_strings.h" line="569"/>
         <source>Parent Directory</source>
         <translation>Diretório raiz</translation>
     </message>
@@ -10304,42 +10485,42 @@ Por favor verifique seu nome de usuário e senha, e tente novamente.</translatio
         <translation type="vanished">Senha: </translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="582"/>
+        <location filename="../../core/fullscreenui_strings.h" line="590"/>
         <source>Please enter your user name and password for retroachievements.org below. Your password will not be saved in DuckStation, an access token will be generated and used instead.</source>
         <translation>Digite seu nome de usuário e senha para o retroachievements.org abaixo. Sua senha não será salva no DuckStation; será gerado e usado um token de acesso no lugar.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="592"/>
+        <location filename="../../core/fullscreenui_strings.h" line="600"/>
         <source>Press To Toggle</source>
         <translation>Pressione para alternar</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="593"/>
+        <location filename="../../core/fullscreenui_strings.h" line="601"/>
         <source>Pressure</source>
         <translation>Pressão</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="626"/>
+        <location filename="../../core/fullscreenui_strings.h" line="634"/>
         <source>Removes all bindings for this controller port.</source>
         <translation>Remove todos os vínculos dessa porta do controle.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="630"/>
+        <location filename="../../core/fullscreenui_strings.h" line="638"/>
         <source>Replaces these settings with a previously saved controller preset.</source>
         <translation>Substitui essas configurações por uma predefinição do controle salva anteriormente.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="633"/>
+        <location filename="../../core/fullscreenui_strings.h" line="641"/>
         <source>Reset Controller Settings</source>
         <translation>Redefinir as configurações do controle</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="641"/>
+        <location filename="../../core/fullscreenui_strings.h" line="649"/>
         <source>Restart Game</source>
         <translation>Reinicializar o jogo</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="644"/>
+        <location filename="../../core/fullscreenui_strings.h" line="652"/>
         <source>Resume Last Session</source>
         <translation>Retomar a última sessão</translation>
     </message>
@@ -10348,17 +10529,17 @@ Por favor verifique seu nome de usuário e senha, e tente novamente.</translatio
         <translation type="vanished">Credenciais do RetroAchievements</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="645"/>
+        <location filename="../../core/fullscreenui_strings.h" line="653"/>
         <source>Return To Game</source>
         <translation>Retornar ao jogo</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="646"/>
+        <location filename="../../core/fullscreenui_strings.h" line="654"/>
         <source>Return to desktop mode, or exit the application.</source>
         <translation>Retornar ao modo de área de trabalho ou sair do aplicativo.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="647"/>
+        <location filename="../../core/fullscreenui_strings.h" line="655"/>
         <source>Return to the previous menu.</source>
         <translation>Retornar ao menu anterior.</translation>
     </message>
@@ -10367,237 +10548,237 @@ Por favor verifique seu nome de usuário e senha, e tente novamente.</translatio
         <translation type="vanished">Rebobinar para {0} quadros, com duração de {1:.2f} segundos, exigirá até {2} MB de RAM e {3} MB de VRAM.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="653"/>
+        <location filename="../../core/fullscreenui_strings.h" line="661"/>
         <source>Rewind is disabled because runahead is enabled. Runahead will significantly increase system requirements.</source>
         <translation>O retrocesso não está ativado porque o pulo de quadros está ativado; Tenha em mente que ativando esta função poderá aumentar muito os requisitos do sistema. (Uso de RAM e V-RAM).</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="654"/>
+        <location filename="../../core/fullscreenui_strings.h" line="662"/>
         <source>Rewind is not enabled. Please note that enabling rewind may significantly increase system requirements.</source>
         <translation>Retrocesso não está ativado. Tenha em mente que ativando esta função poderá aumentar muito os requisitos do sistema.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="657"/>
+        <location filename="../../core/fullscreenui_strings.h" line="665"/>
         <source>Rounds texture coordinates instead of flooring when upscaling. Can fix misaligned textures in some games, but break others, and is incompatible with texture filtering.</source>
         <translation>Arredonda as coordenadas da textura em vez de arredondar a parte inferior ao subir a resolução. Pode corrigir texturas desalinhadas em alguns jogos, mas quebrar outras, é incompatível com a filtragem de texturas.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="661"/>
+        <location filename="../../core/fullscreenui_strings.h" line="669"/>
         <source>Runs the software renderer in parallel for VRAM readbacks. On some systems, this may result in greater performance when using graphical enhancements with the hardware renderer.</source>
         <translation>Executa o modo software em paralelo para releituras na memória de vídeo. Em alguns sistemas, pode resultar em maior desempenho ao usar aprimoramentos gráficos com o renderizador por hardware.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="666"/>
+        <location filename="../../core/fullscreenui_strings.h" line="674"/>
         <source>Save Controller Preset</source>
         <translation>Salvar predefinição do controle</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="668"/>
+        <location filename="../../core/fullscreenui_strings.h" line="676"/>
         <source>Save Preset</source>
         <translation>Salvar predefinição</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="673"/>
+        <location filename="../../core/fullscreenui_strings.h" line="681"/>
         <source>Save State On Game Close</source>
         <translation>Salvar estado ao fechar jogo</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="675"/>
+        <location filename="../../core/fullscreenui_strings.h" line="683"/>
         <source>Save state deleted.</source>
         <translation>Save state excluído.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="683"/>
+        <location filename="../../core/fullscreenui_strings.h" line="691"/>
         <source>Screen Margins</source>
         <translation>Margens da tela</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="684"/>
+        <location filename="../../core/fullscreenui_strings.h" line="692"/>
         <source>Screen Position</source>
         <translation>Posição da tela</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="688"/>
+        <location filename="../../core/fullscreenui_strings.h" line="696"/>
         <source>Screenshot Format</source>
         <translation>Formato de captura de tela</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="689"/>
+        <location filename="../../core/fullscreenui_strings.h" line="697"/>
         <source>Screenshot Quality</source>
         <translation>Qualidade da captura de tela</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="690"/>
+        <location filename="../../core/fullscreenui_strings.h" line="698"/>
         <source>Screenshot Size</source>
         <translation>Tamanho da captura de tela</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="691"/>
+        <location filename="../../core/fullscreenui_strings.h" line="699"/>
         <source>Scroll Page</source>
         <translation>Rolar página</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="696"/>
+        <location filename="../../core/fullscreenui_strings.h" line="704"/>
         <source>Select</source>
         <translation>Select</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="699"/>
+        <location filename="../../core/fullscreenui_strings.h" line="708"/>
         <source>Select Disc Drive</source>
         <translation>Selecionar unidade de disco</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="702"/>
+        <location filename="../../core/fullscreenui_strings.h" line="711"/>
         <source>Select Game</source>
         <translation>Selecionar jogo</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="704"/>
+        <location filename="../../core/fullscreenui_strings.h" line="714"/>
         <source>Select State</source>
         <translation>Selecionar dado salvo</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="705"/>
+        <location filename="../../core/fullscreenui_strings.h" line="715"/>
         <source>Select from the list of preset borders, or manually specify a custom configuration.</source>
         <translation>Selecione a partir da lista de bordas predefinidas ou especifique manualmente uma configuração personalizada.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="706"/>
+        <location filename="../../core/fullscreenui_strings.h" line="716"/>
         <source>Selected Preset</source>
         <translation>Predefinição selecionada</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="707"/>
+        <location filename="../../core/fullscreenui_strings.h" line="717"/>
         <source>Selects between Xbox/PlayStation button icons in the footer and input binding.</source>
         <translation>Escolha entre ícones de botões do Xbox/PlayStation no rodapé e no mapeamento de entradas.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="714"/>
+        <location filename="../../core/fullscreenui_strings.h" line="724"/>
         <source>Selects the quality at which screenshots will be compressed.</source>
         <translation>Seleciona a qualidade na qual as capturas de tela serão compactadas.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="717"/>
+        <location filename="../../core/fullscreenui_strings.h" line="727"/>
         <source>Selects the screen location for achievement and leaderboard notifications.</source>
         <translation>Seleciona o local da tela para notificações de conquistas e placares.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="718"/>
+        <location filename="../../core/fullscreenui_strings.h" line="728"/>
         <source>Selects the screen location for challenge/progress indicators, and leaderboard trackers.</source>
         <translation>Seleciona a localização na tela para indicadores de desafio/progresso e registros de placares.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="719"/>
+        <location filename="../../core/fullscreenui_strings.h" line="729"/>
         <source>Selects the type of emulated controller for this port.</source>
         <translation>Seleciona o tipo de controle emulado para essa porta.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="721"/>
+        <location filename="../../core/fullscreenui_strings.h" line="731"/>
         <source>Selects which location on the screen messages are displayed.</source>
         <translation>Seleciona em que local da tela as mensagens são exibidas.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="726"/>
+        <location filename="../../core/fullscreenui_strings.h" line="736"/>
         <source>Set Cover Image</source>
         <translation>Definir imagem de capa</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="730"/>
+        <location filename="../../core/fullscreenui_strings.h" line="740"/>
         <source>Sets the custom scale percentage for achievement notifications.</source>
         <translation>Define a porcentagem de escala personalizada para as notificações de conquistas.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="731"/>
+        <location filename="../../core/fullscreenui_strings.h" line="741"/>
         <source>Sets the custom scale percentage for challenge/progress indicators.</source>
         <translation>Define a porcentagem de escala personalizada para os indicadores de desafio/progresso.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="761"/>
+        <location filename="../../core/fullscreenui_strings.h" line="771"/>
         <source>Shows a background image or shader when a game isn&apos;t running. Backgrounds are located in resources/fullscreenui/backgrounds in the data directory.</source>
         <translation>Mostra uma imagem de fundo ou um sombreador quando um jogo não está em execução. Os planos de fundo estão localizados na pasta raiz, resources/fullscreenui/backgrounds.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="762"/>
+        <location filename="../../core/fullscreenui_strings.h" line="772"/>
         <source>Shows a notification or icons in the selected location when a challenge/primed achievement is active.</source>
         <translation>Mostra uma notificação ou ícones no local selecionado quando um desafio/conquista foi ativada.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="763"/>
+        <location filename="../../core/fullscreenui_strings.h" line="773"/>
         <source>Shows a popup in the selected location when progress towards a measured achievement changes.</source>
         <translation>Mostra um pop-up no local selecionado quando o progresso de uma conquista muda.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="764"/>
+        <location filename="../../core/fullscreenui_strings.h" line="774"/>
         <source>Shows a timer in the selected location when leaderboard challenges are active.</source>
         <translation>Mostra um cronômetro no local selecionado quando os desafios da tabela de classificação estão ativos.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="775"/>
+        <location filename="../../core/fullscreenui_strings.h" line="785"/>
         <source>Shows the host&apos;s CPU usage of each system thread in the top-right corner of the display.</source>
         <translation>Mostra o uso do CPU sequencialmente por sistema no topo superior direito da tela.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="787"/>
+        <location filename="../../core/fullscreenui_strings.h" line="797"/>
         <source>Smooths out blockyness between colour transitions in 24-bit content, usually FMVs.</source>
         <translation>Suaviza a imagem entre as transições de cores em conteúdo de 24 bits, geralmente FMVs.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="788"/>
+        <location filename="../../core/fullscreenui_strings.h" line="798"/>
         <source>Smooths out the blockiness of magnified textures on 2D objects.</source>
         <translation>Suaviza artefatos de texturas ampliadas em objetos 2D.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="790"/>
+        <location filename="../../core/fullscreenui_strings.h" line="800"/>
         <source>Sort Alphabetically</source>
         <translation>Ordenar alfabeticamente</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="793"/>
+        <location filename="../../core/fullscreenui_strings.h" line="803"/>
         <source>Sorts the cheat list alphabetically by the name of the code.</source>
         <translation>Ordena a lista de trapaças em ordem alfabética pelo nome do código.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="800"/>
+        <location filename="../../core/fullscreenui_strings.h" line="810"/>
         <source>Sprite Texture Filtering</source>
         <translation>Filtro de textura de sprites</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="803"/>
+        <location filename="../../core/fullscreenui_strings.h" line="813"/>
         <source>Start Disc</source>
         <translation>Iniciar disco</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="807"/>
+        <location filename="../../core/fullscreenui_strings.h" line="817"/>
         <source>Start Game</source>
         <translation>Iniciar jogo</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="809"/>
+        <location filename="../../core/fullscreenui_strings.h" line="819"/>
         <source>Start a game from a disc in your PC&apos;s DVD drive.</source>
         <translation>Inicie um jogo a partir de um disco na unidade de DVD do seu PC.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="812"/>
+        <location filename="../../core/fullscreenui_strings.h" line="822"/>
         <source>Stores the current settings to a controller preset.</source>
         <translation>Armazena as configurações atuais em uma predefinição de controle.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="816"/>
+        <location filename="../../core/fullscreenui_strings.h" line="826"/>
         <source>Swap Gamepad Confirm/Cancel Buttons</source>
         <translation>Trocar botões de Confirmar/Cancelar do controle</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="817"/>
+        <location filename="../../core/fullscreenui_strings.h" line="827"/>
         <source>Swaps the confirm/cancel buttons on the gamepad, using {0} for confirming and {1} for cancelling.</source>
         <translation>Troca os botões de confirmar/cancelar no controle, usando {0} para confirmar e {1} para cancelar.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="822"/>
+        <location filename="../../core/fullscreenui_strings.h" line="832"/>
         <source>Synchronizes presentation of the console&apos;s frames to the host. GSync/FreeSync users should enable Optimal Frame Pacing instead.</source>
         <translation>Sincroniza a apresentação dos quadros do console para o monitor. Quem faz o uso de GSync/FreeSync deve ativar o Otimização de quadros.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="828"/>
+        <location filename="../../core/fullscreenui_strings.h" line="838"/>
         <source>Textures Directory</source>
         <translation>Diretório de texturas</translation>
     </message>
@@ -10614,22 +10795,22 @@ Por favor verifique seu nome de usuário e senha, e tente novamente.</translatio
         <translation type="vanished">Este jogo não possui placares de líderes.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="837"/>
+        <location filename="../../core/fullscreenui_strings.h" line="848"/>
         <source>Timing out in {:.0f} seconds...</source>
         <translation>Tempo limite em {:.0f} segundos...</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="844"/>
+        <location filename="../../core/fullscreenui_strings.h" line="856"/>
         <source>Toggle Fullscreen</source>
         <translation>Alternar para o modo tela cheia</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="846"/>
+        <location filename="../../core/fullscreenui_strings.h" line="858"/>
         <source>Toggles the macro when the button is pressed, instead of held.</source>
         <translation>Alterna a macro quando o botão é pressionado, em vez de pressionado.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="851"/>
+        <location filename="../../core/fullscreenui_strings.h" line="863"/>
         <source>Trigger</source>
         <translation>Gatilho</translation>
     </message>
@@ -10638,7 +10819,7 @@ Por favor verifique seu nome de usuário e senha, e tente novamente.</translatio
         <translation type="vanished">Idioma da interface</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="854"/>
+        <location filename="../../core/fullscreenui_strings.h" line="866"/>
         <source>Uncompressed Size</source>
         <translation>Tamanho sem compressão</translation>
     </message>
@@ -10647,27 +10828,27 @@ Por favor verifique seu nome de usuário e senha, e tente novamente.</translatio
         <translation type="vanished">Tamanho sem compressão: %.2f MB</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="856"/>
+        <location filename="../../core/fullscreenui_strings.h" line="868"/>
         <source>Ungrouped</source>
         <translation>Não agrupado</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="858"/>
+        <location filename="../../core/fullscreenui_strings.h" line="870"/>
         <source>Unknown File Size</source>
         <translation>Tamanho de arquivo desconhecido</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="869"/>
+        <location filename="../../core/fullscreenui_strings.h" line="881"/>
         <source>Use Old MDEC Routines</source>
         <translation>Usar rotinas MDEC antigas</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="872"/>
+        <location filename="../../core/fullscreenui_strings.h" line="884"/>
         <source>Use Separate Disc Settings</source>
         <translation>Usar configurações de disco separadas</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="873"/>
+        <location filename="../../core/fullscreenui_strings.h" line="885"/>
         <source>Use Single Card For Multi-Disc Games</source>
         <translation>Use cartão único para jogos com vários discos</translation>
     </message>
@@ -10676,32 +10857,32 @@ Por favor verifique seu nome de usuário e senha, e tente novamente.</translatio
         <translation type="vanished">Nome de usuário: </translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="890"/>
+        <location filename="../../core/fullscreenui_strings.h" line="902"/>
         <source>Uses separate game settings for each disc of multi-disc games. Can only be set on the first/main disc.</source>
         <translation>Usa configurações de jogo separadas para cada disco de jogos multi-discos. Só pode ser definido para o primeiro disco/principal.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="897"/>
+        <location filename="../../core/fullscreenui_strings.h" line="909"/>
         <source>Vertex Cache</source>
         <translation>Cache de vértices</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="898"/>
+        <location filename="../../core/fullscreenui_strings.h" line="910"/>
         <source>Vertical Sync (VSync)</source>
         <translation>Sincronização vertical (Vsync)</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="899"/>
+        <location filename="../../core/fullscreenui_strings.h" line="911"/>
         <source>WARNING: Activating cheats can cause unpredictable behavior, crashing, soft-locks, or broken saved games.</source>
         <translation>AVISO: a ativação de modificações de jogos pode causar comportamentos imprevisíveis, travamentos, corrupção de dados de jogos já salvos.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="900"/>
+        <location filename="../../core/fullscreenui_strings.h" line="912"/>
         <source>WARNING: Activating game patches can cause unpredictable behavior, crashing, soft-locks, or broken saved games.</source>
         <translation>AVISO: a ativação de modificações de jogos pode causar comportamentos imprevisíveis, travamentos, corrupção de dados de jogos já salvos.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="917"/>
+        <location filename="../../core/fullscreenui_strings.h" line="929"/>
         <source>Wireframe Rendering</source>
         <translation>Modo de renderização Wireframe</translation>
     </message>
@@ -10825,62 +11006,62 @@ Deseja excluir o save state e iniciar o jogo mesmo assim?</translation>
         <translation type="vanished">Carrega e aplica automaticamente as trapaças no início do jogo. Trapaças podem quebrar jogos e salvamentos.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="149"/>
+        <location filename="../../core/fullscreenui_strings.h" line="153"/>
         <source>Change Page</source>
         <translation>Mudar de página</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="150"/>
+        <location filename="../../core/fullscreenui_strings.h" line="154"/>
         <source>Change Selection</source>
         <translation>Alterar seleção</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="153"/>
+        <location filename="../../core/fullscreenui_strings.h" line="157"/>
         <source>Change View</source>
         <translation>Alterar visualização</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="154"/>
+        <location filename="../../core/fullscreenui_strings.h" line="158"/>
         <source>Changes settings for the application.</source>
         <translation>Altera as configurações do aplicativo.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="156"/>
+        <location filename="../../core/fullscreenui_strings.h" line="160"/>
         <source>Cheats</source>
         <translation>Trapaças</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="159"/>
+        <location filename="../../core/fullscreenui_strings.h" line="163"/>
         <source>Clear Mappings</source>
         <translation>Limpar mapeamentos</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="169"/>
+        <location filename="../../core/fullscreenui_strings.h" line="173"/>
         <source>Close Without Saving</source>
         <translation>Fechar janela e salvar</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="170"/>
+        <location filename="../../core/fullscreenui_strings.h" line="174"/>
         <source>Close and Save State</source>
         <translation>Fechar e salvar estado</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="171"/>
+        <location filename="../../core/fullscreenui_strings.h" line="175"/>
         <source>Cobalt Sky</source>
         <translation>Cobalto (azul)</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="174"/>
+        <location filename="../../core/fullscreenui_strings.h" line="178"/>
         <source>Completely exits the application, returning you to your desktop.</source>
         <translation>Sai completamente do aplicativo, retornando-o à área de trabalho.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="176"/>
+        <location filename="../../core/fullscreenui_strings.h" line="180"/>
         <source>Confirm Game Close</source>
         <translation>Confirmar fechar ao salvar</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="178"/>
+        <location filename="../../core/fullscreenui_strings.h" line="182"/>
         <source>Contributor List</source>
         <translation>Lista de colaboradores</translation>
     </message>
@@ -10889,22 +11070,22 @@ Deseja excluir o save state e iniciar o jogo mesmo assim?</translation>
         <translation type="vanished">Porta do controle {} vínculos</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="196"/>
+        <location filename="../../core/fullscreenui_strings.h" line="201"/>
         <source>Could not find any CD/DVD-ROM devices. Please ensure you have a drive connected and sufficient permissions to access it.</source>
         <translation>Não foi possível encontrar nenhum dispositivo de CD/DVD-ROM. Verifique se há uma unidade conectada e se há permissões suficientes para acessá-la.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="203"/>
+        <location filename="../../core/fullscreenui_strings.h" line="208"/>
         <source>Create New...</source>
         <translation>Criar novo...</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="223"/>
+        <location filename="../../core/fullscreenui_strings.h" line="228"/>
         <source>Deinterlacing Mode</source>
         <translation>Modo de desentrelaçamento</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="228"/>
+        <location filename="../../core/fullscreenui_strings.h" line="234"/>
         <source>Depth Clear Threshold</source>
         <translation>Limite de compensação de profundidade</translation>
     </message>
@@ -10913,12 +11094,12 @@ Deseja excluir o save state e iniciar o jogo mesmo assim?</translation>
         <translation type="vanished">Define como o áudio é expandido de estéreo para surround nos jogos compatíveis.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="255"/>
+        <location filename="../../core/fullscreenui_strings.h" line="261"/>
         <source>Determines the rotation of the simulated TV screen.</source>
         <translation>Determina a rotação da tela de TV emulada.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="261"/>
+        <location filename="../../core/fullscreenui_strings.h" line="267"/>
         <source>Determines which algorithm is used to convert interlaced frames to progressive for display on your system.</source>
         <translation>Determina qual algoritmo é usado para converter quadros entrelaçados em  progressivos para exibição em seu sistema.</translation>
     </message>
@@ -10927,7 +11108,7 @@ Deseja excluir o save state e iniciar o jogo mesmo assim?</translation>
         <translation type="vanished">Disco {} | {}</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="279"/>
+        <location filename="../../core/fullscreenui_strings.h" line="285"/>
         <source>Display Area</source>
         <translation>Área de exibição</translation>
     </message>
@@ -10936,26 +11117,25 @@ Deseja excluir o save state e iniciar o jogo mesmo assim?</translation>
         <translation type="vanished">Exibe os ícones dos botões DualShock/DualSense no rodapé e na atribuição de entrada, em vez dos botões do Xbox.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="280"/>
+        <location filename="../../core/fullscreenui_strings.h" line="286"/>
         <source>Displays only the game title in the list, instead of the title and serial/file name.</source>
         <translation>Exibe apenas o título do jogo na lista, em vez do título e do número de série ou arquivo.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="283"/>
+        <location filename="../../core/fullscreenui_strings.h" line="289"/>
         <source>Dithering</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="284"/>
         <source>Do you want to continue from the automatic save created at {}?</source>
-        <translation>Deseja continuar a partir do salvamento automático criado em {}?</translation>
+        <translation type="vanished">Deseja continuar a partir do salvamento automático criado em {}?</translation>
     </message>
     <message>
         <source>Download Game Icons</source>
         <translation type="vanished">Baixar ícones dos jogos</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="287"/>
+        <location filename="../../core/fullscreenui_strings.h" line="293"/>
         <source>Downloads all locked achievement badges while starting the game. This will reduce delays in the images being shown when unlocking achievements.</source>
         <translation>Baixa todos os ícones de conquistas bloqueadas ao iniciar o jogo. Isso reduzirá os atrasos para exibir as imagens ao desbloquear conquistas.</translation>
     </message>
@@ -10964,52 +11144,52 @@ Deseja excluir o save state e iniciar o jogo mesmo assim?</translation>
         <translation type="vanished">Baixar ícones para todos os jogos do RetroAchievements.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="294"/>
+        <location filename="../../core/fullscreenui_strings.h" line="300"/>
         <source>DuckStation can automatically download covers for games which do not currently have a cover set. We do not host any cover images, the user must provide their own source for images.</source>
         <translation>O DuckStation pode baixar automaticamente capas para jogos que ainda não possuem suas capas definidas. Não hospedamos nenhuma imagem de capa, o usuário deve fornecer sua própria fonte de imagens.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="295"/>
+        <location filename="../../core/fullscreenui_strings.h" line="301"/>
         <source>DuckStation is a free simulator/emulator of the Sony PlayStation(TM) console, focusing on playability, speed, and long-term maintainability.</source>
         <translation>O Duckstation é um emulador de código aberto do console Playstation 1 focado na velocidade, jogabilidade e suporte a longo prazo.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="296"/>
+        <location filename="../../core/fullscreenui_strings.h" line="302"/>
         <source>Dump Replaced Textures</source>
         <translation>Despejar texturas personalizadas</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="297"/>
+        <location filename="../../core/fullscreenui_strings.h" line="303"/>
         <source>Dumps textures that have replacements already loaded.</source>
         <translation>Despeja texturas que já foram carregadas.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="303"/>
+        <location filename="../../core/fullscreenui_strings.h" line="309"/>
         <source>Enable Cheats</source>
         <translation>Ativar trapaças</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="325"/>
+        <location filename="../../core/fullscreenui_strings.h" line="331"/>
         <source>Enable XInput Input Source</source>
         <translation>Ativar fonte de entrada XInput</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="326"/>
+        <location filename="../../core/fullscreenui_strings.h" line="332"/>
         <source>Enable debugging when supported by the host&apos;s renderer API. Only for developer use.</source>
         <translation>Habilita a depuração quando suportada pela API do renderizador do host. somente para uso do desenvolvedor.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="328"/>
+        <location filename="../../core/fullscreenui_strings.h" line="334"/>
         <source>Enables alignment and bus exceptions. Not needed for any known games.</source>
         <translation>Ativa o alinhamento e as exceções de barramento. Não é necessário para nenhum jogo conhecido.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="329"/>
+        <location filename="../../core/fullscreenui_strings.h" line="335"/>
         <source>Enables an additional 6MB of RAM to obtain a total of 2+6 = 8MB, usually present on dev consoles.</source>
         <translation>Permite um adicional de 6 MB de RAM para obter um total de 2+6 = 8 MB, geralmente presente em consoles de desenvolvimento.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="330"/>
+        <location filename="../../core/fullscreenui_strings.h" line="336"/>
         <source>Enables an additional three controller slots on each port. Not supported in all games.</source>
         <translation>Permite três compartimentos de controle adicionais em cada porta. Não é compatível com todos os jogos.</translation>
     </message>
@@ -11018,7 +11198,7 @@ Deseja excluir o save state e iniciar o jogo mesmo assim?</translation>
         <translation type="vanished">Permite um ritmo de quadros mais preciso ao custo da duração da bateria.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="341"/>
+        <location filename="../../core/fullscreenui_strings.h" line="347"/>
         <source>Enables the replacement of background textures in supported games.</source>
         <translation>Permite a substituição de texturas de fundo em jogos compatíveis.</translation>
     </message>
@@ -11027,17 +11207,17 @@ Deseja excluir o save state e iniciar o jogo mesmo assim?</translation>
         <translation type="vanished">Digite o nome do perfil de entrada que você deseja criar.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="349"/>
+        <location filename="../../core/fullscreenui_strings.h" line="355"/>
         <source>Error</source>
         <translation>Erro</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="352"/>
+        <location filename="../../core/fullscreenui_strings.h" line="358"/>
         <source>Execution Mode</source>
         <translation>Modo de execução</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="353"/>
+        <location filename="../../core/fullscreenui_strings.h" line="359"/>
         <source>Exit</source>
         <translation>Sair</translation>
     </message>
@@ -11054,22 +11234,22 @@ Deseja excluir o save state e iniciar o jogo mesmo assim?</translation>
         <translation type="vanished">Modo de expansão</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="359"/>
+        <location filename="../../core/fullscreenui_strings.h" line="365"/>
         <source>Failed to copy text to clipboard.</source>
         <translation>Falha ao copiar o texto para a área de transferência.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="361"/>
+        <location filename="../../core/fullscreenui_strings.h" line="367"/>
         <source>Failed to delete save state.</source>
         <translation>Falha ao excluir o estado salvo.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="362"/>
+        <location filename="../../core/fullscreenui_strings.h" line="368"/>
         <source>Failed to delete {}.</source>
         <translation>Falha ao excluir {}.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="363"/>
+        <location filename="../../core/fullscreenui_strings.h" line="369"/>
         <source>Failed to load &apos;{}&apos;.</source>
         <translation>Falha ao carregar &apos;{}&apos;.</translation>
     </message>
@@ -11078,17 +11258,17 @@ Deseja excluir o save state e iniciar o jogo mesmo assim?</translation>
         <translation type="vanished">Falha ao salvar o perfil de entrada &apos;{}&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="369"/>
+        <location filename="../../core/fullscreenui_strings.h" line="375"/>
         <source>Fast Boot</source>
         <translation>Início rápido</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="372"/>
+        <location filename="../../core/fullscreenui_strings.h" line="378"/>
         <source>Fast Forward Speed</source>
         <translation>Velocidade do avanço rápido</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="373"/>
+        <location filename="../../core/fullscreenui_strings.h" line="379"/>
         <source>Fast Forward Volume</source>
         <translation>Volume do avanço rápido</translation>
     </message>
@@ -11097,7 +11277,7 @@ Deseja excluir o save state e iniciar o jogo mesmo assim?</translation>
         <translation type="vanished">Tamanho do arquivo: %u MB (%u MB no disco)</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="377"/>
+        <location filename="../../core/fullscreenui_strings.h" line="383"/>
         <source>File Title</source>
         <translation>Título do jogo (na pasta)</translation>
     </message>
@@ -11110,7 +11290,7 @@ Deseja excluir o save state e iniciar o jogo mesmo assim?</translation>
         <translation type="vanished">Força os jogos Europeus a serem executados como se fossem NTSC, ou seja, 60hz. Alguns jogos Europeus serão executados em suas velocidades &quot;normais&quot;, enquanto outros serão interrompidos.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="382"/>
+        <location filename="../../core/fullscreenui_strings.h" line="388"/>
         <source>Forces a full rescan of all games previously identified.</source>
         <translation>Força uma nova varredura completa de todos os jogos identificados anteriormente.</translation>
     </message>
@@ -11119,42 +11299,42 @@ Deseja excluir o save state e iniciar o jogo mesmo assim?</translation>
         <translation type="vanished">Força a mistura no sombreador com precisão de 16 bits, quando não estiver usando cores reais. Impacto não comum no desempenho e desnecessário para a maioria dos jogos.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="384"/>
+        <location filename="../../core/fullscreenui_strings.h" line="390"/>
         <source>Forces the use of FIFO over Mailbox presentation, i.e. double buffering instead of triple buffering. Usually results in worse frame pacing.</source>
         <translation>Força o uso do FIFO em vez de apresentação de entrada, ou seja, buffer duplo em vez de buffer triplo. Geralmente resulta em um ritmo de quadros pior.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="385"/>
+        <location filename="../../core/fullscreenui_strings.h" line="391"/>
         <source>Forcibly mutes both CD-DA and XA audio from the CD-ROM. Can be used to disable background music in some games.</source>
         <translation>Opção útil para silenciar tanto CDs de áudio quanto sons de fundo em alguns jogos.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="386"/>
+        <location filename="../../core/fullscreenui_strings.h" line="392"/>
         <source>Frame Rate</source>
         <translation>Taxa de quadro</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="387"/>
+        <location filename="../../core/fullscreenui_strings.h" line="393"/>
         <source>Frame Time Buffer</source>
         <translation>Armazenamento temporal de quadro</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="389"/>
+        <location filename="../../core/fullscreenui_strings.h" line="395"/>
         <source>From File...</source>
         <translation>Do arquivo...</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="390"/>
+        <location filename="../../core/fullscreenui_strings.h" line="396"/>
         <source>Fullscreen Resolution</source>
         <translation>Resolução de tela cheia</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="391"/>
+        <location filename="../../core/fullscreenui_strings.h" line="397"/>
         <source>GPU Adapter</source>
         <translation>Adaptador de GPU</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="392"/>
+        <location filename="../../core/fullscreenui_strings.h" line="398"/>
         <source>GPU Renderer</source>
         <translation>Renderizador de GPU</translation>
     </message>
@@ -11163,47 +11343,47 @@ Deseja excluir o save state e iniciar o jogo mesmo assim?</translation>
         <translation type="vanished">O adaptador de GPU será usado após a reinicialização.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="394"/>
+        <location filename="../../core/fullscreenui_strings.h" line="400"/>
         <source>Game Grid</source>
         <translation>Grade de jogos</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="395"/>
+        <location filename="../../core/fullscreenui_strings.h" line="401"/>
         <source>Game List</source>
         <translation>Lista de jogos</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="396"/>
+        <location filename="../../core/fullscreenui_strings.h" line="402"/>
         <source>Game List Settings</source>
         <translation>Configurar lista de jogos</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="398"/>
+        <location filename="../../core/fullscreenui_strings.h" line="404"/>
         <source>Game Properties</source>
         <translation>Propriedades do jogo</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="399"/>
+        <location filename="../../core/fullscreenui_strings.h" line="405"/>
         <source>Game Quick Save</source>
         <translation>Salvamento rápido do jogo</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="400"/>
+        <location filename="../../core/fullscreenui_strings.h" line="406"/>
         <source>Game Serial</source>
         <translation>Número de série do jogo</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="401"/>
+        <location filename="../../core/fullscreenui_strings.h" line="407"/>
         <source>Game Slot {0}##game_slot_{0}</source>
         <translation>Compartimento de jogo {0}##game_slot_{0}</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="402"/>
+        <location filename="../../core/fullscreenui_strings.h" line="408"/>
         <source>Game Title</source>
         <translation>Título do jogo</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="403"/>
+        <location filename="../../core/fullscreenui_strings.h" line="409"/>
         <source>Game compatibility rating copied to clipboard.</source>
         <translation>Classificação de compatibilidade do jogo copiada para a área de transferência.</translation>
     </message>
@@ -11212,7 +11392,7 @@ Deseja excluir o save state e iniciar o jogo mesmo assim?</translation>
         <translation type="vanished">Jogo não carregado ou sem conquistas disponíveis.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="404"/>
+        <location filename="../../core/fullscreenui_strings.h" line="410"/>
         <source>Game path copied to clipboard.</source>
         <translation>Caminho do jogo copiado para a área de transferência.</translation>
     </message>
@@ -11221,42 +11401,42 @@ Deseja excluir o save state e iniciar o jogo mesmo assim?</translation>
         <translation type="vanished">Propriedades do jogo estão disponíveis apenas para jogos já listados.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="405"/>
+        <location filename="../../core/fullscreenui_strings.h" line="411"/>
         <source>Game region copied to clipboard.</source>
         <translation>Região do jogo copiada para a área de transferência.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="406"/>
+        <location filename="../../core/fullscreenui_strings.h" line="412"/>
         <source>Game serial copied to clipboard.</source>
         <translation>Número de série do jogo copiada para a área de transferência.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="407"/>
+        <location filename="../../core/fullscreenui_strings.h" line="413"/>
         <source>Game serial updated.</source>
         <translation>Número de série do jogo atualizado.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="408"/>
+        <location filename="../../core/fullscreenui_strings.h" line="414"/>
         <source>Game settings have been cleared for &apos;{}&apos;.</source>
         <translation>As configurações do jogo foram apagadas para &apos;{}&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="409"/>
+        <location filename="../../core/fullscreenui_strings.h" line="415"/>
         <source>Game settings initialized with global settings for &apos;{}&apos;.</source>
         <translation>Configurações do jogo inicializadas com configurações globais para &apos;{}&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="410"/>
+        <location filename="../../core/fullscreenui_strings.h" line="416"/>
         <source>Game title copied to clipboard.</source>
         <translation>Título do jogo copiado para a área de transferência.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="411"/>
+        <location filename="../../core/fullscreenui_strings.h" line="417"/>
         <source>Game title updated.</source>
         <translation>Título do jogo atualizado.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="412"/>
+        <location filename="../../core/fullscreenui_strings.h" line="418"/>
         <source>Game type copied to clipboard.</source>
         <translation>Tipo de jogo copiado para a área de transferência.</translation>
     </message>
@@ -11269,32 +11449,32 @@ Deseja excluir o save state e iniciar o jogo mesmo assim?</translation>
         <translation type="vanished">Genêro: %s</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="415"/>
+        <location filename="../../core/fullscreenui_strings.h" line="421"/>
         <source>Geometry Tolerance</source>
         <translation>Tolerância de geometria</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="416"/>
+        <location filename="../../core/fullscreenui_strings.h" line="422"/>
         <source>GitHub Repository</source>
         <translation>Repositório no Github</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="418"/>
+        <location filename="../../core/fullscreenui_strings.h" line="424"/>
         <source>Global Settings</source>
         <translation>Configurações globais</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="419"/>
+        <location filename="../../core/fullscreenui_strings.h" line="425"/>
         <source>Global Slot {0} - {1}##global_slot_{0}</source>
         <translation>Compartimento de jogo {0} - {1}##global_slot_{0}</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="420"/>
+        <location filename="../../core/fullscreenui_strings.h" line="426"/>
         <source>Global Slot {0}##global_slot_{0}</source>
         <translation>Compartimento de jogo {0}##global_slot_{0}</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="424"/>
+        <location filename="../../core/fullscreenui_strings.h" line="430"/>
         <source>Hardcore Mode</source>
         <translation>Modo hardcore</translation>
     </message>
@@ -11303,12 +11483,12 @@ Deseja excluir o save state e iniciar o jogo mesmo assim?</translation>
         <translation type="vanished">O modo hardcore será ativado na próxima reinicialização do jogo.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="427"/>
+        <location filename="../../core/fullscreenui_strings.h" line="433"/>
         <source>Hide Cursor In Fullscreen</source>
         <translation>Esconder cursor em tela cheia</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="428"/>
+        <location filename="../../core/fullscreenui_strings.h" line="434"/>
         <source>Hides the mouse pointer/cursor when the emulator is in fullscreen mode.</source>
         <translation>Oculta o cursor do mouse quando o emulador está no modo de tela cheia.</translation>
     </message>
@@ -11317,22 +11497,22 @@ Deseja excluir o save state e iniciar o jogo mesmo assim?</translation>
         <translation type="vanished">Configurações de atalhos</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="430"/>
+        <location filename="../../core/fullscreenui_strings.h" line="436"/>
         <source>How many saves will be kept for rewinding. Higher values have greater memory requirements.</source>
         <translation>Quantas gravações serão mantidas para retrocesso. Valores mais altos exigem mais memória.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="431"/>
+        <location filename="../../core/fullscreenui_strings.h" line="437"/>
         <source>How often a rewind state will be created. Higher frequencies have greater system requirements.</source>
         <translation>Com que frequência um estado de retrocesso será criado. Frequências mais altas têm requisitos de sistema maiores.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="432"/>
+        <location filename="../../core/fullscreenui_strings.h" line="438"/>
         <source>Identifies any new files added to the game directories.</source>
         <translation>Identifica todos os novos arquivos adicionados aos diretórios do jogo.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="436"/>
+        <location filename="../../core/fullscreenui_strings.h" line="442"/>
         <source>If not enabled, the current post processing chain will be ignored.</source>
         <translation>Se não estiver ativado, a cadeia de pós-processamento atual será ignorada.</translation>
     </message>
@@ -11341,12 +11521,12 @@ Deseja excluir o save state e iniciar o jogo mesmo assim?</translation>
         <translation type="vanished">Aumentar resolução em tempo real</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="443"/>
+        <location filename="../../core/fullscreenui_strings.h" line="449"/>
         <source>Increases the field of view from 4:3 to the chosen display aspect ratio in 3D games.</source>
         <translation>Aumenta o campo de visão de 4:3 para a proporção de tela escolhida em jogos 3D.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="444"/>
+        <location filename="../../core/fullscreenui_strings.h" line="450"/>
         <source>Increases the precision of polygon culling, reducing the number of holes in geometry.</source>
         <translation>Aumenta a precisão das curvas nos polígonos, reduzindo o número de buracos na geometria do mesmo. Requer a Correção geometrica ativada.</translation>
     </message>
@@ -11355,12 +11535,12 @@ Deseja excluir o save state e iniciar o jogo mesmo assim?</translation>
         <translation type="vanished">Infinita/Instantânea</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="448"/>
+        <location filename="../../core/fullscreenui_strings.h" line="454"/>
         <source>Inhibit Screensaver</source>
         <translation>Inibir proteção de tela</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="449"/>
+        <location filename="../../core/fullscreenui_strings.h" line="455"/>
         <source>Input Sources</source>
         <translation>Fontes de entrada</translation>
     </message>
@@ -11377,12 +11557,12 @@ Deseja excluir o save state e iniciar o jogo mesmo assim?</translation>
         <translation type="vanished">Integração</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="450"/>
+        <location filename="../../core/fullscreenui_strings.h" line="457"/>
         <source>Interface Settings</source>
         <translation>Configurações de interface</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="454"/>
+        <location filename="../../core/fullscreenui_strings.h" line="461"/>
         <source>Last Played</source>
         <translation>Jogou pela última vez</translation>
     </message>
@@ -11391,27 +11571,27 @@ Deseja excluir o save state e iniciar o jogo mesmo assim?</translation>
         <translation type="vanished">Jogou pela última vez</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="456"/>
+        <location filename="../../core/fullscreenui_strings.h" line="463"/>
         <source>Latency Control</source>
         <translation>Controle de latência</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="458"/>
+        <location filename="../../core/fullscreenui_strings.h" line="465"/>
         <source>Launch a game by selecting a file/disc image.</source>
         <translation>Inicie um jogo selecionando uma imagem de arquivo/disco.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="460"/>
+        <location filename="../../core/fullscreenui_strings.h" line="467"/>
         <source>Launch a game from images scanned from your game directories.</source>
         <translation>Inicie um jogo a partir de arquivos de imagens (.chd .iso) armazenados nos diretórios de jogos.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="461"/>
+        <location filename="../../core/fullscreenui_strings.h" line="468"/>
         <source>Leaderboard Notifications</source>
         <translation>Notificações do placar de líderes</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="463"/>
+        <location filename="../../core/fullscreenui_strings.h" line="470"/>
         <source>Leaderboards</source>
         <translation>Classificações</translation>
     </message>
@@ -11420,12 +11600,12 @@ Deseja excluir o save state e iniciar o jogo mesmo assim?</translation>
         <translation type="vanished">Os placares não estão ativadas.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="468"/>
+        <location filename="../../core/fullscreenui_strings.h" line="475"/>
         <source>List Settings</source>
         <translation>Configurações de lista</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="470"/>
+        <location filename="../../core/fullscreenui_strings.h" line="477"/>
         <source>Load Devices From Save States</source>
         <translation>Carregar a partir do estado salvo</translation>
     </message>
@@ -11434,42 +11614,42 @@ Deseja excluir o save state e iniciar o jogo mesmo assim?</translation>
         <translation type="vanished">Carregar perfil</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="473"/>
+        <location filename="../../core/fullscreenui_strings.h" line="480"/>
         <source>Load Resume State</source>
         <translation>Carregar estado salvo</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="474"/>
+        <location filename="../../core/fullscreenui_strings.h" line="481"/>
         <source>Load State</source>
         <translation>Carregar estado</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="475"/>
+        <location filename="../../core/fullscreenui_strings.h" line="482"/>
         <source>Loads all replacement texture to RAM, reducing stuttering at runtime.</source>
         <translation>Carrega todas as texturas de substituição na RAM, reduzindo engasgos no tempo de execução.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="476"/>
+        <location filename="../../core/fullscreenui_strings.h" line="483"/>
         <source>Loads the game image into RAM. Useful for network paths that may become unreliable during gameplay.</source>
         <translation>Carrega o jogo na memória RAM. Útil para evitar certas instabilidades durante o jogo.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="478"/>
+        <location filename="../../core/fullscreenui_strings.h" line="485"/>
         <source>Log Level</source>
         <translation>Nivel do registro</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="480"/>
+        <location filename="../../core/fullscreenui_strings.h" line="487"/>
         <source>Log To Debug Console</source>
         <translation>Carregar para console de depuração</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="481"/>
+        <location filename="../../core/fullscreenui_strings.h" line="488"/>
         <source>Log To File</source>
         <translation>Carregar para arquivo</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="482"/>
+        <location filename="../../core/fullscreenui_strings.h" line="489"/>
         <source>Log To System Console</source>
         <translation>Carregar para console</translation>
     </message>
@@ -11478,27 +11658,26 @@ Deseja excluir o save state e iniciar o jogo mesmo assim?</translation>
         <translation type="vanished">Registro</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="484"/>
+        <location filename="../../core/fullscreenui_strings.h" line="491"/>
         <source>Logging Settings</source>
         <translation>Configurações de registro</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="486"/>
+        <location filename="../../core/fullscreenui_strings.h" line="493"/>
         <source>Login</source>
         <translation>Entrar</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="488"/>
         <source>Login token generated on {}</source>
-        <translation>Token de conexão gerado em {}</translation>
+        <translation type="vanished">Token de conexão gerado em {}</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="489"/>
+        <location filename="../../core/fullscreenui_strings.h" line="496"/>
         <source>Logout</source>
         <translation>Sair</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="490"/>
+        <location filename="../../core/fullscreenui_strings.h" line="497"/>
         <source>Logs BIOS calls to printf(). Not all games contain debugging messages.</source>
         <translation>Registra chamadas do BIOS no console. Nem todos os jogos contêm mensagens de depuração.</translation>
     </message>
@@ -11507,17 +11686,17 @@ Deseja excluir o save state e iniciar o jogo mesmo assim?</translation>
         <translation type="vanished">Conecta-se ao RetroAchievements.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="491"/>
+        <location filename="../../core/fullscreenui_strings.h" line="498"/>
         <source>Logs messages to duckstation.log in the user directory.</source>
         <translation>Cria um arquivo de registro (duckstation.log) no diretório do usuário.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="492"/>
+        <location filename="../../core/fullscreenui_strings.h" line="499"/>
         <source>Logs messages to the console window.</source>
         <translation>Mostra mensagens na janela de console.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="493"/>
+        <location filename="../../core/fullscreenui_strings.h" line="500"/>
         <source>Logs messages to the debug console where supported.</source>
         <translation>Mostra mensagens no console de depuração quando suportado.</translation>
     </message>
@@ -11546,107 +11725,107 @@ Deseja excluir o save state e iniciar o jogo mesmo assim?</translation>
         <translation type="vanished">Gatilho do macro {}</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="495"/>
+        <location filename="../../core/fullscreenui_strings.h" line="502"/>
         <source>Makes games run closer to their console framerate, at a small cost to performance.</source>
         <translation>Faz com que os jogos sejam executados mais próximos da taxa de quadros do console, com um pequeno custo para o desempenho.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="496"/>
+        <location filename="../../core/fullscreenui_strings.h" line="503"/>
         <source>Maximum (Safer)</source>
         <translation>Máximo (mais seguro)</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="497"/>
+        <location filename="../../core/fullscreenui_strings.h" line="504"/>
         <source>Maximum Read Speedup Cycles</source>
         <translation>Ciclos de velocidade máxima de leitura de CD-ROM</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="498"/>
+        <location filename="../../core/fullscreenui_strings.h" line="505"/>
         <source>Maximum Seek Speedup Cycles</source>
         <translation>Ciclos de aceleração máxima de busca de CD-ROM</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="499"/>
+        <location filename="../../core/fullscreenui_strings.h" line="506"/>
         <source>Memory Card Busy</source>
         <translation>Cartão de memória em uso</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="500"/>
+        <location filename="../../core/fullscreenui_strings.h" line="507"/>
         <source>Memory Card Directory</source>
         <translation>Diretório de cartão de memória</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="501"/>
+        <location filename="../../core/fullscreenui_strings.h" line="508"/>
         <source>Memory Card Port {}</source>
         <translation>Porta de cartão de memória {}</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="502"/>
+        <location filename="../../core/fullscreenui_strings.h" line="509"/>
         <source>Memory Card Settings</source>
         <translation>Cartões de memória</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="503"/>
+        <location filename="../../core/fullscreenui_strings.h" line="510"/>
         <source>Memory Card {} Type</source>
         <translation>Tipo de cartão de memória {}</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="505"/>
+        <location filename="../../core/fullscreenui_strings.h" line="512"/>
         <source>Menu Borders</source>
         <translation>Bordas do menu</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="506"/>
+        <location filename="../../core/fullscreenui_strings.h" line="513"/>
         <source>Merge Multi-Disc Games</source>
         <translation>Mesclar jogos com múltiplos discos</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="507"/>
+        <location filename="../../core/fullscreenui_strings.h" line="514"/>
         <source>Merges multi-disc games into one item in the game list.</source>
         <translation>Mescla jogos com vários discos em um único item na lista de jogos.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="509"/>
+        <location filename="../../core/fullscreenui_strings.h" line="516"/>
         <source>Minimal Output Latency</source>
         <translation>Latência de saída mínima</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="510"/>
+        <location filename="../../core/fullscreenui_strings.h" line="518"/>
         <source>Move Down</source>
         <translation>Para baixo</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="511"/>
+        <location filename="../../core/fullscreenui_strings.h" line="519"/>
         <source>Move Up</source>
         <translation>Para cima</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="512"/>
+        <location filename="../../core/fullscreenui_strings.h" line="520"/>
         <source>Moves this shader higher in the chain, applying it earlier.</source>
         <translation>Move shader para um nível mais alto na lista, aplicando-o antes dos demais.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="513"/>
+        <location filename="../../core/fullscreenui_strings.h" line="521"/>
         <source>Moves this shader lower in the chain, applying it later.</source>
         <translation>Move shader para um nível mais abaixo na lista, aplicando-o depois dos demais.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="514"/>
+        <location filename="../../core/fullscreenui_strings.h" line="522"/>
         <source>Multitap</source>
         <translation>Multitap</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="515"/>
+        <location filename="../../core/fullscreenui_strings.h" line="523"/>
         <source>Multitap Mode</source>
         <translation>Modo multitap</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="516"/>
+        <location filename="../../core/fullscreenui_strings.h" line="524"/>
         <source>Mute All Sound</source>
         <translation>Silenciar tudo</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="517"/>
+        <location filename="../../core/fullscreenui_strings.h" line="525"/>
         <source>Mute CD Audio</source>
         <translation>Silenciar áudio CDs</translation>
     </message>
@@ -11655,7 +11834,7 @@ Deseja excluir o save state e iniciar o jogo mesmo assim?</translation>
         <translation type="vanished">Sem atribuição</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="521"/>
+        <location filename="../../core/fullscreenui_strings.h" line="529"/>
         <source>No Game Selected</source>
         <translation>Nenhum jogo selecionado</translation>
     </message>
@@ -11664,17 +11843,17 @@ Deseja excluir o save state e iniciar o jogo mesmo assim?</translation>
         <translation type="vanished">Não foram encontradas trapaças para {}.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="378"/>
+        <location filename="../../core/fullscreenui_strings.h" line="384"/>
         <source>Fine Crop Amount</source>
         <translation>Ajuste fino do recorte</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="379"/>
+        <location filename="../../core/fullscreenui_strings.h" line="385"/>
         <source>Fine Crop Mode</source>
         <translation>Modo do ajuste fino</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="380"/>
+        <location filename="../../core/fullscreenui_strings.h" line="386"/>
         <source>Font</source>
         <translation>Fonte</translation>
     </message>
@@ -11687,557 +11866,597 @@ Deseja excluir o save state e iniciar o jogo mesmo assim?</translation>
         <translation type="vanished">Não há perfis de entrada disponíveis.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="413"/>
+        <location filename="../../core/fullscreenui_strings.h" line="419"/>
         <source>Gamepad Button Type</source>
         <translation>Tipo de botão do controle</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="417"/>
+        <location filename="../../core/fullscreenui_strings.h" line="423"/>
         <source>Global</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="425"/>
+        <location filename="../../core/fullscreenui_strings.h" line="431"/>
         <source>Hardcore mode will not be enabled until the game is restarted. Do you want to restart the game now?</source>
         <translation>O modo hardcore não será ativado até que o jogo seja reiniciado. Deseja reinicializar o jogo agora?</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="426"/>
+        <location filename="../../core/fullscreenui_strings.h" line="432"/>
         <source>Hash Calculation Failed</source>
         <translation>Falha no cálculo do hash</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="446"/>
+        <location filename="../../core/fullscreenui_strings.h" line="452"/>
         <source>Indicator Scale</source>
         <translation>Tamanho dos indicadores</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="494"/>
+        <location filename="../../core/fullscreenui_strings.h" line="456"/>
+        <source>Install BIOS</source>
+        <translation>Instalar BIOS</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreenui_strings.h" line="495"/>
+        <source>Login token generated {}</source>
+        <translation>Token de conexão gerado {}</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreenui_strings.h" line="501"/>
         <source>Macro {}</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="508"/>
+        <location filename="../../core/fullscreenui_strings.h" line="515"/>
         <source>Message Location</source>
         <translation>Localização da mensagem</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="518"/>
+        <location filename="../../core/fullscreenui_strings.h" line="517"/>
+        <source>Move Cursor</source>
+        <translation>Mover o cursor</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreenui_strings.h" line="526"/>
         <source>N/A</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="525"/>
+        <location filename="../../core/fullscreenui_strings.h" line="533"/>
         <source>No controller presets available.</source>
         <translation>Sem predefinições de controle disponíveis.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="526"/>
+        <location filename="../../core/fullscreenui_strings.h" line="534"/>
         <source>No devices with LEDs were detected.</source>
         <translation>Nenhum dispositivo com LEDS foi detectado.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="529"/>
+        <location filename="../../core/fullscreenui_strings.h" line="537"/>
         <source>No resume save state found.</source>
         <translation>Salvamento rápido não encontrado.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="530"/>
+        <location filename="../../core/fullscreenui_strings.h" line="538"/>
         <source>No save present in this slot.</source>
         <translation>Não há salvamento presente nesse compartimento.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="531"/>
+        <location filename="../../core/fullscreenui_strings.h" line="539"/>
         <source>No save states found.</source>
         <translation>Não foram encontrados estados salvos.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="532"/>
+        <location filename="../../core/fullscreenui_strings.h" line="540"/>
         <source>No, resume the game.</source>
         <translation>Não, retomar ao jogo.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="534"/>
+        <location filename="../../core/fullscreenui_strings.h" line="542"/>
         <source>None (Double Speed)</source>
         <translation>Nenhuma</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="535"/>
+        <location filename="../../core/fullscreenui_strings.h" line="543"/>
         <source>None (Normal Speed)</source>
         <translation>Nenhuma (velocidade normal)</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="536"/>
+        <location filename="../../core/fullscreenui_strings.h" line="544"/>
         <source>Not Logged In</source>
         <translation>Não conectado</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="537"/>
+        <location filename="../../core/fullscreenui_strings.h" line="545"/>
         <source>Not Scanning Subdirectories</source>
         <translation>Não está verificando subdiretórios</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="538"/>
+        <location filename="../../core/fullscreenui_strings.h" line="546"/>
         <source>Notification Location</source>
         <translation>Local da notificação</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="539"/>
+        <location filename="../../core/fullscreenui_strings.h" line="547"/>
         <source>Notification Size</source>
         <translation>Tamanho da notificação</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="540"/>
+        <location filename="../../core/fullscreenui_strings.h" line="548"/>
         <source>Notifications</source>
         <translation>Notificações</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="541"/>
+        <location filename="../../core/fullscreenui_strings.h" line="549"/>
         <source>OK</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="542"/>
+        <location filename="../../core/fullscreenui_strings.h" line="550"/>
         <source>OSD Scale</source>
         <translation>Tamanho das mensagens em tela</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="543"/>
+        <location filename="../../core/fullscreenui_strings.h" line="551"/>
         <source>On-Screen Display</source>
         <translation>Mensagens em tela</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="544"/>
+        <location filename="../../core/fullscreenui_strings.h" line="552"/>
         <source>On-Screen Display Message Durations</source>
         <translation>Duração da mensagem em tela</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="545"/>
+        <location filename="../../core/fullscreenui_strings.h" line="553"/>
         <source>Only measured achievements can be pinned.</source>
         <translation>Apenas conquistas com progresso podem ser fixadas.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="546"/>
+        <location filename="../../core/fullscreenui_strings.h" line="554"/>
         <source>Open Containing Directory</source>
         <translation>Abrir diretório de conteúdo</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="547"/>
+        <location filename="../../core/fullscreenui_strings.h" line="555"/>
         <source>Open To Game List</source>
         <translation>Abrir lista de jogos</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="548"/>
+        <location filename="../../core/fullscreenui_strings.h" line="556"/>
         <source>Open in File Browser</source>
         <translation>Abrir no navegador de arquivos</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="549"/>
+        <location filename="../../core/fullscreenui_strings.h" line="557"/>
         <source>Open on RetroAchievements</source>
         <translation>Abrir no RetroAchievements</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="550"/>
+        <location filename="../../core/fullscreenui_strings.h" line="558"/>
         <source>Operations</source>
         <translation>Operações</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="551"/>
+        <location filename="../../core/fullscreenui_strings.h" line="559"/>
         <source>Optimal Frame Pacing</source>
         <translation>Otimização de quadros</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="552"/>
+        <location filename="../../core/fullscreenui_strings.h" line="560"/>
         <source>Options</source>
         <translation>Opções</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="553"/>
+        <location filename="../../core/fullscreenui_strings.h" line="561"/>
         <source>Output Latency</source>
         <translation>Latência de saída</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="554"/>
+        <location filename="../../core/fullscreenui_strings.h" line="562"/>
         <source>Output Volume</source>
         <translation>Volume de saída</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="555"/>
+        <location filename="../../core/fullscreenui_strings.h" line="563"/>
         <source>Overclocking Percentage</source>
         <translation>Porcentagem de sobrecarga do CPU</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="556"/>
+        <location filename="../../core/fullscreenui_strings.h" line="564"/>
         <source>Overlay Font</source>
         <translation>Fonte da sobreposição</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="557"/>
+        <location filename="../../core/fullscreenui_strings.h" line="565"/>
         <source>Overlays or replaces normal triangle drawing with a wireframe/line view.</source>
         <translation>Sobrepõe os gráficos do jogo por linhas triangulares para visualização dos gráficos em forma de esboço.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="558"/>
+        <location filename="../../core/fullscreenui_strings.h" line="566"/>
         <source>PGXP (Precision Geometry Transform Pipeline)</source>
         <translation>PGXP (correção geométrica)</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="560"/>
+        <location filename="../../core/fullscreenui_strings.h" line="568"/>
         <source>PGXP Geometry Correction</source>
         <translation>PGXP correção geométrica</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="562"/>
+        <location filename="../../core/fullscreenui_strings.h" line="570"/>
         <source>Password</source>
         <translation>Senha</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="563"/>
+        <location filename="../../core/fullscreenui_strings.h" line="571"/>
         <source>Patches</source>
         <translation>Modificações</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="564"/>
+        <location filename="../../core/fullscreenui_strings.h" line="572"/>
         <source>Patches the BIOS to skip the boot animation. Safe to enable.</source>
         <translation>Modifica o BIOS para ignorar a animação de inicialização. É seguro ativar.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="565"/>
+        <location filename="../../core/fullscreenui_strings.h" line="573"/>
         <source>Path</source>
         <translation>Caminho</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="566"/>
+        <location filename="../../core/fullscreenui_strings.h" line="574"/>
         <source>Pause On Controller Disconnection</source>
         <translation>Pausar na desconexão do controle</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="567"/>
+        <location filename="../../core/fullscreenui_strings.h" line="575"/>
         <source>Pause On Focus Loss</source>
         <translation>Pausar quando inativo</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="568"/>
+        <location filename="../../core/fullscreenui_strings.h" line="576"/>
         <source>Pause On Start</source>
         <translation>Pausar ao iniciar</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="569"/>
+        <location filename="../../core/fullscreenui_strings.h" line="577"/>
         <source>Pauses the emulator when a controller with bindings is disconnected.</source>
         <translation>Pausa o emulador quando um controle já configurado é desconectado.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="570"/>
+        <location filename="../../core/fullscreenui_strings.h" line="578"/>
         <source>Pauses the emulator when a game is started.</source>
         <translation>Pausa a emulação quando um jogo é iniciado.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="571"/>
+        <location filename="../../core/fullscreenui_strings.h" line="579"/>
         <source>Pauses the emulator when you minimize the window or switch to another application, and unpauses when you switch back.</source>
         <translation>Pausa o emulador quando a janela é minimizada ou na mudança de foco para outro aplicativo aberto, e retoma quando volta ao foco.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="572"/>
+        <location filename="../../core/fullscreenui_strings.h" line="580"/>
         <source>Per-Game Configuration</source>
         <translation>Configuração por jogo</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="573"/>
+        <location filename="../../core/fullscreenui_strings.h" line="581"/>
         <source>Per-game controller configuration initialized with global settings.</source>
         <translation>Configuração do controle por jogo carregada com as configurações globais.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="574"/>
+        <location filename="../../core/fullscreenui_strings.h" line="582"/>
         <source>Performance enhancement - jumps directly between blocks instead of returning to the dispatcher.</source>
         <translation>Aprimoramento do desempenho - salta diretamente entre blocos antes de renderiza-los na tela.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="575"/>
+        <location filename="../../core/fullscreenui_strings.h" line="583"/>
         <source>Perspective Correct Colors</source>
         <translation>Perspectiva de correção de cores</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="576"/>
+        <location filename="../../core/fullscreenui_strings.h" line="584"/>
         <source>Perspective Correct Textures</source>
         <translation>Perspectiva de correção de texturas</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="577"/>
+        <location filename="../../core/fullscreenui_strings.h" line="585"/>
         <source>Pin to OSD</source>
         <translation>Fixar em tela</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="578"/>
+        <location filename="../../core/fullscreenui_strings.h" line="586"/>
         <source>Pinky Pals</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="579"/>
+        <location filename="../../core/fullscreenui_strings.h" line="587"/>
         <source>PlayStation</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="580"/>
+        <location filename="../../core/fullscreenui_strings.h" line="588"/>
         <source>Plays sound effects for events such as achievement unlocks and leaderboard submissions.</source>
         <translation>Reproduz efeitos sonoros para eventos como desbloqueios de conquistas e envios de placar.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="581"/>
+        <location filename="../../core/fullscreenui_strings.h" line="589"/>
         <source>Plays sound effects when navigating and activating menus.</source>
         <translation>Reproduz efeitos sonoros ao navegar e ativar menus.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="583"/>
+        <location filename="../../core/fullscreenui_strings.h" line="591"/>
         <source>Port {} Controller Type</source>
         <translation>Porta do controle do tipo{}</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="584"/>
+        <location filename="../../core/fullscreenui_strings.h" line="592"/>
         <source>Post-Processing Settings</source>
         <translation>Ajustes de pós-processamento</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="585"/>
+        <location filename="../../core/fullscreenui_strings.h" line="593"/>
         <source>Post-processing chain cleared.</source>
         <translation>Lista de pós-processamento limpa.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="586"/>
+        <location filename="../../core/fullscreenui_strings.h" line="594"/>
         <source>Post-processing shaders reloaded.</source>
         <translation>Texturas de pós-processamento recarregadas.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="587"/>
+        <location filename="../../core/fullscreenui_strings.h" line="595"/>
         <source>Prefer OpenGL ES Context</source>
         <translation>Contexto OpenGL ES adequado</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="588"/>
+        <location filename="../../core/fullscreenui_strings.h" line="596"/>
         <source>Prefetch Badges</source>
         <translation>Recuperar emblemas</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="589"/>
+        <location filename="../../core/fullscreenui_strings.h" line="597"/>
         <source>Preload Images to RAM</source>
         <translation>Carregar jogo para RAM</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="590"/>
+        <location filename="../../core/fullscreenui_strings.h" line="598"/>
         <source>Preload Replacement Textures</source>
         <translation>Pré-carregar texturas personalizadas</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="594"/>
+        <location filename="../../core/fullscreenui_strings.h" line="602"/>
         <source>Prevents inputs from being processed when another application is active.</source>
         <translation>Impede que as entradas sejam processadas quando outro aplicativo estiver em foco.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="595"/>
+        <location filename="../../core/fullscreenui_strings.h" line="603"/>
         <source>Prevents resizing of the window while a game is running.</source>
         <translation>Impede o redimensionamento da janela enquanto um jogo está em execução.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="598"/>
+        <location filename="../../core/fullscreenui_strings.h" line="606"/>
         <source>Progress Indicators</source>
         <translation>Indicadores de progresso</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="599"/>
+        <location filename="../../core/fullscreenui_strings.h" line="607"/>
         <source>Progress Tracking</source>
         <translation>Registro de progresso</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="600"/>
+        <location filename="../../core/fullscreenui_strings.h" line="608"/>
         <source>Progress database updated.</source>
         <translation>Progresso do banco de dados atualizada.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="602"/>
+        <location filename="../../core/fullscreenui_strings.h" line="610"/>
         <source>Purple Rain</source>
         <translation>Purple Rain (roxo)</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="604"/>
+        <location filename="../../core/fullscreenui_strings.h" line="612"/>
         <source>Quick Message Duration</source>
         <translation>Duração da mensagem rápida</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="615"/>
+        <location filename="../../core/fullscreenui_strings.h" line="623"/>
         <source>Refresh Achievement Database</source>
         <translation>Atualizar banco de dados de conquistas</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="616"/>
+        <location filename="../../core/fullscreenui_strings.h" line="624"/>
         <source>Refresh Achievement Progress</source>
         <translation>Atualizar progresso de conquistas</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="617"/>
+        <location filename="../../core/fullscreenui_strings.h" line="625"/>
         <source>Refreshes the list of unlocked achievements.</source>
         <translation>Atualiza a lista de conquistas desbloqueadas.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="620"/>
+        <location filename="../../core/fullscreenui_strings.h" line="628"/>
         <source>Release Date: </source>
         <translation>Data de lançamento: </translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="632"/>
+        <location filename="../../core/fullscreenui_strings.h" line="640"/>
         <source>Reset</source>
         <translation>Redefinir</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="635"/>
+        <location filename="../../core/fullscreenui_strings.h" line="643"/>
         <source>Reset Serial</source>
         <translation>Redefinir o número de série</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="637"/>
+        <location filename="../../core/fullscreenui_strings.h" line="645"/>
         <source>Reset Title</source>
         <translation>Redefinir título</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="638"/>
+        <location filename="../../core/fullscreenui_strings.h" line="646"/>
         <source>Reset To Default</source>
         <translation>Redefinir para o padrão</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="665"/>
+        <location filename="../../core/fullscreenui_strings.h" line="673"/>
         <source>Save</source>
         <translation>Salvar</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="667"/>
+        <location filename="../../core/fullscreenui_strings.h" line="675"/>
         <source>Save Locations</source>
         <translation>Local dos saves</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="672"/>
+        <location filename="../../core/fullscreenui_strings.h" line="680"/>
         <source>Save State Directory</source>
         <translation>Diretório dos salvamentos rápidos</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="686"/>
+        <location filename="../../core/fullscreenui_strings.h" line="694"/>
         <source>Screenshot Directory</source>
         <translation>Diretório de capturas de tela</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="687"/>
+        <location filename="../../core/fullscreenui_strings.h" line="695"/>
         <source>Screenshot File Name Format</source>
         <translation>Formato do nome do arquivo das capturas de tela</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="692"/>
+        <location filename="../../core/fullscreenui_strings.h" line="700"/>
         <source>Search</source>
         <translation>Procurar</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="694"/>
+        <location filename="../../core/fullscreenui_strings.h" line="702"/>
         <source>Search on redump.info</source>
         <translation>Pesquisar no redump.info</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="711"/>
+        <location filename="../../core/fullscreenui_strings.h" line="705"/>
+        <source>Select BIOS Image</source>
+        <translation>Escolha uma imagem de BIOS</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreenui_strings.h" line="712"/>
+        <source>Select Key</source>
+        <translation>Escolha uma tecla</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreenui_strings.h" line="721"/>
         <source>Selects the font used for UI text.</source>
         <translation>Seleciona a fonte usada no texto da interface do usuário.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="712"/>
+        <location filename="../../core/fullscreenui_strings.h" line="722"/>
         <source>Selects the font used for the performance overlay.</source>
         <translation>Seleciona a fonte usada na sobreposição de desempenho.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="723"/>
+        <location filename="../../core/fullscreenui_strings.h" line="733"/>
         <source>Serial (*)</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="724"/>
+        <location filename="../../core/fullscreenui_strings.h" line="734"/>
         <source>Serial:</source>
         <translation>Serial:</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="808"/>
+        <location filename="../../core/fullscreenui_strings.h" line="818"/>
         <source>Start In Big Picture Mode</source>
         <translation>Iniciar o aplicativo no modo tela cheia</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="811"/>
+        <location filename="../../core/fullscreenui_strings.h" line="821"/>
         <source>Starts the application in Big Picture Mode instead of the desktop interface.</source>
         <translation>Inicia o aplicativo no modo tela cheia em vez da interface de desktop.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreenui_strings.h" line="839"/>
+        <source>The BIOS file &apos;{}&apos; is already installed. Do you want to overwrite it?</source>
+        <translation>O arquivo de BIOS &apos;{}&apos; já está instalado. Deseja substituí-lo?</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreenui_strings.h" line="850"/>
         <source>Title (*)</source>
         <translation>Título (*)</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="840"/>
+        <location filename="../../core/fullscreenui_strings.h" line="851"/>
         <source>Title:</source>
         <translation>Título:</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="848"/>
+        <location filename="../../core/fullscreenui_strings.h" line="854"/>
+        <source>Toggle Case</source>
+        <translation>Alternar</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreenui_strings.h" line="860"/>
         <source>Track</source>
         <translation>Faixa</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="849"/>
+        <location filename="../../core/fullscreenui_strings.h" line="861"/>
         <source>Track hash copied to clipboard.</source>
         <translation>Código hash da faixa foi copiado para a área de transferência.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="861"/>
+        <location filename="../../core/fullscreenui_strings.h" line="873"/>
         <source>Update Database</source>
         <translation>Atualizar banco de dados</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="863"/>
+        <location filename="../../core/fullscreenui_strings.h" line="875"/>
         <source>Updates the database for achievements shown in the game list.</source>
         <translation>Atualiza o banco de dados das conquistas exibidas na lista de jogos.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="876"/>
+        <location filename="../../core/fullscreenui_strings.h" line="888"/>
         <source>Use This Directory</source>
         <translation>Usar este diretório</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="895"/>
+        <location filename="../../core/fullscreenui_strings.h" line="907"/>
         <source>Verify</source>
         <translation>Verificar</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="896"/>
+        <location filename="../../core/fullscreenui_strings.h" line="908"/>
         <source>Verifying Image</source>
         <translation>Verificando imagem</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="903"/>
+        <location filename="../../core/fullscreenui_strings.h" line="915"/>
         <source>Web Cache Size: {0} MB ({1} MB in {2} objects)</source>
         <translation>Tamanho do cachê da Web: {0} MB ({1} MB em {2} objetos)</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="904"/>
+        <location filename="../../core/fullscreenui_strings.h" line="916"/>
         <source>Web cache cleared.</source>
         <translation>Cachê da Web limpo.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="911"/>
+        <location filename="../../core/fullscreenui_strings.h" line="923"/>
         <source>When enabled, the legacy global save state slots will be available. These slots are independent of the current game.</source>
         <translation>Quando ativado, os compartimentos de arquivos de save state globais estarão disponíveis. Esses compartimentos são independentes do jogo atual.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="933"/>
+        <location filename="../../core/fullscreenui_strings.h" line="939"/>
+        <source>{0} (Missing)</source>
+        <translation>{0} (Ausente)</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreenui_strings.h" line="946"/>
         <source>{} pinned.</source>
         <translation>{} fixado.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="934"/>
+        <location filename="../../core/fullscreenui_strings.h" line="947"/>
         <source>{} unpinned.</source>
         <translation>{} desafixado.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="935"/>
+        <location filename="../../core/fullscreenui_strings.h" line="948"/>
         <source>{} | Start: {} | Length: {}</source>
         <translation>{} | Início: {} | Duração: {}</translation>
     </message>
@@ -12246,32 +12465,32 @@ Deseja excluir o save state e iniciar o jogo mesmo assim?</translation>
         <translation type="vanished">Reiniciar jogo</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="640"/>
+        <location filename="../../core/fullscreenui_strings.h" line="648"/>
         <source>Resets all settings to the defaults.</source>
         <translation>Redefine todas as configurações para os padrões.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="642"/>
+        <location filename="../../core/fullscreenui_strings.h" line="650"/>
         <source>Restore Defaults</source>
         <translation>Restaurar padrões</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="651"/>
+        <location filename="../../core/fullscreenui_strings.h" line="659"/>
         <source>Rewind for {0} frames, lasting {1:.2f} seconds will require {2} MB of RAM and {3} MB of VRAM.</source>
         <translation>Rebobinar para {0} quadros, com duração de {1:.2f} segundos, exigirá até {2} MB de RAM e {3} MB de VRAM.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="652"/>
+        <location filename="../../core/fullscreenui_strings.h" line="660"/>
         <source>Rewind for {0} frames, lasting {1:.2f} seconds will require {2} MB of RAM.</source>
         <translation>Rebobinar para {0} quadros, com duração de {1:.2f} segundos, exigirá até {2} MB de RAM.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="655"/>
+        <location filename="../../core/fullscreenui_strings.h" line="663"/>
         <source>Right: </source>
         <translation>Direito: </translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="659"/>
+        <location filename="../../core/fullscreenui_strings.h" line="667"/>
         <source>Runahead for Analog Input</source>
         <translation>Pulo de quadro para modo analógico</translation>
     </message>
@@ -12280,77 +12499,77 @@ Deseja excluir o save state e iniciar o jogo mesmo assim?</translation>
         <translation type="vanished">Salvar estado ao sair</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="674"/>
+        <location filename="../../core/fullscreenui_strings.h" line="682"/>
         <source>Save as Serial File Names</source>
         <translation>Salvar como nomes de arquivos seriais</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="678"/>
+        <location filename="../../core/fullscreenui_strings.h" line="686"/>
         <source>Scaled Interlacing</source>
         <translation>Entrelaçamento dimensionado</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="679"/>
+        <location filename="../../core/fullscreenui_strings.h" line="687"/>
         <source>Scales line skipping in interlaced rendering to the internal resolution, making it less noticeable. Usually safe to enable.</source>
         <translation>Dimensiona o salto na renderização entrelaçada para a resolução interna, tornando-o menos perceptível. Normalmente, é seguro ativá-lo.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="701"/>
+        <location filename="../../core/fullscreenui_strings.h" line="710"/>
         <source>Select Disc for {}</source>
         <translation>Selecionar disco para {}</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="709"/>
+        <location filename="../../core/fullscreenui_strings.h" line="719"/>
         <source>Selects the backend to use for rendering the console/game visuals.</source>
         <translation>Seleciona o backend a ser usado para renderizar os visuais do console/jogo.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="710"/>
+        <location filename="../../core/fullscreenui_strings.h" line="720"/>
         <source>Selects the color style to be used for Big Picture UI.</source>
         <translation>Escolha o estilo de cor a ser usado no modo de tela grande.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="733"/>
+        <location filename="../../core/fullscreenui_strings.h" line="743"/>
         <source>Sets the minimum delay for the &apos;Maximum&apos; read speedup level.</source>
         <translation>Define o atraso mínimo para o nível de aceleração de busca “Máxima”.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="734"/>
+        <location filename="../../core/fullscreenui_strings.h" line="744"/>
         <source>Sets the minimum delay for the &apos;Maximum&apos; seek speedup level.</source>
         <translation>Define o atraso mínimo para o nível de aceleração de busca “Máxima”.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="741"/>
+        <location filename="../../core/fullscreenui_strings.h" line="751"/>
         <source>Settings reset to default.</source>
         <translation>Configurações redefinidas para o padrão.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="744"/>
+        <location filename="../../core/fullscreenui_strings.h" line="754"/>
         <source>Show Achievement Trophy Icons</source>
         <translation>Exibir ícones de troféus e conquistas</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="745"/>
+        <location filename="../../core/fullscreenui_strings.h" line="755"/>
         <source>Show All</source>
         <translation>Mostrar tudo</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="753"/>
+        <location filename="../../core/fullscreenui_strings.h" line="763"/>
         <source>Show Grid View Titles</source>
         <translation>Mostrar títulos da visualização em grade</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="755"/>
+        <location filename="../../core/fullscreenui_strings.h" line="765"/>
         <source>Show Localized Titles</source>
         <translation>Mostrar títulos localizados</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="756"/>
+        <location filename="../../core/fullscreenui_strings.h" line="766"/>
         <source>Show Messages</source>
         <translation>Mostrar mensagens</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="757"/>
+        <location filename="../../core/fullscreenui_strings.h" line="767"/>
         <source>Show Nearby</source>
         <translation>Mostrar nas redondezas</translation>
     </message>
@@ -12367,82 +12586,82 @@ Deseja excluir o save state e iniciar o jogo mesmo assim?</translation>
         <translation type="vanished">Mostra um cronômetro no canto inferior direito da tela quando os desafios da tabela de classificação estiverem ativos.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="769"/>
+        <location filename="../../core/fullscreenui_strings.h" line="779"/>
         <source>Shows on-screen-display messages when events occur. Errors and warnings are still displayed regardless of this setting.</source>
         <translation>Mostra mensagens na tela quando ocorrem eventos. Erros e avisos continuam sendo exibidos independentemente dessa configuração.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="778"/>
+        <location filename="../../core/fullscreenui_strings.h" line="788"/>
         <source>Shows titles underneath the images in the game grid view.</source>
         <translation>Mostra os títulos abaixo das imagens na visualização da grade do jogo.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="779"/>
+        <location filename="../../core/fullscreenui_strings.h" line="789"/>
         <source>Shows trophy icons in game grid when games have achievements or have been mastered.</source>
         <translation>Mostra ícones de troféus na grade de jogos quando os jogos têm conquistas ou foram terminados 100%.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="782"/>
+        <location filename="../../core/fullscreenui_strings.h" line="792"/>
         <source>Size: </source>
         <translation>Tamanho: </translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="804"/>
+        <location filename="../../core/fullscreenui_strings.h" line="814"/>
         <source>Start Download</source>
         <translation>Iniciar download</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="815"/>
+        <location filename="../../core/fullscreenui_strings.h" line="825"/>
         <source>Support for controllers that use the XInput protocol. XInput should only be used if you are using a XInput wrapper library.</source>
         <translation>Suporte para controles que usam o protocolo XInput. O XInput só deve ser usado se você estiver usando uma biblioteca encapsulamento XInput.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="818"/>
+        <location filename="../../core/fullscreenui_strings.h" line="828"/>
         <source>Switch to Next Disc on Stop</source>
         <translation>Alternar para o próximo disco ao parar</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="826"/>
+        <location filename="../../core/fullscreenui_strings.h" line="836"/>
         <source>Texture Modulation Cropping (&quot;Old/v0&quot; GPU)</source>
         <translation>Recorte da modulação de textura (GPU &quot;Antigo/v0&quot;)</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="832"/>
+        <location filename="../../core/fullscreenui_strings.h" line="843"/>
         <source>Theme</source>
         <translation>Tema</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="833"/>
+        <location filename="../../core/fullscreenui_strings.h" line="844"/>
         <source>This game was not scanned by DuckStation. Some functionality is not available.</source>
         <translation>Este jogo não foi digitalizado pelo DuckStation. Algumas funcionalidades não estão disponíveis.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="836"/>
+        <location filename="../../core/fullscreenui_strings.h" line="847"/>
         <source>Time Played: </source>
         <translation>Tempo de jogo: </translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="841"/>
+        <location filename="../../core/fullscreenui_strings.h" line="852"/>
         <source>To use achievements, please log in with your retroachievements.org account.</source>
         <translation>Para usar as conquistas, conecte-se com sua conta retroachievements.org.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="847"/>
+        <location filename="../../core/fullscreenui_strings.h" line="859"/>
         <source>Top: </source>
         <translation>Superior: </translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="850"/>
+        <location filename="../../core/fullscreenui_strings.h" line="862"/>
         <source>Tries to detect FMVs and disable read speedup during games that don&apos;t use XA streaming audio.</source>
         <translation>Tenta detectar FMVs e desativar o aumento da velocidade de leitura durante jogos que não utilizam áudio streaming XA.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="860"/>
+        <location filename="../../core/fullscreenui_strings.h" line="872"/>
         <source>Unpin from OSD</source>
         <translation>Desafixar da tela</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="862"/>
+        <location filename="../../core/fullscreenui_strings.h" line="874"/>
         <source>Update Progress</source>
         <translation>Atualização do progresso</translation>
     </message>
@@ -12451,7 +12670,7 @@ Deseja excluir o save state e iniciar o jogo mesmo assim?</translation>
         <translation type="vanished">Atualiza o banco de dados de progresso das conquistas exibidas na lista de jogos.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="864"/>
+        <location filename="../../core/fullscreenui_strings.h" line="876"/>
         <source>Upscales the game&apos;s rendering by the specified multiplier.</source>
         <translation>Aumenta a escala da renderização do jogo pelo multiplicador especificado.</translation>
     </message>
@@ -12460,107 +12679,107 @@ Deseja excluir o save state e iniciar o jogo mesmo assim?</translation>
         <translation type="vanished">Use os ícones dos botões DualShock/DualSense</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="868"/>
+        <location filename="../../core/fullscreenui_strings.h" line="880"/>
         <source>Use OSD Scale</source>
         <translation>Usar escalonamento do OSD</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="870"/>
+        <location filename="../../core/fullscreenui_strings.h" line="882"/>
         <source>Use Per-Game Hotkeys</source>
         <translation>Usar teclas de atalho por perfil</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="871"/>
+        <location filename="../../core/fullscreenui_strings.h" line="883"/>
         <source>Use Per-Game Input Sources</source>
         <translation>Usar fontes de entrada por jogo</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="874"/>
+        <location filename="../../core/fullscreenui_strings.h" line="886"/>
         <source>Use Software Renderer (Low VRAM Mode)</source>
         <translation>Usar renderizador de software (baixo uso de VRAM)</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="877"/>
+        <location filename="../../core/fullscreenui_strings.h" line="889"/>
         <source>User Name</source>
         <translation>Nome de usuário</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="878"/>
+        <location filename="../../core/fullscreenui_strings.h" line="890"/>
         <source>Uses OpenGL ES even when desktop OpenGL is supported. May improve performance on some SBC drivers.</source>
         <translation>Utiliza OpenGL ES mesmo quando o mesmo Opengl padrão de desktop é suportado. Pode melhorar o desempenho em alguns drivers SBC.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="881"/>
+        <location filename="../../core/fullscreenui_strings.h" line="893"/>
         <source>Uses a second thread for drawing graphics. Provides a significant speed improvement particularly with the software renderer, and is safe to use.</source>
         <translation>Usa um segundo thread para desenhar gráficos. Proporciona uma melhora significativa na velocidade, especialmente com o renderizador em modo software, e é seguro de usar.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="882"/>
+        <location filename="../../core/fullscreenui_strings.h" line="894"/>
         <source>Uses game-specific configuration for hotkeys. If disabled, global hotkeys will be used.</source>
         <translation>Utiliza configuração específica do jogo para atalhos. Se desativado, será utilizada a configuração global.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="883"/>
+        <location filename="../../core/fullscreenui_strings.h" line="895"/>
         <source>Uses game-specific configuration for input sources. If disabled, the global configuration will be used.</source>
         <translation>Utiliza configuração específica do jogo para fontes de entrada. Se desativado, será utilizada a configuração global.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="885"/>
+        <location filename="../../core/fullscreenui_strings.h" line="897"/>
         <source>Uses localized (native language) titles in the game list.</source>
         <translation>Utiliza títulos localizados (idioma nativo) na lista de jogos.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="891"/>
+        <location filename="../../core/fullscreenui_strings.h" line="903"/>
         <source>Uses the software renderer when creating rewind states to prevent additional VRAM usage. Especially useful when upscaling.</source>
         <translation>Utiliza o renderizador de software ao criar estados de retrocesso para evitar o uso adicional de memória de vídeo. Útil ao aumentar a resolução.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="892"/>
+        <location filename="../../core/fullscreenui_strings.h" line="904"/>
         <source>Utilizes the chosen frame rate regardless of the game&apos;s setting.</source>
         <translation>Utiliza a taxa de quadros escolhida, independentemente da configuração do jogo.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="893"/>
+        <location filename="../../core/fullscreenui_strings.h" line="905"/>
         <source>Value Range</source>
         <translation>Intervalo de valores</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="902"/>
+        <location filename="../../core/fullscreenui_strings.h" line="914"/>
         <source>Warning Message Duration</source>
         <translation>Duração da mensagem de alerta</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="905"/>
+        <location filename="../../core/fullscreenui_strings.h" line="917"/>
         <source>When Big Picture mode is started, the game list will be displayed instead of the main menu.</source>
         <translation>Quando o modo Tela cheia for iniciado, a lista de jogos será exibida em vez do menu principal.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="916"/>
+        <location filename="../../core/fullscreenui_strings.h" line="928"/>
         <source>Window Animations</source>
         <translation>Animações de janela</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="918"/>
+        <location filename="../../core/fullscreenui_strings.h" line="930"/>
         <source>Writes backgrounds that can be replaced to the dump directory.</source>
         <translation>Grava os planos de fundo que podem ser substituídos no diretório de despejo.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="919"/>
+        <location filename="../../core/fullscreenui_strings.h" line="931"/>
         <source>Xbox</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="920"/>
+        <location filename="../../core/fullscreenui_strings.h" line="932"/>
         <source>Yes</source>
         <translation>Sim</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="925"/>
+        <location filename="../../core/fullscreenui_strings.h" line="937"/>
         <source>restart</source>
         <translation>reiniciar</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="927"/>
+        <location filename="../../core/fullscreenui_strings.h" line="940"/>
         <source>{0} achievement unlocks have not been confirmed by the server. Continuing to {1} will result in loss of these unlocks. Once network connectivity has been re-established, these unlocks will be confirmed automatically.
 
 Do you want to {1} anyway?</source>
@@ -12569,7 +12788,7 @@ Do you want to {1} anyway?</source>
 Deseja {1} mesmo assim?</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="932"/>
+        <location filename="../../core/fullscreenui_strings.h" line="945"/>
         <source>{} of {}</source>
         <translation>{} de {}</translation>
     </message>
@@ -12578,32 +12797,32 @@ Deseja {1} mesmo assim?</translation>
         <translation type="vanished">Apresenta quadros em segundo plano quando o avanço rápido ou vsync está desativado.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="591"/>
+        <location filename="../../core/fullscreenui_strings.h" line="599"/>
         <source>Preserve Projection Precision</source>
         <translation>Preservar precisão e projeção</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="596"/>
+        <location filename="../../core/fullscreenui_strings.h" line="604"/>
         <source>Prevents the emulator from producing any audible sound.</source>
         <translation>Silencia totalmente o emulador.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="597"/>
+        <location filename="../../core/fullscreenui_strings.h" line="605"/>
         <source>Prevents the screen saver from activating and the host from sleeping while emulation is running.</source>
         <translation>Evita que a proteção de tela seja ativada enquanto a emulação está em execução.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="601"/>
+        <location filename="../../core/fullscreenui_strings.h" line="609"/>
         <source>Provides vibration and LED control support over Bluetooth.</source>
         <translation>Fornece vibração e suporte de controle de LED por Bluetooth.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="603"/>
+        <location filename="../../core/fullscreenui_strings.h" line="611"/>
         <source>Push a controller button or axis now.</source>
         <translation>Pressione um botão ou eixo do controle agora.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="605"/>
+        <location filename="../../core/fullscreenui_strings.h" line="613"/>
         <source>Quick Save</source>
         <translation>Salvamento rápido</translation>
     </message>
@@ -12612,57 +12831,57 @@ Deseja {1} mesmo assim?</translation>
         <translation type="vanished">A integração com o Retroachievements está sendo usada em vez da implementação de conquistas incorporadas.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="606"/>
+        <location filename="../../core/fullscreenui_strings.h" line="614"/>
         <source>Read Speedup</source>
         <translation>Velocidade de leitura</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="607"/>
+        <location filename="../../core/fullscreenui_strings.h" line="615"/>
         <source>Readahead Sectors</source>
         <translation>Pré-leitura de setores</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="608"/>
+        <location filename="../../core/fullscreenui_strings.h" line="616"/>
         <source>Recompiler Fast Memory Access</source>
         <translation>Acesso rápido à memória do recompilador</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="609"/>
+        <location filename="../../core/fullscreenui_strings.h" line="617"/>
         <source>Reduce Input Latency</source>
         <translation>Redução da latência de entrada</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="610"/>
+        <location filename="../../core/fullscreenui_strings.h" line="618"/>
         <source>Reduces &quot;wobbly&quot; polygons by attempting to preserve the fractional component through memory transfers.</source>
         <translation>Reduz polígonos &quot;trepidantes&quot;, tentando preservar o componente por meio de transferências de memória.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="611"/>
+        <location filename="../../core/fullscreenui_strings.h" line="619"/>
         <source>Reduces hitches in emulation by reading/decompressing CD data asynchronously on a worker thread.</source>
         <translation>Reduz engasgos na emulação lendo / descomprimindo os arquivos da mídia de forma assincrona.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="612"/>
+        <location filename="../../core/fullscreenui_strings.h" line="620"/>
         <source>Reduces input latency by delaying the start of frame until closer to the presentation time.</source>
         <translation>Reduz a latência de entrada atrasando o início do quadro o mais próximo ao tempo de apresentação.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="613"/>
+        <location filename="../../core/fullscreenui_strings.h" line="621"/>
         <source>Reduces polygon Z-fighting through depth testing. Low compatibility with games.</source>
         <translation>Reduz o conflito de polígonos Z por meio de testes de profundidade. Tem baixa compatibilidade com jogos.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="614"/>
+        <location filename="../../core/fullscreenui_strings.h" line="622"/>
         <source>Reduces the size of save states by compressing the data before saving.</source>
         <translation>Reduz o tamanho dos estados salvos comprimindo os dados antes de salvá-los.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="618"/>
+        <location filename="../../core/fullscreenui_strings.h" line="626"/>
         <source>Region</source>
         <translation>Região</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="619"/>
+        <location filename="../../core/fullscreenui_strings.h" line="627"/>
         <source>Region: </source>
         <translation>Região: </translation>
     </message>
@@ -12671,42 +12890,42 @@ Deseja {1} mesmo assim?</translation>
         <translation type="vanished">Data de lançamento: %s</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="621"/>
+        <location filename="../../core/fullscreenui_strings.h" line="629"/>
         <source>Reload Shaders</source>
         <translation>Recarregar shaders</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="622"/>
+        <location filename="../../core/fullscreenui_strings.h" line="630"/>
         <source>Reloads the shaders from disk, applying any changes.</source>
         <translation>Recarrega os shaders do disco, aplicando todas as alterações.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="623"/>
+        <location filename="../../core/fullscreenui_strings.h" line="631"/>
         <source>Remove From Chain</source>
         <translation>Remover da lista</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="624"/>
+        <location filename="../../core/fullscreenui_strings.h" line="632"/>
         <source>Remove From List</source>
         <translation>Remover da lista</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="625"/>
+        <location filename="../../core/fullscreenui_strings.h" line="633"/>
         <source>Removed stage {} ({}).</source>
         <translation>Removido do estágio {} ({}).</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="627"/>
+        <location filename="../../core/fullscreenui_strings.h" line="635"/>
         <source>Removes this shader from the chain.</source>
         <translation>Remove esse shader da lista.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="628"/>
+        <location filename="../../core/fullscreenui_strings.h" line="636"/>
         <source>Renames existing save states when saving to a backup file.</source>
         <translation>Renomeia os estados salvos existentes ao salvar em um arquivo de backup.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="629"/>
+        <location filename="../../core/fullscreenui_strings.h" line="637"/>
         <source>Rendering</source>
         <translation>Renderizador</translation>
     </message>
@@ -12715,7 +12934,7 @@ Deseja {1} mesmo assim?</translation>
         <translation type="vanished">Substitui essas configurações por um perfil de entrada salvo anteriormente.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="631"/>
+        <location filename="../../core/fullscreenui_strings.h" line="639"/>
         <source>Rescan All Games</source>
         <translation>Examinar tudo</translation>
     </message>
@@ -12724,12 +12943,12 @@ Deseja {1} mesmo assim?</translation>
         <translation type="vanished">Redefinir diretório do cartão de memória</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="634"/>
+        <location filename="../../core/fullscreenui_strings.h" line="642"/>
         <source>Reset Play Time</source>
         <translation>Redefinir tempo de jogo</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="636"/>
+        <location filename="../../core/fullscreenui_strings.h" line="644"/>
         <source>Reset Settings</source>
         <translation>Redefinir configurações</translation>
     </message>
@@ -12738,7 +12957,7 @@ Deseja {1} mesmo assim?</translation>
         <translation type="vanished">Reiniciar o sistema</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="639"/>
+        <location filename="../../core/fullscreenui_strings.h" line="647"/>
         <source>Resets all configuration to defaults (including bindings).</source>
         <translation>Redefine todas as configurações para os padrões (inclusive as atribuições).</translation>
     </message>
@@ -12755,22 +12974,22 @@ Deseja {1} mesmo assim?</translation>
         <translation type="vanished">Restaura o estado do sistema antes do último estado carregado.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="643"/>
+        <location filename="../../core/fullscreenui_strings.h" line="651"/>
         <source>Resume Game</source>
         <translation>Continuar jogo</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="648"/>
+        <location filename="../../core/fullscreenui_strings.h" line="656"/>
         <source>Reverses the game list sort order from the default (usually ascending to descending).</source>
         <translation>Inverte a ordem de classificação da lista de jogos do padrão (geralmente crescente para decrescente).</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="649"/>
+        <location filename="../../core/fullscreenui_strings.h" line="657"/>
         <source>Rewind Save Frequency</source>
         <translation>Frequência do retrocesso</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="650"/>
+        <location filename="../../core/fullscreenui_strings.h" line="658"/>
         <source>Rewind Save Slots</source>
         <translation>Retrocede espaços de salvamento</translation>
     </message>
@@ -12779,17 +12998,17 @@ Deseja {1} mesmo assim?</translation>
         <translation type="vanished">Presença rica do Discord inativa ou não suportada.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="656"/>
+        <location filename="../../core/fullscreenui_strings.h" line="664"/>
         <source>Round Upscaled Texture Coordinates</source>
         <translation>Coordenadas de textura ampliada</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="658"/>
+        <location filename="../../core/fullscreenui_strings.h" line="666"/>
         <source>Runahead</source>
         <translation>Avançar</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="660"/>
+        <location filename="../../core/fullscreenui_strings.h" line="668"/>
         <source>Runahead/Rewind</source>
         <translation>Retroceder/Avançar</translation>
     </message>
@@ -12798,17 +13017,17 @@ Deseja {1} mesmo assim?</translation>
         <translation type="vanished">Executa o renderizador de software em paralelo para leituras de VRAM. Em alguns sistemas, isso pode resultar em melhor desempenho.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="662"/>
+        <location filename="../../core/fullscreenui_strings.h" line="670"/>
         <source>SDL DualSense Player LED</source>
         <translation>LED indicador de jogador Dualsense</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="663"/>
+        <location filename="../../core/fullscreenui_strings.h" line="671"/>
         <source>SDL DualShock 4 / DualSense Enhanced Mode</source>
         <translation>SDL DualShock 4 / Modo aprimorado DualSense</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="664"/>
+        <location filename="../../core/fullscreenui_strings.h" line="672"/>
         <source>Safe Mode</source>
         <translation>Modo seguro</translation>
     </message>
@@ -12817,17 +13036,17 @@ Deseja {1} mesmo assim?</translation>
         <translation type="vanished">Salvar perfil</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="669"/>
+        <location filename="../../core/fullscreenui_strings.h" line="677"/>
         <source>Save Screenshot</source>
         <translation>Salvar captura de tela</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="670"/>
+        <location filename="../../core/fullscreenui_strings.h" line="678"/>
         <source>Save State</source>
         <translation>Salvar estado</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="671"/>
+        <location filename="../../core/fullscreenui_strings.h" line="679"/>
         <source>Save State Compression</source>
         <translation>Compressão de dados de estado salvo</translation>
     </message>
@@ -12836,12 +13055,12 @@ Deseja {1} mesmo assim?</translation>
         <translation type="vanished">Salvar ao fechar</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="676"/>
+        <location filename="../../core/fullscreenui_strings.h" line="684"/>
         <source>Saved {}</source>
         <translation>Salvo {}</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="677"/>
+        <location filename="../../core/fullscreenui_strings.h" line="685"/>
         <source>Saves state periodically so you can rewind any mistakes while playing.</source>
         <translation>Salva o estado periodicamente para que você possa retroceder qualquer erro durante a reprodução.</translation>
     </message>
@@ -12858,92 +13077,92 @@ Deseja {1} mesmo assim?</translation>
         <translation type="vanished">Dimensiona o padrão de pontilhamento (dithering) com a resolução de renderização interna, tornando-o menos perceptível. Normalmente, é seguro ativá-lo.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="680"/>
+        <location filename="../../core/fullscreenui_strings.h" line="688"/>
         <source>Scaling</source>
         <translation>Dimensionamento</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="681"/>
+        <location filename="../../core/fullscreenui_strings.h" line="689"/>
         <source>Scan For New Games</source>
         <translation>Examinar por novos jogos</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="682"/>
+        <location filename="../../core/fullscreenui_strings.h" line="690"/>
         <source>Scanning Subdirectories</source>
         <translation>Verificação de subdiretórios</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="685"/>
+        <location filename="../../core/fullscreenui_strings.h" line="693"/>
         <source>Screen Rotation</source>
         <translation>Rotação da tela</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="693"/>
+        <location filename="../../core/fullscreenui_strings.h" line="701"/>
         <source>Search Directories</source>
         <translation>Pesquisar diretórios</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="695"/>
+        <location filename="../../core/fullscreenui_strings.h" line="703"/>
         <source>Seek Speedup</source>
         <translation>Velocidade de busca</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="697"/>
+        <location filename="../../core/fullscreenui_strings.h" line="706"/>
         <source>Select Device</source>
         <translation>Selecionar dispositivo</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="698"/>
+        <location filename="../../core/fullscreenui_strings.h" line="707"/>
         <source>Select Disc</source>
         <translation>Escolher disco</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="700"/>
+        <location filename="../../core/fullscreenui_strings.h" line="709"/>
         <source>Select Disc Image</source>
         <translation>Escolha uma imagem de disco</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="703"/>
+        <location filename="../../core/fullscreenui_strings.h" line="713"/>
         <source>Select Macro {} Binds</source>
         <translation>Selecionar macro {} atribuições</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="708"/>
+        <location filename="../../core/fullscreenui_strings.h" line="718"/>
         <source>Selects the GPU to use for rendering.</source>
         <translation>Seleciona a GPU a ser usada na renderização.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="713"/>
+        <location filename="../../core/fullscreenui_strings.h" line="723"/>
         <source>Selects the percentage of the normal clock speed the emulated hardware will run at.</source>
         <translation>Escolhe a porcentagem de velocidade na qual o console emulado será executado.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="715"/>
+        <location filename="../../core/fullscreenui_strings.h" line="725"/>
         <source>Selects the resolution scale that will be applied to the final image. 1x will downsample to the original console resolution.</source>
         <translation>Escolha a escala de resolução que será aplicada à imagem final. 1x reduzirá a resolução original do console.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="716"/>
+        <location filename="../../core/fullscreenui_strings.h" line="726"/>
         <source>Selects the resolution to use in fullscreen modes.</source>
         <translation>Seleciona a resolução a ser usada nos modos de tela cheia.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="720"/>
+        <location filename="../../core/fullscreenui_strings.h" line="730"/>
         <source>Selects the view that the game list will open to.</source>
         <translation>Seleciona o modo de exibição na qual a lista de jogos será aberta.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="722"/>
+        <location filename="../../core/fullscreenui_strings.h" line="732"/>
         <source>Serial</source>
         <translation>Serial</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="725"/>
+        <location filename="../../core/fullscreenui_strings.h" line="735"/>
         <source>Session: {}</source>
         <translation>Sessão: {}</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="727"/>
+        <location filename="../../core/fullscreenui_strings.h" line="737"/>
         <source>Set Input Binding</source>
         <translation>Definir atribuição de entrada</translation>
     </message>
@@ -12952,47 +13171,47 @@ Deseja {1} mesmo assim?</translation>
         <translation type="vanished">Definir canal alfa de despejo de gravação VRAM</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="728"/>
+        <location filename="../../core/fullscreenui_strings.h" line="738"/>
         <source>Sets a threshold for discarding precise values when exceeded. May help with glitches in some games.</source>
         <translation>Define um limite para descartar valores quando excedido. Pode ajudar com falhas em alguns jogos.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="729"/>
+        <location filename="../../core/fullscreenui_strings.h" line="739"/>
         <source>Sets a threshold for discarding the emulated depth buffer. May help in some games.</source>
         <translation>Define um limite para descartar o buffer de profundidade emulado. Pode ajudar em alguns jogos.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="732"/>
+        <location filename="../../core/fullscreenui_strings.h" line="742"/>
         <source>Sets the fast forward speed. It is not guaranteed that this speed will be reached on all systems.</source>
         <translation>Define a velocidade de avanço rápido. Não é garantido que essa velocidade seja alcançada em todos os sistemas.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="735"/>
+        <location filename="../../core/fullscreenui_strings.h" line="745"/>
         <source>Sets the target emulation speed. It is not guaranteed that this speed will be reached on all systems.</source>
         <translation>Define a velocidade de emulação. Não é garantido que essa velocidade seja atingida em todos os sistemas.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="736"/>
+        <location filename="../../core/fullscreenui_strings.h" line="746"/>
         <source>Sets the turbo speed. It is not guaranteed that this speed will be reached on all systems.</source>
         <translation>Define a velocidade do turbo. Não é garantido que essa velocidade seja atingida em todos os sistemas.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="737"/>
+        <location filename="../../core/fullscreenui_strings.h" line="747"/>
         <source>Sets the verbosity of messages logged. Higher levels will log more messages.</source>
         <translation>Configura o nível detalhado de mensagens que serão armazenadas. Níveis mais altos terão mensagens maiores.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="738"/>
+        <location filename="../../core/fullscreenui_strings.h" line="748"/>
         <source>Sets which sort of memory card image will be used for slot {}.</source>
         <translation>Define o tipo de imagem do cartão de memória a ser usado no compartimento {}.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="739"/>
+        <location filename="../../core/fullscreenui_strings.h" line="749"/>
         <source>Setting {} binding {}.</source>
         <translation>Configurando {} atribuição {}.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="740"/>
+        <location filename="../../core/fullscreenui_strings.h" line="750"/>
         <source>Settings</source>
         <translation>Configurações</translation>
     </message>
@@ -13001,52 +13220,52 @@ Deseja {1} mesmo assim?</translation>
         <translation type="vanished">Configurações e operações</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="742"/>
+        <location filename="../../core/fullscreenui_strings.h" line="752"/>
         <source>Shader {} added as stage {}.</source>
         <translation>Shader {} adicionado {}.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="743"/>
+        <location filename="../../core/fullscreenui_strings.h" line="753"/>
         <source>Shared Card Name</source>
         <translation>Nome do cartão compartilhado</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="746"/>
+        <location filename="../../core/fullscreenui_strings.h" line="756"/>
         <source>Show CPU Usage</source>
         <translation>Mostrar uso do CPU</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="747"/>
+        <location filename="../../core/fullscreenui_strings.h" line="757"/>
         <source>Show Controller Input</source>
         <translation>Mostrar controles na tela</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="748"/>
+        <location filename="../../core/fullscreenui_strings.h" line="758"/>
         <source>Show Enhancement Settings</source>
         <translation>Mostrar configurações de aprimoramento</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="749"/>
+        <location filename="../../core/fullscreenui_strings.h" line="759"/>
         <source>Show FPS</source>
         <translation>Mostrar FPS</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="750"/>
+        <location filename="../../core/fullscreenui_strings.h" line="760"/>
         <source>Show Frame Times</source>
         <translation>Mostrar tempos por quadro</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="751"/>
+        <location filename="../../core/fullscreenui_strings.h" line="761"/>
         <source>Show GPU Statistics</source>
         <translation>Mostrar estatísticas da GPU</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="752"/>
+        <location filename="../../core/fullscreenui_strings.h" line="762"/>
         <source>Show GPU Usage</source>
         <translation>Mostrar uso da GPU</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="754"/>
+        <location filename="../../core/fullscreenui_strings.h" line="764"/>
         <source>Show Latency Statistics</source>
         <translation>Exibir estatísticas de latência</translation>
     </message>
@@ -13055,27 +13274,27 @@ Deseja {1} mesmo assim?</translation>
         <translation type="vanished">Mostrar mensagens na tela</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="758"/>
+        <location filename="../../core/fullscreenui_strings.h" line="768"/>
         <source>Show Resolution</source>
         <translation>Mostrar resolução</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="759"/>
+        <location filename="../../core/fullscreenui_strings.h" line="769"/>
         <source>Show Speed</source>
         <translation>Mostrar Velocidade</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="760"/>
+        <location filename="../../core/fullscreenui_strings.h" line="770"/>
         <source>Show Status Indicators</source>
         <translation>Mostrar indicadores de situação</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="765"/>
+        <location filename="../../core/fullscreenui_strings.h" line="775"/>
         <source>Shows a visual history of frame times in the upper-left corner of the display.</source>
         <translation>Mostra o histórico dos tempos de quadro no canto superior esquerdo da tela.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="766"/>
+        <location filename="../../core/fullscreenui_strings.h" line="776"/>
         <source>Shows enhancement settings in the bottom-right corner of the screen.</source>
         <translation>Mostra as configurações de aprimoramento no canto inferior direito da tela.</translation>
     </message>
@@ -13084,12 +13303,12 @@ Deseja {1} mesmo assim?</translation>
         <translation type="vanished">Mostra ícones no canto inferior direito da tela quando um desafio/conquista está ativa.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="767"/>
+        <location filename="../../core/fullscreenui_strings.h" line="777"/>
         <source>Shows information about input and audio latency in the top-right corner of the display.</source>
         <translation>Mostra informações sobre a latência de entrada e de áudio no canto superior direito da tela.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="768"/>
+        <location filename="../../core/fullscreenui_strings.h" line="778"/>
         <source>Shows information about the emulated GPU in the top-right corner of the display.</source>
         <translation>Mostra informações sobre a GPU no canto superior direito da tela.</translation>
     </message>
@@ -13098,27 +13317,27 @@ Deseja {1} mesmo assim?</translation>
         <translation type="vanished">Mostra mensagens na tela quando ocorrem eventos.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="770"/>
+        <location filename="../../core/fullscreenui_strings.h" line="780"/>
         <source>Shows persistent icons when turbo is active or when paused.</source>
         <translation>Mostra ícones quando o turbo está ativo ou em pausa.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="771"/>
+        <location filename="../../core/fullscreenui_strings.h" line="781"/>
         <source>Shows the current controller state of the system in the bottom-left corner of the display.</source>
         <translation>Mostra quais botões estão sendo pressionados no canto inferior esquerdo da tela.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="772"/>
+        <location filename="../../core/fullscreenui_strings.h" line="782"/>
         <source>Shows the current emulation speed of the system in the top-right corner of the display as a percentage.</source>
         <translation>Mostra a velocidade de emulação atual do sistema no canto superior direito da tela registrado em porcentagem.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="773"/>
+        <location filename="../../core/fullscreenui_strings.h" line="783"/>
         <source>Shows the current rendering resolution of the system in the top-right corner of the display.</source>
         <translation>Mostra a resolução de renderização atual do sistema no canto superior direito da tela.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="774"/>
+        <location filename="../../core/fullscreenui_strings.h" line="784"/>
         <source>Shows the game you are currently playing as part of your profile in Discord.</source>
         <translation>Mostra o jogo que estiver jogando no seu perfil no Discord quando conectado.</translation>
     </message>
@@ -13127,12 +13346,12 @@ Deseja {1} mesmo assim?</translation>
         <translation type="vanished">Mostra o uso da CPU do host com base em threads no canto superior direito da tela.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="776"/>
+        <location filename="../../core/fullscreenui_strings.h" line="786"/>
         <source>Shows the host&apos;s GPU usage in the top-right corner of the display.</source>
         <translation>Mostra o uso da GPU do host no canto superior direito da tela.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="777"/>
+        <location filename="../../core/fullscreenui_strings.h" line="787"/>
         <source>Shows the number of frames (or v-syncs) displayed per second by the system in the top-right corner of the display.</source>
         <translation>Mostra o número de quadros (ou v-syncs) por segundo pelo sistema no canto superior direito da tela.</translation>
     </message>
@@ -13141,102 +13360,102 @@ Deseja {1} mesmo assim?</translation>
         <translation type="vanished">Simula o cache de instruções da CPU no recompilador. Pode ajudar com jogos executados muito rapidamente.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="780"/>
+        <location filename="../../core/fullscreenui_strings.h" line="790"/>
         <source>Simulates the region check present in original, unmodified consoles.</source>
         <translation>Simula a verificação de região conforme no console sem nenhum tipo de modificação.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="781"/>
+        <location filename="../../core/fullscreenui_strings.h" line="791"/>
         <source>Simulates the system ahead of time and rolls back/replays to reduce input lag. Very high system requirements.</source>
         <translation>Simula o pulo de quadros para tentar reduzir atrasos. Requisitos de sistema muito altos.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="783"/>
+        <location filename="../../core/fullscreenui_strings.h" line="793"/>
         <source>Skip Duplicate Frame Display</source>
         <translation>Ignorar exibição de quadro duplicado</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="784"/>
+        <location filename="../../core/fullscreenui_strings.h" line="794"/>
         <source>Skips the presentation/display of frames that are not unique. Can result in worse frame pacing.</source>
         <translation>Pula a exibição de quadros que não são exclusivos. Pode resultar em um ritmo de quadros pior.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="785"/>
+        <location filename="../../core/fullscreenui_strings.h" line="795"/>
         <source>Slow Boot</source>
         <translation>Inicialização lenta</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="786"/>
+        <location filename="../../core/fullscreenui_strings.h" line="796"/>
         <source>Smooth Scrolling</source>
         <translation>Rolagem suave</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="789"/>
+        <location filename="../../core/fullscreenui_strings.h" line="799"/>
         <source>Smooths out the blockiness of magnified textures on 3D objects.</source>
         <translation>Suaviza as texturas em objetos 3D.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="791"/>
+        <location filename="../../core/fullscreenui_strings.h" line="801"/>
         <source>Sort By</source>
         <translation>Classificar por</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="792"/>
+        <location filename="../../core/fullscreenui_strings.h" line="802"/>
         <source>Sort Reversed</source>
         <translation>Classificação invertida</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="794"/>
+        <location filename="../../core/fullscreenui_strings.h" line="804"/>
         <source>Sound Effects</source>
         <translation>Efeitos sonoros</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="795"/>
+        <location filename="../../core/fullscreenui_strings.h" line="805"/>
         <source>Specifies the amount of buffer time added, which reduces the additional sleep time introduced.</source>
         <translation>Especifica a quantidade de tempo de buffer adicionado, o que reduz o tempo adicional de suspensão.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="796"/>
+        <location filename="../../core/fullscreenui_strings.h" line="806"/>
         <source>Spectator Mode</source>
         <translation>Modo espectador</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="797"/>
+        <location filename="../../core/fullscreenui_strings.h" line="807"/>
         <source>Speed Control</source>
         <translation>Controle de Velocidade</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="798"/>
+        <location filename="../../core/fullscreenui_strings.h" line="808"/>
         <source>Speeds up CD-ROM reads by the specified factor. May improve loading speeds in some games, and break others.</source>
         <translation>Acelera a leitura de CD-ROM pelo valor configurado. Pode melhorar a velocidade de carregamento em alguns jogos e prejudicar outros.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="799"/>
+        <location filename="../../core/fullscreenui_strings.h" line="809"/>
         <source>Speeds up CD-ROM seeks by the specified factor. May improve loading speeds in some games, and break others.</source>
         <translation>Acelera a leitura de CD-ROM pelo valor configurado. Pode melhorar a velocidade de carregamento em alguns jogos e prejudicar outros.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="801"/>
+        <location filename="../../core/fullscreenui_strings.h" line="811"/>
         <source>Stage {}: {}</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="802"/>
+        <location filename="../../core/fullscreenui_strings.h" line="812"/>
         <source>Start BIOS</source>
         <translation>Iniciar o BIOS</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="805"/>
+        <location filename="../../core/fullscreenui_strings.h" line="815"/>
         <source>Start File</source>
         <translation>Iniciar arquivo</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="806"/>
+        <location filename="../../core/fullscreenui_strings.h" line="816"/>
         <source>Start Fullscreen</source>
         <translation>Iniciar em tela cheia</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="810"/>
+        <location filename="../../core/fullscreenui_strings.h" line="820"/>
         <source>Start the console without any disc inserted.</source>
         <translation>Ligue o console sem nenhum disco inserido.</translation>
     </message>
@@ -13249,7 +13468,7 @@ Deseja {1} mesmo assim?</translation>
         <translation type="vanished">Esticar imagem verticalmente</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="813"/>
+        <location filename="../../core/fullscreenui_strings.h" line="823"/>
         <source>Stretch Mode</source>
         <translation>Modo de alongamento</translation>
     </message>
@@ -13258,47 +13477,47 @@ Deseja {1} mesmo assim?</translation>
         <translation type="vanished">Estica a tela para corresponder à proporção de aspecto, multiplicando verticalmente em vez de horizontalmente.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="814"/>
+        <location filename="../../core/fullscreenui_strings.h" line="824"/>
         <source>Summary</source>
         <translation>Índice</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="819"/>
+        <location filename="../../core/fullscreenui_strings.h" line="829"/>
         <source>Switches back to 4:3 display aspect ratio when displaying 24-bit content, usually FMVs.</source>
         <translation>Muda para o formato 4:3 quando FMV&apos;s são iniciados.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="820"/>
+        <location filename="../../core/fullscreenui_strings.h" line="830"/>
         <source>Switches between full screen and windowed when the window is double-clicked.</source>
         <translation>Alterna entre tela cheia e janela quando a janela é clicada duas vezes.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="821"/>
+        <location filename="../../core/fullscreenui_strings.h" line="831"/>
         <source>Sync To Host Refresh Rate</source>
         <translation>Sincronizar taxa de atualização</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="823"/>
+        <location filename="../../core/fullscreenui_strings.h" line="833"/>
         <source>Temporarily disables all enhancements, useful when testing.</source>
         <translation>Desativa temporariamente todos os aprimoramentos, útil para testes.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="824"/>
+        <location filename="../../core/fullscreenui_strings.h" line="834"/>
         <source>Test Unofficial Achievements</source>
         <translation>Testar as conquistas não oficiais</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="825"/>
+        <location filename="../../core/fullscreenui_strings.h" line="835"/>
         <source>Texture Filtering</source>
         <translation>Filtro de textura</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="827"/>
+        <location filename="../../core/fullscreenui_strings.h" line="837"/>
         <source>Texture Replacements</source>
         <translation>Texturas personalizadas</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="829"/>
+        <location filename="../../core/fullscreenui_strings.h" line="840"/>
         <source>The SDL input source supports most controllers.</source>
         <translation>A fonte de entrada SDL é compatível com a maioria dos controles.</translation>
     </message>
@@ -13307,12 +13526,12 @@ Deseja {1} mesmo assim?</translation>
         <translation type="vanished">A fonte XInput oferece suporte para os controles XBox 360/XBox One/XBox Series.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="830"/>
+        <location filename="../../core/fullscreenui_strings.h" line="841"/>
         <source>The audio backend determines how frames produced by the emulator are submitted to the host.</source>
         <translation>O backend de áudio determina como os quadros produzidos pelo emulador são enviados ao host.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="831"/>
+        <location filename="../../core/fullscreenui_strings.h" line="842"/>
         <source>The selected memory card image will be used in shared mode for this slot.</source>
         <translation>A imagem do cartão de memória escolhida será usada no modo compartilhado para esse compartimento.</translation>
     </message>
@@ -13321,12 +13540,12 @@ Deseja {1} mesmo assim?</translation>
         <translation type="vanished">Apresentação sequencial</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="834"/>
+        <location filename="../../core/fullscreenui_strings.h" line="845"/>
         <source>Threaded Rendering</source>
         <translation>Renderização sequencial</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="835"/>
+        <location filename="../../core/fullscreenui_strings.h" line="846"/>
         <source>Time Played</source>
         <translation>Tempo de jogo</translation>
     </message>
@@ -13335,22 +13554,22 @@ Deseja {1} mesmo assim?</translation>
         <translation type="vanished">Jogou pela última vez: %s</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="838"/>
+        <location filename="../../core/fullscreenui_strings.h" line="849"/>
         <source>Title</source>
         <translation>Título</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="842"/>
+        <location filename="../../core/fullscreenui_strings.h" line="853"/>
         <source>Toggle Analog</source>
         <translation>Alternância do analógico</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="843"/>
+        <location filename="../../core/fullscreenui_strings.h" line="855"/>
         <source>Toggle Fast Forward</source>
         <translation>Alternar pulo de quadros</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="845"/>
+        <location filename="../../core/fullscreenui_strings.h" line="857"/>
         <source>Toggle every %d frames</source>
         <translation>Alternar a cada %d quadros</translation>
     </message>
@@ -13363,42 +13582,42 @@ Deseja {1} mesmo assim?</translation>
         <translation type="vanished">Renderização com cores reais</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="852"/>
+        <location filename="../../core/fullscreenui_strings.h" line="864"/>
         <source>Turbo Speed</source>
         <translation>Velocidade do Turbo</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="853"/>
+        <location filename="../../core/fullscreenui_strings.h" line="865"/>
         <source>Type</source>
         <translation>Tipo</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="855"/>
+        <location filename="../../core/fullscreenui_strings.h" line="867"/>
         <source>Undo Load State</source>
         <translation>Desfazer carregar estado</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="857"/>
+        <location filename="../../core/fullscreenui_strings.h" line="869"/>
         <source>Unknown</source>
         <translation>Desconhecido</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="859"/>
+        <location filename="../../core/fullscreenui_strings.h" line="871"/>
         <source>Unlimited</source>
         <translation>ilimitado</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="865"/>
+        <location filename="../../core/fullscreenui_strings.h" line="877"/>
         <source>Use Blit Swap Chain</source>
         <translation>Usar cadeia de troca</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="866"/>
+        <location filename="../../core/fullscreenui_strings.h" line="878"/>
         <source>Use Debug GPU Device</source>
         <translation>Usar dispositivo de depuração</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="867"/>
+        <location filename="../../core/fullscreenui_strings.h" line="879"/>
         <source>Use Global Setting</source>
         <translation>Usar configuração global</translation>
     </message>
@@ -13407,7 +13626,7 @@ Deseja {1} mesmo assim?</translation>
         <translation type="vanished">Usar tema claro</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="875"/>
+        <location filename="../../core/fullscreenui_strings.h" line="887"/>
         <source>Use Software Renderer For Readbacks</source>
         <translation>Usar modo software para releituras</translation>
     </message>
@@ -13416,12 +13635,12 @@ Deseja {1} mesmo assim?</translation>
         <translation type="vanished">Nome de usuário: {}</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="879"/>
+        <location filename="../../core/fullscreenui_strings.h" line="891"/>
         <source>Uses PGXP for all instructions, not just memory operations.</source>
         <translation>Usa PGXP para todas as instruções, não apenas para operações de memória.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="880"/>
+        <location filename="../../core/fullscreenui_strings.h" line="892"/>
         <source>Uses a blit presentation model instead of flipping. This may be needed on some systems.</source>
         <translation>Usa um modelo de apresentação blit em vez de flipping.</translation>
     </message>
@@ -13434,27 +13653,27 @@ Deseja {1} mesmo assim?</translation>
         <translation type="vanished">Usa um segundo thread para desenhar gráficos. Aumento de velocidade e uso seguro.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="884"/>
+        <location filename="../../core/fullscreenui_strings.h" line="896"/>
         <source>Uses game-specific settings for controllers for this game.</source>
         <translation>Usa configurações específicas do jogo para os controles deste jogo.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="886"/>
+        <location filename="../../core/fullscreenui_strings.h" line="898"/>
         <source>Uses native resolution coordinates for 2D polygons, instead of precise coordinates. Can fix misaligned UI in some games, but otherwise should be left disabled.</source>
         <translation>Usa coordenadas de resolução nativa para jogos com polígonos 2D, em vez de coordenadas precisas. Pode corrigir interfaces de usuário desalinhadas em alguns jogos, caso contrário, deve ser desativada.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="887"/>
+        <location filename="../../core/fullscreenui_strings.h" line="899"/>
         <source>Uses perspective-correct interpolation for colors, which can improve visuals in some games.</source>
         <translation>Usa interpolação com correção de perspectiva para cores, o que pode melhorar o visual em alguns jogos.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="888"/>
+        <location filename="../../core/fullscreenui_strings.h" line="900"/>
         <source>Uses perspective-correct interpolation for texture coordinates, straightening out warped textures.</source>
         <translation>Usa interpolação com correção de perspectiva para coordenadas de textura, endireitando texturas distorcidas.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="889"/>
+        <location filename="../../core/fullscreenui_strings.h" line="901"/>
         <source>Uses screen positions to resolve PGXP data. May improve visuals in some games.</source>
         <translation>Usa as posições da tela para resolver os dados do PGXP. Pode melhorar o visual em alguns jogos.</translation>
     </message>
@@ -13463,12 +13682,12 @@ Deseja {1} mesmo assim?</translation>
         <translation type="vanished">Utiliza o tempo de vídeo escolhido, independentemente da configuração do jogo.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="894"/>
+        <location filename="../../core/fullscreenui_strings.h" line="906"/>
         <source>Value: {} | Default: {} | Minimum: {} | Maximum: {}</source>
         <translation>Valor: {} | Padrão: {} | Mínimo: {} | Máximo: {}</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="901"/>
+        <location filename="../../core/fullscreenui_strings.h" line="913"/>
         <source>WARNING: Your game is still saving to the memory card. Continuing to {0} may IRREVERSIBLY DESTROY YOUR MEMORY CARD. We recommend resuming your game and waiting 5 seconds for it to finish saving.
 
 Do you want to {0} anyway?</source>
@@ -13477,47 +13696,47 @@ Do you want to {0} anyway?</source>
 Deseja fazer {0} mesmo assim?</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="906"/>
+        <location filename="../../core/fullscreenui_strings.h" line="918"/>
         <source>When enabled and logged in, DuckStation will scan for achievements on startup.</source>
         <translation>Quando ativado e conectado o DuckStation irá buscar por conquistas assim que o jogo for iniciado.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="907"/>
+        <location filename="../../core/fullscreenui_strings.h" line="919"/>
         <source>When enabled, DuckStation will assume all achievements are locked and not send any unlock notifications to the server.</source>
         <translation>Quando ativado, o DuckStation entenderá que todas as conquistas deverão ficar travadas e não enviará nenhuma notificação de desbloqueio ao servidor.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="908"/>
+        <location filename="../../core/fullscreenui_strings.h" line="920"/>
         <source>When enabled, DuckStation will list achievements from unofficial sets. These achievements are not tracked by RetroAchievements.</source>
         <translation>Quando ativado, o DuckStation listará as conquistas não oficiais. Essas conquistas não são monitoradas pelo RetroAchievements.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="909"/>
+        <location filename="../../core/fullscreenui_strings.h" line="921"/>
         <source>When enabled, each session will behave as if no achievements have been unlocked.</source>
         <translation>Quando ativada, cada sessão se comportará como se nenhuma conquista tivesse sido desbloqueada.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="910"/>
+        <location filename="../../core/fullscreenui_strings.h" line="922"/>
         <source>When enabled, memory cards and controllers will be overwritten when save states are loaded.</source>
         <translation>Quando ativado, os cartões de memória e os controles serão sobrescritos quando os estados de salvamento forem carregados.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="912"/>
+        <location filename="../../core/fullscreenui_strings.h" line="924"/>
         <source>When enabled, the minimum supported output latency will be used for the host API.</source>
         <translation>Quando ativada, a latência mínima de saída suportada será usada para a API do host.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="913"/>
+        <location filename="../../core/fullscreenui_strings.h" line="925"/>
         <source>When playing a multi-disc game and using per-game (title) memory cards, use a single memory card for all discs.</source>
         <translation>Ao jogar um jogo com vários discos usando cartões de memória independente por jogo, use um único cartão de memória para todos os discos.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="914"/>
+        <location filename="../../core/fullscreenui_strings.h" line="926"/>
         <source>When this option is chosen, the clock speed set below will be used.</source>
         <translation>Quando ativado, a velocidade escolhida será usada.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="915"/>
+        <location filename="../../core/fullscreenui_strings.h" line="927"/>
         <source>Widescreen Rendering</source>
         <translation>Renderização em tela panorâmica</translation>
     </message>
@@ -13526,22 +13745,22 @@ Deseja fazer {0} mesmo assim?</translation>
         <translation type="vanished">Grava texturas que podem ser substituídas no diretório de despejo.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="921"/>
+        <location filename="../../core/fullscreenui_strings.h" line="933"/>
         <source>Yes, {} now and risk memory card corruption.</source>
         <translation>Sim, {} aceitar que o cartão de memória será corrompido.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="922"/>
+        <location filename="../../core/fullscreenui_strings.h" line="934"/>
         <source>&quot;Challenge&quot; mode for achievements, including leaderboard tracking. Disables save state, cheats, and slowdown functions.</source>
         <translation>Desativa salvamentos rápidos, carregamento de trapaças e funções de velocidade.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="923"/>
+        <location filename="../../core/fullscreenui_strings.h" line="935"/>
         <source>&quot;PlayStation&quot; and &quot;PSX&quot; are registered trademarks of Sony Interactive Entertainment Europe Limited. This software is not affiliated in any way with Sony Interactive Entertainment.</source>
         <translation>&quot;PlayStation&quot; e &quot;PSX&quot; são marcas registradas da Sony Interactive Entertainment Europe Limited. Este software não é afiliado de forma alguma à Sony Interactive Entertainment.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="924"/>
+        <location filename="../../core/fullscreenui_strings.h" line="936"/>
         <source>change disc</source>
         <translation>mudar disco</translation>
     </message>
@@ -13550,27 +13769,27 @@ Deseja fazer {0} mesmo assim?</translation>
         <translation type="vanished">reiniciar</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="926"/>
+        <location filename="../../core/fullscreenui_strings.h" line="938"/>
         <source>shut down</source>
         <translation>desligar</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="928"/>
+        <location filename="../../core/fullscreenui_strings.h" line="941"/>
         <source>{} Frames</source>
         <translation>{} Quadros</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="929"/>
+        <location filename="../../core/fullscreenui_strings.h" line="942"/>
         <source>{} deleted.</source>
         <translation>{} Apagado.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="930"/>
+        <location filename="../../core/fullscreenui_strings.h" line="943"/>
         <source>{} does not exist.</source>
         <translation>{} não existe.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui_strings.h" line="931"/>
+        <location filename="../../core/fullscreenui_strings.h" line="944"/>
         <source>{} is not a valid disc image.</source>
         <translation>{} não é uma imagem de disco válida.</translation>
     </message>
@@ -13584,7 +13803,7 @@ Deseja fazer {0} mesmo assim?</translation>
         <translation></translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/fullscreenui_widgets.cpp" line="6761"/>
+        <location filename="../../core/fullscreenui_widgets.cpp" line="6842"/>
         <source>%n seconds remaining</source>
         <comment>Loading time</comment>
         <translation>
@@ -13593,7 +13812,7 @@ Deseja fazer {0} mesmo assim?</translation>
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/fullscreenui_widgets.cpp" line="6766"/>
+        <location filename="../../core/fullscreenui_widgets.cpp" line="6847"/>
         <source>%n minutes remaining</source>
         <comment>Loading time</comment>
         <translation>
@@ -13605,61 +13824,61 @@ Deseja fazer {0} mesmo assim?</translation>
 <context>
     <name>GPU</name>
     <message>
-        <location filename="../../core/gpu_backend.cpp" line="761"/>
-        <location filename="../../core/gpu_backend.cpp" line="779"/>
+        <location filename="../../core/gpu_backend.cpp" line="765"/>
+        <location filename="../../core/gpu_backend.cpp" line="783"/>
         <source>Failed to save screenshot:
 {}</source>
         <translation>Falha ao salvar a captura de tela:
 {}</translation>
     </message>
     <message>
-        <location filename="../../core/gpu_backend.cpp" line="788"/>
+        <location filename="../../core/gpu_backend.cpp" line="792"/>
         <source>Saving screenshot to &apos;{}&apos;.</source>
         <translation>Salvando a captura de tela em &apos;{}&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/gpu_backend.cpp" line="828"/>
+        <location filename="../../core/gpu_backend.cpp" line="832"/>
         <source>Saved screenshot to &apos;{}&apos;.</source>
         <translation>Captura de tela salva em &apos;{}&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/gpu_backend.cpp" line="829"/>
+        <location filename="../../core/gpu_backend.cpp" line="833"/>
         <source>Failed to save screenshot to &apos;{}&apos;.</source>
         <translation>Falha ao salvar a captura de tela &apos;{}&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/gpu.cpp" line="3958"/>
+        <location filename="../../core/gpu.cpp" line="3978"/>
         <source>Failed to start GPU trace:</source>
         <translation>Falha ao salvar o rastreio da GPU:</translation>
     </message>
     <message>
-        <location filename="../../core/gpu.cpp" line="3965"/>
+        <location filename="../../core/gpu.cpp" line="3985"/>
         <source>Saving {0} frame GPU trace to &apos;{1}&apos;.</source>
         <translation>Salvando o rastreamento da GPU do quadro {0} em &apos;{1}&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/gpu.cpp" line="3966"/>
+        <location filename="../../core/gpu.cpp" line="3986"/>
         <source>Saving multi-frame frame GPU trace to &apos;{1}&apos;.</source>
         <translation>Salvando o rastreamento da GPU de quadros múltiplos em &apos;{1}&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/gpu.cpp" line="3985"/>
+        <location filename="../../core/gpu.cpp" line="4005"/>
         <source>Failed to close GPU trace:</source>
         <translation>Falha ao fechar o rastreio da GPU:</translation>
     </message>
     <message>
-        <location filename="../../core/gpu.cpp" line="3998"/>
-        <location filename="../../core/gpu.cpp" line="4015"/>
+        <location filename="../../core/gpu.cpp" line="4018"/>
+        <location filename="../../core/gpu.cpp" line="4035"/>
         <source>Saved GPU trace to &apos;{}&apos;.</source>
         <translation>Rastreamento da GPU salvo em &apos;{}&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/gpu.cpp" line="4008"/>
+        <location filename="../../core/gpu.cpp" line="4028"/>
         <source>Compressing GPU trace &apos;{}&apos;...</source>
         <translation>Comprimindo o rastreamento da GPU &apos;{}&apos;...</translation>
     </message>
     <message>
-        <location filename="../../core/gpu.cpp" line="4022"/>
+        <location filename="../../core/gpu.cpp" line="4042"/>
         <source>Failed to save GPU trace to &apos;{}&apos;:</source>
         <translation>Falha ao salvar o rastreio da GPU em &apos;{}&apos;:</translation>
     </message>
@@ -13944,24 +14163,24 @@ As funções de fetch, loops e exibição de rasterização são obrigatórias.<
         <translation>Remover trapaça</translation>
     </message>
     <message>
-        <location filename="../gamecheatsettingswidget.cpp" line="1081"/>
-        <location filename="../gamecheatsettingswidget.cpp" line="1096"/>
-        <location filename="../gamecheatsettingswidget.cpp" line="1106"/>
+        <location filename="../gamecheatsettingswidget.cpp" line="1087"/>
+        <location filename="../gamecheatsettingswidget.cpp" line="1102"/>
+        <location filename="../gamecheatsettingswidget.cpp" line="1112"/>
         <source>Error</source>
         <translation>Erro</translation>
     </message>
     <message>
-        <location filename="../gamecheatsettingswidget.cpp" line="1081"/>
+        <location filename="../gamecheatsettingswidget.cpp" line="1087"/>
         <source>At least one option must be defined.</source>
         <translation>Pelo menos uma opção deve ser definida.</translation>
     </message>
     <message>
-        <location filename="../gamecheatsettingswidget.cpp" line="1097"/>
+        <location filename="../gamecheatsettingswidget.cpp" line="1103"/>
         <source>The option &apos;%1&apos; is defined twice.</source>
         <translation>A opção “%1” foi definida duas vezes.</translation>
     </message>
     <message>
-        <location filename="../gamecheatsettingswidget.cpp" line="1107"/>
+        <location filename="../gamecheatsettingswidget.cpp" line="1113"/>
         <source>The option &apos;%1&apos; does not have a valid value. It must be a number.</source>
         <translation>A opção &apos;%1&apos; não tem um valor válido. Ela deve ser um número.</translation>
     </message>
@@ -14153,38 +14372,38 @@ Deseja ativar as trapaças agora?</translation>
         <translation>Do arquivo...</translation>
     </message>
     <message>
-        <location filename="../gamecheatsettingswidget.cpp" line="565"/>
+        <location filename="../gamecheatsettingswidget.cpp" line="566"/>
         <source>From Text...</source>
         <translation>Do texto...</translation>
     </message>
     <message>
-        <location filename="../gamecheatsettingswidget.cpp" line="571"/>
+        <location filename="../gamecheatsettingswidget.cpp" line="573"/>
         <source>PCSXR/Libretro Cheat Files (*.cht *.txt);;All Files (*.*)</source>
         <translation>PCSXR/Libretro arquivos de trapaça (*.cht);;Todos os arquivos (*.*)</translation>
     </message>
     <message>
-        <location filename="../gamecheatsettingswidget.cpp" line="573"/>
-        <location filename="../gamecheatsettingswidget.cpp" line="591"/>
+        <location filename="../gamecheatsettingswidget.cpp" line="575"/>
+        <location filename="../gamecheatsettingswidget.cpp" line="593"/>
         <source>Import Cheats</source>
         <translation>Importar trapaças</translation>
     </message>
     <message>
-        <location filename="../gamecheatsettingswidget.cpp" line="581"/>
-        <location filename="../gamecheatsettingswidget.cpp" line="661"/>
-        <location filename="../gamecheatsettingswidget.cpp" line="679"/>
-        <location filename="../gamecheatsettingswidget.cpp" line="699"/>
+        <location filename="../gamecheatsettingswidget.cpp" line="583"/>
+        <location filename="../gamecheatsettingswidget.cpp" line="663"/>
+        <location filename="../gamecheatsettingswidget.cpp" line="685"/>
+        <location filename="../gamecheatsettingswidget.cpp" line="705"/>
         <source>Error</source>
         <translation>Erro</translation>
     </message>
     <message>
-        <location filename="../gamecheatsettingswidget.cpp" line="582"/>
+        <location filename="../gamecheatsettingswidget.cpp" line="584"/>
         <source>Failed to read file:
 %1</source>
         <translation>Falha ao ler o arquivo:
 %1</translation>
     </message>
     <message>
-        <location filename="../gamecheatsettingswidget.cpp" line="591"/>
+        <location filename="../gamecheatsettingswidget.cpp" line="593"/>
         <source>Cheat File Text:</source>
         <translation>Texto da trapaça:</translation>
     </message>
@@ -14195,47 +14414,47 @@ Deseja ativar as trapaças agora?</translation>
 %1</translation>
     </message>
     <message>
-        <location filename="../gamecheatsettingswidget.cpp" line="680"/>
+        <location filename="../gamecheatsettingswidget.cpp" line="686"/>
         <source>Failed to save file:
 %1</source>
         <translation>Falha ao salvar arquivo:
 %1</translation>
     </message>
     <message>
-        <location filename="../gamecheatsettingswidget.cpp" line="662"/>
+        <location filename="../gamecheatsettingswidget.cpp" line="664"/>
         <source>This code is from the built-in cheat database, and cannot be removed. To hide this code, uncheck the &quot;Load Database Cheats&quot; option.</source>
         <translation>Esse código é do banco de dados de trapaças incorporado e não pode ser removido. Para ocultar esse código, desmarque a opção Carregar trapaças do banco de dados.</translation>
     </message>
     <message>
-        <location filename="../gamecheatsettingswidget.cpp" line="668"/>
-        <location filename="../gamecheatsettingswidget.cpp" line="707"/>
+        <location filename="../gamecheatsettingswidget.cpp" line="670"/>
+        <location filename="../gamecheatsettingswidget.cpp" line="713"/>
         <source>Confirm Removal</source>
         <translation>Confirmar remoção</translation>
     </message>
     <message>
-        <location filename="../gamecheatsettingswidget.cpp" line="669"/>
+        <location filename="../gamecheatsettingswidget.cpp" line="671"/>
         <source>You are removing the code named &apos;%1&apos;. You cannot undo this action, are you sure you wish to delete this code?</source>
         <translation>Você está removendo o código &apos;%1&apos;. Esta ação não pode ser desfeita. Tem certeza de que deseja excluir esse código?</translation>
     </message>
     <message>
-        <location filename="../gamecheatsettingswidget.cpp" line="690"/>
+        <location filename="../gamecheatsettingswidget.cpp" line="696"/>
         <source>PCSXR Cheat Files (*.cht);;All Files (*.*)</source>
         <translation>Arquivos suportados (*.cht *.txt);;Todos os tipos de arquivo (*.*)</translation>
     </message>
     <message>
-        <location filename="../gamecheatsettingswidget.cpp" line="692"/>
+        <location filename="../gamecheatsettingswidget.cpp" line="698"/>
         <source>Export Cheats</source>
         <translation>Exportar trapaças</translation>
     </message>
     <message>
-        <location filename="../gamecheatsettingswidget.cpp" line="700"/>
+        <location filename="../gamecheatsettingswidget.cpp" line="706"/>
         <source>Failed to save cheat file:
 %1</source>
         <translation>Falha ao salvar o código de trapaça:
 %1</translation>
     </message>
     <message>
-        <location filename="../gamecheatsettingswidget.cpp" line="708"/>
+        <location filename="../gamecheatsettingswidget.cpp" line="714"/>
         <source>You are removing all cheats manually added for this game. This action cannot be reversed.
 
 Any database cheats will still be loaded and present unless you uncheck the &quot;Load Database Cheats&quot; option.
@@ -15096,17 +15315,18 @@ Configure um controle compatível da lista acima.</translation>
         <translation>Varredura &apos;{}&apos;...</translation>
     </message>
     <message>
+        <location filename="../gamelistwidget.cpp" line="222"/>
         <location filename="../../core/game_list.cpp" line="1447"/>
         <source>Unknown</source>
         <translation>Desconhecido</translation>
     </message>
     <message>
-        <location filename="../../core/game_list.cpp" line="1832"/>
+        <location filename="../../core/game_list.cpp" line="1767"/>
         <source>URL template must contain at least one of ${title}, ${savetitle}, ${filetitle}, or ${serial}.</source>
         <translation>O modelo de URL deve conter pelo menos um dos seguintes elementos: ${title}, ${savetitle}, ${filetitle} ou ${serial}.</translation>
     </message>
     <message>
-        <location filename="../../core/game_list.cpp" line="1866"/>
+        <location filename="../../core/game_list.cpp" line="1801"/>
         <source>No URLs to download enumerated.</source>
         <translation>Nenhuma URL para download listado.</translation>
     </message>
@@ -15117,72 +15337,54 @@ Configure um controle compatível da lista acima.</translation>
 {}</translation>
     </message>
     <message>
-        <location filename="../gamelistwidget.cpp" line="2520"/>
-        <location filename="../../core/game_list.cpp" line="1698"/>
         <source>Never</source>
-        <translation>Nunca</translation>
+        <translation type="vanished">Nunca</translation>
     </message>
     <message>
-        <location filename="../gamelistwidget.cpp" line="2518"/>
-        <location filename="../../core/game_list.cpp" line="1712"/>
         <source>Today</source>
-        <translation>Hoje</translation>
+        <translation type="vanished">Hoje</translation>
     </message>
     <message>
-        <location filename="../gamelistwidget.cpp" line="2519"/>
-        <location filename="../../core/game_list.cpp" line="1719"/>
         <source>Yesterday</source>
-        <translation>Ontem</translation>
+        <translation type="vanished">Ontem</translation>
     </message>
     <message>
-        <location filename="../../core/game_list.cpp" line="1736"/>
         <source>{}h {}m</source>
-        <translation>{}h {}m</translation>
+        <translation type="vanished">{}h {}m</translation>
     </message>
     <message>
-        <location filename="../../core/game_list.cpp" line="1738"/>
         <source>{}h {}m {}s</source>
-        <translation>{}h {}m {}s</translation>
+        <translation type="vanished">{}h {}m {}s</translation>
     </message>
     <message>
-        <location filename="../../core/game_list.cpp" line="1740"/>
         <source>{}m {}s</source>
-        <translation>{}m {}s</translation>
+        <translation type="vanished">{}m {}s</translation>
     </message>
     <message>
-        <location filename="../../core/game_list.cpp" line="1742"/>
         <source>{}s</source>
-        <translation>{}s</translation>
+        <translation type="vanished">{}s</translation>
     </message>
     <message>
-        <location filename="../../core/game_list.cpp" line="1744"/>
-        <location filename="../../core/game_list.cpp" line="1755"/>
         <source>None</source>
-        <translation>Nenhum</translation>
+        <translation type="vanished">Nenhum</translation>
     </message>
     <message numerus="yes">
-        <location filename="../gamelistwidget.cpp" line="2513"/>
-        <location filename="../../core/game_list.cpp" line="1749"/>
         <source>%n hours</source>
-        <translation>
+        <translation type="vanished">
             <numerusform>%n horas</numerusform>
             <numerusform></numerusform>
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../gamelistwidget.cpp" line="2512"/>
-        <location filename="../../core/game_list.cpp" line="1751"/>
         <source>%n minutes</source>
-        <translation>
+        <translation type="vanished">
             <numerusform>%n minutos</numerusform>
             <numerusform></numerusform>
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../gamelistwidget.cpp" line="2511"/>
-        <location filename="../../core/game_list.cpp" line="1753"/>
         <source>%n seconds</source>
-        <translation>
+        <translation type="vanished">
             <numerusform>%n segundos</numerusform>
             <numerusform></numerusform>
         </translation>
@@ -15191,17 +15393,15 @@ Configure um controle compatível da lista acima.</translation>
 <context>
     <name>GameListListView</name>
     <message>
-        <location filename="../gamelistwidget.cpp" line="2525"/>
         <source>Unknown</source>
-        <translation>Desconhecido</translation>
+        <translation type="vanished">Desconhecido</translation>
     </message>
 </context>
 <context>
     <name>GameListModel</name>
     <message>
-        <location filename="../gamelistwidget.cpp" line="222"/>
         <source>Unknown</source>
-        <translation>Desconhecido</translation>
+        <translation type="vanished">Desconhecido</translation>
     </message>
     <message>
         <location filename="../gamelistwidget.cpp" line="1088"/>
@@ -15425,8 +15625,12 @@ Escanear o diretório desta forma demora mais tempo porém, identificará arquiv
         <translation>Mesclar jogos multidiscos</translation>
     </message>
     <message>
-        <location filename="../gamelistwidget.ui" line="112"/>
         <source>Show Localized Icons</source>
+        <translation type="vanished">Mostrar títulos localizados</translation>
+    </message>
+    <message>
+        <location filename="../gamelistwidget.ui" line="112"/>
+        <source>Show Localized Titles</source>
         <translation>Mostrar títulos localizados</translation>
     </message>
     <message>
@@ -15548,7 +15752,7 @@ Escanear o diretório desta forma demora mais tempo porém, identificará arquiv
         <translation type="vanished">Não há modificações disponíveis para este jogo.</translation>
     </message>
     <message>
-        <location filename="../gamepatchsettingswidget.cpp" line="127"/>
+        <location filename="../gamepatchsettingswidget.cpp" line="126"/>
         <source>No patches are available for this game.</source>
         <translation>Não há modificações disponíveis para este jogo.</translation>
     </message>
@@ -15820,17 +16024,17 @@ Escanear o diretório desta forma demora mais tempo porém, identificará arquiv
         </translation>
     </message>
     <message>
-        <location filename="../gamesummarywidget.cpp" line="488"/>
+        <location filename="../gamesummarywidget.cpp" line="498"/>
         <source>This game was not scanned by DuckStation. Some functionality is not available.</source>
         <translation>Este jogo não foi digitalizado pelo DuckStation. Algumas funcionalidades não estão disponíveis.</translation>
     </message>
     <message>
-        <location filename="../gamesummarywidget.cpp" line="587"/>
+        <location filename="../gamesummarywidget.cpp" line="597"/>
         <source>Verifying Image</source>
         <translation>Verificando imagem</translation>
     </message>
     <message>
-        <location filename="../gamesummarywidget.cpp" line="609"/>
+        <location filename="../gamesummarywidget.cpp" line="619"/>
         <source>Hash Calculation Failed</source>
         <translation>Falha no cálculo do hash</translation>
     </message>
@@ -15839,7 +16043,7 @@ Escanear o diretório desta forma demora mais tempo porém, identificará arquiv
         <translation type="vanished">Incompatibilidade de número serial: disco %1 vs hash %2</translation>
     </message>
     <message>
-        <location filename="../gamesummarywidget.cpp" line="641"/>
+        <location filename="../gamesummarywidget.cpp" line="651"/>
         <source>Search on redump.info</source>
         <translation>Pesquisar no redump.info</translation>
     </message>
@@ -15857,22 +16061,22 @@ Escanear o diretório desta forma demora mais tempo porém, identificará arquiv
         <translation type="vanished">%1 faixa(s) totalizando %2 MB (%3 MB no disco)</translation>
     </message>
     <message>
-        <location filename="../gamesummarywidget.cpp" line="469"/>
+        <location filename="../gamesummarywidget.cpp" line="479"/>
         <source>Track %1</source>
         <translation>Faixa %1</translation>
     </message>
     <message>
-        <location filename="../gamesummarywidget.cpp" line="473"/>
+        <location filename="../gamesummarywidget.cpp" line="483"/>
         <source>&lt;not computed&gt;</source>
         <translation>&lt;Não calculado&gt;</translation>
     </message>
     <message>
-        <location filename="../gamesummarywidget.cpp" line="497"/>
+        <location filename="../gamesummarywidget.cpp" line="507"/>
         <source>Compatibility Report</source>
         <translation>Relatório de compatibilidade</translation>
     </message>
     <message>
-        <location filename="../gamesummarywidget.cpp" line="539"/>
+        <location filename="../gamesummarywidget.cpp" line="549"/>
         <source>Per-game controller configuration initialized with global settings.</source>
         <translation>Configuração do controle por jogo carregada com as configurações globais.</translation>
     </message>
@@ -16931,7 +17135,7 @@ Escanear o diretório desta forma demora mais tempo porém, identificará arquiv
         <translation>PGXP não está ativado. Aumentar a resolução sem ativar o PGXP resultará em falhas visíveis nos polígonos.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="1047"/>
+        <location filename="../graphicssettingswidget.cpp" line="1046"/>
         <source>&lt;h3&gt;Changing the renderer is not recommended!&lt;/h3&gt;&lt;p&gt;The &lt;strong&gt;Automatic&lt;/strong&gt; option provides the best experience, selecting the optimal renderer for your graphics adapter. There is &lt;strong&gt;no visual or performance advantage&lt;/strong&gt; to using a different renderer, and you risk the application breaking due to driver bugs.&lt;br&gt;&lt;br&gt;If you continue with changing the renderer, &lt;strong&gt;do not ask for support&lt;/strong&gt;.&lt;br&gt;&lt;br&gt;Are you sure you want to change the renderer?&lt;/p&gt;</source>
         <translation>&lt;h3&gt;Alterar o renderizador não é recomendado!&lt;/h3&gt;&lt;p&gt;A opção &lt;strong&gt;Automático&lt;/strong&gt; oferece a melhor experiência, selecionando o renderizador ideal para a sua placa de vídeo. Não há &lt;strong&gt;nenhuma vantagem visual ou de desempenho&lt;/strong&gt; em usar um renderizador diferente, e você corre o risco do aplicativo apresentar problemas devido a problemas de driver.&lt;br&gt;&lt;br&gt;Se você continuar e alterar o renderizador, &lt;strong&gt;não peça suporte&lt;/strong&gt;.&lt;br&gt;&lt;br&gt;Tem certeza de que deseja alterar o renderizador?&lt;/p&gt;</translation>
     </message>
@@ -17612,109 +17816,238 @@ Escanear o diretório desta forma demora mais tempo porém, identificará arquiv
 <context>
     <name>GunCon</name>
     <message>
-        <location filename="../../core/guncon.cpp" line="275"/>
+        <location filename="../../core/guncon.cpp" line="277"/>
         <source>Pointer/Aiming</source>
         <translation>Ponteiro/Mira</translation>
     </message>
     <message>
-        <location filename="../../core/guncon.cpp" line="276"/>
+        <location filename="../../core/guncon.cpp" line="278"/>
         <source>Trigger</source>
         <translation>Gatilho</translation>
     </message>
     <message>
-        <location filename="../../core/guncon.cpp" line="277"/>
+        <location filename="../../core/guncon.cpp" line="279"/>
         <source>Shoot Offscreen</source>
         <translation>Atirar para fora da tela</translation>
     </message>
     <message>
-        <location filename="../../core/guncon.cpp" line="278"/>
+        <location filename="../../core/guncon.cpp" line="280"/>
         <source>A</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../core/guncon.cpp" line="279"/>
+        <location filename="../../core/guncon.cpp" line="281"/>
         <source>B</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../core/guncon.cpp" line="281"/>
+        <location filename="../../core/guncon.cpp" line="283"/>
         <source>Relative Left</source>
         <translation>Relativo para esquerda</translation>
     </message>
     <message>
-        <location filename="../../core/guncon.cpp" line="282"/>
+        <location filename="../../core/guncon.cpp" line="284"/>
         <source>Relative Right</source>
         <translation>Relativo para direita</translation>
     </message>
     <message>
-        <location filename="../../core/guncon.cpp" line="283"/>
+        <location filename="../../core/guncon.cpp" line="285"/>
         <source>Relative Up</source>
         <translation>Relativo para cima</translation>
     </message>
     <message>
-        <location filename="../../core/guncon.cpp" line="284"/>
+        <location filename="../../core/guncon.cpp" line="286"/>
         <source>Relative Down</source>
         <translation>Relativo para baixo</translation>
     </message>
     <message>
-        <location filename="../../core/guncon.cpp" line="297"/>
+        <location filename="../../core/guncon.cpp" line="299"/>
         <source>Crosshair Image Path</source>
         <translation>Caminho da imagem da mira</translation>
     </message>
     <message>
-        <location filename="../../core/guncon.cpp" line="298"/>
+        <location filename="../../core/guncon.cpp" line="300"/>
         <source>Path to an image to use as a crosshair/cursor.</source>
         <translation>Caminho para imagem a ser usada como cursor.</translation>
     </message>
     <message>
-        <location filename="../../core/guncon.cpp" line="300"/>
+        <location filename="../../core/guncon.cpp" line="302"/>
         <source>Crosshair Image Scale</source>
         <translation>Escala de mira</translation>
     </message>
     <message>
-        <location filename="../../core/guncon.cpp" line="301"/>
+        <location filename="../../core/guncon.cpp" line="303"/>
         <source>Scale of crosshair image on screen.</source>
         <translation>Escala da mira em tela.</translation>
     </message>
     <message>
-        <location filename="../../core/guncon.cpp" line="303"/>
+        <location filename="../../core/guncon.cpp" line="305"/>
         <source>Cursor Color</source>
         <translation>Cor do cursor</translation>
     </message>
     <message>
-        <location filename="../../core/guncon.cpp" line="304"/>
+        <location filename="../../core/guncon.cpp" line="306"/>
         <source>Applies a color to the chosen crosshair images, can be used for multiple players. Specify in HTML/CSS format (e.g. #aabbcc)</source>
         <translation>Aplica uma cor às imagens de mira escolhidas, pode ser usado por vários jogadores. Especifique no formato HTML/CSS (por exemplo, #aabbcc)</translation>
     </message>
     <message>
-        <location filename="../../core/guncon.cpp" line="307"/>
+        <location filename="../../core/guncon.cpp" line="309"/>
         <source>X Scale</source>
         <translation>Dimensão X (verticalmente)</translation>
     </message>
     <message>
-        <location filename="../../core/guncon.cpp" line="308"/>
+        <location filename="../../core/guncon.cpp" line="310"/>
         <source>Scales X coordinates relative to the center of the screen.</source>
         <translation>Dimensionar coordenadas X em relação ao centro da tela .</translation>
     </message>
     <message>
-        <location filename="../../core/guncon.cpp" line="310"/>
+        <location filename="../../core/guncon.cpp" line="312"/>
         <source>Line Offset</source>
         <translation>Deslocamento vertical (linha)</translation>
     </message>
     <message>
-        <location filename="../../core/guncon.cpp" line="311"/>
+        <location filename="../../core/guncon.cpp" line="313"/>
         <source>Offset applied to lightgun vertical position.</source>
         <translation>Deslocamento aplicado à posição vertical.</translation>
     </message>
     <message>
-        <location filename="../../core/guncon.cpp" line="313"/>
+        <location filename="../../core/guncon.cpp" line="315"/>
         <source>Tick Offset</source>
         <translation>Deslocamento de tique (gatilho)</translation>
     </message>
     <message>
-        <location filename="../../core/guncon.cpp" line="314"/>
+        <location filename="../../core/guncon.cpp" line="316"/>
         <source>Offset applied to lightgun horizontal position.</source>
         <translation>Deslocamento aplicado à posição horizontal.</translation>
+    </message>
+</context>
+<context>
+    <name>Host</name>
+    <message numerus="yes">
+        <location filename="../gamelistwidget.cpp" line="2511"/>
+        <location filename="../../util/translation.cpp" line="259"/>
+        <source>%n seconds</source>
+        <translation>
+            <numerusform>%n segundos</numerusform>
+            <numerusform></numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../gamelistwidget.cpp" line="2512"/>
+        <location filename="../../util/translation.cpp" line="257"/>
+        <source>%n minutes</source>
+        <translation>
+            <numerusform>%n minutos</numerusform>
+            <numerusform></numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../gamelistwidget.cpp" line="2513"/>
+        <location filename="../../util/translation.cpp" line="255"/>
+        <source>%n hours</source>
+        <translation>
+            <numerusform>%n horas</numerusform>
+            <numerusform></numerusform>
+        </translation>
+    </message>
+    <message>
+        <location filename="../gamelistwidget.cpp" line="2518"/>
+        <location filename="../../util/translation.cpp" line="168"/>
+        <source>Today</source>
+        <translation>Hoje</translation>
+    </message>
+    <message>
+        <location filename="../gamelistwidget.cpp" line="2519"/>
+        <location filename="../../util/translation.cpp" line="175"/>
+        <source>Yesterday</source>
+        <translation>Ontem</translation>
+    </message>
+    <message>
+        <location filename="../gamelistwidget.cpp" line="2520"/>
+        <location filename="../../util/translation.cpp" line="153"/>
+        <location filename="../../util/translation.cpp" line="197"/>
+        <source>Never</source>
+        <translation>Nunca</translation>
+    </message>
+    <message>
+        <location filename="../../util/translation.cpp" line="168"/>
+        <source>today</source>
+        <translation>hoje</translation>
+    </message>
+    <message>
+        <location filename="../../util/translation.cpp" line="176"/>
+        <source>yesterday</source>
+        <translation>ontem</translation>
+    </message>
+    <message>
+        <location filename="../../util/translation.cpp" line="181"/>
+        <source>%n days ago</source>
+        <comment>Date difference</comment>
+        <translation>%n dias atrás</translation>
+    </message>
+    <message>
+        <location filename="../../util/translation.cpp" line="189"/>
+        <source>on {}</source>
+        <translation>em {}</translation>
+    </message>
+    <message>
+        <location filename="../../util/translation.cpp" line="204"/>
+        <source>Now</source>
+        <translation>Agora</translation>
+    </message>
+    <message>
+        <location filename="../../util/translation.cpp" line="204"/>
+        <source>now</source>
+        <translation>agora</translation>
+    </message>
+    <message>
+        <location filename="../../util/translation.cpp" line="208"/>
+        <source>%n seconds ago</source>
+        <comment>Time difference</comment>
+        <translation>%n segundos atrás</translation>
+    </message>
+    <message>
+        <location filename="../../util/translation.cpp" line="213"/>
+        <source>%n minutes ago</source>
+        <comment>Time difference</comment>
+        <translation>%n minutos atrás</translation>
+    </message>
+    <message>
+        <location filename="../../util/translation.cpp" line="218"/>
+        <source>%n hours ago</source>
+        <comment>Time difference</comment>
+        <translation>%n horas atrás</translation>
+    </message>
+    <message>
+        <location filename="../../util/translation.cpp" line="228"/>
+        <source>{} at {}</source>
+        <translation>{} de {}</translation>
+    </message>
+    <message>
+        <location filename="../../util/translation.cpp" line="242"/>
+        <source>{}h {}m</source>
+        <translation>{}h {}m</translation>
+    </message>
+    <message>
+        <location filename="../../util/translation.cpp" line="244"/>
+        <source>{}h {}m {}s</source>
+        <translation>{}h {}m {}s</translation>
+    </message>
+    <message>
+        <location filename="../../util/translation.cpp" line="246"/>
+        <source>{}m {}s</source>
+        <translation>{}m {}s</translation>
+    </message>
+    <message>
+        <location filename="../../util/translation.cpp" line="248"/>
+        <source>{}s</source>
+        <translation>{}s</translation>
+    </message>
+    <message>
+        <location filename="../../util/translation.cpp" line="250"/>
+        <location filename="../../util/translation.cpp" line="261"/>
+        <source>None</source>
+        <translation>Nenhum</translation>
     </message>
 </context>
 <context>
@@ -18616,8 +18949,8 @@ Escanear o diretório desta forma demora mais tempo porém, identificará arquiv
         <translation>Aperte botão/analógicos... [%1]</translation>
     </message>
     <message>
-        <location filename="../inputbindingdialog.cpp" line="365"/>
-        <location filename="../inputbindingdialog.cpp" line="390"/>
+        <location filename="../inputbindingdialog.cpp" line="362"/>
+        <location filename="../inputbindingdialog.cpp" line="386"/>
         <source>%1%</source>
         <translation>%1%</translation>
     </message>
@@ -18650,28 +18983,28 @@ Segure a tecla shift pressionada para definir vários vínculos.</translation>
         </translation>
     </message>
     <message>
-        <location filename="../inputbindingwidgets.cpp" line="367"/>
-        <location filename="../inputbindingwidgets.cpp" line="384"/>
+        <location filename="../inputbindingwidgets.cpp" line="361"/>
+        <location filename="../inputbindingwidgets.cpp" line="378"/>
         <source>Push Button/Axis... [%1]</source>
         <translation>Aperte botão/analógicos... [%1]</translation>
     </message>
     <message>
-        <location filename="../inputbindingwidgets.cpp" line="505"/>
+        <location filename="../inputbindingwidgets.cpp" line="499"/>
         <source>Error</source>
         <translation>Erro</translation>
     </message>
     <message>
-        <location filename="../inputbindingwidgets.cpp" line="507"/>
+        <location filename="../inputbindingwidgets.cpp" line="501"/>
         <source>No devices with vibration motors were detected.</source>
         <translation>Nenhum dispositivo com motores de vibração foi detectado.</translation>
     </message>
     <message>
-        <location filename="../inputbindingwidgets.cpp" line="508"/>
+        <location filename="../inputbindingwidgets.cpp" line="502"/>
         <source>No devices with LEDs were detected.</source>
         <translation>Nenhum dispositivo com LEDS foi detectado.</translation>
     </message>
     <message>
-        <location filename="../inputbindingwidgets.cpp" line="525"/>
+        <location filename="../inputbindingwidgets.cpp" line="519"/>
         <source>&lt;strong&gt;%1&lt;/strong&gt;&lt;br&gt;Select the device and effect to map this bind to.</source>
         <translation>&lt;strong&gt;%1&lt;/strong&gt;&lt;br&gt;Selecione o dispositivo e o efeito ao qual deseja criar o vinculo.</translation>
     </message>
@@ -19162,149 +19495,149 @@ Segure a tecla shift pressionada para definir vários vínculos.</translation>
 <context>
     <name>JogCon</name>
     <message>
-        <location filename="../../core/jogcon.cpp" line="593"/>
+        <location filename="../../core/jogcon.cpp" line="588"/>
         <source>Failed to create force feedback device for Port {}:
 {}</source>
         <translation>Falha ao criar o dispositivo de feedback de força para a porta {}:
 {}</translation>
     </message>
     <message>
-        <location filename="../../core/jogcon.cpp" line="618"/>
+        <location filename="../../core/jogcon.cpp" line="613"/>
         <source>D-Pad Up</source>
         <translation>D-Pad para cima</translation>
     </message>
     <message>
-        <location filename="../../core/jogcon.cpp" line="619"/>
+        <location filename="../../core/jogcon.cpp" line="614"/>
         <source>D-Pad Right</source>
         <translation>D-Pad para a direita</translation>
     </message>
     <message>
-        <location filename="../../core/jogcon.cpp" line="620"/>
+        <location filename="../../core/jogcon.cpp" line="615"/>
         <source>D-Pad Down</source>
         <translation>D-Pad para baixo</translation>
     </message>
     <message>
-        <location filename="../../core/jogcon.cpp" line="621"/>
+        <location filename="../../core/jogcon.cpp" line="616"/>
         <source>D-Pad Left</source>
         <translation>D-Pad para a esquerda</translation>
     </message>
     <message>
-        <location filename="../../core/jogcon.cpp" line="622"/>
+        <location filename="../../core/jogcon.cpp" line="617"/>
         <source>Triangle</source>
         <translation>Triângulo</translation>
     </message>
     <message>
-        <location filename="../../core/jogcon.cpp" line="623"/>
+        <location filename="../../core/jogcon.cpp" line="618"/>
         <source>Circle</source>
         <translation>Círculo</translation>
     </message>
     <message>
-        <location filename="../../core/jogcon.cpp" line="624"/>
+        <location filename="../../core/jogcon.cpp" line="619"/>
         <source>Cross</source>
         <translation>Cruz</translation>
     </message>
     <message>
-        <location filename="../../core/jogcon.cpp" line="625"/>
+        <location filename="../../core/jogcon.cpp" line="620"/>
         <source>Square</source>
         <translation>Quadrado</translation>
     </message>
     <message>
-        <location filename="../../core/jogcon.cpp" line="626"/>
+        <location filename="../../core/jogcon.cpp" line="621"/>
         <source>Select</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../core/jogcon.cpp" line="627"/>
+        <location filename="../../core/jogcon.cpp" line="622"/>
         <source>Start</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../core/jogcon.cpp" line="628"/>
+        <location filename="../../core/jogcon.cpp" line="623"/>
         <source>L1</source>
         <translation>L1</translation>
     </message>
     <message>
-        <location filename="../../core/jogcon.cpp" line="629"/>
+        <location filename="../../core/jogcon.cpp" line="624"/>
         <source>R1</source>
         <translation>R1</translation>
     </message>
     <message>
-        <location filename="../../core/jogcon.cpp" line="630"/>
+        <location filename="../../core/jogcon.cpp" line="625"/>
         <source>L2</source>
         <translation>L2</translation>
     </message>
     <message>
-        <location filename="../../core/jogcon.cpp" line="631"/>
+        <location filename="../../core/jogcon.cpp" line="626"/>
         <source>R2</source>
         <translation>R2</translation>
     </message>
     <message>
-        <location filename="../../core/jogcon.cpp" line="632"/>
+        <location filename="../../core/jogcon.cpp" line="627"/>
         <source>Mode</source>
         <translation>Modo</translation>
     </message>
     <message>
-        <location filename="../../core/jogcon.cpp" line="634"/>
+        <location filename="../../core/jogcon.cpp" line="629"/>
         <source>Steering Left</source>
         <translation>Direção esquerda</translation>
     </message>
     <message>
-        <location filename="../../core/jogcon.cpp" line="635"/>
+        <location filename="../../core/jogcon.cpp" line="630"/>
         <source>Steering Right</source>
         <translation>Direção direita</translation>
     </message>
     <message>
-        <location filename="../../core/jogcon.cpp" line="639"/>
+        <location filename="../../core/jogcon.cpp" line="634"/>
         <source>Mode LED</source>
         <translation>Modo do LED</translation>
     </message>
     <message>
-        <location filename="../../core/jogcon.cpp" line="642"/>
+        <location filename="../../core/jogcon.cpp" line="637"/>
         <source>Vibration Motor</source>
         <translation>Motor de vibração</translation>
     </message>
     <message>
-        <location filename="../../core/jogcon.cpp" line="645"/>
+        <location filename="../../core/jogcon.cpp" line="640"/>
         <source>Force Feedback Device</source>
         <translation>Dispositivo de realimentação de força</translation>
     </message>
     <message>
-        <location filename="../../core/jogcon.cpp" line="653"/>
+        <location filename="../../core/jogcon.cpp" line="648"/>
         <source>Analog Deadzone</source>
         <translation>Zona morta do analógico</translation>
     </message>
     <message>
-        <location filename="../../core/jogcon.cpp" line="654"/>
+        <location filename="../../core/jogcon.cpp" line="649"/>
         <source>Sets the analog stick deadzone, i.e. the fraction of the stick movement which will be ignored.</source>
         <translation>Define a zona morta do analógico, por exemplo:. a fração do movimento do analógico que será ignorada.</translation>
     </message>
     <message>
-        <location filename="../../core/jogcon.cpp" line="657"/>
+        <location filename="../../core/jogcon.cpp" line="652"/>
         <source>Analog Sensitivity</source>
         <translation>Sensibilidade do analógico</translation>
     </message>
     <message>
-        <location filename="../../core/jogcon.cpp" line="658"/>
+        <location filename="../../core/jogcon.cpp" line="653"/>
         <source>Sets the analog stick axis scaling factor. A value between 130% and 140% is recommended when using recent controllers, e.g. DualShock 4, Xbox One Controller.</source>
         <translation>Define o fator de escala do eixo do analógico. Um valor entre 130% e 140% é recomendável quando estiver usando controles mais recentes, por exemplo: Dualshock 4 e controles de Xbox One.</translation>
     </message>
     <message>
-        <location filename="../../core/jogcon.cpp" line="661"/>
+        <location filename="../../core/jogcon.cpp" line="656"/>
         <source>Button/Trigger Deadzone</source>
         <translation>Botão/Gatilho zona morta</translation>
     </message>
     <message>
-        <location filename="../../core/jogcon.cpp" line="662"/>
+        <location filename="../../core/jogcon.cpp" line="657"/>
         <source>Sets the deadzone for activating buttons/triggers, i.e. the fraction of the trigger which will be ignored.</source>
         <translation>Define a zona morta para acionamento de botões e gatilhos, ou seja, a fração do gatilho que será ignorada.</translation>
     </message>
     <message>
-        <location filename="../../core/jogcon.cpp" line="666"/>
+        <location filename="../../core/jogcon.cpp" line="661"/>
         <source>Steering Hold Deadzone</source>
         <translation>Zona morta de retenção da direção</translation>
     </message>
     <message>
-        <location filename="../../core/jogcon.cpp" line="667"/>
+        <location filename="../../core/jogcon.cpp" line="662"/>
         <source>Sets the deadzone for holding the wheel at the set position, i.e. when it will not trigger an effect.</source>
         <translation>Define a zona morta para manter o volante na posição definida, ou seja, quando ele não acionará um efeito.</translation>
     </message>
@@ -19312,143 +19645,143 @@ Segure a tecla shift pressionada para definir vários vínculos.</translation>
 <context>
     <name>Justifier</name>
     <message>
-        <location filename="../../core/justifier.cpp" line="340"/>
+        <location filename="../../core/justifier.cpp" line="342"/>
         <source>Pointer/Aiming</source>
         <translation>Ponteiro/Mira</translation>
     </message>
     <message>
-        <location filename="../../core/justifier.cpp" line="341"/>
+        <location filename="../../core/justifier.cpp" line="343"/>
         <source>Trigger</source>
         <translation>Gatilho</translation>
     </message>
     <message>
-        <location filename="../../core/justifier.cpp" line="342"/>
+        <location filename="../../core/justifier.cpp" line="344"/>
         <source>Shoot Offscreen</source>
         <translation>Atirar para fora da tela</translation>
     </message>
     <message>
-        <location filename="../../core/justifier.cpp" line="343"/>
+        <location filename="../../core/justifier.cpp" line="345"/>
         <source>Start</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../core/justifier.cpp" line="344"/>
+        <location filename="../../core/justifier.cpp" line="346"/>
         <source>Back</source>
         <translation>Voltar</translation>
     </message>
     <message>
-        <location filename="../../core/justifier.cpp" line="346"/>
+        <location filename="../../core/justifier.cpp" line="348"/>
         <source>Relative Left</source>
         <translation>Relativo para esquerda</translation>
     </message>
     <message>
-        <location filename="../../core/justifier.cpp" line="347"/>
+        <location filename="../../core/justifier.cpp" line="349"/>
         <source>Relative Right</source>
         <translation>Relativo para direita</translation>
     </message>
     <message>
-        <location filename="../../core/justifier.cpp" line="348"/>
+        <location filename="../../core/justifier.cpp" line="350"/>
         <source>Relative Up</source>
         <translation>Relativo para cima</translation>
     </message>
     <message>
-        <location filename="../../core/justifier.cpp" line="349"/>
+        <location filename="../../core/justifier.cpp" line="351"/>
         <source>Relative Down</source>
         <translation>Relativo para baixo</translation>
     </message>
     <message>
-        <location filename="../../core/justifier.cpp" line="362"/>
+        <location filename="../../core/justifier.cpp" line="364"/>
         <source>Crosshair Image Path</source>
         <translation>Caminho da imagem da mira</translation>
     </message>
     <message>
-        <location filename="../../core/justifier.cpp" line="363"/>
+        <location filename="../../core/justifier.cpp" line="365"/>
         <source>Path to an image to use as a crosshair/cursor.</source>
         <translation>Caminho da imagem a ser usada como cursor.</translation>
     </message>
     <message>
-        <location filename="../../core/justifier.cpp" line="365"/>
+        <location filename="../../core/justifier.cpp" line="367"/>
         <source>Crosshair Image Scale</source>
         <translation>Escala de mira</translation>
     </message>
     <message>
-        <location filename="../../core/justifier.cpp" line="366"/>
+        <location filename="../../core/justifier.cpp" line="368"/>
         <source>Scale of crosshair image on screen.</source>
         <translation>Escala da mira em tela.</translation>
     </message>
     <message>
-        <location filename="../../core/justifier.cpp" line="368"/>
+        <location filename="../../core/justifier.cpp" line="370"/>
         <source>Cursor Color</source>
         <translation>Cor do cursor</translation>
     </message>
     <message>
-        <location filename="../../core/justifier.cpp" line="369"/>
+        <location filename="../../core/justifier.cpp" line="371"/>
         <source>Applies a color to the chosen crosshair images, can be used for multiple players. Specify in HTML/CSS format (e.g. #aabbcc)</source>
         <translation>Aplica uma cor às imagens de mira escolhidas, pode ser usado por vários jogadores. Especifique no formato HTML/CSS (por exemplo, #aabbcc)</translation>
     </message>
     <message>
-        <location filename="../../core/justifier.cpp" line="373"/>
+        <location filename="../../core/justifier.cpp" line="375"/>
         <source>X Scale</source>
         <translation>Dimensão X (verticalmente)</translation>
     </message>
     <message>
-        <location filename="../../core/justifier.cpp" line="374"/>
+        <location filename="../../core/justifier.cpp" line="376"/>
         <source>Scales X coordinates relative to the center of the screen.</source>
         <translation>Dimensionar coordenadas X em relação ao centro da tela .</translation>
     </message>
     <message>
-        <location filename="../../core/justifier.cpp" line="376"/>
+        <location filename="../../core/justifier.cpp" line="378"/>
         <source>Line Start Offset</source>
         <translation>Deslocamento do início da linha</translation>
     </message>
     <message>
-        <location filename="../../core/justifier.cpp" line="377"/>
+        <location filename="../../core/justifier.cpp" line="379"/>
         <source>Offset applied to lightgun vertical position that the Justifier will first trigger on.</source>
         <translation>Deslocamento aplicado à posição vertical da pistola em que será acionado pela primeira vez.</translation>
     </message>
     <message>
-        <location filename="../../core/justifier.cpp" line="380"/>
+        <location filename="../../core/justifier.cpp" line="382"/>
         <source>Line End Offset</source>
         <translation>Deslocamento do final da linha</translation>
     </message>
     <message>
-        <location filename="../../core/justifier.cpp" line="381"/>
+        <location filename="../../core/justifier.cpp" line="383"/>
         <source>Offset applied to lightgun vertical position that the Justifier will last trigger on.</source>
         <translation>Deslocamento aplicado à posição vertical da pistola em que será acionado pela última vez.</translation>
     </message>
     <message>
-        <location filename="../../core/justifier.cpp" line="383"/>
+        <location filename="../../core/justifier.cpp" line="385"/>
         <source>Tick Offset</source>
         <translation>Deslocamento de tique (gatilho)</translation>
     </message>
     <message>
-        <location filename="../../core/justifier.cpp" line="384"/>
+        <location filename="../../core/justifier.cpp" line="386"/>
         <source>Offset applied to lightgun horizontal position that the Justifier will trigger on.</source>
         <translation>Deslocamento aplicado à posição horizontal da pistola em que será acionado.</translation>
     </message>
     <message>
-        <location filename="../../core/justifier.cpp" line="386"/>
+        <location filename="../../core/justifier.cpp" line="388"/>
         <source>Off-Screen Out-Of-Bounds Frames</source>
         <translation>Quadros fora da tela e fora dos limites</translation>
     </message>
     <message>
-        <location filename="../../core/justifier.cpp" line="387"/>
+        <location filename="../../core/justifier.cpp" line="389"/>
         <source>Number of frames that the Justifier is pointed out-of-bounds for an off-screen shot.</source>
         <translation>Número de quadros em que a pistola é apontada para fora dos limites para um tiro fora da tela.</translation>
     </message>
     <message>
-        <location filename="../../core/justifier.cpp" line="389"/>
-        <location filename="../../core/justifier.cpp" line="392"/>
+        <location filename="../../core/justifier.cpp" line="391"/>
+        <location filename="../../core/justifier.cpp" line="394"/>
         <source>Off-Screen Trigger Frames</source>
         <translation>Quadros de acionamento fora da tela</translation>
     </message>
     <message>
-        <location filename="../../core/justifier.cpp" line="390"/>
+        <location filename="../../core/justifier.cpp" line="392"/>
         <source>Number of frames that the trigger is held for an off-screen shot.</source>
         <translation>Número de quadros em que o gatilho é mantido para uma foto fora da tela.</translation>
     </message>
     <message>
-        <location filename="../../core/justifier.cpp" line="393"/>
+        <location filename="../../core/justifier.cpp" line="395"/>
         <source>Number of frames that the Justifier is pointed out-of-bounds after the trigger is released, for an off-screen shot.</source>
         <translation>Número de quadros em que a pistola é apontado para fora dos limites depois que o gatilho é liberado, para uma quadro fora da tela.</translation>
     </message>
@@ -19603,37 +19936,37 @@ Segure a tecla shift pressionada para definir vários vínculos.</translation>
 <context>
     <name>MAC_APPLICATION_MENU</name>
     <message>
-        <location filename="../qthost.cpp" line="92"/>
+        <location filename="../qthost.cpp" line="94"/>
         <source>Services</source>
         <translation>Serviços</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="93"/>
+        <location filename="../qthost.cpp" line="95"/>
         <source>Hide %1</source>
         <translation>Ocultar %1</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="94"/>
+        <location filename="../qthost.cpp" line="96"/>
         <source>Hide Others</source>
         <translation>Ocultar outros</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="95"/>
+        <location filename="../qthost.cpp" line="97"/>
         <source>Show All</source>
         <translation>Mostrar tudo</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="96"/>
+        <location filename="../qthost.cpp" line="98"/>
         <source>Preferences...</source>
         <translation>Preferências...</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="97"/>
+        <location filename="../qthost.cpp" line="99"/>
         <source>Quit %1</source>
         <translation>Sair %1</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="98"/>
+        <location filename="../qthost.cpp" line="100"/>
         <source>About %1</source>
         <translation>Sobre %1</translation>
     </message>
@@ -19660,7 +19993,7 @@ Segure a tecla shift pressionada para definir vários vínculos.</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="53"/>
-        <location filename="../mainwindow.cpp" line="892"/>
+        <location filename="../mainwindow.cpp" line="896"/>
         <location filename="../mainwindow.cpp" line="1252"/>
         <source>Load State</source>
         <translation>Carregar estado</translation>
@@ -20710,7 +21043,7 @@ Segure a tecla shift pressionada para definir vários vínculos.</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="961"/>
-        <location filename="../mainwindow.cpp" line="889"/>
+        <location filename="../mainwindow.cpp" line="893"/>
         <source>Resume</source>
         <translation>Continuar</translation>
     </message>
@@ -20970,7 +21303,7 @@ Segure a tecla shift pressionada para definir vários vínculos.</translation>
         <translation>Escolha uma imagem de disco</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="946"/>
+        <location filename="../mainwindow.cpp" line="949"/>
         <source>Delete Save States</source>
         <translation>Apagar estados salvos</translation>
     </message>
@@ -21033,19 +21366,19 @@ Segure a tecla shift pressionada para definir vários vínculos.</translation>
         <translation>Escolha a unidade de disco:</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="912"/>
+        <location filename="../mainwindow.cpp" line="914"/>
         <source>Resume (%1)</source>
         <translation>Continuar (%1)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="918"/>
-        <location filename="../mainwindow.cpp" line="1008"/>
+        <location filename="../mainwindow.cpp" line="921"/>
+        <location filename="../mainwindow.cpp" line="1009"/>
         <location filename="../mainwindow.cpp" line="1055"/>
         <source>Game Save %1 (%2)</source>
         <translation>Jogo salvo %1 (%2)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="929"/>
+        <location filename="../mainwindow.cpp" line="932"/>
         <source>Edit Memory Cards...</source>
         <translation>Editar cartões de memória...</translation>
     </message>
@@ -21054,58 +21387,58 @@ Segure a tecla shift pressionada para definir vários vínculos.</translation>
         <translation type="vanished">Apagar estados salvos...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="952"/>
+        <location filename="../mainwindow.cpp" line="955"/>
         <source>Confirm Save State Deletion</source>
         <translation>Confirmar deleção de estado salvo</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="953"/>
+        <location filename="../mainwindow.cpp" line="956"/>
         <source>Are you sure you want to delete all save states for %1?
 
 The saves will not be recoverable.</source>
         <translation>Tem certeza de que deseja apagar os estados salvos %1? Não será possivel reverter esta ação.</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="986"/>
+        <location filename="../mainwindow.cpp" line="988"/>
         <source>Load From File...</source>
         <translation>Carregar do arquivo...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="988"/>
+        <location filename="../mainwindow.cpp" line="990"/>
         <location filename="../mainwindow.cpp" line="1043"/>
         <source>Select Save State File</source>
         <translation>Escolher arquivo de salvamento rápido</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="988"/>
+        <location filename="../mainwindow.cpp" line="990"/>
         <location filename="../mainwindow.cpp" line="1043"/>
         <source>Save States (*.sav)</source>
         <translation>Salvamento rápido (*.sav)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="996"/>
+        <location filename="../mainwindow.cpp" line="997"/>
         <source>Undo Load State (%1)</source>
         <translation>Desfazer carregar estado (%1)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="999"/>
+        <location filename="../mainwindow.cpp" line="1000"/>
         <source>Undo Load State</source>
         <translation>Desfazer estado carregado</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1008"/>
+        <location filename="../mainwindow.cpp" line="1009"/>
         <location filename="../mainwindow.cpp" line="1055"/>
         <source>Game Save %1 (Empty)</source>
         <translation>Jogo salvo %1 (Vazio)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1017"/>
+        <location filename="../mainwindow.cpp" line="1018"/>
         <location filename="../mainwindow.cpp" line="1064"/>
         <source>Global Save %1 (%2)</source>
         <translation>Compartimento global %1 (%2)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1017"/>
+        <location filename="../mainwindow.cpp" line="1018"/>
         <location filename="../mainwindow.cpp" line="1064"/>
         <source>Global Save %1 (Empty)</source>
         <translation>Compartimento global %1 (Vazio)</translation>
@@ -21196,6 +21529,11 @@ Você deseja que este arquivo seja carregado ou que seja reiniciado novamente?</
         <translation>Falha ao apagar o arquivo de estado salvo &apos;%1&apos;.</translation>
     </message>
     <message>
+        <location filename="../mainwindow.cpp" line="1219"/>
+        <source>Save was created %1.</source>
+        <translation>Arquivo foi criado %1.</translation>
+    </message>
+    <message>
         <location filename="../mainwindow.cpp" line="1327"/>
         <source>Confirm Disc Change</source>
         <translation>Confirmar troca de disco</translation>
@@ -21278,9 +21616,8 @@ Você deseja que este arquivo seja carregado ou que seja reiniciado novamente?</
         <translation>Tem certeza de que deseja fechar o jogo atual?</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="3326"/>
         <source>RA: Logged in as %1 (%2, %3 softcore). %4 unread messages.</source>
-        <translation>RA: conectado como %1 (%2, %3 normal). %4 mensagens não lidas.</translation>
+        <translation type="vanished">RA: conectado como %1 (%2, %3 normal). %4 mensagens não lidas.</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="3418"/>
@@ -21415,9 +21752,8 @@ Deseja excluir o save state e iniciar o jogo mesmo assim?</translation>
         <translation>&lt;strong&gt;Retomar jogo&lt;/strong&gt;&lt;br&gt;Deseja carregar este estado salvo ou realizar uma inicialização limpa?</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1219"/>
         <source>Save was created on %1.</source>
-        <translation>A gravação foi criada em %1.</translation>
+        <translation type="vanished">A gravação foi criada em %1.</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="1328"/>
@@ -21669,6 +22005,11 @@ Tem certeza de que deseja continuar?</translation>
         <translation>Erro ao criar cartão de memória &apos;%1&apos;: %2</translation>
     </message>
     <message>
+        <location filename="../mainwindow.cpp" line="3326"/>
+        <source>RA: Logged in as %1 (%2, %3 casual). %4 unread messages.</source>
+        <translation>RA: conectado como %1 (%2, %3 casual). %4 mensagens não lidas.</translation>
+    </message>
+    <message>
         <location filename="../mainwindow.cpp" line="3493"/>
         <source>%1 Files (*.%2)</source>
         <translation>%1 Arquivos (*.%2)</translation>
@@ -21734,29 +22075,29 @@ Tem certeza de que deseja continuar?</translation>
     <message>
         <location filename="../../util/media_capture.cpp" line="861"/>
         <location filename="../../util/media_capture.cpp" line="880"/>
-        <location filename="../../util/media_capture.cpp" line="3406"/>
-        <location filename="../../util/media_capture.cpp" line="3416"/>
+        <location filename="../../util/media_capture.cpp" line="3399"/>
+        <location filename="../../util/media_capture.cpp" line="3409"/>
         <source>MPEG-4 Part 14</source>
         <comment>ContainerFormat</comment>
         <translation>MPEG-4 parte 14</translation>
     </message>
     <message>
         <location filename="../../util/media_capture.cpp" line="862"/>
-        <location filename="../../util/media_capture.cpp" line="3407"/>
+        <location filename="../../util/media_capture.cpp" line="3400"/>
         <source>MPEG-2 Audio Layer III</source>
         <comment>ContainerFormat</comment>
         <translation>MPEG-2 camada de áudio II</translation>
     </message>
     <message>
         <location filename="../../util/media_capture.cpp" line="863"/>
-        <location filename="../../util/media_capture.cpp" line="3408"/>
+        <location filename="../../util/media_capture.cpp" line="3401"/>
         <source>Waveform Audio File Format</source>
         <comment>ContainerFormat</comment>
         <translation>Formato de arquivo de áudio waveform</translation>
     </message>
     <message>
         <location filename="../../util/media_capture.cpp" line="879"/>
-        <location filename="../../util/media_capture.cpp" line="3415"/>
+        <location filename="../../util/media_capture.cpp" line="3408"/>
         <source>Audio Video Interleave</source>
         <comment>ContainerFormat</comment>
         <translation>Entrelaçamento de áudio e vídeo</translation>
@@ -21782,30 +22123,30 @@ Esta versão do DuckStation requer o FFmpeg {}, com as seguintes versões de bib
   libswresample: {}</translation>
     </message>
     <message>
-        <location filename="../../util/media_capture.cpp" line="2741"/>
+        <location filename="../../util/media_capture.cpp" line="2734"/>
         <source>Audio codec &apos;{0}&apos; does not support {1} Hz samples, using {2} Hz.</source>
         <translation>O codec de áudio &apos;{0}&apos; não oferece suporte a amostras de {1} Hz. Será utilizada a frequência de {2} Hz.</translation>
     </message>
     <message>
-        <location filename="../../util/media_capture.cpp" line="3417"/>
+        <location filename="../../util/media_capture.cpp" line="3410"/>
         <source>Matroska Media Container</source>
         <comment>ContainerFormat</comment>
         <translation>Contêiner de mídia matroska (MKV)</translation>
     </message>
     <message>
-        <location filename="../../util/media_capture.cpp" line="3418"/>
+        <location filename="../../util/media_capture.cpp" line="3411"/>
         <source>QuickTime File Format</source>
         <comment>ContainerFormat</comment>
         <translation>Formato quick time</translation>
     </message>
     <message>
-        <location filename="../../util/media_capture.cpp" line="3486"/>
+        <location filename="../../util/media_capture.cpp" line="3479"/>
         <source>Media Foundation</source>
         <comment>MediaCaptureBackend</comment>
         <translation>Mídia</translation>
     </message>
     <message>
-        <location filename="../../util/media_capture.cpp" line="3489"/>
+        <location filename="../../util/media_capture.cpp" line="3482"/>
         <source>FFmpeg</source>
         <comment>MediaCaptureBackend</comment>
         <translation></translation>
@@ -21852,107 +22193,107 @@ Você deve excluir o cartão de memória manualmente se quiser salvar.</translat
         <translation type="vanished">Salvo para o cartão de memória em &apos;{}&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/memory_card_image.cpp" line="334"/>
+        <location filename="../../core/memory_card_image.cpp" line="328"/>
         <source>Buffer is empty.</source>
         <translation>Armazenamento vazio.</translation>
     </message>
     <message>
-        <location filename="../../core/memory_card_image.cpp" line="343"/>
+        <location filename="../../core/memory_card_image.cpp" line="337"/>
         <source>Insufficient free blocks, {} blocks are needed, but only have {}.</source>
         <translation>Não há blocos livres suficientes, são necessários {} blocos, mas só existem {}.</translation>
     </message>
     <message>
-        <location filename="../../core/memory_card_image.cpp" line="492"/>
+        <location filename="../../core/memory_card_image.cpp" line="486"/>
         <source>File name must be at maximum {} characters long.</source>
         <translation>O nome do arquivo deve ter no máximo {} caracteres.</translation>
     </message>
     <message>
-        <location filename="../../core/memory_card_image.cpp" line="502"/>
-        <location filename="../../core/memory_card_image.cpp" line="751"/>
-        <location filename="../../core/memory_card_image.cpp" line="798"/>
+        <location filename="../../core/memory_card_image.cpp" line="496"/>
+        <location filename="../../core/memory_card_image.cpp" line="745"/>
+        <location filename="../../core/memory_card_image.cpp" line="792"/>
         <source>Save file with the same name &apos;{}&apos; already exists in memory card.</source>
         <translation>Já existe um arquivo salvo com o mesmo nome &apos;{}&apos; no cartão de memória.</translation>
     </message>
     <message>
-        <location filename="../../core/memory_card_image.cpp" line="521"/>
-        <location filename="../../core/memory_card_image.cpp" line="593"/>
-        <location filename="../../core/memory_card_image.cpp" line="616"/>
+        <location filename="../../core/memory_card_image.cpp" line="515"/>
+        <location filename="../../core/memory_card_image.cpp" line="587"/>
+        <location filename="../../core/memory_card_image.cpp" line="610"/>
         <source>File is incorrect size, expected {} bytes, got {} bytes.</source>
         <translation>O arquivo tem tamanho incorreto, esperado {} bytes, contém {} bytes.</translation>
     </message>
     <message>
-        <location filename="../../core/memory_card_image.cpp" line="555"/>
+        <location filename="../../core/memory_card_image.cpp" line="549"/>
         <source>File is incorrect size, expected at least {} bytes, got {} bytes.</source>
         <translation>O arquivo tem tamanho incorreto, esperado {} bytes, contém {} bytes.</translation>
     </message>
     <message>
-        <location filename="../../core/memory_card_image.cpp" line="601"/>
-        <location filename="../../core/memory_card_image.cpp" line="624"/>
+        <location filename="../../core/memory_card_image.cpp" line="595"/>
+        <location filename="../../core/memory_card_image.cpp" line="618"/>
         <source>Incorrect header.</source>
         <translation>Cabeçalho incorreto.</translation>
     </message>
     <message>
-        <location filename="../../core/memory_card_image.cpp" line="637"/>
+        <location filename="../../core/memory_card_image.cpp" line="631"/>
         <source>File must have an extension.</source>
         <translation>O arquivo precisa ter uma extensão.</translation>
     </message>
     <message>
-        <location filename="../../core/memory_card_image.cpp" line="662"/>
+        <location filename="../../core/memory_card_image.cpp" line="656"/>
         <source>Unknown extension &apos;{}&apos;.</source>
         <translation>Extensão desconhecida &apos;{}&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/memory_card_image.cpp" line="705"/>
+        <location filename="../../core/memory_card_image.cpp" line="699"/>
         <source>Invalid size for save file.</source>
         <translation>Tamanho inválido do arquivo salvo.</translation>
     </message>
     <message>
-        <location filename="../../core/memory_card_image.cpp" line="716"/>
+        <location filename="../../core/memory_card_image.cpp" line="710"/>
         <source>Failed to read directory frame: </source>
         <translation>Falha na leitura do diretório: </translation>
     </message>
     <message>
-        <location filename="../../core/memory_card_image.cpp" line="723"/>
+        <location filename="../../core/memory_card_image.cpp" line="717"/>
         <source>Invalid size ({} bytes) reported by directory frame.</source>
         <translation>Tamanho inválido ({} bytes) informado pelo diretório.</translation>
     </message>
     <message>
-        <location filename="../../core/memory_card_image.cpp" line="731"/>
+        <location filename="../../core/memory_card_image.cpp" line="725"/>
         <source>Failed to read block bytes: </source>
         <translation>Falha na leitura dos bytes do bloco: </translation>
     </message>
     <message>
-        <location filename="../../core/memory_card_image.cpp" line="738"/>
+        <location filename="../../core/memory_card_image.cpp" line="732"/>
         <source>Insufficient free blocks.</source>
         <translation>Blocos livres insuficientes.</translation>
     </message>
     <message>
-        <location filename="../../core/memory_card_image.cpp" line="768"/>
+        <location filename="../../core/memory_card_image.cpp" line="762"/>
         <source>Invalid filename.</source>
         <translation>Nome do arquivo inválido.</translation>
     </message>
     <message>
-        <location filename="../../core/memory_card_image.cpp" line="784"/>
+        <location filename="../../core/memory_card_image.cpp" line="778"/>
         <source>Insufficient free blocks, needs {} blocks, but only have {}.</source>
         <translation>Não há blocos livres suficientes, é necessário {} de blocos, mas só existem {}.</translation>
     </message>
     <message>
-        <location filename="../../core/memory_card_image.cpp" line="816"/>
+        <location filename="../../core/memory_card_image.cpp" line="810"/>
         <source>File does not exist, or is empty.</source>
         <translation>O arquivo não existe ou está vazio.</translation>
     </message>
     <message>
-        <location filename="../../core/memory_card_image.cpp" line="830"/>
+        <location filename="../../core/memory_card_image.cpp" line="824"/>
         <source>Unknown save format.</source>
         <translation>Formato de gravação desconhecido.</translation>
     </message>
     <message>
-        <location filename="../../core/memory_card.cpp" line="330"/>
+        <location filename="../../core/memory_card.cpp" line="336"/>
         <source>Memory Card {} could not be read.</source>
         <translation>Cartão de memória {} não pôde ser lido.</translation>
     </message>
     <message>
-        <location filename="../../core/memory_card.cpp" line="331"/>
+        <location filename="../../core/memory_card.cpp" line="337"/>
         <source>File: {0}
 Error: {1}
 The memory card will NOT be saved.
@@ -21963,24 +22304,24 @@ O cartão de memória NÃO será salvo.
 Você deve apagar o cartão de memória manualmente se quiser salvar.</translation>
     </message>
     <message>
-        <location filename="../../core/memory_card.cpp" line="370"/>
+        <location filename="../../core/memory_card.cpp" line="376"/>
         <source>Failed to save memory card {}.</source>
         <translation>Falha ao salvar no cartão de memória {}.</translation>
     </message>
     <message>
-        <location filename="../../core/memory_card.cpp" line="371"/>
+        <location filename="../../core/memory_card.cpp" line="377"/>
         <source>File: {0}:
 Error: {1}</source>
         <translation>Arquivo: {0}:
 Erro: {1}</translation>
     </message>
     <message>
-        <location filename="../../core/memory_card.cpp" line="384"/>
+        <location filename="../../core/memory_card.cpp" line="390"/>
         <source>Memory Card Slot {}</source>
         <translation>Compartimento de cartão de memória {}</translation>
     </message>
     <message>
-        <location filename="../../core/memory_card.cpp" line="385"/>
+        <location filename="../../core/memory_card.cpp" line="391"/>
         <source>Saved card to &apos;{}&apos;.</source>
         <translation>Cartão de memória salvo em &apos;{}&apos;.</translation>
     </message>
@@ -23086,7 +23427,7 @@ Erro: {1}</translation>
 <context>
     <name>MultipleDeviceAutobindDialog</name>
     <message>
-        <location filename="../controllerbindingwidgets.cpp" line="1035"/>
+        <location filename="../controllerbindingwidgets.cpp" line="1031"/>
         <source>Select the devices from the list below that you want to bind to this controller.</source>
         <translation>Selecione a partir da lista abaixo os dispositivos que você deseja vincular a este controle.</translation>
     </message>
@@ -23095,18 +23436,18 @@ Erro: {1}</translation>
         <translation type="vanished">Mapeamento automático</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidgets.cpp" line="1085"/>
-        <location filename="../controllerbindingwidgets.cpp" line="1100"/>
+        <location filename="../controllerbindingwidgets.cpp" line="1081"/>
+        <location filename="../controllerbindingwidgets.cpp" line="1096"/>
         <source>Automatic Mapping Failed</source>
         <translation>Falha no mapeamento automático</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidgets.cpp" line="1086"/>
+        <location filename="../controllerbindingwidgets.cpp" line="1082"/>
         <source>No generic bindings were generated for device &apos;%1&apos;. The controller/source may not support automatic mapping.</source>
         <translation>Nenhuma atribuição genérica foi gerada para o dispositivo &apos;%1&apos;. O controle pode não suportar o mapeamento automático gerado pelo emulador.</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidgets.cpp" line="1101"/>
+        <location filename="../controllerbindingwidgets.cpp" line="1097"/>
         <source>No devices were selected.</source>
         <translation>Nenhum dispositivo foi selecionado.</translation>
     </message>
@@ -23133,227 +23474,237 @@ Erro: {1}</translation>
 <context>
     <name>NeGcon</name>
     <message>
-        <location filename="../../core/negcon.cpp" line="276"/>
+        <location filename="../../core/negcon.cpp" line="275"/>
         <source>D-Pad Up</source>
         <translation>D-Pad para cima</translation>
     </message>
     <message>
-        <location filename="../../core/negcon.cpp" line="277"/>
+        <location filename="../../core/negcon.cpp" line="276"/>
         <source>D-Pad Right</source>
         <translation>D-Pad para a direita</translation>
     </message>
     <message>
-        <location filename="../../core/negcon.cpp" line="278"/>
+        <location filename="../../core/negcon.cpp" line="277"/>
         <source>D-Pad Down</source>
         <translation>D-Pad para baixo</translation>
     </message>
     <message>
-        <location filename="../../core/negcon.cpp" line="279"/>
+        <location filename="../../core/negcon.cpp" line="278"/>
         <source>D-Pad Left</source>
         <translation>D-Pad para a esquerda</translation>
     </message>
     <message>
-        <location filename="../../core/negcon.cpp" line="280"/>
+        <location filename="../../core/negcon.cpp" line="279"/>
         <source>Start</source>
         <translation>Start</translation>
     </message>
     <message>
-        <location filename="../../core/negcon.cpp" line="281"/>
+        <location filename="../../core/negcon.cpp" line="280"/>
         <source>A Button</source>
         <translation>Botão A</translation>
     </message>
     <message>
-        <location filename="../../core/negcon.cpp" line="282"/>
+        <location filename="../../core/negcon.cpp" line="281"/>
         <source>B Button</source>
         <translation>Botão B</translation>
     </message>
     <message>
-        <location filename="../../core/negcon.cpp" line="283"/>
+        <location filename="../../core/negcon.cpp" line="282"/>
         <source>I Button</source>
         <translation>Botão I</translation>
     </message>
     <message>
-        <location filename="../../core/negcon.cpp" line="284"/>
+        <location filename="../../core/negcon.cpp" line="283"/>
         <source>II Button</source>
         <translation>Botão II</translation>
     </message>
     <message>
-        <location filename="../../core/negcon.cpp" line="285"/>
+        <location filename="../../core/negcon.cpp" line="284"/>
         <source>Left Trigger</source>
         <translation>Gatilho esquerdo</translation>
     </message>
     <message>
-        <location filename="../../core/negcon.cpp" line="286"/>
+        <location filename="../../core/negcon.cpp" line="285"/>
         <source>Right Trigger</source>
         <translation>Gatilho direito</translation>
     </message>
     <message>
-        <location filename="../../core/negcon.cpp" line="287"/>
+        <location filename="../../core/negcon.cpp" line="286"/>
         <source>Steering (Twist) Left</source>
         <translation>Direção (giro) para a esquerda</translation>
     </message>
     <message>
-        <location filename="../../core/negcon.cpp" line="288"/>
+        <location filename="../../core/negcon.cpp" line="287"/>
         <source>Steering (Twist) Right</source>
         <translation>Direção (giro) para a direita</translation>
     </message>
     <message>
         <location filename="../../core/negcon.cpp" line="296"/>
+        <source>Disable Simultaneous Opposing Cardinal Directions</source>
+        <translation>Desativar direções opostas simultâneas</translation>
+    </message>
+    <message>
+        <location filename="../../core/negcon.cpp" line="297"/>
+        <source>Prevents concurrent left/right or up/down inputs from being presented to the game.</source>
+        <translation>Impede que entradas simultâneas para esquerda/direita ou cima/baixo sejam enviadas ao jogo.</translation>
+    </message>
+    <message>
+        <location filename="../../core/negcon.cpp" line="299"/>
         <source>Steering Axis Deadzone</source>
         <translation>Zona morta do volante</translation>
     </message>
     <message>
-        <location filename="../../core/negcon.cpp" line="297"/>
+        <location filename="../../core/negcon.cpp" line="300"/>
         <source>Sets deadzone for steering axis.</source>
         <translation>Define a zona morta do eixo de direção.</translation>
     </message>
     <message>
-        <location filename="../../core/negcon.cpp" line="298"/>
+        <location filename="../../core/negcon.cpp" line="301"/>
         <source>Steering Axis Saturation</source>
         <translation>Limitação do Eixo de Direção</translation>
     </message>
     <message>
-        <location filename="../../core/negcon.cpp" line="299"/>
+        <location filename="../../core/negcon.cpp" line="302"/>
         <source>Sets saturation for steering axis.</source>
         <translation>Define a limitação do eixo de direção.</translation>
     </message>
     <message>
-        <location filename="../../core/negcon.cpp" line="300"/>
+        <location filename="../../core/negcon.cpp" line="303"/>
         <source>Steering Axis Linearity</source>
         <translation>Linearidade do eixo de direção</translation>
     </message>
     <message>
-        <location filename="../../core/negcon.cpp" line="301"/>
+        <location filename="../../core/negcon.cpp" line="304"/>
         <source>Sets linearity for steering axis.</source>
         <translation>Define a sensibilidade do eixo de direção.</translation>
     </message>
     <message>
-        <location filename="../../core/negcon.cpp" line="302"/>
+        <location filename="../../core/negcon.cpp" line="305"/>
         <source>Steering Scaling</source>
         <translation>Escala de direção</translation>
     </message>
     <message>
-        <location filename="../../core/negcon.cpp" line="303"/>
+        <location filename="../../core/negcon.cpp" line="306"/>
         <source>Sets scaling for steering axis.</source>
         <translation>Define a escala do eixo de direção.</translation>
     </message>
     <message>
-        <location filename="../../core/negcon.cpp" line="304"/>
+        <location filename="../../core/negcon.cpp" line="307"/>
         <source>I Button Deadzone</source>
         <translation>I Zona morta</translation>
     </message>
     <message>
-        <location filename="../../core/negcon.cpp" line="305"/>
+        <location filename="../../core/negcon.cpp" line="308"/>
         <source>Sets deadzone for button I.</source>
         <translation>Define a zona morta para o botão I.</translation>
     </message>
     <message>
-        <location filename="../../core/negcon.cpp" line="306"/>
+        <location filename="../../core/negcon.cpp" line="309"/>
         <source>I Button Saturation</source>
         <translation>I Limitação do botão</translation>
     </message>
     <message>
-        <location filename="../../core/negcon.cpp" line="307"/>
+        <location filename="../../core/negcon.cpp" line="310"/>
         <source>Sets saturation for button I.</source>
         <translation>Definie a limitação para o botão I.</translation>
     </message>
     <message>
-        <location filename="../../core/negcon.cpp" line="308"/>
+        <location filename="../../core/negcon.cpp" line="311"/>
         <source>I Button Linearity</source>
         <translation>I Linearidade do botão</translation>
     </message>
     <message>
-        <location filename="../../core/negcon.cpp" line="309"/>
+        <location filename="../../core/negcon.cpp" line="312"/>
         <source>Sets linearity for button I.</source>
         <translation>Definine a linearidade para o botão I.</translation>
     </message>
     <message>
-        <location filename="../../core/negcon.cpp" line="310"/>
+        <location filename="../../core/negcon.cpp" line="313"/>
         <source>I Scaling</source>
         <translation>I Escalonamento</translation>
     </message>
     <message>
-        <location filename="../../core/negcon.cpp" line="311"/>
+        <location filename="../../core/negcon.cpp" line="314"/>
         <source>Sets scaling for button I.</source>
         <translation>Define o escalonamento para o botão I.</translation>
     </message>
     <message>
-        <location filename="../../core/negcon.cpp" line="312"/>
+        <location filename="../../core/negcon.cpp" line="315"/>
         <source>II Button Deadzone</source>
         <translation>II Zona morta</translation>
     </message>
     <message>
-        <location filename="../../core/negcon.cpp" line="313"/>
+        <location filename="../../core/negcon.cpp" line="316"/>
         <source>Sets deadzone for button II.</source>
         <translation>Define a zona morta para o botão II.</translation>
     </message>
     <message>
-        <location filename="../../core/negcon.cpp" line="314"/>
+        <location filename="../../core/negcon.cpp" line="317"/>
         <source>II Button Saturation</source>
         <translation>II Limitação do botão</translation>
     </message>
     <message>
-        <location filename="../../core/negcon.cpp" line="315"/>
+        <location filename="../../core/negcon.cpp" line="318"/>
         <source>Sets saturation for button II.</source>
         <translation>Definie a limitação para o botão II.</translation>
     </message>
     <message>
-        <location filename="../../core/negcon.cpp" line="316"/>
+        <location filename="../../core/negcon.cpp" line="319"/>
         <source>II Button Linearity</source>
         <translation>II Linearidade do botão</translation>
     </message>
     <message>
-        <location filename="../../core/negcon.cpp" line="317"/>
+        <location filename="../../core/negcon.cpp" line="320"/>
         <source>Sets linearity for button II.</source>
         <translation>Definine a linearidade para o botão II.</translation>
     </message>
     <message>
-        <location filename="../../core/negcon.cpp" line="318"/>
+        <location filename="../../core/negcon.cpp" line="321"/>
         <source>II Scaling</source>
         <translation>II Escalonamento</translation>
     </message>
     <message>
-        <location filename="../../core/negcon.cpp" line="319"/>
+        <location filename="../../core/negcon.cpp" line="322"/>
         <source>Sets scaling for button II.</source>
         <translation>Define o escalonamento para o botão II.</translation>
     </message>
     <message>
-        <location filename="../../core/negcon.cpp" line="320"/>
+        <location filename="../../core/negcon.cpp" line="323"/>
         <source>Left Trigger Deadzone</source>
         <translation>Zona morta do gatilho esquerdo</translation>
     </message>
     <message>
-        <location filename="../../core/negcon.cpp" line="321"/>
+        <location filename="../../core/negcon.cpp" line="324"/>
         <source>Sets deadzone for left trigger.</source>
         <translation>Define a zona morta do gatilho esquerdo.</translation>
     </message>
     <message>
-        <location filename="../../core/negcon.cpp" line="322"/>
+        <location filename="../../core/negcon.cpp" line="325"/>
         <source>Left Trigger Saturation</source>
         <translation>Limitação do gatilho esquerdo</translation>
     </message>
     <message>
-        <location filename="../../core/negcon.cpp" line="323"/>
+        <location filename="../../core/negcon.cpp" line="326"/>
         <source>Sets saturation for left trigger.</source>
         <translation>Define a limitação do gatilho esquerdo.</translation>
     </message>
     <message>
-        <location filename="../../core/negcon.cpp" line="324"/>
+        <location filename="../../core/negcon.cpp" line="327"/>
         <source>Left Trigger Linearity</source>
         <translation>Linearidade do gatilho esquerdo</translation>
     </message>
     <message>
-        <location filename="../../core/negcon.cpp" line="325"/>
+        <location filename="../../core/negcon.cpp" line="328"/>
         <source>Sets linearity for left trigger.</source>
         <translation>Define a linearidade do gatilho esquerdo.</translation>
     </message>
     <message>
-        <location filename="../../core/negcon.cpp" line="326"/>
+        <location filename="../../core/negcon.cpp" line="329"/>
         <source>Left Trigger Scaling</source>
         <translation>Escala do gatilho esquerdo</translation>
     </message>
     <message>
-        <location filename="../../core/negcon.cpp" line="327"/>
+        <location filename="../../core/negcon.cpp" line="330"/>
         <source>Sets scaling for left trigger.</source>
         <translation>Define a pressão para o gatilho esquerdo.</translation>
     </message>
@@ -23361,112 +23712,122 @@ Erro: {1}</translation>
 <context>
     <name>NeGconRumble</name>
     <message>
-        <location filename="../../core/negcon_rumble.cpp" line="729"/>
+        <location filename="../../core/negcon_rumble.cpp" line="720"/>
         <source>D-Pad Up</source>
         <translation>D-Pad para cima</translation>
     </message>
     <message>
-        <location filename="../../core/negcon_rumble.cpp" line="730"/>
+        <location filename="../../core/negcon_rumble.cpp" line="721"/>
         <source>D-Pad Right</source>
         <translation>D-Pad para a direita</translation>
     </message>
     <message>
-        <location filename="../../core/negcon_rumble.cpp" line="731"/>
+        <location filename="../../core/negcon_rumble.cpp" line="722"/>
         <source>D-Pad Down</source>
         <translation>D-Pad para baixo</translation>
     </message>
     <message>
-        <location filename="../../core/negcon_rumble.cpp" line="732"/>
+        <location filename="../../core/negcon_rumble.cpp" line="723"/>
         <source>D-Pad Left</source>
         <translation>D-Pad para a esquerda</translation>
     </message>
     <message>
-        <location filename="../../core/negcon_rumble.cpp" line="733"/>
+        <location filename="../../core/negcon_rumble.cpp" line="724"/>
         <source>Start</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../core/negcon_rumble.cpp" line="734"/>
+        <location filename="../../core/negcon_rumble.cpp" line="725"/>
         <source>A Button</source>
         <translation>Botão A</translation>
     </message>
     <message>
-        <location filename="../../core/negcon_rumble.cpp" line="735"/>
+        <location filename="../../core/negcon_rumble.cpp" line="726"/>
         <source>B Button</source>
         <translation>Botão B</translation>
     </message>
     <message>
-        <location filename="../../core/negcon_rumble.cpp" line="736"/>
+        <location filename="../../core/negcon_rumble.cpp" line="727"/>
         <source>I Button</source>
         <translation>Botão I</translation>
     </message>
     <message>
-        <location filename="../../core/negcon_rumble.cpp" line="737"/>
+        <location filename="../../core/negcon_rumble.cpp" line="728"/>
         <source>II Button</source>
         <translation>Botão II</translation>
     </message>
     <message>
-        <location filename="../../core/negcon_rumble.cpp" line="738"/>
+        <location filename="../../core/negcon_rumble.cpp" line="729"/>
         <source>Left Trigger</source>
         <translation>Gatilho esquerdo</translation>
     </message>
     <message>
-        <location filename="../../core/negcon_rumble.cpp" line="739"/>
+        <location filename="../../core/negcon_rumble.cpp" line="730"/>
         <source>Right Trigger</source>
         <translation>Gatilho direito</translation>
     </message>
     <message>
-        <location filename="../../core/negcon_rumble.cpp" line="740"/>
+        <location filename="../../core/negcon_rumble.cpp" line="731"/>
         <source>Steering (Twist) Left</source>
         <translation>Direção (giro) para a esquerda</translation>
     </message>
     <message>
-        <location filename="../../core/negcon_rumble.cpp" line="741"/>
+        <location filename="../../core/negcon_rumble.cpp" line="732"/>
         <source>Steering (Twist) Right</source>
         <translation>Direção (giro) para a direita</translation>
     </message>
     <message>
-        <location filename="../../core/negcon_rumble.cpp" line="742"/>
+        <location filename="../../core/negcon_rumble.cpp" line="733"/>
         <source>Analog Toggle</source>
         <translation>Alternância do analógico</translation>
     </message>
     <message>
-        <location filename="../../core/negcon_rumble.cpp" line="756"/>
+        <location filename="../../core/negcon_rumble.cpp" line="748"/>
+        <source>Disable Simultaneous Opposing Cardinal Directions</source>
+        <translation>Desativar direções opostas simultâneas</translation>
+    </message>
+    <message>
+        <location filename="../../core/negcon_rumble.cpp" line="749"/>
+        <source>Prevents concurrent left/right or up/down inputs from being presented to the game.</source>
+        <translation>Impede que entradas simultâneas para esquerda/direita ou cima/baixo sejam enviadas ao jogo.</translation>
+    </message>
+    <message>
+        <location filename="../../core/negcon_rumble.cpp" line="751"/>
         <source>Steering Axis Deadzone</source>
         <translation>Zona morta do volante</translation>
     </message>
     <message>
-        <location filename="../../core/negcon_rumble.cpp" line="757"/>
+        <location filename="../../core/negcon_rumble.cpp" line="752"/>
         <source>Sets deadzone size for steering axis.</source>
         <translation>Define a zona morta do eixo de direção</translation>
     </message>
     <message>
-        <location filename="../../core/negcon_rumble.cpp" line="759"/>
+        <location filename="../../core/negcon_rumble.cpp" line="754"/>
         <source>Steering Axis Sensitivity</source>
         <translation>Sensibilidade do eixo de direção</translation>
     </message>
     <message>
-        <location filename="../../core/negcon_rumble.cpp" line="760"/>
+        <location filename="../../core/negcon_rumble.cpp" line="755"/>
         <source>Sets the steering axis scaling factor.</source>
         <translation>Define o fator de escala do eixo de direção.</translation>
     </message>
     <message>
-        <location filename="../../core/negcon_rumble.cpp" line="762"/>
+        <location filename="../../core/negcon_rumble.cpp" line="757"/>
         <source>Large Motor Vibration Bias</source>
         <translation>Direção de vibração do motor grande</translation>
     </message>
     <message>
-        <location filename="../../core/negcon_rumble.cpp" line="763"/>
+        <location filename="../../core/negcon_rumble.cpp" line="758"/>
         <source>Sets the bias value for the large vibration motor. If vibration in some games is too weak or not functioning, try increasing this value. Negative values will decrease the intensity of vibration.</source>
         <translation>Define o valor de direcionamento para o motor grande. Se a vibração em alguns jogos estiver muito fraca ou não estiver funcionando, tente aumentar esse valor. Valores negativos diminuirão a intensidade da vibração.</translation>
     </message>
     <message>
-        <location filename="../../core/negcon_rumble.cpp" line="767"/>
+        <location filename="../../core/negcon_rumble.cpp" line="762"/>
         <source>Small Motor Vibration Bias</source>
         <translation>Direção de vibração do motor pequeno</translation>
     </message>
     <message>
-        <location filename="../../core/negcon_rumble.cpp" line="768"/>
+        <location filename="../../core/negcon_rumble.cpp" line="763"/>
         <source>Sets the bias value for the small vibration motor. If vibration in some games is too weak or not functioning, try increasing this value. Negative values will decrease the intensity of vibration.</source>
         <translation>Define o valor de direcionamento para o motor pequeno. Se a vibração em alguns jogos estiver muito fraca ou não estiver funcionando, tente aumentar esse valor. Valores negativos diminuirão a intensidade da vibração.</translation>
     </message>
@@ -23478,12 +23839,12 @@ Erro: {1}</translation>
         <translation type="vanished">Sistema reiniciado.</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1219"/>
+        <location filename="../../core/settings.cpp" line="1223"/>
         <source>Disabling PCDrv because no root directory is specified.</source>
         <translation>PCDrv desativado porque nenhum diretório raiz foi especificado.</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1229"/>
+        <location filename="../../core/settings.cpp" line="1233"/>
         <source>PGXP is incompatible with the software renderer, disabling PGXP.</source>
         <translation>PGXP é incompatível com o rederizador por software, desligando PGXP.</translation>
     </message>
@@ -23500,7 +23861,7 @@ Erro: {1}</translation>
         <translation type="vanished">Função de retrocesso desligada porque o avanço rápido está ligado.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4438"/>
+        <location filename="../../core/system.cpp" line="4563"/>
         <source>Recompiler options changed, flushing all blocks.</source>
         <translation>As opções do recompilador foram alteradas, limpando todos os blocos.</translation>
     </message>
@@ -23660,22 +24021,22 @@ Erro: {1}</translation>
         <translation>Áudio do CD religado.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3875"/>
+        <location filename="../../core/system.cpp" line="4000"/>
         <source>Swapped memory card ports. Both ports have a memory card.</source>
         <translation>Portas de cartão de memória trocadas. ambas já contém cartão.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3881"/>
+        <location filename="../../core/system.cpp" line="4006"/>
         <source>Swapped memory card ports. Port 2 has a memory card, Port 1 is empty.</source>
         <translation>Portas de cartão de memória trocadas. porta 2 tem um cartão de memória, porta 1 vazia.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3887"/>
+        <location filename="../../core/system.cpp" line="4012"/>
         <source>Swapped memory card ports. Port 1 has a memory card, Port 2 is empty.</source>
         <translation>Portas de cartão de memória trocadas. porta 1 tem um cartão de memória, porta 2 vazia.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3892"/>
+        <location filename="../../core/system.cpp" line="4017"/>
         <source>Swapped memory card ports. Neither port has a memory card.</source>
         <translation>Portas de cartão de memória trocadas. nenhuma das portas possui cartão de memória.</translation>
     </message>
@@ -23776,44 +24137,44 @@ Your dump may be corrupted, or the physical disc is scratched.</source>
         <translation type="vanished">Estado salvo em &apos;{}&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1458"/>
+        <location filename="../../core/system.cpp" line="1578"/>
         <source>Game restarted.</source>
         <translation>Jogo reiniciado.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3981"/>
+        <location filename="../../core/system.cpp" line="4106"/>
         <source>Failed to open disc image &apos;{}&apos;: {}.</source>
         <translation>Falha ao abrir a imagem do disco &apos;{}&apos;: {}.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3991"/>
+        <location filename="../../core/system.cpp" line="4116"/>
         <source>Inserted disc &apos;{}&apos; ({}).</source>
         <translation>Disco inserido &apos;{}&apos; ({}).</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="5330"/>
+        <location filename="../../core/system.cpp" line="5455"/>
         <source>Failed to save undo load state:
 {}</source>
         <translation>Falha ao desfazer o carregamento:
 {}</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="6017"/>
+        <location filename="../../core/system.cpp" line="6146"/>
         <source>Widescreen rendering is now enabled, and aspect ratio is set to {}.</source>
         <translation>A renderização em modo widescreen foi ativada e a proporção de aspecto foi definida para {}.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="6024"/>
+        <location filename="../../core/system.cpp" line="6153"/>
         <source>Widescreen rendering is now disabled, and aspect ratio is set to {}.</source>
         <translation>A renderização em modo widescreen foi desativada e a proporção de aspecto foi definida para {}.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="6040"/>
+        <location filename="../../core/system.cpp" line="6169"/>
         <source>Switching to {} renderer...</source>
         <translation>Alterando para renderizador {}...</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4480"/>
+        <location filename="../../core/system.cpp" line="4605"/>
         <source>Switching to {}{} GPU renderer.</source>
         <translation>Alternando para o renderizador de GPU {}{}.</translation>
     </message>
@@ -23822,12 +24183,12 @@ Your dump may be corrupted, or the physical disc is scratched.</source>
         <translation type="vanished">Cartão de memória no compartimento {} alterado para ‘{}’.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4401"/>
+        <location filename="../../core/system.cpp" line="4526"/>
         <source>Switching to {} audio backend.</source>
         <translation>Alternando para o backend de áudio {}.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4424"/>
+        <location filename="../../core/system.cpp" line="4549"/>
         <source>Switching to {} CPU execution mode.</source>
         <translation>Alternando para o modo de execução pelo CPU {}.</translation>
     </message>
@@ -24259,6 +24620,11 @@ Controles iniciados em modo digital.</translation>
 <context>
     <name>PlayStationMouse</name>
     <message>
+        <location filename="../../core/playstation_mouse.cpp" line="202"/>
+        <source>Pointer</source>
+        <translation>Ponteiro</translation>
+    </message>
+    <message>
         <location filename="../../core/playstation_mouse.cpp" line="203"/>
         <source>Left Button</source>
         <translation>Botão esquerdo</translation>
@@ -24288,65 +24654,64 @@ Controles iniciados em modo digital.</translation>
 <context>
     <name>PlaystationMouse</name>
     <message>
-        <location filename="../../core/playstation_mouse.cpp" line="202"/>
         <source>Pointer</source>
-        <translation>Ponteiro</translation>
+        <translation type="vanished">Ponteiro</translation>
     </message>
 </context>
 <context>
     <name>PopnController</name>
     <message>
-        <location filename="../../core/digital_controller.cpp" line="196"/>
+        <location filename="../../core/digital_controller.cpp" line="216"/>
         <source>Left White</source>
         <translation>Botão branco direito</translation>
     </message>
     <message>
-        <location filename="../../core/digital_controller.cpp" line="197"/>
+        <location filename="../../core/digital_controller.cpp" line="217"/>
         <source>Left Yellow</source>
         <translation>Botão amarelo esquerdo</translation>
     </message>
     <message>
-        <location filename="../../core/digital_controller.cpp" line="198"/>
+        <location filename="../../core/digital_controller.cpp" line="218"/>
         <source>Left Green</source>
         <translation>Botão verde esquerdo</translation>
     </message>
     <message>
-        <location filename="../../core/digital_controller.cpp" line="199"/>
+        <location filename="../../core/digital_controller.cpp" line="219"/>
         <source>Left Blue/Sel</source>
         <translation>Botão azul esquerdo/select</translation>
     </message>
     <message>
-        <location filename="../../core/digital_controller.cpp" line="200"/>
+        <location filename="../../core/digital_controller.cpp" line="220"/>
         <source>Middle Red/Okay</source>
         <translation>Botão do meio vermelho/ok</translation>
     </message>
     <message>
-        <location filename="../../core/digital_controller.cpp" line="201"/>
+        <location filename="../../core/digital_controller.cpp" line="221"/>
         <source>Right Blue/Sel</source>
         <translation>Botão azul direito/select</translation>
     </message>
     <message>
-        <location filename="../../core/digital_controller.cpp" line="202"/>
+        <location filename="../../core/digital_controller.cpp" line="222"/>
         <source>Right Green</source>
         <translation>Botão verde direito</translation>
     </message>
     <message>
-        <location filename="../../core/digital_controller.cpp" line="203"/>
+        <location filename="../../core/digital_controller.cpp" line="223"/>
         <source>Right Yellow</source>
         <translation>Botão amarelo direito</translation>
     </message>
     <message>
-        <location filename="../../core/digital_controller.cpp" line="204"/>
+        <location filename="../../core/digital_controller.cpp" line="224"/>
         <source>Right White</source>
         <translation>Botão branco direito</translation>
     </message>
     <message>
-        <location filename="../../core/digital_controller.cpp" line="205"/>
+        <location filename="../../core/digital_controller.cpp" line="225"/>
         <source>Select</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../core/digital_controller.cpp" line="206"/>
+        <location filename="../../core/digital_controller.cpp" line="226"/>
         <source>Start</source>
         <translation></translation>
     </message>
@@ -24768,17 +25133,17 @@ The URL was: %1</source>
 <context>
     <name>QtHost</name>
     <message>
-        <location filename="../qthost.cpp" line="696"/>
+        <location filename="../qthost.cpp" line="698"/>
         <location filename="../qthost.cpp" line="714"/>
-        <location filename="../qthost.cpp" line="1353"/>
-        <location filename="../qthost.cpp" line="3584"/>
-        <location filename="../qthost.cpp" line="3611"/>
-        <location filename="../qthost.cpp" line="3630"/>
+        <location filename="../qthost.cpp" line="1349"/>
+        <location filename="../qthost.cpp" line="3511"/>
+        <location filename="../qthost.cpp" line="3538"/>
+        <location filename="../qthost.cpp" line="3557"/>
         <source>Error</source>
         <translation>Erro</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="697"/>
+        <location filename="../qthost.cpp" line="699"/>
         <source>An error occurred while deleting empty game settings:
 {}</source>
         <translation>Ocorreu um erro ao apagar as configurações vazias:
@@ -24810,7 +25175,7 @@ The URL was: %1</source>
 %2</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="765"/>
+        <location filename="../qthost.cpp" line="789"/>
         <source>Download failed: Data is empty.</source>
         <translation>O download falhou: Os dados estão vazios.</translation>
     </message>
@@ -24845,7 +25210,7 @@ The URL was: %1</source>
         <translation type="vanished">Falha ao gravar em &apos;%1&apos;.</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1355"/>
+        <location filename="../qthost.cpp" line="1351"/>
         <source>Unfortunately, the virtual machine has abnormally shut down and cannot be recovered. Please use the available support options for further assistance, and provide information about what you were doing when the error occurred, as well as the details below:
 
 {}</source>
@@ -24854,12 +25219,12 @@ The URL was: %1</source>
 {}</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="2353"/>
+        <location filename="../qthost.cpp" line="2334"/>
         <source>Yes</source>
         <translation>Sim</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="2355"/>
+        <location filename="../qthost.cpp" line="2336"/>
         <source>No</source>
         <translation>Não</translation>
     </message>
@@ -24868,7 +25233,7 @@ The URL was: %1</source>
         <translation type="vanished">RA: conectado como %1 (%2, %3 normal). %4 mensagens não lidas.</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="554"/>
+        <location filename="../qthost.cpp" line="556"/>
         <source>Would you like to create a launcher shortcut for DuckStation?
 
 This will add DuckStation to your application menu, allowing you to launch it more easily.
@@ -24883,19 +25248,19 @@ O atalho será criado em:
 %1</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="561"/>
+        <location filename="../qthost.cpp" line="563"/>
         <source>Don&apos;t ask again</source>
         <translation>Não perguntar novamente</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="584"/>
+        <location filename="../qthost.cpp" line="586"/>
         <source>Failed to create launcher shortcut shortcut:
 %1</source>
         <translation>Falha ao criar o atalho:
 %1</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="590"/>
+        <location filename="../qthost.cpp" line="592"/>
         <source>Launcher shortcut created successfully.
 
 You can find DuckStation in your application menu.</source>
@@ -24904,7 +25269,7 @@ You can find DuckStation in your application menu.</source>
 Você pode encontrar o DuckStation no menu de aplicativos.</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="614"/>
+        <location filename="../qthost.cpp" line="616"/>
         <source>The existing launcher shortcut points to a different location:
 
 Current: %1
@@ -24919,41 +25284,41 @@ Atalho: %2
 Deseja atualizar o atalho para apontar para o local atual?</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="630"/>
+        <location filename="../qthost.cpp" line="632"/>
         <source>Failed to remove old launcher shortcut:
 %1</source>
         <translation>Falha ao remover o atalho antigo:
 %1</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="639"/>
+        <location filename="../qthost.cpp" line="641"/>
         <source>Failed to create updated launcher shortcut:
 %1</source>
         <translation>Falha ao criar o atalho atualizado:
 %1</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="645"/>
+        <location filename="../qthost.cpp" line="647"/>
         <source>Launcher shortcut updated successfully.</source>
         <translation>Atalho atualizado com sucesso.</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="746"/>
+        <location filename="../qthost.cpp" line="770"/>
         <source>Downloading {}...</source>
         <translation>Baixando {}...</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="750"/>
+        <location filename="../qthost.cpp" line="774"/>
         <source>File Download</source>
         <translation>Baixar arquivo</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="2673"/>
+        <location filename="../qthost.cpp" line="2598"/>
         <source>System Language</source>
         <translation>Idioma do sistema</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="2691"/>
+        <location filename="../qthost.cpp" line="2616"/>
         <source>Unknown</source>
         <translation>Desconhecido</translation>
     </message>
@@ -24971,22 +25336,22 @@ Deseja atualizar o atalho para apontar para o local atual?</translation>
         <translation>Controle {} desconectado.</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="3585"/>
+        <location filename="../qthost.cpp" line="3512"/>
         <source>File &apos;%1&apos; does not exist.</source>
         <translation>O arquivo &apos;%1&apos; não existe.</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="3612"/>
+        <location filename="../qthost.cpp" line="3539"/>
         <source>The specified save state does not exist.</source>
         <translation>O dado de salvamento não existe.</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="3632"/>
+        <location filename="../qthost.cpp" line="3559"/>
         <source>Cannot use no-gui mode, because no boot filename was specified.</source>
         <translation>Não é possível usar o modo no-gui, porque nenhum parâmetro de inicialização foi configurado.</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="3633"/>
+        <location filename="../qthost.cpp" line="3560"/>
         <source>Cannot use batch mode, because no boot filename was specified.</source>
         <translation>Não é possível usar este modo porque nenhum parâmetro de inicialização foi configurado.</translation>
     </message>
@@ -25465,57 +25830,62 @@ Deseja atualizar o atalho para apontar para o local atual?</translation>
 <context>
     <name>SaveStateSelectorUI</name>
     <message>
-        <location filename="../../core/imgui_overlays.cpp" line="951"/>
         <source>Saved at {0:%H:%M} on {0:%a} {0:%Y/%m/%d}.</source>
-        <translation>Salvo em {0:%H:%M} on {0:%a} {0:%Y/%m/%d}.</translation>
+        <translation type="vanished">Salvo em {0:%H:%M} on {0:%a} {0:%Y/%m/%d}.</translation>
     </message>
     <message>
-        <location filename="../../core/imgui_overlays.cpp" line="1008"/>
+        <location filename="../../core/imgui_overlays.cpp" line="1022"/>
         <source>No save state slots available.</source>
         <translation>Nenhum compartimento de save state disponível.</translation>
     </message>
     <message>
-        <location filename="../../core/imgui_overlays.cpp" line="1122"/>
+        <location filename="../../core/imgui_overlays.cpp" line="1144"/>
         <source>Load</source>
         <translation>Carregar</translation>
     </message>
     <message>
-        <location filename="../../core/imgui_overlays.cpp" line="1124"/>
+        <location filename="../../core/imgui_overlays.cpp" line="1146"/>
         <source>Save</source>
         <translation>Salvar</translation>
     </message>
     <message>
-        <location filename="../../core/imgui_overlays.cpp" line="1126"/>
+        <location filename="../../core/imgui_overlays.cpp" line="1148"/>
         <source>Select Previous</source>
         <translation>Anterior</translation>
     </message>
     <message>
-        <location filename="../../core/imgui_overlays.cpp" line="1128"/>
+        <location filename="../../core/imgui_overlays.cpp" line="1150"/>
         <source>Select Next</source>
         <translation>Próximo</translation>
     </message>
     <message>
-        <location filename="../../core/imgui_overlays.cpp" line="1184"/>
+        <location filename="../../core/imgui_overlays.cpp" line="1220"/>
         <source>{} ({})</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../core/imgui_overlays.cpp" line="1216"/>
+        <location filename="../../core/imgui_overlays.cpp" line="1222"/>
+        <location filename="../../core/imgui_overlays.cpp" line="1515"/>
+        <source>Saved {}</source>
+        <translation>Salvo {}</translation>
+    </message>
+    <message>
+        <location filename="../../core/imgui_overlays.cpp" line="1252"/>
         <source>Unknown error.</source>
         <translation>Erro desconhecido.</translation>
     </message>
     <message>
-        <location filename="../../core/imgui_overlays.cpp" line="1452"/>
+        <location filename="../../core/imgui_overlays.cpp" line="1520"/>
         <source>No save in this slot.</source>
         <translation>Não há salvamento presente nesse compartimento.</translation>
     </message>
     <message>
-        <location filename="../../core/imgui_overlays.cpp" line="1458"/>
+        <location filename="../../core/imgui_overlays.cpp" line="1526"/>
         <source>Global Save Slot {} selected.</source>
         <translation>Compartimento de salvamento global {} selecionado.</translation>
     </message>
     <message>
-        <location filename="../../core/imgui_overlays.cpp" line="1459"/>
+        <location filename="../../core/imgui_overlays.cpp" line="1527"/>
         <source>Save Slot {0} selected.</source>
         <translation>Compartimento de dados {0} escolhido.</translation>
     </message>
@@ -25540,17 +25910,17 @@ Deseja atualizar o atalho para apontar para o local atual?</translation>
         <translation type="vanished">Compartimento de dados {0} escolhido({1}).</translation>
     </message>
     <message>
-        <location filename="../../core/imgui_overlays.cpp" line="1335"/>
+        <location filename="../../core/imgui_overlays.cpp" line="1400"/>
         <source>Global Slot {}</source>
         <translation>Compartimento global {}</translation>
     </message>
     <message>
-        <location filename="../../core/imgui_overlays.cpp" line="1336"/>
+        <location filename="../../core/imgui_overlays.cpp" line="1401"/>
         <source>Game Slot {}</source>
         <translation>Compartimento {}</translation>
     </message>
     <message>
-        <location filename="../../core/imgui_overlays.cpp" line="1212"/>
+        <location filename="../../core/imgui_overlays.cpp" line="1248"/>
         <source>No save present in this slot.</source>
         <translation>Não há dados nesse compartimento.</translation>
     </message>
@@ -25596,7 +25966,7 @@ Deseja atualizar o atalho para apontar para o local atual?</translation>
         <translation>Cancelar</translation>
     </message>
     <message>
-        <location filename="../selectdiscdialog.cpp" line="87"/>
+        <location filename="../selectdiscdialog.cpp" line="90"/>
         <source>Select Disc for %1</source>
         <translation>Escolha disco para %1</translation>
     </message>
@@ -25628,12 +25998,12 @@ Deseja atualizar o atalho para apontar para o local atual?</translation>
         <translation>Global: </translation>
     </message>
     <message>
-        <location filename="../settingwidgetbinder.h" line="1299"/>
+        <location filename="../settingwidgetbinder.h" line="1290"/>
         <source>Confirm Folder</source>
         <translation>Confirmar pasta</translation>
     </message>
     <message>
-        <location filename="../settingwidgetbinder.h" line="1300"/>
+        <location filename="../settingwidgetbinder.h" line="1291"/>
         <source>The chosen directory does not currently exist:
 
 %1
@@ -25646,28 +26016,28 @@ Do you want to create this directory?</source>
 Deseja criar esse diretório?</translation>
     </message>
     <message>
-        <location filename="../settingwidgetbinder.h" line="1323"/>
+        <location filename="../settingwidgetbinder.h" line="1314"/>
         <source>Error</source>
         <translation>Erro</translation>
     </message>
     <message>
-        <location filename="../settingwidgetbinder.h" line="1324"/>
+        <location filename="../settingwidgetbinder.h" line="1315"/>
         <source>Folder path cannot be empty.</source>
         <translation>O caminho da pasta não pode estar vazio.</translation>
     </message>
     <message>
-        <location filename="../settingwidgetbinder.h" line="1383"/>
-        <location filename="../settingwidgetbinder.h" line="1387"/>
+        <location filename="../settingwidgetbinder.h" line="1374"/>
+        <location filename="../settingwidgetbinder.h" line="1378"/>
         <source>Incompatible with this game</source>
         <translation>Incompatível com este jogo</translation>
     </message>
     <message>
-        <location filename="../settingwidgetbinder.h" line="1391"/>
+        <location filename="../settingwidgetbinder.h" line="1382"/>
         <source>%1 [incompatible]</source>
         <translation>%1 [incompatível]</translation>
     </message>
     <message>
-        <location filename="../settingwidgetbinder.h" line="1413"/>
+        <location filename="../settingwidgetbinder.h" line="1404"/>
         <source>%1 [forced]</source>
         <translation>%1 [forçado]</translation>
     </message>
@@ -25684,7 +26054,7 @@ Deseja criar esse diretório?</translation>
         <translation type="vanished"> [Incompatível]</translation>
     </message>
     <message>
-        <location filename="../achievementsettingswidget.cpp" line="168"/>
+        <location filename="../achievementsettingswidget.cpp" line="169"/>
         <location filename="../graphicssettingswidget.cpp" line="887"/>
         <location filename="../settingwidgetbinder.h" line="154"/>
         <location filename="../settingwidgetbinder.h" line="170"/>
@@ -25763,121 +26133,121 @@ Deseja criar esse diretório?</translation>
         <translation type="vanished">Zstandard (Alta)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1392"/>
+        <location filename="../../core/settings.cpp" line="1396"/>
         <source>None</source>
         <comment>LogLevel</comment>
         <translation>Nenhum</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1393"/>
+        <location filename="../../core/settings.cpp" line="1397"/>
         <source>Error</source>
         <comment>LogLevel</comment>
         <translation>Erro</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1394"/>
+        <location filename="../../core/settings.cpp" line="1398"/>
         <source>Warning</source>
         <comment>LogLevel</comment>
         <translation>Alerta</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1395"/>
+        <location filename="../../core/settings.cpp" line="1399"/>
         <source>Information</source>
         <comment>LogLevel</comment>
         <translation>Informação</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1396"/>
+        <location filename="../../core/settings.cpp" line="1400"/>
         <source>Verbose</source>
         <comment>LogLevel</comment>
         <translation>Detalhado</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1397"/>
+        <location filename="../../core/settings.cpp" line="1401"/>
         <source>Developer</source>
         <comment>LogLevel</comment>
         <translation>Desenvolvedor</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1398"/>
+        <location filename="../../core/settings.cpp" line="1402"/>
         <source>Debug</source>
         <comment>LogLevel</comment>
         <translation>Depurar</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1399"/>
+        <location filename="../../core/settings.cpp" line="1403"/>
         <source>Trace</source>
         <comment>LogLevel</comment>
         <translation>Rastreio</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1433"/>
+        <location filename="../../core/settings.cpp" line="1437"/>
         <source>Auto-Detect</source>
         <comment>ConsoleRegion</comment>
         <translation>Detectar automaticamente</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1434"/>
+        <location filename="../../core/settings.cpp" line="1438"/>
         <source>NTSC-J (Japan)</source>
         <comment>ConsoleRegion</comment>
         <translation>NTSC-J (Japão)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1435"/>
+        <location filename="../../core/settings.cpp" line="1439"/>
         <source>NTSC-U/C (US, Canada)</source>
         <comment>ConsoleRegion</comment>
         <translation>NTSC-U/C (US, Canadá)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1436"/>
+        <location filename="../../core/settings.cpp" line="1440"/>
         <source>PAL (Europe, Australia)</source>
         <comment>ConsoleRegion</comment>
         <translation>PAL (Europeu, Austrália)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1468"/>
+        <location filename="../../core/settings.cpp" line="1472"/>
         <source>NTSC-J (Japan)</source>
         <comment>DiscRegion</comment>
         <translation>NTSC-J (Japão)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1469"/>
+        <location filename="../../core/settings.cpp" line="1473"/>
         <source>NTSC-U/C (US, Canada)</source>
         <comment>DiscRegion</comment>
         <translation>NTSC-U/C (US, Canadá)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1470"/>
+        <location filename="../../core/settings.cpp" line="1474"/>
         <source>PAL (Europe, Australia)</source>
         <comment>DiscRegion</comment>
         <translation>PAL (Europeu, Austrália)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1471"/>
+        <location filename="../../core/settings.cpp" line="1475"/>
         <source>Other</source>
         <comment>DiscRegion</comment>
         <translation>Outros</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1472"/>
+        <location filename="../../core/settings.cpp" line="1476"/>
         <source>Non-PS1</source>
         <comment>DiscRegion</comment>
         <translation>Não é de PS1</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1505"/>
+        <location filename="../../core/settings.cpp" line="1509"/>
         <source>Interpreter (Slowest)</source>
         <comment>CPUExecutionMode</comment>
         <translation>Interpretador (mais lento)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1506"/>
+        <location filename="../../core/settings.cpp" line="1510"/>
         <source>Cached Interpreter (Faster)</source>
         <comment>CPUExecutionMode</comment>
         <translation>Interpretador armazenado (rápido)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1507"/>
+        <location filename="../../core/settings.cpp" line="1511"/>
         <source>Recompiler (Fastest)</source>
         <comment>CPUExecutionMode</comment>
         <translation>Recompilador (mais rápido)</translation>
@@ -25888,127 +26258,127 @@ Deseja criar esse diretório?</translation>
         <translation type="vanished">Novo recompilador (experimental)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1541"/>
+        <location filename="../../core/settings.cpp" line="1545"/>
         <source>Disabled (Slowest)</source>
         <comment>CPUFastmemMode</comment>
         <translation>Desativado (Lento)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1542"/>
+        <location filename="../../core/settings.cpp" line="1546"/>
         <source>MMap (Hardware, Fastest, 64-Bit Only)</source>
         <comment>CPUFastmemMode</comment>
         <translation>MMap (hardware, mais rápido)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1543"/>
+        <location filename="../../core/settings.cpp" line="1547"/>
         <source>LUT (Faster)</source>
         <comment>CPUFastmemMode</comment>
         <translation>LUT (rápido)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1588"/>
+        <location filename="../../core/settings.cpp" line="1592"/>
         <source>Automatic</source>
         <comment>GPURenderer</comment>
         <translation>Automático</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1590"/>
+        <location filename="../../core/settings.cpp" line="1594"/>
         <source>Direct3D 11</source>
         <comment>GPURenderer</comment>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1591"/>
+        <location filename="../../core/settings.cpp" line="1595"/>
         <source>Direct3D 12</source>
         <comment>GPURenderer</comment>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1594"/>
+        <location filename="../../core/settings.cpp" line="1598"/>
         <source>Metal</source>
         <comment>GPURenderer</comment>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1597"/>
+        <location filename="../../core/settings.cpp" line="1601"/>
         <source>Vulkan</source>
         <comment>GPURenderer</comment>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1600"/>
+        <location filename="../../core/settings.cpp" line="1604"/>
         <source>OpenGL</source>
         <comment>GPURenderer</comment>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1602"/>
+        <location filename="../../core/settings.cpp" line="1606"/>
         <source>Software</source>
         <comment>GPURenderer</comment>
         <translation>Software</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1697"/>
+        <location filename="../../core/settings.cpp" line="1701"/>
         <source>Nearest-Neighbor</source>
         <comment>GPUTextureFilter</comment>
         <translation>Nearest-Neighbor</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1698"/>
+        <location filename="../../core/settings.cpp" line="1702"/>
         <source>Bilinear</source>
         <comment>GPUTextureFilter</comment>
         <translation>Bi-linear</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1699"/>
+        <location filename="../../core/settings.cpp" line="1703"/>
         <source>Bilinear (No Edge Blending)</source>
         <comment>GPUTextureFilter</comment>
         <translation>Bi-linear (sem AA)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1700"/>
+        <location filename="../../core/settings.cpp" line="1704"/>
         <source>JINC2 (Slow)</source>
         <comment>GPUTextureFilter</comment>
         <translation>JINC2 (lento)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1701"/>
+        <location filename="../../core/settings.cpp" line="1705"/>
         <source>JINC2 (Slow, No Edge Blending)</source>
         <comment>GPUTextureFilter</comment>
         <translation>JINC2 (lento, sem AA)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1702"/>
+        <location filename="../../core/settings.cpp" line="1706"/>
         <source>xBR (Very Slow)</source>
         <comment>GPUTextureFilter</comment>
         <translation>xBR (muito lento)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1703"/>
+        <location filename="../../core/settings.cpp" line="1707"/>
         <source>xBR (Very Slow, No Edge Blending)</source>
         <comment>GPUTextureFilter</comment>
         <translation>xBR (muito lento sem AA)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1704"/>
+        <location filename="../../core/settings.cpp" line="1708"/>
         <source>Scale2x (EPX)</source>
         <comment>GPUTextureFilter</comment>
         <translation>Dimensionar 2x (EPX)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1705"/>
+        <location filename="../../core/settings.cpp" line="1709"/>
         <source>Scale3x (Slow)</source>
         <comment>GPUTextureFilter</comment>
         <translation>Dimensionar 3x (lento)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1706"/>
+        <location filename="../../core/settings.cpp" line="1710"/>
         <source>MMPX (Slow)</source>
         <comment>GPUTextureFilter</comment>
         <translation>MMPX (lento)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1707"/>
+        <location filename="../../core/settings.cpp" line="1711"/>
         <source>MMPX Enhanced (Slow)</source>
         <comment>GPUTextureFilter</comment>
         <translation>MMPX Melhorado (lento)</translation>
@@ -26019,241 +26389,241 @@ Deseja criar esse diretório?</translation>
         <translation type="vanished">MMPX Qualidade (muito lento)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1742"/>
+        <location filename="../../core/settings.cpp" line="1746"/>
         <source>Unscaled</source>
         <comment>GPUDitheringMode</comment>
         <translation>Não dimensionado</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1743"/>
+        <location filename="../../core/settings.cpp" line="1747"/>
         <source>Unscaled (Shader Blending)</source>
         <comment>GPUDitheringMode</comment>
         <translation>Não dimensionado (mesclagem de sombras/cores)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1744"/>
+        <location filename="../../core/settings.cpp" line="1748"/>
         <source>Scaled</source>
         <comment>GPUDitheringMode</comment>
         <translation>Dimensionado</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1745"/>
+        <location filename="../../core/settings.cpp" line="1749"/>
         <source>Scaled (Shader Blending)</source>
         <comment>GPUDitheringMode</comment>
         <translation>Dimensionado (mesclagem de sombras/cores)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1746"/>
+        <location filename="../../core/settings.cpp" line="1750"/>
         <source>True Color</source>
         <comment>GPUDitheringMode</comment>
         <translation>Cores reais</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1747"/>
+        <location filename="../../core/settings.cpp" line="1751"/>
         <source>True Color (Full)</source>
         <comment>GPUDitheringMode</comment>
         <translation>Cores reais (completo)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1784"/>
+        <location filename="../../core/settings.cpp" line="1788"/>
         <source>Disabled</source>
         <comment>GPULineDetectMode</comment>
         <translation>Desligado</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1785"/>
+        <location filename="../../core/settings.cpp" line="1789"/>
         <source>Quads</source>
         <comment>GPULineDetectMode</comment>
         <translation>Quadrantes</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1786"/>
+        <location filename="../../core/settings.cpp" line="1790"/>
         <source>Triangles (Basic)</source>
         <comment>GPULineDetectMode</comment>
         <translation>Triângulos (básico)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1787"/>
+        <location filename="../../core/settings.cpp" line="1791"/>
         <source>Triangles (Aggressive)</source>
         <comment>GPULineDetectMode</comment>
         <translation>Triângulos (agressivo)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1817"/>
+        <location filename="../../core/settings.cpp" line="1821"/>
         <source>Disabled</source>
         <comment>GPUDownsampleMode</comment>
         <translation>Desligado</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1818"/>
+        <location filename="../../core/settings.cpp" line="1822"/>
         <source>Box (Downsample 3D/Smooth All)</source>
         <comment>GPUDownsampleMode</comment>
         <translation>Misto (Reduz 3D / Suaviza tudo)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1819"/>
+        <location filename="../../core/settings.cpp" line="1823"/>
         <source>Adaptive (Preserve 3D/Smooth 2D)</source>
         <comment>GPUDownsampleMode</comment>
         <translation>Adaptativo (Preserva o 3D / Suaviza 2D)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1848"/>
+        <location filename="../../core/settings.cpp" line="1852"/>
         <source>Disabled</source>
         <comment>GPUWireframeMode</comment>
         <translation>Desligado</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1849"/>
+        <location filename="../../core/settings.cpp" line="1853"/>
         <source>Overlay Wireframe</source>
         <comment>GPUWireframeMode</comment>
         <translation>Sobreposição</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1850"/>
+        <location filename="../../core/settings.cpp" line="1854"/>
         <source>Only Wireframe</source>
         <comment>GPUWireframeMode</comment>
         <translation>Esboço</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1880"/>
+        <location filename="../../core/settings.cpp" line="1884"/>
         <source>Disabled</source>
         <comment>GPUDumpCompressionMode</comment>
         <translation>Desativado</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1881"/>
+        <location filename="../../core/settings.cpp" line="1885"/>
         <source>Zstandard (Low)</source>
         <comment>GPUDumpCompressionMode</comment>
         <translation>Zstandard (baixo)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1882"/>
+        <location filename="../../core/settings.cpp" line="1886"/>
         <source>Zstandard (Default)</source>
         <comment>GPUDumpCompressionMode</comment>
         <translation>Zstandard (Padrão)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1883"/>
+        <location filename="../../core/settings.cpp" line="1887"/>
         <source>Zstandard (High)</source>
         <comment>GPUDumpCompressionMode</comment>
         <translation>Zstandard (Alta)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1884"/>
+        <location filename="../../core/settings.cpp" line="1888"/>
         <source>XZ (Low)</source>
         <comment>GPUDumpCompressionMode</comment>
         <translation>XZ (baixa)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1885"/>
+        <location filename="../../core/settings.cpp" line="1889"/>
         <source>XZ (Default)</source>
         <comment>GPUDumpCompressionMode</comment>
         <translation>XZ (padrão)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1886"/>
+        <location filename="../../core/settings.cpp" line="1890"/>
         <source>XZ (High)</source>
         <comment>GPUDumpCompressionMode</comment>
         <translation>XZ (alta)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1921"/>
+        <location filename="../../core/settings.cpp" line="1925"/>
         <source>Disabled (Flickering)</source>
         <comment>DisplayDeinterlacingMode</comment>
         <translation>Oscilação (desativada)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1922"/>
+        <location filename="../../core/settings.cpp" line="1926"/>
         <source>Weave (Combing)</source>
         <comment>DisplayDeinterlacingMode</comment>
         <translation>Ondulação</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1923"/>
+        <location filename="../../core/settings.cpp" line="1927"/>
         <source>Blend (Blur)</source>
         <comment>DisplayDeinterlacingMode</comment>
         <translation>Desfoque</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1924"/>
+        <location filename="../../core/settings.cpp" line="1928"/>
         <source>Adaptive (FastMAD)</source>
         <comment>DisplayDeinterlacingMode</comment>
         <translation>Adaptativo (rápido)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1925"/>
+        <location filename="../../core/settings.cpp" line="1929"/>
         <source>Progressive (Optimal)</source>
         <comment>DisplayDeinterlacingMode</comment>
         <translation>Progressivo (ideal)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1957"/>
+        <location filename="../../core/settings.cpp" line="1961"/>
         <source>None</source>
         <comment>DisplayCropMode</comment>
         <translation>Nenhum</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1958"/>
+        <location filename="../../core/settings.cpp" line="1962"/>
         <source>Only Overscan Area</source>
         <comment>DisplayCropMode</comment>
         <translation>Somente área renderizada</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1959"/>
+        <location filename="../../core/settings.cpp" line="1963"/>
         <source>Only Overscan Area (Aspect Uncorrected)</source>
         <comment>DisplayCropMode</comment>
         <translation>Somente área renderizada (Aspecto não corrigido)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1960"/>
+        <location filename="../../core/settings.cpp" line="1964"/>
         <source>All Borders</source>
         <comment>DisplayCropMode</comment>
         <translation>Todas as bordas</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1961"/>
+        <location filename="../../core/settings.cpp" line="1965"/>
         <source>All Borders (Aspect Uncorrected)</source>
         <comment>DisplayCropMode</comment>
         <translation>Todas as bordas (Aspecto não corrigido)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1996"/>
+        <location filename="../../core/settings.cpp" line="2000"/>
         <source>None</source>
         <comment>DisplayFineCropMode</comment>
         <translation>Nenhum</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1997"/>
+        <location filename="../../core/settings.cpp" line="2001"/>
         <source>Video Resolution</source>
         <comment>DisplayFineCropMode</comment>
         <translation>Resolução do vídeo</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1998"/>
+        <location filename="../../core/settings.cpp" line="2002"/>
         <source>Internal Resolution</source>
         <comment>DisplayFineCropMode</comment>
         <translation>Resolução interna</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1999"/>
+        <location filename="../../core/settings.cpp" line="2003"/>
         <source>Window Resolution</source>
         <comment>DisplayFineCropMode</comment>
         <translation>Resolução da janela</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="2030"/>
+        <location filename="../../core/settings.cpp" line="2034"/>
         <source>Auto (Game Native)</source>
         <comment>DisplayAspectRatio</comment>
         <translation>Auto (resolução nativa)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="2033"/>
+        <location filename="../../core/settings.cpp" line="2037"/>
         <source>Stretch To Fill</source>
         <comment>DisplayAspectRatio</comment>
         <translation>Esticar para preencher</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="2038"/>
+        <location filename="../../core/settings.cpp" line="2042"/>
         <source>PAR 1:1</source>
         <comment>DisplayAspectRatio</comment>
         <translation>PAR 1:1</translation>
@@ -26264,49 +26634,49 @@ Deseja criar esse diretório?</translation>
         <translation type="vanished">Personalizado</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="2118"/>
+        <location filename="../../core/settings.cpp" line="2122"/>
         <source>Left / Top</source>
         <comment>DisplayAlignment</comment>
         <translation>Topo superior</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="2119"/>
+        <location filename="../../core/settings.cpp" line="2123"/>
         <source>Center</source>
         <comment>DisplayAlignment</comment>
         <translation>Centro</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="2120"/>
+        <location filename="../../core/settings.cpp" line="2124"/>
         <source>Right / Bottom</source>
         <comment>DisplayAlignment</comment>
         <translation>Esquerda inferior</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="2150"/>
+        <location filename="../../core/settings.cpp" line="2154"/>
         <source>No Rotation</source>
         <comment>DisplayRotation</comment>
         <translation>Sem rotação</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="2151"/>
+        <location filename="../../core/settings.cpp" line="2155"/>
         <source>Rotate 90° (Clockwise)</source>
         <comment>DisplayRotation</comment>
         <translation>Girar 90° (sentido horário)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="2152"/>
+        <location filename="../../core/settings.cpp" line="2156"/>
         <source>Rotate 180° (Vertical Flip)</source>
         <comment>DisplayRotation</comment>
         <translation>Girar 180° (inversão vertical)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="2153"/>
+        <location filename="../../core/settings.cpp" line="2157"/>
         <source>Rotate 270° (Clockwise)</source>
         <comment>DisplayRotation</comment>
         <translation>Girar 270° (sentido horário)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="2188"/>
+        <location filename="../../core/settings.cpp" line="2192"/>
         <source>Auto-Detect</source>
         <comment>ForceVideoTiming</comment>
         <translation>Detectar automaticamente</translation>
@@ -26317,349 +26687,349 @@ Deseja criar esse diretório?</translation>
         <translation type="vanished">Desligado</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1708"/>
+        <location filename="../../core/settings.cpp" line="1712"/>
         <source>MMPX Advanced (Very Slow)</source>
         <comment>GPUTextureFilter</comment>
         <translation>MMPX avançado (Muito lento)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="2189"/>
-        <source>NTSC (60hz)</source>
+        <location filename="../../core/settings.cpp" line="2193"/>
+        <source>NTSC (60 Hz)</source>
         <comment>ForceVideoTiming</comment>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="2190"/>
-        <source>PAL (50hz)</source>
+        <location filename="../../core/settings.cpp" line="2194"/>
+        <source>PAL (50 Hz)</source>
         <comment>ForceVideoTiming</comment>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="2222"/>
+        <location filename="../../core/settings.cpp" line="2226"/>
         <source>Nearest-Neighbor</source>
         <comment>DisplayScalingMode</comment>
         <translation>Nearest-Neighbor</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="2223"/>
+        <location filename="../../core/settings.cpp" line="2227"/>
         <source>Nearest-Neighbor (Integer)</source>
         <comment>DisplayScalingMode</comment>
         <translation>Nearest-Neighbor (integro)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="2224"/>
+        <location filename="../../core/settings.cpp" line="2228"/>
         <source>Bilinear (Smooth)</source>
         <comment>DisplayScalingMode</comment>
         <translation>Bilinear (suave)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="2225"/>
+        <location filename="../../core/settings.cpp" line="2229"/>
         <source>Bilinear (Hybrid)</source>
         <comment>DisplayScalingMode</comment>
         <translation>Bilinear (híbrido)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="2226"/>
+        <location filename="../../core/settings.cpp" line="2230"/>
         <source>Bilinear (Sharp)</source>
         <comment>DisplayScalingMode</comment>
         <translation>Bilinear (forte)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="2227"/>
+        <location filename="../../core/settings.cpp" line="2231"/>
         <source>Bilinear (Integer)</source>
         <comment>DisplayScalingMode</comment>
         <translation>Bilinear (inteiro)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="2228"/>
+        <location filename="../../core/settings.cpp" line="2232"/>
         <source>Lanczos (Sharp)</source>
         <comment>DisplayScalingMode</comment>
         <translation>Lanczos (Nítido)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="2262"/>
+        <location filename="../../core/settings.cpp" line="2266"/>
         <source>Automatic</source>
         <comment>DisplayExclusiveFullscreenControl</comment>
         <translation>Automático</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="2263"/>
+        <location filename="../../core/settings.cpp" line="2267"/>
         <source>Disallowed</source>
         <comment>DisplayExclusiveFullscreenControl</comment>
         <translation>Não permitido</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="2264"/>
+        <location filename="../../core/settings.cpp" line="2268"/>
         <source>Allowed</source>
         <comment>DisplayExclusiveFullscreenControl</comment>
         <translation>Permitido</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="2299"/>
+        <location filename="../../core/settings.cpp" line="2303"/>
         <source>Screen Resolution</source>
         <comment>DisplayScreenshotMode</comment>
         <translation>Resolução da tela</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="2300"/>
+        <location filename="../../core/settings.cpp" line="2304"/>
         <source>Internal Resolution</source>
         <comment>DisplayScreenshotMode</comment>
         <translation>Resolução interna</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="2301"/>
+        <location filename="../../core/settings.cpp" line="2305"/>
         <source>Internal Resolution (Aspect Uncorrected)</source>
         <comment>DisplayScreenshotMode</comment>
         <translation>Resolução interna (aspecto não corrigido)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="2335"/>
+        <location filename="../../core/settings.cpp" line="2339"/>
         <source>PNG</source>
         <comment>DisplayScreenshotFormat</comment>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="2336"/>
+        <location filename="../../core/settings.cpp" line="2340"/>
         <source>JPEG</source>
         <comment>DisplayScreenshotFormat</comment>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="2337"/>
+        <location filename="../../core/settings.cpp" line="2341"/>
         <source>WebP</source>
         <comment>DisplayScreenshotFormat</comment>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="2398"/>
+        <location filename="../../core/settings.cpp" line="2402"/>
         <source>Timestamp</source>
         <comment>CaptureFileNameFormat</comment>
         <translation>Data/hora</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="2399"/>
+        <location filename="../../core/settings.cpp" line="2403"/>
         <source>Game and Timestamp</source>
         <comment>CaptureFileNameFormat</comment>
         <translation>Data/hora Jogo</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="2400"/>
+        <location filename="../../core/settings.cpp" line="2404"/>
         <source>Timestamp in Game Folder</source>
         <comment>CaptureFileNameFormat</comment>
         <translation>Data/hora Pasta do jogo</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="2401"/>
+        <location filename="../../core/settings.cpp" line="2405"/>
         <source>Game and Timestamp in Game Folder</source>
         <comment>CaptureFileNameFormat</comment>
         <translation>Jogo e data/hora na pasta do jogo</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="2445"/>
+        <location filename="../../core/settings.cpp" line="2449"/>
         <source>Top Left</source>
         <comment>NotificationLocation</comment>
         <translation>Canto superior esquerdo</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="2446"/>
+        <location filename="../../core/settings.cpp" line="2450"/>
         <source>Top Center</source>
         <comment>NotificationLocation</comment>
         <translation>Centro superior</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="2447"/>
+        <location filename="../../core/settings.cpp" line="2451"/>
         <source>Top Right</source>
         <comment>NotificationLocation</comment>
         <translation>Canto superior direito</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="2448"/>
+        <location filename="../../core/settings.cpp" line="2452"/>
         <source>Bottom Left</source>
         <comment>NotificationLocation</comment>
         <translation>Canto inferior esquerdo</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="2449"/>
+        <location filename="../../core/settings.cpp" line="2453"/>
         <source>Bottom Center</source>
         <comment>NotificationLocation</comment>
         <translation>Centro inferior</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="2450"/>
+        <location filename="../../core/settings.cpp" line="2454"/>
         <source>Bottom Right</source>
         <comment>NotificationLocation</comment>
         <translation>Canto inferior direito</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="2488"/>
+        <location filename="../../core/settings.cpp" line="2492"/>
         <source>Disabled</source>
         <comment>AchievementChallengeIndicatorMode</comment>
         <translation>Desativado</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="2489"/>
+        <location filename="../../core/settings.cpp" line="2493"/>
         <source>Show Persistent Icons</source>
         <comment>AchievementChallengeIndicatorMode</comment>
         <translation>Mostrar ícones permanentes</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="2490"/>
+        <location filename="../../core/settings.cpp" line="2494"/>
         <source>Show Temporary Icons</source>
         <comment>AchievementChallengeIndicatorMode</comment>
         <translation>Mostrar ícones temporários</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="2491"/>
+        <location filename="../../core/settings.cpp" line="2495"/>
         <source>Show Notifications</source>
         <comment>AchievementChallengeIndicatorMode</comment>
         <translation>Mostrar notificações</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="2530"/>
+        <location filename="../../core/settings.cpp" line="2534"/>
         <source>Disabled</source>
         <comment>AchievementProgressIndicatorMode</comment>
         <translation>Desativado</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="2531"/>
+        <location filename="../../core/settings.cpp" line="2535"/>
         <source>Show Icon</source>
         <comment>AchievementProgressIndicatorMode</comment>
         <translation>Mostrar ícone</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="2532"/>
+        <location filename="../../core/settings.cpp" line="2536"/>
         <source>Show Icon and Title</source>
         <comment>AchievementProgressIndicatorMode</comment>
         <translation>Modo do indicador de progresso de conquistas</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="2567"/>
+        <location filename="../../core/settings.cpp" line="2571"/>
         <source>No Memory Card</source>
         <comment>MemoryCardType</comment>
         <translation>Sem cartão de memória</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="2568"/>
+        <location filename="../../core/settings.cpp" line="2572"/>
         <source>Shared Between All Games</source>
         <comment>MemoryCardType</comment>
         <translation>Compartilhada entre jogos</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="2569"/>
+        <location filename="../../core/settings.cpp" line="2573"/>
         <source>Separate Card Per Game (Serial)</source>
         <comment>MemoryCardType</comment>
         <translation>Cartão separado por jogo (Serial)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="2570"/>
+        <location filename="../../core/settings.cpp" line="2574"/>
         <source>Separate Card Per Game (Title)</source>
         <comment>MemoryCardType</comment>
         <translation>Cartão separado por jogo (título)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="2571"/>
+        <location filename="../../core/settings.cpp" line="2575"/>
         <source>Separate Card Per Game (File Title)</source>
         <comment>MemoryCardType</comment>
         <translation>Separar cartão por jogo (título do arquivo)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="2572"/>
+        <location filename="../../core/settings.cpp" line="2576"/>
         <source>Non-Persistent Card (Do Not Save)</source>
         <comment>MemoryCardType</comment>
         <translation>Cartão não persistente (não salvar)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="2631"/>
+        <location filename="../../core/settings.cpp" line="2645"/>
         <source>Disabled</source>
         <comment>MultitapMode</comment>
         <translation>Desligado</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="2632"/>
+        <location filename="../../core/settings.cpp" line="2646"/>
         <source>Enable on Port 1 Only</source>
         <comment>MultitapMode</comment>
         <translation>Ativar somente na porta 1</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="2633"/>
+        <location filename="../../core/settings.cpp" line="2647"/>
         <source>Enable on Port 2 Only</source>
         <comment>MultitapMode</comment>
         <translation>Ativar somente na porta 2</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="2634"/>
+        <location filename="../../core/settings.cpp" line="2648"/>
         <source>Enable on Ports 1 and 2</source>
         <comment>MultitapMode</comment>
         <translation>Ativar nas portas 1 e 2</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="2698"/>
+        <location filename="../../core/settings.cpp" line="2712"/>
         <source>Uncompressed</source>
         <comment>SaveStateCompressionMode</comment>
         <translation>Não comprimido</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="2699"/>
+        <location filename="../../core/settings.cpp" line="2713"/>
         <source>Deflate (Low)</source>
         <comment>SaveStateCompressionMode</comment>
         <translation>Compressão (baixa)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="2700"/>
+        <location filename="../../core/settings.cpp" line="2714"/>
         <source>Deflate (Default)</source>
         <comment>SaveStateCompressionMode</comment>
         <translation>Diminuto (Padrão)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="2701"/>
+        <location filename="../../core/settings.cpp" line="2715"/>
         <source>Deflate (High)</source>
         <comment>SaveStateCompressionMode</comment>
         <translation>Compressão (alta)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="2702"/>
+        <location filename="../../core/settings.cpp" line="2716"/>
         <source>Zstandard (Low)</source>
         <comment>SaveStateCompressionMode</comment>
         <translation>Zstandard (baixo)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="2703"/>
+        <location filename="../../core/settings.cpp" line="2717"/>
         <source>Zstandard (Default)</source>
         <comment>SaveStateCompressionMode</comment>
         <translation>Zstandard (Padrão)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="2704"/>
+        <location filename="../../core/settings.cpp" line="2718"/>
         <source>Zstandard (High)</source>
         <comment>SaveStateCompressionMode</comment>
         <translation>Zstandard (Alta)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="2705"/>
+        <location filename="../../core/settings.cpp" line="2719"/>
         <source>XZ (Low)</source>
         <comment>SaveStateCompressionMode</comment>
         <translation>XZ (baixa)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="2706"/>
+        <location filename="../../core/settings.cpp" line="2720"/>
         <source>XZ (Default)</source>
         <comment>SaveStateCompressionMode</comment>
         <translation>XZ (padrão)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="2707"/>
+        <location filename="../../core/settings.cpp" line="2721"/>
         <source>XZ (High)</source>
         <comment>SaveStateCompressionMode</comment>
         <translation>XZ (alta)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="2743"/>
+        <location filename="../../core/settings.cpp" line="2757"/>
         <source>None</source>
         <comment>PIODeviceType</comment>
         <translation>Nenhum</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="2744"/>
+        <location filename="../../core/settings.cpp" line="2758"/>
         <source>Xplorer/Xploder Cartridge</source>
         <comment>PIODeviceType</comment>
         <translation>Cartucho Xplorer/Xploder</translation>
@@ -26752,9 +27122,9 @@ Deseja criar esse diretório?</translation>
     <message>
         <location filename="../settingswindow.ui" line="20"/>
         <location filename="../settingswindow.cpp" line="349"/>
-        <location filename="../settingswindow.cpp" line="366"/>
-        <location filename="../settingswindow.cpp" line="376"/>
-        <location filename="../settingswindow.cpp" line="388"/>
+        <location filename="../settingswindow.cpp" line="367"/>
+        <location filename="../settingswindow.cpp" line="377"/>
+        <location filename="../settingswindow.cpp" line="389"/>
         <source>DuckStation Settings</source>
         <translation>Configurações</translation>
     </message>
@@ -27017,12 +27387,12 @@ Todos os valores de configuração atuais serão substituídos.
 Deseja continuar?</translation>
     </message>
     <message>
-        <location filename="../settingswindow.cpp" line="367"/>
+        <location filename="../settingswindow.cpp" line="368"/>
         <source>Per-game configuration copied from global settings.</source>
         <translation>Configuração individual copiada das configurações globais.</translation>
     </message>
     <message>
-        <location filename="../settingswindow.cpp" line="377"/>
+        <location filename="../settingswindow.cpp" line="378"/>
         <source>The configuration for this game will be cleared.
 
 Any current setting values will be lost.
@@ -27035,17 +27405,17 @@ Todos os valores de configuração atuais serão perdidos.
 Deseja continuar?</translation>
     </message>
     <message>
-        <location filename="../settingswindow.cpp" line="389"/>
+        <location filename="../settingswindow.cpp" line="390"/>
         <source>Per-game configuration cleared.</source>
         <translation>Configuração individual apagada.</translation>
     </message>
     <message>
-        <location filename="../settingswindow.cpp" line="412"/>
+        <location filename="../settingswindow.cpp" line="417"/>
         <source>Recommended Value</source>
         <translation>Recomendado</translation>
     </message>
     <message>
-        <location filename="../settingswindow.cpp" line="707"/>
+        <location filename="../settingswindow.cpp" line="713"/>
         <source>%1 [%2]</source>
         <translation>%1 [%2]</translation>
     </message>
@@ -27098,57 +27468,56 @@ Deseja continuar?</translation>
         <translation>Habilitar atualizações automáticas</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.ui" line="317"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DuckStation requires a PS1 or PS2 BIOS in order to run.&lt;/p&gt;&lt;p&gt;For legal reasons, you must obtain a BIOS &lt;span style=&quot; font-weight:700;&quot;&gt;from an actual PS1 unit that you own&lt;/span&gt; (borrowing doesn&apos;t count). You should use Caetla or another utility to create an image from your console&apos;s BIOS ROM on your PC.&lt;/p&gt;&lt;p&gt;Once dumped, this BIOS image should be placed in the bios folder within the data directory shown below, or you can instruct DuckStation to scan an alternative directory.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;O DuckStation exige um BIOS de PS1 ou PS2 para executar jogos.&lt;/p&gt;&lt;p&gt;Por motivos legais, é necessário obter um BIOS &lt;span style=&quot; font-weight:700;&quot;&gt;de uma unidade PS1 real que você possua&lt;/span&gt; (empréstimos não contam). Use o Caetla ou outro utilitário para criar uma imagem da ROM do BIOS do console no PC.&lt;/p&gt;&lt;p&gt; Após o despejo, essa imagem BIOS deve ser colocada na pasta bios dentro do diretório de dados mostrado abaixo, ou você pode instruir o DuckStation a verificar um diretório alternativo.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation type="vanished">&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;O DuckStation exige um BIOS de PS1 ou PS2 para executar jogos.&lt;/p&gt;&lt;p&gt;Por motivos legais, é necessário obter um BIOS &lt;span style=&quot; font-weight:700;&quot;&gt;de uma unidade PS1 real que você possua&lt;/span&gt; (empréstimos não contam). Use o Caetla ou outro utilitário para criar uma imagem da ROM do BIOS do console no PC.&lt;/p&gt;&lt;p&gt; Após o despejo, essa imagem BIOS deve ser colocada na pasta bios dentro do diretório de dados mostrado abaixo, ou você pode instruir o DuckStation a verificar um diretório alternativo.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.ui" line="332"/>
+        <location filename="../setupwizarddialog.ui" line="361"/>
         <source>BIOS Directory:</source>
         <translation>Diretório do BIOS:</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.ui" line="342"/>
+        <location filename="../setupwizarddialog.ui" line="371"/>
         <source>Browse...</source>
         <translation>Buscar...</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.ui" line="353"/>
+        <location filename="../setupwizarddialog.ui" line="382"/>
         <source>Reset</source>
         <translation>Redefinir</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.ui" line="368"/>
+        <location filename="../setupwizarddialog.ui" line="397"/>
         <source>NTSC-J (Japan):</source>
         <translation>NTSC-J (Japão):</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.ui" line="385"/>
+        <location filename="../setupwizarddialog.ui" line="414"/>
         <source>NTSC-U/C (US/Canada):</source>
         <translation>NTSC-U/C (EUA, Canadá):</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.ui" line="402"/>
+        <location filename="../setupwizarddialog.ui" line="431"/>
         <source>PAL (Europe, Australia):</source>
         <translation>PAL (Europa, Austrália):</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.ui" line="436"/>
+        <location filename="../setupwizarddialog.ui" line="465"/>
         <source>Open in Explorer...</source>
         <translation>Abrir pasta...</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.ui" line="447"/>
+        <location filename="../setupwizarddialog.ui" line="476"/>
         <source>Refresh List</source>
         <translation>Atualizar lista</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.ui" line="1133"/>
+        <location filename="../setupwizarddialog.ui" line="1165"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DuckStation supports earning achievements and leaderboard tracking with RetroAchievements.&lt;/p&gt;&lt;p&gt;If you have a RetroAchievements account, you can use the form below to log in. If not, you can register by clicking the Register button below.&lt;/p&gt;&lt;p&gt;A RetroAchievements account is &lt;span style=&quot; font-weight:700;&quot;&gt;not&lt;/span&gt; required to use DuckStation.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DuckStation oferece suporte à obtenção de conquistas e ao acompanhamento de placares por meio do RetroAchievements.&lt;/p&gt;&lt;p&gt;Se você possui uma conta no site RetroAchievements, pode usar o formulário abaixo para fazer login. Caso contrário, você pode criar uma conta clicando no botão registrar abaixo.&lt;/p&gt;&lt;p&gt;Uma conta no RetroAchievements &lt;span style=&quot; font-weight:700;&quot;&gt;não é&lt;/span&gt; necessária para usar o DuckStation.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.ui" line="1181"/>
+        <location filename="../setupwizarddialog.ui" line="1213"/>
         <source>Register</source>
         <translation>Registrador</translation>
     </message>
@@ -27157,18 +27526,18 @@ Deseja continuar?</translation>
         <translation type="vanished">&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DuckStation irá verificar e identificar automaticamente os jogos dos diretórios escolhidos abaixo preenchendo a lista de jogos. Esses jogos devem ser retirados dos discos que você possui. Programas como ImgBurn podem ser usados ​​para criar imagens de discos de jogos no formato .bin/.cue.&lt;/p&gt;&lt;p&gt;Os formatos suportados para dumps são: &lt;span style=&quot; font-weight:700;&quot;&gt;.cue&lt;/span&gt; (Cue Sheets), &lt;span style=&quot; font-weight:700;&quot;&gt;.iso/.img&lt;/span&gt; (Imagem de faixa única), &lt;span style=&quot; font-weight:700;&quot;&gt;.ecm&lt;/span&gt; (Error Code Modeling Image), &lt;span style=&quot; font-weight:700;&quot;&gt;.mds&lt;/span&gt; (Media Descriptor Sidecar), &lt;span style=&quot; font-weight:700;&quot;&gt;.chd&lt;/span&gt; (Compressed Hunks of Data), &lt;span style=&quot; font-weight:700;&quot;&gt;.pbp&lt;/span&gt; (PlayStation Portátil, Apenas descriptografado).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.ui" line="504"/>
+        <location filename="../setupwizarddialog.ui" line="536"/>
         <source>Search Directories (will be scanned for games)</source>
         <translation>Examinar diretórios (serão examinados por jogos)</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.ui" line="530"/>
+        <location filename="../setupwizarddialog.ui" line="562"/>
         <source>Add...</source>
         <translation>Adicionar...</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.ui" line="547"/>
-        <location filename="../setupwizarddialog.cpp" line="276"/>
+        <location filename="../setupwizarddialog.ui" line="579"/>
+        <location filename="../setupwizarddialog.cpp" line="307"/>
         <source>Remove</source>
         <translation>Remover</translation>
     </message>
@@ -27185,46 +27554,46 @@ Deseja continuar?</translation>
         <translation type="vanished">&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Por padrão, o DuckStation mapeará seu teclado como um controle.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Para usar um dispositivo externo, você deve mapeá-lo primeiro. &lt;/span&gt;Nesta tela, você pode mapear automaticamente qualquer controle que esteja conectado no momento. Se o seu controle não estiver conectado no momento, pode conectá-lo agora.&lt;/p&gt;&lt;p&gt;Para alterar as atribuições do controle ou usar a função multitap, abra o menu Configurações e escolha Controle depois de concluir o assistente de configuração. .&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.ui" line="614"/>
+        <location filename="../setupwizarddialog.ui" line="646"/>
         <source>Controller Port 1</source>
         <translation>Porta do controle 1</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.ui" line="630"/>
-        <location filename="../setupwizarddialog.ui" line="691"/>
+        <location filename="../setupwizarddialog.ui" line="662"/>
+        <location filename="../setupwizarddialog.ui" line="723"/>
         <source>Controller Mapped To:</source>
         <translation>Controle mapeado para:</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.ui" line="620"/>
-        <location filename="../setupwizarddialog.ui" line="681"/>
+        <location filename="../setupwizarddialog.ui" line="652"/>
+        <location filename="../setupwizarddialog.ui" line="713"/>
         <source>Controller Type:</source>
         <translation>Tipo de controle:</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.ui" line="489"/>
+        <location filename="../setupwizarddialog.ui" line="521"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DuckStation will automatically scan and identify games from the selected directories below, and populate the game list. These games should be dumped from discs you own. Utilities such as ImgBurn can be used to create images of game discs in .bin/.cue format.&lt;/p&gt;&lt;p&gt;Supported formats for dumps include: %1&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;O DuckStation verificará e identificará automaticamente os jogos nos diretórios selecionados abaixo e preencherá a lista de jogos. Esses jogos devem ter sido extraídos de discos que você possui. Utilitários como o ImgBurn podem ser usados para criar imagens de discos de jogos nos formatos .bin/.cue.&lt;/p&gt;&lt;p&gt;Os formatos de extração compatíveis incluem: %1&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.ui" line="604"/>
+        <location filename="../setupwizarddialog.ui" line="636"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;By default, DuckStation will map your keyboard to the virtual controller. &lt;span style=&quot; font-weight:700;&quot;&gt;To use an external controller, you must map it first. &lt;/span&gt;On this screen, you can automatically map any controller which is currently connected. If your controller is not currently connected, you can plug it in now.&lt;/p&gt;&lt;p&gt;To change controller bindings in more detail, or use multi-tap, open the Settings menu and choose Controllers once you have completed the Setup Wizard.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Por padrão, o DuckStation mapeará o teclado para o controle virtual. &lt;span style=&quot; font-weight:700;&quot;&gt;Para usar um controle externo, você deve mapeá-lo primeiro.&lt;/span&gt; Nesta tela, você pode mapear automaticamente qualquer controle conectado no momento. Se o seu controle ainda não estiver conectado, você pode conectá-lo agora.&lt;/p&gt;&lt;p&gt;Para alterar as atribuições dos botões do controle com mais detalhes ou usar multitap, abra o menu configurações e escolha controles após concluir o assistente de configuração.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.ui" line="639"/>
-        <location filename="../setupwizarddialog.ui" line="700"/>
+        <location filename="../setupwizarddialog.ui" line="671"/>
+        <location filename="../setupwizarddialog.ui" line="732"/>
         <source>Default (Keyboard)</source>
         <translation>Padrão (teclado)</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.ui" line="659"/>
-        <location filename="../setupwizarddialog.ui" line="720"/>
+        <location filename="../setupwizarddialog.ui" line="691"/>
+        <location filename="../setupwizarddialog.ui" line="752"/>
         <source>Automatic Mapping</source>
         <translation>Mapeamento automático</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.ui" line="675"/>
+        <location filename="../setupwizarddialog.ui" line="707"/>
         <source>Controller Port 2</source>
         <translation>Porta do controle 2</translation>
     </message>
@@ -27241,122 +27610,137 @@ Deseja continuar?</translation>
         <translation type="vanished">Seleciona o backend a ser usado para renderizar os visuais do console/jogo.</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.ui" line="864"/>
+        <location filename="../setupwizarddialog.ui" line="896"/>
         <source>Internal Resolution:</source>
         <translation>Resolução interna:</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.ui" line="892"/>
+        <location filename="../setupwizarddialog.ui" line="924"/>
         <source>Setting this beyond 1x will enhance the resolution of rendered 3D polygons and lines. Only applies to the hardware backends. &lt;br&gt;This option is usually safe, with most games looking fine at higher resolutions. Higher resolutions require a more powerful GPU.</source>
         <translation>Aumentar a resolução para mais de 1x aumentará a resolução dos polígonos e linhas em jogos 3D. Só é utilizável quando usado com placas de vídeo dedicadas. Geralmente é seguro ativar esta opção deixando assim a maior parte dos jogos com visual muito melhor em resoluções mais altas porém utiliza mais da sua placa de vídeo.</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.ui" line="899"/>
+        <location filename="../setupwizarddialog.ui" line="931"/>
         <source>Texture Filtering:</source>
         <translation>Filtro de textura:</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.ui" line="906"/>
+        <location filename="../setupwizarddialog.ui" line="938"/>
         <source>Smooths out the blockiness of magnified textures on 3D objects by using filtering. &lt;br&gt;Will have a greater effect on higher resolution scales.</source>
         <translation>Suaviza artefatos de texturas ampliadas em objetos 2D. Esse filtro se aplica somente a sprites e outros elementos 2D, como o HUD (elementos exibidos em tela).</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.ui" line="913"/>
+        <location filename="../setupwizarddialog.ui" line="945"/>
         <source>Sprite Texture Filtering:</source>
         <translation>Filtro de textura em sprites:</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.ui" line="920"/>
+        <location filename="../setupwizarddialog.ui" line="952"/>
         <source>Smooths out the blockiness of magnified textures on 2D objects by using filtering. This filter only applies to sprites and other 2D elements, such as the HUD.</source>
         <translation>Suaviza artefatos de texturas ampliadas em objetos 2D. Esse filtro se aplica somente a sprites e outros elementos 2D, como o HUD (elementos exibidos em tela).</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.ui" line="941"/>
+        <location filename="../setupwizarddialog.ui" line="973"/>
         <source>Aspect Ratio:</source>
         <translation>Proporção:</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.ui" line="950"/>
+        <location filename="../setupwizarddialog.ui" line="982"/>
         <source>Changes the aspect ratio used to display the console&apos;s output to the screen. The default is Auto (Game Native) which automatically adjusts the aspect ratio to match how a game would be shown on a typical TV of the era.</source>
         <translation>Altera a proporção de aspecto exibida na tela. O padrão é automático (resolução nativa), que se ajusta a proporção da imagem para como o jogo seria em uma TV típica da época.</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.ui" line="967"/>
+        <location filename="../setupwizarddialog.ui" line="999"/>
         <source>:</source>
         <translation>:</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.ui" line="986"/>
+        <location filename="../setupwizarddialog.ui" line="1018"/>
         <source>Crop:</source>
         <translation>Corte:</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.ui" line="993"/>
+        <location filename="../setupwizarddialog.ui" line="1025"/>
         <source>Determines how much of the area typically not visible on a consumer TV set to crop/hide. Some games display content in the overscan area, or use it for screen effects. May not display correctly with the &quot;All Borders&quot; setting. &quot;Only Overscan&quot; offers a good compromise between stability and hiding black borders.</source>
         <translation>Determina quanto da área normalmente não visível em um aparelho de TV deve ser cortada/oculta. Alguns jogos exibem conteúdo na área de sangria  ou a utilizam para efeitos posteriores de carregamento de tela. Pode não ser exibido corretamente com a configuração (Todas as bordas &quot;Somente área renderizada)&quot; oferece um bom resultado entre estabilidade quando preciso ocultar as bordas pretas.</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.ui" line="1000"/>
+        <location filename="../setupwizarddialog.ui" line="1032"/>
         <source>Scaling:</source>
         <translation>Dimensionamento:</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.ui" line="1007"/>
+        <location filename="../setupwizarddialog.ui" line="1039"/>
         <source>Determines how the emulated console&apos;s output is upscaled or downscaled to your monitor&apos;s resolution.</source>
         <translation>Determina como a imagem do console emulado é aumentada ou reduzida de acordo com a resolução do seu monitor.</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.ui" line="1036"/>
+        <location filename="../setupwizarddialog.ui" line="1068"/>
         <source>Scales vertex positions in screen-space to a widescreen aspect ratio, essentially increasing the field of view from 4:3 to the chosen display aspect ratio in 3D games. &lt;b&gt;&lt;u&gt;May not be compatible with all games.&lt;/u&gt;&lt;/b&gt;</source>
         <translation>Dimensiona as posições dos vértices no espaço da tela para uma proporção de tela panorâmica (widescreen), essencialmente aumentando o campo de visão de 4:3 para a proporção de tela escolhida em jogos 3D. &lt;b&gt;&lt;u&gt;Pode não ser compatível com todos os jogos.</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.ui" line="1039"/>
+        <location filename="../setupwizarddialog.ui" line="1071"/>
         <source>Widescreen Rendering</source>
         <translation>Renderização em tela panorâmica</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.ui" line="1026"/>
+        <location filename="../setupwizarddialog.ui" line="1058"/>
         <source>Reduces &quot;wobbly&quot; polygons and &quot;warping&quot; textures that are common in PS1 games. &lt;strong&gt;May not be compatible with all games.&lt;/strong&gt;</source>
         <translation>Reduz os polígonos &quot;instáveis&quot; e as texturas &quot;deformadas&quot; comuns nos jogos de PS1. &lt;strong&gt;Pode não ser compatível com todos os jogos&lt;/strong&gt;</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.ui" line="1029"/>
+        <location filename="../setupwizarddialog.ui" line="1061"/>
         <source>PGXP Geometry Correction</source>
         <translation>PGXP correção geométrica</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.ui" line="927"/>
+        <location filename="../setupwizarddialog.ui" line="959"/>
         <source>Dithering:</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.ui" line="736"/>
+        <location filename="../setupwizarddialog.ui" line="317"/>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DuckStation requires a PS1 or PS2 BIOS in order to run.&lt;/p&gt;&lt;p&gt;For legal reasons, you must obtain a BIOS &lt;span style=&quot; font-weight:700;&quot;&gt;from an actual PS1/PS2 unit that you own&lt;/span&gt; (borrowing doesn&apos;t count). You should use Caetla or another utility to create an image from your console&apos;s BIOS ROM on your PC.&lt;/p&gt;&lt;p&gt;Once you have dumped the BIOS from your console, you can click the &amp;quot;Install BIOS&amp;quot; button below to add this image to DuckStation.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;O DuckStation exige um arquivo de BIOS de PS1 ou PS2 para funcionar.&lt;/p&gt;&lt;p&gt;Por motivos legais, você deve obter o BIOS &lt;span style=&quot; font-weight:700;&quot;&gt;de um console PS1/PS2 que seja de sua propriedade&lt;/span&gt; (emprestar não conta). Você deve usar o Caetla ou outro utilitário para criar uma imagem da ROM do BIOS do seu console no PC.&lt;/p&gt;&lt;p&gt;Depois de extrair o BIOS do seu console, você pode clicar no botão &amp;quot;Instalar BIOS&amp;quot; abaixo para adicionar essa imagem ao DuckStation.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+    </message>
+    <message>
+        <location filename="../setupwizarddialog.ui" line="339"/>
+        <source>Install BIOS...</source>
+        <translation>Instalar BIOS...</translation>
+    </message>
+    <message>
+        <location filename="../setupwizarddialog.ui" line="353"/>
+        <source>Advanced Settings</source>
+        <translation>Configurações avançadas</translation>
+    </message>
+    <message>
+        <location filename="../setupwizarddialog.ui" line="768"/>
         <source>Pause Menu Hotkey</source>
         <translation>Tecla de atalho do menu de pausa</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.ui" line="742"/>
+        <location filename="../setupwizarddialog.ui" line="774"/>
         <source>Pressing this key will open the pause menu when ingame, allowing you to load/save state, change settings, and perform other functions without needing to use a mouse. Click the button to change the trigger.</source>
         <translation>Pressionar esta tecla abrirá o menu de pausa durante o jogo, permitindo carregar/salvar estados, alterar configurações e executar outras funções sem precisar usar o mouse. Clique no botão para alterar a tecla de ativação.</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.ui" line="823"/>
+        <location filename="../setupwizarddialog.ui" line="855"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This page includes some of the commonly set graphics options in DuckStation.&lt;/p&gt;&lt;p&gt;These options are generally safe to enable, and compatible with most games. Changing the internal resolution and enabling PGXP geometry correction will significantly improve the graphical fidelity of most games.&lt;/p&gt;&lt;p&gt;You can change these options and others in &lt;span style=&quot; font-weight:700;&quot;&gt;Graphics Settings &lt;/span&gt;after completing setup.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Esta página inclui algumas das opções gráficas mais utilizadas no DuckStation.&lt;/p&gt;&lt;p&gt;Essas opções geralmente são seguras para ativar e compatíveis com a maioria dos jogos. Alterar a resolução interna e ativar a correção de geometria PGXP melhorará significativamente a qualidade gráfica da maioria dos jogos.&lt;/p&gt;&lt;p&gt;Você poderá alterar essas e outras opções em &lt;span style=&quot; font-weight:700;&quot;&gt;Configurações gráficas&lt;/span&gt; após concluir a configuração.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;.</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.ui" line="934"/>
+        <location filename="../setupwizarddialog.ui" line="966"/>
         <source>Controls how dithering is applied in the emulated GPU. True Color disables dithering and produces the nicest looking gradients. Scaled options make the dither pattern less noticeable at higher resolutions. Shader Blending options perform blending in software, and are more accurate but have a &lt;strong&gt;significant&lt;/strong&gt; performance penalty.</source>
         <translation>Controla como o pontilhamento na imagem é aplicado na GPU emulada. A opção Cores reais desativa o pontilhamento e produz os gradientes de aparência mais agradável. As opções em escala tornam o padrão de pontilhamento menos perceptível em resoluções mais altas. As opções Mistura e Sombreamento realizam a mistura no software e são mais precisas, mas têm uma penalidade de desempenho significativa.</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.ui" line="1014"/>
+        <location filename="../setupwizarddialog.ui" line="1046"/>
         <source>FMV Scaling:</source>
         <translation>Escalonamento FMV:</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.ui" line="1121"/>
+        <location filename="../setupwizarddialog.ui" line="1153"/>
         <source>RetroAchievements</source>
         <comment>Header text</comment>
         <translation>Retroachievements</translation>
@@ -27366,17 +27750,17 @@ Deseja continuar?</translation>
         <translation type="vanished">&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;O DuckStation oferece suporte para obtenção de conquistas e rastreamento de tabelas de classificação com RetroAchievements.&lt;/p&gt;&lt;p&gt;Se você tem uma conta no RetroAchievements, você pode usar o formulário abaixo para se conectar. Se não, você pode registrar-se em &lt;a href=&quot;https://retroachievements.org/createaccount.php&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#99ebff;&quot;&gt;https://retroachievements.org/createaccount.php&lt;/span&gt;&lt;/a&gt;.&lt;/p&gt;&lt;p&gt;Não é preciso uma conta no RetroAchievements &lt;span style=&quot; font-weight:700;&quot;&gt;para usar&lt;/span&gt; o DuckStation.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.ui" line="1228"/>
+        <location filename="../setupwizarddialog.ui" line="1260"/>
         <source>Settings</source>
         <translation>Configurações</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.ui" line="1234"/>
+        <location filename="../setupwizarddialog.ui" line="1266"/>
         <source>Enable Achievements</source>
         <translation>Ativar conquistas</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.ui" line="1241"/>
+        <location filename="../setupwizarddialog.ui" line="1273"/>
         <source>Enable Hardcore Mode</source>
         <translation>Ativar modo hardcore</translation>
     </message>
@@ -27391,17 +27775,17 @@ Login token generated at:</source>
 Token de login gerado em:</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.ui" line="1192"/>
+        <location filename="../setupwizarddialog.ui" line="1224"/>
         <source>View Profile...</source>
         <translation>Ver perfil...</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.ui" line="1203"/>
+        <location filename="../setupwizarddialog.ui" line="1235"/>
         <source>Login...</source>
         <translation>Entrar...</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.ui" line="1283"/>
+        <location filename="../setupwizarddialog.ui" line="1315"/>
         <source>Choose the interface DuckStation should show when it starts. Desktop Mode is designed for mouse and keyboard use, while Big Picture Mode is optimized for navigation with a controller on a TV.
 
 You can change this at a later time by toggling the &quot;Start In Big Picture Mode&quot; setting in Interface Settings.</source>
@@ -27410,34 +27794,34 @@ You can change this at a later time by toggling the &quot;Start In Big Picture M
 Você pode alterar essa configuração posteriormente, ativando ou desativando a opção “Iniciar no modo Big Picture” nas configurações de interface.</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.ui" line="1303"/>
+        <location filename="../setupwizarddialog.ui" line="1335"/>
         <source>Desktop Mode</source>
         <translation>Modo desktop</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.ui" line="1323"/>
+        <location filename="../setupwizarddialog.ui" line="1355"/>
         <source>Big Picture Mode</source>
         <translation>Modo big picture</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.ui" line="1377"/>
+        <location filename="../setupwizarddialog.ui" line="1409"/>
         <source>Choose how games should initially be displayed in both Desktop and Big Picture Mode. List View shows detailed information in columns, while Grid View shows game cover art.
 
 You can change this option at a later time by using the toolbar in Desktop Mode or shortcuts in Big Picture Mode.</source>
         <translation>Escolha como os jogos serão exibidos inicialmente nos modos Área de Trabalho e Big Picture. A Visualização em Lista exibe informações detalhadas em colunas, enquanto a Visualização em Grade exibe as capas dos jogos.</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.ui" line="1397"/>
+        <location filename="../setupwizarddialog.ui" line="1429"/>
         <source>List View</source>
         <translation>Visualização em lista</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.ui" line="1417"/>
+        <location filename="../setupwizarddialog.ui" line="1449"/>
         <source>Grid View</source>
         <translation>Visualização em grade</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.ui" line="1468"/>
+        <location filename="../setupwizarddialog.ui" line="1500"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;h1 style=&quot; margin-top:18px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:xx-large; font-weight:700;&quot;&gt;Setup Complete!&lt;/span&gt;&lt;/h1&gt;&lt;p&gt;You are now ready to run games.&lt;/p&gt;&lt;p&gt;Further options are available under the settings menu. You can also use the Big Picture UI for navigation entirely with a gamepad.&lt;/p&gt;&lt;p&gt;We hope you enjoy using DuckStation.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;h1 style=&quot; margin-top:18px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:xx-large; font-weight:700;&quot;&gt;Configuração concluída!&lt;/span&gt;&lt;/h1&gt;&lt;p&gt;Agora você está pronto para rodar os jogos.&lt;/p&gt;&lt;p&gt;Outras opções estão disponíveis no menu de configurações. Você também pode usar o modo Tela grande para navegar diretamente pelo controle.&lt;/p&gt;&lt;p&gt;Esperamos que você goste de usar o DuckStation.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
@@ -27473,7 +27857,7 @@ You can change this option at a later time by using the toolbar in Desktop Mode 
     </message>
     <message>
         <location filename="../setupwizarddialog.ui" line="190"/>
-        <location filename="../setupwizarddialog.cpp" line="138"/>
+        <location filename="../setupwizarddialog.cpp" line="139"/>
         <source>&amp;Next</source>
         <translation>&amp;Próximo</translation>
     </message>
@@ -27487,12 +27871,12 @@ You can change this option at a later time by using the toolbar in Desktop Mode 
         <translation type="vanished">Alerta</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.cpp" line="58"/>
+        <location filename="../setupwizarddialog.cpp" line="59"/>
         <source>No BIOS Image Found</source>
         <translation>Nenhum BIOS encontrado</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.cpp" line="59"/>
+        <location filename="../setupwizarddialog.cpp" line="60"/>
         <source>No BIOS images were found. DuckStation WILL NOT be able to run games without a BIOS image.
 
 Are you sure you wish to continue without selecting a BIOS image?</source>
@@ -27501,12 +27885,12 @@ Are you sure you wish to continue without selecting a BIOS image?</source>
 Tem certeza de que deseja continuar sem selecionar uma imagem do BIOS?</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.cpp" line="73"/>
+        <location filename="../setupwizarddialog.cpp" line="74"/>
         <source>No Game Directories Selected</source>
         <translation>Não foram selecionados diretórios de jogos</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.cpp" line="74"/>
+        <location filename="../setupwizarddialog.cpp" line="75"/>
         <source>No game directories have been selected. You will have to manually open any game dumps you want to play, DuckStation&apos;s list will be empty.
 
 Are you sure you want to continue?</source>
@@ -27515,17 +27899,17 @@ Are you sure you want to continue?</source>
 Você tem certeza de que quer continuar?</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.cpp" line="138"/>
+        <location filename="../setupwizarddialog.cpp" line="139"/>
         <source>&amp;Finish</source>
         <translation>&amp;Terminar</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.cpp" line="145"/>
+        <location filename="../setupwizarddialog.cpp" line="146"/>
         <source>Cancel Setup</source>
         <translation>Cancelar configuração</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.cpp" line="146"/>
+        <location filename="../setupwizarddialog.cpp" line="147"/>
         <source>Are you sure you want to cancel DuckStation setup?
 
 Any changes have been saved, and the wizard will run again next time you start DuckStation.</source>
@@ -27534,27 +27918,41 @@ Any changes have been saved, and the wizard will run again next time you start D
 Todas as alterações foram salvas e o assistente será executado novamente na próxima vez que você iniciar o emulador.</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.cpp" line="222"/>
+        <location filename="../setupwizarddialog.cpp" line="224"/>
         <source>Select BIOS Directory</source>
         <translation>Selecionar o diretório do BIOS</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.cpp" line="279"/>
+        <location filename="../setupwizarddialog.cpp" line="262"/>
+        <source>No BIOS images found. Please install one to continue.</source>
+        <translation>Nenhuma imagem de BIOS encontrada. Instale uma para continuar.</translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../setupwizarddialog.cpp" line="271"/>
+        <source>%n BIOS images found. You can install additional BIOS images if desired.</source>
+        <comment>BIOS Count</comment>
+        <translation>
+            <numerusform>%n imagens de BIOS encontradas. Você pode instalar imagens de BIOS adicionais, se desejar.</numerusform>
+            <numerusform></numerusform>
+        </translation>
+    </message>
+    <message>
+        <location filename="../setupwizarddialog.cpp" line="310"/>
         <source>Open Directory...</source>
         <translation>Abrir diretório...</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.cpp" line="286"/>
+        <location filename="../setupwizarddialog.cpp" line="317"/>
         <source>Select Search Directory</source>
         <translation>Escolha o diretório de pesquisa</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.cpp" line="292"/>
+        <location filename="../setupwizarddialog.cpp" line="323"/>
         <source>Scan Recursively?</source>
         <translation>Verificar recursivamente?</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.cpp" line="293"/>
+        <location filename="../setupwizarddialog.cpp" line="324"/>
         <source>Would you like to scan the directory &quot;%1&quot; recursively?
 
 Scanning recursively takes more time, but will identify files in subdirectories.</source>
@@ -27562,30 +27960,36 @@ Scanning recursively takes more time, but will identify files in subdirectories.
 Escanear o diretório desta forma demora mais tempo porém, identificará arquivos em sub-pastas.</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.cpp" line="375"/>
+        <location filename="../setupwizarddialog.cpp" line="406"/>
         <source>Open Pause Menu</source>
         <translation>Abrir menu rápido</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.cpp" line="404"/>
+        <location filename="../setupwizarddialog.cpp" line="435"/>
         <source>Multiple Devices...</source>
         <translation>Múltiplos dispositivos...</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.cpp" line="422"/>
+        <location filename="../setupwizarddialog.cpp" line="453"/>
         <source>Automatic Binding Failed</source>
         <translation>Falha no mapeamento automático</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.cpp" line="459"/>
+        <location filename="../setupwizarddialog.cpp" line="490"/>
         <source>PGXP is not enabled. Increasing the resolution without enabling PGXP will result in visible polygon glitches.</source>
         <translation>PGXP não está ativado. Aumentar a resolução sem ativar o PGXP resultará em falhas visíveis nos polígonos.</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.cpp" line="598"/>
+        <location filename="../setupwizarddialog.cpp" line="627"/>
+        <source>Logged in as %1
+Token generated %2</source>
+        <translation>Conectado como %1
+Token gerado em %2</translation>
+    </message>
+    <message>
         <source>Logged in as %1
 Token generated at %2</source>
-        <translation>Conectado como %1
+        <translation type="vanished">Conectado como %1
 Token gerado em %2</translation>
     </message>
     <message>
@@ -27595,12 +27999,12 @@ Login token generated on %2.</source>
 Token gerado %2.</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.ui" line="1214"/>
+        <location filename="../setupwizarddialog.ui" line="1246"/>
         <source>Logout</source>
         <translation>Sair</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.cpp" line="602"/>
+        <location filename="../setupwizarddialog.cpp" line="633"/>
         <source>Not Logged In.</source>
         <translation>Não conectado.</translation>
     </message>
@@ -27609,7 +28013,7 @@ Token gerado %2.</translation>
         <translation type="vanished">Padrão (Nenhum)</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.cpp" line="409"/>
+        <location filename="../setupwizarddialog.cpp" line="440"/>
         <source>No devices available</source>
         <translation>Nenhum dispositivo disponível</translation>
     </message>
@@ -27618,7 +28022,7 @@ Token gerado %2.</translation>
         <translation type="vanished">Atribuição automática</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.cpp" line="423"/>
+        <location filename="../setupwizarddialog.cpp" line="454"/>
         <source>No generic bindings were generated for device &apos;%1&apos;. The controller/source may not support automatic mapping.</source>
         <translation>Nenhuma atribuição genérica foi gerada para o dispositivo &apos;%1&apos;. O controle pode não suportar o mapeamento automático gerado pelo emulador.</translation>
     </message>
@@ -27626,15 +28030,27 @@ Token gerado %2.</translation>
 <context>
     <name>System</name>
     <message>
-        <location filename="../../core/fullscreenui.cpp" line="714"/>
-        <location filename="../../core/system.cpp" line="5248"/>
+        <location filename="../qthost.cpp" line="1073"/>
+        <location filename="../../core/fullscreenui.cpp" line="716"/>
+        <source>Failed to boot system:</source>
+        <translation>Falha ao iniciar o sistema:</translation>
+    </message>
+    <message>
+        <location filename="../qthost.cpp" line="1075"/>
+        <location filename="../../core/fullscreenui.cpp" line="715"/>
+        <location filename="../../core/system.cpp" line="5374"/>
         <source>Error</source>
         <translation>Erro</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreenui.cpp" line="715"/>
+        <location filename="../qthost.cpp" line="1082"/>
+        <location filename="../../core/fullscreenui.cpp" line="720"/>
+        <source>Do you want to install a BIOS file now?</source>
+        <translation>Você deseja instalar um arquivo de BIOS agora?</translation>
+    </message>
+    <message>
         <source>Failed to boot system: {}</source>
-        <translation>Falha ao iniciar o sistema: {}</translation>
+        <translation type="vanished">Falha ao iniciar o sistema: {}</translation>
     </message>
     <message>
         <source>Failed to undo load state.</source>
@@ -27649,12 +28065,12 @@ Token gerado %2.</translation>
         <translation type="vanished">Falha ao salvar o estado: {}</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4956"/>
+        <location filename="../../core/system.cpp" line="5082"/>
         <source>Compatibility settings are not enabled. Some games may not function correctly.</source>
         <translation>As configurações de compatibilidade não estão ativadas. Alguns jogos podem não funcionar corretamente.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3089"/>
+        <location filename="../../core/system.cpp" line="3214"/>
         <source>Cannot save state while memory card is being saved.</source>
         <translation>Não é possível salvar o estado enquanto o cartão de memória está sendo lido.</translation>
     </message>
@@ -27663,7 +28079,7 @@ Token gerado %2.</translation>
         <translation type="vanished">Falha ao inicializar o renderizador {}, retornando ao renderizador por software.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2354"/>
+        <location filename="../../core/system.cpp" line="2473"/>
         <source>This save state was created with a different BIOS. This may cause stability issues.</source>
         <translation>Esse estado salvo foi criado com um BIOS diferente. Isso pode causar problemas de estabilidade.</translation>
     </message>
@@ -27686,7 +28102,7 @@ Token gerado %2.</translation>
         </translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1711"/>
+        <location filename="../../core/system.cpp" line="1838"/>
         <source>You are attempting to run a libcrypt protected game without an SBI file:
 
 {0}: {1}
@@ -27707,7 +28123,7 @@ Consulte o LEIAME para obter instruções sobre como adicionar um arquivo SBI.
 Deseja continuar?</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4202"/>
+        <location filename="../../core/system.cpp" line="4327"/>
         <source>You are attempting to run a libcrypt protected game without an SBI file:
 
 {0}: {1}
@@ -27724,49 +28140,49 @@ Seu arquivo de jogo está incompleto, você deve adicionar o arquivo SBI para ex
 O nome do arquivo SBI deve corresponder ao nome da imagem do disco.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4263"/>
+        <location filename="../../core/system.cpp" line="4388"/>
         <source>Failed to switch to subimage {} in &apos;{}&apos;: {}.</source>
         <translation>Falha ao alternar para a subimagem {} em &apos;{}&apos;: {}.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4277"/>
+        <location filename="../../core/system.cpp" line="4402"/>
         <source>Switched to sub-image {} ({}) in &apos;{}&apos;.</source>
         <translation>Alternado para a subimagem {} ({}) em &apos;{}&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4288"/>
+        <location filename="../../core/system.cpp" line="4413"/>
         <source>Current game does not have multiple discs.</source>
         <translation>O jogo atual não possui vários discos.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4309"/>
+        <location filename="../../core/system.cpp" line="4434"/>
         <source>Could not determine current disc for switching.</source>
         <translation>Não foi possível determinar o disco atual para troca.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4321"/>
+        <location filename="../../core/system.cpp" line="4446"/>
         <source>There is no previous disc to switch to.</source>
         <translation>Não há disco anterior para o qual alternar.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4322"/>
+        <location filename="../../core/system.cpp" line="4447"/>
         <source>There is no next disc to switch to.</source>
         <translation>Não há um próximo disco para o qual alternar.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4336"/>
+        <location filename="../../core/system.cpp" line="4461"/>
         <source>No disc found for serial {}.</source>
         <translation>Nenhum disco encontrado para o serial {}.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4811"/>
+        <location filename="../../core/system.cpp" line="4937"/>
         <source>This save state was created with the following tainted options, and may be unstable.
 You must save to a memory card and reset the game to clear any effects.</source>
         <translation>Este arquivo de save state foi criado com as seguintes opções e pode apresentar instabilidade.
 Salve em um cartão de memória e reinicialize o jogo para limpar quaisquer mudanças.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4907"/>
+        <location filename="../../core/system.cpp" line="5033"/>
         <source>CPU clock speed is set to {}% ({} / {}). This may crash games.</source>
         <translation>Velocidade do CPU configurada para {}% ({} / {}. pode causar falhas nos jogos.</translation>
     </message>
@@ -27787,17 +28203,17 @@ Salve em um cartão de memória e reinicialize o jogo para limpar quaisquer muda
         <translation type="vanished">A opção forçar temporizador no modo NTSC está ativada. Os jogos serão executados em uma velocidade incorreta.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4922"/>
+        <location filename="../../core/system.cpp" line="5048"/>
         <source>Multisample anti-aliasing is enabled, some games may not render correctly.</source>
         <translation>O anti-serrilhamento múltiplo está ativado, alguns jogos podem não ser renderizados corretamente.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4927"/>
+        <location filename="../../core/system.cpp" line="5053"/>
         <source>Round upscaled texture coordinates is enabled. This may cause rendering errors.</source>
         <translation>A opção de arredondamento das coordenadas de textura com escalas maiores está ativada. Isso pode causar erros de renderização.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4936"/>
+        <location filename="../../core/system.cpp" line="5062"/>
         <source>8MB RAM is enabled, this may be incompatible with some games.</source>
         <translation>Modo de 8 MB de RAM está ativado, o que pode ser incompatível com alguns jogos.</translation>
     </message>
@@ -27854,27 +28270,27 @@ Salve em um cartão de memória e reinicialize o jogo para limpar quaisquer muda
         <translation type="vanished">Forçar temporização de quadros está ativada. Jogos podem ser executados em velocidades incorretas.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4943"/>
+        <location filename="../../core/system.cpp" line="5069"/>
         <source>Texture cache is enabled. This feature is experimental, some games may not render correctly.</source>
         <translation>O armazenamento de textura é atualmente experimental e pode causar erros de renderização em alguns jogos.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4950"/>
+        <location filename="../../core/system.cpp" line="5076"/>
         <source>Fastmem mode is set to {}, this will reduce performance.</source>
         <translation>Modo fastmen definido para {}, reduções de desempenho ocorrerão.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4895"/>
+        <location filename="../../core/system.cpp" line="5021"/>
         <source>Safe mode is enabled.</source>
         <translation>Modo seguro está ativado.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4839"/>
+        <location filename="../../core/system.cpp" line="4965"/>
         <source>Overclock disabled.</source>
         <translation>Overclock desligado.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4841"/>
+        <location filename="../../core/system.cpp" line="4967"/>
         <source>8MB RAM disabled.</source>
         <translation>8MB RAM desligado.</translation>
     </message>
@@ -27887,12 +28303,12 @@ Salve em um cartão de memória e reinicialize o jogo para limpar quaisquer muda
         <translation type="vanished">Modificações desativadas.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4843"/>
+        <location filename="../../core/system.cpp" line="4969"/>
         <source>Resolution scale set to 1x.</source>
         <translation>Escala de resolução definida para 1x.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4845"/>
+        <location filename="../../core/system.cpp" line="4971"/>
         <source>Multisample anti-aliasing disabled.</source>
         <translation>Suavização de serrilhado desligado.</translation>
     </message>
@@ -27905,43 +28321,43 @@ Salve em um cartão de memória e reinicialize o jogo para limpar quaisquer muda
         <translation type="vanished">Suavização de gradientes desligada.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4914"/>
+        <location filename="../../core/system.cpp" line="5040"/>
         <source>CD-ROM read/seek speedup is enabled. This may crash games.</source>
         <translation>A velocidade de leitura/busca do CD-ROM está ativada. Travamentos podem ocorrer.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4917"/>
+        <location filename="../../core/system.cpp" line="5043"/>
         <source>Frame rate is not set to automatic. Games may run at incorrect speeds.</source>
         <translation>A taxa de quadros não está definida como automática. Os jogos poderão ser executados em velocidades incorretas.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4932"/>
+        <location filename="../../core/system.cpp" line="5058"/>
         <source>PGXP Geometry Tolerance is not set to default. This may cause rendering errors.</source>
         <translation>A tolerância geométrica PGXP não está configurada no modo padrão. Isso pode causar erros de renderização.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4938"/>
+        <location filename="../../core/system.cpp" line="5064"/>
         <source>Cached interpreter is being used, this may be incompatible with some games.</source>
         <translation>O interpretador em cache está sendo usado, o que pode ser incompatível com alguns jogos.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4847"/>
+        <location filename="../../core/system.cpp" line="4973"/>
         <source>Dithering set to unscaled.</source>
         <translation>Dithering definido para não dimensionado.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="445"/>
+        <location filename="../../core/system.cpp" line="447"/>
         <source>Memory Card Mismatch</source>
         <comment>Taint</comment>
         <translation>Incompatibilidade do cartão de memória</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2422"/>
+        <location filename="../../core/system.cpp" line="2541"/>
         <source>CPU Overclock Changed</source>
         <translation>Velocidade do CPU alterada</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2424"/>
+        <location filename="../../core/system.cpp" line="2543"/>
         <source>The save state does not match the current configuration.
 Save State: {0}%
 Configuration: {1}%</source>
@@ -27950,12 +28366,12 @@ Estado salvo: {0}%
 Configuração: {1}%</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2873"/>
+        <location filename="../../core/system.cpp" line="2998"/>
         <source>Failed to open CD image from save state.</source>
         <translation>Falha ao abrir imagem a partir do estado salvo.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2875"/>
+        <location filename="../../core/system.cpp" line="3000"/>
         <source>Path: {0}
 Error: {1}
 Using current CD image, this may result in instability.</source>
@@ -27964,84 +28380,84 @@ Erro: {1}
 Usando imagem de disco, isso pode resultar em instabilidade.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3156"/>
+        <location filename="../../core/system.cpp" line="3281"/>
         <source>Global Save Slot {}</source>
         <translation>Compartimento global {}</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3158"/>
+        <location filename="../../core/system.cpp" line="3283"/>
         <source>Save Slot {}</source>
         <translation>Compartimento {}</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3170"/>
-        <location filename="../../core/system.cpp" line="3213"/>
+        <location filename="../../core/system.cpp" line="3295"/>
+        <location filename="../../core/system.cpp" line="3338"/>
         <source>Save States Unavailable</source>
         <translation>Estados salvos indisponíveis</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3171"/>
-        <location filename="../../core/system.cpp" line="3214"/>
+        <location filename="../../core/system.cpp" line="3296"/>
+        <location filename="../../core/system.cpp" line="3339"/>
         <source>Save states require a disc inserted with a valid serial.</source>
         <translation>Os estados salvos exigem um disco inserido com um número de série válido.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3180"/>
+        <location filename="../../core/system.cpp" line="3305"/>
         <source>No save state found in slot {}.</source>
         <translation>Nenhum dado encontrado no compartimento {}.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3193"/>
+        <location filename="../../core/system.cpp" line="3318"/>
         <source>Loaded save state from {}.</source>
         <translation>Estado carregado de {}.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3199"/>
+        <location filename="../../core/system.cpp" line="3324"/>
         <source>Failed to load state from {0}:
 {1}</source>
         <translation>Falha ao carregar estado de {0}:
 {1}</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3222"/>
+        <location filename="../../core/system.cpp" line="3347"/>
         <source>Saving state to {}...</source>
         <translation>Salvando estado para {}...</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3234"/>
+        <location filename="../../core/system.cpp" line="3359"/>
         <source>State saved to {}.</source>
         <translation>Estado salvo em {}.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3240"/>
+        <location filename="../../core/system.cpp" line="3365"/>
         <source>Failed to save state to {0}:
 {1}</source>
         <translation>Falha ao salvar estado para {0}:
 {1}</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3695"/>
+        <location filename="../../core/system.cpp" line="3820"/>
         <source>Failed to inhibit screensaver</source>
         <translation>Falha ao inibir o protetor de tela</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3696"/>
+        <location filename="../../core/system.cpp" line="3821"/>
         <source>Failed to allow screensaver</source>
         <translation>Falha ao permitir o protetor de tela</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3822"/>
-        <location filename="../../core/system.cpp" line="5861"/>
+        <location filename="../../core/system.cpp" line="3947"/>
+        <location filename="../../core/system.cpp" line="5990"/>
         <source>Memory Card Slot {}</source>
         <translation>Compartimento de cartão de memória {}</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3823"/>
+        <location filename="../../core/system.cpp" line="3948"/>
         <source>Card changed to {}.</source>
         <translation>Cartão alterado para {}.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4157"/>
+        <location filename="../../core/system.cpp" line="4282"/>
         <source>No valid game is running.</source>
         <translation>Nenhum jogo em execução.</translation>
     </message>
@@ -28050,144 +28466,149 @@ Usando imagem de disco, isso pode resultar em instabilidade.</translation>
         <translation type="vanished">Salvamento rápido com configurações corrompidas; pode causar instabilidade. Reinicie o sistema.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4851"/>
+        <location filename="../../core/system.cpp" line="4977"/>
         <source>Texture filtering disabled.</source>
         <translation>Filtro de textura desativado.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4854"/>
+        <location filename="../../core/system.cpp" line="4980"/>
         <source>Wireframe rendering disabled.</source>
         <translation>Renderização em modo esboço desativada.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4856"/>
+        <location filename="../../core/system.cpp" line="4982"/>
         <source>Textures enabled.</source>
         <translation>Texturas ativadas.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4858"/>
+        <location filename="../../core/system.cpp" line="4984"/>
         <source>Vertex lighting enabled.</source>
         <translation>Iluminação por vértice ativada.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4860"/>
+        <location filename="../../core/system.cpp" line="4986"/>
         <source>Downsampling disabled.</source>
         <translation>Suavização da imagem desativado.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4862"/>
+        <location filename="../../core/system.cpp" line="4988"/>
         <source>Interlaced rendering enabled.</source>
         <translation>Renderização entrelaçada ativada.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4864"/>
+        <location filename="../../core/system.cpp" line="4990"/>
         <source>Video timings set to default.</source>
         <translation>Temporizadores de vídeo definidos para o padrão.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4866"/>
+        <location filename="../../core/system.cpp" line="4992"/>
         <source>Widescreen rendering disabled.</source>
         <translation>Renderização em tela panorâmica desativada.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4868"/>
+        <location filename="../../core/system.cpp" line="4994"/>
         <source>PGXP disabled.</source>
         <translation>PGXP disabled.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4870"/>
+        <location filename="../../core/system.cpp" line="4996"/>
         <source>Texture modulation cropping disabled.</source>
         <translation>Recorte na modulação de textura desativado.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4872"/>
+        <location filename="../../core/system.cpp" line="4998"/>
         <source>GPU texture cache disabled.</source>
         <translation>Cache de textura da GPU desativado.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4874"/>
+        <location filename="../../core/system.cpp" line="5000"/>
         <source>FMV chroma smoothing disabled.</source>
         <translation>Suavização de croma do FMV desligado.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4876"/>
+        <location filename="../../core/system.cpp" line="5002"/>
         <source>CD-ROM read speedup disabled.</source>
         <translation>Velocidade de leitura CD-ROM desligado.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4878"/>
+        <location filename="../../core/system.cpp" line="5004"/>
         <source>CD-ROM seek speedup disabled.</source>
         <translation>Velocidade de busca CD-ROM desligado.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4880"/>
+        <location filename="../../core/system.cpp" line="5006"/>
         <source>Mute CD-ROM audio disabled.</source>
         <translation>Silenciar o áudio do CD-ROM desativado.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4882"/>
+        <location filename="../../core/system.cpp" line="5008"/>
         <source>VRAM write texture replacements disabled.</source>
         <translation>Substituições de textura na VRAM desativadas.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4884"/>
+        <location filename="../../core/system.cpp" line="5010"/>
         <source>Use old MDEC routines disabled.</source>
         <translation>Usar rotinas MDEC antigas desativado.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4886"/>
+        <location filename="../../core/system.cpp" line="5012"/>
         <source>PIO device removed.</source>
         <translation>Dispositivo PIO removido.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4888"/>
+        <location filename="../../core/system.cpp" line="5014"/>
         <source>PCDrv disabled.</source>
         <translation>PCDrv desativado.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4890"/>
+        <location filename="../../core/system.cpp" line="5016"/>
         <source>PCSX Expansion Region disabled.</source>
         <translation>Região de expansão desativada.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4892"/>
+        <location filename="../../core/system.cpp" line="5018"/>
         <source>Fast boot disabled.</source>
         <translation>Inicialização rápida desativada.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4959"/>
+        <location filename="../../core/system.cpp" line="5085"/>
         <source>CD-ROM SubQ Skew is enabled. This will break games.</source>
         <translation>A derivação do CD-ROM no módulo SubQ está ativada. Erros poderão ocorrer.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4970"/>
+        <location filename="../../core/system.cpp" line="5096"/>
         <source>One or more unsafe settings is enabled.</source>
         <translation>Uma ou mais configurações inseguras estão ativadas.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="5249"/>
+        <location filename="../../core/system.cpp" line="5375"/>
         <source>Failed to save resume state: {}</source>
         <translation>Falha ao resumir o estado: {}</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="5287"/>
+        <location filename="../../core/system.cpp" line="5413"/>
         <source>Undo load state</source>
         <translation>Desfazer estado de carregamento</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="5295"/>
+        <location filename="../../core/system.cpp" line="5421"/>
         <source>Undo Load State</source>
         <translation>Desfazer estado carregado</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="5302"/>
+        <location filename="../../core/system.cpp" line="5428"/>
         <source>Failed to load undo state, restarting game.
 {}</source>
         <translation>Falha ao desfazeer o salvamento rápido; reiniciando o jogo.
 {}</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="6157"/>
+        <location filename="../../core/system.cpp" line="5438"/>
+        <source>Loaded undo save state created {}.</source>
+        <translation>Estado anterior criado em {} carregado.</translation>
+    </message>
+    <message>
+        <location filename="../../core/system.cpp" line="6286"/>
         <source>Failed to change GPU dump: {}</source>
         <translation>Falha ao alterar o despejo da GPU: {}</translation>
     </message>
@@ -28198,47 +28619,46 @@ Usando imagem de disco, isso pode resultar em instabilidade.</translation>
 {}</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="5312"/>
         <source>Loaded undo save state created at {}.</source>
-        <translation>Estado anterior criado em {} carregado.</translation>
+        <translation type="vanished">Estado anterior criado em {} carregado.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="5514"/>
+        <location filename="../../core/system.cpp" line="5639"/>
         <source>capturing audio and video</source>
         <translation>Capturando áudio e vídeo</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="5515"/>
+        <location filename="../../core/system.cpp" line="5640"/>
         <source>capturing video</source>
         <translation>Capturando vídeo</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="5516"/>
+        <location filename="../../core/system.cpp" line="5641"/>
         <source>capturing audio</source>
         <translation>Capturando áudio</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="5599"/>
+        <location filename="../../core/system.cpp" line="5724"/>
         <source>Failed to create media capture: {0}</source>
         <translation>Falha ao criar a captura de mídia: {0}</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="5607"/>
+        <location filename="../../core/system.cpp" line="5732"/>
         <source>Starting {0} to &apos;{1}&apos;.</source>
         <translation>Iniciando {0} a &apos;{1}&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="5647"/>
+        <location filename="../../core/system.cpp" line="5772"/>
         <source>Stopped {0} to &apos;{1}&apos;.</source>
         <translation>Terminado {0} a &apos;{1}&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="5654"/>
+        <location filename="../../core/system.cpp" line="5779"/>
         <source>Stopped {0}: {1}.</source>
         <translation>Terminado {0}: {1}.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="5864"/>
+        <location filename="../../core/system.cpp" line="5993"/>
         <source>Cannot use per-game memory card without a disc.
 Using shared card instead.</source>
         <translation>Não é possível usar um cartão de memória por jogo sem um disco inserido.
@@ -28277,66 +28697,66 @@ Um cartão de memória compartilhado será usado.</translation>
         <translation type="vanished">O cartão de memória individual não pode ser usado no compartimento {} porque o jogo em execução não possui código. Usando cartão compartilhado.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2942"/>
+        <location filename="../../core/system.cpp" line="3067"/>
         <source>Save state is incompatible: minimum version is {0} but state is version {1}.</source>
         <translation>Dado de estado salvo incompatível: a versão mínima é {0}, mas o estado é referente a versão {1}.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2950"/>
+        <location filename="../../core/system.cpp" line="3075"/>
         <source>Save state is incompatible: maximum version is {0} but state is version {1}.</source>
         <translation>Dado de estado salvo incompatível: a versão máxima é {0}, mas o estado é referente a versão {1}.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2880"/>
+        <location filename="../../core/system.cpp" line="3005"/>
         <source>Failed to open CD image &apos;{}&apos; used by save state:
 </source>
         <translation>Falha ao abrir a imagem de CD &apos;{}&apos; usada pelo estado de salvamento:
 </translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="438"/>
+        <location filename="../../core/system.cpp" line="440"/>
         <source>CPU Overclock</source>
         <comment>Taint</comment>
         <translation>Overclock de CPU</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="439"/>
+        <location filename="../../core/system.cpp" line="441"/>
         <source>CD-ROM Read Speedup</source>
         <comment>Taint</comment>
         <translation>Velocidade de leitura CD-ROM</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="440"/>
+        <location filename="../../core/system.cpp" line="442"/>
         <source>CD-ROM Seek Speedup</source>
         <comment>Taint</comment>
         <translation>Velocidade de busca CD-ROM</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="441"/>
+        <location filename="../../core/system.cpp" line="443"/>
         <source>Force Frame Timings</source>
         <comment>Taint</comment>
         <translation>Forçar temporizadores de quadro</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="442"/>
+        <location filename="../../core/system.cpp" line="444"/>
         <source>8MB RAM</source>
         <comment>Taint</comment>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="443"/>
+        <location filename="../../core/system.cpp" line="445"/>
         <source>Cheats</source>
         <comment>Taint</comment>
         <translation>Trapaças</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="444"/>
+        <location filename="../../core/system.cpp" line="446"/>
         <source>Game Patches</source>
         <comment>Taint</comment>
         <translation>Modificações de jogos</translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/system.cpp" line="1528"/>
+        <location filename="../../core/system.cpp" line="1648"/>
         <source>You cannot pause until another %n second(s) have passed.</source>
         <translation>
             <numerusform>Você não pode pausar até que mais %n segundo(s) tenham se passado.</numerusform>
@@ -28344,8 +28764,8 @@ Um cartão de memória compartilhado será usado.</translation>
         </translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2796"/>
-        <location filename="../../core/system.cpp" line="3084"/>
+        <location filename="../../core/system.cpp" line="2921"/>
+        <location filename="../../core/system.cpp" line="3209"/>
         <source>System is not in correct state.</source>
         <translation>O sistema não está em seu estado correto.</translation>
     </message>
@@ -28360,7 +28780,7 @@ Um cartão de memória compartilhado será usado.</translation>
         <translation type="vanished">O cartão de memória individual não pode ser usado no compartimento {} porque o jogo em execução não tem título. Usando cartão compartilhado.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="5919"/>
+        <location filename="../../core/system.cpp" line="6048"/>
         <source>Using disc-specific memory card &apos;{}&apos; instead of per-game card.</source>
         <translation>Usando cartão de memória específico do disco &apos;{}&apos; em vez do cartão por jogo.</translation>
     </message>
@@ -28373,7 +28793,6 @@ Um cartão de memória compartilhado será usado.</translation>
         <translation type="vanished">Jogo trocado, recarregando cartões de memória.</translation>
     </message>
     <message>
-        <location filename="../../core/bios.cpp" line="442"/>
         <source>No BIOS image found for {} region.
 
 DuckStation requires a PS1 or PS2 BIOS in order to run.
@@ -28381,7 +28800,7 @@ DuckStation requires a PS1 or PS2 BIOS in order to run.
 For legal reasons, you *must* obtain a BIOS from an actual PS1 unit that you own (borrowing doesn&apos;t count).
 
 Once dumped, this BIOS image should be placed in the bios folder within the data directory (Tools Menu -&gt; Open Data Directory).</source>
-        <translation>Nenhuma imagem de BIOS encontrada para a região {}.
+        <translation type="vanished">Nenhuma imagem de BIOS encontrada para a região {}.
 
 DuckStation exige um BIOS PS1 ou PS2 para ser executado.
 
@@ -28390,9 +28809,8 @@ Por motivos legais, você DEVE obter uma imagem do BIOS de uma unidade PS1 que s
 Após o despejo, essa imagem de BIOS deve ser colocada na pasta bios dentro do diretório de dados (Menu ferramentas &gt; Abrir diretório de dados).</translation>
     </message>
     <message>
-        <location filename="../../core/bios.cpp" line="448"/>
         <source>No BIOS image found for {} region.</source>
-        <translation>Nenhuma imagem de BIOS encontrada para região {}.</translation>
+        <translation type="vanished">Nenhuma imagem de BIOS encontrada para região {}.</translation>
     </message>
     <message>
         <location filename="../../core/video_thread.cpp" line="732"/>
@@ -28408,14 +28826,27 @@ This may be due to your GPU not supporting the chosen renderer ({1}), or because
 Isso pode ocorrer porque sua GPU não é compatível com o renderizador escolhido ({1}) ou porque seus drivers gráficos precisam ser atualizados.</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1274"/>
+        <location filename="../../core/settings.cpp" line="1278"/>
         <source>Rewind has been disabled.</source>
         <translation>Retrocesso desativado.</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1275"/>
+        <location filename="../../core/settings.cpp" line="1279"/>
         <source>Rewind and runahead cannot be used at the same time.</source>
         <translation>A função retroceder e avançar não podem ser usadas ao mesmo tempo.</translation>
+    </message>
+    <message>
+        <location filename="../../core/bios.cpp" line="444"/>
+        <source>No BIOS image found for {} region.
+
+DuckStation requires a PS1 or PS2 BIOS in order to run.
+
+For legal reasons, you must obtain a BIOS from an actual PS1/PS2 unit that you own (borrowing doesn&apos;t count).</source>
+        <translation>Nenhuma imagem de BIOS encontrada para a região {}.
+
+O DuckStation exite o BIOS de PS1 ou PS2 para funcionar.
+
+Por motivos legais, você deve obter o BIOS de um console PS1/PS2 que seja de sua propriedade (emprestar não conta).</translation>
     </message>
 </context>
 <context>
@@ -28545,32 +28976,32 @@ Isso pode ocorrer porque sua GPU não é compatível com o renderizador escolhid
         <translation>Fechar</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="1272"/>
+        <location filename="../graphicssettingswidget.cpp" line="1271"/>
         <source>Texture Replacement Configuration</source>
         <translation>Configuração de substituição de textura</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="1275"/>
+        <location filename="../graphicssettingswidget.cpp" line="1274"/>
         <source>Texture Replacement Configuration (config.yaml)</source>
         <translation>Configuração de substituição de textura (config.yaml)</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="1277"/>
+        <location filename="../graphicssettingswidget.cpp" line="1276"/>
         <source>Save As...</source>
         <translation>Salvar como...</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="1280"/>
+        <location filename="../graphicssettingswidget.cpp" line="1279"/>
         <source>Save Configuration</source>
         <translation>Salvar configuração</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="1280"/>
+        <location filename="../graphicssettingswidget.cpp" line="1279"/>
         <source>Configuration Files (config.yaml)</source>
         <translation>Arquivos de configuração (config.yaml)</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="1288"/>
+        <location filename="../graphicssettingswidget.cpp" line="1287"/>
         <source>Write Failed</source>
         <translation>Erro de gravação</translation>
     </message>
