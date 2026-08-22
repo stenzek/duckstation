@@ -62,6 +62,7 @@ static constexpr const char LOCAL_CONFIG_FILENAME[] = "config.yaml";
 static constexpr u32 STATE_VRAM_WRITE_SIZE = sizeof(GSVector4i) * 2 + sizeof(HashType) + sizeof(u32);
 static constexpr u32 STATE_PALETTE_RECORD_SIZE =
   sizeof(GSVector4i) + sizeof(SourceKey) + sizeof(PaletteRecordFlags) + sizeof(HashType) + sizeof(u16) * MAX_CLUT_SIZE;
+static constexpr u32 STATE_MARKER_SIZE = sizeof(u32) + sizeof("GPUTextureCache") - 1;
 
 // Has to be public because it's referenced in Source.
 struct HashCacheEntry
@@ -780,9 +781,10 @@ bool GPUTextureCache::DoState(StateWrapper& sw, bool skip)
 
     if (!skip && s_state.track_vram_writes)
     {
+      size_t required_size = STATE_MARKER_SIZE + sizeof(u32) * 2;
       for (PageEntry& page : s_state.pages)
       {
-        ListIterate(page.writes, [](VRAMWrite* vrw) {
+        ListIterate(page.writes, [&required_size](VRAMWrite* vrw) {
           if (std::find(s_state.temp_vram_write_list.begin(), s_state.temp_vram_write_list.end(), vrw) !=
               s_state.temp_vram_write_list.end())
           {
@@ -794,7 +796,15 @@ bool GPUTextureCache::DoState(StateWrapper& sw, bool skip)
             SyncVRAMWritePaletteRecords(vrw);
 
           s_state.temp_vram_write_list.push_back(vrw);
+          required_size += STATE_VRAM_WRITE_SIZE + vrw->palette_records.size() * STATE_PALETTE_RECORD_SIZE;
         });
+      }
+
+      // Will it fit in the state reserve?
+      if (required_size >= MAX_SAVE_STATE_DATA_SIZE)
+      {
+        ERROR_LOG("VRAM write is too large ({} bytes required), not saving", required_size);
+        s_state.temp_vram_write_list.clear();
       }
     }
 
@@ -802,7 +812,7 @@ bool GPUTextureCache::DoState(StateWrapper& sw, bool skip)
     sw.Do(&num_vram_writes);
 
     u32 last_vram_write_index = INVALID_VRAM_WRITE_INDEX;
-    if (s_state.last_vram_write)
+    if (num_vram_writes > 0 && s_state.last_vram_write)
     {
       const auto iter = std::ranges::find(s_state.temp_vram_write_list, s_state.last_vram_write);
       if (iter != s_state.temp_vram_write_list.end())
