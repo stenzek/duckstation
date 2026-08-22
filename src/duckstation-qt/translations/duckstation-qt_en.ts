@@ -281,6 +281,38 @@
 <context>
     <name>Host</name>
     <message numerus="yes">
+        <source>%n days ago</source>
+        <comment>Date difference</comment>
+        <translation>
+            <numerusform>%n day ago</numerusform>
+            <numerusform>%n days ago</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n seconds ago</source>
+        <comment>Time difference</comment>
+        <translation>
+            <numerusform>%n second ago</numerusform>
+            <numerusform>%n seconds ago</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n minutes ago</source>
+        <comment>Time difference</comment>
+        <translation>
+            <numerusform>%n minute ago</numerusform>
+            <numerusform>%n minutes ago</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n hours ago</source>
+        <comment>Time difference</comment>
+        <translation>
+            <numerusform>%n hour ago</numerusform>
+            <numerusform>%n hours ago</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
         <source>%n seconds</source>
         <translation>
             <numerusform>%n second</numerusform>

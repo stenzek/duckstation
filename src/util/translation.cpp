@@ -178,7 +178,7 @@ TinyString Host::FormatRelativeDate(std::time_t timestamp, bool long_format /* =
     }
     else if (delta < 7 * 24 * 60 * 60)
     {
-      return TranslatePluralToTinyString("Host", TRANSLATE_DISAMBIG_NOOP("Host", "%n days ago", "Date difference"),
+      return TranslatePluralToTinyString("Host", TRANSLATE_PLURAL_NOOP("Host", "%n days ago", "Date difference"),
                                          "Date difference", static_cast<int>(delta) / (24 * 60 * 60));
     }
   }
@@ -205,17 +205,17 @@ TinyString Host::FormatRelativeDateTime(std::time_t timestamp, bool long_format 
   }
   else if (delta < 60)
   {
-    return TranslatePluralToTinyString("Host", TRANSLATE_DISAMBIG_NOOP("Host", "%n seconds ago", "Time difference"),
+    return TranslatePluralToTinyString("Host", TRANSLATE_PLURAL_NOOP("Host", "%n seconds ago", "Time difference"),
                                        "Time difference", static_cast<int>(delta));
   }
   else if (delta < 60 * 60)
   {
-    return TranslatePluralToTinyString("Host", TRANSLATE_DISAMBIG_NOOP("Host", "%n minutes ago", "Time difference"),
+    return TranslatePluralToTinyString("Host", TRANSLATE_PLURAL_NOOP("Host", "%n minutes ago", "Time difference"),
                                        "Time difference", static_cast<int>(delta) / 60);
   }
   else if (delta < 12 * 60 * 60)
   {
-    return TranslatePluralToTinyString("Host", TRANSLATE_DISAMBIG_NOOP("Host", "%n hours ago", "Time difference"),
+    return TranslatePluralToTinyString("Host", TRANSLATE_PLURAL_NOOP("Host", "%n hours ago", "Time difference"),
                                        "Time difference", static_cast<int>(delta) / (60 * 60));
   }
 
