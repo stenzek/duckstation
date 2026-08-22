@@ -460,7 +460,7 @@ void PostProcessingShaderConfigWidget::createUi()
         {
           static constexpr std::array<const char*, PostProcessing::ShaderOption::MAX_VECTOR_COMPONENTS + 1> suffixes = {
             {QT_TR_NOOP("Red"), QT_TR_NOOP("Green"), QT_TR_NOOP("Blue"), QT_TR_NOOP("Alpha")}};
-          label = tr("%1 (%2)").arg(QString::fromStdString(option.ui_name)).arg(tr(suffixes[i]));
+          label = tr("%1 (%2)").arg(QString::fromStdString(option.ui_name), tr(suffixes[i]));
         }
 
         QWidget* label_w = new QLabel(label, this);
@@ -848,7 +848,7 @@ void PostProcessingSelectShaderDialog::collapseShaderList(QTreeWidgetItem* item)
     if (child->childCount() == 1)
     {
       QTreeWidgetItem* const grandchild = child->child(0);
-      const QString merged_name = QStringLiteral("%1/%2").arg(child->text(0)).arg(grandchild->text(0));
+      const QString merged_name = QStringLiteral("%1/%2").arg(child->text(0), grandchild->text(0));
       grandchild->setText(0, merged_name);
       child->removeChild(grandchild);
       item->insertChild(i, grandchild);

@@ -205,13 +205,13 @@ void CaptureSettingsWidget::onMediaCaptureBackendChanged()
     for (const auto& [name, display_name] : MediaCapture::GetAudioContainerList(backend))
     {
       const QString qname = QString::fromStdString(name);
-      m_ui.audioCaptureContainer->addItem(tr("%1 (%2)").arg(QString::fromStdString(display_name)).arg(qname), qname);
+      m_ui.audioCaptureContainer->addItem(tr("%1 (%2)").arg(QString::fromStdString(display_name), qname), qname);
     }
 
     for (const auto& [name, display_name] : MediaCapture::GetVideoContainerList(backend))
     {
       const QString qname = QString::fromStdString(name);
-      m_ui.videoCaptureContainer->addItem(tr("%1 (%2)").arg(QString::fromStdString(display_name)).arg(qname), qname);
+      m_ui.videoCaptureContainer->addItem(tr("%1 (%2)").arg(QString::fromStdString(display_name), qname), qname);
     }
 
     SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.audioCaptureContainer, "MediaCapture", "AudioContainer",
@@ -249,7 +249,7 @@ void CaptureSettingsWidget::onMediaCaptureVideoContainerChanged()
   for (const auto& [name, display_name] : MediaCapture::GetVideoCodecList(backend, container.c_str()))
   {
     const QString qname = QString::fromStdString(name);
-    m_ui.videoCaptureCodec->addItem(tr("%1 (%2)").arg(QString::fromStdString(display_name)).arg(qname), qname);
+    m_ui.videoCaptureCodec->addItem(tr("%1 (%2)").arg(QString::fromStdString(display_name), qname), qname);
   }
 
   if (const QString current_value =
@@ -298,7 +298,7 @@ void CaptureSettingsWidget::onMediaCaptureAudioContainerChanged()
   for (const auto& [name, display_name] : MediaCapture::GetAudioCodecList(backend, container.c_str()))
   {
     const QString qname = QString::fromStdString(name);
-    m_ui.audioCaptureCodec->addItem(tr("%1 (%2)").arg(QString::fromStdString(display_name)).arg(qname), qname);
+    m_ui.audioCaptureCodec->addItem(tr("%1 (%2)").arg(QString::fromStdString(display_name), qname), qname);
   }
 
   if (const QString current_value =

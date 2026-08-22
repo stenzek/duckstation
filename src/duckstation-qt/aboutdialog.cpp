@@ -33,7 +33,7 @@ AboutDialog::AboutDialog(QWidget* parent /* = nullptr */) : QDialog(parent)
   m_ui.title->setFont(title_font);
 
   m_ui.scmversion->setText(
-    tr("%1 (%2)").arg(QLatin1StringView(g_scm_tag_str)).arg(QLatin1StringView(g_scm_branch_str)));
+    tr("%1 (%2)").arg(QLatin1StringView(g_scm_tag_str), QLatin1StringView(g_scm_branch_str)));
 
   m_ui.description->setText(QStringLiteral(R"(
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN" "http://www.w3.org/TR/REC-html40/strict.dtd">

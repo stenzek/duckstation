@@ -130,7 +130,7 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* dialog, QWidget
                                                    AutoUpdaterDialog::getDefaultTag());
     connect(m_ui.checkForUpdates, &QPushButton::clicked, this, &InterfaceSettingsWidget::checkForUpdates);
 
-    m_ui.autoUpdateCurrentVersion->setText(tr("%1 (%2)").arg(g_scm_version_str).arg(g_scm_date_str));
+    m_ui.autoUpdateCurrentVersion->setText(tr("%1 (%2)").arg(g_scm_version_str, g_scm_date_str));
   }
   else
   {

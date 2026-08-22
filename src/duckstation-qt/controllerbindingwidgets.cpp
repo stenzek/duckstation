@@ -282,7 +282,7 @@ void ControllerBindingWidget::onAutomaticBindingClicked()
   {
     // we set it as data, because the device list could get invalidated while the menu is up
     menu->addAction(InputDeviceListModel::getIconForKey(dev.key),
-                    QStringLiteral("%1 (%2)").arg(dev.identifier).arg(dev.display_name),
+                    QStringLiteral("%1 (%2)").arg(dev.identifier, dev.display_name),
                     [this, device = dev.identifier]() { doDeviceAutomaticBinding(device); });
     added = true;
   }

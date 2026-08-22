@@ -734,7 +734,7 @@ void MainWindow::openSelectDiscDialog(const QString& title, std::function<void(s
 
   QStringList input_options;
   for (const auto& [path, name] : devices)
-    input_options.append(tr("%1 (%2)").arg(QString::fromStdString(name)).arg(QString::fromStdString(path)));
+    input_options.append(tr("%1 (%2)").arg(QString::fromStdString(name), QString::fromStdString(path)));
 
   QInputDialog* input_dialog = new QInputDialog(this);
   input_dialog->setWindowTitle(title);
@@ -1850,7 +1850,7 @@ void MainWindow::setGameListEntryCoverImage(const GameList::Entry* entry)
   if (!QFile::copy(filename, new_filename))
   {
     QtUtils::AsyncMessageBox(this, QMessageBox::Critical, tr("Copy Error"),
-                             tr("Failed to copy '%1' to '%2'").arg(filename).arg(new_filename));
+                             tr("Failed to copy '%1' to '%2'").arg(filename, new_filename));
     return;
   }
   if (!old_filename.isEmpty() && old_filename != new_filename && !QFile::remove(old_filename))
@@ -3490,7 +3490,7 @@ void MainWindow::onToolsStartMediaCaptureTriggered(bool audio, bool video)
   for (const auto& [container_name, container_desc] : containers)
   {
     const QString this_filter =
-      tr("%1 Files (*.%2)").arg(QString::fromStdString(container_desc)).arg(QString::fromStdString(container_name));
+      tr("%1 Files (*.%2)").arg(QString::fromStdString(container_desc), QString::fromStdString(container_name));
     if (container_name == container)
       selected_filter = this_filter;
 
@@ -3579,7 +3579,7 @@ void MainWindow::onToolsOpenTextureDirectoryTriggered()
 {
   QString dir = QString::fromStdString(EmuFolders::Textures);
   if (s_locals.system_valid && !s_locals.current_game_serial.isEmpty())
-    dir = QStringLiteral("%1" FS_OSPATH_SEPARATOR_STR "%2").arg(dir).arg(s_locals.current_game_serial);
+    dir = QStringLiteral("%1" FS_OSPATH_SEPARATOR_STR "%2").arg(dir, s_locals.current_game_serial);
 
   QtUtils::OpenURL(this, QUrl::fromLocalFile(dir));
 }

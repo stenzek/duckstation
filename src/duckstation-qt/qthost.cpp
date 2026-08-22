@@ -1849,7 +1849,7 @@ void CoreThread::dumpRAM(const QString& path)
   {
     emit errorReported(
       QStringLiteral("Error"),
-      QStringLiteral("Failed to dump RAM to %1: %2").arg(path).arg(QString::fromStdString(error.GetDescription())));
+      QStringLiteral("Failed to dump RAM to %1: %2").arg(path, QString::fromStdString(error.GetDescription())));
   }
 }
 
@@ -1871,7 +1871,7 @@ void CoreThread::dumpVRAM(const QString& path)
   {
     emit errorReported(
       QStringLiteral("Error"),
-      QStringLiteral("Failed to dump VRAM to %1: %2").arg(path).arg(QString::fromStdString(error.GetDescription())));
+      QStringLiteral("Failed to dump VRAM to %1: %2").arg(path, QString::fromStdString(error.GetDescription())));
   }
 }
 
@@ -1893,7 +1893,7 @@ void CoreThread::dumpSPURAM(const QString& path)
   {
     emit errorReported(
       QStringLiteral("Error"),
-      QStringLiteral("Failed to dump SPU RAM to %1: %2").arg(path).arg(QString::fromStdString(error.GetDescription())));
+      QStringLiteral("Failed to dump SPU RAM to %1: %2").arg(path, QString::fromStdString(error.GetDescription())));
   }
 }
 
@@ -2475,7 +2475,7 @@ void QtHost::UpdateApplicationLanguage(QWidget* dialog_parent)
 
   // Qt base uses underscores instead of hyphens.
   const QString qtbase_language = QString(qlanguage).replace(QChar('-'), QChar('_'));
-  QString base_path(QStringLiteral("%1/qt_%2.qm").arg(base_dir).arg(qtbase_language));
+  QString base_path(QStringLiteral("%1/qt_%2.qm").arg(base_dir, qtbase_language));
   bool has_base_ts = QFile::exists(base_path);
   if (!has_base_ts)
   {
@@ -2483,7 +2483,7 @@ void QtHost::UpdateApplicationLanguage(QWidget* dialog_parent)
     const qsizetype index = qlanguage.lastIndexOf('-');
     if (index > 0)
     {
-      base_path = QStringLiteral("%1/qt_%2.qm").arg(base_dir).arg(qlanguage.left(index));
+      base_path = QStringLiteral("%1/qt_%2.qm").arg(base_dir, qlanguage.left(index));
       has_base_ts = QFile::exists(base_path);
     }
   }
@@ -2494,7 +2494,7 @@ void QtHost::UpdateApplicationLanguage(QWidget* dialog_parent)
     {
       QtUtils::MessageBoxWarning(
         dialog_parent, QStringLiteral("Translation Error"),
-        QStringLiteral("Failed to load base translation file for '%1':\n%2").arg(qlanguage).arg(base_path));
+        QStringLiteral("Failed to load base translation file for '%1':\n%2").arg(qlanguage, base_path));
       delete base_translator;
     }
     else
@@ -2504,12 +2504,12 @@ void QtHost::UpdateApplicationLanguage(QWidget* dialog_parent)
     }
   }
 
-  const QString path = QStringLiteral("%1/duckstation-qt_%3.qm").arg(base_dir).arg(qlanguage);
+  const QString path = QStringLiteral("%1/duckstation-qt_%3.qm").arg(base_dir, qlanguage);
   if (!QFile::exists(path))
   {
     QtUtils::MessageBoxWarning(
       dialog_parent, QStringLiteral("Translation Error"),
-      QStringLiteral("Failed to find translation file for language '%1':\n%2").arg(qlanguage).arg(path));
+      QStringLiteral("Failed to find translation file for language '%1':\n%2").arg(qlanguage, path));
     return;
   }
 
@@ -2518,7 +2518,7 @@ void QtHost::UpdateApplicationLanguage(QWidget* dialog_parent)
   {
     QtUtils::MessageBoxWarning(
       dialog_parent, QStringLiteral("Translation Error"),
-      QStringLiteral("Failed to load translation file for language '%1':\n%2").arg(qlanguage).arg(path));
+      QStringLiteral("Failed to load translation file for language '%1':\n%2").arg(qlanguage, path));
     delete translator;
     return;
   }
@@ -2789,7 +2789,7 @@ QVariant InputDeviceListModel::data(const QModelIndex& index, int role /*= Qt::D
     }
     else
     {
-      return QStringLiteral("%1\n%2").arg(dev.identifier).arg(dev.display_name);
+      return QStringLiteral("%1\n%2").arg(dev.identifier, dev.display_name);
     }
   }
   else if (role == Qt::DecorationRole)
