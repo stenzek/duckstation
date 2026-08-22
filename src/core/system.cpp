@@ -1873,6 +1873,9 @@ System::BootResult System::BootSystem(SystemBootParameters parameters, Error* er
   // Immediately pausing?
   const bool start_paused = (ShouldStartPaused() || parameters.override_start_paused.value_or(false));
 
+  // Achievement game load request must come before state load, otherwise we can't load state.
+  Achievements::OnSystemStarted();
+
   // try to load the state, if it fails, bail out
   if (!parameters.save_state.empty() &&
       !LoadState(parameters.save_state.c_str(), error, false, start_paused).value_or(false))
@@ -1895,7 +1898,6 @@ System::BootResult System::BootSystem(SystemBootParameters parameters, Error* er
     GDBServer::Initialize(g_settings.gdb_server_port);
 #endif
 
-  Achievements::OnSystemStarted();
   Host::OnSystemStarted();
 
   if (parameters.load_image_to_ram || g_settings.cdrom_load_image_to_ram)
