@@ -128,6 +128,7 @@ public:
   u32 GetVideoWidth() const override final;
   u32 GetVideoHeight() const override final;
   float GetVideoFPS() const override final;
+  u64 GetOutputSize() const override final;
 
   float GetCaptureThreadUsage() const override final;
   float GetCaptureThreadTime() const override final;
@@ -164,6 +165,7 @@ protected:
   void StartEncoderThread();
   void StopEncoderThread(std::unique_lock<std::mutex>& lock);
   void DeleteOutputFile();
+  void UpdateOutputSize(u64 size);
 
   virtual void ClearState();
   virtual bool SendFrame(const PendingFrame& pf, Error* error) = 0;
@@ -179,6 +181,7 @@ protected:
   std::string m_path;
   std::atomic_bool m_capturing{false};
   std::atomic_bool m_encoding_error{false};
+  std::atomic<u64> m_output_size{0};
 
   GPUTextureFormat m_video_render_texture_format = GPUTextureFormat::Unknown;
   u32 m_video_width = 0;
@@ -219,6 +222,7 @@ bool MediaCaptureBase::BeginCapture(MediaCaptureMode mode, float fps, float aspe
                                     std::string_view audio_codec, u32 audio_bitrate, std::string_view audio_codec_args,
                                     Error* error)
 {
+  m_output_size.store(0, std::memory_order_release);
   m_video_render_texture_format = texture_format;
   m_video_width = width;
   m_video_height = height;
@@ -622,6 +626,17 @@ float MediaCaptureBase::GetVideoFPS() const
   return m_video_fps;
 }
 
+u64 MediaCaptureBase::GetOutputSize() const
+{
+  return m_output_size.load(std::memory_order_acquire);
+}
+
+void MediaCaptureBase::UpdateOutputSize(u64 size)
+{
+  if (size > m_output_size.load(std::memory_order_relaxed))
+    m_output_size.store(size, std::memory_order_release);
+}
+
 float MediaCaptureBase::GetCaptureThreadUsage() const
 {
   return m_encoder_thread_usage;
@@ -661,6 +676,7 @@ void MediaCaptureBase::DeleteOutputFile()
 #ifdef _WIN32
 
 #define VISIT_MFPLAT_IMPORTS(X)                                                                                        \
+  X(MFCreateFile)                                                                                                      \
   X(MFCreateMediaType)                                                                                                 \
   X(MFCreateMemoryBuffer)                                                                                              \
   X(MFCreateSample)                                                                                                    \
@@ -709,6 +725,8 @@ protected:
   bool InternalEndCapture(std::unique_lock<std::mutex>& lock, Error* error) override;
 
 private:
+  class CountingByteStream;
+
   // Media foundation works in units of 100 nanoseconds.
   static constexpr double ConvertFrequencyToMFDurationUnits(double frequency) { return ((1e+9 / frequency) / 100.0); }
   static constexpr LONGLONG ConvertPTSToTimestamp(s64 pts, double duration)
@@ -735,6 +753,7 @@ private:
   bool ProcessVideoEvents(Error* error);        // asynchronous
 
   ComPtr<IMFSinkWriter> m_sink_writer;
+  ComPtr<IMFByteStream> m_output_byte_stream;
 
   DWORD m_video_stream_index = INVALID_STREAM_INDEX;
   DWORD m_audio_stream_index = INVALID_STREAM_INDEX;
@@ -765,6 +784,130 @@ private:
 
   static bool LoadMediaFoundation(Error* error);
   static void UnloadMediaFoundation();
+};
+
+class MediaCaptureMF::CountingByteStream final : public IMFByteStream
+{
+public:
+  CountingByteStream(MediaCaptureMF* capture, IMFByteStream* stream) : m_capture(capture), m_stream(stream)
+  {
+    QWORD position;
+    if (SUCCEEDED(m_stream->GetCurrentPosition(&position)))
+      m_position = position;
+  }
+
+  STDMETHODIMP QueryInterface(REFIID riid, void** object) override
+  {
+    if (!object)
+      return E_POINTER;
+
+    if (riid == IID_IUnknown || riid == __uuidof(IMFByteStream))
+    {
+      *object = static_cast<IMFByteStream*>(this);
+      AddRef();
+      return S_OK;
+    }
+
+    *object = nullptr;
+    return E_NOINTERFACE;
+  }
+
+  STDMETHODIMP_(ULONG) AddRef() override { return m_ref_count.fetch_add(1, std::memory_order_relaxed) + 1; }
+
+  STDMETHODIMP_(ULONG) Release() override
+  {
+    const ULONG ref_count = m_ref_count.fetch_sub(1, std::memory_order_acq_rel) - 1;
+    if (ref_count == 0)
+      delete this;
+    return ref_count;
+  }
+
+  STDMETHODIMP GetCapabilities(DWORD* capabilities) override { return m_stream->GetCapabilities(capabilities); }
+  STDMETHODIMP GetLength(QWORD* length) override { return m_stream->GetLength(length); }
+
+  STDMETHODIMP SetLength(QWORD length) override
+  {
+    const HRESULT hr = m_stream->SetLength(length);
+    if (SUCCEEDED(hr))
+      m_capture->UpdateOutputSize(length);
+    return hr;
+  }
+
+  STDMETHODIMP GetCurrentPosition(QWORD* position) override { return m_stream->GetCurrentPosition(position); }
+
+  STDMETHODIMP SetCurrentPosition(QWORD position) override
+  {
+    const HRESULT hr = m_stream->SetCurrentPosition(position);
+    if (SUCCEEDED(hr))
+      m_position = position;
+    return hr;
+  }
+
+  STDMETHODIMP IsEndOfStream(BOOL* end_of_stream) override { return m_stream->IsEndOfStream(end_of_stream); }
+  STDMETHODIMP Read(BYTE* buffer, ULONG count, ULONG* bytes_read) override
+  {
+    const HRESULT hr = m_stream->Read(buffer, count, bytes_read);
+    if (SUCCEEDED(hr))
+      m_position += *bytes_read;
+    return hr;
+  }
+  STDMETHODIMP BeginRead(BYTE* buffer, ULONG count, IMFAsyncCallback* callback, IUnknown* state) override
+  {
+    return m_stream->BeginRead(buffer, count, callback, state);
+  }
+  STDMETHODIMP EndRead(IMFAsyncResult* result, ULONG* bytes_read) override
+  {
+    const HRESULT hr = m_stream->EndRead(result, bytes_read);
+    if (SUCCEEDED(hr))
+      m_position += *bytes_read;
+    return hr;
+  }
+
+  STDMETHODIMP Write(const BYTE* buffer, ULONG count, ULONG* bytes_written) override
+  {
+    const HRESULT hr = m_stream->Write(buffer, count, bytes_written);
+    if (SUCCEEDED(hr))
+      AdvancePosition(*bytes_written);
+    return hr;
+  }
+
+  STDMETHODIMP BeginWrite(const BYTE* buffer, ULONG count, IMFAsyncCallback* callback, IUnknown* state) override
+  {
+    return m_stream->BeginWrite(buffer, count, callback, state);
+  }
+
+  STDMETHODIMP EndWrite(IMFAsyncResult* result, ULONG* bytes_written) override
+  {
+    const HRESULT hr = m_stream->EndWrite(result, bytes_written);
+    if (SUCCEEDED(hr))
+      AdvancePosition(*bytes_written);
+    return hr;
+  }
+
+  STDMETHODIMP Seek(MFBYTESTREAM_SEEK_ORIGIN origin, LONGLONG offset, DWORD flags, QWORD* position) override
+  {
+    const HRESULT hr = m_stream->Seek(origin, offset, flags, position);
+    if (SUCCEEDED(hr))
+      m_position = *position;
+    return hr;
+  }
+
+  STDMETHODIMP Flush() override { return m_stream->Flush(); }
+  STDMETHODIMP Close() override { return m_stream->Close(); }
+
+private:
+  ~CountingByteStream() = default;
+
+  void AdvancePosition(ULONG bytes_written)
+  {
+    m_position += bytes_written;
+    m_capture->UpdateOutputSize(m_position);
+  }
+
+  std::atomic<ULONG> m_ref_count{1};
+  MediaCaptureMF* m_capture;
+  ComPtr<IMFByteStream> m_stream;
+  u64 m_position = 0;
 };
 
 struct MediaFoundationVideoCodec
@@ -950,10 +1093,23 @@ bool MediaCaptureMF::InternalBeginCapture(float fps, float aspect, u32 sample_ra
     m_audio_sample_duration = ConvertFrequencyToMFDurationUnits(sample_rate);
   }
 
-  if (FAILED(hr = wrap_MFCreateSinkWriterFromURL(StringUtil::UTF8StringToWideString(m_path).c_str(), nullptr, nullptr,
+  const std::wstring output_path = StringUtil::UTF8StringToWideString(m_path);
+  ComPtr<IMFByteStream> file_stream;
+  if (FAILED(hr = wrap_MFCreateFile(MF_ACCESSMODE_READWRITE, MF_OPENMODE_DELETE_IF_EXIST, MF_FILEFLAGS_NONE,
+                                    output_path.c_str(), file_stream.GetAddressOf())))
+  {
+    Error::SetHResult(error, "MFCreateFile() failed: ", hr);
+    return false;
+  }
+
+  m_output_byte_stream.Attach(new CountingByteStream(this, file_stream.Get()));
+  if (FAILED(hr = wrap_MFCreateSinkWriterFromURL(output_path.c_str(), m_output_byte_stream.Get(), nullptr,
                                                  m_sink_writer.GetAddressOf())))
   {
     Error::SetHResult(error, "MFCreateSinkWriterFromURL() failed: ", hr);
+    m_output_byte_stream->Close();
+    m_output_byte_stream.Reset();
+    DeleteOutputFile();
     return false;
   }
 
@@ -1006,6 +1162,8 @@ bool MediaCaptureMF::InternalBeginCapture(float fps, float aspect, u32 sample_ra
   if (FAILED(hr))
   {
     m_sink_writer.Reset();
+    m_output_byte_stream->Close();
+    m_output_byte_stream.Reset();
     DeleteOutputFile();
     return false;
   }
@@ -1399,6 +1557,11 @@ void MediaCaptureMF::ClearState()
   MediaCaptureBase::ClearState();
 
   m_sink_writer.Reset();
+  if (m_output_byte_stream)
+  {
+    m_output_byte_stream->Close();
+    m_output_byte_stream.Reset();
+  }
 
   m_video_stream_index = INVALID_STREAM_INDEX;
   m_audio_stream_index = INVALID_STREAM_INDEX;
@@ -1947,6 +2110,7 @@ bool MediaCaptureMF::ProcessAudioPackets(s64 video_pts, Error* error)
   X(avformat_free_context)                                                                                             \
   X(avformat_query_codec)                                                                                              \
   X(avio_open)                                                                                                         \
+  X(avio_seek)                                                                                                         \
   X(avio_closep)
 
 #define VISIT_AVUTIL_IMPORTS(X)                                                                                        \
@@ -2026,6 +2190,8 @@ protected:
 private:
   static void SetAVError(Error* error, std::string_view prefix, int errnum);
   static CodecList GetCodecListForContainer(const char* container, AVMediaType type);
+
+  void UpdateAVIOOutputSize();
 
   bool IsUsingHardwareVideoEncoding();
 
@@ -2914,6 +3080,8 @@ bool MediaCaptureFFmpeg::InternalBeginCapture(float fps, float aspect, u32 sampl
     return false;
   }
 
+  UpdateAVIOOutputSize();
+
   return true;
 }
 
@@ -2967,6 +3135,7 @@ bool MediaCaptureFFmpeg::InternalEndCapture(std::unique_lock<std::mutex>& lock, 
     return false;
   }
 
+  UpdateAVIOOutputSize();
   return true;
 }
 
@@ -3029,6 +3198,14 @@ void MediaCaptureFFmpeg::ClearState()
   m_audio_frame_planar = false;
 }
 
+void MediaCaptureFFmpeg::UpdateAVIOOutputSize()
+{
+  // avio_tell() is an inline call to avio_seek(); use the dynamically loaded function directly.
+  const s64 position = wrap_avio_seek(m_format_context->pb, 0, SEEK_CUR);
+  if (position >= 0)
+    UpdateOutputSize(static_cast<u64>(position));
+}
+
 bool MediaCaptureFFmpeg::ReceivePackets(AVCodecContext* codec_context, AVStream* stream, AVPacket* packet, Error* error)
 {
   for (;;)
@@ -3060,6 +3237,7 @@ bool MediaCaptureFFmpeg::ReceivePackets(AVCodecContext* codec_context, AVStream*
     wrap_av_packet_unref(packet);
   }
 
+  UpdateAVIOOutputSize();
   return true;
 }
 

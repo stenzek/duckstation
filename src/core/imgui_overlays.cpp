@@ -670,8 +670,13 @@ void ImGuiManager::DrawMediaCaptureOverlay(float& position_y, float scale, float
 
   static constexpr const char* ICON = ICON_PF_CIRCLE;
   const time_t elapsed_time = cap->GetElapsedTime();
-  const TinyString text_msg = TinyString::from_format(" {:02d}:{:02d}:{:02d}", elapsed_time / 3600,
-                                                      (elapsed_time % 3600) / 60, (elapsed_time % 3600) % 60);
+  const u64 output_size = cap->GetOutputSize();
+  const u32 output_size_mb = (output_size >= (1024 * 1024 * 1024)) ?
+                               static_cast<u32>((output_size + (1024 * 1024 - 1)) / (1024 * 1024 * 1024)) :
+                               static_cast<u32>((output_size + (1024 * 1024 - 1)) / (1024 * 1024));
+  const TinyString text_msg =
+    TinyString::from_format(" {:02d}:{:02d}:{:02d}  ({} MB)", elapsed_time / 3600, (elapsed_time % 3600) / 60,
+                            (elapsed_time % 3600) % 60, output_size_mb);
   const ImVec2 icon_size =
     font->CalcTextSizeA(font_size, font_weight, std::numeric_limits<float>::max(), -1.0f, ICON, nullptr, nullptr);
   const ImVec2 text_size = font->CalcTextSizeA(font_size, font_weight, std::numeric_limits<float>::max(), -1.0f,
