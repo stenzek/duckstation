@@ -109,54 +109,6 @@
             <numerusform>This subset has %n leaderboards.</numerusform>
         </translation>
     </message>
-    <message numerus="yes">
-        <source>%n minutes ago</source>
-        <comment>Relative time</comment>
-        <translation>
-            <numerusform>%n minute ago</numerusform>
-            <numerusform>%n minutes ago</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <source>%n hours ago</source>
-        <comment>Relative time</comment>
-        <translation>
-            <numerusform>%n hour ago</numerusform>
-            <numerusform>%n hours ago</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <source>%n days ago</source>
-        <comment>Relative time</comment>
-        <translation>
-            <numerusform>%n day ago</numerusform>
-            <numerusform>%n days ago</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <source>%n weeks ago</source>
-        <comment>Relative time</comment>
-        <translation>
-            <numerusform>%n week ago</numerusform>
-            <numerusform>%n weeks ago</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <source>%n months ago</source>
-        <comment>Relative time</comment>
-        <translation>
-            <numerusform>%n month ago</numerusform>
-            <numerusform>%n months ago</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <source>%n years ago</source>
-        <comment>Relative time</comment>
-        <translation>
-            <numerusform>%n year ago</numerusform>
-            <numerusform>%n years ago</numerusform>
-        </translation>
-    </message>
 </context>
 <context>
     <name>CDImage</name>
@@ -310,6 +262,30 @@
         <translation>
             <numerusform>%n hour ago</numerusform>
             <numerusform>%n hours ago</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n weeks ago</source>
+        <comment>Time difference</comment>
+        <translation>
+            <numerusform>%n week ago</numerusform>
+            <numerusform>%n weeks ago</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n months ago</source>
+        <comment>Time difference</comment>
+        <translation>
+            <numerusform>%n month ago</numerusform>
+            <numerusform>%n months ago</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n years ago</source>
+        <comment>Time difference</comment>
+        <translation>
+            <numerusform>%n year ago</numerusform>
+            <numerusform>%n years ago</numerusform>
         </translation>
     </message>
     <message numerus="yes">

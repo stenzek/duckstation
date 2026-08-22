@@ -141,9 +141,8 @@ static void CloseLeaderboard();
 static void DrawLeaderboardListEntry(const rc_client_leaderboard_t* lboard);
 static bool DrawLeaderboardEntry(const rc_client_leaderboard_entry_t& entry, u32 index, bool is_self,
                                  float rank_column_width, float name_column_width, float time_column_width,
-                                 float column_spacing, std::time_t current_time, const std::tm& current_tm);
+                                 float column_spacing);
 static void DrawLeaderboardLoadingIndicator(float pos_y, float avail_height, bool short_text);
-static SmallString FormatRelativeTimestamp(std::time_t timestamp, std::time_t current_time, const std::tm& current_tm);
 
 namespace {
 
@@ -2880,11 +2879,6 @@ void FullscreenUI::DrawLeaderboardsWindow()
       BeginMenuButtons(0, 0.0f, LAYOUT_MENU_BUTTON_X_PADDING, 8.0f, 0.0f, 4.0f);
       ResetFocusHere();
 
-      // for drawing time popups
-      const std::time_t current_time = std::time(nullptr);
-      std::optional<std::tm> current_tm = Common::LocalTime(current_time);
-      if (!current_tm.has_value())
-        current_tm = std::tm{};
       ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
       ImGui::PushStyleVar(ImGuiStyleVar_PopupBorderSize, 0.0f);
 
@@ -2901,8 +2895,7 @@ void FullscreenUI::DrawLeaderboardsWindow()
             if (DrawLeaderboardEntry(s_achievements_locals.leaderboard_nearby_entries->entries[i], i,
                                      static_cast<s32>(i) ==
                                        s_achievements_locals.leaderboard_nearby_entries->user_index,
-                                     rank_column_width, name_column_width, time_column_width, column_spacing,
-                                     current_time, current_tm.value()))
+                                     rank_column_width, name_column_width, time_column_width, column_spacing))
             {
               last_visible_count = total_count;
             }
@@ -2922,8 +2915,7 @@ void FullscreenUI::DrawLeaderboardsWindow()
             total_count++;
 
             if (DrawLeaderboardEntry(list->entries[i], i, static_cast<s32>(i) == list->user_index, rank_column_width,
-                                     name_column_width, time_column_width, column_spacing, current_time,
-                                     current_tm.value()))
+                                     name_column_width, time_column_width, column_spacing))
             {
               last_visible_count = total_count;
             }
@@ -2980,7 +2972,7 @@ void FullscreenUI::DrawLeaderboardsWindow()
 
 bool FullscreenUI::DrawLeaderboardEntry(const rc_client_leaderboard_entry_t& entry, u32 index, bool is_self,
                                         float rank_column_width, float name_column_width, float time_column_width,
-                                        float column_spacing, std::time_t current_time, const std::tm& current_tm)
+                                        float column_spacing)
 {
   ImRect bb;
   bool visible, hovered;
@@ -3036,8 +3028,8 @@ bool FullscreenUI::DrawLeaderboardEntry(const rc_client_leaderboard_entry_t& ent
 
   const ImRect time_bb(ImVec2(text_start_x, bb.Min.y), ImVec2(bb.Max.x, midpoint));
 
-  const SmallString relative_time =
-    FormatRelativeTimestamp(static_cast<std::time_t>(entry.submitted), current_time, current_tm);
+  const TinyString relative_time =
+    Host::FormatRelativeDateTime(static_cast<std::time_t>(entry.submitted), false, true, true);
   RenderShadowedTextClipped(UIStyle.Font, UIStyle.MediumLargeFontSize, font_weight, time_bb.Min, time_bb.Max,
                             text_color, relative_time, nullptr, ImVec2(0.0f, 0.0f), 0.0f, &time_bb);
 
@@ -3094,82 +3086,6 @@ void FullscreenUI::DrawLeaderboardLoadingIndicator(float pos_y, float avail_heig
   const ImVec2 text_pos = ImVec2(pos.x + spinner_size + spinner_spacing, pos.y);
   RenderShadowedTextClipped(UIStyle.Font, font_size, UIStyle.BoldFontWeight, text_pos, text_pos + text_size, color,
                             text, &text_size);
-}
-
-SmallString FullscreenUI::FormatRelativeTimestamp(time_t timestamp, time_t current_time, const std::tm& current_tm)
-{
-  const s64 diff = static_cast<s64>(current_time) - static_cast<s64>(timestamp);
-
-  constexpr s64 MINUTE = 60;
-  constexpr s64 HOUR = 60 * MINUTE;
-  constexpr s64 DAY = 24 * HOUR;
-  constexpr s64 WEEK = 7 * DAY;
-
-  if (diff < MINUTE)
-    return SmallString(TRANSLATE_SV("Achievements", "Just now"));
-
-  if (diff < HOUR)
-  {
-    const int minutes = static_cast<int>(diff / MINUTE);
-    return TRANSLATE_PLURAL_SSTR("Achievements", "%n minutes ago", "Relative time", minutes);
-  }
-
-  if (diff < DAY)
-  {
-    const int hours = static_cast<int>(diff / HOUR);
-    return TRANSLATE_PLURAL_SSTR("Achievements", "%n hours ago", "Relative time", hours);
-  }
-
-  if (diff < DAY * 2)
-  {
-    // Check if it's actually today vs yesterday
-    const std::optional<std::tm> timestamp_tm = Common::LocalTime(timestamp);
-    if (timestamp_tm.has_value() && timestamp_tm->tm_yday == current_tm.tm_yday &&
-        timestamp_tm->tm_year == current_tm.tm_year)
-    {
-      return SmallString(TRANSLATE_SV("Achievements", "Today"));
-    }
-
-    return SmallString(TRANSLATE_SV("Achievements", "Yesterday"));
-  }
-
-  if (diff < WEEK)
-  {
-    const int days = static_cast<int>(diff / DAY);
-    return TRANSLATE_PLURAL_SSTR("Achievements", "%n days ago", "Relative time", days);
-  }
-
-  const std::optional<std::tm> timestamp_tm = Common::LocalTime(timestamp);
-  if (!timestamp_tm.has_value())
-    return SmallString();
-
-  const int year_diff = current_tm.tm_year - timestamp_tm->tm_year;
-  const int month_diff = current_tm.tm_mon - timestamp_tm->tm_mon;
-  const int total_months = year_diff * 12 + month_diff;
-
-  if (total_months == 0)
-  {
-    // Less than a month - use weeks
-    const int weeks = static_cast<int>(diff / WEEK);
-    return TRANSLATE_PLURAL_SSTR("Achievements", "%n weeks ago", "Relative time", weeks);
-  }
-
-  if (total_months < 12)
-    return TRANSLATE_PLURAL_SSTR("Achievements", "%n months ago", "Relative time", total_months);
-
-  // For years, adjust if we haven't reached the anniversary yet
-  int years = year_diff;
-  if (current_tm.tm_mon < timestamp_tm->tm_mon ||
-      (current_tm.tm_mon == timestamp_tm->tm_mon && current_tm.tm_mday < timestamp_tm->tm_mday))
-  {
-    years--;
-  }
-
-  // Edge case: less than a full year but more than 11 months
-  if (years < 1)
-    return TRANSLATE_PLURAL_SSTR("Achievements", "%n months ago", "Relative time", total_months);
-
-  return TRANSLATE_PLURAL_SSTR("Achievements", "%n years ago", "Relative time", years);
 }
 
 void FullscreenUI::DrawLeaderboardListEntry(const rc_client_leaderboard_t* lboard)
