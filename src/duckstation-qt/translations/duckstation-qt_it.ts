@@ -120,9 +120,9 @@ Vuoi abilitare il tracciamento ora?</translation>
 However, hardcore mode also prevents the usage of save states, cheats and slowdown functionality.
 
 Do you want to enable hardcore mode?</source>
-        <translation>La modalità hardcore non è attualmente abilitata. Abilitare la modalità hardcore ti consente di fissare tempi, punteggi, e partecipare in classifiche specifiche per ogni gioco.
+        <translation>La modalità hardcore non è attualmente abilitata. Abilitare la modalità hardcore ti consente di fissare tempi e punteggi nonché di partecipare alle classifiche specifiche di ogni gioco.
 
-Tuttavia, la modalità hardcore mode impedisce anche l&apos;uso di stati salvati, trucchi e funzionalità di rallentamento.
+Tuttavia, la modalità hardcore mode impedisce anche l&apos;uso di salvataggi di stato, trucchi e funzionalità di rallentamento.
 
 Vuoi abilitare la modalità hardcore?</translation>
     </message>
@@ -203,7 +203,8 @@ Vuoi abilitare la modalità hardcore?</translation>
     </message>
     <message>
         <source>Prefetch Badges</source>
-        <translation>Precarica badge</translation>
+        <translatorcomment>Follow RAWeb translation</translatorcomment>
+        <translation>Precarica emblemi</translation>
     </message>
     <message>
         <source>Notifications</source>
@@ -247,11 +248,11 @@ Vuoi abilitare la modalità hardcore?</translation>
     </message>
     <message>
         <source>When enabled and logged in, DuckStation will scan for achievements on startup.</source>
-        <translation>Quando attivato e con accesso effettuato, DuckStation cercherà gli obiettivi all&apos;avvio.</translation>
+        <translation>Quando attivato e con accesso effettuato, DuckStation cercherà gli obiettivi del gioco all&apos;avvio.</translation>
     </message>
     <message>
         <source>&quot;Challenge&quot; mode for achievements, including leaderboard tracking. Disables save state, cheats, and slowdown functions.</source>
-        <translation>Modalità &quot;sfida&quot; per gli obiettivi, incluso il tracciamento delle classifiche. Disabilita stati salvati, trucchi e funzionalità di rallentamento.</translation>
+        <translation>Modalità &quot;sfida&quot; per gli obiettivi, inclusa la partecipazione alle classifiche. Disabilita salvataggi di stato, trucchi e funzionalità di rallentamento.</translation>
     </message>
     <message>
         <source>Checked</source>
@@ -275,7 +276,7 @@ Vuoi abilitare la modalità hardcore?</translation>
     </message>
     <message>
         <source>Downloads all locked achievement badges while starting the game. This will reduce delays in the images being shown when unlocking achievements.</source>
-        <translation>Scarica tutti i badge degli obiettivi non ancora sbloccati all&apos;avvio del gioco. In questo modo si ridurranno i ritardi nella visualizzazione delle immagini quando si sbloccano gli obiettivi.</translation>
+        <translation>Scarica tutti gli emblemi degli obiettivi non ancora sbloccati all&apos;avvio del gioco. In questo modo si ridurranno i ritardi nella visualizzazione delle immagini quando si sbloccano gli obiettivi.</translation>
     </message>
     <message>
         <source>Notification Location</source>
@@ -379,9 +380,9 @@ Vuoi abilitare la modalità hardcore?</translation>
     </message>
     <message>
         <source>Logged in as %1
-Token generated at %2</source>
+Token generated %2</source>
         <translation>Accesso effettuato come %1
-Token generato alle %2</translation>
+Token generato %2</translation>
     </message>
     <message>
         <source>When enabled, each session will behave as if no achievements have been unlocked.</source>
@@ -448,9 +449,10 @@ Token generato alle %2</translation>
     <message numerus="yes">
         <source>Prefetching achievement badges (%n remaining)...</source>
         <comment>Achievement badge prefetch count</comment>
+        <translatorcomment>Follow RAWeb translation</translatorcomment>
         <translation>
-            <numerusform>Precaricamento dei badge degli obiettivi (%n rimanente)...</numerusform>
-            <numerusform>Precaricamento dei badge degli obiettivi (%n rimanenti)...</numerusform>
+            <numerusform>Precaricamento emblemi degli obiettivi (%n rimanente)...</numerusform>
+            <numerusform>Precaricamento emblemi degli obiettivi (%n rimanenti)...</numerusform>
         </translation>
     </message>
     <message>
@@ -578,14 +580,16 @@ Token generato alle %2</translation>
         <source>An unlock request could not be completed.
 We will keep trying to submit this request.</source>
         <translation>Impossibile completare una richiesta di sblocco.
-Continueremo a provare a inviare questa richiesta.</translation>
+La richiesta verrà tentata nuovamente.</translation>
     </message>
     <message>
         <source>Hardcore mode enabled.</source>
+        <translatorcomment>Follow RAWeb translation</translatorcomment>
         <translation>Modalità hardcore attivata.</translation>
     </message>
     <message>
         <source>Hardcore mode disabled.</source>
+        <translatorcomment>Follow RAWeb translation</translatorcomment>
         <translation>Modalità hardcore disattivata.</translation>
     </message>
     <message>
@@ -607,7 +611,7 @@ Continueremo a provare a inviare questa richiesta.</translation>
     <message>
         <source>Achievement unlocks will not be submitted for this session.
 Error: {}</source>
-        <translation>Gli sblocchi degli obiettivi non verranno inviati per questa sessione.
+        <translation>Gli sblocchi degli obiettivi non verranno registrati per questa sessione.
 Errore: {}</translation>
     </message>
     <message>
@@ -672,6 +676,7 @@ Messaggi non letti: {}</translation>
     </message>
     <message>
         <source> (Hardcore Mode)</source>
+        <translatorcomment>Follow RAWeb translation</translatorcomment>
         <translation> (Modalità hardcore)</translation>
     </message>
     <message>
@@ -710,7 +715,7 @@ Messaggi non letti: {}</translation>
     <message>
         <source>Active Leaderboard Attempts</source>
         <comment>Pause Menu</comment>
-        <translation>Tentativi attivi nelle classifiche</translation>
+        <translation>Tentativi di classifica in corso</translation>
     </message>
     <message>
         <source>Achievements are not available.</source>
@@ -765,30 +770,6 @@ Messaggi non letti: {}</translation>
         </translation>
     </message>
     <message>
-        <source>Game was beaten on {0}, and completed on {1}.</source>
-        <translation>Il gioco è stato battuto il {0} e completato il {1}.</translation>
-    </message>
-    <message>
-        <source>Subset was beaten on {0}, and completed on {1}.</source>
-        <translation>Il subset è stato battuto il {0} e completato il {1}.</translation>
-    </message>
-    <message>
-        <source>Game was beaten on {0}.</source>
-        <translation>Il gioco è stato battuto il {0}.</translation>
-    </message>
-    <message>
-        <source>Subset was beaten on {0}.</source>
-        <translation>Il subset è stato battuto il {0}.</translation>
-    </message>
-    <message>
-        <source>Game was completed on {0}.</source>
-        <translation>Il gioco è stato completato il {0}.</translation>
-    </message>
-    <message>
-        <source>Subset was completed on {0}.</source>
-        <translation>Il subset è stato completato il {0}.</translation>
-    </message>
-    <message>
         <source>Unknown</source>
         <translation>Sconosciuti</translation>
     </message>
@@ -810,7 +791,7 @@ Messaggi non letti: {}</translation>
     </message>
     <message>
         <source>Recently Unlocked</source>
-        <translation>Recentemente sbloccati</translation>
+        <translation>Sbloccati di recente</translation>
     </message>
     <message>
         <source>Active Challenges</source>
@@ -850,7 +831,8 @@ Messaggi non letti: {}</translation>
     </message>
     <message>
         <source>Missable</source>
-        <translation>Perdibile</translation>
+        <translatorcomment>Follow RAWeb translation</translatorcomment>
+        <translation>Mancabile</translation>
     </message>
     <message>
         <source>Progression</source>
@@ -858,11 +840,8 @@ Messaggi non letti: {}</translation>
     </message>
     <message>
         <source>Win Condition</source>
+        <translatorcomment>Follow RAWeb translation</translatorcomment>
         <translation>Condizione di vittoria</translation>
-    </message>
-    <message>
-        <source>Unlocked: {} | {:.1f}% of players have this achievement</source>
-        <translation>Sbloccato: {} | Il {:.1f}% dei giocatori ha questo obiettivo</translation>
     </message>
     <message>
         <source>{:.1f}% of players have this achievement</source>
@@ -899,6 +878,40 @@ Messaggi non letti: {}</translation>
     <message>
         <source>XXX points</source>
         <translation>XXX punti</translation>
+    </message>
+    <message>
+        <source>Game was beaten {0}, and completed {1}.</source>
+        <translatorcomment>Follow RAWeb translation</translatorcomment>
+        <translation>Gioco finito {0} e completato al 100% {1}.</translation>
+    </message>
+    <message>
+        <source>Subset was beaten {0}, and completed {1}.</source>
+        <translatorcomment>Follow RAWeb translation</translatorcomment>
+        <translation>Subset finito {0} e completato al 100% {1}.</translation>
+    </message>
+    <message>
+        <source>Game was beaten {0}.</source>
+        <translatorcomment>Follow RAWeb translation</translatorcomment>
+        <translation>Gioco finito {0}.</translation>
+    </message>
+    <message>
+        <source>Subset was beaten {0}.</source>
+        <translatorcomment>Follow RAWeb translation</translatorcomment>
+        <translation>Subset finito {0}.</translation>
+    </message>
+    <message>
+        <source>Game was completed {0}.</source>
+        <translatorcomment>Follow RAWeb translation</translatorcomment>
+        <translation>Gioco completato al 100% {0}.</translation>
+    </message>
+    <message>
+        <source>Subset was completed {0}.</source>
+        <translatorcomment>Follow RAWeb translation</translatorcomment>
+        <translation>Subset completato al 100% {0}.</translation>
+    </message>
+    <message>
+        <source>Unlocked {} | {:.1f}% of players have this achievement</source>
+        <translation>Sbloccato {} | Il {:.1f}% dei giocatori ha questo obiettivo</translation>
     </message>
     <message>
         <source>Loading...</source>
@@ -1636,7 +1649,8 @@ Messaggi non letti: {}</translation>
     </message>
     <message>
         <source>Minimal</source>
-        <translation>Minimo</translation>
+        <translatorcomment>Feminine because it refers to the latency (&quot;latenza&quot;)</translatorcomment>
+        <translation>Minima</translation>
     </message>
     <message>
         <source>Output Latency:</source>
@@ -1660,7 +1674,7 @@ Messaggi non letti: {}</translation>
     </message>
     <message>
         <source>Reset Output Volume</source>
-        <translation>Reimposta il volume in uscita</translation>
+        <translation>Ripristina volume in uscita predefinito</translation>
     </message>
     <message>
         <source>Fast Forward Volume:</source>
@@ -1668,7 +1682,7 @@ Messaggi non letti: {}</translation>
     </message>
     <message>
         <source>Reset Fast Forward Volume</source>
-        <translation>Reimposta il volume dell&apos;avanzamento veloce</translation>
+        <translation>Ripristina volume di avanzamento veloce predefinito</translation>
     </message>
     <message>
         <source>Mute All Sound</source>
@@ -1684,7 +1698,7 @@ Messaggi non letti: {}</translation>
     </message>
     <message>
         <source>Reset Buffer Size</source>
-        <translation>Reimposta la dimensione del buffer</translation>
+        <translation>Ripristina dimensione del buffer predefinita</translation>
     </message>
     <message>
         <source>Maximum Latency: 0 ms (0 ms stretch + 0 ms buffer + 0 ms output)</source>
@@ -1696,7 +1710,7 @@ Messaggi non letti: {}</translation>
     </message>
     <message>
         <source>Reset Sequence Length</source>
-        <translation>Reimposta la lunghezza della sequenza</translation>
+        <translation>Ripristina lunghezza della sequenza predefinita</translation>
     </message>
     <message>
         <source>Seek Window:</source>
@@ -1704,7 +1718,7 @@ Messaggi non letti: {}</translation>
     </message>
     <message>
         <source>Reset Seek Window</source>
-        <translation>Reimposta la finestra di ricerca</translation>
+        <translation>Ripristina finestra di ricerca predefinita</translation>
     </message>
     <message>
         <source>Overlap:</source>
@@ -1712,7 +1726,7 @@ Messaggi non letti: {}</translation>
     </message>
     <message>
         <source>Reset Overlap</source>
-        <translation>Reimposta la sovrapposizione</translation>
+        <translation>Ripristina sovrapposizione predefinita</translation>
     </message>
     <message>
         <source>Use Quick Seek</source>
@@ -1812,7 +1826,7 @@ Messaggi non letti: {}</translation>
     </message>
     <message>
         <source>Reset Volume</source>
-        <translation>Reimposta il volume</translation>
+        <translation>Ripristina volume predefinito</translation>
     </message>
     <message>
         <source>N/A</source>
@@ -1994,7 +2008,7 @@ Puoi aggiornare DuckStation manualmente scaricando nuovamente l&apos;ultima vers
     </message>
     <message>
         <source>&lt;h2&gt;Save State Warning&lt;/h2&gt;&lt;p&gt;Installing this update will make your save states &lt;b&gt;incompatible&lt;/b&gt;. Please ensure you have saved your games to memory card before installing this update or you will lose progress.&lt;/p&gt;</source>
-        <translation>&lt;h2&gt;Avviso stati salvati&lt;/h2&gt;&lt;p&gt;Questo aggiornamento renderà i tuoi stati salvati &lt;b&gt;incompatibili&lt;/b&gt;. Assicurati di aver salvato le tue partite su una memory card prima di installare questo aggiornamento o perderai i tuoi progressi.&lt;/p&gt;</translation>
+        <translation>&lt;h2&gt;Avviso salvataggi di stato&lt;/h2&gt;&lt;p&gt;Questo aggiornamento renderà i tuoi salvataggi di stato &lt;b&gt;incompatibili&lt;/b&gt;. Assicurati di aver salvato le tue partite su una memory card prima di installare questo aggiornamento o perderai i tuoi progressi.&lt;/p&gt;</translation>
     </message>
     <message>
         <source>Updater Warning</source>
@@ -2294,7 +2308,7 @@ Il tuo dump potrebbe essere danneggiato oppure il disco fisico potrebbe essere g
     </message>
     <message>
         <source>Screenshot Size:</source>
-        <translation>Dimensione Screenshot:</translation>
+        <translation>Dimensione screenshot:</translation>
     </message>
     <message>
         <source>Quality:</source>
@@ -2670,7 +2684,7 @@ Tentare di utilizzare questo trucco non funzionerà come previsto. Vuoi continua
     <name>ColorPickerButton</name>
     <message>
         <source>Select LED Color</source>
-        <translation>Seleziona Colore LED</translation>
+        <translation>Seleziona colore LED</translation>
     </message>
 </context>
 <context>
@@ -2721,7 +2735,7 @@ Tentare di utilizzare questo trucco non funzionerà come previsto. Vuoi continua
     </message>
     <message>
         <source>Enable Recompiler ICache</source>
-        <translation>Abilita cache istruzioni (ICache) nel ricompilatore</translation>
+        <translation>Abilita cache istruzioni (ICache) del ricompilatore</translation>
     </message>
     <message>
         <source>CD-ROM Emulation</source>
@@ -2833,7 +2847,7 @@ Tentare di utilizzare questo trucco non funzionerà come previsto. Vuoi continua
     </message>
     <message>
         <source>Skips the boot animation. Safe to enable.</source>
-        <translation>Salta l&apos;animazione di avvio. È sicuro abilitarla.</translation>
+        <translation>Salta l&apos;animazione di avvio. Può essere abilitata in sicurezza.</translation>
     </message>
     <message>
         <source>Fast forwards through the early loading process when fast booting, saving time. Results may vary between games.</source>
@@ -3868,7 +3882,7 @@ Il colore &quot;alternativo&quot; viene utilizzato quando è attiva la modalità
     </message>
     <message>
         <source>Restore Defaults</source>
-        <translation>Ripristina predefiniti</translation>
+        <translation>Ripristina valori predefiniti</translation>
     </message>
     <message>
         <source>Error</source>
@@ -4663,7 +4677,7 @@ Questo file può pesare anche diversi GB, quindi bisogna tenere conto dell&apos;
     </message>
     <message>
         <source>Reset To Default</source>
-        <translation>Reimposta Valori Predefiniti</translation>
+        <translation>Ripristina valori predefiniti</translation>
     </message>
     <message>
         <source>Option</source>
@@ -4687,15 +4701,15 @@ Questo file può pesare anche diversi GB, quindi bisogna tenere conto dell&apos;
     </message>
     <message>
         <source>Load Devices From Save States</source>
-        <translation>Carica dispositivi dagli stati salvati</translation>
+        <translation>Carica dispositivi dai salvataggi di stato</translation>
     </message>
     <message>
         <source>Pause On Start</source>
-        <translation>Pausa all&apos;avvio</translation>
+        <translation>Metti in pausa all&apos;avvio</translation>
     </message>
     <message>
         <source>Save State Compression</source>
-        <translation>Compressione degli stati salvati</translation>
+        <translation>Compressione dei salvataggi di stato</translation>
     </message>
     <message>
         <source>Display Active Start Offset</source>
@@ -5093,7 +5107,7 @@ Facendo clic su Ripristina, il seriale verrà ripristinato al valore rilevato da
     </message>
     <message>
         <source>Sets the fast forward speed. This speed will be used when the fast forward hotkey is pressed/toggled.</source>
-        <translation>Imposta la velocità dell&apos;avanzamento veloce. Questa velocità verrà usata quando il tasto rapido per l&apos;Avanzamento Veloce viene premuto/attivato.</translation>
+        <translation>Imposta la velocità dell&apos;avanzamento veloce. Questa velocità verrà usata quando il tasto rapido per l&apos;avanzamento veloce viene premuto/attivato.</translation>
     </message>
     <message>
         <source>Turbo Speed</source>
@@ -5157,7 +5171,7 @@ Facendo clic su Ripristina, il seriale verrà ripristinato al valore rilevato da
     </message>
     <message>
         <source>&lt;b&gt;Enable Rewinding:&lt;/b&gt; Saves state periodically so you can rewind any mistakes while playing.&lt;br&gt; &lt;b&gt;Rewind Save Frequency:&lt;/b&gt; How often a rewind state will be created. Higher frequencies have greater system requirements.&lt;br&gt; &lt;b&gt;Rewind Buffer Size:&lt;/b&gt; How many saves will be kept for rewinding. Higher values have greater memory requirements.</source>
-        <translation>&lt;b&gt;Abilita riavvolgimento:&lt;/b&gt; Salva lo stato periodicamente così che tu possa riavvolgere qualunque errore commesso durante il gioco.&lt;br&gt; &lt;b&gt;Frequenza salvataggi di riavvolgimento:&lt;/b&gt; Quanto spesso verrà creato uno stato salvato per il riavvolgimento. Frequenze più alte hanno requisiti di sistema più elevati.&lt;br&gt; &lt;b&gt;Dimensione buffer di riavvolgimento:&lt;/b&gt; Quanti stati salvati verranno mantenuti per il riavvolgimento. Valori più alti hanno requisiti di memoria maggiori.</translation>
+        <translation>&lt;b&gt;Abilita riavvolgimento:&lt;/b&gt; Salva lo stato periodicamente così che tu possa riavvolgere qualunque errore commesso durante il gioco.&lt;br&gt; &lt;b&gt;Frequenza salvataggi di riavvolgimento:&lt;/b&gt; Quanto spesso verrà creato un salvataggio di stato per il riavvolgimento. Frequenze più alte hanno requisiti di sistema più elevati.&lt;br&gt; &lt;b&gt;Dimensione buffer di riavvolgimento:&lt;/b&gt; Quanti salvataggi di stato verranno mantenuti per il riavvolgimento. Valori più alti hanno requisiti di memoria maggiori.</translation>
     </message>
     <message>
         <source>Uses the software renderer when creating rewind states to prevent additional VRAM usage. Especially useful when upscaling, as this will significantly reduce the system requirements for rewinding.</source>
@@ -5206,11 +5220,11 @@ Facendo clic su Ripristina, il seriale verrà ripristinato al valore rilevato da
     </message>
     <message>
         <source>Rewind is disabled because runahead is enabled. Runahead will significantly increase system requirements.</source>
-        <translation>Il riavvolgimento è disabilitato perchè il runahead è abilitato. Il runahead aumenterà significativamente i requisiti di sistema.</translation>
+        <translation>Il riavvolgimento è disabilitato perchè il runahead è abilitato. Il runahead aumenterà notevolmente i requisiti di sistema.</translation>
     </message>
     <message>
         <source>Rewind is not enabled. Please note that enabling rewind may significantly increase system requirements.</source>
-        <translation>Il riavvolgimento non è abilitato. Notare che abilitarlo potrebbe aumentare significativamente i requisiti di sistema.</translation>
+        <translation>Il riavvolgimento non è abilitato. Abilitarlo potrebbe aumentare notevolmente i requisiti di sistema.</translation>
     </message>
 </context>
 <context>
@@ -5641,7 +5655,7 @@ ${serial}: Numero seriale del gioco.</translation>
     </message>
     <message>
         <source>Create Save State Backups</source>
-        <translation>Crea backup stati salvati</translation>
+        <translation>Crea backup dei salvataggi di stato</translation>
     </message>
     <message>
         <source>Crop Mode</source>
@@ -5752,6 +5766,10 @@ ${serial}: Numero seriale del gioco.</translation>
         <translation>Mostra messaggi popup all&apos;avvio, all&apos;invio, o al fallimento di una sfida in classifica.</translation>
     </message>
     <message>
+        <source>Do you want to continue from the automatic save created {}?</source>
+        <translation>Vuoi continuare dal salvataggio automatico creato {}?</translation>
+    </message>
+    <message>
         <source>Double-Click Toggles Fullscreen</source>
         <translation>Usa il doppio clic per entrare o uscire da schermo intero</translation>
     </message>
@@ -5821,7 +5839,7 @@ ${serial}: Numero seriale del gioco.</translation>
     </message>
     <message>
         <source>Enable Recompiler ICache</source>
-        <translation>Abilita cache istruzioni (ICache) nel ricompilatore</translation>
+        <translation>Abilita cache istruzioni (ICache) del ricompilatore</translation>
     </message>
     <message>
         <source>Enable Recompiler Memory Exceptions</source>
@@ -5893,7 +5911,7 @@ ${serial}: Numero seriale del gioco.</translation>
     </message>
     <message>
         <source>Failed to delete save state.</source>
-        <translation>Eliminazione dello stato salvato non riuscita.</translation>
+        <translation>Eliminazione del salvataggio di stato non riuscita.</translation>
     </message>
     <message>
         <source>Failed to delete {}.</source>
@@ -6095,7 +6113,7 @@ L&apos;errore è:</translation>
     </message>
     <message>
         <source>Load Devices From Save States</source>
-        <translation>Carica Dispositivi da Stati Salvati</translation>
+        <translation>Carica dispositivi dai salvataggi di stato</translation>
     </message>
     <message>
         <source>Load Resume State</source>
@@ -6136,10 +6154,6 @@ L&apos;errore è:</translation>
     <message>
         <source>Login</source>
         <translation>Accedi</translation>
-    </message>
-    <message>
-        <source>Login token generated on {}</source>
-        <translation>Token d&apos;accesso generato il {}</translation>
     </message>
     <message>
         <source>Logout</source>
@@ -6758,12 +6772,8 @@ Questa azione non può essere annullata.</translation>
         <translation>Dithering</translation>
     </message>
     <message>
-        <source>Do you want to continue from the automatic save created at {}?</source>
-        <translation>Vuoi continuare dal salvataggio automatico creato alle {}?</translation>
-    </message>
-    <message>
         <source>Downloads all locked achievement badges while starting the game. This will reduce delays in the images being shown when unlocking achievements.</source>
-        <translation>Scarica tutti i distintivi degli obiettivi bloccati all&apos;avvio del gioco. Questo ridurrà i ritardi nella visualizzazione delle immagini quando si sbloccano gli obiettivi.</translation>
+        <translation>Scarica tutti gli emblemi degli obiettivi non ancora sbloccati all&apos;avvio del gioco. In questo modo si ridurranno i ritardi nella visualizzazione delle immagini quando si sbloccano gli obiettivi.</translation>
     </message>
     <message>
         <source>Draws a border around the currently-selected item for readability.</source>
@@ -7198,6 +7208,10 @@ Errore: {}
 Controlla il nome utente e la password, quindi riprova.</translation>
     </message>
     <message>
+        <source>Login token generated {}</source>
+        <translation>Token d&apos;accesso generato {}</translation>
+    </message>
+    <message>
         <source>Macro {}</source>
         <translation>Macro {}</translation>
     </message>
@@ -7335,19 +7349,19 @@ Controlla il nome utente e la password, quindi riprova.</translation>
     </message>
     <message>
         <source>Reset Controller Settings</source>
-        <translation>Reimposta impostazioni controller</translation>
+        <translation>Ripristina impostazioni controller predefinite</translation>
     </message>
     <message>
         <source>Reset Title</source>
-        <translation>Reimposta titolo</translation>
+        <translation>Ripristina titolo</translation>
     </message>
     <message>
         <source>Reset To Default</source>
-        <translation>Reimposta Valori Predefiniti</translation>
+        <translation>Ripristina valori predefiniti</translation>
     </message>
     <message>
         <source>Resets all settings to the defaults.</source>
-        <translation>Reimposta tutte le impostazioni sui valori predefiniti.</translation>
+        <translation>Ripristina tutte le impostazioni ai valori predefiniti.</translation>
     </message>
     <message>
         <source>Restart Game</source>
@@ -7659,7 +7673,7 @@ Vuoi comunque {1}?</translation>
     </message>
     <message>
         <source>No resume save state found.</source>
-        <translation>Nessuno stato salvato di ripresa trovato.</translation>
+        <translation>Non è stato trovato alcun salvataggio di stato per la ripresa.</translation>
     </message>
     <message>
         <source>No save present in this slot.</source>
@@ -7667,7 +7681,7 @@ Vuoi comunque {1}?</translation>
     </message>
     <message>
         <source>No save states found.</source>
-        <translation>Nessuno stato salvato trovato.</translation>
+        <translation>Non è stato trovato alcun salvataggio di stato.</translation>
     </message>
     <message>
         <source>No, resume the game.</source>
@@ -7775,15 +7789,15 @@ Vuoi comunque {1}?</translation>
     </message>
     <message>
         <source>PGXP (Precision Geometry Transform Pipeline)</source>
-        <translation>PGXP (Precision Geometry Transform Pipeline, o Pipeline di Trasformazione per Geometria di Precisione)</translation>
+        <translation>PGXP (trasformazione precisa della geometria)</translation>
     </message>
     <message>
         <source>PGXP Geometry Correction</source>
-        <translation>Correzione Geometria PGXP</translation>
+        <translation>Correzione geometria PGXP</translation>
     </message>
     <message>
         <source>Parent Directory</source>
-        <translation>Cartella Superiore</translation>
+        <translation>Cartella superiore</translation>
     </message>
     <message>
         <source>Password</source>
@@ -7795,7 +7809,7 @@ Vuoi comunque {1}?</translation>
     </message>
     <message>
         <source>Patches the BIOS to skip the boot animation. Safe to enable.</source>
-        <translation>Applica una patch al BIOS per saltare l&apos;animazione di avvio. Abilitabile in sicurezza.</translation>
+        <translation>Applica una patch al BIOS per saltare l&apos;animazione di avvio. Può essere abilitata in sicurezza.</translation>
     </message>
     <message>
         <source>Path</source>
@@ -7807,15 +7821,15 @@ Vuoi comunque {1}?</translation>
     </message>
     <message>
         <source>Pause On Focus Loss</source>
-        <translation>Pausa A Finestra Inattiva</translation>
+        <translation>Metti in pausa quando in secondo piano</translation>
     </message>
     <message>
         <source>Pause On Start</source>
-        <translation>Pausa All&apos;Avvio</translation>
+        <translation>Metti in pausa all&apos;avvio</translation>
     </message>
     <message>
         <source>Pauses the emulator when a controller with bindings is disconnected.</source>
-        <translation>Mette in pausa l&apos;emulatore quando un controller con assegnazioni viene disconnesso.</translation>
+        <translation>Mette in pausa l&apos;emulatore quando un controller con associazioni viene scollegato.</translation>
     </message>
     <message>
         <source>Pauses the emulator when a game is started.</source>
@@ -7823,15 +7837,15 @@ Vuoi comunque {1}?</translation>
     </message>
     <message>
         <source>Pauses the emulator when you minimize the window or switch to another application, and unpauses when you switch back.</source>
-        <translation>Mette in pausa l&apos;emulatore quando minimizzi la finestra o passi ad un&apos;altra applicazione, e riprende quando passi di nuovo alla finestra.</translation>
+        <translation>Mette in pausa l&apos;emulatore quando minimizzi la finestra o passi ad un&apos;altra applicazione; riprende l&apos;esecuzione quando la finestra torna in primo piano.</translation>
     </message>
     <message>
         <source>Per-Game Configuration</source>
-        <translation>Configurazione Per Gioco</translation>
+        <translation>Configurazione specifica del gioco</translation>
     </message>
     <message>
         <source>Per-game controller configuration initialized with global settings.</source>
-        <translation>Configurazione controller per gioco inizializzata con impostazioni globali.</translation>
+        <translation>Configurazione controller per il gioco inizializzata con le impostazioni globali.</translation>
     </message>
     <message>
         <source>Performance enhancement - jumps directly between blocks instead of returning to the dispatcher.</source>
@@ -7839,11 +7853,11 @@ Vuoi comunque {1}?</translation>
     </message>
     <message>
         <source>Perspective Correct Colors</source>
-        <translation>Correggi Colori Prospetticamente</translation>
+        <translation>Correzione prospettiva dei colori</translation>
     </message>
     <message>
         <source>Perspective Correct Textures</source>
-        <translation>Correggi Texture Prospetticamente</translation>
+        <translation>Correzione prospettiva delle texture</translation>
     </message>
     <message>
         <source>Pin to OSD</source>
@@ -7871,39 +7885,40 @@ Vuoi comunque {1}?</translation>
     </message>
     <message>
         <source>Port {} Controller Type</source>
-        <translation>Tipo Controller Porta {}</translation>
+        <translation>Tipo controller porta {}</translation>
     </message>
     <message>
         <source>Post-Processing Settings</source>
-        <translation>Impostazioni Post-Processing</translation>
+        <translation>Impostazioni di post-elaborazione</translation>
     </message>
     <message>
         <source>Post-processing chain cleared.</source>
-        <translation>Catena di post-processing cancellata.</translation>
+        <translation>Catena di post-elaborazione rimossa.</translation>
     </message>
     <message>
         <source>Post-processing shaders reloaded.</source>
-        <translation>Shader di post-processing ricaricati.</translation>
+        <translation>Shader di post-elaborazione ricaricati.</translation>
     </message>
     <message>
         <source>Prefer OpenGL ES Context</source>
-        <translation>Preferisci il contesto OpenGL ES</translation>
+        <translation>Preferisci contesto OpenGL ES</translation>
     </message>
     <message>
         <source>Prefetch Badges</source>
-        <translation>Precarica distintivi</translation>
+        <translatorcomment>Follow RAWeb translation</translatorcomment>
+        <translation>Precarica emblemi</translation>
     </message>
     <message>
         <source>Preload Images to RAM</source>
-        <translation>Precarica Immagini nella RAM</translation>
+        <translation>Precarica immagini in RAM</translation>
     </message>
     <message>
         <source>Preload Replacement Textures</source>
-        <translation>Precarica Texture Sostitutive</translation>
+        <translation>Precarica texture sostitutive</translation>
     </message>
     <message>
         <source>Preserve Projection Precision</source>
-        <translation>Conserva Precisione Proiezione</translation>
+        <translation>Mantieni precisione della proiezione</translation>
     </message>
     <message>
         <source>Press To Toggle</source>
@@ -7955,7 +7970,7 @@ Vuoi comunque {1}?</translation>
     </message>
     <message>
         <source>Quick Message Duration</source>
-        <translation>Durata del messaggio rapido</translation>
+        <translation>Durata dei messaggi rapidi</translation>
     </message>
     <message>
         <source>Quick Save</source>
@@ -8047,7 +8062,7 @@ Vuoi comunque {1}?</translation>
     </message>
     <message>
         <source>Renames existing save states when saving to a backup file.</source>
-        <translation>Rinomina gli stati salvati quando li si salva su un file di backup.</translation>
+        <translation>Rinomina i salvataggi di stato esistenti quando vengono salvati su un file di backup.</translation>
     </message>
     <message>
         <source>Rendering</source>
@@ -8903,7 +8918,7 @@ Vuoi comunque {0}?</translation>
     </message>
     <message>
         <source>Warning Message Duration</source>
-        <translation>Durata del messaggio di avviso</translation>
+        <translation>Durata dei messaggi di avviso</translation>
     </message>
     <message>
         <source>Web Cache Size: {0} MB ({1} MB in {2} objects)</source>
@@ -8955,7 +8970,7 @@ Vuoi comunque {0}?</translation>
     </message>
     <message>
         <source>&quot;Challenge&quot; mode for achievements, including leaderboard tracking. Disables save state, cheats, and slowdown functions.</source>
-        <translation>Modalità &quot;Sfida&quot; per gli obiettivi, che include il tracciamento nelle classifiche. Disabilita gli stati salvati, i trucchi, e le funzionalità di rallentamento.</translation>
+        <translation>Modalità &quot;sfida&quot; per gli obiettivi, inclusa la partecipazione alle classifiche. Disabilita salvataggi di stato, trucchi e funzionalità di rallentamento.</translation>
     </message>
     <message>
         <source>&quot;PlayStation&quot; and &quot;PSX&quot; are registered trademarks of Sony Interactive Entertainment Europe Limited. This software is not affiliated in any way with Sony Interactive Entertainment.</source>
@@ -9739,7 +9754,7 @@ Sei sicuro di voler continuare?</translation>
     </message>
     <message>
         <source>Save Title</source>
-        <translation>Salva titolo</translation>
+        <translation>Titolo salvataggio</translation>
     </message>
     <message>
         <source>Languages</source>
@@ -9767,19 +9782,19 @@ Sei sicuro di voler continuare?</translation>
     </message>
     <message>
         <source>Display Active Start Offset</source>
-        <translation>Mostra Offset di Inizio Attivo</translation>
+        <translation>Compensazione inizio schermo attivo</translation>
     </message>
     <message>
         <source>Display Active End Offset</source>
-        <translation>Mostra Offset di Fine Attivo</translation>
+        <translation>Compensazione fine schermo attivo</translation>
     </message>
     <message>
         <source>Display Line Start Offset</source>
-        <translation>Mostra Offset di Inizio della Riga</translation>
+        <translation>Compensazione riga iniziale dello schermo</translation>
     </message>
     <message>
         <source>Display Line End Offset</source>
-        <translation>Mostra Offset di Fine della Riga</translation>
+        <translation>Compensazione riga finale dello schermo</translation>
     </message>
     <message>
         <source>Display Crop Mode</source>
@@ -9795,11 +9810,11 @@ Sei sicuro di voler continuare?</translation>
     </message>
     <message>
         <source>DMA Max Slice Ticks</source>
-        <translation>Tick di Sezione Massima DMA</translation>
+        <translation>Tick di sezione massima DMA</translation>
     </message>
     <message>
         <source>DMA Halt Ticks</source>
-        <translation>Tick di Arresto DMA</translation>
+        <translation>Tick di arresto DMA</translation>
     </message>
     <message>
         <source>CD-ROM Max Seek Speedup Cycles</source>
@@ -9857,39 +9872,6 @@ Sei sicuro di voler continuare?</translation>
 <context>
     <name>GameList</name>
     <message>
-        <source>Never</source>
-        <translation>Mai</translation>
-    </message>
-    <message>
-        <source>Today</source>
-        <translation>Oggi</translation>
-    </message>
-    <message numerus="yes">
-        <source>%n seconds</source>
-        <translation>
-            <numerusform>%n secondo</numerusform>
-            <numerusform>%n secondi</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <source>%n minutes</source>
-        <translation>
-            <numerusform>%n minuto</numerusform>
-            <numerusform>%n minuti</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <source>%n hours</source>
-        <translation>
-            <numerusform>%n ora</numerusform>
-            <numerusform>%n ore</numerusform>
-        </translation>
-    </message>
-    <message>
-        <source>Yesterday</source>
-        <translation>Ieri</translation>
-    </message>
-    <message>
         <source>Disc</source>
         <comment>EntryType</comment>
         <translation>Disco</translation>
@@ -9927,26 +9909,6 @@ Sei sicuro di voler continuare?</translation>
         <source>Unknown</source>
         <translatorcomment>Feminine because it refers to disc size/game size (&quot;dimensione&quot;)</translatorcomment>
         <translation>Sconosciuta</translation>
-    </message>
-    <message>
-        <source>{}h {}m</source>
-        <translation>{}h {}m</translation>
-    </message>
-    <message>
-        <source>{}h {}m {}s</source>
-        <translation>{}h {}m {}s</translation>
-    </message>
-    <message>
-        <source>{}m {}s</source>
-        <translation>{}m {}s</translation>
-    </message>
-    <message>
-        <source>{}s</source>
-        <translation>{}s</translation>
-    </message>
-    <message>
-        <source>None</source>
-        <translation>Nulla</translation>
     </message>
     <message>
         <source>URL template must contain at least one of ${title}, ${savetitle}, ${filetitle}, or ${serial}.</source>
@@ -10044,7 +10006,7 @@ Sei sicuro di voler continuare?</translation>
     </message>
     <message>
         <source>Scan Recursively</source>
-        <translation>Scansione ricorsiva</translation>
+        <translation>Ricerca ricorsiva</translation>
     </message>
 </context>
 <context>
@@ -10097,9 +10059,9 @@ Sei sicuro di voler continuare?</translation>
         <source>Would you like to scan the directory &quot;%1&quot; recursively?
 
 Scanning recursively takes more time, but will identify files in subdirectories.</source>
-        <translation>Vuoi cercare la cartella &quot;%1&quot; ricorsivamente?
+        <translation>Vuoi cercare nella cartella &quot;%1&quot; ricorsivamente?
 
-Scansionare ricorsivamente richiede più tempo, ma identificherà file anche nelle sottocartelle.</translation>
+Cercare ricorsivamente richiede più tempo, ma permette di identificare file anche nelle sottocartelle.</translation>
     </message>
     <message>
         <source>Select Path</source>
@@ -10267,7 +10229,7 @@ Scansionare ricorsivamente richiede più tempo, ma identificherà file anche nel
     </message>
     <message>
         <source>Controller Preset:</source>
-        <translation>Preimpostazione controller:</translation>
+        <translation>Impostazioni controller:</translation>
     </message>
     <message>
         <source>Verify</source>
@@ -10311,7 +10273,7 @@ Scansionare ricorsivamente richiede più tempo, ma identificherà file anche nel
     </message>
     <message>
         <source>Release Info:</source>
-        <translation>Informazioni sull&apos;uscita:</translation>
+        <translation>Informazioni rilascio:</translation>
     </message>
     <message>
         <source>Type:</source>
@@ -10605,7 +10567,7 @@ Scansionare ricorsivamente richiede più tempo, ma identificherà file anche nel
     </message>
     <message>
         <source>Top:</source>
-        <translation>Alto:</translation>
+        <translation>Sopra:</translation>
     </message>
     <message>
         <source>Right:</source>
@@ -10613,7 +10575,7 @@ Scansionare ricorsivamente richiede più tempo, ma identificherà file anche nel
     </message>
     <message>
         <source>Bottom:</source>
-        <translation>Basso:</translation>
+        <translation>Sotto:</translation>
     </message>
     <message>
         <source>Disable Mailbox Presentation</source>
@@ -10978,7 +10940,7 @@ Scansionare ricorsivamente richiede più tempo, ma identificherà file anche nel
     </message>
     <message>
         <source>Bilinear (Smooth)</source>
-        <translation>Bilineare (omogeneo)</translation>
+        <translation>Bilineare (uniforme)</translation>
     </message>
     <message>
         <source>Determines how the emulated console&apos;s output is upscaled or downscaled to your monitor&apos;s resolution.</source>
@@ -11002,7 +10964,7 @@ Scansionare ricorsivamente richiede più tempo, ma identificherà file anche nel
     </message>
     <message>
         <source>None</source>
-        <translation>Nessuna</translation>
+        <translation>Nessuno</translation>
     </message>
     <message>
         <source>Enables manual fine cropping of the display area, while preserving the aspect ratio of the image. Useful for removing black borders in certain games.</source>
@@ -11186,7 +11148,7 @@ Scansionare ricorsivamente richiede più tempo, ma identificherà file anche nel
     </message>
     <message>
         <source>Draws a wireframe outline of the triangles rendered by the console&apos;s GPU, either as a replacement or an overlay.</source>
-        <translation>Disegna un contorno wireframe dei triangoli renderizzati dalla GPU della console, o come sostituzione o come sovraimpressione.</translation>
+        <translation>Disegna le linee di contorno dei triangoli renderizzati dalla GPU della console, o in sostituzione o in sovrapposizione.</translation>
     </message>
     <message>
         <source>Disables texture emulation in the GPU, forcing all primitives to only show vertex colours.</source>
@@ -11354,6 +11316,110 @@ Scansionare ricorsivamente richiede più tempo, ma identificherà file anche nel
     <message>
         <source>Offset applied to lightgun horizontal position.</source>
         <translation>Offset applicato alla posizione orizzontale della pistola ottica.</translation>
+    </message>
+</context>
+<context>
+    <name>Host</name>
+    <message numerus="yes">
+        <source>%n seconds</source>
+        <translation>
+            <numerusform>%n secondo</numerusform>
+            <numerusform>%n secondi</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n minutes</source>
+        <translation>
+            <numerusform>%n minuto</numerusform>
+            <numerusform>%n minuti</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n hours</source>
+        <translation>
+            <numerusform>%n ora</numerusform>
+            <numerusform>%n ore</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Today</source>
+        <translation>Oggi</translation>
+    </message>
+    <message>
+        <source>Yesterday</source>
+        <translation>Ieri</translation>
+    </message>
+    <message>
+        <source>Never</source>
+        <translation>Mai</translation>
+    </message>
+    <message>
+        <source>today</source>
+        <translation>oggi</translation>
+    </message>
+    <message>
+        <source>yesterday</source>
+        <translation>ieri</translation>
+    </message>
+    <message>
+        <source>%n days ago</source>
+        <comment>Date difference</comment>
+        <translation>%n giorni fa</translation>
+    </message>
+    <message>
+        <source>on {}</source>
+        <translation>il {}</translation>
+    </message>
+    <message>
+        <source>Now</source>
+        <translation>Adesso</translation>
+    </message>
+    <message>
+        <source>now</source>
+        <translation>adesso</translation>
+    </message>
+    <message>
+        <source>%n seconds ago</source>
+        <comment>Time difference</comment>
+        <translation>%n secondi fa</translation>
+    </message>
+    <message>
+        <source>%n minutes ago</source>
+        <comment>Time difference</comment>
+        <translation>%n minuti fa</translation>
+    </message>
+    <message>
+        <source>%n hours ago</source>
+        <comment>Time difference</comment>
+        <translation>%n ore fa</translation>
+    </message>
+    <message>
+        <source>{} at {}</source>
+        <translation>{} alle {}</translation>
+    </message>
+    <message>
+        <source>{}h {}m</source>
+        <translatorcomment>Per ISO 31-1</translatorcomment>
+        <translation>{}h {}min</translation>
+    </message>
+    <message>
+        <source>{}h {}m {}s</source>
+        <translatorcomment>Per ISO 31-1</translatorcomment>
+        <translation>{}h {}min {}s</translation>
+    </message>
+    <message>
+        <source>{}m {}s</source>
+        <translatorcomment>Per ISO 31-1</translatorcomment>
+        <translation>{}min {}s</translation>
+    </message>
+    <message>
+        <source>{}s</source>
+        <translatorcomment>Per ISO 31-1</translatorcomment>
+        <translation>{}s</translation>
+    </message>
+    <message>
+        <source>None</source>
+        <translation>Nulla</translation>
     </message>
 </context>
 <context>
@@ -11903,7 +11969,7 @@ Scansionare ricorsivamente richiede più tempo, ma identificherà file anche nel
     </message>
     <message>
         <source>&lt;Parent Directory&gt;</source>
-        <translation>&lt;Cartella superiore&gt;</translation>
+        <translation>&lt;cartella superiore&gt;</translation>
     </message>
 </context>
 <context>
@@ -11986,7 +12052,7 @@ Fai clic tenendo premuto Maiusc per impostare più associazioni.</translation>
     </message>
     <message>
         <source>Push Button/Axis... [%1]</source>
-        <translation>Premi Pulsante/Asse... [%1]</translation>
+        <translation>Premi tasto/asse... [%1]</translation>
     </message>
     <message>
         <source>Error</source>
@@ -12002,7 +12068,7 @@ Fai clic tenendo premuto Maiusc per impostare più associazioni.</translation>
     </message>
     <message>
         <source>&lt;strong&gt;%1&lt;/strong&gt;&lt;br&gt;Select the device and effect to map this bind to.</source>
-        <translation>&lt;strong&gt;%1&lt;/strong&gt;&lt;br&gt;Seleziona il dispositivo e l&apos;effetto a cui associare questa associazione.</translation>
+        <translation>&lt;strong&gt;%1&lt;/strong&gt;&lt;br&gt;Seleziona il dispositivo e l&apos;effetto a cui assegnare questa associazione.</translation>
     </message>
 </context>
 <context>
@@ -12017,31 +12083,31 @@ Fai clic tenendo premuto Maiusc per impostare più associazioni.</translation>
     </message>
     <message>
         <source>WheelX</source>
-        <translation>WheelX</translation>
+        <translation>RotellaX</translation>
     </message>
     <message>
         <source>WheelY</source>
-        <translation>WheelY</translation>
+        <translation>RotellaY</translation>
     </message>
     <message>
         <source>LeftButton</source>
-        <translation>LeftButton</translation>
+        <translation>TastoSinistro</translation>
     </message>
     <message>
         <source>RightButton</source>
-        <translation>RightButton</translation>
+        <translation>TastoDestro</translation>
     </message>
     <message>
         <source>MiddleButton</source>
-        <translation>MiddleButton</translation>
+        <translation>TastoCentrale</translation>
     </message>
     <message>
         <source>Keyboard/{}</source>
-        <translation>Keyboard/{}</translation>
+        <translation>Tastiera/{}</translation>
     </message>
     <message>
         <source>Pointer-{0}/{1}</source>
-        <translation>Pointer-{0}/{1}</translation>
+        <translation>Puntatore-{0}/{1}</translation>
     </message>
     <message>
         <source>Multiple Devices</source>
@@ -12232,7 +12298,7 @@ Fai clic tenendo premuto Maiusc per impostare più associazioni.</translation>
     </message>
     <message>
         <source>Pauses the emulator when a controller with bindings is disconnected.</source>
-        <translation>Mette in pausa l&apos;emulatore quando viene scollegato un controller con associazioni.</translation>
+        <translation>Mette in pausa l&apos;emulatore quando un controller con associazioni viene scollegato.</translation>
     </message>
     <message>
         <source>Starts the application in Big Picture Mode instead of the desktop interface.</source>
@@ -13473,7 +13539,7 @@ Fai clic tenendo premuto Maiusc per impostare più associazioni.</translation>
     </message>
     <message>
         <source>Prioritizes the games badges used for RetroAchievements over memory card icons.</source>
-        <translation>Dà priorità ai badge dei giochi utilizzati da RetroAchievements rispetto alle icone delle memory card.</translation>
+        <translation>Dà priorità agli emblemi dei giochi utilizzati da RetroAchievements rispetto alle icone delle memory card.</translation>
     </message>
     <message>
         <source>System Log</source>
@@ -13672,10 +13738,6 @@ Vuoi eliminare il salvataggio di stato e avviare comunque il gioco?</translation
         <translation>&lt;strong&gt;Riprendi gioco&lt;/strong&gt;&lt;br&gt;Vuoi caricare questo stato o avviare da zero?</translation>
     </message>
     <message>
-        <source>Save was created on %1.</source>
-        <translation>Il salvataggio è stato creato il %1.</translation>
-    </message>
-    <message>
         <source>Do you want to swap discs or boot the new image via system restart?</source>
         <translation>Vuoi scambiare il disco o avviare la nuova immagine tramite un riavvio del sistema?</translation>
     </message>
@@ -13830,6 +13892,10 @@ I salvataggi non saranno recuperabili.</translation>
     <message>
         <source>Failed to delete save state file &apos;%1&apos;.</source>
         <translation>Impossibile cancellare il file del salvataggio di stato &quot;%1&quot;.</translation>
+    </message>
+    <message>
+        <source>Save was created %1.</source>
+        <translation>Salvataggio creato %1.</translation>
     </message>
     <message>
         <source>Confirm Disc Change</source>
@@ -14022,13 +14088,13 @@ Quest&apos;azione non può essere annullata.</translation>
         <source>Advanced Audio Coding</source>
         <comment>AudioCodec</comment>
         <translatorcomment>Codec name, should not be translated</translatorcomment>
-        <translation>Advanced Audio Coding (AAC)</translation>
+        <translation>Advanced Audio Coding</translation>
     </message>
     <message>
         <source>MPEG-2 Audio Layer III</source>
         <comment>AudioCodec</comment>
         <translatorcomment>Codec name, should not be translated</translatorcomment>
-        <translation>MPEG-2 Audio Layer III (MP3)</translation>
+        <translation>MPEG-2 Audio Layer III</translation>
     </message>
     <message>
         <source>Uncompressed PCM</source>
@@ -14043,24 +14109,24 @@ Quest&apos;azione non può essere annullata.</translation>
         <source>MPEG-4 Part 14</source>
         <comment>ContainerFormat</comment>
         <translatorcomment>Container name, should not be translated</translatorcomment>
-        <translation>MPEG-4 Part 14 (MP4)</translation>
+        <translation>MPEG-4 Part 14</translation>
     </message>
     <message>
         <source>MPEG-2 Audio Layer III</source>
         <comment>ContainerFormat</comment>
         <translatorcomment>Container name, should not be translated</translatorcomment>
-        <translation>MPEG-2 Audio Layer III (MP3)</translation>
+        <translation>MPEG-2 Audio Layer III</translation>
     </message>
     <message>
         <source>Waveform Audio File Format</source>
         <comment>ContainerFormat</comment>
-        <translation>Formato file audio Waveform (WAV)</translation>
+        <translation>Formato file audio Waveform</translation>
     </message>
     <message>
         <source>Audio Video Interleave</source>
         <comment>ContainerFormat</comment>
         <translatorcomment>Container name, should not be translated</translatorcomment>
-        <translation>Audio Video Interleave (AVI)</translation>
+        <translation>Audio Video Interleave</translation>
     </message>
     <message>
         <source>FFmpeg was not found, or is not the correct version.
@@ -14089,12 +14155,12 @@ Questa build di DuckStation richiede FFmpeg v{}, con le seguenti versioni delle 
     <message>
         <source>Matroska Media Container</source>
         <comment>ContainerFormat</comment>
-        <translation>Contenitore multimediale Matroska (MKV)</translation>
+        <translation>Contenitore multimediale Matroska</translation>
     </message>
     <message>
         <source>QuickTime File Format</source>
         <comment>ContainerFormat</comment>
-        <translation>Formato file QuickTime (MOV)</translation>
+        <translation>Formato file QuickTime</translation>
     </message>
     <message>
         <source>Media Foundation</source>
@@ -14472,7 +14538,7 @@ Errore: {1}</translation>
     </message>
     <message>
         <source>Memory Card Type:</source>
-        <translation>Tipo memory card:</translation>
+        <translation>Tipo di memory card:</translation>
     </message>
     <message>
         <source>Browse...</source>
@@ -14643,11 +14709,11 @@ Errore: {1}</translation>
     </message>
     <message>
         <source>Hexadecimal</source>
-        <translation>Hexadecimal</translation>
+        <translation>Esadecimale</translation>
     </message>
     <message>
         <source>Octal</source>
-        <translation>Octal</translation>
+        <translation>Ottale</translation>
     </message>
     <message>
         <source>Unsigned Byte:</source>
@@ -14655,11 +14721,11 @@ Errore: {1}</translation>
     </message>
     <message>
         <source>Little Endian</source>
-        <translation>Little Endian</translation>
+        <translation>Little endian</translation>
     </message>
     <message>
         <source>Big Endian</source>
-        <translation>Big Endian</translation>
+        <translation>Big endian</translation>
     </message>
     <message>
         <source>Unsigned Halfword:</source>
@@ -14703,7 +14769,7 @@ Errore: {1}</translation>
     </message>
     <message>
         <source>Invalid search pattern. It should contain hex digits or question marks.</source>
-        <translation>Pattern di ricerca non valido. Dovrebbe contenere cifre hex o punti di domanda.</translation>
+        <translation>Pattern di ricerca non valido. Deve contenere cifre esadecimali o punti di domanda.</translation>
     </message>
     <message>
         <source>Pattern not found in memory.</source>
@@ -14722,7 +14788,7 @@ Errore: {1}</translation>
     <name>MemoryScannerWindow</name>
     <message>
         <source>Memory Scanner</source>
-        <translation>Analizzatore Memoria</translation>
+        <translation>Analizzatore della memoria</translation>
     </message>
     <message>
         <source>Address</source>
@@ -14734,7 +14800,7 @@ Errore: {1}</translation>
     </message>
     <message>
         <source>Previous Value</source>
-        <translation>Valore Precedente</translation>
+        <translation>Valore precedente</translation>
     </message>
     <message>
         <source>First Value</source>
@@ -14742,7 +14808,7 @@ Errore: {1}</translation>
     </message>
     <message>
         <source>Search Parameters</source>
-        <translation>Parametri di Ricerca</translation>
+        <translation>Parametri di ricerca</translation>
     </message>
     <message>
         <source>Value:</source>
@@ -14750,11 +14816,11 @@ Errore: {1}</translation>
     </message>
     <message>
         <source>Signed</source>
-        <translation>Firmato</translation>
+        <translation>Con segno</translation>
     </message>
     <message>
         <source>Unsigned</source>
-        <translation>Non Firmato</translation>
+        <translation>Senza segno</translation>
     </message>
     <message>
         <source>Decimal</source>
@@ -14766,7 +14832,7 @@ Errore: {1}</translation>
     </message>
     <message>
         <source>Data Size:</source>
-        <translation>Dimensione Dati:</translation>
+        <translation>Dimensione dati:</translation>
     </message>
     <message>
         <source>Byte (1 byte)</source>
@@ -14786,79 +14852,79 @@ Errore: {1}</translation>
     </message>
     <message>
         <source>Any Value (&apos;New Search&apos; or &apos;Reset Result Value&apos;)</source>
-        <translation>Qualsiasi Valore (&apos;Nuova Ricerca&apos; o &apos;Reimposta Valore Risultato&apos;)</translation>
+        <translation>Qualsiasi valore (&quot;Nuova ricerca&quot; o &quot;Reimposta valore risultato&quot;)</translation>
     </message>
     <message>
         <source>Less Than Previous Result</source>
-        <translation>Minore del Precedente Risultato</translation>
+        <translation>Minore del risultato precedente</translation>
     </message>
     <message>
         <source>Less or Equal to Previous Result</source>
-        <translation>Minore del o Uguale al Precedente Risultato</translation>
+        <translation>Minore o uguale al risultato precedente</translation>
     </message>
     <message>
         <source>Greater Than Previous Result</source>
-        <translation>Maggiore Del Precedente Risultato</translation>
+        <translation>Maggiore del risultato precedente</translation>
     </message>
     <message>
         <source>Greater or Equal to Previous Result</source>
-        <translation>Maggiore del o Uguale al Precedente Risultato</translation>
+        <translation>Maggiore o uguale al risultato precedente</translation>
     </message>
     <message>
         <source>Not Equal to Previous Result (Changed Value)</source>
-        <translation>Non Uguale al Precedente Risultato (Valore Cambiato)</translation>
+        <translation>Diverso dal risultato precedente (valore cambiato)</translation>
     </message>
     <message>
         <source>Equal to Previous Result (Unchanged Value)</source>
-        <translation>Uguale al Precedente Risultato (Valore Non Cambiato)</translation>
+        <translation>Uguale al risultato precedente (valore non cambiato)</translation>
     </message>
     <message>
         <source>Decreased By Value</source>
-        <translation>Diminuito del Valore di</translation>
+        <translation>Diminuito del valore di</translation>
     </message>
     <message>
         <source>Increased By Value</source>
-        <translation>Aumentato del Valore di</translation>
+        <translation>Aumentato del valore di</translation>
     </message>
     <message>
         <source>Changed By Value</source>
-        <translation>Cambiato del Valore di</translation>
+        <translation>Cambiato del valore di</translation>
     </message>
     <message>
         <source>Equal to Value</source>
-        <translation>Uguale al Valore</translation>
+        <translation>Uguale al valore</translation>
     </message>
     <message>
         <source>Not Equal to Value</source>
-        <translation>Non Uguale al Valore</translation>
+        <translation>Diverso dal valore</translation>
     </message>
     <message>
         <source>Less Than Value</source>
-        <translation>Minore del Valore</translation>
+        <translation>Minore del valore</translation>
     </message>
     <message>
         <source>Less or Equal to Value</source>
-        <translation>Minore del o Uguale al Valore</translation>
+        <translation>Minore o uguale al valore</translation>
     </message>
     <message>
         <source>Greater Than Value</source>
-        <translation>Maggiore del Valore</translation>
+        <translation>Maggiore del valore</translation>
     </message>
     <message>
         <source>Greater or Equal to Value</source>
-        <translation>Maggiore del o Uguale al Valore</translation>
+        <translation>Maggiore o uguale al valore</translation>
     </message>
     <message>
         <source>Start Address:</source>
-        <translation>Indirizzo di Inizio:</translation>
+        <translation>Indirizzo di partenza:</translation>
     </message>
     <message>
         <source>End Address:</source>
-        <translation>Indirizzo di Fine:</translation>
+        <translation>Indirizzo di fine:</translation>
     </message>
     <message>
         <source>Preset Range:</source>
-        <translation>Intervallo Preimpostato:</translation>
+        <translation>Intervallo preimpostato:</translation>
     </message>
     <message>
         <source>RAM</source>
@@ -14874,7 +14940,7 @@ Errore: {1}</translation>
     </message>
     <message>
         <source>Result Count:</source>
-        <translation>Conteggio Risultato:</translation>
+        <translation>Conteggio risultati:</translation>
     </message>
     <message>
         <source>0</source>
@@ -14882,23 +14948,23 @@ Errore: {1}</translation>
     </message>
     <message>
         <source>New Search</source>
-        <translation>Nuova Ricerca</translation>
+        <translation>Nuova ricerca</translation>
     </message>
     <message>
         <source>Search Again</source>
-        <translation>Cerca Ancora</translation>
+        <translation>Cerca ancora</translation>
     </message>
     <message>
         <source>Clear Results</source>
-        <translation>Cancella Risultati</translation>
+        <translation>Cancella risultati</translation>
     </message>
     <message>
         <source>Add Selected Results To Watch List</source>
-        <translation>Aggiungi Risultati Selezionati A Lista di Controllo</translation>
+        <translation>Aggiungi risultati selezionati a lista di controllo</translation>
     </message>
     <message>
         <source>Simple Cheat Code or Description</source>
-        <translation>Trucco Semplice o Descrizione</translation>
+        <translation>Codice trucco semplice o descrizione</translation>
     </message>
     <message>
         <source>Type</source>
@@ -14910,15 +14976,15 @@ Errore: {1}</translation>
     </message>
     <message>
         <source>Load Watch</source>
-        <translation>Carica Controllo</translation>
+        <translation>Carica controllo</translation>
     </message>
     <message>
         <source>Save Watch</source>
-        <translation>Salva Controllo</translation>
+        <translation>Salva controllo</translation>
     </message>
     <message>
         <source>Add Manual Address</source>
-        <translation>Aggiungi Indirizzo Manuale</translation>
+        <translation>Aggiungi indirizzo manuale</translation>
     </message>
     <message>
         <source>Freeze Selected Entries</source>
@@ -14942,27 +15008,27 @@ Errore: {1}</translation>
     </message>
     <message>
         <source>Signed Byte</source>
-        <translation>Byte Firmato</translation>
+        <translation>Byte con segno</translation>
     </message>
     <message>
         <source>Signed Halfword</source>
-        <translation>Halfword Firmata</translation>
+        <translation>Halfword con segno</translation>
     </message>
     <message>
         <source>Signed Word</source>
-        <translation>Word Firmata</translation>
+        <translation>Word con segno</translation>
     </message>
     <message>
         <source>Address of RAM for HxD Usage: 0x%1</source>
-        <translation>Indirizzo della RAM per Uso HxD: 0x%1</translation>
+        <translation>Indirizzo della RAM per uso HxD: 0x%1</translation>
     </message>
     <message>
         <source>Enter manual address:</source>
-        <translation>Inserisci indirizzo manualmente:</translation>
+        <translation>Inserisci indirizzo manuale:</translation>
     </message>
     <message>
         <source>Select data size:</source>
-        <translation>Seleziona dimens. dati:</translation>
+        <translation>Seleziona dimensione dati:</translation>
     </message>
     <message>
         <source>Failed to open memory editor at specified address.</source>
@@ -15521,7 +15587,7 @@ Errore: {1}</translation>
     </message>
     <message>
         <source>Overlay Font:</source>
-        <translation>Carattere della sovrapposizione:</translation>
+        <translation>Carattere sovraimpressione:</translation>
     </message>
     <message>
         <source>Messages</source>
@@ -15569,7 +15635,7 @@ Errore: {1}</translation>
     </message>
     <message>
         <source>Overlays</source>
-        <translation>Sovrapposizioni</translation>
+        <translation>Sovraimpressione</translation>
     </message>
     <message>
         <source>Show FPS</source>
@@ -15649,11 +15715,11 @@ Errore: {1}</translation>
     </message>
     <message>
         <source>Overlay Font</source>
-        <translation>Carattere della sovrapposizione</translation>
+        <translation>Carattere sovraimpressione</translation>
     </message>
     <message>
         <source>Determines the font to use for the performance overlay.</source>
-        <translation>Determina il carattere da usare per la sovrapposizione delle prestazioni.</translation>
+        <translation>Determina il carattere da usare per le informazioni in sovraimpressione.</translation>
     </message>
     <message>
         <source>Checked</source>
@@ -15927,7 +15993,7 @@ Errore: {1}</translation>
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;A border overlay is an image that is drawn around the system display. Border overlays are applied after post-processing. You can choose from the border list below, or manually configure a custom border.&lt;/p&gt;&lt;p&gt;Additional preset borders can be added to the &lt;span style=&quot; font-weight:700;&quot;&gt;resources\overlays&lt;/span&gt; folder within in the data directory.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Una sovrapposizione del bordo è un&apos;immagine disegnata attorno allo schermo del sistema. Le sovrapposizioni del bordo vengono applicate dopo il post-processing. Puoi scegliere dall&apos;elenco dei bordi sottostante oppure configurare manualmente un bordo personalizzato.&lt;/p&gt;&lt;p&gt;È possibile aggiungere ulteriori bordi preimpostati alla cartella &lt;span style=&quot; font-weight:700;&quot;&gt;resources\\overlays&lt;/span&gt; nella cartella dei dati.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Una sovrapposizione del bordo è un&apos;immagine visualizzata attorno allo schermo del sistema. Le sovrapposizioni del bordo vengono applicate dopo il post-processing. Puoi scegliere dall&apos;elenco dei bordi sottostante oppure configurare manualmente un bordo personalizzato.&lt;/p&gt;&lt;p&gt;È possibile aggiungere ulteriori bordi preimpostati alla cartella &lt;span style=&quot; font-weight:700;&quot;&gt;resources\overlays&lt;/span&gt; nella cartella dei dati.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>Selected Preset:</source>
@@ -16575,10 +16641,6 @@ Vuoi aggiornare il collegamento affinché punti alla posizione attuale?</transla
 <context>
     <name>SaveStateSelectorUI</name>
     <message>
-        <source>Saved at {0:%H:%M} on {0:%a} {0:%Y/%m/%d}.</source>
-        <translation>Salvato alle {0:%H:%M} di {0:%a} {0:%Y/%m/%d}.</translation>
-    </message>
-    <message>
         <source>No save state slots available.</source>
         <translation>Nessuno spazio di salvataggio disponibile.</translation>
     </message>
@@ -16601,6 +16663,10 @@ Vuoi aggiornare il collegamento affinché punti alla posizione attuale?</transla
     <message>
         <source>{} ({})</source>
         <translation>{} ({})</translation>
+    </message>
+    <message>
+        <source>Saved {}</source>
+        <translation>Salvato {}</translation>
     </message>
     <message>
         <source>No save present in this slot.</source>
@@ -16879,7 +16945,7 @@ Vuoi creare la cartella?</translation>
     <message>
         <source>Nearest-Neighbor</source>
         <comment>GPUTextureFilter</comment>
-        <translation>Più vicino</translation>
+        <translation>Nearest-neighbor</translation>
     </message>
     <message>
         <source>Bilinear</source>
@@ -17154,7 +17220,7 @@ Vuoi creare la cartella?</translation>
     <message>
         <source>No Rotation</source>
         <comment>DisplayRotation</comment>
-        <translation>Nessuna rotazione</translation>
+        <translation>Non ruotato</translation>
     </message>
     <message>
         <source>Rotate 90° (Clockwise)</source>
@@ -17365,22 +17431,22 @@ Vuoi creare la cartella?</translation>
     <message>
         <source>Separate Card Per Game (Serial)</source>
         <comment>MemoryCardType</comment>
-        <translation>Memory card separata per ogni gioco (seriale)</translation>
+        <translation>Separata per ogni gioco (seriale)</translation>
     </message>
     <message>
         <source>Separate Card Per Game (Title)</source>
         <comment>MemoryCardType</comment>
-        <translation>Memory card separata per ogni gioco (titolo)</translation>
+        <translation>Separata per ogni gioco (titolo)</translation>
     </message>
     <message>
         <source>Separate Card Per Game (File Title)</source>
         <comment>MemoryCardType</comment>
-        <translation>Memory card separata per ogni gioco (titolo del file)</translation>
+        <translation>Separata per ogni gioco (titolo del file)</translation>
     </message>
     <message>
         <source>Non-Persistent Card (Do Not Save)</source>
         <comment>MemoryCardType</comment>
-        <translation>Memory card non persistente (non salvare)</translation>
+        <translation>Non persistente (non salvare)</translation>
     </message>
     <message>
         <source>Disabled</source>
@@ -17510,7 +17576,7 @@ Vuoi creare la cartella?</translation>
     </message>
     <message>
         <source>Restore Defaults</source>
-        <translation>Ripristina predefinite</translation>
+        <translation>Ripristina valori predefiniti</translation>
     </message>
     <message>
         <source>Copy Global Settings</source>
@@ -17538,7 +17604,7 @@ Vuoi creare la cartella?</translation>
     </message>
     <message>
         <source>&lt;strong&gt;Game List Settings&lt;/strong&gt;&lt;hr&gt;The list above shows the directories which will be searched by DuckStation to populate the game list. Search directories can be added, removed, and switched to recursive/non-recursive.</source>
-        <translation>&lt;strong&gt;Impostazioni lista giochi&lt;/strong&gt;&lt;hr&gt;La lista qui sopra mostra i percorsi nei quali verrà effettuata una ricerca da DuckStation per popolare la lista dei giochi. I percorsi di ricerca possono essere aggiunti, rimossi e cambiati in ricorsivi/non ricorsivi.</translation>
+        <translation>&lt;strong&gt;Impostazioni lista giochi&lt;/strong&gt;&lt;hr&gt;La lista qui sopra mostra i percorsi nei quali DuckStation effettuerà una ricerca per popolare la lista dei giochi. I percorsi di ricerca possono essere aggiunti, rimossi e cambiati in ricorsivi/non ricorsivi.</translation>
     </message>
     <message>
         <source>BIOS</source>
@@ -18139,9 +18205,9 @@ Scansionare ricorsivamente richiede più tempo, ma identificherà file anche nel
     </message>
     <message>
         <source>Logged in as %1
-Token generated at %2</source>
+Token generated %2</source>
         <translation>Accesso effettuato come %1
-Token generato alle %2</translation>
+Token generato %2</translation>
     </message>
     <message>
         <source>Not Logged In.</source>
@@ -18176,7 +18242,7 @@ Token generato alle %2</translation>
     </message>
     <message>
         <source>Save state is incompatible: minimum version is {0} but state is version {1}.</source>
-        <translation>Lo stato salvato è incompatibile: la versione minima è {0} ma lo stato è della versione {1}.</translation>
+        <translation>Salvataggio di stato incompatibile: la versione minima è {0} ma la versione del salvataggio è {1}.</translation>
     </message>
     <message>
         <source>CPU Overclock</source>
@@ -18266,6 +18332,10 @@ L&apos;uso dell&apos;immagine CD attuale potrebbe causare instabilità.</transla
 </source>
         <translation>Apertura non riuscita dell&apos;immagine CD &quot;{}&quot; usata dal salvataggio di stato:
 </translation>
+    </message>
+    <message>
+        <source>Loaded undo save state created {}.</source>
+        <translation>Caricato il salvataggio di stato di ripristino creato {}.</translation>
     </message>
     <message>
         <source>Using disc-specific memory card &apos;{}&apos; instead of per-game card.</source>
@@ -18544,10 +18614,6 @@ Devi salvare su una memory card e riavviare il gioco per eliminare ogni effetto.
 {}</translation>
     </message>
     <message>
-        <source>Loaded undo save state created at {}.</source>
-        <translation>Caricato il salvataggio di stato di ripristino, creato alle {}.</translation>
-    </message>
-    <message>
         <source>capturing audio and video</source>
         <translation>acquisizione di audio e video</translation>
     </message>
@@ -18730,11 +18796,11 @@ Ciò potrebbe essere dovuto al fatto che la tua GPU non supporta il renderer sce
     </message>
     <message>
         <source>Dump Size Threshold:</source>
-        <translation>Soglia Dimensione Dump:</translation>
+        <translation>Soglia dimensione dump:</translation>
     </message>
     <message>
         <source>Set Alpha Channel</source>
-        <translation>Imposta Canale Alfa</translation>
+        <translation>Imposta canale alfa</translation>
     </message>
     <message>
         <source>Determines the minimum size of a texture that will be dumped. Textures with a size smaller than this value will be ignored.</source>
@@ -18785,43 +18851,43 @@ Ciò potrebbe essere dovuto al fatto che la tua GPU non supporta il renderer sce
     <name>XInputSource</name>
     <message>
         <source>LeftX</source>
-        <translation>LeftX</translation>
+        <translation>SinistraX</translation>
     </message>
     <message>
         <source>LeftY</source>
-        <translation>LeftY</translation>
+        <translation>SinistraY</translation>
     </message>
     <message>
         <source>RightX</source>
-        <translation>RightX</translation>
+        <translation>DestraX</translation>
     </message>
     <message>
         <source>RightY</source>
-        <translation>RightY</translation>
+        <translation>DestraY</translation>
     </message>
     <message>
         <source>LeftTrigger</source>
-        <translation>LeftTrigger</translation>
+        <translation>GrillettoSinistro</translation>
     </message>
     <message>
         <source>RightTrigger</source>
-        <translation>RightTrigger</translation>
+        <translation>GrillettoDestro</translation>
     </message>
     <message>
         <source>DPadUp</source>
-        <translation>DPadUp</translation>
+        <translation>DPadSu</translation>
     </message>
     <message>
         <source>DPadDown</source>
-        <translation>DPadDown</translation>
+        <translation>DPadGiù</translation>
     </message>
     <message>
         <source>DPadLeft</source>
-        <translation>DPadLeft</translation>
+        <translation>DPadSinistra</translation>
     </message>
     <message>
         <source>DPadRight</source>
-        <translation>DPadRight</translation>
+        <translation>DPadDestra</translation>
     </message>
     <message>
         <source>Start</source>
@@ -18833,19 +18899,19 @@ Ciò potrebbe essere dovuto al fatto che la tua GPU non supporta il renderer sce
     </message>
     <message>
         <source>LeftStick</source>
-        <translation>LeftStick</translation>
+        <translation>LevettaSinistra</translation>
     </message>
     <message>
         <source>RightStick</source>
-        <translation>RightStick</translation>
+        <translation>LevettaDestra</translation>
     </message>
     <message>
         <source>LeftShoulder</source>
-        <translation>LeftShoulder</translation>
+        <translation>DorsaleSinistro</translation>
     </message>
     <message>
         <source>RightShoulder</source>
-        <translation>RightShoulder</translation>
+        <translation>DorsaleDestro</translation>
     </message>
     <message>
         <source>A</source>
@@ -18865,7 +18931,7 @@ Ciò potrebbe essere dovuto al fatto che la tua GPU non supporta il renderer sce
     </message>
     <message>
         <source>Guide</source>
-        <translation>Guide</translation>
+        <translation>Guida</translation>
     </message>
     <message>
         <source>XInput-{0}  {1}</source>
@@ -18881,11 +18947,11 @@ Ciò potrebbe essere dovuto al fatto che la tua GPU non supporta il renderer sce
     </message>
     <message>
         <source>SmallMotor</source>
-        <translation>SmallMotor</translation>
+        <translation>MotorePiccolo</translation>
     </message>
     <message>
         <source>LargeMotor</source>
-        <translation>LargeMotor</translation>
+        <translation>MotoreGrande</translation>
     </message>
 </context>
 </TS>
