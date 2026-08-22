@@ -75,3 +75,4 @@ s32 GetTranslatedStringImpl(std::string_view context, std::string_view msg, std:
 // Does not translate the string at runtime, but allows the UI to in its own way.
 #define TRANSLATE_NOOP(context, msg) msg
 #define TRANSLATE_DISAMBIG_NOOP(context, msg, disambiguation) msg
+#define TRANSLATE_PLURAL_NOOP(context, msg, disambiguation) msg
