@@ -76,6 +76,9 @@ public:
   /// Returns the elapsed time in seconds.
   virtual time_t GetElapsedTime() const = 0;
 
+  /// Returns the highest byte offset produced in the output file so far.
+  virtual u64 GetOutputSize() const = 0;
+
   virtual float GetCaptureThreadUsage() const = 0;
   virtual float GetCaptureThreadTime() const = 0;
   virtual void UpdateCaptureThreadUsage(double pct_divider, double time_divider) = 0;
