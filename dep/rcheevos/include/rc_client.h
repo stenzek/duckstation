@@ -222,6 +222,10 @@ typedef struct rc_client_user_game_summary_t {
   /* minimum version: 12.1 */
   time_t beaten_time;
   time_t completed_time;
+
+  uint32_t num_unlocked_unofficial_achievements;
+  uint32_t points_unofficial;
+  uint32_t points_unlocked_unofficial;
 } rc_client_user_game_summary_t;
 
 /**
@@ -585,6 +589,14 @@ typedef struct rc_client_achievement_t {
  * Get information about an achievement. Returns NULL if not found.
  */
 RC_EXPORT const rc_client_achievement_t* RC_CCONV rc_client_get_achievement_info(rc_client_t* client, uint32_t id);
+
+/**
+ * Sets the locally tracked unlock state for an unofficial achievement.
+ * Returns RC_OK on success, RC_NOT_FOUND if the achievement does not exist or is not unofficial,
+ * or another rc_error.h error code if the operation could not be performed.
+ */
+RC_EXPORT int RC_CCONV rc_client_set_unofficial_achievement_unlock_state(rc_client_t* client, uint32_t id,
+    uint8_t unlock_state, time_t unlock_time_softcore, time_t unlock_time_hardcore);
 
 /**
  * Gets the next achievement after a provided achievement that fits in the specified bucket. Returns NULL if none found.

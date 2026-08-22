@@ -989,6 +989,12 @@ static void rc_client_subset_get_user_game_summary(const rc_client_t* client,
 
       case RC_CLIENT_ACHIEVEMENT_CATEGORY_UNOFFICIAL:
         ++summary->num_unofficial_achievements;
+        summary->points_unofficial += achievement->public_.points;
+
+        if (achievement->public_.unlocked & unlock_bit) {
+          ++summary->num_unlocked_unofficial_achievements;
+          summary->points_unlocked_unofficial += achievement->public_.points;
+        }
         break;
 
       default:
@@ -1010,6 +1016,7 @@ void rc_client_get_user_game_summary(const rc_client_t* client, rc_client_user_g
   if (!summary)
     return;
 
+  /* External clients may only populate an older prefix of the structure. */
   memset(summary, 0, sizeof(*summary));
   if (!client)
     return;
@@ -1036,6 +1043,7 @@ void rc_client_get_user_subset_summary(const rc_client_t* client, uint32_t subse
   if (!summary)
     return;
 
+  /* External clients may only populate an older prefix of the structure. */
   memset(summary, 0, sizeof(*summary));
   if (!client || !subset_id)
     return;
@@ -4555,6 +4563,84 @@ const rc_client_achievement_t* rc_client_get_achievement_info(rc_client_t* clien
   }
 
   return NULL;
+}
+
+int rc_client_set_unofficial_achievement_unlock_state(rc_client_t* client, uint32_t id,
+    uint8_t unlock_state, time_t unlock_time_softcore, time_t unlock_time_hardcore)
+{
+  rc_client_subset_info_t* subset;
+  rc_client_achievement_info_t* achievement = NULL;
+  uint8_t active_bit;
+
+  if (!client)
+    return RC_INVALID_STATE;
+
+#ifdef RC_CLIENT_SUPPORTS_EXTERNAL
+  if (client->state.external_client) {
+    RC_CLIENT_LOG_ERR_FORMATTED(client, "Cannot set unofficial achievement %u unlock state with external client", id);
+    return RC_INVALID_STATE;
+  }
+#endif
+
+  if (!client->game)
+    return RC_NO_GAME_LOADED;
+
+  if (unlock_state & ~RC_CLIENT_ACHIEVEMENT_UNLOCKED_BOTH)
+    return RC_INVALID_VALUE;
+
+  for (subset = client->game->subsets; subset; subset = subset->next) {
+    rc_client_achievement_info_t* scan = subset->achievements;
+    rc_client_achievement_info_t* stop = scan + subset->public_.num_achievements;
+    for (; scan < stop; ++scan) {
+      if (scan->public_.id == id) {
+        achievement = scan;
+        break;
+      }
+    }
+
+    if (achievement)
+      break;
+  }
+
+  if (!achievement || achievement->public_.category != RC_CLIENT_ACHIEVEMENT_CATEGORY_UNOFFICIAL)
+    return RC_NOT_FOUND;
+
+  rc_mutex_lock(&client->state.mutex);
+
+  if ((unlock_state & RC_CLIENT_ACHIEVEMENT_UNLOCKED_SOFTCORE) && !unlock_time_softcore)
+    unlock_time_softcore = time(NULL);
+  else if (!(unlock_state & RC_CLIENT_ACHIEVEMENT_UNLOCKED_SOFTCORE))
+    unlock_time_softcore = 0;
+
+  if ((unlock_state & RC_CLIENT_ACHIEVEMENT_UNLOCKED_HARDCORE) && !unlock_time_hardcore)
+    unlock_time_hardcore = time(NULL);
+  else if (!(unlock_state & RC_CLIENT_ACHIEVEMENT_UNLOCKED_HARDCORE))
+    unlock_time_hardcore = 0;
+
+  achievement->public_.unlocked = unlock_state;
+  achievement->unlock_time_softcore = unlock_time_softcore;
+  achievement->unlock_time_hardcore = unlock_time_hardcore;
+  achievement->public_.unlock_time = client->state.hardcore ? unlock_time_hardcore : unlock_time_softcore;
+
+  active_bit = client->state.encore_mode ? RC_CLIENT_ACHIEVEMENT_UNLOCKED_NONE :
+    client->state.hardcore ? RC_CLIENT_ACHIEVEMENT_UNLOCKED_HARDCORE : RC_CLIENT_ACHIEVEMENT_UNLOCKED_SOFTCORE;
+
+  if (achievement->public_.state != RC_CLIENT_ACHIEVEMENT_STATE_DISABLED) {
+    if (unlock_state & active_bit) {
+      achievement->public_.state = RC_CLIENT_ACHIEVEMENT_STATE_UNLOCKED;
+      if (achievement->trigger)
+        achievement->trigger->state = RC_TRIGGER_STATE_TRIGGERED;
+    }
+    else {
+      if (achievement->trigger)
+        rc_reset_trigger(achievement->trigger);
+      achievement->public_.state = RC_CLIENT_ACHIEVEMENT_STATE_ACTIVE;
+    }
+  }
+
+  rc_client_update_active_achievements(client->game);
+  rc_mutex_unlock(&client->state.mutex);
+  return RC_OK;
 }
 
 const rc_client_achievement_t* rc_client_get_next_achievement_info(rc_client_t* client,
