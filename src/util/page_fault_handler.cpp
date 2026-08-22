@@ -64,6 +64,53 @@ static constexpr u64 ARM64_ESR_ISS_DA_WNR = (1u << 6);
       return false;
   }
 }
+
+#ifdef __linux__
+
+static std::optional<u64> GetLinuxAArch64ESR(const ucontext_t* context)
+{
+  // Why doesn't Linux keep this in the context... ugh.
+  struct LinuxAArch64ContextHeader
+  {
+    u32 magic;
+    u32 size;
+  };
+
+  struct LinuxAArch64ESRContext
+  {
+    LinuxAArch64ContextHeader head;
+    u64 esr;
+  };
+
+  static constexpr u32 LINUX_AARCH64_ESR_MAGIC = 0x45535201;
+
+  const u8* ptr = context->uc_mcontext.__reserved;
+  const u8* const end = ptr + sizeof(context->uc_mcontext.__reserved);
+
+  while (ptr < end)
+  {
+    const std::size_t remaining = static_cast<std::size_t>(end - ptr);
+    if (remaining < sizeof(LinuxAArch64ContextHeader))
+      break;
+
+    const auto* header = reinterpret_cast<const LinuxAArch64ContextHeader*>(ptr);
+    if (header->magic == 0 && header->size == 0)
+      break;
+
+    if (header->size < sizeof(LinuxAArch64ContextHeader) || header->size > remaining || (header->size & 15) != 0)
+      break;
+
+    if (header->magic == LINUX_AARCH64_ESR_MAGIC && header->size >= sizeof(LinuxAArch64ESRContext))
+      return reinterpret_cast<const LinuxAArch64ESRContext*>(ptr)->esr;
+
+    ptr += header->size;
+  }
+
+  return std::nullopt;
+}
+
+#endif // __linux__
+
 #elif defined(CPU_ARCH_RISCV64)
 [[maybe_unused]] static bool IsStoreInstruction(const void* ptr)
 {
@@ -247,8 +294,11 @@ void PageFaultHandler::SignalHandler(int sig, siginfo_t* info, void* ctx)
   void* const exception_pc = reinterpret_cast<void*>(static_cast<ucontext_t*>(ctx)->uc_mcontext.arm_pc);
   const bool is_write = (static_cast<ucontext_t*>(ctx)->uc_mcontext.error_code & (1 << 11)) != 0; // DFSR.WnR
 #elif defined(CPU_ARCH_ARM64)
-  void* const exception_pc = reinterpret_cast<void*>(static_cast<ucontext_t*>(ctx)->uc_mcontext.pc);
-  const bool is_write = IsStoreInstruction(exception_pc);
+  ucontext_t* const context = static_cast<ucontext_t*>(ctx);
+  void* const exception_pc = reinterpret_cast<void*>(context->uc_mcontext.pc);
+  const std::optional<u64> esr = GetLinuxAArch64ESR(context); // NOTE: Must not read instruction unless ESR check fails.
+  const bool is_write =
+    esr.has_value() ? ((esr.value() & ARM64_ESR_ISS_DA_WNR) != 0) : IsStoreInstruction(exception_pc);
 #elif defined(CPU_ARCH_RISCV64)
   void* const exception_pc = reinterpret_cast<void*>(static_cast<ucontext_t*>(ctx)->uc_mcontext.__gregs[REG_PC]);
   const bool is_write = IsStoreInstruction(exception_pc);
