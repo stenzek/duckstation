@@ -120,7 +120,7 @@ void InputBindingWidget::updateTextAndToolTip()
   {
     m_full_text.clear();
     setText(QString());
-    setToolTip(QStringLiteral("%1:\n\n%2\n\n%3").arg(m_display_name).arg(tr("No binding set.")).arg(tr(help_text)));
+    setToolTip(QStringLiteral("%1:\n\n%2\n\n%3").arg(m_display_name, tr("No binding set."), tr(help_text)));
   }
   else
   {

@@ -58,7 +58,7 @@ ISOBrowserWindow* ISOBrowserWindow::createAndOpenFile(QWidget* parent, const QSt
   {
     QtUtils::AsyncMessageBox(
       parent, QMessageBox::Critical, u"Error"_s,
-      QStringLiteral("Failed to open %1:\n%2").arg(path).arg(QString::fromStdString(error.GetDescription())));
+      QStringLiteral("Failed to open %1:\n%2").arg(path, QString::fromStdString(error.GetDescription())));
     delete ib;
     return nullptr;
   }
@@ -100,7 +100,7 @@ void ISOBrowserWindow::onOpenFileClicked()
   {
     QtUtils::AsyncMessageBox(
       this, QMessageBox::Critical, u"Error"_s,
-      QStringLiteral("Failed to open %1:\n%2").arg(path).arg(QString::fromStdString(error.GetDescription())));
+      QStringLiteral("Failed to open %1:\n%2").arg(path, QString::fromStdString(error.GetDescription())));
     return;
   }
 }

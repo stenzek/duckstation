@@ -536,7 +536,7 @@ void AutoUpdaterDialog::getChangesComplete(s32 status_code, Error& error, std::v
         if (!message.isEmpty())
         {
           changes_html +=
-            QStringLiteral("<li>%1 <i>(%2)</i></li>").arg(message.toHtmlEscaped()).arg(author.toHtmlEscaped());
+            QStringLiteral("<li>%1 <i>(%2)</i></li>").arg(message.toHtmlEscaped(), author.toHtmlEscaped());
         }
 
         if (message.contains("[SAVEVERSION+]"_L1))
