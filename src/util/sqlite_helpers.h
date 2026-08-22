@@ -45,6 +45,7 @@ public:
   }
   void BindBlob(int idx, const std::span<const u8> data) { BindBlob(idx, data.data(), static_cast<int>(data.size())); }
   void BindInt(int idx, int val) { g_dyn_sqlite.sqlite3_bind_int(m_stmt, idx, val); }
+  void BindInt64(int idx, s64 val) { g_dyn_sqlite.sqlite3_bind_int64(m_stmt, idx, val); }
   void BindText(int idx, const char* text, int size)
   {
     g_dyn_sqlite.sqlite3_bind_text(m_stmt, idx, text, size, SQLITE_STATIC);
@@ -66,6 +67,7 @@ public:
   int ColumnSizeBytes(int idx) const { return g_dyn_sqlite.sqlite3_column_bytes(m_stmt, idx); }
 
   int ColumnInt(int idx) const { return g_dyn_sqlite.sqlite3_column_int(m_stmt, idx); }
+  s64 ColumnInt64(int idx) const { return g_dyn_sqlite.sqlite3_column_int64(m_stmt, idx); }
 
   std::string_view ColumnText(int idx) const
   {

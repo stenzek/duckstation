@@ -19,11 +19,13 @@ class Error;
   X(sqlite3_exec)                                                                                                      \
   X(sqlite3_bind_blob)                                                                                                 \
   X(sqlite3_bind_int)                                                                                                  \
+  X(sqlite3_bind_int64)                                                                                                \
   X(sqlite3_bind_text)                                                                                                 \
   X(sqlite3_column_blob)                                                                                               \
   X(sqlite3_column_bytes)                                                                                              \
   X(sqlite3_column_text)                                                                                               \
-  X(sqlite3_column_int)
+  X(sqlite3_column_int)                                                                                                \
+  X(sqlite3_column_int64)
 
 struct DynSqlite
 {
