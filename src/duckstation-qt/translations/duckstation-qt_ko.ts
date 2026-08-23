@@ -221,6 +221,10 @@ Do you want to enable hardcore mode?</source>
         <translation>앙코르 모드 활성화</translation>
     </message>
     <message>
+        <source>Track Unofficial Achievements</source>
+        <translation>비공식 도전 과제 추적</translation>
+    </message>
+    <message>
         <source>Notifications</source>
         <translation>알림</translation>
     </message>
@@ -273,12 +277,12 @@ Do you want to enable hardcore mode?</source>
         <translation>활성화하면 DuckStation은 모든 도전 과제가 잠긴 것으로 간주하고 봉인 해제 알림을 서버로 보내지 않습니다.</translation>
     </message>
     <message>
-        <source>When enabled, DuckStation will list achievements from unofficial sets. Please note that these achievements are not tracked by RetroAchievements, so they unlock every time.</source>
-        <translation>이 기능을 활성화하면 DuckStation에서 비공식 세트의 도전 과제를 나열합니다. 해당 도전 과제는 레트로어치브먼트에서 추적되지 않으므로 매번 봉인 해제됩니다.</translation>
-    </message>
-    <message>
         <source>&quot;Challenge&quot; mode for achievements, including leaderboard tracking. Disables save state, cheats, and slowdown functions.</source>
         <translation>순위표 추적을 포함한 도전 과제를 위한 &quot;도전&quot; 모드. 저장 상태, 치트, 속도 저하 기능 비활성화.</translation>
+    </message>
+    <message>
+        <source>When enabled, DuckStation will track unofficial achievements. Unlocks will be saved locally and not sent to RetroAchievements.</source>
+        <translation>활성화하면 DuckStation이 비공식 도전 과제를 추적합니다. 잠금 해제 정보는 로컬에 저장되며 RetroAchievements로 전송되지 않습니다.</translation>
     </message>
     <message>
         <source>Checked</source>
@@ -395,9 +399,9 @@ Do you want to enable hardcore mode?</source>
     </message>
     <message>
         <source>Logged in as %1
-Token generated at %2</source>
-        <translation>로그인 계정: %1
-토큰 생성 시간: %2</translation>
+Token generated %2</source>
+        <translation>%1(으)로 로그인됨
+토큰 생성: %2</translation>
     </message>
     <message numerus="yes">
         <source>%n seconds</source>
@@ -621,18 +625,6 @@ Error: {}</source>
         <translation>이 하위 집합에는 도전 과제가 없습니다.</translation>
     </message>
     <message>
-        <source>Subset was beaten on {0}, and completed on {1}.</source>
-        <translation>하위 집합은 {0}에 클리어했으며 {1}에 완료했습니다.</translation>
-    </message>
-    <message>
-        <source>Subset was beaten on {0}.</source>
-        <translation>하위 집합을 {0}에 클리어했습니다.</translation>
-    </message>
-    <message>
-        <source>Subset was completed on {0}.</source>
-        <translation>하위 집합을 {0}에 완료했습니다.</translation>
-    </message>
-    <message>
         <source>Unknown</source>
         <translation>알 수 없음</translation>
     </message>
@@ -685,6 +677,10 @@ Error: {}</source>
         <translation>도전 과제 고정</translation>
     </message>
     <message>
+        <source>Reset Unofficial Unlocks</source>
+        <translation>비공식 잠금 해제 초기화</translation>
+    </message>
+    <message>
         <source>View Details</source>
         <translation>자세히 보기</translation>
     </message>
@@ -695,6 +691,10 @@ Error: {}</source>
     <message>
         <source>XXX points</source>
         <translation>XXX점</translation>
+    </message>
+    <message>
+        <source>Unlocked {}</source>
+        <translation>{} 잠금 해제됨</translation>
     </message>
     <message>
         <source>Leaderboards are not available.</source>
@@ -731,62 +731,32 @@ Error: {}</source>
         <translation>페이지 변경</translation>
     </message>
     <message>
+        <source>Game was beaten {0}, and completed {1}.</source>
+        <translation>게임을 {0}에 클리어했고 {1}에 완료했습니다.</translation>
+    </message>
+    <message>
+        <source>Subset was beaten {0}, and completed {1}.</source>
+        <translation>하위 집합을 {0}에 클리어했고 {1}에 완료했습니다.</translation>
+    </message>
+    <message>
+        <source>Game was beaten {0}.</source>
+        <translation>게임을 {0}에 클리어했습니다.</translation>
+    </message>
+    <message>
+        <source>Subset was beaten {0}.</source>
+        <translation>하위 집합을 {0}에 클리어했습니다.</translation>
+    </message>
+    <message>
+        <source>Game was completed {0}.</source>
+        <translation>게임을 {0}에 완료했습니다.</translation>
+    </message>
+    <message>
+        <source>Subset was completed {0}.</source>
+        <translation>하위 집합을 {0}에 완료했습니다.</translation>
+    </message>
+    <message>
         <source>View Profile</source>
         <translation>프로필 표시</translation>
-    </message>
-    <message>
-        <source>Just now</source>
-        <translation>방금 전</translation>
-    </message>
-    <message numerus="yes">
-        <source>%n minutes ago</source>
-        <comment>Relative time</comment>
-        <translation>
-            <numerusform>%n분 전</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <source>%n hours ago</source>
-        <comment>Relative time</comment>
-        <translation>
-            <numerusform>%n시간 전</numerusform>
-        </translation>
-    </message>
-    <message>
-        <source>Today</source>
-        <translation>오늘</translation>
-    </message>
-    <message>
-        <source>Yesterday</source>
-        <translation>어제</translation>
-    </message>
-    <message numerus="yes">
-        <source>%n days ago</source>
-        <comment>Relative time</comment>
-        <translation>
-            <numerusform>%n일 전</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <source>%n weeks ago</source>
-        <comment>Relative time</comment>
-        <translation>
-            <numerusform>%n주 전</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <source>%n months ago</source>
-        <comment>Relative time</comment>
-        <translation>
-            <numerusform>%n개월 전</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <source>%n years ago</source>
-        <comment>Relative time</comment>
-        <translation>
-            <numerusform>%n년 전</numerusform>
-        </translation>
     </message>
     <message>
         <source>Leaderboard download failed</source>
@@ -903,26 +873,16 @@ Error: {}</source>
         <source>{0} - {1}</source>
         <translation>{0} - {1}</translation>
     </message>
+    <message>
+        <source>You have unlocked {0} of {1} unofficial achievements, earning {2} of {3} possible points.</source>
+        <translation>비공식 도전 과제 {1}개 중 {0}개를 잠금 해제하여 획득 가능한 {3}점 중 {2}점을 획득했습니다.</translation>
+    </message>
     <message numerus="yes">
         <source>%n achievements are not supported by DuckStation and cannot be unlocked.</source>
         <comment>Unsupported achievement count</comment>
         <translation>
             <numerusform>%n 도전 과제는 DuckStation에서 지원되지 않으므로 잠금 해제할 수 없습니다.</numerusform>
         </translation>
-    </message>
-    <message>
-        <source>Game was beaten on {0}, and completed on {1}.</source>
-        <translation>게임은 {0}에 끝났고, {1}에 완료되었습니다.</translation>
-    </message>
-    <message>
-        <source>Game was beaten on {0}.</source>
-        <translation>게임은 {0}에 끝났습니다.</translation>
-    </message>
-    <message>
-        <source>Game was completed on {0}.</source>
-        <oldsource>Game complete.
-{0}, {1}.</oldsource>
-        <translation>게임은 {0}에 완료되었습니다.</translation>
     </message>
     <message>
         <source>Missable</source>
@@ -935,10 +895,6 @@ Error: {}</source>
     <message>
         <source>Win Condition</source>
         <translation>승리 조건</translation>
-    </message>
-    <message>
-        <source>Unlocked: {} | {:.1f}% of players have this achievement</source>
-        <translation>잠금 해제 : {} | {:.1f}%의 플레이어가 이 도전 과제를 달성</translation>
     </message>
     <message>
         <source>{:.1f}% of players have this achievement</source>
@@ -2780,10 +2736,6 @@ Trying to use this cheat will not work as expected. Do you want to continue?</so
     <message>
         <source>Ignore Drive Subcode</source>
         <translation>드라이브 하위 코드 무시</translation>
-    </message>
-    <message>
-        <source>Preload Image To RAM</source>
-        <translation>램에 이미지 미리 불러오기</translation>
     </message>
     <message>
         <source>Unchecked</source>
@@ -5435,6 +5387,10 @@ ${serial} : 게임 일련번호.</translation>
         <translation>총 시간 : {}</translation>
     </message>
     <message>
+        <source>All unofficial achievement progress for the current game will be removed. This cannot be undone.</source>
+        <translation>현재 게임의 모든 비공식 도전 과제 진행 상황이 제거됩니다. 이 작업은 되돌릴 수 없습니다.</translation>
+    </message>
+    <message>
         <source>Allow Booting Without SBI File</source>
         <translation>SBI 파일 없이 부팅 허용</translation>
     </message>
@@ -5949,6 +5905,10 @@ You cannot undo this action.</source>
         <translation>순위표 도전을 시작, 제출 또는 실패할 때 팝업 메시지를 표시합니다.</translation>
     </message>
     <message>
+        <source>Do you want to continue from the automatic save created {}?</source>
+        <translation>{}에 생성된 자동 저장에서 계속하시겠습니까?</translation>
+    </message>
+    <message>
         <source>Double-Click Toggles Fullscreen</source>
         <translation>두 번 클릭하면 전체 화면 전환</translation>
     </message>
@@ -6327,6 +6287,10 @@ Please check your username and password, and try again.</source>
 아이디와 비밀번호를 확인하고 다시 시도하세요.</translation>
     </message>
     <message>
+        <source>Login token generated {}</source>
+        <translation>로그인 토큰 생성: {}</translation>
+    </message>
+    <message>
         <source>Menu Background</source>
         <translation>메뉴 배경</translation>
     </message>
@@ -6394,6 +6358,18 @@ Please check your username and password, and try again.</source>
     <message>
         <source>Reset Controller Settings</source>
         <translation>컨트롤러 설정 초기화</translation>
+    </message>
+    <message>
+        <source>Reset Unlock</source>
+        <translation>잠금 해제 초기화</translation>
+    </message>
+    <message>
+        <source>Reset Unofficial Achievement</source>
+        <translation>비공식 도전 과제 초기화</translation>
+    </message>
+    <message>
+        <source>Reset Unofficial Achievement Unlocks</source>
+        <translation>비공식 도전 과제 잠금 해제 초기화</translation>
     </message>
     <message>
         <source>Resume Last Session</source>
@@ -6576,6 +6552,10 @@ Please check your username and password, and try again.</source>
         <translation>텍스처 디렉터리</translation>
     </message>
     <message>
+        <source>The unlock state for &apos;{}&apos; will be removed. This cannot be undone.</source>
+        <translation>&apos;{}&apos;의 잠금 해제 상태가 제거됩니다. 이 작업은 되돌릴 수 없습니다.</translation>
+    </message>
+    <message>
         <source>Timing out in {:.0f} seconds...</source>
         <translation>{:.0f}초 후 시간 초과...</translation>
     </message>
@@ -6592,6 +6572,10 @@ Please check your username and password, and try again.</source>
         <translation>버튼을 누르고 있는 대신, 누르면 매크로가 전환됩니다.</translation>
     </message>
     <message>
+        <source>Track Unofficial Achievements</source>
+        <translation>비공식 도전 과제 추적</translation>
+    </message>
+    <message>
         <source>Trigger</source>
         <translation>트리거</translation>
     </message>
@@ -6606,6 +6590,14 @@ Please check your username and password, and try again.</source>
     <message>
         <source>Unknown File Size</source>
         <translation>알 수 없는 파일 크기</translation>
+    </message>
+    <message>
+        <source>Unofficial achievement unlock reset.</source>
+        <translation>비공식 도전 과제 잠금 해제가 초기화되었습니다.</translation>
+    </message>
+    <message>
+        <source>Unofficial achievement unlocks reset.</source>
+        <translation>비공식 도전 과제 잠금 해제가 초기화되었습니다.</translation>
     </message>
     <message>
         <source>Use Old MDEC Routines</source>
@@ -6638,6 +6630,10 @@ Please check your username and password, and try again.</source>
     <message>
         <source>WARNING: Activating game patches can cause unpredictable behavior, crashing, soft-locks, or broken saved games.</source>
         <translation>경고 : 게임 패치를 활성화하면 예기치 않은 동작, 충돌, 소프트 잠금 또는 저장된 게임 손상이 발생할 수 있습니다.</translation>
+    </message>
+    <message>
+        <source>When enabled, DuckStation will track unofficial achievements. Unlocks will be saved locally and not sent to RetroAchievements.</source>
+        <translation>활성화하면 DuckStation이 비공식 도전 과제를 추적합니다. 잠금 해제 정보는 로컬에 저장되며 RetroAchievements로 전송되지 않습니다.</translation>
     </message>
     <message>
         <source>Wireframe Rendering</source>
@@ -6770,10 +6766,6 @@ Please check your username and password, and try again.</source>
     <message>
         <source>Dithering</source>
         <translation>디더링</translation>
-    </message>
-    <message>
-        <source>Do you want to continue from the automatic save created at {}?</source>
-        <translation>{}에 생성된 자동 저장을 계속 진행하시겠습니까?</translation>
     </message>
     <message>
         <source>DuckStation can automatically download covers for games which do not currently have a cover set. We do not host any cover images, the user must provide their own source for images.</source>
@@ -7086,10 +7078,6 @@ Please check your username and password, and try again.</source>
     <message>
         <source>Login</source>
         <translation>로그인</translation>
-    </message>
-    <message>
-        <source>Login token generated on {}</source>
-        <translation>{}에 로그인 토큰이 생성되었습니다.</translation>
     </message>
     <message>
         <source>Logout</source>
@@ -8654,10 +8642,6 @@ Do you want to delete the save state and boot the game anyway?</source>
         <translation>테스트 시, 유용한 모든 개선 사항을 일시적으로 비활성화합니다.</translation>
     </message>
     <message>
-        <source>Test Unofficial Achievements</source>
-        <translation>비공식 도전 과제 테스트</translation>
-    </message>
-    <message>
         <source>Texture Filtering</source>
         <translation>텍스처 필터링</translation>
     </message>
@@ -8876,10 +8860,6 @@ Do you want to {0} anyway?</source>
     <message>
         <source>When enabled, DuckStation will assume all achievements are locked and not send any unlock notifications to the server.</source>
         <translation>활성화하면 DuckStation은 모든 도전 과제가 잠긴 것으로 간주하고 봉인 해제 알림을 서버로 보내지 않습니다.</translation>
-    </message>
-    <message>
-        <source>When enabled, DuckStation will list achievements from unofficial sets. These achievements are not tracked by RetroAchievements.</source>
-        <translation>이 옵션을 활성화하면 DuckStation은 비공식 세트의 도전 과제를 나열합니다. 이러한 도전 과제는 레트로어치브먼트에서 추적되지 않습니다.</translation>
     </message>
     <message>
         <source>When enabled, each session will behave as if no achievements have been unlocked.</source>
@@ -9897,70 +9877,9 @@ Are you sure you want to continue?</source>
         <source>No URLs to download enumerated.</source>
         <translation>내려받을 URL이 나열되어 있지 않습니다.</translation>
     </message>
-    <message>
-        <source>Never</source>
-        <translation>미 실행</translation>
-    </message>
-    <message>
-        <source>Today</source>
-        <translation>오늘</translation>
-    </message>
-    <message>
-        <source>Yesterday</source>
-        <translation>어제</translation>
-    </message>
-    <message>
-        <source>{}h {}m</source>
-        <translation>{}시 {}분</translation>
-    </message>
-    <message>
-        <source>{}h {}m {}s</source>
-        <translation>{}시 {}분 {}초</translation>
-    </message>
-    <message>
-        <source>{}m {}s</source>
-        <translation>{}분 {}초</translation>
-    </message>
-    <message>
-        <source>{}s</source>
-        <translation>{}초</translation>
-    </message>
-    <message>
-        <source>None</source>
-        <translation>없음</translation>
-    </message>
-    <message numerus="yes">
-        <source>%n hours</source>
-        <translation>
-            <numerusform>%n시간</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <source>%n minutes</source>
-        <translation>
-            <numerusform>%n분</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <source>%n seconds</source>
-        <translation>
-            <numerusform>%n초</numerusform>
-        </translation>
-    </message>
-</context>
-<context>
-    <name>GameListListView</name>
-    <message>
-        <source>Unknown</source>
-        <translation>알 수 없음</translation>
-    </message>
 </context>
 <context>
     <name>GameListModel</name>
-    <message>
-        <source>Unknown</source>
-        <translation>알 수 없음</translation>
-    </message>
     <message>
         <source>No Achievements</source>
         <oldsource>Achievements</oldsource>
@@ -10132,8 +10051,8 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>다중 디스크 게임 병합</translation>
     </message>
     <message>
-        <source>Show Localized Icons</source>
-        <translation>현지화된 아이콘 표시</translation>
+        <source>Show Localized Titles</source>
+        <translation>현지화 타이틀 표시</translation>
     </message>
     <message>
         <source>Show Game Icons</source>
@@ -11360,6 +11279,132 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <source>Offset applied to lightgun horizontal position.</source>
         <translation>라이트건 수평 위치에 적용되는 오프셋입니다.</translation>
+    </message>
+</context>
+<context>
+    <name>Host</name>
+    <message numerus="yes">
+        <source>%n seconds</source>
+        <translation>
+            <numerusform>%n초</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n minutes</source>
+        <translation>
+            <numerusform>%n분</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n hours</source>
+        <translation>
+            <numerusform>%n시간</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Today</source>
+        <translation>오늘</translation>
+    </message>
+    <message>
+        <source>Yesterday</source>
+        <translation>어제</translation>
+    </message>
+    <message>
+        <source>Never</source>
+        <translation>미 실행</translation>
+    </message>
+    <message>
+        <source>today</source>
+        <translation>오늘</translation>
+    </message>
+    <message>
+        <source>yesterday</source>
+        <translation>어제</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n days ago</source>
+        <comment>Date difference</comment>
+        <translation>
+            <numerusform>%n일 전</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>on {}</source>
+        <translation>{}에</translation>
+    </message>
+    <message>
+        <source>Now</source>
+        <translation>지금</translation>
+    </message>
+    <message>
+        <source>now</source>
+        <translation>지금</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n seconds ago</source>
+        <comment>Time difference</comment>
+        <translation>
+            <numerusform>%n초 전</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n minutes ago</source>
+        <comment>Time difference</comment>
+        <translation>
+            <numerusform>%n분 전</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n hours ago</source>
+        <comment>Time difference</comment>
+        <translation>
+            <numerusform>%n시간 전</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n weeks ago</source>
+        <comment>Time difference</comment>
+        <translation>
+            <numerusform>%n주 전</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n months ago</source>
+        <comment>Time difference</comment>
+        <translation>
+            <numerusform>%n개월 전</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n years ago</source>
+        <comment>Time difference</comment>
+        <translation>
+            <numerusform>%n년 전</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>{} at {}</source>
+        <translation>{} {}에</translation>
+    </message>
+    <message>
+        <source>{}h {}m</source>
+        <translation>{}시 {}분</translation>
+    </message>
+    <message>
+        <source>{}h {}m {}s</source>
+        <translation>{}시 {}분 {}초</translation>
+    </message>
+    <message>
+        <source>{}m {}s</source>
+        <translation>{}분 {}초</translation>
+    </message>
+    <message>
+        <source>{}s</source>
+        <translation>{}초</translation>
+    </message>
+    <message>
+        <source>None</source>
+        <translation>없음</translation>
     </message>
 </context>
 <context>
@@ -12676,10 +12721,6 @@ Shift 키를 누른 채 클릭하면 여러 결합을 설정할 수 있습니다
         <translation>상태 불러오기</translation>
     </message>
     <message>
-        <source>Save State</source>
-        <translation>상태 저장하기</translation>
-    </message>
-    <message>
         <source>S&amp;ettings</source>
         <translation>설정(&amp;E)</translation>
     </message>
@@ -12772,20 +12813,12 @@ Shift 키를 누른 채 클릭하면 여러 결합을 설정할 수 있습니다
         <translation>컨트롤러(&amp;C)</translation>
     </message>
     <message>
-        <source>&amp;Post-Processing</source>
-        <translation>후처리(&amp;P)</translation>
-    </message>
-    <message>
         <source>View Third-Party Notices...</source>
         <translation>써드파티 공지 보기...</translation>
     </message>
     <message>
         <source>&amp;Settings</source>
         <translation>설정(&amp;S)</translation>
-    </message>
-    <message>
-        <source>Enable Safe Mode</source>
-        <translation>안전 모드 활성화</translation>
     </message>
     <message>
         <source>&amp;Memory Cards</source>
@@ -12800,16 +12833,28 @@ Shift 키를 누른 채 클릭하면 여러 결합을 설정할 수 있습니다
         <translation>빅피처</translation>
     </message>
     <message>
-        <source>Cover Downloader</source>
-        <translation>커버 내려받기</translation>
-    </message>
-    <message>
         <source>Media Ca&amp;pture</source>
         <translation>미디어 캡처(&amp;P)</translation>
     </message>
     <message>
         <source>Starts a new session without any disc inserted.</source>
         <translation>디스크를 삽입하지 않고 새 세션을 시작합니다.</translation>
+    </message>
+    <message>
+        <source>Cha&amp;nge Disc</source>
+        <translation>디스크 교체(&amp;N)</translation>
+    </message>
+    <message>
+        <source>&amp;Cheats</source>
+        <translation>치트(&amp;C)</translation>
+    </message>
+    <message>
+        <source>Sa&amp;ve State</source>
+        <translation>저장 상태(&amp;V)</translation>
+    </message>
+    <message>
+        <source>Media Capt&amp;ure</source>
+        <translation>미디어 캡처(&amp;U)</translation>
     </message>
     <message>
         <source>Scan &amp;For New Games</source>
@@ -12900,6 +12945,10 @@ Shift 키를 누른 채 클릭하면 여러 결합을 설정할 수 있습니다
         <translation>세션 콘텐츠의 표시 방식과 관련된 옵션을 설정합니다.</translation>
     </message>
     <message>
+        <source>Post-Processi&amp;ng</source>
+        <translation>후처리(&amp;N)</translation>
+    </message>
+    <message>
         <source>Configures post-processing effects applied after rendering the content.</source>
         <translation>콘텐츠를 렌더링한 후 적용되는 후처리 효과를 설정합니다.</translation>
     </message>
@@ -12984,16 +13033,48 @@ Shift 키를 누른 채 클릭하면 여러 결합을 설정할 수 있습니다
         <translation>애플리케이션의 모양과 동작과 관련된 옵션을 설정합니다.</translation>
     </message>
     <message>
-        <source>A&amp;dvanced</source>
-        <translation>고급(&amp;D)</translation>
+        <source>&amp;Refresh Grid Covers</source>
+        <translation>그리드 표지 새로 고침(&amp;R)</translation>
+    </message>
+    <message>
+        <source>Capture &amp;GPU Frame</source>
+        <translation>GPU 프레임 캡처(&amp;G)</translation>
+    </message>
+    <message>
+        <source>&amp;ISO Browser</source>
+        <translation>ISO 브라우저(&amp;I)</translation>
+    </message>
+    <message>
+        <source>&amp;Free Camera</source>
+        <translation>프리 카메라(&amp;F)</translation>
+    </message>
+    <message>
+        <source>Controller &amp;Test</source>
+        <translation>컨트롤러 테스트(&amp;T)</translation>
+    </message>
+    <message>
+        <source>Clear List Backgro&amp;und</source>
+        <translation>목록 배경 지우기(&amp;U)</translation>
+    </message>
+    <message>
+        <source>Refresh &amp;Achievement Database</source>
+        <translation>도전 과제 데이터베이스 새로 고침(&amp;A)</translation>
+    </message>
+    <message>
+        <source>&amp;Animate Game Icons</source>
+        <translation>게임 아이콘 애니메이션(&amp;A)</translation>
+    </message>
+    <message>
+        <source>Prefer Ac&amp;hievement Icons</source>
+        <translation>도전 과제 아이콘 우선 사용(&amp;H)</translation>
+    </message>
+    <message>
+        <source>Syst&amp;em Log</source>
+        <translation>시스템 로그(&amp;E)</translation>
     </message>
     <message>
         <source>Configures advanced options for the application.</source>
         <translation>애플리케이션의 고급 옵션을 설정합니다.</translation>
-    </message>
-    <message>
-        <source>Debuggi&amp;ng</source>
-        <translation>디버깅(&amp;N)</translation>
     </message>
     <message>
         <source>Configures internal options for the application.</source>
@@ -13036,8 +13117,16 @@ Shift 키를 누른 채 클릭하면 여러 결합을 설정할 수 있습니다
         <translation>에뮬레이션된 메모리 카드와 관련된 옵션을 설정합니다.</translation>
     </message>
     <message>
+        <source>Res&amp;ume</source>
+        <translation>재개(&amp;U)</translation>
+    </message>
+    <message>
         <source>Resumes the last save state created.</source>
         <translation>마지막으로 생성된 세이브 스테이트를 재개합니다.</translation>
+    </message>
+    <message>
+        <source>&amp;Show Toolbar</source>
+        <translation>도구 모음 표시(&amp;S)</translation>
     </message>
     <message>
         <source>Controls whether the toolbar is visible.</source>
@@ -13052,24 +13141,12 @@ Shift 키를 누른 채 클릭하면 여러 결합을 설정할 수 있습니다
         <translation>도구 모음을 이동할 수 있는지 제어합니다.</translation>
     </message>
     <message>
-        <source>S&amp;mall Toolbar Icons</source>
-        <translation>작은 도구 모음 아이콘(&amp;M)</translation>
-    </message>
-    <message>
         <source>Controls whether the smaller toolbar icons are displayed.</source>
         <translation>작은 도구 모음 아이콘을 표시할지 제어합니다.</translation>
     </message>
     <message>
-        <source>Toolbar L&amp;abels</source>
-        <translation>도구 모음 레이블(&amp;A)</translation>
-    </message>
-    <message>
         <source>Controls whether labels are displayed alongside toolbar icons.</source>
         <translation>도구 모음 아이콘 옆에 레이블을 표시할지 제어합니다.</translation>
-    </message>
-    <message>
-        <source>Toolbar Labels &amp;Beside Icons</source>
-        <translation>아이콘 옆에 도구 모음 레이블 표시(&amp;B)</translation>
     </message>
     <message>
         <source>Controls whether labels are displayed next to or under toolbar icons.</source>
@@ -13112,10 +13189,6 @@ Shift 키를 누른 채 클릭하면 여러 결합을 설정할 수 있습니다
         <translation>같은 게임에 속한 여러 디스크를 게임 목록의 하나의 항목으로 병합합니다.</translation>
     </message>
     <message>
-        <source>Show G&amp;rid Captions</source>
-        <translation>그리드 캡션 표시(&amp;R)</translation>
-    </message>
-    <message>
         <source>Shows captions under the game cover in grid view.</source>
         <translation>그리드 보기에서 게임 표지 아래에 캡션을 표시합니다.</translation>
     </message>
@@ -13136,12 +13209,12 @@ Shift 키를 누른 채 클릭하면 여러 결합을 설정할 수 있습니다
         <translation>게임 아이콘이나 표지의 크기를 줄입니다.</translation>
     </message>
     <message>
-        <source>Refresh Grid &amp;Covers</source>
-        <translation>그리드 표지 새로 고침(&amp;C)</translation>
-    </message>
-    <message>
         <source>Invalidates the cache of game covers, allowing new images to be discovered.</source>
         <translation>게임 표지의 캐시를 무효화하여 새 이미지를 검색할 수 있게 합니다.</translation>
+    </message>
+    <message>
+        <source>&amp;Open Data Directory...</source>
+        <translation>데이터 디렉터리 열기(&amp;O)...</translation>
     </message>
     <message>
         <source>Opens the directory containing application data in your file browser.</source>
@@ -13160,8 +13233,16 @@ Shift 키를 누른 채 클릭하면 여러 결합을 설정할 수 있습니다
         <translation>상태를 저장할 수 있는 옵션 없이 현재 세션을 종료합니다.</translation>
     </message>
     <message>
+        <source>Start Bi&amp;g Picture Mode</source>
+        <translation>빅픽처 모드 시작(&amp;G)</translation>
+    </message>
+    <message>
         <source>Opens or closes the controller-based &quot;big picture&quot; mode.</source>
         <translation>컨트롤러 기반 &quot;빅 픽처&quot; 모드를 열거나 닫습니다.</translation>
+    </message>
+    <message>
+        <source>Cover &amp;Downloader</source>
+        <translation>커버 내려받기(&amp;D)</translation>
     </message>
     <message>
         <source>Opens the cover downloader window.</source>
@@ -13192,16 +13273,20 @@ Shift 키를 누른 채 클릭하면 여러 결합을 설정할 수 있습니다
         <translation>콘텐츠의 비디오와 오디오 캡처를 시작하거나 중지합니다.</translation>
     </message>
     <message>
+        <source>Open Te&amp;xture Directory...</source>
+        <translation>텍스처 디렉터리 열기(&amp;X)...</translation>
+    </message>
+    <message>
         <source>Opens the directory used to store texture replacements.</source>
         <translation>텍스처 교체를 저장하는 데 사용되는 디렉터리를 엽니다.</translation>
     </message>
     <message>
-        <source>Invalidates the cache of available replacement textures.</source>
-        <translation>사용 가능한 교체 텍스처의 캐시를 무효화합니다.</translation>
+        <source>&amp;Reload Texture Replacements</source>
+        <translation>텍스처 대체 항목 다시 불러오기(&amp;R)</translation>
     </message>
     <message>
-        <source>Capture GPU Frame</source>
-        <translation>GPU 프레임 캡처</translation>
+        <source>Invalidates the cache of available replacement textures.</source>
+        <translation>사용 가능한 교체 텍스처의 캐시를 무효화합니다.</translation>
     </message>
     <message>
         <source>Saves the emulated GPU commands to a file that can be later replayed.</source>
@@ -13228,24 +13313,12 @@ Shift 키를 누른 채 클릭하면 여러 결합을 설정할 수 있습니다
         <translation>파일에 기록</translation>
     </message>
     <message>
-        <source>ISO Browser</source>
-        <translation>ISO 브라우저</translation>
-    </message>
-    <message>
         <source>Opens the ISO browser window.</source>
         <translation>ISO 브라우저 창을 엽니다.</translation>
     </message>
     <message>
-        <source>Free Camera</source>
-        <translation>프리 카메라</translation>
-    </message>
-    <message>
         <source>Allows you to freely move the camera in supported games.</source>
         <translation>지원되는 게임에서 카메라를 자유롭게 이동할 수 있습니다.</translation>
-    </message>
-    <message>
-        <source>Controller Test</source>
-        <translation>컨트롤러 테스트</translation>
     </message>
     <message>
         <source>Allows you to test emulated controller mappings.</source>
@@ -13268,20 +13341,12 @@ Shift 키를 누른 채 클릭하면 여러 결합을 설정할 수 있습니다
         <translation>게임 목록/그리드에 표시되는 배경 이미지를 변경합니다.</translation>
     </message>
     <message>
-        <source>Clea&amp;r List Background</source>
-        <translation>목록 배경 지우기(&amp;R)</translation>
-    </message>
-    <message>
         <source>Removes the background image shown in the game list/grid.</source>
         <translation>게임 목록/그리드에 표시되는 배경 이미지를 제거합니다.</translation>
     </message>
     <message>
         <source>Refreshes the list of unlocked achievements.</source>
         <translation>잠금 해제된 도전 과제 목록을 새로 고칩니다.</translation>
-    </message>
-    <message>
-        <source>Refresh Achievement Database</source>
-        <translation>도전 과제 데이터베이스 새로 고침</translation>
     </message>
     <message>
         <source>Updates the database for achievements shown in the game list.</source>
@@ -13308,24 +13373,12 @@ Shift 키를 누른 채 클릭하면 여러 결합을 설정할 수 있습니다
         <translation>메모리 편집기 창을 엽니다.</translation>
     </message>
     <message>
-        <source>Animate Game Icons</source>
-        <translation>게임 아이콘 애니메이션</translation>
-    </message>
-    <message>
         <source>Animates icons in the list view when selected.</source>
         <translation>목록 보기에서 선택할 때 아이콘을 애니메이션으로 표시합니다.</translation>
     </message>
     <message>
-        <source>Prefer Achievement Icons</source>
-        <translation>도전 과제 아이콘 우선 사용</translation>
-    </message>
-    <message>
         <source>Prioritizes the games badges used for RetroAchievements over memory card icons.</source>
         <translation>메모리 카드 아이콘보다 RetroAchievements에 사용되는 게임 배지를 우선합니다.</translation>
-    </message>
-    <message>
-        <source>System Log</source>
-        <translation>시스템 로그</translation>
     </message>
     <message>
         <source>Start &amp;Capture</source>
@@ -13416,6 +13469,14 @@ Shift 키를 누른 채 클릭하면 여러 결합을 설정할 수 있습니다
         <translation>인터페이스(&amp;I)</translation>
     </message>
     <message>
+        <source>Ad&amp;vanced</source>
+        <translation>고급(&amp;V)</translation>
+    </message>
+    <message>
+        <source>&amp;Debugging</source>
+        <translation>디버깅(&amp;D)</translation>
+    </message>
+    <message>
         <source>From File...</source>
         <translation>파일로부터...</translation>
     </message>
@@ -13442,6 +13503,10 @@ Shift 키를 누른 채 클릭하면 여러 결합을 설정할 수 있습니다
     <message>
         <source>Dump VRAM to CPU Copies</source>
         <translation>비디오램에서 CPU로 복사본 덤프</translation>
+    </message>
+    <message>
+        <source>Enable &amp;Safe Mode</source>
+        <translation>안전 모드 활성화(&amp;S)</translation>
     </message>
     <message>
         <source>Dump RAM...</source>
@@ -13504,6 +13569,18 @@ Shift 키를 누른 채 클릭하면 여러 결합을 설정할 수 있습니다
         <translation>게임 목록(&amp;L)</translation>
     </message>
     <message>
+        <source>S&amp;mall Icons</source>
+        <translation>작은 아이콘(&amp;M)</translation>
+    </message>
+    <message>
+        <source>Show &amp;Labels</source>
+        <translation>레이블 표시(&amp;L)</translation>
+    </message>
+    <message>
+        <source>Show Labels &amp;Beside Icons</source>
+        <translation>아이콘 옆에 레이블 표시(&amp;B)</translation>
+    </message>
+    <message>
         <source>Game &amp;Properties</source>
         <translation>게임 속성(&amp;P)</translation>
     </message>
@@ -13516,24 +13593,16 @@ Shift 키를 누른 채 클릭하면 여러 결합을 설정할 수 있습니다
         <translation>게임 그리드(&amp;G)</translation>
     </message>
     <message>
+        <source>Show Grid Ca&amp;ptions</source>
+        <translation>그리드 캡션 표시(&amp;P)</translation>
+    </message>
+    <message>
         <source>Show Titles (Grid View)</source>
         <translation>그리드뷰 | 타이틀 표시</translation>
     </message>
     <message>
-        <source>Open Data Directory...</source>
-        <translation>데이터 디렉터리 열기...</translation>
-    </message>
-    <message>
         <source>Memory &amp;Scanner</source>
         <translation>메모리 스캐너(&amp;S)</translation>
-    </message>
-    <message>
-        <source>Open Texture Directory...</source>
-        <translation>텍스처 디렉터리 열기...</translation>
-    </message>
-    <message>
-        <source>Reload Texture Replacements</source>
-        <translation>텍스처 대체 다시 불러오기</translation>
     </message>
     <message>
         <source>System &amp;Display</source>
@@ -13680,6 +13749,10 @@ The saves will not be recoverable.</source>
         <translation>저장 상태 파일 &apos;%1&apos;을(를) 삭제하지 못했습니다.</translation>
     </message>
     <message>
+        <source>Save was created %1.</source>
+        <translation>%1에 저장되었습니다.</translation>
+    </message>
+    <message>
         <source>Confirm Disc Change</source>
         <translation>디스크 교체 확인</translation>
     </message>
@@ -13711,6 +13784,10 @@ The saves will not be recoverable.</source>
     <message>
         <source>Select Background Image</source>
         <translation>배경 이미지 선택</translation>
+    </message>
+    <message>
+        <source>RA: Logged in as %1 (%2 points, %3 casual). %4 unread messages.</source>
+        <translation>RA: %1(%2점, 캐주얼 %3개)로 로그인했습니다. 읽지 않은 메시지는 %4개입니다.</translation>
     </message>
     <message>
         <source>RA: Updated achievement progress database.</source>
@@ -13783,10 +13860,6 @@ Do you want to delete the save state and boot the game anyway?</source>
     <message>
         <source>&lt;strong&gt;Resume Game&lt;/strong&gt;&lt;br&gt;Do you want to load this state, or start from a fresh boot?</source>
         <translation>&lt;strong&gt;게임 재개&lt;/strong&gt;&lt;br&gt;이 상태를 불러오시겠습니까, 아니면 새로 시작하시겠습니까?</translation>
-    </message>
-    <message>
-        <source>Save was created on %1.</source>
-        <translation>%1에 저장되었습니다.</translation>
     </message>
     <message>
         <source>Do you want to swap discs or boot the new image via system restart?</source>
@@ -13983,10 +14056,6 @@ Do you want to delete the save state and boot the game anyway?</source>
     <message>
         <source>Are you sure you want to close the current game?</source>
         <translation>현재 게임을 닫으시겠습니까?</translation>
-    </message>
-    <message>
-        <source>RA: Logged in as %1 (%2, %3 casual). %4 unread messages.</source>
-        <translation>RA: %1(%2, %3 캐주얼)로 로그인했습니다. 읽지 않은 메시지는 %4개입니다.</translation>
     </message>
     <message>
         <source>Refresh Achievement Progress</source>
@@ -15780,6 +15849,10 @@ Error: {1}</source>
 <context>
     <name>PlayStationMouse</name>
     <message>
+        <source>Pointer</source>
+        <translation>포인터</translation>
+    </message>
+    <message>
         <source>Left Button</source>
         <translation>왼쪽 버튼</translation>
     </message>
@@ -15798,13 +15871,6 @@ Error: {1}</source>
     <message>
         <source>Vertical Sensitivity</source>
         <translation>수직 감도</translation>
-    </message>
-</context>
-<context>
-    <name>PlaystationMouse</name>
-    <message>
-        <source>Pointer</source>
-        <translation>포인터</translation>
     </message>
 </context>
 <context>
@@ -16597,10 +16663,6 @@ Would you like to update the shortcut to point to the current location?</source>
 <context>
     <name>SaveStateSelectorUI</name>
     <message>
-        <source>Saved at {0:%H:%M} on {0:%a} {0:%Y/%m/%d}.</source>
-        <translation>{0:%a} {0:%Y/%m/%d}의 {0:%H:%M}에 저장되었습니다.</translation>
-    </message>
-    <message>
         <source>No save state slots available.</source>
         <translation>사용 가능한 저장 상태 슬롯이 없습니다.</translation>
     </message>
@@ -16623,6 +16685,10 @@ Would you like to update the shortcut to point to the current location?</source>
     <message>
         <source>{} ({})</source>
         <translation>{} ({})</translation>
+    </message>
+    <message>
+        <source>Saved {}</source>
+        <translation>{} 저장</translation>
     </message>
     <message>
         <source>Unknown error.</source>
@@ -17200,14 +17266,14 @@ Do you want to create this directory?</source>
         <translation>자동 감지</translation>
     </message>
     <message>
-        <source>NTSC (60hz)</source>
+        <source>NTSC (60 Hz)</source>
         <comment>ForceVideoTiming</comment>
-        <translation>NTSC(60Hz)</translation>
+        <translation>NTSC (60 Hz)</translation>
     </message>
     <message>
-        <source>PAL (50hz)</source>
+        <source>PAL (50 Hz)</source>
         <comment>ForceVideoTiming</comment>
-        <translation>PAL(50Hz)</translation>
+        <translation>PAL (50 Hz)</translation>
     </message>
     <message>
         <source>Nearest-Neighbor</source>
@@ -18166,9 +18232,9 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>Logged in as %1
-Token generated at %2</source>
-        <translation>%1 계정으로 로그인함
-토큰 생성 시간: %2</translation>
+Token generated %2</source>
+        <translation>%1(으)로 로그인됨
+토큰 생성: %2</translation>
     </message>
     <message>
         <source>Logout</source>
@@ -18561,10 +18627,6 @@ You must save to a memory card and reset the game to clear any effects.</source>
 {}</translation>
     </message>
     <message>
-        <source>Loaded undo save state created at {}.</source>
-        <translation>{}에 생성된 실행 취소 저장 상태를 불러왔습니다.</translation>
-    </message>
-    <message>
         <source>capturing audio and video</source>
         <translation>음향 및 영상 캡처</translation>
     </message>
@@ -18653,6 +18715,10 @@ Using shared card instead.</source>
     <message>
         <source>System is not in correct state.</source>
         <translation>시스템이 올바른 상태가 아닙니다.</translation>
+    </message>
+    <message>
+        <source>Loaded undo save state created {}.</source>
+        <translation>{}에 생성된 실행 취소 저장 상태를 불러왔습니다.</translation>
     </message>
     <message>
         <source>Using disc-specific memory card &apos;{}&apos; instead of per-game card.</source>

@@ -182,6 +182,10 @@ Do you want to enable hardcore mode?</source>
         <translation>アンコールモードを有効にする</translation>
     </message>
     <message>
+        <source>Track Unofficial Achievements</source>
+        <translation>非公式の実績を追跡</translation>
+    </message>
+    <message>
         <source>Prefetch Badges</source>
         <translation>バッジを事前取得する</translation>
     </message>
@@ -244,6 +248,10 @@ Do you want to enable hardcore mode?</source>
     <message>
         <source>When enabled and logged in, DuckStation will scan for achievements on startup.</source>
         <translation>有効にしてログインすると、DuckStation は起動時に実績を検索します。</translation>
+    </message>
+    <message>
+        <source>When enabled, DuckStation will track unofficial achievements. Unlocks will be saved locally and not sent to RetroAchievements.</source>
+        <translation>有効にすると、DuckStation は非公式の実績を追跡します。解除状況はローカルに保存され、RetroAchievements には送信されません。</translation>
     </message>
     <message>
         <source>Displays popup messages on events such as achievement unlocks and game completion.</source>
@@ -359,7 +367,7 @@ Do you want to enable hardcore mode?</source>
     </message>
     <message>
         <source>Logged in as %1
-Token generated at %2</source>
+Token generated %2</source>
         <translation>%1 としてログイン中
 トークン生成日時: %2</translation>
     </message>
@@ -374,10 +382,6 @@ Token generated at %2</source>
     <message>
         <source>When enabled, DuckStation will assume all achievements are locked and not send any unlock notifications to the server.</source>
         <translation>有効にすると、DuckStation はすべての実績がロックされていると見なし、サーバーにロック解除通知を送信しません。</translation>
-    </message>
-    <message>
-        <source>When enabled, DuckStation will list achievements from unofficial sets. Please note that these achievements are not tracked by RetroAchievements, so they unlock every time.</source>
-        <translation>有効にすると、DuckStation は非公式セットからの実績を一覧表示します。&lt;br&gt;これらの実績は RetroAchievements によって記録されないため、毎回ロックが解除されることに注意してください。</translation>
     </message>
     <message>
         <source>&quot;Challenge&quot; mode for achievements, including leaderboard tracking. Disables save state, cheats, and slowdown functions.</source>
@@ -565,36 +569,16 @@ Error: {}</source>
         <source>This subset has no achievements.</source>
         <translation>このサブセットには実績がありません。</translation>
     </message>
+    <message>
+        <source>You have unlocked {0} of {1} unofficial achievements, earning {2} of {3} possible points.</source>
+        <translation>非公式実績を {1} 件中 {0} 件解除し、獲得可能な {3} ポイント中 {2} ポイントを獲得しました。</translation>
+    </message>
     <message numerus="yes">
         <source>%n achievements are not supported by DuckStation and cannot be unlocked.</source>
         <comment>Unsupported achievement count</comment>
         <translation>
             <numerusform>%n 件の実績は DuckStation でサポートされていないため、解除できません。</numerusform>
         </translation>
-    </message>
-    <message>
-        <source>Game was beaten on {0}, and completed on {1}.</source>
-        <translation>ゲームを {0} にクリアし、{1} にコンプリートしました。</translation>
-    </message>
-    <message>
-        <source>Subset was beaten on {0}, and completed on {1}.</source>
-        <translation>サブセットを {0} にクリアし、{1} にコンプリートしました。</translation>
-    </message>
-    <message>
-        <source>Game was beaten on {0}.</source>
-        <translation>ゲームを {0} にクリアしました。</translation>
-    </message>
-    <message>
-        <source>Subset was beaten on {0}.</source>
-        <translation>サブセットを {0} にクリアしました。</translation>
-    </message>
-    <message>
-        <source>Game was completed on {0}.</source>
-        <translation>ゲームを {0} にコンプリートしました。</translation>
-    </message>
-    <message>
-        <source>Subset was completed on {0}.</source>
-        <translation>サブセットを {0} にコンプリートしました。</translation>
     </message>
     <message>
         <source>Unknown</source>
@@ -645,6 +629,10 @@ Error: {}</source>
         <translation>実績をピン留め</translation>
     </message>
     <message>
+        <source>Reset Unofficial Unlocks</source>
+        <translation>非公式実績の解除をリセット</translation>
+    </message>
+    <message>
         <source>View Details</source>
         <translation>詳細を表示</translation>
     </message>
@@ -663,10 +651,6 @@ Error: {}</source>
     <message>
         <source>Win Condition</source>
         <translation>勝利条件</translation>
-    </message>
-    <message>
-        <source>Unlocked: {} | {:.1f}% of players have this achievement</source>
-        <translation>解除日時: {} | プレイヤーの {:.1f}% がこの実績を獲得</translation>
     </message>
     <message>
         <source>{:.1f}% of players have this achievement</source>
@@ -703,66 +687,40 @@ Error: {}</source>
         <translation>XXX ポイント</translation>
     </message>
     <message>
+        <source>Game was beaten {0}, and completed {1}.</source>
+        <translation>ゲームは {0} にクリアし、{1} にコンプリートしました。</translation>
+    </message>
+    <message>
+        <source>Subset was beaten {0}, and completed {1}.</source>
+        <translation>サブセットは {0} にクリアし、{1} にコンプリートしました。</translation>
+    </message>
+    <message>
+        <source>Game was beaten {0}.</source>
+        <translation>ゲームは {0} にクリアしました。</translation>
+    </message>
+    <message>
+        <source>Subset was beaten {0}.</source>
+        <translation>サブセットは {0} にクリアしました。</translation>
+    </message>
+    <message>
+        <source>Game was completed {0}.</source>
+        <translation>ゲームは {0} にコンプリートしました。</translation>
+    </message>
+    <message>
+        <source>Subset was completed {0}.</source>
+        <translation>サブセットは {0} にコンプリートしました。</translation>
+    </message>
+    <message>
         <source>Unlocked in Casual</source>
         <translation>カジュアルで解除</translation>
     </message>
     <message>
+        <source>Unlocked {}</source>
+        <translation>{} を解除</translation>
+    </message>
+    <message>
         <source>Loading...</source>
         <translation>ロード中...</translation>
-    </message>
-    <message>
-        <source>Just now</source>
-        <translation>たった今</translation>
-    </message>
-    <message numerus="yes">
-        <source>%n minutes ago</source>
-        <comment>Relative time</comment>
-        <translation>
-            <numerusform>%n 分前</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <source>%n hours ago</source>
-        <comment>Relative time</comment>
-        <translation>
-            <numerusform>%n 時間前</numerusform>
-        </translation>
-    </message>
-    <message>
-        <source>Today</source>
-        <translation>今日</translation>
-    </message>
-    <message>
-        <source>Yesterday</source>
-        <translation>昨日</translation>
-    </message>
-    <message numerus="yes">
-        <source>%n days ago</source>
-        <comment>Relative time</comment>
-        <translation>
-            <numerusform>%n 日前</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <source>%n weeks ago</source>
-        <comment>Relative time</comment>
-        <translation>
-            <numerusform>%n 週間前</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <source>%n months ago</source>
-        <comment>Relative time</comment>
-        <translation>
-            <numerusform>%n か月前</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <source>%n years ago</source>
-        <comment>Relative time</comment>
-        <translation>
-            <numerusform>%n 年前</numerusform>
-        </translation>
     </message>
     <message>
         <source>Leaderboard download failed</source>
@@ -2767,10 +2725,6 @@ Trying to use this cheat will not work as expected. Do you want to continue?</so
     <message>
         <source>Ignore Drive Subcode</source>
         <translation>ドライブサブコードを無視する</translation>
-    </message>
-    <message>
-        <source>Preload Image To RAM</source>
-        <translation>RAM にイメージを先読みする</translation>
     </message>
     <message>
         <source>Unchecked</source>
@@ -5867,10 +5821,6 @@ You cannot undo this action.</source>
         <translation>ディザリング</translation>
     </message>
     <message>
-        <source>Do you want to continue from the automatic save created at {}?</source>
-        <translation>{} に作成された自動セーブから続行しますか?</translation>
-    </message>
-    <message>
         <source>Double-Click Toggles Fullscreen</source>
         <translation>ダブルクリックでフルスクリーン切り替え</translation>
     </message>
@@ -6315,10 +6265,6 @@ Please check your username and password, and try again.</source>
         <translation>ログインに失敗しました。
 エラー: {}
 ユーザー名とパスワードを確認して、再試行してください。</translation>
-    </message>
-    <message>
-        <source>Login token generated on {}</source>
-        <translation>ログイントークンの生成日: {}</translation>
     </message>
     <message>
         <source>Logout</source>
@@ -7029,6 +6975,10 @@ You cannot undo this action.</source>
         <translation>2D オブジェクト上の拡大テクスチャのブロック感を滑らかにします。</translation>
     </message>
     <message>
+        <source>The unlock state for &apos;{}&apos; will be removed. This cannot be undone.</source>
+        <translation>&apos;{}&apos; の解除状態を削除します。この操作は元に戻せません。</translation>
+    </message>
+    <message>
         <source>Theme</source>
         <translation>テーマ</translation>
     </message>
@@ -7053,6 +7003,10 @@ You cannot undo this action.</source>
         <translation>トラック</translation>
     </message>
     <message>
+        <source>Track Unofficial Achievements</source>
+        <translation>非公式の実績を追跡</translation>
+    </message>
+    <message>
         <source>Track hash copied to clipboard.</source>
         <translation>トラックハッシュをクリップボードにコピーしました。</translation>
     </message>
@@ -7063,6 +7017,14 @@ You cannot undo this action.</source>
     <message>
         <source>Trigger</source>
         <translation>トリガー</translation>
+    </message>
+    <message>
+        <source>Unofficial achievement unlock reset.</source>
+        <translation>非公式実績の解除をリセットしました。</translation>
+    </message>
+    <message>
+        <source>Unofficial achievement unlocks reset.</source>
+        <translation>非公式実績の解除をリセットしました。</translation>
     </message>
     <message>
         <source>Use OSD Scale</source>
@@ -7107,6 +7069,10 @@ You cannot undo this action.</source>
     <message>
         <source>Uses game-specific configuration for input sources. If disabled, the global configuration will be used.</source>
         <translation>このゲーム固有の入力ソース設定を使用します。無効にするとグローバル設定が使用されます。</translation>
+    </message>
+    <message>
+        <source>When enabled, DuckStation will track unofficial achievements. Unlocks will be saved locally and not sent to RetroAchievements.</source>
+        <translation>有効にすると、DuckStation は非公式の実績を追跡します。解除状況はローカルに保存され、RetroAchievements には送信されません。</translation>
     </message>
     <message>
         <source>Widescreen Rendering</source>
@@ -7161,6 +7127,10 @@ Do you want to {1} anyway?</source>
         <translation>スクリーンショットの保存/圧縮形式を設定します。</translation>
     </message>
     <message>
+        <source>All unofficial achievement progress for the current game will be removed. This cannot be undone.</source>
+        <translation>現在のゲームの非公式実績の進行状況をすべて削除します。この操作は元に戻せません。</translation>
+    </message>
+    <message>
         <source>Determines the rotation of the simulated TV screen.</source>
         <translation>シミュレートされたテレビ画面の回転を設定します。</translation>
     </message>
@@ -7195,6 +7165,10 @@ Do you want to {1} anyway?</source>
     <message>
         <source>Disable Mailbox Presentation</source>
         <translation>Mailboxプレゼンテーションを無効にする</translation>
+    </message>
+    <message>
+        <source>Do you want to continue from the automatic save created {}?</source>
+        <translation>{} に作成された自動セーブから続行しますか？</translation>
     </message>
     <message>
         <source>Enable Cheats</source>
@@ -7511,6 +7485,10 @@ Do you want to {1} anyway?</source>
     <message>
         <source>Load Global State</source>
         <translation>グローバルステートを読み込む</translation>
+    </message>
+    <message>
+        <source>Login token generated {}</source>
+        <translation>ログイントークンを {} に生成しました</translation>
     </message>
     <message>
         <source>Memory Card Busy</source>
@@ -7995,6 +7973,18 @@ Do you want to {1} anyway?</source>
     <message>
         <source>Reset Settings</source>
         <translation>設定をリセット</translation>
+    </message>
+    <message>
+        <source>Reset Unlock</source>
+        <translation>解除をリセット</translation>
+    </message>
+    <message>
+        <source>Reset Unofficial Achievement</source>
+        <translation>非公式実績をリセット</translation>
+    </message>
+    <message>
+        <source>Reset Unofficial Achievement Unlocks</source>
+        <translation>非公式実績の解除をリセット</translation>
     </message>
     <message>
         <source>Resets all configuration to defaults (including bindings).</source>
@@ -8599,10 +8589,6 @@ Do you want to {1} anyway?</source>
         <translation>すべての拡張機能を一時的に無効にします。テスト時に便利です。</translation>
     </message>
     <message>
-        <source>Test Unofficial Achievements</source>
-        <translation>非公式の実績をテストする</translation>
-    </message>
-    <message>
         <source>Texture Filtering</source>
         <translation>テクスチャフィルタリング</translation>
     </message>
@@ -8865,10 +8851,6 @@ Do you want to {0} anyway?</source>
     <message>
         <source>When enabled, DuckStation will assume all achievements are locked and not send any unlock notifications to the server.</source>
         <translation>有効にすると、DuckStation はすべての実績がロックされていると見なし、サーバーにロック解除通知を送信しません。</translation>
-    </message>
-    <message>
-        <source>When enabled, DuckStation will list achievements from unofficial sets. These achievements are not tracked by RetroAchievements.</source>
-        <translation>有効にすると、DuckStation は非公式セットの実績も一覧に表示します。これらの実績は RetroAchievements では追跡されません。</translation>
     </message>
     <message>
         <source>When enabled, each session will behave as if no achievements have been unlocked.</source>
@@ -9852,69 +9834,12 @@ Are you sure you want to continue?</source>
         <translation>不明</translation>
     </message>
     <message>
-        <source>Never</source>
-        <translation>未プレイ</translation>
-    </message>
-    <message>
-        <source>Today</source>
-        <translation>今日</translation>
-    </message>
-    <message>
-        <source>Yesterday</source>
-        <translation>昨日</translation>
-    </message>
-    <message>
-        <source>{}h {}m</source>
-        <translation>{}時間 {}分</translation>
-    </message>
-    <message>
-        <source>{}h {}m {}s</source>
-        <translation>{}時間 {}分 {}秒</translation>
-    </message>
-    <message>
-        <source>{}m {}s</source>
-        <translation>{}分 {}秒</translation>
-    </message>
-    <message>
-        <source>{}s</source>
-        <translation>{}秒</translation>
-    </message>
-    <message>
-        <source>None</source>
-        <translation>なし</translation>
-    </message>
-    <message numerus="yes">
-        <source>%n seconds</source>
-        <translation>
-            <numerusform>%n 秒</numerusform>
-        </translation>
-    </message>
-    <message>
         <source>URL template must contain at least one of ${title}, ${savetitle}, ${filetitle}, or ${serial}.</source>
         <translation>URL テンプレートには ${title}、${savetitle}、${filetitle}、${serial} のいずれかを含める必要があります。</translation>
     </message>
     <message>
         <source>No URLs to download enumerated.</source>
         <translation>ダウンロードする URL が見つかりませんでした。</translation>
-    </message>
-    <message numerus="yes">
-        <source>%n hours</source>
-        <translation>
-            <numerusform>%n 時間</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <source>%n minutes</source>
-        <translation>
-            <numerusform>%n 分</numerusform>
-        </translation>
-    </message>
-</context>
-<context>
-    <name>GameListListView</name>
-    <message>
-        <source>Unknown</source>
-        <translation>不明</translation>
     </message>
 </context>
 <context>
@@ -9970,10 +9895,6 @@ Are you sure you want to continue?</source>
     <message>
         <source>Data Size</source>
         <translation>データサイズ</translation>
-    </message>
-    <message>
-        <source>Unknown</source>
-        <translation>不明</translation>
     </message>
     <message>
         <source>No Achievements</source>
@@ -10089,8 +10010,8 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>マルチディスクゲームを統合する</translation>
     </message>
     <message>
-        <source>Show Localized Icons</source>
-        <translation>ローカライズされたアイコンを表示</translation>
+        <source>Show Localized Titles</source>
+        <translation>ローカライズされたタイトルを表示</translation>
     </message>
     <message>
         <source>Show Game Icons</source>
@@ -11314,6 +11235,132 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <source>Offset applied to lightgun horizontal position.</source>
         <translation>ライトガンの水平位置に適用するオフセットです。</translation>
+    </message>
+</context>
+<context>
+    <name>Host</name>
+    <message numerus="yes">
+        <source>%n seconds</source>
+        <translation>
+            <numerusform>%n 秒</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n minutes</source>
+        <translation>
+            <numerusform>%n 分</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n hours</source>
+        <translation>
+            <numerusform>%n 時間</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Today</source>
+        <translation>今日</translation>
+    </message>
+    <message>
+        <source>Yesterday</source>
+        <translation>昨日</translation>
+    </message>
+    <message>
+        <source>Never</source>
+        <translation>なし</translation>
+    </message>
+    <message>
+        <source>today</source>
+        <translation>今日</translation>
+    </message>
+    <message>
+        <source>yesterday</source>
+        <translation>昨日</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n days ago</source>
+        <comment>Date difference</comment>
+        <translation>
+            <numerusform>%n 日前</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>on {}</source>
+        <translation>{} に</translation>
+    </message>
+    <message>
+        <source>Now</source>
+        <translation>現在</translation>
+    </message>
+    <message>
+        <source>now</source>
+        <translation>今</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n seconds ago</source>
+        <comment>Time difference</comment>
+        <translation>
+            <numerusform>%n 秒前</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n minutes ago</source>
+        <comment>Time difference</comment>
+        <translation>
+            <numerusform>%n 分前</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n hours ago</source>
+        <comment>Time difference</comment>
+        <translation>
+            <numerusform>%n 時間前</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n weeks ago</source>
+        <comment>Time difference</comment>
+        <translation>
+            <numerusform>%n 週間前</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n months ago</source>
+        <comment>Time difference</comment>
+        <translation>
+            <numerusform>%n か月前</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n years ago</source>
+        <comment>Time difference</comment>
+        <translation>
+            <numerusform>%n 年前</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>{} at {}</source>
+        <translation>{} の {}</translation>
+    </message>
+    <message>
+        <source>{}h {}m</source>
+        <translation>{}時間 {}分</translation>
+    </message>
+    <message>
+        <source>{}h {}m {}s</source>
+        <translation>{}時間 {}分 {}秒</translation>
+    </message>
+    <message>
+        <source>{}m {}s</source>
+        <translation>{}分 {}秒</translation>
+    </message>
+    <message>
+        <source>{}s</source>
+        <translation>{}秒</translation>
+    </message>
+    <message>
+        <source>None</source>
+        <translation>なし</translation>
     </message>
 </context>
 <context>
@@ -12630,10 +12677,6 @@ Shift+クリックで複数のバインドを設定します。</translation>
         <translation>ステートロード</translation>
     </message>
     <message>
-        <source>Save State</source>
-        <translation>ステートセーブ</translation>
-    </message>
-    <message>
         <source>S&amp;ettings</source>
         <translation>設定(&amp;E)</translation>
     </message>
@@ -12670,10 +12713,6 @@ Shift+クリックで複数のバインドを設定します。</translation>
         <translation>コントローラー(&amp;C)</translation>
     </message>
     <message>
-        <source>&amp;Post-Processing</source>
-        <translation>ポストプロセス(&amp;P)</translation>
-    </message>
-    <message>
         <source>&amp;Settings</source>
         <translation>設定(&amp;S)</translation>
     </message>
@@ -12688,10 +12727,6 @@ Shift+クリックで複数のバインドを設定します。</translation>
     <message>
         <source>Memory &amp;Card Editor</source>
         <translation>メモリーカードエディタ(&amp;C)</translation>
-    </message>
-    <message>
-        <source>Open Data Directory...</source>
-        <translation>データディレクトリを開く...</translation>
     </message>
     <message>
         <source>Start Big Picture Mode</source>
@@ -12746,6 +12781,18 @@ Shift+クリックで複数のバインドを設定します。</translation>
         <translation>システム(&amp;S)</translation>
     </message>
     <message>
+        <source>Cha&amp;nge Disc</source>
+        <translation>ディスクを変更(&amp;N)</translation>
+    </message>
+    <message>
+        <source>&amp;Cheats</source>
+        <translation>チート(&amp;C)</translation>
+    </message>
+    <message>
+        <source>Sa&amp;ve State</source>
+        <translation>ステートセーブ(&amp;V)</translation>
+    </message>
+    <message>
         <source>Switch Crop Mode</source>
         <translation>トリミングモードの切り替え</translation>
     </message>
@@ -12772,6 +12819,10 @@ Shift+クリックで複数のバインドを設定します。</translation>
     <message>
         <source>Allows you to record audio and/or video from the content.</source>
         <translation>コンテンツの音声や映像を録画できます。</translation>
+    </message>
+    <message>
+        <source>Media Capt&amp;ure</source>
+        <translation>メディアキャプチャー(&amp;U)</translation>
     </message>
     <message>
         <source>Start &amp;File...</source>
@@ -12882,6 +12933,10 @@ Shift+クリックで複数のバインドを設定します。</translation>
         <translation>セッション内容の表示方法に関するオプションを設定します。</translation>
     </message>
     <message>
+        <source>Post-Processi&amp;ng</source>
+        <translation>ポストプロセス(&amp;N)</translation>
+    </message>
+    <message>
         <source>Configures post-processing effects applied after rendering the content.</source>
         <translation>コンテンツのレンダリング後に適用するポストプロセス効果を設定します。</translation>
     </message>
@@ -12978,6 +13033,58 @@ Shift+クリックで複数のバインドを設定します。</translation>
         <translation>インターフェース(&amp;I)</translation>
     </message>
     <message>
+        <source>Ad&amp;vanced</source>
+        <translation>詳細設定(&amp;V)</translation>
+    </message>
+    <message>
+        <source>&amp;Debugging</source>
+        <translation>デバッグ(&amp;D)</translation>
+    </message>
+    <message>
+        <source>Enable &amp;Safe Mode</source>
+        <translation>セーフモードを有効化(&amp;S)</translation>
+    </message>
+    <message>
+        <source>Res&amp;ume</source>
+        <translation>再開(&amp;U)</translation>
+    </message>
+    <message>
+        <source>&amp;Show Toolbar</source>
+        <translation>ツールバーを表示(&amp;S)</translation>
+    </message>
+    <message>
+        <source>S&amp;mall Icons</source>
+        <translation>小さいアイコン(&amp;M)</translation>
+    </message>
+    <message>
+        <source>Show &amp;Labels</source>
+        <translation>ラベルを表示(&amp;L)</translation>
+    </message>
+    <message>
+        <source>Show Labels &amp;Beside Icons</source>
+        <translation>アイコンの横にラベルを表示(&amp;B)</translation>
+    </message>
+    <message>
+        <source>Show Grid Ca&amp;ptions</source>
+        <translation>グリッドのキャプションを表示(&amp;P)</translation>
+    </message>
+    <message>
+        <source>&amp;Refresh Grid Covers</source>
+        <translation>グリッドのカバーを更新(&amp;R)</translation>
+    </message>
+    <message>
+        <source>&amp;Open Data Directory...</source>
+        <translation>データディレクトリを開く(&amp;O)...</translation>
+    </message>
+    <message>
+        <source>Start Bi&amp;g Picture Mode</source>
+        <translation>ビッグピクチャーモードを開始(&amp;G)</translation>
+    </message>
+    <message>
+        <source>Cover &amp;Downloader</source>
+        <translation>カバーダウンローダー(&amp;D)</translation>
+    </message>
+    <message>
         <source>Scanner</source>
         <translation>スキャナー</translation>
     </message>
@@ -13006,24 +13113,56 @@ Shift+クリックで複数のバインドを設定します。</translation>
         <translation>コンテンツの映像と音声のキャプチャーを開始または停止します。</translation>
     </message>
     <message>
-        <source>Open Texture Directory...</source>
-        <translation>テクスチャーディレクトリを開く...</translation>
+        <source>Open Te&amp;xture Directory...</source>
+        <translation>テクスチャーディレクトリを開く(&amp;X)...</translation>
+    </message>
+    <message>
+        <source>&amp;Reload Texture Replacements</source>
+        <translation>テクスチャ置換をリロード(&amp;R)</translation>
+    </message>
+    <message>
+        <source>Capture &amp;GPU Frame</source>
+        <translation>GPU フレームをキャプチャー(&amp;G)</translation>
+    </message>
+    <message>
+        <source>&amp;ISO Browser</source>
+        <translation>ISO ブラウザー(&amp;I)</translation>
+    </message>
+    <message>
+        <source>&amp;Free Camera</source>
+        <translation>フリーカメラ(&amp;F)</translation>
+    </message>
+    <message>
+        <source>Controller &amp;Test</source>
+        <translation>コントローラーテスト(&amp;T)</translation>
+    </message>
+    <message>
+        <source>Clear List Backgro&amp;und</source>
+        <translation>リストの背景を消去(&amp;U)</translation>
+    </message>
+    <message>
+        <source>Refresh &amp;Achievement Database</source>
+        <translation>実績データベースを更新(&amp;A)</translation>
+    </message>
+    <message>
+        <source>&amp;Animate Game Icons</source>
+        <translation>ゲームアイコンをアニメーション表示(&amp;A)</translation>
+    </message>
+    <message>
+        <source>Prefer Ac&amp;hievement Icons</source>
+        <translation>実績アイコンを優先(&amp;H)</translation>
+    </message>
+    <message>
+        <source>Syst&amp;em Log</source>
+        <translation>システムログ(&amp;E)</translation>
     </message>
     <message>
         <source>Opens the directory used to store texture replacements.</source>
         <translation>置換テクスチャーの保存に使用するディレクトリを開きます。</translation>
     </message>
     <message>
-        <source>Reload Texture Replacements</source>
-        <translation>テクスチャ置換をリロード</translation>
-    </message>
-    <message>
         <source>Invalidates the cache of available replacement textures.</source>
         <translation>利用可能な置換テクスチャーのキャッシュを無効化します。</translation>
-    </message>
-    <message>
-        <source>Capture GPU Frame</source>
-        <translation>GPU フレームをキャプチャー</translation>
     </message>
     <message>
         <source>Saves the emulated GPU commands to a file that can be later replayed.</source>
@@ -13050,24 +13189,12 @@ Shift+クリックで複数のバインドを設定します。</translation>
         <translation>ファイルにログ保存</translation>
     </message>
     <message>
-        <source>ISO Browser</source>
-        <translation>ISO ブラウザー</translation>
-    </message>
-    <message>
         <source>Opens the ISO browser window.</source>
         <translation>ISO ブラウザーウィンドウを開きます。</translation>
     </message>
     <message>
-        <source>Free Camera</source>
-        <translation>フリーカメラ</translation>
-    </message>
-    <message>
         <source>Allows you to freely move the camera in supported games.</source>
         <translation>対応ゲームでカメラを自由に移動できます。</translation>
-    </message>
-    <message>
-        <source>Controller Test</source>
-        <translation>コントローラーテスト</translation>
     </message>
     <message>
         <source>Allows you to test emulated controller mappings.</source>
@@ -13090,10 +13217,6 @@ Shift+クリックで複数のバインドを設定します。</translation>
         <translation>ゲームのリスト/グリッドに表示する背景画像を変更します。</translation>
     </message>
     <message>
-        <source>Clea&amp;r List Background</source>
-        <translation>リストの背景を消去(&amp;R)</translation>
-    </message>
-    <message>
         <source>Removes the background image shown in the game list/grid.</source>
         <translation>ゲームのリスト/グリッドに表示されている背景画像を削除します。</translation>
     </message>
@@ -13104,10 +13227,6 @@ Shift+クリックで複数のバインドを設定します。</translation>
     <message>
         <source>Refreshes the list of unlocked achievements.</source>
         <translation>解除済み実績の一覧を更新します。</translation>
-    </message>
-    <message>
-        <source>Refresh Achievement Database</source>
-        <translation>実績データベースを更新</translation>
     </message>
     <message>
         <source>Updates the database for achievements shown in the game list.</source>
@@ -13134,24 +13253,12 @@ Shift+クリックで複数のバインドを設定します。</translation>
         <translation>メモリーエディターウィンドウを開きます。</translation>
     </message>
     <message>
-        <source>Animate Game Icons</source>
-        <translation>ゲームアイコンをアニメーション表示</translation>
-    </message>
-    <message>
         <source>Animates icons in the list view when selected.</source>
         <translation>リスト表示で選択したアイコンをアニメーション表示します。</translation>
     </message>
     <message>
-        <source>Prefer Achievement Icons</source>
-        <translation>実績アイコンを優先</translation>
-    </message>
-    <message>
         <source>Prioritizes the games badges used for RetroAchievements over memory card icons.</source>
         <translation>メモリーカードアイコンより RetroAchievements のゲームバッジを優先します。</translation>
-    </message>
-    <message>
-        <source>System Log</source>
-        <translation>システムログ</translation>
     </message>
     <message>
         <source>Start &amp;Capture</source>
@@ -13286,16 +13393,8 @@ Shift+クリックで複数のバインドを設定します。</translation>
         <translation>アプリケーションの外観と動作に関するオプションを設定します。</translation>
     </message>
     <message>
-        <source>A&amp;dvanced</source>
-        <translation>詳細設定(&amp;D)</translation>
-    </message>
-    <message>
         <source>Configures advanced options for the application.</source>
         <translation>アプリケーションの詳細オプションを設定します。</translation>
-    </message>
-    <message>
-        <source>Debuggi&amp;ng</source>
-        <translation>デバッグ(&amp;N)</translation>
     </message>
     <message>
         <source>Configures internal options for the application.</source>
@@ -13330,10 +13429,6 @@ Shift+クリックで複数のバインドを設定します。</translation>
         <translation>エミュレートされたシステムからディスクを取り出します。</translation>
     </message>
     <message>
-        <source>Enable Safe Mode</source>
-        <translation>セーフモードを有効化</translation>
-    </message>
-    <message>
         <source>Takes a screenshot of the current content.</source>
         <translation>現在のコンテンツのスクリーンショットを撮影します。</translation>
     </message>
@@ -13354,24 +13449,12 @@ Shift+クリックで複数のバインドを設定します。</translation>
         <translation>ツールバーを移動できるかどうかを設定します。</translation>
     </message>
     <message>
-        <source>S&amp;mall Toolbar Icons</source>
-        <translation>小さいツールバーアイコン(&amp;M)</translation>
-    </message>
-    <message>
         <source>Controls whether the smaller toolbar icons are displayed.</source>
         <translation>小さいツールバーアイコンを表示するかどうかを設定します。</translation>
     </message>
     <message>
-        <source>Toolbar L&amp;abels</source>
-        <translation>ツールバーのラベル(&amp;A)</translation>
-    </message>
-    <message>
         <source>Controls whether labels are displayed alongside toolbar icons.</source>
         <translation>ツールバーアイコンと共にラベルを表示するかどうかを設定します。</translation>
-    </message>
-    <message>
-        <source>Toolbar Labels &amp;Beside Icons</source>
-        <translation>アイコンの横にツールバーラベルを表示(&amp;B)</translation>
     </message>
     <message>
         <source>Controls whether labels are displayed next to or under toolbar icons.</source>
@@ -13418,10 +13501,6 @@ Shift+クリックで複数のバインドを設定します。</translation>
         <translation>同じゲームに属する複数のディスクをゲームリスト内の 1 つの項目に統合します。</translation>
     </message>
     <message>
-        <source>Show G&amp;rid Captions</source>
-        <translation>グリッドのキャプションを表示(&amp;R)</translation>
-    </message>
-    <message>
         <source>Shows captions under the game cover in grid view.</source>
         <translation>グリッド表示でゲームカバーの下にキャプションを表示します。</translation>
     </message>
@@ -13440,10 +13519,6 @@ Shift+クリックで複数のバインドを設定します。</translation>
     <message>
         <source>Decreases the size of game icons or covers.</source>
         <translation>ゲームアイコンまたはカバーのサイズを小さくします。</translation>
-    </message>
-    <message>
-        <source>Refresh Grid &amp;Covers</source>
-        <translation>グリッドのカバーを更新(&amp;C)</translation>
     </message>
     <message>
         <source>Invalidates the cache of game covers, allowing new images to be discovered.</source>
@@ -13488,10 +13563,6 @@ Shift+クリックで複数のバインドを設定します。</translation>
     <message>
         <source>Show Titles (Grid View)</source>
         <translation>ゲーム名表示 (グリッドビュー)</translation>
-    </message>
-    <message>
-        <source>Cover Downloader</source>
-        <translation>カバーダウンローダー</translation>
     </message>
     <message>
         <source>System &amp;Display</source>
@@ -13598,12 +13669,20 @@ The saves will not be recoverable.</source>
         <translation>ステートセーブファイル &apos;%1&apos; を削除できませんでした。</translation>
     </message>
     <message>
+        <source>Save was created %1.</source>
+        <translation>セーブは %1 に作成されました。</translation>
+    </message>
+    <message>
         <source>Confirm Disc Change</source>
         <translation>ディスク交換の確認</translation>
     </message>
     <message>
         <source>Swap Disc</source>
         <translation>ディスク交換</translation>
+    </message>
+    <message>
+        <source>RA: Logged in as %1 (%2 points, %3 casual). %4 unread messages.</source>
+        <translation>RA: %1 としてログイン中（%2 ポイント、%3 カジュアル）。未読メッセージ: %4。</translation>
     </message>
     <message>
         <source>Top</source>
@@ -13664,10 +13743,6 @@ Do you want to delete the save state and boot the game anyway?</source>
     <message>
         <source>&lt;strong&gt;Resume Game&lt;/strong&gt;&lt;br&gt;Do you want to load this state, or start from a fresh boot?</source>
         <translation>&lt;strong&gt;ゲームを再開&lt;/strong&gt;&lt;br&gt;このステートをロードしますか？それとも新しく起動しますか？</translation>
-    </message>
-    <message>
-        <source>Save was created on %1.</source>
-        <translation>セーブは %1 に作成されました。</translation>
     </message>
     <message>
         <source>Do you want to swap discs or boot the new image via system restart?</source>
@@ -13756,10 +13831,6 @@ Do you want to delete the save state and boot the game anyway?</source>
     <message>
         <source>Failed to create memory card &apos;%1&apos;: %2</source>
         <translation>メモリーカード「%1」を作成できませんでした: %2</translation>
-    </message>
-    <message>
-        <source>RA: Logged in as %1 (%2, %3 casual). %4 unread messages.</source>
-        <translation>RA: %1 としてログイン中（%2、%3 カジュアル）。未読メッセージ: %4。</translation>
     </message>
     <message>
         <source>Refresh Achievement Progress</source>
@@ -15726,6 +15797,10 @@ Error: {1}</source>
 <context>
     <name>PlayStationMouse</name>
     <message>
+        <source>Pointer</source>
+        <translation>ポインター</translation>
+    </message>
+    <message>
         <source>Left Button</source>
         <translation>左ボタン</translation>
     </message>
@@ -15744,13 +15819,6 @@ Error: {1}</source>
     <message>
         <source>Vertical Sensitivity</source>
         <translation>垂直感度</translation>
-    </message>
-</context>
-<context>
-    <name>PlaystationMouse</name>
-    <message>
-        <source>Pointer</source>
-        <translation>ポインター</translation>
     </message>
 </context>
 <context>
@@ -16530,10 +16598,6 @@ Would you like to update the shortcut to point to the current location?</source>
 <context>
     <name>SaveStateSelectorUI</name>
     <message>
-        <source>Saved at {0:%H:%M} on {0:%a} {0:%Y/%m/%d}.</source>
-        <translation>{0:%Y/%m/%d} ({0:%a}) {0:%H:%M} に保存。</translation>
-    </message>
-    <message>
         <source>No save state slots available.</source>
         <translation>利用可能なセーブステートスロットがありません。</translation>
     </message>
@@ -16556,6 +16620,10 @@ Would you like to update the shortcut to point to the current location?</source>
     <message>
         <source>{} ({})</source>
         <translation>{} ({})</translation>
+    </message>
+    <message>
+        <source>Saved {}</source>
+        <translation>{} を保存しました</translation>
     </message>
     <message>
         <source>No save present in this slot.</source>
@@ -17132,12 +17200,12 @@ Do you want to create this directory?</source>
         <translation>自動検出</translation>
     </message>
     <message>
-        <source>NTSC (60hz)</source>
+        <source>NTSC (60 Hz)</source>
         <comment>ForceVideoTiming</comment>
         <translation>NTSC (60 Hz)</translation>
     </message>
     <message>
-        <source>PAL (50hz)</source>
+        <source>PAL (50 Hz)</source>
         <comment>ForceVideoTiming</comment>
         <translation>PAL (50 Hz)</translation>
     </message>
@@ -18088,7 +18156,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>Logged in as %1
-Token generated at %2</source>
+Token generated %2</source>
         <translation>%1 としてログイン中
 トークン生成日時: %2</translation>
     </message>
@@ -18148,6 +18216,10 @@ Token generated at %2</source>
 </source>
         <translation>ステートセーブで使用されているCDイメージ「{}」を開けませんでした:
 </translation>
+    </message>
+    <message>
+        <source>Loaded undo save state created {}.</source>
+        <translation>{} に作成された復元用ステートセーブをロードしました。</translation>
     </message>
     <message>
         <source>Using disc-specific memory card &apos;{}&apos; instead of per-game card.</source>
@@ -18514,10 +18586,6 @@ You must save to a memory card and reset the game to clear any effects.</source>
 {}</source>
         <translation>復元用ステートをロードできなかったため、ゲームを再起動します。
 {}</translation>
-    </message>
-    <message>
-        <source>Loaded undo save state created at {}.</source>
-        <translation>{}に作成された復元用ステートセーブをロードしました。</translation>
     </message>
     <message>
         <source>capturing audio and video</source>

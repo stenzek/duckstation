@@ -250,12 +250,6 @@ Do you want to enable hardcore mode?</source>
         <translation>在重启游戏之前，硬核模式不会启用。您想要现在重启游戏吗？</translation>
     </message>
     <message>
-        <source>Logged in as %1
-Token generated at %2</source>
-        <translation>登录身份: %1
-令牌生成于%2</translation>
-    </message>
-    <message>
         <source>View Profile...</source>
         <translation>查看档案…</translation>
     </message>
@@ -298,6 +292,10 @@ Token generated at %2</source>
     <message>
         <source>Register</source>
         <translation>寄存器</translation>
+    </message>
+    <message>
+        <source>Track Unofficial Achievements</source>
+        <translation>跟踪非官方成就</translation>
     </message>
     <message>
         <source>Prefetch Badges</source>
@@ -382,8 +380,18 @@ Token generated at %2</source>
         <translation>未勾选</translation>
     </message>
     <message>
+        <source>When enabled, DuckStation will track unofficial achievements. Unlocks will be saved locally and not sent to RetroAchievements.</source>
+        <translation>启用后，DuckStation 将跟踪非官方成就。解锁记录将保存在本地，不会发送到 RetroAchievements。</translation>
+    </message>
+    <message>
         <source>Challenge Indicators</source>
         <translation>挑战指示器</translation>
+    </message>
+    <message>
+        <source>Logged in as %1
+Token generated %2</source>
+        <translation>登录身份：%1
+令牌生成时间：%2</translation>
     </message>
     <message>
         <source>Not Logged In.</source>
@@ -392,10 +400,6 @@ Token generated at %2</source>
     <message>
         <source>Enable Encore Mode</source>
         <translation>启用再来一遍模式</translation>
-    </message>
-    <message>
-        <source>When enabled, DuckStation will list achievements from unofficial sets. Please note that these achievements are not tracked by RetroAchievements, so they unlock every time.</source>
-        <translation>当启用时，DuckStation将列出非官方集的成就。请注意，这些成就不会被RetroAchievements跟踪，所以它们每次都会解锁。</translation>
     </message>
     <message>
         <source>Show Leaderboard Notifications</source>
@@ -595,18 +599,6 @@ We will keep trying to submit this request.</source>
         </translation>
     </message>
     <message>
-        <source>Game was beaten on {0}, and completed on {1}.</source>
-        <translation>游戏于{0}通关，并于{1}达成全成就。</translation>
-    </message>
-    <message>
-        <source>Game was beaten on {0}.</source>
-        <translation>游戏于{0}通关。</translation>
-    </message>
-    <message>
-        <source>Game was completed on {0}.</source>
-        <translation>游戏于{0}达成全成就。</translation>
-    </message>
-    <message>
         <source>User is not logged in.</source>
         <translation>用户未登录。</translation>
     </message>
@@ -633,6 +625,34 @@ We will keep trying to submit this request.</source>
     <message>
         <source> (Hardcore Mode)</source>
         <translation> (硬核模式)</translation>
+    </message>
+    <message>
+        <source>You have unlocked {0} of {1} unofficial achievements, earning {2} of {3} possible points.</source>
+        <translation>您已解锁 {1} 项非官方成就中的 {0} 项，获得 {3} 个可能点数中的 {2} 个。</translation>
+    </message>
+    <message>
+        <source>Game was beaten {0}, and completed {1}.</source>
+        <translation>游戏于 {0} 通关，并于 {1} 完成。</translation>
+    </message>
+    <message>
+        <source>Subset was beaten {0}, and completed {1}.</source>
+        <translation>子集于 {0} 通关，并于 {1} 完成。</translation>
+    </message>
+    <message>
+        <source>Game was beaten {0}.</source>
+        <translation>游戏于 {0} 通关。</translation>
+    </message>
+    <message>
+        <source>Subset was beaten {0}.</source>
+        <translation>子集于 {0} 通关。</translation>
+    </message>
+    <message>
+        <source>Game was completed {0}.</source>
+        <translation>游戏于 {0} 完成。</translation>
+    </message>
+    <message>
+        <source>Subset was completed {0}.</source>
+        <translation>子集于 {0} 完成。</translation>
     </message>
     <message>
         <source>Unknown</source>
@@ -665,6 +685,10 @@ We will keep trying to submit this request.</source>
     <message>
         <source>Almost There</source>
         <translation>近在咫尺</translation>
+    </message>
+    <message>
+        <source>Reset Unofficial Unlocks</source>
+        <translation>重置非官方解锁记录</translation>
     </message>
     <message>
         <source>XXX points</source>
@@ -793,18 +817,6 @@ Unread messages: {}</source>
         <translation>此子集没有成就。</translation>
     </message>
     <message>
-        <source>Subset was beaten on {0}, and completed on {1}.</source>
-        <translation>此子集已于{0}通关，并于{1}完成。</translation>
-    </message>
-    <message>
-        <source>Subset was beaten on {0}.</source>
-        <translation>此子集已于{0}通关。</translation>
-    </message>
-    <message>
-        <source>Subset was completed on {0}.</source>
-        <translation>此子集已于{0}完成。</translation>
-    </message>
-    <message>
         <source>Not Confirmed</source>
         <translation>未确认</translation>
     </message>
@@ -839,6 +851,10 @@ Unread messages: {}</source>
     <message>
         <source>Back</source>
         <translation>返回</translation>
+    </message>
+    <message>
+        <source>Unlocked {}</source>
+        <translation>已解锁 {}</translation>
     </message>
     <message numerus="yes">
         <source>This game has %n leaderboards.</source>
@@ -903,60 +919,6 @@ Unread messages: {}</source>
         <translation>查看档案</translation>
     </message>
     <message>
-        <source>Just now</source>
-        <translation>刚刚</translation>
-    </message>
-    <message numerus="yes">
-        <source>%n minutes ago</source>
-        <comment>Relative time</comment>
-        <translation>
-            <numerusform>%n分钟前</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <source>%n hours ago</source>
-        <comment>Relative time</comment>
-        <translation>
-            <numerusform>%n小时前</numerusform>
-        </translation>
-    </message>
-    <message>
-        <source>Today</source>
-        <translation>今天</translation>
-    </message>
-    <message>
-        <source>Yesterday</source>
-        <translation>昨天</translation>
-    </message>
-    <message numerus="yes">
-        <source>%n days ago</source>
-        <comment>Relative time</comment>
-        <translation>
-            <numerusform>%n天前</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <source>%n weeks ago</source>
-        <comment>Relative time</comment>
-        <translation>
-            <numerusform>%n周前</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <source>%n months ago</source>
-        <comment>Relative time</comment>
-        <translation>
-            <numerusform>%n个月前</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <source>%n years ago</source>
-        <comment>Relative time</comment>
-        <translation>
-            <numerusform>%n年前</numerusform>
-        </translation>
-    </message>
-    <message>
         <source>Leaderboard download failed</source>
         <translation>排行榜下载失败</translation>
     </message>
@@ -971,10 +933,6 @@ Unread messages: {}</source>
     <message>
         <source>You have unlocked {0} of {1} achievements, earning {2} of {3} possible points.</source>
         <translation>您已经解锁了{0}的{1}成就，获得了{2}的{3}可能的点数。</translation>
-    </message>
-    <message>
-        <source>Unlocked: {} | {:.1f}% of players have this achievement</source>
-        <translation>已解锁: {} | {:.1f}%的玩家拥有此成就</translation>
     </message>
     <message>
         <source>{:.1f}% of players have this achievement</source>
@@ -1033,7 +991,7 @@ Unread messages: {}</source>
     </message>
     <message>
         <source>Always displays the current RetroAchievements rich presence string in the indicator area.</source>
-        <translation type="unfinished"></translation>
+        <translation>始终在指示区域显示当前的 RetroAchievements 富状态字符串。</translation>
     </message>
     <message>
         <source>Default</source>
@@ -1085,7 +1043,7 @@ Unread messages: {}</source>
     </message>
     <message>
         <source>Rich Presence Monitor</source>
-        <translation type="unfinished"></translation>
+        <translation>富状态监视器</translation>
     </message>
     <message>
         <source>Enable RAIntegration</source>
@@ -2815,10 +2773,6 @@ This warning will only be shown once.</source>
     <message>
         <source>Unchecked</source>
         <translation>未勾选</translation>
-    </message>
-    <message>
-        <source>Preload Image To RAM</source>
-        <translation>预加载镜像到内存</translation>
     </message>
     <message>
         <source>Console</source>
@@ -5564,6 +5518,10 @@ Do you want to delete the save state and boot the game anyway?</source>
         <translation>成就解锁/计数</translation>
     </message>
     <message>
+        <source>All unofficial achievement progress for the current game will be removed. This cannot be undone.</source>
+        <translation>将删除当前游戏的所有非官方成就进度。此操作无法撤销。</translation>
+    </message>
+    <message>
         <source>Allows booting to continue even without a required SBI file. These games will not run correctly.</source>
         <translation>即使没有必需的SBI文件，也允许启动过程继续进行。这些游戏将无法正常运行。</translation>
     </message>
@@ -5890,6 +5848,10 @@ You cannot undo this action.</source>
     <message>
         <source>Dithering</source>
         <translation>色彩抖动</translation>
+    </message>
+    <message>
+        <source>Do you want to continue from the automatic save created {}?</source>
+        <translation>是否要从自动创建的存档 {} 继续？</translation>
     </message>
     <message>
         <source>Draws a border around the currently-selected item for readability.</source>
@@ -6366,10 +6328,6 @@ Do you want to {0} anyway?</source>
     <message>
         <source>Use Software Renderer For Readbacks</source>
         <translation>使用软件渲染器进行回读</translation>
-    </message>
-    <message>
-        <source>Test Unofficial Achievements</source>
-        <translation>测试非官方成就</translation>
     </message>
     <message>
         <source>Mute CD Audio</source>
@@ -7510,10 +7468,6 @@ Error was:</source>
         <translation>兼容性: </translation>
     </message>
     <message>
-        <source>When enabled, DuckStation will list achievements from unofficial sets. These achievements are not tracked by RetroAchievements.</source>
-        <translation>当启用时，DuckStation将列出非官方集的成就。这些成就不会被RetroAchievements跟踪。</translation>
-    </message>
-    <message>
         <source>Game compatibility rating copied to clipboard.</source>
         <translation>游戏兼容性评定复制到剪贴板。</translation>
     </message>
@@ -7583,7 +7537,7 @@ Error was:</source>
     </message>
     <message>
         <source>Delete</source>
-        <translation type="unfinished"></translation>
+        <translation>删除</translation>
     </message>
     <message>
         <source>Depth Clear Threshold</source>
@@ -7628,10 +7582,6 @@ Error was:</source>
     <message>
         <source>Display Area</source>
         <translation>显示区域</translation>
-    </message>
-    <message>
-        <source>Do you want to continue from the automatic save created at {}?</source>
-        <translation>您想要从创建于{}的自动存档继续吗？</translation>
     </message>
     <message>
         <source>Downloads all locked achievement badges while starting the game. This will reduce delays in the images being shown when unlocking achievements.</source>
@@ -7914,6 +7864,10 @@ Please check your username and password, and try again.</source>
 请检查您的用户名和密码，然后重试。</translation>
     </message>
     <message>
+        <source>Login token generated {}</source>
+        <translation>已生成登录令牌 {}</translation>
+    </message>
+    <message>
         <source>Maximum Read Speedup Cycles</source>
         <translation>最大读取加速周期</translation>
     </message>
@@ -7935,7 +7889,7 @@ Please check your username and password, and try again.</source>
     </message>
     <message>
         <source>Move Cursor</source>
-        <translation type="unfinished"></translation>
+        <translation>移动光标</translation>
     </message>
     <message>
         <source>N/A</source>
@@ -8130,6 +8084,18 @@ Please check your username and password, and try again.</source>
         <translation>重置为默认值</translation>
     </message>
     <message>
+        <source>Reset Unlock</source>
+        <translation>重置解锁记录</translation>
+    </message>
+    <message>
+        <source>Reset Unofficial Achievement</source>
+        <translation>重置非官方成就</translation>
+    </message>
+    <message>
+        <source>Reset Unofficial Achievement Unlocks</source>
+        <translation>重置非官方成就解锁记录</translation>
+    </message>
+    <message>
         <source>Resets all settings to the defaults.</source>
         <translation>将所有设置重置为默认值。</translation>
     </message>
@@ -8283,7 +8249,7 @@ Please check your username and password, and try again.</source>
     </message>
     <message>
         <source>Select Key</source>
-        <translation type="unfinished"></translation>
+        <translation>选择按键</translation>
     </message>
     <message>
         <source>Select State</source>
@@ -8510,6 +8476,10 @@ Please check your username and password, and try again.</source>
         <translation>BIOS 文件“{}”已安装。要覆盖它吗？</translation>
     </message>
     <message>
+        <source>The unlock state for &apos;{}&apos; will be removed. This cannot be undone.</source>
+        <translation>将删除“{}”的解锁状态。此操作无法撤销。</translation>
+    </message>
+    <message>
         <source>Theme</source>
         <translation>主题</translation>
     </message>
@@ -8535,7 +8505,7 @@ Please check your username and password, and try again.</source>
     </message>
     <message>
         <source>Toggle Case</source>
-        <translation type="unfinished"></translation>
+        <translation>切换大小写</translation>
     </message>
     <message>
         <source>Toggle Fullscreen</source>
@@ -8546,8 +8516,20 @@ Please check your username and password, and try again.</source>
         <translation>轨道</translation>
     </message>
     <message>
+        <source>Track Unofficial Achievements</source>
+        <translation>跟踪非官方成就</translation>
+    </message>
+    <message>
         <source>Track hash copied to clipboard.</source>
         <translation>轨道哈希值已复制到剪贴板。</translation>
+    </message>
+    <message>
+        <source>Unofficial achievement unlock reset.</source>
+        <translation>非官方成就解锁记录已重置。</translation>
+    </message>
+    <message>
+        <source>Unofficial achievement unlocks reset.</source>
+        <translation>非官方成就解锁记录已重置。</translation>
     </message>
     <message>
         <source>Unpin from OSD</source>
@@ -8612,6 +8594,10 @@ Please check your username and password, and try again.</source>
     <message>
         <source>Web cache cleared.</source>
         <translation>网络缓存已清除。</translation>
+    </message>
+    <message>
+        <source>When enabled, DuckStation will track unofficial achievements. Unlocks will be saved locally and not sent to RetroAchievements.</source>
+        <translation>启用后，DuckStation 将跟踪非官方成就。解锁记录将保存在本地，不会发送到 RetroAchievements。</translation>
     </message>
     <message>
         <source>When enabled, the legacy global save state slots will be available. These slots are independent of the current game.</source>
@@ -8748,10 +8734,6 @@ Do you want to {1} anyway?</source>
     <message>
         <source>Backend Settings</source>
         <translation>后端设置</translation>
-    </message>
-    <message>
-        <source>Login token generated on {}</source>
-        <translation>登录令牌生成于{}</translation>
     </message>
     <message>
         <source>If not enabled, the current post processing chain will be ignored.</source>
@@ -9810,18 +9792,6 @@ Are you sure you want to continue?</source>
 <context>
     <name>GameList</name>
     <message>
-        <source>{}s</source>
-        <translation>{}秒</translation>
-    </message>
-    <message>
-        <source>None</source>
-        <translation>无</translation>
-    </message>
-    <message>
-        <source>Never</source>
-        <translation>从未</translation>
-    </message>
-    <message>
         <source>Disc</source>
         <comment>EntryType</comment>
         <translation>光盘</translation>
@@ -9859,57 +9829,12 @@ Are you sure you want to continue?</source>
         <translation>没有列出可下载的URL。</translation>
     </message>
     <message>
-        <source>Today</source>
-        <translation>今天</translation>
-    </message>
-    <message numerus="yes">
-        <source>%n seconds</source>
-        <translation>
-            <numerusform>%n秒</numerusform>
-        </translation>
-    </message>
-    <message>
         <source>Scanning directory &apos;{}&apos;...</source>
         <translation>扫描目录&apos;{}&apos;...</translation>
     </message>
     <message>
         <source>Scanning &apos;{}&apos;...</source>
         <translation>扫描&apos;{}&apos;...</translation>
-    </message>
-    <message>
-        <source>{}h {}m</source>
-        <translation>{}时{}分</translation>
-    </message>
-    <message>
-        <source>{}m {}s</source>
-        <translation>{}分{}秒</translation>
-    </message>
-    <message>
-        <source>{}h {}m {}s</source>
-        <translation>{}时{}分{}秒</translation>
-    </message>
-    <message>
-        <source>Yesterday</source>
-        <translation>昨天</translation>
-    </message>
-    <message numerus="yes">
-        <source>%n hours</source>
-        <translation>
-            <numerusform>%n小时</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <source>%n minutes</source>
-        <translation>
-            <numerusform>%n分钟</numerusform>
-        </translation>
-    </message>
-</context>
-<context>
-    <name>GameListListView</name>
-    <message>
-        <source>Unknown</source>
-        <translation>未知</translation>
     </message>
 </context>
 <context>
@@ -9925,10 +9850,6 @@ Are you sure you want to continue?</source>
     <message>
         <source>Genre</source>
         <translation>游戏类型</translation>
-    </message>
-    <message>
-        <source>Unknown</source>
-        <translation>未知</translation>
     </message>
     <message>
         <source>No Achievements</source>
@@ -10084,8 +10005,8 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>合并多光盘游戏</translation>
     </message>
     <message>
-        <source>Show Localized Icons</source>
-        <translation>显示本地化图标</translation>
+        <source>Show Localized Titles</source>
+        <translation>显示本地化标题</translation>
     </message>
     <message>
         <source>Show Game Icons</source>
@@ -11309,6 +11230,132 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <source>X Scale</source>
         <translation>X缩放</translation>
+    </message>
+</context>
+<context>
+    <name>Host</name>
+    <message numerus="yes">
+        <source>%n seconds</source>
+        <translation>
+            <numerusform>%n 秒</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n minutes</source>
+        <translation>
+            <numerusform>%n 分钟</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n hours</source>
+        <translation>
+            <numerusform>%n 小时</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Today</source>
+        <translation>今天</translation>
+    </message>
+    <message>
+        <source>Yesterday</source>
+        <translation>昨天</translation>
+    </message>
+    <message>
+        <source>Never</source>
+        <translation>从不</translation>
+    </message>
+    <message>
+        <source>today</source>
+        <translation>今天</translation>
+    </message>
+    <message>
+        <source>yesterday</source>
+        <translation>昨天</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n days ago</source>
+        <comment>Date difference</comment>
+        <translation>
+            <numerusform>%n 天前</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>on {}</source>
+        <translation>于 {}</translation>
+    </message>
+    <message>
+        <source>Now</source>
+        <translation>现在</translation>
+    </message>
+    <message>
+        <source>now</source>
+        <translation>现在</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n seconds ago</source>
+        <comment>Time difference</comment>
+        <translation>
+            <numerusform>%n 秒前</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n minutes ago</source>
+        <comment>Time difference</comment>
+        <translation>
+            <numerusform>%n 分钟前</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n hours ago</source>
+        <comment>Time difference</comment>
+        <translation>
+            <numerusform>%n 小时前</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n weeks ago</source>
+        <comment>Time difference</comment>
+        <translation>
+            <numerusform>%n 周前</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n months ago</source>
+        <comment>Time difference</comment>
+        <translation>
+            <numerusform>%n 个月前</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n years ago</source>
+        <comment>Time difference</comment>
+        <translation>
+            <numerusform>%n 年前</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>{} at {}</source>
+        <translation>{}，{}</translation>
+    </message>
+    <message>
+        <source>{}h {}m</source>
+        <translation>{} 小时 {} 分钟</translation>
+    </message>
+    <message>
+        <source>{}h {}m {}s</source>
+        <translation>{} 小时 {} 分钟 {} 秒</translation>
+    </message>
+    <message>
+        <source>{}m {}s</source>
+        <translation>{} 分钟 {} 秒</translation>
+    </message>
+    <message>
+        <source>{}s</source>
+        <translation>{} 秒</translation>
+    </message>
+    <message>
+        <source>None</source>
+        <translation>无</translation>
     </message>
 </context>
 <context>
@@ -12745,10 +12792,6 @@ Shift-click to set multiple bindings.</source>
         <translation>全局保存%1 (%2)</translation>
     </message>
     <message>
-        <source>&amp;Post-Processing</source>
-        <translation>后处理(&amp;P)</translation>
-    </message>
-    <message>
         <source>Takes a screenshot of the current content.</source>
         <translation>截取当前内容的屏幕快照。</translation>
     </message>
@@ -12769,24 +12812,12 @@ Shift-click to set multiple bindings.</source>
         <translation>控制工具栏是否可移动。</translation>
     </message>
     <message>
-        <source>S&amp;mall Toolbar Icons</source>
-        <translation>小工具栏图标(&amp;M)</translation>
-    </message>
-    <message>
         <source>Controls whether the smaller toolbar icons are displayed.</source>
         <translation>控制是否显示较小的工具栏图标。</translation>
     </message>
     <message>
-        <source>Toolbar L&amp;abels</source>
-        <translation>工具栏标签(&amp;A)</translation>
-    </message>
-    <message>
         <source>Controls whether labels are displayed alongside toolbar icons.</source>
         <translation>控制标签是否显示在工具栏图标旁边。</translation>
-    </message>
-    <message>
-        <source>Toolbar Labels &amp;Beside Icons</source>
-        <translation>工具栏标签并列图标(&amp;B)</translation>
     </message>
     <message>
         <source>Controls whether labels are displayed next to or under toolbar icons.</source>
@@ -12837,6 +12868,38 @@ This action cannot be undone.</source>
         <translation>保存会话状态到所选档位。</translation>
     </message>
     <message>
+        <source>Ad&amp;vanced</source>
+        <translation>高级(&amp;V)</translation>
+    </message>
+    <message>
+        <source>&amp;Debugging</source>
+        <translation>调试(&amp;D)</translation>
+    </message>
+    <message>
+        <source>Enable &amp;Safe Mode</source>
+        <translation>启用安全模式(&amp;S)</translation>
+    </message>
+    <message>
+        <source>Res&amp;ume</source>
+        <translation>继续(&amp;U)</translation>
+    </message>
+    <message>
+        <source>&amp;Show Toolbar</source>
+        <translation>显示工具栏(&amp;S)</translation>
+    </message>
+    <message>
+        <source>S&amp;mall Icons</source>
+        <translation>小图标(&amp;M)</translation>
+    </message>
+    <message>
+        <source>Show &amp;Labels</source>
+        <translation>显示标签(&amp;L)</translation>
+    </message>
+    <message>
+        <source>Show Labels &amp;Beside Icons</source>
+        <translation>在图标旁显示标签(&amp;B)</translation>
+    </message>
+    <message>
         <source>Opens the debugger for the emulated CPU.</source>
         <translation>打开模拟CPU的调试器。</translation>
     </message>
@@ -12851,6 +12914,10 @@ This action cannot be undone.</source>
     <message>
         <source>Merges multiple discs that belong to the same game into a single item in the game list.</source>
         <translation>将属于同一游戏的多个光盘合并为游戏列表中的单个项目。</translation>
+    </message>
+    <message>
+        <source>Show Grid Ca&amp;ptions</source>
+        <translation>显示网格标题(&amp;P)</translation>
     </message>
     <message>
         <source>Shows captions under the game cover in grid view.</source>
@@ -13037,10 +13104,6 @@ This action cannot be undone.</source>
         <translation>游戏列表(&amp;L)</translation>
     </message>
     <message>
-        <source>Save State</source>
-        <translation>保存即时档案</translation>
-    </message>
-    <message>
         <source>Log Level</source>
         <translation>日志级别</translation>
     </message>
@@ -13093,8 +13156,24 @@ This action cannot be undone.</source>
         <translation>关闭</translation>
     </message>
     <message>
+        <source>Cha&amp;nge Disc</source>
+        <translation>更换光盘(&amp;N)</translation>
+    </message>
+    <message>
+        <source>&amp;Cheats</source>
+        <translation>作弊码(&amp;C)</translation>
+    </message>
+    <message>
+        <source>Sa&amp;ve State</source>
+        <translation>保存状态(&amp;V)</translation>
+    </message>
+    <message>
         <source>Allows you to record audio and/or video from the content.</source>
         <translation>允许从内容中录制音频和/或视频。</translation>
+    </message>
+    <message>
+        <source>Media Capt&amp;ure</source>
+        <translation>媒体捕获(&amp;U)</translation>
     </message>
     <message>
         <source>Restarts the emulated system.</source>
@@ -13155,6 +13234,10 @@ This action cannot be undone.</source>
     <message>
         <source>Configures options related to how the session content is displayed.</source>
         <translation>配置与会话内容显示方式相关的选项。</translation>
+    </message>
+    <message>
+        <source>Post-Processi&amp;ng</source>
+        <translation>后处理(&amp;N)</translation>
     </message>
     <message>
         <source>Configures post-processing effects applied after rendering the content.</source>
@@ -13233,8 +13316,12 @@ This action cannot be undone.</source>
         <translation>配置与RetroAchievements相关的选项。</translation>
     </message>
     <message>
-        <source>System Log</source>
-        <translation>系统日志</translation>
+        <source>Prefer Ac&amp;hievement Icons</source>
+        <translation>优先使用成就图标(&amp;H)</translation>
+    </message>
+    <message>
+        <source>Syst&amp;em Log</source>
+        <translation>系统日志(&amp;E)</translation>
     </message>
     <message>
         <source>Start &amp;Capture</source>
@@ -13289,16 +13376,8 @@ This action cannot be undone.</source>
         <translation>配置与本应用程序的外观和行为相关的选项。</translation>
     </message>
     <message>
-        <source>A&amp;dvanced</source>
-        <translation>高级(&amp;D)</translation>
-    </message>
-    <message>
         <source>Configures advanced options for the application.</source>
         <translation>为本应用程序配置高级选项。</translation>
-    </message>
-    <message>
-        <source>Debuggi&amp;ng</source>
-        <translation>调试(&amp;N)</translation>
     </message>
     <message>
         <source>Configures internal options for the application.</source>
@@ -13337,18 +13416,6 @@ This action cannot be undone.</source>
         <translation>从模拟系统中移除光盘。</translation>
     </message>
     <message>
-        <source>Enable Safe Mode</source>
-        <translation>启用安全模式</translation>
-    </message>
-    <message>
-        <source>Show G&amp;rid Captions</source>
-        <translation>显示网格标题(&amp;R)</translation>
-    </message>
-    <message>
-        <source>Refresh Grid &amp;Covers</source>
-        <translation>刷新网格封面(&amp;C)</translation>
-    </message>
-    <message>
         <source>Invalidates the cache of game covers, allowing new images to be discovered.</source>
         <translation>清除游戏封面缓存，以便识别新图片。</translation>
     </message>
@@ -13381,6 +13448,22 @@ This action cannot be undone.</source>
         <translation>重启</translation>
     </message>
     <message>
+        <source>&amp;Refresh Grid Covers</source>
+        <translation>刷新网格封面(&amp;R)</translation>
+    </message>
+    <message>
+        <source>&amp;Open Data Directory...</source>
+        <translation>打开数据目录(&amp;O)...</translation>
+    </message>
+    <message>
+        <source>Start Bi&amp;g Picture Mode</source>
+        <translation>启动大屏幕模式(&amp;G)</translation>
+    </message>
+    <message>
+        <source>Cover &amp;Downloader</source>
+        <translation>封面下载器(&amp;D)</translation>
+    </message>
+    <message>
         <source>Show Game Ico&amp;ns</source>
         <translation>显示游戏图标(&amp;N)</translation>
     </message>
@@ -13389,16 +13472,40 @@ This action cannot be undone.</source>
         <translation>捕获</translation>
     </message>
     <message>
+        <source>Open Te&amp;xture Directory...</source>
+        <translation>打开纹理目录(&amp;T)...</translation>
+    </message>
+    <message>
+        <source>&amp;Reload Texture Replacements</source>
+        <translation>重新加载纹理替换(&amp;R)</translation>
+    </message>
+    <message>
+        <source>Capture &amp;GPU Frame</source>
+        <translation>捕获 GPU 帧(&amp;G)</translation>
+    </message>
+    <message>
+        <source>&amp;ISO Browser</source>
+        <translation>ISO 浏览器(&amp;I)</translation>
+    </message>
+    <message>
+        <source>&amp;Free Camera</source>
+        <translation>自由视角(&amp;F)</translation>
+    </message>
+    <message>
+        <source>Controller &amp;Test</source>
+        <translation>控制器测试(&amp;T)</translation>
+    </message>
+    <message>
+        <source>Clear List Backgro&amp;und</source>
+        <translation>清除列表背景(&amp;U)</translation>
+    </message>
+    <message>
+        <source>Refresh &amp;Achievement Database</source>
+        <translation>刷新成就数据库(&amp;A)</translation>
+    </message>
+    <message>
         <source>Editor</source>
         <translation>编辑器</translation>
-    </message>
-    <message>
-        <source>Animate Game Icons</source>
-        <translation>动画游戏图标</translation>
-    </message>
-    <message>
-        <source>Prefer Achievement Icons</source>
-        <translation>偏好成就图标</translation>
     </message>
     <message>
         <source>Prioritizes the games badges used for RetroAchievements over memory card icons.</source>
@@ -13425,20 +13532,12 @@ This action cannot be undone.</source>
         <translation>更改游戏列表/网格中显示的背景图片。</translation>
     </message>
     <message>
-        <source>Clea&amp;r List Background</source>
-        <translation>清除列表背景(&amp;R)</translation>
-    </message>
-    <message>
         <source>Removes the background image shown in the game list/grid.</source>
         <translation>移除游戏列表/网格中显示的背景图片。</translation>
     </message>
     <message>
         <source>Refreshes the list of unlocked achievements.</source>
         <translation>刷新已解锁成就列表。</translation>
-    </message>
-    <message>
-        <source>Refresh Achievement Database</source>
-        <translation>刷新成就数据库</translation>
     </message>
     <message>
         <source>Updates the database for achievements shown in the game list.</source>
@@ -13459,6 +13558,10 @@ This action cannot be undone.</source>
     <message>
         <source>Opens the memory editor window.</source>
         <translation>打开内存编辑器窗口。</translation>
+    </message>
+    <message>
+        <source>&amp;Animate Game Icons</source>
+        <translation>动画化游戏图标(&amp;A)</translation>
     </message>
     <message>
         <source>Animates icons in the list view when selected.</source>
@@ -13489,24 +13592,12 @@ This action cannot be undone.</source>
         <translation>开始或停止从内容中捕获视频和音频。</translation>
     </message>
     <message>
-        <source>Open Texture Directory...</source>
-        <translation>打开纹理目录...</translation>
-    </message>
-    <message>
         <source>Opens the directory used to store texture replacements.</source>
         <translation>打开用于存储纹理替换的目录。</translation>
     </message>
     <message>
-        <source>Reload Texture Replacements</source>
-        <translation>重新加载纹理替换</translation>
-    </message>
-    <message>
         <source>Invalidates the cache of available replacement textures.</source>
         <translation>使可用替换纹理的缓存失效。</translation>
-    </message>
-    <message>
-        <source>Capture GPU Frame</source>
-        <translation>捕获GPU帧</translation>
     </message>
     <message>
         <source>Saves the emulated GPU commands to a file that can be later replayed.</source>
@@ -13533,24 +13624,12 @@ This action cannot be undone.</source>
         <translation>日志记录到文件</translation>
     </message>
     <message>
-        <source>ISO Browser</source>
-        <translation>ISO浏览器</translation>
-    </message>
-    <message>
         <source>Opens the ISO browser window.</source>
         <translation>打开ISO浏览器窗口。</translation>
     </message>
     <message>
-        <source>Free Camera</source>
-        <translation>自由镜头</translation>
-    </message>
-    <message>
         <source>Allows you to freely move the camera in supported games.</source>
         <translation>允许您在支持的游戏中自由移动相机。</translation>
-    </message>
-    <message>
-        <source>Controller Test</source>
-        <translation>控制器测试</translation>
     </message>
     <message>
         <source>Allows you to test emulated controller mappings.</source>
@@ -13633,10 +13712,6 @@ Do you want to delete the save state and boot the game anyway?</source>
         <translation>&lt;strong&gt;继续游戏&lt;/strong&gt;&lt;br&gt;您想要载入该即时档案，还是从全新启动开始？</translation>
     </message>
     <message>
-        <source>Save was created on %1.</source>
-        <translation>保存创建于%1。</translation>
-    </message>
-    <message>
         <source>Do you want to swap discs or boot the new image via system restart?</source>
         <translation>您想要交换光盘，还是通过重启系统启动新镜像？</translation>
     </message>
@@ -13705,10 +13780,6 @@ Do you want to delete the save state and boot the game anyway?</source>
         <translation>无法创建记忆卡&apos;%1&apos;: %2</translation>
     </message>
     <message>
-        <source>RA: Logged in as %1 (%2, %3 casual). %4 unread messages.</source>
-        <translation>RA：已登录为 %1（%2，%3 休闲模式）。%4 条未读消息。</translation>
-    </message>
-    <message>
         <source>Refresh Achievement Progress</source>
         <translation>刷新成就进度</translation>
     </message>
@@ -13767,10 +13838,6 @@ Do you want to delete the save state and boot the game anyway?</source>
     <message>
         <source>Start Disc</source>
         <translation>启动光盘</translation>
-    </message>
-    <message>
-        <source>Cover Downloader</source>
-        <translation>封面下载器</translation>
     </message>
     <message>
         <source>Fresh Boot</source>
@@ -13905,12 +13972,20 @@ Do you want to delete the save state and boot the game anyway?</source>
         <translation>确认即时存档删除</translation>
     </message>
     <message>
+        <source>Save was created %1.</source>
+        <translation>存档创建于 %1。</translation>
+    </message>
+    <message>
         <source>Exclude From List</source>
         <translation>从列表中排除</translation>
     </message>
     <message>
         <source>Failed to remove existing cover &apos;%1&apos;</source>
         <translation>无法移除现有封面&apos;%1&apos;</translation>
+    </message>
+    <message>
+        <source>RA: Logged in as %1 (%2 points, %3 casual). %4 unread messages.</source>
+        <translation>RA：已登录为 %1（%2 点数，%3 休闲）。%4 条未读消息。</translation>
     </message>
     <message>
         <source>Media Capture</source>
@@ -13939,10 +14014,6 @@ The saves will not be recoverable.</source>
     <message>
         <source>Select Disc Image</source>
         <translation>选择光盘镜像</translation>
-    </message>
-    <message>
-        <source>Open Data Directory...</source>
-        <translation>打开数据目录…</translation>
     </message>
     <message>
         <source>Dump VRAM...</source>
@@ -15720,6 +15791,10 @@ Error: {1}</source>
 <context>
     <name>PlayStationMouse</name>
     <message>
+        <source>Pointer</source>
+        <translation>指针</translation>
+    </message>
+    <message>
         <source>Left Button</source>
         <translation>左键</translation>
     </message>
@@ -15738,13 +15813,6 @@ Error: {1}</source>
     <message>
         <source>Vertical Sensitivity</source>
         <translation>垂直灵敏度</translation>
-    </message>
-</context>
-<context>
-    <name>PlaystationMouse</name>
-    <message>
-        <source>Pointer</source>
-        <translation>指针</translation>
     </message>
 </context>
 <context>
@@ -16524,10 +16592,6 @@ Would you like to update the shortcut to point to the current location?</source>
 <context>
     <name>SaveStateSelectorUI</name>
     <message>
-        <source>Saved at {0:%H:%M} on {0:%a} {0:%Y/%m/%d}.</source>
-        <translation>保存于{0:%H:%M}在{0:%a} {0:%Y/%m/%d}。</translation>
-    </message>
-    <message>
         <source>No save state slots available.</source>
         <translation>没有可用的即时存档档位。</translation>
     </message>
@@ -16542,6 +16606,10 @@ Would you like to update the shortcut to point to the current location?</source>
     <message>
         <source>{} ({})</source>
         <translation>{} ({})</translation>
+    </message>
+    <message>
+        <source>Saved {}</source>
+        <translation>已保存 {}</translation>
     </message>
     <message>
         <source>No save present in this slot.</source>
@@ -17126,14 +17194,14 @@ Do you want to create this directory?</source>
         <translation>自动检测</translation>
     </message>
     <message>
-        <source>NTSC (60hz)</source>
+        <source>NTSC (60 Hz)</source>
         <comment>ForceVideoTiming</comment>
-        <translation>NTSC (60hz)</translation>
+        <translation>NTSC（60 Hz）</translation>
     </message>
     <message>
-        <source>PAL (50hz)</source>
+        <source>PAL (50 Hz)</source>
         <comment>ForceVideoTiming</comment>
-        <translation>PAL (50hz)</translation>
+        <translation>PAL（50 Hz）</translation>
     </message>
     <message>
         <source>Nearest-Neighbor</source>
@@ -18026,9 +18094,9 @@ Are you sure you wish to continue without selecting a BIOS image?</source>
     </message>
     <message>
         <source>Logged in as %1
-Token generated at %2</source>
-        <translation>登录身份: %1
-令牌生成于%2</translation>
+Token generated %2</source>
+        <translation>登录身份：%1
+令牌生成时间：%2</translation>
     </message>
     <message>
         <source>Logout</source>
@@ -18510,6 +18578,10 @@ You must save to a memory card and reset the game to clear any effects.</source>
 {}</translation>
     </message>
     <message>
+        <source>Loaded undo save state created {}.</source>
+        <translation>已加载创建于 {} 的撤销存档状态。</translation>
+    </message>
+    <message>
         <source>Cannot use per-game memory card without a disc.
 Using shared card instead.</source>
         <translation>没有光盘，无法使用每个游戏独立记忆卡。
@@ -18538,10 +18610,6 @@ Using shared card instead.</source>
     <message>
         <source>Undo Load State</source>
         <translation>撤销载入即时档案</translation>
-    </message>
-    <message>
-        <source>Loaded undo save state created at {}.</source>
-        <translation>已载入在{}创建的撤销即时存档。</translation>
     </message>
     <message>
         <source>capturing audio and video</source>

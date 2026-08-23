@@ -230,6 +230,10 @@ Apakah ingin mengaktifkan Mode Hardcore?</translation>
         <translation>Aktifkan Mode Encore</translation>
     </message>
     <message>
+        <source>Track Unofficial Achievements</source>
+        <translation>Lacak Pencapaian Tidak Resmi</translation>
+    </message>
+    <message>
         <source>Show Achievement Notifications</source>
         <translation>Tampilkan Pemberitahuan Pencapaian</translation>
     </message>
@@ -244,6 +248,10 @@ Apakah ingin mengaktifkan Mode Hardcore?</translation>
     <message>
         <source>&quot;Challenge&quot; mode for achievements, including leaderboard tracking. Disables save state, cheats, and slowdown functions.</source>
         <translation>Mode &quot;tantangan&quot; untuk pencapaian dan pelacakan papan peringkat. Akan menonaktifkan fungsi save state, cheat, dan juga gerak lambat.</translation>
+    </message>
+    <message>
+        <source>When enabled, DuckStation will track unofficial achievements. Unlocks will be saved locally and not sent to RetroAchievements.</source>
+        <translation>Saat diaktifkan, DuckStation akan melacak pencapaian tidak resmi. Pembukaan akan disimpan secara lokal dan tidak dikirim ke RetroAchievements.</translation>
     </message>
     <message>
         <source>Checked</source>
@@ -363,8 +371,8 @@ Apakah ingin mengaktifkan Mode Hardcore?</translation>
     </message>
     <message>
         <source>Logged in as %1
-Token generated at %2</source>
-        <translation>Login sebagai %1
+Token generated %2</source>
+        <translation>Masuk sebagai %1
 Token dibuat pada %2</translation>
     </message>
     <message>
@@ -390,10 +398,6 @@ Token dibuat pada %2</translation>
     <message>
         <source>When enabled, DuckStation will assume all achievements are locked and not send any unlock notifications to the server.</source>
         <translation>Ketika diaktifkan, DuckStation akan menganggap semua pencapaian terkunci dan tidak akan mengirimkan notifikasi pembukaan pencapaian ke server.</translation>
-    </message>
-    <message>
-        <source>When enabled, DuckStation will list achievements from unofficial sets. Please note that these achievements are not tracked by RetroAchievements, so they unlock every time.</source>
-        <translation>Ketika diaktifkan, DuckStation akan mencantumkan pencapaian dari set tidak resmi. Harap diperhatikan bahwa pencapaian ini tidak dilacak oleh RetroAchievements, jadi pencapaian ini akan terbuka setiap saat.</translation>
     </message>
     <message numerus="yes">
         <source>%n seconds</source>
@@ -709,30 +713,6 @@ Pesan belum dibaca: {}</translation>
         </translation>
     </message>
     <message>
-        <source>Game was beaten on {0}, and completed on {1}.</source>
-        <translation>Permainan ditaklukkan pada {0}, dan diselesaikan pada {1}.</translation>
-    </message>
-    <message>
-        <source>Subset was beaten on {0}, and completed on {1}.</source>
-        <translation>Subset ditaklukkan pada {0}, dan diselesaikan pada {1}.</translation>
-    </message>
-    <message>
-        <source>Game was beaten on {0}.</source>
-        <translation>Permainan ditaklukkan pada {0}.</translation>
-    </message>
-    <message>
-        <source>Subset was beaten on {0}.</source>
-        <translation>Subset ditaklukkan pada {0}.</translation>
-    </message>
-    <message>
-        <source>Game was completed on {0}.</source>
-        <translation>Permainan diselesaikan pada {0}.</translation>
-    </message>
-    <message>
-        <source>Subset was completed on {0}.</source>
-        <translation>Subset diselesaikan pada {0}.</translation>
-    </message>
-    <message>
         <source>Not Confirmed</source>
         <translation>Belum Dikonfirmasi</translation>
     </message>
@@ -773,10 +753,6 @@ Pesan belum dibaca: {}</translation>
         <translation>Kembali</translation>
     </message>
     <message>
-        <source>Unlocked: {} | {:.1f}% of players have this achievement</source>
-        <translation>Tercapai: {} | {:.1f}% pemain memiliki pencapaian ini</translation>
-    </message>
-    <message>
         <source>{:.1f}% of players have this achievement</source>
         <translation>{:.1f}% pemain memiliki pencapaian ini</translation>
     </message>
@@ -794,60 +770,6 @@ Pesan belum dibaca: {}</translation>
     <message>
         <source>View Profile</source>
         <translation>Lihat Profil</translation>
-    </message>
-    <message>
-        <source>Just now</source>
-        <translation>Baru saja</translation>
-    </message>
-    <message numerus="yes">
-        <source>%n minutes ago</source>
-        <comment>Relative time</comment>
-        <translation>
-            <numerusform>%n menit yang lalu</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <source>%n hours ago</source>
-        <comment>Relative time</comment>
-        <translation>
-            <numerusform>%n jam yang lalu</numerusform>
-        </translation>
-    </message>
-    <message>
-        <source>Today</source>
-        <translation>Hari Ini</translation>
-    </message>
-    <message>
-        <source>Yesterday</source>
-        <translation>Kemarin</translation>
-    </message>
-    <message numerus="yes">
-        <source>%n days ago</source>
-        <comment>Relative time</comment>
-        <translation>
-            <numerusform>%n hari yang lalu</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <source>%n weeks ago</source>
-        <comment>Relative time</comment>
-        <translation>
-            <numerusform>%n minggu yang lalu</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <source>%n months ago</source>
-        <comment>Relative time</comment>
-        <translation>
-            <numerusform>%n bulan yang lalu</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <source>%n years ago</source>
-        <comment>Relative time</comment>
-        <translation>
-            <numerusform>%n tahun yang lalu</numerusform>
-        </translation>
     </message>
     <message>
         <source>Leaderboard download failed</source>
@@ -886,6 +808,34 @@ Pesan belum dibaca: {}</translation>
         <translation>Anda membuka {0} dari {1} pencapaian, mendapat {2} dari {3} poin yang dapat diperoleh.</translation>
     </message>
     <message>
+        <source>You have unlocked {0} of {1} unofficial achievements, earning {2} of {3} possible points.</source>
+        <translation>Anda telah membuka {0} dari {1} pencapaian tidak resmi, memperoleh {2} dari {3} poin yang mungkin.</translation>
+    </message>
+    <message>
+        <source>Game was beaten {0}, and completed {1}.</source>
+        <translation>Game ditamatkan pada {0}, dan diselesaikan pada {1}.</translation>
+    </message>
+    <message>
+        <source>Subset was beaten {0}, and completed {1}.</source>
+        <translation>Subset ditamatkan pada {0}, dan diselesaikan pada {1}.</translation>
+    </message>
+    <message>
+        <source>Game was beaten {0}.</source>
+        <translation>Game ditamatkan pada {0}.</translation>
+    </message>
+    <message>
+        <source>Subset was beaten {0}.</source>
+        <translation>Subset ditamatkan pada {0}.</translation>
+    </message>
+    <message>
+        <source>Game was completed {0}.</source>
+        <translation>Game diselesaikan pada {0}.</translation>
+    </message>
+    <message>
+        <source>Subset was completed {0}.</source>
+        <translation>Subset diselesaikan pada {0}.</translation>
+    </message>
+    <message>
         <source>Unknown</source>
         <translation>Tidak Diketahui</translation>
     </message>
@@ -918,8 +868,16 @@ Pesan belum dibaca: {}</translation>
         <translation>Hampir Selesai</translation>
     </message>
     <message>
+        <source>Reset Unofficial Unlocks</source>
+        <translation>Atur Ulang Pembukaan Tidak Resmi</translation>
+    </message>
+    <message>
         <source>XXX points</source>
         <translation>XXX poin</translation>
+    </message>
+    <message>
+        <source>Unlocked {}</source>
+        <translation>Dibuka {}</translation>
     </message>
     <message>
         <source>Leaderboards are not available.</source>
@@ -2751,10 +2709,6 @@ Mencoba menggunakan kode curang ini tidak akan bekerja seperti yang diharapkan. 
     <message>
         <source>6x</source>
         <translation>6x</translation>
-    </message>
-    <message>
-        <source>Preload Image To RAM</source>
-        <translation>Muat Image Ke RAM</translation>
     </message>
     <message>
         <source>Apply Image Patches</source>
@@ -5408,6 +5362,10 @@ ${serial}: Nomor seri permainan.</translation>
         <translation>Opsi Rendering Lanjutan</translation>
     </message>
     <message>
+        <source>All unofficial achievement progress for the current game will be removed. This cannot be undone.</source>
+        <translation>Semua progres pencapaian tidak resmi untuk game saat ini akan dihapus. Tindakan ini tidak dapat dibatalkan.</translation>
+    </message>
+    <message>
         <source>Allow Booting Without SBI File</source>
         <translation>Izinkan Booting Tanpa Berkas SBI</translation>
     </message>
@@ -5856,6 +5814,10 @@ Tindakan ini tidak dapat dibatalkan.</translation>
         <translation>Area Tampilan</translation>
     </message>
     <message>
+        <source>Do you want to continue from the automatic save created {}?</source>
+        <translation>Apakah Anda ingin melanjutkan dari simpanan otomatis yang dibuat {}?</translation>
+    </message>
+    <message>
         <source>Downsamples the rendered image prior to displaying it. Can improve overall image quality in mixed 2D/3D games.</source>
         <translation>Memperkecil citra yang dirender sebelum menampilkannya. Dapat meningkatkan kualitas citra secara keseluruhan pada permainan 2D/3D campuran.</translation>
     </message>
@@ -6298,6 +6260,10 @@ Kesalahan: {}
 Silakan periksa nama pengguna dan kata sandi Anda, lalu coba lagi.</translation>
     </message>
     <message>
+        <source>Login token generated {}</source>
+        <translation>Token masuk dibuat {}</translation>
+    </message>
+    <message>
         <source>Logs BIOS calls to printf(). Not all games contain debugging messages.</source>
         <translation>Mencatat panggilan BIOS ke printf(). Tidak semua game berisi pesan debug.</translation>
     </message>
@@ -6576,6 +6542,18 @@ Silakan periksa nama pengguna dan kata sandi Anda, lalu coba lagi.</translation>
     <message>
         <source>Reset Controller Settings</source>
         <translation>Atur Ulang Pengaturan Pengontrol</translation>
+    </message>
+    <message>
+        <source>Reset Unlock</source>
+        <translation>Atur Ulang Pembukaan</translation>
+    </message>
+    <message>
+        <source>Reset Unofficial Achievement</source>
+        <translation>Atur Ulang Pencapaian Tidak Resmi</translation>
+    </message>
+    <message>
+        <source>Reset Unofficial Achievement Unlocks</source>
+        <translation>Atur Ulang Pembukaan Pencapaian Tidak Resmi</translation>
     </message>
     <message>
         <source>Resets all settings to the defaults.</source>
@@ -7658,10 +7636,6 @@ Apakah Anda tetap ingin {0}?</translation>
         <translation>Saat diaktifkan, DuckStation akan menganggap semua pencapaian terkunci dan tidak mengirim pemberitahuan pembukaan kunci ke server.</translation>
     </message>
     <message>
-        <source>When enabled, DuckStation will list achievements from unofficial sets. These achievements are not tracked by RetroAchievements.</source>
-        <translation>Jika diaktifkan, DuckStation akan mencantumkan pencapaian dari set tidak resmi. Pencapaian ini tidak dilacak oleh RetroAchievements.</translation>
-    </message>
-    <message>
         <source>When enabled, memory cards and controllers will be overwritten when save states are loaded.</source>
         <translation>Jika diaktifkan, kartu memori dan pengontrol akan ditimpa saat status simpanan dimuat.</translation>
     </message>
@@ -8076,10 +8050,6 @@ Apakah Anda ingin menghapus status simpanan tersebut dan tetap mem-boot game?</t
     <message>
         <source>Displays only the game title in the list, instead of the title and serial/file name.</source>
         <translation>Hanya menampilkan judul game dalam daftar, bukan judul dan nama serial/file.</translation>
-    </message>
-    <message>
-        <source>Do you want to continue from the automatic save created at {}?</source>
-        <translation>Apakah Anda ingin melanjutkan dari simpanan otomatis yang dibuat pada {}?</translation>
     </message>
     <message>
         <source>Downloads all locked achievement badges while starting the game. This will reduce delays in the images being shown when unlocking achievements.</source>
@@ -8534,6 +8504,10 @@ Apakah Anda ingin menghapus status simpanan tersebut dan tetap mem-boot game?</t
         <translation>Berkas BIOS &apos;{}&apos; sudah terpasang. Apakah Anda ingin menimpanya?</translation>
     </message>
     <message>
+        <source>The unlock state for &apos;{}&apos; will be removed. This cannot be undone.</source>
+        <translation>Status pembukaan untuk &apos;{}&apos; akan dihapus. Tindakan ini tidak dapat dibatalkan.</translation>
+    </message>
+    <message>
         <source>This game was not scanned by DuckStation. Some functionality is not available.</source>
         <translation>Game ini belum dipindai oleh DuckStation. Beberapa fungsi tidak tersedia.</translation>
     </message>
@@ -8582,6 +8556,10 @@ Apakah Anda ingin menghapus status simpanan tersebut dan tetap mem-boot game?</t
         <translation>Lacak</translation>
     </message>
     <message>
+        <source>Track Unofficial Achievements</source>
+        <translation>Lacak Pencapaian Tidak Resmi</translation>
+    </message>
+    <message>
         <source>Track hash copied to clipboard.</source>
         <translation>Hash trek disalin ke papan klip.</translation>
     </message>
@@ -8596,6 +8574,18 @@ Apakah Anda ingin menghapus status simpanan tersebut dan tetap mem-boot game?</t
     <message>
         <source>Type</source>
         <translation>Tipe</translation>
+    </message>
+    <message>
+        <source>Unofficial achievement unlock reset.</source>
+        <translation>Pembukaan pencapaian tidak resmi telah diatur ulang.</translation>
+    </message>
+    <message>
+        <source>Unofficial achievement unlocks reset.</source>
+        <translation>Pembukaan pencapaian tidak resmi telah diatur ulang.</translation>
+    </message>
+    <message>
+        <source>When enabled, DuckStation will track unofficial achievements. Unlocks will be saved locally and not sent to RetroAchievements.</source>
+        <translation>Saat diaktifkan, DuckStation akan melacak pencapaian tidak resmi. Pembukaan akan disimpan secara lokal dan tidak dikirim ke RetroAchievements.</translation>
     </message>
     <message>
         <source>{0} (Missing)</source>
@@ -8912,14 +8902,6 @@ Apakah Anda ingin menghapus status simpanan tersebut dan tetap mem-boot game?</t
     <message>
         <source>Sound Effects</source>
         <translation>Efek Suara</translation>
-    </message>
-    <message>
-        <source>Test Unofficial Achievements</source>
-        <translation>Uji Coba Pencapaian Tidak Resmi</translation>
-    </message>
-    <message>
-        <source>Login token generated on {}</source>
-        <translation>Token masuk dibuat pada {}</translation>
     </message>
     <message>
         <source>Logout</source>
@@ -9854,63 +9836,6 @@ Apakah Anda yakin ingin melanjutkan?</translation>
         <source>No URLs to download enumerated.</source>
         <translation>Tidak ada URL yang tercantum untuk diunduh.</translation>
     </message>
-    <message>
-        <source>Never</source>
-        <translation>Tidak pernah</translation>
-    </message>
-    <message>
-        <source>Today</source>
-        <translation>Hari Ini</translation>
-    </message>
-    <message numerus="yes">
-        <source>%n seconds</source>
-        <translation>
-            <numerusform>%n detik</numerusform>
-        </translation>
-    </message>
-    <message>
-        <source>Yesterday</source>
-        <translation>Kemarin</translation>
-    </message>
-    <message>
-        <source>{}h {}m</source>
-        <translation>{}j {}m</translation>
-    </message>
-    <message>
-        <source>{}h {}m {}s</source>
-        <translation>{}j {}m {}d</translation>
-    </message>
-    <message>
-        <source>{}m {}s</source>
-        <translation>{}m {}d</translation>
-    </message>
-    <message>
-        <source>{}s</source>
-        <translation>{}d</translation>
-    </message>
-    <message>
-        <source>None</source>
-        <translation>Tidak ada</translation>
-    </message>
-    <message numerus="yes">
-        <source>%n hours</source>
-        <translation>
-            <numerusform>%n jam</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <source>%n minutes</source>
-        <translation>
-            <numerusform>%n menit</numerusform>
-        </translation>
-    </message>
-</context>
-<context>
-    <name>GameListListView</name>
-    <message>
-        <source>Unknown</source>
-        <translation>Tidak Diketahui</translation>
-    </message>
 </context>
 <context>
     <name>GameListModel</name>
@@ -9921,10 +9846,6 @@ Apakah Anda yakin ingin melanjutkan?</translation>
     <message>
         <source>File Title</source>
         <translation>Judul File</translation>
-    </message>
-    <message>
-        <source>Unknown</source>
-        <translation>Tidak Diketahui</translation>
     </message>
     <message>
         <source>Icon</source>
@@ -10084,8 +10005,8 @@ Pemindaian rekursif akan membuat proses pencarian menjadi lebih lama, namun dapa
         <translation>Gabungkan Game Multi-Disc</translation>
     </message>
     <message>
-        <source>Show Localized Icons</source>
-        <translation>Tampilkan Ikon yang Dilokalkan</translation>
+        <source>Show Localized Titles</source>
+        <translation>Tampilkan Judul yang Dilokalkan</translation>
     </message>
     <message>
         <source>Show Game Icons</source>
@@ -11309,6 +11230,132 @@ Pemindaian rekursif akan membuat proses pencarian menjadi lebih lama, namun dapa
     <message>
         <source>Offset applied to lightgun horizontal position.</source>
         <translation>Offset yang diterapkan pada posisi horizontal senjata cahaya.</translation>
+    </message>
+</context>
+<context>
+    <name>Host</name>
+    <message numerus="yes">
+        <source>%n seconds</source>
+        <translation>
+            <numerusform>%n detik</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n minutes</source>
+        <translation>
+            <numerusform>%n menit</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n hours</source>
+        <translation>
+            <numerusform>%n jam</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Today</source>
+        <translation>Hari Ini</translation>
+    </message>
+    <message>
+        <source>Yesterday</source>
+        <translation>Kemarin</translation>
+    </message>
+    <message>
+        <source>Never</source>
+        <translation>Tidak Pernah</translation>
+    </message>
+    <message>
+        <source>today</source>
+        <translation>hari ini</translation>
+    </message>
+    <message>
+        <source>yesterday</source>
+        <translation>kemarin</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n days ago</source>
+        <comment>Date difference</comment>
+        <translation>
+            <numerusform>%n hari yang lalu</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>on {}</source>
+        <translation>pada {}</translation>
+    </message>
+    <message>
+        <source>Now</source>
+        <translation>Sekarang</translation>
+    </message>
+    <message>
+        <source>now</source>
+        <translation>sekarang</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n seconds ago</source>
+        <comment>Time difference</comment>
+        <translation>
+            <numerusform>%n detik yang lalu</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n minutes ago</source>
+        <comment>Time difference</comment>
+        <translation>
+            <numerusform>%n menit yang lalu</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n hours ago</source>
+        <comment>Time difference</comment>
+        <translation>
+            <numerusform>%n jam yang lalu</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n weeks ago</source>
+        <comment>Time difference</comment>
+        <translation>
+            <numerusform>%n minggu yang lalu</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n months ago</source>
+        <comment>Time difference</comment>
+        <translation>
+            <numerusform>%n bulan yang lalu</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n years ago</source>
+        <comment>Time difference</comment>
+        <translation>
+            <numerusform>%n tahun yang lalu</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>{} at {}</source>
+        <translation>{} pada {}</translation>
+    </message>
+    <message>
+        <source>{}h {}m</source>
+        <translation>{}j {}m</translation>
+    </message>
+    <message>
+        <source>{}h {}m {}s</source>
+        <translation>{}j {}m {}d</translation>
+    </message>
+    <message>
+        <source>{}m {}s</source>
+        <translation>{}m {}d</translation>
+    </message>
+    <message>
+        <source>{}s</source>
+        <translation>{}d</translation>
+    </message>
+    <message>
+        <source>None</source>
+        <translation>Tidak Ada</translation>
     </message>
 </context>
 <context>
@@ -12629,10 +12676,6 @@ Shift-klik untuk menetapkan beberapa penetapan.</translation>
         <translation>Muat Save State</translation>
     </message>
     <message>
-        <source>Save State</source>
-        <translation>Simpan Save State</translation>
-    </message>
-    <message>
         <source>S&amp;ettings</source>
         <translation>P&amp;engaturan</translation>
     </message>
@@ -12689,10 +12732,6 @@ Shift-klik untuk menetapkan beberapa penetapan.</translation>
         <translation>K&amp;onsol</translation>
     </message>
     <message>
-        <source>&amp;Post-Processing</source>
-        <translation>&amp;Pasca-Pemrosesan</translation>
-    </message>
-    <message>
         <source>&amp;About DuckStation...</source>
         <translation>&amp;Tentang DuckStation...</translation>
     </message>
@@ -12725,16 +12764,8 @@ Shift-klik untuk menetapkan beberapa penetapan.</translation>
         <translation>Kunci Bilah Alat</translation>
     </message>
     <message>
-        <source>Open Data Directory...</source>
-        <translation>Buka Direktori Data...</translation>
-    </message>
-    <message>
         <source>Big Picture</source>
         <translation>Big Picture</translation>
-    </message>
-    <message>
-        <source>Cover Downloader</source>
-        <translation>Pengunduh Sampul</translation>
     </message>
     <message>
         <source>Memory &amp;Scanner</source>
@@ -12747,6 +12778,22 @@ Shift-klik untuk menetapkan beberapa penetapan.</translation>
     <message>
         <source>Starts a new session using the selected file.</source>
         <translation>Memulai sesi baru menggunakan berkas yang dipilih.</translation>
+    </message>
+    <message>
+        <source>Cha&amp;nge Disc</source>
+        <translation>U&amp;bah Disk</translation>
+    </message>
+    <message>
+        <source>&amp;Cheats</source>
+        <translation>&amp;Cheat</translation>
+    </message>
+    <message>
+        <source>Sa&amp;ve State</source>
+        <translation>S&amp;impan Status</translation>
+    </message>
+    <message>
+        <source>Media Capt&amp;ure</source>
+        <translation>Pengambilan &amp;Media</translation>
     </message>
     <message>
         <source>Starts a new session from a physical disc.</source>
@@ -12845,6 +12892,10 @@ Shift-klik untuk menetapkan beberapa penetapan.</translation>
         <translation>Mengonfigurasi opsi terkait cara konten sesi ditampilkan.</translation>
     </message>
     <message>
+        <source>Post-Processi&amp;ng</source>
+        <translation>&amp;Pasca-Pemrosesan</translation>
+    </message>
+    <message>
         <source>Configures post-processing effects applied after rendering the content.</source>
         <translation>Mengonfigurasi efek pasca-pemrosesan yang diterapkan setelah merender konten.</translation>
     </message>
@@ -12929,16 +12980,56 @@ Shift-klik untuk menetapkan beberapa penetapan.</translation>
         <translation>Mengonfigurasi opsi terkait tampilan dan perilaku aplikasi.</translation>
     </message>
     <message>
-        <source>A&amp;dvanced</source>
-        <translation>L&amp;anjutan</translation>
+        <source>&amp;Refresh Grid Covers</source>
+        <translation>&amp;Segarkan Sampul Kisi</translation>
+    </message>
+    <message>
+        <source>Open Te&amp;xture Directory...</source>
+        <translation>Buka Direktori Te&amp;kstur...</translation>
+    </message>
+    <message>
+        <source>&amp;Reload Texture Replacements</source>
+        <translation>&amp;Muat Ulang Penggantian Tekstur</translation>
+    </message>
+    <message>
+        <source>Capture &amp;GPU Frame</source>
+        <translation>Tangkap Bingkai &amp;GPU</translation>
+    </message>
+    <message>
+        <source>&amp;ISO Browser</source>
+        <translation>Peramban &amp;ISO</translation>
+    </message>
+    <message>
+        <source>&amp;Free Camera</source>
+        <translation>Kamera &amp;Bebas</translation>
+    </message>
+    <message>
+        <source>Controller &amp;Test</source>
+        <translation>Uji &amp;Kontroler</translation>
+    </message>
+    <message>
+        <source>Clear List Backgro&amp;und</source>
+        <translation>Hapus Latar Belakang &amp;Daftar</translation>
+    </message>
+    <message>
+        <source>Refresh &amp;Achievement Database</source>
+        <translation>Segarkan &amp;Basis Data Pencapaian</translation>
+    </message>
+    <message>
+        <source>&amp;Animate Game Icons</source>
+        <translation>&amp;Animasikan Ikon Game</translation>
+    </message>
+    <message>
+        <source>Prefer Ac&amp;hievement Icons</source>
+        <translation>Utamakan Ikon &amp;Pencapaian</translation>
+    </message>
+    <message>
+        <source>Syst&amp;em Log</source>
+        <translation>Log Sist&amp;em</translation>
     </message>
     <message>
         <source>Configures advanced options for the application.</source>
         <translation>Mengonfigurasi opsi lanjutan untuk aplikasi.</translation>
-    </message>
-    <message>
-        <source>Debuggi&amp;ng</source>
-        <translation>Debuggi&amp;ng</translation>
     </message>
     <message>
         <source>Configures internal options for the application.</source>
@@ -12973,6 +13064,10 @@ Shift-klik untuk menetapkan beberapa penetapan.</translation>
         <translation>Mengeluarkan cakram dari sistem yang diemulasikan.</translation>
     </message>
     <message>
+        <source>Enable &amp;Safe Mode</source>
+        <translation>Aktifkan Mode &amp;Aman</translation>
+    </message>
+    <message>
         <source>Takes a screenshot of the current content.</source>
         <translation>Mengambil tangkapan layar konten saat ini.</translation>
     </message>
@@ -12981,8 +13076,16 @@ Shift-klik untuk menetapkan beberapa penetapan.</translation>
         <translation>Mengonfigurasi opsi terkait kartu memori yang diemulasikan.</translation>
     </message>
     <message>
+        <source>Res&amp;ume</source>
+        <translation>L&amp;anjutkan</translation>
+    </message>
+    <message>
         <source>Resumes the last save state created.</source>
         <translation>Melanjutkan save state terakhir yang dibuat.</translation>
+    </message>
+    <message>
+        <source>&amp;Show Toolbar</source>
+        <translation>&amp;Tampilkan Bilah Alat</translation>
     </message>
     <message>
         <source>Controls whether the toolbar is visible.</source>
@@ -12997,24 +13100,12 @@ Shift-klik untuk menetapkan beberapa penetapan.</translation>
         <translation>Mengontrol apakah bilah alat dapat dipindahkan.</translation>
     </message>
     <message>
-        <source>S&amp;mall Toolbar Icons</source>
-        <translation>Ikon Bilah Alat &amp;Kecil</translation>
-    </message>
-    <message>
         <source>Controls whether the smaller toolbar icons are displayed.</source>
         <translation>Mengontrol apakah ikon bilah alat yang lebih kecil ditampilkan.</translation>
     </message>
     <message>
-        <source>Toolbar L&amp;abels</source>
-        <translation>L&amp;abel Bilah Alat</translation>
-    </message>
-    <message>
         <source>Controls whether labels are displayed alongside toolbar icons.</source>
         <translation>Mengontrol apakah label ditampilkan bersama ikon bilah alat.</translation>
-    </message>
-    <message>
-        <source>Toolbar Labels &amp;Beside Icons</source>
-        <translation>Label Bilah Alat di &amp;Samping Ikon</translation>
     </message>
     <message>
         <source>Controls whether labels are displayed next to or under toolbar icons.</source>
@@ -13057,10 +13148,6 @@ Shift-klik untuk menetapkan beberapa penetapan.</translation>
         <translation>Menggabungkan beberapa cakram yang termasuk game yang sama menjadi satu item dalam daftar game.</translation>
     </message>
     <message>
-        <source>Show G&amp;rid Captions</source>
-        <translation>Tampilkan &amp;Keterangan Kisi</translation>
-    </message>
-    <message>
         <source>Shows captions under the game cover in grid view.</source>
         <translation>Menampilkan keterangan di bawah sampul game dalam tampilan kisi.</translation>
     </message>
@@ -13081,12 +13168,12 @@ Shift-klik untuk menetapkan beberapa penetapan.</translation>
         <translation>Memperkecil ukuran ikon atau sampul game.</translation>
     </message>
     <message>
-        <source>Refresh Grid &amp;Covers</source>
-        <translation>Segarkan &amp;Sampul Kisi</translation>
-    </message>
-    <message>
         <source>Invalidates the cache of game covers, allowing new images to be discovered.</source>
         <translation>Membatalkan cache sampul game, sehingga gambar baru dapat ditemukan.</translation>
+    </message>
+    <message>
+        <source>&amp;Open Data Directory...</source>
+        <translation>&amp;Buka Direktori Data...</translation>
     </message>
     <message>
         <source>Opens the directory containing application data in your file browser.</source>
@@ -13105,8 +13192,16 @@ Shift-klik untuk menetapkan beberapa penetapan.</translation>
         <translation>Mengakhiri sesi saat ini tanpa opsi untuk menyimpan state.</translation>
     </message>
     <message>
+        <source>Start Bi&amp;g Picture Mode</source>
+        <translation>Mulai Mode &amp;Big Picture</translation>
+    </message>
+    <message>
         <source>Opens or closes the controller-based &quot;big picture&quot; mode.</source>
         <translation>Membuka atau menutup mode &quot;big picture&quot; berbasis kontroler.</translation>
+    </message>
+    <message>
+        <source>Cover &amp;Downloader</source>
+        <translation>&amp;Pengunduh Sampul</translation>
     </message>
     <message>
         <source>Opens the cover downloader window.</source>
@@ -13137,24 +13232,12 @@ Shift-klik untuk menetapkan beberapa penetapan.</translation>
         <translation>Memulai atau menghentikan pengambilan video dan audio dari konten.</translation>
     </message>
     <message>
-        <source>Open Texture Directory...</source>
-        <translation>Buka Direktori Tekstur...</translation>
-    </message>
-    <message>
         <source>Opens the directory used to store texture replacements.</source>
         <translation>Membuka direktori yang digunakan untuk menyimpan pengganti tekstur.</translation>
     </message>
     <message>
-        <source>Reload Texture Replacements</source>
-        <translation>Muat Ulang Tekstur Pengganti</translation>
-    </message>
-    <message>
         <source>Invalidates the cache of available replacement textures.</source>
         <translation>Membatalkan cache pengganti tekstur yang tersedia.</translation>
-    </message>
-    <message>
-        <source>Capture GPU Frame</source>
-        <translation>Tangkap Bingkai GPU</translation>
     </message>
     <message>
         <source>Saves the emulated GPU commands to a file that can be later replayed.</source>
@@ -13181,24 +13264,12 @@ Shift-klik untuk menetapkan beberapa penetapan.</translation>
         <translation>Catat ke File</translation>
     </message>
     <message>
-        <source>ISO Browser</source>
-        <translation>Peramban ISO</translation>
-    </message>
-    <message>
         <source>Opens the ISO browser window.</source>
         <translation>Membuka jendela peramban ISO.</translation>
     </message>
     <message>
-        <source>Free Camera</source>
-        <translation>Kamera Bebas</translation>
-    </message>
-    <message>
         <source>Allows you to freely move the camera in supported games.</source>
         <translation>Memungkinkan Anda menggerakkan kamera dengan bebas dalam game yang didukung.</translation>
-    </message>
-    <message>
-        <source>Controller Test</source>
-        <translation>Uji Kontroler</translation>
     </message>
     <message>
         <source>Allows you to test emulated controller mappings.</source>
@@ -13221,20 +13292,12 @@ Shift-klik untuk menetapkan beberapa penetapan.</translation>
         <translation>Mengubah gambar latar belakang yang ditampilkan dalam daftar/kisi game.</translation>
     </message>
     <message>
-        <source>Clea&amp;r List Background</source>
-        <translation>Hapu&amp;s Latar Belakang Daftar</translation>
-    </message>
-    <message>
         <source>Removes the background image shown in the game list/grid.</source>
         <translation>Menghapus gambar latar belakang yang ditampilkan dalam daftar/kisi game.</translation>
     </message>
     <message>
         <source>Refreshes the list of unlocked achievements.</source>
         <translation>Menyegarkan daftar pencapaian yang terbuka.</translation>
-    </message>
-    <message>
-        <source>Refresh Achievement Database</source>
-        <translation>Segarkan Basis Data Pencapaian</translation>
     </message>
     <message>
         <source>Updates the database for achievements shown in the game list.</source>
@@ -13261,24 +13324,12 @@ Shift-klik untuk menetapkan beberapa penetapan.</translation>
         <translation>Membuka jendela editor memori.</translation>
     </message>
     <message>
-        <source>Animate Game Icons</source>
-        <translation>Animasikan Ikon Game</translation>
-    </message>
-    <message>
         <source>Animates icons in the list view when selected.</source>
         <translation>Menganimasikan ikon dalam tampilan daftar saat dipilih.</translation>
     </message>
     <message>
-        <source>Prefer Achievement Icons</source>
-        <translation>Utamakan Ikon Pencapaian</translation>
-    </message>
-    <message>
         <source>Prioritizes the games badges used for RetroAchievements over memory card icons.</source>
         <translation>Memprioritaskan lencana game yang digunakan untuk RetroAchievements dibandingkan ikon kartu memori.</translation>
-    </message>
-    <message>
-        <source>System Log</source>
-        <translation>Log Sistem</translation>
     </message>
     <message>
         <source>Start &amp;Capture</source>
@@ -13381,6 +13432,14 @@ Shift-klik untuk menetapkan beberapa penetapan.</translation>
         <translation>Tentang &amp;Qt...</translation>
     </message>
     <message>
+        <source>Ad&amp;vanced</source>
+        <translation>L&amp;anjutan</translation>
+    </message>
+    <message>
+        <source>&amp;Debugging</source>
+        <translation>&amp;Debugging</translation>
+    </message>
+    <message>
         <source>Show VRAM</source>
         <translation>Tampilkan VRAM</translation>
     </message>
@@ -13391,10 +13450,6 @@ Shift-klik untuk menetapkan beberapa penetapan.</translation>
     <message>
         <source>Dump VRAM to CPU Copies</source>
         <translation>Buang Salinan VRAM ke CPU</translation>
-    </message>
-    <message>
-        <source>Enable Safe Mode</source>
-        <translation>Aktifkan Mode Aman</translation>
     </message>
     <message>
         <source>Dump RAM...</source>
@@ -13465,6 +13520,18 @@ Shift-klik untuk menetapkan beberapa penetapan.</translation>
         <translation>Memungkinkan Anda merekam audio dan/atau video dari konten.</translation>
     </message>
     <message>
+        <source>S&amp;mall Icons</source>
+        <translation>Ikon &amp;Kecil</translation>
+    </message>
+    <message>
+        <source>Show &amp;Labels</source>
+        <translation>Tampilkan &amp;Label</translation>
+    </message>
+    <message>
+        <source>Show Labels &amp;Beside Icons</source>
+        <translation>Tampilkan Label di &amp;Samping Ikon</translation>
+    </message>
+    <message>
         <source>System &amp;Display</source>
         <translation>&amp;Tampilan Sistem</translation>
     </message>
@@ -13485,6 +13552,10 @@ Shift-klik untuk menetapkan beberapa penetapan.</translation>
         <translation>Tampilan &amp;Kisi</translation>
     </message>
     <message>
+        <source>Show Grid Ca&amp;ptions</source>
+        <translation>Tampilkan &amp;Keterangan Kisi</translation>
+    </message>
+    <message>
         <source>Show Titles (Grid View)</source>
         <translation>Tampilkan Judul (Tampilan Kisi)</translation>
     </message>
@@ -13495,10 +13566,6 @@ Shift-klik untuk menetapkan beberapa penetapan.</translation>
     <message>
         <source>%1x Scale</source>
         <translation>Skala %1x</translation>
-    </message>
-    <message>
-        <source>RA: Logged in as %1 (%2, %3 casual). %4 unread messages.</source>
-        <translation>RA: Masuk sebagai %1 (%2, %3 kasual). %4 pesan belum dibaca.</translation>
     </message>
     <message>
         <source>Refresh Achievement Progress</source>
@@ -13591,6 +13658,10 @@ Shift-klik untuk menetapkan beberapa penetapan.</translation>
     <message>
         <source>&amp;Apply Cheat</source>
         <translation>&amp;Terapkan Cheat</translation>
+    </message>
+    <message>
+        <source>Save was created %1.</source>
+        <translation>Simpanan dibuat %1.</translation>
     </message>
     <message>
         <source>Exit Big Picture</source>
@@ -13725,6 +13796,10 @@ Shift-klik untuk menetapkan beberapa penetapan.</translation>
         <translation>Kartu memori &apos;%1&apos; tidak dapat ditemukan. Coba mulai game dan simpan untuk membuatnya.</translation>
     </message>
     <message>
+        <source>RA: Logged in as %1 (%2 points, %3 casual). %4 unread messages.</source>
+        <translation>RA: Masuk sebagai %1 (%2 poin, %3 kasual). %4 pesan belum dibaca.</translation>
+    </message>
+    <message>
         <source>RA: Updated achievement progress database.</source>
         <translation>RA: Basis data kemajuan pencapaian diperbarui.</translation>
     </message>
@@ -13795,10 +13870,6 @@ Apakah Anda ingin menghapus status simpanan tersebut dan tetap menjalankan game?
     <message>
         <source>&lt;strong&gt;Resume Game&lt;/strong&gt;&lt;br&gt;Do you want to load this state, or start from a fresh boot?</source>
         <translation>&lt;strong&gt;Lanjutkan Game&lt;/strong&gt;&lt;br&gt;Apakah Anda ingin memuat status ini atau memulai dari awal?</translation>
-    </message>
-    <message>
-        <source>Save was created on %1.</source>
-        <translation>Simpanan dibuat pada %1.</translation>
     </message>
     <message>
         <source>Do you want to swap discs or boot the new image via system restart?</source>
@@ -15720,6 +15791,10 @@ Kesalahan: {1}</translation>
 <context>
     <name>PlayStationMouse</name>
     <message>
+        <source>Pointer</source>
+        <translation>Penunjuk</translation>
+    </message>
+    <message>
         <source>Left Button</source>
         <translation>Tombol Kiri</translation>
     </message>
@@ -15738,13 +15813,6 @@ Kesalahan: {1}</translation>
     <message>
         <source>Vertical Sensitivity</source>
         <translation>Sensitivitas Vertikal</translation>
-    </message>
-</context>
-<context>
-    <name>PlaystationMouse</name>
-    <message>
-        <source>Pointer</source>
-        <translation>Kursor</translation>
     </message>
 </context>
 <context>
@@ -16524,10 +16592,6 @@ Apakah Anda ingin memperbarui pintasan agar mengarah ke lokasi saat ini?</transl
 <context>
     <name>SaveStateSelectorUI</name>
     <message>
-        <source>Saved at {0:%H:%M} on {0:%a} {0:%Y/%m/%d}.</source>
-        <translation>Disimpan pada pukul {0:%H:%M} di hari {0:%a} {0:%Y/%m/%d}.</translation>
-    </message>
-    <message>
         <source>No save state slots available.</source>
         <translation>Tidak ada slot status simpanan yang tersedia.</translation>
     </message>
@@ -16550,6 +16614,10 @@ Apakah Anda ingin memperbarui pintasan agar mengarah ke lokasi saat ini?</transl
     <message>
         <source>{} ({})</source>
         <translation>{} ({})</translation>
+    </message>
+    <message>
+        <source>Saved {}</source>
+        <translation>Disimpan {}</translation>
     </message>
     <message>
         <source>No save present in this slot.</source>
@@ -17126,12 +17194,12 @@ Apakah Anda ingin membuat direktori ini?</translation>
         <translation>Deteksi Otomatis</translation>
     </message>
     <message>
-        <source>NTSC (60hz)</source>
+        <source>NTSC (60 Hz)</source>
         <comment>ForceVideoTiming</comment>
         <translation>NTSC (60 Hz)</translation>
     </message>
     <message>
-        <source>PAL (50hz)</source>
+        <source>PAL (50 Hz)</source>
         <comment>ForceVideoTiming</comment>
         <translation>PAL (50 Hz)</translation>
     </message>
@@ -18086,7 +18154,7 @@ Pemindaian rekursif akan membuat proses pencarian menjadi lebih lama, namun dapa
     </message>
     <message>
         <source>Logged in as %1
-Token generated at %2</source>
+Token generated %2</source>
         <translation>Masuk sebagai %1
 Token dibuat pada %2</translation>
     </message>
@@ -18197,6 +18265,10 @@ Hal ini mungkin disebabkan GPU Anda tidak mendukung perender yang dipilih ({1}),
     <message>
         <source>Cannot save state while memory card is being saved.</source>
         <translation>Tidak dapat menyimpan status saat kartu memori sedang disimpan.</translation>
+    </message>
+    <message>
+        <source>Loaded undo save state created {}.</source>
+        <translation>Status simpanan pembatalan yang dibuat {} telah dimuat.</translation>
     </message>
     <message>
         <source>Using disc-specific memory card &apos;{}&apos; instead of per-game card.</source>
@@ -18548,10 +18620,6 @@ Anda harus menyimpan ke kartu memori dan mengatur ulang game untuk menghapus sem
 {}</source>
         <translation>Gagal memuat status pembatalan, memulai ulang game.
 {}</translation>
-    </message>
-    <message>
-        <source>Loaded undo save state created at {}.</source>
-        <translation>Status simpanan pembatalan yang dibuat pada {} dimuat.</translation>
     </message>
     <message>
         <source>capturing audio and video</source>

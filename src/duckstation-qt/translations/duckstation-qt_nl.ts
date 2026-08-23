@@ -202,6 +202,10 @@ Wilt u de hardcoremodus inschakelen?</translation>
         <translation>Encoremodus inschakelen</translation>
     </message>
     <message>
+        <source>Track Unofficial Achievements</source>
+        <translation>Niet-officiële prestaties bijhouden</translation>
+    </message>
+    <message>
         <source>Prefetch Badges</source>
         <translation>Badges vooraf ophalen</translation>
     </message>
@@ -252,6 +256,10 @@ Wilt u de hardcoremodus inschakelen?</translation>
     <message>
         <source>&quot;Challenge&quot; mode for achievements, including leaderboard tracking. Disables save state, cheats, and slowdown functions.</source>
         <translation>De modus &apos;Uitdaging&apos; voor prestaties, inclusief het bijhouden van klassementen. Schakelt opgeslagen toestanden, cheats en vertragingsfuncties uit.</translation>
+    </message>
+    <message>
+        <source>When enabled, DuckStation will track unofficial achievements. Unlocks will be saved locally and not sent to RetroAchievements.</source>
+        <translation>Wanneer ingeschakeld, houdt DuckStation niet-officiële prestaties bij. Ontgrendelingen worden lokaal opgeslagen en niet naar RetroAchievements verzonden.</translation>
     </message>
     <message>
         <source>Checked</source>
@@ -379,9 +387,9 @@ Wilt u de hardcoremodus inschakelen?</translation>
     </message>
     <message>
         <source>Logged in as %1
-Token generated at %2</source>
+Token generated %2</source>
         <translation>Ingelogd als %1
-Token gegenereerd op %2</translation>
+Token gegenereerd %2</translation>
     </message>
     <message>
         <source>When enabled, each session will behave as if no achievements have been unlocked.</source>
@@ -390,10 +398,6 @@ Token gegenereerd op %2</translation>
     <message>
         <source>When enabled, DuckStation will assume all achievements are locked and not send any unlock notifications to the server.</source>
         <translation>Indien ingeschakeld, gaat DuckStation ervan uit dat alle prestaties vergrendeld zijn en worden er geen ontgrendelingsmeldingen naar de server verzonden.</translation>
-    </message>
-    <message>
-        <source>When enabled, DuckStation will list achievements from unofficial sets. Please note that these achievements are not tracked by RetroAchievements, so they unlock every time.</source>
-        <translation>Indien ingeschakeld, toont DuckStation prestaties uit onofficiële sets. Let op: deze prestaties worden niet bijgehouden door RetroAchievements en worden daarom telkens ontgrendeld.</translation>
     </message>
     <message numerus="yes">
         <source>%n seconds</source>
@@ -755,6 +759,10 @@ Ongelezen berichten: {}</translation>
         <source>This subset has no achievements.</source>
         <translation>Deze subset bevat geen prestaties.</translation>
     </message>
+    <message>
+        <source>You have unlocked {0} of {1} unofficial achievements, earning {2} of {3} possible points.</source>
+        <translation>U hebt {0} van de {1} niet-officiële prestaties ontgrendeld en {2} van de {3} mogelijke punten verdiend.</translation>
+    </message>
     <message numerus="yes">
         <source>%n achievements are not supported by DuckStation and cannot be unlocked.</source>
         <comment>Unsupported achievement count</comment>
@@ -762,30 +770,6 @@ Ongelezen berichten: {}</translation>
             <numerusform>%n prestatie wordt niet ondersteund door DuckStation en kan niet worden ontgrendeld.</numerusform>
             <numerusform>%n prestaties worden niet ondersteund door DuckStation en kunnen niet worden ontgrendeld.</numerusform>
         </translation>
-    </message>
-    <message>
-        <source>Game was beaten on {0}, and completed on {1}.</source>
-        <translation>De game is op {0} uitgespeeld en op {1} voltooid.</translation>
-    </message>
-    <message>
-        <source>Subset was beaten on {0}, and completed on {1}.</source>
-        <translation>De subset is op {0} uitgespeeld en op {1} voltooid.</translation>
-    </message>
-    <message>
-        <source>Game was beaten on {0}.</source>
-        <translation>De game is op {0} uitgespeeld.</translation>
-    </message>
-    <message>
-        <source>Subset was beaten on {0}.</source>
-        <translation>De subset is op {0} uitgespeeld.</translation>
-    </message>
-    <message>
-        <source>Game was completed on {0}.</source>
-        <translation>De game is op {0} voltooid.</translation>
-    </message>
-    <message>
-        <source>Subset was completed on {0}.</source>
-        <translation>De subset is op {0} voltooid.</translation>
     </message>
     <message>
         <source>Unknown</source>
@@ -840,6 +824,10 @@ Ongelezen berichten: {}</translation>
         <translation>Prestatie vastzetten</translation>
     </message>
     <message>
+        <source>Reset Unofficial Unlocks</source>
+        <translation>Niet-officiële ontgrendelingen resetten</translation>
+    </message>
+    <message>
         <source>View Details</source>
         <translation>Details bekijken</translation>
     </message>
@@ -858,10 +846,6 @@ Ongelezen berichten: {}</translation>
     <message>
         <source>Win Condition</source>
         <translation>Voorwaarde voor overwinning</translation>
-    </message>
-    <message>
-        <source>Unlocked: {} | {:.1f}% of players have this achievement</source>
-        <translation>Ontgrendeld: {} | {:.1f}% van de spelers heeft deze prestatie</translation>
     </message>
     <message>
         <source>{:.1f}% of players have this achievement</source>
@@ -900,68 +884,36 @@ Ongelezen berichten: {}</translation>
         <translation>XXX punten</translation>
     </message>
     <message>
+        <source>Game was beaten {0}, and completed {1}.</source>
+        <translation>De game is uitgespeeld {0} en voltooid {1}.</translation>
+    </message>
+    <message>
+        <source>Subset was beaten {0}, and completed {1}.</source>
+        <translation>De subset is uitgespeeld {0} en voltooid {1}.</translation>
+    </message>
+    <message>
+        <source>Game was beaten {0}.</source>
+        <translation>De game is uitgespeeld {0}.</translation>
+    </message>
+    <message>
+        <source>Subset was beaten {0}.</source>
+        <translation>De subset is uitgespeeld {0}.</translation>
+    </message>
+    <message>
+        <source>Game was completed {0}.</source>
+        <translation>De game is voltooid {0}.</translation>
+    </message>
+    <message>
+        <source>Subset was completed {0}.</source>
+        <translation>De subset is voltooid {0}.</translation>
+    </message>
+    <message>
+        <source>Unlocked {}</source>
+        <translation>Ontgrendeld {}</translation>
+    </message>
+    <message>
         <source>Loading...</source>
         <translation>Laden...</translation>
-    </message>
-    <message>
-        <source>Just now</source>
-        <translation>Zojuist</translation>
-    </message>
-    <message numerus="yes">
-        <source>%n minutes ago</source>
-        <comment>Relative time</comment>
-        <translation>
-            <numerusform>%n minuut geleden</numerusform>
-            <numerusform>%n minuten geleden</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <source>%n hours ago</source>
-        <comment>Relative time</comment>
-        <translation>
-            <numerusform>%n uur geleden</numerusform>
-            <numerusform>%n uur geleden</numerusform>
-        </translation>
-    </message>
-    <message>
-        <source>Today</source>
-        <translation>Vandaag</translation>
-    </message>
-    <message>
-        <source>Yesterday</source>
-        <translation>Gisteren</translation>
-    </message>
-    <message numerus="yes">
-        <source>%n days ago</source>
-        <comment>Relative time</comment>
-        <translation>
-            <numerusform>%n dag geleden</numerusform>
-            <numerusform>%n dagen geleden</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <source>%n weeks ago</source>
-        <comment>Relative time</comment>
-        <translation>
-            <numerusform>%n week geleden</numerusform>
-            <numerusform>%n weken geleden</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <source>%n months ago</source>
-        <comment>Relative time</comment>
-        <translation>
-            <numerusform>%n maand geleden</numerusform>
-            <numerusform>%n maanden geleden</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <source>%n years ago</source>
-        <comment>Relative time</comment>
-        <translation>
-            <numerusform>%n jaar geleden</numerusform>
-            <numerusform>%n jaren geleden</numerusform>
-        </translation>
     </message>
     <message>
         <source>Leaderboard download failed</source>
@@ -2693,10 +2645,6 @@ Deze cheat gebruiken zal niet het verwachte resultaat opleveren. Wilt u doorgaan
     <message>
         <source>CD-ROM Emulation</source>
         <translation>CD-ROM Emulatie</translation>
-    </message>
-    <message>
-        <source>Preload Image To RAM</source>
-        <translation>Vooraf Image Inladen Naar Het Geheugen</translation>
     </message>
     <message>
         <source>Read Speedup:</source>
@@ -5389,6 +5337,10 @@ ${serial}: Serienummer van de game.</translation>
         <translation>Totale tijd: {}</translation>
     </message>
     <message>
+        <source>All unofficial achievement progress for the current game will be removed. This cannot be undone.</source>
+        <translation>Alle niet-officiële prestatievoortgang voor de huidige game wordt verwijderd. Dit kan niet ongedaan worden gemaakt.</translation>
+    </message>
+    <message>
         <source>Allow Booting Without SBI File</source>
         <translation>Opstarten zonder SBI-bestand toestaan</translation>
     </message>
@@ -5735,6 +5687,10 @@ ${serial}: Serienummer van de game.</translation>
     <message>
         <source>Displays popup messages when starting, submitting, or failing a leaderboard challenge.</source>
         <translation>Toont pop-upberichten bij het starten, indienen of mislukken van een klassementuitdaging.</translation>
+    </message>
+    <message>
+        <source>Do you want to continue from the automatic save created {}?</source>
+        <translation>Wilt u doorgaan vanaf de automatische opslag van {}?</translation>
     </message>
     <message>
         <source>Double-Click Toggles Fullscreen</source>
@@ -6121,10 +6077,6 @@ De fout was:</translation>
     <message>
         <source>Login</source>
         <translation>Inloggen</translation>
-    </message>
-    <message>
-        <source>Login token generated on {}</source>
-        <translation>Inlogtoken gegenereerd op {}</translation>
     </message>
     <message>
         <source>Logout</source>
@@ -6783,10 +6735,6 @@ U kunt deze actie niet ongedaan maken.</translation>
         <translation>Dithering</translation>
     </message>
     <message>
-        <source>Do you want to continue from the automatic save created at {}?</source>
-        <translation>Wilt u doorgaan vanaf de automatische opslag die op {} is gemaakt?</translation>
-    </message>
-    <message>
         <source>Downloads all locked achievement badges while starting the game. This will reduce delays in the images being shown when unlocking achievements.</source>
         <translation>Downloadt alle vergrendelde prestatiebadges bij het starten van de game. Hierdoor worden vertragingen bij het weergeven van afbeeldingen tijdens het ontgrendelen van prestaties verminderd.</translation>
     </message>
@@ -7223,6 +7171,10 @@ Fout: {}
 Controleer uw gebruikersnaam en wachtwoord en probeer het opnieuw.</translation>
     </message>
     <message>
+        <source>Login token generated {}</source>
+        <translation>Inlogtoken gegenereerd {}</translation>
+    </message>
+    <message>
         <source>Macro {}</source>
         <translation>Macro {}</translation>
     </message>
@@ -7463,6 +7415,18 @@ Controleer uw gebruikersnaam en wachtwoord en probeer het opnieuw.</translation>
         <translation>Terugzetten naar de standaardwaarde</translation>
     </message>
     <message>
+        <source>Reset Unlock</source>
+        <translation>Ontgrendeling resetten</translation>
+    </message>
+    <message>
+        <source>Reset Unofficial Achievement</source>
+        <translation>Niet-officiële prestatie resetten</translation>
+    </message>
+    <message>
+        <source>Reset Unofficial Achievement Unlocks</source>
+        <translation>Niet-officiële prestatieontgrendelingen resetten</translation>
+    </message>
+    <message>
         <source>Resets all settings to the defaults.</source>
         <translation>Zet alle instellingen terug op de standaardwaarden.</translation>
     </message>
@@ -7667,6 +7631,10 @@ Controleer uw gebruikersnaam en wachtwoord en probeer het opnieuw.</translation>
         <translation>Synchroniseert de weergave van de frames van de console met de host. Gebruikers van GSync/FreeSync moeten in plaats daarvan Optimale frametiming inschakelen.</translation>
     </message>
     <message>
+        <source>The unlock state for &apos;{}&apos; will be removed. This cannot be undone.</source>
+        <translation>De ontgrendelingsstatus voor &apos;{}&apos; wordt verwijderd. Dit kan niet ongedaan worden gemaakt.</translation>
+    </message>
+    <message>
         <source>Theme</source>
         <translation>Thema</translation>
     </message>
@@ -7695,6 +7663,10 @@ Controleer uw gebruikersnaam en wachtwoord en probeer het opnieuw.</translation>
         <translation>Volgen</translation>
     </message>
     <message>
+        <source>Track Unofficial Achievements</source>
+        <translation>Niet-officiële prestaties bijhouden</translation>
+    </message>
+    <message>
         <source>Track hash copied to clipboard.</source>
         <translation>Trackhash naar klembord gekopieerd.</translation>
     </message>
@@ -7705,6 +7677,14 @@ Controleer uw gebruikersnaam en wachtwoord en probeer het opnieuw.</translation>
     <message>
         <source>Trigger</source>
         <translation>Trigger</translation>
+    </message>
+    <message>
+        <source>Unofficial achievement unlock reset.</source>
+        <translation>Niet-officiële prestatieontgrendeling gereset.</translation>
+    </message>
+    <message>
+        <source>Unofficial achievement unlocks reset.</source>
+        <translation>Niet-officiële prestatieontgrendelingen gereset.</translation>
     </message>
     <message>
         <source>Use OSD Scale</source>
@@ -7749,6 +7729,10 @@ Controleer uw gebruikersnaam en wachtwoord en probeer het opnieuw.</translation>
     <message>
         <source>Uses game-specific configuration for input sources. If disabled, the global configuration will be used.</source>
         <translation>Gebruikt gamespecifieke configuratie voor invoerbronnen. Als dit is uitgeschakeld, wordt de globale configuratie gebruikt.</translation>
+    </message>
+    <message>
+        <source>When enabled, DuckStation will track unofficial achievements. Unlocks will be saved locally and not sent to RetroAchievements.</source>
+        <translation>Wanneer ingeschakeld, houdt DuckStation niet-officiële prestaties bij. Ontgrendelingen worden lokaal opgeslagen en niet naar RetroAchievements verzonden.</translation>
     </message>
     <message>
         <source>When enabled, the legacy global save state slots will be available. These slots are independent of the current game.</source>
@@ -8623,10 +8607,6 @@ Controleer uw gebruikersnaam en wachtwoord en probeer het opnieuw.</translation>
         <translation>Schakelt alle verbeteringen tijdelijk uit, wat nuttig is bij het testen.</translation>
     </message>
     <message>
-        <source>Test Unofficial Achievements</source>
-        <translation>Niet-officiële achievements testen</translation>
-    </message>
-    <message>
         <source>Texture Filtering</source>
         <translation>Textuurfiltering</translation>
     </message>
@@ -8885,10 +8865,6 @@ Wil je toch doorgaan met {0}?</translation>
     <message>
         <source>When enabled, DuckStation will assume all achievements are locked and not send any unlock notifications to the server.</source>
         <translation>Wanneer dit is ingeschakeld, gaat DuckStation ervan uit dat alle achievements vergrendeld zijn en worden er geen ontgrendelingsmeldingen naar de server gestuurd.</translation>
-    </message>
-    <message>
-        <source>When enabled, DuckStation will list achievements from unofficial sets. These achievements are not tracked by RetroAchievements.</source>
-        <translation>Wanneer dit is ingeschakeld, toont DuckStation achievements uit onofficiële sets. Deze achievements worden niet bijgehouden door RetroAchievements.</translation>
     </message>
     <message>
         <source>When enabled, each session will behave as if no achievements have been unlocked.</source>
@@ -9842,39 +9818,6 @@ Weet u zeker dat u wilt doorgaan?</translation>
 <context>
     <name>GameList</name>
     <message>
-        <source>Never</source>
-        <translation>Nooit</translation>
-    </message>
-    <message>
-        <source>Today</source>
-        <translation>Vandaag</translation>
-    </message>
-    <message numerus="yes">
-        <source>%n seconds</source>
-        <translation>
-            <numerusform>%n seconde</numerusform>
-            <numerusform>%n seconden</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <source>%n minutes</source>
-        <translation>
-            <numerusform>%n minuut</numerusform>
-            <numerusform>%n minuten</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <source>%n hours</source>
-        <translation>
-            <numerusform>%n uur</numerusform>
-            <numerusform>%n uur</numerusform>
-        </translation>
-    </message>
-    <message>
-        <source>Yesterday</source>
-        <translation>Gisteren</translation>
-    </message>
-    <message>
         <source>Disc</source>
         <comment>EntryType</comment>
         <translation>Schijf</translation>
@@ -9912,26 +9855,6 @@ Weet u zeker dat u wilt doorgaan?</translation>
         <translation>Onbekend</translation>
     </message>
     <message>
-        <source>{}h {}m</source>
-        <translation>{}u {}m</translation>
-    </message>
-    <message>
-        <source>{}h {}m {}s</source>
-        <translation>{}u {}m {}s</translation>
-    </message>
-    <message>
-        <source>{}m {}s</source>
-        <translation>{}m {}s</translation>
-    </message>
-    <message>
-        <source>{}s</source>
-        <translation>{}s</translation>
-    </message>
-    <message>
-        <source>None</source>
-        <translation>Geen</translation>
-    </message>
-    <message>
         <source>URL template must contain at least one of ${title}, ${savetitle}, ${filetitle}, or ${serial}.</source>
         <translation>De URL-sjabloon moet ten minste een van ${title}, ${savetitle}, ${filetitle} of ${serial} bevatten.</translation>
     </message>
@@ -9941,18 +9864,7 @@ Weet u zeker dat u wilt doorgaan?</translation>
     </message>
 </context>
 <context>
-    <name>GameListListView</name>
-    <message>
-        <source>Unknown</source>
-        <translation>Onbekend</translation>
-    </message>
-</context>
-<context>
     <name>GameListModel</name>
-    <message>
-        <source>Unknown</source>
-        <translation>Onbekend</translation>
-    </message>
     <message>
         <source>Serial</source>
         <translation>Serienummer</translation>
@@ -10119,8 +10031,8 @@ Recursief doorzoeken kost meer tijd, maar zal bestanden in subfolders vinden.</t
         <translation>Games met meerdere schijven samenvoegen</translation>
     </message>
     <message>
-        <source>Show Localized Icons</source>
-        <translation>Gelokaliseerde pictogrammen tonen</translation>
+        <source>Show Localized Titles</source>
+        <translation>Gelokaliseerde titels tonen</translation>
     </message>
     <message>
         <source>Show Game Icons</source>
@@ -11346,6 +11258,142 @@ Recursief doorzoeken kost meer tijd, maar zal bestanden in subfolders vinden.</t
     <message>
         <source>Offset applied to lightgun horizontal position.</source>
         <translation>Verschuiving toegepast op de horizontale positie van het lichtpistool.</translation>
+    </message>
+</context>
+<context>
+    <name>Host</name>
+    <message numerus="yes">
+        <source>%n seconds</source>
+        <translation>
+            <numerusform>%n seconde</numerusform>
+            <numerusform>%n seconden</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n minutes</source>
+        <translation>
+            <numerusform>%n minuut</numerusform>
+            <numerusform>%n minuten</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n hours</source>
+        <translation>
+            <numerusform>%n uur</numerusform>
+            <numerusform>%n uur</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Today</source>
+        <translation>Vandaag</translation>
+    </message>
+    <message>
+        <source>Yesterday</source>
+        <translation>Gisteren</translation>
+    </message>
+    <message>
+        <source>Never</source>
+        <translation>Nooit</translation>
+    </message>
+    <message>
+        <source>today</source>
+        <translation>vandaag</translation>
+    </message>
+    <message>
+        <source>yesterday</source>
+        <translation>gisteren</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n days ago</source>
+        <comment>Date difference</comment>
+        <translation>
+            <numerusform>%n dag geleden</numerusform>
+            <numerusform>%n dagen geleden</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>on {}</source>
+        <translation>op {}</translation>
+    </message>
+    <message>
+        <source>Now</source>
+        <translation>Nu</translation>
+    </message>
+    <message>
+        <source>now</source>
+        <translation>nu</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n seconds ago</source>
+        <comment>Time difference</comment>
+        <translation>
+            <numerusform>%n seconde geleden</numerusform>
+            <numerusform>%n seconden geleden</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n minutes ago</source>
+        <comment>Time difference</comment>
+        <translation>
+            <numerusform>%n minuut geleden</numerusform>
+            <numerusform>%n minuten geleden</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n hours ago</source>
+        <comment>Time difference</comment>
+        <translation>
+            <numerusform>%n uur geleden</numerusform>
+            <numerusform>%n uur geleden</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n weeks ago</source>
+        <comment>Time difference</comment>
+        <translation>
+            <numerusform>%n week geleden</numerusform>
+            <numerusform>%n weken geleden</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n months ago</source>
+        <comment>Time difference</comment>
+        <translation>
+            <numerusform>%n maand geleden</numerusform>
+            <numerusform>%n maanden geleden</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n years ago</source>
+        <comment>Time difference</comment>
+        <translation>
+            <numerusform>%n jaar geleden</numerusform>
+            <numerusform>%n jaren geleden</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>{} at {}</source>
+        <translation>{} om {}</translation>
+    </message>
+    <message>
+        <source>{}h {}m</source>
+        <translation>{}u {}m</translation>
+    </message>
+    <message>
+        <source>{}h {}m {}s</source>
+        <translation>{}u {}m {}s</translation>
+    </message>
+    <message>
+        <source>{}m {}s</source>
+        <translation>{}m {}s</translation>
+    </message>
+    <message>
+        <source>{}s</source>
+        <translation>{}s</translation>
+    </message>
+    <message>
+        <source>None</source>
+        <translation>Geen</translation>
     </message>
 </context>
 <context>
@@ -12667,10 +12715,6 @@ Shift-klik om meerdere bindingen in te stellen.</translation>
         <translation>Laad Staat</translation>
     </message>
     <message>
-        <source>Save State</source>
-        <translation>Sla Staat Op</translation>
-    </message>
-    <message>
         <source>S&amp;ettings</source>
         <translation>Inst&amp;ellingen</translation>
     </message>
@@ -12763,10 +12807,6 @@ Shift-klik om meerdere bindingen in te stellen.</translation>
         <translation>&amp;Controllers</translation>
     </message>
     <message>
-        <source>&amp;Post-Processing</source>
-        <translation>&amp;Nabewerking</translation>
-    </message>
-    <message>
         <source>View Third-Party Notices...</source>
         <translation>Meldingen van derden bekijken...</translation>
     </message>
@@ -12795,10 +12835,6 @@ Shift-klik om meerdere bindingen in te stellen.</translation>
         <translation>Big Picture</translation>
     </message>
     <message>
-        <source>Cover Downloader</source>
-        <translation>Coverdownloadprogramma</translation>
-    </message>
-    <message>
         <source>&amp;GitHub Repository...</source>
         <translation>&amp;GitHub-opslagplaats...</translation>
     </message>
@@ -12817,6 +12853,14 @@ Shift-klik om meerdere bindingen in te stellen.</translation>
     <message>
         <source>&amp;About DuckStation...</source>
         <translation>Over EendStation (&amp;A)...</translation>
+    </message>
+    <message>
+        <source>Ad&amp;vanced</source>
+        <translation>Gea&amp;vanceerd</translation>
+    </message>
+    <message>
+        <source>&amp;Debugging</source>
+        <translation>&amp;Foutopsporing</translation>
     </message>
     <message>
         <source>From File...</source>
@@ -12845,6 +12889,10 @@ Shift-klik om meerdere bindingen in te stellen.</translation>
     <message>
         <source>Dump VRAM to CPU Copies</source>
         <translation>Dump VRAM naar CPU kopien</translation>
+    </message>
+    <message>
+        <source>Enable &amp;Safe Mode</source>
+        <translation>&amp;Veilige modus inschakelen</translation>
     </message>
     <message>
         <source>Dump RAM...</source>
@@ -12911,12 +12959,32 @@ Shift-klik om meerdere bindingen in te stellen.</translation>
         <translation>Hiermee kunt u audio en/of video uit de inhoud opnemen.</translation>
     </message>
     <message>
+        <source>&amp;Refresh Grid Covers</source>
+        <translation>&amp;Rastercovers vernieuwen</translation>
+    </message>
+    <message>
         <source>Media Ca&amp;pture</source>
         <translation>Media &amp;vastleggen</translation>
     </message>
     <message>
         <source>Starts a new session using the selected file.</source>
         <translation>Start een nieuwe sessie met het geselecteerde bestand.</translation>
+    </message>
+    <message>
+        <source>Cha&amp;nge Disc</source>
+        <translation>Schijf &amp;wisselen</translation>
+    </message>
+    <message>
+        <source>&amp;Cheats</source>
+        <translation>&amp;Cheats</translation>
+    </message>
+    <message>
+        <source>Sa&amp;ve State</source>
+        <translation>Status o&amp;pslaan</translation>
+    </message>
+    <message>
+        <source>Media Capt&amp;ure</source>
+        <translation>Media-&amp;opname</translation>
     </message>
     <message>
         <source>Starts a new session from a physical disc.</source>
@@ -13019,6 +13087,10 @@ Shift-klik om meerdere bindingen in te stellen.</translation>
         <translation>Configureert opties voor de manier waarop de sessie-inhoud wordt weergegeven.</translation>
     </message>
     <message>
+        <source>Post-Processi&amp;ng</source>
+        <translation>&amp;Nabewerking</translation>
+    </message>
+    <message>
         <source>Configures post-processing effects applied after rendering the content.</source>
         <translation>Configureert nabewerkingseffecten die na het renderen van de inhoud worden toegepast.</translation>
     </message>
@@ -13107,16 +13179,52 @@ Shift-klik om meerdere bindingen in te stellen.</translation>
         <translation>Configureert opties voor het uiterlijk en gedrag van de applicatie.</translation>
     </message>
     <message>
-        <source>A&amp;dvanced</source>
-        <translation>Ge&amp;avanceerd</translation>
+        <source>Open Te&amp;xture Directory...</source>
+        <translation>Te&amp;xtuurmap openen...</translation>
+    </message>
+    <message>
+        <source>&amp;Reload Texture Replacements</source>
+        <translation>&amp;Textuurvervangingen opnieuw laden</translation>
+    </message>
+    <message>
+        <source>Capture &amp;GPU Frame</source>
+        <translation>&amp;GPU-frame vastleggen</translation>
+    </message>
+    <message>
+        <source>&amp;ISO Browser</source>
+        <translation>&amp;ISO-browser</translation>
+    </message>
+    <message>
+        <source>&amp;Free Camera</source>
+        <translation>&amp;Vrije camera</translation>
+    </message>
+    <message>
+        <source>Controller &amp;Test</source>
+        <translation>Controller &amp;testen</translation>
+    </message>
+    <message>
+        <source>Clear List Backgro&amp;und</source>
+        <translation>Lijstachtergrond &amp;wissen</translation>
+    </message>
+    <message>
+        <source>Refresh &amp;Achievement Database</source>
+        <translation>&amp;Prestatiedatabase vernieuwen</translation>
+    </message>
+    <message>
+        <source>&amp;Animate Game Icons</source>
+        <translation>&amp;Spelpictogrammen animeren</translation>
+    </message>
+    <message>
+        <source>Prefer Ac&amp;hievement Icons</source>
+        <translation>Voorkeur voor prestatiep&amp;ictogrammen</translation>
+    </message>
+    <message>
+        <source>Syst&amp;em Log</source>
+        <translation>Syste&amp;emlogboek</translation>
     </message>
     <message>
         <source>Configures advanced options for the application.</source>
         <translation>Configureert geavanceerde opties voor de applicatie.</translation>
-    </message>
-    <message>
-        <source>Debuggi&amp;ng</source>
-        <translation>Foutopsporin&amp;g</translation>
     </message>
     <message>
         <source>Configures internal options for the application.</source>
@@ -13151,10 +13259,6 @@ Shift-klik om meerdere bindingen in te stellen.</translation>
         <translation>Verwijdert de schijf uit het geëmuleerde systeem.</translation>
     </message>
     <message>
-        <source>Enable Safe Mode</source>
-        <translation>Veilige modus inschakelen</translation>
-    </message>
-    <message>
         <source>Takes a screenshot of the current content.</source>
         <translation>Maakt een schermafbeelding van de huidige inhoud.</translation>
     </message>
@@ -13175,24 +13279,12 @@ Shift-klik om meerdere bindingen in te stellen.</translation>
         <translation>Bepaalt of de werkbalk kan worden verplaatst.</translation>
     </message>
     <message>
-        <source>S&amp;mall Toolbar Icons</source>
-        <translation>K&amp;leine werkbalkpictogrammen</translation>
-    </message>
-    <message>
         <source>Controls whether the smaller toolbar icons are displayed.</source>
         <translation>Bepaalt of de kleinere werkbalkpictogrammen worden weergegeven.</translation>
     </message>
     <message>
-        <source>Toolbar L&amp;abels</source>
-        <translation>Werkbalkl&amp;abels</translation>
-    </message>
-    <message>
         <source>Controls whether labels are displayed alongside toolbar icons.</source>
         <translation>Bepaalt of labels naast de werkbalkpictogrammen worden weergegeven.</translation>
-    </message>
-    <message>
-        <source>Toolbar Labels &amp;Beside Icons</source>
-        <translation>Werkbalklabels &amp;naast pictogrammen</translation>
     </message>
     <message>
         <source>Controls whether labels are displayed next to or under toolbar icons.</source>
@@ -13231,6 +13323,10 @@ Shift-klik om meerdere bindingen in te stellen.</translation>
         <translation>Opent de geheugenkaarteditor.</translation>
     </message>
     <message>
+        <source>Show Grid Ca&amp;ptions</source>
+        <translation>Rasterbijschriften &amp;weergeven</translation>
+    </message>
+    <message>
         <source>Shows captions under the game cover in grid view.</source>
         <translation>Toont bijschriften onder de spelcover in rasterweergave.</translation>
     </message>
@@ -13251,12 +13347,12 @@ Shift-klik om meerdere bindingen in te stellen.</translation>
         <translation>Verkleint de pictogrammen of covers van spellen.</translation>
     </message>
     <message>
-        <source>Refresh Grid &amp;Covers</source>
-        <translation>Rastercovers ver&amp;nieuwen</translation>
-    </message>
-    <message>
         <source>Invalidates the cache of game covers, allowing new images to be discovered.</source>
         <translation>Maakt de cache van spelcovers ongeldig, zodat nieuwe afbeeldingen kunnen worden gevonden.</translation>
+    </message>
+    <message>
+        <source>&amp;Open Data Directory...</source>
+        <translation>&amp;Gegevensmap openen...</translation>
     </message>
     <message>
         <source>Opens the directory containing application data in your file browser.</source>
@@ -13273,6 +13369,14 @@ Shift-klik om meerdere bindingen in te stellen.</translation>
     <message>
         <source>Ends the current session without the option to save state.</source>
         <translation>Beëindigt de huidige sessie zonder de mogelijkheid om de status op te slaan.</translation>
+    </message>
+    <message>
+        <source>Start Bi&amp;g Picture Mode</source>
+        <translation>&amp;Big Picture-modus starten</translation>
+    </message>
+    <message>
+        <source>Cover &amp;Downloader</source>
+        <translation>Coverdown&amp;loader</translation>
     </message>
     <message>
         <source>Opens the cover downloader window.</source>
@@ -13307,24 +13411,12 @@ Shift-klik om meerdere bindingen in te stellen.</translation>
         <translation>Start of stopt het vastleggen van video en audio uit de inhoud.</translation>
     </message>
     <message>
-        <source>Open Texture Directory...</source>
-        <translation>Textuurmap openen...</translation>
-    </message>
-    <message>
         <source>Opens the directory used to store texture replacements.</source>
         <translation>Opent de map waarin textuurvervangingen worden opgeslagen.</translation>
     </message>
     <message>
-        <source>Reload Texture Replacements</source>
-        <translation>Textuurvervangingen opnieuw laden</translation>
-    </message>
-    <message>
         <source>Invalidates the cache of available replacement textures.</source>
         <translation>Maakt de cache van beschikbare textuurvervangingen ongeldig.</translation>
-    </message>
-    <message>
-        <source>Capture GPU Frame</source>
-        <translation>GPU-frame vastleggen</translation>
     </message>
     <message>
         <source>Saves the emulated GPU commands to a file that can be later replayed.</source>
@@ -13351,24 +13443,12 @@ Shift-klik om meerdere bindingen in te stellen.</translation>
         <translation>Naar bestand loggen</translation>
     </message>
     <message>
-        <source>ISO Browser</source>
-        <translation>ISO-browser</translation>
-    </message>
-    <message>
         <source>Opens the ISO browser window.</source>
         <translation>Opent het ISO-browservenster.</translation>
     </message>
     <message>
-        <source>Free Camera</source>
-        <translation>Vrije camera</translation>
-    </message>
-    <message>
         <source>Allows you to freely move the camera in supported games.</source>
         <translation>Hiermee kunt u de camera vrij bewegen in ondersteunde spellen.</translation>
-    </message>
-    <message>
-        <source>Controller Test</source>
-        <translation>Controller testen</translation>
     </message>
     <message>
         <source>Allows you to test emulated controller mappings.</source>
@@ -13391,10 +13471,6 @@ Shift-klik om meerdere bindingen in te stellen.</translation>
         <translation>Wijzigt de achtergrondafbeelding die in de spellenlijst/rasterweergave wordt getoond.</translation>
     </message>
     <message>
-        <source>Clea&amp;r List Background</source>
-        <translation>Achtergrond van lijst &amp;wissen</translation>
-    </message>
-    <message>
         <source>Removes the background image shown in the game list/grid.</source>
         <translation>Verwijdert de achtergrondafbeelding die in de spellenlijst/rasterweergave wordt getoond.</translation>
     </message>
@@ -13405,10 +13481,6 @@ Shift-klik om meerdere bindingen in te stellen.</translation>
     <message>
         <source>Refreshes the list of unlocked achievements.</source>
         <translation>Vernieuwt de lijst met ontgrendelde prestaties.</translation>
-    </message>
-    <message>
-        <source>Refresh Achievement Database</source>
-        <translation>Prestatiedatabase vernieuwen</translation>
     </message>
     <message>
         <source>Updates the database for achievements shown in the game list.</source>
@@ -13435,24 +13507,12 @@ Shift-klik om meerdere bindingen in te stellen.</translation>
         <translation>Opent het venster van de geheugenbewerker.</translation>
     </message>
     <message>
-        <source>Animate Game Icons</source>
-        <translation>Spelpictogrammen animeren</translation>
-    </message>
-    <message>
         <source>Animates icons in the list view when selected.</source>
         <translation>Animeert pictogrammen in de lijstweergave wanneer ze worden geselecteerd.</translation>
     </message>
     <message>
-        <source>Prefer Achievement Icons</source>
-        <translation>Voorkeur voor prestatiepictogrammen</translation>
-    </message>
-    <message>
         <source>Prioritizes the games badges used for RetroAchievements over memory card icons.</source>
         <translation>Geeft de spelbadges voor RetroAchievements voorrang boven geheugenkaartpictogrammen.</translation>
-    </message>
-    <message>
-        <source>System Log</source>
-        <translation>Systeemlogboek</translation>
     </message>
     <message>
         <source>Start &amp;Capture</source>
@@ -13499,6 +13559,26 @@ Shift-klik om meerdere bindingen in te stellen.</translation>
         <translation>CPU-d&amp;ebugger</translation>
     </message>
     <message>
+        <source>Res&amp;ume</source>
+        <translation>He&amp;rvatten</translation>
+    </message>
+    <message>
+        <source>&amp;Show Toolbar</source>
+        <translation>&amp;Werkbalk weergeven</translation>
+    </message>
+    <message>
+        <source>S&amp;mall Icons</source>
+        <translation>K&amp;leine pictogrammen</translation>
+    </message>
+    <message>
+        <source>Show &amp;Labels</source>
+        <translation>&amp;Labels weergeven</translation>
+    </message>
+    <message>
+        <source>Show Labels &amp;Beside Icons</source>
+        <translation>Labels &amp;naast pictogrammen</translation>
+    </message>
+    <message>
         <source>Opens the debugger for the emulated CPU.</source>
         <translation>Opent de debugger voor de geëmuleerde CPU.</translation>
     </message>
@@ -13519,16 +13599,8 @@ Shift-klik om meerdere bindingen in te stellen.</translation>
         <translation>Voegt meerdere schijven die bij dezelfde game horen samen tot één item in de gamelijst.</translation>
     </message>
     <message>
-        <source>Show G&amp;rid Captions</source>
-        <translation>&amp;Rasterbijschriften weergeven</translation>
-    </message>
-    <message>
         <source>Show Titles (Grid View)</source>
         <translation>Toon Titels (Roosterweergave)</translation>
-    </message>
-    <message>
-        <source>Open Data Directory...</source>
-        <translation>Open Data Folder...</translation>
     </message>
     <message>
         <source>Error</source>
@@ -13627,6 +13699,10 @@ De saves kunnen niet worden hersteld.</translation>
         <translation>Save-statebestand &apos;%1&apos; kon niet worden verwijderd.</translation>
     </message>
     <message>
+        <source>Save was created %1.</source>
+        <translation>Opslag is gemaakt %1.</translation>
+    </message>
+    <message>
         <source>Confirm Disc Change</source>
         <translation>Schijfwissel bevestigen</translation>
     </message>
@@ -13697,10 +13773,6 @@ Wilt u de save state verwijderen en de game toch opstarten?</translation>
     <message>
         <source>&lt;strong&gt;Resume Game&lt;/strong&gt;&lt;br&gt;Do you want to load this state, or start from a fresh boot?</source>
         <translation>&lt;strong&gt;Game hervatten&lt;/strong&gt;&lt;br&gt;Wilt u deze state laden of de game vers opstarten?</translation>
-    </message>
-    <message>
-        <source>Save was created on %1.</source>
-        <translation>Save gemaakt op %1.</translation>
     </message>
     <message>
         <source>Do you want to swap discs or boot the new image via system restart?</source>
@@ -13807,8 +13879,8 @@ Wilt u de save state verwijderen en de game toch opstarten?</translation>
         <translation>Kan geheugenkaart &apos;%1&apos; niet maken: %2</translation>
     </message>
     <message>
-        <source>RA: Logged in as %1 (%2, %3 casual). %4 unread messages.</source>
-        <translation>RA: ingelogd als %1 (%2, %3 casual). %4 ongelezen berichten.</translation>
+        <source>RA: Logged in as %1 (%2 points, %3 casual). %4 unread messages.</source>
+        <translation>RA: ingelogd als %1 (%2 punten, %3 casual). %4 ongelezen berichten.</translation>
     </message>
     <message>
         <source>Refresh Achievement Progress</source>
@@ -15760,6 +15832,10 @@ Fout: {1}</translation>
 <context>
     <name>PlayStationMouse</name>
     <message>
+        <source>Pointer</source>
+        <translation>Aanwijzer</translation>
+    </message>
+    <message>
         <source>Left Button</source>
         <translation>Linkerknop</translation>
     </message>
@@ -15778,13 +15854,6 @@ Fout: {1}</translation>
     <message>
         <source>Vertical Sensitivity</source>
         <translation>Verticale gevoeligheid</translation>
-    </message>
-</context>
-<context>
-    <name>PlaystationMouse</name>
-    <message>
-        <source>Pointer</source>
-        <translation>Aanwijzer</translation>
     </message>
 </context>
 <context>
@@ -16564,10 +16633,6 @@ Wilt u de snelkoppeling bijwerken zodat deze naar de huidige locatie verwijst?</
 <context>
     <name>SaveStateSelectorUI</name>
     <message>
-        <source>Saved at {0:%H:%M} on {0:%a} {0:%Y/%m/%d}.</source>
-        <translation>Opgeslagen om {0:%H:%M} op {0:%a} {0:%Y/%m/%d}.</translation>
-    </message>
-    <message>
         <source>No save state slots available.</source>
         <translation>Geen save-stateposities beschikbaar.</translation>
     </message>
@@ -16590,6 +16655,10 @@ Wilt u de snelkoppeling bijwerken zodat deze naar de huidige locatie verwijst?</
     <message>
         <source>{} ({})</source>
         <translation>{} ({})</translation>
+    </message>
+    <message>
+        <source>Saved {}</source>
+        <translation>{} opgeslagen</translation>
     </message>
     <message>
         <source>No save present in this slot.</source>
@@ -17166,12 +17235,12 @@ Wilt u deze map maken?</translation>
         <translation>Automatisch detecteren</translation>
     </message>
     <message>
-        <source>NTSC (60hz)</source>
+        <source>NTSC (60 Hz)</source>
         <comment>ForceVideoTiming</comment>
         <translation>NTSC (60 Hz)</translation>
     </message>
     <message>
-        <source>PAL (50hz)</source>
+        <source>PAL (50 Hz)</source>
         <comment>ForceVideoTiming</comment>
         <translation>PAL (50 Hz)</translation>
     </message>
@@ -18127,9 +18196,9 @@ Recursief scannen kost meer tijd, maar vindt ook bestanden in submappen.</transl
     </message>
     <message>
         <source>Logged in as %1
-Token generated at %2</source>
+Token generated %2</source>
         <translation>Ingelogd als %1
-Token gegenereerd op %2</translation>
+Token gegenereerd %2</translation>
     </message>
     <message>
         <source>Not Logged In.</source>
@@ -18556,8 +18625,8 @@ U moet op een geheugenkaart opslaan en de game resetten om alle effecten te wiss
 {}</translation>
     </message>
     <message>
-        <source>Loaded undo save state created at {}.</source>
-        <translation>Ongedaanmakingssavestate geladen, gemaakt op {}.</translation>
+        <source>Loaded undo save state created {}.</source>
+        <translation>Ongedaanmakingssavestate geladen, gemaakt {}.</translation>
     </message>
     <message>
         <source>capturing audio and video</source>

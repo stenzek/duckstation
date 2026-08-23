@@ -202,6 +202,10 @@ Do you want to enable hardcore mode?</source>
         <translation>הפעלת מצב הדרן</translation>
     </message>
     <message>
+        <source>Track Unofficial Achievements</source>
+        <translation>מעקב אחר הישגים לא רשמיים</translation>
+    </message>
+    <message>
         <source>Prefetch Badges</source>
         <translation>טעינה מראש של תגי הישגים</translation>
     </message>
@@ -252,6 +256,10 @@ Do you want to enable hardcore mode?</source>
     <message>
         <source>&quot;Challenge&quot; mode for achievements, including leaderboard tracking. Disables save state, cheats, and slowdown functions.</source>
         <translation>מצב &quot;אתגר&quot; להישגים, כולל מעקב אחר לוחות תוצאות. משבית מצבי שמירה, צ&apos;יטים ופונקציות האטה.</translation>
+    </message>
+    <message>
+        <source>When enabled, DuckStation will track unofficial achievements. Unlocks will be saved locally and not sent to RetroAchievements.</source>
+        <translation>כאשר אפשרות זו מופעלת, DuckStation יעקוב אחר הישגים לא רשמיים. פתיחות יישמרו מקומית ולא יישלחו אל RetroAchievements.</translation>
     </message>
     <message>
         <source>Checked</source>
@@ -379,9 +387,9 @@ Do you want to enable hardcore mode?</source>
     </message>
     <message>
         <source>Logged in as %1
-Token generated at %2</source>
+Token generated %2</source>
         <translation>מחובר בתור %1
-האסימון נוצר ב-%2</translation>
+האסימון נוצר %2</translation>
     </message>
     <message>
         <source>When enabled, each session will behave as if no achievements have been unlocked.</source>
@@ -390,10 +398,6 @@ Token generated at %2</source>
     <message>
         <source>When enabled, DuckStation will assume all achievements are locked and not send any unlock notifications to the server.</source>
         <translation>כאשר האפשרות מופעלת, DuckStation יניח שכל ההישגים נעולים ולא ישלח לשרת התראות על פתיחתם.</translation>
-    </message>
-    <message>
-        <source>When enabled, DuckStation will list achievements from unofficial sets. Please note that these achievements are not tracked by RetroAchievements, so they unlock every time.</source>
-        <translation>כאשר האפשרות מופעלת, DuckStation יציג הישגים מקבוצות לא רשמיות. שים לב שהישגים אלה אינם נמצאים במעקב של RetroAchievements, ולכן הם נפתחים בכל פעם.</translation>
     </message>
     <message numerus="yes">
         <source>%n seconds</source>
@@ -755,6 +759,10 @@ Unread messages: {}</source>
         <source>This subset has no achievements.</source>
         <translation>בתת-הקבוצה הזו אין הישגים.</translation>
     </message>
+    <message>
+        <source>You have unlocked {0} of {1} unofficial achievements, earning {2} of {3} possible points.</source>
+        <translation>פתחת {0} מתוך {1} הישגים לא רשמיים וצברת {2} מתוך {3} הנקודות האפשריות.</translation>
+    </message>
     <message numerus="yes">
         <source>%n achievements are not supported by DuckStation and cannot be unlocked.</source>
         <comment>Unsupported achievement count</comment>
@@ -762,30 +770,6 @@ Unread messages: {}</source>
             <numerusform>%n הישג אינו נתמך על ידי DuckStation ולא ניתן לפתוח אותו.</numerusform>
             <numerusform>%n הישגים אינם נתמכים על ידי DuckStation ולא ניתן לפתוח אותם.</numerusform>
         </translation>
-    </message>
-    <message>
-        <source>Game was beaten on {0}, and completed on {1}.</source>
-        <translation>המשחק נוצח ב-{0}, והושלם ב-{1}.</translation>
-    </message>
-    <message>
-        <source>Subset was beaten on {0}, and completed on {1}.</source>
-        <translation>תת-הקבוצה נוצחה ב-{0}, והושלמה ב-{1}.</translation>
-    </message>
-    <message>
-        <source>Game was beaten on {0}.</source>
-        <translation>המשחק נוצח ב-{0}.</translation>
-    </message>
-    <message>
-        <source>Subset was beaten on {0}.</source>
-        <translation>תת-הקבוצה נוצחה ב-{0}.</translation>
-    </message>
-    <message>
-        <source>Game was completed on {0}.</source>
-        <translation>המשחק הושלם ב-{0}.</translation>
-    </message>
-    <message>
-        <source>Subset was completed on {0}.</source>
-        <translation>תת-הקבוצה הושלמה ב-{0}.</translation>
     </message>
     <message>
         <source>Unknown</source>
@@ -840,6 +824,10 @@ Unread messages: {}</source>
         <translation>הצמדת הישג</translation>
     </message>
     <message>
+        <source>Reset Unofficial Unlocks</source>
+        <translation>איפוס פתיחות לא רשמיות</translation>
+    </message>
+    <message>
         <source>View Details</source>
         <translation>הצגת פרטים</translation>
     </message>
@@ -858,10 +846,6 @@ Unread messages: {}</source>
     <message>
         <source>Win Condition</source>
         <translation>תנאי ניצחון</translation>
-    </message>
-    <message>
-        <source>Unlocked: {} | {:.1f}% of players have this achievement</source>
-        <translation>נפתח: {} | {:.1f}% מהשחקנים השיגו הישג זה</translation>
     </message>
     <message>
         <source>{:.1f}% of players have this achievement</source>
@@ -900,68 +884,36 @@ Unread messages: {}</source>
         <translation>XXX נקודות</translation>
     </message>
     <message>
+        <source>Game was beaten {0}, and completed {1}.</source>
+        <translation>המשחק נוצח {0}, והושלם {1}.</translation>
+    </message>
+    <message>
+        <source>Subset was beaten {0}, and completed {1}.</source>
+        <translation>תת-הקבוצה נוצחה {0}, והושלמה {1}.</translation>
+    </message>
+    <message>
+        <source>Game was beaten {0}.</source>
+        <translation>המשחק נוצח {0}.</translation>
+    </message>
+    <message>
+        <source>Subset was beaten {0}.</source>
+        <translation>תת-הקבוצה נוצחה {0}.</translation>
+    </message>
+    <message>
+        <source>Game was completed {0}.</source>
+        <translation>המשחק הושלם {0}.</translation>
+    </message>
+    <message>
+        <source>Subset was completed {0}.</source>
+        <translation>תת-הקבוצה הושלמה {0}.</translation>
+    </message>
+    <message>
+        <source>Unlocked {}</source>
+        <translation>נפתח {}</translation>
+    </message>
+    <message>
         <source>Loading...</source>
         <translation>טוען...</translation>
-    </message>
-    <message>
-        <source>Just now</source>
-        <translation>זה עתה</translation>
-    </message>
-    <message numerus="yes">
-        <source>%n minutes ago</source>
-        <comment>Relative time</comment>
-        <translation>
-            <numerusform>לפני %n דקה</numerusform>
-            <numerusform>לפני %n דקות</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <source>%n hours ago</source>
-        <comment>Relative time</comment>
-        <translation>
-            <numerusform>לפני %n שעה</numerusform>
-            <numerusform>לפני %n שעות</numerusform>
-        </translation>
-    </message>
-    <message>
-        <source>Today</source>
-        <translation>היום</translation>
-    </message>
-    <message>
-        <source>Yesterday</source>
-        <translation>אתמול</translation>
-    </message>
-    <message numerus="yes">
-        <source>%n days ago</source>
-        <comment>Relative time</comment>
-        <translation>
-            <numerusform>לפני %n יום</numerusform>
-            <numerusform>לפני %n ימים</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <source>%n weeks ago</source>
-        <comment>Relative time</comment>
-        <translation>
-            <numerusform>לפני %n שבוע</numerusform>
-            <numerusform>לפני %n שבועות</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <source>%n months ago</source>
-        <comment>Relative time</comment>
-        <translation>
-            <numerusform>לפני %n חודש</numerusform>
-            <numerusform>לפני %n חודשים</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <source>%n years ago</source>
-        <comment>Relative time</comment>
-        <translation>
-            <numerusform>לפני %n שנה</numerusform>
-            <numerusform>לפני %n שנים</numerusform>
-        </translation>
     </message>
     <message>
         <source>Leaderboard download failed</source>
@@ -2791,10 +2743,6 @@ Trying to use this cheat will not work as expected. Do you want to continue?</so
     <message>
         <source>Execution Mode:</source>
         <translation>מצב ביצוע</translation>
-    </message>
-    <message>
-        <source>Preload Image To RAM</source>
-        <translation>RAM טען מראש תמונה ל</translation>
     </message>
     <message>
         <source>Region</source>
@@ -5387,6 +5335,10 @@ ${serial}: המספר הסידורי של המשחק.</translation>
         <translation>כל הזמנים: {}</translation>
     </message>
     <message>
+        <source>All unofficial achievement progress for the current game will be removed. This cannot be undone.</source>
+        <translation>כל ההתקדמות בהישגים לא רשמיים עבור המשחק הנוכחי תוסר. לא ניתן לבטל פעולה זו.</translation>
+    </message>
+    <message>
         <source>Allow Booting Without SBI File</source>
         <translation>אפשר הפעלה ללא קובץ SBI</translation>
     </message>
@@ -5733,6 +5685,10 @@ ${serial}: המספר הסידורי של המשחק.</translation>
     <message>
         <source>Displays popup messages when starting, submitting, or failing a leaderboard challenge.</source>
         <translation>מציג הודעות קופצות בעת התחלה, שליחה או כישלון של אתגר לוח תוצאות.</translation>
+    </message>
+    <message>
+        <source>Do you want to continue from the automatic save created {}?</source>
+        <translation>האם להמשיך מהשמירה האוטומטית שנוצרה {}?</translation>
     </message>
     <message>
         <source>Double-Click Toggles Fullscreen</source>
@@ -6119,10 +6075,6 @@ Error was:</source>
     <message>
         <source>Login</source>
         <translation>כניסה</translation>
-    </message>
-    <message>
-        <source>Login token generated on {}</source>
-        <translation>אסימון הכניסה נוצר ב-{}</translation>
     </message>
     <message>
         <source>Logout</source>
@@ -6781,10 +6733,6 @@ You cannot undo this action.</source>
         <translation>ערבול גוונים</translation>
     </message>
     <message>
-        <source>Do you want to continue from the automatic save created at {}?</source>
-        <translation>האם להמשיך מהשמירה האוטומטית שנוצרה ב־{}?</translation>
-    </message>
-    <message>
         <source>Downloads all locked achievement badges while starting the game. This will reduce delays in the images being shown when unlocking achievements.</source>
         <translation>מוריד את כל תגי ההישגים הנעולים בעת הפעלת המשחק. פעולה זו תפחית עיכובים בהצגת התמונות בעת פתיחת הישגים.</translation>
     </message>
@@ -7221,6 +7169,10 @@ Please check your username and password, and try again.</source>
 בדוק את שם המשתמש והסיסמה שלך ונסה שוב.</translation>
     </message>
     <message>
+        <source>Login token generated {}</source>
+        <translation>אסימון הכניסה נוצר {}</translation>
+    </message>
+    <message>
         <source>Macro {}</source>
         <translation>מאקרו {}</translation>
     </message>
@@ -7461,6 +7413,18 @@ Please check your username and password, and try again.</source>
         <translation>החזר לברירת-מחדל</translation>
     </message>
     <message>
+        <source>Reset Unlock</source>
+        <translation>איפוס פתיחה</translation>
+    </message>
+    <message>
+        <source>Reset Unofficial Achievement</source>
+        <translation>איפוס הישג לא רשמי</translation>
+    </message>
+    <message>
+        <source>Reset Unofficial Achievement Unlocks</source>
+        <translation>איפוס פתיחות של הישגים לא רשמיים</translation>
+    </message>
+    <message>
         <source>Resets all settings to the defaults.</source>
         <translation>מאפס את כל ההגדרות לברירות המחדל.</translation>
     </message>
@@ -7665,6 +7629,10 @@ Please check your username and password, and try again.</source>
         <translation>מסנכרן את הצגת הפריימים של הקונסולה למארח. משתמשי GSync/FreeSync צריכים להפעיל במקום זאת תזמון פריימים מיטבי.</translation>
     </message>
     <message>
+        <source>The unlock state for &apos;{}&apos; will be removed. This cannot be undone.</source>
+        <translation>מצב הפתיחה של &apos;{}&apos; יוסר. לא ניתן לבטל פעולה זו.</translation>
+    </message>
+    <message>
         <source>Theme</source>
         <translation>נושא</translation>
     </message>
@@ -7693,6 +7661,10 @@ Please check your username and password, and try again.</source>
         <translation>רצועה</translation>
     </message>
     <message>
+        <source>Track Unofficial Achievements</source>
+        <translation>מעקב אחר הישגים לא רשמיים</translation>
+    </message>
+    <message>
         <source>Track hash copied to clipboard.</source>
         <translation>גיבוב הרצועה הועתק ללוח.</translation>
     </message>
@@ -7703,6 +7675,14 @@ Please check your username and password, and try again.</source>
     <message>
         <source>Trigger</source>
         <translation>הדק</translation>
+    </message>
+    <message>
+        <source>Unofficial achievement unlock reset.</source>
+        <translation>פתיחת הישג לא רשמי אופסה.</translation>
+    </message>
+    <message>
+        <source>Unofficial achievement unlocks reset.</source>
+        <translation>פתיחות של הישגים לא רשמיים אופסו.</translation>
     </message>
     <message>
         <source>Use OSD Scale</source>
@@ -7747,6 +7727,10 @@ Please check your username and password, and try again.</source>
     <message>
         <source>Uses game-specific configuration for input sources. If disabled, the global configuration will be used.</source>
         <translation>משתמש בתצורה ספציפית למשחק עבור מקורות קלט. אם מושבת, ייעשה שימוש בתצורה הגלובלית.</translation>
+    </message>
+    <message>
+        <source>When enabled, DuckStation will track unofficial achievements. Unlocks will be saved locally and not sent to RetroAchievements.</source>
+        <translation>כאשר אפשרות זו מופעלת, DuckStation יעקוב אחר הישגים לא רשמיים. פתיחות יישמרו מקומית ולא יישלחו אל RetroAchievements.</translation>
     </message>
     <message>
         <source>When enabled, the legacy global save state slots will be available. These slots are independent of the current game.</source>
@@ -8621,10 +8605,6 @@ Please check your username and password, and try again.</source>
         <translation>משבית זמנית את כל השיפורים, שימושי לצורכי בדיקה.</translation>
     </message>
     <message>
-        <source>Test Unofficial Achievements</source>
-        <translation>בדיקת הישגים לא רשמיים</translation>
-    </message>
-    <message>
         <source>Texture Filtering</source>
         <translation>סינון טקסטורות</translation>
     </message>
@@ -8883,10 +8863,6 @@ Do you want to {0} anyway?</source>
     <message>
         <source>When enabled, DuckStation will assume all achievements are locked and not send any unlock notifications to the server.</source>
         <translation>כאשר האפשרות מופעלת, DuckStation יניח שכל ההישגים נעולים ולא ישלח לשרת התראות על פתיחתם.</translation>
-    </message>
-    <message>
-        <source>When enabled, DuckStation will list achievements from unofficial sets. These achievements are not tracked by RetroAchievements.</source>
-        <translation>כאשר האפשרות מופעלת, DuckStation יציג הישגים מקבוצות לא רשמיות. הישגים אלה אינם נמצאים במעקב של RetroAchievements.</translation>
     </message>
     <message>
         <source>When enabled, each session will behave as if no achievements have been unlocked.</source>
@@ -9840,39 +9816,6 @@ Are you sure you want to continue?</source>
 <context>
     <name>GameList</name>
     <message>
-        <source>Never</source>
-        <translation>לעולם לא</translation>
-    </message>
-    <message>
-        <source>Today</source>
-        <translation>היום</translation>
-    </message>
-    <message numerus="yes">
-        <source>%n seconds</source>
-        <translation>
-            <numerusform>%n שנייה</numerusform>
-            <numerusform>%n שניות</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <source>%n minutes</source>
-        <translation>
-            <numerusform>%n דקה</numerusform>
-            <numerusform>%n דקות</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <source>%n hours</source>
-        <translation>
-            <numerusform>%n שעה</numerusform>
-            <numerusform>%n שעות</numerusform>
-        </translation>
-    </message>
-    <message>
-        <source>Yesterday</source>
-        <translation>אתמול</translation>
-    </message>
-    <message>
         <source>Disc</source>
         <comment>EntryType</comment>
         <translation>תקליטור</translation>
@@ -9910,26 +9853,6 @@ Are you sure you want to continue?</source>
         <translation>לא ידוע</translation>
     </message>
     <message>
-        <source>{}h {}m</source>
-        <translation>{} שעות {} דקות</translation>
-    </message>
-    <message>
-        <source>{}h {}m {}s</source>
-        <translation>{} שעות {} דקות {} שניות</translation>
-    </message>
-    <message>
-        <source>{}m {}s</source>
-        <translation>{} דקות {} שניות</translation>
-    </message>
-    <message>
-        <source>{}s</source>
-        <translation>{} שניות</translation>
-    </message>
-    <message>
-        <source>None</source>
-        <translation>ללא</translation>
-    </message>
-    <message>
         <source>URL template must contain at least one of ${title}, ${savetitle}, ${filetitle}, or ${serial}.</source>
         <translation>תבנית כתובת ה־URL חייבת להכיל לפחות אחד מהמשתנים ${title}, ${savetitle}, ${filetitle} או ${serial}.</translation>
     </message>
@@ -9939,18 +9862,7 @@ Are you sure you want to continue?</source>
     </message>
 </context>
 <context>
-    <name>GameListListView</name>
-    <message>
-        <source>Unknown</source>
-        <translation>לא ידוע</translation>
-    </message>
-</context>
-<context>
     <name>GameListModel</name>
-    <message>
-        <source>Unknown</source>
-        <translation>לא ידוע</translation>
-    </message>
     <message>
         <source>Serial</source>
         <translation>מספר סידורי</translation>
@@ -10117,8 +10029,8 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>מיזוג משחקים מרובי־תקליטורים</translation>
     </message>
     <message>
-        <source>Show Localized Icons</source>
-        <translation>הצגת סמלים מתורגמים</translation>
+        <source>Show Localized Titles</source>
+        <translation>הצגת כותרות מתורגמות</translation>
     </message>
     <message>
         <source>Show Game Icons</source>
@@ -11344,6 +11256,142 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <source>Offset applied to lightgun horizontal position.</source>
         <translation>היסט המוחל על המיקום האופקי של אקדח האור.</translation>
+    </message>
+</context>
+<context>
+    <name>Host</name>
+    <message numerus="yes">
+        <source>%n seconds</source>
+        <translation>
+            <numerusform>%n שנייה</numerusform>
+            <numerusform>%n שניות</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n minutes</source>
+        <translation>
+            <numerusform>%n דקה</numerusform>
+            <numerusform>%n דקות</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n hours</source>
+        <translation>
+            <numerusform>%n שעה</numerusform>
+            <numerusform>%n שעות</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Today</source>
+        <translation>היום</translation>
+    </message>
+    <message>
+        <source>Yesterday</source>
+        <translation>אתמול</translation>
+    </message>
+    <message>
+        <source>Never</source>
+        <translation>אף פעם</translation>
+    </message>
+    <message>
+        <source>today</source>
+        <translation>היום</translation>
+    </message>
+    <message>
+        <source>yesterday</source>
+        <translation>אתמול</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n days ago</source>
+        <comment>Date difference</comment>
+        <translation>
+            <numerusform>לפני %n יום</numerusform>
+            <numerusform>לפני %n ימים</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>on {}</source>
+        <translation>ב-{}</translation>
+    </message>
+    <message>
+        <source>Now</source>
+        <translation>כעת</translation>
+    </message>
+    <message>
+        <source>now</source>
+        <translation>כעת</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n seconds ago</source>
+        <comment>Time difference</comment>
+        <translation>
+            <numerusform>לפני %n שנייה</numerusform>
+            <numerusform>לפני %n שניות</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n minutes ago</source>
+        <comment>Time difference</comment>
+        <translation>
+            <numerusform>לפני %n דקה</numerusform>
+            <numerusform>לפני %n דקות</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n hours ago</source>
+        <comment>Time difference</comment>
+        <translation>
+            <numerusform>לפני %n שעה</numerusform>
+            <numerusform>לפני %n שעות</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n weeks ago</source>
+        <comment>Time difference</comment>
+        <translation>
+            <numerusform>לפני %n שבוע</numerusform>
+            <numerusform>לפני %n שבועות</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n months ago</source>
+        <comment>Time difference</comment>
+        <translation>
+            <numerusform>לפני %n חודש</numerusform>
+            <numerusform>לפני %n חודשים</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n years ago</source>
+        <comment>Time difference</comment>
+        <translation>
+            <numerusform>לפני %n שנה</numerusform>
+            <numerusform>לפני %n שנים</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>{} at {}</source>
+        <translation>{} ב-{}</translation>
+    </message>
+    <message>
+        <source>{}h {}m</source>
+        <translation>{} שעות {} דקות</translation>
+    </message>
+    <message>
+        <source>{}h {}m {}s</source>
+        <translation>{} שעות {} דקות {} שניות</translation>
+    </message>
+    <message>
+        <source>{}m {}s</source>
+        <translation>{} דקות {} שניות</translation>
+    </message>
+    <message>
+        <source>{}s</source>
+        <translation>{} שניות</translation>
+    </message>
+    <message>
+        <source>None</source>
+        <translation>ללא</translation>
     </message>
 </context>
 <context>
@@ -12665,10 +12713,6 @@ Shift-לחץ כדי להגדיר קישורים מרובים.</translation>
         <translation>טען מצב משחק</translation>
     </message>
     <message>
-        <source>Save State</source>
-        <translation>שמור מצב משחק</translation>
-    </message>
-    <message>
         <source>S&amp;ettings</source>
         <translation>הגדרות</translation>
     </message>
@@ -12761,10 +12805,6 @@ Shift-לחץ כדי להגדיר קישורים מרובים.</translation>
         <translation>&amp;בקרים</translation>
     </message>
     <message>
-        <source>&amp;Post-Processing</source>
-        <translation>&amp;עיבוד לאחרי</translation>
-    </message>
-    <message>
         <source>View Third-Party Notices...</source>
         <translation>הצגת הודעות של צד שלישי...</translation>
     </message>
@@ -12809,12 +12849,32 @@ Shift-לחץ כדי להגדיר קישורים מרובים.</translation>
         <translation>מאפשר להקליט שמע ו/או וידאו מהתוכן.</translation>
     </message>
     <message>
+        <source>&amp;Refresh Grid Covers</source>
+        <translation>&amp;רענון עטיפות הרשת</translation>
+    </message>
+    <message>
         <source>Media Ca&amp;pture</source>
         <translation>לכידת &amp;מדיה</translation>
     </message>
     <message>
         <source>Starts a new session using the selected file.</source>
         <translation>מתחיל הפעלה חדשה באמצעות הקובץ שנבחר.</translation>
+    </message>
+    <message>
+        <source>Cha&amp;nge Disc</source>
+        <translation>ה&amp;חלפת תקליטור</translation>
+    </message>
+    <message>
+        <source>&amp;Cheats</source>
+        <translation>&amp;צ&apos;יטים</translation>
+    </message>
+    <message>
+        <source>Sa&amp;ve State</source>
+        <translation>שמירת מ&amp;צב</translation>
+    </message>
+    <message>
+        <source>Media Capt&amp;ure</source>
+        <translation>לכידת &amp;מדיה</translation>
     </message>
     <message>
         <source>Starts a new session from a physical disc.</source>
@@ -12917,6 +12977,10 @@ Shift-לחץ כדי להגדיר קישורים מרובים.</translation>
         <translation>מגדיר אפשרויות הקשורות לאופן הצגת תוכן ההפעלה.</translation>
     </message>
     <message>
+        <source>Post-Processi&amp;ng</source>
+        <translation>עיבוד לאח&amp;ר מכן</translation>
+    </message>
+    <message>
         <source>Configures post-processing effects applied after rendering the content.</source>
         <translation>מגדיר אפקטים של עיבוד לאחרי המוחלים לאחר רינדור התוכן.</translation>
     </message>
@@ -13005,16 +13069,52 @@ Shift-לחץ כדי להגדיר קישורים מרובים.</translation>
         <translation>מגדיר אפשרויות הקשורות למראה ולהתנהגות של היישום.</translation>
     </message>
     <message>
-        <source>A&amp;dvanced</source>
-        <translation>&amp;מתקדם</translation>
+        <source>Open Te&amp;xture Directory...</source>
+        <translation>פתיחת תיקיית טקסטו&amp;רות...</translation>
+    </message>
+    <message>
+        <source>&amp;Reload Texture Replacements</source>
+        <translation>&amp;טעינה מחדש של החלפות טקסטורות</translation>
+    </message>
+    <message>
+        <source>Capture &amp;GPU Frame</source>
+        <translation>לכידת פריים &amp;GPU</translation>
+    </message>
+    <message>
+        <source>&amp;ISO Browser</source>
+        <translation>&amp;דפדפן ISO</translation>
+    </message>
+    <message>
+        <source>&amp;Free Camera</source>
+        <translation>&amp;מצלמה חופשית</translation>
+    </message>
+    <message>
+        <source>Controller &amp;Test</source>
+        <translation>בדיקת &amp;בקר</translation>
+    </message>
+    <message>
+        <source>Clear List Backgro&amp;und</source>
+        <translation>ניקוי רקע הרשי&amp;מה</translation>
+    </message>
+    <message>
+        <source>Refresh &amp;Achievement Database</source>
+        <translation>רענון &amp;מסד נתוני ההישגים</translation>
+    </message>
+    <message>
+        <source>&amp;Animate Game Icons</source>
+        <translation>&amp;הנפשת סמלי משחקים</translation>
+    </message>
+    <message>
+        <source>Prefer Ac&amp;hievement Icons</source>
+        <translation>העדפת &amp;סמלי הישגים</translation>
+    </message>
+    <message>
+        <source>Syst&amp;em Log</source>
+        <translation>רישום מערכ&amp;ת</translation>
     </message>
     <message>
         <source>Configures advanced options for the application.</source>
         <translation>מגדיר אפשרויות מתקדמות ליישום.</translation>
-    </message>
-    <message>
-        <source>Debuggi&amp;ng</source>
-        <translation>&amp;ניפוי באגים</translation>
     </message>
     <message>
         <source>Configures internal options for the application.</source>
@@ -13049,16 +13149,20 @@ Shift-לחץ כדי להגדיר קישורים מרובים.</translation>
         <translation>מסיר את הדיסק מהמערכת המדומה.</translation>
     </message>
     <message>
-        <source>Enable Safe Mode</source>
-        <translation>הפעלת מצב בטוח</translation>
-    </message>
-    <message>
         <source>Takes a screenshot of the current content.</source>
         <translation>מצלם את התוכן הנוכחי.</translation>
     </message>
     <message>
         <source>Configures options related to the emulated memory cards.</source>
         <translation>מגדיר אפשרויות הקשורות לכרטיסי הזיכרון המדומים.</translation>
+    </message>
+    <message>
+        <source>Res&amp;ume</source>
+        <translation>ה&amp;משך</translation>
+    </message>
+    <message>
+        <source>&amp;Show Toolbar</source>
+        <translation>&amp;הצגת סרגל הכלים</translation>
     </message>
     <message>
         <source>Controls whether the toolbar is visible.</source>
@@ -13073,24 +13177,12 @@ Shift-לחץ כדי להגדיר קישורים מרובים.</translation>
         <translation>שולט אם ניתן להזיז את סרגל הכלים.</translation>
     </message>
     <message>
-        <source>S&amp;mall Toolbar Icons</source>
-        <translation>סמלי סרגל כלים &amp;קטנים</translation>
-    </message>
-    <message>
         <source>Controls whether the smaller toolbar icons are displayed.</source>
         <translation>שולט אם סמלי סרגל הכלים הקטנים מוצגים.</translation>
     </message>
     <message>
-        <source>Toolbar L&amp;abels</source>
-        <translation>תוויות סרגל &amp;הכלים</translation>
-    </message>
-    <message>
         <source>Controls whether labels are displayed alongside toolbar icons.</source>
         <translation>שולט אם תוויות מוצגות לצד סמלי סרגל הכלים.</translation>
-    </message>
-    <message>
-        <source>Toolbar Labels &amp;Beside Icons</source>
-        <translation>תוויות סרגל הכלים &amp;לצד סמלים</translation>
     </message>
     <message>
         <source>Controls whether labels are displayed next to or under toolbar icons.</source>
@@ -13133,6 +13225,10 @@ Shift-לחץ כדי להגדיר קישורים מרובים.</translation>
         <translation>פותח את מנפה הבאגים עבור המעבד המדומה.</translation>
     </message>
     <message>
+        <source>Show Grid Ca&amp;ptions</source>
+        <translation>הצגת כיתובי רש&amp;ת</translation>
+    </message>
+    <message>
         <source>Shows captions under the game cover in grid view.</source>
         <translation>מציג כיתובים מתחת לתמונת המשחק בתצוגת רשת.</translation>
     </message>
@@ -13153,12 +13249,12 @@ Shift-לחץ כדי להגדיר קישורים מרובים.</translation>
         <translation>מקטין את הגודל של סמלי המשחקים או תמונות העטיפה.</translation>
     </message>
     <message>
-        <source>Refresh Grid &amp;Covers</source>
-        <translation>רענון רשת ותמונות &amp;עטיפה</translation>
-    </message>
-    <message>
         <source>Invalidates the cache of game covers, allowing new images to be discovered.</source>
         <translation>מבטל את תוקף מטמון תמונות העטיפה של המשחקים, ומאפשר לגלות תמונות חדשות.</translation>
+    </message>
+    <message>
+        <source>&amp;Open Data Directory...</source>
+        <translation>&amp;פתיחת תיקיית הנתונים...</translation>
     </message>
     <message>
         <source>Opens the directory containing application data in your file browser.</source>
@@ -13175,6 +13271,14 @@ Shift-לחץ כדי להגדיר קישורים מרובים.</translation>
     <message>
         <source>Ends the current session without the option to save state.</source>
         <translation>מסיים את ההפעלה הנוכחית ללא אפשרות לשמור מצב.</translation>
+    </message>
+    <message>
+        <source>Start Bi&amp;g Picture Mode</source>
+        <translation>הפעלת מצב תמונה &amp;גדולה</translation>
+    </message>
+    <message>
+        <source>Cover &amp;Downloader</source>
+        <translation>&amp;הורדת תמונות עטיפה</translation>
     </message>
     <message>
         <source>Opens the cover downloader window.</source>
@@ -13209,24 +13313,12 @@ Shift-לחץ כדי להגדיר קישורים מרובים.</translation>
         <translation>מתחיל או מפסיק לכידת וידאו ושמע מהתוכן.</translation>
     </message>
     <message>
-        <source>Open Texture Directory...</source>
-        <translation>פתיחת תיקיית טקסטורות...</translation>
-    </message>
-    <message>
         <source>Opens the directory used to store texture replacements.</source>
         <translation>פותח את הספרייה המשמשת לאחסון החלפות טקסטורות.</translation>
     </message>
     <message>
-        <source>Reload Texture Replacements</source>
-        <translation>טעינה מחדש של החלפות טקסטורות</translation>
-    </message>
-    <message>
         <source>Invalidates the cache of available replacement textures.</source>
         <translation>מבטל את תוקף מטמון הטקסטורות החלופיות הזמינות.</translation>
-    </message>
-    <message>
-        <source>Capture GPU Frame</source>
-        <translation>לכידת פריים GPU</translation>
     </message>
     <message>
         <source>Saves the emulated GPU commands to a file that can be later replayed.</source>
@@ -13253,24 +13345,12 @@ Shift-לחץ כדי להגדיר קישורים מרובים.</translation>
         <translation>רשום לקובץ</translation>
     </message>
     <message>
-        <source>ISO Browser</source>
-        <translation>דפדפן ISO</translation>
-    </message>
-    <message>
         <source>Opens the ISO browser window.</source>
         <translation>פותח את חלון דפדפן ה-ISO.</translation>
     </message>
     <message>
-        <source>Free Camera</source>
-        <translation>מצלמה חופשית</translation>
-    </message>
-    <message>
         <source>Allows you to freely move the camera in supported games.</source>
         <translation>מאפשר לנוע בחופשיות עם המצלמה במשחקים נתמכים.</translation>
-    </message>
-    <message>
-        <source>Controller Test</source>
-        <translation>בדיקת בקר</translation>
     </message>
     <message>
         <source>Allows you to test emulated controller mappings.</source>
@@ -13293,10 +13373,6 @@ Shift-לחץ כדי להגדיר קישורים מרובים.</translation>
         <translation>משנה את תמונת הרקע המוצגת ברשימת או ברשת המשחקים.</translation>
     </message>
     <message>
-        <source>Clea&amp;r List Background</source>
-        <translation>ניקוי &amp;רקע הרשימה</translation>
-    </message>
-    <message>
         <source>Removes the background image shown in the game list/grid.</source>
         <translation>מסיר את תמונת הרקע המוצגת ברשימת או ברשת המשחקים.</translation>
     </message>
@@ -13307,10 +13383,6 @@ Shift-לחץ כדי להגדיר קישורים מרובים.</translation>
     <message>
         <source>Refreshes the list of unlocked achievements.</source>
         <translation>מרענן את רשימת ההישגים שנפתחו.</translation>
-    </message>
-    <message>
-        <source>Refresh Achievement Database</source>
-        <translation>רענון מסד נתוני ההישגים</translation>
     </message>
     <message>
         <source>Updates the database for achievements shown in the game list.</source>
@@ -13337,24 +13409,12 @@ Shift-לחץ כדי להגדיר קישורים מרובים.</translation>
         <translation>פותח את חלון עורך הזיכרון.</translation>
     </message>
     <message>
-        <source>Animate Game Icons</source>
-        <translation>הנפשת סמלי משחקים</translation>
-    </message>
-    <message>
         <source>Animates icons in the list view when selected.</source>
         <translation>מנפיש סמלים בתצוגת הרשימה בעת בחירתם.</translation>
     </message>
     <message>
-        <source>Prefer Achievement Icons</source>
-        <translation>העדפת סמלי הישגים</translation>
-    </message>
-    <message>
         <source>Prioritizes the games badges used for RetroAchievements over memory card icons.</source>
         <translation>מעדיף את תגי המשחקים המשמשים עבור RetroAchievements על פני סמלי כרטיסי הזיכרון.</translation>
-    </message>
-    <message>
-        <source>System Log</source>
-        <translation>רישום מערכת</translation>
     </message>
     <message>
         <source>Start &amp;Capture</source>
@@ -13401,6 +13461,18 @@ Shift-לחץ כדי להגדיר קישורים מרובים.</translation>
         <translation>מנפה באגים של &amp;מעבד</translation>
     </message>
     <message>
+        <source>S&amp;mall Icons</source>
+        <translation>סמלים &amp;קטנים</translation>
+    </message>
+    <message>
+        <source>Show &amp;Labels</source>
+        <translation>הצגת &amp;תוויות</translation>
+    </message>
+    <message>
+        <source>Show Labels &amp;Beside Icons</source>
+        <translation>הצגת תוויות &amp;לצד סמלים</translation>
+    </message>
+    <message>
         <source>Game &amp;Grid</source>
         <translation>רשת &amp;משחקים</translation>
     </message>
@@ -13417,16 +13489,8 @@ Shift-לחץ כדי להגדיר קישורים מרובים.</translation>
         <translation>ממזג דיסקים מרובים השייכים לאותו משחק לפריט יחיד ברשימת המשחקים.</translation>
     </message>
     <message>
-        <source>Show G&amp;rid Captions</source>
-        <translation>הצגת כיתובי &amp;רשת</translation>
-    </message>
-    <message>
         <source>Show Titles (Grid View)</source>
         <translation>הצגת כותרות (תצוגת רשת)</translation>
-    </message>
-    <message>
-        <source>Open Data Directory...</source>
-        <translation>פתיחת תיקיית הנתונים...</translation>
     </message>
     <message>
         <source>Start Big Picture Mode</source>
@@ -13441,10 +13505,6 @@ Shift-לחץ כדי להגדיר קישורים מרובים.</translation>
         <translation>תמונה גדולה</translation>
     </message>
     <message>
-        <source>Cover Downloader</source>
-        <translation>הורדת תמונות עטיפה</translation>
-    </message>
-    <message>
         <source>&amp;GitHub Repository...</source>
         <translation>&amp;מאגר GitHub...</translation>
     </message>
@@ -13455,6 +13515,14 @@ Shift-לחץ כדי להגדיר קישורים מרובים.</translation>
     <message>
         <source>Check for &amp;Updates...</source>
         <translation>&amp;בדוק עדכונים</translation>
+    </message>
+    <message>
+        <source>Ad&amp;vanced</source>
+        <translation>מתק&amp;דם</translation>
+    </message>
+    <message>
+        <source>&amp;Debugging</source>
+        <translation>&amp;ניפוי באגים</translation>
     </message>
     <message>
         <source>From File...</source>
@@ -13483,6 +13551,10 @@ Shift-לחץ כדי להגדיר קישורים מרובים.</translation>
     <message>
         <source>Dump VRAM to CPU Copies</source>
         <translation>השלכת עותקי VRAM ל־CPU</translation>
+    </message>
+    <message>
+        <source>Enable &amp;Safe Mode</source>
+        <translation>הפעלת &amp;מצב בטוח</translation>
     </message>
     <message>
         <source>Dump RAM...</source>
@@ -13625,6 +13697,10 @@ The saves will not be recoverable.</source>
         <translation>מחיקת קובץ מצב השמירה &apos;%1&apos; נכשלה.</translation>
     </message>
     <message>
+        <source>Save was created %1.</source>
+        <translation>השמירה נוצרה %1.</translation>
+    </message>
+    <message>
         <source>Confirm Disc Change</source>
         <translation>אישור החלפת דיסק</translation>
     </message>
@@ -13695,10 +13771,6 @@ Do you want to delete the save state and boot the game anyway?</source>
     <message>
         <source>&lt;strong&gt;Resume Game&lt;/strong&gt;&lt;br&gt;Do you want to load this state, or start from a fresh boot?</source>
         <translation>&lt;strong&gt;המשך משחק&lt;/strong&gt;&lt;br&gt;האם ברצונך לטעון מצב זה, או להתחיל מאתחול חדש?</translation>
-    </message>
-    <message>
-        <source>Save was created on %1.</source>
-        <translation>השמירה נוצרה בתאריך %1.</translation>
     </message>
     <message>
         <source>Do you want to swap discs or boot the new image via system restart?</source>
@@ -13805,8 +13877,8 @@ Do you want to delete the save state and boot the game anyway?</source>
         <translation>יצירת כרטיס הזיכרון &apos;%1&apos; נכשלה: %2</translation>
     </message>
     <message>
-        <source>RA: Logged in as %1 (%2, %3 casual). %4 unread messages.</source>
-        <translation>RA: מחובר בתור %1 (%2, %3 מזדמנים). %4 הודעות שלא נקראו.</translation>
+        <source>RA: Logged in as %1 (%2 points, %3 casual). %4 unread messages.</source>
+        <translation>RA: מחובר בתור %1 (%2 נקודות, %3 מזדמנים). %4 הודעות שלא נקראו.</translation>
     </message>
     <message>
         <source>Refresh Achievement Progress</source>
@@ -15758,6 +15830,10 @@ Error: {1}</source>
 <context>
     <name>PlayStationMouse</name>
     <message>
+        <source>Pointer</source>
+        <translation>מצביע</translation>
+    </message>
+    <message>
         <source>Left Button</source>
         <translation>כפתור שמאלי</translation>
     </message>
@@ -15776,13 +15852,6 @@ Error: {1}</source>
     <message>
         <source>Vertical Sensitivity</source>
         <translation>רגישות אנכית</translation>
-    </message>
-</context>
-<context>
-    <name>PlaystationMouse</name>
-    <message>
-        <source>Pointer</source>
-        <translation>מצביע</translation>
     </message>
 </context>
 <context>
@@ -16562,10 +16631,6 @@ Would you like to update the shortcut to point to the current location?</source>
 <context>
     <name>SaveStateSelectorUI</name>
     <message>
-        <source>Saved at {0:%H:%M} on {0:%a} {0:%Y/%m/%d}.</source>
-        <translation>נשמר ב־{0:%H:%M} ביום {0:%a} {0:%Y/%m/%d}.</translation>
-    </message>
-    <message>
         <source>No save state slots available.</source>
         <translation>אין משבצות שמירת מצב זמינות.</translation>
     </message>
@@ -16588,6 +16653,10 @@ Would you like to update the shortcut to point to the current location?</source>
     <message>
         <source>{} ({})</source>
         <translation>{} ({})</translation>
+    </message>
+    <message>
+        <source>Saved {}</source>
+        <translation>נשמר {}</translation>
     </message>
     <message>
         <source>No save present in this slot.</source>
@@ -17164,12 +17233,12 @@ Do you want to create this directory?</source>
         <translation>זיהוי אוטומטי</translation>
     </message>
     <message>
-        <source>NTSC (60hz)</source>
+        <source>NTSC (60 Hz)</source>
         <comment>ForceVideoTiming</comment>
         <translation>NTSC (60 הרץ)</translation>
     </message>
     <message>
-        <source>PAL (50hz)</source>
+        <source>PAL (50 Hz)</source>
         <comment>ForceVideoTiming</comment>
         <translation>PAL (50 הרץ)</translation>
     </message>
@@ -18125,9 +18194,9 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>Logged in as %1
-Token generated at %2</source>
+Token generated %2</source>
         <translation>מחובר בתור %1
-האסימון נוצר בתאריך %2</translation>
+האסימון נוצר %2</translation>
     </message>
     <message>
         <source>Not Logged In.</source>
@@ -18554,8 +18623,8 @@ You must save to a memory card and reset the game to clear any effects.</source>
 {}</translation>
     </message>
     <message>
-        <source>Loaded undo save state created at {}.</source>
-        <translation>נטענה שמירת מצב הביטול שנוצרה ב־{}.</translation>
+        <source>Loaded undo save state created {}.</source>
+        <translation>נטענה שמירת מצב הביטול שנוצרה {}.</translation>
     </message>
     <message>
         <source>capturing audio and video</source>

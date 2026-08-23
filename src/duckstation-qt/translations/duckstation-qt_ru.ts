@@ -219,6 +219,10 @@ Do you want to enable hardcore mode?</source>
         <translation>Включить режим &quot;Encore&quot;</translation>
     </message>
     <message>
+        <source>Track Unofficial Achievements</source>
+        <translation>Отслеживать неофициальные достижения</translation>
+    </message>
+    <message>
         <source>Notifications</source>
         <translation>Уведомления</translation>
     </message>
@@ -272,12 +276,12 @@ Do you want to enable hardcore mode?</source>
         <translation>При включении DuckStation будет считать, что все достижения заблокированы, и не будет отправлять уведомления о разблокировке на сервер.</translation>
     </message>
     <message>
-        <source>When enabled, DuckStation will list achievements from unofficial sets. Please note that these achievements are not tracked by RetroAchievements, so they unlock every time.</source>
-        <translation>При включении DuckStation будет отображать достижения из неофициальных наборов. Пожалуйста, обратите внимание, что эти достижения не отслеживаются достижениями RetroAchievements, поэтому они разблокируются каждый раз.</translation>
-    </message>
-    <message>
         <source>&quot;Challenge&quot; mode for achievements, including leaderboard tracking. Disables save state, cheats, and slowdown functions.</source>
         <translation>Режим &quot;Испытаний&quot; для достижений, включая отслеживание списка лидеров. Отключает функции сохранения состояния, читов и замедления.</translation>
+    </message>
+    <message>
+        <source>When enabled, DuckStation will track unofficial achievements. Unlocks will be saved locally and not sent to RetroAchievements.</source>
+        <translation>Если включено, DuckStation будет отслеживать неофициальные достижения. Разблокировки будут сохранены локально и не будут отправлены в RetroAchievements.</translation>
     </message>
     <message>
         <source>Checked</source>
@@ -393,9 +397,9 @@ Do you want to enable hardcore mode?</source>
     </message>
     <message>
         <source>Logged in as %1
-Token generated at %2</source>
+Token generated %2</source>
         <translation>Авторизован под именем %1
-Токен сгенерирован в %2</translation>
+Токен сгенерирован %2</translation>
     </message>
     <message numerus="yes">
         <source>%n seconds</source>
@@ -685,6 +689,10 @@ We will keep trying to submit this request.</source>
         <source>This subset has no achievements.</source>
         <translation>В этом подразделе нет достижений.</translation>
     </message>
+    <message>
+        <source>You have unlocked {0} of {1} unofficial achievements, earning {2} of {3} possible points.</source>
+        <translation>Вы разблокировали {0} неофициальных достижений из {1} и заработали {2} из {3} возможных баллов.</translation>
+    </message>
     <message numerus="yes">
         <source>%n achievements are not supported by DuckStation and cannot be unlocked.</source>
         <comment>Unsupported achievement count</comment>
@@ -693,30 +701,6 @@ We will keep trying to submit this request.</source>
             <numerusform>%n достижения не поддерживается DuckStation и не будет разблокировано.</numerusform>
             <numerusform>%n достижений не поддерживается DuckStation и не будет разблокировано.</numerusform>
         </translation>
-    </message>
-    <message>
-        <source>Game was beaten on {0}, and completed on {1}.</source>
-        <translation>Игра пройдена в {0}, а завершена в {1}.</translation>
-    </message>
-    <message>
-        <source>Subset was beaten on {0}, and completed on {1}.</source>
-        <translation>Подраздел пройден в {0}, а завершён в {1}.</translation>
-    </message>
-    <message>
-        <source>Game was beaten on {0}.</source>
-        <translation>Игра пройдена в {0}.</translation>
-    </message>
-    <message>
-        <source>Subset was beaten on {0}.</source>
-        <translation>Подраздел пройден в {0}.</translation>
-    </message>
-    <message>
-        <source>Game was completed on {0}.</source>
-        <translation>Игра была завершена {0}.</translation>
-    </message>
-    <message>
-        <source>Unlocked: {} | {:.1f}% of players have this achievement</source>
-        <translation>Разблокировано: {} | {:.1f}% игроков имеют это достижение</translation>
     </message>
     <message>
         <source>{:.1f}% of players have this achievement</source>
@@ -779,10 +763,6 @@ We will keep trying to submit this request.</source>
         <source>Unknown</source>
         <translatorcomment>*Неизвестный</translatorcomment>
         <translation>Неизвестно</translation>
-    </message>
-    <message>
-        <source>Subset was completed on {0}.</source>
-        <translation>Подраздел завершён в {0}.</translation>
     </message>
     <message>
         <source>Locked</source>
@@ -898,72 +878,6 @@ We will keep trying to submit this request.</source>
         <translation>Посмотреть профиль</translation>
     </message>
     <message>
-        <source>Just now</source>
-        <translation>Сейчас</translation>
-    </message>
-    <message numerus="yes">
-        <source>%n minutes ago</source>
-        <comment>Relative time</comment>
-        <translation>
-            <numerusform>%n минуту назад</numerusform>
-            <numerusform>%n минуты назад</numerusform>
-            <numerusform>%n минут назад</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <source>%n hours ago</source>
-        <comment>Relative time</comment>
-        <translation>
-            <numerusform>%n час назад</numerusform>
-            <numerusform>%n часа назад</numerusform>
-            <numerusform>%n часов назад</numerusform>
-        </translation>
-    </message>
-    <message>
-        <source>Today</source>
-        <translation>Сегодня</translation>
-    </message>
-    <message>
-        <source>Yesterday</source>
-        <translation>Вчера</translation>
-    </message>
-    <message numerus="yes">
-        <source>%n days ago</source>
-        <comment>Relative time</comment>
-        <translation>
-            <numerusform>%n день назад</numerusform>
-            <numerusform>%n дня назад</numerusform>
-            <numerusform>%n дней назад</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <source>%n weeks ago</source>
-        <comment>Relative time</comment>
-        <translation>
-            <numerusform>%n неделю назад</numerusform>
-            <numerusform>%n недели назад</numerusform>
-            <numerusform>%n недель назад</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <source>%n months ago</source>
-        <comment>Relative time</comment>
-        <translation>
-            <numerusform>%n месяц назад</numerusform>
-            <numerusform>%n месяца назад</numerusform>
-            <numerusform>%n месяцев назад</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <source>%n years ago</source>
-        <comment>Relative time</comment>
-        <translation>
-            <numerusform>%n год назад</numerusform>
-            <numerusform>%n года назад</numerusform>
-            <numerusform>%n лет назад</numerusform>
-        </translation>
-    </message>
-    <message>
         <source>Leaderboard download failed</source>
         <translation>Загрузка списка лидеров не удалась</translation>
     </message>
@@ -1005,6 +919,38 @@ We will keep trying to submit this request.</source>
     <message>
         <source>You have unlocked {0} of {1} achievements, earning {2} of {3} possible points.</source>
         <translation>Вы разблокировали {0} достижений из {1} и заработали {2} из {3} возможных баллов.</translation>
+    </message>
+    <message>
+        <source>Game was beaten {0}, and completed {1}.</source>
+        <translation>Игра пройдена {0}, а завершена {1}.</translation>
+    </message>
+    <message>
+        <source>Subset was beaten {0}, and completed {1}.</source>
+        <translation>Подраздел пройден {0}, а завершён {1}.</translation>
+    </message>
+    <message>
+        <source>Game was beaten {0}.</source>
+        <translation>Игра пройдена {0}.</translation>
+    </message>
+    <message>
+        <source>Subset was beaten {0}.</source>
+        <translation>Подраздел пройден {0}.</translation>
+    </message>
+    <message>
+        <source>Game was completed {0}.</source>
+        <translation>Игра завершена {0}.</translation>
+    </message>
+    <message>
+        <source>Subset was completed {0}.</source>
+        <translation>Подраздел завершён {0}.</translation>
+    </message>
+    <message>
+        <source>Reset Unofficial Unlocks</source>
+        <translation>Сбросить неофициальные разблокировки</translation>
+    </message>
+    <message>
+        <source>Unlocked {}</source>
+        <translation>Разблокировано {}</translation>
     </message>
     <message>
         <source>Submitting scores is disabled because hardcore mode is off. Leaderboards are read-only.</source>
@@ -2843,10 +2789,6 @@ Trying to use this cheat will not work as expected. Do you want to continue?</so
         <source>Execution Mode:</source>
         <translatorcomment>*выполнения *исполнения</translatorcomment>
         <translation>Режим выполнения:</translation>
-    </message>
-    <message>
-        <source>Preload Image To RAM</source>
-        <translation>Предварительно загрузить образ в ОЗУ</translation>
     </message>
     <message>
         <source>Unchecked</source>
@@ -5576,6 +5518,10 @@ ${serial}: Серийный номер игры.</translation>
         <translation>Все время: {}</translation>
     </message>
     <message>
+        <source>All unofficial achievement progress for the current game will be removed. This cannot be undone.</source>
+        <translation>Весь прогресс неофициальных достижений для текущей игры будет удалён. Это действие нельзя отменить.</translation>
+    </message>
+    <message>
         <source>Allow Booting Without SBI File</source>
         <translation>Разрешить загрузку без файла SBI</translation>
     </message>
@@ -6235,10 +6181,6 @@ You cannot undo this action.</source>
         <translation>Отображает всплывающие сообщения при запуске, отправке или провале испытания в списке лидеров.</translation>
     </message>
     <message>
-        <source>Do you want to continue from the automatic save created at {}?</source>
-        <translation>Хотите ли вы продолжить с автоматического сохранения, созданного в {}?</translation>
-    </message>
-    <message>
         <source>Double-Click Toggles Fullscreen</source>
         <translation>Двойной щелчок переключает полноэкранный режим</translation>
     </message>
@@ -6683,6 +6625,10 @@ Please check your username and password, and try again.</source>
 Пожалуйста, проверьте имя пользователя и пароль и повторите попытку.</translation>
     </message>
     <message>
+        <source>Login token generated {}</source>
+        <translation>Токен входа сгенерирован {}</translation>
+    </message>
+    <message>
         <source>Maximum Read Speedup Cycles</source>
         <translation>Максимальное ускорение циклов чтения</translation>
     </message>
@@ -6801,6 +6747,18 @@ Please check your username and password, and try again.</source>
     <message>
         <source>Reset Controller Settings</source>
         <translation>Сброс настроек контроллера</translation>
+    </message>
+    <message>
+        <source>Reset Unlock</source>
+        <translation>Сбросить разблокировку</translation>
+    </message>
+    <message>
+        <source>Reset Unofficial Achievement</source>
+        <translation>Сбросить неофициальное достижение</translation>
+    </message>
+    <message>
+        <source>Reset Unofficial Achievement Unlocks</source>
+        <translation>Сбросить разблокировки неофициального достижения</translation>
     </message>
     <message>
         <source>Resets all settings to the defaults.</source>
@@ -7094,6 +7052,10 @@ Please check your username and password, and try again.</source>
         <translation>Каталог текстур</translation>
     </message>
     <message>
+        <source>The unlock state for &apos;{}&apos; will be removed. This cannot be undone.</source>
+        <translation>Состояние разблокировки для &apos;{}&apos; будет удалено. Это действие нельзя отменить.</translation>
+    </message>
+    <message>
         <source>Time Played: </source>
         <translation>Время игры: </translation>
     </message>
@@ -7121,8 +7083,20 @@ Please check your username and password, and try again.</source>
         <translation>Вверху: </translation>
     </message>
     <message>
+        <source>Track Unofficial Achievements</source>
+        <translation>Отслеживать неофициальные достижения</translation>
+    </message>
+    <message>
         <source>Tries to detect FMVs and disable read speedup during games that don&apos;t use XA streaming audio.</source>
         <translation>Пытается обнаружить FMV и отключить ускорение чтения во время игр, которые не используют потоковое аудио XA.</translation>
+    </message>
+    <message>
+        <source>Unofficial achievement unlock reset.</source>
+        <translation>Неофициальная разблокировка достижения сброшена.</translation>
+    </message>
+    <message>
+        <source>Unofficial achievement unlocks reset.</source>
+        <translation>Неофициальные разблокировки достижений сброшены.</translation>
     </message>
     <message>
         <source>Update Progress</source>
@@ -7139,6 +7113,10 @@ Please check your username and password, and try again.</source>
     <message>
         <source>Value Range</source>
         <translation>Диапазон значений</translation>
+    </message>
+    <message>
+        <source>When enabled, DuckStation will track unofficial achievements. Unlocks will be saved locally and not sent to RetroAchievements.</source>
+        <translation>Если включено, DuckStation будет отслеживать неофициальные достижения. Разблокировки будут сохранены локально и не будут отправлены в RetroAchievements.</translation>
     </message>
     <message>
         <source>Window Animations</source>
@@ -7450,6 +7428,10 @@ Do you want to delete the save state and boot the game anyway?</source>
     <message>
         <source>Dithering</source>
         <translation>Дизеринг</translation>
+    </message>
+    <message>
+        <source>Do you want to continue from the automatic save created {}?</source>
+        <translation>Хотите продолжить с автоматического сохранения, созданного {}?</translation>
     </message>
     <message>
         <source>DuckStation is a free simulator/emulator of the Sony PlayStation(TM) console, focusing on playability, speed, and long-term maintainability.</source>
@@ -7823,11 +7805,6 @@ Do you want to delete the save state and boot the game anyway?</source>
         <source>Login</source>
         <translatorcomment>*Авторизоваться</translatorcomment>
         <translation>Авторизация</translation>
-    </message>
-    <message>
-        <source>Login token generated on {}</source>
-        <translatorcomment>(BigP/Настройки/Настройки достижений/Учетная запись/) (wUI/Настройки/Достижения/Учетная запись)</translatorcomment>
-        <translation>Токен входа создан для {}</translation>
     </message>
     <message>
         <source>Logout</source>
@@ -8891,10 +8868,6 @@ Do you want to delete the save state and boot the game anyway?</source>
         <translation>Временно отключает все улучшения, что полезно при тестировании.</translation>
     </message>
     <message>
-        <source>Test Unofficial Achievements</source>
-        <translation>Проверка неофициальных достижений</translation>
-    </message>
-    <message>
         <source>Texture Filtering</source>
         <translation>Фильтрация текстур</translation>
     </message>
@@ -9136,10 +9109,6 @@ Do you want to {0} anyway?</source>
     <message>
         <source>When enabled, DuckStation will assume all achievements are locked and not send any unlock notifications to the server.</source>
         <translation>Если этот параметр включен, DuckStation будет считать, что все достижения заблокированы, и не будет отправлять уведомления о разблокировке на сервер.</translation>
-    </message>
-    <message>
-        <source>When enabled, DuckStation will list achievements from unofficial sets. These achievements are not tracked by RetroAchievements.</source>
-        <translation>Если этот параметр включен, DuckStation будет отображать достижения из неофициальных наборов. Эти достижения не отслеживаются RetroAchievements.</translation>
     </message>
     <message>
         <source>When enabled, each session will behave as if no achievements have been unlocked.</source>
@@ -10149,77 +10118,9 @@ Are you sure you want to continue?</source>
         <source>No URLs to download enumerated.</source>
         <translation>URL-адреса для загрузки не перечислены.</translation>
     </message>
-    <message>
-        <source>Never</source>
-        <translation>Никогда</translation>
-    </message>
-    <message>
-        <source>Today</source>
-        <translation>Сегодня</translation>
-    </message>
-    <message>
-        <source>Yesterday</source>
-        <translatorcomment>*Недавно</translatorcomment>
-        <translation>Вчера</translation>
-    </message>
-    <message>
-        <source>{}h {}m</source>
-        <translation>{}ч {}м</translation>
-    </message>
-    <message>
-        <source>{}h {}m {}s</source>
-        <translation>{}ч {}м {}с</translation>
-    </message>
-    <message>
-        <source>{}m {}s</source>
-        <translation>{}м {}с</translation>
-    </message>
-    <message>
-        <source>{}s</source>
-        <translation>{}с</translation>
-    </message>
-    <message>
-        <source>None</source>
-        <translation>Нет</translation>
-    </message>
-    <message numerus="yes">
-        <source>%n hours</source>
-        <translation>
-            <numerusform>%n час</numerusform>
-            <numerusform>%n часа</numerusform>
-            <numerusform>%n часов</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <source>%n minutes</source>
-        <translation>
-            <numerusform>%n минута</numerusform>
-            <numerusform>%n минуты</numerusform>
-            <numerusform>%n минут</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <source>%n seconds</source>
-        <translation>
-            <numerusform>%n секунда</numerusform>
-            <numerusform>%n секунды</numerusform>
-            <numerusform>%n секунд</numerusform>
-        </translation>
-    </message>
-</context>
-<context>
-    <name>GameListListView</name>
-    <message>
-        <source>Unknown</source>
-        <translation>Неизвестно</translation>
-    </message>
 </context>
 <context>
     <name>GameListModel</name>
-    <message>
-        <source>Unknown</source>
-        <translation>Неизвестно</translation>
-    </message>
     <message>
         <source>Icon</source>
         <translation>Значек</translation>
@@ -10390,8 +10291,8 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>Объединение многодисковых игр</translation>
     </message>
     <message>
-        <source>Show Localized Icons</source>
-        <translation>Показать локализованные значки</translation>
+        <source>Show Localized Titles</source>
+        <translation>Показать локализованные названия</translation>
     </message>
     <message>
         <source>Show Game Icons</source>
@@ -11636,6 +11537,152 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <source>Offset applied to lightgun horizontal position.</source>
         <translation>Смещение, применяемое к горизонтальному положению светового пистолета.</translation>
+    </message>
+</context>
+<context>
+    <name>Host</name>
+    <message numerus="yes">
+        <source>%n seconds</source>
+        <translation>
+            <numerusform>%n секунда</numerusform>
+            <numerusform>%n секунды</numerusform>
+            <numerusform>%n секунд</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n minutes</source>
+        <translation>
+            <numerusform>%n минута</numerusform>
+            <numerusform>%n минуты</numerusform>
+            <numerusform>%n минут</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n hours</source>
+        <translation>
+            <numerusform>%n час</numerusform>
+            <numerusform>%n часа</numerusform>
+            <numerusform>%n часов</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Today</source>
+        <translation>Сегодня</translation>
+    </message>
+    <message>
+        <source>Yesterday</source>
+        <translation>Вчера</translation>
+    </message>
+    <message>
+        <source>Never</source>
+        <translation>Никогда</translation>
+    </message>
+    <message>
+        <source>today</source>
+        <translation>сегодня</translation>
+    </message>
+    <message>
+        <source>yesterday</source>
+        <translation>вчера</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n days ago</source>
+        <comment>Date difference</comment>
+        <translation>
+            <numerusform>%n день назад</numerusform>
+            <numerusform>%n дня назад</numerusform>
+            <numerusform>%n дней назад</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>on {}</source>
+        <translation>в {}</translation>
+    </message>
+    <message>
+        <source>Now</source>
+        <translation>Сейчас</translation>
+    </message>
+    <message>
+        <source>now</source>
+        <translation>сейчас</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n seconds ago</source>
+        <comment>Time difference</comment>
+        <translation>
+            <numerusform>%n секунду назад</numerusform>
+            <numerusform>%n секунды назад</numerusform>
+            <numerusform>%n секунд назад</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n minutes ago</source>
+        <comment>Time difference</comment>
+        <translation>
+            <numerusform>%n минуту назад</numerusform>
+            <numerusform>%n минуты назад</numerusform>
+            <numerusform>%n минут назад</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n hours ago</source>
+        <comment>Time difference</comment>
+        <translation>
+            <numerusform>%n час назад</numerusform>
+            <numerusform>%n часа назад</numerusform>
+            <numerusform>%n часов назад</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n weeks ago</source>
+        <comment>Time difference</comment>
+        <translation>
+            <numerusform>%n неделю назад</numerusform>
+            <numerusform>%n недели назад</numerusform>
+            <numerusform>%n недель назад</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n months ago</source>
+        <comment>Time difference</comment>
+        <translation>
+            <numerusform>%n месяц назад</numerusform>
+            <numerusform>%n месяца назад</numerusform>
+            <numerusform>%n месяцев назад</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n years ago</source>
+        <comment>Time difference</comment>
+        <translation>
+            <numerusform>%n год назад</numerusform>
+            <numerusform>%n года назад</numerusform>
+            <numerusform>%n лет назад</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>{} at {}</source>
+        <translation>{} в {}</translation>
+    </message>
+    <message>
+        <source>{}h {}m</source>
+        <translation>{}ч {}м</translation>
+    </message>
+    <message>
+        <source>{}h {}m {}s</source>
+        <translation>{}ч {}м {}с</translation>
+    </message>
+    <message>
+        <source>{}m {}s</source>
+        <translation>{}м {}с</translation>
+    </message>
+    <message>
+        <source>{}s</source>
+        <translation>{}с</translation>
+    </message>
+    <message>
+        <source>None</source>
+        <translation>Нет</translation>
     </message>
 </context>
 <context>
@@ -12964,10 +13011,6 @@ Shift-click to set multiple bindings.</source>
         <translation>Загрузить состояние</translation>
     </message>
     <message>
-        <source>Save State</source>
-        <translation>Сохранить состояние</translation>
-    </message>
-    <message>
         <source>S&amp;ettings</source>
         <translation>&amp;Настройки</translation>
     </message>
@@ -13081,6 +13124,22 @@ Shift-click to set multiple bindings.</source>
         <translation>&amp;Загрузить</translation>
     </message>
     <message>
+        <source>Cha&amp;nge Disc</source>
+        <translation>С&amp;менить диск</translation>
+    </message>
+    <message>
+        <source>&amp;Cheats</source>
+        <translation>&amp;Читы</translation>
+    </message>
+    <message>
+        <source>Sa&amp;ve State</source>
+        <translation>&amp;Сохранить состояние</translation>
+    </message>
+    <message>
+        <source>Media Capt&amp;ure</source>
+        <translation>Захват &amp;медиа</translation>
+    </message>
+    <message>
         <source>Restores the session state from the selected slot.</source>
         <translation>Восстанавливает состояние сеанса из выбранной ячейки.</translation>
     </message>
@@ -13127,6 +13186,10 @@ Shift-click to set multiple bindings.</source>
     <message>
         <source>Configures options related to how the session content is displayed.</source>
         <translation>Настройка параметров, связанных с отображением содержимого сеанса.</translation>
+    </message>
+    <message>
+        <source>Post-Processi&amp;ng</source>
+        <translation>Постобработ&amp;ка</translation>
     </message>
     <message>
         <source>Configures post-processing effects applied after rendering the content.</source>
@@ -13193,8 +13256,16 @@ Shift-click to set multiple bindings.</source>
         <translation>Настройка параметров, связанных с внешним видом и поведением приложения.</translation>
     </message>
     <message>
+        <source>Ad&amp;vanced</source>
+        <translation>&amp;Расширенные</translation>
+    </message>
+    <message>
         <source>Configures advanced options for the application.</source>
         <translation>Настройка расширенных параметров приложения.</translation>
+    </message>
+    <message>
+        <source>&amp;Debugging</source>
+        <translation>&amp;Отладка</translation>
     </message>
     <message>
         <source>Adds a new directory that will be searched for game files.</source>
@@ -13225,10 +13296,6 @@ Shift-click to set multiple bindings.</source>
         <translation>Извлекает диск из эмулируемой системы.</translation>
     </message>
     <message>
-        <source>Enable Safe Mode</source>
-        <translation>Включить: Безопасный режим</translation>
-    </message>
-    <message>
         <source>Shows captions under the game cover in grid view.</source>
         <translation>Показывает подписи под обложкой игры в виде сетки.</translation>
     </message>
@@ -13249,10 +13316,6 @@ Shift-click to set multiple bindings.</source>
         <translation>Уменьшает размер значков или обложек игр.</translation>
     </message>
     <message>
-        <source>Refresh Grid &amp;Covers</source>
-        <translation>Обновить сетку &amp;обложек</translation>
-    </message>
-    <message>
         <source>Invalidates the cache of game covers, allowing new images to be discovered.</source>
         <translation>Очищает кэш обложек игр, позволяя обнаруживать новые изображения.</translation>
     </message>
@@ -13267,6 +13330,26 @@ Shift-click to set multiple bindings.</source>
     <message>
         <source>Close (No Save)</source>
         <translation>Закрыть (без сохранения)</translation>
+    </message>
+    <message>
+        <source>Res&amp;ume</source>
+        <translation>&amp;Продолжить</translation>
+    </message>
+    <message>
+        <source>&amp;Show Toolbar</source>
+        <translation>&amp;Показать панель инструментов</translation>
+    </message>
+    <message>
+        <source>S&amp;mall Icons</source>
+        <translation>&amp;Маленькие значки</translation>
+    </message>
+    <message>
+        <source>Show &amp;Labels</source>
+        <translation>Показать &amp;надписи</translation>
+    </message>
+    <message>
+        <source>Show Labels &amp;Beside Icons</source>
+        <translation>Показывать надписи &amp;рядом со значками</translation>
     </message>
     <message>
         <source>Opens the memory scanner window.</source>
@@ -13297,20 +13380,12 @@ Shift-click to set multiple bindings.</source>
         <translation>Изменяет фоновое изображение, отображаемое в списке/сетке игр.</translation>
     </message>
     <message>
-        <source>Clea&amp;r List Background</source>
-        <translation>&amp;Очистить фон списка</translation>
-    </message>
-    <message>
         <source>Removes the background image shown in the game list/grid.</source>
         <translation>Удаляет фоновое изображение, отображаемое в списке/сеточке игр.</translation>
     </message>
     <message>
         <source>Refreshes the list of unlocked achievements.</source>
         <translation>Обновляет список разблокированных достижений.</translation>
-    </message>
-    <message>
-        <source>Refresh Achievement Database</source>
-        <translation>Обновить базу данных достижений</translation>
     </message>
     <message>
         <source>Updates the database for achievements shown in the game list.</source>
@@ -13337,16 +13412,8 @@ Shift-click to set multiple bindings.</source>
         <translation>Открывает окно редактора памяти.</translation>
     </message>
     <message>
-        <source>Animate Game Icons</source>
-        <translation>Анимированные значки игр</translation>
-    </message>
-    <message>
         <source>Animates icons in the list view when selected.</source>
         <translation>Анимирует значки в списке при выборе.</translation>
-    </message>
-    <message>
-        <source>Prefer Achievement Icons</source>
-        <translation>Предпочтительные значки достижений</translation>
     </message>
     <message>
         <source>Prioritizes the games badges used for RetroAchievements over memory card icons.</source>
@@ -13405,14 +13472,6 @@ Shift-click to set multiple bindings.</source>
         <translation>До&amp;стижения</translation>
     </message>
     <message>
-        <source>A&amp;dvanced</source>
-        <translation>&amp;Расширенные</translation>
-    </message>
-    <message>
-        <source>Debuggi&amp;ng</source>
-        <translation>&amp;Отладка</translation>
-    </message>
-    <message>
         <source>Configures internal options for the application.</source>
         <translation>Настраивает внутренние параметры приложения.</translation>
     </message>
@@ -13427,10 +13486,6 @@ Shift-click to set multiple bindings.</source>
     <message>
         <source>Big Picture</source>
         <translation>Big Picture</translation>
-    </message>
-    <message>
-        <source>Cover Downloader</source>
-        <translation>Загрузчик обложек</translation>
     </message>
     <message>
         <source>Opens the cover downloader window.</source>
@@ -13457,24 +13512,12 @@ Shift-click to set multiple bindings.</source>
         <translation>Запускает или останавливает захват видео и аудио из контента.</translation>
     </message>
     <message>
-        <source>Open Texture Directory...</source>
-        <translation>Открыть каталог текстур...</translation>
-    </message>
-    <message>
         <source>Opens the directory used to store texture replacements.</source>
         <translation>Открывает каталог, используемый для хранения замен текстур.</translation>
     </message>
     <message>
-        <source>Reload Texture Replacements</source>
-        <translation>Перезагрузить замены текстур</translation>
-    </message>
-    <message>
         <source>Invalidates the cache of available replacement textures.</source>
         <translation>Очищает кэш доступных текстур для замены.</translation>
-    </message>
-    <message>
-        <source>Capture GPU Frame</source>
-        <translation>Снимок кадра ГП</translation>
     </message>
     <message>
         <source>Saves the emulated GPU commands to a file that can be later replayed.</source>
@@ -13501,32 +13544,16 @@ Shift-click to set multiple bindings.</source>
         <translation>Жунал в файл</translation>
     </message>
     <message>
-        <source>ISO Browser</source>
-        <translation>Браузер образов ISO</translation>
-    </message>
-    <message>
         <source>Opens the ISO browser window.</source>
         <translation>Открывает окно браузера образов ISO.</translation>
-    </message>
-    <message>
-        <source>Free Camera</source>
-        <translation>Свободная камера</translation>
     </message>
     <message>
         <source>Allows you to freely move the camera in supported games.</source>
         <translation>Позволяет свободно перемещать камеру в поддерживаемых играх.</translation>
     </message>
     <message>
-        <source>Controller Test</source>
-        <translation>Тест контроллеров</translation>
-    </message>
-    <message>
         <source>Allows you to test emulated controller mappings.</source>
         <translation>Позволяет тестировать сопоставления эмулированных контроллеров.</translation>
-    </message>
-    <message>
-        <source>System Log</source>
-        <translation>Системный журнал</translation>
     </message>
     <message>
         <source>Refresh Achievement &amp;Progress</source>
@@ -13614,16 +13641,8 @@ Shift-click to set multiple bindings.</source>
         <translation>Объединяет несколько дисков, относящихся к одной и той же игре, в один элемент в списке игр.</translation>
     </message>
     <message>
-        <source>Show G&amp;rid Captions</source>
-        <translation>Показать &amp;заголовки сетки</translation>
-    </message>
-    <message>
         <source>Show Titles (Grid View)</source>
         <translation>Показать заголовки (вид сетки)</translation>
-    </message>
-    <message>
-        <source>Open Data Directory...</source>
-        <translation>Открыть каталог данных...</translation>
     </message>
     <message>
         <source>Opens the directory containing application data in your file browser.</source>
@@ -13644,10 +13663,6 @@ Shift-click to set multiple bindings.</source>
     <message>
         <source>&amp;Controllers</source>
         <translation>&amp;Контроллеры</translation>
-    </message>
-    <message>
-        <source>&amp;Post-Processing</source>
-        <translation>&amp;Постобработка</translation>
     </message>
     <message>
         <source>From File...</source>
@@ -13672,6 +13687,10 @@ Shift-click to set multiple bindings.</source>
     <message>
         <source>Dump VRAM to CPU Copies</source>
         <translation>Дамп копий из VRAM в ЦП</translation>
+    </message>
+    <message>
+        <source>Enable &amp;Safe Mode</source>
+        <translation>Включить &amp;безопасный режим</translation>
     </message>
     <message>
         <source>Dump RAM...</source>
@@ -13734,24 +13753,12 @@ Shift-click to set multiple bindings.</source>
         <translation>Управляет возможностью перемещения панели инструментов.</translation>
     </message>
     <message>
-        <source>S&amp;mall Toolbar Icons</source>
-        <translation>Маленькие значки панели инстру&amp;ментов</translation>
-    </message>
-    <message>
         <source>Controls whether the smaller toolbar icons are displayed.</source>
         <translation>Управляет отображением маленьких значков панели инструментов.</translation>
     </message>
     <message>
-        <source>Toolbar L&amp;abels</source>
-        <translation>Метки панели &amp;инструментов</translation>
-    </message>
-    <message>
         <source>Controls whether labels are displayed alongside toolbar icons.</source>
         <translation>Управляет отображением меток рядом с значками панели инструментов.</translation>
-    </message>
-    <message>
-        <source>Toolbar Labels &amp;Beside Icons</source>
-        <translation>Метки панели инструментов и значки &amp;рядом с ними</translation>
     </message>
     <message>
         <source>Controls whether labels are displayed next to or under toolbar icons.</source>
@@ -13788,6 +13795,70 @@ Shift-click to set multiple bindings.</source>
     <message>
         <source>Memory &amp;Card Editor</source>
         <translation>Редактор &amp;карт памяти</translation>
+    </message>
+    <message>
+        <source>Show Grid Ca&amp;ptions</source>
+        <translation>Показать заголовки &amp;сетки</translation>
+    </message>
+    <message>
+        <source>&amp;Refresh Grid Covers</source>
+        <translation>&amp;Обновить обложки сетки</translation>
+    </message>
+    <message>
+        <source>&amp;Open Data Directory...</source>
+        <translation>&amp;Открыть каталог данных...</translation>
+    </message>
+    <message>
+        <source>Start Bi&amp;g Picture Mode</source>
+        <translation>Запустить режим &amp;Big Picture</translation>
+    </message>
+    <message>
+        <source>Cover &amp;Downloader</source>
+        <translation>&amp;Загрузчик обложек</translation>
+    </message>
+    <message>
+        <source>Open Te&amp;xture Directory...</source>
+        <translation>Открыть каталог &amp;текстур...</translation>
+    </message>
+    <message>
+        <source>&amp;Reload Texture Replacements</source>
+        <translation>&amp;Перезагрузить замены текстур</translation>
+    </message>
+    <message>
+        <source>Capture &amp;GPU Frame</source>
+        <translation>&amp;Снять кадр ГП</translation>
+    </message>
+    <message>
+        <source>&amp;ISO Browser</source>
+        <translation>&amp;Браузер ISO</translation>
+    </message>
+    <message>
+        <source>&amp;Free Camera</source>
+        <translation>&amp;Свободная камера</translation>
+    </message>
+    <message>
+        <source>Controller &amp;Test</source>
+        <translation>&amp;Тест контроллера</translation>
+    </message>
+    <message>
+        <source>Clear List Backgro&amp;und</source>
+        <translation>Очистить фон &amp;списка</translation>
+    </message>
+    <message>
+        <source>Refresh &amp;Achievement Database</source>
+        <translation>&amp;Обновить базу данных достижений</translation>
+    </message>
+    <message>
+        <source>&amp;Animate Game Icons</source>
+        <translation>&amp;Анимировать значки игр</translation>
+    </message>
+    <message>
+        <source>Prefer Ac&amp;hievement Icons</source>
+        <translation>Предпочитать значки &amp;достижений</translation>
+    </message>
+    <message>
+        <source>Syst&amp;em Log</source>
+        <translation>Системный &amp;журнал</translation>
     </message>
     <message>
         <source>Start &amp;Capture</source>
@@ -13942,6 +14013,10 @@ The saves will not be recoverable.</source>
         <translation>Не удалось удалить файл сохранения состояния &apos;%1&apos;.</translation>
     </message>
     <message>
+        <source>Save was created %1.</source>
+        <translation>Сохранение было создано %1.</translation>
+    </message>
+    <message>
         <source>Confirm Disc Change</source>
         <translation>Подтверждение замены диска</translation>
     </message>
@@ -13999,6 +14074,10 @@ The saves will not be recoverable.</source>
         <translation>Уверены, что хотите закрыть текущую игру?</translation>
     </message>
     <message>
+        <source>RA: Logged in as %1 (%2 points, %3 casual). %4 unread messages.</source>
+        <translation>RA: выполнен вход как %1 (%2 очков, %3 — обычный режим). %4 непрочитанных сообщений.</translation>
+    </message>
+    <message>
         <source>Refresh Achievement Progress</source>
         <translation>Обновить прогресс по достижениям</translation>
     </message>
@@ -14045,10 +14124,6 @@ Do you want to delete the save state and boot the game anyway?</source>
     <message>
         <source>&lt;strong&gt;Resume Game&lt;/strong&gt;&lt;br&gt;Do you want to load this state, or start from a fresh boot?</source>
         <translation>&lt;strong&gt;Возобновить игру&lt;/strong&gt;&lt;br&gt;Вы хотите загрузить это состояние или начать с новой загрузки?</translation>
-    </message>
-    <message>
-        <source>Save was created on %1.</source>
-        <translation>Сохранение было создано в %1.</translation>
     </message>
     <message>
         <source>Do you want to swap discs or boot the new image via system restart?</source>
@@ -14272,10 +14347,6 @@ This action cannot be undone.</source>
     <message>
         <source>Failed to create memory card &apos;%1&apos;: %2</source>
         <translation>Не удалось создать карту памяти &apos;%1&apos;: %2</translation>
-    </message>
-    <message>
-        <source>RA: Logged in as %1 (%2, %3 casual). %4 unread messages.</source>
-        <translation>RA: выполнен вход как %1 (%2, %3 — обычный пользователь). Непрочитанных сообщений: %4.</translation>
     </message>
     <message>
         <source>RA: Updated achievement game database.</source>
@@ -16080,6 +16151,10 @@ Error: {1}</source>
 <context>
     <name>PlayStationMouse</name>
     <message>
+        <source>Pointer</source>
+        <translation>Указатель</translation>
+    </message>
+    <message>
         <source>Left Button</source>
         <translation>Левая кнопка</translation>
     </message>
@@ -16098,13 +16173,6 @@ Error: {1}</source>
     <message>
         <source>Vertical Sensitivity</source>
         <translation>Чувствительность по вертикали</translation>
-    </message>
-</context>
-<context>
-    <name>PlaystationMouse</name>
-    <message>
-        <source>Pointer</source>
-        <translation>Указатель</translation>
     </message>
 </context>
 <context>
@@ -16884,10 +16952,6 @@ Would you like to update the shortcut to point to the current location?</source>
 <context>
     <name>SaveStateSelectorUI</name>
     <message>
-        <source>Saved at {0:%H:%M} on {0:%a} {0:%Y/%m/%d}.</source>
-        <translation>Сохранено в {0:%H:%M} в {0:%a} {0:%Y/%m/%d}.</translation>
-    </message>
-    <message>
         <source>No save state slots available.</source>
         <translation>Нет доступных слотов сохранения состояния.</translation>
     </message>
@@ -16912,6 +16976,10 @@ Would you like to update the shortcut to point to the current location?</source>
     <message>
         <source>{} ({})</source>
         <translation>{} ({})</translation>
+    </message>
+    <message>
+        <source>Saved {}</source>
+        <translation>Сохранено: {}</translation>
     </message>
     <message>
         <source>No save present in this slot.</source>
@@ -17490,12 +17558,12 @@ Do you want to create this directory?</source>
         <translation>Авто-определение</translation>
     </message>
     <message>
-        <source>NTSC (60hz)</source>
+        <source>NTSC (60 Hz)</source>
         <comment>ForceVideoTiming</comment>
         <translation>NTSC (60 Гц)</translation>
     </message>
     <message>
-        <source>PAL (50hz)</source>
+        <source>PAL (50 Hz)</source>
         <comment>ForceVideoTiming</comment>
         <translation>PAL (50 Гц)</translation>
     </message>
@@ -18450,9 +18518,9 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>Logged in as %1
-Token generated at %2</source>
+Token generated %2</source>
         <translation>Авторизован под именем %1
-Токен сгенерирован в %2</translation>
+Токен сгенерирован %2</translation>
     </message>
     <message>
         <source>Logout</source>
@@ -18905,12 +18973,12 @@ Using current CD image, this may result in instability.</source>
 {}</translation>
     </message>
     <message>
-        <source>Failed to change GPU dump: {}</source>
-        <translation>Не удалось изменить дамп ГП: {}</translation>
+        <source>Loaded undo save state created {}.</source>
+        <translation>Загружено состояние отмены сохранения, созданное {}.</translation>
     </message>
     <message>
-        <source>Loaded undo save state created at {}.</source>
-        <translation>Загружено состояние отмены сохранения, созданное в {}.</translation>
+        <source>Failed to change GPU dump: {}</source>
+        <translation>Не удалось изменить дамп ГП: {}</translation>
     </message>
     <message>
         <source>capturing audio and video</source>

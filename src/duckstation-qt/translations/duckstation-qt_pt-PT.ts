@@ -203,6 +203,10 @@ Quer ativar o modo hardcore?</translation>
         <translation>Ativar Modo Encore</translation>
     </message>
     <message>
+        <source>Track Unofficial Achievements</source>
+        <translation>Acompanhar Conquistas Não Oficiais</translation>
+    </message>
+    <message>
         <source>Prefetch Badges</source>
         <translation>Pré-carregar medalhas</translation>
     </message>
@@ -253,6 +257,10 @@ Quer ativar o modo hardcore?</translation>
     <message>
         <source>&quot;Challenge&quot; mode for achievements, including leaderboard tracking. Disables save state, cheats, and slowdown functions.</source>
         <translation>&quot;Desafio&quot; este modo de troféus inclui monitorização da tabela de desafio. Desativação dos estados de salvamento, trapaças e funções de abrandamento.</translation>
+    </message>
+    <message>
+        <source>When enabled, DuckStation will track unofficial achievements. Unlocks will be saved locally and not sent to RetroAchievements.</source>
+        <translation>Quando ativado, o DuckStation acompanhará as conquistas não oficiais. Os desbloqueios serão guardados localmente e não enviados para o RetroAchievements.</translation>
     </message>
     <message>
         <source>Checked</source>
@@ -381,9 +389,9 @@ Quer ativar o modo hardcore?</translation>
     </message>
     <message>
         <source>Logged in as %1
-Token generated at %2</source>
-        <translation>Iniciada sessão como %1
-Token gerado em %2</translation>
+Token generated %2</source>
+        <translation>Sessão iniciada como %1
+Token gerado %2</translation>
     </message>
     <message>
         <source>When enabled, each session will behave as if no achievements have been unlocked.</source>
@@ -392,10 +400,6 @@ Token gerado em %2</translation>
     <message>
         <source>When enabled, DuckStation will assume all achievements are locked and not send any unlock notifications to the server.</source>
         <translation>Quando ativado, o DuckStation irá assumir que todas as conquistas estão bloqueadas e não enviará nenhuma notificação de desbloqueio ao servidor.</translation>
-    </message>
-    <message>
-        <source>When enabled, DuckStation will list achievements from unofficial sets. Please note that these achievements are not tracked by RetroAchievements, so they unlock every time.</source>
-        <translation>Quando ativado, o DuckStation irá listar conquistas de conjuntos não oficiais . Nota: estas conquistas não são rastreadas pelo RetroAchievements, pelo que são desbloqueadas sempre.</translation>
     </message>
     <message numerus="yes">
         <source>%n seconds</source>
@@ -757,6 +761,10 @@ Mensagens não lidas: {}</translation>
         <source>This subset has no achievements.</source>
         <translation>Este subconjunto não tem conquistas.</translation>
     </message>
+    <message>
+        <source>You have unlocked {0} of {1} unofficial achievements, earning {2} of {3} possible points.</source>
+        <translation>Desbloqueaste {0} de {1} conquistas não oficiais, ganhando {2} de {3} pontos possíveis.</translation>
+    </message>
     <message numerus="yes">
         <source>%n achievements are not supported by DuckStation and cannot be unlocked.</source>
         <comment>Unsupported achievement count</comment>
@@ -764,30 +772,6 @@ Mensagens não lidas: {}</translation>
             <numerusform>%n conquista não é suportada pelo DuckStation e não pode ser desbloqueada.</numerusform>
             <numerusform>%n conquistas não são suportadas pelo DuckStation e não podem ser desbloqueadas.</numerusform>
         </translation>
-    </message>
-    <message>
-        <source>Game was beaten on {0}, and completed on {1}.</source>
-        <translation>O jogo foi terminado em {0} e concluído em {1}.</translation>
-    </message>
-    <message>
-        <source>Subset was beaten on {0}, and completed on {1}.</source>
-        <translation>O subconjunto foi terminado em {0} e concluído em {1}.</translation>
-    </message>
-    <message>
-        <source>Game was beaten on {0}.</source>
-        <translation>O jogo foi terminado em {0}.</translation>
-    </message>
-    <message>
-        <source>Subset was beaten on {0}.</source>
-        <translation>O subconjunto foi terminado em {0}.</translation>
-    </message>
-    <message>
-        <source>Game was completed on {0}.</source>
-        <translation>O jogo foi concluído em {0}.</translation>
-    </message>
-    <message>
-        <source>Subset was completed on {0}.</source>
-        <translation>O subconjunto foi concluído em {0}.</translation>
     </message>
     <message>
         <source>Unknown</source>
@@ -842,6 +826,10 @@ Mensagens não lidas: {}</translation>
         <translation>Fixar conquista</translation>
     </message>
     <message>
+        <source>Reset Unofficial Unlocks</source>
+        <translation>Repor Desbloqueios Não Oficiais</translation>
+    </message>
+    <message>
         <source>View Details</source>
         <translation>Ver detalhes</translation>
     </message>
@@ -860,10 +848,6 @@ Mensagens não lidas: {}</translation>
     <message>
         <source>Win Condition</source>
         <translation>Condição de vitória</translation>
-    </message>
-    <message>
-        <source>Unlocked: {} | {:.1f}% of players have this achievement</source>
-        <translation>Desbloqueado: {} | {:.1f}% dos jogadores têm esta conquista</translation>
     </message>
     <message>
         <source>{:.1f}% of players have this achievement</source>
@@ -902,68 +886,36 @@ Mensagens não lidas: {}</translation>
         <translation>XXX pontos</translation>
     </message>
     <message>
+        <source>Game was beaten {0}, and completed {1}.</source>
+        <translation>O jogo foi terminado em {0} e concluído em {1}.</translation>
+    </message>
+    <message>
+        <source>Subset was beaten {0}, and completed {1}.</source>
+        <translation>O subconjunto foi terminado em {0} e concluído em {1}.</translation>
+    </message>
+    <message>
+        <source>Game was beaten {0}.</source>
+        <translation>O jogo foi terminado em {0}.</translation>
+    </message>
+    <message>
+        <source>Subset was beaten {0}.</source>
+        <translation>O subconjunto foi terminado em {0}.</translation>
+    </message>
+    <message>
+        <source>Game was completed {0}.</source>
+        <translation>O jogo foi concluído em {0}.</translation>
+    </message>
+    <message>
+        <source>Subset was completed {0}.</source>
+        <translation>O subconjunto foi concluído em {0}.</translation>
+    </message>
+    <message>
+        <source>Unlocked {}</source>
+        <translation>Desbloqueado {}</translation>
+    </message>
+    <message>
         <source>Loading...</source>
         <translation>A carregar...</translation>
-    </message>
-    <message>
-        <source>Just now</source>
-        <translation>Agora mesmo</translation>
-    </message>
-    <message numerus="yes">
-        <source>%n minutes ago</source>
-        <comment>Relative time</comment>
-        <translation>
-            <numerusform>há %n minuto</numerusform>
-            <numerusform>há %n minutos</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <source>%n hours ago</source>
-        <comment>Relative time</comment>
-        <translation>
-            <numerusform>há %n hora</numerusform>
-            <numerusform>há %n horas</numerusform>
-        </translation>
-    </message>
-    <message>
-        <source>Today</source>
-        <translation>Hoje</translation>
-    </message>
-    <message>
-        <source>Yesterday</source>
-        <translation>Ontem</translation>
-    </message>
-    <message numerus="yes">
-        <source>%n days ago</source>
-        <comment>Relative time</comment>
-        <translation>
-            <numerusform>há %n dia</numerusform>
-            <numerusform>há %n dias</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <source>%n weeks ago</source>
-        <comment>Relative time</comment>
-        <translation>
-            <numerusform>há %n semana</numerusform>
-            <numerusform>há %n semanas</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <source>%n months ago</source>
-        <comment>Relative time</comment>
-        <translation>
-            <numerusform>há %n mês</numerusform>
-            <numerusform>há %n meses</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <source>%n years ago</source>
-        <comment>Relative time</comment>
-        <translation>
-            <numerusform>há %n ano</numerusform>
-            <numerusform>há %n anos</numerusform>
-        </translation>
     </message>
     <message>
         <source>Leaderboard download failed</source>
@@ -2793,10 +2745,6 @@ A utilização desta batota não funcionará como esperado. Quer continuar?</tra
     <message>
         <source>Execution Mode:</source>
         <translation>Modo de Execução:</translation>
-    </message>
-    <message>
-        <source>Preload Image To RAM</source>
-        <translation>Pré-Carregar Imagem para a RAM</translation>
     </message>
     <message>
         <source>Region</source>
@@ -5389,6 +5337,10 @@ ${serial}: Número de série do jogo.</translation>
         <translation>Tempo Total: {}</translation>
     </message>
     <message>
+        <source>All unofficial achievement progress for the current game will be removed. This cannot be undone.</source>
+        <translation>Todo o progresso de conquistas não oficiais do jogo atual será removido. Esta ação não pode ser anulada.</translation>
+    </message>
+    <message>
         <source>Allow Booting Without SBI File</source>
         <translation>Permitir Arranque Sem Ficheiro SBI</translation>
     </message>
@@ -5735,6 +5687,10 @@ ${serial}: Número de série do jogo.</translation>
     <message>
         <source>Displays popup messages when starting, submitting, or failing a leaderboard challenge.</source>
         <translation>Mostra mensagens pop-up ao iniciar, submeter ou falhar um desafio de tabela de classificação.</translation>
+    </message>
+    <message>
+        <source>Do you want to continue from the automatic save created {}?</source>
+        <translation>Pretende continuar a partir da gravação automática criada em {}?</translation>
     </message>
     <message>
         <source>Double-Click Toggles Fullscreen</source>
@@ -6121,10 +6077,6 @@ O erro foi:</translation>
     <message>
         <source>Login</source>
         <translation>Registo</translation>
-    </message>
-    <message>
-        <source>Login token generated on {}</source>
-        <translation>Token de início de sessão gerado em {}</translation>
     </message>
     <message>
         <source>Logout</source>
@@ -6783,10 +6735,6 @@ Não é possível anular esta ação.</translation>
         <translation>Pontilhado</translation>
     </message>
     <message>
-        <source>Do you want to continue from the automatic save created at {}?</source>
-        <translation>Pretende continuar a partir da gravação automática criada em {}?</translation>
-    </message>
-    <message>
         <source>Downloads all locked achievement badges while starting the game. This will reduce delays in the images being shown when unlocking achievements.</source>
         <translation>Transfere todos os emblemas de conquistas bloqueados ao iniciar o jogo. Isto reduz os atrasos na apresentação das imagens ao desbloquear conquistas.</translation>
     </message>
@@ -7223,6 +7171,10 @@ Erro: {}
 Verifique o seu nome de utilizador e palavra-passe e tente novamente.</translation>
     </message>
     <message>
+        <source>Login token generated {}</source>
+        <translation>Token de início de sessão gerado {}</translation>
+    </message>
+    <message>
         <source>Macro {}</source>
         <translation>Macro {}</translation>
     </message>
@@ -7463,6 +7415,18 @@ Verifique o seu nome de utilizador e palavra-passe e tente novamente.</translati
         <translation>Repor predefinições</translation>
     </message>
     <message>
+        <source>Reset Unlock</source>
+        <translation>Repor Desbloqueio</translation>
+    </message>
+    <message>
+        <source>Reset Unofficial Achievement</source>
+        <translation>Repor Conquista Não Oficial</translation>
+    </message>
+    <message>
+        <source>Reset Unofficial Achievement Unlocks</source>
+        <translation>Repor Desbloqueios de Conquistas Não Oficiais</translation>
+    </message>
+    <message>
         <source>Resets all settings to the defaults.</source>
         <translation>Repõe todas as definições nos valores predefinidos.</translation>
     </message>
@@ -7667,6 +7631,10 @@ Verifique o seu nome de utilizador e palavra-passe e tente novamente.</translati
         <translation>Sincroniza a apresentação dos fotogramas da consola com o anfitrião. Os utilizadores de GSync/FreeSync devem ativar a temporização de fotogramas ideal.</translation>
     </message>
     <message>
+        <source>The unlock state for &apos;{}&apos; will be removed. This cannot be undone.</source>
+        <translation>O estado de desbloqueio de &apos;{}&apos; será removido. Esta ação não pode ser anulada.</translation>
+    </message>
+    <message>
         <source>Theme</source>
         <translation>Tema</translation>
     </message>
@@ -7695,6 +7663,10 @@ Verifique o seu nome de utilizador e palavra-passe e tente novamente.</translati
         <translation>Faixa</translation>
     </message>
     <message>
+        <source>Track Unofficial Achievements</source>
+        <translation>Acompanhar Conquistas Não Oficiais</translation>
+    </message>
+    <message>
         <source>Track hash copied to clipboard.</source>
         <translation>Hash da faixa copiado para a área de transferência.</translation>
     </message>
@@ -7705,6 +7677,14 @@ Verifique o seu nome de utilizador e palavra-passe e tente novamente.</translati
     <message>
         <source>Trigger</source>
         <translation>Gatilho</translation>
+    </message>
+    <message>
+        <source>Unofficial achievement unlock reset.</source>
+        <translation>Desbloqueio de conquista não oficial reposto.</translation>
+    </message>
+    <message>
+        <source>Unofficial achievement unlocks reset.</source>
+        <translation>Desbloqueios de conquistas não oficiais repostos.</translation>
     </message>
     <message>
         <source>Use OSD Scale</source>
@@ -7749,6 +7729,10 @@ Verifique o seu nome de utilizador e palavra-passe e tente novamente.</translati
     <message>
         <source>Uses game-specific configuration for input sources. If disabled, the global configuration will be used.</source>
         <translation>Utiliza uma configuração específica do jogo para as origens de entrada. Se estiver desativada, será utilizada a configuração global.</translation>
+    </message>
+    <message>
+        <source>When enabled, DuckStation will track unofficial achievements. Unlocks will be saved locally and not sent to RetroAchievements.</source>
+        <translation>Quando ativado, o DuckStation acompanhará as conquistas não oficiais. Os desbloqueios serão guardados localmente e não enviados para o RetroAchievements.</translation>
     </message>
     <message>
         <source>When enabled, the legacy global save state slots will be available. These slots are independent of the current game.</source>
@@ -8623,10 +8607,6 @@ Verifique o seu nome de utilizador e palavra-passe e tente novamente.</translati
         <translation>Desativa temporariamente todas as melhorias, útil para testes.</translation>
     </message>
     <message>
-        <source>Test Unofficial Achievements</source>
-        <translation>Testar Conquistas Não Oficiais</translation>
-    </message>
-    <message>
         <source>Texture Filtering</source>
         <translation>Filtro de Texturas</translation>
     </message>
@@ -8885,10 +8865,6 @@ Pretende {0} mesmo assim?</translation>
     <message>
         <source>When enabled, DuckStation will assume all achievements are locked and not send any unlock notifications to the server.</source>
         <translation>Quando ativado, o DuckStation irá assumir que todas as conquistas estão bloqueadas e não enviará nenhuma notificação de desbloqueio ao servidor.</translation>
-    </message>
-    <message>
-        <source>When enabled, DuckStation will list achievements from unofficial sets. These achievements are not tracked by RetroAchievements.</source>
-        <translation>Quando ativado, o DuckStation irá listar conquistas de conjuntos não oficiais. Estas conquistas não são monitorizadas pelo RetroAchievements.</translation>
     </message>
     <message>
         <source>When enabled, each session will behave as if no achievements have been unlocked.</source>
@@ -9842,39 +9818,6 @@ Tem a certeza de que pretende continuar?</translation>
 <context>
     <name>GameList</name>
     <message>
-        <source>Never</source>
-        <translation>Nunca</translation>
-    </message>
-    <message>
-        <source>Today</source>
-        <translation>Hoje</translation>
-    </message>
-    <message numerus="yes">
-        <source>%n seconds</source>
-        <translation>
-            <numerusform>%n segundo</numerusform>
-            <numerusform>%n segundos</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <source>%n minutes</source>
-        <translation>
-            <numerusform>%n minuto</numerusform>
-            <numerusform>%n minutos</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <source>%n hours</source>
-        <translation>
-            <numerusform>%n hora</numerusform>
-            <numerusform>%n horas</numerusform>
-        </translation>
-    </message>
-    <message>
-        <source>Yesterday</source>
-        <translation>Ontem</translation>
-    </message>
-    <message>
         <source>Disc</source>
         <comment>EntryType</comment>
         <translation>Disco</translation>
@@ -9912,26 +9855,6 @@ Tem a certeza de que pretende continuar?</translation>
         <translation>Desconhecido</translation>
     </message>
     <message>
-        <source>{}h {}m</source>
-        <translation>{} h {} min</translation>
-    </message>
-    <message>
-        <source>{}h {}m {}s</source>
-        <translation>{} h {} min {} s</translation>
-    </message>
-    <message>
-        <source>{}m {}s</source>
-        <translation>{} min {} s</translation>
-    </message>
-    <message>
-        <source>{}s</source>
-        <translation>{} s</translation>
-    </message>
-    <message>
-        <source>None</source>
-        <translation>Nenhum</translation>
-    </message>
-    <message>
         <source>URL template must contain at least one of ${title}, ${savetitle}, ${filetitle}, or ${serial}.</source>
         <translation>O modelo de URL tem de conter pelo menos um de ${title}, ${savetitle}, ${filetitle} ou ${serial}.</translation>
     </message>
@@ -9941,18 +9864,7 @@ Tem a certeza de que pretende continuar?</translation>
     </message>
 </context>
 <context>
-    <name>GameListListView</name>
-    <message>
-        <source>Unknown</source>
-        <translation>Desconhecido</translation>
-    </message>
-</context>
-<context>
     <name>GameListModel</name>
-    <message>
-        <source>Unknown</source>
-        <translation>Desconhecido</translation>
-    </message>
     <message>
         <source>Serial</source>
         <translation>Número de Série</translation>
@@ -10120,8 +10032,8 @@ Analisar de forma recorrente demora mais tempo, mas irá identificar ficheiros e
         <translation>Combinar Jogos de Vários Discos</translation>
     </message>
     <message>
-        <source>Show Localized Icons</source>
-        <translation>Mostrar Ícones Localizados</translation>
+        <source>Show Localized Titles</source>
+        <translation>Mostrar Títulos Localizados</translation>
     </message>
     <message>
         <source>Show Game Icons</source>
@@ -11347,6 +11259,142 @@ Analisar de forma recorrente demora mais tempo, mas irá identificar ficheiros e
     <message>
         <source>Offset applied to lightgun horizontal position.</source>
         <translation>Deslocamento aplicado à posição horizontal da pistola de luz.</translation>
+    </message>
+</context>
+<context>
+    <name>Host</name>
+    <message numerus="yes">
+        <source>%n seconds</source>
+        <translation>
+            <numerusform>%n segundo</numerusform>
+            <numerusform>%n segundos</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n minutes</source>
+        <translation>
+            <numerusform>%n minuto</numerusform>
+            <numerusform>%n minutos</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n hours</source>
+        <translation>
+            <numerusform>%n hora</numerusform>
+            <numerusform>%n horas</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Today</source>
+        <translation>Hoje</translation>
+    </message>
+    <message>
+        <source>Yesterday</source>
+        <translation>Ontem</translation>
+    </message>
+    <message>
+        <source>Never</source>
+        <translation>Nunca</translation>
+    </message>
+    <message>
+        <source>today</source>
+        <translation>hoje</translation>
+    </message>
+    <message>
+        <source>yesterday</source>
+        <translation>ontem</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n days ago</source>
+        <comment>Date difference</comment>
+        <translation>
+            <numerusform>há %n dia</numerusform>
+            <numerusform>há %n dias</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>on {}</source>
+        <translation>em {}</translation>
+    </message>
+    <message>
+        <source>Now</source>
+        <translation>Agora</translation>
+    </message>
+    <message>
+        <source>now</source>
+        <translation>agora</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n seconds ago</source>
+        <comment>Time difference</comment>
+        <translation>
+            <numerusform>há %n segundo</numerusform>
+            <numerusform>há %n segundos</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n minutes ago</source>
+        <comment>Time difference</comment>
+        <translation>
+            <numerusform>há %n minuto</numerusform>
+            <numerusform>há %n minutos</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n hours ago</source>
+        <comment>Time difference</comment>
+        <translation>
+            <numerusform>há %n hora</numerusform>
+            <numerusform>há %n horas</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n weeks ago</source>
+        <comment>Time difference</comment>
+        <translation>
+            <numerusform>há %n semana</numerusform>
+            <numerusform>há %n semanas</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n months ago</source>
+        <comment>Time difference</comment>
+        <translation>
+            <numerusform>há %n mês</numerusform>
+            <numerusform>há %n meses</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n years ago</source>
+        <comment>Time difference</comment>
+        <translation>
+            <numerusform>há %n ano</numerusform>
+            <numerusform>há %n anos</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>{} at {}</source>
+        <translation>{} às {}</translation>
+    </message>
+    <message>
+        <source>{}h {}m</source>
+        <translation>{} h {} min</translation>
+    </message>
+    <message>
+        <source>{}h {}m {}s</source>
+        <translation>{} h {} min {} s</translation>
+    </message>
+    <message>
+        <source>{}m {}s</source>
+        <translation>{} min {} s</translation>
+    </message>
+    <message>
+        <source>{}s</source>
+        <translation>{} s</translation>
+    </message>
+    <message>
+        <source>None</source>
+        <translation>Nenhum</translation>
     </message>
 </context>
 <context>
@@ -12661,10 +12709,6 @@ Clique com Shift para definir vários atalhos.</translation>
         <translation>Carregar Estado</translation>
     </message>
     <message>
-        <source>Save State</source>
-        <translation>Gravar Estado</translation>
-    </message>
-    <message>
         <source>S&amp;ettings</source>
         <translation>C&amp;onfigurações</translation>
     </message>
@@ -12725,10 +12769,6 @@ Clique com Shift para definir vários atalhos.</translation>
         <translation>&amp;Comandos</translation>
     </message>
     <message>
-        <source>&amp;Post-Processing</source>
-        <translation>&amp;Pós-Processamento</translation>
-    </message>
-    <message>
         <source>View Third-Party Notices...</source>
         <translation>Ver Avisos de Terceiros...</translation>
     </message>
@@ -12755,10 +12795,6 @@ Clique com Shift para definir vários atalhos.</translation>
     <message>
         <source>Big Picture</source>
         <translation>Big Picture</translation>
-    </message>
-    <message>
-        <source>Cover Downloader</source>
-        <translation>Transferência de Capas</translation>
     </message>
     <message>
         <source>&amp;GitHub Repository...</source>
@@ -12813,12 +12849,32 @@ Clique com Shift para definir vários atalhos.</translation>
         <translation>Permite gravar áudio e/ou vídeo do conteúdo.</translation>
     </message>
     <message>
+        <source>&amp;Refresh Grid Covers</source>
+        <translation>&amp;Atualizar Capas da Grelha</translation>
+    </message>
+    <message>
         <source>Media Ca&amp;pture</source>
         <translation>&amp;Captura de Multimédia</translation>
     </message>
     <message>
         <source>Starts a new session using the selected file.</source>
         <translation>Inicia uma nova sessão usando o ficheiro selecionado.</translation>
+    </message>
+    <message>
+        <source>Cha&amp;nge Disc</source>
+        <translation>&amp;Mudar Disco</translation>
+    </message>
+    <message>
+        <source>&amp;Cheats</source>
+        <translation>&amp;Códigos</translation>
+    </message>
+    <message>
+        <source>Sa&amp;ve State</source>
+        <translation>Gr&amp;avar Estado</translation>
+    </message>
+    <message>
+        <source>Media Capt&amp;ure</source>
+        <translation>Capt&amp;ura de Multimédia</translation>
     </message>
     <message>
         <source>Starts a new session from a physical disc.</source>
@@ -12921,6 +12977,10 @@ Clique com Shift para definir vários atalhos.</translation>
         <translation>Configura opções relacionadas com a forma como o conteúdo da sessão é apresentado.</translation>
     </message>
     <message>
+        <source>Post-Processi&amp;ng</source>
+        <translation>Pós-processame&amp;nto</translation>
+    </message>
+    <message>
         <source>Configures post-processing effects applied after rendering the content.</source>
         <translation>Configura efeitos de pós-processamento aplicados depois de renderizar o conteúdo.</translation>
     </message>
@@ -12981,8 +13041,44 @@ Clique com Shift para definir vários atalhos.</translation>
         <translation>&amp;Acerca do Duckstation...</translation>
     </message>
     <message>
+        <source>Ad&amp;vanced</source>
+        <translation>A&amp;vançado</translation>
+    </message>
+    <message>
+        <source>&amp;Debugging</source>
+        <translation>&amp;Depuração</translation>
+    </message>
+    <message>
+        <source>Enable &amp;Safe Mode</source>
+        <translation>Ativar Modo &amp;Seguro</translation>
+    </message>
+    <message>
+        <source>Res&amp;ume</source>
+        <translation>Ret&amp;omar</translation>
+    </message>
+    <message>
+        <source>&amp;Show Toolbar</source>
+        <translation>&amp;Mostrar Barra de Ferramentas</translation>
+    </message>
+    <message>
+        <source>S&amp;mall Icons</source>
+        <translation>Ícones Pe&amp;quenos</translation>
+    </message>
+    <message>
+        <source>Show &amp;Labels</source>
+        <translation>Mostrar &amp;Rótulos</translation>
+    </message>
+    <message>
+        <source>Show Labels &amp;Beside Icons</source>
+        <translation>Mostrar Rótulos &amp;ao Lado dos Ícones</translation>
+    </message>
+    <message>
         <source>Opens the memory card editor.</source>
         <translation>Abre o editor de cartões de memória.</translation>
+    </message>
+    <message>
+        <source>Show Grid Ca&amp;ptions</source>
+        <translation>Mostrar Legendas da Grel&amp;ha</translation>
     </message>
     <message>
         <source>Shows captions under the game cover in grid view.</source>
@@ -13005,12 +13101,56 @@ Clique com Shift para definir vários atalhos.</translation>
         <translation>Reduz o tamanho dos ícones ou capas dos jogos.</translation>
     </message>
     <message>
-        <source>Refresh Grid &amp;Covers</source>
-        <translation>Atualizar &amp;Capas da Grelha</translation>
+        <source>Open Te&amp;xture Directory...</source>
+        <translation>Abrir Diretório de Te&amp;xturas...</translation>
+    </message>
+    <message>
+        <source>&amp;Reload Texture Replacements</source>
+        <translation>&amp;Recarregar Substituições de Texturas</translation>
+    </message>
+    <message>
+        <source>Capture &amp;GPU Frame</source>
+        <translation>Capturar Fotograma da &amp;GPU</translation>
+    </message>
+    <message>
+        <source>&amp;ISO Browser</source>
+        <translation>Navegador de &amp;ISO</translation>
+    </message>
+    <message>
+        <source>&amp;Free Camera</source>
+        <translation>Câmara &amp;Livre</translation>
+    </message>
+    <message>
+        <source>Controller &amp;Test</source>
+        <translation>&amp;Testar Comando</translation>
+    </message>
+    <message>
+        <source>Clear List Backgro&amp;und</source>
+        <translation>Limpar Fundo da Lis&amp;ta</translation>
+    </message>
+    <message>
+        <source>Refresh &amp;Achievement Database</source>
+        <translation>Atualizar Base de Dados de &amp;Conquistas</translation>
+    </message>
+    <message>
+        <source>&amp;Animate Game Icons</source>
+        <translation>&amp;Animar Ícones dos Jogos</translation>
+    </message>
+    <message>
+        <source>Prefer Ac&amp;hievement Icons</source>
+        <translation>Preferir Ícones de Con&amp;quistas</translation>
+    </message>
+    <message>
+        <source>Syst&amp;em Log</source>
+        <translation>Registo do Sist&amp;ema</translation>
     </message>
     <message>
         <source>Invalidates the cache of game covers, allowing new images to be discovered.</source>
         <translation>Invalida a cache das capas dos jogos, permitindo descobrir novas imagens.</translation>
+    </message>
+    <message>
+        <source>&amp;Open Data Directory...</source>
+        <translation>&amp;Abrir Diretório de Dados...</translation>
     </message>
     <message>
         <source>Opens the directory containing application data in your file browser.</source>
@@ -13027,6 +13167,14 @@ Clique com Shift para definir vários atalhos.</translation>
     <message>
         <source>Ends the current session without the option to save state.</source>
         <translation>Termina a sessão atual sem permitir guardar o estado.</translation>
+    </message>
+    <message>
+        <source>Start Bi&amp;g Picture Mode</source>
+        <translation>Iniciar Modo de Ecrã &amp;Inteiro</translation>
+    </message>
+    <message>
+        <source>Cover &amp;Downloader</source>
+        <translation>&amp;Transferidor de Capas</translation>
     </message>
     <message>
         <source>Opens the cover downloader window.</source>
@@ -13061,24 +13209,12 @@ Clique com Shift para definir vários atalhos.</translation>
         <translation>Inicia ou para a captura de vídeo e áudio do conteúdo.</translation>
     </message>
     <message>
-        <source>Open Texture Directory...</source>
-        <translation>Abrir Diretório de Texturas...</translation>
-    </message>
-    <message>
         <source>Opens the directory used to store texture replacements.</source>
         <translation>Abre o diretório usado para guardar substituições de texturas.</translation>
     </message>
     <message>
-        <source>Reload Texture Replacements</source>
-        <translation>Recarregar Substituição de Texturas</translation>
-    </message>
-    <message>
         <source>Invalidates the cache of available replacement textures.</source>
         <translation>Invalida a cache das substituições de texturas disponíveis.</translation>
-    </message>
-    <message>
-        <source>Capture GPU Frame</source>
-        <translation>Capturar Fotograma da GPU</translation>
     </message>
     <message>
         <source>Saves the emulated GPU commands to a file that can be later replayed.</source>
@@ -13105,24 +13241,12 @@ Clique com Shift para definir vários atalhos.</translation>
         <translation>Registo para Ficheiro</translation>
     </message>
     <message>
-        <source>ISO Browser</source>
-        <translation>Navegador ISO</translation>
-    </message>
-    <message>
         <source>Opens the ISO browser window.</source>
         <translation>Abre a janela do navegador ISO.</translation>
     </message>
     <message>
-        <source>Free Camera</source>
-        <translation>Câmara Livre</translation>
-    </message>
-    <message>
         <source>Allows you to freely move the camera in supported games.</source>
         <translation>Permite mover livremente a câmara nos jogos compatíveis.</translation>
-    </message>
-    <message>
-        <source>Controller Test</source>
-        <translation>Teste de Comandos</translation>
     </message>
     <message>
         <source>Allows you to test emulated controller mappings.</source>
@@ -13145,10 +13269,6 @@ Clique com Shift para definir vários atalhos.</translation>
         <translation>Altera a imagem de fundo apresentada na lista/grelha de jogos.</translation>
     </message>
     <message>
-        <source>Clea&amp;r List Background</source>
-        <translation>&amp;Limpar Fundo da Lista</translation>
-    </message>
-    <message>
         <source>Removes the background image shown in the game list/grid.</source>
         <translation>Remove a imagem de fundo apresentada na lista/grelha de jogos.</translation>
     </message>
@@ -13159,10 +13279,6 @@ Clique com Shift para definir vários atalhos.</translation>
     <message>
         <source>Refreshes the list of unlocked achievements.</source>
         <translation>Atualiza a lista de conquistas desbloqueadas.</translation>
-    </message>
-    <message>
-        <source>Refresh Achievement Database</source>
-        <translation>Atualizar Base de Dados de Conquistas</translation>
     </message>
     <message>
         <source>Updates the database for achievements shown in the game list.</source>
@@ -13189,24 +13305,12 @@ Clique com Shift para definir vários atalhos.</translation>
         <translation>Abre a janela do editor de memória.</translation>
     </message>
     <message>
-        <source>Animate Game Icons</source>
-        <translation>Animar Ícones dos Jogos</translation>
-    </message>
-    <message>
         <source>Animates icons in the list view when selected.</source>
         <translation>Anima os ícones na vista de lista quando selecionados.</translation>
     </message>
     <message>
-        <source>Prefer Achievement Icons</source>
-        <translation>Preferir Ícones de Conquistas</translation>
-    </message>
-    <message>
         <source>Prioritizes the games badges used for RetroAchievements over memory card icons.</source>
         <translation>Dá prioridade aos emblemas de jogos usados pelo RetroAchievements em vez dos ícones dos cartões de memória.</translation>
-    </message>
-    <message>
-        <source>System Log</source>
-        <translation>Registo do Sistema</translation>
     </message>
     <message>
         <source>Start &amp;Capture</source>
@@ -13377,16 +13481,8 @@ Clique com Shift para definir vários atalhos.</translation>
         <translation>Configura opções relacionadas com o aspeto e o comportamento da aplicação.</translation>
     </message>
     <message>
-        <source>A&amp;dvanced</source>
-        <translation>A&amp;vançadas</translation>
-    </message>
-    <message>
         <source>Configures advanced options for the application.</source>
         <translation>Configura opções avançadas da aplicação.</translation>
-    </message>
-    <message>
-        <source>Debuggi&amp;ng</source>
-        <translation>Depura&amp;ção</translation>
     </message>
     <message>
         <source>Configures internal options for the application.</source>
@@ -13421,10 +13517,6 @@ Clique com Shift para definir vários atalhos.</translation>
         <translation>Remove o disco do sistema emulado.</translation>
     </message>
     <message>
-        <source>Enable Safe Mode</source>
-        <translation>Ativar Modo Seguro</translation>
-    </message>
-    <message>
         <source>Takes a screenshot of the current content.</source>
         <translation>Tira uma captura de ecrã do conteúdo atual.</translation>
     </message>
@@ -13445,24 +13537,12 @@ Clique com Shift para definir vários atalhos.</translation>
         <translation>Controla se a barra de ferramentas pode ser movida.</translation>
     </message>
     <message>
-        <source>S&amp;mall Toolbar Icons</source>
-        <translation>Ícones &amp;Pequenos da Barra de Ferramentas</translation>
-    </message>
-    <message>
         <source>Controls whether the smaller toolbar icons are displayed.</source>
         <translation>Controla se são apresentados ícones mais pequenos na barra de ferramentas.</translation>
     </message>
     <message>
-        <source>Toolbar L&amp;abels</source>
-        <translation>&amp;Etiquetas da Barra de Ferramentas</translation>
-    </message>
-    <message>
         <source>Controls whether labels are displayed alongside toolbar icons.</source>
         <translation>Controla se as etiquetas são apresentadas junto aos ícones da barra de ferramentas.</translation>
-    </message>
-    <message>
-        <source>Toolbar Labels &amp;Beside Icons</source>
-        <translation>Etiquetas da Barra de Ferramentas &amp;Junto aos Ícones</translation>
     </message>
     <message>
         <source>Controls whether labels are displayed next to or under toolbar icons.</source>
@@ -13521,16 +13601,8 @@ Clique com Shift para definir vários atalhos.</translation>
         <translation>Funde vários discos pertencentes ao mesmo jogo num único item da lista de jogos.</translation>
     </message>
     <message>
-        <source>Show G&amp;rid Captions</source>
-        <translation>Mostrar &amp;Legendas da Grelha</translation>
-    </message>
-    <message>
         <source>Show Titles (Grid View)</source>
         <translation>Exibir Títulos (Vista de Grelha)</translation>
-    </message>
-    <message>
-        <source>Open Data Directory...</source>
-        <translation>Abrir Diretório dos Dados...</translation>
     </message>
     <message>
         <source>Error</source>
@@ -13657,12 +13729,20 @@ Estas gravações não serão recuperáveis.</translation>
         <translation>Falha ao guardar o fcheiro de estado guardado &apos;%1&apos;.</translation>
     </message>
     <message>
+        <source>Save was created %1.</source>
+        <translation>A gravação foi criada em %1.</translation>
+    </message>
+    <message>
         <source>Confirm Disc Change</source>
         <translation>Confirmar Troca de Disco</translation>
     </message>
     <message>
         <source>Swap Disc</source>
         <translation>Trocar Disco</translation>
+    </message>
+    <message>
+        <source>RA: Logged in as %1 (%2 points, %3 casual). %4 unread messages.</source>
+        <translation>RA: Sessão iniciada como %1 (%2 pontos, %3 casual). %4 mensagens não lidas.</translation>
     </message>
     <message>
         <source>Start Disc</source>
@@ -13773,10 +13853,6 @@ Esta ação não pode ser desfeita.</translation>
         <translation>Falha ao criar o cartão de memória &apos;%1&apos;: %2</translation>
     </message>
     <message>
-        <source>RA: Logged in as %1 (%2, %3 casual). %4 unread messages.</source>
-        <translation>RA: Sessão iniciada como %1 (%2, %3 casual). %4 mensagens não lidas.</translation>
-    </message>
-    <message>
         <source>Refresh Achievement Progress</source>
         <translation>Atualizar Progresso das Conquistas</translation>
     </message>
@@ -13835,10 +13911,6 @@ Pretende eliminar o estado de gravação e iniciar o jogo mesmo assim?</translat
     <message>
         <source>&lt;strong&gt;Resume Game&lt;/strong&gt;&lt;br&gt;Do you want to load this state, or start from a fresh boot?</source>
         <translation>&lt;strong&gt;Retomar Jogo&lt;/strong&gt;&lt;br&gt;Pretende carregar este estado ou iniciar a partir de um arranque novo?</translation>
-    </message>
-    <message>
-        <source>Save was created on %1.</source>
-        <translation>A gravação foi criada em %1.</translation>
     </message>
     <message>
         <source>Do you want to swap discs or boot the new image via system restart?</source>
@@ -15762,6 +15834,10 @@ Erro: {1}</translation>
 <context>
     <name>PlayStationMouse</name>
     <message>
+        <source>Pointer</source>
+        <translation>Ponteiro</translation>
+    </message>
+    <message>
         <source>Left Button</source>
         <translation>Botão Esquerdo</translation>
     </message>
@@ -15780,13 +15856,6 @@ Erro: {1}</translation>
     <message>
         <source>Vertical Sensitivity</source>
         <translation>Sensiblidade Vertical</translation>
-    </message>
-</context>
-<context>
-    <name>PlaystationMouse</name>
-    <message>
-        <source>Pointer</source>
-        <translation>Cursor</translation>
     </message>
 </context>
 <context>
@@ -16566,10 +16635,6 @@ Deseja atualizar o atalho para apontar para a localização atual?</translation>
 <context>
     <name>SaveStateSelectorUI</name>
     <message>
-        <source>Saved at {0:%H:%M} on {0:%a} {0:%Y/%m/%d}.</source>
-        <translation>Guardado às: {0:%H:%M} em {0:%a} {0:%Y/%m/%d}.</translation>
-    </message>
-    <message>
         <source>No save state slots available.</source>
         <translation>Não existem ranhuras de estados de gravação disponíveis.</translation>
     </message>
@@ -16592,6 +16657,10 @@ Deseja atualizar o atalho para apontar para a localização atual?</translation>
     <message>
         <source>{} ({})</source>
         <translation>{} ({})</translation>
+    </message>
+    <message>
+        <source>Saved {}</source>
+        <translation>Guardado {}</translation>
     </message>
     <message>
         <source>No save present in this slot.</source>
@@ -17168,14 +17237,14 @@ Deseja criar esse diretório?</translation>
         <translation>Detectar Automaticamente</translation>
     </message>
     <message>
-        <source>NTSC (60hz)</source>
+        <source>NTSC (60 Hz)</source>
         <comment>ForceVideoTiming</comment>
-        <translation>NTSC (60hz)</translation>
+        <translation>NTSC (60 Hz)</translation>
     </message>
     <message>
-        <source>PAL (50hz)</source>
+        <source>PAL (50 Hz)</source>
         <comment>ForceVideoTiming</comment>
-        <translation>PAL (50hz)</translation>
+        <translation>PAL (50 Hz)</translation>
     </message>
     <message>
         <source>Nearest-Neighbor</source>
@@ -18135,9 +18204,9 @@ A análise recursiva pode demorar mais tempo, mas permite identificar ficheiros 
     </message>
     <message>
         <source>Logged in as %1
-Token generated at %2</source>
+Token generated %2</source>
         <translation>Sessão iniciada como %1
-Token gerado em %2</translation>
+Token gerado %2</translation>
     </message>
     <message>
         <source>Not Logged In.</source>
@@ -18564,8 +18633,8 @@ Tem de guardar num cartão de memória e reiniciar o jogo para eliminar quaisque
 {}</translation>
     </message>
     <message>
-        <source>Loaded undo save state created at {}.</source>
-        <translation>Estado guardado anulado carregado; criado em {}.</translation>
+        <source>Loaded undo save state created {}.</source>
+        <translation>Foi carregado o estado de gravação de anulação criado em {}.</translation>
     </message>
     <message>
         <source>capturing audio and video</source>

@@ -182,6 +182,10 @@ Zor (Hardcore) modunu açmak ister misiniz?</translation>
         <translation>Başarım Bildirimlerini Göster</translation>
     </message>
     <message>
+        <source>Track Unofficial Achievements</source>
+        <translation>Resmi Olmayan Başarımları Takip Et</translation>
+    </message>
+    <message>
         <source>Prefetch Badges</source>
         <translation>Rozetleri Önceden İndir</translation>
     </message>
@@ -252,6 +256,10 @@ Zor (Hardcore) modunu açmak ister misiniz?</translation>
     <message>
         <source>&quot;Challenge&quot; mode for achievements, including leaderboard tracking. Disables save state, cheats, and slowdown functions.</source>
         <translation>Başarımlar için&quot;Challenge/Meydan Okuma&quot; modu. Lider tahtası takibinide içerir. Durum kaydı,hile ve yavaşlatma fonksiyonlarını kapatır.</translation>
+    </message>
+    <message>
+        <source>When enabled, DuckStation will track unofficial achievements. Unlocks will be saved locally and not sent to RetroAchievements.</source>
+        <translation>Etkinleştirildiğinde DuckStation resmi olmayan başarımları takip eder. Kilit açmaları yerel olarak kaydedilir ve RetroAchievements&apos;a gönderilmez.</translation>
     </message>
     <message>
         <source>Checked</source>
@@ -379,9 +387,9 @@ Zor (Hardcore) modunu açmak ister misiniz?</translation>
     </message>
     <message>
         <source>Logged in as %1
-Token generated at %2</source>
+Token generated %2</source>
         <translation>%1 olarak giriş yapıldı
-Token %2 tarihinde oluşturuldu</translation>
+Belirteç %2 oluşturuldu</translation>
     </message>
     <message>
         <source>When enabled, each session will behave as if no achievements have been unlocked.</source>
@@ -390,10 +398,6 @@ Token %2 tarihinde oluşturuldu</translation>
     <message>
         <source>When enabled, DuckStation will assume all achievements are locked and not send any unlock notifications to the server.</source>
         <translation>Etkinleştirildiğinde, Duckstation tüm başarımları kilitli kabul edip sunucuya başarım elde edilme verisi göndermez.</translation>
-    </message>
-    <message>
-        <source>When enabled, DuckStation will list achievements from unofficial sets. Please note that these achievements are not tracked by RetroAchievements, so they unlock every time.</source>
-        <translation>Etkinleştirildiğinde, Duckstation resmi olmayan setlerdeki başarımları listeleyecek. Aklınızda bulunsunki RetroAchievements bu başarımları takip etmez bu yüzden her defasında tekrar bu başarımları kazanıcaksınız.</translation>
     </message>
     <message numerus="yes">
         <source>%n seconds</source>
@@ -585,36 +589,16 @@ Hata: {}</translation>
         <source>This subset has no achievements.</source>
         <translation>Bu alt kümede başarım yok.</translation>
     </message>
+    <message>
+        <source>You have unlocked {0} of {1} unofficial achievements, earning {2} of {3} possible points.</source>
+        <translation>{1} resmi olmayan başarımın {0} tanesinin kilidini açtınız ve mümkün olan {3} puanın {2} tanesini kazandınız.</translation>
+    </message>
     <message numerus="yes">
         <source>%n achievements are not supported by DuckStation and cannot be unlocked.</source>
         <comment>Unsupported achievement count</comment>
         <translation>
             <numerusform>%n başarım DuckStation tarafından desteklenmiyor ve bunların kilidi açılamıyor.</numerusform>
         </translation>
-    </message>
-    <message>
-        <source>Game was beaten on {0}, and completed on {1}.</source>
-        <translation>Oyun {0} tarihinde tamamlandı ve {1} tarihinde bitirildi.</translation>
-    </message>
-    <message>
-        <source>Subset was beaten on {0}, and completed on {1}.</source>
-        <translation>Alt küme {0} tarihinde tamamlandı ve {1} tarihinde bitirildi.</translation>
-    </message>
-    <message>
-        <source>Game was beaten on {0}.</source>
-        <translation>Oyun {0} tarihinde bitirildi.</translation>
-    </message>
-    <message>
-        <source>Subset was beaten on {0}.</source>
-        <translation>Alt küme {0} tarihinde bitirildi.</translation>
-    </message>
-    <message>
-        <source>Game was completed on {0}.</source>
-        <translation>Oyun {0} tarihinde tamamlandı.</translation>
-    </message>
-    <message>
-        <source>Subset was completed on {0}.</source>
-        <translation>Alt küme {0} tarihinde tamamlandı.</translation>
     </message>
     <message>
         <source>Not Confirmed</source>
@@ -655,10 +639,6 @@ Hata: {}</translation>
     <message>
         <source>Back</source>
         <translation>Geri</translation>
-    </message>
-    <message>
-        <source>Unlocked: {} | {:.1f}% of players have this achievement</source>
-        <translation>Aöıldı: {} | {:.1f}% kadar oyuncular bu başarıma sahip</translation>
     </message>
     <message>
         <source>{:.1f}% of players have this achievement</source>
@@ -716,6 +696,30 @@ Hata: {}</translation>
         <translation>Bu kadar başarımı açtınız {0}, {1} adet başarımın içinden ve  {2} puan kazandınız {3} puanın içinden.</translation>
     </message>
     <message>
+        <source>Game was beaten {0}, and completed {1}.</source>
+        <translation>Oyun {0} tarihinde bitirildi ve {1} tarihinde tamamlandı.</translation>
+    </message>
+    <message>
+        <source>Subset was beaten {0}, and completed {1}.</source>
+        <translation>Alt küme {0} tarihinde bitirildi ve {1} tarihinde tamamlandı.</translation>
+    </message>
+    <message>
+        <source>Game was beaten {0}.</source>
+        <translation>Oyun {0} tarihinde bitirildi.</translation>
+    </message>
+    <message>
+        <source>Subset was beaten {0}.</source>
+        <translation>Alt küme {0} tarihinde bitirildi.</translation>
+    </message>
+    <message>
+        <source>Game was completed {0}.</source>
+        <translation>Oyun {0} tarihinde tamamlandı.</translation>
+    </message>
+    <message>
+        <source>Subset was completed {0}.</source>
+        <translation>Alt küme {0} tarihinde tamamlandı.</translation>
+    </message>
+    <message>
         <source>Unknown</source>
         <translation>Bilinmiyor</translation>
     </message>
@@ -748,8 +752,16 @@ Hata: {}</translation>
         <translation>Neredeyse</translation>
     </message>
     <message>
+        <source>Reset Unofficial Unlocks</source>
+        <translation>Resmi Olmayan Kilit Açmaları Sıfırla</translation>
+    </message>
+    <message>
         <source>XXX points</source>
         <translation>XXX Puan</translation>
+    </message>
+    <message>
+        <source>Unlocked {}</source>
+        <translation>Kilidi açıldı {}</translation>
     </message>
     <message>
         <source>Loading...</source>
@@ -769,60 +781,6 @@ Hata: {}</translation>
     <message>
         <source>View Profile</source>
         <translation>Profili Göster</translation>
-    </message>
-    <message>
-        <source>Just now</source>
-        <translation>Az önce</translation>
-    </message>
-    <message numerus="yes">
-        <source>%n minutes ago</source>
-        <comment>Relative time</comment>
-        <translation>
-            <numerusform>%n dakika önce</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <source>%n hours ago</source>
-        <comment>Relative time</comment>
-        <translation>
-            <numerusform>%n saat önce</numerusform>
-        </translation>
-    </message>
-    <message>
-        <source>Today</source>
-        <translation>Bugün</translation>
-    </message>
-    <message>
-        <source>Yesterday</source>
-        <translation>Dün</translation>
-    </message>
-    <message numerus="yes">
-        <source>%n days ago</source>
-        <comment>Relative time</comment>
-        <translation>
-            <numerusform>%n gün önce</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <source>%n weeks ago</source>
-        <comment>Relative time</comment>
-        <translation>
-            <numerusform>%n hafta önce</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <source>%n months ago</source>
-        <comment>Relative time</comment>
-        <translation>
-            <numerusform>%n ay önce</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <source>%n years ago</source>
-        <comment>Relative time</comment>
-        <translation>
-            <numerusform>%n yıl önce</numerusform>
-        </translation>
     </message>
     <message>
         <source>Leaderboard download failed</source>
@@ -2727,10 +2685,6 @@ Bu hileyi kullanmaya çalışmak beklenen sonucu vermeyecek. Devam etmek istiyor
     <message>
         <source>Maximum (Safer)</source>
         <translation>Maksimum (Daha Güvenli)</translation>
-    </message>
-    <message>
-        <source>Preload Image To RAM</source>
-        <translation>CD&apos;yi RAM&apos;a Kopyala</translation>
     </message>
     <message>
         <source>Apply Image Patches</source>
@@ -5356,6 +5310,10 @@ Sıfırla&apos;ya tıklamak, seri numarasını disk görüntüsünden taranan de
         <translation>Tüm Zamanlar: {}</translation>
     </message>
     <message>
+        <source>All unofficial achievement progress for the current game will be removed. This cannot be undone.</source>
+        <translation>Geçerli oyun için tüm resmi olmayan başarım ilerlemesi kaldırılacak. Bu işlem geri alınamaz.</translation>
+    </message>
+    <message>
         <source>Allow Booting Without SBI File</source>
         <translation>SBI Dosyası Olmadan Başlatmayı Etkinleştir</translation>
     </message>
@@ -5896,6 +5854,10 @@ Bu işlemi geri alamazsınız.</translation>
         <translation>Lider tahtası challenge/meydan okumalarını başlatırken, başaramayınca ve sisteme girdi yapınca mesaj gösterir.</translation>
     </message>
     <message>
+        <source>Do you want to continue from the automatic save created {}?</source>
+        <translation>{} oluşturulan otomatik kayıttan devam etmek istiyor musunuz?</translation>
+    </message>
+    <message>
         <source>Double-Click Toggles Fullscreen</source>
         <translation>Çift Tıkla Tam Ekranı Aç/Kapa</translation>
     </message>
@@ -6268,10 +6230,6 @@ Hata şuydu:</translation>
     <message>
         <source>Login</source>
         <translation>Giriş</translation>
-    </message>
-    <message>
-        <source>Login token generated on {}</source>
-        <translation>{} Tarihli Tek kullanımlık giriş kodu</translation>
     </message>
     <message>
         <source>Logout</source>
@@ -6694,6 +6652,10 @@ Hata şuydu:</translation>
         <translation>Everensel Durum Kaydı Yükle</translation>
     </message>
     <message>
+        <source>Login token generated {}</source>
+        <translation>Giriş belirteci {} oluşturuldu</translation>
+    </message>
+    <message>
         <source>Makes games run closer to their console framerate, at a small cost to performance.</source>
         <translation>Küçük bir performans kaybıyla oyunları konsoldaki kare sayısına yaklaştırır.</translation>
     </message>
@@ -6716,6 +6678,18 @@ Hata şuydu:</translation>
     <message>
         <source>Memory Card {} Type</source>
         <translation>Hafıza Kartı {} Türü</translation>
+    </message>
+    <message>
+        <source>Reset Unlock</source>
+        <translation>Kilidi Açmayı Sıfırla</translation>
+    </message>
+    <message>
+        <source>Reset Unofficial Achievement</source>
+        <translation>Resmi Olmayan Başarımı Sıfırla</translation>
+    </message>
+    <message>
+        <source>Reset Unofficial Achievement Unlocks</source>
+        <translation>Resmi Olmayan Başarım Kilit Açmalarını Sıfırla</translation>
     </message>
     <message>
         <source>Rewind for {0} frames, lasting {1:.2f} seconds will require {2} MB of RAM and {3} MB of VRAM.</source>
@@ -7002,6 +6976,10 @@ Hata şuydu:</translation>
         <translation>BIOS dosyası &apos;{}&apos; zaten kurulu. Üzerine yazmak istiyor musunuz?</translation>
     </message>
     <message>
+        <source>The unlock state for &apos;{}&apos; will be removed. This cannot be undone.</source>
+        <translation>&apos;{}&apos; için kilit açma durumu kaldırılacak. Bu işlem geri alınamaz.</translation>
+    </message>
+    <message>
         <source>Theme</source>
         <translation>Tema</translation>
     </message>
@@ -7038,6 +7016,10 @@ Hata şuydu:</translation>
         <translation>Takip Et</translation>
     </message>
     <message>
+        <source>Track Unofficial Achievements</source>
+        <translation>Resmi Olmayan Başarımları Takip Et</translation>
+    </message>
+    <message>
         <source>Track hash copied to clipboard.</source>
         <translation>İzleme karması panoya kopyalandı.</translation>
     </message>
@@ -7052,6 +7034,14 @@ Hata şuydu:</translation>
     <message>
         <source>Ungrouped</source>
         <translation>Grupsuz</translation>
+    </message>
+    <message>
+        <source>Unofficial achievement unlock reset.</source>
+        <translation>Resmi olmayan başarım kilit açması sıfırlandı.</translation>
+    </message>
+    <message>
+        <source>Unofficial achievement unlocks reset.</source>
+        <translation>Resmi olmayan başarım kilit açmaları sıfırlandı.</translation>
     </message>
     <message>
         <source>Unpin from OSD</source>
@@ -7120,6 +7110,10 @@ Hata şuydu:</translation>
     <message>
         <source>When Big Picture mode is started, the game list will be displayed instead of the main menu.</source>
         <translation>Tam Ekran Modu başlatıldığında ana menü yerine oyun listesi gösterilir.</translation>
+    </message>
+    <message>
+        <source>When enabled, DuckStation will track unofficial achievements. Unlocks will be saved locally and not sent to RetroAchievements.</source>
+        <translation>Etkinleştirildiğinde DuckStation resmi olmayan başarımları takip eder. Kilit açmaları yerel olarak kaydedilir ve RetroAchievements&apos;a gönderilmez.</translation>
     </message>
     <message>
         <source>Widescreen Rendering</source>
@@ -7628,10 +7622,6 @@ Hata: {}
     <message>
         <source>Displays only the game title in the list, instead of the title and serial/file name.</source>
         <translation>Listede başlık ile seri/dosya adı yerine yalnızca oyun başlığını gösterir.</translation>
-    </message>
-    <message>
-        <source>Do you want to continue from the automatic save created at {}?</source>
-        <translation>{} tarihinde oluşturulan otomatik kayıttan devam etmek istiyor musunuz?</translation>
     </message>
     <message>
         <source>Downloads all locked achievement badges while starting the game. This will reduce delays in the images being shown when unlocking achievements.</source>
@@ -8659,10 +8649,6 @@ Yine de {1} işlemine devam etmek istiyor musunuz?</translation>
         <translation>Tüm iyileştiremleri geçici olarak kapar. Deneme yaparken işe yarar.</translation>
     </message>
     <message>
-        <source>Test Unofficial Achievements</source>
-        <translation>Resmi Olmayan Başarımları Dene</translation>
-    </message>
-    <message>
         <source>Texture Filtering</source>
         <translation>Doku Süzme</translation>
     </message>
@@ -8861,10 +8847,6 @@ Yinede işleminize {0} devam etmek istiyor musunuz?</translation>
     <message>
         <source>When enabled, DuckStation will assume all achievements are locked and not send any unlock notifications to the server.</source>
         <translation>Etkinleştirildiğinde, Duckstation tüm başarımları kilitli kabul edip sunucuya başarım elde edilme verisi göndermez.</translation>
-    </message>
-    <message>
-        <source>When enabled, DuckStation will list achievements from unofficial sets. These achievements are not tracked by RetroAchievements.</source>
-        <translation>Açıldığında DuckStation gayriresmi başarımlarıda takip eder. Bu başarımlar Retro Achievements&apos;te geçerli değildir.</translation>
     </message>
     <message>
         <source>When enabled, each session will behave as if no achievements have been unlocked.</source>
@@ -9855,70 +9837,9 @@ Devam etmekten emin misiniz?</translation>
         <source>No URLs to download enumerated.</source>
         <translation>İndirilecek URL listelenmedi.</translation>
     </message>
-    <message>
-        <source>Never</source>
-        <translation>Asla</translation>
-    </message>
-    <message>
-        <source>Today</source>
-        <translation>Bugün</translation>
-    </message>
-    <message numerus="yes">
-        <source>%n seconds</source>
-        <translation>
-            <numerusform>%n saniye</numerusform>
-        </translation>
-    </message>
-    <message>
-        <source>Yesterday</source>
-        <translation>Dün</translation>
-    </message>
-    <message>
-        <source>{}h {}m</source>
-        <translation>{}Saat {}Dakika</translation>
-    </message>
-    <message>
-        <source>{}h {}m {}s</source>
-        <translation>{}Saat {}Dakika {}Saniye</translation>
-    </message>
-    <message>
-        <source>{}m {}s</source>
-        <translation>{}Dakika {}Saniye</translation>
-    </message>
-    <message>
-        <source>{}s</source>
-        <translation>{}Saniye</translation>
-    </message>
-    <message>
-        <source>None</source>
-        <translation>Hiç</translation>
-    </message>
-    <message numerus="yes">
-        <source>%n hours</source>
-        <translation>
-            <numerusform>%n saat</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <source>%n minutes</source>
-        <translation>
-            <numerusform>%n dakika</numerusform>
-        </translation>
-    </message>
-</context>
-<context>
-    <name>GameListListView</name>
-    <message>
-        <source>Unknown</source>
-        <translation>Bilinmiyor</translation>
-    </message>
 </context>
 <context>
     <name>GameListModel</name>
-    <message>
-        <source>Unknown</source>
-        <translation>Bilinmiyor</translation>
-    </message>
     <message>
         <source>Icon</source>
         <translation>Simge</translation>
@@ -10085,8 +10006,8 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
         <translation>Çoklu CD Kullanan Oyunları Birleştir</translation>
     </message>
     <message>
-        <source>Show Localized Icons</source>
-        <translation>Yerelleştirilmiş Simgeleri Göster</translation>
+        <source>Show Localized Titles</source>
+        <translation>Yerelleştirilmiş Başlıkları Göster</translation>
     </message>
     <message>
         <source>Show Game Icons</source>
@@ -11310,6 +11231,132 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
     <message>
         <source>Offset applied to lightgun horizontal position.</source>
         <translation>Işık tabancasının yatay konumuna uygulanan ofset.</translation>
+    </message>
+</context>
+<context>
+    <name>Host</name>
+    <message numerus="yes">
+        <source>%n seconds</source>
+        <translation>
+            <numerusform>%n saniye</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n minutes</source>
+        <translation>
+            <numerusform>%n dakika</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n hours</source>
+        <translation>
+            <numerusform>%n saat</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Today</source>
+        <translation>Bugün</translation>
+    </message>
+    <message>
+        <source>Yesterday</source>
+        <translation>Dün</translation>
+    </message>
+    <message>
+        <source>Never</source>
+        <translation>Asla</translation>
+    </message>
+    <message>
+        <source>today</source>
+        <translation>bugün</translation>
+    </message>
+    <message>
+        <source>yesterday</source>
+        <translation>dün</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n days ago</source>
+        <comment>Date difference</comment>
+        <translation>
+            <numerusform>%n gün önce</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>on {}</source>
+        <translation>{} tarihinde</translation>
+    </message>
+    <message>
+        <source>Now</source>
+        <translation>Şimdi</translation>
+    </message>
+    <message>
+        <source>now</source>
+        <translation>şimdi</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n seconds ago</source>
+        <comment>Time difference</comment>
+        <translation>
+            <numerusform>%n saniye önce</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n minutes ago</source>
+        <comment>Time difference</comment>
+        <translation>
+            <numerusform>%n dakika önce</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n hours ago</source>
+        <comment>Time difference</comment>
+        <translation>
+            <numerusform>%n saat önce</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n weeks ago</source>
+        <comment>Time difference</comment>
+        <translation>
+            <numerusform>%n hafta önce</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n months ago</source>
+        <comment>Time difference</comment>
+        <translation>
+            <numerusform>%n ay önce</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n years ago</source>
+        <comment>Time difference</comment>
+        <translation>
+            <numerusform>%n yıl önce</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>{} at {}</source>
+        <translation>{} saat {}</translation>
+    </message>
+    <message>
+        <source>{}h {}m</source>
+        <translation>{}Saat {}Dakika</translation>
+    </message>
+    <message>
+        <source>{}h {}m {}s</source>
+        <translation>{}Saat {}Dakika {}Saniye</translation>
+    </message>
+    <message>
+        <source>{}m {}s</source>
+        <translation>{}Dakika {}Saniye</translation>
+    </message>
+    <message>
+        <source>{}s</source>
+        <translation>{}Saniye</translation>
+    </message>
+    <message>
+        <source>None</source>
+        <translation>Hiç</translation>
     </message>
 </context>
 <context>
@@ -12630,10 +12677,6 @@ Shift&apos;e basılı tutarak birden çok atama yapın.</translation>
         <translation>Durum Kaydı Yükle</translation>
     </message>
     <message>
-        <source>Save State</source>
-        <translation>Durum Kaydı Kaydet</translation>
-    </message>
-    <message>
         <source>S&amp;ettings</source>
         <translation>A&amp;yarlar</translation>
     </message>
@@ -12718,10 +12761,6 @@ Shift&apos;e basılı tutarak birden çok atama yapın.</translation>
         <translation>&amp;CKollar</translation>
     </message>
     <message>
-        <source>Enable Safe Mode</source>
-        <translation>Güvenli Mod Aç</translation>
-    </message>
-    <message>
         <source>Memory &amp;Scanner</source>
         <translation>Hafıza &amp;sTarayıcı</translation>
     </message>
@@ -12732,6 +12771,22 @@ Shift&apos;e basılı tutarak birden çok atama yapın.</translation>
     <message>
         <source>Starts a new session using the selected file.</source>
         <translation>Seçilen dosyayı kullanarak yeni bir oturum başlatır.</translation>
+    </message>
+    <message>
+        <source>Cha&amp;nge Disc</source>
+        <translation>Diski &amp;Değiştir</translation>
+    </message>
+    <message>
+        <source>&amp;Cheats</source>
+        <translation>&amp;Hileler</translation>
+    </message>
+    <message>
+        <source>Sa&amp;ve State</source>
+        <translation>Durum Kaydını &amp;Kaydet</translation>
+    </message>
+    <message>
+        <source>Media Capt&amp;ure</source>
+        <translation>Medya &amp;Yakalama</translation>
     </message>
     <message>
         <source>Starts a new session from a physical disc.</source>
@@ -12830,6 +12885,10 @@ Shift&apos;e basılı tutarak birden çok atama yapın.</translation>
         <translation>Oturum içeriğinin nasıl görüntüleneceğiyle ilgili seçenekleri yapılandırır.</translation>
     </message>
     <message>
+        <source>Post-Processi&amp;ng</source>
+        <translation>Görsel İşleme &amp;Sonrası</translation>
+    </message>
+    <message>
         <source>Configures post-processing effects applied after rendering the content.</source>
         <translation>İçerik oluşturulduktan sonra uygulanan son işlem efektlerini yapılandırır.</translation>
     </message>
@@ -12914,16 +12973,56 @@ Shift&apos;e basılı tutarak birden çok atama yapın.</translation>
         <translation>Uygulamanın görünümü ve davranışıyla ilgili seçenekleri yapılandırır.</translation>
     </message>
     <message>
-        <source>A&amp;dvanced</source>
-        <translation>&amp;Gelişmiş</translation>
+        <source>&amp;Refresh Grid Covers</source>
+        <translation>Izgara Kapaklarını &amp;Yenile</translation>
+    </message>
+    <message>
+        <source>Open Te&amp;xture Directory...</source>
+        <translation>Doku Dizinini &amp;Aç...</translation>
+    </message>
+    <message>
+        <source>&amp;Reload Texture Replacements</source>
+        <translation>Doku Değiştirmelerini &amp;Yeniden Yükle</translation>
+    </message>
+    <message>
+        <source>Capture &amp;GPU Frame</source>
+        <translation>&amp;GPU Karesini Yakala</translation>
+    </message>
+    <message>
+        <source>&amp;ISO Browser</source>
+        <translation>&amp;ISO Tarayıcısı</translation>
+    </message>
+    <message>
+        <source>&amp;Free Camera</source>
+        <translation>&amp;Serbest Kamera</translation>
+    </message>
+    <message>
+        <source>Controller &amp;Test</source>
+        <translation>Denetleyici &amp;Testi</translation>
+    </message>
+    <message>
+        <source>Clear List Backgro&amp;und</source>
+        <translation>Liste Arka Planını &amp;Temizle</translation>
+    </message>
+    <message>
+        <source>Refresh &amp;Achievement Database</source>
+        <translation>Başarım Veritabanını &amp;Yenile</translation>
+    </message>
+    <message>
+        <source>&amp;Animate Game Icons</source>
+        <translation>Oyun Simgelerini &amp;Canlandır</translation>
+    </message>
+    <message>
+        <source>Prefer Ac&amp;hievement Icons</source>
+        <translation>Başarım Simgelerini &amp;Tercih Et</translation>
+    </message>
+    <message>
+        <source>Syst&amp;em Log</source>
+        <translation>Sistem &amp;Günlüğü</translation>
     </message>
     <message>
         <source>Configures advanced options for the application.</source>
         <translation>Uygulama için gelişmiş seçenekleri yapılandırır.</translation>
-    </message>
-    <message>
-        <source>Debuggi&amp;ng</source>
-        <translation>Hata Ayıkla&amp;ma</translation>
     </message>
     <message>
         <source>Configures internal options for the application.</source>
@@ -12966,6 +13065,14 @@ Shift&apos;e basılı tutarak birden çok atama yapın.</translation>
         <translation>Öykünülen hafıza kartlarıyla ilgili seçenekleri yapılandırır.</translation>
     </message>
     <message>
+        <source>Res&amp;ume</source>
+        <translation>&amp;Devam Et</translation>
+    </message>
+    <message>
+        <source>&amp;Show Toolbar</source>
+        <translation>&amp;Araç Çubuğunu Göster</translation>
+    </message>
+    <message>
         <source>Controls whether the toolbar is visible.</source>
         <translation>Araç çubuğunun görünür olup olmadığını denetler.</translation>
     </message>
@@ -12978,24 +13085,12 @@ Shift&apos;e basılı tutarak birden çok atama yapın.</translation>
         <translation>Araç çubuğunun taşınıp taşınamayacağını denetler.</translation>
     </message>
     <message>
-        <source>S&amp;mall Toolbar Icons</source>
-        <translation>Küçük Araç Çubuğu S&amp;imgeleri</translation>
-    </message>
-    <message>
         <source>Controls whether the smaller toolbar icons are displayed.</source>
         <translation>Küçük araç çubuğu simgelerinin görüntülenip görüntülenmeyeceğini denetler.</translation>
     </message>
     <message>
-        <source>Toolbar L&amp;abels</source>
-        <translation>Araç Çubuğu Etiket&amp;leri</translation>
-    </message>
-    <message>
         <source>Controls whether labels are displayed alongside toolbar icons.</source>
         <translation>Etiketlerin araç çubuğu simgelerinin yanında görüntülenip görüntülenmeyeceğini denetler.</translation>
-    </message>
-    <message>
-        <source>Toolbar Labels &amp;Beside Icons</source>
-        <translation>Araç Çubuğu Etiketleri Simgelerin &amp;Yanında</translation>
     </message>
     <message>
         <source>Controls whether labels are displayed next to or under toolbar icons.</source>
@@ -13038,10 +13133,6 @@ Shift&apos;e basılı tutarak birden çok atama yapın.</translation>
         <translation>Aynı oyuna ait birden çok diski oyun listesinde tek bir öğede birleştirir.</translation>
     </message>
     <message>
-        <source>Show G&amp;rid Captions</source>
-        <translation>Izgara Açıklamalarını G&amp;öster</translation>
-    </message>
-    <message>
         <source>Shows captions under the game cover in grid view.</source>
         <translation>Izgara görünümünde oyun kapağının altında açıklamaları gösterir.</translation>
     </message>
@@ -13062,12 +13153,12 @@ Shift&apos;e basılı tutarak birden çok atama yapın.</translation>
         <translation>Oyun simgelerinin veya kapaklarının boyutunu azaltır.</translation>
     </message>
     <message>
-        <source>Refresh Grid &amp;Covers</source>
-        <translation>Izgarayı ve Kapakları &amp;Yenile</translation>
-    </message>
-    <message>
         <source>Invalidates the cache of game covers, allowing new images to be discovered.</source>
         <translation>Oyun kapaklarının önbelleğini geçersiz kılar ve yeni görüntülerin bulunmasını sağlar.</translation>
+    </message>
+    <message>
+        <source>&amp;Open Data Directory...</source>
+        <translation>Veri Dizinini &amp;Aç...</translation>
     </message>
     <message>
         <source>Opens the directory containing application data in your file browser.</source>
@@ -13086,8 +13177,16 @@ Shift&apos;e basılı tutarak birden çok atama yapın.</translation>
         <translation>Mevcut oturumu durum kaydetme seçeneği olmadan sonlandırır.</translation>
     </message>
     <message>
+        <source>Start Bi&amp;g Picture Mode</source>
+        <translation>Büyük Resim Modunu &amp;Başlat</translation>
+    </message>
+    <message>
         <source>Opens or closes the controller-based &quot;big picture&quot; mode.</source>
         <translation>Kol tabanlı &quot;büyük resim&quot; modunu açar veya kapatır.</translation>
+    </message>
+    <message>
+        <source>Cover &amp;Downloader</source>
+        <translation>Kapak &amp;İndiricisi</translation>
     </message>
     <message>
         <source>Opens the cover downloader window.</source>
@@ -13118,24 +13217,12 @@ Shift&apos;e basılı tutarak birden çok atama yapın.</translation>
         <translation>İçerikten video ve ses yakalamayı başlatır veya durdurur.</translation>
     </message>
     <message>
-        <source>Open Texture Directory...</source>
-        <translation>Doku Dizinini Aç...</translation>
-    </message>
-    <message>
         <source>Opens the directory used to store texture replacements.</source>
         <translation>Doku yedeklerini depolamak için kullanılan dizini açar.</translation>
     </message>
     <message>
-        <source>Reload Texture Replacements</source>
-        <translation>Doku Paketlerini Tekrar Yükle</translation>
-    </message>
-    <message>
         <source>Invalidates the cache of available replacement textures.</source>
         <translation>Kullanılabilir doku yedeklerinin önbelleğini geçersiz kılar.</translation>
-    </message>
-    <message>
-        <source>Capture GPU Frame</source>
-        <translation>Capture GPU Frame</translation>
     </message>
     <message>
         <source>Saves the emulated GPU commands to a file that can be later replayed.</source>
@@ -13162,24 +13249,12 @@ Shift&apos;e basılı tutarak birden çok atama yapın.</translation>
         <translation>Log To File</translation>
     </message>
     <message>
-        <source>ISO Browser</source>
-        <translation>ISO Arayıcı</translation>
-    </message>
-    <message>
         <source>Opens the ISO browser window.</source>
         <translation>ISO tarayıcısı penceresini açar.</translation>
     </message>
     <message>
-        <source>Free Camera</source>
-        <translation>Özgür/Free Camera</translation>
-    </message>
-    <message>
         <source>Allows you to freely move the camera in supported games.</source>
         <translation>Desteklenen oyunlarda kamerayı serbestçe hareket ettirmenizi sağlar.</translation>
-    </message>
-    <message>
-        <source>Controller Test</source>
-        <translation>Kol Testi</translation>
     </message>
     <message>
         <source>Allows you to test emulated controller mappings.</source>
@@ -13202,20 +13277,12 @@ Shift&apos;e basılı tutarak birden çok atama yapın.</translation>
         <translation>Oyun listesinde/ızgarasında gösterilen arka plan görüntüsünü değiştirir.</translation>
     </message>
     <message>
-        <source>Clea&amp;r List Background</source>
-        <translation>Liste Arka Planını &amp;Temizle</translation>
-    </message>
-    <message>
         <source>Removes the background image shown in the game list/grid.</source>
         <translation>Oyun listesinde/ızgarasında gösterilen arka plan görüntüsünü kaldırır.</translation>
     </message>
     <message>
         <source>Refreshes the list of unlocked achievements.</source>
         <translation>Açılmış başarımların listesini yeniler.</translation>
-    </message>
-    <message>
-        <source>Refresh Achievement Database</source>
-        <translation>Başarım Veritabanını Yenile</translation>
     </message>
     <message>
         <source>Updates the database for achievements shown in the game list.</source>
@@ -13242,24 +13309,12 @@ Shift&apos;e basılı tutarak birden çok atama yapın.</translation>
         <translation>Hafıza düzenleyicisi penceresini açar.</translation>
     </message>
     <message>
-        <source>Animate Game Icons</source>
-        <translation>Oyun Simgelerini Canlandır</translation>
-    </message>
-    <message>
         <source>Animates icons in the list view when selected.</source>
         <translation>Seçildiğinde liste görünümündeki simgeleri canlandırır.</translation>
     </message>
     <message>
-        <source>Prefer Achievement Icons</source>
-        <translation>Başarım Simgelerini Tercih Et</translation>
-    </message>
-    <message>
         <source>Prioritizes the games badges used for RetroAchievements over memory card icons.</source>
         <translation>RetroAchievements için kullanılan oyun rozetlerine, hafıza kartı simgelerine göre öncelik verir.</translation>
-    </message>
-    <message>
-        <source>System Log</source>
-        <translation>Sistem Günlüğü</translation>
     </message>
     <message>
         <source>Start &amp;Capture</source>
@@ -13306,10 +13361,6 @@ Shift&apos;e basılı tutarak birden çok atama yapın.</translation>
         <translation>Başarım İlerlemesini &amp;PTazele</translation>
     </message>
     <message>
-        <source>&amp;Post-Processing</source>
-        <translation>&amp;PGörsel Efektler</translation>
-    </message>
-    <message>
         <source>Log Level</source>
         <translation>Log Level</translation>
     </message>
@@ -13336,10 +13387,6 @@ Shift&apos;e basılı tutarak birden çok atama yapın.</translation>
     <message>
         <source>Big Picture</source>
         <translation>Tam Ekran Modu</translation>
-    </message>
-    <message>
-        <source>Cover Downloader</source>
-        <translation>Oyun Kapağı İndiricisi</translation>
     </message>
     <message>
         <source>&amp;Graphics</source>
@@ -13370,6 +13417,14 @@ Shift&apos;e basılı tutarak birden çok atama yapın.</translation>
         <translation>&amp;iArayüz</translation>
     </message>
     <message>
+        <source>Ad&amp;vanced</source>
+        <translation>&amp;Gelişmiş</translation>
+    </message>
+    <message>
+        <source>&amp;Debugging</source>
+        <translation>&amp;Hata Ayıklama</translation>
+    </message>
+    <message>
         <source>From File...</source>
         <translation>Dosyadan...</translation>
     </message>
@@ -13396,6 +13451,10 @@ Shift&apos;e basılı tutarak birden çok atama yapın.</translation>
     <message>
         <source>Dump VRAM to CPU Copies</source>
         <translation>Dump VRAM to CPU Copies</translation>
+    </message>
+    <message>
+        <source>Enable &amp;Safe Mode</source>
+        <translation>&amp;Güvenli Modu Etkinleştir</translation>
     </message>
     <message>
         <source>Dump RAM...</source>
@@ -13466,6 +13525,18 @@ Shift&apos;e basılı tutarak birden çok atama yapın.</translation>
         <translation>İçerikten ses ve/veya video kaydetmenizi sağlar.</translation>
     </message>
     <message>
+        <source>S&amp;mall Icons</source>
+        <translation>&amp;Küçük Simgeler</translation>
+    </message>
+    <message>
+        <source>Show &amp;Labels</source>
+        <translation>&amp;Etiketleri Göster</translation>
+    </message>
+    <message>
+        <source>Show Labels &amp;Beside Icons</source>
+        <translation>Simgelerin Yanındaki Etiketleri &amp;Göster</translation>
+    </message>
+    <message>
         <source>System &amp;Display</source>
         <translation>Konsolu &amp;Göster</translation>
     </message>
@@ -13486,12 +13557,12 @@ Shift&apos;e basılı tutarak birden çok atama yapın.</translation>
         <translation>Oyun Listesi &amp;Grid</translation>
     </message>
     <message>
-        <source>Show Titles (Grid View)</source>
-        <translation>İsimleri Göster (Grid Görünümü)</translation>
+        <source>Show Grid Ca&amp;ptions</source>
+        <translation>Izgara Açıklamalarını &amp;Göster</translation>
     </message>
     <message>
-        <source>Open Data Directory...</source>
-        <translation>Veri Dizinini Aç...</translation>
+        <source>Show Titles (Grid View)</source>
+        <translation>İsimleri Göster (Grid Görünümü)</translation>
     </message>
     <message>
         <source>Select Disc Image</source>
@@ -13622,10 +13693,6 @@ Durum kaydı silinsin ve oyun yine de başlatılsın mı?</translation>
         <translation>&lt;strong&gt;Oyuna Devam Et&lt;/strong&gt;&lt;br&gt;Bu durum kaydı yüklensin mi yoksa yeni bir başlangıç mı yapılsın?</translation>
     </message>
     <message>
-        <source>Save was created on %1.</source>
-        <translation>Kayıt %1 tarihinde oluşturuldu.</translation>
-    </message>
-    <message>
         <source>Do you want to swap discs or boot the new image via system restart?</source>
         <translation>Diskleri değiştirmek veya yeni görüntüyü sistem yeniden başlatmasıyla başlatmak ister misiniz?</translation>
     </message>
@@ -13680,10 +13747,6 @@ Durum kaydı silinsin ve oyun yine de başlatılsın mı?</translation>
     <message>
         <source>Are you sure you want to close the current game?</source>
         <translation>Mevcut oyunu kapatmak istediğinizden emin misiniz?</translation>
-    </message>
-    <message>
-        <source>RA: Logged in as %1 (%2, %3 casual). %4 unread messages.</source>
-        <translation>RA: %1 (%2, %3 sıradan) olarak giriş yapıldı. %4 okunmamış mesaj.</translation>
     </message>
     <message>
         <source>Refresh Achievement Progress</source>
@@ -13772,6 +13835,10 @@ Bu geri alınamaz.</translation>
     <message>
         <source>&amp;Apply Cheat</source>
         <translation>&amp;AHile Uygula</translation>
+    </message>
+    <message>
+        <source>Save was created %1.</source>
+        <translation>Kayıt %1 oluşturuldu.</translation>
     </message>
     <message>
         <source>Open Containing Directory...</source>
@@ -13940,6 +14007,10 @@ Bu geri alınamaz.</translation>
     <message>
         <source>Failed to create memory card &apos;%1&apos;: %2</source>
         <translation>Hafıza kartı oluşturulamadı &apos;%1&apos; %2</translation>
+    </message>
+    <message>
+        <source>RA: Logged in as %1 (%2 points, %3 casual). %4 unread messages.</source>
+        <translation>RA: %1 olarak giriş yapıldı (%2 puan, %3 rahat). %4 okunmamış mesaj.</translation>
     </message>
     <message>
         <source>RA: Updated achievement progress database.</source>
@@ -15721,6 +15792,10 @@ Hata: {1}</translation>
 <context>
     <name>PlayStationMouse</name>
     <message>
+        <source>Pointer</source>
+        <translation>İmleç</translation>
+    </message>
+    <message>
         <source>Left Button</source>
         <translation>Sol Tuş</translation>
     </message>
@@ -15739,13 +15814,6 @@ Hata: {1}</translation>
     <message>
         <source>Vertical Sensitivity</source>
         <translation>Dikey Hassasiyet</translation>
-    </message>
-</context>
-<context>
-    <name>PlaystationMouse</name>
-    <message>
-        <source>Pointer</source>
-        <translation>İmleç</translation>
     </message>
 </context>
 <context>
@@ -16525,10 +16593,6 @@ Kısayol, mevcut konumu gösterecek şekilde güncellensin mi?</translation>
 <context>
     <name>SaveStateSelectorUI</name>
     <message>
-        <source>Saved at {0:%H:%M} on {0:%a} {0:%Y/%m/%d}.</source>
-        <translation>Kayıt Yapıldı. Saat {0:%H:%M} Tarih {0:%a} {0:%Y/%m/%d}.</translation>
-    </message>
-    <message>
         <source>No save state slots available.</source>
         <translation>Kullanılabilir kayıt durumu yuvası yok.</translation>
     </message>
@@ -16551,6 +16615,10 @@ Kısayol, mevcut konumu gösterecek şekilde güncellensin mi?</translation>
     <message>
         <source>{} ({})</source>
         <translation>{} ({})</translation>
+    </message>
+    <message>
+        <source>Saved {}</source>
+        <translation>Kaydedildi {}</translation>
     </message>
     <message>
         <source>No save present in this slot.</source>
@@ -17127,14 +17195,14 @@ Bu dizini oluşturmak istiyor musunuz?</translation>
         <translation>Otomatik Algıla</translation>
     </message>
     <message>
-        <source>NTSC (60hz)</source>
+        <source>NTSC (60 Hz)</source>
         <comment>ForceVideoTiming</comment>
-        <translation>NTSC (60hz)</translation>
+        <translation>NTSC (60 Hz)</translation>
     </message>
     <message>
-        <source>PAL (50hz)</source>
+        <source>PAL (50 Hz)</source>
         <comment>ForceVideoTiming</comment>
-        <translation>PAL (50hz)</translation>
+        <translation>PAL (50 Hz)</translation>
     </message>
     <message>
         <source>Nearest-Neighbor</source>
@@ -18083,9 +18151,9 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
     </message>
     <message>
         <source>Logged in as %1
-Token generated at %2</source>
+Token generated %2</source>
         <translation>%1 olarak giriş yapıldı
-Belirteç %2 tarihinde oluşturuldu</translation>
+Belirteç %2 oluşturuldu</translation>
     </message>
     <message>
         <source>Logout</source>
@@ -18139,6 +18207,10 @@ Belirteç %2 tarihinde oluşturuldu</translation>
     <message>
         <source>Cannot save state while memory card is being saved.</source>
         <translation>Hafıza kartı kaydedilirken durum kaydı kaydedilemez.</translation>
+    </message>
+    <message>
+        <source>Loaded undo save state created {}.</source>
+        <translation>{} oluşturulan geri alma durum kaydı yüklendi.</translation>
     </message>
     <message>
         <source>Using disc-specific memory card &apos;{}&apos; instead of per-game card.</source>
@@ -18529,10 +18601,6 @@ Etkileri temizlemek için bir hafıza kartına kayıt yapmalı ve oyunu sıfırl
 {}</source>
         <translation>Geri alma durum kaydı yüklenemedi, oyun yeniden başlatılıyor.
 {}</translation>
-    </message>
-    <message>
-        <source>Loaded undo save state created at {}.</source>
-        <translation>{} tarihinde oluşturulan geri alma durum kaydı yüklendi.</translation>
     </message>
     <message>
         <source>capturing audio and video</source>

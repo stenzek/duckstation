@@ -218,6 +218,10 @@ Do you want to enable hardcore mode?</source>
         <translation>Увімкнути режим «Encore»</translation>
     </message>
     <message>
+        <source>Track Unofficial Achievements</source>
+        <translation>Відстежувати неофіційні досягнення</translation>
+    </message>
+    <message>
         <source>Notifications</source>
         <translation>Сповіщення</translation>
     </message>
@@ -270,12 +274,12 @@ Do you want to enable hardcore mode?</source>
         <translation>Якщо увімкнено, DuckStation вважатиме всі досягнення заблокованими й не надсилатиме сповіщення про їх розблокування на сервер.</translation>
     </message>
     <message>
-        <source>When enabled, DuckStation will list achievements from unofficial sets. Please note that these achievements are not tracked by RetroAchievements, so they unlock every time.</source>
-        <translation>Якщо увімкнено, DuckStation показуватиме досягнення з неофіційних наборів. Будь ласка, зверніть увагу, що ці досягнення не відстежуються сервісом RetroAchievements, тому вони розблоковуватимуться щоразу.</translation>
-    </message>
-    <message>
         <source>&quot;Challenge&quot; mode for achievements, including leaderboard tracking. Disables save state, cheats, and slowdown functions.</source>
         <translation>Режим &quot;Випробування&quot; для досягнень, включаючи відстеження таблиць лідерів. Вимикає функції збереження стану, читів та уповільнення.</translation>
+    </message>
+    <message>
+        <source>When enabled, DuckStation will track unofficial achievements. Unlocks will be saved locally and not sent to RetroAchievements.</source>
+        <translation>Якщо ввімкнено, DuckStation відстежуватиме неофіційні досягнення. Розблокування зберігатимуться локально й не надсилатимуться до RetroAchievements.</translation>
     </message>
     <message>
         <source>Checked</source>
@@ -391,9 +395,9 @@ Do you want to enable hardcore mode?</source>
     </message>
     <message>
         <source>Logged in as %1
-Token generated at %2</source>
+Token generated %2</source>
         <translation>Виконано вхід як %1
-Токен згенеровано: %2</translation>
+Токен згенеровано %2</translation>
     </message>
     <message numerus="yes">
         <source>%n seconds</source>
@@ -680,6 +684,10 @@ We will keep trying to submit this request.</source>
         <source>This subset has no achievements.</source>
         <translation>У цьому піднаборі немає досягнень.</translation>
     </message>
+    <message>
+        <source>You have unlocked {0} of {1} unofficial achievements, earning {2} of {3} possible points.</source>
+        <translation>Ви розблокували {0} із {1} неофіційних досягнень і заробили {2} із {3} можливих балів.</translation>
+    </message>
     <message numerus="yes">
         <source>%n achievements are not supported by DuckStation and cannot be unlocked.</source>
         <comment>Unsupported achievement count</comment>
@@ -688,30 +696,6 @@ We will keep trying to submit this request.</source>
             <numerusform>%n досягнення не підтримуються DuckStation і не можуть бути розблоковані.</numerusform>
             <numerusform>%n досягнень не підтримуються DuckStation і не можуть бути розблоковані.</numerusform>
         </translation>
-    </message>
-    <message>
-        <source>Game was beaten on {0}, and completed on {1}.</source>
-        <translation>Гру було пройдено {0} і повністю завершено {1}.</translation>
-    </message>
-    <message>
-        <source>Subset was beaten on {0}, and completed on {1}.</source>
-        <translation>Піднабір було пройдено {0} і повністю завершено {1}.</translation>
-    </message>
-    <message>
-        <source>Game was beaten on {0}.</source>
-        <translation>Гру було пройдено {0}.</translation>
-    </message>
-    <message>
-        <source>Subset was beaten on {0}.</source>
-        <translation>Піднабір було пройдено {0}.</translation>
-    </message>
-    <message>
-        <source>Game was completed on {0}.</source>
-        <translation>Гру було повністю завершено {0}.</translation>
-    </message>
-    <message>
-        <source>Unlocked: {} | {:.1f}% of players have this achievement</source>
-        <translation>Розблоковано: {} | {:.1f}% гравців мають це досягнення</translation>
     </message>
     <message>
         <source>{:.1f}% of players have this achievement</source>
@@ -773,10 +757,6 @@ We will keep trying to submit this request.</source>
     <message>
         <source>Unknown</source>
         <translation>Невідомо</translation>
-    </message>
-    <message>
-        <source>Subset was completed on {0}.</source>
-        <translation>Піднабір було повністю завершено {0}.</translation>
     </message>
     <message>
         <source>Locked</source>
@@ -887,72 +867,6 @@ We will keep trying to submit this request.</source>
         <translation>Переглянути профіль</translation>
     </message>
     <message>
-        <source>Just now</source>
-        <translation>Щойно</translation>
-    </message>
-    <message numerus="yes">
-        <source>%n minutes ago</source>
-        <comment>Relative time</comment>
-        <translation>
-            <numerusform>%n хвилину тому</numerusform>
-            <numerusform>%n хвилини тому</numerusform>
-            <numerusform>%n хвилин тому</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <source>%n hours ago</source>
-        <comment>Relative time</comment>
-        <translation>
-            <numerusform>%n годину тому</numerusform>
-            <numerusform>%n години тому</numerusform>
-            <numerusform>%n годин тому</numerusform>
-        </translation>
-    </message>
-    <message>
-        <source>Today</source>
-        <translation>Сьогодні</translation>
-    </message>
-    <message>
-        <source>Yesterday</source>
-        <translation>Вчора</translation>
-    </message>
-    <message numerus="yes">
-        <source>%n days ago</source>
-        <comment>Relative time</comment>
-        <translation>
-            <numerusform>%n день тому</numerusform>
-            <numerusform>%n дня тому</numerusform>
-            <numerusform>%n днів тому</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <source>%n weeks ago</source>
-        <comment>Relative time</comment>
-        <translation>
-            <numerusform>%n тиждень тому</numerusform>
-            <numerusform>%n тижня тому</numerusform>
-            <numerusform>%n тижнів тому</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <source>%n months ago</source>
-        <comment>Relative time</comment>
-        <translation>
-            <numerusform>%n місяць тому</numerusform>
-            <numerusform>%n місяця тому</numerusform>
-            <numerusform>%n місяців тому</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <source>%n years ago</source>
-        <comment>Relative time</comment>
-        <translation>
-            <numerusform>%n рік тому</numerusform>
-            <numerusform>%n року тому</numerusform>
-            <numerusform>%n років тому</numerusform>
-        </translation>
-    </message>
-    <message>
         <source>Leaderboard download failed</source>
         <translation>Завантаження таблиці лідерів не вдалося</translation>
     </message>
@@ -993,6 +907,38 @@ We will keep trying to submit this request.</source>
     <message>
         <source>You have unlocked {0} of {1} achievements, earning {2} of {3} possible points.</source>
         <translation>Ви розблокували {0} із {1} досягнень і заробили {2} із {3} можливих балів.</translation>
+    </message>
+    <message>
+        <source>Game was beaten {0}, and completed {1}.</source>
+        <translation>Гру було пройдено {0} і повністю завершено {1}.</translation>
+    </message>
+    <message>
+        <source>Subset was beaten {0}, and completed {1}.</source>
+        <translation>Піднабір було пройдено {0} і повністю завершено {1}.</translation>
+    </message>
+    <message>
+        <source>Game was beaten {0}.</source>
+        <translation>Гру було пройдено {0}.</translation>
+    </message>
+    <message>
+        <source>Subset was beaten {0}.</source>
+        <translation>Піднабір було пройдено {0}.</translation>
+    </message>
+    <message>
+        <source>Game was completed {0}.</source>
+        <translation>Гру було повністю завершено {0}.</translation>
+    </message>
+    <message>
+        <source>Subset was completed {0}.</source>
+        <translation>Піднабір було повністю завершено {0}.</translation>
+    </message>
+    <message>
+        <source>Reset Unofficial Unlocks</source>
+        <translation>Скинути неофіційні розблокування</translation>
+    </message>
+    <message>
+        <source>Unlocked {}</source>
+        <translation>Розблоковано {}</translation>
     </message>
     <message>
         <source>Submitting scores is disabled because hardcore mode is off. Leaderboards are read-only.</source>
@@ -2014,7 +1960,7 @@ DuckStation можна оновити вручную, повторно зава�
     </message>
     <message>
         <source>&lt;h1&gt;Inconsistent Application State&lt;/h1&gt;&lt;h3&gt;The update zip is missing the current executable:&lt;/h3&gt;&lt;div align=&quot;center&quot;&gt;&lt;pre&gt;%1&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;strong&gt;This is usually a result of manually renaming the file.&lt;/strong&gt; Continuing to install this update may result in a broken installation if the renamed executable is used. The DuckStation executable should be named:&lt;/p&gt;&lt;div align=&quot;center&quot;&gt;&lt;pre&gt;%2&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Do you want to continue anyway?&lt;/p&gt;</source>
-        <translation>&lt;h1&gt;Непослідовний стан програми&lt;/h1&gt;&lt;h3&gt;В архіві оновлення відсутній поточний виконуваний файл:&lt;/h3&gt;&lt;div align="center"&gt;&lt;pre&gt;%1&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;strong&gt;Зазвичай це є наслідком ручного перейменування файлу.&lt;/strong&gt; Продовження встановлення цього оновлення може призвести до пошкодження інсталяції, якщо використовуватиметься перейменований виконуваний файл. Виконуваний файл DuckStation має називатися:&lt;/p&gt;&lt;div align="center"&gt;&lt;pre&gt;%2&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Усе одно продовжити?&lt;/p&gt;</translation>
+        <translation>&lt;h1&gt;Непослідовний стан програми&lt;/h1&gt;&lt;h3&gt;В архіві оновлення відсутній поточний виконуваний файл:&lt;/h3&gt;&lt;div align=&quot;center&quot;&gt;&lt;pre&gt;%1&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;strong&gt;Зазвичай це є наслідком ручного перейменування файлу.&lt;/strong&gt; Продовження встановлення цього оновлення може призвести до пошкодження інсталяції, якщо використовуватиметься перейменований виконуваний файл. Виконуваний файл DuckStation має називатися:&lt;/p&gt;&lt;div align=&quot;center&quot;&gt;&lt;pre&gt;%2&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Усе одно продовжити?&lt;/p&gt;</translation>
     </message>
     <message>
         <source>Failed to remove updater exe after update:
@@ -2815,10 +2761,6 @@ Trying to use this cheat will not work as expected. Do you want to continue?</so
     <message>
         <source>Execution Mode:</source>
         <translation>Режим виконання:</translation>
-    </message>
-    <message>
-        <source>Preload Image To RAM</source>
-        <translation>Попередньо завантажити образ в ОЗП</translation>
     </message>
     <message>
         <source>Unchecked</source>
@@ -4816,7 +4758,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Changing these settings may cause games to become unstable or crash.&lt;/span&gt; Do not change any settings on this page if you do not know what you are doing, or understand what the impact of the change will be.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=" font-weight:700;"&gt;Зміна цих налаштувань може зробити ігри нестабільними або спричинити їх аварійне завершення.&lt;/span&gt; Не змінюйте налаштування на цій сторінці, якщо не знаєте, що робите, або не розумієте наслідків змін.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Зміна цих налаштувань може зробити ігри нестабільними або спричинити їх аварійне завершення.&lt;/span&gt; Не змінюйте налаштування на цій сторінці, якщо не знаєте, що робите, або не розумієте наслідків змін.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>Reset To Default</source>
@@ -5526,6 +5468,10 @@ ${serial}: Серійний номер гри.</translation>
         <translation>Весь час: {}</translation>
     </message>
     <message>
+        <source>All unofficial achievement progress for the current game will be removed. This cannot be undone.</source>
+        <translation>Увесь прогрес неофіційних досягнень для поточної гри буде видалено. Це неможливо скасувати.</translation>
+    </message>
+    <message>
         <source>Allow Booting Without SBI File</source>
         <translation>Дозволити завантаження без SBI</translation>
     </message>
@@ -6146,10 +6092,6 @@ You cannot undo this action.</source>
         <translation>Відображає спливаючі повідомлення під час запуска, надсилання або провалу випробування таблиці лідерів.</translation>
     </message>
     <message>
-        <source>Do you want to continue from the automatic save created at {}?</source>
-        <translation>Бажаєте продовжити з автоматичного збереження, створеного о {}?</translation>
-    </message>
-    <message>
         <source>Double-Click Toggles Fullscreen</source>
         <translation>Подвійне клацання перемикає повноекранний режим</translation>
     </message>
@@ -6580,6 +6522,10 @@ Please check your username and password, and try again.</source>
 Будь ласка, перевірте ім&apos;я користувача та пароль та спробуйте ще раз.</translation>
     </message>
     <message>
+        <source>Login token generated {}</source>
+        <translation>Токен входу згенеровано {}</translation>
+    </message>
+    <message>
         <source>Maximum Read Speedup Cycles</source>
         <translation>Максимальне прискорення циклів читання</translation>
     </message>
@@ -6686,6 +6632,18 @@ Please check your username and password, and try again.</source>
     <message>
         <source>Reset Controller Settings</source>
         <translation>Скидання налаштувань контролера</translation>
+    </message>
+    <message>
+        <source>Reset Unlock</source>
+        <translation>Скинути розблокування</translation>
+    </message>
+    <message>
+        <source>Reset Unofficial Achievement</source>
+        <translation>Скинути неофіційне досягнення</translation>
+    </message>
+    <message>
+        <source>Reset Unofficial Achievement Unlocks</source>
+        <translation>Скинути розблокування неофіційних досягнень</translation>
     </message>
     <message>
         <source>Resets all settings to the defaults.</source>
@@ -6960,6 +6918,10 @@ Please check your username and password, and try again.</source>
         <translation>Каталог текстур</translation>
     </message>
     <message>
+        <source>The unlock state for &apos;{}&apos; will be removed. This cannot be undone.</source>
+        <translation>Стан розблокування для &apos;{}&apos; буде видалено. Це неможливо скасувати.</translation>
+    </message>
+    <message>
         <source>Time Played: </source>
         <translation>Час гри:</translation>
     </message>
@@ -6980,8 +6942,20 @@ Please check your username and password, and try again.</source>
         <translation>Вгорі:</translation>
     </message>
     <message>
+        <source>Track Unofficial Achievements</source>
+        <translation>Відстежувати неофіційні досягнення</translation>
+    </message>
+    <message>
         <source>Tries to detect FMVs and disable read speedup during games that don&apos;t use XA streaming audio.</source>
         <translation>Намагається виявити FMV та вимкнути прискорення читання під час ігор, які не використовують потокове аудіо XA.</translation>
+    </message>
+    <message>
+        <source>Unofficial achievement unlock reset.</source>
+        <translation>Розблокування неофіційного досягнення скинуто.</translation>
+    </message>
+    <message>
+        <source>Unofficial achievement unlocks reset.</source>
+        <translation>Розблокування неофіційних досягнень скинуто.</translation>
     </message>
     <message>
         <source>Update Progress</source>
@@ -6998,6 +6972,10 @@ Please check your username and password, and try again.</source>
     <message>
         <source>Value Range</source>
         <translation>Діапазон значень</translation>
+    </message>
+    <message>
+        <source>When enabled, DuckStation will track unofficial achievements. Unlocks will be saved locally and not sent to RetroAchievements.</source>
+        <translation>Якщо ввімкнено, DuckStation відстежуватиме неофіційні досягнення. Розблокування зберігатимуться локально й не надсилатимуться до RetroAchievements.</translation>
     </message>
     <message>
         <source>Window Animations</source>
@@ -7290,6 +7268,10 @@ Do you want to delete the save state and boot the game anyway?</source>
     <message>
         <source>Dithering</source>
         <translation>Дизеринг</translation>
+    </message>
+    <message>
+        <source>Do you want to continue from the automatic save created {}?</source>
+        <translation>Бажаєте продовжити з автоматичного збереження, створеного {}?</translation>
     </message>
     <message>
         <source>DuckStation is a free simulator/emulator of the Sony PlayStation(TM) console, focusing on playability, speed, and long-term maintainability.</source>
@@ -7650,10 +7632,6 @@ Do you want to delete the save state and boot the game anyway?</source>
     <message>
         <source>Login</source>
         <translation>Вхід</translation>
-    </message>
-    <message>
-        <source>Login token generated on {}</source>
-        <translation>Токен входу створений для {}</translation>
     </message>
     <message>
         <source>Logout</source>
@@ -8680,10 +8658,6 @@ Do you want to delete the save state and boot the game anyway?</source>
         <translation>Тимчасово відключає всі покращення, що корисно під час тестування.</translation>
     </message>
     <message>
-        <source>Test Unofficial Achievements</source>
-        <translation>Перевірка неофіційних досягнень</translation>
-    </message>
-    <message>
         <source>Texture Filtering</source>
         <translation>Фільтрування текстур</translation>
     </message>
@@ -8914,10 +8888,6 @@ Do you want to {0} anyway?</source>
     <message>
         <source>When enabled, DuckStation will assume all achievements are locked and not send any unlock notifications to the server.</source>
         <translation>Якщо цей параметр увімкнено, DuckStation вважатиме, що всі досягнення заблоковані, і не надсилатиме повідомлення про розблокування на сервер.</translation>
-    </message>
-    <message>
-        <source>When enabled, DuckStation will list achievements from unofficial sets. These achievements are not tracked by RetroAchievements.</source>
-        <translation>Якщо цей параметр увімкнено, DuckStation відображатиме досягнення з неофіційних наборів. Ці досягнення не відстежуються RetroAchievements.</translation>
     </message>
     <message>
         <source>When enabled, each session will behave as if no achievements have been unlocked.</source>
@@ -9914,76 +9884,9 @@ Are you sure you want to continue?</source>
         <source>No URLs to download enumerated.</source>
         <translation>URL-адреси для завантаження не перелічені.</translation>
     </message>
-    <message>
-        <source>Never</source>
-        <translation>Ніколи</translation>
-    </message>
-    <message>
-        <source>Today</source>
-        <translation>Сьогодні</translation>
-    </message>
-    <message>
-        <source>Yesterday</source>
-        <translation>Вчора</translation>
-    </message>
-    <message>
-        <source>{}h {}m</source>
-        <translation>{}ч {}м</translation>
-    </message>
-    <message>
-        <source>{}h {}m {}s</source>
-        <translation>{} ч {} м {} с</translation>
-    </message>
-    <message>
-        <source>{}m {}s</source>
-        <translation>{}м {}с</translation>
-    </message>
-    <message>
-        <source>{}s</source>
-        <translation>{} с</translation>
-    </message>
-    <message>
-        <source>None</source>
-        <translation>Ні</translation>
-    </message>
-    <message numerus="yes">
-        <source>%n hours</source>
-        <translation>
-            <numerusform>%n год</numerusform>
-            <numerusform>%n години</numerusform>
-            <numerusform>%n годин</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <source>%n minutes</source>
-        <translation>
-            <numerusform>%n хвилина</numerusform>
-            <numerusform>%n хвилини</numerusform>
-            <numerusform>%n хвилин</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <source>%n seconds</source>
-        <translation>
-            <numerusform>%n секунда</numerusform>
-            <numerusform>%n секунди</numerusform>
-            <numerusform>%n секунд</numerusform>
-        </translation>
-    </message>
-</context>
-<context>
-    <name>GameListListView</name>
-    <message>
-        <source>Unknown</source>
-        <translation>Невідомо</translation>
-    </message>
 </context>
 <context>
     <name>GameListModel</name>
-    <message>
-        <source>Unknown</source>
-        <translation>Невідомо</translation>
-    </message>
     <message>
         <source>Icon</source>
         <translation>Значок</translation>
@@ -10150,8 +10053,8 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>Об&apos;єднання багатодискових ігор</translation>
     </message>
     <message>
-        <source>Show Localized Icons</source>
-        <translation>Показати локалізовані значки</translation>
+        <source>Show Localized Titles</source>
+        <translation>Показати локалізовані назви</translation>
     </message>
     <message>
         <source>Show Game Icons</source>
@@ -11379,6 +11282,152 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <source>Offset applied to lightgun horizontal position.</source>
         <translation>Зміщення, яке застосовується до горизонтального положення світлового пістолета.</translation>
+    </message>
+</context>
+<context>
+    <name>Host</name>
+    <message numerus="yes">
+        <source>%n seconds</source>
+        <translation>
+            <numerusform>%n секунда</numerusform>
+            <numerusform>%n секунди</numerusform>
+            <numerusform>%n секунд</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n minutes</source>
+        <translation>
+            <numerusform>%n хвилина</numerusform>
+            <numerusform>%n хвилини</numerusform>
+            <numerusform>%n хвилин</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n hours</source>
+        <translation>
+            <numerusform>%n година</numerusform>
+            <numerusform>%n години</numerusform>
+            <numerusform>%n годин</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Today</source>
+        <translation>Сьогодні</translation>
+    </message>
+    <message>
+        <source>Yesterday</source>
+        <translation>Вчора</translation>
+    </message>
+    <message>
+        <source>Never</source>
+        <translation>Ніколи</translation>
+    </message>
+    <message>
+        <source>today</source>
+        <translation>сьогодні</translation>
+    </message>
+    <message>
+        <source>yesterday</source>
+        <translation>вчора</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n days ago</source>
+        <comment>Date difference</comment>
+        <translation>
+            <numerusform>%n день тому</numerusform>
+            <numerusform>%n дні тому</numerusform>
+            <numerusform>%n днів тому</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>on {}</source>
+        <translation>о {}</translation>
+    </message>
+    <message>
+        <source>Now</source>
+        <translation>Зараз</translation>
+    </message>
+    <message>
+        <source>now</source>
+        <translation>зараз</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n seconds ago</source>
+        <comment>Time difference</comment>
+        <translation>
+            <numerusform>%n секунду тому</numerusform>
+            <numerusform>%n секунди тому</numerusform>
+            <numerusform>%n секунд тому</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n minutes ago</source>
+        <comment>Time difference</comment>
+        <translation>
+            <numerusform>%n хвилину тому</numerusform>
+            <numerusform>%n хвилини тому</numerusform>
+            <numerusform>%n хвилин тому</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n hours ago</source>
+        <comment>Time difference</comment>
+        <translation>
+            <numerusform>%n годину тому</numerusform>
+            <numerusform>%n години тому</numerusform>
+            <numerusform>%n годин тому</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n weeks ago</source>
+        <comment>Time difference</comment>
+        <translation>
+            <numerusform>%n тиждень тому</numerusform>
+            <numerusform>%n тижні тому</numerusform>
+            <numerusform>%n тижнів тому</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n months ago</source>
+        <comment>Time difference</comment>
+        <translation>
+            <numerusform>%n місяць тому</numerusform>
+            <numerusform>%n місяці тому</numerusform>
+            <numerusform>%n місяців тому</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n years ago</source>
+        <comment>Time difference</comment>
+        <translation>
+            <numerusform>%n рік тому</numerusform>
+            <numerusform>%n роки тому</numerusform>
+            <numerusform>%n років тому</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>{} at {}</source>
+        <translation>{} о {}</translation>
+    </message>
+    <message>
+        <source>{}h {}m</source>
+        <translation>{}ч {}м</translation>
+    </message>
+    <message>
+        <source>{}h {}m {}s</source>
+        <translation>{} ч {} м {} с</translation>
+    </message>
+    <message>
+        <source>{}m {}s</source>
+        <translation>{}м {}с</translation>
+    </message>
+    <message>
+        <source>{}s</source>
+        <translation>{} с</translation>
+    </message>
+    <message>
+        <source>None</source>
+        <translation>Немає</translation>
     </message>
 </context>
 <context>
@@ -12699,10 +12748,6 @@ Shift-click to set multiple bindings.</source>
         <translation>Завантажити стан</translation>
     </message>
     <message>
-        <source>Save State</source>
-        <translation>Зберегти стан</translation>
-    </message>
-    <message>
         <source>S&amp;ettings</source>
         <translation>&amp;Налаштування</translation>
     </message>
@@ -12803,6 +12848,22 @@ Shift-click to set multiple bindings.</source>
         <translation>&amp;Завантажити стан</translation>
     </message>
     <message>
+        <source>Cha&amp;nge Disc</source>
+        <translation>З&amp;мінити диск</translation>
+    </message>
+    <message>
+        <source>&amp;Cheats</source>
+        <translation>&amp;Коди</translation>
+    </message>
+    <message>
+        <source>Sa&amp;ve State</source>
+        <translation>З&amp;берегти стан</translation>
+    </message>
+    <message>
+        <source>Media Capt&amp;ure</source>
+        <translation>Захоплення &amp;медіа</translation>
+    </message>
+    <message>
         <source>Restores the session state from the selected slot.</source>
         <translation>Відновлює стан сеансу з вибраного слота.</translation>
     </message>
@@ -12849,6 +12910,10 @@ Shift-click to set multiple bindings.</source>
     <message>
         <source>Configures options related to how the session content is displayed.</source>
         <translation>Налаштовує параметри відображення вмісту сеансу.</translation>
+    </message>
+    <message>
+        <source>Post-Processi&amp;ng</source>
+        <translation>Постоб&amp;робка</translation>
     </message>
     <message>
         <source>Configures post-processing effects applied after rendering the content.</source>
@@ -12915,8 +12980,16 @@ Shift-click to set multiple bindings.</source>
         <translation>Налаштовує зовнішній вигляд та поведінку програми.</translation>
     </message>
     <message>
+        <source>Ad&amp;vanced</source>
+        <translation>Додат&amp;ково</translation>
+    </message>
+    <message>
         <source>Configures advanced options for the application.</source>
         <translation>Налаштовує розширені параметри програми.</translation>
+    </message>
+    <message>
+        <source>&amp;Debugging</source>
+        <translation>&amp;Налагодження</translation>
     </message>
     <message>
         <source>Adds a new directory that will be searched for game files.</source>
@@ -12947,10 +13020,6 @@ Shift-click to set multiple bindings.</source>
         <translation>Вилучає диск із емульованої системи.</translation>
     </message>
     <message>
-        <source>Enable Safe Mode</source>
-        <translation>Увімкнути безпечний режим</translation>
-    </message>
-    <message>
         <source>Shows captions under the game cover in grid view.</source>
         <translation>Показує підписи під обкладинками ігор у режимі сітки.</translation>
     </message>
@@ -12971,10 +13040,6 @@ Shift-click to set multiple bindings.</source>
         <translation>Зменшує розмір піктограм або обкладинок ігор.</translation>
     </message>
     <message>
-        <source>Refresh Grid &amp;Covers</source>
-        <translation>Оновити сітку &amp;обкладинок</translation>
-    </message>
-    <message>
         <source>Invalidates the cache of game covers, allowing new images to be discovered.</source>
         <translation>Очищає кеш обкладинок ігор для пошуку нових зображень.</translation>
     </message>
@@ -12989,6 +13054,26 @@ Shift-click to set multiple bindings.</source>
     <message>
         <source>Close (No Save)</source>
         <translation>Закрити (без збереження)</translation>
+    </message>
+    <message>
+        <source>Res&amp;ume</source>
+        <translation>Про&amp;довжити</translation>
+    </message>
+    <message>
+        <source>&amp;Show Toolbar</source>
+        <translation>&amp;Показати панель інструментів</translation>
+    </message>
+    <message>
+        <source>S&amp;mall Icons</source>
+        <translation>Мал&amp;енькі значки</translation>
+    </message>
+    <message>
+        <source>Show &amp;Labels</source>
+        <translation>Показати &amp;написи</translation>
+    </message>
+    <message>
+        <source>Show Labels &amp;Beside Icons</source>
+        <translation>Показати написи &amp;поруч зі значками</translation>
     </message>
     <message>
         <source>Opens the memory scanner window.</source>
@@ -13019,20 +13104,12 @@ Shift-click to set multiple bindings.</source>
         <translation>Змінює фонове зображення, яке відображається у списку/сітці ігор.</translation>
     </message>
     <message>
-        <source>Clea&amp;r List Background</source>
-        <translation>&amp;Очистити фон списку</translation>
-    </message>
-    <message>
         <source>Removes the background image shown in the game list/grid.</source>
         <translation>Видаляє фонове зображення, яке відображається у списку/сітці ігор.</translation>
     </message>
     <message>
         <source>Refreshes the list of unlocked achievements.</source>
         <translation>Оновлює список розблокованих досягнень.</translation>
-    </message>
-    <message>
-        <source>Refresh Achievement Database</source>
-        <translation>Оновити базу даних досягнень</translation>
     </message>
     <message>
         <source>Updates the database for achievements shown in the game list.</source>
@@ -13059,16 +13136,8 @@ Shift-click to set multiple bindings.</source>
         <translation>Відкриває вікно редактора пам&apos;яті.</translation>
     </message>
     <message>
-        <source>Animate Game Icons</source>
-        <translation>Анімувати значки ігор</translation>
-    </message>
-    <message>
         <source>Animates icons in the list view when selected.</source>
         <translation>Анімує значки у вигляді списку, коли вони вибрані.</translation>
-    </message>
-    <message>
-        <source>Prefer Achievement Icons</source>
-        <translation>Надавати перевагу значкам досягнень</translation>
     </message>
     <message>
         <source>Prioritizes the games badges used for RetroAchievements over memory card icons.</source>
@@ -13139,14 +13208,6 @@ Shift-click to set multiple bindings.</source>
         <translation>До&amp;сягнення</translation>
     </message>
     <message>
-        <source>A&amp;dvanced</source>
-        <translation>&amp;Додатково</translation>
-    </message>
-    <message>
-        <source>Debuggi&amp;ng</source>
-        <translation>&amp;Налагодження</translation>
-    </message>
-    <message>
         <source>Configures internal options for the application.</source>
         <translation>Налаштовує внутрішні параметри програми.</translation>
     </message>
@@ -13161,10 +13222,6 @@ Shift-click to set multiple bindings.</source>
     <message>
         <source>Big Picture</source>
         <translation>Big Picture</translation>
-    </message>
-    <message>
-        <source>Cover Downloader</source>
-        <translation>Завантажувач обкладинок</translation>
     </message>
     <message>
         <source>Opens the cover downloader window.</source>
@@ -13191,24 +13248,12 @@ Shift-click to set multiple bindings.</source>
         <translation>Запускає або зупиняє захоплення відео та аудіо з вмісту.</translation>
     </message>
     <message>
-        <source>Open Texture Directory...</source>
-        <translation>Відкрити каталог текстур...</translation>
-    </message>
-    <message>
         <source>Opens the directory used to store texture replacements.</source>
         <translation>Відкриває каталог, який використовується для зберігання замін текстур.</translation>
     </message>
     <message>
-        <source>Reload Texture Replacements</source>
-        <translation>Перезавантажити заміни текстур</translation>
-    </message>
-    <message>
         <source>Invalidates the cache of available replacement textures.</source>
         <translation>Очищає кеш доступних текстур для заміни.</translation>
-    </message>
-    <message>
-        <source>Capture GPU Frame</source>
-        <translation>Знімок кадру ГП</translation>
     </message>
     <message>
         <source>Saves the emulated GPU commands to a file that can be later replayed.</source>
@@ -13235,32 +13280,16 @@ Shift-click to set multiple bindings.</source>
         <translation>Запис журналу у файл</translation>
     </message>
     <message>
-        <source>ISO Browser</source>
-        <translation>Браузер образів ISO</translation>
-    </message>
-    <message>
         <source>Opens the ISO browser window.</source>
         <translation>Відкриває вікно браузера ISO.</translation>
-    </message>
-    <message>
-        <source>Free Camera</source>
-        <translation>Вільна камера</translation>
     </message>
     <message>
         <source>Allows you to freely move the camera in supported games.</source>
         <translation>Дозволяє вільно переміщати камеру в підтримуваних іграх.</translation>
     </message>
     <message>
-        <source>Controller Test</source>
-        <translation>Тест контролерів</translation>
-    </message>
-    <message>
         <source>Allows you to test emulated controller mappings.</source>
         <translation>Дозволяє тестувати розкладку емульованих контролерів.</translation>
-    </message>
-    <message>
-        <source>System Log</source>
-        <translation>Системний журнал</translation>
     </message>
     <message>
         <source>Refresh Achievement &amp;Progress</source>
@@ -13347,16 +13376,8 @@ Shift-click to set multiple bindings.</source>
         <translation>Об&apos;єднує кілька дисків, що належать до однієї гри, в один елемент у списку ігор.</translation>
     </message>
     <message>
-        <source>Show G&amp;rid Captions</source>
-        <translation>Показати підпи&amp;си сітки</translation>
-    </message>
-    <message>
         <source>Show Titles (Grid View)</source>
         <translation>Показувати назви (вигляд сітки)</translation>
-    </message>
-    <message>
-        <source>Open Data Directory...</source>
-        <translation>Відкрити каталог програми...</translation>
     </message>
     <message>
         <source>Opens the directory containing application data in your file browser.</source>
@@ -13377,10 +13398,6 @@ Shift-click to set multiple bindings.</source>
     <message>
         <source>&amp;Controllers</source>
         <translation>&amp;Контролери</translation>
-    </message>
-    <message>
-        <source>&amp;Post-Processing</source>
-        <translation>&amp;Постобробка</translation>
     </message>
     <message>
         <source>From File...</source>
@@ -13405,6 +13422,10 @@ Shift-click to set multiple bindings.</source>
     <message>
         <source>Dump VRAM to CPU Copies</source>
         <translation>Дамп копій VRAM -&gt; CPU</translation>
+    </message>
+    <message>
+        <source>Enable &amp;Safe Mode</source>
+        <translation>Увімкнути &amp;безпечний режим</translation>
     </message>
     <message>
         <source>Dump RAM...</source>
@@ -13467,24 +13488,12 @@ Shift-click to set multiple bindings.</source>
         <translation>Керує можливістю переміщення панелі інструментів.</translation>
     </message>
     <message>
-        <source>S&amp;mall Toolbar Icons</source>
-        <translation>Ма&amp;лі значки панелі інструментів</translation>
-    </message>
-    <message>
         <source>Controls whether the smaller toolbar icons are displayed.</source>
         <translation>Керує відображенням менших значків панелі інструментів.</translation>
     </message>
     <message>
-        <source>Toolbar L&amp;abels</source>
-        <translation>&amp;Мітки панелі інструментів</translation>
-    </message>
-    <message>
         <source>Controls whether labels are displayed alongside toolbar icons.</source>
         <translation>Керує відображенням текстових міток поруч зі значками панелі інструментів.</translation>
-    </message>
-    <message>
-        <source>Toolbar Labels &amp;Beside Icons</source>
-        <translation>Мітки панелі інструментів &amp;поруч зі значками</translation>
     </message>
     <message>
         <source>Controls whether labels are displayed next to or under toolbar icons.</source>
@@ -13521,6 +13530,70 @@ Shift-click to set multiple bindings.</source>
     <message>
         <source>Memory &amp;Card Editor</source>
         <translation>Редактор &amp;карток пам&apos;яті</translation>
+    </message>
+    <message>
+        <source>Show Grid Ca&amp;ptions</source>
+        <translation>Показати під&amp;писи сітки</translation>
+    </message>
+    <message>
+        <source>&amp;Refresh Grid Covers</source>
+        <translation>&amp;Оновити обкладинки сітки</translation>
+    </message>
+    <message>
+        <source>&amp;Open Data Directory...</source>
+        <translation>&amp;Відкрити каталог даних...</translation>
+    </message>
+    <message>
+        <source>Start Bi&amp;g Picture Mode</source>
+        <translation>Запустити режим &amp;Big Picture</translation>
+    </message>
+    <message>
+        <source>Cover &amp;Downloader</source>
+        <translation>Завантажувач &amp;обкладинок</translation>
+    </message>
+    <message>
+        <source>Open Te&amp;xture Directory...</source>
+        <translation>Відкрити каталог те&amp;кстур...</translation>
+    </message>
+    <message>
+        <source>&amp;Reload Texture Replacements</source>
+        <translation>&amp;Перезавантажити заміни текстур</translation>
+    </message>
+    <message>
+        <source>Capture &amp;GPU Frame</source>
+        <translation>Захопити кадр &amp;GPU</translation>
+    </message>
+    <message>
+        <source>&amp;ISO Browser</source>
+        <translation>&amp;Переглядач ISO</translation>
+    </message>
+    <message>
+        <source>&amp;Free Camera</source>
+        <translation>&amp;Вільна камера</translation>
+    </message>
+    <message>
+        <source>Controller &amp;Test</source>
+        <translation>&amp;Тест контролерів</translation>
+    </message>
+    <message>
+        <source>Clear List Backgro&amp;und</source>
+        <translation>Очистити фон списк&amp;у</translation>
+    </message>
+    <message>
+        <source>Refresh &amp;Achievement Database</source>
+        <translation>Оновити базу &amp;даних досягнень</translation>
+    </message>
+    <message>
+        <source>&amp;Animate Game Icons</source>
+        <translation>&amp;Анімувати значки ігор</translation>
+    </message>
+    <message>
+        <source>Prefer Ac&amp;hievement Icons</source>
+        <translation>Надавати перевагу значкам досягнен&amp;ь</translation>
+    </message>
+    <message>
+        <source>Syst&amp;em Log</source>
+        <translation>Системний журна&amp;л</translation>
     </message>
     <message>
         <source>Start &amp;Capture</source>
@@ -13671,6 +13744,10 @@ The saves will not be recoverable.</source>
         <translation>Неможливо видалити файл збереження стану &apos;%1&apos;.</translation>
     </message>
     <message>
+        <source>Save was created %1.</source>
+        <translation>Збереження було створено %1.</translation>
+    </message>
+    <message>
         <source>Confirm Disc Change</source>
         <translation>Підтвердження заміни диска</translation>
     </message>
@@ -13727,6 +13804,10 @@ The saves will not be recoverable.</source>
         <translation>Ви впевнені, що хочете закрити поточну гру?</translation>
     </message>
     <message>
+        <source>RA: Logged in as %1 (%2 points, %3 casual). %4 unread messages.</source>
+        <translation>RA: виконано вхід як %1 (%2 балів, %3 у звичайному режимі). Непрочитаних повідомлень: %4.</translation>
+    </message>
+    <message>
         <source>Refresh Achievement Progress</source>
         <translation>Оновити прогрес за досягненнями</translation>
     </message>
@@ -13773,10 +13854,6 @@ Do you want to delete the save state and boot the game anyway?</source>
     <message>
         <source>&lt;strong&gt;Resume Game&lt;/strong&gt;&lt;br&gt;Do you want to load this state, or start from a fresh boot?</source>
         <translation>&lt;strong&gt;Відновити гру&lt;/strong&gt;&lt;br&gt;Ви хочете завантажити цей стан або почати з нового завантаження?</translation>
-    </message>
-    <message>
-        <source>Save was created on %1.</source>
-        <translation>Збереження було створено у %1.</translation>
     </message>
     <message>
         <source>Do you want to swap discs or boot the new image via system restart?</source>
@@ -13997,10 +14074,6 @@ This action cannot be undone.</source>
     <message>
         <source>Failed to create memory card &apos;%1&apos;: %2</source>
         <translation>Не вдалося створити картку пам&apos;яті &apos;%1&apos;: %2</translation>
-    </message>
-    <message>
-        <source>RA: Logged in as %1 (%2, %3 casual). %4 unread messages.</source>
-        <translation>RA: виконано вхід як %1 (%2, %3 у звичайному режимі). Непрочитаних повідомлень: %4.</translation>
     </message>
     <message>
         <source>RA: Updated achievement game database.</source>
@@ -15793,6 +15866,10 @@ Error: {1}</source>
 <context>
     <name>PlayStationMouse</name>
     <message>
+        <source>Pointer</source>
+        <translation>Вказівник</translation>
+    </message>
+    <message>
         <source>Left Button</source>
         <translation>Ліва кнопка</translation>
     </message>
@@ -15811,13 +15888,6 @@ Error: {1}</source>
     <message>
         <source>Vertical Sensitivity</source>
         <translation>Чутливість по вертикалі</translation>
-    </message>
-</context>
-<context>
-    <name>PlaystationMouse</name>
-    <message>
-        <source>Pointer</source>
-        <translation>Покажчик</translation>
     </message>
 </context>
 <context>
@@ -16597,10 +16667,6 @@ Would you like to update the shortcut to point to the current location?</source>
 <context>
     <name>SaveStateSelectorUI</name>
     <message>
-        <source>Saved at {0:%H:%M} on {0:%a} {0:%Y/%m/%d}.</source>
-        <translation>Збережено в {0:%H:%M} в {0:%a} {0:%Y/%m/%d}.</translation>
-    </message>
-    <message>
         <source>No save state slots available.</source>
         <translation>Немає доступних комірок збережених станів.</translation>
     </message>
@@ -16623,6 +16689,10 @@ Would you like to update the shortcut to point to the current location?</source>
     <message>
         <source>{} ({})</source>
         <translation>{} ({})</translation>
+    </message>
+    <message>
+        <source>Saved {}</source>
+        <translation>Збережено {}</translation>
     </message>
     <message>
         <source>No save present in this slot.</source>
@@ -17199,12 +17269,12 @@ Do you want to create this directory?</source>
         <translation>Автовизначення</translation>
     </message>
     <message>
-        <source>NTSC (60hz)</source>
+        <source>NTSC (60 Hz)</source>
         <comment>ForceVideoTiming</comment>
         <translation>NTSC (60 Гц)</translation>
     </message>
     <message>
-        <source>PAL (50hz)</source>
+        <source>PAL (50 Hz)</source>
         <comment>ForceVideoTiming</comment>
         <translation>PAL (50 Гц)</translation>
     </message>
@@ -17823,7 +17893,7 @@ Do you want to continue?</source>
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DuckStation requires a PS1 or PS2 BIOS in order to run.&lt;/p&gt;&lt;p&gt;For legal reasons, you must obtain a BIOS &lt;span style=&quot; font-weight:700;&quot;&gt;from an actual PS1/PS2 unit that you own&lt;/span&gt; (borrowing doesn&apos;t count). You should use Caetla or another utility to create an image from your console&apos;s BIOS ROM on your PC.&lt;/p&gt;&lt;p&gt;Once you have dumped the BIOS from your console, you can click the &amp;quot;Install BIOS&amp;quot; button below to add this image to DuckStation.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Для роботи DuckStation потрібен BIOS PS1 або PS2.&lt;/p&gt;&lt;p&gt;З юридичних причин ви маєте отримати BIOS &lt;span style=" font-weight:700;"&gt;із фактичного пристрою PS1/PS2, яким володієте&lt;/span&gt; (позичений не підходить). Для створення образу BIOS ROM вашої консолі на ПК слід скористатися Caetla або іншою утилітою.&lt;/p&gt;&lt;p&gt;Після створення дампа BIOS із вашої консолі натисніть кнопку &amp;quot;Встановити BIOS&amp;quot; нижче, щоб додати цей образ до DuckStation.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Для роботи DuckStation потрібен BIOS PS1 або PS2.&lt;/p&gt;&lt;p&gt;З юридичних причин ви маєте отримати BIOS &lt;span style=&quot; font-weight:700;&quot;&gt;із фактичного пристрою PS1/PS2, яким володієте&lt;/span&gt; (позичений не підходить). Для створення образу BIOS ROM вашої консолі на ПК слід скористатися Caetla або іншою утилітою.&lt;/p&gt;&lt;p&gt;Після створення дампа BIOS із вашої консолі натисніть кнопку &amp;quot;Встановити BIOS&amp;quot; нижче, щоб додати цей образ до DuckStation.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>Install BIOS...</source>
@@ -17839,7 +17909,7 @@ Do you want to continue?</source>
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;By default, DuckStation will map your keyboard to the virtual controller. &lt;span style=&quot; font-weight:700;&quot;&gt;To use an external controller, you must map it first. &lt;/span&gt;On this screen, you can automatically map any controller which is currently connected. If your controller is not currently connected, you can plug it in now.&lt;/p&gt;&lt;p&gt;To change controller bindings in more detail, or use multi-tap, open the Settings menu and choose Controllers once you have completed the Setup Wizard.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Типово DuckStation призначить клавіатуру віртуальному контролеру. &lt;span style=" font-weight:700;"&gt;Щоб використовувати зовнішній контролер, спочатку його потрібно налаштувати. &lt;/span&gt;На цьому екрані можна автоматично налаштувати будь-який підключений контролер. Якщо ваш контролер зараз не підключено, можете підключити його зараз.&lt;/p&gt;&lt;p&gt;Щоб докладніше змінити прив’язки контролера або використати multitap, після завершення майстра налаштування відкрийте меню «Налаштування» та виберіть «Контролери».&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Типово DuckStation призначить клавіатуру віртуальному контролеру. &lt;span style=&quot; font-weight:700;&quot;&gt;Щоб використовувати зовнішній контролер, спочатку його потрібно налаштувати. &lt;/span&gt;На цьому екрані можна автоматично налаштувати будь-який підключений контролер. Якщо ваш контролер зараз не підключено, можете підключити його зараз.&lt;/p&gt;&lt;p&gt;Щоб докладніше змінити прив’язки контролера або використати multitap, після завершення майстра налаштування відкрийте меню «Налаштування» та виберіть «Контролери».&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>Default (Keyboard)</source>
@@ -17919,7 +17989,7 @@ Do you want to continue?</source>
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DuckStation supports earning achievements and leaderboard tracking with RetroAchievements.&lt;/p&gt;&lt;p&gt;If you have a RetroAchievements account, you can use the form below to log in. If not, you can register by clicking the Register button below.&lt;/p&gt;&lt;p&gt;A RetroAchievements account is &lt;span style=&quot; font-weight:700;&quot;&gt;not&lt;/span&gt; required to use DuckStation.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DuckStation підтримує отримання досягнень і відстеження таблиць лідерів через RetroAchievements.&lt;/p&gt;&lt;p&gt;Якщо у вас є обліковий запис RetroAchievements, ви можете увійти за допомогою форми нижче. Якщо ні, зареєструйтеся, натиснувши кнопку «Зареєструватися» нижче.&lt;/p&gt;&lt;p&gt;Обліковий запис RetroAchievements &lt;span style=" font-weight:700;"&gt;не&lt;/span&gt; потрібен для використання DuckStation.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DuckStation підтримує отримання досягнень і відстеження таблиць лідерів через RetroAchievements.&lt;/p&gt;&lt;p&gt;Якщо у вас є обліковий запис RetroAchievements, ви можете увійти за допомогою форми нижче. Якщо ні, зареєструйтеся, натиснувши кнопку «Зареєструватися» нижче.&lt;/p&gt;&lt;p&gt;Обліковий запис RetroAchievements &lt;span style=&quot; font-weight:700;&quot;&gt;не&lt;/span&gt; потрібен для використання DuckStation.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>Register</source>
@@ -17947,7 +18017,7 @@ Do you want to continue?</source>
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This page includes some of the commonly set graphics options in DuckStation.&lt;/p&gt;&lt;p&gt;These options are generally safe to enable, and compatible with most games. Changing the internal resolution and enabling PGXP geometry correction will significantly improve the graphical fidelity of most games.&lt;/p&gt;&lt;p&gt;You can change these options and others in &lt;span style=&quot; font-weight:700;&quot;&gt;Graphics Settings &lt;/span&gt;after completing setup.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Ця сторінка містить деякі з часто налаштовуваних графічних параметрів DuckStation.&lt;/p&gt;&lt;p&gt;Ці параметри зазвичай безпечно вмикати, і вони сумісні з більшістю ігор. Зміна внутрішньої роздільної здатності та ввімкнення корекції геометрії PGXP значно поліпшать графічну якість більшості ігор.&lt;/p&gt;&lt;p&gt;Після завершення налаштування ви зможете змінити ці та інші параметри в &lt;span style=" font-weight:700;"&gt;налаштуваннях графіки &lt;/span&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Ця сторінка містить деякі з часто налаштовуваних графічних параметрів DuckStation.&lt;/p&gt;&lt;p&gt;Ці параметри зазвичай безпечно вмикати, і вони сумісні з більшістю ігор. Зміна внутрішньої роздільної здатності та ввімкнення корекції геометрії PGXP значно поліпшать графічну якість більшості ігор.&lt;/p&gt;&lt;p&gt;Після завершення налаштування ви зможете змінити ці та інші параметри в &lt;span style=&quot; font-weight:700;&quot;&gt;налаштуваннях графіки &lt;/span&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>Controls how dithering is applied in the emulated GPU. True Color disables dithering and produces the nicest looking gradients. Scaled options make the dither pattern less noticeable at higher resolutions. Shader Blending options perform blending in software, and are more accurate but have a &lt;strong&gt;significant&lt;/strong&gt; performance penalty.</source>
@@ -18157,9 +18227,9 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>Logged in as %1
-Token generated at %2</source>
+Token generated %2</source>
         <translation>Виконано вхід як %1
-Токен створено о %2</translation>
+Токен згенеровано %2</translation>
     </message>
     <message>
         <source>Logout</source>
@@ -18611,12 +18681,12 @@ Using current CD image, this may result in instability.</source>
 {}</translation>
     </message>
     <message>
-        <source>Failed to change GPU dump: {}</source>
-        <translation>Не вдалося змінити дамп ГП: {}</translation>
+        <source>Loaded undo save state created {}.</source>
+        <translation>Завантажено стан збереження для скасування, створений {}.</translation>
     </message>
     <message>
-        <source>Loaded undo save state created at {}.</source>
-        <translation>Завантажено скасований стан збереження, створений у {}.</translation>
+        <source>Failed to change GPU dump: {}</source>
+        <translation>Не вдалося змінити дамп ГП: {}</translation>
     </message>
     <message>
         <source>capturing audio and video</source>

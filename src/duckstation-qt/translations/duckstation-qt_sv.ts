@@ -190,6 +190,10 @@ Vill du aktivera hardcore-läget?</translation>
         <translation>Aktivera Encore-läget</translation>
     </message>
     <message>
+        <source>Track Unofficial Achievements</source>
+        <translation>Spåra inofficiella prestationer</translation>
+    </message>
+    <message>
         <source>Prefetch Badges</source>
         <translation>Förhämta märken</translation>
     </message>
@@ -228,10 +232,6 @@ Vill du aktivera hardcore-läget?</translation>
     <message>
         <source>When enabled, DuckStation will assume all achievements are locked and not send any unlock notifications to the server.</source>
         <translation>När aktiverad kommer DuckStation att anta att alla prestationer är låsta och inte skicka några upplåsniingsaviseringar till servern.</translation>
-    </message>
-    <message>
-        <source>When enabled, DuckStation will list achievements from unofficial sets. Please note that these achievements are not tracked by RetroAchievements, so they unlock every time.</source>
-        <translation>När aktiverat kommer DuckStation att lista prestationer från inofficiella uppsättningar. Observera att dessa prestationer inte kontrolleras av RetroAchievements så de låses upp varje gång.</translation>
     </message>
     <message>
         <source>Displays popup messages on events such as achievement unlocks and game completion.</source>
@@ -303,6 +303,10 @@ Vill du aktivera hardcore-läget?</translation>
     <message>
         <source>(Customize)</source>
         <translation>(Anpassa)</translation>
+    </message>
+    <message>
+        <source>When enabled, DuckStation will track unofficial achievements. Unlocks will be saved locally and not sent to RetroAchievements.</source>
+        <translation>När detta är aktiverat spårar DuckStation inofficiella prestationer. Upplåsningar sparas lokalt och skickas inte till RetroAchievements.</translation>
     </message>
     <message>
         <source>Shows a timer in the selected location when leaderboard challenges are active.</source>
@@ -406,7 +410,7 @@ Vill du aktivera hardcore-läget?</translation>
     </message>
     <message>
         <source>Logged in as %1
-Token generated at %2</source>
+Token generated %2</source>
         <translation>Inloggad som: %1
 Token genererades %2</translation>
     </message>
@@ -544,6 +548,34 @@ Fel: {}</translation>
         <translation>Du har låst upp {0} av {1}  prestationer och tjänat {2} of {3} möjliga poäng.</translation>
     </message>
     <message>
+        <source>You have unlocked {0} of {1} unofficial achievements, earning {2} of {3} possible points.</source>
+        <translation>Du har låst upp {0} av {1} inofficiella prestationer och tjänat {2} av {3} möjliga poäng.</translation>
+    </message>
+    <message>
+        <source>Game was beaten {0}, and completed {1}.</source>
+        <translation>Spelet klarades av {0} och färdigställdes {1}.</translation>
+    </message>
+    <message>
+        <source>Subset was beaten {0}, and completed {1}.</source>
+        <translation>Deluppsättningen klarades av {0} och färdigställdes {1}.</translation>
+    </message>
+    <message>
+        <source>Game was beaten {0}.</source>
+        <translation>Spelet klarades av {0}.</translation>
+    </message>
+    <message>
+        <source>Subset was beaten {0}.</source>
+        <translation>Deluppsättningen klarades av {0}.</translation>
+    </message>
+    <message>
+        <source>Game was completed {0}.</source>
+        <translation>Spelet färdigställdes {0}.</translation>
+    </message>
+    <message>
+        <source>Subset was completed {0}.</source>
+        <translation>Deluppsättningen färdigställdes {0}.</translation>
+    </message>
+    <message>
         <source>Recently Unlocked</source>
         <translation>Senast upplåsta</translation>
     </message>
@@ -556,12 +588,20 @@ Fel: {}</translation>
         <translation>Byt val</translation>
     </message>
     <message>
+        <source>Reset Unofficial Unlocks</source>
+        <translation>Återställ inofficiella upplåsningar</translation>
+    </message>
+    <message>
         <source>View Details</source>
         <translation>Visa detaljer</translation>
     </message>
     <message>
         <source>Back</source>
         <translation>Bakåt</translation>
+    </message>
+    <message>
+        <source>Unlocked {}</source>
+        <translation>Upplåst {}</translation>
     </message>
     <message numerus="yes">
         <source>This game has %n leaderboards.</source>
@@ -704,10 +744,6 @@ Fel: {}</translation>
         <translation>Villkor för att vinna</translation>
     </message>
     <message>
-        <source>Unlocked: {} | {:.1f}% of players have this achievement</source>
-        <translation>Upplåst: {} | {:.1f}% av spelarna har den här prestationen</translation>
-    </message>
-    <message>
         <source>{:.1f}% of players have this achievement</source>
         <translation>{:.1f}% av spelarna har den här prestationen</translation>
     </message>
@@ -766,18 +802,6 @@ Fel: {}</translation>
             <numerusform>%n prestation stöds inte av DuckStation och kan inte låsas upp.</numerusform>
             <numerusform>%n prestationer stöds inte av DuckStation och kan inte låsas upp.</numerusform>
         </translation>
-    </message>
-    <message>
-        <source>Game was beaten on {0}, and completed on {1}.</source>
-        <translation>Spelet klarades av den {0} och färdigställdes den {1}.</translation>
-    </message>
-    <message>
-        <source>Game was beaten on {0}.</source>
-        <translation>Spelet klarades av den {0}.</translation>
-    </message>
-    <message>
-        <source>Game was completed on {0}.</source>
-        <translation>Spelet färdigställdes den {0}.</translation>
     </message>
     <message>
         <source>Challenge Failed: {}</source>
@@ -883,18 +907,6 @@ Olästa meddelanden: {}</translation>
         <translation>Denna deluppsättning har inga prestationer.</translation>
     </message>
     <message>
-        <source>Subset was beaten on {0}, and completed on {1}.</source>
-        <translation>Deluppsättningen besegrades den {0}, och färdigställdes den {1}.</translation>
-    </message>
-    <message>
-        <source>Subset was beaten on {0}.</source>
-        <translation>Deluppsättningen besegrades den {0}.</translation>
-    </message>
-    <message>
-        <source>Subset was completed on {0}.</source>
-        <translation>Deluppsättningen färdigställdes den {0}.</translation>
-    </message>
-    <message>
         <source>Change Subset</source>
         <translation>Ändra deluppsättning</translation>
     </message>
@@ -950,66 +962,6 @@ Olästa meddelanden: {}</translation>
     <message>
         <source>Pin Achievement</source>
         <translation>Fäst prestation</translation>
-    </message>
-    <message>
-        <source>Just now</source>
-        <translation>Precis nu</translation>
-    </message>
-    <message numerus="yes">
-        <source>%n minutes ago</source>
-        <comment>Relative time</comment>
-        <translation>
-            <numerusform>%n minut sedan</numerusform>
-            <numerusform>%n minuter sedan</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <source>%n hours ago</source>
-        <comment>Relative time</comment>
-        <translation>
-            <numerusform>%n timma sedan</numerusform>
-            <numerusform>%n timmar sedan</numerusform>
-        </translation>
-    </message>
-    <message>
-        <source>Today</source>
-        <translation>Idag</translation>
-    </message>
-    <message>
-        <source>Yesterday</source>
-        <translation>Igår</translation>
-    </message>
-    <message numerus="yes">
-        <source>%n days ago</source>
-        <comment>Relative time</comment>
-        <translation>
-            <numerusform>%n dag sedan</numerusform>
-            <numerusform>%n dagar sedan</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <source>%n weeks ago</source>
-        <comment>Relative time</comment>
-        <translation>
-            <numerusform>%n vecka sedan</numerusform>
-            <numerusform>%n veckor sedan</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <source>%n months ago</source>
-        <comment>Relative time</comment>
-        <translation>
-            <numerusform>%n månad sedan</numerusform>
-            <numerusform>%n månader sedan</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <source>%n years ago</source>
-        <comment>Relative time</comment>
-        <translation>
-            <numerusform>%n år sedan</numerusform>
-            <numerusform>%n år sedan</numerusform>
-        </translation>
     </message>
 </context>
 <context>
@@ -2755,10 +2707,6 @@ Om du försöker använda denna fuskkod kommer den inte att fungera som förvän
     <message>
         <source>6x</source>
         <translation>6x</translation>
-    </message>
-    <message>
-        <source>Preload Image To RAM</source>
-        <translation>Läs in avbild först till RAM</translation>
     </message>
     <message>
         <source>Apply Image Patches</source>
@@ -5831,6 +5779,10 @@ Vill du {1} ändå?</translation>
         <translation>All tid: {}</translation>
     </message>
     <message>
+        <source>All unofficial achievement progress for the current game will be removed. This cannot be undone.</source>
+        <translation>Alla inofficiella prestationsframsteg för det aktuella spelet tas bort. Detta kan inte ångras.</translation>
+    </message>
+    <message>
         <source>Allow Booting Without SBI File</source>
         <translation>Tillåt uppstarter utan SBI-fil</translation>
     </message>
@@ -6281,6 +6233,10 @@ Alla bindningar och konfigurationen kommer att förloras . Du kan inte ångra de
     <message>
         <source>Displays popup messages when starting, submitting, or failing a leaderboard challenge.</source>
         <translation>Visar popupmeddelanden vid start, insändning eller misslyckanden av en ledartavleutmaning.</translation>
+    </message>
+    <message>
+        <source>Do you want to continue from the automatic save created {}?</source>
+        <translation>Vill du fortsätta från den automatiska sparning som skapades {}?</translation>
     </message>
     <message>
         <source>Double-Click Toggles Fullscreen</source>
@@ -6769,10 +6725,6 @@ Fel: {}
 Kontrollera ditt användarnamn och lösenord. Försök igen.</translation>
     </message>
     <message>
-        <source>Login token generated on {}</source>
-        <translation>Inloggningstoken genererades {}</translation>
-    </message>
-    <message>
         <source>Logs BIOS calls to printf(). Not all games contain debugging messages.</source>
         <translation>Loggar BIOS-anrop till printf(). Inte alla spel innehåller felsökningsmeddelanden.</translation>
     </message>
@@ -7173,6 +7125,18 @@ Kontrollera ditt användarnamn och lösenord. Försök igen.</translation>
         <translation>Rendering</translation>
     </message>
     <message>
+        <source>Reset Unlock</source>
+        <translation>Återställ upplåsning</translation>
+    </message>
+    <message>
+        <source>Reset Unofficial Achievement</source>
+        <translation>Återställ inofficiell prestation</translation>
+    </message>
+    <message>
+        <source>Reset Unofficial Achievement Unlocks</source>
+        <translation>Återställ upplåsningar för inofficiella prestationer</translation>
+    </message>
+    <message>
         <source>Resets all configuration to defaults (including bindings).</source>
         <translation>Nollställer all konfiguration till standardvärden (inklusive bindningar).</translation>
     </message>
@@ -7541,10 +7505,6 @@ Kontrollera ditt användarnamn och lösenord. Försök igen.</translation>
         <translation>Inaktiverar tillfälligt alla förbättringar, användbart vid testning.</translation>
     </message>
     <message>
-        <source>Test Unofficial Achievements</source>
-        <translation>Testa inofficiella prestationer</translation>
-    </message>
-    <message>
         <source>Texture Filtering</source>
         <translation>Texturfiltrering</translation>
     </message>
@@ -7739,10 +7699,6 @@ Vill du {0} ändå?</translation>
     <message>
         <source>When enabled, DuckStation will assume all achievements are locked and not send any unlock notifications to the server.</source>
         <translation>När aktiverad kommer DuckStation att anta att alla prestationer är låsta och inte skicka några upplåsniingsaviseringar till servern.</translation>
-    </message>
-    <message>
-        <source>When enabled, DuckStation will list achievements from unofficial sets. These achievements are not tracked by RetroAchievements.</source>
-        <translation>När DuckStation är aktiverat kommer det att lista prestationer från inofficiella uppsättningar. Dessa prestationer spåras inte av RetroAchievements.</translation>
     </message>
     <message>
         <source>When enabled, each session will behave as if no achievements have been unlocked.</source>
@@ -8107,10 +8063,6 @@ Du kan inte ångra den här åtgärden.</translation>
     <message>
         <source>Default Value</source>
         <translation>Standardvärde</translation>
-    </message>
-    <message>
-        <source>Do you want to continue from the automatic save created at {}?</source>
-        <translation>Vill du fortsätta från den automatiska sparning som skapades vid {}?</translation>
     </message>
     <message>
         <source>Enable Achievements to see your user summary.</source>
@@ -8714,6 +8666,10 @@ Vill du ta bort det sparade tillståndet och starta spelet ändå?</translation>
         <translation>Indikatorskala</translation>
     </message>
     <message>
+        <source>Login token generated {}</source>
+        <translation>Inloggningstoken genererades {}</translation>
+    </message>
+    <message>
         <source>Macro {}</source>
         <translation>Makro {}</translation>
     </message>
@@ -8910,6 +8866,10 @@ Vill du ta bort det sparade tillståndet och starta spelet ändå?</translation>
         <translation>Byter plats på handkontrollens bekräfta-/avbrytknappar så att {0} bekräftar och {1} avbryter.</translation>
     </message>
     <message>
+        <source>The unlock state for &apos;{}&apos; will be removed. This cannot be undone.</source>
+        <translation>Upplåsningsstatusen för &apos;{}&apos; tas bort. Detta kan inte ångras.</translation>
+    </message>
+    <message>
         <source>Title (*)</source>
         <translation>Titel (*)</translation>
     </message>
@@ -8922,8 +8882,20 @@ Vill du ta bort det sparade tillståndet och starta spelet ändå?</translation>
         <translation>Spår</translation>
     </message>
     <message>
+        <source>Track Unofficial Achievements</source>
+        <translation>Spåra inofficiella prestationer</translation>
+    </message>
+    <message>
         <source>Track hash copied to clipboard.</source>
         <translation>Spårets kontrollsumma kopierades till urklipp.</translation>
+    </message>
+    <message>
+        <source>Unofficial achievement unlock reset.</source>
+        <translation>Inofficiell prestationsupplåsning återställd.</translation>
+    </message>
+    <message>
+        <source>Unofficial achievement unlocks reset.</source>
+        <translation>Inofficiella prestationsupplåsningar återställda.</translation>
     </message>
     <message>
         <source>Unpin from OSD</source>
@@ -8960,6 +8932,10 @@ Vill du ta bort det sparade tillståndet och starta spelet ändå?</translation>
     <message>
         <source>Uses game-specific configuration for input sources. If disabled, the global configuration will be used.</source>
         <translation>Använder spelspecifik konfiguration för inmatningskällor. Om den är inaktiverad kommer den globala konfigurationen att användas.</translation>
+    </message>
+    <message>
+        <source>When enabled, DuckStation will track unofficial achievements. Unlocks will be saved locally and not sent to RetroAchievements.</source>
+        <translation>När detta är aktiverat spårar DuckStation inofficiella prestationer. Upplåsningar sparas lokalt och skickas inte till RetroAchievements.</translation>
     </message>
     <message>
         <source>{0} (Missing)</source>
@@ -9870,65 +9846,12 @@ Alla databasfusk kommer fortfarande att läsas in och synas såvida inte du avma
         <translation>Okänt</translation>
     </message>
     <message>
-        <source>Never</source>
-        <translation>Aldrig</translation>
-    </message>
-    <message>
-        <source>Today</source>
-        <translation>Idag</translation>
-    </message>
-    <message>
-        <source>Yesterday</source>
-        <translation>Igår</translation>
-    </message>
-    <message>
-        <source>{}h {}m</source>
-        <translation>{}h {}m</translation>
-    </message>
-    <message>
-        <source>{}h {}m {}s</source>
-        <translation>{}h {}m {}s</translation>
-    </message>
-    <message>
-        <source>{}m {}s</source>
-        <translation>{}m {}s</translation>
-    </message>
-    <message>
-        <source>{}s</source>
-        <translation>{}s</translation>
-    </message>
-    <message>
-        <source>None</source>
-        <translation>Ingen</translation>
-    </message>
-    <message numerus="yes">
-        <source>%n hours</source>
-        <translation>
-            <numerusform>%n hour</numerusform>
-            <numerusform>%n hours</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <source>%n minutes</source>
-        <translation>
-            <numerusform>%n minute</numerusform>
-            <numerusform>%n minutes</numerusform>
-        </translation>
-    </message>
-    <message>
         <source>Scanning directory &apos;{}&apos;...</source>
         <translation>Söker igenom katalogen &apos;{}&apos;...</translation>
     </message>
     <message>
         <source>Scanning &apos;{}&apos;...</source>
         <translation>Söker igenom &apos;{}&apos;...</translation>
-    </message>
-    <message numerus="yes">
-        <source>%n seconds</source>
-        <translation>
-            <numerusform>%n sekund</numerusform>
-            <numerusform>%n sekunder</numerusform>
-        </translation>
     </message>
     <message>
         <source>URL template must contain at least one of ${title}, ${savetitle}, ${filetitle}, or ${serial}.</source>
@@ -9937,13 +9860,6 @@ Alla databasfusk kommer fortfarande att läsas in och synas såvida inte du avma
     <message>
         <source>No URLs to download enumerated.</source>
         <translation>Inga URLer för att hämta ner uppräknat.</translation>
-    </message>
-</context>
-<context>
-    <name>GameListListView</name>
-    <message>
-        <source>Unknown</source>
-        <translation>Okänt</translation>
     </message>
 </context>
 <context>
@@ -9975,10 +9891,6 @@ Alla databasfusk kommer fortfarande att läsas in och synas såvida inte du avma
     <message>
         <source>Compatibility</source>
         <translation>Kompatibilitet</translation>
-    </message>
-    <message>
-        <source>Unknown</source>
-        <translation>Okänt</translation>
     </message>
     <message>
         <source>Icon</source>
@@ -10118,6 +10030,10 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
         <translation>Slå ihop spel på flera skivor</translation>
     </message>
     <message>
+        <source>Show Localized Titles</source>
+        <translation>Visa lokalanpassade titlar</translation>
+    </message>
+    <message>
         <source>Show Titles</source>
         <translation>Visa titlar</translation>
     </message>
@@ -10128,10 +10044,6 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
     <message>
         <source>All Regions</source>
         <translation>Alla regioner</translation>
-    </message>
-    <message>
-        <source>Show Localized Icons</source>
-        <translation>Visa lokalanpassade ikoner</translation>
     </message>
     <message>
         <source>Show Game Icons</source>
@@ -11345,6 +11257,142 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
     <message>
         <source>Offset applied to lightgun horizontal position.</source>
         <translation>Förskjutning som tillämpas på ljuspistolens horisontella position.</translation>
+    </message>
+</context>
+<context>
+    <name>Host</name>
+    <message numerus="yes">
+        <source>%n seconds</source>
+        <translation>
+            <numerusform>%n sekund</numerusform>
+            <numerusform>%n sekunder</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n minutes</source>
+        <translation>
+            <numerusform>%n minut</numerusform>
+            <numerusform>%n minuter</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n hours</source>
+        <translation>
+            <numerusform>%n timme</numerusform>
+            <numerusform>%n timmar</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Today</source>
+        <translation>Idag</translation>
+    </message>
+    <message>
+        <source>Yesterday</source>
+        <translation>Igår</translation>
+    </message>
+    <message>
+        <source>Never</source>
+        <translation>Aldrig</translation>
+    </message>
+    <message>
+        <source>today</source>
+        <translation>idag</translation>
+    </message>
+    <message>
+        <source>yesterday</source>
+        <translation>igår</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n days ago</source>
+        <comment>Date difference</comment>
+        <translation>
+            <numerusform>%n dag sedan</numerusform>
+            <numerusform>%n dagar sedan</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>on {}</source>
+        <translation>den {}</translation>
+    </message>
+    <message>
+        <source>Now</source>
+        <translation>Nu</translation>
+    </message>
+    <message>
+        <source>now</source>
+        <translation>nu</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n seconds ago</source>
+        <comment>Time difference</comment>
+        <translation>
+            <numerusform>%n sekund sedan</numerusform>
+            <numerusform>%n sekunder sedan</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n minutes ago</source>
+        <comment>Time difference</comment>
+        <translation>
+            <numerusform>%n minut sedan</numerusform>
+            <numerusform>%n minuter sedan</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n hours ago</source>
+        <comment>Time difference</comment>
+        <translation>
+            <numerusform>%n timme sedan</numerusform>
+            <numerusform>%n timmar sedan</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n weeks ago</source>
+        <comment>Time difference</comment>
+        <translation>
+            <numerusform>%n vecka sedan</numerusform>
+            <numerusform>%n veckor sedan</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n months ago</source>
+        <comment>Time difference</comment>
+        <translation>
+            <numerusform>%n månad sedan</numerusform>
+            <numerusform>%n månader sedan</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n years ago</source>
+        <comment>Time difference</comment>
+        <translation>
+            <numerusform>%n år sedan</numerusform>
+            <numerusform>%n år sedan</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>{} at {}</source>
+        <translation>{} kl. {}</translation>
+    </message>
+    <message>
+        <source>{}h {}m</source>
+        <translation>{}h {}m</translation>
+    </message>
+    <message>
+        <source>{}h {}m {}s</source>
+        <translation>{}h {}m {}s</translation>
+    </message>
+    <message>
+        <source>{}m {}s</source>
+        <translation>{}m {}s</translation>
+    </message>
+    <message>
+        <source>{}s</source>
+        <translation>{}s</translation>
+    </message>
+    <message>
+        <source>None</source>
+        <translation>Ingen</translation>
     </message>
 </context>
 <context>
@@ -12666,10 +12714,6 @@ Skift-klicka för att ställa in flera bindningar.</translation>
         <translation>Läs in tillstånd</translation>
     </message>
     <message>
-        <source>Save State</source>
-        <translation>Spara tillstånd</translation>
-    </message>
-    <message>
         <source>S&amp;ettings</source>
         <translation>&amp;Inställningar</translation>
     </message>
@@ -12712,10 +12756,6 @@ Skift-klicka för att ställa in flera bindningar.</translation>
     <message>
         <source>C&amp;onsole</source>
         <translation>K&amp;onsol</translation>
-    </message>
-    <message>
-        <source>&amp;Post-Processing</source>
-        <translation>E&amp;fterbehandling</translation>
     </message>
     <message>
         <source>View Third-Party Notices...</source>
@@ -12798,28 +12838,12 @@ Skift-klicka för att ställa in flera bindningar.</translation>
         <translation>Storbild</translation>
     </message>
     <message>
-        <source>Cover Downloader</source>
-        <translation>Hämta omslagsbilder</translation>
-    </message>
-    <message>
         <source>Memory &amp;Scanner</source>
         <translation>Minness&amp;kanner</translation>
     </message>
     <message>
         <source>Media Ca&amp;pture</source>
         <translation>Mediafångs&amp;t</translation>
-    </message>
-    <message>
-        <source>Open Texture Directory...</source>
-        <translation>Öppna texturkatalog...</translation>
-    </message>
-    <message>
-        <source>Reload Texture Replacements</source>
-        <translation>Läs om texturersättningar</translation>
-    </message>
-    <message>
-        <source>Capture GPU Frame</source>
-        <translation>Fånga GPU-bildruta</translation>
     </message>
     <message>
         <source>&amp;View</source>
@@ -12906,10 +12930,6 @@ Skift-klicka för att ställa in flera bindningar.</translation>
         <translation>Ta bort skiva</translation>
     </message>
     <message>
-        <source>Enable Safe Mode</source>
-        <translation>Aktivera säkert läge</translation>
-    </message>
-    <message>
         <source>&amp;Screenshot</source>
         <translation>&amp;Skärmbild</translation>
     </message>
@@ -12966,32 +12986,12 @@ Skift-klicka för att ställa in flera bindningar.</translation>
         <translation>Logga till fil</translation>
     </message>
     <message>
-        <source>ISO Browser</source>
-        <translation>ISO-bläddrare</translation>
-    </message>
-    <message>
-        <source>Free Camera</source>
-        <translation>Fri kamera</translation>
-    </message>
-    <message>
-        <source>Controller Test</source>
-        <translation>Handkontrollertest</translation>
-    </message>
-    <message>
-        <source>Open Data Directory...</source>
-        <translation>Öppna datakatalog...</translation>
-    </message>
-    <message>
         <source>Start Big Picture Mode</source>
         <translation>Starta storbildsläge</translation>
     </message>
     <message>
         <source>%1x Scale</source>
         <translation>%1x skala</translation>
-    </message>
-    <message>
-        <source>RA: Logged in as %1 (%2, %3 casual). %4 unread messages.</source>
-        <translation>RA: Inloggad som %1 (%2, %3 avslappnat). %4 olästa meddelanden.</translation>
     </message>
     <message>
         <source>No containers are available for the current backend.</source>
@@ -13066,6 +13066,10 @@ Skift-klicka för att ställa in flera bindningar.</translation>
         <translation>Tilläm&amp;pa fusk</translation>
     </message>
     <message>
+        <source>Save was created %1.</source>
+        <translation>Sparningen skapades %1.</translation>
+    </message>
+    <message>
         <source>Exit Big Picture</source>
         <translation>Avsluta storbildsläge</translation>
     </message>
@@ -13124,6 +13128,10 @@ Skift-klicka för att ställa in flera bindningar.</translation>
     <message>
         <source>Memory card &apos;%1&apos; could not be found. Try starting the game and saving to create it.</source>
         <translation>Minneskortet &apos;%1&apos; kunde inte hittas. Prova att starta spelet och spara för att skapa det.</translation>
+    </message>
+    <message>
+        <source>RA: Logged in as %1 (%2 points, %3 casual). %4 unread messages.</source>
+        <translation>RA: Inloggad som %1 (%2 poäng, %3 avslappnat). %4 olästa meddelanden.</translation>
     </message>
     <message>
         <source>RA: Updated achievement game database.</source>
@@ -13418,8 +13426,24 @@ Vill du ta bort det sparade tillståndet och starta spelet ändå?</translation>
         <translation>Sortera e&amp;fter</translation>
     </message>
     <message>
+        <source>Cha&amp;nge Disc</source>
+        <translation>&amp;Byt skiva</translation>
+    </message>
+    <message>
+        <source>&amp;Cheats</source>
+        <translation>&amp;Fusk</translation>
+    </message>
+    <message>
+        <source>Sa&amp;ve State</source>
+        <translation>Spara &amp;tillstånd</translation>
+    </message>
+    <message>
         <source>Allows you to record audio and/or video from the content.</source>
         <translation>Gör det möjligt att spela in ljud och/eller video från innehållet.</translation>
+    </message>
+    <message>
+        <source>Media Capt&amp;ure</source>
+        <translation>Mediafån&amp;gst</translation>
     </message>
     <message>
         <source>Starts a new session using the selected file.</source>
@@ -13510,6 +13534,10 @@ Vill du ta bort det sparade tillståndet och starta spelet ändå?</translation>
         <translation>Konfigurerar alternativ relaterade till hur sessionens innehåll visas.</translation>
     </message>
     <message>
+        <source>Post-Processi&amp;ng</source>
+        <translation>Efterbehandli&amp;ng</translation>
+    </message>
+    <message>
         <source>Configures post-processing effects applied after rendering the content.</source>
         <translation>Konfigurerar efterbearbetningseffekter som tillämpas efter rendering av innehållet.</translation>
     </message>
@@ -13594,16 +13622,8 @@ Vill du ta bort det sparade tillståndet och starta spelet ändå?</translation>
         <translation>Konfigurerar alternativ relaterade till applikationens utseende och beteende.</translation>
     </message>
     <message>
-        <source>A&amp;dvanced</source>
-        <translation>A&amp;vancerat</translation>
-    </message>
-    <message>
         <source>Configures advanced options for the application.</source>
         <translation>Konfigurerar avancerade alternativ för applikationen.</translation>
-    </message>
-    <message>
-        <source>Debuggi&amp;ng</source>
-        <translation>Felsök&amp;ning</translation>
     </message>
     <message>
         <source>Configures internal options for the application.</source>
@@ -13658,24 +13678,12 @@ Vill du ta bort det sparade tillståndet och starta spelet ändå?</translation>
         <translation>Kontrollerar om verktygsfältet kan flyttas.</translation>
     </message>
     <message>
-        <source>S&amp;mall Toolbar Icons</source>
-        <translation>S&amp;må ikoner på verktygsrad</translation>
-    </message>
-    <message>
         <source>Controls whether the smaller toolbar icons are displayed.</source>
         <translation>Kontrollerar om de mindre verktygsfältikonerna visas.</translation>
     </message>
     <message>
-        <source>Toolbar L&amp;abels</source>
-        <translation>Eti&amp;ketter för verktygsrad</translation>
-    </message>
-    <message>
         <source>Controls whether labels are displayed alongside toolbar icons.</source>
         <translation>Kontrollerar om etiketter visas bredvid verktygsfältets ikoner.</translation>
-    </message>
-    <message>
-        <source>Toolbar Labels &amp;Beside Icons</source>
-        <translation>Verkty&amp;gsfältetiketter bredvid ikoner</translation>
     </message>
     <message>
         <source>Controls whether labels are displayed next to or under toolbar icons.</source>
@@ -13716,6 +13724,26 @@ Vill du ta bort det sparade tillståndet och starta spelet ändå?</translation>
     <message>
         <source>Merges multiple discs that belong to the same game into a single item in the game list.</source>
         <translation>Slår samman flera skivor som tillhör samma spel till ett enda objekt i spellistan.</translation>
+    </message>
+    <message>
+        <source>Clear List Backgro&amp;und</source>
+        <translation>Töm listbakgr&amp;und</translation>
+    </message>
+    <message>
+        <source>Refresh &amp;Achievement Database</source>
+        <translation>Uppdatera &amp;prestationsdatabas</translation>
+    </message>
+    <message>
+        <source>&amp;Animate Game Icons</source>
+        <translation>&amp;Animera spelikoner</translation>
+    </message>
+    <message>
+        <source>Prefer Ac&amp;hievement Icons</source>
+        <translation>Föredra prestations&amp;ikoner</translation>
+    </message>
+    <message>
+        <source>Syst&amp;em Log</source>
+        <translation>System&amp;logg</translation>
     </message>
     <message>
         <source>Start &amp;Capture</source>
@@ -13762,6 +13790,42 @@ Vill du ta bort det sparade tillståndet och starta spelet ändå?</translation>
         <translation>Visar bildtexter under spelomslaget i rutnätvy.</translation>
     </message>
     <message>
+        <source>Ad&amp;vanced</source>
+        <translation>Avance&amp;rat</translation>
+    </message>
+    <message>
+        <source>&amp;Debugging</source>
+        <translation>&amp;Felsökning</translation>
+    </message>
+    <message>
+        <source>Enable &amp;Safe Mode</source>
+        <translation>Aktivera &amp;säkert läge</translation>
+    </message>
+    <message>
+        <source>Res&amp;ume</source>
+        <translation>Återup&amp;pta</translation>
+    </message>
+    <message>
+        <source>&amp;Show Toolbar</source>
+        <translation>&amp;Visa verktygsrad</translation>
+    </message>
+    <message>
+        <source>S&amp;mall Icons</source>
+        <translation>S&amp;må ikoner</translation>
+    </message>
+    <message>
+        <source>Show &amp;Labels</source>
+        <translation>Visa &amp;etiketter</translation>
+    </message>
+    <message>
+        <source>Show Labels &amp;Beside Icons</source>
+        <translation>Visa etiketter &amp;bredvid ikoner</translation>
+    </message>
+    <message>
+        <source>Show Grid Ca&amp;ptions</source>
+        <translation>Visa rutnätste&amp;xter</translation>
+    </message>
+    <message>
         <source>Increases the size of game icons or covers.</source>
         <translation>Ökar storleken på spelikonerna eller omslag.</translation>
     </message>
@@ -13770,8 +13834,16 @@ Vill du ta bort det sparade tillståndet och starta spelet ändå?</translation>
         <translation>Minskar storleken på spelikonerna eller omslag.</translation>
     </message>
     <message>
+        <source>&amp;Refresh Grid Covers</source>
+        <translation>&amp;Uppdatera rutnätsomslag</translation>
+    </message>
+    <message>
         <source>Invalidates the cache of game covers, allowing new images to be discovered.</source>
         <translation>Invaliderar cachen för spelomslag, vilket gör det möjligt att upptäcka nya bilder.</translation>
+    </message>
+    <message>
+        <source>&amp;Open Data Directory...</source>
+        <translation>&amp;Öppna datakatalog...</translation>
     </message>
     <message>
         <source>Opens the directory containing application data in your file browser.</source>
@@ -13782,8 +13854,16 @@ Vill du ta bort det sparade tillståndet och starta spelet ändå?</translation>
         <translation>Avslutar den aktuella sessionen utan möjlighet att spara tillståndet.</translation>
     </message>
     <message>
+        <source>Start Bi&amp;g Picture Mode</source>
+        <translation>Starta s&amp;torbildsläge</translation>
+    </message>
+    <message>
         <source>Opens or closes the controller-based &quot;big picture&quot; mode.</source>
         <translation>Öppnar eller stänger det kontrollerbaserade ”storbildsläget”.</translation>
+    </message>
+    <message>
+        <source>Cover &amp;Downloader</source>
+        <translation>Hämta &amp;omslagsbilder</translation>
     </message>
     <message>
         <source>Opens the cover downloader window.</source>
@@ -13802,24 +13882,48 @@ Vill du ta bort det sparade tillståndet och starta spelet ändå?</translation>
         <translation>Startar eller stoppar inspelning av video och ljud från innehållet.</translation>
     </message>
     <message>
+        <source>Open Te&amp;xture Directory...</source>
+        <translation>Öppna te&amp;xturkatalog...</translation>
+    </message>
+    <message>
         <source>Opens the directory used to store texture replacements.</source>
         <translation>Öppnar katalogen som används för att lagra texturersättningar.</translation>
+    </message>
+    <message>
+        <source>&amp;Reload Texture Replacements</source>
+        <translation>&amp;Läs om texturersättningar</translation>
     </message>
     <message>
         <source>Invalidates the cache of available replacement textures.</source>
         <translation>Invaliderar cachen med tillgängliga ersättningstexturer.</translation>
     </message>
     <message>
+        <source>Capture &amp;GPU Frame</source>
+        <translation>Fånga &amp;GPU-bildruta</translation>
+    </message>
+    <message>
         <source>Saves the emulated GPU commands to a file that can be later replayed.</source>
         <translation>Sparar emulerade GPU-kommandona i en fil som senare kan spelas upp igen.</translation>
+    </message>
+    <message>
+        <source>&amp;ISO Browser</source>
+        <translation>&amp;ISO-bläddrare</translation>
     </message>
     <message>
         <source>Opens the ISO browser window.</source>
         <translation>Öppnar fönstret för ISO-bläddraren.</translation>
     </message>
     <message>
+        <source>&amp;Free Camera</source>
+        <translation>&amp;Fri kamera</translation>
+    </message>
+    <message>
         <source>Allows you to freely move the camera in supported games.</source>
         <translation>Gör det möjligt att fritt flytta kameran i spel som stöder denna funktion.</translation>
+    </message>
+    <message>
+        <source>Controller &amp;Test</source>
+        <translation>Handkontroller&amp;test</translation>
     </message>
     <message>
         <source>Allows you to test emulated controller mappings.</source>
@@ -13842,20 +13946,12 @@ Vill du ta bort det sparade tillståndet och starta spelet ändå?</translation>
         <translation>Ändrar bakgrundsbilden som visas i spellistan/rutnätet.</translation>
     </message>
     <message>
-        <source>Clea&amp;r List Background</source>
-        <translation>Tö&amp;m listbakgrund</translation>
-    </message>
-    <message>
         <source>Removes the background image shown in the game list/grid.</source>
         <translation>Tar bort bakgrundsbilden som visas i spellistan/rutnätet.</translation>
     </message>
     <message>
         <source>Refreshes the list of unlocked achievements.</source>
         <translation>Uppdaterar listan över upplåsta prestationer.</translation>
-    </message>
-    <message>
-        <source>Refresh Achievement Database</source>
-        <translation>Uppdatera prestationsdatabas</translation>
     </message>
     <message>
         <source>Updates the database for achievements shown in the game list.</source>
@@ -13902,24 +13998,12 @@ Vill du ta bort det sparade tillståndet och starta spelet ändå?</translation>
         <translation>&lt;strong&gt;Återuppta spel&lt;/strong&gt;&lt;br&gt;Vill du läsa  in detta tillstånd eller starta om från början?</translation>
     </message>
     <message>
-        <source>Save was created on %1.</source>
-        <translation>Sparningen skapades %1.</translation>
-    </message>
-    <message>
         <source>Cl&amp;ose Game</source>
         <translation>S&amp;täng spel</translation>
     </message>
     <message>
         <source>Close</source>
         <translation>Stäng</translation>
-    </message>
-    <message>
-        <source>Show G&amp;rid Captions</source>
-        <translation>Visa &amp;rutnätstexter</translation>
-    </message>
-    <message>
-        <source>Refresh Grid &amp;Covers</source>
-        <translation>Uppdatera r&amp;utnätsomslag</translation>
     </message>
     <message>
         <source>Close Game &amp;Without Saving</source>
@@ -13932,14 +14016,6 @@ Vill du ta bort det sparade tillståndet och starta spelet ändå?</translation>
     <message>
         <source>Show Game Ico&amp;ns</source>
         <translation>Visa speliko&amp;ner</translation>
-    </message>
-    <message>
-        <source>Animate Game Icons</source>
-        <translation>Animera spelikoner</translation>
-    </message>
-    <message>
-        <source>Prefer Achievement Icons</source>
-        <translation>Föredra prestationsikoner</translation>
     </message>
     <message>
         <source>Prioritizes the games badges used for RetroAchievements over memory card icons.</source>
@@ -13980,10 +14056,6 @@ Vill du ta bort det sparade tillståndet och starta spelet ändå?</translation>
     <message>
         <source>Refresh Achievement Progress</source>
         <translation>Uppdatera prestationsförlopp</translation>
-    </message>
-    <message>
-        <source>System Log</source>
-        <translation>Systemlogg</translation>
     </message>
 </context>
 <context>
@@ -15759,6 +15831,10 @@ Fel: {1}</translation>
 <context>
     <name>PlayStationMouse</name>
     <message>
+        <source>Pointer</source>
+        <translation>Pekare</translation>
+    </message>
+    <message>
         <source>Left Button</source>
         <translation>Vänster knapp</translation>
     </message>
@@ -15777,13 +15853,6 @@ Fel: {1}</translation>
     <message>
         <source>Vertical Sensitivity</source>
         <translation>Vertikal känslighet</translation>
-    </message>
-</context>
-<context>
-    <name>PlaystationMouse</name>
-    <message>
-        <source>Pointer</source>
-        <translation>Pekare</translation>
     </message>
 </context>
 <context>
@@ -16563,10 +16632,6 @@ Vill du uppdatera genvägen så att den pekar på den aktuella platsen?</transla
 <context>
     <name>SaveStateSelectorUI</name>
     <message>
-        <source>Saved at {0:%H:%M} on {0:%a} {0:%Y/%m/%d}.</source>
-        <translation>Sparades {0:%H:%M} den {0:%a} {0:%Y/%m/%d}.</translation>
-    </message>
-    <message>
         <source>No save state slots available.</source>
         <translation>Inga platser för sparade tillstånd är tillgängliga.</translation>
     </message>
@@ -16589,6 +16654,10 @@ Vill du uppdatera genvägen så att den pekar på den aktuella platsen?</transla
     <message>
         <source>{} ({})</source>
         <translation>{} ({})</translation>
+    </message>
+    <message>
+        <source>Saved {}</source>
+        <translation>Sparat {}</translation>
     </message>
     <message>
         <source>No save present in this slot.</source>
@@ -17085,16 +17154,6 @@ Vill du skapa denna katalog?</translation>
         <translation>Rotera 270° (medurs)</translation>
     </message>
     <message>
-        <source>NTSC (60hz)</source>
-        <comment>ForceVideoTiming</comment>
-        <translation>NTSC (60 Hz)</translation>
-    </message>
-    <message>
-        <source>PAL (50hz)</source>
-        <comment>ForceVideoTiming</comment>
-        <translation>PAL (50hz)</translation>
-    </message>
-    <message>
         <source>Nearest-Neighbor</source>
         <comment>DisplayScalingMode</comment>
         <translation>Närmaste granne</translation>
@@ -17388,6 +17447,16 @@ Vill du skapa denna katalog?</translation>
         <source>MMPX Enhanced (Slow)</source>
         <comment>GPUTextureFilter</comment>
         <translation>MMPX förbättrad (Långsam)</translation>
+    </message>
+    <message>
+        <source>NTSC (60 Hz)</source>
+        <comment>ForceVideoTiming</comment>
+        <translation>NTSC (60 Hz)</translation>
+    </message>
+    <message>
+        <source>PAL (50 Hz)</source>
+        <comment>ForceVideoTiming</comment>
+        <translation>PAL (50 Hz)</translation>
     </message>
     <message>
         <source>Disabled</source>
@@ -17981,7 +18050,7 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
     </message>
     <message>
         <source>Logged in as %1
-Token generated at %2</source>
+Token generated %2</source>
         <translation>Inloggad som: %1
 Token genererades %2</translation>
     </message>
@@ -18413,6 +18482,10 @@ Namnet på SBI-filen måste matcha namnet på skivavbilden.</translation>
 {}</translation>
     </message>
     <message>
+        <source>Loaded undo save state created {}.</source>
+        <translation>Läste in ångrat sparat tillstånd skapat {}.</translation>
+    </message>
+    <message>
         <source>capturing audio and video</source>
         <translation>fångar ljud och video</translation>
     </message>
@@ -18578,10 +18651,6 @@ Om du använder den aktuella CD-avbildningen kan detta leda till instabilitet.</
     <message>
         <source>Undo Load State</source>
         <translation>Ångra inläst tillstånd</translation>
-    </message>
-    <message>
-        <source>Loaded undo save state created at {}.</source>
-        <translation>Läste in ångrat sparat tillstånd skapat på {}.</translation>
     </message>
     <message>
         <source>Cannot use per-game memory card without a disc.
