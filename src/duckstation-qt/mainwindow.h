@@ -280,8 +280,8 @@ private:
   void onFullscreenUIStartedOrStopped(bool running);
   void onRemoveDiscActionTriggered();
   void onScanForNewGamesTriggered();
-  void onViewToolbarActionTriggered(bool checked);
-  void onViewToolbarLockActionTriggered(bool checked);
+  void onViewShowToolbarActionTriggered(bool checked);
+  void onViewLockToolbarActionTriggered(bool checked);
   void onViewToolbarSmallIconsActionTriggered(bool checked);
   void onViewToolbarLabelsActionTriggered(bool checked);
   void onViewToolbarLabelsBesideIconsActionTriggered(bool checked);
