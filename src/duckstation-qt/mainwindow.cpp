@@ -85,7 +85,7 @@ static constexpr std::pair<const char*, QAction * Ui::MainWindow::*> s_toolbar_a
   {"Reset", &Ui::MainWindow::actionRestartGame},
   {"Pause", &Ui::MainWindow::actionPause},
   {"ChangeDisc", &Ui::MainWindow::actionChangeDisc},
-  {"Cheats", &Ui::MainWindow::actionCheatsToolbar},
+  {"Cheats", &Ui::MainWindow::actionToolbarCheats},
   {"Screenshot", &Ui::MainWindow::actionScreenshot},
   {"MediaCapture", &Ui::MainWindow::actionMediaCapture},
   {nullptr, nullptr},
@@ -1513,7 +1513,7 @@ void MainWindow::onScanForNewGamesTriggered()
   refreshGameList(false);
 }
 
-void MainWindow::onViewToolbarActionTriggered(bool checked)
+void MainWindow::onViewShowToolbarActionTriggered(bool checked)
 {
   Core::SetBaseBoolSettingValue("UI", "ShowToolbar", checked);
   Host::CommitBaseSettingChanges();
@@ -1521,7 +1521,7 @@ void MainWindow::onViewToolbarActionTriggered(bool checked)
   updateToolbarIconStyle();
 }
 
-void MainWindow::onViewToolbarLockActionTriggered(bool checked)
+void MainWindow::onViewLockToolbarActionTriggered(bool checked)
 {
   Core::SetBaseBoolSettingValue("UI", "LockToolbar", checked);
   Host::CommitBaseSettingChanges();
@@ -1885,7 +1885,7 @@ void MainWindow::setupAdditionalUi()
   m_ui.statusBar->setVisible(status_bar_visible);
 
   const bool toolbar_visible = Core::GetBaseBoolSettingValue("UI", "ShowToolbar", false);
-  m_ui.actionViewToolbar->setChecked(toolbar_visible);
+  m_ui.actionViewShowToolbar->setChecked(toolbar_visible);
   m_ui.toolBar->setVisible(toolbar_visible);
 
   const bool toolbars_locked = Core::GetBaseBoolSettingValue("UI", "LockToolbar", false);
@@ -2161,7 +2161,7 @@ void MainWindow::onToolbarContextMenuRequested(const QPoint& pos)
     QAction* action = menu->addAction(tr("Lock Toolbar"));
     action->setCheckable(true);
     action->setChecked(!m_ui.toolBar->isMovable());
-    connect(action, &QAction::triggered, this, &MainWindow::onViewToolbarLockActionTriggered);
+    connect(action, &QAction::triggered, this, &MainWindow::onViewLockToolbarActionTriggered);
 
     action = menu->addAction(tr("Small Icons"));
     action->setCheckable(true);
@@ -2260,7 +2260,7 @@ void MainWindow::updateEmulationActions()
   m_ui.actionRestartGame->setDisabled(starting_or_not_running);
   m_ui.actionPause->setDisabled(starting_or_not_running);
   m_ui.actionChangeDisc->setDisabled(starting_or_not_running);
-  m_ui.actionCheatsToolbar->setDisabled(starting_or_not_running || achievements_hardcore_mode);
+  m_ui.actionToolbarCheats->setDisabled(starting_or_not_running || achievements_hardcore_mode);
   m_ui.actionScreenshot->setDisabled(starting_or_not_running);
   m_ui.menuChangeDisc->menuAction()->setDisabled(starting_or_not_running);
   m_ui.menuChangeDisc->setDisabled(starting_or_not_running);
@@ -2542,7 +2542,7 @@ void MainWindow::connectSignals()
   connect(m_ui.menuLoadState, &QMenu::aboutToShow, this, &MainWindow::onLoadStateMenuAboutToShow);
   connect(m_ui.menuSaveState, &QMenu::aboutToShow, this, &MainWindow::onSaveStateMenuAboutToShow);
   connect(m_ui.menuCheats, &QMenu::aboutToShow, this, &MainWindow::onCheatsMenuAboutToShow);
-  connect(m_ui.actionCheatsToolbar, &QAction::triggered, [this] { m_ui.menuCheats->popup(QCursor::pos()); });
+  connect(m_ui.actionToolbarCheats, &QAction::triggered, [this] { m_ui.menuCheats->popup(QCursor::pos()); });
   connect(m_ui.actionStartFullscreenUI, &QAction::triggered, this, &MainWindow::onStartFullscreenUITriggered);
   connect(m_ui.actionToolbarStartFullscreenUI, &QAction::triggered, this, &MainWindow::onStartFullscreenUITriggered);
   connect(m_ui.actionRemoveDisc, &QAction::triggered, this, &MainWindow::onRemoveDiscActionTriggered);
@@ -2581,8 +2581,8 @@ void MainWindow::connectSignals()
   connect(m_ui.actionAdvancedSettings, &QAction::triggered, [this]() { doSettings("Advanced"); });
   connect(m_ui.actionDebuggingSettings, &QAction::triggered, [this]() { doSettings("Debugging"); });
   connect(m_ui.actionControllerProfiles, &QAction::triggered, this, &MainWindow::onSettingsControllerProfilesTriggered);
-  connect(m_ui.actionViewToolbar, &QAction::triggered, this, &MainWindow::onViewToolbarActionTriggered);
-  connect(m_ui.actionViewLockToolbar, &QAction::triggered, this, &MainWindow::onViewToolbarLockActionTriggered);
+  connect(m_ui.actionViewShowToolbar, &QAction::triggered, this, &MainWindow::onViewShowToolbarActionTriggered);
+  connect(m_ui.actionViewLockToolbar, &QAction::triggered, this, &MainWindow::onViewLockToolbarActionTriggered);
   connect(m_ui.actionViewSmallToolbarIcons, &QAction::triggered, this,
           &MainWindow::onViewToolbarSmallIconsActionTriggered);
   connect(m_ui.actionViewToolbarLabels, &QAction::triggered, this, &MainWindow::onViewToolbarLabelsActionTriggered);

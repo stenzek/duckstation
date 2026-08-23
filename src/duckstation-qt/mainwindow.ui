@@ -18,21 +18,13 @@
   </property>
   <widget class="QStackedWidget" name="mainContainer"/>
   <widget class="QMenuBar" name="menuBar">
-   <property name="geometry">
-    <rect>
-     <x>0</x>
-     <y>0</y>
-     <width>800</width>
-     <height>33</height>
-    </rect>
-   </property>
    <widget class="QMenu" name="menuSystem">
     <property name="title">
      <string>&amp;System</string>
     </property>
     <widget class="QMenu" name="menuChangeDisc">
      <property name="title">
-      <string>Change Disc</string>
+      <string>Cha&amp;nge Disc</string>
      </property>
      <property name="icon">
       <iconset resource="resources/duckstation-qt.qrc">
@@ -41,7 +33,7 @@
     </widget>
     <widget class="QMenu" name="menuCheats">
      <property name="title">
-      <string>Cheats</string>
+      <string>&amp;Cheats</string>
      </property>
      <property name="icon">
       <iconset resource="resources/duckstation-qt.qrc">
@@ -50,7 +42,7 @@
     </widget>
     <widget class="QMenu" name="menuLoadState">
      <property name="title">
-      <string>Load State</string>
+      <string>&amp;Load State</string>
      </property>
      <property name="icon">
       <iconset resource="resources/duckstation-qt.qrc">
@@ -59,7 +51,7 @@
     </widget>
     <widget class="QMenu" name="menuSaveState">
      <property name="title">
-      <string>Save State</string>
+      <string>Sa&amp;ve State</string>
      </property>
      <property name="icon">
       <iconset resource="resources/duckstation-qt.qrc">
@@ -196,7 +188,7 @@
     <addaction name="actionDebugShowMDECState"/>
     <addaction name="actionDebugShowDMAState"/>
    </widget>
-   <widget class="QMenu" name="menu_View">
+   <widget class="QMenu" name="menuView">
     <property name="title">
      <string>&amp;View</string>
     </property>
@@ -218,11 +210,18 @@
        <normaloff>:/icons/monochrome/svg/sort-alphabet-asc.svg</normaloff>:/icons/monochrome/svg/sort-alphabet-asc.svg</iconset>
      </property>
     </widget>
-    <addaction name="actionViewToolbar"/>
-    <addaction name="actionViewLockToolbar"/>
-    <addaction name="actionViewSmallToolbarIcons"/>
-    <addaction name="actionViewToolbarLabels"/>
-    <addaction name="actionViewToolbarLabelsBesideIcons"/>
+    <widget class="QMenu" name="menuToolbar">
+     <property name="title">
+      <string>&amp;Toolbar</string>
+     </property>
+     <addaction name="actionViewShowToolbar"/>
+     <addaction name="actionViewLockToolbar"/>
+     <addaction name="separator"/>
+     <addaction name="actionViewSmallToolbarIcons"/>
+     <addaction name="actionViewToolbarLabels"/>
+     <addaction name="actionViewToolbarLabelsBesideIcons"/>
+    </widget>
+    <addaction name="menuToolbar"/>
     <addaction name="actionViewStatusBar"/>
     <addaction name="separator"/>
     <addaction name="actionViewGameList"/>
@@ -249,7 +248,7 @@
     <addaction name="actionChangeGameListBackground"/>
     <addaction name="actionClearGameListBackground"/>
    </widget>
-   <widget class="QMenu" name="menu_Tools">
+   <widget class="QMenu" name="menuTools">
     <property name="title">
      <string>&amp;Tools</string>
     </property>
@@ -258,7 +257,7 @@
       <string>Allows you to record audio and/or video from the content.</string>
      </property>
      <property name="title">
-      <string>Media Ca&amp;pture</string>
+      <string>Media Capt&amp;ure</string>
      </property>
      <property name="icon">
       <iconset resource="resources/duckstation-qt.qrc">
@@ -292,8 +291,8 @@
    </widget>
    <addaction name="menuSystem"/>
    <addaction name="menuSettings"/>
-   <addaction name="menu_View"/>
-   <addaction name="menu_Tools"/>
+   <addaction name="menuView"/>
+   <addaction name="menuTools"/>
    <addaction name="menuDebug"/>
    <addaction name="menuHelp"/>
   </widget>
@@ -544,7 +543,7 @@
      <normaloff>:/icons/monochrome/svg/sun-fill.svg</normaloff>:/icons/monochrome/svg/sun-fill.svg</iconset>
    </property>
    <property name="text">
-    <string>&amp;Post-Processing</string>
+    <string>Post-Processi&amp;ng</string>
    </property>
    <property name="toolTip">
     <string>Configures post-processing effects applied after rendering the content.</string>
@@ -675,7 +674,7 @@
     <string>Swaps the currently-inserted disc with another disc or game.</string>
    </property>
   </action>
-  <action name="actionCheatsToolbar">
+  <action name="actionToolbarCheats">
    <property name="icon">
     <iconset resource="resources/duckstation-qt.qrc">
      <normaloff>:/icons/monochrome/svg/cheats-line.svg</normaloff>:/icons/monochrome/svg/cheats-line.svg</iconset>
@@ -741,7 +740,7 @@
      <normaloff>:/icons/monochrome/svg/alert-line.svg</normaloff>:/icons/monochrome/svg/alert-line.svg</iconset>
    </property>
    <property name="text">
-    <string>A&amp;dvanced</string>
+    <string>Ad&amp;vanced</string>
    </property>
    <property name="toolTip">
     <string>Configures advanced options for the application.</string>
@@ -753,7 +752,7 @@
      <normaloff>:/icons/monochrome/svg/code-line.svg</normaloff>:/icons/monochrome/svg/code-line.svg</iconset>
    </property>
    <property name="text">
-    <string>Debuggi&amp;ng</string>
+    <string>&amp;Debugging</string>
    </property>
    <property name="toolTip">
     <string>Configures internal options for the application.</string>
@@ -862,7 +861,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Enable Safe Mode</string>
+    <string>Enable &amp;Safe Mode</string>
    </property>
   </action>
   <action name="actionDumpRAM">
@@ -958,21 +957,18 @@
      <normaloff>:/icons/monochrome/svg/play-circle-line.svg</normaloff>:/icons/monochrome/svg/play-circle-line.svg</iconset>
    </property>
    <property name="text">
-    <string>Resume</string>
+    <string>Res&amp;ume</string>
    </property>
    <property name="toolTip">
     <string>Resumes the last save state created.</string>
    </property>
   </action>
-  <action name="actionViewToolbar">
+  <action name="actionViewShowToolbar">
    <property name="checkable">
     <bool>true</bool>
    </property>
-   <property name="checked">
-    <bool>true</bool>
-   </property>
    <property name="text">
-    <string>&amp;Toolbar</string>
+    <string>&amp;Show Toolbar</string>
    </property>
    <property name="toolTip">
     <string>Controls whether the toolbar is visible.</string>
@@ -994,7 +990,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>S&amp;mall Toolbar Icons</string>
+    <string>S&amp;mall Icons</string>
    </property>
    <property name="toolTip">
     <string>Controls whether the smaller toolbar icons are displayed.</string>
@@ -1005,7 +1001,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Toolbar L&amp;abels</string>
+    <string>Show &amp;Labels</string>
    </property>
    <property name="toolTip">
     <string>Controls whether labels are displayed alongside toolbar icons.</string>
@@ -1016,7 +1012,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Toolbar Labels &amp;Beside Icons</string>
+    <string>Show Labels &amp;Beside Icons</string>
    </property>
    <property name="toolTip">
     <string>Controls whether labels are displayed next to or under toolbar icons.</string>
@@ -1153,7 +1149,7 @@
      <normaloff>:/icons/monochrome/svg/price-tag-3-line.svg</normaloff>:/icons/monochrome/svg/price-tag-3-line.svg</iconset>
    </property>
    <property name="text">
-    <string>Show G&amp;rid Captions</string>
+    <string>Show Grid Ca&amp;ptions</string>
    </property>
    <property name="iconText">
     <string>Show Titles (Grid View)</string>
@@ -1192,7 +1188,7 @@
      <normaloff>:/icons/monochrome/svg/refresh-line.svg</normaloff>:/icons/monochrome/svg/refresh-line.svg</iconset>
    </property>
    <property name="text">
-    <string>Refresh Grid &amp;Covers</string>
+    <string>&amp;Refresh Grid Covers</string>
    </property>
    <property name="toolTip">
     <string>Invalidates the cache of game covers, allowing new images to be discovered.</string>
@@ -1204,7 +1200,7 @@
      <normaloff>:/icons/monochrome/svg/folder-open-line.svg</normaloff>:/icons/monochrome/svg/folder-open-line.svg</iconset>
    </property>
    <property name="text">
-    <string>Open Data Directory...</string>
+    <string>&amp;Open Data Directory...</string>
    </property>
    <property name="toolTip">
     <string>Opens the directory containing application data in your file browser.</string>
@@ -1231,7 +1227,7 @@
      <normaloff>:/icons/monochrome/svg/tv-2-line.svg</normaloff>:/icons/monochrome/svg/tv-2-line.svg</iconset>
    </property>
    <property name="text">
-    <string>Start Big Picture Mode</string>
+    <string>Start Bi&amp;g Picture Mode</string>
    </property>
    <property name="toolTip">
     <string>Opens or closes the controller-based &quot;big picture&quot; mode.</string>
@@ -1255,7 +1251,7 @@
      <normaloff>:/icons/monochrome/svg/artboard-2-line.svg</normaloff>:/icons/monochrome/svg/artboard-2-line.svg</iconset>
    </property>
    <property name="text">
-    <string>Cover Downloader</string>
+    <string>Cover &amp;Downloader</string>
    </property>
    <property name="toolTip">
     <string>Opens the cover downloader window.</string>
@@ -1315,7 +1311,7 @@
      <normaloff>:/icons/monochrome/svg/folder-add-line.svg</normaloff>:/icons/monochrome/svg/folder-add-line.svg</iconset>
    </property>
    <property name="text">
-    <string>Open Texture Directory...</string>
+    <string>Open Te&amp;xture Directory...</string>
    </property>
    <property name="toolTip">
     <string>Opens the directory used to store texture replacements.</string>
@@ -1327,7 +1323,7 @@
      <normaloff>:/icons/monochrome/svg/refresh-line.svg</normaloff>:/icons/monochrome/svg/refresh-line.svg</iconset>
    </property>
    <property name="text">
-    <string>Reload Texture Replacements</string>
+    <string>&amp;Reload Texture Replacements</string>
    </property>
    <property name="toolTip">
     <string>Invalidates the cache of available replacement textures.</string>
@@ -1339,7 +1335,7 @@
      <normaloff>:/icons/monochrome/svg/image-fill.svg</normaloff>:/icons/monochrome/svg/image-fill.svg</iconset>
    </property>
    <property name="text">
-    <string>Capture GPU Frame</string>
+    <string>Capture &amp;GPU Frame</string>
    </property>
    <property name="toolTip">
     <string>Saves the emulated GPU commands to a file that can be later replayed.</string>
@@ -1391,7 +1387,7 @@
      <normaloff>:/icons/monochrome/svg/disc-line.svg</normaloff>:/icons/monochrome/svg/disc-line.svg</iconset>
    </property>
    <property name="text">
-    <string>ISO Browser</string>
+    <string>&amp;ISO Browser</string>
    </property>
    <property name="toolTip">
     <string>Opens the ISO browser window.</string>
@@ -1406,7 +1402,7 @@
      <normaloff>:/icons/monochrome/svg/camera-switch-line.svg</normaloff>:/icons/monochrome/svg/camera-switch-line.svg</iconset>
    </property>
    <property name="text">
-    <string>Free Camera</string>
+    <string>&amp;Free Camera</string>
    </property>
    <property name="toolTip">
     <string>Allows you to freely move the camera in supported games.</string>
@@ -1418,7 +1414,7 @@
      <normaloff>:/icons/monochrome/svg/controller-digital-line.svg</normaloff>:/icons/monochrome/svg/controller-digital-line.svg</iconset>
    </property>
    <property name="text">
-    <string>Controller Test</string>
+    <string>Controller &amp;Test</string>
    </property>
    <property name="toolTip">
     <string>Allows you to test emulated controller mappings.</string>
@@ -1454,7 +1450,7 @@
      <normaloff>:/icons/monochrome/svg/trash-fill.svg</normaloff>:/icons/monochrome/svg/trash-fill.svg</iconset>
    </property>
    <property name="text">
-    <string>Clea&amp;r List Background</string>
+    <string>Clear List Backgro&amp;und</string>
    </property>
    <property name="toolTip">
     <string>Removes the background image shown in the game list/grid.</string>
@@ -1484,7 +1480,7 @@
      <normaloff>:/icons/monochrome/svg/refresh-line.svg</normaloff>:/icons/monochrome/svg/refresh-line.svg</iconset>
    </property>
    <property name="text">
-    <string>Refresh Achievement Database</string>
+    <string>Refresh &amp;Achievement Database</string>
    </property>
    <property name="toolTip">
     <string>Updates the database for achievements shown in the game list.</string>
@@ -1529,7 +1525,7 @@
      <normaloff>:/icons/monochrome/svg/add-animation.svg</normaloff>:/icons/monochrome/svg/add-animation.svg</iconset>
    </property>
    <property name="text">
-    <string>Animate Game Icons</string>
+    <string>&amp;Animate Game Icons</string>
    </property>
    <property name="toolTip">
     <string>Animates icons in the list view when selected.</string>
@@ -1544,7 +1540,7 @@
      <normaloff>:/icons/monochrome/svg/trophy-line.svg</normaloff>:/icons/monochrome/svg/trophy-line.svg</iconset>
    </property>
    <property name="text">
-    <string>Prefer Achievement Icons</string>
+    <string>Prefer Ac&amp;hievement Icons</string>
    </property>
    <property name="toolTip">
     <string>Prioritizes the games badges used for RetroAchievements over memory card icons.</string>
@@ -1562,7 +1558,7 @@
      <normaloff>:/icons/monochrome/svg/file-list-line.svg</normaloff>:/icons/monochrome/svg/file-list-line.svg</iconset>
    </property>
    <property name="text">
-    <string>System Log</string>
+    <string>Syst&amp;em Log</string>
    </property>
   </action>
   <action name="actionStartMediaCapture">
