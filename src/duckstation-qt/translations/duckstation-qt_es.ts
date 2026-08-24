@@ -191,7 +191,7 @@ No obstante, el modo hardcore también impide el uso de los estados de guardado,
     </message>
     <message>
         <source>Show Leaderboard Notifications</source>
-        <translation>Mostrar notificaciones de tabla de posiciones</translation>
+        <translation>Mostrar notificaciones de tabla de clasificación</translation>
     </message>
     <message>
         <source>Unchecked</source>
@@ -286,7 +286,7 @@ No obstante, el modo hardcore también impide el uso de los estados de guardado,
     </message>
     <message>
         <source>Show Leaderboard Trackers</source>
-        <translation>Mostrar seguimiento de tablas</translation>
+        <translation>Mostrar seguimiento de tabla de clasificación</translation>
     </message>
     <message>
         <source>Progress Tracking</source>
@@ -406,9 +406,9 @@ No obstante, el modo hardcore también impide el uso de los estados de guardado,
     </message>
     <message>
         <source>Logged in as %1
-Token generated at %2</source>
-        <translation>Nombre de usuario: %1
-Fecha de creación del token de acceso: %2</translation>
+Token generated %2</source>
+        <translation>Sesión iniciada como %1
+Token generado %2</translation>
     </message>
 </context>
 <context>
@@ -431,11 +431,11 @@ Fecha de creación del token de acceso: %2</translation>
     </message>
     <message>
         <source>Leaderboard attempt started.</source>
-        <translation>Intento de entrar en tabla de posiciones iniciado.</translation>
+        <translation>Intento de entrar en tabla de clasificación iniciado.</translation>
     </message>
     <message>
         <source>Leaderboard attempt failed.</source>
-        <translation>Intento de entrar en tabla de posiciones fallido.</translation>
+        <translation>Intento de entrar en tabla de clasificación fallido.</translation>
     </message>
     <message>
         <source>Your Time: {}</source>
@@ -601,6 +601,34 @@ Error: {}</translation>
         <comment>Pause Menu</comment>
         <translation>Intentos activos de entrar en tabla de clasificación</translation>
     </message>
+    <message>
+        <source>Game was beaten {0}, and completed {1}.</source>
+        <translation>Este juego fue superado {0} y completado {1}.</translation>
+    </message>
+    <message>
+        <source>Subset was beaten {0}, and completed {1}.</source>
+        <translation>Este conjunto fue superado {0} y completado {1}.</translation>
+    </message>
+    <message>
+        <source>Game was beaten {0}.</source>
+        <translation>Este juego fue superado {0}.</translation>
+    </message>
+    <message>
+        <source>Subset was beaten {0}.</source>
+        <translation>Este conjunto fue superado {0}.</translation>
+    </message>
+    <message>
+        <source>Game was completed {0}.</source>
+        <translation>Este juego fue completado{0}.</translation>
+    </message>
+    <message>
+        <source>Subset was completed {0}.</source>
+        <translation>Este conjunto fue completado {0}.</translation>
+    </message>
+    <message>
+        <source>Unlocked {} | {:.1f}% of players have this achievement</source>
+        <translation>Desbloqueado {} | {:.1f}% de los jugadores tienen este logro</translation>
+    </message>
     <message numerus="yes">
         <source>This game has %n leaderboards.</source>
         <comment>Leaderboard count</comment>
@@ -613,7 +641,7 @@ Error: {}</translation>
         <source>This subset has %n leaderboards.</source>
         <comment>Leaderboard count</comment>
         <translation>
-            <numerusform>Este subset tiene %n tabla de clasificación.</numerusform>
+            <numerusform>Este conjunto tiene %n tabla de clasificación.</numerusform>
             <numerusform>Este subset tiene %n tablas de clasificación.</numerusform>
         </translation>
     </message>
@@ -671,7 +699,7 @@ Error: {}</translation>
     </message>
     <message>
         <source>Leaderboard download failed</source>
-        <translation>Fallo al descargar tabla de posiciones</translation>
+        <translation>Fallo al descargar tabla de clasificación</translation>
     </message>
     <message>
         <source>Hardcore mode is enabled. Cheats and save states are unavailable.</source>
@@ -739,11 +767,11 @@ Error: {}</translation>
     </message>
     <message>
         <source>Open Leaderboard</source>
-        <translation>Abrir tabla de posiciones</translation>
+        <translation>Abrir tabla de clasificación</translation>
     </message>
     <message>
         <source>Downloading leaderboard data, please wait...</source>
-        <translation>Descargando información de tabla de posiciones, espera...</translation>
+        <translation>Descargando información de tabla de clasificación, espera...</translation>
     </message>
     <message>
         <source>Challenge Started: {}</source>
@@ -857,35 +885,11 @@ La petición seguirá reenviándose.</translation>
     </message>
     <message>
         <source>You have unlocked {0} of {1} achievements in this subset, earning {2} of {3} possible points.</source>
-        <translation>Has obtenido {0} de {1} logros del subset y {2} de {3} puntos.</translation>
+        <translation>Has obtenido {0} de {1} logros de este conjunto y {2} de {3} puntos.</translation>
     </message>
     <message>
         <source>This subset has no achievements.</source>
-        <translation>Este subset no tiene logros.</translation>
-    </message>
-    <message>
-        <source>Game was beaten on {0}, and completed on {1}.</source>
-        <translation>Juego terminado en {0} y completado en {1}.</translation>
-    </message>
-    <message>
-        <source>Subset was beaten on {0}, and completed on {1}.</source>
-        <translation>Subset terminado en {0} y completado en {1}.</translation>
-    </message>
-    <message>
-        <source>Game was beaten on {0}.</source>
-        <translation>Juego terminado en {0}.</translation>
-    </message>
-    <message>
-        <source>Subset was beaten on {0}.</source>
-        <translation>Subset terminado en {0}.</translation>
-    </message>
-    <message>
-        <source>Game was completed on {0}.</source>
-        <translation>Juego completado en {0}.</translation>
-    </message>
-    <message>
-        <source>Subset was completed on {0}.</source>
-        <translation>Subset completado en {0}.</translation>
+        <translation>Este conjunto no tiene logros.</translation>
     </message>
     <message>
         <source>Unlocked in Casual</source>
@@ -893,7 +897,7 @@ La petición seguirá reenviándose.</translation>
     </message>
     <message>
         <source>Change Subset</source>
-        <translation>Cambiar subset</translation>
+        <translation>Cambiar conjunto</translation>
     </message>
     <message>
         <source>User is not logged in.</source>
@@ -940,7 +944,7 @@ La petición seguirá reenviándose.</translation>
     <message>
         <source>Subset complete.
 {0} and {1}.</source>
-        <translation>Subset completado.
+        <translation>Conjunto completado.
 {0} y {1}.</translation>
     </message>
     <message>
@@ -963,7 +967,7 @@ La petición seguirá reenviándose.</translation>
         <source>You have unlocked all achievements in this subset and earned %n points!</source>
         <comment>Point count</comment>
         <translation>
-            <numerusform>¡Has desbloqueado todos los logros del subset y has ganado %n punto!</numerusform>
+            <numerusform>¡Has desbloqueado todos los logros de este conjunto y has conseguido %n puntos!</numerusform>
             <numerusform>¡Has desbloqueado todos los logros del subset y has ganado %n puntos!</numerusform>
         </translation>
     </message>
@@ -994,10 +998,6 @@ La petición seguirá reenviándose.</translation>
     <message>
         <source>Win Condition</source>
         <translation>Condición de victoria</translation>
-    </message>
-    <message>
-        <source>Unlocked: {} | {:.1f}% of players have this achievement</source>
-        <translation>Desbloqueado: {} | El {:.1f} % de los jugadores tiene este logro</translation>
     </message>
     <message>
         <source>{:.1f}% of players have this achievement</source>
@@ -1164,7 +1164,7 @@ La petición seguirá reenviándose.</translation>
     </message>
     <message>
         <source>Always displays the current RetroAchievements rich presence string in the indicator area.</source>
-        <translation>Muestra siempre la cadena de presencia enriquecida actual de RetroAchievements en el área de indicadores.</translation>
+        <translation>Siempre muestra la cadena de presencia enriquecida de RetroAchievements actual en el área de indicadores.</translation>
     </message>
     <message>
         <source>Default</source>
@@ -1335,11 +1335,11 @@ La petición seguirá reenviándose.</translation>
     </message>
     <message>
         <source>Disable Simultaneous Opposing Cardinal Directions</source>
-        <translation>Desactivar direcciones cardinales opuestas simultáneas</translation>
+        <translation>Desactivar direcciones opuestas simultáneas</translation>
     </message>
     <message>
         <source>Prevents concurrent left/right or up/down inputs from being presented to the game.</source>
-        <translation>Evita que se envíen al juego entradas simultáneas de izquierda/derecha o arriba/abajo.</translation>
+        <translation>Impide que el juego reciba pulsaciones simultáneas de izquierda/derecha o arriba/abajo.</translation>
     </message>
     <message>
         <source>Analog Deadzone</source>
@@ -1570,11 +1570,11 @@ La petición seguirá reenviándose.</translation>
     </message>
     <message>
         <source>Disable Simultaneous Opposing Cardinal Directions</source>
-        <translation>Desactivar direcciones cardinales opuestas simultáneas</translation>
+        <translation>Desactivar direcciones opuestas simultáneas</translation>
     </message>
     <message>
         <source>Prevents concurrent left/right or up/down inputs from being presented to the game.</source>
-        <translation>Evita que se envíen al juego entradas simultáneas de izquierda/derecha o arriba/abajo.</translation>
+        <translation>Impide que el juego reciba pulsaciones simultáneas de izquierda/derecha o arriba/abajo.</translation>
     </message>
     <message>
         <source>Analog Deadzone</source>
@@ -2255,7 +2255,7 @@ Puedes actualizar DuckStation de forma manual redescargando la última versión.
     <message>
         <source>{0} is {1}-bit with {2} channels at {3}hz.
 WAV files must be 16-bit stereo and use a sample rate of 44100hz.</source>
-        <translation>{0} es de {1} bits, con {2} canales a {3} Hz.
+        <translation>{0} es {1} bit con {2} canales a {3} Hz.
 Los archivos WAV deben ser estéreo de 16 bits y usar una frecuencia de muestreo de 44100 Hz.</translation>
     </message>
 </context>
@@ -2705,7 +2705,7 @@ Si intentas utilizarlo, no funcionará tal y como se espera. ¿Quieres continuar
     </message>
     <message>
         <source>100% (33.87MHz)</source>
-        <translation>100 % (33.87MHz)</translation>
+        <translation>100 % (33,87 MHz)</translation>
     </message>
     <message>
         <source>Enable Recompiler ICache</source>
@@ -2770,10 +2770,6 @@ Si intentas utilizarlo, no funcionará tal y como se espera. ¿Quieres continuar
     <message>
         <source>6x</source>
         <translation>6x</translation>
-    </message>
-    <message>
-        <source>Preload Image To RAM</source>
-        <translation>Precargar imagen a RAM</translation>
     </message>
     <message>
         <source>Apply Image Patches</source>
@@ -3952,7 +3948,7 @@ Se eliminarán todas las asignaciones y configuraciones. Esta acción no puede d
     <name>ControllerType</name>
     <message>
         <source>Analog Controller</source>
-        <translation>Control analógico</translation>
+        <translation>Mando analógico</translation>
     </message>
     <message>
         <source>Analog Joystick</source>
@@ -3964,11 +3960,11 @@ Se eliminarán todas las asignaciones y configuraciones. Esta acción no puede d
     </message>
     <message>
         <source>Digital Controller</source>
-        <translation>Control digital</translation>
+        <translation>Mando digital</translation>
     </message>
     <message>
         <source>Pop&apos;n Controller</source>
-        <translation>Control de Pop&apos;n</translation>
+        <translation>Mando Pop&apos;n</translation>
     </message>
     <message>
         <source>GunCon</source>
@@ -3984,7 +3980,7 @@ Se eliminarán todas las asignaciones y configuraciones. Esta acción no puede d
     </message>
     <message>
         <source>Densha de Go! Controller</source>
-        <translation>Control de Densha de Go!</translation>
+        <translation>Mando Densha de Go!</translation>
     </message>
     <message>
         <source>JogCon</source>
@@ -3996,7 +3992,7 @@ Se eliminarán todas las asignaciones y configuraciones. Esta acción no puede d
     </message>
     <message>
         <source>Mouse</source>
-        <translation>Mouse</translation>
+        <translation>Ratón</translation>
     </message>
 </context>
 <context>
@@ -4011,7 +4007,7 @@ Se eliminarán todas las asignaciones y configuraciones. Esta acción no puede d
     </message>
     <message>
         <source>Memory Card Busy</source>
-        <translation>Memory Card en uso</translation>
+        <translation>Memory Card ocupada</translation>
     </message>
     <message>
         <source>%1 achievement unlocks have not been confirmed by the server. Continuing to %2 will result in loss of these unlocks. Once network connectivity has been re-established, these unlocks will be confirmed automatically.
@@ -4023,7 +4019,7 @@ Do you want to %2 anyway?</source>
     </message>
     <message>
         <source>shut down</source>
-        <translation>apagar el sistema</translation>
+        <translation>apagar</translation>
     </message>
     <message>
         <source>reset</source>
@@ -4031,7 +4027,7 @@ Do you want to %2 anyway?</source>
     </message>
     <message>
         <source>change disc</source>
-        <translation>cambiar el disco</translation>
+        <translation>cambiar de disco</translation>
     </message>
     <message>
         <source>Failed to switch to subimage %1</source>
@@ -4067,7 +4063,7 @@ El archivo pesa aproximadamente 206 KB. ¿Deseas descargarlo?</translation>
     </message>
     <message>
         <source>Video: %1 FPS (%2%)</source>
-        <translation>Video: %1 FPS (%2%)</translation>
+        <translation>Video: %1 FPS (%2&#xa0;%)</translation>
     </message>
     <message>
         <source>Cannot change GPU dump state without restarting the system.</source>
@@ -4185,7 +4181,7 @@ Do you want to %1 anyway?</source>
     </message>
     <message>
         <source>Brake Released</source>
-        <translation>Freno suelto</translation>
+        <translation>Soltar freno</translation>
     </message>
     <message>
         <source>Brake 1</source>
@@ -4233,7 +4229,7 @@ Do you want to %1 anyway?</source>
     </message>
     <message>
         <source>Analog Deadzone</source>
-        <translation>Zona muerta de las palancas analógicas</translation>
+        <translation>Zona muerta de la palanca analógica</translation>
     </message>
     <message>
         <source>Analog Sensitivity</source>
@@ -4306,7 +4302,7 @@ Do you want to %1 anyway?</source>
     <name>DebuggerStackModel</name>
     <message>
         <source>&lt;invalid&gt;</source>
-        <translation>&lt;inválido&gt;</translation>
+        <translation>&lt;no válido&gt;</translation>
     </message>
     <message>
         <source>Address</source>
@@ -4583,7 +4579,7 @@ Este archivo puede alcanzar varios gigabytes en tamaño, así que ten cuidado co
     </message>
     <message>
         <source>Invalid search pattern. It should contain hex digits or question marks.</source>
-        <translation>Patrón de búsqueda inválido, debe contener dígitos hexadecimales o signos de interrogación.</translation>
+        <translation>Patrón de búsqueda no válido, debe contener dígitos hexadecimales o signos de interrogación.</translation>
     </message>
     <message>
         <source>Pattern not found.</source>
@@ -4599,7 +4595,7 @@ Este archivo puede alcanzar varios gigabytes en tamaño, así que ten cuidado co
     </message>
     <message>
         <source>Invalid address. It should be in hex (0x12345678 or 12345678)</source>
-        <translation>Dirección inválida. Debe estar en formato hexadecimal (0x12345678 o 12345678)</translation>
+        <translation>Dirección no válida. Debe estar en formato hexadecimal (0x12345678 o 12345678)</translation>
     </message>
     <message>
         <source>VRAM</source>
@@ -4809,11 +4805,11 @@ Este archivo puede alcanzar varios gigabytes en tamaño, así que ten cuidado co
     <name>DigitalController</name>
     <message>
         <source>Disable Simultaneous Opposing Cardinal Directions</source>
-        <translation>Desactivar direcciones cardinales opuestas simultáneas</translation>
+        <translation>Desactivar direcciones opuestas simultáneas</translation>
     </message>
     <message>
         <source>Prevents concurrent left/right or up/down inputs from being presented to the game.</source>
-        <translation>Evita que se envíen al juego entradas simultáneas de izquierda/derecha o arriba/abajo.</translation>
+        <translation>Impide que el juego reciba pulsaciones simultáneas de izquierda/derecha o arriba/abajo.</translation>
     </message>
     <message>
         <source>D-Pad Up</source>
@@ -5807,7 +5803,7 @@ Haz clic en Reiniciar para restablecer el número de serie al que se ha encontra
     </message>
     <message>
         <source>Displays popup messages on events such as achievement unlocks and leaderboard submissions.</source>
-        <translation>Muestra mensajes emergentes durante eventos como desbloqueo de logros y envíos a la tabla de posiciones.</translation>
+        <translation>Muestra mensajes emergentes durante eventos como desbloqueo de logros y envíos a la tabla de clasificación.</translation>
     </message>
     <message>
         <source>Displays popup messages when starting, submitting, or failing a leaderboard challenge.</source>
@@ -5952,7 +5948,7 @@ Haz clic en Reiniciar para restablecer el número de serie al que se ha encontra
     <message>
         <source>Failed to load shader {}. It may be invalid.
 Error was:</source>
-        <translation>Fallo al cargar el sombreador {}. Puede que sea inválido.
+        <translation>Fallo al cargar el sombreador {}. Puede que no sea válido.
 Error:</translation>
     </message>
     <message>
@@ -6190,10 +6186,6 @@ Please check your username and password, and try again.</source>
         <translation>Fallo al iniciar sesión.
 Error: {}
 Comprueba el nombre de usuario y contraseña e intenta de nuevo.</translation>
-    </message>
-    <message>
-        <source>Login token generated on {}</source>
-        <translation>Token de acceso generado en {}</translation>
     </message>
     <message>
         <source>Logout</source>
@@ -6785,11 +6777,15 @@ Comprueba el nombre de usuario y contraseña e intenta de nuevo.</translation>
     </message>
     <message>
         <source>Delete</source>
-        <translation>Eliminar</translation>
+        <translation>Borrar</translation>
     </message>
     <message>
         <source>Determines quality of audio when not running at 100% speed.</source>
         <translation>Determina la calidad del audio cuando la emulación no se ejecute al 100 % de velocidad.</translation>
+    </message>
+    <message>
+        <source>Do you want to continue from the automatic save created {}?</source>
+        <translation>¿Desea continuar desde el guardado automático creado {}?</translation>
     </message>
     <message>
         <source>Enable 8MB RAM</source>
@@ -6804,8 +6800,12 @@ Comprueba el nombre de usuario y contraseña e intenta de nuevo.</translation>
         <translation>Cargar perfil</translation>
     </message>
     <message>
+        <source>Login token generated {}</source>
+        <translation>Token de inicio de sesión generado {}</translation>
+    </message>
+    <message>
         <source>Move Cursor</source>
-        <translation>Mover cursor</translation>
+        <translation>Mover Cursor</translation>
     </message>
     <message>
         <source>Move Down</source>
@@ -6901,7 +6901,7 @@ Comprueba el nombre de usuario y contraseña e intenta de nuevo.</translation>
     </message>
     <message>
         <source>Open Containing Directory</source>
-        <translation>Abrir directorio contenedor</translation>
+        <translation>Abrir carpeta contenedora</translation>
     </message>
     <message>
         <source>Open in File Browser</source>
@@ -7613,7 +7613,7 @@ Comprueba el nombre de usuario y contraseña e intenta de nuevo.</translation>
     </message>
     <message>
         <source>Toggle Case</source>
-        <translation>Alternar mayúsculas/minúsculas</translation>
+        <translation>Estuche con palanca</translation>
     </message>
     <message>
         <source>Toggle Fast Forward</source>
@@ -7773,7 +7773,7 @@ Comprueba el nombre de usuario y contraseña e intenta de nuevo.</translation>
     </message>
     <message>
         <source>{0} (Missing)</source>
-        <translation>{0} (ausente)</translation>
+        <translation>{0} (Falta)</translation>
     </message>
     <message>
         <source>{} Frames</source>
@@ -8050,10 +8050,6 @@ Esta acción no puede deshacerse.</translation>
     <message>
         <source>Displays only the game title in the list, instead of the title and serial/file name.</source>
         <translation>Muestra únicamente el título del juego en la lista y no su número de serie o nombre de archivo.</translation>
-    </message>
-    <message>
-        <source>Do you want to continue from the automatic save created at {}?</source>
-        <translation>¿Deseas retomar el guardado automático creado el:  {}?</translation>
     </message>
     <message>
         <source>Downloads all locked achievement badges while starting the game. This will reduce delays in the images being shown when unlocking achievements.</source>
@@ -9852,18 +9848,6 @@ Do you want to enable game settings now?</source>
         <translation>Desconocido</translation>
     </message>
     <message>
-        <source>Never</source>
-        <translation>Nunca</translation>
-    </message>
-    <message>
-        <source>Today</source>
-        <translation>Hoy</translation>
-    </message>
-    <message>
-        <source>Yesterday</source>
-        <translation>Ayer</translation>
-    </message>
-    <message>
         <source>Disc</source>
         <comment>EntryType</comment>
         <translation>Disco</translation>
@@ -9889,40 +9873,6 @@ Do you want to enable game settings now?</source>
         <translation>PSF</translation>
     </message>
     <message>
-        <source>{}h {}m</source>
-        <translation>{}h {}m</translation>
-    </message>
-    <message>
-        <source>{}h {}m {}s</source>
-        <translation>{}h {}m {}s</translation>
-    </message>
-    <message>
-        <source>{}m {}s</source>
-        <translation>{}m {}s</translation>
-    </message>
-    <message>
-        <source>{}s</source>
-        <translation>{}s</translation>
-    </message>
-    <message>
-        <source>None</source>
-        <translation>Ninguno</translation>
-    </message>
-    <message numerus="yes">
-        <source>%n hours</source>
-        <translation>
-            <numerusform>%n hora</numerusform>
-            <numerusform>%n horas</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <source>%n minutes</source>
-        <translation>
-            <numerusform>%n minuto</numerusform>
-            <numerusform>%n minutos</numerusform>
-        </translation>
-    </message>
-    <message>
         <source>URL template must contain at least one of ${title}, ${savetitle}, ${filetitle}, or ${serial}.</source>
         <translation>La URL de plantilla debe contener, al menos, un elemento ${title}, ${savetitle}, ${filetitle} o ${serial}.</translation>
     </message>
@@ -9930,27 +9880,9 @@ Do you want to enable game settings now?</source>
         <source>No URLs to download enumerated.</source>
         <translation>No se han enumerado direcciones URL desde las que descargar.</translation>
     </message>
-    <message numerus="yes">
-        <source>%n seconds</source>
-        <translation>
-            <numerusform>%n segundo</numerusform>
-            <numerusform>%n segundos</numerusform>
-        </translation>
-    </message>
-</context>
-<context>
-    <name>GameListListView</name>
-    <message>
-        <source>Unknown</source>
-        <translation>Desconocido</translation>
-    </message>
 </context>
 <context>
     <name>GameListModel</name>
-    <message>
-        <source>Unknown</source>
-        <translation>Desconocido</translation>
-    </message>
     <message>
         <source>Icon</source>
         <translation>Icono</translation>
@@ -10117,6 +10049,10 @@ La búsqueda recursiva llevará más tiempo, pero identificará todo archivo que
         <translation>Combinar juegos de múltiples discos</translation>
     </message>
     <message>
+        <source>Show Localized Titles</source>
+        <translation>Mostrar títulos localizados</translation>
+    </message>
+    <message>
         <source>Show Titles</source>
         <translation>Mostrar títulos</translation>
     </message>
@@ -10127,10 +10063,6 @@ La búsqueda recursiva llevará más tiempo, pero identificará todo archivo que
     <message>
         <source>All Regions</source>
         <translation>Todas las regiones</translation>
-    </message>
-    <message>
-        <source>Show Localized Icons</source>
-        <translation>Mostrar iconos localizados</translation>
     </message>
     <message>
         <source>Show Game Icons</source>
@@ -10263,7 +10195,7 @@ La búsqueda recursiva llevará más tiempo, pero identificará todo archivo que
     </message>
     <message>
         <source>Controllers:</source>
-        <translation>Controles:</translation>
+        <translation>Mandos:</translation>
     </message>
     <message>
         <source>Tracks:</source>
@@ -10492,7 +10424,7 @@ La búsqueda recursiva llevará más tiempo, pero identificará todo archivo que
     </message>
     <message>
         <source>Advanced</source>
-        <translation>Avanzada</translation>
+        <translation>Avanzado</translation>
     </message>
     <message>
         <source>Display Options</source>
@@ -11347,6 +11279,106 @@ La búsqueda recursiva llevará más tiempo, pero identificará todo archivo que
     </message>
 </context>
 <context>
+    <name>Host</name>
+    <message numerus="yes">
+        <source>%n seconds</source>
+        <translation>
+            <numerusform>%n segundo</numerusform>
+            <numerusform>%n segundos</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n minutes</source>
+        <translation>
+            <numerusform>%n minuto</numerusform>
+            <numerusform>%n minutos</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n hours</source>
+        <translation>
+            <numerusform>%n hora</numerusform>
+            <numerusform>%n horas</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Today</source>
+        <translation>Hoy</translation>
+    </message>
+    <message>
+        <source>Yesterday</source>
+        <translation>Ayer</translation>
+    </message>
+    <message>
+        <source>Never</source>
+        <translation>Nunca</translation>
+    </message>
+    <message>
+        <source>today</source>
+        <translation>hoy</translation>
+    </message>
+    <message>
+        <source>yesterday</source>
+        <translation>ayer</translation>
+    </message>
+    <message>
+        <source>%n days ago</source>
+        <comment>Date difference</comment>
+        <translation>Hace %n días</translation>
+    </message>
+    <message>
+        <source>on {}</source>
+        <translation>en {}</translation>
+    </message>
+    <message>
+        <source>Now</source>
+        <translation>Ahora</translation>
+    </message>
+    <message>
+        <source>now</source>
+        <translation>ahora</translation>
+    </message>
+    <message>
+        <source>%n seconds ago</source>
+        <comment>Time difference</comment>
+        <translation>Hace %n segundos</translation>
+    </message>
+    <message>
+        <source>%n minutes ago</source>
+        <comment>Time difference</comment>
+        <translation>Hace %n minutos</translation>
+    </message>
+    <message>
+        <source>%n hours ago</source>
+        <comment>Time difference</comment>
+        <translation>Hace %n horas</translation>
+    </message>
+    <message>
+        <source>{} at {}</source>
+        <translation>{} en {}</translation>
+    </message>
+    <message>
+        <source>{}h {}m</source>
+        <translation>{}h {}m</translation>
+    </message>
+    <message>
+        <source>{}h {}m {}s</source>
+        <translation>{}h {}m {}s</translation>
+    </message>
+    <message>
+        <source>{}m {}s</source>
+        <translation>{}m {}s</translation>
+    </message>
+    <message>
+        <source>{}s</source>
+        <translation>{}s</translation>
+    </message>
+    <message>
+        <source>None</source>
+        <translation>Ninguno</translation>
+    </message>
+</context>
+<context>
     <name>Hotkeys</name>
     <message>
         <source>Open Pause Menu</source>
@@ -12011,7 +12043,7 @@ Mayús + Clic izquierdo para asignaciones adicionales.</translation>
     </message>
     <message>
         <source>Mouse</source>
-        <translation>Mouse</translation>
+        <translation>Ratón</translation>
     </message>
     <message>
         <source>X</source>
@@ -12653,7 +12685,7 @@ Mayús + Clic izquierdo para asignaciones adicionales.</translation>
     </message>
     <message>
         <source>Change Disc</source>
-        <translation>Cambiar disco</translation>
+        <translation>Cambiar CD</translation>
     </message>
     <message>
         <source>Cheats</source>
@@ -12733,11 +12765,11 @@ Mayús + Clic izquierdo para asignaciones adicionales.</translation>
     </message>
     <message>
         <source>&amp;Load State</source>
-        <translation>&amp;Cargar</translation>
+        <translation>&amp;Cargar estado</translation>
     </message>
     <message>
         <source>&amp;Save State</source>
-        <translation>&amp;Guardar</translation>
+        <translation>&amp;Guardar estado</translation>
     </message>
     <message>
         <source>E&amp;xit</source>
@@ -12769,7 +12801,7 @@ Mayús + Clic izquierdo para asignaciones adicionales.</translation>
     </message>
     <message>
         <source>Media Ca&amp;pture</source>
-        <translation>Captura &amp;multimedia</translation>
+        <translation>Grabación &amp;multimedia</translation>
     </message>
     <message>
         <source>Open Texture Directory...</source>
@@ -12953,7 +12985,7 @@ Mayús + Clic izquierdo para asignaciones adicionales.</translation>
     </message>
     <message>
         <source>CPU D&amp;ebugger</source>
-        <translation>Depurador de &amp;CPU</translation>
+        <translation>&amp;Depurador</translation>
     </message>
     <message>
         <source>Game &amp;Grid</source>
@@ -13068,6 +13100,10 @@ Mayús + Clic izquierdo para asignaciones adicionales.</translation>
         <translation>Fallo al eliminar el archivo de estado guardado &quot;%1&quot;.</translation>
     </message>
     <message>
+        <source>Save was created %1.</source>
+        <translation>Se creó el guardado %1.</translation>
+    </message>
+    <message>
         <source>Confirm Disc Change</source>
         <translation>Confirmar cambio de disco</translation>
     </message>
@@ -13097,7 +13133,7 @@ Mayús + Clic izquierdo para asignaciones adicionales.</translation>
     </message>
     <message>
         <source>Open Containing Directory...</source>
-        <translation>Abrir directorio contenedor...</translation>
+        <translation>Abrir carpeta contenedora...</translation>
     </message>
     <message>
         <source>Browse ISO...</source>
@@ -13105,11 +13141,11 @@ Mayús + Clic izquierdo para asignaciones adicionales.</translation>
     </message>
     <message>
         <source>Set Cover Image...</source>
-        <translation>Establecer imágen de portada...</translation>
+        <translation>Establecer imagen de carátula...</translation>
     </message>
     <message>
         <source>Default Boot</source>
-        <translation>Inicio predeterminado</translation>
+        <translation>Arranque predeterminado</translation>
     </message>
     <message>
         <source>Fast Boot</source>
@@ -13117,11 +13153,11 @@ Mayús + Clic izquierdo para asignaciones adicionales.</translation>
     </message>
     <message>
         <source>Full Boot</source>
-        <translation>Inicio completo</translation>
+        <translation>Arranque completo</translation>
     </message>
     <message>
         <source>Boot and Debug</source>
-        <translation>Iniciar y depurar</translation>
+        <translation>Arrancar con depurador</translation>
     </message>
     <message>
         <source>Exclude From List</source>
@@ -13373,7 +13409,7 @@ Mayús + Clic izquierdo para asignaciones adicionales.</translation>
     </message>
     <message>
         <source>Capt&amp;ure</source>
-        <translation>Capt&amp;ura</translation>
+        <translation>Gra&amp;bar</translation>
     </message>
     <message>
         <source>These options determine how screenshots and videos are captured by the application.</source>
@@ -13389,7 +13425,7 @@ Mayús + Clic izquierdo para asignaciones adicionales.</translation>
     </message>
     <message>
         <source>A&amp;dvanced</source>
-        <translation>Avan&amp;zada</translation>
+        <translation>Avan&amp;zado</translation>
     </message>
     <message>
         <source>Debuggi&amp;ng</source>
@@ -13533,7 +13569,8 @@ Mayús + Clic izquierdo para asignaciones adicionales.</translation>
     </message>
     <message>
         <source>Capture</source>
-        <translation>Capturar</translation>
+        <translatorcomment>Toolbar option</translatorcomment>
+        <translation>Grabar</translation>
     </message>
     <message>
         <source>Starts or stops capture of video and audio from the content.</source>
@@ -13613,7 +13650,7 @@ Mayús + Clic izquierdo para asignaciones adicionales.</translation>
     </message>
     <message>
         <source>Start &amp;Capture</source>
-        <translation>Iniciar &amp;captura</translation>
+        <translation>Iniciar &amp;grabación</translation>
     </message>
     <message>
         <source>Starts recording audio and video.</source>
@@ -13621,11 +13658,11 @@ Mayús + Clic izquierdo para asignaciones adicionales.</translation>
     </message>
     <message>
         <source>Stop &amp;Capture</source>
-        <translation>Detener &amp;captura</translation>
+        <translation>Detener gra&amp;bación</translation>
     </message>
     <message>
         <source>Start &amp;Video-Only Capture</source>
-        <translation>Iniciar captura de solo &amp;video</translation>
+        <translation>Iniciar grabación de solo &amp;video</translation>
     </message>
     <message>
         <source>Starts a video-only recording.</source>
@@ -13633,7 +13670,7 @@ Mayús + Clic izquierdo para asignaciones adicionales.</translation>
     </message>
     <message>
         <source>Start &amp;Audio-Only Capture</source>
-        <translation>Iniciar captura de solo &amp;audio</translation>
+        <translation>Iniciar grabación de solo &amp;audio</translation>
     </message>
     <message>
         <source>Starts an audio-only recording.</source>
@@ -13769,7 +13806,7 @@ Mayús + Clic izquierdo para asignaciones adicionales.</translation>
     </message>
     <message>
         <source>Close (No Save)</source>
-        <translation>Cerrar (sin guardar)</translation>
+        <translation>Apagar (sin guardar)</translation>
     </message>
     <message>
         <source>Show Game Ico&amp;ns</source>
@@ -13946,10 +13983,6 @@ Esta acción no se puede deshacer.</translation>
     <message>
         <source>&lt;strong&gt;Resume Game&lt;/strong&gt;&lt;br&gt;Do you want to load this state, or start from a fresh boot?</source>
         <translation>&lt;strong&gt;Reanudar juego&lt;/strong&gt;&lt;br&gt;¿Desea cargar este estado o comenzar desde cero?</translation>
-    </message>
-    <message>
-        <source>Save was created on %1.</source>
-        <translation>Fecha de creación: %1</translation>
     </message>
     <message>
         <source>Do you want to swap discs or boot the new image via system restart?</source>
@@ -14130,7 +14163,7 @@ Esta compilación necesita la versión v{} de FFmpeg con las siguientes versione
     </message>
     <message>
         <source>Invalid size for save file.</source>
-        <translation>Tamaño inválido para el archivo de guardado.</translation>
+        <translation>Tamaño no válido para el archivo de guardado.</translation>
     </message>
     <message>
         <source>Failed to read directory frame: </source>
@@ -14138,7 +14171,7 @@ Esta compilación necesita la versión v{} de FFmpeg con las siguientes versione
     </message>
     <message>
         <source>Invalid size ({} bytes) reported by directory frame.</source>
-        <translation>Estructura del directorio: tamaño inválido ({} bytes).</translation>
+        <translation>Estructura del directorio: tamaño no válido ({} bytes).</translation>
     </message>
     <message>
         <source>Failed to read block bytes: </source>
@@ -14150,7 +14183,7 @@ Esta compilación necesita la versión v{} de FFmpeg con las siguientes versione
     </message>
     <message>
         <source>Invalid filename.</source>
-        <translation>Nombre de archivo inválido.</translation>
+        <translation>Nombre de archivo no válido.</translation>
     </message>
     <message>
         <source>Insufficient free blocks, needs {} blocks, but only have {}.</source>
@@ -14403,8 +14436,9 @@ Error: {1}</translation>
     <message numerus="yes">
         <source>%n block(s) free</source>
         <translation>
-            <numerusform>%n bloque libre</numerusform>
-            <numerusform>%n bloques libres</numerusform>
+            <numerusform>
+            </numerusform>
+            <numerusform></numerusform>
         </translation>
     </message>
 </context>
@@ -15031,11 +15065,11 @@ Error: {1}</translation>
     </message>
     <message>
         <source>Disable Simultaneous Opposing Cardinal Directions</source>
-        <translation>Desactivar direcciones cardinales opuestas simultáneas</translation>
+        <translation>Desactivar direcciones opuestas simultáneas</translation>
     </message>
     <message>
         <source>Prevents concurrent left/right or up/down inputs from being presented to the game.</source>
-        <translation>Evita que se envíen al juego entradas simultáneas de izquierda/derecha o arriba/abajo.</translation>
+        <translation>Impide que el juego reciba pulsaciones simultáneas de izquierda/derecha o arriba/abajo.</translation>
     </message>
     <message>
         <source>Steering Axis Deadzone</source>
@@ -15226,11 +15260,11 @@ Error: {1}</translation>
     </message>
     <message>
         <source>Disable Simultaneous Opposing Cardinal Directions</source>
-        <translation>Desactivar direcciones cardinales opuestas simultáneas</translation>
+        <translation>Desactivar direcciones opuestas simultáneas</translation>
     </message>
     <message>
         <source>Prevents concurrent left/right or up/down inputs from being presented to the game.</source>
-        <translation>Evita que se envíen al juego entradas simultáneas de izquierda/derecha o arriba/abajo.</translation>
+        <translation>Impide que el juego reciba pulsaciones simultáneas de izquierda/derecha o arriba/abajo.</translation>
     </message>
     <message>
         <source>Steering Axis Deadzone</source>
@@ -15757,6 +15791,10 @@ Error: {1}</translation>
 <context>
     <name>PlayStationMouse</name>
     <message>
+        <source>Pointer</source>
+        <translation>Cursor</translation>
+    </message>
+    <message>
         <source>Left Button</source>
         <translation>Botón izquierdo</translation>
     </message>
@@ -15775,13 +15813,6 @@ Error: {1}</translation>
     <message>
         <source>Vertical Sensitivity</source>
         <translation>Sensibilidad vertical</translation>
-    </message>
-</context>
-<context>
-    <name>PlaystationMouse</name>
-    <message>
-        <source>Pointer</source>
-        <translation>Cursor</translation>
     </message>
 </context>
 <context>
@@ -16561,10 +16592,6 @@ Ubicación del acceso directo: %2
 <context>
     <name>SaveStateSelectorUI</name>
     <message>
-        <source>Saved at {0:%H:%M} on {0:%a} {0:%Y/%m/%d}.</source>
-        <translation>Guardado a las {0:%H:%M} del {0:%a} {0:%Y/%m/%d}.</translation>
-    </message>
-    <message>
         <source>Load</source>
         <translation>Cargar</translation>
     </message>
@@ -16583,6 +16610,10 @@ Ubicación del acceso directo: %2
     <message>
         <source>{} ({})</source>
         <translation>{} ({})</translation>
+    </message>
+    <message>
+        <source>Saved {}</source>
+        <translation>Guardado {}</translation>
     </message>
     <message>
         <source>No save present in this slot.</source>
@@ -17163,12 +17194,12 @@ Do you want to create this directory?</source>
         <translation>Detectar automáticamente</translation>
     </message>
     <message>
-        <source>NTSC (60hz)</source>
+        <source>NTSC (60 Hz)</source>
         <comment>ForceVideoTiming</comment>
         <translation>NTSC (60 Hz)</translation>
     </message>
     <message>
-        <source>PAL (50hz)</source>
+        <source>PAL (50 Hz)</source>
         <comment>ForceVideoTiming</comment>
         <translation>PAL (50 Hz)</translation>
     </message>
@@ -17647,7 +17678,7 @@ Se perderá cualquier ajuste actual.
     </message>
     <message>
         <source>Advanced</source>
-        <translation>Avanzada</translation>
+        <translation>Avanzado</translation>
     </message>
     <message>
         <source>Unchecked</source>
@@ -17865,8 +17896,9 @@ Podrás cambiar este ajuste más adelante en la barra de herramientas del modo e
         <source>%n BIOS images found. You can install additional BIOS images if desired.</source>
         <comment>BIOS Count</comment>
         <translation>
-            <numerusform>Se ha encontrado %n imagen de BIOS. Puedes instalar imágenes de BIOS adicionales si lo deseas.</numerusform>
-            <numerusform>Se han encontrado %n imágenes de BIOS. Puedes instalar imágenes de BIOS adicionales si lo deseas.</numerusform>
+            <numerusform>
+            </numerusform>
+            <numerusform></numerusform>
         </translation>
     </message>
     <message>
@@ -17892,6 +17924,12 @@ Podrás cambiar este ajuste más adelante en la barra de herramientas del modo e
     <message>
         <source>No generic bindings were generated for device &apos;%1&apos;. The controller/source may not support automatic mapping.</source>
         <translation>No se han podido generar asignaciones para el dispositivo &quot;%1&quot;. El mando/dispositivo de origen podría no ser compatible con las asociaciones automáticas.</translation>
+    </message>
+    <message>
+        <source>Logged in as %1
+Token generated %2</source>
+        <translation>Sesión iniciada como %1
+Token generado %2</translation>
     </message>
     <message>
         <source>Graphics Setup</source>
@@ -18127,12 +18165,6 @@ La búsqueda recursiva llevará más tiempo, pero identificará todo archivo que
         <translation>La PGXP no está habilitada. Si aumentas la resolución sin habilitar la PGXP, los polígonos se mostrarán distorsionados.</translation>
     </message>
     <message>
-        <source>Logged in as %1
-Token generated at %2</source>
-        <translation>Nombre de usuario: %1
-Fecha de creación del token de acceso: %2</translation>
-    </message>
-    <message>
         <source>Logout</source>
         <translation>Cerrar sesión</translation>
     </message>
@@ -18145,7 +18177,7 @@ Fecha de creación del token de acceso: %2</translation>
     <name>System</name>
     <message>
         <source>Failed to boot system:</source>
-        <translation>Fallo al iniciar el sistema:</translation>
+        <translation>Error al iniciar el sistema:</translation>
     </message>
     <message>
         <source>Error</source>
@@ -18153,7 +18185,7 @@ Fecha de creación del token de acceso: %2</translation>
     </message>
     <message>
         <source>Do you want to install a BIOS file now?</source>
-        <translation>¿Deseas instalar un archivo de BIOS ahora?</translation>
+        <translation>¿Desea instalar un archivo BIOS ahora?</translation>
     </message>
     <message>
         <source>This save state was created with a different BIOS. This may cause stability issues.</source>
@@ -18409,8 +18441,9 @@ Deberás guardar tus avances en una Memory Card y reiniciar el sistema para elim
     <message numerus="yes">
         <source>You cannot pause until another %n second(s) have passed.</source>
         <translation>
-            <numerusform>No puedes pausar hasta que haya transcurrido %n segundo más.</numerusform>
-            <numerusform>No puedes pausar hasta que hayan transcurrido %n segundos más.</numerusform>
+            <numerusform>
+            </numerusform>
+            <numerusform></numerusform>
         </translation>
     </message>
     <message>
@@ -18585,6 +18618,10 @@ El nombre del archivo SBI debe coincidir con el nombre de la imagen del disco.</
 {}</translation>
     </message>
     <message>
+        <source>Loaded undo save state created {}.</source>
+        <translation>Se cargó el estado de guardado de deshacer creado {}.</translation>
+    </message>
+    <message>
         <source>Cannot use per-game memory card without a disc.
 Using shared card instead.</source>
         <translation>No puede usarse una Memory Card individual para el juego sin un disco. Se usará una Memory Card compartida.</translation>
@@ -18609,10 +18646,6 @@ Los juegos podrían ejecutarse a velocidades incorrectas.</translation>
     <message>
         <source>Undo Load State</source>
         <translation>Deshacer carga de estado de guardado</translation>
-    </message>
-    <message>
-        <source>Loaded undo save state created at {}.</source>
-        <translation>Cargando estado de guardado para deshacer de {}.</translation>
     </message>
     <message>
         <source>Rewind has been disabled.</source>
@@ -18640,11 +18673,11 @@ Puede que tu GPU no sea compatible con el renderizador seleccionado ({1}) o que 
 DuckStation requires a PS1 or PS2 BIOS in order to run.
 
 For legal reasons, you must obtain a BIOS from an actual PS1/PS2 unit that you own (borrowing doesn&apos;t count).</source>
-        <translation>No se ha encontrado ninguna imagen de BIOS para la región {}.
+        <translation>No se encontró ninguna imagen BIOS para la región {}.
 
-DuckStation necesita una BIOS de PS1 o PS2 para funcionar.
+DuckStation requiere una BIOS de PS1 o PS2 para funcionar.
 
-Por motivos legales, debes obtener una BIOS de una unidad PS1/PS2 real que sea de tu propiedad (pedirla prestada no cuenta).</translation>
+Por motivos legales, debe obtener una BIOS de una consola PS1/PS2 original de su propiedad (no se aceptan copias prestadas).</translation>
     </message>
 </context>
 <context>
