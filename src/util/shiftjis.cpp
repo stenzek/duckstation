@@ -736,7 +736,7 @@ static int TrailIndex(unsigned char b)
   return -1;
 }
 
-std::string ConvertShiftJISToUTF8(std::string_view str)
+std::string ShiftJIS::ConvertShiftJISToUTF8(std::string_view str)
 {
   std::string out;
   out.reserve(str.size());
@@ -812,6 +812,33 @@ std::string ConvertShiftJISToUTF8(std::string_view str)
       }
 
       i += 2;
+    }
+
+    StringUtil::EncodeAndAppendUTF8(out, cp);
+  }
+
+  return out;
+}
+
+std::string ShiftJIS::ConvertFullWidthToASCII(std::string_view str)
+{
+  std::string out;
+  out.reserve(str.size());
+
+  for (size_t offset = 0; offset < str.size();)
+  {
+    char32_t cp;
+    offset += StringUtil::DecodeUTF8(str, offset, &cp);
+
+    // IDEOGRAPHIC SPACE -> ASCII space.
+    if (cp == 0x3000)
+    {
+      cp = ' ';
+    }
+    // FULLWIDTH ! through ~ -> ASCII ! through ~.
+    else if (cp >= 0xFF01 && cp <= 0xFF5E)
+    {
+      cp -= 0xFEE0;
     }
 
     StringUtil::EncodeAndAppendUTF8(out, cp);

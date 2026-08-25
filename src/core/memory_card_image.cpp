@@ -282,7 +282,8 @@ std::vector<MemoryCardImage::FileInfo> MemoryCardImage::EnumerateFiles(const Dat
       continue;
     }
 
-    fi.title = ConvertShiftJISToUTF8(std::string_view(reinterpret_cast<const char*>(tf->title), sizeof(tf->title)));
+    fi.title = ShiftJIS::ConvertFullWidthToASCII(
+      ShiftJIS::ConvertShiftJISToUTF8(std::string_view(reinterpret_cast<const char*>(tf->title), sizeof(tf->title))));
 
     fi.icon_frames.resize(num_icon_frames);
     for (u32 icon_frame = 0; icon_frame < num_icon_frames; icon_frame++)

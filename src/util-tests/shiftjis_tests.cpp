@@ -154,7 +154,7 @@ static std::uint32_t ExpectedSingleByteCodePoint(unsigned int byte)
 
 TEST(ConvertShiftJISToUTF8Test, EmptyInputProducesEmptyOutput)
 {
-  EXPECT_TRUE(ConvertShiftJISToUTF8({}).empty());
+  EXPECT_TRUE(ShiftJIS::ConvertShiftJISToUTF8({}).empty());
 }
 
 TEST(ConvertShiftJISToUTF8Test, ConvertsEveryValidSingleByteCodeUnit)
@@ -164,22 +164,22 @@ TEST(ConvertShiftJISToUTF8Test, ConvertsEveryValidSingleByteCodeUnit)
     const std::string input = Bytes({byte});
     const std::string expected = EncodeUtf8(ExpectedSingleByteCodePoint(byte));
     SCOPED_TRACE(fmt::format("byte: {:02X}", byte));
-    EXPECT_EQ(ConvertShiftJISToUTF8(input), expected);
+    EXPECT_EQ(ShiftJIS::ConvertShiftJISToUTF8(input), expected);
   }
   for (unsigned int byte = 0xA1u; byte <= 0xDFu; ++byte)
   {
     const std::string input = Bytes({byte});
     const std::string expected = EncodeUtf8(ExpectedSingleByteCodePoint(byte));
     SCOPED_TRACE(fmt::format("byte: {:02X}", byte));
-    EXPECT_EQ(ConvertShiftJISToUTF8(input), expected);
+    EXPECT_EQ(ShiftJIS::ConvertShiftJISToUTF8(input), expected);
   }
 }
 
 TEST(ConvertShiftJISToUTF8Test, NulByteTerminatesInput)
 {
-  EXPECT_EQ(ConvertShiftJISToUTF8(Bytes({0x00, 'A'})), "");
-  EXPECT_EQ(ConvertShiftJISToUTF8(Bytes({'A', 0x00, 'B', 0x82, 0xA0})), "A");
-  EXPECT_EQ(ConvertShiftJISToUTF8(Bytes({0x82, 0x00, 'A'})), UNICODE_REPLACEMENT_CHARACTER_STR);
+  EXPECT_EQ(ShiftJIS::ConvertShiftJISToUTF8(Bytes({0x00, 'A'})), "");
+  EXPECT_EQ(ShiftJIS::ConvertShiftJISToUTF8(Bytes({'A', 0x00, 'B', 0x82, 0xA0})), "A");
+  EXPECT_EQ(ShiftJIS::ConvertShiftJISToUTF8(Bytes({0x82, 0x00, 'A'})), UNICODE_REPLACEMENT_CHARACTER_STR);
 }
 
 TEST(ConvertShiftJISToUTF8Test, ConvertsRepresentativeStandardCharacters)
@@ -202,7 +202,7 @@ TEST(ConvertShiftJISToUTF8Test, ConvertsRepresentativeStandardCharacters)
   for (const Case& test_case : cases)
   {
     SCOPED_TRACE("Shift-JIS bytes: " + StringUtil::EncodeHex(test_case.input.data(), test_case.input.size()));
-    EXPECT_EQ(ConvertShiftJISToUTF8(test_case.input), test_case.expected);
+    EXPECT_EQ(ShiftJIS::ConvertShiftJISToUTF8(test_case.input), test_case.expected);
   }
 }
 
@@ -211,7 +211,7 @@ TEST(ConvertShiftJISToUTF8Test, ConvertsJapaneseText)
   const std::string input = Bytes({0x93, 0xFA, 0x96, 0x7B, 0x8C, 0xEA}); // 日本語
   const std::string expected = Bytes({0xE6, 0x97, 0xA5, 0xE6, 0x9C, 0xAC, 0xE8, 0xAA, 0x9E});
 
-  EXPECT_EQ(ConvertShiftJISToUTF8(input), expected);
+  EXPECT_EQ(ShiftJIS::ConvertShiftJISToUTF8(input), expected);
 }
 
 TEST(ConvertShiftJISToUTF8Test, ConvertsWindows932Extensions)
@@ -232,13 +232,13 @@ TEST(ConvertShiftJISToUTF8Test, ConvertsWindows932Extensions)
   for (const Case& test_case : cases)
   {
     SCOPED_TRACE("Shift-JIS bytes: " + StringUtil::EncodeHex(test_case.input.data(), test_case.input.size()));
-    EXPECT_EQ(ConvertShiftJISToUTF8(test_case.input), test_case.expected);
+    EXPECT_EQ(ShiftJIS::ConvertShiftJISToUTF8(test_case.input), test_case.expected);
   }
 }
 
 TEST(ConvertShiftJISToUTF8Test, ConvertsPrivateUseAreaMapping)
 {
-  EXPECT_EQ(ConvertShiftJISToUTF8(Bytes({0xF0, 0x40})), EncodeUtf8(0xE000));
+  EXPECT_EQ(ShiftJIS::ConvertShiftJISToUTF8(Bytes({0xF0, 0x40})), EncodeUtf8(0xE000));
 }
 
 TEST(ConvertShiftJISToUTF8Test, RejectsEveryInvalidOneByteInput)
@@ -249,7 +249,7 @@ TEST(ConvertShiftJISToUTF8Test, RejectsEveryInvalidOneByteInput)
       continue;
 
     SCOPED_TRACE(fmt::format("byte: {:02X}", byte));
-    ASSERT_EQ(ConvertShiftJISToUTF8(Bytes({byte})), UNICODE_REPLACEMENT_CHARACTER_STR);
+    ASSERT_EQ(ShiftJIS::ConvertShiftJISToUTF8(Bytes({byte})), UNICODE_REPLACEMENT_CHARACTER_STR);
   }
 }
 
@@ -270,36 +270,37 @@ TEST(ConvertShiftJISToUTF8Test, RejectsEveryIllegalTrailByteForEveryLead)
 
       const std::string input = Bytes({lead, trail});
       SCOPED_TRACE("bytes: " + StringUtil::EncodeHex(input.data(), input.size()));
-      ASSERT_EQ(ConvertShiftJISToUTF8(input), UNICODE_REPLACEMENT_CHARACTER_STR);
+      ASSERT_EQ(ShiftJIS::ConvertShiftJISToUTF8(input), UNICODE_REPLACEMENT_CHARACTER_STR);
     }
   }
 }
 
 TEST(ConvertShiftJISToUTF8Test, RejectsSyntacticallyValidButUnassignedPair)
 {
-  EXPECT_EQ(ConvertShiftJISToUTF8(Bytes({0x81, 0xAD})), UNICODE_REPLACEMENT_CHARACTER_STR);
+  EXPECT_EQ(ShiftJIS::ConvertShiftJISToUTF8(Bytes({0x81, 0xAD})), UNICODE_REPLACEMENT_CHARACTER_STR);
 }
 
 TEST(ConvertShiftJISToUTF8Test, ReplacesInvalidSequencesAtAnyOffset)
 {
   // invalid or unassigned Shift-JIS byte sequence at offset 0
-  ASSERT_EQ(ConvertShiftJISToUTF8(Bytes({0x80})), UNICODE_REPLACEMENT_CHARACTER_STR);
+  ASSERT_EQ(ShiftJIS::ConvertShiftJISToUTF8(Bytes({0x80})), UNICODE_REPLACEMENT_CHARACTER_STR);
 
   // invalid or unassigned Shift-JIS byte sequence at offset 1
-  ASSERT_EQ(ConvertShiftJISToUTF8(Bytes({'A', 0x82})), "A" UNICODE_REPLACEMENT_CHARACTER_STR);
+  ASSERT_EQ(ShiftJIS::ConvertShiftJISToUTF8(Bytes({'A', 0x82})), "A" UNICODE_REPLACEMENT_CHARACTER_STR);
 
   // invalid or unassigned Shift-JIS byte sequence at offset 2
-  ASSERT_EQ(ConvertShiftJISToUTF8(Bytes({'A', 0x82, 0x20})), "A" UNICODE_REPLACEMENT_CHARACTER_STR);
+  ASSERT_EQ(ShiftJIS::ConvertShiftJISToUTF8(Bytes({'A', 0x82, 0x20})), "A" UNICODE_REPLACEMENT_CHARACTER_STR);
 
   // invalid or unassigned Shift-JIS byte sequence at offset 3
-  ASSERT_EQ(ConvertShiftJISToUTF8(Bytes({0x82, 0xA0, 'B', 0x81, 0xAD})), "\xe3\x81\x82"
-                                                                         "B" UNICODE_REPLACEMENT_CHARACTER_STR);
+  ASSERT_EQ(ShiftJIS::ConvertShiftJISToUTF8(Bytes({0x82, 0xA0, 'B', 0x81, 0xAD})),
+            "\xe3\x81\x82"
+            "B" UNICODE_REPLACEMENT_CHARACTER_STR);
 }
 
 TEST(ConvertShiftJISToUTF8Test, InvalidLeadDoesNotSkipFollowingCodeUnit)
 {
-  EXPECT_EQ(ConvertShiftJISToUTF8(Bytes({0x80, 'A'})), UNICODE_REPLACEMENT_CHARACTER_STR "A");
-  EXPECT_EQ(ConvertShiftJISToUTF8(Bytes({0x80, 0x00, 'A'})), UNICODE_REPLACEMENT_CHARACTER_STR);
+  EXPECT_EQ(ShiftJIS::ConvertShiftJISToUTF8(Bytes({0x80, 'A'})), UNICODE_REPLACEMENT_CHARACTER_STR "A");
+  EXPECT_EQ(ShiftJIS::ConvertShiftJISToUTF8(Bytes({0x80, 0x00, 'A'})), UNICODE_REPLACEMENT_CHARACTER_STR);
 }
 
 TEST(ConvertShiftJISToUTF8Test, ExhaustivelyClassifiesEveryPossibleDoubleByteCodeUnit)
@@ -320,7 +321,7 @@ TEST(ConvertShiftJISToUTF8Test, ExhaustivelyClassifiesEveryPossibleDoubleByteCod
       const std::string input = Bytes({lead, trail});
       SCOPED_TRACE("bytes: " + StringUtil::EncodeHex(input.data(), input.size()));
 
-      const std::string output = ConvertShiftJISToUTF8(input);
+      const std::string output = ShiftJIS::ConvertShiftJISToUTF8(input);
       const auto code_points = DecodeUtf8Strict(output);
       ASSERT_TRUE(code_points.has_value())
         << "converter returned malformed UTF-8: " << StringUtil::EncodeHex(output.data(), output.size());
@@ -351,13 +352,13 @@ TEST(ConvertShiftJISToUTF8Test, ConvertingConcatenatedCodeUnitsMatchesIndividual
   {
     const std::string code_unit = Bytes({byte});
     combined_input += code_unit;
-    combined_expected += ConvertShiftJISToUTF8(code_unit);
+    combined_expected += ShiftJIS::ConvertShiftJISToUTF8(code_unit);
   }
   for (unsigned int byte = 0xA1u; byte <= 0xDFu; ++byte)
   {
     const std::string code_unit = Bytes({byte});
     combined_input += code_unit;
-    combined_expected += ConvertShiftJISToUTF8(code_unit);
+    combined_expected += ShiftJIS::ConvertShiftJISToUTF8(code_unit);
   }
   for (unsigned int lead = 0; lead <= 0xFFu; ++lead)
   {
@@ -370,12 +371,24 @@ TEST(ConvertShiftJISToUTF8Test, ConvertingConcatenatedCodeUnitsMatchesIndividual
         continue;
 
       const std::string code_unit = Bytes({lead, trail});
-      const std::string converted = ConvertShiftJISToUTF8(code_unit);
+      const std::string converted = ShiftJIS::ConvertShiftJISToUTF8(code_unit);
       combined_input += code_unit;
       combined_expected += converted;
     }
   }
 
   combined_input.push_back('\0');
-  EXPECT_EQ(ConvertShiftJISToUTF8(combined_input), combined_expected);
+  EXPECT_EQ(ShiftJIS::ConvertShiftJISToUTF8(combined_input), combined_expected);
+}
+
+TEST(ConvertShiftJISToUTF8Test, ConvertFullWidthToASCII)
+{
+  EXPECT_EQ(ShiftJIS::ConvertFullWidthToASCII("ＡＢＣ　１２３！"), "ABC 123!");
+  EXPECT_EQ(ShiftJIS::ConvertFullWidthToASCII("ａｂｃ＠ｘｙｚ．ｃｏｍ"), "abc@xyz.com");
+
+  // Non-full-width Japanese is preserved.
+  EXPECT_EQ(ShiftJIS::ConvertFullWidthToASCII("日本語テスト"), "日本語テスト");
+
+  // Mixed text.
+  EXPECT_EQ(ShiftJIS::ConvertFullWidthToASCII("ＳＡＶＥ　データ　０１"), "SAVE データ 01");
 }
