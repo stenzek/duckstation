@@ -1735,8 +1735,8 @@ void FullscreenUI::DrawPauseMenu()
         }
 
         if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_FA_WRENCH, "Game Properties"),
-                                     has_game && GameList::CanEditGameSettingsForPath(VideoThread::GetGameSerial(),
-                                                                                      VideoThread::GetGamePath())))
+                                     has_game && GameList::CanEditGameSettingsForPath(VideoThread::GetGamePath(),
+                                                                                      VideoThread::GetGameSerial())))
         {
           BeginTransition(TransitionEffect::ZoomIn, DEFAULT_TRANSITION_TIME, []() { SwitchToGameSettings(); });
         }
