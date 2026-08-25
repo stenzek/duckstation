@@ -68,6 +68,8 @@ CDImageMDS::~CDImageMDS()
 
 bool CDImageMDS::OpenAndParse(const char* filename, Error* error)
 {
+  m_filename = filename;
+
   std::FILE* mds_fp = FileSystem::OpenSharedCFile(filename, "rb", FileSystem::FileShareMode::DenyWrite, error);
   if (!mds_fp)
   {
