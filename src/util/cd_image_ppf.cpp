@@ -33,7 +33,7 @@ public:
   CDImagePPF();
   ~CDImagePPF() override;
 
-  bool Open(const char* filename, std::unique_ptr<CDImage> parent_image, Error* error);
+  bool Open(const char* path, std::unique_ptr<CDImage> parent_image, Error* error);
 
   bool ReadSubChannelQ(SubChannelQ* subq, const Index& index, LBA lba_in_index) override;
   bool HasSubchannelData() const override;
@@ -67,12 +67,12 @@ CDImagePPF::CDImagePPF() = default;
 
 CDImagePPF::~CDImagePPF() = default;
 
-bool CDImagePPF::Open(const char* filename, std::unique_ptr<CDImage> parent_image, Error* error)
+bool CDImagePPF::Open(const char* path, std::unique_ptr<CDImage> parent_image, Error* error)
 {
-  auto fp = FileSystem::OpenManagedSharedCFile(filename, "rb", FileSystem::FileShareMode::DenyWrite, error);
+  auto fp = FileSystem::OpenManagedSharedCFile(path, "rb", FileSystem::FileShareMode::DenyWrite, error);
   if (!fp)
   {
-    Error::AddPrefixFmt(error, "Failed to open '{}'", Path::GetFileName(filename));
+    Error::AddPrefixFmt(error, "Failed to open '{}'", Path::GetFileName(path));
     return false;
   }
 
@@ -91,7 +91,7 @@ bool CDImagePPF::Open(const char* filename, std::unique_ptr<CDImage> parent_imag
     m_replacement_offset = parent_image->GetIndex(1).start_lba_on_disc;
 
   // copy all the stuff from the parent image
-  m_filename = parent_image->GetPath();
+  m_path = parent_image->GetPath();
   m_tracks = parent_image->GetTracks();
   m_indices = parent_image->GetIndices();
   m_parent_image = std::move(parent_image);

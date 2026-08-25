@@ -44,7 +44,7 @@ public:
   CDImageMDS();
   ~CDImageMDS() override;
 
-  bool OpenAndParse(const char* filename, Error* error);
+  bool OpenAndParse(const char* path, Error* error);
 
   s64 GetSizeOnDisk() const override;
 
@@ -66,14 +66,14 @@ CDImageMDS::~CDImageMDS()
     std::fclose(m_mdf_file);
 }
 
-bool CDImageMDS::OpenAndParse(const char* filename, Error* error)
+bool CDImageMDS::OpenAndParse(const char* path, Error* error)
 {
-  m_filename = filename;
+  m_path = path;
 
-  std::FILE* mds_fp = FileSystem::OpenSharedCFile(filename, "rb", FileSystem::FileShareMode::DenyWrite, error);
+  std::FILE* mds_fp = FileSystem::OpenSharedCFile(path, "rb", FileSystem::FileShareMode::DenyWrite, error);
   if (!mds_fp)
   {
-    Error::AddPrefixFmt(error, "Failed to open mds '{}': ", Path::GetFileName(filename));
+    Error::AddPrefixFmt(error, "Failed to open mds '{}': ", Path::GetFileName(path));
     return false;
   }
 
@@ -81,16 +81,16 @@ bool CDImageMDS::OpenAndParse(const char* filename, Error* error)
   std::fclose(mds_fp);
   if (!mds_data_opt.has_value() || mds_data_opt->size() < 0x54)
   {
-    ERROR_LOG("Failed to read mds file '{}'", Path::GetFileName(filename));
-    Error::SetStringFmt(error, "Failed to read mds file '{}'", filename);
+    ERROR_LOG("Failed to read mds file '{}'", Path::GetFileName(path));
+    Error::SetStringFmt(error, "Failed to read mds file '{}'", path);
     return false;
   }
 
-  std::string mdf_filename(Path::ReplaceExtension(filename, "mdf"));
-  m_mdf_file = FileSystem::OpenSharedCFile(mdf_filename.c_str(), "rb", FileSystem::FileShareMode::DenyWrite, error);
+  std::string mdf_path = Path::ReplaceExtension(path, "mdf");
+  m_mdf_file = FileSystem::OpenSharedCFile(mdf_path.c_str(), "rb", FileSystem::FileShareMode::DenyWrite, error);
   if (!m_mdf_file)
   {
-    Error::AddPrefixFmt(error, "Failed to open mdf file '{}': ", Path::GetFileName(mdf_filename));
+    Error::AddPrefixFmt(error, "Failed to open mdf file '{}': ", Path::GetFileName(mdf_path));
     return false;
   }
 
@@ -98,8 +98,8 @@ bool CDImageMDS::OpenAndParse(const char* filename, Error* error)
   static constexpr char expected_signature[] = "MEDIA DESCRIPTOR";
   if (std::memcmp(&mds[0], expected_signature, sizeof(expected_signature) - 1) != 0)
   {
-    ERROR_LOG("Incorrect signature in '{}'", Path::GetFileName(filename));
-    Error::SetStringFmt(error, "Incorrect signature in '{}'", Path::GetFileName(filename));
+    ERROR_LOG("Incorrect signature in '{}'", Path::GetFileName(path));
+    Error::SetStringFmt(error, "Incorrect signature in '{}'", Path::GetFileName(path));
     return false;
   }
 
@@ -107,8 +107,8 @@ bool CDImageMDS::OpenAndParse(const char* filename, Error* error)
   std::memcpy(&session_offset, &mds[0x50], sizeof(session_offset));
   if (session_offset >= mds.size() || (mds.size() - session_offset) < 24)
   {
-    ERROR_LOG("Invalid session offset in '{}'", Path::GetFileName(filename));
-    Error::SetStringFmt(error, "Invalid session offset in '{}'", Path::GetFileName(filename));
+    ERROR_LOG("Invalid session offset in '{}'", Path::GetFileName(path));
+    Error::SetStringFmt(error, "Invalid session offset in '{}'", Path::GetFileName(path));
     return false;
   }
 
@@ -118,9 +118,9 @@ bool CDImageMDS::OpenAndParse(const char* filename, Error* error)
   std::memcpy(&track_offset, &mds[session_offset + 20], sizeof(track_offset));
   if (track_count > 99 || track_offset >= mds.size())
   {
-    ERROR_LOG("Invalid track count/block offset {}/{} in '{}'", track_count, track_offset, Path::GetFileName(filename));
+    ERROR_LOG("Invalid track count/block offset {}/{} in '{}'", track_count, track_offset, Path::GetFileName(path));
     Error::SetStringFmt(error, "Invalid track count/block offset {}/{} in '{}'", track_count, track_offset,
-                        Path::GetFileName(filename));
+                        Path::GetFileName(path));
     return false;
   }
 
@@ -239,8 +239,8 @@ bool CDImageMDS::OpenAndParse(const char* filename, Error* error)
 
   if (m_tracks.empty())
   {
-    ERROR_LOG("File '{}' contains no tracks", Path::GetFileName(filename));
-    Error::SetStringFmt(error, "File '{}' contains no tracks", Path::GetFileName(filename));
+    ERROR_LOG("File '{}' contains no tracks", Path::GetFileName(path));
+    Error::SetStringFmt(error, "File '{}' contains no tracks", Path::GetFileName(path));
     return false;
   }
 

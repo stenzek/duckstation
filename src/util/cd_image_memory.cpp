@@ -133,7 +133,7 @@ bool CDImageMemory::CopyImage(CDImage* image, ProgressCallback* progress, Error*
     m_tracks.push_back(image->GetTrack(i));
 
   Assert(memory_offset == m_memory_size);
-  m_filename = image->GetPath();
+  m_path = image->GetPath();
   m_lba_count = image->GetLBACount();
 
   return Seek(1, Position{0, 0, 0});

@@ -211,7 +211,7 @@ public:
   CDImageDeviceWin32();
   ~CDImageDeviceWin32() override;
 
-  bool Open(const char* filename, Error* error);
+  bool Open(const char* path, Error* error);
 
   bool ReadSubChannelQ(SubChannelQ* subq, const Index& index, LBA lba_in_index) override;
   bool HasSubchannelData() const override;
@@ -248,24 +248,24 @@ CDImageDeviceWin32::~CDImageDeviceWin32()
     CloseHandle(m_hDevice);
 }
 
-bool CDImageDeviceWin32::Open(const char* filename, Error* error)
+bool CDImageDeviceWin32::Open(const char* path, Error* error)
 {
   bool try_sptd = true;
 
-  m_filename = filename;
-  m_hDevice = CreateFileA(filename, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr,
+  m_path = path;
+  m_hDevice = CreateFileA(path, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr,
                           OPEN_EXISTING, 0, NULL);
   if (m_hDevice == INVALID_HANDLE_VALUE)
   {
-    m_hDevice = CreateFileA(filename, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, 0, NULL);
+    m_hDevice = CreateFileA(path, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, 0, NULL);
     if (m_hDevice != INVALID_HANDLE_VALUE)
     {
-      WARNING_LOG("Could not open '{}' as read/write, can't use SPTD", filename);
+      WARNING_LOG("Could not open '{}' as read/write, can't use SPTD", path);
       try_sptd = false;
     }
     else
     {
-      ERROR_LOG("CreateFile('{}') failed: %08X", filename, GetLastError());
+      ERROR_LOG("CreateFile('{}') failed: %08X", path, GetLastError());
       if (error)
         error->SetWin32(GetLastError());
 
@@ -385,8 +385,8 @@ bool CDImageDeviceWin32::Open(const char* filename, Error* error)
 
   if (m_tracks.empty())
   {
-    ERROR_LOG("File '{}' contains no tracks", filename);
-    Error::SetStringFmt(error, "File '{}' contains no tracks", filename);
+    ERROR_LOG("File '{}' contains no tracks", path);
+    Error::SetStringFmt(error, "File '{}' contains no tracks", path);
     return false;
   }
 
@@ -742,7 +742,7 @@ CDImageDeviceLinux::~CDImageDeviceLinux()
 
 bool CDImageDeviceLinux::Open(const char* filename, Error* error)
 {
-  m_filename = filename;
+  m_path = filename;
 
   m_fd = open(filename, O_RDONLY);
   if (m_fd < 0)
@@ -1235,7 +1235,7 @@ CDImageDeviceMacOS::~CDImageDeviceMacOS()
 
 bool CDImageDeviceMacOS::Open(const char* filename, Error* error)
 {
-  m_filename = filename;
+  m_path = filename;
 
   m_fd = open(filename, O_RDONLY);
   if (m_fd < 0)

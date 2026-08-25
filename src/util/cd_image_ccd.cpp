@@ -26,7 +26,7 @@ public:
   CDImageCCD();
   ~CDImageCCD() override;
 
-  bool OpenAndParse(const char* filename, Error* error);
+  bool OpenAndParse(const char* path, Error* error);
 
   s64 GetSizeOnDisk() const override;
 
@@ -57,30 +57,30 @@ CDImageCCD::~CDImageCCD()
     std::fclose(m_img_file);
 }
 
-bool CDImageCCD::OpenAndParse(const char* filename, Error* error)
+bool CDImageCCD::OpenAndParse(const char* path, Error* error)
 {
   // Read the CCD file as text.
-  std::optional<std::string> ccd_data = FileSystem::ReadFileToString(filename, error);
+  std::optional<std::string> ccd_data = FileSystem::ReadFileToString(path, error);
   if (!ccd_data.has_value())
   {
-    Error::AddPrefixFmt(error, "Failed to open ccd '{}': ", Path::GetFileName(filename));
+    Error::AddPrefixFmt(error, "Failed to open ccd '{}': ", Path::GetFileName(path));
     return false;
   }
 
   // Open the IMG file (raw 2352-byte sector data).
-  std::string img_filename(Path::ReplaceExtension(filename, "img"));
-  m_img_file = FileSystem::OpenSharedCFile(img_filename.c_str(), "rb", FileSystem::FileShareMode::DenyWrite, error);
+  std::string img_path = Path::ReplaceExtension(path, "img");
+  m_img_file = FileSystem::OpenSharedCFile(img_path.c_str(), "rb", FileSystem::FileShareMode::DenyWrite, error);
   if (!m_img_file)
   {
-    Error::AddPrefixFmt(error, "Failed to open img file '{}': ", Path::GetFileName(img_filename));
+    Error::AddPrefixFmt(error, "Failed to open img file '{}': ", Path::GetFileName(img_path));
     return false;
   }
 
   // Open the SUB file (96-byte raw interleaved subchannel data per sector).
-  std::string sub_filename(Path::ReplaceExtension(filename, "sub"));
-  m_sub_file = FileSystem::OpenSharedCFile(sub_filename.c_str(), "rb", FileSystem::FileShareMode::DenyWrite, error);
+  std::string sub_path = Path::ReplaceExtension(path, "sub");
+  m_sub_file = FileSystem::OpenSharedCFile(sub_path.c_str(), "rb", FileSystem::FileShareMode::DenyWrite, error);
   if (!m_sub_file)
-    WARNING_LOG("Failed to open sub file '{}': ", Path::GetFileName(sub_filename));
+    WARNING_LOG("Failed to open sub file '{}': ", Path::GetFileName(sub_path));
 
   // Parse CCD INI-style file into sections.
   StringMap<StringMap<std::string>> sections;
@@ -107,16 +107,16 @@ bool CDImageCCD::OpenAndParse(const char* filename, Error* error)
   // Verify CloneCD header.
   if (sections.find("CloneCD") == sections.end())
   {
-    ERROR_LOG("Missing [CloneCD] header in '{}'", Path::GetFileName(filename));
-    Error::SetStringFmt(error, "Missing [CloneCD] header in '{}'", Path::GetFileName(filename));
+    ERROR_LOG("Missing [CloneCD] header in '{}'", Path::GetFileName(path));
+    Error::SetStringFmt(error, "Missing [CloneCD] header in '{}'", Path::GetFileName(path));
     return false;
   }
 
   // Get disc info.
   if (sections.find("Disc") == sections.end())
   {
-    ERROR_LOG("Missing [Disc] section in '{}'", Path::GetFileName(filename));
-    Error::SetStringFmt(error, "Missing [Disc] section in '{}'", Path::GetFileName(filename));
+    ERROR_LOG("Missing [Disc] section in '{}'", Path::GetFileName(path));
+    Error::SetStringFmt(error, "Missing [Disc] section in '{}'", Path::GetFileName(path));
     return false;
   }
 
@@ -134,8 +134,8 @@ bool CDImageCCD::OpenAndParse(const char* filename, Error* error)
   const std::optional<s32> toc_entries = get_int_value("Disc", "TocEntries");
   if (!toc_entries.has_value() || toc_entries.value() < 3)
   {
-    ERROR_LOG("Invalid or missing TocEntries in '{}'", Path::GetFileName(filename));
-    Error::SetStringFmt(error, "Invalid or missing TocEntries in '{}'", Path::GetFileName(filename));
+    ERROR_LOG("Invalid or missing TocEntries in '{}'", Path::GetFileName(path));
+    Error::SetStringFmt(error, "Invalid or missing TocEntries in '{}'", Path::GetFileName(path));
     return false;
   }
 
@@ -182,8 +182,8 @@ bool CDImageCCD::OpenAndParse(const char* filename, Error* error)
 
   if (track_toc_entries.empty())
   {
-    ERROR_LOG("File '{}' contains no track entries", Path::GetFileName(filename));
-    Error::SetStringFmt(error, "File '{}' contains no track entries", Path::GetFileName(filename));
+    ERROR_LOG("File '{}' contains no track entries", Path::GetFileName(path));
+    Error::SetStringFmt(error, "File '{}' contains no track entries", Path::GetFileName(path));
     return false;
   }
 
@@ -197,8 +197,8 @@ bool CDImageCCD::OpenAndParse(const char* filename, Error* error)
     }
     else
     {
-      ERROR_LOG("Could not determine lead-out position in '{}'", Path::GetFileName(filename));
-      Error::SetStringFmt(error, "Could not determine lead-out position in '{}'", Path::GetFileName(filename));
+      ERROR_LOG("Could not determine lead-out position in '{}'", Path::GetFileName(path));
+      Error::SetStringFmt(error, "Could not determine lead-out position in '{}'", Path::GetFileName(path));
       return false;
     }
   }
@@ -262,17 +262,17 @@ bool CDImageCCD::OpenAndParse(const char* filename, Error* error)
   // Should have track 1, and no missing tracks.
   if (parsed_tracks.empty() || parsed_tracks[0].track_number != 1)
   {
-    ERROR_LOG("File '{}' must contain a track 1", Path::GetFileName(filename));
-    Error::SetStringFmt(error, "File '{}' must contain a track 1", Path::GetFileName(filename));
+    ERROR_LOG("File '{}' must contain a track 1", Path::GetFileName(path));
+    Error::SetStringFmt(error, "File '{}' must contain a track 1", Path::GetFileName(path));
     return false;
   }
   for (size_t i = 1; i < parsed_tracks.size(); i++)
   {
     if (parsed_tracks[i].track_number != parsed_tracks[i - 1].track_number + 1)
     {
-      ERROR_LOG("File '{}' has missing track number {}", Path::GetFileName(filename),
+      ERROR_LOG("File '{}' has missing track number {}", Path::GetFileName(path),
                 parsed_tracks[i - 1].track_number + 1);
-      Error::SetStringFmt(error, "File '{}' has missing track number {}", Path::GetFileName(filename),
+      Error::SetStringFmt(error, "File '{}' has missing track number {}", Path::GetFileName(path),
                           parsed_tracks[i - 1].track_number + 1);
       return false;
     }
@@ -377,15 +377,15 @@ bool CDImageCCD::OpenAndParse(const char* filename, Error* error)
 
   if (m_tracks.empty())
   {
-    ERROR_LOG("File '{}' contains no tracks", Path::GetFileName(filename));
-    Error::SetStringFmt(error, "File '{}' contains no tracks", Path::GetFileName(filename));
+    ERROR_LOG("File '{}' contains no tracks", Path::GetFileName(path));
+    Error::SetStringFmt(error, "File '{}' contains no tracks", Path::GetFileName(path));
     return false;
   }
 
   m_lba_count = m_tracks.back().start_lba + m_tracks.back().length;
   AddLeadOutIndex();
 
-  m_filename = filename;
+  m_path = path;
 
   return Seek(1, Position{0, 0, 0});
 }

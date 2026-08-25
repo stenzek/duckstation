@@ -214,7 +214,7 @@ public:
                                                   Error* error);
 
   // Accessors.
-  const std::string& GetPath() const { return m_filename; }
+  const std::string& GetPath() const { return m_path; }
   LBA GetPositionOnDisc() const { return m_position_on_disc; }
   Position GetMSFPositionOnDisc() const { return Position::FromLBA(m_position_on_disc); }
   LBA GetPositionInTrack() const { return m_position_in_track; }
@@ -304,7 +304,7 @@ protected:
   /// Synthesis of lead-out data.
   void AddLeadOutIndex();
 
-  std::string m_filename;
+  std::string m_path;
   u32 m_lba_count = 0;
 
   std::vector<Track> m_tracks;

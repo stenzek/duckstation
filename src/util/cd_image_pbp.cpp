@@ -132,7 +132,7 @@ public:
   CDImagePBP() = default;
   ~CDImagePBP() override;
 
-  bool Open(const char* filename, Error* error);
+  bool Open(const char* path, Error* error);
 
   s64 GetSizeOnDisk() const override;
 
@@ -399,16 +399,16 @@ bool CDImagePBP::IsValidEboot(Error* error)
   return true;
 }
 
-bool CDImagePBP::Open(const char* filename, Error* error)
+bool CDImagePBP::Open(const char* path, Error* error)
 {
-  m_file = FileSystem::OpenSharedCFile(filename, "rb", FileSystem::FileShareMode::DenyWrite, error);
+  m_file = FileSystem::OpenSharedCFile(path, "rb", FileSystem::FileShareMode::DenyWrite, error);
   if (!m_file)
   {
-    Error::AddPrefixFmt(error, "Failed to open '{}': ", Path::GetFileName(filename));
+    Error::AddPrefixFmt(error, "Failed to open '{}': ", Path::GetFileName(path));
     return false;
   }
 
-  m_filename = filename;
+  m_path = path;
 
   // Read in PBP header
   if (!LoadPBPHeader(error))
@@ -470,7 +470,7 @@ bool CDImagePBP::Open(const char* filename, Error* error)
     // Ignore encrypted files
     if (disc_table[0] == 0x44475000) // "\0PGD"
     {
-      ERROR_LOG("Encrypted PBP images are not supported, skipping {}", m_filename);
+      ERROR_LOG("Encrypted PBP images are not supported, skipping {}", m_path);
       Error::SetString(error, "Encrypted PBP images are not supported");
       return false;
     }
@@ -539,7 +539,7 @@ bool CDImagePBP::OpenDisc(u32 index, Error* error)
 
   if (pgd_magic == 0x44475000) // "\0PGD"
   {
-    ERROR_LOG("Encrypted PBP images are not supported, skipping {}", m_filename);
+    ERROR_LOG("Encrypted PBP images are not supported, skipping {}", m_path);
     Error::SetString(error, "Encrypted PBP images are not supported");
     return false;
   }

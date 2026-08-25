@@ -74,7 +74,7 @@ bool CDImageM3u::Open(const char* path, bool apply_patches, Error* error)
   }
 
   std::istringstream ifs(m3u_file.value());
-  m_filename = path;
+  m_path = path;
   m_apply_patches = apply_patches;
 
   std::vector<std::string> entries;

@@ -575,7 +575,7 @@ bool CDImageCueSheet::OpenAndParseCueSheet(const char* path, Error* error)
 
   std::fclose(fp);
 
-  m_filename = path;
+  m_path = path;
 
   u32 disc_lba = 0;
 
@@ -598,7 +598,7 @@ bool CDImageCueSheet::OpenAndParseCueSheet(const char* path, Error* error)
     if (track_file_index == m_files.size())
     {
       std::string track_full_path =
-        !Path::IsAbsolute(track_filename) ? Path::BuildRelativePath(m_filename, track_filename) : track_filename;
+        !Path::IsAbsolute(track_filename) ? Path::BuildRelativePath(m_path, track_filename) : track_filename;
       std::unique_ptr<TrackFileInterface> track_file;
 
       if (track->file_format == CueParser::FileFormat::Binary)
@@ -818,7 +818,7 @@ bool CDImageCueSheet::OpenAndParseCueSheet(const char* path, Error* error)
 
 bool CDImageCueSheet::OpenAndParseSingleFile(const char* path, Error* error)
 {
-  m_filename = path;
+  m_path = path;
 
   std::unique_ptr<TrackFileInterface> fi = TrackFileInterface::OpenBinaryFile(Path::GetFileName(path), path, error);
   if (!fi)

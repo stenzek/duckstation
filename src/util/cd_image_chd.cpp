@@ -63,7 +63,7 @@ public:
   CDImageCHD();
   ~CDImageCHD() override;
 
-  bool Open(const char* filename, Error* error);
+  bool Open(const char* path, Error* error);
 
   bool ReadSubChannelQ(SubChannelQ* subq, const Index& index, LBA lba_in_index) override;
   bool HasSubchannelData() const override;
@@ -79,7 +79,7 @@ private:
   static constexpr u32 CHD_CD_TRACK_ALIGNMENT = 4;
   static constexpr u32 MAX_PARENTS = 32; // Surely someone wouldn't be insane enough to go beyond this...
 
-  chd_file* OpenCHD(std::string_view filename, FileSystem::ManagedCFilePtr fp, Error* error, u32 recursion_level);
+  chd_file* OpenCHD(std::string_view path, FileSystem::ManagedCFilePtr fp, Error* error, u32 recursion_level);
   bool UpdateHunkBuffer(const Index& index, LBA lba_in_index, u32& hunk_offset);
 
   static void CopyAndSwap(void* dst_ptr, const u8* src_ptr);
@@ -102,8 +102,7 @@ CDImageCHD::~CDImageCHD()
     chd_close(m_chd);
 }
 
-chd_file* CDImageCHD::OpenCHD(std::string_view filename, FileSystem::ManagedCFilePtr fp, Error* error,
-                              u32 recursion_level)
+chd_file* CDImageCHD::OpenCHD(std::string_view path, FileSystem::ManagedCFilePtr fp, Error* error, u32 recursion_level)
 {
   chd_file* chd;
   chd_error err = chd_open_file(fp.get(), CHD_OPEN_READ | CHD_OPEN_TRANSFER_FILE, nullptr, &chd);
@@ -115,14 +114,14 @@ chd_file* CDImageCHD::OpenCHD(std::string_view filename, FileSystem::ManagedCFil
   }
   else if (err != CHDERR_REQUIRES_PARENT)
   {
-    ERROR_LOG("Failed to open CHD '{}': {}", filename, chd_error_string(err));
+    ERROR_LOG("Failed to open CHD '{}': {}", path, chd_error_string(err));
     Error::SetString(error, chd_error_string(err));
     return nullptr;
   }
 
   if (recursion_level >= MAX_PARENTS)
   {
-    ERROR_LOG("Failed to open CHD '{}': Too many parent files", filename);
+    ERROR_LOG("Failed to open CHD '{}': Too many parent files", path);
     Error::SetString(error, "Too many parent files");
     return nullptr;
   }
@@ -132,7 +131,7 @@ chd_file* CDImageCHD::OpenCHD(std::string_view filename, FileSystem::ManagedCFil
   err = chd_read_header_file(fp.get(), &header);
   if (err != CHDERR_NONE)
   {
-    ERROR_LOG("Failed to read CHD header '{}': {}", filename, chd_error_string(err));
+    ERROR_LOG("Failed to read CHD header '{}': {}", path, chd_error_string(err));
     Error::SetString(error, chd_error_string(err));
     return nullptr;
   }
@@ -140,7 +139,7 @@ chd_file* CDImageCHD::OpenCHD(std::string_view filename, FileSystem::ManagedCFil
   // Find a chd with a matching sha1 in the same directory.
   // Have to do *.* and filter on the extension manually because Linux is case sensitive.
   chd_file* parent_chd = nullptr;
-  const std::string parent_dir(Path::GetDirectory(filename));
+  const std::string parent_dir(Path::GetDirectory(path));
   const std::unique_lock hash_cache_lock(s_chd_hash_cache_mutex);
 
   // Memoize which hashes came from what files, to avoid reading them repeatedly.
@@ -159,14 +158,14 @@ chd_file* CDImageCHD::OpenCHD(std::string_view filename, FileSystem::ManagedCFil
         chd_is_matching_parent(&header, &parent_header))
     {
       // Need to take a copy of the string, because the parent might add to the list and invalidate the iterator.
-      const std::string filename_to_open = it->first;
+      const std::string path_to_open = it->first;
 
       // Match! Open this one.
-      parent_chd = OpenCHD(filename_to_open, std::move(parent_fp), error, recursion_level + 1);
+      parent_chd = OpenCHD(path_to_open, std::move(parent_fp), error, recursion_level + 1);
       if (parent_chd)
       {
-        VERBOSE_LOG("Using parent CHD '{}' from cache for '{}'.", Path::GetFileName(filename_to_open),
-                    Path::GetFileName(filename));
+        VERBOSE_LOG("Using parent CHD '{}' from cache for '{}'.", Path::GetFileName(path_to_open),
+                    Path::GetFileName(path));
       }
     }
 
@@ -207,14 +206,14 @@ chd_file* CDImageCHD::OpenCHD(std::string_view filename, FileSystem::ManagedCFil
       parent_chd = OpenCHD(fd.FileName, std::move(parent_fp), error, recursion_level + 1);
       if (parent_chd)
       {
-        VERBOSE_LOG("Using parent CHD '{}' for '{}'.", Path::GetFileName(fd.FileName), Path::GetFileName(filename));
+        VERBOSE_LOG("Using parent CHD '{}' for '{}'.", Path::GetFileName(fd.FileName), Path::GetFileName(path));
         break;
       }
     }
   }
   if (!parent_chd)
   {
-    ERROR_LOG("Failed to open CHD '{}': Failed to find parent CHD, it must be in the same directory.", filename);
+    ERROR_LOG("Failed to open CHD '{}': Failed to find parent CHD, it must be in the same directory.", path);
     Error::SetString(error, "Failed to find parent CHD, it must be in the same directory.");
     return nullptr;
   }
@@ -223,7 +222,7 @@ chd_file* CDImageCHD::OpenCHD(std::string_view filename, FileSystem::ManagedCFil
   err = chd_open_file(fp.get(), CHD_OPEN_READ | CHD_OPEN_TRANSFER_FILE, parent_chd, &chd);
   if (err != CHDERR_NONE)
   {
-    ERROR_LOG("Failed to open CHD '{}': {}", filename, chd_error_string(err));
+    ERROR_LOG("Failed to open CHD '{}': {}", path, chd_error_string(err));
     Error::SetString(error, chd_error_string(err));
     return nullptr;
   }
@@ -233,19 +232,19 @@ chd_file* CDImageCHD::OpenCHD(std::string_view filename, FileSystem::ManagedCFil
   return chd;
 }
 
-bool CDImageCHD::Open(const char* filename, Error* error)
+bool CDImageCHD::Open(const char* path, Error* error)
 {
-  auto fp = FileSystem::OpenManagedSharedCFile(filename, "rb", FileSystem::FileShareMode::DenyWrite);
+  auto fp = FileSystem::OpenManagedSharedCFile(path, "rb", FileSystem::FileShareMode::DenyWrite);
   if (!fp)
   {
-    ERROR_LOG("Failed to open CHD '{}': errno {}", filename, errno);
+    ERROR_LOG("Failed to open CHD '{}': errno {}", path, errno);
     if (error)
       error->SetErrno(errno);
 
     return false;
   }
 
-  m_chd = OpenCHD(filename, std::move(fp), error, 0);
+  m_chd = OpenCHD(path, std::move(fp), error, 0);
   if (!m_chd)
     return false;
 
@@ -261,7 +260,7 @@ bool CDImageCHD::Open(const char* filename, Error* error)
 
   m_sectors_per_hunk = m_hunk_size / CHD_CD_SECTOR_DATA_SIZE;
   m_hunk_buffer.resize(m_hunk_size);
-  m_filename = filename;
+  m_path = path;
 
   u32 disc_lba = 0;
   u64 file_lba = 0;
@@ -406,8 +405,8 @@ bool CDImageCHD::Open(const char* filename, Error* error)
 
   if (m_tracks.empty())
   {
-    ERROR_LOG("File '{}' contains no tracks", filename);
-    Error::SetString(error, fmt::format("File '{}' contains no tracks", filename));
+    ERROR_LOG("File '{}' contains no tracks", path);
+    Error::SetString(error, fmt::format("File '{}' contains no tracks", path));
     return false;
   }
 
@@ -458,7 +457,8 @@ CDImage::PrecacheResult CDImageCHD::Precache(ProgressCallback* progress, Error* 
     constexpr size_t one_mb = 1048576;
     const u32 total_mb = static_cast<u32>((total + (one_mb - 1)) / one_mb);
     const u32 pos_mb = static_cast<u32>((pos + (one_mb - 1)) / one_mb);
-    static_cast<ProgressCallback*>(param)->SetState(TinyString::from_format("{}MB of {}MB", pos_mb, total_mb), pos_mb, total_mb);
+    static_cast<ProgressCallback*>(param)->SetState(TinyString::from_format("{}MB of {}MB", pos_mb, total_mb), pos_mb,
+                                                    total_mb);
   };
 
   if (const chd_error err = chd_precache_progress(m_chd, callback, progress); err != CHDERR_NONE)
