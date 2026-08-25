@@ -9,11 +9,11 @@
 #include "common/scoped_guard.h"
 #include "common/types.h"
 
+#include <fmt/format.h>
 #include <gtest/gtest.h>
 
 #include <algorithm>
 #include <cstring>
-#include <fmt/core.h>
 #include <numeric>
 #include <vector>
 
@@ -134,8 +134,7 @@ TEST(ObjectArchive, InsertAndLookupRoundTrip)
   ASSERT_TRUE(archive.CreateFile(idx, blob, TEST_VERSION, &error)) << error.GetDescription();
 
   const u8 payload[] = {0xDE, 0xAD, 0xBE, 0xEF, 0x01, 0x02, 0x03, 0x04};
-  ASSERT_TRUE(
-    archive.Insert("test_key", payload, sizeof(payload), ObjectArchive::CompressType::Uncompressed, &error))
+  ASSERT_TRUE(archive.Insert("test_key", payload, sizeof(payload), ObjectArchive::CompressType::Uncompressed, &error))
     << error.GetDescription();
 
   auto result = archive.Lookup("test_key", &error);
@@ -163,8 +162,8 @@ TEST(ObjectArchive, InsertAndLookupCompressed)
   for (size_t i = 0; i < payload.size(); i++)
     payload[i] = static_cast<u8>(i & 0xFF);
 
-  ASSERT_TRUE(archive.Insert("compressed_key", std::span<const u8>(payload),
-                              ObjectArchive::CompressType::Zstandard, &error))
+  ASSERT_TRUE(
+    archive.Insert("compressed_key", std::span<const u8>(payload), ObjectArchive::CompressType::Zstandard, &error))
     << error.GetDescription();
 
   auto result = archive.Lookup("compressed_key", &error);
@@ -189,11 +188,9 @@ TEST(ObjectArchive, DuplicateKeyRejected)
 
   const u8 data1[] = {1};
   const u8 data2[] = {2};
-  ASSERT_TRUE(
-    archive.Insert("dup", std::span<const u8>(data1), ObjectArchive::CompressType::Uncompressed, &error))
+  ASSERT_TRUE(archive.Insert("dup", std::span<const u8>(data1), ObjectArchive::CompressType::Uncompressed, &error))
     << error.GetDescription();
-  EXPECT_FALSE(
-    archive.Insert("dup", std::span<const u8>(data2), ObjectArchive::CompressType::Uncompressed, &error));
+  EXPECT_FALSE(archive.Insert("dup", std::span<const u8>(data2), ObjectArchive::CompressType::Uncompressed, &error));
 }
 
 // ---------------------------------------------------------------------------
@@ -212,8 +209,7 @@ TEST(ObjectArchive, MissingKeyReturnsNullopt)
 
   // Insert one key so the index is non-empty.
   const u8 data[] = {0x42};
-  ASSERT_TRUE(
-    archive.Insert("exists", std::span<const u8>(data), ObjectArchive::CompressType::Uncompressed, &error))
+  ASSERT_TRUE(archive.Insert("exists", std::span<const u8>(data), ObjectArchive::CompressType::Uncompressed, &error))
     << error.GetDescription();
 
   auto result = archive.Lookup("does_not_exist", &error);
@@ -238,14 +234,11 @@ TEST(ObjectArchive, MultipleKeysCorrectIsolation)
   const u8 m_data[] = {0xBB, 0xCC};
   const u8 z_data[] = {0xDD, 0xEE, 0xFF};
 
-  ASSERT_TRUE(
-    archive.Insert("aaa", std::span<const u8>(a_data), ObjectArchive::CompressType::Uncompressed, &error))
+  ASSERT_TRUE(archive.Insert("aaa", std::span<const u8>(a_data), ObjectArchive::CompressType::Uncompressed, &error))
     << error.GetDescription();
-  ASSERT_TRUE(
-    archive.Insert("mmm", std::span<const u8>(m_data), ObjectArchive::CompressType::Uncompressed, &error))
+  ASSERT_TRUE(archive.Insert("mmm", std::span<const u8>(m_data), ObjectArchive::CompressType::Uncompressed, &error))
     << error.GetDescription();
-  ASSERT_TRUE(
-    archive.Insert("zzz", std::span<const u8>(z_data), ObjectArchive::CompressType::Uncompressed, &error))
+  ASSERT_TRUE(archive.Insert("zzz", std::span<const u8>(z_data), ObjectArchive::CompressType::Uncompressed, &error))
     << error.GetDescription();
 
   auto ra = archive.Lookup("aaa", &error);
@@ -280,8 +273,7 @@ TEST(ObjectArchive, ClearAndReinsert)
   ASSERT_TRUE(archive.CreateFile(idx, blob, TEST_VERSION, &error)) << error.GetDescription();
 
   const u8 data1[] = {0x11, 0x22};
-  ASSERT_TRUE(
-    archive.Insert("key1", std::span<const u8>(data1), ObjectArchive::CompressType::Uncompressed, &error))
+  ASSERT_TRUE(archive.Insert("key1", std::span<const u8>(data1), ObjectArchive::CompressType::Uncompressed, &error))
     << error.GetDescription();
   EXPECT_EQ(archive.GetSize(), 1u);
 
@@ -294,8 +286,7 @@ TEST(ObjectArchive, ClearAndReinsert)
 
   // Re-insertion should succeed.
   const u8 data2[] = {0x33, 0x44, 0x55};
-  ASSERT_TRUE(
-    archive.Insert("key2", std::span<const u8>(data2), ObjectArchive::CompressType::Uncompressed, &error))
+  ASSERT_TRUE(archive.Insert("key2", std::span<const u8>(data2), ObjectArchive::CompressType::Uncompressed, &error))
     << error.GetDescription();
   EXPECT_EQ(archive.GetSize(), 1u);
 
@@ -322,8 +313,8 @@ TEST(ObjectArchive, CloseAndReopenPersistence)
     auto [idx, blob] = files.Release();
     Error error;
     ASSERT_TRUE(archive.CreateFile(idx, blob, TEST_VERSION, &error)) << error.GetDescription();
-    ASSERT_TRUE(archive.Insert("persist", std::span<const u8>(payload),
-                                ObjectArchive::CompressType::Uncompressed, &error))
+    ASSERT_TRUE(
+      archive.Insert("persist", std::span<const u8>(payload), ObjectArchive::CompressType::Uncompressed, &error))
       << error.GetDescription();
     archive.Close();
   }
@@ -361,8 +352,7 @@ TEST(ObjectArchive, VersionMismatchCreatesEmpty)
     ASSERT_TRUE(archive.CreateFile(idx, blob, TEST_VERSION, &error)) << error.GetDescription();
 
     const u8 data[] = {0x01, 0x02};
-    ASSERT_TRUE(
-      archive.Insert("v1_key", std::span<const u8>(data), ObjectArchive::CompressType::Uncompressed, &error))
+    ASSERT_TRUE(archive.Insert("v1_key", std::span<const u8>(data), ObjectArchive::CompressType::Uncompressed, &error))
       << error.GetDescription();
     archive.Close();
   }
