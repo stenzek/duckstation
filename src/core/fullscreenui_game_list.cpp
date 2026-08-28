@@ -648,11 +648,11 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
         if (display_as_language)
         {
           ImGui::TextWrapped(" (%s, %s)", selected_entry->dbentry->GetLanguagesString().c_str(),
-                             Settings::GetDiscRegionName(selected_entry->region));
+                             Settings::GetDiscRegionDisplayName(selected_entry->region));
         }
         else
         {
-          ImGui::TextWrapped(" (%s)", Settings::GetDiscRegionName(selected_entry->region));
+          ImGui::TextWrapped(" (%s)", Settings::GetDiscRegionDisplayName(selected_entry->region));
         }
         ImGui::PopStyleColor();
       }

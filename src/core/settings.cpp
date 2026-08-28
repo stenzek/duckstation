@@ -1469,9 +1469,9 @@ static constexpr const std::array s_disc_region_names = {
   "NTSC-J", "NTSC-U", "PAL", "Other", "Non-PS1",
 };
 static constexpr const std::array s_disc_region_display_names = {
-  TRANSLATE_DISAMBIG_NOOP("Settings", "NTSC-J (Japan)", "DiscRegion"),
-  TRANSLATE_DISAMBIG_NOOP("Settings", "NTSC-U/C (US, Canada)", "DiscRegion"),
-  TRANSLATE_DISAMBIG_NOOP("Settings", "PAL (Europe, Australia)", "DiscRegion"),
+  TRANSLATE_DISAMBIG_NOOP("Settings", "NTSC-J", "DiscRegion"),
+  TRANSLATE_DISAMBIG_NOOP("Settings", "NTSC-U/C", "DiscRegion"),
+  TRANSLATE_DISAMBIG_NOOP("Settings", "PAL", "DiscRegion"),
   TRANSLATE_DISAMBIG_NOOP("Settings", "Other", "DiscRegion"),
   TRANSLATE_DISAMBIG_NOOP("Settings", "Non-PS1", "DiscRegion"),
 };

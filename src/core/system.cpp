@@ -1713,7 +1713,7 @@ System::BootResult System::BootSystem(SystemBootParameters parameters, Error* er
     {
       const DiscRegion file_region = ((boot_mode == BootMode::BootEXE) ? GetRegionForExe(parameters.path.c_str()) :
                                                                          GetRegionForPsf(parameters.path.c_str()));
-      INFO_LOG("EXE/PSF Region: {}", Settings::GetDiscRegionDisplayName(file_region));
+      INFO_LOG("EXE/PSF Region: {}", Settings::GetDiscRegionName(file_region));
       auto_console_region = GetConsoleRegionForDiscRegion(file_region);
     }
     else if (boot_mode != BootMode::ReplayGPUDump)

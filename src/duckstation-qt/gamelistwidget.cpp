@@ -1853,7 +1853,7 @@ GameListWidget::GameListWidget(QWidget* parent, QAction* action_view_list, QActi
   for (u32 region = 0; region < static_cast<u32>(DiscRegion::Count); region++)
   {
     m_ui.filterRegion->addItem(QtUtils::GetIconForRegion(static_cast<DiscRegion>(region)),
-                               QString::fromUtf8(Settings::GetDiscRegionName(static_cast<DiscRegion>(region))));
+                               QString::fromUtf8(Settings::GetDiscRegionDisplayName(static_cast<DiscRegion>(region))));
   }
 
   m_list_view = new GameListListView(m_model, m_sort_model, m_ui.stack);
