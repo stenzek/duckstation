@@ -198,18 +198,34 @@
   </Target>
 
   <!--Compiles all translation files-->
-  <ItemGroup>
-    <TsFiles Include="$(MSBuildProjectDirectory)\**\*.ts" />
-  </ItemGroup>
   <Target Name="QtTs"
     BeforeTargets="ClCompile"
-    Inputs="@(TsFiles)"
-    Condition="'@(QtTs)'!=''"
-    Outputs="@(TsFiles->'$(QtTsOutDir)%(Filename).qm')">
-    <Message Text="lrelease %(TsFiles.Filename)" Importance="High" />
+    Condition="'@(QtTs)'!=''">
+    <ItemGroup>
+      <QtTs>
+        <AdditionalInputs>%(QtTs.FullPath)</AdditionalInputs>
+        <Command>&quot;$(QtHostBinDir)lrelease.exe&quot; &quot;%(QtTs.FullPath)&quot; -qm &quot;$(QtTsOutDir)%(QtTs.Filename).qm&quot;</Command>
+        <Outputs>$(QtTsOutDir)%(QtTs.Filename).qm</Outputs>
+      </QtTs>
+    </ItemGroup>
     <Error Condition="!$(DSQTDIRValid)" Text="Qt directory non-existent (download/extract the zip)" />
     <MakeDir Directories="$(QtTsOutDir)" />
-    <Exec Command="&quot;$(QtHostBinDir)lrelease.exe&quot; &quot;%(TsFiles.FullPath)&quot; -qm &quot;$(QtTsOutDir)%(TsFiles.Filename).qm&quot;" />
+    <!-- C++ projects use these tlogs for both incremental builds and Visual Studio's project-level up-to-date check. -->
+    <GetOutOfDateItems
+      Sources="@(QtTs)"
+      OutputsMetadataName="Outputs"
+      DependenciesMetadataName="AdditionalInputs"
+      CommandMetadataName="Command"
+      TLogDirectory="$(TLogLocation)"
+      TLogNamePrefix="QtTs"
+      CheckForInterdependencies="false">
+      <Output TaskParameter="OutOfDateSources" ItemName="_QtTsOutOfDate" />
+    </GetOutOfDateItems>
+    <Message Condition="'@(_QtTsOutOfDate)'!=''" Text="lrelease %(_QtTsOutOfDate.Filename)" Importance="High" />
+    <Exec Condition="'@(_QtTsOutOfDate)'!=''" Command="%(_QtTsOutOfDate.Command)" />
+    <ItemGroup>
+      <_QtTsOutOfDate Remove="@(_QtTsOutOfDate)" />
+    </ItemGroup>
   </Target>
   <ItemGroup>
     <TsOutputs Include="$(QtTsOutDir)*.qm" />
