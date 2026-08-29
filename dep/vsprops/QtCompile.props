@@ -38,12 +38,50 @@
   </ItemDefinitionGroup>
 
   <!--Passes all .qrc files to rcc and puts output in the build directory-->
-  <Target Name="QtResource"
-    AfterTargets="Build"
+  <Target Name="QtResourcePrepare"
     Condition="'@(QtResource)'!=''">
     <ItemGroup>
       <QtResource>
-        <AdditionalInputs>%(QtResource.FullPath)</AdditionalInputs>
+        <DependencyCache>$(QtToolOutDir)rcc_%(QtResource.Filename).inputs</DependencyCache>
+      </QtResource>
+    </ItemGroup>
+  </Target>
+
+  <Target Name="QtResourceDependencies"
+    DependsOnTargets="QtResourcePrepare"
+    Condition="'@(QtResource)'!=''"
+    Inputs="%(QtResource.FullPath);$(QtHostBinDir)rcc.exe"
+    Outputs="%(QtResource.DependencyCache)">
+    <Error Condition="!$(DSQTDIRValid)" Text="Qt directory non-existent (download/extract the zip)" />
+    <MakeDir Directories="$(QtToolOutDir)" />
+    <!-- Cache rcc's authoritative file list per .qrc; target batching keeps each manifest independent. -->
+    <Exec
+      Command="&quot;$(QtHostBinDir)rcc.exe&quot; --list &quot;%(QtResource.FullPath)&quot;"
+      ConsoleToMSBuild="true"
+      StandardOutputImportance="Low">
+      <Output TaskParameter="ConsoleOutput" ItemName="_QtResourceDependency" />
+    </Exec>
+    <WriteLinesToFile
+      File="%(QtResource.DependencyCache)"
+      Lines="@(_QtResourceDependency)"
+      Overwrite="true" />
+    <ItemGroup>
+      <_QtResourceDependency Remove="@(_QtResourceDependency)" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="QtResource"
+    AfterTargets="Build"
+    DependsOnTargets="QtResourceDependencies"
+    Condition="'@(QtResource)'!=''"
+    Outputs="%(QtResource.DependencyCache)">
+    <!-- Outputs intentionally forces one target batch per .qrc; with no Inputs, GetOutOfDateItems still decides whether rcc runs. -->
+    <ReadLinesFromFile File="%(QtResource.DependencyCache)">
+      <Output TaskParameter="Lines" ItemName="_QtResourceDependency" />
+    </ReadLinesFromFile>
+    <ItemGroup>
+      <QtResource>
+        <AdditionalInputs>%(QtResource.FullPath);@(_QtResourceDependency)</AdditionalInputs>
         <Command>&quot;$(QtHostBinDir)rcc.exe&quot; -binary -no-compress &quot;%(QtResource.FullPath)&quot; -o &quot;$(QtRccOutDir)%(QtResource.Filename).rcc&quot;</Command>
         <Outputs>$(QtRccOutDir)%(QtResource.Filename).rcc</Outputs>
       </QtResource>
@@ -57,7 +95,7 @@
       DependenciesMetadataName="AdditionalInputs"
       CommandMetadataName="Command"
       TLogDirectory="$(TLogLocation)"
-      TLogNamePrefix="QtResource"
+      TLogNamePrefix="QtResource_%(QtResource.Filename)"
       CheckForInterdependencies="false">
       <Output TaskParameter="OutOfDateSources" ItemName="_QtResourceOutOfDate" />
     </GetOutOfDateItems>
@@ -65,11 +103,13 @@
     <Exec Condition="'@(_QtResourceOutOfDate)'!=''" Command="%(_QtResourceOutOfDate.Command)" />
     <ItemGroup>
       <_QtResourceOutOfDate Remove="@(_QtResourceOutOfDate)" />
+      <_QtResourceDependency Remove="@(_QtResourceDependency)" />
     </ItemGroup>
   </Target>
 
-  <Target Name="QtResourceClean">
+  <Target Name="QtResourceClean" DependsOnTargets="QtResourcePrepare">
     <Delete Files="@(QtResource->'$(QtRccOutDir)%(Filename).rcc')" />
+    <Delete Files="@(QtResource->'%(DependencyCache)')" />
   </Target>
 
   <!--Passes all .ui files to uic and puts output in the build directory-->
