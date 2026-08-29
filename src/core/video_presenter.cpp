@@ -592,8 +592,9 @@ void VideoPresenter::SetDisplayTexture(GPUTexture* texture, const GSVector4i& so
   FullscreenUI::InvalidateBlurBackground();
 }
 
-GPUPresentResult VideoPresenter::RenderDisplay(GPUTexture* target, const GSVector2i target_size, bool postfx,
-                                               bool apply_aspect_ratio)
+GPUPresentResult VideoPresenter::RenderDisplay(GPUTexture* target, const GSVector2i target_size,
+                                               const GSVector2i final_target_size, WindowInfoPrerotation prerotation,
+                                               bool postfx, bool apply_aspect_ratio)
 {
   GL_SCOPE_FMT("RenderDisplay: {}x{}", target_size.x, target_size.y);
 
@@ -604,8 +605,6 @@ GPUPresentResult VideoPresenter::RenderDisplay(GPUTexture* target, const GSVecto
   DebugAssert(!postfx || target_size.eq(g_gpu_device->GetMainSwapChain()->GetSizeVec()));
 
   GPUSwapChain* const swap_chain = g_gpu_device->GetMainSwapChain();
-  const WindowInfoPrerotation prerotation = target ? WindowInfoPrerotation::Identity : swap_chain->GetPreRotation();
-  const GSVector2i final_target_size = target ? target->GetSizeVec() : swap_chain->GetPostRotatedSizeVec();
   const bool is_vram_view = g_gpu_settings.gpu_show_vram;
   const bool integer_scale = g_gpu_settings.IsUsingIntegerDisplayScaling(s_locals.display_texture_24bit);
   const bool have_overlay = (postfx && !is_vram_view && HasBorderOverlay());
@@ -1158,16 +1157,14 @@ GPUPresentResult VideoPresenter::DrawDisplayCopy(GPUTexture* const source, GPUTe
       return pres;
   }
 
-  const WindowInfoPrerotation prerotation = target ? WindowInfoPrerotation::Identity : swap_chain->GetPreRotation();
-  const GSVector2i final_target_size = target ? target->GetSizeVec() : swap_chain->GetPostRotatedSizeVec();
-  const GSVector2i target_size = target ? target->GetSizeVec() : swap_chain->GetSizeVec();
-  const GSVector4i rect = GSVector4i::loadh(target_size);
+  const GSVector2i size = target ? target->GetSizeVec() : swap_chain->GetPostRotatedSizeVec();
+  const GSVector4i rect = GSVector4i::loadh(size);
   const GSVector4 uv_rect = g_gpu_device->UsesLowerLeftOrigin() ? GSVector4::cxpr(0.0f, 1.0f, 1.0f, 0.0f) :
                                                                   GSVector4::cxpr(0.0f, 0.0f, 1.0f, 1.0f);
   g_gpu_device->SetViewportAndScissor(rect);
   g_gpu_device->SetTextureSampler(0, source, g_gpu_device->GetNearestSampler());
   g_gpu_device->SetPipeline(FullscreenUI::GetPresentCopyPipeline());
-  DrawScreenQuad(rect, uv_rect, target_size, final_target_size, DisplayRotation::Normal, prerotation, nullptr, 0);
+  DrawScreenQuad(rect, uv_rect, size, size, DisplayRotation::Normal, WindowInfoPrerotation::Identity, nullptr, 0);
 
   return GPUPresentResult::OK;
 }
@@ -1188,7 +1185,8 @@ void VideoPresenter::SendDisplayToMediaCapture(MediaCapture* cap)
     (g_gpu_settings.display_screenshot_mode == DisplayScreenshotMode::ScreenResolution &&
      g_gpu_device->HasMainSwapChain() && target->GetSizeVec().eq(g_gpu_device->GetMainSwapChain()->GetSizeVec()));
 
-  if (RenderDisplay(target, target->GetSizeVec(), postfx, apply_aspect_ratio) != GPUPresentResult::OK ||
+  if (RenderDisplay(target, target->GetSizeVec(), target->GetSizeVec(), WindowInfoPrerotation::Identity, postfx,
+                    apply_aspect_ratio) != GPUPresentResult::OK ||
       !cap->DeliverVideoFrame(target)) [[unlikely]]
   {
     WARNING_LOG("Failed to render/deliver video capture frame.");
@@ -1509,11 +1507,12 @@ bool VideoPresenter::PresentFrame(GPUBackend* backend, u64 present_time)
   GPUSwapChain* const swap_chain = g_gpu_device->GetMainSwapChain();
   DebugAssert(swap_chain);
 
-  GPUTexture* const blur_target = FullscreenUI::GetBlurRenderTexture();
+  GPUTexture* const blur_target = FullscreenUI::GetBlurRenderTexture(swap_chain);
   if (blur_target)
   {
-    RenderDisplay(blur_target, blur_target->GetSizeVec(), true, true);
-    FullscreenUI::RenderBlur(blur_target);
+    RenderDisplay(blur_target, swap_chain->GetSizeVec(), swap_chain->GetPostRotatedSizeVec(),
+                  swap_chain->GetPreRotation(), true, true);
+    FullscreenUI::RenderBlur(swap_chain, blur_target);
   }
 
   GPUPresentResult pres;
@@ -1531,13 +1530,19 @@ bool VideoPresenter::PresentFrame(GPUBackend* backend, u64 present_time)
     {
       // Display still needs rendering.
       if (backend)
-        RenderDisplay(transition_target, transition_target->GetSizeVec(), true, true);
+      {
+        RenderDisplay(transition_target, swap_chain->GetSizeVec(), swap_chain->GetPostRotatedSizeVec(),
+                      swap_chain->GetPreRotation(), true, true);
+      }
       else
+      {
         g_gpu_device->ClearRenderTarget(transition_target, GPUDevice::DEFAULT_CLEAR_COLOR);
+      }
     }
 
     g_gpu_device->SetRenderTarget(transition_target);
-    ImGuiManager::RenderDrawLists(ImGui::GetDrawData(), transition_target);
+    ImGuiManager::RenderDrawLists(ImGui::GetDrawData(), swap_chain->GetWidth(), swap_chain->GetHeight(),
+                                  swap_chain->GetPreRotation());
 
     if ((pres = g_gpu_device->BeginPresent(swap_chain)) == GPUPresentResult::OK)
       FullscreenUI::RenderTransitionBlend(swap_chain, transition_target);
@@ -1545,9 +1550,11 @@ bool VideoPresenter::PresentFrame(GPUBackend* backend, u64 present_time)
   else
   {
     if ((pres = blur_target ? DrawDisplayCopy(blur_target, nullptr, swap_chain) :
-                              RenderDisplay(nullptr, swap_chain->GetSizeVec(), true, true)) == GPUPresentResult::OK)
+                              RenderDisplay(nullptr, swap_chain->GetSizeVec(), swap_chain->GetPostRotatedSizeVec(),
+                                            swap_chain->GetPreRotation(), true, true)) == GPUPresentResult::OK)
     {
-      ImGuiManager::RenderDrawLists(ImGui::GetDrawData(), swap_chain);
+      ImGuiManager::RenderDrawLists(ImGui::GetDrawData(), swap_chain->GetWidth(), swap_chain->GetHeight(),
+                                    swap_chain->GetPreRotation());
     }
   }
 
@@ -1632,8 +1639,8 @@ bool VideoPresenter::RenderScreenshotToBuffer(u32 width, u32 height, bool postfx
     return false;
 
   g_gpu_device->ClearRenderTarget(render_texture.get(), GPUDevice::DEFAULT_CLEAR_COLOR);
-  if (RenderDisplay(render_texture.get(), render_texture->GetSizeVec(), postfx, apply_aspect_ratio) !=
-      GPUPresentResult::OK)
+  if (RenderDisplay(render_texture.get(), render_texture->GetSizeVec(), render_texture->GetSizeVec(),
+                    WindowInfoPrerotation::Identity, postfx, apply_aspect_ratio) != GPUPresentResult::OK)
   {
     Error::SetStringView(error, "RenderDisplay() failed");
     return false;

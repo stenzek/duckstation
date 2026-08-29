@@ -1230,12 +1230,13 @@ FullscreenUI::TransitionState FullscreenUI::GetTransitionState()
 
 GPUTexture* FullscreenUI::GetTransitionRenderTexture(GPUSwapChain* const swap_chain)
 {
-  if (!g_gpu_device->ResizeTexture(&s_state.transition_current_texture, swap_chain->GetWidth(), swap_chain->GetHeight(),
+  const u32 swap_chain_width = swap_chain->GetPostRotatedWidth();
+  const u32 swap_chain_height = swap_chain->GetPostRotatedHeight();
+  if (!g_gpu_device->ResizeTexture(&s_state.transition_current_texture, swap_chain_width, swap_chain_height,
                                    GPUTexture::Type::RenderTarget, swap_chain->GetFormat(), GPUTexture::Flags::None,
                                    false))
   {
-    ERROR_LOG("Failed to allocate {}x{} texture for transition, cancelling.", swap_chain->GetWidth(),
-              swap_chain->GetHeight());
+    ERROR_LOG("Failed to allocate {}x{} texture for transition, cancelling.", swap_chain_width, swap_chain_height);
     s_state.transition_state = TransitionState::Inactive;
     return nullptr;
   }
@@ -1451,11 +1452,10 @@ void FullscreenUI::RenderTransitionBlend(GPUSwapChain* swap_chain, GPUTexture* c
   g_gpu_device->SetViewportAndScissor(0, 0, swap_chain->GetPostRotatedWidth(), swap_chain->GetPostRotatedHeight());
 
   const GSVector2i size = swap_chain->GetSizeVec();
-  const GSVector2i postrotated_size = swap_chain->GetPostRotatedSizeVec();
   const GSVector4 uv_rect = g_gpu_device->UsesLowerLeftOrigin() ? GSVector4::cxpr(0.0f, 1.0f, 1.0f, 0.0f) :
                                                                   GSVector4::cxpr(0.0f, 0.0f, 1.0f, 1.0f);
-  VideoPresenter::DrawScreenQuad(GSVector4i::loadh(size), uv_rect, size, postrotated_size, DisplayRotation::Normal,
-                                 swap_chain->GetPreRotation(), uniforms, sizeof(uniforms));
+  VideoPresenter::DrawScreenQuad(GSVector4i::loadh(size), uv_rect, size, size, DisplayRotation::Normal,
+                                 WindowInfoPrerotation::Identity, uniforms, sizeof(uniforms));
 }
 
 void FullscreenUI::UpdateTransitionState()
@@ -1493,17 +1493,13 @@ void FullscreenUI::InvalidateBlurBackground()
   s_state.blur_valid = false;
 }
 
-GPUTexture* FullscreenUI::GetBlurRenderTexture()
+GPUTexture* FullscreenUI::GetBlurRenderTexture(GPUSwapChain* const swap_chain)
 {
   if (!s_state.blur_active)
     return nullptr;
 
   // clear for next frame
   s_state.blur_active = false;
-
-  const GPUSwapChain* const swap_chain = g_gpu_device->GetMainSwapChain();
-  if (!swap_chain)
-    return nullptr;
 
   const u32 swap_chain_width = swap_chain->GetPostRotatedWidth();
   const u32 swap_chain_height = swap_chain->GetPostRotatedHeight();
@@ -1542,7 +1538,7 @@ GPUTexture* FullscreenUI::GetBlurRenderTexture()
     }
 
     s_state.blur_texture_scale =
-      GSVector2(s_state.blur_output_texture->GetSizeVec()) / GSVector2(swap_chain->GetSizeVec());
+      GSVector2(s_state.blur_output_texture->GetSizeVec()) / GSVector2(s_state.blur_source_texture->GetSizeVec());
     s_state.blur_valid = false;
   }
 
@@ -1551,7 +1547,7 @@ GPUTexture* FullscreenUI::GetBlurRenderTexture()
   return s_state.blur_valid ? nullptr : s_state.blur_source_texture.get();
 }
 
-void FullscreenUI::RenderBlur(GPUTexture* const blur_render_texture)
+void FullscreenUI::RenderBlur(GPUSwapChain* const swap_chain, GPUTexture* const blur_render_texture)
 {
   DebugAssert(s_state.blur_source_texture && s_state.blur_source_texture.get() == blur_render_texture);
   DebugAssert(s_state.blur_intermediate_texture);
@@ -1566,11 +1562,13 @@ void FullscreenUI::RenderBlur(GPUTexture* const blur_render_texture)
   const GSVector2i source_size_vec = s_state.blur_source_texture->GetSizeVec();
   const GSVector2i size_vec = s_state.blur_output_texture->GetSizeVec();
   const GSVector4i viewport = GSVector4i::loadh(size_vec);
-  const GSVector4 scaled_blur_rectf = GSVector4(s_state.blur_rect) * GSVector4::xyxy(s_state.blur_texture_scale);
+  const GSVector4 blur_rect = GSVector4(
+    GPUSwapChain::PreRotateClipRect(swap_chain->GetPreRotation(), swap_chain->GetSizeVec(), s_state.blur_rect));
+  const GSVector4 scaled_blur_rectf = blur_rect * GSVector4::xyxy(s_state.blur_texture_scale);
   const GSVector4i scaled_blur_rect = GSVector4i(scaled_blur_rectf.floor().blend32<12>(scaled_blur_rectf.ceil()));
   const GSVector2 texel_size = GSVector2::cxpr(1.0f) / GSVector2(size_vec);
 
-  GL_SCOPE_FMT("RenderDisplayBlur() Rect={}, ScaledRect={}", s_state.blur_rect, scaled_blur_rect);
+  GL_SCOPE_FMT("RenderDisplayBlur() Rect={}, ScaledRect={}", blur_rect, scaled_blur_rect);
   blur_render_texture->MakeReadyForSampling();
   g_gpu_device->SetViewport(viewport);
 
@@ -6683,20 +6681,22 @@ void FullscreenUI::RenderLoadingScreen(std::string_view image, std::string_view 
   draw_data.Textures = &io.Fonts->TexList;
   draw_data.AddDrawList(&draw_list);
 
+  GPUSwapChain* const swap_chain = g_gpu_device->GetMainSwapChain();
   if (s_state.blur_active && !s_state.blur_valid)
   {
-    GPUTexture* const blur_target = GetBlurRenderTexture();
+    GPUTexture* const blur_target = GetBlurRenderTexture(swap_chain);
     if (blur_target)
     {
-      VideoPresenter::RenderDisplay(blur_target, blur_target->GetSizeVec(), false, true);
-      RenderBlur(blur_target);
+      VideoPresenter::RenderDisplay(blur_target, blur_target->GetSizeVec(), swap_chain->GetPostRotatedSizeVec(),
+                                    swap_chain->GetPreRotation(), false, true);
+      RenderBlur(swap_chain, blur_target);
     }
   }
 
-  GPUSwapChain* swap_chain = g_gpu_device->GetMainSwapChain();
   if (g_gpu_device->BeginPresent(swap_chain) == GPUPresentResult::OK)
   {
-    ImGuiManager::RenderDrawLists(&draw_data, swap_chain);
+    ImGuiManager::RenderDrawLists(&draw_data, swap_chain->GetWidth(), swap_chain->GetHeight(),
+                                  swap_chain->GetPreRotation());
     g_gpu_device->EndPresent(swap_chain, false);
   }
 }

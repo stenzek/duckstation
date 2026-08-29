@@ -17,6 +17,7 @@ struct WindowInfo;
 class GPUSwapChain;
 class GPUTexture;
 enum class GPUTextureFormat : u8;
+enum class WindowInfoPrerotation : u8;
 
 struct ImGuiContext;
 struct ImDrawData;
@@ -145,8 +146,8 @@ void NewFrame(u64 current_time);
 void CreateDrawLists();
 
 /// Renders ImGui screen elements. Call before EndPresent().
-void RenderDrawLists(const ImDrawData* draw_data, GPUSwapChain* swap_chain);
-void RenderDrawLists(const ImDrawData* draw_data, GPUTexture* texture);
+void RenderDrawLists(const ImDrawData* draw_data, u32 window_width, u32 window_height,
+                     WindowInfoPrerotation prerotation);
 
 /// Renders any on-screen display elements.
 void RenderOSDMessages();
