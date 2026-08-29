@@ -100,13 +100,32 @@
   </PropertyGroup>
   <Target Name="QtMoc"
     BeforeTargets="ClCompile"
-    Condition="'@(QtMoc)'!=''"
-    Inputs="%(QtMoc.Identity);%(QtMoc.AdditionalDependencies);$(MSBuildProjectFile)"
-    Outputs="$(QtToolOutDir)%(QtMoc.RelativeDir)moc_%(QtMoc.Filename).cpp">
-    <Message Text="moc %(QtMoc.Filename) $(QtToolOutDir)%(QtMoc.RelativeDir)moc_%(QtMoc.Filename).cpp" Importance="High" />
+    Condition="'@(QtMoc)'!=''">
+    <ItemGroup>
+      <QtMoc>
+        <AdditionalInputs>%(QtMoc.FullPath);%(QtMoc.AdditionalDependencies)</AdditionalInputs>
+        <Command>&quot;$(QtHostBinDir)moc.exe&quot; &quot;%(QtMoc.FullPath)&quot; -o &quot;$(QtToolOutDir)%(QtMoc.RelativeDir)moc_%(QtMoc.Filename).cpp&quot; -f%(QtMoc.Filename)%(QtMoc.Extension) $(MocDefines) $(MocIncludes)</Command>
+        <Outputs>$(QtToolOutDir)%(QtMoc.RelativeDir)moc_%(QtMoc.Filename).cpp</Outputs>
+      </QtMoc>
+    </ItemGroup>
     <Error Condition="!$(DSQTDIRValid)" Text="Qt directory non-existent (download/extract the zip)" />
     <MakeDir Directories="$(QtToolOutDir)" />
-    <Exec Command="&quot;$(QtHostBinDir)moc.exe&quot; &quot;%(QtMoc.FullPath)&quot; -o &quot;$(QtToolOutDir)%(QtMoc.RelativeDir)moc_%(QtMoc.Filename).cpp&quot; -f%(QtMoc.Filename)%(QtMoc.Extension) $(MocDefines) $(MocIncludes)" />
+    <!-- Track the effective command instead of the project-file timestamp, which changes for unrelated project edits. -->
+    <GetOutOfDateItems
+      Sources="@(QtMoc)"
+      OutputsMetadataName="Outputs"
+      DependenciesMetadataName="AdditionalInputs"
+      CommandMetadataName="Command"
+      TLogDirectory="$(TLogLocation)"
+      TLogNamePrefix="QtMoc"
+      CheckForInterdependencies="false">
+      <Output TaskParameter="OutOfDateSources" ItemName="_QtMocOutOfDate" />
+    </GetOutOfDateItems>
+    <Message Condition="'@(_QtMocOutOfDate)'!=''" Text="moc %(_QtMocOutOfDate.Filename) %(_QtMocOutOfDate.Outputs)" Importance="High" />
+    <Exec Condition="'@(_QtMocOutOfDate)'!=''" Command="%(_QtMocOutOfDate.Command)" />
+    <ItemGroup>
+      <_QtMocOutOfDate Remove="@(_QtMocOutOfDate)" />
+    </ItemGroup>
   </Target>
 
   <ItemGroup>
