@@ -105,6 +105,7 @@
       <QtMoc>
         <AdditionalInputs>%(QtMoc.FullPath);%(QtMoc.AdditionalDependencies)</AdditionalInputs>
         <Command>&quot;$(QtHostBinDir)moc.exe&quot; &quot;%(QtMoc.FullPath)&quot; -o &quot;$(QtToolOutDir)%(QtMoc.RelativeDir)moc_%(QtMoc.Filename).cpp&quot; -f%(QtMoc.Filename)%(QtMoc.Extension) $(MocDefines) $(MocIncludes)</Command>
+        <Message>moc %(QtMoc.Filename) $(QtToolOutDir)%(QtMoc.RelativeDir)moc_%(QtMoc.Filename).cpp</Message>
         <Outputs>$(QtToolOutDir)%(QtMoc.RelativeDir)moc_%(QtMoc.Filename).cpp</Outputs>
       </QtMoc>
     </ItemGroup>
@@ -121,8 +122,10 @@
       CheckForInterdependencies="false">
       <Output TaskParameter="OutOfDateSources" ItemName="_QtMocOutOfDate" />
     </GetOutOfDateItems>
-    <Message Condition="'@(_QtMocOutOfDate)'!=''" Text="moc %(_QtMocOutOfDate.Filename) %(_QtMocOutOfDate.Outputs)" Importance="High" />
-    <Exec Condition="'@(_QtMocOutOfDate)'!=''" Command="%(_QtMocOutOfDate.Command)" />
+    <!-- ParallelCustomBuild runs the independent stale MOC commands concurrently using its native scheduler. -->
+    <ParallelCustomBuild
+      Condition="'@(_QtMocOutOfDate)'!=''"
+      Sources="@(_QtMocOutOfDate)" />
     <ItemGroup>
       <_QtMocOutOfDate Remove="@(_QtMocOutOfDate)" />
     </ItemGroup>
