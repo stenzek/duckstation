@@ -113,22 +113,40 @@
   </Target>
 
   <!--Passes all .ui files to uic and puts output in the build directory-->
-  <ItemGroup>
-    <UiFiles Include="$(MSBuildProjectDirectory)\**\*.ui" />
-  </ItemGroup>
   <Target Name="QtUi"
     BeforeTargets="ClCompile"
-    Inputs="@(UiFiles)"
-    Condition="'@(QtUi)'!=''"
-    Outputs="@(UiFiles->'$(QtToolOutDir)ui_%(Filename).h')">
-    <Message Text="uic %(UiFiles.Filename)" Importance="High" />
+    Condition="'@(QtUi)'!=''">
+    <ItemGroup>
+      <QtUi>
+        <AdditionalInputs>%(QtUi.FullPath)</AdditionalInputs>
+        <Command>&quot;$(QtHostBinDir)uic.exe&quot; &quot;%(QtUi.FullPath)&quot; -o &quot;$(QtToolOutDir)ui_%(QtUi.Filename).h&quot;</Command>
+        <Message>uic %(QtUi.Filename)</Message>
+        <Outputs>$(QtToolOutDir)ui_%(QtUi.Filename).h</Outputs>
+      </QtUi>
+    </ItemGroup>
     <Error Condition="!$(DSQTDIRValid)" Text="Qt directory non-existent (download/extract the zip)" />
     <MakeDir Directories="$(QtToolOutDir)" />
-    <Exec Command="&quot;$(QtHostBinDir)uic.exe&quot; &quot;%(UiFiles.FullPath)&quot; -o &quot;$(QtToolOutDir)ui_%(UiFiles.Filename).h&quot;" />
+    <!-- Track UI inputs and outputs in native tlogs, then generate only stale forms concurrently. -->
+    <GetOutOfDateItems
+      Sources="@(QtUi)"
+      OutputsMetadataName="Outputs"
+      DependenciesMetadataName="AdditionalInputs"
+      CommandMetadataName="Command"
+      TLogDirectory="$(TLogLocation)"
+      TLogNamePrefix="QtUi"
+      CheckForInterdependencies="false">
+      <Output TaskParameter="OutOfDateSources" ItemName="_QtUiOutOfDate" />
+    </GetOutOfDateItems>
+    <ParallelCustomBuild
+      Condition="'@(_QtUiOutOfDate)'!=''"
+      Sources="@(_QtUiOutOfDate)" />
+    <ItemGroup>
+      <_QtUiOutOfDate Remove="@(_QtUiOutOfDate)" />
+    </ItemGroup>
   </Target>
 
   <Target Name="QtUiClean">
-    <Delete Files="@(UiFiles->'$(QtToolOutDir)ui_%(Filename).h')" />
+    <Delete Files="@(QtUi->'$(QtToolOutDir)ui_%(Filename).h')" />
   </Target>
 
   <!--Compile files needed to MOC and output in the build directory-->
