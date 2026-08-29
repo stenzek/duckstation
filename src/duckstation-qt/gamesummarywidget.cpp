@@ -7,6 +7,7 @@
 #include "mainwindow.h"
 #include "qthost.h"
 #include "qtprogresscallback.h"
+#include "qtutils.h"
 #include "settingswindow.h"
 
 #include "core/achievements.h"
@@ -302,9 +303,12 @@ void GameSummaryWidget::populateUi(const GameList::Entry* entry)
     m_ui.inputProfile->addItem(QString::fromStdString(name));
 
   reloadGameSettings();
-  if (!entry->is_runtime_populated)
+
+  // Don't populate tracks when we're running from disc, because the core might have exclusive access.
+  if (!entry->is_runtime_populated || !CDImage::IsDeviceName(m_path.c_str()))
     populateTracksInfo();
-  else
+
+  if (entry->is_runtime_populated)
     disableWidgetsForRuntimeScannedEntry();
 }
 
@@ -487,16 +491,32 @@ void GameSummaryWidget::populateTracksInfo()
 
 void GameSummaryWidget::disableWidgetsForRuntimeScannedEntry()
 {
-  m_ui.tracks->setEnabled(false);
-  m_ui.computeHashes->setEnabled(false);
   m_ui.title->setReadOnly(true);
   m_ui.restoreTitle->setEnabled(false);
   m_ui.region->setEnabled(false);
   m_ui.restoreRegion->setEnabled(false);
+  m_ui.changeSerial->setEnabled(false);
   m_ui.languages->setReadOnly(true);
   m_ui.customLanguage->setEnabled(false);
-  m_ui.revision->setText(tr("This game was not scanned by DuckStation. Some functionality is not available."));
-  m_ui.tracks->setVisible(false);
+
+  // Need to re-add the spacer, ugh.
+  const int insert_row = m_ui.mainLayout->rowCount() - 1;
+  QLayoutItem* const spacer_item = m_ui.mainLayout->itemAtPosition(insert_row, 0);
+  if (spacer_item)
+    m_ui.mainLayout->removeItem(spacer_item);
+
+  QHBoxLayout* const warning_layout = new QHBoxLayout();
+  QLabel* const icon = new QLabel(this);
+  icon->setPixmap(QIcon(QtHost::GetResourceQPath("images/warning.svg", true)).pixmap(16, 16));
+  warning_layout->addWidget(icon);
+
+  QLabel* const warning =
+    new QLabel(tr("This game was not scanned by DuckStation. Some functionality is not available."), this);
+  warning_layout->addWidget(warning, 1);
+  m_ui.mainLayout->addLayout(warning_layout, insert_row, 0, 1, 3);
+
+  if (spacer_item)
+    m_ui.mainLayout->addItem(spacer_item, insert_row + 1, 0, 1, 3);
 }
 
 void GameSummaryWidget::onCompatibilityCommentsClicked()

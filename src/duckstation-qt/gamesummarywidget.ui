@@ -24,7 +24,7 @@
     <number>0</number>
    </property>
    <item row="0" column="0">
-    <widget class="QLabel" name="label_4">
+    <widget class="QLabel" name="pathLabel">
      <property name="text">
       <string>Image Path:</string>
      </property>
@@ -38,7 +38,7 @@
     </widget>
    </item>
    <item row="1" column="0">
-    <widget class="QLabel" name="label_2">
+    <widget class="QLabel" name="titleLabel">
      <property name="text">
       <string>Title:</string>
      </property>
@@ -86,7 +86,7 @@
     </widget>
    </item>
    <item row="3" column="0">
-    <widget class="QLabel" name="label">
+    <widget class="QLabel" name="serialLabel">
      <property name="text">
       <string>Serial:</string>
      </property>
@@ -111,7 +111,7 @@
     </widget>
    </item>
    <item row="4" column="0">
-    <widget class="QLabel" name="label_3">
+    <widget class="QLabel" name="regionLabel">
      <property name="text">
       <string>Region:</string>
      </property>
@@ -142,14 +142,14 @@
     </widget>
    </item>
    <item row="5" column="0">
-    <widget class="QLabel" name="label_5">
+    <widget class="QLabel" name="languagesLabel">
      <property name="text">
       <string>Languages:</string>
      </property>
     </widget>
    </item>
    <item row="5" column="1" colspan="2">
-    <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="1,0">
+    <layout class="QHBoxLayout" name="languagesLayout" stretch="1,0">
      <item>
       <widget class="QLineEdit" name="languages">
        <property name="readOnly">
@@ -163,7 +163,7 @@
     </layout>
    </item>
    <item row="6" column="0">
-    <widget class="QLabel" name="label_7">
+    <widget class="QLabel" name="compatibilityLabel">
      <property name="text">
       <string>Compatibility:</string>
      </property>
@@ -185,14 +185,14 @@
     </widget>
    </item>
    <item row="7" column="0">
-    <widget class="QLabel" name="label_10">
+    <widget class="QLabel" name="entryTypeLabel">
      <property name="text">
       <string>Type:</string>
      </property>
     </widget>
    </item>
    <item row="7" column="1" colspan="2">
-    <layout class="QHBoxLayout" name="horizontalLayout_4" stretch="1,0">
+    <layout class="QHBoxLayout" name="entryTypeLayout" stretch="1,0">
      <item>
       <widget class="QComboBox" name="entryType">
        <property name="enabled">
@@ -227,7 +227,7 @@
     </widget>
    </item>
    <item row="9" column="0">
-    <widget class="QLabel" name="label_11">
+    <widget class="QLabel" name="metadataLabel">
      <property name="text">
       <string>Metadata:</string>
      </property>
@@ -241,7 +241,7 @@
     </widget>
    </item>
    <item row="10" column="0">
-    <widget class="QLabel" name="label_14">
+    <widget class="QLabel" name="releaseInfoLabel">
      <property name="text">
       <string>Release Info:</string>
      </property>
@@ -255,7 +255,7 @@
     </widget>
    </item>
    <item row="11" column="0">
-    <widget class="QLabel" name="label_15">
+    <widget class="QLabel" name="controllersLabel">
      <property name="text">
       <string>Controllers:</string>
      </property>
@@ -269,14 +269,14 @@
     </widget>
    </item>
    <item row="12" column="0">
-    <widget class="QLabel" name="label_9">
+    <widget class="QLabel" name="inputProfileLabel">
      <property name="text">
       <string>Controller Preset:</string>
      </property>
     </widget>
    </item>
    <item row="12" column="1" colspan="2">
-    <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="1,0">
+    <layout class="QHBoxLayout" name="inputProfileLayout" stretch="1,0">
      <item>
       <widget class="QComboBox" name="inputProfile"/>
      </item>
@@ -294,7 +294,7 @@
     </layout>
    </item>
    <item row="13" column="0">
-    <widget class="QLabel" name="label_8">
+    <widget class="QLabel" name="tracksLabel">
      <property name="text">
       <string>Tracks:</string>
      </property>
