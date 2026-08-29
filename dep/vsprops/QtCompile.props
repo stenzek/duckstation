@@ -283,6 +283,7 @@
       <QtTs>
         <AdditionalInputs>%(QtTs.FullPath)</AdditionalInputs>
         <Command>&quot;$(QtHostBinDir)lrelease.exe&quot; &quot;%(QtTs.FullPath)&quot; -qm &quot;$(QtTsOutDir)%(QtTs.Filename).qm&quot;</Command>
+        <Message>lrelease %(QtTs.Filename)</Message>
         <Outputs>$(QtTsOutDir)%(QtTs.Filename).qm</Outputs>
       </QtTs>
     </ItemGroup>
@@ -299,8 +300,10 @@
       CheckForInterdependencies="false">
       <Output TaskParameter="OutOfDateSources" ItemName="_QtTsOutOfDate" />
     </GetOutOfDateItems>
-    <Message Condition="'@(_QtTsOutOfDate)'!=''" Text="lrelease %(_QtTsOutOfDate.Filename)" Importance="High" />
-    <Exec Condition="'@(_QtTsOutOfDate)'!=''" Command="%(_QtTsOutOfDate.Command)" />
+    <!-- Translation catalogs are independent, so only stale items are submitted to the parallel custom-build scheduler. -->
+    <ParallelCustomBuild
+      Condition="'@(_QtTsOutOfDate)'!=''"
+      Sources="@(_QtTsOutOfDate)" />
     <ItemGroup>
       <_QtTsOutOfDate Remove="@(_QtTsOutOfDate)" />
     </ItemGroup>
