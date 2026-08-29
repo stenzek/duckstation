@@ -119,7 +119,7 @@ static void DestroySoftwareCursorTextures();
 static void DrawSoftwareCursor(const SoftwareCursor& sc, const std::pair<float, float>& pos);
 static std::optional<ImGuiKey> MapHostKeyEventToImGuiKey(u32 key);
 
-static constexpr float OSD_FADE_IN_TIME = 0.1f;
+static constexpr float OSD_FADE_IN_TIME = 0.2f;
 static constexpr float OSD_FADE_OUT_TIME = 0.4f;
 
 static constexpr std::array<const char*, static_cast<size_t>(LanguageFont::MaxCount)> LANGUAGE_FONT_NAMES = {{
