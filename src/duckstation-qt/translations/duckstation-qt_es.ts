@@ -178,6 +178,10 @@ No obstante, el modo hardcore también impide el uso de los estados de guardado,
         <translation>Activar modo Encore</translation>
     </message>
     <message>
+        <source>Track Unofficial Achievements</source>
+        <translation>Seguimiento de logros no oficiales</translation>
+    </message>
+    <message>
         <source>Notifications</source>
         <translation>Notificaciones</translation>
     </message>
@@ -199,7 +203,7 @@ No obstante, el modo hardcore también impide el uso de los estados de guardado,
     </message>
     <message>
         <source>When enabled and logged in, DuckStation will scan for achievements on startup.</source>
-        <translation>Cuando esté activado y se haya iniciado sesión, DuckStation buscará logros al iniciarse.</translation>
+        <translation>Al activar esta opción e iniciar una sesión, DuckStation buscará logros al iniciar.</translation>
     </message>
     <message>
         <source>Displays popup messages on events such as achievement unlocks and game completion.</source>
@@ -211,15 +215,11 @@ No obstante, el modo hardcore también impide el uso de los estados de guardado,
     </message>
     <message>
         <source>When enabled, each session will behave as if no achievements have been unlocked.</source>
-        <translation>Cuando esté activado, cada sesión se tratará como si no se hubiese desbloqueado ningún logro.</translation>
+        <translation>Al activar esta opción, cada sesión de juego se comportará como si no se hubiese desbloqueado ningún logro.</translation>
     </message>
     <message>
         <source>When enabled, DuckStation will assume all achievements are locked and not send any unlock notifications to the server.</source>
-        <translation>Cuando esté activado, DuckStation asumirá que todos los logros están bloqueados, y no enviará ninguna notificación de desbloqueo al servidor.</translation>
-    </message>
-    <message>
-        <source>When enabled, DuckStation will list achievements from unofficial sets. Please note that these achievements are not tracked by RetroAchievements, so they unlock every time.</source>
-        <translation>Cuando esté activado, DuckStation listará logros no oficiales. Ten en cuenta que RetroAchievements no rastreará estos logros, por lo que se desbloquearán cada vez que se consigan.</translation>
+        <translation>Al activar esta opción, DuckStation asumirá que todos los logros están bloqueados y no enviará ninguna notificación de desbloqueo al servidor.</translation>
     </message>
     <message>
         <source>&quot;Challenge&quot; mode for achievements, including leaderboard tracking. Disables save state, cheats, and slowdown functions.</source>
@@ -303,6 +303,10 @@ No obstante, el modo hardcore también impide el uso de los estados de guardado,
     <message>
         <source>(Customize)</source>
         <translation>(personalizar)</translation>
+    </message>
+    <message>
+        <source>When enabled, DuckStation will track unofficial achievements. Unlocks will be saved locally and not sent to RetroAchievements.</source>
+        <translation>Al activar esta opción, DuckStation hará un seguimiento de logros no oficiales. Sus desbloqueos se guardarán de forma local y no se enviarán a RetroAchievements.</translation>
     </message>
     <message>
         <source>Downloads all locked achievement badges while starting the game. This will reduce delays in the images being shown when unlocking achievements.</source>
@@ -602,6 +606,10 @@ Error: {}</translation>
         <translation>Intentos activos de entrar en tabla de clasificación</translation>
     </message>
     <message>
+        <source>You have unlocked {0} of {1} unofficial achievements, earning {2} of {3} possible points.</source>
+        <translation>Has desbloqueado {0} de {1} logros no oficiales, obteniendo {2} de {3} puntos posibles.</translation>
+    </message>
+    <message>
         <source>Game was beaten {0}, and completed {1}.</source>
         <translation>Este juego fue superado {0} y completado {1}.</translation>
     </message>
@@ -625,10 +633,6 @@ Error: {}</translation>
         <source>Subset was completed {0}.</source>
         <translation>Este conjunto fue completado {0}.</translation>
     </message>
-    <message>
-        <source>Unlocked {} | {:.1f}% of players have this achievement</source>
-        <translation>Desbloqueado {} | {:.1f}% de los jugadores tienen este logro</translation>
-    </message>
     <message numerus="yes">
         <source>This game has %n leaderboards.</source>
         <comment>Leaderboard count</comment>
@@ -648,54 +652,6 @@ Error: {}</translation>
     <message>
         <source>View Profile</source>
         <translation>Ver perfil</translation>
-    </message>
-    <message numerus="yes">
-        <source>%n minutes ago</source>
-        <comment>Relative time</comment>
-        <translation>
-            <numerusform>Hace %n minuto</numerusform>
-            <numerusform>Hace %n minutos</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <source>%n hours ago</source>
-        <comment>Relative time</comment>
-        <translation>
-            <numerusform>Hace %n hora</numerusform>
-            <numerusform>Hace %n horas</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <source>%n days ago</source>
-        <comment>Relative time</comment>
-        <translation>
-            <numerusform>Hace %n día</numerusform>
-            <numerusform>Hace %n días</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <source>%n weeks ago</source>
-        <comment>Relative time</comment>
-        <translation>
-            <numerusform>Hace %n semana</numerusform>
-            <numerusform>Hace %n semanas</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <source>%n months ago</source>
-        <comment>Relative time</comment>
-        <translation>
-            <numerusform>Hace %n mes</numerusform>
-            <numerusform>Hace %n meses</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <source>%n years ago</source>
-        <comment>Relative time</comment>
-        <translation>
-            <numerusform>Hace %n año</numerusform>
-            <numerusform>Hace %n años</numerusform>
-        </translation>
     </message>
     <message>
         <source>Leaderboard download failed</source>
@@ -920,18 +876,6 @@ La petición seguirá reenviándose.</translation>
         <translation>Logros no compatibles</translation>
     </message>
     <message>
-        <source>Just now</source>
-        <translation>Ahora mismo</translation>
-    </message>
-    <message>
-        <source>Today</source>
-        <translation>Hoy</translation>
-    </message>
-    <message>
-        <source>Yesterday</source>
-        <translation>Ayer</translation>
-    </message>
-    <message>
         <source>Hardcore mode will be enabled on game restart.</source>
         <translation>El modo hardcore se activará al reiniciar la partida.</translation>
     </message>
@@ -988,6 +932,10 @@ La petición seguirá reenviándose.</translation>
         <translation>Fijar logro</translation>
     </message>
     <message>
+        <source>Reset Unofficial Unlocks</source>
+        <translation>Restablecer desbloqueos no oficiales</translation>
+    </message>
+    <message>
         <source>Missable</source>
         <translation>Perdible</translation>
     </message>
@@ -998,6 +946,10 @@ La petición seguirá reenviándose.</translation>
     <message>
         <source>Win Condition</source>
         <translation>Condición de victoria</translation>
+    </message>
+    <message>
+        <source>Unlocked {}</source>
+        <translation>Desbloqueado {}</translation>
     </message>
     <message>
         <source>{:.1f}% of players have this achievement</source>
@@ -1825,7 +1777,7 @@ La petición seguirá reenviándose.</translation>
     </message>
     <message>
         <source>When enabled, the minimum supported output latency will be used for the host API.</source>
-        <translation>Si esta opción está habilitada, se utilizará la latencia de salida mínima compatible para la API del equipo.</translation>
+        <translation>Al activar esta opción, se utilizará la latencia de salida mínima compatible para la API del equipo.</translation>
     </message>
     <message>
         <source>When running outside of 100% speed, adjusts the tempo on audio instead of dropping frames. Produces much nicer fast forward/slowdown audio at a small cost to performance.</source>
@@ -2809,7 +2761,7 @@ Si intentas utilizarlo, no funcionará tal y como se espera. ¿Quieres continuar
     </message>
     <message>
         <source>When this option is chosen, the clock speed set below will be used.</source>
-        <translation>Cuando se habilite esta opción, se utilizará la velocidad de reloj seleccionada.</translation>
+        <translation>Al activar esta opción, se utilizará la velocidad de reloj seleccionada.</translation>
     </message>
     <message>
         <source>Overclocking Percentage</source>
@@ -2873,9 +2825,9 @@ Si intentas utilizarlo, no funcionará tal y como se espera. ¿Quieres continuar
 By enabling this option you are agreeing to not create any bug reports unless you have confirmed the bug also occurs with overclocking disabled.
 
 This warning will only be shown once.</source>
-        <translation>Activar el overclocking de la CPU puede provocar fallos en los juegos, errores, una disminución del rendimiento y un aumento significativo de los requisitos del sistema.
+        <translation>Activar el overclocking de la CPU puede romper juegos, causar defectos, reducir el rendimiento y aumentar significativamente los requisitos del sistema.
 
-Al activar esta opción, aceptas no crear informes de errores a menos que confirmes que el problema persiste incluso con el overclocking desactivado.
+Al activar esta opción aceptas que no enviarás ningún informe de problemas sin haber confirmado que estos ocurran también con el overclocking desactivado.
 
 Esta advertencia se mostrará solo una vez.</translation>
     </message>
@@ -4942,7 +4894,7 @@ Haz clic en Reiniciar para restablecer el número de serie al que se ha encontra
     </message>
     <message>
         <source>Optimal Frame Pacing</source>
-        <translation>Ritmo de fotogramas óptimo</translation>
+        <translation>Optimizar duración de fotogramas</translation>
     </message>
     <message>
         <source>Skip Duplicate Frame Display</source>
@@ -5058,15 +5010,15 @@ Haz clic en Reiniciar para restablecer el número de serie al que se ha encontra
     </message>
     <message>
         <source>Synchronizes presentation of the console&apos;s frames to the host. Enabling may result in smoother animations, at the cost of increased input lag. &lt;strong&gt;GSync/FreeSync users should enable Optimal Frame Pacing instead.&lt;/strong&gt;</source>
-        <translation>Sincroniza la presentación de los fotogramas de la consola con el sistema. Activar esta opción puede resultar en animaciones más fluídas, a cambio de una mayor latencia de entrada. &lt;strong&gt;Usuarios con GSync/FreeSync deberían activar la opción: Ritmo de fotogramas óptimo.&lt;/strong&gt;</translation>
+        <translation>Sincroniza la presentación de los fotogramas de la consola con el equipo. Al activar esta opción, las animaciones podrían mostrarse más fluidas a cambio de aumentar la latencia de entrada. &lt;strong&gt;Los usuarios de GSync/FreeSync deberían activar en su lugar Optimizar duración de fotogramas.&lt;/strong&gt;</translation>
     </message>
     <message>
         <source>Adjusts the emulation speed so the console&apos;s refresh rate matches the host&apos;s refresh rate when VSync is enabled. This results in the smoothest animations possible, at the cost of potentially increasing the emulation speed by less than 1%. Sync To Host Refresh Rate will not take effect if the console&apos;s refresh rate is too far from the host&apos;s refresh rate. Users with variable refresh rate displays should disable this option.</source>
-        <translation>Ajusta la velocidad de emulación para que la frecuencia de actualización de la consola coincida con la del equipo cuando VSync está activado. Mejorará la fluidez de las animaciones con un posible aumento de la velocidad de emulación inferior al 1 %. La opción Sincronizar con la frecuencia del equipo no tendrá efecto si la frecuencia de actualización de la consola difiere demasiado a la del equipo. Los usuarios con pantallas de frecuencia de actualización variable (VRR) deben desactivar esta opción.</translation>
+        <translation>Ajusta la velocidad de emulación para que la frecuencia de actualización de la consola sea igual a la del equipo cuando VSync esté activado. Mejorará la fluidez de las animaciones a costa de aumentar la velocidad de emulación en menos del 1 %. Esta opción no se aplicará si la frecuencia de actualización de la consola difiere demasiado a la del equipo. Los usuarios con pantallas de frecuencia de actualización variable (VRR) deben desactivar esta opción.</translation>
     </message>
     <message>
         <source>Enabling this option will ensure every frame the console renders is displayed to the screen, at a consistent rate, for optimal frame pacing. If you have a GSync/FreeSync display, enable this option. If you are having difficulties maintaining full speed, or are getting audio glitches, try disabling this option.</source>
-        <translation>Activar esta opción asegurará que cada fotograma que renderiza la consola se mostrará en la pantalla, a una velocidad constante, para un ritmo de fotogramas óptimo. Si tienes un monitor compatible con GSync/FreeSync, habilita esta opción. Si tienes dificultades para mantener máxima velocidad, o problemas de audio, intenta deshabilitar esta opción.</translation>
+        <translation>Al activar esta opción, se garantiza que cada fotograma que renderiza la consola se muestre en pantalla a una velocidad constante, para una sincronización óptima. Si tienes una pantalla G-Sync/FreeSync, activa esta opción. Si tienes dificultades para mantener la velocidad máxima o experimentas problemas de audio, prueba a desactivarla.</translation>
     </message>
     <message>
         <source>Reduces input latency by delaying the start of frame until closer to the presentation time. This may cause dropped frames on slower systems with higher frame time variance, if the buffer size is not sufficient.</source>
@@ -5335,7 +5287,7 @@ Haz clic en Reiniciar para restablecer el número de serie al que se ha encontra
     </message>
     <message>
         <source>A cover already exists for this game. Are you sure that you want to overwrite it?</source>
-        <translation>Una imágen de portada ya existe para este juego, ¿Quieres reemplazarla?</translation>
+        <translation>Ya existe una carátula para este juego. ¿Seguro que quieres sobrescribirla?</translation>
     </message>
     <message>
         <source>About</source>
@@ -5651,15 +5603,15 @@ Haz clic en Reiniciar para restablecer el número de serie al que se ha encontra
     </message>
     <message>
         <source>Cover Settings</source>
-        <translation>Configuración de portada</translation>
+        <translation>Configuración de carátula</translation>
     </message>
     <message>
         <source>Cover set.</source>
-        <translation>Portada establecida.</translation>
+        <translation>Carátula establecida.</translation>
     </message>
     <message>
         <source>Covers Directory</source>
-        <translation>Directorio de portadas</translation>
+        <translation>Directorio de carátulas</translation>
     </message>
     <message>
         <source>Create</source>
@@ -6309,7 +6261,7 @@ Comprueba el nombre de usuario y contraseña e intenta de nuevo.</translation>
     </message>
     <message>
         <source>Adjusts the emulation speed so the console&apos;s refresh rate matches the host when VSync is enabled.</source>
-        <translation>Ajusta la velocidad de emulación para que la tasa de refresco de la consola coincida con la pantalla de tu sistema cuando la sincronización vertical esté habilitada.</translation>
+        <translation>Ajusta la velocidad de la emulación para que la frecuencia de actualización de la consola sea igual a la del equipo cuando se active la sincronización vertical.</translation>
     </message>
     <message>
         <source>An error occurred while deleting empty game settings:
@@ -6481,7 +6433,7 @@ Comprueba el nombre de usuario y contraseña e intenta de nuevo.</translation>
     </message>
     <message>
         <source>Enables the older, less accurate MDEC decoding routines. May be required for old replacement backgrounds to match/load.</source>
-        <translation>Habilita las rutinas de decodificación MDEC más antiguas y menos precisas. Puede ser necesario para utilizar fondos de reemplazo antiguos.</translation>
+        <translation>Permite el uso de rutinas de decodificación MDEC más antiguas y menos precisas. Puede ser necesario para que los fondos reemplazo antiguos coincidan o se carguen correctamente.</translation>
     </message>
     <message>
         <source>Ensures every frame generated is displayed for optimal pacing. Enable for variable refresh displays, such as GSync/FreeSync. Disable if you are having speed or sound issues.</source>
@@ -6717,7 +6669,7 @@ Comprueba el nombre de usuario y contraseña e intenta de nuevo.</translation>
     </message>
     <message>
         <source>Synchronizes presentation of the console&apos;s frames to the host. GSync/FreeSync users should enable Optimal Frame Pacing instead.</source>
-        <translation>Sincroniza la presentación de los fotogramas de la consola con el sistema. Usuarios con GSync/FreeSync deberían activar la opción: Ritmo de fotogramas óptimo.</translation>
+        <translation>Sincroniza la presentación de los fotogramas de la consola con el sistema. Usuarios con GSync/FreeSync deberían activar la opción: Optimizar duración de fotogramas.</translation>
     </message>
     <message>
         <source>Textures Directory</source>
@@ -6774,6 +6726,10 @@ Comprueba el nombre de usuario y contraseña e intenta de nuevo.</translation>
     <message>
         <source>%.1f ms</source>
         <translation>%.1f ms</translation>
+    </message>
+    <message>
+        <source>All unofficial achievement progress for the current game will be removed. This cannot be undone.</source>
+        <translation>Se eliminará todo el progreso no oficial de los logros del juego actual. Esta acción es irreversible.</translation>
     </message>
     <message>
         <source>Delete</source>
@@ -6913,7 +6869,7 @@ Comprueba el nombre de usuario y contraseña e intenta de nuevo.</translation>
     </message>
     <message>
         <source>Optimal Frame Pacing</source>
-        <translation>Ritmo de fotogramas óptimo</translation>
+        <translation>Optimizar duración de fotogramas</translation>
     </message>
     <message>
         <source>Options</source>
@@ -7138,6 +7094,18 @@ Comprueba el nombre de usuario y contraseña e intenta de nuevo.</translation>
     <message>
         <source>Reset Settings</source>
         <translation>Restablecer configuración</translation>
+    </message>
+    <message>
+        <source>Reset Unlock</source>
+        <translation>Restablecer desbloqueo</translation>
+    </message>
+    <message>
+        <source>Reset Unofficial Achievement</source>
+        <translation>Restablecer logro no oficial</translation>
+    </message>
+    <message>
+        <source>Reset Unofficial Achievement Unlocks</source>
+        <translation>Restablecer desbloqueos de logros no oficiales</translation>
     </message>
     <message>
         <source>Resets all configuration to defaults (including bindings).</source>
@@ -7469,7 +7437,7 @@ Comprueba el nombre de usuario y contraseña e intenta de nuevo.</translation>
     </message>
     <message>
         <source>Skips the presentation/display of frames that are not unique. Can result in worse frame pacing.</source>
-        <translation>Omite la presentación de fotogramas que no sean únicos. Puede empeorar el ritmo de fotogramas.</translation>
+        <translation>Omite los fotogramas que no sean únicos. Podría empeorar la duración de fotogramas.</translation>
     </message>
     <message>
         <source>Slow Boot</source>
@@ -7566,10 +7534,6 @@ Comprueba el nombre de usuario y contraseña e intenta de nuevo.</translation>
     <message>
         <source>Temporarily disables all enhancements, useful when testing.</source>
         <translation>Desactiva temporalmente todas las mejoras, útil para hacer pruebas.</translation>
-    </message>
-    <message>
-        <source>Test Unofficial Achievements</source>
-        <translation>Probar logros no oficiales</translation>
     </message>
     <message>
         <source>Texture Filtering</source>
@@ -7717,35 +7681,31 @@ Comprueba el nombre de usuario y contraseña e intenta de nuevo.</translation>
     </message>
     <message>
         <source>When enabled and logged in, DuckStation will scan for achievements on startup.</source>
-        <translation>Cuando esté activado y se haya iniciado sesión, DuckStation buscará logros al iniciarse.</translation>
+        <translation>Al activar esta opción e iniciar una sesión, DuckStation buscará logros al iniciar.</translation>
     </message>
     <message>
         <source>When enabled, DuckStation will assume all achievements are locked and not send any unlock notifications to the server.</source>
-        <translation>Cuando esté activado, DuckStation asumirá que todos los logros están bloqueados, y no enviará ninguna notificación de desbloqueo al servidor.</translation>
-    </message>
-    <message>
-        <source>When enabled, DuckStation will list achievements from unofficial sets. These achievements are not tracked by RetroAchievements.</source>
-        <translation>Cuando esté activado, DuckStation listará logros no oficiales. RetroAchievements no rastreará estos logros.</translation>
+        <translation>Al activar esta opción, DuckStation asumirá que todos los logros están bloqueados y no enviará notificaciones de desbloqueo al servidor.</translation>
     </message>
     <message>
         <source>When enabled, each session will behave as if no achievements have been unlocked.</source>
-        <translation>Cuando esté activado, cada sesión se tratará como si no se hubiese desbloqueado ningún logro.</translation>
+        <translation>Al activar esta opción, cada sesión de juego se comportará como si no se hubiese desbloqueado ningún logro.</translation>
     </message>
     <message>
         <source>When enabled, memory cards and controllers will be overwritten when save states are loaded.</source>
-        <translation>Cuando se habilita, los mandos y Memory Cards se sobrescribirán cuando se carguen estados de guardado.</translation>
+        <translation>Al activar esta opción, se sobrescribirán las Memory Cards y los mandos al cargar estados de guardado.</translation>
     </message>
     <message>
         <source>When enabled, the minimum supported output latency will be used for the host API.</source>
-        <translation>Cuando se habilita, se utilizará la latencia de salida mínima soportada para la API del sistema.</translation>
+        <translation>Al activar esta opción, se utilizará la latencia de salida mínima compatible para la API del equipo.</translation>
     </message>
     <message>
         <source>When playing a multi-disc game and using per-game (title) memory cards, use a single memory card for all discs.</source>
-        <translation>Cuando se ejecute un juego de múltiples discos y se utilicen Memory Cards por juego, se utilizará una única tarjeta para todos los discos.</translation>
+        <translation>Cuando utilices un juego de varios discos y Memory Cards individuales para cada juego (por título), se usará una sola Memory Card para todos los discos.</translation>
     </message>
     <message>
         <source>When this option is chosen, the clock speed set below will be used.</source>
-        <translation>Cuando se habilite esta opción, se utilizará la velocidad de reloj seleccionada.</translation>
+        <translation>Al activar esta opción, se utilizará la velocidad de reloj seleccionada.</translation>
     </message>
     <message>
         <source>Wireframe Rendering</source>
@@ -8448,6 +8408,10 @@ Esta acción no puede deshacerse.</translation>
         <translation>El archivo BIOS &apos;{}&apos; ya está instalado. ¿Desea sobrescribirlo?</translation>
     </message>
     <message>
+        <source>The unlock state for &apos;{}&apos; will be removed. This cannot be undone.</source>
+        <translation>Se eliminará el estado de desbloqueo para &apos;{}&apos;. Esta acción es irreversible.</translation>
+    </message>
+    <message>
         <source>Theme</source>
         <translation>Tema</translation>
     </message>
@@ -8472,12 +8436,24 @@ Esta acción no puede deshacerse.</translation>
         <translation>Pista</translation>
     </message>
     <message>
+        <source>Track Unofficial Achievements</source>
+        <translation>Seguimiento de logros no oficiales</translation>
+    </message>
+    <message>
         <source>Track hash copied to clipboard.</source>
         <translation>Hash de pista copiado al portapapeles.</translation>
     </message>
     <message>
         <source>Tries to detect FMVs and disable read speedup during games that don&apos;t use XA streaming audio.</source>
         <translation>Intenta detectar los videos FMV y desactiva la aceleración de lectura en aquellos juegos que no utilicen audio XA por streaming.</translation>
+    </message>
+    <message>
+        <source>Unofficial achievement unlock reset.</source>
+        <translation>Reinicio no oficial del desbloqueo de logros.</translation>
+    </message>
+    <message>
+        <source>Unofficial achievement unlocks reset.</source>
+        <translation>Los logros no oficiales se reinician.</translation>
     </message>
     <message>
         <source>Unpin from OSD</source>
@@ -8498,6 +8474,10 @@ Do you want to {0} anyway?</source>
         <translation>ADVERTENCIA: la Memory Card todavía está escribiendo datos. Si continúas, DESTRUIRÁS DE FORMA IRREVERSIBLE TU MEMORY CARD. Se recomienda encarecidamente que reanudes la partida y esperes al menos 5 segundos para que se terminen de escribir los datos.
 
 ¿Deseas {0} de todos modos?</translation>
+    </message>
+    <message>
+        <source>When enabled, DuckStation will track unofficial achievements. Unlocks will be saved locally and not sent to RetroAchievements.</source>
+        <translation>Al activar esta opción, DuckStation hará un seguimiento de logros no oficiales. Sus desbloqueos se guardarán de forma local y no se enviarán a RetroAchievements.</translation>
     </message>
     <message>
         <source>{0} achievement unlocks have not been confirmed by the server. Continuing to {1} will result in loss of these unlocks. Once network connectivity has been re-established, these unlocks will be confirmed automatically.
@@ -8849,7 +8829,7 @@ Do you want to {1} anyway?</source>
     </message>
     <message>
         <source>When enabled, the legacy global save state slots will be available. These slots are independent of the current game.</source>
-        <translation>Al activar esta opción se activarán los antiguos espacios de los estados de guardado globales. Estos espacios son independientes al juego actual.</translation>
+        <translation>Al activar esta opción, se activarán los antiguos espacios de los estados de guardado globales. Estos espacios son independientes al juego actual.</translation>
     </message>
     <message>
         <source>Window Animations</source>
@@ -10812,7 +10792,7 @@ La búsqueda recursiva llevará más tiempo, pero identificará todo archivo que
     </message>
     <message>
         <source>Forces the use of FIFO over Mailbox presentation, i.e. double buffering instead of triple buffering. Usually results in worse frame pacing.</source>
-        <translation>Fuerza el uso de la presentación tipo FIFO en lugar de Mailbox, es decir, utilizando búfer doble en vez de triple. Suele producir un peor ritmo de fotogramas.</translation>
+        <translation>Fuerza la presentación FIFO en vez de la tipo mailbox, es decir: búfer doble en vez de triple. Suele producir un ritmo de fotogramas peor.</translation>
     </message>
     <message>
         <source>Uses a blit presentation model instead of flipping when using the Direct3D 11 renderer. This usually results in slower performance, but may be required for some streaming applications, or to uncap framerates on some systems.</source>
@@ -11084,7 +11064,7 @@ La búsqueda recursiva llevará más tiempo, pero identificará todo archivo que
     </message>
     <message>
         <source>Texture Modulation Cropping (&quot;Old/v0 GPU&quot;)</source>
-        <translation>Recorte de modulación de texturas (GPU v0/antigua)</translation>
+        <translation>Recorte de modulación de texturas (GPU v0/inicial)</translation>
     </message>
     <message>
         <source>Disable Textures</source>
@@ -11164,7 +11144,7 @@ La búsqueda recursiva llevará más tiempo, pero identificará todo archivo que
     </message>
     <message>
         <source>Texture Modulation Cropping (&quot;Old/v0&quot; GPU)</source>
-        <translation>Recorte de modulación de texturas (GPU v0/antigua)</translation>
+        <translation>Recorte de modulación de texturas (GPU v0/inicial)</translation>
     </message>
     <message>
         <source>Crops vertex colours to 5:5:5 before modulating with the texture colour, which typically results in more visible banding. This is a characteristic of the &quot;old&quot; GPUs found in early model consoles.</source>
@@ -11321,10 +11301,13 @@ La búsqueda recursiva llevará más tiempo, pero identificará todo archivo que
         <source>yesterday</source>
         <translation>ayer</translation>
     </message>
-    <message>
+    <message numerus="yes">
         <source>%n days ago</source>
         <comment>Date difference</comment>
-        <translation>Hace %n días</translation>
+        <translation>
+            <numerusform>Hace %n días</numerusform>
+            <numerusform></numerusform>
+        </translation>
     </message>
     <message>
         <source>on {}</source>
@@ -11338,20 +11321,53 @@ La búsqueda recursiva llevará más tiempo, pero identificará todo archivo que
         <source>now</source>
         <translation>ahora</translation>
     </message>
-    <message>
+    <message numerus="yes">
         <source>%n seconds ago</source>
         <comment>Time difference</comment>
-        <translation>Hace %n segundos</translation>
+        <translation>
+            <numerusform>Hace %n segundos</numerusform>
+            <numerusform></numerusform>
+        </translation>
     </message>
-    <message>
+    <message numerus="yes">
         <source>%n minutes ago</source>
         <comment>Time difference</comment>
-        <translation>Hace %n minutos</translation>
+        <translation>
+            <numerusform>Hace %n minutos</numerusform>
+            <numerusform></numerusform>
+        </translation>
     </message>
-    <message>
+    <message numerus="yes">
         <source>%n hours ago</source>
         <comment>Time difference</comment>
-        <translation>Hace %n horas</translation>
+        <translation>
+            <numerusform>Hace %n horas</numerusform>
+            <numerusform></numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n weeks ago</source>
+        <comment>Time difference</comment>
+        <translation>
+            <numerusform>Hace %n semana</numerusform>
+            <numerusform>Hace %n semanas</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n months ago</source>
+        <comment>Time difference</comment>
+        <translation>
+            <numerusform>Hace %n mes</numerusform>
+            <numerusform>Hace %n meses</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n years ago</source>
+        <comment>Time difference</comment>
+        <translation>
+            <numerusform>Hace %n año</numerusform>
+            <numerusform>Hace %n años</numerusform>
+        </translation>
     </message>
     <message>
         <source>{} at {}</source>
@@ -12696,10 +12712,6 @@ Mayús + Clic izquierdo para asignaciones adicionales.</translation>
         <translation>Cargar estado</translation>
     </message>
     <message>
-        <source>Save State</source>
-        <translation>Guardar estado</translation>
-    </message>
-    <message>
         <source>S&amp;ettings</source>
         <translation>&amp;Ajustes</translation>
     </message>
@@ -12745,7 +12757,7 @@ Mayús + Clic izquierdo para asignaciones adicionales.</translation>
     </message>
     <message>
         <source>Start &amp;File...</source>
-        <translation>Iniciar &amp;Archivo...</translation>
+        <translation>Iniciar &amp;archivo...</translation>
     </message>
     <message>
         <source>Start &amp;Disc...</source>
@@ -12765,7 +12777,19 @@ Mayús + Clic izquierdo para asignaciones adicionales.</translation>
     </message>
     <message>
         <source>&amp;Load State</source>
-        <translation>&amp;Cargar estado</translation>
+        <translation>Ca&amp;rgar estado</translation>
+    </message>
+    <message>
+        <source>Cha&amp;nge Disc</source>
+        <translation>&amp;Cambiar Disco</translation>
+    </message>
+    <message>
+        <source>&amp;Cheats</source>
+        <translation>&amp;Trucos</translation>
+    </message>
+    <message>
+        <source>Sa&amp;ve State</source>
+        <translation>G&amp;uardar estado</translation>
     </message>
     <message>
         <source>&amp;Save State</source>
@@ -12792,28 +12816,12 @@ Mayús + Clic izquierdo para asignaciones adicionales.</translation>
         <translation>&amp;Interfaz</translation>
     </message>
     <message>
-        <source>Enable Safe Mode</source>
-        <translation>Activar modo seguro</translation>
-    </message>
-    <message>
         <source>Memory &amp;Scanner</source>
         <translation>&amp;Buscador de memoria</translation>
     </message>
     <message>
         <source>Media Ca&amp;pture</source>
         <translation>Grabación &amp;multimedia</translation>
-    </message>
-    <message>
-        <source>Open Texture Directory...</source>
-        <translation>Abrir directorio de texturas...</translation>
-    </message>
-    <message>
-        <source>Reload Texture Replacements</source>
-        <translation>Recargar reemplazos de textura</translation>
-    </message>
-    <message>
-        <source>Capture GPU Frame</source>
-        <translation>Capturar fotograma de la GPU</translation>
     </message>
     <message>
         <source>Log Timestamps</source>
@@ -12830,22 +12838,6 @@ Mayús + Clic izquierdo para asignaciones adicionales.</translation>
     <message>
         <source>Log To File</source>
         <translation>Registrar en archivo</translation>
-    </message>
-    <message>
-        <source>ISO Browser</source>
-        <translation>Explorador de ISO</translation>
-    </message>
-    <message>
-        <source>Free Camera</source>
-        <translation>Cámara libre</translation>
-    </message>
-    <message>
-        <source>Controller Test</source>
-        <translation>Prueba de mandos</translation>
-    </message>
-    <message>
-        <source>&amp;Post-Processing</source>
-        <translation>&amp;Posprocesado</translation>
     </message>
     <message>
         <source>&amp;GitHub Repository...</source>
@@ -12870,6 +12862,14 @@ Mayús + Clic izquierdo para asignaciones adicionales.</translation>
     <message>
         <source>&amp;About DuckStation...</source>
         <translation>Acerca de &amp;DuckStation...</translation>
+    </message>
+    <message>
+        <source>Ad&amp;vanced</source>
+        <translation>Avan&amp;zado</translation>
+    </message>
+    <message>
+        <source>&amp;Debugging</source>
+        <translation>&amp;Depuración</translation>
     </message>
     <message>
         <source>&amp;Settings</source>
@@ -12902,6 +12902,10 @@ Mayús + Clic izquierdo para asignaciones adicionales.</translation>
     <message>
         <source>Dump VRAM to CPU Copies</source>
         <translation>Volcar copias de VRAM a CPU</translation>
+    </message>
+    <message>
+        <source>Enable &amp;Safe Mode</source>
+        <translation>Habilitar modo &amp;seguro</translation>
     </message>
     <message>
         <source>Dump RAM...</source>
@@ -12972,6 +12976,26 @@ Mayús + Clic izquierdo para asignaciones adicionales.</translation>
         <translation>&amp;Lista de juegos</translation>
     </message>
     <message>
+        <source>Res&amp;ume</source>
+        <translation>&amp;Continuar</translation>
+    </message>
+    <message>
+        <source>&amp;Show Toolbar</source>
+        <translation>&amp;Mostrar barra de herramientas</translation>
+    </message>
+    <message>
+        <source>S&amp;mall Icons</source>
+        <translation>&amp;Iconos pequeños</translation>
+    </message>
+    <message>
+        <source>Show &amp;Labels</source>
+        <translation>Mostrar &amp;etiquetas</translation>
+    </message>
+    <message>
+        <source>Show Labels &amp;Beside Icons</source>
+        <translation>Mostrar etiquetas e i&amp;conos adyacentes</translation>
+    </message>
+    <message>
         <source>System &amp;Display</source>
         <translation>&amp;Salida del sistema</translation>
     </message>
@@ -12996,20 +13020,12 @@ Mayús + Clic izquierdo para asignaciones adicionales.</translation>
         <translation>Mostrar títulos (vista en cuadrícula)</translation>
     </message>
     <message>
-        <source>Open Data Directory...</source>
-        <translation>Abrir directorio de datos...</translation>
-    </message>
-    <message>
         <source>Start Big Picture Mode</source>
         <translation>Iniciar modo Big Picture</translation>
     </message>
     <message>
         <source>Big Picture</source>
         <translation>Big Picture</translation>
-    </message>
-    <message>
-        <source>Cover Downloader</source>
-        <translation>Descargador de portadas</translation>
     </message>
     <message>
         <source>Error</source>
@@ -13173,7 +13189,7 @@ Mayús + Clic izquierdo para asignaciones adicionales.</translation>
     </message>
     <message>
         <source>Select Cover Image</source>
-        <translation>Seleccionar imagen de portada</translation>
+        <translation>Seleccionar imagen de carátula</translation>
     </message>
     <message>
         <source>Cover Already Exists</source>
@@ -13316,6 +13332,10 @@ Mayús + Clic izquierdo para asignaciones adicionales.</translation>
         <translation>Permite grabar audio o video del contenido.</translation>
     </message>
     <message>
+        <source>Media Capt&amp;ure</source>
+        <translation>&amp;Grabación</translation>
+    </message>
+    <message>
         <source>Starts a new session using the selected file.</source>
         <translation>Inicia una sesión nueva con el archivo seleccionado.</translation>
     </message>
@@ -13400,6 +13420,10 @@ Mayús + Clic izquierdo para asignaciones adicionales.</translation>
         <translation>Configura las teclas de atajo para las acciones relacionadas con la sesión.</translation>
     </message>
     <message>
+        <source>Post-Processi&amp;ng</source>
+        <translation>Posprocesado</translation>
+    </message>
+    <message>
         <source>On-&amp;Screen Display</source>
         <translation>Mensajes en pan&amp;talla</translation>
     </message>
@@ -13424,20 +13448,12 @@ Mayús + Clic izquierdo para asignaciones adicionales.</translation>
         <translation>L&amp;ogros</translation>
     </message>
     <message>
-        <source>A&amp;dvanced</source>
-        <translation>Avan&amp;zado</translation>
-    </message>
-    <message>
-        <source>Debuggi&amp;ng</source>
-        <translation>Depu&amp;ración</translation>
-    </message>
-    <message>
         <source>Configures internal options for the application.</source>
         <translation>Configura las opciones internas de la aplicación.</translation>
     </message>
     <message>
         <source>Add Game Director&amp;y...</source>
-        <translation>Añadir &amp;directorio de juegos...</translation>
+        <translation>A&amp;ñadir directorio de juegos...</translation>
     </message>
     <message>
         <source>Configures options related to the emulated memory cards.</source>
@@ -13456,24 +13472,12 @@ Mayús + Clic izquierdo para asignaciones adicionales.</translation>
         <translation>Establece si la barra de herramientas puede ser reubicada.</translation>
     </message>
     <message>
-        <source>S&amp;mall Toolbar Icons</source>
-        <translation>Iconos pe&amp;queños en la barra de herramientas</translation>
-    </message>
-    <message>
         <source>Controls whether the smaller toolbar icons are displayed.</source>
         <translation>Establece si se van a mostrar o no los iconos pequeños de la barra de herramientas.</translation>
     </message>
     <message>
-        <source>Toolbar L&amp;abels</source>
-        <translation>Etiquetas de la barra de herramie&amp;ntas</translation>
-    </message>
-    <message>
         <source>Controls whether labels are displayed alongside toolbar icons.</source>
         <translation>Establece si se mostrarán etiquetas de texto junto con los iconos de la barra de herramientas.</translation>
-    </message>
-    <message>
-        <source>Toolbar Labels &amp;Beside Icons</source>
-        <translation>Etiquetas &amp;junto a iconos de la barra de herramientas</translation>
     </message>
     <message>
         <source>Controls whether labels are displayed next to or under toolbar icons.</source>
@@ -13516,6 +13520,10 @@ Mayús + Clic izquierdo para asignaciones adicionales.</translation>
         <translation>Combina en la lista de juegos varios discos de un mismo juego en un único elemento.</translation>
     </message>
     <message>
+        <source>Show Grid Ca&amp;ptions</source>
+        <translation>Mostrar título en cuadrícula</translation>
+    </message>
+    <message>
         <source>Shows captions under the game cover in grid view.</source>
         <translation>Muestra información sobre cada juego bajo las imágenes de sus carátulas en el modo de cuadrícula.</translation>
     </message>
@@ -13536,8 +13544,16 @@ Mayús + Clic izquierdo para asignaciones adicionales.</translation>
         <translation>Reduce el tamaño de los iconos o carátulas de los juegos.</translation>
     </message>
     <message>
+        <source>&amp;Refresh Grid Covers</source>
+        <translation>Actualizar ca&amp;rátulas de cuadrícula</translation>
+    </message>
+    <message>
         <source>Invalidates the cache of game covers, allowing new images to be discovered.</source>
         <translation>Anula la caché de carátulas de juegos para que se puedan descubrir imágenes nuevas.</translation>
+    </message>
+    <message>
+        <source>&amp;Open Data Directory...</source>
+        <translation>Abrir directori&amp;o de datos...</translation>
     </message>
     <message>
         <source>Opens the directory containing application data in your file browser.</source>
@@ -13548,8 +13564,16 @@ Mayús + Clic izquierdo para asignaciones adicionales.</translation>
         <translation>Cierra la sesión actual sin la opción de guardar el estado.</translation>
     </message>
     <message>
+        <source>Start Bi&amp;g Picture Mode</source>
+        <translation>Iniciar el modo Bi&amp;g Picture</translation>
+    </message>
+    <message>
         <source>Opens or closes the controller-based &quot;big picture&quot; mode.</source>
         <translation>Abre o cierra el modo Big Picture para mandos.</translation>
+    </message>
+    <message>
+        <source>Cover &amp;Downloader</source>
+        <translation>&amp;Descargador de carátulas</translation>
     </message>
     <message>
         <source>Opens the cover downloader window.</source>
@@ -13577,16 +13601,40 @@ Mayús + Clic izquierdo para asignaciones adicionales.</translation>
         <translation>Inicia o detiene la captura de video y audio del contenido.</translation>
     </message>
     <message>
+        <source>Open Te&amp;xture Directory...</source>
+        <translation>Abrir carpeta de &amp;texturas...</translation>
+    </message>
+    <message>
         <source>Opens the directory used to store texture replacements.</source>
         <translation>Abre el directorio donde se almacenan las texturas de reemplazo.</translation>
+    </message>
+    <message>
+        <source>&amp;Reload Texture Replacements</source>
+        <translation>&amp;Recargar reemplazos de texturas</translation>
     </message>
     <message>
         <source>Invalidates the cache of available replacement textures.</source>
         <translation>Anula la caché de texturas de reemplazo disponibles.</translation>
     </message>
     <message>
+        <source>Capture &amp;GPU Frame</source>
+        <translation>Capturar &amp;fotograma de GPU</translation>
+    </message>
+    <message>
         <source>Saves the emulated GPU commands to a file that can be later replayed.</source>
         <translation>Guarda los comandos de GPU emulados en un archivo reproducible en otro momento.</translation>
+    </message>
+    <message>
+        <source>&amp;ISO Browser</source>
+        <translation>Explorador de &amp;ISO</translation>
+    </message>
+    <message>
+        <source>&amp;Free Camera</source>
+        <translation>Cámara &amp;libre</translation>
+    </message>
+    <message>
+        <source>Controller &amp;Test</source>
+        <translation>&amp;Prueba de mando</translation>
     </message>
     <message>
         <source>Controller Prese&amp;ts</source>
@@ -13605,8 +13653,8 @@ Mayús + Clic izquierdo para asignaciones adicionales.</translation>
         <translation>Cambia la imagen de fondo que se muestra en la lista/cuadrícula de juegos.</translation>
     </message>
     <message>
-        <source>Clea&amp;r List Background</source>
-        <translation>Quitar fondo de li&amp;stado</translation>
+        <source>Refresh &amp;Achievement Database</source>
+        <translation>Actualizar base de datos de &amp;logros</translation>
     </message>
     <message>
         <source>Removes the background image shown in the game list/grid.</source>
@@ -13615,10 +13663,6 @@ Mayús + Clic izquierdo para asignaciones adicionales.</translation>
     <message>
         <source>Refreshes the list of unlocked achievements.</source>
         <translation>Actualiza la lista de logros desbloqueados.</translation>
-    </message>
-    <message>
-        <source>Refresh Achievement Database</source>
-        <translation>Actualizar base de datos de logros</translation>
     </message>
     <message>
         <source>Updates the database for achievements shown in the game list.</source>
@@ -13645,8 +13689,20 @@ Mayús + Clic izquierdo para asignaciones adicionales.</translation>
         <translation>Abre la ventana del editor de memoria.</translation>
     </message>
     <message>
+        <source>&amp;Animate Game Icons</source>
+        <translation>Iconos de juego &amp;animados</translation>
+    </message>
+    <message>
         <source>Animates icons in the list view when selected.</source>
         <translation>Muestra iconos animados al seleccionar un juego en la vista de lista.</translation>
+    </message>
+    <message>
+        <source>Prefer Ac&amp;hievement Icons</source>
+        <translation>Preferir i&amp;conos de logros</translation>
+    </message>
+    <message>
+        <source>Syst&amp;em Log</source>
+        <translation>Registro del sist&amp;ema</translation>
     </message>
     <message>
         <source>Start &amp;Capture</source>
@@ -13689,12 +13745,8 @@ Mayús + Clic izquierdo para asignaciones adicionales.</translation>
         <translation>Abierta</translation>
     </message>
     <message>
-        <source>System Log</source>
-        <translation>Registro del sistema</translation>
-    </message>
-    <message>
         <source>Scan &amp;For New Games</source>
-        <translation>Buscar juegos nue&amp;vos</translation>
+        <translation>Buscar juegos n&amp;uevos</translation>
     </message>
     <message>
         <source>Cl&amp;ose Game</source>
@@ -13793,14 +13845,6 @@ Mayús + Clic izquierdo para asignaciones adicionales.</translation>
         <translation>Cambia a un disco de la lista de juegos.</translation>
     </message>
     <message>
-        <source>Show G&amp;rid Captions</source>
-        <translation>Mostrar &amp;subtítulos en cuadrícula</translation>
-    </message>
-    <message>
-        <source>Refresh Grid &amp;Covers</source>
-        <translation>Ac&amp;tualizar caráctulas de cuadrícula</translation>
-    </message>
-    <message>
         <source>Close Game &amp;Without Saving</source>
         <translation>C&amp;errar juego sin guardar</translation>
     </message>
@@ -13810,7 +13854,7 @@ Mayús + Clic izquierdo para asignaciones adicionales.</translation>
     </message>
     <message>
         <source>Show Game Ico&amp;ns</source>
-        <translation>Mostrar &amp;iconos de juegos</translation>
+        <translation>Mostrar &amp;iconos del juego</translation>
     </message>
     <message>
         <source>Log File Timestamps</source>
@@ -13829,16 +13873,12 @@ Mayús + Clic izquierdo para asignaciones adicionales.</translation>
         <translation>Permite probar las asociaciones de los mandos emulados.</translation>
     </message>
     <message>
+        <source>Clear List Backgro&amp;und</source>
+        <translation>Borrar fondo de l&amp;ista</translation>
+    </message>
+    <message>
         <source>Refresh Achievement &amp;Progress</source>
         <translation>Actualizar p&amp;rogresos de logros</translation>
-    </message>
-    <message>
-        <source>Animate Game Icons</source>
-        <translation>Mostrar iconos de juegos animados</translation>
-    </message>
-    <message>
-        <source>Prefer Achievement Icons</source>
-        <translation>Dar prioridad a iconos de logros</translation>
     </message>
     <message>
         <source>Prioritizes the games badges used for RetroAchievements over memory card icons.</source>
@@ -13883,10 +13923,6 @@ Do you want to delete the save state and boot the game anyway?</source>
 %1
 
 ¿Deseas eliminar el estado de guardado e iniciar el juego de todos modos?</translation>
-    </message>
-    <message>
-        <source>RA: Logged in as %1 (%2, %3 casual). %4 unread messages.</source>
-        <translation>RA: Logged in as %1 (%2, %3 casual). %4 unread messages.</translation>
     </message>
     <message>
         <source>RA: Updated achievement game database.</source>
@@ -13951,6 +13987,10 @@ Esta acción no se puede deshacer.</translation>
     <message>
         <source>Are you sure you want to close the current game?</source>
         <translation>¿Seguro que quieres cerrar la partida actual?</translation>
+    </message>
+    <message>
+        <source>RA: Logged in as %1 (%2 points, %3 casual). %4 unread messages.</source>
+        <translation>RA: Sesión iniciada como %1 (%2 puntos, %3 casual). %4 mensajes sin leer.</translation>
     </message>
     <message>
         <source>Refresh Achievement Progress</source>
@@ -14501,7 +14541,7 @@ Error: {1}</translation>
     </message>
     <message>
         <source>When playing a multi-disc game and using per-game (title) memory cards, a single memory card will be used for all discs. If unchecked, a separate card will be used for each disc.</source>
-        <translation>Cuando se ejecute un juego de múltiples discos y se utilicen Memory Cards por juego, se utilizará una única tarjeta para todos los discos. Si se deshabilita, se utilizará una tarjeta diferente para cada disco.</translation>
+        <translation>Cuando utilices un juego de varios discos y Memory Cards individuales para cada juego (por título), se usará una sola Memory Card para todos los discos. Al desactivar esta opción, se usará una Memory Card diferente para cada disco.</translation>
     </message>
     <message>
         <source>The memory card editor enables you to move saves between cards, as well as import cards of other formats.</source>
@@ -14585,7 +14625,7 @@ Error: {1}</translation>
     </message>
     <message>
         <source>When enabled, the legacy global save state slots will be available. These slots are independent of the current game.</source>
-        <translation>Al activar esta opción se activarán los antiguos espacios de los estados de guardado globales. Estos espacios son independientes al juego actual.</translation>
+        <translation>Al activar esta opción, se activarán los antiguos espacios de los estados de guardado globales. Estos espacios son independientes al juego actual.</translation>
     </message>
     <message>
         <source>Memory Card Editor</source>
@@ -16804,19 +16844,19 @@ Do you want to create this directory?</source>
         <translation>PAL (Europa, Australia)</translation>
     </message>
     <message>
-        <source>NTSC-J (Japan)</source>
+        <source>NTSC-J</source>
         <comment>DiscRegion</comment>
-        <translation>NTSC-J (Japón)</translation>
+        <translation>NTSC-J</translation>
     </message>
     <message>
-        <source>NTSC-U/C (US, Canada)</source>
+        <source>NTSC-U/C</source>
         <comment>DiscRegion</comment>
-        <translation>NTSC-U/C (EE.UU., Canadá)</translation>
+        <translation>NTSC-U/C</translation>
     </message>
     <message>
-        <source>PAL (Europe, Australia)</source>
+        <source>PAL</source>
         <comment>DiscRegion</comment>
-        <translation>PAL (Europa, Australia)</translation>
+        <translation>PAL</translation>
     </message>
     <message>
         <source>Other</source>
