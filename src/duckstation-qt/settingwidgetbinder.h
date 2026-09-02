@@ -1329,8 +1329,8 @@ inline void BindWidgetToFolderSetting(SettingsInterface* sif, QLineEdit* widget,
   {
     QObject::connect(browse_button, &QAbstractButton::clicked, browse_button,
                      [widget, browse_title = std::move(browse_title), value_changed]() {
-                       const QString path =
-                         QDir::toNativeSeparators(QFileDialog::getExistingDirectory(widget, browse_title));
+                       const QString path = QDir::toNativeSeparators(QDir::cleanPath(
+                         QDir::fromNativeSeparators(QFileDialog::getExistingDirectory(widget, browse_title))));
                        if (path.isEmpty())
                          return;
 
