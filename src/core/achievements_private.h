@@ -104,9 +104,38 @@ std::string GetSubsetBadgeURL(const rc_client_subset_t* subset);
 
 } // namespace Achievements
 
-#ifndef __ANDROID__
-
 namespace FullscreenUI {
+
+enum class AchievementNotificationNoteType : u8
+{
+  None,
+  Text,
+  IconText,
+  Spinner,
+  Image,
+};
+
+enum class AchievementNotificationCategory : u8
+{
+  None = 0,
+  Missable = 1,
+  Progression = 2,
+  Win = 3,
+  TypeMask = 0x0F,
+  Unofficial = (1 << 4),
+};
+
+IMPLEMENT_ENUM_CLASS_BITWISE_OPERATORS(AchievementNotificationCategory);
+
+/// Returns the category bitmask for a given achievement.
+AchievementNotificationCategory GetAchievementNotificationCategory(const rc_client_achievement_t* achievement);
+
+/// Schedules an achievement notification to be shown.
+void AddAchievementNotification(std::string key, float duration, std::string image_url, std::string title,
+                                std::string text, std::string note = {},
+                                AchievementNotificationNoteType note_type = AchievementNotificationNoteType::None,
+                                AchievementNotificationCategory category = AchievementNotificationCategory::None,
+                                u16 min_width = 0, bool small_font = false);
 
 /// Clears all cached state used to render the UI.
 void ClearAchievementsState();
@@ -115,5 +144,3 @@ void ClearAchievementsState();
 void UpdateAchievementsLastProgressUpdate(const rc_client_achievement_t* achievement);
 
 } // namespace FullscreenUI
-
-#endif // __ANDROID__

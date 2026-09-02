@@ -52,6 +52,15 @@ static constexpr float NOTIFICATION_DISAPPEAR_ANIMATION_TIME = 0.5f;
 static constexpr float CHALLENGE_INDICATOR_FADE_IN_TIME = 0.1f;
 static constexpr float CHALLENGE_INDICATOR_FADE_OUT_TIME = 0.3f;
 
+static constexpr const float& ACHIEVEMENT_BADGE_FONT_WEIGHT = UIStyle.BoldFontWeight;
+
+static_assert(static_cast<u8>(AchievementNotificationCategory::None) == RC_CLIENT_ACHIEVEMENT_TYPE_STANDARD);
+static_assert(static_cast<u8>(AchievementNotificationCategory::Missable) == RC_CLIENT_ACHIEVEMENT_TYPE_MISSABLE);
+static_assert(static_cast<u8>(AchievementNotificationCategory::Progression) == RC_CLIENT_ACHIEVEMENT_TYPE_PROGRESSION);
+static_assert(static_cast<u8>(AchievementNotificationCategory::Win) == RC_CLIENT_ACHIEVEMENT_TYPE_WIN);
+static_assert((AchievementNotificationCategory::Unofficial & AchievementNotificationCategory::TypeMask) ==
+              AchievementNotificationCategory::None);
+
 namespace {
 
 struct Notification
@@ -68,6 +77,7 @@ struct Notification
   float last_y;
   u16 min_width;
   AchievementNotificationNoteType note_type;
+  AchievementNotificationCategory category;
   bool small_font;
 };
 
@@ -105,7 +115,20 @@ struct PauseMenuLeaderboardInfo
   u32 format;
 };
 
+struct AchievementCategoryBadge
+{
+  const char* icon;
+  const char* label;
+  ImU32 background_color;
+};
+
 } // namespace
+
+static ImVec2 MeasureAchievementCategoryBadges(AchievementNotificationCategory category, float font_size,
+                                               float font_weight, const ImVec2& padding, float spacing);
+static void DrawAchievementCategoryBadges(ImDrawList* dl, AchievementNotificationCategory category, ImVec2 position,
+                                          float font_size, float font_weight, const ImVec2& padding, float spacing,
+                                          float rounding, float opacity);
 
 static float EffectiveNotificationScale(s16 scale);
 static void DrawNotifications(NotificationLayout& layout);
@@ -232,6 +255,86 @@ void FullscreenUI::ClearAchievementsState()
   UpdateAchievementOverlaysRunIdle();
 }
 
+FullscreenUI::AchievementNotificationCategory
+FullscreenUI::GetAchievementNotificationCategory(const rc_client_achievement_t* achievement)
+{
+  AchievementNotificationCategory category = static_cast<FullscreenUI::AchievementNotificationCategory>(
+    achievement->type & static_cast<u8>(FullscreenUI::AchievementNotificationCategory::TypeMask));
+  if (achievement->category == RC_CLIENT_ACHIEVEMENT_CATEGORY_UNOFFICIAL)
+    category |= FullscreenUI::AchievementNotificationCategory::Unofficial;
+
+  return category;
+}
+
+static constexpr const FullscreenUI::AchievementCategoryBadge s_achievement_category_badges[] = {
+  {nullptr, nullptr, 0},
+  {ICON_PF_ACHIEVEMENTS_MISSABLE, TRANSLATE_NOOP("Achievements", "Missable"), IM_COL32(205, 45, 32, 255)},
+  {ICON_PF_ACHIEVEMENTS_PROGRESSION, TRANSLATE_NOOP("Achievements", "Progression"), IM_COL32(13, 71, 161, 255)},
+  {ICON_PF_ACHIEVEMENTS_PROGRESSION, TRANSLATE_NOOP("Achievements", "Win Condition"), IM_COL32(50, 110, 30, 255)},
+};
+static constexpr FullscreenUI::AchievementCategoryBadge UNOFFICIAL_ACHIEVEMENT_BADGE = {
+  ICON_FA_FLASK_VIAL, TRANSLATE_NOOP("Achievements", "Unofficial"), IM_COL32(142, 64, 58, 255)};
+
+ImVec2 FullscreenUI::MeasureAchievementCategoryBadges(AchievementNotificationCategory category, float font_size,
+                                                      float font_weight, const ImVec2& padding, float spacing)
+{
+  ImVec2 size;
+  TinyString text;
+
+  if ((category & AchievementNotificationCategory::Unofficial) != AchievementNotificationCategory::None)
+  {
+    text.format("{} {}", UNOFFICIAL_ACHIEVEMENT_BADGE.icon,
+                Host::TranslateToStringView("Achievements", UNOFFICIAL_ACHIEVEMENT_BADGE.label));
+    size = UIStyle.Font->CalcTextSizeA(font_size, font_weight, FLT_MAX, 0.0f, IMSTR_START_END(text)) + padding * 2.0f;
+  }
+
+  if (const AchievementCategoryBadge& badge =
+        s_achievement_category_badges[static_cast<size_t>(category & AchievementNotificationCategory::TypeMask)];
+      badge.label)
+  {
+    text.format("{} {}", badge.icon, Host::TranslateToStringView("Achievements", badge.label));
+    const ImVec2 text_size =
+      UIStyle.Font->CalcTextSizeA(font_size, font_weight, FLT_MAX, 0.0f, IMSTR_START_END(text)) + padding * 2.0f;
+    size.x = (size.x > 0.0f) ? (size.x + spacing + text_size.x) : text_size.x;
+    size.y = std::max(size.y, text_size.y);
+  }
+
+  return size;
+}
+
+void FullscreenUI::DrawAchievementCategoryBadges(ImDrawList* dl, AchievementNotificationCategory category,
+                                                 ImVec2 position, float font_size, float font_weight,
+                                                 const ImVec2& padding, float spacing, float rounding, float opacity)
+{
+  const auto draw_badge = [&dl, &position, &font_size, &font_weight, &padding, &spacing, &rounding,
+                           &opacity](const AchievementCategoryBadge& badge) {
+    TinyString text =
+      TinyString::from_format("{} {}", badge.icon, Host::TranslateToStringView("Achievements", badge.label));
+    const ImVec2 size =
+      UIStyle.Font->CalcTextSizeA(font_size, font_weight, FLT_MAX, 0.0f, IMSTR_START_END(text)) + padding * 2.0f;
+    dl->AddRectFilled(position, position + size,
+                      ImGui::GetColorU32(ModAlpha(ImGui::ColorConvertU32ToFloat4(badge.background_color), opacity)),
+                      rounding);
+    const ImVec2 text_position = position + padding;
+    const ImVec4 clip_rect(position.x, position.y, position.x + size.x, position.y + size.y);
+    dl->AddText(UIStyle.Font, font_size, font_weight, text_position,
+                ImGui::GetColorU32(ImVec4(1.0f, 1.0f, 1.0f, opacity)), IMSTR_START_END(text), 0.0f, &clip_rect);
+    position.x += size.x + spacing;
+  };
+
+  if ((category & AchievementNotificationCategory::Unofficial) != AchievementNotificationCategory::None)
+  {
+    draw_badge(UNOFFICIAL_ACHIEVEMENT_BADGE);
+  }
+
+  if (const AchievementCategoryBadge& badge =
+        s_achievement_category_badges[static_cast<size_t>(category & AchievementNotificationCategory::TypeMask)];
+      badge.label)
+  {
+    draw_badge(badge);
+  }
+}
+
 void FullscreenUI::DrawAchievementsOverlays()
 {
   if (!Achievements::IsActive())
@@ -254,7 +357,8 @@ void FullscreenUI::DrawAchievementsOverlays()
 
 void FullscreenUI::AddAchievementNotification(std::string key, float duration, std::string image_url, std::string title,
                                               std::string text, std::string note,
-                                              AchievementNotificationNoteType note_type, u16 min_width, bool small_font)
+                                              AchievementNotificationNoteType note_type,
+                                              AchievementNotificationCategory category, u16 min_width, bool small_font)
 {
   const bool prev_had_notifications = !s_achievements_locals.notifications.empty();
   const Timer::Value current_time = Timer::GetCurrentValue();
@@ -272,6 +376,7 @@ void FullscreenUI::AddAchievementNotification(std::string key, float duration, s
         it->image_url = std::move(image_url);
         it->min_width = min_width;
         it->note_type = note_type;
+        it->category = category;
         it->small_font = small_font;
 
         // Don't fade it in again
@@ -296,6 +401,7 @@ void FullscreenUI::AddAchievementNotification(std::string key, float duration, s
   notif.last_y = -1.0f;
   notif.min_width = min_width;
   notif.note_type = note_type;
+  notif.category = category;
   notif.small_font = small_font;
   s_achievements_locals.notifications.push_back(std::move(notif));
 
@@ -350,7 +456,11 @@ void FullscreenUI::DrawNotifications(NotificationLayout& layout)
   static constexpr const float& text_font_weight = UIStyle.NormalFontWeight;
   const float note_text_size = ImCeil(LAYOUT_MEDIUM_FONT_SIZE * scale);
   static constexpr const float& note_text_weight = UIStyle.BoldFontWeight;
-  const float note_icon_size = ImCeil(LAYOUT_LARGE_FONT_SIZE * scale);
+  const float note_icon_size = ImCeil(LAYOUT_MEDIUM_LARGE_FONT_SIZE * scale);
+  const float category_badge_font_size = ImCeil(LAYOUT_MEDIUM_SMALL_FONT_SIZE * scale);
+  const ImVec2 category_badge_padding(ImCeil(5.0f * scale), ImCeil(3.0f * scale));
+  const float category_badge_spacing = ImCeil(10.0f * scale);
+  const float category_badge_rounding = ImCeil(3.0f * scale);
   const ImVec4 left_background_color = DarkerColor(UIStyle.ToastBackgroundColor, 1.3f);
   const ImVec4 right_background_color = DarkerColor(UIStyle.ToastBackgroundColor, 0.8f);
   const bool blur_background = g_gpu_settings.display_blur_message_backgrounds && !FullscreenUI::HasActiveWindow() &&
@@ -422,19 +532,29 @@ void FullscreenUI::DrawNotifications(NotificationLayout& layout)
         break;
     }
 
+    const ImVec2 category_size =
+      MeasureAchievementCategoryBadges(notif.category, category_badge_font_size, ACHIEVEMENT_BADGE_FONT_WEIGHT,
+                                       category_badge_padding, category_badge_spacing);
+    const bool has_category = (category_size.x > 0.0f);
+    const bool has_note = (note_size.x > 0.0f);
+    const float category_note_spacing = (has_category && has_note) ? horizontal_spacing : 0.0f;
+    const float title_trailing_width = category_size.x + category_note_spacing + note_size.x;
+    const float title_trailing_spacing = has_category ? larger_horizontal_spacing : note_spacing;
+    const float title_available_width = std::max(max_text_width - title_trailing_spacing - title_trailing_width, 1.0f);
     const float title_font_size = notif.small_font ? small_title_font_size : normal_title_font_size;
     const float text_font_size = notif.small_font ? small_text_font_size : normal_text_font_size;
-    const ImVec2 title_size = font->CalcTextSizeA(title_font_size, title_font_weight, max_text_width - note_size.x,
-                                                  max_text_width - note_size.x, IMSTR_START_END(notif.title));
+    const ImVec2 title_size = font->CalcTextSizeA(title_font_size, title_font_weight, title_available_width,
+                                                  title_available_width, IMSTR_START_END(notif.title));
     const ImVec2 text_size = font->CalcTextSizeA(text_font_size, text_font_weight, max_text_width, max_text_width,
                                                  IMSTR_START_END(notif.text));
 
     const float badge_size = notif.small_font ? small_badge_size : normal_badge_size;
     const float horizontal_padding = notif.small_font ? small_horizontal_padding : normal_horizontal_padding;
     const float vertical_padding = notif.small_font ? small_vertical_padding : normal_vertical_padding;
-    const float box_width = std::max((horizontal_padding * 2.0f) + badge_size + horizontal_spacing +
-                                       ImCeil(std::max(title_size.x + note_spacing + note_size.x, text_size.x)),
-                                     std::max(static_cast<float>(ImCeil(notif.min_width * scale)), min_width));
+    const float box_width =
+      std::max((horizontal_padding * 2.0f) + badge_size + horizontal_spacing +
+                 ImCeil(std::max(title_size.x + title_trailing_spacing + title_trailing_width, text_size.x)),
+               std::max(static_cast<float>(ImCeil(notif.min_width * scale)), min_width));
     const float box_height =
       std::max((vertical_padding * 2.0f) + ImCeil(title_size.y) + vertical_spacing + ImCeil(text_size.y),
                notif.small_font ? small_min_height : normal_min_height);
@@ -512,18 +632,29 @@ void FullscreenUI::DrawNotifications(NotificationLayout& layout)
     const u32 title_col = ImGui::GetColorU32(ModAlpha(UIStyle.ToastTextColor, opacity));
     const u32 text_col = ImGui::GetColorU32(ModAlpha(DarkerColor(UIStyle.ToastTextColor), opacity));
 
-    const ImVec2 title_pos = ImVec2(badge_max.x + horizontal_spacing, box_min.y + vertical_padding);
+    // offset the title's Y position ever-so-slightly due to the different font size, make it line up with the note
+    const float title_offset = LayoutScale(2.0f);
+    const ImVec2 title_pos = ImVec2(badge_max.x + horizontal_spacing, box_min.y + vertical_padding - title_offset);
     const ImRect title_bb = ImRect(title_pos, title_pos + title_size);
     RenderShadowedTextClipped(dl, font, title_font_size, title_font_weight, title_bb.Min, title_bb.Max, title_col,
-                              notif.title, &title_size, ImVec2(0.0f, 0.0f), max_text_width - note_size.x, &title_bb);
+                              notif.title, &title_size, ImVec2(0.0f, 0.0f), title_available_width, &title_bb);
 
-    const ImVec2 text_pos = ImVec2(badge_max.x + horizontal_spacing, title_bb.Max.y + vertical_spacing);
+    const ImVec2 text_pos = ImVec2(badge_max.x + horizontal_spacing, title_bb.Max.y + vertical_spacing - title_offset);
     const ImRect text_bb = ImRect(text_pos, text_pos + text_size);
     RenderShadowedTextClipped(dl, font, text_font_size, text_font_weight, text_bb.Min, text_bb.Max, text_col,
                               notif.text, &text_size, ImVec2(0.0f, 0.0f), max_text_width, &text_bb);
 
     const ImVec2 note_pos =
       ImVec2((box_min.x + box_width) - horizontal_padding - note_size.x, box_min.y + vertical_padding + note_offset_y);
+    if (has_category)
+    {
+      const float category_right = has_note ? note_pos.x - category_note_spacing : box_max.x - horizontal_padding;
+      const ImVec2 category_pos(category_right - category_size.x, box_min.y + vertical_padding);
+      DrawAchievementCategoryBadges(dl, notif.category, category_pos, category_badge_font_size,
+                                    ACHIEVEMENT_BADGE_FONT_WEIGHT, category_badge_padding, category_badge_spacing,
+                                    category_badge_rounding, opacity);
+    }
+
     switch (notif.note_type)
     {
       case AchievementNotificationNoteType::Text:
@@ -2258,7 +2389,6 @@ void FullscreenUI::DrawAchievement(const rc_client_achievement_t* cheevo, const 
   static constexpr const float& subtitle_font_size = UIStyle.MediumFontSize;
   static constexpr const float& subtitle_font_weight = UIStyle.NormalFontWeight;
   static constexpr const float& type_badge_font_size = UIStyle.MediumSmallFontSize;
-  static constexpr const float& type_badge_font_weight = UIStyle.BoldFontWeight;
 
   const std::string_view title(cheevo->title);
   const std::string_view description = cheevo->description ? std::string_view(cheevo->description) : std::string_view();
@@ -2271,27 +2401,13 @@ void FullscreenUI::DrawAchievement(const rc_client_achievement_t* cheevo, const 
   const ImVec2 type_badge_padding = LayoutScale(5.0f, 3.0f);
   const float type_badge_spacing = LayoutScale(10.0f);
   const float type_badge_rounding = LayoutScale(3.0f);
-  ImVec2 type_badge_size;
-  ImU32 type_badge_bg_color = 0;
-  TinyString type_badge_text;
+  AchievementNotificationCategory category = static_cast<AchievementNotificationCategory>(
+    cheevo->type & static_cast<u8>(AchievementNotificationCategory::TypeMask));
+  if (is_unofficial)
+    category |= AchievementNotificationCategory::Unofficial;
+  const ImVec2 category_size = MeasureAchievementCategoryBadges(
+    category, type_badge_font_size, ACHIEVEMENT_BADGE_FONT_WEIGHT, type_badge_padding, type_badge_spacing);
   SmallString text;
-  switch (cheevo->type)
-  {
-    case RC_CLIENT_ACHIEVEMENT_TYPE_MISSABLE:
-      type_badge_text.format(ICON_PF_ACHIEVEMENTS_MISSABLE " {}", TRANSLATE_SV("Achievements", "Missable"));
-      type_badge_bg_color = IM_COL32(205, 45, 32, 255);
-      break;
-
-    case RC_CLIENT_ACHIEVEMENT_TYPE_PROGRESSION:
-      type_badge_text.format(ICON_PF_ACHIEVEMENTS_PROGRESSION " {}", TRANSLATE_SV("Achievements", "Progression"));
-      type_badge_bg_color = IM_COL32(13, 71, 161, 255);
-      break;
-
-    case RC_CLIENT_ACHIEVEMENT_TYPE_WIN:
-      type_badge_text.format(ICON_PF_ACHIEVEMENTS_PROGRESSION " {}", TRANSLATE_SV("Achievements", "Win Condition"));
-      type_badge_bg_color = IM_COL32(50, 110, 30, 255);
-      break;
-  }
 
   static constexpr const float& pin_font_size = UIStyle.MediumLargeFontSize;
   const std::string_view pin_text = is_pinned ? std::string_view(ICON_FA_THUMBTACK) : std::string_view();
@@ -2299,22 +2415,6 @@ void FullscreenUI::DrawAchievement(const rc_client_achievement_t* cheevo, const 
                             ImVec2() :
                             UIStyle.Font->CalcTextSizeA(pin_font_size, 0.0f, FLT_MAX, 0.0f, IMSTR_START_END(pin_text));
   const float pin_spacing = pin_text.empty() ? 0.0f : LayoutScale(5.0f);
-
-  if (!type_badge_text.empty())
-  {
-    type_badge_size = UIStyle.Font->CalcTextSizeA(type_badge_font_size, type_badge_font_weight, FLT_MAX, 0.0f,
-                                                  IMSTR_START_END(type_badge_text));
-    type_badge_size += type_badge_padding * 2.0f;
-  }
-
-  ImVec2 unofficial_badge_size;
-  if (is_unofficial)
-  {
-    text.format("{} {}", ICON_FA_FLASK_VIAL, TRANSLATE_SV("Achievements", "Unofficial"));
-    unofficial_badge_size =
-      UIStyle.Font->CalcTextSizeA(type_badge_font_size, type_badge_font_weight, FLT_MAX, 0.0f, IMSTR_START_END(text));
-    unofficial_badge_size += type_badge_padding * 2.0f;
-  }
 
   const ImVec2 image_size = LayoutScale(50.0f, 50.0f);
   const float image_right_padding = LayoutScale(15.0f);
@@ -2325,8 +2425,7 @@ void FullscreenUI::DrawAchievement(const rc_client_achievement_t* cheevo, const 
   const float max_text_width =
     avail_width - (image_size.x + image_right_padding + (spacing * 2.0f) + right_side_size.x + spacing);
   const float max_title_width = max_text_width -
-                                (type_badge_text.empty() ? 0.0f : type_badge_size.x + type_badge_spacing) -
-                                (is_unofficial ? 0.0f : unofficial_badge_size.x + type_badge_spacing) -
+                                (category_size.x > 0.0f ? category_size.x + type_badge_spacing : 0.0f) -
                                 (pin_text.empty() ? 0.0f : pin_size.x + pin_spacing);
   const ImVec2 title_size = UIStyle.Font->CalcTextSizeA(UIStyle.LargeFontSize, UIStyle.BoldFontWeight, FLT_MAX,
                                                         max_title_width, IMSTR_START_END(title));
@@ -2400,35 +2499,13 @@ void FullscreenUI::DrawAchievement(const rc_client_achievement_t* cheevo, const 
                             text_color, title, &title_size, ImVec2(0.0f, 0.0f), max_title_width, &title_bb);
   current_pos.y += title_size.y + spacing;
 
-  // -- Type Badge --
-  if (!type_badge_text.empty())
+  // -- Category Badges --
+  if (category_size.x > 0.0f)
   {
-    const ImVec2 type_badge_pos(current_pos.x + max_text_width - type_badge_size.x,
-                                ImFloor(title_bb.Min.y + (title_font_size - type_badge_size.y) * 0.5f));
-    dl->AddRectFilled(type_badge_pos, type_badge_pos + type_badge_size, type_badge_bg_color, type_badge_rounding);
-
-    const ImVec2 type_badge_text_pos = type_badge_pos + type_badge_padding;
-    const ImVec4 type_badge_text_clip = ImVec4(type_badge_pos.x, type_badge_pos.y, type_badge_pos.x + type_badge_size.x,
-                                               type_badge_pos.y + type_badge_size.y);
-    dl->AddText(UIStyle.Font, type_badge_font_size, type_badge_font_weight, type_badge_text_pos,
-                IM_COL32(255, 255, 255, 255), IMSTR_START_END(type_badge_text), 0.0f, &type_badge_text_clip);
-  }
-
-  // -- Unofficial Badge --
-  if (is_unofficial)
-  {
-    const float right =
-      current_pos.x + max_text_width - (type_badge_text.empty() ? 0.0f : type_badge_size.x + type_badge_spacing);
-    const ImVec2 badge_pos(right - unofficial_badge_size.x,
-                           ImFloor(title_bb.Min.y + (title_font_size - unofficial_badge_size.y) * 0.5f));
-    dl->AddRectFilled(badge_pos, badge_pos + unofficial_badge_size, IM_COL32(142, 64, 58, 255), type_badge_rounding);
-
-    const ImVec2 badge_text_pos = badge_pos + type_badge_padding;
-    const ImVec4 badge_text_clip =
-      ImVec4(badge_pos.x, badge_pos.y, badge_pos.x + unofficial_badge_size.x, badge_pos.y + unofficial_badge_size.y);
-    text.format("{} {}", ICON_FA_FLASK_VIAL, TRANSLATE_SV("Achievements", "Unofficial"));
-    dl->AddText(UIStyle.Font, type_badge_font_size, type_badge_font_weight, badge_text_pos,
-                IM_COL32(255, 255, 255, 255), IMSTR_START_END(text), 0.0f, &badge_text_clip);
+    const ImVec2 badge_pos(current_pos.x + max_text_width - category_size.x,
+                           ImFloor(title_bb.Min.y + (title_font_size - category_size.y) * 0.5f));
+    DrawAchievementCategoryBadges(dl, category, badge_pos, type_badge_font_size, ACHIEVEMENT_BADGE_FONT_WEIGHT,
+                                  type_badge_padding, type_badge_spacing, type_badge_rounding, 1.0f);
   }
 
   // -- Description --

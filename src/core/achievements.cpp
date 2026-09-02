@@ -1436,23 +1436,18 @@ void Achievements::HandleUnlockEvent(const rc_client_event_t* event)
 
   if (g_settings.achievements_notifications)
   {
-    std::string title;
-    if (cheevo->category == RC_CLIENT_ACHIEVEMENT_CATEGORY_UNOFFICIAL)
-      title = fmt::format(TRANSLATE_FS("Achievements", "{} (Unofficial)"), cheevo->title);
-    else
-      title = cheevo->title;
-
     std::string note;
     if (cheevo->points > 0)
       note = fmt::format(ICON_EMOJI_TROPHY " {}", cheevo->points);
 
     FullscreenUI::AddAchievementNotification(fmt::format("achievement_unlock_{}", cheevo->id),
                                              static_cast<float>(g_settings.achievements_notification_duration),
-                                             std::string(GetAchievementBadgeURL(cheevo, false)), std::move(title),
-                                             std::string(cheevo->description), std::move(note),
-                                             (cheevo->points > 0) ?
-                                               FullscreenUI::AchievementNotificationNoteType::Text :
-                                               FullscreenUI::AchievementNotificationNoteType::None);
+                                             std::string(GetAchievementBadgeURL(cheevo, false)),
+                                             std::string(cheevo->title), std::string(cheevo->description),
+                                             std::move(note),
+                                             !note.empty() ? FullscreenUI::AchievementNotificationNoteType::Text :
+                                                             FullscreenUI::AchievementNotificationNoteType::None,
+                                             FullscreenUI::GetAchievementNotificationCategory(cheevo));
 
     PrefetchNextAchievementBadge(cheevo);
   }
@@ -1568,7 +1563,7 @@ void Achievements::HandleLeaderboardSubmittedEvent(const rc_client_event_t* even
       g_settings.achievements_spectator_mode ? std::string(ICON_EMOJI_CHART_UPWARDS_TREND) : std::string(),
       g_settings.achievements_spectator_mode ? FullscreenUI::AchievementNotificationNoteType::IconText :
                                                FullscreenUI::AchievementNotificationNoteType::Spinner,
-      LEADERBOARD_NOTIFICATION_MIN_WIDTH);
+      FullscreenUI::AchievementNotificationCategory::None, LEADERBOARD_NOTIFICATION_MIN_WIDTH);
   }
 
   if (g_settings.achievements_sound_effects)
@@ -1602,7 +1597,8 @@ void Achievements::HandleLeaderboardScoreboardEvent(const rc_client_event_t* eve
       fmt::format("leaderboard_{}", event->leaderboard->id),
       static_cast<float>(g_settings.achievements_leaderboard_duration), s_state.game_badge_url,
       std::string(event->leaderboard->title), std::move(message), ICON_EMOJI_CHECKMARK_BUTTON,
-      FullscreenUI::AchievementNotificationNoteType::IconText, LEADERBOARD_NOTIFICATION_MIN_WIDTH);
+      FullscreenUI::AchievementNotificationNoteType::IconText, FullscreenUI::AchievementNotificationCategory::None,
+      LEADERBOARD_NOTIFICATION_MIN_WIDTH);
   }
 }
 
@@ -1682,7 +1678,8 @@ void Achievements::HandleAchievementChallengeIndicatorShowEvent(const rc_client_
       fmt::format(TRANSLATE_FS("Achievements", "Challenge Started: {}"),
                   event->achievement->title ? event->achievement->title : ""),
       fmt::format(ICON_EMOJI_DIRECT_HIT " {}", event->achievement->description ? event->achievement->description : ""),
-      {}, FullscreenUI::AchievementNotificationNoteType::None, 0, true);
+      {}, FullscreenUI::AchievementNotificationNoteType::None,
+      FullscreenUI::GetAchievementNotificationCategory(event->achievement), 0, true);
   }
 
   s_state.active_challenge_indicators.push_back(
@@ -1713,7 +1710,8 @@ void Achievements::HandleAchievementChallengeIndicatorHideEvent(const rc_client_
                   event->achievement->title ? event->achievement->title : ""),
       fmt::format(ICON_EMOJI_CROSS_MARK_BUTTON " {}",
                   event->achievement->description ? event->achievement->description : ""),
-      {}, FullscreenUI::AchievementNotificationNoteType::None, 0, true);
+      {}, FullscreenUI::AchievementNotificationNoteType::None,
+      FullscreenUI::GetAchievementNotificationCategory(event->achievement), 0, true);
   }
   if (g_settings.achievements_challenge_indicator_mode == AchievementChallengeIndicatorMode::Notification ||
       g_settings.achievements_challenge_indicator_mode == AchievementChallengeIndicatorMode::Disabled)
