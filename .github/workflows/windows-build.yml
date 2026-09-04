@@ -57,20 +57,20 @@ jobs:
       shell: bash
       run: |
         DEPS_VERSION=$(cat dep/PREBUILT-VERSION)
-        curl --fail --retry 5 --retry-all-errors -LO "https://github.com/duckstation/dependencies/releases/download/$DEPS_VERSION/deps-windows-x64.7z"
+        curl --fail --retry 5 --retry-all-errors -LO "https://github.com/duckstation/dependencies/releases/download/$DEPS_VERSION/deps-windows-qt-installer-x64.7z"
         sha256sum --check --ignore-missing dep/PREBUILT-SHA256SUMS
-        7z x -odep/prebuilt deps-windows-x64.7z
-        rm deps-windows-x64.7z
+        7z x -odep/prebuilt deps-windows-qt-installer-x64.7z
+        rm deps-windows-qt-installer-x64.7z
 
     - name: Download ARM64 Dependencies
       shell: bash
       if: matrix.arch == 'arm64'
       run: |
         DEPS_VERSION=$(cat dep/PREBUILT-VERSION)
-        curl --fail --retry 5 --retry-all-errors -LO "https://github.com/duckstation/dependencies/releases/download/$DEPS_VERSION/deps-windows-arm64.7z"
+        curl --fail --retry 5 --retry-all-errors -LO "https://github.com/duckstation/dependencies/releases/download/$DEPS_VERSION/deps-windows-qt-installer-arm64.7z"
         sha256sum --check --ignore-missing dep/PREBUILT-SHA256SUMS
-        7z x -odep/prebuilt deps-windows-arm64.7z
-        rm deps-windows-arm64.7z
+        7z x -odep/prebuilt deps-windows-qt-installer-arm64.7z
+        rm deps-windows-qt-installer-arm64.7z
 
     - name: Download Patch Archives
       shell: cmd

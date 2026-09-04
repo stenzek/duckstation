@@ -80,17 +80,17 @@ find_package(Shaderc 2026.3 REQUIRED
              NO_DEFAULT_PATH PATHS "${DEPS_PATH}/lib/cmake/Shaderc")
 find_package(spirv_cross_c_shared REQUIRED
              NO_DEFAULT_PATH PATHS "${DEPS_PATH}/share/spirv_cross_c_shared/cmake")
-find_package(SDL3 3.4.14 REQUIRED
+find_package(SDL3 3.4.16 REQUIRED
              NO_DEFAULT_PATH PATHS "${DEPS_PATH}/lib/cmake/SDL3")
 
 # All our builds include Qt, so this is not a problem.
 set(QT_NO_PRIVATE_MODULE_WARNING ON)
 if(LINUX)
-  find_package(Qt6 6.11.1 REQUIRED
+  find_package(Qt6 6.11.2 REQUIRED
                 NO_DEFAULT_PATH PATHS "${DEPS_PATH}/lib/cmake/Qt6"
                 COMPONENTS Core Gui GuiPrivate Widgets LinguistTools DBus)
 else()
-  find_package(Qt6 6.11.1 REQUIRED
+  find_package(Qt6 6.11.2 REQUIRED
                 NO_DEFAULT_PATH PATHS "${DEPS_PATH}/lib/cmake/Qt6"
                 COMPONENTS Core Gui GuiPrivate Widgets LinguistTools)
 endif()
