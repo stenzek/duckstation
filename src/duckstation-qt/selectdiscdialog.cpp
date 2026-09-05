@@ -20,7 +20,7 @@ SelectDiscDialog::SelectDiscDialog(const GameDatabase::DiscSetEntry* dsentry, bo
   : QDialog(parent)
 {
   m_ui.setupUi(this);
-  QtUtils::SetColumnWidthsForTreeView(m_ui.discList, {50, -1, 100});
+  QtUtils::SetColumnWidthsForTreeView(m_ui.discList, {50, -1, 150});
   populateList(dsentry, localized_titles);
   updateStartEnabled();
 
