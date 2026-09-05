@@ -2190,6 +2190,11 @@ std::string Achievements::GetProfileURL(std::string_view username)
   return fmt::format("https://retroachievements.org/user/{}", Path::URLEncode(username));
 }
 
+std::string Achievements::GetGameURL(u32 game_id)
+{
+  return fmt::format("https://retroachievements.org/game/{}", game_id);
+}
+
 u32 Achievements::GetPauseThrottleFrames()
 {
   if (!IsActive())

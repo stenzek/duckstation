@@ -294,9 +294,16 @@
     </layout>
    </item>
    <item row="13" column="0" colspan="3">
-    <layout class="QHBoxLayout" name="verifyLayout" stretch="1,0">
+    <layout class="QHBoxLayout" name="verifyLayout" stretch="1,0,0">
      <item>
       <widget class="QLabel" name="tracksLabel"/>
+     </item>
+     <item>
+      <widget class="QPushButton" name="openRetroAchievementsGame">
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
      </item>
      <item>
       <widget class="QPushButton" name="computeHashes">

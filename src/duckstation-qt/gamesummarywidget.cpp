@@ -302,6 +302,21 @@ void GameSummaryWidget::populateUi(const GameList::Entry* entry)
   for (const std::string& name : InputManager::GetInputProfileNames())
     m_ui.inputProfile->addItem(QString::fromStdString(name));
 
+  if (entry->achievements_game_id != 0)
+  {
+    m_ui.openRetroAchievementsGame->setIcon(QIcon(QtHost::GetResourceQPath(Achievements::RA_LOGO_SVG_ICON_NAME, true)));
+    m_ui.openRetroAchievementsGame->setText(tr("Game ID: %1").arg(entry->achievements_game_id));
+    m_ui.openRetroAchievementsGame->setEnabled(true);
+    connect(
+      m_ui.openRetroAchievementsGame, &QAbstractButton::clicked, this,
+      [this, game_id = entry->achievements_game_id]() { QtUtils::OpenURL(this, Achievements::GetGameURL(game_id)); });
+  }
+  else
+  {
+    m_ui.verifyLayout->removeWidget(m_ui.openRetroAchievementsGame);
+    QtUtils::SafeDeleteWidget(m_ui.openRetroAchievementsGame);
+  }
+
   reloadGameSettings();
 
   // Don't populate tracks when we're running from disc, because the core might have exclusive access.
