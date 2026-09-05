@@ -1910,9 +1910,8 @@ GameDatabase::TrackHashMatchResult GameDatabase::MatchTrackHashes(const CDImageH
         }
       }
 
-      const auto old_matches_count = std::count(result.track_matches.begin(), result.track_matches.end(), true);
-      const auto new_matches_count =
-        std::count(current_verification_results.begin(), current_verification_results.end(), true);
+      const auto old_matches_count = std::ranges::count(result.track_matches, true);
+      const auto new_matches_count = std::ranges::count(current_verification_results, true);
 
       if (new_matches_count > old_matches_count)
       {
@@ -1989,6 +1988,7 @@ bool GameDatabase::VerifyImage(CDImage* image, std::string_view expected_serial,
   result->track_hashes = std::move(track_hashes);
   result->track_matches = std::move(match.track_matches);
   result->summary = std::move(summary);
+  result->serial = std::move(match.serial);
   return true;
 }
 

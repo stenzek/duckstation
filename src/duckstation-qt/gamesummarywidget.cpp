@@ -470,7 +470,7 @@ void GameSummaryWidget::populateTracksInfo()
   if (!image)
     return;
 
-  m_ui.revision->setText(QString::fromStdString(image->GetSummary()));
+  m_ui.tracksLabel->setText(QString::fromStdString(image->GetSummary()));
 
   const u32 num_tracks = image->GetTrackCount();
   for (u32 track = 1; track <= num_tracks; track++)
@@ -644,7 +644,18 @@ void GameSummaryWidget::processHashResults(const GameDatabase::TrackVerification
   }
 
   if (!verification.summary.empty())
-    m_ui.revision->setText(QString::fromStdString(verification.summary));
+  {
+    QLabel* const warning_icon = new QLabel(this);
+    warning_icon->setPixmap(QIcon(QtHost::GetResourceQPath("images/warning.svg", true)).pixmap(16, 16));
+    m_ui.verifyLayout->insertWidget(0, warning_icon);
+    if (verification.serial.empty())
+    {
+      QFont font = m_ui.tracksLabel->font();
+      font.setBold(true);
+      m_ui.tracksLabel->setFont(font);
+    }
+    m_ui.tracksLabel->setText(QString::fromStdString(verification.summary));
+  }
 
   // update in ui
   for (size_t i = 0; i < verification.track_hashes.size(); i++)

@@ -293,21 +293,10 @@
      </item>
     </layout>
    </item>
-   <item row="13" column="0">
-    <widget class="QLabel" name="tracksLabel">
-     <property name="text">
-      <string>Tracks:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="13" column="1" colspan="2">
+   <item row="13" column="0" colspan="3">
     <layout class="QHBoxLayout" name="verifyLayout" stretch="1,0">
      <item>
-      <widget class="QLineEdit" name="revision">
-       <property name="readOnly">
-        <bool>true</bool>
-       </property>
-      </widget>
+      <widget class="QLabel" name="tracksLabel"/>
      </item>
      <item>
       <widget class="QPushButton" name="computeHashes">
