@@ -1195,6 +1195,7 @@ void Settings::ApplySettingRestrictions()
     emulation_speed = (emulation_speed != 0.0f) ? std::max(emulation_speed, 1.0f) : 0.0f;
     fast_forward_speed = (fast_forward_speed != 0.0f) ? std::max(fast_forward_speed, 1.0f) : 0.0f;
     turbo_speed = (turbo_speed != 0.0f) ? std::max(turbo_speed, 1.0f) : 0.0f;
+    region = ConsoleRegion::Auto;
     gpu_force_video_timing = ForceVideoTimingMode::Disabled;
     rewind_enable = false;
     if (cpu_overclock_enable && GetCPUOverclockPercent() < 100)
