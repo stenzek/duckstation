@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "image.h"
@@ -17,6 +17,7 @@
 #include "common/scoped_guard.h"
 #include "common/string_util.h"
 
+#include <cmath>
 #include <jpeglib.h>
 #include <limits>
 #include <plutosvg.h>
