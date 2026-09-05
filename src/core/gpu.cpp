@@ -434,9 +434,11 @@ void GPU::UpdateSettings(const Settings& old_settings)
   s_locals.texture_enable_mask = !g_settings.gpu_disable_textures;
   s_locals.force_raw_texture = g_settings.gpu_disable_vertex_lighting;
 
-  if (g_settings.gpu_force_video_timing != old_settings.gpu_force_video_timing)
+  if (const bool console_is_pal = System::IsPALRegion();
+      s_locals.console_is_pal != console_is_pal ||
+      g_settings.gpu_force_video_timing != old_settings.gpu_force_video_timing)
   {
-    s_locals.console_is_pal = System::IsPALRegion();
+    s_locals.console_is_pal = console_is_pal;
     UpdateCRTCConfig();
   }
   else if (g_settings.display_crop_mode != old_settings.display_crop_mode ||
@@ -607,7 +609,9 @@ bool GPU::DoState(StateWrapper& sw)
   sw.Do(&s_locals.drawing_offset.y);
   sw.Do(&s_locals.drawing_offset.x);
 
-  sw.Do(&s_locals.console_is_pal);
+  if (sw.GetVersion() < 87) [[unlikely]]
+    sw.SkipBytes(1); // console_is_pal
+
   sw.Do(&s_locals.set_texture_disable_mask);
 
   sw.Do(&s_locals.crtc_state.regs.display_address_start);
@@ -740,7 +744,6 @@ void GPU::DoMemoryState(StateWrapper& sw, System::MemorySaveState& mss)
   sw.DoBytes(&s_locals.drawing_area, sizeof(s_locals.drawing_area));
   sw.DoBytes(&s_locals.drawing_offset, sizeof(s_locals.drawing_offset));
 
-  sw.Do(&s_locals.console_is_pal);
   sw.Do(&s_locals.set_texture_disable_mask);
 
   sw.DoBytes(&s_locals.crtc_state, sizeof(s_locals.crtc_state));

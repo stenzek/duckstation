@@ -160,6 +160,7 @@ static bool Initialize(std::unique_ptr<CDImage> disc, DiscRegion disc_region, bo
                        std::optional<bool> start_fullscreen, Error* error);
 static bool LoadBIOS(bool* using_auto_select, Error* error);
 static bool SetBootMode(BootMode new_boot_mode, DiscRegion disc_region, bool* missing_bios, Error* error);
+static void UpdateConsoleRegion();
 static void InternalReset();
 static void ClearRunningGame();
 static void DestroySystem();
@@ -285,6 +286,7 @@ struct StateVars
 
   const BIOS::ImageInfo* bios_image_info = nullptr;
   BIOS::ImageInfo::Hash bios_hash = {};
+  ConsoleRegion auto_region = ConsoleRegion::NTSC_U;
   u32 taints = 0;
 
   std::string running_game_path;
@@ -1746,6 +1748,7 @@ System::BootResult System::BootSystem(SystemBootParameters parameters, Error* er
   Assert(s_state.state == State::Shutdown);
   s_state.state = State::Starting;
   s_state.region = auto_console_region;
+  s_state.auto_region = auto_console_region;
   s_state.startup_cancelled.store(false, std::memory_order_relaxed);
   s_state.gpu_dump_player = std::move(gpu_dump);
   Host::OnSystemStarting();
@@ -2442,15 +2445,24 @@ bool System::DoState(StateWrapper& sw, bool update_display)
   if (!sw.DoMarker("System"))
     return false;
 
+  ConsoleRegion state_region = s_state.region;
   if (sw.GetVersion() < 74) [[unlikely]]
   {
     u32 region32 = static_cast<u32>(s_state.region);
     sw.Do(&region32);
-    s_state.region = static_cast<ConsoleRegion>(region32);
+    state_region = static_cast<ConsoleRegion>(region32);
   }
   else
   {
-    sw.Do(&s_state.region, ConsoleRegion::PAL);
+    sw.Do(&state_region, ConsoleRegion::PAL);
+  }
+  if (sw.IsReading() && state_region != s_state.region) [[unlikely]]
+  {
+    WARNING_LOG("Region mismatch: System: {} | State: {}", Settings::GetConsoleRegionName(s_state.region),
+                Settings::GetConsoleRegionName(state_region));
+    Host::AddIconOSDMessage(
+      OSDMessageType::Error, "StateRegionMismatch", ICON_EMOJI_WARNING,
+      TRANSLATE_STR("System", "This save state was created with a different console region, and may be unstable."));
   }
 
   u32 state_taints = s_state.taints;
@@ -2466,12 +2478,12 @@ bool System::DoState(StateWrapper& sw, bool update_display)
 
   BIOS::ImageInfo::Hash bios_hash = s_state.bios_hash;
   sw.DoBytesEx(bios_hash.data(), BIOS::ImageInfo::HASH_SIZE, 58, s_state.bios_hash.data());
-  if (bios_hash != s_state.bios_hash)
+  if (sw.IsReading() && bios_hash != s_state.bios_hash) [[unlikely]]
   {
     WARNING_LOG("BIOS hash mismatch: System: {} | State: {}", BIOS::ImageInfo::GetHashString(s_state.bios_hash),
                 BIOS::ImageInfo::GetHashString(bios_hash));
     Host::AddIconOSDMessage(
-      OSDMessageType::Error, "StateBIOSMismatch", ICON_FA_TRIANGLE_EXCLAMATION,
+      OSDMessageType::Error, "StateBIOSMismatch", ICON_EMOJI_WARNING,
       TRANSLATE_STR("System", "This save state was created with a different BIOS. This may cause stability issues."));
   }
 
@@ -2883,12 +2895,17 @@ bool System::SetBootMode(BootMode new_boot_mode, DiscRegion disc_region, bool* m
 
   // If we're not starting a game and we're using auto console region, change the region to match.
   if (new_boot_mode == BootMode::FullBoot && disc_region == DiscRegion::NonPS1 && s_state.bios_image_info &&
-      g_settings.region == ConsoleRegion::Auto && s_state.region != s_state.bios_image_info->region)
+      s_state.auto_region != s_state.bios_image_info->region)
   {
-    WARNING_LOG("Changing console region from {} to {} to match BIOS for full boot without game",
-                Settings::GetConsoleRegionName(s_state.region),
+    WARNING_LOG("Changing auto console region from {} to {} to match BIOS for full boot without game",
+                Settings::GetConsoleRegionName(s_state.auto_region),
                 Settings::GetConsoleRegionName(s_state.bios_image_info->region));
-    s_state.region = s_state.bios_image_info->region;
+
+    s_state.auto_region = s_state.bios_image_info->region;
+
+    // Don't override a user's region setting.
+    if (g_settings.region == ConsoleRegion::Auto)
+      s_state.region = s_state.auto_region;
   }
 
   return true;
@@ -4586,6 +4603,20 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
     }
 
     SPU::GetOutputStream().SetOutputVolume(GetAudioOutputVolume());
+
+    // Console region can be changed
+    if (g_settings.region != old_settings.region)
+    {
+      const ConsoleRegion new_region =
+        (g_settings.region == ConsoleRegion::Auto) ? s_state.auto_region : g_settings.region;
+      if (s_state.region != new_region)
+      {
+        WARNING_LOG("Changing console region from {} to {} while running",
+                    Settings::GetConsoleRegionName(s_state.region), Settings::GetConsoleRegionName(new_region));
+        s_state.region = new_region;
+        GPU::UpdateSettings(old_settings);
+      }
+    }
 
     // CPU side GPU settings
     if (g_settings.display_deinterlacing_mode != old_settings.display_deinterlacing_mode ||
