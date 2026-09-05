@@ -1172,7 +1172,9 @@ void System::SetDefaultSettings(SettingsInterface& si, bool ignore_user_prefs)
 
   Settings::SetDefaultLogConfig(si);
 
+  si.SetBoolValue(PostProcessing::Config::DISPLAY_CHAIN_SECTION, "Enabled", false);
   PostProcessing::Config::ClearStages(si, PostProcessing::Config::DISPLAY_CHAIN_SECTION);
+  si.SetBoolValue(PostProcessing::Config::INTERNAL_CHAIN_SECTION, "Enabled", false);
   PostProcessing::Config::ClearStages(si, PostProcessing::Config::INTERNAL_CHAIN_SECTION);
   si.ClearSection("BorderOverlay");
 
