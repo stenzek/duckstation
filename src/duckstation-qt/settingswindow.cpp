@@ -357,7 +357,7 @@ void SettingsWindow::onCopyGlobalSettingsClicked()
     const auto lock = Core::GetSettingsLock();
     Settings temp;
     temp.Load(*Core::GetBaseSettingsLayer(), *Core::GetBaseSettingsLayer());
-    temp.Save(*m_sif.get(), true, true);
+    temp.Save(*m_sif.get(), true);
   }
 
   QtHost::SaveSettingsInterface(m_sif.get(), true, true);

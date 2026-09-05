@@ -448,7 +448,7 @@ struct Settings : public GPUSettings
 
   void Load(const SettingsInterface& si, const SettingsInterface& controller_si);
   void LoadPGXPSettings(const SettingsInterface& si);
-  void Save(SettingsInterface& si, bool ignore_user_prefs, bool for_copy) const;
+  void Save(SettingsInterface& si, bool for_copy) const;
 
   void ApplySettingRestrictions();
   void FixIncompatibleSettings(const SettingsInterface& si, bool display_osd_messages);

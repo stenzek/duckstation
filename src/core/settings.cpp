@@ -660,7 +660,7 @@ void Settings::LoadPGXPSettings(const SettingsInterface& si)
   SetPGXPDepthClearThreshold(si.GetFloatValue("GPU", "PGXPDepthThreshold", DEFAULT_GPU_PGXP_DEPTH_THRESHOLD));
 }
 
-void Settings::Save(SettingsInterface& si, bool ignore_user_prefs, bool for_copy) const
+void Settings::Save(SettingsInterface& si, bool for_copy) const
 {
   TinyString skey;
 
@@ -671,7 +671,7 @@ void Settings::Save(SettingsInterface& si, bool ignore_user_prefs, bool for_copy
   si.SetFloatValue("Main", "FastForwardSpeed", fast_forward_speed);
   si.SetFloatValue("Main", "TurboSpeed", turbo_speed);
 
-  if (!ignore_user_prefs)
+  if (!for_copy)
   {
     si.SetBoolValue("Main", "SyncToHostRefreshRate", sync_to_host_refresh_rate);
     si.SetBoolValue("Main", "InhibitScreensaver", inhibit_screensaver);
@@ -682,9 +682,6 @@ void Settings::Save(SettingsInterface& si, bool ignore_user_prefs, bool for_copy
     si.SetStringValue("Main", "SaveStateCompression", GetSaveStateCompressionModeName(save_state_compression));
     si.SetBoolValue("Main", "ConfirmPowerOff", confim_power_off);
     si.SetBoolValue("Main", "EnableDiscordPresence", enable_discord_presence);
-  }
-  if (!for_copy)
-  {
     si.SetBoolValue("Main", "LoadDevicesFromSaveStates", load_devices_from_save_states);
     si.SetBoolValue("Main", "DisableAllEnhancements", disable_all_enhancements);
   }
@@ -714,7 +711,7 @@ void Settings::Save(SettingsInterface& si, bool ignore_user_prefs, bool for_copy
   si.SetUIntValue("GPU", "ResolutionScale", gpu_resolution_scale);
   si.SetUIntValue("GPU", "Multisamples", gpu_multisamples);
 
-  if (!ignore_user_prefs)
+  if (!for_copy)
   {
     si.SetBoolValue("GPU", "UseDebugDevice", gpu_use_debug_device);
     si.SetBoolValue("GPU", "UseGPUBasedValidation", gpu_use_debug_device_gpu_validation);
@@ -799,7 +796,7 @@ void Settings::Save(SettingsInterface& si, bool ignore_user_prefs, bool for_copy
     si.SetIntValue("Display", "LineEndOffset", display_line_end_offset);
   }
 
-  if (!ignore_user_prefs)
+  if (!for_copy)
   {
     si.SetBoolValue("Display", "ShowOSDMessages", display_show_messages);
     si.SetBoolValue("Display", "AnimateOSDMessages", display_animate_messages);

@@ -1162,11 +1162,13 @@ void System::SetDefaultSettings(SettingsInterface& si, bool ignore_user_prefs)
   for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
     temp.controller_types[i] = g_settings.controller_types[i];
 
-  temp.Save(si, ignore_user_prefs, false);
+  temp.Save(si, false);
 
   si.SetBoolValue("Main", "StartPaused", false);
   si.SetBoolValue("Main", "StartFullscreen", false);
-  si.SetBoolValue("Main", "StartFullscreenUI", false);
+
+  if (!ignore_user_prefs)
+    si.SetBoolValue("Main", "StartFullscreenUI", false);
 
   Settings::SetDefaultLogConfig(si);
 
