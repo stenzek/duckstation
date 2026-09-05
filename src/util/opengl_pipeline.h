@@ -62,7 +62,7 @@ public:
   };
   struct VertexArrayCacheKeyHash
   {
-    size_t operator()(const VertexArrayCacheKey& k) const;
+    static size_t operator()(const VertexArrayCacheKey& k);
   };
   using VertexArrayCache = std::unordered_map<VertexArrayCacheKey, VertexArrayCacheItem, VertexArrayCacheKeyHash>;
 
@@ -82,7 +82,7 @@ public:
   static_assert(sizeof(ProgramCacheKey) == 96); // Has no padding
   struct ProgramCacheKeyHash
   {
-    size_t operator()(const ProgramCacheKey& k) const;
+    static size_t operator()(const ProgramCacheKey& k);
   };
   struct ProgramCacheItem
   {

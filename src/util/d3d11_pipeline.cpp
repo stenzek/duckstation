@@ -217,7 +217,7 @@ D3D11Device::ComPtr<ID3D11DepthStencilState> D3D11Device::GetDepthState(const GP
   return dds;
 }
 
-size_t D3D11Device::BlendStateMapHash::operator()(const BlendStateMapKey& key) const
+size_t D3D11Device::BlendStateMapHash::operator()(const BlendStateMapKey& key)
 {
   size_t h = std::hash<u64>()(key.first);
   hash_combine(h, key.second);

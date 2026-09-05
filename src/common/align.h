@@ -118,7 +118,7 @@ namespace detail {
 template<class T>
 struct unique_aligned_ptr_deleter
 {
-  ALWAYS_INLINE void operator()(T* ptr) const
+  ALWAYS_INLINE static void operator()(T* ptr)
   {
     // Array types - do nothing, elements must be trivially destructible
     if constexpr (!std::is_array_v<T> && !std::is_trivially_destructible_v<T>)

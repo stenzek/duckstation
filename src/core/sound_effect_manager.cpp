@@ -63,7 +63,7 @@ struct PlayingCachedEffect
 
 struct SpeexResamplerStateDeleter
 {
-  void operator()(SpeexResamplerState* state) const;
+  static void operator()(SpeexResamplerState* state);
 };
 using SpeexResamplerStatePtr = std::unique_ptr<SpeexResamplerState, SpeexResamplerStateDeleter>;
 
@@ -731,7 +731,7 @@ void SoundEffectManager::ConvertToStereo(std::span<const AudioStream::SampleType
 #define RANDOM_PREFIX speex
 #include "speex/speex_resampler.h"
 
-void SoundEffectManager::SpeexResamplerStateDeleter::operator()(SpeexResamplerState* state) const
+void SoundEffectManager::SpeexResamplerStateDeleter::operator()(SpeexResamplerState* state)
 {
   speex_resampler_destroy(state);
 }

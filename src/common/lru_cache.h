@@ -13,7 +13,7 @@
 template<class V>
 struct LRUCacheDefaultDeleter
 {
-  void operator()(V&& value) const noexcept
+  static void operator()(V&& value) noexcept
   {
     if constexpr (std::is_pointer_v<V>)
       std::default_delete<std::remove_pointer_t<V>>{}(value);

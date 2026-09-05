@@ -236,7 +236,7 @@ bool OpenGLPipeline::VertexArrayCacheKey::operator!=(const VertexArrayCacheKey& 
   return (std::memcmp(this, &rhs, sizeof(*this)) != 0);
 }
 
-size_t OpenGLPipeline::VertexArrayCacheKeyHash::operator()(const VertexArrayCacheKey& k) const
+size_t OpenGLPipeline::VertexArrayCacheKeyHash::operator()(const VertexArrayCacheKey& k)
 {
   std::size_t h = 0;
   hash_combine(h, k.num_vertex_attributes, k.vertex_attribute_stride);
@@ -255,7 +255,7 @@ bool OpenGLPipeline::ProgramCacheKey::operator!=(const ProgramCacheKey& rhs) con
   return (std::memcmp(this, &rhs, sizeof(*this)) != 0);
 }
 
-size_t OpenGLPipeline::ProgramCacheKeyHash::operator()(const ProgramCacheKey& k) const
+size_t OpenGLPipeline::ProgramCacheKeyHash::operator()(const ProgramCacheKey& k)
 {
   // TODO: maybe use xxhash here...
   std::size_t h = 0;

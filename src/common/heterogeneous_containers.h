@@ -18,31 +18,31 @@ struct transparent_string_hash
 {
   using is_transparent = void;
 
-  std::size_t operator()(const std::string_view& v) const { return std::hash<std::string_view>{}(v); }
-  std::size_t operator()(const std::string& s) const { return std::hash<std::string>{}(s); }
-  std::size_t operator()(const char* s) const { return operator()(std::string_view(s)); }
+  static std::size_t operator()(const std::string_view& v) { return std::hash<std::string_view>{}(v); }
+  static std::size_t operator()(const std::string& s) { return std::hash<std::string>{}(s); }
+  static std::size_t operator()(const char* s) { return operator()(std::string_view(s)); }
 };
 
 struct transparent_string_equal
 {
   using is_transparent = void;
 
-  bool operator()(const std::string& lhs, const std::string_view& rhs) const { return lhs == rhs; }
-  bool operator()(const std::string& lhs, const std::string& rhs) const { return lhs == rhs; }
-  bool operator()(const std::string& lhs, const char* rhs) const { return lhs == rhs; }
-  bool operator()(const std::string_view& lhs, const std::string& rhs) const { return lhs == rhs; }
-  bool operator()(const char* lhs, const std::string& rhs) const { return lhs == rhs; }
+  static bool operator()(const std::string& lhs, const std::string_view& rhs) { return lhs == rhs; }
+  static bool operator()(const std::string& lhs, const std::string& rhs) { return lhs == rhs; }
+  static bool operator()(const std::string& lhs, const char* rhs) { return lhs == rhs; }
+  static bool operator()(const std::string_view& lhs, const std::string& rhs) { return lhs == rhs; }
+  static bool operator()(const char* lhs, const std::string& rhs) { return lhs == rhs; }
 };
 
 struct transparent_string_less
 {
   using is_transparent = void;
 
-  bool operator()(const std::string& lhs, const std::string_view& rhs) const { return lhs < rhs; }
-  bool operator()(const std::string& lhs, const std::string& rhs) const { return lhs < rhs; }
-  bool operator()(const std::string& lhs, const char* rhs) const { return lhs < rhs; }
-  bool operator()(const std::string_view& lhs, const std::string& rhs) const { return lhs < rhs; }
-  bool operator()(const char* lhs, const std::string& rhs) const { return lhs < rhs; }
+  static bool operator()(const std::string& lhs, const std::string_view& rhs) { return lhs < rhs; }
+  static bool operator()(const std::string& lhs, const std::string& rhs) { return lhs < rhs; }
+  static bool operator()(const std::string& lhs, const char* rhs) { return lhs < rhs; }
+  static bool operator()(const std::string_view& lhs, const std::string& rhs) { return lhs < rhs; }
+  static bool operator()(const char* lhs, const std::string& rhs) { return lhs < rhs; }
 };
 } // namespace detail
 

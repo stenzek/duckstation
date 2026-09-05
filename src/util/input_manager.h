@@ -98,7 +98,7 @@ static_assert(sizeof(InputBindingKey) == sizeof(u64), "Input binding key is 64 b
 /// Hashability for InputBindingKey
 struct InputBindingKeyHash
 {
-  std::size_t operator()(const InputBindingKey& k) const { return std::hash<u64>{}(k.bits); }
+  static std::size_t operator()(const InputBindingKey& k) { return std::hash<u64>{}(k.bits); }
 };
 
 /// Callback type for a binary event. Usually used for hotkeys.

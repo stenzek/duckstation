@@ -244,7 +244,7 @@ public:
 
   struct InputLayoutHash
   {
-    size_t operator()(const InputLayout& il) const;
+    static size_t operator()(const InputLayout& il);
   };
 
   enum class CullMode : u8
@@ -596,7 +596,7 @@ public:
 
   struct PooledTextureDeleter
   {
-    void operator()(GPUTexture* const tex);
+    static void operator()(GPUTexture* const tex);
   };
   using AutoRecycleTexture = std::unique_ptr<GPUTexture, PooledTextureDeleter>;
 

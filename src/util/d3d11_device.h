@@ -128,7 +128,7 @@ private:
   using BlendStateMapKey = std::pair<u64, u32>;
   struct BlendStateMapHash
   {
-    size_t operator()(const BlendStateMapKey& key) const;
+    static size_t operator()(const BlendStateMapKey& key);
   };
   using RasterizationStateMap = std::unordered_map<u16, ComPtr<ID3D11RasterizerState>>;
   using DepthStateMap = std::unordered_map<u8, ComPtr<ID3D11DepthStencilState>>;

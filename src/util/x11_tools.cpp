@@ -56,7 +56,7 @@ XCB_FUNCTIONS(ADD_FUNC);
 template<typename T>
 struct XCBPointerDeleter
 {
-  void operator()(T* ptr) { free(ptr); }
+  static void operator()(T* ptr) { free(ptr); }
 };
 
 template<typename T>

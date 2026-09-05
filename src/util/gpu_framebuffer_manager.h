@@ -28,7 +28,7 @@ protected:
 
   struct KeyHash
   {
-    size_t operator()(const Key& key) const;
+    static size_t operator()(const Key& key);
   };
 };
 

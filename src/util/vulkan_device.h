@@ -291,7 +291,7 @@ private:
 
   struct RenderPassCacheKeyHash
   {
-    size_t operator()(const RenderPassCacheKey& rhs) const;
+    static size_t operator()(const RenderPassCacheKey& rhs);
   };
 
   struct CommandBuffer

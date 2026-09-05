@@ -117,7 +117,7 @@ class D3D12GroupedSamplerAllocator : private D3D12DescriptorAllocator
 
   struct KeyHash
   {
-    ALWAYS_INLINE std::size_t operator()(const Key& key) const
+    ALWAYS_INLINE static std::size_t operator()(const Key& key)
     {
       size_t seed = 0;
       for (u32 i : key.idx)

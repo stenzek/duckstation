@@ -26,12 +26,12 @@ inline u32 DEFAULT_EXTRACT_CHUNK_SIZE = 128 * 1024;
 
 struct ZipDeleter
 {
-  void operator()(zip_t* zf);
+  static void operator()(zip_t* zf);
 };
 
 struct ZipFileDeleter
 {
-  void operator()(zip_file_t* zf);
+  static void operator()(zip_file_t* zf);
 };
 
 using ManagedZipT = std::unique_ptr<zip_t, ZipDeleter>;

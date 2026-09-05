@@ -861,7 +861,7 @@ bool VulkanDevice::RenderPassCacheKey::operator!=(const RenderPassCacheKey& rhs)
   return (std::memcmp(this, &rhs, sizeof(*this)) != 0);
 }
 
-size_t VulkanDevice::RenderPassCacheKeyHash::operator()(const RenderPassCacheKey& rhs) const
+size_t VulkanDevice::RenderPassCacheKeyHash::operator()(const RenderPassCacheKey& rhs)
 {
   if constexpr (sizeof(void*) == 8)
     return XXH3_64bits(&rhs, sizeof(rhs));

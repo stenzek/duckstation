@@ -129,7 +129,7 @@ struct HashCacheKey
 };
 struct HashCacheKeyHash
 {
-  size_t operator()(const HashCacheKey& k) const;
+  static size_t operator()(const HashCacheKey& k);
 };
 
 enum class TextureReplacementType : u8
@@ -164,7 +164,7 @@ struct VRAMReplacementName
 
 struct VRAMReplacementNameHash
 {
-  size_t operator()(const VRAMReplacementName& hash) const;
+  static size_t operator()(const VRAMReplacementName& hash);
 };
 
 struct TextureReplacementIndex
@@ -182,7 +182,7 @@ struct TextureReplacementIndex
 
 struct TextureReplacementIndexHash
 {
-  size_t operator()(const TextureReplacementIndex& hash) const;
+  static size_t operator()(const TextureReplacementIndex& hash);
 };
 
 struct TextureReplacementName
@@ -246,7 +246,7 @@ struct DumpedTextureKey
 };
 struct DumpedTextureKeyHash
 {
-  size_t operator()(const DumpedTextureKey& k) const;
+  static size_t operator()(const DumpedTextureKey& k);
 };
 } // namespace
 
@@ -2479,7 +2479,7 @@ void GPUTextureCache::Compact()
   CompactTextureReplacementGPUImages();
 }
 
-size_t GPUTextureCache::HashCacheKeyHash::operator()(const HashCacheKey& k) const
+size_t GPUTextureCache::HashCacheKeyHash::operator()(const HashCacheKey& k)
 {
   std::size_t h = 0;
   hash_combine(h, k.texture_hash, k.palette_hash, k.mode);
@@ -2506,7 +2506,7 @@ bool GPUTextureCache::VRAMReplacementName::Parse(const std::string_view file_tit
   return true;
 }
 
-size_t GPUTextureCache::VRAMReplacementNameHash::operator()(const VRAMReplacementName& name) const
+size_t GPUTextureCache::VRAMReplacementNameHash::operator()(const VRAMReplacementName& name)
 {
   size_t seed = std::hash<u64>{}(name.low);
   hash_combine(seed, name.high);
@@ -2771,7 +2771,7 @@ bool GPUTextureCache::TextureReplacementName::IsSemitransparent() const
   return (texture_mode >= 4);
 }
 
-size_t GPUTextureCache::TextureReplacementIndexHash::operator()(const TextureReplacementIndex& name) const
+size_t GPUTextureCache::TextureReplacementIndexHash::operator()(const TextureReplacementIndex& name)
 {
   // TODO: This sucks ass, do better.
   size_t seed = std::hash<u64>{}(name.src_hash);
@@ -2779,7 +2779,7 @@ size_t GPUTextureCache::TextureReplacementIndexHash::operator()(const TextureRep
   return seed;
 }
 
-size_t GPUTextureCache::DumpedTextureKeyHash::operator()(const DumpedTextureKey& k) const
+size_t GPUTextureCache::DumpedTextureKeyHash::operator()(const DumpedTextureKey& k)
 {
   // TODO: This is slow
   std::size_t hash = 0;

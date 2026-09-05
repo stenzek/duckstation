@@ -118,7 +118,7 @@ GPUPipeline::GPUPipeline() = default;
 
 GPUPipeline::~GPUPipeline() = default;
 
-size_t GPUPipeline::InputLayoutHash::operator()(const InputLayout& il) const
+size_t GPUPipeline::InputLayoutHash::operator()(const InputLayout& il)
 {
   std::size_t h = 0;
   hash_combine(h, il.vertex_attributes.size(), il.vertex_stride);
@@ -245,7 +245,7 @@ bool GPUFramebufferManagerBase::Key::ContainsRT(const GPUTexture* tex) const
   return false;
 }
 
-size_t GPUFramebufferManagerBase::KeyHash::operator()(const Key& key) const
+size_t GPUFramebufferManagerBase::KeyHash::operator()(const Key& key)
 {
   if constexpr (sizeof(void*) == 8)
     return XXH3_64bits(&key, sizeof(key));
