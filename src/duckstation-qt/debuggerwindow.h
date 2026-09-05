@@ -18,6 +18,7 @@ enum class MemoryRegion;
 
 class DebuggerRegistersModel;
 class DebuggerStackModel;
+class DebuggerCallStackModel;
 class DebuggerThreadsModel;
 
 class DebuggerWindow : public QMainWindow
@@ -83,6 +84,7 @@ private:
   void onCodeViewToggleBreakpointActivated(VirtualMemoryAddress address);
   void onCodeViewCommentActivated(VirtualMemoryAddress address);
   void onCodeViewContextMenuRequested(const QPoint& pt);
+  void onCallStackItemDoubleClicked(const QModelIndex& index);
   void onThreadItemDoubleClicked(const QModelIndex& index);
   void onMemorySearchTriggered();
   void onMemorySearchStringChanged(const QString&);
@@ -91,6 +93,7 @@ private:
 
   DebuggerRegistersModel* m_registers_model;
   DebuggerStackModel* m_stack_model;
+  DebuggerCallStackModel* m_call_stack_model;
   DebuggerThreadsModel* m_threads_model;
 
   QTimer m_refresh_timer;

@@ -31,6 +31,8 @@ add_library(core
   controller_helpers.h
   core.cpp
   core.h
+  cpu_call_stack.cpp
+  cpu_call_stack.h
   cpu_code_cache.cpp
   cpu_code_cache.h
   cpu_code_cache_private.h

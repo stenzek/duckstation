@@ -2,6 +2,7 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="system.cpp" />
+    <ClCompile Include="cpu_call_stack.cpp" />
     <ClCompile Include="cpu_core.cpp" />
     <ClCompile Include="cpu_disasm.cpp" />
     <ClCompile Include="bus.cpp" />
@@ -78,6 +79,7 @@
     <ClInclude Include="types.h" />
     <ClInclude Include="save_state_version.h" />
     <ClInclude Include="system.h" />
+    <ClInclude Include="cpu_call_stack.h" />
     <ClInclude Include="cpu_core.h" />
     <ClInclude Include="cpu_types.h" />
     <ClInclude Include="cpu_disasm.h" />

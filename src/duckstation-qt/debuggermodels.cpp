@@ -5,6 +5,7 @@
 #include "qtutils.h"
 
 #include "core/bios_types.h"
+#include "core/cpu_call_stack.h"
 #include "core/cpu_core.h"
 #include "core/cpu_core_private.h"
 #include "core/cpu_disasm.h"
@@ -181,6 +182,86 @@ void DebuggerStackModel::invalidateView()
 {
   beginResetModel();
   endResetModel();
+}
+
+DebuggerCallStackModel::DebuggerCallStackModel(QObject* parent /*= nullptr*/) : QAbstractTableModel(parent)
+{
+}
+
+DebuggerCallStackModel::~DebuggerCallStackModel() = default;
+
+int DebuggerCallStackModel::rowCount(const QModelIndex& parent /*= QModelIndex()*/) const
+{
+  return parent.isValid() ? 0 : static_cast<int>(m_frames.size());
+}
+
+int DebuggerCallStackModel::columnCount(const QModelIndex& parent /*= QModelIndex()*/) const
+{
+  return 2;
+}
+
+QVariant DebuggerCallStackModel::data(const QModelIndex& index, int role /*= Qt::DisplayRole*/) const
+{
+  if (!index.isValid() || role != Qt::DisplayRole || index.row() < 0 ||
+      static_cast<size_t>(index.row()) >= m_frames.size())
+  {
+    return {};
+  }
+
+  const CPU::CallStack::Frame& frame = m_frames[static_cast<size_t>(index.row())];
+  switch (index.column())
+  {
+    case 0:
+      return QString::asprintf("0x%08X", frame.address);
+    case 1:
+      return QString::asprintf("0x%08X", frame.stack_pointer);
+    default:
+      return {};
+  }
+}
+
+QVariant DebuggerCallStackModel::headerData(int section, Qt::Orientation orientation,
+                                            int role /*= Qt::DisplayRole*/) const
+{
+  if (orientation != Qt::Horizontal || role != Qt::DisplayRole)
+    return {};
+
+  switch (section)
+  {
+    case 0:
+      return tr("Address");
+    case 1:
+      return tr("Frame");
+    default:
+      return {};
+  }
+}
+
+void DebuggerCallStackModel::updateValues()
+{
+  beginResetModel();
+
+  CPU::CallStack call_stack(CPU::g_state.pc, CPU::g_state.regs.sp, CPU::g_state.regs.ra);
+  call_stack.Walk();
+
+  m_frames = call_stack.TakeFrames();
+
+  endResetModel();
+}
+
+void DebuggerCallStackModel::clear()
+{
+  beginResetModel();
+  m_frames.clear();
+  endResetModel();
+}
+
+const CPU::CallStack::Frame* DebuggerCallStackModel::getFrame(const QModelIndex& index) const
+{
+  if (!index.isValid() || index.row() < 0 || static_cast<size_t>(index.row()) >= m_frames.size())
+    return nullptr;
+
+  return &m_frames[static_cast<size_t>(index.row())];
 }
 
 DebuggerThreadsModel::DebuggerThreadsModel(QObject* parent /*= nullptr*/) : QAbstractItemModel(parent)

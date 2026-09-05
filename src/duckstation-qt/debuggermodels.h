@@ -8,6 +8,7 @@
 #include "core/bus.h"
 #include "core/cpu_core.h"
 #include "core/cpu_types.h"
+#include "core/cpu_call_stack.h"
 
 #include <QtCore/QAbstractItemModel>
 #include <QtCore/QAbstractListModel>
@@ -54,6 +55,28 @@ public:
   QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
 
   void invalidateView();
+};
+
+class DebuggerCallStackModel final : public QAbstractTableModel
+{
+  Q_OBJECT
+
+public:
+  explicit DebuggerCallStackModel(QObject* parent = nullptr);
+  ~DebuggerCallStackModel() override;
+
+  int rowCount(const QModelIndex& parent = QModelIndex()) const override;
+  int columnCount(const QModelIndex& parent = QModelIndex()) const override;
+  QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
+  QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
+
+  const CPU::CallStack::Frame* getFrame(const QModelIndex& index) const;
+
+  void updateValues();
+  void clear();
+
+private:
+  CPU::CallStack::FrameList m_frames;
 };
 
 class DebuggerThreadsModel final : public QAbstractItemModel

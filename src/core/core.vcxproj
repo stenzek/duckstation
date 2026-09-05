@@ -12,6 +12,7 @@
     <ClCompile Include="cdrom_subq_replacement.cpp" />
     <ClCompile Include="cheats.cpp" />
     <ClCompile Include="core.cpp" />
+    <ClCompile Include="cpu_call_stack.cpp" />
     <ClCompile Include="cpu_core.cpp" />
     <ClCompile Include="cpu_disasm.cpp" />
     <ClCompile Include="cpu_code_cache.cpp" />
@@ -101,6 +102,7 @@
     <ClInclude Include="controller_helpers.h" />
     <ClInclude Include="core.h" />
     <ClInclude Include="core_private.h" />
+    <ClInclude Include="cpu_call_stack.h" />
     <ClInclude Include="cpu_code_cache_private.h" />
     <ClInclude Include="cpu_core.h" />
     <ClInclude Include="cpu_core_private.h" />
