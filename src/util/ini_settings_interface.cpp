@@ -87,8 +87,8 @@ INISettingsInterface::Section& INISettingsInterface::GetOrCreateSection(std::str
   return *m_sections.insert(it, std::move(sec));
 }
 
-INISettingsInterface::KeyValueList::const_iterator INISettingsInterface::FindKey(const Section& section,
-                                                                                 std::string_view key) const
+INISettingsInterface::SectionKeyValueList::const_iterator INISettingsInterface::FindKey(const Section& section,
+                                                                                        std::string_view key) const
 {
   auto it = std::lower_bound(
     section.entries.begin(), section.entries.end(), key,
@@ -98,7 +98,8 @@ INISettingsInterface::KeyValueList::const_iterator INISettingsInterface::FindKey
   return section.entries.end();
 }
 
-INISettingsInterface::KeyValueList::iterator INISettingsInterface::FindKey(Section& section, std::string_view key)
+INISettingsInterface::SectionKeyValueList::iterator INISettingsInterface::FindKey(Section& section,
+                                                                                  std::string_view key)
 {
   auto it = std::lower_bound(
     section.entries.begin(), section.entries.end(), key,
@@ -108,15 +109,16 @@ INISettingsInterface::KeyValueList::iterator INISettingsInterface::FindKey(Secti
   return section.entries.end();
 }
 
-INISettingsInterface::KeyValueList::const_iterator INISettingsInterface::FindKeyEnd(const Section& section,
-                                                                                    std::string_view key) const
+INISettingsInterface::SectionKeyValueList::const_iterator INISettingsInterface::FindKeyEnd(const Section& section,
+                                                                                           std::string_view key) const
 {
   return std::upper_bound(
     section.entries.begin(), section.entries.end(), key,
     [this](const std::string_view& k, const KeyValuePair& kv) { return (k < GetPoolStringView(kv.key)); });
 }
 
-INISettingsInterface::KeyValueList::iterator INISettingsInterface::FindKeyEnd(Section& section, std::string_view key)
+INISettingsInterface::SectionKeyValueList::iterator INISettingsInterface::FindKeyEnd(Section& section,
+                                                                                     std::string_view key)
 {
   return std::upper_bound(
     section.entries.begin(), section.entries.end(), key,
@@ -574,7 +576,7 @@ void INISettingsInterface::RemoveEmptySections()
   }
 }
 
-std::vector<std::string> INISettingsInterface::GetStringList(const char* section, const char* key) const
+INISettingsInterface::StringList INISettingsInterface::GetStringList(const char* section, const char* key) const
 {
   auto sit = FindSection(std::string_view(section));
   if (sit == m_sections.end())
@@ -586,14 +588,14 @@ std::vector<std::string> INISettingsInterface::GetStringList(const char* section
     return {};
 
   auto end_it = FindKeyEnd(*sit, key_sv);
-  std::vector<std::string> result;
+  StringList result;
   result.reserve(static_cast<size_t>(end_it - begin_it));
   for (auto it = begin_it; it != end_it; ++it)
     result.emplace_back(GetPoolStringView(it->value));
   return result;
 }
 
-void INISettingsInterface::SetStringList(const char* section, const char* key, const std::vector<std::string>& items)
+void INISettingsInterface::SetStringList(const char* section, const char* key, const StringList& items)
 {
   const std::string_view section_sv(section);
   const std::string_view key_sv(key);
@@ -667,7 +669,7 @@ bool INISettingsInterface::AddToStringList(const char* section, const char* key,
   return true;
 }
 
-std::vector<std::pair<std::string, std::string>> INISettingsInterface::GetKeyValueList(const char* section) const
+INISettingsInterface::KeyValueList INISettingsInterface::GetKeyValueList(const char* section) const
 {
   auto sit = FindSection(section);
   if (sit == m_sections.end())
@@ -680,8 +682,7 @@ std::vector<std::pair<std::string, std::string>> INISettingsInterface::GetKeyVal
   return result;
 }
 
-void INISettingsInterface::SetKeyValueList(const char* section,
-                                           const std::vector<std::pair<std::string, std::string>>& items)
+void INISettingsInterface::SetKeyValueList(const char* section, const KeyValueList& items)
 {
   Section& sec = GetOrCreateSection(section);
   sec.entries.clear();

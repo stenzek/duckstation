@@ -16,6 +16,9 @@ class Error;
 class SettingsInterface
 {
 public:
+  using KeyValueList = std::vector<std::pair<std::string, std::string>>;
+  using StringList = std::vector<std::string>;
+
   virtual ~SettingsInterface();
 
   virtual bool IsEmpty() = 0;
@@ -23,13 +26,13 @@ public:
   virtual bool LookupValue(const char* section, const char* key, std::string_view* value) const = 0;
   virtual void StoreValue(const char* section, const char* key, std::string_view value) = 0;
 
-  virtual std::vector<std::string> GetStringList(const char* section, const char* key) const = 0;
-  virtual void SetStringList(const char* section, const char* key, const std::vector<std::string>& items) = 0;
+  virtual StringList GetStringList(const char* section, const char* key) const = 0;
+  virtual void SetStringList(const char* section, const char* key, const StringList& items) = 0;
   virtual bool RemoveFromStringList(const char* section, const char* key, const char* item) = 0;
   virtual bool AddToStringList(const char* section, const char* key, const char* item) = 0;
 
-  virtual std::vector<std::pair<std::string, std::string>> GetKeyValueList(const char* section) const = 0;
-  virtual void SetKeyValueList(const char* section, const std::vector<std::pair<std::string, std::string>>& items) = 0;
+  virtual KeyValueList GetKeyValueList(const char* section) const = 0;
+  virtual void SetKeyValueList(const char* section, const KeyValueList& items) = 0;
 
   virtual bool ContainsValue(const char* section, const char* key) const = 0;
   virtual void DeleteValue(const char* section, const char* key) = 0;

@@ -24,12 +24,12 @@ public:
     PoolString key;
     PoolString value;
   };
-  using KeyValueList = std::vector<KeyValuePair>;
+  using SectionKeyValueList = std::vector<KeyValuePair>;
 
   struct Section
   {
     PoolString name;
-    KeyValueList entries;
+    SectionKeyValueList entries;
   };
   using SectionList = std::vector<Section>;
 
@@ -65,13 +65,13 @@ public:
   void RemoveSection(const char* section) override;
   void RemoveEmptySections() override;
 
-  std::vector<std::string> GetStringList(const char* section, const char* key) const override;
+  StringList GetStringList(const char* section, const char* key) const override;
   void SetStringList(const char* section, const char* key, const std::vector<std::string>& items) override;
   bool RemoveFromStringList(const char* section, const char* key, const char* item) override;
   bool AddToStringList(const char* section, const char* key, const char* item) override;
 
-  std::vector<std::pair<std::string, std::string>> GetKeyValueList(const char* section) const override;
-  void SetKeyValueList(const char* section, const std::vector<std::pair<std::string, std::string>>& items) override;
+  KeyValueList GetKeyValueList(const char* section) const override;
+  void SetKeyValueList(const char* section, const KeyValueList& items) override;
 
 private:
   std::string_view GetPoolStringView(const PoolString& ps) const;
@@ -81,10 +81,10 @@ private:
   SectionList::iterator FindSection(std::string_view name);
   Section& GetOrCreateSection(std::string_view name);
 
-  KeyValueList::const_iterator FindKey(const Section& section, std::string_view key) const;
-  KeyValueList::iterator FindKey(Section& section, std::string_view key);
-  KeyValueList::const_iterator FindKeyEnd(const Section& section, std::string_view key) const;
-  KeyValueList::iterator FindKeyEnd(Section& section, std::string_view key);
+  SectionKeyValueList::const_iterator FindKey(const Section& section, std::string_view key) const;
+  SectionKeyValueList::iterator FindKey(Section& section, std::string_view key);
+  SectionKeyValueList::const_iterator FindKeyEnd(const Section& section, std::string_view key) const;
+  SectionKeyValueList::iterator FindKeyEnd(Section& section, std::string_view key);
 
   void InsertKeyValue(Section& section, std::string_view key, std::string_view value);
 

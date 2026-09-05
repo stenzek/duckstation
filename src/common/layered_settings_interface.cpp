@@ -66,9 +66,9 @@ void LayeredSettingsInterface::RemoveEmptySections()
   Panic("Attempt to call RemoveEmptySections() on layered settings interface");
 }
 
-std::vector<std::string> LayeredSettingsInterface::GetStringList(const char* section, const char* key) const
+LayeredSettingsInterface::StringList LayeredSettingsInterface::GetStringList(const char* section, const char* key) const
 {
-  std::vector<std::string> ret;
+  StringList ret;
 
   for (u32 layer = FIRST_LAYER; layer <= LAST_LAYER; layer++)
   {
@@ -83,8 +83,7 @@ std::vector<std::string> LayeredSettingsInterface::GetStringList(const char* sec
   return ret;
 }
 
-void LayeredSettingsInterface::SetStringList(const char* section, const char* key,
-                                             const std::vector<std::string>& items)
+void LayeredSettingsInterface::SetStringList(const char* section, const char* key, const StringList& items)
 {
   Panic("Attempt to call SetStringList() on layered settings interface");
 }
@@ -99,16 +98,16 @@ bool LayeredSettingsInterface::AddToStringList(const char* section, const char* 
   Panic("Attempt to call AddToStringList() on layered settings interface");
 }
 
-std::vector<std::pair<std::string, std::string>> LayeredSettingsInterface::GetKeyValueList(const char* section) const
+LayeredSettingsInterface::KeyValueList LayeredSettingsInterface::GetKeyValueList(const char* section) const
 {
   std::unordered_set<std::string_view> seen;
-  std::vector<std::pair<std::string, std::string>> ret;
+  KeyValueList ret;
   for (u32 layer = FIRST_LAYER; layer <= LAST_LAYER; layer++)
   {
     if (SettingsInterface* sif = m_layers[layer])
     {
       const size_t newly_added_begin = ret.size();
-      std::vector<std::pair<std::string, std::string>> entries = sif->GetKeyValueList(section);
+      KeyValueList entries = sif->GetKeyValueList(section);
       for (std::pair<std::string, std::string>& entry : entries)
       {
         if (seen.find(entry.first) != seen.end())

@@ -32,13 +32,13 @@ public:
   void RemoveSection(const char* section) override;
   void RemoveEmptySections() override;
 
-  std::vector<std::string> GetStringList(const char* section, const char* key) const override;
+  StringList GetStringList(const char* section, const char* key) const override;
   void SetStringList(const char* section, const char* key, const std::vector<std::string>& items) override;
   bool RemoveFromStringList(const char* section, const char* key, const char* item) override;
   bool AddToStringList(const char* section, const char* key, const char* item) override;
 
-  std::vector<std::pair<std::string, std::string>> GetKeyValueList(const char* section) const override;
-  void SetKeyValueList(const char* section, const std::vector<std::pair<std::string, std::string>>& items) override;
+  KeyValueList GetKeyValueList(const char* section) const override;
+  void SetKeyValueList(const char* section, const KeyValueList& items) override;
 
 private:
   static constexpr Layer FIRST_LAYER = LAYER_GAME;
