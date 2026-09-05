@@ -157,6 +157,23 @@ ALWAYS_INLINE ImVec2 LayoutUnscale(float x, float y)
   return ImVec2(ImCeil(x * UIStyle.RcpLayoutScale), ImCeil(y * UIStyle.RcpLayoutScale));
 }
 
+ALWAYS_INLINE ImRect ImRectFromExtent(const ImVec2& pos, const ImVec2& size)
+{
+  return ImRect(pos, pos + size);
+}
+ALWAYS_INLINE ImRect ImRectFromExtent(const ImVec2& pos, const float width, const float height)
+{
+  return ImRectFromExtent(pos, ImVec2(width, height));
+}
+ALWAYS_INLINE ImRect ImRectFromLayoutExtent(const ImVec2& pos, const ImVec2& size)
+{
+  return ImRectFromExtent(pos, LayoutScale(size));
+}
+ALWAYS_INLINE ImRect ImRectFromLayoutExtent(const ImVec2& pos, const float width, const float height)
+{
+  return ImRectFromExtent(pos, LayoutScale(width, height));
+}
+
 ALWAYS_INLINE ImVec4 ModAlpha(const ImVec4& v, float a)
 {
   return ImVec4(v.x, v.y, v.z, a);

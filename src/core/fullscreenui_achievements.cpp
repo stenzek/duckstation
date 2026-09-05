@@ -54,6 +54,10 @@ static constexpr float CHALLENGE_INDICATOR_FADE_OUT_TIME = 0.3f;
 
 static constexpr const float& ACHIEVEMENT_BADGE_FONT_WEIGHT = UIStyle.BoldFontWeight;
 
+// Adjust the text position slightly to compensate for the baseline being too low, to ensure it aligns with the badge.
+static constexpr const float BADGE_TEXT_Y_OFFSET = 3.0f;
+static constexpr const float SMALL_BADGE_TEXT_Y_OFFSET = 1.0f;
+
 static_assert(static_cast<u8>(AchievementNotificationCategory::None) == RC_CLIENT_ACHIEVEMENT_TYPE_STANDARD);
 static_assert(static_cast<u8>(AchievementNotificationCategory::Missable) == RC_CLIENT_ACHIEVEMENT_TYPE_MISSABLE);
 static_assert(static_cast<u8>(AchievementNotificationCategory::Progression) == RC_CLIENT_ACHIEVEMENT_TYPE_PROGRESSION);
@@ -548,11 +552,12 @@ void FullscreenUI::DrawNotifications(NotificationLayout& layout)
     const ImVec2 text_size = font->CalcTextSizeA(text_font_size, text_font_weight, max_text_width, max_text_width,
                                                  IMSTR_START_END(notif.text));
 
-    const float badge_size = notif.small_font ? small_badge_size : normal_badge_size;
+    const ImVec2 badge_size =
+      notif.small_font ? ImVec2(small_badge_size, small_badge_size) : ImVec2(normal_badge_size, normal_badge_size);
     const float horizontal_padding = notif.small_font ? small_horizontal_padding : normal_horizontal_padding;
     const float vertical_padding = notif.small_font ? small_vertical_padding : normal_vertical_padding;
     const float box_width =
-      std::max((horizontal_padding * 2.0f) + badge_size + horizontal_spacing +
+      std::max((horizontal_padding * 2.0f) + badge_size.x + horizontal_spacing +
                  ImCeil(std::max(title_size.x + title_trailing_spacing + title_trailing_width, text_size.x)),
                std::max(static_cast<float>(ImCeil(notif.min_width * scale)), min_width));
     const float box_height =
@@ -616,15 +621,14 @@ void FullscreenUI::DrawNotifications(NotificationLayout& layout)
         horizontal_padding);
     }
 
-    const ImVec2 badge_min(box_min.x + horizontal_padding, box_min.y + vertical_padding);
-    const ImVec2 badge_max(badge_min.x + badge_size, badge_min.y + badge_size);
+    const ImVec2 badge_pos(box_min.x + horizontal_padding, box_min.y + vertical_padding);
     if (!notif.image_url.empty())
     {
-      GPUTexture* tex =
-        GetCachedTextureAsync(notif.image_url, static_cast<u32>(badge_size), static_cast<u32>(badge_size));
+      GPUTexture* tex = GetCachedTextureAsync(notif.image_url, badge_size);
       if (tex)
       {
-        dl->AddImage(tex, badge_min, badge_max, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f),
+        const ImRect badge_rect = CenterImage(ImRectFromExtent(badge_pos, badge_size), tex);
+        dl->AddImage(tex, badge_rect.Min, badge_rect.Max, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f),
                      ImGui::GetColorU32(ImVec4(1.0f, 1.0f, 1.0f, opacity)));
       }
     }
@@ -632,24 +636,23 @@ void FullscreenUI::DrawNotifications(NotificationLayout& layout)
     const u32 title_col = ImGui::GetColorU32(ModAlpha(UIStyle.ToastTextColor, opacity));
     const u32 text_col = ImGui::GetColorU32(ModAlpha(DarkerColor(UIStyle.ToastTextColor), opacity));
 
-    // offset the title's Y position ever-so-slightly due to the different font size, make it line up with the note
-    const float title_offset = LayoutScale(2.0f);
-    const ImVec2 title_pos = ImVec2(badge_max.x + horizontal_spacing, box_min.y + vertical_padding - title_offset);
-    const ImRect title_bb = ImRect(title_pos, title_pos + title_size);
+    const ImRect title_bb = ImRectFromExtent(
+      ImVec2(badge_pos.x + badge_size.x + horizontal_spacing,
+             badge_pos.y - LayoutScale(notif.small_font ? SMALL_BADGE_TEXT_Y_OFFSET : BADGE_TEXT_Y_OFFSET)),
+      title_size);
     RenderShadowedTextClipped(dl, font, title_font_size, title_font_weight, title_bb.Min, title_bb.Max, title_col,
                               notif.title, &title_size, ImVec2(0.0f, 0.0f), title_available_width, &title_bb);
 
-    const ImVec2 text_pos = ImVec2(badge_max.x + horizontal_spacing, title_bb.Max.y + vertical_spacing - title_offset);
-    const ImRect text_bb = ImRect(text_pos, text_pos + text_size);
+    const ImRect text_bb = ImRectFromExtent(ImVec2(title_bb.Min.x, title_bb.Max.y + vertical_spacing), text_size);
     RenderShadowedTextClipped(dl, font, text_font_size, text_font_weight, text_bb.Min, text_bb.Max, text_col,
                               notif.text, &text_size, ImVec2(0.0f, 0.0f), max_text_width, &text_bb);
 
     const ImVec2 note_pos =
-      ImVec2((box_min.x + box_width) - horizontal_padding - note_size.x, box_min.y + vertical_padding + note_offset_y);
+      ImVec2((box_min.x + box_width) - horizontal_padding - note_size.x, badge_pos.y + note_offset_y);
     if (has_category)
     {
       const float category_right = has_note ? note_pos.x - category_note_spacing : box_max.x - horizontal_padding;
-      const ImVec2 category_pos(category_right - category_size.x, box_min.y + vertical_padding);
+      const ImVec2 category_pos(category_right - category_size.x, badge_pos.y);
       DrawAchievementCategoryBadges(dl, notif.category, category_pos, category_badge_font_size,
                                     ACHIEVEMENT_BADGE_FONT_WEIGHT, category_badge_padding, category_badge_spacing,
                                     category_badge_rounding, opacity);
@@ -2037,14 +2040,15 @@ void FullscreenUI::DrawAchievementsWindow()
       GPUTexture* badge = GetCachedTextureAsync(badge_url);
       if (badge)
       {
-        ImGui::GetWindowDrawList()->AddImage(badge, pos, pos + ImVec2(image_size, image_size), ImVec2(0.0f, 0.0f),
-                                             ImVec2(1.0f, 1.0f), IM_COL32(255, 255, 255, 255));
+        const ImRect image_bb = CenterImage(ImRectFromExtent(pos, image_size, image_size), badge);
+        ImGui::GetWindowDrawList()->AddImage(badge, image_bb.Min, image_bb.Max, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f),
+                                             IM_COL32(255, 255, 255, 255));
       }
     }
 
     float left = pos.x + image_size + LayoutScale(10.0f);
     float right = pos.x + GetMenuButtonAvailableWidth();
-    float top = pos.y;
+    float top = pos.y - LayoutScale(BADGE_TEXT_Y_OFFSET);
     ImDrawList* dl = ImGui::GetWindowDrawList();
     SmallString text;
     ImVec2 text_size;
@@ -2433,10 +2437,12 @@ void FullscreenUI::DrawAchievement(const rc_client_achievement_t* cheevo, const 
                                     ImVec2() :
                                     UIStyle.Font->CalcTextSizeA(UIStyle.MediumFontSize, UIStyle.NormalFontWeight,
                                                                 FLT_MAX, max_text_width, IMSTR_START_END(description));
-  const float content_height = (title_size.y + spacing + description_size.y +
-                                ((is_unlocked || !is_unofficial) ? (spacing + UIStyle.MediumFontSize) : 0.0f)) +
-                               (is_measured ? (spacing + LayoutScale(progress_height_unscaled)) : 0.0f) +
-                               LayoutScale(LAYOUT_MENU_ITEM_EXTRA_HEIGHT);
+  const float content_height =
+    std::max((title_size.y + spacing + description_size.y +
+              ((is_unlocked || !is_unofficial) ? (spacing + UIStyle.MediumFontSize) : 0.0f)) +
+               (is_measured ? (spacing + LayoutScale(progress_height_unscaled)) : 0.0f),
+             image_size.y + LayoutScale(BADGE_TEXT_Y_OFFSET)) +
+    LayoutScale(LAYOUT_MENU_ITEM_EXTRA_HEIGHT);
 
   text.format("chv_{}", cheevo->id);
 
@@ -2472,7 +2478,8 @@ void FullscreenUI::DrawAchievement(const rc_client_achievement_t* cheevo, const 
     GPUTexture* badge = GetCachedTextureAsync(badge_url);
     if (badge)
     {
-      const ImRect image_bb = CenterImage(ImRect(bb.Min, bb.Min + image_size), badge);
+      const ImRect image_bb =
+        CenterImage(ImRectFromExtent(ImVec2(bb.Min.x, bb.Min.y + LayoutScale(BADGE_TEXT_Y_OFFSET)), image_size), badge);
       dl->AddImage(badge, image_bb.Min, image_bb.Max, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f),
                    IM_COL32(255, 255, 255, 255));
     }
@@ -2503,7 +2510,7 @@ void FullscreenUI::DrawAchievement(const rc_client_achievement_t* cheevo, const 
   if (category_size.x > 0.0f)
   {
     const ImVec2 badge_pos(current_pos.x + max_text_width - category_size.x,
-                           ImFloor(title_bb.Min.y + (title_font_size - category_size.y) * 0.5f));
+                           ImFloor(bb.Min.y + (title_font_size - category_size.y) * 0.5f));
     DrawAchievementCategoryBadges(dl, category, badge_pos, type_badge_font_size, ACHIEVEMENT_BADGE_FONT_WEIGHT,
                                   type_badge_padding, type_badge_spacing, type_badge_rounding, 1.0f);
   }
@@ -2791,14 +2798,15 @@ void FullscreenUI::DrawLeaderboardsWindow()
       GPUTexture* badge = GetCachedTextureAsync(badge_url);
       if (badge)
       {
-        ImGui::GetWindowDrawList()->AddImage(badge, heading_pos, heading_pos + ImVec2(image_size, image_size),
-                                             ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f), IM_COL32(255, 255, 255, 255));
+        const ImRect image_bb = CenterImage(ImRectFromExtent(heading_pos, image_size, image_size), badge);
+        ImGui::GetWindowDrawList()->AddImage(badge, image_bb.Min, image_bb.Max, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f),
+                                             IM_COL32(255, 255, 255, 255));
       }
     }
 
     float left = heading_pos.x + image_size + spacing;
     float right = heading_pos.x + GetMenuButtonAvailableWidth();
-    float top = heading_pos.y;
+    float top = heading_pos.y - LayoutScale(BADGE_TEXT_Y_OFFSET);
 
     const ImRect title_bb(ImVec2(left, top), ImVec2(right, top + UIStyle.LargeFontSize));
     if (s_achievements_locals.open_subset)
