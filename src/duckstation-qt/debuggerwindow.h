@@ -53,6 +53,7 @@ private:
   void scrollToPC(bool center);
   void scrollToCodeAddress(VirtualMemoryAddress address, bool center);
   bool scrollToMemoryAddress(VirtualMemoryAddress address);
+  bool scrollToStackAddress(VirtualMemoryAddress address);
   void refreshBreakpointList();
   void refreshBreakpointList(const CPU::BreakpointList& bps);
   void addBreakpoint(CPU::BreakpointType type, u32 address);
@@ -85,6 +86,7 @@ private:
   void onCodeViewCommentActivated(VirtualMemoryAddress address);
   void onCodeViewContextMenuRequested(const QPoint& pt);
   void onCallStackItemDoubleClicked(const QModelIndex& index);
+  void onStackItemDoubleClicked(const QModelIndex& index);
   void onThreadItemDoubleClicked(const QModelIndex& index);
   void onMemorySearchTriggered();
   void onMemorySearchStringChanged(const QString&);

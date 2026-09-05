@@ -357,7 +357,16 @@ void DebuggerWindow::onCallStackItemDoubleClicked(const QModelIndex& index)
   if (index.column() == 0)
     scrollToCodeAddress(frame->address, true);
   else if (index.column() == 1)
-    scrollToMemoryAddress(frame->stack_pointer);
+    scrollToStackAddress(frame->stack_pointer);
+}
+
+void DebuggerWindow::onStackItemDoubleClicked(const QModelIndex& index)
+{
+  const std::optional<VirtualMemoryAddress> address = m_stack_model->getAddressForIndex(index);
+  if (!address.has_value())
+    return;
+
+  scrollToMemoryAddress(address.value());
 }
 
 void DebuggerWindow::startPatchInstruction(VirtualMemoryAddress address)
@@ -605,6 +614,7 @@ void DebuggerWindow::connectSignals()
   connect(m_ui.codeView, &DebuggerCodeView::commentActivated, this, &DebuggerWindow::onCodeViewCommentActivated);
   connect(m_ui.codeView, &QWidget::customContextMenuRequested, this, &DebuggerWindow::onCodeViewContextMenuRequested);
   connect(m_ui.callStackView, &QTreeView::doubleClicked, this, &DebuggerWindow::onCallStackItemDoubleClicked);
+  connect(m_ui.stackView, &QTreeView::doubleClicked, this, &DebuggerWindow::onStackItemDoubleClicked);
   connect(m_ui.threadsView, &QTreeView::doubleClicked, this, &DebuggerWindow::onThreadItemDoubleClicked);
   connect(m_ui.breakpointsWidget, &QTreeWidget::customContextMenuRequested, this,
           &DebuggerWindow::onBreakpointListContextMenuRequested);
@@ -800,6 +810,16 @@ bool DebuggerWindow::scrollToMemoryAddress(VirtualMemoryAddress address)
 
   const PhysicalMemoryAddress offset = phys_address - Bus::GetMemoryRegionStart(region.value());
   m_ui.memoryView->scrollToOffset(offset);
+  return true;
+}
+
+bool DebuggerWindow::scrollToStackAddress(VirtualMemoryAddress address)
+{
+  const QModelIndex index = m_stack_model->getIndexForAddress(address);
+  if (!index.isValid())
+    return false;
+
+  m_ui.stackView->scrollTo(index, QAbstractItemView::PositionAtTop);
   return true;
 }
 

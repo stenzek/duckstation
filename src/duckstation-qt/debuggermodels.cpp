@@ -24,8 +24,9 @@
 
 using namespace Qt::StringLiterals;
 
-static constexpr int STACK_RANGE = 128;
+static constexpr u32 STACK_RANGE = 128;
 static constexpr u32 STACK_VALUE_SIZE = sizeof(u32);
+static constexpr u32 STACK_RANGE_BYTES = STACK_RANGE * STACK_VALUE_SIZE;
 
 DebuggerRegistersModel::DebuggerRegistersModel(QObject* parent /*= nullptr*/) : QAbstractListModel(parent)
 {
@@ -129,7 +130,7 @@ DebuggerStackModel::~DebuggerStackModel()
 
 int DebuggerStackModel::rowCount(const QModelIndex& parent /*= QModelIndex()*/) const
 {
-  return STACK_RANGE * 2;
+  return static_cast<int>(STACK_RANGE * 2);
 }
 
 int DebuggerStackModel::columnCount(const QModelIndex& parent /*= QModelIndex()*/) const
@@ -140,20 +141,20 @@ int DebuggerStackModel::columnCount(const QModelIndex& parent /*= QModelIndex()*
 QVariant DebuggerStackModel::data(const QModelIndex& index, int role /*= Qt::DisplayRole*/) const
 {
   if (index.column() < 0 || index.column() > 1)
-    return QVariant();
+    return {};
 
   if (role != Qt::DisplayRole)
-    return QVariant();
+    return {};
 
-  const u32 sp = CPU::g_state.regs.sp;
-  const VirtualMemoryAddress address =
-    (sp - static_cast<u32>(STACK_RANGE * STACK_VALUE_SIZE)) + static_cast<u32>(index.row()) * STACK_VALUE_SIZE;
+  const std::optional<VirtualMemoryAddress> address = getAddressForIndex(index);
+  if (!address.has_value())
+    return {};
 
   if (index.column() == 0)
-    return QString::asprintf("0x%08X", address);
+    return QString::asprintf("0x%08X", address.value());
 
   u32 value;
-  if (!CPU::SafeReadMemoryWord(address, &value))
+  if (!CPU::SafeReadMemoryWord(address.value(), &value))
     return tr("<invalid>");
 
   return QString::asprintf("0x%08X", ZeroExtend32(value));
@@ -176,6 +177,26 @@ QVariant DebuggerStackModel::headerData(int section, Qt::Orientation orientation
     default:
       return QVariant();
   }
+}
+
+QModelIndex DebuggerStackModel::getIndexForAddress(VirtualMemoryAddress address) const
+{
+  const u32 sp = CPU::g_state.regs.sp;
+  const u32 start = sp - std::min(sp, STACK_RANGE_BYTES);
+  if (address < start || address >= (sp + std::min(STACK_RANGE_BYTES, std::numeric_limits<u32>::max() - sp)))
+    return QModelIndex();
+
+  return index(static_cast<int>((address - start) / STACK_VALUE_SIZE));
+}
+
+std::optional<VirtualMemoryAddress> DebuggerStackModel::getAddressForIndex(const QModelIndex& index) const
+{
+  if (!index.isValid())
+    return std::nullopt;
+
+  const u32 sp = CPU::g_state.regs.sp;
+  const u32 start = sp - std::min(sp, STACK_RANGE_BYTES);
+  return start + static_cast<u32>(index.row()) * STACK_VALUE_SIZE;
 }
 
 void DebuggerStackModel::invalidateView()
