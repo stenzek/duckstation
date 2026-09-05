@@ -160,7 +160,6 @@ static bool Initialize(std::unique_ptr<CDImage> disc, DiscRegion disc_region, bo
                        std::optional<bool> start_fullscreen, Error* error);
 static bool LoadBIOS(bool* using_auto_select, Error* error);
 static bool SetBootMode(BootMode new_boot_mode, DiscRegion disc_region, bool* missing_bios, Error* error);
-static void UpdateConsoleRegion();
 static void InternalReset();
 static void ClearRunningGame();
 static void DestroySystem();
