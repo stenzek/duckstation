@@ -710,10 +710,15 @@ int rc_json_get_string(const char** out, rc_buffer_t* buffer, const rc_json_fiel
     }
 
     *out = dst = (char*)rc_buffer_reserve(buffer, len - 1); /* -2 for quotes, +1 for null terminator */
+    if (!dst)
+      return 0;
 
-    do {
+    while (src < field->value_end && *src != '\"') {
       if (*src == '\\') {
         ++src;
+        if (src >= field->value_end)
+          return 0;
+
         if (*src == 'n') {
           /* newline */
           ++src;
@@ -731,7 +736,7 @@ int rc_json_get_string(const char** out, rc_buffer_t* buffer, const rc_json_fiel
         if (*src == 'u') {
           /* unicode character */
           uint32_t ucs32_char;
-          if (src + 5 >= field->value_end) /* incomplete unicode character */
+          if ((size_t)(field->value_end - src) < 6) /* incomplete unicode character */
             return 0;
 
           ucs32_char = rc_json_decode_hex4(src + 1);
@@ -739,7 +744,7 @@ int rc_json_get_string(const char** out, rc_buffer_t* buffer, const rc_json_fiel
 
           if (ucs32_char >= 0xD800 && ucs32_char < 0xE000) {
             /* surrogate lead - look for surrogate tail */
-            if (ucs32_char < 0xDC00 && src[0] == '\\' && src[1] == 'u') {
+            if (ucs32_char < 0xDC00 && (size_t)(field->value_end - src) >= 6 && src[0] == '\\' && src[1] == 'u') {
               const uint32_t surrogate = rc_json_decode_hex4(src + 2);
               src += 6;
 
@@ -770,10 +775,16 @@ int rc_json_get_string(const char** out, rc_buffer_t* buffer, const rc_json_fiel
       }
 
       *dst++ = *src++;
-    } while (*src != '\"');
+    }
+
+    if (src >= field->value_end)
+      return 0;
 
   } else {
     *out = dst = (char*)rc_buffer_reserve(buffer, len + 1); /* +1 for null terminator */
+    if (!dst)
+      return 0;
+
     memcpy(dst, src, len);
     dst += len;
   }
