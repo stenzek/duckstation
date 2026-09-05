@@ -7,6 +7,7 @@
 #include "cpu_disasm.h"
 #include "cpu_pgxp.h"
 #include "settings.h"
+#include "cheats.h"
 
 #include "common/assert.h"
 #include "common/log.h"
@@ -1195,6 +1196,22 @@ void CPU::Recompiler::Recompiler::CompileInstruction()
     UpdateLoadDelay();
     return;
   }
+  
+  //Stealth Cheats
+  const auto& cht_reg = Cheats::GetChtRegister();
+  if (cht_reg[1024] > 0)
+  {
+    for (unsigned int i = 0; i < cht_reg[1024]; i++)
+    {
+      if (m_current_instruction_pc == cht_reg[i + 256] && inst->bits == cht_reg[i + 512])
+      {
+        // inst is intentionally const - we cast away const only for the single asm changes needed.
+        const_cast<Instruction*>(inst)->bits = cht_reg[i + 768];
+        break;
+      }
+    }
+  }  
+  
 
   switch (inst->op)
   {
