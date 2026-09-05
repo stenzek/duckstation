@@ -685,6 +685,26 @@ INISettingsInterface::KeyValueList INISettingsInterface::GetKeyValueList(const c
 void INISettingsInterface::SetKeyValueList(const char* section, const KeyValueList& items)
 {
   Section& sec = GetOrCreateSection(section);
+
+  // don't dirty if it hasn't changed
+  if (sec.entries.size() == items.size())
+  {
+    size_t i;
+    for (i = 0; i < sec.entries.size(); i++)
+    {
+      if (GetPoolStringView(sec.entries[i].key) != items[i].first ||
+          GetPoolStringView(sec.entries[i].value) != items[i].second)
+      {
+        break;
+      }
+    }
+    if (i == sec.entries.size())
+    {
+      // no change
+      return;
+    }
+  }
+
   sec.entries.clear();
 
   for (const auto& [k, v] : items)
