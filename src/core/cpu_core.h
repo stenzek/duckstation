@@ -13,6 +13,7 @@
 #include <optional>
 #include <span>
 #include <string>
+#include <string_view>
 #include <vector>
 
 class StateWrapper;
@@ -246,6 +247,8 @@ using BreakpointList = std::vector<Breakpoint>;
 
 // Breakpoints
 const char* GetBreakpointTypeName(BreakpointType type);
+const char* GetBreakpointTypeDisplayName(BreakpointType type);
+std::optional<BreakpointType> ParseBreakpointTypeName(std::string_view sv);
 bool HasAnyBreakpoints();
 bool HasBreakpointAtAddress(BreakpointType type, VirtualMemoryAddress address);
 BreakpointList CopyBreakpointList(bool include_auto_clear = false, bool include_callbacks = false);
@@ -253,7 +256,7 @@ bool AddBreakpoint(BreakpointType type, VirtualMemoryAddress address, bool auto_
 bool AddBreakpointWithCallback(BreakpointType type, VirtualMemoryAddress address, BreakpointCallback callback);
 bool SetBreakpointEnabled(BreakpointType type, VirtualMemoryAddress address, bool enabled);
 bool RemoveBreakpoint(BreakpointType type, VirtualMemoryAddress address);
-void ClearBreakpoints();
+void ClearBreakpoints(bool include_auto_clear = false, bool include_callbacks = false);
 bool AddStepOverBreakpoint();
 bool AddStepOutBreakpoint(u32 max_instructions_to_search = 1000);
 void SetSingleStepFlag();

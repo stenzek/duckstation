@@ -10,7 +10,10 @@
 
 #include <QtCore/QTimer>
 #include <QtWidgets/QMainWindow>
+#include <memory>
 #include <optional>
+
+class INISettingsInterface;
 
 namespace Bus {
 enum class MemoryRegion;
@@ -58,9 +61,12 @@ private:
   void refreshBreakpointList(const CPU::BreakpointList& bps);
   void addBreakpoint(CPU::BreakpointType type, u32 address);
   void removeBreakpoint(CPU::BreakpointType type, u32 address);
+  void loadGameSettings(bool clear_existing);
+  void saveGameSettings();
 
   void onSystemStarted();
   void onSystemDestroyed();
+  void onSystemGameChanged(const QString& path, const QString& serial, const QString& title);
   void onSystemPaused();
   void onSystemResumed();
 
@@ -103,4 +109,7 @@ private:
   Bus::MemoryRegion m_active_memory_region;
 
   PhysicalMemoryAddress m_next_memory_search_address = 0;
+
+  QString m_game_serial;
+  std::unique_ptr<INISettingsInterface> m_settings;
 };

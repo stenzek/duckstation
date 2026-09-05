@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "cpu_core.h"
@@ -16,12 +16,14 @@
 #include "timing_event.h"
 
 #include "util/state_wrapper.h"
+#include "util/translation.h"
 
 #include "common/align.h"
 #include "common/fastjmp.h"
 #include "common/file_system.h"
 #include "common/log.h"
 #include "common/path.h"
+#include "common/string_util.h"
 
 #include "fmt/format.h"
 
@@ -196,7 +198,7 @@ void CPU::Initialize()
 
 void CPU::Shutdown()
 {
-  ClearBreakpoints();
+  ClearBreakpoints(true, true);
   StopTrace();
 }
 
@@ -2254,6 +2256,28 @@ const char* CPU::GetBreakpointTypeName(BreakpointType type)
   return names[static_cast<size_t>(type)];
 }
 
+const char* CPU::GetBreakpointTypeDisplayName(BreakpointType type)
+{
+  static constexpr std::array<const char*, static_cast<u32>(BreakpointType::Count)> names = {{
+    TRANSLATE_DISAMBIG_NOOP("CPU", "Execute", "BreakpointType"),
+    TRANSLATE_DISAMBIG_NOOP("CPU", "Read", "BreakpointType"),
+    TRANSLATE_DISAMBIG_NOOP("CPU", "Write", "BreakpointType"),
+  }};
+  return Host::TranslateToCString("CPU", names[static_cast<size_t>(type)], "BreakpointType");
+}
+
+std::optional<CPU::BreakpointType> CPU::ParseBreakpointTypeName(std::string_view sv)
+{
+  for (u8 i = 0; i < static_cast<u8>(CPU::BreakpointType::Count); i++)
+  {
+    const CPU::BreakpointType type = static_cast<CPU::BreakpointType>(i);
+    if (StringUtil::EqualNoCase(sv, CPU::GetBreakpointTypeName(type)))
+      return type;
+  }
+
+  return std::nullopt;
+}
+
 bool CPU::HasBreakpointAtAddress(BreakpointType type, VirtualMemoryAddress address)
 {
   for (Breakpoint& bp : GetBreakpointList(type))
@@ -2370,12 +2394,36 @@ bool CPU::RemoveBreakpoint(BreakpointType type, VirtualMemoryAddress address)
   return true;
 }
 
-void CPU::ClearBreakpoints()
+void CPU::ClearBreakpoints(bool include_auto_clear /*= false*/, bool include_callbacks /*= false*/)
 {
-  for (BreakpointList& bplist : s_locals.breakpoints)
-    bplist.clear();
-  s_locals.breakpoint_counter = 0;
-  s_locals.last_breakpoint_check_pc = INVALID_BREAKPOINT_PC;
+  if (include_auto_clear && include_callbacks)
+  {
+    for (BreakpointList& bplist : s_locals.breakpoints)
+      bplist.clear();
+  }
+  else
+  {
+    for (BreakpointList& bplist : s_locals.breakpoints)
+    {
+      for (auto iter = bplist.begin(); iter != bplist.end();)
+      {
+        if ((iter->callback && !include_callbacks) || (iter->auto_clear && !include_auto_clear))
+        {
+          ++iter;
+          continue;
+        }
+
+        iter = bplist.erase(iter);
+      }
+    }
+  }
+
+  if (std::ranges::all_of(s_locals.breakpoints, [](const auto& bplist) { return bplist.empty(); }))
+  {
+    s_locals.breakpoint_counter = 0;
+    s_locals.last_breakpoint_check_pc = INVALID_BREAKPOINT_PC;
+  }
+
   if (UpdateDebugDispatcherFlag())
     System::InterruptExecution();
 }

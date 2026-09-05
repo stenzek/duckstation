@@ -11,11 +11,22 @@
 #include "core/cpu_code_cache.h"
 #include "core/cpu_core_private.h"
 #include "core/cpu_disasm.h"
+#include "core/settings.h"
+#include "core/system.h"
 
 #include "common/assert.h"
 #include "common/error.h"
+#include "common/file_system.h"
 #include "common/log.h"
+#include "common/path.h"
 #include "common/small_string.h"
+#include "common/string_util.h"
+
+#include "util/ini_settings_interface.h"
+
+#include <fmt/format.h>
+
+#include <tuple>
 
 #include <QtCore/QPointer>
 #include <QtCore/QSignalBlocker>
@@ -32,6 +43,7 @@ using namespace Qt::StringLiterals;
 LOG_CHANNEL(Host);
 
 static constexpr int TIMER_REFRESH_INTERVAL_MS = 100;
+static constexpr const char* BREAKPOINTS_SECTION = "Breakpoints";
 
 DebuggerWindow::DebuggerWindow(QWidget* parent /* = nullptr */)
   : QMainWindow(parent), m_active_memory_region(Bus::MemoryRegion::Count)
@@ -41,10 +53,16 @@ DebuggerWindow::DebuggerWindow(QWidget* parent /* = nullptr */)
   connectSignals();
   createModels();
   setMemoryViewRegion(Bus::MemoryRegion::RAM);
-  if (QtHost::IsSystemValid() && QtHost::IsSystemPaused())
-    onSystemPaused();
-  else if (QtHost::IsSystemValid())
-    onSystemStarted();
+  if (QtHost::IsSystemValid())
+  {
+    m_game_serial = QtHost::GetCurrentGameSerial();
+    loadGameSettings(false);
+
+    if (QtHost::IsSystemPaused())
+      onSystemPaused();
+    else
+      onSystemStarted();
+  }
   else
     onSystemDestroyed();
 }
@@ -53,14 +71,34 @@ DebuggerWindow::~DebuggerWindow() = default;
 
 void DebuggerWindow::onSystemStarted()
 {
+  if (const QString& serial = QtHost::GetCurrentGameSerial(); m_game_serial != serial)
+  {
+    m_game_serial = serial;
+    loadGameSettings(true);
+  }
+
   setUIEnabled(false, true);
 }
 
 void DebuggerWindow::onSystemDestroyed()
 {
+  m_game_serial.clear();
+  refreshBreakpointList({});
   m_call_stack_model->clear();
   m_threads_model->clear();
   setUIEnabled(false, false);
+}
+
+void DebuggerWindow::onSystemGameChanged(const QString& path, const QString& serial, const QString& title)
+{
+  Q_UNUSED(path);
+  Q_UNUSED(title);
+
+  if (m_game_serial == serial)
+    return;
+
+  m_game_serial = serial;
+  loadGameSettings(true);
 }
 
 void DebuggerWindow::onSystemPaused()
@@ -551,9 +589,10 @@ void DebuggerWindow::onMemorySearchStringChanged(const QString&)
 
 void DebuggerWindow::closeEvent(QCloseEvent* event)
 {
-  QtUtils::SaveWindowGeometry(this);
   g_core_thread->disconnect(this);
-  Host::RunOnCoreThread(&CPU::ClearBreakpoints);
+  Host::RunOnCoreThread([]() { CPU::ClearBreakpoints(true, false); });
+  QtUtils::SaveWindowGeometry(this);
+  saveGameSettings();
   QMainWindow::closeEvent(event);
   emit closed();
 }
@@ -593,6 +632,7 @@ void DebuggerWindow::connectSignals()
   connect(g_core_thread, &CoreThread::systemResumed, this, &DebuggerWindow::onSystemResumed);
   connect(g_core_thread, &CoreThread::systemStarted, this, &DebuggerWindow::onSystemStarted);
   connect(g_core_thread, &CoreThread::systemDestroyed, this, &DebuggerWindow::onSystemDestroyed);
+  connect(g_core_thread, &CoreThread::systemGameChanged, this, &DebuggerWindow::onSystemGameChanged);
 
   connect(m_ui.actionPause, &QAction::triggered, this, &DebuggerWindow::onPauseActionTriggered);
   connect(m_ui.actionRunToCursor, &QAction::triggered, this, &DebuggerWindow::onRunToCursorTriggered);
@@ -770,7 +810,8 @@ void DebuggerWindow::toggleBreakpoint(VirtualMemoryAddress address)
 void DebuggerWindow::clearBreakpoints()
 {
   m_ui.codeView->clearBreakpoints();
-  Host::RunOnCoreThread(&CPU::ClearBreakpoints);
+  refreshBreakpointList(CPU::BreakpointList());
+  Host::RunOnCoreThread([]() { CPU::ClearBreakpoints(false, false); });
 }
 
 bool DebuggerWindow::tryFollowLoadStore(VirtualMemoryAddress address)
@@ -845,7 +886,7 @@ void DebuggerWindow::refreshBreakpointList(const CPU::BreakpointList& bps)
     item->setCheckState(0, bp.enabled ? Qt::Checked : Qt::Unchecked);
     item->setText(0, QString::asprintf("%u", bp.number));
     item->setText(1, QString::asprintf("0x%08X", bp.address));
-    item->setText(2, QString::fromUtf8(CPU::GetBreakpointTypeName(bp.type)));
+    item->setText(2, QString::fromUtf8(CPU::GetBreakpointTypeDisplayName(bp.type)));
     item->setText(3, QString::asprintf("%u", bp.hit_count));
     item->setData(0, Qt::UserRole, bp.number);
     item->setData(1, Qt::UserRole, QVariant(static_cast<uint>(bp.address)));
@@ -937,5 +978,146 @@ void Host::ReportDebuggerEvent(CPU::DebuggerEvent event, std::string_view messag
       if (!message.isEmpty())
         win->reportMessage(message);
     });
+  }
+}
+
+void DebuggerWindow::loadGameSettings(bool clear_existing)
+{
+  // can't have breakpoints without serial
+  if (m_game_serial.isEmpty())
+  {
+    saveGameSettings();
+    m_settings.reset();
+
+    if (!clear_existing)
+      return;
+
+    m_ui.codeView->clearBreakpoints();
+    refreshBreakpointList(CPU::BreakpointList());
+    Host::RunOnCoreThread([]() { CPU::ClearBreakpoints(false, false); });
+    return;
+  }
+
+  m_settings = std::make_unique<INISettingsInterface>(
+    Path::Combine(EmuFolders::GameSettings, fmt::format("{}.debugger.ini", m_game_serial.toStdString())));
+  if (Error error; FileSystem::FileExists(m_settings->GetPath().c_str()))
+  {
+    INFO_LOG("Loading debugger settings from {}", Path::GetFileName(m_settings->GetPath()));
+    if (!m_settings->Load(&error))
+    {
+      ERROR_LOG("Failed to load debugger settings from '{}': {}", Path::GetFileName(m_settings->GetPath()),
+                error.GetDescription());
+      QtUtils::AsyncMessageBox(
+        this, QMessageBox::Critical, windowTitle(),
+        u"Failed to load debugger settings: %1"_s.arg(QtUtils::StringViewToQStringView(error.GetDescription())));
+    }
+  }
+
+  using QueuedBreakpoint = std::tuple<CPU::BreakpointType, VirtualMemoryAddress, bool>;
+  std::vector<QueuedBreakpoint> queued_bps;
+
+  for (const auto& [type_name, value] : m_settings->GetKeyValueList(BREAKPOINTS_SECTION))
+  {
+    const std::optional<CPU::BreakpointType> type = CPU::ParseBreakpointTypeName(type_name);
+    const std::vector<std::string_view> parts = StringUtil::SplitString(value, ',', false);
+    const std::optional<u32> address =
+      (parts.size() == 2) ? StringUtil::FromCharsWithOptionalBase<u32>(parts[0]) : std::nullopt;
+    const std::optional<bool> enabled = (parts.size() == 2) ? StringUtil::FromChars<bool>(parts[1]) : std::nullopt;
+    if (!type.has_value() || !address.has_value() || !enabled.has_value())
+    {
+      WARNING_LOG("Ignoring invalid debugger breakpoint '{} = {}'.", type_name, value);
+      continue;
+    }
+
+    const QueuedBreakpoint bp = std::make_tuple(type.value(), address.value(), enabled.value());
+    if (std::ranges::find(queued_bps, bp) != queued_bps.end())
+    {
+      WARNING_LOG("Ignoring duplicate debugger breakpoint '{} = {}'.", type_name, value);
+      continue;
+    }
+
+    queued_bps.push_back(bp);
+  }
+
+  if (!queued_bps.empty())
+    reportMessage(tr("Loaded %1 saved breakpoints.").arg(queued_bps.size()));
+
+  Host::RunOnCoreThread([win = QPointer<DebuggerWindow>(this), serial = m_game_serial, clear_existing,
+                         queued_bps = std::move(queued_bps)]() mutable {
+    if (QtUtils::StringViewToQStringView(System::GetGameSerial()) != serial)
+      return;
+
+    if (clear_existing)
+      CPU::ClearBreakpoints(false, false);
+
+    for (const auto& [type, address, enabled] : queued_bps)
+      CPU::AddBreakpoint(type, address, false, enabled);
+
+    Host::RunOnUIThread([win = std::move(win), serial = std::move(serial), bps = CPU::CopyBreakpointList()]() {
+      if (win && win->m_game_serial == serial)
+        win->refreshBreakpointList(bps);
+    });
+  });
+}
+
+void DebuggerWindow::saveGameSettings()
+{
+  if (!m_settings)
+    return;
+
+  // update the breakpoint list, we can yoink it back from the UI to avoid storing it again
+  if (const int count = m_ui.breakpointsWidget->topLevelItemCount(); count > 0)
+  {
+    INISettingsInterface::KeyValueList entries;
+    entries.reserve(static_cast<size_t>(count));
+    for (int i = 0; i < count; i++)
+    {
+      const QTreeWidgetItem* const item = m_ui.breakpointsWidget->topLevelItem(i);
+      bool address_valid, type_valid;
+      const u32 address = item->data(1, Qt::UserRole).toUInt(&address_valid);
+      const CPU::BreakpointType type =
+        static_cast<CPU::BreakpointType>(item->data(2, Qt::UserRole).toUInt(&type_valid));
+      if (!address_valid || !type_valid)
+        continue;
+
+      const bool enabled = (item->checkState(0) == Qt::Checked);
+      entries.emplace_back(CPU::GetBreakpointTypeName(type), fmt::format("0x{:08X},{}", address, enabled));
+    }
+
+    // assumes it won't set dirty if it is unchanged
+    m_settings->SetKeyValueList(BREAKPOINTS_SECTION, entries);
+  }
+  else
+  {
+    m_settings->ClearSection(BREAKPOINTS_SECTION);
+  }
+
+  // don't save if unchanged
+  m_settings->RemoveEmptySections();
+  if (!m_settings->IsDirty())
+    return;
+
+  if (m_settings->IsEmpty())
+  {
+    INFO_LOG("Removing empty debugger settings {}", Path::GetFileName(m_settings->GetPath()));
+    if (FileSystem::FileExists(m_settings->GetPath().c_str()))
+    {
+      if (Error error; !FileSystem::DeleteFile(m_settings->GetPath().c_str(), &error))
+      {
+        ERROR_LOG("Failed to delete debugger settings '{}': {}", Path::GetFileName(m_settings->GetPath()),
+                  error.GetDescription());
+        QtUtils::AsyncMessageBox(
+          this, QMessageBox::Critical, windowTitle(),
+          u"Failed to delete debugger settings: %1"_s.arg(QtUtils::StringViewToQStringView(error.GetDescription())));
+      }
+    }
+  }
+  else if (Error error; !m_settings->Save(&error))
+  {
+    ERROR_LOG("Failed to save debugger settings to '{}': {}", Path::GetFileName(m_settings->GetPath()),
+              error.GetDescription());
+    QtUtils::AsyncMessageBox(
+      this, QMessageBox::Critical, windowTitle(),
+      u"Failed to save debugger settings: %1"_s.arg(QtUtils::StringViewToQStringView(error.GetDescription())));
   }
 }
