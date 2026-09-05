@@ -250,8 +250,8 @@ function(add_debug_symbol_flag var)
   endif()
 endfunction()
 
-function(check_cpp20_feature MACRO MINIMUM_VALUE)
-  set(CACHE_VAR "CHECK_CPP20_FEATURE_${MACRO}")
+function(check_cpp_feature MACRO MINIMUM_VALUE)
+  set(CACHE_VAR "CHECK_CPP_FEATURE_${MACRO}")
   if(NOT DEFINED ${CACHE_VAR})
     # Create a small source code snippet that fails to compile if the feature is not available.
     set(TEMP_FILE "${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeTmp/src.cpp")
@@ -263,7 +263,7 @@ function(check_cpp20_feature MACRO MINIMUM_VALUE)
     set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
     try_compile(HAS_FEATURE
       ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY} "${TEMP_FILE}"
-      CXX_STANDARD 20
+      CXX_STANDARD 23
       CXX_STANDARD_REQUIRED TRUE
     )
     set(${CACHE_VAR} ${HAS_FEATURE} CACHE INTERNAL "Cached feature test result for ${MACRO}")
@@ -273,8 +273,8 @@ function(check_cpp20_feature MACRO MINIMUM_VALUE)
   endif()
 endfunction()
 
-function(check_cpp20_attribute ATTRIBUTE MINIMUM_VALUE)
-  set(CACHE_VAR "CHECK_CPP20_ATTRIBUTE_${MACRO}")
+function(check_cpp_attribute ATTRIBUTE MINIMUM_VALUE)
+  set(CACHE_VAR "CHECK_CPP_ATTRIBUTE_${MACRO}")
   if(NOT DEFINED ${CACHE_VAR})
     set(TEMP_FILE "${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeTmp/src.cpp")
     file(WRITE "${TEMP_FILE}" "#include <version>
@@ -285,7 +285,7 @@ function(check_cpp20_attribute ATTRIBUTE MINIMUM_VALUE)
     set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
     try_compile(HAS_FEATURE
       ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY} "${TEMP_FILE}"
-      CXX_STANDARD 20
+      CXX_STANDARD 23
       CXX_STANDARD_REQUIRED TRUE
     )
     set(${CACHE_VAR} ${HAS_FEATURE} CACHE INTERNAL "Cached attribute test result for ${MACRO}")
