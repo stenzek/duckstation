@@ -17,6 +17,7 @@
 #include "common/log.h"
 #include "common/small_string.h"
 
+#include <QtCore/QPointer>
 #include <QtCore/QSignalBlocker>
 #include <QtGui/QCursor>
 #include <QtGui/QFontDatabase>
@@ -161,15 +162,14 @@ void DebuggerWindow::onDumpAddressTriggered()
 
 void DebuggerWindow::onTraceTriggered()
 {
-  Host::RunOnCoreThread([]() {
+  Host::RunOnCoreThread([win = QPointer(this)]() mutable {
     const bool trace_enabled = !CPU::IsTraceEnabled();
     if (trace_enabled)
       CPU::StartTrace();
     else
       CPU::StopTrace();
 
-    Host::RunOnUIThread([trace_enabled]() {
-      DebuggerWindow* const win = g_main_window->getDebuggerWindow();
+    Host::RunOnUIThread([win = std::move(win), trace_enabled]() {
       if (!win)
         return;
 
@@ -409,13 +409,12 @@ void DebuggerWindow::startPatchInstruction(VirtualMemoryAddress address)
 
 void DebuggerWindow::patchInstruction(VirtualMemoryAddress address, u32 bits)
 {
-  Host::RunOnCoreThread([address, bits]() {
+  Host::RunOnCoreThread([win = QPointer(this), address, bits]() mutable {
     const bool success = CPU::SafeWriteMemoryWord(address, bits);
     if (success)
       CPU::InvalidateICacheAt(address);
 
-    Host::RunOnUIThread([address, success]() {
-      DebuggerWindow* const win = g_main_window->getDebuggerWindow();
+    Host::RunOnUIThread([win = std::move(win), address, success]() {
       if (!win)
         return;
 
@@ -746,7 +745,7 @@ void DebuggerWindow::setMemoryViewRegion(Bus::MemoryRegion region)
 
 void DebuggerWindow::toggleBreakpoint(VirtualMemoryAddress address)
 {
-  Host::RunOnCoreThread([address]() {
+  Host::RunOnCoreThread([win = QPointer(this), address]() mutable {
     const bool new_bp_state = !CPU::HasBreakpointAtAddress(CPU::BreakpointType::Execute, address);
     if (new_bp_state)
     {
@@ -759,8 +758,7 @@ void DebuggerWindow::toggleBreakpoint(VirtualMemoryAddress address)
         return;
     }
 
-    Host::RunOnUIThread([bps = CPU::CopyBreakpointList()]() {
-      DebuggerWindow* const win = g_main_window->getDebuggerWindow();
+    Host::RunOnUIThread([win = std::move(win), bps = CPU::CopyBreakpointList()]() {
       if (!win)
         return;
 
@@ -825,9 +823,8 @@ bool DebuggerWindow::scrollToStackAddress(VirtualMemoryAddress address)
 
 void DebuggerWindow::refreshBreakpointList()
 {
-  Host::RunOnCoreThread([]() {
-    Host::RunOnUIThread([bps = CPU::CopyBreakpointList()]() {
-      DebuggerWindow* const win = g_main_window->getDebuggerWindow();
+  Host::RunOnCoreThread([win = QPointer(this)]() mutable {
+    Host::RunOnUIThread([win = std::move(win), bps = CPU::CopyBreakpointList()]() {
       if (!win)
         return;
 
@@ -861,10 +858,9 @@ void DebuggerWindow::refreshBreakpointList(const CPU::BreakpointList& bps)
 
 void DebuggerWindow::addBreakpoint(CPU::BreakpointType type, u32 address)
 {
-  Host::RunOnCoreThread([address, type]() {
+  Host::RunOnCoreThread([win = QPointer(this), address, type]() mutable {
     const bool result = CPU::AddBreakpoint(type, address);
-    Host::RunOnUIThread([bps = CPU::CopyBreakpointList(), result]() {
-      DebuggerWindow* const win = g_main_window->getDebuggerWindow();
+    Host::RunOnUIThread([win = std::move(win), bps = CPU::CopyBreakpointList(), result]() {
       if (!win)
         return;
 
@@ -882,10 +878,9 @@ void DebuggerWindow::addBreakpoint(CPU::BreakpointType type, u32 address)
 
 void DebuggerWindow::removeBreakpoint(CPU::BreakpointType type, u32 address)
 {
-  Host::RunOnCoreThread([address, type]() {
+  Host::RunOnCoreThread([win = QPointer(this), address, type]() mutable {
     const bool result = CPU::RemoveBreakpoint(type, address);
-    Host::RunOnUIThread([bps = CPU::CopyBreakpointList(), result]() {
-      DebuggerWindow* const win = g_main_window->getDebuggerWindow();
+    Host::RunOnUIThread([win = std::move(win), bps = CPU::CopyBreakpointList(), result]() {
       if (!win)
         return;
 
