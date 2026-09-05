@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #pragma once
@@ -18,6 +18,7 @@ enum class MemoryRegion;
 
 class DebuggerRegistersModel;
 class DebuggerStackModel;
+class DebuggerThreadsModel;
 
 class DebuggerWindow : public QMainWindow
 {
@@ -82,6 +83,7 @@ private:
   void onCodeViewToggleBreakpointActivated(VirtualMemoryAddress address);
   void onCodeViewCommentActivated(VirtualMemoryAddress address);
   void onCodeViewContextMenuRequested(const QPoint& pt);
+  void onThreadItemDoubleClicked(const QModelIndex& index);
   void onMemorySearchTriggered();
   void onMemorySearchStringChanged(const QString&);
 
@@ -89,6 +91,7 @@ private:
 
   DebuggerRegistersModel* m_registers_model;
   DebuggerStackModel* m_stack_model;
+  DebuggerThreadsModel* m_threads_model;
 
   QTimer m_refresh_timer;
 

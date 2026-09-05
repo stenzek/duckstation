@@ -14,6 +14,7 @@ add_library(core
   analog_joystick.h
   bios.cpp
   bios.h
+  bios_types.h
   bus.cpp
   bus.h
   cdrom.cpp

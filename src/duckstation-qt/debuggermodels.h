@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #pragma once
@@ -9,11 +9,15 @@
 #include "core/cpu_core.h"
 #include "core/cpu_types.h"
 
+#include <QtCore/QAbstractItemModel>
 #include <QtCore/QAbstractListModel>
 #include <QtCore/QAbstractTableModel>
 #include <QtGui/QPixmap>
 #include <QtWidgets/QDialog>
+#include <array>
 #include <map>
+#include <optional>
+#include <vector>
 
 class DebuggerRegistersModel final : public QAbstractListModel
 {
@@ -50,6 +54,40 @@ public:
   QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
 
   void invalidateView();
+};
+
+class DebuggerThreadsModel final : public QAbstractItemModel
+{
+  Q_OBJECT
+
+public:
+  explicit DebuggerThreadsModel(QObject* parent = nullptr);
+  ~DebuggerThreadsModel() override;
+
+  QModelIndex index(int row, int column, const QModelIndex& parent = QModelIndex()) const override;
+  QModelIndex parent(const QModelIndex& child) const override;
+  int rowCount(const QModelIndex& parent = QModelIndex()) const override;
+  int columnCount(const QModelIndex& parent = QModelIndex()) const override;
+  QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
+  QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
+
+  void updateValues();
+  void clear();
+  std::optional<VirtualMemoryAddress> getThreadPC(const QModelIndex& index) const;
+
+private:
+  static constexpr u32 NUM_REGISTER_VALUES = 36;
+
+  struct Thread
+  {
+    std::array<u32, NUM_REGISTER_VALUES> registers;
+    u32 index;
+    u32 handle;
+    VirtualMemoryAddress pc;
+    bool current;
+  };
+
+  std::vector<Thread> m_threads;
 };
 
 class DebuggerAddBreakpointDialog final : public QDialog

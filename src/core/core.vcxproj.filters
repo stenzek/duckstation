@@ -98,6 +98,7 @@
     <ClInclude Include="gpu_sw.h" />
     <ClInclude Include="gpu_hw_shadergen.h" />
     <ClInclude Include="bios.h" />
+    <ClInclude Include="bios_types.h" />
     <ClInclude Include="cpu_code_cache.h" />
     <ClInclude Include="sio.h" />
     <ClInclude Include="controller.h" />

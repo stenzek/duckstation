@@ -1,9 +1,10 @@
-// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "debuggermodels.h"
 #include "qtutils.h"
 
+#include "core/bios_types.h"
 #include "core/cpu_core.h"
 #include "core/cpu_core_private.h"
 #include "core/cpu_disasm.h"
@@ -16,7 +17,11 @@
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QPushButton>
 
+#include <algorithm>
+
 #include "moc_debuggermodels.cpp"
+
+using namespace Qt::StringLiterals;
 
 static constexpr int STACK_RANGE = 128;
 static constexpr u32 STACK_VALUE_SIZE = sizeof(u32);
@@ -176,6 +181,223 @@ void DebuggerStackModel::invalidateView()
 {
   beginResetModel();
   endResetModel();
+}
+
+DebuggerThreadsModel::DebuggerThreadsModel(QObject* parent /*= nullptr*/) : QAbstractItemModel(parent)
+{
+}
+
+DebuggerThreadsModel::~DebuggerThreadsModel() = default;
+
+QModelIndex DebuggerThreadsModel::index(int row, int column, const QModelIndex& parent) const
+{
+  if (row < 0 || column < 0 || column >= columnCount(parent))
+    return {};
+
+  if (!parent.isValid())
+  {
+    if (static_cast<size_t>(row) >= m_threads.size())
+      return {};
+
+    return createIndex(row, column, quintptr(0));
+  }
+
+  if (parent.internalId() != 0 || parent.column() != 0 || row >= static_cast<int>(NUM_REGISTER_VALUES))
+    return {};
+
+  return createIndex(row, column, static_cast<quintptr>(parent.row() + 1));
+}
+
+QModelIndex DebuggerThreadsModel::parent(const QModelIndex& child) const
+{
+  if (!child.isValid() || child.internalId() == 0)
+    return {};
+
+  const int thread_row = static_cast<int>(child.internalId() - 1);
+  if (thread_row < 0 || static_cast<size_t>(thread_row) >= m_threads.size())
+    return {};
+
+  return createIndex(thread_row, 0, quintptr(0));
+}
+
+int DebuggerThreadsModel::rowCount(const QModelIndex& parent) const
+{
+  if (!parent.isValid())
+    return static_cast<int>(m_threads.size());
+
+  return (parent.internalId() == 0 && parent.column() == 0) ? static_cast<int>(NUM_REGISTER_VALUES) : 0;
+}
+
+int DebuggerThreadsModel::columnCount(const QModelIndex& parent /*= QModelIndex()*/) const
+{
+  return 2;
+}
+
+QVariant DebuggerThreadsModel::data(const QModelIndex& index, int role /*= Qt::DisplayRole*/) const
+{
+  if (!index.isValid() || (role != Qt::DisplayRole && role != Qt::DecorationRole) || index.column() < 0 ||
+      index.column() >= 2)
+  {
+    return {};
+  }
+
+  if (index.internalId() == 0)
+  {
+    if (static_cast<size_t>(index.row()) >= m_threads.size())
+      return {};
+
+    const Thread& thread = m_threads[static_cast<size_t>(index.row())];
+
+    if (role == Qt::DecorationRole)
+    {
+      if (index.column() == 0 && thread.current)
+        return QIcon(u":/icons/debug-pc.png"_s).pixmap(12);
+      else
+        return {};
+    }
+    else
+    {
+      if (index.column() == 0)
+        return QString::asprintf("0x%08X", thread.handle);
+      else
+        return QString::asprintf("0x%08X", thread.pc);
+    }
+  }
+
+  const size_t thread_index = static_cast<size_t>(index.internalId() - 1);
+  if (role != Qt::DisplayRole || thread_index >= m_threads.size() || index.row() < 0 ||
+      index.row() >= static_cast<int>(NUM_REGISTER_VALUES))
+  {
+    return {};
+  }
+
+  if (index.column() == 0)
+  {
+    if (index.row() < 32)
+      return QString::fromLatin1(CPU::GetRegName(static_cast<CPU::Reg>(index.row())));
+
+    static constexpr const char* register_names[] = {"hi", "lo", "SR", "CAUSE"};
+    return QString::fromLatin1(register_names[index.row() - 32]);
+  }
+
+  return QString::asprintf("0x%08X", m_threads[thread_index].registers[static_cast<size_t>(index.row())]);
+}
+
+QVariant DebuggerThreadsModel::headerData(int section, Qt::Orientation orientation,
+                                          int role /*= Qt::DisplayRole*/) const
+{
+  if (orientation != Qt::Horizontal || role != Qt::DisplayRole)
+    return {};
+
+  switch (section)
+  {
+    case 0:
+      return tr("Name");
+    case 1:
+      return tr("Value");
+    default:
+      return {};
+  }
+}
+
+void DebuggerThreadsModel::updateValues()
+{
+  beginResetModel();
+  m_threads.clear();
+
+  BIOS::ControlBlockTableEntry pcb_table;
+  BIOS::ControlBlockTableEntry tcb_table;
+  if (!CPU::SafeReadMemoryBytes(BIOS::PCB_TABLE_ADDRESS, &pcb_table, sizeof(pcb_table)) ||
+      !CPU::SafeReadMemoryBytes(BIOS::TCB_TABLE_ADDRESS, &tcb_table, sizeof(tcb_table)) ||
+      pcb_table.size < sizeof(BIOS::ProcessControlBlock) || pcb_table.size > BIOS::KERNEL_CONTROL_BLOCK_MEMORY_SIZE ||
+      tcb_table.size == 0 || tcb_table.size > BIOS::KERNEL_CONTROL_BLOCK_MEMORY_SIZE ||
+      (tcb_table.size % sizeof(BIOS::ThreadControlBlock)) != 0)
+  {
+    endResetModel();
+    return;
+  }
+
+  BIOS::ProcessControlBlock pcb;
+  if (!CPU::SafeReadMemoryBytes(pcb_table.address, &pcb, sizeof(pcb)))
+  {
+    endResetModel();
+    return;
+  }
+
+  const u32 num_tcbs = tcb_table.size / sizeof(BIOS::ThreadControlBlock);
+  if (num_tcbs > BIOS::MAX_THREAD_CONTROL_BLOCKS)
+  {
+    endResetModel();
+    return;
+  }
+
+  m_threads.reserve(num_tcbs);
+  bool valid = true;
+  for (u32 i = 0; i < num_tcbs; i++)
+  {
+    const u64 tcb_address_64 =
+      static_cast<u64>(tcb_table.address) + (static_cast<u64>(i) * sizeof(BIOS::ThreadControlBlock));
+    if (tcb_address_64 > UINT32_MAX)
+    {
+      valid = false;
+      break;
+    }
+
+    const VirtualMemoryAddress tcb_address = static_cast<VirtualMemoryAddress>(tcb_address_64);
+    BIOS::ThreadControlBlock tcb;
+    if (!CPU::SafeReadMemoryBytes(tcb_address, &tcb, sizeof(tcb)))
+    {
+      valid = false;
+      break;
+    }
+
+    if (tcb.status != BIOS::ThreadStatus::Used)
+      continue;
+
+    Thread& thread = m_threads.emplace_back();
+    thread.index = i;
+    thread.handle = BIOS::THREAD_HANDLE_BASE | i;
+    thread.current = (CPU::VirtualAddressToPhysical(tcb_address) == CPU::VirtualAddressToPhysical(pcb.current_thread));
+
+    if (thread.current)
+    {
+      std::copy_n(CPU::g_state.regs.r, 32, thread.registers.begin());
+      thread.pc = CPU::g_state.pc;
+      thread.registers[32] = CPU::g_state.regs.hi;
+      thread.registers[33] = CPU::g_state.regs.lo;
+      thread.registers[34] = CPU::g_state.cop0_regs.sr.bits;
+      thread.registers[35] = CPU::g_state.cop0_regs.cause.bits;
+    }
+    else
+    {
+      std::copy(tcb.regs.begin(), tcb.regs.end(), thread.registers.begin());
+      thread.pc = tcb.epc;
+      thread.registers[32] = tcb.hi;
+      thread.registers[33] = tcb.lo;
+      thread.registers[34] = tcb.sr;
+      thread.registers[35] = tcb.cause;
+    }
+  }
+
+  if (!valid)
+    m_threads.clear();
+
+  endResetModel();
+}
+
+void DebuggerThreadsModel::clear()
+{
+  beginResetModel();
+  m_threads.clear();
+  endResetModel();
+}
+
+std::optional<VirtualMemoryAddress> DebuggerThreadsModel::getThreadPC(const QModelIndex& index) const
+{
+  if (!index.isValid() || index.internalId() != 0 || static_cast<size_t>(index.row()) >= m_threads.size())
+    return std::nullopt;
+
+  return m_threads[static_cast<size_t>(index.row())].pc;
 }
 
 DebuggerAddBreakpointDialog::DebuggerAddBreakpointDialog(QWidget* parent /*= nullptr*/) : QDialog(parent)

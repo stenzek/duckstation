@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "debuggerwindow.h"
@@ -57,6 +57,7 @@ void DebuggerWindow::onSystemStarted()
 
 void DebuggerWindow::onSystemDestroyed()
 {
+  m_threads_model->clear();
   setUIEnabled(false, false);
 }
 
@@ -89,6 +90,7 @@ void DebuggerWindow::refreshAll()
 {
   m_registers_model->updateValues();
   m_stack_model->invalidateView();
+  m_threads_model->updateValues();
   m_ui.memoryView->forceRefresh();
 
   m_ui.codeView->setPC(CPU::g_state.pc);
@@ -336,6 +338,13 @@ void DebuggerWindow::onCodeViewContextMenuRequested(const QPoint& pt)
   menu->popup(m_ui.codeView->mapToGlobal(pt));
 }
 
+void DebuggerWindow::onThreadItemDoubleClicked(const QModelIndex& index)
+{
+  const std::optional<VirtualMemoryAddress> pc = m_threads_model->getThreadPC(index);
+  if (pc.has_value())
+    scrollToCodeAddress(pc.value(), true);
+}
+
 void DebuggerWindow::startPatchInstruction(VirtualMemoryAddress address)
 {
   u32 instruction_bits;
@@ -534,12 +543,14 @@ void DebuggerWindow::setupAdditionalUi()
   m_ui.registerView->setFont(fixed_font);
   m_ui.memoryView->setFont(fixed_font);
   m_ui.stackView->setFont(fixed_font);
+  m_ui.threadsView->setFont(fixed_font);
 
   m_ui.codeView->setContextMenuPolicy(Qt::CustomContextMenu);
   m_ui.breakpointsWidget->setContextMenuPolicy(Qt::CustomContextMenu);
 
-  setCentralWidget(nullptr);
-  delete m_ui.centralwidget;
+  splitDockWidget(m_ui.dockWidgetMemory, m_ui.dockWidgetBreakpoints, Qt::Horizontal);
+  splitDockWidget(m_ui.dockWidgetBreakpoints, m_ui.dockWidgetStack, Qt::Horizontal);
+  splitDockWidget(m_ui.dockWidgetBreakpoints, m_ui.dockWidgetThreads, Qt::Vertical);
 
 #ifdef __APPLE__
   QtUtils::SetIsMaskForMonochromeMenuBarActionIcons(menuBar());
@@ -571,6 +582,7 @@ void DebuggerWindow::connectSignals()
           &DebuggerWindow::onCodeViewToggleBreakpointActivated);
   connect(m_ui.codeView, &DebuggerCodeView::commentActivated, this, &DebuggerWindow::onCodeViewCommentActivated);
   connect(m_ui.codeView, &QWidget::customContextMenuRequested, this, &DebuggerWindow::onCodeViewContextMenuRequested);
+  connect(m_ui.threadsView, &QTreeView::doubleClicked, this, &DebuggerWindow::onThreadItemDoubleClicked);
   connect(m_ui.breakpointsWidget, &QTreeWidget::customContextMenuRequested, this,
           &DebuggerWindow::onBreakpointListContextMenuRequested);
   connect(m_ui.breakpointsWidget, &QTreeWidget::itemChanged, this, &DebuggerWindow::onBreakpointListItemChanged);
@@ -600,6 +612,10 @@ void DebuggerWindow::createModels()
   m_stack_model = new DebuggerStackModel(this);
   m_ui.stackView->setModel(m_stack_model);
 
+  m_threads_model = new DebuggerThreadsModel(this);
+  m_ui.threadsView->setModel(m_threads_model);
+  QtUtils::SetColumnWidthsForTreeView(m_ui.threadsView, {-1, 100});
+
   m_ui.breakpointsWidget->setColumnWidth(0, 50);
   m_ui.breakpointsWidget->setColumnWidth(1, 80);
   m_ui.breakpointsWidget->setColumnWidth(2, 50);
@@ -617,6 +633,7 @@ void DebuggerWindow::setUIEnabled(bool enabled, bool allow_pause)
   m_ui.codeView->setEnabled(read_only_views);
   m_ui.registerView->setEnabled(read_only_views);
   m_ui.stackView->setEnabled(read_only_views);
+  m_ui.threadsView->setEnabled(read_only_views);
   m_ui.memoryView->setEnabled(read_only_views);
   m_ui.actionRunToCursor->setEnabled(enabled);
   m_ui.actionAddBreakpoint->setEnabled(enabled);

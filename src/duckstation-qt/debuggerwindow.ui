@@ -20,7 +20,6 @@
   <property name="dockNestingEnabled">
    <bool>true</bool>
   </property>
-  <widget class="QWidget" name="centralwidget"/>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
@@ -88,7 +87,7 @@
    <addaction name="separator"/>
    <addaction name="actionTrace"/>
   </widget>
-  <widget class="QDockWidget" name="dockWidget_2">
+  <widget class="QDockWidget" name="dockWidgetDisassembly">
    <property name="features">
     <set>QDockWidget::DockWidgetFeature::DockWidgetFloatable|QDockWidget::DockWidgetFeature::DockWidgetMovable</set>
    </property>
@@ -107,7 +106,7 @@
     </property>
    </widget>
   </widget>
-  <widget class="QDockWidget" name="dockWidget_3">
+  <widget class="QDockWidget" name="dockWidgetRegisters">
    <property name="features">
     <set>QDockWidget::DockWidgetFeature::DockWidgetFloatable|QDockWidget::DockWidgetFeature::DockWidgetMovable</set>
    </property>
@@ -132,7 +131,7 @@
     </property>
    </widget>
   </widget>
-  <widget class="QDockWidget" name="dockWidget">
+  <widget class="QDockWidget" name="dockWidgetMemory">
    <property name="sizePolicy">
     <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
      <horstretch>1</horstretch>
@@ -239,7 +238,7 @@
     </layout>
    </widget>
   </widget>
-  <widget class="QDockWidget" name="dockWidget_5">
+  <widget class="QDockWidget" name="dockWidgetBreakpoints">
    <property name="sizePolicy">
     <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
      <horstretch>0</horstretch>
@@ -296,7 +295,7 @@
     </column>
    </widget>
   </widget>
-  <widget class="QDockWidget" name="dockWidget_4">
+  <widget class="QDockWidget" name="dockWidgetStack">
    <property name="features">
     <set>QDockWidget::DockWidgetFeature::DockWidgetFloatable|QDockWidget::DockWidgetFeature::DockWidgetMovable</set>
    </property>
@@ -312,6 +311,25 @@
       <width>220</width>
       <height>16777215</height>
      </size>
+    </property>
+   </widget>
+  </widget>
+  <widget class="QDockWidget" name="dockWidgetThreads">
+   <property name="features">
+    <set>QDockWidget::DockWidgetFeature::DockWidgetFloatable|QDockWidget::DockWidgetFeature::DockWidgetMovable</set>
+   </property>
+   <property name="windowTitle">
+    <string>Threads</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>8</number>
+   </attribute>
+   <widget class="QTreeView" name="threadsView">
+    <property name="selectionBehavior">
+     <enum>QAbstractItemView::SelectionBehavior::SelectRows</enum>
+    </property>
+    <property name="uniformRowHeights">
+     <bool>true</bool>
     </property>
    </widget>
   </widget>

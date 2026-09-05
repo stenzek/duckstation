@@ -90,6 +90,7 @@
     <ClInclude Include="analog_controller.h" />
     <ClInclude Include="analog_joystick.h" />
     <ClInclude Include="bios.h" />
+    <ClInclude Include="bios_types.h" />
     <ClInclude Include="bus.h" />
     <ClInclude Include="cdrom.h" />
     <ClInclude Include="cdrom_async_reader.h" />
