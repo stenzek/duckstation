@@ -430,10 +430,6 @@ Token generado %2</translation>
         <translation>Resumiendo estado</translation>
     </message>
     <message>
-        <source>{} (Unofficial)</source>
-        <translation>{} (no oficial)</translation>
-    </message>
-    <message>
         <source>Leaderboard attempt started.</source>
         <translation>Intento de entrar en tabla de clasificación iniciado.</translation>
     </message>
@@ -2229,6 +2225,24 @@ Los archivos WAV deben ser estéreo de 16 bits y usar una frecuencia de muestreo
 Your dump may be corrupted, or the physical disc is scratched.</source>
         <translation>El juego probablemente se colgará.
 Tu volcado podría estar dañado o tu disco físico está arañado.</translation>
+    </message>
+</context>
+<context>
+    <name>CPU</name>
+    <message>
+        <source>Execute</source>
+        <comment>BreakpointType</comment>
+        <translation>Ejecución</translation>
+    </message>
+    <message>
+        <source>Read</source>
+        <comment>BreakpointType</comment>
+        <translation>Lectura</translation>
+    </message>
+    <message>
+        <source>Write</source>
+        <comment>BreakpointType</comment>
+        <translation>Escritura</translation>
     </message>
 </context>
 <context>
@@ -4240,6 +4254,17 @@ Do you want to %1 anyway?</source>
     </message>
 </context>
 <context>
+    <name>DebuggerCallStackModel</name>
+    <message>
+        <source>Address</source>
+        <translation>Dirección</translation>
+    </message>
+    <message>
+        <source>Frame</source>
+        <translation>Frame</translation>
+    </message>
+</context>
+<context>
     <name>DebuggerRegistersModel</name>
     <message>
         <source>Register</source>
@@ -4259,6 +4284,17 @@ Do you want to %1 anyway?</source>
     <message>
         <source>Address</source>
         <translation>Dirección</translation>
+    </message>
+    <message>
+        <source>Value</source>
+        <translation>Valor</translation>
+    </message>
+</context>
+<context>
+    <name>DebuggerThreadsModel</name>
+    <message>
+        <source>Name</source>
+        <translation>Nombre</translation>
     </message>
     <message>
         <source>Value</source>
@@ -4334,6 +4370,14 @@ Do you want to %1 anyway?</source>
     <message>
         <source>Stack</source>
         <translation>Pila</translation>
+    </message>
+    <message>
+        <source>Threads</source>
+        <translation>Hilos</translation>
+    </message>
+    <message>
+        <source>Call Stack</source>
+        <translation>Pila de llamadas</translation>
     </message>
     <message>
         <source>Pause/Continue</source>
@@ -4516,6 +4560,10 @@ Este archivo puede alcanzar varios gigabytes en tamaño, así que ten cuidado co
     <message>
         <source>Failed to remove breakpoint. This breakpoint may not exist.</source>
         <translation>Fallo al eliminar punto de interrupción. Es posible que no exista.</translation>
+    </message>
+    <message>
+        <source>Loaded %1 saved breakpoints.</source>
+        <translation>Se cargaron %1 puntos de interrupción guardados.</translation>
     </message>
     <message>
         <source>Debugger</source>
@@ -4840,7 +4888,7 @@ Haz clic en Reiniciar para restablecer el número de serie al que se ha encontra
     </message>
     <message>
         <source>New Serial:</source>
-        <translation>Número nuevo:</translation>
+        <translation>Nueva serie:</translation>
     </message>
     <message>
         <source>This game currently has a custom serial set.</source>
@@ -9838,6 +9886,11 @@ Do you want to enable game settings now?</source>
         <translation>Colección de discos</translation>
     </message>
     <message>
+        <source>Audio CD</source>
+        <comment>EntryType</comment>
+        <translation>Audio CD</translation>
+    </message>
+    <message>
         <source>PS-EXE</source>
         <comment>EntryType</comment>
         <translation>PS-EXE</translation>
@@ -10178,10 +10231,6 @@ La búsqueda recursiva llevará más tiempo, pero identificará todo archivo que
         <translation>Mandos:</translation>
     </message>
     <message>
-        <source>Tracks:</source>
-        <translation>Pistas:</translation>
-    </message>
-    <message>
         <source>Release Info:</source>
         <translation>Lanzamiento:</translation>
     </message>
@@ -10232,6 +10281,10 @@ La búsqueda recursiva llevará más tiempo, pero identificará todo archivo que
     <message>
         <source>Game Specific Configuration</source>
         <translation>Configuración específica por juego</translation>
+    </message>
+    <message>
+        <source>Game ID: %1</source>
+        <translation>ID del juego: %1</translation>
     </message>
     <message>
         <source>Track %1</source>
@@ -16247,6 +16300,22 @@ El acceso directo se creará en esta ubicación:
 %1</translation>
     </message>
     <message>
+        <source>We have detected that LD_LIBRARY_PATH has been set to the following value:
+
+%1
+
+This will likely prevent DuckStation from working correctly. You should modify your environment to leave LD_LIBRARY_PATH unset.</source>
+        <translation>Hemos detectado que LD_LIBRARY_PATH tiene el siguiente valor:
+
+%1
+
+Esto probablemente impedirá que DuckStation funcione correctamente. Deberías modificar tu entorno para que LD_LIBRARY_PATH no esté configurado.</translation>
+    </message>
+    <message>
+        <source>Don&apos;t show again</source>
+        <translation>No mostrar de nuevo</translation>
+    </message>
+    <message>
         <source>Launcher shortcut created successfully.
 
 You can find DuckStation in your application menu.</source>
@@ -18510,6 +18579,10 @@ Es probable que el juego no funcione correctamente.
 Consulta el archivo README para obtener instrucciones sobre cómo añadir un archivo SBI.
 
 ¿Deseas continuar?</translation>
+    </message>
+    <message>
+        <source>This save state was created with a different console region, and may be unstable.</source>
+        <translation>Este estado de guardado se creó con una región de consola diferente y puede ser inestable.</translation>
     </message>
     <message>
         <source>CPU Overclock Changed</source>
