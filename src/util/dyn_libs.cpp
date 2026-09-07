@@ -39,7 +39,6 @@ static_assert(std::is_trivially_copyable_v<DynSqlite> && std::is_standard_layout
 static constexpr int FREETYPE_MAJOR_VERSION = -1;
 static constexpr int PLUTOSVG_MAJOR_VERSION = -1;
 static constexpr int LIBPNG_MAJOR_VERSION = -1;
-static constexpr int LIBJPEG_MAJOR_VERSION = -1;
 static constexpr int LIBWEBP_MAJOR_VERSION = -1;
 static constexpr int LIBSDL_MAJOR_VERSION = -1;
 static constexpr int LIBZIP_MAJOR_VERSION = -1;
@@ -49,7 +48,6 @@ static constexpr int SPIRV_CROSS_MAJOR_VERSION = -1;
 static constexpr int FREETYPE_MAJOR_VERSION = 6;
 static constexpr int PLUTOSVG_MAJOR_VERSION = 0;
 static constexpr int LIBPNG_MAJOR_VERSION = 16;
-static constexpr int LIBJPEG_MAJOR_VERSION = 62;
 static constexpr int LIBWEBP_MAJOR_VERSION = 7;
 static constexpr int LIBZIP_MAJOR_VERSION = 5;
 static constexpr int LIBSDL_MAJOR_VERSION = 0;
@@ -191,8 +189,16 @@ bool DynLibJPEG::Open(Error* const error)
   if (s_locals.libjpeg_library.IsOpen()) [[likely]]
     return true;
 
-  return LoadDynLib("jpeg", LIBJPEG_MAJOR_VERSION, s_locals.libjpeg_library, s_locals.libjpeg_init_flag,
-                    s_libjpeg_symbols, error);
+#ifdef _WIN32
+  static constexpr const char* libname = "jpeg62";
+  static constexpr int major_version = -1;
+#else
+  static constexpr const char* libname = "jpeg";
+  static constexpr int major_version = 62;
+#endif
+
+  return LoadDynLib(libname, major_version, s_locals.libjpeg_library, s_locals.libjpeg_init_flag, s_libjpeg_symbols,
+                    error);
 }
 
 static const DynamicLibrary::SymbolTable s_libwebp_symbols[] = {
