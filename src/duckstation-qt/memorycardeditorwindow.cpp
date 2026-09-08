@@ -64,7 +64,7 @@ public:
   void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override
   {
     const QRect& rc = option.rect;
-    if (const QPixmap* icon_frame = getIconFrame(static_cast<size_t>(index.row()), m_current_frame_index, rc))
+    if (const QPixmap* icon_frame = getIconFrame(static_cast<size_t>(index.row()), m_current_frame_index))
     {
       // center the icon in the available space
       const int x = rc.x() + std::max((rc.width() - MEMORY_CARD_ICON_SIZE) / 2, 0);
@@ -79,7 +79,7 @@ public:
     m_icon_frames.resize(m_files.size());
   }
 
-  const QPixmap* getIconFrame(size_t file_index, u32 frame_index, const QRect& rc) const
+  const QPixmap* getIconFrame(size_t file_index, u32 frame_index) const
   {
     if (file_index >= m_icon_frames.size())
       return nullptr;
@@ -155,11 +155,15 @@ MemoryCardEditorWindow::MemoryCardEditorWindow() : QWidget()
   m_moveRight->setIcon(style()->standardIcon(QStyle::SP_ArrowRight));
 
   m_card_a.path_cb = m_ui.cardAPath;
+  m_card_a.new_button = m_ui.newCardA;
+  m_card_a.open_button = m_ui.openCardA;
   m_card_a.table = m_ui.cardA;
   m_card_a.blocks_free_label = m_ui.cardAUsage;
   m_card_a.modified_icon_label = m_ui.cardAModifiedIcon;
   m_card_a.modified_label = m_ui.cardAModified;
   m_card_b.path_cb = m_ui.cardBPath;
+  m_card_b.new_button = m_ui.newCardB;
+  m_card_b.open_button = m_ui.openCardB;
   m_card_b.table = m_ui.cardB;
   m_card_b.blocks_free_label = m_ui.cardBUsage;
   m_card_b.modified_icon_label = m_ui.cardBModifiedIcon;
@@ -169,14 +173,19 @@ MemoryCardEditorWindow::MemoryCardEditorWindow() : QWidget()
   m_file_icon_height = MEMORY_CARD_ICON_SIZE + (m_card_a.table->showGrid() ? 1 : 0);
   QtUtils::SetColumnWidthsForTableView(m_card_a.table, {m_file_icon_width, -1, 155, 45});
   QtUtils::SetColumnWidthsForTableView(m_card_b.table, {m_file_icon_width, -1, 155, 45});
+  const qreal dpr = devicePixelRatio();
+  m_card_a.table->setItemDelegateForColumn(
+    0, new MemoryCardEditorIconStyleDelegate(m_card_a.files, dpr, m_current_frame_index, m_card_a.table));
+  m_card_b.table->setItemDelegateForColumn(
+    0, new MemoryCardEditorIconStyleDelegate(m_card_b.files, dpr, m_current_frame_index, m_card_b.table));
 
   createCardButtons(&m_card_a, m_ui.buttonBoxA);
   createCardButtons(&m_card_b, m_ui.buttonBoxB);
   connectUi();
-  connectCardUi(&m_card_a, m_ui.buttonBoxA);
-  connectCardUi(&m_card_b, m_ui.buttonBoxB);
-  populateComboBox(m_ui.cardAPath);
-  populateComboBox(m_ui.cardBPath);
+  connectCardUi(&m_card_a);
+  connectCardUi(&m_card_b);
+  populateComboBox(m_card_a.path_cb);
+  populateComboBox(m_card_b.path_cb);
   updateCardBlocksFree(&m_card_a);
   updateCardBlocksFree(&m_card_b);
   updateButtonState();
@@ -261,56 +270,43 @@ void MemoryCardEditorWindow::closeEvent(QCloseEvent* event)
 
 void MemoryCardEditorWindow::createCardButtons(Card* card, QDialogButtonBox* buttonBox)
 {
-  card->modified_icon_label->setPixmap(QIcon(QtHost::GetResourceQPath("images/warning.svg", true)).pixmap(16, 16));
-  card->format_button = buttonBox->addButton(tr("Format Card"), QDialogButtonBox::ActionRole);
-  card->import_file_button = buttonBox->addButton(tr("Import File..."), QDialogButtonBox::ActionRole);
-  card->import_button = buttonBox->addButton(tr("Import Card..."), QDialogButtonBox::ActionRole);
+  card->modified_icon_label->setPixmap(QIcon(QtHost::GetResourceQPath("images/warning.svg", true)).pixmap(16));
   card->save_button = buttonBox->addButton(tr("Save"), QDialogButtonBox::ActionRole);
+  card->format_button = buttonBox->addButton(tr("Format Card"), QDialogButtonBox::ActionRole);
+  card->import_button = buttonBox->addButton(tr("Import..."), QDialogButtonBox::ActionRole);
 
-  card->format_button->setIcon(QIcon(u":/icons/monochrome/svg/file-settings-line.svg"_s));
-  card->import_file_button->setIcon(QIcon(u":/icons/monochrome/svg/import-line.svg"_s));
-  card->import_button->setIcon(QIcon(u":/icons/monochrome/svg/import-line.svg"_s));
   card->save_button->setIcon(QIcon(u":/icons/monochrome/svg/save-3-line.svg"_s));
+  card->format_button->setIcon(QIcon(u":/icons/monochrome/svg/file-settings-line.svg"_s));
+  card->import_button->setIcon(QIcon(u":/icons/monochrome/svg/import-line.svg"_s));
 }
 
-void MemoryCardEditorWindow::connectCardUi(Card* card, QDialogButtonBox* buttonBox)
+void MemoryCardEditorWindow::connectCardUi(Card* card)
 {
+  connect(card->path_cb, &QComboBox::currentIndexChanged,
+          [this, card](int index) { loadCardFromComboBox(card, index); });
+  connect(card->new_button, &QPushButton::clicked, [this, card] { newCard(card); });
+  connect(card->open_button, &QPushButton::clicked, [this, card] { openCard(card); });
   connect(card->save_button, &QPushButton::clicked, [this, card] { saveCard(card); });
   connect(card->format_button, &QPushButton::clicked, [this, card] { formatCard(card); });
-  connect(card->import_file_button, &QPushButton::clicked, [this, card] { importSaveFile(card); });
-  connect(card->import_button, &QPushButton::clicked, [this, card] { importCard(card); });
+  connect(card->import_button, &QPushButton::clicked, [this, card] { onImportClicked(card); });
 }
 
 void MemoryCardEditorWindow::connectUi()
 {
-  const qreal dpr = devicePixelRatio();
-  m_ui.cardA->setItemDelegateForColumn(
-    0, new MemoryCardEditorIconStyleDelegate(m_card_a.files, dpr, m_current_frame_index, m_ui.cardA));
-  m_ui.cardB->setItemDelegateForColumn(
-    0, new MemoryCardEditorIconStyleDelegate(m_card_b.files, dpr, m_current_frame_index, m_ui.cardB));
-
   connect(m_ui.cardA, &QTableWidget::itemSelectionChanged, this, &MemoryCardEditorWindow::onCardASelectionChanged);
   connect(m_ui.cardA, &QTableWidget::customContextMenuRequested, this,
           &MemoryCardEditorWindow::onCardContextMenuRequested);
   connect(m_ui.cardB, &QTableWidget::itemSelectionChanged, this, &MemoryCardEditorWindow::onCardBSelectionChanged);
   connect(m_ui.cardB, &QTableWidget::customContextMenuRequested, this,
           &MemoryCardEditorWindow::onCardContextMenuRequested);
-  connect(m_moveLeft, &QPushButton::clicked, this, &MemoryCardEditorWindow::doCopyFile);
-  connect(m_moveRight, &QPushButton::clicked, this, &MemoryCardEditorWindow::doCopyFile);
+
   connect(m_deleteFile, &QPushButton::clicked, this, &MemoryCardEditorWindow::doDeleteFile);
   connect(m_undeleteFile, &QPushButton::clicked, this, &MemoryCardEditorWindow::doUndeleteFile);
-
-  connect(m_ui.cardAPath, QOverload<int>::of(&QComboBox::currentIndexChanged),
-          [this](int index) { loadCardFromComboBox(&m_card_a, index); });
-  connect(m_ui.cardBPath, QOverload<int>::of(&QComboBox::currentIndexChanged),
-          [this](int index) { loadCardFromComboBox(&m_card_b, index); });
-  connect(m_ui.newCardA, &QPushButton::clicked, [this]() { newCard(&m_card_a); });
-  connect(m_ui.newCardB, &QPushButton::clicked, [this]() { newCard(&m_card_b); });
-  connect(m_ui.openCardA, &QPushButton::clicked, [this]() { openCard(&m_card_a); });
-  connect(m_ui.openCardB, &QPushButton::clicked, [this]() { openCard(&m_card_b); });
   connect(m_renameFile, &QPushButton::clicked, this, &MemoryCardEditorWindow::doRenameSaveFile);
   connect(m_exportFile, &QPushButton::clicked, this, &MemoryCardEditorWindow::doExportSaveFile);
   connect(m_extractIcon, &QPushButton::clicked, this, &MemoryCardEditorWindow::onExtractIconClicked);
+  connect(m_moveLeft, &QPushButton::clicked, this, &MemoryCardEditorWindow::doCopyFile);
+  connect(m_moveRight, &QPushButton::clicked, this, &MemoryCardEditorWindow::doCopyFile);
 }
 
 void MemoryCardEditorWindow::populateComboBox(QComboBox* cb)
@@ -718,7 +714,7 @@ void MemoryCardEditorWindow::doUndeleteFile()
 void MemoryCardEditorWindow::doExportSaveFile()
 {
   QString filename = QDir::toNativeSeparators(
-    QFileDialog::getSaveFileName(this, tr("Select Single Savefile"), QString(), tr(SINGLE_SAVEFILE_FILTER)));
+    QFileDialog::getSaveFileName(this, tr("Select Single Save File"), QString(), tr(SINGLE_SAVEFILE_FILTER)));
 
   if (filename.isEmpty())
     return;
@@ -841,6 +837,16 @@ void MemoryCardEditorWindow::doRenameSaveFile()
   });
 
   dlg->open();
+}
+
+void MemoryCardEditorWindow::onImportClicked(Card* card)
+{
+  QMenu* const import_menu = QtUtils::NewPopupMenu(card->import_button);
+  import_menu->addAction(QIcon(u":/icons/monochrome/svg/file-line.svg"_s), tr("Import Single Save File..."),
+                         [this, card] { importSaveFile(card); });
+  import_menu->addAction(QIcon(u":/icons/monochrome/svg/memcard-line.svg"_s), tr("Import Entire Memory Card..."),
+                         [this, card] { importCard(card); });
+  import_menu->popup(QCursor::pos());
 }
 
 void MemoryCardEditorWindow::importCard(Card* card)
