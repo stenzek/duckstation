@@ -36,6 +36,7 @@ LOG_CHANNEL(CodeCache);
 #include "cpu_recompiler.h"
 #endif
 
+#include <atomic>
 #include <map>
 #include <unordered_set>
 #include <zlib.h>
@@ -150,6 +151,8 @@ struct Locals
   u32 total_host_instructions_emitted = 0;
   u32 total_host_code_used_by_instructions = 0;
 #endif
+
+  std::atomic_flag in_page_fault_handler = ATOMIC_FLAG_INIT;
 
 #ifdef NEEDS_JIT_WRITE_PROTECT
   bool jit_write_protect_enabled = false;
@@ -772,29 +775,37 @@ void CPU::CodeCache::ClearBlocks()
 PageFaultHandler::HandlerResult PageFaultHandler::HandlePageFault(void* exception_pc, void* fault_address,
                                                                   bool is_write)
 {
+  using namespace CPU::CodeCache;
+
+  // Avoid a thread-local recursive guard by checking the calling thread.
+  // I previously had this in PageFaultHandler::ExceptionHandler(), but it was causing random strange crashes in XTAJIT
+  // (Windows ARM64 x86 emulation layer). Seems like some threads were being created and triggering exceptions before
+  // the TLS storage was initialized. Very strange. Anyway, best to just avoid that completely, since apparently you
+  // can't guarantee that the TLS will be initialized at the point a VEH runs.
+  if (!Host::IsOnCoreThread() || s_locals.in_page_fault_handler.test_and_set(std::memory_order_relaxed))
+    return HandlerResult::ExecuteNextHandler;
+
   if (g_bus.ram && static_cast<const u8*>(fault_address) >= g_bus.ram &&
       static_cast<const u8*>(fault_address) < (g_bus.ram + Bus::RAM_8MB_SIZE))
   {
-    // Writing to protected RAM should only occur on the core thread.
     // Writes can come from anywhere here (e.g. DMA).
-    Assert(is_write && Host::IsOnCoreThread());
+    DebugAssert(is_write);
 
     const u32 guest_address = static_cast<u32>(static_cast<const u8*>(fault_address) - g_bus.ram);
     const u32 page_index = Bus::GetRAMCodePageIndex(guest_address);
     DEV_LOG("Page fault on protected RAM @ 0x{:08X} (page #{}), invalidating code cache.", guest_address, page_index);
-    CPU::CodeCache::InvalidateBlocksWithPageIndex(page_index);
-    return PageFaultHandler::HandlerResult::ContinueExecution;
+    InvalidateBlocksWithPageIndex(page_index);
+    s_locals.in_page_fault_handler.clear(std::memory_order_relaxed);
+    return HandlerResult::ContinueExecution;
   }
 
   // Fastmem exceptions should only occur within JIT code. Must also be on the core thread.
   // If we're not, get out of here because it's probably a crash.
-  if (!CPU::CodeCache::IsInCodeBuffer(exception_pc))
-    return HandlerResult::ExecuteNextHandler;
-
-  // TODO: Remove the assertion eventually.
-  Assert(Host::IsOnCoreThread());
-
-  return CPU::CodeCache::HandleFastmemException(exception_pc, fault_address, is_write);
+  const HandlerResult ret = IsInCodeBuffer(exception_pc) ?
+                              HandleFastmemException(exception_pc, fault_address, is_write) :
+                              HandlerResult::ExecuteNextHandler;
+  s_locals.in_page_fault_handler.clear(std::memory_order_relaxed);
+  return ret;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

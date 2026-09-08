@@ -228,16 +228,10 @@ static std::optional<u64> GetLinuxAArch64ESR(const ucontext_t* context)
 
 namespace PageFaultHandler {
 static LONG ExceptionHandler(PEXCEPTION_POINTERS exi);
-
-static thread_local bool s_in_exception_handler = false;
 } // namespace PageFaultHandler
 
 LONG PageFaultHandler::ExceptionHandler(PEXCEPTION_POINTERS exi)
 {
-  // Prevent recursive exception filtering.
-  if (s_in_exception_handler)
-    return EXCEPTION_CONTINUE_SEARCH;
-
   // Only interested in page faults.
   if (exi->ExceptionRecord->ExceptionCode != EXCEPTION_ACCESS_VIOLATION)
     return EXCEPTION_CONTINUE_SEARCH;
@@ -253,12 +247,7 @@ LONG PageFaultHandler::ExceptionHandler(PEXCEPTION_POINTERS exi)
   void* const exception_address = reinterpret_cast<void*>(exi->ExceptionRecord->ExceptionInformation[1]);
   const bool is_write = exi->ExceptionRecord->ExceptionInformation[0] == 1;
 
-  s_in_exception_handler = true;
-
   const HandlerResult handled = HandlePageFault(exception_pc, exception_address, is_write);
-
-  s_in_exception_handler = false;
-
   return (handled == HandlerResult::ContinueExecution) ? EXCEPTION_CONTINUE_EXECUTION : EXCEPTION_CONTINUE_SEARCH;
 }
 
@@ -278,8 +267,6 @@ bool PageFaultHandler::Install(Error* error)
 
 namespace PageFaultHandler {
 static void SignalHandler(int sig, siginfo_t* info, void* ctx);
-
-static thread_local bool s_in_exception_handler = false;
 } // namespace PageFaultHandler
 
 void PageFaultHandler::SignalHandler(int sig, siginfo_t* info, void* ctx)
@@ -346,16 +333,8 @@ void PageFaultHandler::SignalHandler(int sig, siginfo_t* info, void* ctx)
 
 #endif
 
-  // Prevent recursive exception filtering.
-  HandlerResult result = HandlerResult::ExecuteNextHandler;
-  if (!s_in_exception_handler)
-  {
-    s_in_exception_handler = true;
-    result = HandlePageFault(exception_pc, exception_address, is_write);
-    s_in_exception_handler = false;
-  }
-
   // Resumes execution right where we left off (re-executes instruction that caused the SIGSEGV).
+  const HandlerResult result = HandlePageFault(exception_pc, exception_address, is_write);
   if (result == HandlerResult::ContinueExecution)
     return;
 
