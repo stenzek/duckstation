@@ -45,18 +45,19 @@ private:
     bool dirty = false;
 
     QComboBox* path_cb = nullptr;
+    QPushButton* new_button = nullptr;
+    QPushButton* open_button = nullptr;
     QTableWidget* table = nullptr;
     QLabel* blocks_free_label = nullptr;
     QLabel* modified_icon_label = nullptr;
     QLabel* modified_label = nullptr;
     QPushButton* save_button = nullptr;
-    QPushButton* import_button = nullptr;
-    QPushButton* import_file_button = nullptr;
     QPushButton* format_button = nullptr;
+    QPushButton* import_button = nullptr;
   };
 
   void createCardButtons(Card* card, QDialogButtonBox* buttonBox);
-  void connectCardUi(Card* card, QDialogButtonBox* buttonBox);
+  void connectCardUi(Card* card);
 
   void connectUi();
   void populateComboBox(QComboBox* cb);
@@ -70,15 +71,16 @@ private:
   void openCard(Card* card);
   void saveCard(Card* card);
   void promptForSave(Card* card);
-  void importCard(Card* card);
   void formatCard(Card* card);
+  void onImportClicked(Card* card);
+  void importCard(Card* card);
+  void importSaveFile(Card* card);
 
   void doRenameSaveFile();
   void doExportSaveFile();
   void onExtractIconClicked();
   void doExtractIcon();
   void doExtractAnimatedIcon();
-  void importSaveFile(Card* card);
 
   std::tuple<Card*, const MemoryCardImage::FileInfo*> getSelectedFile();
   void updateButtonState();
