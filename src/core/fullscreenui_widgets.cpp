@@ -1341,7 +1341,7 @@ bool FullscreenUI::CompilePipelines(Error* error)
                                        GPUPipeline::VertexAttribute::Type::UNorm8, 4, OFFSETOF(ImDrawVert, col)),
   };
 
-  plconfig.layout = GPUPipeline::Layout::SingleTextureAndUBOAndPushConstants;
+  plconfig.layout = GPUPipeline::Layout::MultiTextureAndUBOAndPushConstants;
   plconfig.input_layout.vertex_attributes = imgui_attributes;
   plconfig.input_layout.vertex_stride = sizeof(ImDrawVert);
   plconfig.primitive = GPUPipeline::Primitive::Triangles;
