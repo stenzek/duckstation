@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <array>
+#include <cstring>
 #include <limits>
 #include <random>
 
@@ -201,6 +202,86 @@ TEST(SPU, GaussianSIMDMatchesScalar)
     if (wide_sum >= std::numeric_limits<s32>::min() && wide_sum <= std::numeric_limits<s32>::max())
     {
       EXPECT_EQ(GaussianSIMD(samples, coefficients), GaussianScalar(samples, coefficients));
+    }
+  }
+}
+
+struct CaptureState
+{
+  std::array<u8, 4 * 0x400> ram;
+  u16 position;
+  u16 irq_address;
+  bool irq_enabled;
+  bool irq_flag;
+  bool second_half;
+  u32 triggered_address;
+
+  bool operator==(const CaptureState&) const = default;
+};
+
+static void TriggerCaptureIRQ(CaptureState* state, u32 address)
+{
+  state->irq_flag = true;
+  state->triggered_address = address;
+}
+
+static void WriteCaptureBuffersOriginal(CaptureState* state, const std::array<s16, 4>& values)
+{
+  for (u32 index = 0; index < values.size(); index++)
+  {
+    const u32 ram_address = index * 0x400u | state->position;
+    std::memcpy(&state->ram[ram_address], &values[index], sizeof(values[index]));
+    if (state->irq_enabled && !state->irq_flag && static_cast<u32>(state->irq_address) * 8 == ram_address)
+      TriggerCaptureIRQ(state, ram_address);
+  }
+
+  state->position += sizeof(s16);
+  state->position %= 0x400;
+  state->second_half = state->position >= 0x200;
+}
+
+static void WriteCaptureBuffersCombined(CaptureState* state, const std::array<s16, 4>& values)
+{
+  const u32 position = state->position;
+  const u32 irq_address = static_cast<u32>(state->irq_address) * 8;
+  bool irq_triggerable = state->irq_enabled && !state->irq_flag;
+  for (u32 index = 0; index < values.size(); index++)
+  {
+    const u32 ram_address = index * 0x400u | position;
+    std::memcpy(&state->ram[ram_address], &values[index], sizeof(values[index]));
+    if (irq_triggerable && irq_address == ram_address)
+    {
+      TriggerCaptureIRQ(state, ram_address);
+      irq_triggerable = false;
+    }
+  }
+
+  state->position = (position + sizeof(s16)) & 0x3FF;
+  state->second_half = state->position >= 0x200;
+}
+
+TEST(SPU, CombinedCaptureWritesMatchIndividualWrites)
+{
+  static constexpr std::array<s16, 4> values = {{-32768, -1, 0x1234, 32767}};
+  for (u32 position = 0; position < 0x400; position += 2)
+  {
+    for (u32 irq_case = 0; irq_case < 7; irq_case++)
+    {
+      CaptureState original = {};
+      original.ram.fill(0xA5);
+      original.position = static_cast<u16>(position);
+      original.irq_enabled = irq_case != 5;
+      original.irq_flag = irq_case == 6;
+      if (irq_case < 4 && (position % 8) == 0)
+        original.irq_address = static_cast<u16>((irq_case * 0x400 + position) / 8);
+      else
+        original.irq_address = 0xFFFF;
+      original.triggered_address = 0xFFFFFFFF;
+
+      CaptureState combined = original;
+      WriteCaptureBuffersOriginal(&original, values);
+      WriteCaptureBuffersCombined(&combined, values);
+      EXPECT_EQ(combined, original) << "position=" << position << " irq_case=" << irq_case;
     }
   }
 }

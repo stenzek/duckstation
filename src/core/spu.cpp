@@ -347,8 +347,7 @@ static bool CheckRAMIRQ(u32 address);
 static void TriggerRAMIRQ();
 static void CheckForLateRAMIRQs();
 
-static void WriteToCaptureBuffer(u32 index, s16 value);
-static void IncrementCaptureBufferPosition();
+static void WriteToCaptureBuffers(s16 cd_left, s16 cd_right, s16 voice_1, s16 voice_3);
 
 static void ReadADPCMBlock(u16 address, ADPCMBlock* block);
 static std::tuple<s32, s32> SampleVoice(Voice& voice, u32 voice_index, bool noise_enabled,
@@ -1354,22 +1353,27 @@ void SPU::CheckForLateRAMIRQs()
   }
 }
 
-void SPU::WriteToCaptureBuffer(u32 index, s16 value)
+void SPU::WriteToCaptureBuffers(s16 cd_left, s16 cd_right, s16 voice_1, s16 voice_3)
 {
-  const u32 ram_address = (index * CAPTURE_BUFFER_SIZE_PER_CHANNEL) | ZeroExtend16(s_state.capture_buffer_position);
-  // Log_DebugFmt("write to capture buffer {} (0x{:08X}) <- 0x{:04X}", index, ram_address, u16(value));
-  std::memcpy(&s_ram[ram_address], &value, sizeof(value));
-  if (IsRAMIRQTriggerable() && CheckRAMIRQ(ram_address))
-  {
-    DEBUG_LOG("Trigger IRQ @ {:08X} ({:04X}) from capture buffer", ram_address, ram_address / 8);
-    TriggerRAMIRQ();
-  }
-}
+  const std::array<s16, 4> values = {cd_left, cd_right, voice_1, voice_3};
+  const u32 position = ZeroExtend16(s_state.capture_buffer_position);
+  const u32 irq_address = ZeroExtend32(s_state.irq_address) * 8;
+  bool irq_triggerable = IsRAMIRQTriggerable();
 
-void SPU::IncrementCaptureBufferPosition()
-{
-  s_state.capture_buffer_position += sizeof(s16);
-  s_state.capture_buffer_position %= CAPTURE_BUFFER_SIZE_PER_CHANNEL;
+  for (u32 index = 0; index < values.size(); index++)
+  {
+    const u32 ram_address = (index * CAPTURE_BUFFER_SIZE_PER_CHANNEL) | position;
+    // DEBUG_LOG("write to capture buffer {} (0x{:08X}) <- 0x{:04X}", index, ram_address, u16(values[index]));
+    std::memcpy(&s_ram[ram_address], &values[index], sizeof(values[index]));
+    if (irq_triggerable && irq_address == ram_address)
+    {
+      DEBUG_LOG("Trigger IRQ @ {:08X} ({:04X}) from capture buffer", ram_address, ram_address / 8);
+      TriggerRAMIRQ();
+      irq_triggerable = false;
+    }
+  }
+
+  s_state.capture_buffer_position = (position + sizeof(s16)) & (CAPTURE_BUFFER_SIZE_PER_CHANNEL - 1);
   s_state.SPUSTAT.second_half_capture_buffer = s_state.capture_buffer_position >= (CAPTURE_BUFFER_SIZE_PER_CHANNEL / 2);
 }
 
@@ -2528,11 +2532,8 @@ void SPU::Execute(void* param, TickCount ticks)
       s_state.main_volume_right.Tick();
 
       // Write to capture buffers.
-      WriteToCaptureBuffer(0, cd_audio_left);
-      WriteToCaptureBuffer(1, cd_audio_right);
-      WriteToCaptureBuffer(2, static_cast<s16>(Clamp16(s_state.voices[1].last_volume)));
-      WriteToCaptureBuffer(3, static_cast<s16>(Clamp16(s_state.voices[3].last_volume)));
-      IncrementCaptureBufferPosition();
+      WriteToCaptureBuffers(cd_audio_left, cd_audio_right, static_cast<s16>(Clamp16(s_state.voices[1].last_volume)),
+                            static_cast<s16>(Clamp16(s_state.voices[3].last_volume)));
 
       // Key off/on voices after the first frame.
       if (i == 0 && (s_state.key_off_register != 0 || s_state.key_on_register != 0))
