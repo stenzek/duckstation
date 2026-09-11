@@ -351,7 +351,9 @@ static void WriteToCaptureBuffer(u32 index, s16 value);
 static void IncrementCaptureBufferPosition();
 
 static void ReadADPCMBlock(u16 address, ADPCMBlock* block);
-static std::tuple<s32, s32> SampleVoice(u32 voice_index);
+static std::tuple<s32, s32> SampleVoice(Voice& voice, u32 voice_index, bool noise_enabled,
+                                        bool pitch_modulation_enabled, bool irq9_enabled,
+                                        s32 previous_voice_last_volume);
 
 static void UpdateNoise();
 
@@ -2045,10 +2047,11 @@ void SPU::ReadADPCMBlock(u16 address, ADPCMBlock* block)
   }
 }
 
-ALWAYS_INLINE_RELEASE std::tuple<s32, s32> SPU::SampleVoice(u32 voice_index)
+ALWAYS_INLINE_RELEASE std::tuple<s32, s32> SPU::SampleVoice(Voice& voice, u32 voice_index, bool noise_enabled,
+                                                            bool pitch_modulation_enabled, bool irq9_enabled,
+                                                            s32 previous_voice_last_volume)
 {
-  Voice& voice = s_state.voices[voice_index];
-  if (!voice.IsOn() && !s_state.SPUCNT.irq9_enable)
+  if (!voice.IsOn() && !irq9_enabled)
   {
     voice.last_volume = 0;
 
@@ -2083,7 +2086,7 @@ ALWAYS_INLINE_RELEASE std::tuple<s32, s32> SPU::SampleVoice(u32 voice_index)
   {
     // interpolate/sample and apply ADSR volume
     s32 sample;
-    if (IsVoiceNoiseEnabled(voice_index))
+    if (noise_enabled)
       sample = GetVoiceNoiseLevel();
     else
       sample = voice.Interpolate();
@@ -2102,9 +2105,9 @@ ALWAYS_INLINE_RELEASE std::tuple<s32, s32> SPU::SampleVoice(u32 voice_index)
 
   // Pitch modulation
   u16 step = voice.regs.adpcm_sample_rate;
-  if (IsPitchModulationEnabled(voice_index))
+  if (pitch_modulation_enabled)
   {
-    const s32 factor = std::clamp<s32>(s_state.voices[voice_index - 1].last_volume, -0x8000, 0x7FFF) + 0x8000;
+    const s32 factor = std::clamp<s32>(previous_voice_last_volume, -0x8000, 0x7FFF) + 0x8000;
     step = Truncate16(static_cast<u32>((SignExtend32(step) * factor) >> 15));
   }
   step = std::min<u16>(step, 0x3FFF);
@@ -2132,7 +2135,7 @@ ALWAYS_INLINE_RELEASE std::tuple<s32, s32> SPU::SampleVoice(u32 voice_index)
       if (!voice.current_block_flags.loop_repeat)
       {
         // End+Mute flags are ignored when noise is enabled. ADPCM data is still decoded.
-        if (!IsVoiceNoiseEnabled(voice_index))
+        if (!noise_enabled)
         {
           TRACE_LOG("Voice {} loop end+mute @ 0x{:04X}", voice_index, voice.current_address);
           voice.ForceOff();
@@ -2429,11 +2432,18 @@ void SPU::Execute(void* param, TickCount ticks)
       s32 reverb_in_left = 0;
       s32 reverb_in_right = 0;
 
+      u32 noise_mode = s_state.noise_mode_register;
+      u32 pitch_modulation_enable = s_state.pitch_modulation_enable_register & ~1u;
       u32 reverb_on_register = s_state.reverb_on_register;
+      s32 previous_voice_last_volume = 0;
+      const bool irq9_enabled = s_state.SPUCNT.irq9_enable;
 
-      for (u32 voice = 0; voice < NUM_VOICES; voice++)
+      u32 voice_index = 0;
+      for (Voice& voice : s_state.voices)
       {
-        const auto [left, right] = SampleVoice(voice);
+        const auto [left, right] =
+          SampleVoice(voice, voice_index, ConvertToBoolUnchecked(noise_mode & 1u),
+                      ConvertToBoolUnchecked(pitch_modulation_enable & 1u), irq9_enabled, previous_voice_last_volume);
         left_sum += left;
         right_sum += right;
 
@@ -2442,7 +2452,11 @@ void SPU::Execute(void* param, TickCount ticks)
           reverb_in_left += left;
           reverb_in_right += right;
         }
+        previous_voice_last_volume = voice.last_volume;
+        noise_mode >>= 1;
+        pitch_modulation_enable >>= 1;
         reverb_on_register >>= 1;
+        voice_index++;
       }
 
       if (!s_state.SPUCNT.mute_n)

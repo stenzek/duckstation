@@ -8,6 +8,7 @@ add_executable(core-tests
   ../util/zip_helpers.cpp
   cheats_tests.cpp
   cpu_disasm_tests.cpp
+  spu_tests.cpp
   stub_cpu.cpp
 )
 
