@@ -1941,7 +1941,7 @@ void SPU::Voice::DecodeBlock(const ADPCMBlock& block)
   current_block_flags.bits = block.flags.bits;
 }
 
-s32 SPU::Voice::Interpolate() const
+static constexpr std::array<std::array<s16, 4>, 0x100> GenerateInterpolationCoefficients()
 {
   static constexpr std::array<s16, 0x200> gauss = {{
     -0x001, -0x001, -0x001, -0x001, -0x001, -0x001, -0x001, -0x001, //
@@ -2010,14 +2010,23 @@ s32 SPU::Voice::Interpolate() const
     0x5997, 0x599E, 0x59A4, 0x59A9, 0x59AD, 0x59B0, 0x59B2, 0x59B3  //
   }};
 
+  std::array<std::array<s16, 4>, 0x100> ret = {};
+  for (u32 phase = 0; phase < ret.size(); phase++)
+    ret[phase] = {gauss[0x0FF - phase], gauss[0x1FF - phase], gauss[0x100 + phase], gauss[phase]};
+  return ret;
+}
+
+s32 SPU::Voice::Interpolate() const
+{
+  static constexpr std::array<std::array<s16, 4>, 0x100> coefficients = GenerateInterpolationCoefficients();
+
   const u8 i = counter.interpolation_index;
   const u32 s = NUM_SAMPLES_FROM_LAST_ADPCM_BLOCK + ZeroExtend32(counter.sample_index.GetValue());
+  const GSVector4i samples = GSVector4i::loadl<false>(&current_block_samples[s - 3]);
+  const GSVector4i weights = GSVector4i::loadl<false>(coefficients[i].data());
 
-  s32 out = s32(gauss[0x0FF - i]) * s32(current_block_samples[s - 3]);
-  out += s32(gauss[0x1FF - i]) * s32(current_block_samples[s - 2]);
-  out += s32(gauss[0x100 + i]) * s32(current_block_samples[s - 1]);
-  out += s32(gauss[0x000 + i]) * s32(current_block_samples[s - 0]);
-  return out >> 15;
+  // Only the lower half is used, so we can do a 64-bit reduction instead of 128-bit.
+  return (samples.madd_s16(weights).xy().addv_s32() >> 15);
 }
 
 void SPU::ReadADPCMBlock(u16 address, ADPCMBlock* block)
