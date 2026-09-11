@@ -208,15 +208,13 @@ struct ADPCMBlock
   u8 data[NUM_SAMPLES_PER_ADPCM_BLOCK / 2];
 
   // For both 4bit and 8bit ADPCM, reserved shift values 13..15 will act same as shift=9).
-  u8 GetShift() const
+  ALWAYS_INLINE u8 GetShift() const
   {
     const u8 shift = shift_filter.shift;
     return (shift > 12) ? 9 : shift;
   }
 
-  u8 GetFilter() const { return shift_filter.filter; }
-
-  u8 GetNibble(u32 index) const { return (data[index / 2] >> ((index % 2) * 4)) & 0x0F; }
+  ALWAYS_INLINE u8 GetFilter() const { return shift_filter.filter; }
 };
 
 struct VolumeEnvelope
@@ -1927,21 +1925,36 @@ void SPU::Voice::DecodeBlock(const ADPCMBlock& block)
   const u8 filter_index = block.GetFilter();
   const s32 filter_pos = filter_table_pos[filter_index];
   const s32 filter_neg = filter_table_neg[filter_index];
-  s16 last_samples[2] = {adpcm_last_samples[0], adpcm_last_samples[1]};
+  s32 last_sample_0 = adpcm_last_samples[0];
+  s32 last_sample_1 = adpcm_last_samples[1];
+  s16* output = &current_block_samples[NUM_SAMPLES_FROM_LAST_ADPCM_BLOCK];
 
-  // samples
-  for (u32 i = 0; i < NUM_SAMPLES_PER_ADPCM_BLOCK; i++)
+  // decode pairs of nibbles on each iteration instead of alternating
+  for (u32 i = 0; i < static_cast<u32>(std::size(block.data)); i++)
   {
-    // extend 4-bit to 16-bit, apply shift from header and mix in previous samples
-    s32 sample = s32(static_cast<s16>(ZeroExtend16(block.GetNibble(i)) << 12) >> shift);
-    sample += (last_samples[0] * filter_pos) >> 6;
-    sample += (last_samples[1] * filter_neg) >> 6;
+    const u8 data = block.data[i];
 
-    last_samples[1] = last_samples[0];
-    current_block_samples[NUM_SAMPLES_FROM_LAST_ADPCM_BLOCK + i] = last_samples[0] = static_cast<s16>(Clamp16(sample));
+    // extend 4-bit to 16-bit, apply shift from header and mix in previous samples
+    // this is interleaved and whacky to try to maximize instruction-level parallelism, but basically, it's:
+    // s32(static_cast<s16>(ZeroExtend16(block.GetNibble(i)) << 12) >> shift) +
+    //   (last_samples[0] * filter_pos) >> 6
+    //   (last_samples[1] * filter_neg) >> 6
+    s32 s0 = static_cast<s32>(static_cast<s16>(ZeroExtend16(data & 0x0F) << 12) >> shift);
+    s32 s1 = static_cast<s32>(static_cast<s16>(ZeroExtend16(data >> 4) << 12) >> shift);
+    s0 += (last_sample_0 * filter_pos) >> 6;
+    s1 += (last_sample_0 * filter_neg) >> 6;
+    s0 += (last_sample_1 * filter_neg) >> 6;
+    s0 = Clamp16(s0);
+    s1 += (s0 * filter_pos) >> 6;
+    s1 = Clamp16(s1);
+
+    *(output++) = Truncate16(last_sample_1 = s0);
+    *(output++) = Truncate16(last_sample_0 = s1);
   }
 
-  std::copy(last_samples, last_samples + countof(last_samples), adpcm_last_samples.begin());
+  adpcm_last_samples[0] = Truncate16(last_sample_0);
+  adpcm_last_samples[1] = Truncate16(last_sample_1);
+
   current_block_flags.bits = block.flags.bits;
 }
 

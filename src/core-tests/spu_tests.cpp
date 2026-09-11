@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
+#include "common/bitutils.h"
 #include "common/gsvector.h"
 #include "common/types.h"
 
@@ -282,6 +283,108 @@ TEST(SPU, CombinedCaptureWritesMatchIndividualWrites)
       WriteCaptureBuffersOriginal(&original, values);
       WriteCaptureBuffersCombined(&combined, values);
       EXPECT_EQ(combined, original) << "position=" << position << " irq_case=" << irq_case;
+    }
+  }
+}
+
+struct ADPCMDecodeResult
+{
+  std::array<s16, 28> samples;
+  std::array<s16, 2> last_samples;
+
+  bool operator==(const ADPCMDecodeResult&) const = default;
+};
+
+static s32 Clamp16ForTest(s32 value)
+{
+  return (value < -0x8000) ? -0x8000 : (value > 0x7FFF) ? 0x7FFF : value;
+}
+
+static ADPCMDecodeResult DecodeADPCMOriginal(const std::array<u8, 14>& data, u8 raw_shift, u8 filter,
+                                             std::array<s16, 2> history)
+{
+  static constexpr std::array<s8, 16> filter_table_pos = {{0, 60, 115, 98, 122, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}};
+  static constexpr std::array<s8, 16> filter_table_neg = {{0, 0, -52, -55, -60, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}};
+
+  ADPCMDecodeResult result = {};
+  const u8 shift = (raw_shift > 12) ? 9 : raw_shift;
+  for (u32 i = 0; i < result.samples.size(); i++)
+  {
+    const u8 nibble = (data[i / 2] >> ((i % 2) * 4)) & 0x0F;
+    s32 sample = static_cast<s16>(static_cast<u16>(nibble) << 12) >> shift;
+    sample += (history[0] * filter_table_pos[filter]) >> 6;
+    sample += (history[1] * filter_table_neg[filter]) >> 6;
+    history[1] = history[0];
+    result.samples[i] = history[0] = static_cast<s16>(Clamp16ForTest(sample));
+  }
+  result.last_samples = history;
+  return result;
+}
+
+static ADPCMDecodeResult DecodeADPCMPaired(const std::array<u8, 14>& edata, u8 raw_shift, u8 filter,
+                                           std::array<s16, 2> history)
+{
+  static constexpr std::array<s8, 16> filter_table_pos = {{0, 60, 115, 98, 122, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}};
+  static constexpr std::array<s8, 16> filter_table_neg = {{0, 0, -52, -55, -60, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}};
+
+  ADPCMDecodeResult result = {};
+  const u8 shift = (raw_shift > 12) ? 9 : raw_shift;
+  const s32 filter_pos = filter_table_pos[filter];
+  const s32 filter_neg = filter_table_neg[filter];
+
+  // decode pairs of nibbles on each iteration instead of alternating
+  s32 last_sample_0 = history[0];
+  s32 last_sample_1 = history[1];
+  s16* output = result.samples.data();
+  for (u32 i = 0; i < static_cast<u32>(edata.size()); i++)
+  {
+    const u8 data = edata.data[i];
+
+    // extend 4-bit to 16-bit, apply shift from header and mix in previous samples
+    // this is interleaved and whacky to try to maximize instruction-level parallelism, but basically, it's:
+    // s32(static_cast<s16>(ZeroExtend16(block.GetNibble(i)) << 12) >> shift) +
+    //   (last_samples[0] * filter_pos) >> 6
+    //   (last_samples[1] * filter_neg) >> 6
+    s32 s0 = static_cast<s32>(static_cast<s16>(ZeroExtend16(data & 0x0F) << 12) >> shift);
+    s32 s1 = static_cast<s32>(static_cast<s16>(ZeroExtend16(data >> 4) << 12) >> shift);
+    s0 += (last_sample_0 * filter_pos) >> 6;
+    s1 += (last_sample_0 * filter_neg) >> 6;
+    s0 += (last_sample_1 * filter_neg) >> 6;
+    s0 = Clamp16ForTest(s0);
+    s1 += (s0 * filter_pos) >> 6;
+    s1 = Clamp16ForTest(s1);
+
+    *(output++) = Truncate16(last_sample_1 = s0);
+    *(output++) = Truncate16(last_sample_0 = s1);
+  }
+
+  result.last_samples[0] = Truncate16(last_sample_0);
+  result.last_samples[1] = Truncate16(last_sample_1);
+  return result;
+}
+
+TEST(SPU, PairedADPCMDecodeMatchesNibbleDecode)
+{
+  std::mt19937 generator(0x41445043u);
+  std::uniform_int_distribution<u32> byte_distribution(0, 0xFF);
+  std::uniform_int_distribution<s32> sample_distribution(-32768, 32767);
+
+  for (u32 filter = 0; filter < 16; filter++)
+  {
+    for (u32 shift = 0; shift < 16; shift++)
+    {
+      for (u32 iteration = 0; iteration < 256; iteration++)
+      {
+        std::array<u8, 14> data;
+        for (u8& value : data)
+          value = static_cast<u8>(byte_distribution(generator));
+        const std::array<s16, 2> history = {
+          {static_cast<s16>(sample_distribution(generator)), static_cast<s16>(sample_distribution(generator))}};
+
+        EXPECT_EQ(DecodeADPCMPaired(data, static_cast<u8>(shift), static_cast<u8>(filter), history),
+                  DecodeADPCMOriginal(data, static_cast<u8>(shift), static_cast<u8>(filter), history))
+          << "filter=" << filter << " shift=" << shift << " iteration=" << iteration;
+      }
     }
   }
 }
