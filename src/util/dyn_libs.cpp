@@ -39,7 +39,6 @@ static_assert(std::is_trivially_copyable_v<DynSqlite> && std::is_standard_layout
 static constexpr int FREETYPE_MAJOR_VERSION = -1;
 static constexpr int PLUTOSVG_MAJOR_VERSION = -1;
 static constexpr int LIBPNG_MAJOR_VERSION = -1;
-static constexpr int LIBWEBP_MAJOR_VERSION = -1;
 static constexpr int LIBSDL_MAJOR_VERSION = -1;
 static constexpr int LIBZIP_MAJOR_VERSION = -1;
 static constexpr int SQLITE_MAJOR_VERSION = -1;
@@ -48,7 +47,6 @@ static constexpr int SPIRV_CROSS_MAJOR_VERSION = -1;
 static constexpr int FREETYPE_MAJOR_VERSION = 6;
 static constexpr int PLUTOSVG_MAJOR_VERSION = 0;
 static constexpr int LIBPNG_MAJOR_VERSION = 16;
-static constexpr int LIBWEBP_MAJOR_VERSION = 7;
 static constexpr int LIBZIP_MAJOR_VERSION = 5;
 static constexpr int LIBSDL_MAJOR_VERSION = 0;
 static constexpr int SQLITE_MAJOR_VERSION = 3;
@@ -212,8 +210,16 @@ bool DynLibWebP::Open(Error* const error)
   if (s_locals.libwebp_library.IsOpen()) [[likely]]
     return true;
 
-  return LoadDynLib("webp", LIBWEBP_MAJOR_VERSION, s_locals.libwebp_library, s_locals.libwebp_init_flag,
-                    s_libwebp_symbols, error);
+#ifdef _WIN32
+  static constexpr const char* libname = "libwebp";
+  static constexpr int major_version = -1;
+#else
+  static constexpr const char* libname = "webp";
+  static constexpr int major_version = 7;
+#endif
+
+  return LoadDynLib(libname, major_version, s_locals.libwebp_library, s_locals.libwebp_init_flag, s_libwebp_symbols,
+                    error);
 }
 
 static const DynamicLibrary::SymbolTable s_libzip_symbols[] = {
