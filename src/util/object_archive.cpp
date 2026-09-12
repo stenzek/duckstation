@@ -41,6 +41,18 @@ struct CacheIndexEntryHeader
 };
 #pragma pack(pop)
 
+ALWAYS_INLINE bool KeyLess(ObjectArchive::KeySpan lhs, ObjectArchive::KeySpan rhs)
+{
+  const size_t common = std::min(lhs.size(), rhs.size());
+  const int cmp = std::memcmp(lhs.data(), rhs.data(), common);
+  return (cmp < 0 || (cmp == 0 && lhs.size() < rhs.size()));
+}
+
+ALWAYS_INLINE bool KeyEqual(ObjectArchive::KeySpan lhs, ObjectArchive::KeySpan rhs)
+{
+  return (lhs.size() == rhs.size() && std::memcmp(lhs.data(), rhs.data(), lhs.size()) == 0);
+}
+
 } // namespace
 
 static constexpr u32 EXPECTED_SIGNATURE = 0x41435544; // DUCA
@@ -69,6 +81,7 @@ void ObjectArchive::Close()
     m_blob_file = nullptr;
   }
   m_index.clear();
+  m_key_pool.clear();
 }
 
 bool ObjectArchive::Clear(Error* error)
@@ -89,12 +102,16 @@ bool ObjectArchive::Clear(Error* error)
   }
 
   m_index.clear();
+  m_key_pool.clear();
   return true;
 }
 
-bool ObjectArchive::OpenPath(std::string_view base_path, u32 data_version, Error* error)
+bool ObjectArchive::OpenPath(std::string_view base_path, u32 data_version, Error* error, bool* was_invalidated)
 {
   Close();
+
+  if (was_invalidated)
+    *was_invalidated = false;
 
   const std::string index_filename = fmt::format("{}.idx", base_path);
   const std::string blob_filename = fmt::format("{}.bin", base_path);
@@ -107,6 +124,9 @@ bool ObjectArchive::OpenPath(std::string_view base_path, u32 data_version, Error
 
     ERROR_LOG("Failed to open existing object archive index '{}': {}", Path::GetFileName(index_filename),
               open_error.GetDescription());
+
+    if (was_invalidated)
+      *was_invalidated = true;
   }
 
   return CreateNew(index_filename, blob_filename, data_version, error);
@@ -240,12 +260,12 @@ bool ObjectArchive::ReadExisting(u32 version, Error* error)
     return false;
   }
 
-  // preallocate string storage, this will overshoot a bit since we don't know the actual key sizes, but it should be
+  // preallocate key storage, this will overshoot a bit since we don't know the actual key sizes, but it should be
   // good enough to avoid fragmentation and multiple resizes in most cases.
-  m_key_pool.Reserve(static_cast<size_t>(index_file_size));
+  m_key_pool.reserve(static_cast<size_t>(index_file_size));
 
   Timer timer;
-  std::string key;
+  std::vector<u8> key;
   for (;;)
   {
     CacheIndexEntryHeader key_header;
@@ -265,9 +285,10 @@ bool ObjectArchive::ReadExisting(u32 version, Error* error)
       return false;
     }
 
-    const BumpStringPool::Offset offset = m_key_pool.AddString(key);
-    m_index.emplace_back(key_header.file_offset, key_header.compressed_size, key_header.uncompressed_size,
-                         static_cast<u32>(offset), key_size, static_cast<CompressType>(key_header.compress_type));
+    const u32 offset = static_cast<u32>(m_key_pool.size());
+    m_key_pool.insert(m_key_pool.end(), key.begin(), key.end());
+    m_index.emplace_back(key_header.file_offset, key_header.compressed_size, key_header.uncompressed_size, offset,
+                         key_size, static_cast<CompressType>(key_header.compress_type));
   }
 
   // ensure we don't write before seeking
@@ -279,14 +300,14 @@ bool ObjectArchive::ReadExisting(u32 version, Error* error)
 
   // ensure index is sorted, the file is written out of order so it probably won't be
   std::sort(m_index.begin(), m_index.end(),
-            [this](const CacheIndexData& a, const CacheIndexData& b) { return (GetKeyString(a) < GetKeyString(b)); });
+            [this](const CacheIndexData& a, const CacheIndexData& b) { return KeyLess(GetKeySpan(a), GetKeySpan(b)); });
 
   // there shouldn't be any duplicates
   for (size_t i = 1; i < m_index.size(); i++)
   {
-    if (GetKeyString(m_index[i - 1]) == GetKeyString(m_index[i]))
+    if (KeyEqual(GetKeySpan(m_index[i - 1]), GetKeySpan(m_index[i])))
     {
-      Error::SetStringFmt(error, "Duplicate key '{}' in index file, corrupt file?", GetKeyString(m_index[i]));
+      Error::SetStringView(error, "Duplicate key in index file, corrupt file?");
       Close();
       return false;
     }
@@ -296,17 +317,17 @@ bool ObjectArchive::ReadExisting(u32 version, Error* error)
   return true;
 }
 
-std::string_view ObjectArchive::GetKeyString(const CacheIndexData& data) const
+ObjectArchive::KeySpan ObjectArchive::GetKeySpan(const CacheIndexData& data) const
 {
-  return m_key_pool.GetString(data.key_offset, data.key_size);
+  return KeySpan(m_key_pool.data() + data.key_offset, data.key_size);
 }
 
-std::optional<ObjectArchive::ObjectData> ObjectArchive::Lookup(std::string_view key, Error* error)
+std::optional<ObjectArchive::ObjectData> ObjectArchive::Lookup(KeySpan key, Error* error)
 {
-  const auto iter = std::lower_bound(
-    m_index.begin(), m_index.end(), key,
-    [this](const CacheIndexData& entry, const std::string_view& key) { return (GetKeyString(entry) < key); });
-  if (iter == m_index.end() || GetKeyString(*iter) != key)
+  const auto iter =
+    std::lower_bound(m_index.begin(), m_index.end(), key,
+                     [this](const CacheIndexData& entry, KeySpan key) { return KeyLess(GetKeySpan(entry), key); });
+  if (iter == m_index.end() || !KeyEqual(GetKeySpan(*iter), key))
   {
     Error::SetStringView(error, ERROR_DESCRIPTION_DOES_NOT_EXIST);
     return std::nullopt;
@@ -316,7 +337,7 @@ std::optional<ObjectArchive::ObjectData> ObjectArchive::Lookup(std::string_view 
   if (std::fseek(m_blob_file, iter->file_offset, SEEK_SET) != 0 ||
       std::fread(data.data(), iter->compressed_size, 1, m_blob_file) != 1) [[unlikely]]
   {
-    ERROR_LOG("failed to read {} byte object at offset {} for key '{}'", iter->compressed_size, iter->file_offset, key);
+    ERROR_LOG("failed to read {} byte object at offset {}", iter->compressed_size, iter->file_offset);
     Error::SetErrno(error, errno);
     return std::nullopt;
   }
@@ -335,24 +356,18 @@ std::optional<ObjectArchive::ObjectData> ObjectArchive::Lookup(std::string_view 
   return std::optional<ObjectData>(std::move(uncompressed_data));
 }
 
-bool ObjectArchive::Contains(std::string_view key) const
+bool ObjectArchive::Contains(KeySpan key) const
 {
   if (key.empty() || key.size() > MAX_KEY_SIZE || !IsOpen()) [[unlikely]]
     return false;
 
-  const auto iter = std::lower_bound(
-    m_index.begin(), m_index.end(), key,
-    [this](const CacheIndexData& entry, const std::string_view& key) { return (GetKeyString(entry) < key); });
-  return (iter != m_index.end() && GetKeyString(*iter) == key);
+  const auto iter =
+    std::lower_bound(m_index.begin(), m_index.end(), key,
+                     [this](const CacheIndexData& entry, KeySpan key) { return KeyLess(GetKeySpan(entry), key); });
+  return (iter != m_index.end() && KeyEqual(GetKeySpan(*iter), key));
 }
 
-bool ObjectArchive::Insert(std::string_view key, std::span<const u8> data, CompressType compression, Error* error)
-{
-  return Insert(key, data.data(), data.size(), compression, error);
-}
-
-bool ObjectArchive::Insert(std::string_view key, const void* data, size_t data_size, CompressType compression,
-                           Error* error)
+bool ObjectArchive::Insert(KeySpan key, std::span<const u8> data, CompressType compression, Error* error)
 {
   if (key.empty() || key.size() > MAX_KEY_SIZE) [[unlikely]]
   {
@@ -365,29 +380,28 @@ bool ObjectArchive::Insert(std::string_view key, const void* data, size_t data_s
     return false;
   }
 
-  const auto iter = std::lower_bound(
-    m_index.begin(), m_index.end(), key,
-    [this](const CacheIndexData& entry, const std::string_view& key) { return (GetKeyString(entry) < key); });
-  if (iter != m_index.end() && GetKeyString(*iter) == key)
+  const auto iter =
+    std::lower_bound(m_index.begin(), m_index.end(), key,
+                     [this](const CacheIndexData& entry, KeySpan key) { return KeyLess(GetKeySpan(entry), key); });
+  if (iter != m_index.end() && KeyEqual(GetKeySpan(*iter), key))
   {
     Error::SetStringView(error, ERROR_DESCRIPTION_ALREADY_EXISTS);
     return false;
   }
 
   DynamicHeapArray<u8> compress_buffer;
-  const void* write_data = data;
-  size_t write_size = data_size;
+  const void* write_data = data.data();
+  size_t write_size = data.size();
   if (compression != CompressType::Uncompressed)
   {
-    if (!CompressHelpers::CompressToBuffer(compress_buffer, compression,
-                                           std::span<const u8>(static_cast<const u8*>(data), data_size), -1, error))
+    if (!CompressHelpers::CompressToBuffer(compress_buffer, compression, data, -1, error))
     {
-      ERROR_LOG("Compress {} byte object failed", data_size);
+      ERROR_LOG("Compress {} byte object failed", data.size());
       return false;
     }
 
-    DEV_LOG("Cached compressed object: {} -> {} bytes ({:.1f}%)", data_size, compress_buffer.size(),
-            (static_cast<float>(data_size) / static_cast<float>(compress_buffer.size())) * 100.0f);
+    DEV_LOG("Cached compressed object: {} -> {} bytes ({:.1f}%)", data.size(), compress_buffer.size(),
+            (static_cast<float>(data.size()) / static_cast<float>(compress_buffer.size())) * 100.0f);
 
     write_data = compress_buffer.data();
     write_size = compress_buffer.size();
@@ -406,10 +420,11 @@ bool ObjectArchive::Insert(std::string_view key, const void* data, size_t data_s
   CacheIndexData idata;
   idata.file_offset = static_cast<u32>(file_offset);
   idata.compressed_size = static_cast<u32>(write_size);
-  idata.uncompressed_size = static_cast<u32>(data_size);
-  idata.key_offset = static_cast<u32>(m_key_pool.AddString(key));
+  idata.uncompressed_size = static_cast<u32>(data.size());
+  idata.key_offset = static_cast<u32>(m_key_pool.size());
   idata.key_size = static_cast<u32>(key.size());
   idata.compress_type = compression;
+  m_key_pool.insert(m_key_pool.end(), key.begin(), key.end());
 
   CacheIndexEntryHeader key_header = {};
   key_header.file_offset = idata.file_offset;
@@ -424,7 +439,7 @@ bool ObjectArchive::Insert(std::string_view key, const void* data, size_t data_s
     [[unlikely]]
   {
     Error::SetErrno(error, "fwrite() failed: ", errno);
-    ERROR_LOG("Failed to write {} byte object", data_size);
+    ERROR_LOG("Failed to write {} byte object", data.size());
     return false;
   }
 

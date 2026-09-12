@@ -89,6 +89,11 @@ void HTTPCache::Shutdown()
     s_locals.cache_archive.Close();
 }
 
+std::span<const u8> HTTPCache::URLToCacheKey(std::string_view key)
+{
+  return std::span<const u8>(reinterpret_cast<const u8*>(key.data()), key.size());
+}
+
 HTTPCache::CacheArchivePtr HTTPCache::GetCacheArchive()
 {
   std::unique_lock lock(s_locals.cache_mutex);
@@ -113,7 +118,7 @@ HTTPCache::LookupResult HTTPCache::Lookup(std::string_view url, Error* error)
   const auto cache = GetCacheArchive();
 
   Error lookup_error;
-  std::optional<ObjectArchive::ObjectData> image_data = cache->Lookup(url, &lookup_error);
+  std::optional<ObjectArchive::ObjectData> image_data = cache->Lookup(URLToCacheKey(url), &lookup_error);
   if (image_data.has_value())
   {
     return LookupResult(LookupStatus::Hit, std::move(*image_data));
@@ -139,7 +144,7 @@ HTTPCache::LookupResult HTTPCache::LookupOrFetch(std::string_view url, Error* er
   const auto cache = GetCacheArchive();
 
   Error lookup_error;
-  image_data = cache->Lookup(url, &lookup_error);
+  image_data = cache->Lookup(URLToCacheKey(url), &lookup_error);
   if (!image_data.has_value() && lookup_error.GetDescription() != ObjectArchive::ERROR_DESCRIPTION_DOES_NOT_EXIST)
     [[unlikely]]
   {
@@ -221,7 +226,7 @@ void HTTPCache::DownloadCallback(const std::string& url, s32 status_code, const 
 
   // TODO: only compress if it's images
   Error insert_error;
-  if (!cache->Insert(url, data, ObjectArchive::CompressType::Uncompressed, &insert_error))
+  if (!cache->Insert(URLToCacheKey(url), data, ObjectArchive::CompressType::Uncompressed, &insert_error))
   {
     if (insert_error.GetDescription() != ObjectArchive::ERROR_DESCRIPTION_ALREADY_EXISTS)
       ERROR_LOG("Failed to insert downloaded data for URL '{}' into cache: {}", url, insert_error.GetDescription());
@@ -230,14 +235,14 @@ void HTTPCache::DownloadCallback(const std::string& url, s32 status_code, const 
 
 bool HTTPCache::Contains(std::string_view url)
 {
-  return GetCacheArchive()->Contains(url);
+  return GetCacheArchive()->Contains(URLToCacheKey(url));
 }
 
 void HTTPCache::Prefetch(std::string_view url)
 {
   // skip early if already cached, or cannot prefetch
   const auto cache = GetCacheArchive();
-  if (!cache->IsOpen() || cache->Contains(url)) [[unlikely]]
+  if (!cache->IsOpen() || cache->Contains(URLToCacheKey(url))) [[unlikely]]
     return;
 
   // queue a download with no callback, which will cause it to be cached when it completes
@@ -255,7 +260,7 @@ void HTTPCache::Prefetch(std::string_view url, PrefetchCallback callback)
   }
 
   // skip early if already cached
-  if (cache->Contains(url))
+  if (cache->Contains(URLToCacheKey(url)))
   {
     callback(true);
     return;

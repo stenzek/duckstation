@@ -49,6 +49,9 @@ std::string_view GetURLFilename(std::string_view url);
 /// Shuts down the HTTP cache, releasing the cache archive.
 void Shutdown();
 
+/// Converts a URL to a cache key.
+std::span<const u8> URLToCacheKey(std::string_view key);
+
 /// Returns a locked pointer to the shared cache archive, opening it on first use.
 CacheArchivePtr GetCacheArchive();
 
