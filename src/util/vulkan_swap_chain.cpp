@@ -733,7 +733,6 @@ bool VulkanSwapChain::HandleAcquireOrPresentError(VkResult& res)
     // buffer's fences. I'm guessing it's something due to the failed present, but regardless, it shouldn't hurt
     // anything doing this here. But don't remove it for this reason.
     vkDeviceWaitIdle(dev.GetVulkanDevice());
-    dev.WaitForAllFences();
 
     Error error;
     if (!RecreateSwapChain(dev, &error))
@@ -754,7 +753,6 @@ bool VulkanSwapChain::HandleAcquireOrPresentError(VkResult& res)
 
     // See above.
     vkDeviceWaitIdle(dev.GetVulkanDevice());
-    dev.WaitForAllFences();
 
     Error error;
     if (!RecreateSurface(dev, &error))

@@ -55,6 +55,7 @@ public:
     bool vk_khr_push_descriptor : 1;
     bool vk_khr_shader_non_semantic_info : 1;
     bool vk_khr_swapchain_maintenance1 : 1;
+    bool vk_khr_timeline_semaphore : 1;
   };
 
   using ExtensionList = std::vector<const char*>;
@@ -168,8 +169,6 @@ public:
     return static_cast<u32>(m_device_properties.limits.optimalBufferCopyRowPitchAlignment);
   }
 
-  void WaitForAllFences();
-
   // Creates a simple render pass.
   VkRenderPass GetRenderPass(const GPUPipeline::GraphicsConfig& config);
   VkRenderPass GetRenderPass(VulkanTexture* const* rts, u32 num_rts, VulkanTexture* ds,
@@ -194,14 +193,14 @@ public:
   /// Frees a descriptor set allocated from the global pool.
   void FreePersistentDescriptorSet(VkDescriptorSet set);
 
-  // Fence "counters" are used to track which commands have been completed by the GPU.
-  // If the last completed fence counter is greater or equal to N, it means that the work
-  // associated counter N has been completed by the GPU. The value of N to associate with
-  // commands can be retreived by calling GetCurrentFenceCounter().
+  // Fence "counters" are submission serials used to track which commands have been completed by the GPU. They are
+  // backed by either a timeline semaphore or fences. If the last completed counter is greater or equal to N, the work
+  // associated with counter N has been completed by the GPU. The value of N to associate with commands can be
+  // retrieved by calling GetCurrentFenceCounter().
   u64 GetCompletedFenceCounter() const { return m_completed_fence_counter; }
 
-  // Gets the fence that will be signaled when the currently executing command buffer is
-  // queued and executed. Do not wait for this fence before the buffer is executed.
+  // Gets the counter that will be signaled when the currently executing command buffer is queued and executed. Do not
+  // wait for this counter before the buffer is executed.
   // TODO: move out of struct
   u64 GetCurrentFenceCounter() const { return m_frame_resources[m_current_frame].fence_counter; }
 
@@ -379,6 +378,7 @@ private:
 
   VkQueue m_graphics_queue = VK_NULL_HANDLE;
   VkQueue m_present_queue = VK_NULL_HANDLE;
+  VkSemaphore m_timeline_semaphore = VK_NULL_HANDLE;
   u32 m_graphics_queue_family_index = 0;
   u32 m_present_queue_family_index = 0;
 

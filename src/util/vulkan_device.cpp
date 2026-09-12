@@ -191,6 +191,8 @@ bool VulkanDevice::EnableOptionalDeviceExtensions(VkPhysicalDevice physical_devi
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_4_FEATURES, nullptr, VK_FALSE};
   VkPhysicalDeviceMaintenance5FeaturesKHR maintenance5_features = {
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_5_FEATURES_KHR, nullptr, VK_FALSE};
+  VkPhysicalDeviceTimelineSemaphoreFeaturesKHR timeline_semaphore_features = {
+    VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TIMELINE_SEMAPHORE_FEATURES_KHR, nullptr, VK_FALSE};
 
   // add in optional feature structs
   // Gate most of the extension checks behind a Vulkan 1.1 device, so we don't have to deal with situations where
@@ -233,6 +235,11 @@ bool VulkanDevice::EnableOptionalDeviceExtensions(VkPhysicalDevice physical_devi
         Vulkan::AddPointerToChain(&features2, &maintenance5_features);
       }
     }
+    if (SupportsExtension(VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME))
+    {
+      m_optional_extensions.vk_khr_timeline_semaphore = true;
+      Vulkan::AddPointerToChain(&features2, &timeline_semaphore_features);
+    }
   }
 
   // don't bother querying if we're not actually looking at any features
@@ -253,6 +260,7 @@ bool VulkanDevice::EnableOptionalDeviceExtensions(VkPhysicalDevice physical_devi
   m_optional_extensions.vk_khr_maintenance4 &= (maintenance4_features.maintenance4 == VK_TRUE);
   m_optional_extensions.vk_khr_maintenance5 &=
     (m_optional_extensions.vk_khr_dynamic_rendering && maintenance5_features.maintenance5 == VK_TRUE);
+  m_optional_extensions.vk_khr_timeline_semaphore &= (timeline_semaphore_features.timelineSemaphore == VK_TRUE);
 
   VkPhysicalDeviceProperties2 properties2 = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2, nullptr, {}};
   VkPhysicalDevicePushDescriptorPropertiesKHR push_descriptor_properties = {
@@ -376,6 +384,9 @@ bool VulkanDevice::EnableOptionalDeviceExtensions(VkPhysicalDevice physical_devi
     if (m_optional_extensions.vk_khr_maintenance5)
       AddExtension(VK_KHR_MAINTENANCE_5_EXTENSION_NAME);
 
+    if (m_optional_extensions.vk_khr_timeline_semaphore)
+      AddExtension(VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME);
+
     // Driver support for swapchain maintenance is a mess... try KHR first, then EXT.
     m_optional_extensions.vk_khr_swapchain_maintenance1 =
       enable_surface && VulkanLoader::GetOptionalExtensions().vk_khr_surface_maintenance1 &&
@@ -409,6 +420,7 @@ bool VulkanDevice::EnableOptionalDeviceExtensions(VkPhysicalDevice physical_devi
   LOG_EXT("VK_KHR_maintenance5", vk_khr_maintenance5);
   LOG_EXT("VK_KHR_push_descriptor", vk_khr_push_descriptor);
   LOG_EXT("VK_KHR_swapchain_maintenance1", vk_khr_swapchain_maintenance1);
+  LOG_EXT("VK_KHR_timeline_semaphore", vk_khr_timeline_semaphore);
 
 #ifdef _WIN32
   m_optional_extensions.vk_ext_full_screen_exclusive =
@@ -563,6 +575,8 @@ bool VulkanDevice::CreateDevice(VkPhysicalDevice physical_device, VkSurfaceKHR s
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_4_FEATURES, nullptr, VK_TRUE};
   VkPhysicalDeviceMaintenance5FeaturesKHR maintenance5_features = {
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_5_FEATURES_KHR, nullptr, VK_TRUE};
+  VkPhysicalDeviceTimelineSemaphoreFeaturesKHR timeline_semaphore_features = {
+    VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TIMELINE_SEMAPHORE_FEATURES_KHR, nullptr, VK_TRUE};
 
   if (m_optional_extensions.vk_ext_rasterization_order_attachment_access)
     Vulkan::AddPointerToChain(&device_info, &rasterization_order_access_feature);
@@ -582,6 +596,8 @@ bool VulkanDevice::CreateDevice(VkPhysicalDevice physical_device, VkSurfaceKHR s
     if (m_optional_extensions.vk_khr_maintenance5)
       Vulkan::AddPointerToChain(&device_info, &maintenance5_features);
   }
+  if (m_optional_extensions.vk_khr_timeline_semaphore)
+    Vulkan::AddPointerToChain(&device_info, &timeline_semaphore_features);
 
   VkDevice device;
   res = vkCreateDevice(physical_device, &device_info, nullptr, &device);
@@ -718,6 +734,20 @@ bool VulkanDevice::CreateCommandBuffers()
 {
   VkResult res;
 
+  if (m_optional_extensions.vk_khr_timeline_semaphore)
+  {
+    const VkSemaphoreTypeCreateInfoKHR type_info = {VK_STRUCTURE_TYPE_SEMAPHORE_TYPE_CREATE_INFO_KHR, nullptr,
+                                                    VK_SEMAPHORE_TYPE_TIMELINE_KHR, 0};
+    const VkSemaphoreCreateInfo semaphore_info = {VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO, &type_info, 0};
+    res = vkCreateSemaphore(m_device, &semaphore_info, nullptr, &m_timeline_semaphore);
+    if (res != VK_SUCCESS)
+    {
+      LOG_VULKAN_ERROR(res, "vkCreateSemaphore() for timeline semaphore failed: ");
+      return false;
+    }
+    Vulkan::SetObjectName(m_device, m_timeline_semaphore, "Command Buffer Timeline Semaphore");
+  }
+
   u32 frame_index = 0;
   for (CommandBuffer& resources : m_frame_resources)
   {
@@ -748,15 +778,17 @@ bool VulkanDevice::CreateCommandBuffers()
                             TinyString::from_format("Frame {} {}Command Buffer", frame_index, (i == 0) ? "Init" : ""));
     }
 
-    VkFenceCreateInfo fence_info = {VK_STRUCTURE_TYPE_FENCE_CREATE_INFO, nullptr, VK_FENCE_CREATE_SIGNALED_BIT};
-
-    res = vkCreateFence(m_device, &fence_info, nullptr, &resources.fence);
-    if (res != VK_SUCCESS)
+    if (!m_optional_extensions.vk_khr_timeline_semaphore)
     {
-      LOG_VULKAN_ERROR(res, "vkCreateFence failed: ");
-      return false;
+      const VkFenceCreateInfo fence_info = {VK_STRUCTURE_TYPE_FENCE_CREATE_INFO, nullptr, VK_FENCE_CREATE_SIGNALED_BIT};
+      res = vkCreateFence(m_device, &fence_info, nullptr, &resources.fence);
+      if (res != VK_SUCCESS)
+      {
+        LOG_VULKAN_ERROR(res, "vkCreateFence failed: ");
+        return false;
+      }
+      Vulkan::SetObjectName(m_device, resources.fence, TinyString::from_format("Frame Fence {}", frame_index));
     }
-    Vulkan::SetObjectName(m_device, resources.fence, TinyString::from_format("Frame Fence {}", frame_index));
 
     u32 num_pools = 0;
     VkDescriptorPoolSize pool_sizes[2];
@@ -801,6 +833,12 @@ void VulkanDevice::DestroyCommandBuffers()
     }
     if (resources.command_pool != VK_NULL_HANDLE)
       vkDestroyCommandPool(m_device, resources.command_pool, nullptr);
+  }
+
+  if (m_timeline_semaphore != VK_NULL_HANDLE)
+  {
+    vkDestroySemaphore(m_device, m_timeline_semaphore, nullptr);
+    m_timeline_semaphore = VK_NULL_HANDLE;
   }
 }
 
@@ -1039,30 +1077,122 @@ void VulkanDevice::FreePersistentDescriptorSet(VkDescriptorSet set)
 
 void VulkanDevice::WaitForFenceCounter(u64 fence_counter)
 {
-  if (m_completed_fence_counter >= fence_counter)
+  if (m_device_was_lost || m_completed_fence_counter >= fence_counter)
     return;
 
-  // Find the first command buffer which covers this counter value.
-  u32 index = (m_current_frame + 1) % NUM_COMMAND_BUFFERS;
-  while (index != m_current_frame)
+  u64 now_completed_counter = fence_counter;
+  VkFence wait_fence = VK_NULL_HANDLE;
+  if (!m_optional_extensions.vk_khr_timeline_semaphore)
   {
-    if (m_frame_resources[index].fence_counter >= fence_counter)
-      break;
+    // Find the fence for the first submission which covers this counter value.
+    u32 wait_index = NUM_COMMAND_BUFFERS;
+    u64 wait_counter = std::numeric_limits<u64>::max();
+    for (u32 i = 0; i < NUM_COMMAND_BUFFERS; i++)
+    {
+      const u64 current_counter = m_frame_resources[i].fence_counter;
+      if (current_counter >= fence_counter && current_counter < wait_counter)
+      {
+        wait_index = i;
+        wait_counter = current_counter;
+      }
+    }
 
-    index = (index + 1) % NUM_COMMAND_BUFFERS;
+    DebugAssert(wait_index < NUM_COMMAND_BUFFERS);
+    if (wait_index >= NUM_COMMAND_BUFFERS) [[unlikely]]
+      return;
+
+    wait_fence = m_frame_resources[wait_index].fence;
+    now_completed_counter = wait_counter;
   }
 
-  DebugAssert(index != m_current_frame);
-  WaitForCommandBufferCompletion(index);
-}
-
-void VulkanDevice::WaitForAllFences()
-{
-  u32 index = (m_current_frame + 1) % NUM_COMMAND_BUFFERS;
-  for (u32 i = 0; i < (NUM_COMMAND_BUFFERS - 1); i++)
+  static constexpr u32 MAX_TIMEOUTS = 10;
+  u32 timeouts = 0;
+  for (;;)
   {
-    WaitForCommandBufferCompletion(index);
-    index = (index + 1) % NUM_COMMAND_BUFFERS;
+    VkResult res;
+    if (m_optional_extensions.vk_khr_timeline_semaphore)
+    {
+      const VkSemaphoreWaitInfoKHR wait_info = {
+        VK_STRUCTURE_TYPE_SEMAPHORE_WAIT_INFO_KHR, nullptr, 0, 1, &m_timeline_semaphore, &fence_counter};
+      res = vkWaitSemaphoresKHR(m_device, &wait_info, UINT64_MAX);
+    }
+    else
+    {
+      res = vkWaitForFences(m_device, 1, &wait_fence, VK_TRUE, UINT64_MAX);
+    }
+
+    if (res == VK_SUCCESS)
+      break;
+
+    if (res == VK_TIMEOUT && (++timeouts) <= MAX_TIMEOUTS)
+    {
+      ERROR_LOG("{}() for fence counter {} failed with VK_TIMEOUT, trying again.",
+                m_optional_extensions.vk_khr_timeline_semaphore ? "vkWaitSemaphoresKHR" : "vkWaitForFences",
+                fence_counter);
+      continue;
+    }
+
+    LOG_VULKAN_ERROR(res, TinyString::from_format(
+                            "{}() for fence counter {} failed: ",
+                            m_optional_extensions.vk_khr_timeline_semaphore ? "vkWaitSemaphoresKHR" : "vkWaitForFences",
+                            fence_counter));
+    m_device_was_lost = true;
+    return;
+  }
+
+  // Might have completed more, so keep track of that if so.
+  if (m_optional_extensions.vk_khr_timeline_semaphore)
+  {
+    const VkResult res = vkGetSemaphoreCounterValueKHR(m_device, m_timeline_semaphore, &now_completed_counter);
+    if (res != VK_SUCCESS)
+    {
+      LOG_VULKAN_ERROR(res, "vkGetSemaphoreCounterValueKHR() failed: ");
+      m_device_was_lost = true;
+      return;
+    }
+  }
+
+  if (m_gpu_timing_enabled)
+  {
+    for (u32 i = 0; i < NUM_COMMAND_BUFFERS; i++)
+    {
+      const CommandBuffer& resources = m_frame_resources[i];
+      if (!resources.timestamp_written || resources.fence_counter <= m_completed_fence_counter ||
+          resources.fence_counter > now_completed_counter)
+      {
+        continue;
+      }
+
+      std::array<u64, 2> timestamps;
+      VkResult res =
+        vkGetQueryPoolResults(m_device, m_timestamp_query_pool, i * 2, static_cast<u32>(timestamps.size()),
+                              sizeof(u64) * timestamps.size(), timestamps.data(), sizeof(u64), VK_QUERY_RESULT_64_BIT);
+      if (res == VK_SUCCESS)
+      {
+        // if we didn't write the timestamp at the start of the cmdbuffer (just enabled timing), the first TS will be
+        // zero
+        if (timestamps[0] > 0)
+        {
+          const double ns_diff =
+            (timestamps[1] - timestamps[0]) * static_cast<double>(m_device_properties.limits.timestampPeriod);
+          m_accumulated_gpu_time += static_cast<float>(ns_diff / 1000000.0);
+        }
+      }
+      else
+      {
+        LOG_VULKAN_ERROR(res, "vkGetQueryPoolResults failed: ");
+      }
+    }
+  }
+
+  m_completed_fence_counter = now_completed_counter;
+  while (!m_cleanup_objects.empty())
+  {
+    auto& it = m_cleanup_objects.front();
+    if (it.first > now_completed_counter)
+      break;
+    it.second();
+    m_cleanup_objects.pop_front();
   }
 }
 
@@ -1081,76 +1211,7 @@ bool VulkanDevice::SetGPUTimingEnabled(bool enabled)
 
 void VulkanDevice::WaitForCommandBufferCompletion(u32 index)
 {
-  if (m_device_was_lost)
-    return;
-
-  // Wait for this command buffer to be completed.
-  static constexpr u32 MAX_TIMEOUTS = 10;
-  u32 timeouts = 0;
-  for (;;)
-  {
-    VkResult res = vkWaitForFences(m_device, 1, &m_frame_resources[index].fence, VK_TRUE, UINT64_MAX);
-    if (res == VK_SUCCESS)
-      break;
-
-    if (res == VK_TIMEOUT && (++timeouts) <= MAX_TIMEOUTS)
-    {
-      ERROR_LOG("vkWaitForFences() for cmdbuffer {} failed with VK_TIMEOUT, trying again.", index);
-      continue;
-    }
-    else if (res != VK_SUCCESS)
-    {
-      LOG_VULKAN_ERROR(res, TinyString::from_format("vkWaitForFences() for cmdbuffer {} failed: ", index));
-      m_device_was_lost = true;
-      return;
-    }
-  }
-
-  // Clean up any resources for command buffers between the last known completed buffer and this
-  // now-completed command buffer. If we use >2 buffers, this may be more than one buffer.
-  const u64 now_completed_counter = m_frame_resources[index].fence_counter;
-  u32 cleanup_index = (m_current_frame + 1) % NUM_COMMAND_BUFFERS;
-  while (cleanup_index != m_current_frame)
-  {
-    CommandBuffer& resources = m_frame_resources[cleanup_index];
-    if (resources.fence_counter > now_completed_counter)
-      break;
-
-    if (m_gpu_timing_enabled && resources.timestamp_written)
-    {
-      std::array<u64, 2> timestamps;
-      VkResult res =
-        vkGetQueryPoolResults(m_device, m_timestamp_query_pool, cleanup_index * 2, static_cast<u32>(timestamps.size()),
-                              sizeof(u64) * timestamps.size(), timestamps.data(), sizeof(u64), VK_QUERY_RESULT_64_BIT);
-      if (res == VK_SUCCESS)
-      {
-        // if we didn't write the timestamp at the start of the cmdbuffer (just enabled timing), the first TS will be
-        // zero
-        if (timestamps[0] > 0 && m_gpu_timing_enabled)
-        {
-          const double ns_diff =
-            (timestamps[1] - timestamps[0]) * static_cast<double>(m_device_properties.limits.timestampPeriod);
-          m_accumulated_gpu_time += static_cast<float>(ns_diff / 1000000.0);
-        }
-      }
-      else
-      {
-        LOG_VULKAN_ERROR(res, "vkGetQueryPoolResults failed: ");
-      }
-    }
-
-    cleanup_index = (cleanup_index + 1) % NUM_COMMAND_BUFFERS;
-  }
-
-  m_completed_fence_counter = now_completed_counter;
-  while (!m_cleanup_objects.empty())
-  {
-    auto& it = m_cleanup_objects.front();
-    if (it.first > now_completed_counter)
-      break;
-    it.second();
-    m_cleanup_objects.pop_front();
-  }
+  WaitForFenceCounter(m_frame_resources[index].fence_counter);
 }
 
 void VulkanDevice::EndAndSubmitCommandBuffer(bool wait_for_completion, VulkanSwapChain* present_swap_chain,
@@ -1206,7 +1267,9 @@ void VulkanDevice::EndAndSubmitCommandBuffer(bool wait_for_completion, VulkanSwa
 
   buffers[submit_info.commandBufferCount++] = resources.command_buffers[1];
 
-  uint32_t wait_bits;
+  u32 wait_bits;
+  std::array<VkSemaphore, 2> signal_semaphores;
+  std::array<u64, 2> signal_values = {};
   if (present_swap_chain)
   {
     wait_bits = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
@@ -1215,11 +1278,29 @@ void VulkanDevice::EndAndSubmitCommandBuffer(bool wait_for_completion, VulkanSwa
     submit_info.waitSemaphoreCount = 1;
     submit_info.pWaitDstStageMask = &wait_bits;
 
-    submit_info.pSignalSemaphores = present_swap_chain->GetPresentSemaphorePtr();
-    submit_info.signalSemaphoreCount = 1;
+    signal_semaphores[submit_info.signalSemaphoreCount++] = present_swap_chain->GetPresentSemaphore();
   }
 
-  res = vkQueueSubmit(m_graphics_queue, 1, &submit_info, resources.fence);
+  std::array<u64, 1> wait_values = {};
+  VkTimelineSemaphoreSubmitInfoKHR timeline_submit_info = {};
+  if (m_optional_extensions.vk_khr_timeline_semaphore)
+  {
+    signal_semaphores[submit_info.signalSemaphoreCount] = m_timeline_semaphore;
+    signal_values[submit_info.signalSemaphoreCount++] = resources.fence_counter;
+
+    timeline_submit_info.sType = VK_STRUCTURE_TYPE_TIMELINE_SEMAPHORE_SUBMIT_INFO_KHR;
+    timeline_submit_info.waitSemaphoreValueCount = submit_info.waitSemaphoreCount;
+    timeline_submit_info.pWaitSemaphoreValues = wait_values.data();
+    timeline_submit_info.signalSemaphoreValueCount = submit_info.signalSemaphoreCount;
+    timeline_submit_info.pSignalSemaphoreValues = signal_values.data();
+    submit_info.pNext = &timeline_submit_info;
+  }
+
+  if (submit_info.signalSemaphoreCount > 0)
+    submit_info.pSignalSemaphores = signal_semaphores.data();
+
+  res = vkQueueSubmit(m_graphics_queue, 1, &submit_info,
+                      m_optional_extensions.vk_khr_timeline_semaphore ? VK_NULL_HANDLE : resources.fence);
   if (res != VK_SUCCESS)
   {
     LOG_VULKAN_ERROR(res, "vkQueueSubmit failed: ");
@@ -1292,10 +1373,14 @@ void VulkanDevice::BeginCommandBuffer(u32 index)
   if (resources.fence_counter > m_completed_fence_counter)
     WaitForCommandBufferCompletion(index);
 
-  // Reset fence to unsignaled before starting.
-  VkResult res = vkResetFences(m_device, 1, &resources.fence);
-  if (res != VK_SUCCESS)
-    LOG_VULKAN_ERROR(res, "vkResetFences failed: ");
+  VkResult res;
+  if (!m_optional_extensions.vk_khr_timeline_semaphore)
+  {
+    // Reset fence to unsignaled before starting.
+    res = vkResetFences(m_device, 1, &resources.fence);
+    if (res != VK_SUCCESS)
+      LOG_VULKAN_ERROR(res, "vkResetFences failed: ");
+  }
 
   // Reset command pools to beginning since we can re-use the memory now
   res = vkResetCommandPool(m_device, resources.command_pool, 0);
