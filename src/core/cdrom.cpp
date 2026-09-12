@@ -2901,7 +2901,12 @@ void CDROM::BeginPlaying(u8 track, bool after_seek)
     if (track > s_reader.GetMedia()->GetTrackCount())
     {
       // restart current track
-      track = Truncate8(s_reader.GetMedia()->GetTrackNumber());
+      const CDImage* media = s_reader.GetMedia();
+      const CDImage::Index* current_index = media->GetIndexForDiscPosition(s_state.current_lba);
+      track = (current_index && current_index->track_number >= media->GetFirstTrackNumber() &&
+               current_index->track_number <= media->GetLastTrackNumber()) ?
+                Truncate8(current_index->track_number) :
+                Truncate8(media->GetLastTrackNumber());
     }
 
     s_state.setloc_position = s_reader.GetMedia()->GetTrackStartMSFPosition(track);
@@ -4191,6 +4196,7 @@ void CDROM::DrawDebugWindow(float scale)
     {
       const CDImage* media = s_reader.GetMedia();
       const CDImage::Position disc_position = CDImage::Position::FromLBA(s_state.current_lba);
+      const CDImage::Index* current_index = media->GetIndexForDiscPosition(s_state.current_lba);
       const float start_y = ImGui::GetCursorPosY();
 
       if (media->HasSubImages())
@@ -4206,15 +4212,19 @@ void CDROM::DrawDebugWindow(float scale)
       ImGui::Text("Disc Position: MSF[%02u:%02u:%02u] LBA[%u]", disc_position.minute, disc_position.second,
                   disc_position.frame, disc_position.ToLBA());
 
-      if (media->GetTrackNumber() > media->GetTrackCount())
+      if (!current_index)
+      {
+        ImGui::Text("Track Position: Outside image");
+      }
+      else if (current_index->track_number > media->GetTrackCount())
       {
         ImGui::Text("Track Position: Lead-out");
       }
       else
       {
         const CDImage::Position track_position = CDImage::Position::FromLBA(
-          s_state.current_lba - media->GetTrackStartPosition(static_cast<u8>(media->GetTrackNumber())));
-        ImGui::Text("Track Position: Number[%u] MSF[%02u:%02u:%02u] LBA[%u]", media->GetTrackNumber(),
+          s_state.current_lba - media->GetTrackStartPosition(static_cast<u8>(current_index->track_number)));
+        ImGui::Text("Track Position: Number[%u] MSF[%02u:%02u:%02u] LBA[%u]", current_index->track_number,
                     track_position.minute, track_position.second, track_position.frame, track_position.ToLBA());
       }
 
@@ -4224,14 +4234,14 @@ void CDROM::DrawDebugWindow(float scale)
 
       if (s_state.show_current_file)
       {
-        if (media->GetTrackNumber() == 1)
+        if (current_index && current_index->track_number == 1)
         {
           if (!s_state.file_map_created)
             CreateFileMap();
 
           u32 current_file_start_lba, current_file_end_lba;
           const u32 track_lba =
-            s_state.current_lba - media->GetTrackStartPosition(static_cast<u8>(media->GetTrackNumber()));
+            s_state.current_lba - media->GetTrackStartPosition(static_cast<u8>(current_index->track_number));
           const std::string* current_file = LookupFileMap(track_lba, &current_file_start_lba, &current_file_end_lba);
           if (current_file)
           {

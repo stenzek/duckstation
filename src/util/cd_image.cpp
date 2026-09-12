@@ -299,88 +299,6 @@ const CDImage::CDImage::Index& CDImage::GetIndex(u32 i) const
   return m_indices[i];
 }
 
-bool CDImage::Seek(LBA lba)
-{
-  const Index* new_index;
-  if (m_current_index && lba >= m_current_index->start_lba_on_disc &&
-      (lba - m_current_index->start_lba_on_disc) < m_current_index->length)
-  {
-    new_index = m_current_index;
-  }
-  else
-  {
-    new_index = GetIndexForDiscPosition(lba);
-    if (!new_index)
-      return false;
-  }
-
-  const LBA new_index_offset = lba - new_index->start_lba_on_disc;
-  if (new_index_offset >= new_index->length)
-    return false;
-
-  m_current_index = new_index;
-  m_position_on_disc = lba;
-  m_position_in_index = new_index_offset;
-  m_position_in_track = new_index->start_lba_in_track + new_index_offset;
-  return true;
-}
-
-bool CDImage::Seek(u32 track_number, const Position& pos_in_track)
-{
-  if (track_number < 1 || track_number > m_tracks.size())
-    return false;
-
-  const Track& track = m_tracks[track_number - 1];
-  const LBA pos_lba = pos_in_track.ToLBA();
-  if (pos_lba >= track.length)
-    return false;
-
-  return Seek(track.start_lba + pos_lba);
-}
-
-bool CDImage::Seek(const Position& pos)
-{
-  return Seek(pos.ToLBA());
-}
-
-bool CDImage::Seek(u32 track_number, LBA lba)
-{
-  if (track_number < 1 || track_number > m_tracks.size())
-    return false;
-
-  const Track& track = m_tracks[track_number - 1];
-  return Seek(track.start_lba + lba);
-}
-
-bool CDImage::ReadRawSector(void* buffer, SubChannelQ* subq)
-{
-  if (m_position_in_index == m_current_index->length)
-  {
-    if (!Seek(m_position_on_disc))
-      return false;
-  }
-
-  Sector sector;
-  if (ReadSectors(
-        m_position_on_disc, std::span<Sector>(&sector, 1),
-        (buffer ? (subq ? SectorReadMode::DataAndSubQ : SectorReadMode::DataOnly) : SectorReadMode::SubQOnly)) != 1)
-  {
-    ERROR_LOG("Read of LBA {} failed", m_position_on_disc);
-    Seek(m_position_on_disc);
-    return false;
-  }
-
-  if (buffer)
-    std::memcpy(buffer, sector.data.data(), sector.data.size());
-  if (subq)
-    *subq = sector.subq;
-
-  m_position_on_disc++;
-  m_position_in_index++;
-  m_position_in_track++;
-  return true;
-}
-
 u32 CDImage::ReadSectors(LBA lba, std::span<Sector> sectors, SectorReadMode mode)
 {
   const bool read_data = (mode != SectorReadMode::SubQOnly);
@@ -515,10 +433,6 @@ void CDImage::ClearTOC()
   m_lba_count = 0;
   m_indices.clear();
   m_tracks.clear();
-  m_current_index = nullptr;
-  m_position_in_index = 0;
-  m_position_in_track = 0;
-  m_position_on_disc = 0;
 }
 
 void CDImage::CopyTOC(const CDImage* image)
@@ -542,10 +456,6 @@ void CDImage::CopyTOC(const CDImage* image)
     std::memcpy(&new_track, &track, sizeof(new_track));
     m_tracks.push_back(new_track);
   }
-  m_current_index = nullptr;
-  m_position_in_index = 0;
-  m_position_in_track = 0;
-  m_position_on_disc = 0;
 }
 
 const CDImage::Index* CDImage::GetIndexForDiscPosition(LBA pos) const
@@ -563,18 +473,6 @@ const CDImage::Index* CDImage::GetIndexForDiscPosition(LBA pos) const
   }
 
   return nullptr;
-}
-
-const CDImage::Index* CDImage::GetIndexForTrackPosition(u32 track_number, LBA track_pos) const
-{
-  if (track_number < 1 || track_number > m_tracks.size())
-    return nullptr;
-
-  const Track& track = m_tracks[track_number - 1];
-  if (track_pos >= track.length)
-    return nullptr;
-
-  return GetIndexForDiscPosition(track.start_lba + track_pos);
 }
 
 bool CDImage::GenerateSubChannelQ(SubChannelQ* subq, LBA lba) const

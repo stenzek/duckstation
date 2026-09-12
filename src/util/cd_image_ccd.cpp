@@ -387,7 +387,7 @@ bool CDImageCCD::OpenAndParse(const char* path, Error* error)
 
   m_path = path;
 
-  return Seek(1, Position{0, 0, 0});
+  return true;
 }
 
 u32 CDImageCCD::ReadSectorsFromIndex(std::span<Sector> sectors, const Index& index, LBA lba_in_index,

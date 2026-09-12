@@ -439,7 +439,7 @@ bool CDImageDeviceWin32::Open(const char* path, Error* error)
     return false;
   }
 
-  return Seek(1, Position{0, 0, 0});
+  return true;
 }
 
 u32 CDImageDeviceWin32::ReadSectorsFromIndex(std::span<Sector> sectors, const Index& index, LBA lba_in_index,
@@ -974,7 +974,7 @@ bool CDImageDeviceLinux::Open(const char* filename, Error* error)
   if (!DetermineReadMode(error))
     return false;
 
-  return Seek(1, Position{0, 0, 0});
+  return true;
 }
 
 u32 CDImageDeviceLinux::ReadSectorsFromIndex(std::span<Sector> sectors, const Index& index, LBA lba_in_index,
@@ -1516,7 +1516,7 @@ bool CDImageDeviceMacOS::Open(const char* filename, Error* error)
   if (!DetermineReadMode(error))
     return false;
 
-  return Seek(1, Position{0, 0, 0});
+  return true;
 }
 
 u32 CDImageDeviceMacOS::ReadSectorsFromIndex(std::span<Sector> sectors, const Index& index, LBA lba_in_index,

@@ -413,7 +413,7 @@ bool CDImageCHD::Open(const char* path, Error* error)
   m_lba_count = disc_lba;
   AddLeadOutIndex();
 
-  return Seek(1, Position{0, 0, 0});
+  return true;
 }
 
 bool CDImageCHD::HasSubchannelData() const

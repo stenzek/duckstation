@@ -149,7 +149,7 @@ bool CDImageMemory::CopyImage(CDImage* image, ProgressCallback* progress, Error*
   m_path = image->GetPath();
   m_lba_count = image->GetLBACount();
 
-  return Seek(1, Position{0, 0, 0});
+  return true;
 }
 
 bool CDImageMemory::HasSubchannelData() const

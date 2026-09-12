@@ -751,7 +751,7 @@ bool CDImagePBP::OpenDisc(u32 index, Error* error)
   }
 
   m_current_disc = index;
-  return Seek(1, Position{0, 0, 0});
+  return true;
 }
 
 const std::string* CDImagePBP::LookupStringSFOTableEntry(const char* key, const SFOTable& table)

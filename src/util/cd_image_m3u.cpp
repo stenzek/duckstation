@@ -147,9 +147,6 @@ bool CDImageM3u::SwitchSubImage(u32 index, Error* error)
   CopyTOC(new_image.get());
   m_current_image = std::move(new_image);
   m_current_image_index = index;
-  if (!Seek(1, Position{0, 0, 0}))
-    Panic("Failed to seek to start after sub-image change.");
-
   return true;
 }
 

@@ -248,7 +248,7 @@ bool CDImageMDS::OpenAndParse(const char* path, Error* error)
   m_lba_count = m_tracks.back().start_lba + m_tracks.back().length;
   AddLeadOutIndex();
 
-  return Seek(1, Position{0, 0, 0});
+  return true;
 }
 
 u32 CDImageMDS::ReadSectorsFromIndex(std::span<Sector> sectors, const Index& index, LBA lba_in_index,

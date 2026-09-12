@@ -814,7 +814,7 @@ bool CDImageCueSheet::OpenAndParseCueSheet(const char* path, Error* error)
   m_lba_count = disc_lba;
   AddLeadOutIndex();
 
-  return Seek(1, Position{0, 0, 0});
+  return true;
 }
 
 bool CDImageCueSheet::OpenAndParseSingleFile(const char* path, Error* error)
@@ -874,7 +874,7 @@ bool CDImageCueSheet::OpenAndParseSingleFile(const char* path, Error* error)
 
   AddLeadOutIndex();
 
-  return Seek(1, Position{0, 0, 0});
+  return true;
 }
 
 std::optional<CDImage::TrackMode> CDImageCueSheet::DetectSingleFileTrackMode(TrackFileInterface* fi, const char* path,

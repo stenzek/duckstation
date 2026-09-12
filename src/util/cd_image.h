@@ -232,13 +232,7 @@ public:
 
   // Accessors.
   const std::string& GetPath() const { return m_path; }
-  LBA GetPositionOnDisc() const { return m_position_on_disc; }
-  Position GetMSFPositionOnDisc() const { return Position::FromLBA(m_position_on_disc); }
-  LBA GetPositionInTrack() const { return m_position_in_track; }
-  Position GetMSFPositionInTrack() const { return Position::FromLBA(m_position_in_track); }
   LBA GetLBACount() const { return m_lba_count; }
-  u32 GetIndexNumber() const { return m_current_index->index_number; }
-  u32 GetTrackNumber() const { return m_current_index->track_number; }
   u32 GetTrackCount() const { return static_cast<u32>(m_tracks.size()); }
   LBA GetTrackStartPosition(u32 track) const;
   Position GetTrackStartMSFPosition(u32 track) const;
@@ -255,20 +249,8 @@ public:
   const Track& GetTrack(u32 track) const;
   const Index& GetIndex(u32 i) const;
 
-  // Seek to data LBA.
-  bool Seek(LBA lba);
-
-  // Seek to disc position (MSF).
-  bool Seek(const Position& pos);
-
-  // Seek to track and position.
-  bool Seek(u32 track_number, const Position& pos_in_track);
-
-  // Seek to track and LBA.
-  bool Seek(u32 track_number, LBA lba);
-
-  // Read a single raw sector, and subchannel from the current LBA.
-  bool ReadRawSector(void* buffer, SubChannelQ* subq);
+  /// Returns the index containing the specified absolute disc LBA, or nullptr when the LBA is outside the image.
+  const Index* GetIndexForDiscPosition(LBA pos) const;
 
   /// Reads the requested components of consecutive raw sectors beginning at the specified LBA, leaving unrequested
   /// components untouched. Returns the number of sectors successfully read.
@@ -321,9 +303,6 @@ protected:
   void ClearTOC();
   void CopyTOC(const CDImage* image);
 
-  const Index* GetIndexForDiscPosition(LBA pos) const;
-  const Index* GetIndexForTrackPosition(u32 track_number, LBA track_pos) const;
-
   /// Synthesis of lead-out data.
   void AddLeadOutIndex();
 
@@ -336,12 +315,4 @@ protected:
 private:
   // Helper function for filling in raw sector headers.
   static void FillRawSectorSyncAndHeader(u8* sector, LBA lba, u8 sector_mode);
-
-  // Position on disc.
-  LBA m_position_on_disc = 0;
-
-  // Position in track/index.
-  const Index* m_current_index = nullptr;
-  LBA m_position_in_index = 0;
-  LBA m_position_in_track = 0;
 };
