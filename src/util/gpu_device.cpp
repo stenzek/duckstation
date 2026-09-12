@@ -11,10 +11,12 @@
 #include "shadergen.h"
 
 #include "common/assert.h"
+#include "common/bitutils.h"
 #include "common/error.h"
 #include "common/file_system.h"
 #include "common/hash_combine.h"
 #include "common/log.h"
+#include "common/md5_digest.h"
 #include "common/path.h"
 #include "common/scoped_guard.h"
 #include "common/sha1_digest.h"
@@ -45,6 +47,11 @@ LOG_CHANNEL(GPUDevice);
 #include "vulkan_loader.h"
 #endif
 
+static_assert(sizeof(GPUShaderCacheKey) == 48, "Shader cache key has no padding");
+static_assert(std::is_standard_layout_v<GPUShaderCacheKey> && std::is_trivially_copyable_v<GPUShaderCacheKey>);
+static_assert(sizeof(GPUPipeline::GraphicsConfig::color_formats) ==
+              sizeof(GPUTextureFormat) * GPUDevice::MAX_RENDER_TARGETS);
+
 std::unique_ptr<GPUDevice> g_gpu_device;
 
 namespace {
@@ -56,7 +63,6 @@ struct Locals
   std::array<u8, SHA1Digest::DIGEST_SIZE> pipeline_cache_hash;
 
   // Dynamic libraries
-
 };
 } // namespace
 
@@ -375,6 +381,44 @@ const char* GPUDevice::ShaderLanguageToString(GPUShaderLanguage language)
   }
 }
 
+ALWAYS_INLINE static ObjectArchive::KeySpan GetShaderCacheKeySpan(const GPUShaderCacheKey& key)
+{
+  return ObjectArchive::KeySpan(reinterpret_cast<const u8*>(&key), sizeof(key));
+}
+
+GPUShaderCacheKey GPUDevice::GetShaderCacheKey(GPUShaderStage stage, GPUShaderLanguage language,
+                                               std::string_view shader_code, std::string_view entry_point)
+{
+  union
+  {
+    struct
+    {
+      u64 hash_low;
+      u64 hash_high;
+    };
+    u8 hash[16];
+  } h;
+
+  GPUShaderCacheKey key = {};
+  key.shader_type = static_cast<u32>(stage);
+  key.shader_language = static_cast<u32>(language);
+
+  MD5Digest digest;
+  digest.Update(shader_code.data(), static_cast<u32>(shader_code.length()));
+  digest.Final(h.hash);
+  key.source_hash_low = h.hash_low;
+  key.source_hash_high = h.hash_high;
+  key.source_length = static_cast<u32>(shader_code.length());
+
+  digest.Reset();
+  digest.Update(entry_point.data(), static_cast<u32>(entry_point.length()));
+  digest.Final(h.hash);
+  key.entry_point_low = h.hash_low;
+  key.entry_point_high = h.hash_high;
+
+  return key;
+}
+
 const char* GPUDevice::VSyncModeToString(GPUVSyncMode mode)
 {
   static constexpr std::array<const char*, static_cast<size_t>(GPUVSyncMode::Count)> vsync_modes = {{
@@ -531,16 +575,24 @@ void GPUDevice::DestroyMainSwapChain()
 
 void GPUDevice::OpenShaderCache(std::string_view base_path, u32 version)
 {
+  DebugAssert(version <= std::numeric_limits<u16>::max());
+  const u16 backend_version = GetShaderCacheVersion();
+  const u32 archive_version = (ZeroExtend32(backend_version) << 16) | ZeroExtend32(Truncate16(version));
+
   if (m_features.shader_cache && !base_path.empty())
   {
     const std::string basename = GetShaderCacheBaseName("shaders");
     const std::string filename = Path::Combine(base_path, basename);
-    if (!m_shader_cache.Open(filename.c_str(), m_render_api_version, version))
-    {
-      WARNING_LOG("Failed to open shader cache. Creating new cache.");
-      if (!m_shader_cache.Create())
-        ERROR_LOG("Failed to create new shader cache.");
 
+    Error error;
+    bool was_invalidated = false;
+    if (!m_shader_cache.OpenPath(filename, archive_version, &error, &was_invalidated))
+    {
+      WARNING_LOG("Failed to open shader cache '{}': {}", Path::GetFileName(filename), error.GetDescription());
+    }
+
+    if (was_invalidated)
+    {
       // Squish the pipeline cache too, it's going to be stale.
       if (m_features.pipeline_cache)
       {
@@ -554,11 +606,6 @@ void GPUDevice::OpenShaderCache(std::string_view base_path, u32 version)
       }
     }
   }
-  else
-  {
-    // Still need to set the version - GL needs it.
-    m_shader_cache.Open(std::string_view(), m_render_api_version, version);
-  }
 
   s_locals.pipeline_cache_path = {};
   s_locals.pipeline_cache_size = 0;
@@ -571,7 +618,7 @@ void GPUDevice::OpenShaderCache(std::string_view base_path, u32 version)
       Path::Combine(base_path, TinyString::from_format("{}.bin", GetShaderCacheBaseName("pipelines")));
     if (FileSystem::FileExists(s_locals.pipeline_cache_path.c_str()))
     {
-      if (OpenPipelineCache(s_locals.pipeline_cache_path, &error))
+      if (OpenPipelineCache(s_locals.pipeline_cache_path, archive_version, &error))
         return;
 
       WARNING_LOG("Failed to read pipeline cache '{}': {}", Path::GetFileName(s_locals.pipeline_cache_path),
@@ -614,7 +661,7 @@ std::string GPUDevice::GetShaderCacheBaseName(std::string_view type) const
   return fmt::format("{}_{}{}", lower_api_name, type, debug_suffix);
 }
 
-bool GPUDevice::OpenPipelineCache(const std::string& path, Error* error)
+bool GPUDevice::OpenPipelineCache(const std::string& path, u32 version, Error* error)
 {
   CompressHelpers::OptionalByteBuffer data =
     CompressHelpers::DecompressFile(CompressHelpers::CompressType::Zstandard, path.c_str(), std::nullopt, error);
@@ -790,8 +837,9 @@ std::unique_ptr<GPUShader> GPUDevice::CreateShader(GPUShaderStage stage, GPUShad
     return shader;
   }
 
-  const GPUShaderCache::CacheIndexKey key = m_shader_cache.GetCacheKey(stage, language, source, entry_point);
-  std::optional<GPUShaderCache::ShaderBinary> binary = m_shader_cache.Lookup(key);
+  const GPUShaderCacheKey key = GetShaderCacheKey(stage, language, source, entry_point);
+  Error lookup_error;
+  std::optional<ObjectArchive::ObjectData> binary = m_shader_cache.Lookup(GetShaderCacheKeySpan(key), &lookup_error);
   if (binary.has_value())
   {
     shader = CreateShaderFromBinary(stage, binary->cspan(), error);
@@ -799,20 +847,35 @@ std::unique_ptr<GPUShader> GPUDevice::CreateShader(GPUShaderStage stage, GPUShad
       return shader;
 
     ERROR_LOG("Failed to create shader from binary (driver changed?). Clearing cache.");
-    m_shader_cache.Clear();
+    Error clear_error;
+    if (!m_shader_cache.Clear(&clear_error))
+      ERROR_LOG("Failed to clear shader cache: {}", clear_error.GetDescription());
     binary.reset();
   }
+  else if (lookup_error.GetDescription() != ObjectArchive::ERROR_DESCRIPTION_DOES_NOT_EXIST) [[unlikely]]
+  {
+    ERROR_LOG("Failed to read cached {} shader: {}", GPUShader::GetStageName(stage), lookup_error.GetDescription());
 
-  GPUShaderCache::ShaderBinary new_binary;
+    Error clear_error;
+    if (!m_shader_cache.Clear(&clear_error))
+      ERROR_LOG("Failed to clear shader cache: {}", clear_error.GetDescription());
+  }
+
+  DynamicHeapArray<u8> new_binary;
   shader = CreateShaderFromSource(stage, language, source, entry_point, &new_binary, error);
   if (!shader)
     return shader;
 
   // Don't insert empty shaders into the cache...
-  if (!new_binary.empty())
+  if (!new_binary.empty() && m_shader_cache.IsOpen())
   {
-    if (!m_shader_cache.Insert(key, new_binary.data(), static_cast<u32>(new_binary.size())))
+    Error insert_error;
+    if (!m_shader_cache.Insert(GetShaderCacheKeySpan(key), new_binary.cspan(), ObjectArchive::CompressType::Zstandard,
+                               &insert_error))
+    {
+      ERROR_LOG("Failed to cache {} shader: {}", GPUShader::GetStageName(stage), insert_error.GetDescription());
       m_shader_cache.Close();
+    }
   }
 
   return shader;

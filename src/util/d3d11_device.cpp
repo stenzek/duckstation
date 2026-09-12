@@ -209,6 +209,13 @@ void D3D11Device::SetFeatures(CreateFlags create_flags)
                               SupportsTextureFormat(GPUTextureFormat::BC7));
 }
 
+u16 D3D11Device::GetShaderCacheVersion() const
+{
+  // Incorporate feature bits into the archive version so that device capability changes don't load the wrong shaders.
+  return Truncate16(m_render_api_version) | (BoolToUInt16(m_features.dual_source_blend) << 15) |
+         (BoolToUInt16(m_features.texture_buffers) << 14) | (BoolToUInt16(m_features.raster_order_views) << 13);
+}
+
 D3D11SwapChain::D3D11SwapChain(const WindowInfo& wi, GPUVSyncMode vsync_mode,
                                const GPUDevice::ExclusiveFullscreenMode* fullscreen_mode)
   : GPUSwapChain(wi, vsync_mode)

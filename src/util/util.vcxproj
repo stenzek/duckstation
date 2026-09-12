@@ -37,7 +37,6 @@
     <ClInclude Include="dinput_source.h" />
     <ClInclude Include="gpu_device.h" />
     <ClInclude Include="gpu_framebuffer_manager.h" />
-    <ClInclude Include="gpu_shader_cache.h" />
     <ClInclude Include="gpu_texture.h" />
     <ClInclude Include="http_downloader.h" />
     <ClInclude Include="imgui_gsvector.h" />
@@ -157,7 +156,6 @@
     <ClCompile Include="dinput_source.cpp" />
     <ClCompile Include="elf_file.cpp" />
     <ClCompile Include="gpu_device.cpp" />
-    <ClCompile Include="gpu_shader_cache.cpp" />
     <ClCompile Include="gpu_texture.cpp" />
     <ClCompile Include="http_downloader.cpp" />
     <ClCompile Include="image.cpp" />

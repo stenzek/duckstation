@@ -124,6 +124,8 @@ protected:
                                     std::optional<bool> exclusive_fullscreen_control, Error* error) override;
   void DestroyDevice() override;
 
+  u16 GetShaderCacheVersion() const override;
+
 private:
   using BlendStateMapKey = std::pair<u64, u32>;
   struct BlendStateMapHash

@@ -1,15 +1,17 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "opengl_device.h"
 #include "opengl_pipeline.h"
 #include "opengl_stream_buffer.h"
 #include "opengl_texture.h"
+#include "shadergen.h"
 
 #include "core/host.h"
 
 #include "common/align.h"
 #include "common/assert.h"
+#include "common/bitutils.h"
 #include "common/error.h"
 #include "common/log.h"
 #include "common/string_util.h"
@@ -513,6 +515,20 @@ bool OpenGLDevice::CheckFeatures(CreateFlags create_flags)
   }
 
   return true;
+}
+
+u16 OpenGLDevice::GetShaderCacheVersion() const
+{
+  // Incorporate feature bits into the archive version so that device capability changes don't load the wrong shaders.
+  const u32 glsl_version = ShaderGen::GetGLSLVersion(m_render_api);
+  const bool glsl_interface_blocks = ShaderGen::UseGLSLInterfaceBlocks();
+  const bool glsl_binding_layout = ShaderGen::UseGLSLBindingLayout();
+  DebugAssert(glsl_version <= ((1u << 10) - 1));
+
+  return Truncate16(glsl_version) | (BoolToUInt16(m_features.dual_source_blend) << 15) |
+         (BoolToUInt16(m_features.framebuffer_fetch) << 14) | (BoolToUInt16(m_features.texture_buffers) << 13) |
+         (BoolToUInt16(m_features.texture_buffers_emulated_with_ssbo) << 12) |
+         (BoolToUInt16(glsl_interface_blocks) << 11) | (BoolToUInt16(glsl_binding_layout) << 10);
 }
 
 void OpenGLDevice::DestroyDevice()

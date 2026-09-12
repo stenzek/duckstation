@@ -91,7 +91,7 @@ static void FillFooter(PipelineDiskCacheFooter* footer, u32 version)
                       std::size(footer->driver_version));
 }
 
-OpenGLShader::OpenGLShader(GPUShaderStage stage, const GPUShaderCache::CacheIndexKey& key, std::string source)
+OpenGLShader::OpenGLShader(GPUShaderStage stage, const GPUShaderCacheKey& key, std::string source)
   : GPUShader(stage), m_key(key), m_source(std::move(source))
 {
 }
@@ -221,7 +221,7 @@ std::unique_ptr<GPUShader> OpenGLDevice::CreateShaderFromSource(GPUShaderStage s
   }
 
   return std::unique_ptr<GPUShader>(
-    new OpenGLShader(stage, GPUShaderCache::GetCacheKey(stage, language, source, entry_point), std::string(source)));
+    new OpenGLShader(stage, GetShaderCacheKey(stage, language, source, entry_point), std::string(source)));
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -272,9 +272,9 @@ OpenGLPipeline::ProgramCacheKey OpenGLPipeline::GetProgramCacheKey(const Graphic
 {
   Assert(plconfig.input_layout.vertex_attributes.size() <= MAX_VERTEX_ATTRIBUTES);
 
-  const GPUShaderCache::CacheIndexKey& vs_key = static_cast<const OpenGLShader*>(plconfig.vertex_shader)->GetKey();
-  const GPUShaderCache::CacheIndexKey& fs_key = static_cast<const OpenGLShader*>(plconfig.fragment_shader)->GetKey();
-  const GPUShaderCache::CacheIndexKey* gs_key =
+  const GPUShaderCacheKey& vs_key = static_cast<const OpenGLShader*>(plconfig.vertex_shader)->GetKey();
+  const GPUShaderCacheKey& fs_key = static_cast<const OpenGLShader*>(plconfig.fragment_shader)->GetKey();
+  const GPUShaderCacheKey* gs_key =
     plconfig.geometry_shader ? &static_cast<const OpenGLShader*>(plconfig.geometry_shader)->GetKey() : nullptr;
 
   ProgramCacheKey ret;
@@ -805,9 +805,10 @@ void OpenGLDevice::SetPipeline(GPUPipeline* pipeline)
   }
 }
 
-bool OpenGLDevice::OpenPipelineCache(const std::string& path, Error* error)
+bool OpenGLDevice::OpenPipelineCache(const std::string& path, u32 version, Error* error)
 {
   DebugAssert(!m_pipeline_disk_cache_file);
+  m_pipeline_disk_cache_version = version;
 
   auto fp = FileSystem::OpenManagedCFile(path.c_str(), "r+b", error);
   if (!fp)
@@ -843,7 +844,7 @@ bool OpenGLDevice::OpenPipelineCache(const std::string& path, Error* error)
   }
 
   PipelineDiskCacheFooter expected_footer;
-  FillFooter(&expected_footer, m_shader_cache.GetVersion());
+  FillFooter(&expected_footer, version);
 
   if (file_footer.version != expected_footer.version ||
       std::strncmp(file_footer.driver_vendor, expected_footer.driver_vendor, std::size(file_footer.driver_vendor)) !=
@@ -1126,7 +1127,7 @@ bool OpenGLDevice::ClosePipelineCache(const std::string& filename, Error* error)
   }
 
   PipelineDiskCacheFooter footer;
-  FillFooter(&footer, m_shader_cache.GetVersion());
+  FillFooter(&footer, m_pipeline_disk_cache_version);
   footer.num_programs = count;
 
   if (std::fwrite(&footer, sizeof(footer), 1, m_pipeline_disk_cache_file) != 1 ||

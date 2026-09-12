@@ -119,3 +119,15 @@ enum class GPUPresentResult : u8
   ExclusiveFullscreenLost,
   DeviceLost,
 };
+
+struct GPUShaderCacheKey
+{
+  u32 shader_type;
+  u32 shader_language;
+  u64 source_hash_low;
+  u64 source_hash_high;
+  u64 entry_point_low;
+  u64 entry_point_high;
+  u32 source_length;
+  u32 unused;
+};

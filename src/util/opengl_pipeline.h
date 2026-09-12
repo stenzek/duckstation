@@ -4,7 +4,6 @@
 #pragma once
 
 #include "gpu_device.h"
-#include "gpu_shader_cache.h"
 #include "opengl_loader.h"
 
 class OpenGLDevice;
@@ -23,13 +22,13 @@ public:
   bool Compile(Error* error);
 
   ALWAYS_INLINE GLuint GetGLId() const { return m_id.value(); }
-  ALWAYS_INLINE const GPUShaderCache::CacheIndexKey& GetKey() const { return m_key; }
+  ALWAYS_INLINE const GPUShaderCacheKey& GetKey() const { return m_key; }
   ALWAYS_INLINE const std::string& GetSource() const { return m_source; }
 
 private:
-  OpenGLShader(GPUShaderStage stage, const GPUShaderCache::CacheIndexKey& key, std::string source);
+  OpenGLShader(GPUShaderStage stage, const GPUShaderCacheKey& key, std::string source);
 
-  GPUShaderCache::CacheIndexKey m_key;
+  GPUShaderCacheKey m_key;
   std::string m_source;
   std::optional<GLuint> m_id;
   bool m_compile_tried = false;

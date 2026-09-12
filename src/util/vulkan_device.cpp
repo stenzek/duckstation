@@ -2133,6 +2133,16 @@ void VulkanDevice::SetFeatures(CreateFlags create_flags, VkPhysicalDevice physic
     (!HasCreateFlag(create_flags, CreateFlags::DisableCompressedTextures) && vk_features.textureCompressionBC);
 }
 
+u16 VulkanDevice::GetShaderCacheVersion() const
+{
+  // Incorporate feature bits into the archive version so that device capability changes don't load the wrong shaders.
+  DebugAssert(m_render_api_version <= ((1u << 10) - 1));
+  return Truncate16(m_render_api_version) | (BoolToUInt16(m_features.dual_source_blend) << 15) |
+         (BoolToUInt16(m_features.framebuffer_fetch) << 14) | (BoolToUInt16(m_features.texture_buffers) << 13) |
+         (BoolToUInt16(m_features.texture_buffers_emulated_with_ssbo) << 12) |
+         (BoolToUInt16(m_features.feedback_loops) << 11) | (BoolToUInt16(m_features.raster_order_views) << 10);
+}
+
 void VulkanDevice::CopyTextureRegion(GPUTexture* dst, u32 dst_x, u32 dst_y, u32 dst_layer, u32 dst_level,
                                      GPUTexture* src, u32 src_x, u32 src_y, u32 src_layer, u32 src_level, u32 width,
                                      u32 height)

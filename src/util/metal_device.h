@@ -344,6 +344,8 @@ protected:
                                     std::optional<bool> exclusive_fullscreen_control, Error* error) override;
   void DestroyDevice() override;
 
+  u16 GetShaderCacheVersion() const override;
+
 private:
   static constexpr u32 UNIFORM_BUFFER_ALIGNMENT = 256;
   static constexpr u8 NUM_TIMESTAMP_QUERIES = 3;

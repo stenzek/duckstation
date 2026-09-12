@@ -42,8 +42,6 @@ add_library(util
   gpu_device.cpp
   gpu_device.h
   gpu_framebuffer_manager.h
-  gpu_shader_cache.cpp
-  gpu_shader_cache.h
   gpu_texture.cpp
   gpu_texture.h
   gpu_types.h

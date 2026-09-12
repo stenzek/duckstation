@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include "gpu_shader_cache.h"
 #include "gpu_texture.h"
+#include "object_archive.h"
 #include "window_info.h"
 
 #include "common/bitfield.h"
@@ -23,6 +23,7 @@
 #include <string>
 #include <string_view>
 #include <tuple>
+#include <type_traits>
 #include <unordered_map>
 #include <vector>
 
@@ -612,7 +613,6 @@ public:
   static constexpr u32 UNIFORM_BUFFER_SIZE = 8 * 1024 * 1024;
   static constexpr u32 SMALL_TEXTURE_BUFFER_SIZE = 16 * 1024 * 1024;
   static constexpr u32 LARGE_TEXTURE_BUFFER_SIZE = 64 * 1024 * 1024;
-  static_assert(sizeof(GPUPipeline::GraphicsConfig::color_formats) == sizeof(GPUTextureFormat) * MAX_RENDER_TARGETS);
 
   GPUDevice();
   virtual ~GPUDevice();
@@ -625,6 +625,10 @@ public:
 
   /// Returns a string representing the specified language.
   static const char* ShaderLanguageToString(GPUShaderLanguage language);
+
+  /// Returns the cache key for a shader.
+  static GPUShaderCacheKey GetShaderCacheKey(GPUShaderStage stage, GPUShaderLanguage language,
+                                          std::string_view shader_code, std::string_view entry_point);
 
   /// Returns a string representing the specified vsync mode.
   static const char* VSyncModeToString(GPUVSyncMode mode);
@@ -873,7 +877,8 @@ protected:
   virtual void DestroyDevice() = 0;
 
   std::string GetShaderCacheBaseName(std::string_view type) const;
-  virtual bool OpenPipelineCache(const std::string& path, Error* error);
+  virtual u16 GetShaderCacheVersion() const = 0;
+  virtual bool OpenPipelineCache(const std::string& path, u32 version, Error* error);
   virtual bool CreatePipelineCache(const std::string& path, Error* error);
   virtual bool ReadPipelineCache(DynamicHeapArray<u8> data, Error* error);
   virtual bool GetPipelineCacheData(DynamicHeapArray<u8>* data, Error* error);
@@ -913,7 +918,7 @@ protected:
   GPUSampler* m_nearest_sampler = nullptr;
   GPUSampler* m_linear_sampler = nullptr;
 
-  GPUShaderCache m_shader_cache;
+  ObjectArchive m_shader_cache;
 
 private:
   static constexpr u32 MAX_TEXTURE_POOL_SIZE = 125;

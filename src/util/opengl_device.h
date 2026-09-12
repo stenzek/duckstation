@@ -5,7 +5,6 @@
 
 #include "gpu_device.h"
 #include "gpu_framebuffer_manager.h"
-#include "gpu_shader_cache.h"
 #include "opengl_context.h"
 #include "opengl_loader.h"
 #include "opengl_pipeline.h"
@@ -151,7 +150,8 @@ protected:
                                     std::optional<bool> exclusive_fullscreen_control, Error* error) override;
   void DestroyDevice() override;
 
-  bool OpenPipelineCache(const std::string& path, Error* error) override;
+  u16 GetShaderCacheVersion() const override;
+  bool OpenPipelineCache(const std::string& path, u32 version, Error* error) override;
   bool CreatePipelineCache(const std::string& path, Error* error) override;
   bool ClosePipelineCache(const std::string& path, Error* error) override;
 
@@ -240,6 +240,7 @@ private:
   FileSystem::POSIXLock m_pipeline_disk_cache_file_lock;
 #endif
   u32 m_pipeline_disk_cache_data_end = 0;
+  u32 m_pipeline_disk_cache_version = 0;
   bool m_pipeline_disk_cache_changed = false;
 
   bool m_disable_pbo = false;

@@ -1376,6 +1376,13 @@ void D3D12Device::SetFeatures(D3D_FEATURE_LEVEL feature_level, CreateFlags creat
                               SupportsTextureFormat(GPUTextureFormat::BC7));
 }
 
+u16 D3D12Device::GetShaderCacheVersion() const
+{
+  // Incorporate feature bits into the archive version so that device capability changes don't load the wrong shaders.
+  return Truncate16(m_render_api_version) | (BoolToUInt16(m_features.dual_source_blend) << 15) |
+         (BoolToUInt16(m_features.texture_buffers) << 14) | (BoolToUInt16(m_features.raster_order_views) << 13);
+}
+
 void D3D12Device::CopyTextureRegion(GPUTexture* dst, u32 dst_x, u32 dst_y, u32 dst_layer, u32 dst_level,
                                     GPUTexture* src, u32 src_x, u32 src_y, u32 src_layer, u32 src_level, u32 width,
                                     u32 height)
