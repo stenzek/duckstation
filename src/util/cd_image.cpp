@@ -236,37 +236,37 @@ void CDImage::ConvertSectorToRaw(void* buffer, u32 lba, TrackMode mode)
   }
 }
 
-CDImage::LBA CDImage::GetTrackStartPosition(u8 track) const
+CDImage::LBA CDImage::GetTrackStartPosition(u32 track) const
 {
   Assert(track > 0 && track <= m_tracks.size());
   return m_tracks[track - 1].start_lba;
 }
 
-CDImage::Position CDImage::GetTrackStartMSFPosition(u8 track) const
+CDImage::Position CDImage::GetTrackStartMSFPosition(u32 track) const
 {
   Assert(track > 0 && track <= m_tracks.size());
   return Position::FromLBA(m_tracks[track - 1].start_lba);
 }
 
-CDImage::LBA CDImage::GetTrackLength(u8 track) const
+CDImage::LBA CDImage::GetTrackLength(u32 track) const
 {
   Assert(track > 0 && track <= m_tracks.size());
   return m_tracks[track - 1].length;
 }
 
-CDImage::Position CDImage::GetTrackMSFLength(u8 track) const
+CDImage::Position CDImage::GetTrackMSFLength(u32 track) const
 {
   Assert(track > 0 && track <= m_tracks.size());
   return Position::FromLBA(m_tracks[track - 1].length);
 }
 
-CDImage::TrackMode CDImage::GetTrackMode(u8 track) const
+CDImage::TrackMode CDImage::GetTrackMode(u32 track) const
 {
   Assert(track > 0 && track <= m_tracks.size());
   return m_tracks[track - 1].mode;
 }
 
-CDImage::LBA CDImage::GetTrackIndexPosition(u8 track, u8 index) const
+CDImage::LBA CDImage::GetTrackIndexPosition(u32 track, u32 index) const
 {
   for (const Index& current_index : m_indices)
   {
@@ -277,7 +277,7 @@ CDImage::LBA CDImage::GetTrackIndexPosition(u8 track, u8 index) const
   return m_lba_count;
 }
 
-CDImage::LBA CDImage::GetTrackIndexLength(u8 track, u8 index) const
+CDImage::LBA CDImage::GetTrackIndexLength(u32 track, u32 index) const
 {
   for (const Index& current_index : m_indices)
   {
@@ -360,41 +360,20 @@ bool CDImage::ReadRawSector(void* buffer, SubChannelQ* subq)
       return false;
   }
 
-  if (buffer)
+  Sector sector;
+  if (ReadSectors(
+        m_position_on_disc, std::span<Sector>(&sector, 1),
+        (buffer ? (subq ? SectorReadMode::DataAndSubQ : SectorReadMode::DataOnly) : SectorReadMode::SubQOnly)) != 1)
   {
-    if (m_current_index->file_sector_size > 0)
-    {
-      if (!ReadSectorFromIndex(buffer, *m_current_index, m_position_in_index))
-      {
-        ERROR_LOG("Read of LBA {} failed", m_position_on_disc);
-        Seek(m_position_on_disc);
-        return false;
-      }
-
-      // Fix up the sector header and sync data if necessary.
-      ConvertSectorToRaw(buffer, m_current_index->start_lba_on_disc + m_position_in_index, m_current_index->mode);
-    }
-    else
-    {
-      if (m_current_index->track_number == LEAD_OUT_TRACK_NUMBER)
-      {
-        // Lead-out area.
-        std::fill(static_cast<u8*>(buffer), static_cast<u8*>(buffer) + RAW_SECTOR_SIZE, u8(0xAA));
-      }
-      else
-      {
-        // This in an implicit pregap. Return silence.
-        std::fill(static_cast<u8*>(buffer), static_cast<u8*>(buffer) + RAW_SECTOR_SIZE, u8(0));
-      }
-    }
-  }
-
-  if (subq && !ReadSubChannelQ(subq, *m_current_index, m_position_in_index))
-  {
-    ERROR_LOG("Subchannel read of LBA {} failed", m_position_on_disc);
+    ERROR_LOG("Read of LBA {} failed", m_position_on_disc);
     Seek(m_position_on_disc);
     return false;
   }
+
+  if (buffer)
+    std::memcpy(buffer, sector.data.data(), sector.data.size());
+  if (subq)
+    *subq = sector.subq;
 
   m_position_on_disc++;
   m_position_in_index++;
@@ -402,10 +381,75 @@ bool CDImage::ReadRawSector(void* buffer, SubChannelQ* subq)
   return true;
 }
 
-bool CDImage::ReadSubChannelQ(SubChannelQ* subq, const Index& index, LBA lba_in_index)
+u32 CDImage::ReadSectors(LBA lba, std::span<Sector> sectors, SectorReadMode mode)
 {
-  GenerateSubChannelQ(subq, index, lba_in_index);
-  return true;
+  const bool read_data = (mode != SectorReadMode::SubQOnly);
+  const bool read_subq = (mode != SectorReadMode::DataOnly);
+
+  u32 sectors_read = 0;
+  while (sectors_read < sectors.size())
+  {
+    const LBA current_lba = lba + sectors_read;
+    if (current_lba < lba)
+      break;
+
+    const Index* index = GetIndexForDiscPosition(current_lba);
+    if (!index)
+      break;
+
+    const LBA lba_in_index = current_lba - index->start_lba_on_disc;
+    const u32 count = static_cast<u32>(
+      std::min<size_t>(sectors.size() - sectors_read, static_cast<size_t>(index->length - lba_in_index)));
+    std::span<Sector> chunk = sectors.subspan(sectors_read, count);
+    if (read_subq)
+    {
+      for (u32 i = 0; i < count; i++)
+        GenerateSubChannelQ(&chunk[i].subq, *index, lba_in_index + i);
+    }
+
+    u32 chunk_read;
+    const bool read_replacement_subq = (read_subq && HasSubchannelData() && index->submode != SubchannelMode::None);
+    if (!read_data && !read_replacement_subq)
+    {
+      // Generated SubQ is already complete. Do not touch a backing file just to return synthesized position data.
+      chunk_read = count;
+    }
+    else if (index->file_sector_size > 0)
+    {
+      chunk_read = std::min(ReadSectorsFromIndex(chunk, *index, lba_in_index, mode), count);
+      if (read_data)
+      {
+        for (u32 i = 0; i < chunk_read; i++)
+          ConvertSectorToRaw(chunk[i].data.data(), current_lba + i, index->mode);
+      }
+    }
+    else
+    {
+      if (read_data)
+      {
+        // Synthesize sectors which do not have a backing file.
+        if (index->track_number == LEAD_OUT_TRACK_NUMBER)
+        {
+          // Lead-out area.
+          for (Sector& sector : chunk)
+            sector.data.fill(0xAA);
+        }
+        else
+        {
+          // This is an implicit pregap. Return silence.
+          for (Sector& sector : chunk)
+            sector.data.fill(0);
+        }
+      }
+      chunk_read = count;
+    }
+
+    sectors_read += chunk_read;
+    if (chunk_read != count)
+      break;
+  }
+
+  return sectors_read;
 }
 
 bool CDImage::HasSubchannelData() const

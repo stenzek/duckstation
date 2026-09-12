@@ -952,11 +952,12 @@ DiscRegion System::GetRegionForSerial(const std::string_view serial)
 DiscRegion System::GetRegionFromSystemArea(CDImage* cdi)
 {
   // The license code is on sector 4 of the disc.
-  std::array<u8, CDImage::RAW_SECTOR_SIZE> sector;
+  CDImage::Sector sector;
   std::span<const u8> sector_data;
-  if (cdi->GetTrackMode(1) == CDImage::TrackMode::Audio || !cdi->Seek(1, 4) ||
-      !cdi->ReadRawSector(sector.data(), nullptr) ||
-      (sector_data = IsoReader::ExtractSectorData(sector, IsoReader::ReadMode::Data, nullptr)).empty())
+  if (cdi->GetTrackMode(1) == CDImage::TrackMode::Audio ||
+      cdi->ReadSectors(cdi->GetTrackStartPosition(1) + 4, std::span<CDImage::Sector>(&sector, 1),
+                       CDImage::SectorReadMode::DataOnly) != 1 ||
+      (sector_data = IsoReader::ExtractSectorData(sector.data, IsoReader::ReadMode::Data, nullptr)).empty())
   {
     return DiscRegion::Other;
   }

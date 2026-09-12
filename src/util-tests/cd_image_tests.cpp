@@ -169,10 +169,51 @@ TEST(CDImage, CueMode1_2048ReadsAsRaw)
   std::unique_ptr<CDImage> image = CDImage::Open(cue.GetPath().c_str(), false, &error);
   ASSERT_TRUE(image) << error.GetDescription();
 
-  std::array<u8, CDImage::RAW_SECTOR_SIZE> sector;
-  ASSERT_TRUE(image->ReadRawSector(sector.data(), nullptr));
-  ExpectSyncAndHeader(sector, 0x01, 2 * CDImage::FRAMES_PER_SECOND);
-  EXPECT_EQ(std::memcmp(&sector[16], payload.data(), payload.size()), 0);
+  CDImage::Sector sector;
+  ASSERT_EQ(image->ReadSectors(2 * CDImage::FRAMES_PER_SECOND, std::span<CDImage::Sector>(&sector, 1),
+                               CDImage::SectorReadMode::DataAndSubQ),
+            1u);
+  ExpectSyncAndHeader(sector.data, 0x01, 2 * CDImage::FRAMES_PER_SECOND);
+  EXPECT_EQ(std::memcmp(&sector.data[16], payload.data(), payload.size()), 0);
+}
+
+TEST(CDImage, BatchReadUsesExplicitLBA)
+{
+  TempFile bin("duckstation_cd_image_batch", "bin");
+  std::array<u8, CDImage::DATA_SECTOR_SIZE * 3> payload = {};
+  for (u32 sector = 0; sector < 3; sector++)
+  {
+    std::fill_n(payload.data() + (sector * CDImage::DATA_SECTOR_SIZE), CDImage::DATA_SECTOR_SIZE,
+                static_cast<u8>(sector + 1));
+  }
+  ASSERT_TRUE(bin.Write(payload));
+
+  TempFile cue("duckstation_cd_image_batch", "cue");
+  const std::string cue_data =
+    fmt::format("FILE \"{}\" BINARY\nTRACK 01 MODE1/2048\nINDEX 01 00:00:00\n", Path::GetFileName(bin.GetPath()));
+  ASSERT_TRUE(cue.WriteString(cue_data));
+
+  Error error;
+  std::unique_ptr<CDImage> image = CDImage::Open(cue.GetPath().c_str(), false, &error);
+  ASSERT_TRUE(image) << error.GetDescription();
+
+  std::array<CDImage::Sector, 2> sectors;
+  ASSERT_EQ(image->ReadSectors(2 * CDImage::FRAMES_PER_SECOND + 1, sectors, CDImage::SectorReadMode::DataAndSubQ),
+            sectors.size());
+  for (u32 i = 0; i < sectors.size(); i++)
+  {
+    ExpectSyncAndHeader(sectors[i].data, 0x01, 2 * CDImage::FRAMES_PER_SECOND + i + 1);
+    EXPECT_EQ(sectors[i].data[16], i + 2);
+    EXPECT_TRUE(sectors[i].subq.IsCRCValid());
+  }
+
+  std::array<CDImage::Sector, 4> partial;
+  EXPECT_EQ(image->ReadSectors(image->GetLBACount() + CDImage::LEAD_OUT_SECTOR_COUNT - 1, partial,
+                               CDImage::SectorReadMode::DataAndSubQ),
+            1u);
+  EXPECT_EQ(image->ReadSectors(image->GetLBACount() + CDImage::LEAD_OUT_SECTOR_COUNT, partial,
+                               CDImage::SectorReadMode::DataAndSubQ),
+            0u);
 }
 
 TEST(CDImage, Iso2048DetectedAsMode1)
@@ -188,10 +229,12 @@ TEST(CDImage, Iso2048DetectedAsMode1)
   ASSERT_TRUE(image) << error.GetDescription();
   EXPECT_EQ(image->GetTrackMode(1), CDImage::TrackMode::Mode1);
 
-  std::array<u8, CDImage::RAW_SECTOR_SIZE> sector;
-  ASSERT_TRUE(image->ReadRawSector(sector.data(), nullptr));
-  ExpectSyncAndHeader(sector, 0x01, 2 * CDImage::FRAMES_PER_SECOND);
-  EXPECT_EQ(std::memcmp(&sector[16], payload.data(), payload.size()), 0);
+  CDImage::Sector sector;
+  ASSERT_EQ(image->ReadSectors(2 * CDImage::FRAMES_PER_SECOND, std::span<CDImage::Sector>(&sector, 1),
+                               CDImage::SectorReadMode::DataAndSubQ),
+            1u);
+  ExpectSyncAndHeader(sector.data, 0x01, 2 * CDImage::FRAMES_PER_SECOND);
+  EXPECT_EQ(std::memcmp(&sector.data[16], payload.data(), payload.size()), 0);
 }
 
 TEST(CDImage, IsoRawDetectedAsRaw)
@@ -210,7 +253,9 @@ TEST(CDImage, IsoRawDetectedAsRaw)
   ASSERT_TRUE(image) << error.GetDescription();
   EXPECT_EQ(image->GetTrackMode(1), CDImage::TrackMode::Mode2Raw);
 
-  std::array<u8, CDImage::RAW_SECTOR_SIZE> sector;
-  ASSERT_TRUE(image->ReadRawSector(sector.data(), nullptr));
-  EXPECT_EQ(std::memcmp(sector.data(), raw.data(), raw.size()), 0);
+  CDImage::Sector sector;
+  ASSERT_EQ(image->ReadSectors(2 * CDImage::FRAMES_PER_SECOND, std::span<CDImage::Sector>(&sector, 1),
+                               CDImage::SectorReadMode::DataAndSubQ),
+            1u);
+  EXPECT_EQ(std::memcmp(sector.data.data(), raw.data(), raw.size()), 0);
 }

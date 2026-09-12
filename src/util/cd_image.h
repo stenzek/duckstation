@@ -8,6 +8,7 @@
 
 #include <array>
 #include <memory>
+#include <span>
 #include <string>
 #include <tuple>
 #include <vector>
@@ -71,6 +72,13 @@ public:
     Unsupported,
     ReadError,
     Success,
+  };
+
+  enum class SectorReadMode : u8
+  {
+    DataAndSubQ,
+    DataOnly,
+    SubQOnly,
   };
 
   struct SectorHeader
@@ -150,6 +158,15 @@ public:
   };
   static_assert(sizeof(SubChannelQ) == SUBCHANNEL_BYTES_PER_FRAME, "SubChannelQ is correct size");
 
+  using SectorData = std::array<u8, RAW_SECTOR_SIZE>;
+
+  struct Sector
+  {
+    SectorData data;
+    SubChannelQ subq;
+  };
+  static_assert(sizeof(Sector) == (RAW_SECTOR_SIZE + SUBCHANNEL_BYTES_PER_FRAME));
+
   struct Track
   {
     u32 track_number;
@@ -223,13 +240,13 @@ public:
   u32 GetIndexNumber() const { return m_current_index->index_number; }
   u32 GetTrackNumber() const { return m_current_index->track_number; }
   u32 GetTrackCount() const { return static_cast<u32>(m_tracks.size()); }
-  LBA GetTrackStartPosition(u8 track) const;
-  Position GetTrackStartMSFPosition(u8 track) const;
-  LBA GetTrackLength(u8 track) const;
-  Position GetTrackMSFLength(u8 track) const;
-  TrackMode GetTrackMode(u8 track) const;
-  LBA GetTrackIndexPosition(u8 track, u8 index) const;
-  LBA GetTrackIndexLength(u8 track, u8 index) const;
+  LBA GetTrackStartPosition(u32 track) const;
+  Position GetTrackStartMSFPosition(u32 track) const;
+  LBA GetTrackLength(u32 track) const;
+  Position GetTrackMSFLength(u32 track) const;
+  TrackMode GetTrackMode(u32 track) const;
+  LBA GetTrackIndexPosition(u32 track, u32 index) const;
+  LBA GetTrackIndexLength(u32 track, u32 index) const;
   u32 GetFirstTrackNumber() const { return m_tracks.front().track_number; }
   u32 GetLastTrackNumber() const { return m_tracks.back().track_number; }
   u32 GetIndexCount() const { return static_cast<u32>(m_indices.size()); }
@@ -253,14 +270,15 @@ public:
   // Read a single raw sector, and subchannel from the current LBA.
   bool ReadRawSector(void* buffer, SubChannelQ* subq);
 
+  /// Reads the requested components of consecutive raw sectors beginning at the specified LBA, leaving unrequested
+  /// components untouched. Returns the number of sectors successfully read.
+  u32 ReadSectors(LBA lba, std::span<Sector> sectors, SectorReadMode mode);
+
   /// Generates sub-channel Q given the specified position.
   bool GenerateSubChannelQ(SubChannelQ* subq, LBA lba) const;
 
   /// Generates sub-channel Q from the given index and index-offset.
   void GenerateSubChannelQ(SubChannelQ* subq, const Index& index, u32 index_offset) const;
-
-  // Reads sub-channel Q for the specified index+LBA.
-  virtual bool ReadSubChannelQ(SubChannelQ* subq, const Index& index, LBA lba_in_index);
 
   // Returns true if the image has replacement subchannel data.
   virtual bool HasSubchannelData() const;
@@ -268,8 +286,10 @@ public:
   /// Returns true if reads are serviced by a physical CD-ROM device.
   virtual bool IsPhysicalDevice() const;
 
-  // Reads a single sector from an index.
-  virtual bool ReadSectorFromIndex(void* buffer, const Index& index, LBA lba_in_index) = 0;
+  /// Reads sectors from a single index. When requested, SubQ is pre-filled with generated data and may be replaced by
+  /// the backend.
+  virtual u32 ReadSectorsFromIndex(std::span<Sector> sectors, const Index& index, LBA lba_in_index,
+                                   SectorReadMode mode) = 0;
 
   // Returns true if this image type has sub-images (e.g. m3u).
   virtual bool HasSubImages() const;

@@ -1,10 +1,11 @@
-// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "cd_image_hasher.h"
 #include "cd_image.h"
 #include "translation.h"
 
+#include "common/align.h"
 #include "common/error.h"
 #include "common/md5_digest.h"
 #include "common/progress_callback.h"
@@ -23,20 +24,16 @@ static bool ReadTrack(CDImage* image, u8 track, MD5Digest* digest, ProgressCallb
 bool CDImageHasher::ReadIndex(CDImage* image, u8 track, u8 index, MD5Digest* digest,
                               ProgressCallback* progress_callback, Error* error)
 {
+  static constexpr u32 READ_BATCH_SIZE = 32;
+
   const CDImage::LBA index_start = image->GetTrackIndexPosition(track, index);
   const u32 index_length = image->GetTrackIndexLength(track, index);
-  const u32 update_interval = std::max<u32>(index_length / 100u, 1u);
+  const u32 update_interval = Common::AlignUpPow2(std::max<u32>(index_length / 100u, 1u), READ_BATCH_SIZE);
 
   progress_callback->SetProgressRange(index_length);
 
-  if (!image->Seek(index_start))
-  {
-    Error::SetStringFmt(error, "Failed to seek to sector {} for track {} index {}", index_start, track, index);
-    return false;
-  }
-
-  std::array<u8, CDImage::RAW_SECTOR_SIZE> sector;
-  for (u32 lba = 0; lba < index_length; lba++)
+  std::array<CDImage::Sector, READ_BATCH_SIZE> sectors;
+  for (u32 lba = 0; lba < index_length;)
   {
     if ((lba % update_interval) == 0)
       progress_callback->SetProgressValue(lba);
@@ -44,13 +41,18 @@ bool CDImageHasher::ReadIndex(CDImage* image, u8 track, u8 index, MD5Digest* dig
     if (progress_callback->IsCancelled())
       return false;
 
-    if (!image->ReadRawSector(sector.data(), nullptr))
+    const u32 count = std::min(index_length - lba, READ_BATCH_SIZE);
+    const u32 count_read =
+      image->ReadSectors(index_start + lba, std::span(sectors).first(count), CDImage::SectorReadMode::DataOnly);
+    if (count_read != count)
     {
-      Error::SetStringFmt(error, "Failed to read sector {} from image", image->GetPositionOnDisc());
+      Error::SetStringFmt(error, "Failed to read sector {} from image", index_start + lba + count_read);
       return false;
     }
 
-    digest->Update(sector);
+    for (u32 i = 0; i < count; i++)
+      digest->Update(sectors[i].data);
+    lba += count;
   }
 
   progress_callback->SetProgressValue(index_length);

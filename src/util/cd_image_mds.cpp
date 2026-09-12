@@ -49,7 +49,8 @@ public:
   s64 GetSizeOnDisk() const override;
 
 protected:
-  bool ReadSectorFromIndex(void* buffer, const Index& index, LBA lba_in_index) override;
+  u32 ReadSectorsFromIndex(std::span<Sector> sectors, const Index& index, LBA lba_in_index,
+                           SectorReadMode mode) override;
 
 private:
   std::FILE* m_mdf_file = nullptr;
@@ -250,27 +251,35 @@ bool CDImageMDS::OpenAndParse(const char* path, Error* error)
   return Seek(1, Position{0, 0, 0});
 }
 
-bool CDImageMDS::ReadSectorFromIndex(void* buffer, const Index& index, LBA lba_in_index)
+u32 CDImageMDS::ReadSectorsFromIndex(std::span<Sector> sectors, const Index& index, LBA lba_in_index,
+                                     SectorReadMode mode)
 {
-  const u64 file_position = index.file_offset + (static_cast<u64>(lba_in_index) * index.file_sector_size);
-  if (m_mdf_file_position != file_position)
+  (void)mode;
+  u32 sectors_read = 0;
+  for (Sector& sector : sectors)
   {
-    if (FileSystem::FSeek64(m_mdf_file, file_position, SEEK_SET) != 0)
-      return false;
+    const u64 file_position =
+      index.file_offset + (static_cast<u64>(lba_in_index + sectors_read) * index.file_sector_size);
+    if (m_mdf_file_position != file_position)
+    {
+      if (FileSystem::FSeek64(m_mdf_file, file_position, SEEK_SET) != 0)
+        break;
 
-    m_mdf_file_position = file_position;
+      m_mdf_file_position = file_position;
+    }
+
+    // Preserve the existing behavior of ignoring embedded MDS subchannel data.
+    if (std::fread(sector.data.data(), RAW_SECTOR_SIZE, 1, m_mdf_file) != 1)
+    {
+      FileSystem::FSeek64(m_mdf_file, m_mdf_file_position, SEEK_SET);
+      break;
+    }
+
+    m_mdf_file_position += RAW_SECTOR_SIZE;
+    sectors_read++;
   }
 
-  // we don't want the subchannel data
-  const u32 read_size = RAW_SECTOR_SIZE;
-  if (std::fread(buffer, read_size, 1, m_mdf_file) != 1)
-  {
-    FileSystem::FSeek64(m_mdf_file, m_mdf_file_position, SEEK_SET);
-    return false;
-  }
-
-  m_mdf_file_position += read_size;
-  return true;
+  return sectors_read;
 }
 
 s64 CDImageMDS::GetSizeOnDisk() const

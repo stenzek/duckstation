@@ -35,7 +35,6 @@ public:
 
   bool Open(const char* path, std::unique_ptr<CDImage> parent_image, Error* error);
 
-  bool ReadSubChannelQ(SubChannelQ* subq, const Index& index, LBA lba_in_index) override;
   bool HasSubchannelData() const override;
   bool IsPhysicalDevice() const override;
   s64 GetSizeOnDisk() const override;
@@ -45,7 +44,8 @@ public:
   PrecacheResult Precache(ProgressCallback* progress, Error* error) override;
 
 protected:
-  bool ReadSectorFromIndex(void* buffer, const Index& index, LBA lba_in_index) override;
+  u32 ReadSectorsFromIndex(std::span<Sector> sectors, const Index& index, LBA lba_in_index,
+                           SectorReadMode mode) override;
 
 private:
   bool ReadV1Patch(std::FILE* fp, Error* error);
@@ -240,10 +240,11 @@ bool CDImagePPF::ReadV2Patch(std::FILE* fp, Error* error)
     u32 blockcheck_src_sector = 16 + m_replacement_offset;
     u32 blockcheck_src_offset = 32;
 
-    std::vector<u8> src_sector(RAW_SECTOR_SIZE);
-    if (m_parent_image->Seek(blockcheck_src_sector) && m_parent_image->ReadRawSector(src_sector.data(), nullptr))
+    Sector src_sector;
+    if (m_parent_image->ReadSectors(blockcheck_src_sector, std::span<Sector>(&src_sector, 1),
+                                    SectorReadMode::DataOnly) == 1)
     {
-      if (std::memcmp(&src_sector[blockcheck_src_offset], temp.data(), BLOCKCHECK_SIZE) != 0)
+      if (std::memcmp(&src_sector.data[blockcheck_src_offset], temp.data(), BLOCKCHECK_SIZE) != 0)
         WARNING_LOG("Blockcheck failed. The patch may not apply correctly.");
     }
     else
@@ -426,12 +427,14 @@ bool CDImagePPF::AddPatch(u64 offset, std::span<const u8> patch, std::span<const
     {
       const u32 replacement_buffer_start = static_cast<u32>(m_replacement_data.size());
       m_replacement_data.resize(m_replacement_data.size() + RAW_SECTOR_SIZE);
-      if (!m_parent_image->Seek(sector_index) ||
-          !m_parent_image->ReadRawSector(&m_replacement_data[replacement_buffer_start], nullptr))
+      Sector source_sector;
+      if (m_parent_image->ReadSectors(sector_index, std::span<Sector>(&source_sector, 1), SectorReadMode::DataOnly) !=
+          1)
       {
         Error::SetStringFmt(error, "Failed to read sector {} from parent image", sector_index);
         return false;
       }
+      std::memcpy(&m_replacement_data[replacement_buffer_start], source_sector.data.data(), RAW_SECTOR_SIZE);
 
       iter = m_replacement_map.emplace(sector_index, replacement_buffer_start).first;
     }
@@ -457,11 +460,6 @@ bool CDImagePPF::AddPatch(u64 offset, std::span<const u8> patch, std::span<const
   return true;
 }
 
-bool CDImagePPF::ReadSubChannelQ(SubChannelQ* subq, const Index& index, LBA lba_in_index)
-{
-  return m_parent_image->ReadSubChannelQ(subq, index, lba_in_index);
-}
-
 bool CDImagePPF::HasSubchannelData() const
 {
   return m_parent_image->HasSubchannelData();
@@ -483,17 +481,38 @@ CDImage::PrecacheResult CDImagePPF::Precache(ProgressCallback* progress, Error* 
   return m_parent_image->Precache(progress, error);
 }
 
-bool CDImagePPF::ReadSectorFromIndex(void* buffer, const Index& index, LBA lba_in_index)
+u32 CDImagePPF::ReadSectorsFromIndex(std::span<Sector> sectors, const Index& index, LBA lba_in_index,
+                                     SectorReadMode mode)
 {
   DebugAssert(index.file_index == 0);
 
-  const u32 sector_number = index.start_lba_on_disc + lba_in_index;
-  const auto it = m_replacement_map.find(sector_number);
-  if (it == m_replacement_map.end())
-    return m_parent_image->ReadSectorFromIndex(buffer, index, lba_in_index);
+  if (mode == SectorReadMode::SubQOnly)
+    return m_parent_image->ReadSectorsFromIndex(sectors, index, lba_in_index, mode);
 
-  std::memcpy(buffer, &m_replacement_data[it->second], RAW_SECTOR_SIZE);
-  return true;
+  u32 i;
+  for (i = 0; i < static_cast<u32>(sectors.size()); i++)
+  {
+    const u32 sector_number = index.start_lba_on_disc + lba_in_index + i;
+    const auto it = m_replacement_map.find(sector_number);
+    if (it != m_replacement_map.end())
+    {
+      // add in subq
+      if (mode != SectorReadMode::DataOnly &&
+          m_parent_image->ReadSectorsFromIndex(sectors.subspan(i, 1), index, lba_in_index + i,
+                                               CDImage::SectorReadMode::SubQOnly) == 0)
+      {
+        return i;
+      }
+
+      std::memcpy(sectors[i].data.data(), &m_replacement_data[it->second], RAW_SECTOR_SIZE);
+    }
+    else if (m_parent_image->ReadSectorsFromIndex(sectors.subspan(i, 1), index, lba_in_index + i, mode) == 0)
+    {
+      return i;
+    }
+  }
+
+  return i;
 }
 
 s64 CDImagePPF::GetSizeOnDisk() const
