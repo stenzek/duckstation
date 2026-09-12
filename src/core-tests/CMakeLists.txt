@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: CC-BY-NC-ND-4.0 + Packaging Restriction
 
 add_executable(core-tests
+  cdrom_async_reader_tests.cpp
   cheats_tests.cpp
   cpu_disasm_tests.cpp
   spu_tests.cpp
