@@ -99,20 +99,20 @@ public:
   void UpdateDisplay(const GPUBackendUpdateDisplayCommand* cmd) override;
 
 private:
- /// Accounts for the shaded-pixel (fill-rate) cost of a drawn rectangle.
- ALWAYS_INLINE_RELEASE void AccountRenderPixels(const GSVector4i& rect, bool textured)
- {
-   const size_t pixels = static_cast<size_t>(rect.width()) * rect.height();
-   s_counters.fill_pixels += pixels;
-   if (textured)
-     s_counters.tex_pixels += pixels;
- }
+  /// Accounts for the shaded-pixel (fill-rate) cost of a drawn rectangle.
+  ALWAYS_INLINE void AccountRenderPixels(const GSVector4i& rect, bool textured)
+  {
+    const size_t pixels = static_cast<size_t>(rect.width()) * rect.height();
+    s_counters.fill_pixels += pixels;
+    if (textured)
+      s_counters.tex_pixels += pixels;
+  }
 
- enum : u32
- {
-   MAX_BATCH_VERTEX_COUNTER_IDS = 65536 - 2,
+  enum : u32
+  {
+    MAX_BATCH_VERTEX_COUNTER_IDS = 65536 - 2,
     MAX_VERTICES_FOR_RECTANGLE = 6 * (((MAX_PRIMITIVE_WIDTH + (TEXTURE_PAGE_WIDTH - 1)) / TEXTURE_PAGE_WIDTH) + 1u) *
-                                 (((MAX_PRIMITIVE_HEIGHT + (TEXTURE_PAGE_HEIGHT - 1)) / TEXTURE_PAGE_HEIGHT) + 1u),
+                                      (((MAX_PRIMITIVE_HEIGHT + (TEXTURE_PAGE_HEIGHT - 1)) / TEXTURE_PAGE_HEIGHT) + 1u),
     NUM_TEXTURE_MODES = static_cast<u32>(BatchTextureMode::MaxCount),
   };
   enum : u8

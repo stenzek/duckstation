@@ -3633,16 +3633,16 @@ void GPU_HW::UpdateVRAMOnGPU(u32 x, u32 y, u32 width, u32 height, const void* da
     g_gpu_device->SetTextureSampler(0, upload_texture.get(), g_gpu_device->GetNearestSampler());
   else
     g_gpu_device->SetTextureBuffer(0, m_vram_upload_buffer.get());
-  
-    DrawScreenQuad(scaled_bounds, m_vram_texture->GetSizeVec(), GSVector4::zero(), &uniforms, sizeof(uniforms));
-  
-    // VRAM bandwidth: upload (2 bytes/pixel) + framebuffer write (4 bytes/pixel) +
-    // framebuffer read for the mask check (4 bytes/pixel).
-    GPUBackend::s_counters.vram_write_bytes +=
-      static_cast<size_t>(width) * height * (2 + 4 + (check_mask ? 4 : 0));
-  
-    RestoreDeviceContext();
-  }
+
+  DrawScreenQuad(scaled_bounds, m_vram_texture->GetSizeVec(), GSVector4::zero(), &uniforms, sizeof(uniforms));
+
+  // VRAM bandwidth: upload (2 bytes/pixel) + framebuffer write (4 bytes/pixel) +
+  // framebuffer read for the mask check (4 bytes/pixel).
+  GPUBackend::s_counters.vram_write_bytes +=
+    static_cast<size_t>(width) * height * (2 + 4 + (check_mask ? 4 : 0));
+
+  RestoreDeviceContext();
+}
 
 void GPU_HW::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 height, bool set_mask, bool check_mask)
 {
