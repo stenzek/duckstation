@@ -111,6 +111,7 @@ struct GPUSettings
   bool display_show_fps : 1 = false;
   bool display_show_speed : 1 = false;
   bool display_show_gpu_stats : 1 = false;
+  bool display_show_bandwidth_stats : 1 = false;
   bool display_show_resolution : 1 = false;
   bool display_show_latency_stats : 1 = false;
   bool display_show_cpu_usage : 1 = false;

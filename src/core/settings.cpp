@@ -429,6 +429,7 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
   display_show_fps = si.GetBoolValue("Display", "ShowFPS", false);
   display_show_speed = si.GetBoolValue("Display", "ShowSpeed", false);
   display_show_gpu_stats = si.GetBoolValue("Display", "ShowGPUStatistics", false);
+  display_show_bandwidth_stats = si.GetBoolValue("Display", "ShowBandwidthStatistics", false);
   display_show_resolution = si.GetBoolValue("Display", "ShowResolution", false);
   display_show_latency_stats = si.GetBoolValue("Display", "ShowLatencyStatistics", false);
   display_show_cpu_usage = si.GetBoolValue("Display", "ShowCPU", false);
@@ -806,6 +807,7 @@ void Settings::Save(SettingsInterface& si, bool for_copy) const
     si.SetBoolValue("Display", "ShowResolution", display_show_resolution);
     si.SetBoolValue("Display", "ShowLatencyStatistics", display_show_latency_stats);
     si.SetBoolValue("Display", "ShowGPUStatistics", display_show_gpu_stats);
+    si.SetBoolValue("Display", "ShowBandwidthStatistics", display_show_bandwidth_stats);
     si.SetBoolValue("Display", "ShowCPU", display_show_cpu_usage);
     si.SetBoolValue("Display", "ShowGPU", display_show_gpu_usage);
     si.SetBoolValue("Display", "ShowFrameTimes", display_show_frame_times);

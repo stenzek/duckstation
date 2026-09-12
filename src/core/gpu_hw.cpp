@@ -2804,6 +2804,8 @@ void GPU_HW::DrawSprite(const GPUBackendDrawRectangleCommand* cmd)
     return;
   }
 
+  AccountRenderPixels(clamped_rect, cmd->texture_enable);
+
   // Treat non-textured sprite draws as fills, so we don't break the TC on framebuffer clears.
   bool draw_with_software_renderer = m_draw_with_software_renderer;
   if (m_use_texture_cache && !cmd->transparency_enable && !cmd->shading_enable && !cmd->texture_enable &&
@@ -2936,6 +2938,11 @@ void GPU_HW::DrawPolygon(const GPUBackendDrawPolygonCommand* cmd)
   {
     SetBatchDepthBuffer(cmd, false);
 
+    if (!clamped_draw_rect_012.rempty())
+      AccountRenderPixels(clamped_draw_rect_012, cmd->texture_enable);
+    if (!clamped_draw_rect_123.rempty())
+      AccountRenderPixels(clamped_draw_rect_123, cmd->texture_enable);
+
     FinishPolygonDraw(cmd, vertices, num_vertices, false, false, clamped_draw_rect_012, clamped_draw_rect_123);
   }
 
@@ -2982,6 +2989,11 @@ void GPU_HW::DrawPrecisePolygon(const GPUBackendDrawPrecisePolygonCommand* cmd)
                                 ComputePolygonAverageZ(vertices[0].w, vertices[1].w, vertices[2].w);
       CheckForDepthClear(cmd, average_z);
     }
+
+    if (!clamped_draw_rect_012.rempty())
+      AccountRenderPixels(clamped_draw_rect_012, cmd->texture_enable);
+    if (!clamped_draw_rect_123.rempty())
+      AccountRenderPixels(clamped_draw_rect_123, cmd->texture_enable);
 
     FinishPolygonDraw(cmd, vertices, num_vertices, true, is_3d, clamped_draw_rect_012, clamped_draw_rect_123);
   }
@@ -3516,6 +3528,9 @@ void GPU_HW::DownloadVRAMFromGPU(u32 x, u32 y, u32 width, u32 height)
                                                  VRAM_WIDTH * sizeof(u16));
   }
 
+  // VRAM bandwidth: framebuffer read (4 bytes/pixel) + CPU readback copy (2 bytes/pixel).
+  GPUBackend::s_counters.vram_read_bytes += static_cast<size_t>(copy_rect.width()) * copy_rect.height() * 6;
+
   RestoreDeviceContext();
 }
 
@@ -3618,11 +3633,16 @@ void GPU_HW::UpdateVRAMOnGPU(u32 x, u32 y, u32 width, u32 height, const void* da
     g_gpu_device->SetTextureSampler(0, upload_texture.get(), g_gpu_device->GetNearestSampler());
   else
     g_gpu_device->SetTextureBuffer(0, m_vram_upload_buffer.get());
-
-  DrawScreenQuad(scaled_bounds, m_vram_texture->GetSizeVec(), GSVector4::zero(), &uniforms, sizeof(uniforms));
-
-  RestoreDeviceContext();
-}
+  
+    DrawScreenQuad(scaled_bounds, m_vram_texture->GetSizeVec(), GSVector4::zero(), &uniforms, sizeof(uniforms));
+  
+    // VRAM bandwidth: upload (2 bytes/pixel) + framebuffer write (4 bytes/pixel) +
+    // framebuffer read for the mask check (4 bytes/pixel).
+    GPUBackend::s_counters.vram_write_bytes +=
+      static_cast<size_t>(width) * height * (2 + 4 + (check_mask ? 4 : 0));
+  
+    RestoreDeviceContext();
+  }
 
 void GPU_HW::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 height, bool set_mask, bool check_mask)
 {
@@ -3676,6 +3696,10 @@ void GPU_HW::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32
 
     return;
   }
+
+  // VRAM bandwidth: a copy reads and writes the framebuffer (4 bytes/pixel each).
+  // (The recursive chunk path above counts itself; the local-memory TC path is CPU-side.)
+  GPUBackend::s_counters.vram_copy_bytes += static_cast<size_t>(width) * height * 8;
 
   if (use_shader || IsUsingMultisampling())
   {
@@ -4171,6 +4195,11 @@ void GPU_HW::UpdateDisplay(const GPUBackendUpdateDisplayCommand* cmd)
     const ExtractUniforms uniforms = {reinterpret_start_x, scaled_vram_offset_y, static_cast<float>(skip_x),
                                       static_cast<float>(line_skip ? 2 : 1)};
     g_gpu_device->DrawWithPushConstants(3, 0, &uniforms, sizeof(uniforms));
+
+    // VRAM bandwidth: the display extraction reads the VRAM framebuffer and writes the
+    // extract texture (4 bytes/pixel each, at the scaled resolution).
+    GPUBackend::s_counters.vram_display_bytes +=
+      static_cast<size_t>(scaled_display_width) * scaled_display_height * 8;
 
     m_vram_extract_texture->MakeReadyForSampling();
     if (depth_source)
