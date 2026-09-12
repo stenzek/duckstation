@@ -551,6 +551,7 @@ public:
     bool gpu_timing : 1;
     bool shader_cache : 1;
     bool pipeline_cache : 1;
+    bool thread_safe_shader_compile : 1;
     bool prefer_unused_textures : 1;
     bool raster_order_views : 1;
     bool dxt_textures : 1;
@@ -628,7 +629,11 @@ public:
 
   /// Returns the cache key for a shader.
   static GPUShaderCacheKey GetShaderCacheKey(GPUShaderStage stage, GPUShaderLanguage language,
-                                          std::string_view shader_code, std::string_view entry_point);
+                                             std::string_view shader_code, std::string_view entry_point);
+  static GPUShaderCacheKey GetShaderCacheKey(GPUShaderStage stage, GPUShaderLanguage language, u16 opaque_data_type,
+                                             std::span<const u8> data);
+  static GPUShaderCacheKey GetShaderCacheKey(GPUShaderStage stage, GPUShaderLanguage language, u16 opaque_data_type,
+                                             const void* data, size_t data_size);
 
   /// Returns a string representing the specified vsync mode.
   static const char* VSyncModeToString(GPUVSyncMode mode);
@@ -766,6 +771,11 @@ public:
   virtual void InvalidateRenderTarget(GPUTexture* t);
 
   /// Shader abstraction.
+  std::unique_ptr<GPUShader> LoadShader(const GPUShaderCacheKey& key);
+  std::unique_ptr<GPUShader> CompileShader(const GPUShaderCacheKey& key, std::string_view source,
+                                           Error* error = nullptr, const char* entry_point = "main");
+  std::unique_ptr<GPUShader> LoadOrCompileShader(const GPUShaderCacheKey& key, std::string_view source,
+                                                 Error* error = nullptr, const char* entry_point = "main");
   std::unique_ptr<GPUShader> CreateShader(GPUShaderStage stage, GPUShaderLanguage language, std::string_view source,
                                           Error* error = nullptr, const char* entry_point = "main");
   virtual std::unique_ptr<GPUPipeline> CreatePipeline(const GPUPipeline::GraphicsConfig& config,
@@ -918,8 +928,6 @@ protected:
   GPUSampler* m_nearest_sampler = nullptr;
   GPUSampler* m_linear_sampler = nullptr;
 
-  ObjectArchive m_shader_cache;
-
 private:
   static constexpr u32 MAX_TEXTURE_POOL_SIZE = 125;
   static constexpr u32 MAX_TARGET_POOL_SIZE = 50;
@@ -981,6 +989,8 @@ protected:
 
   bool m_gpu_timing_enabled = false;
   bool m_debug_device = false;
+
+  ObjectArchive m_shader_cache;
 };
 
 extern std::unique_ptr<GPUDevice> g_gpu_device;

@@ -464,6 +464,7 @@ bool OpenGLDevice::CheckFeatures(CreateFlags create_flags)
   m_features.timed_present = false;
 
   m_features.shader_cache = false;
+  m_features.thread_safe_shader_compile = false;
 
   m_features.dxt_textures =
     (!HasCreateFlag(create_flags, CreateFlags::DisableCompressedTextures) && GLAD_GL_EXT_texture_compression_s3tc);

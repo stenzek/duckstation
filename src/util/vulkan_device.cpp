@@ -2123,6 +2123,7 @@ void VulkanDevice::SetFeatures(CreateFlags create_flags, VkPhysicalDevice physic
   m_features.timed_present = false;
   m_features.shader_cache = true;
   m_features.pipeline_cache = true;
+  m_features.thread_safe_shader_compile = true;
   m_features.prefer_unused_textures = true;
   m_features.raster_order_views =
     (!HasCreateFlag(create_flags, CreateFlags::DisableRasterOrderViews) && vk_features.fragmentStoresAndAtomics &&

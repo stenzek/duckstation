@@ -411,6 +411,7 @@ void MetalDevice::SetFeatures(CreateFlags create_flags)
   m_features.timed_present = true;
   m_features.shader_cache = true;
   m_features.pipeline_cache = false;
+  m_features.thread_safe_shader_compile = true;
   m_features.prefer_unused_textures = true;
 
   // Same feature bit for both.

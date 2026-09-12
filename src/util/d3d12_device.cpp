@@ -1357,6 +1357,7 @@ void D3D12Device::SetFeatures(D3D_FEATURE_LEVEL feature_level, CreateFlags creat
   m_features.gpu_timing = true;
   m_features.shader_cache = true;
   m_features.pipeline_cache = true;
+  m_features.thread_safe_shader_compile = true;
   m_features.prefer_unused_textures = true;
 
   m_features.raster_order_views = false;

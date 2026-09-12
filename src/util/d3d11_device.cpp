@@ -191,6 +191,7 @@ void D3D11Device::SetFeatures(CreateFlags create_flags)
   m_features.gpu_timing = true;
   m_features.shader_cache = true;
   m_features.pipeline_cache = false;
+  m_features.thread_safe_shader_compile = true;
   m_features.prefer_unused_textures = false;
   m_features.raster_order_views = false;
   if (!HasCreateFlag(create_flags, CreateFlags::DisableRasterOrderViews))

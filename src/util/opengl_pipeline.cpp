@@ -280,13 +280,13 @@ OpenGLPipeline::ProgramCacheKey OpenGLPipeline::GetProgramCacheKey(const Graphic
   ProgramCacheKey ret;
   ret.vs_hash_low = vs_key.source_hash_low;
   ret.vs_hash_high = vs_key.source_hash_high;
-  ret.vs_length = vs_key.source_length;
+  ret.vs_length = vs_key.data_length;
   ret.fs_hash_low = fs_key.source_hash_low;
   ret.fs_hash_high = fs_key.source_hash_high;
-  ret.fs_length = fs_key.source_length;
+  ret.fs_length = fs_key.data_length;
   ret.gs_hash_low = gs_key ? gs_key->source_hash_low : 0;
   ret.gs_hash_high = gs_key ? gs_key->source_hash_high : 0;
-  ret.gs_length = gs_key ? gs_key->source_length : 0;
+  ret.gs_length = gs_key ? gs_key->data_length : 0;
 
   std::memset(ret.va_key.vertex_attributes, 0, sizeof(ret.va_key.vertex_attributes));
   ret.va_key.vertex_attribute_stride = 0;
