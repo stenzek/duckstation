@@ -5,4 +5,11 @@
 
 #include "common/types.h"
 
-inline constexpr u32 SHADER_CACHE_VERSION = 38;
+inline constexpr u32 SHADER_CACHE_VERSION = 39;
+
+// Used to tag opaque keys.
+enum class ShaderCacheKeyType : u16
+{
+	HWBatchVertex,
+	HWBatchFragment,
+};

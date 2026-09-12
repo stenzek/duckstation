@@ -14,6 +14,7 @@
 #include "host.h"
 #include "imgui_overlays.h"
 #include "settings.h"
+#include "shader_cache_version.h"
 #include "system_private.h"
 #include "video_presenter.h"
 #include "video_thread.h"
@@ -1253,8 +1254,13 @@ bool GPU_HW::CompilePipelines(Error* error)
 
         vssel.uv_limits = ShouldClampUVs(sprite ? m_sprite_texture_filtering : m_texture_filtering);
         vssel.force_round_texcoords = !sprite && force_round_texcoords;
-        if (!(batch_vertex_shaders[textured][palette][sprite] = g_gpu_device->CreateShader(
-                GPUShaderStage::Vertex, shadergen.GetLanguage(), shadergen.GenerateBatchVertexShader(vssel), error)))
+
+        const GPUShaderCacheKey key =
+          GPUDevice::GetShaderCacheKey(GPUShaderStage::Vertex, shadergen.GetLanguage(),
+                                       static_cast<u16>(ShaderCacheKeyType::HWBatchVertex), &vssel, sizeof(vssel));
+        if (!(batch_vertex_shaders[textured][palette][sprite] = g_gpu_device->LoadShader(key)) &&
+            !(batch_vertex_shaders[textured][palette][sprite] =
+                g_gpu_device->CompileShader(key, shadergen.GenerateBatchVertexShader(vssel), error)))
         {
           return false;
         }
@@ -1367,10 +1373,15 @@ bool GPU_HW::CompilePipelines(Error* error)
                 fssel.interlacing = ConvertToBoolUnchecked(interlacing);
                 fssel.scaled_interlacing = (fssel.interlacing && scaled_interlacing);
 
+                const GPUShaderCacheKey key = GPUDevice::GetShaderCacheKey(
+                  GPUShaderStage::Fragment, shadergen.GetLanguage(),
+                  static_cast<u16>(ShaderCacheKeyType::HWBatchFragment), &fssel, sizeof(fssel));
+
                 if (!(batch_fragment_shaders[depth_test][render_mode][transparency_mode][texture_mode][check_mask]
-                                            [dithering][interlacing] = g_gpu_device->CreateShader(
-                                              GPUShaderStage::Fragment, shadergen.GetLanguage(),
-                                              shadergen.GenerateBatchFragmentShader(fssel), error)))
+                                            [dithering][interlacing] = g_gpu_device->LoadShader(key)) &&
+                    !(batch_fragment_shaders[depth_test][render_mode][transparency_mode][texture_mode][check_mask]
+                                            [dithering][interlacing] = g_gpu_device->CompileShader(
+                                              key, shadergen.GenerateBatchFragmentShader(fssel), error)))
                 {
                   return false;
                 }
