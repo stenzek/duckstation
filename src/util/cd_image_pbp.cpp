@@ -143,7 +143,8 @@ public:
   std::string GetSubImageTitle(u32 index) const override;
 
 protected:
-  bool ReadSectorFromIndex(void* buffer, const Index& index, LBA lba_in_index) override;
+  u32 ReadSectorsFromIndex(std::span<Sector> sectors, const Index& index, LBA lba_in_index,
+                           SectorReadMode mode) override;
 
 private:
   struct BlockInfo
@@ -750,7 +751,7 @@ bool CDImagePBP::OpenDisc(u32 index, Error* error)
   }
 
   m_current_disc = index;
-  return Seek(1, Position{0, 0, 0});
+  return true;
 }
 
 const std::string* CDImagePBP::LookupStringSFOTableEntry(const char* key, const SFOTable& table)
@@ -814,33 +815,42 @@ bool CDImagePBP::DecompressBlock(const BlockInfo& block_info)
   return true;
 }
 
-bool CDImagePBP::ReadSectorFromIndex(void* buffer, const Index& index, LBA lba_in_index)
+u32 CDImagePBP::ReadSectorsFromIndex(std::span<Sector> sectors, const Index& index, LBA lba_in_index,
+                                     SectorReadMode mode)
 {
-  const u32 offset_in_file = static_cast<u32>(index.file_offset) + (lba_in_index * index.file_sector_size);
-  const u32 offset_in_block = offset_in_file % DECOMPRESSED_BLOCK_SIZE;
-  const u32 requested_block = offset_in_file / DECOMPRESSED_BLOCK_SIZE;
-
-  if (requested_block >= m_blockinfo_table.size()) [[unlikely]]
+  (void)mode;
+  u32 sectors_read = 0;
+  for (Sector& sector : sectors)
   {
-    ERROR_LOG("Invalid block {} requested", requested_block);
-    return false;
+    const u32 offset_in_file =
+      static_cast<u32>(index.file_offset) + ((lba_in_index + sectors_read) * index.file_sector_size);
+    const u32 offset_in_block = offset_in_file % DECOMPRESSED_BLOCK_SIZE;
+    const u32 requested_block = offset_in_file / DECOMPRESSED_BLOCK_SIZE;
+
+    if (requested_block >= m_blockinfo_table.size()) [[unlikely]]
+    {
+      ERROR_LOG("Invalid block {} requested", requested_block);
+      break;
+    }
+
+    const BlockInfo& bi = m_blockinfo_table[requested_block];
+    if (bi.size == 0) [[unlikely]]
+    {
+      ERROR_LOG("Requested block {} has size 0", requested_block);
+      break;
+    }
+
+    if (m_current_block != requested_block && !DecompressBlock(bi)) [[unlikely]]
+    {
+      ERROR_LOG("Failed to decompress block {}", requested_block);
+      break;
+    }
+
+    std::memcpy(sector.data.data(), &m_decompressed_block[offset_in_block], RAW_SECTOR_SIZE);
+    sectors_read++;
   }
 
-  const BlockInfo& bi = m_blockinfo_table[requested_block];
-  if (bi.size == 0) [[unlikely]]
-  {
-    ERROR_LOG("Requested block {} has size 0", requested_block);
-    return false;
-  }
-
-  if (m_current_block != requested_block && !DecompressBlock(bi)) [[unlikely]]
-  {
-    ERROR_LOG("Failed to decompress block {}", requested_block);
-    return false;
-  }
-
-  std::memcpy(buffer, &m_decompressed_block[offset_in_block], RAW_SECTOR_SIZE);
-  return true;
+  return sectors_read;
 }
 
 #if defined(_DEBUG) || defined(_DEVEL)

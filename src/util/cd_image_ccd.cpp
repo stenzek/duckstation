@@ -30,11 +30,11 @@ public:
 
   s64 GetSizeOnDisk() const override;
 
-  bool ReadSubChannelQ(SubChannelQ* subq, const Index& index, LBA lba_in_index) override;
   bool HasSubchannelData() const override;
 
 protected:
-  bool ReadSectorFromIndex(void* buffer, const Index& index, LBA lba_in_index) override;
+  u32 ReadSectorsFromIndex(std::span<Sector> sectors, const Index& index, LBA lba_in_index,
+                           SectorReadMode mode) override;
 
 private:
   static constexpr SubchannelMode SUBCHANNEL_MODE = SubchannelMode::Raw;
@@ -387,52 +387,56 @@ bool CDImageCCD::OpenAndParse(const char* path, Error* error)
 
   m_path = path;
 
-  return Seek(1, Position{0, 0, 0});
-}
-
-bool CDImageCCD::ReadSectorFromIndex(void* buffer, const Index& index, LBA lba_in_index)
-{
-  const s64 file_position = static_cast<s64>(index.file_offset + (static_cast<u64>(lba_in_index) * IMG_SECTOR_SIZE));
-  if (m_img_file_position != file_position)
-  {
-    if (FileSystem::FSeek64(m_img_file, file_position, SEEK_SET) != 0)
-      return false;
-
-    m_img_file_position = file_position;
-  }
-
-  if (std::fread(buffer, IMG_SECTOR_SIZE, 1, m_img_file) != 1)
-  {
-    FileSystem::FSeek64(m_img_file, m_img_file_position, SEEK_SET);
-    return false;
-  }
-
-  m_img_file_position += IMG_SECTOR_SIZE;
   return true;
 }
 
-bool CDImageCCD::ReadSubChannelQ(SubChannelQ* subq, const Index& index, LBA lba_in_index)
+u32 CDImageCCD::ReadSectorsFromIndex(std::span<Sector> sectors, const Index& index, LBA lba_in_index,
+                                     SectorReadMode mode)
 {
-  // For virtual pregaps (not in file), fall back to generated subchannel Q.
-  if (!m_sub_file || (index.is_pregap && index.file_sector_size == 0))
-    return CDImage::ReadSubChannelQ(subq, index, lba_in_index);
-
-  // Q subchannel is the second 12-byte block (P, Q, R, S, T, U, V, W).
-  static constexpr u64 q_offset = SUBCHANNEL_BYTES_PER_FRAME;
-
-  // Have to wrangle this because of the two second implicit pregap.
-  const s64 sub_offset = static_cast<s64>(((index.file_offset / IMG_SECTOR_SIZE) * ALL_SUBCODE_SIZE) +
-                                          (static_cast<u64>(lba_in_index) * ALL_SUBCODE_SIZE) + q_offset);
-
-  // Since we're only reading partially, the position's never going to match for sequential. Always seek.
-  if (FileSystem::FSeek64(m_sub_file, static_cast<s64>(sub_offset), SEEK_SET) != 0 ||
-      std::fread(subq->data.data(), SUBCHANNEL_BYTES_PER_FRAME, 1, m_sub_file) != 1)
+  u32 sectors_read = 0;
+  for (Sector& sector : sectors)
   {
-    WARNING_LOG("Failed to read subq for sector {}", index.start_lba_on_disc + lba_in_index);
-    return CDImage::ReadSubChannelQ(subq, index, lba_in_index);
+    const LBA current_lba_in_index = lba_in_index + sectors_read;
+    if (mode != SectorReadMode::SubQOnly)
+    {
+      const s64 file_position =
+        static_cast<s64>(index.file_offset + (static_cast<u64>(current_lba_in_index) * IMG_SECTOR_SIZE));
+      if (m_img_file_position != file_position)
+      {
+        if (FileSystem::FSeek64(m_img_file, file_position, SEEK_SET) != 0)
+          break;
+
+        m_img_file_position = file_position;
+      }
+
+      if (std::fread(sector.data.data(), IMG_SECTOR_SIZE, 1, m_img_file) != 1)
+      {
+        FileSystem::FSeek64(m_img_file, m_img_file_position, SEEK_SET);
+        break;
+      }
+      m_img_file_position += IMG_SECTOR_SIZE;
+    }
+
+    // For virtual pregaps (not in file), keep the generated subchannel Q.
+    if (mode != SectorReadMode::DataOnly && m_sub_file)
+    {
+      // Q subchannel is the second 12-byte block (P, Q, R, S, T, U, V, W).
+      // Have to wrangle this because of the two second implicit pregap.
+      const u64 sub_offset = ((index.file_offset / IMG_SECTOR_SIZE) * ALL_SUBCODE_SIZE) +
+                             (static_cast<u64>(current_lba_in_index) * ALL_SUBCODE_SIZE) + SUBCHANNEL_BYTES_PER_FRAME;
+      // Since we're only reading partially, the position's never going to match for sequential. Always seek.
+      if (FileSystem::FSeek64(m_sub_file, static_cast<s64>(sub_offset), SEEK_SET) != 0 ||
+          std::fread(sector.subq.data.data(), SUBCHANNEL_BYTES_PER_FRAME, 1, m_sub_file) != 1)
+      {
+        WARNING_LOG("Failed to read subq for sector {}", index.start_lba_on_disc + current_lba_in_index);
+        // Keep the generated Q which was placed in the output by CDImage::ReadSectors().
+      }
+    }
+
+    sectors_read++;
   }
 
-  return true;
+  return sectors_read;
 }
 
 bool CDImageCCD::HasSubchannelData() const

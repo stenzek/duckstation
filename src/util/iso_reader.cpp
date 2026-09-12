@@ -45,16 +45,11 @@ bool IsoReader::Open(CDImage* image, u32 track_number, Error* error)
 
 bool IsoReader::ReadSector(std::span<u8, SECTOR_SIZE> buf, u32 lsn, Error* error)
 {
-  if (!m_image->Seek(m_track_number, lsn))
-  {
-    Error::SetStringFmt(error, "Failed to seek to LSN #{}", lsn);
-    return false;
-  }
-
-  std::array<u8, CDImage::RAW_SECTOR_SIZE> raw_sector;
+  CDImage::Sector raw_sector;
   std::span<const u8> sector_data;
-  if (!m_image->ReadRawSector(raw_sector.data(), nullptr) ||
-      (sector_data = ExtractSectorData(raw_sector, ReadMode::Data, error)).empty())
+  const CDImage::LBA lba = m_image->GetTrackStartPosition(m_track_number) + lsn;
+  if (m_image->ReadSectors(lba, std::span<CDImage::Sector>(&raw_sector, 1), CDImage::SectorReadMode::DataOnly) != 1 ||
+      (sector_data = ExtractSectorData(raw_sector.data, ReadMode::Data, error)).empty())
   {
     Error::SetStringFmt(error, "Failed to read LSN #{}: ", lsn);
     return false;
@@ -442,31 +437,39 @@ bool IsoReader::ReadFile(const ISODirectoryEntry& de, std::vector<u8>* data, Rea
     return true;
   }
 
-  if (!m_image->Seek(m_track_number, de.location_le))
-  {
-    Error::SetStringFmt(error, "Failed to seek to LSN #{}", de.location_le);
-    return false;
-  }
-
   // NOTE: ISO uses 2048 byte "sectors" in the directory listing regardless of the file mode.
   const u32 sector_size = GetReadModeSectorSize(read_mode);
   const u32 num_sectors = de.GetSizeInSectors();
   data->resize(num_sectors * sector_size);
 
-  std::array<u8, CDImage::RAW_SECTOR_SIZE> raw_sector;
+  static constexpr u32 READ_BATCH_SIZE = 32;
+  std::array<CDImage::Sector, READ_BATCH_SIZE> raw_sectors;
+  const CDImage::LBA start_lba = m_image->GetTrackStartPosition(m_track_number) + de.location_le;
   size_t data_offset = 0;
-  for (u32 i = 0; i < num_sectors; i++)
+  for (u32 i = 0; i < num_sectors;)
   {
-    std::span<const u8> sector_data;
-    if (!m_image->ReadRawSector(raw_sector.data(), nullptr) ||
-        (sector_data = ExtractSectorData(raw_sector, read_mode, error)).empty())
+    const u32 count = std::min(num_sectors - i, READ_BATCH_SIZE);
+    const u32 count_read =
+      m_image->ReadSectors(start_lba + i, std::span(raw_sectors).first(count), CDImage::SectorReadMode::DataOnly);
+    if (count_read != count)
     {
-      Error::AddPrefixFmt(error, "Failed to read LSN #{}", de.location_le + i);
+      Error::AddPrefixFmt(error, "Failed to read LSN #{}", de.location_le + i + count_read);
       return false;
     }
 
-    std::memcpy(data->data() + data_offset, sector_data.data(), sector_data.size());
-    data_offset += sector_data.size();
+    for (u32 j = 0; j < count; j++)
+    {
+      const std::span<const u8> sector_data = ExtractSectorData(raw_sectors[j].data, read_mode, error);
+      if (sector_data.empty())
+      {
+        Error::AddPrefixFmt(error, "Failed to read LSN #{}", de.location_le + i + j);
+        return false;
+      }
+
+      std::memcpy(data->data() + data_offset, sector_data.data(), sector_data.size());
+      data_offset += sector_data.size();
+    }
+    i += count;
   }
 
   // only shrink for data read mode
@@ -501,12 +504,6 @@ bool IsoReader::WriteFileToStream(const ISODirectoryEntry& de, std::FILE* fp, Re
   if (de.length_le == 0)
     return FileSystem::FTruncate64(fp, 0, error);
 
-  if (!m_image->Seek(m_track_number, de.location_le))
-  {
-    Error::SetStringFmt(error, "Failed to seek to LSN #{}", de.location_le);
-    return false;
-  }
-
   if (progress)
   {
     progress->SetProgressRange(de.length_le);
@@ -515,39 +512,53 @@ bool IsoReader::WriteFileToStream(const ISODirectoryEntry& de, std::FILE* fp, Re
 
   const u32 num_sectors = de.GetSizeInSectors();
 
-  std::array<u8, CDImage::RAW_SECTOR_SIZE> raw_sector;
+  static constexpr u32 READ_BATCH_SIZE = 32;
+  std::array<CDImage::Sector, READ_BATCH_SIZE> raw_sectors;
+  const CDImage::LBA start_lba = m_image->GetTrackStartPosition(m_track_number) + de.location_le;
   u32 file_pos = 0;
 
-  for (u32 i = 0; i < num_sectors; i++)
+  for (u32 i = 0; i < num_sectors;)
   {
-    std::span<const u8> sector_data;
-    if (!m_image->ReadRawSector(raw_sector.data(), nullptr) ||
-        (sector_data = ExtractSectorData(raw_sector, read_mode, error)).empty())
+    const u32 count = std::min(num_sectors - i, READ_BATCH_SIZE);
+    const u32 count_read =
+      m_image->ReadSectors(start_lba + i, std::span(raw_sectors).first(count), CDImage::SectorReadMode::DataOnly);
+    if (count_read != count)
     {
-      Error::AddPrefixFmt(error, "Failed to read LSN #{}", de.location_le + i);
+      Error::AddPrefixFmt(error, "Failed to read LSN #{}", de.location_le + i + count_read);
       return false;
     }
 
-    // only shrink for data mode
-    const u32 write_size = (read_mode == ReadMode::Data) ?
-                             std::min<u32>(de.length_le - file_pos, static_cast<u32>(sector_data.size())) :
-                             static_cast<u32>(sector_data.size());
-    if (std::fwrite(sector_data.data(), write_size, 1, fp) != 1)
+    for (u32 j = 0; j < count; j++)
     {
-      Error::SetErrno(error, "fwrite() failed: ", errno);
-      return false;
-    }
-
-    file_pos += write_size;
-    if (progress)
-    {
-      progress->SetProgressValue(file_pos);
-      if (progress->IsCancelled())
+      const std::span<const u8> sector_data = ExtractSectorData(raw_sectors[j].data, read_mode, error);
+      if (sector_data.empty())
       {
-        Error::SetStringView(error, "Operation was cancelled.");
+        Error::AddPrefixFmt(error, "Failed to read LSN #{}", de.location_le + i + j);
         return false;
       }
+
+      // only shrink for data mode
+      const u32 write_size = (read_mode == ReadMode::Data) ?
+                               std::min<u32>(de.length_le - file_pos, static_cast<u32>(sector_data.size())) :
+                               static_cast<u32>(sector_data.size());
+      if (std::fwrite(sector_data.data(), write_size, 1, fp) != 1)
+      {
+        Error::SetErrno(error, "fwrite() failed: ", errno);
+        return false;
+      }
+
+      file_pos += write_size;
+      if (progress)
+      {
+        progress->SetProgressValue(file_pos);
+        if (progress->IsCancelled())
+        {
+          Error::SetStringView(error, "Operation was cancelled.");
+          return false;
+        }
+      }
     }
+    i += count;
   }
 
   if (std::fflush(fp) != 0)

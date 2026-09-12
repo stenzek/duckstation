@@ -38,17 +38,20 @@ enum class SCSIReadMode : u8
   SubQOnly,
 };
 
-[[maybe_unused]] static void FillSCSIReadCommand(u8 cmd[SCSI_CMD_LENGTH], u32 sector_number, SCSIReadMode mode)
+[[maybe_unused]] static void FillSCSIReadCommand(u8 cmd[SCSI_CMD_LENGTH], u32 sector_number, u32 sector_count,
+                                                SCSIReadMode mode)
 {
+  DebugAssert(sector_count > 0 && sector_count <= 0xFFFFFF);
+
   cmd[0] = 0xBE;                           // READ CD
   cmd[1] = 0x00;                           // sector type
   cmd[2] = Truncate8(sector_number >> 24); // Starting LBA
   cmd[3] = Truncate8(sector_number >> 16);
   cmd[4] = Truncate8(sector_number >> 8);
   cmd[5] = Truncate8(sector_number);
-  cmd[6] = 0x00; // Transfer Count
-  cmd[7] = 0x00;
-  cmd[8] = 0x01;
+  cmd[6] = Truncate8(sector_count >> 16); // Transfer Count
+  cmd[7] = Truncate8(sector_count >> 8);
+  cmd[8] = Truncate8(sector_count);
   cmd[9] = (1 << 7) |    // include sync
            (0b11 << 5) | // include header codes
            (1 << 4) |    // include user data
@@ -95,6 +98,25 @@ enum class SCSIReadMode : u8
       return CDImage::RAW_SECTOR_SIZE + CDImage::SUBCHANNEL_BYTES_PER_FRAME;
     default:
       UnreachableCode();
+  }
+}
+
+[[maybe_unused]] static void CopySCSISubChannelQ(CDImage::SubChannelQ* subq, const u8* buffer, SCSIReadMode mode)
+{
+  if (mode == SCSIReadMode::SubQOnly)
+  {
+    // Copy out subq.
+    std::memcpy(subq->data.data(), buffer + CDImage::RAW_SECTOR_SIZE, CDImage::SUBCHANNEL_BYTES_PER_FRAME);
+  }
+  else if (mode == SCSIReadMode::Full || mode == SCSIReadMode::None)
+  {
+    // Need to deinterleave the subcode.
+    u8 deinterleaved_subcode[CDImage::ALL_SUBCODE_SIZE];
+    CDImage::DeinterleaveSubcode(buffer + CDImage::RAW_SECTOR_SIZE, deinterleaved_subcode);
+
+    // P, Q, ...
+    std::memcpy(subq->data.data(), deinterleaved_subcode + CDImage::SUBCHANNEL_BYTES_PER_FRAME,
+                CDImage::SUBCHANNEL_BYTES_PER_FRAME);
   }
 }
 
@@ -213,16 +235,19 @@ public:
 
   bool Open(const char* path, Error* error);
 
-  bool ReadSubChannelQ(SubChannelQ* subq, const Index& index, LBA lba_in_index) override;
   bool HasSubchannelData() const override;
+  bool IsPhysicalDevice() const override { return true; }
 
 protected:
-  bool ReadSectorFromIndex(void* buffer, const Index& index, LBA lba_in_index) override;
+  u32 ReadSectorsFromIndex(std::span<Sector> sectors, const Index& index, LBA lba_in_index,
+                           SectorReadMode mode) override;
 
 private:
   std::optional<u32> DoSCSICommand(u8 cmd[SCSI_CMD_LENGTH], std::span<u8> out_buffer);
   std::optional<u32> DoSCSIRead(LBA lba, SCSIReadMode read_mode);
+  std::optional<u32> DoSCSIRead(LBA lba, u32 sector_count, SCSIReadMode read_mode, std::span<u8> out_buffer);
   bool DoRawRead(LBA lba);
+  bool DoRawRead(LBA lba, u32 sector_count, std::span<u8> out_buffer);
   bool DoSetSpeed(u32 speed_multiplier);
 
   bool ReadSectorToBuffer(LBA lba);
@@ -234,8 +259,10 @@ private:
 
   SCSIReadMode m_scsi_read_mode = SCSIReadMode::None;
   bool m_has_valid_subcode = false;
+  bool m_supports_batch_reads = true;
 
   std::array<u8, CD_RAW_SECTOR_WITH_SUBCODE_SIZE> m_buffer;
+  std::vector<u8> m_batch_buffer;
 };
 
 } // namespace
@@ -412,52 +439,77 @@ bool CDImageDeviceWin32::Open(const char* path, Error* error)
     return false;
   }
 
-  return Seek(1, Position{0, 0, 0});
+  return true;
 }
 
-bool CDImageDeviceWin32::ReadSubChannelQ(SubChannelQ* subq, const Index& index, LBA lba_in_index)
+u32 CDImageDeviceWin32::ReadSectorsFromIndex(std::span<Sector> sectors, const Index& index, LBA lba_in_index,
+                                             SectorReadMode mode)
 {
-  if (index.file_sector_size == 0 || !m_has_valid_subcode)
-    return CDImage::ReadSubChannelQ(subq, index, lba_in_index);
-
-  const LBA offset = static_cast<LBA>(index.file_offset) + lba_in_index;
-  if (m_current_lba != offset && !ReadSectorToBuffer(offset))
-    return false;
-
-  if (m_scsi_read_mode == SCSIReadMode::SubQOnly)
+  const LBA start_lba = static_cast<LBA>(index.file_offset) + lba_in_index;
+  bool batch_failed = false;
+  if (m_supports_batch_reads && sectors.size() > 1)
   {
-    // copy out subq
-    std::memcpy(subq->data.data(), m_buffer.data() + RAW_SECTOR_SIZE, SUBCHANNEL_BYTES_PER_FRAME);
-    return true;
-  }
-  else // if (m_scsi_read_mode == SCSIReadMode::Full || m_scsi_read_mode == SCSIReadMode::None)
-  {
-    // need to deinterleave the subcode
-    u8 deinterleaved_subcode[ALL_SUBCODE_SIZE];
-    DeinterleaveSubcode(m_buffer.data() + RAW_SECTOR_SIZE, deinterleaved_subcode);
+    const u32 sector_count = static_cast<u32>(sectors.size());
+    const u32 sector_size = (m_scsi_read_mode == SCSIReadMode::None) ?
+                              static_cast<u32>(CD_RAW_SECTOR_WITH_SUBCODE_SIZE) :
+                              SCSIReadCommandOutputSize(m_scsi_read_mode);
+    m_batch_buffer.resize(static_cast<size_t>(sector_size) * sector_count);
 
-    // P, Q, ...
-    std::memcpy(subq->data.data(), deinterleaved_subcode + SUBCHANNEL_BYTES_PER_FRAME, SUBCHANNEL_BYTES_PER_FRAME);
-    return true;
+    const bool batch_result =
+      (m_scsi_read_mode != SCSIReadMode::None) ?
+        (DoSCSIRead(start_lba, sector_count, m_scsi_read_mode, m_batch_buffer).value_or(0) == m_batch_buffer.size()) :
+        DoRawRead(start_lba, sector_count, m_batch_buffer);
+    if (batch_result)
+    {
+      for (u32 i = 0; i < sector_count; i++)
+      {
+        const u8* const source = m_batch_buffer.data() + (static_cast<size_t>(i) * sector_size);
+        if (mode != SectorReadMode::SubQOnly)
+          std::memcpy(sectors[i].data.data(), source, RAW_SECTOR_SIZE);
+        if (mode != SectorReadMode::DataOnly && m_has_valid_subcode)
+          CopySCSISubChannelQ(&sectors[i].subq, source, m_scsi_read_mode);
+      }
+
+      // Keep the scalar cache and its tag synchronized in case the next request repeats the end of this batch.
+      std::memcpy(m_buffer.data(), m_batch_buffer.data() + (static_cast<size_t>(sector_count - 1) * sector_size),
+                  sector_size);
+      m_current_lba = start_lba + sector_count - 1;
+      return sector_count;
+    }
+
+    WARNING_LOG("Batch read of {} sectors at LBA {} failed, retrying individually", sector_count, start_lba);
+    batch_failed = true;
   }
+
+  // Retry individually on errors so that callers receive the exact readable prefix.
+  u32 sectors_read = 0;
+  for (Sector& sector : sectors)
+  {
+    const LBA offset = start_lba + sectors_read;
+    if (m_current_lba != offset && !ReadSectorToBuffer(offset))
+      break;
+
+    if (mode != SectorReadMode::SubQOnly)
+      std::memcpy(sector.data.data(), m_buffer.data(), RAW_SECTOR_SIZE);
+    if (mode != SectorReadMode::DataOnly && m_has_valid_subcode)
+      CopySCSISubChannelQ(&sector.subq, m_buffer.data(), m_scsi_read_mode);
+    sectors_read++;
+  }
+
+  if (batch_failed && sectors_read == sectors.size())
+  {
+    // A completely successful scalar retry distinguishes an unsupported/mishandled multi-sector command from an
+    // unreadable sector. Avoid paying the device timeout on every subsequent refill.
+    WARNING_LOG("Disabling multi-sector reads after {} sectors at LBA {} succeeded individually", sectors_read,
+                start_lba);
+    m_supports_batch_reads = false;
+  }
+  return sectors_read;
 }
 
 bool CDImageDeviceWin32::HasSubchannelData() const
 {
   return m_has_valid_subcode;
-}
-
-bool CDImageDeviceWin32::ReadSectorFromIndex(void* buffer, const Index& index, LBA lba_in_index)
-{
-  if (index.file_sector_size == 0)
-    return false;
-
-  const LBA offset = static_cast<LBA>(index.file_offset) + lba_in_index;
-  if (m_current_lba != offset && !ReadSectorToBuffer(offset))
-    return false;
-
-  std::memcpy(buffer, m_buffer.data(), RAW_SECTOR_SIZE);
-  return true;
 }
 
 std::optional<u32> CDImageDeviceWin32::DoSCSICommand(u8 cmd[SCSI_CMD_LENGTH], std::span<u8> out_buffer)
@@ -500,11 +552,17 @@ std::optional<u32> CDImageDeviceWin32::DoSCSICommand(u8 cmd[SCSI_CMD_LENGTH], st
 
 std::optional<u32> CDImageDeviceWin32::DoSCSIRead(LBA lba, SCSIReadMode read_mode)
 {
-  u8 cmd[SCSI_CMD_LENGTH];
-  FillSCSIReadCommand(cmd, lba, read_mode);
-
   const u32 size = SCSIReadCommandOutputSize(read_mode);
-  return DoSCSICommand(cmd, std::span<u8>(m_buffer.data(), size));
+  return DoSCSIRead(lba, 1, read_mode, std::span<u8>(m_buffer.data(), size));
+}
+
+std::optional<u32> CDImageDeviceWin32::DoSCSIRead(LBA lba, u32 sector_count, SCSIReadMode read_mode,
+                                                  std::span<u8> out_buffer)
+{
+  u8 cmd[SCSI_CMD_LENGTH];
+  FillSCSIReadCommand(cmd, lba, sector_count, read_mode);
+
+  return DoSCSICommand(cmd, out_buffer);
 }
 
 bool CDImageDeviceWin32::DoSetSpeed(u32 speed_multiplier)
@@ -516,23 +574,32 @@ bool CDImageDeviceWin32::DoSetSpeed(u32 speed_multiplier)
 
 bool CDImageDeviceWin32::DoRawRead(LBA lba)
 {
-  const DWORD expected_size = RAW_SECTOR_SIZE + ALL_SUBCODE_SIZE;
+  return DoRawRead(lba, 1, m_buffer);
+}
+
+bool CDImageDeviceWin32::DoRawRead(LBA lba, u32 sector_count, std::span<u8> out_buffer)
+{
+  const DWORD expected_size = static_cast<DWORD>((RAW_SECTOR_SIZE + ALL_SUBCODE_SIZE) * sector_count);
+  DebugAssert(out_buffer.size() >= expected_size);
 
   RAW_READ_INFO rri;
   rri.DiskOffset.QuadPart = static_cast<u64>(lba) * 2048;
-  rri.SectorCount = 1;
+  rri.SectorCount = sector_count;
   rri.TrackMode = RawWithSubCode;
 
   DWORD bytes_returned;
-  if (!DeviceIoControl(m_hDevice, IOCTL_CDROM_RAW_READ, &rri, sizeof(rri), m_buffer.data(),
-                       static_cast<DWORD>(m_buffer.size()), &bytes_returned, nullptr))
+  if (!DeviceIoControl(m_hDevice, IOCTL_CDROM_RAW_READ, &rri, sizeof(rri), out_buffer.data(), expected_size,
+                       &bytes_returned, nullptr))
   {
     ERROR_LOG("DeviceIoControl(IOCTL_CDROM_RAW_READ) for LBA {} failed: {:08X}", lba, GetLastError());
     return false;
   }
 
   if (bytes_returned != expected_size)
+  {
     WARNING_LOG("Only read {} of {} bytes", bytes_returned, expected_size);
+    return false;
+  }
 
   return true;
 }
@@ -704,11 +771,12 @@ public:
 
   bool Open(const char* filename, Error* error);
 
-  bool ReadSubChannelQ(SubChannelQ* subq, const Index& index, LBA lba_in_index) override;
   bool HasSubchannelData() const override;
+  bool IsPhysicalDevice() const override { return true; }
 
 protected:
-  bool ReadSectorFromIndex(void* buffer, const Index& index, LBA lba_in_index) override;
+  u32 ReadSectorsFromIndex(std::span<Sector> sectors, const Index& index, LBA lba_in_index,
+                           SectorReadMode mode) override;
 
 private:
   // Raw reads use an offset of 00:02:00
@@ -719,6 +787,7 @@ private:
 
   std::optional<u32> DoSCSICommand(u8 cmd[SCSI_CMD_LENGTH], std::span<u8> out_buffer);
   std::optional<u32> DoSCSIRead(LBA lba, SCSIReadMode read_mode);
+  std::optional<u32> DoSCSIRead(LBA lba, u32 sector_count, SCSIReadMode read_mode, std::span<u8> out_buffer);
   bool DoRawRead(LBA lba);
   bool DoSetSpeed(u32 speed_multiplier);
 
@@ -726,8 +795,10 @@ private:
   LBA m_current_lba = ~static_cast<LBA>(0);
 
   SCSIReadMode m_scsi_read_mode = SCSIReadMode::None;
+  bool m_supports_batch_reads = true;
 
   std::array<u8, RAW_SECTOR_SIZE + ALL_SUBCODE_SIZE> m_buffer;
+  std::vector<u8> m_batch_buffer;
 };
 
 } // namespace
@@ -903,53 +974,71 @@ bool CDImageDeviceLinux::Open(const char* filename, Error* error)
   if (!DetermineReadMode(error))
     return false;
 
-  return Seek(1, Position{0, 0, 0});
+  return true;
 }
 
-bool CDImageDeviceLinux::ReadSubChannelQ(SubChannelQ* subq, const Index& index, LBA lba_in_index)
+u32 CDImageDeviceLinux::ReadSectorsFromIndex(std::span<Sector> sectors, const Index& index, LBA lba_in_index,
+                                             SectorReadMode mode)
 {
-  if (index.file_sector_size == 0 || m_scsi_read_mode < SCSIReadMode::Full)
-    return CDImage::ReadSubChannelQ(subq, index, lba_in_index);
-
-  const LBA disc_lba = static_cast<LBA>(index.file_offset) + lba_in_index;
-  if (m_current_lba != disc_lba && !ReadSectorToBuffer(disc_lba))
-    return false;
-
-  if (m_scsi_read_mode == SCSIReadMode::SubQOnly)
+  const LBA start_lba = static_cast<LBA>(index.file_offset) + lba_in_index;
+  bool batch_failed = false;
+  if (m_supports_batch_reads && m_scsi_read_mode != SCSIReadMode::None && sectors.size() > 1)
   {
-    // copy out subq
-    std::memcpy(subq->data.data(), m_buffer.data() + RAW_SECTOR_SIZE, SUBCHANNEL_BYTES_PER_FRAME);
-    return true;
-  }
-  else // if (m_scsi_read_mode == SCSIReadMode::Full)
-  {
-    // need to deinterleave the subcode
-    u8 deinterleaved_subcode[ALL_SUBCODE_SIZE];
-    DeinterleaveSubcode(m_buffer.data() + RAW_SECTOR_SIZE, deinterleaved_subcode);
+    const u32 sector_count = static_cast<u32>(sectors.size());
+    const u32 sector_size = SCSIReadCommandOutputSize(m_scsi_read_mode);
+    m_batch_buffer.resize(static_cast<size_t>(sector_size) * sector_count);
+    if (DoSCSIRead(start_lba, sector_count, m_scsi_read_mode, m_batch_buffer).value_or(0) == m_batch_buffer.size())
+    {
+      for (u32 i = 0; i < sector_count; i++)
+      {
+        const u8* const source = m_batch_buffer.data() + (static_cast<size_t>(i) * sector_size);
+        if (mode != SectorReadMode::SubQOnly)
+          std::memcpy(sectors[i].data.data(), source, RAW_SECTOR_SIZE);
+        if (mode != SectorReadMode::DataOnly && m_scsi_read_mode >= SCSIReadMode::Full)
+          CopySCSISubChannelQ(&sectors[i].subq, source, m_scsi_read_mode);
+      }
 
-    // P, Q, ...
-    std::memcpy(subq->data.data(), deinterleaved_subcode + SUBCHANNEL_BYTES_PER_FRAME, SUBCHANNEL_BYTES_PER_FRAME);
-    return true;
+      // Keep the scalar cache and its tag synchronized in case the next request repeats the end of this batch.
+      std::memcpy(m_buffer.data(), m_batch_buffer.data() + (static_cast<size_t>(sector_count - 1) * sector_size),
+                  sector_size);
+      m_current_lba = start_lba + sector_count - 1;
+      return sector_count;
+    }
+
+    WARNING_LOG("Batch read of {} sectors at LBA {} failed, retrying individually", sector_count, start_lba);
+    batch_failed = true;
   }
+
+  // CDROMREADRAW cannot read multiple sectors. Scalar reads also determine the exact prefix after a batch error.
+  u32 sectors_read = 0;
+  for (Sector& sector : sectors)
+  {
+    const LBA disc_lba = start_lba + sectors_read;
+    if (m_current_lba != disc_lba && !ReadSectorToBuffer(disc_lba))
+      break;
+
+    if (mode != SectorReadMode::SubQOnly)
+      std::memcpy(sector.data.data(), m_buffer.data(), RAW_SECTOR_SIZE);
+    if (mode != SectorReadMode::DataOnly && m_scsi_read_mode >= SCSIReadMode::Full)
+      CopySCSISubChannelQ(&sector.subq, m_buffer.data(), m_scsi_read_mode);
+    sectors_read++;
+  }
+
+  if (batch_failed && sectors_read == sectors.size())
+  {
+    // A completely successful scalar retry distinguishes an unsupported/mishandled multi-sector command from an
+    // unreadable sector. Avoid paying the device timeout on every subsequent refill.
+    WARNING_LOG("Disabling multi-sector reads after {} sectors at LBA {} succeeded individually", sectors_read,
+                start_lba);
+    m_supports_batch_reads = false;
+  }
+  return sectors_read;
 }
 
 bool CDImageDeviceLinux::HasSubchannelData() const
 {
   // Can only read subchannel through SPTD.
   return m_scsi_read_mode >= SCSIReadMode::Full;
-}
-
-bool CDImageDeviceLinux::ReadSectorFromIndex(void* buffer, const Index& index, LBA lba_in_index)
-{
-  if (index.file_sector_size == 0)
-    return false;
-
-  const LBA disc_lba = static_cast<LBA>(index.file_offset) + lba_in_index;
-  if (m_current_lba != disc_lba && !ReadSectorToBuffer(disc_lba))
-    return false;
-
-  std::memcpy(buffer, m_buffer.data(), RAW_SECTOR_SIZE);
-  return true;
 }
 
 std::optional<u32> CDImageDeviceLinux::DoSCSICommand(u8 cmd[SCSI_CMD_LENGTH], std::span<u8> out_buffer)
@@ -976,16 +1065,29 @@ std::optional<u32> CDImageDeviceLinux::DoSCSICommand(u8 cmd[SCSI_CMD_LENGTH], st
     return std::nullopt;
   }
 
-  return hdr.dxfer_len;
+  u32 transferred = hdr.dxfer_len;
+  if (hdr.resid > 0)
+  {
+    const u32 residual = std::min(static_cast<u32>(hdr.resid), transferred);
+    transferred -= residual;
+    WARNING_LOG("SCSI command {:02X} transferred {} of {} bytes", cmd[0], transferred, hdr.dxfer_len);
+  }
+  return transferred;
 }
 
 std::optional<u32> CDImageDeviceLinux::DoSCSIRead(LBA lba, SCSIReadMode read_mode)
 {
-  u8 cmd[SCSI_CMD_LENGTH];
-  FillSCSIReadCommand(cmd, lba, read_mode);
-
   const u32 size = SCSIReadCommandOutputSize(read_mode);
-  return DoSCSICommand(cmd, std::span<u8>(m_buffer.data(), size));
+  return DoSCSIRead(lba, 1, read_mode, std::span<u8>(m_buffer.data(), size));
+}
+
+std::optional<u32> CDImageDeviceLinux::DoSCSIRead(LBA lba, u32 sector_count, SCSIReadMode read_mode,
+                                                  std::span<u8> out_buffer)
+{
+  u8 cmd[SCSI_CMD_LENGTH];
+  FillSCSIReadCommand(cmd, lba, sector_count, read_mode);
+
+  return DoSCSICommand(cmd, out_buffer);
 }
 
 bool CDImageDeviceLinux::DoSetSpeed(u32 speed_multiplier)
@@ -1165,11 +1267,12 @@ public:
 
   bool Open(const char* filename, Error* error);
 
-  bool ReadSubChannelQ(SubChannelQ* subq, const Index& index, LBA lba_in_index) override;
   bool HasSubchannelData() const override;
+  bool IsPhysicalDevice() const override { return true; }
 
 protected:
-  bool ReadSectorFromIndex(void* buffer, const Index& index, LBA lba_in_index) override;
+  u32 ReadSectorsFromIndex(std::span<Sector> sectors, const Index& index, LBA lba_in_index,
+                           SectorReadMode mode) override;
 
 private:
   // Raw reads should subtract 00:02:00.
@@ -1184,8 +1287,10 @@ private:
   LBA m_current_lba = ~static_cast<LBA>(0);
 
   SCSIReadMode m_read_mode = SCSIReadMode::None;
+  bool m_supports_batch_reads = true;
 
   std::array<u8, RAW_SECTOR_SIZE + ALL_SUBCODE_SIZE> m_buffer;
+  std::vector<u8> m_batch_buffer;
 };
 
 } // namespace
@@ -1411,53 +1516,96 @@ bool CDImageDeviceMacOS::Open(const char* filename, Error* error)
   if (!DetermineReadMode(error))
     return false;
 
-  return Seek(1, Position{0, 0, 0});
+  return true;
 }
 
-bool CDImageDeviceMacOS::ReadSubChannelQ(SubChannelQ* subq, const Index& index, LBA lba_in_index)
+u32 CDImageDeviceMacOS::ReadSectorsFromIndex(std::span<Sector> sectors, const Index& index, LBA lba_in_index,
+                                             SectorReadMode mode)
 {
-  if (index.file_sector_size == 0 || m_read_mode < SCSIReadMode::Full)
-    return CDImage::ReadSubChannelQ(subq, index, lba_in_index);
-
-  const LBA disc_lba = static_cast<LBA>(index.file_offset) + lba_in_index;
-  if (m_current_lba != disc_lba && !ReadSectorToBuffer(disc_lba))
-    return false;
-
-  if (m_read_mode == SCSIReadMode::SubQOnly)
+  const LBA start_lba = static_cast<LBA>(index.file_offset) + lba_in_index;
+  bool batch_failed = false;
+  if (m_supports_batch_reads && start_lba >= RAW_READ_OFFSET && sectors.size() > 1)
   {
-    // copy out subq
-    std::memcpy(subq->data.data(), m_buffer.data() + RAW_SECTOR_SIZE, SUBCHANNEL_BYTES_PER_FRAME);
-    return true;
-  }
-  else // if (m_scsi_read_mode == SCSIReadMode::Full)
-  {
-    // need to deinterleave the subcode
-    u8 deinterleaved_subcode[ALL_SUBCODE_SIZE];
-    DeinterleaveSubcode(m_buffer.data() + RAW_SECTOR_SIZE, deinterleaved_subcode);
+    const u32 sector_count = static_cast<u32>(sectors.size());
+    const u32 sector_size =
+      RAW_SECTOR_SIZE + ((m_read_mode == SCSIReadMode::Full) ?
+                           ALL_SUBCODE_SIZE :
+                           ((m_read_mode == SCSIReadMode::SubQOnly) ? SUBCHANNEL_BYTES_PER_FRAME : 0));
+    m_batch_buffer.resize(static_cast<size_t>(sector_size) * sector_count);
 
-    // P, Q, ...
-    std::memcpy(subq->data.data(), deinterleaved_subcode + SUBCHANNEL_BYTES_PER_FRAME, SUBCHANNEL_BYTES_PER_FRAME);
-    return true;
+    dk_cd_read_t desc = {};
+    desc.sectorArea =
+      kCDSectorAreaSync | kCDSectorAreaHeader | kCDSectorAreaSubHeader | kCDSectorAreaUser | kCDSectorAreaAuxiliary |
+      ((m_read_mode == SCSIReadMode::Full) ? kCDSectorAreaSubChannel :
+                                             ((m_read_mode == SCSIReadMode::SubQOnly) ? kCDSectorAreaSubChannelQ : 0));
+    desc.sectorType = kCDSectorTypeUnknown;
+    desc.offset = static_cast<u64>(start_lba - RAW_READ_OFFSET) * sector_size;
+    desc.buffer = m_batch_buffer.data();
+    desc.bufferLength = static_cast<u32>(m_batch_buffer.size());
+    const int ioctl_result = ioctl(m_fd, DKIOCCDREAD, &desc);
+    if (ioctl_result == 0 && desc.bufferLength == m_batch_buffer.size())
+    {
+      for (u32 i = 0; i < sector_count; i++)
+      {
+        const u8* const source = m_batch_buffer.data() + (static_cast<size_t>(i) * sector_size);
+        if (mode != SectorReadMode::SubQOnly)
+          std::memcpy(sectors[i].data.data(), source, RAW_SECTOR_SIZE);
+        if (mode != SectorReadMode::DataOnly && m_read_mode >= SCSIReadMode::Full)
+          CopySCSISubChannelQ(&sectors[i].subq, source, m_read_mode);
+      }
+
+      // Keep the scalar cache and its tag synchronized in case the next request repeats the end of this batch.
+      std::memcpy(m_buffer.data(), m_batch_buffer.data() + (static_cast<size_t>(sector_count - 1) * sector_size),
+                  sector_size);
+      m_current_lba = start_lba + sector_count - 1;
+      return sector_count;
+    }
+
+    const Position msf = Position::FromLBA(start_lba);
+    if (ioctl_result == 0)
+    {
+      WARNING_LOG("DKIOCCDREAD batch for LBA {} (MSF {}:{}:{}, count {}) returned {} of {} bytes, retrying "
+                  "individually",
+                  start_lba, msf.minute, msf.second, msf.frame, sector_count, desc.bufferLength, m_batch_buffer.size());
+    }
+    else
+    {
+      WARNING_LOG("DKIOCCDREAD batch for LBA {} (MSF {}:{}:{}, count {}) failed: {}, retrying individually", start_lba,
+                  msf.minute, msf.second, msf.frame, sector_count, errno);
+    }
+    batch_failed = true;
   }
+
+  // Retry individually on errors so that callers receive the exact readable prefix.
+  u32 sectors_read = 0;
+  for (Sector& sector : sectors)
+  {
+    const LBA disc_lba = start_lba + sectors_read;
+    if (m_current_lba != disc_lba && !ReadSectorToBuffer(disc_lba))
+      break;
+
+    if (mode != SectorReadMode::SubQOnly)
+      std::memcpy(sector.data.data(), m_buffer.data(), RAW_SECTOR_SIZE);
+    if (mode != SectorReadMode::DataOnly && m_read_mode >= SCSIReadMode::Full)
+      CopySCSISubChannelQ(&sector.subq, m_buffer.data(), m_read_mode);
+    sectors_read++;
+  }
+
+  if (batch_failed && sectors_read == sectors.size())
+  {
+    // A completely successful scalar retry distinguishes an unsupported/mishandled multi-sector command from an
+    // unreadable sector. Avoid paying the device timeout on every subsequent refill.
+    WARNING_LOG("Disabling multi-sector reads after {} sectors at LBA {} succeeded individually", sectors_read,
+                start_lba);
+    m_supports_batch_reads = false;
+  }
+  return sectors_read;
 }
 
 bool CDImageDeviceMacOS::HasSubchannelData() const
 {
   // Can only read subchannel through SPTD.
   return m_read_mode >= SCSIReadMode::Full;
-}
-
-bool CDImageDeviceMacOS::ReadSectorFromIndex(void* buffer, const Index& index, LBA lba_in_index)
-{
-  if (index.file_sector_size == 0)
-    return false;
-
-  const LBA disc_lba = static_cast<LBA>(index.file_offset) + lba_in_index;
-  if (m_current_lba != disc_lba && !ReadSectorToBuffer(disc_lba))
-    return false;
-
-  std::memcpy(buffer, m_buffer.data(), RAW_SECTOR_SIZE);
-  return true;
 }
 
 bool CDImageDeviceMacOS::DoSetSpeed(u32 speed_multiplier)

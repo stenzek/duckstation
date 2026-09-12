@@ -65,14 +65,14 @@ public:
 
   bool Open(const char* path, Error* error);
 
-  bool ReadSubChannelQ(SubChannelQ* subq, const Index& index, LBA lba_in_index) override;
   bool HasSubchannelData() const override;
   PrecacheResult Precache(ProgressCallback* progress, Error* error) override;
   bool IsPrecached() const override;
   s64 GetSizeOnDisk() const override;
 
 protected:
-  bool ReadSectorFromIndex(void* buffer, const Index& index, LBA lba_in_index) override;
+  u32 ReadSectorsFromIndex(std::span<Sector> sectors, const Index& index, LBA lba_in_index,
+                           SectorReadMode mode) override;
 
 private:
   static constexpr u32 CHD_CD_SECTOR_DATA_SIZE = 2352 + 96;
@@ -413,29 +413,6 @@ bool CDImageCHD::Open(const char* path, Error* error)
   m_lba_count = disc_lba;
   AddLeadOutIndex();
 
-  return Seek(1, Position{0, 0, 0});
-}
-
-bool CDImageCHD::ReadSubChannelQ(SubChannelQ* subq, const Index& index, LBA lba_in_index)
-{
-  if (index.submode == CDImage::SubchannelMode::None)
-    return CDImage::ReadSubChannelQ(subq, index, lba_in_index);
-
-  u32 hunk_offset;
-  if (!UpdateHunkBuffer(index, lba_in_index, hunk_offset))
-    return false;
-
-  u8 deinterleaved_subchannel_data[96];
-  const u8* raw_subchannel_data = &m_hunk_buffer[hunk_offset + RAW_SECTOR_SIZE];
-  const u8* real_subchannel_data = raw_subchannel_data;
-  if (index.submode == CDImage::SubchannelMode::RawInterleaved)
-  {
-    DeinterleaveSubcode(raw_subchannel_data, deinterleaved_subchannel_data);
-    real_subchannel_data = deinterleaved_subchannel_data;
-  }
-
-  // P, Q, R, S, T, U, V, W
-  std::memcpy(subq->data.data(), real_subchannel_data + (1 * SUBCHANNEL_BYTES_PER_FRAME), SUBCHANNEL_BYTES_PER_FRAME);
   return true;
 }
 
@@ -495,19 +472,45 @@ ALWAYS_INLINE_RELEASE void CDImageCHD::CopyAndSwap(void* dst_ptr, const u8* src_
   }
 }
 
-bool CDImageCHD::ReadSectorFromIndex(void* buffer, const Index& index, LBA lba_in_index)
+u32 CDImageCHD::ReadSectorsFromIndex(std::span<Sector> sectors, const Index& index, LBA lba_in_index,
+                                     SectorReadMode mode)
 {
-  u32 hunk_offset;
-  if (!UpdateHunkBuffer(index, lba_in_index, hunk_offset))
-    return false;
+  u32 sectors_read = 0;
+  for (Sector& sector : sectors)
+  {
+    u32 hunk_offset;
+    if (!UpdateHunkBuffer(index, lba_in_index + sectors_read, hunk_offset))
+      break;
 
-  // Audio data is in big-endian, so we have to swap it for little endian hosts...
-  if (index.mode == TrackMode::Audio)
-    CopyAndSwap(buffer, &m_hunk_buffer[hunk_offset]);
-  else
-    std::memcpy(buffer, &m_hunk_buffer[hunk_offset], RAW_SECTOR_SIZE);
+    if (mode != SectorReadMode::SubQOnly)
+    {
+      // Audio data is in big-endian, so we have to swap it for little endian hosts...
+      if (index.mode == TrackMode::Audio)
+        CopyAndSwap(sector.data.data(), &m_hunk_buffer[hunk_offset]);
+      else
+        std::memcpy(sector.data.data(), &m_hunk_buffer[hunk_offset], RAW_SECTOR_SIZE);
+    }
 
-  return true;
+    if (mode != SectorReadMode::DataOnly && index.submode != CDImage::SubchannelMode::None)
+    {
+      u8 deinterleaved_subchannel_data[ALL_SUBCODE_SIZE];
+      const u8* raw_subchannel_data = &m_hunk_buffer[hunk_offset + RAW_SECTOR_SIZE];
+      const u8* real_subchannel_data = raw_subchannel_data;
+      if (index.submode == CDImage::SubchannelMode::RawInterleaved)
+      {
+        DeinterleaveSubcode(raw_subchannel_data, deinterleaved_subchannel_data);
+        real_subchannel_data = deinterleaved_subchannel_data;
+      }
+
+      // P, Q, R, S, T, U, V, W
+      std::memcpy(sector.subq.data.data(), real_subchannel_data + SUBCHANNEL_BYTES_PER_FRAME,
+                  SUBCHANNEL_BYTES_PER_FRAME);
+    }
+
+    sectors_read++;
+  }
+
+  return sectors_read;
 }
 
 ALWAYS_INLINE_RELEASE bool CDImageCHD::UpdateHunkBuffer(const Index& index, LBA lba_in_index, u32& hunk_offset)

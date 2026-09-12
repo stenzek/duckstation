@@ -27,8 +27,8 @@ public:
 
   bool Open(const char* path, bool apply_patches, Error* Error);
 
-  bool ReadSubChannelQ(SubChannelQ* subq, const Index& index, LBA lba_in_index) override;
   bool HasSubchannelData() const override;
+  bool IsPhysicalDevice() const override;
 
   bool HasSubImages() const override;
   u32 GetSubImageCount() const override;
@@ -37,7 +37,8 @@ public:
   bool SwitchSubImage(u32 index, Error* error) override;
 
 protected:
-  bool ReadSectorFromIndex(void* buffer, const Index& index, LBA lba_in_index) override;
+  u32 ReadSectorsFromIndex(std::span<Sector> sectors, const Index& index, LBA lba_in_index,
+                           SectorReadMode mode) override;
 
 private:
   struct Entry
@@ -108,6 +109,11 @@ bool CDImageM3u::HasSubchannelData() const
   return m_current_image->HasSubchannelData();
 }
 
+bool CDImageM3u::IsPhysicalDevice() const
+{
+  return m_current_image->IsPhysicalDevice();
+}
+
 bool CDImageM3u::HasSubImages() const
 {
   return true;
@@ -141,9 +147,6 @@ bool CDImageM3u::SwitchSubImage(u32 index, Error* error)
   CopyTOC(new_image.get());
   m_current_image = std::move(new_image);
   m_current_image_index = index;
-  if (!Seek(1, Position{0, 0, 0}))
-    Panic("Failed to seek to start after sub-image change.");
-
   return true;
 }
 
@@ -156,14 +159,10 @@ std::string CDImageM3u::GetSubImageTitle(u32 index) const
   return ret;
 }
 
-bool CDImageM3u::ReadSectorFromIndex(void* buffer, const Index& index, LBA lba_in_index)
+u32 CDImageM3u::ReadSectorsFromIndex(std::span<Sector> sectors, const Index& index, LBA lba_in_index,
+                                     SectorReadMode mode)
 {
-  return m_current_image->ReadSectorFromIndex(buffer, index, lba_in_index);
-}
-
-bool CDImageM3u::ReadSubChannelQ(SubChannelQ* subq, const Index& index, LBA lba_in_index)
-{
-  return m_current_image->ReadSubChannelQ(subq, index, lba_in_index);
+  return m_current_image->ReadSectorsFromIndex(sectors, index, lba_in_index, mode);
 }
 
 std::unique_ptr<CDImage> CDImage::OpenM3uImage(const char* path, bool apply_patches, Error* error)

@@ -6,6 +6,7 @@
     <ClCompile Include="cpu_disasm_tests.cpp" />
     <ClCompile Include="stub_host.cpp" />
     <ClCompile Include="spu_tests.cpp" />
+    <ClCompile Include="cdrom_async_reader_tests.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="CMakeLists.txt" />

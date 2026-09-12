@@ -148,7 +148,8 @@ public:
   s64 GetSizeOnDisk() const override;
 
 protected:
-  bool ReadSectorFromIndex(void* buffer, const Index& index, LBA lba_in_index) override;
+  u32 ReadSectorsFromIndex(std::span<Sector> sectors, const Index& index, LBA lba_in_index,
+                           SectorReadMode mode) override;
 
 private:
   std::optional<TrackMode> DetectSingleFileTrackMode(TrackFileInterface* fi, const char* path, Error* error);
@@ -813,7 +814,7 @@ bool CDImageCueSheet::OpenAndParseCueSheet(const char* path, Error* error)
   m_lba_count = disc_lba;
   AddLeadOutIndex();
 
-  return Seek(1, Position{0, 0, 0});
+  return true;
 }
 
 bool CDImageCueSheet::OpenAndParseSingleFile(const char* path, Error* error)
@@ -873,7 +874,7 @@ bool CDImageCueSheet::OpenAndParseSingleFile(const char* path, Error* error)
 
   AddLeadOutIndex();
 
-  return Seek(1, Position{0, 0, 0});
+  return true;
 }
 
 std::optional<CDImage::TrackMode> CDImageCueSheet::DetectSingleFileTrackMode(TrackFileInterface* fi, const char* path,
@@ -910,20 +911,27 @@ std::optional<CDImage::TrackMode> CDImageCueSheet::DetectSingleFileTrackMode(Tra
   return TrackMode::Mode1;
 }
 
-bool CDImageCueSheet::ReadSectorFromIndex(void* buffer, const Index& index, LBA lba_in_index)
+u32 CDImageCueSheet::ReadSectorsFromIndex(std::span<Sector> sectors, const Index& index, LBA lba_in_index,
+                                          SectorReadMode mode)
 {
   DebugAssert(index.file_index < m_files.size());
-
+  (void)mode;
   TrackFileInterface* tf = m_files[index.file_index].get();
-  const u64 file_position = index.file_offset + (static_cast<u64>(lba_in_index) * index.file_sector_size);
-  Error error;
-  if (!tf->Read(buffer, file_position, index.file_sector_size, &error)) [[unlikely]]
+  u32 sectors_read = 0;
+  for (Sector& sector : sectors)
   {
-    ERROR_LOG("Failed to read LBA {}: {}", lba_in_index, error.GetDescription());
-    return false;
+    const u64 file_position =
+      index.file_offset + (static_cast<u64>(lba_in_index + sectors_read) * index.file_sector_size);
+    Error error;
+    if (!tf->Read(sector.data.data(), file_position, index.file_sector_size, &error)) [[unlikely]]
+    {
+      ERROR_LOG("Failed to read LBA {}: {}", lba_in_index + sectors_read, error.GetDescription());
+      break;
+    }
+    sectors_read++;
   }
 
-  return true;
+  return sectors_read;
 }
 
 s64 CDImageCueSheet::GetSizeOnDisk() const

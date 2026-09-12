@@ -236,37 +236,37 @@ void CDImage::ConvertSectorToRaw(void* buffer, u32 lba, TrackMode mode)
   }
 }
 
-CDImage::LBA CDImage::GetTrackStartPosition(u8 track) const
+CDImage::LBA CDImage::GetTrackStartPosition(u32 track) const
 {
   Assert(track > 0 && track <= m_tracks.size());
   return m_tracks[track - 1].start_lba;
 }
 
-CDImage::Position CDImage::GetTrackStartMSFPosition(u8 track) const
+CDImage::Position CDImage::GetTrackStartMSFPosition(u32 track) const
 {
   Assert(track > 0 && track <= m_tracks.size());
   return Position::FromLBA(m_tracks[track - 1].start_lba);
 }
 
-CDImage::LBA CDImage::GetTrackLength(u8 track) const
+CDImage::LBA CDImage::GetTrackLength(u32 track) const
 {
   Assert(track > 0 && track <= m_tracks.size());
   return m_tracks[track - 1].length;
 }
 
-CDImage::Position CDImage::GetTrackMSFLength(u8 track) const
+CDImage::Position CDImage::GetTrackMSFLength(u32 track) const
 {
   Assert(track > 0 && track <= m_tracks.size());
   return Position::FromLBA(m_tracks[track - 1].length);
 }
 
-CDImage::TrackMode CDImage::GetTrackMode(u8 track) const
+CDImage::TrackMode CDImage::GetTrackMode(u32 track) const
 {
   Assert(track > 0 && track <= m_tracks.size());
   return m_tracks[track - 1].mode;
 }
 
-CDImage::LBA CDImage::GetTrackIndexPosition(u8 track, u8 index) const
+CDImage::LBA CDImage::GetTrackIndexPosition(u32 track, u32 index) const
 {
   for (const Index& current_index : m_indices)
   {
@@ -277,7 +277,7 @@ CDImage::LBA CDImage::GetTrackIndexPosition(u8 track, u8 index) const
   return m_lba_count;
 }
 
-CDImage::LBA CDImage::GetTrackIndexLength(u8 track, u8 index) const
+CDImage::LBA CDImage::GetTrackIndexLength(u32 track, u32 index) const
 {
   for (const Index& current_index : m_indices)
   {
@@ -299,116 +299,83 @@ const CDImage::CDImage::Index& CDImage::GetIndex(u32 i) const
   return m_indices[i];
 }
 
-bool CDImage::Seek(LBA lba)
+u32 CDImage::ReadSectors(LBA lba, std::span<Sector> sectors, SectorReadMode mode)
 {
-  const Index* new_index;
-  if (m_current_index && lba >= m_current_index->start_lba_on_disc &&
-      (lba - m_current_index->start_lba_on_disc) < m_current_index->length)
+  const bool read_data = (mode != SectorReadMode::SubQOnly);
+  const bool read_subq = (mode != SectorReadMode::DataOnly);
+
+  u32 sectors_read = 0;
+  while (sectors_read < sectors.size())
   {
-    new_index = m_current_index;
-  }
-  else
-  {
-    new_index = GetIndexForDiscPosition(lba);
-    if (!new_index)
-      return false;
-  }
+    const LBA current_lba = lba + sectors_read;
+    if (current_lba < lba)
+      break;
 
-  const LBA new_index_offset = lba - new_index->start_lba_on_disc;
-  if (new_index_offset >= new_index->length)
-    return false;
+    const Index* index = GetIndexForDiscPosition(current_lba);
+    if (!index)
+      break;
 
-  m_current_index = new_index;
-  m_position_on_disc = lba;
-  m_position_in_index = new_index_offset;
-  m_position_in_track = new_index->start_lba_in_track + new_index_offset;
-  return true;
-}
-
-bool CDImage::Seek(u32 track_number, const Position& pos_in_track)
-{
-  if (track_number < 1 || track_number > m_tracks.size())
-    return false;
-
-  const Track& track = m_tracks[track_number - 1];
-  const LBA pos_lba = pos_in_track.ToLBA();
-  if (pos_lba >= track.length)
-    return false;
-
-  return Seek(track.start_lba + pos_lba);
-}
-
-bool CDImage::Seek(const Position& pos)
-{
-  return Seek(pos.ToLBA());
-}
-
-bool CDImage::Seek(u32 track_number, LBA lba)
-{
-  if (track_number < 1 || track_number > m_tracks.size())
-    return false;
-
-  const Track& track = m_tracks[track_number - 1];
-  return Seek(track.start_lba + lba);
-}
-
-bool CDImage::ReadRawSector(void* buffer, SubChannelQ* subq)
-{
-  if (m_position_in_index == m_current_index->length)
-  {
-    if (!Seek(m_position_on_disc))
-      return false;
-  }
-
-  if (buffer)
-  {
-    if (m_current_index->file_sector_size > 0)
+    const LBA lba_in_index = current_lba - index->start_lba_on_disc;
+    const u32 count = static_cast<u32>(
+      std::min<size_t>(sectors.size() - sectors_read, static_cast<size_t>(index->length - lba_in_index)));
+    std::span<Sector> chunk = sectors.subspan(sectors_read, count);
+    if (read_subq)
     {
-      if (!ReadSectorFromIndex(buffer, *m_current_index, m_position_in_index))
-      {
-        ERROR_LOG("Read of LBA {} failed", m_position_on_disc);
-        Seek(m_position_on_disc);
-        return false;
-      }
+      for (u32 i = 0; i < count; i++)
+        GenerateSubChannelQ(&chunk[i].subq, *index, lba_in_index + i);
+    }
 
-      // Fix up the sector header and sync data if necessary.
-      ConvertSectorToRaw(buffer, m_current_index->start_lba_on_disc + m_position_in_index, m_current_index->mode);
+    u32 chunk_read;
+    const bool read_replacement_subq = (read_subq && HasSubchannelData() && index->submode != SubchannelMode::None);
+    if (!read_data && !read_replacement_subq)
+    {
+      // Generated SubQ is already complete. Do not touch a backing file just to return synthesized position data.
+      chunk_read = count;
+    }
+    else if (index->file_sector_size > 0)
+    {
+      chunk_read = std::min(ReadSectorsFromIndex(chunk, *index, lba_in_index, mode), count);
+      if (read_data)
+      {
+        for (u32 i = 0; i < chunk_read; i++)
+          ConvertSectorToRaw(chunk[i].data.data(), current_lba + i, index->mode);
+      }
     }
     else
     {
-      if (m_current_index->track_number == LEAD_OUT_TRACK_NUMBER)
+      if (read_data)
       {
-        // Lead-out area.
-        std::fill(static_cast<u8*>(buffer), static_cast<u8*>(buffer) + RAW_SECTOR_SIZE, u8(0xAA));
+        // Synthesize sectors which do not have a backing file.
+        if (index->track_number == LEAD_OUT_TRACK_NUMBER)
+        {
+          // Lead-out area.
+          for (Sector& sector : chunk)
+            sector.data.fill(0xAA);
+        }
+        else
+        {
+          // This is an implicit pregap. Return silence.
+          for (Sector& sector : chunk)
+            sector.data.fill(0);
+        }
       }
-      else
-      {
-        // This in an implicit pregap. Return silence.
-        std::fill(static_cast<u8*>(buffer), static_cast<u8*>(buffer) + RAW_SECTOR_SIZE, u8(0));
-      }
+      chunk_read = count;
     }
+
+    sectors_read += chunk_read;
+    if (chunk_read != count)
+      break;
   }
 
-  if (subq && !ReadSubChannelQ(subq, *m_current_index, m_position_in_index))
-  {
-    ERROR_LOG("Subchannel read of LBA {} failed", m_position_on_disc);
-    Seek(m_position_on_disc);
-    return false;
-  }
-
-  m_position_on_disc++;
-  m_position_in_index++;
-  m_position_in_track++;
-  return true;
-}
-
-bool CDImage::ReadSubChannelQ(SubChannelQ* subq, const Index& index, LBA lba_in_index)
-{
-  GenerateSubChannelQ(subq, index, lba_in_index);
-  return true;
+  return sectors_read;
 }
 
 bool CDImage::HasSubchannelData() const
+{
+  return false;
+}
+
+bool CDImage::IsPhysicalDevice() const
 {
   return false;
 }
@@ -466,10 +433,6 @@ void CDImage::ClearTOC()
   m_lba_count = 0;
   m_indices.clear();
   m_tracks.clear();
-  m_current_index = nullptr;
-  m_position_in_index = 0;
-  m_position_in_track = 0;
-  m_position_on_disc = 0;
 }
 
 void CDImage::CopyTOC(const CDImage* image)
@@ -493,10 +456,6 @@ void CDImage::CopyTOC(const CDImage* image)
     std::memcpy(&new_track, &track, sizeof(new_track));
     m_tracks.push_back(new_track);
   }
-  m_current_index = nullptr;
-  m_position_in_index = 0;
-  m_position_in_track = 0;
-  m_position_on_disc = 0;
 }
 
 const CDImage::Index* CDImage::GetIndexForDiscPosition(LBA pos) const
@@ -514,18 +473,6 @@ const CDImage::Index* CDImage::GetIndexForDiscPosition(LBA pos) const
   }
 
   return nullptr;
-}
-
-const CDImage::Index* CDImage::GetIndexForTrackPosition(u32 track_number, LBA track_pos) const
-{
-  if (track_number < 1 || track_number > m_tracks.size())
-    return nullptr;
-
-  const Track& track = m_tracks[track_number - 1];
-  if (track_pos >= track.length)
-    return nullptr;
-
-  return GetIndexForDiscPosition(track.start_lba + track_pos);
 }
 
 bool CDImage::GenerateSubChannelQ(SubChannelQ* subq, LBA lba) const
