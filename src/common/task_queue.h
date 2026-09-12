@@ -28,12 +28,19 @@ public:
   /// @param count The desired number of worker threads.
   void SetWorkerCount(u32 count);
 
+  /// Returns the number of tasks remaining.
+  size_t GetOutstandingTasks();
+
   /// Submits a task to the queue for execution.
   /// @param func The task function to execute.
   void SubmitTask(TaskFunctionType func);
 
   /// Waits for all submitted tasks to complete execution.
   void WaitForAll();
+
+  /// Executes a single task on the calling thread.
+  /// Returns false if there was no work to complete.
+  bool ExecuteOneTask();
 
 private:
   /// Waits for all submitted tasks to complete execution.

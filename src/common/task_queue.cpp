@@ -40,6 +40,12 @@ void TaskQueue::SetWorkerCount(u32 count)
   }
 }
 
+size_t TaskQueue::GetOutstandingTasks()
+{
+  std::unique_lock lock(m_mutex);
+  return m_tasks_outstanding;
+}
+
 void TaskQueue::SubmitTask(TaskFunctionType func)
 {
   std::unique_lock lock(m_mutex);
@@ -74,6 +80,16 @@ void TaskQueue::WaitForAll(std::unique_lock<std::mutex>& lock)
 
     return (m_tasks_outstanding == 0);
   });
+}
+
+bool TaskQueue::ExecuteOneTask()
+{
+  std::unique_lock lock(m_mutex);
+  if (m_tasks.empty())
+    return false;
+
+  ExecuteOneTask(lock);
+  return true;
 }
 
 void TaskQueue::ExecuteOneTask(std::unique_lock<std::mutex>& lock)
