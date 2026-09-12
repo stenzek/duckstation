@@ -338,7 +338,7 @@ static ADPCMDecodeResult DecodeADPCMPaired(const std::array<u8, 14>& edata, u8 r
   s16* output = result.samples.data();
   for (u32 i = 0; i < static_cast<u32>(edata.size()); i++)
   {
-    const u8 data = edata.data[i];
+    const u8 data = edata[i];
 
     // extend 4-bit to 16-bit, apply shift from header and mix in previous samples
     // this is interleaved and whacky to try to maximize instruction-level parallelism, but basically, it's:

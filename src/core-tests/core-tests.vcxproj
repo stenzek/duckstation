@@ -3,13 +3,10 @@
   <Import Project="..\..\dep\vsprops\Configurations.props" />
   <ItemGroup>
     <ClCompile Include="..\..\dep\googletest\src\gtest_main.cc" />
-    <ClCompile Include="..\core\cheats.cpp" />
-    <ClCompile Include="..\core\cpu_disasm.cpp" />
-    <ClCompile Include="..\core\cpu_types.cpp" />
-    <ClCompile Include="..\util\zip_helpers.cpp" />
     <ClCompile Include="cheats_tests.cpp" />
     <ClCompile Include="cpu_disasm_tests.cpp" />
-    <ClCompile Include="stub_cpu.cpp" />
+    <ClCompile Include="spu_tests.cpp" />
+    <ClCompile Include="stub_host.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\dep\googletest\googletest.vcxproj">
@@ -21,20 +18,27 @@
     <ProjectReference Include="..\common\common.vcxproj">
       <Project>{ee054e08-3799-4a59-a422-18259c105ffd}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\core\core.vcxproj">
+      <Project>{868b98c8-65a1-494b-8346-250a73a48c0a}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\util\util.vcxproj">
+      <Project>{57f6206d-f264-4b07-baf8-11b9bbe1f455}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="CMakeLists.txt" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{93D9300C-B64A-4B21-A4B5-30173DE88747}</ProjectGuid>
   </PropertyGroup>
   <Import Project="..\..\dep\vsprops\ConsoleApplication.props" />
-  <Import Project="..\util\util.props" />
+  <Import Project="..\core\core.props" />
   <ItemDefinitionGroup>
     <ClCompile>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)dep\googletest\include</AdditionalIncludeDirectories>
-      <FunctionLevelLinking>true</FunctionLevelLinking>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
-      <OptimizeReferences>true</OptimizeReferences>
     </Link>
   </ItemDefinitionGroup>
   <Import Project="..\..\dep\vsprops\Targets.props" />
