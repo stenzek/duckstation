@@ -117,7 +117,8 @@ bool GPUBackend::Initialize(bool clear_vram, Error* error)
 
 bool GPUBackend::UpdateSettings(const GPUSettings& old_settings, Error* error)
 {
-  if (g_gpu_settings.display_show_gpu_stats != old_settings.display_show_gpu_stats)
+  if (g_gpu_settings.display_show_gpu_stats != old_settings.display_show_gpu_stats ||
+      g_gpu_settings.display_show_bandwidth_stats != old_settings.display_show_bandwidth_stats)
     GPUBackend::ResetStatistics();
 
   return true;
@@ -654,6 +655,31 @@ void GPUBackend::GetMemoryStatsString(SmallStringBase& str) const
              s_stats.host_num_copies, s_stats.host_num_uploads);
 }
 
+void GPUBackend::GetBandwidthStatsString(SmallStringBase& str) const
+{
+  // VRAM memory bandwidth in KB per frame, by category. "BW" is the total;
+  // W = CPU->GPU writes, R = GPU->CPU readbacks, C = GPU->GPU copies, D = display extraction.
+  const u32 total_kb = static_cast<u32>((s_stats.vram_bandwidth.total() + (1024 - 1)) / 1024);
+  const u32 write_kb = static_cast<u32>((s_stats.vram_bandwidth.write + (1024 - 1)) / 1024);
+  const u32 read_kb = static_cast<u32>((s_stats.vram_bandwidth.read + (1024 - 1)) / 1024);
+  const u32 copy_kb = static_cast<u32>((s_stats.vram_bandwidth.copy + (1024 - 1)) / 1024);
+  const u32 display_kb = static_cast<u32>((s_stats.vram_bandwidth.display + (1024 - 1)) / 1024);
+
+  str.format("{}KB " BOLD("BW") " | {} " BOLD("W") " | {} " BOLD("R") " | {} " BOLD("C") " | {} " BOLD("D"),
+             total_kb, write_kb, read_kb, copy_kb, display_kb);
+}
+
+void GPUBackend::GetRenderStatsString(SmallStringBase& str) const
+{
+  // Rendering / fill-rate in thousands of shaded pixels per frame. "FP" is the total
+  // shaded-pixel count (bounding-box estimate, includes overdraw); "TX" is the subset
+  // that samples a texture (i.e. the texture-fetch cost).
+  const u32 fill_k = static_cast<u32>((s_stats.render.fill + 1000 - 1) / 1000);
+  const u32 tex_k = static_cast<u32>((s_stats.render.tex + 1000 - 1) / 1000);
+
+  str.format("{}K " BOLD("FP") " | {}K " BOLD("TX"), fill_k, tex_k);
+}
+
 #undef BOLD
 
 void GPUBackend::ResetStatistics()
@@ -687,6 +713,16 @@ void GPUBackend::UpdateStatistics(u32 frame_count)
   UPDATE_GPU_STAT(num_copies);
   UPDATE_GPU_STAT(num_downloads);
   UPDATE_GPU_STAT(num_uploads);
+
+  // VRAM memory bandwidth (per-frame average).
+  s_stats.vram_bandwidth.write = (s_counters.vram_write_bytes + round) / frame_count;
+  s_stats.vram_bandwidth.read = (s_counters.vram_read_bytes + round) / frame_count;
+  s_stats.vram_bandwidth.copy = (s_counters.vram_copy_bytes + round) / frame_count;
+  s_stats.vram_bandwidth.display = (s_counters.vram_display_bytes + round) / frame_count;
+
+  // Rendering / fill-rate (per-frame average).
+  s_stats.render.fill = (s_counters.fill_pixels + round) / frame_count;
+  s_stats.render.tex = (s_counters.tex_pixels + round) / frame_count;
 
 #undef UPDATE_GPU_STAT
 #undef UPDATE_COUNTER

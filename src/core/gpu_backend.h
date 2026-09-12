@@ -92,6 +92,8 @@ public:
 
   void GetStatsString(SmallStringBase& str) const;
   void GetMemoryStatsString(SmallStringBase& str) const;
+  void GetBandwidthStatsString(SmallStringBase& str) const;
+  void GetRenderStatsString(SmallStringBase& str) const;
 
   void ResetStatistics();
   void UpdateStatistics(u32 frame_count);
@@ -130,6 +132,20 @@ protected:
     u32 num_vertices;
     u32 num_primitives;
     u32 num_depth_buffer_clears;
+
+    // VRAM memory bandwidth in bytes (hardware backend only). These measure the actual
+    // memory-bus traffic of VRAM operations, which is the bottleneck on low-bandwidth
+    // SoCs (e.g. Allwinner H700 / panfrost).
+    size_t vram_write_bytes;   // CPU->GPU uploads + framebuffer writes (+ reads when checking mask)
+    size_t vram_read_bytes;    // GPU->CPU readbacks
+    size_t vram_copy_bytes;    // GPU->GPU VRAM copies (read + write)
+    size_t vram_display_bytes; // display extraction (read + write)
+
+    // Rendering / fill-rate in shaded pixels (hardware backend only). These measure the
+    // GPU rasterization cost, which (unlike VRAM bandwidth) scales with what is actually
+    // on screen - the likely bottleneck for animated-texture scenes on weak GPUs.
+    size_t fill_pixels; // total shaded pixels (bounding-box estimate, includes overdraw)
+    size_t tex_pixels;  // shaded pixels that sample a texture (texture-fetch cost)
   };
 
   struct Stats : Counters
@@ -143,6 +159,26 @@ protected:
     u32 host_num_uploads;
 
     u8 gpu_busy_pct;
+
+    /// Per-frame average VRAM memory bandwidth in bytes, by category.
+    struct Bandwidth
+    {
+      size_t write;
+      size_t read;
+      size_t copy;
+      size_t display;
+
+      ALWAYS_INLINE size_t total() const { return (write + read + copy + display); }
+    };
+    Bandwidth vram_bandwidth;
+
+    /// Per-frame average rendering / fill-rate in shaded pixels.
+    struct Render
+    {
+      size_t fill;
+      size_t tex;
+    };
+    Render render;
   };
 
   virtual void ReadVRAM(u32 x, u32 y, u32 width, u32 height) = 0;
