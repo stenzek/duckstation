@@ -26,10 +26,11 @@ public:
 
   bool CopyImage(CDImage* image, ProgressCallback* progress, Error* error);
 
+  bool HasSubchannelData() const override;
+
   bool ReadSectorFromIndex(void* buffer, const Index& index, LBA lba_in_index) override;
   bool ReadSubChannelQ(SubChannelQ* subq, const Index& index, LBA lba_in_index) override;
 
-  bool HasSubchannelData() const override { return m_has_subchannel_data; }
   bool IsPrecached() const override;
 
 private:
@@ -139,9 +140,9 @@ bool CDImageMemory::CopyImage(CDImage* image, ProgressCallback* progress, Error*
   return Seek(1, Position{0, 0, 0});
 }
 
-bool CDImageMemory::IsPrecached() const
+bool CDImageMemory::HasSubchannelData() const
 {
-  return true;
+  return m_has_subchannel_data;
 }
 
 bool CDImageMemory::ReadSectorFromIndex(void* buffer, const Index& index, LBA lba_in_index)
@@ -175,6 +176,11 @@ bool CDImageMemory::ReadSubChannelQ(SubChannelQ* subq, const Index& index, LBA l
 
   std::memcpy(subq->data.data(), &m_memory[memory_offset + index.file_sector_size - SUBCHANNEL_BYTES_PER_FRAME],
               SUBCHANNEL_BYTES_PER_FRAME);
+  return true;
+}
+
+bool CDImageMemory::IsPrecached() const
+{
   return true;
 }
 

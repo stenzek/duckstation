@@ -265,6 +265,9 @@ public:
   // Returns true if the image has replacement subchannel data.
   virtual bool HasSubchannelData() const;
 
+  /// Returns true if reads are serviced by a physical CD-ROM device.
+  virtual bool IsPhysicalDevice() const;
+
   // Reads a single sector from an index.
   virtual bool ReadSectorFromIndex(void* buffer, const Index& index, LBA lba_in_index) = 0;
 

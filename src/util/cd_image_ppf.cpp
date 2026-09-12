@@ -37,6 +37,7 @@ public:
 
   bool ReadSubChannelQ(SubChannelQ* subq, const Index& index, LBA lba_in_index) override;
   bool HasSubchannelData() const override;
+  bool IsPhysicalDevice() const override;
   s64 GetSizeOnDisk() const override;
 
   std::string GetSubImageTitle(u32 index) const override;
@@ -464,6 +465,11 @@ bool CDImagePPF::ReadSubChannelQ(SubChannelQ* subq, const Index& index, LBA lba_
 bool CDImagePPF::HasSubchannelData() const
 {
   return m_parent_image->HasSubchannelData();
+}
+
+bool CDImagePPF::IsPhysicalDevice() const
+{
+  return m_parent_image->IsPhysicalDevice();
 }
 
 std::string CDImagePPF::GetSubImageTitle(u32 index) const

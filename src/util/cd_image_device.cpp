@@ -215,6 +215,7 @@ public:
 
   bool ReadSubChannelQ(SubChannelQ* subq, const Index& index, LBA lba_in_index) override;
   bool HasSubchannelData() const override;
+  bool IsPhysicalDevice() const override { return true; }
 
 protected:
   bool ReadSectorFromIndex(void* buffer, const Index& index, LBA lba_in_index) override;
@@ -706,6 +707,7 @@ public:
 
   bool ReadSubChannelQ(SubChannelQ* subq, const Index& index, LBA lba_in_index) override;
   bool HasSubchannelData() const override;
+  bool IsPhysicalDevice() const override { return true; }
 
 protected:
   bool ReadSectorFromIndex(void* buffer, const Index& index, LBA lba_in_index) override;
@@ -1167,6 +1169,7 @@ public:
 
   bool ReadSubChannelQ(SubChannelQ* subq, const Index& index, LBA lba_in_index) override;
   bool HasSubchannelData() const override;
+  bool IsPhysicalDevice() const override { return true; }
 
 protected:
   bool ReadSectorFromIndex(void* buffer, const Index& index, LBA lba_in_index) override;

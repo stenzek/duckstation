@@ -29,6 +29,7 @@ public:
 
   bool ReadSubChannelQ(SubChannelQ* subq, const Index& index, LBA lba_in_index) override;
   bool HasSubchannelData() const override;
+  bool IsPhysicalDevice() const override;
 
   bool HasSubImages() const override;
   u32 GetSubImageCount() const override;
@@ -106,6 +107,11 @@ bool CDImageM3u::Open(const char* path, bool apply_patches, Error* error)
 bool CDImageM3u::HasSubchannelData() const
 {
   return m_current_image->HasSubchannelData();
+}
+
+bool CDImageM3u::IsPhysicalDevice() const
+{
+  return m_current_image->IsPhysicalDevice();
 }
 
 bool CDImageM3u::HasSubImages() const

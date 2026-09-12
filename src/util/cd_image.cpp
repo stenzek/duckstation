@@ -413,6 +413,11 @@ bool CDImage::HasSubchannelData() const
   return false;
 }
 
+bool CDImage::IsPhysicalDevice() const
+{
+  return false;
+}
+
 bool CDImage::HasSubImages() const
 {
   return false;
