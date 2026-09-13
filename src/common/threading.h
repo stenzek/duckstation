@@ -17,6 +17,7 @@
 namespace Threading {
 extern u64 GetThreadCpuTime();
 extern u64 GetThreadTicksPerSecond();
+extern u32 GetProcessorCount();
 
 /// Set the name of the current thread
 extern void SetNameOfCurrentThread(const char* name);

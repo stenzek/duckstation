@@ -40,6 +40,8 @@
 #include <mach/mach_time.h>
 #include <mach/semaphore.h>
 #include <mach/task.h>
+#include <sys/sysctl.h>
+#include <sys/types.h>
 #else
 #include <pthread_np.h>
 #endif
@@ -599,6 +601,26 @@ u64 Threading::GetThreadTicksPerSecond()
 
 #else
   return 1000000;
+#endif
+}
+
+u32 Threading::GetProcessorCount()
+{
+#if defined(_WIN32)
+  const DWORD count = GetActiveProcessorCount(ALL_PROCESSOR_GROUPS);
+  return count > 0 ? static_cast<uint32_t>(count) : 1;
+#elif defined(__linux__)
+  const long count = sysconf(_SC_NPROCESSORS_ONLN);
+  return count > 0 ? static_cast<uint32_t>(count) : 1;
+#elif defined(__APPLE__)
+  int count = 0;
+  size_t size = sizeof(count);
+  if (sysctlbyname("hw.logicalcpu", &count, &size, nullptr, 0) == 0 && count > 0)
+    return static_cast<uint32_t>(count);
+  else
+    return 1;
+#else
+#error Unsupported platform
 #endif
 }
 
