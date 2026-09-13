@@ -205,6 +205,7 @@ public:
   double GetElapsedMilliseconds() const;
   bool Increment(u32 progress, Error* error);
   bool CompileShader(std::unique_ptr<GPUShader>* dest, const GPUShaderCacheKey& key, std::string source, Error* error);
+  bool CompilePipeline(std::unique_ptr<GPUPipeline>* dest, const GPUPipeline::GraphicsConfig& config, Error* error);
   bool WaitForCompletion(Error* error);
 
 private:
@@ -1150,10 +1151,6 @@ bool ShaderCompileProgressTracker::CompileShader(std::unique_ptr<GPUShader>* des
     return Increment(1, error);
   }
 
-  // Have we previously aborted? Don't enqueue if so.
-  if (!ConsumeCompletedTasks(error))
-    return false;
-
   m_tasks_remaining++;
   Host::QueueAsyncTask([this, dest, key, source = std::move(source)]() {
     // bail out on error
@@ -1163,6 +1160,36 @@ bool ShaderCompileProgressTracker::CompileShader(std::unique_ptr<GPUShader>* des
       if (!(*dest = g_gpu_device->CompileShader(key, source, &error)))
       {
         ERROR_LOG("Failed to compile {} shader: {}", GPUShader::GetStageName(key.stage), error.GetDescription());
+        m_tasks_abort.test_and_set(std::memory_order_acq_rel);
+      }
+    }
+
+    m_tasks_completed.fetch_add(1, std::memory_order_acq_rel);
+  });
+
+  return true;
+}
+
+bool ShaderCompileProgressTracker::CompilePipeline(std::unique_ptr<GPUPipeline>* dest,
+                                                   const GPUPipeline::GraphicsConfig& config, Error* error)
+{
+  if (!g_gpu_device->GetFeatures().thread_safe_shader_compile)
+  {
+    if (!(*dest = g_gpu_device->CreatePipeline(config, error)))
+      return false;
+
+    return Increment(1, error);
+  }
+
+  m_tasks_remaining++;
+  Host::QueueAsyncTask([this, dest, config]() {
+    // bail out on error
+    if (!m_tasks_abort.test(std::memory_order_acquire))
+    {
+      Error error;
+      if (!(*dest = g_gpu_device->CreatePipeline(config, &error)))
+      {
+        ERROR_LOG("Failed to create pipeline: {}", error.GetDescription());
         m_tasks_abort.test_and_set(std::memory_order_acq_rel);
       }
     }
@@ -1727,13 +1754,20 @@ bool GPU_HW::CompilePipelines(Error* error)
                 }
 
                 if (!(m_batch_pipelines[depth_test][transparency_mode][render_mode][texture_mode][dithering]
-                                       [interlacing][check_mask] = g_gpu_device->CreatePipeline(plconfig, error)))
+                                       [interlacing][check_mask] = g_gpu_device->LoadPipeline(plconfig)))
                 {
-                  return false;
+                  if (!progress.CompilePipeline(&m_batch_pipelines[depth_test][transparency_mode][render_mode]
+                                                                  [texture_mode][dithering][interlacing][check_mask],
+                                                plconfig, error))
+                  {
+                    return false;
+                  }
                 }
-
-                if (!progress.Increment(1, error)) [[unlikely]]
-                  return false;
+                else
+                {
+                  if (!progress.Increment(1, error)) [[unlikely]]
+                    return false;
+                }
               }
             }
           }
@@ -1741,6 +1775,9 @@ bool GPU_HW::CompilePipelines(Error* error)
       }
     }
   }
+
+  if (!progress.WaitForCompletion(error))
+    return false;
 
   plconfig.SetTargetFormats(VRAM_RT_FORMAT, needs_rov_depth ? GPUTextureFormat::Unknown : depth_buffer_format);
   plconfig.render_pass_flags = needs_feedback_loop ? GPUPipeline::ColorFeedbackLoop : GPUPipeline::NoRenderPassFlags;
