@@ -104931,6 +104931,7 @@ SLPM-88509:
     linkCable: false
 SLPS-00500:
   name: "Megami Ibunroku Persona - Be Your True Mind"
+  localizedName: "女神異聞録ペルソナ"
   saveName: "Megami Ibunroku Persona - Be Your True Mind (Japan)"
   controllers:
     - DigitalController
@@ -104954,6 +104955,7 @@ SLPS-00500:
     linkCable: false
 SLPS-91029:
   name: "Megami Ibunroku Persona - Be Your True Mind"
+  localizedName: "女神異聞録ペルソナ"
   saveName: "Megami Ibunroku Persona - Be Your True Mind (Japan) (Rev 1)"
   controllers:
     - DigitalController
