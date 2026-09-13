@@ -1867,7 +1867,8 @@ void Achievements::LoadStateFromBuffer(std::span<const u8> data, std::unique_loc
 {
   // if we're active, make sure we've downloaded and activated all the achievements
   // before deserializing, otherwise that state's going to get lost.
-  if (s_state.load_game_request)
+  // need to check for login requests too, because game load won't be created until login finishes
+  if (s_state.load_game_request || s_state.login_request)
   {
     // Fallback to game icon if we don't have a cover.
     std::string image = System::GetImageForLoadingScreen(System::GetGamePath());
