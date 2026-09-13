@@ -4,15 +4,19 @@
 #include "task_queue.h"
 #include "assert.h"
 
+#include "common/log.h"
+
+LOG_CHANNEL(Threading);
+
 TaskQueue::TaskQueue() = default;
 
 TaskQueue::~TaskQueue()
 {
-  SetWorkerCount(0);
+  SetWorkerCount(0, 0);
   Assert(m_tasks.empty());
 }
 
-void TaskQueue::SetWorkerCount(u32 count)
+void TaskQueue::SetWorkerCount(u16 count, u16 max_threads)
 {
   std::unique_lock lock(m_mutex);
 
@@ -38,6 +42,8 @@ void TaskQueue::SetWorkerCount(u32 count)
     for (u32 i = 0; i < count; i++)
       m_threads.emplace_back(&TaskQueue::WorkerThreadEntryPoint, this);
   }
+
+  m_max_threads = max_threads;
 }
 
 size_t TaskQueue::GetOutstandingTasks()
@@ -50,7 +56,7 @@ void TaskQueue::SubmitTask(TaskFunctionType func)
 {
   std::unique_lock lock(m_mutex);
 
-  if (m_threads.empty()) [[unlikely]]
+  if (m_max_threads == 0) [[unlikely]]
   {
     lock.unlock();
     func();
@@ -59,6 +65,14 @@ void TaskQueue::SubmitTask(TaskFunctionType func)
 
   m_tasks.push_back(std::move(func));
   m_tasks_outstanding++;
+
+  // If we're under pressure and all threads are busy, spin up another one.
+  if (m_threads_busy == m_threads.size() && m_threads.size() < m_max_threads)
+  {
+    m_threads.emplace_back(&TaskQueue::WorkerThreadEntryPoint, this);
+    DEV_LOG("Spawning TaskQueue worker thread, now {} threads", m_threads.size());
+  }
+
   m_task_wait_cv.notify_one();
 }
 
@@ -96,9 +110,12 @@ void TaskQueue::ExecuteOneTask(std::unique_lock<std::mutex>& lock)
 {
   TaskFunctionType func = std::move(m_tasks.front());
   m_tasks.pop_front();
+  m_threads_busy++;
   lock.unlock();
   func();
   lock.lock();
+  DebugAssert(m_threads_busy > 0);
+  m_threads_busy--;
   m_tasks_outstanding--;
   if (m_tasks_outstanding == 0)
     m_tasks_done_cv.notify_all();

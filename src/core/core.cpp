@@ -55,8 +55,8 @@ LOG_CHANNEL(Core);
 
 namespace Core {
 
-/// Use two async worker threads, should be enough for most tasks.
-static constexpr u32 NUM_ASYNC_WORKER_THREADS = 2;
+/// Worker threads are dynamically allocated, maximum 8.
+static constexpr u32 MAX_ASYNC_WORKER_THREADS = 8;
 
 static bool SetAppRootAndResources(Error* error);
 static bool SetDataRoot(Error* error);
@@ -738,7 +738,7 @@ bool Core::CoreThreadInitialize(bool disable_worker_threads, Error* error)
   s_locals.core_thread_handle = Threading::ThreadHandle::GetForCallingThread();
 
   if (!disable_worker_threads)
-    s_locals.async_task_queue.SetWorkerCount(NUM_ASYNC_WORKER_THREADS);
+    s_locals.async_task_queue.SetWorkerCount(0, MAX_ASYNC_WORKER_THREADS);
 
   System::LoadSettings(false);
 
@@ -758,7 +758,7 @@ bool Core::CoreThreadInitialize(bool disable_worker_threads, Error* error)
 
 void Core::CoreThreadShutdown()
 {
-  s_locals.async_task_queue.SetWorkerCount(0);
+  s_locals.async_task_queue.SetWorkerCount(0, 0);
 
 #ifdef ENABLE_DISCORD_PRESENCE
   DiscordPresence::Shutdown();
