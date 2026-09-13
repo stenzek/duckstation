@@ -193,6 +193,8 @@ bool VulkanDevice::EnableOptionalDeviceExtensions(VkPhysicalDevice physical_devi
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_5_FEATURES_KHR, nullptr, VK_FALSE};
   VkPhysicalDeviceTimelineSemaphoreFeaturesKHR timeline_semaphore_features = {
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TIMELINE_SEMAPHORE_FEATURES_KHR, nullptr, VK_FALSE};
+  VkPhysicalDevicePipelineCreationCacheControlFeaturesEXT pipeline_cache_control_features = {
+    VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_CREATION_CACHE_CONTROL_FEATURES_EXT, nullptr, VK_FALSE};
 
   // add in optional feature structs
   // Gate most of the extension checks behind a Vulkan 1.1 device, so we don't have to deal with situations where
@@ -240,6 +242,11 @@ bool VulkanDevice::EnableOptionalDeviceExtensions(VkPhysicalDevice physical_devi
       m_optional_extensions.vk_khr_timeline_semaphore = true;
       Vulkan::AddPointerToChain(&features2, &timeline_semaphore_features);
     }
+    if (SupportsExtension(VK_EXT_PIPELINE_CREATION_CACHE_CONTROL_EXTENSION_NAME))
+    {
+      m_optional_extensions.vk_ext_pipeline_creation_cache_control = true;
+      Vulkan::AddPointerToChain(&features2, &pipeline_cache_control_features);
+    }
   }
 
   // don't bother querying if we're not actually looking at any features
@@ -261,6 +268,8 @@ bool VulkanDevice::EnableOptionalDeviceExtensions(VkPhysicalDevice physical_devi
   m_optional_extensions.vk_khr_maintenance5 &=
     (m_optional_extensions.vk_khr_dynamic_rendering && maintenance5_features.maintenance5 == VK_TRUE);
   m_optional_extensions.vk_khr_timeline_semaphore &= (timeline_semaphore_features.timelineSemaphore == VK_TRUE);
+  m_optional_extensions.vk_ext_pipeline_creation_cache_control &=
+    (pipeline_cache_control_features.pipelineCreationCacheControl == VK_TRUE);
 
   VkPhysicalDeviceProperties2 properties2 = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2, nullptr, {}};
   VkPhysicalDevicePushDescriptorPropertiesKHR push_descriptor_properties = {
@@ -387,6 +396,9 @@ bool VulkanDevice::EnableOptionalDeviceExtensions(VkPhysicalDevice physical_devi
     if (m_optional_extensions.vk_khr_timeline_semaphore)
       AddExtension(VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME);
 
+    if (m_optional_extensions.vk_ext_pipeline_creation_cache_control)
+      AddExtension(VK_EXT_PIPELINE_CREATION_CACHE_CONTROL_EXTENSION_NAME);
+
     // Driver support for swapchain maintenance is a mess... try KHR first, then EXT.
     m_optional_extensions.vk_khr_swapchain_maintenance1 =
       enable_surface && VulkanLoader::GetOptionalExtensions().vk_khr_surface_maintenance1 &&
@@ -412,6 +424,7 @@ bool VulkanDevice::EnableOptionalDeviceExtensions(VkPhysicalDevice physical_devi
   LOG_EXT("VK_EXT_external_memory_host", vk_ext_external_memory_host);
   LOG_EXT("VK_EXT_fragment_shader_interlock", vk_ext_fragment_shader_interlock);
   LOG_EXT("VK_EXT_memory_budget", vk_ext_memory_budget);
+  LOG_EXT("VK_EXT_pipeline_creation_cache_control", vk_ext_pipeline_creation_cache_control);
   LOG_EXT("VK_EXT_rasterization_order_attachment_access", vk_ext_rasterization_order_attachment_access);
   LOG_EXT("VK_KHR_driver_properties", vk_khr_driver_properties);
   LOG_EXT("VK_KHR_dynamic_rendering", vk_khr_dynamic_rendering);
@@ -577,6 +590,8 @@ bool VulkanDevice::CreateDevice(VkPhysicalDevice physical_device, VkSurfaceKHR s
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_5_FEATURES_KHR, nullptr, VK_TRUE};
   VkPhysicalDeviceTimelineSemaphoreFeaturesKHR timeline_semaphore_features = {
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TIMELINE_SEMAPHORE_FEATURES_KHR, nullptr, VK_TRUE};
+  VkPhysicalDevicePipelineCreationCacheControlFeaturesEXT pipeline_cache_control_features = {
+    VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_CREATION_CACHE_CONTROL_FEATURES_EXT, nullptr, VK_TRUE};
 
   if (m_optional_extensions.vk_ext_rasterization_order_attachment_access)
     Vulkan::AddPointerToChain(&device_info, &rasterization_order_access_feature);
@@ -598,6 +613,8 @@ bool VulkanDevice::CreateDevice(VkPhysicalDevice physical_device, VkSurfaceKHR s
   }
   if (m_optional_extensions.vk_khr_timeline_semaphore)
     Vulkan::AddPointerToChain(&device_info, &timeline_semaphore_features);
+  if (m_optional_extensions.vk_ext_pipeline_creation_cache_control)
+    Vulkan::AddPointerToChain(&device_info, &pipeline_cache_control_features);
 
   VkDevice device;
   res = vkCreateDevice(physical_device, &device_info, nullptr, &device);
@@ -936,8 +953,17 @@ VkRenderPass VulkanDevice::GetRenderPass(const GPUPipeline::GraphicsConfig& conf
   key.samples = config.rasterization.multisamples;
   key.feedback_loop = config.render_pass_flags;
 
+  m_render_pass_cache_mutex.lock_shared();
   const auto it = m_render_pass_cache.find(key);
-  return (it != m_render_pass_cache.end()) ? it->second : CreateCachedRenderPass(key);
+  if (it != m_render_pass_cache.end())
+  {
+    const VkRenderPass ret = it->second;
+    m_render_pass_cache_mutex.unlock_shared();
+    return ret;
+  }
+
+  m_render_pass_cache_mutex.unlock_shared();
+  return CreateCachedRenderPass(key);
 }
 
 VkRenderPass VulkanDevice::GetRenderPass(VulkanTexture* const* rts, u32 num_rts, VulkanTexture* ds,
@@ -972,8 +998,17 @@ VkRenderPass VulkanDevice::GetRenderPass(VulkanTexture* const* rts, u32 num_rts,
 
   key.feedback_loop = feedback_loop;
 
+  m_render_pass_cache_mutex.lock_shared();
   const auto it = m_render_pass_cache.find(key);
-  return (it != m_render_pass_cache.end()) ? it->second : CreateCachedRenderPass(key);
+  if (it != m_render_pass_cache.end())
+  {
+    const VkRenderPass ret = it->second;
+    m_render_pass_cache_mutex.unlock_shared();
+    return ret;
+  }
+
+  m_render_pass_cache_mutex.unlock_shared();
+  return CreateCachedRenderPass(key);
 }
 
 VkRenderPass VulkanDevice::GetSwapChainRenderPass(GPUTextureFormat format, VkAttachmentLoadOp load_op)
@@ -988,12 +1023,22 @@ VkRenderPass VulkanDevice::GetSwapChainRenderPass(GPUTextureFormat format, VkAtt
   key.color[0].store_op = VK_ATTACHMENT_STORE_OP_STORE;
   key.samples = 1;
 
+  m_render_pass_cache_mutex.lock_shared();
   const auto it = m_render_pass_cache.find(key);
-  return (it != m_render_pass_cache.end()) ? it->second : CreateCachedRenderPass(key);
+  if (it != m_render_pass_cache.end())
+  {
+    const VkRenderPass ret = it->second;
+    m_render_pass_cache_mutex.unlock_shared();
+    return ret;
+  }
+
+  m_render_pass_cache_mutex.unlock_shared();
+  return CreateCachedRenderPass(key);
 }
 
 VkRenderPass VulkanDevice::GetRenderPassForRestarting(VkRenderPass pass)
 {
+  m_render_pass_cache_mutex.lock_shared();
   for (const auto& it : m_render_pass_cache)
   {
     if (it.second != pass)
@@ -1012,15 +1057,24 @@ VkRenderPass VulkanDevice::GetRenderPassForRestarting(VkRenderPass pass)
       modified_key.stencil_load_op = VK_ATTACHMENT_LOAD_OP_LOAD;
 
     if (modified_key == it.first)
+    {
+      m_render_pass_cache_mutex.unlock_shared();
       return pass;
+    }
 
     auto fit = m_render_pass_cache.find(modified_key);
     if (fit != m_render_pass_cache.end())
-      return fit->second;
+    {
+      const VkRenderPass ret = fit->second;
+      m_render_pass_cache_mutex.unlock_shared();
+      return ret;
+    }
 
+    m_render_pass_cache_mutex.unlock_shared();
     return CreateCachedRenderPass(modified_key);
   }
 
+  m_render_pass_cache_mutex.unlock_shared();
   return pass;
 }
 
@@ -1618,7 +1672,18 @@ VkRenderPass VulkanDevice::CreateCachedRenderPass(RenderPassCacheKey key)
     return VK_NULL_HANDLE;
   }
 
+  // ensure another thread didn't create in the meantime
+  m_render_pass_cache_mutex.lock();
+  if (const auto it = m_render_pass_cache.find(key); it != m_render_pass_cache.end()) [[unlikely]]
+  {
+    const VkRenderPass conflicting_pass = it->second;
+    m_render_pass_cache_mutex.unlock();
+    vkDestroyRenderPass(m_device, pass, nullptr);
+    return conflicting_pass;
+  }
+
   m_render_pass_cache.emplace(key, pass);
+  m_render_pass_cache_mutex.unlock();
   return pass;
 }
 

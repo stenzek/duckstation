@@ -744,6 +744,16 @@ id<MTLDepthStencilState> MetalDevice::GetDepthState(const GPUPipeline::DepthStat
   }
 }
 
+std::unique_ptr<GPUPipeline> MetalDevice::LoadPipeline(const GPUPipeline::GraphicsConfig& config)
+{
+  // Effectively no difference between loading and creating here.
+  Error error;
+  std::unique_ptr<GPUPipeline> ret = CreatePipeline(config, &error);
+  if (!ret) [[unlikely]]
+    ERROR_LOG("Failed to create pipeline: {}", error.GetDescription());
+  return ret;
+}
+
 std::unique_ptr<GPUPipeline> MetalDevice::CreatePipeline(const GPUPipeline::GraphicsConfig& config, Error* error)
 {
   @autoreleasepool
@@ -895,6 +905,16 @@ std::unique_ptr<GPUPipeline> MetalDevice::CreatePipeline(const GPUPipeline::Grap
 
     return std::unique_ptr<GPUPipeline>(new MetalPipeline(pipeline, depth, config.layout, cull_mode, primitive));
   }
+}
+
+std::unique_ptr<GPUPipeline> MetalDevice::LoadPipeline(const GPUPipeline::ComputeConfig& config)
+{
+  // Effectively no difference between loading and creating here.
+  Error error;
+  std::unique_ptr<GPUPipeline> ret = CreatePipeline(config, &error);
+  if (!ret) [[unlikely]]
+    ERROR_LOG("Failed to create pipeline: {}", error.GetDescription());
+  return ret;
 }
 
 std::unique_ptr<GPUPipeline> MetalDevice::CreatePipeline(const GPUPipeline::ComputeConfig& config, Error* error)

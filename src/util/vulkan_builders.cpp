@@ -116,6 +116,9 @@ void Vulkan::LogVulkanResult(const char* func_name, VkResult res, std::string_vi
 
 void Vulkan::SetErrorObject(Error* errptr, std::string_view prefix, VkResult res)
 {
+  if (!errptr)
+    return;
+
   Error::SetStringFmt(errptr, "{} (0x{:08X}: {})", prefix, static_cast<unsigned>(res), VkResultToString(res));
 }
 
@@ -317,13 +320,18 @@ void Vulkan::GraphicsPipelineBuilder::Clear()
 }
 
 VkPipeline Vulkan::GraphicsPipelineBuilder::Create(VkDevice device, VkPipelineCache pipeline_cache, bool clear,
-                                                   Error* error)
+                                                   bool require_cache_hit, Error* error)
 {
+  if (require_cache_hit)
+    m_ci.flags |= VK_PIPELINE_CREATE_FAIL_ON_PIPELINE_COMPILE_REQUIRED_BIT;
+
   VkPipeline pipeline;
   VkResult res = vkCreateGraphicsPipelines(device, pipeline_cache, 1, &m_ci, nullptr, &pipeline);
   if (res != VK_SUCCESS)
   {
-    LOG_VULKAN_ERROR(res, "vkCreateGraphicsPipelines() failed: ");
+    if (res != VK_PIPELINE_COMPILE_REQUIRED || !require_cache_hit)
+      LOG_VULKAN_ERROR(res, "vkCreateGraphicsPipelines() failed: ");
+
     SetErrorObject(error, "vkCreateGraphicsPipelines() failed: ", res);
     return VK_NULL_HANDLE;
   }
@@ -661,13 +669,18 @@ void Vulkan::ComputePipelineBuilder::Clear()
 }
 
 VkPipeline Vulkan::ComputePipelineBuilder::Create(VkDevice device, VkPipelineCache pipeline_cache, bool clear,
-                                                  Error* error)
+                                                  bool require_cache_hit, Error* error)
 {
+  if (require_cache_hit)
+    m_ci.flags |= VK_PIPELINE_CREATE_FAIL_ON_PIPELINE_COMPILE_REQUIRED_BIT;
+
   VkPipeline pipeline;
   VkResult res = vkCreateComputePipelines(device, pipeline_cache, 1, &m_ci, nullptr, &pipeline);
   if (res != VK_SUCCESS)
   {
-    LOG_VULKAN_ERROR(res, "vkCreateComputePipelines() failed: ");
+    if (res != VK_PIPELINE_COMPILE_REQUIRED || !require_cache_hit)
+      LOG_VULKAN_ERROR(res, "vkCreateComputePipelines() failed: ");
+
     SetErrorObject(error, "vkCreateComputePipelines() failed: ", res);
     return VK_NULL_HANDLE;
   }

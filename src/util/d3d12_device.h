@@ -26,18 +26,22 @@
 #include <vector>
 #include <wrl/client.h>
 
+namespace D3D12MA {
+class Allocator;
+}
+
 class D3D12Framebuffer;
 class D3D12Pipeline;
 class D3D12SwapChain;
 class D3D12Texture;
 class D3D12TextureBuffer;
 class D3D12DownloadTexture;
-
-namespace D3D12MA {
-class Allocator;
-}
-
 class D3D12SwapChain;
+
+namespace D3D12 {
+class GraphicsPipelineBuilder;
+class ComputePipelineBuilder;
+} // namespace D3D12
 
 class D3D12Device final : public GPUDevice
 {
@@ -97,7 +101,9 @@ public:
   std::unique_ptr<GPUShader> CreateShaderFromSource(GPUShaderStage stage, GPUShaderLanguage language,
                                                     std::string_view source, const char* entry_point,
                                                     DynamicHeapArray<u8>* out_binary, Error* error) override;
+  std::unique_ptr<GPUPipeline> LoadPipeline(const GPUPipeline::GraphicsConfig& config) override;
   std::unique_ptr<GPUPipeline> CreatePipeline(const GPUPipeline::GraphicsConfig& config, Error* error) override;
+  std::unique_ptr<GPUPipeline> LoadPipeline(const GPUPipeline::ComputeConfig& config) override;
   std::unique_ptr<GPUPipeline> CreatePipeline(const GPUPipeline::ComputeConfig& config, Error* error) override;
 
 #ifdef ENABLE_GPU_OBJECT_NAMES
@@ -276,6 +282,13 @@ private:
   bool CreateUAVDescriptor(ID3D12Resource* resource, u32 layers, u32 samples, DXGI_FORMAT format,
                            D3D12DescriptorHandle* dh, Error* error);
 
+  void SetupPipelineBuilder(D3D12::GraphicsPipelineBuilder& gpb, const GPUPipeline::GraphicsConfig& config);
+  std::unique_ptr<GPUPipeline> WrapPipelineState(const GPUPipeline::GraphicsConfig& config,
+                                                 ComPtr<ID3D12PipelineState> pipeline);
+  void SetupPipelineBuilder(D3D12::ComputePipelineBuilder& cpb, const GPUPipeline::ComputeConfig& config);
+  std::unique_ptr<GPUPipeline> WrapPipelineState(const GPUPipeline::ComputeConfig& config,
+                                                 ComPtr<ID3D12PipelineState> pipeline);
+
   bool IsRenderTargetBound(const GPUTexture* tex) const;
 
   /// Set dirty flags on everything to force re-bind at next draw time.
@@ -340,8 +353,6 @@ private:
   u32 m_uniform_buffer_position = 0;
   bool m_in_render_pass = false;
 
-  ComPtr<ID3D12PipelineLibrary> m_pipeline_library;
-
   // Which bindings/state has to be updated before the next draw.
   u32 m_dirty_flags = ALL_DIRTY_STATE;
 
@@ -366,6 +377,9 @@ private:
   ComPtr<ID3D12RootSignature> m_mipmap_render_root_signature;
   std::array<ComPtr<ID3D12PipelineState>, static_cast<size_t>(GPUTextureFormat::MaxCount)> m_mipmap_render_pipelines =
     {};
+
+  ComPtr<ID3D12PipelineLibrary> m_pipeline_library;
+  std::mutex m_pipeline_library_mutex;
 };
 
 class D3D12SwapChain : public GPUSwapChain

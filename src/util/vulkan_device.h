@@ -17,6 +17,7 @@
 #include <deque>
 #include <functional>
 #include <memory>
+#include <shared_mutex>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -26,6 +27,11 @@ class VulkanSwapChain;
 class VulkanTexture;
 class VulkanTextureBuffer;
 class VulkanDownloadTexture;
+
+namespace Vulkan {
+class GraphicsPipelineBuilder;
+class ComputePipelineBuilder;
+} // namespace Vulkan
 
 struct VK_PIPELINE_CACHE_HEADER;
 
@@ -46,6 +52,7 @@ public:
     bool vk_ext_fragment_shader_interlock : 1;
     bool vk_ext_full_screen_exclusive : 1;
     bool vk_ext_memory_budget : 1;
+    bool vk_ext_pipeline_creation_cache_control : 1;
     bool vk_ext_rasterization_order_attachment_access : 1;
     bool vk_khr_driver_properties : 1;
     bool vk_khr_dynamic_rendering : 1;
@@ -106,7 +113,9 @@ public:
                                                     std::string_view source, const char* entry_point,
                                                     DynamicHeapArray<u8>* out_binary, Error* error) override;
   std::unique_ptr<GPUPipeline> CreatePipeline(const GPUPipeline::GraphicsConfig& config, Error* error) override;
+  std::unique_ptr<GPUPipeline> LoadPipeline(const GPUPipeline::GraphicsConfig& config) override;
   std::unique_ptr<GPUPipeline> CreatePipeline(const GPUPipeline::ComputeConfig& config, Error* error) override;
+  std::unique_ptr<GPUPipeline> LoadPipeline(const GPUPipeline::ComputeConfig& config) override;
 
 #ifdef ENABLE_GPU_OBJECT_NAMES
   void PushDebugGroup(const char* name) override;
@@ -340,6 +349,11 @@ private:
   bool TryImportHostMemory(void* data, size_t data_size, VkBufferUsageFlags buffer_usage, VkDeviceMemory* out_memory,
                            VkBuffer* out_buffer, VkDeviceSize* out_offset, Error* error);
 
+  void SetupPipelineBuilder(Vulkan::GraphicsPipelineBuilder& gpb, const GPUPipeline::GraphicsConfig& config);
+  std::unique_ptr<GPUPipeline> WrapPipelineState(const GPUPipeline::GraphicsConfig& config, VkPipeline pipeline);
+  void SetupPipelineBuilder(Vulkan::ComputePipelineBuilder& cpb, const GPUPipeline::ComputeConfig& config);
+  std::unique_ptr<GPUPipeline> WrapPipelineState(const GPUPipeline::ComputeConfig& config, VkPipeline pipeline);
+
   /// Set dirty flags on everything to force re-bind at next draw time.
   void InvalidateCachedState();
 
@@ -428,6 +442,7 @@ private:
   VkQueryPool m_timestamp_query_pool = VK_NULL_HANDLE;
 
   std::unordered_map<RenderPassCacheKey, VkRenderPass, RenderPassCacheKeyHash> m_render_pass_cache;
+  std::shared_mutex m_render_pass_cache_mutex;
   GPUFramebufferManager<VkFramebuffer, CreateFramebuffer, DestroyFramebuffer> m_framebuffer_manager;
   VkPipelineCache m_pipeline_cache = VK_NULL_HANDLE;
 

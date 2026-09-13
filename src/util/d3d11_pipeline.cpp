@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "d3d11_pipeline.h"
@@ -9,11 +9,14 @@
 #include "common/assert.h"
 #include "common/error.h"
 #include "common/hash_combine.h"
+#include "common/log.h"
 
 #include "fmt/format.h"
 
 #include <array>
 #include <malloc.h>
+
+LOG_CHANNEL(GPUDevice);
 
 D3D11Shader::D3D11Shader(GPUShaderStage stage, Microsoft::WRL::ComPtr<ID3D11DeviceChild> shader,
                          std::vector<u8> bytecode)
@@ -341,6 +344,16 @@ D3D11Device::ComPtr<ID3D11InputLayout> D3D11Device::GetInputLayout(const GPUPipe
   return dil;
 }
 
+std::unique_ptr<GPUPipeline> D3D11Device::LoadPipeline(const GPUPipeline::GraphicsConfig& config)
+{
+  // Effectively no difference between loading and creating here.
+  Error error;
+  std::unique_ptr<GPUPipeline> ret = CreatePipeline(config, &error);
+  if (!ret) [[unlikely]]
+    ERROR_LOG("Failed to create pipeline: {}", error.GetDescription());
+  return ret;
+}
+
 std::unique_ptr<GPUPipeline> D3D11Device::CreatePipeline(const GPUPipeline::GraphicsConfig& config, Error* error)
 {
   ComPtr<ID3D11RasterizerState> rs = GetRasterizationState(config.rasterization, error);
@@ -373,6 +386,16 @@ std::unique_ptr<GPUPipeline> D3D11Device::CreatePipeline(const GPUPipeline::Grap
     config.geometry_shader ? static_cast<const D3D11Shader*>(config.geometry_shader)->GetGeometryShader() : nullptr,
     static_cast<const D3D11Shader*>(config.fragment_shader)->GetPixelShader(),
     primitives[static_cast<u8>(config.primitive)], vertex_stride, config.blend.constant));
+}
+
+std::unique_ptr<GPUPipeline> D3D11Device::LoadPipeline(const GPUPipeline::ComputeConfig& config)
+{
+  // Effectively no difference between loading and creating here.
+  Error error;
+  std::unique_ptr<GPUPipeline> ret = CreatePipeline(config, &error);
+  if (!ret) [[unlikely]]
+    ERROR_LOG("Failed to create pipeline: {}", error.GetDescription());
+  return ret;
 }
 
 std::unique_ptr<GPUPipeline> D3D11Device::CreatePipeline(const GPUPipeline::ComputeConfig& config, Error* error)

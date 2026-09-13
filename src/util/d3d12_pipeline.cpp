@@ -128,15 +128,8 @@ std::string D3D12Pipeline::GetPipelineName(const ComputeConfig& config)
   return SHA1Digest::DigestToString(digest);
 }
 
-std::unique_ptr<GPUPipeline> D3D12Device::CreatePipeline(const GPUPipeline::GraphicsConfig& config, Error* error)
+void D3D12Device::SetupPipelineBuilder(D3D12::GraphicsPipelineBuilder& gpb, const GPUPipeline::GraphicsConfig& config)
 {
-  static constexpr std::array<D3D12_PRIMITIVE_TOPOLOGY, static_cast<u32>(GPUPipeline::Primitive::MaxCount)> primitives =
-    {{
-      D3D_PRIMITIVE_TOPOLOGY_POINTLIST,     // Points
-      D3D_PRIMITIVE_TOPOLOGY_LINELIST,      // Lines
-      D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST,  // Triangles
-      D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP, // TriangleStrips
-    }};
   static constexpr std::array<D3D12_PRIMITIVE_TOPOLOGY_TYPE, static_cast<u32>(GPUPipeline::Primitive::MaxCount)>
     primitive_types = {{
       D3D12_PRIMITIVE_TOPOLOGY_TYPE_POINT,    // Points
@@ -203,12 +196,8 @@ std::unique_ptr<GPUPipeline> D3D12Device::CreatePipeline(const GPUPipeline::Grap
   }};
 
   if (config.render_pass_flags & GPUPipeline::BindRenderTargetsAsImages && !m_features.raster_order_views)
-  {
-    ERROR_LOG("Attempting to create ROV pipeline without ROV feature.");
-    return {};
-  }
+    Panic("Attempting to create ROV pipeline without ROV feature.");
 
-  D3D12::GraphicsPipelineBuilder gpb;
   gpb.SetRootSignature(m_root_signatures[BoolToUInt8(
     (config.render_pass_flags & GPUPipeline::BindRenderTargetsAsImages))][static_cast<u8>(config.layout)]
                          .Get());
@@ -258,13 +247,65 @@ std::unique_ptr<GPUPipeline> D3D12Device::CreatePipeline(const GPUPipeline::Grap
 
   if (config.depth_format != GPUTextureFormat::Unknown)
     gpb.SetDepthStencilFormat(D3DCommon::GetFormatMapping(config.depth_format).dsv_format);
+}
+
+std::unique_ptr<GPUPipeline> D3D12Device::WrapPipelineState(const GPUPipeline::GraphicsConfig& config,
+                                                            ComPtr<ID3D12PipelineState> pipeline)
+{
+  static constexpr std::array<D3D12_PRIMITIVE_TOPOLOGY, static_cast<u32>(GPUPipeline::Primitive::MaxCount)> primitives =
+    {{
+      D3D_PRIMITIVE_TOPOLOGY_POINTLIST,     // Points
+      D3D_PRIMITIVE_TOPOLOGY_LINELIST,      // Lines
+      D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST,  // Triangles
+      D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP, // TriangleStrips
+    }};
+
+  return std::unique_ptr<GPUPipeline>(new D3D12Pipeline(
+    std::move(pipeline), config.layout, primitives[static_cast<u8>(config.primitive)],
+    config.input_layout.vertex_attributes.empty() ? 0 : config.input_layout.vertex_stride, config.blend.constant));
+}
+
+std::unique_ptr<GPUPipeline> D3D12Device::LoadPipeline(const GPUPipeline::GraphicsConfig& config)
+{
+  if (!m_pipeline_library)
+    return {};
+
+  D3D12::GraphicsPipelineBuilder gpb;
+  SetupPipelineBuilder(gpb, config);
+
+  ComPtr<ID3D12PipelineState> pipeline;
+  const std::wstring name = StringUtil::UTF8StringToWideString(D3D12Pipeline::GetPipelineName(config));
+  HRESULT hr;
+  {
+    // MS notes that pipeline libraries are thread-safe, but not for two threads loading the same PSO.
+    // I don't trust my code enough to be certain that two threads aren't going to try to create the same PSO...
+    std::unique_lock lock(m_pipeline_library_mutex);
+    hr = m_pipeline_library->LoadGraphicsPipeline(name.c_str(), gpb.GetDesc(), IID_PPV_ARGS(pipeline.GetAddressOf()));
+  }
+  if (SUCCEEDED(hr))
+    return WrapPipelineState(config, std::move(pipeline));
+
+  // E_INVALIDARG = not found.
+  if (hr != E_INVALIDARG)
+    ERROR_LOG("LoadGraphicsPipeline() failed with HRESULT {:08X}", static_cast<unsigned>(hr));
+
+  return {};
+}
+
+std::unique_ptr<GPUPipeline> D3D12Device::CreatePipeline(const GPUPipeline::GraphicsConfig& config, Error* error)
+{
+  D3D12::GraphicsPipelineBuilder gpb;
+  SetupPipelineBuilder(gpb, config);
 
   ComPtr<ID3D12PipelineState> pipeline;
   if (m_pipeline_library)
   {
     const std::wstring name = StringUtil::UTF8StringToWideString(D3D12Pipeline::GetPipelineName(config));
-    HRESULT hr =
-      m_pipeline_library->LoadGraphicsPipeline(name.c_str(), gpb.GetDesc(), IID_PPV_ARGS(pipeline.GetAddressOf()));
+    HRESULT hr;
+    {
+      std::unique_lock lock(m_pipeline_library_mutex);
+      hr = m_pipeline_library->LoadGraphicsPipeline(name.c_str(), gpb.GetDesc(), IID_PPV_ARGS(pipeline.GetAddressOf()));
+    }
     if (FAILED(hr))
     {
       // E_INVALIDARG = not found.
@@ -277,8 +318,9 @@ std::unique_ptr<GPUPipeline> D3D12Device::CreatePipeline(const GPUPipeline::Grap
       // Store if it wasn't an OOM or something else.
       if (pipeline && hr == E_INVALIDARG)
       {
+        std::unique_lock lock(m_pipeline_library_mutex);
         hr = m_pipeline_library->StorePipeline(name.c_str(), pipeline.Get());
-        if (FAILED(hr))
+        if (FAILED(hr) && hr != E_INVALIDARG)
           ERROR_LOG("StorePipeline() failed with HRESULT {:08X}", static_cast<unsigned>(hr));
       }
     }
@@ -291,24 +333,63 @@ std::unique_ptr<GPUPipeline> D3D12Device::CreatePipeline(const GPUPipeline::Grap
   if (!pipeline)
     return {};
 
-  return std::unique_ptr<GPUPipeline>(new D3D12Pipeline(
-    pipeline, config.layout, primitives[static_cast<u8>(config.primitive)],
-    config.input_layout.vertex_attributes.empty() ? 0 : config.input_layout.vertex_stride, config.blend.constant));
+  return WrapPipelineState(config, std::move(pipeline));
+}
+
+void D3D12Device::SetupPipelineBuilder(D3D12::ComputePipelineBuilder& cpb, const GPUPipeline::ComputeConfig& config)
+{
+  cpb.SetRootSignature(m_root_signatures[0][static_cast<u8>(config.layout)].Get());
+  cpb.SetShader(static_cast<const D3D12Shader*>(config.compute_shader)->GetBytecodeData(),
+                static_cast<const D3D12Shader*>(config.compute_shader)->GetBytecodeSize());
+}
+
+std::unique_ptr<GPUPipeline> D3D12Device::WrapPipelineState(const GPUPipeline::ComputeConfig& config,
+                                                            ComPtr<ID3D12PipelineState> pipeline)
+{
+  return std::unique_ptr<GPUPipeline>(
+    new D3D12Pipeline(pipeline, config.layout, D3D_PRIMITIVE_TOPOLOGY_UNDEFINED, 0, 0));
+}
+
+std::unique_ptr<GPUPipeline> D3D12Device::LoadPipeline(const GPUPipeline::ComputeConfig& config)
+{
+  if (!m_pipeline_library)
+    return {};
+
+  D3D12::ComputePipelineBuilder cpb;
+  SetupPipelineBuilder(cpb, config);
+
+  ComPtr<ID3D12PipelineState> pipeline;
+
+  const std::wstring name = StringUtil::UTF8StringToWideString(D3D12Pipeline::GetPipelineName(config));
+  HRESULT hr;
+  {
+    std::unique_lock lock(m_pipeline_library_mutex);
+    hr = m_pipeline_library->LoadComputePipeline(name.c_str(), cpb.GetDesc(), IID_PPV_ARGS(pipeline.GetAddressOf()));
+  }
+  if (SUCCEEDED(hr))
+    return WrapPipelineState(config, std::move(pipeline));
+
+  // E_INVALIDARG = not found.
+  if (hr != E_INVALIDARG)
+    ERROR_LOG("LoadComputePipeline() failed with HRESULT {:08X}", static_cast<unsigned>(hr));
+
+  return {};
 }
 
 std::unique_ptr<GPUPipeline> D3D12Device::CreatePipeline(const GPUPipeline::ComputeConfig& config, Error* error)
 {
   D3D12::ComputePipelineBuilder cpb;
-  cpb.SetRootSignature(m_root_signatures[0][static_cast<u8>(config.layout)].Get());
-  cpb.SetShader(static_cast<const D3D12Shader*>(config.compute_shader)->GetBytecodeData(),
-                static_cast<const D3D12Shader*>(config.compute_shader)->GetBytecodeSize());
+  SetupPipelineBuilder(cpb, config);
 
   ComPtr<ID3D12PipelineState> pipeline;
   if (m_pipeline_library)
   {
     const std::wstring name = StringUtil::UTF8StringToWideString(D3D12Pipeline::GetPipelineName(config));
-    HRESULT hr =
-      m_pipeline_library->LoadComputePipeline(name.c_str(), cpb.GetDesc(), IID_PPV_ARGS(pipeline.GetAddressOf()));
+    HRESULT hr;
+    {
+      std::unique_lock lock(m_pipeline_library_mutex);
+      hr = m_pipeline_library->LoadComputePipeline(name.c_str(), cpb.GetDesc(), IID_PPV_ARGS(pipeline.GetAddressOf()));
+    }
     if (FAILED(hr))
     {
       // E_INVALIDARG = not found.
@@ -321,8 +402,9 @@ std::unique_ptr<GPUPipeline> D3D12Device::CreatePipeline(const GPUPipeline::Comp
       // Store if it wasn't an OOM or something else.
       if (pipeline && hr == E_INVALIDARG)
       {
+        std::unique_lock lock(m_pipeline_library_mutex);
         hr = m_pipeline_library->StorePipeline(name.c_str(), pipeline.Get());
-        if (FAILED(hr))
+        if (FAILED(hr) && hr != E_INVALIDARG)
           ERROR_LOG("StorePipeline() failed with HRESULT {:08X}", static_cast<unsigned>(hr));
       }
     }
@@ -335,6 +417,5 @@ std::unique_ptr<GPUPipeline> D3D12Device::CreatePipeline(const GPUPipeline::Comp
   if (!pipeline)
     return {};
 
-  return std::unique_ptr<GPUPipeline>(
-    new D3D12Pipeline(pipeline, config.layout, D3D_PRIMITIVE_TOPOLOGY_UNDEFINED, 0, 0));
+  return WrapPipelineState(config, std::move(pipeline));
 }

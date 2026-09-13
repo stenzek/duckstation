@@ -778,8 +778,10 @@ public:
                                                  Error* error = nullptr, const char* entry_point = "main");
   std::unique_ptr<GPUShader> CreateShader(GPUShaderStage stage, GPUShaderLanguage language, std::string_view source,
                                           Error* error = nullptr, const char* entry_point = "main");
+  virtual std::unique_ptr<GPUPipeline> LoadPipeline(const GPUPipeline::GraphicsConfig& config) = 0;
   virtual std::unique_ptr<GPUPipeline> CreatePipeline(const GPUPipeline::GraphicsConfig& config,
                                                       Error* error = nullptr) = 0;
+  virtual std::unique_ptr<GPUPipeline> LoadPipeline(const GPUPipeline::ComputeConfig& config) = 0;
   virtual std::unique_ptr<GPUPipeline> CreatePipeline(const GPUPipeline::ComputeConfig& config,
                                                       Error* error = nullptr) = 0;
 

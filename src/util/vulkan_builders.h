@@ -94,7 +94,7 @@ public:
 
   void Clear();
 
-  VkPipeline Create(VkDevice device, VkPipelineCache pipeline_cache, bool clear, Error* error);
+  VkPipeline Create(VkDevice device, VkPipelineCache pipeline_cache, bool clear, bool require_cache_hit, Error* error);
 
   void SetShaderStage(VkShaderStageFlagBits stage, VkShaderModule module, const char* entry_point);
   void SetVertexShader(VkShaderModule module) { SetShaderStage(VK_SHADER_STAGE_VERTEX_BIT, module, "main"); }
@@ -199,7 +199,7 @@ public:
 
   void Clear();
 
-  VkPipeline Create(VkDevice device, VkPipelineCache pipeline_cache, bool clear, Error* error);
+  VkPipeline Create(VkDevice device, VkPipelineCache pipeline_cache, bool clear, bool require_cache_hit, Error* error);
 
   void SetShader(VkShaderModule module, const char* entry_point);
 

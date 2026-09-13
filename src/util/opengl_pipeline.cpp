@@ -644,6 +644,16 @@ void OpenGLPipeline::SetDebugName(std::string_view name)
 
 #endif
 
+std::unique_ptr<GPUPipeline> OpenGLDevice::LoadPipeline(const GPUPipeline::GraphicsConfig& config)
+{
+  // Effectively no difference between loading and creating here.
+  Error error;
+  std::unique_ptr<GPUPipeline> ret = CreatePipeline(config, &error);
+  if (!ret) [[unlikely]]
+    ERROR_LOG("Failed to create pipeline: {}", error.GetDescription());
+  return ret;
+}
+
 std::unique_ptr<GPUPipeline> OpenGLDevice::CreatePipeline(const GPUPipeline::GraphicsConfig& config, Error* error)
 {
   const OpenGLPipeline::ProgramCacheKey pkey = OpenGLPipeline::GetProgramCacheKey(config);

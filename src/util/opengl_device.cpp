@@ -210,6 +210,11 @@ void OpenGLDevice::InvalidateRenderTarget(GPUTexture* t)
   }
 }
 
+std::unique_ptr<GPUPipeline> OpenGLDevice::LoadPipeline(const GPUPipeline::ComputeConfig& config)
+{
+  return {};
+}
+
 std::unique_ptr<GPUPipeline> OpenGLDevice::CreatePipeline(const GPUPipeline::ComputeConfig& config, Error* error)
 {
   ERROR_LOG("Compute shaders are not yet supported.");

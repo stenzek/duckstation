@@ -122,15 +122,14 @@ void VulkanPipeline::SetDebugName(std::string_view name)
 
 #endif
 
-std::unique_ptr<GPUPipeline> VulkanDevice::CreatePipeline(const GPUPipeline::GraphicsConfig& config, Error* error)
+void VulkanDevice::SetupPipelineBuilder(Vulkan::GraphicsPipelineBuilder& gpb, const GPUPipeline::GraphicsConfig& config)
 {
-  static constexpr std::array<std::pair<VkPrimitiveTopology, u32>, static_cast<u32>(GPUPipeline::Primitive::MaxCount)>
-    primitives = {{
-      {VK_PRIMITIVE_TOPOLOGY_POINT_LIST, 1},     // Points
-      {VK_PRIMITIVE_TOPOLOGY_LINE_LIST, 2},      // Lines
-      {VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 3},  // Triangles
-      {VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP, 3}, // TriangleStrips
-    }};
+  static constexpr std::array<VkPrimitiveTopology, static_cast<u32>(GPUPipeline::Primitive::MaxCount)> primitives = {{
+    VK_PRIMITIVE_TOPOLOGY_POINT_LIST,     // Points
+    VK_PRIMITIVE_TOPOLOGY_LINE_LIST,      // Lines
+    VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,  // Triangles
+    VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP, // TriangleStrips
+  }};
 
   static constexpr u32 MAX_COMPONENTS = 4;
   static constexpr const VkFormat format_mapping[static_cast<u8>(
@@ -187,7 +186,6 @@ std::unique_ptr<GPUPipeline> VulkanDevice::CreatePipeline(const GPUPipeline::Gra
     VK_BLEND_OP_MAX,              // Max
   }};
 
-  Vulkan::GraphicsPipelineBuilder gpb;
   gpb.SetVertexShader(static_cast<const VulkanShader*>(config.vertex_shader)->GetModule());
   gpb.SetFragmentShader(static_cast<const VulkanShader*>(config.fragment_shader)->GetModule());
 
@@ -207,8 +205,7 @@ std::unique_ptr<GPUPipeline> VulkanDevice::CreatePipeline(const GPUPipeline::Gra
     }
   }
 
-  const auto [vk_topology, vertices_per_primitive] = primitives[static_cast<u8>(config.primitive)];
-  gpb.SetPrimitiveTopology(vk_topology);
+  gpb.SetPrimitiveTopology(primitives[static_cast<u8>(config.primitive)]);
 
   // Line width?
 
@@ -284,24 +281,84 @@ std::unique_ptr<GPUPipeline> VulkanDevice::CreatePipeline(const GPUPipeline::Gra
     DebugAssert(render_pass != VK_NULL_HANDLE);
     gpb.SetRenderPass(render_pass, 0);
   }
+}
 
-  const VkPipeline pipeline = gpb.Create(m_device, m_pipeline_cache, false, error);
+std::unique_ptr<GPUPipeline> VulkanDevice::WrapPipelineState(const GPUPipeline::GraphicsConfig& config,
+                                                             VkPipeline pipeline)
+{
+  static constexpr std::array<u8, static_cast<u32>(GPUPipeline::Primitive::MaxCount)> vertices_per_primitive = {{
+    1, // Points
+    2, // Lines
+    3, // Triangles
+    3, // TriangleStrips
+  }};
+
+  return std::unique_ptr<GPUPipeline>(new VulkanPipeline(
+    pipeline, config.layout, vertices_per_primitive[static_cast<u8>(config.primitive)], config.render_pass_flags));
+}
+
+std::unique_ptr<GPUPipeline> VulkanDevice::LoadPipeline(const GPUPipeline::GraphicsConfig& config)
+{
+  if (m_pipeline_cache == VK_NULL_HANDLE || !m_optional_extensions.vk_ext_pipeline_creation_cache_control)
+    return {};
+
+  Vulkan::GraphicsPipelineBuilder gpb;
+  SetupPipelineBuilder(gpb, config);
+
+  const VkPipeline pipeline = gpb.Create(m_device, m_pipeline_cache, false, true, nullptr);
   if (!pipeline)
     return {};
 
-  return std::unique_ptr<GPUPipeline>(
-    new VulkanPipeline(pipeline, config.layout, static_cast<u8>(vertices_per_primitive), config.render_pass_flags));
+  return WrapPipelineState(config, pipeline);
+}
+
+std::unique_ptr<GPUPipeline> VulkanDevice::CreatePipeline(const GPUPipeline::GraphicsConfig& config, Error* error)
+{
+  Vulkan::GraphicsPipelineBuilder gpb;
+  SetupPipelineBuilder(gpb, config);
+
+  const VkPipeline pipeline = gpb.Create(m_device, m_pipeline_cache, false, false, error);
+  if (!pipeline)
+    return {};
+
+  return WrapPipelineState(config, pipeline);
+}
+
+void VulkanDevice::SetupPipelineBuilder(Vulkan::ComputePipelineBuilder& cpb, const GPUPipeline::ComputeConfig& config)
+{
+  cpb.SetShader(static_cast<const VulkanShader*>(config.compute_shader)->GetModule(), "main");
+  cpb.SetPipelineLayout(m_pipeline_layouts[0][static_cast<size_t>(config.layout)]);
+}
+
+std::unique_ptr<GPUPipeline> VulkanDevice::WrapPipelineState(const GPUPipeline::ComputeConfig& config,
+                                                             VkPipeline pipeline)
+{
+  return std::unique_ptr<GPUPipeline>(new VulkanPipeline(pipeline, config.layout, 0, GPUPipeline::NoRenderPassFlags));
+}
+
+std::unique_ptr<GPUPipeline> VulkanDevice::LoadPipeline(const GPUPipeline::ComputeConfig& config)
+{
+  if (m_pipeline_cache == VK_NULL_HANDLE || !m_optional_extensions.vk_ext_pipeline_creation_cache_control)
+    return {};
+
+  Vulkan::ComputePipelineBuilder cpb;
+  SetupPipelineBuilder(cpb, config);
+
+  const VkPipeline pipeline = cpb.Create(m_device, m_pipeline_cache, false, true, nullptr);
+  if (!pipeline)
+    return {};
+
+  return WrapPipelineState(config, pipeline);
 }
 
 std::unique_ptr<GPUPipeline> VulkanDevice::CreatePipeline(const GPUPipeline::ComputeConfig& config, Error* error)
 {
   Vulkan::ComputePipelineBuilder cpb;
-  cpb.SetShader(static_cast<const VulkanShader*>(config.compute_shader)->GetModule(), "main");
-  cpb.SetPipelineLayout(m_pipeline_layouts[0][static_cast<size_t>(config.layout)]);
+  SetupPipelineBuilder(cpb, config);
 
-  const VkPipeline pipeline = cpb.Create(m_device, m_pipeline_cache, false, error);
+  const VkPipeline pipeline = cpb.Create(m_device, m_pipeline_cache, false, false, error);
   if (!pipeline)
     return {};
 
-  return std::unique_ptr<GPUPipeline>(new VulkanPipeline(pipeline, config.layout, 0, GPUPipeline::NoRenderPassFlags));
+  return WrapPipelineState(config, pipeline);
 }
