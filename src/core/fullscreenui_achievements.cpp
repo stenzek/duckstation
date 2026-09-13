@@ -457,11 +457,11 @@ void FullscreenUI::DrawNotifications(NotificationLayout& layout)
   static constexpr const float& title_font_weight = UIStyle.BoldFontWeight;
   const float normal_text_font_size = ImCeil(LAYOUT_MEDIUM_FONT_SIZE * scale);
   const float small_text_font_size = ImCeil(LAYOUT_MEDIUM_SMALL_FONT_SIZE * scale);
+  const float tiny_text_font_size = ImCeil(LAYOUT_SMALL_FONT_SIZE * scale);
   static constexpr const float& text_font_weight = UIStyle.NormalFontWeight;
   const float note_text_size = ImCeil(LAYOUT_MEDIUM_FONT_SIZE * scale);
   static constexpr const float& note_text_weight = UIStyle.BoldFontWeight;
   const float note_icon_size = ImCeil(LAYOUT_MEDIUM_LARGE_FONT_SIZE * scale);
-  const float category_badge_font_size = ImCeil(LAYOUT_MEDIUM_SMALL_FONT_SIZE * scale);
   const ImVec2 category_badge_padding(ImCeil(5.0f * scale), ImCeil(3.0f * scale));
   const float category_badge_spacing = ImCeil(10.0f * scale);
   const float category_badge_rounding = ImCeil(3.0f * scale);
@@ -536,6 +536,7 @@ void FullscreenUI::DrawNotifications(NotificationLayout& layout)
         break;
     }
 
+    const float category_badge_font_size = notif.small_font ? tiny_text_font_size : small_text_font_size;
     const ImVec2 category_size =
       MeasureAchievementCategoryBadges(notif.category, category_badge_font_size, ACHIEVEMENT_BADGE_FONT_WEIGHT,
                                        category_badge_padding, category_badge_spacing);
