@@ -31,8 +31,8 @@ bool AsyncPixmapLoader::isQueueNeeded(std::string_view url_or_path)
     return false;
 
   // Don't try to async load when we don't have cache.
-  const auto cache = HTTPCache::GetCacheArchive();
-  return (cache->IsOpen() && !cache->Contains(HTTPCache::URLToCacheKey(url_or_path)));
+  const ObjectArchive& cache = HTTPCache::GetCacheArchive();
+  return (cache.IsOpen() && !cache.Contains(HTTPCache::URLToCacheKey(url_or_path)));
 }
 
 static std::string_view GetExtensionFromURL(std::string_view url)

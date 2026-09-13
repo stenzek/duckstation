@@ -5773,13 +5773,13 @@ void FullscreenUI::DrawAchievementsSettingsPage(std::unique_lock<std::mutex>& se
       MenuButtonWithoutSummary(str, false);
     }
 
-    if (const auto cache = HTTPCache::GetCacheArchive(); cache->IsOpen())
+    if (const ObjectArchive& cache = HTTPCache::GetCacheArchive(); cache.IsOpen())
     {
       static constexpr auto to_mb = [](s64 size) { return static_cast<u32>((size + 1048575) / 1048576); };
 
-      const u64 size = cache->GetTotalSize();
-      const u64 object_size = cache->GetTotalObjectSize();
-      const size_t count = cache->GetSize();
+      const u64 size = cache.GetTotalSize();
+      const u64 object_size = cache.GetTotalObjectSize();
+      const size_t count = cache.GetSize();
 
       str.format(fmt::runtime(FSUI_ICONVSTR(ICON_FA_GLOBE, "Web Cache Size: {0} MB ({1} MB in {2} objects)")),
                  to_mb(size), to_mb(object_size), count);

@@ -133,12 +133,12 @@ void AdvancedSettingsWidget::onShowDebugOptionsStateChanged()
 
 void AdvancedSettingsWidget::refreshWebCacheSize()
 {
-  const auto cache = HTTPCache::GetCacheArchive();
+  const ObjectArchive& cache = HTTPCache::GetCacheArchive();
 
   static constexpr auto to_mb = [](s64 size) { return static_cast<u32>((size + 1048575) / 1048576); };
-  const u64 cache_size = cache->GetTotalSize();
-  const u64 object_size = cache->GetTotalObjectSize();
-  const size_t num_objects = cache->GetSize();
+  const u64 cache_size = cache.GetTotalSize();
+  const u64 object_size = cache.GetTotalObjectSize();
+  const size_t num_objects = cache.GetSize();
 
   m_ui.webCacheSize->setText(tr("Current Cache Size: %1 MB (%2 MB in %3 objects)")
                                .arg(to_mb(cache_size))
