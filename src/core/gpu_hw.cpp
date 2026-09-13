@@ -1668,7 +1668,7 @@ bool GPU_HW::CompilePipelines(Error* error)
       plconfig.depth.depth_test =
         (depth_test != 0) ? GPUPipeline::DepthFunc::GreaterEqual : GPUPipeline::DepthFunc::Always;
 
-      if (!(m_vram_copy_pipelines[depth_test] = g_gpu_device->CreatePipeline(plconfig), error))
+      if (!(m_vram_copy_pipelines[depth_test] = g_gpu_device->CreatePipeline(plconfig, error)))
         return false;
 
       GL_OBJECT_NAME_FMT(m_vram_copy_pipelines[depth_test], "VRAM Write Pipeline, depth={}", depth_test);
