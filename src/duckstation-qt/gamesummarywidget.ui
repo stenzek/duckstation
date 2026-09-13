@@ -299,11 +299,7 @@
       <widget class="QLabel" name="tracksLabel"/>
      </item>
      <item>
-      <widget class="QPushButton" name="openRetroAchievementsGame">
-       <property name="text">
-        <string/>
-       </property>
-      </widget>
+      <widget class="QPushButton" name="openRetroAchievementsGame"/>
      </item>
      <item>
       <widget class="QPushButton" name="computeHashes">
