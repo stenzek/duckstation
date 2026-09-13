@@ -167,6 +167,16 @@
     </message>
 </context>
 <context>
+    <name>DebuggerWindow</name>
+    <message numerus="yes">
+        <source>Loaded %n saved breakpoint(s).</source>
+        <translation>
+            <numerusform>Loaded %n saved breakpoint.</numerusform>
+            <numerusform>Loaded %n saved breakpoints.</numerusform>
+        </translation>
+    </message>
+</context>
+<context>
     <name>EmulationSettingsWidget</name>
     <message numerus="yes">
         <source>Rewind for %n frame(s), lasting %1 second(s) will require %2MB of RAM and %3MB of VRAM.</source>

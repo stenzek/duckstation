@@ -431,10 +431,6 @@ Token generato %2</translation>
         <translation>Ripristino stato</translation>
     </message>
     <message>
-        <source>{} (Unofficial)</source>
-        <translation>{} (Non ufficiale)</translation>
-    </message>
-    <message>
         <source>Leaderboard attempt started.</source>
         <translation>Tentativo classifica avviato.</translation>
     </message>
@@ -2250,6 +2246,24 @@ I file WAV devono essere stereo a 16 bit e utilizzare una frequenza di campionam
 Your dump may be corrupted, or the physical disc is scratched.</source>
         <translation>Probabilmente il gioco si bloccherà ora.
 Il tuo dump potrebbe essere danneggiato oppure il disco fisico potrebbe essere graffiato.</translation>
+    </message>
+</context>
+<context>
+    <name>CPU</name>
+    <message>
+        <source>Execute</source>
+        <comment>BreakpointType</comment>
+        <translation>Esecuzione</translation>
+    </message>
+    <message>
+        <source>Read</source>
+        <comment>BreakpointType</comment>
+        <translation>Lettura</translation>
+    </message>
+    <message>
+        <source>Write</source>
+        <comment>BreakpointType</comment>
+        <translation>Scrittura</translation>
     </message>
 </context>
 <context>
@@ -4271,6 +4285,17 @@ Questo file ha una dimensione di circa 206 KB. Vuoi scaricarlo ora?</translation
     </message>
 </context>
 <context>
+    <name>DebuggerCallStackModel</name>
+    <message>
+        <source>Address</source>
+        <translation>Indirizzo</translation>
+    </message>
+    <message>
+        <source>Frame</source>
+        <translation>Frame</translation>
+    </message>
+</context>
+<context>
     <name>DebuggerRegistersModel</name>
     <message>
         <source>Register</source>
@@ -4297,6 +4322,17 @@ Questo file ha una dimensione di circa 206 KB. Vuoi scaricarlo ora?</translation
     </message>
 </context>
 <context>
+    <name>DebuggerThreadsModel</name>
+    <message>
+        <source>Name</source>
+        <translation>Nome</translation>
+    </message>
+    <message>
+        <source>Value</source>
+        <translation>Valore</translation>
+    </message>
+</context>
+<context>
     <name>DebuggerWindow</name>
     <message>
         <source>CPU Debugger</source>
@@ -4308,15 +4344,11 @@ Questo file ha una dimensione di circa 206 KB. Vuoi scaricarlo ora?</translation
     </message>
     <message>
         <source>Breakpoints</source>
-        <translation>Breakpoints</translation>
-    </message>
-    <message>
-        <source>toolBar</source>
-        <translation>Barra degli strumenti</translation>
+        <translation>Breakpoint</translation>
     </message>
     <message>
         <source>Disassembly</source>
-        <translation>Disassemblatore</translation>
+        <translation>Disassemblato</translation>
     </message>
     <message>
         <source>Registers</source>
@@ -4375,6 +4407,14 @@ Questo file ha una dimensione di circa 206 KB. Vuoi scaricarlo ora?</translation
         <translation>Stack</translation>
     </message>
     <message>
+        <source>Threads</source>
+        <translation>Thread</translation>
+    </message>
+    <message>
+        <source>Call Stack</source>
+        <translation>Stack chiamate</translation>
+    </message>
+    <message>
         <source>Pause/Continue</source>
         <translation>Pausa/Continua</translation>
     </message>
@@ -4412,11 +4452,11 @@ Questo file ha una dimensione di circa 206 KB. Vuoi scaricarlo ora?</translation
     </message>
     <message>
         <source>Toggle Breakpoint</source>
-        <translation>Abilita/Disabilita Breakpoint</translation>
+        <translation>Abilita/Disabilita breakpoint</translation>
     </message>
     <message>
         <source>Toggle &amp;Breakpoint</source>
-        <translation>Abilita/Disabilita &amp;Breakpoint</translation>
+        <translation>Abilita/Disabilita &amp;breakpoint</translation>
     </message>
     <message>
         <source>F9</source>
@@ -4440,11 +4480,11 @@ Questo file ha una dimensione di circa 206 KB. Vuoi scaricarlo ora?</translation
     </message>
     <message>
         <source>Run To Cursor</source>
-        <translation>Esegui al Cursore</translation>
+        <translation>Esegui fino al cursore</translation>
     </message>
     <message>
         <source>&amp;Run To Cursor</source>
-        <translation>&amp;Esegui al Cursore</translation>
+        <translation>Ese&amp;gui fino al cursore</translation>
     </message>
     <message>
         <source>Ctrl+F10</source>
@@ -4452,11 +4492,11 @@ Questo file ha una dimensione di circa 206 KB. Vuoi scaricarlo ora?</translation
     </message>
     <message>
         <source>Clear Breakpoints</source>
-        <translation>Cancella Breakpoints</translation>
+        <translation>Rimuovi tutti i breakpoint</translation>
     </message>
     <message>
         <source>&amp;Clear Breakpoints</source>
-        <translation>&amp;Cancella Breakpoints</translation>
+        <translation>&amp;Rimuovi tutti i breakpoint</translation>
     </message>
     <message>
         <source>Ctrl+Del</source>
@@ -4464,7 +4504,7 @@ Questo file ha una dimensione di circa 206 KB. Vuoi scaricarlo ora?</translation
     </message>
     <message>
         <source>Add Breakpoint</source>
-        <translation>Aggiungi Breakpoint</translation>
+        <translation>Aggiungi breakpoint</translation>
     </message>
     <message>
         <source>Ctrl+F9</source>
@@ -4484,15 +4524,15 @@ Questo file ha una dimensione di circa 206 KB. Vuoi scaricarlo ora?</translation
     </message>
     <message>
         <source>Go To Address</source>
-        <translation>Vai a Indirizzo</translation>
+        <translation>Vai a indirizzo</translation>
     </message>
     <message>
         <source>Go To &amp;Address</source>
-        <translation>Vai a &amp;Indirizzo</translation>
+        <translation>Vai a &amp;indirizzo</translation>
     </message>
     <message>
         <source>&amp;Add Breakpoint</source>
-        <translation>&amp;Aggiungi Breakpoint</translation>
+        <translation>&amp;Aggiungi breakpoint</translation>
     </message>
     <message>
         <source>Ctrl+G</source>
@@ -4500,7 +4540,7 @@ Questo file ha una dimensione di circa 206 KB. Vuoi scaricarlo ora?</translation
     </message>
     <message>
         <source>&amp;Dump Address</source>
-        <translation>&amp;Dump Indirizzo</translation>
+        <translation>&amp;Dump indirizzo</translation>
     </message>
     <message>
         <source>Ctrl+D</source>
@@ -4546,7 +4586,7 @@ Questo file può pesare anche diversi GB, quindi bisogna tenere conto dell&apos;
     </message>
     <message>
         <source>&amp;Patch Instruction</source>
-        <translation>Applica la &amp;patch all&apos;istruzione</translation>
+        <translation>Applica &amp;patch all&apos;istruzione</translation>
     </message>
     <message>
         <source>&amp;Nop Instruction</source>
@@ -4554,7 +4594,7 @@ Questo file può pesare anche diversi GB, quindi bisogna tenere conto dell&apos;
     </message>
     <message>
         <source>&amp;Follow Load/Store</source>
-        <translation>&amp;Segui Caricamento/Archivio</translation>
+        <translation>&amp;Segui caricamento/scrittura</translation>
     </message>
     <message>
         <source>Failed to read the instruction at 0x%1.</source>
@@ -4588,6 +4628,13 @@ Questo file può pesare anche diversi GB, quindi bisogna tenere conto dell&apos;
         <source>Failed to remove breakpoint. This breakpoint may not exist.</source>
         <translation>Rimozione del breakpoint non riuscita. Questo breakpoint potrebbe non esistere.</translation>
     </message>
+    <message numerus="yes">
+        <source>Loaded %n saved breakpoint(s).</source>
+        <translation>
+            <numerusform>Caricato %n breakpoint salvato.</numerusform>
+            <numerusform>Caricati %n breakpoint salvati.</numerusform>
+        </translation>
+    </message>
     <message>
         <source>Debugger</source>
         <translation>Debugger</translation>
@@ -4598,11 +4645,11 @@ Questo file può pesare anche diversi GB, quindi bisogna tenere conto dell&apos;
     </message>
     <message>
         <source>View in &amp;Dump</source>
-        <translation>Visualizza in &amp;Dump</translation>
+        <translation>Visualizza in &amp;dump</translation>
     </message>
     <message>
         <source>Invalid search pattern. It should contain hex digits or question marks.</source>
-        <translation>Pattern di ricerca non valido. Dovrebbe contenere cifre hex o punti di domanda.</translation>
+        <translation>Pattern di ricerca non valido. Deve contenere cifre esadecimali o punti di domanda.</translation>
     </message>
     <message>
         <source>Pattern not found.</source>
@@ -4618,7 +4665,7 @@ Questo file può pesare anche diversi GB, quindi bisogna tenere conto dell&apos;
     </message>
     <message>
         <source>Invalid address. It should be in hex (0x12345678 or 12345678)</source>
-        <translation>Indirizzo non valido. Deve essere in hex (0x12345678 o 12345678)</translation>
+        <translation>Indirizzo non valido. Deve essere in esadecimale (0x12345678 o 12345678)</translation>
     </message>
 </context>
 <context>
@@ -9864,6 +9911,11 @@ Sei sicuro di voler continuare?</translation>
         <translation>Set di dischi</translation>
     </message>
     <message>
+        <source>Audio CD</source>
+        <comment>EntryType</comment>
+        <translation>CD audio</translation>
+    </message>
+    <message>
         <source>PS-EXE</source>
         <comment>EntryType</comment>
         <translation>PS-EXE</translation>
@@ -10250,10 +10302,6 @@ Cercare ricorsivamente richiede più tempo, ma permette di identificare file anc
         <translation>Controlli:</translation>
     </message>
     <message>
-        <source>Tracks:</source>
-        <translation>Tracce:</translation>
-    </message>
-    <message>
         <source>Release Info:</source>
         <translation>Informazioni rilascio:</translation>
     </message>
@@ -10330,6 +10378,10 @@ Cercare ricorsivamente richiede più tempo, ma permette di identificare file anc
     <message>
         <source>Game Specific Configuration</source>
         <translation>Configurazione specifica del gioco</translation>
+    </message>
+    <message>
+        <source>Game ID: %1</source>
+        <translation>ID gioco: %1</translation>
     </message>
     <message>
         <source>Track %1</source>
@@ -14420,16 +14472,12 @@ Errore: {1}</translation>
         <translation>Formatta</translation>
     </message>
     <message>
-        <source>Import File...</source>
-        <translation>Importa file...</translation>
-    </message>
-    <message>
-        <source>Import Card...</source>
-        <translation>Importa memory card...</translation>
-    </message>
-    <message>
         <source>Save</source>
         <translation>Salva</translation>
+    </message>
+    <message>
+        <source>Import...</source>
+        <translation>Importa...</translation>
     </message>
     <message numerus="yes">
         <source>%n block(s) free</source>
@@ -14445,6 +14493,10 @@ Errore: {1}</translation>
     <message>
         <source>Failed to load memory card: %1</source>
         <translation>Impossibile caricare la memory card: %1</translation>
+    </message>
+    <message>
+        <source>Select Single Save File</source>
+        <translation>Seleziona file salvataggio singolo</translation>
     </message>
     <message>
         <source>Extract Animated Icon</source>
@@ -14467,6 +14519,14 @@ Errore: {1}</translation>
 %2</source>
         <translation>Impossibile rinominare il file di salvataggio %1:
 %2</translation>
+    </message>
+    <message>
+        <source>Import Single Save File...</source>
+        <translation>Importa salvataggio singolo...</translation>
+    </message>
+    <message>
+        <source>Import Entire Memory Card...</source>
+        <translation>Importa memory card intera...</translation>
     </message>
     <message>
         <source>Copy File</source>
@@ -14515,10 +14575,6 @@ Errore: {1}</translation>
     <message>
         <source>Failed to undelete file %1. The file may have been partially overwritten by another save.</source>
         <translation>Ripristino del file %1 non riuscito. Il file potrebbe essere stato parzialmente sovrascritto da un altro salvataggio.</translation>
-    </message>
-    <message>
-        <source>Select Single Savefile</source>
-        <translation>Seleziona file salvataggio singolo</translation>
     </message>
     <message>
         <source>Select Import File</source>
@@ -16244,6 +16300,22 @@ Il collegamento verrà creato in:
 %1</translation>
     </message>
     <message>
+        <source>We have detected that LD_LIBRARY_PATH has been set to the following value:
+
+%1
+
+This will likely prevent DuckStation from working correctly. You should modify your environment to leave LD_LIBRARY_PATH unset.</source>
+        <translation>È stato rilevato che LD_LIBRARY_PATH è impostato al seguente valore:
+
+%1
+
+Questo potrebbe impedire il corretto funzionamento di DuckStation. Si consiglia di modificare l&apos;ambiente in modo da lasciare LD_LIBRARY_PATH non impostato.</translation>
+    </message>
+    <message>
+        <source>Don&apos;t show again</source>
+        <translation>Non mostrare più</translation>
+    </message>
+    <message>
         <source>Don&apos;t ask again</source>
         <translation>Non chiedermelo più</translation>
     </message>
@@ -16895,19 +16967,19 @@ Vuoi creare la cartella?</translation>
         <translation>PAL (Europa, Australia)</translation>
     </message>
     <message>
-        <source>NTSC-J (Japan)</source>
+        <source>NTSC-J</source>
         <comment>DiscRegion</comment>
-        <translation>NTSC-J (Giappone)</translation>
+        <translation>NTSC-J</translation>
     </message>
     <message>
-        <source>NTSC-U/C (US, Canada)</source>
+        <source>NTSC-U/C</source>
         <comment>DiscRegion</comment>
-        <translation>NTSC-U/C (USA, Canada)</translation>
+        <translation>NTSC-U/C</translation>
     </message>
     <message>
-        <source>PAL (Europe, Australia)</source>
+        <source>PAL</source>
         <comment>DiscRegion</comment>
-        <translation>PAL (Europa, Australia)</translation>
+        <translation>PAL</translation>
     </message>
     <message>
         <source>Other</source>
@@ -18402,6 +18474,10 @@ Il gioco probabilmente non funzionerà correttamente.
 Per favore, controlla il README per le istruzioni su come aggiungere un file SBI.
 
 Vuoi continuare?</translation>
+    </message>
+    <message>
+        <source>This save state was created with a different console region, and may be unstable.</source>
+        <translation>Questo salvataggio di stato è stato creato con una console di una regione diversa e potrebbe risultare instabile.</translation>
     </message>
     <message>
         <source>Cannot save state while memory card is being saved.</source>
