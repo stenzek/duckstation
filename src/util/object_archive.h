@@ -7,6 +7,7 @@
 
 #include "common/heap_array.h"
 
+#include <mutex>
 #include <optional>
 #include <span>
 #include <string>
@@ -26,14 +27,16 @@ public:
   ~ObjectArchive();
 
   /// Error messages indicating the key does/does not exist in the archive.
+  static const std::string_view ERROR_DESCRIPTION_NOT_OPEN;
   static const std::string_view ERROR_DESCRIPTION_DOES_NOT_EXIST;
   static const std::string_view ERROR_DESCRIPTION_ALREADY_EXISTS;
 
   /// Returns true if the archive has been successfully opened or created.
+  /// NOTE: Not synchronized, because we should only be opening the archive on one thread.
   bool IsOpen() const { return (m_index_file != nullptr); }
 
   /// Returns the number of entries currently stored in the archive.
-  size_t GetSize() const { return m_index.size(); }
+  size_t GetSize() const;
 
   /// Opens or creates an archive at the given base path. The index and blob files will be named
   /// "{base_path}.idx" and "{base_path}.bin" respectively. If the files already exist and match
@@ -86,10 +89,9 @@ private:
   };
   using CacheIndex = std::vector<CacheIndexData>;
 
-  bool CreateNew(const std::string& index_path, const std::string& blob_path, u32 version, Error* error);
-  bool CreateNew(u32 version, Error* error);
-  bool OpenExisting(const std::string& index_path, const std::string& blob_path, u32 version, Error* error);
-  bool ReadExisting(u32 version, Error* error);
+  bool CreateNew(u32 version, std::FILE* index_file, std::FILE* blob_file, Error* error);
+  bool ReadExisting(u32 version, std::FILE* index_file, std::FILE* blob_file, Error* error);
+  void LockedClose();
 
   KeySpan GetKeySpan(const CacheIndexData& data) const;
 
@@ -98,4 +100,6 @@ private:
 
   std::FILE* m_index_file = nullptr;
   std::FILE* m_blob_file = nullptr;
+
+  mutable std::mutex m_mutex;
 };

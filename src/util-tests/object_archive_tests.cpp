@@ -142,7 +142,7 @@ TEST(ObjectArchive, OpenPathInvalidationStatus)
   {
     ObjectArchive archive;
     ASSERT_TRUE(archive.OpenPath(path.GetPath(), TEST_VERSION, &error, &was_invalidated)) << error.GetDescription();
-    EXPECT_FALSE(was_invalidated);
+    EXPECT_TRUE(was_invalidated);
     ASSERT_TRUE(archive.Insert(StringToCacheKey("persist"), payload, ObjectArchive::CompressType::Uncompressed, &error))
       << error.GetDescription();
   }
