@@ -560,9 +560,10 @@ void FullscreenUI::DrawNotifications(NotificationLayout& layout)
       std::max((horizontal_padding * 2.0f) + badge_size.x + horizontal_spacing +
                  ImCeil(std::max(title_size.x + title_trailing_spacing + title_trailing_width, text_size.x)),
                std::max(static_cast<float>(ImCeil(notif.min_width * scale)), min_width));
-    const float box_height =
-      std::max((vertical_padding * 2.0f) + ImCeil(title_size.y) + vertical_spacing + ImCeil(text_size.y),
-               notif.small_font ? small_min_height : normal_min_height);
+    const float box_height = std::max(
+      (vertical_padding * 2.0f) - LayoutScale(notif.small_font ? SMALL_BADGE_TEXT_Y_OFFSET : BADGE_TEXT_Y_OFFSET) +
+        ImCeil(title_size.y) + vertical_spacing + ImCeil(text_size.y),
+      notif.small_font ? small_min_height : normal_min_height);
 
     const auto& [expected_pos, opacity] =
       layout.GetNextPosition(box_width, box_height, time_passed, notif.duration, NOTIFICATION_APPEAR_ANIMATION_TIME,
