@@ -1040,7 +1040,7 @@ void DebuggerWindow::loadGameSettings(bool clear_existing)
   }
 
   if (!queued_bps.empty())
-    reportMessage(tr("Loaded %1 saved breakpoints.").arg(queued_bps.size()));
+    reportMessage(tr("Loaded %n saved breakpoint(s).", nullptr, queued_bps.size()));
 
   Host::RunOnCoreThread([win = QPointer<DebuggerWindow>(this), serial = m_game_serial, clear_existing,
                          queued_bps = std::move(queued_bps)]() mutable {
