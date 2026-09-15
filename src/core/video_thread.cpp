@@ -44,6 +44,7 @@ namespace VideoThread {
 enum : u32
 {
   COMMAND_QUEUE_SIZE = 16 * 1024 * 1024,
+  COMMAND_QUEUE_RESERVED_SPACE = VideoThreadCommand::AlignCommandSize(1),
   THRESHOLD_TO_WAKE_GPU = 65536,
 };
 
@@ -174,6 +175,7 @@ void VideoThread::ProcessShutdown()
 VideoThreadCommand* VideoThread::AllocateCommand(VideoThreadCommandType command, u32 size)
 {
   size = VideoThreadCommand::AlignCommandSize(size);
+  DebugAssert(size > 0 && size <= (COMMAND_QUEUE_SIZE - COMMAND_QUEUE_RESERVED_SPACE));
 
   for (;;)
   {
@@ -182,7 +184,7 @@ VideoThreadCommand* VideoThread::AllocateCommand(VideoThreadCommandType command,
     if (read_ptr > write_ptr) [[unlikely]]
     {
       u32 available_size = read_ptr - write_ptr;
-      while (available_size < size)
+      while (available_size <= size)
       {
         WakeThreadIfSleeping();
         read_ptr = s_state.command_fifo_read_ptr.load(std::memory_order_acquire);
@@ -192,7 +194,7 @@ VideoThreadCommand* VideoThread::AllocateCommand(VideoThreadCommandType command,
     else
     {
       const u32 available_size = COMMAND_QUEUE_SIZE - write_ptr;
-      if (size > available_size) [[unlikely]]
+      if (size >= available_size) [[unlikely]]
       {
         // Can't wrap around until the video thread has at least started processing commands...
         if (read_ptr == 0) [[unlikely]]
