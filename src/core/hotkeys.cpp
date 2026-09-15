@@ -174,11 +174,7 @@ static constexpr const HotkeyInfo s_hotkey_list[] = {
 #endif // __ANDROID__
 
   {"FastForward", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_NOOP("Hotkeys", "Fast Forward (Hold)"),
-   [](s32 pressed) {
-     if (pressed < 0)
-       return;
-     System::SetFastForwardEnabled(pressed > 0);
-   }},
+   [](s32 pressed) { System::SetFastForwardEnabled(pressed > 0); }},
 
   {"ToggleFastForward", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_NOOP("Hotkeys", "Fast Forward (Toggle)"),
    [](s32 pressed) {
@@ -187,11 +183,7 @@ static constexpr const HotkeyInfo s_hotkey_list[] = {
    }},
 
   {"Turbo", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_NOOP("Hotkeys", "Turbo (Hold)"),
-   [](s32 pressed) {
-     if (pressed < 0)
-       return;
-     System::SetTurboEnabled(pressed > 0);
-   }},
+   [](s32 pressed) { System::SetTurboEnabled(pressed > 0); }},
 
   {"ToggleTurbo", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_NOOP("Hotkeys", "Turbo (Toggle)"),
    [](s32 pressed) {
@@ -235,9 +227,6 @@ static constexpr const HotkeyInfo s_hotkey_list[] = {
 
   {"Rewind", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_NOOP("Hotkeys", "Rewind"),
    [](s32 pressed) {
-     if (pressed < 0)
-       return;
-
      const bool enabled = (pressed > 0);
      if (HotkeyCheckRewindAvailability(enabled))
        System::SetRewindState(enabled);
