@@ -169,6 +169,8 @@ static bool ShouldMaskBackgroundInput(InputBindingKey key);
 static bool DoEventHook(InputBindingKey key, float value);
 static bool PreprocessEvent(InputBindingKey key, float value, GenericInputBinding generic_key);
 static bool ProcessEvent(InputBindingKey key, float value, bool skip_button_handlers);
+template<typename Predicate>
+static void ClearBindState(Predicate&& matches);
 
 static void LoadMacroButtonConfig(const SettingsInterface& si, const std::string& section, u32 pad,
                                   const Controller::ControllerInfo& cinfo);
@@ -1309,14 +1311,14 @@ bool InputManager::ProcessEvent(InputBindingKey key, float value, bool skip_butt
   return true;
 }
 
-void InputManager::ClearBindStateFromSource(InputBindingKey key)
+template<typename Predicate>
+void InputManager::ClearBindState(Predicate&& matches)
 {
   // Why are we doing it this way? Because any of the bindings could cause a reload and invalidate our iterators :(.
   // Axis handlers should be fine, so we'll do those as a first pass.
   for (const auto& [match_key, binding] : s_state.binding_map)
   {
-    if (key.source_type != match_key.source_type || key.source_subtype != match_key.source_subtype ||
-        key.source_index != match_key.source_index || !IsAxisHandler(binding->handler))
+    if (!matches(match_key) || !IsAxisHandler(binding->handler))
     {
       continue;
     }
@@ -1339,8 +1341,7 @@ void InputManager::ClearBindStateFromSource(InputBindingKey key)
 
     for (const auto& [match_key, binding] : s_state.binding_map)
     {
-      if (key.source_type != match_key.source_type || key.source_subtype != match_key.source_subtype ||
-          key.source_index != match_key.source_index || IsAxisHandler(binding->handler))
+      if (!matches(match_key) || IsAxisHandler(binding->handler))
       {
         continue;
       }
@@ -1372,6 +1373,13 @@ void InputManager::ClearBindStateFromSource(InputBindingKey key)
         break;
     }
   } while (matched);
+}
+
+void InputManager::ClearBindStateFromSource(InputBindingKey key)
+{
+  ClearBindState([key](const InputBindingKey& match_key) {
+    return (key.source_type == match_key.source_type && key.source_index == match_key.source_index);
+  });
 }
 
 void InputManager::SynchronizeBindingHandlerState()
@@ -1652,6 +1660,7 @@ void InputManager::UpdateInputIgnoreState()
     if (s_state.ignore_input_events)
     {
       VERBOSE_COLOR_LOG(StrongOrange, "Application in background, ignoring input events");
+      ClearBindState([](const InputBindingKey& key) { return (key.source_type > InputSourceType::Pointer); });
     }
     else
     {
@@ -1938,6 +1947,7 @@ void InputManager::OnInputDeviceConnected(InputBindingKey key, std::string_view 
 void InputManager::OnInputDeviceDisconnected(InputBindingKey key, std::string_view identifier)
 {
   INFO_LOG("Device '{}' disconnected", identifier);
+  ClearBindStateFromSource(key);
   Host::OnInputDeviceDisconnected(key, identifier);
 
   if (System::IsValid() || VideoThread::IsFullscreenUIRequested())
