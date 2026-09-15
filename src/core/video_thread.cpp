@@ -881,6 +881,8 @@ bool VideoThread::CreateGPUBackendOnThread(bool hardware_renderer, bool upload_v
       s_state.gpu_backend = GPUBackend::CreateSoftwareBackend();
       if (!s_state.gpu_backend->Initialize(upload_vram, &local_error))
         Panic("Failed to initialize fallback software renderer");
+
+      okay = true;
     }
 
     if (!okay)
