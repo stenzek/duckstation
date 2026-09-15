@@ -580,7 +580,10 @@ bool VideoThread::Reconfigure(std::optional<GPURenderer> renderer, bool upload_v
   cmd->settings = g_settings;
 
   if (!s_state.use_thread) [[unlikely]]
+  {
     ReconfigureOnThread(cmd);
+    cmd->~VideoThreadReconfigureCommand();
+  }
   else
     PushCommandAndSync(cmd, false);
 
