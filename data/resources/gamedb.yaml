@@ -57911,6 +57911,7 @@ SLES-02166:
   traits:
     - DisableMultitap # Sends multitap read command, can't handle response.
     - DisableWidescreen # FMV backgrounds.
+    - DisableUpscaledDirectTextures # Fixes texture filtering on backgrounds.
   metadata:
     publisher: "Eidos Interactive"
     developer: "Kronos Digital Entertainment, Inc."
@@ -57936,6 +57937,7 @@ SLES-12166:
   traits:
     - DisableMultitap # Sends multitap read command, can't handle response.
     - DisableWidescreen # FMV backgrounds.
+    - DisableUpscaledDirectTextures # Fixes texture filtering on backgrounds.
   metadata:
     publisher: "Eidos Interactive"
     developer: "Kronos Digital Entertainment, Inc."
@@ -57961,6 +57963,7 @@ SLES-22166:
   traits:
     - DisableMultitap # Sends multitap read command, can't handle response.
     - DisableWidescreen # FMV backgrounds.
+    - DisableUpscaledDirectTextures # Fixes texture filtering on backgrounds.
   metadata:
     publisher: "Eidos Interactive"
     developer: "Kronos Digital Entertainment, Inc."
@@ -57986,6 +57989,7 @@ SLES-32166:
   traits:
     - DisableMultitap # Sends multitap read command, can't handle response.
     - DisableWidescreen # FMV backgrounds.
+    - DisableUpscaledDirectTextures # Fixes texture filtering on backgrounds.
   metadata:
     publisher: "Eidos Interactive"
     developer: "Kronos Digital Entertainment, Inc."
@@ -58011,6 +58015,7 @@ SLES-02167:
   traits:
     - DisableMultitap # Sends multitap read command, can't handle response.
     - DisableWidescreen # FMV backgrounds.
+    - DisableUpscaledDirectTextures # Fixes texture filtering on backgrounds.
   metadata:
     publisher: "Eidos Interactive"
     developer: "Kronos Digital Entertainment, Inc."
@@ -58034,6 +58039,7 @@ SLES-12167:
   traits:
     - DisableMultitap # Sends multitap read command, can't handle response.
     - DisableWidescreen # FMV backgrounds.
+    - DisableUpscaledDirectTextures # Fixes texture filtering on backgrounds.
   metadata:
     publisher: "Eidos Interactive"
     developer: "Kronos Digital Entertainment, Inc."
@@ -58057,6 +58063,7 @@ SLES-22167:
   traits:
     - DisableMultitap # Sends multitap read command, can't handle response.
     - DisableWidescreen # FMV backgrounds.
+    - DisableUpscaledDirectTextures # Fixes texture filtering on backgrounds.
   metadata:
     publisher: "Eidos Interactive"
     developer: "Kronos Digital Entertainment, Inc."
@@ -58080,6 +58087,7 @@ SLES-32167:
   traits:
     - DisableMultitap # Sends multitap read command, can't handle response.
     - DisableWidescreen # FMV backgrounds.
+    - DisableUpscaledDirectTextures # Fixes texture filtering on backgrounds.
   metadata:
     publisher: "Eidos Interactive"
     developer: "Kronos Digital Entertainment, Inc."
@@ -58103,6 +58111,7 @@ SLES-02168:
   traits:
     - DisableMultitap # Sends multitap read command, can't handle response.
     - DisableWidescreen # FMV backgrounds.
+    - DisableUpscaledDirectTextures # Fixes texture filtering on backgrounds.
   metadata:
     publisher: "Eidos Interactive"
     developer: "Kronos Digital Entertainment, Inc."
@@ -58126,6 +58135,7 @@ SLES-12168:
   traits:
     - DisableMultitap # Sends multitap read command, can't handle response.
     - DisableWidescreen # FMV backgrounds.
+    - DisableUpscaledDirectTextures # Fixes texture filtering on backgrounds.
   metadata:
     publisher: "Eidos Interactive"
     developer: "Kronos Digital Entertainment, Inc."
@@ -58149,6 +58159,7 @@ SLES-22168:
   traits:
     - DisableMultitap # Sends multitap read command, can't handle response.
     - DisableWidescreen # FMV backgrounds.
+    - DisableUpscaledDirectTextures # Fixes texture filtering on backgrounds.
   metadata:
     publisher: "Eidos Interactive"
     developer: "Kronos Digital Entertainment, Inc."
@@ -58172,6 +58183,7 @@ SLES-32168:
   traits:
     - DisableMultitap # Sends multitap read command, can't handle response.
     - DisableWidescreen # FMV backgrounds.
+    - DisableUpscaledDirectTextures # Fixes texture filtering on backgrounds.
   metadata:
     publisher: "Eidos Interactive"
     developer: "Kronos Digital Entertainment, Inc."
@@ -58192,13 +58204,13 @@ SLUS-00920:
   compatibility:
     rating: NoIssues
     versionTested: "0.1-1336-gd711baa"
-    upscalingIssues: "If use fast forward some controllers buttons may not function properly."
   controllers:
     - AnalogController
     - DigitalController
   traits:
     - DisableMultitap # Sends multitap read command, can't handle response.
     - DisableWidescreen # FMV backgrounds.
+    - DisableUpscaledDirectTextures # Fixes texture filtering on backgrounds.
   metadata:
     publisher: "Eidos Interactive"
     developer: "Kronos Digital Entertainment, Inc."
@@ -58226,6 +58238,7 @@ SLUS-01056:
   traits:
     - DisableMultitap # Sends multitap read command, can't handle response.
     - DisableWidescreen # FMV backgrounds.
+    - DisableUpscaledDirectTextures # Fixes texture filtering on backgrounds.
   metadata:
     publisher: "Eidos Interactive"
     developer: "Kronos Digital Entertainment, Inc."
@@ -58253,6 +58266,7 @@ SLUS-01057:
   traits:
     - DisableMultitap # Sends multitap read command, can't handle response.
     - DisableWidescreen # FMV backgrounds.
+    - DisableUpscaledDirectTextures # Fixes texture filtering on backgrounds.
   metadata:
     publisher: "Eidos Interactive"
     developer: "Kronos Digital Entertainment, Inc."
@@ -58280,6 +58294,7 @@ SLUS-01058:
   traits:
     - DisableMultitap # Sends multitap read command, can't handle response.
     - DisableWidescreen # FMV backgrounds.
+    - DisableUpscaledDirectTextures # Fixes texture filtering on backgrounds.
   metadata:
     publisher: "Eidos Interactive"
     developer: "Kronos Digital Entertainment, Inc."
@@ -58307,6 +58322,7 @@ SLES-03386:
   traits:
     - DisableMultitap # Sends multitap read command, can't handle response.
     - DisableWidescreen # FMV backgrounds.
+    - DisableUpscaledDirectTextures # Fixes texture filtering on backgrounds.
   metadata:
     publisher: "Eidos Interactive"
     developer: "Kronos Digital Entertainment, Inc"
@@ -58332,6 +58348,7 @@ SLES-13386:
   traits:
     - DisableMultitap # Sends multitap read command, can't handle response.
     - DisableWidescreen # FMV backgrounds.
+    - DisableUpscaledDirectTextures # Fixes texture filtering on backgrounds.
   metadata:
     publisher: "Eidos Interactive"
     developer: "Kronos Digital Entertainment, Inc"
@@ -58357,6 +58374,7 @@ SLES-23386:
   traits:
     - DisableMultitap # Sends multitap read command, can't handle response.
     - DisableWidescreen # FMV backgrounds.
+    - DisableUpscaledDirectTextures # Fixes texture filtering on backgrounds.
   metadata:
     publisher: "Eidos Interactive"
     developer: "Kronos Digital Entertainment, Inc"
@@ -58382,6 +58400,7 @@ SLES-33386:
   traits:
     - DisableMultitap # Sends multitap read command, can't handle response.
     - DisableWidescreen # FMV backgrounds.
+    - DisableUpscaledDirectTextures # Fixes texture filtering on backgrounds.
   metadata:
     publisher: "Eidos Interactive"
     developer: "Kronos Digital Entertainment, Inc"
@@ -58410,6 +58429,7 @@ SLUS-01266:
   traits:
     - DisableMultitap # Sends multitap read command, can't handle response.
     - DisableWidescreen # FMV backgrounds.
+    - DisableUpscaledDirectTextures # Fixes texture filtering on backgrounds.
   metadata:
     publisher: "Eidos Interactive"
     developer: "Kronos Digital Entertainment, Inc."
@@ -58433,6 +58453,7 @@ SLUS-01275:
   traits:
     - DisableMultitap # Sends multitap read command, can't handle response.
     - DisableWidescreen # FMV backgrounds.
+    - DisableUpscaledDirectTextures # Fixes texture filtering on backgrounds.
   metadata:
     publisher: "Eidos Interactive"
     developer: "Kronos Digital Entertainment, Inc."
@@ -58456,6 +58477,7 @@ SLUS-01276:
   traits:
     - DisableMultitap # Sends multitap read command, can't handle response.
     - DisableWidescreen # FMV backgrounds.
+    - DisableUpscaledDirectTextures # Fixes texture filtering on backgrounds.
   metadata:
     publisher: "Eidos Interactive"
     developer: "Kronos Digital Entertainment, Inc."
@@ -58479,6 +58501,7 @@ SLUS-01277:
   traits:
     - DisableMultitap # Sends multitap read command, can't handle response.
     - DisableWidescreen # FMV backgrounds.
+    - DisableUpscaledDirectTextures # Fixes texture filtering on backgrounds.
   metadata:
     publisher: "Eidos Interactive"
     developer: "Kronos Digital Entertainment, Inc."
@@ -75337,6 +75360,8 @@ SLPS-03340:
     - DigitalController
   traits:
     - DisableMultitap # Sends multitap read command, can't handle response.
+    - DisableWidescreen # FMV backgrounds.
+    - DisableUpscaledDirectTextures # Fixes texture filtering on backgrounds.
   metadata:
     publisher: "Eidos Interactive"
     developer: "Kronos Digital Entertainment, Inc."
@@ -75360,6 +75385,8 @@ SLPS-03341:
     - DigitalController
   traits:
     - DisableMultitap # Sends multitap read command, can't handle response.
+    - DisableWidescreen # FMV backgrounds.
+    - DisableUpscaledDirectTextures # Fixes texture filtering on backgrounds.
   metadata:
     publisher: "Eidos Interactive"
     developer: "Kronos Digital Entertainment, Inc."
@@ -75383,6 +75410,8 @@ SLPS-03342:
     - DigitalController
   traits:
     - DisableMultitap # Sends multitap read command, can't handle response.
+    - DisableWidescreen # FMV backgrounds.
+    - DisableUpscaledDirectTextures # Fixes texture filtering on backgrounds.
   metadata:
     publisher: "Eidos Interactive"
     developer: "Kronos Digital Entertainment, Inc."
@@ -75406,6 +75435,8 @@ SLPS-03343:
     - DigitalController
   traits:
     - DisableMultitap # Sends multitap read command, can't handle response.
+    - DisableWidescreen # FMV backgrounds.
+    - DisableUpscaledDirectTextures # Fixes texture filtering on backgrounds.
   metadata:
     publisher: "Eidos Interactive"
     developer: "Kronos Digital Entertainment, Inc."
