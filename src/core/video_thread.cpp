@@ -1128,8 +1128,9 @@ void VideoThread::SetThreadEnabled(bool enabled)
   if (!Reconfigure(requested_renderer, requested_renderer.has_value(), fullscreen_state, requested_fullscreen_ui, true,
                    &error))
   {
-    ERROR_LOG("Reconfigure failed: {}", error.GetDescription());
-    ReportFatalErrorAndShutdown(fmt::format("Reconfigure failed: {}", error.GetDescription()));
+    std::string message = fmt::format("Reconfigure failed: {}", error.GetDescription());
+    ERROR_LOG(message);
+    RunOnThreadAndSync([message = std::move(message)]() { ReportFatalErrorAndShutdown(message); });
   }
 }
 

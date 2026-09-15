@@ -800,7 +800,7 @@ void MainWindow::recreate()
     show();
 
   // We need to close input sources, because e.g. DInput uses our window handle.
-  Host::RunOnCoreThread(&InputManager::CloseSources, true);
+  Host::RunOnCoreThread(&InputManager::CloseSources);
 
   // Ensure we don't get a display widget creation sent to us.
   const bool was_display_created = hasDisplayWidget();
