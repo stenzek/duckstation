@@ -611,24 +611,25 @@ void GPUBackend::HandleSubmitFrameCommand(const GPUBackendFramePresentationParam
     RestoreDeviceContext();
 }
 
-#define BOLD(text) "\x02" text "\x01"
-
 void GPUBackend::GetStatsString(SmallStringBase& str) const
 {
+#define BOLD(text) "\x02" text "\x01"
+#define DOT_SEP " \u2022 "
+
   if (IsUsingHardwareBackend())
   {
     if (g_gpu_settings.gpu_pgxp_depth_buffer)
     {
-      str.format(BOLD("{}{} HW") " | {} " BOLD("P") " | {} " BOLD("DC") " | {} " BOLD("RB") " | {} " BOLD(
-                   "C") " | {} " BOLD("W") " | {}% " BOLD("U") " | {} " BOLD("DBC"),
+      str.format(BOLD("{}{} HW") DOT_SEP "{} " BOLD("P") DOT_SEP "{} " BOLD("DC") DOT_SEP "{} " BOLD("RB") DOT_SEP
+                 "{} " BOLD("C") DOT_SEP "{} " BOLD("W") DOT_SEP "{}% " BOLD("U") DOT_SEP "{} " BOLD("DBC"),
                  GPUDevice::RenderAPIToString(g_gpu_device->GetRenderAPI()), g_gpu_settings.gpu_use_thread ? "-MT" : "",
                  s_stats.num_primitives, s_stats.host_num_draws, s_stats.host_num_downloads, s_stats.num_copies,
                  s_stats.num_writes, s_stats.gpu_busy_pct, s_stats.num_depth_buffer_clears);
     }
     else
     {
-      str.format(BOLD("{}{} HW") " | {} " BOLD("P") " | {} " BOLD("DC") " | {} " BOLD("RB") " | {} " BOLD(
-                   "C") " | {} " BOLD("W") " | {}% " BOLD("U"),
+      str.format(BOLD("{}{} HW") DOT_SEP "{} " BOLD("P") DOT_SEP "{} " BOLD("DC") DOT_SEP "{} " BOLD("RB") DOT_SEP
+                 "{} " BOLD("C") DOT_SEP "{} " BOLD("W") DOT_SEP "{}% " BOLD("U"),
                  GPUDevice::RenderAPIToString(g_gpu_device->GetRenderAPI()), g_gpu_settings.gpu_use_thread ? "-MT" : "",
                  s_stats.num_primitives, s_stats.host_num_draws, s_stats.host_num_downloads, s_stats.num_copies,
                  s_stats.num_writes, s_stats.gpu_busy_pct);
@@ -636,10 +637,10 @@ void GPUBackend::GetStatsString(SmallStringBase& str) const
   }
   else
   {
-    str.format(
-      BOLD("{}{} SW") " | {} " BOLD("P") " | {} " BOLD("R") " | {} " BOLD("C") " | {} " BOLD("W") " | {}% " BOLD("U"),
-      GPUDevice::RenderAPIToString(g_gpu_device->GetRenderAPI()), g_gpu_settings.gpu_use_thread ? "-MT" : "",
-      s_stats.num_primitives, s_stats.num_reads, s_stats.num_copies, s_stats.num_writes, s_stats.gpu_busy_pct);
+    str.format(BOLD("{}{} SW") DOT_SEP "{} " BOLD("P") DOT_SEP "{} " BOLD("R") DOT_SEP "{} " BOLD("C") DOT_SEP
+               "{} " BOLD("W") DOT_SEP "{}% " BOLD("U"),
+               GPUDevice::RenderAPIToString(g_gpu_device->GetRenderAPI()), g_gpu_settings.gpu_use_thread ? "-MT" : "",
+               s_stats.num_primitives, s_stats.num_reads, s_stats.num_copies, s_stats.num_writes, s_stats.gpu_busy_pct);
   }
 }
 
@@ -648,13 +649,14 @@ void GPUBackend::GetMemoryStatsString(SmallStringBase& str) const
   const u32 vram_usage_mb = static_cast<u32>((g_gpu_device->GetVRAMUsage() + (1048576 - 1)) / 1048576);
   const u32 stream_kb = static_cast<u32>((s_stats.host_buffer_streamed + (1024 - 1)) / 1024);
 
-  str.format("{}MB " BOLD("VRAM") " | {}KB " BOLD("STR") " | {} " BOLD("B") " | {} " BOLD("RP") " | {} " BOLD(
-               "TC") " | {} " BOLD("TU"),
+  str.format("{}MB " BOLD("VRAM") DOT_SEP "{}KB " BOLD("STR") DOT_SEP "{} " BOLD("B") DOT_SEP "{} " BOLD("RP") DOT_SEP
+             "{} " BOLD("TC") DOT_SEP "{} " BOLD("TU"),
              vram_usage_mb, stream_kb, s_stats.host_num_barriers, s_stats.host_num_render_passes,
              s_stats.host_num_copies, s_stats.host_num_uploads);
-}
 
+#undef DOT_SEP
 #undef BOLD
+}
 
 void GPUBackend::ResetStatistics()
 {

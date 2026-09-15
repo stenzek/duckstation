@@ -168,8 +168,8 @@ static constexpr const std::array TEXT_FONT_FILENAMES = {
 static constexpr const char* DEFAULT_TEXT_FONT_NAME = TEXT_FONT_NAMES[0];
 
 #define ENUMERATE_FIXED_FONT_NAMES(X)                                                                                  \
-  X("GoogleSansCode", "Google Sans Code", "GoogleSansCode-VariableFont_wght.ttf")                                      \
   X("RobotoMono", "Roboto Mono", "RobotoMono-VariableFont_wght.ttf")                                                   \
+  X("GoogleSansCode", "Google Sans Code", "GoogleSansCode-VariableFont_wght.ttf")                                      \
   X("KodeMono", "Kode Mono", "KodeMono-VariableFont_wght.ttf")                                                         \
   X("Bitcount", "Bitcount", "BitcountPropSingle-VariableFont_CRSV,ELSH,ELXP,slnt,wght.ttf")
 

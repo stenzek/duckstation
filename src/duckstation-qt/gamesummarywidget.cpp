@@ -144,7 +144,7 @@ void GameSummaryWidget::populateUi(const GameList::Entry* entry)
   if (entry->IsDiscOrDiscSet())
   {
     m_ui.hashes->setText(QtUtils::StringViewToQString(SmallString::from_format(
-      "HASH-{:016X} | RA: {}", entry->hash, Achievements::GameHashToString(entry->achievements_hash))));
+      "HASH-{:016X} \u2022 RA: {}", entry->hash, Achievements::GameHashToString(entry->achievements_hash))));
   }
   else
   {

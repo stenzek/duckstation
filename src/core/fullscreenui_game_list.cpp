@@ -475,9 +475,14 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
       if (!compact_mode)
       {
         if (entry->serial.empty())
-          summary.format("{} | {} MB", Path::GetFileName(entry->path), to_mb(entry->file_size));
+        {
+          summary.format("{} \u2022 {} MB", Path::GetFileName(entry->path), to_mb(entry->file_size));
+        }
         else
-          summary.format("{} | {} | {} MB", entry->serial, Path::GetFileName(entry->path), to_mb(entry->file_size));
+        {
+          summary.format("{} \u2022 {} \u2022 {} MB", entry->serial, Path::GetFileName(entry->path),
+                         to_mb(entry->file_size));
+        }
       }
 
       const MenuButtonBounds mbb(entry->GetDisplayTitle(show_localized_titles), {}, summary, row_left_margin);
@@ -1103,7 +1108,7 @@ void FullscreenUI::HandleSelectDiscForDiscSet(const GameDatabase::DiscSetEntry* 
   for (u32 i = 0; i < static_cast<u32>(entries.size()); i++)
   {
     const GameList::Entry* const entry = entries[i];
-    std::string title = fmt::format(ICON_FA_COMPACT_DISC " {} {} | {}##{}", FSUI_VSTR("Disc"),
+    std::string title = fmt::format(ICON_FA_COMPACT_DISC " {} {} \u2022 {}##{}", FSUI_VSTR("Disc"),
                                     entry->disc_set_index + 1, Path::GetFileName(entry->path), i);
     options.emplace_back(std::move(title), false);
     paths.push_back(entry->path);

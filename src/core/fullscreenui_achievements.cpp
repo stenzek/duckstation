@@ -2541,7 +2541,7 @@ void FullscreenUI::DrawAchievement(const rc_client_achievement_t* cheevo, const 
     // unofficial can't be unlocked so don't show the percentage
     if (!is_unofficial)
     {
-      text.append(" | ");
+      text.append(" \u2022 ");
       text.append_format(TRANSLATE_FS("Achievements", "{:.1f}% of players have this achievement"), rarity_to_display);
     }
 

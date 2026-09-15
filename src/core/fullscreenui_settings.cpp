@@ -2481,6 +2481,8 @@ void FullscreenUI::DrawSummarySettingsTrackList()
 
 void FullscreenUI::PopulateImageTrackList()
 {
+#define DOT_SEP " \u2022 "
+
   s_settings_locals.image_track_list.clear();
   s_settings_locals.image_track_summary.clear();
 
@@ -2498,14 +2500,16 @@ void FullscreenUI::PopulateImageTrackList()
   for (u32 track = 1; track <= num_tracks; track++)
   {
     const CDImage::TrackMode mode = image->GetTrackMode(static_cast<u8>(track));
-    s_settings_locals.image_track_list.push_back(
-      {fmt::format(FSUI_FSTR("{} | Start: {} | Length: {}"), CDImage::GetTrackModeDisplayName(mode),
-                   image->GetTrackStartMSFPosition(static_cast<u8>(track)).ToString(),
-                   image->GetTrackMSFLength(static_cast<u8>(track)).ToString()),
-       {},
-       {},
-       mode == CDImage::TrackMode::Audio});
+    SmallString summary;
+    summary.assign(CDImage::GetTrackModeDisplayName(mode));
+    summary.append(DOT_SEP);
+    summary.append_format(FSUI_FSTR("Start: {}"), image->GetTrackStartMSFPosition(static_cast<u8>(track)).ToString());
+    summary.append(DOT_SEP);
+    summary.append_format(FSUI_FSTR("Length: {}"), image->GetTrackMSFLength(static_cast<u8>(track)).ToString());
+    s_settings_locals.image_track_list.push_back({std::string(summary), {}, {}, mode == CDImage::TrackMode::Audio});
   }
+
+#undef DOT_SEP
 }
 
 void FullscreenUI::StartImageVerification()
@@ -5113,6 +5117,8 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
       if (opt.ShouldHide())
         continue;
 
+#define DOT_SEP " \u2022 "
+
       switch (opt.type)
       {
         case PostProcessing::ShaderOption::Type::Bool:
@@ -5135,8 +5141,14 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
         case PostProcessing::ShaderOption::Type::Float:
         {
           tstr.format(ICON_FA_RULER_VERTICAL " {}###{}", opt.ui_name, opt.name);
-          str.format(FSUI_FSTR("Value: {} | Default: {} | Minimum: {} | Maximum: {}"), opt.value[0].float_value,
-                     opt.default_value[0].float_value, opt.min_value[0].float_value, opt.max_value[0].float_value);
+          str.format(FSUI_FSTR("Value: {}"), opt.value[0].float_value);
+          str.append(DOT_SEP);
+          str.append_format(FSUI_FSTR("Default: {}"), opt.default_value[0].float_value);
+          str.append(DOT_SEP);
+          str.append_format(FSUI_FSTR("Minimum: {}"), opt.min_value[0].float_value);
+          str.append(DOT_SEP);
+          str.append_format(FSUI_FSTR("Maximum: {}"), opt.max_value[0].float_value);
+          str.append(DOT_SEP);
           if (MenuButton(tstr, str))
             OpenFixedPopupDialog(tstr);
 
@@ -5203,8 +5215,14 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
         case PostProcessing::ShaderOption::Type::Int:
         {
           tstr.format(ICON_FA_RULER_VERTICAL " {}##{}", opt.ui_name, opt.name);
-          str.format(FSUI_FSTR("Value: {} | Default: {} | Minimum: {} | Maximum: {}"), opt.value[0].int_value,
-                     opt.default_value[0].int_value, opt.min_value[0].int_value, opt.max_value[0].int_value);
+          str.format(FSUI_FSTR("Value: {}"), opt.value[0].int_value);
+          str.append(DOT_SEP);
+          str.append_format(FSUI_FSTR("Default: {}"), opt.default_value[0].int_value);
+          str.append(DOT_SEP);
+          str.append_format(FSUI_FSTR("Minimum: {}"), opt.min_value[0].int_value);
+          str.append(DOT_SEP);
+          str.append_format(FSUI_FSTR("Maximum: {}"), opt.max_value[0].int_value);
+          str.append(DOT_SEP);
           if (MenuButton(tstr, str))
             OpenFixedPopupDialog(tstr);
 
@@ -5268,6 +5286,8 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
         default:
           break;
       }
+
+#undef DOT_SEP
     }
 
     ImGui::PopID();

@@ -387,6 +387,7 @@ void ImGuiManager::DrawPerformanceOverlay(const GPUBackend* gpu, float& position
 {
 #define BOLD(text) "\x02" text "\x01"
 #define COLOR(text) "\x04" text "\x03"
+#define DOT_SEP " \u2022 "
 
   if (!(g_gpu_settings.display_show_fps || g_gpu_settings.display_show_speed || g_gpu_settings.display_show_gpu_stats ||
         g_gpu_settings.display_show_resolution || g_gpu_settings.display_show_latency_stats ||
@@ -415,15 +416,15 @@ void ImGuiManager::DrawPerformanceOverlay(const GPUBackend* gpu, float& position
       const float vps = PerformanceCounters::GetVPS();
 
       if (vps < 100.0f)
-        text.append_format(COLOR("{:.2f}") " " BOLD("FPS") " | " COLOR("{:.2f}") " " BOLD("VPS"), fps, vps);
+        text.append_format(COLOR("{:.2f}") " " BOLD("FPS") DOT_SEP COLOR("{:.2f}") " " BOLD("VPS"), fps, vps);
       else if (vps < 1000.0f)
-        text.append_format(COLOR("{:.1f}") " " BOLD("FPS") " | " COLOR("{:.1f}") " " BOLD("VPS"), fps, vps);
+        text.append_format(COLOR("{:.1f}") " " BOLD("FPS") DOT_SEP COLOR("{:.1f}") " " BOLD("VPS"), fps, vps);
       else
-        text.append_format(COLOR("{:.0f}") " " BOLD("FPS") " | " COLOR("{:.0f}") " " BOLD("VPS"), fps, vps);
+        text.append_format(COLOR("{:.0f}") " " BOLD("FPS") DOT_SEP COLOR("{:.0f}") " " BOLD("VPS"), fps, vps);
     }
     if (g_gpu_settings.display_show_speed)
     {
-      text.append_format("{}" COLOR("{}%") " ", text.empty() ? "" : " | ", static_cast<u32>(std::round(speed)));
+      text.append_format("{}" COLOR("{}%") " ", text.empty() ? "" : DOT_SEP, static_cast<u32>(std::round(speed)));
 
       const float target_speed = System::GetTargetSpeed();
       if (target_speed <= 0.0f)
@@ -464,10 +465,10 @@ void ImGuiManager::DrawPerformanceOverlay(const GPUBackend* gpu, float& position
       const bool interlaced = GPU::IsInterlacedDisplayEnabled();
       const bool progressive_forced = GPU::IsProgressiveDisplayScanForced();
       const bool pal = GPU::IsInPALMode();
-      text.format("{}x{} " BOLD("{} {}") " | {}x " BOLD("IR") "{}", display_width * resolution_scale,
+      text.format("{}x{} " BOLD("{} {}") DOT_SEP "{}x " BOLD("IR") "{}", display_width * resolution_scale,
                   display_height * resolution_scale, pal ? "PAL" : "NTSC",
                   interlaced ? "Interlaced" : (progressive_forced ? "Forced-Progressive" : "Progressive"),
-                  resolution_scale, pgxp ? " | " BOLD("PGXP") : "");
+                  resolution_scale, pgxp ? DOT_SEP BOLD("PGXP") : "");
       DrawPerformanceStat(dl, position_y, fixed_font, fixed_font_size, FIXED_BOLD_WEIGHT, 0, rbound, text);
       position_y += spacing;
     }
@@ -481,7 +482,7 @@ void ImGuiManager::DrawPerformanceOverlay(const GPUBackend* gpu, float& position
 
     if (g_gpu_settings.display_show_cpu_usage)
     {
-      text.format(" {:.2f}ms " BOLD("Min") " | {:.2f}ms " BOLD("Avg") " | {:.2f}ms " BOLD("Max"),
+      text.format(" {:.2f}ms " BOLD("Min") DOT_SEP "{:.2f}ms " BOLD("Avg") DOT_SEP "{:.2f}ms " BOLD("Max"),
                   PerformanceCounters::GetMinimumFrameTime(), PerformanceCounters::GetAverageFrameTime(),
                   PerformanceCounters::GetMaximumFrameTime());
       DrawPerformanceStat(dl, position_y, fixed_font, fixed_font_size, FIXED_BOLD_WEIGHT, 0, rbound, text);
@@ -568,6 +569,7 @@ void ImGuiManager::DrawPerformanceOverlay(const GPUBackend* gpu, float& position
     DrawStatusIndicators(dl, position_y, ui_font, status_size, rbound, text, true);
   }
 
+#undef DOT_SEP
 #undef COLOR
 #undef BOLD
 }
