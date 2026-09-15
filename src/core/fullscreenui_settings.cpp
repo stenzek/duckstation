@@ -2795,6 +2795,10 @@ void FullscreenUI::DrawInterfaceSettingsPage()
   DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_CHART_BAR, "Show GPU Statistics"),
                     FSUI_VSTR("Shows information about the emulated GPU in the top-right corner of the display."),
                     "Display", "ShowGPUStatistics", false);
+  DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_CHART_BAR, "Show Bandwidth Statistics"),
+                    FSUI_VSTR("Shows VRAM memory bandwidth (writes, readbacks, copies, display) per frame in the "
+                              "top-right corner of the display."),
+                    "Display", "ShowBandwidthStatistics", false);
   DrawToggleSetting(
     bsi, FSUI_ICONVSTR(ICON_FA_USER_CLOCK, "Show Latency Statistics"),
     FSUI_VSTR("Shows information about input and audio latency in the top-right corner of the display."), "Display",

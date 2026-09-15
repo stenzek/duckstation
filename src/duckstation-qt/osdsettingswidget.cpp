@@ -72,6 +72,8 @@ OSDSettingsWidget::OSDSettingsWidget(SettingsWindow* dialog, QWidget* parent) : 
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showGPU, "Display", "ShowGPU", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showInput, "Display", "ShowInputs", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showGPUStatistics, "Display", "ShowGPUStatistics", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showBandwidthStatistics, "Display", "ShowBandwidthStatistics",
+                                              false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showLatencyStatistics, "Display", "ShowLatencyStatistics",
                                                false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showFrameTimes, "Display", "ShowFrameTimes", false);

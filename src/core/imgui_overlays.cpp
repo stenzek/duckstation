@@ -389,9 +389,9 @@ void ImGuiManager::DrawPerformanceOverlay(const GPUBackend* gpu, float& position
 #define COLOR(text) "\x04" text "\x03"
 
   if (!(g_gpu_settings.display_show_fps || g_gpu_settings.display_show_speed || g_gpu_settings.display_show_gpu_stats ||
-        g_gpu_settings.display_show_resolution || g_gpu_settings.display_show_latency_stats ||
-        g_gpu_settings.display_show_cpu_usage || g_gpu_settings.display_show_gpu_usage ||
-        g_gpu_settings.display_show_frame_times ||
+        g_gpu_settings.display_show_bandwidth_stats || g_gpu_settings.display_show_resolution ||
+        g_gpu_settings.display_show_latency_stats || g_gpu_settings.display_show_cpu_usage ||
+        g_gpu_settings.display_show_gpu_usage || g_gpu_settings.display_show_frame_times ||
         (g_gpu_settings.display_show_status_indicators &&
          (VideoThread::IsSystemPaused() || System::IsFastForwardEnabled() || System::IsTurboEnabled()))))
   {
@@ -452,6 +452,17 @@ void ImGuiManager::DrawPerformanceOverlay(const GPUBackend* gpu, float& position
       position_y += spacing;
 
       gpu->GetMemoryStatsString(text);
+      DrawPerformanceStat(dl, position_y, fixed_font, fixed_font_size, FIXED_BOLD_WEIGHT, 0, rbound, text);
+      position_y += spacing;
+    }
+
+    if (g_gpu_settings.display_show_bandwidth_stats)
+    {
+      gpu->GetBandwidthStatsString(text);
+      DrawPerformanceStat(dl, position_y, fixed_font, fixed_font_size, FIXED_BOLD_WEIGHT, 0, rbound, text);
+      position_y += spacing;
+
+      gpu->GetRenderStatsString(text);
       DrawPerformanceStat(dl, position_y, fixed_font, fixed_font_size, FIXED_BOLD_WEIGHT, 0, rbound, text);
       position_y += spacing;
     }
