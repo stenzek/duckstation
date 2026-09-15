@@ -8,6 +8,7 @@
 #include "qtutils.h"
 
 #include "core/bus.h"
+#include "core/core.h"
 #include "core/cpu_code_cache.h"
 #include "core/cpu_core_private.h"
 #include "core/cpu_disasm.h"
@@ -45,12 +46,15 @@ LOG_CHANNEL(Host);
 
 static constexpr int TIMER_REFRESH_INTERVAL_MS = 100;
 static constexpr const char* BREAKPOINTS_SECTION = "Breakpoints";
+static constexpr const char* WINDOW_STATE_SECTION = "UI";
+static constexpr const char* WINDOW_STATE_KEY = "DebuggerWindowState";
 
 DebuggerWindow::DebuggerWindow(QWidget* parent /* = nullptr */)
   : QMainWindow(parent), m_active_memory_region(Bus::MemoryRegion::Count)
 {
   m_ui.setupUi(this);
   setupAdditionalUi();
+  restoreWindowState();
   connectSignals();
   createModels();
   setMemoryViewRegion(Bus::MemoryRegion::RAM);
@@ -65,7 +69,9 @@ DebuggerWindow::DebuggerWindow(QWidget* parent /* = nullptr */)
       onSystemStarted();
   }
   else
+  {
     onSystemDestroyed();
+  }
 }
 
 DebuggerWindow::~DebuggerWindow() = default;
@@ -674,10 +680,27 @@ void DebuggerWindow::closeEvent(QCloseEvent* event)
 {
   g_core_thread->disconnect(this);
   Host::RunOnCoreThread([]() { CPU::ClearBreakpoints(true, false); });
-  QtUtils::SaveWindowGeometry(this);
+  saveWindowState();
   saveGameSettings();
   QMainWindow::closeEvent(event);
   emit closed();
+}
+
+void DebuggerWindow::saveWindowState()
+{
+  QtUtils::SaveWindowGeometry(this, false);
+
+  const QByteArray state = QMainWindow::saveState().toBase64();
+  Core::SetBaseStringSettingValue(WINDOW_STATE_SECTION, WINDOW_STATE_KEY, state.constData());
+  Host::CommitBaseSettingChanges();
+}
+
+void DebuggerWindow::restoreWindowState()
+{
+  // NOTE: Geometry restored in QtUtils::ShowOrRaiseWindow().
+  const std::string state = Core::GetBaseStringSettingValue(WINDOW_STATE_SECTION, WINDOW_STATE_KEY);
+  if (!state.empty())
+    QMainWindow::restoreState(QByteArray::fromBase64(QByteArray::fromStdString(state)));
 }
 
 void DebuggerWindow::setupAdditionalUi()

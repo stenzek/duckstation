@@ -42,6 +42,8 @@ protected:
   void closeEvent(QCloseEvent* event) override;
 
 private:
+  void saveWindowState();
+  void restoreWindowState();
   void setupAdditionalUi();
   void connectSignals();
   void createModels();
