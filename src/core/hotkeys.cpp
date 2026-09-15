@@ -135,6 +135,13 @@ static constexpr const HotkeyInfo s_hotkey_list[] = {
        FullscreenUI::OpenPauseMenu();
    }},
 
+  {"TogglePauseMenu", TRANSLATE_NOOP("Hotkeys", "Interface"), TRANSLATE_NOOP("Hotkeys", "Toggle Pause Menu"),
+   [](InputButtonEvent event) {
+     if (event == InputButtonEvent::Released && System::CanPauseSystem(true))
+       FullscreenUI::TogglePauseMenu();
+   },
+   true},
+
   {"OpenCheatsMenu", TRANSLATE_NOOP("Hotkeys", "Interface"), TRANSLATE_NOOP("Hotkeys", "Open Cheat Settings"),
    [](InputButtonEvent event) {
      if (event == InputButtonEvent::Released && System::CanPauseSystem(true))
@@ -144,13 +151,13 @@ static constexpr const HotkeyInfo s_hotkey_list[] = {
   {"OpenAchievements", TRANSLATE_NOOP("Hotkeys", "Interface"), TRANSLATE_NOOP("Hotkeys", "Open Achievement List"),
    [](InputButtonEvent event) {
      if (event == InputButtonEvent::Released && System::CanPauseSystem(true))
-       FullscreenUI::OpenAchievementsWindow();
+       FullscreenUI::ToggleAchievementsWindow();
    }},
 
   {"OpenLeaderboards", TRANSLATE_NOOP("Hotkeys", "Interface"), TRANSLATE_NOOP("Hotkeys", "Open Leaderboard List"),
    [](InputButtonEvent event) {
      if (event == InputButtonEvent::Released && System::CanPauseSystem(true))
-       FullscreenUI::OpenLeaderboardsWindow();
+       FullscreenUI::ToggleLeaderboardsWindow();
    }},
 
   {"Screenshot", TRANSLATE_NOOP("Hotkeys", "Interface"), TRANSLATE_NOOP("Hotkeys", "Save Screenshot"),
