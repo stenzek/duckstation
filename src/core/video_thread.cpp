@@ -1468,10 +1468,10 @@ void VideoThread::RecreateRenderWindowOnThread(bool fullscreen, bool allow_exclu
     exclusive_fullscreen_requested = fullscreen_mode.has_value();
   }
   std::optional<bool> exclusive_fullscreen_control;
-  if (g_settings.display_exclusive_fullscreen_control != DisplayExclusiveFullscreenControl::Automatic)
+  if (g_gpu_settings.display_exclusive_fullscreen_control != DisplayExclusiveFullscreenControl::Automatic)
   {
     exclusive_fullscreen_control =
-      (g_settings.display_exclusive_fullscreen_control == DisplayExclusiveFullscreenControl::Allowed);
+      (g_gpu_settings.display_exclusive_fullscreen_control == DisplayExclusiveFullscreenControl::Allowed);
   }
 
   g_gpu_device->DestroyMainSwapChain();
