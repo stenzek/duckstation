@@ -15,6 +15,7 @@
 
 #include <QtCore/QTimer>
 #include <QtGui/QFontDatabase>
+#include <QtGui/QKeySequence>
 #include <QtGui/QMouseEvent>
 #include <QtGui/QPainter>
 #include <QtGui/QPainterPath>
@@ -231,10 +232,32 @@ std::optional<VirtualMemoryAddress> DebuggerCodeView::getSelectedAddress() const
   return m_selected_address;
 }
 
+std::optional<std::pair<VirtualMemoryAddress, VirtualMemoryAddress>> DebuggerCodeView::getSelectedAddressRange() const
+{
+  if (!m_has_selection)
+    return std::nullopt;
+
+  return std::make_pair(std::min(m_selection_anchor_address, m_selected_address),
+                        std::max(m_selection_anchor_address, m_selected_address));
+}
+
+bool DebuggerCodeView::isAddressSelected(VirtualMemoryAddress address) const
+{
+  const std::optional<std::pair<VirtualMemoryAddress, VirtualMemoryAddress>> range = getSelectedAddressRange();
+  return range.has_value() && address >= range->first && address <= range->second;
+}
+
 void DebuggerCodeView::setSelectedAddress(VirtualMemoryAddress address)
 {
   m_selected_address = address;
+  m_selection_anchor_address = address;
   m_has_selection = true;
+  viewport()->update();
+}
+
+void DebuggerCodeView::setSelectionEndAddress(VirtualMemoryAddress address)
+{
+  m_selected_address = address;
   viewport()->update();
 }
 
@@ -269,7 +292,7 @@ void DebuggerCodeView::paintEvent(QPaintEvent* event)
     if (y + m_row_height < visible_rect.top() || y > visible_rect.bottom())
       continue;
 
-    const bool is_selected = (m_has_selection && address == m_selected_address);
+    const bool is_selected = isAddressSelected(address);
     const bool is_pc = (address == m_last_pc);
 
     drawInstruction(painter, address, y, is_selected, is_pc);
@@ -581,7 +604,10 @@ void DebuggerCodeView::mousePressEvent(QMouseEvent* event)
   if (event->button() == Qt::LeftButton)
   {
     const VirtualMemoryAddress address = getAddressAtPoint(event->pos());
-    setSelectedAddress(address);
+    if (m_has_selection && (event->modifiers() & Qt::ShiftModifier))
+      setSelectionEndAddress(address);
+    else
+      setSelectedAddress(address);
   }
 
   QAbstractScrollArea::mousePressEvent(event);
@@ -592,7 +618,7 @@ void DebuggerCodeView::mouseMoveEvent(QMouseEvent* event)
   if (event->buttons() & Qt::LeftButton)
   {
     const VirtualMemoryAddress address = getAddressAtPoint(event->pos());
-    setSelectedAddress(address);
+    setSelectionEndAddress(address);
   }
   QAbstractScrollArea::mouseMoveEvent(event);
 }
@@ -631,35 +657,49 @@ void DebuggerCodeView::contextMenuEvent(QContextMenuEvent* event)
 
 void DebuggerCodeView::keyPressEvent(QKeyEvent* event)
 {
+  if (m_has_selection && event->matches(QKeySequence::Copy))
+  {
+    emit copyActivated();
+    event->accept();
+    return;
+  }
+
   if (!m_has_selection)
   {
     QAbstractScrollArea::keyPressEvent(event);
     return;
   }
 
-  VirtualMemoryAddress new_address = m_selected_address;
+  int row_delta;
 
   switch (event->key())
   {
     case Qt::Key_Up:
-      new_address -= CPU::INSTRUCTION_SIZE;
+      row_delta = -1;
       break;
     case Qt::Key_Down:
-      new_address += CPU::INSTRUCTION_SIZE;
+      row_delta = 1;
       break;
     case Qt::Key_PageUp:
-      new_address -= CPU::INSTRUCTION_SIZE * getVisibleRowCount();
+      row_delta = -getVisibleRowCount();
       break;
     case Qt::Key_PageDown:
-      new_address += CPU::INSTRUCTION_SIZE * getVisibleRowCount();
+      row_delta = getVisibleRowCount();
       break;
     default:
       QAbstractScrollArea::keyPressEvent(event);
       return;
   }
 
+  const int total_rows = static_cast<int>((m_code_region_end - m_code_region_start) / CPU::INSTRUCTION_SIZE);
+  const int new_row = std::clamp(getRowForAddress(m_selected_address) + row_delta, 0, total_rows - 1);
+  const VirtualMemoryAddress new_address = getAddressForRow(new_row);
   scrollToAddress(new_address, false);
-  setSelectedAddress(new_address);
+  if (event->modifiers() & Qt::ShiftModifier)
+    setSelectionEndAddress(new_address);
+  else
+    setSelectedAddress(new_address);
+  event->accept();
 }
 
 void DebuggerCodeView::wheelEvent(QWheelEvent* event)

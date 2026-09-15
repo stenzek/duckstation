@@ -15,6 +15,7 @@
 
 #include <memory>
 #include <optional>
+#include <utility>
 #include <vector>
 
 class DebuggerCodeView : public QAbstractScrollArea
@@ -30,6 +31,8 @@ public:
 
   void scrollToAddress(VirtualMemoryAddress address, bool center = false);
   std::optional<VirtualMemoryAddress> getSelectedAddress() const;
+  std::optional<std::pair<VirtualMemoryAddress, VirtualMemoryAddress>> getSelectedAddressRange() const;
+  bool isAddressSelected(VirtualMemoryAddress address) const;
   void setSelectedAddress(VirtualMemoryAddress address);
   VirtualMemoryAddress getAddressAtPoint(const QPoint& point) const;
 
@@ -48,6 +51,7 @@ Q_SIGNALS:
   void toggleBreakpointActivated(VirtualMemoryAddress address);
   void addressActivated(VirtualMemoryAddress address);
   void commentActivated(VirtualMemoryAddress address);
+  void copyActivated();
   void contextMenuRequested(const QPoint& point, VirtualMemoryAddress address);
 
 protected:
@@ -99,11 +103,13 @@ private:
   int getVisibleRowCount() const;
   VirtualMemoryAddress getFirstVisibleAddress() const;
   VirtualMemoryAddress getLastVisibleAddress() const;
+  void setSelectionEndAddress(VirtualMemoryAddress address);
 
   int m_row_height = 1;
   int m_char_width = 0;
 
   VirtualMemoryAddress m_selected_address = 0;
+  VirtualMemoryAddress m_selection_anchor_address = 0;
   bool m_has_selection = false;
 
   std::vector<BranchArrow> m_branch_arrows;
