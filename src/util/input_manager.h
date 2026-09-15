@@ -297,15 +297,15 @@ void CloseSources();
 void PollSources();
 
 /// Returns true if any bindings exist for the specified key.
-/// Can be safely called on another thread.
+/// Must be called on the core thread.
 bool HasAnyBindingsForKey(InputBindingKey key);
 
 /// Returns true if any bindings exist for the specified source + index.
-/// Can be safely called on another thread.
+/// Must be called on the core thread.
 bool HasAnyBindingsForSource(InputBindingKey key);
 
 /// Returns true if any bindings exist for the specified subclass.
-/// Can be safely called on another thread.
+/// Must be called on the core thread.
 bool HasAnyBindingsForSubclass(InputBindingKey key);
 
 /// Parses a string binding into its components. Use with external AddBinding().
