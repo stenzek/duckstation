@@ -130,118 +130,118 @@ static constexpr const HotkeyInfo s_hotkey_list[] = {
 #ifndef __ANDROID__
 
   {"OpenPauseMenu", TRANSLATE_NOOP("Hotkeys", "Interface"), TRANSLATE_NOOP("Hotkeys", "Open Pause Menu"),
-   [](s32 pressed) {
-     if (!pressed && System::CanPauseSystem(true))
+   [](InputButtonEvent event) {
+     if (event == InputButtonEvent::Released && System::CanPauseSystem(true))
        FullscreenUI::OpenPauseMenu();
    }},
 
   {"OpenCheatsMenu", TRANSLATE_NOOP("Hotkeys", "Interface"), TRANSLATE_NOOP("Hotkeys", "Open Cheat Settings"),
-   [](s32 pressed) {
-     if (!pressed && System::CanPauseSystem(true))
+   [](InputButtonEvent event) {
+     if (event == InputButtonEvent::Released && System::CanPauseSystem(true))
        FullscreenUI::OpenCheatsMenu();
    }},
 
   {"OpenAchievements", TRANSLATE_NOOP("Hotkeys", "Interface"), TRANSLATE_NOOP("Hotkeys", "Open Achievement List"),
-   [](s32 pressed) {
-     if (!pressed && System::CanPauseSystem(true))
+   [](InputButtonEvent event) {
+     if (event == InputButtonEvent::Released && System::CanPauseSystem(true))
        FullscreenUI::OpenAchievementsWindow();
    }},
 
   {"OpenLeaderboards", TRANSLATE_NOOP("Hotkeys", "Interface"), TRANSLATE_NOOP("Hotkeys", "Open Leaderboard List"),
-   [](s32 pressed) {
-     if (!pressed && System::CanPauseSystem(true))
+   [](InputButtonEvent event) {
+     if (event == InputButtonEvent::Released && System::CanPauseSystem(true))
        FullscreenUI::OpenLeaderboardsWindow();
    }},
 
   {"Screenshot", TRANSLATE_NOOP("Hotkeys", "Interface"), TRANSLATE_NOOP("Hotkeys", "Save Screenshot"),
-   [](s32 pressed) {
-     if (!pressed)
+   [](InputButtonEvent event) {
+     if (event == InputButtonEvent::Released)
        System::SaveScreenshot();
    }},
 
   {"TogglePause", TRANSLATE_NOOP("Hotkeys", "Interface"), TRANSLATE_NOOP("Hotkeys", "Toggle Pause"),
-   [](s32 pressed) {
-     if (!pressed && System::CanPauseSystem(true))
+   [](InputButtonEvent event) {
+     if (event == InputButtonEvent::Released && System::CanPauseSystem(true))
        System::PauseSystem(!System::IsPaused());
    }},
 
   {"ToggleFullscreen", TRANSLATE_NOOP("Hotkeys", "Interface"), TRANSLATE_NOOP("Hotkeys", "Toggle Fullscreen"),
-   [](s32 pressed) {
-     if (!pressed)
+   [](InputButtonEvent event) {
+     if (event == InputButtonEvent::Released)
        VideoThread::SetFullscreen(!VideoThread::IsFullscreen());
    }},
 
 #endif // __ANDROID__
 
   {"FastForward", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_NOOP("Hotkeys", "Fast Forward (Hold)"),
-   [](s32 pressed) { System::SetFastForwardEnabled(pressed > 0); }},
+   [](InputButtonEvent event) { System::SetFastForwardEnabled(event == InputButtonEvent::Pressed); }},
 
   {"ToggleFastForward", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_NOOP("Hotkeys", "Fast Forward (Toggle)"),
-   [](s32 pressed) {
-     if (!pressed)
+   [](InputButtonEvent event) {
+     if (event == InputButtonEvent::Released)
        System::SetFastForwardEnabled(!System::IsFastForwardEnabled());
    }},
 
   {"Turbo", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_NOOP("Hotkeys", "Turbo (Hold)"),
-   [](s32 pressed) { System::SetTurboEnabled(pressed > 0); }},
+   [](InputButtonEvent event) { System::SetTurboEnabled(event == InputButtonEvent::Pressed); }},
 
   {"ToggleTurbo", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_NOOP("Hotkeys", "Turbo (Toggle)"),
-   [](s32 pressed) {
-     if (!pressed)
+   [](InputButtonEvent event) {
+     if (event == InputButtonEvent::Released)
        System::SetTurboEnabled(!System::IsTurboEnabled());
    }},
 
   {"PowerOff", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_NOOP("Hotkeys", "Power Off System"),
-   [](s32 pressed) {
-     if (!pressed)
+   [](InputButtonEvent event) {
+     if (event == InputButtonEvent::Released)
        Host::RequestSystemShutdown(true, g_settings.save_state_on_exit, true);
    }},
 
   {"Reset", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_NOOP("Hotkeys", "Restart Game"),
-   [](s32 pressed) {
-     if (!pressed)
+   [](InputButtonEvent event) {
+     if (event == InputButtonEvent::Released)
        Host::RunOnCoreThread(System::ResetSystem);
    }},
 
 #ifndef __ANDROID__
   {"ChangeDisc", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_NOOP("Hotkeys", "Change Disc"),
-   [](s32 pressed) {
-     if (!pressed)
+   [](InputButtonEvent event) {
+     if (event == InputButtonEvent::Released)
        FullscreenUI::OpenDiscChangeMenu();
    }},
 #endif // __ANDROID__
 
   {"SwitchToPreviousDisc", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_NOOP("Hotkeys", "Switch to Previous Disc"),
-   [](s32 pressed) {
+   [](InputButtonEvent event) {
      // Defer because otherwise the hotkey might be invalidated by config change.
-     if (!pressed)
+     if (event == InputButtonEvent::Released)
        Host::RunOnCoreThread([]() { System::SwitchToPreviousDisc(true); });
    }},
 
   {"SwitchToNextDisc", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_NOOP("Hotkeys", "Switch to Next Disc"),
-   [](s32 pressed) {
+   [](InputButtonEvent event) {
      // Defer because otherwise the hotkey might be invalidated by config change.
-     if (!pressed)
+     if (event == InputButtonEvent::Released)
        Host::RunOnCoreThread([]() { System::SwitchToNextDisc(true); });
    }},
 
   {"Rewind", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_NOOP("Hotkeys", "Rewind"),
-   [](s32 pressed) {
-     const bool enabled = (pressed > 0);
+   [](InputButtonEvent event) {
+     const bool enabled = (event == InputButtonEvent::Pressed);
      if (HotkeyCheckRewindAvailability(enabled))
        System::SetRewindState(enabled);
    }},
 
 #ifndef __ANDROID__
   {"FrameStep", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_NOOP("Hotkeys", "Frame Step"),
-   [](s32 pressed) {
-     if (!pressed)
+   [](InputButtonEvent event) {
+     if (event == InputButtonEvent::Released)
        System::FrameStep();
    }},
 
   {"ToggleMediaCapture", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_NOOP("Hotkeys", "Toggle Media Capture"),
-   [](s32 pressed) {
-     if (!pressed)
+   [](InputButtonEvent event) {
+     if (event == InputButtonEvent::Released)
      {
        if (System::GetMediaCapture())
          System::StopMediaCapture();
@@ -251,8 +251,8 @@ static constexpr const HotkeyInfo s_hotkey_list[] = {
    }},
 
   {"ToggleAudioCapture", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_NOOP("Hotkeys", "Toggle Audio Capture"),
-   [](s32 pressed) {
-     if (!pressed)
+   [](InputButtonEvent event) {
+     if (event == InputButtonEvent::Released)
      {
        if (System::GetMediaCapture())
          System::StopMediaCapture();
@@ -262,8 +262,8 @@ static constexpr const HotkeyInfo s_hotkey_list[] = {
    }},
 
   {"ToggleVideoCapture", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_NOOP("Hotkeys", "Toggle Video Capture"),
-   [](s32 pressed) {
-     if (!pressed)
+   [](InputButtonEvent event) {
+     if (event == InputButtonEvent::Released)
      {
        if (System::GetMediaCapture())
          System::StopMediaCapture();
@@ -275,15 +275,15 @@ static constexpr const HotkeyInfo s_hotkey_list[] = {
 #endif // __ANDROID__
 
   {"SwapMemoryCards", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_NOOP("Hotkeys", "Swap Memory Card Slots"),
-   [](s32 pressed) {
-     if (!pressed)
+   [](InputButtonEvent event) {
+     if (event == InputButtonEvent::Released)
        System::SwapMemoryCards();
    }},
 
   {"ToggleOverclocking", TRANSLATE_NOOP("Hotkeys", "System"),
    TRANSLATE_NOOP("Hotkeys", "Toggle Clock Speed Control (Overclocking)"),
-   [](s32 pressed) {
-     if (!pressed && System::IsValid() && !Achievements::IsHardcoreModeActive())
+   [](InputButtonEvent event) {
+     if (event == InputButtonEvent::Released && System::IsValid() && !Achievements::IsHardcoreModeActive())
      {
        g_settings.cpu_overclock_enable = !g_settings.cpu_overclock_enable;
        g_settings.UpdateOverclockActive();
@@ -309,8 +309,8 @@ static constexpr const HotkeyInfo s_hotkey_list[] = {
    }},
 
   {"IncreaseEmulationSpeed", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_NOOP("Hotkeys", "Increase Emulation Speed"),
-   [](s32 pressed) {
-     if (!pressed && System::IsValid())
+   [](InputButtonEvent event) {
+     if (event == InputButtonEvent::Released && System::IsValid())
      {
        g_settings.emulation_speed += 0.1f;
        System::UpdateSpeedLimiterState();
@@ -321,8 +321,8 @@ static constexpr const HotkeyInfo s_hotkey_list[] = {
    }},
 
   {"DecreaseEmulationSpeed", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_NOOP("Hotkeys", "Decrease Emulation Speed"),
-   [](s32 pressed) {
-     if (!pressed && System::IsValid())
+   [](InputButtonEvent event) {
+     if (event == InputButtonEvent::Released && System::IsValid())
      {
        g_settings.emulation_speed =
          std::max(g_settings.emulation_speed - 0.1f, Achievements::IsHardcoreModeActive() ? 1.0f : 0.1f);
@@ -334,8 +334,8 @@ static constexpr const HotkeyInfo s_hotkey_list[] = {
    }},
 
   {"ResetEmulationSpeed", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_NOOP("Hotkeys", "Reset Emulation Speed"),
-   [](s32 pressed) {
-     if (!pressed && System::IsValid())
+   [](InputButtonEvent event) {
+     if (event == InputButtonEvent::Released && System::IsValid())
      {
        g_settings.emulation_speed = std::max(Core::GetFloatSettingValue("Main", "EmulationSpeed", 1.0f),
                                              Achievements::IsHardcoreModeActive() ? 1.0f : 0.1f);
@@ -347,8 +347,8 @@ static constexpr const HotkeyInfo s_hotkey_list[] = {
    }},
 
   {"RotateClockwise", TRANSLATE_NOOP("Hotkeys", "Graphics"), TRANSLATE_NOOP("Hotkeys", "Rotate Display Clockwise"),
-   [](s32 pressed) {
-     if (!pressed)
+   [](InputButtonEvent event) {
+     if (event == InputButtonEvent::Released)
      {
        g_settings.display_rotation = static_cast<DisplayRotation>((static_cast<u8>(g_settings.display_rotation) + 1) %
                                                                   static_cast<u8>(DisplayRotation::Count));
@@ -358,8 +358,8 @@ static constexpr const HotkeyInfo s_hotkey_list[] = {
 
   {"RotateCounterclockwise", TRANSLATE_NOOP("Hotkeys", "Graphics"),
    TRANSLATE_NOOP("Hotkeys", "Rotate Display Counterclockwise"),
-   [](s32 pressed) {
-     if (!pressed)
+   [](InputButtonEvent event) {
+     if (event == InputButtonEvent::Released)
      {
        g_settings.display_rotation = (g_settings.display_rotation > static_cast<DisplayRotation>(0)) ?
                                        static_cast<DisplayRotation>((static_cast<u8>(g_settings.display_rotation) - 1) %
@@ -370,21 +370,21 @@ static constexpr const HotkeyInfo s_hotkey_list[] = {
    }},
 
   {"ToggleOSD", TRANSLATE_NOOP("Hotkeys", "Graphics"), TRANSLATE_NOOP("Hotkeys", "Toggle On-Screen Display"),
-   [](s32 pressed) {
-     if (!pressed)
+   [](InputButtonEvent event) {
+     if (event == InputButtonEvent::Released)
        HotkeyToggleOSD();
    }},
 
   {"ToggleSoftwareRendering", TRANSLATE_NOOP("Hotkeys", "Graphics"),
    TRANSLATE_NOOP("Hotkeys", "Toggle Software Rendering"),
-   [](s32 pressed) {
-     if (!pressed && System::IsValid())
+   [](InputButtonEvent event) {
+     if (event == InputButtonEvent::Released && System::IsValid())
        System::ToggleSoftwareRendering();
    }},
 
   {"TogglePGXP", TRANSLATE_NOOP("Hotkeys", "Graphics"), TRANSLATE_NOOP("Hotkeys", "Toggle PGXP"),
-   [](s32 pressed) {
-     if (!pressed && System::IsValid())
+   [](InputButtonEvent event) {
+     if (event == InputButtonEvent::Released && System::IsValid())
      {
        System::ClearMemorySaveStates(true, true);
 
@@ -418,8 +418,8 @@ static constexpr const HotkeyInfo s_hotkey_list[] = {
    }},
 
   {"TogglePGXPDepth", TRANSLATE_NOOP("Hotkeys", "Graphics"), TRANSLATE_NOOP("Hotkeys", "Toggle PGXP Depth Buffer"),
-   [](s32 pressed) {
-     if (!pressed && System::IsValid())
+   [](InputButtonEvent event) {
+     if (event == InputButtonEvent::Released && System::IsValid())
      {
        if (!g_settings.gpu_pgxp_enable)
          return;
@@ -437,15 +437,15 @@ static constexpr const HotkeyInfo s_hotkey_list[] = {
    }},
 
   {"ToggleWidescreen", TRANSLATE_NOOP("Hotkeys", "Graphics"), TRANSLATE_NOOP("Hotkeys", "Toggle Widescreen"),
-   [](s32 pressed) {
-     if (!pressed)
+   [](InputButtonEvent event) {
+     if (event == InputButtonEvent::Released)
        System::ToggleWidescreen();
    }},
 
   {"ToggleModulationCrop", TRANSLATE_NOOP("Hotkeys", "Graphics"),
    TRANSLATE_NOOP("Hotkeys", "Toggle Texture Modulation Cropping"),
-   [](s32 pressed) {
-     if (!pressed && System::IsValid())
+   [](InputButtonEvent event) {
+     if (event == InputButtonEvent::Released && System::IsValid())
      {
        g_settings.gpu_modulation_crop = !g_settings.gpu_modulation_crop;
        VideoThread::UpdateSettings(true, false, false);
@@ -457,50 +457,50 @@ static constexpr const HotkeyInfo s_hotkey_list[] = {
    }},
 
   {"TogglePostProcessing", TRANSLATE_NOOP("Hotkeys", "Graphics"), TRANSLATE_NOOP("Hotkeys", "Toggle Post-Processing"),
-   [](s32 pressed) {
-     if (!pressed && System::IsValid())
+   [](InputButtonEvent event) {
+     if (event == InputButtonEvent::Released && System::IsValid())
        VideoPresenter::TogglePostProcessing();
    }},
 
   {"ReloadPostProcessingShaders", TRANSLATE_NOOP("Hotkeys", "Graphics"),
    TRANSLATE_NOOP("Hotkeys", "Reload Post Processing Shaders"),
-   [](s32 pressed) {
-     if (!pressed && System::IsValid())
+   [](InputButtonEvent event) {
+     if (event == InputButtonEvent::Released && System::IsValid())
        VideoPresenter::ReloadPostProcessingSettings(true, true, true);
    }},
 
   {"ReloadTextureReplacements", TRANSLATE_NOOP("Hotkeys", "Graphics"),
    TRANSLATE_NOOP("Hotkeys", "Reload Texture Replacements"),
-   [](s32 pressed) {
-     if (!pressed && System::IsValid())
+   [](InputButtonEvent event) {
+     if (event == InputButtonEvent::Released && System::IsValid())
        VideoThread::RunOnThread([]() { GPUTextureCache::ReloadTextureReplacements(true, true); });
    }},
 
   {"IncreaseResolutionScale", TRANSLATE_NOOP("Hotkeys", "Graphics"),
    TRANSLATE_NOOP("Hotkeys", "Increase Resolution Scale"),
-   [](s32 pressed) {
-     if (!pressed && System::IsValid())
+   [](InputButtonEvent event) {
+     if (event == InputButtonEvent::Released && System::IsValid())
        HotkeyModifyResolutionScale(1);
    }},
 
   {"DecreaseResolutionScale", TRANSLATE_NOOP("Hotkeys", "Graphics"),
    TRANSLATE_NOOP("Hotkeys", "Decrease Resolution Scale"),
-   [](s32 pressed) {
-     if (!pressed && System::IsValid())
+   [](InputButtonEvent event) {
+     if (event == InputButtonEvent::Released && System::IsValid())
        HotkeyModifyResolutionScale(-1);
    }},
 
   {"RecordSingleFrameGPUDump", TRANSLATE_NOOP("Hotkeys", "Graphics"),
    TRANSLATE_NOOP("Hotkeys", "Record Single Frame GPU Trace"),
-   [](s32 pressed) {
-     if (!pressed)
+   [](InputButtonEvent event) {
+     if (event == InputButtonEvent::Released)
        System::StartRecordingGPUDump(nullptr, 1);
    }},
 
   {"RecordMultiFrameGPUDump", TRANSLATE_NOOP("Hotkeys", "Graphics"),
    TRANSLATE_NOOP("Hotkeys", "Record Multi-Frame GPU Trace"),
-   [](s32 pressed) {
-     if (pressed > 0)
+   [](InputButtonEvent event) {
+     if (event == InputButtonEvent::Pressed)
        System::StartRecordingGPUDump(nullptr, 0);
      else
        System::StopRecordingGPUDump();
@@ -510,120 +510,120 @@ static constexpr const HotkeyInfo s_hotkey_list[] = {
 #ifndef __ANDROID__
 
   {"FreecamToggle", TRANSLATE_NOOP("Hotkeys", "Free Camera"), TRANSLATE_NOOP("Hotkeys", "Freecam Toggle"),
-   [](s32 pressed) {
-     if (!pressed && !Achievements::IsHardcoreModeActive())
+   [](InputButtonEvent event) {
+     if (event == InputButtonEvent::Released && !Achievements::IsHardcoreModeActive())
        GTE::SetFreecamEnabled(!GTE::IsFreecamEnabled());
    }},
 
   {"FreecamReset", TRANSLATE_NOOP("Hotkeys", "Free Camera"), TRANSLATE_NOOP("Hotkeys", "Freecam Reset"),
-   [](s32 pressed) {
-     if (!pressed && !Achievements::IsHardcoreModeActive())
+   [](InputButtonEvent event) {
+     if (event == InputButtonEvent::Released && !Achievements::IsHardcoreModeActive())
        GTE::ResetFreecam();
    }},
 
   {"FreecamMoveLeft", TRANSLATE_NOOP("Hotkeys", "Free Camera"), TRANSLATE_NOOP("Hotkeys", "Freecam Move Left"),
-   [](s32 pressed) {
+   [](InputButtonEvent event) {
      if (Achievements::IsHardcoreModeActive())
        return;
 
-     GTE::SetFreecamMoveAxis(0, std::max(static_cast<float>(pressed), 0.0f));
+     GTE::SetFreecamMoveAxis(0, (event == InputButtonEvent::Pressed) ? 1.0f : 0.0f);
    }},
 
   {"FreecamMoveRight", TRANSLATE_NOOP("Hotkeys", "Free Camera"), TRANSLATE_NOOP("Hotkeys", "Freecam Move Right"),
-   [](s32 pressed) {
+   [](InputButtonEvent event) {
      if (Achievements::IsHardcoreModeActive())
        return;
 
-     GTE::SetFreecamMoveAxis(0, std::min(static_cast<float>(-pressed), 0.0f));
+     GTE::SetFreecamMoveAxis(0, (event == InputButtonEvent::Pressed) ? -1.0f : 0.0f);
    }},
 
   {"FreecamMoveUp", TRANSLATE_NOOP("Hotkeys", "Free Camera"), TRANSLATE_NOOP("Hotkeys", "Freecam Move Up"),
-   [](s32 pressed) {
+   [](InputButtonEvent event) {
      if (Achievements::IsHardcoreModeActive())
        return;
 
-     GTE::SetFreecamMoveAxis(1, std::max(static_cast<float>(pressed), 0.0f));
+     GTE::SetFreecamMoveAxis(1, (event == InputButtonEvent::Pressed) ? 1.0f : 0.0f);
    }},
 
   {"FreecamMoveDown", TRANSLATE_NOOP("Hotkeys", "Free Camera"), TRANSLATE_NOOP("Hotkeys", "Freecam Move Down"),
-   [](s32 pressed) {
+   [](InputButtonEvent event) {
      if (Achievements::IsHardcoreModeActive())
        return;
 
-     GTE::SetFreecamMoveAxis(1, std::min(static_cast<float>(-pressed), 0.0f));
+     GTE::SetFreecamMoveAxis(1, (event == InputButtonEvent::Pressed) ? -1.0f : 0.0f);
    }},
 
   {"FreecamMoveForward", TRANSLATE_NOOP("Hotkeys", "Free Camera"), TRANSLATE_NOOP("Hotkeys", "Freecam Move Forward"),
-   [](s32 pressed) {
+   [](InputButtonEvent event) {
      if (Achievements::IsHardcoreModeActive())
        return;
 
-     GTE::SetFreecamMoveAxis(2, std::min(static_cast<float>(-pressed), 0.0f));
+     GTE::SetFreecamMoveAxis(2, (event == InputButtonEvent::Pressed) ? -1.0f : 0.0f);
    }},
 
   {"FreecamMoveBackward", TRANSLATE_NOOP("Hotkeys", "Free Camera"), TRANSLATE_NOOP("Hotkeys", "Freecam Move Backward"),
-   [](s32 pressed) {
+   [](InputButtonEvent event) {
      if (Achievements::IsHardcoreModeActive())
        return;
 
-     GTE::SetFreecamMoveAxis(2, std::max(static_cast<float>(pressed), 0.0f));
+     GTE::SetFreecamMoveAxis(2, (event == InputButtonEvent::Pressed) ? 1.0f : 0.0f);
    }},
 
   {"FreecamRotateLeft", TRANSLATE_NOOP("Hotkeys", "Free Camera"), TRANSLATE_NOOP("Hotkeys", "Freecam Rotate Left"),
-   [](s32 pressed) {
+   [](InputButtonEvent event) {
      if (Achievements::IsHardcoreModeActive())
        return;
 
-     GTE::SetFreecamRotateAxis(1, std::max(static_cast<float>(pressed), 0.0f));
+     GTE::SetFreecamRotateAxis(1, (event == InputButtonEvent::Pressed) ? 1.0f : 0.0f);
    }},
 
   {"FreecamRotateRight", TRANSLATE_NOOP("Hotkeys", "Free Camera"), TRANSLATE_NOOP("Hotkeys", "Freecam Rotate Right"),
-   [](s32 pressed) {
+   [](InputButtonEvent event) {
      if (Achievements::IsHardcoreModeActive())
        return;
 
-     GTE::SetFreecamRotateAxis(1, std::min(static_cast<float>(-pressed), 0.0f));
+     GTE::SetFreecamRotateAxis(1, (event == InputButtonEvent::Pressed) ? -1.0f : 0.0f);
    }},
 
   {"FreecamRotateForward", TRANSLATE_NOOP("Hotkeys", "Free Camera"),
    TRANSLATE_NOOP("Hotkeys", "Freecam Rotate Forward"),
-   [](s32 pressed) {
+   [](InputButtonEvent event) {
      if (Achievements::IsHardcoreModeActive())
        return;
 
-     GTE::SetFreecamRotateAxis(0, std::min(static_cast<float>(-pressed), 0.0f));
+     GTE::SetFreecamRotateAxis(0, (event == InputButtonEvent::Pressed) ? -1.0f : 0.0f);
    }},
 
   {"FreecamRotateBackward", TRANSLATE_NOOP("Hotkeys", "Free Camera"),
    TRANSLATE_NOOP("Hotkeys", "Freecam Rotate Backward"),
-   [](s32 pressed) {
+   [](InputButtonEvent event) {
      if (Achievements::IsHardcoreModeActive())
        return;
 
-     GTE::SetFreecamRotateAxis(0, std::max(static_cast<float>(pressed), 0.0f));
+     GTE::SetFreecamRotateAxis(0, (event == InputButtonEvent::Pressed) ? 1.0f : 0.0f);
    }},
 
   {"FreecamRollLeft", TRANSLATE_NOOP("Hotkeys", "Free Camera"), TRANSLATE_NOOP("Hotkeys", "Freecam Roll Left"),
-   [](s32 pressed) {
+   [](InputButtonEvent event) {
      if (Achievements::IsHardcoreModeActive())
        return;
 
-     GTE::SetFreecamRotateAxis(2, std::min(static_cast<float>(-pressed), 0.0f));
+     GTE::SetFreecamRotateAxis(2, (event == InputButtonEvent::Pressed) ? -1.0f : 0.0f);
    }},
 
   {"FreecamRollRight", TRANSLATE_NOOP("Hotkeys", "Free Camera"), TRANSLATE_NOOP("Hotkeys", "Freecam Roll Right"),
-   [](s32 pressed) {
+   [](InputButtonEvent event) {
      if (Achievements::IsHardcoreModeActive())
        return;
 
-     GTE::SetFreecamRotateAxis(2, std::max(static_cast<float>(pressed), 0.0f));
+     GTE::SetFreecamRotateAxis(2, (event == InputButtonEvent::Pressed) ? 1.0f : 0.0f);
    }},
 
 #endif // __ANDROID__
 
   {"AudioMute", TRANSLATE_NOOP("Hotkeys", "Audio"), TRANSLATE_NOOP("Hotkeys", "Toggle Mute"),
-   [](s32 pressed) {
-     if (!pressed && System::IsValid())
+   [](InputButtonEvent event) {
+     if (event == InputButtonEvent::Released && System::IsValid())
      {
        g_settings.audio_output_muted = !g_settings.audio_output_muted;
        const s32 volume = System::GetAudioOutputVolume();
@@ -642,8 +642,8 @@ static constexpr const HotkeyInfo s_hotkey_list[] = {
    }},
 
   {"AudioCDAudioMute", TRANSLATE_NOOP("Hotkeys", "Audio"), TRANSLATE_NOOP("Hotkeys", "Toggle CD Audio Mute"),
-   [](s32 pressed) {
-     if (!pressed && System::IsValid())
+   [](InputButtonEvent event) {
+     if (event == InputButtonEvent::Released && System::IsValid())
      {
        g_settings.cdrom_mute_cd_audio = !g_settings.cdrom_mute_cd_audio;
        Host::AddIconOSDMessage(OSDMessageType::Quick, "AudioControlHotkey",
@@ -655,8 +655,8 @@ static constexpr const HotkeyInfo s_hotkey_list[] = {
    }},
 
   {"AudioVolumeUp", TRANSLATE_NOOP("Hotkeys", "Audio"), TRANSLATE_NOOP("Hotkeys", "Volume Up"),
-   [](s32 pressed) {
-     if (!pressed && System::IsValid())
+   [](InputButtonEvent event) {
+     if (event == InputButtonEvent::Released && System::IsValid())
      {
        g_settings.audio_output_muted = false;
 
@@ -670,8 +670,8 @@ static constexpr const HotkeyInfo s_hotkey_list[] = {
    }},
 
   {"AudioVolumeDown", TRANSLATE_NOOP("Hotkeys", "Audio"), TRANSLATE_NOOP("Hotkeys", "Volume Down"),
-   [](s32 pressed) {
-     if (!pressed && System::IsValid())
+   [](InputButtonEvent event) {
+     if (event == InputButtonEvent::Released && System::IsValid())
      {
        g_settings.audio_output_muted = false;
 
@@ -687,36 +687,36 @@ static constexpr const HotkeyInfo s_hotkey_list[] = {
   // NOTE: All save/load state hotkeys are deferred, because it can trigger setting reapply, which reloads bindings.
   {"LoadSelectedSaveState", TRANSLATE_NOOP("Hotkeys", "Save States"),
    TRANSLATE_NOOP("Hotkeys", "Load From Selected Slot"),
-   [](s32 pressed) {
-     if (!pressed)
+   [](InputButtonEvent event) {
+     if (event == InputButtonEvent::Released)
        VideoThread::RunOnThread(SaveStateSelectorUI::LoadCurrentSlot);
    }},
 
   {"SaveSelectedSaveState", TRANSLATE_NOOP("Hotkeys", "Save States"),
    TRANSLATE_NOOP("Hotkeys", "Save To Selected Slot"),
-   [](s32 pressed) {
-     if (!pressed)
+   [](InputButtonEvent event) {
+     if (event == InputButtonEvent::Released)
        VideoThread::RunOnThread(SaveStateSelectorUI::SaveCurrentSlot);
    }},
 
   {"SelectPreviousSaveStateSlot", TRANSLATE_NOOP("Hotkeys", "Save States"),
    TRANSLATE_NOOP("Hotkeys", "Select Previous Save Slot"),
-   [](s32 pressed) {
-     if (!pressed)
+   [](InputButtonEvent event) {
+     if (event == InputButtonEvent::Released)
        VideoThread::RunOnThread([]() { SaveStateSelectorUI::SelectPreviousSlot(true); });
    }},
 
   {"SelectNextSaveStateSlot", TRANSLATE_NOOP("Hotkeys", "Save States"),
    TRANSLATE_NOOP("Hotkeys", "Select Next Save Slot"),
-   [](s32 pressed) {
-     if (!pressed)
+   [](InputButtonEvent event) {
+     if (event == InputButtonEvent::Released)
        VideoThread::RunOnThread([]() { SaveStateSelectorUI::SelectNextSlot(true); });
    }},
 
   {"SaveStateAndSelectNextSlot", TRANSLATE_NOOP("Hotkeys", "Save States"),
    TRANSLATE_NOOP("Hotkeys", "Save State and Select Next Slot"),
-   [](s32 pressed) {
-     if (!pressed && System::IsValid())
+   [](InputButtonEvent event) {
+     if (event == InputButtonEvent::Released && System::IsValid())
      {
        VideoThread::RunOnThread([]() {
          SaveStateSelectorUI::SaveCurrentSlot();
@@ -727,8 +727,8 @@ static constexpr const HotkeyInfo s_hotkey_list[] = {
 
   {"SelectNextSlotSaveState", TRANSLATE_NOOP("Hotkeys", "Save States"),
    TRANSLATE_NOOP("Hotkeys", "Select Next Slot and Save State"),
-   [](s32 pressed) {
-     if (!pressed && System::IsValid())
+   [](InputButtonEvent event) {
+     if (event == InputButtonEvent::Released && System::IsValid())
      {
        VideoThread::RunOnThread([]() {
          SaveStateSelectorUI::SelectNextSlot(false);
@@ -738,14 +738,14 @@ static constexpr const HotkeyInfo s_hotkey_list[] = {
    }},
 
   {"UndoLoadState", TRANSLATE_NOOP("Hotkeys", "Save States"), TRANSLATE_NOOP("Hotkeys", "Undo Load State"),
-   [](s32 pressed) {
-     if (!pressed)
+   [](InputButtonEvent event) {
+     if (event == InputButtonEvent::Released)
        Host::RunOnCoreThread(System::UndoLoadState);
    }},
 
   {"TogglePGXPCPU", TRANSLATE_NOOP("Hotkeys", "Debugging"), TRANSLATE_NOOP("Hotkeys", "Toggle PGXP CPU Mode"),
-   [](s32 pressed) {
-     if (pressed && System::IsValid())
+   [](InputButtonEvent event) {
+     if (event == InputButtonEvent::Pressed && System::IsValid())
      {
        if (!g_settings.gpu_pgxp_enable)
          return;
@@ -773,8 +773,8 @@ static constexpr const HotkeyInfo s_hotkey_list[] = {
 
   {"TogglePGXPPreserveProjPrecision", TRANSLATE_NOOP("Hotkeys", "Debugging"),
    TRANSLATE_NOOP("Hotkeys", "Toggle PGXP Preserve Projection Precision"),
-   [](s32 pressed) {
-     if (pressed && System::IsValid())
+   [](InputButtonEvent event) {
+     if (event == InputButtonEvent::Pressed && System::IsValid())
      {
        if (!g_settings.gpu_pgxp_enable)
          return;
@@ -790,8 +790,8 @@ static constexpr const HotkeyInfo s_hotkey_list[] = {
    }},
 
   {"ToggleVRAMView", TRANSLATE_NOOP("Hotkeys", "Debugging"), TRANSLATE_NOOP("Hotkeys", "Toggle VRAM View"),
-   [](s32 pressed) {
-     if (pressed && System::IsValid())
+   [](InputButtonEvent event) {
+     if (event == InputButtonEvent::Pressed && System::IsValid())
      {
        if (!g_settings.gpu_pgxp_enable || Achievements::IsHardcoreModeActive())
          return;
@@ -807,14 +807,14 @@ static constexpr const HotkeyInfo s_hotkey_list[] = {
 
 #define MAKE_LOAD_STATE_HOTKEY(global, slot, name)                                                                     \
   {global ? "LoadGameState" #slot : "LoadGlobalState" #slot, TRANSLATE_NOOP("Hotkeys", "Save States"), name,           \
-   [](s32 pressed) {                                                                                                   \
-     if (!pressed)                                                                                                     \
+   [](InputButtonEvent event) {                                                                                        \
+     if (event == InputButtonEvent::Released)                                                                          \
        Host::RunOnCoreThread([]() { System::LoadStateFromSlot(global, slot); });                                       \
    }}
 #define MAKE_SAVE_STATE_HOTKEY(global, slot, name)                                                                     \
   {global ? "SaveGameState" #slot : "SaveGlobalState" #slot, TRANSLATE_NOOP("Hotkeys", "Save States"), name,           \
-   [](s32 pressed) {                                                                                                   \
-     if (!pressed)                                                                                                     \
+   [](InputButtonEvent event) {                                                                                        \
+     if (event == InputButtonEvent::Released)                                                                          \
        Host::RunOnCoreThread([]() { System::SaveStateToSlot(global, slot); });                                         \
    }}
 

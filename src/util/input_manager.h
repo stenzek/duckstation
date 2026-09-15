@@ -101,8 +101,16 @@ struct InputBindingKeyHash
   static std::size_t operator()(const InputBindingKey& k) { return std::hash<u64>{}(k.bits); }
 };
 
+/// State transition passed to binary input handlers.
+enum class InputButtonEvent : s8
+{
+  Cancelled = -1,
+  Released = 0,
+  Pressed = 1,
+};
+
 /// Callback type for a binary event. Usually used for hotkeys.
-using InputButtonEventHandler = std::function<void(s32 value)>;
+using InputButtonEventHandler = std::function<void(InputButtonEvent event)>;
 
 /// Callback types for a normalized event. Usually used for pads.
 using InputAxisEventHandler = std::function<void(float value)>;
@@ -130,15 +138,14 @@ struct InputInterceptHook
 };
 
 /// Hotkeys are actions (e.g. toggle frame limit) which can be bound to keys or chords.
-/// The handler is called with an integer representing the key state, where 0 means that
-/// one or more keys were released, 1 means all the keys were pressed, and -1 means that
-/// the hotkey was cancelled due to a chord with more keys being activated.
+/// The handler receives Pressed when the full chord activates, Released when a key in an active
+/// chord is released, and Cancelled when input routing or a longer chord suppresses the action.
 struct HotkeyInfo
 {
   const char* name;
   const char* category;
   const char* display_name;
-  void (*handler)(s32 pressed);
+  void (*handler)(InputButtonEvent event);
   bool activate_when_captured = false;
 };
 

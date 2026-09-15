@@ -1287,7 +1287,7 @@ bool InputManager::ProcessEvent(InputBindingKey key, float value, bool skip_butt
               // We only need to cancel the binding if it was fully active before. Which in the above
               // case of Shift+F1 / F1, it will be.
               if (other_binding->current_mask == other_binding->full_mask)
-                std::get<InputButtonEventHandler>(other_binding->handler)(-1);
+                std::get<InputButtonEventHandler>(other_binding->handler)(InputButtonEvent::Cancelled);
 
               // Zero out the current bits so that we don't release this binding, if the other part
               // of the chord releases first.
@@ -1298,8 +1298,10 @@ bool InputManager::ProcessEvent(InputBindingKey key, float value, bool skip_butt
 
         if (prev_full_state != new_full_state && binding->num_keys >= min_num_keys)
         {
-          const s32 pressed = skip_button_handler ? -1 : static_cast<s32>(value_to_pass > 0.0f);
-          std::get<InputButtonEventHandler>(binding->handler)(pressed);
+          const InputButtonEvent event =
+            skip_button_handler ? InputButtonEvent::Cancelled :
+                                  ((value_to_pass > 0.0f) ? InputButtonEvent::Pressed : InputButtonEvent::Released);
+          std::get<InputButtonEventHandler>(binding->handler)(event);
         }
       }
 
@@ -1362,7 +1364,7 @@ void InputManager::ClearBindState(Predicate&& matches)
 
         if (current_mask == binding->full_mask)
         {
-          std::get<InputButtonEventHandler>(binding->handler)(-1);
+          std::get<InputButtonEventHandler>(binding->handler)(InputButtonEvent::Cancelled);
           matched = true;
           break;
         }
@@ -2160,13 +2162,14 @@ void InputManager::LoadMacroButtonConfig(const SettingsInterface& si, const std:
           if (deadzone != 0.0f)
             WARNING_LOG("Chord binding {} not supported with trigger deadzone {}.", trigger_binding, deadzone);
 
-          AddBinding(trigger_binding, false,
-                     InputButtonEventHandler{[pad = macro.pad_index, index = macro.macro_index](s32 state) {
-                       if (!System::IsValid())
-                         return;
+          AddBinding(
+            trigger_binding, false,
+            InputButtonEventHandler{[pad = macro.pad_index, index = macro.macro_index](InputButtonEvent event) {
+              if (!System::IsValid())
+                return;
 
-                       SetMacroButtonState(pad, index, (state > 0));
-                     }});
+              SetMacroButtonState(pad, index, (event == InputButtonEvent::Pressed));
+            }});
         }
         else
         {
