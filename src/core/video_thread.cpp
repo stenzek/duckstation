@@ -174,6 +174,8 @@ void VideoThread::ProcessShutdown()
 
 VideoThreadCommand* VideoThread::AllocateCommand(VideoThreadCommandType command, u32 size)
 {
+  DebugAssert(Host::IsOnCoreThread());
+
   size = VideoThreadCommand::AlignCommandSize(size);
   DebugAssert(size > 0 && size <= (COMMAND_QUEUE_SIZE - COMMAND_QUEUE_RESERVED_SPACE));
 
@@ -260,6 +262,8 @@ bool VideoThread::IsCommandFIFOEmpty()
 
 void VideoThread::PushCommand(VideoThreadCommand* cmd)
 {
+  DebugAssert(Host::IsOnCoreThread());
+
   if (!s_state.use_thread) [[unlikely]]
   {
     DebugAssert(s_state.gpu_backend);
@@ -276,6 +280,8 @@ void VideoThread::PushCommand(VideoThreadCommand* cmd)
 
 void VideoThread::PushCommandAndWakeThread(VideoThreadCommand* cmd)
 {
+  DebugAssert(Host::IsOnCoreThread());
+
   if (!s_state.use_thread) [[unlikely]]
   {
     DebugAssert(s_state.gpu_backend);
@@ -291,6 +297,8 @@ void VideoThread::PushCommandAndWakeThread(VideoThreadCommand* cmd)
 
 void VideoThread::PushCommandAndSync(VideoThreadCommand* cmd, bool spin)
 {
+  DebugAssert(Host::IsOnCoreThread());
+
   if (!s_state.use_thread) [[unlikely]]
   {
     DebugAssert(s_state.gpu_backend);
@@ -331,6 +339,8 @@ ALWAYS_INLINE_RELEASE void VideoThread::WakeThreadIfSleeping()
 
 void VideoThread::SyncThread(bool spin)
 {
+  DebugAssert(Host::IsOnCoreThread());
+
   if (!s_state.use_thread)
     return;
 
@@ -1155,7 +1165,7 @@ void VideoThread::UpdateSettingsOnThread(GPUSettings&& new_settings)
 
 void VideoThread::RunOnThread(AsyncCallType func)
 {
-  DebugAssert(!s_state.use_thread || !IsOnThread());
+  DebugAssert(Host::IsOnCoreThread());
 
   if (!s_state.use_thread) [[unlikely]]
   {
@@ -1170,7 +1180,7 @@ void VideoThread::RunOnThread(AsyncCallType func)
 
 void VideoThread::RunOnThreadAndSync(AsyncCallType func)
 {
-  DebugAssert(!s_state.use_thread || !IsOnThread());
+  DebugAssert(Host::IsOnCoreThread());
 
   if (!s_state.use_thread) [[unlikely]]
   {
@@ -1185,7 +1195,7 @@ void VideoThread::RunOnThreadAndSync(AsyncCallType func)
 
 std::pair<VideoThreadCommand*, void*> VideoThread::BeginASyncBufferCall(AsyncBufferCallType func, u32 buffer_size)
 {
-  DebugAssert(!s_state.use_thread || !IsOnThread());
+  DebugAssert(Host::IsOnCoreThread());
 
   // this is less than optimal, but it's only used for input osd updates currently, so whatever
   VideoThreadAsyncBufferCallCommand* const cmd = AllocateCommand<VideoThreadAsyncBufferCallCommand>(
@@ -1196,7 +1206,7 @@ std::pair<VideoThreadCommand*, void*> VideoThread::BeginASyncBufferCall(AsyncBuf
 
 void VideoThread::EndASyncBufferCall(VideoThreadCommand* cmd)
 {
-  DebugAssert(!s_state.use_thread || !IsOnThread());
+  DebugAssert(Host::IsOnCoreThread());
 
   if (!s_state.use_thread) [[unlikely]]
   {

@@ -1601,7 +1601,7 @@ bool VideoPresenter::PresentFrame(GPUBackend* backend, u64 present_time)
     if (pres == GPUPresentResult::ExclusiveFullscreenLost) [[unlikely]]
     {
       WARNING_LOG("Lost exclusive fullscreen.");
-      VideoThread::SetFullscreen(false);
+      Host::RunOnCoreThread([]() { VideoThread::SetFullscreen(false); });
     }
 
     g_gpu_device->FlushCommands();
