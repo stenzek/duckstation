@@ -1101,7 +1101,7 @@ void InputManager::SynchronizePadEffectBindings(InputBindingKey key)
   for (PadVibrationBinding& vib_binding : s_state.pad_vibration_array)
   {
     // only matching devices
-    if (vib_binding.binding.source_type != key.source_type && vib_binding.binding.source_index != key.source_index)
+    if (vib_binding.binding.source_type != key.source_type || vib_binding.binding.source_index != key.source_index)
       continue;
 
     // need to find the max intensity for this binding, might be more than one if combined motors
@@ -1119,7 +1119,7 @@ void InputManager::SynchronizePadEffectBindings(InputBindingKey key)
   for (PadLEDBinding& led_binding : s_state.pad_led_array)
   {
     // only matching devices
-    if (led_binding.binding.source_type != key.source_type && led_binding.binding.source_index != key.source_index)
+    if (led_binding.binding.source_type != key.source_type || led_binding.binding.source_index != key.source_index)
       continue;
 
     // Need to pass it through unconditionally, otherwise if the LED was on it'll stay on.
