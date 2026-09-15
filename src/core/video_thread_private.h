@@ -7,7 +7,7 @@
 
 namespace VideoThread {
 
-void ProcessStartup();
+bool ProcessStartup(Error* error);
 void ProcessShutdown();
 void DoRunIdle();
 

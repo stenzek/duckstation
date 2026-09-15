@@ -148,7 +148,7 @@ void VideoThread::ResetCommandFIFO()
   s_state.command_fifo_read_ptr.store(0, std::memory_order_release);
 }
 
-void VideoThread::ProcessStartup()
+bool VideoThread::ProcessStartup(Error* error)
 {
   s_state.thread_spin_time = Timer::ConvertNanosecondsToValue(THREAD_SPIN_TIME_US * 1000.0);
   s_state.command_fifo_data = Common::make_unique_aligned_for_overwrite<u8[]>(HOST_CACHE_LINE_SIZE, COMMAND_QUEUE_SIZE);
@@ -156,7 +156,13 @@ void VideoThread::ProcessStartup()
   s_state.run_idle_reasons = static_cast<u8>(RunIdleReason::NoGPUBackend);
 
   // Thread is always started/persists regardless of whether it is used or not.
-  s_state.thread.Start(&VideoThread::VideoThreadEntryPoint);
+  if (!s_state.thread.Start(&VideoThread::VideoThreadEntryPoint)) [[unlikely]]
+  {
+    Error::SetStringView(error, "Failed to start video thread.");
+    return false;
+  }
+
+  return true;
 }
 
 void VideoThread::ProcessShutdown()

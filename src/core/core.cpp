@@ -744,7 +744,15 @@ bool Core::CoreThreadInitialize(bool disable_worker_threads, Error* error)
 
   LogStartupInformation();
 
-  VideoThread::ProcessStartup();
+  if (!VideoThread::ProcessStartup(error)) [[unlikely]]
+  {
+    s_locals.async_task_queue.SetWorkerCount(0, 0);
+    s_locals.core_thread_handle = {};
+#ifdef _WIN32
+    CoUninitialize();
+#endif
+    return false;
+  }
 
   Achievements::Initialize();
 
