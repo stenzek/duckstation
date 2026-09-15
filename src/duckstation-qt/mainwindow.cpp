@@ -891,10 +891,10 @@ void MainWindow::populateGameListContextMenu(const GameList::Entry* entry, QWidg
 
   if (!entry->IsDiscSet() && is_game)
   {
-    resume_action = menu->addAction(tr("Resume"));
+    resume_action = menu->addAction(QIcon(u":/icons/monochrome/svg/play-circle-line.svg"_s), tr("Resume"));
     resume_action->setEnabled(false);
 
-    load_state_menu = menu->addMenu(tr("Load State"));
+    load_state_menu = menu->addMenu(QIcon(u":/icons/monochrome/svg/folder-open-line.svg"_s), tr("Load State"));
     load_state_menu->setEnabled(false);
     QtUtils::StylePopupMenu(load_state_menu);
 
@@ -929,24 +929,26 @@ void MainWindow::populateGameListContextMenu(const GameList::Entry* entry, QWidg
 
   if (is_game)
   {
-    menu->addAction(tr("Edit Memory Cards..."), [path = entry->path]() {
-      const auto lock = GameList::GetLock();
-      const GameList::Entry* entry = GameList::GetEntryForPath(path);
-      if (!entry)
-        return;
+    menu->addAction(
+      QIcon(u":/icons/monochrome/svg/memcard-line.svg"_s), tr("Edit Memory Cards..."), [path = entry->path]() {
+        const auto lock = GameList::GetLock();
+        const GameList::Entry* entry = GameList::GetEntryForPath(path);
+        if (!entry)
+          return;
 
-      QString paths[2];
-      for (u32 i = 0; i < 2; i++)
-        paths[i] = QString::fromStdString(System::GetGameMemoryCardPath(entry->title, entry->serial, entry->path, i));
+        QString paths[2];
+        for (u32 i = 0; i < 2; i++)
+          paths[i] = QString::fromStdString(System::GetGameMemoryCardPath(entry->title, entry->serial, entry->path, i));
 
-      g_main_window->openMemoryCardEditor(paths[0], paths[1]);
-    });
+        g_main_window->openMemoryCardEditor(paths[0], paths[1]);
+      });
   }
 
   if (!entry->IsDiscSet() && is_game)
   {
     const bool has_any_states = resume_action->isEnabled() || load_state_menu->isEnabled();
-    QAction* delete_save_states_action = menu->addAction(tr("Delete Save States"));
+    QAction* delete_save_states_action =
+      menu->addAction(QIcon(u":/icons/monochrome/svg/trash-fill.svg"_s), tr("Delete Save States"));
     delete_save_states_action->setEnabled(has_any_states);
     if (has_any_states)
     {
@@ -1684,7 +1686,7 @@ void MainWindow::onGameListEntryContextMenuRequested(const QPoint& point)
     {
       if (entry->IsGame())
       {
-        menu->addAction(tr("Properties..."), [qpath]() {
+        menu->addAction(QIcon(u":/icons/monochrome/svg/file-settings-line.svg"_s), tr("Properties..."), [qpath]() {
           const auto lock = GameList::GetLock();
           const GameList::Entry* entry = GameList::GetEntryForPath(qpath.toStdString());
           if (!entry || !g_main_window)
@@ -1694,14 +1696,15 @@ void MainWindow::onGameListEntryContextMenuRequested(const QPoint& point)
         });
       }
 
-      menu->addAction(tr("Open Containing Directory..."), [this, qpath]() {
-        const QFileInfo fi(qpath);
-        QtUtils::OpenURL(this, QUrl::fromLocalFile(fi.absolutePath()));
-      });
+      menu->addAction(QIcon(u":/icons/monochrome/svg/folder-open-line.svg"_s), tr("Open Containing Directory..."),
+                      [this, qpath]() {
+                        const QFileInfo fi(qpath);
+                        QtUtils::OpenURL(this, QUrl::fromLocalFile(fi.absolutePath()));
+                      });
 
       if (entry->IsDisc())
       {
-        menu->addAction(tr("Browse ISO..."), [this, qpath]() {
+        menu->addAction(QIcon(u":/icons/monochrome/svg/disc-line.svg"_s), tr("Browse ISO..."), [this, qpath]() {
           ISOBrowserWindow* ib = ISOBrowserWindow::createAndOpenFile(this, qpath);
           if (ib)
           {
@@ -1712,7 +1715,7 @@ void MainWindow::onGameListEntryContextMenuRequested(const QPoint& point)
         });
       }
 
-      menu->addAction(tr("Set Cover Image..."), [this, qpath]() {
+      menu->addAction(QIcon(u":/icons/monochrome/svg/image-fill.svg"_s), tr("Set Cover Image..."), [this, qpath]() {
         const auto lock = GameList::GetLock();
         const GameList::Entry* entry = GameList::GetEntryForPath(qpath.toStdString());
         if (entry)
@@ -1726,17 +1729,18 @@ void MainWindow::onGameListEntryContextMenuRequested(const QPoint& point)
         populateGameListContextMenu(entry, this, menu);
         menu->addSeparator();
 
-        menu->addAction(tr("Default Boot"), [this, qpath]() mutable {
+        menu->addAction(QIcon(u":/icons/monochrome/svg/play-line.svg"_s), tr("Default Boot"), [this, qpath]() mutable {
           g_core_thread->bootSystem(getSystemBootParameters(qpath.toStdString()));
         });
 
-        menu->addAction(tr("Fast Boot"), [this, qpath]() mutable {
-          std::shared_ptr<SystemBootParameters> boot_params = getSystemBootParameters(qpath.toStdString());
-          boot_params->override_fast_boot = true;
-          g_core_thread->bootSystem(std::move(boot_params));
-        });
+        menu->addAction(
+          QIcon(u":/icons/monochrome/svg/flashlight-line.svg"_s), tr("Fast Boot"), [this, qpath]() mutable {
+            std::shared_ptr<SystemBootParameters> boot_params = getSystemBootParameters(qpath.toStdString());
+            boot_params->override_fast_boot = true;
+            g_core_thread->bootSystem(std::move(boot_params));
+          });
 
-        menu->addAction(tr("Full Boot"), [this, qpath]() mutable {
+        menu->addAction(QIcon(u":/icons/monochrome/svg/chip-line.svg"_s), tr("Full Boot"), [this, qpath]() mutable {
           std::shared_ptr<SystemBootParameters> boot_params = getSystemBootParameters(qpath.toStdString());
           boot_params->override_fast_boot = false;
           g_core_thread->bootSystem(std::move(boot_params));
@@ -1744,19 +1748,20 @@ void MainWindow::onGameListEntryContextMenuRequested(const QPoint& point)
 
         if (m_ui.menuDebug->menuAction()->isVisible())
         {
-          menu->addAction(tr("Boot and Debug"), [this, qpath]() mutable {
-            openCPUDebugger();
+          menu->addAction(
+            QIcon(u":/icons/monochrome/svg/code-line.svg"_s), tr("Boot and Debug"), [this, qpath]() mutable {
+              openCPUDebugger();
 
-            std::shared_ptr<SystemBootParameters> boot_params = getSystemBootParameters(qpath.toStdString());
-            boot_params->override_start_paused = true;
-            boot_params->disable_achievements_hardcore_mode = true;
-            g_core_thread->bootSystem(std::move(boot_params));
-          });
+              std::shared_ptr<SystemBootParameters> boot_params = getSystemBootParameters(qpath.toStdString());
+              boot_params->override_start_paused = true;
+              boot_params->disable_achievements_hardcore_mode = true;
+              g_core_thread->bootSystem(std::move(boot_params));
+            });
         }
       }
       else
       {
-        menu->addAction(tr("Change Disc"), [this, qpath]() {
+        menu->addAction(QIcon(u":/icons/monochrome/svg/disc-line.svg"_s), tr("Change Disc"), [this, qpath]() {
           g_core_thread->changeDisc(qpath, false, true);
           g_core_thread->setSystemPaused(false);
           switchToEmulationView();
@@ -1765,15 +1770,16 @@ void MainWindow::onGameListEntryContextMenuRequested(const QPoint& point)
     }
     else
     {
-      menu->addAction(tr("Properties..."), [dsentry = entry->GetDiscSetEntry()]() {
-        // resolve path first
-        auto lock = GameList::GetLock();
-        const GameList::Entry* first_disc = GameList::GetFirstDiscSetMember(dsentry);
-        if (first_disc && g_main_window)
-          SettingsWindow::openGamePropertiesDialog(first_disc);
-      });
+      menu->addAction(QIcon(u":/icons/monochrome/svg/file-settings-line.svg"_s), tr("Properties..."),
+                      [dsentry = entry->GetDiscSetEntry()]() {
+                        // resolve path first
+                        auto lock = GameList::GetLock();
+                        const GameList::Entry* first_disc = GameList::GetFirstDiscSetMember(dsentry);
+                        if (first_disc && g_main_window)
+                          SettingsWindow::openGamePropertiesDialog(first_disc);
+                      });
 
-      menu->addAction(tr("Set Cover Image..."), [this, qpath]() {
+      menu->addAction(QIcon(u":/icons/monochrome/svg/image-fill.svg"_s), tr("Set Cover Image..."), [this, qpath]() {
         const auto lock = GameList::GetLock();
         const GameList::Entry* entry = GameList::GetEntryForPath(qpath.toStdString());
         if (!entry)
@@ -1788,17 +1794,18 @@ void MainWindow::onGameListEntryContextMenuRequested(const QPoint& point)
 
       menu->addSeparator();
 
-      menu->addAction(tr("Select Disc..."), this, &MainWindow::onGameListEntryActivated);
+      menu->addAction(QIcon(u":/icons/monochrome/svg/multi-discs.svg"_s), tr("Select Disc..."), this,
+                      &MainWindow::onGameListEntryActivated);
     }
 
     menu->addSeparator();
 
-    menu->addAction(tr("Exclude From List"),
+    menu->addAction(QIcon(u":/icons/monochrome/svg/file-forbid-line.svg"_s), tr("Exclude From List"),
                     [this, qpath]() { getSettingsWindow()->getGameListSettingsWidget()->addExcludedPath(qpath); });
 
     if (entry->IsGame())
     {
-      menu->addAction(tr("Reset Play Time"), [this, qpath]() {
+      menu->addAction(QIcon(u":/icons/monochrome/svg/restart-line.svg"_s), tr("Reset Play Time"), [this, qpath]() {
         const auto lock = GameList::GetLock();
         const GameList::Entry* entry = GameList::GetEntryForPath(qpath.toStdString());
         if (!entry)
@@ -1811,7 +1818,7 @@ void MainWindow::onGameListEntryContextMenuRequested(const QPoint& point)
 
   menu->addSeparator();
 
-  menu->addAction(tr("Add Search Directory..."),
+  menu->addAction(QIcon(u":/icons/monochrome/svg/folder-add-line.svg"_s), tr("Add Search Directory..."),
                   [this]() { getSettingsWindow()->getGameListSettingsWidget()->addSearchDirectory(this); });
 
   menu->popup(point);
