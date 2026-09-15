@@ -139,6 +139,7 @@ struct HotkeyInfo
   const char* category;
   const char* display_name;
   void (*handler)(s32 pressed);
+  bool activate_when_captured = false;
 };
 
 /// Generic input bindings. These roughly match a DualShock 4 or XBox One controller.
@@ -311,7 +312,7 @@ bool HasAnyBindingsForSubclass(InputBindingKey key);
 bool ParseBindingAndGetSource(std::string_view binding, InputBindingKey* key, InputSource** source);
 
 /// Externally adds a fixed binding. Be sure to call *after* ReloadBindings() otherwise it will be lost.
-void AddBinding(std::string_view binding, const InputEventHandler& handler);
+void AddBinding(std::string_view binding, bool activate_when_captured, const InputEventHandler& handler);
 
 /// Adds an external vibration binding.
 void AddVibrationBinding(u32 pad_index, u32 bind_index, const InputBindingKey& binding, InputSource* source);
