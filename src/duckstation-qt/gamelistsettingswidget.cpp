@@ -243,7 +243,11 @@ bool GameListSettingsWidget::addExcludedPath(const QString& path)
     return false;
 
   Host::CommitBaseSettingChanges();
-  m_ui.excludedPaths->addItem(path);
+
+  QListWidgetItem* const it = new QListWidgetItem(path);
+  it->setIcon(QIcon(u":/icons/monochrome/svg/file-forbid-line.svg"_s));
+  m_ui.excludedPaths->addItem(it);
+
   g_main_window->refreshGameList(false);
   return true;
 }
