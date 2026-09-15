@@ -30,6 +30,8 @@ CoverDownloadWindow::CoverDownloadWindow() : QWidget()
   const std::vector<std::string> urls = Core::GetBaseStringListSetting("UI", "CoverDownloaderURL");
   if (!urls.empty())
     m_ui.urls->setPlainText(QString::fromStdString(StringUtil::JoinString(urls, "\n")));
+
+  m_ui.useSerialFileNames->setChecked(Core::GetBaseBoolSettingValue("UI", "CoverDownloaderUseSerialFileNames", false));
 }
 
 CoverDownloadWindow::~CoverDownloadWindow() = default;
@@ -44,8 +46,18 @@ void CoverDownloadWindow::closeEvent(QCloseEvent* ev)
     if (!url.empty())
       urls.push_back(std::move(url));
   }
-  if (urls != Core::GetBaseStringListSetting("UI", "CoverDownloaderURL"))
+
+  bool changed = (urls != Core::GetBaseStringListSetting("UI", "CoverDownloaderURL"));
+  if (changed)
     Core::SetBaseStringListSettingValue("UI", "CoverDownloaderURL", urls);
+  if (const bool use_serial_filenames = m_ui.useSerialFileNames->isChecked();
+      use_serial_filenames != Core::GetBaseBoolSettingValue("UI", "CoverDownloaderUseSerialFileNames", false))
+  {
+    Core::SetBaseBoolSettingValue("UI", "CoverDownloaderUseSerialFileNames", use_serial_filenames);
+    changed = true;
+  }
+  if (changed)
+    Host::CommitBaseSettingChanges();
 
   QtUtils::SaveWindowGeometry(this);
   QWidget::closeEvent(ev);

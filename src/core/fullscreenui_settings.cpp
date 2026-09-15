@@ -3036,6 +3036,9 @@ void FullscreenUI::DrawCoverDownloaderWindow()
       StringUtil::Strlcpy(s_settings_locals.cover_downloader_template_urls, StringUtil::JoinString(urls, '\n'),
                           sizeof(s_settings_locals.cover_downloader_template_urls));
     }
+
+    s_settings_locals.cover_downloader_use_serial_names =
+      Core::GetBaseBoolSettingValue("UI", "CoverDownloaderUseSerialFileNames", false);
   }
 
   ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
@@ -3135,8 +3138,18 @@ void FullscreenUI::SaveCoverDownloaderURLs()
 {
   const std::vector<std::string> urls =
     StringUtil::SplitNewString(s_settings_locals.cover_downloader_template_urls, '\n');
-  if (urls != Core::GetBaseStringListSetting("UI", "CoverDownloaderURL"))
+  bool changed = (urls != Core::GetBaseStringListSetting("UI", "CoverDownloaderURL"));
+  if (changed)
     Core::SetBaseStringListSettingValue("UI", "CoverDownloaderURL", urls);
+  if (s_settings_locals.cover_downloader_use_serial_names !=
+      Core::GetBaseBoolSettingValue("UI", "CoverDownloaderUseSerialFileNames", false))
+  {
+    Core::SetBaseBoolSettingValue("UI", "CoverDownloaderUseSerialFileNames",
+                                  s_settings_locals.cover_downloader_use_serial_names);
+    changed = true;
+  }
+  if (changed)
+    Host::CommitBaseSettingChanges();
 }
 
 void FullscreenUI::DrawBIOSSettingsPage()
