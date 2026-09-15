@@ -78,7 +78,7 @@ static void VideoThreadEntryPoint();
 static bool CreateDeviceOnThread(RenderAPI api, bool fullscreen, bool start_fullscreen_ui,
                                  bool preserve_imgui_on_failure, Error* error);
 static void DestroyDeviceOnThread(bool preserve_imgui_state);
-static void ResizeRenderWindowOnThread(u32 width, u32 height, float scale, float refresh_rate);
+static void ResizeRenderWindowOnThread(u32 width, u32 height, float scale, float refresh_rate, bool fullscreen);
 static void RecreateRenderWindowOnThread(bool fullscreen, bool allow_exclusive_fullscreen);
 static void RenderWindowResizedOnThread();
 static bool CheckExclusiveFullscreenOnThread();
@@ -1375,6 +1375,8 @@ bool VideoThread::IsUsingThread()
 
 void VideoThread::ResizeRenderWindow(s32 width, s32 height, float scale, float refresh_rate)
 {
+  DebugAssert(Host::IsOnCoreThread());
+
   const u16 clamped_width = static_cast<u16>(std::clamp<s32>(width, 1, std::numeric_limits<u16>::max()));
   const u16 clamped_height = static_cast<u16>(std::clamp<s32>(height, 1, std::numeric_limits<u16>::max()));
   const bool size_changed = (s_state.render_window_info.surface_width != clamped_width ||
@@ -1386,8 +1388,8 @@ void VideoThread::ResizeRenderWindow(s32 width, s32 height, float scale, float r
   s_state.render_window_info.surface_scale = scale;
   s_state.render_window_info.surface_refresh_rate = refresh_rate;
 
-  RunOnThread([clamped_width, clamped_height, scale, refresh_rate]() {
-    ResizeRenderWindowOnThread(clamped_width, clamped_height, scale, refresh_rate);
+  RunOnThread([clamped_width, clamped_height, scale, refresh_rate, fullscreen = s_state.fullscreen_state]() {
+    ResizeRenderWindowOnThread(clamped_width, clamped_height, scale, refresh_rate, fullscreen);
   });
 
   if (System::IsValid())
@@ -1399,7 +1401,7 @@ void VideoThread::ResizeRenderWindow(s32 width, s32 height, float scale, float r
   }
 }
 
-void VideoThread::ResizeRenderWindowOnThread(u32 width, u32 height, float scale, float refresh_rate)
+void VideoThread::ResizeRenderWindowOnThread(u32 width, u32 height, float scale, float refresh_rate, bool fullscreen)
 {
   // We should _not_ be getting this without a device, since we should have shut down.
   if (!g_gpu_device || !g_gpu_device->HasMainSwapChain())
@@ -1411,9 +1413,8 @@ void VideoThread::ResizeRenderWindowOnThread(u32 width, u32 height, float scale,
   GPUSwapChain* const swap_chain = g_gpu_device->GetMainSwapChain();
   if (!swap_chain->ResizeBuffers(width, height, &error))
   {
-    // ick, CPU thread read, but this is unlikely to happen in the first place
     ERROR_LOG("Failed to resize main swap chain: {}", error.GetDescription());
-    RecreateRenderWindowOnThread(s_state.fullscreen_state, true);
+    RecreateRenderWindowOnThread(fullscreen, true);
     return;
   }
 
@@ -1425,11 +1426,15 @@ void VideoThread::ResizeRenderWindowOnThread(u32 width, u32 height, float scale,
 
 void VideoThread::RecreateRenderWindow()
 {
+  DebugAssert(Host::IsOnCoreThread());
+
   RunOnThread([fullscreen = s_state.fullscreen_state]() { RecreateRenderWindowOnThread(fullscreen, true); });
 }
 
 void VideoThread::SetFullscreen(bool fullscreen)
 {
+  DebugAssert(Host::IsOnCoreThread());
+
   // Technically not safe to read g_gpu_device here on the CPU thread, but we do sync on create/destroy.
   if (s_state.fullscreen_state == fullscreen || !Host::CanChangeFullscreenMode(fullscreen) || !g_gpu_device)
     return;
@@ -1440,6 +1445,8 @@ void VideoThread::SetFullscreen(bool fullscreen)
 
 void VideoThread::SetFullscreenWithCompletionHandler(bool fullscreen, AsyncCallType completion_handler)
 {
+  DebugAssert(Host::IsOnCoreThread());
+
   if (s_state.fullscreen_state == fullscreen || !Host::CanChangeFullscreenMode(fullscreen) || !g_gpu_device)
   {
     if (completion_handler)
