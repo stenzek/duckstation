@@ -72,6 +72,7 @@ private:
   void onAddExcludedFolderButtonClicked();
   void onRemoveExcludedPathButtonClicked();
   void onExcludedPathsSelectionChanged();
+  void onExcludedPathsContextMenuRequested(const QPoint& point);
   void onScanForNewGamesClicked();
   void onRescanAllGamesClicked();
 

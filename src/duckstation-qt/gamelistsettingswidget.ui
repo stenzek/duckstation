@@ -183,6 +183,12 @@
    </item>
    <item>
     <widget class="QListWidget" name="excludedPaths">
+     <property name="contextMenuPolicy">
+      <enum>Qt::ContextMenuPolicy::CustomContextMenu</enum>
+     </property>
+     <property name="selectionMode">
+      <enum>QAbstractItemView::SelectionMode::ExtendedSelection</enum>
+     </property>
      <property name="iconSize">
       <size>
        <width>20</width>

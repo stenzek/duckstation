@@ -228,6 +228,8 @@ GameListSettingsWidget::GameListSettingsWidget(SettingsWindow* dialog, QWidget* 
           &GameListSettingsWidget::onRemoveExcludedPathButtonClicked);
   connect(m_ui.excludedPaths, &QListWidget::itemSelectionChanged, this,
           &GameListSettingsWidget::onExcludedPathsSelectionChanged);
+  connect(m_ui.excludedPaths, &QListWidget::customContextMenuRequested, this,
+          &GameListSettingsWidget::onExcludedPathsContextMenuRequested);
   connect(m_ui.rescanAllGames, &QPushButton::clicked, this, &GameListSettingsWidget::onRescanAllGamesClicked);
   connect(m_ui.scanForNewGames, &QPushButton::clicked, this, &GameListSettingsWidget::onScanForNewGamesClicked);
 
@@ -356,14 +358,20 @@ void GameListSettingsWidget::onAddExcludedFolderButtonClicked()
 
 void GameListSettingsWidget::onRemoveExcludedPathButtonClicked()
 {
-  const int row = m_ui.excludedPaths->currentRow();
-  QListWidgetItem* item = (row >= 0) ? m_ui.excludedPaths->takeItem(row) : nullptr;
-  if (!item)
+  const QList<QListWidgetItem*> items = m_ui.excludedPaths->selectedItems();
+  if (items.isEmpty())
     return;
 
-  if (Core::RemoveValueFromBaseStringListSetting("GameList", "ExcludedPaths", item->text().toUtf8().constData()))
+  bool changed = false;
+  for (QListWidgetItem* const item : items)
+  {
+    changed |=
+      Core::RemoveValueFromBaseStringListSetting("GameList", "ExcludedPaths", item->text().toUtf8().constData());
+    delete item;
+  }
+
+  if (changed)
     Host::CommitBaseSettingChanges();
-  delete item;
 
   g_main_window->refreshGameList(false);
 }
@@ -371,6 +379,23 @@ void GameListSettingsWidget::onRemoveExcludedPathButtonClicked()
 void GameListSettingsWidget::onExcludedPathsSelectionChanged()
 {
   m_ui.removeExcludedPath->setEnabled(!m_ui.excludedPaths->selectedItems().isEmpty());
+}
+
+void GameListSettingsWidget::onExcludedPathsContextMenuRequested(const QPoint& point)
+{
+  QMenu* const menu = QtUtils::NewPopupMenu(this);
+  if (!m_ui.excludedPaths->selectedItems().isEmpty())
+  {
+    menu->addAction(QIcon(u":/icons/monochrome/svg/folder-reduce-line.svg"_s), tr("Remove"), this,
+                    &GameListSettingsWidget::onRemoveExcludedPathButtonClicked);
+    menu->addSeparator();
+  }
+
+  menu->addAction(QIcon(u":/icons/monochrome/svg/file-add-line.svg"_s), tr("Add File..."), this,
+                  &GameListSettingsWidget::onAddExcludedFileButtonClicked);
+  menu->addAction(QIcon(u":/icons/monochrome/svg/folder-add-line.svg"_s), tr("Add Folder..."), this,
+                  &GameListSettingsWidget::onAddExcludedFolderButtonClicked);
+  menu->popup(m_ui.excludedPaths->mapToGlobal(point));
 }
 
 void GameListSettingsWidget::onRescanAllGamesClicked()
