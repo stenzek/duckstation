@@ -20,6 +20,9 @@
   <property name="dockNestingEnabled">
    <bool>true</bool>
   </property>
+  <property name="unifiedTitleAndToolBarOnMac">
+   <bool>true</bool>
+  </property>
   <widget class="QMenuBar" name="menubar">
    <widget class="QMenu" name="menu_Debugger">
     <property name="title">
@@ -53,6 +56,9 @@
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <widget class="QToolBar" name="toolBar">
+   <property name="windowTitle">
+    <string>Toolbar</string>
+   </property>
    <attribute name="toolBarArea">
     <enum>TopToolBarArea</enum>
    </attribute>
