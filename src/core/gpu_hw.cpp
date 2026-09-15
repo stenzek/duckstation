@@ -527,6 +527,8 @@ bool GPU_HW::UpdateSettings(const GPUSettings& old_settings, Error* error)
                                g_gpu_settings.gpu_scaled_interlacing != old_settings.gpu_scaled_interlacing)) ||
      (resolution_scale > 1 && g_gpu_settings.gpu_texture_filter == GPUTextureFilter::Nearest &&
       g_gpu_settings.gpu_force_round_texcoords != old_settings.gpu_force_round_texcoords) ||
+     (resolution_scale > 1 &&
+      g_gpu_settings.gpu_disable_upscaled_direct_textures != old_settings.gpu_disable_upscaled_direct_textures) ||
      g_gpu_settings.gpu_modulation_crop != old_settings.gpu_modulation_crop ||
      g_gpu_settings.IsUsingShaderBlending() != old_settings.IsUsingShaderBlending() ||
      m_texture_filtering != g_gpu_settings.gpu_texture_filter ||
@@ -915,6 +917,8 @@ void GPU_HW::PrintSettingsToLog()
            (m_resolution_scale > 1 && g_gpu_settings.gpu_scaled_interlacing) ? " (scaled)" : "");
   INFO_LOG("Force round texture coordinates: {}",
            (m_resolution_scale > 1 && g_gpu_settings.gpu_force_round_texcoords) ? "Enabled" : "Disabled");
+  INFO_LOG("Disable upscaled direct textures: {}",
+           (m_resolution_scale > 1 && g_gpu_settings.gpu_disable_upscaled_direct_textures) ? "Enabled" : "Disabled");
   INFO_LOG("Texture Filtering: {}/{}", Settings::GetTextureFilterDisplayName(m_texture_filtering),
            Settings::GetTextureFilterDisplayName(m_sprite_texture_filtering));
   INFO_LOG("Dual-source blending: {}", m_supports_dual_source_blend ? "Supported" : "Not supported");
@@ -1277,6 +1281,7 @@ bool GPU_HW::CompilePipelines(Error* error)
   const bool per_sample_shading = (msaa && g_gpu_settings.gpu_per_sample_shading && features.per_sample_shading);
   const bool force_round_texcoords =
     (upscaled && m_texture_filtering == GPUTextureFilter::Nearest && g_gpu_settings.gpu_force_round_texcoords);
+  const bool disable_upscaled_direct_textures = (upscaled && g_gpu_settings.gpu_disable_upscaled_direct_textures);
   const bool modulation_crop = g_gpu_settings.gpu_modulation_crop;
   const bool true_color = g_gpu_settings.IsUsingTrueColor();
   const bool scaled_dithering = (!m_true_color && upscaled && g_gpu_settings.IsUsingScaledDithering());
@@ -1380,6 +1385,7 @@ bool GPU_HW::CompilePipelines(Error* error)
   vssel.per_sample_shading = per_sample_shading;
   vssel.pgxp_depth = m_pgxp_depth_buffer;
   vssel.disable_color_perspective = disable_color_perspective;
+  vssel.disable_upscaled_direct_textures = disable_upscaled_direct_textures;
   for (u8 textured = 0; textured < 2; textured++)
   {
     vssel.textured = (textured != 0);
@@ -1430,6 +1436,7 @@ bool GPU_HW::CompilePipelines(Error* error)
   fssel.true_color = true_color;
   fssel.disable_color_perspective = disable_color_perspective;
   fssel.write_mask_as_depth = m_write_mask_as_depth;
+  fssel.disable_upscaled_direct_textures = disable_upscaled_direct_textures;
 
   for (u8 depth_test = 0; depth_test < 2; depth_test++)
   {

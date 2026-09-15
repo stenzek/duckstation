@@ -4658,6 +4658,7 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
                old_settings.gpu_use_software_renderer_for_memory_states ||
              g_settings.gpu_scaled_interlacing != old_settings.gpu_scaled_interlacing ||
              g_settings.gpu_force_round_texcoords != old_settings.gpu_force_round_texcoords ||
+             g_settings.gpu_disable_upscaled_direct_textures != old_settings.gpu_disable_upscaled_direct_textures ||
              g_settings.gpu_texture_filter != old_settings.gpu_texture_filter ||
              g_settings.gpu_sprite_texture_filter != old_settings.gpu_sprite_texture_filter ||
              g_settings.gpu_dithering_mode != old_settings.gpu_dithering_mode ||

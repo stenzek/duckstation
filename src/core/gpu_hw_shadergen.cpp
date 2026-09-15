@@ -81,6 +81,7 @@ std::string GPU_HW_ShaderGen::GenerateBatchVertexShader(const BatchVertexShaderS
   DefineMacro(ss, "PAGE_TEXTURE", sel.page_texture);
   DefineMacro(ss, "UV_LIMITS", sel.uv_limits);
   DefineMacro(ss, "FORCE_ROUND_TEXCOORDS", sel.force_round_texcoords);
+  DefineMacro(ss, "DISABLE_UPSCALED_DIRECT_TEXTURES", sel.disable_upscaled_direct_textures);
   DefineMacro(ss, "PGXP_DEPTH", sel.pgxp_depth);
   DefineMacro(ss, "UPSCALED", sel.upscaled);
 
@@ -159,7 +160,7 @@ std::string GPU_HW_ShaderGen::GenerateBatchVertexShader(const BatchVertexShaderS
   v_col0 = a_col0;
   #if TEXTURED
     v_tex0 = float2(uint2(a_texcoord & 0xFFFFu, a_texcoord >> 16));
-    #if !PALETTE && !PAGE_TEXTURE
+    #if !PALETTE && !PAGE_TEXTURE && !DISABLE_UPSCALED_DIRECT_TEXTURES
       v_tex0 *= u_resolution_scale;
     #endif
 
@@ -180,7 +181,7 @@ std::string GPU_HW_ShaderGen::GenerateBatchVertexShader(const BatchVertexShaderS
         // Add 0.5 to the upper bounds when upscaling, to work around interpolation differences.
         // Limited to force-round-texcoord hack, to avoid breaking other games.
         v_uv_limits.zw += 0.5;
-      #elif !PAGE_TEXTURE && !PALETTE
+      #elif !PAGE_TEXTURE && !PALETTE && !DISABLE_UPSCALED_DIRECT_TEXTURES
         // Treat coordinates as being in upscaled space, and extend the UV range to all "upscaled"
         // pixels. This means 1-pixel-high polygon-based framebuffer effects won't be downsampled.
         // (e.g. Mega Man Legends 2 haze effect)
@@ -2200,6 +2201,7 @@ std::string GPU_HW_ShaderGen::GenerateBatchFragmentShader(const BatchFragmentSha
   DefineMacro(ss, "USE_DUAL_SOURCE", use_dual_source);
   DefineMacro(ss, "WRITE_MASK_AS_DEPTH", sel.write_mask_as_depth);
   DefineMacro(ss, "FORCE_ROUND_TEXCOORDS", sel.force_round_texcoords);
+  DefineMacro(ss, "DISABLE_UPSCALED_DIRECT_TEXTURES", sel.disable_upscaled_direct_textures);
   DefineMacro(ss, "UPSCALED", sel.upscaled);
 
   // Used for converting to normalized coordinates for sampling.
@@ -2356,6 +2358,12 @@ float4 SampleFromVRAM(TEXPAGE_VALUE texpage, DECLARE_UV_LIMITS(float2 coords, fl
       uint2 icoord = ApplyTextureWindow(FloatToIntegerCoords(DECLARE_UV_LIMITS(coords, uv_limits)));
       uint2 vicoord = (texpage.xy + icoord) & uint2(1023, 511);
       return LOAD_TEXTURE(samp0, int2(vicoord), 0);
+    #elif DISABLE_UPSCALED_DIRECT_TEXTURES
+      // Treat direct textures as native resolution, so filtering offsets move to adjacent native texels instead of
+      // duplicated upscaled texels.
+      uint2 icoord = ApplyTextureWindow(FloatToIntegerCoords(DECLARE_UV_LIMITS(coords, uv_limits)));
+      uint2 vicoord = (texpage.xy + icoord) & uint2(1023, 511);
+      return SAMPLE_TEXTURE_LEVEL(samp0, float2(vicoord) * RCP_VRAM_SIZE, 0.0);
     #else
       // Coordinates are already upscaled, we need to downscale them to apply the texture
       // window, then re-upscale/offset. We can't round here, because it could result in

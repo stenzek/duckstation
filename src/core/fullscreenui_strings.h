@@ -273,6 +273,7 @@ TRANSLATE_NOOP("FullscreenUI", "Disable Mailbox Presentation");
 TRANSLATE_NOOP("FullscreenUI", "Disable Speedup on MDEC");
 TRANSLATE_NOOP("FullscreenUI", "Disable Subdirectory Scanning");
 TRANSLATE_NOOP("FullscreenUI", "Disable Textures");
+TRANSLATE_NOOP("FullscreenUI", "Disable Upscaled Direct Textures");
 TRANSLATE_NOOP("FullscreenUI", "Disable Vertex Lighting");
 TRANSLATE_NOOP("FullscreenUI", "Disable Window Resizing");
 TRANSLATE_NOOP("FullscreenUI", "Disable on 2D Polygons");
@@ -678,6 +679,7 @@ TRANSLATE_NOOP("FullscreenUI", "Runs the software renderer in parallel for VRAM 
 TRANSLATE_NOOP("FullscreenUI", "SDL DualSense Player LED");
 TRANSLATE_NOOP("FullscreenUI", "SDL DualShock 4 / DualSense Enhanced Mode");
 TRANSLATE_NOOP("FullscreenUI", "Safe Mode");
+TRANSLATE_NOOP("FullscreenUI", "Samples 16-bit direct-color textures at native resolution when upscaling. This can fix filtering of FMVs/backgrounds in some games, but may reduce the quality of render-to-texture effects.");
 TRANSLATE_NOOP("FullscreenUI", "Save");
 TRANSLATE_NOOP("FullscreenUI", "Save Controller Preset");
 TRANSLATE_NOOP("FullscreenUI", "Save Locations");

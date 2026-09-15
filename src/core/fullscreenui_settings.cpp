@@ -4806,6 +4806,12 @@ void FullscreenUI::DrawGraphicsSettingsPage()
                                 "less noticeable. Usually safe to enable."),
                       "GPU", "ScaledInterlacing", true, resolution_scale > 1);
 
+    DrawToggleSetting(
+      bsi, FSUI_ICONVSTR(ICON_FA_IMAGE, "Disable Upscaled Direct Textures"),
+      FSUI_VSTR("Samples 16-bit direct-color textures at native resolution when upscaling. This can fix filtering of "
+                "FMVs/backgrounds in some games, but may reduce the quality of render-to-texture effects."),
+      "GPU", "DisableUpscaledDirectTextures", false, resolution_scale > 1);
+
     DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_SWATCHBOOK, "Texture Modulation Cropping (\"Old/v0\" GPU)"),
                       FSUI_VSTR("Crops vertex colours to 5:5:5 before modulating with the texture colour, which "
                                 "typically results in more visible banding."),

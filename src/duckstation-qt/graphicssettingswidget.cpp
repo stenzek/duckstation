@@ -178,6 +178,8 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
                                               Settings::DEFAULT_GPU_MAX_QUEUED_FRAMES);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.modulationCrop, "GPU", "EnableModulationCrop", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.scaledInterlacing, "GPU", "ScaledInterlacing", true);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.disableUpscaledDirectTextures, "GPU",
+                                               "DisableUpscaledDirectTextures", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.useSoftwareRendererForReadbacks, "GPU",
                                                "UseSoftwareRendererForReadbacks", false);
 
@@ -192,6 +194,8 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
                                        m_dialog->hasGameTrait(GameDatabase::Trait::ForceSoftwareRendererForReadbacks));
   SettingWidgetBinder::SetForceEnabled(
     m_ui.forceRoundedTexcoords, m_dialog->hasGameTrait(GameDatabase::Trait::ForceRoundUpscaledTextureCoordinates));
+  SettingWidgetBinder::SetForceEnabled(m_ui.disableUpscaledDirectTextures,
+                                       m_dialog->hasGameTrait(GameDatabase::Trait::DisableUpscaledDirectTextures));
 
   // PGXP Tab
 
@@ -461,6 +465,10 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
   dialog->registerWidgetHelp(m_ui.scaledInterlacing, tr("Scaled Interlacing"), tr("Checked"),
                              tr("Scales line skipping in interlaced rendering to the internal resolution. This makes "
                                 "the combing less obvious at higher resolutions. Usually safe to enable."));
+  dialog->registerWidgetHelp(
+    m_ui.disableUpscaledDirectTextures, tr("Disable Upscaled Direct Textures"), tr("Unchecked"),
+    tr("Samples 16-bit direct-color textures at native resolution when upscaling. This can fix filtering of "
+       "FMVs/backgrounds in some games, but may reduce the quality of render-to-texture effects."));
   dialog->registerWidgetHelp(
     m_ui.useSoftwareRendererForReadbacks, tr("Software Renderer Readbacks"), tr("Unchecked"),
     tr("Runs the software renderer in parallel for VRAM readbacks. On some systems, this may result in greater "
@@ -1022,6 +1030,8 @@ void GraphicsSettingsWidget::updateResolutionDependentOptions()
   m_ui.forceRoundedTexcoords->setEnabled(
     is_hardware && scale != 1 && texture_filtering == GPUTextureFilter::Nearest &&
     !m_dialog->hasGameTrait(GameDatabase::Trait::ForceRoundUpscaledTextureCoordinates));
+  m_ui.disableUpscaledDirectTextures->setEnabled(
+    is_hardware && scale != 1 && !m_dialog->hasGameTrait(GameDatabase::Trait::DisableUpscaledDirectTextures));
   m_ui.resolutionScaleWarningIcon->setVisible(scale != 1 && !pgxp_enabled);
 }
 

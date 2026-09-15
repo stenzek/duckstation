@@ -68,6 +68,7 @@ enum class Trait : u32
   ForceRecompilerICache,
   ForceCDROMSubQSkew,
   IsLibCryptProtected,
+  DisableUpscaledDirectTextures,
 
   MaxCount
 };

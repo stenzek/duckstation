@@ -22,6 +22,7 @@ public:
     bool force_round_texcoords : 1;
     bool pgxp_depth : 1;
     bool disable_color_perspective : 1;
+    bool disable_upscaled_direct_textures : 1;
   };
 
   struct BatchFragmentShaderSelector
@@ -49,6 +50,7 @@ public:
     bool use_rov_depth : 1;
     bool rov_depth_test : 1;
     bool rov_depth_write : 1;
+    bool disable_upscaled_direct_textures : 1;
   };
 
 public:

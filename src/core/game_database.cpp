@@ -151,6 +151,7 @@ static constexpr const std::array s_trait_names = {
   "ForceRecompilerICache",
   "ForceCDROMSubQSkew",
   "IsLibCryptProtected",
+  "DisableUpscaledDirectTextures",
 };
 static_assert(s_trait_names.size() == static_cast<size_t>(Trait::MaxCount));
 
@@ -189,6 +190,7 @@ static constexpr const std::array s_trait_display_names = {
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Force Recompiler ICache", "GameDatabase::Trait"),
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Force CD-ROM SubQ Skew", "GameDatabase::Trait"),
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Is LibCrypt Protected", "GameDatabase::Trait"),
+  TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Disable Upscaled Direct Textures", "GameDatabase::Trait"),
 };
 static_assert(s_trait_display_names.size() == static_cast<size_t>(Trait::MaxCount));
 
@@ -679,6 +681,11 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
   if (HasTrait(Trait::ForceRoundUpscaledTextureCoordinates))
   {
     settings.gpu_force_round_texcoords = true;
+  }
+
+  if (HasTrait(Trait::DisableUpscaledDirectTextures))
+  {
+    settings.gpu_disable_upscaled_direct_textures = true;
   }
 
   if (HasTrait(Trait::ForceDeinterlacing))

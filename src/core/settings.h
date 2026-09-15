@@ -78,6 +78,7 @@ struct GPUSettings
   bool gpu_per_sample_shading : 1 = false;
   bool gpu_scaled_interlacing : 1 = true;
   bool gpu_force_round_texcoords : 1 = false;
+  bool gpu_disable_upscaled_direct_textures : 1 = false;
   bool gpu_widescreen_rendering : 1 = false;
   bool gpu_widescreen_hack : 1 = false;
   bool gpu_modulation_crop : 1 = false;
