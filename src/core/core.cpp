@@ -362,184 +362,184 @@ SettingsInterface* Core::GetSettingsInterface()
 
 std::string Core::GetBaseStringSettingValue(const char* section, const char* key, std::string_view default_value)
 {
-  std::unique_lock lock(s_locals.settings_mutex);
+  std::lock_guard lock(s_locals.settings_mutex);
   return s_locals.layered_settings_interface.GetLayer(LayeredSettingsInterface::LAYER_BASE)
     ->GetStringValue(section, key, default_value);
 }
 
 SmallString Core::GetBaseSmallStringSettingValue(const char* section, const char* key, std::string_view default_value)
 {
-  std::unique_lock lock(s_locals.settings_mutex);
+  std::lock_guard lock(s_locals.settings_mutex);
   return s_locals.layered_settings_interface.GetLayer(LayeredSettingsInterface::LAYER_BASE)
     ->GetSmallStringValue(section, key, default_value);
 }
 
 TinyString Core::GetBaseTinyStringSettingValue(const char* section, const char* key, std::string_view default_value)
 {
-  std::unique_lock lock(s_locals.settings_mutex);
+  std::lock_guard lock(s_locals.settings_mutex);
   return s_locals.layered_settings_interface.GetLayer(LayeredSettingsInterface::LAYER_BASE)
     ->GetTinyStringValue(section, key, default_value);
 }
 
 bool Core::GetBaseBoolSettingValue(const char* section, const char* key, bool default_value /*= false*/)
 {
-  std::unique_lock lock(s_locals.settings_mutex);
+  std::lock_guard lock(s_locals.settings_mutex);
   return s_locals.layered_settings_interface.GetLayer(LayeredSettingsInterface::LAYER_BASE)
     ->GetBoolValue(section, key, default_value);
 }
 
 s32 Core::GetBaseIntSettingValue(const char* section, const char* key, s32 default_value /*= 0*/)
 {
-  std::unique_lock lock(s_locals.settings_mutex);
+  std::lock_guard lock(s_locals.settings_mutex);
   return s_locals.layered_settings_interface.GetLayer(LayeredSettingsInterface::LAYER_BASE)
     ->GetIntValue(section, key, default_value);
 }
 
 u32 Core::GetBaseUIntSettingValue(const char* section, const char* key, u32 default_value /*= 0*/)
 {
-  std::unique_lock lock(s_locals.settings_mutex);
+  std::lock_guard lock(s_locals.settings_mutex);
   return s_locals.layered_settings_interface.GetLayer(LayeredSettingsInterface::LAYER_BASE)
     ->GetUIntValue(section, key, default_value);
 }
 
 float Core::GetBaseFloatSettingValue(const char* section, const char* key, float default_value /*= 0.0f*/)
 {
-  std::unique_lock lock(s_locals.settings_mutex);
+  std::lock_guard lock(s_locals.settings_mutex);
   return s_locals.layered_settings_interface.GetLayer(LayeredSettingsInterface::LAYER_BASE)
     ->GetFloatValue(section, key, default_value);
 }
 
 double Core::GetBaseDoubleSettingValue(const char* section, const char* key, double default_value /* = 0.0f */)
 {
-  std::unique_lock lock(s_locals.settings_mutex);
+  std::lock_guard lock(s_locals.settings_mutex);
   return s_locals.layered_settings_interface.GetLayer(LayeredSettingsInterface::LAYER_BASE)
     ->GetDoubleValue(section, key, default_value);
 }
 
 std::vector<std::string> Core::GetBaseStringListSetting(const char* section, const char* key)
 {
-  std::unique_lock lock(s_locals.settings_mutex);
+  std::lock_guard lock(s_locals.settings_mutex);
   return s_locals.layered_settings_interface.GetLayer(LayeredSettingsInterface::LAYER_BASE)
     ->GetStringList(section, key);
 }
 
 std::string Core::GetStringSettingValue(const char* section, const char* key, std::string_view default_value)
 {
-  std::unique_lock lock(s_locals.settings_mutex);
+  std::lock_guard lock(s_locals.settings_mutex);
   return s_locals.layered_settings_interface.GetStringValue(section, key, default_value);
 }
 
 SmallString Core::GetSmallStringSettingValue(const char* section, const char* key, std::string_view default_value)
 {
-  std::unique_lock lock(s_locals.settings_mutex);
+  std::lock_guard lock(s_locals.settings_mutex);
   return s_locals.layered_settings_interface.GetSmallStringValue(section, key, default_value);
 }
 
 TinyString Core::GetTinyStringSettingValue(const char* section, const char* key, std::string_view default_value)
 {
-  std::unique_lock lock(s_locals.settings_mutex);
+  std::lock_guard lock(s_locals.settings_mutex);
   return s_locals.layered_settings_interface.GetTinyStringValue(section, key, default_value);
 }
 
 bool Core::GetBoolSettingValue(const char* section, const char* key, bool default_value /*= false*/)
 {
-  std::unique_lock lock(s_locals.settings_mutex);
+  std::lock_guard lock(s_locals.settings_mutex);
   return s_locals.layered_settings_interface.GetBoolValue(section, key, default_value);
 }
 
 s32 Core::GetIntSettingValue(const char* section, const char* key, s32 default_value /*= 0*/)
 {
-  std::unique_lock lock(s_locals.settings_mutex);
+  std::lock_guard lock(s_locals.settings_mutex);
   return s_locals.layered_settings_interface.GetIntValue(section, key, default_value);
 }
 
 u32 Core::GetUIntSettingValue(const char* section, const char* key, u32 default_value /*= 0*/)
 {
-  std::unique_lock lock(s_locals.settings_mutex);
+  std::lock_guard lock(s_locals.settings_mutex);
   return s_locals.layered_settings_interface.GetUIntValue(section, key, default_value);
 }
 
 float Core::GetFloatSettingValue(const char* section, const char* key, float default_value /*= 0.0f*/)
 {
-  std::unique_lock lock(s_locals.settings_mutex);
+  std::lock_guard lock(s_locals.settings_mutex);
   return s_locals.layered_settings_interface.GetFloatValue(section, key, default_value);
 }
 
 double Core::GetDoubleSettingValue(const char* section, const char* key, double default_value /*= 0.0f*/)
 {
-  std::unique_lock lock(s_locals.settings_mutex);
+  std::lock_guard lock(s_locals.settings_mutex);
   return s_locals.layered_settings_interface.GetDoubleValue(section, key, default_value);
 }
 
 std::vector<std::string> Core::GetStringListSetting(const char* section, const char* key)
 {
-  std::unique_lock lock(s_locals.settings_mutex);
+  std::lock_guard lock(s_locals.settings_mutex);
   return s_locals.layered_settings_interface.GetStringList(section, key);
 }
 
 void Core::SetBaseBoolSettingValue(const char* section, const char* key, bool value)
 {
-  std::unique_lock lock(s_locals.settings_mutex);
+  std::lock_guard lock(s_locals.settings_mutex);
   s_locals.layered_settings_interface.GetLayer(LayeredSettingsInterface::LAYER_BASE)->SetBoolValue(section, key, value);
 }
 
 void Core::SetBaseIntSettingValue(const char* section, const char* key, s32 value)
 {
-  std::unique_lock lock(s_locals.settings_mutex);
+  std::lock_guard lock(s_locals.settings_mutex);
   s_locals.layered_settings_interface.GetLayer(LayeredSettingsInterface::LAYER_BASE)->SetIntValue(section, key, value);
 }
 
 void Core::SetBaseUIntSettingValue(const char* section, const char* key, u32 value)
 {
-  std::unique_lock lock(s_locals.settings_mutex);
+  std::lock_guard lock(s_locals.settings_mutex);
   s_locals.layered_settings_interface.GetLayer(LayeredSettingsInterface::LAYER_BASE)->SetUIntValue(section, key, value);
 }
 
 void Core::SetBaseFloatSettingValue(const char* section, const char* key, float value)
 {
-  std::unique_lock lock(s_locals.settings_mutex);
+  std::lock_guard lock(s_locals.settings_mutex);
   s_locals.layered_settings_interface.GetLayer(LayeredSettingsInterface::LAYER_BASE)
     ->SetFloatValue(section, key, value);
 }
 
 void Core::SetBaseStringSettingValue(const char* section, const char* key, const char* value)
 {
-  std::unique_lock lock(s_locals.settings_mutex);
+  std::lock_guard lock(s_locals.settings_mutex);
   s_locals.layered_settings_interface.GetLayer(LayeredSettingsInterface::LAYER_BASE)
     ->SetStringValue(section, key, value);
 }
 
 void Core::SetBaseStringListSettingValue(const char* section, const char* key, const std::vector<std::string>& values)
 {
-  std::unique_lock lock(s_locals.settings_mutex);
+  std::lock_guard lock(s_locals.settings_mutex);
   s_locals.layered_settings_interface.GetLayer(LayeredSettingsInterface::LAYER_BASE)
     ->SetStringList(section, key, values);
 }
 
 bool Core::AddValueToBaseStringListSetting(const char* section, const char* key, const char* value)
 {
-  std::unique_lock lock(s_locals.settings_mutex);
+  std::lock_guard lock(s_locals.settings_mutex);
   return s_locals.layered_settings_interface.GetLayer(LayeredSettingsInterface::LAYER_BASE)
     ->AddToStringList(section, key, value);
 }
 
 bool Core::RemoveValueFromBaseStringListSetting(const char* section, const char* key, const char* value)
 {
-  std::unique_lock lock(s_locals.settings_mutex);
+  std::lock_guard lock(s_locals.settings_mutex);
   return s_locals.layered_settings_interface.GetLayer(LayeredSettingsInterface::LAYER_BASE)
     ->RemoveFromStringList(section, key, value);
 }
 
 bool Core::ContainsBaseSettingValue(const char* section, const char* key)
 {
-  std::unique_lock lock(s_locals.settings_mutex);
+  std::lock_guard lock(s_locals.settings_mutex);
   return s_locals.layered_settings_interface.GetLayer(LayeredSettingsInterface::LAYER_BASE)
     ->ContainsValue(section, key);
 }
 
 void Core::DeleteBaseSettingValue(const char* section, const char* key)
 {
-  std::unique_lock lock(s_locals.settings_mutex);
+  std::lock_guard lock(s_locals.settings_mutex);
   s_locals.layered_settings_interface.GetLayer(LayeredSettingsInterface::LAYER_BASE)->DeleteValue(section, key);
 }
 
