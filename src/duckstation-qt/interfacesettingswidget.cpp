@@ -104,8 +104,7 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* dialog, QWidget
     QCheckBox* const use_system_font = new QCheckBox(tr("Use System Font"), m_ui.appearanceGroup);
     SettingWidgetBinder::BindWidgetToBoolSetting(sif, use_system_font, "Main", "UseSystemFont", false);
     m_ui.appearanceLayout->addWidget(use_system_font, next_appearance_row, next_appearance_col++ * 2, 1, 2);
-    connect(use_system_font, &QCheckBox::checkStateChanged, this, &QtHost::UpdateApplicationTheme,
-            Qt::QueuedConnection);
+    connect(use_system_font, &QCheckBox::checkStateChanged, &QtHost::UpdateApplicationTheme);
     dialog->registerWidgetHelp(
       use_system_font, tr("Use System Font"), tr("Unchecked"),
       tr("Uses the system font for the interface, instead of the bundled Roboto font. Enabling "
@@ -114,7 +113,7 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* dialog, QWidget
 
     m_disable_style_sheets = new QCheckBox(tr("Disable Style Sheets"), m_ui.appearanceGroup);
     SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_disable_style_sheets, "Main", "DisableStylesheet", false);
-    connect(m_disable_style_sheets, &QCheckBox::checkStateChanged, this, &QtHost::UpdateApplicationTheme);
+    connect(m_disable_style_sheets, &QCheckBox::checkStateChanged, &QtHost::UpdateApplicationTheme);
     m_ui.appearanceLayout->addWidget(m_disable_style_sheets, next_appearance_row, next_appearance_col++ * 2, 1, 2);
     dialog->registerWidgetHelp(m_disable_style_sheets, tr("Disable Style Sheets"), tr("Unchecked"),
                                tr("Disables the use of style sheets in the application, reverting to the original "
@@ -279,7 +278,7 @@ void InterfaceSettingsWidget::setupThemeCombo(QComboBox* const cb)
   }
 
   SettingWidgetBinder::BindWidgetToStringSetting(nullptr, cb, "UI", "Theme", QtHost::GetDefaultThemeName());
-  connect(cb, QOverload<int>::of(&QComboBox::currentIndexChanged), cb, &QtHost::UpdateApplicationTheme);
+  connect(cb, &QComboBox::currentIndexChanged, &QtHost::UpdateApplicationTheme);
 }
 
 void InterfaceSettingsWidget::updateRenderToSeparateWindowOptions()

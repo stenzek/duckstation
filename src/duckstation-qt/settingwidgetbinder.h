@@ -510,7 +510,7 @@ struct SettingAccessor<QSpinBox>
   {
     if (!isNullable(widget))
     {
-      widget->connect(widget, QOverload<int>::of(&QSpinBox::valueChanged), func);
+      widget->connect(widget, &QSpinBox::valueChanged, func);
     }
     else
     {
@@ -539,7 +539,7 @@ struct SettingAccessor<QSpinBox>
 
   static void disconnect(QSpinBox* widget)
   {
-    QObject::disconnect(widget, QOverload<int>::of(&QSpinBox::valueChanged), nullptr, nullptr);
+    QObject::disconnect(widget, &QSpinBox::valueChanged, nullptr, nullptr);
     if (isNullable(widget))
       QObject::disconnect(widget, &QSpinBox::customContextMenuRequested, nullptr, nullptr);
   }
@@ -646,7 +646,7 @@ struct SettingAccessor<QDoubleSpinBox>
   {
     if (!isNullable(widget))
     {
-      widget->connect(widget, QOverload<double>::of(&QDoubleSpinBox::valueChanged), func);
+      widget->connect(widget, &QDoubleSpinBox::valueChanged, func);
     }
     else
     {
@@ -662,7 +662,7 @@ struct SettingAccessor<QDoubleSpinBox>
         });
         menu->popup(widget->mapToGlobal(pt));
       });
-      widget->connect(widget, QOverload<double>::of(&QDoubleSpinBox::valueChanged), widget,
+      widget->connect(widget, &QDoubleSpinBox::valueChanged, widget,
                       [widget, func = std::move(func)]() {
                         if (widget->property(IS_NULL_PROPERTY).toBool())
                         {
@@ -676,7 +676,7 @@ struct SettingAccessor<QDoubleSpinBox>
 
   static void disconnect(QDoubleSpinBox* widget)
   {
-    QObject::disconnect(widget, QOverload<double>::of(&QDoubleSpinBox::valueChanged), nullptr, nullptr);
+    QObject::disconnect(widget, &QDoubleSpinBox::valueChanged, nullptr, nullptr);
     if (isNullable(widget))
       QObject::disconnect(widget, &QDoubleSpinBox::customContextMenuRequested, nullptr, nullptr);
   }

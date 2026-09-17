@@ -109,8 +109,7 @@ static void InitializeSpeedControl(SettingsWindow* dialog, QSpinBox* spinbox, QC
                                    QPushButton* reset_button, const char* setting_name, float default_value)
 {
   const SpeedControl control{dialog, spinbox, checkbox, setting_name, default_value};
-  QObject::connect(spinbox, QOverload<int>::of(&QSpinBox::valueChanged), spinbox,
-                   [control](int) { OnSpeedControlValueChanged(control); });
+  QObject::connect(spinbox, &QSpinBox::valueChanged, spinbox, [control](int) { OnSpeedControlValueChanged(control); });
   QObject::connect(checkbox, &QCheckBox::checkStateChanged, checkbox,
                    [control](Qt::CheckState state) { OnSpeedControlUnlimitedStateChanged(control, state); });
   QObject::connect(reset_button, &QPushButton::clicked, reset_button, [control]() { ResetSpeedControlState(control); });
@@ -157,12 +156,9 @@ EmulationSettingsWidget::EmulationSettingsWidget(SettingsWindow* dialog, QWidget
   connect(m_ui.rewindEnable, &QCheckBox::checkStateChanged, this, &EmulationSettingsWidget::updateRewind);
   connect(m_ui.useSoftwareRendererForMemoryStates, &QCheckBox::checkStateChanged, this,
           &EmulationSettingsWidget::updateRewind);
-  connect(m_ui.rewindSaveFrequency, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this,
-          &EmulationSettingsWidget::updateRewind);
-  connect(m_ui.rewindSaveSlots, QOverload<int>::of(&QSpinBox::valueChanged), this,
-          &EmulationSettingsWidget::updateRewind);
-  connect(m_ui.runaheadFrames, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
-          &EmulationSettingsWidget::updateRewind);
+  connect(m_ui.rewindSaveFrequency, &QDoubleSpinBox::valueChanged, this, &EmulationSettingsWidget::updateRewind);
+  connect(m_ui.rewindSaveSlots, &QSpinBox::valueChanged, this, &EmulationSettingsWidget::updateRewind);
+  connect(m_ui.runaheadFrames, &QComboBox::currentIndexChanged, this, &EmulationSettingsWidget::updateRewind);
 
   dialog->registerWidgetHelp(
     m_ui.normalSpeed, tr("Emulation Speed"), "100%",
