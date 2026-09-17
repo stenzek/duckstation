@@ -4,8 +4,8 @@
 #include "performance_counters.h"
 #include "gpu.h"
 #include "gpu_backend.h"
-#include "system.h"
 #include "host.h"
+#include "system.h"
 #include "video_thread.h"
 
 #include "util/media_capture.h"
@@ -15,6 +15,7 @@
 #include "common/threading.h"
 #include "common/timer.h"
 
+#include <limits>
 #include <utility>
 
 LOG_CHANNEL(PerfMon);
@@ -23,10 +24,12 @@ namespace PerformanceCounters {
 
 namespace {
 
+static constexpr Timer::Value INVALID_FRAME_TIME = std::numeric_limits<Timer::Value>::max();
+
 struct State
 {
   Timer::Value last_update_time;
-  Timer::Value last_frame_time;
+  Timer::Value last_frame_time = INVALID_FRAME_TIME;
 
   u32 last_frame_number;
   u32 last_internal_frame_number;
@@ -35,6 +38,7 @@ struct State
   float average_frame_time_accumulator;
   float minimum_frame_time_accumulator;
   float maximum_frame_time_accumulator;
+  u32 frame_time_samples;
 
   float vps;
   float fps;
@@ -44,12 +48,12 @@ struct State
   float maximum_frame_time;
   float average_frame_time;
 
-  u64 last_core_thread_time;
   float core_thread_usage;
+  u64 last_core_thread_time;
   float core_thread_time;
 
-  u64 last_video_thread_time;
   float video_thread_usage;
+  u64 last_video_thread_time;
   float video_thread_time;
 
   float average_gpu_time;
@@ -147,35 +151,36 @@ void PerformanceCounters::Clear()
 void PerformanceCounters::Reset()
 {
   DebugAssert(Host::IsOnCoreThread());
-  VideoThread::RunOnThread(
-    [frame_number = System::GetFrameNumber(), internal_frame_number = System::GetInternalFrameNumber()]() {
-      const Timer::Value now_ticks = Timer::GetCurrentValue();
-
-      s_state.last_frame_time = now_ticks;
-      s_state.last_update_time = now_ticks;
-
-      s_state.last_frame_number = frame_number;
-      s_state.last_internal_frame_number = internal_frame_number;
-      s_state.last_core_thread_time = Host::GetCoreThreadHandle().GetCPUTime();
-      s_state.last_video_thread_time = VideoThread::GetThreadHandle().GetCPUTime();
-
-      s_state.average_frame_time_accumulator = 0.0f;
-      s_state.minimum_frame_time_accumulator = 0.0f;
-      s_state.maximum_frame_time_accumulator = 0.0f;
-    });
+  VideoThread::RunOnThread([]() {
+    s_state.last_frame_time = INVALID_FRAME_TIME;
+    s_state.average_frame_time_accumulator = 0.0f;
+    s_state.minimum_frame_time_accumulator = 0.0f;
+    s_state.maximum_frame_time_accumulator = 0.0f;
+    s_state.frame_time_samples = 0;
+  });
 }
 
 void PerformanceCounters::Update(GPUBackend* gpu, u32 frame_number, u32 internal_frame_number)
 {
   const Timer::Value now_ticks = Timer::GetCurrentValue();
 
-  const float frame_time = static_cast<float>(
-    Timer::ConvertValueToMilliseconds(now_ticks - std::exchange(s_state.last_frame_time, now_ticks)));
-  s_state.minimum_frame_time_accumulator = (s_state.minimum_frame_time_accumulator == 0.0f) ?
-                                             frame_time :
-                                             std::min(s_state.minimum_frame_time_accumulator, frame_time);
+  const Timer::Value last_frame_time = std::exchange(s_state.last_frame_time, now_ticks);
+  if (last_frame_time == INVALID_FRAME_TIME)
+  {
+    s_state.last_update_time = now_ticks;
+    s_state.last_frame_number = frame_number;
+    s_state.last_internal_frame_number = internal_frame_number;
+    s_state.last_core_thread_time = Host::GetCoreThreadHandle().GetCPUTime();
+    s_state.last_video_thread_time = VideoThread::GetThreadHandle().GetCPUTime();
+    return;
+  }
+
+  const float frame_time = static_cast<float>(Timer::ConvertValueToMilliseconds(now_ticks - last_frame_time));
+  s_state.minimum_frame_time_accumulator =
+    (s_state.frame_time_samples == 0) ? frame_time : std::min(s_state.minimum_frame_time_accumulator, frame_time);
   s_state.average_frame_time_accumulator += frame_time;
   s_state.maximum_frame_time_accumulator = std::max(s_state.maximum_frame_time_accumulator, frame_time);
+  s_state.frame_time_samples++;
   s_state.frame_time_history[s_state.frame_time_history_pos] = frame_time;
   s_state.frame_time_history_pos = (s_state.frame_time_history_pos + 1) % NUM_FRAME_TIME_SAMPLES;
 
@@ -199,9 +204,16 @@ void PerformanceCounters::Update(GPUBackend* gpu, u32 frame_number, u32 internal
   const double time_divider = 1000.0 * (1.0 / static_cast<double>(Threading::GetThreadTicksPerSecond())) *
                               (1.0 / static_cast<double>(frames_runf));
 
-  s_state.minimum_frame_time = std::exchange(s_state.minimum_frame_time_accumulator, 0.0f);
-  s_state.average_frame_time = std::exchange(s_state.average_frame_time_accumulator, 0.0f) / frames_runf;
-  s_state.maximum_frame_time = std::exchange(s_state.maximum_frame_time_accumulator, 0.0f);
+  const float minimum_frame_time = std::exchange(s_state.minimum_frame_time_accumulator, 0.0f);
+  const float average_frame_time = std::exchange(s_state.average_frame_time_accumulator, 0.0f);
+  const float maximum_frame_time = std::exchange(s_state.maximum_frame_time_accumulator, 0.0f);
+  const u32 frame_time_samples = std::exchange(s_state.frame_time_samples, 0);
+  if (frame_time_samples > 0)
+  {
+    s_state.minimum_frame_time = minimum_frame_time;
+    s_state.average_frame_time = average_frame_time / static_cast<float>(frame_time_samples);
+    s_state.maximum_frame_time = maximum_frame_time;
+  }
 
   s_state.vps = static_cast<float>(frames_runf / time);
   s_state.fps = static_cast<float>(internal_frames_run) / time;
