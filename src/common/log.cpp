@@ -5,9 +5,10 @@
 #include "assert.h"
 #include "file_system.h"
 #include "small_string.h"
+#include "threading.h"
 #include "timer.h"
 
-#include "fmt/format.h"
+#include <fmt/format.h>
 
 #include <array>
 #include <bitset>
@@ -39,9 +40,9 @@ struct RegisteredCallback
 using ChannelBitSet = std::bitset<static_cast<size_t>(Channel::MaxCount)>;
 
 static void RegisterCallback(CallbackFunctionType callbackFunction, void* pUserParam,
-                             const std::unique_lock<std::mutex>& lock);
+                             const std::unique_lock<Threading::Mutex>& lock);
 static void UnregisterCallback(CallbackFunctionType callbackFunction, void* pUserParam,
-                               const std::unique_lock<std::mutex>& lock);
+                               const std::unique_lock<Threading::Mutex>& lock);
 static void UpdateEffectiveLevel();
 
 static bool FilterTest(Channel channel, Level level);
@@ -81,7 +82,7 @@ struct State
   ChannelBitSet log_channels_enabled = ChannelBitSet().set();
 
   std::vector<RegisteredCallback> callbacks;
-  std::mutex callbacks_mutex;
+  Threading::Mutex callbacks_mutex;
 
   Timer::Value start_timestamp = Timer::GetCurrentValue();
 
@@ -113,7 +114,7 @@ void Log::RegisterCallback(CallbackFunctionType callbackFunction, void* pUserPar
 }
 
 void Log::RegisterCallback(CallbackFunctionType callbackFunction, void* pUserParam,
-                           const std::unique_lock<std::mutex>& lock)
+                           const std::unique_lock<Threading::Mutex>& lock)
 {
   RegisteredCallback Callback;
   Callback.Function = callbackFunction;
@@ -130,7 +131,7 @@ void Log::UnregisterCallback(CallbackFunctionType callbackFunction, void* pUserP
 }
 
 void Log::UnregisterCallback(CallbackFunctionType callbackFunction, void* pUserParam,
-                             const std::unique_lock<std::mutex>& lock)
+                             const std::unique_lock<Threading::Mutex>& lock)
 {
   for (auto iter = s_state.callbacks.begin(); iter != s_state.callbacks.end(); ++iter)
   {

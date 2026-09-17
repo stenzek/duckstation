@@ -9,6 +9,7 @@
 #include "gpu_texture.h"
 
 #include "common/dimensional_array.h"
+#include "common/threading.h"
 #include "common/windows_headers.h"
 
 #include <array>
@@ -19,7 +20,6 @@
 #include <dxgi1_5.h>
 #include <functional>
 #include <memory>
-#include <mutex>
 #include <string>
 #include <thread>
 #include <unordered_map>
@@ -379,7 +379,7 @@ private:
     {};
 
   ComPtr<ID3D12PipelineLibrary> m_pipeline_library;
-  std::mutex m_pipeline_library_mutex;
+  Threading::Mutex m_pipeline_library_mutex;
 };
 
 class D3D12SwapChain : public GPUSwapChain

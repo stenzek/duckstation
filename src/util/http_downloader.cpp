@@ -112,7 +112,7 @@ struct Request
 
 static void StartOrAddRequest(Request* req);
 static u32 LockedGetActiveRequestCount();
-static void LockedPollRequests(std::unique_lock<std::mutex>& lock);
+static void LockedPollRequests(std::unique_lock<Threading::Mutex>& lock);
 
 // Platform specific implementations
 
@@ -156,7 +156,7 @@ struct ALIGN_TO_CACHE_LINE Locals
 
   /// Guards pending_http_requests. Also used to serialise callback dispatch in
   /// LockedPollRequests() — the lock is released around each callback invocation.
-  std::mutex pending_http_request_lock;
+  Threading::Mutex pending_http_request_lock;
 
   /// All requests that are either queued (Pending) or actively in-flight
   /// (Started / Receiving). Requests are removed just before their callback fires.
@@ -180,7 +180,7 @@ struct ALIGN_TO_CACHE_LINE Locals
   /// Protected by worker_queue_mutex; woken with curl_multi_wakeup().
   ALIGN_TO_CACHE_LINE std::deque<std::pair<QueueAction, Request*>> worker_queue;
   std::atomic_bool worker_thread_shutdown{false}; ///< Set to true to signal the worker to exit.
-  std::mutex worker_queue_mutex;
+  Threading::Mutex worker_queue_mutex;
 
 #endif
 };
@@ -259,7 +259,7 @@ void HTTPDownloader::StartOrAddRequest(Request* req)
 // re-acquisition to handle requests added or removed by the callback.
 //
 // Notifies the host when the queue transitions from non-empty to empty.
-void HTTPDownloader::LockedPollRequests(std::unique_lock<std::mutex>& lock)
+void HTTPDownloader::LockedPollRequests(std::unique_lock<Threading::Mutex>& lock)
 {
   if (s_locals.pending_http_requests.empty())
     return;
@@ -1094,7 +1094,7 @@ void HTTPDownloader::Shutdown()
   if (s_locals.worker_thread.Joinable())
   {
     {
-      const std::unique_lock lock(s_locals.worker_queue_mutex);
+      const std::lock_guard lock(s_locals.worker_queue_mutex);
       s_locals.worker_thread_shutdown.store(true, std::memory_order_release);
 
       // Should break the curl_multi_poll wait.
@@ -1202,7 +1202,7 @@ void HTTPDownloader::WorkerThreadEntryPoint()
 // Must only be called from the worker thread.
 void HTTPDownloader::ProcessQueuedActions()
 {
-  const std::unique_lock lock(s_locals.worker_queue_mutex);
+  const std::lock_guard lock(s_locals.worker_queue_mutex);
   while (!s_locals.worker_queue.empty())
   {
     const auto& [action, request] = s_locals.worker_queue.front();
@@ -1338,7 +1338,7 @@ bool HTTPDownloader::StartRequest(Request* req)
   req->last_update_time = req->start_time;
 
   // Add to action queue for worker thread to process
-  const std::unique_lock lock(s_locals.worker_queue_mutex);
+  const std::lock_guard lock(s_locals.worker_queue_mutex);
   s_locals.worker_queue.emplace_back(QueueAction::Add, req);
 
   // Wake up worker thread
@@ -1355,7 +1355,7 @@ void HTTPDownloader::CloseRequest(Request* req)
   DebugAssert(req->handle);
 
   // Add to action queue for worker thread to process
-  const std::unique_lock lock(s_locals.worker_queue_mutex);
+  const std::lock_guard lock(s_locals.worker_queue_mutex);
   s_locals.worker_queue.emplace_back(QueueAction::RemoveAndDelete, req);
 
   // Wake up worker thread

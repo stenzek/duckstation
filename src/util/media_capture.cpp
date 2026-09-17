@@ -22,7 +22,6 @@
 
 #include <algorithm>
 #include <atomic>
-#include <condition_variable>
 #include <cstring>
 #include <deque>
 #include <limits>
@@ -159,11 +158,11 @@ protected:
     return (static_cast<u32>(m_audio_buffer.size()) / AUDIO_CHANNELS);
   }
 
-  void ProcessFramePendingMap(std::unique_lock<std::mutex>& lock);
-  void ProcessAllInFlightFrames(std::unique_lock<std::mutex>& lock);
+  void ProcessFramePendingMap(std::unique_lock<Threading::Mutex>& lock);
+  void ProcessAllInFlightFrames(std::unique_lock<Threading::Mutex>& lock);
   void EncoderThreadEntryPoint();
   void StartEncoderThread();
-  void StopEncoderThread(std::unique_lock<std::mutex>& lock);
+  void StopEncoderThread(std::unique_lock<Threading::Mutex>& lock);
   void DeleteOutputFile();
   void UpdateOutputSize(u64 size);
 
@@ -175,9 +174,9 @@ protected:
                                     std::string_view video_codec, u32 video_bitrate, std::string_view video_codec_args,
                                     bool capture_audio, std::string_view audio_codec, u32 audio_bitrate,
                                     std::string_view audio_codec_args, Error* error) = 0;
-  virtual bool InternalEndCapture(std::unique_lock<std::mutex>& lock, Error* error);
+  virtual bool InternalEndCapture(std::unique_lock<Threading::Mutex>& lock, Error* error);
 
-  mutable std::mutex m_lock;
+  mutable Threading::Mutex m_lock;
   std::string m_path;
   std::atomic_bool m_capturing{false};
   std::atomic_bool m_encoding_error{false};
@@ -199,8 +198,8 @@ protected:
   float m_encoder_thread_usage = 0.0f;
   float m_encoder_thread_time = 0.0f;
 
-  std::condition_variable m_frame_ready_cv;
-  std::condition_variable m_frame_encoded_cv;
+  Threading::ConditionVariable m_frame_ready_cv;
+  Threading::ConditionVariable m_frame_encoded_cv;
   std::array<PendingFrame, MAX_PENDING_FRAMES> m_pending_frames = {};
   u32 m_pending_frames_pos = 0;
   u32 m_frames_pending_map = 0;
@@ -342,7 +341,7 @@ bool MediaCaptureBase::DeliverVideoFrame(GPUTexture* stex)
   return true;
 }
 
-void MediaCaptureBase::ProcessFramePendingMap(std::unique_lock<std::mutex>& lock)
+void MediaCaptureBase::ProcessFramePendingMap(std::unique_lock<Threading::Mutex>& lock)
 {
   DebugAssert(m_frames_pending_map > 0);
 
@@ -424,7 +423,7 @@ void MediaCaptureBase::StartEncoderThread()
   m_encoder_thread.Start([this]() { EncoderThreadEntryPoint(); });
 }
 
-void MediaCaptureBase::StopEncoderThread(std::unique_lock<std::mutex>& lock)
+void MediaCaptureBase::StopEncoderThread(std::unique_lock<Threading::Mutex>& lock)
 {
   // Thread will exit when s_capturing is false.
   DebugAssert(!m_capturing.load(std::memory_order_acquire));
@@ -441,7 +440,7 @@ void MediaCaptureBase::StopEncoderThread(std::unique_lock<std::mutex>& lock)
   }
 }
 
-void MediaCaptureBase::ProcessAllInFlightFrames(std::unique_lock<std::mutex>& lock)
+void MediaCaptureBase::ProcessAllInFlightFrames(std::unique_lock<Threading::Mutex>& lock)
 {
   while (m_frames_pending_map > 0)
     ProcessFramePendingMap(lock);
@@ -517,7 +516,7 @@ bool MediaCaptureBase::DeliverAudioFrames(const s16* frames, u32 num_frames)
   return true;
 }
 
-bool MediaCaptureBase::InternalEndCapture(std::unique_lock<std::mutex>& lock, Error* error)
+bool MediaCaptureBase::InternalEndCapture(std::unique_lock<Threading::Mutex>& lock, Error* error)
 {
   DebugAssert(m_capturing.load(std::memory_order_acquire));
 
@@ -722,7 +721,7 @@ protected:
                             u32 video_bitrate, std::string_view video_codec_args, bool capture_audio,
                             std::string_view audio_codec, u32 audio_bitrate, std::string_view audio_codec_args,
                             Error* error) override;
-  bool InternalEndCapture(std::unique_lock<std::mutex>& lock, Error* error) override;
+  bool InternalEndCapture(std::unique_lock<Threading::Mutex>& lock, Error* error) override;
 
 private:
   class CountingByteStream;
@@ -1171,7 +1170,7 @@ bool MediaCaptureMF::InternalBeginCapture(float fps, float aspect, u32 sample_ra
   return true;
 }
 
-bool MediaCaptureMF::InternalEndCapture(std::unique_lock<std::mutex>& lock, Error* error)
+bool MediaCaptureMF::InternalEndCapture(std::unique_lock<Threading::Mutex>& lock, Error* error)
 {
   HRESULT hr = MediaCaptureBase::InternalEndCapture(lock, error) ? S_OK : E_FAIL;
 
@@ -2185,7 +2184,7 @@ protected:
                             u32 video_bitrate, std::string_view video_codec_args, bool capture_audio,
                             std::string_view audio_codec, u32 audio_bitrate, std::string_view audio_codec_args,
                             Error* error) override;
-  bool InternalEndCapture(std::unique_lock<std::mutex>& lock, Error* error) override;
+  bool InternalEndCapture(std::unique_lock<Threading::Mutex>& lock, Error* error) override;
 
 private:
   static void SetAVError(Error* error, std::string_view prefix, int errnum);
@@ -3085,7 +3084,7 @@ bool MediaCaptureFFmpeg::InternalBeginCapture(float fps, float aspect, u32 sampl
   return true;
 }
 
-bool MediaCaptureFFmpeg::InternalEndCapture(std::unique_lock<std::mutex>& lock, Error* error)
+bool MediaCaptureFFmpeg::InternalEndCapture(std::unique_lock<Threading::Mutex>& lock, Error* error)
 {
   if (!MediaCaptureBase::InternalEndCapture(lock, error))
     return false;

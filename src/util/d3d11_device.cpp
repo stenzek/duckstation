@@ -16,6 +16,7 @@
 #include "common/log.h"
 #include "common/path.h"
 #include "common/string_util.h"
+#include "common/threading.h"
 
 #include "fmt/format.h"
 
@@ -26,7 +27,7 @@
 LOG_CHANNEL(GPUDevice);
 
 // We need to synchronize instance creation because of adapter enumeration from the UI thread.
-static std::mutex s_instance_mutex;
+static Threading::Mutex s_instance_mutex;
 
 static constexpr std::array<float, 4> s_clear_color = {};
 static constexpr GPUTextureFormat s_swap_chain_format = GPUTextureFormat::RGBA8;
@@ -63,7 +64,7 @@ bool D3D11Device::CreateDeviceAndMainSwapChain(std::string_view adapter, CreateF
                                                const ExclusiveFullscreenMode* exclusive_fullscreen_mode,
                                                std::optional<bool> exclusive_fullscreen_control, Error* error)
 {
-  std::unique_lock lock(s_instance_mutex);
+  std::lock_guard lock(s_instance_mutex);
 
   UINT d3d_create_flags = 0;
   if (m_debug_device)
@@ -146,7 +147,7 @@ bool D3D11Device::CreateDeviceAndMainSwapChain(std::string_view adapter, CreateF
 
 void D3D11Device::DestroyDevice()
 {
-  std::unique_lock lock(s_instance_mutex);
+  std::lock_guard lock(s_instance_mutex);
 
   DestroyBuffers();
   m_main_swap_chain.reset();

@@ -18,6 +18,7 @@
 #include "common/scoped_guard.h"
 #include "common/small_string.h"
 #include "common/string_util.h"
+#include "common/threading.h"
 
 #include "D3D12MemAlloc.h"
 #include "fmt/format.h"
@@ -46,7 +47,7 @@ enum : u32
 };
 
 // We need to synchronize instance creation because of adapter enumeration from the UI thread.
-static std::mutex s_instance_mutex;
+static Threading::Mutex s_instance_mutex;
 
 static constexpr GPUTextureFormat s_swap_chain_format = GPUTextureFormat::RGBA8;
 
@@ -142,7 +143,7 @@ bool D3D12Device::CreateDeviceAndMainSwapChain(std::string_view adapter, CreateF
                                                const ExclusiveFullscreenMode* exclusive_fullscreen_mode,
                                                std::optional<bool> exclusive_fullscreen_control, Error* error)
 {
-  std::unique_lock lock(s_instance_mutex);
+  std::lock_guard lock(s_instance_mutex);
 
   m_dxgi_factory = D3DCommon::CreateFactory(m_debug_device, error);
   if (!m_dxgi_factory)
@@ -291,7 +292,7 @@ bool D3D12Device::CreateDeviceAndMainSwapChain(std::string_view adapter, CreateF
 
 void D3D12Device::DestroyDevice()
 {
-  std::unique_lock lock(s_instance_mutex);
+  std::lock_guard lock(s_instance_mutex);
 
   // Toss command list if we're recording...
   if (InRenderPass())

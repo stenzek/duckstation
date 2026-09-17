@@ -157,13 +157,13 @@ private:
 #ifdef __linux__
   int m_epoll_fd = -1;
 #else
-  std::mutex m_poll_array_lock;
+  Threading::Mutex m_poll_array_mutex;
   pollfd* m_poll_array = nullptr;
   size_t m_poll_array_active_size = 0;
   size_t m_poll_array_max_size = 0;
 #endif
 
-  std::mutex m_open_sockets_lock;
+  Threading::Mutex m_open_sockets_mutex;
   SocketMap m_open_sockets;
   std::atomic_size_t m_client_socket_count{0};
 };

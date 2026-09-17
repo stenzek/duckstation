@@ -569,7 +569,7 @@ bool MetalDevice::SetGPUTimingEnabled(bool enabled)
   if (m_gpu_timing_enabled == enabled)
     return true;
 
-  std::unique_lock lock(m_fence_mutex);
+  std::lock_guard lock(m_fence_mutex);
   m_gpu_timing_enabled = enabled;
   m_accumulated_gpu_time = 0.0;
   m_last_gpu_time_end = 0.0;
@@ -578,7 +578,7 @@ bool MetalDevice::SetGPUTimingEnabled(bool enabled)
 
 float MetalDevice::GetAndResetAccumulatedGPUTime()
 {
-  std::unique_lock lock(m_fence_mutex);
+  std::lock_guard lock(m_fence_mutex);
   return std::exchange(m_accumulated_gpu_time, 0.0) * 1000.0;
 }
 
@@ -2656,7 +2656,7 @@ void MetalDevice::CreateCommandBuffer()
 
 void MetalDevice::CommandBufferCompletedOffThread(id<MTLCommandBuffer> buffer, u64 fence_counter)
 {
-  std::unique_lock lock(m_fence_mutex);
+  std::lock_guard lock(m_fence_mutex);
   m_completed_fence_counter.store(std::max(m_completed_fence_counter.load(std::memory_order_acquire), fence_counter),
                                   std::memory_order_release);
 

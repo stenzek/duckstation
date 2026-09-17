@@ -6,8 +6,8 @@
 #include "compress_helpers.h"
 
 #include "common/heap_array.h"
+#include "common/threading.h"
 
-#include <mutex>
 #include <optional>
 #include <span>
 #include <string>
@@ -101,5 +101,5 @@ private:
   std::FILE* m_index_file = nullptr;
   std::FILE* m_blob_file = nullptr;
 
-  mutable std::mutex m_mutex;
+  mutable Threading::Mutex m_mutex;
 };

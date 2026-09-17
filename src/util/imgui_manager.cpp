@@ -110,7 +110,7 @@ static void AddOSDMessage(OSDMessageType type, std::string key, OSDMessageIconTy
                           std::string title, std::string message);
 static void RemoveKeyedOSDMessage(std::string key);
 static void ClearOSDMessages();
-static void UpdateOSDMessageRunIdle(const std::unique_lock<std::mutex>& lock);
+static void UpdateOSDMessageRunIdle(const std::unique_lock<Threading::Mutex>& lock);
 static void AcquirePendingOSDMessages(Timer::Value current_time);
 static void DrawOSDMessages(Timer::Value current_time);
 static void CreateSoftwareCursorTextures();
@@ -216,7 +216,7 @@ struct ALIGN_TO_CACHE_LINE State
   std::array<ImGuiManager::SoftwareCursor, InputManager::MAX_SOFTWARE_CURSORS> software_cursors = {};
 
   std::deque<PostedOSDMessage> osd_posted_messages;
-  std::mutex osd_messages_lock;
+  Threading::Mutex osd_messages_lock;
 
   // Read by both threads
   ALIGN_TO_CACHE_LINE ImGuiContext* imgui_context = nullptr;
@@ -1101,7 +1101,7 @@ void ImGuiManager::AddOSDMessage(OSDMessageType type, std::string key, OSDMessag
     UpdateOSDMessageRunIdle(lock);
 }
 
-void ImGuiManager::UpdateOSDMessageRunIdle(const std::unique_lock<std::mutex>& lock)
+void ImGuiManager::UpdateOSDMessageRunIdle(const std::unique_lock<Threading::Mutex>& lock)
 {
   static constexpr auto cb = []() {
     VideoThread::SetRunIdleReason(VideoThread::RunIdleReason::OSDMessagesActive,

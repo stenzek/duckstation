@@ -430,7 +430,7 @@ void SocketMultiplexer::AddOpenSocket(std::shared_ptr<BaseSocket> socket)
     ERROR_LOG("epoll_ctl() to add socket failed: {}", Error::CreateErrno(errno).GetDescription());
 #endif
 
-  std::unique_lock lock(m_open_sockets_lock);
+  std::lock_guard lock(m_open_sockets_mutex);
   DebugAssert(m_open_sockets.find(socket->GetDescriptor()) == m_open_sockets.end());
   m_open_sockets.emplace(socket->GetDescriptor(), std::move(socket));
 }
@@ -443,7 +443,7 @@ void SocketMultiplexer::AddClientSocket(std::shared_ptr<BaseSocket> socket)
 
 void SocketMultiplexer::RemoveOpenSocket(BaseSocket* socket)
 {
-  std::unique_lock lock(m_open_sockets_lock);
+  std::lock_guard lock(m_open_sockets_mutex);
   const auto iter = m_open_sockets.find(socket->GetDescriptor());
   Assert(iter != m_open_sockets.end());
   m_open_sockets.erase(iter);
@@ -477,7 +477,7 @@ void SocketMultiplexer::RemoveClientSocket(BaseSocket* socket)
 
 bool SocketMultiplexer::HasAnyOpenSockets()
 {
-  std::unique_lock lock(m_open_sockets_lock);
+  std::lock_guard lock(m_open_sockets_mutex);
   return !m_open_sockets.empty();
 }
 
@@ -493,7 +493,7 @@ size_t SocketMultiplexer::GetClientSocketCount()
 
 void SocketMultiplexer::CloseAll()
 {
-  std::unique_lock lock(m_open_sockets_lock);
+  std::unique_lock lock(m_open_sockets_mutex);
 
   while (!m_open_sockets.empty())
   {
@@ -511,7 +511,7 @@ void SocketMultiplexer::SetNotificationMask(BaseSocket* socket, SocketDescriptor
   if (epoll_ctl(m_epoll_fd, EPOLL_CTL_MOD, descriptor, &ev) != 0) [[unlikely]]
     ERROR_LOG("epoll_ctl() for events 0x{:x} failed: {}", events, Error::CreateErrno(errno).GetDescription());
 #else
-  std::unique_lock lock(m_poll_array_lock);
+  std::lock_guard lock(m_poll_array_mutex);
   size_t free_slot = m_poll_array_active_size;
   for (size_t i = 0; i < m_poll_array_active_size; i++)
   {
@@ -570,7 +570,7 @@ bool SocketMultiplexer::PollEventsWithTimeout(u32 milliseconds)
     reinterpret_cast<PendingSocketPair*>(alloca(sizeof(PendingSocketPair) * static_cast<size_t>(nevents)));
   size_t num_triggered_sockets = 0;
   {
-    std::unique_lock open_lock(m_open_sockets_lock);
+    std::lock_guard open_lock(m_open_sockets_mutex);
     for (int i = 0; i < nevents; i++)
     {
       const epoll_event& ev = events[i];
@@ -609,7 +609,7 @@ bool SocketMultiplexer::PollEventsWithTimeout(u32 milliseconds)
 
   return true;
 #else
-  std::unique_lock lock(m_poll_array_lock);
+  std::unique_lock lock(m_poll_array_mutex);
   if (m_poll_array_active_size == 0)
     return false;
 
@@ -623,7 +623,7 @@ bool SocketMultiplexer::PollEventsWithTimeout(u32 milliseconds)
     reinterpret_cast<PendingSocketPair*>(alloca(sizeof(PendingSocketPair) * static_cast<size_t>(res)));
   size_t num_triggered_sockets = 0;
   {
-    std::unique_lock open_lock(m_open_sockets_lock);
+    std::lock_guard open_lock(m_open_sockets_mutex);
     for (size_t i = 0; i < m_poll_array_active_size; i++)
     {
       const pollfd& pfd = m_poll_array[i];

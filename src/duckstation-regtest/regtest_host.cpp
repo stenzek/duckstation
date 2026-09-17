@@ -65,8 +65,8 @@ static void ProcessCoreThreadEvents();
 
 struct RegTestHostState
 {
-  ALIGN_TO_CACHE_LINE std::mutex core_thread_events_mutex;
-  std::condition_variable core_thread_event_done;
+  ALIGN_TO_CACHE_LINE Threading::Mutex core_thread_events_mutex;
+  Threading::ConditionVariable core_thread_event_done;
   std::deque<std::pair<std::function<void()>, bool>> cpu_thread_events;
   u32 blocking_cpu_events_pending = 0;
 };

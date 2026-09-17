@@ -10,9 +10,10 @@
 #include "common/error.h"
 #include "common/log.h"
 #include "common/string_util.h"
+#include "common/threading.h"
 
-#include "cubeb/cubeb.h"
-#include "fmt/format.h"
+#include <cubeb/cubeb.h>
+#include <fmt/format.h>
 
 #include <mutex>
 #include <string>
@@ -23,7 +24,7 @@ namespace {
 
 struct CubebContextHolder
 {
-  std::mutex mutex;
+  Threading::Mutex mutex;
   cubeb* context = nullptr;
   u32 reference_count = 0;
   std::string driver_name;
@@ -95,7 +96,7 @@ static void CubebLogCallback(const char* fmt, ...)
 
 static cubeb* GetCubebContext(std::string_view driver_name, Error* error)
 {
-  std::lock_guard<std::mutex> lock(s_cubeb_context.mutex);
+  std::lock_guard lock(s_cubeb_context.mutex);
   if (s_cubeb_context.context)
   {
     // Check if the requested driver/device matches the existing context.
@@ -127,7 +128,7 @@ static cubeb* GetCubebContext(std::string_view driver_name, Error* error)
 
 static void ReleaseCubebContext(cubeb* ctx)
 {
-  std::lock_guard<std::mutex> lock(s_cubeb_context.mutex);
+  std::lock_guard lock(s_cubeb_context.mutex);
   AssertMsg(s_cubeb_context.context == ctx, "Cubeb context mismatch on release.");
   Assert(s_cubeb_context.reference_count > 0);
   s_cubeb_context.reference_count--;

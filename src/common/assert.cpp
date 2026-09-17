@@ -5,6 +5,7 @@
 
 #include "assert.h"
 #include "crash_handler.h"
+#include "threading.h"
 
 #include <cstdio>
 #include <cstdlib>
@@ -21,7 +22,7 @@
 #pragma clang diagnostic ignored "-Winvalid-noreturn"
 #endif
 
-static std::mutex s_AssertFailedMutex;
+static Threading::Mutex s_AssertFailedMutex;
 
 static HANDLE FreezeThreads()
 {
@@ -81,7 +82,7 @@ void Y_OnAssertFailed(const char* szMessage, const char* szFunction, const char*
   std::snprintf(szMsg, sizeof(szMsg), "%s in function %s (%s:%u)\n", szMessage, szFunction, szFile, uLine);
 
 #if defined(_WIN32)
-  std::unique_lock lock(s_AssertFailedMutex);
+  std::lock_guard lock(s_AssertFailedMutex);
   HANDLE pHandle = FreezeThreads();
 
   SetConsoleTextAttribute(GetStdHandle(STD_ERROR_HANDLE), FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_INTENSITY);
@@ -118,7 +119,7 @@ void Y_OnAssertFailed(const char* szMessage, const char* szFunction, const char*
   std::snprintf(szMsg, sizeof(szMsg), "%s in function %s (%s:%u)\n", szMessage, szFunction, szFile, uLine);
 
 #if defined(_WIN32)
-  std::unique_lock guard(s_AssertFailedMutex);
+  std::lock_guard guard(s_AssertFailedMutex);
   HANDLE pHandle = FreezeThreads();
 
   SetConsoleTextAttribute(GetStdHandle(STD_ERROR_HANDLE), FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_INTENSITY);

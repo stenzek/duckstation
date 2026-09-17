@@ -4,9 +4,11 @@
 #include "perf_scope.h"
 #include "assert.h"
 #include "string_util.h"
+#include "threading.h"
 
 #include <array>
 #include <cstring>
+#include <mutex>
 
 #ifdef __linux__
 #include <atomic>
@@ -26,10 +28,10 @@
 
 static std::FILE* s_map_file = nullptr;
 static bool s_map_file_opened = false;
-static std::mutex s_mutex;
+static Threading::Mutex s_mutex;
 static void RegisterMethod(const void* ptr, size_t size, const char* symbol)
 {
-  std::unique_lock lock(s_mutex);
+  std::lock_guard lock(s_mutex);
 
   if (!s_map_file)
   {
@@ -96,16 +98,16 @@ static u64 JitDumpTimestamp()
   return (static_cast<u64>(ts.tv_sec) * 1000000000ULL) + static_cast<u64>(ts.tv_nsec);
 }
 
-static FILE* s_jitdump_file = nullptr;
+static std::FILE* s_jitdump_file = nullptr;
 static bool s_jitdump_file_opened = false;
-static std::mutex s_jitdump_mutex;
+static Threading::Mutex s_jitdump_mutex;
 static u32 s_jitdump_record_id;
 
 static void RegisterMethod(const void* ptr, size_t size, const char* symbol)
 {
   const u32 namelen = std::strlen(symbol) + 1;
 
-  std::unique_lock lock(s_jitdump_mutex);
+  std::lock_guard lock(s_jitdump_mutex);
   if (!s_jitdump_file)
   {
     if (!s_jitdump_file_opened)

@@ -47,23 +47,23 @@ private:
   /// Waits for all submitted tasks to complete execution.
   /// This is a helper function that assumes a lock is already held.
   /// @param lock A unique_lock object holding the mutex.
-  void WaitForAll(std::unique_lock<std::mutex>& lock);
+  void WaitForAll(std::unique_lock<Threading::Mutex>& lock);
 
   /// Executes one task from the queue.
   /// This is a helper function that assumes a lock is already held.
   /// @param lock A unique_lock object holding the mutex.
-  void ExecuteOneTask(std::unique_lock<std::mutex>& lock);
+  void ExecuteOneTask(std::unique_lock<Threading::Mutex>& lock);
 
   /// Entry point for worker threads. Executes tasks from the queue until termination is signaled.
   void WorkerThreadEntryPoint();
 
-  std::mutex m_mutex;
+  Threading::Mutex m_mutex;
   std::deque<TaskFunctionType> m_tasks;
   size_t m_tasks_outstanding = 0;
   u32 m_threads_busy = 0;
   u16 m_max_threads = 0;
   bool m_threads_done = false;
-  std::condition_variable m_task_wait_cv;
-  std::condition_variable m_tasks_done_cv;
+  Threading::ConditionVariable m_task_wait_cv;
+  Threading::ConditionVariable m_tasks_done_cv;
   std::vector<std::thread> m_threads;
 };

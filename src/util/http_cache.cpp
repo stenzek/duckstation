@@ -13,6 +13,7 @@
 #include "common/path.h"
 #include "common/string_util.h"
 #include "common/thirdparty/SmallVector.h"
+#include "common/threading.h"
 
 #include <array>
 #include <deque>
@@ -31,7 +32,7 @@ namespace HTTPCache {
 static constexpr u32 CACHE_VERSION = 1;
 
 static void QueueDownload(std::string_view url, FetchCallback callback, Error* error,
-                          std::unique_lock<std::mutex>&& lock);
+                          std::unique_lock<Threading::Mutex>&& lock);
 static void DownloadCallback(const std::string& url, s32 status_code, const Error& error,
                              const std::string& content_type, const HTTPDownloader::RequestData& data);
 
@@ -41,7 +42,7 @@ struct Locals
 {
   ObjectArchive cache_archive;
   std::deque<std::pair<std::string, FetchCallback>> pending_downloads;
-  std::mutex pending_downloads_lock;
+  Threading::Mutex pending_downloads_lock;
   std::once_flag cache_open_flag;
 };
 
@@ -179,7 +180,7 @@ HTTPCache::LookupResult HTTPCache::LookupOrFetch(std::string_view url, Error* er
 }
 
 void HTTPCache::QueueDownload(std::string_view url, FetchCallback callback, Error* error,
-                              std::unique_lock<std::mutex>&& lock)
+                              std::unique_lock<Threading::Mutex>&& lock)
 {
   // do we already have a request?
   const bool has_request =

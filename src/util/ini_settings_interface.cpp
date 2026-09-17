@@ -8,6 +8,7 @@
 #include "common/log.h"
 #include "common/path.h"
 #include "common/string_util.h"
+#include "common/threading.h"
 
 #include <algorithm>
 #include <cstring>
@@ -17,7 +18,7 @@ LOG_CHANNEL(Settings);
 
 // To prevent races between saving and loading settings, particularly with game settings,
 // we only allow one ini to be parsed at any point in time.
-static std::mutex s_ini_load_save_mutex;
+static Threading::Mutex s_ini_load_save_mutex;
 
 INISettingsInterface::INISettingsInterface() = default;
 
@@ -171,7 +172,7 @@ bool INISettingsInterface::Load(Error* error)
     return false;
   }
 
-  std::unique_lock lock(s_ini_load_save_mutex);
+  std::lock_guard lock(s_ini_load_save_mutex);
 
   std::optional<std::string> file_data = FileSystem::ReadFileToString(m_path.c_str(), error);
   if (!file_data.has_value())

@@ -20,6 +20,7 @@
 #include "metal_stream_buffer.h"
 #include "window_info.h"
 
+#include "common/threading.h"
 #include "common/timer.h"
 
 #include <atomic>
@@ -417,7 +418,7 @@ private:
   id<MTLDevice> m_device;
   id<MTLCommandQueue> m_queue;
 
-  std::mutex m_fence_mutex;
+  Threading::Mutex m_fence_mutex;
   u64 m_current_fence_counter = 0;
   std::atomic<u64> m_completed_fence_counter{0};
   std::deque<std::pair<u64, id>> m_cleanup_objects; // [fence_counter, object]

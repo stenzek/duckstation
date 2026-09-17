@@ -16,6 +16,7 @@
 #include "common/log.h"
 #include "common/lru_cache.h"
 #include "common/path.h"
+#include "common/threading.h"
 
 #include <algorithm>
 #include <cstring>
@@ -89,7 +90,7 @@ using ActiveSoundEntry = std::variant<PlayingStreamedEffect, PlayingCachedEffect
 
 struct Locals
 {
-  std::mutex state_mutex;
+  Threading::Mutex state_mutex;
   std::deque<ActiveSoundEntry> active_sounds;
   std::unique_ptr<AudioStream> audio_stream;
   DynamicHeapArray<AudioStream::SampleType> temp_buffer;
@@ -109,7 +110,8 @@ static bool LockedIsInitialized();
 static bool LoadCachedEffect(const std::string& resource_name, const CachedEffectPtr& effect, Error* error);
 
 /// Looks up a cached effect, loading it if necessary.
-static const CachedEffectPtr* LookupOrLoadCachedEffect(std::string resource_name, std::unique_lock<std::mutex>& lock);
+static const CachedEffectPtr* LookupOrLoadCachedEffect(std::string resource_name,
+                                                       std::unique_lock<Threading::Mutex>& lock);
 
 /// Opens a WAV file for streaming, checking that it matches the correct format.
 static bool OpenFileForStreaming(const char* path, WAVReader* reader, Error* error);
@@ -260,7 +262,7 @@ bool SoundEffectManager::LoadCachedEffect(const std::string& resource_name, cons
 }
 
 const SoundEffectManager::CachedEffectPtr*
-SoundEffectManager::LookupOrLoadCachedEffect(std::string resource_name, std::unique_lock<std::mutex>& lock)
+SoundEffectManager::LookupOrLoadCachedEffect(std::string resource_name, std::unique_lock<Threading::Mutex>& lock)
 {
   const CachedEffectPtr* cached_effect = s_locals.effect_cache.Lookup(resource_name);
   if (cached_effect)

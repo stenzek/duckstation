@@ -14,6 +14,7 @@
 #include "common/dynamic_library.h"
 #include "common/error.h"
 #include "common/log.h"
+#include "common/threading.h"
 
 #include <cstdarg>
 #include <cstdio>
@@ -63,7 +64,7 @@ struct Locals
   WindowInfoType window_type = WindowInfoType::Surfaceless;
   bool is_debug_instance = false;
 
-  std::mutex mutex;
+  Threading::Mutex mutex;
 };
 
 static const DynamicLibrary::OptionalSymbolTable s_vulkan_module_entry_points[] = {

@@ -27,6 +27,7 @@
 #include "common/settings_interface.h"
 #include "common/small_string.h"
 #include "common/string_util.h"
+#include "common/threading.h"
 
 #include "IconsEmoji.h"
 #include "IconsFontAwesome.h"
@@ -236,7 +237,7 @@ struct Locals
 
 struct ArchiveLocals
 {
-  std::mutex zip_mutex;
+  Threading::Mutex zip_mutex;
   CheatArchive patches_zip;
   CheatArchive cheats_zip;
 };

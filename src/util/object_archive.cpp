@@ -71,7 +71,7 @@ constinit const std::string_view ObjectArchive::ERROR_DESCRIPTION_ALREADY_EXISTS
 
 void ObjectArchive::Close()
 {
-  std::unique_lock lock(m_mutex);
+  std::lock_guard lock(m_mutex);
   LockedClose();
 }
 
@@ -93,7 +93,7 @@ void ObjectArchive::LockedClose()
 
 bool ObjectArchive::Clear(Error* error)
 {
-  std::unique_lock lock(m_mutex);
+  std::lock_guard lock(m_mutex);
 
   if (!IsOpen())
     return true;
@@ -117,13 +117,13 @@ bool ObjectArchive::Clear(Error* error)
 
 size_t ObjectArchive::GetSize() const
 {
-  std::unique_lock lock(m_mutex);
+  std::lock_guard lock(m_mutex);
   return m_index.size();
 }
 
 bool ObjectArchive::OpenPath(std::string_view base_path, u32 data_version, Error* error, bool* was_invalidated)
 {
-  std::unique_lock lock(m_mutex);
+  std::lock_guard lock(m_mutex);
 
   LockedClose();
 
@@ -219,7 +219,7 @@ bool ObjectArchive::OpenPath(std::string_view base_path, u32 data_version, Error
 
 bool ObjectArchive::OpenFile(std::FILE* index_file, std::FILE* blob_file, u32 data_version, Error* error)
 {
-  std::unique_lock lock(m_mutex);
+  std::lock_guard lock(m_mutex);
 
   LockedClose();
 
@@ -236,7 +236,7 @@ bool ObjectArchive::OpenFile(std::FILE* index_file, std::FILE* blob_file, u32 da
 
 bool ObjectArchive::CreateFile(std::FILE* index_file, std::FILE* blob_file, u32 data_version, Error* error)
 {
-  std::unique_lock lock(m_mutex);
+  std::lock_guard lock(m_mutex);
 
   LockedClose();
 
@@ -361,7 +361,7 @@ std::optional<ObjectArchive::ObjectData> ObjectArchive::Lookup(KeySpan key, Erro
   u32 uncompressed_size;
   {
     // Minimize the time locked, only the lookup+read, not the decompress.
-    std::unique_lock lock(m_mutex);
+    std::lock_guard lock(m_mutex);
     if (!IsOpen()) [[unlikely]]
     {
       Error::SetStringView(error, ERROR_DESCRIPTION_NOT_OPEN);
@@ -407,7 +407,7 @@ bool ObjectArchive::Contains(KeySpan key) const
   if (key.empty() || key.size() > MAX_KEY_SIZE) [[unlikely]]
     return false;
 
-  std::unique_lock lock(m_mutex);
+  std::lock_guard lock(m_mutex);
   if (!IsOpen()) [[unlikely]]
     return false;
 
@@ -427,7 +427,7 @@ bool ObjectArchive::Insert(KeySpan key, std::span<const u8> data, CompressType c
 
   // Lookup once before compress, and again afterwards because we don't hold the lock.
   {
-    std::unique_lock lock(m_mutex);
+    std::lock_guard lock(m_mutex);
     if (!IsOpen()) [[unlikely]]
     {
       Error::SetStringView(error, ERROR_DESCRIPTION_NOT_OPEN);
@@ -463,7 +463,7 @@ bool ObjectArchive::Insert(KeySpan key, std::span<const u8> data, CompressType c
   }
 
   // See above.
-  std::unique_lock lock(m_mutex);
+  std::lock_guard lock(m_mutex);
   if (!IsOpen()) [[unlikely]]
   {
     Error::SetStringView(error, ERROR_DESCRIPTION_NOT_OPEN);
@@ -520,7 +520,7 @@ bool ObjectArchive::Insert(KeySpan key, std::span<const u8> data, CompressType c
 
 u64 ObjectArchive::GetTotalObjectSize() const
 {
-  std::unique_lock lock(m_mutex);
+  std::lock_guard lock(m_mutex);
   u64 total_size = 0;
   for (const CacheIndexData& entry : m_index)
     total_size += entry.uncompressed_size;
@@ -529,7 +529,7 @@ u64 ObjectArchive::GetTotalObjectSize() const
 
 u64 ObjectArchive::GetTotalSize() const
 {
-  std::unique_lock lock(m_mutex);
+  std::lock_guard lock(m_mutex);
   u64 total_size = 0;
   for (const CacheIndexData& entry : m_index)
     total_size += entry.compressed_size + sizeof(CacheIndexEntryHeader) + entry.key_size;

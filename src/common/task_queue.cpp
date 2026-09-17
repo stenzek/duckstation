@@ -82,7 +82,7 @@ void TaskQueue::WaitForAll()
   WaitForAll(lock);
 }
 
-void TaskQueue::WaitForAll(std::unique_lock<std::mutex>& lock)
+void TaskQueue::WaitForAll(std::unique_lock<Threading::Mutex>& lock)
 {
   // while we're waiting, execute work on the calling thread
   m_tasks_done_cv.wait(lock, [this, &lock]() {
@@ -106,7 +106,7 @@ bool TaskQueue::ExecuteOneTask()
   return true;
 }
 
-void TaskQueue::ExecuteOneTask(std::unique_lock<std::mutex>& lock)
+void TaskQueue::ExecuteOneTask(std::unique_lock<Threading::Mutex>& lock)
 {
   TaskFunctionType func = std::move(m_tasks.front());
   m_tasks.pop_front();
