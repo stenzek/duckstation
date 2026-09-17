@@ -505,7 +505,6 @@ struct CDROMState
 } // namespace
 
 ALIGN_TO_CACHE_LINE static CDROMState s_state;
-ALIGN_TO_CACHE_LINE static CDROMAsyncReader s_reader;
 
 static constexpr std::array<const char*, 15> s_drive_state_names = {
   {"Idle", "Opening Shell", "Resetting", "Seeking (Physical)", "Seeking (Logical)", "Reading ID", "Reading TOC",
@@ -571,7 +570,7 @@ void CDROM::Initialize()
   s_state.manual_lid_control = MANUAL_LID_CONTROL_DISABLED;
 
   if (g_settings.cdrom_readahead_sectors > 0)
-    s_reader.StartThread(g_settings.cdrom_readahead_sectors);
+    CDROMAsyncReader::StartThread(g_settings.cdrom_readahead_sectors);
 
   Reset();
 }
@@ -586,8 +585,8 @@ void CDROM::Shutdown()
   s_state.async_interrupt_event.Deactivate();
   s_state.command_second_response_event.Deactivate();
   s_state.command_event.Deactivate();
-  s_reader.StopThread();
-  s_reader.RemoveMedia();
+  CDROMAsyncReader::StopThread();
+  CDROMAsyncReader::RemoveMedia();
 }
 
 void CDROM::Reset()
@@ -699,7 +698,7 @@ TickCount CDROM::SoftReset()
       s_state.drive_state = DriveState::SeekingImplicit;
       s_state.drive_event.SetIntervalAndSchedule(total_ticks);
       s_state.requested_lba = 0;
-      s_reader.QueueReadSector(s_state.requested_lba);
+      CDROMAsyncReader::QueueReadSector(s_state.requested_lba);
       s_state.seek_start_lba = s_state.current_lba;
       s_state.seek_end_lba = 0;
     }
@@ -861,8 +860,8 @@ bool CDROM::DoState(StateWrapper& sw)
   if (sw.IsReading())
   {
     s_state.last_subq_needs_update = true;
-    if (s_reader.HasMedia())
-      s_reader.QueueReadSector(s_state.requested_lba);
+    if (CDROMAsyncReader::HasMedia())
+      CDROMAsyncReader::QueueReadSector(s_state.requested_lba);
     if (sw.GetVersion() >= 84) [[likely]]
       s_state.command_event.SetState(command_event_active);
     else
@@ -878,27 +877,28 @@ bool CDROM::DoState(StateWrapper& sw)
 
 bool CDROM::HasMedia()
 {
-  return s_reader.HasMedia();
+  return CDROMAsyncReader::HasMedia();
 }
 
 const std::string& CDROM::GetMediaPath()
 {
-  return s_reader.GetMediaPath();
+  return CDROMAsyncReader::GetMediaPath();
 }
 
 u32 CDROM::GetCurrentSubImage()
 {
-  return s_reader.HasMedia() ? s_reader.GetMedia()->GetCurrentSubImage() : 0;
+  return CDROMAsyncReader::HasMedia() ? CDROMAsyncReader::GetMedia()->GetCurrentSubImage() : 0;
 }
 
 bool CDROM::HasNonStandardOrReplacementSubQ()
 {
-  return ((s_reader.HasMedia() ? s_reader.GetMedia()->HasSubchannelData() : false) || s_state.subq_replacement);
+  return ((CDROMAsyncReader::HasMedia() ? CDROMAsyncReader::GetMedia()->HasSubchannelData() : false) ||
+          s_state.subq_replacement);
 }
 
 const CDImage* CDROM::GetMedia()
 {
-  return s_reader.GetMedia();
+  return CDROMAsyncReader::GetMedia();
 }
 
 DiscRegion CDROM::GetDiscRegion()
@@ -913,11 +913,11 @@ bool CDROM::IsMediaPS1Disc()
 
 bool CDROM::IsMediaAudioCD()
 {
-  if (!s_reader.HasMedia())
+  if (!CDROMAsyncReader::HasMedia())
     return false;
 
   // Check for an audio track as the first track.
-  return (s_reader.GetMedia()->GetTrackMode(1) == CDImage::TrackMode::Audio);
+  return (CDROMAsyncReader::GetMedia()->GetTrackMode(1) == CDImage::TrackMode::Audio);
 }
 
 bool CDROM::DoesMediaRegionMatchConsole()
@@ -960,7 +960,8 @@ bool CDROM::IsReadingOrPlaying()
 bool CDROM::CanReadMedia()
 {
   return (s_state.drive_state != DriveState::ShellOpening &&
-          s_state.manual_lid_control != (MANUAL_LID_CONTROL_ENABLED | MANUAL_LID_CONTROL_OPEN) && s_reader.HasMedia());
+          s_state.manual_lid_control != (MANUAL_LID_CONTROL_ENABLED | MANUAL_LID_CONTROL_OPEN) &&
+          CDROMAsyncReader::HasMedia());
 }
 
 bool CDROM::InsertMedia(std::unique_ptr<CDImage>& media, DiscRegion region, std::string_view serial,
@@ -982,7 +983,7 @@ bool CDROM::InsertMedia(std::unique_ptr<CDImage>& media, DiscRegion region, std:
 
   s_state.subq_replacement = std::move(subq);
   s_state.disc_region = region;
-  s_reader.SetMedia(std::move(media));
+  CDROMAsyncReader::SetMedia(std::move(media));
   SetHoldPosition(0, 0);
 
   // motor automatically spins up
@@ -1006,7 +1007,7 @@ std::unique_ptr<CDImage> CDROM::RemoveMedia(bool for_disc_swap)
     stop_ticks += System::ScaleTicksToOverclock(System::MASTER_CLOCK * 2);
 
   INFO_LOG("Removing CD...");
-  std::unique_ptr<CDImage> image = s_reader.RemoveMedia();
+  std::unique_ptr<CDImage> image = CDROMAsyncReader::RemoveMedia();
 
   if (s_state.show_current_file)
     CreateFileMap();
@@ -1070,21 +1071,22 @@ void CDROM::SetLidState(bool manual_control, bool manual_state)
 
 bool CDROM::PrecacheMedia()
 {
-  if (!s_reader.HasMedia())
+  if (!CDROMAsyncReader::HasMedia())
     return false;
 
-  if (s_reader.GetMedia()->HasSubImages() && s_reader.GetMedia()->GetSubImageCount() > 1)
+  const CDImage* const media = CDROMAsyncReader::GetMedia();
+  if (media->HasSubImages() && media->GetSubImageCount() > 1)
   {
     Host::AddOSDMessage(
       OSDMessageType::Error,
       fmt::format(TRANSLATE_FS("OSDMessage", "CD image preloading not available for multi-disc image '{}'"),
-                  Path::GetFileName(s_reader.GetMedia()->GetPath())));
+                  Path::GetFileName(media->GetPath())));
     return false;
   }
 
   Error error;
   FullscreenUI::LoadingScreenProgressCallback callback;
-  if (!s_reader.Precache(&callback, &error))
+  if (!CDROMAsyncReader::Precache(&callback, &error))
   {
     Host::AddOSDMessage(OSDMessageType::Error,
                         TRANSLATE_STR("OSDMessage", "Precaching CD image failed, it may be unreliable."));
@@ -1114,16 +1116,16 @@ TinyString CDROM::LBAToMSFString(CDImage::LBA lba)
 void CDROM::SetReadaheadSectors(u32 readahead_sectors)
 {
   const bool want_thread = (readahead_sectors > 0);
-  if (want_thread == s_reader.IsUsingThread() && s_reader.GetReadaheadCount() == readahead_sectors)
+  if (want_thread == CDROMAsyncReader::IsUsingThread() && CDROMAsyncReader::GetReadaheadCount() == readahead_sectors)
     return;
 
   if (want_thread)
-    s_reader.StartThread(readahead_sectors);
+    CDROMAsyncReader::StartThread(readahead_sectors);
   else
-    s_reader.StopThread();
+    CDROMAsyncReader::StopThread();
 
   if (HasMedia())
-    s_reader.QueueReadSector(s_state.requested_lba);
+    CDROMAsyncReader::QueueReadSector(s_state.requested_lba);
 }
 
 void CDROM::CPUClockChanged()
@@ -1822,8 +1824,8 @@ CDImage::LBA CDROM::GetNextSectorToBeRead()
   if (!IsReadingOrPlaying() && !IsSeeking())
     return s_state.current_lba;
 
-  s_reader.WaitForReadToComplete();
-  return s_reader.GetLastReadSector();
+  CDROMAsyncReader::WaitForReadToComplete();
+  return CDROMAsyncReader::GetLastReadSector();
 }
 
 void CDROM::BeginCommand(Command command)
@@ -2447,12 +2449,12 @@ void CDROM::ExecuteCommand(void*, TickCount ticks)
     {
       if (CanReadMedia())
       {
-        DEV_COLOR_LOG(StrongRed, "GetTN      {}, {}", s_reader.GetMedia()->GetFirstTrackNumber(),
-                      s_reader.GetMedia()->GetLastTrackNumber());
+        const CDImage* const media = CDROMAsyncReader::GetMedia();
+        DEV_COLOR_LOG(StrongRed, "GetTN      {}, {}", media->GetFirstTrackNumber(), media->GetLastTrackNumber());
 
         s_state.response_fifo.Push(s_state.secondary_status.bits);
-        s_state.response_fifo.Push(BinaryToBCD(Truncate8(s_reader.GetMedia()->GetFirstTrackNumber())));
-        s_state.response_fifo.Push(BinaryToBCD(Truncate8(s_reader.GetMedia()->GetLastTrackNumber())));
+        s_state.response_fifo.Push(BinaryToBCD(Truncate8(media->GetFirstTrackNumber())));
+        s_state.response_fifo.Push(BinaryToBCD(Truncate8(media->GetLastTrackNumber())));
         SetInterrupt(Interrupt::ACK);
       }
       else
@@ -2486,8 +2488,9 @@ void CDROM::ExecuteCommand(void*, TickCount ticks)
         return;
       }
 
+      const CDImage* const media = CDROMAsyncReader::GetMedia();
       const u8 track = PackedBCDToBinary(track_bcd);
-      if (track > s_reader.GetMedia()->GetTrackCount())
+      if (track > media->GetTrackCount())
       {
         DEV_COLOR_LOG(StrongRed, "GetTD      Out-of-range Track {:02d}", track);
         SendErrorResponse(STAT_ERROR, ERROR_REASON_INVALID_ARGUMENT);
@@ -2496,9 +2499,9 @@ void CDROM::ExecuteCommand(void*, TickCount ticks)
       {
         CDImage::Position pos;
         if (track == 0)
-          pos = CDImage::Position::FromLBA(s_reader.GetMedia()->GetLBACount());
+          pos = CDImage::Position::FromLBA(media->GetLBACount());
         else
-          pos = s_reader.GetMedia()->GetTrackStartMSFPosition(track);
+          pos = media->GetTrackStartMSFPosition(track);
 
         s_state.response_fifo.Push(s_state.secondary_status.bits);
         s_state.response_fifo.Push(BinaryToBCD(Truncate8(pos.minute)));
@@ -2883,7 +2886,7 @@ void CDROM::BeginReading(bool after_seek)
   s_state.requested_lba = s_state.current_lba;
   s_state.seek_start_lba = 0;
   s_state.seek_end_lba = 0;
-  s_reader.QueueReadSector(s_state.requested_lba);
+  CDROMAsyncReader::QueueReadSector(s_state.requested_lba);
 }
 
 void CDROM::BeginPlaying(u8 track, bool after_seek)
@@ -2896,13 +2899,14 @@ void CDROM::BeginPlaying(u8 track, bool after_seek)
   if (track != 0)
   {
     // play specific track?
-    if (track > s_reader.GetMedia()->GetTrackCount())
+    const CDImage* const media = CDROMAsyncReader::GetMedia();
+    if (track > media->GetTrackCount())
     {
       // restart current track
-      track = Truncate8(s_reader.GetMedia()->GetTrackNumber());
+      track = Truncate8(media->GetTrackNumber());
     }
 
-    s_state.setloc_position = s_reader.GetMedia()->GetTrackStartMSFPosition(track);
+    s_state.setloc_position = media->GetTrackStartMSFPosition(track);
     s_state.setloc_pending = true;
   }
 
@@ -2928,7 +2932,7 @@ void CDROM::BeginPlaying(u8 track, bool after_seek)
   s_state.drive_event.Schedule(first_sector_ticks);
 
   s_state.requested_lba = s_state.current_lba;
-  s_reader.QueueReadSector(s_state.requested_lba);
+  CDROMAsyncReader::QueueReadSector(s_state.requested_lba);
 }
 
 void CDROM::BeginSeeking(bool logical, bool read_after_seek, bool play_after_seek)
@@ -2979,7 +2983,7 @@ void CDROM::BeginSeeking(bool logical, bool read_after_seek, bool play_after_see
   s_state.seek_start_lba = s_state.current_lba;
   s_state.seek_end_lba = seek_lba;
   s_state.requested_lba = seek_lba;
-  s_reader.QueueReadSector(s_state.requested_lba);
+  CDROMAsyncReader::QueueReadSector(s_state.requested_lba);
 }
 
 void CDROM::UpdateSubQPositionWhileSeeking()
@@ -3073,7 +3077,7 @@ void CDROM::UpdateSubQPosition(bool update_logical)
       {
         CDImage::SubChannelQ real_subq = {};
         CDROMAsyncReader::SectorBuffer raw_sector;
-        if (!s_reader.ReadSectorUncached(new_subq_lba, &real_subq, &raw_sector))
+        if (!CDROMAsyncReader::ReadSectorUncached(new_subq_lba, &real_subq, &raw_sector))
         {
           ERROR_LOG("Failed to read subq for sector {} for subq position", new_subq_lba);
         }
@@ -3109,7 +3113,7 @@ void CDROM::EnsureLastSubQValid()
   s_state.last_subq_needs_update = false;
 
   CDImage::SubChannelQ real_subq = {};
-  if (!s_reader.ReadSectorUncached(s_state.current_subq_lba, &real_subq, nullptr))
+  if (!CDROMAsyncReader::ReadSectorUncached(s_state.current_subq_lba, &real_subq, nullptr))
     ERROR_LOG("Failed to read subq for sector {} for subq position", s_state.current_subq_lba);
 
   const CDImage::SubChannelQ& subq = GetSectorSubQ(s_state.current_subq_lba, real_subq);
@@ -3131,24 +3135,24 @@ bool CDROM::CompleteSeek()
   const bool logical = (s_state.drive_state == DriveState::SeekingLogical);
   ClearDriveState();
 
-  bool seek_okay = s_reader.WaitForReadToComplete();
+  bool seek_okay = CDROMAsyncReader::WaitForReadToComplete();
 
-  s_state.current_subq_lba = s_reader.GetLastReadSector();
+  s_state.current_subq_lba = CDROMAsyncReader::GetLastReadSector();
   s_state.last_subq_needs_update = false;
   s_state.subq_lba_update_tick = System::GetGlobalTickCounter();
   s_state.subq_lba_update_carry = 0;
 
   if (seek_okay)
   {
-    const CDImage::SubChannelQ& subq = GetSectorSubQ(s_reader.GetLastReadSector(), s_reader.GetSectorSubQ());
-    s_state.current_lba = s_reader.GetLastReadSector();
+    const CDImage::SubChannelQ& subq = GetSectorSubQ(s_state.current_subq_lba, CDROMAsyncReader::GetSectorSubQ());
+    s_state.current_lba = s_state.current_subq_lba;
 
     if (subq.IsCRCValid())
     {
       // seek and update sub-q for ReadP command
       s_state.last_subq = subq;
       s_state.last_subq_needs_update = false;
-      const auto [seek_mm, seek_ss, seek_ff] = CDImage::Position::FromLBA(s_reader.GetLastReadSector()).ToBCD();
+      const auto [seek_mm, seek_ss, seek_ff] = CDImage::Position::FromLBA(s_state.current_subq_lba).ToBCD();
       seek_okay = (subq.absolute_minute_bcd == seek_mm && subq.absolute_second_bcd == seek_ss &&
                    subq.absolute_frame_bcd == seek_ff);
       if (seek_okay)
@@ -3157,7 +3161,7 @@ bool CDROM::CompleteSeek()
         {
           if (logical)
           {
-            ProcessDataSectorHeader(s_reader.GetSectorBuffer().data());
+            ProcessDataSectorHeader(CDROMAsyncReader::GetSectorBuffer().data());
             seek_okay = (s_state.last_sector_header.minute == seek_mm && s_state.last_sector_header.second == seek_ss &&
                          s_state.last_sector_header.frame == seek_ff);
 
@@ -3192,7 +3196,7 @@ bool CDROM::CompleteSeek()
 
         if (subq.track_number_bcd == CDImage::LEAD_OUT_TRACK_NUMBER)
         {
-          WARNING_LOG("Invalid seek to lead-out area (LBA {})", s_reader.GetLastReadSector());
+          WARNING_LOG("Invalid seek to lead-out area (LBA {})", s_state.current_subq_lba);
           seek_okay = false;
         }
       }
@@ -3209,7 +3213,7 @@ void CDROM::DoSeekComplete()
   if (seek_okay)
   {
     DEV_LOG("{} seek to [{}] complete{}", logical ? "Logical" : "Physical",
-            LBAToMSFString(s_reader.GetLastReadSector()),
+            LBAToMSFString(CDROMAsyncReader::GetLastReadSector()),
             s_state.read_after_seek ? ", now reading" : (s_state.play_after_seek ? ", now playing" : ""));
 
     // seek complete, transition to play/read if requested
@@ -3232,7 +3236,7 @@ void CDROM::DoSeekComplete()
   else
   {
     WARNING_LOG("{} seek to [{}] failed", logical ? "Logical" : "Physical",
-                LBAToMSFString(s_reader.GetLastReadSector()));
+                LBAToMSFString(CDROMAsyncReader::GetLastReadSector()));
     s_state.secondary_status.ClearActiveBits();
     SendAsyncErrorResponse(STAT_SEEK_ERROR, 0x04);
     s_state.last_sector_header_valid = false;
@@ -3381,7 +3385,7 @@ void CDROM::StopMotor()
 void CDROM::DoSectorRead()
 {
   // TODO: Queue the next read here and swap the buffer.
-  if (!s_reader.WaitForReadToComplete()) [[unlikely]]
+  if (!CDROMAsyncReader::WaitForReadToComplete()) [[unlikely]]
   {
     Host::AddIconOSDMessage(
       OSDMessageType::Error, "DiscReadError", ICON_EMOJI_WARNING, TRANSLATE_STR("CDROM", "Disc Read Error"),
@@ -3391,7 +3395,7 @@ void CDROM::DoSectorRead()
     return;
   }
 
-  s_state.current_lba = s_reader.GetLastReadSector();
+  s_state.current_lba = CDROMAsyncReader::GetLastReadSector();
   s_state.current_subq_lba = s_state.current_lba;
   s_state.last_subq_needs_update = false;
   s_state.subq_lba_update_tick = System::GetGlobalTickCounter();
@@ -3399,7 +3403,7 @@ void CDROM::DoSectorRead()
 
   s_state.secondary_status.SetReadingBits(s_state.drive_state == DriveState::Playing);
 
-  const CDImage::SubChannelQ& subq = GetSectorSubQ(s_state.current_lba, s_reader.GetSectorSubQ());
+  const CDImage::SubChannelQ& subq = GetSectorSubQ(s_state.current_lba, CDROMAsyncReader::GetSectorSubQ());
   const bool subq_valid = subq.IsCRCValid();
   if (subq_valid)
   {
@@ -3430,7 +3434,7 @@ void CDROM::DoSectorRead()
       // so that multiple sectors could be read in one back, in which case we could just "look ahead" to grab the
       // subq, but I haven't got around to it. It'll break libcrypt, but CC doesn't use it. One day I'll get around to
       // doing the refactor.... but given this is the only game that relies on it, priorities.
-      s_reader.GetMedia()->GenerateSubChannelQ(&s_state.last_subq, s_state.current_lba + SUBQ_SECTOR_SKEW);
+      CDROMAsyncReader::GetMedia()->GenerateSubChannelQ(&s_state.last_subq, s_state.current_lba + SUBQ_SECTOR_SKEW);
     }
   }
   else
@@ -3440,16 +3444,17 @@ void CDROM::DoSectorRead()
 
   if (subq.track_number_bcd == CDImage::LEAD_OUT_TRACK_NUMBER)
   {
-    DEV_LOG("Read reached lead-out area of disc at LBA {}, stopping", s_reader.GetLastReadSector());
+    DEV_LOG("Read reached lead-out area of disc at LBA {}, stopping", s_state.current_lba);
     StopReadingWithDataEnd();
     StopMotor();
     return;
   }
 
   const bool is_data_sector = subq.IsData();
+  const CDROMAsyncReader::SectorBuffer& sector_data = CDROMAsyncReader::GetSectorBuffer();
   if (is_data_sector)
   {
-    ProcessDataSectorHeader(s_reader.GetSectorBuffer().data());
+    ProcessDataSectorHeader(sector_data.data());
   }
   else if (s_state.mode.auto_pause)
   {
@@ -3482,12 +3487,12 @@ void CDROM::DoSectorRead()
   u32 next_sector = s_state.current_lba + 1u;
   if (is_data_sector && s_state.drive_state == DriveState::Reading)
   {
-    ProcessDataSector(s_reader.GetSectorBuffer().data(), subq);
+    ProcessDataSector(sector_data.data(), subq);
   }
   else if (!is_data_sector && (s_state.drive_state == DriveState::Playing ||
                                (s_state.drive_state == DriveState::Reading && s_state.mode.cdda)))
   {
-    ProcessCDDASector(s_reader.GetSectorBuffer().data(), subq, subq_valid);
+    ProcessCDDASector(sector_data.data(), subq, subq_valid);
 
     if (s_state.fast_forward_rate != 0)
       next_sector = s_state.current_lba + SignExtend32(s_state.fast_forward_rate);
@@ -3503,7 +3508,7 @@ void CDROM::DoSectorRead()
   }
 
   s_state.requested_lba = next_sector;
-  s_reader.QueueReadSector(s_state.requested_lba);
+  CDROMAsyncReader::QueueReadSector(s_state.requested_lba);
 }
 
 ALWAYS_INLINE_RELEASE void CDROM::ProcessDataSectorHeader(const u8* raw_sector)
@@ -4110,11 +4115,11 @@ void CDROM::CreateFileMap()
   s_state.file_map.clear();
   s_state.file_map_created = true;
 
-  if (!s_reader.HasMedia())
+  if (!CDROMAsyncReader::HasMedia())
     return;
 
-  s_reader.WaitForIdle();
-  CDImage* media = s_reader.GetMedia();
+  CDROMAsyncReader::WaitForIdle();
+  CDImage* const media = CDROMAsyncReader::GetMedia();
   IsoReader iso;
   if (!iso.Open(media, 1))
   {
@@ -4180,20 +4185,22 @@ void CDROM::DrawDebugWindow(float scale)
   // draw voice states
   if (ImGui::CollapsingHeader("Media", ImGuiTreeNodeFlags_DefaultOpen))
   {
-    if (s_reader.HasMedia())
+    if (CDROMAsyncReader::HasMedia())
     {
-      const CDImage* media = s_reader.GetMedia();
+      const CDImage* const media = CDROMAsyncReader::GetMedia();
       const CDImage::Position disc_position = CDImage::Position::FromLBA(s_state.current_lba);
       const float start_y = ImGui::GetCursorPosY();
 
       if (media->HasSubImages())
       {
         ImGui::Text("Filename: %s [Subimage %u of %u] [%u buffered sectors]", media->GetPath().c_str(),
-                    media->GetCurrentSubImage() + 1u, media->GetSubImageCount(), s_reader.GetBufferedSectorCount());
+                    media->GetCurrentSubImage() + 1u, media->GetSubImageCount(),
+                    CDROMAsyncReader::GetBufferedSectorCount());
       }
       else
       {
-        ImGui::Text("Filename: %s [%u buffered sectors]", media->GetPath().c_str(), s_reader.GetBufferedSectorCount());
+        ImGui::Text("Filename: %s [%u buffered sectors]", media->GetPath().c_str(),
+                    CDROMAsyncReader::GetBufferedSectorCount());
       }
 
       ImGui::Text("Disc Position: MSF[%02u:%02u:%02u] LBA[%u]", disc_position.minute, disc_position.second,
