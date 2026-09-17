@@ -16291,6 +16291,8 @@ SLPS-00222:
   traits:
     - DisableWidescreen
     - ForceRecompilerICache # Other REs need it, probably the same here.
+  settings:
+    gpuFilterFramebufferUploads: 256x224 # Enables background texture filtering.
   metadata:
     publisher: "Capcom"
     developer: "Capcom Production Studio 4"
@@ -16312,6 +16314,8 @@ SLPM-80027:
   traits:
     - DisableWidescreen
     - ForceRecompilerICache # Other REs need it, probably the same here.
+  settings:
+    gpuFilterFramebufferUploads: 256x224 # Enables background texture filtering.
   metadata:
     genre: "** DEMO **"
 SLPS-01513:
@@ -16323,6 +16327,8 @@ SLPS-01513:
   traits:
     - DisableWidescreen
     - ForceRecompilerICache # Other REs need it, probably the same here.
+  settings:
+    gpuFilterFramebufferUploads: 256x224 # Enables background texture filtering.
   metadata:
     publisher: "Capcom"
     developer: "Capcom Production Studio 4"
@@ -16346,6 +16352,8 @@ SLPS-00998:
   traits:
     - DisableWidescreen
     - ForceRecompilerICache # Other REs need it, probably the same here.
+  settings:
+    gpuFilterFramebufferUploads: 256x224 # Enables background texture filtering.
   metadata:
     publisher: "Capcom"
     developer: "Capcom Production Studio 4"
@@ -16370,6 +16378,8 @@ SLPS-01512:
   traits:
     - DisableWidescreen
     - ForceRecompilerICache # Other REs need it, probably the same here.
+  settings:
+    gpuFilterFramebufferUploads: 256x224 # Enables background texture filtering.
   metadata:
     publisher: "Capcom"
     developer: "Capcom Production Studio 4"
@@ -16420,6 +16430,7 @@ SLPS-01222:
     - ForceRecompilerICache # Other REs need it, probably the same here.
   settings:
     cdromMaxReadSpeedupCycles: 65000 # Hangs on boot and after certain door transitions.
+    gpuFilterFramebufferUploads: 256x224 # Enables background texture filtering.
   metadata:
     publisher: "Capcom"
     developer: "Capcom Production Studio 4"
@@ -16445,6 +16456,7 @@ SLPS-01223:
     - ForceRecompilerICache # Other REs need it, probably the same here.
   settings:
     cdromMaxReadSpeedupCycles: 65000 # Hangs on boot and after certain door transitions.
+    gpuFilterFramebufferUploads: 256x224 # Enables background texture filtering.
   metadata:
     publisher: "Capcom"
     developer: "Capcom Production Studio 4"
@@ -16470,6 +16482,7 @@ SLPS-00999:
     - ForceRecompilerICache # Other REs need it, probably the same here.
   settings:
     cdromMaxReadSpeedupCycles: 65000 # Hangs on boot and after certain door transitions.
+    gpuFilterFramebufferUploads: 256x224 # Enables background texture filtering.
 SLPS-01510:
   name: "Biohazard 2 - Dual Shock Ver. (Disc 1) (Leon-hen)"
   localizedName: "バイオハザード２　デュアルショックバージョン"
@@ -16482,6 +16495,7 @@ SLPS-01510:
     - ForceRecompilerICache # Other REs need it, probably the same here.
   settings:
     cdromMaxReadSpeedupCycles: 65000 # Hangs on boot and after certain door transitions.
+    gpuFilterFramebufferUploads: 256x224 # Enables background texture filtering.
   metadata:
     publisher: "Capcom"
     developer: "Capcom Production Studio 4"
@@ -16508,6 +16522,7 @@ SLPS-01511:
     - ForceRecompilerICache # Other REs need it, probably the same here.
   settings:
     cdromMaxReadSpeedupCycles: 65000 # Hangs on boot and after certain door transitions.
+    gpuFilterFramebufferUploads: 256x224 # Enables background texture filtering.
   metadata:
     publisher: "Capcom"
     developer: "Capcom Production Studio 4"
@@ -16535,6 +16550,7 @@ SLPS-02300:
     - ForceRecompilerICache # Fixes hangs in CD code.
   settings:
     cdromMaxReadSpeedupCycles: 70000 # Randomly hangs after certain door transitions.
+    gpuFilterFramebufferUploads: 256x224 # Enables background texture filtering.
     displayActiveStartOffset: -8
     displayActiveEndOffset: -8
   metadata:
@@ -16563,6 +16579,7 @@ SLPM-80485:
     - ForceRecompilerICache # Fixes hangs in CD code.
   settings:
     cdromMaxReadSpeedupCycles: 70000 # Randomly hangs after certain door transitions.
+    gpuFilterFramebufferUploads: 256x224 # Enables background texture filtering.
     displayActiveStartOffset: -8
     displayActiveEndOffset: -8
 SLPM-87224:
@@ -16578,6 +16595,7 @@ SLPM-87224:
     - ForceRecompilerICache # Fixes hangs in CD code.
   settings:
     cdromMaxReadSpeedupCycles: 70000 # Randomly hangs after certain door transitions.
+    gpuFilterFramebufferUploads: 256x224 # Enables background texture filtering.
     displayActiveStartOffset: -8
     displayActiveEndOffset: -8
   metadata:
@@ -40646,6 +40664,7 @@ SLES-03221:
     - ForceRecompilerICache
   settings:
     cdromMaxReadSpeedupCycles: 80000 # Freezes before reaching the title screen and when returning to it from the demo.
+    gpuFilterFramebufferUploads: 256x224 # Enables background texture filtering.
   metadata:
     publisher: "Virgin Interactive"
     developer: "Capcom"
@@ -40671,6 +40690,7 @@ SLES-03222:
     - ForceRecompilerICache
   settings:
     cdromMaxReadSpeedupCycles: 80000 # Freezes before reaching the title screen and when returning to it from the demo.
+    gpuFilterFramebufferUploads: 256x224 # Enables background texture filtering.
   metadata:
     publisher: "Virgin Interactive"
     developer: "Capcom"
@@ -40696,6 +40716,7 @@ SLES-03223:
     - ForceRecompilerICache
   settings:
     cdromMaxReadSpeedupCycles: 80000 # Freezes before reaching the title screen and when returning to it from the demo.
+    gpuFilterFramebufferUploads: 256x224 # Enables background texture filtering.
   metadata:
     publisher: "Virgin Interactive"
     developer: "Capcom"
@@ -40721,6 +40742,7 @@ SLES-03224:
     - ForceRecompilerICache
   settings:
     cdromMaxReadSpeedupCycles: 80000 # Freezes before reaching the title screen and when returning to it from the demo.
+    gpuFilterFramebufferUploads: 256x224 # Enables background texture filtering.
   metadata:
     publisher: "Virgin Interactive"
     developer: "Capcom"
@@ -40746,6 +40768,7 @@ SLPM-86627:
     - DisableWidescreen
   settings:
     cdromMaxReadSpeedupCycles: 80000 # Freezes before reaching the title screen and when returning to it from the demo.
+    gpuFilterFramebufferUploads: 256x224 # Enables background texture filtering.
   codes:
     - SLPM-86627
     - SLPM-87234
@@ -40773,6 +40796,7 @@ SLPM-80573:
     - DisableWidescreen
   settings:
     cdromMaxReadSpeedupCycles: 80000 # Freezes before reaching the title screen and when returning to it from the demo.
+    gpuFilterFramebufferUploads: 256x224 # Enables background texture filtering.
 SLES-03225:
   name: "Dino Crisis 2"
   saveName: "Dino Crisis 2 (Spain)"
@@ -40787,6 +40811,7 @@ SLES-03225:
     - ForceRecompilerICache
   settings:
     cdromMaxReadSpeedupCycles: 80000 # Freezes before reaching the title screen and when returning to it from the demo.
+    gpuFilterFramebufferUploads: 256x224 # Enables background texture filtering.
   metadata:
     publisher: "Virgin Interactive"
     developer: "Capcom"
@@ -40814,6 +40839,7 @@ SLUS-01279:
     - DisableWidescreen
   settings:
     cdromMaxReadSpeedupCycles: 80000 # Freezes before reaching the title screen and when returning to it from the demo.
+    gpuFilterFramebufferUploads: 256x224 # Enables background texture filtering.
     displayActiveStartOffset: -8
     displayActiveEndOffset: -8
   metadata:
@@ -40839,6 +40865,7 @@ SLUS-90087:
     - DisableWidescreen
   settings:
     cdromMaxReadSpeedupCycles: 80000 # Freezes before reaching the title screen and when returning to it from the demo.
+    gpuFilterFramebufferUploads: 256x224 # Enables background texture filtering.
 SLES-03989:
   name: "Dinomaster Party"
   saveName: "Dinomaster Party (Europe) (En,Fr,De,Es,It,Nl)"
@@ -54389,9 +54416,11 @@ SLES-03428:
     - AnalogController
     - DigitalController
   traits:
-    - DisableWidescreen
+    - DisableWidescreen # Static backgrounds.
+    - DisableUpscaledDirectTextures: # Fixes part of background texture filtering.
   settings:
     gpuPGXPPreserveProjFP: true # Fixes jitter in character models.
+    gpuFilterFramebufferUploads: 16x208 # Fixes part of background texture filtering.
   metadata:
     publisher: "THQ"
     developer: "Heavy Iron Studios"
@@ -54413,9 +54442,11 @@ SLES-13428:
     - AnalogController
     - DigitalController
   traits:
-    - DisableWidescreen
+    - DisableWidescreen # Static backgrounds.
+    - DisableUpscaledDirectTextures: # Fixes part of background texture filtering.
   settings:
     gpuPGXPPreserveProjFP: true # Fixes jitter in character models.
+    gpuFilterFramebufferUploads: 16x208 # Fixes part of background texture filtering.
   metadata:
     publisher: "THQ"
     developer: "Heavy Iron Studios"
@@ -54440,9 +54471,11 @@ SLUS-01072:
     - AnalogController
     - DigitalController
   traits:
-    - DisableWidescreen
+    - DisableWidescreen # Static backgrounds.
+    - DisableUpscaledDirectTextures: # Fixes part of background texture filtering.
   settings:
     gpuPGXPPreserveProjFP: true # Fixes jitter in character models.
+    gpuFilterFramebufferUploads: 16x208 # Fixes part of background texture filtering.
   metadata:
     publisher: "THQ"
     developer: "Heavy Iron Studios"
@@ -54467,9 +54500,11 @@ SLUS-01326:
     - AnalogController
     - DigitalController
   traits:
-    - DisableWidescreen
+    - DisableWidescreen # Static backgrounds.
+    - DisableUpscaledDirectTextures: # Fixes part of background texture filtering.
   settings:
     gpuPGXPPreserveProjFP: true # Fixes jitter in character models.
+    gpuFilterFramebufferUploads: 16x208 # Fixes part of background texture filtering.
   metadata:
     publisher: "THQ"
     developer: "Heavy Iron Studios"
@@ -142125,6 +142160,8 @@ SLES-00200:
   traits:
     - DisableWidescreen
     - ForceRecompilerICache # Fixes missing dialogue lines.
+  settings:
+    gpuFilterFramebufferUploads: 256x224 # Enables background texture filtering.
   metadata:
     publisher: "Virgin Interactive"
     developer: "Capcom Production Studio 4"
@@ -142147,6 +142184,8 @@ SLES-00335:
   traits:
     - DisableWidescreen
     - ForceRecompilerICache # Fixes missing dialogue lines.
+  settings:
+    gpuFilterFramebufferUploads: 256x224 # Enables background texture filtering.
 SLES-00227:
   name: "Resident Evil"
   saveName: "Resident Evil (France)"
@@ -142155,6 +142194,8 @@ SLES-00227:
   traits:
     - DisableWidescreen
     - ForceRecompilerICache # Fixes missing dialogue lines.
+  settings:
+    gpuFilterFramebufferUploads: 256x224 # Enables background texture filtering.
   metadata:
     publisher: "Virgin Interactive"
     developer: "Capcom Production Studio 4"
@@ -142177,6 +142218,8 @@ SLES-00228:
   traits:
     - DisableWidescreen
     - ForceRecompilerICache # Fixes missing dialogue lines.
+  settings:
+    gpuFilterFramebufferUploads: 256x224 # Enables background texture filtering.
   metadata:
     publisher: "Virgin Interactive"
     developer: "Capcom Production Studio 4"
@@ -142199,6 +142242,8 @@ SLES-00355:
   traits:
     - DisableWidescreen
     - ForceRecompilerICache # Fixes missing dialogue lines.
+  settings:
+    gpuFilterFramebufferUploads: 256x224 # Enables background texture filtering.
 SLUS-00170:
   name: "Resident Evil"
   saveName: "Resident Evil (USA)"
@@ -142210,6 +142255,8 @@ SLUS-00170:
   traits:
     - DisableWidescreen
     - ForceRecompilerICache # Fixes missing dialogue lines.
+  settings:
+    gpuFilterFramebufferUploads: 256x224 # Enables background texture filtering.
   metadata:
     publisher: "Capcom"
     developer: "Capcom Production Studio 4"
@@ -142232,6 +142279,8 @@ SLES-00969:
   traits:
     - DisableWidescreen
     - ForceRecompilerICache # Fixes missing dialogue lines.
+  settings:
+    gpuFilterFramebufferUploads: 256x224 # Enables background texture filtering.
   metadata:
     publisher: "Virgin Interactive"
     developer: "Capcom Production Studio 4"
@@ -142253,7 +142302,9 @@ SLES-00970:
     - DigitalController
   traits:
     - DisableWidescreen
-    - ForceRecompilerICache # Fixes missing dialogue lines.
+    - ForceRecompilerICache # Fixes missing dialogue lines
+  settings:
+    gpuFilterFramebufferUploads: 256x224 # Enables background texture filtering..
   metadata:
     publisher: "Virgin Interactive"
     developer: "Capcom Production Studio 4"
@@ -142276,6 +142327,8 @@ SLES-00971:
   traits:
     - DisableWidescreen
     - ForceRecompilerICache # Fixes missing dialogue lines.
+  settings:
+    gpuFilterFramebufferUploads: 256x224 # Enables background texture filtering.
   metadata:
     publisher: "Virgin Interactive"
     developer: "Capcom Production Studio 4"
@@ -142301,6 +142354,8 @@ SLUS-00551:
   traits:
     - DisableWidescreen
     - ForceRecompilerICache # Fixes missing dialogue lines.
+  settings:
+    gpuFilterFramebufferUploads: 256x224 # Enables background texture filtering.
   metadata:
     publisher: "Capcom"
     developer: "Capcom Production Studio 4"
@@ -142324,6 +142379,8 @@ SLUS-00747:
   traits:
     - DisableWidescreen
     - ForceRecompilerICache # Fixes missing dialogue lines.
+  settings:
+    gpuFilterFramebufferUploads: 256x224 # Enables background texture filtering.
   metadata:
     publisher: "Capcom"
     developer: "Capcom Production Studio 4"
@@ -142415,6 +142472,7 @@ SLES-00972:
     - ForceRecompilerICache # Other REs need it, probably the same here.
   settings:
     cdromMaxReadSpeedupCycles: 65000 # Hangs on boot and after certain door transitions.
+    gpuFilterFramebufferUploads: 256x224 # Enables background texture filtering.
   metadata:
     publisher: "Virgin Interactive"
     developer: "Capcom Production Studio 4"
@@ -142439,6 +142497,7 @@ SLES-10972:
     - ForceRecompilerICache # Other REs need it, probably the same here.
   settings:
     cdromMaxReadSpeedupCycles: 65000 # Hangs on boot and after certain door transitions.
+    gpuFilterFramebufferUploads: 256x224 # Enables background texture filtering.
   metadata:
     publisher: "Virgin Interactive"
     developer: "Capcom Production Studio 4"
@@ -142463,6 +142522,7 @@ SLED-00977:
     - ForceRecompilerICache # Other REs need it, probably the same here.
   settings:
     cdromMaxReadSpeedupCycles: 65000 # Hangs on boot and after certain door transitions.
+    gpuFilterFramebufferUploads: 256x224 # Enables background texture filtering.
 SLES-00973:
   name: "Resident Evil 2 (Disc 1)"
   saveName: "Resident Evil 2 (France) (Disc 1)"
@@ -142473,6 +142533,7 @@ SLES-00973:
     - ForceRecompilerICache # Other REs need it, probably the same here.
   settings:
     cdromMaxReadSpeedupCycles: 65000 # Hangs on boot and after certain door transitions.
+    gpuFilterFramebufferUploads: 256x224 # Enables background texture filtering.
   metadata:
     publisher: "Virgin Interactive"
     developer: "Capcom Production Studio 4"
@@ -142497,6 +142558,7 @@ SLES-10973:
     - ForceRecompilerICache # Other REs need it, probably the same here.
   settings:
     cdromMaxReadSpeedupCycles: 65000 # Hangs on boot and after certain door transitions.
+    gpuFilterFramebufferUploads: 256x224 # Enables background texture filtering.
   metadata:
     publisher: "Virgin Interactive"
     developer: "Capcom Production Studio 4"
@@ -142521,6 +142583,7 @@ SLES-00974:
     - ForceRecompilerICache # Other REs need it, probably the same here.
   settings:
     cdromMaxReadSpeedupCycles: 65000 # Hangs on boot and after certain door transitions.
+    gpuFilterFramebufferUploads: 256x224 # Enables background texture filtering.
   metadata:
     publisher: "Virgin Interactive"
     developer: "Capcom Production Studio 4"
@@ -142545,6 +142608,7 @@ SLES-10974:
     - ForceRecompilerICache # Other REs need it, probably the same here.
   settings:
     cdromMaxReadSpeedupCycles: 65000 # Hangs on boot and after certain door transitions.
+    gpuFilterFramebufferUploads: 256x224 # Enables background texture filtering.
   metadata:
     publisher: "Virgin Interactive"
     developer: "Capcom Production Studio 4"
@@ -142569,6 +142633,7 @@ SLES-00975:
     - ForceRecompilerICache # Other REs need it, probably the same here.
   settings:
     cdromMaxReadSpeedupCycles: 65000 # Hangs on boot and after certain door transitions.
+    gpuFilterFramebufferUploads: 256x224 # Enables background texture filtering.
   metadata:
     publisher: "Virgin Interactive"
     developer: "Capcom Production Studio 4"
@@ -142593,6 +142658,7 @@ SLES-10975:
     - ForceRecompilerICache # Other REs need it, probably the same here.
   settings:
     cdromMaxReadSpeedupCycles: 65000 # Hangs on boot and after certain door transitions.
+    gpuFilterFramebufferUploads: 256x224 # Enables background texture filtering.
   metadata:
     publisher: "Virgin Interactive"
     developer: "Capcom Production Studio 4"
@@ -142620,6 +142686,7 @@ SLES-00976:
     - ForceRecompilerICache # Other REs need it, probably the same here.
   settings:
     cdromMaxReadSpeedupCycles: 65000 # Hangs on boot and after certain door transitions.
+    gpuFilterFramebufferUploads: 256x224 # Enables background texture filtering.
   metadata:
     publisher: "Virgin Interactive"
     developer: "Capcom Production Studio 4"
@@ -142647,6 +142714,7 @@ SLES-10976:
     - ForceRecompilerICache # Other REs need it, probably the same here.
   settings:
     cdromMaxReadSpeedupCycles: 65000 # Hangs on boot and after certain door transitions.
+    gpuFilterFramebufferUploads: 256x224 # Enables background texture filtering.
   metadata:
     publisher: "Virgin Interactive"
     developer: "Capcom Production Studio 4"
@@ -142671,6 +142739,7 @@ SLUS-80421:
     - ForceRecompilerICache # Other REs need it, probably the same here.
   settings:
     cdromMaxReadSpeedupCycles: 65000 # Hangs on boot and after certain door transitions.
+    gpuFilterFramebufferUploads: 256x224 # Enables background texture filtering.
   codes:
     - SLUS-80421
     - SLUS-90009
@@ -142687,6 +142756,7 @@ SLUS-00421:
     - ForceRecompilerICache # Other REs need it, probably the same here.
   settings:
     cdromMaxReadSpeedupCycles: 65000 # Hangs on boot and after certain door transitions.
+    gpuFilterFramebufferUploads: 256x224 # Enables background texture filtering.
   metadata:
     publisher: "Capcom"
     developer: "Capcom Production Studio 4"
@@ -142714,6 +142784,7 @@ SLUS-00592:
     - ForceRecompilerICache # Other REs need it, probably the same here.
   settings:
     cdromMaxReadSpeedupCycles: 65000 # Hangs on boot and after certain door transitions.
+    gpuFilterFramebufferUploads: 256x224 # Enables background texture filtering.
   metadata:
     publisher: "Capcom"
     developer: "Capcom Production Studio 4"
@@ -142742,6 +142813,7 @@ SLUS-00748:
     - ForceRecompilerICache # Other REs need it, probably the same here.
   settings:
     cdromMaxReadSpeedupCycles: 65000 # Hangs on boot and after certain door transitions.
+    gpuFilterFramebufferUploads: 256x224 # Enables background texture filtering.
   metadata:
     publisher: "Capcom"
     developer: "Capcom Production Studio 4"
@@ -142770,6 +142842,7 @@ SLUS-00756:
     - ForceRecompilerICache # Other REs need it, probably the same here.
   settings:
     cdromMaxReadSpeedupCycles: 65000 # Hangs on boot and after certain door transitions.
+    gpuFilterFramebufferUploads: 256x224 # Enables background texture filtering.
   metadata:
     publisher: "Capcom"
     developer: "Capcom Production Studio 4"
@@ -142796,6 +142869,7 @@ SLES-02529:
     - ForceRecompilerICache # Fixes hangs in CD code.
   settings:
     cdromMaxReadSpeedupCycles: 70000 # Randomly hangs after certain door transitions.
+    gpuFilterFramebufferUploads: 256x224 # Enables background texture filtering.
   libcrypt: true
   metadata:
     publisher: "Eidos Interactive"
@@ -142822,6 +142896,7 @@ SLED-02541:
     - ForceRecompilerICache # Fixes hangs in CD code.
   settings:
     cdromMaxReadSpeedupCycles: 70000 # Randomly hangs after certain door transitions.
+    gpuFilterFramebufferUploads: 256x224 # Enables background texture filtering.
 SLES-02530:
   name: "Resident Evil 3 - Nemesis"
   saveName: "Resident Evil 3 - Nemesis (France)"
@@ -142834,6 +142909,7 @@ SLES-02530:
     - ForceRecompilerICache # Fixes hangs in CD code.
   settings:
     cdromMaxReadSpeedupCycles: 70000 # Randomly hangs after certain door transitions.
+    gpuFilterFramebufferUploads: 256x224 # Enables background texture filtering.
   libcrypt: true
   metadata:
     publisher: "Eidos Interactive"
@@ -142861,6 +142937,7 @@ SLES-02531:
     - ForceRecompilerICache # Fixes hangs in CD code.
   settings:
     cdromMaxReadSpeedupCycles: 70000 # Randomly hangs after certain door transitions.
+    gpuFilterFramebufferUploads: 256x224 # Enables background texture filtering.
   libcrypt: true
   metadata:
     publisher: "Eidos Interactive"
@@ -142888,6 +142965,7 @@ SLES-02698:
     - ForceRecompilerICache # Fixes hangs in CD code.
   settings:
     cdromMaxReadSpeedupCycles: 70000 # Randomly hangs after certain door transitions.
+    gpuFilterFramebufferUploads: 256x224 # Enables background texture filtering.
   libcrypt: true
   metadata:
     publisher: "Eidos Interactive"
@@ -142915,6 +142993,7 @@ SLES-02533:
     - ForceRecompilerICache # Fixes hangs in CD code.
   settings:
     cdromMaxReadSpeedupCycles: 70000 # Randomly hangs after certain door transitions.
+    gpuFilterFramebufferUploads: 256x224 # Enables background texture filtering.
   libcrypt: true
   metadata:
     publisher: "Eidos Interactive"
@@ -142945,6 +143024,7 @@ SLES-02532:
     - ForceRecompilerICache # Fixes hangs in CD code.
   settings:
     cdromMaxReadSpeedupCycles: 70000 # Randomly hangs after certain door transitions.
+    gpuFilterFramebufferUploads: 256x224 # Enables background texture filtering.
   libcrypt: true
   metadata:
     publisher: "Proein / Eidos Interactive"
@@ -142975,6 +143055,7 @@ SLUS-00923:
     - ForceRecompilerICache # Fixes hangs in CD code.
   settings:
     cdromMaxReadSpeedupCycles: 70000 # Randomly hangs after certain door transitions.
+    gpuFilterFramebufferUploads: 256x224 # Enables background texture filtering.
     displayActiveStartOffset: -8
     displayActiveEndOffset: -8
   metadata:
@@ -143002,6 +143083,7 @@ SLUS-90064:
     - ForceRecompilerICache # Fixes hangs in CD code.
   settings:
     cdromMaxReadSpeedupCycles: 70000 # Randomly hangs after certain door transitions.
+    gpuFilterFramebufferUploads: 256x224 # Enables background texture filtering.
 SLPS-01974:
   name: "Restaurant Dream"
   localizedName: "レストランドリーム"
