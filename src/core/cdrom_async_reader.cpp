@@ -24,7 +24,7 @@ void CDROMAsyncReader::StartThread(u32 readahead_count)
   EmptyBuffers();
 
   m_shutdown_flag.store(false);
-  m_read_thread = std::thread(&CDROMAsyncReader::WorkerThreadEntryPoint, this);
+  m_read_thread.Start([this]() { WorkerThreadEntryPoint(); });
   INFO_LOG("Read thread started with readahead of {} sectors", readahead_count);
 }
 
@@ -39,7 +39,7 @@ void CDROMAsyncReader::StopThread()
     m_do_read_cv.notify_one();
   }
 
-  m_read_thread.join();
+  m_read_thread.Join();
   EmptyBuffers();
   m_buffers.clear();
 }
@@ -224,7 +224,7 @@ void CDROMAsyncReader::EmptyBuffers()
   m_buffer_count.store(0);
 }
 
-bool CDROMAsyncReader::ReadSectorIntoBuffer(std::unique_lock<std::mutex>& lock)
+bool CDROMAsyncReader::ReadSectorIntoBuffer(std::unique_lock<Threading::Mutex>& lock)
 {
   Timer timer;
 

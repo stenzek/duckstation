@@ -2,12 +2,16 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #pragma once
-#include "util/cd_image.h"
+
 #include "types.h"
+
+#include "util/cd_image.h"
+
+#include "common/threading.h"
+
 #include <array>
 #include <atomic>
-#include <condition_variable>
-#include <thread>
+#include <mutex>
 
 class ProgressCallback;
 
@@ -39,7 +43,7 @@ public:
   CDImage* GetMedia() { return m_media.get(); }
   const std::string& GetMediaPath() const { return m_media->GetPath(); }
 
-  bool IsUsingThread() const { return m_read_thread.joinable(); }
+  bool IsUsingThread() const { return m_read_thread.Joinable(); }
   void StartThread(u32 readahead_count = 8);
   void StopThread();
 
@@ -59,7 +63,7 @@ public:
 
 private:
   void EmptyBuffers();
-  bool ReadSectorIntoBuffer(std::unique_lock<std::mutex>& lock);
+  bool ReadSectorIntoBuffer(std::unique_lock<Threading::Mutex>& lock);
   void ReadSectorNonThreaded(CDImage::LBA lba);
   bool InternalReadSectorUncached(CDImage::LBA lba, CDImage::SubChannelQ* subq, SectorBuffer* data);
   void CancelReadahead();
@@ -68,10 +72,10 @@ private:
 
   std::unique_ptr<CDImage> m_media;
 
-  std::mutex m_mutex;
-  std::thread m_read_thread;
-  std::condition_variable m_do_read_cv;
-  std::condition_variable m_notify_read_complete_cv;
+  Threading::Mutex m_mutex;
+  Threading::Thread m_read_thread;
+  Threading::ConditionVariable m_do_read_cv;
+  Threading::ConditionVariable m_notify_read_complete_cv;
 
   std::atomic<CDImage::LBA> m_next_position{};
   std::atomic_bool m_next_position_set{false};
