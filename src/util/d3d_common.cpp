@@ -36,7 +36,6 @@ struct FeatureLevelTableEntry
 
 struct Libs
 {
-  std::mutex load_mutex;
   DynamicLibrary dxgi_library;
   decltype(&CreateDXGIFactory2) CreateDXGIFactory2;
   DynamicLibrary d3d11_library;
@@ -49,6 +48,12 @@ struct Libs
   pD3DCompile D3DCompile;
   DynamicLibrary dxcompiler_library;
   DxcCreateInstanceProc DxcCreateInstance;
+
+  std::once_flag dxgi_library_once_flag;
+  std::once_flag d3d11_library_once_flag;
+  std::once_flag d3d12_library_once_flag;
+  std::once_flag d3dcompiler_library_once_flag;
+  std::once_flag dxcompiler_library_once_flag;
 };
 
 } // namespace
@@ -60,8 +65,6 @@ static std::optional<DynamicHeapArray<u8>> CompileShaderWithDXC(u32 shader_model
                                                                 GPUShaderStage stage, std::string_view source,
                                                                 const char* entry_point, Error* error);
 static bool LoadD3D12Library(Error* error);
-static bool LoadD3DCompilerLibrary(Error* error);
-static bool LoadDXCompilerLibrary(Error* error);
 
 static constexpr std::array<FeatureLevelTableEntry, 11> s_feature_levels = {{
   {D3D_FEATURE_LEVEL_1_0_CORE, 100, 40, "D3D_FEATURE_LEVEL_1_0_CORE"},
@@ -138,19 +141,26 @@ Microsoft::WRL::ComPtr<IDXGIFactory5> D3DCommon::CreateFactory(bool debug, Error
 {
   if (!s_libs.dxgi_library.IsOpen())
   {
-    // another thread may have opened it
-    const std::unique_lock lock(s_libs.load_mutex);
+    std::call_once(s_libs.dxgi_library_once_flag, []() {
+      DynamicLibrary lib;
+      if (Error error; !lib.Open("dxgi.dll", &error))
+      {
+        ERROR_LOG("Failed to load dxgi.dll: {}", error.GetDescription());
+        return;
+      }
+
+      if (!lib.GetSymbol("CreateDXGIFactory2", &s_libs.CreateDXGIFactory2))
+      {
+        ERROR_LOG("Failed to load CreateDXGIFactory2 from dxgi.dll");
+        return;
+      }
+
+      s_libs.dxgi_library = std::move(lib);
+    });
     if (!s_libs.dxgi_library.IsOpen())
     {
-      if (!s_libs.dxgi_library.Open("dxgi.dll", error))
-        return {};
-
-      if (!s_libs.dxgi_library.GetSymbol("CreateDXGIFactory2", &s_libs.CreateDXGIFactory2))
-      {
-        Error::SetStringView(error, "Failed to load CreateDXGIFactory2 from dxgi.dll");
-        s_libs.dxgi_library.Close();
-        return {};
-      }
+      Error::SetStringView(error, "Failed to load dxgi.dll or CreateDXGIFactory2");
+      return nullptr;
     }
   }
 
@@ -181,19 +191,25 @@ bool D3DCommon::CreateD3D11Device(IDXGIAdapter* adapter, UINT create_flags, cons
 {
   if (!s_libs.d3d11_library.IsOpen())
   {
-    // another thread may have opened it
-    const std::unique_lock lock(s_libs.load_mutex);
+    std::call_once(s_libs.d3d11_library_once_flag, []() {
+      DynamicLibrary lib;
+      if (Error error; !lib.Open("d3d11.dll", &error))
+      {
+        ERROR_LOG("Failed to load d3d11.dll: {}", error.GetDescription());
+        return;
+      }
+      if (!lib.GetSymbol("D3D11CreateDevice", &s_libs.D3D11CreateDevice))
+      {
+        ERROR_LOG("Failed to load D3D11CreateDevice from d3d11.dll");
+        return;
+      }
+
+      s_libs.d3d11_library = std::move(lib);
+    });
     if (!s_libs.d3d11_library.IsOpen())
     {
-      if (!s_libs.d3d11_library.Open("d3d11.dll", error))
-        return false;
-
-      if (!s_libs.d3d11_library.GetSymbol("D3D11CreateDevice", &s_libs.D3D11CreateDevice))
-      {
-        Error::SetStringView(error, "Failed to load D3D11CreateDevice from d3d11.dll");
-        s_libs.d3d11_library.Close();
-        return false;
-      }
+      Error::SetStringView(error, "Failed to load d3d11.dll or D3D11CreateDevice");
+      return false;
     }
   }
 
@@ -213,20 +229,26 @@ bool D3DCommon::LoadD3D12Library(Error* error)
   if (s_libs.d3d12_library.IsOpen())
     return true;
 
-  // double check, another thread may have opened it
-  const std::unique_lock lock(s_libs.load_mutex);
-  if (s_libs.d3d12_library.IsOpen())
-    return true;
+  std::call_once(s_libs.d3d12_library_once_flag, []() {
+    DynamicLibrary lib;
+    if (Error error; !lib.Open("d3d12.dll", &error))
+    {
+      ERROR_LOG("Failed to load d3d12.dll: {}", error.GetDescription());
+      return;
+    }
+    if (!lib.GetSymbol("D3D12CreateDevice", &s_libs.D3D12CreateDevice) ||
+        !lib.GetSymbol("D3D12GetDebugInterface", &s_libs.D3D12GetDebugInterface) ||
+        !lib.GetSymbol("D3D12SerializeRootSignature", &s_libs.D3D12SerializeRootSignature))
+    {
+      ERROR_LOG("Failed to load one or more required functions from d3d12.dll");
+      return;
+    }
+    s_libs.d3d12_library = std::move(lib);
+  });
 
-  if (!s_libs.d3d12_library.Open("d3d12.dll", error))
-    return false;
-
-  if (!s_libs.d3d12_library.GetSymbol("D3D12CreateDevice", &s_libs.D3D12CreateDevice) ||
-      !s_libs.d3d12_library.GetSymbol("D3D12GetDebugInterface", &s_libs.D3D12GetDebugInterface) ||
-      !s_libs.d3d12_library.GetSymbol("D3D12SerializeRootSignature", &s_libs.D3D12SerializeRootSignature))
+  if (!s_libs.d3d12_library.IsOpen())
   {
-    Error::SetStringView(error, "Failed to load one or more required functions from d3d12.dll");
-    s_libs.d3d12_library.Close();
+    Error::SetStringView(error, "Failed to load d3d12.dll or required functions");
     return false;
   }
 
@@ -604,8 +626,28 @@ std::optional<DynamicHeapArray<u8>> D3DCommon::CompileShaderWithFXC(u32 shader_m
                                                                     GPUShaderStage stage, std::string_view source,
                                                                     const char* entry_point, Error* error)
 {
-  if (!LoadD3DCompilerLibrary(error))
-    return {};
+  if (!s_libs.d3dcompiler_library.IsOpen())
+  {
+    std::call_once(s_libs.d3dcompiler_library_once_flag, []() {
+      DynamicLibrary lib;
+      if (Error error; !lib.Open(D3DCOMPILER_DLL_A, &error))
+      {
+        ERROR_LOG("Failed to load d3dcompiler.dll: {}", error.GetDescription());
+        return;
+      }
+      if (!lib.GetSymbol("D3DCompile", &s_libs.D3DCompile))
+      {
+        ERROR_LOG("Failed to load D3DCompile from d3dcompiler.dll");
+        return;
+      }
+      s_libs.d3dcompiler_library = std::move(lib);
+    });
+    if (!s_libs.d3dcompiler_library.IsOpen())
+    {
+      Error::SetStringView(error, "Failed to load d3dcompiler.dll or D3DCompile");
+      return {};
+    }
+  }
 
   const char* target;
   switch (shader_model)
@@ -672,35 +714,32 @@ std::optional<DynamicHeapArray<u8>> D3DCommon::CompileShaderWithFXC(u32 shader_m
   return DynamicHeapArray<u8>(static_cast<const u8*>(blob->GetBufferPointer()), blob->GetBufferSize());
 }
 
-bool D3DCommon::LoadD3DCompilerLibrary(Error* error)
-{
-  if (s_libs.d3dcompiler_library.IsOpen())
-    return true;
-
-  // double check, another thread may have opened it
-  const std::unique_lock lock(s_libs.load_mutex);
-  if (s_libs.d3dcompiler_library.IsOpen())
-    return true;
-
-  if (!s_libs.d3dcompiler_library.Open(D3DCOMPILER_DLL_A, error))
-    return false;
-
-  if (!s_libs.d3dcompiler_library.GetSymbol("D3DCompile", &s_libs.D3DCompile))
-  {
-    Error::SetStringView(error, "Failed to load D3DCompile from d3dcompiler.dll");
-    s_libs.d3dcompiler_library.Close();
-    return false;
-  }
-
-  return true;
-}
-
 std::optional<DynamicHeapArray<u8>> D3DCommon::CompileShaderWithDXC(u32 shader_model, bool debug_device,
                                                                     GPUShaderStage stage, std::string_view source,
                                                                     const char* entry_point, Error* error)
 {
-  if (!LoadDXCompilerLibrary(error))
-    return {};
+  if (!s_libs.dxcompiler_library.IsOpen())
+  {
+    std::call_once(s_libs.dxcompiler_library_once_flag, []() {
+      DynamicLibrary lib;
+      if (Error error; !lib.Open("dxcompiler.dll", &error))
+      {
+        ERROR_LOG("Failed to load dxcompiler.dll: {}", error.GetDescription());
+        return;
+      }
+      if (!lib.GetSymbol("DxcCreateInstance", &s_libs.DxcCreateInstance))
+      {
+        ERROR_LOG("Failed to load DxcCreateInstance from dxcompiler.dll");
+        return;
+      }
+      s_libs.dxcompiler_library = std::move(lib);
+    });
+    if (!s_libs.dxcompiler_library.IsOpen())
+    {
+      Error::SetStringView(error, "Failed to load dxcompiler.dll or DxcCreateInstance");
+      return {};
+    }
+  }
 
   HRESULT hr;
   Microsoft::WRL::ComPtr<IDxcUtils> utils;
@@ -790,29 +829,6 @@ std::optional<DynamicHeapArray<u8>> D3DCommon::CompileShaderWithDXC(u32 shader_m
   }
 
   return DynamicHeapArray<u8>(static_cast<const u8*>(object_blob->GetBufferPointer()), object_blob->GetBufferSize());
-}
-
-bool D3DCommon::LoadDXCompilerLibrary(Error* error)
-{
-  if (s_libs.dxcompiler_library.IsOpen())
-    return true;
-
-  // double check, another thread may have opened it
-  const std::unique_lock lock(s_libs.load_mutex);
-  if (s_libs.dxcompiler_library.IsOpen())
-    return true;
-
-  if (!s_libs.dxcompiler_library.Open("dxcompiler.dll", error))
-    return false;
-
-  if (!s_libs.dxcompiler_library.GetSymbol("DxcCreateInstance", &s_libs.DxcCreateInstance))
-  {
-    Error::SetStringView(error, "Failed to load DxcCreateInstance from dxcompiler.dll");
-    s_libs.dxcompiler_library.Close();
-    return false;
-  }
-
-  return true;
 }
 
 static constexpr std::array<D3DCommon::DXGIFormatMapping, static_cast<int>(GPUTextureFormat::MaxCount)>
