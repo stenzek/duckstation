@@ -311,8 +311,8 @@ void FullscreenUI::PauseAndOpenMenuFromCoreThread(void (*callback)())
   // Do the pause early, that way the core thread doesn't push extra frames while the transition is happening.
   // But, we also don't want extra frames between the pause and the open, because otherwise we'll see the pause icon.
   const bool was_paused = System::IsPaused();
-
-  VideoThread::RunOnThread([callback, was_paused]() {
+  bool should_pause = false;
+  VideoThread::RunOnThreadAndSync([callback, was_paused, &should_pause]() {
     if (s_locals.current_main_window != MainWindowType::None)
       return;
 
@@ -330,10 +330,11 @@ void FullscreenUI::PauseAndOpenMenuFromCoreThread(void (*callback)())
 
     s_locals.was_paused_on_quick_menu_open = was_paused;
     callback();
+    should_pause = !was_paused;
   });
 
   // See comment above. We want the video thread to start transitioning before the pause goes through.
-  if (!was_paused)
+  if (should_pause)
     System::PauseSystem(true);
 }
 
@@ -359,7 +360,8 @@ void FullscreenUI::PauseAndToggleMenuFromCoreThread(void (*open_callback)(), voi
     return;
 
   const bool was_paused = System::IsPaused();
-  VideoThread::RunOnThread([open_callback, restored_callback, transition_time, was_paused]() {
+  bool should_pause = false;
+  VideoThread::RunOnThreadAndSync([open_callback, restored_callback, transition_time, was_paused, &should_pause]() {
     Initialize();
 
     // Dialogs cannot be hidden safely, since doing so would leave their callbacks pending while the game is running.
@@ -404,10 +406,11 @@ void FullscreenUI::PauseAndToggleMenuFromCoreThread(void (*open_callback)(), voi
         open_callback();
       }
     });
-
-    if (!was_paused)
-      Host::RunOnCoreThread([]() { System::PauseSystem(true); });
+    should_pause = !was_paused;
   });
+
+  if (should_pause)
+    System::PauseSystem(true);
 }
 
 void FullscreenUI::TogglePauseMenu()
