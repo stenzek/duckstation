@@ -5,6 +5,7 @@
 #include "achievements.h"
 #include "controller.h"
 #include "core.h"
+#include "gpu_types.h"
 #include "gte_types.h"
 #include "host.h"
 #include "imgui_overlays.h"
@@ -326,6 +327,11 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
   gpu_scaled_interlacing = si.GetBoolValue("GPU", "ScaledInterlacing", true);
   gpu_force_round_texcoords = si.GetBoolValue("GPU", "ForceRoundTextureCoordinates", false);
   gpu_disable_upscaled_direct_textures = si.GetBoolValue("GPU", "DisableUpscaledDirectTextures", false);
+  gpu_filter_framebuffer_uploads = si.GetBoolValue("GPU", "FilterFramebufferUploads", false);
+  gpu_filter_framebuffer_uploads_minimum_width = std::clamp<u16>(
+    si.GetSaturatedIntValue<u16>("GPU", "FilterFramebufferUploadsMinimumWidth", 1), 1, static_cast<u16>(VRAM_WIDTH));
+  gpu_filter_framebuffer_uploads_minimum_height = std::clamp<u16>(
+    si.GetSaturatedIntValue<u16>("GPU", "FilterFramebufferUploadsMinimumHeight", 1), 1, static_cast<u16>(VRAM_HEIGHT));
   gpu_texture_filter = ParseTextureFilterName(si.GetStringViewValue("GPU", "TextureFilter",
                                                                     GetTextureFilterName(DEFAULT_GPU_TEXTURE_FILTER)))
                          .value_or(DEFAULT_GPU_TEXTURE_FILTER);
@@ -736,6 +742,9 @@ void Settings::Save(SettingsInterface& si, bool for_copy) const
   si.SetBoolValue("GPU", "ScaledInterlacing", gpu_scaled_interlacing);
   si.SetBoolValue("GPU", "ForceRoundTextureCoordinates", gpu_force_round_texcoords);
   si.SetBoolValue("GPU", "DisableUpscaledDirectTextures", gpu_disable_upscaled_direct_textures);
+  si.SetBoolValue("GPU", "FilterFramebufferUploads", gpu_filter_framebuffer_uploads);
+  si.SetUIntValue("GPU", "FilterFramebufferUploadsMinimumWidth", gpu_filter_framebuffer_uploads_minimum_width);
+  si.SetUIntValue("GPU", "FilterFramebufferUploadsMinimumHeight", gpu_filter_framebuffer_uploads_minimum_height);
   si.SetStringValue("GPU", "TextureFilter", GetTextureFilterName(gpu_texture_filter));
   si.SetStringValue("GPU", "SpriteTextureFilter", GetTextureFilterName(gpu_sprite_texture_filter));
   si.SetStringValue("GPU", "DitheringMode", GetGPUDitheringModeName(gpu_dithering_mode));
@@ -1151,6 +1160,7 @@ void Settings::ApplySettingRestrictions()
     gpu_scaled_interlacing = false;
     gpu_force_round_texcoords = false;
     gpu_disable_upscaled_direct_textures = false;
+    gpu_filter_framebuffer_uploads = false;
     gpu_texture_filter = GPUTextureFilter::Nearest;
     gpu_sprite_texture_filter = GPUTextureFilter::Nearest;
     gpu_dithering_mode = GPUDitheringMode::Unscaled;

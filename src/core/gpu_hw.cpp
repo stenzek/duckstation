@@ -324,7 +324,10 @@ bool GPU_HW::Initialize(bool upload_vram, Error* error)
 
   // If we're not initializing VRAM, need to upload it here. Implies RestoreDeviceContext().
   if (upload_vram)
-    UpdateVRAMOnGPU(0, 0, VRAM_WIDTH, VRAM_HEIGHT, g_vram, VRAM_WIDTH * sizeof(u16), false, false, VRAM_SIZE_RECT);
+  {
+    UpdateVRAMOnGPU(0, 0, VRAM_WIDTH, VRAM_HEIGHT, g_vram, VRAM_WIDTH * sizeof(u16), false, false, VRAM_SIZE_RECT,
+                    false);
+  }
 
   m_drawing_area_changed = true;
   LoadInternalPostProcessing();
@@ -386,7 +389,7 @@ void GPU_HW::LoadState(const GPUBackendLoadStateCommand* cmd)
 
   std::memcpy(g_vram, cmd->vram_data, sizeof(g_vram));
   std::memcpy(g_gpu_clut, cmd->clut_data, sizeof(g_gpu_clut));
-  UpdateVRAMOnGPU(0, 0, VRAM_WIDTH, VRAM_HEIGHT, g_vram, VRAM_WIDTH * sizeof(u16), false, false, VRAM_SIZE_RECT);
+  UpdateVRAMOnGPU(0, 0, VRAM_WIDTH, VRAM_HEIGHT, g_vram, VRAM_WIDTH * sizeof(u16), false, false, VRAM_SIZE_RECT, false);
 
   if (m_use_texture_cache)
   {
@@ -476,7 +479,8 @@ void GPU_HW::DoMemoryState(StateWrapper& sw, System::MemorySaveState& mss)
     }
     else
     {
-      UpdateVRAMOnGPU(0, 0, VRAM_WIDTH, VRAM_HEIGHT, g_vram, VRAM_WIDTH * sizeof(u16), false, false, VRAM_SIZE_RECT);
+      UpdateVRAMOnGPU(0, 0, VRAM_WIDTH, VRAM_HEIGHT, g_vram, VRAM_WIDTH * sizeof(u16), false, false, VRAM_SIZE_RECT,
+                      false);
     }
 
     PostLoadState();
@@ -530,6 +534,8 @@ bool GPU_HW::UpdateSettings(const GPUSettings& old_settings, Error* error)
       g_gpu_settings.gpu_force_round_texcoords != old_settings.gpu_force_round_texcoords) ||
      (resolution_scale > 1 &&
       g_gpu_settings.gpu_disable_upscaled_direct_textures != old_settings.gpu_disable_upscaled_direct_textures) ||
+     (resolution_scale > 1 &&
+      g_gpu_settings.gpu_filter_framebuffer_uploads != old_settings.gpu_filter_framebuffer_uploads) ||
      g_gpu_settings.gpu_modulation_crop != old_settings.gpu_modulation_crop ||
      g_gpu_settings.IsUsingShaderBlending() != old_settings.IsUsingShaderBlending() ||
      m_texture_filtering != g_gpu_settings.gpu_texture_filter ||
@@ -656,7 +662,8 @@ bool GPU_HW::UpdateSettings(const GPUSettings& old_settings, Error* error)
 
     UpdateDownsamplingLevels();
     RestoreDeviceContext();
-    UpdateVRAMOnGPU(0, 0, VRAM_WIDTH, VRAM_HEIGHT, g_vram, VRAM_WIDTH * sizeof(u16), false, false, VRAM_SIZE_RECT);
+    UpdateVRAMOnGPU(0, 0, VRAM_WIDTH, VRAM_HEIGHT, g_vram, VRAM_WIDTH * sizeof(u16), false, false, VRAM_SIZE_RECT,
+                    false);
     if (m_write_mask_as_depth)
       UpdateDepthBufferFromMaskBit();
   }
@@ -920,6 +927,10 @@ void GPU_HW::PrintSettingsToLog()
            (m_resolution_scale > 1 && g_gpu_settings.gpu_force_round_texcoords) ? "Enabled" : "Disabled");
   INFO_LOG("Disable upscaled direct textures: {}",
            (m_resolution_scale > 1 && g_gpu_settings.gpu_disable_upscaled_direct_textures) ? "Enabled" : "Disabled");
+  INFO_LOG("Filter framebuffer uploads: {} (minimum size: {}x{})",
+           (m_resolution_scale > 1 && g_gpu_settings.gpu_filter_framebuffer_uploads) ? "Enabled" : "Disabled",
+           g_gpu_settings.gpu_filter_framebuffer_uploads_minimum_width,
+           g_gpu_settings.gpu_filter_framebuffer_uploads_minimum_height);
   INFO_LOG("Texture Filtering: {}/{}", Settings::GetTextureFilterDisplayName(m_texture_filtering),
            Settings::GetTextureFilterDisplayName(m_sprite_texture_filtering));
   INFO_LOG("Dual-source blending: {}", m_supports_dual_source_blend ? "Supported" : "Not supported");
@@ -1283,6 +1294,9 @@ bool GPU_HW::CompilePipelines(Error* error)
   const bool force_round_texcoords =
     (upscaled && m_texture_filtering == GPUTextureFilter::Nearest && g_gpu_settings.gpu_force_round_texcoords);
   const bool disable_upscaled_direct_textures = (upscaled && g_gpu_settings.gpu_disable_upscaled_direct_textures);
+  const GPUTextureFilter framebuffer_upload_filter = (upscaled && g_gpu_settings.gpu_filter_framebuffer_uploads) ?
+                                                       m_sprite_texture_filtering :
+                                                       GPUTextureFilter::Nearest;
   const bool modulation_crop = g_gpu_settings.gpu_modulation_crop;
   const bool true_color = g_gpu_settings.IsUsingTrueColor();
   const bool scaled_dithering = (!m_true_color && upscaled && g_gpu_settings.IsUsingScaledDithering());
@@ -1347,10 +1361,11 @@ bool GPU_HW::CompilePipelines(Error* error)
     ((m_wireframe_mode != GPUWireframeMode::Disabled) ? 1 : 0) + // wireframe
     (2 * 2) +                                                    // vram fill
     (1 + BoolToUInt32(m_write_mask_as_depth)) +                  // vram copy
-    (1 + BoolToUInt32(m_write_mask_as_depth)) +                  // vram write
-    1 +                                                          // vram write replacement
-    (m_write_mask_as_depth ? 1 : 0) +                            // mask -> depth
-    1;                                                           // resolution dependent shaders
+    ((1 + BoolToUInt32(m_write_mask_as_depth)) *
+     (1 + BoolToUInt32(framebuffer_upload_filter != GPUTextureFilter::Nearest))) + // vram write
+    1 +                                                                            // vram write replacement
+    (m_write_mask_as_depth ? 1 : 0) +                                              // mask -> depth
+    1;                                                                             // resolution dependent shaders
 
   INFO_LOG("Compiling {} vertex shaders, {} fragment shaders, and {} pipelines.", total_vertex_shaders,
            total_fragment_shaders, total_items);
@@ -1359,8 +1374,7 @@ bool GPU_HW::CompilePipelines(Error* error)
   m_wireframe_pipeline.reset();
   m_batch_pipelines.enumerate([](std::unique_ptr<GPUPipeline>& p) { p.reset(); });
   m_vram_fill_pipelines.enumerate([](std::unique_ptr<GPUPipeline>& p) { p.reset(); });
-  for (std::unique_ptr<GPUPipeline>& p : m_vram_write_pipelines)
-    p.reset();
+  m_vram_write_pipelines.enumerate([](std::unique_ptr<GPUPipeline>& p) { p.reset(); });
   for (std::unique_ptr<GPUPipeline>& p : m_vram_copy_pipelines)
     p.reset();
   m_vram_update_depth_pipeline.reset();
@@ -1893,31 +1907,40 @@ bool GPU_HW::CompilePipelines(Error* error)
   {
     const bool use_buffer = features.texture_buffers;
     const bool use_ssbo = features.texture_buffers_emulated_with_ssbo;
-    std::unique_ptr<GPUShader> fs = g_gpu_device->CreateShader(
-      GPUShaderStage::Fragment, shadergen.GetLanguage(),
-      shadergen.GenerateVRAMWriteFragmentShader(use_buffer, use_ssbo, m_write_mask_as_depth, needs_rov_depth), error);
-    if (!fs)
-      return false;
-
     plconfig.layout = use_buffer ? GPUPipeline::Layout::SingleTextureBufferAndPushConstants :
                                    GPUPipeline::Layout::SingleTextureAndPushConstants;
-    plconfig.fragment_shader = fs.get();
-    for (u8 depth_test = 0; depth_test < 2; depth_test++)
+    for (u8 filtered = 0; filtered < 2; filtered++)
     {
-      if (depth_test && !m_write_mask_as_depth)
+      if (filtered && framebuffer_upload_filter == GPUTextureFilter::Nearest)
         continue;
 
-      plconfig.depth.depth_write = needs_real_depth_buffer;
-      plconfig.depth.depth_test =
-        (depth_test != 0) ? GPUPipeline::DepthFunc::GreaterEqual : GPUPipeline::DepthFunc::Always;
-
-      if (!(m_vram_write_pipelines[depth_test] = g_gpu_device->CreatePipeline(plconfig, error)))
+      const GPUTextureFilter filter = filtered ? framebuffer_upload_filter : GPUTextureFilter::Nearest;
+      std::unique_ptr<GPUShader> fs = g_gpu_device->CreateShader(
+        GPUShaderStage::Fragment, shadergen.GetLanguage(),
+        shadergen.GenerateVRAMWriteFragmentShader(use_buffer, use_ssbo, filter, m_write_mask_as_depth, needs_rov_depth),
+        error);
+      if (!fs)
         return false;
 
-      GL_OBJECT_NAME_FMT(m_vram_write_pipelines[depth_test], "VRAM Write Pipeline, depth={}", depth_test);
+      plconfig.fragment_shader = fs.get();
+      for (u8 depth_test = 0; depth_test < 2; depth_test++)
+      {
+        if (depth_test && !m_write_mask_as_depth)
+          continue;
 
-      if (!progress.Increment(1, error)) [[unlikely]]
-        return false;
+        plconfig.depth.depth_write = needs_real_depth_buffer;
+        plconfig.depth.depth_test =
+          (depth_test != 0) ? GPUPipeline::DepthFunc::GreaterEqual : GPUPipeline::DepthFunc::Always;
+
+        if (!(m_vram_write_pipelines[filtered][depth_test] = g_gpu_device->CreatePipeline(plconfig, error)))
+          return false;
+
+        GL_OBJECT_NAME_FMT(m_vram_write_pipelines[filtered][depth_test], "VRAM Write Pipeline, filter={}, depth={}",
+                           Settings::GetTextureFilterName(filter), depth_test);
+
+        if (!progress.Increment(1, error)) [[unlikely]]
+          return false;
+      }
     }
   }
 
@@ -3762,11 +3785,11 @@ void GPU_HW::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data, b
     }
   }
 
-  UpdateVRAMOnGPU(x, y, width, height, data, sizeof(u16) * width, set_mask, check_mask, bounds);
+  UpdateVRAMOnGPU(x, y, width, height, data, sizeof(u16) * width, set_mask, check_mask, bounds, true);
 }
 
 void GPU_HW::UpdateVRAMOnGPU(u32 x, u32 y, u32 width, u32 height, const void* data, u32 data_pitch, bool set_mask,
-                             bool check_mask, const GSVector4i bounds)
+                             bool check_mask, const GSVector4i bounds, bool allow_filtering)
 {
   DeactivateROV();
 
@@ -3823,7 +3846,12 @@ void GPU_HW::UpdateVRAMOnGPU(u32 x, u32 y, u32 width, u32 height, const void* da
   const GSVector4i scaled_bounds = bounds.mul32l(GSVector4i(m_resolution_scale));
   g_gpu_device->SetScissor(scaled_bounds);
 
-  g_gpu_device->SetPipeline(m_vram_write_pipelines[BoolToUInt8(check_mask && m_write_mask_as_depth)].get());
+  const bool filter_upload =
+    (allow_filtering && width >= g_gpu_settings.gpu_filter_framebuffer_uploads_minimum_width &&
+     height >= g_gpu_settings.gpu_filter_framebuffer_uploads_minimum_height && m_resolution_scale > 1 &&
+     g_gpu_settings.gpu_filter_framebuffer_uploads && m_sprite_texture_filtering != GPUTextureFilter::Nearest);
+  g_gpu_device->SetPipeline(
+    m_vram_write_pipelines[BoolToUInt8(filter_upload)][BoolToUInt8(check_mask && m_write_mask_as_depth)].get());
 
   if (upload_texture)
     g_gpu_device->SetTextureSampler(0, upload_texture.get(), g_gpu_device->GetNearestSampler());
@@ -3860,7 +3888,7 @@ void GPU_HW::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32
     GPUTextureCache::CopyVRAM(src_x, src_y, dst_x, dst_y, width, height, set_mask, check_mask, src_bounds, dst_bounds);
     UpdateVRAMOnGPU(dst_bounds.left, dst_bounds.top, dst_bounds.width(), dst_bounds.height(),
                     &g_vram[dst_bounds.top * VRAM_WIDTH + dst_bounds.left], VRAM_WIDTH * sizeof(u16), false, false,
-                    dst_bounds);
+                    dst_bounds, false);
     return;
   }
   else if (m_draw_with_software_renderer)

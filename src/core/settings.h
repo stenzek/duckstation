@@ -52,6 +52,8 @@ struct GPUSettings
   DisplayExclusiveFullscreenControl display_exclusive_fullscreen_control = DEFAULT_DISPLAY_EXCLUSIVE_FULLSCREEN_CONTROL;
   DisplayScreenshotMode display_screenshot_mode = DEFAULT_DISPLAY_SCREENSHOT_MODE;
   u8 gpu_max_queued_frames = DEFAULT_GPU_MAX_QUEUED_FRAMES;
+  u16 gpu_filter_framebuffer_uploads_minimum_width = 1;
+  u16 gpu_filter_framebuffer_uploads_minimum_height = 1;
   s16 display_active_start_offset = 0;
   s16 display_active_end_offset = 0;
   s8 display_line_start_offset = 0;
@@ -79,6 +81,7 @@ struct GPUSettings
   bool gpu_scaled_interlacing : 1 = true;
   bool gpu_force_round_texcoords : 1 = false;
   bool gpu_disable_upscaled_direct_textures : 1 = false;
+  bool gpu_filter_framebuffer_uploads : 1 = false;
   bool gpu_widescreen_rendering : 1 = false;
   bool gpu_widescreen_hack : 1 = false;
   bool gpu_modulation_crop : 1 = false;

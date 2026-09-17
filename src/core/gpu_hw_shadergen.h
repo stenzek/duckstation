@@ -64,8 +64,8 @@ public:
   std::string GenerateWireframeGeometryShader() const;
   std::string GenerateWireframeFragmentShader() const;
   std::string GenerateVRAMReadFragmentShader(u32 resolution_scale, u32 multisamples) const;
-  std::string GenerateVRAMWriteFragmentShader(bool use_buffer, bool use_ssbo, bool write_mask_as_depth,
-                                              bool write_depth_as_rt) const;
+  std::string GenerateVRAMWriteFragmentShader(bool use_buffer, bool use_ssbo, GPUTextureFilter texture_filter,
+                                              bool write_mask_as_depth, bool write_depth_as_rt) const;
   std::string GenerateVRAMCopyFragmentShader(bool write_mask_as_depth, bool write_depth_as_rt) const;
   std::string GenerateVRAMFillFragmentShader(bool wrapped, bool interlaced, bool write_mask_as_depth,
                                              bool write_depth_as_rt) const;

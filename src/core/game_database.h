@@ -69,6 +69,7 @@ enum class Trait : u32
   ForceCDROMSubQSkew,
   IsLibCryptProtected,
   DisableUpscaledDirectTextures,
+  FilterFramebufferUploads,
 
   MaxCount
 };
@@ -141,6 +142,8 @@ struct Entry
   std::optional<u32> cdrom_max_read_speedup_cycles;                   ///< CD-ROM max read speedup cycles override.
   std::optional<u32> gpu_fifo_size;                                   ///< GPU FIFO size override.
   std::optional<u32> gpu_max_run_ahead;                               ///< GPU max runahead override.
+  std::optional<u16> gpu_filter_framebuffer_uploads_minimum_width;    ///< Filtered upload width override.
+  std::optional<u16> gpu_filter_framebuffer_uploads_minimum_height;   ///< Filtered upload height override.
   std::optional<float> gpu_pgxp_tolerance;                            ///< GPU PGXP tolerance override.
   std::optional<float> gpu_pgxp_depth_threshold;                      ///< GPU PGXP depth threshold override.
   std::optional<bool> gpu_pgxp_preserve_proj_fp; ///< GPU PGXP preserve projection precision override.

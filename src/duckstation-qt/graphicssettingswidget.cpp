@@ -180,6 +180,14 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.scaledInterlacing, "GPU", "ScaledInterlacing", true);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.disableUpscaledDirectTextures, "GPU",
                                                "DisableUpscaledDirectTextures", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.filterFramebufferUploads, "GPU", "FilterFramebufferUploads",
+                                               false);
+  SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.filterFramebufferUploadsMinimumWidth, "GPU",
+                                              "FilterFramebufferUploadsMinimumWidth", 1);
+  SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.filterFramebufferUploadsMinimumHeight, "GPU",
+                                              "FilterFramebufferUploadsMinimumHeight", 1);
+  connect(m_ui.filterFramebufferUploads, &QCheckBox::checkStateChanged, this,
+          &GraphicsSettingsWidget::updateResolutionDependentOptions);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.useSoftwareRendererForReadbacks, "GPU",
                                                "UseSoftwareRendererForReadbacks", false);
 
@@ -196,6 +204,8 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
     m_ui.forceRoundedTexcoords, m_dialog->hasGameTrait(GameDatabase::Trait::ForceRoundUpscaledTextureCoordinates));
   SettingWidgetBinder::SetForceEnabled(m_ui.disableUpscaledDirectTextures,
                                        m_dialog->hasGameTrait(GameDatabase::Trait::DisableUpscaledDirectTextures));
+  SettingWidgetBinder::SetForceEnabled(m_ui.filterFramebufferUploads,
+                                       m_dialog->hasGameTrait(GameDatabase::Trait::FilterFramebufferUploads));
 
   // PGXP Tab
 
@@ -469,6 +479,16 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
     m_ui.disableUpscaledDirectTextures, tr("Disable Upscaled Direct Textures"), tr("Unchecked"),
     tr("Samples 16-bit direct-color textures at native resolution when upscaling. This can fix filtering of "
        "FMVs/backgrounds in some games, but may reduce the quality of render-to-texture effects."));
+  dialog->registerWidgetHelp(
+    m_ui.filterFramebufferUploads, tr("Filter Framebuffer Uploads"), tr("Unchecked"),
+    tr("Applies the selected sprite texture filter to framebuffer uploads. This can smooth backgrounds in some "
+       "games while preserving texture data and 24-bit video."));
+  dialog->registerWidgetHelp(
+    m_ui.filterFramebufferUploadsMinimumWidth, tr("Minimum Framebuffer Upload Width"), tr("1 px"),
+    tr("Only filters framebuffer uploads at least this wide. Increase this value to avoid filtering texture data."));
+  dialog->registerWidgetHelp(
+    m_ui.filterFramebufferUploadsMinimumHeight, tr("Minimum Framebuffer Upload Height"), tr("1 px"),
+    tr("Only filters framebuffer uploads at least this tall. Increase this value to avoid filtering texture data."));
   dialog->registerWidgetHelp(
     m_ui.useSoftwareRendererForReadbacks, tr("Software Renderer Readbacks"), tr("Unchecked"),
     tr("Runs the software renderer in parallel for VRAM readbacks. On some systems, this may result in greater "
@@ -866,8 +886,9 @@ void GraphicsSettingsWidget::populateUpscalingModes(QComboBox* const cb, int max
   {
     const auto it = std::find_if(std::begin(templates), std::end(templates),
                                  [&scale](const std::pair<int, const char*>& it) { return scale == it.first; });
-    cb->addItem((it != std::end(templates)) ? QCoreApplication::translate("GraphicsSettingsWidget", it->second) :
-                                              QCoreApplication::translate("GraphicsSettingsWidget", "%1x Native").arg(scale));
+    cb->addItem((it != std::end(templates)) ?
+                  QCoreApplication::translate("GraphicsSettingsWidget", it->second) :
+                  QCoreApplication::translate("GraphicsSettingsWidget", "%1x Native").arg(scale));
   }
 }
 
@@ -1027,11 +1048,24 @@ void GraphicsSettingsWidget::updateResolutionDependentOptions()
   const GPUTextureFilter texture_filtering =
     Settings::ParseTextureFilterName(m_dialog->getEffectiveStringValue("GPU", "TextureFilter").c_str())
       .value_or(Settings::DEFAULT_GPU_TEXTURE_FILTER);
+  const GPUTextureFilter sprite_texture_filtering =
+    Settings::ParseTextureFilterName(m_dialog->getEffectiveStringValue("GPU", "SpriteTextureFilter").c_str())
+      .value_or(Settings::DEFAULT_GPU_TEXTURE_FILTER);
   m_ui.forceRoundedTexcoords->setEnabled(
     is_hardware && scale != 1 && texture_filtering == GPUTextureFilter::Nearest &&
     !m_dialog->hasGameTrait(GameDatabase::Trait::ForceRoundUpscaledTextureCoordinates));
   m_ui.disableUpscaledDirectTextures->setEnabled(
     is_hardware && scale != 1 && !m_dialog->hasGameTrait(GameDatabase::Trait::DisableUpscaledDirectTextures));
+  const bool filter_framebuffer_uploads_available =
+    (is_hardware && scale != 1 && sprite_texture_filtering != GPUTextureFilter::Nearest);
+  m_ui.filterFramebufferUploads->setEnabled(filter_framebuffer_uploads_available &&
+                                            !m_dialog->hasGameTrait(GameDatabase::Trait::FilterFramebufferUploads));
+  const bool filter_framebuffer_upload_sizes_enabled =
+    (filter_framebuffer_uploads_available && m_ui.filterFramebufferUploads->isChecked());
+  m_ui.filterFramebufferUploadsMinimumSizeLabel->setEnabled(filter_framebuffer_upload_sizes_enabled);
+  m_ui.filterFramebufferUploadsMinimumWidth->setEnabled(filter_framebuffer_upload_sizes_enabled);
+  m_ui.filterFramebufferUploadsMinimumSizeSeparatorLabel->setEnabled(filter_framebuffer_upload_sizes_enabled);
+  m_ui.filterFramebufferUploadsMinimumHeight->setEnabled(filter_framebuffer_upload_sizes_enabled);
   m_ui.resolutionScaleWarningIcon->setVisible(scale != 1 && !pgxp_enabled);
 }
 

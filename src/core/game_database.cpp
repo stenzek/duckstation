@@ -3,6 +3,7 @@
 
 #include "game_database.h"
 #include "controller.h"
+#include "gpu_types.h"
 #include "host.h"
 #include "system.h"
 
@@ -24,6 +25,7 @@
 
 #include "ryml.hpp"
 
+#include <algorithm>
 #include <bit>
 #include <iomanip>
 #include <memory>
@@ -44,7 +46,7 @@ namespace {
 enum : u32
 {
   GAME_DATABASE_CACHE_SIGNATURE = 0x45434C48,
-  GAME_DATABASE_CACHE_VERSION = 33,
+  GAME_DATABASE_CACHE_VERSION = 34,
 };
 
 /// Map of track hashes for image verification
@@ -152,6 +154,7 @@ static constexpr const std::array s_trait_names = {
   "ForceCDROMSubQSkew",
   "IsLibCryptProtected",
   "DisableUpscaledDirectTextures",
+  "FilterFramebufferUploads",
 };
 static_assert(s_trait_names.size() == static_cast<size_t>(Trait::MaxCount));
 
@@ -191,6 +194,7 @@ static constexpr const std::array s_trait_display_names = {
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Force CD-ROM SubQ Skew", "GameDatabase::Trait"),
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Is LibCrypt Protected", "GameDatabase::Trait"),
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Disable Upscaled Direct Textures", "GameDatabase::Trait"),
+  TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Filter Framebuffer Uploads", "GameDatabase::Trait"),
 };
 static_assert(s_trait_display_names.size() == static_cast<size_t>(Trait::MaxCount));
 
@@ -688,6 +692,19 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
     settings.gpu_disable_upscaled_direct_textures = true;
   }
 
+  if (HasTrait(Trait::FilterFramebufferUploads))
+  {
+    settings.gpu_filter_framebuffer_uploads = true;
+    settings.gpu_filter_framebuffer_uploads_minimum_width = gpu_filter_framebuffer_uploads_minimum_width.value();
+    settings.gpu_filter_framebuffer_uploads_minimum_height = gpu_filter_framebuffer_uploads_minimum_height.value();
+    if (display_osd_messages)
+    {
+      INFO_LOG("GameDB: Filter framebuffer uploads minimum size set to {}x{}.",
+               settings.gpu_filter_framebuffer_uploads_minimum_width,
+               settings.gpu_filter_framebuffer_uploads_minimum_height);
+    }
+  }
+
   if (HasTrait(Trait::ForceDeinterlacing))
   {
     const DisplayDeinterlacingMode new_mode = display_deinterlacing_mode.value_or(
@@ -1120,6 +1137,10 @@ std::string GameDatabase::Entry::GenerateCompatibilityReport() const
                        cdrom_max_read_speedup_cycles);
   AppendIntegerSetting(ret, settings_heading, TRANSLATE_SV("GameDatabase", "GPU FIFO Size"), gpu_fifo_size);
   AppendIntegerSetting(ret, settings_heading, TRANSLATE_SV("GameDatabase", "GPU Max Runahead"), gpu_max_run_ahead);
+  AppendIntegerSetting(ret, settings_heading, TRANSLATE_SV("GameDatabase", "Filter Framebuffer Uploads Minimum Width"),
+                       gpu_filter_framebuffer_uploads_minimum_width);
+  AppendIntegerSetting(ret, settings_heading, TRANSLATE_SV("GameDatabase", "Filter Framebuffer Uploads Minimum Height"),
+                       gpu_filter_framebuffer_uploads_minimum_height);
   AppendEnumSetting(ret, settings_heading, TRANSLATE_SV("GameDatabase", "GPU Line Detect Mode"),
                     &Settings::GetLineDetectModeDisplayName, gpu_line_detect_mode);
   AppendFloatSetting(ret, settings_heading, TRANSLATE_SV("GameDatabase", "PGXP Tolerance"), gpu_pgxp_tolerance);
@@ -1235,8 +1256,10 @@ bool GameDatabase::LoadFromCache()
         !reader.ReadOptionalT(&entry.display_deinterlacing_mode) || !reader.ReadOptionalT(&entry.dma_max_slice_ticks) ||
         !reader.ReadOptionalT(&entry.dma_halt_ticks) || !reader.ReadOptionalT(&entry.cdrom_max_seek_speedup_cycles) ||
         !reader.ReadOptionalT(&entry.cdrom_max_read_speedup_cycles) || !reader.ReadOptionalT(&entry.gpu_fifo_size) ||
-        !reader.ReadOptionalT(&entry.gpu_max_run_ahead) || !reader.ReadOptionalT(&entry.gpu_pgxp_tolerance) ||
-        !reader.ReadOptionalT(&entry.gpu_pgxp_depth_threshold) ||
+        !reader.ReadOptionalT(&entry.gpu_max_run_ahead) ||
+        !reader.ReadOptionalT(&entry.gpu_filter_framebuffer_uploads_minimum_width) ||
+        !reader.ReadOptionalT(&entry.gpu_filter_framebuffer_uploads_minimum_height) ||
+        !reader.ReadOptionalT(&entry.gpu_pgxp_tolerance) || !reader.ReadOptionalT(&entry.gpu_pgxp_depth_threshold) ||
         !reader.ReadOptionalT(&entry.gpu_pgxp_preserve_proj_fp) || !reader.ReadOptionalT(&entry.gpu_line_detect_mode) ||
         !reader.ReadOptionalT(&entry.cpu_overclock))
     {
@@ -1363,6 +1386,8 @@ bool GameDatabase::SaveToCache()
     writer.WriteOptionalT(entry.cdrom_max_read_speedup_cycles);
     writer.WriteOptionalT(entry.gpu_fifo_size);
     writer.WriteOptionalT(entry.gpu_max_run_ahead);
+    writer.WriteOptionalT(entry.gpu_filter_framebuffer_uploads_minimum_width);
+    writer.WriteOptionalT(entry.gpu_filter_framebuffer_uploads_minimum_height);
     writer.WriteOptionalT(entry.gpu_pgxp_tolerance);
     writer.WriteOptionalT(entry.gpu_pgxp_depth_threshold);
     writer.WriteOptionalT(entry.gpu_pgxp_preserve_proj_fp);
@@ -1665,6 +1690,33 @@ bool GameDatabase::ParseYamlEntry(Entry* entry, const ryml::ConstNodeRef& value)
     entry->gpu_line_detect_mode =
       ParseOptionalTFromObject<GPULineDetectMode>(settings, "gpuLineDetectMode", &Settings::ParseLineDetectModeName);
     entry->cpu_overclock = GetOptionalTFromObject<u8>(settings, "cpuOverclockPercent");
+
+    // Bit yuck to parse a size here...
+    if (const ryml::ConstNodeRef node = settings.find_child("gpuFilterFramebufferUploads"); node.valid())
+    {
+      if (std::string_view next; (entry->gpu_filter_framebuffer_uploads_minimum_width =
+                                    StringUtil::FromChars<u16>(to_stringview(node.val()), 10, &next))
+                                   .has_value())
+      {
+        if (next = StringUtil::StripWhitespace(next);
+            !next.empty() && next.front() == 'x' &&
+            (entry->gpu_filter_framebuffer_uploads_minimum_height =
+               StringUtil::FromChars<u16>(StringUtil::StripWhitespace(next.substr(1)), 10))
+              .has_value())
+        {
+          // Clamp it here to avoid doing so at apply time.
+          entry->gpu_filter_framebuffer_uploads_minimum_width = std::clamp<u16>(
+            entry->gpu_filter_framebuffer_uploads_minimum_width.value(), 1, static_cast<u16>(VRAM_WIDTH));
+          entry->gpu_filter_framebuffer_uploads_minimum_height = std::clamp<u16>(
+            entry->gpu_filter_framebuffer_uploads_minimum_height.value(), 1, static_cast<u16>(VRAM_HEIGHT));
+          entry->traits[static_cast<size_t>(Trait::FilterFramebufferUploads)] = true;
+        }
+        else
+        {
+          entry->gpu_filter_framebuffer_uploads_minimum_width.reset();
+        }
+      }
+    }
   }
 
   return true;
