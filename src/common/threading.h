@@ -5,12 +5,6 @@
 
 #include "types.h"
 
-#if defined(__APPLE__)
-#include <mach/semaphore.h>
-#elif !defined(_WIN32)
-#include <semaphore.h>
-#endif
-
 #include <atomic>
 #include <functional>
 
@@ -119,6 +113,107 @@ protected:
 #endif
 };
 
+// --------------------------------------------------------------------------------------
+//  Mutex
+// --------------------------------------------------------------------------------------
+// A lightweight replacement for std::mutex. The native object is stored inline to avoid
+// the oversized standard library representation on Windows, without exposing platform
+// headers to users of this header.
+//
+class Mutex
+{
+public:
+#ifdef _WIN32
+  Mutex() = default;
+#else
+  Mutex();
+  ~Mutex();
+#endif
+
+  Mutex(const Mutex&) = delete;
+  Mutex& operator=(const Mutex&) = delete;
+
+  void lock();
+  bool try_lock();
+  void unlock();
+
+private:
+  friend class ConditionVariable;
+
+#if defined(_WIN32)
+  void* m_data = nullptr;
+#elif defined(__APPLE__)
+  static constexpr u32 NATIVE_STORAGE_SIZE = 64;
+#elif defined(__ANDROID__)
+  static constexpr u32 NATIVE_STORAGE_SIZE = (sizeof(void*) == 8) ? 40 : 4;
+#elif defined(__linux__) && defined(CPU_ARCH_ARM64)
+  static constexpr u32 NATIVE_STORAGE_SIZE = 48;
+#elif defined(__linux__)
+  static constexpr u32 NATIVE_STORAGE_SIZE = (sizeof(void*) == 8) ? 40 : 24;
+#else
+#error Unsupported platform.
+#endif
+
+#if !defined(_WIN32)
+  alignas(void*) u8 m_data[NATIVE_STORAGE_SIZE];
+#endif
+};
+
+// --------------------------------------------------------------------------------------
+//  ConditionVariable
+// --------------------------------------------------------------------------------------
+// A lightweight replacement for the subset of std::condition_variable used by the
+// project. Spurious wakeups are permitted, matching std::condition_variable.
+//
+class ConditionVariable
+{
+public:
+#ifdef _WIN32
+  ConditionVariable() = default;
+#else
+  ConditionVariable();
+  ~ConditionVariable();
+#endif
+
+  ConditionVariable(const ConditionVariable&) = delete;
+  ConditionVariable& operator=(const ConditionVariable&) = delete;
+
+  void notify_one();
+  void notify_all();
+
+  template<typename LockType>
+  void wait(LockType& lock)
+  {
+    Wait(*lock.mutex());
+  }
+
+  template<typename LockType, typename Predicate>
+  void wait(LockType& lock, Predicate predicate)
+  {
+    while (!predicate())
+      wait(lock);
+  }
+
+private:
+  void Wait(Mutex& mutex);
+
+#if defined(_WIN32)
+  void* m_data = nullptr;
+#elif defined(__APPLE__) || (defined(__linux__) && !defined(__ANDROID__))
+  static constexpr u32 NATIVE_STORAGE_SIZE = 48;
+  static constexpr u32 NATIVE_STORAGE_ALIGNMENT = 8;
+#elif defined(__ANDROID__)
+  static constexpr u32 NATIVE_STORAGE_SIZE = (sizeof(void*) == 8) ? 48 : 4;
+  static constexpr u32 NATIVE_STORAGE_ALIGNMENT = alignof(void*);
+#else
+#error Unsupported platform.
+#endif
+
+#if !defined(_WIN32)
+  alignas(NATIVE_STORAGE_ALIGNMENT) u8 m_data[NATIVE_STORAGE_SIZE];
+#endif
+};
+
 /// A semaphore that requires a system call to wake/sleep.
 class KernelSemaphore
 {
@@ -134,12 +229,18 @@ public:
   bool TryWait();
 
 private:
-#if defined(_WIN32)
-  void* m_sema;
-#elif defined(__APPLE__)
-  semaphore_t m_sema;
+#if defined(_WIN32) || defined(__APPLE__)
+  void* m_data = nullptr;
+#elif defined(__ANDROID__)
+  static constexpr u32 NATIVE_STORAGE_SIZE = (sizeof(void*) == 8) ? 16 : 4;
+#elif defined(__linux__)
+  static constexpr u32 NATIVE_STORAGE_SIZE = (sizeof(void*) == 8) ? 32 : 16;
 #else
-  sem_t m_sema;
+#error Unsupported platform.
+#endif
+
+#if !defined(_WIN32) && !defined(__APPLE__)
+  alignas(void*) u8 m_data[NATIVE_STORAGE_SIZE] = {};
 #endif
 };
 

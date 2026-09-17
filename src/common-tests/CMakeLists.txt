@@ -19,6 +19,7 @@ add_executable(common-tests
   small_string_tests.cpp
   string_pool_tests.cpp
   string_tests.cpp
+  threading_tests.cpp
 )
 
 target_include_directories(common-tests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/..")

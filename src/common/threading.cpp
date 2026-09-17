@@ -22,7 +22,11 @@
 #include "windows_headers.h"
 #include <process.h>
 #else
+#include <cerrno>
 #include <pthread.h>
+#if !defined(__APPLE__)
+#include <semaphore.h>
+#endif
 #include <unistd.h>
 #if defined(__linux__)
 #include <sched.h>
@@ -48,6 +52,20 @@
 #endif
 
 LOG_CHANNEL(Threading);
+
+#ifdef _WIN32
+#define NATIVE_MUTEX_PTR(storage) static_cast<SRWLOCK*>(static_cast<void*>(&(storage)))
+#define NATIVE_CONDITION_VARIABLE_PTR(storage) static_cast<CONDITION_VARIABLE*>(static_cast<void*>(&(storage)))
+#else
+#define NATIVE_MUTEX_PTR(storage) static_cast<pthread_mutex_t*>(static_cast<void*>(&(storage)))
+#define NATIVE_CONDITION_VARIABLE_PTR(storage) static_cast<pthread_cond_t*>(static_cast<void*>(&(storage)))
+#endif
+
+#if defined(__APPLE__)
+#define NATIVE_SEMAPHORE(storage) (*static_cast<semaphore_t*>(static_cast<void*>(&(storage))))
+#elif !defined(_WIN32)
+#define NATIVE_SEMAPHORE(storage) static_cast<sem_t*>(static_cast<void*>(&(storage)))
+#endif
 
 #ifdef _WIN32
 union FileTimeU64Union
@@ -549,6 +567,129 @@ Threading::ThreadHandle& Threading::Thread::operator=(Thread&& thread)
   return *this;
 }
 
+#ifdef _WIN32
+
+// Trick we do to avoid the constructor/destructor.
+static_assert(sizeof(SRWLOCK) == sizeof(void*));
+static_assert(alignof(SRWLOCK) == alignof(void*));
+static_assert(
+  []() {
+    const SRWLOCK ensure_srwlock_init_is_zero = SRWLOCK_INIT;
+    return (ensure_srwlock_init_is_zero.Ptr == nullptr);
+  }(),
+  "SRWLOCK_INIT is equivalent to null");
+
+#else // _WIN32
+
+Threading::Mutex::Mutex()
+{
+  static_assert(sizeof(m_data) == sizeof(pthread_mutex_t));
+  static_assert(alignof(Mutex) >= alignof(pthread_mutex_t));
+  [[maybe_unused]] const int result = pthread_mutex_init(NATIVE_MUTEX_PTR(m_data), nullptr);
+  DebugAssert(result == 0);
+}
+
+Threading::Mutex::~Mutex()
+{
+  [[maybe_unused]] const int result = pthread_mutex_destroy(NATIVE_MUTEX_PTR(m_data));
+  DebugAssert(result == 0);
+}
+
+#endif // _WIN32
+
+void Threading::Mutex::lock()
+{
+#ifdef _WIN32
+  AcquireSRWLockExclusive(NATIVE_MUTEX_PTR(m_data));
+#else
+  [[maybe_unused]] const int result = pthread_mutex_lock(NATIVE_MUTEX_PTR(m_data));
+  DebugAssert(result == 0);
+#endif
+}
+
+bool Threading::Mutex::try_lock()
+{
+#ifdef _WIN32
+  return TryAcquireSRWLockExclusive(NATIVE_MUTEX_PTR(m_data)) != FALSE;
+#else
+  const int result = pthread_mutex_trylock(NATIVE_MUTEX_PTR(m_data));
+  DebugAssert(result == 0 || result == EBUSY);
+  return result == 0;
+#endif
+}
+
+void Threading::Mutex::unlock()
+{
+#ifdef _WIN32
+  ReleaseSRWLockExclusive(NATIVE_MUTEX_PTR(m_data));
+#else
+  [[maybe_unused]] const int result = pthread_mutex_unlock(NATIVE_MUTEX_PTR(m_data));
+  DebugAssert(result == 0);
+#endif
+}
+
+#ifndef _WIN32
+
+Threading::ConditionVariable::ConditionVariable()
+{
+  static_assert(sizeof(m_data) == sizeof(pthread_cond_t));
+  static_assert(alignof(ConditionVariable) >= alignof(pthread_cond_t));
+  [[maybe_unused]] const int result = pthread_cond_init(NATIVE_CONDITION_VARIABLE_PTR(m_data), nullptr);
+  DebugAssert(result == 0);
+}
+
+Threading::ConditionVariable::~ConditionVariable()
+{
+  [[maybe_unused]] const int result = pthread_cond_destroy(NATIVE_CONDITION_VARIABLE_PTR(m_data));
+  DebugAssert(result == 0);
+}
+
+#else // _WIN32
+
+static_assert(sizeof(CONDITION_VARIABLE) == sizeof(void*));
+static_assert(alignof(CONDITION_VARIABLE) == alignof(void*));
+static_assert(
+  []() {
+    const CONDITION_VARIABLE ensure_condition_variable_init_is_zero = CONDITION_VARIABLE_INIT;
+    return (ensure_condition_variable_init_is_zero.Ptr == nullptr);
+  }(),
+  "CONDITION_VARIABLE_INIT is equivalent to null");
+
+#endif // _WIN32
+
+void Threading::ConditionVariable::notify_one()
+{
+#ifdef _WIN32
+  WakeConditionVariable(NATIVE_CONDITION_VARIABLE_PTR(m_data));
+#else
+  [[maybe_unused]] const int result = pthread_cond_signal(NATIVE_CONDITION_VARIABLE_PTR(m_data));
+  DebugAssert(result == 0);
+#endif
+}
+
+void Threading::ConditionVariable::notify_all()
+{
+#ifdef _WIN32
+  WakeAllConditionVariable(NATIVE_CONDITION_VARIABLE_PTR(m_data));
+#else
+  [[maybe_unused]] const int result = pthread_cond_broadcast(NATIVE_CONDITION_VARIABLE_PTR(m_data));
+  DebugAssert(result == 0);
+#endif
+}
+
+void Threading::ConditionVariable::Wait(Mutex& mutex)
+{
+#ifdef _WIN32
+  [[maybe_unused]] const BOOL result =
+    SleepConditionVariableSRW(NATIVE_CONDITION_VARIABLE_PTR(m_data), NATIVE_MUTEX_PTR(mutex.m_data), INFINITE, 0);
+  DebugAssert(result);
+#else
+  [[maybe_unused]] const int result =
+    pthread_cond_wait(NATIVE_CONDITION_VARIABLE_PTR(m_data), NATIVE_MUTEX_PTR(mutex.m_data));
+  DebugAssert(result == 0);
+#endif
+}
+
 u64 Threading::GetThreadCpuTime()
 {
 #if defined(_WIN32) && !defined(_M_ARM64)
@@ -673,15 +814,21 @@ void Threading::SetNameOfCurrentThread(const char* name)
 Threading::KernelSemaphore::KernelSemaphore()
 {
 #ifdef _WIN32
-  m_sema = CreateSemaphore(nullptr, 0, LONG_MAX, nullptr);
-  if (m_sema == NULL) [[unlikely]]
+  static_assert(sizeof(m_data) == sizeof(HANDLE));
+  static_assert(alignof(KernelSemaphore) >= alignof(HANDLE));
+  m_data = CreateSemaphore(nullptr, 0, LONG_MAX, nullptr);
+  if (m_data == nullptr) [[unlikely]]
     Panic("CreateSemaphore() failed");
 #elif defined(__APPLE__)
-  const kern_return_t kr = semaphore_create(mach_task_self(), &m_sema, SYNC_POLICY_FIFO, 0);
+  static_assert(sizeof(m_data) >= sizeof(semaphore_t));
+  static_assert(alignof(KernelSemaphore) >= alignof(semaphore_t));
+  const kern_return_t kr = semaphore_create(mach_task_self(), &NATIVE_SEMAPHORE(m_data), SYNC_POLICY_FIFO, 0);
   if (kr != KERN_SUCCESS) [[unlikely]]
     Panic("CreateSemaphore() failed");
 #else
-  if (sem_init(&m_sema, false, 0) != 0) [[unlikely]]
+  static_assert(sizeof(m_data) == sizeof(sem_t));
+  static_assert(alignof(KernelSemaphore) >= alignof(sem_t));
+  if (sem_init(NATIVE_SEMAPHORE(m_data), false, 0) != 0) [[unlikely]]
     Panic("sem_init() failed");
 #endif
 }
@@ -689,35 +836,35 @@ Threading::KernelSemaphore::KernelSemaphore()
 Threading::KernelSemaphore::~KernelSemaphore()
 {
 #ifdef _WIN32
-  CloseHandle(m_sema);
+  CloseHandle(m_data);
 #elif defined(__APPLE__)
-  semaphore_destroy(mach_task_self(), m_sema);
+  semaphore_destroy(mach_task_self(), NATIVE_SEMAPHORE(m_data));
 #else
-  sem_destroy(&m_sema);
+  sem_destroy(NATIVE_SEMAPHORE(m_data));
 #endif
 }
 
 void Threading::KernelSemaphore::Post()
 {
 #ifdef _WIN32
-  ReleaseSemaphore(m_sema, 1, nullptr);
+  ReleaseSemaphore(m_data, 1, nullptr);
 #elif defined(__APPLE__)
-  semaphore_signal(m_sema);
+  semaphore_signal(NATIVE_SEMAPHORE(m_data));
 #else
-  sem_post(&m_sema);
+  sem_post(NATIVE_SEMAPHORE(m_data));
 #endif
 }
 
 void Threading::KernelSemaphore::Wait()
 {
 #ifdef _WIN32
-  WaitForSingleObject(m_sema, INFINITE);
+  WaitForSingleObject(m_data, INFINITE);
 #elif defined(__APPLE__)
-  semaphore_wait(m_sema);
+  semaphore_wait(NATIVE_SEMAPHORE(m_data));
 #else
   do
   {
-    if (sem_wait(&m_sema) == 0) [[likely]]
+    if (sem_wait(NATIVE_SEMAPHORE(m_data)) == 0) [[likely]]
       return;
   } while (errno == EINTR);
 #endif
@@ -726,12 +873,18 @@ void Threading::KernelSemaphore::Wait()
 bool Threading::KernelSemaphore::TryWait()
 {
 #ifdef _WIN32
-  return WaitForSingleObject(m_sema, 0) == WAIT_OBJECT_0;
+  return WaitForSingleObject(m_data, 0) == WAIT_OBJECT_0;
 #elif defined(__APPLE__)
   mach_timespec_t time = {};
-  kern_return_t res = semaphore_timedwait(m_sema, time);
+  kern_return_t res = semaphore_timedwait(NATIVE_SEMAPHORE(m_data), time);
   return (res != KERN_OPERATION_TIMED_OUT);
 #else
-  return sem_trywait(&m_sema) == 0;
+  return sem_trywait(NATIVE_SEMAPHORE(m_data)) == 0;
 #endif
 }
+
+#undef NATIVE_MUTEX_PTR
+#undef NATIVE_CONDITION_VARIABLE_PTR
+#if !defined(_WIN32)
+#undef NATIVE_SEMAPHORE
+#endif
