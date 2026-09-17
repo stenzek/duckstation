@@ -790,15 +790,22 @@ void GraphicsSettingsWidget::populateGPUAdaptersAndResolutions(RenderAPI render_
     SettingWidgetBinder::DisconnectWidget(m_ui.msaaMode);
     m_ui.msaaMode->clear();
 
-    if (m_dialog->isPerGameSettings())
-      m_ui.msaaMode->addItem(tr("Use Global Setting"));
-
     const u32 max_multisamples = current_adapter ? current_adapter->max_multisamples : 8;
     m_ui.msaaMode->addItem(tr("Disabled"), GetMSAAModeValue(1, false));
     for (uint i = 2; i <= max_multisamples; i *= 2)
       m_ui.msaaMode->addItem(tr("%1x MSAA").arg(i), GetMSAAModeValue(i, false));
     for (uint i = 2; i <= max_multisamples; i *= 2)
       m_ui.msaaMode->addItem(tr("%1x SSAA").arg(i), GetMSAAModeValue(i, true));
+
+    if (m_dialog->isPerGameSettings())
+    {
+      const QVariant global_msaa_mode(
+        GetMSAAModeValue(static_cast<uint>(Core::GetBaseIntSettingValue("GPU", "Multisamples", 1)),
+                         Core::GetBaseBoolSettingValue("GPU", "PerSampleShading", false)));
+      const QString global_msaa_string = m_ui.msaaMode->itemText(m_ui.msaaMode->findData(global_msaa_mode));
+      m_ui.msaaMode->insertItem(0, QCoreApplication::translate("SettingWidgetBinder", "Use Global Setting [%1]")
+                                     .arg(global_msaa_string));
+    }
 
     if (!m_dialog->isPerGameSettings() || (m_dialog->containsSettingValue("GPU", "Multisamples") ||
                                            m_dialog->containsSettingValue("GPU", "PerSampleShading")))
