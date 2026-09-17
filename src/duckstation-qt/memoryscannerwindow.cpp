@@ -115,19 +115,18 @@ void MemoryScannerWindow::connectUi()
   m_ui.scanSize->setCurrentIndex(static_cast<int>(m_scanner.GetSize()));
 
   connect(m_ui.scanValue, &QLineEdit::textChanged, this, &MemoryScannerWindow::updateScanValue);
-  connect(m_ui.scanValueBase, QOverload<int>::of(&QComboBox::currentIndexChanged),
-          [this](int index) { updateScanValue(); });
-  connect(m_ui.scanSize, QOverload<int>::of(&QComboBox::currentIndexChanged), [this](int index) {
+  connect(m_ui.scanValueBase, &QComboBox::currentIndexChanged, [this](int index) { updateScanValue(); });
+  connect(m_ui.scanSize, &QComboBox::currentIndexChanged, [this](int index) {
     m_scanner.SetSize(static_cast<MemoryAccessSize>(index));
     m_scanner.ResetSearch();
     updateResults();
   });
-  connect(m_ui.scanValueSigned, QOverload<int>::of(&QComboBox::currentIndexChanged), [this](int index) {
+  connect(m_ui.scanValueSigned, &QComboBox::currentIndexChanged, [this](int index) {
     m_scanner.SetValueSigned(index == 0);
     m_scanner.ResetSearch();
     updateResults();
   });
-  connect(m_ui.scanOperator, QOverload<int>::of(&QComboBox::currentIndexChanged),
+  connect(m_ui.scanOperator, &QComboBox::currentIndexChanged,
           [this](int index) { m_scanner.SetOperator(static_cast<MemoryScan::Operator>(index)); });
   connect(m_ui.scanStartAddress, &QLineEdit::textChanged, [this](const QString& value) {
     uint address;
@@ -145,7 +144,7 @@ void MemoryScannerWindow::connectUi()
       address = value.toUInt(nullptr, 16);
     m_scanner.SetEndAddress(static_cast<PhysicalMemoryAddress>(address));
   });
-  connect(m_ui.scanPresetRange, QOverload<int>::of(&QComboBox::currentIndexChanged), [this](int index) {
+  connect(m_ui.scanPresetRange, &QComboBox::currentIndexChanged, [this](int index) {
     if (index == 0)
     {
       m_ui.scanStartAddress->setText(formatHexValue(0, MemoryAccessSize::Word));

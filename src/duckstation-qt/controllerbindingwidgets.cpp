@@ -52,8 +52,7 @@ ControllerBindingWidget::ControllerBindingWidget(QWidget* parent, ControllerSett
   populateControllerTypes();
   populateWidgets();
 
-  connect(m_ui.controllerType, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
-          &ControllerBindingWidget::onTypeChanged);
+  connect(m_ui.controllerType, &QComboBox::currentIndexChanged, this, &ControllerBindingWidget::onTypeChanged);
   connect(m_ui.bindings, &QPushButton::clicked, this, &ControllerBindingWidget::onBindingsClicked);
   connect(m_ui.settings, &QPushButton::clicked, this, &ControllerBindingWidget::onSettingsClicked);
   connect(m_ui.macros, &QPushButton::clicked, this, &ControllerBindingWidget::onMacrosClicked);

@@ -38,12 +38,11 @@ BIOSSettingsWidget::BIOSSettingsWidget(SettingsWindow* dialog, QWidget* parent) 
   SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.pioImagePath, "PIO", "FlashImagePath");
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.pioSwitchActive, "PIO", "SwitchActive", true);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.pioImageWrites, "PIO", "FlashImageWriteEnable", false);
-  connect(m_ui.pioDeviceType, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
-          &BIOSSettingsWidget::onPIODeviceTypeChanged);
+  connect(m_ui.pioDeviceType, &QComboBox::currentIndexChanged, this, &BIOSSettingsWidget::onPIODeviceTypeChanged);
   connect(m_ui.pioImagePathBrowse, &QPushButton::clicked, this, &BIOSSettingsWidget::onPIOImagePathBrowseClicked);
   onPIODeviceTypeChanged();
 
-  connect(m_ui.imageNTSCJ, QOverload<int>::of(&QComboBox::currentIndexChanged), [this](int index) {
+  connect(m_ui.imageNTSCJ, &QComboBox::currentIndexChanged, [this](int index) {
     if (m_dialog->isPerGameSettings() && index == 0)
     {
       m_dialog->removeSettingValue("BIOS", "PathNTSCJ");
@@ -54,7 +53,7 @@ BIOSSettingsWidget::BIOSSettingsWidget(SettingsWindow* dialog, QWidget* parent) 
                                       m_ui.imageNTSCJ->itemData(index).toString().toStdString().c_str());
     }
   });
-  connect(m_ui.imageNTSCU, QOverload<int>::of(&QComboBox::currentIndexChanged), [this](int index) {
+  connect(m_ui.imageNTSCU, &QComboBox::currentIndexChanged, [this](int index) {
     if (m_dialog->isPerGameSettings() && index == 0)
     {
       m_dialog->removeSettingValue("BIOS", "PathNTSCU");
@@ -65,7 +64,7 @@ BIOSSettingsWidget::BIOSSettingsWidget(SettingsWindow* dialog, QWidget* parent) 
                                       m_ui.imageNTSCU->itemData(index).toString().toStdString().c_str());
     }
   });
-  connect(m_ui.imagePAL, QOverload<int>::of(&QComboBox::currentIndexChanged), [this](int index) {
+  connect(m_ui.imagePAL, &QComboBox::currentIndexChanged, [this](int index) {
     if (m_dialog->isPerGameSettings() && index == 0)
     {
       m_dialog->removeSettingValue("BIOS", "PathPAL");
