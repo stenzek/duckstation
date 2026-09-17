@@ -1727,7 +1727,7 @@ void FullscreenUI::DrawAchievementsPauseMenuOverlays(float start_pos_y)
   }
 }
 
-void FullscreenUI::OpenAchievementsWindow()
+void FullscreenUI::ToggleAchievementsWindow()
 {
   // NOTE: Called from CPU thread.
   if (!System::IsValid())
@@ -1743,7 +1743,7 @@ void FullscreenUI::OpenAchievementsWindow()
     return;
   }
 
-  PauseAndOpenMenuFromCoreThread([]() {
+  PauseAndToggleMenuFromCoreThread([]() {
     BeginTransition(TransitionEffect::ZoomIn, DEFAULT_TRANSITION_TIME, []() {
       ForceKeyNavEnabled();
       EnqueueSoundEffect(SFX_NAV_ACTIVATE);
@@ -2714,7 +2714,7 @@ void FullscreenUI::ConfirmResetAllUnofficialAchievementUnlocks()
     });
 }
 
-void FullscreenUI::OpenLeaderboardsWindow()
+void FullscreenUI::ToggleLeaderboardsWindow()
 {
   if (!System::IsValid())
     return;
@@ -2729,7 +2729,7 @@ void FullscreenUI::OpenLeaderboardsWindow()
     return;
   }
 
-  PauseAndOpenMenuFromCoreThread([]() {
+  PauseAndToggleMenuFromCoreThread([]() {
     BeginTransition(TransitionEffect::ZoomIn, DEFAULT_TRANSITION_TIME, []() {
       ForceKeyNavEnabled();
       EnqueueSoundEffect(SFX_NAV_ACTIVATE);

@@ -46,7 +46,7 @@ void UpdateRunIdleState();
 
 void OpenPauseMenu();
 void TogglePauseMenu();
-void OpenCheatsMenu();
+void ToggleCheatsMenu();
 void OpenDiscChangeMenu();
 void ToggleAchievementsWindow();
 void ToggleLeaderboardsWindow();

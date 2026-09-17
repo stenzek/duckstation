@@ -421,21 +421,19 @@ void FullscreenUI::TogglePauseMenu()
     &UpdateAchievementsPauseScreenInfo);
 }
 
-void FullscreenUI::OpenCheatsMenu()
+void FullscreenUI::ToggleCheatsMenu()
 {
-  PauseAndOpenMenuFromCoreThread([]() {
-    BeginTransition(TransitionEffect::ZoomIn, SHORT_TRANSITION_TIME, []() {
-      if (!SwitchToGameSettings(SettingsPage::Cheats))
-      {
-        // We'll end up here when we're in batch mode and using a runtime-populated game list entry. There _might_ be
-        // one frame when we display the main settings instead of the game settings page, but it'll be part of the
-        // transition and not noticeable. That's what you get for not using the game list.
-        SwitchToMainWindow(MainWindowType::Settings);
-      }
+  PauseAndToggleMenuFromCoreThread([]() {
+    if (!SwitchToGameSettings(SettingsPage::Cheats))
+    {
+      // We'll end up here when we're in batch mode and using a runtime-populated game list entry. There _might_ be
+      // one frame when we display the main settings instead of the game settings page, but it'll be part of the
+      // transition and not noticeable. That's what you get for not using the game list.
+      SwitchToMainWindow(MainWindowType::Settings);
+    }
 
-      ForceKeyNavEnabled();
-      EnqueueSoundEffect(SFX_NAV_ACTIVATE);
-    });
+    ForceKeyNavEnabled();
+    EnqueueSoundEffect(SFX_NAV_ACTIVATE);
   });
 }
 

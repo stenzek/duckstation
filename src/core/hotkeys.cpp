@@ -142,23 +142,26 @@ static constexpr const HotkeyInfo s_hotkey_list[] = {
    },
    true},
 
-  {"OpenCheatsMenu", TRANSLATE_NOOP("Hotkeys", "Interface"), TRANSLATE_NOOP("Hotkeys", "Open Cheat Settings"),
+  {"OpenCheatsMenu", TRANSLATE_NOOP("Hotkeys", "Interface"), TRANSLATE_NOOP("Hotkeys", "Toggle Cheat List"),
    [](InputButtonEvent event) {
      if (event == InputButtonEvent::Released && System::CanPauseSystem(true))
-       FullscreenUI::OpenCheatsMenu();
-   }},
+       FullscreenUI::ToggleCheatsMenu();
+   },
+   true},
 
-  {"OpenAchievements", TRANSLATE_NOOP("Hotkeys", "Interface"), TRANSLATE_NOOP("Hotkeys", "Open Achievement List"),
+  {"OpenAchievements", TRANSLATE_NOOP("Hotkeys", "Interface"), TRANSLATE_NOOP("Hotkeys", "Toggle Achievement List"),
    [](InputButtonEvent event) {
      if (event == InputButtonEvent::Released && System::CanPauseSystem(true))
        FullscreenUI::ToggleAchievementsWindow();
-   }},
+   },
+   true},
 
-  {"OpenLeaderboards", TRANSLATE_NOOP("Hotkeys", "Interface"), TRANSLATE_NOOP("Hotkeys", "Open Leaderboard List"),
+  {"OpenLeaderboards", TRANSLATE_NOOP("Hotkeys", "Interface"), TRANSLATE_NOOP("Hotkeys", "Toggle Leaderboard List"),
    [](InputButtonEvent event) {
      if (event == InputButtonEvent::Released && System::CanPauseSystem(true))
        FullscreenUI::ToggleLeaderboardsWindow();
-   }},
+   },
+   true},
 
   {"Screenshot", TRANSLATE_NOOP("Hotkeys", "Interface"), TRANSLATE_NOOP("Hotkeys", "Save Screenshot"),
    [](InputButtonEvent event) {
