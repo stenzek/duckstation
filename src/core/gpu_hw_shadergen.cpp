@@ -3016,10 +3016,10 @@ std::string GPU_HW_ShaderGen::GenerateVRAMWriteFragmentShader(bool use_buffer, b
   uint value = LOAD_TEXTURE(samp0, int2(offset), 0).x;
 #else
   uint buffer_offset = u_buffer_base_offset + uint((offset.y * u_size.x) + offset.x);
-  uint value = GET_VALUE(buffer_offset) | u_mask_or_bits;
+  uint value = GET_VALUE(buffer_offset);
 #endif
 
-  o_col0 = RGBA5551ToRGBA8(value);
+  o_col0 = RGBA5551ToRGBA8(value | u_mask_or_bits);
 #if WRITE_MASK_AS_DEPTH
   o_depth = (o_col0.a == 1.0) ? u_depth_value : 0.0;
 #elif WRITE_DEPTH_AS_RT
