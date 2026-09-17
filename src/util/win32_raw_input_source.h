@@ -20,8 +20,8 @@ public:
   Win32RawInputSource();
   ~Win32RawInputSource();
 
-  bool Initialize(const SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock) override;
-  void UpdateSettings(const SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock) override;
+  bool Initialize(const SettingsInterface& si, std::unique_lock<Threading::Mutex>& settings_lock) override;
+  void UpdateSettings(const SettingsInterface& si, std::unique_lock<Threading::Mutex>& settings_lock) override;
   bool ReloadDevices() override;
   void Shutdown() override;
 

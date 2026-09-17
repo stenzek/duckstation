@@ -178,9 +178,9 @@ static void ApplyMacroButton(const MacroButton& mb);
 static void UpdateMacroButtons();
 
 static size_t UpdateInputSubclassPolling(InputSubclass subclass, bool enable_all);
-static void UpdateInputSourceState(const SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock,
+static void UpdateInputSourceState(const SettingsInterface& si, std::unique_lock<Threading::Mutex>& settings_lock,
                                    InputSourceType type, std::unique_ptr<InputSource> (*factory_function)());
-static void ReloadSources(const SettingsInterface& sources_si, std::unique_lock<std::mutex>& settings_lock);
+static void ReloadSources(const SettingsInterface& sources_si, std::unique_lock<Threading::Mutex>& settings_lock);
 
 static const KeyCodeData* FindKeyCodeData(u32 usb_code);
 
@@ -2564,8 +2564,9 @@ bool InputManager::IsInputSourceEnabled(const SettingsInterface& si, InputSource
   return si.GetBoolValue("InputSources", InputSourceToString(type), GetInputSourceDefaultEnabled(type));
 }
 
-void InputManager::UpdateInputSourceState(const SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock,
-                                          InputSourceType type, std::unique_ptr<InputSource> (*factory_function)())
+void InputManager::UpdateInputSourceState(const SettingsInterface& si,
+                                          std::unique_lock<Threading::Mutex>& settings_lock, InputSourceType type,
+                                          std::unique_ptr<InputSource> (*factory_function)())
 {
   const bool enabled = IsInputSourceEnabled(si, type);
   std::unique_ptr<InputSource>& source = s_state.input_sources[static_cast<u32>(type)];
@@ -2598,7 +2599,7 @@ void InputManager::UpdateInputSourceState(const SettingsInterface& si, std::uniq
   }
 }
 
-void InputManager::ReloadSources(const SettingsInterface& sources_si, std::unique_lock<std::mutex>& settings_lock)
+void InputManager::ReloadSources(const SettingsInterface& sources_si, std::unique_lock<Threading::Mutex>& settings_lock)
 {
   const std::unique_lock lock(s_state.sources_mutex);
 
@@ -2633,7 +2634,7 @@ void InputManager::ReloadSources(const SettingsInterface& sources_si, std::uniqu
 
 void InputManager::ReloadSourcesAndBindings(const SettingsInterface& sources_si, const SettingsInterface& binding_si,
                                             const SettingsInterface& hotkey_binding_si,
-                                            std::unique_lock<std::mutex>& settings_lock)
+                                            std::unique_lock<Threading::Mutex>& settings_lock)
 {
   DebugAssert(Host::IsOnCoreThread());
   ReloadSources(sources_si, settings_lock);

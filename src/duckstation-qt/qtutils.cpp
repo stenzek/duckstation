@@ -14,6 +14,7 @@
 #include "common/dynamic_library.h"
 #include "common/error.h"
 #include "common/log.h"
+#include "common/threading.h"
 
 #include <QtCore/QIODevice>
 #include <QtCore/QMetaObject>

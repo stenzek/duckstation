@@ -13,6 +13,10 @@
 #include <string_view>
 #include <vector>
 
+namespace Threading {
+class Mutex;
+}
+
 class GPUPipeline;
 class GPUSampler;
 class GPUTexture;
@@ -139,9 +143,9 @@ public:
 
   bool IsActive() const;
 
-  void UpdateSettings(std::unique_lock<std::mutex>& settings_lock, const SettingsInterface& si);
+  void UpdateSettings(std::unique_lock<Threading::Mutex>& settings_lock, const SettingsInterface& si);
 
-  void LoadStages(std::unique_lock<std::mutex>& settings_lock, const SettingsInterface& si,
+  void LoadStages(std::unique_lock<Threading::Mutex>& settings_lock, const SettingsInterface& si,
                   bool preload_swap_chain_size);
 
   /// Temporarily toggles post-processing on/off.

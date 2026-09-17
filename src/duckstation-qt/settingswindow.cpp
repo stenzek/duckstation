@@ -32,6 +32,7 @@
 #include "common/error.h"
 #include "common/file_system.h"
 #include "common/log.h"
+#include "common/threading.h"
 
 #include <QtGui/QWheelEvent>
 #include <QtWidgets/QScrollBar>

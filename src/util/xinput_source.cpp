@@ -65,9 +65,19 @@ static constexpr std::array<const char*, XInputSource::NUM_BUTTONS> s_button_nam
   TRANSLATE_NOOP("XInputSource", "Guide"),         // XINPUT_GAMEPAD_GUIDE
 }};
 static constexpr std::array<u16, XInputSource::NUM_BUTTONS> s_button_masks = {{
-  XINPUT_GAMEPAD_DPAD_UP, XINPUT_GAMEPAD_DPAD_DOWN, XINPUT_GAMEPAD_DPAD_LEFT, XINPUT_GAMEPAD_DPAD_RIGHT,
-  XINPUT_GAMEPAD_START, XINPUT_GAMEPAD_BACK, XINPUT_GAMEPAD_LEFT_THUMB, XINPUT_GAMEPAD_RIGHT_THUMB,
-  XINPUT_GAMEPAD_LEFT_SHOULDER, XINPUT_GAMEPAD_RIGHT_SHOULDER, XINPUT_GAMEPAD_A, XINPUT_GAMEPAD_B, XINPUT_GAMEPAD_X,
+  XINPUT_GAMEPAD_DPAD_UP,
+  XINPUT_GAMEPAD_DPAD_DOWN,
+  XINPUT_GAMEPAD_DPAD_LEFT,
+  XINPUT_GAMEPAD_DPAD_RIGHT,
+  XINPUT_GAMEPAD_START,
+  XINPUT_GAMEPAD_BACK,
+  XINPUT_GAMEPAD_LEFT_THUMB,
+  XINPUT_GAMEPAD_RIGHT_THUMB,
+  XINPUT_GAMEPAD_LEFT_SHOULDER,
+  XINPUT_GAMEPAD_RIGHT_SHOULDER,
+  XINPUT_GAMEPAD_A,
+  XINPUT_GAMEPAD_B,
+  XINPUT_GAMEPAD_X,
   XINPUT_GAMEPAD_Y,
   0x400, // XINPUT_GAMEPAD_GUIDE
 }};
@@ -123,7 +133,7 @@ XInputSource::XInputSource() = default;
 
 XInputSource::~XInputSource() = default;
 
-bool XInputSource::Initialize(const SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock)
+bool XInputSource::Initialize(const SettingsInterface& si, std::unique_lock<Threading::Mutex>& settings_lock)
 {
   // xinput1_3.dll is flawed and obsolete, but it's also commonly used by wrappers.
   // For this reason, try to load it *only* from the application directory, and not system32.
@@ -173,7 +183,7 @@ bool XInputSource::Initialize(const SettingsInterface& si, std::unique_lock<std:
   return true;
 }
 
-void XInputSource::UpdateSettings(const SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock)
+void XInputSource::UpdateSettings(const SettingsInterface& si, std::unique_lock<Threading::Mutex>& settings_lock)
 {
 }
 

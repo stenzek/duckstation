@@ -20,6 +20,10 @@
 class Error;
 class SmallStringBase;
 
+namespace Threading {
+class Mutex;
+}
+
 /// Class, or source of an input event.
 enum class InputSourceType : u32
 {
@@ -295,7 +299,8 @@ void ReloadBindings(const SettingsInterface& binding_si, const SettingsInterface
 
 /// Re-parses the sources part of the config and initializes any backends.
 void ReloadSourcesAndBindings(const SettingsInterface& sources_si, const SettingsInterface& binding_si,
-                              const SettingsInterface& hotkey_binding_si, std::unique_lock<std::mutex>& settings_lock);
+                              const SettingsInterface& hotkey_binding_si,
+                              std::unique_lock<Threading::Mutex>& settings_lock);
 
 /// Shuts down any enabled input sources.
 void CloseSources();

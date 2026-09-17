@@ -12,6 +12,10 @@
 #include <string_view>
 #include <vector>
 
+namespace Threading {
+class Mutex;
+}
+
 class SettingsInterface;
 
 namespace Core {
@@ -53,7 +57,7 @@ double GetDoubleSettingValue(const char* section, const char* key, double defaul
 std::vector<std::string> GetStringListSetting(const char* section, const char* key);
 
 /// Direct access to settings interface. Must hold the lock when calling GetSettingsInterface() and while using it.
-std::unique_lock<std::mutex> GetSettingsLock();
+std::unique_lock<Threading::Mutex> GetSettingsLock();
 SettingsInterface* GetSettingsInterface();
 
 /// Retrieves the base settings layer. Must call with lock held.

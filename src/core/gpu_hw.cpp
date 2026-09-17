@@ -30,6 +30,7 @@
 #include "common/log.h"
 #include "common/scoped_guard.h"
 #include "common/string_util.h"
+#include "common/threading.h"
 #include "common/timer.h"
 
 #include "IconsEmoji.h"

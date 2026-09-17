@@ -35,7 +35,7 @@ Win32RawInputSource::Win32RawInputSource() = default;
 
 Win32RawInputSource::~Win32RawInputSource() = default;
 
-bool Win32RawInputSource::Initialize(const SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock)
+bool Win32RawInputSource::Initialize(const SettingsInterface& si, std::unique_lock<Threading::Mutex>& settings_lock)
 {
   if (!RegisterDummyClass())
   {
@@ -57,7 +57,7 @@ bool Win32RawInputSource::Initialize(const SettingsInterface& si, std::unique_lo
   return true;
 }
 
-void Win32RawInputSource::UpdateSettings(const SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock)
+void Win32RawInputSource::UpdateSettings(const SettingsInterface& si, std::unique_lock<Threading::Mutex>& settings_lock)
 {
 }
 

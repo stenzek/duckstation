@@ -13,6 +13,7 @@
 #include "util/postprocessing.h"
 
 #include "common/error.h"
+#include "common/threading.h"
 
 #include <QtCore/QDir>
 #include <QtCore/QFileInfo>

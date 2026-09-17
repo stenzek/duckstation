@@ -17,8 +17,6 @@
 #include "core/host.h"
 #include "core/settings.h"
 
-#include "IconsEmoji.h"
-#include "IconsFontAwesome.h"
 #include "common/assert.h"
 #include "common/bitutils.h"
 #include "common/error.h"
@@ -28,8 +26,12 @@
 #include "common/progress_callback.h"
 #include "common/small_string.h"
 #include "common/string_util.h"
+#include "common/threading.h"
 #include "common/timer.h"
-#include "fmt/format.h"
+
+#include <IconsEmoji.h>
+#include <IconsFontAwesome.h>
+#include <fmt/format.h>
 
 LOG_CHANNEL(PostProcessing);
 
@@ -452,7 +454,7 @@ void PostProcessing::Chain::ClearStagesWithError(const Error& error)
   m_stages.clear();
 }
 
-void PostProcessing::Chain::LoadStages(std::unique_lock<std::mutex>& settings_lock, const SettingsInterface& si,
+void PostProcessing::Chain::LoadStages(std::unique_lock<Threading::Mutex>& settings_lock, const SettingsInterface& si,
                                        bool preload_swap_chain_size)
 {
   m_stages.clear();
@@ -552,7 +554,8 @@ void PostProcessing::Chain::LoadStages(std::unique_lock<std::mutex>& settings_lo
   settings_lock.lock();
 }
 
-void PostProcessing::Chain::UpdateSettings(std::unique_lock<std::mutex>& settings_lock, const SettingsInterface& si)
+void PostProcessing::Chain::UpdateSettings(std::unique_lock<Threading::Mutex>& settings_lock,
+                                           const SettingsInterface& si)
 {
   m_enabled = Config::IsEnabled(si, m_section);
 

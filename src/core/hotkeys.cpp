@@ -26,6 +26,7 @@
 
 #include "common/error.h"
 #include "common/file_system.h"
+#include "common/threading.h"
 #include "common/timer.h"
 
 #include "IconsEmoji.h"

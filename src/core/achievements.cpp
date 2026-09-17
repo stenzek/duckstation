@@ -36,6 +36,7 @@
 #include "common/small_string.h"
 #include "common/string_pool.h"
 #include "common/string_util.h"
+#include "common/threading.h"
 #include "common/timer.h"
 
 #include "util/cd_image.h"

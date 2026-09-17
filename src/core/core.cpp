@@ -68,7 +68,7 @@ static void LogStartupInformation();
 namespace {
 struct CoreLocals
 {
-  std::mutex settings_mutex;
+  Threading::Mutex settings_mutex;
   LayeredSettingsInterface layered_settings_interface;
   INISettingsInterface base_settings_interface;
 
@@ -350,7 +350,7 @@ void Core::SetDefaultSettings(SettingsInterface& si, bool host, bool system, boo
 
 #endif // __ANDROID__
 
-std::unique_lock<std::mutex> Core::GetSettingsLock()
+std::unique_lock<Threading::Mutex> Core::GetSettingsLock()
 {
   return std::unique_lock(s_locals.settings_mutex);
 }
@@ -558,12 +558,12 @@ SettingsInterface* Core::GetInputSettingsLayer()
   return s_locals.layered_settings_interface.GetLayer(LayeredSettingsInterface::LAYER_INPUT);
 }
 
-void Core::SetGameSettingsLayer(SettingsInterface* sif, std::unique_lock<std::mutex>& lock)
+void Core::SetGameSettingsLayer(SettingsInterface* sif, std::unique_lock<Threading::Mutex>& lock)
 {
   s_locals.layered_settings_interface.SetLayer(LayeredSettingsInterface::LAYER_GAME, sif);
 }
 
-void Core::SetInputSettingsLayer(SettingsInterface* sif, std::unique_lock<std::mutex>& lock)
+void Core::SetInputSettingsLayer(SettingsInterface* sif, std::unique_lock<Threading::Mutex>& lock)
 {
   s_locals.layered_settings_interface.SetLayer(LayeredSettingsInterface::LAYER_INPUT, sif);
 }

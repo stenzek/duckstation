@@ -27,10 +27,10 @@ bool SaveBaseSettingsLayer(Error* error);
 void SetDefaultSettings(bool host, bool system, bool controller, bool ignore_user_prefs);
 
 /// Sets the game settings layer. Called by System when the game changes.
-void SetGameSettingsLayer(SettingsInterface* sif, std::unique_lock<std::mutex>& lock);
+void SetGameSettingsLayer(SettingsInterface* sif, std::unique_lock<Threading::Mutex>& lock);
 
 /// Sets the input profile settings layer. Called by System when the game changes.
-void SetInputSettingsLayer(SettingsInterface* sif, std::unique_lock<std::mutex>& lock);
+void SetInputSettingsLayer(SettingsInterface* sif, std::unique_lock<Threading::Mutex>& lock);
 
 /// Performs mandatory hardware checks.
 bool PerformEarlyHardwareChecks(Error* error);

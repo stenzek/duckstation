@@ -21,6 +21,7 @@
 #include "common/assert.h"
 #include "common/error.h"
 #include "common/string_util.h"
+#include "common/threading.h"
 
 #include "fmt/format.h"
 

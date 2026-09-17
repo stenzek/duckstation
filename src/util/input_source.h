@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #pragma once
@@ -17,6 +17,10 @@
 class Error;
 class SettingsInterface;
 
+namespace Threading {
+class Mutex;
+}
+
 class ForceFeedbackDevice;
 
 class InputSource
@@ -26,10 +30,10 @@ public:
   virtual ~InputSource();
 
   // Sets up the input source.
-  virtual bool Initialize(const SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock) = 0;
+  virtual bool Initialize(const SettingsInterface& si, std::unique_lock<Threading::Mutex>& settings_lock) = 0;
 
   /// Updates the settings for this input source. This should be called when settings change.
-  virtual void UpdateSettings(const SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock) = 0;
+  virtual void UpdateSettings(const SettingsInterface& si, std::unique_lock<Threading::Mutex>& settings_lock) = 0;
 
   /// Reloads the devices for this input source. This should be called when a device change is detected.
   virtual bool ReloadDevices() = 0;

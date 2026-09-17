@@ -11,6 +11,7 @@
 #include "common/error.h"
 #include "common/log.h"
 #include "common/string_util.h"
+#include "common/threading.h"
 
 #include "fmt/format.h"
 
@@ -60,7 +61,7 @@ std::string DInputSource::GetDeviceIdentifier(u32 index)
 static constexpr std::array<const char*, DInputSource::NUM_HAT_DIRECTIONS> s_hat_directions = {
   {"Up", "Down", "Left", "Right"}};
 
-bool DInputSource::Initialize(const SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock)
+bool DInputSource::Initialize(const SettingsInterface& si, std::unique_lock<Threading::Mutex>& settings_lock)
 {
   m_dinput_module = LoadLibraryW(L"dinput8");
   if (!m_dinput_module)
@@ -104,7 +105,7 @@ bool DInputSource::Initialize(const SettingsInterface& si, std::unique_lock<std:
   return true;
 }
 
-void DInputSource::UpdateSettings(const SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock)
+void DInputSource::UpdateSettings(const SettingsInterface& si, std::unique_lock<Threading::Mutex>& settings_lock)
 {
   // noop
 }

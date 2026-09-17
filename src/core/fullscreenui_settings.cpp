@@ -36,6 +36,7 @@
 #include "common/log.h"
 #include "common/path.h"
 #include "common/string_util.h"
+#include "common/threading.h"
 
 #include "IconsEmoji.h"
 #include "IconsFontAwesome.h"
@@ -117,8 +118,8 @@ static void DrawPostProcessingSettingsPage();
 static void DrawAudioSettingsPage();
 static void DrawMemoryCardSettingsPage();
 static void DrawControllerSettingsPage();
-static void DrawAchievementsSettingsPage(std::unique_lock<std::mutex>& settings_lock);
-static void DrawAchievementsSettingsHeader(SettingsInterface* bsi, std::unique_lock<std::mutex>& settings_lock);
+static void DrawAchievementsSettingsPage(std::unique_lock<Threading::Mutex>& settings_lock);
+static void DrawAchievementsSettingsHeader(SettingsInterface* bsi, std::unique_lock<Threading::Mutex>& settings_lock);
 static void DrawAdvancedSettingsPage();
 static void DrawPatchesOrCheatsSettingsPage(bool cheats);
 
@@ -5491,7 +5492,8 @@ void FullscreenUI::DrawAudioSettingsPage()
   EndMenuButtons();
 }
 
-void FullscreenUI::DrawAchievementsSettingsHeader(SettingsInterface* bsi, std::unique_lock<std::mutex>& settings_lock)
+void FullscreenUI::DrawAchievementsSettingsHeader(SettingsInterface* bsi,
+                                                  std::unique_lock<Threading::Mutex>& settings_lock)
 {
   ImDrawList* const dl = ImGui::GetWindowDrawList();
 
@@ -5618,7 +5620,7 @@ void FullscreenUI::DrawAchievementsSettingsHeader(SettingsInterface* bsi, std::u
   ImGui::SetCursorPos(ImVec2(pos_backup.x, pos_backup.y + panel_height + (spacing * 3.0f)));
 }
 
-void FullscreenUI::DrawAchievementsSettingsPage(std::unique_lock<std::mutex>& settings_lock)
+void FullscreenUI::DrawAchievementsSettingsPage(std::unique_lock<Threading::Mutex>& settings_lock)
 {
   SettingsInterface* bsi = GetEditingSettingsInterface();
 

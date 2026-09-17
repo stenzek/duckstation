@@ -19,6 +19,7 @@
 #include "common/log.h"
 #include "common/path.h"
 #include "common/string_util.h"
+#include "common/threading.h"
 
 #include "IconsPromptFont.h"
 #include "fmt/format.h"
@@ -299,7 +300,7 @@ SDLInputSource::~SDLInputSource()
   Assert(m_controllers.empty());
 }
 
-bool SDLInputSource::Initialize(const SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock)
+bool SDLInputSource::Initialize(const SettingsInterface& si, std::unique_lock<Threading::Mutex>& settings_lock)
 {
   if (Error error; !g_dyn_sdl.Open(&error))
   {
@@ -315,7 +316,7 @@ bool SDLInputSource::Initialize(const SettingsInterface& si, std::unique_lock<st
   return result;
 }
 
-void SDLInputSource::UpdateSettings(const SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock)
+void SDLInputSource::UpdateSettings(const SettingsInterface& si, std::unique_lock<Threading::Mutex>& settings_lock)
 {
   const bool old_controller_touchpad_as_pointer = m_controller_touchpad_as_pointer;
   const u8 old_advanced_options_bits = m_advanced_options_bits;

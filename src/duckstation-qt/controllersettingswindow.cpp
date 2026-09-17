@@ -17,6 +17,7 @@
 #include "common/assert.h"
 #include "common/error.h"
 #include "common/file_system.h"
+#include "common/threading.h"
 
 #include <QtWidgets/QInputDialog>
 #include <array>
