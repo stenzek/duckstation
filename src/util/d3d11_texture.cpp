@@ -386,7 +386,10 @@ D3D11TextureBuffer::D3D11TextureBuffer(Format format, u32 size_in_elements) : GP
 {
 }
 
-D3D11TextureBuffer::~D3D11TextureBuffer() = default;
+D3D11TextureBuffer::~D3D11TextureBuffer()
+{
+  D3D11Device::GetInstance().UnbindTextureBuffer(this);
+}
 
 bool D3D11TextureBuffer::CreateBuffer(Error* error)
 {

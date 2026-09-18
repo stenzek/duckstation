@@ -481,8 +481,8 @@ void OpenGLDevice::PostLinkProgram(const GPUPipeline::GraphicsConfig& plconfig, 
 
     glUseProgram(program_id);
 
-    // Texture buffer is zero here, so we have to bump it.
-    const u32 num_textures = std::max<u32>(GetActiveTexturesForLayout(plconfig.layout), 1);
+    // HW batches have a single texture, but also have the texture buffer.
+    const u32 num_textures = LayoutHasTextureBuffer(plconfig.layout) ? 2 : GetActiveTexturesForLayout(plconfig.layout);
     for (u32 i = 0; i < num_textures; i++)
     {
       const GLint samp_location = glGetUniformLocation(program_id, TinyString::from_format("samp{}", i));

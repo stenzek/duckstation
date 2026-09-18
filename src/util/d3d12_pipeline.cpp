@@ -197,10 +197,14 @@ void D3D12Device::SetupPipelineBuilder(D3D12::GraphicsPipelineBuilder& gpb, cons
 
   if (config.render_pass_flags & GPUPipeline::BindRenderTargetsAsImages && !m_features.raster_order_views)
     Panic("Attempting to create ROV pipeline without ROV feature.");
+  DebugAssert(config.layout != GPUPipeline::Layout::HWFeedbackLoopBatch ||
+              (config.render_pass_flags & GPUPipeline::ColorFeedbackLoop));
+  DebugAssert(config.layout != GPUPipeline::Layout::HWImageBatch ||
+              (config.render_pass_flags & GPUPipeline::BindRenderTargetsAsImages));
+  DebugAssert(!(config.render_pass_flags & GPUPipeline::BindRenderTargetsAsImages) ||
+              config.layout == GPUPipeline::Layout::HWImageBatch);
 
-  gpb.SetRootSignature(m_root_signatures[BoolToUInt8(
-    (config.render_pass_flags & GPUPipeline::BindRenderTargetsAsImages))][static_cast<u8>(config.layout)]
-                         .Get());
+  gpb.SetRootSignature(m_root_signatures[static_cast<u8>(config.layout)].Get());
   gpb.SetVertexShader(static_cast<const D3D12Shader*>(config.vertex_shader)->GetBytecodeData(),
                       static_cast<const D3D12Shader*>(config.vertex_shader)->GetBytecodeSize());
   gpb.SetPixelShader(static_cast<const D3D12Shader*>(config.fragment_shader)->GetBytecodeData(),
@@ -338,7 +342,7 @@ std::unique_ptr<GPUPipeline> D3D12Device::CreatePipeline(const GPUPipeline::Grap
 
 void D3D12Device::SetupPipelineBuilder(D3D12::ComputePipelineBuilder& cpb, const GPUPipeline::ComputeConfig& config)
 {
-  cpb.SetRootSignature(m_root_signatures[0][static_cast<u8>(config.layout)].Get());
+  cpb.SetRootSignature(m_root_signatures[static_cast<u8>(config.layout)].Get());
   cpb.SetShader(static_cast<const D3D12Shader*>(config.compute_shader)->GetBytecodeData(),
                 static_cast<const D3D12Shader*>(config.compute_shader)->GetBytecodeSize());
 }

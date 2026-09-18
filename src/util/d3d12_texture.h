@@ -66,6 +66,15 @@ public:
   // Call when the texture is bound to the pipeline, or read from in a copy.
   ALWAYS_INLINE void SetUseFenceValue(u64 counter) { m_use_fence_counter = counter; }
 
+  // Some textures are only used with multiple-texture heaps, hence we generate it on-demand.
+  ALWAYS_INLINE bool HasGPUSRVDescriptor(u64 fence_value) const { return m_gpu_srv_fence_value == fence_value; }
+  ALWAYS_INLINE D3D12_GPU_DESCRIPTOR_HANDLE GetGPUSRVDescriptor() const { return m_gpu_srv_descriptor; }
+  ALWAYS_INLINE void SetGPUSRVDescriptor(D3D12_GPU_DESCRIPTOR_HANDLE handle, u64 fence_value)
+  {
+    m_gpu_srv_descriptor = handle;
+    m_gpu_srv_fence_value = fence_value;
+  }
+
 private:
   enum class WriteDescriptorType : u8
   {
@@ -94,7 +103,10 @@ private:
 
   DXGI_FORMAT m_dxgi_format = DXGI_FORMAT_UNKNOWN;
   D3D12_RESOURCE_STATES m_resource_state = D3D12_RESOURCE_STATE_COMMON;
-  WriteDescriptorType m_write_descriptor_type = WriteDescriptorType::None;
+
+  // Ephemeral descriptor that is used to avoid copying multiple times within the same frame.
+  D3D12_GPU_DESCRIPTOR_HANDLE m_gpu_srv_descriptor = {};
+  u64 m_gpu_srv_fence_value = 0;
 
   // Contains the fence counter when the texture was last used.
   // When this matches the current fence counter, the texture was used this command buffer.
@@ -106,6 +118,8 @@ private:
   u16 m_map_height = 0;
   u8 m_map_layer = 0;
   u8 m_map_level = 0;
+
+  WriteDescriptorType m_write_descriptor_type = WriteDescriptorType::None;
 };
 
 class D3D12Sampler final : public GPUSampler
@@ -150,9 +164,21 @@ public:
   void SetDebugName(std::string_view name) override;
 #endif
 
+  ALWAYS_INLINE bool HasGPUSRVDescriptor(u64 fence_value) const { return m_gpu_srv_fence_value == fence_value; }
+  ALWAYS_INLINE D3D12_GPU_DESCRIPTOR_HANDLE GetGPUSRVDescriptor() const { return m_gpu_srv_descriptor; }
+  ALWAYS_INLINE void SetGPUSRVDescriptor(D3D12_GPU_DESCRIPTOR_HANDLE handle, u64 fence_value)
+  {
+    m_gpu_srv_descriptor = handle;
+    m_gpu_srv_fence_value = fence_value;
+  }
+
 private:
   D3D12StreamBuffer m_buffer;
   D3D12DescriptorHandle m_descriptor;
+
+  // Ephemeral descriptor that is used to avoid copying multiple times within the same frame.
+  D3D12_GPU_DESCRIPTOR_HANDLE m_gpu_srv_descriptor = {};
+  u64 m_gpu_srv_fence_value = 0;
 };
 
 class D3D12DownloadTexture final : public GPUDownloadTexture

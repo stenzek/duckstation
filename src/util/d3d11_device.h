@@ -96,7 +96,7 @@ public:
                         GPUPipeline::RenderPassFlag flags = GPUPipeline::NoRenderPassFlags) override;
   void SetPipeline(GPUPipeline* pipeline) override;
   void SetTextureSampler(u32 slot, GPUTexture* texture, GPUSampler* sampler) override;
-  void SetTextureBuffer(u32 slot, GPUTextureBuffer* buffer) override;
+  void SetTextureBuffer(GPUTextureBuffer* buffer) override;
   void SetViewport(const GSVector4i rc) override;
   void SetScissor(const GSVector4i rc) override;
   void Draw(u32 vertex_count, u32 base_vertex) override;
@@ -119,6 +119,7 @@ public:
 
   void UnbindPipeline(D3D11Pipeline* pl);
   void UnbindTexture(D3D11Texture* tex);
+  void UnbindTextureBuffer(D3D11TextureBuffer* tex);
 
 protected:
   bool CreateDeviceAndMainSwapChain(std::string_view adapter, CreateFlags create_flags, const WindowInfo& wi,
@@ -145,6 +146,9 @@ private:
   static constexpr u32 UNIFORM_BUFFER_ALIGNMENT_DISCARD = 16;
   static constexpr u32 PUSH_CONSTANT_BUFFER_SIZE = 128;
   static constexpr u8 NUM_TIMESTAMP_QUERIES = 3;
+
+  // Texture buffers occupy slot #1.
+  static constexpr u32 TEXTURE_BUFFER_SLOT = 1;
 
   void SetFeatures(CreateFlags create_flags);
 

@@ -443,46 +443,6 @@ void ShaderGen::DeclareTexture(std::stringstream& ss, const char* name, u32 inde
   }
 }
 
-void ShaderGen::DeclareTextureBuffer(std::stringstream& ss, const char* name, u32 index, bool is_int,
-                                     bool is_unsigned) const
-{
-  if (m_glsl)
-  {
-    if (m_spirv)
-      ss << "layout(set = " << ((m_has_uniform_buffer || IsMetal()) ? 1 : 0) << ", binding = " << index << ") ";
-    else if (m_use_glsl_binding_layout)
-      ss << "layout(binding = " << index << ") ";
-
-    ss << "uniform " << (is_int ? (is_unsigned ? "u" : "i") : "") << "samplerBuffer " << name << ";\n";
-  }
-  else
-  {
-    ss << "Buffer<" << (is_int ? (is_unsigned ? "uint4" : "int4") : "float4") << "> " << name << " : register(t"
-       << index << ");\n";
-  }
-}
-
-void ShaderGen::DeclareImage(std::stringstream& ss, const char* name, u32 index, bool is_float /* = false */,
-                             bool is_int /* = false */, bool is_unsigned /* = false */) const
-{
-  if (m_glsl)
-  {
-    if (m_spirv)
-      ss << "layout(set = " << (m_has_uniform_buffer ? 2 : 1) << ", binding = " << index;
-    else
-      ss << "layout(binding = " << index;
-
-    ss << ", " << (is_int ? (is_unsigned ? "rgba8ui" : "rgba8i") : "rgba8") << ") "
-       << "uniform restrict coherent image2D " << name << ";\n";
-  }
-  else
-  {
-    ss << "RasterizerOrderedTexture2D<"
-       << (is_int ? (is_unsigned ? "uint4" : "int4") : (is_float ? "float4" : "unorm float4")) << "> " << name
-       << " : register(u" << index << ");\n";
-  }
-}
-
 const char* ShaderGen::GetInterpolationQualifier(bool interface_block, bool centroid_interpolation,
                                                  bool sample_interpolation, bool is_out) const
 {
@@ -723,7 +683,7 @@ void ShaderGen::DeclareFragmentEntryPoint(
       if (m_render_api == RenderAPI::Vulkan || (m_render_api == RenderAPI::Metal && m_supports_framebuffer_fetch))
       {
         // Set doesn't matter for Metal, because it's transformed to color0.
-        ss << "layout(input_attachment_index = 0, set = 2, binding = 0) uniform "
+        ss << "layout(input_attachment_index = 0, set = 3, binding = 0) uniform "
            << (msaa ? "subpassInputMS" : "subpassInput") << " u_input_rt; \n";
         ss << "#define LAST_FRAG_COLOR " << (msaa ? "subpassLoad(u_input_rt, gl_SampleID)" : "subpassLoad(u_input_rt)")
            << "\n";

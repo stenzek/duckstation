@@ -808,13 +808,15 @@ bool VulkanDevice::CreateCommandBuffers()
     }
 
     u32 num_pools = 0;
-    VkDescriptorPoolSize pool_sizes[2];
+    VkDescriptorPoolSize pool_sizes[3];
     if (!m_optional_extensions.vk_khr_push_descriptor)
     {
       pool_sizes[num_pools++] = {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
                                  MAX_COMBINED_IMAGE_SAMPLER_DESCRIPTORS_PER_FRAME};
     }
     pool_sizes[num_pools++] = {VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, MAX_INPUT_ATTACHMENT_DESCRIPTORS_PER_FRAME};
+    if (m_optional_extensions.vk_ext_fragment_shader_interlock)
+      pool_sizes[num_pools++] = {VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, MAX_INPUT_ATTACHMENT_DESCRIPTORS_PER_FRAME};
 
     VkDescriptorPoolCreateInfo pool_create_info = {
       VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO, nullptr, 0, MAX_DESCRIPTOR_SETS_PER_FRAME, num_pools, pool_sizes};
@@ -2487,7 +2489,7 @@ void VulkanDevice::PushUniformBuffer(bool is_compute, const void* data, u32 data
 {
   DebugAssert(data_size <= UNIFORM_PUSH_CONSTANTS_SIZE);
   s_stats.buffer_streamed += data_size;
-  vkCmdPushConstants(m_current_command_buffer, GetCurrentVkPipelineLayout(is_compute),
+  vkCmdPushConstants(m_current_command_buffer, m_pipeline_layouts[static_cast<size_t>(m_current_pipeline_layout)],
                      is_compute ? VK_SHADER_STAGE_COMPUTE_BIT :
                                   static_cast<VkShaderStageFlagBits>(UNIFORM_PUSH_CONSTANTS_STAGES),
                      0, data_size, data);
@@ -2608,99 +2610,76 @@ bool VulkanDevice::CreatePipelineLayouts()
     return false;
   Vulkan::SetObjectName(m_device, m_image_ds_layout, "ROV Descriptor Set Layout");
 
-  for (u32 type = 0; type < 3; type++)
   {
-    const bool feedback_loop = (type == 1);
-    const bool rov = (type == 2);
-    if ((feedback_loop && !m_features.feedback_loops) || (rov && !m_features.raster_order_views))
-      continue;
-
-    {
-      VkPipelineLayout& pl = m_pipeline_layouts[type][static_cast<u8>(GPUPipeline::Layout::SingleTextureAndUBO)];
-      plb.AddDescriptorSet(m_ubo_ds_layout);
-      plb.AddDescriptorSet(m_single_texture_ds_layout);
-      if (feedback_loop)
-        plb.AddDescriptorSet(m_feedback_loop_ds_layout);
-      else if (rov)
-        plb.AddDescriptorSet(m_image_ds_layout);
-      if ((pl = plb.Create(m_device)) == VK_NULL_HANDLE)
-        return false;
-      Vulkan::SetObjectName(m_device, pl, "Single Texture + UBO Pipeline Layout");
-    }
-
-    {
-      VkPipelineLayout& pl =
-        m_pipeline_layouts[type][static_cast<u8>(GPUPipeline::Layout::SingleTextureAndPushConstants)];
-      plb.AddDescriptorSet(m_single_texture_ds_layout);
-      if (feedback_loop)
-        plb.AddDescriptorSet(m_feedback_loop_ds_layout);
-      else if (rov)
-        plb.AddDescriptorSet(m_image_ds_layout);
-      plb.AddPushConstants(UNIFORM_PUSH_CONSTANTS_STAGES, 0, UNIFORM_PUSH_CONSTANTS_SIZE);
-      if ((pl = plb.Create(m_device)) == VK_NULL_HANDLE)
-        return false;
-      Vulkan::SetObjectName(m_device, pl, "Single Texture Pipeline Layout");
-    }
-
-    {
-      VkPipelineLayout& pl =
-        m_pipeline_layouts[type][static_cast<u8>(GPUPipeline::Layout::SingleTextureBufferAndPushConstants)];
-      plb.AddDescriptorSet(m_single_texture_buffer_ds_layout);
-      if (feedback_loop)
-        plb.AddDescriptorSet(m_feedback_loop_ds_layout);
-      else if (rov)
-        plb.AddDescriptorSet(m_image_ds_layout);
-      plb.AddPushConstants(UNIFORM_PUSH_CONSTANTS_STAGES, 0, UNIFORM_PUSH_CONSTANTS_SIZE);
-      if ((pl = plb.Create(m_device)) == VK_NULL_HANDLE)
-        return false;
-      Vulkan::SetObjectName(m_device, pl, "Single Texture Buffer + UBO Pipeline Layout");
-    }
-
-    {
-      VkPipelineLayout& pl = m_pipeline_layouts[type][static_cast<u8>(GPUPipeline::Layout::MultiTextureAndUBO)];
-      plb.AddDescriptorSet(m_ubo_ds_layout);
-      plb.AddDescriptorSet(m_multi_texture_ds_layout);
-      if (feedback_loop)
-        plb.AddDescriptorSet(m_feedback_loop_ds_layout);
-      else if (rov)
-        plb.AddDescriptorSet(m_image_ds_layout);
-      if ((pl = plb.Create(m_device)) == VK_NULL_HANDLE)
-        return false;
-      Vulkan::SetObjectName(m_device, pl, "Multi Texture + UBO + Push Constant Pipeline Layout");
-    }
-
-    {
-      VkPipelineLayout& pl =
-        m_pipeline_layouts[type][static_cast<u8>(GPUPipeline::Layout::MultiTextureAndPushConstants)];
-      plb.AddDescriptorSet(m_multi_texture_ds_layout);
-      plb.AddPushConstants(UNIFORM_PUSH_CONSTANTS_STAGES, 0, UNIFORM_PUSH_CONSTANTS_SIZE);
-      if (feedback_loop)
-        plb.AddDescriptorSet(m_feedback_loop_ds_layout);
-      else if (rov)
-        plb.AddDescriptorSet(m_image_ds_layout);
-      if ((pl = plb.Create(m_device)) == VK_NULL_HANDLE)
-        return false;
-      Vulkan::SetObjectName(m_device, pl, "Multi Texture Pipeline Layout");
-    }
-
-    {
-      VkPipelineLayout& pl =
-        m_pipeline_layouts[type][static_cast<u8>(GPUPipeline::Layout::MultiTextureAndUBOAndPushConstants)];
-      plb.AddDescriptorSet(m_ubo_ds_layout);
-      plb.AddDescriptorSet(m_multi_texture_ds_layout);
-      plb.AddPushConstants(UNIFORM_PUSH_CONSTANTS_STAGES, 0, UNIFORM_PUSH_CONSTANTS_SIZE);
-      if (feedback_loop)
-        plb.AddDescriptorSet(m_feedback_loop_ds_layout);
-      else if (rov)
-        plb.AddDescriptorSet(m_image_ds_layout);
-      if ((pl = plb.Create(m_device)) == VK_NULL_HANDLE)
-        return false;
-      Vulkan::SetObjectName(m_device, pl, "Multi Texture + UBO + Push Constant Pipeline Layout");
-    }
+    VkPipelineLayout& pl = m_pipeline_layouts[static_cast<u8>(GPUPipeline::Layout::SingleTextureAndUBO)];
+    plb.AddDescriptorSet(m_ubo_ds_layout);
+    plb.AddDescriptorSet(m_single_texture_ds_layout);
+    if ((pl = plb.Create(m_device)) == VK_NULL_HANDLE)
+      return false;
+    Vulkan::SetObjectName(m_device, pl, "Single Texture + UBO Pipeline Layout");
   }
 
   {
-    VkPipelineLayout& pl = m_pipeline_layouts[0][static_cast<u8>(GPUPipeline::Layout::ComputeMultiTextureAndUBO)];
+    VkPipelineLayout& pl = m_pipeline_layouts[static_cast<u8>(GPUPipeline::Layout::SingleTextureAndPushConstants)];
+    plb.AddDescriptorSet(m_single_texture_ds_layout);
+    plb.AddPushConstants(UNIFORM_PUSH_CONSTANTS_STAGES, 0, UNIFORM_PUSH_CONSTANTS_SIZE);
+    if ((pl = plb.Create(m_device)) == VK_NULL_HANDLE)
+      return false;
+    Vulkan::SetObjectName(m_device, pl, "Single Texture Pipeline Layout");
+  }
+
+  {
+    VkPipelineLayout& pl = m_pipeline_layouts[static_cast<u8>(GPUPipeline::Layout::MultiTextureAndUBO)];
+    plb.AddDescriptorSet(m_ubo_ds_layout);
+    plb.AddDescriptorSet(m_multi_texture_ds_layout);
+    if ((pl = plb.Create(m_device)) == VK_NULL_HANDLE)
+      return false;
+    Vulkan::SetObjectName(m_device, pl, "Multi Texture + UBO Pipeline Layout");
+  }
+
+  {
+    VkPipelineLayout& pl = m_pipeline_layouts[static_cast<u8>(GPUPipeline::Layout::MultiTextureAndPushConstants)];
+    plb.AddDescriptorSet(m_multi_texture_ds_layout);
+    plb.AddPushConstants(UNIFORM_PUSH_CONSTANTS_STAGES, 0, UNIFORM_PUSH_CONSTANTS_SIZE);
+    if ((pl = plb.Create(m_device)) == VK_NULL_HANDLE)
+      return false;
+    Vulkan::SetObjectName(m_device, pl, "Multi Texture Pipeline Layout");
+  }
+
+  {
+    VkPipelineLayout& pl = m_pipeline_layouts[static_cast<u8>(GPUPipeline::Layout::MultiTextureAndUBOAndPushConstants)];
+    plb.AddDescriptorSet(m_ubo_ds_layout);
+    plb.AddDescriptorSet(m_multi_texture_ds_layout);
+    plb.AddPushConstants(UNIFORM_PUSH_CONSTANTS_STAGES, 0, UNIFORM_PUSH_CONSTANTS_SIZE);
+    if ((pl = plb.Create(m_device)) == VK_NULL_HANDLE)
+      return false;
+    Vulkan::SetObjectName(m_device, pl, "Multi Texture + UBO + Push Constant Pipeline Layout");
+  }
+
+  for (const GPUPipeline::Layout layout :
+       {GPUPipeline::Layout::HWBatch, GPUPipeline::Layout::HWFeedbackLoopBatch, GPUPipeline::Layout::HWImageBatch})
+  {
+    if ((layout == GPUPipeline::Layout::HWFeedbackLoopBatch && !m_features.feedback_loops) ||
+        (layout == GPUPipeline::Layout::HWImageBatch && !m_features.raster_order_views))
+    {
+      continue;
+    }
+
+    VkPipelineLayout& pl = m_pipeline_layouts[static_cast<u8>(layout)];
+    plb.AddDescriptorSet(m_ubo_ds_layout);
+    plb.AddDescriptorSet(m_single_texture_ds_layout);
+    plb.AddDescriptorSet(m_single_texture_buffer_ds_layout);
+    if (layout == GPUPipeline::Layout::HWFeedbackLoopBatch)
+      plb.AddDescriptorSet(m_feedback_loop_ds_layout);
+    else if (layout == GPUPipeline::Layout::HWImageBatch)
+      plb.AddDescriptorSet(m_image_ds_layout);
+    if ((pl = plb.Create(m_device)) == VK_NULL_HANDLE)
+      return false;
+    Vulkan::SetObjectName(m_device, pl, "GPU-HW Batch Pipeline Layout");
+  }
+
+  {
+    VkPipelineLayout& pl = m_pipeline_layouts[static_cast<u8>(GPUPipeline::Layout::ComputeMultiTextureAndUBO)];
     plb.AddDescriptorSet(m_ubo_ds_layout);
     plb.AddDescriptorSet(m_multi_texture_ds_layout);
     plb.AddDescriptorSet(m_image_ds_layout);
@@ -2709,29 +2688,19 @@ bool VulkanDevice::CreatePipelineLayouts()
     Vulkan::SetObjectName(m_device, pl, "Compute Multi Texture + UBO Pipeline Layout");
   }
 
-  {
-    VkPipelineLayout& pl =
-      m_pipeline_layouts[0][static_cast<u8>(GPUPipeline::Layout::ComputeMultiTextureAndPushConstants)];
-    plb.AddDescriptorSet(m_multi_texture_ds_layout);
-    plb.AddDescriptorSet(m_image_ds_layout);
-    plb.AddPushConstants(VK_SHADER_STAGE_COMPUTE_BIT, 0, UNIFORM_PUSH_CONSTANTS_SIZE);
-    if ((pl = plb.Create(m_device)) == VK_NULL_HANDLE)
-      return false;
-    Vulkan::SetObjectName(m_device, pl, "Compute Multi Texture Pipeline Layout");
-  }
-
   return true;
 }
 
 void VulkanDevice::DestroyPipelineLayouts()
 {
-  m_pipeline_layouts.enumerate([this](auto& pl) {
+  for (VkPipelineLayout& pl : m_pipeline_layouts)
+  {
     if (pl != VK_NULL_HANDLE)
     {
       vkDestroyPipelineLayout(m_device, pl, nullptr);
       pl = VK_NULL_HANDLE;
     }
-  });
+  }
 
   auto destroy_dsl = [this](VkDescriptorSetLayout& l) {
     if (l != VK_NULL_HANDLE)
@@ -2930,9 +2899,6 @@ bool VulkanDevice::TryImportHostMemory(void* data, size_t data_size, VkBufferUsa
 void VulkanDevice::SetRenderTargets(GPUTexture* const* rts, u32 num_rts, GPUTexture* ds,
                                     GPUPipeline::RenderPassFlag flags)
 {
-  const bool changed_layout =
-    (m_current_render_pass_flags & (GPUPipeline::ColorFeedbackLoop | GPUPipeline::BindRenderTargetsAsImages)) !=
-    (flags & (GPUPipeline::ColorFeedbackLoop | GPUPipeline::BindRenderTargetsAsImages));
   bool changed =
     (m_num_current_render_targets != num_rts || m_current_depth_target != ds || m_current_render_pass_flags != flags);
   bool needs_ds_clear = (ds && ds->IsClearedOrInvalidated());
@@ -2974,10 +2940,10 @@ void VulkanDevice::SetRenderTargets(GPUTexture* const* rts, u32 num_rts, GPUText
       }
     }
 
-    m_dirty_flags = (m_dirty_flags & ~DIRTY_FLAG_INPUT_ATTACHMENT) | (changed_layout ? DIRTY_FLAG_PIPELINE_LAYOUT : 0) |
-                    ((flags & (GPUPipeline::ColorFeedbackLoop | GPUPipeline::BindRenderTargetsAsImages)) ?
-                       DIRTY_FLAG_INPUT_ATTACHMENT :
-                       0);
+    m_dirty_flags =
+      (m_dirty_flags & ~DIRTY_FLAG_RENDER_TARGETS) |
+      ((flags & (GPUPipeline::ColorFeedbackLoop | GPUPipeline::BindRenderTargetsAsImages)) ? DIRTY_FLAG_RENDER_TARGETS :
+                                                                                             0);
   }
   else if (needs_rt_clear || needs_ds_clear)
   {
@@ -3310,7 +3276,7 @@ void VulkanDevice::SetPipeline(GPUPipeline* pipeline)
   if (m_current_pipeline_layout != m_current_pipeline->GetLayout())
   {
     m_current_pipeline_layout = m_current_pipeline->GetLayout();
-    m_dirty_flags |= DIRTY_FLAG_PIPELINE_LAYOUT;
+    m_dirty_flags |= PIPELINE_LAYOUT_DEPENDENT_STATE;
   }
 }
 
@@ -3325,8 +3291,11 @@ void VulkanDevice::UnbindPipeline(VulkanPipeline* pl)
 void VulkanDevice::InvalidateCachedState()
 {
   DebugAssert(!m_current_render_pass);
-  m_dirty_flags = ALL_DIRTY_STATE |
-                  ((m_current_render_pass_flags & GPUPipeline::ColorFeedbackLoop) ? DIRTY_FLAG_INPUT_ATTACHMENT : 0);
+  m_dirty_flags =
+    ALL_DIRTY_STATE |
+    ((m_current_render_pass_flags & (GPUPipeline::ColorFeedbackLoop | GPUPipeline::BindRenderTargetsAsImages)) ?
+       DIRTY_FLAG_RENDER_TARGETS :
+       0);
 }
 
 s32 VulkanDevice::IsRenderTargetBoundIndex(const GPUTexture* tex) const
@@ -3338,20 +3307,6 @@ s32 VulkanDevice::IsRenderTargetBoundIndex(const GPUTexture* tex) const
   }
 
   return -1;
-}
-
-VulkanDevice::PipelineLayoutType VulkanDevice::GetPipelineLayoutType(GPUPipeline::RenderPassFlag flags)
-{
-  return (flags & GPUPipeline::BindRenderTargetsAsImages) ?
-           PipelineLayoutType::BindRenderTargetsAsImages :
-           ((flags & GPUPipeline::ColorFeedbackLoop) ? PipelineLayoutType::ColorFeedbackLoop :
-                                                       PipelineLayoutType::Normal);
-}
-
-VkPipelineLayout VulkanDevice::GetCurrentVkPipelineLayout(bool is_compute) const
-{
-  return m_pipeline_layouts[is_compute ? 0 : static_cast<size_t>(GetPipelineLayoutType(m_current_render_pass_flags))]
-                           [static_cast<size_t>(m_current_pipeline_layout)];
 }
 
 void VulkanDevice::SetInitialPipelineState()
@@ -3407,15 +3362,14 @@ void VulkanDevice::SetTextureSampler(u32 slot, GPUTexture* texture, GPUSampler* 
   }
 }
 
-void VulkanDevice::SetTextureBuffer(u32 slot, GPUTextureBuffer* buffer)
+void VulkanDevice::SetTextureBuffer(GPUTextureBuffer* buffer)
 {
-  DebugAssert(slot == 0);
   if (m_current_texture_buffer == buffer)
     return;
 
   m_current_texture_buffer = static_cast<VulkanTextureBuffer*>(buffer);
-  if (m_current_pipeline_layout == GPUPipeline::Layout::SingleTextureBufferAndPushConstants)
-    m_dirty_flags |= DIRTY_FLAG_TEXTURES_OR_SAMPLERS;
+  if (LayoutHasTextureBuffer(m_current_pipeline_layout))
+    m_dirty_flags |= DIRTY_FLAG_TEXTURE_BUFFER;
 }
 
 void VulkanDevice::UnbindTexture(VulkanTexture* tex)
@@ -3462,8 +3416,8 @@ void VulkanDevice::UnbindTextureBuffer(VulkanTextureBuffer* buf)
 
   m_current_texture_buffer = nullptr;
 
-  if (m_current_pipeline_layout == GPUPipeline::Layout::SingleTextureBufferAndPushConstants)
-    m_dirty_flags |= DIRTY_FLAG_TEXTURES_OR_SAMPLERS;
+  if (LayoutHasTextureBuffer(m_current_pipeline_layout))
+    m_dirty_flags |= DIRTY_FLAG_TEXTURE_BUFFER;
 }
 
 void VulkanDevice::SetViewport(const GSVector4i rc)
@@ -3507,7 +3461,7 @@ void VulkanDevice::PreDrawCheck()
     BeginRenderPass();
 
   DebugAssert(!(m_dirty_flags & DIRTY_FLAG_INITIAL));
-  const u32 update_mask = (m_current_render_pass_flags ? ~0u : ~DIRTY_FLAG_INPUT_ATTACHMENT);
+  const u32 update_mask = (m_current_render_pass_flags ? ~0u : ~DIRTY_FLAG_RENDER_TARGETS);
   const u32 dirty = m_dirty_flags & update_mask;
   m_dirty_flags = m_dirty_flags & ~update_mask;
 
@@ -3548,7 +3502,7 @@ void VulkanDevice::PreDispatchCheck()
     SetInitialPipelineState();
 
   DebugAssert(!(m_dirty_flags & DIRTY_FLAG_INITIAL));
-  const u32 update_mask = (m_current_render_pass_flags ? ~0u : ~DIRTY_FLAG_INPUT_ATTACHMENT);
+  const u32 update_mask = (m_current_render_pass_flags ? ~0u : ~DIRTY_FLAG_RENDER_TARGETS);
   const u32 dirty = m_dirty_flags & update_mask;
   m_dirty_flags = m_dirty_flags & ~update_mask;
 
@@ -3575,15 +3529,13 @@ bool VulkanDevice::UpdateDescriptorSetsForLayout(u32 dirty)
      layout == GPUPipeline::Layout::ComputeMultiTextureAndUBO);
   constexpr VkPipelineBindPoint vk_bind_point =
     (is_compute ? VK_PIPELINE_BIND_POINT_COMPUTE : VK_PIPELINE_BIND_POINT_GRAPHICS);
-  const VkPipelineLayout vk_pipeline_layout = GetCurrentVkPipelineLayout(is_compute);
+  const VkPipelineLayout vk_pipeline_layout = m_pipeline_layouts[static_cast<size_t>(layout)];
   std::array<VkDescriptorSet, 3> ds;
   u32 first_ds = 0;
   u32 num_ds = 0;
 
   if constexpr (has_ubo)
   {
-    new_dynamic_offsets = ((dirty & DIRTY_FLAG_DYNAMIC_OFFSETS) != 0);
-
     if (dirty & (DIRTY_FLAG_PIPELINE_LAYOUT | DIRTY_FLAG_DYNAMIC_OFFSETS))
     {
       ds[num_ds++] = m_ubo_descriptor_set;
@@ -3603,16 +3555,10 @@ bool VulkanDevice::UpdateDescriptorSetsForLayout(u32 dirty)
     DebugAssert(tex && m_current_samplers[0] != VK_NULL_HANDLE);
     ds[num_ds++] = tex->GetDescriptorSetWithSampler(m_current_samplers[0]);
   }
-  else if constexpr (layout == GPUPipeline::Layout::SingleTextureBufferAndPushConstants)
-  {
-    DebugAssert(m_current_texture_buffer);
-    ds[num_ds++] = m_current_texture_buffer->GetDescriptorSet();
-  }
   else if constexpr (layout == GPUPipeline::Layout::MultiTextureAndUBO ||
                      layout == GPUPipeline::Layout::MultiTextureAndPushConstants ||
                      layout == GPUPipeline::Layout::MultiTextureAndUBOAndPushConstants ||
-                     layout == GPUPipeline::Layout::ComputeMultiTextureAndUBO ||
-                     layout == GPUPipeline::Layout::ComputeMultiTextureAndPushConstants)
+                     layout == GPUPipeline::Layout::ComputeMultiTextureAndUBO)
   {
     Vulkan::DescriptorSetUpdateBuilder dsub;
 
@@ -3651,7 +3597,7 @@ bool VulkanDevice::UpdateDescriptorSetsForLayout(u32 dirty)
   }
 
   if (m_num_current_render_targets > 0 &&
-      ((dirty & DIRTY_FLAG_INPUT_ATTACHMENT) ||
+      ((dirty & DIRTY_FLAG_RENDER_TARGETS) ||
        (dirty & DIRTY_FLAG_PIPELINE_LAYOUT &&
         (m_current_render_pass_flags & (GPUPipeline::ColorFeedbackLoop | GPUPipeline::BindRenderTargetsAsImages)))))
   {
@@ -3707,6 +3653,92 @@ bool VulkanDevice::UpdateDescriptorSetsForLayout(u32 dirty)
   return true;
 }
 
+template<GPUPipeline::Layout layout>
+bool VulkanDevice::UpdateDescriptorSetsForHWBatch(u32 dirty)
+{
+  VulkanTexture* const tex =
+    m_current_textures[0] ? m_current_textures[0] : static_cast<VulkanTexture*>(m_empty_texture.get());
+  DebugAssert(tex && m_current_samplers[0] != VK_NULL_HANDLE);
+
+  std::array<VkDescriptorSet, 4> ds;
+  u32 num_ds = 0;
+  u32 first_ds = 0;
+
+  if (dirty & (DIRTY_FLAG_PIPELINE_LAYOUT | DIRTY_FLAG_DYNAMIC_OFFSETS))
+  {
+    ds[num_ds++] = m_ubo_descriptor_set;
+    first_ds = 0;
+  }
+  else
+  {
+    first_ds = 1;
+  }
+
+  // texture buffer updates are very rare, just collapse them in with the textures and do a single update
+  if (dirty & (DIRTY_FLAG_TEXTURES_OR_SAMPLERS | DIRTY_FLAG_TEXTURE_BUFFER))
+    ds[num_ds++] = tex->GetDescriptorSetWithSampler(m_current_samplers[0]);
+
+  if (m_current_texture_buffer && (dirty & DIRTY_FLAG_TEXTURE_BUFFER))
+    ds[num_ds++] = m_current_texture_buffer->GetDescriptorSet();
+
+  // If we're only changing the RT, this can be zero.
+  if (num_ds > 0)
+  {
+    const u32 num_dynamic_offsets = BoolToUInt32(first_ds == 0);
+    vkCmdBindDescriptorSets(m_current_command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
+                            m_pipeline_layouts[static_cast<size_t>(layout)], first_ds, num_ds, ds.data(),
+                            num_dynamic_offsets, num_dynamic_offsets ? &m_uniform_buffer_position : nullptr);
+  }
+
+  // ROV/RT updates are even rare, put them in their own bind to avoid the hole for texture buffers...
+  if constexpr (layout == GPUPipeline::Layout::HWFeedbackLoopBatch || layout == GPUPipeline::Layout::HWImageBatch)
+  {
+    if (dirty & DIRTY_FLAG_RENDER_TARGETS)
+    {
+      DebugAssert(m_num_current_render_targets > 0);
+
+      VkDescriptorSet rt_ds;
+      if constexpr (layout == GPUPipeline::Layout::HWFeedbackLoopBatch)
+      {
+        rt_ds = AllocateDescriptorSet(m_feedback_loop_ds_layout);
+        if (rt_ds == VK_NULL_HANDLE)
+          return false;
+
+        Vulkan::DescriptorSetUpdateBuilder dsub;
+        dsub.AddInputAttachmentDescriptorWrite(rt_ds, 0, m_current_render_targets[0]->GetView(),
+                                               m_current_render_targets[0]->GetVkLayout());
+        dsub.Update(m_device, false);
+      }
+      else
+      {
+        rt_ds = AllocateDescriptorSet(m_image_ds_layout);
+        if (rt_ds == VK_NULL_HANDLE)
+          return false;
+
+        Vulkan::DescriptorSetUpdateBuilder dsub;
+        for (u32 i = 0; i < m_num_current_render_targets; i++)
+        {
+          dsub.AddStorageImageDescriptorWrite(rt_ds, i, m_current_render_targets[i]->GetView(),
+                                              m_current_render_targets[i]->GetVkLayout());
+        }
+
+        const VulkanTexture* const empty_tex = static_cast<VulkanTexture*>(m_empty_texture.get());
+        for (u32 i = m_num_current_render_targets; i < MAX_IMAGE_RENDER_TARGETS; i++)
+        {
+          dsub.AddStorageImageDescriptorWrite(rt_ds, i, empty_tex->GetView(), empty_tex->GetVkLayout());
+        }
+
+        dsub.Update(m_device, false);
+      }
+
+      vkCmdBindDescriptorSets(m_current_command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
+                              m_pipeline_layouts[static_cast<size_t>(layout)], 3, 1, &rt_ds, 0, nullptr);
+    }
+  }
+
+  return true;
+}
+
 bool VulkanDevice::UpdateDescriptorSets(u32 dirty)
 {
   switch (m_current_pipeline_layout)
@@ -3717,9 +3749,6 @@ bool VulkanDevice::UpdateDescriptorSets(u32 dirty)
     case GPUPipeline::Layout::SingleTextureAndPushConstants:
       return UpdateDescriptorSetsForLayout<GPUPipeline::Layout::SingleTextureAndPushConstants>(dirty);
 
-    case GPUPipeline::Layout::SingleTextureBufferAndPushConstants:
-      return UpdateDescriptorSetsForLayout<GPUPipeline::Layout::SingleTextureBufferAndPushConstants>(dirty);
-
     case GPUPipeline::Layout::MultiTextureAndUBO:
       return UpdateDescriptorSetsForLayout<GPUPipeline::Layout::MultiTextureAndUBO>(dirty);
 
@@ -3729,11 +3758,17 @@ bool VulkanDevice::UpdateDescriptorSets(u32 dirty)
     case GPUPipeline::Layout::MultiTextureAndUBOAndPushConstants:
       return UpdateDescriptorSetsForLayout<GPUPipeline::Layout::MultiTextureAndUBOAndPushConstants>(dirty);
 
+    case GPUPipeline::Layout::HWBatch:
+      return UpdateDescriptorSetsForHWBatch<GPUPipeline::Layout::HWBatch>(dirty);
+
+    case GPUPipeline::Layout::HWFeedbackLoopBatch:
+      return UpdateDescriptorSetsForHWBatch<GPUPipeline::Layout::HWFeedbackLoopBatch>(dirty);
+
+    case GPUPipeline::Layout::HWImageBatch:
+      return UpdateDescriptorSetsForHWBatch<GPUPipeline::Layout::HWImageBatch>(dirty);
+
     case GPUPipeline::Layout::ComputeMultiTextureAndUBO:
       return UpdateDescriptorSetsForLayout<GPUPipeline::Layout::ComputeMultiTextureAndUBO>(dirty);
-
-    case GPUPipeline::Layout::ComputeMultiTextureAndPushConstants:
-      return UpdateDescriptorSetsForLayout<GPUPipeline::Layout::ComputeMultiTextureAndPushConstants>(dirty);
 
     default:
       UnreachableCode();

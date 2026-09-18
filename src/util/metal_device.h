@@ -83,8 +83,8 @@ class MetalPipeline final : public GPUPipeline
 public:
   ~MetalPipeline() override;
 
-  ALWAYS_INLINE bool IsRenderPipeline() const { return !IsComputePipeline(); }
-  ALWAYS_INLINE bool IsComputePipeline() const { return GPUDevice::IsComputeLayout(m_layout); }
+  ALWAYS_INLINE bool IsRenderPipeline() const { return !m_compute; }
+  ALWAYS_INLINE bool IsComputePipeline() const { return m_compute; }
   ALWAYS_INLINE id<MTLRenderPipelineState> GetRenderPipelineState() const
   {
     return (id<MTLRenderPipelineState>)m_pipeline;
@@ -94,7 +94,6 @@ public:
     return (id<MTLComputePipelineState>)m_pipeline;
   }
   ALWAYS_INLINE id<MTLDepthStencilState> GetDepthState() const { return m_depth; }
-  ALWAYS_INLINE Layout GetLayout() const { return m_layout; }
   ALWAYS_INLINE MTLCullMode GetCullMode() const { return static_cast<MTLCullMode>(m_cull_mode); }
   ALWAYS_INLINE MTLPrimitiveType GetPrimitive() const { return static_cast<MTLPrimitiveType>(m_primitive); }
 
@@ -103,12 +102,12 @@ public:
 #endif
 
 private:
-  MetalPipeline(id pipeline, id<MTLDepthStencilState> depth, Layout layout, MTLCullMode cull_mode,
+  MetalPipeline(id pipeline, id<MTLDepthStencilState> depth, bool compute, MTLCullMode cull_mode,
                 MTLPrimitiveType primitive);
 
   id m_pipeline;
   id<MTLDepthStencilState> m_depth;
-  Layout m_layout;
+  bool m_compute;
   u8 m_cull_mode;
   u8 m_primitive;
 };
@@ -299,7 +298,7 @@ public:
                         GPUPipeline::RenderPassFlag flags) override;
   void SetPipeline(GPUPipeline* pipeline) override;
   void SetTextureSampler(u32 slot, GPUTexture* texture, GPUSampler* sampler) override;
-  void SetTextureBuffer(u32 slot, GPUTextureBuffer* buffer) override;
+  void SetTextureBuffer(GPUTextureBuffer* buffer) override;
   void SetViewport(const GSVector4i rc) override;
   void SetScissor(const GSVector4i rc) override;
   void Draw(u32 vertex_count, u32 base_vertex) override;
@@ -375,6 +374,7 @@ private:
 
   std::unique_ptr<GPUShader> CreateShaderFromMSL(GPUShaderStage stage, std::string_view source,
                                                  std::string_view entry_point, Error* error);
+  std::unique_ptr<GPUPipeline> CreateComputePipeline(id<MTLFunction> function, Error* error);
   id<MTLFunction> GetFunctionFromLibrary(id<MTLLibrary> library, NSString* name);
   ClearPipelineConfig GetCurrentClearPipelineConfig() const;
   id<MTLRenderPipelineState> GetClearDepthPipeline(const ClearPipelineConfig& config);

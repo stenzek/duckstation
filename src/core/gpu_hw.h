@@ -191,8 +191,10 @@ private:
   void UpdateDepthBufferFromMaskBit();
   void CopyAndClearDepthBuffer(bool only_drawing_area);
   void ClearDepthBuffer(bool only_drawing_area);
+  void SetViewport();
   void SetScissor();
-  void SetVRAMRenderTarget();
+  void BindVRAMRenderTarget();
+  void BindVRAMReadTexture();
   void DeactivateROV();
   void MapGPUBuffer(u32 required_vertices, u32 required_indices);
   void UnmapGPUBuffer(u32 used_vertices, u32 used_indices);

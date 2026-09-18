@@ -690,9 +690,9 @@ std::unique_ptr<GPUShader> MetalDevice::CreateShaderFromSource(GPUShaderStage st
   return CreateShaderFromMSL(stage, source, entry_point, error);
 }
 
-MetalPipeline::MetalPipeline(id pipeline, id<MTLDepthStencilState> depth, Layout layout, MTLCullMode cull_mode,
+MetalPipeline::MetalPipeline(id pipeline, id<MTLDepthStencilState> depth, bool compute, MTLCullMode cull_mode,
                              MTLPrimitiveType primitive)
-  : m_pipeline(pipeline), m_depth(depth), m_layout(layout), m_cull_mode(static_cast<u8>(cull_mode)),
+  : m_pipeline(pipeline), m_depth(depth), m_compute(compute), m_cull_mode(static_cast<u8>(cull_mode)),
     m_primitive(static_cast<u8>(primitive))
 {
 }
@@ -888,7 +888,8 @@ std::unique_ptr<GPUPipeline> MetalDevice::CreatePipeline(const GPUPipeline::Grap
     desc.fragmentBuffers[0].mutability = MTLMutabilityImmutable;
     if (!config.input_layout.vertex_attributes.empty())
       desc.vertexBuffers[1].mutability = MTLMutabilityImmutable;
-    if (config.layout == GPUPipeline::Layout::SingleTextureBufferAndPushConstants)
+    if (config.layout == GPUPipeline::Layout::HWBatch || config.layout == GPUPipeline::Layout::HWFeedbackLoopBatch ||
+        config.layout == GPUPipeline::Layout::HWImageBatch)
       desc.fragmentBuffers[1].mutability = MTLMutabilityImmutable;
 
     NSError* nserror = nil;
@@ -902,7 +903,7 @@ std::unique_ptr<GPUPipeline> MetalDevice::CreatePipeline(const GPUPipeline::Grap
       return {};
     }
 
-    return std::unique_ptr<GPUPipeline>(new MetalPipeline(pipeline, depth, config.layout, cull_mode, primitive));
+    return std::unique_ptr<GPUPipeline>(new MetalPipeline(pipeline, depth, false, cull_mode, primitive));
   }
 }
 
@@ -918,10 +919,15 @@ std::unique_ptr<GPUPipeline> MetalDevice::LoadPipeline(const GPUPipeline::Comput
 
 std::unique_ptr<GPUPipeline> MetalDevice::CreatePipeline(const GPUPipeline::ComputeConfig& config, Error* error)
 {
+  return CreateComputePipeline(static_cast<MetalShader*>(config.compute_shader)->GetFunction(), error);
+}
+
+std::unique_ptr<GPUPipeline> MetalDevice::CreateComputePipeline(id<MTLFunction> function, Error* error)
+{
   @autoreleasepool
   {
     MTLComputePipelineDescriptor* desc = [[MTLComputePipelineDescriptor new] autorelease];
-    [desc setComputeFunction:static_cast<MetalShader*>(config.compute_shader)->GetFunction()];
+    [desc setComputeFunction:function];
 
     NSError* nserror = nil;
     id<MTLComputePipelineState> pipeline = [m_device newComputePipelineStateWithDescriptor:desc
@@ -935,8 +941,7 @@ std::unique_ptr<GPUPipeline> MetalDevice::CreatePipeline(const GPUPipeline::Comp
       return {};
     }
 
-    return std::unique_ptr<GPUPipeline>(
-      new MetalPipeline(pipeline, nil, config.layout, MTLCullModeNone, MTLPrimitiveTypePoint));
+    return std::unique_ptr<GPUPipeline>(new MetalPipeline(pipeline, nil, true, MTLCullModeNone, MTLPrimitiveTypePoint));
   }
 }
 
@@ -1570,16 +1575,11 @@ void MetalDevice::ResolveTextureRegion(GPUTexture* dst, u32 dst_x, u32 dst_y, u3
     {
       const bool is_depth = GPUTexture::IsDepthFormat(src_format);
       id<MTLFunction> function =
-        GetFunctionFromLibrary(m_shaders, is_depth ? @"depthResolveKernel" : @"colorResolveKernel");
+        [GetFunctionFromLibrary(m_shaders, is_depth ? @"depthResolveKernel" : @"colorResolveKernel") autorelease];
       if (function == nil)
         Panic("Failed to get resolve kernel");
 
-      MetalShader temp_shader(GPUShaderStage::Compute, [m_shaders retain], function);
-      GPUPipeline::ComputeConfig config;
-      config.layout = GPUPipeline::Layout::ComputeMultiTextureAndPushConstants;
-      config.compute_shader = &temp_shader;
-
-      std::unique_ptr<GPUPipeline> pipeline = CreatePipeline(config, nullptr);
+      std::unique_ptr<GPUPipeline> pipeline = CreateComputePipeline(function, nullptr);
       if (!pipeline)
         Panic("Failed to create resolve pipeline");
 
@@ -2014,7 +2014,7 @@ void MetalDevice::SetTextureSampler(u32 slot, GPUTexture* texture, GPUSampler* s
   }
 }
 
-void MetalDevice::SetTextureBuffer(u32 slot, GPUTextureBuffer* buffer)
+void MetalDevice::SetTextureBuffer(GPUTextureBuffer* buffer)
 {
   id<MTLBuffer> B = buffer ? static_cast<MetalTextureBuffer*>(buffer)->GetMTLBuffer() : nil;
   if (m_current_ssbo == B)

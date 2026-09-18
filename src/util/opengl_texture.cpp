@@ -743,16 +743,10 @@ OpenGLTextureBuffer::OpenGLTextureBuffer(Format format, u32 size_in_elements,
 
 OpenGLTextureBuffer::~OpenGLTextureBuffer()
 {
-  OpenGLDevice& dev = OpenGLDevice::GetInstance();
+  OpenGLDevice::GetInstance().UnbindTextureBuffer(this);
+
   if (m_texture_id != 0)
-  {
-    dev.UnbindTexture(m_texture_id);
     glDeleteTextures(1, &m_texture_id);
-  }
-  else if (dev.GetFeatures().texture_buffers_emulated_with_ssbo && m_buffer)
-  {
-    dev.UnbindSSBO(m_buffer->GetGLBufferId());
-  }
 }
 
 bool OpenGLTextureBuffer::CreateBuffer()

@@ -706,6 +706,7 @@ D3D12Sampler::D3D12Sampler(D3D12DescriptorHandle descriptor) : m_descriptor(desc
 D3D12Sampler::~D3D12Sampler()
 {
   D3D12Device& dev = D3D12Device::GetInstance();
+  dev.UnbindSampler(this);
   dev.DeferDescriptorDestruction(dev.GetSamplerHeapManager(), &m_descriptor);
 }
 

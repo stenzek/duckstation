@@ -114,7 +114,7 @@ public:
   static GSVector4 GetScreenQuadClipSpaceCoordinates(const GSVector4i bounds, const GSVector2i rt_size);
 
   static void DrawScreenQuad(const GSVector4i bounds, const GSVector2i rt_size, const GSVector4 uv_bounds,
-                             const void* push_constants, u32 push_constants_size);
+                             const void* uniform_data = nullptr, u32 uniform_data_size = 0);
 
 protected:
   enum : u32

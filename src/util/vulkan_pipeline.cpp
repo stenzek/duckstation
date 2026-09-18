@@ -124,6 +124,13 @@ void VulkanPipeline::SetDebugName(std::string_view name)
 
 void VulkanDevice::SetupPipelineBuilder(Vulkan::GraphicsPipelineBuilder& gpb, const GPUPipeline::GraphicsConfig& config)
 {
+  DebugAssert(!(config.render_pass_flags & GPUPipeline::ColorFeedbackLoop) ||
+              config.layout == GPUPipeline::Layout::HWFeedbackLoopBatch);
+  DebugAssert(config.layout != GPUPipeline::Layout::HWImageBatch ||
+              (config.render_pass_flags & GPUPipeline::BindRenderTargetsAsImages));
+  DebugAssert(!(config.render_pass_flags & GPUPipeline::BindRenderTargetsAsImages) ||
+              config.layout == GPUPipeline::Layout::HWImageBatch);
+
   static constexpr std::array<VkPrimitiveTopology, static_cast<u32>(GPUPipeline::Primitive::MaxCount)> primitives = {{
     VK_PRIMITIVE_TOPOLOGY_POINT_LIST,     // Points
     VK_PRIMITIVE_TOPOLOGY_LINE_LIST,      // Lines
@@ -238,8 +245,7 @@ void VulkanDevice::SetupPipelineBuilder(Vulkan::GraphicsPipelineBuilder& gpb, co
   gpb.AddDynamicState(VK_DYNAMIC_STATE_VIEWPORT);
   gpb.AddDynamicState(VK_DYNAMIC_STATE_SCISSOR);
 
-  gpb.SetPipelineLayout(m_pipeline_layouts[static_cast<size_t>(GetPipelineLayoutType(config.render_pass_flags))]
-                                          [static_cast<size_t>(config.layout)]);
+  gpb.SetPipelineLayout(m_pipeline_layouts[static_cast<size_t>(config.layout)]);
 
   if ((config.render_pass_flags & GPUPipeline::ColorFeedbackLoopActive) &&
       m_optional_extensions.vk_ext_rasterization_order_attachment_access)
@@ -268,8 +274,9 @@ void VulkanDevice::SetupPipelineBuilder(Vulkan::GraphicsPipelineBuilder& gpb, co
                                              VK_FORMAT_UNDEFINED);
     }
 
-    if (config.render_pass_flags & GPUPipeline::ColorFeedbackLoop)
+    if (config.render_pass_flags & GPUPipeline::ColorFeedbackLoopActive)
     {
+      DebugAssert(config.render_pass_flags & GPUPipeline::ColorFeedbackLoop);
       DebugAssert(m_optional_extensions.vk_khr_dynamic_rendering_local_read &&
                   config.color_formats[0] != GPUTextureFormat::Unknown);
       gpb.AddDynamicRenderingInputAttachment(0);
@@ -327,7 +334,7 @@ std::unique_ptr<GPUPipeline> VulkanDevice::CreatePipeline(const GPUPipeline::Gra
 void VulkanDevice::SetupPipelineBuilder(Vulkan::ComputePipelineBuilder& cpb, const GPUPipeline::ComputeConfig& config)
 {
   cpb.SetShader(static_cast<const VulkanShader*>(config.compute_shader)->GetModule(), "main");
-  cpb.SetPipelineLayout(m_pipeline_layouts[0][static_cast<size_t>(config.layout)]);
+  cpb.SetPipelineLayout(m_pipeline_layouts[static_cast<size_t>(config.layout)]);
 }
 
 std::unique_ptr<GPUPipeline> VulkanDevice::WrapPipelineState(const GPUPipeline::ComputeConfig& config,

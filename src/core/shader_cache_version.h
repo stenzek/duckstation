@@ -10,6 +10,6 @@ inline constexpr u32 SHADER_CACHE_VERSION = 42;
 // Used to tag opaque keys.
 enum class ShaderCacheKeyType : u16
 {
-	HWBatchVertex,
-	HWBatchFragment,
+  HWBatchVertex,
+  HWBatchFragment,
 };

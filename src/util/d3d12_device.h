@@ -36,6 +36,7 @@ class D3D12SwapChain;
 class D3D12Texture;
 class D3D12TextureBuffer;
 class D3D12DownloadTexture;
+class D3D12Sampler;
 class D3D12SwapChain;
 
 namespace D3D12 {
@@ -123,7 +124,7 @@ public:
                         GPUPipeline::RenderPassFlag flags = GPUPipeline::NoRenderPassFlags) override;
   void SetPipeline(GPUPipeline* pipeline) override;
   void SetTextureSampler(u32 slot, GPUTexture* texture, GPUSampler* sampler) override;
-  void SetTextureBuffer(u32 slot, GPUTextureBuffer* buffer) override;
+  void SetTextureBuffer(GPUTextureBuffer* buffer) override;
   void SetViewport(const GSVector4i rc) override;
   void SetScissor(const GSVector4i rc) override;
   void Draw(u32 vertex_count, u32 base_vertex) override;
@@ -159,7 +160,6 @@ public:
   D3D12DescriptorHeapManager& GetRTVHeapManager() { return m_rtv_heap_manager; }
   D3D12DescriptorHeapManager& GetDSVHeapManager() { return m_dsv_heap_manager; }
   D3D12DescriptorHeapManager& GetSamplerHeapManager() { return m_sampler_heap_manager; }
-  const D3D12DescriptorHandle& GetNullSRVDescriptor() const { return m_null_srv_descriptor; }
 
   // These command buffers are allocated per-frame. They are valid until the command buffer
   // is submitted, after that you should call these functions again.
@@ -203,6 +203,7 @@ public:
   void UnbindPipeline(D3D12Pipeline* pl);
   void UnbindTexture(D3D12Texture* tex);
   void UnbindTextureBuffer(D3D12TextureBuffer* buf);
+  void UnbindSampler(D3D12Sampler* sampler);
 
   void RenderTextureMipmap(D3D12Texture* texture, u32 layer, u32 dst_level, u32 dst_width, u32 dst_height,
                            u32 src_level, u32 src_width, u32 src_height);
@@ -223,15 +224,17 @@ private:
   enum DIRTY_FLAG : u32
   {
     DIRTY_FLAG_INITIAL = (1 << 0),
-    DIRTY_FLAG_PIPELINE_LAYOUT = (1 << 1),
+    DIRTY_FLAG_ROOT_SIGNATURE = (1 << 1),
     DIRTY_FLAG_CONSTANT_BUFFER = (1 << 2),
     DIRTY_FLAG_TEXTURES = (1 << 3),
-    DIRTY_FLAG_SAMPLERS = (1 << 3),
-    DIRTY_FLAG_RT_UAVS = (1 << 4),
+    DIRTY_FLAG_SAMPLERS = (1 << 4),
+    DIRTY_FLAG_TEXTURE_BUFFER = (1 << 5),
+    DIRTY_FLAG_RT_UAVS = (1 << 6),
 
-    LAYOUT_DEPENDENT_DIRTY_STATE = DIRTY_FLAG_PIPELINE_LAYOUT | DIRTY_FLAG_CONSTANT_BUFFER | DIRTY_FLAG_TEXTURES |
-                                   DIRTY_FLAG_SAMPLERS | DIRTY_FLAG_RT_UAVS,
-    ALL_DIRTY_STATE = DIRTY_FLAG_INITIAL | LAYOUT_DEPENDENT_DIRTY_STATE,
+    ROOT_SIGNATURE_DEPENDENT_DIRTY_STATE = DIRTY_FLAG_ROOT_SIGNATURE | DIRTY_FLAG_CONSTANT_BUFFER |
+                                           DIRTY_FLAG_TEXTURES | DIRTY_FLAG_SAMPLERS | DIRTY_FLAG_TEXTURE_BUFFER |
+                                           DIRTY_FLAG_RT_UAVS,
+    ALL_DIRTY_STATE = DIRTY_FLAG_INITIAL | ROOT_SIGNATURE_DEPENDENT_DIRTY_STATE,
   };
 
   struct CommandList
@@ -303,11 +306,13 @@ private:
   void PreDispatchCheck();
   void PushUniformBuffer(ID3D12GraphicsCommandList4* const cmdlist, bool compute, const void* data, u32 data_size);
 
-  bool IsUsingROVRootSignature() const;
-  bool IsUsingComputeRootSignature() const;
   void UpdateRootSignature();
+  bool EnsureGPUNullSRVDescriptorValid();
+  template<bool is_compute, u32 base_param>
+  bool UpdateSingleTextureRootParameter(ID3D12GraphicsCommandList4* const cmdlist, u32 dirty);
   template<GPUPipeline::Layout layout>
   bool UpdateParametersForLayout(u32 dirty);
+  bool UpdateParametersForHWBatchLayout(GPUPipeline::Layout layout, u32 dirty);
   bool UpdateRootParameters(u32 dirty);
 
   ComPtr<IDXGIAdapter1> m_adapter;
@@ -333,6 +338,9 @@ private:
   D3D12DescriptorHandle m_null_srv_descriptor;
   D3D12DescriptorHandle m_null_uav_descriptor;
 
+  D3D12_GPU_DESCRIPTOR_HANDLE m_gpu_null_srv_descriptor = {};
+  u64 m_persistent_null_srv_fence_value = 0;
+
   ComPtr<ID3D12QueryHeap> m_timestamp_query_heap;
   ComPtr<ID3D12Resource> m_timestamp_query_buffer;
   ComPtr<D3D12MA::Allocation> m_timestamp_query_allocation;
@@ -342,8 +350,7 @@ private:
   std::deque<std::pair<u64, std::pair<D3D12MA::Allocation*, ID3D12Object*>>> m_cleanup_resources;
   std::deque<std::pair<u64, std::pair<D3D12DescriptorHeapManager*, D3D12DescriptorHandle>>> m_cleanup_descriptors;
 
-  DimensionalArray<ComPtr<ID3D12RootSignature>, static_cast<u8>(GPUPipeline::Layout::MaxCount), 2> m_root_signatures =
-    {};
+  std::array<ComPtr<ID3D12RootSignature>, static_cast<u8>(GPUPipeline::Layout::MaxCount)> m_root_signatures = {};
 
   D3D12StreamBuffer m_vertex_buffer;
   D3D12StreamBuffer m_index_buffer;
@@ -367,7 +374,7 @@ private:
   GPUPipeline::Layout m_current_pipeline_layout = GPUPipeline::Layout::SingleTextureAndPushConstants;
 
   std::array<D3D12Texture*, MAX_TEXTURE_SAMPLERS> m_current_textures = {};
-  std::array<D3D12DescriptorHandle, MAX_TEXTURE_SAMPLERS> m_current_samplers = {};
+  std::array<D3D12Sampler*, MAX_TEXTURE_SAMPLERS> m_current_samplers = {};
   D3D12TextureBuffer* m_current_texture_buffer = nullptr;
   GSVector4i m_current_viewport = GSVector4i::cxpr(0, 0, 1, 1);
   GSVector4i m_current_scissor = {};

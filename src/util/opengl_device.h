@@ -101,7 +101,7 @@ public:
                         GPUPipeline::RenderPassFlag feedback_loop = GPUPipeline::NoRenderPassFlags) override;
   void SetPipeline(GPUPipeline* pipeline) override;
   void SetTextureSampler(u32 slot, GPUTexture* texture, GPUSampler* sampler) override;
-  void SetTextureBuffer(u32 slot, GPUTextureBuffer* buffer) override;
+  void SetTextureBuffer(GPUTextureBuffer* buffer) override;
   void SetViewport(const GSVector4i rc) override;
   void SetScissor(const GSVector4i rc) override;
   void Draw(u32 vertex_count, u32 base_vertex) override;
@@ -140,7 +140,7 @@ public:
   void SetActiveTexture(u32 slot);
   void UnbindTexture(GLuint id);
   void UnbindTexture(OpenGLTexture* tex);
-  void UnbindSSBO(GLuint id);
+  void UnbindTextureBuffer(OpenGLTextureBuffer* tex);
   void UnbindSampler(GLuint id);
   void UnbindPipeline(const OpenGLPipeline* pl);
 
@@ -163,6 +163,9 @@ private:
   static constexpr GLenum UPDATE_TEXTURE_UNIT = GL_TEXTURE8;
 
   static constexpr u32 PUSH_CONSTANT_BUFFER_SIZE = 1 * 1024 * 1024;
+
+  // Texture buffers occupy slot #1 when not using SSBO-texture-buffer emulation.
+  static constexpr u32 TEXTURE_BUFFER_SLOT = 1;
 
   bool CheckFeatures(CreateFlags create_flags);
   bool CreateBuffers();

@@ -273,7 +273,7 @@ bool D3D12Device::CreateDeviceAndMainSwapChain(std::string_view adapter, CreateF
 
   SetFeatures(feature_level, create_flags);
 
-  if (!CreateCommandLists(error) || !CreateDescriptorHeaps(error))
+  if (!CreateDescriptorHeaps(error) || !CreateCommandLists(error))
     return false;
 
   if (!wi.IsSurfaceless())
@@ -501,8 +501,8 @@ void D3D12Device::BeginCommandList(u32 index)
                                    index * NUM_TIMESTAMP_QUERIES_PER_CMDLIST);
   }
 
-  ID3D12DescriptorHeap* heaps[2] = {res.descriptor_allocator.GetDescriptorHeap(),
-                                    res.sampler_allocator.GetDescriptorHeap()};
+  ID3D12DescriptorHeap* const heaps[2] = {res.descriptor_allocator.GetDescriptorHeap(),
+                                          res.sampler_allocator.GetDescriptorHeap()};
   res.command_lists[1]->SetDescriptorHeaps(static_cast<UINT>(std::size(heaps)), heaps);
 
   m_allocator->SetCurrentFrameIndex(static_cast<UINT>(m_current_fence_value));
@@ -560,7 +560,7 @@ bool D3D12Device::CreateDescriptorHeaps(Error* error)
   if (!default_sampler) [[unlikely]]
     return false;
   for (u32 i = 0; i < MAX_TEXTURE_SAMPLERS; i++)
-    m_current_samplers[i] = static_cast<D3D12Sampler*>(default_sampler)->GetDescriptor();
+    m_current_samplers[i] = static_cast<D3D12Sampler*>(default_sampler);
   return true;
 }
 
@@ -1228,8 +1228,7 @@ GPUPresentResult D3D12Device::BeginPresent(GPUSwapChain* swap_chain, u32 clear_c
 
   std::memset(m_current_render_targets.data(), 0, sizeof(m_current_render_targets));
   m_num_current_render_targets = 0;
-  m_dirty_flags =
-    (m_dirty_flags & ~DIRTY_FLAG_RT_UAVS) | ((IsUsingROVRootSignature()) ? DIRTY_FLAG_PIPELINE_LAYOUT : 0);
+  m_dirty_flags &= ~DIRTY_FLAG_RT_UAVS;
   m_current_render_pass_flags = GPUPipeline::NoRenderPassFlags;
   m_current_depth_target = nullptr;
   m_in_render_pass = true;
@@ -1618,18 +1617,18 @@ void D3D12Device::PushUniformBuffer(ID3D12GraphicsCommandList4* const cmdlist, b
   static constexpr std::array<u8, static_cast<u8>(GPUPipeline::Layout::MaxCount)> push_parameters = {
     0, // SingleTextureAndUBO
     2, // SingleTextureAndPushConstants
-    1, // SingleTextureBufferAndPushConstants
     0, // MultiTextureAndUBO
     2, // MultiTextureAndPushConstants
     3, // MultiTextureAndUBOAndPushConstants
+    0, // HWBatch
+    0, // HWFeedbackLoopBatch
+    0, // HWImageBatch
     0, // ComputeMultiTextureAndUBO
-    2, // ComputeSingleTextureAndPushConstants
   };
 
   s_stats.buffer_streamed += data_size;
 
-  const u32 push_param =
-    push_parameters[static_cast<u8>(m_current_pipeline_layout)] + BoolToUInt8(!compute && IsUsingROVRootSignature());
+  const u32 push_param = push_parameters[static_cast<u8>(m_current_pipeline_layout)];
   if (!compute)
     cmdlist->SetGraphicsRoot32BitConstants(push_param, data_size / 4u, data, 0);
   else
@@ -1663,139 +1662,85 @@ bool D3D12Device::CreateRootSignatures(Error* error)
 {
   D3D12::RootSignatureBuilder rsb;
 
-  for (u32 rov = 0; rov < 2; rov++)
   {
-    if (rov && !m_features.raster_order_views)
-      break;
-
-    {
-      auto& rs = m_root_signatures[rov][static_cast<u8>(GPUPipeline::Layout::SingleTextureAndUBO)];
-
-      rsb.SetInputAssemblerFlag();
-      rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 1, D3D12_SHADER_VISIBILITY_PIXEL);
-      rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 0, 1, D3D12_SHADER_VISIBILITY_PIXEL);
-      rsb.AddCBVParameter(0, D3D12_SHADER_VISIBILITY_ALL);
-      if (rov)
-      {
-        rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, MAX_IMAGE_RENDER_TARGETS,
-                               D3D12_SHADER_VISIBILITY_PIXEL);
-      }
-      if (!(rs = rsb.Create(error, true)))
-        return false;
-      D3D12::SetObjectName(rs.Get(), "Single Texture + UBO Pipeline Layout");
-    }
-
-    {
-      auto& rs = m_root_signatures[rov][static_cast<u8>(GPUPipeline::Layout::SingleTextureAndPushConstants)];
-
-      rsb.SetInputAssemblerFlag();
-      rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 1, D3D12_SHADER_VISIBILITY_PIXEL);
-      rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 0, 1, D3D12_SHADER_VISIBILITY_PIXEL);
-      if (rov)
-      {
-        rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, MAX_IMAGE_RENDER_TARGETS,
-                               D3D12_SHADER_VISIBILITY_PIXEL);
-      }
-      rsb.Add32BitConstants(1, UNIFORM_PUSH_CONSTANTS_SIZE / sizeof(u32), D3D12_SHADER_VISIBILITY_ALL);
-      if (!(rs = rsb.Create(error, true)))
-        return false;
-      D3D12::SetObjectName(rs.Get(), "Single Texture Pipeline Layout");
-    }
-
-    {
-      auto& rs = m_root_signatures[rov][static_cast<u8>(GPUPipeline::Layout::SingleTextureBufferAndPushConstants)];
-
-      rsb.SetInputAssemblerFlag();
-      rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 1, D3D12_SHADER_VISIBILITY_PIXEL);
-      if (rov)
-      {
-        rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, MAX_IMAGE_RENDER_TARGETS,
-                               D3D12_SHADER_VISIBILITY_PIXEL);
-      }
-      rsb.Add32BitConstants(1, UNIFORM_PUSH_CONSTANTS_SIZE / sizeof(u32), D3D12_SHADER_VISIBILITY_ALL);
-      if (!(rs = rsb.Create(error, true)))
-        return false;
-      D3D12::SetObjectName(rs.Get(), "Single Texture Buffer + UBO Pipeline Layout");
-    }
-
-    {
-      auto& rs = m_root_signatures[rov][static_cast<u8>(GPUPipeline::Layout::MultiTextureAndUBO)];
-
-      rsb.SetInputAssemblerFlag();
-      rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, MAX_TEXTURE_SAMPLERS, D3D12_SHADER_VISIBILITY_PIXEL);
-      rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 0, MAX_TEXTURE_SAMPLERS,
-                             D3D12_SHADER_VISIBILITY_PIXEL);
-      rsb.AddCBVParameter(0, D3D12_SHADER_VISIBILITY_ALL);
-      if (rov)
-      {
-        rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, MAX_IMAGE_RENDER_TARGETS,
-                               D3D12_SHADER_VISIBILITY_PIXEL);
-      }
-      if (!(rs = rsb.Create(error, true)))
-        return false;
-      D3D12::SetObjectName(rs.Get(), "Multi Texture + UBO Pipeline Layout");
-    }
-
-    {
-      auto& rs = m_root_signatures[rov][static_cast<u8>(GPUPipeline::Layout::MultiTextureAndPushConstants)];
-
-      rsb.SetInputAssemblerFlag();
-      rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, MAX_TEXTURE_SAMPLERS, D3D12_SHADER_VISIBILITY_PIXEL);
-      rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 0, MAX_TEXTURE_SAMPLERS,
-                             D3D12_SHADER_VISIBILITY_PIXEL);
-      if (rov)
-      {
-        rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, MAX_IMAGE_RENDER_TARGETS,
-                               D3D12_SHADER_VISIBILITY_PIXEL);
-      }
-      rsb.Add32BitConstants(1, UNIFORM_PUSH_CONSTANTS_SIZE / sizeof(u32), D3D12_SHADER_VISIBILITY_ALL);
-      if (!(rs = rsb.Create(error, true)))
-        return false;
-      D3D12::SetObjectName(rs.Get(), "Multi Texture + Push Constant Pipeline Layout");
-    }
-
-    {
-      auto& rs = m_root_signatures[rov][static_cast<u8>(GPUPipeline::Layout::MultiTextureAndUBOAndPushConstants)];
-
-      rsb.SetInputAssemblerFlag();
-      rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, MAX_TEXTURE_SAMPLERS, D3D12_SHADER_VISIBILITY_PIXEL);
-      rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 0, MAX_TEXTURE_SAMPLERS,
-                             D3D12_SHADER_VISIBILITY_PIXEL);
-      rsb.AddCBVParameter(0, D3D12_SHADER_VISIBILITY_ALL);
-      if (rov)
-      {
-        rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, MAX_IMAGE_RENDER_TARGETS,
-                               D3D12_SHADER_VISIBILITY_PIXEL);
-      }
-      rsb.Add32BitConstants(1, UNIFORM_PUSH_CONSTANTS_SIZE / sizeof(u32), D3D12_SHADER_VISIBILITY_ALL);
-      if (!(rs = rsb.Create(error, true)))
-        return false;
-      D3D12::SetObjectName(rs.Get(), "Multi Texture + UBO + Push Constant Pipeline Layout");
-    }
+    auto& rs = m_root_signatures[static_cast<u8>(GPUPipeline::Layout::SingleTextureAndUBO)];
+    rsb.SetInputAssemblerFlag();
+    rsb.AddCBVParameter(0, D3D12_SHADER_VISIBILITY_ALL);
+    rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 1, D3D12_SHADER_VISIBILITY_PIXEL);
+    rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 0, 1, D3D12_SHADER_VISIBILITY_PIXEL);
+    if (!(rs = rsb.Create(error, true)))
+      return false;
+    D3D12::SetObjectName(rs.Get(), "Single Texture + UBO Pipeline Layout");
   }
 
   {
-    auto& rs = m_root_signatures[0][static_cast<u8>(GPUPipeline::Layout::ComputeMultiTextureAndUBO)];
+    auto& rs = m_root_signatures[static_cast<u8>(GPUPipeline::Layout::SingleTextureAndPushConstants)];
+    rsb.SetInputAssemblerFlag();
+    rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 1, D3D12_SHADER_VISIBILITY_PIXEL);
+    rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 0, 1, D3D12_SHADER_VISIBILITY_PIXEL);
+    rsb.Add32BitConstants(1, UNIFORM_PUSH_CONSTANTS_SIZE / sizeof(u32), D3D12_SHADER_VISIBILITY_ALL);
+    if (!(rs = rsb.Create(error, true)))
+      return false;
+    D3D12::SetObjectName(rs.Get(), "Single Texture Pipeline Layout");
+  }
 
+  for (const GPUPipeline::Layout layout :
+       {GPUPipeline::Layout::MultiTextureAndUBO, GPUPipeline::Layout::MultiTextureAndPushConstants,
+        GPUPipeline::Layout::MultiTextureAndUBOAndPushConstants})
+  {
+    auto& rs = m_root_signatures[static_cast<u8>(layout)];
+    rsb.SetInputAssemblerFlag();
+    if (layout != GPUPipeline::Layout::MultiTextureAndPushConstants)
+      rsb.AddCBVParameter(0, D3D12_SHADER_VISIBILITY_ALL);
+    rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, MAX_TEXTURE_SAMPLERS, D3D12_SHADER_VISIBILITY_PIXEL);
+    rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 0, MAX_TEXTURE_SAMPLERS, D3D12_SHADER_VISIBILITY_PIXEL);
+    if (layout == GPUPipeline::Layout::MultiTextureAndPushConstants ||
+        layout == GPUPipeline::Layout::MultiTextureAndUBOAndPushConstants)
+    {
+      rsb.Add32BitConstants(1, UNIFORM_PUSH_CONSTANTS_SIZE / sizeof(u32), D3D12_SHADER_VISIBILITY_ALL);
+    }
+    if (!(rs = rsb.Create(error, true)))
+      return false;
+    D3D12::SetObjectName(rs.Get(), "Multi Texture Pipeline Layout");
+  }
+
+  {
+    auto& rs = m_root_signatures[static_cast<u8>(GPUPipeline::Layout::ComputeMultiTextureAndUBO)];
+
+    rsb.AddCBVParameter(0, D3D12_SHADER_VISIBILITY_ALL);
     rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, MAX_TEXTURE_SAMPLERS, D3D12_SHADER_VISIBILITY_ALL);
     rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 0, MAX_TEXTURE_SAMPLERS, D3D12_SHADER_VISIBILITY_ALL);
     rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, MAX_IMAGE_RENDER_TARGETS, D3D12_SHADER_VISIBILITY_ALL);
-    rsb.AddCBVParameter(0, D3D12_SHADER_VISIBILITY_ALL);
     if (!(rs = rsb.Create(error, true)))
       return false;
     D3D12::SetObjectName(rs.Get(), "Compute Multi Texture + UBO Pipeline Layout");
   }
 
   {
-    auto& rs = m_root_signatures[0][static_cast<u8>(GPUPipeline::Layout::ComputeMultiTextureAndPushConstants)];
-
-    rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, MAX_TEXTURE_SAMPLERS, D3D12_SHADER_VISIBILITY_ALL);
-    rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 0, MAX_TEXTURE_SAMPLERS, D3D12_SHADER_VISIBILITY_ALL);
-    rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, MAX_IMAGE_RENDER_TARGETS, D3D12_SHADER_VISIBILITY_ALL);
-    rsb.Add32BitConstants(0, UNIFORM_PUSH_CONSTANTS_SIZE / sizeof(u32), D3D12_SHADER_VISIBILITY_ALL);
+    auto& rs = m_root_signatures[static_cast<u8>(GPUPipeline::Layout::HWBatch)];
+    rsb.SetInputAssemblerFlag();
+    rsb.AddCBVParameter(0, D3D12_SHADER_VISIBILITY_ALL);
+    rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 1, D3D12_SHADER_VISIBILITY_PIXEL);     // Texture
+    rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 0, 1, D3D12_SHADER_VISIBILITY_PIXEL); // Sampler
+    rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 1, D3D12_SHADER_VISIBILITY_PIXEL);     // TextureBuffer
     if (!(rs = rsb.Create(error, true)))
       return false;
-    D3D12::SetObjectName(rs.Get(), "Compute Multi Texture Pipeline Layout");
+    D3D12::SetObjectName(rs.Get(), "GPU-HW Batch Pipeline Layout");
+    m_root_signatures[static_cast<u8>(GPUPipeline::Layout::HWFeedbackLoopBatch)] = rs;
+  }
+
+  if (m_features.raster_order_views)
+  {
+    auto& rs = m_root_signatures[static_cast<u8>(GPUPipeline::Layout::HWImageBatch)];
+    rsb.SetInputAssemblerFlag();
+    rsb.AddCBVParameter(0, D3D12_SHADER_VISIBILITY_ALL);
+    rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 1, D3D12_SHADER_VISIBILITY_PIXEL);     // Texture
+    rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 0, 1, D3D12_SHADER_VISIBILITY_PIXEL); // Sampler
+    rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 1, D3D12_SHADER_VISIBILITY_PIXEL);     // TextureBuffer
+    rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, MAX_IMAGE_RENDER_TARGETS, D3D12_SHADER_VISIBILITY_PIXEL);
+    if (!(rs = rsb.Create(error, true)))
+      return false;
+    D3D12::SetObjectName(rs.Get(), "GPU-HW Image Batch Pipeline Layout");
   }
 
   {
@@ -1816,7 +1761,8 @@ void D3D12Device::DestroyRootSignatures()
   for (ComPtr<ID3D12PipelineState>& it : m_mipmap_render_pipelines)
     it.Reset();
   m_mipmap_render_root_signature.Reset();
-  m_root_signatures.enumerate([](auto& it) { it.Reset(); });
+  for (auto& it : m_root_signatures)
+    it.Reset();
 }
 
 void D3D12Device::SetRenderTargets(GPUTexture* const* rts, u32 num_rts, GPUTexture* ds,
@@ -1825,7 +1771,6 @@ void D3D12Device::SetRenderTargets(GPUTexture* const* rts, u32 num_rts, GPUTextu
   DebugAssert(
     !(flags & (GPUPipeline::RenderPassFlag::ColorFeedbackLoop | GPUPipeline::RenderPassFlag::SampleDepthBuffer)));
 
-  const bool image_bind_changed = ((m_current_render_pass_flags ^ flags) & GPUPipeline::BindRenderTargetsAsImages);
   bool changed =
     (m_num_current_render_targets != num_rts || m_current_depth_target != ds || m_current_render_pass_flags != flags);
   bool needs_ds_clear = (ds && ds->IsClearedOrInvalidated());
@@ -1850,8 +1795,6 @@ void D3D12Device::SetRenderTargets(GPUTexture* const* rts, u32 num_rts, GPUTextu
     if (InRenderPass())
       EndRenderPass();
 
-    // Need a root signature change if switching to UAVs.
-    m_dirty_flags |= image_bind_changed ? LAYOUT_DEPENDENT_DIRTY_STATE : 0;
     m_dirty_flags = (flags & GPUPipeline::BindRenderTargetsAsImages) ? (m_dirty_flags | DIRTY_FLAG_RT_UAVS) :
                                                                        (m_dirty_flags & ~DIRTY_FLAG_RT_UAVS);
   }
@@ -1877,7 +1820,7 @@ void D3D12Device::BeginRenderPass()
 
   if (m_num_current_render_targets > 0 || m_current_depth_target) [[likely]]
   {
-    if (!IsUsingROVRootSignature()) [[likely]]
+    if (!(m_current_render_pass_flags & GPUPipeline::BindRenderTargetsAsImages)) [[likely]]
     {
       for (u32 i = 0; i < m_num_current_render_targets; i++)
       {
@@ -1997,7 +1940,7 @@ void D3D12Device::BeginRenderPass()
       m_current_textures[i]->TransitionToState(cmdlist, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
   }
 
-  DebugAssert(rt_desc_p || ds_desc_p || IsUsingROVRootSignature());
+  DebugAssert(rt_desc_p || ds_desc_p || (m_current_render_pass_flags & GPUPipeline::BindRenderTargetsAsImages));
   cmdlist->BeginRenderPass(num_rt_descs, rt_desc_p, ds_desc_p, D3D12_RENDER_PASS_FLAG_NONE);
 
   // TODO: Stats
@@ -2069,7 +2012,9 @@ void D3D12Device::SetPipeline(GPUPipeline* pipeline)
   if (GPUPipeline::Layout layout = m_current_pipeline->GetLayout(); m_current_pipeline_layout != layout)
   {
     m_current_pipeline_layout = layout;
-    m_dirty_flags |= LAYOUT_DEPENDENT_DIRTY_STATE & (IsUsingROVRootSignature() ? ~0u : ~DIRTY_FLAG_RT_UAVS);
+    m_dirty_flags |=
+      ROOT_SIGNATURE_DEPENDENT_DIRTY_STATE &
+      ((layout == GPUPipeline::Layout::HWImageBatch || IsComputeLayout(layout)) ? ~0u : ~DIRTY_FLAG_RT_UAVS);
   }
 }
 
@@ -2095,8 +2040,10 @@ bool D3D12Device::IsRenderTargetBound(const GPUTexture* tex) const
 void D3D12Device::InvalidateCachedState()
 {
   DebugAssert(!m_in_render_pass);
-  m_dirty_flags = ALL_DIRTY_STATE &
-                  ((m_current_render_pass_flags & GPUPipeline::BindRenderTargetsAsImages) ? ~0u : ~DIRTY_FLAG_RT_UAVS);
+  m_dirty_flags = ALL_DIRTY_STATE & ((m_current_pipeline_layout == GPUPipeline::Layout::HWImageBatch ||
+                                      IsComputeLayout(m_current_pipeline_layout)) ?
+                                       ~0u :
+                                       ~DIRTY_FLAG_RT_UAVS);
 }
 
 void D3D12Device::SetInitialPipelineState()
@@ -2170,24 +2117,22 @@ void D3D12Device::SetTextureSampler(u32 slot, GPUTexture* texture, GPUSampler* s
     }
   }
 
-  const D3D12DescriptorHandle& handle =
-    static_cast<D3D12Sampler*>(sampler ? sampler : m_nearest_sampler)->GetDescriptor();
-  if (m_current_samplers[slot] != handle)
+  D3D12Sampler* sampler_to_bind = static_cast<D3D12Sampler*>(sampler ? sampler : m_nearest_sampler);
+  if (m_current_samplers[slot] != sampler_to_bind)
   {
-    m_current_samplers[slot] = handle;
+    m_current_samplers[slot] = sampler_to_bind;
     m_dirty_flags |= DIRTY_FLAG_SAMPLERS;
   }
 }
 
-void D3D12Device::SetTextureBuffer(u32 slot, GPUTextureBuffer* buffer)
+void D3D12Device::SetTextureBuffer(GPUTextureBuffer* buffer)
 {
-  DebugAssert(slot == 0);
   if (m_current_texture_buffer == buffer)
     return;
 
   m_current_texture_buffer = static_cast<D3D12TextureBuffer*>(buffer);
-  if (m_current_pipeline_layout == GPUPipeline::Layout::SingleTextureBufferAndPushConstants)
-    m_dirty_flags |= DIRTY_FLAG_TEXTURES;
+  if (LayoutHasTextureBuffer(m_current_pipeline_layout))
+    m_dirty_flags |= DIRTY_FLAG_TEXTURE_BUFFER;
 }
 
 void D3D12Device::UnbindTexture(D3D12Texture* tex)
@@ -2231,8 +2176,20 @@ void D3D12Device::UnbindTextureBuffer(D3D12TextureBuffer* buf)
 
   m_current_texture_buffer = nullptr;
 
-  if (m_current_pipeline_layout == GPUPipeline::Layout::SingleTextureBufferAndPushConstants)
-    m_dirty_flags |= DIRTY_FLAG_TEXTURES;
+  if (LayoutHasTextureBuffer(m_current_pipeline_layout))
+    m_dirty_flags |= DIRTY_FLAG_TEXTURE_BUFFER;
+}
+
+void D3D12Device::UnbindSampler(D3D12Sampler* sampler)
+{
+  for (u32 i = 0; i < MAX_TEXTURE_SAMPLERS; i++)
+  {
+    if (m_current_samplers[i] == sampler)
+    {
+      m_current_samplers[i] = static_cast<D3D12Sampler*>(m_nearest_sampler);
+      m_dirty_flags |= DIRTY_FLAG_SAMPLERS;
+    }
+  }
 }
 
 void D3D12Device::RenderTextureMipmap(D3D12Texture* texture, u32 layer, u32 dst_level, u32 dst_width, u32 dst_height,
@@ -2397,7 +2354,7 @@ void D3D12Device::RenderTextureMipmap(D3D12Texture* texture, u32 layer, u32 dst_
       cmdlist->IASetPrimitiveTopology(m_current_pipeline->GetTopology());
   }
 
-  m_dirty_flags |= LAYOUT_DEPENDENT_DIRTY_STATE;
+  m_dirty_flags |= ROOT_SIGNATURE_DEPENDENT_DIRTY_STATE;
 }
 
 void D3D12Device::SetViewport(const GSVector4i rc)
@@ -2434,7 +2391,7 @@ void D3D12Device::PreDrawCheck()
   const u32 dirty = std::exchange(m_dirty_flags, 0);
   if (dirty != 0)
   {
-    if (dirty & DIRTY_FLAG_PIPELINE_LAYOUT)
+    if (dirty & DIRTY_FLAG_ROOT_SIGNATURE)
     {
       UpdateRootSignature();
       if (!UpdateRootParameters(dirty))
@@ -2444,7 +2401,8 @@ void D3D12Device::PreDrawCheck()
         return;
       }
     }
-    else if (dirty & (DIRTY_FLAG_CONSTANT_BUFFER | DIRTY_FLAG_TEXTURES | DIRTY_FLAG_SAMPLERS | DIRTY_FLAG_RT_UAVS))
+    else if (dirty & (DIRTY_FLAG_CONSTANT_BUFFER | DIRTY_FLAG_TEXTURES | DIRTY_FLAG_TEXTURE_BUFFER |
+                      DIRTY_FLAG_SAMPLERS | DIRTY_FLAG_RT_UAVS))
     {
       if (!UpdateRootParameters(dirty))
       {
@@ -2511,7 +2469,7 @@ void D3D12Device::PreDispatchCheck()
   const u32 dirty = std::exchange(m_dirty_flags, 0);
   if (dirty != 0)
   {
-    if (dirty & DIRTY_FLAG_PIPELINE_LAYOUT)
+    if (dirty & DIRTY_FLAG_ROOT_SIGNATURE)
     {
       UpdateRootSignature();
       if (!UpdateRootParameters(dirty))
@@ -2521,7 +2479,8 @@ void D3D12Device::PreDispatchCheck()
         return;
       }
     }
-    else if (dirty & (DIRTY_FLAG_CONSTANT_BUFFER | DIRTY_FLAG_TEXTURES | DIRTY_FLAG_SAMPLERS | DIRTY_FLAG_RT_UAVS))
+    else if (dirty & (DIRTY_FLAG_CONSTANT_BUFFER | DIRTY_FLAG_TEXTURES | DIRTY_FLAG_TEXTURE_BUFFER |
+                      DIRTY_FLAG_SAMPLERS | DIRTY_FLAG_RT_UAVS))
     {
       if (!UpdateRootParameters(dirty))
       {
@@ -2533,28 +2492,85 @@ void D3D12Device::PreDispatchCheck()
   }
 }
 
-bool D3D12Device::IsUsingROVRootSignature() const
-{
-  return ((m_current_render_pass_flags & GPUPipeline::BindRenderTargetsAsImages) != 0);
-}
-
-bool D3D12Device::IsUsingComputeRootSignature() const
-{
-  return IsComputeLayout(m_current_pipeline_layout);
-}
-
 void D3D12Device::UpdateRootSignature()
 {
-  ID3D12GraphicsCommandList4* cmdlist = GetCommandList();
-  if (!IsUsingComputeRootSignature())
-  {
-    cmdlist->SetGraphicsRootSignature(
-      m_root_signatures[BoolToUInt8(IsUsingROVRootSignature())][static_cast<u8>(m_current_pipeline_layout)].Get());
-  }
+  ID3D12GraphicsCommandList4* const cmdlist = GetCommandList();
+  ID3D12RootSignature* const rootsig = m_root_signatures[static_cast<u8>(m_current_pipeline_layout)].Get();
+  if (!IsComputeLayout(m_current_pipeline_layout))
+    cmdlist->SetGraphicsRootSignature(rootsig);
   else
+    cmdlist->SetComputeRootSignature(rootsig);
+}
+
+bool D3D12Device::EnsureGPUNullSRVDescriptorValid()
+{
+  if (m_persistent_null_srv_fence_value == m_current_fence_value)
+    return true;
+
+  D3D12DescriptorHandle alloc_handle;
+  if (!m_command_lists[m_current_command_list].descriptor_allocator.Allocate(1, &alloc_handle))
+    return false;
+
+  m_device->CopyDescriptorsSimple(1, alloc_handle, m_null_srv_descriptor, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+  m_gpu_null_srv_descriptor = alloc_handle;
+  m_persistent_null_srv_fence_value = m_current_fence_value;
+  return true;
+}
+
+template<bool is_compute, u32 base_param>
+bool D3D12Device::UpdateSingleTextureRootParameter(ID3D12GraphicsCommandList4* const cmdlist, u32 dirty)
+{
+  if (dirty & DIRTY_FLAG_TEXTURES)
   {
-    cmdlist->SetComputeRootSignature(m_root_signatures[0][static_cast<u8>(m_current_pipeline_layout)].Get());
+    D3D12Texture* const tex = m_current_textures[0];
+    if (tex)
+    {
+      // avoid reallocating descriptors that we have already used in this frame
+      if (!tex->HasGPUSRVDescriptor(m_current_fence_value))
+      {
+        D3D12DescriptorHandle alloc_handle;
+        if (!m_command_lists[m_current_command_list].descriptor_allocator.Allocate(1, &alloc_handle))
+          return false;
+
+        m_device->CopyDescriptorsSimple(1, alloc_handle, tex->GetSRVDescriptor(),
+                                        D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+        tex->SetGPUSRVDescriptor(alloc_handle, m_current_fence_value);
+      }
+
+      if constexpr (!is_compute)
+        cmdlist->SetGraphicsRootDescriptorTable(base_param, tex->GetGPUSRVDescriptor());
+      else
+        cmdlist->SetComputeRootDescriptorTable(base_param, tex->GetGPUSRVDescriptor());
+    }
+    else
+    {
+      // need to do the same dance with the null descriptor
+      if (!EnsureGPUNullSRVDescriptorValid())
+        return false;
+
+      if constexpr (!is_compute)
+        cmdlist->SetGraphicsRootDescriptorTable(base_param, m_gpu_null_srv_descriptor);
+      else
+        cmdlist->SetComputeRootDescriptorTable(base_param, m_gpu_null_srv_descriptor);
+    }
   }
+
+  if (dirty & DIRTY_FLAG_SAMPLERS)
+  {
+    D3D12DescriptorHandle handle;
+    if (!m_command_lists[m_current_command_list].sampler_allocator.LookupSingle(m_device.Get(), &handle,
+                                                                                m_current_samplers[0]->GetDescriptor()))
+    {
+      return false;
+    }
+
+    if constexpr (!is_compute)
+      cmdlist->SetGraphicsRootDescriptorTable(base_param + 1, handle);
+    else
+      cmdlist->SetComputeRootDescriptorTable(base_param + 1, handle);
+  }
+
+  return true;
 }
 
 template<GPUPipeline::Layout layout>
@@ -2562,36 +2578,46 @@ bool D3D12Device::UpdateParametersForLayout(u32 dirty)
 {
   ID3D12GraphicsCommandList4* cmdlist = GetCommandList();
 
-  if constexpr (layout == GPUPipeline::Layout::SingleTextureAndUBO ||
+  static_assert(layout == GPUPipeline::Layout::SingleTextureAndUBO ||
+                layout == GPUPipeline::Layout::SingleTextureAndPushConstants ||
                 layout == GPUPipeline::Layout::MultiTextureAndUBO ||
+                layout == GPUPipeline::Layout::MultiTextureAndPushConstants ||
                 layout == GPUPipeline::Layout::MultiTextureAndUBOAndPushConstants ||
-                layout == GPUPipeline::Layout::ComputeMultiTextureAndUBO)
+                layout == GPUPipeline::Layout::ComputeMultiTextureAndUBO);
+
+  constexpr bool is_compute = IsComputeLayout(layout);
+  constexpr bool has_ubo =
+    (layout == GPUPipeline::Layout::SingleTextureAndUBO || layout == GPUPipeline::Layout::MultiTextureAndUBO ||
+     layout == GPUPipeline::Layout::MultiTextureAndUBOAndPushConstants ||
+     layout == GPUPipeline::Layout::ComputeMultiTextureAndUBO);
+
+  if constexpr (has_ubo)
   {
     if (dirty & DIRTY_FLAG_CONSTANT_BUFFER)
     {
-      if constexpr (!IsComputeLayout(layout))
-        cmdlist->SetGraphicsRootConstantBufferView(2, m_uniform_buffer.GetGPUPointer() + m_uniform_buffer_position);
+      if constexpr (!is_compute)
+        cmdlist->SetGraphicsRootConstantBufferView(0, m_uniform_buffer.GetGPUPointer() + m_uniform_buffer_position);
       else
-        cmdlist->SetComputeRootConstantBufferView(3, m_uniform_buffer.GetGPUPointer() + m_uniform_buffer_position);
+        cmdlist->SetComputeRootConstantBufferView(0, m_uniform_buffer.GetGPUPointer() + m_uniform_buffer_position);
     }
   }
 
+  constexpr u32 base_param = has_ubo ? 1 : 0;
   constexpr u32 num_textures = GetActiveTexturesForLayout(layout);
-  if (dirty & DIRTY_FLAG_TEXTURES && num_textures > 0)
+  if constexpr (num_textures == 1)
   {
-    D3D12DescriptorAllocator& allocator = m_command_lists[m_current_command_list].descriptor_allocator;
-    D3D12DescriptorHandle gpu_handle;
-    if (!allocator.Allocate(num_textures, &gpu_handle))
+    // use persistent descriptors
+    if (!UpdateSingleTextureRootParameter<is_compute, base_param>(cmdlist, dirty))
       return false;
+  }
+  else
+  {
+    if (dirty & DIRTY_FLAG_TEXTURES)
+    {
+      D3D12DescriptorHandle gpu_handle;
+      if (!m_command_lists[m_current_command_list].descriptor_allocator.Allocate(num_textures, &gpu_handle))
+        return false;
 
-    if constexpr (num_textures == 1)
-    {
-      m_device->CopyDescriptorsSimple(
-        1, gpu_handle, m_current_textures[0] ? m_current_textures[0]->GetSRVDescriptor() : m_null_srv_descriptor,
-        D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-    }
-    else
-    {
       D3D12_CPU_DESCRIPTOR_HANDLE src_handles[MAX_TEXTURE_SAMPLERS];
       UINT src_sizes[MAX_TEXTURE_SAMPLERS];
       for (u32 i = 0; i < num_textures; i++)
@@ -2601,49 +2627,106 @@ bool D3D12Device::UpdateParametersForLayout(u32 dirty)
       }
       m_device->CopyDescriptors(1, &gpu_handle.cpu_handle, &num_textures, num_textures, src_handles, src_sizes,
                                 D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+
+      if constexpr (!is_compute)
+        cmdlist->SetGraphicsRootDescriptorTable(base_param, gpu_handle);
+      else
+        cmdlist->SetComputeRootDescriptorTable(base_param, gpu_handle);
     }
 
-    if constexpr (!IsComputeLayout(layout))
-      cmdlist->SetGraphicsRootDescriptorTable(0, gpu_handle);
-    else
-      cmdlist->SetComputeRootDescriptorTable(0, gpu_handle);
-  }
-
-  if (dirty & DIRTY_FLAG_SAMPLERS && num_textures > 0)
-  {
-    auto& allocator = m_command_lists[m_current_command_list].sampler_allocator;
-    D3D12DescriptorHandle gpu_handle;
-    if constexpr (num_textures == 1)
+    if (dirty & DIRTY_FLAG_SAMPLERS)
     {
-      if (!allocator.LookupSingle(m_device.Get(), &gpu_handle, m_current_samplers[0]))
+      static_assert(num_textures == MAX_TEXTURE_SAMPLERS);
+      std::array<D3D12DescriptorHandle, MAX_TEXTURE_SAMPLERS> sampler_descriptors;
+      for (u32 i = 0; i < num_textures; i++)
+        sampler_descriptors[i] = m_current_samplers[i]->GetDescriptor();
+
+      D3D12DescriptorHandle gpu_handle;
+      if (!m_command_lists[m_current_command_list].sampler_allocator.LookupGroup(m_device.Get(), &gpu_handle,
+                                                                                 sampler_descriptors.data()))
+      {
         return false;
+      }
+
+      if constexpr (!is_compute)
+        cmdlist->SetGraphicsRootDescriptorTable(base_param + 1, gpu_handle);
+      else
+        cmdlist->SetComputeRootDescriptorTable(base_param + 1, gpu_handle);
+    }
+  }
+
+  if constexpr (is_compute)
+  {
+    if (dirty & DIRTY_FLAG_RT_UAVS)
+    {
+      DebugAssert(m_current_render_pass_flags & GPUPipeline::BindRenderTargetsAsImages);
+
+      D3D12DescriptorAllocator& allocator = m_command_lists[m_current_command_list].descriptor_allocator;
+      D3D12DescriptorHandle gpu_handle;
+      if (!allocator.Allocate(MAX_IMAGE_RENDER_TARGETS, &gpu_handle))
+        return false;
+
+      D3D12_CPU_DESCRIPTOR_HANDLE src_handles[MAX_IMAGE_RENDER_TARGETS];
+      UINT src_sizes[MAX_IMAGE_RENDER_TARGETS];
+      const UINT dst_size = MAX_IMAGE_RENDER_TARGETS;
+      for (u32 i = 0; i < MAX_IMAGE_RENDER_TARGETS; i++)
+      {
+        src_handles[i] =
+          m_current_render_targets[i] ? m_current_render_targets[i]->GetUAVDescriptor() : m_null_uav_descriptor;
+        src_sizes[i] = 1;
+      }
+      m_device->CopyDescriptors(1, &gpu_handle.cpu_handle, &dst_size, MAX_IMAGE_RENDER_TARGETS, src_handles, src_sizes,
+                                D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+
+      if constexpr (!IsComputeLayout(layout))
+        cmdlist->SetGraphicsRootDescriptorTable(base_param + 2, gpu_handle);
+      else
+        cmdlist->SetComputeRootDescriptorTable(base_param + 2, gpu_handle);
+    }
+  }
+
+  return true;
+}
+
+bool D3D12Device::UpdateParametersForHWBatchLayout(GPUPipeline::Layout layout, u32 dirty)
+{
+  ID3D12GraphicsCommandList4* cmdlist = GetCommandList();
+
+  if (dirty & DIRTY_FLAG_CONSTANT_BUFFER)
+    cmdlist->SetGraphicsRootConstantBufferView(0, m_uniform_buffer.GetGPUPointer() + m_uniform_buffer_position);
+
+  if (!UpdateSingleTextureRootParameter<false, 1>(cmdlist, dirty))
+    return false;
+
+  if (dirty & DIRTY_FLAG_TEXTURE_BUFFER)
+  {
+    if (m_current_texture_buffer)
+    {
+      // avoid reallocating descriptors that we have already used in this frame
+      if (!m_current_texture_buffer->HasGPUSRVDescriptor(m_current_fence_value))
+      {
+        D3D12DescriptorHandle alloc_handle;
+        if (!m_command_lists[m_current_command_list].descriptor_allocator.Allocate(1, &alloc_handle))
+          return false;
+
+        m_device->CopyDescriptorsSimple(1, alloc_handle, m_current_texture_buffer->GetDescriptor(),
+                                        D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+        m_current_texture_buffer->SetGPUSRVDescriptor(alloc_handle, m_current_fence_value);
+      }
+
+      cmdlist->SetGraphicsRootDescriptorTable(3, m_current_texture_buffer->GetGPUSRVDescriptor());
     }
     else
     {
-      if (!allocator.LookupGroup(m_device.Get(), &gpu_handle, m_current_samplers.data()))
+      // need to do the same dance with the null descriptor
+      if (!EnsureGPUNullSRVDescriptorValid())
         return false;
+
+      cmdlist->SetGraphicsRootDescriptorTable(3, m_gpu_null_srv_descriptor);
     }
-
-    if constexpr (!IsComputeLayout(layout))
-      cmdlist->SetGraphicsRootDescriptorTable(1, gpu_handle);
-    else
-      cmdlist->SetComputeRootDescriptorTable(1, gpu_handle);
   }
 
-  if (dirty & DIRTY_FLAG_TEXTURES && layout == GPUPipeline::Layout::SingleTextureBufferAndPushConstants)
-  {
-    D3D12DescriptorAllocator& allocator = m_command_lists[m_current_command_list].descriptor_allocator;
-    D3D12DescriptorHandle gpu_handle;
-    if (!allocator.Allocate(1, &gpu_handle))
-      return false;
-
-    m_device->CopyDescriptorsSimple(
-      1, gpu_handle, m_current_texture_buffer ? m_current_texture_buffer->GetDescriptor() : m_null_srv_descriptor,
-      D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-    cmdlist->SetGraphicsRootDescriptorTable(0, gpu_handle);
-  }
-
-  if (dirty & DIRTY_FLAG_RT_UAVS)
+  if (layout == GPUPipeline::Layout::HWImageBatch && (dirty & DIRTY_FLAG_RT_UAVS))
   {
     DebugAssert(m_current_render_pass_flags & GPUPipeline::BindRenderTargetsAsImages);
 
@@ -2663,20 +2746,7 @@ bool D3D12Device::UpdateParametersForLayout(u32 dirty)
     }
     m_device->CopyDescriptors(1, &gpu_handle.cpu_handle, &dst_size, MAX_IMAGE_RENDER_TARGETS, src_handles, src_sizes,
                               D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-
-    constexpr u32 rov_param =
-      IsComputeLayout(layout) ?
-        2 :
-        ((layout == GPUPipeline::Layout::SingleTextureBufferAndPushConstants) ?
-           1 :
-           ((layout == GPUPipeline::Layout::SingleTextureAndUBO || layout == GPUPipeline::Layout::MultiTextureAndUBO ||
-             layout == GPUPipeline::Layout::MultiTextureAndUBOAndPushConstants) ?
-              3 :
-              2));
-    if constexpr (!IsComputeLayout(layout))
-      cmdlist->SetGraphicsRootDescriptorTable(rov_param, gpu_handle);
-    else
-      cmdlist->SetComputeRootDescriptorTable(rov_param, gpu_handle);
+    cmdlist->SetGraphicsRootDescriptorTable(4, gpu_handle);
   }
 
   return true;
@@ -2692,9 +2762,6 @@ bool D3D12Device::UpdateRootParameters(u32 dirty)
     case GPUPipeline::Layout::SingleTextureAndPushConstants:
       return UpdateParametersForLayout<GPUPipeline::Layout::SingleTextureAndPushConstants>(dirty);
 
-    case GPUPipeline::Layout::SingleTextureBufferAndPushConstants:
-      return UpdateParametersForLayout<GPUPipeline::Layout::SingleTextureBufferAndPushConstants>(dirty);
-
     case GPUPipeline::Layout::MultiTextureAndUBO:
       return UpdateParametersForLayout<GPUPipeline::Layout::MultiTextureAndUBO>(dirty);
 
@@ -2704,11 +2771,13 @@ bool D3D12Device::UpdateRootParameters(u32 dirty)
     case GPUPipeline::Layout::MultiTextureAndUBOAndPushConstants:
       return UpdateParametersForLayout<GPUPipeline::Layout::MultiTextureAndUBOAndPushConstants>(dirty);
 
+    case GPUPipeline::Layout::HWBatch:
+    case GPUPipeline::Layout::HWFeedbackLoopBatch:
+    case GPUPipeline::Layout::HWImageBatch:
+      return UpdateParametersForHWBatchLayout(m_current_pipeline_layout, dirty);
+
     case GPUPipeline::Layout::ComputeMultiTextureAndUBO:
       return UpdateParametersForLayout<GPUPipeline::Layout::ComputeMultiTextureAndUBO>(dirty);
-
-    case GPUPipeline::Layout::ComputeMultiTextureAndPushConstants:
-      return UpdateParametersForLayout<GPUPipeline::Layout::ComputeMultiTextureAndPushConstants>(dirty);
 
     default:
       UnreachableCode();

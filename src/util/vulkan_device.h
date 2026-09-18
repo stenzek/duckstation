@@ -134,7 +134,7 @@ public:
                         GPUPipeline::RenderPassFlag flags = GPUPipeline::NoRenderPassFlags) override;
   void SetPipeline(GPUPipeline* pipeline) override;
   void SetTextureSampler(u32 slot, GPUTexture* texture, GPUSampler* sampler) override;
-  void SetTextureBuffer(u32 slot, GPUTextureBuffer* buffer) override;
+  void SetTextureBuffer(GPUTextureBuffer* buffer) override;
   void SetViewport(const GSVector4i rc) override;
   void SetScissor(const GSVector4i rc) override;
   void Draw(u32 vertex_count, u32 base_vertex) override;
@@ -263,18 +263,15 @@ private:
     DIRTY_FLAG_PIPELINE_LAYOUT = (1 << 1),
     DIRTY_FLAG_DYNAMIC_OFFSETS = (1 << 2),
     DIRTY_FLAG_TEXTURES_OR_SAMPLERS = (1 << 3),
-    DIRTY_FLAG_INPUT_ATTACHMENT = (1 << 4),
+    DIRTY_FLAG_TEXTURE_BUFFER = (1 << 4),
+    DIRTY_FLAG_RENDER_TARGETS = (1 << 5),
+
+    PIPELINE_LAYOUT_DEPENDENT_STATE = DIRTY_FLAG_PIPELINE_LAYOUT | DIRTY_FLAG_DYNAMIC_OFFSETS |
+                                      DIRTY_FLAG_TEXTURES_OR_SAMPLERS | DIRTY_FLAG_TEXTURE_BUFFER |
+                                      DIRTY_FLAG_RENDER_TARGETS,
 
     ALL_DIRTY_STATE = DIRTY_FLAG_INITIAL | DIRTY_FLAG_PIPELINE_LAYOUT | DIRTY_FLAG_DYNAMIC_OFFSETS |
-                      DIRTY_FLAG_TEXTURES_OR_SAMPLERS | DIRTY_FLAG_INPUT_ATTACHMENT,
-  };
-
-  enum class PipelineLayoutType : u8
-  {
-    Normal,
-    ColorFeedbackLoop,
-    BindRenderTargetsAsImages,
-    MaxCount,
+                      DIRTY_FLAG_TEXTURES_OR_SAMPLERS | DIRTY_FLAG_RENDER_TARGETS | DIRTY_FLAG_TEXTURE_BUFFER,
   };
 
   struct RenderPassCacheKey
@@ -360,8 +357,6 @@ private:
   s32 IsRenderTargetBoundIndex(const GPUTexture* tex) const;
 
   /// Applies any changed state.
-  static PipelineLayoutType GetPipelineLayoutType(GPUPipeline::RenderPassFlag flags);
-  VkPipelineLayout GetCurrentVkPipelineLayout(bool is_compute) const;
   void SetInitialPipelineState();
   void PreDrawCheck();
   void PreDispatchCheck();
@@ -370,6 +365,8 @@ private:
 
   template<GPUPipeline::Layout layout>
   bool UpdateDescriptorSetsForLayout(u32 dirty);
+  template<GPUPipeline::Layout layout>
+  bool UpdateDescriptorSetsForHWBatch(u32 dirty);
   bool UpdateDescriptorSets(u32 dirty);
 
   void BeginSwapChainRenderPass(VulkanSwapChain* swap_chain, u32 clear_color);
@@ -452,9 +449,7 @@ private:
   VkDescriptorSetLayout m_multi_texture_ds_layout = VK_NULL_HANDLE;
   VkDescriptorSetLayout m_feedback_loop_ds_layout = VK_NULL_HANDLE;
   VkDescriptorSetLayout m_image_ds_layout = VK_NULL_HANDLE;
-  DimensionalArray<VkPipelineLayout, static_cast<size_t>(GPUPipeline::Layout::MaxCount),
-                   static_cast<size_t>(PipelineLayoutType::MaxCount)>
-    m_pipeline_layouts = {};
+  std::array<VkPipelineLayout, static_cast<size_t>(GPUPipeline::Layout::MaxCount)> m_pipeline_layouts = {};
 
   // Cold variables.
   VkPhysicalDevice m_physical_device = VK_NULL_HANDLE;

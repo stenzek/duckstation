@@ -134,9 +134,6 @@ public:
     // 128 byte UBO via push constants, 1 texture.
     SingleTextureAndPushConstants,
 
-    // 128 byte UBO via push constants, 1 texture buffer/SSBO.
-    SingleTextureBufferAndPushConstants,
-
     // Multiple textures, 1 streamed UBO.
     MultiTextureAndUBO,
 
@@ -146,11 +143,17 @@ public:
     // Multiple textures, 1 streamed UBO, 128 byte push constants.
     MultiTextureAndUBOAndPushConstants,
 
+    // GPU-HW batch: 1 streamed UBO, 1 texture, 1 texture buffer/SSBO.
+    HWBatch,
+
+    // GPU-HW batch with a render-target feedback input.
+    HWFeedbackLoopBatch,
+
+    // GPU-HW batch with render targets bound as storage images.
+    HWImageBatch,
+
     // Multiple textures, 1 streamed UBO, compute shader.
     ComputeMultiTextureAndUBO,
-
-    // 128 byte UBO via push constants, multiple textures, compute shader.
-    ComputeMultiTextureAndPushConstants,
 
     MaxCount
   };
@@ -665,15 +668,22 @@ public:
     constexpr std::array<u8, static_cast<u8>(GPUPipeline::Layout::MaxCount)> counts = {
       1,                    // SingleTextureAndUBO
       1,                    // SingleTextureAndPushConstants
-      0,                    // SingleTextureBufferAndPushConstants
       MAX_TEXTURE_SAMPLERS, // MultiTextureAndUBO
       MAX_TEXTURE_SAMPLERS, // MultiTextureAndPushConstants
       MAX_TEXTURE_SAMPLERS, // MultiTextureAndUBOAndPushConstants
+      1,                    // HWBatch
+      1,                    // HWFeedbackLoopBatch
+      1,                    // HWImageBatch
       MAX_TEXTURE_SAMPLERS, // ComputeMultiTextureAndUBO
-      MAX_TEXTURE_SAMPLERS, // ComputeMultiTextureAndPushConstants
     };
 
     return counts[static_cast<u8>(layout)];
+  }
+
+  /// Returns true if the given pipeline layout has a texture buffer.
+  static constexpr bool LayoutHasTextureBuffer(GPUPipeline::Layout layout)
+  {
+    return (layout >= GPUPipeline::Layout::HWBatch && layout <= GPUPipeline::Layout::HWImageBatch);
   }
 
   /// Returns true if the given pipeline layout is used for compute shaders.
@@ -823,7 +833,7 @@ public:
                                 GPUPipeline::RenderPassFlag flags = GPUPipeline::NoRenderPassFlags) = 0;
   virtual void SetPipeline(GPUPipeline* pipeline) = 0;
   virtual void SetTextureSampler(u32 slot, GPUTexture* texture, GPUSampler* sampler) = 0;
-  virtual void SetTextureBuffer(u32 slot, GPUTextureBuffer* buffer) = 0;
+  virtual void SetTextureBuffer(GPUTextureBuffer* buffer) = 0;
   virtual void SetViewport(const GSVector4i rc) = 0;
   virtual void SetScissor(const GSVector4i rc) = 0;
   void SetRenderTarget(GPUTexture* rt, GPUTexture* ds = nullptr,

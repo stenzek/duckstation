@@ -9,6 +9,13 @@
 
 #include "common/assert.h"
 
+// For HW batch draws, Vulkan layout:
+// - Set 0: UBO
+// - Set 1: VRAM read texture/page texture
+// - Set 2: Texture buffer
+// - Set 3: Feedback loop/ROV
+// For other renderers
+
 GPU_HW_ShaderGen::GPU_HW_ShaderGen(RenderAPI render_api, bool supports_dual_source_blend,
                                    bool supports_framebuffer_fetch)
   : ShaderGen(render_api, GetShaderLanguageForAPI(render_api), supports_dual_source_blend, supports_framebuffer_fetch)
@@ -16,6 +23,47 @@ GPU_HW_ShaderGen::GPU_HW_ShaderGen(RenderAPI render_api, bool supports_dual_sour
 }
 
 GPU_HW_ShaderGen::~GPU_HW_ShaderGen() = default;
+
+void GPU_HW_ShaderGen::DeclareTextureBuffer(std::stringstream& ss, const char* name, bool is_int,
+                                            bool is_unsigned) const
+{
+  if (m_glsl)
+  {
+    if (IsMetal()) // metal uses slot 1 in the texture descriptor state, TODO clean this up and make consistent
+      ss << "layout(set = 1, binding = 0) ";
+    if (m_spirv)
+      ss << "layout(set = 2, binding = 0) ";
+    else if (m_use_glsl_binding_layout)
+      ss << "layout(binding = 1) ";
+
+    ss << "uniform " << (is_int ? (is_unsigned ? "u" : "i") : "") << "samplerBuffer " << name << ";\n";
+  }
+  else
+  {
+    ss << "Buffer<" << (is_int ? (is_unsigned ? "uint4" : "int4") : "float4") << "> " << name << " : register(t1);\n";
+  }
+}
+
+void GPU_HW_ShaderGen::DeclareImage(std::stringstream& ss, const char* name, u32 index, bool is_float /* = false */,
+                                    bool is_int /* = false */, bool is_unsigned /* = false */) const
+{
+  if (m_glsl)
+  {
+    if (m_spirv)
+      ss << "layout(set = 3, binding = " << index;
+    else
+      ss << "layout(binding = " << index;
+
+    ss << ", " << (is_int ? (is_unsigned ? "rgba8ui" : "rgba8i") : "rgba8") << ") "
+       << "uniform restrict coherent image2D " << name << ";\n";
+  }
+  else
+  {
+    ss << "RasterizerOrderedTexture2D<"
+       << (is_int ? (is_unsigned ? "uint4" : "int4") : (is_float ? "float4" : "unorm float4")) << "> " << name
+       << " : register(u" << index << ");\n";
+  }
+}
 
 void GPU_HW_ShaderGen::WriteColorConversionFunctions(std::stringstream& ss) const
 {
@@ -1365,14 +1413,13 @@ void FilteredSampleFromVRAM(TEXPAGE_VALUE texpage, float2 coords, float4 uv_limi
 	#define src(xoffs,yoffs) packUnorm4x8(srcf(xoffs,yoffs))
 	)";
 
-	/* MMPX Enhanced
-	 * An optimized refinement of the original MMPX shader that addresses key 
-	 * visual artifacts while fully preserving the baseline's signature performance and efficiency.
-	 *
-	 * License: MIT
-	 * (C) 2025-2026 by crashGG.
-	 */
-
+    /* MMPX Enhanced
+     * An optimized refinement of the original MMPX shader that addresses key
+     * visual artifacts while fully preserving the baseline's signature performance and efficiency.
+     *
+     * License: MIT
+     * (C) 2025-2026 by crashGG.
+     */
 
     ss << R"(
 
@@ -1581,29 +1628,29 @@ skiprest = skiprest||slope1||slope2||slope3||slope4||E==0u||B==0u||D==0u||F==0u|
 	#define src(xoffs,yoffs) packUnorm4x8(srcf(xoffs,yoffs))
 	)";
 
-/* =========================================================================
- * MMPX Advanced v3.2
- * =========================================================================
- * An optimized and heavily expanded derivative of the MMPX algorithm.
- * 
- * The baseline MMPX implementation relies on a minimalist rule-set, which 
- * inherently suffers from topological conflicts at complex intersections, 
- * manifesting as jarring structural artifacts, "bubbles," and "spurs." 
- * 
- * MMPX Advanced introduces comprehensive morphological analysis, utilizing a 
- * vast array of high-precision conditional predicates to expand the 
- * architectural logic by an order of magnitude. Through exhaustive conflict-
- * scenario analysis and granular edge-case resolution, this refinement 
- * completely eliminates morphological glitches. 
- * 
- * Furthermore, the integration of approximate pixel-matching logic effectively 
- * addresses unmapped topological configurations overlooked by the baseline 
- * specification, thereby delivering flawless detail reconstruction while 
- * preserving the authentic pixel-art aesthetic.
+    /* =========================================================================
+     * MMPX Advanced v3.2
+     * =========================================================================
+     * An optimized and heavily expanded derivative of the MMPX algorithm.
+     *
+     * The baseline MMPX implementation relies on a minimalist rule-set, which
+     * inherently suffers from topological conflicts at complex intersections,
+     * manifesting as jarring structural artifacts, "bubbles," and "spurs."
+     *
+     * MMPX Advanced introduces comprehensive morphological analysis, utilizing a
+     * vast array of high-precision conditional predicates to expand the
+     * architectural logic by an order of magnitude. Through exhaustive conflict-
+     * scenario analysis and granular edge-case resolution, this refinement
+     * completely eliminates morphological glitches.
+     *
+     * Furthermore, the integration of approximate pixel-matching logic effectively
+     * addresses unmapped topological configurations overlooked by the baseline
+     * specification, thereby delivering flawless detail reconstruction while
+     * preserving the authentic pixel-art aesthetic.
 
- * License: MIT
- * Copyright (c) 2025-2026 by crashGG.
- * ========================================================================= */
+     * License: MIT
+     * Copyright (c) 2025-2026 by crashGG.
+     * ========================================================================= */
 
     ss << R"(
 
@@ -2148,7 +2195,7 @@ float4 admixS( uint A, uint B, uint C, uint D, uint E, uint F, uint G, uint H, u
     return vE;
 }
 )"
-//**************************************************************************************************zz**
+          //**************************************************************************************************zz**
           R"(
 void FilteredSampleFromVRAM(TEXPAGE_VALUE texpage, float2 coords, float4 uv_limits, out float4 texcol, out float ialpha)
 {
@@ -3305,6 +3352,7 @@ std::string GPU_HW_ShaderGen::GenerateVRAMReplacementBlitFragmentShader() const
 {
   std::stringstream ss;
   WriteHeader(ss);
+  m_has_uniform_buffer = true;
   DeclareTexture(ss, "samp0", 0);
   DeclareFragmentEntryPoint(ss, 0, 1);
 
@@ -3492,7 +3540,7 @@ std::string GPU_HW_ShaderGen::GenerateVRAMWriteFragmentShader(bool use_buffer, b
   DeclareUniformBuffer(ss,
                        {"float2 u_base_coords", "float2 u_end_coords", "float2 u_size", "float u_resolution_scale",
                         "uint u_buffer_base_offset", "uint u_mask_or_bits", "float u_depth_value"},
-                       true);
+                       false);
 
   if (!use_buffer)
   {
@@ -3502,7 +3550,7 @@ std::string GPU_HW_ShaderGen::GenerateVRAMWriteFragmentShader(bool use_buffer, b
   {
     ss << "layout(std430";
     if (IsVulkan())
-      ss << ", set = 0, binding = 0";
+      ss << ", set = 2, binding = 0";
     else if (IsMetal())
       ss << ", set = 1, binding = 0";
     else if (m_use_glsl_binding_layout)
@@ -3516,8 +3564,8 @@ std::string GPU_HW_ShaderGen::GenerateVRAMWriteFragmentShader(bool use_buffer, b
   }
   else
   {
-    DeclareTextureBuffer(ss, "samp0", 0, true, true);
-    ss << "#define GET_VALUE(buffer_offset) (LOAD_TEXTURE_BUFFER(samp0, int(buffer_offset)).r)\n\n";
+    DeclareTextureBuffer(ss, "samp1", true, true);
+    ss << "#define GET_VALUE(buffer_offset) (LOAD_TEXTURE_BUFFER(samp1, int(buffer_offset)).r)\n\n";
   }
 
   if (filtering)
@@ -3620,7 +3668,7 @@ std::string GPU_HW_ShaderGen::GenerateVRAMCopyFragmentShader(bool write_mask_as_
   DeclareUniformBuffer(ss,
                        {"float2 u_src_coords", "float2 u_dst_coords", "float2 u_end_coords", "float2 u_vram_size",
                         "float u_resolution_scale", "bool u_set_mask_bit", "float u_depth_value"},
-                       true);
+                       false);
 
   DeclareTexture(ss, "samp0", 0, msaa);
   DeclareFragmentEntryPoint(ss, 0, 1, {}, true, 1 + BoolToUInt32(write_depth_as_rt), false, write_mask_as_depth, false,
@@ -3675,7 +3723,8 @@ std::string GPU_HW_ShaderGen::GenerateVRAMFillFragmentShader(bool wrapped, bool 
   DefineMacro(ss, "INTERLACED", interlaced);
 
   DeclareUniformBuffer(
-    ss, {"uint2 u_dst_coords", "uint2 u_end_coords", "float4 u_fill_color", "uint u_interlaced_displayed_field"}, true);
+    ss, {"uint2 u_dst_coords", "uint2 u_end_coords", "float4 u_fill_color", "uint u_interlaced_displayed_field"},
+    false);
 
   DeclareFragmentEntryPoint(ss, 0, 1, {}, interlaced || wrapped, 1 + BoolToUInt32(write_depth_as_rt), false,
                             write_mask_as_depth, false, false, false);
@@ -3714,6 +3763,7 @@ std::string GPU_HW_ShaderGen::GenerateVRAMUpdateDepthFragmentShader(bool msaa) c
 {
   std::stringstream ss;
   WriteHeader(ss);
+  m_has_uniform_buffer = true;
   DefineMacro(ss, "MULTISAMPLING", msaa);
   DeclareTexture(ss, "samp0", 0, msaa);
   DeclareFragmentEntryPoint(ss, 0, 1, {}, true, 0, false, true, false, false, msaa);
@@ -3735,6 +3785,7 @@ std::string GPU_HW_ShaderGen::GenerateVRAMCopyDepthFragmentShader(bool msaa) con
 {
   std::stringstream ss;
   WriteHeader(ss);
+  m_has_uniform_buffer = true;
   DefineMacro(ss, "MULTISAMPLED", msaa);
   DeclareTexture(ss, "samp0", 0, msaa);
   DeclareFragmentEntryPoint(ss, 0, 1, {}, msaa, 1, false, false, msaa, msaa, msaa);
