@@ -128444,6 +128444,7 @@ SCPS-10096:
   controllers:
     - AnalogController
     - DigitalController
+    - PlayStationMouse
   metadata:
     publisher: "Sony"
     developer: "Sony"
