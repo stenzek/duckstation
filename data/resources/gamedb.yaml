@@ -54417,7 +54417,7 @@ SLES-03428:
     - DigitalController
   traits:
     - DisableWidescreen # Static backgrounds.
-    - DisableUpscaledDirectTextures: # Fixes part of background texture filtering.
+    - DisableUpscaledDirectTextures # Fixes part of background texture filtering.
   settings:
     gpuPGXPPreserveProjFP: true # Fixes jitter in character models.
     gpuFilterFramebufferUploads: 16x208 # Fixes part of background texture filtering.
@@ -54443,7 +54443,7 @@ SLES-13428:
     - DigitalController
   traits:
     - DisableWidescreen # Static backgrounds.
-    - DisableUpscaledDirectTextures: # Fixes part of background texture filtering.
+    - DisableUpscaledDirectTextures # Fixes part of background texture filtering.
   settings:
     gpuPGXPPreserveProjFP: true # Fixes jitter in character models.
     gpuFilterFramebufferUploads: 16x208 # Fixes part of background texture filtering.
@@ -54472,7 +54472,7 @@ SLUS-01072:
     - DigitalController
   traits:
     - DisableWidescreen # Static backgrounds.
-    - DisableUpscaledDirectTextures: # Fixes part of background texture filtering.
+    - DisableUpscaledDirectTextures # Fixes part of background texture filtering.
   settings:
     gpuPGXPPreserveProjFP: true # Fixes jitter in character models.
     gpuFilterFramebufferUploads: 16x208 # Fixes part of background texture filtering.
@@ -54501,7 +54501,7 @@ SLUS-01326:
     - DigitalController
   traits:
     - DisableWidescreen # Static backgrounds.
-    - DisableUpscaledDirectTextures: # Fixes part of background texture filtering.
+    - DisableUpscaledDirectTextures # Fixes part of background texture filtering.
   settings:
     gpuPGXPPreserveProjFP: true # Fixes jitter in character models.
     gpuFilterFramebufferUploads: 16x208 # Fixes part of background texture filtering.
