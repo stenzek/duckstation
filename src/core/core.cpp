@@ -2,9 +2,10 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "core.h"
-#include "cheats.h"
 #include "achievements.h"
 #include "achievements_private.h"
+#include "cdrom_async_reader.h"
+#include "cheats.h"
 #include "core_private.h"
 #include "discord_presence.h"
 #include "gdb_server.h"
@@ -744,8 +745,9 @@ bool Core::CoreThreadInitialize(bool disable_worker_threads, Error* error)
 
   LogStartupInformation();
 
-  if (!VideoThread::ProcessStartup(error)) [[unlikely]]
+  if (!VideoThread::ProcessStartup(error) || !CDROMAsyncReader::ProcessStartup(error)) [[unlikely]]
   {
+    VideoThread::ProcessShutdown();
     s_locals.async_task_queue.SetWorkerCount(0, 0);
     s_locals.core_thread_handle = {};
 #ifdef _WIN32
@@ -783,6 +785,7 @@ void Core::CoreThreadShutdown()
   HTTPDownloader::Shutdown();
   HTTPCache::Shutdown();
 
+  CDROMAsyncReader::ProcessShutdown();
   VideoThread::ProcessShutdown();
 
   s_locals.core_thread_handle = {};

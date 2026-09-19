@@ -36,11 +36,10 @@ bool HasMedia();
 CDImage* GetMedia();
 const std::string& GetMediaPath();
 
-// TODO: FIXME: Make global shutdown
-bool IsUsingThread();
-void StartThread(u32 readahead_count = 8);
-void StopThread();
+bool ProcessStartup(Error* error);
+void ProcessShutdown();
 
+void SetReadaheadSectors(u32 readahead_sectors);
 void SetMedia(std::unique_ptr<CDImage> media);
 std::unique_ptr<CDImage> RemoveMedia();
 

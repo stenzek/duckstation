@@ -568,10 +568,7 @@ void CDROM::Initialize()
 {
   s_state.disc_region = DiscRegion::NonPS1;
   s_state.manual_lid_control = MANUAL_LID_CONTROL_DISABLED;
-
-  if (g_settings.cdrom_readahead_sectors > 0)
-    CDROMAsyncReader::StartThread(g_settings.cdrom_readahead_sectors);
-
+  CDROMAsyncReader::SetReadaheadSectors(g_settings.cdrom_readahead_sectors);
   Reset();
 }
 
@@ -585,7 +582,6 @@ void CDROM::Shutdown()
   s_state.async_interrupt_event.Deactivate();
   s_state.command_second_response_event.Deactivate();
   s_state.command_event.Deactivate();
-  CDROMAsyncReader::StopThread();
   CDROMAsyncReader::RemoveMedia();
 }
 
@@ -1115,15 +1111,10 @@ TinyString CDROM::LBAToMSFString(CDImage::LBA lba)
 
 void CDROM::SetReadaheadSectors(u32 readahead_sectors)
 {
-  const bool want_thread = (readahead_sectors > 0);
-  if (want_thread == CDROMAsyncReader::IsUsingThread() && CDROMAsyncReader::GetReadaheadCount() == readahead_sectors)
+  if (CDROMAsyncReader::GetReadaheadCount() == readahead_sectors)
     return;
 
-  if (want_thread)
-    CDROMAsyncReader::StartThread(readahead_sectors);
-  else
-    CDROMAsyncReader::StopThread();
-
+  CDROMAsyncReader::SetReadaheadSectors(readahead_sectors);
   if (HasMedia())
     CDROMAsyncReader::QueueReadSector(s_state.requested_lba);
 }
