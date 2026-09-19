@@ -414,6 +414,469 @@ void FilteredSampleFromVRAM(TEXPAGE_VALUE texpage, float2 coords, float4 uv_limi
 }
 )";
   }
+  else if (texture_filter == GPUTextureFilter::MonotonicCubic ||
+           texture_filter == GPUTextureFilter::MonotonicCubicBinAlpha)
+  {
+    ss << R"(
+float4 MonotonicSlope(float4 left, float4 right)
+{
+  float4 valid = step(float4(0.000001, 0.000001, 0.000001, 0.000001), left * right);
+  float4 denominator = valid * (left + right) + (float4(1.0, 1.0, 1.0, 1.0) - valid);
+  return valid * ((2.0 * left * right) / denominator);
+}
+
+float4 MonotonicInterpolate(float4 p0, float4 p1, float4 p2, float4 p3, float t)
+{
+  float4 m1 = MonotonicSlope(p1 - p0, p2 - p1);
+  float4 m2 = MonotonicSlope(p2 - p1, p3 - p2);
+  float t2 = t * t;
+  float t3 = t2 * t;
+  float4 value = (2.0 * t3 - 3.0 * t2 + 1.0) * p1 + (t3 - 2.0 * t2 + t) * m1 +
+                 (-2.0 * t3 + 3.0 * t2) * p2 + (t3 - t2) * m2;
+  return clamp(value, min(p1, p2), max(p1, p2));
+}
+
+void FilteredSampleFromVRAM(TEXPAGE_VALUE texpage, float2 coords, float4 uv_limits,
+                            out float4 texcol, out float ialpha)
+{
+  float2 sample_pos = coords - float2(0.5, 0.5);
+  float2 base = floor(sample_pos);
+  float2 fpart = frac(sample_pos);
+  float4 color_rows[4];
+  float4 coverage_rows;
+
+  for (int y = 0; y < 4; y++)
+  {
+    float4 samples[4];
+    float4 coverage;
+    for (int x = 0; x < 4; x++)
+    {
+      samples[x] = SampleFromVRAM(texpage, base + float2(float(x - 1), float(y - 1)), uv_limits);
+      coverage[x] = float(VECTOR_NEQ(samples[x], TRANSPARENT_PIXEL_COLOR));
+    }
+    color_rows[y] = MonotonicInterpolate(samples[0], samples[1], samples[2], samples[3], fpart.x);
+    coverage_rows[y] = MonotonicInterpolate(coverage.xxxx, coverage.yyyy, coverage.zzzz,
+                                            coverage.wwww, fpart.x).x;
+  }
+
+  texcol = MonotonicInterpolate(color_rows[0], color_rows[1], color_rows[2], color_rows[3], fpart.y);
+  ialpha = MonotonicInterpolate(coverage_rows.xxxx, coverage_rows.yyyy, coverage_rows.zzzz,
+                                coverage_rows.wwww, fpart.y).x;
+  if (ialpha > 0.0)
+    texcol.rgb = saturate(texcol.rgb / float3(ialpha, ialpha, ialpha));
+
+#if !TEXTURE_ALPHA_BLENDING
+  ialpha = (ialpha >= 0.5) ? 1.0 : 0.0;
+#endif
+}
+)";
+  }
+  else if (texture_filter == GPUTextureFilter::AdaptiveDiagonal ||
+           texture_filter == GPUTextureFilter::AdaptiveDiagonalBinAlpha)
+  {
+    ss << R"(
+float AdaptiveDiagonalLuma(float4 color)
+{
+  return dot(color.rgb, float3(0.299, 0.587, 0.114));
+}
+
+void FilteredSampleFromVRAM(TEXPAGE_VALUE texpage, float2 coords, float4 uv_limits,
+                            out float4 texcol, out float ialpha)
+{
+  float2 sample_pos = coords - float2(0.5, 0.5);
+  float2 base = floor(sample_pos);
+  float2 fpart = frac(sample_pos);
+
+  float4 samples[16];
+  float coverage[16];
+
+  for (int y = 0; y < 4; y++)
+  {
+    for (int x = 0; x < 4; x++)
+    {
+      int index = y * 4 + x;
+      samples[index] = SampleFromVRAM(texpage, base + float2(float(x - 1), float(y - 1)), uv_limits);
+      coverage[index] = float(VECTOR_NEQ(samples[index], TRANSPARENT_PIXEL_COLOR));
+    }
+  }
+
+  // Baseline interpolation. This guarantees sensible behaviour away from
+  // strongly directional structure.
+  float4 spatial = float4((1.0 - fpart.x) * (1.0 - fpart.y), fpart.x * (1.0 - fpart.y),
+           (1.0 - fpart.x) * fpart.y, fpart.x * fpart.y);
+
+  float4 bilinear = samples[5] * spatial.x + samples[6] * spatial.y +
+    samples[9] * spatial.z + samples[10] * spatial.w;
+
+  float bilinear_coverage = coverage[5] * spatial.x + coverage[6] * spatial.y +
+    coverage[9] * spatial.z + coverage[10] * spatial.w;
+
+  // Measure variation along the two diagonals.
+  float down_mean = (AdaptiveDiagonalLuma(samples[0]) + AdaptiveDiagonalLuma(samples[5]) +
+     AdaptiveDiagonalLuma(samples[10]) + AdaptiveDiagonalLuma(samples[15])) * 0.25;
+
+  float up_mean = (AdaptiveDiagonalLuma(samples[12]) + AdaptiveDiagonalLuma(samples[9]) +
+     AdaptiveDiagonalLuma(samples[6]) + AdaptiveDiagonalLuma(samples[3])) * 0.25;
+
+  float4 down_delta = float4(AdaptiveDiagonalLuma(samples[0]),
+           AdaptiveDiagonalLuma(samples[5]), AdaptiveDiagonalLuma(samples[10]),
+           AdaptiveDiagonalLuma(samples[15])) - VECTOR_BROADCAST(float4, down_mean);
+
+  float4 up_delta = float4(AdaptiveDiagonalLuma(samples[12]), AdaptiveDiagonalLuma(samples[9]),
+           AdaptiveDiagonalLuma(samples[6]), AdaptiveDiagonalLuma(samples[3])) -
+           VECTOR_BROADCAST(float4, up_mean);
+
+  const float epsilon = 0.0001;
+
+  float down_variance =
+    epsilon + dot(down_delta, down_delta);
+
+  float up_variance =
+    epsilon + dot(up_delta, up_delta);
+
+  // Project the fractional position onto each diagonal.
+  float down_t = (fpart.x + fpart.y) * 0.5;
+  float up_t = (fpart.x + (1.0 - fpart.y)) * 0.5;
+
+  float4 down = lerp(samples[5], samples[10], down_t);
+  float4 up = lerp(samples[9], samples[6], up_t);
+  float down_coverage = lerp(coverage[5], coverage[10], down_t);
+  float up_coverage = lerp(coverage[9], coverage[6], up_t);
+
+  // Low variance means that diagonal is the more plausible continuation.
+  float down_weight = 1.0 / down_variance;
+  float up_weight = 1.0 / up_variance;
+  float weight_sum = down_weight + up_weight;
+
+  float4 directional_prediction = (down * down_weight + up * up_weight) / weight_sum;
+  float directional_coverage = (down_coverage * down_weight + up_coverage * up_weight) / weight_sum;
+
+  // IMPORTANT: closeness must be weighted using the SAME directional weights as the prediction. Taking max()
+  // here associates the confidence of one diagonal with a prediction dominated by the other diagonal.
+  float down_closeness = 1.0 - saturate(abs(fpart.x - fpart.y) * 2.0);
+  float up_closeness = 1.0 - saturate(abs(fpart.x + fpart.y - 1.0) * 2.0);
+
+  float directional_closeness = (down_weight * down_closeness + up_weight * up_closeness) / weight_sum;
+
+  float anisotropy = abs(down_variance - up_variance) / (down_variance + up_variance);
+
+  float adaptive_amount = anisotropy * directional_closeness;
+
+  texcol = lerp(bilinear, directional_prediction, adaptive_amount);
+
+  ialpha = saturate(lerp(bilinear_coverage, directional_coverage, adaptive_amount));
+
+  if (ialpha > 0.0)
+    texcol.rgb = saturate(texcol.rgb / float3(ialpha, ialpha, ialpha));
+  else
+    texcol.rgb = float3(0.0, 0.0, 0.0);
+
+  texcol.a = saturate(texcol.a);
+
+#if !TEXTURE_ALPHA_BLENDING
+  ialpha = (ialpha >= 0.5) ? 1.0 : 0.0;
+#endif
+}
+)";
+  }
+  else if (texture_filter == GPUTextureFilter::DCCI || texture_filter == GPUTextureFilter::DCCIBinAlpha)
+  {
+    ss << R"(
+float DCCILuma(float4 color)
+{
+  return dot(color.rgb, float3(0.299, 0.587, 0.114));
+}
+
+float4 DCCIMidpoint(float4 p0, float4 p1, float4 p2, float4 p3)
+{
+  // Cubic convolution at t = 0.5:
+  // [-1, 9, 9, -1] / 16.
+  return (-p0 + 9.0 * p1 + 9.0 * p2 - p3) * (1.0 / 16.0);
+}
+
+float DCCIMidpointCoverage(float p0, float p1, float p2, float p3)
+{
+  return (-p0 + 9.0 * p1 + 9.0 * p2 - p3) * (1.0 / 16.0);
+}
+
+float DCCIWeight(float d)
+{
+  // Reference DCCI uses 1 / (1 + d^k), k = 5.
+  float d2 = d * d;
+  return 1.0 / (1.0 + d2 * d2 * d);
+}
+
+void DCCISource(TEXPAGE_VALUE texpage, float2 p, float4 uv_limits,
+                out float4 color, out float coverage)
+{
+  color = SampleFromVRAM(texpage, p, uv_limits);
+  coverage = float(VECTOR_NEQ(color, TRANSPARENT_PIXEL_COLOR));
+}
+
+// First DCCI reconstruction stage.
+//
+// 'cell' is the upper-left source texel of the 2x2 source cell whose
+// diagonal midpoint is being reconstructed. In the 2x lattice this
+// corresponds to an odd/odd sample.
+void DCCIStage1(TEXPAGE_VALUE texpage, float2 cell, float4 uv_limits,
+                out float4 color, out float coverage)
+{
+  float4 s[16];
+  float a[16];
+  float l[16];
+
+  for (int y = 0; y < 4; y++)
+  {
+    for (int x = 0; x < 4; x++)
+    {
+      int i = y * 4 + x;
+      DCCISource(texpage,
+                 cell + float2(float(x - 1), float(y - 1)),
+                 uv_limits, s[i], a[i]);
+      l[i] = DCCILuma(s[i]);
+    }
+  }
+
+  // Exact type-1 direction detector from DCCI's 7x7 formulation,
+  // reduced to the sixteen occupied source-lattice samples.
+  //
+  // d1: 45-degree gradient measure.
+  float d1 =
+    abs(l[4] - l[1]) +
+    abs(l[8] - l[5]) + abs(l[5] - l[2]) +
+    abs(l[12] - l[9]) + abs(l[9] - l[6]) + abs(l[6] - l[3]) +
+    abs(l[13] - l[10]) + abs(l[10] - l[7]) +
+    abs(l[14] - l[11]);
+
+  // d2: 135-degree gradient measure.
+  float d2 =
+    abs(l[2] - l[7]) +
+    abs(l[1] - l[6]) + abs(l[6] - l[11]) +
+    abs(l[0] - l[5]) + abs(l[5] - l[10]) + abs(l[10] - l[15]) +
+    abs(l[4] - l[9]) + abs(l[9] - l[14]) +
+    abs(l[8] - l[13]);
+
+  // v1 in the reference implementation: anti-diagonal.
+  float4 p1 = DCCIMidpoint(s[12], s[9], s[6], s[3]);
+  float p1a = DCCIMidpointCoverage(a[12], a[9], a[6], a[3]);
+
+  // v2 in the reference implementation: main diagonal.
+  float4 p2 = DCCIMidpoint(s[0], s[5], s[10], s[15]);
+  float p2a = DCCIMidpointCoverage(a[0], a[5], a[10], a[15]);
+
+  CONSTANT float DCCI_THRESHOLD = 1.15;
+
+  if ((1.0 + d1) > DCCI_THRESHOLD * (1.0 + d2))
+  {
+    // Gradient is stronger in direction 1, interpolate along direction 2.
+    color = p2;
+    coverage = p2a;
+  }
+  else if ((1.0 + d2) > DCCI_THRESHOLD * (1.0 + d1))
+  {
+    color = p1;
+    coverage = p1a;
+  }
+  else
+  {
+    float w1 = DCCIWeight(d1);
+    float w2 = DCCIWeight(d2);
+    float inv_sum = 1.0 / (w1 + w2);
+
+    color = (w1 * p1 + w2 * p2) * inv_sum;
+    coverage = (w1 * p1a + w2 * p2a) * inv_sum;
+  }
+}
+
+// Fetch a point which is already known after DCCI stage 1.
+//
+// The 2x reconstruction lattice uses:
+//   even/even -> original source samples
+//   odd/odd   -> stage-1 diagonal samples
+void DCCIKnown(TEXPAGE_VALUE texpage, float2 h, float4 uv_limits,
+               out float4 color, out float coverage)
+{
+  int hx = int(h.x);
+  int hy = int(h.y);
+
+  if (((hx & 1) == 0) && ((hy & 1) == 0))
+  {
+    DCCISource(texpage, h * 0.5, uv_limits, color, coverage);
+  }
+  else
+  {
+    // This function is only called for points belonging to the
+    // even-parity lattice, so the remaining possibility is odd/odd.
+    DCCIStage1(texpage, floor(h * 0.5), uv_limits, color, coverage);
+  }
+}
+
+// Second DCCI reconstruction stage.
+//
+// h has mixed parity (odd/even or even/odd). The surrounding
+// even-parity lattice already consists of original samples plus the
+// stage-1 diagonal samples.
+void DCCIStage2(TEXPAGE_VALUE texpage, float2 h, float4 uv_limits,
+                out float4 color, out float coverage)
+{
+  float4 s0,  s1,  s2,  s3;
+  float4 s4,  s5,  s6,  s7;
+  float4 s8,  s9,  s10, s11;
+  float4 s12, s13, s14, s15;
+
+  float a0,  a1,  a2,  a3;
+  float a4,  a5,  a6,  a7;
+  float a8,  a9,  a10, a11;
+  float a12, a13, a14, a15;
+
+  // Unique known samples required by the reference 5x5 direction
+  // detector and the 7x7 cubic support.
+  DCCIKnown(texpage, h + float2(-1.0, -2.0), uv_limits, s0,  a0);
+  DCCIKnown(texpage, h + float2( 1.0, -2.0), uv_limits, s1,  a1);
+
+  DCCIKnown(texpage, h + float2(-2.0, -1.0), uv_limits, s2,  a2);
+  DCCIKnown(texpage, h + float2( 0.0, -1.0), uv_limits, s3,  a3);
+  DCCIKnown(texpage, h + float2( 2.0, -1.0), uv_limits, s4,  a4);
+
+  DCCIKnown(texpage, h + float2(-3.0,  0.0), uv_limits, s5,  a5);
+  DCCIKnown(texpage, h + float2(-1.0,  0.0), uv_limits, s6,  a6);
+  DCCIKnown(texpage, h + float2( 1.0,  0.0), uv_limits, s7,  a7);
+  DCCIKnown(texpage, h + float2( 3.0,  0.0), uv_limits, s8,  a8);
+
+  DCCIKnown(texpage, h + float2(-2.0,  1.0), uv_limits, s9,  a9);
+  DCCIKnown(texpage, h + float2( 0.0,  1.0), uv_limits, s10, a10);
+  DCCIKnown(texpage, h + float2( 2.0,  1.0), uv_limits, s11, a11);
+
+  DCCIKnown(texpage, h + float2(-1.0,  2.0), uv_limits, s12, a12);
+  DCCIKnown(texpage, h + float2( 1.0,  2.0), uv_limits, s13, a13);
+
+  DCCIKnown(texpage, h + float2( 0.0, -3.0), uv_limits, s14, a14);
+  DCCIKnown(texpage, h + float2( 0.0,  3.0), uv_limits, s15, a15);
+
+  float l0  = DCCILuma(s0);
+  float l1  = DCCILuma(s1);
+  float l2  = DCCILuma(s2);
+  float l3  = DCCILuma(s3);
+  float l4  = DCCILuma(s4);
+  float l6  = DCCILuma(s6);
+  float l7  = DCCILuma(s7);
+  float l9  = DCCILuma(s9);
+  float l10 = DCCILuma(s10);
+  float l11 = DCCILuma(s11);
+  float l12 = DCCILuma(s12);
+  float l13 = DCCILuma(s13);
+
+  // Exact type-2/type-3 horizontal direction detector.
+  float d1 =
+    abs(l0 - l1) +
+    abs(l6 - l7) +
+    abs(l12 - l13) +
+    abs(l2 - l3) + abs(l3 - l4) +
+    abs(l9 - l10) + abs(l10 - l11);
+
+  // Exact type-2/type-3 vertical direction detector.
+  float d2 =
+    abs(l2 - l9) +
+    abs(l3 - l10) +
+    abs(l4 - l11) +
+    abs(l0 - l6) + abs(l6 - l12) +
+    abs(l1 - l7) + abs(l7 - l13);
+
+  // Horizontal candidate.
+  float4 p1 = DCCIMidpoint(s5, s6, s7, s8);
+  float p1a = DCCIMidpointCoverage(a5, a6, a7, a8);
+
+  // Vertical candidate.
+  float4 p2 = DCCIMidpoint(s14, s3, s10, s15);
+  float p2a = DCCIMidpointCoverage(a14, a3, a10, a15);
+
+  CONSTANT float DCCI_THRESHOLD = 1.15;
+
+  if ((1.0 + d1) > DCCI_THRESHOLD * (1.0 + d2))
+  {
+    color = p2;
+    coverage = p2a;
+  }
+  else if ((1.0 + d2) > DCCI_THRESHOLD * (1.0 + d1))
+  {
+    color = p1;
+    coverage = p1a;
+  }
+  else
+  {
+    float w1 = DCCIWeight(d1);
+    float w2 = DCCIWeight(d2);
+    float inv_sum = 1.0 / (w1 + w2);
+
+    color = (w1 * p1 + w2 * p2) * inv_sum;
+    coverage = (w1 * p1a + w2 * p2a) * inv_sum;
+  }
+}
+
+void DCCILattice(TEXPAGE_VALUE texpage, float2 h, float4 uv_limits,
+                 out float4 color, out float coverage)
+{
+  int hx = int(h.x);
+  int hy = int(h.y);
+  bool x_odd = ((hx & 1) != 0);
+  bool y_odd = ((hy & 1) != 0);
+
+  if (!x_odd && !y_odd)
+  {
+    DCCISource(texpage, h * 0.5, uv_limits, color, coverage);
+  }
+  else if (x_odd && y_odd)
+  {
+    DCCIStage1(texpage, floor(h * 0.5), uv_limits, color, coverage);
+  }
+  else
+  {
+    DCCIStage2(texpage, h, uv_limits, color, coverage);
+  }
+}
+
+void FilteredSampleFromVRAM(TEXPAGE_VALUE texpage, float2 coords, float4 uv_limits,
+                            out float4 texcol, out float ialpha)
+{
+  // DCCI is a 2x reconstruction algorithm. Work in its canonical
+  // high-resolution lattice, where source texels occupy even/even
+  // positions.
+  float2 source_pos = coords - float2(0.5, 0.5);
+  float2 hpos = source_pos * 2.0;
+
+  float2 hbase = floor(hpos);
+  float2 fpart = frac(hpos);
+
+  float4 c00, c10, c01, c11;
+  float a00, a10, a01, a11;
+
+  DCCILattice(texpage, hbase + float2(0.0, 0.0), uv_limits, c00, a00);
+  DCCILattice(texpage, hbase + float2(1.0, 0.0), uv_limits, c10, a10);
+  DCCILattice(texpage, hbase + float2(0.0, 1.0), uv_limits, c01, a01);
+  DCCILattice(texpage, hbase + float2(1.0, 1.0), uv_limits, c11, a11);
+
+  // Continuous sampling of the canonical DCCI 2x reconstruction.
+  texcol = lerp(lerp(c00, c10, fpart.x),
+                lerp(c01, c11, fpart.x), fpart.y);
+
+  ialpha = lerp(lerp(a00, a10, fpart.x),
+                 lerp(a01, a11, fpart.x), fpart.y);
+
+  ialpha = saturate(ialpha);
+
+  if (ialpha > 0.0)
+    texcol.rgb = saturate(texcol.rgb / float3(ialpha, ialpha, ialpha));
+  else
+    texcol.rgb = float3(0.0, 0.0, 0.0);
+
+  texcol.a = saturate(texcol.a);
+
+#if !TEXTURE_ALPHA_BLENDING
+  ialpha = (ialpha >= 0.5) ? 1.0 : 0.0;
+#endif
+}
+)";
+  }
   else if (texture_filter == GPUTextureFilter::xBR || texture_filter == GPUTextureFilter::xBRBinAlpha)
   {
     /*
@@ -722,6 +1185,64 @@ void FilteredSampleFromVRAM(TEXPAGE_VALUE texpage, float2 coords, float4 uv_limi
 
 #undef P
 
+)";
+  }
+  else if (texture_filter == GPUTextureFilter::SharpBilinear)
+  {
+    ss << R"(
+void FilteredSampleFromVRAM(TEXPAGE_VALUE texpage, float2 coords, float4 uv_limits,
+                            out float4 texcol, out float ialpha)
+{
+  // Coordinates are normally in native texel units. One output pixel therefore
+  // spans 1 / resolution_scale texels. Direct upscaled textures are the exception:
+  // their texture coordinates have already been multiplied by resolution_scale.
+#if UPSCALED && !PALETTE && !PAGE_TEXTURE && !DISABLE_UPSCALED_DIRECT_TEXTURES
+  float filter_width = 1.0;
+#else
+  float filter_width = 1.0 / u_resolution_scale;
+#endif
+
+  // Determine the nearest texel and the neighboring texel in the direction of the current sample.
+  float2 texel_center_offset = frac(coords) - float2(0.5, 0.5);
+  float2 texel_offset = sign(texel_center_offset);
+
+  float4 fcoords =
+    max(coords.xyxy + float4(0.0, 0.0, texel_offset.x, texel_offset.y),
+        float4(0.0, 0.0, 0.0, 0.0));
+
+  float4 s00 = SampleFromVRAM(texpage, fcoords.xy, uv_limits);
+  float4 s10 = SampleFromVRAM(texpage, fcoords.zy, uv_limits);
+  float4 s01 = SampleFromVRAM(texpage, fcoords.xw, uv_limits);
+  float4 s11 = SampleFromVRAM(texpage, fcoords.zw, uv_limits);
+
+  float a00 = float(VECTOR_NEQ(s00, TRANSPARENT_PIXEL_COLOR));
+  float a10 = float(VECTOR_NEQ(s10, TRANSPARENT_PIXEL_COLOR));
+  float a01 = float(VECTOR_NEQ(s01, TRANSPARENT_PIXEL_COLOR));
+  float a11 = float(VECTOR_NEQ(s11, TRANSPARENT_PIXEL_COLOR));
+
+  // Keep the central portion of each texel nearest-neighbor sharp.
+  // The transition across each texel boundary is one output pixel wide.
+  float half_filter_width = filter_width * 0.5;
+  float sharp_region = 0.5 - half_filter_width;
+
+  float2 weights =
+    saturate((abs(texel_center_offset) - sharp_region) / filter_width);
+
+  texcol = lerp(lerp(s00, s10, weights.x),
+                lerp(s01, s11, weights.x),
+                weights.y);
+
+  ialpha = lerp(lerp(a00, a10, weights.x),
+                lerp(a01, a11, weights.x),
+                weights.y);
+
+  if (ialpha > 0.0)
+    texcol.rgb /= float3(ialpha, ialpha, ialpha);
+
+#if !TEXTURE_ALPHA_BLENDING
+  ialpha = (ialpha >= 0.5) ? 1.0 : 0.0;
+#endif
+}
 )";
   }
   else if (texture_filter == GPUTextureFilter::MMPX)

@@ -139,9 +139,15 @@ ALWAYS_INLINE bool IsBlendedTextureFiltering(GPUTextureFilter filter)
                 ((static_cast<u8>(GPUTextureFilter::BilinearBinAlpha) & 1u) == 0u) &&
                 ((static_cast<u8>(GPUTextureFilter::JINC2) & 1u) == 1u) &&
                 ((static_cast<u8>(GPUTextureFilter::JINC2BinAlpha) & 1u) == 0u) &&
+                ((static_cast<u8>(GPUTextureFilter::MonotonicCubic) & 1u) == 1u) &&
+                ((static_cast<u8>(GPUTextureFilter::MonotonicCubicBinAlpha) & 1u) == 0u) &&
+                ((static_cast<u8>(GPUTextureFilter::AdaptiveDiagonal) & 1u) == 1u) &&
+                ((static_cast<u8>(GPUTextureFilter::AdaptiveDiagonalBinAlpha) & 1u) == 0u) &&
+                ((static_cast<u8>(GPUTextureFilter::DCCI) & 1u) == 1u) &&
+                ((static_cast<u8>(GPUTextureFilter::DCCIBinAlpha) & 1u) == 0u) &&
                 ((static_cast<u8>(GPUTextureFilter::xBR) & 1u) == 1u) &&
                 ((static_cast<u8>(GPUTextureFilter::xBRBinAlpha) & 1u) == 0u));
-  return (filter < GPUTextureFilter::Scale2x && ((static_cast<u8>(filter) & 1u) == 1u));
+  return (filter < GPUTextureFilter::SharpBilinear && ((static_cast<u8>(filter) & 1u) == 1u));
 }
 
 /// Computes the area affected by a VRAM transfer, including wrap-around of X.
