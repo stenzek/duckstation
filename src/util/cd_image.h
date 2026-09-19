@@ -233,6 +233,8 @@ public:
   u32 GetFirstTrackNumber() const { return m_tracks.front().track_number; }
   u32 GetLastTrackNumber() const { return m_tracks.back().track_number; }
   u32 GetIndexCount() const { return static_cast<u32>(m_indices.size()); }
+  const Index* GetIndexForDiscPosition(LBA pos) const;
+  const Index* GetIndexForTrackPosition(u32 track_number, LBA track_pos) const;
   const std::vector<Track>& GetTracks() const { return m_tracks; }
   const std::vector<Index>& GetIndices() const { return m_indices; }
   const Track& GetTrack(u32 track) const;
@@ -297,9 +299,6 @@ public:
 protected:
   void ClearTOC();
   void CopyTOC(const CDImage* image);
-
-  const Index* GetIndexForDiscPosition(LBA pos) const;
-  const Index* GetIndexForTrackPosition(u32 track_number, LBA track_pos) const;
 
   /// Synthesis of lead-out data.
   void AddLeadOutIndex();
