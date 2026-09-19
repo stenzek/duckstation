@@ -2894,7 +2894,10 @@ void CDROM::BeginPlaying(u8 track, bool after_seek)
     if (track > media->GetTrackCount())
     {
       // restart current track
-      track = Truncate8(media->GetTrackNumber());
+      const u32 track_count = media->GetTrackCount();
+      const CDImage::Index* const index = media->GetIndexForDiscPosition(s_state.current_lba);
+      track = Truncate8(std::min(index ? index->track_number : track_count, track_count));
+      s_state.play_track_number_bcd = BinaryToBCD(track);
     }
 
     s_state.setloc_position = media->GetTrackStartMSFPosition(track);
@@ -4197,15 +4200,16 @@ void CDROM::DrawDebugWindow(float scale)
       ImGui::Text("Disc Position: MSF[%02u:%02u:%02u] LBA[%u]", disc_position.minute, disc_position.second,
                   disc_position.frame, disc_position.ToLBA());
 
-      if (media->GetTrackNumber() > media->GetTrackCount())
+      const CDImage::Index* index = media->GetIndexForDiscPosition(s_state.current_lba);
+      if (!index || index->track_number > media->GetTrackCount())
       {
         ImGui::Text("Track Position: Lead-out");
       }
       else
       {
         const CDImage::Position track_position = CDImage::Position::FromLBA(
-          s_state.current_lba - media->GetTrackStartPosition(static_cast<u8>(media->GetTrackNumber())));
-        ImGui::Text("Track Position: Number[%u] MSF[%02u:%02u:%02u] LBA[%u]", media->GetTrackNumber(),
+          s_state.current_lba - media->GetTrackStartPosition(Truncate8(index->track_number)));
+        ImGui::Text("Track Position: Number[%u] MSF[%02u:%02u:%02u] LBA[%u]", index->track_number,
                     track_position.minute, track_position.second, track_position.frame, track_position.ToLBA());
       }
 
@@ -4215,14 +4219,16 @@ void CDROM::DrawDebugWindow(float scale)
 
       if (s_state.show_current_file)
       {
-        if (media->GetTrackNumber() == 1)
+        if (index && index->track_number == 1)
         {
           if (!s_state.file_map_created)
-            CreateFileMap();
+          {
+            Host::RunOnCoreThread(static_cast<void (*)()>(&CDROM::CreateFileMap));
+            return;
+          }
 
           u32 current_file_start_lba, current_file_end_lba;
-          const u32 track_lba =
-            s_state.current_lba - media->GetTrackStartPosition(static_cast<u8>(media->GetTrackNumber()));
+          const u32 track_lba = s_state.current_lba - media->GetTrackStartPosition(Truncate8(index->track_number));
           const std::string* current_file = LookupFileMap(track_lba, &current_file_start_lba, &current_file_end_lba);
           if (current_file)
           {
