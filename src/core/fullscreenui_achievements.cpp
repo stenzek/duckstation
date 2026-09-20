@@ -1743,13 +1743,7 @@ void FullscreenUI::ToggleAchievementsWindow()
     return;
   }
 
-  PauseAndToggleMenuFromCoreThread([]() {
-    BeginTransition(TransitionEffect::ZoomIn, DEFAULT_TRANSITION_TIME, []() {
-      ForceKeyNavEnabled();
-      EnqueueSoundEffect(SFX_NAV_ACTIVATE);
-      SwitchToAchievements();
-    });
-  });
+  PauseAndToggleMenuFromCoreThread(&FullscreenUI::SwitchToAchievements);
 }
 
 void FullscreenUI::AddSubsetInfo(const rc_client_subset_t* subset)
@@ -2729,13 +2723,7 @@ void FullscreenUI::ToggleLeaderboardsWindow()
     return;
   }
 
-  PauseAndToggleMenuFromCoreThread([]() {
-    BeginTransition(TransitionEffect::ZoomIn, DEFAULT_TRANSITION_TIME, []() {
-      ForceKeyNavEnabled();
-      EnqueueSoundEffect(SFX_NAV_ACTIVATE);
-      SwitchToLeaderboards();
-    });
-  });
+  PauseAndToggleMenuFromCoreThread(&FullscreenUI::SwitchToLeaderboards);
 }
 
 void FullscreenUI::SwitchToLeaderboards()

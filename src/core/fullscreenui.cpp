@@ -434,9 +434,6 @@ void FullscreenUI::ToggleCheatsMenu()
       // transition and not noticeable. That's what you get for not using the game list.
       SwitchToMainWindow(MainWindowType::Settings);
     }
-
-    ForceKeyNavEnabled();
-    EnqueueSoundEffect(SFX_NAV_ACTIVATE);
   });
 }
 
