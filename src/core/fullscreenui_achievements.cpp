@@ -1743,7 +1743,7 @@ void FullscreenUI::ToggleAchievementsWindow()
     return;
   }
 
-  PauseAndToggleMenuFromCoreThread(&FullscreenUI::SwitchToAchievements);
+  PauseAndToggleMenuFromCoreThread(MainWindowType::Achievements, &FullscreenUI::SwitchToAchievements);
 }
 
 void FullscreenUI::AddSubsetInfo(const rc_client_subset_t* subset)
@@ -2723,7 +2723,7 @@ void FullscreenUI::ToggleLeaderboardsWindow()
     return;
   }
 
-  PauseAndToggleMenuFromCoreThread(&FullscreenUI::SwitchToLeaderboards);
+  PauseAndToggleMenuFromCoreThread(MainWindowType::Leaderboards, &FullscreenUI::SwitchToLeaderboards);
 }
 
 void FullscreenUI::SwitchToLeaderboards()

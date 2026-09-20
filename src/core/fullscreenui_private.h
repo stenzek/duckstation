@@ -64,7 +64,8 @@ bool AreAnyDialogsOpen();
 bool AreAnyDialogsInteractable();
 
 void PauseAndOpenMenuFromCoreThread(void (*callback)());
-void PauseAndToggleMenuFromCoreThread(void (*open_callback)(), void (*restored_callback)() = nullptr,
+void PauseAndToggleMenuFromCoreThread(MainWindowType expected_main_window, void (*open_callback)(),
+                                      void (*restored_callback)() = nullptr,
                                       float transition_time = SHORT_TRANSITION_TIME);
 void ClosePauseMenu(TransitionEffect effect = TransitionEffect::Fade, float transition_time = SHORT_TRANSITION_TIME);
 void ClosePauseMenuImmediately();
