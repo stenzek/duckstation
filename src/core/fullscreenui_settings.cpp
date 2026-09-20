@@ -5196,7 +5196,6 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
           str.append_format(FSUI_FSTR("Minimum: {}"), opt.min_value[0].float_value);
           str.append(DOT_SEP);
           str.append_format(FSUI_FSTR("Maximum: {}"), opt.max_value[0].float_value);
-          str.append(DOT_SEP);
           if (MenuButton(tstr, str))
             OpenFixedPopupDialog(tstr);
 
@@ -5270,7 +5269,6 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
           str.append_format(FSUI_FSTR("Minimum: {}"), opt.min_value[0].int_value);
           str.append(DOT_SEP);
           str.append_format(FSUI_FSTR("Maximum: {}"), opt.max_value[0].int_value);
-          str.append(DOT_SEP);
           if (MenuButton(tstr, str))
             OpenFixedPopupDialog(tstr);
 
