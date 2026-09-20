@@ -197,7 +197,7 @@ static void DrawEnumSetting(SettingsInterface* bsi, std::string_view title, std:
                             std::optional<DataType> (*from_string_function)(std::string_view str),
                             const char* (*to_string_function)(DataType value),
                             const char* (*to_display_string_function)(DataType value), SizeType option_count,
-                            bool enabled = true);
+                            bool enabled = true, bool use_dropdown = true);
 static void DrawSpeedSelectorSetting(SettingsInterface* bsi, std::string_view title, std::string_view summary,
                                      const char* section, const char* key, float default_value, bool enabled = true);
 static void DrawFolderSetting(SettingsInterface* bsi, std::string_view title, const char* section, const char* key,
@@ -1529,7 +1529,7 @@ void FullscreenUI::DrawEnumSetting(SettingsInterface* bsi, std::string_view titl
                                    std::optional<DataType> (*from_string_function)(std::string_view str),
                                    const char* (*to_string_function)(DataType value),
                                    const char* (*to_display_string_function)(DataType value), SizeType option_count,
-                                   bool enabled /* = true */)
+                                   bool enabled /* = true */, bool use_dropdown /* = true */)
 {
   const bool game_settings = IsEditingGameSettings(bsi);
 
@@ -1542,7 +1542,7 @@ void FullscreenUI::DrawEnumSetting(SettingsInterface* bsi, std::string_view titl
   if (MenuActionButton(title, summary,
                        typed_value.has_value() ? to_display_string_function(typed_value.value()) :
                                                  FSUI_CSTR("Use Global Setting"),
-                       true, enabled))
+                       use_dropdown, enabled))
   {
     DropdownDialogOptions cd_options;
     cd_options.reserve(static_cast<u32>(option_count) + 1);
@@ -1551,28 +1551,46 @@ void FullscreenUI::DrawEnumSetting(SettingsInterface* bsi, std::string_view titl
     for (u32 i = 0; i < static_cast<u32>(option_count); i++)
       cd_options.emplace_back(to_display_string_function(static_cast<DataType>(i)),
                               (typed_value.has_value() && i == static_cast<u32>(typed_value.value())));
-    OpenDropdownDialog(title, std::move(cd_options),
+
+    static constexpr auto apply_option = [](const TinyString& section, const TinyString& key,
+                                            const char* (*to_string_function)(DataType value), bool game_settings,
+                                            s32 index) {
+      if (index < 0)
+        return;
+
+      const auto lock = Core::GetSettingsLock();
+      SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
+      if (game_settings)
+      {
+        if (index == 0)
+          bsi->DeleteValue(section, key);
+        else
+          bsi->SetStringValue(section, key, to_string_function(static_cast<DataType>(index - 1)));
+      }
+      else
+      {
+        bsi->SetStringValue(section, key, to_string_function(static_cast<DataType>(index)));
+      }
+
+      SetSettingsChanged(bsi);
+    };
+
+    if (use_dropdown)
+    {
+      OpenDropdownDialog(title, std::move(cd_options),
+                         [section = TinyString(section), key = TinyString(key), to_string_function,
+                          game_settings](s32 index, const std::string& title) {
+                           apply_option(section, key, to_string_function, game_settings, index);
+                         });
+    }
+    else
+    {
+      OpenChoiceDialog(title, false, std::move(cd_options),
                        [section = TinyString(section), key = TinyString(key), to_string_function,
-                        game_settings](s32 index, const std::string& title) {
-                         if (index < 0)
-                           return;
-
-                         const auto lock = Core::GetSettingsLock();
-                         SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
-                         if (game_settings)
-                         {
-                           if (index == 0)
-                             bsi->DeleteValue(section, key);
-                           else
-                             bsi->SetStringValue(section, key, to_string_function(static_cast<DataType>(index - 1)));
-                         }
-                         else
-                         {
-                           bsi->SetStringValue(section, key, to_string_function(static_cast<DataType>(index)));
-                         }
-
-                         SetSettingsChanged(bsi);
+                        game_settings](s32 index, const std::string& title, bool checked) {
+                         apply_option(section, key, to_string_function, game_settings, index);
                        });
+    }
   }
 }
 
@@ -4561,12 +4579,14 @@ void FullscreenUI::DrawGraphicsSettingsPage()
     DrawEnumSetting(bsi, FSUI_ICONVSTR(ICON_FA_TABLE_CELLS, "Texture Filtering"),
                     FSUI_VSTR("Smooths out the blockiness of magnified textures on 3D objects."), "GPU",
                     "TextureFilter", Settings::DEFAULT_GPU_TEXTURE_FILTER, &Settings::ParseTextureFilterName,
-                    &Settings::GetTextureFilterName, &Settings::GetTextureFilterDisplayName, GPUTextureFilter::Count);
+                    &Settings::GetTextureFilterName, &Settings::GetTextureFilterDisplayName, GPUTextureFilter::Count,
+                    true, false);
 
     DrawEnumSetting(bsi, FSUI_ICONVSTR(ICON_FA_SQUARE_ARROW_UP_RIGHT, "Sprite Texture Filtering"),
                     FSUI_VSTR("Smooths out the blockiness of magnified textures on 2D objects."), "GPU",
                     "SpriteTextureFilter", Settings::DEFAULT_GPU_TEXTURE_FILTER, &Settings::ParseTextureFilterName,
-                    &Settings::GetTextureFilterName, &Settings::GetTextureFilterDisplayName, GPUTextureFilter::Count);
+                    &Settings::GetTextureFilterName, &Settings::GetTextureFilterDisplayName, GPUTextureFilter::Count,
+                    true, false);
 
     DrawEnumSetting(bsi, FSUI_ICONVSTR(ICON_FA_DROPLET_SLASH, "Dithering"),
                     FSUI_VSTR("Controls how dithering is applied in the emulated GPU. True Color disables dithering "
