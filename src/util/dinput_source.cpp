@@ -119,7 +119,7 @@ static BOOL CALLBACK EnumCallback(LPCDIDEVICEINSTANCEW lpddi, LPVOID pvRef)
 bool DInputSource::ReloadDevices()
 {
   // detect any removals
-  PollEvents();
+  bool changed = PollEvents();
 
   // look for new devices
   std::vector<DIDEVICEINSTANCEW> devices;
@@ -127,7 +127,6 @@ bool DInputSource::ReloadDevices()
 
   VERBOSE_LOG("Enumerated {} devices", devices.size());
 
-  bool changed = false;
   for (DIDEVICEINSTANCEW inst : devices)
   {
     // do we already have this one?
@@ -254,8 +253,9 @@ bool DInputSource::AddDevice(ControllerData& cd, const std::string& name)
   return (cd.num_buttons > 0 || !cd.axis_offsets.empty() || cd.num_hats > 0);
 }
 
-void DInputSource::PollEvents()
+bool DInputSource::PollEvents()
 {
+  bool topology_changed = false;
   for (size_t i = 0; i < m_controllers.size();)
   {
     ControllerData& cd = m_controllers[i];
@@ -276,6 +276,7 @@ void DInputSource::PollEvents()
         InputManager::OnInputDeviceDisconnected(
           MakeGenericControllerDeviceKey(InputSourceType::DInput, static_cast<u32>(i)),
           GetDeviceIdentifier(static_cast<u32>(i)));
+        topology_changed = true;
         continue;
       }
     }
@@ -289,6 +290,7 @@ void DInputSource::PollEvents()
     CheckForStateChanges(i, js);
     i++;
   }
+  return topology_changed;
 }
 
 InputManager::DeviceList DInputSource::EnumerateDevices()

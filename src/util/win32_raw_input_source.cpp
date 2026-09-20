@@ -72,9 +72,10 @@ void Win32RawInputSource::Shutdown()
                                InputManager::GetPointerDeviceName(0), TRANSLATE_SV("InputManager", "Mouse"));
 }
 
-void Win32RawInputSource::PollEvents()
+bool Win32RawInputSource::PollEvents()
 {
   // noop, handled by message pump
+  return false;
 }
 
 std::optional<float> Win32RawInputSource::GetCurrentValue(InputBindingKey key)

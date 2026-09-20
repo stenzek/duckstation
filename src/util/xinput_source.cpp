@@ -248,8 +248,9 @@ void XInputSource::Shutdown()
   m_xinput_get_extended = nullptr;
 }
 
-void XInputSource::PollEvents()
+bool XInputSource::PollEvents()
 {
+  bool topology_changed = false;
   for (u32 i = 0; i < NUM_CONTROLLERS; i++)
   {
     const bool was_connected = m_controllers[i].connected;
@@ -261,7 +262,10 @@ void XInputSource::PollEvents()
     if (result == ERROR_SUCCESS)
     {
       if (!was_connected)
+      {
         HandleControllerConnection(i, new_state);
+        topology_changed = true;
+      }
       else
         CheckForStateChanges(i, new_state);
     }
@@ -271,9 +275,13 @@ void XInputSource::PollEvents()
         WARNING_LOG("XInputGetState({}) failed: 0x{:08X} / 0x{:08X}", i, result, GetLastError());
 
       if (was_connected)
+      {
         HandleControllerDisconnection(i);
+        topology_changed = true;
+      }
     }
   }
+  return topology_changed;
 }
 
 InputManager::DeviceList XInputSource::EnumerateDevices()

@@ -25,7 +25,7 @@ public:
   bool ReloadDevices() override;
   void Shutdown() override;
 
-  void PollEvents() override;
+  bool PollEvents() override;
   std::optional<float> GetCurrentValue(InputBindingKey key) override;
   InputManager::DeviceList EnumerateDevices() override;
   InputManager::DeviceEffectList EnumerateEffects(std::optional<InputBindingInfo::Type> type,

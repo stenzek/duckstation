@@ -42,7 +42,8 @@ public:
   virtual void Shutdown() = 0;
 
   /// Polls the input source for events. This should be called at a regular interval, such as every frame.
-  virtual void PollEvents() = 0;
+  /// Returns true when the set of connected devices changed.
+  virtual bool PollEvents() = 0;
 
   /// Returns the current value for the specified device and key.
   virtual std::optional<float> GetCurrentValue(InputBindingKey key) = 0;

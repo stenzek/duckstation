@@ -2392,6 +2392,7 @@ void InputManager::PollSources()
   DebugAssert(Host::IsOnCoreThread());
 
   const bool system_running = (System::GetState() == System::State::Running);
+  bool topology_changed = false;
 
   {
     const std::unique_lock lock(s_state.sources_mutex);
@@ -2399,12 +2400,15 @@ void InputManager::PollSources()
     for (u32 i = FIRST_EXTERNAL_INPUT_SOURCE; i < LAST_EXTERNAL_INPUT_SOURCE; i++)
     {
       if (s_state.input_sources[i])
-        s_state.input_sources[i]->PollEvents();
+        topology_changed |= s_state.input_sources[i]->PollEvents();
     }
 
     if (system_running && !s_state.pad_vibration_array.empty())
       UpdateContinuedVibration();
   }
+
+  if (topology_changed)
+    System::ReloadInputBindings();
 
   GenerateRelativeMouseEvents();
 

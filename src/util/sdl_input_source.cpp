@@ -337,8 +337,7 @@ void SDLInputSource::UpdateSettings(const SettingsInterface& si, std::unique_loc
 bool SDLInputSource::ReloadDevices()
 {
   // We'll get a GC added/removed event here.
-  PollEvents();
-  return false;
+  return PollEvents();
 }
 
 void SDLInputSource::Shutdown()
@@ -605,16 +604,22 @@ void SDLInputSource::ShutdownSubsystem()
   g_dyn_sdl.QuitSubSystem(SDL_INIT_JOYSTICK | SDL_INIT_GAMEPAD | SDL_INIT_HAPTIC);
 }
 
-void SDLInputSource::PollEvents()
+bool SDLInputSource::PollEvents()
 {
+  bool topology_changed = false;
   for (;;)
   {
     SDL_Event ev;
     if (g_dyn_sdl.SDL_PollEvent(&ev))
+    {
+      const size_t old_controller_count = m_controllers.size();
       ProcessSDLEvent(&ev);
+      topology_changed |= (m_controllers.size() != old_controller_count);
+    }
     else
       break;
   }
+  return topology_changed;
 }
 
 InputManager::DeviceList SDLInputSource::EnumerateDevices()
