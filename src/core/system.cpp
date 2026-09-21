@@ -2655,7 +2655,7 @@ void System::FreeMemoryStateStorage(bool release_memory, bool release_textures, 
       if ((mss.vram_texture || !mss.gpu_state_data.empty()) && !video_thread_synced)
       {
         video_thread_synced = true;
-        VideoThread::SyncThread(true);
+        VideoThread::SyncThread(false);
       }
 
       if (mss.vram_texture)

@@ -127,7 +127,7 @@ void Timer::SleepUntil(Value value, bool exact)
     // And spin off whatever time is left.
     while (current < value)
     {
-      MultiPause();
+      PauseCPU();
       current = GetCurrentValue();
     }
   }
@@ -219,7 +219,7 @@ void Timer::SleepUntil(Value value, bool exact)
     // And spin off whatever time is left.
     while (current < value)
     {
-      MultiPause();
+      PauseCPU();
       current = GetCurrentValue();
     }
   }

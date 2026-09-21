@@ -376,7 +376,10 @@ void VideoThread::SyncThread(bool spin)
       }
 
       // Hopefully ought to be enough.
-      MultiPause();
+      PauseCPU();
+      PauseCPU();
+      PauseCPU();
+      PauseCPU();
 
       current_time = Timer::GetCurrentValue();
     } while ((current_time - start_time) < s_state.thread_spin_time);

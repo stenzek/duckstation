@@ -36,6 +36,7 @@
 #else
 #include <arm_neon.h>
 #endif
+#include <arm_acle.h>
 #endif
 
 #ifdef __APPLE__
@@ -108,46 +109,16 @@ ALWAYS_INLINE_RELEASE static void MemsetPtrs(T* ptr, T value, u32 count)
     *(dest++) = value;
 }
 
-ALWAYS_INLINE void MultiPause()
+ALWAYS_INLINE void PauseCPU()
 {
-#if defined(CPU_ARCH_X86) || defined(CPU_ARCH_X64)
+#if defined(CPU_ARCH_X64)
   _mm_pause();
-  _mm_pause();
-  _mm_pause();
-  _mm_pause();
-  _mm_pause();
-  _mm_pause();
-  _mm_pause();
-  _mm_pause();
-#elif defined(CPU_ARCH_ARM64) && defined(_MSC_VER) && !defined(__clang__)
-  __isb(_ARM64_BARRIER_SY);
-  __isb(_ARM64_BARRIER_SY);
-  __isb(_ARM64_BARRIER_SY);
-  __isb(_ARM64_BARRIER_SY);
-  __isb(_ARM64_BARRIER_SY);
-  __isb(_ARM64_BARRIER_SY);
-  __isb(_ARM64_BARRIER_SY);
-  __isb(_ARM64_BARRIER_SY);
 #elif defined(CPU_ARCH_ARM64) || defined(CPU_ARCH_ARM32)
-  __asm__ __volatile__("isb");
-  __asm__ __volatile__("isb");
-  __asm__ __volatile__("isb");
-  __asm__ __volatile__("isb");
-  __asm__ __volatile__("isb");
-  __asm__ __volatile__("isb");
-  __asm__ __volatile__("isb");
-  __asm__ __volatile__("isb");
+  __yield();
 #elif defined(CPU_ARCH_RISCV64)
   // Probably wrong... pause is optional :/
   asm volatile("fence" ::: "memory");
 #elif defined(CPU_ARCH_LOONGARCH64)
-  asm volatile("ibar 0" ::: "memory");
-  asm volatile("ibar 0" ::: "memory");
-  asm volatile("ibar 0" ::: "memory");
-  asm volatile("ibar 0" ::: "memory");
-  asm volatile("ibar 0" ::: "memory");
-  asm volatile("ibar 0" ::: "memory");
-  asm volatile("ibar 0" ::: "memory");
   asm volatile("ibar 0" ::: "memory");
 #else
 #pragma warning("Missing implementation")
