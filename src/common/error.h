@@ -132,6 +132,13 @@ public:
       errptr->AddSuffixFmtArgs(fmt.get(), fmt::make_format_args(args...));
   }
 
+  // Helpers for obtaining error strings without creating an Error object.
+  static std::string TranslateErrnoError(std::string_view prefix, int err);
+#ifdef _WIN32
+  static std::string TranslateWin32Error(std::string_view prefix, unsigned long err);
+  static std::string TranslateHResultError(std::string_view prefix, long err);
+#endif
+
   Error& operator=(const Error& e);
   Error& operator=(Error&& e);
   bool operator==(const Error& e) const;

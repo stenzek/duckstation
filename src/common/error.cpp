@@ -56,28 +56,32 @@ void Error::SetErrno(int err)
 void Error::SetErrno(std::string_view prefix, int err)
 {
   m_type = Type::Errno;
+  m_description = TranslateErrnoError(prefix, err);
+}
 
+std::string Error::TranslateErrnoError(std::string_view prefix, int err)
+{
 #ifdef _MSC_VER
   char buf[128];
   if (strerror_s(buf, sizeof(buf), err) == 0)
-    m_description = fmt::format("{}errno {}: {}", prefix, err, buf);
+    return fmt::format("{}errno {}: {}", prefix, err, buf);
   else
-    m_description = fmt::format("{}errno {}: <Could not get error message>", prefix, err);
+    return fmt::format("{}errno {}: <Could not get error message>", prefix, err);
 #elif defined(__GLIBC__) && (__GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ >= 32))
   const char* desc = strerrordesc_np(err);
   const char* name = strerrorname_np(err);
   if (desc && name)
-    m_description = fmt::format("{}errno {} ({}): {}", prefix, err, name, desc);
+    return fmt::format("{}errno {} ({}): {}", prefix, err, name, desc);
   else if (desc)
-    m_description = fmt::format("{}errno {}: {}", prefix, err, desc);
+    return fmt::format("{}errno {}: {}", prefix, err, desc);
   else
-    m_description = fmt::format("{}errno {}: <Could not get error message>", prefix, err);
+    return fmt::format("{}errno {}: <Could not get error message>", prefix, err);
 #else
   const char* buf = std::strerror(err);
   if (buf)
-    m_description = fmt::format("{}errno {}: {}", prefix, err, buf);
+    return fmt::format("{}errno {}: {}", prefix, err, buf);
   else
-    m_description = fmt::format("{}errno {}: <Could not get error message>", prefix, err);
+    return fmt::format("{}errno {}: <Could not get error message>", prefix, err);
 #endif
 }
 
@@ -127,7 +131,11 @@ void Error::SetWin32(unsigned long err)
 void Error::SetWin32(std::string_view prefix, unsigned long err)
 {
   m_type = Type::Win32;
+  m_description = TranslateWin32Error({}, err);
+}
 
+std::string Error::TranslateWin32Error(std::string_view prefix, unsigned long err)
+{
   WCHAR buf[128];
   DWORD r = FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM, nullptr, err, ENGLISH_LANG_ID, buf,
                            static_cast<DWORD>(std::size(buf)), nullptr);
@@ -136,12 +144,12 @@ void Error::SetWin32(std::string_view prefix, unsigned long err)
 
   if (r > 0)
   {
-    m_description =
-      fmt::format("{}Win32 Error {}: {}", prefix, err, StringUtil::WideStringToUTF8String(std::wstring_view(buf, r)));
+    return fmt::format("{}Win32 Error {}: {}", prefix, err,
+                       StringUtil::WideStringToUTF8String(std::wstring_view(buf, r)));
   }
   else
   {
-    m_description = fmt::format("{}Win32 Error {}: <Could not resolve system error ID>", prefix, err);
+    return fmt::format("{}Win32 Error {}: <Could not resolve system error ID>", prefix, err);
   }
 }
 
@@ -165,7 +173,11 @@ void Error::SetHResult(long err)
 void Error::SetHResult(std::string_view prefix, long err)
 {
   m_type = Type::HResult;
+  m_description = TranslateHResultError(prefix, err);
+}
 
+std::string Error::TranslateHResultError(std::string_view prefix, long err)
+{
   WCHAR buf[128];
   DWORD r = FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM, nullptr, err, ENGLISH_LANG_ID, buf,
                            static_cast<DWORD>(std::size(buf)), nullptr);
@@ -174,12 +186,12 @@ void Error::SetHResult(std::string_view prefix, long err)
 
   if (r > 0)
   {
-    m_description = fmt::format("{}HRESULT {:08X}: {}", prefix, static_cast<unsigned>(err),
-                                StringUtil::WideStringToUTF8String(std::wstring_view(buf, r)));
+    return fmt::format("{}HRESULT {:08X}: {}", prefix, static_cast<unsigned>(err),
+                       StringUtil::WideStringToUTF8String(std::wstring_view(buf, r)));
   }
   else
   {
-    m_description = fmt::format("{}HRESULT {:08X}: <Could not resolve system error ID>", prefix, err);
+    return fmt::format("{}HRESULT {:08X}: <Could not resolve system error ID>", prefix, err);
   }
 }
 
