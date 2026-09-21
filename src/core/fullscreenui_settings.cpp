@@ -2505,8 +2505,13 @@ void FullscreenUI::PopulateImageTrackList()
   s_settings_locals.image_track_list.clear();
   s_settings_locals.image_track_summary.clear();
 
-  if (!s_settings_locals.game_settings_entry || s_settings_locals.game_settings_entry->is_runtime_populated)
+  // Don't populate tracks when we're running from disc, because the core might have exclusive access.
+  if (!s_settings_locals.game_settings_entry ||
+      (s_settings_locals.game_settings_entry->is_runtime_populated &&
+       CDImage::IsDeviceName(s_settings_locals.game_settings_entry->path.c_str())))
+  {
     return;
+  }
 
   std::unique_ptr<CDImage> image = CDImage::Open(s_settings_locals.game_settings_entry->path.c_str(), false, nullptr);
   if (!image)
