@@ -729,8 +729,8 @@ bool VideoThread::CreateDeviceOnThread(RenderAPI api, bool fullscreen, bool star
   std::optional<WindowInfo> wi;
   if (!g_gpu_device ||
       !(wi = Host::AcquireRenderWindow(api, fullscreen, fullscreen_mode.has_value(), &create_error)).has_value() ||
-      !g_gpu_device->Create(Core::GetStringSettingValue("GPU", "Adapter"), create_flags, EmuFolders::DataRoot,
-                            EmuFolders::Cache, SHADER_CACHE_VERSION, wi.value(), s_state.requested_vsync,
+      !g_gpu_device->Create(Core::GetStringSettingValue("GPU", "Adapter"), create_flags, SHADER_CACHE_VERSION,
+                            wi.value(), s_state.requested_vsync,
                             fullscreen_mode.has_value() ? &fullscreen_mode.value() : nullptr,
                             exclusive_fullscreen_control, &create_error))
   {

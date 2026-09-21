@@ -708,9 +708,8 @@ public:
 
   ALWAYS_INLINE bool IsGPUTimingEnabled() const { return m_gpu_timing_enabled; }
 
-  bool Create(std::string_view adapter, CreateFlags create_flags, std::string_view shader_dump_path,
-              std::string_view shader_cache_path, u32 shader_cache_version, const WindowInfo& wi, GPUVSyncMode vsync,
-              const ExclusiveFullscreenMode* exclusive_fullscreen_mode,
+  bool Create(std::string_view adapter, CreateFlags create_flags, u32 shader_cache_version, const WindowInfo& wi,
+              GPUVSyncMode vsync, const ExclusiveFullscreenMode* exclusive_fullscreen_mode,
               std::optional<bool> exclusive_fullscreen_control, Error* error);
   void Destroy();
 

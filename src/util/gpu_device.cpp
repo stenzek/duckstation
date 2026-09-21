@@ -10,6 +10,8 @@
 #include "imgui_manager.h"
 #include "shadergen.h"
 
+#include "core/settings.h"
+
 #include "common/assert.h"
 #include "common/bitutils.h"
 #include "common/error.h"
@@ -57,7 +59,6 @@ std::unique_ptr<GPUDevice> g_gpu_device;
 namespace {
 struct Locals
 {
-  std::string shader_dump_path;
   std::string pipeline_cache_path;
   size_t pipeline_cache_size;
   std::array<u8, SHA1Digest::DIGEST_SIZE> pipeline_cache_hash;
@@ -503,13 +504,12 @@ std::optional<GPUDevice::AdapterInfoList> GPUDevice::GetAdapterListForAPI(Render
   return ret;
 }
 
-bool GPUDevice::Create(std::string_view adapter, CreateFlags create_flags, std::string_view shader_dump_path,
-                       std::string_view shader_cache_path, u32 shader_cache_version, const WindowInfo& wi,
-                       GPUVSyncMode vsync, const ExclusiveFullscreenMode* exclusive_fullscreen_mode,
+bool GPUDevice::Create(std::string_view adapter, CreateFlags create_flags, u32 shader_cache_version,
+                       const WindowInfo& wi, GPUVSyncMode vsync,
+                       const ExclusiveFullscreenMode* exclusive_fullscreen_mode,
                        std::optional<bool> exclusive_fullscreen_control, Error* error)
 {
   m_debug_device = HasCreateFlag(create_flags, CreateFlags::EnableDebugDevice);
-  s_locals.shader_dump_path = shader_dump_path;
 
   INFO_LOG("Main render window is {}x{}.", wi.surface_width, wi.surface_height);
 
@@ -557,8 +557,8 @@ bool GPUDevice::Create(std::string_view adapter, CreateFlags create_flags, std::
   INFO_LOG("Render API: {} Version {}", RenderAPIToString(m_render_api), m_render_api_version);
   INFO_LOG("Graphics Driver Info:\n{}", GetDriverInfo());
 
-  OpenShaderCache(HasCreateFlag(create_flags, CreateFlags::DisableShaderCache) ? std::string_view() : shader_cache_path,
-                  shader_cache_version);
+  if (!HasCreateFlag(create_flags, CreateFlags::DisableShaderCache))
+    OpenShaderCache(EmuFolders::Cache, shader_cache_version);
 
   if (!CreateResources(error))
   {
@@ -571,8 +571,6 @@ bool GPUDevice::Create(std::string_view adapter, CreateFlags create_flags, std::
 
 void GPUDevice::Destroy()
 {
-  s_locals.shader_dump_path = {};
-
   PurgeTexturePool();
   DestroyResources();
   CloseShaderCache();
@@ -606,17 +604,16 @@ void GPUDevice::OpenShaderCache(std::string_view base_path, u32 version)
   const u16 backend_version = GetShaderCacheVersion();
   const u32 archive_version = (ZeroExtend32(backend_version) << 16) | ZeroExtend32(Truncate16(version));
 
-  if (m_features.shader_cache && !base_path.empty())
+  if (m_features.shader_cache)
   {
     const std::string basename = GetShaderCacheBaseName("shaders");
-    const std::string filename = Path::Combine(base_path, basename);
+    const std::string path = Path::Combine(base_path, basename);
+    DEV_LOG("Opening shader cache from {}", path);
 
     Error error;
     bool was_invalidated = false;
-    if (!m_shader_cache.OpenPath(filename, archive_version, &error, &was_invalidated))
-    {
-      WARNING_LOG("Failed to open shader cache '{}': {}", Path::GetFileName(filename), error.GetDescription());
-    }
+    if (!m_shader_cache.OpenPath(path, archive_version, &error, &was_invalidated))
+      WARNING_LOG("Failed to open shader cache '{}': {}", Path::GetFileName(path), error.GetDescription());
 
     if (was_invalidated)
     {
@@ -634,17 +631,14 @@ void GPUDevice::OpenShaderCache(std::string_view base_path, u32 version)
     }
   }
 
-  s_locals.pipeline_cache_path = {};
-  s_locals.pipeline_cache_size = 0;
-  s_locals.pipeline_cache_hash = {};
-
-  if (m_features.pipeline_cache && !base_path.empty())
+  if (m_features.pipeline_cache)
   {
     Error error;
     s_locals.pipeline_cache_path =
       Path::Combine(base_path, TinyString::from_format("{}.bin", GetShaderCacheBaseName("pipelines")));
     if (FileSystem::FileExists(s_locals.pipeline_cache_path.c_str()))
     {
+      DEV_LOG("Opening pipeline cache from {}", s_locals.pipeline_cache_path);
       if (OpenPipelineCache(s_locals.pipeline_cache_path, archive_version, &error))
         return;
 
@@ -652,11 +646,14 @@ void GPUDevice::OpenShaderCache(std::string_view base_path, u32 version)
                   error.GetDescription());
     }
 
+    DEV_COLOR_LOG(StrongOrange, "Creating pipeline cache at {}", s_locals.pipeline_cache_path);
     if (!CreatePipelineCache(s_locals.pipeline_cache_path, &error))
     {
       WARNING_LOG("Failed to create pipeline cache '{}': {}", Path::GetFileName(s_locals.pipeline_cache_path),
                   error.GetDescription());
       s_locals.pipeline_cache_path = {};
+      s_locals.pipeline_cache_size = 0;
+      s_locals.pipeline_cache_hash = {};
     }
   }
 }
@@ -675,6 +672,8 @@ void GPUDevice::CloseShaderCache()
     }
 
     s_locals.pipeline_cache_path = {};
+    s_locals.pipeline_cache_size = 0;
+    s_locals.pipeline_cache_hash = {};
   }
 }
 
@@ -1001,11 +1000,8 @@ void GPUDevice::DumpBadShader(std::string_view code, std::string_view errors)
 {
   static u32 next_bad_shader_id = 0;
 
-  if (s_locals.shader_dump_path.empty())
-    return;
-
   const std::string filename =
-    Path::Combine(s_locals.shader_dump_path, TinyString::from_format("bad_shader_{}.txt", ++next_bad_shader_id));
+    Path::Combine(EmuFolders::DataRoot, TinyString::from_format("bad_shader_{}.txt", ++next_bad_shader_id));
   auto fp = FileSystem::OpenManagedCFile(filename.c_str(), "wb");
   if (fp)
   {
