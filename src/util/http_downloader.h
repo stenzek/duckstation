@@ -29,12 +29,12 @@ using RequestData = std::vector<u8>;
 /// Callback fired when a request completes, times out, or is cancelled.
 /// Invoked on the thread that calls PollRequests(), with no internal locks held.
 ///
-/// @param status_code  HTTP status code, or one of the negative HTTP_STATUS_* sentinels on failure.
-/// @param error        Populated with a description when status_code < HTTP_STATUS_OK.
-/// @param content_type Value of the response Content-Type header; empty if unavailable.
-/// @param data         Response body; empty if the request did not succeed.
+/// @param status_code   HTTP status code, or one of the negative HTTP_STATUS_* sentinels on failure.
+/// @param error_message Populated with a description when status_code < HTTP_STATUS_OK.
+/// @param content_type  Value of the response Content-Type header; empty if unavailable.
+/// @param data          Response body; empty if the request did not succeed.
 using RequestCallback =
-  std::function<void(s32 status_code, Error& error, std::string& content_type, RequestData& data)>;
+  std::function<void(s32 status_code, std::string_view error_message, std::string_view content_type, RequestData data)>;
 
 /// Synthetic status codes used in place of a real HTTP status on failure.
 enum : s32
@@ -47,7 +47,7 @@ enum : s32
 
 /// Returns the file extension (without leading dot) for the given MIME type,
 /// or an empty string if the type is not recognised.
-std::string GetExtensionForContentType(const std::string& content_type);
+std::string_view GetExtensionForContentType(std::string_view content_type);
 
 /// Sets the default timeout applied to new requests when none is explicitly provided.
 /// The initial default is 30 seconds.

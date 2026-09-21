@@ -1841,11 +1841,12 @@ bool GameList::DownloadCovers(const std::vector<std::string>& url_templates, boo
     std::string filename = Path::URLDecode(url);
     HTTPDownloader::CreateRequest(
       std::move(url), &s_state,
-      [use_serial, &save_callback, entry_path = std::move(entry_path), filename = std::move(filename)](
-        s32 status_code, Error& error, std::string& content_type, HTTPDownloader::RequestData& data) {
+      [use_serial, &save_callback, entry_path = std::move(entry_path),
+       filename = std::move(filename)](s32 status_code, std::string_view error_message, std::string_view content_type,
+                                       HTTPDownloader::RequestData data) {
         if (status_code != HTTPDownloader::HTTP_STATUS_OK || data.empty())
         {
-          ERROR_LOG("Download for {} failed: {}", Path::GetFileName(filename), error.GetDescription());
+          ERROR_LOG("Download for {} failed: {}", Path::GetFileName(filename), error_message);
           return;
         }
 
@@ -1856,8 +1857,8 @@ bool GameList::DownloadCovers(const std::vector<std::string>& url_templates, boo
 
         // prefer the content type from the response for the extension
         // otherwise, if it's missing, and the request didn't have an extension.. fall back to jpegs.
+        const std::string_view content_type_extension(HTTPDownloader::GetExtensionForContentType(content_type));
         std::string template_filename;
-        std::string content_type_extension(HTTPDownloader::GetExtensionForContentType(content_type));
 
         // don't treat the domain name as an extension..
         const std::string::size_type last_slash = filename.find('/');

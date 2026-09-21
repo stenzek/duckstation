@@ -28,15 +28,16 @@ public:
             HTTPDownloader::HeaderList additional_headers = {}, std::optional<u16> timeout_seconds = {});
 
 Q_SIGNALS:
-  void requestComplete(qint32 status_code, Error& error_message, std::string& content_type,
-                       HTTPDownloader::RequestData& data);
+  void requestComplete(qint32 status_code, const std::string& error_message, const std::string& content_type,
+                       const HTTPDownloader::RequestData& data);
 
 private:
-  void handleResponse(s32 status_code, Error& error, std::string& content_type, HTTPDownloader::RequestData& data);
+  void handleResponse(s32 status_code, const std::string_view& error_message, const std::string_view& content_type,
+                      HTTPDownloader::RequestData&& data);
   void finishRequest();
 
   s32 m_status_code = HTTPDownloader::HTTP_STATUS_ERROR;
-  Error m_error;
+  std::string m_error_message;
   std::string m_content_type;
   HTTPDownloader::RequestData m_data;
 };

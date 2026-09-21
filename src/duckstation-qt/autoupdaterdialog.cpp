@@ -334,8 +334,9 @@ void AutoUpdaterDialog::queueUpdateCheck(bool display_errors, bool ignore_skippe
 
   AsyncHTTPRequest* const req = new AsyncHTTPRequest();
   connect(req, &AsyncHTTPRequest::requestComplete, this,
-          [this, display_errors](s32 status_code, Error& error, std::string& content_type, std::vector<u8>& response) {
-            getLatestTagComplete(status_code, error, response, display_errors);
+          [this, display_errors](s32 status_code, const std::string& error_message, const std::string& content_type,
+                                 const std::vector<u8>& response) {
+            getLatestTagComplete(status_code, error_message, response, display_errors);
           });
   req->get(LATEST_TAG_URL, this);
 }
@@ -344,14 +345,13 @@ void AutoUpdaterDialog::queueGetLatestRelease()
 {
   AsyncHTTPRequest* const req = new AsyncHTTPRequest();
   connect(req, &AsyncHTTPRequest::requestComplete, this,
-          [this](s32 status_code, Error& error, std::string& content_type, std::vector<u8>& response) {
-            getLatestReleaseComplete(status_code, error, response);
-          });
+          [this](s32 status_code, const std::string& error_message, const std::string& content_type,
+                 const std::vector<u8>& response) { getLatestReleaseComplete(status_code, error_message, response); });
   req->get(fmt::format(LATEST_RELEASE_URL, getCurrentUpdateTag()), this);
 }
 
-void AutoUpdaterDialog::getLatestTagComplete(s32 status_code, Error& error, std::vector<u8>& response,
-                                             bool display_errors)
+void AutoUpdaterDialog::getLatestTagComplete(s32 status_code, const std::string& error_message,
+                                             const std::vector<u8>& response, bool display_errors)
 {
   if (handleCancelledRequest(status_code))
     return;
@@ -411,13 +411,14 @@ void AutoUpdaterDialog::getLatestTagComplete(s32 status_code, Error& error, std:
   else
   {
     if (display_errors)
-      reportError(fmt::format("Failed to download latest tag info: {}", error.GetDescription()));
+      reportError(fmt::format("Failed to download latest tag info: {}", error_message));
   }
 
   emit updateCheckCompleted(false);
 }
 
-void AutoUpdaterDialog::getLatestReleaseComplete(s32 status_code, Error& error, std::vector<u8>& response)
+void AutoUpdaterDialog::getLatestReleaseComplete(s32 status_code, const std::string& error_message,
+                                                 const std::vector<u8>& response)
 {
   if (handleCancelledRequest(status_code))
     return;
@@ -489,7 +490,7 @@ void AutoUpdaterDialog::getLatestReleaseComplete(s32 status_code, Error& error, 
   }
   else
   {
-    reportError(fmt::format("Failed to download latest release info: {}", error.GetDescription()));
+    reportError(fmt::format("Failed to download latest release info: {}", error_message));
   }
 
   emit updateCheckCompleted(false);
@@ -499,15 +500,15 @@ void AutoUpdaterDialog::queueGetChanges()
 {
   AsyncHTTPRequest* const req = new AsyncHTTPRequest();
   connect(req, &AsyncHTTPRequest::requestComplete, this,
-          [this](s32 status_code, Error& error, std::string& content_type, std::vector<u8>& response) {
-            getChangesComplete(status_code, error, response);
-          });
+          [this](s32 status_code, const std::string& error_message, const std::string& content_type,
+                 const std::vector<u8>& response) { getChangesComplete(status_code, error_message, response); });
   req->get(fmt::format(CHANGES_URL, g_scm_hash_str, getCurrentUpdateTag()), this);
 }
 
-void AutoUpdaterDialog::getChangesComplete(s32 status_code, Error& error, std::vector<u8>& response)
+void AutoUpdaterDialog::getChangesComplete(s32 status_code, const std::string& error_message,
+                                           const std::vector<u8>& response)
 {
-  std::string_view error_message;
+  std::string_view error_message_to_display;
 
   if (status_code == HTTPDownloader::HTTP_STATUS_OK)
   {
@@ -557,19 +558,19 @@ void AutoUpdaterDialog::getChangesComplete(s32 status_code, Error& error, std::v
     }
     else
     {
-      error_message = "Change list JSON is not an object";
+      error_message_to_display = "Change list JSON is not an object";
     }
   }
   else
   {
-    error_message = error.GetDescription();
+    error_message_to_display = error_message;
   }
 
   m_ui.updateNotes->setText(QString::fromStdString(
     fmt::format("<h2>Failed to download change list</h2><p>The error was:<pre>{}</pre></p><p>You may be able to "
                 "install this update anyway. If the download installation fails, you can download the update "
                 "from:</p><p><a href=\"" DOWNLOAD_PAGE_URL "\">" DOWNLOAD_PAGE_URL "</a></p>",
-                error_message, UPDATER_RELEASE_CHANNEL, UPDATER_RELEASE_CHANNEL)));
+                error_message_to_display, UPDATER_RELEASE_CHANNEL, UPDATER_RELEASE_CHANNEL)));
 }
 
 void AutoUpdaterDialog::downloadUpdateClicked()
@@ -587,13 +588,13 @@ void AutoUpdaterDialog::downloadUpdateClicked()
 
   AsyncHTTPRequest* const req = new AsyncHTTPRequest();
   connect(req, &AsyncHTTPRequest::requestComplete, this,
-          [this](s32 status_code, Error& error, std::string&, std::vector<u8>& response) {
-            downloadUpdateComplete(status_code, error, response);
-          });
+          [this](s32 status_code, const std::string& error_message, const std::string& content_type,
+                 const std::vector<u8>& response) { downloadUpdateComplete(status_code, error_message, response); });
   req->get(m_download_url.toStdString(), this, m_download_progress_callback);
 }
 
-void AutoUpdaterDialog::downloadUpdateComplete(s32 status_code, Error& error, std::vector<u8>& response)
+void AutoUpdaterDialog::downloadUpdateComplete(s32 status_code, const std::string& error_message,
+                                               const std::vector<u8>& response)
 {
   DebugAssert(m_download_progress_callback);
   m_download_progress_callback->SetState(TRANSLATE_SV("AutoUpdaterWindow", "Processing Update..."), 1, 1);
@@ -608,7 +609,7 @@ void AutoUpdaterDialog::downloadUpdateComplete(s32 status_code, Error& error, st
 
   if (status_code != HTTPDownloader::HTTP_STATUS_OK)
   {
-    reportError(fmt::format("Download failed: {}", error.GetDescription()));
+    reportError(fmt::format("Download failed: {}", error_message));
     setDownloadSectionVisibility(false);
     return;
   }

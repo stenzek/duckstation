@@ -33,8 +33,8 @@ static constexpr u32 CACHE_VERSION = 1;
 
 static void QueueDownload(std::string_view url, FetchCallback callback, Error* error,
                           std::unique_lock<Threading::Mutex>&& lock);
-static void DownloadCallback(const std::string& url, s32 status_code, const Error& error,
-                             const std::string& content_type, const HTTPDownloader::RequestData& data);
+static void DownloadCallback(const std::string& url, s32 status_code, const std::string_view& error,
+                             const HTTPDownloader::RequestData& data);
 
 namespace {
 
@@ -199,15 +199,14 @@ void HTTPCache::QueueDownload(std::string_view url, FetchCallback callback, Erro
 
   // release lock because CreateRequest() can fire the callback immediately
   lock.unlock();
-  HTTPDownloader::CreateRequest(std::string(url), &s_locals,
-                                [url = std::string(url)](s32 status_code, Error& error, std::string& content_type,
-                                                         HTTPDownloader::RequestData& data) {
-                                  DownloadCallback(url, status_code, error, content_type, std::move(data));
-                                });
+  HTTPDownloader::CreateRequest(
+    std::string(url), &s_locals,
+    [url = std::string(url)](s32 status_code, std::string_view error, std::string_view content_type,
+                             HTTPDownloader::RequestData data) { DownloadCallback(url, status_code, error, data); });
 }
 
-void HTTPCache::DownloadCallback(const std::string& url, s32 status_code, const Error& error,
-                                 const std::string& content_type, const HTTPDownloader::RequestData& data)
+void HTTPCache::DownloadCallback(const std::string& url, s32 status_code, const std::string_view& error,
+                                 const HTTPDownloader::RequestData& data)
 {
   // hold the lock for the insertion, so we don't create a duplicate request as described in Lookup()
   std::unique_lock lock(s_locals.pending_downloads_lock);
@@ -228,7 +227,7 @@ void HTTPCache::DownloadCallback(const std::string& url, s32 status_code, const 
   }
   else
   {
-    ERROR_LOG("Failed to download '{}': HTTP status code {}, error: {}", url, status_code, error.GetDescription());
+    ERROR_LOG("Failed to download '{}': HTTP status code {}, error: {}", url, status_code, error);
   }
 
   // invoke all callbacks. uses indexing in case something gets added in the callback

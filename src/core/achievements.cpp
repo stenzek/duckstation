@@ -833,16 +833,16 @@ uint32_t Achievements::ClientReadMemory(uint32_t address, uint8_t* buffer, uint3
 void Achievements::ClientServerCall(const rc_api_request_t* request, rc_client_server_callback_t callback,
                                     void* callback_data, rc_client_t* client)
 {
-  HTTPDownloader::RequestCallback hd_callback = [callback, callback_data](s32 status_code, Error& error,
-                                                                          std::string& content_type,
-                                                                          HTTPDownloader::RequestData& data) {
-    if (status_code != HTTPDownloader::HTTP_STATUS_OK)
-      ERROR_LOG("Server call failed: {}", error.GetDescription());
+  HTTPDownloader::RequestCallback hd_callback =
+    [callback, callback_data](s32 status_code, std::string_view error_message, std::string_view content_type,
+                              HTTPDownloader::RequestData data) {
+      if (status_code != HTTPDownloader::HTTP_STATUS_OK)
+        ERROR_LOG("Server call failed: {}", error_message);
 
-    const rc_api_server_response_t rr = MakeRCAPIServerResponse(status_code, data);
-    const auto lock = GetLock();
-    callback(&rr, callback_data);
-  };
+      const rc_api_server_response_t rr = MakeRCAPIServerResponse(status_code, data);
+      const auto lock = GetLock();
+      callback(&rr, callback_data);
+    };
 
   const std::array<const char* const, 1> headers = {s_state.http_user_agent_header.c_str()};
   if (request->post_data)

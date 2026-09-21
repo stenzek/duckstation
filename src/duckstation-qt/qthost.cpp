@@ -812,10 +812,11 @@ void QtHost::DownloadFile(QWidget* parent, std::string url, std::string path,
       bool result = false;
       HTTPDownloader::CreateRequest(
         std::move(url), parent,
-        [&result, &error, &path](s32 status_code, Error& http_error, std::string&, std::vector<u8>& hdata) {
+        [&result, &error, &path](s32 status_code, std::string_view http_error, std::string_view content_type,
+                                 std::vector<u8> hdata) {
           if (status_code != HTTPDownloader::HTTP_STATUS_OK)
           {
-            error.SetString(http_error.GetDescription());
+            error.SetStringView(http_error);
             return;
           }
           else if (hdata.empty())

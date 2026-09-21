@@ -27,8 +27,8 @@ void AsyncHTTPRequest::get(std::string url, const void* owner, ProgressCallback*
 {
   HTTPDownloader::CreateRequest(
     std::move(url), owner,
-    [this](s32 status_code, Error& error, std::string& content_type, HTTPDownloader::RequestData& data) {
-      handleResponse(status_code, error, content_type, data);
+    [this](s32 status_code, std::string_view error, std::string_view content_type, HTTPDownloader::RequestData data) {
+      handleResponse(status_code, error, content_type, std::move(data));
     },
     progress, additional_headers, timeout_seconds);
 }
@@ -40,24 +40,25 @@ void AsyncHTTPRequest::post(std::string url, std::string post_data, const void* 
 {
   HTTPDownloader::CreatePostRequest(
     std::move(url), std::move(post_data), owner,
-    [this](s32 status_code, Error& error, std::string& content_type, HTTPDownloader::RequestData& data) {
-      handleResponse(status_code, error, content_type, data);
+    [this](s32 status_code, std::string_view error, std::string_view content_type, HTTPDownloader::RequestData data) {
+      handleResponse(status_code, error, content_type, std::move(data));
     },
     progress, additional_headers, timeout_seconds);
 }
 
-ALWAYS_INLINE_RELEASE void AsyncHTTPRequest::handleResponse(s32 status_code, Error& error, std::string& content_type,
-                                                            HTTPDownloader::RequestData& data)
+ALWAYS_INLINE_RELEASE void AsyncHTTPRequest::handleResponse(s32 status_code, const std::string_view& error_message,
+                                                            const std::string_view& content_type,
+                                                            HTTPDownloader::RequestData&& data)
 {
   m_status_code = status_code;
-  m_error = std::move(error);
-  m_content_type = std::move(content_type);
+  m_error_message = error_message;
+  m_content_type = content_type;
   m_data = std::move(data);
   QMetaObject::invokeMethod(this, &AsyncHTTPRequest::finishRequest, Qt::QueuedConnection);
 }
 
 void AsyncHTTPRequest::finishRequest()
 {
-  emit requestComplete(m_status_code, m_error, m_content_type, m_data);
+  emit requestComplete(m_status_code, m_error_message, m_content_type, m_data);
   deleteLater();
 }

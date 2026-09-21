@@ -291,7 +291,7 @@ void HTTPDownloader::LockedPollRequests(std::unique_lock<Threading::Mutex>& lock
       lock.unlock();
 
       req->error.SetStringFmt("Request timed out after {} seconds.", req->timeout_seconds);
-      req->callback(HTTP_STATUS_TIMEOUT, req->error, req->content_type, req->data);
+      req->callback(HTTP_STATUS_TIMEOUT, req->error.GetDescription(), {}, {});
 
       CloseRequest(req);
 
@@ -309,7 +309,7 @@ void HTTPDownloader::LockedPollRequests(std::unique_lock<Threading::Mutex>& lock
       lock.unlock();
 
       req->error.SetStringView("Request was cancelled.");
-      req->callback(HTTP_STATUS_CANCELLED, req->error, req->content_type, req->data);
+      req->callback(HTTP_STATUS_CANCELLED, req->error.GetDescription(), {}, {});
 
       CloseRequest(req);
 
@@ -347,7 +347,7 @@ void HTTPDownloader::LockedPollRequests(std::unique_lock<Threading::Mutex>& lock
     else if (req->status_code < 0)
       DEV_LOG("Request failed with error {}", req->error.GetDescription());
 
-    req->callback(req->status_code, req->error, req->content_type, req->data);
+    req->callback(req->status_code, req->error.GetDescription(), req->content_type, std::move(req->data));
     CloseRequest(req);
     lock.lock();
   }
@@ -537,8 +537,7 @@ void HTTPDownloader::CancelRequestsForOwner(const void* owner)
       s_locals.pending_http_requests.erase(s_locals.pending_http_requests.begin() + index);
       lock.unlock();
 
-      req->error.SetStringView("Request was cancelled.");
-      req->callback(HTTP_STATUS_CANCELLED, req->error, req->content_type, req->data);
+      req->callback(HTTP_STATUS_CANCELLED, "Request was cancelled.", {}, {});
 
       // If pending, we can delete it immediately since it won't be processed by the worker thread.
       // Otherwise, we need to close it so the worker thread can clean up properly.
@@ -557,7 +556,7 @@ void HTTPDownloader::CancelRequestsForOwner(const void* owner)
     Host::OnHTTPDownloaderActiveChanged(false);
 }
 
-std::string HTTPDownloader::GetExtensionForContentType(const std::string& content_type)
+std::string_view HTTPDownloader::GetExtensionForContentType(std::string_view content_type)
 {
   // Based on https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types
   static constexpr const char* table[][2] = {
@@ -638,16 +637,14 @@ std::string HTTPDownloader::GetExtensionForContentType(const std::string& conten
     {"application/x-7z-compressed", "7z"},
   };
 
-  std::string ret;
-  for (size_t i = 0; i < std::size(table); i++)
+  const std::string_view mime = StringUtil::StripWhitespace(content_type.substr(0, content_type.find(';')));
+  for (const auto& [table_mime, table_extension] : table)
   {
-    if (StringUtil::Strncasecmp(table[i][0], content_type.data(), content_type.length()) == 0)
-    {
-      ret = table[i][1];
-      break;
-    }
+    if (StringUtil::EqualNoCase(mime, table_mime))
+      return table_extension;
   }
-  return ret;
+
+  return {};
 }
 
 #if defined(USE_WINHTTP)
@@ -888,7 +885,7 @@ void HTTPDownloader::InternalCreateRequest(Request::Type type, std::string url, 
 
   if (!EnsureInitialized(&req->error))
   {
-    callback(HTTP_STATUS_ERROR, req->error, req->content_type, req->data);
+    callback(HTTP_STATUS_ERROR, req->error.GetDescription(), req->content_type, req->data);
     DeleteRequest(req);
     return;
   }
@@ -935,7 +932,7 @@ bool HTTPDownloader::StartRequest(Request* req)
     const DWORD err = GetLastError();
     ERROR_LOG("WinHttpCrackUrl() failed: {}", err);
     req->error.SetWin32("WinHttpCrackUrl() failed: ", err);
-    req->callback(HTTP_STATUS_ERROR, req->error, req->content_type, req->data);
+    req->callback(HTTP_STATUS_ERROR, req->error.GetDescription(), {}, {});
     DeleteRequest(req);
     return false;
   }
@@ -949,7 +946,7 @@ bool HTTPDownloader::StartRequest(Request* req)
     const DWORD err = GetLastError();
     ERROR_LOG("Failed to start HTTP request for '{}': {}", req->url, err);
     req->error.SetWin32("WinHttpConnect() failed: ", err);
-    req->callback(HTTP_STATUS_ERROR, req->error, req->content_type, req->data);
+    req->callback(HTTP_STATUS_ERROR, req->error.GetDescription(), {}, {});
     DeleteRequest(req);
     return false;
   }
@@ -962,7 +959,7 @@ bool HTTPDownloader::StartRequest(Request* req)
     const DWORD err = GetLastError();
     ERROR_LOG("WinHttpOpenRequest() failed: {}", err);
     req->error.SetWin32("WinHttpOpenRequest() failed: ", err);
-    req->callback(HTTP_STATUS_ERROR, req->error, req->content_type, req->data);
+    req->callback(HTTP_STATUS_ERROR, req->error.GetDescription(), {}, {});
     WinHttpCloseHandle(req->hConnection);
     DeleteRequest(req);
     return false;
@@ -976,7 +973,7 @@ bool HTTPDownloader::StartRequest(Request* req)
     const DWORD err = GetLastError();
     ERROR_LOG("WinHttpAddRequestHeaders() failed: {}", err);
     req->error.SetWin32("WinHttpAddRequestHeaders() failed: ", err);
-    req->callback(HTTP_STATUS_ERROR, req->error, req->content_type, req->data);
+    req->callback(HTTP_STATUS_ERROR, req->error.GetDescription(), {}, {});
     WinHttpCloseHandle(req->hRequest);
     WinHttpCloseHandle(req->hConnection);
     DeleteRequest(req);
@@ -1144,7 +1141,7 @@ void HTTPDownloader::InternalCreateRequest(Request::Type type, std::string url, 
 
   if (!EnsureInitialized(&req->error))
   {
-    callback(HTTP_STATUS_ERROR, req->error, req->content_type, req->data);
+    callback(HTTP_STATUS_ERROR, req->error.GetDescription(), req->content_type, req->data);
     DeleteRequest(req);
     return;
   }
@@ -1290,8 +1287,7 @@ bool HTTPDownloader::StartRequest(Request* req)
   if (!req->handle)
   {
     ERROR_LOG("curl_easy_init() failed");
-    req->error.SetStringView("curl_easy_init() failed");
-    req->callback(HTTP_STATUS_ERROR, req->error, req->content_type, req->data);
+    req->callback(HTTP_STATUS_ERROR, "curl_easy_init() failed", {}, {});
     DeleteRequest(req);
     return false;
   }
