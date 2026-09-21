@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "imgui_overlays.h"
-#include "achievements.h"
 #include "cdrom.h"
 #include "controller.h"
 #include "core.h"
@@ -127,30 +126,27 @@ static InputOverlayState s_input_overlay_state = {};
 
 } // namespace ImGuiManager
 
-bool ImGuiManager::AreAnyDebugWindowsEnabled(const SettingsInterface& si)
+u8 ImGuiManager::LoadDebugWindowVisibility(const SettingsInterface& si)
 {
-  const bool block_all = Achievements::IsHardcoreModeActive();
-  if (block_all)
-    return false;
+  u8 visible = 0;
 
   for (size_t i = 0; i < NUM_DEBUG_WINDOWS; i++)
   {
     const DebugWindowInfo& info = s_debug_window_info[i];
     if (si.GetBoolValue(DEBUG_WINDOW_CONFIG_SECTION, info.name, false))
-      return true;
+      visible |= (1u << i);
   }
 
-  return false;
+  return visible;
 }
 
-bool ImGuiManager::IsSPUDebugWindowEnabled()
+bool ImGuiManager::IsSPUDebugWindowVisible(u8 debug_window_visibility)
 {
-  return (s_debug_window_state[1].window_handle != nullptr);
+  return ((debug_window_visibility & (1u << 1)) != 0);
 }
 
-bool ImGuiManager::UpdateDebugWindowConfig()
+bool ImGuiManager::UpdateDebugWindowConfig(u8 debug_window_visibility)
 {
-  const bool block_all = Achievements::IsHardcoreModeActive();
   bool was_changed = false;
 
   for (size_t i = 0; i < NUM_DEBUG_WINDOWS; i++)
@@ -159,7 +155,7 @@ bool ImGuiManager::UpdateDebugWindowConfig()
     const DebugWindowInfo& info = s_debug_window_info[i];
 
     const bool current = (state.window_handle != nullptr);
-    const bool enabled = (!block_all && Core::GetBaseBoolSettingValue(DEBUG_WINDOW_CONFIG_SECTION, info.name, false));
+    const bool enabled = ((debug_window_visibility & (1u << i)) != 0);
     if (enabled == current)
       continue;
 

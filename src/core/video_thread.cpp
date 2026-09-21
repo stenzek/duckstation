@@ -858,7 +858,7 @@ bool VideoThread::CreateGPUBackendOnThread(bool hardware_renderer, bool upload_v
     }
   }
 
-  ImGuiManager::UpdateDebugWindowConfig();
+  ImGuiManager::UpdateDebugWindowConfig(g_gpu_settings.debug_window_visibility);
 
   if (hardware_renderer)
     s_state.gpu_backend = GPUBackend::CreateHardwareBackend();
@@ -1162,7 +1162,7 @@ void VideoThread::UpdateSettingsOnThread(GPUSettings&& new_settings)
       return;
     }
 
-    if (ImGuiManager::UpdateDebugWindowConfig())
+    if (ImGuiManager::UpdateDebugWindowConfig(g_gpu_settings.debug_window_visibility))
       PresentFrameAndRestoreContext();
     else
       s_state.gpu_backend->RestoreDeviceContext();
@@ -1255,17 +1255,6 @@ void VideoThread::UpdateSettings(bool gpu_settings_changed, bool device_settings
     {
       UpdateSettingsOnThread(GPUSettings(g_settings));
     }
-  }
-  else
-  {
-    // still need to update debug window visibility
-    RunOnThread([]() {
-      if (s_state.gpu_backend)
-      {
-        if (ImGuiManager::UpdateDebugWindowConfig())
-          PresentFrameAndRestoreContext();
-      }
-    });
   }
 }
 

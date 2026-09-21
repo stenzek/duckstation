@@ -4663,6 +4663,7 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
              g_settings.display_line_start_offset != old_settings.display_line_start_offset ||
              g_settings.display_line_end_offset != old_settings.display_line_end_offset ||
              g_settings.gpu_show_vram != old_settings.gpu_show_vram ||
+             g_settings.debug_window_visibility != old_settings.debug_window_visibility ||
              g_settings.rewind_enable != old_settings.rewind_enable ||
              g_settings.runahead_frames != old_settings.runahead_frames ||
              g_settings.texture_replacements != old_settings.texture_replacements)
@@ -4748,11 +4749,6 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
         // don't need to represent here, because the OSD isn't visible while paused anyway
         VideoThread::UpdateSettings(true, false, false);
       }
-    }
-    else
-    {
-      // still need to update debug windows
-      VideoThread::UpdateSettings(false, false, false);
     }
 
     if (g_settings.gpu_widescreen_hack != old_settings.gpu_widescreen_hack ||

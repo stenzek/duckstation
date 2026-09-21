@@ -451,9 +451,9 @@ ALIGN_TO_CACHE_LINE static std::array<s16, (44100 / 60) * 2> s_muted_output_buff
 
 #ifdef SPU_ENABLE_VU_METER
 
-static bool IsVUMeterActive()
+ALWAYS_INLINE static bool IsVUMeterActive()
 {
-  return ImGuiManager::IsSPUDebugWindowEnabled();
+  return ImGuiManager::IsSPUDebugWindowVisible(g_settings.debug_window_visibility);
 }
 
 ALWAYS_INLINE_RELEASE static void UpdateDebugPeaks(s16 peaks[2], s32 left, s32 right)

@@ -17,10 +17,10 @@ inline constexpr const char* LOGO_IMAGE_NAME = "images/duck.png";
 
 void UpdateInputOverlay();
 void RenderTextOverlays(const GPUBackend* gpu);
-bool AreAnyDebugWindowsEnabled(const SettingsInterface& si);
-bool IsSPUDebugWindowEnabled();
+u8 LoadDebugWindowVisibility(const SettingsInterface& si);
+bool IsSPUDebugWindowVisible(u8 debug_window_visibility);
 void RenderDebugWindows();
-bool UpdateDebugWindowConfig();
+bool UpdateDebugWindowConfig(u8 debug_window_visibility);
 void DestroyAllDebugWindows();
 
 void RenderOverlayWindows();

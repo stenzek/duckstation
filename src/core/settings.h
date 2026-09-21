@@ -127,6 +127,8 @@ struct GPUSettings
 
   bool achievements_rich_presence_monitor : 1 = false;
 
+  u8 debug_window_visibility = 0;
+
   NotificationLocation display_osd_message_location = DEFAULT_OSD_MESSAGE_LOCATION;
 
   // achievements

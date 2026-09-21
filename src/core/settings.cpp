@@ -582,6 +582,8 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
   pcdrv_enable_writes = si.GetBoolValue("PCDrv", "EnableWrites", false);
   pcdrv_root = Path::ToNativePath(si.GetStringViewValue("PCDrv", "Root"));
 
+  debug_window_visibility = ImGuiManager::LoadDebugWindowVisibility(si);
+
   texture_replacements.enable_texture_replacements =
     si.GetBoolValue("TextureReplacements", "EnableTextureReplacements", false);
   texture_replacements.enable_vram_write_replacements =
@@ -1205,6 +1207,8 @@ void Settings::ApplySettingRestrictions()
     gpu_show_vram = false;
     gpu_dump_cpu_to_vram_copies = false;
     gpu_dump_vram_to_cpu_copies = false;
+
+    debug_window_visibility = 0;
   }
 }
 
@@ -1248,7 +1252,7 @@ void Settings::FixIncompatibleSettings(const SettingsInterface& si, bool display
   texture_replacements.enable_vram_write_replacements &= (gpu_renderer != GPURenderer::Software);
 
   // GPU thread should be disabled if any debug windows are active, since they will be racing to read CPU thread state.
-  if (gpu_use_thread && gpu_max_queued_frames > 0 && ImGuiManager::AreAnyDebugWindowsEnabled(si))
+  if (debug_window_visibility != 0 && gpu_use_thread && gpu_max_queued_frames > 0)
   {
     WARNING_LOG("Setting maximum queued frames to 0 because one or more debug windows are enabled.");
     gpu_max_queued_frames = 0;
