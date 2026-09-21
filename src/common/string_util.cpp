@@ -1100,6 +1100,8 @@ std::optional<size_t> StringUtil::BytePatternSearch(const std::span<const u8> by
   }
   if (pattern_length == 0)
     return std::nullopt;
+  if (pattern_length > bytes.size())
+    return std::nullopt;
 
   const bool allocate_on_heap = (pattern_length >= 512);
   u8* match_bytes = allocate_on_heap ? new u8[pattern_length * 2] : static_cast<u8*>(alloca(pattern_length * 2));
@@ -1143,7 +1145,7 @@ std::optional<size_t> StringUtil::BytePatternSearch(const std::span<const u8> by
 
   std::optional<size_t> ret;
   const size_t max_search_offset = bytes.size() - pattern_length;
-  for (size_t offset = 0; offset < max_search_offset; offset++)
+  for (size_t offset = 0; offset <= max_search_offset; offset++)
   {
     const u8* start = bytes.data() + offset;
     for (size_t match_offset = 0;;)
@@ -1154,8 +1156,8 @@ std::optional<size_t> StringUtil::BytePatternSearch(const std::span<const u8> by
       match_offset++;
       if (match_offset == pattern_length)
       {
-        // found it!
         ret = offset;
+        break;
       }
     }
   }

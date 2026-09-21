@@ -1030,6 +1030,15 @@ TEST(StringUtil, BytePatternSearch)
   result = StringUtil::BytePatternSearch(std::span<const u8>(data), "01 ?? 03");
   ASSERT_TRUE(result.has_value());
   ASSERT_EQ(result.value(), 0u);
+
+  // Test a match at the final valid offset.
+  result = StringUtil::BytePatternSearch(std::span<const u8>(data), "06 07 08");
+  ASSERT_TRUE(result.has_value());
+  ASSERT_EQ(result.value(), 5u);
+
+  // Test a pattern longer than the input.
+  result = StringUtil::BytePatternSearch(std::span<const u8>(data), "01 02 03 04 05 06 07 08 09");
+  ASSERT_FALSE(result.has_value());
 }
 
 TEST(StringUtil, StrideMemCpy)
