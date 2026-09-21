@@ -8,6 +8,10 @@
 #include <atomic>
 #include <functional>
 
+#if defined(_DEBUG) || defined(_DEVEL)
+#define THREADING_DEBUG_CHECKS
+#endif
+
 namespace Threading {
 extern u64 GetThreadCpuTime();
 extern u64 GetThreadTicksPerSecond();
@@ -154,6 +158,10 @@ private:
 
 #if !defined(_WIN32)
   alignas(void*) u8 m_data[NATIVE_STORAGE_SIZE];
+#endif
+
+#ifdef THREADING_DEBUG_CHECKS
+  std::atomic<uintptr_t> m_owner_thread_id = 0;
 #endif
 };
 

@@ -20,7 +20,12 @@ TEST(ThreadingMutex, TryLock)
 {
   Threading::Mutex mutex;
   EXPECT_TRUE(mutex.try_lock());
-  EXPECT_FALSE(mutex.try_lock());
+
+  bool acquired_in_thread = true;
+  std::thread thread([&]() { acquired_in_thread = mutex.try_lock(); });
+  thread.join();
+  EXPECT_FALSE(acquired_in_thread);
+
   mutex.unlock();
   EXPECT_TRUE(mutex.try_lock());
   mutex.unlock();
@@ -32,13 +37,11 @@ TEST(ThreadingMutex, StandardLockWrappers)
 
   {
     const std::lock_guard lock(mutex);
-    EXPECT_FALSE(mutex.try_lock());
   }
 
   {
     std::unique_lock lock(mutex);
     EXPECT_TRUE(lock.owns_lock());
-    EXPECT_FALSE(mutex.try_lock());
   }
 
   EXPECT_TRUE(mutex.try_lock());

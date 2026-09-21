@@ -68,11 +68,31 @@ LOG_CHANNEL(Threading);
 #endif
 
 #ifdef _WIN32
+namespace {
 union FileTimeU64Union
 {
   FILETIME filetime;
   u64 u64time;
 };
+} // namespace
+#endif
+
+#ifdef THREADING_DEBUG_CHECKS
+
+static uintptr_t GetCurrentThreadIdentifier()
+{
+#ifdef _WIN32
+  return static_cast<uintptr_t>(GetCurrentThreadId());
+#elif defined(__APPLE__)
+  u64 thread_id;
+  [[maybe_unused]] const int result = pthread_threadid_np(nullptr, &thread_id);
+  DebugAssert(result == 0);
+  return static_cast<uintptr_t>(thread_id);
+#else
+  return static_cast<uintptr_t>(gettid());
+#endif
+}
+
 #endif
 
 #ifdef __APPLE__
@@ -599,27 +619,51 @@ Threading::Mutex::~Mutex()
 
 void Threading::Mutex::lock()
 {
+#ifdef THREADING_DEBUG_CHECKS
+  DebugAssert(m_owner_thread_id.load(std::memory_order_relaxed) != GetCurrentThreadIdentifier());
+#endif
+
 #ifdef _WIN32
   AcquireSRWLockExclusive(NATIVE_MUTEX_PTR(m_data));
 #else
   [[maybe_unused]] const int result = pthread_mutex_lock(NATIVE_MUTEX_PTR(m_data));
   DebugAssert(result == 0);
 #endif
+
+#ifdef THREADING_DEBUG_CHECKS
+  m_owner_thread_id.store(GetCurrentThreadIdentifier(), std::memory_order_relaxed);
+#endif
 }
 
 bool Threading::Mutex::try_lock()
 {
+#ifdef THREADING_DEBUG_CHECKS
+  DebugAssert(m_owner_thread_id.load(std::memory_order_relaxed) != GetCurrentThreadIdentifier());
+#endif
+
 #ifdef _WIN32
-  return TryAcquireSRWLockExclusive(NATIVE_MUTEX_PTR(m_data)) != FALSE;
+  const bool success = (TryAcquireSRWLockExclusive(NATIVE_MUTEX_PTR(m_data)) != FALSE);
 #else
   const int result = pthread_mutex_trylock(NATIVE_MUTEX_PTR(m_data));
   DebugAssert(result == 0 || result == EBUSY);
-  return result == 0;
+  const bool success = (result == 0);
 #endif
+
+#ifdef THREADING_DEBUG_CHECKS
+  if (success)
+    m_owner_thread_id.store(GetCurrentThreadIdentifier(), std::memory_order_relaxed);
+#endif
+
+  return success;
 }
 
 void Threading::Mutex::unlock()
 {
+#ifdef THREADING_DEBUG_CHECKS
+  DebugAssert(m_owner_thread_id.load(std::memory_order_relaxed) == GetCurrentThreadIdentifier());
+  m_owner_thread_id.store(0, std::memory_order_relaxed);
+#endif
+
 #ifdef _WIN32
   ReleaseSRWLockExclusive(NATIVE_MUTEX_PTR(m_data));
 #else
@@ -679,6 +723,11 @@ void Threading::ConditionVariable::notify_all()
 
 void Threading::ConditionVariable::Wait(Mutex& mutex)
 {
+#ifdef THREADING_DEBUG_CHECKS
+  DebugAssert(mutex.m_owner_thread_id.load(std::memory_order_relaxed) == GetCurrentThreadIdentifier());
+  mutex.m_owner_thread_id.store(0, std::memory_order_relaxed);
+#endif
+
 #ifdef _WIN32
   [[maybe_unused]] const BOOL result =
     SleepConditionVariableSRW(NATIVE_CONDITION_VARIABLE_PTR(m_data), NATIVE_MUTEX_PTR(mutex.m_data), INFINITE, 0);
@@ -687,6 +736,10 @@ void Threading::ConditionVariable::Wait(Mutex& mutex)
   [[maybe_unused]] const int result =
     pthread_cond_wait(NATIVE_CONDITION_VARIABLE_PTR(m_data), NATIVE_MUTEX_PTR(mutex.m_data));
   DebugAssert(result == 0);
+#endif
+
+#ifdef THREADING_DEBUG_CHECKS
+  mutex.m_owner_thread_id.store(GetCurrentThreadIdentifier(), std::memory_order_relaxed);
 #endif
 }
 
