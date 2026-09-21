@@ -31,8 +31,7 @@ namespace HTTPCache {
 
 static constexpr u32 CACHE_VERSION = 1;
 
-static void QueueDownload(std::string_view url, FetchCallback callback, Error* error,
-                          std::unique_lock<Threading::Mutex>&& lock);
+static void QueueDownload(std::string_view url, FetchCallback callback, Error* error);
 static void DownloadCallback(const std::string& url, s32 status_code, const std::string_view& error,
                              const HTTPDownloader::RequestData& data);
 
@@ -175,12 +174,11 @@ HTTPCache::LookupResult HTTPCache::LookupOrFetch(std::string_view url, Error* er
     return LookupResult(LookupStatus::Error);
   }
 
-  QueueDownload(url, std::move(callback), error, std::move(lock));
+  QueueDownload(url, std::move(callback), error);
   return LookupResult(LookupStatus::Miss);
 }
 
-void HTTPCache::QueueDownload(std::string_view url, FetchCallback callback, Error* error,
-                              std::unique_lock<Threading::Mutex>&& lock)
+void HTTPCache::QueueDownload(std::string_view url, FetchCallback callback, Error* error)
 {
   // do we already have a request?
   const bool has_request =
@@ -197,12 +195,12 @@ void HTTPCache::QueueDownload(std::string_view url, FetchCallback callback, Erro
 
   DEV_LOG("Cache miss for URL '{}', downloading...", url);
 
-  // release lock because CreateRequest() can fire the callback immediately
-  lock.unlock();
-  HTTPDownloader::CreateRequest(
-    std::string(url), &s_locals,
-    [url = std::string(url)](s32 status_code, std::string_view error, std::string_view content_type,
-                             HTTPDownloader::RequestData data) { DownloadCallback(url, status_code, error, data); });
+  HTTPDownloader::CreateRequest(std::string(url), &s_locals,
+                                [url = std::string(url)](s32 status_code, std::string_view error_message,
+                                                         std::string_view content_type,
+                                                         HTTPDownloader::RequestData data) {
+                                  DownloadCallback(url, status_code, error_message, data);
+                                });
 }
 
 void HTTPCache::DownloadCallback(const std::string& url, s32 status_code, const std::string_view& error,
@@ -292,7 +290,7 @@ void HTTPCache::Prefetch(std::string_view url)
   if (cache.Contains(URLToCacheKey(url)))
     return;
 
-  QueueDownload(url, {}, nullptr, std::move(lock));
+  QueueDownload(url, {}, nullptr);
 }
 
 void HTTPCache::Prefetch(std::string_view url, PrefetchCallback callback)
@@ -323,9 +321,7 @@ void HTTPCache::Prefetch(std::string_view url, PrefetchCallback callback)
     return;
   }
 
-  QueueDownload(
-    url, [callback = std::move(callback)](std::span<const u8> data) { callback(!data.empty()); }, nullptr,
-    std::move(lock));
+  QueueDownload(url, [callback = std::move(callback)](std::span<const u8> data) { callback(!data.empty()); }, nullptr);
 }
 
 void HTTPCache::WaitForAllPrefetchRequests()

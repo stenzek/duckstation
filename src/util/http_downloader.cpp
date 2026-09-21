@@ -60,8 +60,8 @@ struct Request
     Post,
   };
 
-  /// Lifecycle of a request. Transitions flow forward only; Cancelled may be set
-  /// from Pending, Started, or Receiving by the main thread via CancelRequestsForOwner().
+  /// Lifecycle of a request. Transitions flow forward only; Cancelled may replace
+  /// any state before callback dispatch via CancelRequestsForOwner().
   /// All state changes are made with release semantics and read with acquire semantics.
   enum class State : u8
   {
@@ -84,8 +84,9 @@ struct Request
   std::string content_type;
   RequestData data;
   Error error;
-  u64 start_time = 0;       ///< Timer value recorded when the request was submitted to the backend.
-  u64 last_update_time = 0; ///< Timer value of the most recent data activity; used for timeout detection.
+  u64 start_time = 0; ///< Timer value recorded when the request was submitted to the backend.
+  std::atomic<Timer::Value> last_update_time{
+    0}; ///< Timer value of the most recent data activity; used for timeout detection.
   s32 status_code = 0;
   u32 content_length = 0;
   u32 last_progress_update = 0;
@@ -110,9 +111,11 @@ struct Request
 };
 } // namespace
 
-static void StartOrAddRequest(Request* req);
+static void QueueRequest(Request* req);
 static u32 LockedGetActiveRequestCount();
 static void LockedPollRequests(std::unique_lock<Threading::Mutex>& lock);
+static bool MarkRequestsByOwnerCancelled(const void* owner, std::unique_lock<Threading::Mutex>& lock);
+static void MarkRequestComplete(Request* req);
 
 // Platform specific implementations
 
@@ -158,8 +161,8 @@ struct ALIGN_TO_CACHE_LINE Locals
   /// LockedPollRequests() — the lock is released around each callback invocation.
   Threading::Mutex pending_http_request_lock;
 
-  /// All requests that are either queued (Pending) or actively in-flight
-  /// (Started / Receiving). Requests are removed just before their callback fires.
+  /// All requests awaiting callback dispatch, including queued, active, completed,
+  /// and cancelled requests. Requests are removed just before their callback fires.
   std::vector<Request*> pending_http_requests;
 
 #if defined(USE_WINHTTP)
@@ -230,23 +233,37 @@ void HTTPDownloader::CreatePostRequest(std::string url, std::string post_data, c
                         timeout_seconds.value_or(s_locals.default_timeout), additional_headers);
 }
 
-// If the number of active requests is below the limit, starts the request immediately;
-// otherwise leaves it in Pending state to be promoted by LockedPollRequests().
-// Notifies the host when the queue transitions from empty to non-empty.
+// Adds every request to the tracked queue. If the number of active requests is below
+// the limit, attempts to start it immediately; otherwise leaves it in Pending state
+// to be promoted by LockedPollRequests(). Start failures remain in the queue as
+// Complete so their callbacks are dispatched by the polling path.
 // Called without pending_http_request_lock held; acquires it internally.
-void HTTPDownloader::StartOrAddRequest(Request* req)
+void HTTPDownloader::QueueRequest(Request* req)
 {
   std::unique_lock lock(s_locals.pending_http_request_lock);
-  if (LockedGetActiveRequestCount() < s_locals.max_active_requests)
-  {
-    if (!StartRequest(req))
-      return;
-  }
-
   const bool was_empty = s_locals.pending_http_requests.empty();
   s_locals.pending_http_requests.push_back(req);
+
+  if (req->state.load(std::memory_order_acquire) == Request::State::Pending &&
+      LockedGetActiveRequestCount() < s_locals.max_active_requests)
+  {
+    StartRequest(req);
+  }
+
   if (was_empty)
     Host::OnHTTPDownloaderActiveChanged(true);
+}
+
+// Marks a request complete unless cancellation has already won the race. Backend
+// threads must use this instead of unconditionally overwriting the terminal state.
+void HTTPDownloader::MarkRequestComplete(Request* req)
+{
+  Request::State state = req->state.load(std::memory_order_acquire);
+  while (state != Request::State::Cancelled && state != Request::State::Complete &&
+         !req->state.compare_exchange_weak(state, Request::State::Complete, std::memory_order_release,
+                                           std::memory_order_acquire))
+  {
+  }
 }
 
 // Drives the request queue: handles timeouts, progress-based cancellations, and
@@ -264,118 +281,134 @@ void HTTPDownloader::LockedPollRequests(std::unique_lock<Threading::Mutex>& lock
   if (s_locals.pending_http_requests.empty())
     return;
 
-  const Timer::Value current_time = Timer::GetCurrentValue();
-  u32 active_requests = 0;
-  u32 unstarted_requests = 0;
-
-  for (size_t index = 0; index < s_locals.pending_http_requests.size();)
+  for (;;)
   {
-    Request* req = s_locals.pending_http_requests[index];
-    const Request::State req_state = req->state.load(std::memory_order_acquire);
-    if (req_state == Request::State::Pending)
-    {
-      unstarted_requests++;
-      index++;
-      continue;
-    }
+    const Timer::Value current_time = Timer::GetCurrentValue();
+    u32 active_requests = 0;
+    u32 unstarted_requests = 0;
 
-    if ((req_state == Request::State::Started || req_state == Request::State::Receiving) &&
-        current_time >= req->last_update_time &&
-        Timer::ConvertValueToSeconds(current_time - req->last_update_time) >= static_cast<float>(req->timeout_seconds))
-    {
-      // request timed out
-      ERROR_LOG("Request for '{}' timed out", req->url);
-
-      req->state.store(Request::State::Cancelled, std::memory_order_release);
-      s_locals.pending_http_requests.erase(s_locals.pending_http_requests.begin() + index);
-      lock.unlock();
-
-      req->error.SetStringFmt("Request timed out after {} seconds.", req->timeout_seconds);
-      req->callback(HTTP_STATUS_TIMEOUT, req->error.GetDescription(), {}, {});
-
-      CloseRequest(req);
-
-      lock.lock();
-      continue;
-    }
-    else if ((req_state == Request::State::Started || req_state == Request::State::Receiving) && req->progress &&
-             req->progress->IsCancelled())
-    {
-      // request timed out
-      ERROR_LOG("Request for '{}' cancelled", req->url);
-
-      req->state.store(Request::State::Cancelled, std::memory_order_release);
-      s_locals.pending_http_requests.erase(s_locals.pending_http_requests.begin() + index);
-      lock.unlock();
-
-      req->error.SetStringView("Request was cancelled.");
-      req->callback(HTTP_STATUS_CANCELLED, req->error.GetDescription(), {}, {});
-
-      CloseRequest(req);
-
-      lock.lock();
-      continue;
-    }
-
-    if (req_state != Request::State::Complete)
-    {
-      if (req->progress)
-      {
-        const u32 size = static_cast<u32>(req->data.size());
-        if (size != req->last_progress_update)
-        {
-          req->last_progress_update = size;
-          req->progress->SetProgressRange(req->content_length);
-          req->progress->SetProgressValue(req->last_progress_update);
-        }
-      }
-
-      active_requests++;
-      index++;
-      continue;
-    }
-
-    // request complete
-    VERBOSE_LOG("Request for '{}' complete, returned status code {} and {} bytes, took {:.0f} ms", req->url,
-                req->status_code, req->data.size(), Timer::ConvertValueToMilliseconds(current_time - req->start_time));
-    s_locals.pending_http_requests.erase(s_locals.pending_http_requests.begin() + index);
-
-    // run callback with lock unheld
-    lock.unlock();
-    if (req->status_code >= 0 && req->status_code != HTTP_STATUS_OK)
-      req->error.SetStringFmt("Request failed with HTTP status code {}", req->status_code);
-    else if (req->status_code < 0)
-      DEV_LOG("Request failed with error {}", req->error.GetDescription());
-
-    req->callback(req->status_code, req->error.GetDescription(), req->content_type, std::move(req->data));
-    CloseRequest(req);
-    lock.lock();
-  }
-
-  // start new requests when we finished some
-  if (unstarted_requests > 0 && active_requests < s_locals.max_active_requests)
-  {
     for (size_t index = 0; index < s_locals.pending_http_requests.size();)
     {
       Request* req = s_locals.pending_http_requests[index];
-      if (req->state != Request::State::Pending)
+      const Request::State req_state = req->state.load(std::memory_order_acquire);
+      if (req_state == Request::State::Pending)
       {
+        unstarted_requests++;
         index++;
         continue;
       }
 
-      if (!StartRequest(req))
+      s32 callback_status_code;
+      if (Timer::Value last_update_time;
+          (req_state == Request::State::Started || req_state == Request::State::Receiving) &&
+          (current_time >= (last_update_time = req->last_update_time.load(std::memory_order_acquire))) &&
+          Timer::ConvertValueToSeconds(current_time - last_update_time) >= static_cast<float>(req->timeout_seconds))
       {
-        s_locals.pending_http_requests.erase(s_locals.pending_http_requests.begin() + index);
+        // request timed out
+        ERROR_LOG("Request for '{}' timed out", req->url);
+
+        callback_status_code = HTTP_STATUS_TIMEOUT;
+        req->state.store(Request::State::Cancelled, std::memory_order_release);
+      }
+      else if ((req_state == Request::State::Started || req_state == Request::State::Receiving) && req->progress &&
+               req->progress->IsCancelled())
+      {
+        // request cancelled by the progress callback
+        ERROR_LOG("Request for '{}' cancelled", req->url);
+
+        callback_status_code = HTTP_STATUS_CANCELLED;
+        req->state.store(Request::State::Cancelled, std::memory_order_release);
+      }
+      else if (req_state != Request::State::Complete && req_state != Request::State::Cancelled)
+      {
+        if (req->progress)
+        {
+          // NOTE: These reads are technically unsafe. But worst case we just get out-of-date progress for one poll.
+          const u32 size = static_cast<u32>(req->data.size());
+          if (size != req->last_progress_update)
+          {
+            req->last_progress_update = size;
+            req->progress->SetProgressRange(req->content_length);
+            req->progress->SetProgressValue(req->last_progress_update);
+          }
+        }
+
+        active_requests++;
+        index++;
         continue;
       }
+      else
+      {
+        // WinHTTP thread can still write to the status code while we're here.
+        callback_status_code = (req_state == Request::State::Cancelled) ? HTTP_STATUS_CANCELLED : req->status_code;
+      }
 
-      active_requests++;
-      index++;
+      // request complete or cancelled
+      if (req->start_time != 0)
+      {
+        VERBOSE_LOG("Request for '{}' complete, returned status code {} and {} bytes, took {:.0f} ms", req->url,
+                    callback_status_code, req->data.size(),
+                    Timer::ConvertValueToMilliseconds(current_time - req->start_time));
+      }
+      else
+      {
+        VERBOSE_LOG("Request for '{}' failed before starting, returned status code {}", req->url, callback_status_code);
+      }
+      s_locals.pending_http_requests.erase(s_locals.pending_http_requests.begin() + index);
 
-      if (active_requests >= s_locals.max_active_requests)
-        break;
+      // run callback with lock unheld
+      lock.unlock();
+
+      // With WinHTTP, the worker threads can still be modifying the request. Don't pass any of those buffers through.
+      if (callback_status_code == HTTP_STATUS_CANCELLED || callback_status_code == HTTP_STATUS_TIMEOUT)
+      {
+        const std::string_view error_message =
+          (callback_status_code == HTTP_STATUS_CANCELLED) ? "Request was cancelled." : "Request timed out.";
+        req->callback(callback_status_code, error_message, {}, {});
+      }
+      else
+      {
+        if (callback_status_code != HTTP_STATUS_OK)
+        {
+          if (callback_status_code >= 0)
+            req->error.SetStringFmt("Request failed with HTTP status code {}", callback_status_code);
+
+          DEV_LOG("Request failed with error {}", req->error.GetDescription());
+        }
+
+        req->callback(callback_status_code, req->error.GetDescription(), req->content_type, std::move(req->data));
+      }
+
+      CloseRequest(req);
+      lock.lock();
     }
+
+    // start new requests when we finished some
+    bool should_poll_again = false;
+    if (unstarted_requests > 0 && active_requests < s_locals.max_active_requests)
+    {
+      for (size_t index = 0; index < s_locals.pending_http_requests.size();)
+      {
+        Request* req = s_locals.pending_http_requests[index];
+        if (req->state != Request::State::Pending)
+        {
+          index++;
+          continue;
+        }
+
+        if (StartRequest(req))
+          active_requests++;
+        else
+          should_poll_again = true;
+
+        index++;
+
+        if (active_requests >= s_locals.max_active_requests)
+          break;
+      }
+    }
+    if (!should_poll_again)
+      break;
   }
 
   // notify host
@@ -407,17 +440,17 @@ void HTTPDownloader::WaitForAllRequestsWithYield(std::function<void()> before_sl
   while (!s_locals.pending_http_requests.empty())
   {
     // Don't burn too much CPU.
+    lock.unlock();
+
     if (before_sleep_cb)
-    {
-      lock.unlock();
       before_sleep_cb();
-    }
+
     Timer::NanoSleep(WAIT_FOR_ALL_REQUESTS_POLL_INTERVAL_NS);
+
     if (after_sleep_cb)
-    {
       after_sleep_cb();
-      lock.lock();
-    }
+
+    lock.lock();
     LockedPollRequests(lock);
   }
 }
@@ -454,17 +487,16 @@ void HTTPDownloader::WaitForAllRequestsFromOwnerWithYield(const void* owner, std
     std::ranges::any_of(s_locals.pending_http_requests, [owner](const Request* req) { return req->owner == owner; }))
   {
     // Don't burn too much CPU.
+    lock.unlock();
     if (before_sleep_cb)
-    {
-      lock.unlock();
       before_sleep_cb();
-    }
+
     Timer::NanoSleep(WAIT_FOR_ALL_REQUESTS_POLL_INTERVAL_NS);
+
     if (after_sleep_cb)
-    {
       after_sleep_cb();
-      lock.lock();
-    }
+
+    lock.lock();
     LockedPollRequests(lock);
   }
 }
@@ -499,61 +531,38 @@ bool HTTPDownloader::HasAnyRequestsFromOwner(const void* owner)
                              [owner](const Request* req) { return req->owner == owner; });
 }
 
-void HTTPDownloader::CancelAllRequests()
+void HTTPDownloader::CancelRequestsForOwnerAsync(const void* owner)
 {
-  CancelRequestsForOwner(nullptr);
+  std::unique_lock lock(s_locals.pending_http_request_lock);
+  MarkRequestsByOwnerCancelled(owner, lock);
+}
+
+bool HTTPDownloader::MarkRequestsByOwnerCancelled(const void* owner, std::unique_lock<Threading::Mutex>& lock)
+{
+  DebugAssert(lock.owns_lock());
+
+  bool matched_any = false;
+  for (Request* req : s_locals.pending_http_requests)
+  {
+    if (owner && req->owner != owner)
+      continue;
+
+    // Cancel even completed requests. Polling owns callback dispatch and cleanup.
+    const Request::State req_state = req->state.load(std::memory_order_acquire);
+    if (req_state != Request::State::Cancelled)
+      req->state.store(Request::State::Cancelled, std::memory_order_release);
+
+    matched_any = true;
+  }
+
+  return matched_any;
 }
 
 void HTTPDownloader::CancelRequestsForOwner(const void* owner)
 {
   std::unique_lock lock(s_locals.pending_http_request_lock);
-
-  if (s_locals.pending_http_requests.empty())
-    return;
-
-  // one request might start another, so loop multiple times until we match none
-  bool had_matching_requests;
-  do
-  {
-    had_matching_requests = false;
-
-    for (size_t index = 0; index < s_locals.pending_http_requests.size();)
-    {
-      Request* req = s_locals.pending_http_requests[index];
-      if (owner && req->owner != owner)
-      {
-        index++;
-        continue;
-      }
-
-      // Should never be cancelled at this point.
-      const Request::State req_state = req->state.load(std::memory_order_acquire);
-      DebugAssert(req_state != Request::State::Cancelled);
-
-      // Cancel even completed requests.
-      ERROR_LOG("Request for '{}' cancelled", req->url);
-
-      req->state.store(Request::State::Cancelled, std::memory_order_release);
-      s_locals.pending_http_requests.erase(s_locals.pending_http_requests.begin() + index);
-      lock.unlock();
-
-      req->callback(HTTP_STATUS_CANCELLED, "Request was cancelled.", {}, {});
-
-      // If pending, we can delete it immediately since it won't be processed by the worker thread.
-      // Otherwise, we need to close it so the worker thread can clean up properly.
-      if (req_state == Request::State::Pending)
-        DeleteRequest(req);
-      else
-        CloseRequest(req);
-
-      lock.lock();
-      had_matching_requests = true;
-    }
-  } while (had_matching_requests);
-
-  // notify host
-  if (s_locals.pending_http_requests.empty())
-    Host::OnHTTPDownloaderActiveChanged(false);
+  while (MarkRequestsByOwnerCancelled(owner, lock))
+    LockedPollRequests(lock);
 }
 
 std::string_view HTTPDownloader::GetExtensionForContentType(std::string_view content_type)
@@ -697,7 +706,9 @@ bool HTTPDownloader::EnsureInitialized(Error* error)
 // avoid callbacks arriving after the session is destroyed.
 void HTTPDownloader::Shutdown()
 {
-  CancelRequestsForOwner(nullptr);
+  std::unique_lock lock(s_locals.pending_http_request_lock);
+  while (MarkRequestsByOwnerCancelled(nullptr, lock))
+    LockedPollRequests(lock);
 
   if (s_locals.hSession)
   {
@@ -741,13 +752,28 @@ void CALLBACK HTTPDownloader::HTTPStatusCallback(HINTERNET hRequest, DWORD_PTR d
       return;
     }
 
+    default:
+      break;
+  }
+
+  // Complete and Cancelled are terminal. Ignore any notifications already in
+  // flight; HANDLE_CLOSING above still owns final destruction.
+  if (!req)
+    return;
+
+  const Request::State req_state = req->state.load(std::memory_order_acquire);
+  if (req_state == Request::State::Complete || req_state == Request::State::Cancelled)
+    return;
+
+  switch (dwInternetStatus)
+  {
     case WINHTTP_CALLBACK_STATUS_REQUEST_ERROR:
     {
       const WINHTTP_ASYNC_RESULT* res = reinterpret_cast<const WINHTTP_ASYNC_RESULT*>(lpvStatusInformation);
       ERROR_LOG("WinHttp async function {} returned error {}", res->dwResult, res->dwError);
       req->status_code = HTTP_STATUS_ERROR;
       req->error.SetStringFmt("WinHttp async function {} returned error {}", res->dwResult, res->dwError);
-      req->state.store(Request::State::Complete, std::memory_order_release);
+      MarkRequestComplete(req);
       return;
     }
     case WINHTTP_CALLBACK_STATUS_SENDREQUEST_COMPLETE:
@@ -759,7 +785,7 @@ void CALLBACK HTTPDownloader::HTTPStatusCallback(HINTERNET hRequest, DWORD_PTR d
         ERROR_LOG("WinHttpReceiveResponse() failed: {}", err);
         req->status_code = HTTP_STATUS_ERROR;
         req->error.SetWin32("WinHttpReceiveResponse() failed: ", err);
-        req->state.store(Request::State::Complete, std::memory_order_release);
+        MarkRequestComplete(req);
       }
 
       return;
@@ -776,7 +802,7 @@ void CALLBACK HTTPDownloader::HTTPStatusCallback(HINTERNET hRequest, DWORD_PTR d
         ERROR_LOG("WinHttpQueryHeaders() for status code failed: {}", err);
         req->status_code = HTTP_STATUS_ERROR;
         req->error.SetWin32("WinHttpQueryHeaders() failed: ", err);
-        req->state.store(Request::State::Complete, std::memory_order_release);
+        MarkRequestComplete(req);
         return;
       }
 
@@ -808,7 +834,12 @@ void CALLBACK HTTPDownloader::HTTPStatusCallback(HINTERNET hRequest, DWORD_PTR d
 
       DEV_LOG("Status code {}, content-length is {}", req->status_code, req->content_length);
       req->data.reserve(req->content_length);
-      req->state.store(Request::State::Receiving, std::memory_order_release);
+      Request::State expected_state = Request::State::Started;
+      if (!req->state.compare_exchange_strong(expected_state, Request::State::Receiving, std::memory_order_release,
+                                              std::memory_order_acquire))
+      {
+        return;
+      }
 
       // start reading
       if (!WinHttpQueryDataAvailable(hRequest, nullptr) && GetLastError() != ERROR_IO_PENDING)
@@ -817,7 +848,7 @@ void CALLBACK HTTPDownloader::HTTPStatusCallback(HINTERNET hRequest, DWORD_PTR d
         ERROR_LOG("WinHttpQueryDataAvailable() failed: {}", err);
         req->status_code = HTTP_STATUS_ERROR;
         req->error.SetWin32("WinHttpQueryDataAvailable() failed: ", err);
-        req->state.store(Request::State::Complete, std::memory_order_release);
+        MarkRequestComplete(req);
       }
 
       return;
@@ -830,7 +861,7 @@ void CALLBACK HTTPDownloader::HTTPStatusCallback(HINTERNET hRequest, DWORD_PTR d
       {
         // end of request
         DEV_LOG("End of request '{}', {} bytes received", req->url, req->data.size());
-        req->state.store(Request::State::Complete, std::memory_order_release);
+        MarkRequestComplete(req);
         return;
       }
 
@@ -845,7 +876,7 @@ void CALLBACK HTTPDownloader::HTTPStatusCallback(HINTERNET hRequest, DWORD_PTR d
         ERROR_LOG("WinHttpReadData() failed: {}", err);
         req->status_code = HTTP_STATUS_ERROR;
         req->error.SetWin32("WinHttpReadData() failed: ", err);
-        req->state.store(Request::State::Complete, std::memory_order_release);
+        MarkRequestComplete(req);
       }
 
       return;
@@ -865,7 +896,7 @@ void CALLBACK HTTPDownloader::HTTPStatusCallback(HINTERNET hRequest, DWORD_PTR d
         ERROR_LOG("WinHttpQueryDataAvailable() failed: {}", err);
         req->status_code = HTTP_STATUS_ERROR;
         req->error.SetWin32("WinHttpQueryDataAvailable() failed: ", err);
-        req->state.store(Request::State::Complete, std::memory_order_release);
+        MarkRequestComplete(req);
       }
 
       return;
@@ -885,8 +916,9 @@ void HTTPDownloader::InternalCreateRequest(Request::Type type, std::string url, 
 
   if (!EnsureInitialized(&req->error))
   {
-    callback(HTTP_STATUS_ERROR, req->error.GetDescription(), req->content_type, req->data);
-    DeleteRequest(req);
+    req->status_code = HTTP_STATUS_ERROR;
+    req->state.store(Request::State::Complete, std::memory_order_release);
+    QueueRequest(req);
     return;
   }
 
@@ -905,13 +937,13 @@ void HTTPDownloader::InternalCreateRequest(Request::Type type, std::string url, 
     }
   }
 
-  StartOrAddRequest(req);
+  QueueRequest(req);
 }
 
 // Cracks the URL, opens a WinHTTP connection and request handle, and fires
 // WinHttpSendRequest() to begin the async transfer. On success returns true and
 // leaves the request in Started state; the remainder of the transfer is driven by
-// HTTPStatusCallback(). On failure fires the callback directly and returns false.
+// HTTPStatusCallback(). On failure leaves the request in Complete state for polling.
 bool HTTPDownloader::StartRequest(Request* req)
 {
   std::wstring host_name;
@@ -931,9 +963,9 @@ bool HTTPDownloader::StartRequest(Request* req)
   {
     const DWORD err = GetLastError();
     ERROR_LOG("WinHttpCrackUrl() failed: {}", err);
+    req->status_code = HTTP_STATUS_ERROR;
     req->error.SetWin32("WinHttpCrackUrl() failed: ", err);
-    req->callback(HTTP_STATUS_ERROR, req->error.GetDescription(), {}, {});
-    DeleteRequest(req);
+    req->state.store(Request::State::Complete, std::memory_order_release);
     return false;
   }
 
@@ -945,9 +977,9 @@ bool HTTPDownloader::StartRequest(Request* req)
   {
     const DWORD err = GetLastError();
     ERROR_LOG("Failed to start HTTP request for '{}': {}", req->url, err);
+    req->status_code = HTTP_STATUS_ERROR;
     req->error.SetWin32("WinHttpConnect() failed: ", err);
-    req->callback(HTTP_STATUS_ERROR, req->error.GetDescription(), {}, {});
-    DeleteRequest(req);
+    req->state.store(Request::State::Complete, std::memory_order_release);
     return false;
   }
 
@@ -958,10 +990,24 @@ bool HTTPDownloader::StartRequest(Request* req)
   {
     const DWORD err = GetLastError();
     ERROR_LOG("WinHttpOpenRequest() failed: {}", err);
+    req->status_code = HTTP_STATUS_ERROR;
     req->error.SetWin32("WinHttpOpenRequest() failed: ", err);
-    req->callback(HTTP_STATUS_ERROR, req->error.GetDescription(), {}, {});
-    WinHttpCloseHandle(req->hConnection);
-    DeleteRequest(req);
+    req->state.store(Request::State::Complete, std::memory_order_release);
+    return false;
+  }
+
+  // Associate the lifetime context before any subsequent operation can fail. Once
+  // this succeeds, Request deletion must wait for HANDLE_CLOSING.
+  DWORD_PTR request_context = reinterpret_cast<DWORD_PTR>(req);
+  if (!WinHttpSetOption(req->hRequest, WINHTTP_OPTION_CONTEXT_VALUE, &request_context, sizeof(request_context)))
+  {
+    const DWORD err = GetLastError();
+    ERROR_LOG("WinHttpSetOption(WINHTTP_OPTION_CONTEXT_VALUE) failed: {}", err);
+    req->status_code = HTTP_STATUS_ERROR;
+    req->error.SetWin32("WinHttpSetOption(WINHTTP_OPTION_CONTEXT_VALUE) failed: ", err);
+    WinHttpCloseHandle(req->hRequest);
+    req->hRequest = NULL;
+    req->state.store(Request::State::Complete, std::memory_order_release);
     return false;
   }
 
@@ -972,13 +1018,16 @@ bool HTTPDownloader::StartRequest(Request* req)
   {
     const DWORD err = GetLastError();
     ERROR_LOG("WinHttpAddRequestHeaders() failed: {}", err);
+    req->status_code = HTTP_STATUS_ERROR;
     req->error.SetWin32("WinHttpAddRequestHeaders() failed: ", err);
-    req->callback(HTTP_STATUS_ERROR, req->error.GetDescription(), {}, {});
-    WinHttpCloseHandle(req->hRequest);
-    WinHttpCloseHandle(req->hConnection);
-    DeleteRequest(req);
+    req->state.store(Request::State::Complete, std::memory_order_release);
     return false;
   }
+
+  DEV_LOG("Started HTTP request for '{}'", req->url);
+  req->state.store(Request::State::Started, std::memory_order_release);
+  req->start_time = Timer::GetCurrentValue();
+  req->last_update_time = req->start_time;
 
   BOOL result;
   if (req->type == Request::Type::Post)
@@ -999,13 +1048,10 @@ bool HTTPDownloader::StartRequest(Request* req)
     ERROR_LOG("WinHttpSendRequest() failed: {}", err);
     req->status_code = HTTP_STATUS_ERROR;
     req->error.SetWin32("WinHttpSendRequest() failed: ", err);
-    req->state.store(Request::State::Complete);
+    req->state.store(Request::State::Complete, std::memory_order_release);
+    return false;
   }
 
-  DEV_LOG("Started HTTP request for '{}'", req->url);
-  req->state = Request::State::Started;
-  req->start_time = Timer::GetCurrentValue();
-  req->last_update_time = req->start_time;
   return true;
 }
 
@@ -1085,7 +1131,9 @@ bool HTTPDownloader::EnsureInitialized(Error* error)
 // so it can drain the action queue and free all easy handles cleanly.
 void HTTPDownloader::Shutdown()
 {
-  CancelRequestsForOwner(nullptr);
+  std::unique_lock lock(s_locals.pending_http_request_lock);
+  while (MarkRequestsByOwnerCancelled(nullptr, lock))
+    LockedPollRequests(lock);
 
   // Signal worker thread to shutdown
   if (s_locals.worker_thread.Joinable())
@@ -1141,15 +1189,16 @@ void HTTPDownloader::InternalCreateRequest(Request::Type type, std::string url, 
 
   if (!EnsureInitialized(&req->error))
   {
-    callback(HTTP_STATUS_ERROR, req->error.GetDescription(), req->content_type, req->data);
-    DeleteRequest(req);
+    req->status_code = HTTP_STATUS_ERROR;
+    req->state.store(Request::State::Complete, std::memory_order_release);
+    QueueRequest(req);
     return;
   }
 
   for (const char* header : additional_headers)
     req->header_list = curl_slist_append(req->header_list, header);
 
-  StartOrAddRequest(req);
+  QueueRequest(req);
 }
 
 void HTTPDownloader::DeleteRequest(Request* req)
@@ -1159,8 +1208,8 @@ void HTTPDownloader::DeleteRequest(Request* req)
   delete req;
 }
 
-// Worker thread entry point. Runs the curl_multi_poll → ProcessQueuedActions →
-// curl_multi_perform → ReadMultiResults loop until worker_thread_shutdown is set.
+// Worker thread entry point. Processes queued actions before checking for shutdown,
+// ensuring RemoveAndDelete actions are drained before the multi handle is destroyed.
 // SIGPIPE is blocked because OpenSSL may raise it on broken connections.
 void HTTPDownloader::WorkerThreadEntryPoint()
 {
@@ -1173,24 +1222,26 @@ void HTTPDownloader::WorkerThreadEntryPoint()
   if (pthread_sigmask(SIG_BLOCK, &block_mask, nullptr) != 0)
     WARNING_LOG("Failed to block SIGPIPE");
 
-  while (!s_locals.worker_thread_shutdown.load(std::memory_order_acquire))
+  for (;;)
   {
-    // Wait for activity with curl_multi_poll
-    CURLMcode err = curl_multi_poll(s_locals.multi_handle, nullptr, 0, std::numeric_limits<int>::max(), nullptr);
-    if (err != CURLM_OK)
-      ERROR_LOG("curl_multi_poll() returned {}", static_cast<int>(err));
-
     // Process any queued actions
     ProcessQueuedActions();
+    if (s_locals.worker_thread_shutdown.load(std::memory_order_acquire))
+      break;
 
     // Perform curl operations
     int running_handles;
-    err = curl_multi_perform(s_locals.multi_handle, &running_handles);
+    CURLMcode err = curl_multi_perform(s_locals.multi_handle, &running_handles);
     if (err != CURLM_OK)
       ERROR_LOG("curl_multi_perform() returned {}", static_cast<int>(err));
 
     // Read any results
     ReadMultiResults();
+
+    // Wait for network activity or a producer wakeup.
+    err = curl_multi_poll(s_locals.multi_handle, nullptr, 0, std::numeric_limits<int>::max(), nullptr);
+    if (err != CURLM_OK)
+      ERROR_LOG("curl_multi_poll() returned {}", static_cast<int>(err));
   }
 }
 
@@ -1212,7 +1263,8 @@ void HTTPDownloader::ProcessQueuedActions()
         {
           ERROR_LOG("curl_multi_add_handle() returned {}", static_cast<int>(err));
           request->error.SetStringFmt("curl_multi_add_handle() failed: {}", curl_multi_strerror(err));
-          request->state.store(Request::State::Complete, std::memory_order_release);
+          request->status_code = HTTP_STATUS_ERROR;
+          MarkRequestComplete(request);
         }
       }
       break;
@@ -1255,6 +1307,9 @@ void HTTPDownloader::ReadMultiResults()
       continue;
     }
 
+    if (req->state.load(std::memory_order_acquire) == Request::State::Cancelled)
+      continue;
+
     if (msg->data.result == CURLE_OK)
     {
       long response_code = 0;
@@ -1274,7 +1329,7 @@ void HTTPDownloader::ReadMultiResults()
       req->status_code = HTTP_STATUS_ERROR;
     }
 
-    req->state.store(Request::State::Complete, std::memory_order_release);
+    MarkRequestComplete(req);
   }
 }
 
@@ -1287,8 +1342,9 @@ bool HTTPDownloader::StartRequest(Request* req)
   if (!req->handle)
   {
     ERROR_LOG("curl_easy_init() failed");
-    req->callback(HTTP_STATUS_ERROR, "curl_easy_init() failed", {}, {});
-    DeleteRequest(req);
+    req->status_code = HTTP_STATUS_ERROR;
+    req->error.SetStringView("curl_easy_init() failed");
+    req->state.store(Request::State::Complete, std::memory_order_release);
     return false;
   }
 
@@ -1348,7 +1404,11 @@ bool HTTPDownloader::StartRequest(Request* req)
 // woken via curl_multi_wakeup() to process the action promptly.
 void HTTPDownloader::CloseRequest(Request* req)
 {
-  DebugAssert(req->handle);
+  if (!req->handle)
+  {
+    DeleteRequest(req);
+    return;
+  }
 
   // Add to action queue for worker thread to process
   const std::lock_guard lock(s_locals.worker_queue_mutex);

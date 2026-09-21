@@ -127,8 +127,9 @@ AutoUpdaterDialog::AutoUpdaterDialog(QWidget* const parent) : QDialog(parent)
 
 AutoUpdaterDialog::~AutoUpdaterDialog()
 {
-  // Ensure all requests have finished.
-  HTTPDownloader::CancelRequestsForOwner(this);
+  // Ensure all requests have finished. This uses async otherwise the callbacks will fire on the UI thread.
+  // Cancelled state should prevent the callbacks from running afterwards.
+  HTTPDownloader::CancelRequestsForOwnerAsync(this);
 }
 
 void AutoUpdaterDialog::warnAboutUnofficialBuild()

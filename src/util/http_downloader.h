@@ -27,7 +27,9 @@ using HeaderList = std::span<const char* const>;
 using RequestData = std::vector<u8>;
 
 /// Callback fired when a request completes, times out, or is cancelled.
-/// Invoked on the thread that calls PollRequests(), with no internal locks held.
+/// Invoked by the polling path (PollRequests(), WaitForAllRequests*(), or Shutdown()),
+/// with no internal locks held. CreateRequest() and CancelRequests*() never invoke
+/// callbacks directly.
 ///
 /// @param status_code   HTTP status code, or one of the negative HTTP_STATUS_* sentinels on failure.
 /// @param error_message Populated with a description when status_code < HTTP_STATUS_OK.
@@ -59,7 +61,8 @@ void SetDefaultTimeout(u16 timeout_seconds);
 void SetMaxActiveRequests(u16 max_active_requests);
 
 /// Cancels all outstanding requests and tears down the HTTP backend.
-/// Each cancelled request still has its callback invoked before this returns.
+/// Each cancelled request has its callback invoked through the polling path before
+/// this returns.
 /// Safe to call even if the downloader was never initialised.
 void Shutdown();
 
@@ -107,14 +110,12 @@ bool HasAnyRequests();
 /// Passing nullptr is equivalent to HasAnyRequests().
 bool HasAnyRequestsFromOwner(const void* owner);
 
-/// Cancels all outstanding requests. Equivalent to CancelRequestsForOwner(nullptr).
-void CancelAllRequests();
+/// Marks all outstanding requests belonging to owner as cancelled. Their callbacks
+/// are invoked by the next polling or waiting operation, not by this function.
+/// Passing nullptr cancels every pending request.
+void CancelRequestsForOwnerAsync(const void* owner);
 
-/// Cancels all outstanding requests belonging to owner.
-/// Passing nullptr cancels every pending request (same as CancelAllRequests()).
-/// Each cancelled request still has its callback invoked with HTTP_STATUS_CANCELLED.
-/// The function loops until no matching requests remain, because a cancellation
-/// callback may itself queue new requests for the same owner.
+/// Mall outstanding requests belonging to owner as cancelled, and invokes their callbacks.
 void CancelRequestsForOwner(const void* owner);
 
 } // namespace HTTPDownloader
