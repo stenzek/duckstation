@@ -30,7 +30,7 @@
 #endif
 
 #ifdef CPU_ARCH_ARM64
-static constexpr u64 ARM64_ESR_ISS_DA_WNR = (1u << 6);
+[[maybe_unused]] static constexpr u64 ARM64_ESR_ISS_DA_WNR = (1u << 6);
 
 [[maybe_unused]] static bool IsStoreInstruction(const void* ptr)
 {
