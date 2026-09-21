@@ -1008,6 +1008,12 @@ TEST(StringUtil, BytePatternSearch)
   ASSERT_TRUE(result.has_value());
   ASSERT_EQ(result.value(), 2u);
 
+  // Test that the first match is returned.
+  const std::vector<u8> duplicate_data = {0x01, 0x02, 0x01, 0x02};
+  result = StringUtil::BytePatternSearch(std::span<const u8>(duplicate_data), "01 02");
+  ASSERT_TRUE(result.has_value());
+  ASSERT_EQ(result.value(), 0u);
+
   // Test with wildcards
   result = StringUtil::BytePatternSearch(std::span<const u8>(data), "01 ?? 03");
   ASSERT_TRUE(result.has_value());
@@ -1019,6 +1025,12 @@ TEST(StringUtil, BytePatternSearch)
 
   // Test empty pattern
   result = StringUtil::BytePatternSearch(std::span<const u8>(data), "");
+  ASSERT_FALSE(result.has_value());
+
+  // Test malformed patterns.
+  result = StringUtil::BytePatternSearch(std::span<const u8>(data), "01 2");
+  ASSERT_FALSE(result.has_value());
+  result = StringUtil::BytePatternSearch(std::span<const u8>(data), "01 GG");
   ASSERT_FALSE(result.has_value());
 
   // Test lowercase hex
@@ -1035,6 +1047,16 @@ TEST(StringUtil, BytePatternSearch)
   result = StringUtil::BytePatternSearch(std::span<const u8>(data), "06 07 08");
   ASSERT_TRUE(result.has_value());
   ASSERT_EQ(result.value(), 5u);
+
+  // Test a wildcard match at the final valid offset.
+  result = StringUtil::BytePatternSearch(std::span<const u8>(data), "06 ?? 08");
+  ASSERT_TRUE(result.has_value());
+  ASSERT_EQ(result.value(), 5u);
+
+  // Test a pattern exactly the size of the input.
+  result = StringUtil::BytePatternSearch(std::span<const u8>(data), "01 02 03 04 05 06 07 08");
+  ASSERT_TRUE(result.has_value());
+  ASSERT_EQ(result.value(), 0u);
 
   // Test a pattern longer than the input.
   result = StringUtil::BytePatternSearch(std::span<const u8>(data), "01 02 03 04 05 06 07 08 09");

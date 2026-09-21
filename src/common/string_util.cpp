@@ -1095,10 +1095,10 @@ std::optional<size_t> StringUtil::BytePatternSearch(const std::span<const u8> by
     }
     else
     {
-      break;
+      return std::nullopt;
     }
   }
-  if (pattern_length == 0)
+  if (pattern_length == 0 || !hinibble)
     return std::nullopt;
   if (pattern_length > bytes.size())
     return std::nullopt;
@@ -1145,7 +1145,7 @@ std::optional<size_t> StringUtil::BytePatternSearch(const std::span<const u8> by
 
   std::optional<size_t> ret;
   const size_t max_search_offset = bytes.size() - pattern_length;
-  for (size_t offset = 0; offset <= max_search_offset; offset++)
+  for (size_t offset = 0; offset <= max_search_offset && !ret.has_value(); offset++)
   {
     const u8* start = bytes.data() + offset;
     for (size_t match_offset = 0;;)
