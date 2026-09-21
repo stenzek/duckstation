@@ -138,6 +138,7 @@ void AddAchievementNotification(std::string key, float duration, std::string ima
                                 u16 min_width = 0, bool small_font = false);
 
 /// Clears all cached state used to render the UI.
+/// NOTE: Assumes achievements lock is held.
 void ClearAchievementsState();
 
 /// Updates cached data for the last progress update.

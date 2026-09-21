@@ -4300,9 +4300,12 @@ bool System::PopulateGameListEntryFromCurrentGame(GameList::Entry* entry, Error*
                        ((s_state.region == ConsoleRegion::NTSC_J) ? DiscRegion::NTSC_J : DiscRegion::PAL));
   }
 
-  entry->achievements_game_id = Achievements::GetGameID();
-  if (const std::optional<Achievements::GameHash> achievements_hash = Achievements::GetGameHash())
-    entry->achievements_hash = achievements_hash.value();
+  {
+    const auto lock = Achievements::GetLock();
+    entry->achievements_game_id = Achievements::GetGameID();
+    if (const std::optional<Achievements::GameHash> achievements_hash = Achievements::GetGameHash())
+      entry->achievements_hash = achievements_hash.value();
+  }
   entry->is_runtime_populated = true;
 
   return true;

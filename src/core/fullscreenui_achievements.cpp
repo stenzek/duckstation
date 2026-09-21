@@ -226,8 +226,6 @@ void FullscreenUI::ClearAchievementsState()
   // NOTE: can be called on the CPU thread. don't mess with any GPU thread state
   // will already be held if we're clearing as a result of achievements shutting down
 
-  const auto lock = Achievements::GetLock();
-
   CloseLeaderboard();
 
   s_achievements_locals.notifications = {};
@@ -2849,7 +2847,7 @@ void FullscreenUI::DrawLeaderboardsWindow()
     RenderShadowedTextClipped(UIStyle.Font, UIStyle.MediumFontSize, UIStyle.NormalFontWeight, summary_bb.Min,
                               summary_bb.Max, summary_color, text, nullptr, ImVec2(0.0f, 0.0f), 0.0f, &summary_bb);
 
-    if (!is_leaderboard_open && !Achievements::IsHardcoreModeActive())
+    if (!is_leaderboard_open && !rc_client_get_hardcore_enabled(Achievements::GetClient()))
     {
       const ImRect hardcore_warning_bb(ImVec2(left, top), ImVec2(right, top + UIStyle.MediumFontSize));
       top += UIStyle.MediumFontSize + spacing_small;

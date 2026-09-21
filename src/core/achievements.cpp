@@ -108,7 +108,7 @@ template<typename... T>
 static void ReportRCError(int err, fmt::format_string<T...> fmt, T&&... args);
 static void ClearGameInfo();
 static bool TryLoggingInWithToken();
-static void EnableHardcoreMode(bool display_message, bool display_game_summary);
+static void SetHardcoreModeState(bool enabled, bool display_message, bool display_game_summary);
 static void OnHardcoreModeChanged(bool enabled, bool display_message, bool display_game_summary);
 static bool IsRAIntegrationInitializing();
 static void FinishInitialize();
@@ -117,7 +117,7 @@ static void BeginLoadGame();
 static void UpdateGameSummary();
 static void UpdateModeSettings(const Settings& old_config);
 static DynamicHeapArray<u8> SaveStateToBuffer();
-static void LoadStateFromBuffer(std::span<const u8> data, std::unique_lock<std::recursive_mutex>& lock);
+static void LoadStateFromBuffer(std::span<const u8> data, std::unique_lock<Threading::Mutex>& lock);
 static bool SaveStateToBuffer(std::span<u8> data);
 static std::string GetImageURL(const char* image_name, u32 type);
 static void PrefetchNextAchievementBadge();
@@ -128,14 +128,17 @@ static void UpdatePrefetchAchievementBadgesOSDMessage();
 static TinyString DecryptLoginToken(std::string_view encrypted_token, std::string_view username);
 static TinyString EncryptLoginToken(std::string_view token, std::string_view username);
 
-static bool CreateClient(std::unique_lock<std::recursive_mutex>& lock, bool is_temporary_client);
-static void DestroyClient(std::unique_lock<std::recursive_mutex>& lock);
+static bool CreateClient(std::unique_lock<Threading::Mutex>& lock, bool is_temporary_client);
+static void DestroyClient(std::unique_lock<Threading::Mutex>& lock);
 static void ClientMessageCallback(const char* message, const rc_client_t* client);
 static uint32_t ClientReadMemory(uint32_t address, uint8_t* buffer, uint32_t num_bytes, rc_client_t* client);
 static void ClientServerCall(const rc_api_request_t* request, rc_client_server_callback_t callback, void* callback_data,
                              rc_client_t* client);
 static rc_api_server_response_t MakeRCAPIServerResponse(s32 status_code, const std::vector<u8>& data);
-static void WaitForServerCallsWithYield(std::unique_lock<std::recursive_mutex>& lock);
+
+// NOTE: Should be called **without** lock held.
+static void WaitForServerCalls();
+static void WaitForServerCallsWithYield(std::unique_lock<Threading::Mutex>& lock);
 
 static void ClientEventHandler(const rc_client_event_t* event, rc_client_t* client);
 static void HandleResetEvent(const rc_client_event_t* event);
@@ -164,7 +167,7 @@ static void ClientLoadGameCallback(int result, const char* error_message, rc_cli
 
 static void DisplayHardcoreDeferredMessage();
 static void DisplayAchievementSummary();
-static void UpdateRichPresence(std::unique_lock<std::recursive_mutex>& lock);
+static void UpdateRichPresence(std::unique_lock<Threading::Mutex>& lock);
 
 static bool EnsureAchievementsDatabaseOpen(Error* error = nullptr);
 static void CloseAchievementsDatabase();
@@ -200,7 +203,7 @@ static void SetAchievementPinnedInDatabase(u32 achievement_id, bool pinned);
 #ifdef RC_CLIENT_SUPPORTS_RAINTEGRATION
 
 static void BeginLoadRAIntegration();
-static void UnloadRAIntegration(std::unique_lock<std::recursive_mutex>& lock);
+static void UnloadRAIntegration(std::unique_lock<Threading::Mutex>& lock);
 
 // Just to make things even more annoying, RAIntegration callbacks on a worker thread.
 static void RAIntegrationClientLoginWithTokenCallback(int result, const char* error_message, rc_client_t* client,
@@ -236,7 +239,7 @@ struct State
   bool has_saved_credentials : 1 = false;
   bool reload_game_on_reset : 1 = false;
 
-  std::recursive_mutex mutex; // large
+  Threading::Mutex mutex;
 
   std::vector<LeaderboardTrackerIndicator> active_leaderboard_trackers;
   std::vector<ActiveChallengeIndicator> active_challenge_indicators;
@@ -304,7 +307,7 @@ TinyString Achievements::GameHashToString(const std::optional<GameHash>& hash)
   return ret;
 }
 
-std::unique_lock<std::recursive_mutex> Achievements::GetLock()
+std::unique_lock<Threading::Mutex> Achievements::GetLock()
 {
   return std::unique_lock(s_state.mutex);
 }
@@ -489,11 +492,10 @@ bool Achievements::IsActive()
 
 bool Achievements::IsHardcoreModeActive()
 {
-  if (!s_state.client)
-    return false;
-
-  const auto lock = GetLock();
-  return rc_client_get_hardcore_enabled(s_state.client);
+  // Does not take the lock here because we only call on the core thread.
+  // This is because it is called in other places like cheats which can have a reload triggered by HC mode.
+  DebugAssert(Host::IsOnCoreThread());
+  return (s_state.client && rc_client_get_hardcore_enabled(s_state.client));
 }
 
 bool Achievements::HasActiveGame()
@@ -564,7 +566,7 @@ void Achievements::Initialize()
   CreateClient(lock, false);
 }
 
-bool Achievements::CreateClient(std::unique_lock<std::recursive_mutex>& lock, bool is_temporary_client)
+bool Achievements::CreateClient(std::unique_lock<Threading::Mutex>& lock, bool is_temporary_client)
 {
   Assert(!s_state.client);
 
@@ -641,13 +643,16 @@ void Achievements::FinishInitialize()
   Host::OnAchievementsActiveChanged(true);
 }
 
-void Achievements::DestroyClient(std::unique_lock<std::recursive_mutex>& lock)
+void Achievements::DestroyClient(std::unique_lock<Threading::Mutex>& lock)
 {
   DebugAssert(IsActive());
-  WaitForServerCallsWithYield(lock);
+
+  lock.unlock();
+  WaitForServerCalls();
+  lock.lock();
 
   ClearGameInfo();
-  DisableHardcoreMode(false, false);
+  SetHardcoreModeState(false, false, false);
   CancelFetchGameListRequest();
   CancelFetchAllProgressRequest();
 
@@ -712,10 +717,10 @@ bool Achievements::TryLoggingInWithToken()
 
 void Achievements::UpdateSettings(const Settings& old_config)
 {
-  auto lock = GetLock();
-
   if (g_settings.achievements_enabled != old_config.achievements_enabled)
   {
+    auto lock = GetLock();
+
     // we're done here
     if (g_settings.achievements_enabled)
     {
@@ -731,10 +736,14 @@ void Achievements::UpdateSettings(const Settings& old_config)
     return;
   }
 
+  if (!IsActive())
+    return;
+
 #ifdef RC_CLIENT_SUPPORTS_RAINTEGRATION
   if (g_settings.achievements_use_raintegration != old_config.achievements_use_raintegration)
   {
     // RAIntegration requires a full client reload?
+    auto lock = GetLock();
     if (IsActive())
       DestroyClient(lock);
     CreateClient(lock, false);
@@ -746,33 +755,46 @@ void Achievements::UpdateSettings(const Settings& old_config)
   {
     // Enables have to wait for reset, disables can go through immediately.
     if (!g_settings.achievements_hardcore_mode)
-      DisableHardcoreMode(true, true);
+    {
+      const auto lock = GetLock();
+      SetHardcoreModeState(false, true, true);
+    }
   }
 
   if (!g_settings.achievements_leaderboard_trackers)
+  {
+    const auto lock = GetLock();
     s_state.active_leaderboard_trackers.clear();
+  }
 
   // remove progress indicator because it won't remove normally
   if (g_settings.achievements_progress_indicator_mode == AchievementProgressIndicatorMode::Disabled)
+  {
+    const auto lock = GetLock();
     s_state.active_progress_indicator.reset();
+  }
 
   // If a game is active and these settings changed, reload the game to apply them.
   // Just unload and reload without destroying the client to preserve hardcore mode.
   // NOTE: Can't change spectator mode while game is loaded.
-  if (HasActiveGame() && (g_settings.achievements_encore_mode != old_config.achievements_encore_mode ||
-                          g_settings.achievements_spectator_mode != old_config.achievements_spectator_mode ||
-                          g_settings.achievements_track_unofficial != old_config.achievements_track_unofficial))
+  if (g_settings.achievements_encore_mode != old_config.achievements_encore_mode ||
+      g_settings.achievements_spectator_mode != old_config.achievements_spectator_mode ||
+      g_settings.achievements_track_unofficial != old_config.achievements_track_unofficial)
   {
-    // Save and restore state to preserve progress.
-    const DynamicHeapArray<u8> state_data = SaveStateToBuffer();
-    ClearGameInfo();
-    UpdateModeSettings(old_config);
-    BeginLoadGame();
-    LoadStateFromBuffer(state_data.cspan(), lock);
-  }
-  else
-  {
-    UpdateModeSettings(old_config);
+    auto lock = GetLock();
+    if (HasActiveGame())
+    {
+      // Save and restore state to preserve progress.
+      const DynamicHeapArray<u8> state_data = SaveStateToBuffer();
+      ClearGameInfo();
+      UpdateModeSettings(old_config);
+      BeginLoadGame();
+      LoadStateFromBuffer(state_data.cspan(), lock);
+    }
+    else
+    {
+      UpdateModeSettings(old_config);
+    }
   }
 }
 
@@ -893,10 +915,17 @@ rc_api_server_response_t Achievements::MakeRCAPIServerResponse(s32 status_code, 
   }
 }
 
-void Achievements::WaitForServerCallsWithYield(std::unique_lock<std::recursive_mutex>& lock)
+void Achievements::WaitForServerCalls()
 {
-  HTTPDownloader::WaitForAllRequestsFromOwnerWithYield(
-    &s_state, [&lock]() { lock.unlock(); }, [&lock]() { lock.lock(); });
+  HTTPDownloader::WaitForAllRequestsFromOwner(&s_state);
+}
+
+void Achievements::WaitForServerCallsWithYield(std::unique_lock<Threading::Mutex>& lock)
+{
+  DebugAssert(lock.owns_lock());
+  lock.unlock();
+  WaitForServerCalls();
+  lock.lock();
 }
 
 void Achievements::IdleUpdate()
@@ -1010,7 +1039,7 @@ void Achievements::UpdateGameSummary()
   rc_client_get_user_game_summary(s_state.client, &s_state.game_summary);
 }
 
-void Achievements::UpdateRichPresence(std::unique_lock<std::recursive_mutex>& lock)
+void Achievements::UpdateRichPresence(std::unique_lock<Threading::Mutex>& lock)
 {
   if (!s_state.has_rich_presence)
     return;
@@ -1061,7 +1090,7 @@ void Achievements::OnSystemStarting(bool disable_hardcore_mode)
   {
     // only enable hardcore mode if we're logged in, or waiting for a login response
     if (!disable_hardcore_mode && g_settings.achievements_hardcore_mode && IsLoggedInOrLoggingIn())
-      EnableHardcoreMode(false, false);
+      SetHardcoreModeState(true, false, false);
   }
 }
 
@@ -1085,7 +1114,7 @@ void Achievements::OnSystemDestroyed()
   if (IsActive())
   {
     ClearGameInfo();
-    DisableHardcoreMode(false, false);
+    SetHardcoreModeState(false, false, false);
   }
 }
 
@@ -1101,7 +1130,7 @@ void Achievements::OnSystemReset()
   {
     // This will raise the silly reset event, but we can safely ignore that since we're immediately resetting the client
     DEV_LOG("Enabling hardcore mode after reset");
-    EnableHardcoreMode(true, true);
+    SetHardcoreModeState(true, true, true);
   }
 
   DEV_LOG("Reset client");
@@ -1129,9 +1158,11 @@ void Achievements::SetGameHash(const std::optional<GameHash>& hash)
   INFO_COLOR_LOG(StrongOrange, "RA Hash: {}", GameHashToString(s_state.game_hash));
 
   // just set the hash if inactive
-  if (!IsActive() || IsRAIntegrationInitializing())
+  if (!IsActive())
+    return;
+  if (IsRAIntegrationInitializing())
   {
-    DisableHardcoreMode(false, false);
+    SetHardcoreModeState(false, false, false);
     return;
   }
 
@@ -1156,7 +1187,6 @@ void Achievements::SetGameHash(const std::optional<GameHash>& hash)
 
 std::optional<Achievements::GameHash> Achievements::GetGameHash()
 {
-  const auto lock = GetLock();
   return s_state.game_hash;
 }
 
@@ -1165,7 +1195,7 @@ void Achievements::BeginLoadGame()
   if (!s_state.game_hash.has_value())
   {
     // no need to go through ClientLoadGameCallback, just bail out straight away
-    DisableHardcoreMode(false, false);
+    SetHardcoreModeState(false, false, false);
     return;
   }
 
@@ -1186,7 +1216,7 @@ void Achievements::ClientLoadGameCallback(int result, const char* error_message,
     if (was_disc_change)
       ClearGameInfo();
 
-    DisableHardcoreMode(false, false);
+    SetHardcoreModeState(false, false, false);
     return;
   }
   else if (result == RC_LOGIN_REQUIRED)
@@ -1209,7 +1239,7 @@ void Achievements::ClientLoadGameCallback(int result, const char* error_message,
     if (was_disc_change)
       ClearGameInfo();
 
-    DisableHardcoreMode(false, false);
+    SetHardcoreModeState(false, false, false);
     return;
   }
 
@@ -1220,7 +1250,7 @@ void Achievements::ClientLoadGameCallback(int result, const char* error_message,
     if (was_disc_change)
       ClearGameInfo();
 
-    DisableHardcoreMode(false, false);
+    SetHardcoreModeState(false, false, false);
     return;
   }
 
@@ -1236,7 +1266,7 @@ void Achievements::ClientLoadGameCallback(int result, const char* error_message,
   if (!has_achievements && !has_leaderboards)
   {
     WARNING_LOG("Game '{}' has no achievements or leaderboards, disabling hardcore mode.", info->title);
-    DisableHardcoreMode(false, false);
+    SetHardcoreModeState(false, false, false);
   }
 
   s_state.game_id = info->id;
@@ -1314,6 +1344,8 @@ void Achievements::DisplayAchievementSummary()
 {
   if (g_settings.achievements_notifications)
   {
+    const bool hardcore_enabled = rc_client_get_hardcore_enabled(s_state.client);
+
     SmallString summary;
     if (s_state.game_summary.num_core_achievements > 0)
     {
@@ -1327,7 +1359,7 @@ void Achievements::DisplayAchievementSummary()
                                  s_state.game_summary.points_unlocked));
 
       summary.append('\n');
-      if (IsHardcoreModeActive())
+      if (hardcore_enabled)
       {
         summary.append(
           TRANSLATE_SV("Achievements", "Hardcore mode is enabled. Cheats and save states are unavailable."));
@@ -1343,8 +1375,8 @@ void Achievements::DisplayAchievementSummary()
     }
 
     FullscreenUI::AddAchievementNotification("AchievementsSummary",
-                                             IsHardcoreModeActive() ? ACHIEVEMENT_SUMMARY_NOTIFICATION_TIME_HC :
-                                                                      ACHIEVEMENT_SUMMARY_NOTIFICATION_TIME,
+                                             hardcore_enabled ? ACHIEVEMENT_SUMMARY_NOTIFICATION_TIME_HC :
+                                                                ACHIEVEMENT_SUMMARY_NOTIFICATION_TIME,
                                              s_state.game_badge_url, s_state.game_title, std::string(summary),
                                              RA_LOGO_ICON_NAME, FullscreenUI::AchievementNotificationNoteType::Image);
 
@@ -1793,14 +1825,15 @@ void Achievements::HandleServerReconnectedEvent(const rc_client_event_t* event)
                           TRANSLATE_STR("Achievements", "All pending unlock requests have completed."));
 }
 
-void Achievements::EnableHardcoreMode(bool display_message, bool display_game_summary)
+void Achievements::SetHardcoreModeState(bool enabled, bool display_message, bool display_game_summary)
 {
   DebugAssert(IsActive());
-  if (rc_client_get_hardcore_enabled(s_state.client))
+
+  if ((rc_client_get_hardcore_enabled(s_state.client) != 0) == enabled)
     return;
 
-  rc_client_set_hardcore_enabled(s_state.client, true);
-  OnHardcoreModeChanged(true, display_message, display_game_summary);
+  rc_client_set_hardcore_enabled(s_state.client, enabled);
+  OnHardcoreModeChanged(enabled, display_message, display_game_summary);
 }
 
 void Achievements::DisableHardcoreMode(bool show_message, bool display_game_summary)
@@ -1809,11 +1842,7 @@ void Achievements::DisableHardcoreMode(bool show_message, bool display_game_summ
     return;
 
   const auto lock = GetLock();
-  if (!rc_client_get_hardcore_enabled(s_state.client))
-    return;
-
-  rc_client_set_hardcore_enabled(s_state.client, false);
-  OnHardcoreModeChanged(false, show_message, display_game_summary);
+  SetHardcoreModeState(false, show_message, display_game_summary);
 }
 
 void Achievements::OnHardcoreModeChanged(bool enabled, bool display_message, bool display_game_summary)
@@ -1858,21 +1887,26 @@ void Achievements::OnHardcoreModeChanged(bool enabled, bool display_message, boo
   Host::OnAchievementsHardcoreModeChanged(enabled);
 }
 
-void Achievements::LoadStateFromBuffer(std::span<const u8> data, std::unique_lock<std::recursive_mutex>& lock)
+void Achievements::LoadStateFromBuffer(std::span<const u8> data, std::unique_lock<Threading::Mutex>& lock)
 {
   // if we're active, make sure we've downloaded and activated all the achievements
   // before deserializing, otherwise that state's going to get lost.
   // need to check for login requests too, because game load won't be created until login finishes
   if (s_state.load_game_request || s_state.login_request)
   {
+    // GetGamePath() can call GetGameID(), lock needs to be released first.
+    lock.unlock();
+
     // Fallback to game icon if we don't have a cover.
     std::string image = System::GetImageForLoadingScreen(System::GetGamePath());
     FullscreenUI::OpenOrUpdateLoadingScreen(image.empty() ? s_state.game_badge_url : image,
                                             TRANSLATE_SV("Achievements", "Downloading achievements data..."));
 
-    WaitForServerCallsWithYield(lock);
+    WaitForServerCalls();
 
     FullscreenUI::CloseLoadingScreen();
+
+    lock.lock();
   }
 
   if (data.empty())
@@ -2196,7 +2230,7 @@ u32 Achievements::GetPauseThrottleFrames()
     return 0;
 
   const auto lock = GetLock();
-  if (!IsHardcoreModeActive())
+  if (!rc_client_get_hardcore_enabled(s_state.client))
     return 0;
 
   u32 frames_remaining = 0;
@@ -2221,7 +2255,7 @@ void Achievements::Logout()
     if (HasActiveGame())
     {
       ClearGameInfo();
-      DisableHardcoreMode(false, false);
+      SetHardcoreModeState(false, false, false);
     }
 
     CancelFetchGameListRequest();
@@ -3899,7 +3933,7 @@ void Achievements::FinishLoadRAIntegrationOnCoreThread()
   FinishInitialize();
 }
 
-void Achievements::UnloadRAIntegration(std::unique_lock<std::recursive_mutex>& lock)
+void Achievements::UnloadRAIntegration(std::unique_lock<Threading::Mutex>& lock)
 {
   DebugAssert(s_state.using_raintegration && s_state.client);
 

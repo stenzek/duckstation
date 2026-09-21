@@ -17,6 +17,10 @@
 
 class Error;
 class ProgressCallback;
+namespace Threading {
+class Mutex;
+}
+
 class StateWrapper;
 class CDImage;
 
@@ -63,7 +67,8 @@ private:
 };
 
 /// Acquires the achievements lock. Must be held when accessing any achievement state from another thread.
-std::unique_lock<std::recursive_mutex> GetLock();
+/// The core thread is allowed to **read** achievement state without taking the lock first.
+std::unique_lock<Threading::Mutex> GetLock();
 
 /// Converts a game hash to a string for display. If the hash is nullopt, returns "[NO HASH]".
 TinyString GameHashToString(const std::optional<GameHash>& hash);
@@ -119,6 +124,7 @@ void DisableHardcoreMode(bool show_message, bool display_game_summary);
 void ConfirmHardcoreModeDisableAsync(std::string_view trigger, std::function<void(bool)> callback);
 
 /// Returns true if hardcore mode is active, and functionality should be restricted.
+/// NOTE: Only safe to call on the core thread.
 bool IsHardcoreModeActive();
 
 /// RAIntegration only exists for Windows, so no point checking it on other platforms.

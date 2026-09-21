@@ -11,6 +11,7 @@
 #include "common/error.h"
 #include "common/log.h"
 #include "common/string_util.h"
+#include "common/threading.h"
 
 #include "discord_rpc.h"
 

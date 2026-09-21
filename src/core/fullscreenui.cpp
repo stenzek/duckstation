@@ -644,7 +644,11 @@ void FullscreenUI::Shutdown()
   s_locals.was_paused_on_quick_menu_open = false;
   s_locals.has_pending_window_switch = false;
 
-  ClearAchievementsState();
+  {
+    const auto lock = Achievements::GetLock();
+    ClearAchievementsState();
+  }
+
   ClearSettingsState();
   ClearGameListState();
   s_locals.current_time_string = {};
