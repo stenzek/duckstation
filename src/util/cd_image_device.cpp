@@ -685,7 +685,7 @@ bool CDImage::IsDeviceName(const char* path)
   return std::string_view(path).starts_with("\\\\.\\");
 }
 
-#elif defined(__linux__) && !defined(__ANDROID__)
+#elif defined(__linux__)
 
 #include <fcntl.h>
 #include <libudev.h>
@@ -1616,23 +1616,6 @@ bool CDImage::IsDeviceName(const char* path)
     IOObjectRelease(service);
 
   return valid;
-}
-
-#else
-
-std::unique_ptr<CDImage> CDImage::OpenDeviceImage(const char* path, Error* error)
-{
-  return {};
-}
-
-std::vector<std::pair<std::string, std::string>> CDImage::GetDeviceList()
-{
-  return {};
-}
-
-bool CDImage::IsDeviceName(const char* path)
-{
-  return false;
 }
 
 #endif

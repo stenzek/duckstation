@@ -18,8 +18,6 @@
 
 #if defined(_WIN32)
 #include "windows_headers.h"
-#elif defined(__ANDROID__)
-#include <android/log.h>
 #else
 #include <sys/ioctl.h>
 #include <termios.h>
@@ -169,8 +167,6 @@ bool Log::IsConsoleOutputCurrentlyAvailable()
 #ifdef _WIN32
   const HANDLE h = GetStdHandle(STD_OUTPUT_HANDLE);
   return (h != NULL && h != INVALID_HANDLE_VALUE);
-#elif defined(__ANDROID__)
-  return false;
 #else
   // standard output isn't really reliable because it could be redirected to a file. check standard input for tty.
   struct termios attr;
@@ -357,14 +353,14 @@ void Log::ConsoleOutputLogCallback(void* pUserParam, MessageCategory cat, const 
   if (!s_state.console_output_enabled)
     return;
 
-#if defined(_WIN32)
+#ifdef _WIN32
   FormatLogMessageAndPrintW(
     cat, function_name, message, s_state.console_output_timestamps, true, [cat](const std::wstring_view& message) {
       HANDLE hOutput = (UnpackLevel(cat) <= Level::Warning) ? s_state.hConsoleStdErr : s_state.hConsoleStdOut;
       DWORD chars_written;
       WriteConsoleW(hOutput, message.data(), static_cast<DWORD>(message.length()), &chars_written, nullptr);
     });
-#elif !defined(__ANDROID__)
+#else
   FormatLogMessageAndPrint(
     cat, function_name, message, s_state.console_output_timestamps, true, [cat](std::string_view message) {
       const int outputFd = (UnpackLevel(cat) <= Log::Level::Warning) ? STDERR_FILENO : STDOUT_FILENO;
@@ -379,26 +375,9 @@ void Log::DebugOutputLogCallback(void* pUserParam, MessageCategory cat, const ch
   if (!s_state.debug_output_enabled)
     return;
 
-#if defined(_WIN32)
+#ifdef _WIN32
   FormatLogMessageAndPrintW(cat, function_name, message, false, false,
                             [](const std::wstring_view& message) { OutputDebugStringW(message.data()); });
-#elif defined(__ANDROID__)
-  if (message.empty())
-    return;
-
-  static constexpr int logPriority[static_cast<size_t>(Level::MaxCount)] = {
-    ANDROID_LOG_INFO,  // None
-    ANDROID_LOG_ERROR, // Error
-    ANDROID_LOG_WARN,  // Warning
-    ANDROID_LOG_INFO,  // Info
-    ANDROID_LOG_INFO,  // Verbose
-    ANDROID_LOG_DEBUG, // Dev
-    ANDROID_LOG_DEBUG, // Debug
-    ANDROID_LOG_DEBUG, // Trace
-  };
-
-  __android_log_print(logPriority[static_cast<size_t>(UnpackLevel(cat))], GetChannelName(UnpackChannel(cat)), "%.*s",
-                      static_cast<int>(message.length()), message.data());
 #endif
 }
 

@@ -68,9 +68,8 @@ static constexpr u32 RECOMPILER_FAR_CODE_CACHE_SIZE = 16 * 1024 * 1024;
 
 // On Linux ARM32/ARM64, we use a dedicated section in the ELF for storing code. This is because without
 // ASLR, or on certain ASLR offsets, the sbrk() heap ends up immediately following the text/data sections,
-// which means there isn't a large enough gap to fit within range on ARM32. Also enable it for Android,
-// because MAP_FIXED_NOREPLACE may not exist on older kernels.
-#if (defined(__linux__) && (defined(CPU_ARCH_ARM32) || defined(CPU_ARCH_ARM64))) || defined(__ANDROID__)
+// which means there isn't a large enough gap to fit within range on ARM32.
+#if defined(__linux__) && (defined(CPU_ARCH_ARM32) || defined(CPU_ARCH_ARM64))
 #define USE_CODE_BUFFER_SECTION 1
 #endif
 

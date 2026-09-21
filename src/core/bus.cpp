@@ -45,7 +45,6 @@
 LOG_CHANNEL(Bus);
 
 // Exports for external debugger access
-#ifndef __ANDROID__
 namespace Exports {
 
 extern "C" {
@@ -59,7 +58,6 @@ __attribute__((visibility("default"), used)) u32 RAM_SIZE, RAM_MASK;
 }
 
 } // namespace Exports
-#endif
 
 namespace Bus {
 
@@ -249,20 +247,16 @@ bool Bus::AllocateMemoryMap(bool export_shared_memory, Error* error)
   g_bus.ram_mapped_size = RAM_8MB_SIZE;
   SetHandlers();
 
-#ifndef __ANDROID__
   Exports::RAM = reinterpret_cast<uintptr_t>(g_bus.unprotected_ram);
-#endif
 
   return true;
 }
 
 void Bus::ReleaseMemoryMap()
 {
-#ifndef __ANDROID__
   Exports::RAM = 0;
   Exports::RAM_SIZE = 0;
   Exports::RAM_MASK = 0;
-#endif
 
   g_bus.memory_handlers_isc = nullptr;
   if (g_bus.memory_handlers)
@@ -368,7 +362,7 @@ bool Bus::ReallocateMemoryMap(bool export_shared_memory, Error* error)
 
 void Bus::CleanupMemoryMap()
 {
-#if !defined(_WIN32) && !defined(__ANDROID__)
+#ifndef _WIN32
   // This is only needed on Linux.
   if (!s_locals.shmem_name.empty())
     MemMap::DeleteSharedMemory(s_locals.shmem_name.c_str());
@@ -386,10 +380,8 @@ void Bus::SetRAMSize(bool enable_8mb_ram)
   g_bus.ram_size = enable_8mb_ram ? RAM_8MB_SIZE : RAM_2MB_SIZE;
   g_bus.ram_mask = enable_8mb_ram ? RAM_8MB_MASK : RAM_2MB_MASK;
 
-#ifndef __ANDROID__
   Exports::RAM_SIZE = g_bus.ram_size;
   Exports::RAM_MASK = g_bus.ram_mask;
-#endif
 }
 
 void Bus::Shutdown()

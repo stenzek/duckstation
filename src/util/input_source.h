@@ -121,10 +121,6 @@ public:
   static std::unique_ptr<InputSource> CreateXInputSource();
   static std::unique_ptr<InputSource> CreateWin32RawInputSource();
 #endif
-#ifndef __ANDROID__
   static std::unique_ptr<InputSource> CreateSDLSource();
   static void CopySDLSourceSettings(SettingsInterface* dest_si, const SettingsInterface& src_si);
-#else
-  static std::unique_ptr<InputSource> CreateAndroidSource();
-#endif
 };

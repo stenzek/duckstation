@@ -19,8 +19,6 @@
 #include "opengl_context_wgl.h"
 #elif defined(__APPLE__)
 #include "opengl_context_agl.h"
-#elif defined(__ANDROID__)
-#include "opengl_context_egl_android.h"
 #else
 #ifdef ENABLE_EGL
 #ifdef ENABLE_WAYLAND
@@ -145,8 +143,6 @@ std::unique_ptr<OpenGLContext> OpenGLContext::Create(WindowInfo& wi, SurfaceHand
   context = OpenGLContextWGL::Create(wi, surface, versions_to_try, error);
 #elif defined(__APPLE__)
   context = OpenGLContextAGL::Create(wi, surface, versions_to_try, error);
-#elif defined(__ANDROID__)
-  context = OpenGLContextEGLAndroid::Create(wi, surface, versions_to_try, error);
 #else
 #if defined(ENABLE_X11)
   if (wi.type == WindowInfoType::Xlib)

@@ -269,13 +269,11 @@ struct State
 ALIGN_TO_CACHE_LINE static State s_state;
 
 static constexpr const std::array s_key_code_data = {
-#if defined(_WIN32)
+#ifdef _WIN32
 #define KEY_ENTRY(ename, usb, evdev, xkb, win, mac, name, icon_name) KeyCodeData{usb, win, name, icon_name},
-#elif defined(__APPLE__)
+#elifdef __APPLE__
 #define KEY_ENTRY(ename, usb, evdev, xkb, win, mac, name, icon_name) KeyCodeData{usb, mac, name, icon_name},
-#elif defined(__ANDROID__)
-#define KEY_ENTRY(ename, usb, evdev, xkb, win, mac, name, icon_name) KeyCodeData{usb, evdev, name, icon_name},
-#else
+#elifdef __linux__
 #define KEY_ENTRY(ename, usb, evdev, xkb, win, mac, name, icon_name) KeyCodeData{usb, xkb, name, icon_name},
 #endif
 #include "common/thirdparty/usb_key_code_data.inl"
@@ -795,12 +793,7 @@ static std::array<const char*, static_cast<u32>(InputSourceType::Count)> s_input
   "XInput",
   "RawInput",
 #endif
-#ifdef ENABLE_SDL
   "SDL",
-#endif
-#ifdef __ANDROID__
-  "Android",
-#endif
 }};
 
 InputSource* InputManager::GetInputSourceInterface(InputSourceType type)
@@ -832,15 +825,8 @@ bool InputManager::GetInputSourceDefaultEnabled(InputSourceType type)
       return false;
 #endif
 
-#ifdef ENABLE_SDL
     case InputSourceType::SDL:
       return true;
-#endif
-
-#ifdef __ANDROID__
-    case InputSourceType::Android:
-      return true;
-#endif
 
     default:
       return false;
@@ -1609,10 +1595,8 @@ void InputManager::UpdateRelativeMouseMode()
   if (s_state.relative_mouse_mode == has_relative_mode_bindings && s_state.hide_host_mouse_cursor == hide_mouse_cursor)
     return;
 
-#ifndef __ANDROID__
   s_state.relative_mouse_mode = has_relative_mode_bindings;
   s_state.hide_host_mouse_cursor = hide_mouse_cursor;
-#endif
 
   UpdateHostMouseMode();
 }
@@ -1713,11 +1697,9 @@ void InputManager::CopyConfiguration(SettingsInterface* dest_si, const SettingsI
                              InputManager::InputSourceToString(static_cast<InputSourceType>(type)));
     }
 
-#ifdef ENABLE_SDL
     // I hate this, but there isn't a better location for it...
     if (dest_si->GetBoolValue("InputSources", "SDL"))
       InputSource::CopySDLSourceSettings(dest_si, src_si);
-#endif
   }
 
   const MultitapMode mtap_mode =
@@ -2555,12 +2537,6 @@ GenericInputBindingMapping InputManager::GetGenericBindingMapping(std::string_vi
 
 bool InputManager::IsInputSourceEnabled(const SettingsInterface& si, InputSourceType type)
 {
-#ifdef __ANDROID__
-  // Force Android source to always be enabled so nobody accidentally breaks it via ini.
-  if (type == InputSourceType::Android)
-    return true;
-#endif
-
   return si.GetBoolValue("InputSources", InputSourceToString(type), GetInputSourceDefaultEnabled(type));
 }
 
@@ -2622,12 +2598,7 @@ void InputManager::ReloadSources(const SettingsInterface& sources_si, std::uniqu
       UnregisterDeviceNotificationHandle();
   }
 #endif
-#ifdef ENABLE_SDL
   UpdateInputSourceState(sources_si, settings_lock, InputSourceType::SDL, &InputSource::CreateSDLSource);
-#endif
-#ifdef __ANDROID__
-  UpdateInputSourceState(sources_si, settings_lock, InputSourceType::Android, &InputSource::CreateAndroidSource);
-#endif
 
   UpdatePointerCount();
 }

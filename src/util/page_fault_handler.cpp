@@ -16,9 +16,11 @@
 #include <signal.h>
 #include <ucontext.h>
 #include <unistd.h>
-#elif defined(__APPLE__) || defined(__FreeBSD__)
+#elif defined(__APPLE__)
 #include <signal.h>
 #include <unistd.h>
+#else
+#error Unsupported platform.
 #endif
 
 #ifdef __APPLE__
@@ -27,7 +29,7 @@
 #include <mach/task.h>
 #endif
 
-#if defined(CPU_ARCH_ARM64)
+#ifdef CPU_ARCH_ARM64
 static constexpr u64 ARM64_ESR_ISS_DA_WNR = (1u << 6);
 
 [[maybe_unused]] static bool IsStoreInstruction(const void* ptr)
@@ -65,7 +67,7 @@ static constexpr u64 ARM64_ESR_ISS_DA_WNR = (1u << 6);
   }
 }
 
-#ifdef __linux__
+#if defined(__linux__) && !defined(__ANDROID__)
 
 static std::optional<u64> GetLinuxAArch64ESR(const ucontext_t* context)
 {
@@ -111,7 +113,7 @@ static std::optional<u64> GetLinuxAArch64ESR(const ucontext_t* context)
 
 #endif // __linux__
 
-#elif defined(CPU_ARCH_RISCV64)
+#elifdef CPU_ARCH_RISCV64
 [[maybe_unused]] static bool IsStoreInstruction(const void* ptr)
 {
   u32 bits;
@@ -119,7 +121,7 @@ static std::optional<u64> GetLinuxAArch64ESR(const ucontext_t* context)
 
   return ((bits & 0x7Fu) == 0b0100011u);
 }
-#elif defined(CPU_ARCH_LOONGARCH64)
+#elifdef CPU_ARCH_LOONGARCH64
 [[maybe_unused]] static bool IsStoreInstruction(const void* ptr)
 {
   u32 bits;
@@ -224,7 +226,7 @@ static std::optional<u64> GetLinuxAArch64ESR(const ucontext_t* context)
 }
 #endif
 
-#if defined(_WIN32)
+#ifdef _WIN32
 
 namespace PageFaultHandler {
 static LONG ExceptionHandler(PEXCEPTION_POINTERS exi);
@@ -236,9 +238,9 @@ LONG PageFaultHandler::ExceptionHandler(PEXCEPTION_POINTERS exi)
   if (exi->ExceptionRecord->ExceptionCode != EXCEPTION_ACCESS_VIOLATION)
     return EXCEPTION_CONTINUE_SEARCH;
 
-#if defined(_M_AMD64)
+#ifdef _M_AMD64
   void* const exception_pc = reinterpret_cast<void*>(exi->ContextRecord->Rip);
-#elif defined(_M_ARM64)
+#elifdef _M_ARM64
   void* const exception_pc = reinterpret_cast<void*>(exi->ContextRecord->Pc);
 #else
   void* const exception_pc = nullptr;
@@ -271,65 +273,50 @@ static void SignalHandler(int sig, siginfo_t* info, void* ctx);
 
 void PageFaultHandler::SignalHandler(int sig, siginfo_t* info, void* ctx)
 {
-#if defined(__linux__)
+#ifdef __linux__
   void* const exception_address = reinterpret_cast<void*>(info->si_addr);
 
-#if defined(CPU_ARCH_X64)
+#ifdef CPU_ARCH_X64
   void* const exception_pc = reinterpret_cast<void*>(static_cast<ucontext_t*>(ctx)->uc_mcontext.gregs[REG_RIP]);
   const bool is_write = (static_cast<ucontext_t*>(ctx)->uc_mcontext.gregs[REG_ERR] & 2) != 0;
-#elif defined(CPU_ARCH_ARM32)
+#elifdef CPU_ARCH_ARM32
   void* const exception_pc = reinterpret_cast<void*>(static_cast<ucontext_t*>(ctx)->uc_mcontext.arm_pc);
   const bool is_write = (static_cast<ucontext_t*>(ctx)->uc_mcontext.error_code & (1 << 11)) != 0; // DFSR.WnR
-#elif defined(CPU_ARCH_ARM64)
+#elifdef CPU_ARCH_ARM64
   ucontext_t* const context = static_cast<ucontext_t*>(ctx);
   void* const exception_pc = reinterpret_cast<void*>(context->uc_mcontext.pc);
   const std::optional<u64> esr = GetLinuxAArch64ESR(context); // NOTE: Must not read instruction unless ESR check fails.
   const bool is_write =
     esr.has_value() ? ((esr.value() & ARM64_ESR_ISS_DA_WNR) != 0) : IsStoreInstruction(exception_pc);
-#elif defined(CPU_ARCH_RISCV64)
+#elifdef CPU_ARCH_RISCV64
   void* const exception_pc = reinterpret_cast<void*>(static_cast<ucontext_t*>(ctx)->uc_mcontext.__gregs[REG_PC]);
   const bool is_write = IsStoreInstruction(exception_pc);
-#elif defined(CPU_ARCH_LOONGARCH64)
+#elifdef CPU_ARCH_LOONGARCH64
   void* const exception_pc = reinterpret_cast<void*>(static_cast<ucontext_t*>(ctx)->uc_mcontext.__pc);
   const bool is_write = IsStoreInstruction(exception_pc);
 #else
-  void* const exception_pc = nullptr;
-  const bool is_write = false;
+#error Unsupported architecture.
 #endif
 
-#elif defined(__APPLE__)
+#elifdef __APPLE__
 
-#if defined(CPU_ARCH_X64)
+#ifdef CPU_ARCH_X64
   void* const exception_address =
     reinterpret_cast<void*>(static_cast<ucontext_t*>(ctx)->uc_mcontext->__es.__faultvaddr);
   void* const exception_pc = reinterpret_cast<void*>(static_cast<ucontext_t*>(ctx)->uc_mcontext->__ss.__rip);
   const bool is_write = (static_cast<ucontext_t*>(ctx)->uc_mcontext->__es.__err & 2) != 0;
-#elif defined(CPU_ARCH_ARM64)
+#elifdef CPU_ARCH_ARM64
   ucontext_t* const context = static_cast<ucontext_t*>(ctx);
   void* const exception_address = reinterpret_cast<void*>(context->uc_mcontext->__es.__far);
   void* const exception_pc = reinterpret_cast<void*>(context->uc_mcontext->__ss.__pc);
   const bool is_write = (context->uc_mcontext->__es.__esr & ARM64_ESR_ISS_DA_WNR) != 0;
 #else
-  void* const exception_address = reinterpret_cast<void*>(info->si_addr);
-  void* const exception_pc = nullptr;
-  const bool is_write = false;
+#error Unsupported architecture.
 #endif
 
-#elif defined(__FreeBSD__)
-
-#if defined(CPU_ARCH_X64)
-  void* const exception_address = reinterpret_cast<void*>(static_cast<ucontext_t*>(ctx)->uc_mcontext.mc_addr);
-  void* const exception_pc = reinterpret_cast<void*>(static_cast<ucontext_t*>(ctx)->uc_mcontext.mc_rip);
-  const bool is_write = (static_cast<ucontext_t*>(ctx)->uc_mcontext.mc_err & 2) != 0;
-#elif defined(CPU_ARCH_ARM64)
-  void* const exception_address = reinterpret_cast<void*>(static_cast<ucontext_t*>(ctx)->uc_mcontext->__es.__far);
-  void* const exception_pc = reinterpret_cast<void*>(static_cast<ucontext_t*>(ctx)->uc_mcontext->__ss.__pc);
-  const bool is_write = IsStoreInstruction(exception_pc);
 #else
-  void* const exception_address = reinterpret_cast<void*>(info->si_addr);
-  void* const exception_pc = nullptr;
-  const bool is_write = false;
-#endif
+
+#error Unsupported platform.
 
 #endif
 

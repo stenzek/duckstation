@@ -1133,10 +1133,6 @@ void GameList::Refresh(std::unique_lock<std::recursive_mutex>& lock, bool invali
   if (!achievements_progress.Load(&error))
     WARNING_LOG("Failed to load achievements progress: {}", error.GetDescription());
 
-#ifdef __ANDROID__
-  recursive_dirs.push_back(Path::Combine(EmuFolders::DataRoot, "games"));
-#endif
-
   if (!dirs.empty() || !recursive_dirs.empty())
   {
     progress->SetState(0, static_cast<u32>(dirs.size() + recursive_dirs.size()));

@@ -333,7 +333,7 @@ bool VulkanDevice::EnableOptionalDeviceExtensions(VkPhysicalDevice physical_devi
     // VK_KHR_dynamic_rendering_local_read appears to be broken on RDNA3, like everything else...
     // Just causes GPU resets when you actually use a feedback loop. Assume Mesa is fine.
     // VK_EXT_fragment_shader_interlock is similar, random GPU hangs.
-#if defined(_WIN32) || defined(__ANDROID__)
+#if defined(_WIN32)
     m_optional_extensions.vk_ext_fragment_shader_interlock = false;
     m_optional_extensions.vk_khr_dynamic_rendering_local_read = false;
     WARNING_LOG(

@@ -144,8 +144,6 @@ private:
   void* m_data = nullptr;
 #elif defined(__APPLE__)
   static constexpr u32 NATIVE_STORAGE_SIZE = 64;
-#elif defined(__ANDROID__)
-  static constexpr u32 NATIVE_STORAGE_SIZE = (sizeof(void*) == 8) ? 40 : 4;
 #elif defined(__linux__) && defined(CPU_ARCH_ARM64)
   static constexpr u32 NATIVE_STORAGE_SIZE = 48;
 #elif defined(__linux__)
@@ -199,12 +197,9 @@ private:
 
 #if defined(_WIN32)
   void* m_data = nullptr;
-#elif defined(__APPLE__) || (defined(__linux__) && !defined(__ANDROID__))
+#elif defined(__APPLE__) || defined(__linux__)
   static constexpr u32 NATIVE_STORAGE_SIZE = 48;
   static constexpr u32 NATIVE_STORAGE_ALIGNMENT = 8;
-#elif defined(__ANDROID__)
-  static constexpr u32 NATIVE_STORAGE_SIZE = (sizeof(void*) == 8) ? 48 : 4;
-  static constexpr u32 NATIVE_STORAGE_ALIGNMENT = alignof(void*);
 #else
 #error Unsupported platform.
 #endif
@@ -231,8 +226,6 @@ public:
 private:
 #if defined(_WIN32) || defined(__APPLE__)
   void* m_data = nullptr;
-#elif defined(__ANDROID__)
-  static constexpr u32 NATIVE_STORAGE_SIZE = (sizeof(void*) == 8) ? 16 : 4;
 #elif defined(__linux__)
   static constexpr u32 NATIVE_STORAGE_SIZE = (sizeof(void*) == 8) ? 32 : 16;
 #else

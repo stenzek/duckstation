@@ -26,6 +26,7 @@
     <ClInclude Include="layered_settings_interface.h" />
     <ClInclude Include="locked_ptr.h" />
     <ClInclude Include="optional_with_status.h" />
+    <ClInclude Include="platform_strings.h" />
     <ClInclude Include="string_pool.h" />
     <ClInclude Include="time_helpers.h" />
     <ClInclude Include="log.h" />

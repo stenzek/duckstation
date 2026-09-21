@@ -103,26 +103,6 @@ bool VulkanSwapChain::CreateSurface(VkPhysicalDevice physical_device, Error* err
   }
 #endif
 
-#if defined(VK_USE_PLATFORM_ANDROID_KHR)
-  if (m_window_info.type == WindowInfoType::Android)
-  {
-    const VkAndroidSurfaceCreateInfoKHR surface_create_info = {
-      .sType = VK_STRUCTURE_TYPE_ANDROID_SURFACE_CREATE_INFO_KHR,
-      .pNext = nullptr,
-      .flags = 0,
-      .window = static_cast<ANativeWindow*>(m_window_info.window_handle)};
-    const VkResult res =
-      vkCreateAndroidSurfaceKHR(VulkanLoader::GetVulkanInstance(), &surface_create_info, nullptr, &m_surface);
-    if (res != VK_SUCCESS)
-    {
-      Vulkan::SetErrorObject(error, "vkCreateAndroidSurfaceKHR failed: ", res);
-      return false;
-    }
-
-    return true;
-  }
-#endif
-
 #if defined(VK_USE_PLATFORM_XCB_KHR)
   if (m_window_info.type == WindowInfoType::XCB)
   {
@@ -359,11 +339,10 @@ bool VulkanSwapChain::CreateSwapChain(VulkanDevice& dev, Error* error)
   DEV_LOG("Creating a swap chain with {} images in present mode {}", image_count,
           PresentModeToString(present_mode.value()));
 
-  // Determine the dimensions of the swap chain. Values of -1 indicate the size we specify here
-  // determines window size? Android sometimes lags updating currentExtent, so don't use it.
-  // We want to avoid the system-level downsampling with fractional scaling on MacOS too.
+  // Determine the dimensions of the swap chain. Values of -1 indicate the size we specify here determines
+  // window size? We want to avoid the system-level downsampling with fractional scaling on MacOS too.
   VkExtent2D size = surface_caps.surfaceCapabilities.currentExtent;
-#if !defined(__ANDROID__) && !defined(__APPLE__)
+#ifndef __APPLE__
   if (size.width == UINT32_MAX)
 #endif
   {

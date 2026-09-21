@@ -19,9 +19,7 @@ enum class MediaCaptureBackend : u8
 #ifdef _WIN32
   MediaFoundation,
 #endif
-#ifndef __ANDROID__
   FFmpeg,
-#endif
   MaxCount,
 };
 

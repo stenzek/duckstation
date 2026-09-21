@@ -12,10 +12,8 @@ class Error;
 
 // vulkan.h pulls in windows.h on Windows, so we need to include our replacement header first
 #include "common/windows_headers.h"
-#elif defined(__APPLE__)
+#elifdef __APPLE__
 #define VK_USE_PLATFORM_METAL_EXT
-#elif defined(__ANDROID__)
-#define VK_USE_PLATFORM_ANDROID_KHR
 #else
 #ifdef ENABLE_X11
 #define VK_USE_PLATFORM_XCB_KHR
@@ -45,17 +43,17 @@ extern "C" {
 #endif
 
 // We include vk_mem_alloc globally, so we don't accidentally include it before the vulkan header somewhere.
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wnullability-completeness"
 #pragma clang diagnostic ignored "-Wunused-variable"
 #pragma clang diagnostic ignored "-Wmissing-field-initializers"
 #pragma clang diagnostic ignored "-Wunused-function"
-#elif defined(__GNUC__)
+#elifdef __GNUC__
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-variable"
 #pragma GCC diagnostic ignored "-Wunused-function"
-#elif defined(_MSC_VER)
+#elifdef _MSC_VER
 #pragma warning(push, 0)
 #endif
 
@@ -64,10 +62,10 @@ extern "C" {
 #define VMA_STATS_STRING_ENABLED 0
 #include "vulkan/vk_mem_alloc.h"
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic pop
-#elif defined(__GNUC__)
+#elifdef __GNUC__
 #pragma GCC diagnostic pop
-#elif defined(_MSC_VER)
+#elifdef _MSC_VER
 #pragma warning(pop)
 #endif

@@ -86,8 +86,6 @@ struct InputOverlayStateUpdateBuffer
   InputOverlayState::PadState pads[0];
 };
 
-#ifndef __ANDROID__
-
 struct DebugWindowInfo
 {
   const char* name;
@@ -97,8 +95,6 @@ struct DebugWindowInfo
   u32 default_width;
   u32 default_height;
 };
-
-#endif
 
 } // namespace
 
@@ -114,8 +110,6 @@ static void DrawEnhancementsOverlay(const GPUBackend* gpu);
 static void DrawInputsOverlay();
 static void UpdateInputOverlay(void* buffer);
 
-#ifndef __ANDROID__
-
 static constexpr size_t NUM_DEBUG_WINDOWS = 7;
 static constexpr const char* DEBUG_WINDOW_CONFIG_SECTION = "DebugWindows";
 static constexpr const std::array<DebugWindowInfo, NUM_DEBUG_WINDOWS> s_debug_window_info = {{
@@ -129,15 +123,12 @@ static constexpr const std::array<DebugWindowInfo, NUM_DEBUG_WINDOWS> s_debug_wi
 }};
 static std::array<ImGuiManager::AuxiliaryRenderWindowState, NUM_DEBUG_WINDOWS> s_debug_window_state = {};
 
-#endif
-
 static InputOverlayState s_input_overlay_state = {};
 
 } // namespace ImGuiManager
 
 bool ImGuiManager::AreAnyDebugWindowsEnabled(const SettingsInterface& si)
 {
-#ifndef __ANDROID__
   const bool block_all = Achievements::IsHardcoreModeActive();
   if (block_all)
     return false;
@@ -148,23 +139,17 @@ bool ImGuiManager::AreAnyDebugWindowsEnabled(const SettingsInterface& si)
     if (si.GetBoolValue(DEBUG_WINDOW_CONFIG_SECTION, info.name, false))
       return true;
   }
-#endif
 
   return false;
 }
 
 bool ImGuiManager::IsSPUDebugWindowEnabled()
 {
-#ifndef __ANDROID__
   return (s_debug_window_state[1].window_handle != nullptr);
-#else
-  return false;
-#endif
 }
 
 bool ImGuiManager::UpdateDebugWindowConfig()
 {
-#ifndef __ANDROID__
   const bool block_all = Achievements::IsHardcoreModeActive();
   bool was_changed = false;
 
@@ -198,14 +183,10 @@ bool ImGuiManager::UpdateDebugWindowConfig()
   }
 
   return was_changed;
-#else
-  return false;
-#endif
 }
 
 void ImGuiManager::RenderDebugWindows()
 {
-#ifndef __ANDROID__
   for (size_t i = 0; i < NUM_DEBUG_WINDOWS; i++)
   {
     AuxiliaryRenderWindowState& state = s_debug_window_state[i];
@@ -221,12 +202,10 @@ void ImGuiManager::RenderDebugWindows()
       Host::CommitBaseSettingChanges();
     }
   }
-#endif
 }
 
 void ImGuiManager::DestroyAllDebugWindows()
 {
-#ifndef __ANDROID__
   for (size_t i = 0; i < NUM_DEBUG_WINDOWS; i++)
   {
     AuxiliaryRenderWindowState& state = s_debug_window_state[i];
@@ -235,7 +214,6 @@ void ImGuiManager::DestroyAllDebugWindows()
 
     ImGuiManager::DestroyAuxiliaryRenderWindow(&state, DEBUG_WINDOW_CONFIG_SECTION, s_debug_window_info[i].name);
   }
-#endif
 }
 
 void ImGuiManager::RenderTextOverlays(const GPUBackend* gpu)
@@ -539,7 +517,6 @@ void ImGuiManager::DrawPerformanceOverlay(const GPUBackend* gpu, float& position
         position_y += spacing;
       }
 
-#ifndef __ANDROID__
       if (MediaCapture* cap = System::GetMediaCapture())
       {
         text.assign(BOLD("CAP:") " ");
@@ -547,7 +524,6 @@ void ImGuiManager::DrawPerformanceOverlay(const GPUBackend* gpu, float& position
         DrawPerformanceStat(dl, position_y, fixed_font, fixed_font_size, FIXED_BOLD_WEIGHT, 0, rbound, text);
         position_y += spacing;
       }
-#endif
     }
 
     if (g_gpu_settings.display_show_gpu_usage && g_gpu_device->IsGPUTimingEnabled())
@@ -659,7 +635,6 @@ void ImGuiManager::DrawEnhancementsOverlay(const GPUBackend* gpu)
 
 void ImGuiManager::DrawMediaCaptureOverlay(float& position_y, float scale, float margin, float spacing)
 {
-#ifndef __ANDROID__
   MediaCapture* const cap = System::GetMediaCapture();
   if (!cap)
     return;
@@ -701,7 +676,6 @@ void ImGuiManager::DrawMediaCaptureOverlay(float& position_y, float scale, float
               IM_COL32(255, 255, 255, 255), text_msg.c_str(), text_msg.end_ptr());
 
   position_y += box_size.y + spacing;
-#endif
 }
 
 void ImGuiManager::DrawFrameTimeOverlay(float& position_y, float scale, float margin, float spacing)

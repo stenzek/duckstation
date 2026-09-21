@@ -264,20 +264,9 @@ struct GPUSettings
   static constexpr s16 ACHIEVEMENT_NOTIFICATION_SCALE_OSD_SCALE = -1;
   static constexpr s16 ACHIEVEMENT_NOTIFICATION_SCALE_AUTO = 0;
 
-#ifndef __ANDROID__
   static constexpr u8 DEFAULT_GPU_MAX_QUEUED_FRAMES = 2;
   static constexpr bool DEFAULT_GPU_PREFER_GLES_CONTEXT = false;
-#else
-  static constexpr u8 DEFAULT_GPU_MAX_QUEUED_FRAMES = 3;
-  static constexpr bool DEFAULT_GPU_PREFER_GLES_CONTEXT = true;
-#endif
-
-  // Prefer optimal frame pacing everywhere except ARM64 Linux because potatoes.
-#if defined(__ANDROID__) || (defined(__linux__) && defined(__aarch64__))
-  static constexpr bool DEFAULT_OPTIMAL_FRAME_PACING = false;
-#else
   static constexpr bool DEFAULT_OPTIMAL_FRAME_PACING = true;
-#endif
 };
 
 struct Settings : public GPUSettings
@@ -413,10 +402,8 @@ struct Settings : public GPUSettings
 
   std::string pcdrv_root;
 
-#ifndef __ANDROID__
   u16 gdb_server_port = DEFAULT_GDB_SERVER_PORT;
   bool enable_gdb_server = false;
-#endif
 
   ALWAYS_INLINE bool IsRunaheadEnabled() const { return (runahead_frames > 0); }
 
@@ -654,17 +641,10 @@ struct Settings : public GPUSettings
   static constexpr CaptureFileNameFormat DEFAULT_MEDIA_CAPTURE_FILENAME_FORMAT =
     CaptureFileNameFormat::TitleAndTimestamp;
 
-  // Android doesn't create settings until they're first opened, so we have to override the defaults here.
-#ifndef __ANDROID__
   static constexpr bool DEFAULT_SAVE_STATE_BACKUPS = true;
   static constexpr bool DEFAULT_FAST_BOOT_VALUE = false;
   static constexpr u16 DEFAULT_GDB_SERVER_PORT = 2345;
   static constexpr bool DEFAULT_ACHIEVEMENT_BADGE_PREFETCH = true;
-#else
-  static constexpr bool DEFAULT_SAVE_STATE_BACKUPS = false;
-  static constexpr bool DEFAULT_FAST_BOOT_VALUE = true;
-  static constexpr bool DEFAULT_ACHIEVEMENT_BADGE_PREFETCH = false;
-#endif
 };
 
 ALIGN_TO_CACHE_LINE extern Settings g_settings;        // CPU thread copy.

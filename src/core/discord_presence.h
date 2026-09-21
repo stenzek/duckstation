@@ -7,13 +7,6 @@
 
 #include <string_view>
 
-// Discord presence is available on all platforms except Android.
-#ifndef __ANDROID__
-#define ENABLE_DISCORD_PRESENCE
-#endif
-
-#ifdef ENABLE_DISCORD_PRESENCE
-
 namespace DiscordPresence {
 
 bool Initialize();
@@ -26,5 +19,3 @@ void Update(bool is_new_session);
 void UpdateDetails(std::string_view badge_url, std::string_view state);
 
 } // namespace DiscordPresence
-
-#endif // ENABLE_DISCORD_PRESENCE

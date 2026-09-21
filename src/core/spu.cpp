@@ -2573,13 +2573,11 @@ void SPU::Execute(void* param, TickCount ticks)
       }
     }
 
-#ifndef __ANDROID__
     if (MediaCapture* cap = System::GetMediaCapture()) [[unlikely]]
     {
       if (!cap->DeliverAudioFrames(output_frame_start, frames_in_this_batch))
         System::StopMediaCapture();
     }
-#endif
 
     if (!s_state.audio_output_muted) [[likely]]
       s_state.audio_stream.EndWrite(frames_in_this_batch);

@@ -3,8 +3,6 @@
 
 #include "discord_presence.h"
 
-#ifdef ENABLE_DISCORD_PRESENCE
-
 #include "achievements.h"
 #include "game_database.h"
 #include "system.h"
@@ -193,5 +191,3 @@ void DiscordPresence::UpdateDetails(std::string_view badge_url, std::string_view
 
   Update(false);
 }
-
-#endif // ENABLE_DISCORD_PRESENCE

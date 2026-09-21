@@ -45,9 +45,9 @@ DynamicLibrary::~DynamicLibrary()
 
 std::string DynamicLibrary::GetUnprefixedFilename(const char* filename)
 {
-#if defined(_WIN32)
+#ifdef _WIN32
   return std::string(filename) + ".dll";
-#elif defined(__APPLE__)
+#elifdef __APPLE__
   return std::string(filename) + ".dylib";
 #else
   return std::string(filename) + ".so";
@@ -56,7 +56,7 @@ std::string DynamicLibrary::GetUnprefixedFilename(const char* filename)
 
 std::string DynamicLibrary::GetVersionedFilename(const char* libname, int major, int minor, int patch)
 {
-#if defined(_WIN32)
+#ifdef _WIN32
   if (major >= 0 && minor >= 0 && patch >= 0)
     return fmt::format("{}-{}-{}-{}.dll", libname, major, minor, patch);
   else if (major >= 0 && minor >= 0)
@@ -65,7 +65,7 @@ std::string DynamicLibrary::GetVersionedFilename(const char* libname, int major,
     return fmt::format("{}-{}.dll", libname, major);
   else
     return fmt::format("{}.dll", libname);
-#elif defined(__APPLE__)
+#elifdef __APPLE__
   const char* prefix = std::strncmp(libname, "lib", 3) ? "lib" : "";
   if (major >= 0 && minor >= 0 && patch >= 0)
     return fmt::format("{}{}.{}.{}.{}.dylib", prefix, libname, major, minor, patch);
@@ -108,7 +108,7 @@ bool DynamicLibrary::Open(const char* filename, Error* error)
     return false;
   }
 
-#if defined(__linux__) && !defined(__ANDROID__)
+#ifdef __linux__
   struct link_map* map;
   if (dlinfo(m_handle, RTLD_DI_LINKMAP, &map) == 0)
     DEV_LOG("{} loaded as {}", filename, map->l_name);

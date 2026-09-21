@@ -26,12 +26,6 @@
 
 LOG_CHANNEL(CPU);
 
-// Freecam is disabled on Android because there's no windowed UI for it.
-// And because users can't be trusted to not crash games and complain.
-#ifndef __ANDROID__
-#define ENABLE_FREECAM 1
-#endif
-
 namespace GTE {
 
 static constexpr s64 MAC0_MIN_VALUE = -(INT64_C(1) << 31);
@@ -71,8 +65,6 @@ struct ALIGN_TO_CACHE_LINE Config
   u32 custom_aspect_ratio_denominator = 0;
   float custom_aspect_ratio_f = 1.0f;
 
-#ifdef ENABLE_FREECAM
-
   Timer::Value freecam_update_time = 0;
   std::atomic_bool freecam_transform_changed{false};
   bool freecam_enabled = false;
@@ -89,7 +81,6 @@ struct ALIGN_TO_CACHE_LINE Config
 
   ALIGN_TO_CACHE_LINE GSMatrix4x4 freecam_matrix = GSMatrix4x4::Identity();
   GSMatrix4x4 freecam_inverted_rotation_matrix = GSMatrix4x4::Identity();
-#endif
 };
 
 } // namespace
@@ -240,10 +231,6 @@ static void NCCS(const s16 V[3], u8 shift, bool lm);
 static void NCDS(const s16 V[3], u8 shift, bool lm);
 static void DPCS(const u8 color[3], u8 shift, bool lm);
 
-#ifdef ENABLE_FREECAM
-static void ApplyFreecam(s64& x, s64& y, s64& z);
-#endif
-
 static void Execute_MVMVA(Instruction inst);
 static void Execute_SQR(Instruction inst);
 static void Execute_OP(Instruction inst);
@@ -267,6 +254,8 @@ static void Execute_DCPL(Instruction inst);
 static void Execute_INTPL(Instruction inst);
 static void Execute_GPL(Instruction inst);
 static void Execute_GPF(Instruction inst);
+
+static void ApplyFreecam(s64& x, s64& y, s64& z);
 
 } // namespace GTE
 
@@ -728,10 +717,8 @@ void GTE::RTPS(const s16 V[3], u8 shift, bool lm, bool last)
   s64 y = dot3(1);
   s64 z = dot3(2);
 
-#ifdef ENABLE_FREECAM
   if (s_config.freecam_active)
     ApplyFreecam(x, y, z);
-#endif
 
   TruncateAndSetMAC<1>(x, shift);
   TruncateAndSetMAC<2>(y, shift);
@@ -805,7 +792,6 @@ void GTE::RTPS(const s16 V[3], u8 shift, bool lm, bool last)
         precise_y = RT1.dot(FV) + static_cast<float>(REGS.TR[1]);
         precise_z = RT2.dot(FV) + static_cast<float>(REGS.TR[2]);
 
-#ifdef ENABLE_FREECAM
         if (s_config.freecam_active)
         {
           const GSVector4 offset_pos = s_config.freecam_matrix * GSVector4(precise_x, precise_y, precise_z, 1.0f);
@@ -813,7 +799,6 @@ void GTE::RTPS(const s16 V[3], u8 shift, bool lm, bool last)
           precise_y = offset_pos.extract32<1>();
           precise_z = offset_pos.extract32<2>();
         }
-#endif
       }
       else
       {
@@ -1501,8 +1486,6 @@ GTE::InstructionImpl GTE::GetInstructionImpl(u32 inst_bits, TickCount* ticks)
   }
 }
 
-#ifdef ENABLE_FREECAM
-
 bool GTE::IsFreecamEnabled()
 {
   return s_config.freecam_enabled;
@@ -1808,36 +1791,3 @@ void GTE::DrawFreecamWindow(float scale)
   if (changed)
     s_config.freecam_transform_changed.store(true, std::memory_order_release);
 }
-
-#else // ENABLE_FREECAM
-
-bool GTE::IsFreecamEnabled()
-{
-  return false;
-}
-
-void GTE::SetFreecamEnabled(bool enabled)
-{
-}
-
-void GTE::SetFreecamMoveAxis(u32 axis, float x)
-{
-}
-
-void GTE::SetFreecamRotateAxis(u32 axis, float x)
-{
-}
-
-void GTE::UpdateFreecam(u64 current_time)
-{
-}
-
-void GTE::ResetFreecam()
-{
-}
-
-void GTE::DrawFreecamWindow(float scale)
-{
-}
-
-#endif // ENABLE_FREECAM

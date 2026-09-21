@@ -70,9 +70,6 @@ struct Locals
   std::once_flag libwebp_init_flag;
   DynamicLibrary libzip_library;
   std::once_flag libzip_init_flag;
-  DynamicLibrary sdl_library;
-  std::once_flag sdl_init_flag;
-  std::atomic<SDL_InitFlags> sdl_init_subsystems{0};
   DynamicLibrary sqlite_library;
   std::once_flag sqlite_init_flag;
   DynamicLibrary shaderc_library;
@@ -80,6 +77,9 @@ struct Locals
   shaderc_compiler_t shaderc_compiler;
   DynamicLibrary spirv_cross_library;
   std::once_flag spirv_cross_init_flag;
+  DynamicLibrary sdl_library;
+  std::once_flag sdl_init_flag;
+  std::atomic<SDL_InitFlags> sdl_init_subsystems{0};
 };
 } // namespace
 
@@ -89,10 +89,10 @@ DynLibJPEG g_dyn_libjpeg;
 DynLibWebP g_dyn_libwebp;
 DynLibPNG g_dyn_libpng;
 DynLibZip g_dyn_libzip;
-DynSDL g_dyn_sdl;
 DynSqlite g_dyn_sqlite;
 DynShaderc g_dyn_shaderc;
 DynSpirvCross g_dyn_spirv_cross;
+DynSDL g_dyn_sdl;
 static Locals s_locals;
 
 Locals::~Locals()
@@ -237,12 +237,6 @@ bool DynLibZip::Open(Error* const error)
                     error);
 }
 
-static const DynamicLibrary::SymbolTable s_sdl_symbols[] = {
-#define RESOLVE_SYMBOL(F) {#F, (void**)&g_dyn_sdl.F},
-  DYN_SDL_FUNCTIONS(RESOLVE_SYMBOL)
-#undef RESOLVE_SYMBOL
-};
-
 static const DynamicLibrary::SymbolTable s_sqlite_symbols[] = {
 #define RESOLVE_SYMBOL(F) {#F, (void**)&g_dyn_sqlite.F},
   DYN_SQLITE_FUNCTIONS(RESOLVE_SYMBOL)
@@ -257,6 +251,62 @@ bool DynSqlite::Open(Error* error)
   return LoadDynLib("sqlite3", SQLITE_MAJOR_VERSION, s_locals.sqlite_library, s_locals.sqlite_init_flag,
                     s_sqlite_symbols, error);
 }
+
+static const DynamicLibrary::SymbolTable s_shaderc_symbols[] = {
+#define RESOLVE_SYMBOL(F) {#F, (void**)&g_dyn_shaderc.F},
+  DYN_SHADERC_FUNCTIONS(RESOLVE_SYMBOL)
+#undef RESOLVE_SYMBOL
+};
+
+bool DynShaderc::Open(Error* const error)
+{
+  if (s_locals.shaderc_library.IsOpen()) [[likely]]
+    return true;
+
+  return LoadDynLib("shaderc_shared", -1, s_locals.shaderc_library, s_locals.shaderc_init_flag, s_shaderc_symbols,
+                    error, [](Error* const error) {
+                      g_dyn_shaderc.compiler = g_dyn_shaderc.shaderc_compiler_initialize();
+                      if (!g_dyn_shaderc.compiler)
+                      {
+                        ERROR_LOG("shaderc_compiler_initialize() failed");
+                        Error::SetStringView(error, "shaderc_compiler_initialize() failed");
+                        return false;
+                      }
+
+                      return true;
+                    });
+}
+
+void DynShaderc::Close()
+{
+  if (compiler)
+    shaderc_compiler_release(std::exchange(compiler, nullptr));
+}
+
+// clang-format off
+static const DynamicLibrary::SymbolTable s_spirv_cross_symbols[] = {
+#define RESOLVE_SYMBOL(F) {#F, (void**)&g_dyn_spirv_cross.F},
+  DYN_SPIRV_CROSS_FUNCTIONS(RESOLVE_SYMBOL)
+  DYN_SPIRV_CROSS_HLSL_FUNCTIONS(RESOLVE_SYMBOL)
+  DYN_SPIRV_CROSS_MSL_FUNCTIONS(RESOLVE_SYMBOL)
+#undef RESOLVE_SYMBOL
+};
+// clang-format on
+
+bool DynSpirvCross::Open(Error* const error)
+{
+  if (s_locals.spirv_cross_library.IsOpen()) [[likely]]
+    return true;
+
+  return LoadDynLib("spirv-cross-c-shared", SPIRV_CROSS_MAJOR_VERSION, s_locals.spirv_cross_library,
+                    s_locals.spirv_cross_init_flag, s_spirv_cross_symbols, error);
+}
+
+static const DynamicLibrary::SymbolTable s_sdl_symbols[] = {
+#define RESOLVE_SYMBOL(F) {#F, (void**)&g_dyn_sdl.F},
+  DYN_SDL_FUNCTIONS(RESOLVE_SYMBOL)
+#undef RESOLVE_SYMBOL
+};
 
 static void SDLLogCallback(void* userdata, int category, SDL_LogPriority priority, const char* message)
 {
@@ -317,54 +367,4 @@ void DynSDL::QuitSubSystem(SDL_InitFlags flags)
   const SDL_InitFlags subsystems_to_release = (flags & prev_subsystems);
   if (subsystems_to_release != 0)
     SDL_QuitSubSystem(subsystems_to_release);
-}
-
-static const DynamicLibrary::SymbolTable s_shaderc_symbols[] = {
-#define RESOLVE_SYMBOL(F) {#F, (void**)&g_dyn_shaderc.F},
-  DYN_SHADERC_FUNCTIONS(RESOLVE_SYMBOL)
-#undef RESOLVE_SYMBOL
-};
-
-bool DynShaderc::Open(Error* const error)
-{
-  if (s_locals.shaderc_library.IsOpen()) [[likely]]
-    return true;
-
-  return LoadDynLib("shaderc_shared", -1, s_locals.shaderc_library, s_locals.shaderc_init_flag, s_shaderc_symbols,
-                    error, [](Error* const error) {
-                      g_dyn_shaderc.compiler = g_dyn_shaderc.shaderc_compiler_initialize();
-                      if (!g_dyn_shaderc.compiler)
-                      {
-                        ERROR_LOG("shaderc_compiler_initialize() failed");
-                        Error::SetStringView(error, "shaderc_compiler_initialize() failed");
-                        return false;
-                      }
-
-                      return true;
-                    });
-}
-
-void DynShaderc::Close()
-{
-  if (compiler)
-    shaderc_compiler_release(std::exchange(compiler, nullptr));
-}
-
-// clang-format off
-static const DynamicLibrary::SymbolTable s_spirv_cross_symbols[] = {
-#define RESOLVE_SYMBOL(F) {#F, (void**)&g_dyn_spirv_cross.F},
-  DYN_SPIRV_CROSS_FUNCTIONS(RESOLVE_SYMBOL)
-  DYN_SPIRV_CROSS_HLSL_FUNCTIONS(RESOLVE_SYMBOL)
-  DYN_SPIRV_CROSS_MSL_FUNCTIONS(RESOLVE_SYMBOL)
-#undef RESOLVE_SYMBOL
-};
-// clang-format on
-
-bool DynSpirvCross::Open(Error* const error)
-{
-  if (s_locals.spirv_cross_library.IsOpen()) [[likely]]
-    return true;
-
-  return LoadDynLib("spirv-cross-c-shared", SPIRV_CROSS_MAJOR_VERSION, s_locals.spirv_cross_library,
-                    s_locals.spirv_cross_init_flag, s_spirv_cross_symbols, error);
 }

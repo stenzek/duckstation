@@ -150,10 +150,8 @@ const CPUFastmemMode Settings::DEFAULT_CPU_FASTMEM_MODE =
 
 #if defined(_WIN32)
 const MediaCaptureBackend Settings::DEFAULT_MEDIA_CAPTURE_BACKEND = MediaCaptureBackend::MediaFoundation;
-#elif !defined(__ANDROID__)
-const MediaCaptureBackend Settings::DEFAULT_MEDIA_CAPTURE_BACKEND = MediaCaptureBackend::FFmpeg;
 #else
-const MediaCaptureBackend Settings::DEFAULT_MEDIA_CAPTURE_BACKEND = MediaCaptureBackend::MaxCount;
+const MediaCaptureBackend Settings::DEFAULT_MEDIA_CAPTURE_BACKEND = MediaCaptureBackend::FFmpeg;
 #endif
 
 std::span<const char* const> Settings::GetSectionSaveOrder()
@@ -184,9 +182,7 @@ std::span<const char* const> Settings::GetSectionSaveOrder()
     "PostProcessing",
     "BorderOverlay",
     "InputSources",
-#ifdef ENABLE_SDL
     "SDLExtra",
-#endif
     "ControllerPorts",
     "Pad1",
     "Pad2",
@@ -577,10 +573,8 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
   gpu_dump_cpu_to_vram_copies = si.GetBoolValue("Debug", "DumpCPUToVRAMCopies");
   gpu_dump_vram_to_cpu_copies = si.GetBoolValue("Debug", "DumpVRAMToCPUCopies");
 
-#ifndef __ANDROID__
   enable_gdb_server = si.GetBoolValue("Debug", "EnableGDBServer");
   gdb_server_port = static_cast<u16>(si.GetUIntValue("Debug", "GDBServerPort", DEFAULT_GDB_SERVER_PORT));
-#endif
 
   sio_redirect_to_tty = si.GetBoolValue("SIO", "RedirectToTTY", false);
 
@@ -644,12 +638,6 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
   pio_flash_image_path = si.GetStringViewValue("PIO", "FlashImagePath");
   pio_flash_write_enable = si.GetBoolValue("PIO", "FlashImageWriteEnable", false);
   pio_switch_active = si.GetBoolValue("PIO", "SwitchActive", true);
-
-#ifdef __ANDROID__
-  // Android users are incredibly silly and don't understand that stretch is in the aspect ratio list...
-  if (si.GetBoolValue("Display", "Stretch", false))
-    display_aspect_ratio = DisplayAspectRatio::MatchWindow;
-#endif
 }
 
 void Settings::LoadPGXPSettings(const SettingsInterface& si)
@@ -923,10 +911,8 @@ void Settings::Save(SettingsInterface& si, bool for_copy) const
     si.SetBoolValue("Debug", "DumpCPUToVRAMCopies", gpu_dump_cpu_to_vram_copies);
     si.SetBoolValue("Debug", "DumpVRAMToCPUCopies", gpu_dump_vram_to_cpu_copies);
 
-#ifndef __ANDROID__
     si.SetBoolValue("Debug", "EnableGDBServer", enable_gdb_server);
     si.SetUIntValue("Debug", "GDBServerPort", gdb_server_port);
-#endif
 
     si.SetBoolValue("SIO", "RedirectToTTY", sio_redirect_to_tty);
 
@@ -1214,9 +1200,7 @@ void Settings::ApplySettingRestrictions()
       UpdateOverclockActive();
     }
 
-#ifndef __ANDROID__
     enable_gdb_server = false;
-#endif
 
     gpu_show_vram = false;
     gpu_dump_cpu_to_vram_copies = false;
@@ -1332,7 +1316,7 @@ void Settings::SetDefaultLogConfig(SettingsInterface& si)
   si.SetStringValue("Logging", "LogLevel", GetLogLevelName(Log::DEFAULT_LOG_LEVEL));
   si.SetBoolValue("Logging", "LogTimestamps", true);
 
-#if !defined(_WIN32) && !defined(__ANDROID__)
+#ifndef _WIN32
   // On Linux, default the console to whether standard input is currently available.
   si.SetBoolValue("Logging", "LogToConsole", Log::IsConsoleOutputCurrentlyAvailable());
 #else
@@ -1395,10 +1379,8 @@ void Settings::SetDefaultControllerConfig(SettingsInterface& si)
     si.SetStringValue(section.c_str(), "Type", Controller::GetControllerInfo(GetDefaultControllerType(i)).name);
   }
 
-#ifndef __ANDROID__
   // Use the automapper to set this up.
   InputManager::MapController(si, 0, InputManager::GetGenericBindingMapping("Keyboard"), true);
-#endif
 }
 
 static constexpr const std::array s_log_level_names = {
@@ -2069,11 +2051,7 @@ const char* Settings::GetDisplayFineCropModeDisplayName(DisplayFineCropMode mode
 static constexpr const std::string_view s_auto_aspect_ratio_name =
   TRANSLATE_DISAMBIG_NOOP("Settings", "Auto (Game Native)", "DisplayAspectRatio");
 static constexpr const std::string_view s_stretch_aspect_ratio_name =
-#ifndef __ANDROID__
   TRANSLATE_DISAMBIG_NOOP("Settings", "Stretch To Fill", "DisplayAspectRatio");
-#else
-  "Auto (Match Window)";
-#endif
 static constexpr const std::string_view s_par_1_1_aspect_ratio_name =
   TRANSLATE_DISAMBIG_NOOP("Settings", "PAR 1:1", "DisplayAspectRatio");
 

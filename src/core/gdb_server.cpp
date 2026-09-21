@@ -3,8 +3,6 @@
 
 #include "gdb_server.h"
 
-#ifdef ENABLE_GDB_SERVER
-
 #include "bus.h"
 #include "cpu_code_cache.h"
 #include "cpu_core.h"
@@ -1546,5 +1544,3 @@ void GDBServer::OnSystemResumed()
   for (size_t i = 0; i < s_locals.clients.size(); i++)
     s_locals.clients[i]->OnSystemResumed();
 }
-
-#endif // ENABLE_GDB_SERVER

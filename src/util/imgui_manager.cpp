@@ -394,13 +394,8 @@ bool ImGuiManager::Initialize(Error* error)
   io.IniFilename = nullptr;
   io.BackendFlags |=
     ImGuiBackendFlags_HasGamepad | ImGuiBackendFlags_RendererHasVtxOffset | ImGuiBackendFlags_RendererHasTextures;
-#ifndef __ANDROID__
-  // Android has no keyboard, nor are we using ImGui for any actual user-interactable windows.
   io.ConfigFlags |=
     ImGuiConfigFlags_NavEnableKeyboard | ImGuiConfigFlags_NavEnableGamepad | ImGuiConfigFlags_NoMouseCursorChange;
-#else
-  io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard | ImGuiConfigFlags_NavEnableGamepad;
-#endif
   SetCommonIOOptions(io, s_state.imgui_context->PlatformIO);
 
   s_state.last_render_time = Timer::GetCurrentValue();
@@ -2097,8 +2092,6 @@ std::optional<ImGuiKey> ImGuiManager::MapHostKeyEventToImGuiKey(u32 key)
                                                                                   std::nullopt;
 }
 
-#ifndef __ANDROID__
-
 bool ImGuiManager::CreateAuxiliaryRenderWindow(AuxiliaryRenderWindowState* state, std::string_view title,
                                                std::string_view icon_name, const char* config_section,
                                                const char* config_prefix, u32 default_width, u32 default_height,
@@ -2313,5 +2306,3 @@ void ImGuiManager::ProcessAuxiliaryRenderWindowInputEvent(Host::AuxiliaryRenderW
       break;
   }
 }
-
-#endif // __ANDROID__

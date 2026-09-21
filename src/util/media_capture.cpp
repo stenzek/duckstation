@@ -42,8 +42,6 @@
 #pragma comment(lib, "mfuuid")
 #endif
 
-#ifndef __ANDROID__
-
 #ifdef _MSC_VER
 #pragma warning(push)
 #pragma warning(disable : 4244) // warning C4244: 'return': conversion from 'int' to 'uint8_t', possible loss of data
@@ -71,11 +69,7 @@ extern "C" {
 #pragma warning(pop)
 #endif
 
-#endif
-
 LOG_CHANNEL(MediaCapture);
-
-#if defined(_WIN32) || !defined(__ANDROID__)
 
 namespace {
 struct Locals
@@ -87,20 +81,16 @@ struct Locals
   std::once_flag mf_library_once_flag;
 #endif
 
-#ifndef __ANDROID__
   static inline DynamicLibrary avcodec_library;
   static inline DynamicLibrary avformat_library;
   static inline DynamicLibrary avutil_library;
   static inline DynamicLibrary swscale_library;
   static inline DynamicLibrary swresample_library;
   std::once_flag ffmpeg_once_flag;
-#endif
 };
 } // namespace
 
 static Locals s_locals;
-
-#endif
 
 namespace {
 
@@ -2080,8 +2070,6 @@ bool MediaCaptureMF::ProcessAudioPackets(s64 video_pts, Error* error)
 
 #endif
 
-#ifndef __ANDROID__
-
 #define VISIT_AVCODEC_IMPORTS(X)                                                                                       \
   X(avcodec_get_supported_config)                                                                                      \
   X(avcodec_find_encoder_by_name)                                                                                      \
@@ -3638,26 +3626,20 @@ MediaCapture::CodecList MediaCaptureFFmpeg::GetAudioCodecList(const char* contai
   return GetCodecListForContainer(container, AVMEDIA_TYPE_AUDIO);
 }
 
-#endif
-
 } // namespace
 
 static constexpr const std::array<const char*, static_cast<size_t>(MediaCaptureBackend::MaxCount)> s_backend_names = {
 #ifdef _WIN32
   "MediaFoundation",
 #endif
-#ifndef __ANDROID__
   "FFmpeg",
-#endif
 };
 static constexpr const std::array<const char*, static_cast<size_t>(MediaCaptureBackend::MaxCount)>
   s_backend_display_names = {
 #ifdef _WIN32
     TRANSLATE_DISAMBIG_NOOP("MediaCapture", "Media Foundation", "MediaCaptureBackend"),
 #endif
-#ifndef __ANDROID__
     TRANSLATE_DISAMBIG_NOOP("MediaCapture", "FFmpeg", "MediaCaptureBackend"),
-#endif
 };
 static_assert(s_backend_names.size() == static_cast<size_t>(MediaCaptureBackend::MaxCount));
 static_assert(s_backend_display_names.size() == static_cast<size_t>(MediaCaptureBackend::MaxCount));
@@ -3705,11 +3687,9 @@ MediaCapture::ContainerList MediaCapture::GetAudioContainerList(MediaCaptureBack
       ret = MediaCaptureMF::GetAudioContainerList();
       break;
 #endif
-#ifndef __ANDROID__
     case MediaCaptureBackend::FFmpeg:
       ret = MediaCaptureFFmpeg::GetAudioContainerList();
       break;
-#endif
     default:
       break;
   }
@@ -3726,11 +3706,9 @@ MediaCapture::CodecList MediaCapture::GetAudioCodecList(MediaCaptureBackend back
       ret = MediaCaptureMF::GetAudioCodecList(container);
       break;
 #endif
-#ifndef __ANDROID__
     case MediaCaptureBackend::FFmpeg:
       ret = MediaCaptureFFmpeg::GetAudioCodecList(container);
       break;
-#endif
     default:
       break;
   }
@@ -3747,11 +3725,9 @@ MediaCapture::ContainerList MediaCapture::GetVideoContainerList(MediaCaptureBack
       ret = MediaCaptureMF::GetVideoContainerList();
       break;
 #endif
-#ifndef __ANDROID__
     case MediaCaptureBackend::FFmpeg:
       ret = MediaCaptureFFmpeg::GetVideoContainerList();
       break;
-#endif
     default:
       break;
   }
@@ -3768,11 +3744,9 @@ MediaCapture::CodecList MediaCapture::GetVideoCodecList(MediaCaptureBackend back
       ret = MediaCaptureMF::GetVideoCodecList(container);
       break;
 #endif
-#ifndef __ANDROID__
     case MediaCaptureBackend::FFmpeg:
       ret = MediaCaptureFFmpeg::GetVideoCodecList(container);
       break;
-#endif
     default:
       break;
   }
@@ -3787,10 +3761,8 @@ std::unique_ptr<MediaCapture> MediaCapture::Create(MediaCaptureBackend backend, 
     case MediaCaptureBackend::MediaFoundation:
       return MediaCaptureMF::Create(error);
 #endif
-#ifndef __ANDROID__
     case MediaCaptureBackend::FFmpeg:
       return MediaCaptureFFmpeg::Create(error);
-#endif
     default:
       return nullptr;
   }

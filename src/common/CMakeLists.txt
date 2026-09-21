@@ -50,6 +50,7 @@ add_library(common
   path.h
   perf_scope.cpp
   perf_scope.h
+  platform_strings.h
   progress_callback.cpp
   progress_callback.h
   ryml_helpers.h
@@ -97,14 +98,8 @@ if(APPLE)
   find_library(COCOA_LIBRARY Cocoa REQUIRED)
   find_library(QUARTZCORE_LIBRARY QuartzCore)
   target_link_libraries(common PRIVATE ${COCOA_LIBRARY} ${QUARTZCORE_LIBRARY})
-endif()
-
-if(NOT ANDROID AND NOT APPLE)
+else()
   target_link_libraries(common PRIVATE libbacktrace::libbacktrace)
-endif()
-
-if(ANDROID)
-  target_link_libraries(common PRIVATE log)
 endif()
 
 if(LINUX)

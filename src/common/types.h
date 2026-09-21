@@ -138,31 +138,25 @@ struct dependent_int_false : std::false_type
 // Architecture detection.
 #if defined(_MSC_VER)
 
-#if defined(_M_X64)
+#ifdef _M_X64
 #define CPU_ARCH_X64 1
-#elif defined(_M_IX86)
-#define CPU_ARCH_X86 1
-#elif defined(_M_ARM64)
+#elifdef _M_ARM64
 #define CPU_ARCH_ARM64 1
-#elif defined(_M_ARM)
-#define CPU_ARCH_ARM32 1
 #else
 #error Unknown architecture.
 #endif
 
 #elif defined(__GNUC__) || defined(__clang__)
 
-#if defined(__x86_64__)
+#ifdef __x86_64__
 #define CPU_ARCH_X64 1
-#elif defined(__i386__)
-#define CPU_ARCH_X86 1
-#elif defined(__aarch64__)
+#elifdef __aarch64__
 #define CPU_ARCH_ARM64 1
-#elif defined(__arm__)
+#elifdef __arm__
 #define CPU_ARCH_ARM32 1
 #elif defined(__riscv) && __riscv_xlen == 64
 #define CPU_ARCH_RISCV64 1
-#elif defined(__loongarch64)
+#elifdef __loongarch64
 #define CPU_ARCH_LOONGARCH64 1
 #else
 #error Unknown architecture.
@@ -172,37 +166,6 @@ struct dependent_int_false : std::false_type
 
 #error Unknown compiler.
 
-#endif
-
-#if defined(CPU_ARCH_X64)
-#define CPU_ARCH_STR "x64"
-#elif defined(CPU_ARCH_X86)
-#define CPU_ARCH_STR "x86"
-#elif defined(CPU_ARCH_ARM32)
-#define CPU_ARCH_STR "arm32"
-#elif defined(CPU_ARCH_ARM64)
-#define CPU_ARCH_STR "arm64"
-#elif defined(CPU_ARCH_RISCV64)
-#define CPU_ARCH_STR "riscv64"
-#elif defined(CPU_ARCH_LOONGARCH64)
-#define CPU_ARCH_STR "loongarch64"
-#else
-#define CPU_ARCH_STR "Unknown"
-#endif
-
-// OS detection.
-#if defined(_WIN32)
-#define TARGET_OS_STR "Windows"
-#elif defined(__ANDROID__)
-#define TARGET_OS_STR "Android"
-#elif defined(__linux__)
-#define TARGET_OS_STR "Linux"
-#elif defined(__FreeBSD__)
-#define TARGET_OS_STR "FreeBSD"
-#elif defined(__APPLE__)
-#define TARGET_OS_STR "macOS"
-#else
-#define TARGET_OS_STR "Unknown"
 #endif
 
 // Host page sizes.

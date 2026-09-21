@@ -19,6 +19,7 @@
 #include "common/file_system.h"
 #include "common/log.h"
 #include "common/path.h"
+#include "common/platform_strings.h"
 #include "common/string_util.h"
 #include "common/timer.h"
 

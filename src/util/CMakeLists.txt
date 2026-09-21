@@ -26,6 +26,7 @@ add_library(util
   compress_helpers.h
   core_audio_stream.cpp
   core_audio_stream.h
+  cubeb_audio_stream.cpp
   cue_parser.cpp
   cue_parser.h
   dyn_libjpeg.h
@@ -78,6 +79,9 @@ add_library(util
   postprocessing_shader_glsl.h
   postprocessing_shader_slang.cpp
   postprocessing_shader_slang.h
+  sdl_audio_stream.cpp
+  sdl_input_source.cpp
+  sdl_input_source.h
   shadergen.cpp
   shadergen.h
   shiftjis.cpp
@@ -110,7 +114,8 @@ get_target_property(WEBP_INCLUDE_DIRS WebP::webp INTERFACE_INCLUDE_DIRECTORIES)
 get_target_property(LIBZIP_INCLUDE_DIRS libzip::zip INTERFACE_INCLUDE_DIRECTORIES)
 target_include_directories(util PRIVATE ${JPEG_INCLUDE_DIRS} ${PNG_INCLUDE_DIRS} ${WEBP_INCLUDE_DIRS} ${LIBZIP_INCLUDE_DIRS})
 target_link_libraries(util PUBLIC common imgui)
-target_link_libraries(util PRIVATE libchdr lzma ZLIB::ZLIB SoundTouch::SoundTouchDLL xxhash zstd::libzstd_shared reshadefx)
+target_link_libraries(util PRIVATE libchdr lzma reshadefx cubeb xxhash)
+target_link_libraries(util PRIVATE CURL::libcurl SDL3::Headers SoundTouch::SoundTouchDLL ZLIB::ZLIB zstd::libzstd_shared)
 
 if(ENABLE_X11)
   target_sources(util PRIVATE
@@ -142,7 +147,7 @@ if(ENABLE_OPENGL)
   target_compile_definitions(util PUBLIC "ENABLE_OPENGL=1")
   target_link_libraries(util PRIVATE glad)
 
-  if(LINUX OR BSD OR ANDROID)
+  if(LINUX OR BSD)
     target_sources(util PRIVATE
       opengl_context_egl.cpp
       opengl_context_egl.h
@@ -165,9 +170,6 @@ if(ENABLE_OPENGL)
       target_include_directories(util PRIVATE
         "${Wayland_INCLUDE_DIRS}" # For wayland-egl
       )
-    endif()
-    if(ANDROID)
-      target_include_directories(util PRIVATE "${CMAKE_SOURCE_DIR}/android")
     endif()
   endif()
 
@@ -203,7 +205,7 @@ if(ENABLE_VULKAN)
   target_link_libraries(util PUBLIC vulkan-headers)
 endif()
 
-# shaderc/spirv-cross is loaded dynamically to reduce module loads on startup.
+# freetype/plutosvg/shaderc/spirv-cross/ffmpeg is loaded dynamically to reduce module loads on startup.
 get_target_property(FREETYPE_INCLUDE_DIRS freetype INTERFACE_INCLUDE_DIRECTORIES)
 get_target_property(PLUTOSVG_INCLUDE_DIRS plutosvg::plutosvg INTERFACE_INCLUDE_DIRECTORIES)
 get_target_property(SHADERC_INCLUDE_DIR Shaderc::shaderc_shared INTERFACE_INCLUDE_DIRECTORIES)
@@ -213,26 +215,8 @@ target_include_directories(util PUBLIC
   ${PLUTOSVG_INCLUDE_DIRS}
   ${SHADERC_INCLUDE_DIR}
   ${SPIRV_CROSS_INCLUDE_DIR}
+  ${FFMPEG_INCLUDE_DIRS}
 )
-
-if(NOT ANDROID)
-  target_sources(util PRIVATE
-    cubeb_audio_stream.cpp
-    sdl_audio_stream.cpp
-    sdl_input_source.cpp
-    sdl_input_source.h
-  )
-  target_compile_definitions(util PUBLIC
-    ENABLE_SDL
-  )
-  target_link_libraries(util PUBLIC
-    cubeb
-    SDL3::Headers
-  )
-
-  # FFmpeg loaded dynamically on demand.
-  target_include_directories(util PUBLIC ${FFMPEG_INCLUDE_DIRS})
-endif()
 
 if(APPLE)
   set(MAC_SOURCES
@@ -251,14 +235,8 @@ if(APPLE)
   find_library(QUARTZCORE_LIBRARY QuartzCore)
   target_link_libraries(util PRIVATE ${METAL_LIBRARY} ${QUARTZCORE_LIBRARY} ${IOK_LIBRARY})
   set_source_files_properties(${MAC_SOURCES} PROPERTIES SKIP_PRECOMPILE_HEADERS TRUE)
-elseif(NOT ANDROID)
-  if(LINUX)
-    target_link_libraries(util PRIVATE UDEV::UDEV)
-  endif()
-endif()
-
-if(NOT ANDROID)
-  target_link_libraries(util PRIVATE CURL::libcurl)
+elseif(LINUX)
+  target_link_libraries(util PRIVATE UDEV::UDEV)
 endif()
 
 function(add_util_resources target)

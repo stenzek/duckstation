@@ -15,15 +15,10 @@ class Error;
 enum class AudioBackend : u8
 {
   Null,
-#ifndef __ANDROID__
   Cubeb,
   SDL,
 #ifdef _WIN32
   XAudio2,
-#endif
-#else
-  AAudio,
-  OpenSLES,
 #endif
   Count
 };
@@ -41,11 +36,7 @@ class AudioStream
 public:
   using SampleType = AudioStreamSource::SampleType;
 
-#ifndef __ANDROID__
   static constexpr AudioBackend DEFAULT_BACKEND = AudioBackend::Cubeb;
-#else
-  static constexpr AudioBackend DEFAULT_BACKEND = AudioBackend::AAudio;
-#endif
 
   struct DeviceInfo
   {
@@ -87,7 +78,6 @@ protected:
   AudioStream();
 
 private:
-#ifndef __ANDROID__
   static std::vector<std::pair<std::string, std::string>> GetCubebDriverNames();
   static std::vector<DeviceInfo> GetCubebOutputDevices(std::string_view driver, u32 sample_rate);
   static std::unique_ptr<AudioStream> CreateCubebAudioStream(u32 sample_rate, u32 channels, u32 output_latency_frames,
@@ -103,14 +93,5 @@ private:
                                                                bool output_latency_minimal,
                                                                std::string_view device_name, AudioStreamSource* source,
                                                                bool auto_start, Error* error);
-#endif
-#else
-  static std::unique_ptr<AudioStream> CreateAAudioAudioStream(u32 sample_rate, u32 channels, u32 output_latency_frames,
-                                                              bool output_latency_minimal, AudioStreamSource* source,
-                                                              bool auto_start, Error* error);
-  static std::unique_ptr<AudioStream> CreateOpenSLESAudioStream(u32 sample_rate, u32 channels,
-                                                                u32 output_latency_frames, bool output_latency_minimal,
-                                                                AudioStreamSource* source, bool auto_start,
-                                                                Error* error);
 #endif
 };

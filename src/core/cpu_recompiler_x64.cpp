@@ -42,7 +42,7 @@ static constexpr u32 BACKPATCH_JMP_SIZE = 5;
 static bool IsCallerSavedRegister(u32 id);
 
 // ABI selection
-#if defined(_WIN32)
+#ifdef _WIN32
 
 #define RWRET Xbyak::Reg32(Xbyak::Operand::EAX)
 #define RWARG1 Xbyak::Reg32(Xbyak::Operand::RCX)
@@ -58,7 +58,7 @@ static bool IsCallerSavedRegister(u32 id);
 // on win32, we need to reserve an additional 32 bytes shadow space when calling out to C
 static constexpr u32 STACK_SHADOW_SIZE = 32;
 
-#elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__) || defined(__FreeBSD__)
+#else
 
 #define RWRET Xbyak::Reg32(Xbyak::Operand::EAX)
 #define RWARG1 Xbyak::Reg32(Xbyak::Operand::EDI)
@@ -72,10 +72,6 @@ static constexpr u32 STACK_SHADOW_SIZE = 32;
 #define RXARG4 Xbyak::Reg64(Xbyak::Operand::RCX)
 
 static constexpr u32 STACK_SHADOW_SIZE = 0;
-
-#else
-
-#error Unknown ABI.
 
 #endif
 

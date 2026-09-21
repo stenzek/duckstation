@@ -1177,7 +1177,6 @@ void System::SetDefaultSettings(SettingsInterface& si, bool ignore_user_prefs)
   PostProcessing::Config::ClearStages(si, PostProcessing::Config::INTERNAL_CHAIN_SECTION);
   si.ClearSection("BorderOverlay");
 
-#ifndef __ANDROID__
   si.SetStringValue("MediaCapture", "Backend", MediaCapture::GetBackendName(Settings::DEFAULT_MEDIA_CAPTURE_BACKEND));
   si.SetStringValue("MediaCapture", "FileNameFormat",
                     Settings::GetCaptureFileNameFormatName(Settings::DEFAULT_MEDIA_CAPTURE_FILENAME_FORMAT));
@@ -1194,7 +1193,6 @@ void System::SetDefaultSettings(SettingsInterface& si, bool ignore_user_prefs)
   si.SetStringValue("MediaCapture", "AudioCodec", "");
   si.SetBoolValue("MediaCapture", "AudioCodecUseArgs", false);
   si.SetStringValue("MediaCapture", "AudioCodecArgs", "");
-#endif
 }
 
 void System::ApplySettings(bool display_osd_messages)
@@ -1607,9 +1605,7 @@ void System::PauseSystem(bool paused)
     if (g_settings.inhibit_screensaver)
       InhibitScreensaver(false);
 
-#ifdef ENABLE_GDB_SERVER
     GDBServer::OnSystemPaused();
-#endif
 
     Host::OnSystemPaused();
     UpdateDisplayVSync();
@@ -1624,9 +1620,7 @@ void System::PauseSystem(bool paused)
     if (g_settings.inhibit_screensaver)
       InhibitScreensaver(true);
 
-#ifdef ENABLE_GDB_SERVER
     GDBServer::OnSystemResumed();
-#endif
 
     Host::OnSystemResumed();
     UpdateDisplayVSync();
@@ -1899,10 +1893,8 @@ System::BootResult System::BootSystem(SystemBootParameters parameters, Error* er
   if (g_settings.inhibit_screensaver)
     InhibitScreensaver(true);
 
-#ifdef ENABLE_GDB_SERVER
   if (g_settings.enable_gdb_server)
     GDBServer::Initialize(g_settings.gdb_server_port);
-#endif
 
   Host::OnSystemStarted();
 
@@ -2017,9 +2009,7 @@ void System::DestroySystem()
 
   s_state.undo_load_state.reset();
 
-#ifdef ENABLE_GDB_SERVER
   GDBServer::Shutdown();
-#endif
 
   VideoThread::RunOnThread([]() {
     VideoThread::SetRunIdleReason(VideoThread::RunIdleReason::SystemPaused, false);
@@ -2107,9 +2097,7 @@ void System::ClearRunningGame()
   Host::OnSystemGameChanged(s_state.running_game_path, s_state.running_game_serial, s_state.running_game_title,
                             s_state.running_game_hash);
 
-#ifdef ENABLE_DISCORD_PRESENCE
   DiscordPresence::Update(true);
-#endif
 }
 
 void System::Execute()
@@ -2166,13 +2154,9 @@ void System::FrameDone()
       Achievements::FrameUpdate();
   }
 
-#ifdef ENABLE_DISCORD_PRESENCE
   DiscordPresence::Poll();
-#endif
 
-#ifdef ENABLE_GDB_SERVER
   GDBServer::PollUntil(0);
-#endif
 
   // Save states for rewind and runahead.
   if (s_state.rewind_save_counter >= 0)
@@ -2383,7 +2367,6 @@ void System::Throttle(Timer::Value current_time, Timer::Value sleep_until)
     return;
   }
 
-#ifdef ENABLE_GDB_SERVER
   // If we are running the GDB server and have clients, then use it to sleep instead.
   // That way in a query->response->query->response chain, we don't process only one message per frame.
   if (GDBServer::HasAnyClients())
@@ -2391,11 +2374,10 @@ void System::Throttle(Timer::Value current_time, Timer::Value sleep_until)
     GDBServer::PollUntil(sleep_until);
   }
   else
-#endif
   {
     // Use a spinwait if we undersleep for all platforms except android.. don't want to burn battery.
     // Linux also seems to do a much better job of waking up at the requested time.
-#if !defined(__linux__) && !defined(__ANDROID__)
+#ifndef __linux__
     Timer::SleepUntil(sleep_until, g_settings.display_optimal_frame_pacing);
 #else
     Timer::SleepUntil(sleep_until, false);
@@ -4282,9 +4264,7 @@ void System::UpdateRunningGame(const std::string& path, CDImage* image, bool boo
   if (s_state.running_game_serial != prev_serial)
     UpdateSessionTime(prev_serial);
 
-#ifdef ENABLE_DISCORD_PRESENCE
   DiscordPresence::Update(booting);
-#endif
 
   if (!s_state.running_game_title.empty())
   {
@@ -4868,7 +4848,6 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
     if (g_settings.inhibit_screensaver != old_settings.inhibit_screensaver)
       InhibitScreensaver(!IsPaused() && g_settings.inhibit_screensaver);
 
-#ifdef ENABLE_GDB_SERVER
     if (g_settings.enable_gdb_server != old_settings.enable_gdb_server ||
         g_settings.gdb_server_port != old_settings.gdb_server_port)
     {
@@ -4876,7 +4855,6 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
       if (g_settings.enable_gdb_server)
         GDBServer::Initialize(g_settings.gdb_server_port);
     }
-#endif
   }
   else
   {
@@ -4909,7 +4887,6 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
 
   Achievements::UpdateSettings(old_settings);
 
-#ifdef ENABLE_DISCORD_PRESENCE
   if (g_settings.enable_discord_presence != old_settings.enable_discord_presence)
   {
     if (g_settings.enable_discord_presence)
@@ -4917,7 +4894,6 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
     else
       DiscordPresence::Shutdown();
   }
-#endif
 
   if (g_settings.export_shared_memory != old_settings.export_shared_memory) [[unlikely]]
   {

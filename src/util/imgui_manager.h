@@ -96,11 +96,7 @@ enum class LanguageFont : u8
 using LanguageFontOrder = std::array<LanguageFont, static_cast<size_t>(LanguageFont::MaxCount)>;
 
 /// Default size for screen margins.
-#ifndef __ANDROID__
 inline constexpr float DEFAULT_SCREEN_MARGIN = 10.0f;
-#else
-inline constexpr float DEFAULT_SCREEN_MARGIN = 16.0f;
-#endif
 
 /// Initializes ImGui, creates fonts, etc.
 bool Initialize(Error* error);
@@ -232,8 +228,6 @@ float GetOSDMessageDuration(OSDMessageType type);
 /// Returns the ending position of OSD messages from the last frame.
 float GetOSDMessageEndPosition();
 
-#ifndef __ANDROID__
-
 /// Auxiliary imgui windows.
 struct AuxiliaryRenderWindowState
 {
@@ -264,8 +258,6 @@ void ProcessAuxiliaryRenderWindowInputEvent(Host::AuxiliaryRenderWindowUserData 
                                             Host::AuxiliaryRenderWindowEventParam param2,
                                             Host::AuxiliaryRenderWindowEventParam param3);
 
-#endif
-
 } // namespace ImGuiManager
 
 namespace Host {
@@ -281,15 +273,11 @@ void AddIconOSDMessage(OSDMessageType type, std::string key, OSDMessageIconType 
 void RemoveKeyedOSDMessage(std::string key);
 void ClearOSDMessages();
 
-#ifndef __ANDROID__
-
 /// Auxiliary window management.
 bool CreateAuxiliaryRenderWindow(s32 x, s32 y, u32 width, u32 height, std::string_view title,
                                  std::string_view icon_name, AuxiliaryRenderWindowUserData userdata,
                                  AuxiliaryRenderWindowHandle* handle, WindowInfo* wi, Error* error);
 void DestroyAuxiliaryRenderWindow(AuxiliaryRenderWindowHandle handle, s32* pos_x = nullptr, s32* pos_y = nullptr,
                                   u32* width = nullptr, u32* height = nullptr);
-
-#endif
 
 } // namespace Host

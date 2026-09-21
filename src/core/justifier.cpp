@@ -354,11 +354,7 @@ static const Controller::ControllerBindingInfo s_binding_info[] = {
 #undef BUTTON
 };
 
-#ifndef __ANDROID__
 static constexpr const char* DEFAULT_CROSSHAIR_PATH = "images" FS_OSPATH_SEPARATOR_STR "crosshair.png";
-#else
-static constexpr const char* DEFAULT_CROSSHAIR_PATH = "";
-#endif
 
 static const SettingInfo s_settings[] = {
   {SettingInfo::Type::Path, "CrosshairImagePath", TRANSLATE_NOOP("Justifier", "Crosshair Image Path"),
@@ -453,14 +449,10 @@ void Justifier::LoadSettings(const SettingsInterface& si, const char* section, b
       if (!m_cursor_path.empty())
       {
         std::string image_path;
-#ifndef __ANDROID__
         if (!Path::IsAbsolute(m_cursor_path))
           image_path = Path::Combine(EmuFolders::Resources, m_cursor_path);
         else
           image_path = m_cursor_path;
-#else
-        image_path = m_cursor_path;
-#endif
 
         ImGuiManager::SetSoftwareCursor(new_pointer_index, std::move(image_path), m_cursor_scale, m_cursor_color);
         if (m_has_relative_binds)

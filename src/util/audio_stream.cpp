@@ -20,31 +20,20 @@ AudioStream::DeviceInfo::~DeviceInfo() = default;
 static constexpr const std::array s_backend_names = {
   // clang-format off
   "Null",
-#ifndef __ANDROID__
   "Cubeb",
   "SDL",
-#endif
 #ifdef _WIN32
   "XAudio2",
-#endif
-#ifdef __ANDROID__
-  "AAudio",  "OpenSLES",
 #endif
   // clang-format on
 };
 static constexpr const std::array s_backend_display_names = {
   // clang-format off
   TRANSLATE_DISAMBIG_NOOP("Settings", "Null (No Output)", "AudioBackend"),
-#ifndef __ANDROID__
   TRANSLATE_DISAMBIG_NOOP("Settings", "Cubeb", "AudioBackend"),
   TRANSLATE_DISAMBIG_NOOP("Settings", "SDL", "AudioBackend"),
-#endif
 #ifdef _WIN32
   TRANSLATE_DISAMBIG_NOOP("Settings", "XAudio2", "AudioBackend"),
-#endif
-#ifdef __ANDROID__
-  "AAudio",
-  "OpenSL ES",
 #endif
   // clang-format on
 };
@@ -83,11 +72,9 @@ std::vector<std::pair<std::string, std::string>> AudioStream::GetDriverNames(Aud
   std::vector<std::pair<std::string, std::string>> ret;
   switch (backend)
   {
-#ifndef __ANDROID__
     case AudioBackend::Cubeb:
       ret = GetCubebDriverNames();
       break;
-#endif
 
     default:
       break;
@@ -102,11 +89,9 @@ std::vector<AudioStream::DeviceInfo> AudioStream::GetOutputDevices(AudioBackend 
   std::vector<AudioStream::DeviceInfo> ret;
   switch (backend)
   {
-#ifndef __ANDROID__
     case AudioBackend::Cubeb:
       ret = GetCubebOutputDevices(driver, sample_rate);
       break;
-#endif
 #ifdef _WIN32
     case AudioBackend::XAudio2:
       ret = GetXAudio2OutputDevices(sample_rate);
@@ -127,7 +112,6 @@ std::unique_ptr<AudioStream> AudioStream::CreateStream(AudioBackend backend, u32
 {
   switch (backend)
   {
-#ifndef __ANDROID__
     case AudioBackend::Cubeb:
       return CreateCubebAudioStream(sample_rate, channels, output_latency_frames, output_latency_minimal, driver_name,
                                     device_name, source, auto_start, error);
@@ -135,20 +119,10 @@ std::unique_ptr<AudioStream> AudioStream::CreateStream(AudioBackend backend, u32
     case AudioBackend::SDL:
       return CreateSDLAudioStream(sample_rate, channels, output_latency_frames, output_latency_minimal, source,
                                   auto_start, error);
-#endif
 #ifdef _WIN32
     case AudioBackend::XAudio2:
       return CreateXAudio2AudioStream(sample_rate, channels, output_latency_frames, output_latency_minimal, device_name,
                                       source, auto_start, error);
-#endif
-#ifdef __ANDROID__
-    case AudioBackend::AAudio:
-      return CreateAAudioAudioStream(sample_rate, channels, output_latency_frames, output_latency_minimal, source,
-                                     auto_start, error);
-
-    case AudioBackend::OpenSLES:
-      return CreateOpenSLESAudioStream(sample_rate, channels, output_latency_frames, output_latency_minimal, source,
-                                       auto_start, error);
 #endif
 
     default:

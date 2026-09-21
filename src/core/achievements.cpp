@@ -1032,9 +1032,7 @@ void Achievements::UpdateRichPresence(std::unique_lock<std::recursive_mutex>& lo
 
   INFO_LOG("Rich presence updated: {}", s_state.rich_presence_string);
 
-#ifdef ENABLE_DISCORD_PRESENCE
   DiscordPresence::UpdateDetails(GetCurrentGameBadgeURL(), s_state.rich_presence_string);
-#endif
 }
 
 void Achievements::OnSystemStarting(bool disable_hardcore_mode)
@@ -1267,9 +1265,7 @@ void Achievements::ClientLoadGameCallback(int result, const char* error_message,
   // but the progress is fine since that's just game IDs
   UpdateProgressDatabaseFromCurrentGame();
 
-#ifdef ENABLE_DISCORD_PRESENCE
   DiscordPresence::UpdateDetails(s_state.game_badge_url, s_state.rich_presence_string);
-#endif
 
   if (g_settings.achievements_prefetch_badges)
     Achievements::PrefetchAllAchievementBadges();
@@ -1287,9 +1283,7 @@ void Achievements::ClientLoadGameCallback(int result, const char* error_message,
 
 void Achievements::ClearGameInfo()
 {
-#ifdef ENABLE_DISCORD_PRESENCE
   DiscordPresence::UpdateDetails({}, {});
-#endif
 
   FullscreenUI::ClearAchievementsState();
 
@@ -2268,16 +2262,14 @@ void Achievements::ConfirmHardcoreModeDisableAsync(std::string_view trigger, std
     });
 }
 
-#if defined(_WIN32)
+#ifdef _WIN32
 #include "common/windows_headers.h"
-#elif !defined(__ANDROID__)
+#else
 #include <unistd.h>
 #endif
 
 #include "common/thirdparty/SmallVector.h"
 #include "common/thirdparty/aes.h"
-
-#ifndef __ANDROID__
 
 static TinyString GetLoginEncryptionMachineKey()
 {
@@ -2316,12 +2308,12 @@ static TinyString GetLoginEncryptionMachineKey()
   ret.resize(machine_guid_length);
   RegCloseKey(hKey);
 #else
-#if defined(__linux__)
+#ifdef __linux__
   // use /etc/machine-id on Linux
   std::optional<std::string> machine_id = FileSystem::ReadFileToString("/etc/machine-id");
   if (machine_id.has_value())
     ret = std::string_view(machine_id.value());
-#elif defined(__APPLE__)
+#elifdef __APPLE__
   // use gethostuuid(2) on macOS
   const struct timespec ts{};
   uuid_t uuid{};
@@ -2342,8 +2334,6 @@ static TinyString GetLoginEncryptionMachineKey()
   return ret;
 }
 
-#endif
-
 static std::array<u8, 32> GetLoginEncryptionKey(std::string_view username)
 {
   // super basic key stretching
@@ -2351,7 +2341,6 @@ static std::array<u8, 32> GetLoginEncryptionKey(std::string_view username)
 
   SHA256Digest digest;
 
-#ifndef __ANDROID__
   // Only use machine key if we're not running in portable mode.
   if (!EmuFolders::IsRunningInPortableMode())
   {
@@ -2361,7 +2350,6 @@ static std::array<u8, 32> GetLoginEncryptionKey(std::string_view username)
     else
       WARNING_LOG("Failed to get machine key, token will be decipherable.");
   }
-#endif
 
   // salt with username
   digest.Update(username.data(), username.length());

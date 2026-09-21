@@ -725,18 +725,11 @@ bool VideoThread::CreateDeviceOnThread(RenderAPI api, bool fullscreen, bool star
   if (g_gpu_settings.gpu_disable_compressed_textures)
     create_flags |= GPUDevice::CreateFlags::DisableCompressedTextures;
 
-  // Only dump shaders on debug builds for Android, users will complain about storage...
-#if !defined(__ANDROID__) || defined(_DEBUG)
-  const std::string_view shader_dump_directory(EmuFolders::DataRoot);
-#else
-  const std::string_view shader_dump_directory;
-#endif
-
   Error create_error;
   std::optional<WindowInfo> wi;
   if (!g_gpu_device ||
       !(wi = Host::AcquireRenderWindow(api, fullscreen, fullscreen_mode.has_value(), &create_error)).has_value() ||
-      !g_gpu_device->Create(Core::GetStringSettingValue("GPU", "Adapter"), create_flags, shader_dump_directory,
+      !g_gpu_device->Create(Core::GetStringSettingValue("GPU", "Adapter"), create_flags, EmuFolders::DataRoot,
                             EmuFolders::Cache, SHADER_CACHE_VERSION, wi.value(), s_state.requested_vsync,
                             fullscreen_mode.has_value() ? &fullscreen_mode.value() : nullptr,
                             exclusive_fullscreen_control, &create_error))
@@ -862,9 +855,7 @@ bool VideoThread::CreateGPUBackendOnThread(bool hardware_renderer, bool upload_v
     }
   }
 
-#ifndef __ANDROID__
   ImGuiManager::UpdateDebugWindowConfig();
-#endif
 
   if (hardware_renderer)
     s_state.gpu_backend = GPUBackend::CreateHardwareBackend();
@@ -1264,8 +1255,7 @@ void VideoThread::UpdateSettings(bool gpu_settings_changed, bool device_settings
   }
   else
   {
-#ifndef __ANDROID__
-    // Not needed on Android, debug windows are not used.
+    // still need to update debug window visibility
     RunOnThread([]() {
       if (s_state.gpu_backend)
       {
@@ -1273,7 +1263,6 @@ void VideoThread::UpdateSettings(bool gpu_settings_changed, bool device_settings
           PresentFrameAndRestoreContext();
       }
     });
-#endif
   }
 }
 

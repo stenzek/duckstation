@@ -5,13 +5,6 @@
 
 #include "common/types.h"
 
-// GDB server is available on all platforms except Android.
-#ifndef __ANDROID__
-#define ENABLE_GDB_SERVER
-#endif
-
-#ifdef ENABLE_GDB_SERVER
-
 namespace GDBServer {
 
 bool Initialize(u16 port);
@@ -30,5 +23,3 @@ namespace Host {
 void OnGDBServerActiveClientsChanged(bool has_clients);
 
 } // namespace Host
-
-#endif // ENABLE_GDB_SERVER

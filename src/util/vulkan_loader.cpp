@@ -378,37 +378,30 @@ bool VulkanLoader::SelectInstanceExtensions(VulkanDevice::ExtensionList* extensi
     return false;
   };
 
-#if defined(VK_USE_PLATFORM_WIN32_KHR)
+#ifdef VK_USE_PLATFORM_WIN32_KHR
   if (wtype == WindowInfoType::Win32 && (!SupportsExtension(VK_KHR_SURFACE_EXTENSION_NAME, true) ||
                                          !SupportsExtension(VK_KHR_WIN32_SURFACE_EXTENSION_NAME, true)))
   {
     return false;
   }
 #endif
-#if defined(VK_USE_PLATFORM_XCB_KHR)
+#ifdef VK_USE_PLATFORM_XCB_KHR
   if (wtype == WindowInfoType::XCB && (!SupportsExtension(VK_KHR_SURFACE_EXTENSION_NAME, true) ||
                                        !SupportsExtension(VK_KHR_XCB_SURFACE_EXTENSION_NAME, true)))
   {
     return false;
   }
 #endif
-#if defined(VK_USE_PLATFORM_WAYLAND_KHR)
+#ifdef VK_USE_PLATFORM_WAYLAND_KHR
   if (wtype == WindowInfoType::Wayland && (!SupportsExtension(VK_KHR_SURFACE_EXTENSION_NAME, true) ||
                                            !SupportsExtension(VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME, true)))
   {
     return false;
   }
 #endif
-#if defined(VK_USE_PLATFORM_METAL_EXT)
+#ifdef VK_USE_PLATFORM_METAL_EXT
   if (wtype == WindowInfoType::MacOS && (!SupportsExtension(VK_KHR_SURFACE_EXTENSION_NAME, true) ||
                                          !SupportsExtension(VK_EXT_METAL_SURFACE_EXTENSION_NAME, true)))
-  {
-    return false;
-  }
-#endif
-#if defined(VK_USE_PLATFORM_ANDROID_KHR)
-  if (wtype == WindowInfoType::Android && (!SupportsExtension(VK_KHR_SURFACE_EXTENSION_NAME, true) ||
-                                           !SupportsExtension(VK_KHR_ANDROID_SURFACE_EXTENSION_NAME, true)))
   {
     return false;
   }
@@ -589,10 +582,6 @@ VulkanLoader::GPUList VulkanLoader::EnumerateGPUs(Error* error)
 
 bool VulkanLoader::IsSuitableDefaultRenderer(WindowInfoType window_type)
 {
-#ifdef __ANDROID__
-  // No way in hell.
-  return false;
-#else
   const std::optional<GPUDevice::AdapterInfoList> adapter_list = GetAdapterList(window_type, nullptr);
   if (!adapter_list.has_value() || adapter_list->empty())
   {
@@ -622,9 +611,7 @@ bool VulkanLoader::IsSuitableDefaultRenderer(WindowInfoType window_type)
     INFO_LOG("Not using Vulkan for Intel GPU with incomplete driver.");
     return false;
   }
-#endif
 
-#if defined(__linux__) || defined(__ANDROID__)
   // V3D is buggy, image copies with larger textures are broken.
   if (ainfo.driver_type == GPUDriverType::BroadcomMesa)
   {
@@ -635,7 +622,6 @@ bool VulkanLoader::IsSuitableDefaultRenderer(WindowInfoType window_type)
 
   INFO_LOG("Allowing Vulkan as default renderer.");
   return true;
-#endif
 }
 
 GPUDriverType VulkanLoader::GuessDriverType(const VkPhysicalDeviceProperties& device_properties,

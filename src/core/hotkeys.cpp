@@ -39,7 +39,6 @@ void Settings::SetDefaultHotkeyConfig(SettingsInterface& si)
 {
   si.ClearSection("Hotkeys");
 
-#ifndef __ANDROID__
   si.SetStringValue("Hotkeys", "FastForward", "Keyboard/Tab");
   si.SetStringValue("Hotkeys", "TogglePause", "Keyboard/Space");
   si.SetStringValue("Hotkeys", "Screenshot", "Keyboard/F10");
@@ -50,7 +49,6 @@ void Settings::SetDefaultHotkeyConfig(SettingsInterface& si)
   si.SetStringValue("Hotkeys", "SaveSelectedSaveState", "Keyboard/F2");
   si.SetStringValue("Hotkeys", "SelectPreviousSaveStateSlot", "Keyboard/F3");
   si.SetStringValue("Hotkeys", "SelectNextSaveStateSlot", "Keyboard/F4");
-#endif
 }
 
 static void HotkeyModifyResolutionScale(s32 increment)
@@ -128,8 +126,6 @@ static bool HotkeyCheckRewindAvailability(bool enabled)
 
 static constexpr const HotkeyInfo s_hotkey_list[] = {
 
-#ifndef __ANDROID__
-
   {"OpenPauseMenu", TRANSLATE_NOOP("Hotkeys", "Interface"), TRANSLATE_NOOP("Hotkeys", "Open Pause Menu"),
    [](InputButtonEvent event) {
      if (event == InputButtonEvent::Released && System::CanPauseSystem(true))
@@ -182,8 +178,6 @@ static constexpr const HotkeyInfo s_hotkey_list[] = {
        VideoThread::SetFullscreen(!VideoThread::IsFullscreen());
    }},
 
-#endif // __ANDROID__
-
   {"FastForward", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_NOOP("Hotkeys", "Fast Forward (Hold)"),
    [](InputButtonEvent event) { System::SetFastForwardEnabled(event == InputButtonEvent::Pressed); }},
 
@@ -214,13 +208,11 @@ static constexpr const HotkeyInfo s_hotkey_list[] = {
        Host::RunOnCoreThread(System::ResetSystem);
    }},
 
-#ifndef __ANDROID__
   {"ChangeDisc", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_NOOP("Hotkeys", "Change Disc"),
    [](InputButtonEvent event) {
      if (event == InputButtonEvent::Released)
        FullscreenUI::OpenDiscChangeMenu();
    }},
-#endif // __ANDROID__
 
   {"SwitchToPreviousDisc", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_NOOP("Hotkeys", "Switch to Previous Disc"),
    [](InputButtonEvent event) {
@@ -243,7 +235,6 @@ static constexpr const HotkeyInfo s_hotkey_list[] = {
        System::SetRewindState(enabled);
    }},
 
-#ifndef __ANDROID__
   {"FrameStep", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_NOOP("Hotkeys", "Frame Step"),
    [](InputButtonEvent event) {
      if (event == InputButtonEvent::Released)
@@ -282,8 +273,6 @@ static constexpr const HotkeyInfo s_hotkey_list[] = {
          System::StartMediaCapture(MediaCaptureMode::VideoOnly);
      }
    }},
-
-#endif // __ANDROID__
 
   {"SwapMemoryCards", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_NOOP("Hotkeys", "Swap Memory Card Slots"),
    [](InputButtonEvent event) {
@@ -517,9 +506,6 @@ static constexpr const HotkeyInfo s_hotkey_list[] = {
        System::StopRecordingGPUDump();
    }},
 
-// See gte.cpp.
-#ifndef __ANDROID__
-
   {"FreecamToggle", TRANSLATE_NOOP("Hotkeys", "Free Camera"), TRANSLATE_NOOP("Hotkeys", "Freecam Toggle"),
    [](InputButtonEvent event) {
      if (event == InputButtonEvent::Released && !Achievements::IsHardcoreModeActive())
@@ -629,8 +615,6 @@ static constexpr const HotkeyInfo s_hotkey_list[] = {
 
      GTE::SetFreecamRotateAxis(2, (event == InputButtonEvent::Pressed) ? 1.0f : 0.0f);
    }},
-
-#endif // __ANDROID__
 
   {"AudioMute", TRANSLATE_NOOP("Hotkeys", "Audio"), TRANSLATE_NOOP("Hotkeys", "Toggle Mute"),
    [](InputButtonEvent event) {

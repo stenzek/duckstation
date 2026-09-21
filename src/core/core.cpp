@@ -30,6 +30,7 @@
 #include "common/log.h"
 #include "common/memmap.h"
 #include "common/path.h"
+#include "common/platform_strings.h"
 #include "common/ryml_helpers.h"
 #include "common/string_util.h"
 #include "common/task_queue.h"
@@ -139,7 +140,6 @@ bool Core::SetAppRootAndResources(Error* error)
 
 bool Core::SetDataRoot(Error* error)
 {
-#ifndef __ANDROID__
   // This bullshit here because AppImage mounts in /tmp, so we need to check the "real" appimage location.
   std::string_view real_approot = EmuFolders::AppRoot;
 
@@ -156,9 +156,8 @@ bool Core::SetDataRoot(Error* error)
     EmuFolders::DataRoot = std::string(real_approot);
     return true;
   }
-#endif // __ANDROID__
 
-#if defined(_WIN32)
+#ifdef _WIN32
 
   // On Windows, we want to use %APPDATA%\DuckStation for data, and %LOCALAPPDATA%\DuckStation for cache.
   // Old installs use Documents\DuckStation for everything. Check this first.
@@ -195,7 +194,7 @@ bool Core::SetDataRoot(Error* error)
     }
   }
 
-#elif (defined(__linux__) || defined(__FreeBSD__)) && !defined(__ANDROID__)
+#elifdef __linux__
 
   // Use $XDG_CONFIG_HOME/duckstation if it exists.
   const char* xdg_config_home = getenv("XDG_CONFIG_HOME");
@@ -222,7 +221,7 @@ bool Core::SetDataRoot(Error* error)
     }
   }
 
-#elif defined(__APPLE__)
+#elifdef __APPLE__
 
   static constexpr char MAC_DATA_DIR[] = "Library/Application Support/DuckStation";
   const char* home_dir = getenv("HOME");
@@ -256,8 +255,6 @@ bool Core::SetDataRoot(Error* error)
 
   return true;
 }
-
-#ifndef __ANDROID__
 
 std::string Core::GetBaseSettingsPath()
 {
@@ -348,8 +345,6 @@ void Core::SetDefaultSettings(SettingsInterface& si, bool host, bool system, boo
     Settings::SetDefaultHotkeyConfig(si);
   }
 }
-
-#endif // __ANDROID__
 
 std::unique_lock<Threading::Mutex> Core::GetSettingsLock()
 {
@@ -758,10 +753,8 @@ bool Core::CoreThreadInitialize(bool disable_worker_threads, Error* error)
 
   Achievements::Initialize();
 
-#ifdef ENABLE_DISCORD_PRESENCE
   if (g_settings.enable_discord_presence)
     DiscordPresence::Initialize();
-#endif
 
   return true;
 }
@@ -770,9 +763,7 @@ void Core::CoreThreadShutdown()
 {
   s_locals.async_task_queue.SetWorkerCount(0, 0);
 
-#ifdef ENABLE_DISCORD_PRESENCE
   DiscordPresence::Shutdown();
-#endif
 
   Achievements::Shutdown();
 
@@ -824,15 +815,11 @@ void Core::IdleUpdate(u64 max_poll_time)
 {
   InputManager::PollSources();
 
-#ifdef ENABLE_DISCORD_PRESENCE
   DiscordPresence::Poll();
-#endif
 
   HTTPDownloader::PollRequests();
 
   Achievements::IdleUpdate();
 
-#ifdef ENABLE_GDB_SERVER
   GDBServer::PollUntil(max_poll_time);
-#endif
 }

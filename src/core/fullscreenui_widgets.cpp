@@ -1717,7 +1717,6 @@ void FullscreenUI::DrawWithBlurTexture(const ImDrawList* parent_list, const ImDr
 
 bool FullscreenUI::UpdateLayoutScale()
 {
-#ifndef __ANDROID__
   static constexpr float LAYOUT_RATIO = LAYOUT_SCREEN_WIDTH / LAYOUT_SCREEN_HEIGHT;
   const ImGuiIO& io = ImGui::GetIO();
 
@@ -1748,21 +1747,6 @@ bool FullscreenUI::UpdateLayoutScale()
   UIStyle.MediumSmallFontSize = LayoutScale(LAYOUT_MEDIUM_SMALL_FONT_SIZE);
 
   return (UIStyle.LayoutScale != old_scale);
-
-#else
-  // On Android, treat a rotated display as always being in landscape mode for FSUI scaling.
-  // Makes achievement popups readable regardless of the device's orientation, and avoids layout changes.
-  const ImGuiIO& io = ImGui::GetIO();
-  const float old_scale = UIStyle.LayoutScale;
-  UIStyle.LayoutScale = std::max(io.DisplaySize.x, io.DisplaySize.y) / LAYOUT_SCREEN_WIDTH;
-  UIStyle.RcpLayoutScale = 1.0f / UIStyle.LayoutScale;
-  UIStyle.LargeFontSize = LayoutScale(LAYOUT_LARGE_FONT_SIZE);
-  UIStyle.MediumFontSize = LayoutScale(LAYOUT_MEDIUM_FONT_SIZE);
-  UIStyle.MediumLargeFontSize = LayoutScale(LAYOUT_MEDIUM_LARGE_FONT_SIZE);
-  UIStyle.MediumSmallFontSize = LayoutScale(LAYOUT_MEDIUM_SMALL_FONT_SIZE);
-  return (UIStyle.LayoutScale != old_scale);
-
-#endif
 }
 
 FullscreenUI::IconStackString::IconStackString(std::string_view icon, std::string_view str)
@@ -7084,15 +7068,7 @@ FullscreenUI::NotificationLayout::NotificationLayout(NotificationLocation locati
   : m_spacing(LayoutScale(10.0f)), m_location(location)
 {
   const float screen_margin = ImGuiManager::GetScreenMargin();
-
-  // android goes a little lower due to on-screen buttons
-#ifndef __ANDROID__
-  static constexpr float top_start_pct = 0.1f;
-#else
-  static constexpr float top_start_pct = 0.15f;
-#endif
-
-  const float top_margin = ImFloor(top_start_pct * ImGui::GetIO().DisplaySize.y);
+  const float top_margin = ImFloor(0.1f * ImGui::GetIO().DisplaySize.y);
   CalcStartPosition(screen_margin, top_margin);
 }
 
