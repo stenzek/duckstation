@@ -483,7 +483,7 @@ public:
 
 struct WidgetsState
 {
-  std::recursive_mutex shared_state_mutex;
+  Threading::Mutex shared_state_mutex;
 
   CloseButtonState close_button_state = CloseButtonState::None;
   FocusResetType focus_reset_queued = FocusResetType::None;
