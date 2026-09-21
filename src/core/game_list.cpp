@@ -1773,12 +1773,11 @@ bool GameList::DownloadCovers(const std::vector<std::string>& url_templates, boo
     if (!has_serial && url_template.find("${serial}") != std::string::npos)
       has_serial = true;
   }
-  if (!has_title && !has_save_title && !has_file_title && !has_serial)
+  if (!has_title && !has_localized_title && !has_save_title && !has_file_title && !has_serial)
   {
-    Error::SetStringView(
-      error,
-      TRANSLATE_SV("GameList",
-                   "URL template must contain at least one of ${title}, ${savetitle}, ${filetitle}, or ${serial}."));
+    Error::SetStringView(error,
+                         TRANSLATE_SV("GameList", "URL template must contain at least one of ${title}, "
+                                                  "${localizedtitle}, ${savetitle}, ${filetitle}, or ${serial}."));
     return false;
   }
 

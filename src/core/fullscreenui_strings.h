@@ -17,7 +17,11 @@
 #if 0
 // TRANSLATION-STRING-AREA-BEGIN
 TRANSLATE_NOOP("FullscreenUI", " (%u MB on disk)");
-TRANSLATE_NOOP("FullscreenUI", "${title}: Title of the game.\n${filetitle}: Name component of the game's filename.\n${serial}: Serial of the game.");
+TRANSLATE_NOOP("FullscreenUI", "${filetitle}: Name component of the game's filename.");
+TRANSLATE_NOOP("FullscreenUI", "${localizedtitle}: Localized title for the game in its native language.");
+TRANSLATE_NOOP("FullscreenUI", "${savetitle}: Save title for the game, including the region suffix.");
+TRANSLATE_NOOP("FullscreenUI", "${serial}: Serial of the game.");
+TRANSLATE_NOOP("FullscreenUI", "${title}: Title of the game.");
 TRANSLATE_NOOP("FullscreenUI", "%.1f ms");
 TRANSLATE_NOOP("FullscreenUI", "%.2f Seconds");
 TRANSLATE_NOOP("FullscreenUI", "%d Frames");
