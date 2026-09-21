@@ -79,8 +79,6 @@ static bool LoadOverlaySettings();
 static bool LoadOverlayTexture();
 static bool LoadOverlayPreset(Error* error, Image* image);
 
-static void SleepUntilPresentTime(u64 present_time);
-
 namespace {
 
 struct Locals
@@ -1571,7 +1569,7 @@ bool VideoPresenter::PresentFrame(GPUBackend* backend, u64 present_time)
     {
       // No explicit present support, simulate it with Flush.
       g_gpu_device->FlushCommands();
-      SleepUntilPresentTime(present_time);
+      Timer::SleepUntil(present_time, true);
     }
 
     g_gpu_device->EndPresent(swap_chain, explicit_present, timed_present ? present_time : 0);
@@ -1581,7 +1579,7 @@ bool VideoPresenter::PresentFrame(GPUBackend* backend, u64 present_time)
 
     if (explicit_present)
     {
-      SleepUntilPresentTime(present_time);
+      Timer::SleepUntil(present_time, true);
       g_gpu_device->SubmitPresent(swap_chain);
     }
 
@@ -1612,18 +1610,6 @@ bool VideoPresenter::PresentFrame(GPUBackend* backend, u64 present_time)
   }
 
   return true;
-}
-
-void VideoPresenter::SleepUntilPresentTime(u64 present_time)
-{
-  // Use a spinwait if we undersleep for all platforms except android.. don't want to burn battery.
-  // Linux also seems to do a much better job of waking up at the requested time.
-
-#if !defined(__linux__) && !defined(__ANDROID__)
-  Timer::SleepUntil(present_time, true);
-#else
-  Timer::SleepUntil(present_time, false);
-#endif
 }
 
 bool VideoPresenter::RenderScreenshotToBuffer(u32 width, u32 height, bool postfx, bool apply_aspect_ratio,

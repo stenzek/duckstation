@@ -2370,19 +2370,9 @@ void System::Throttle(Timer::Value current_time, Timer::Value sleep_until)
   // If we are running the GDB server and have clients, then use it to sleep instead.
   // That way in a query->response->query->response chain, we don't process only one message per frame.
   if (GDBServer::HasAnyClients())
-  {
     GDBServer::PollUntil(sleep_until);
-  }
   else
-  {
-    // Use a spinwait if we undersleep for all platforms except android.. don't want to burn battery.
-    // Linux also seems to do a much better job of waking up at the requested time.
-#ifndef __linux__
     Timer::SleepUntil(sleep_until, g_settings.display_optimal_frame_pacing);
-#else
-    Timer::SleepUntil(sleep_until, false);
-#endif
-  }
 
 #if 0
   const Timer::Value time_after_sleep = Timer::GetCurrentValue();
