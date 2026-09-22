@@ -3,24 +3,14 @@
 
 #pragma once
 
-#include "controller.h"
+#include "negcon_base.h"
 
 #include <array>
 #include <memory>
-#include <optional>
 
-class NeGconRumble final : public Controller
+class NeGconRumble final : public NegConBase
 {
 public:
-  enum class Axis : u8
-  {
-    Steering = 0,
-    I = 1,
-    II = 2,
-    L = 3,
-    Count
-  };
-
   enum class Button : u8
   {
     Start = 0,
@@ -32,16 +22,6 @@ public:
     B = 6,
     A = 7,
     Analog = 8,
-    Count
-  };
-
-  enum class HalfAxis : u8
-  {
-    SteeringLeft,
-    SteeringRight,
-    I,
-    II,
-    L,
     Count
   };
 
@@ -64,9 +44,6 @@ public:
 
   void ResetTransferState() override;
   bool Transfer(const u8 data_in, u8* data_out) override;
-
-  u32 GetButtonStateBits() const override;
-  std::optional<u32> GetAnalogInputBytes() const override;
 
   void LoadSettings(const SettingsInterface& si, const char* section, bool initial) override;
 
@@ -97,26 +74,16 @@ private:
   static const Controller::ControllerBindingInfo s_binding_info[];
 
   std::array<s16, NUM_MOTORS> m_vibration_bias{DEFAULT_LARGE_MOTOR_VIBRATION_BIAS, DEFAULT_SMALL_MOTOR_VIBRATION_BIAS};
-  bool m_disable_socd = false;
-
   bool m_analog_mode = false;
   bool m_analog_locked = false;
   bool m_dualshock_enabled = false;
   bool m_configuration_mode = false;
-
-  std::array<u8, static_cast<u8>(Axis::Count)> m_axis_state{};
 
   enum : u8
   {
     LargeMotor = 0,
     SmallMotor = 1
   };
-
-  // steering, merged to m_axis_state
-  std::array<u8, 2> m_half_axis_state{};
-
-  // buttons are active low; bits 0-2, 8-10, 14-15 are not used and are always high
-  u16 m_button_state = UINT16_C(0xFFFF);
 
   MotorState m_motor_state{};
 
@@ -148,7 +115,4 @@ private:
   float GetMotorStrength(u32 motor) const;
   void ResetRumbleConfig();
   void SetMotorStateForConfigIndex(int index, u8 value);
-
-  float m_steering_deadzone = 0.00f;
-  float m_steering_sensitivity = 1.00f;
 };

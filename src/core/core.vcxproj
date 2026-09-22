@@ -67,6 +67,7 @@
     <ClCompile Include="multitap.cpp" />
     <ClCompile Include="guncon.cpp" />
     <ClCompile Include="negcon.cpp" />
+    <ClCompile Include="negcon_base.cpp" />
     <ClCompile Include="negcon_rumble.cpp" />
     <ClCompile Include="pad.cpp" />
     <ClCompile Include="controller.cpp" />
@@ -164,6 +165,7 @@
     <ClInclude Include="multitap.h" />
     <ClInclude Include="guncon.h" />
     <ClInclude Include="negcon.h" />
+    <ClInclude Include="negcon_base.h" />
     <ClInclude Include="negcon_rumble.h" />
     <ClInclude Include="pad.h" />
     <ClInclude Include="controller.h" />

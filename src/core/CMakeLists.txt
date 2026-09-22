@@ -116,6 +116,8 @@ add_library(core
   multitap.h
   negcon.cpp
   negcon.h
+  negcon_base.cpp
+  negcon_base.h
   negcon_rumble.cpp
   negcon_rumble.h
   pad.cpp

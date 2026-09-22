@@ -3,8 +3,7 @@
 
 #include "negcon_rumble.h"
 #include "controller_helpers.h"
-#include "settings.h"
-#include "system.h"
+#include "host.h"
 
 #include "util/imgui_manager.h"
 #include "util/input_manager.h"
@@ -14,24 +13,19 @@
 #include "common/assert.h"
 #include "common/bitutils.h"
 #include "common/log.h"
-#include "common/string_util.h"
 
 #include "IconsFontAwesome.h"
 #include "IconsPromptFont.h"
 #include "fmt/format.h"
 
+#include <algorithm>
 #include <cmath>
 
 LOG_CHANNEL(Controller);
 
-// Mapping of Button to index of corresponding bit in m_button_state
-static constexpr std::array<u8, static_cast<size_t>(NeGconRumble::Button::Count)> s_button_indices = {3, 4,  5,  6,
-                                                                                                      7, 11, 12, 13};
-NeGconRumble::NeGconRumble(u32 index) : Controller(index)
+NeGconRumble::NeGconRumble(u32 index) : NegConBase(index, HALFAXIS_BIND_START_INDEX)
 {
   m_status_byte = 0x5A;
-  m_axis_state.fill(0x00);
-  m_axis_state[static_cast<u8>(Axis::Steering)] = 0x80;
   m_rumble_config.fill(0xFF);
 }
 
@@ -120,23 +114,9 @@ float NeGconRumble::GetBindState(u32 index) const
   {
     return GetMotorStrength(index - MOTOR_BIND_START_INDEX);
   }
-  else if (index >= (HALFAXIS_BIND_START_INDEX + static_cast<u32>(HalfAxis::I)))
-  {
-    return static_cast<float>(m_axis_state[index - (HALFAXIS_BIND_START_INDEX + static_cast<u32>(HalfAxis::I)) + 1]) *
-           (1.0f / 255.0f);
-  }
-  else if (index >= HALFAXIS_BIND_START_INDEX)
-  {
-    return static_cast<float>(m_half_axis_state[index - HALFAXIS_BIND_START_INDEX]) * (1.0f / 255.0f);
-  }
-  else if (index < static_cast<u32>(Button::Analog))
-  {
-    const u16 bit = u16(1) << s_button_indices[static_cast<u8>(index)];
-    return BoolToFloat((m_button_state & bit) == 0);
-  }
   else
   {
-    return 0.0f;
+    return NegConBase::GetBindState(index);
   }
 }
 
@@ -155,60 +135,7 @@ void NeGconRumble::SetBindState(u32 index, float value)
 
     return;
   }
-  // Steering Axis: -1..1 -> 0..255
-  else if (index == (static_cast<u32>(Button::Count) + static_cast<u32>(HalfAxis::SteeringLeft)) ||
-           index == (static_cast<u32>(Button::Count) + static_cast<u32>(HalfAxis::SteeringRight)))
-  {
-    value *= m_steering_sensitivity;
-    if (value < m_steering_deadzone)
-      value = 0.0f;
-
-    m_half_axis_state[index - static_cast<u32>(Button::Count)] =
-      static_cast<u8>(std::clamp(value * 255.0f, 0.0f, 255.0f));
-
-    m_axis_state[static_cast<u32>(Axis::Steering)] =
-      ControllerHelpers::MergeHalfAxes(m_half_axis_state[static_cast<size_t>(HalfAxis::SteeringLeft)],
-                                       m_half_axis_state[static_cast<size_t>(HalfAxis::SteeringRight)], false);
-  }
-  else if (index >= static_cast<u32>(Button::Count))
-  {
-    // less one because of the two steering axes
-    const u32 sub_index = index - (static_cast<u32>(Button::Count) + 1);
-    if (sub_index >= m_axis_state.size())
-      return;
-
-    m_axis_state[sub_index] = static_cast<u8>(std::clamp(value * 255.0f, 0.0f, 255.0f));
-  }
-  else if (index < static_cast<u32>(Button::Count))
-  {
-    const u16 bit = u16(1) << s_button_indices[static_cast<u8>(index)];
-
-    if (value >= 0.5f)
-    {
-      if (m_button_state & bit)
-        System::SetRunaheadReplayFlag(false);
-
-      m_button_state &= ~bit;
-    }
-    else
-    {
-      if (!(m_button_state & bit))
-        System::SetRunaheadReplayFlag(false);
-
-      m_button_state |= bit;
-    }
-  }
-}
-
-u32 NeGconRumble::GetButtonStateBits() const
-{
-  return m_button_state ^ 0xFFFF;
-}
-
-std::optional<u32> NeGconRumble::GetAnalogInputBytes() const
-{
-  return m_axis_state[static_cast<size_t>(Axis::L)] << 24 | m_axis_state[static_cast<size_t>(Axis::II)] << 16 |
-         m_axis_state[static_cast<size_t>(Axis::I)] << 8 | m_axis_state[static_cast<size_t>(Axis::Steering)];
+  NegConBase::SetBindState(index, value);
 }
 
 void NeGconRumble::ResetTransferState()
@@ -717,25 +644,25 @@ constinit const Controller::ControllerBindingInfo NeGconRumble::s_binding_info[]
   {name, display_name, icon_name, LED_BIND_START_INDEX + index, InputBindingInfo::Type::LED, genb}
 
   // clang-format off
-  BUTTON("Up", TRANSLATE_NOOP("NeGconRumble", "D-Pad Up"), ICON_PF_DPAD_UP, NeGconRumble::Button::Up, GenericInputBinding::DPadUp),
-  BUTTON("Right", TRANSLATE_NOOP("NeGconRumble", "D-Pad Right"), ICON_PF_DPAD_RIGHT, NeGconRumble::Button::Right, GenericInputBinding::DPadRight),
-  BUTTON("Down", TRANSLATE_NOOP("NeGconRumble", "D-Pad Down"), ICON_PF_DPAD_DOWN, NeGconRumble::Button::Down, GenericInputBinding::DPadDown),
-  BUTTON("Left", TRANSLATE_NOOP("NeGconRumble", "D-Pad Left"), ICON_PF_DPAD_LEFT, NeGconRumble::Button::Left, GenericInputBinding::DPadLeft),
-  BUTTON("Start", TRANSLATE_NOOP("NeGconRumble", "Start"),ICON_PF_START, NeGconRumble::Button::Start, GenericInputBinding::Start),
-  BUTTON("A", TRANSLATE_NOOP("NeGconRumble", "A Button"), ICON_PF_BUTTON_A, NeGconRumble::Button::A, GenericInputBinding::Circle),
-  BUTTON("B", TRANSLATE_NOOP("NeGconRumble", "B Button"), ICON_PF_BUTTON_B, NeGconRumble::Button::B, GenericInputBinding::Triangle),
-  AXIS("I", TRANSLATE_NOOP("NeGconRumble", "I Button"), ICON_PF_RIGHT_TRIGGER_R2, NeGconRumble::HalfAxis::I, GenericInputBinding::R2),
-  AXIS("II", TRANSLATE_NOOP("NeGconRumble", "II Button"), ICON_PF_LEFT_TRIGGER_L2, NeGconRumble::HalfAxis::II, GenericInputBinding::L2),
-  AXIS("L", TRANSLATE_NOOP("NeGconRumble", "Left Trigger"), ICON_PF_LEFT_ANALOG_LEFT, NeGconRumble::HalfAxis::L, GenericInputBinding::L1),
-  BUTTON("R", TRANSLATE_NOOP("NeGconRumble", "Right Trigger"), ICON_PF_RIGHT_SHOULDER_R1, NeGconRumble::Button::R, GenericInputBinding::R1),
-  AXIS("SteeringLeft", TRANSLATE_NOOP("NeGconRumble", "Steering (Twist) Left"), ICON_PF_LEFT_ANALOG_LEFT, NeGconRumble::HalfAxis::SteeringLeft, GenericInputBinding::LeftStickLeft),
-  AXIS("SteeringRight", TRANSLATE_NOOP("NeGconRumble", "Steering (Twist) Right"), ICON_PF_LEFT_ANALOG_RIGHT, NeGconRumble::HalfAxis::SteeringRight, GenericInputBinding::LeftStickRight),
-  BUTTON("Analog", TRANSLATE_NOOP("NeGconRumble", "Analog Toggle"), ICON_PF_ANALOG_LEFT_RIGHT, NeGconRumble::Button::Analog, GenericInputBinding::System),
+  BUTTON("Up", TRANSLATE_NOOP("NeGcon", "D-Pad Up"), ICON_PF_DPAD_UP, NeGconRumble::Button::Up, GenericInputBinding::DPadUp),
+  BUTTON("Right", TRANSLATE_NOOP("NeGcon", "D-Pad Right"), ICON_PF_DPAD_RIGHT, NeGconRumble::Button::Right, GenericInputBinding::DPadRight),
+  BUTTON("Down", TRANSLATE_NOOP("NeGcon", "D-Pad Down"), ICON_PF_DPAD_DOWN, NeGconRumble::Button::Down, GenericInputBinding::DPadDown),
+  BUTTON("Left", TRANSLATE_NOOP("NeGcon", "D-Pad Left"), ICON_PF_DPAD_LEFT, NeGconRumble::Button::Left, GenericInputBinding::DPadLeft),
+  BUTTON("Start", TRANSLATE_NOOP("NeGcon", "Start"),ICON_PF_START, NeGconRumble::Button::Start, GenericInputBinding::Start),
+  BUTTON("A", TRANSLATE_NOOP("NeGcon", "A Button"), ICON_PF_BUTTON_A, NeGconRumble::Button::A, GenericInputBinding::Circle),
+  BUTTON("B", TRANSLATE_NOOP("NeGcon", "B Button"), ICON_PF_BUTTON_B, NeGconRumble::Button::B, GenericInputBinding::Triangle),
+  AXIS("I", TRANSLATE_NOOP("NeGcon", "I Button"), ICON_PF_BUTTON_ALT_1, NeGconRumble::HalfAxis::I, GenericInputBinding::R2),
+  AXIS("II", TRANSLATE_NOOP("NeGcon", "II Button"), ICON_PF_BUTTON_ALT_2, NeGconRumble::HalfAxis::II, GenericInputBinding::L2),
+  AXIS("L", TRANSLATE_NOOP("NeGcon", "Left Trigger"), ICON_PF_LEFT_TRIGGER_LT, NeGconRumble::HalfAxis::L, GenericInputBinding::L1),
+  BUTTON("R", TRANSLATE_NOOP("NeGcon", "Right Trigger"), ICON_PF_RIGHT_TRIGGER_RT, NeGconRumble::Button::R, GenericInputBinding::R1),
+  AXIS("SteeringLeft", TRANSLATE_NOOP("NeGcon", "Steering (Twist) Left"), ICON_PF_ANALOG_LEFT, NeGconRumble::HalfAxis::SteeringLeft, GenericInputBinding::LeftStickLeft),
+  AXIS("SteeringRight", TRANSLATE_NOOP("NeGcon", "Steering (Twist) Right"), ICON_PF_ANALOG_RIGHT, NeGconRumble::HalfAxis::SteeringRight, GenericInputBinding::LeftStickRight),
+  BUTTON("Analog", TRANSLATE_NOOP("NeGcon", "Analog Toggle"), ICON_PF_ANALOG_LEFT_RIGHT, NeGconRumble::Button::Analog, GenericInputBinding::System),
   
-  MOTOR("LargeMotor", TRANSLATE_NOOP("AnalogController", "Large Motor"), ICON_PF_VIBRATION_L, LargeMotor, GenericInputBinding::LargeMotor),
-  MOTOR("SmallMotor", TRANSLATE_NOOP("AnalogController", "Small Motor"), ICON_PF_VIBRATION, SmallMotor, GenericInputBinding::SmallMotor),
+  MOTOR("LargeMotor", TRANSLATE_NOOP("NeGcon", "Large Motor"), ICON_PF_VIBRATION_L, LargeMotor, GenericInputBinding::LargeMotor),
+  MOTOR("SmallMotor", TRANSLATE_NOOP("NeGcon", "Small Motor"), ICON_PF_VIBRATION, SmallMotor, GenericInputBinding::SmallMotor),
 
-  MODE_LED("ModeLED", TRANSLATE_NOOP("AnalogController", "Mode LED"), ICON_PF_LED, 0, GenericInputBinding::ModeLED),
+  MODE_LED("ModeLED", TRANSLATE_NOOP("NeGcon", "Mode LED"), ICON_PF_LED, 0, GenericInputBinding::ModeLED),
 // clang-format on
 
 #undef MOTOR
@@ -745,22 +672,48 @@ constinit const Controller::ControllerBindingInfo NeGconRumble::s_binding_info[]
 
 static constexpr SettingInfo s_settings[] = {
   {SettingInfo::Type::Boolean, "DisableSOCD",
-   TRANSLATE_NOOP("NeGconRumble", "Disable Simultaneous Opposing Cardinal Directions"),
-   TRANSLATE_NOOP("NeGconRumble", "Prevents concurrent left/right or up/down inputs from being presented to the game."),
+   TRANSLATE_NOOP("NeGcon", "Disable Simultaneous Opposing Cardinal Directions"),
+   TRANSLATE_NOOP("NeGcon", "Prevents concurrent left/right or up/down inputs from being presented to the game."),
    "false", nullptr, nullptr, nullptr, nullptr, nullptr, 0.0f},
-  {SettingInfo::Type::Float, "SteeringDeadzone", TRANSLATE_NOOP("NeGconRumble", "Steering Axis Deadzone"),
-   TRANSLATE_NOOP("NeGconRumble", "Sets deadzone size for steering axis."), "0", "0", "0.99", "0.01", "%.0f%%", nullptr,
-   100.0f},
-  {SettingInfo::Type::Float, "SteeringSensitivity", TRANSLATE_NOOP("NeGconRumble", "Steering Axis Sensitivity"),
-   TRANSLATE_NOOP("NeGconRumble", "Sets the steering axis scaling factor."), "1", "0.01", "2", "0.01", "%.0f%%",
-   nullptr, 100.0f},
-  {SettingInfo::Type::Integer, "LargeMotorVibrationBias", TRANSLATE_NOOP("NeGconRumble", "Large Motor Vibration Bias"),
-   TRANSLATE_NOOP("NeGconRumble",
+  {SettingInfo::Type::Float, "SteeringDeadzone", TRANSLATE_NOOP("NeGcon", "Steering Axis Deadzone"),
+   TRANSLATE_NOOP("NeGcon", "Sets deadzone for steering axis."), "0", "0", "0.99", "0.01", "%.0f%%", nullptr, 100.0f},
+  {SettingInfo::Type::Float, "SteeringSaturation", TRANSLATE_NOOP("NeGcon", "Steering Axis Saturation"),
+   TRANSLATE_NOOP("NeGcon", "Sets saturation for steering axis."), "1", "0.01", "1", "0.01", "%.0f%%", nullptr, 100.0f},
+  {SettingInfo::Type::Float, "SteeringLinearity", TRANSLATE_NOOP("NeGcon", "Steering Axis Linearity"),
+   TRANSLATE_NOOP("NeGcon", "Sets linearity for steering axis."), "0", "-2", "2", "0.05", "%.2f", nullptr, 1.0f},
+  {SettingInfo::Type::Float, "SteeringScaling", TRANSLATE_NOOP("NeGcon", "Steering Scaling"),
+   TRANSLATE_NOOP("NeGcon", "Sets scaling for steering axis."), "1", "0.01", "10", "0.01", "%.0f%%", nullptr, 100.0f},
+  {SettingInfo::Type::Float, "IDeadzone", TRANSLATE_NOOP("NeGcon", "I Button Deadzone"),
+   TRANSLATE_NOOP("NeGcon", "Sets deadzone for button I."), "0", "0", "0.99", "0.01", "%.0f%%", nullptr, 100.0f},
+  {SettingInfo::Type::Float, "ISaturation", TRANSLATE_NOOP("NeGcon", "I Button Saturation"),
+   TRANSLATE_NOOP("NeGcon", "Sets saturation for button I."), "1", "0.01", "1", "0.01", "%.0f%%", nullptr, 100.0f},
+  {SettingInfo::Type::Float, "ILinearity", TRANSLATE_NOOP("NeGcon", "I Button Linearity"),
+   TRANSLATE_NOOP("NeGcon", "Sets linearity for button I."), "0", "-2", "2", "0.01", "%.2f", nullptr, 1.0f},
+  {SettingInfo::Type::Float, "IScaling", TRANSLATE_NOOP("NeGcon", "I Scaling"),
+   TRANSLATE_NOOP("NeGcon", "Sets scaling for button I."), "1", "0.01", "10", "0.01", "%.0f%%", nullptr, 100.0f},
+  {SettingInfo::Type::Float, "IIDeadzone", TRANSLATE_NOOP("NeGcon", "II Button Deadzone"),
+   TRANSLATE_NOOP("NeGcon", "Sets deadzone for button II."), "0", "0", "0.99", "0.01", "%.0f%%", nullptr, 100.0f},
+  {SettingInfo::Type::Float, "IISaturation", TRANSLATE_NOOP("NeGcon", "II Button Saturation"),
+   TRANSLATE_NOOP("NeGcon", "Sets saturation for button II."), "1", "0.01", "1", "0.01", "%.0f%%", nullptr, 100.0f},
+  {SettingInfo::Type::Float, "IILinearity", TRANSLATE_NOOP("NeGcon", "II Button Linearity"),
+   TRANSLATE_NOOP("NeGcon", "Sets linearity for button II."), "0", "-2", "2", "0.01", "%.2f", nullptr, 1.0f},
+  {SettingInfo::Type::Float, "IIScaling", TRANSLATE_NOOP("NeGcon", "II Scaling"),
+   TRANSLATE_NOOP("NeGcon", "Sets scaling for button II."), "1", "0.01", "10", "0.01", "%.0f%%", nullptr, 100.0f},
+  {SettingInfo::Type::Float, "LDeadzone", TRANSLATE_NOOP("NeGcon", "Left Trigger Deadzone"),
+   TRANSLATE_NOOP("NeGcon", "Sets deadzone for left trigger."), "0", "0", "0.99", "0.01", "%.0f%%", nullptr, 100.0f},
+  {SettingInfo::Type::Float, "LSaturation", TRANSLATE_NOOP("NeGcon", "Left Trigger Saturation"),
+   TRANSLATE_NOOP("NeGcon", "Sets saturation for left trigger."), "1", "0.01", "1", "0.01", "%.0f%%", nullptr, 100.0f},
+  {SettingInfo::Type::Float, "LLinearity", TRANSLATE_NOOP("NeGcon", "Left Trigger Linearity"),
+   TRANSLATE_NOOP("NeGcon", "Sets linearity for left trigger."), "0", "-2", "2", "0.01", "%.2f", nullptr, 1.0f},
+  {SettingInfo::Type::Float, "LScaling", TRANSLATE_NOOP("NeGcon", "Left Trigger Scaling"),
+   TRANSLATE_NOOP("NeGcon", "Sets scaling for left trigger."), "1", "0.01", "10", "0.01", "%.0f%%", nullptr, 100.0f},
+  {SettingInfo::Type::Integer, "LargeMotorVibrationBias", TRANSLATE_NOOP("NeGcon", "Large Motor Vibration Bias"),
+   TRANSLATE_NOOP("NeGcon",
                   "Sets the bias value for the large vibration motor. If vibration in some games is too weak or not "
                   "functioning, try increasing this value. Negative values will decrease the intensity of vibration."),
    "8", "-255", "255", "1", "%d", nullptr, 1.0f},
-  {SettingInfo::Type::Integer, "SmallMotorVibrationBias", TRANSLATE_NOOP("NeGconRumble", "Small Motor Vibration Bias"),
-   TRANSLATE_NOOP("NeGconRumble",
+  {SettingInfo::Type::Integer, "SmallMotorVibrationBias", TRANSLATE_NOOP("NeGcon", "Small Motor Vibration Bias"),
+   TRANSLATE_NOOP("NeGcon",
                   "Sets the bias value for the small vibration motor. If vibration in some games is too weak or not "
                   "functioning, try increasing this value. Negative values will decrease the intensity of vibration."),
    "8", "-255", "255", "1", "%d", nullptr, 1.0f},
@@ -776,9 +729,7 @@ const Controller::ControllerInfo NeGconRumble::INFO = {ControllerType::NeGconRum
 
 void NeGconRumble::LoadSettings(const SettingsInterface& si, const char* section, bool initial)
 {
-  m_steering_deadzone = si.GetFloatValue(section, "SteeringDeadzone", 0.10f);
-  m_steering_sensitivity = si.GetFloatValue(section, "SteeringSensitivity", 1.00f);
-  m_disable_socd = si.GetBoolValue(section, "DisableSOCD", false);
+  NegConBase::LoadSettings(si, section, initial);
   m_vibration_bias[0] = static_cast<s16>(
     std::clamp(si.GetIntValue(section, "LargeMotorVibrationBias", DEFAULT_LARGE_MOTOR_VIBRATION_BIAS), -255, 255));
   m_vibration_bias[1] = static_cast<s16>(

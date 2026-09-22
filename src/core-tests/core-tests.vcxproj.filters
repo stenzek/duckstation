@@ -6,6 +6,8 @@
     <ClCompile Include="cpu_disasm_tests.cpp" />
     <ClCompile Include="stub_host.cpp" />
     <ClCompile Include="spu_tests.cpp" />
+    <ClCompile Include="lightgun_controller_tests.cpp" />
+    <ClCompile Include="negcon_base_tests.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="CMakeLists.txt" />
