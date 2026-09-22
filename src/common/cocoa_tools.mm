@@ -134,30 +134,58 @@ std::optional<std::string> CocoaTools::GetNonTranslocatedBundlePath()
   return ret;
 }
 
-bool CocoaTools::DelayedLaunch(std::string_view file, std::span<const std::string_view> args)
+bool CocoaTools::LaunchApplication(std::string_view path, std::span<const std::string_view> args, Error* error)
 {
   @autoreleasepool
   {
-    const int pid = [[NSProcessInfo processInfo] processIdentifier];
-
-    // Hopefully we're not too large here...
-    std::string task_args =
-      fmt::format("while /bin/ps -p {} > /dev/null; do /bin/sleep 0.1; done; exec /usr/bin/open \"{}\"", pid, file);
-    if (!args.empty())
+    if (path.empty())
     {
-      task_args += " --args";
-      for (const std::string_view& arg : args)
-      {
-        task_args += " \"";
-        task_args += arg;
-        task_args += "\"";
-      }
+      Error::SetString(error, "Cannot launch an application with an empty path.");
+      return false;
     }
 
-    NSTask* task = [NSTask new];
-    [task setExecutableURL:[NSURL fileURLWithPath:@"/bin/sh"]];
-    [task setArguments:@[ @"-c", [NSString stringWithUTF8String:task_args.c_str()] ]];
-    return [task launchAndReturnError:nil];
+    NSMutableArray<NSString*>* const launch_args = [NSMutableArray arrayWithCapacity:args.size()];
+    for (const std::string_view& arg : args)
+      [launch_args addObject:arg.empty() ? @"" : StringViewToNSString(arg)];
+
+    NSWorkspaceOpenConfiguration* const configuration = [NSWorkspaceOpenConfiguration configuration];
+    [configuration setActivates:YES];
+    [configuration setAllowsRunningApplicationSubstitution:NO];
+    [configuration setCreatesNewApplicationInstance:YES];
+    // Callers present launch failures in their own UI. Asking LaunchServices to present them would result in a
+    // duplicate system alert followed by the DuckStation/Updater error dialog.
+    [configuration setPromptsUserIfNeeded:NO];
+    [configuration setArguments:launch_args];
+
+    // NSWorkspace's completion handler runs on a concurrent queue, so it is safe to wait here. Waiting for the
+    // callback ensures that callers do not exit until LaunchServices has confirmed that the replacement app started.
+    dispatch_semaphore_t const completion_semaphore = dispatch_semaphore_create(0);
+    __block bool launch_succeeded = false;
+    __block NSError* launch_error = nil;
+    [[NSWorkspace sharedWorkspace]
+      openApplicationAtURL:[NSURL fileURLWithPath:StringViewToNSString(path) isDirectory:YES]
+             configuration:configuration
+         completionHandler:^(NSRunningApplication* app, NSError* nserror) {
+           launch_succeeded = (app != nil && nserror == nil);
+           launch_error = [nserror retain];
+           dispatch_semaphore_signal(completion_semaphore);
+         }];
+    dispatch_semaphore_wait(completion_semaphore, DISPATCH_TIME_FOREVER);
+
+    if (!launch_succeeded)
+    {
+      if (launch_error)
+        Error::SetStringFmt(error, "Failed to launch '{}': {}", path, NSErrorToString(launch_error));
+      else
+        Error::SetStringFmt(error, "Failed to launch '{}'.", path);
+    }
+    [launch_error release];
+
+#if !OS_OBJECT_USE_OBJC
+    dispatch_release(completion_semaphore);
+#endif
+
+    return launch_succeeded;
   }
 }
 

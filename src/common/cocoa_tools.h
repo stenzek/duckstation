@@ -46,8 +46,8 @@ std::optional<std::string> GetBundlePath();
 /// Get the bundle path to the actual application without any translocation fun
 std::optional<std::string> GetNonTranslocatedBundlePath();
 
-/// Launch the given application once this one quits
-bool DelayedLaunch(std::string_view file, std::span<const std::string_view> args = {});
+/// Launches an application through LaunchServices, optionally passing command-line arguments.
+bool LaunchApplication(std::string_view path, std::span<const std::string_view> args, Error* error);
 
 /// Returns the size of a NSView in pixels.
 std::optional<std::pair<int, int>> GetViewSizeInPixels(const void* view);

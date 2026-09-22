@@ -901,14 +901,21 @@ bool AutoUpdaterDialog::processUpdate(const std::vector<u8>& update_data)
   INFO_LOG("Beginning update:\nUpdater path: {}\nZip path: {}\nStaging directory: {}\nOutput directory: {}",
            updater_app, zip_path, staging_directory, bundle_path.value());
 
+  const std::string parent_process_id = fmt::format("{}", QCoreApplication::applicationPid());
   const std::string_view args[] = {
+    parent_process_id,
     zip_path,
     staging_directory,
     bundle_path.value(),
   };
 
   // Kick off updater!
-  CocoaTools::DelayedLaunch(updater_app, args);
+  if (!CocoaTools::LaunchApplication(updater_app, args, &error))
+  {
+    reportError(fmt::format("Failed to start updater: {}", error.GetDescription()));
+    return false;
+  }
+
   return true;
 }
 
