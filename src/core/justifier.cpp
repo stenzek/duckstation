@@ -5,10 +5,7 @@
 #include "gpu.h"
 #include "interrupt_controller.h"
 #include "system.h"
-#include "video_thread.h"
 
-#include "util/imgui_manager.h"
-#include "util/input_manager.h"
 #include "util/state_wrapper.h"
 #include "util/translation.h"
 
@@ -16,7 +13,7 @@
 #include "common/gsvector_formatter.h"
 #include "common/log.h"
 #include "common/path.h"
-#include "common/string_util.h"
+#include "common/settings_interface.h"
 
 #include "IconsPromptFont.h"
 #include <array>
@@ -28,13 +25,14 @@ LOG_CHANNEL(Controller);
 static u32 s_irq_current_line;
 #endif
 
-static constexpr std::array<u8, static_cast<size_t>(Justifier::Binding::ButtonCount)> s_button_indices = {{15, 3, 14}};
+static constexpr std::array<u8, static_cast<size_t>(Justifier::Binding::ButtonCount)> s_button_indices = {
+  {15, 3, 14, 0}};
 static constexpr std::array<const char*, NUM_CONTROLLER_AND_CARD_PORTS> s_event_names = {
   {"Justifier IRQ P0", "Justifier IRQ P1", "Justifier IRQ P2", "Justifier IRQ P3", "Justifier IRQ P4",
    "Justifier IRQ P5", "Justifier IRQ P6", "Justifier IRQ P7"}};
 
 Justifier::Justifier(u32 index)
-  : Controller(index),
+  : LightgunController(index, s_button_indices),
     m_irq_event(
       s_event_names[index], 1, 1, [](void* param, TickCount) { static_cast<Justifier*>(param)->IRQEvent(); }, this)
 {
@@ -43,13 +41,6 @@ Justifier::Justifier(u32 index)
 Justifier::~Justifier()
 {
   m_irq_event.Deactivate();
-
-  if (!m_cursor_path.empty())
-  {
-    const u32 cursor_index = GetSoftwarePointerIndex();
-    if (cursor_index < InputManager::MAX_SOFTWARE_CURSORS)
-      ImGuiManager::ClearSoftwareCursor(cursor_index);
-  }
 }
 
 ControllerType Justifier::GetType() const
@@ -67,14 +58,14 @@ bool Justifier::DoState(StateWrapper& sw, bool apply_input_state)
   u16 irq_first_line = m_irq_first_line;
   u16 irq_last_line = m_irq_last_line;
   u16 irq_tick = m_irq_tick;
-  u16 button_state = m_button_state;
   bool shoot_offscreen = m_shoot_offscreen;
   bool position_valid = m_position_valid;
 
   sw.Do(&irq_first_line);
   sw.Do(&irq_last_line);
   sw.Do(&irq_tick);
-  sw.Do(&button_state);
+  if (!LightgunController::DoState(sw, apply_input_state))
+    return false;
   sw.Do(&shoot_offscreen);
   sw.Do(&position_valid);
 
@@ -83,7 +74,6 @@ bool Justifier::DoState(StateWrapper& sw, bool apply_input_state)
     m_irq_first_line = irq_first_line;
     m_irq_last_line = irq_last_line;
     m_irq_tick = irq_tick;
-    m_button_state = button_state;
     m_shoot_offscreen = shoot_offscreen;
     m_position_valid = position_valid;
   }
@@ -97,48 +87,10 @@ bool Justifier::DoState(StateWrapper& sw, bool apply_input_state)
   return true;
 }
 
-float Justifier::GetBindState(u32 index) const
+void Justifier::SetShootOffscreen(bool pressed)
 {
-  if (index >= s_button_indices.size())
-    return 0.0f;
-
-  const u32 bit = s_button_indices[index];
-  return static_cast<float>(((m_button_state >> bit) & 1u) ^ 1u);
-}
-
-void Justifier::SetBindState(u32 index, float value)
-{
-  const bool pressed = (value >= 0.5f);
-  if (index == static_cast<u32>(Binding::ShootOffscreen))
-  {
-    if (pressed)
-      m_shoot_offscreen = m_shoot_offscreen ? m_shoot_offscreen : m_offscreen_oob_frames;
-
-    return;
-  }
-  else if (index >= static_cast<u32>(Binding::ButtonCount))
-  {
-    if (index >= static_cast<u32>(Binding::BindingCount) || !m_has_relative_binds)
-      return;
-
-    if (m_relative_pos[index - static_cast<u32>(Binding::RelativeLeft)] != value)
-    {
-      m_relative_pos[index - static_cast<u32>(Binding::RelativeLeft)] = value;
-      UpdateSoftwarePointerPosition();
-    }
-
-    return;
-  }
-
   if (pressed)
-    m_button_state &= ~(u16(1) << s_button_indices[static_cast<u8>(index)]);
-  else
-    m_button_state |= u16(1) << s_button_indices[static_cast<u8>(index)];
-}
-
-u32 Justifier::GetButtonStateBits() const
-{
-  return m_button_state;
+    m_shoot_offscreen = m_shoot_offscreen ? m_shoot_offscreen : m_offscreen_oob_frames;
 }
 
 void Justifier::ResetTransferState()
@@ -219,16 +171,13 @@ void Justifier::UpdatePosition()
     return;
   }
 
-  const auto [window_x, window_y] = (m_has_relative_binds) ? GetAbsolutePositionFromRelativeAxes() :
-                                                             InputManager::GetPointerAbsolutePosition(m_cursor_index);
-  const GSVector2 display_pos = GPU::ConvertScreenCoordinatesToDisplayCoordinates(GSVector2(window_x, window_y));
+  const Position pos = GetPosition();
+  const GSVector2 display_pos(pos.display_x, pos.display_y);
 
   // are we within the active display area?
-  u32 tick, line;
-  if ((display_pos < GSVector2::zero()).anytrue() ||
-      !GPU::ConvertDisplayCoordinatesToBeamTicksAndLines(display_pos, m_x_scale, &tick, &line) || m_shoot_offscreen)
+  if (!pos.valid || m_shoot_offscreen)
   {
-    DEV_LOG("Lightgun out of range for window coordinates {:.0f},{:.0f}", window_x, window_y);
+    DEV_LOG("Lightgun out of range for window coordinates {:.0f},{:.0f}", pos.window_x, pos.window_y);
     m_position_valid = false;
     UpdateIRQEvent();
     return;
@@ -236,17 +185,17 @@ void Justifier::UpdatePosition()
 
   m_position_valid = true;
 
-  m_irq_tick = static_cast<u16>(static_cast<TickCount>(tick) +
+  m_irq_tick = static_cast<u16>(static_cast<TickCount>(pos.tick) +
                                 System::ScaleTicksToOverclock(static_cast<TickCount>(m_tick_offset)));
-  m_irq_first_line = static_cast<u16>(std::clamp<s32>(static_cast<s32>(line) + m_first_line_offset,
+  m_irq_first_line = static_cast<u16>(std::clamp<s32>(static_cast<s32>(pos.line) + m_first_line_offset,
                                                       static_cast<s32>(GPU::GetCRTCActiveStartLine()),
                                                       static_cast<s32>(GPU::GetCRTCActiveEndLine())));
-  m_irq_last_line = static_cast<u16>(std::clamp<s32>(static_cast<s32>(line) + m_last_line_offset,
+  m_irq_last_line = static_cast<u16>(std::clamp<s32>(static_cast<s32>(pos.line) + m_last_line_offset,
                                                      static_cast<s32>(GPU::GetCRTCActiveStartLine()),
                                                      static_cast<s32>(GPU::GetCRTCActiveEndLine())));
 
-  DEV_LOG("Lightgun window coordinates {},{} -> dpy {} -> tick {} line {} [{}-{}]", window_x, window_y, display_pos,
-          tick, line, m_irq_first_line, m_irq_last_line);
+  DEV_LOG("Lightgun window coordinates {},{} -> dpy {} -> tick {} line {} [{}-{}]", pos.window_x, pos.window_y,
+          display_pos, pos.tick, pos.line, m_irq_first_line, m_irq_last_line);
 
   UpdateIRQEvent();
 }
@@ -297,36 +246,6 @@ void Justifier::IRQEvent()
   UpdateIRQEvent();
 }
 
-// TODO: Merge all this crap with guncon
-
-std::pair<float, float> Justifier::GetAbsolutePositionFromRelativeAxes() const
-{
-  const float screen_rel_x = (((m_relative_pos[1] > 0.0f) ? m_relative_pos[1] : -m_relative_pos[0]) + 1.0f) * 0.5f;
-  const float screen_rel_y = (((m_relative_pos[3] > 0.0f) ? m_relative_pos[3] : -m_relative_pos[2]) + 1.0f) * 0.5f;
-  const WindowInfo& wi = VideoThread::GetRenderWindowInfo();
-  return std::make_pair(screen_rel_x * static_cast<float>(wi.surface_width),
-                        screen_rel_y * static_cast<float>(wi.surface_height));
-}
-
-bool Justifier::CanUseSoftwareCursor() const
-{
-  return (InputManager::MAX_POINTER_DEVICES + m_index) < InputManager::MAX_SOFTWARE_CURSORS;
-}
-
-u32 Justifier::GetSoftwarePointerIndex() const
-{
-  return m_has_relative_binds ? (InputManager::MAX_POINTER_DEVICES + m_index) : m_cursor_index;
-}
-
-void Justifier::UpdateSoftwarePointerPosition()
-{
-  if (m_cursor_path.empty() || !CanUseSoftwareCursor())
-    return;
-
-  const auto& [window_x, window_y] = GetAbsolutePositionFromRelativeAxes();
-  ImGuiManager::SetSoftwareCursorPosition(GetSoftwarePointerIndex(), window_x, window_y);
-}
-
 std::unique_ptr<Justifier> Justifier::Create(u32 index)
 {
   return std::make_unique<Justifier>(index);
@@ -374,10 +293,10 @@ static const SettingInfo s_settings[] = {
   {SettingInfo::Type::Integer, "FirstLineOffset", TRANSLATE_NOOP("Justifier", "Line Start Offset"),
    TRANSLATE_NOOP("Justifier",
                   "Offset applied to lightgun vertical position that the Justifier will first trigger on."),
-   "-14", "-128", "127", "1", "%u", nullptr, 0.0f},
+   "-12", "-128", "127", "1", "%u", nullptr, 0.0f},
   {SettingInfo::Type::Integer, "LastLineOffset", TRANSLATE_NOOP("Justifier", "Line End Offset"),
    TRANSLATE_NOOP("Justifier", "Offset applied to lightgun vertical position that the Justifier will last trigger on."),
-   "-8", "-128", "127", "1", "%u", nullptr, 0.0f},
+   "-6", "-128", "127", "1", "%u", nullptr, 0.0f},
   {SettingInfo::Type::Integer, "TickOffset", TRANSLATE_NOOP("Justifier", "Tick Offset"),
    TRANSLATE_NOOP("Justifier", "Offset applied to lightgun horizontal position that the Justifier will trigger on."),
    "50", "-1000", "1000", "1", "%u", nullptr, 0.0f},
@@ -403,67 +322,7 @@ const Controller::ControllerInfo Justifier::INFO = {ControllerType::Justifier,
 
 void Justifier::LoadSettings(const SettingsInterface& si, const char* section, bool initial)
 {
-  m_x_scale = si.GetFloatValue(section, "XScale", 1.0f);
-
-  std::string cursor_path = si.GetStringValue(section, "CrosshairImagePath", DEFAULT_CROSSHAIR_PATH);
-  const float cursor_scale = si.GetFloatValue(section, "CrosshairScale", 1.0f);
-  u32 cursor_color = 0xFFFFFF;
-  if (std::string cursor_color_str = si.GetStringValue(section, "CrosshairColor", ""); !cursor_color_str.empty())
-  {
-    // Strip the leading hash, if it's a CSS style colour.
-    const std::optional<u32> cursor_color_opt(StringUtil::FromChars<u32>(
-      cursor_color_str[0] == '#' ? std::string_view(cursor_color_str).substr(1) : std::string_view(cursor_color_str),
-      16));
-    if (cursor_color_opt.has_value())
-    {
-      cursor_color = cursor_color_opt.value();
-      cursor_color = (cursor_color & 0x00FF00u) | ((cursor_color >> 16) & 0xFFu) | ((cursor_color & 0xFFu) << 16);
-    }
-  }
-
-  const s32 prev_pointer_index = GetSoftwarePointerIndex();
-
-  m_has_relative_binds = (si.ContainsValue(section, "RelativeLeft") || si.ContainsValue(section, "RelativeRight") ||
-                          si.ContainsValue(section, "RelativeUp") || si.ContainsValue(section, "RelativeDown"));
-  m_cursor_index =
-    static_cast<u8>(InputManager::GetIndexFromPointerBinding(si.GetStringValue(section, "Pointer")).value_or(0));
-
-  const s32 new_pointer_index = GetSoftwarePointerIndex();
-
-  if (prev_pointer_index != new_pointer_index || m_cursor_path != cursor_path || m_cursor_scale != cursor_scale ||
-      m_cursor_color != cursor_color)
-  {
-    if (!initial && prev_pointer_index != new_pointer_index &&
-        static_cast<u32>(prev_pointer_index) < InputManager::MAX_SOFTWARE_CURSORS)
-    {
-      ImGuiManager::ClearSoftwareCursor(prev_pointer_index);
-    }
-
-    // Pointer changed, so need to update software cursor.
-    const bool had_software_cursor = !m_cursor_path.empty();
-    m_cursor_path = std::move(cursor_path);
-    m_cursor_scale = cursor_scale;
-    m_cursor_color = cursor_color;
-    if (static_cast<u32>(new_pointer_index) < InputManager::MAX_SOFTWARE_CURSORS)
-    {
-      if (!m_cursor_path.empty())
-      {
-        std::string image_path;
-        if (!Path::IsAbsolute(m_cursor_path))
-          image_path = Path::Combine(EmuFolders::Resources, m_cursor_path);
-        else
-          image_path = m_cursor_path;
-
-        ImGuiManager::SetSoftwareCursor(new_pointer_index, std::move(image_path), m_cursor_scale, m_cursor_color);
-        if (m_has_relative_binds)
-          UpdateSoftwarePointerPosition();
-      }
-      else if (had_software_cursor)
-      {
-        ImGuiManager::ClearSoftwareCursor(new_pointer_index);
-      }
-    }
-  }
+  LightgunController::LoadSettings(si, section, initial);
 
   m_first_line_offset =
     static_cast<s8>(std::clamp<int>(si.GetIntValue(section, "FirstLineOffset", DEFAULT_FIRST_LINE_OFFSET),

@@ -55,6 +55,7 @@
     <ClCompile Include="cpu_recompiler_riscv64.cpp" />
     <ClCompile Include="cpu_recompiler_arm32.cpp" />
     <ClCompile Include="justifier.cpp" />
+    <ClCompile Include="lightgun_controller.cpp" />
     <ClCompile Include="gdb_server.cpp" />
     <ClCompile Include="gpu_sw_rasterizer.cpp" />
     <ClCompile Include="gpu_hw_texture_cache.cpp" />
@@ -141,6 +142,7 @@
     <ClInclude Include="cpu_recompiler_arm32.h" />
     <ClInclude Include="achievements_private.h" />
     <ClInclude Include="justifier.h" />
+    <ClInclude Include="lightgun_controller.h" />
     <ClInclude Include="gdb_server.h" />
     <ClInclude Include="gpu_sw_rasterizer.h" />
     <ClInclude Include="gpu_hw_texture_cache.h" />

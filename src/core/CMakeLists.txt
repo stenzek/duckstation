@@ -101,6 +101,8 @@ add_library(core
   jogcon.h
   justifier.cpp
   justifier.h
+  lightgun_controller.cpp
+  lightgun_controller.h
   mdec.cpp
   mdec.h
   memory_card.cpp
