@@ -163873,6 +163873,9 @@ SCPS-10128:
     - AnalogController
     - AnalogJoystick
     - DigitalController
+  traits:
+    - DisableCDROMReadSpeedup # Fixes cutscene audio.
+    - ForcePGXPCPUMode # Required, but not perfect. Game messes with geometry.
   metadata:
     publisher: "Sony"
     developer: "Insomniac Games"
@@ -163893,6 +163896,13 @@ PCPX-96191:
   saveName: "Spyro x Sparx - Tondemo Tours (Japan) (Demo)"
   metadata:
     genre: "** DEMO **"
+  controllers:
+    - AnalogController
+    - AnalogJoystick
+    - DigitalController
+  traits:
+    - DisableCDROMReadSpeedup # Fixes cutscene audio.
+    - ForcePGXPCPUMode # Required, but not perfect. Game messes with geometry.
 SLPM-80306:
   name: "Square Maniacs '98"
   saveName: "Square Maniacs '98 (Japan)"
@@ -185123,6 +185133,8 @@ SLPS-01494:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - DisableAutoAnalogMode # Analog controls do nothing.
   metadata:
     publisher: "Atlus"
     developer: "Racdym"
@@ -185143,6 +185155,8 @@ SLUS-00679:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - DisableAutoAnalogMode # Analog controls do nothing.
   metadata:
     publisher: "Atlus U.S.A., Inc"
     developer: "Racdym"
@@ -185163,6 +185177,8 @@ SLES-01628:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - DisableAutoAnalogMode # Analog controls do nothing.
   metadata:
     publisher: "Konami"
     developer: "Racdym"
