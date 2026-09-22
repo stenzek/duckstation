@@ -14,6 +14,9 @@
 #include <QtWidgets/QMenuBar>
 #include <QtWidgets/QScrollBar>
 
+#include <algorithm>
+#include <cmath>
+
 #include "moc_logwindow.cpp"
 
 using namespace Qt::StringLiterals;
@@ -22,7 +25,7 @@ using namespace Qt::StringLiterals;
 // But once I get rid of that, there will be.
 LogWindow* g_log_window;
 
-LogWidget::LogWidget(QWidget* parent) : QPlainTextEdit(parent), m_is_dark_theme(QtHost::IsDarkApplicationTheme())
+LogWidget::LogWidget(QWidget* parent) : QPlainTextEdit(parent)
 {
   setReadOnly(true);
   setUndoRedoEnabled(false);
@@ -30,6 +33,9 @@ LogWidget::LogWidget(QWidget* parent) : QPlainTextEdit(parent), m_is_dark_theme(
   setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
   setMaximumBlockCount(MAX_LINES);
   setFont(QtHost::GetFixedFont());
+
+  ensurePolished();
+  updateColors();
 
   Log::RegisterCallback(&LogWidget::logCallback, this);
 }
@@ -41,10 +47,143 @@ LogWidget::~LogWidget()
 
 void LogWidget::changeEvent(QEvent* event)
 {
-  if (event->type() == QEvent::StyleChange)
-    m_is_dark_theme = QtHost::IsDarkApplicationTheme();
-
   QPlainTextEdit::changeEvent(event);
+
+  if (event->type() == QEvent::StyleChange || event->type() == QEvent::PaletteChange ||
+      event->type() == QEvent::ApplicationPaletteChange)
+  {
+    updateColors();
+  }
+}
+
+static constexpr float MINIMUM_TEXT_CONTRAST = 4.5;
+
+static float GetLinearColorComponent(float component)
+{
+  return (component <= 0.04045f) ? (component / 12.92f) : std::pow((component + 0.055f) / 1.055f, 2.4f);
+}
+
+static float GetRelativeLuminance(const QColor& color)
+{
+  return (0.2126f * GetLinearColorComponent(color.redF())) + (0.7152f * GetLinearColorComponent(color.greenF())) +
+         (0.0722f * GetLinearColorComponent(color.blueF()));
+}
+
+static float GetContrastRatio(const QColor& first, const QColor& second)
+{
+  const float first_luminance = GetRelativeLuminance(first);
+  const float second_luminance = GetRelativeLuminance(second);
+  const float lighter = std::max(first_luminance, second_luminance);
+  const float darker = std::min(first_luminance, second_luminance);
+  return (lighter + 0.05f) / (darker + 0.05f);
+}
+
+static QColor BlendColors(const QColor& first, const QColor& second, float amount)
+{
+  const float inverse_amount = 1.0f - amount;
+  return QColor::fromRgbF((first.redF() * inverse_amount) + (second.redF() * amount),
+                          (first.greenF() * inverse_amount) + (second.greenF() * amount),
+                          (first.blueF() * inverse_amount) + (second.blueF() * amount));
+}
+
+static QColor MakeOpaque(const QColor& color, const QColor& background)
+{
+  return color.alphaF() < 1.0f ? BlendColors(background, color, color.alphaF()) : color;
+}
+
+static QColor EnsureTextContrast(const QColor& color, const QColor& background)
+{
+  const QColor opaque_color = MakeOpaque(color, background);
+  if (GetContrastRatio(opaque_color, background) >= MINIMUM_TEXT_CONTRAST)
+    return opaque_color;
+
+  static constexpr QColor black(0x00, 0x00, 0x00);
+  static constexpr QColor white(0xFF, 0xFF, 0xFF);
+  const bool lighten = (GetContrastRatio(white, background) > GetContrastRatio(black, background));
+
+  float hue;
+  float saturation;
+  float lightness;
+  opaque_color.getHslF(&hue, &saturation, &lightness);
+
+  // Find the smallest lightness adjustment which reaches the contrast target. At either lightness endpoint the
+  // color becomes black or white, so one endpoint is guaranteed to meet the target for any opaque background.
+  float low = 0.0f;
+  float high = 1.0f;
+  for (u32 i = 0; i < 16; i++)
+  {
+    const float amount = (low + high) * 0.5f;
+    const float adjusted_lightness = lightness + ((lighten ? 1.0f : 0.0f) - lightness) * amount;
+    const QColor adjusted = QColor::fromHslF(hue, saturation, adjusted_lightness);
+    if (GetContrastRatio(adjusted, background) >= MINIMUM_TEXT_CONTRAST)
+      high = amount;
+    else
+      low = amount;
+  }
+
+  return QColor::fromHslF(hue, saturation, lightness + ((lighten ? 1.0f : 0.0f) - lightness) * high);
+}
+
+static QColor MakeMutedTextColor(const QColor& text, const QColor& background)
+{
+  if (GetContrastRatio(text, background) <= MINIMUM_TEXT_CONTRAST)
+    return text;
+
+  // Move the text color towards the background as far as possible while keeping it readable.
+  float low = 0.0;
+  float high = 1.0;
+  for (u32 i = 0; i < 16; i++)
+  {
+    const float amount = (low + high) * 0.5f;
+    if (GetContrastRatio(BlendColors(text, background, amount), background) >= MINIMUM_TEXT_CONTRAST)
+      low = amount;
+    else
+      high = amount;
+  }
+
+  return BlendColors(text, background, low);
+}
+
+void LogWidget::updateColors()
+{
+  static constexpr std::array<QColor, static_cast<size_t>(Log::Color::MaxCount)> message_color_seeds = {
+    QColor(0x00, 0x00, 0x00), // Default (replaced with the theme text color below)
+    QColor(0x00, 0x00, 0x00), // Black (replaced with the theme text color below)
+    QColor(0xB4, 0x00, 0x00), // Red
+    QColor(0x13, 0xA1, 0x0E), // Green
+    QColor(0x00, 0x37, 0xDA), // Blue
+    QColor(0xA0, 0x00, 0xA0), // Magenta
+    QColor(0xA0, 0x78, 0x00), // Orange
+    QColor(0x80, 0xB4, 0xB4), // Cyan
+    QColor(0xB4, 0xB4, 0x80), // Yellow
+    QColor(0xCC, 0xCC, 0xCC), // White (replaced with the muted theme text color below)
+    QColor(0x76, 0x76, 0x76), // StrongBlack (replaced with the theme text color below)
+    QColor(0xE7, 0x48, 0x56), // StrongRed
+    QColor(0x16, 0xC6, 0x0C), // StrongGreen
+    QColor(0x3B, 0x78, 0xFF), // StrongBlue
+    QColor(0xB4, 0x00, 0x9E), // StrongMagenta
+    QColor(0xB4, 0x96, 0x00), // StrongOrange
+    QColor(0x61, 0xD6, 0xD6), // StrongCyan
+    QColor(0xF9, 0xF1, 0xA5), // StrongYellow
+    QColor(0xFF, 0xFF, 0xFF), // StrongWhite (replaced with the theme text color below)
+  };
+
+  const QPalette widget_palette = palette();
+  const QColor window_color = widget_palette.color(QPalette::Window);
+  const QColor background_color = MakeOpaque(widget_palette.color(QPalette::Base), window_color);
+  const QColor text_color = EnsureTextContrast(widget_palette.color(QPalette::Text), background_color);
+
+  for (size_t i = 0; i < m_message_colors.size(); i++)
+    m_message_colors[i] = EnsureTextContrast(message_color_seeds[i], background_color);
+
+  m_timestamp_color = MakeMutedTextColor(text_color, background_color);
+  m_channel_color = text_color;
+
+  m_message_colors[static_cast<size_t>(Log::Color::Default)] = text_color;
+  m_message_colors[static_cast<size_t>(Log::Color::Black)] = text_color;
+  m_message_colors[static_cast<size_t>(Log::Color::White)] = m_timestamp_color;
+  m_message_colors[static_cast<size_t>(Log::Color::StrongBlack)] = text_color;
+  m_message_colors[static_cast<size_t>(Log::Color::StrongWhite)] = text_color;
 }
 
 void LogWidget::appendMessage(const QLatin1StringView& channel, quint32 cat, const QString& message)
@@ -96,64 +235,14 @@ void LogWidget::realAppendMessage(const QLatin1StringView& channel, quint32 cat,
   {
     static constexpr const QChar level_characters[static_cast<size_t>(Log::Level::MaxCount)] = {'X', 'E', 'W', 'I',
                                                                                                 'V', 'D', 'B', 'T'};
-    static constexpr const QColor message_colors[2][static_cast<size_t>(Log::Color::MaxCount)] = {
-      // Light theme
-      {
-        QColor(0x00, 0x00, 0x00), // Default
-        QColor(0x00, 0x00, 0x00), // Black
-        QColor(0x70, 0x00, 0x00), // Red
-        QColor(0xec, 0x5e, 0xf1), // Green
-        QColor(0xe9, 0x39, 0xf3), // Blue
-        QColor(0xA0, 0x00, 0xA0), // Magenta
-        QColor(0xA0, 0x78, 0x00), // Orange
-        QColor(0x80, 0xB4, 0xB4), // Cyan
-        QColor(0xB4, 0xB4, 0x80), // Yellow
-        QColor(0x70, 0x70, 0x70), // White
-        QColor(0x00, 0x00, 0x00), // StrongBlack
-        QColor(0x80, 0x00, 0x00), // StrongRed
-        QColor(0x00, 0x80, 0x00), // StrongGreen
-        QColor(0x00, 0x00, 0x80), // StrongBlue
-        QColor(0xA0, 0x00, 0xA0), // StrongMagenta
-        QColor(0xA0, 0x78, 0x00), // StrongOrange
-        QColor(0x80, 0xB4, 0xB4), // StrongCyan
-        QColor(0xb4, 0xb4, 0x00), // StrongYellow
-        QColor(0x0D, 0x0d, 0x0D)  // StrongWhite
-      },
-      // Dark theme
-      {
-        QColor(0xD0, 0xD0, 0xD0), // Default
-        QColor(0xFF, 0xFF, 0xFF), // Black
-        QColor(0xB4, 0x00, 0x00), // Red
-        QColor(0x13, 0xA1, 0x0E), // Green
-        QColor(0x00, 0x37, 0xDA), // Blue
-        QColor(0xA0, 0x00, 0xA0), // Magenta
-        QColor(0xA0, 0x78, 0x00), // Orange
-        QColor(0x80, 0xB4, 0xB4), // Cyan
-        QColor(0xB4, 0xB4, 0x80), // Yellow
-        QColor(0xCC, 0xCC, 0xCC), // White
-        QColor(0xFF, 0xFF, 0xFF), // StrongBlack
-        QColor(0xE7, 0x48, 0x56), // StrongRed
-        QColor(0x16, 0xC6, 0x0C), // StrongGreen
-        QColor(0x20, 0x20, 0xCC), // StrongBlue
-        QColor(0xA0, 0x00, 0xA0), // StrongMagenta
-        QColor(0xB4, 0x96, 0x00), // StrongOrange
-        QColor(0x80, 0xB4, 0xB4), // StrongCyan
-        QColor(0xF9, 0xF1, 0xA5), // StrongYellow
-        QColor(0xFF, 0xFF, 0xFF), // StrongWhite
-      },
-    };
-    static constexpr const QColor timestamp_color[2] = {QColor(0x60, 0x60, 0x60), QColor(0xcc, 0xcc, 0xcc)};
-    static constexpr const QColor channel_color[2] = {QColor(0x30, 0x30, 0x30), QColor(0xf2, 0xf2, 0xf2)};
-
     QTextCharFormat format = temp_cursor.charFormat();
-    const size_t dark = static_cast<size_t>(m_is_dark_theme);
 
     temp_cursor.beginEditBlock();
     if (Log::AreConsoleOutputTimestampsEnabled())
     {
       const float message_time = Log::GetCurrentMessageTime();
       const QString qtimestamp = QStringLiteral("[%1] ").arg(message_time, 10, 'f', 4);
-      format.setForeground(QBrush(timestamp_color[dark]));
+      format.setForeground(QBrush(m_timestamp_color));
       temp_cursor.setCharFormat(format);
       temp_cursor.insertText(qtimestamp);
     }
@@ -166,12 +255,12 @@ void LogWidget::realAppendMessage(const QLatin1StringView& channel, quint32 cat,
       (level <= Log::Level::Warning) ?
         QStringLiteral("%1(%2): ").arg(level_characters[static_cast<size_t>(level)]).arg(channel) :
         QStringLiteral("%1/%2: ").arg(level_characters[static_cast<size_t>(level)]).arg(channel);
-    format.setForeground(QBrush(channel_color[dark]));
+    format.setForeground(QBrush(m_channel_color));
     temp_cursor.setCharFormat(format);
     temp_cursor.insertText(qchannel);
 
     // message has \n already
-    format.setForeground(QBrush(message_colors[dark][static_cast<size_t>(color)]));
+    format.setForeground(QBrush(m_message_colors[static_cast<size_t>(color)]));
     temp_cursor.setCharFormat(format);
     temp_cursor.insertText(message);
     temp_cursor.endEditBlock();

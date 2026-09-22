@@ -5,9 +5,11 @@
 
 #include "common/log.h"
 
+#include <QtGui/QColor>
 #include <QtWidgets/QMainWindow>
 #include <QtWidgets/QPlainTextEdit>
 
+#include <array>
 #include <atomic>
 #include <span>
 
@@ -28,6 +30,7 @@ private:
   static constexpr int MAX_LINES = 1000;
   static constexpr int BLOCK_UPDATES_THRESHOLD = 100;
 
+  void updateColors();
   void realAppendMessage(const QLatin1StringView& channel, quint32 cat, const QString& message);
 
   static void logCallback(void* pUserParam, Log::MessageCategory cat, const char* functionName,
@@ -35,7 +38,9 @@ private:
 
   int m_lines_to_skip = 0;
 
-  bool m_is_dark_theme = false;
+  std::array<QColor, static_cast<size_t>(Log::Color::MaxCount)> m_message_colors;
+  QColor m_timestamp_color;
+  QColor m_channel_color;
 
   ALIGN_TO_CACHE_LINE std::atomic_int m_lines_pending{0};
 };
