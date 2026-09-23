@@ -7,6 +7,7 @@
 
 #include <atomic>
 #include <functional>
+#include <mutex>
 
 #if defined(_DEBUG) || defined(_DEVEL)
 #define THREADING_DEBUG_CHECKS
@@ -163,6 +164,99 @@ private:
 #ifdef THREADING_DEBUG_CHECKS
   std::atomic<uintptr_t> m_owner_thread_id = 0;
 #endif
+};
+
+// --------------------------------------------------------------------------------------
+//  SharedMutex
+// --------------------------------------------------------------------------------------
+// A lightweight replacement for std::shared_mutex. The native object is stored inline
+// without exposing platform headers to users of this header.
+//
+class SharedMutex
+{
+public:
+#ifdef _WIN32
+  SharedMutex() = default;
+#else
+  SharedMutex();
+  ~SharedMutex();
+#endif
+
+  SharedMutex(const SharedMutex&) = delete;
+  SharedMutex& operator=(const SharedMutex&) = delete;
+
+  void lock();
+  bool try_lock();
+  void unlock();
+
+  void lock_shared();
+  bool try_lock_shared();
+  void unlock_shared();
+
+private:
+#if defined(_WIN32)
+  void* m_data = nullptr;
+#elif defined(__APPLE__)
+  static constexpr u32 NATIVE_STORAGE_SIZE = 200;
+#elif defined(__ANDROID__)
+  static constexpr u32 NATIVE_STORAGE_SIZE = (sizeof(void*) == 8) ? 56 : 40;
+#elif defined(__linux__)
+  static constexpr u32 NATIVE_STORAGE_SIZE = (sizeof(void*) == 8) ? 56 : 32;
+#else
+#error Unsupported platform.
+#endif
+
+#if !defined(_WIN32)
+  alignas(void*) u8 m_data[NATIVE_STORAGE_SIZE];
+#endif
+};
+
+// --------------------------------------------------------------------------------------
+//  UpgradeLock
+// --------------------------------------------------------------------------------------
+// Owns a SharedMutex in shared mode, with the option to switch to exclusive mode.
+// upgrade() is not atomic: another thread may acquire the mutex between the two modes.
+//
+class UpgradeLock
+{
+public:
+  using mutex_type = SharedMutex;
+
+  UpgradeLock() = default;
+  explicit UpgradeLock(mutex_type& mutex);
+  UpgradeLock(mutex_type& mutex, std::defer_lock_t) noexcept;
+  UpgradeLock(mutex_type& mutex, std::try_to_lock_t);
+  UpgradeLock(mutex_type& mutex, std::adopt_lock_t) noexcept;
+  UpgradeLock(const UpgradeLock&) = delete;
+  UpgradeLock& operator=(const UpgradeLock&) = delete;
+  UpgradeLock(UpgradeLock&& other) noexcept;
+  UpgradeLock& operator=(UpgradeLock&& other) noexcept;
+  ~UpgradeLock();
+
+  void lock();
+  bool try_lock();
+  void unlock();
+  void upgrade();
+  void ensure_upgraded();
+
+  void swap(UpgradeLock& other) noexcept;
+  mutex_type* release() noexcept;
+
+  mutex_type* mutex() const noexcept { return m_mutex; }
+  bool owns_lock() const noexcept { return m_mode != Mode::Unlocked; }
+  bool is_exclusive() const noexcept { return m_mode == Mode::Exclusive; }
+  explicit operator bool() const noexcept { return owns_lock(); }
+
+private:
+  enum class Mode : u8
+  {
+    Unlocked,
+    Shared,
+    Exclusive,
+  };
+
+  mutex_type* m_mutex = nullptr;
+  Mode m_mode = Mode::Unlocked;
 };
 
 // --------------------------------------------------------------------------------------

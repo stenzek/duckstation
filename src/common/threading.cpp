@@ -55,9 +55,11 @@ LOG_CHANNEL(Threading);
 
 #ifdef _WIN32
 #define NATIVE_MUTEX_PTR(storage) static_cast<SRWLOCK*>(static_cast<void*>(&(storage)))
+#define NATIVE_SHARED_MUTEX_PTR(storage) static_cast<SRWLOCK*>(static_cast<void*>(&(storage)))
 #define NATIVE_CONDITION_VARIABLE_PTR(storage) static_cast<CONDITION_VARIABLE*>(static_cast<void*>(&(storage)))
 #else
 #define NATIVE_MUTEX_PTR(storage) static_cast<pthread_mutex_t*>(static_cast<void*>(&(storage)))
+#define NATIVE_SHARED_MUTEX_PTR(storage) static_cast<pthread_rwlock_t*>(static_cast<void*>(&(storage)))
 #define NATIVE_CONDITION_VARIABLE_PTR(storage) static_cast<pthread_cond_t*>(static_cast<void*>(&(storage)))
 #endif
 
@@ -674,6 +676,187 @@ void Threading::Mutex::unlock()
 
 #ifndef _WIN32
 
+Threading::SharedMutex::SharedMutex()
+{
+  static_assert(sizeof(m_data) == sizeof(pthread_rwlock_t));
+  static_assert(alignof(SharedMutex) >= alignof(pthread_rwlock_t));
+  [[maybe_unused]] const int result = pthread_rwlock_init(NATIVE_SHARED_MUTEX_PTR(m_data), nullptr);
+  DebugAssert(result == 0);
+}
+
+Threading::SharedMutex::~SharedMutex()
+{
+  [[maybe_unused]] const int result = pthread_rwlock_destroy(NATIVE_SHARED_MUTEX_PTR(m_data));
+  DebugAssert(result == 0);
+}
+
+#endif // _WIN32
+
+void Threading::SharedMutex::lock()
+{
+#ifdef _WIN32
+  AcquireSRWLockExclusive(NATIVE_SHARED_MUTEX_PTR(m_data));
+#else
+  [[maybe_unused]] const int result = pthread_rwlock_wrlock(NATIVE_SHARED_MUTEX_PTR(m_data));
+  DebugAssert(result == 0);
+#endif
+}
+
+bool Threading::SharedMutex::try_lock()
+{
+#ifdef _WIN32
+  return TryAcquireSRWLockExclusive(NATIVE_SHARED_MUTEX_PTR(m_data)) != FALSE;
+#else
+  const int result = pthread_rwlock_trywrlock(NATIVE_SHARED_MUTEX_PTR(m_data));
+  DebugAssert(result == 0 || result == EBUSY);
+  return result == 0;
+#endif
+}
+
+void Threading::SharedMutex::unlock()
+{
+#ifdef _WIN32
+  ReleaseSRWLockExclusive(NATIVE_SHARED_MUTEX_PTR(m_data));
+#else
+  [[maybe_unused]] const int result = pthread_rwlock_unlock(NATIVE_SHARED_MUTEX_PTR(m_data));
+  DebugAssert(result == 0);
+#endif
+}
+
+void Threading::SharedMutex::lock_shared()
+{
+#ifdef _WIN32
+  AcquireSRWLockShared(NATIVE_SHARED_MUTEX_PTR(m_data));
+#else
+  [[maybe_unused]] const int result = pthread_rwlock_rdlock(NATIVE_SHARED_MUTEX_PTR(m_data));
+  DebugAssert(result == 0);
+#endif
+}
+
+bool Threading::SharedMutex::try_lock_shared()
+{
+#ifdef _WIN32
+  return TryAcquireSRWLockShared(NATIVE_SHARED_MUTEX_PTR(m_data)) != FALSE;
+#else
+  const int result = pthread_rwlock_tryrdlock(NATIVE_SHARED_MUTEX_PTR(m_data));
+  DebugAssert(result == 0 || result == EBUSY || result == EAGAIN);
+  return result == 0;
+#endif
+}
+
+void Threading::SharedMutex::unlock_shared()
+{
+#ifdef _WIN32
+  ReleaseSRWLockShared(NATIVE_SHARED_MUTEX_PTR(m_data));
+#else
+  [[maybe_unused]] const int result = pthread_rwlock_unlock(NATIVE_SHARED_MUTEX_PTR(m_data));
+  DebugAssert(result == 0);
+#endif
+}
+
+Threading::UpgradeLock::UpgradeLock(mutex_type& mutex) : m_mutex(&mutex)
+{
+  lock();
+}
+
+Threading::UpgradeLock::UpgradeLock(mutex_type& mutex, std::defer_lock_t) noexcept : m_mutex(&mutex)
+{
+}
+
+Threading::UpgradeLock::UpgradeLock(mutex_type& mutex, std::try_to_lock_t) : m_mutex(&mutex)
+{
+  try_lock();
+}
+
+Threading::UpgradeLock::UpgradeLock(mutex_type& mutex, std::adopt_lock_t) noexcept
+  : m_mutex(&mutex), m_mode(Mode::Shared)
+{
+}
+
+Threading::UpgradeLock::UpgradeLock(UpgradeLock&& other) noexcept : m_mutex(other.m_mutex), m_mode(other.m_mode)
+{
+  other.m_mutex = nullptr;
+  other.m_mode = Mode::Unlocked;
+}
+
+Threading::UpgradeLock& Threading::UpgradeLock::operator=(UpgradeLock&& other) noexcept
+{
+  if (this != &other)
+  {
+    if (owns_lock())
+      unlock();
+    m_mutex = other.m_mutex;
+    m_mode = other.m_mode;
+    other.m_mutex = nullptr;
+    other.m_mode = Mode::Unlocked;
+  }
+  return *this;
+}
+
+Threading::UpgradeLock::~UpgradeLock()
+{
+  if (owns_lock())
+    unlock();
+}
+
+void Threading::UpgradeLock::lock()
+{
+  AssertMsg(m_mutex && !owns_lock(), "UpgradeLock must refer to an unlocked mutex");
+  m_mutex->lock_shared();
+  m_mode = Mode::Shared;
+}
+
+bool Threading::UpgradeLock::try_lock()
+{
+  AssertMsg(m_mutex && !owns_lock(), "UpgradeLock must refer to an unlocked mutex");
+  if (!m_mutex->try_lock_shared())
+    return false;
+
+  m_mode = Mode::Shared;
+  return true;
+}
+
+void Threading::UpgradeLock::unlock()
+{
+  AssertMsg(owns_lock(), "UpgradeLock must own a mutex");
+  if (m_mode == Mode::Exclusive)
+    m_mutex->unlock();
+  else
+    m_mutex->unlock_shared();
+  m_mode = Mode::Unlocked;
+}
+
+void Threading::UpgradeLock::upgrade()
+{
+  AssertMsg(m_mode == Mode::Shared, "UpgradeLock must own a shared lock");
+  m_mutex->unlock_shared();
+  m_mode = Mode::Unlocked;
+  m_mutex->lock();
+  m_mode = Mode::Exclusive;
+}
+
+void Threading::UpgradeLock::ensure_upgraded()
+{
+  if (m_mode == Mode::Shared)
+    upgrade();
+}
+
+void Threading::UpgradeLock::swap(UpgradeLock& other) noexcept
+{
+  std::swap(m_mutex, other.m_mutex);
+  std::swap(m_mode, other.m_mode);
+}
+
+Threading::UpgradeLock::mutex_type* Threading::UpgradeLock::release() noexcept
+{
+  mutex_type* mutex = m_mutex;
+  m_mutex = nullptr;
+  m_mode = Mode::Unlocked;
+  return mutex;
+}
+
+#ifndef _WIN32
+
 Threading::ConditionVariable::ConditionVariable()
 {
   static_assert(sizeof(m_data) == sizeof(pthread_cond_t));
@@ -937,6 +1120,7 @@ bool Threading::KernelSemaphore::TryWait()
 }
 
 #undef NATIVE_MUTEX_PTR
+#undef NATIVE_SHARED_MUTEX_PTR
 #undef NATIVE_CONDITION_VARIABLE_PTR
 #if !defined(_WIN32)
 #undef NATIVE_SEMAPHORE
