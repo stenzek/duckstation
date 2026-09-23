@@ -63,9 +63,7 @@ TEST(FileSystem, OpenTemporaryManagedCFile)
   auto fp = FileSystem::OpenTemporaryManagedCFile(base_path, &temp_path);
   ASSERT_NE(fp, nullptr);
 
-  ScopedGuard cleanup([&temp_path]() {
-    FileSystem::DeleteFile(temp_path.c_str());
-  });
+  ScopedGuard cleanup([&temp_path]() { FileSystem::DeleteFile(temp_path.c_str()); });
 
   EXPECT_FALSE(temp_path.empty());
   EXPECT_TRUE(temp_path.starts_with(base_path + "."));
@@ -75,10 +73,13 @@ TEST(FileSystem, OpenTemporaryManagedCFile)
 
 TEST(FileSystem, OpenTemporaryCFileNullOutPath)
 {
-  const std::string base_path = GetTestTempBasePath("duckstation_test_temp_null");
+  const std::string temp_directory = GetTestTempBasePath("duckstation_test_temp_null");
+  ASSERT_TRUE(FileSystem::CreateDirectory(temp_directory.c_str(), false));
+  ScopedGuard cleanup([&temp_directory]() { FileSystem::RecursiveDeleteDirectory(temp_directory.c_str()); });
+
+  const std::string base_path = Path::Combine(temp_directory, "temp");
   std::FILE* fp = FileSystem::OpenTemporaryCFile(base_path, nullptr);
   ASSERT_NE(fp, nullptr);
 
-  // Without out_path we can't reliably clean up the file, so just close it.
   std::fclose(fp);
 }
