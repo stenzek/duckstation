@@ -65,27 +65,21 @@ AudioSettingsWidget::AudioSettingsWidget(SettingsWindow* dialog, QWidget* parent
   onStretchModeChanged();
   onMinimalOutputLatencyToggled(); // also calls updateLatencyLabel()
 
-  // for per-game, just use the normal path, since it needs to re-read/apply
+  SettingWidgetBinder::BindSliderAndLabelToIntSetting(sif, m_ui.volume, m_ui.volumeLabel, m_ui.resetVolume, "Audio",
+                                                      "OutputVolume", 100, tr("%"));
+  SettingWidgetBinder::BindSliderAndLabelToIntSetting(sif, m_ui.fastForwardVolume, m_ui.fastForwardVolumeLabel,
+                                                      m_ui.resetFastForwardVolume, "Audio", "FastForwardVolume", 100,
+                                                      tr("%"));
+
   if (!dialog->isPerGameSettings())
   {
-    m_ui.volume->setValue(m_dialog->getEffectiveIntValue("Audio", "OutputVolume", 100));
-    m_ui.fastForwardVolume->setValue(m_dialog->getEffectiveIntValue("Audio", "FastForwardVolume", 100));
     m_ui.muted->setChecked(m_dialog->getEffectiveBoolValue("Audio", "OutputMuted", false));
-    connect(m_ui.volume, &QSlider::valueChanged, this, &AudioSettingsWidget::onOutputVolumeChanged);
-    connect(m_ui.fastForwardVolume, &QSlider::valueChanged, this, &AudioSettingsWidget::onFastForwardVolumeChanged);
     connect(m_ui.muted, &QCheckBox::checkStateChanged, this, &AudioSettingsWidget::onOutputMutedChanged);
-    updateVolumeLabel();
   }
   else
   {
-    SettingWidgetBinder::BindWidgetAndLabelToIntSetting(sif, m_ui.volume, m_ui.volumeLabel, tr("%"), "Audio",
-                                                        "OutputVolume", 100);
-    SettingWidgetBinder::BindWidgetAndLabelToIntSetting(sif, m_ui.fastForwardVolume, m_ui.fastForwardVolumeLabel,
-                                                        tr("%"), "Audio", "FastForwardVolume", 100);
     SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.muted, "Audio", "OutputMuted", false);
   }
-  connect(m_ui.resetVolume, &QPushButton::clicked, this, [this]() { resetVolume(false); });
-  connect(m_ui.resetFastForwardVolume, &QPushButton::clicked, this, [this]() { resetVolume(true); });
 
   dialog->registerWidgetHelp(
     m_ui.audioBackend, tr("Audio Backend"), QStringLiteral("Cubeb"),
@@ -327,40 +321,12 @@ void AudioSettingsWidget::updateMinimumLatencyLabel()
   }
 }
 
-void AudioSettingsWidget::updateVolumeLabel()
-{
-  m_ui.volumeLabel->setText(tr("%1%").arg(m_ui.volume->value()));
-  m_ui.fastForwardVolumeLabel->setText(tr("%1%").arg(m_ui.fastForwardVolume->value()));
-}
-
 void AudioSettingsWidget::onMinimalOutputLatencyToggled()
 {
   const bool minimal = m_dialog->getEffectiveBoolValue("Audio", "OutputLatencyMinimal", false);
   m_ui.outputLatencyMS->setEnabled(!minimal);
   m_ui.outputLatencyLabel->setEnabled(!minimal);
   m_ui.resetOutputLatency->setEnabled(!minimal);
-}
-
-void AudioSettingsWidget::onOutputVolumeChanged(int new_value)
-{
-  // only called for base settings
-  DebugAssert(!m_dialog->isPerGameSettings());
-  Core::SetBaseIntSettingValue("Audio", "OutputVolume", new_value);
-  Host::CommitBaseSettingChanges();
-  g_core_thread->setAudioOutputVolume(new_value, m_ui.fastForwardVolume->value());
-
-  updateVolumeLabel();
-}
-
-void AudioSettingsWidget::onFastForwardVolumeChanged(int new_value)
-{
-  // only called for base settings
-  DebugAssert(!m_dialog->isPerGameSettings());
-  Core::SetBaseIntSettingValue("Audio", "FastForwardVolume", new_value);
-  Host::CommitBaseSettingChanges();
-  g_core_thread->setAudioOutputVolume(m_ui.volume->value(), new_value);
-
-  updateVolumeLabel();
 }
 
 void AudioSettingsWidget::onOutputMutedChanged(int new_state)
@@ -372,30 +338,4 @@ void AudioSettingsWidget::onOutputMutedChanged(int new_state)
   Core::SetBaseBoolSettingValue("Audio", "OutputMuted", muted);
   Host::CommitBaseSettingChanges();
   g_core_thread->setAudioOutputMuted(muted);
-}
-
-void AudioSettingsWidget::resetVolume(bool fast_forward)
-{
-  const char* key = fast_forward ? "FastForwardVolume" : "OutputVolume";
-  QSlider* const slider = fast_forward ? m_ui.fastForwardVolume : m_ui.volume;
-  QLabel* const label = fast_forward ? m_ui.fastForwardVolumeLabel : m_ui.volumeLabel;
-
-  if (m_dialog->isPerGameSettings())
-  {
-    m_dialog->removeSettingValue("Audio", key);
-
-    const int value = m_dialog->getEffectiveIntValue("Audio", key, 100);
-    QSignalBlocker sb(slider);
-    slider->setValue(value);
-    label->setText(QStringLiteral("%1%2").arg(value).arg(tr("%")));
-
-    // remove bold font if it was previously overridden
-    QFont font(label->font());
-    font.setBold(false);
-    label->setFont(font);
-  }
-  else
-  {
-    slider->setValue(100);
-  }
 }

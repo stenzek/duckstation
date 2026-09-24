@@ -23,16 +23,12 @@ public:
 
 private:
   AudioBackend getEffectiveBackend() const;
-  void resetVolume(bool fast_forward);
 
   void onStretchModeChanged();
   void updateDriverNames();
   void queueUpdateDeviceNames();
   void updateMinimumLatencyLabel();
-  void updateVolumeLabel();
   void onMinimalOutputLatencyToggled();
-  void onOutputVolumeChanged(int new_value);
-  void onFastForwardVolumeChanged(int new_value);
   void onOutputMutedChanged(int new_state);
 
   Ui::AudioSettingsWidget m_ui;

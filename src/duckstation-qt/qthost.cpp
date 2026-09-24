@@ -1817,20 +1817,6 @@ void CoreThread::undoLoadState()
   System::UndoLoadState();
 }
 
-void CoreThread::setAudioOutputVolume(int volume, int fast_forward_volume)
-{
-  if (!isCurrentThread())
-  {
-    QMetaObject::invokeMethod(this, &CoreThread::setAudioOutputVolume, Qt::QueuedConnection, volume,
-                              fast_forward_volume);
-    return;
-  }
-
-  g_settings.audio_output_volume = static_cast<u8>(volume);
-  g_settings.audio_fast_forward_volume = static_cast<u8>(fast_forward_volume);
-  System::UpdateVolume();
-}
-
 void CoreThread::setAudioOutputMuted(bool muted)
 {
   if (!isCurrentThread())

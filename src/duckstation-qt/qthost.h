@@ -155,7 +155,6 @@ public:
   void saveState(const QString& path);
   void saveState(bool global, qint32 slot);
   void undoLoadState();
-  void setAudioOutputVolume(int volume, int fast_forward_volume);
   void setAudioOutputMuted(bool muted);
   void singleStepCPU();
   void dumpRAM(const QString& path);
