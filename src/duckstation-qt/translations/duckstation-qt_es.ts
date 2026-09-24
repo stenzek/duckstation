@@ -4067,8 +4067,8 @@ Do you want to %1 anyway?</source>
         <translation>DuckStation puede descargar automáticamente las carátulas de aquellos juegos que no tengan una asociada. No alojamos ninguna imagen de carátulas, así que debe proveerlas el usuario.</translation>
     </message>
     <message>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Depending on your jurisdiction, &lt;span style=&quot; font-weight:700;&quot;&gt;game covers may be copyrighted&lt;/span&gt;. You are only authorized to use this tool with &lt;span style=&quot; font-weight:700;&quot;&gt;your own servers and images&lt;/span&gt;.&lt;/p&gt;&lt;p&gt;In the box below, specify the URLs to download covers from, with one template URL per line. The following variables are available:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${title}:&lt;/span&gt; Title of the game.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${savetitle}:&lt;/span&gt; Title of the game including the region.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${localizedtitle}:&lt;/span&gt; Localized (native language) title of the game.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${filetitle}:&lt;/span&gt; Name component of the game&apos;s filename.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${serial}:&lt;/span&gt; Serial of the game.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Example:&lt;/span&gt; https://www.example-not-a-real-domain.com/covers/${serial}.jpg&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Las carátulas de los juegos podrían estar sujetas a derechos de autor&lt;/span&gt; según la jurisdicción en la que te encuentres. Solo se te autoriza a utilizar esta herramienta &lt;span style=&quot; font-weight:700;&quot;&gt;con tus servidores e imágenes propias&lt;/span&gt;.&lt;/p&gt;&lt;p&gt;Introduce en el siguiente formulario las direcciones URL de las que descargar las carátulas, a una dirección por línea. Se pueden utilizar las siguientes variables:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${title}:&lt;/span&gt; el título del juego.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${savetitle}:&lt;/span&gt; el título de juego, incluyendo la región.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${localizedtitle}:&lt;/span&gt; el título localizado (es decir, en el idioma nativo) del juego.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${filetitle}:&lt;/span&gt; el nombre del archivo del juego.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${serial}:&lt;/span&gt; el número de serie del juego.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Ejemplo:&lt;/span&gt; https://www.ejemplo-de-un-dominio-ficticio.com/caratulas/${serial}.jpg&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Depending on your jurisdiction, &lt;span style=&quot; font-weight:700;&quot;&gt;game covers may be copyrighted&lt;/span&gt;. You are only authorized to use this tool with &lt;span style=&quot; font-weight:700;&quot;&gt;your own servers and images&lt;/span&gt;.&lt;/p&gt;&lt;p&gt;In the box below, specify the URLs to download covers from, with one template URL per line. The following variables are available:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${title}:&lt;/span&gt; Title of the game.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${savetitle}:&lt;/span&gt; Save title for the game, including the region suffix.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${localizedtitle}:&lt;/span&gt; Localized title for the game in its native language.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${savetitle}:&lt;/span&gt; Title of the game including the region.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${localizedtitle}:&lt;/span&gt; Localized (native language) title of the game.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${filetitle}:&lt;/span&gt; Name component of the game&apos;s filename.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${serial}:&lt;/span&gt; Serial of the game.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Example:&lt;/span&gt; https://www.example-not-a-real-domain.com/covers/${serial}.jpg&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Dependiendo de tu jurisdicción, &lt;span style=&quot; font-weight:700;&quot;&gt;las carátulas de los juegos pueden estar protegidas por derechos de autor&lt;/span&gt;. Solo estás autorizado a utilizar esta herramienta con &lt;span style=&quot; font-weight:700;&quot;&gt;tus propios servidores e imágenes&lt;/span&gt;.&lt;/p&gt;&lt;p&gt;En el cuadro siguiente, especifica las URL desde las que descargar las carátulas, con una URL de plantilla por línea. Las siguientes variables están disponibles:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${title}:&lt;/span&gt; Título del juego.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${savetitle}:&lt;/span&gt; Título guardado del juego, incluido el sufijo de región. &lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${localizedtitle}:&lt;/span&gt; Título localizado del juego en su idioma nativo.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${savetitle}:&lt;/span&gt; Título del juego, incluida la región. &lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${localizedtitle}:&lt;/span&gt; Título localizado (en el idioma nativo) del juego.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${filetitle}:&lt;/span&gt; Componente del nombre del archivo del juego. &lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${serial}:&lt;/span&gt; Número de serie del juego.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Ejemplo:&lt;/span&gt; https://www.example-not-a-real-domain.com/covers/${serial}.jpg&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>By default, the downloaded covers will be saved with the game&apos;s title. If this is not desired, you can check the &quot;Use Serial File Names&quot; box below. Using serials instead of game titles will prevent conflicts when multiple regions of the same game are used.</source>
@@ -4316,10 +4316,6 @@ Do you want to %1 anyway?</source>
         <translation>Puntos de interrupción</translation>
     </message>
     <message>
-        <source>toolBar</source>
-        <translation>toolBar</translation>
-    </message>
-    <message>
         <source>Disassembly</source>
         <translation>Desensamblado</translation>
     </message>
@@ -4496,6 +4492,10 @@ Do you want to %1 anyway?</source>
         <translation>Ir a dirección en el &amp;desensamblado</translation>
     </message>
     <message>
+        <source>Toolbar</source>
+        <translation>Barra de herramientas</translation>
+    </message>
+    <message>
         <source>&amp;Add Breakpoint</source>
         <translation>&amp;Añadir punto de interrupción</translation>
     </message>
@@ -4549,9 +4549,43 @@ Este archivo puede alcanzar varios gigabytes en tamaño, así que ten cuidado co
         <source>&amp;Remove</source>
         <translation>&amp;Eliminar</translation>
     </message>
+    <message numerus="yes">
+        <source>&amp;Nop %n Instruction(s)</source>
+        <translation>
+            <numerusform>&amp;Nop %n Instrucción(es)</numerusform>
+            <numerusform></numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>&amp;Copy %n Instruction(s)</source>
+        <translation>
+            <numerusform>&amp;Copiar %n instrucción(es)</numerusform>
+            <numerusform></numerusform>
+        </translation>
+    </message>
     <message>
         <source>&amp;Follow Load/Store</source>
         <translation>&amp;Seguir carga/almacenamiento</translation>
+    </message>
+    <message>
+        <source>Failed to write one or more patched instructions. Patched %1 of %2 instructions; the first failure was at 0x%3.</source>
+        <translation>No se ha podido escribir una o más instrucciones parcheadas. Se han parcheado %1 de %2 instrucciones; el primer fallo ocurrió en 0x%3.</translation>
+    </message>
+    <message>
+        <source>Patched %1 of %2 selected instructions.</source>
+        <translation>Se han parcheado %1 de las %2 instrucciones seleccionadas.</translation>
+    </message>
+    <message>
+        <source>Patched %1 instructions.</source>
+        <translation>Se han parcheado %1 instrucciones.</translation>
+    </message>
+    <message numerus="yes">
+        <source>Copied %n instruction(s) to the clipboard.</source>
+        <comment>CopyRange</comment>
+        <translation>
+            <numerusform>Se han copiado %n instrucción(es) al portapapeles.</numerusform>
+            <numerusform></numerusform>
+        </translation>
     </message>
     <message>
         <source>Failed to add breakpoint. A breakpoint may already exist at this address.</source>
@@ -4561,9 +4595,12 @@ Este archivo puede alcanzar varios gigabytes en tamaño, así que ten cuidado co
         <source>Failed to remove breakpoint. This breakpoint may not exist.</source>
         <translation>Fallo al eliminar punto de interrupción. Es posible que no exista.</translation>
     </message>
-    <message>
-        <source>Loaded %1 saved breakpoints.</source>
-        <translation>Se cargaron %1 puntos de interrupción guardados.</translation>
+    <message numerus="yes">
+        <source>Loaded %n saved breakpoint(s).</source>
+        <translation>
+            <numerusform>Se han cargado %n punto(s) de interrupción guardado(s).</numerusform>
+            <numerusform></numerusform>
+        </translation>
     </message>
     <message>
         <source>Debugger</source>
@@ -4610,10 +4647,6 @@ Este archivo puede alcanzar varios gigabytes en tamaño, así que ten cuidado co
         <translation>Introducir &amp;parche en instrucción</translation>
     </message>
     <message>
-        <source>&amp;Nop Instruction</source>
-        <translation>Introducir &amp;NOP en instrucción</translation>
-    </message>
-    <message>
         <source>Failed to read the instruction at 0x%1.</source>
         <translation>Error al leer la instrucción en 0x%1.</translation>
     </message>
@@ -4628,10 +4661,6 @@ Este archivo puede alcanzar varios gigabytes en tamaño, así que ten cuidado co
     <message>
         <source>Invalid Instruction</source>
         <translation>Instrucción no válida</translation>
-    </message>
-    <message>
-        <source>Failed to write patched instruction to 0x%1.</source>
-        <translation>Error al escribir la instrucción a parchear en 0x%1.</translation>
     </message>
     <message>
         <source>Patched instruction at 0x%1.</source>
@@ -6772,6 +6801,26 @@ Comprueba el nombre de usuario y contraseña e intenta de nuevo.</translation>
         <translation>Latencia de salida mínima</translation>
     </message>
     <message>
+        <source>${filetitle}: Name component of the game&apos;s filename.</source>
+        <translation>${filetitle}: Componente del nombre del archivo del juego.</translation>
+    </message>
+    <message>
+        <source>${localizedtitle}: Localized title for the game in its native language.</source>
+        <translation>${localizedtitle}: Título localizado del juego en su idioma original.</translation>
+    </message>
+    <message>
+        <source>${savetitle}: Save title for the game, including the region suffix.</source>
+        <translation>${savetitle}: Título guardado del juego, incluido el sufijo de la región.</translation>
+    </message>
+    <message>
+        <source>${serial}: Serial of the game.</source>
+        <translation>${serial}: Número de serie del juego.</translation>
+    </message>
+    <message>
+        <source>${title}: Title of the game.</source>
+        <translation>${title}: Título del juego.</translation>
+    </message>
+    <message>
         <source>%.1f ms</source>
         <translation>%.1f ms</translation>
     </message>
@@ -6780,12 +6829,24 @@ Comprueba el nombre de usuario y contraseña e intenta de nuevo.</translation>
         <translation>Se eliminará todo el progreso no oficial de los logros del juego actual. Esta acción es irreversible.</translation>
     </message>
     <message>
+        <source>Applies the selected sprite texture filter to framebuffer uploads. This can smooth backgrounds in some games while preserving texture data and 24-bit video.</source>
+        <translation>Aplica el filtro de textura de sprites seleccionado a las cargas en el búfer de fotogramas. Esto puede suavizar los fondos en algunos juegos, al tiempo que conserva los datos de textura y el vídeo de 24 bits.</translation>
+    </message>
+    <message>
+        <source>Default: {}</source>
+        <translation>Predeterminado: {}</translation>
+    </message>
+    <message>
         <source>Delete</source>
         <translation>Borrar</translation>
     </message>
     <message>
         <source>Determines quality of audio when not running at 100% speed.</source>
         <translation>Determina la calidad del audio cuando la emulación no se ejecute al 100 % de velocidad.</translation>
+    </message>
+    <message>
+        <source>Disable Upscaled Direct Textures</source>
+        <translation>Desactivar texturas directas reescaladas</translation>
     </message>
     <message>
         <source>Do you want to continue from the automatic save created {}?</source>
@@ -6800,12 +6861,36 @@ Comprueba el nombre de usuario y contraseña e intenta de nuevo.</translation>
         <translation>Habilita 6 MB adicionales de RAM para dar 2+6=8 MB, habituales en consolas de desarrollo.</translation>
     </message>
     <message>
+        <source>Filter Framebuffer Uploads</source>
+        <translation>Filtrar subidas al búfer de pantalla</translation>
+    </message>
+    <message>
+        <source>Length: {}</source>
+        <translation>Longitud: {}</translation>
+    </message>
+    <message>
         <source>Load Preset</source>
         <translation>Cargar perfil</translation>
     </message>
     <message>
         <source>Login token generated {}</source>
         <translation>Token de inicio de sesión generado {}</translation>
+    </message>
+    <message>
+        <source>Maximum: {}</source>
+        <translation>Máximo: {}</translation>
+    </message>
+    <message>
+        <source>Minimum Framebuffer Upload Height</source>
+        <translation>Altura mínima de carga del framebuffer</translation>
+    </message>
+    <message>
+        <source>Minimum Framebuffer Upload Width</source>
+        <translation>Ancho mínimo de carga del framebuffer</translation>
+    </message>
+    <message>
+        <source>Minimum: {}</source>
+        <translation>Mínimo: {}</translation>
     </message>
     <message>
         <source>Move Cursor</source>
@@ -6902,6 +6987,14 @@ Comprueba el nombre de usuario y contraseña e intenta de nuevo.</translation>
     <message>
         <source>On-Screen Display</source>
         <translation>Mensajes en pantalla</translation>
+    </message>
+    <message>
+        <source>Only filters framebuffer uploads at least this tall. Increase this value to avoid filtering texture data.</source>
+        <translation>Solo se filtran las cargas al framebuffer que tengan al menos esta altura. Aumenta este valor para evitar que se filtren los datos de textura.</translation>
+    </message>
+    <message>
+        <source>Only filters framebuffer uploads at least this wide. Increase this value to avoid filtering texture data.</source>
+        <translation>Solo se filtran las cargas al framebuffer que tengan al menos este ancho. Aumenta este valor para evitar que se filtren los datos de las texturas.</translation>
     </message>
     <message>
         <source>Open Containing Directory</source>
@@ -7198,6 +7291,10 @@ Comprueba el nombre de usuario y contraseña e intenta de nuevo.</translation>
     <message>
         <source>SDL DualShock 4 / DualSense Enhanced Mode</source>
         <translation>Modo mejorado para DualShock 4/DualSense de SDL</translation>
+    </message>
+    <message>
+        <source>Samples 16-bit direct-color textures at native resolution when upscaling. This can fix filtering of FMVs/backgrounds in some games, but may reduce the quality of render-to-texture effects.</source>
+        <translation>Muestrea texturas de color directo de 16 bits a resolución nativa al aumentar la resolución. Esto puede solucionar el filtrado de los vídeos FMV y los fondos en algunos juegos, pero puede reducir la calidad de los efectos de renderizado a textura.</translation>
     </message>
     <message>
         <source>Save Screenshot</source>
@@ -7560,6 +7657,10 @@ Comprueba el nombre de usuario y contraseña e intenta de nuevo.</translation>
         <translation>Iniciar la consola sin ningún disco.</translation>
     </message>
     <message>
+        <source>Start: {}</source>
+        <translation>Comenzar: {}</translation>
+    </message>
+    <message>
         <source>Stretch Mode</source>
         <translation>Modo de estiramiento</translation>
     </message>
@@ -7716,10 +7817,6 @@ Comprueba el nombre de usuario y contraseña e intenta de nuevo.</translation>
         <translation>Utiliza posiciones de pantalla para resolver los datos de PGXP. Puede mejorar el aspecto visual en algunos juegos.</translation>
     </message>
     <message>
-        <source>Value: {} | Default: {} | Minimum: {} | Maximum: {}</source>
-        <translation>Valor: {} | Predeterminado: {} | Mínimo: {} | Máximo: {}</translation>
-    </message>
-    <message>
         <source>Vertex Cache</source>
         <translation>Caché de vértices</translation>
     </message>
@@ -7798,14 +7895,6 @@ Comprueba el nombre de usuario y contraseña e intenta de nuevo.</translation>
     <message>
         <source>{} is not a valid disc image.</source>
         <translation>{} no es una imagen de disco válida.</translation>
-    </message>
-    <message>
-        <source>${title}: Title of the game.
-${filetitle}: Name component of the game&apos;s filename.
-${serial}: Serial of the game.</source>
-        <translation>${title}: el título del juego.
-${filetitle}: el nombre del archivo del juego.
-${serial}: el número de serie del juego.</translation>
     </message>
     <message>
         <source>%g seconds</source>
@@ -8516,6 +8605,10 @@ Esta acción no puede deshacerse.</translation>
         <translation>Actualizar progresos</translation>
     </message>
     <message>
+        <source>Value: {}</source>
+        <translation>Valor: {}</translation>
+    </message>
+    <message>
         <source>WARNING: Your game is still saving to the memory card. Continuing to {0} may IRREVERSIBLY DESTROY YOUR MEMORY CARD. We recommend resuming your game and waiting 5 seconds for it to finish saving.
 
 Do you want to {0} anyway?</source>
@@ -8534,10 +8627,6 @@ Do you want to {1} anyway?</source>
         <translation>El servidor no ha confirmado {0} desbloqueos de logros. Si decides {1}, se perderán dichos desbloqueos. Estos se confirmarán automáticamente en cuanto se restablezca la conexión a la red.
 
 ¿Seguro que quieres {1} de todos modos?</translation>
-    </message>
-    <message>
-        <source>{} | Start: {} | Length: {}</source>
-        <translation>{} | Inicio: {} | Duración: {}</translation>
     </message>
     <message>
         <source>Use OSD Scale</source>
@@ -9693,6 +9782,16 @@ Do you want to enable game settings now?</source>
         <translation>Con protección LibCrypt</translation>
     </message>
     <message>
+        <source>Disable Upscaled Direct Textures</source>
+        <comment>GameDatabase::Trait</comment>
+        <translation>Desactivar texturas directas reescaladas</translation>
+    </message>
+    <message>
+        <source>Filter Framebuffer Uploads</source>
+        <comment>GameDatabase::Trait</comment>
+        <translation>Filtrar cargas de framebuffer</translation>
+    </message>
+    <message>
         <source>Languages</source>
         <translation>Idiomas</translation>
     </message>
@@ -9755,6 +9854,14 @@ Do you want to enable game settings now?</source>
     <message>
         <source>GPU Max Runahead</source>
         <translation>Predicción de latencia máxima de la GPU</translation>
+    </message>
+    <message>
+        <source>Filter Framebuffer Uploads Minimum Width</source>
+        <translation>Filtrar las subidas al búfer de pantalla por ancho mínimo</translation>
+    </message>
+    <message>
+        <source>Filter Framebuffer Uploads Minimum Height</source>
+        <translation>Filtrar las subidas al búfer de pantalla por altura mínima</translation>
     </message>
     <message>
         <source>GPU Line Detect Mode</source>
@@ -9906,8 +10013,8 @@ Do you want to enable game settings now?</source>
         <translation>PSF</translation>
     </message>
     <message>
-        <source>URL template must contain at least one of ${title}, ${savetitle}, ${filetitle}, or ${serial}.</source>
-        <translation>La URL de plantilla debe contener, al menos, un elemento ${title}, ${savetitle}, ${filetitle} o ${serial}.</translation>
+        <source>URL template must contain at least one of ${title}, ${localizedtitle}, ${savetitle}, ${filetitle}, or ${serial}.</source>
+        <translation>La plantilla de URL debe contener al menos uno de los siguientes elementos: ${title}, ${localizedtitle}, ${savetitle}, ${filetitle} o ${serial}.</translation>
     </message>
     <message>
         <source>No URLs to download enumerated.</source>
@@ -10065,6 +10172,14 @@ La búsqueda recursiva llevará más tiempo, pero identificará todo archivo que
     <message>
         <source>Select Directory</source>
         <translation>Seleccionar directorio</translation>
+    </message>
+    <message>
+        <source>Add File...</source>
+        <translation>Añadir archivo...</translation>
+    </message>
+    <message>
+        <source>Add Folder...</source>
+        <translation>Añadir carpeta...</translation>
     </message>
 </context>
 <context>
@@ -10968,6 +11083,34 @@ La búsqueda recursiva llevará más tiempo, pero identificará todo archivo que
         <translation>Habilita el cacheo de texturas externas, requerido para el reemplazo de texturas. &lt;strong&gt;Esta funcionalidad es experimental, y puede causar errores de renderizado en algunos juegos.&lt;/strong&gt;</translation>
     </message>
     <message>
+        <source>Samples 16-bit direct-color textures at native resolution when upscaling. This can fix filtering of FMVs/backgrounds in some games, but may reduce the quality of render-to-texture effects.</source>
+        <translation>Muestrea texturas de color directo de 16 bits a resolución nativa al aumentar la resolución. Esto puede solucionar el filtrado de los vídeos FMV y los fondos en algunos juegos, pero puede reducir la calidad de los efectos de renderizado a textura.</translation>
+    </message>
+    <message>
+        <source>Applies the selected sprite texture filter to framebuffer uploads. This can smooth backgrounds in some games while preserving texture data and 24-bit video.</source>
+        <translation>Aplica el filtro de textura de sprites seleccionado a las cargas en el búfer de fotogramas. Esto puede suavizar los fondos en algunos juegos, al tiempo que conserva los datos de textura y el vídeo de 24 bits.</translation>
+    </message>
+    <message>
+        <source>Minimum Framebuffer Upload Width</source>
+        <translation>Ancho mínimo de carga del framebuffer</translation>
+    </message>
+    <message>
+        <source>1 px</source>
+        <translation>1 px</translation>
+    </message>
+    <message>
+        <source>Only filters framebuffer uploads at least this wide. Increase this value to avoid filtering texture data.</source>
+        <translation>Solo se filtran las cargas al framebuffer que tengan al menos este ancho. Aumenta este valor para evitar que se filtren los datos de las texturas.</translation>
+    </message>
+    <message>
+        <source>Minimum Framebuffer Upload Height</source>
+        <translation>Altura mínima de carga del framebuffer</translation>
+    </message>
+    <message>
+        <source>Only filters framebuffer uploads at least this tall. Increase this value to avoid filtering texture data.</source>
+        <translation>Solo se filtran las cargas al framebuffer que tengan al menos esta altura. Aumenta este valor para evitar que se filtren los datos de textura.</translation>
+    </message>
+    <message>
         <source>Enable Texture Replacements</source>
         <translation>Activar reemplazo de texturas</translation>
     </message>
@@ -11064,10 +11207,6 @@ La búsqueda recursiva llevará más tiempo, pero identificará todo archivo que
         <translation>Nativa %1x</translation>
     </message>
     <message>
-        <source>Use Global Setting</source>
-        <translation>Utilizar configuración global</translation>
-    </message>
-    <message>
         <source>%1x MSAA</source>
         <translation>%1x MSAA</translation>
     </message>
@@ -11116,8 +11255,20 @@ La búsqueda recursiva llevará más tiempo, pero identificará todo archivo que
         <translation>Abajo:</translation>
     </message>
     <message>
+        <source>Filter Framebuffer Uploads</source>
+        <translation>Filtrar subidas al búfer de pantalla</translation>
+    </message>
+    <message>
+        <source>Minimum Size:</source>
+        <translation>Tamaño mínimo:</translation>
+    </message>
+    <message>
         <source>Texture Modulation Cropping (&quot;Old/v0 GPU&quot;)</source>
         <translation>Recorte de modulación de texturas (GPU v0/inicial)</translation>
+    </message>
+    <message>
+        <source>Disable Upscaled Direct Textures</source>
+        <translation>Desactivar texturas directas reescaladas</translation>
     </message>
     <message>
         <source>Disable Textures</source>
@@ -11466,24 +11617,12 @@ La búsqueda recursiva llevará más tiempo, pero identificará todo archivo que
         <translation>Apagar sistema</translation>
     </message>
     <message>
-        <source>Open Cheat Settings</source>
-        <translation>Abrir configuración de trucos</translation>
-    </message>
-    <message>
         <source>Save Screenshot</source>
         <translation>Capturar pantalla</translation>
     </message>
     <message>
         <source>Toggle Media Capture</source>
         <translation>Alternar captura multimedia</translation>
-    </message>
-    <message>
-        <source>Open Achievement List</source>
-        <translation>Abrir lista de logros</translation>
-    </message>
-    <message>
-        <source>Open Leaderboard List</source>
-        <translation>Abrir tabla de posiciones</translation>
     </message>
     <message>
         <source>System</source>
@@ -11576,6 +11715,22 @@ La búsqueda recursiva llevará más tiempo, pero identificará todo archivo que
     <message>
         <source>Toggle On-Screen Display</source>
         <translation>Alternar mensajes en pantalla</translation>
+    </message>
+    <message>
+        <source>Toggle Pause Menu</source>
+        <translation>Alternar menú de pausa</translation>
+    </message>
+    <message>
+        <source>Toggle Cheat List</source>
+        <translation>Alternar lista de trucos</translation>
+    </message>
+    <message>
+        <source>Toggle Achievement List</source>
+        <translation>Alternar lista de logros</translation>
+    </message>
+    <message>
+        <source>Toggle Leaderboard List</source>
+        <translation>Alternar lista de clasificación</translation>
     </message>
     <message>
         <source>Rotate Display Clockwise</source>
@@ -14401,16 +14556,12 @@ Error: {1}</translation>
         <translation>Formatear tarjeta</translation>
     </message>
     <message>
-        <source>Import File...</source>
-        <translation>Importar archivo...</translation>
-    </message>
-    <message>
-        <source>Import Card...</source>
-        <translation>Importar tarjeta...</translation>
-    </message>
-    <message>
         <source>Save</source>
         <translation>Guardar</translation>
+    </message>
+    <message>
+        <source>Import...</source>
+        <translation>Importar...</translation>
     </message>
     <message>
         <source>Error</source>
@@ -14421,10 +14572,22 @@ Error: {1}</translation>
         <translation>Fallo al cargar imagen de Memory Card: %1</translation>
     </message>
     <message>
+        <source>Select Single Save File</source>
+        <translation>Seleccionar archivo de guardado</translation>
+    </message>
+    <message>
         <source>Failed to rename save file %1:
 %2</source>
         <translation>Fallo al renombrar archivo de guardado %1:
 %2</translation>
+    </message>
+    <message>
+        <source>Import Single Save File...</source>
+        <translation>Importar un único archivo de guardado...</translation>
+    </message>
+    <message>
+        <source>Import Entire Memory Card...</source>
+        <translation>Importar toda la Memory Card...</translation>
     </message>
     <message>
         <source>Failed to import memory card from %1:
@@ -14473,10 +14636,6 @@ Error: {1}</translation>
     <message>
         <source>Failed to undelete file %1. The file may have been partially overwritten by another save.</source>
         <translation>Fallo al recuperar el archivo %1. Es posible que el guardado haya sido sobrescrito por otro archivo.</translation>
-    </message>
-    <message>
-        <source>Select Single Savefile</source>
-        <translation>Seleccionar archivo de guardado único</translation>
     </message>
     <message>
         <source>Select Import File</source>
@@ -17028,6 +17187,36 @@ Do you want to create this directory?</source>
         <translation>JINC2 (lento, sin unión de bordes)</translation>
     </message>
     <message>
+        <source>Monotonic Cubic (Very Slow)</source>
+        <comment>GPUTextureFilter</comment>
+        <translation>Cúbico monótono (muy lenta)</translation>
+    </message>
+    <message>
+        <source>Monotonic Cubic (Very Slow, No Edge Blending)</source>
+        <comment>GPUTextureFilter</comment>
+        <translation>Cúbico monótono (muy lento, sin unión de bordes)</translation>
+    </message>
+    <message>
+        <source>Adaptive Diagonal (Slow)</source>
+        <comment>GPUTextureFilter</comment>
+        <translation>Diagonal adaptativa (lenta)</translation>
+    </message>
+    <message>
+        <source>Adaptive Diagonal (Slow, No Edge Blending)</source>
+        <comment>GPUTextureFilter</comment>
+        <translation>Diagonal adaptativa (lenta, sin unión de bordes)</translation>
+    </message>
+    <message>
+        <source>DCCI (Extremely Slow)</source>
+        <comment>GPUTextureFilter</comment>
+        <translation>DCCI (extremadamente lento)</translation>
+    </message>
+    <message>
+        <source>DCCI (Extremely Slow, No Edge Blending)</source>
+        <comment>GPUTextureFilter</comment>
+        <translation>DCCI (extremadamente lento, sin unión de bordes)</translation>
+    </message>
+    <message>
         <source>xBR (Very Slow)</source>
         <comment>GPUTextureFilter</comment>
         <translation>xBR (muy lento)</translation>
@@ -17036,6 +17225,11 @@ Do you want to create this directory?</source>
         <source>xBR (Very Slow, No Edge Blending)</source>
         <comment>GPUTextureFilter</comment>
         <translation>xBR (muy lento, sin unión de bordes)</translation>
+    </message>
+    <message>
+        <source>Sharp Bilinear</source>
+        <comment>GPUTextureFilter</comment>
+        <translation>Bilineal nítido</translation>
     </message>
     <message>
         <source>Scale2x (EPX)</source>
@@ -17190,7 +17384,7 @@ Do you want to create this directory?</source>
     <message>
         <source>Blend (Blur)</source>
         <comment>DisplayDeinterlacingMode</comment>
-        <translation>Mezcla (Difuminar)</translation>
+        <translation>Mezcla (difuminar)</translation>
     </message>
     <message>
         <source>Adaptive (FastMAD)</source>
@@ -17335,7 +17529,7 @@ Do you want to create this directory?</source>
     <message>
         <source>Bilinear (Sharp)</source>
         <comment>DisplayScalingMode</comment>
-        <translation>Bilineal (definido)</translation>
+        <translation>Bilineal (nítido)</translation>
     </message>
     <message>
         <source>Bilinear (Integer)</source>
@@ -17345,7 +17539,7 @@ Do you want to create this directory?</source>
     <message>
         <source>Lanczos (Sharp)</source>
         <comment>DisplayScalingMode</comment>
-        <translation>Lanczos (definido)</translation>
+        <translation>Lanczos (nítido)</translation>
     </message>
     <message>
         <source>Automatic</source>
@@ -17355,7 +17549,7 @@ Do you want to create this directory?</source>
     <message>
         <source>Disallowed</source>
         <comment>DisplayExclusiveFullscreenControl</comment>
-        <translation>Desactivar</translation>
+        <translation>No permitido</translation>
     </message>
     <message>
         <source>Allowed</source>
@@ -18833,7 +19027,7 @@ Por motivos legales, debe obtener una BIOS de una consola PS1/PS2 original de su
     </message>
     <message>
         <source>Maximum Write Coalesce Size:</source>
-        <translation>Tamaño máximo de fusión de escrituras:</translation>
+        <translation>Tamaño máximo de agrupación de escritura:</translation>
     </message>
     <message>
         <source>px</source>
