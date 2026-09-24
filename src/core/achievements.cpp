@@ -1869,11 +1869,6 @@ void Achievements::OnHardcoreModeChanged(bool enabled, bool display_message, boo
     // Defer settings update in case something is using it.
     Host::RunOnCoreThread([]() { System::ApplySettings(false); });
   }
-  else if (System::GetState() == System::State::Starting)
-  {
-    // Initial HC enable, activate restrictions.
-    System::ApplySettings(false);
-  }
 
   // Toss away UI state, because it's invalid now
   FullscreenUI::ClearAchievementsState();

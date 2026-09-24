@@ -1752,7 +1752,8 @@ System::BootResult System::BootSystem(SystemBootParameters parameters, Error* er
   FullscreenUI::OnSystemStarting();
   Achievements::OnSystemStarting(parameters.disable_achievements_hardcore_mode);
 
-  // Update running game, this will apply settings as well.
+  // Also reapplies settings after OnSystemStarting(), so newly-enabled hardcore-mode restrictions
+  // are picked up before Initialize().
   UpdateRunningGame(disc ? disc->GetPath() : parameters.path, disc.get(), true);
 
   // Determine console region. Has to be done here, because gamesettings can override it.
