@@ -57,6 +57,7 @@ AudioSettingsWidget::AudioSettingsWidget(SettingsWindow* dialog, QWidget* parent
   connect(m_ui.outputLatencyMS, &QSlider::valueChanged, this, &AudioSettingsWidget::updateMinimumLatencyLabel);
   connect(m_ui.outputLatencyMinimal, &QCheckBox::checkStateChanged, this, &AudioSettingsWidget::onMinimalOutputLatencyToggled);
   connect(m_ui.bufferMS, &QSlider::valueChanged, this, &AudioSettingsWidget::updateMinimumLatencyLabel);
+  connect(m_ui.resetOutputLatency, &QPushButton::clicked, this, &AudioSettingsWidget::updateMinimumLatencyLabel);
   connect(m_ui.sequenceLength, &QSlider::valueChanged, this, &AudioSettingsWidget::updateMinimumLatencyLabel);
   connect(m_ui.resetBufferSize, &QPushButton::clicked, this, &AudioSettingsWidget::updateMinimumLatencyLabel);
   connect(m_ui.resetSequenceLength, &QPushButton::clicked, this, &AudioSettingsWidget::updateMinimumLatencyLabel);
@@ -327,6 +328,8 @@ void AudioSettingsWidget::onMinimalOutputLatencyToggled()
   m_ui.outputLatencyMS->setEnabled(!minimal);
   m_ui.outputLatencyLabel->setEnabled(!minimal);
   m_ui.resetOutputLatency->setEnabled(!minimal);
+
+  updateMinimumLatencyLabel();
 }
 
 void AudioSettingsWidget::onOutputMutedChanged(int new_state)
