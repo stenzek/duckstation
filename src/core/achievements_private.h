@@ -40,6 +40,7 @@ struct ActiveChallengeIndicator
 struct AchievementProgressIndicator
 {
   const rc_client_achievement_t* achievement;
+  std::string mesaured_progress;
   std::string badge_url;
   float time;
   bool active;
@@ -79,9 +80,11 @@ std::optional<AchievementProgressIndicator>& GetActiveProgressIndicator();
 std::vector<PinnedAchievementIndicator>& GetPinnedAchievementIndicators();
 
 /// Returns true if the specified achievement is pinned.
+/// NOTE: Assumes that the overlay lock is held.
 bool IsAchievementPinned(u32 achievement_id);
 
 /// Pins or unpins the specified achievement.
+/// NOTE: Assumes that the overlay lock is held.
 void SetAchievementPinned(u32 achievement_id, bool pinned);
 
 /// Resets a locally tracked unofficial achievement unlock.
@@ -131,6 +134,7 @@ IMPLEMENT_ENUM_CLASS_BITWISE_OPERATORS(AchievementNotificationCategory);
 AchievementNotificationCategory GetAchievementNotificationCategory(const rc_client_achievement_t* achievement);
 
 /// Schedules an achievement notification to be shown.
+/// NOTE: Assumes that the overlay lock is held.
 void AddAchievementNotification(std::string key, float duration, std::string image_url, std::string title,
                                 std::string text, std::string note = {},
                                 AchievementNotificationNoteType note_type = AchievementNotificationNoteType::None,
@@ -138,7 +142,7 @@ void AddAchievementNotification(std::string key, float duration, std::string ima
                                 u16 min_width = 0, bool small_font = false);
 
 /// Clears all cached state used to render the UI.
-/// NOTE: Assumes achievements lock is held.
+/// Requires both main and overlay locks, in that order.
 void ClearAchievementsState();
 
 /// Updates cached data for the last progress update.

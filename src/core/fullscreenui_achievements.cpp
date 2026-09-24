@@ -137,6 +137,7 @@ static void DrawAchievementCategoryBadges(ImDrawList* dl, AchievementNotificatio
 static float EffectiveNotificationScale(s16 scale);
 static void DrawNotifications(NotificationLayout& layout);
 static void DrawIndicators(NotificationLayout& layout);
+static void DrawRichPresenceMonitor(NotificationLayout& layout);
 static void UpdateAchievementOverlaysRunIdle();
 
 static void AddSubsetInfo(const rc_client_subset_t* subset);
@@ -187,16 +188,18 @@ struct SubsetInfo
 
 struct AchievementsLocals
 {
+  // Protected by the achievements overlay mutex.
   std::vector<Notification> notifications;
-
-  // Shared by both achievements and leaderboards
-  std::vector<SubsetInfo> subset_info_list;
-  const SubsetInfo* open_subset = nullptr;
-
   std::optional<PauseMenuAchievementInfoWithPoints> most_recent_unlock;
   std::optional<PauseMenuMeasuredAchievementInfo> achievement_nearest_completion;
   std::optional<PauseMenuTimedMeasuredAchievementInfo> most_recent_progress_update;
   std::vector<PauseMenuLeaderboardInfo> active_leaderboards;
+
+  // Everything onwards from here is protected by the main achievements mutex.
+
+  // Shared by both achievements and leaderboards
+  std::vector<SubsetInfo> subset_info_list;
+  const SubsetInfo* open_subset = nullptr;
 
   rc_client_achievement_list_t* achievement_list = nullptr;
   std::bitset<NUM_RC_CLIENT_ACHIEVEMENT_BUCKETS> achievement_buckets_collapsed = {};
@@ -228,8 +231,6 @@ void FullscreenUI::ClearAchievementsState()
 
   CloseLeaderboard();
 
-  s_achievements_locals.notifications = {};
-
   s_achievements_locals.leaderboard_entry_lists = {};
   if (s_achievements_locals.leaderboard_list)
   {
@@ -247,12 +248,15 @@ void FullscreenUI::ClearAchievementsState()
   s_achievements_locals.last_unlock_percent = 0.0f;
 
   s_achievements_locals.open_subset = nullptr;
-  s_achievements_locals.subset_info_list.clear();
+  s_achievements_locals.subset_info_list = {};
   s_achievements_locals.last_open_subset_id = 0;
+
+  s_achievements_locals.notifications = {};
 
   s_achievements_locals.most_recent_unlock.reset();
   s_achievements_locals.achievement_nearest_completion.reset();
   s_achievements_locals.most_recent_progress_update.reset();
+  s_achievements_locals.active_leaderboards = {};
 
   UpdateAchievementOverlaysRunIdle();
 }
@@ -339,21 +343,29 @@ void FullscreenUI::DrawAchievementCategoryBadges(ImDrawList* dl, AchievementNoti
 
 void FullscreenUI::DrawAchievementsOverlays()
 {
-  if (!Achievements::IsActive())
+  if (!Achievements::HasActiveGame())
     return;
 
-  const auto lock = Achievements::GetLock();
-
   NotificationLayout layout(g_gpu_settings.achievements_notification_location);
-  DrawNotifications(layout);
-
-  if (Achievements::HasActiveGame() && GetCurrentMainWindow() == MainWindowType::None)
   {
-    // need to group them together if they're in the same location
-    if (g_gpu_settings.achievements_indicator_location != layout.GetLocation())
-      layout = NotificationLayout(g_gpu_settings.achievements_indicator_location);
+    const auto overlay_lock = Achievements::GetOverlayLock();
+    DrawNotifications(layout);
 
-    DrawIndicators(layout);
+    if (GetCurrentMainWindow() == MainWindowType::None)
+    {
+      // need to group them together if they're in the same location
+      if (g_gpu_settings.achievements_indicator_location != layout.GetLocation())
+        layout = NotificationLayout(g_gpu_settings.achievements_indicator_location);
+
+      DrawIndicators(layout);
+    }
+  }
+
+  // Rich presence monitor requires the main mutex. We can't lock overlay then main, have to release the former first.
+  if (g_gpu_settings.achievements_rich_presence_monitor)
+  {
+    const auto lock = Achievements::GetLock();
+    DrawRichPresenceMonitor(layout);
   }
 }
 
@@ -799,10 +811,9 @@ void FullscreenUI::DrawIndicators(NotificationLayout& layout)
     const ImVec4 left_background_color = DarkerColor(UIStyle.ToastBackgroundColor, 1.3f);
     const ImVec4 right_background_color = DarkerColor(UIStyle.ToastBackgroundColor, 0.8f);
     const float progress_image_size = ImCeil(32.0f * scale);
-    const std::string_view progress_text = indicator->achievement->measured_progress;
     const float& progress_text_weight = show_title ? UIStyle.NormalFontWeight : font_weight;
-    const ImVec2 progress_text_size =
-      UIStyle.Font->CalcTextSizeA(font_size, progress_text_weight, FLT_MAX, 0.0f, IMSTR_START_END(progress_text));
+    const ImVec2 progress_text_size = UIStyle.Font->CalcTextSizeA(font_size, progress_text_weight, FLT_MAX, 0.0f,
+                                                                  IMSTR_START_END(indicator->mesaured_progress));
     const std::string_view title_text =
       show_title ? std::string_view(indicator->achievement->title) : std::string_view();
     const ImVec2 title_text_size =
@@ -858,10 +869,10 @@ void FullscreenUI::DrawIndicators(NotificationLayout& layout)
                                            std::max(ImFloor((space - progress_text_size.x) * 0.5f), 0.0f),
                                          box_min.y + padding.y + title_text_size.y),
                                   box_max);
-      RenderShadowedTextClipped(dl, UIStyle.Font, font_size, progress_text_weight, text_clip_rect.Min,
-                                text_clip_rect.Max,
-                                ImGui::GetColorU32(ModAlpha(DarkerColor(UIStyle.ToastTextColor), opacity)),
-                                progress_text, &progress_text_size, ImVec2(0.0f, 0.0f), 0.0f, &text_clip_rect);
+      RenderShadowedTextClipped(
+        dl, UIStyle.Font, font_size, progress_text_weight, text_clip_rect.Min, text_clip_rect.Max,
+        ImGui::GetColorU32(ModAlpha(DarkerColor(UIStyle.ToastTextColor), opacity)), indicator->mesaured_progress,
+        &progress_text_size, ImVec2(0.0f, 0.0f), 0.0f, &text_clip_rect);
     }
     else
     {
@@ -870,7 +881,8 @@ void FullscreenUI::DrawIndicators(NotificationLayout& layout)
                                   box_max);
       RenderShadowedTextClipped(dl, UIStyle.Font, font_size, progress_text_weight, text_clip_rect.Min,
                                 text_clip_rect.Max, ImGui::GetColorU32(ModAlpha(UIStyle.ToastTextColor, opacity)),
-                                progress_text, &progress_text_size, ImVec2(0.0f, 0.0f), 0.0f, &text_clip_rect);
+                                indicator->mesaured_progress, &progress_text_size, ImVec2(0.0f, 0.0f), 0.0f,
+                                &text_clip_rect);
     }
 
     if (!indicator->active && opacity <= 0.01f)
@@ -996,6 +1008,9 @@ void FullscreenUI::DrawIndicators(NotificationLayout& layout)
 
     // Get max width, we want to draw all these in one box.
     // TODO: This looks up achievements multiple times, not fast..
+    // TODO: This is also a racey read, while we're protected because the pinned indicators will only be
+    // cleared while the overlay lock is held, which always happens before the game is unloaded, the read
+    // of measured_proress is technically unsafe. Worst case we show the wrong progress for a frame?
     float box_width = 0.0f;
     float box_height = 0.0f;
     for (const Achievements::PinnedAchievementIndicator& indicator : pinned)
@@ -1061,10 +1076,18 @@ void FullscreenUI::DrawIndicators(NotificationLayout& layout)
       }
     }
   }
+}
 
-  if (const std::string& rich_presence = Achievements::GetRichPresenceString();
-      g_gpu_settings.achievements_rich_presence_monitor && !rich_presence.empty())
+void FullscreenUI::DrawRichPresenceMonitor(NotificationLayout& layout)
+{
+  if (const std::string& rich_presence = Achievements::GetRichPresenceString(); !rich_presence.empty())
   {
+    const float scale = EffectiveNotificationScale(g_gpu_settings.achievements_indicator_scale);
+    const ImVec2 padding = ImVec2(ImCeil(16.0f * scale), ImCeil(10.0f * scale));
+    const float rounding = ImCeil(10.0f * scale);
+    const float font_size = ImCeil(LAYOUT_MEDIUM_FONT_SIZE * scale);
+    static constexpr const float& font_weight = UIStyle.BoldFontWeight;
+    ImDrawList* const dl = ImGui::GetBackgroundDrawList();
     const ImVec2 text_size =
       UIStyle.Font->CalcTextSizeA(font_size, font_weight, FLT_MAX, 0.0f, IMSTR_START_END(rich_presence));
 
@@ -1107,6 +1130,7 @@ void FullscreenUI::DrawIndicators(NotificationLayout& layout)
 void FullscreenUI::UpdateAchievementOverlaysRunIdle()
 {
   // early out if we're already on the GPU thread
+  // NOTE: assumes that we have the overlay_mutex already locked
   if (VideoThread::IsOnThread())
   {
     VideoThread::SetRunIdleReason(VideoThread::RunIdleReason::AchievementOverlaysActive,
@@ -1118,7 +1142,7 @@ void FullscreenUI::UpdateAchievementOverlaysRunIdle()
   VideoThread::RunOnThread([]() {
     bool is_active;
     {
-      const auto lock = Achievements::GetLock();
+      const auto lock = Achievements::GetOverlayLock();
       is_active = !s_achievements_locals.notifications.empty();
     }
     VideoThread::SetRunIdleReason(VideoThread::RunIdleReason::AchievementOverlaysActive, is_active);
@@ -1155,6 +1179,7 @@ void FullscreenUI::CachePauseMenuAchievementInfo(const rc_client_achievement_t* 
 void FullscreenUI::UpdateAchievementsPauseScreenInfo()
 {
   const auto lock = Achievements::GetLock();
+  const auto overlay_lock = Achievements::GetOverlayLock();
   if (!Achievements::HasActiveGame())
   {
     s_achievements_locals.most_recent_unlock.reset();
@@ -1273,6 +1298,7 @@ void FullscreenUI::DrawAchievementsPauseMenuOverlays(float start_pos_y)
     return;
 
   const auto lock = Achievements::GetLock();
+  const auto overlay_lock = Achievements::GetOverlayLock();
   rc_client_t* const client = Achievements::GetClient();
 
   const ImVec2& display_size = ImGui::GetIO().DisplaySize;
@@ -1741,7 +1767,7 @@ void FullscreenUI::ToggleAchievementsWindow()
     return;
   }
 
-  PauseAndToggleMenuFromCoreThread(MainWindowType::Achievements, &FullscreenUI::SwitchToAchievements);
+  PauseAndToggleMenuFromCoreThread(MainWindowType::Achievements, []() { SwitchToAchievements(); });
 }
 
 void FullscreenUI::AddSubsetInfo(const rc_client_subset_t* subset)
@@ -1951,7 +1977,7 @@ void FullscreenUI::SortLockedAchievements()
   }
 }
 
-void FullscreenUI::SwitchToAchievements()
+void FullscreenUI::SwitchToAchievements(u32 scroll_to_achievement_id /*= 0*/)
 {
   const auto lock = Achievements::GetLock();
   if (!Achievements::HasAchievements())
@@ -1974,7 +2000,7 @@ void FullscreenUI::SwitchToAchievements()
 
   // reset collapsed buckets
   s_achievements_locals.achievement_buckets_collapsed.reset();
-  s_achievements_locals.scroll_to_achievement_id = 0;
+  s_achievements_locals.scroll_to_achievement_id = scroll_to_achievement_id;
 
   // sort unlocked achievements by unlock time
   for (size_t i = 0; i < s_achievements_locals.achievement_list->num_buckets; i++)
@@ -1990,7 +2016,12 @@ void FullscreenUI::SwitchToAchievements()
   }
 
   CollectSubsetsFromList(s_achievements_locals.achievement_list, true, false);
-  SortLockedAchievements();
+
+  {
+    const auto overlay_lock = Achievements::GetOverlayLock();
+    SortLockedAchievements();
+  }
+
   SwitchToMainWindow(MainWindowType::Achievements);
 }
 
@@ -2273,6 +2304,9 @@ void FullscreenUI::DrawAchievementsWindow()
 
     ResetFocusHere();
     BeginMenuButtons();
+
+    // Need to take the lock since we query IsAchievementPinned()
+    const auto overlay_lock = Achievements::GetOverlayLock();
 
     // Prefetch badges for up to 3 screens worth of achievements based on current scroll position. This should help
     // reduce loading placeholders when scrolling through a large list of achievements.
@@ -2650,6 +2684,7 @@ void FullscreenUI::SetAchievementPinned(u32 achievement_id, bool pinned)
   DebugAssert(VideoThread::IsOnThread());
 
   BeginTransition(DEFAULT_TRANSITION_TIME, [achievement_id, pinned]() {
+    const auto lock = Achievements::GetLock();
     const rc_client_achievement_t* achievement =
       rc_client_get_achievement_info(Achievements::GetClient(), achievement_id);
     if (!achievement)
@@ -2660,6 +2695,8 @@ void FullscreenUI::SetAchievementPinned(u32 achievement_id, bool pinned)
       pinned ?
         FSUI_ICONSTR(ICON_FA_THUMBTACK, SmallString::from_format(FSUI_FSTR("{} pinned."), achievement->title)) :
         FSUI_ICONSTR(ICON_FA_THUMBTACK_SLASH, SmallString::from_format(FSUI_FSTR("{} unpinned."), achievement->title)));
+
+    const auto overlay_lock = Achievements::GetOverlayLock();
     Achievements::SetAchievementPinned(achievement_id, pinned);
     SortLockedAchievements();
     s_achievements_locals.scroll_to_achievement_id = achievement_id;
@@ -2682,8 +2719,7 @@ void FullscreenUI::ConfirmResetUnofficialAchievementUnlock(u32 achievement_id)
 
       BeginTransition(DEFAULT_TRANSITION_TIME, [achievement_id]() {
         Achievements::ResetUnofficialAchievementUnlock(achievement_id);
-        SwitchToAchievements();
-        s_achievements_locals.scroll_to_achievement_id = achievement_id;
+        SwitchToAchievements(achievement_id);
         ShowToast(OSDMessageType::Info, {}, FSUI_STR("Unofficial achievement unlock reset."));
       });
     });

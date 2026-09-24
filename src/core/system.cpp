@@ -596,12 +596,7 @@ void System::ChangeExeOverrideAndReset(std::string path)
 
 std::string System::GetGameIconPath(bool allow_achievements_badge)
 {
-  u32 achievements_game_id = 0;
-  if (allow_achievements_badge)
-  {
-    const auto lock = Achievements::GetLock();
-    achievements_game_id = Achievements::GetGameID();
-  }
+  u32 achievements_game_id = allow_achievements_badge ? Achievements::GetGameID() : 0;
 
   const auto lock = GameList::GetLock();
   return GameList::GetGameIconPath((s_state.running_game_custom_title || !s_state.running_game_entry) ?

@@ -70,6 +70,9 @@ private:
 /// The core thread is allowed to **read** achievement state without taking the lock first.
 std::unique_lock<Threading::Mutex> GetLock();
 
+/// Mutex protecting overlays. Can only be locked after the main achievements lock, or independently.
+std::lock_guard<Threading::Mutex> GetOverlayLock();
+
 /// Converts a game hash to a string for display. If the hash is nullopt, returns "[NO HASH]".
 TinyString GameHashToString(const std::optional<GameHash>& hash);
 

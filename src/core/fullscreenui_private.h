@@ -139,7 +139,7 @@ void DrawAchievementsPauseMenuOverlays(float start_pos_y);
 void UpdateAchievementsPauseScreenInfo();
 
 /// Switches to the achievements window.
-void SwitchToAchievements();
+void SwitchToAchievements(u32 scroll_to_achievement_id = 0);
 
 /// Switches to the leaderboards window.
 void SwitchToLeaderboards();

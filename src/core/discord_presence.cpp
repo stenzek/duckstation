@@ -109,8 +109,11 @@ bool DiscordPresence::Initialize()
 
   INFO_LOG("Discord Rich Presence initialized successfully");
 
-  if (const auto lock = Achievements::GetLock(); Achievements::HasActiveGame())
+  if (Achievements::HasActiveGame())
+  {
+    const auto lock = Achievements::GetLock();
     UpdateDetails(Achievements::GetCurrentGameBadgeURL(), Achievements::GetRichPresenceString());
+  }
 
   Update(true);
   return true;
