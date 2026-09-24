@@ -761,14 +761,15 @@ void Achievements::UpdateSettings(const Settings& old_config)
     }
   }
 
-  if (!g_settings.achievements_leaderboard_trackers)
+  if (old_config.achievements_leaderboard_trackers && !g_settings.achievements_leaderboard_trackers)
   {
     const auto lock = GetLock();
     s_state.active_leaderboard_trackers.clear();
   }
 
   // remove progress indicator because it won't remove normally
-  if (g_settings.achievements_progress_indicator_mode == AchievementProgressIndicatorMode::Disabled)
+  if (old_config.achievements_progress_indicator_mode != AchievementProgressIndicatorMode::Disabled &&
+      g_settings.achievements_progress_indicator_mode == AchievementProgressIndicatorMode::Disabled)
   {
     const auto lock = GetLock();
     s_state.active_progress_indicator.reset();
