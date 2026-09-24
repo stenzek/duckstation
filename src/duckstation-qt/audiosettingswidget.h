@@ -28,7 +28,6 @@ private:
   void onStretchModeChanged();
   void updateDriverNames();
   void queueUpdateDeviceNames();
-  void updateLatencyLabel();
   void updateMinimumLatencyLabel();
   void updateVolumeLabel();
   void onMinimalOutputLatencyToggled();

@@ -32,8 +32,9 @@ AudioSettingsWidget::AudioSettingsWidget(SettingsWindow* dialog, QWidget* parent
   SettingWidgetBinder::BindSliderAndLabelToIntSetting(sif, m_ui.bufferMS, m_ui.bufferMSLabel, m_ui.resetBufferSize,
                                                       "Audio", "BufferMS", AudioStreamParameters::DEFAULT_BUFFER_MS,
                                                       tr(" ms"));
-  SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.outputLatencyMS, "Audio", "OutputLatencyMS",
-                                              AudioStreamParameters::DEFAULT_OUTPUT_LATENCY_MS);
+  SettingWidgetBinder::BindSliderAndLabelToIntSetting(sif, m_ui.outputLatencyMS, m_ui.outputLatencyLabel,
+                                                      m_ui.resetOutputLatency, "Audio", "OutputLatencyMS",
+                                                      AudioStreamParameters::DEFAULT_OUTPUT_LATENCY_MS, tr(" ms"));
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.outputLatencyMinimal, "Audio", "OutputLatencyMinimal",
                                                AudioStreamParameters::DEFAULT_OUTPUT_LATENCY_MINIMAL);
   SettingWidgetBinder::BindSliderAndLabelToIntSetting(
@@ -53,9 +54,8 @@ AudioSettingsWidget::AudioSettingsWidget(SettingsWindow* dialog, QWidget* parent
 
   connect(m_ui.audioBackend, &QComboBox::currentIndexChanged, this, &AudioSettingsWidget::updateDriverNames);
   connect(m_ui.stretchMode, &QComboBox::currentIndexChanged, this, &AudioSettingsWidget::onStretchModeChanged);
-  connect(m_ui.outputLatencyMS, &QSlider::valueChanged, this, &AudioSettingsWidget::updateLatencyLabel);
-  connect(m_ui.outputLatencyMinimal, &QCheckBox::checkStateChanged, this,
-          [this]() { onMinimalOutputLatencyToggled(); });
+  connect(m_ui.outputLatencyMS, &QSlider::valueChanged, this, &AudioSettingsWidget::updateMinimumLatencyLabel);
+  connect(m_ui.outputLatencyMinimal, &QCheckBox::checkStateChanged, this, &AudioSettingsWidget::onMinimalOutputLatencyToggled);
   connect(m_ui.bufferMS, &QSlider::valueChanged, this, &AudioSettingsWidget::updateMinimumLatencyLabel);
   connect(m_ui.sequenceLength, &QSlider::valueChanged, this, &AudioSettingsWidget::updateMinimumLatencyLabel);
   connect(m_ui.resetBufferSize, &QPushButton::clicked, this, &AudioSettingsWidget::updateMinimumLatencyLabel);
@@ -268,20 +268,6 @@ void AudioSettingsWidget::queueUpdateDeviceNames()
   });
 }
 
-void AudioSettingsWidget::updateLatencyLabel()
-{
-  const bool minimal_output_latency = m_dialog->getEffectiveBoolValue(
-    "Audio", "OutputLatencyMinimal", AudioStreamParameters::DEFAULT_OUTPUT_LATENCY_MINIMAL);
-  const int config_output_latency_ms =
-    minimal_output_latency ?
-      0 :
-      m_dialog->getEffectiveIntValue("Audio", "OutputLatencyMS", AudioStreamParameters::DEFAULT_OUTPUT_LATENCY_MS);
-
-  m_ui.outputLatencyLabel->setText(minimal_output_latency ? tr("N/A") : tr("%1 ms").arg(config_output_latency_ms));
-
-  updateMinimumLatencyLabel();
-}
-
 void AudioSettingsWidget::updateMinimumLatencyLabel()
 {
   const AudioStretchMode stretch_mode =
@@ -351,7 +337,8 @@ void AudioSettingsWidget::onMinimalOutputLatencyToggled()
 {
   const bool minimal = m_dialog->getEffectiveBoolValue("Audio", "OutputLatencyMinimal", false);
   m_ui.outputLatencyMS->setEnabled(!minimal);
-  updateLatencyLabel();
+  m_ui.outputLatencyLabel->setEnabled(!minimal);
+  m_ui.resetOutputLatency->setEnabled(!minimal);
 }
 
 void AudioSettingsWidget::onOutputVolumeChanged(int new_value)
