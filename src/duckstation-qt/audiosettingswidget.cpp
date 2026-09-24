@@ -29,22 +29,22 @@ AudioSettingsWidget::AudioSettingsWidget(SettingsWindow* dialog, QWidget* parent
                                                &CoreAudioStream::ParseStretchMode, &CoreAudioStream::GetStretchModeName,
                                                &CoreAudioStream::GetStretchModeDisplayName,
                                                AudioStreamParameters::DEFAULT_STRETCH_MODE, AudioStretchMode::Count);
-  SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.bufferMS, "Audio", "BufferMS",
-                                              AudioStreamParameters::DEFAULT_BUFFER_MS);
-  QtUtils::BindLabelToSlider(m_ui.bufferMS, m_ui.bufferMSLabel, 1.0f, tr("%1 ms"));
+  SettingWidgetBinder::BindSliderAndLabelToIntSetting(sif, m_ui.bufferMS, m_ui.bufferMSLabel, m_ui.resetBufferSize,
+                                                      "Audio", "BufferMS", AudioStreamParameters::DEFAULT_BUFFER_MS,
+                                                      tr(" ms"));
   SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.outputLatencyMS, "Audio", "OutputLatencyMS",
                                               AudioStreamParameters::DEFAULT_OUTPUT_LATENCY_MS);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.outputLatencyMinimal, "Audio", "OutputLatencyMinimal",
                                                AudioStreamParameters::DEFAULT_OUTPUT_LATENCY_MINIMAL);
-  SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.sequenceLength, "Audio", "StretchSequenceLengthMS",
-                                              AudioStreamParameters::DEFAULT_STRETCH_SEQUENCE_LENGTH, 0);
-  QtUtils::BindLabelToSlider(m_ui.sequenceLength, m_ui.sequenceLengthLabel, 1.0f, tr("%1 ms"));
-  SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.seekWindowSize, "Audio", "StretchSeekWindowMS",
-                                              AudioStreamParameters::DEFAULT_STRETCH_SEEKWINDOW, 0);
-  QtUtils::BindLabelToSlider(m_ui.seekWindowSize, m_ui.seekWindowSizeLabel, 1.0f, tr("%1 ms"));
-  SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.overlap, "Audio", "StretchOverlapMS",
-                                              AudioStreamParameters::DEFAULT_STRETCH_OVERLAP, 0);
-  QtUtils::BindLabelToSlider(m_ui.overlap, m_ui.overlapLabel, 1.0f, tr("%1 ms"));
+  SettingWidgetBinder::BindSliderAndLabelToIntSetting(
+    sif, m_ui.sequenceLength, m_ui.sequenceLengthLabel, m_ui.resetSequenceLength, "Audio", "StretchSequenceLengthMS",
+    AudioStreamParameters::DEFAULT_STRETCH_SEQUENCE_LENGTH, tr(" ms"));
+  SettingWidgetBinder::BindSliderAndLabelToIntSetting(sif, m_ui.seekWindowSize, m_ui.seekWindowSizeLabel,
+                                                      m_ui.resetSeekWindowSize, "Audio", "StretchSeekWindowMS",
+                                                      AudioStreamParameters::DEFAULT_STRETCH_SEEKWINDOW, tr(" ms"));
+  SettingWidgetBinder::BindSliderAndLabelToIntSetting(sif, m_ui.overlap, m_ui.overlapLabel, m_ui.resetOverlap, "Audio",
+                                                      "StretchOverlapMS",
+                                                      AudioStreamParameters::DEFAULT_STRETCH_OVERLAP, tr(" ms"));
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.useQuickSeek, "Audio", "StretchUseQuickSeek",
                                                AudioStreamParameters::DEFAULT_STRETCH_USE_QUICKSEEK);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.useAAFilter, "Audio", "StretchUseAAFilter",
@@ -58,6 +58,8 @@ AudioSettingsWidget::AudioSettingsWidget(SettingsWindow* dialog, QWidget* parent
           [this]() { onMinimalOutputLatencyToggled(); });
   connect(m_ui.bufferMS, &QSlider::valueChanged, this, &AudioSettingsWidget::updateMinimumLatencyLabel);
   connect(m_ui.sequenceLength, &QSlider::valueChanged, this, &AudioSettingsWidget::updateMinimumLatencyLabel);
+  connect(m_ui.resetBufferSize, &QPushButton::clicked, this, &AudioSettingsWidget::updateMinimumLatencyLabel);
+  connect(m_ui.resetSequenceLength, &QPushButton::clicked, this, &AudioSettingsWidget::updateMinimumLatencyLabel);
 
   updateDriverNames();
   onStretchModeChanged();
@@ -84,11 +86,6 @@ AudioSettingsWidget::AudioSettingsWidget(SettingsWindow* dialog, QWidget* parent
   }
   connect(m_ui.resetVolume, &QPushButton::clicked, this, [this]() { resetVolume(false); });
   connect(m_ui.resetFastForwardVolume, &QPushButton::clicked, this, [this]() { resetVolume(true); });
-  connect(m_ui.resetBufferSize, &QPushButton::clicked, this, &AudioSettingsWidget::onResetBufferSizeClicked);
-  connect(m_ui.resetSequenceLength, &QPushButton::clicked, this,
-          &AudioSettingsWidget::onResetStretchSequenceLengthClicked);
-  connect(m_ui.resetSeekWindowSize, &QPushButton::clicked, this, &AudioSettingsWidget::onResetStretchSeekWindowClicked);
-  connect(m_ui.resetOverlap, &QPushButton::clicked, this, &AudioSettingsWidget::onResetStretchOverlapClicked);
 
   dialog->registerWidgetHelp(
     m_ui.audioBackend, tr("Audio Backend"), QStringLiteral("Cubeb"),
@@ -414,59 +411,4 @@ void AudioSettingsWidget::resetVolume(bool fast_forward)
   {
     slider->setValue(100);
   }
-}
-
-void AudioSettingsWidget::onResetBufferSizeClicked()
-{
-  m_dialog->setIntSettingValue(
-    "Audio", "BufferMS",
-    m_dialog->isPerGameSettings() ? std::nullopt : std::optional<int>(AudioStreamParameters::DEFAULT_BUFFER_MS));
-  SettingWidgetBinder::DisconnectWidget(m_ui.bufferMS);
-  SettingWidgetBinder::BindWidgetToIntSetting(m_dialog->getSettingsInterface(), m_ui.bufferMS, "Audio", "BufferMS",
-                                              AudioStreamParameters::DEFAULT_BUFFER_MS);
-  QtUtils::BindLabelToSlider(m_ui.bufferMS, m_ui.bufferMSLabel, 1.0f, tr("%1 ms"));
-  connect(m_ui.bufferMS, &QSlider::valueChanged, this, &AudioSettingsWidget::updateMinimumLatencyLabel);
-  updateMinimumLatencyLabel();
-}
-
-void AudioSettingsWidget::onResetStretchSequenceLengthClicked()
-{
-  m_dialog->setIntSettingValue("Audio", "StretchSequenceLengthMS",
-                               m_dialog->isPerGameSettings() ?
-                                 std::nullopt :
-                                 std::optional<int>(AudioStreamParameters::DEFAULT_STRETCH_SEQUENCE_LENGTH));
-
-  SettingWidgetBinder::DisconnectWidget(m_ui.sequenceLength);
-  SettingWidgetBinder::BindWidgetToIntSetting(m_dialog->getSettingsInterface(), m_ui.sequenceLength, "Audio",
-                                              "StretchSequenceLengthMS",
-                                              AudioStreamParameters::DEFAULT_STRETCH_SEQUENCE_LENGTH, 0);
-  QtUtils::BindLabelToSlider(m_ui.sequenceLength, m_ui.sequenceLengthLabel, 1.0f, tr("%1 ms"));
-  connect(m_ui.sequenceLength, &QSlider::valueChanged, this, &AudioSettingsWidget::updateMinimumLatencyLabel);
-  updateMinimumLatencyLabel();
-}
-
-void AudioSettingsWidget::onResetStretchSeekWindowClicked()
-{
-  m_dialog->setIntSettingValue("Audio", "StretchSeekWindowMS",
-                               m_dialog->isPerGameSettings() ?
-                                 std::nullopt :
-                                 std::optional<int>(AudioStreamParameters::DEFAULT_STRETCH_SEEKWINDOW));
-
-  SettingWidgetBinder::DisconnectWidget(m_ui.seekWindowSize);
-  SettingWidgetBinder::BindWidgetToIntSetting(m_dialog->getSettingsInterface(), m_ui.seekWindowSize, "Audio",
-                                              "StretchSeekWindowMS", AudioStreamParameters::DEFAULT_STRETCH_SEEKWINDOW,
-                                              0);
-  QtUtils::BindLabelToSlider(m_ui.seekWindowSize, m_ui.seekWindowSizeLabel, 1.0f, tr("%1 ms"));
-}
-
-void AudioSettingsWidget::onResetStretchOverlapClicked()
-{
-  m_dialog->setIntSettingValue(
-    "Audio", "StretchOverlapMS",
-    m_dialog->isPerGameSettings() ? std::nullopt : std::optional<int>(AudioStreamParameters::DEFAULT_STRETCH_OVERLAP));
-
-  SettingWidgetBinder::DisconnectWidget(m_ui.overlap);
-  SettingWidgetBinder::BindWidgetToIntSetting(m_dialog->getSettingsInterface(), m_ui.overlap, "Audio",
-                                              "StretchOverlapMS", AudioStreamParameters::DEFAULT_STRETCH_OVERLAP, 0);
-  QtUtils::BindLabelToSlider(m_ui.overlap, m_ui.overlapLabel, 1.0f, tr("%1 ms"));
 }

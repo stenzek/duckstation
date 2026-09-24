@@ -37,14 +37,16 @@ AchievementSettingsWidget::AchievementSettingsWidget(SettingsWindow* dialog, QWi
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.unofficialAchievements, "Cheevos", "UnofficialTestMode",
                                                false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.achievementNotifications, "Cheevos", "Notifications", true);
-  SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_ui.achievementNotificationsDuration, "Cheevos",
-                                                "NotificationsDuration",
-                                                Settings::DEFAULT_ACHIEVEMENT_NOTIFICATION_TIME);
+  SettingWidgetBinder::BindSliderAndLabelToIntSetting(
+    sif, m_ui.achievementNotificationsDuration, m_ui.achievementNotificationsDurationLabel,
+    m_ui.resetAchievementNotificationsDuration, "Cheevos", "NotificationsDuration",
+    Settings::DEFAULT_ACHIEVEMENT_NOTIFICATION_TIME, tr(" seconds"));
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.leaderboardNotifications, "Cheevos",
                                                "LeaderboardNotifications", true);
-  SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_ui.leaderboardNotificationsDuration, "Cheevos",
-                                                "LeaderboardsDuration",
-                                                Settings::DEFAULT_LEADERBOARD_NOTIFICATION_TIME);
+  SettingWidgetBinder::BindSliderAndLabelToIntSetting(
+    sif, m_ui.leaderboardNotificationsDuration, m_ui.leaderboardNotificationsDurationLabel,
+    m_ui.resetLeaderboardNotificationsDuration, "Cheevos", "LeaderboardsDuration",
+    Settings::DEFAULT_LEADERBOARD_NOTIFICATION_TIME, tr(" seconds"));
   SettingWidgetBinder::BindWidgetToEnumSetting(
     sif, m_ui.notificationLocation, "Cheevos", "NotificationLocation", &Settings::ParseNotificationLocation,
     &Settings::GetNotificationLocationName, &Settings::GetNotificationLocationDisplayName,
@@ -88,9 +90,17 @@ AchievementSettingsWidget::AchievementSettingsWidget(SettingsWindow* dialog, QWi
                                 "locally and not sent to RetroAchievements."));
   dialog->registerWidgetHelp(m_ui.achievementNotifications, tr("Show Achievement Notifications"), tr("Checked"),
                              tr("Displays popup messages on events such as achievement unlocks and game completion."));
+  dialog->registerWidgetHelp(m_ui.resetAchievementNotificationsDuration, tr("Reset Achievement Notification Duration"),
+                             tr("N/A"),
+                             dialog->isPerGameSettings() ? tr("Resets the duration to the global setting.") :
+                                                           tr("Resets the duration to the default."));
   dialog->registerWidgetHelp(
     m_ui.leaderboardNotifications, tr("Show Leaderboard Notifications"), tr("Checked"),
     tr("Displays popup messages when starting, submitting, or failing a leaderboard challenge."));
+  dialog->registerWidgetHelp(m_ui.resetLeaderboardNotificationsDuration, tr("Reset Leaderboard Notification Duration"),
+                             tr("N/A"),
+                             dialog->isPerGameSettings() ? tr("Resets the duration to the global setting.") :
+                                                           tr("Resets the duration to the default."));
   dialog->registerWidgetHelp(m_ui.leaderboardTrackers, tr("Show Leaderboard Trackers"), tr("Checked"),
                              tr("Shows a timer in the selected location when leaderboard challenges are active."));
   dialog->registerWidgetHelp(
@@ -129,10 +139,6 @@ AchievementSettingsWidget::AchievementSettingsWidget(SettingsWindow* dialog, QWi
           &AchievementSettingsWidget::updateEnableState);
   connect(m_ui.leaderboardNotifications, &QCheckBox::checkStateChanged, this,
           &AchievementSettingsWidget::updateEnableState);
-  connect(m_ui.achievementNotificationsDuration, &QSlider::valueChanged, this,
-          &AchievementSettingsWidget::onAchievementsNotificationDurationSliderChanged);
-  connect(m_ui.leaderboardNotificationsDuration, &QSlider::valueChanged, this,
-          &AchievementSettingsWidget::onLeaderboardsNotificationDurationSliderChanged);
 
   if (!m_dialog->isPerGameSettings())
   {
@@ -152,8 +158,6 @@ AchievementSettingsWidget::AchievementSettingsWidget(SettingsWindow* dialog, QWi
   }
 
   updateEnableState();
-  onAchievementsNotificationDurationSliderChanged();
-  onLeaderboardsNotificationDurationSliderChanged();
 }
 
 AchievementSettingsWidget::~AchievementSettingsWidget() = default;
@@ -247,8 +251,10 @@ void AchievementSettingsWidget::updateEnableState()
   const bool lb_notifications = enabled && m_dialog->getEffectiveBoolValue("Cheevos", "LeaderboardNotifications", true);
   m_ui.achievementNotificationsDuration->setEnabled(notifications);
   m_ui.achievementNotificationsDurationLabel->setEnabled(notifications);
+  m_ui.resetAchievementNotificationsDuration->setEnabled(notifications);
   m_ui.leaderboardNotificationsDuration->setEnabled(lb_notifications);
   m_ui.leaderboardNotificationsDurationLabel->setEnabled(lb_notifications);
+  m_ui.resetLeaderboardNotificationsDuration->setEnabled(lb_notifications);
 }
 
 void AchievementSettingsWidget::onHardcoreModeStateChanged()
@@ -274,20 +280,6 @@ void AchievementSettingsWidget::onHardcoreModeStateChanged()
     QMessageBox::Yes | QMessageBox::No, QMessageBox::NoButton);
   msgbox->connect(msgbox, &QMessageBox::accepted, this, []() { g_core_thread->resetSystem(true); });
   msgbox->open();
-}
-
-void AchievementSettingsWidget::onAchievementsNotificationDurationSliderChanged()
-{
-  const int duration =
-    m_dialog->getEffectiveIntValue("Cheevos", "NotificationsDuration", Settings::DEFAULT_ACHIEVEMENT_NOTIFICATION_TIME);
-  m_ui.achievementNotificationsDurationLabel->setText(tr("%n seconds", nullptr, duration));
-}
-
-void AchievementSettingsWidget::onLeaderboardsNotificationDurationSliderChanged()
-{
-  const int duration =
-    m_dialog->getEffectiveIntValue("Cheevos", "LeaderboardsDuration", Settings::DEFAULT_LEADERBOARD_NOTIFICATION_TIME);
-  m_ui.leaderboardNotificationsDurationLabel->setText(tr("%n seconds", nullptr, duration));
 }
 
 void AchievementSettingsWidget::updateLoginState()

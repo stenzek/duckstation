@@ -173,7 +173,7 @@
        </widget>
       </item>
       <item row="0" column="1">
-       <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="1,0">
+       <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="1,0,0">
         <item>
          <widget class="QSlider" name="achievementNotificationsDuration">
           <property name="minimum">
@@ -209,6 +209,17 @@
           </property>
          </widget>
         </item>
+        <item>
+         <widget class="QPushButton" name="resetAchievementNotificationsDuration">
+          <property name="toolTip">
+           <string>Reset Achievement Notification Duration</string>
+          </property>
+          <property name="icon">
+           <iconset resource="resources/duckstation-qt.qrc">
+            <normaloff>:/icons/monochrome/svg/delete-back-2-line.svg</normaloff>:/icons/monochrome/svg/delete-back-2-line.svg</iconset>
+          </property>
+         </widget>
+        </item>
        </layout>
       </item>
       <item row="1" column="0">
@@ -219,7 +230,7 @@
        </widget>
       </item>
       <item row="1" column="1">
-       <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="1,0">
+       <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="1,0,0">
         <item>
          <widget class="QSlider" name="leaderboardNotificationsDuration">
           <property name="minimum">
@@ -252,6 +263,17 @@
           </property>
           <property name="alignment">
            <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="resetLeaderboardNotificationsDuration">
+          <property name="toolTip">
+           <string>Reset Leaderboard Notification Duration</string>
+          </property>
+          <property name="icon">
+           <iconset resource="resources/duckstation-qt.qrc">
+            <normaloff>:/icons/monochrome/svg/delete-back-2-line.svg</normaloff>:/icons/monochrome/svg/delete-back-2-line.svg</iconset>
           </property>
          </widget>
         </item>

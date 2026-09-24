@@ -24,8 +24,6 @@ private:
 
   void updateEnableState();
   void onHardcoreModeStateChanged();
-  void onAchievementsNotificationDurationSliderChanged();
-  void onLeaderboardsNotificationDurationSliderChanged();
   void onLoginPressed();
   void onLogoutPressed();
   void onLoginCompleted();

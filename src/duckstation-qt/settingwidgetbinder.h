@@ -15,6 +15,7 @@
 #include "common/path.h"
 #include "common/small_string.h"
 
+#include <QtCore/QSignalBlocker>
 #include <QtCore/QtCore>
 #include <QtGui/QAction>
 #include <QtGui/QActionGroup>
@@ -662,15 +663,14 @@ struct SettingAccessor<QDoubleSpinBox>
         });
         menu->popup(widget->mapToGlobal(pt));
       });
-      widget->connect(widget, &QDoubleSpinBox::valueChanged, widget,
-                      [widget, func = std::move(func)]() {
-                        if (widget->property(IS_NULL_PROPERTY).toBool())
-                        {
-                          widget->setProperty(IS_NULL_PROPERTY, QVariant(false));
-                          updateFont(widget, false);
-                        }
-                        func();
-                      });
+      widget->connect(widget, &QDoubleSpinBox::valueChanged, widget, [widget, func = std::move(func)]() {
+        if (widget->property(IS_NULL_PROPERTY).toBool())
+        {
+          widget->setProperty(IS_NULL_PROPERTY, QVariant(false));
+          updateFont(widget, false);
+        }
+        func();
+      });
     }
   }
 
@@ -938,6 +938,86 @@ inline void BindWidgetAndLabelToIntSetting(SettingsInterface* sif, WidgetType* w
 
         if (label)
           label->setText(QStringLiteral("%1%2").arg(new_value).arg(label_suffix));
+      });
+  }
+}
+
+inline void BindSliderAndLabelToIntSetting(SettingsInterface* sif, QSlider* slider, QLabel* label,
+                                           QAbstractButton* reset_button, std::string section, std::string key,
+                                           int default_value, const QString& label_suffix = QString())
+{
+  const QFont original_font = label->font();
+  QFont override_font(original_font);
+  override_font.setBold(true);
+
+  static constexpr auto update_overridable_label = [](QLabel* const label, const QString& label_suffix, int value,
+                                                      bool overridden) {
+    QFont override_font(label->font());
+    override_font.setBold(overridden);
+    label->setFont(override_font);
+    label->setText(QStringLiteral("%1%2").arg(value).arg(label_suffix));
+  };
+
+  if (sif)
+  {
+    const int global_value = Core::GetBaseIntSettingValue(section.c_str(), key.c_str(), default_value);
+    SettingAccessor<QSlider>::makeNullableInt(slider, global_value);
+
+    int game_value;
+    const bool overridden = sif->FindIntValue(section.c_str(), key.c_str(), &game_value);
+    {
+      const QSignalBlocker blocker(slider);
+      SettingAccessor<QSlider>::setNullableIntValue(slider, overridden ? std::optional<int>(game_value) : std::nullopt);
+    }
+    update_overridable_label(label, label_suffix, slider->value(), overridden);
+
+    QObject::connect(slider, &QSlider::valueChanged, slider,
+                     [sif, slider, label, label_suffix, section, key](int value) {
+                       slider->setProperty(IS_NULL_PROPERTY, false);
+                       sif->SetIntValue(section.c_str(), key.c_str(), value);
+                       QtHost::SaveSettingsInterface(sif, true, true);
+                       update_overridable_label(label, label_suffix, value, true);
+                     });
+    QObject::connect(
+      reset_button, &QAbstractButton::clicked, slider,
+      [sif, slider, label, label_suffix, section = std::move(section), key = std::move(key), default_value]() {
+        const int global_value = Core::GetBaseIntSettingValue(section.c_str(), key.c_str(), default_value);
+        slider->setProperty(GLOBAL_VALUE_PROPERTY, global_value);
+        {
+          const QSignalBlocker blocker(slider);
+          SettingAccessor<QSlider>::setNullableIntValue(slider, std::nullopt);
+        }
+        sif->DeleteValue(section.c_str(), key.c_str());
+        QtHost::SaveSettingsInterface(sif, true, true);
+        update_overridable_label(label, label_suffix, global_value, false);
+      });
+  }
+  else
+  {
+    const int value = Core::GetBaseIntSettingValue(section.c_str(), key.c_str(), default_value);
+    {
+      const QSignalBlocker blocker(slider);
+      slider->setValue(value);
+    }
+    label->setText(QStringLiteral("%1%2").arg(value).arg(label_suffix));
+
+    QObject::connect(slider, &QSlider::valueChanged, slider, [label, label_suffix, section, key](int value) {
+      Core::SetBaseIntSettingValue(section.c_str(), key.c_str(), value);
+      Host::CommitBaseSettingChanges();
+      g_core_thread->applySettings();
+      label->setText(QStringLiteral("%1%2").arg(value).arg(label_suffix));
+    });
+    QObject::connect(
+      reset_button, &QAbstractButton::clicked, slider,
+      [slider, label, label_suffix, section = std::move(section), key = std::move(key), default_value]() {
+        {
+          const QSignalBlocker blocker(slider);
+          slider->setValue(default_value);
+        }
+        Core::DeleteBaseSettingValue(section.c_str(), key.c_str());
+        Host::CommitBaseSettingChanges();
+        g_core_thread->applySettings();
+        label->setText(QStringLiteral("%1%2").arg(slider->value()).arg(label_suffix));
       });
   }
 }
