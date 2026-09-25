@@ -140,15 +140,19 @@ struct KeyCodeData
 // ------------------------------------------------------------------------
 // Forward Declarations (for static qualifier)
 // ------------------------------------------------------------------------
+static bool GetInputSourceDefaultEnabled(InputSourceType type);
 static std::optional<InputBindingKey> ParseHostKeyboardKey(std::string_view source, std::string_view sub_binding);
 static std::optional<InputBindingKey> ParsePointerKey(std::string_view source, std::string_view sub_binding);
 
 static std::vector<std::string_view> SplitChord(std::string_view binding);
 static bool SplitBinding(std::string_view binding, std::string_view* source, std::string_view* sub_binding);
+static std::optional<InputBindingKey> ParseInputBindingKey(std::string_view binding);
+static bool ParseBindingAndGetSource(std::string_view binding, InputBindingKey* key, InputSource** source);
 static void PrettifyInputBindingPart(std::string_view binding, bool allow_icon, BindingIconMappingFunction mapper,
                                      SmallString& ret, bool& changed);
 static void AddBindings(const std::vector<std::string>& bindings, bool activate_when_captured,
                         const InputEventHandler& handler);
+static void AddBinding(std::string_view binding, bool activate_when_captured, const InputEventHandler& handler);
 static void UpdatePointerCount();
 
 static bool IsAxisHandler(const InputEventHandler& handler);
@@ -178,6 +182,7 @@ static void ApplyMacroButton(const MacroButton& mb);
 static void UpdateMacroButtons();
 
 static size_t UpdateInputSubclassPolling(InputSubclass subclass, bool enable_all);
+static bool IsInputSourceEnabled(const SettingsInterface& si, InputSourceType type);
 static void UpdateInputSourceState(const SettingsInterface& si, std::unique_lock<Threading::Mutex>& settings_lock,
                                    InputSourceType type, std::unique_ptr<InputSource> (*factory_function)());
 static void ReloadSources(const SettingsInterface& sources_si, std::unique_lock<Threading::Mutex>& settings_lock);
@@ -688,17 +693,6 @@ void InputManager::AddBinding(std::string_view binding, bool activate_when_captu
     s_state.binding_map.emplace(ibinding->keys[i].MaskDirection(), ibinding);
 }
 
-void InputManager::AddVibrationBinding(u32 pad_index, u32 bind_index, const InputBindingKey& binding,
-                                       InputSource* source)
-{
-  s_state.pad_vibration_array.push_back(
-    PadVibrationBinding{.pad_and_bind_index = PadVibrationBinding::PackPadAndBindIndex(pad_index, bind_index),
-                        .binding = binding,
-                        .last_update_time = 0,
-                        .source = source,
-                        .last_intensity = 0.0f});
-}
-
 // ------------------------------------------------------------------------
 // Key Decoders
 // ------------------------------------------------------------------------
@@ -785,7 +779,7 @@ std::optional<u32> InputManager::ConvertHostNativeKeyCodeToKeyCode(u32 native_co
 // Bind Encoders
 // ------------------------------------------------------------------------
 
-static std::array<const char*, static_cast<u32>(InputSourceType::Count)> s_input_class_names = {{
+static std::array<const char*, static_cast<size_t>(InputSourceType::Count)> s_input_class_names = {{
   "Keyboard",
   "Pointer",
 #ifdef _WIN32
@@ -796,14 +790,9 @@ static std::array<const char*, static_cast<u32>(InputSourceType::Count)> s_input
   "SDL",
 }};
 
-InputSource* InputManager::GetInputSourceInterface(InputSourceType type)
-{
-  return s_state.input_sources[static_cast<u32>(type)].get();
-}
-
 const char* InputManager::InputSourceToString(InputSourceType clazz)
 {
-  return s_input_class_names[static_cast<u32>(clazz)];
+  return s_input_class_names[static_cast<size_t>(clazz)];
 }
 
 bool InputManager::GetInputSourceDefaultEnabled(InputSourceType type)
@@ -831,17 +820,6 @@ bool InputManager::GetInputSourceDefaultEnabled(InputSourceType type)
     default:
       return false;
   }
-}
-
-std::optional<InputSourceType> InputManager::ParseInputSourceString(std::string_view str)
-{
-  for (u32 i = 0; i < static_cast<u32>(InputSourceType::Count); i++)
-  {
-    if (str == s_input_class_names[i])
-      return static_cast<InputSourceType>(i);
-  }
-
-  return std::nullopt;
 }
 
 std::optional<InputBindingKey> InputManager::ParseHostKeyboardKey(std::string_view source, std::string_view sub_binding)
@@ -1494,7 +1472,7 @@ void InputManager::UpdatePointerCount()
   }
 
 #ifdef _WIN32
-  InputSource* ris = GetInputSourceInterface(InputSourceType::RawInput);
+  InputSource* ris = s_state.input_sources[static_cast<size_t>(InputSourceType::RawInput)].get();
   DebugAssert(ris);
 
   s_state.pointer_count = 0;
@@ -2276,8 +2254,6 @@ void InputManager::InternalReloadBindings(const SettingsInterface& binding_si,
   s_state.macro_buttons.clear();
   s_state.pointer_move_callbacks.clear();
   s_state.has_pointer_device_bindings = false;
-
-  Host::AddFixedInputBindings(binding_si);
 
   // Hotkeys use the base configuration, except if the custom hotkeys option is enabled.
   AddHotkeyBindings(hotkey_binding_si);

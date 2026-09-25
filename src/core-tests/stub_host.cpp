@@ -364,10 +364,6 @@ const char* Host::GetDefaultFullscreenUITheme()
   return "";
 }
 
-void Host::AddFixedInputBindings(const SettingsInterface& si)
-{
-}
-
 void Host::OnInputDeviceConnected(InputBindingKey key, std::string_view identifier, std::string_view device_name)
 {
 }

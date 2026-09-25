@@ -2927,10 +2927,6 @@ void Host::OnInputDeviceDisconnected(InputBindingKey key, std::string_view ident
   g_core_thread->updateIdleTimerInterval();
 }
 
-void Host::AddFixedInputBindings(const SettingsInterface& si)
-{
-}
-
 std::string QtHost::GetResourcePath(std::string_view filename, bool allow_override)
 {
   return allow_override ? EmuFolders::GetOverridableResourcePath(filename) :

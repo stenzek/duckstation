@@ -213,17 +213,8 @@ inline constexpr u32 MAX_SOFTWARE_CURSORS = MAX_POINTER_DEVICES + 2;
 /// Number of macro buttons per controller.
 inline constexpr u32 NUM_MACRO_BUTTONS_PER_CONTROLLER = 8;
 
-/// Returns a pointer to the external input source class, if present.
-InputSource* GetInputSourceInterface(InputSourceType type);
-
 /// Converts an input class to a string.
 const char* InputSourceToString(InputSourceType clazz);
-
-/// Returns the default state for an input source.
-bool GetInputSourceDefaultEnabled(InputSourceType type);
-
-/// Parses an input class string.
-std::optional<InputSourceType> ParseInputSourceString(std::string_view str);
 
 /// Parses a pointer device string, i.e. tells you which pointer is specified.
 std::optional<u32> GetIndexFromPointerBinding(std::string_view str);
@@ -253,9 +244,6 @@ InputBindingKey MakePointerButtonKey(u32 index, u32 button_index);
 /// (axis 0 = horizontal, 1 = vertical, 2 = wheel horizontal, 3 = wheel vertical).
 InputBindingKey MakePointerAxisKey(u32 index, InputPointerAxis axis);
 
-/// Parses an input binding key string.
-std::optional<InputBindingKey> ParseInputBindingKey(std::string_view binding);
-
 /// Converts a input key to a string.
 TinyString ConvertInputBindingKeyToString(InputBindingInfo::Type binding_type, InputBindingKey key);
 
@@ -282,9 +270,6 @@ u32 GetPollableDeviceCount();
 
 /// Retrieves bindings that match the generic bindings for the specified device.
 GenericInputBindingMapping GetGenericBindingMapping(std::string_view device);
-
-/// Returns true if the specified input source is enabled.
-bool IsInputSourceEnabled(const SettingsInterface& si, InputSourceType type);
 
 /// Synchronizes handlers with the current state of all registered bindings.
 void SynchronizeBindingHandlerState();
@@ -314,15 +299,6 @@ bool HasAnyBindingsForSource(InputBindingKey key);
 /// Returns true if any bindings exist for the specified subclass.
 /// Must be called on the core thread.
 bool HasAnyBindingsForSubclass(InputBindingKey key);
-
-/// Parses a string binding into its components. Use with external AddBinding().
-bool ParseBindingAndGetSource(std::string_view binding, InputBindingKey* key, InputSource** source);
-
-/// Externally adds a fixed binding. Be sure to call *after* ReloadBindings() otherwise it will be lost.
-void AddBinding(std::string_view binding, bool activate_when_captured, const InputEventHandler& handler);
-
-/// Adds an external vibration binding.
-void AddVibrationBinding(u32 pad_index, u32 bind_index, const InputBindingKey& binding, InputSource* source);
 
 /// Updates internal state for any binds for this key, and fires callbacks as needed.
 /// Returns true if anything was bound to this key, otherwise false.
@@ -431,9 +407,6 @@ std::span<const HotkeyInfo> GetHotkeyList();
 } // namespace Core
 
 namespace Host {
-
-/// Adds any fixed bindings from the host.
-void AddFixedInputBindings(const SettingsInterface& si);
 
 /// Called when a new input device is connected.
 void OnInputDeviceConnected(InputBindingKey key, std::string_view identifier, std::string_view device_name);
