@@ -6,15 +6,21 @@
 #include "error.h"
 #include "log.h"
 #include "small_string.h"
+#include "threading.h"
 
 #include "fmt/format.h"
 
 #include <AppKit/AppKit.h>
 #include <Cocoa/Cocoa.h>
+#include <CoreFoundation/CFUserNotification.h>
 #include <QuartzCore/QuartzCore.h>
 #include <cinttypes>
+#include <cstdio>
+#include <cstdlib>
 #include <dlfcn.h>
+#include <mach/mach.h>
 #include <mach/mach_time.h>
+#include <mutex>
 #include <vector>
 
 #if __has_feature(objc_arc)
@@ -288,14 +294,97 @@ void CocoaTools::DestroyMetalLayer(void* view, void* layer)
   [clayer release];
 }
 
+static Threading::Mutex s_assertion_mutex;
+
+static bool SuspendOtherThreads(std::vector<thread_t>* suspended_threads)
+{
+  thread_act_array_t threads = nullptr;
+  mach_msg_type_number_t thread_count = 0;
+  if (task_threads(mach_task_self(), &threads, &thread_count) != KERN_SUCCESS)
+    return false;
+
+  const thread_t current_thread = mach_thread_self();
+  if (current_thread == MACH_PORT_NULL)
+  {
+    for (mach_msg_type_number_t i = 0; i < thread_count; i++)
+      mach_port_deallocate(mach_task_self(), threads[i]);
+    vm_deallocate(mach_task_self(), reinterpret_cast<vm_address_t>(threads), thread_count * sizeof(thread_t));
+    return false;
+  }
+  // Keep push_back allocation-free once any thread is suspended. Suspending arbitrary threads can still deadlock if
+  // one owns a process-wide lock needed by Core Foundation, so keep the work performed while they are suspended to a
+  // minimum.
+  suspended_threads->reserve(thread_count);
+
+  for (mach_msg_type_number_t i = 0; i < thread_count; i++)
+  {
+    if (threads[i] != current_thread && thread_suspend(threads[i]) == KERN_SUCCESS)
+      suspended_threads->push_back(threads[i]);
+    else
+      mach_port_deallocate(mach_task_self(), threads[i]);
+  }
+  vm_deallocate(mach_task_self(), reinterpret_cast<vm_address_t>(threads), thread_count * sizeof(thread_t));
+  mach_port_deallocate(mach_task_self(), current_thread);
+  return true;
+}
+
+static void ResumeOtherThreads(const std::vector<thread_t>& suspended_threads)
+{
+  for (thread_t thread : suspended_threads)
+  {
+    thread_resume(thread);
+    mach_port_deallocate(mach_task_self(), thread);
+  }
+}
+
+static CFOptionFlags ShowBlockingAssertionAlert(CFStringRef title, CFStringRef text, CFStringRef alternate_button,
+                                                CFStringRef other_button, std::vector<thread_t>* suspended_threads)
+{
+  CFOptionFlags response = kCFUserNotificationCancelResponse;
+  if (!SuspendOtherThreads(suspended_threads))
+    std::abort();
+
+  const SInt32 status =
+    CFUserNotificationDisplayAlert(0, kCFUserNotificationStopAlertLevel, nullptr, nullptr, nullptr, title, text,
+                                   CFSTR("Abort"), alternate_button, other_button, &response);
+  if (status != 0)
+    std::abort();
+  return (response & 0x3);
+}
+
+static void ShowAssertionAlert(const char* szMessage, const char* szFunction, const char* szFile, unsigned uLine)
+{
+  @autoreleasepool
+  {
+    NSString* text = [NSString stringWithFormat:@"%s in function %s (%s:%u)\nPress Abort to exit, Break to break to "
+                                                @"debugger, or Ignore to attempt to continue.",
+                                                szMessage, szFunction, szFile, uLine];
+    std::vector<thread_t> suspended_threads;
+    const CFOptionFlags response = ShowBlockingAssertionAlert(CFSTR("Assertion Failed"), (__bridge CFStringRef)text,
+                                                              CFSTR("Break"), CFSTR("Ignore"), &suspended_threads);
+    if (response != kCFUserNotificationAlternateResponse && response != kCFUserNotificationOtherResponse)
+      std::abort();
+    if (response == kCFUserNotificationAlternateResponse)
+      __builtin_debugtrap();
+    ResumeOtherThreads(suspended_threads);
+  }
+}
+
 void Y_OnAssertFailed(const char* szMessage, const char* szFunction, const char* szFile, unsigned uLine)
 {
-  if (![NSThread isMainThread])
-  {
-    dispatch_sync(dispatch_get_main_queue(),
-                  [szMessage, szFunction, szFile, uLine]() { Y_OnAssertFailed(szMessage, szFunction, szFile, uLine); });
-    return;
-  }
+  std::lock_guard lock(s_assertion_mutex);
+
+  char szMsg[512];
+  std::snprintf(szMsg, sizeof(szMsg), "%s in function %s (%s:%u)\n", szMessage, szFunction, szFile, uLine);
+  std::fputs(szMsg, stderr);
+  std::fflush(stderr);
+
+  ShowAssertionAlert(szMessage, szFunction, szFile, uLine);
+}
+
+[[noreturn]] void Y_OnPanicReached(const char* szMessage, const char* szFunction, const char* szFile, unsigned uLine)
+{
+  std::lock_guard lock(s_assertion_mutex);
 
   char szMsg[512];
   std::snprintf(szMsg, sizeof(szMsg), "%s in function %s (%s:%u)\n", szMessage, szFunction, szFile, uLine);
@@ -304,54 +393,14 @@ void Y_OnAssertFailed(const char* szMessage, const char* szFunction, const char*
 
   @autoreleasepool
   {
-    NSAlert* alert = [[[NSAlert alloc] init] autorelease];
-    [alert setMessageText:@"Assertion Failed"];
-
-    NSString* text = [NSString stringWithFormat:@"%s in function %s (%s:%u)\nPress Abort to exit, Break to break to "
-                                                @"debugger, or Ignore to attempt to continue.",
-                                                szMessage, szFunction, szFile, uLine];
-    [alert setInformativeText:text];
-    [alert setAlertStyle:NSAlertStyleCritical];
-    [alert addButtonWithTitle:@"Abort"];
-    [alert addButtonWithTitle:@"Break"];
-    [alert addButtonWithTitle:@"Ignore"];
-
-    const NSModalResponse response = [alert runModal];
-    if (response == NSAlertFirstButtonReturn)
-      std::abort();
-    else if (response == NSAlertSecondButtonReturn)
-      __builtin_debugtrap();
-  }
-}
-
-[[noreturn]] void Y_OnPanicReached(const char* szMessage, const char* szFunction, const char* szFile, unsigned uLine)
-{
-  if (![NSThread isMainThread])
-  {
-    dispatch_sync(dispatch_get_main_queue(),
-                  [szMessage, szFunction, szFile, uLine]() { Y_OnAssertFailed(szMessage, szFunction, szFile, uLine); });
-  }
-  else
-  {
-    char szMsg[512];
-    std::snprintf(szMsg, sizeof(szMsg), "%s in function %s (%s:%u)\n", szMessage, szFunction, szFile, uLine);
-
-    @autoreleasepool
+    NSString* text =
+      [NSString stringWithFormat:@"%s in function %s (%s:%u)\nDo you want to attempt to break into a debugger?",
+                                 szMessage, szFunction, szFile, uLine];
+    std::vector<thread_t> suspended_threads;
+    if (ShowBlockingAssertionAlert(CFSTR("Critical Error"), (__bridge CFStringRef)text, CFSTR("Break"), nullptr,
+                                   &suspended_threads) == kCFUserNotificationAlternateResponse)
     {
-      NSAlert* alert = [[[NSAlert alloc] init] autorelease];
-      [alert setMessageText:@"Critical Error"];
-
-      NSString* text =
-        [NSString stringWithFormat:@"%s in function %s (%s:%u)\nDo you want to attempt to break into a debugger?",
-                                   szMessage, szFunction, szFile, uLine];
-      [alert setInformativeText:text];
-      [alert setAlertStyle:NSAlertStyleCritical];
-      [alert addButtonWithTitle:@"Abort"];
-      [alert addButtonWithTitle:@"Break"];
-
-      const NSModalResponse response = [alert runModal];
-      if (response == NSAlertSecondButtonReturn)
-        __builtin_debugtrap();
+      __builtin_debugtrap();
     }
   }
 
