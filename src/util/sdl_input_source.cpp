@@ -591,6 +591,9 @@ bool SDLInputSource::InitializeSubsystem()
   g_dyn_sdl.SDL_free(g_dyn_sdl.SDL_GetGamepadMappings(&mapping_count));
   INFO_LOG("{} controller mappings are loaded.", mapping_count);
 
+  // poll once to get the connected events for stuff that is already ready
+  PollEvents();
+
   return true;
 }
 
