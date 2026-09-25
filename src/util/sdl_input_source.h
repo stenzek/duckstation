@@ -49,16 +49,10 @@ public:
   void SetSubclassPollDeviceList(InputSubclass subclass, const std::span<const InputBindingKey>* devices) override;
   std::unique_ptr<ForceFeedbackDevice> CreateForceFeedbackDevice(std::string_view device, Error* error) override;
 
-  bool ProcessSDLEvent(const SDL_Event* event);
-
-  SDL_Joystick* GetJoystickForDevice(std::string_view device);
-
   static u32 GetRGBForPlayerId(const SettingsInterface& si, u32 player_id, bool active);
   static u32 ParseRGBForPlayerId(std::string_view str, u32 player_id, bool active);
 
   static std::span<const SettingInfo> GetAdvancedSettingsInfo();
-
-  static bool IsHandledInputEvent(const SDL_Event* ev);
 
 private:
   struct ControllerData
@@ -100,6 +94,7 @@ private:
   void LoadSettings(const SettingsInterface& si);
   void SetHints();
 
+  SDL_Joystick* GetJoystickForDevice(std::string_view device);
   ControllerDataVector::iterator GetControllerDataForJoystickId(SDL_JoystickID id);
   ControllerDataVector::iterator GetControllerDataForPlayerId(int id);
   int GetFreePlayerId() const;
@@ -124,7 +119,6 @@ private:
   std::array<std::array<u32, 2>, MAX_LED_COLORS> m_led_colors{};
   std::vector<std::pair<std::string, std::string>> m_sdl_hints;
 
-  bool m_sdl_subsystem_initialized = false;
   bool m_controller_touchpad_as_pointer = false;
 
   union

@@ -318,13 +318,11 @@ bool SDLInputSource::Initialize(const SettingsInterface& si, std::unique_lock<Th
 
 void SDLInputSource::UpdateSettings(const SettingsInterface& si, std::unique_lock<Threading::Mutex>& settings_lock)
 {
-  const bool old_controller_touchpad_as_pointer = m_controller_touchpad_as_pointer;
-  const u8 old_advanced_options_bits = m_advanced_options_bits;
+  const u16 old_advanced_options_bits = m_advanced_options_bits;
 
   LoadSettings(si);
 
-  if (m_advanced_options_bits != old_advanced_options_bits ||
-      m_controller_touchpad_as_pointer != old_controller_touchpad_as_pointer)
+  if (m_advanced_options_bits != old_advanced_options_bits)
   {
     settings_lock.unlock();
     ShutdownSubsystem();
@@ -602,24 +600,6 @@ void SDLInputSource::ShutdownSubsystem()
     CloseDevice(m_controllers.begin()->joystick_id);
 
   g_dyn_sdl.QuitSubSystem(SDL_INIT_JOYSTICK | SDL_INIT_GAMEPAD | SDL_INIT_HAPTIC);
-}
-
-bool SDLInputSource::PollEvents()
-{
-  bool topology_changed = false;
-  for (;;)
-  {
-    SDL_Event ev;
-    if (g_dyn_sdl.SDL_PollEvent(&ev))
-    {
-      const size_t old_controller_count = m_controllers.size();
-      ProcessSDLEvent(&ev);
-      topology_changed |= (m_controllers.size() != old_controller_count);
-    }
-    else
-      break;
-  }
-  return topology_changed;
 }
 
 InputManager::DeviceList SDLInputSource::EnumerateDevices()
@@ -987,100 +967,90 @@ void SDLInputSource::SetSubclassPollDeviceList(InputSubclass subclass, const std
   }
 }
 
-bool SDLInputSource::IsHandledInputEvent(const SDL_Event* ev)
+bool SDLInputSource::PollEvents()
 {
-  switch (ev->type)
+  bool topology_changed = false;
+  for (;;)
   {
-    case SDL_EVENT_GAMEPAD_ADDED:
-    case SDL_EVENT_GAMEPAD_REMOVED:
-    case SDL_EVENT_GAMEPAD_AXIS_MOTION:
-    case SDL_EVENT_GAMEPAD_BUTTON_DOWN:
-    case SDL_EVENT_GAMEPAD_BUTTON_UP:
-    case SDL_EVENT_GAMEPAD_TOUCHPAD_DOWN:
-    case SDL_EVENT_GAMEPAD_TOUCHPAD_UP:
-    case SDL_EVENT_GAMEPAD_TOUCHPAD_MOTION:
-    case SDL_EVENT_GAMEPAD_SENSOR_UPDATE:
-    case SDL_EVENT_JOYSTICK_ADDED:
-    case SDL_EVENT_JOYSTICK_REMOVED:
-    case SDL_EVENT_JOYSTICK_AXIS_MOTION:
-    case SDL_EVENT_JOYSTICK_BUTTON_DOWN:
-    case SDL_EVENT_JOYSTICK_BUTTON_UP:
-    case SDL_EVENT_JOYSTICK_HAT_MOTION:
-      return true;
+    SDL_Event ev;
+    if (!g_dyn_sdl.SDL_PollEvent(&ev))
+      break;
 
-    default:
-      return false;
+    switch (ev.type)
+    {
+      case SDL_EVENT_GAMEPAD_ADDED:
+      {
+        INFO_LOG("Controller {} inserted", ev.gdevice.which);
+        topology_changed |= OpenDevice(ev.gdevice.which, true);
+      }
+      break;
+
+      case SDL_EVENT_GAMEPAD_REMOVED:
+      {
+        INFO_LOG("Controller {} removed", ev.gdevice.which);
+        topology_changed |= CloseDevice(ev.gdevice.which);
+      }
+      break;
+
+      case SDL_EVENT_JOYSTICK_ADDED:
+      {
+        // Let gamepad handle.. well.. gamepads.
+        if (!g_dyn_sdl.SDL_IsGamepad(ev.jdevice.which))
+        {
+          INFO_LOG("Joystick {} inserted", ev.jdevice.which);
+          topology_changed |= OpenDevice(ev.jdevice.which, false);
+        }
+      }
+      break;
+
+      case SDL_EVENT_JOYSTICK_REMOVED:
+      {
+        if (auto it = GetControllerDataForJoystickId(ev.jdevice.which); it != m_controllers.end() && !it->gamepad)
+        {
+          INFO_LOG("Joystick {} removed", ev.jdevice.which);
+          topology_changed |= CloseDevice(ev.jdevice.which);
+        }
+      }
+      break;
+
+      case SDL_EVENT_GAMEPAD_AXIS_MOTION:
+        HandleGamepadAxisMotionEvent(&ev.gaxis);
+        break;
+
+      case SDL_EVENT_GAMEPAD_BUTTON_DOWN:
+      case SDL_EVENT_GAMEPAD_BUTTON_UP:
+        HandleGamepadButtonEvent(&ev.gbutton);
+        break;
+
+      case SDL_EVENT_GAMEPAD_TOUCHPAD_DOWN:
+      case SDL_EVENT_GAMEPAD_TOUCHPAD_UP:
+      case SDL_EVENT_GAMEPAD_TOUCHPAD_MOTION:
+        HandleGamepadTouchpadEvent(&ev.gtouchpad);
+        break;
+
+      case SDL_EVENT_GAMEPAD_SENSOR_UPDATE:
+        HandleGamepadSensorEvent(&ev.gsensor);
+        break;
+
+      case SDL_EVENT_JOYSTICK_AXIS_MOTION:
+        HandleJoystickAxisEvent(&ev.jaxis);
+        break;
+
+      case SDL_EVENT_JOYSTICK_BUTTON_DOWN:
+      case SDL_EVENT_JOYSTICK_BUTTON_UP:
+        HandleJoystickButtonEvent(&ev.jbutton);
+        break;
+
+      case SDL_EVENT_JOYSTICK_HAT_MOTION:
+        HandleJoystickHatEvent(&ev.jhat);
+        break;
+
+      default:
+        break;
+    }
   }
-}
 
-bool SDLInputSource::ProcessSDLEvent(const SDL_Event* event)
-{
-  switch (event->type)
-  {
-    case SDL_EVENT_GAMEPAD_ADDED:
-    {
-      INFO_LOG("Controller {} inserted", event->gdevice.which);
-      OpenDevice(event->gdevice.which, true);
-      return true;
-    }
-
-    case SDL_EVENT_GAMEPAD_REMOVED:
-    {
-      INFO_LOG("Controller {} removed", event->gdevice.which);
-      CloseDevice(event->gdevice.which);
-      return true;
-    }
-
-    case SDL_EVENT_JOYSTICK_ADDED:
-    {
-      // Let gamepad handle.. well.. gamepads.
-      if (g_dyn_sdl.SDL_IsGamepad(event->jdevice.which))
-        return false;
-
-      INFO_LOG("Joystick {} inserted", event->jdevice.which);
-      OpenDevice(event->jdevice.which, false);
-      return true;
-    }
-    break;
-
-    case SDL_EVENT_JOYSTICK_REMOVED:
-    {
-      if (auto it = GetControllerDataForJoystickId(event->jdevice.which); it != m_controllers.end() && it->gamepad)
-        return false;
-
-      INFO_LOG("Joystick {} removed", event->jdevice.which);
-      CloseDevice(event->jdevice.which);
-      return true;
-    }
-
-    case SDL_EVENT_GAMEPAD_AXIS_MOTION:
-      return HandleGamepadAxisMotionEvent(&event->gaxis);
-
-    case SDL_EVENT_GAMEPAD_BUTTON_DOWN:
-    case SDL_EVENT_GAMEPAD_BUTTON_UP:
-      return HandleGamepadButtonEvent(&event->gbutton);
-
-    case SDL_EVENT_GAMEPAD_TOUCHPAD_DOWN:
-    case SDL_EVENT_GAMEPAD_TOUCHPAD_UP:
-    case SDL_EVENT_GAMEPAD_TOUCHPAD_MOTION:
-      return HandleGamepadTouchpadEvent(&event->gtouchpad);
-
-    case SDL_EVENT_GAMEPAD_SENSOR_UPDATE:
-      return HandleGamepadSensorEvent(&event->gsensor);
-
-    case SDL_EVENT_JOYSTICK_AXIS_MOTION:
-      return HandleJoystickAxisEvent(&event->jaxis);
-
-    case SDL_EVENT_JOYSTICK_BUTTON_DOWN:
-    case SDL_EVENT_JOYSTICK_BUTTON_UP:
-      return HandleJoystickButtonEvent(&event->jbutton);
-
-    case SDL_EVENT_JOYSTICK_HAT_MOTION:
-      return HandleJoystickHatEvent(&event->jhat);
-
-    default:
-      return false;
-  }
+  return topology_changed;
 }
 
 SDL_Joystick* SDLInputSource::GetJoystickForDevice(std::string_view device)
