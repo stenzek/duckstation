@@ -8,6 +8,7 @@
 
 #include "core/controller.h"
 #include "core/core.h"
+#include "core/fullscreenui.h"
 #include "core/host.h"
 #include "core/system.h"
 #include "core/system_private.h"
@@ -153,7 +154,7 @@ static void PrettifyInputBindingPart(std::string_view binding, bool allow_icon, 
 static void AddBindings(const std::vector<std::string>& bindings, bool activate_when_captured,
                         const InputEventHandler& handler);
 static void AddBinding(std::string_view binding, bool activate_when_captured, const InputEventHandler& handler);
-static void UpdatePointerCount();
+static bool UpdatePointerCount();
 
 static bool IsAxisHandler(const InputEventHandler& handler);
 static float ApplySingleBindingScale(float sensitivity, float deadzone, float value);
@@ -183,7 +184,7 @@ static void UpdateMacroButtons();
 
 static size_t UpdateInputSubclassPolling(InputSubclass subclass, bool enable_all);
 static bool IsInputSourceEnabled(const SettingsInterface& si, InputSourceType type);
-static void UpdateInputSourceState(const SettingsInterface& si, std::unique_lock<Threading::Mutex>& settings_lock,
+static bool UpdateInputSourceState(const SettingsInterface& si, std::unique_lock<Threading::Mutex>& settings_lock,
                                    InputSourceType type, std::unique_ptr<InputSource> (*factory_function)());
 static void ReloadSources(const SettingsInterface& sources_si, std::unique_lock<Threading::Mutex>& settings_lock);
 
@@ -248,7 +249,6 @@ struct State
     host_pointer_positions;
   std::array<std::array<PointerAxisState, static_cast<u8>(InputPointerAxis::Count)>, InputManager::MAX_POINTER_DEVICES>
     pointer_state;
-  u32 pointer_count = 0;
   std::array<float, static_cast<u8>(InputPointerAxis::Count)> pointer_axis_scale;
 
   bool application_in_background = false;
@@ -258,15 +258,19 @@ struct State
   bool relative_mouse_mode_active = false;
   bool hide_host_mouse_cursor = false;
   bool hide_host_mouse_cursor_active = false;
-  GamepadButtonType last_gamepad_button_type = GamepadButtonType::Unknown;
-
-  std::recursive_mutex sources_mutex;
+  std::atomic<GamepadButtonType> last_gamepad_button_type{GamepadButtonType::Unknown};
 
 #ifdef _WIN32
+  std::atomic<u32> pointer_count{0};
+  std::atomic_bool raw_input_enabled{false};
+
   // Device notification handle for Windows.
+  std::atomic_bool device_notification_reload_pending{false};
   HCMNOTIFICATION device_notification_handle = nullptr;
-  std::atomic_flag device_notification_reload_pending = ATOMIC_FLAG_INIT;
+
 #endif
+
+  std::recursive_mutex sources_mutex;
 };
 
 } // namespace
@@ -1426,7 +1430,13 @@ void InputManager::GenerateRelativeMouseEvents()
 {
   const bool system_running = System::IsRunning();
 
-  for (u32 device = 0; device < s_state.pointer_count; device++)
+#ifdef _WIN32
+  const u32 pointer_count = s_state.pointer_count.load(std::memory_order_relaxed);
+#else
+  constexpr u32 pointer_count = 1;
+#endif
+
+  for (u32 device = 0; device < pointer_count; device++)
   {
     for (u32 axis = 0; axis < static_cast<u32>(static_cast<u8>(InputPointerAxis::Count)); axis++)
     {
@@ -1463,30 +1473,36 @@ void InputManager::GenerateRelativeMouseEvents()
   }
 }
 
-void InputManager::UpdatePointerCount()
+bool InputManager::UpdatePointerCount()
 {
-  if (!IsUsingRawInput())
-  {
-    s_state.pointer_count = 1;
-    return;
-  }
-
 #ifdef _WIN32
   InputSource* ris = s_state.input_sources[static_cast<size_t>(InputSourceType::RawInput)].get();
-  DebugAssert(ris);
+  if (!ris)
+  {
+    s_state.pointer_count.store(1, std::memory_order_release);
+    return false;
+  }
 
-  s_state.pointer_count = 0;
+  const u32 prev_pointer_count = s_state.pointer_count;
+  u32 new_pointer_count = 0;
   for (const auto& [key, identifier, device_name] : ris->EnumerateDevices())
   {
     if (key.source_type == InputSourceType::Pointer)
-      s_state.pointer_count++;
+      new_pointer_count++;
   }
+  return (s_state.pointer_count.exchange(new_pointer_count, std::memory_order_release) != prev_pointer_count);
+#else
+  return false;
 #endif
 }
 
 u32 InputManager::GetPointerCount()
 {
-  return s_state.pointer_count;
+#ifdef _WIN32
+  return s_state.pointer_count.load(std::memory_order_acquire);
+#else
+  return 1;
+#endif
 }
 
 std::pair<float, float> InputManager::GetPointerAbsolutePosition(u32 index)
@@ -1553,8 +1569,13 @@ void InputManager::UpdateRelativeMouseMode()
 {
   // Check for relative mode bindings, and enable if there's anything using it.
   // Raw input needs to force relative mode/clipping, because it's now disconnected from the system pointer.
+#ifdef _WIN32
+  const bool using_raw_input = s_state.raw_input_enabled.load(std::memory_order_relaxed);
+#else
+  constexpr bool using_raw_input = false;
+#endif
   bool has_relative_mode_bindings =
-    !s_state.pointer_move_callbacks.empty() || (IsUsingRawInput() && s_state.has_pointer_device_bindings);
+    !s_state.pointer_move_callbacks.empty() || (using_raw_input && s_state.has_pointer_device_bindings);
   if (!has_relative_mode_bindings)
   {
     for (const auto& it : s_state.binding_map)
@@ -1603,7 +1624,7 @@ bool InputManager::IsRelativeMouseModeActive()
 bool InputManager::IsUsingRawInput()
 {
 #if defined(_WIN32)
-  return static_cast<bool>(s_state.input_sources[static_cast<u32>(InputSourceType::RawInput)]);
+  return s_state.raw_input_enabled.load(std::memory_order_acquire);
 #else
   return false;
 #endif
@@ -1862,7 +1883,8 @@ std::vector<std::string> InputManager::GetInputProfileNames()
 
 InputManager::GamepadButtonType InputManager::GetLastGamepadButtonType()
 {
-  return s_state.last_gamepad_button_type;
+  // Threading: Called by video thread, uses atomics for synchronization.
+  return s_state.last_gamepad_button_type.load(std::memory_order_acquire);
 }
 
 void InputManager::OnInputDeviceConnected(InputBindingKey key, std::string_view identifier,
@@ -1880,12 +1902,13 @@ void InputManager::OnInputDeviceConnected(InputBindingKey key, std::string_view 
                             fmt::format(TRANSLATE_FS("InputManager", "Controller {} connected."), identifier));
   }
 
-  if (gamepad_button_type.has_value() && s_state.last_gamepad_button_type != gamepad_button_type.value())
+  if (gamepad_button_type.has_value() &&
+      s_state.last_gamepad_button_type.load(std::memory_order_relaxed) != gamepad_button_type.value())
   {
-    s_state.last_gamepad_button_type = gamepad_button_type.value();
+    s_state.last_gamepad_button_type.store(gamepad_button_type.value(), std::memory_order_release);
 
     const char* gamepad_type_str;
-    switch (s_state.last_gamepad_button_type)
+    switch (gamepad_button_type.value())
     {
       case GamepadButtonType::Xbox:
         gamepad_type_str = "Xbox";
@@ -1902,7 +1925,7 @@ void InputManager::OnInputDeviceConnected(InputBindingKey key, std::string_view 
 
     // Skip updating gamepad type if FSUI isn't running, it'll read it again when starting.
     if (has_fsui)
-      ImGuiManager::SetGamepadButtonType(s_state.last_gamepad_button_type);
+      VideoThread::RunOnThread(&FullscreenUI::UpdateWidgetsSettings);
   }
 }
 
@@ -2328,7 +2351,7 @@ void InputManager::ReloadDevices()
         changed |= s_state.input_sources[i]->ReloadDevices();
     }
 
-    UpdatePointerCount();
+    changed |= UpdatePointerCount();
   }
 
   if (!changed)
@@ -2516,7 +2539,7 @@ bool InputManager::IsInputSourceEnabled(const SettingsInterface& si, InputSource
   return si.GetBoolValue("InputSources", InputSourceToString(type), GetInputSourceDefaultEnabled(type));
 }
 
-void InputManager::UpdateInputSourceState(const SettingsInterface& si,
+bool InputManager::UpdateInputSourceState(const SettingsInterface& si,
                                           std::unique_lock<Threading::Mutex>& settings_lock, InputSourceType type,
                                           std::unique_ptr<InputSource> (*factory_function)())
 {
@@ -2527,6 +2550,7 @@ void InputManager::UpdateInputSourceState(const SettingsInterface& si,
     if (source)
     {
       source->UpdateSettings(si, settings_lock);
+      return false;
     }
     else
     {
@@ -2537,8 +2561,10 @@ void InputManager::UpdateInputSourceState(const SettingsInterface& si,
         if (source)
           source->Shutdown();
         source.reset();
-        return;
+        return false;
       }
+
+      return true;
     }
   }
   else
@@ -2547,7 +2573,10 @@ void InputManager::UpdateInputSourceState(const SettingsInterface& si,
     {
       source->Shutdown();
       source.reset();
+      return true;
     }
+
+    return false;
   }
 }
 
@@ -2558,7 +2587,13 @@ void InputManager::ReloadSources(const SettingsInterface& sources_si, std::uniqu
 #ifdef _WIN32
   UpdateInputSourceState(sources_si, settings_lock, InputSourceType::DInput, &InputSource::CreateDInputSource);
   UpdateInputSourceState(sources_si, settings_lock, InputSourceType::XInput, &InputSource::CreateXInputSource);
-  UpdateInputSourceState(sources_si, settings_lock, InputSourceType::RawInput, &InputSource::CreateWin32RawInputSource);
+  if (UpdateInputSourceState(sources_si, settings_lock, InputSourceType::RawInput,
+                             &InputSource::CreateWin32RawInputSource))
+  {
+    s_state.raw_input_enabled.store(
+      static_cast<bool>(s_state.input_sources[static_cast<size_t>(InputSourceType::RawInput)]),
+      std::memory_order_release);
+  }
 
   // Request device notifications when using raw input/xinput/dinput, as we need to manually handle device changes
   if (s_state.input_sources[static_cast<u32>(InputSourceType::DInput)] ||
@@ -2640,11 +2675,11 @@ DWORD InputManager::DeviceNotificationCallback(HCMNOTIFICATION hNotify, PVOID Co
 
   // This comes through on a thread pool worker, so we need to queue the reload on the core thread.
   // We tend to get a few of these in quick succession, so try to batch the reloads together.
-  if (!s_state.device_notification_reload_pending.test_and_set(std::memory_order_acq_rel))
+  if (!s_state.device_notification_reload_pending.exchange(true, std::memory_order_acq_rel))
   {
     Host::RunOnCoreThread([]() {
       DEV_LOG("Reloading input devices due to device notification.");
-      s_state.device_notification_reload_pending.clear(std::memory_order_release);
+      s_state.device_notification_reload_pending.store(false, std::memory_order_release);
       ReloadDevices();
     });
   }
@@ -2655,7 +2690,7 @@ DWORD InputManager::DeviceNotificationCallback(HCMNOTIFICATION hNotify, PVOID Co
 void InputManager::RegisterDeviceNotificationHandle()
 {
   DebugAssert(!s_state.device_notification_handle);
-  s_state.device_notification_reload_pending.clear(std::memory_order_release);
+  s_state.device_notification_reload_pending.store(false, std::memory_order_release);
 
   // We use these notifications to detect when a controller is connected or disconnected.
   CM_NOTIFY_FILTER filter = {};

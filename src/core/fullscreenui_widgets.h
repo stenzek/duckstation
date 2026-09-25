@@ -257,9 +257,6 @@ bool InitializeWidgets(Error* error);
 /// Shuts down, clearing all state.
 void ShutdownWidgets();
 
-/// Loads settings from the settings interface.
-void UpdateWidgetsSettings();
-
 bool CreateWidgetsGPUResources(Error* error);
 void DestroyWidgetsGPUResources();
 GPUPipeline* GetPresentCopyPipeline();

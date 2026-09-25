@@ -668,7 +668,7 @@ void FullscreenUI::UpdateWidgetsSettings()
   const TinyString gamepad_button_type =
     Core::GetBaseTinyStringSettingValue("Main", "FullscreenUIGamepadButtonType", "Automatic");
   if (gamepad_button_type == "Automatic")
-    display_ps_icons = (ImGuiManager::GetGamepadButtonType() == InputManager::GamepadButtonType::PlayStation);
+    display_ps_icons = (InputManager::GetLastGamepadButtonType() == InputManager::GamepadButtonType::PlayStation);
   else if (gamepad_button_type == "PlayStation")
     display_ps_icons = true;
   else

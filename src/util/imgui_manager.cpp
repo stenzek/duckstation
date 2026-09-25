@@ -1566,22 +1566,6 @@ void ImGuiManager::SetGamepadFaceButtonsSwapped(bool enabled)
   s_state.swap_gamepad_face_buttons = enabled;
 }
 
-InputManager::GamepadButtonType ImGuiManager::GetGamepadButtonType()
-{
-  return s_state.gamepad_button_type;
-}
-
-void ImGuiManager::SetGamepadButtonType(InputManager::GamepadButtonType type)
-{
-  VideoThread::RunOnThread([type]() {
-    if (type == s_state.gamepad_button_type)
-      return;
-
-    s_state.gamepad_button_type = type;
-    FullscreenUI::UpdateWidgetsSettings();
-  });
-}
-
 bool ImGuiManager::WantsTextInput()
 {
   return s_state.imgui_wants_text_input.load(std::memory_order_acquire);
@@ -1892,7 +1876,6 @@ void ImGuiManager::DrawSoftwareCursor(const SoftwareCursor& sc, const std::pair<
 
 void ImGuiManager::RenderSoftwareCursors()
 {
-  // This one's okay to race, worst that happens is we render the wrong number of cursors for a frame.
   const u32 pointer_count = InputManager::GetPointerCount();
   for (u32 i = 0; i < pointer_count; i++)
     DrawSoftwareCursor(s_state.software_cursors[i], InputManager::GetPointerAbsolutePosition(i));

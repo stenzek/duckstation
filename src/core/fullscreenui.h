@@ -30,6 +30,9 @@ void OnSystemPaused();
 void OnSystemResumed();
 void OnSystemDestroyed();
 
+/// Loads settings from the settings interface.
+void UpdateWidgetsSettings();
+
 void Shutdown();
 
 void DestroyGPUResources();
