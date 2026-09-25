@@ -436,35 +436,34 @@ std::optional<InputBindingKey> DInputSource::ParseKeyString(std::string_view dev
   return std::nullopt;
 }
 
-TinyString DInputSource::ConvertKeyToString(InputBindingKey key)
+SmallString DInputSource::ConvertKeyToString(InputBindingKey key)
 {
-  TinyString ret;
-
   if (key.source_type == InputSourceType::DInput)
   {
     if (key.source_subtype == InputSubclass::ControllerAxis)
     {
       const char* modifier =
         (key.modifier == InputModifier::FullAxis ? "Full" : (key.modifier == InputModifier::Negate ? "-" : "+"));
-      ret.format("DInput-{}/{}Axis{}{}", u32(key.source_index), modifier, u32(key.data), key.invert ? "~" : "");
+      return SmallString::from_format("DInput-{}/{}Axis{}{}", u32(key.source_index), modifier, u32(key.data),
+                                      key.invert ? "~" : "");
     }
     else if (key.source_subtype == InputSubclass::ControllerButton && key.data >= MAX_NUM_BUTTONS)
     {
       const u32 hat_num = (key.data - MAX_NUM_BUTTONS) / NUM_HAT_DIRECTIONS;
       const u32 hat_dir = (key.data - MAX_NUM_BUTTONS) % NUM_HAT_DIRECTIONS;
-      ret.format("DInput-{}/Hat{}{}", u32(key.source_index), hat_num, s_hat_directions[hat_dir]);
+      return SmallString::from_format("DInput-{}/Hat{}{}", u32(key.source_index), hat_num, s_hat_directions[hat_dir]);
     }
     else if (key.source_subtype == InputSubclass::ControllerButton)
     {
-      ret.format("DInput-{}/Button{}", u32(key.source_index), u32(key.data));
+      return SmallString::from_format("DInput-{}/Button{}", u32(key.source_index), u32(key.data));
     }
   }
 
-  return ret;
+  return {};
 }
 
-TinyString DInputSource::ConvertKeyToDisplayString(InputBindingKey key, bool allow_icon,
-                                                   InputManager::BindingIconMappingFunction mapper)
+SmallString DInputSource::ConvertKeyToDisplayString(InputBindingKey key, bool allow_icon,
+                                                    InputManager::BindingIconMappingFunction mapper)
 {
   return {};
 }
@@ -539,26 +538,24 @@ void DInputSource::CheckForStateChanges(size_t index, const DIJOYSTATE& new_stat
 
 std::optional<float> DInputSource::GetCurrentValue(InputBindingKey key)
 {
-  std::optional<float> ret;
-
   if (key.source_type != InputSourceType::DInput)
-    return ret;
+    return std::nullopt;
 
   if (key.source_index >= m_controllers.size())
-    return ret;
+    return std::nullopt;
 
   const ControllerData& cd = m_controllers[key.source_index];
   if (key.source_subtype == InputSubclass::ControllerAxis && key.data < cd.axis_offsets.size())
   {
     LONG value;
     std::memcpy(&value, reinterpret_cast<const u8*>(&cd.last_state) + cd.axis_offsets[key.data], sizeof(value));
-    ret = static_cast<float>(value) / (value < 0 ? 32768.0f : 32767.0f);
+    return static_cast<float>(value) / (value < 0 ? 32768.0f : 32767.0f);
   }
   else if (key.source_subtype == InputSubclass::ControllerButton)
   {
     if (key.data < cd.num_buttons)
     {
-      ret = BoolToFloat(cd.last_state.rgbButtons[key.data]);
+      return BoolToFloat(cd.last_state.rgbButtons[key.data]);
     }
     else
     {
@@ -568,12 +565,12 @@ std::optional<float> DInputSource::GetCurrentValue(InputBindingKey key)
       if (hat_index < cd.num_hats)
       {
         const std::array<bool, NUM_HAT_DIRECTIONS> buttons(GetHatButtons(cd.last_state.rgdwPOV[hat_index]));
-        ret = BoolToFloat(buttons[hat_direction]);
+        return BoolToFloat(buttons[hat_direction]);
       }
     }
   }
 
-  return ret;
+  return std::nullopt;
 }
 
 std::unique_ptr<InputSource> InputSource::CreateDInputSource()

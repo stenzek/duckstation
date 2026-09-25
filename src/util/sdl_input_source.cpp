@@ -798,10 +798,8 @@ std::optional<InputBindingKey> SDLInputSource::ParseKeyString(std::string_view d
   return std::nullopt;
 }
 
-TinyString SDLInputSource::ConvertKeyToString(InputBindingKey key)
+SmallString SDLInputSource::ConvertKeyToString(InputBindingKey key)
 {
-  TinyString ret;
-
   if (key.source_type == InputSourceType::SDL)
   {
     if (key.source_subtype == InputSubclass::ControllerAxis)
@@ -810,46 +808,47 @@ TinyString SDLInputSource::ConvertKeyToString(InputBindingKey key)
         (key.modifier == InputModifier::FullAxis ? "Full" : (key.modifier == InputModifier::Negate ? "-" : "+"));
       if (key.data < static_cast<u32>(s_axis_info.size()))
       {
-        ret.format("SDL-{}/{}{}{}", static_cast<u32>(key.source_index), modifier, s_axis_info[key.data].name,
-                   key.invert ? "~" : "");
+        return SmallString::from_format("SDL-{}/{}{}{}", static_cast<u32>(key.source_index), modifier,
+                                        s_axis_info[key.data].name, key.invert ? "~" : "");
       }
       else
       {
-        ret.format("SDL-{}/{}Axis{}{}", static_cast<u32>(key.source_index), modifier,
-                   key.data - static_cast<u32>(s_axis_info.size()), key.invert ? "~" : "");
+        return SmallString::from_format("SDL-{}/{}Axis{}{}", static_cast<u32>(key.source_index), modifier,
+                                        key.data - static_cast<u32>(s_axis_info.size()), key.invert ? "~" : "");
       }
     }
     else if (key.source_subtype == InputSubclass::ControllerButton)
     {
       if (key.data < static_cast<u32>(s_button_info.size()))
       {
-        ret.format("SDL-{}/{}", static_cast<u32>(key.source_index), s_button_info[key.data].name);
+        return SmallString::from_format("SDL-{}/{}", static_cast<u32>(key.source_index), s_button_info[key.data].name);
       }
       else
       {
-        ret.format("SDL-{}/Button{}", static_cast<u32>(key.source_index),
-                   key.data - static_cast<u32>(s_button_info.size()));
+        return SmallString::from_format("SDL-{}/Button{}", static_cast<u32>(key.source_index),
+                                        key.data - static_cast<u32>(s_button_info.size()));
       }
     }
     else if (key.source_subtype == InputSubclass::ControllerHat)
     {
       const u32 hat_index = key.data / static_cast<u32>(std::size(s_sdl_hat_direction_names));
       const u32 hat_direction = key.data % static_cast<u32>(std::size(s_sdl_hat_direction_names));
-      ret.format("SDL-{}/Hat{}{}", static_cast<u32>(key.source_index), hat_index,
-                 s_sdl_hat_direction_names[hat_direction]);
+      return SmallString::from_format("SDL-{}/Hat{}{}", static_cast<u32>(key.source_index), hat_index,
+                                      s_sdl_hat_direction_names[hat_direction]);
     }
     else if (key.source_subtype == InputSubclass::ControllerMotor)
     {
-      ret.format("SDL-{}/{}Motor", static_cast<u32>(key.source_index),
-                 (key.data == MOTOR_INDEX_SMALL) ? "Small" : "Large");
+      return SmallString::from_format("SDL-{}/{}Motor", static_cast<u32>(key.source_index),
+                                      (key.data == MOTOR_INDEX_SMALL) ? "Small" : "Large");
     }
     else if (key.source_subtype == InputSubclass::ControllerHaptic)
     {
-      ret.format("SDL-{}/Haptic", static_cast<u32>(key.source_index));
+      return SmallString::from_format("SDL-{}/Haptic", static_cast<u32>(key.source_index));
     }
     else if (key.source_subtype == InputSubclass::ControllerLED)
     {
-      ret.format("SDL-{}/{}", static_cast<u32>(key.source_index), (key.data != 0) ? "MuteLED" : "RGBLED");
+      return SmallString::from_format("SDL-{}/{}", static_cast<u32>(key.source_index),
+                                      (key.data != 0) ? "MuteLED" : "RGBLED");
     }
     else if (key.source_subtype == InputSubclass::ControllerSensor)
     {
@@ -857,20 +856,18 @@ TinyString SDLInputSource::ConvertKeyToString(InputBindingKey key)
       {
         const char* modifier =
           (key.modifier == InputModifier::FullAxis ? "Full" : (key.modifier == InputModifier::Negate ? "-" : "+"));
-        ret.format("SDL-{}/{}{}{}", static_cast<u32>(key.source_index), modifier, s_sdl_sensor_names[key.data],
-                   key.invert ? "~" : "");
+        return SmallString::from_format("SDL-{}/{}{}{}", static_cast<u32>(key.source_index), modifier,
+                                        s_sdl_sensor_names[key.data], key.invert ? "~" : "");
       }
     }
   }
 
-  return ret;
+  return {};
 }
 
-TinyString SDLInputSource::ConvertKeyToDisplayString(InputBindingKey key, bool allow_icon,
-                                                     InputManager::BindingIconMappingFunction mapper)
+SmallString SDLInputSource::ConvertKeyToDisplayString(InputBindingKey key, bool allow_icon,
+                                                      InputManager::BindingIconMappingFunction mapper)
 {
-  TinyString ret;
-
   if (key.source_type == InputSourceType::SDL)
   {
     if (key.source_subtype == InputSubclass::ControllerAxis)
@@ -883,11 +880,11 @@ TinyString SDLInputSource::ConvertKeyToDisplayString(InputBindingKey key, bool a
         const char* icon = (key.modifier == InputModifier::None) ? ai.icon_positive : ai.icon_negative;
         if (icon && allow_icon)
         {
-          ret.format(TRANSLATE_FS("SDLInputSource", "SDL-{0}  {1}"), static_cast<u32>(key.source_index), mapper(icon));
+          return SmallString::from_format(TRANSLATE_FS("SDLInputSource", "SDL-{0}  {1}"), static_cast<u32>(key.source_index), mapper(icon));
         }
         else
         {
-          ret.format(TRANSLATE_FS("SDLInputSource", "SDL-{0}/{1}"), static_cast<u32>(key.source_index),
+          return SmallString::from_format(TRANSLATE_FS("SDLInputSource", "SDL-{0}/{1}"), static_cast<u32>(key.source_index),
                      Host::TranslateToStringView("SDLInputSource", ai.name));
         }
       }
@@ -901,11 +898,11 @@ TinyString SDLInputSource::ConvertKeyToDisplayString(InputBindingKey key, bool a
           GetButtonIcon((it != m_controllers.end()) ? it->gamepad_type : SDL_GAMEPAD_TYPE_UNKNOWN, key.data);
         if (icon && allow_icon)
         {
-          ret.format(TRANSLATE_FS("SDLInputSource", "SDL-{0}  {1}"), static_cast<u32>(key.source_index), mapper(icon));
+          return SmallString::from_format(TRANSLATE_FS("SDLInputSource", "SDL-{0}  {1}"), static_cast<u32>(key.source_index), mapper(icon));
         }
         else
         {
-          ret.format(
+          return SmallString::from_format(
             TRANSLATE_FS("SDLInputSource", "SDL-{0}/{1}"), static_cast<u32>(key.source_index),
             GetButtonLabel((it != m_controllers.end()) ? it->gamepad_type : SDL_GAMEPAD_TYPE_UNKNOWN, key.data));
         }
@@ -915,31 +912,31 @@ TinyString SDLInputSource::ConvertKeyToDisplayString(InputBindingKey key, bool a
     {
       const u32 hat_index = key.data / static_cast<u32>(std::size(s_sdl_hat_direction_names));
       const u32 hat_direction = key.data % static_cast<u32>(std::size(s_sdl_hat_direction_names));
-      ret.format(TRANSLATE_FS("SDLInputSource", "SDL-{0}/Hat{1}{2}"), static_cast<u32>(key.source_index), hat_index,
+      return SmallString::from_format(TRANSLATE_FS("SDLInputSource", "SDL-{0}/Hat{1}{2}"), static_cast<u32>(key.source_index), hat_index,
                  Host::TranslateToStringView("SDLInputSource", s_sdl_hat_direction_names[hat_direction]));
     }
     else if (key.source_subtype == InputSubclass::ControllerMotor)
     {
       if (allow_icon)
       {
-        ret.format(TRANSLATE_FS("SDLInputSource", "SDL-{0}/{1}"), static_cast<u32>(key.source_index),
+        return SmallString::from_format(TRANSLATE_FS("SDLInputSource", "SDL-{0}/{1}"), static_cast<u32>(key.source_index),
                    (key.data == MOTOR_INDEX_SMALL) ? ICON_PF_VIBRATION : ICON_PF_VIBRATION_L);
       }
       else
       {
-        ret.format(TRANSLATE_FS("SDLInputSource", "SDL-{0}/{1}"), static_cast<u32>(key.source_index),
+        return SmallString::from_format(TRANSLATE_FS("SDLInputSource", "SDL-{0}/{1}"), static_cast<u32>(key.source_index),
                    (key.data == MOTOR_INDEX_SMALL) ? TRANSLATE_SV("SDLInputSource", "SmallMotor") :
                                                      TRANSLATE_SV("SDLInputSource", "LargeMotor"));
       }
     }
     else if (key.source_subtype == InputSubclass::ControllerHaptic)
     {
-      ret.format(TRANSLATE_FS("SDLInputSource", "SDL-{0}/{1}"), static_cast<u32>(key.source_index),
+      return SmallString::from_format(TRANSLATE_FS("SDLInputSource", "SDL-{0}/{1}"), static_cast<u32>(key.source_index),
                  TRANSLATE_SV("SDLInputSource", "Haptic"));
     }
     else if (key.source_subtype == InputSubclass::ControllerLED)
     {
-      ret.format(TRANSLATE_FS("SDLInputSource", "SDL-{0}/{1}"), static_cast<u32>(key.source_index),
+      return SmallString::from_format(TRANSLATE_FS("SDLInputSource", "SDL-{0}/{1}"), static_cast<u32>(key.source_index),
                  (key.data != 0) ? TRANSLATE_SV("SDLInputSource", "MuteLED") :
                                    TRANSLATE_SV("SDLInputSource", "RGBLED"));
     }
@@ -949,13 +946,13 @@ TinyString SDLInputSource::ConvertKeyToDisplayString(InputBindingKey key, bool a
       {
         const char* modifier =
           (key.modifier == InputModifier::FullAxis ? "Full" : (key.modifier == InputModifier::Negate ? "-" : "+"));
-        ret.format(TRANSLATE_FS("SDLInputSource", "SDL-{0}/{1}{2}{3}"), static_cast<u32>(key.source_index), modifier,
+        return SmallString::from_format(TRANSLATE_FS("SDLInputSource", "SDL-{0}/{1}{2}{3}"), static_cast<u32>(key.source_index), modifier,
                    Host::TranslateToStringView("SDLInputSource", s_sdl_sensor_names[key.data]), key.invert ? "~" : "");
       }
     }
   }
 
-  return ret;
+  return {};
 }
 
 void SDLInputSource::SetSubclassPollDeviceList(InputSubclass subclass, const std::span<const InputBindingKey>* devices)
@@ -1554,23 +1551,22 @@ bool SDLInputSource::HandleJoystickHatEvent(const SDL_JoyHatEvent* ev)
 
 std::optional<float> SDLInputSource::GetCurrentValue(InputBindingKey key)
 {
-  std::optional<float> ret;
   if (key.source_type != InputSourceType::SDL)
-    return ret;
+    return std::nullopt;
 
   const auto cd = GetControllerDataForPlayerId(static_cast<int>(key.source_index));
   if (cd == m_controllers.end())
-    return ret;
+    return std::nullopt;
 
   if (key.source_subtype == InputSubclass::ControllerAxis)
   {
     if (cd->gamepad && key.data < s_axis_info.size())
     {
-      ret = NormalizeS16(g_dyn_sdl.SDL_GetGamepadAxis(cd->gamepad, static_cast<SDL_GamepadAxis>(key.data)));
+      return NormalizeS16(g_dyn_sdl.SDL_GetGamepadAxis(cd->gamepad, static_cast<SDL_GamepadAxis>(key.data)));
     }
     else if (key.data >= s_axis_info.size())
     {
-      ret = NormalizeS16(
+      return NormalizeS16(
         g_dyn_sdl.SDL_GetJoystickAxis(cd->joystick, static_cast<int>(key.data - static_cast<u32>(s_axis_info.size()))));
     }
   }
@@ -1578,11 +1574,11 @@ std::optional<float> SDLInputSource::GetCurrentValue(InputBindingKey key)
   {
     if (cd->gamepad && key.data < s_button_info.size())
     {
-      ret = BoolToFloat(g_dyn_sdl.SDL_GetGamepadButton(cd->gamepad, static_cast<SDL_GamepadButton>(key.data)));
+      return BoolToFloat(g_dyn_sdl.SDL_GetGamepadButton(cd->gamepad, static_cast<SDL_GamepadButton>(key.data)));
     }
     else if (key.data >= s_button_info.size())
     {
-      ret = BoolToFloat(g_dyn_sdl.SDL_GetJoystickButton(
+      return BoolToFloat(g_dyn_sdl.SDL_GetJoystickButton(
         cd->joystick, static_cast<int>(key.data - static_cast<u32>(s_button_info.size()))));
     }
   }
@@ -1591,7 +1587,7 @@ std::optional<float> SDLInputSource::GetCurrentValue(InputBindingKey key)
     const u32 hat_index = key.data / static_cast<u32>(std::size(s_sdl_hat_direction_names));
     const u8 hat_direction = Truncate8(key.data % static_cast<u32>(std::size(s_sdl_hat_direction_names)));
     const u8 hat_value = g_dyn_sdl.SDL_GetJoystickHat(cd->joystick, static_cast<int>(hat_index));
-    ret = BoolToFloat((hat_value & (1u << hat_direction)) != 0);
+    return BoolToFloat((hat_value & (1u << hat_direction)) != 0);
   }
   else if (key.source_subtype == InputSubclass::ControllerSensor)
   {
@@ -1605,20 +1601,19 @@ std::optional<float> SDLInputSource::GetCurrentValue(InputBindingKey key)
     }
   }
 
-  return ret;
+  return std::nullopt;
 }
 
 InputManager::DeviceEffectList SDLInputSource::EnumerateEffects(std::optional<InputBindingInfo::Type> type,
                                                                 std::optional<InputBindingKey> for_device)
 {
-  InputManager::DeviceEffectList ret;
-
   if (for_device.has_value() && for_device->source_type != InputSourceType::SDL)
-    return ret;
+    return {};
 
   InputBindingKey key = {};
   key.source_type = InputSourceType::SDL;
 
+  InputManager::DeviceEffectList ret;
   for (ControllerData& cd : m_controllers)
   {
     if (for_device.has_value() && for_device->source_index != static_cast<u32>(cd.player_id))

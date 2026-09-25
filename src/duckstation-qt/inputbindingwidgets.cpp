@@ -71,7 +71,7 @@ bool InputBindingWidget::isSensorBinding(InputBindingKey key)
 void InputBindingWidget::logInputEvent(InputBindingInfo::Type bind_type, InputBindingKey key, float value,
                                        float initial_value, float min_value)
 {
-  const TinyString key_str = InputManager::ConvertInputBindingKeyToString(bind_type, key);
+  const SmallString key_str = InputManager::ConvertInputBindingKeyToString(bind_type, key);
   DEV_LOG("Binding input event: key={} value={:.2f} initial_value={:.2f} min_value={:.2f}", key_str, value,
           initial_value, min_value);
 }

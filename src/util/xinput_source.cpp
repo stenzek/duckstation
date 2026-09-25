@@ -380,36 +380,33 @@ std::optional<InputBindingKey> XInputSource::ParseKeyString(std::string_view dev
   return std::nullopt;
 }
 
-TinyString XInputSource::ConvertKeyToString(InputBindingKey key)
+SmallString XInputSource::ConvertKeyToString(InputBindingKey key)
 {
-  TinyString ret;
-
   if (key.source_type == InputSourceType::XInput)
   {
     if (key.source_subtype == InputSubclass::ControllerAxis && key.data < std::size(s_axis_names))
     {
       const char modifier = key.modifier == InputModifier::Negate ? '-' : '+';
-      ret.format("XInput-{}/{}{}", static_cast<u32>(key.source_index), modifier, s_axis_names[key.data]);
+      return SmallString::from_format("XInput-{}/{}{}", static_cast<u32>(key.source_index), modifier,
+                                      s_axis_names[key.data]);
     }
     else if (key.source_subtype == InputSubclass::ControllerButton && key.data < std::size(s_button_names))
     {
-      ret.format("XInput-{}/{}", static_cast<u32>(key.source_index), s_button_names[key.data]);
+      return SmallString::from_format("XInput-{}/{}", static_cast<u32>(key.source_index), s_button_names[key.data]);
     }
     else if (key.source_subtype == InputSubclass::ControllerMotor)
     {
-      ret.format("XInput-{}/{}Motor", static_cast<u32>(key.source_index),
-                 (key.data == MOTOR_INDEX_SMALL) ? "Small" : "Large");
+      return SmallString::from_format("XInput-{}/{}Motor", static_cast<u32>(key.source_index),
+                                      (key.data == MOTOR_INDEX_SMALL) ? "Small" : "Large");
     }
   }
 
-  return ret;
+  return {};
 }
 
-TinyString XInputSource::ConvertKeyToDisplayString(InputBindingKey key, bool allow_icon,
-                                                   InputManager::BindingIconMappingFunction mapper)
+SmallString XInputSource::ConvertKeyToDisplayString(InputBindingKey key, bool allow_icon,
+                                                    InputManager::BindingIconMappingFunction mapper)
 {
-  TinyString ret;
-
   if (key.source_type == InputSourceType::XInput)
   {
     if (allow_icon)
@@ -418,20 +415,24 @@ TinyString XInputSource::ConvertKeyToDisplayString(InputBindingKey key, bool all
       {
         if (key.data < std::size(s_axis_icons) && key.modifier != InputModifier::FullAxis)
         {
-          ret.format(TRANSLATE_FS("XInputSource", "XInput-{0}  {1}"), static_cast<u32>(key.source_index),
-                     mapper(s_axis_icons[key.data][key.modifier == InputModifier::None]));
+          return SmallString::from_format(TRANSLATE_FS("XInputSource", "XInput-{0}  {1}"),
+                                          static_cast<u32>(key.source_index),
+                                          mapper(s_axis_icons[key.data][key.modifier == InputModifier::None]));
         }
       }
       else if (key.source_subtype == InputSubclass::ControllerButton)
       {
         if (key.data < std::size(s_button_icons))
-          ret.format(TRANSLATE_FS("XInputSource", "XInput-{0}  {1}"), static_cast<u32>(key.source_index),
-                     mapper(s_button_icons[key.data]));
+        {
+          return SmallString::from_format(TRANSLATE_FS("XInputSource", "XInput-{0}  {1}"),
+                                          static_cast<u32>(key.source_index), mapper(s_button_icons[key.data]));
+        }
       }
       else if (key.source_subtype == InputSubclass::ControllerMotor)
       {
-        ret.format(TRANSLATE_FS("XInputSource", "XInput-{0}/{1}"), static_cast<u32>(key.source_index),
-                   (key.data == MOTOR_INDEX_SMALL) ? ICON_PF_VIBRATION : ICON_PF_VIBRATION_L);
+        return SmallString::from_format(TRANSLATE_FS("XInputSource", "XInput-{0}/{1}"),
+                                        static_cast<u32>(key.source_index),
+                                        (key.data == MOTOR_INDEX_SMALL) ? ICON_PF_VIBRATION : ICON_PF_VIBRATION_L);
       }
     }
     else
@@ -439,24 +440,27 @@ TinyString XInputSource::ConvertKeyToDisplayString(InputBindingKey key, bool all
       if (key.source_subtype == InputSubclass::ControllerAxis && key.data < std::size(s_axis_names))
       {
         const char modifier = key.modifier == InputModifier::Negate ? '-' : '+';
-        ret.format(TRANSLATE_FS("XInputSource", "XInput-{0}/{1}{2}"), static_cast<u32>(key.source_index), modifier,
-                   Host::TranslateToStringView("XInputSource", s_axis_names[key.data]));
+        return SmallString::from_format(TRANSLATE_FS("XInputSource", "XInput-{0}/{1}{2}"),
+                                        static_cast<u32>(key.source_index), modifier,
+                                        Host::TranslateToStringView("XInputSource", s_axis_names[key.data]));
       }
       else if (key.source_subtype == InputSubclass::ControllerButton && key.data < std::size(s_button_names))
       {
-        ret.format(TRANSLATE_FS("XInputSource", "XInput-{0}/{1}"), static_cast<u32>(key.source_index),
-                   Host::TranslateToStringView("XInputSource", s_button_names[key.data]));
+        return SmallString::from_format(TRANSLATE_FS("XInputSource", "XInput-{0}/{1}"),
+                                        static_cast<u32>(key.source_index),
+                                        Host::TranslateToStringView("XInputSource", s_button_names[key.data]));
       }
       else if (key.source_subtype == InputSubclass::ControllerMotor)
       {
-        ret.format(TRANSLATE_FS("XInputSource", "XInput-{0}/{1}"), static_cast<u32>(key.source_index),
-                   (key.data == MOTOR_INDEX_SMALL) ? TRANSLATE_SV("XInputSource", "SmallMotor") :
-                                                     TRANSLATE_SV("XInputSource", "LargeMotor"));
+        return SmallString::from_format(TRANSLATE_FS("XInputSource", "XInput-{0}/{1}"),
+                                        static_cast<u32>(key.source_index),
+                                        (key.data == MOTOR_INDEX_SMALL) ? TRANSLATE_SV("XInputSource", "SmallMotor") :
+                                                                          TRANSLATE_SV("XInputSource", "LargeMotor"));
       }
     }
   }
 
-  return ret;
+  return {};
 }
 
 void XInputSource::SetSubclassPollDeviceList(InputSubclass subclass, const std::span<const InputBindingKey>* devices)
@@ -472,14 +476,13 @@ std::unique_ptr<ForceFeedbackDevice> XInputSource::CreateForceFeedbackDevice(std
 InputManager::DeviceEffectList XInputSource::EnumerateEffects(std::optional<InputBindingInfo::Type> type,
                                                               std::optional<InputBindingKey> for_device)
 {
-  InputManager::DeviceEffectList ret;
-
   if (for_device.has_value() && for_device->source_type != InputSourceType::XInput)
-    return ret;
+    return {};
 
   if (type.has_value() && type.value() != InputBindingInfo::Type::Motor)
-    return ret;
+    return {};
 
+  InputManager::DeviceEffectList ret;
   for (u32 i = 0; i < NUM_CONTROLLERS; i++)
   {
     if (for_device.has_value() && for_device->source_index != i)
@@ -671,13 +674,12 @@ void XInputSource::CheckForStateChanges(u32 index, const ControllerState& new_st
 
 std::optional<float> XInputSource::GetCurrentValue(InputBindingKey key)
 {
-  std::optional<float> ret;
   if (key.source_type != InputSourceType::XInput || key.source_index >= NUM_CONTROLLERS)
-    return ret;
+    return std::nullopt;
 
   const ControllerData& cd = m_controllers[key.source_index];
   if (!cd.connected)
-    return ret;
+    return std::nullopt;
 
   if (key.source_subtype == InputSubclass::ControllerAxis && key.data < NUM_AXES)
   {
@@ -686,8 +688,7 @@ std::optional<float> XInputSource::GetCurrentValue(InputBindingKey key)
       const XINPUT_GAMEPAD& state = cd.last_state.xinput.Gamepad;
 #define CHECK_AXIS(field, axis, min_value, max_value)                                                                  \
   case axis:                                                                                                           \
-    ret = static_cast<float>(state.field) / ((state.field < 0) ? min_value : max_value);                               \
-    break;
+    return static_cast<float>(state.field) / ((state.field < 0) ? min_value : max_value);
 
       // Y axes is inverted in XInput when compared to SDL.
       switch (key.data)
@@ -705,7 +706,7 @@ std::optional<float> XInputSource::GetCurrentValue(InputBindingKey key)
       const float value = (cd.last_state.scp_extn.*s_scp_axis_fields[key.data]);
 
       // Y axes is inverted in XInput when compared to SDL.
-      ret = ((key.data == AXIS_LEFTY || key.data == AXIS_RIGHTY) ? (value * -1.0f) : value);
+      return ((key.data == AXIS_LEFTY || key.data == AXIS_RIGHTY) ? (value * -1.0f) : value);
     }
   }
   else if (key.source_subtype == InputSubclass::ControllerButton && key.data < NUM_BUTTONS)
@@ -714,15 +715,15 @@ std::optional<float> XInputSource::GetCurrentValue(InputBindingKey key)
     {
       const XINPUT_GAMEPAD& state = cd.last_state.xinput.Gamepad;
       const u16 button_mask = s_button_masks[key.data];
-      ret = BoolToFloat((state.wButtons & button_mask) != 0);
+      return BoolToFloat((state.wButtons & button_mask) != 0);
     }
     else
     {
-      ret = (cd.last_state.scp_extn.*s_scp_button_fields[key.data]);
+      return (cd.last_state.scp_extn.*s_scp_button_fields[key.data]);
     }
   }
 
-  return ret;
+  return std::nullopt;
 }
 
 void XInputSource::UpdateMotorState(InputBindingKey key, float intensity)

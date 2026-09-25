@@ -245,7 +245,7 @@ InputBindingKey MakePointerButtonKey(u32 index, u32 button_index);
 InputBindingKey MakePointerAxisKey(u32 index, InputPointerAxis axis);
 
 /// Converts a input key to a string.
-TinyString ConvertInputBindingKeyToString(InputBindingInfo::Type binding_type, InputBindingKey key);
+SmallString ConvertInputBindingKeyToString(InputBindingInfo::Type binding_type, InputBindingKey key);
 
 /// Converts a chord of binding keys to a string.
 SmallString ConvertInputBindingKeysToString(InputBindingInfo::Type binding_type, const InputBindingKey* keys,

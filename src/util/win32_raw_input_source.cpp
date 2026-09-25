@@ -119,13 +119,13 @@ std::optional<InputBindingKey> Win32RawInputSource::ParseKeyString(std::string_v
   return std::nullopt;
 }
 
-TinyString Win32RawInputSource::ConvertKeyToString(InputBindingKey key)
+SmallString Win32RawInputSource::ConvertKeyToString(InputBindingKey key)
 {
   return {};
 }
 
-TinyString Win32RawInputSource::ConvertKeyToDisplayString(InputBindingKey key, bool allow_icon,
-                                                          InputManager::BindingIconMappingFunction mapper)
+SmallString Win32RawInputSource::ConvertKeyToDisplayString(InputBindingKey key, bool allow_icon,
+                                                           InputManager::BindingIconMappingFunction mapper)
 {
   return {};
 }

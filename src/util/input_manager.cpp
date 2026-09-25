@@ -74,7 +74,7 @@ static std::vector<std::string_view> SplitChord(std::string_view binding);
 static bool SplitBinding(std::string_view binding, std::string_view* source, std::string_view* sub_binding);
 static std::optional<InputBindingKey> ParseInputBindingKey(std::string_view binding);
 static bool ParseBindingAndGetSource(std::string_view binding, InputBindingKey* key, InputSource** source);
-static TinyString InternalConvertInputBindingKeyToString(InputBindingInfo::Type binding_type, InputBindingKey key);
+static SmallString InternalConvertInputBindingKeyToString(InputBindingInfo::Type binding_type, InputBindingKey key);
 static void PrettifyInputBindingPart(std::string_view binding, bool allow_icon, BindingIconMappingFunction mapper,
                                      SmallString& ret, bool& changed);
 static void AddBindings(const std::vector<std::string>& bindings, bool activate_when_captured,
@@ -353,7 +353,7 @@ bool InputManager::ParseBindingAndGetSource(std::string_view binding, InputBindi
   return false;
 }
 
-TinyString InputManager::ConvertInputBindingKeyToString(InputBindingInfo::Type binding_type, InputBindingKey key)
+SmallString InputManager::ConvertInputBindingKeyToString(InputBindingInfo::Type binding_type, InputBindingKey key)
 {
   // Threading: Can be called on other threads.
   const auto lock = GetSourcesReadLock();
@@ -361,12 +361,10 @@ TinyString InputManager::ConvertInputBindingKeyToString(InputBindingInfo::Type b
   return InternalConvertInputBindingKeyToString(binding_type, key);
 }
 
-TinyString InputManager::InternalConvertInputBindingKeyToString(InputBindingInfo::Type binding_type,
-                                                                InputBindingKey key)
+SmallString InputManager::InternalConvertInputBindingKeyToString(InputBindingInfo::Type binding_type,
+                                                                 InputBindingKey key)
 {
   // Threading: Called by ConvertInputBindingKeyToString() and ConvertInputBindingKeysToString() which hold a read lock.
-
-  TinyString ret;
 
   if (binding_type == InputBindingInfo::Type::Pointer || binding_type == InputBindingInfo::Type::RelativePointer ||
       binding_type == InputBindingInfo::Type::Device)
@@ -374,15 +372,16 @@ TinyString InputManager::InternalConvertInputBindingKeyToString(InputBindingInfo
     // pointer and device bindings don't have a data part
     if (key.source_type == InputSourceType::Pointer)
     {
-      ret = GetPointerDeviceName(key.source_index);
+      return GetPointerDeviceName(key.source_index);
     }
     else if (key.source_type < InputSourceType::Count && s_state.input_sources[static_cast<u32>(key.source_type)])
     {
       // This assumes that it always follows the Type/Binding form.
-      ret = s_state.input_sources[static_cast<size_t>(key.source_type)]->ConvertKeyToString(key);
-
+      SmallString ret = s_state.input_sources[static_cast<size_t>(key.source_type)]->ConvertKeyToString(key);
       if (const s32 pos = ret.find('/'); pos > 0)
         ret.erase(pos);
+
+      return ret;
     }
   }
   else
@@ -390,59 +389,57 @@ TinyString InputManager::InternalConvertInputBindingKeyToString(InputBindingInfo
     if (key.source_type == InputSourceType::Keyboard)
     {
       if (const char* key_code_string = ConvertHostKeyboardCodeToString(key.data))
-        ret.format("Keyboard/{}", key_code_string);
+        return SmallString::from_format("Keyboard/{}", key_code_string);
     }
     else if (key.source_type == InputSourceType::Pointer)
     {
       if (key.source_subtype == InputSubclass::PointerButton)
       {
         if (key.data < s_pointer_button_names.size())
-          ret.format("Pointer-{}/{}", u32{key.source_index}, s_pointer_button_names[key.data]);
+          return SmallString::from_format("Pointer-{}/{}", u32{key.source_index}, s_pointer_button_names[key.data]);
         else
-          ret.format("Pointer-{}/Button{}", u32{key.source_index}, key.data);
+          return SmallString::from_format("Pointer-{}/Button{}", u32{key.source_index}, key.data);
       }
       else if (key.source_subtype == InputSubclass::PointerAxis)
       {
-        ret.format("Pointer-{}/{}{:c}", u32{key.source_index}, s_pointer_axis_names[key.data],
-                   key.modifier == InputModifier::Negate ? '-' : '+');
+        return SmallString::from_format("Pointer-{}/{}{:c}", u32{key.source_index}, s_pointer_axis_names[key.data],
+                                        key.modifier == InputModifier::Negate ? '-' : '+');
       }
     }
     else if (key.source_type < InputSourceType::Count && s_state.input_sources[static_cast<u32>(key.source_type)])
     {
-      ret = s_state.input_sources[static_cast<size_t>(key.source_type)]->ConvertKeyToString(key);
+      return s_state.input_sources[static_cast<size_t>(key.source_type)]->ConvertKeyToString(key);
     }
   }
 
-  return ret;
+  return {};
 }
 
 SmallString InputManager::ConvertInputBindingKeysToString(InputBindingInfo::Type binding_type,
                                                           const InputBindingKey* keys, size_t num_keys)
 {
+  if (num_keys == 0)
+    return {};
+
   // Threading: Can be called on other threads.
   const auto lock = GetSourcesReadLock();
 
-  SmallString ret;
-
-  // can't have a chord of devices/pointers
-  if (binding_type == InputBindingInfo::Type::Pointer || binding_type == InputBindingInfo::Type::RelativePointer ||
-      binding_type == InputBindingInfo::Type::Device)
+  // can't have a chord of devices/pointers, so only take the first.
+  // also fast path for a single binding, most cases
+  if (num_keys == 1 || binding_type == InputBindingInfo::Type::Pointer ||
+      binding_type == InputBindingInfo::Type::RelativePointer || binding_type == InputBindingInfo::Type::Device)
   {
-    // so only take the first
-    if (num_keys > 0)
-    {
-      ret = InternalConvertInputBindingKeyToString(binding_type, keys[0]);
-      return ret;
-    }
+    return InternalConvertInputBindingKeyToString(binding_type, keys[0]);
   }
 
+  SmallString ret;
   for (size_t i = 0; i < num_keys; i++)
   {
-    const TinyString keystr = InternalConvertInputBindingKeyToString(binding_type, keys[i]);
+    const SmallString keystr = InternalConvertInputBindingKeyToString(binding_type, keys[i]);
     if (keystr.empty())
       return ret;
 
-    if (i > 0)
+    if (!ret.empty())
       ret.append(" & ");
 
     ret.append(keystr);
@@ -583,7 +580,7 @@ void InputManager::PrettifyInputBindingPart(const std::string_view binding, bool
         std::optional<InputBindingKey> key = s_state.input_sources[i]->ParseKeyString(source, sub_binding);
         if (key.has_value())
         {
-          const TinyString display_str =
+          const SmallString display_str =
             s_state.input_sources[i]->ConvertKeyToDisplayString(key.value(), allow_icon, mapper);
           if (!display_str.empty())
           {
@@ -1864,10 +1861,7 @@ std::string InputManager::GetPhysicalDeviceForController(SettingsInterface& si, 
         }
 
         if (ret != source)
-        {
-          ret = TRANSLATE_STR("InputManager", "Multiple Devices");
-          return ret;
-        }
+          return TRANSLATE_STR("InputManager", "Multiple Devices");
       }
     }
   }
