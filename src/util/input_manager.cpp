@@ -245,7 +245,8 @@ struct State
   // Input sources. Keyboard/mouse don't exist here.
   std::array<std::unique_ptr<InputSource>, static_cast<u32>(InputSourceType::Count)> input_sources;
 
-  std::array<std::array<float, static_cast<u8>(InputPointerAxis::Count)>, InputManager::MAX_POINTER_DEVICES>
+  std::array<std::array<std::atomic<float>, static_cast<u8>(InputPointerAxis::Count)>,
+             InputManager::MAX_POINTER_DEVICES>
     host_pointer_positions;
   std::array<std::array<PointerAxisState, static_cast<u8>(InputPointerAxis::Count)>, InputManager::MAX_POINTER_DEVICES>
     pointer_state;
@@ -1508,17 +1509,24 @@ u32 InputManager::GetPointerCount()
 std::pair<float, float> InputManager::GetPointerAbsolutePosition(u32 index)
 {
   DebugAssert(index < s_state.host_pointer_positions.size());
-  return std::make_pair(s_state.host_pointer_positions[index][static_cast<u8>(InputPointerAxis::X)],
-                        s_state.host_pointer_positions[index][static_cast<u8>(InputPointerAxis::Y)]);
+  return std::make_pair(
+    s_state.host_pointer_positions[index][static_cast<u8>(InputPointerAxis::X)].load(std::memory_order_acquire),
+    s_state.host_pointer_positions[index][static_cast<u8>(InputPointerAxis::Y)].load(std::memory_order_acquire));
 }
 
 void InputManager::UpdatePointerAbsolutePosition(u32 index, float x, float y, bool raw_input)
 {
+  // Threading: Only called on core thread.
   if (index >= MAX_POINTER_DEVICES || (s_state.relative_mouse_mode_active && !raw_input)) [[unlikely]]
     return;
 
-  const float dx = x - std::exchange(s_state.host_pointer_positions[index][static_cast<u8>(InputPointerAxis::X)], x);
-  const float dy = y - std::exchange(s_state.host_pointer_positions[index][static_cast<u8>(InputPointerAxis::Y)], y);
+  DebugAssert(Host::IsOnCoreThread());
+
+  // weak memory access for the read is fine here, because this is only called on the core thread
+  const float dx = x - s_state.host_pointer_positions[index][static_cast<u8>(InputPointerAxis::X)].exchange(
+                         x, std::memory_order_release);
+  const float dy = y - s_state.host_pointer_positions[index][static_cast<u8>(InputPointerAxis::Y)].exchange(
+                         y, std::memory_order_release);
 
   s_state.pointer_state[index][static_cast<u8>(InputPointerAxis::X)].delta += dx;
   s_state.pointer_state[index][static_cast<u8>(InputPointerAxis::Y)].delta += dy;
@@ -1529,9 +1537,11 @@ void InputManager::UpdatePointerAbsolutePosition(u32 index, float x, float y, bo
 
 void InputManager::ResetPointerRelativeDelta(u32 index)
 {
+  // Threading: Only called on core thread.
   if (index >= MAX_POINTER_DEVICES || s_state.relative_mouse_mode_active) [[unlikely]]
     return;
 
+  DebugAssert(Host::IsOnCoreThread());
   s_state.pointer_state[index][static_cast<u8>(InputPointerAxis::X)].delta = 0.0f;
   s_state.pointer_state[index][static_cast<u8>(InputPointerAxis::Y)].delta = 0.0f;
 }
@@ -1545,14 +1555,20 @@ void InputManager::UpdatePointerPositionRelativeDelta(u32 index, InputPointerAxi
   s_state.pointer_state[index][static_cast<u8>(axis)].delta += d;
 
   // We need to clamp the position ourselves in relative mode.
+  // weak memory access for the read is fine here, because this is only called on the core thread
   const WindowInfo& wi = VideoThread::GetRenderWindowInfo();
   const float max_dim = static_cast<float>((axis == InputPointerAxis::X) ? wi.surface_width : wi.surface_height);
-  s_state.host_pointer_positions[index][static_cast<u8>(axis)] =
-    std::clamp(s_state.host_pointer_positions[index][static_cast<u8>(axis)] + d, 0.0f, max_dim);
+  s_state.host_pointer_positions[index][static_cast<u8>(axis)].store(
+    std::clamp(s_state.host_pointer_positions[index][static_cast<u8>(axis)].load(std::memory_order_relaxed) + d, 0.0f,
+               max_dim),
+    std::memory_order_release);
 
   // Imgui also needs to be updated, since the absolute position won't be set above.
   if (index == 0)
-    ImGuiManager::UpdateMousePosition(s_state.host_pointer_positions[0][0], s_state.host_pointer_positions[0][1]);
+  {
+    ImGuiManager::UpdateMousePosition(s_state.host_pointer_positions[0][0].load(std::memory_order_relaxed),
+                                      s_state.host_pointer_positions[0][1].load(std::memory_order_relaxed));
+  }
 }
 
 void InputManager::UpdatePointerWheelRelativeDelta(u32 index, InputPointerAxis axis, float d)
@@ -1561,7 +1577,7 @@ void InputManager::UpdatePointerWheelRelativeDelta(u32 index, InputPointerAxis a
   if (index >= MAX_POINTER_DEVICES)
     return;
 
-  s_state.host_pointer_positions[index][static_cast<u8>(axis)] += d;
+  s_state.host_pointer_positions[index][static_cast<u8>(axis)].fetch_add(d, std::memory_order_release);
   s_state.pointer_state[index][static_cast<u8>(axis)].delta += d;
 }
 
