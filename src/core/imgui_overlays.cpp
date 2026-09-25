@@ -1446,7 +1446,9 @@ void SaveStateSelectorUI::Draw()
     else if (ImGui::IsKeyPressed(ImGuiKey_Escape))
     {
       // Need to cancel the hotkey bindings, otherwise the pause menu will open.
-      InputManager::ClearBindStateFromSource(InputManager::MakeHostKeyboardKey(0));
+      // This is a bit janky because if the key is released before the core thread picks it up,
+      // it'll be too late. Chances of that are pretty slim.
+      Host::RunOnCoreThread([]() { InputManager::ClearBindStateFromSource(InputManager::MakeHostKeyboardKey(0)); });
       Close();
     }
   }

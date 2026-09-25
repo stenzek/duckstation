@@ -307,7 +307,10 @@ bool Win32RawInputSource::ReloadDevices()
     {
       DEV_LOG("Detected raw input device {} removal", i);
 
-      ms = {};
+      {
+        const auto lock = InputManager::GetSourcesWriteLock();
+        ms = {};
+      }
 
       InputManager::OnInputDeviceDisconnected(
         MakeGenericControllerDeviceKey(InputSourceType::Pointer, static_cast<u32>(i)),
@@ -330,6 +333,7 @@ bool Win32RawInputSource::ReloadDevices()
     auto iter = std::ranges::find_if(m_mice, [](const MouseState& ms) { return !ms.device; });
     if (iter == m_mice.end())
     {
+      const auto lock = InputManager::GetSourcesWriteLock();
       m_mice.push_back({});
       iter = std::prev(m_mice.end());
     }
@@ -348,8 +352,11 @@ bool Win32RawInputSource::ReloadDevices()
   }
 
   // Drop any trailing closed devices.
-  while (!m_mice.empty() && !m_mice.back().device)
-    m_mice.pop_back();
+  {
+    const auto lock = InputManager::GetSourcesWriteLock();
+    while (!m_mice.empty() && !m_mice.back().device)
+      m_mice.pop_back();
+  }
 
   const size_t num_mice = std::ranges::count_if(m_mice, [](const MouseState& ms) { return (ms.device != nullptr); });
   DEV_LOG("Found {} mice", num_mice);
@@ -367,17 +374,21 @@ void Win32RawInputSource::CloseDevices()
   if (m_mice.empty())
     return;
 
-  for (size_t i = 0; i < m_mice.size(); i++)
+  std::vector<MouseState> mice;
   {
-    if (!m_mice[i].device)
+    const auto lock = InputManager::GetSourcesWriteLock();
+    std::swap(mice, m_mice);
+  }
+
+  for (size_t i = 0; i < mice.size(); i++)
+  {
+    if (!mice[i].device)
       continue;
 
     InputManager::OnInputDeviceDisconnected(
       MakeGenericControllerDeviceKey(InputSourceType::Pointer, static_cast<u32>(i)),
       InputManager::GetPointerDeviceName(static_cast<u32>(i)));
   }
-
-  m_mice.clear();
 }
 
 void Win32RawInputSource::EnsureRawInputRegistered()

@@ -23,6 +23,7 @@
 #include "common/path.h"
 #include "common/string_util.h"
 #include "common/thirdparty/SmallVector.h"
+#include "common/threading.h"
 #include "common/timer.h"
 
 #include "IconsFontAwesome.h"
@@ -34,7 +35,6 @@
 #include <array>
 #include <atomic>
 #include <memory>
-#include <mutex>
 #include <sstream>
 #include <tuple>
 #include <unordered_map>
@@ -74,6 +74,7 @@ static std::vector<std::string_view> SplitChord(std::string_view binding);
 static bool SplitBinding(std::string_view binding, std::string_view* source, std::string_view* sub_binding);
 static std::optional<InputBindingKey> ParseInputBindingKey(std::string_view binding);
 static bool ParseBindingAndGetSource(std::string_view binding, InputBindingKey* key, InputSource** source);
+static TinyString InternalConvertInputBindingKeyToString(InputBindingInfo::Type binding_type, InputBindingKey key);
 static void PrettifyInputBindingPart(std::string_view binding, bool allow_icon, BindingIconMappingFunction mapper,
                                      SmallString& ret, bool& changed);
 static void AddBindings(const std::vector<std::string>& bindings, bool activate_when_captured,
@@ -107,6 +108,7 @@ static void LoadMacroButtonConfig(const SettingsInterface& si, const std::string
 static void ApplyMacroButton(const MacroButton& mb);
 static void UpdateMacroButtons();
 
+static Threading::SharedLockGuard GetSourcesReadLock();
 static size_t UpdateInputSubclassPolling(InputSubclass subclass, bool enable_all);
 static bool IsInputSourceEnabled(const SettingsInterface& si, InputSourceType type);
 static bool UpdateInputSourceState(const SettingsInterface& si, std::unique_lock<Threading::Mutex>& settings_lock,
@@ -184,7 +186,18 @@ struct State
 
 #endif
 
-  std::recursive_mutex sources_mutex;
+  //
+  // The sources mutex protects source state when it is read by multiple threads.
+  // When the exclusive lock is acquired, a source is updating its internal controller list and it is
+  // not safe for another thread to read. As such, the write lock is only acquired on the core thread.
+  // Public functions to InputManager will take the shared lock when they want to read aforementioned
+  // data. Core thread functions do not need to acquire the shared lock, because doing so puts us at
+  // risk of deadlocking from recursive locking. However, if public functions are called on the core
+  // thread, taking the shared lock briefly will be fine.
+  //
+  // Each function has a Threading: comment at the beginning which states what data it accesses.
+  //
+  Threading::SharedMutex sources_mutex;
 };
 
 } // namespace
@@ -235,6 +248,8 @@ ForceFeedbackDevice::~ForceFeedbackDevice() = default;
 
 std::vector<std::string_view> InputManager::SplitChord(std::string_view binding)
 {
+  // Threading: Only called by AddBinding(), which is on the core thread.
+
   std::vector<std::string_view> parts;
 
   // under an if for RVO
@@ -265,6 +280,8 @@ std::vector<std::string_view> InputManager::SplitChord(std::string_view binding)
 
 bool InputManager::SplitBinding(std::string_view binding, std::string_view* source, std::string_view* sub_binding)
 {
+  // Threading: Only called by parse functions, which are either on the core thread or have the lock.
+
   const std::string_view::size_type slash_pos = binding.find('/');
   if (slash_pos == std::string_view::npos)
   {
@@ -279,6 +296,8 @@ bool InputManager::SplitBinding(std::string_view binding, std::string_view* sour
 
 std::optional<InputBindingKey> InputManager::ParseInputBindingKey(std::string_view binding)
 {
+  // Threading: Only called by AddBinding(), which is on the core thread.
+
   std::string_view source, sub_binding;
   if (!SplitBinding(binding, &source, &sub_binding))
     return std::nullopt;
@@ -294,6 +313,7 @@ std::optional<InputBindingKey> InputManager::ParseInputBindingKey(std::string_vi
   }
   else
   {
+
     for (u32 i = FIRST_EXTERNAL_INPUT_SOURCE; i < LAST_EXTERNAL_INPUT_SOURCE; i++)
     {
       if (s_state.input_sources[i])
@@ -310,6 +330,8 @@ std::optional<InputBindingKey> InputManager::ParseInputBindingKey(std::string_vi
 
 bool InputManager::ParseBindingAndGetSource(std::string_view binding, InputBindingKey* key, InputSource** source)
 {
+  // Threading: Only called by AddBindingAndGetSource(), which is on the core thread.
+
   std::string_view source_string, sub_binding;
   if (!SplitBinding(binding, &source_string, &sub_binding))
     return false;
@@ -333,10 +355,18 @@ bool InputManager::ParseBindingAndGetSource(std::string_view binding, InputBindi
 
 TinyString InputManager::ConvertInputBindingKeyToString(InputBindingInfo::Type binding_type, InputBindingKey key)
 {
-  TinyString ret;
+  // Threading: Can be called on other threads.
+  const auto lock = GetSourcesReadLock();
 
-  // in case the source disappears, very unlikely
-  const auto lock = std::unique_lock(s_state.sources_mutex);
+  return InternalConvertInputBindingKeyToString(binding_type, key);
+}
+
+TinyString InputManager::InternalConvertInputBindingKeyToString(InputBindingInfo::Type binding_type,
+                                                                InputBindingKey key)
+{
+  // Threading: Called by ConvertInputBindingKeyToString() and ConvertInputBindingKeysToString() which hold a read lock.
+
+  TinyString ret;
 
   if (binding_type == InputBindingInfo::Type::Pointer || binding_type == InputBindingInfo::Type::RelativePointer ||
       binding_type == InputBindingInfo::Type::Device)
@@ -389,6 +419,9 @@ TinyString InputManager::ConvertInputBindingKeyToString(InputBindingInfo::Type b
 SmallString InputManager::ConvertInputBindingKeysToString(InputBindingInfo::Type binding_type,
                                                           const InputBindingKey* keys, size_t num_keys)
 {
+  // Threading: Can be called on other threads.
+  const auto lock = GetSourcesReadLock();
+
   SmallString ret;
 
   // can't have a chord of devices/pointers
@@ -398,14 +431,14 @@ SmallString InputManager::ConvertInputBindingKeysToString(InputBindingInfo::Type
     // so only take the first
     if (num_keys > 0)
     {
-      ret = ConvertInputBindingKeyToString(binding_type, keys[0]);
+      ret = InternalConvertInputBindingKeyToString(binding_type, keys[0]);
       return ret;
     }
   }
 
   for (size_t i = 0; i < num_keys; i++)
   {
-    const TinyString keystr = ConvertInputBindingKeyToString(binding_type, keys[i]);
+    const TinyString keystr = InternalConvertInputBindingKeyToString(binding_type, keys[i]);
     if (keystr.empty())
       return ret;
 
@@ -421,6 +454,8 @@ SmallString InputManager::ConvertInputBindingKeysToString(InputBindingInfo::Type
 bool InputManager::PrettifyInputBinding(SmallStringBase& binding, bool allow_icon,
                                         BindingIconMappingFunction mapper /*= nullptr*/)
 {
+  // Threading: Does not access any source state.
+
   if (binding.empty())
     return false;
 
@@ -467,6 +502,7 @@ bool InputManager::PrettifyInputBinding(SmallStringBase& binding, bool allow_ico
 void InputManager::PrettifyInputBindingPart(const std::string_view binding, bool allow_icon,
                                             BindingIconMappingFunction mapper, SmallString& ret, bool& changed)
 {
+  // Threading: Does not access any source state in the non-source part.
   std::string_view source, sub_binding;
   if (!SplitBinding(binding, &source, &sub_binding))
     return;
@@ -537,6 +573,9 @@ void InputManager::PrettifyInputBindingPart(const std::string_view binding, bool
   }
   else
   {
+    // Threading: Hold the lock for as short time as possible.
+    const auto lock = GetSourcesReadLock();
+
     for (u32 i = FIRST_EXTERNAL_INPUT_SOURCE; i < LAST_EXTERNAL_INPUT_SOURCE; i++)
     {
       if (s_state.input_sources[i])
@@ -565,12 +604,14 @@ void InputManager::PrettifyInputBindingPart(const std::string_view binding, bool
 void InputManager::AddBindings(const std::vector<std::string>& bindings, bool activate_when_captured,
                                const InputEventHandler& handler)
 {
+  // Threading: Only called by internal functions.
   for (const std::string& binding : bindings)
     AddBinding(binding, activate_when_captured, handler);
 }
 
 void InputManager::AddBinding(std::string_view binding, bool activate_when_captured, const InputEventHandler& handler)
 {
+  // Threading: Only called by internal functions.
   std::shared_ptr<InputBinding> ibinding;
   const std::vector<std::string_view> chord_bindings(SplitChord(binding));
 
@@ -617,6 +658,7 @@ void InputManager::AddBinding(std::string_view binding, bool activate_when_captu
 
 InputBindingKey InputManager::MakeHostKeyboardKey(u32 key_code)
 {
+  // Threading: No shared state access.
   InputBindingKey key = {};
   key.source_type = InputSourceType::Keyboard;
   key.data = key_code;
@@ -625,6 +667,7 @@ InputBindingKey InputManager::MakeHostKeyboardKey(u32 key_code)
 
 InputBindingKey InputManager::MakePointerButtonKey(u32 index, u32 button_index)
 {
+  // Threading: No shared state access.
   InputBindingKey key = {};
   key.source_index = index;
   key.source_type = InputSourceType::Pointer;
@@ -635,6 +678,7 @@ InputBindingKey InputManager::MakePointerButtonKey(u32 index, u32 button_index)
 
 InputBindingKey InputManager::MakePointerAxisKey(u32 index, InputPointerAxis axis)
 {
+  // Threading: No shared state access.
   InputBindingKey key = {};
   key.data = static_cast<u32>(axis);
   key.source_index = index;
@@ -645,6 +689,8 @@ InputBindingKey InputManager::MakePointerAxisKey(u32 index, InputPointerAxis axi
 
 std::optional<u32> InputManager::ConvertHostKeyboardStringToCode(std::string_view str)
 {
+  // Threading: No shared state access.
+
   // Check legacy names first
   const auto legacy_iter = std::lower_bound(s_legacy_key_names.begin(), s_legacy_key_names.end(), str,
                                             [](const auto& it, const auto& value) { return (it.first < value); });
@@ -665,12 +711,14 @@ std::optional<u32> InputManager::ConvertHostKeyboardStringToCode(std::string_vie
 
 const char* InputManager::ConvertHostKeyboardCodeToString(u32 code)
 {
+  // Threading: No shared state access.
   const KeyCodeData* key_data = FindKeyCodeData(code);
   return key_data ? key_data->name : nullptr;
 }
 
 const InputManager::KeyCodeData* InputManager::FindKeyCodeData(u32 usb_code)
 {
+  // Threading: No shared state access.
   const auto iter = std::lower_bound(s_key_code_data.begin(), s_key_code_data.end(), usb_code,
                                      [](const auto& it, const auto& value) { return (it.usb_code < value); });
   return (iter != s_key_code_data.end() && iter->usb_code == usb_code) ? &(*iter) : nullptr;
@@ -678,12 +726,14 @@ const InputManager::KeyCodeData* InputManager::FindKeyCodeData(u32 usb_code)
 
 const char* InputManager::ConvertHostKeyboardCodeToIcon(u32 code)
 {
+  // Threading: No shared state access.
   const KeyCodeData* key_data = FindKeyCodeData(code);
   return key_data ? key_data->icon_name : nullptr;
 }
 
 std::optional<u32> InputManager::ConvertHostNativeKeyCodeToKeyCode(u32 native_code)
 {
+  // Threading: No shared state access.
   for (const KeyCodeData& name : s_key_code_data)
   {
     if (native_code == name.native_code)
@@ -710,11 +760,13 @@ static std::array<const char*, static_cast<size_t>(InputSourceType::Count)> s_in
 
 const char* InputManager::InputSourceToString(InputSourceType clazz)
 {
+  // Threading: No shared state access.
   return s_input_class_names[static_cast<size_t>(clazz)];
 }
 
 bool InputManager::GetInputSourceDefaultEnabled(InputSourceType type)
 {
+  // Threading: No shared state access.
   switch (type)
   {
     case InputSourceType::Keyboard:
@@ -742,6 +794,7 @@ bool InputManager::GetInputSourceDefaultEnabled(InputSourceType type)
 
 std::optional<InputBindingKey> InputManager::ParseHostKeyboardKey(std::string_view source, std::string_view sub_binding)
 {
+  // Threading: No shared state access.
   if (source != "Keyboard")
     return std::nullopt;
 
@@ -757,6 +810,7 @@ std::optional<InputBindingKey> InputManager::ParseHostKeyboardKey(std::string_vi
 
 std::optional<InputBindingKey> InputManager::ParsePointerKey(std::string_view source, std::string_view sub_binding)
 {
+  // Threading: No shared state access.
   const std::optional<s32> pointer_index = StringUtil::FromChars<s32>(source.substr(8));
   if (!pointer_index.has_value() || pointer_index.value() < 0)
     return std::nullopt;
@@ -810,6 +864,7 @@ std::optional<InputBindingKey> InputManager::ParsePointerKey(std::string_view so
 
 std::optional<u32> InputManager::GetIndexFromPointerBinding(std::string_view source)
 {
+  // Threading: No shared state access.
   if (!source.starts_with("Pointer-"))
     return std::nullopt;
 
@@ -822,6 +877,7 @@ std::optional<u32> InputManager::GetIndexFromPointerBinding(std::string_view sou
 
 TinyString InputManager::GetPointerDeviceName(u32 pointer_index)
 {
+  // Threading: No shared state access.
   return TinyString::from_format("Pointer-{}", pointer_index);
 }
 
@@ -831,12 +887,14 @@ TinyString InputManager::GetPointerDeviceName(u32 pointer_index)
 
 float InputManager::ApplySingleBindingScale(float scale, float deadzone, float value)
 {
+  // Threading: No shared state access.
   const float svalue = std::clamp(value * scale, 0.0f, 1.0f);
   return (deadzone > 0.0f && svalue < deadzone) ? 0.0f : svalue;
 }
 
 void InputManager::AddHotkeyBindings(const SettingsInterface& si)
 {
+  // Threading: Only called by internal functions.
   for (const HotkeyInfo& hotkey : Core::GetHotkeyList())
   {
     const std::vector<std::string> bindings(si.GetStringList("Hotkeys", hotkey.name));
@@ -850,6 +908,7 @@ void InputManager::AddHotkeyBindings(const SettingsInterface& si)
 void InputManager::AddPadBindings(const SettingsInterface& si, const std::string& section, u32 pad_index,
                                   const Controller::ControllerInfo& cinfo)
 {
+  // Threading: Only called by internal functions.
   for (const Controller::ControllerBindingInfo& bi : cinfo.bindings)
   {
     const std::vector<std::string> bindings(si.GetStringList(section.c_str(), bi.name));
@@ -980,6 +1039,7 @@ void InputManager::AddPadBindings(const SettingsInterface& si, const std::string
 
 void InputManager::SynchronizePadEffectBindings(InputBindingKey key)
 {
+  // Threading: Called when a device is added on the core thread.
   for (PadVibrationBinding& vib_binding : s_state.pad_vibration_array)
   {
     // only matching devices
@@ -1015,6 +1075,7 @@ void InputManager::SynchronizePadEffectBindings(InputBindingKey key)
 
 bool InputManager::HasAnyBindingsForKey(InputBindingKey key)
 {
+  // Threading: Only called on the core thread.
   DebugAssert(Host::IsOnCoreThread());
 
   return (s_state.binding_map.find(key.MaskDirection()) != s_state.binding_map.end());
@@ -1022,6 +1083,7 @@ bool InputManager::HasAnyBindingsForKey(InputBindingKey key)
 
 bool InputManager::HasAnyBindingsForSource(InputBindingKey key)
 {
+  // Threading: Only called on the core thread.
   DebugAssert(Host::IsOnCoreThread());
 
   for (const auto& it : s_state.binding_map)
@@ -1036,6 +1098,7 @@ bool InputManager::HasAnyBindingsForSource(InputBindingKey key)
 
 bool InputManager::HasAnyBindingsForSubclass(InputBindingKey key)
 {
+  // Threading: Only called on the core thread.
   DebugAssert(Host::IsOnCoreThread());
 
   for (const auto& it : s_state.binding_map)
@@ -1052,11 +1115,13 @@ bool InputManager::HasAnyBindingsForSubclass(InputBindingKey key)
 
 bool InputManager::IsAxisHandler(const InputEventHandler& handler)
 {
+  // Threading: No shared state access.
   return std::holds_alternative<InputAxisEventHandler>(handler);
 }
 
 bool InputManager::ShouldMaskBackgroundInput(InputBindingKey key)
 {
+  // Threading: No shared state access.
   // Keyboard events won't get sent to us if we're in the background.
   // We want to still update our mouse pointer state.
   // Everything else should be ignored.
@@ -1065,6 +1130,8 @@ bool InputManager::ShouldMaskBackgroundInput(InputBindingKey key)
 
 void InputManager::InvokeEvents(InputBindingKey key, float value, GenericInputBinding generic_key)
 {
+  // Threading: Only called on core thread.
+  DebugAssert(Host::IsOnCoreThread());
   if (DoEventHook(key, value))
     return;
 
@@ -1080,6 +1147,7 @@ void InputManager::InvokeEvents(InputBindingKey key, float value, GenericInputBi
 
 bool InputManager::ProcessEvent(InputBindingKey key, float value, bool skip_button_handlers)
 {
+  // Threading: Only called by InvokeEvents() on the core thread.
   // find all the bindings associated with this key
   const InputBindingKey masked_key = key.MaskDirection();
   const auto range = s_state.binding_map.equal_range(masked_key);
@@ -1198,6 +1266,7 @@ bool InputManager::ProcessEvent(InputBindingKey key, float value, bool skip_butt
 template<typename Predicate>
 void InputManager::ClearBindState(Predicate&& matches)
 {
+  // Threading: Utility function only called on core thread.
   // Why are we doing it this way? Because any of the bindings could cause a reload and invalidate our iterators :(.
   // Axis handlers should be fine, so we'll do those as a first pass.
   for (const auto& [match_key, binding] : s_state.binding_map)
@@ -1261,6 +1330,8 @@ void InputManager::ClearBindState(Predicate&& matches)
 
 void InputManager::ClearBindStateFromSource(InputBindingKey key)
 {
+  // Threading: Utility function only called on core thread.
+  DebugAssert(Host::IsOnCoreThread());
   ClearBindState([key](const InputBindingKey& match_key) {
     return (key.source_type == match_key.source_type && key.source_index == match_key.source_index);
   });
@@ -1268,7 +1339,8 @@ void InputManager::ClearBindStateFromSource(InputBindingKey key)
 
 void InputManager::SynchronizeBindingHandlerState()
 {
-  // should be called on the main thread, so no need to lock
+  // Threading: Utility function only called on core thread.
+  DebugAssert(Host::IsOnCoreThread());
   for (const auto& [key, binding] : s_state.binding_map)
   {
     // ignore hotkeys
@@ -1320,6 +1392,7 @@ void InputManager::SynchronizeBindingHandlerState()
 
 bool InputManager::PreprocessEvent(InputBindingKey key, float value, GenericInputBinding generic_key)
 {
+  // Threading: Called in InvokeEvents() on core thread.
   // does imgui want the event?
   if (key.source_type == InputSourceType::Keyboard)
   {
@@ -1342,6 +1415,7 @@ bool InputManager::PreprocessEvent(InputBindingKey key, float value, GenericInpu
 
 void InputManager::GenerateRelativeMouseEvents()
 {
+  // Threading: Called in PollSources() on core thread.
   const bool system_running = System::IsRunning();
 
 #ifdef _WIN32
@@ -1389,6 +1463,7 @@ void InputManager::GenerateRelativeMouseEvents()
 
 bool InputManager::UpdatePointerCount()
 {
+  // Threading: Called in ReloadSources() and ReloadDevices() on core thread.
 #ifdef _WIN32
   InputSource* ris = s_state.input_sources[static_cast<size_t>(InputSourceType::RawInput)].get();
   if (!ris)
@@ -1413,6 +1488,7 @@ bool InputManager::UpdatePointerCount()
 u32 InputManager::GetPointerCount()
 {
 #ifdef _WIN32
+  // Threading: Called by any thread, but uses atomics for synchronization.
   return s_state.pointer_count.load(std::memory_order_acquire);
 #else
   return 1;
@@ -1458,6 +1534,8 @@ void InputManager::ResetPointerRelativeDelta(u32 index)
 
 void InputManager::UpdatePointerPositionRelativeDelta(u32 index, InputPointerAxis axis, float d)
 {
+  // Threading: Only called by input sources on the core thread.
+
   DebugAssert(axis <= InputPointerAxis::Y);
   if (index >= MAX_POINTER_DEVICES || !s_state.relative_mouse_mode_active)
     return;
@@ -1476,6 +1554,8 @@ void InputManager::UpdatePointerPositionRelativeDelta(u32 index, InputPointerAxi
 
 void InputManager::UpdatePointerWheelRelativeDelta(u32 index, InputPointerAxis axis, float d)
 {
+  // Threading: Only called by input sources on the core thread.
+
   DebugAssert(axis >= InputPointerAxis::WheelX && axis <= InputPointerAxis::WheelY);
   if (index >= MAX_POINTER_DEVICES)
     return;
@@ -1486,6 +1566,7 @@ void InputManager::UpdatePointerWheelRelativeDelta(u32 index, InputPointerAxis a
 
 void InputManager::UpdateRelativeMouseMode()
 {
+  // Threading: Utility function only called on the core thread.
   // Check for relative mode bindings, and enable if there's anything using it.
   // Raw input needs to force relative mode/clipping, because it's now disconnected from the system pointer.
 #ifdef _WIN32
@@ -1521,6 +1602,7 @@ void InputManager::UpdateRelativeMouseMode()
 
 void InputManager::UpdateHostMouseMode()
 {
+  // Threading: Utility function only called on the core thread.
   const bool can_change = System::IsRunning();
   const bool wanted_relative_mouse_mode = (s_state.relative_mouse_mode && can_change);
   const bool wanted_hide_host_mouse_cursor = (s_state.hide_host_mouse_cursor && can_change);
@@ -1537,11 +1619,13 @@ void InputManager::UpdateHostMouseMode()
 
 bool InputManager::IsRelativeMouseModeActive()
 {
+  // Threading: Utility function only called on the core thread by input sources.
   return s_state.relative_mouse_mode_active;
 }
 
 bool InputManager::IsUsingRawInput()
 {
+  // Threading: Called by any thread, uses atomics for synchronization.
 #if defined(_WIN32)
   return s_state.raw_input_enabled.load(std::memory_order_acquire);
 #else
@@ -1551,12 +1635,16 @@ bool InputManager::IsUsingRawInput()
 
 void InputManager::OnApplicationBackgroundStateChanged(bool in_background)
 {
+  // Threading: Called on core thread.
+  DebugAssert(Host::IsOnCoreThread());
   s_state.application_in_background = in_background;
   UpdateInputIgnoreState();
 }
 
 void InputManager::UpdateInputIgnoreState()
 {
+  // Threading: Called on core thread.
+  DebugAssert(Host::IsOnCoreThread());
   const bool prev_ignore_input_events = s_state.ignore_input_events;
   s_state.ignore_input_events = s_state.application_in_background && g_settings.disable_background_input;
   if (s_state.ignore_input_events != prev_ignore_input_events)
@@ -1578,6 +1666,7 @@ void InputManager::UpdateInputIgnoreState()
 
 void InputManager::SetDefaultSourceConfig(SettingsInterface& si)
 {
+  // Threading: No shared state access.
   si.ClearSection("InputSources");
   si.SetBoolValue("InputSources", "SDL", true);
   si.SetBoolValue("InputSources", "SDLControllerEnhancedMode", false);
@@ -1588,6 +1677,7 @@ void InputManager::SetDefaultSourceConfig(SettingsInterface& si)
 
 void InputManager::ClearPortBindings(SettingsInterface& si, u32 port)
 {
+  // Threading: No shared state access.
   const std::string section = Controller::GetSettingsSection(port);
   const TinyString type = si.GetTinyStringValue(
     section.c_str(), "Type", Controller::GetControllerInfo(Settings::GetDefaultControllerType(port)).name);
@@ -1604,6 +1694,7 @@ void InputManager::CopyConfiguration(SettingsInterface* dest_si, const SettingsI
                                      bool copy_pad_config /*= true*/, bool copy_source_config /*= true*/,
                                      bool copy_pad_bindings /*= true*/, bool copy_hotkey_bindings /*= true*/)
 {
+  // Threading: No shared state access.
   if (copy_pad_config)
     dest_si->CopyStringValue(src_si, "ControllerPorts", "MultitapMode");
 
@@ -1682,6 +1773,7 @@ static u32 TryMapGenericMapping(SettingsInterface& si, const std::string& sectio
                                 const GenericInputBindingMapping& mapping, GenericInputBinding generic_name,
                                 const char* bind_name, bool clear_existing_mappings)
 {
+  // Threading: No shared state access.
   // find the mapping it corresponds to
   const std::string* found_mapping = nullptr;
   for (const std::pair<GenericInputBinding, std::string>& it : mapping)
@@ -1716,6 +1808,7 @@ bool InputManager::MapController(SettingsInterface& si, u32 controller,
                                  const std::vector<std::pair<GenericInputBinding, std::string>>& mapping,
                                  bool clear_existing_mappings)
 {
+  // Threading: No shared state access.
   const std::string section = Controller::GetSettingsSection(controller);
   const TinyString type = si.GetTinyStringValue(
     section.c_str(), "Type", Controller::GetControllerInfo(Settings::GetDefaultControllerType(controller)).name);
@@ -1747,6 +1840,7 @@ bool InputManager::MapController(SettingsInterface& si, u32 controller,
 
 std::string InputManager::GetPhysicalDeviceForController(SettingsInterface& si, u32 controller)
 {
+  // Threading: No shared state access.
   std::string ret;
 
   const std::string section = Controller::GetSettingsSection(controller);
@@ -1786,6 +1880,7 @@ std::string InputManager::GetPhysicalDeviceForController(SettingsInterface& si, 
 
 std::vector<std::string> InputManager::GetInputProfileNames()
 {
+  // Threading: No shared state access.
   FileSystem::FindResultsArray results;
   FileSystem::FindFiles(EmuFolders::InputProfiles.c_str(), "*.ini",
                         FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_HIDDEN_FILES | FILESYSTEM_FIND_RELATIVE_PATHS |
@@ -1810,6 +1905,7 @@ void InputManager::OnInputDeviceConnected(InputBindingKey key, std::string_view 
                                           std::string_view device_name,
                                           std::optional<GamepadButtonType> gamepad_button_type)
 {
+  // Threading: Only called by core thread when polling sources.
   INFO_LOG("Device '{}' connected: '{}'", identifier, device_name);
   SynchronizePadEffectBindings(key);
   Host::OnInputDeviceConnected(key, identifier, device_name);
@@ -1850,6 +1946,7 @@ void InputManager::OnInputDeviceConnected(InputBindingKey key, std::string_view 
 
 void InputManager::OnInputDeviceDisconnected(InputBindingKey key, std::string_view identifier)
 {
+  // Threading: Only called by core thread when polling sources.
   INFO_LOG("Device '{}' disconnected", identifier);
   ClearBindStateFromSource(key);
   Host::OnInputDeviceDisconnected(key, identifier);
@@ -1874,6 +1971,9 @@ void InputManager::OnInputDeviceDisconnected(InputBindingKey key, std::string_vi
 std::unique_ptr<ForceFeedbackDevice> InputManager::CreateForceFeedbackDevice(const std::string_view device,
                                                                              Error* error)
 {
+  DebugAssert(Host::IsOnCoreThread());
+
+  // Threading: No synchronization needed, only called on core thread.
   for (u32 i = FIRST_EXTERNAL_INPUT_SOURCE; i < LAST_EXTERNAL_INPUT_SOURCE; i++)
   {
     if (s_state.input_sources[i] && s_state.input_sources[i]->ContainsDevice(device))
@@ -1890,6 +1990,9 @@ std::unique_ptr<ForceFeedbackDevice> InputManager::CreateForceFeedbackDevice(con
 
 void InputManager::SetPadVibrationIntensity(u32 pad_index, u32 bind_index, float intensity)
 {
+  // Threading: Only called by core thread in virtual machine.
+  DebugAssert(Host::IsOnCoreThread());
+
   const u64 pad_and_bind_index = PadVibrationBinding::PackPadAndBindIndex(pad_index, bind_index);
   for (PadVibrationBinding& vib : s_state.pad_vibration_array)
   {
@@ -1903,6 +2006,7 @@ void InputManager::SetPadVibrationIntensity(u32 pad_index, u32 bind_index, float
 
 void InputManager::InternalPauseVibration()
 {
+  // Threading: Internal function only called by core thread.
   for (PadVibrationBinding& binding : s_state.pad_vibration_array)
   {
     // we deliberately don't zero the intensity here, so it can resume later
@@ -1913,6 +2017,7 @@ void InputManager::InternalPauseVibration()
 
 void InputManager::UpdateContinuedVibration()
 {
+  // Threading: Internal function only called by core thread.
   // update vibration intensities, so if the game does a long effect, it continues
   const u64 current_time = Timer::GetCurrentValue();
   for (PadVibrationBinding& binding : s_state.pad_vibration_array)
@@ -1968,6 +2073,9 @@ void InputManager::UpdateContinuedVibration()
 
 void InputManager::SetPadLEDState(u32 pad_index, float intensity)
 {
+  // Threading: Only called by core thread in virtual machine.
+  DebugAssert(Host::IsOnCoreThread());
+
   for (PadLEDBinding& pad : s_state.pad_led_array)
   {
     if (pad.pad_index != pad_index || pad.last_intensity == intensity)
@@ -1980,6 +2088,7 @@ void InputManager::SetPadLEDState(u32 pad_index, float intensity)
 
 void InputManager::InternalClearEffects()
 {
+  // Threading: Internal function only called by core thread.
   for (PadLEDBinding& pad : s_state.pad_led_array)
   {
     if (pad.last_intensity == 0.0f)
@@ -1997,6 +2106,7 @@ void InputManager::InternalClearEffects()
 void InputManager::LoadMacroButtonConfig(const SettingsInterface& si, const std::string& section, u32 pad,
                                          const Controller::ControllerInfo& cinfo)
 {
+  // Threading: Internal function only called by core thread.
   if (cinfo.bindings.empty())
     return;
 
@@ -2114,6 +2224,7 @@ void InputManager::SetMacroButtonState(u32 pad, u32 index, bool state)
 
 void InputManager::ApplyMacroButton(const MacroButton& mb)
 {
+  // Threading: Internal function only called by UpdateMacroButtons() on core thread.
   Controller* const controller = System::GetController(mb.pad_index);
   if (!controller)
     return;
@@ -2125,6 +2236,7 @@ void InputManager::ApplyMacroButton(const MacroButton& mb)
 
 void InputManager::UpdateMacroButtons()
 {
+  // Threading: Internal function only called by PollSources() on core thread.
   for (MacroButton& mb : s_state.macro_buttons)
   {
     if (!mb.trigger_state || mb.toggle_frequency == 0)
@@ -2146,6 +2258,7 @@ void InputManager::UpdateMacroButtons()
 
 void InputManager::SetHook(InputInterceptHook::Callback callback)
 {
+  // Threading: Only called on core thread.
   DebugAssert(Host::IsOnCoreThread());
   DebugAssert(!s_state.event_intercept_callback);
   s_state.event_intercept_callback = std::move(callback);
@@ -2156,6 +2269,7 @@ void InputManager::SetHook(InputInterceptHook::Callback callback)
 
 void InputManager::RemoveHook()
 {
+  // Threading: Only called on core thread.
   DebugAssert(Host::IsOnCoreThread());
   if (s_state.event_intercept_callback)
     s_state.event_intercept_callback = {};
@@ -2166,12 +2280,14 @@ void InputManager::RemoveHook()
 
 bool InputManager::HasHook()
 {
+  // Threading: Only called on core thread.
   DebugAssert(Host::IsOnCoreThread());
   return static_cast<bool>(s_state.event_intercept_callback);
 }
 
 bool InputManager::DoEventHook(InputBindingKey key, float value)
 {
+  // Threading: Only called on core thread in InvokeEvents().
   if (!s_state.event_intercept_callback)
     return false;
 
@@ -2190,6 +2306,7 @@ bool InputManager::DoEventHook(InputBindingKey key, float value)
 void InputManager::InternalReloadBindings(const SettingsInterface& binding_si,
                                           const SettingsInterface& hotkey_binding_si)
 {
+  // Threading: Only called on core thread in ReloadBindings().
   s_state.binding_map.clear();
   s_state.pad_vibration_array.clear();
   s_state.pad_led_array.clear();
@@ -2230,6 +2347,7 @@ void InputManager::InternalReloadBindings(const SettingsInterface& binding_si,
 
 void InputManager::ReloadBindings(const SettingsInterface& binding_si, const SettingsInterface& hotkey_binding_si)
 {
+  // Threading: Only called on core thread.
   DebugAssert(Host::IsOnCoreThread());
 
   InternalPauseVibration();
@@ -2244,8 +2362,20 @@ void InputManager::ReloadBindings(const SettingsInterface& binding_si, const Set
 // Source Management
 // ------------------------------------------------------------------------
 
+Threading::SharedLockGuard InputManager::GetSourcesReadLock()
+{
+  return Threading::SharedLockGuard(s_state.sources_mutex);
+}
+
+std::lock_guard<Threading::SharedMutex> InputManager::GetSourcesWriteLock()
+{
+  DebugAssert(Host::IsOnCoreThread());
+  return std::lock_guard<Threading::SharedMutex>(s_state.sources_mutex);
+}
+
 void InputManager::ClearEffects()
 {
+  // Threading: Only called on core thread.
   DebugAssert(Host::IsOnCoreThread());
   InternalPauseVibration();
   InternalClearEffects();
@@ -2253,75 +2383,82 @@ void InputManager::ClearEffects()
 
 void InputManager::PauseVibration()
 {
+  // Threading: Only called on core thread.
   DebugAssert(Host::IsOnCoreThread());
   InternalPauseVibration();
 }
 
 void InputManager::ReloadDevices()
 {
+  // Threading: Only called on core thread.
   DebugAssert(Host::IsOnCoreThread());
 
+  // We intentionally don't take the source lock here.
+  // If sources need to add devices they will acquire the write lock themselves.
   bool changed = false;
+  for (u32 i = FIRST_EXTERNAL_INPUT_SOURCE; i < LAST_EXTERNAL_INPUT_SOURCE; i++)
   {
-    const std::unique_lock lock(s_state.sources_mutex);
-    for (u32 i = FIRST_EXTERNAL_INPUT_SOURCE; i < LAST_EXTERNAL_INPUT_SOURCE; i++)
-    {
-      if (s_state.input_sources[i])
-        changed |= s_state.input_sources[i]->ReloadDevices();
-    }
-
-    changed |= UpdatePointerCount();
+    if (s_state.input_sources[i])
+      changed |= s_state.input_sources[i]->ReloadDevices();
   }
+
+  changed |= UpdatePointerCount();
 
   if (!changed)
     return;
 
-  // need to release the lock, since otherwise we would risk a lock ordering issue
+  // need to get the settings lock from the system to actually load
   System::ReloadInputBindings();
 }
 
 void InputManager::CloseSources()
 {
+  // Threading: Only called on core thread.
   DebugAssert(Host::IsOnCoreThread());
-
-  const std::unique_lock lock(s_state.sources_mutex);
 
   for (u32 i = FIRST_EXTERNAL_INPUT_SOURCE; i < LAST_EXTERNAL_INPUT_SOURCE; i++)
   {
-    if (s_state.input_sources[i])
+    // We only hold the lock while we disconnect the source.
+    // This is because the source may call back into InputManager to remove devices,
+    // which would deadlock if we held the lock.
+    std::unique_ptr<InputSource> source;
     {
-      s_state.input_sources[i]->Shutdown();
-      s_state.input_sources[i].reset();
+      std::lock_guard<Threading::SharedMutex> lock(s_state.sources_mutex);
+      source = std::move(s_state.input_sources[i]);
     }
+    if (source)
+      source->Shutdown();
   }
 
 #ifdef _WIN32
+  s_state.raw_input_enabled.store(false, std::memory_order_release);
   UnregisterDeviceNotificationHandle();
 #endif
 }
 
 void InputManager::PollSources()
 {
+  // Threading: Only called on core thread.
   DebugAssert(Host::IsOnCoreThread());
 
   const bool system_running = (System::GetState() == System::State::Running);
   bool topology_changed = false;
 
+  // Deliberately not locked here, because nothing else can modify input sources while we're polling.
+  // The core thread is the only thread which can modify input state in the first place. We just protect
+  // the public methods in InputManager in case those are called by other threads. If we do lock here,
+  // then device connection will deadlock because we'll call public methods from the source.
+  for (u32 i = FIRST_EXTERNAL_INPUT_SOURCE; i < LAST_EXTERNAL_INPUT_SOURCE; i++)
   {
-    const std::unique_lock lock(s_state.sources_mutex);
-
-    for (u32 i = FIRST_EXTERNAL_INPUT_SOURCE; i < LAST_EXTERNAL_INPUT_SOURCE; i++)
-    {
-      if (s_state.input_sources[i])
-        topology_changed |= s_state.input_sources[i]->PollEvents();
-    }
-
-    if (system_running && !s_state.pad_vibration_array.empty())
-      UpdateContinuedVibration();
+    if (s_state.input_sources[i])
+      topology_changed |= s_state.input_sources[i]->PollEvents();
   }
 
   if (topology_changed)
     System::ReloadInputBindings();
+
+  if (system_running && !s_state.pad_vibration_array.empty())
+    UpdateContinuedVibration();
 
   GenerateRelativeMouseEvents();
 
@@ -2331,6 +2468,7 @@ void InputManager::PollSources()
 
 InputManager::DeviceList InputManager::EnumerateDevices()
 {
+  // Threading: Only called on core thread.
   DebugAssert(Host::IsOnCoreThread());
 
   DeviceList ret;
@@ -2363,6 +2501,7 @@ InputManager::DeviceList InputManager::EnumerateDevices()
 InputManager::DeviceEffectList InputManager::EnumerateDeviceEffects(std::optional<InputBindingInfo::Type> type,
                                                                     std::optional<InputBindingKey> for_device)
 {
+  // Threading: Only called on core thread.
   DebugAssert(Host::IsOnCoreThread());
 
   DeviceEffectList ret;
@@ -2385,6 +2524,7 @@ InputManager::DeviceEffectList InputManager::EnumerateDeviceEffects(std::optiona
 
 u32 InputManager::GetPollableDeviceCount()
 {
+  // Threading: Only called on core thread.
   DebugAssert(Host::IsOnCoreThread());
 
   u32 count = 0;
@@ -2401,6 +2541,7 @@ u32 InputManager::GetPollableDeviceCount()
 
 static void GetKeyboardGenericBindingMapping(std::vector<std::pair<GenericInputBinding, std::string>>* mapping)
 {
+  // Threading: No shared state access.
   mapping->emplace_back(GenericInputBinding::DPadUp, "Keyboard/UpArrow");
   mapping->emplace_back(GenericInputBinding::DPadRight, "Keyboard/RightArrow");
   mapping->emplace_back(GenericInputBinding::DPadDown, "Keyboard/DownArrow");
@@ -2429,6 +2570,7 @@ static void GetKeyboardGenericBindingMapping(std::vector<std::pair<GenericInputB
 
 static bool GetInternalGenericBindingMapping(std::string_view device, GenericInputBindingMapping* mapping)
 {
+  // Threading: No shared state access.
   if (device == "Keyboard")
   {
     GetKeyboardGenericBindingMapping(mapping);
@@ -2440,12 +2582,12 @@ static bool GetInternalGenericBindingMapping(std::string_view device, GenericInp
 
 GenericInputBindingMapping InputManager::GetGenericBindingMapping(std::string_view device)
 {
+  // Threading: Either no shared state access if keyboard, otherwise acquires read lock.
   GenericInputBindingMapping mapping;
 
   if (!GetInternalGenericBindingMapping(device, &mapping))
   {
-    // Must lock, this gets called off thread.
-    const std::unique_lock lock(s_state.sources_mutex);
+    const auto lock = GetSourcesReadLock();
 
     for (u32 i = FIRST_EXTERNAL_INPUT_SOURCE; i < LAST_EXTERNAL_INPUT_SOURCE; i++)
     {
@@ -2459,6 +2601,7 @@ GenericInputBindingMapping InputManager::GetGenericBindingMapping(std::string_vi
 
 bool InputManager::IsInputSourceEnabled(const SettingsInterface& si, InputSourceType type)
 {
+  // Threading: No shared state access.
   return si.GetBoolValue("InputSources", InputSourceToString(type), GetInputSourceDefaultEnabled(type));
 }
 
@@ -2466,6 +2609,7 @@ bool InputManager::UpdateInputSourceState(const SettingsInterface& si,
                                           std::unique_lock<Threading::Mutex>& settings_lock, InputSourceType type,
                                           std::unique_ptr<InputSource> (*factory_function)())
 {
+  // Threading: Only called in ReloadSources() on core thread. Writes take write lock.
   const bool enabled = IsInputSourceEnabled(si, type);
   std::unique_ptr<InputSource>& source = s_state.input_sources[static_cast<u32>(type)];
   if (enabled)
@@ -2477,13 +2621,21 @@ bool InputManager::UpdateInputSourceState(const SettingsInterface& si,
     }
     else
     {
-      source = factory_function();
+      {
+        const std::lock_guard lock(s_state.sources_mutex);
+        source = factory_function();
+      }
       if (!source || !source->Initialize(si, settings_lock))
       {
         ERROR_LOG("Source '{}' failed to initialize.", InputSourceToString(type));
-        if (source)
-          source->Shutdown();
-        source.reset();
+
+        std::unique_ptr<InputSource> destroy_source;
+        {
+          const std::lock_guard lock(s_state.sources_mutex);
+          destroy_source = std::move(source);
+        }
+        if (destroy_source)
+          destroy_source->Shutdown();
         return false;
       }
 
@@ -2492,10 +2644,16 @@ bool InputManager::UpdateInputSourceState(const SettingsInterface& si,
   }
   else
   {
-    if (source)
+    // Hold the lock while removing it to prevent anything else reading state.
+    std::unique_ptr<InputSource> destroy_source;
     {
-      source->Shutdown();
-      source.reset();
+      const std::lock_guard lock(s_state.sources_mutex);
+      destroy_source = std::move(source);
+    }
+    if (destroy_source)
+    {
+      destroy_source->Shutdown();
+      destroy_source.reset();
       return true;
     }
 
@@ -2505,8 +2663,7 @@ bool InputManager::UpdateInputSourceState(const SettingsInterface& si,
 
 void InputManager::ReloadSources(const SettingsInterface& sources_si, std::unique_lock<Threading::Mutex>& settings_lock)
 {
-  const std::unique_lock lock(s_state.sources_mutex);
-
+  // Threading: Only called in ReloadSourcesAndBindings() on core thread.
 #ifdef _WIN32
   UpdateInputSourceState(sources_si, settings_lock, InputSourceType::DInput, &InputSource::CreateDInputSource);
   UpdateInputSourceState(sources_si, settings_lock, InputSourceType::XInput, &InputSource::CreateXInputSource);
@@ -2541,6 +2698,7 @@ void InputManager::ReloadSourcesAndBindings(const SettingsInterface& sources_si,
                                             const SettingsInterface& hotkey_binding_si,
                                             std::unique_lock<Threading::Mutex>& settings_lock)
 {
+  // Threading: Public function that is only called on core thread, and takes the settings lock.
   DebugAssert(Host::IsOnCoreThread());
   ReloadSources(sources_si, settings_lock);
   InternalReloadBindings(binding_si, hotkey_binding_si);
@@ -2549,6 +2707,8 @@ void InputManager::ReloadSourcesAndBindings(const SettingsInterface& sources_si,
 
 size_t InputManager::UpdateInputSubclassPolling(InputSubclass subclass, bool enable_all)
 {
+  // Threading: Utility function that is only called on core thread.
+  DebugAssert(Host::IsOnCoreThread());
   if (enable_all)
   {
     // enable all -> null devices
@@ -2593,6 +2753,7 @@ size_t InputManager::UpdateInputSubclassPolling(InputSubclass subclass, bool ena
 DWORD InputManager::DeviceNotificationCallback(HCMNOTIFICATION hNotify, PVOID Context, CM_NOTIFY_ACTION Action,
                                                PCM_NOTIFY_EVENT_DATA EventData, DWORD EventDataSize)
 {
+  // Threading: Can be called from a worker thread.
   if (Action != CM_NOTIFY_ACTION_DEVICEINTERFACEARRIVAL && Action != CM_NOTIFY_ACTION_DEVICEINTERFACEREMOVAL)
     return ERROR_SUCCESS;
 
@@ -2612,6 +2773,7 @@ DWORD InputManager::DeviceNotificationCallback(HCMNOTIFICATION hNotify, PVOID Co
 
 void InputManager::RegisterDeviceNotificationHandle()
 {
+  // Threading: Only called by core thread in ReloadSources().
   DebugAssert(!s_state.device_notification_handle);
   s_state.device_notification_reload_pending.store(false, std::memory_order_release);
 
@@ -2629,6 +2791,7 @@ void InputManager::RegisterDeviceNotificationHandle()
 
 void InputManager::UnregisterDeviceNotificationHandle()
 {
+  // Threading: Only called by core thread in ReloadSources().
   if (!s_state.device_notification_handle)
     return;
 

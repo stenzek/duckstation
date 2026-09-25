@@ -130,8 +130,7 @@ bool DInputSource::ReloadDevices()
   for (DIDEVICEINSTANCEW inst : devices)
   {
     // do we already have this one?
-    if (std::any_of(m_controllers.begin(), m_controllers.end(),
-                    [&inst](const ControllerData& cd) { return inst.guidInstance == cd.guid; }))
+    if (std::ranges::any_of(m_controllers, [&inst](const ControllerData& cd) { return inst.guidInstance == cd.guid; }))
     {
       // yup, so skip it
       continue;
@@ -151,8 +150,12 @@ bool DInputSource::ReloadDevices()
     const std::string name(StringUtil::WideStringToUTF8String(inst.tszProductName));
     if (AddDevice(cd, name))
     {
-      const u32 index = static_cast<u32>(m_controllers.size());
-      m_controllers.push_back(std::move(cd));
+      u32 index;
+      {
+        const auto lock = InputManager::GetSourcesWriteLock();
+        index = static_cast<u32>(m_controllers.size());
+        m_controllers.push_back(std::move(cd));
+      }
       InputManager::OnInputDeviceConnected(MakeGenericControllerDeviceKey(InputSourceType::DInput, index),
                                            GetDeviceIdentifier(index), name, std::nullopt);
       changed = true;
@@ -164,10 +167,14 @@ bool DInputSource::ReloadDevices()
 
 void DInputSource::Shutdown()
 {
+  // disconnect in reverse order
   while (!m_controllers.empty())
   {
     const u32 index = static_cast<u32>(m_controllers.size() - 1);
-    m_controllers.pop_back();
+    {
+      const auto lock = InputManager::GetSourcesWriteLock();
+      m_controllers.pop_back();
+    }
     InputManager::OnInputDeviceDisconnected(MakeGenericControllerDeviceKey(InputSourceType::DInput, index),
                                             GetDeviceIdentifier(index));
   }
@@ -272,7 +279,11 @@ bool DInputSource::PollEvents()
 
       if (hr != DI_OK)
       {
-        m_controllers.erase(m_controllers.begin() + i);
+        {
+          const auto lock = InputManager::GetSourcesWriteLock();
+          m_controllers.erase(m_controllers.begin() + i);
+        }
+
         InputManager::OnInputDeviceDisconnected(
           MakeGenericControllerDeviceKey(InputSourceType::DInput, static_cast<u32>(i)),
           GetDeviceIdentifier(static_cast<u32>(i)));

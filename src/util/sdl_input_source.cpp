@@ -1343,7 +1343,11 @@ bool SDLInputSource::OpenDevice(int index, bool is_gamecontroller)
   if (gamepad)
     gamepad_button_type = GetGamepadButtonType(cd.gamepad_type);
 
-  m_controllers.push_back(std::move(cd));
+  // Hold the write lock for as little time as possible.
+  {
+    const auto lock = InputManager::GetSourcesWriteLock();
+    m_controllers.push_back(std::move(cd));
+  }
 
   InputManager::OnInputDeviceConnected(device_key, fmt::format("SDL-{}", player_id), name, gamepad_button_type);
   return true;
@@ -1355,16 +1359,24 @@ bool SDLInputSource::CloseDevice(SDL_JoystickID joystick_index)
   if (it == m_controllers.end())
     return false;
 
-  if (it->haptic)
-    g_dyn_sdl.SDL_CloseHaptic(it->haptic);
-
-  if (it->gamepad)
-    g_dyn_sdl.SDL_CloseGamepad(it->gamepad);
-  else
-    g_dyn_sdl.SDL_CloseJoystick(it->joystick);
-
   const int player_id = it->player_id;
-  m_controllers.erase(it);
+  SDL_Haptic* const haptic_to_close = it->haptic;
+  SDL_Gamepad* const gamepad_to_close = it->gamepad;
+  SDL_Joystick* const joystick_to_close = it->joystick;
+
+  // Hold the write lock for as little time as possible.
+  {
+    const auto lock = InputManager::GetSourcesWriteLock();
+    m_controllers.erase(it);
+  }
+
+  if (haptic_to_close)
+    g_dyn_sdl.SDL_CloseHaptic(haptic_to_close);
+
+  if (gamepad_to_close)
+    g_dyn_sdl.SDL_CloseGamepad(gamepad_to_close);
+  else
+    g_dyn_sdl.SDL_CloseJoystick(joystick_to_close);
 
   InputManager::OnInputDeviceDisconnected(MakeGenericControllerDeviceKey(InputSourceType::SDL, player_id),
                                           fmt::format("SDL-{}", player_id));

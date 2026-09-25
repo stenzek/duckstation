@@ -77,11 +77,11 @@ private:
     float rgb_led_intensity;
     bool accel_enabled;
     u8 gamepad_type;
+    bool mode_led_state;
     bool use_gamepad_rumble : 1;
     bool has_led : 1;
     bool has_rgb_led : 1;
     bool has_mode_led : 1;
-    bool mode_led_state : 1;
     bool has_accel : 1;
 
     // Used to disable Joystick controls that are used in GameController inputs so we don't get double events

@@ -557,11 +557,14 @@ void XInputSource::HandleControllerConnection(u32 index, const ControllerState& 
   if (m_xinput_get_capabilities(index, 0, &caps) != ERROR_SUCCESS)
     WARNING_LOG("Failed to get XInput capabilities for controller {}", index);
 
-  ControllerData& cd = m_controllers[index];
-  cd.connected = true;
-  cd.has_large_motor = caps.Vibration.wLeftMotorSpeed != 0;
-  cd.has_small_motor = caps.Vibration.wRightMotorSpeed != 0;
-  cd.last_state = state;
+  {
+    const auto lock = InputManager::GetSourcesWriteLock();
+    ControllerData& cd = m_controllers[index];
+    cd.connected = true;
+    cd.has_large_motor = caps.Vibration.wLeftMotorSpeed != 0;
+    cd.has_small_motor = caps.Vibration.wRightMotorSpeed != 0;
+    cd.last_state = state;
+  }
 
   // try to detect xbox-like pads...
   std::optional<InputManager::GamepadButtonType> gamepad_button_type;
@@ -579,7 +582,10 @@ void XInputSource::HandleControllerDisconnection(u32 index)
 {
   INFO_LOG("XInput controller {} disconnected.", index);
 
-  m_controllers[index] = {};
+  {
+    const auto lock = InputManager::GetSourcesWriteLock();
+    m_controllers[index] = {};
+  }
 
   InputManager::OnInputDeviceDisconnected(MakeGenericControllerDeviceKey(InputSourceType::XInput, index),
                                           GetDeviceIdentifier(index));
