@@ -296,10 +296,6 @@ bool HasAnyBindingsForKey(InputBindingKey key);
 /// Must be called on the core thread.
 bool HasAnyBindingsForSource(InputBindingKey key);
 
-/// Returns true if any bindings exist for the specified subclass.
-/// Must be called on the core thread.
-bool HasAnyBindingsForSubclass(InputBindingKey key);
-
 /// Clears internal state for any binds with a matching source/index.
 void ClearBindStateFromSource(InputBindingKey key);
 

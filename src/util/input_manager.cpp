@@ -1093,23 +1093,6 @@ bool InputManager::HasAnyBindingsForSource(InputBindingKey key)
   return false;
 }
 
-bool InputManager::HasAnyBindingsForSubclass(InputBindingKey key)
-{
-  // Threading: Only called on the core thread.
-  DebugAssert(Host::IsOnCoreThread());
-
-  for (const auto& it : s_state.binding_map)
-  {
-    const InputBindingKey& okey = it.first;
-    if (okey.source_type == key.source_type && okey.source_index == key.source_index &&
-        okey.source_subtype == key.source_subtype)
-    {
-      return true;
-    }
-  }
-  return false;
-}
-
 bool InputManager::IsAxisHandler(const InputEventHandler& handler)
 {
   // Threading: No shared state access.

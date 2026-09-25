@@ -1286,28 +1286,11 @@ bool SDLInputSource::OpenDevice(int index, bool is_gamecontroller)
   // Create device key
   const InputBindingKey device_key = MakeGenericControllerDeviceKey(InputSourceType::SDL, player_id);
 
-  // Check for accelerometer support and enable it
+  // Check for accelerometer support. Binding reload will enable it if required.
   cd.has_accel = (gamepad && g_dyn_sdl.SDL_GamepadHasSensor(gamepad, SDL_SENSOR_ACCEL));
   cd.accel_enabled = false;
   if (cd.has_accel)
-  {
     VERBOSE_LOG("Accelerometer is supported on '{}'", name);
-
-    InputBindingKey subclass_key = device_key;
-    subclass_key.source_subtype = InputSubclass::ControllerSensor;
-    if (InputManager::HasAnyBindingsForSubclass(subclass_key))
-    {
-      if (!g_dyn_sdl.SDL_SetGamepadSensorEnabled(gamepad, SDL_SENSOR_ACCEL, true))
-      {
-        WARNING_LOG("Failed to enable accelerometer on '{}': {}", name, g_dyn_sdl.SDL_GetError());
-        cd.has_accel = false;
-      }
-      else
-      {
-        VERBOSE_LOG("Accelerometer is supported and enabled on '{}'", name);
-      }
-    }
-  }
 
   std::optional<InputManager::GamepadButtonType> gamepad_button_type;
   if (gamepad)
