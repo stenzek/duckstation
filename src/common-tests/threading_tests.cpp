@@ -16,8 +16,10 @@ static_assert(!std::is_copy_constructible_v<Threading::Mutex>);
 static_assert(!std::is_copy_assignable_v<Threading::Mutex>);
 static_assert(!std::is_copy_constructible_v<Threading::SharedMutex>);
 static_assert(!std::is_copy_assignable_v<Threading::SharedMutex>);
-static_assert(!std::is_copy_constructible_v<Threading::UpgradeLock>);
-static_assert(!std::is_copy_assignable_v<Threading::UpgradeLock>);
+static_assert(!std::is_copy_constructible_v<Threading::SharedLockGuard>);
+static_assert(!std::is_copy_assignable_v<Threading::SharedLockGuard>);
+static_assert(!std::is_move_constructible_v<Threading::SharedLockGuard>);
+static_assert(!std::is_move_assignable_v<Threading::SharedLockGuard>);
 static_assert(!std::is_copy_constructible_v<Threading::ConditionVariable>);
 static_assert(!std::is_copy_assignable_v<Threading::ConditionVariable>);
 
@@ -130,6 +132,34 @@ TEST(ThreadingSharedMutex, StandardLockWrappers)
   }
 }
 
+TEST(ThreadingSharedLockGuard, LocksSharedAndUnlocksOnDestruction)
+{
+  Threading::SharedMutex mutex;
+
+  {
+    const Threading::SharedLockGuard guard(mutex);
+
+    bool shared_locked = false;
+    bool exclusive_locked = false;
+    std::thread thread([&]() {
+      shared_locked = mutex.try_lock_shared();
+      if (shared_locked)
+        mutex.unlock_shared();
+
+      exclusive_locked = mutex.try_lock();
+      if (exclusive_locked)
+        mutex.unlock();
+    });
+    thread.join();
+
+    EXPECT_TRUE(shared_locked);
+    EXPECT_FALSE(exclusive_locked);
+  }
+
+  ASSERT_TRUE(mutex.try_lock());
+  mutex.unlock();
+}
+
 TEST(ThreadingSharedMutex, MutualExclusion)
 {
   static constexpr u32 NUM_THREADS = 4;
@@ -154,79 +184,6 @@ TEST(ThreadingSharedMutex, MutualExclusion)
     thread.join();
 
   EXPECT_EQ(value, NUM_THREADS * NUM_INCREMENTS);
-}
-
-TEST(ThreadingUpgradeLock, SharedThenExclusive)
-{
-  Threading::SharedMutex mutex;
-
-  {
-    Threading::UpgradeLock lock(mutex);
-    EXPECT_EQ(lock.mutex(), &mutex);
-    EXPECT_TRUE(lock.owns_lock());
-    EXPECT_FALSE(lock.is_exclusive());
-    bool shared_locked = false;
-    bool exclusive_locked = true;
-    std::thread shared_test_thread([&]() {
-      shared_locked = mutex.try_lock_shared();
-      if (shared_locked)
-        mutex.unlock_shared();
-      exclusive_locked = mutex.try_lock();
-      if (exclusive_locked)
-        mutex.unlock();
-    });
-    shared_test_thread.join();
-    EXPECT_TRUE(shared_locked);
-    EXPECT_FALSE(exclusive_locked);
-
-    lock.upgrade();
-    lock.ensure_upgraded();
-    EXPECT_TRUE(lock.owns_lock());
-    EXPECT_TRUE(lock.is_exclusive());
-    std::thread exclusive_test_thread([&]() {
-      shared_locked = mutex.try_lock_shared();
-      if (shared_locked)
-        mutex.unlock_shared();
-      exclusive_locked = mutex.try_lock();
-      if (exclusive_locked)
-        mutex.unlock();
-    });
-    exclusive_test_thread.join();
-    EXPECT_FALSE(shared_locked);
-    EXPECT_FALSE(exclusive_locked);
-
-    lock.unlock();
-    lock.ensure_upgraded();
-    EXPECT_FALSE(lock.owns_lock());
-    lock.lock();
-    EXPECT_TRUE(lock.owns_lock());
-    EXPECT_FALSE(lock.is_exclusive());
-    lock.ensure_upgraded();
-    EXPECT_TRUE(lock.is_exclusive());
-  }
-
-  EXPECT_TRUE(mutex.try_lock());
-  mutex.unlock();
-}
-
-TEST(ThreadingUpgradeLock, DeferredAndMove)
-{
-  Threading::SharedMutex mutex;
-  Threading::UpgradeLock deferred(mutex, std::defer_lock);
-  EXPECT_EQ(deferred.mutex(), &mutex);
-  EXPECT_FALSE(deferred.owns_lock());
-
-  EXPECT_TRUE(deferred.try_lock());
-  Threading::UpgradeLock moved(std::move(deferred));
-  EXPECT_EQ(deferred.mutex(), nullptr);
-  EXPECT_FALSE(deferred.owns_lock());
-  EXPECT_TRUE(moved.owns_lock());
-
-  Threading::SharedMutex* released = moved.release();
-  EXPECT_EQ(released, &mutex);
-  EXPECT_EQ(moved.mutex(), nullptr);
-  EXPECT_FALSE(moved.owns_lock());
-  released->unlock_shared();
 }
 
 TEST(ThreadingConditionVariable, NotifyOneAndPredicateWait)

@@ -212,51 +212,25 @@ private:
 };
 
 // --------------------------------------------------------------------------------------
-//  UpgradeLock
+// SharedLockGuard
 // --------------------------------------------------------------------------------------
-// Owns a SharedMutex in shared mode, with the option to switch to exclusive mode.
-// upgrade() is not atomic: another thread may acquire the mutex between the two modes.
+// Replacement for std::lock_guard which uses the shared part of a mutex
 //
-class UpgradeLock
+class SharedLockGuard
 {
 public:
   using mutex_type = SharedMutex;
 
-  UpgradeLock() = default;
-  explicit UpgradeLock(mutex_type& mutex);
-  UpgradeLock(mutex_type& mutex, std::defer_lock_t) noexcept;
-  UpgradeLock(mutex_type& mutex, std::try_to_lock_t);
-  UpgradeLock(mutex_type& mutex, std::adopt_lock_t) noexcept;
-  UpgradeLock(const UpgradeLock&) = delete;
-  UpgradeLock& operator=(const UpgradeLock&) = delete;
-  UpgradeLock(UpgradeLock&& other) noexcept;
-  UpgradeLock& operator=(UpgradeLock&& other) noexcept;
-  ~UpgradeLock();
+  ALWAYS_INLINE SharedLockGuard(mutex_type& mutex) : m_mutex(mutex) { mutex.lock_shared(); }
+  ALWAYS_INLINE ~SharedLockGuard() { m_mutex.unlock_shared(); }
 
-  void lock();
-  bool try_lock();
-  void unlock();
-  void upgrade();
-  void ensure_upgraded();
-
-  void swap(UpgradeLock& other) noexcept;
-  mutex_type* release() noexcept;
-
-  mutex_type* mutex() const noexcept { return m_mutex; }
-  bool owns_lock() const noexcept { return m_mode != Mode::Unlocked; }
-  bool is_exclusive() const noexcept { return m_mode == Mode::Exclusive; }
-  explicit operator bool() const noexcept { return owns_lock(); }
+  SharedLockGuard(const SharedLockGuard&) = delete;
+  SharedLockGuard(SharedLockGuard&&) = delete;
+  SharedLockGuard& operator=(const SharedLockGuard&) = delete;
+  SharedLockGuard& operator=(SharedLockGuard&&) = delete;
 
 private:
-  enum class Mode : u8
-  {
-    Unlocked,
-    Shared,
-    Exclusive,
-  };
-
-  mutex_type* m_mutex = nullptr;
-  Mode m_mode = Mode::Unlocked;
+  mutex_type& m_mutex;
 };
 
 // --------------------------------------------------------------------------------------
