@@ -60,6 +60,8 @@ ControllerGlobalSettingsWidget::ControllerGlobalSettingsWidget(QWidget* parent, 
   if (!remove_sources)
   {
     ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.enableSDLSource, "InputSources", "SDL", true);
+    ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(
+      sif, m_ui.useSDLPersistentDeviceIdentifiers, "InputSources", "SDLUsePersistentDeviceIdentifiers", true);
     ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.enableSDLEnhancedMode, "InputSources",
                                                                 "SDLControllerEnhancedMode", false);
     ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.enableTouchPadAsPointer, "InputSources",
@@ -114,6 +116,7 @@ ControllerGlobalSettingsWidget::ControllerGlobalSettingsWidget(QWidget* parent, 
     m_ui.sdlGridLayout = nullptr;
     m_ui.ledSettings = nullptr;
     m_ui.enableSDLSource = nullptr;
+    m_ui.useSDLPersistentDeviceIdentifiers = nullptr;
     m_ui.enableSDLEnhancedMode = nullptr;
     m_ui.sdlHelpText = nullptr;
     m_ui.enableTouchPadAsPointer = nullptr;
@@ -190,6 +193,8 @@ void ControllerGlobalSettingsWidget::updateSDLOptionsEnabled()
   const bool enabled = m_ui.enableSDLSource->isChecked();
   if (m_ui.enableSDLEnhancedMode)
     m_ui.enableSDLEnhancedMode->setEnabled(enabled);
+  if (m_ui.useSDLPersistentDeviceIdentifiers)
+    m_ui.useSDLPersistentDeviceIdentifiers->setEnabled(enabled);
   if (m_ui.enableTouchPadAsPointer)
     m_ui.enableTouchPadAsPointer->setEnabled(enabled);
   if (m_ui.ledSettings)

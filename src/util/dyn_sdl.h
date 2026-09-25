@@ -48,6 +48,8 @@ class Error;
   X(SDL_GetJoystickName)                                                                                               \
   X(SDL_GetJoystickPlayerIndex)                                                                                        \
   X(SDL_GetJoystickGUID)                                                                                               \
+  X(SDL_GetJoystickSerial)                                                                                             \
+  X(SDL_GetJoystickPath)                                                                                               \
   X(SDL_GetJoystickProperties)                                                                                         \
   X(SDL_GetJoystickID)                                                                                                 \
   X(SDL_GetJoystickAxis)                                                                                               \

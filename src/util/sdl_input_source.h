@@ -78,6 +78,8 @@ private:
     bool has_mode_led : 1;
     bool has_accel : 1;
 
+    std::string persistent_identifier;
+
     // Used to disable Joystick controls that are used in GameController inputs so we don't get double events
     std::vector<bool> joy_button_used_in_gc;
     std::vector<bool> joy_axis_used_in_gc;
@@ -94,9 +96,9 @@ private:
   void LoadSettings(const SettingsInterface& si);
   void SetHints();
 
-  SDL_Joystick* GetJoystickForDevice(std::string_view device);
   ControllerDataVector::iterator GetControllerDataForJoystickId(SDL_JoystickID id);
   ControllerDataVector::iterator GetControllerDataForPlayerId(int id);
+  ControllerDataVector::iterator ResolveDevice(std::string_view device);
   int GetFreePlayerId() const;
 
   bool OpenDevice(int index, bool is_gamecontroller);
@@ -119,6 +121,7 @@ private:
   std::array<std::array<u32, 2>, MAX_LED_COLORS> m_led_colors{};
   std::vector<std::pair<std::string, std::string>> m_sdl_hints;
 
+  bool m_use_persistent_device_identifiers = false;
   bool m_controller_touchpad_as_pointer = false;
 
   union

@@ -3988,12 +3988,18 @@ void FullscreenUI::DrawControllerSettingsPage()
       DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_GEAR, "Enable SDL Input Source"),
                         FSUI_VSTR("The SDL input source supports most controllers."), "InputSources", "SDL", true, true,
                         false);
+
+      const bool sdl_enabled = bsi->GetBoolValue("InputSources", "SDL", true);
       DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_WIFI, "SDL DualShock 4 / DualSense Enhanced Mode"),
                         FSUI_VSTR("Provides vibration and LED control support over Bluetooth."), "InputSources",
-                        "SDLControllerEnhancedMode", false, bsi->GetBoolValue("InputSources", "SDL", true), false);
+                        "SDLControllerEnhancedMode", false, sdl_enabled, false);
       DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_LIGHTBULB, "SDL DualSense Player LED"),
                         FSUI_VSTR("Enable/Disable the Player LED on DualSense controllers."), "InputSources",
-                        "SDLPS5PlayerLED", false, bsi->GetBoolValue("InputSources", "SDL", true), false);
+                        "SDLPS5PlayerLED", false, sdl_enabled, false);
+      DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_PLUG, "SDL Persistent Device Identifiers"),
+                        FSUI_VSTR("Saves supported controllers by serial or device identity so bindings survive port "
+                                  "and connection-order changes when possible."),
+                        "InputSources", "SDLUsePersistentDeviceIdentifiers", true, sdl_enabled, false);
 #ifdef _WIN32
       DrawToggleSetting(
         bsi, FSUI_ICONVSTR(ICON_FA_GEAR, "Enable XInput Input Source"),
