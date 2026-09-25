@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "win32_raw_input_source.h"
-#include "input_manager.h"
+#include "input_manager_private.h"
 
 #include "core/video_thread.h"
 

@@ -27,6 +27,7 @@
 #include "util/imgui_manager.h"
 #include "util/ini_settings_interface.h"
 #include "util/input_manager.h"
+#include "util/input_manager_private.h"
 #include "util/object_archive.h"
 #include "util/postprocessing.h"
 

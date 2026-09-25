@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "xinput_source.h"
-#include "input_manager.h"
+#include "input_manager_private.h"
 #include "translation.h"
 
 #include "common/assert.h"

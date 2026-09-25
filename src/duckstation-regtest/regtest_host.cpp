@@ -28,6 +28,7 @@
 #include "util/http_downloader.h"
 #include "util/imgui_manager.h"
 #include "util/input_manager.h"
+#include "util/input_manager_private.h"
 #include "util/translation.h"
 
 #include "common/assert.h"

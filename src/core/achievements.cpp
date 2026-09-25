@@ -44,6 +44,7 @@
 #include "util/http_downloader.h"
 #include "util/imgui_manager.h"
 #include "util/ini_settings_interface.h"
+#include "util/input_manager_private.h"
 #include "util/sqlite_helpers.h"
 #include "util/state_wrapper.h"
 

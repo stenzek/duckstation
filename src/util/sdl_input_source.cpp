@@ -3,7 +3,7 @@
 
 #include "sdl_input_source.h"
 #include "dyn_sdl.h"
-#include "input_manager.h"
+#include "input_manager_private.h"
 
 #include "core/settings.h"
 #include "core/video_thread.h"

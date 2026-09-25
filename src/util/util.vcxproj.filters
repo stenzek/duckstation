@@ -89,6 +89,7 @@
     <ClInclude Include="dyn_libjpeg.h" />
     <ClInclude Include="dyn_libwebp.h" />
     <ClInclude Include="dyn_libzip.h" />
+    <ClInclude Include="input_manager_private.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="state_wrapper.cpp" />

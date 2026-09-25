@@ -59,6 +59,7 @@ add_library(util
   ini_settings_interface.h
   input_manager.cpp
   input_manager.h
+  input_manager_private.h
   input_source.cpp
   input_source.h
   iso_reader.cpp

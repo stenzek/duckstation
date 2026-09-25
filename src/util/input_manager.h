@@ -300,10 +300,6 @@ bool HasAnyBindingsForSource(InputBindingKey key);
 /// Must be called on the core thread.
 bool HasAnyBindingsForSubclass(InputBindingKey key);
 
-/// Updates internal state for any binds for this key, and fires callbacks as needed.
-/// Returns true if anything was bound to this key, otherwise false.
-void InvokeEvents(InputBindingKey key, float value, GenericInputBinding generic_key = GenericInputBinding::Unknown);
-
 /// Clears internal state for any binds with a matching source/index.
 void ClearBindStateFromSource(InputBindingKey key);
 
@@ -387,13 +383,6 @@ std::string GetPhysicalDeviceForController(SettingsInterface& si, u32 controller
 /// Returns a list of input profiles available.
 std::vector<std::string> GetInputProfileNames();
 
-/// Called when a new input device is connected.
-void OnInputDeviceConnected(InputBindingKey key, std::string_view identifier, std::string_view device_name,
-                            std::optional<GamepadButtonType> gamepad_button_type);
-
-/// Called when an input device is disconnected.
-void OnInputDeviceDisconnected(InputBindingKey key, std::string_view identifier);
-
 /// Creates a force feedback device interface for the specified source and device.
 std::unique_ptr<ForceFeedbackDevice> CreateForceFeedbackDevice(const std::string_view device, Error* error = nullptr);
 
@@ -405,19 +394,3 @@ namespace Core {
 std::span<const HotkeyInfo> GetHotkeyList();
 
 } // namespace Core
-
-namespace Host {
-
-/// Called when a new input device is connected.
-void OnInputDeviceConnected(InputBindingKey key, std::string_view identifier, std::string_view device_name);
-
-/// Called when an input device is disconnected.
-void OnInputDeviceDisconnected(InputBindingKey key, std::string_view identifier);
-
-/// Enables "relative" mouse mode, locking the cursor position and returning relative coordinates.
-void SetMouseMode(bool relative, bool hide_cursor);
-
-/// Return the current window handle. Needed for DInput.
-std::optional<WindowInfo> GetTopLevelWindowInfo();
-
-} // namespace Host

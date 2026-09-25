@@ -4,7 +4,7 @@
 #define INITGUID
 
 #include "dinput_source.h"
-#include "input_manager.h"
+#include "input_manager_private.h"
 
 #include "common/assert.h"
 #include "common/bitutils.h"

@@ -9,6 +9,7 @@
     <ClInclude Include="dyn_sdl.h" />
     <ClInclude Include="dyn_sqlite.h" />
     <ClInclude Include="http_cache.h" />
+    <ClInclude Include="input_manager_private.h" />
     <ClInclude Include="object_archive.h" />
     <ClInclude Include="compress_helpers.h" />
     <ClInclude Include="core_audio_stream.h" />
