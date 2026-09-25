@@ -1530,9 +1530,6 @@ void InputManager::UpdatePointerAbsolutePosition(u32 index, float x, float y, bo
 
   s_state.pointer_state[index][static_cast<u8>(InputPointerAxis::X)].delta += dx;
   s_state.pointer_state[index][static_cast<u8>(InputPointerAxis::Y)].delta += dy;
-
-  if (index == 0)
-    ImGuiManager::UpdateMousePosition(x, y);
 }
 
 void InputManager::ResetPointerRelativeDelta(u32 index)
@@ -1562,13 +1559,6 @@ void InputManager::UpdatePointerPositionRelativeDelta(u32 index, InputPointerAxi
     std::clamp(s_state.host_pointer_positions[index][static_cast<u8>(axis)].load(std::memory_order_relaxed) + d, 0.0f,
                max_dim),
     std::memory_order_release);
-
-  // Imgui also needs to be updated, since the absolute position won't be set above.
-  if (index == 0)
-  {
-    ImGuiManager::UpdateMousePosition(s_state.host_pointer_positions[0][0].load(std::memory_order_relaxed),
-                                      s_state.host_pointer_positions[0][1].load(std::memory_order_relaxed));
-  }
 }
 
 void InputManager::UpdatePointerWheelRelativeDelta(u32 index, InputPointerAxis axis, float d)

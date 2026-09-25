@@ -551,6 +551,8 @@ void ImGuiManager::NewFrame(u64 current_time)
 {
   ImGuiIO& io = ImGui::GetIO();
   io.DeltaTime = static_cast<float>(Timer::ConvertValueToSeconds(current_time - s_state.last_render_time));
+  std::tie(s_state.imgui_context->IO.MousePos.x, s_state.imgui_context->IO.MousePos.y) =
+    InputManager::GetPointerAbsolutePosition(0);
   s_state.last_render_time = current_time;
 
   if (s_state.scale_changed)
@@ -1586,20 +1588,6 @@ void ImGuiManager::AddTextInput(std::string str)
       return;
 
     s_state.imgui_context->IO.AddInputCharactersUTF8(str.c_str());
-  });
-}
-
-void ImGuiManager::UpdateMousePosition(float x, float y)
-{
-  if (!s_state.imgui_context)
-    return;
-
-  VideoThread::RunOnThread([x, y]() {
-    if (!s_state.imgui_context) [[unlikely]]
-      return;
-
-    s_state.imgui_context->IO.MousePos.x = x;
-    s_state.imgui_context->IO.MousePos.y = y;
   });
 }
 
