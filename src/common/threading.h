@@ -7,7 +7,6 @@
 
 #include <atomic>
 #include <functional>
-#include <mutex>
 
 #if defined(_DEBUG) || defined(_DEVEL)
 #define THREADING_DEBUG_CHECKS
