@@ -888,6 +888,14 @@ QLabel:disabled {
   color: #787878;
 }
 
+.pill-label {
+  background-color: #505F69;
+  border: 1px solid #32414B;
+  border-radius: 4px;
+  padding: 3px 10px;
+  color: #F0F0F0;
+}
+
 /* QTextBrowser -----------------------------------------------------------
 
 https://doc.qt.io/qt-5/stylesheet-examples.html#customizing-qabstractscrollarea

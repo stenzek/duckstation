@@ -205,6 +205,13 @@ QDialog QPushButton {
   padding: 6px 12px;
 }
 
+.pill-label {
+  background-color: $bg-surface;
+  border-radius: 8px;
+  padding: 5px 10px;
+  color: $text-color;
+}
+
 QLineEdit {
   border: none;
   border-radius: 8px;
