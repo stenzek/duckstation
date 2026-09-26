@@ -24,116 +24,121 @@
     <number>0</number>
    </property>
    <item>
-    <widget class="QGroupBox" name="groupBox">
+    <widget class="QGroupBox" name="typeGroup">
      <property name="title">
       <string>Controller Type</string>
      </property>
-     <layout class="QHBoxLayout" name="horizontalLayout_3">
+     <layout class="QHBoxLayout" name="typeLayout">
       <item>
-       <layout class="QHBoxLayout" name="horizontalLayout">
-        <item>
-         <widget class="QComboBox" name="controllerType"/>
-        </item>
-        <item>
-         <widget class="QToolButton" name="bindings">
-          <property name="text">
-           <string>Bindings</string>
-          </property>
-          <property name="icon">
-           <iconset resource="resources/duckstation-qt.qrc">
-            <normaloff>:/icons/monochrome/svg/controller-digital-line.svg</normaloff>:/icons/monochrome/svg/controller-digital-line.svg</iconset>
-          </property>
-          <property name="checkable">
-           <bool>true</bool>
-          </property>
-          <property name="toolButtonStyle">
-           <enum>Qt::ToolButtonStyle::ToolButtonTextBesideIcon</enum>
-          </property>
-          <property name="autoRaise">
-           <bool>true</bool>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QToolButton" name="settings">
-          <property name="text">
-           <string>Settings</string>
-          </property>
-          <property name="icon">
-           <iconset resource="resources/duckstation-qt.qrc">
-            <normaloff>:/icons/monochrome/svg/checkbox-multiple-blank-line.svg</normaloff>:/icons/monochrome/svg/checkbox-multiple-blank-line.svg</iconset>
-          </property>
-          <property name="checkable">
-           <bool>true</bool>
-          </property>
-          <property name="toolButtonStyle">
-           <enum>Qt::ToolButtonStyle::ToolButtonTextBesideIcon</enum>
-          </property>
-          <property name="autoRaise">
-           <bool>true</bool>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QToolButton" name="macros">
-          <property name="text">
-           <string>Macros</string>
-          </property>
-          <property name="icon">
-           <iconset resource="resources/duckstation-qt.qrc">
-            <normaloff>:/icons/monochrome/svg/flashlight-line.svg</normaloff>:/icons/monochrome/svg/flashlight-line.svg</iconset>
-          </property>
-          <property name="checkable">
-           <bool>true</bool>
-          </property>
-          <property name="toolButtonStyle">
-           <enum>Qt::ToolButtonStyle::ToolButtonTextBesideIcon</enum>
-          </property>
-          <property name="autoRaise">
-           <bool>true</bool>
-          </property>
-         </widget>
-        </item>
-       </layout>
+       <widget class="QComboBox" name="controllerType"/>
       </item>
       <item>
-       <spacer name="horizontalSpacer">
+       <widget class="QToolButton" name="bindings">
+        <property name="text">
+         <string>Bindings</string>
+        </property>
+        <property name="icon">
+         <iconset resource="resources/duckstation-qt.qrc">
+          <normaloff>:/icons/monochrome/svg/controller-digital-line.svg</normaloff>:/icons/monochrome/svg/controller-digital-line.svg</iconset>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
+        </property>
+        <property name="toolButtonStyle">
+         <enum>Qt::ToolButtonStyle::ToolButtonTextBesideIcon</enum>
+        </property>
+        <property name="autoRaise">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QToolButton" name="settings">
+        <property name="text">
+         <string>Settings</string>
+        </property>
+        <property name="icon">
+         <iconset resource="resources/duckstation-qt.qrc">
+          <normaloff>:/icons/monochrome/svg/checkbox-multiple-blank-line.svg</normaloff>:/icons/monochrome/svg/checkbox-multiple-blank-line.svg</iconset>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
+        </property>
+        <property name="toolButtonStyle">
+         <enum>Qt::ToolButtonStyle::ToolButtonTextBesideIcon</enum>
+        </property>
+        <property name="autoRaise">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QToolButton" name="macros">
+        <property name="text">
+         <string>Macros</string>
+        </property>
+        <property name="icon">
+         <iconset resource="resources/duckstation-qt.qrc">
+          <normaloff>:/icons/monochrome/svg/flashlight-line.svg</normaloff>:/icons/monochrome/svg/flashlight-line.svg</iconset>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
+        </property>
+        <property name="toolButtonStyle">
+         <enum>Qt::ToolButtonStyle::ToolButtonTextBesideIcon</enum>
+        </property>
+        <property name="autoRaise">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <spacer name="boundDeviceSpacer">
         <property name="orientation">
          <enum>Qt::Orientation::Horizontal</enum>
         </property>
         <property name="sizeHint" stdset="0">
          <size>
-          <width>460</width>
-          <height>20</height>
+          <width>0</width>
+          <height>0</height>
          </size>
         </property>
        </spacer>
       </item>
       <item>
-       <layout class="QHBoxLayout" name="horizontalLayout_2">
-        <item>
-         <widget class="QPushButton" name="automaticBinding">
-          <property name="text">
-           <string>Automatic Mapping</string>
-          </property>
-          <property name="icon">
-           <iconset resource="resources/duckstation-qt.qrc">
-            <normaloff>:/icons/monochrome/svg/controller-digital-line.svg</normaloff>:/icons/monochrome/svg/controller-digital-line.svg</iconset>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="clearBindings">
-          <property name="text">
-           <string>Clear Mapping</string>
-          </property>
-          <property name="icon">
-           <iconset resource="resources/duckstation-qt.qrc">
-            <normaloff>:/icons/monochrome/svg/trash-fill.svg</normaloff>:/icons/monochrome/svg/trash-fill.svg</iconset>
-          </property>
-         </widget>
-        </item>
-       </layout>
+       <widget class="QLabel" name="boundDevice">
+        <property name="alignment">
+         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+        </property>
+        <property name="textFormat">
+         <enum>Qt::PlainText</enum>
+        </property>
+        <property name="class" stdset="0">
+         <string notr="true">pill-label</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="automaticBinding">
+        <property name="text">
+         <string>Automatic Mapping</string>
+        </property>
+        <property name="icon">
+         <iconset resource="resources/duckstation-qt.qrc">
+          <normaloff>:/icons/monochrome/svg/controller-digital-line.svg</normaloff>:/icons/monochrome/svg/controller-digital-line.svg</iconset>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="clearBindings">
+        <property name="text">
+         <string>Clear Mapping</string>
+        </property>
+        <property name="icon">
+         <iconset resource="resources/duckstation-qt.qrc">
+          <normaloff>:/icons/monochrome/svg/trash-fill.svg</normaloff>:/icons/monochrome/svg/trash-fill.svg</iconset>
+        </property>
+       </widget>
       </item>
      </layout>
     </widget>

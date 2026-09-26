@@ -87,6 +87,15 @@ void InputBindingWidget::initialize(SettingsInterface* sif, InputBindingInfo::Ty
   reloadBinding();
 }
 
+void InputBindingWidget::setHideDeviceName(bool hide)
+{
+  if (m_hide_device_name == hide)
+    return;
+
+  m_hide_device_name = hide;
+  updateTextAndToolTip();
+}
+
 void InputBindingWidget::updateElidedText()
 {
   // https://github.com/qt/qtbase/blob/5dbb3b358950726447765e4fea7feb040a303860/src/widgets/styles/qcommonstyle.cpp#L4867
@@ -96,8 +105,8 @@ void InputBindingWidget::updateElidedText()
   const QFontMetrics fm = fontMetrics();
   QString elided = fm.elidedText(m_full_text, Qt::ElideMiddle, text_width);
 
-  // prefer removing the source part first
-  if (elided != m_full_text)
+  // Prefer the binding part if the full device name does not fit.
+  if (!m_hide_device_name && elided != m_full_text)
   {
     if (const qsizetype pos = m_full_text.indexOf('/'); pos >= 0)
       elided = fm.elidedText(m_full_text.mid(pos + 1), Qt::ElideMiddle, text_width);
@@ -136,7 +145,30 @@ void InputBindingWidget::updateTextAndToolTip()
 
     if (m_bindings.size() == 1)
     {
-      m_full_text = bindings_qstr.trimmed();
+      if (m_hide_device_name)
+      {
+        m_full_text.clear();
+        for (const std::string_view part : StringUtil::SplitString(m_bindings.front(), '&', true))
+        {
+          const std::string_view trimmed = StringUtil::StripWhitespace(part);
+          if (trimmed.empty())
+            continue;
+
+          SmallString pretty_part(trimmed);
+          InputManager::PrettifyInputBinding(pretty_part, false);
+          QString part_text = QtUtils::StringViewToQString(pretty_part);
+          if (const qsizetype slash = part_text.indexOf('/'); slash >= 0)
+            part_text = part_text.mid(slash + 1);
+
+          if (!m_full_text.isEmpty())
+            m_full_text += " + "_L1;
+          m_full_text += part_text;
+        }
+      }
+      else
+      {
+        m_full_text = bindings_qstr.trimmed();
+      }
       updateElidedText();
     }
     else
@@ -325,6 +357,7 @@ void InputBindingWidget::reloadBinding()
   m_bindings = m_sif ? m_sif->GetStringList(m_section_name.c_str(), m_key_name.c_str()) :
                        Core::GetBaseStringListSetting(m_section_name.c_str(), m_key_name.c_str());
   updateTextAndToolTip();
+  Q_EMIT bindingsChanged();
 }
 
 void InputBindingWidget::onClicked()

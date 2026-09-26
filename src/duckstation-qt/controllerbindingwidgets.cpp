@@ -4,6 +4,7 @@
 #include "controllerbindingwidgets.h"
 #include "controllersettingswindow.h"
 #include "controllersettingwidgetbinder.h"
+#include "inputbindingwidgets.h"
 #include "mainwindow.h"
 #include "qthost.h"
 #include "qtutils.h"
@@ -52,6 +53,11 @@ ControllerBindingWidget::ControllerBindingWidget(QWidget* parent, ControllerSett
   m_ui.setupUi(this);
   populateControllerTypes();
   populateWidgets();
+
+  InputDeviceListModel* const devices = g_core_thread->getInputDeviceListModel();
+  connect(devices, &QAbstractItemModel::rowsInserted, this, &ControllerBindingWidget::updateBindingDeviceStatus);
+  connect(devices, &QAbstractItemModel::rowsRemoved, this, &ControllerBindingWidget::updateBindingDeviceStatus);
+  connect(devices, &QAbstractItemModel::modelReset, this, &ControllerBindingWidget::updateBindingDeviceStatus);
 
   connect(m_ui.controllerType, &QComboBox::currentIndexChanged, this, &ControllerBindingWidget::onTypeChanged);
   connect(m_ui.bindings, &QPushButton::clicked, this, &ControllerBindingWidget::onBindingsClicked);
@@ -226,11 +232,96 @@ void ControllerBindingWidget::populateWidgets()
     m_ui.stackedWidget->addWidget(m_macros_widget);
   }
 
+  for (InputBindingWidget* const widget : m_bindings_widget->findChildren<InputBindingWidget*>())
+    connect(widget, &InputBindingWidget::bindingsChanged, this, &ControllerBindingWidget::updateBindingDeviceStatus);
+
+  updateBindingDeviceStatus();
   updateHeaderToolButtons();
 
   // no need to do this on first init, only changes
   if (!is_initializing)
     m_dialog->updateListDescription(m_port_number, this);
+}
+
+void ControllerBindingWidget::updateBindingDeviceStatus()
+{
+  const InputDeviceListModel::DeviceList& connected_devices = g_core_thread->getInputDeviceListModel()->getDeviceList();
+  std::string_view device;
+  std::string_view example_binding;
+  bool multiple_devices = false;
+
+  for (const InputBindingWidget* const widget : m_bindings_widget->findChildren<InputBindingWidget*>())
+  {
+    for (const std::string& binding : widget->getBindings())
+    {
+      for (const std::string_view part : InputManager::SplitChord(binding))
+      {
+        std::string_view source, sub_binding;
+        if (!InputManager::SplitBinding(part, &source, &sub_binding))
+          continue;
+
+        if (device.empty())
+        {
+          device = source;
+          example_binding = part;
+        }
+        else if (device != source)
+        {
+          multiple_devices = true;
+          break;
+        }
+      }
+
+      if (multiple_devices)
+        break;
+    }
+
+    if (multiple_devices)
+      break;
+  }
+
+  QString status;
+  if (multiple_devices)
+  {
+    status = tr("Multiple Devices");
+  }
+  else
+  {
+    QString fallback_name = QtUtils::StringViewToQString(device);
+    auto devinfo = std::ranges::find_if(
+      connected_devices, [&fallback_name](const auto& listed) { return (listed.identifier == fallback_name); });
+    if (devinfo == connected_devices.end())
+    {
+      SmallString pretty_binding(example_binding);
+      if (InputManager::PrettifyInputBinding(pretty_binding, false))
+      {
+        const std::string_view pretty_source = pretty_binding.view().substr(0, pretty_binding.view().find('/'));
+        fallback_name = QtUtils::StringViewToQString(pretty_source);
+        devinfo = std::ranges::find_if(
+          connected_devices, [&fallback_name](const auto& listed) { return (listed.identifier == fallback_name); });
+      }
+    }
+
+    if (devinfo != connected_devices.end())
+    {
+      // Keyboard has the same display name.
+      if (devinfo->identifier == devinfo->display_name)
+        status = devinfo->identifier;
+      else
+        status = tr("%1 (%2)").arg(devinfo->identifier, devinfo->display_name);
+    }
+    else
+      status = fallback_name;
+  }
+
+  const bool single_device = !device.empty() && !multiple_devices;
+  for (InputBindingWidget* const widget : m_bindings_widget->findChildren<InputBindingWidget*>())
+    widget->setHideDeviceName(single_device);
+
+  static constexpr int MAX_BOUND_DEVICE_WIDTH = 500;
+  m_ui.boundDevice->setText(m_ui.boundDevice->fontMetrics().elidedText(status, Qt::ElideRight, MAX_BOUND_DEVICE_WIDTH));
+  m_ui.boundDevice->setVisible(!status.isEmpty());
+  m_ui.boundDevice->setToolTip(status);
 }
 
 void ControllerBindingWidget::updateHeaderToolButtons()

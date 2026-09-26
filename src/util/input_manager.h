@@ -216,6 +216,12 @@ inline constexpr u32 NUM_MACRO_BUTTONS_PER_CONTROLLER = 8;
 /// Converts an input class to a string.
 const char* InputSourceToString(InputSourceType clazz);
 
+/// Splits a chord into its components.
+std::vector<std::string_view> SplitChord(std::string_view binding);
+
+/// Splits a binding into its device (source) and binding.
+bool SplitBinding(std::string_view binding, std::string_view* source, std::string_view* sub_binding);
+
 /// Parses a pointer device string, i.e. tells you which pointer is specified.
 std::optional<u32> GetIndexFromPointerBinding(std::string_view str);
 

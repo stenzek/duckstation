@@ -31,8 +31,14 @@ public:
   void initialize(SettingsInterface* sif, InputBindingInfo::Type bind_type, std::string section_name,
                   std::string key_name, const QString& display_name);
 
+  const std::vector<std::string>& getBindings() const { return m_bindings; }
+  void setHideDeviceName(bool hide);
+
   void clearBinding();
   void reloadBinding();
+
+Q_SIGNALS:
+  void bindingsChanged();
 
 protected:
   enum : u32
@@ -78,6 +84,7 @@ protected:
   QPoint m_input_listen_start_position{};
   bool m_mouse_mapping_enabled = false;
   bool m_sensor_mapping_enabled = false;
+  bool m_hide_device_name = false;
 
   static InputBindingWidget* s_current_hook_widget;
 };
