@@ -29,7 +29,6 @@ private:
   void queueUpdateDeviceNames();
   void updateMinimumLatencyLabel();
   void onMinimalOutputLatencyToggled();
-  void onOutputMutedChanged(int new_state);
 
   Ui::AudioSettingsWidget m_ui;
   SettingsWindow* m_dialog;

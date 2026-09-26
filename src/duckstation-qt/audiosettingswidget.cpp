@@ -22,6 +22,12 @@ AudioSettingsWidget::AudioSettingsWidget(SettingsWindow* dialog, QWidget* parent
 
   m_ui.setupUi(this);
 
+  SettingWidgetBinder::BindSliderAndLabelToIntSetting(sif, m_ui.volume, m_ui.volumeLabel, m_ui.resetVolume, "Audio",
+                                                      "OutputVolume", 100, tr("%"));
+  SettingWidgetBinder::BindSliderAndLabelToIntSetting(sif, m_ui.fastForwardVolume, m_ui.fastForwardVolumeLabel,
+                                                      m_ui.resetFastForwardVolume, "Audio", "FastForwardVolume", 100,
+                                                      tr("%"));
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.muted, "Audio", "OutputMuted", false);
   SettingWidgetBinder::BindWidgetToEnumSetting(
     sif, m_ui.audioBackend, "Audio", "Backend", &AudioStream::ParseBackendName, &AudioStream::GetBackendName,
     &AudioStream::GetBackendDisplayName, AudioStream::DEFAULT_BACKEND, AudioBackend::Count);
@@ -55,7 +61,8 @@ AudioSettingsWidget::AudioSettingsWidget(SettingsWindow* dialog, QWidget* parent
   connect(m_ui.audioBackend, &QComboBox::currentIndexChanged, this, &AudioSettingsWidget::updateDriverNames);
   connect(m_ui.stretchMode, &QComboBox::currentIndexChanged, this, &AudioSettingsWidget::onStretchModeChanged);
   connect(m_ui.outputLatencyMS, &QSlider::valueChanged, this, &AudioSettingsWidget::updateMinimumLatencyLabel);
-  connect(m_ui.outputLatencyMinimal, &QCheckBox::checkStateChanged, this, &AudioSettingsWidget::onMinimalOutputLatencyToggled);
+  connect(m_ui.outputLatencyMinimal, &QCheckBox::checkStateChanged, this,
+          &AudioSettingsWidget::onMinimalOutputLatencyToggled);
   connect(m_ui.bufferMS, &QSlider::valueChanged, this, &AudioSettingsWidget::updateMinimumLatencyLabel);
   connect(m_ui.resetOutputLatency, &QPushButton::clicked, this, &AudioSettingsWidget::updateMinimumLatencyLabel);
   connect(m_ui.sequenceLength, &QSlider::valueChanged, this, &AudioSettingsWidget::updateMinimumLatencyLabel);
@@ -65,22 +72,6 @@ AudioSettingsWidget::AudioSettingsWidget(SettingsWindow* dialog, QWidget* parent
   updateDriverNames();
   onStretchModeChanged();
   onMinimalOutputLatencyToggled(); // also calls updateLatencyLabel()
-
-  SettingWidgetBinder::BindSliderAndLabelToIntSetting(sif, m_ui.volume, m_ui.volumeLabel, m_ui.resetVolume, "Audio",
-                                                      "OutputVolume", 100, tr("%"));
-  SettingWidgetBinder::BindSliderAndLabelToIntSetting(sif, m_ui.fastForwardVolume, m_ui.fastForwardVolumeLabel,
-                                                      m_ui.resetFastForwardVolume, "Audio", "FastForwardVolume", 100,
-                                                      tr("%"));
-
-  if (!dialog->isPerGameSettings())
-  {
-    m_ui.muted->setChecked(m_dialog->getEffectiveBoolValue("Audio", "OutputMuted", false));
-    connect(m_ui.muted, &QCheckBox::checkStateChanged, this, &AudioSettingsWidget::onOutputMutedChanged);
-  }
-  else
-  {
-    SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.muted, "Audio", "OutputMuted", false);
-  }
 
   dialog->registerWidgetHelp(
     m_ui.audioBackend, tr("Audio Backend"), QStringLiteral("Cubeb"),
@@ -330,15 +321,4 @@ void AudioSettingsWidget::onMinimalOutputLatencyToggled()
   m_ui.resetOutputLatency->setEnabled(!minimal);
 
   updateMinimumLatencyLabel();
-}
-
-void AudioSettingsWidget::onOutputMutedChanged(int new_state)
-{
-  // only called for base settings
-  DebugAssert(!m_dialog->isPerGameSettings());
-
-  const bool muted = (new_state != 0);
-  Core::SetBaseBoolSettingValue("Audio", "OutputMuted", muted);
-  Host::CommitBaseSettingChanges();
-  g_core_thread->setAudioOutputMuted(muted);
 }

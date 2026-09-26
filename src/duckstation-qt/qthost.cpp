@@ -1818,18 +1818,6 @@ void CoreThread::undoLoadState()
   System::UndoLoadState();
 }
 
-void CoreThread::setAudioOutputMuted(bool muted)
-{
-  if (!isCurrentThread())
-  {
-    QMetaObject::invokeMethod(this, &CoreThread::setAudioOutputMuted, Qt::QueuedConnection, muted);
-    return;
-  }
-
-  g_settings.audio_output_muted = muted;
-  System::UpdateVolume();
-}
-
 void CoreThread::singleStepCPU()
 {
   if (!isCurrentThread())
