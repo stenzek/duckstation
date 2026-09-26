@@ -27,6 +27,7 @@
 
 #include "common/align.h"
 #include "common/error.h"
+#include "common/intrin.h"
 #include "common/log.h"
 #include "common/threading.h"
 #include "common/timer.h"
@@ -36,6 +37,7 @@
 #include "fmt/format.h"
 #include "imgui.h"
 
+#include <cmath>
 #include <optional>
 
 LOG_CHANNEL(VideoThread);
@@ -361,10 +363,31 @@ void VideoThread::SyncThread(bool spin)
       WakeThread();
     }
 
+#if defined(CPU_ARCH_ARM64) || defined(CPU_ARCH_ARM32)
+    // GetFrequency() returns ticks per nanosecond. Round up so the delay is at least one tick.
+    static const Timer::Value short_spin_time = static_cast<Timer::Value>(std::ceil(500.0 * Timer::GetFrequency()));
+#endif
     const Timer::Value start_time = Timer::GetCurrentValue();
     Timer::Value current_time = start_time;
-    do
+    while ((current_time - start_time) < s_state.thread_spin_time)
     {
+#if defined(CPU_ARCH_ARM64) || defined(CPU_ARCH_ARM32)
+      // Space out shared-memory polls using elapsed time, since ISB timing varies between cores.
+      const Timer::Value pause_start_time = current_time;
+      do
+      {
+        PauseCPU();
+        current_time = Timer::GetCurrentValue();
+      } while ((current_time - pause_start_time) < short_spin_time);
+#else
+      PauseCPU();
+      PauseCPU();
+      PauseCPU();
+      PauseCPU();
+
+      current_time = Timer::GetCurrentValue();
+#endif
+
       // Check if the video thread is done/sleeping.
       if (GetThreadWakeCount(s_state.thread_wake_count.load(std::memory_order_acquire)) < 0)
       {
@@ -372,17 +395,8 @@ void VideoThread::SyncThread(bool spin)
           return;
 
         WakeThread();
-        continue;
       }
-
-      // Hopefully ought to be enough.
-      PauseCPU();
-      PauseCPU();
-      PauseCPU();
-      PauseCPU();
-
-      current_time = Timer::GetCurrentValue();
-    } while ((current_time - start_time) < s_state.thread_spin_time);
+    }
   }
 
   // s_thread_wake_count |= THREAD_WAKE_COUNT_CPU_THREAD_IS_WAITING if not zero
