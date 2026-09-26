@@ -70,8 +70,6 @@ static bool GetInputSourceDefaultEnabled(InputSourceType type);
 static std::optional<InputBindingKey> ParseHostKeyboardKey(std::string_view source, std::string_view sub_binding);
 static std::optional<InputBindingKey> ParsePointerKey(std::string_view source, std::string_view sub_binding);
 
-static std::vector<std::string_view> SplitChord(std::string_view binding);
-static bool SplitBinding(std::string_view binding, std::string_view* source, std::string_view* sub_binding);
 static std::optional<InputBindingKey> ParseInputBindingKey(std::string_view binding);
 static bool ParseBindingAndGetSource(std::string_view binding, InputBindingKey* key, InputSource** source);
 static SmallString InternalConvertInputBindingKeyToString(InputBindingInfo::Type binding_type, InputBindingKey key);

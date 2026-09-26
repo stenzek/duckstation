@@ -43,6 +43,7 @@ private:
   void createBindingWidgets(QWidget* parent);
   void bindBindingWidgets(QWidget* parent);
   void updateHeaderToolButtons();
+  void updateBindingDeviceStatus();
   void doDeviceAutomaticBinding(const QString& device);
 
   void onTypeChanged();
