@@ -36,7 +36,6 @@
 #else
 #include <arm_neon.h>
 #endif
-#include <arm_acle.h>
 #endif
 
 #ifdef __APPLE__
@@ -113,8 +112,10 @@ ALWAYS_INLINE void PauseCPU()
 {
 #if defined(CPU_ARCH_X64)
   _mm_pause();
+#elif defined(CPU_ARCH_ARM64) && defined(_MSC_VER) && !defined(__clang__)
+  __isb(_ARM64_BARRIER_SY);
 #elif defined(CPU_ARCH_ARM64) || defined(CPU_ARCH_ARM32)
-  __yield();
+  __asm__ __volatile__("isb");
 #elif defined(CPU_ARCH_RISCV64)
   // Probably wrong... pause is optional :/
   asm volatile("fence" ::: "memory");
