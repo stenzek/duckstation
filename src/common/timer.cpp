@@ -19,9 +19,6 @@
 
 #ifdef _WIN32
 
-static double s_counter_frequency;
-static bool s_counter_initialized = false;
-
 namespace {
 
 struct SleepTimerHandle
@@ -59,17 +56,14 @@ static HANDLE GetSleepTimer()
   return s_sleep_timer.handle;
 }
 
+static const double s_counter_frequency = []() {
+  LARGE_INTEGER freq = {};
+  QueryPerformanceFrequency(&freq);
+  return static_cast<double>(freq.QuadPart) / 1000000000.0;
+}();
+
 double Timer::GetFrequency()
 {
-  // even if this races, it should still result in the same value..
-  if (!s_counter_initialized)
-  {
-    LARGE_INTEGER Freq;
-    QueryPerformanceFrequency(&Freq);
-    s_counter_frequency = static_cast<double>(Freq.QuadPart) / 1000000000.0;
-    s_counter_initialized = true;
-  }
-
   return s_counter_frequency;
 }
 
