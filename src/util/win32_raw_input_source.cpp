@@ -50,8 +50,8 @@ bool Win32RawInputSource::Initialize(const SettingsInterface& si, std::unique_lo
   }
 
   // "Disconnect" the normal Mouse device added by InputManager.
-  Host::OnInputDeviceDisconnected(MakeGenericControllerDeviceKey(InputSourceType::Pointer, 0),
-                                  InputManager::GetPointerDeviceName(0));
+  InputManager::OnInputDeviceDisconnected(MakeGenericControllerDeviceKey(InputSourceType::Pointer, 0),
+                                          InputManager::GetPointerDeviceName(0));
 
   ReloadDevices();
   return true;
@@ -68,8 +68,9 @@ void Win32RawInputSource::Shutdown()
   DestroyDummyWindow();
 
   // Restore the normal Mouse device. If we're shutting down, this won't do much.
-  Host::OnInputDeviceConnected(MakeGenericControllerDeviceKey(InputSourceType::Pointer, 0),
-                               InputManager::GetPointerDeviceName(0), TRANSLATE_SV("InputManager", "Mouse"));
+  InputManager::OnInputDeviceConnected(MakeGenericControllerDeviceKey(InputSourceType::Pointer, 0),
+                                       InputManager::GetPointerDeviceName(0), TRANSLATE_SV("InputManager", "Mouse"),
+                                       std::nullopt);
 }
 
 bool Win32RawInputSource::PollEvents()
