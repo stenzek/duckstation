@@ -2571,14 +2571,12 @@ void FullscreenUI::DrawFullscreenFooter()
   const ImVec2& bb_max = io.DisplaySize;
   if (UIStyle.BlurMenuBackground && s_state.fullscreen_footer_blur_allowed && BeginBlurBackground(dl, bb_min, bb_max))
   {
-    dl->AddRectFilled(ImVec2(0.0f, io.DisplaySize.y - height), io.DisplaySize,
-                      ImGui::GetColorU32(ModAlpha(UIStyle.PrimaryColor, 1.0f)), 0.0f);
+    dl->AddRectFilled(bb_min, bb_max, ImGui::GetColorU32(ModAlpha(UIStyle.PrimaryColor, 1.0f)), 0.0f);
     EndBlurBackground(dl);
   }
   else
   {
-    dl->AddRectFilled(ImVec2(0.0f, io.DisplaySize.y - height), io.DisplaySize,
-                      ImGui::GetColorU32(ModAlpha(UIStyle.PrimaryColor, bg_alpha)), 0.0f);
+    dl->AddRectFilled(bb_min, bb_max, ImGui::GetColorU32(ModAlpha(UIStyle.PrimaryColor, bg_alpha)), 0.0f);
   }
 
   ImFont* const font = UIStyle.Font;
@@ -6652,7 +6650,7 @@ void FullscreenUI::DrawBackgroundProgressDialogs(float& current_y)
   const float window_pos_x = (ImGui::GetIO().DisplaySize.x - window_width) * 0.5f;
   const float window_spacing = LayoutScale(10.0f);
 
-  ImDrawList* dl = ImGui::GetForegroundDrawList();
+  ImDrawList* const dl = ImGuiManager::GetOverlayDrawList();
 
   for (const BackgroundProgressDialogData& data : s_state.background_progress_dialogs)
   {
@@ -7508,7 +7506,7 @@ void FullscreenUI::DrawToast(float& current_y)
   const ImVec2 box_size(comb_size.x + total_padding, comb_size.y + total_padding);
   const ImVec2 box_pos((ImGui::GetIO().DisplaySize.x - box_size.x) * 0.5f, current_y - box_size.y);
 
-  ImDrawList* dl = ImGui::GetForegroundDrawList();
+  ImDrawList* const dl = ImGuiManager::GetOverlayDrawList();
   dl->AddRectFilled(box_pos, box_pos + box_size,
                     ImGui::GetColorU32(ModAlpha(UIStyle.ToastBackgroundColor, alpha * 0.95f)), padding);
 

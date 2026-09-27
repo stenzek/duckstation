@@ -479,7 +479,7 @@ void FullscreenUI::DrawNotifications(NotificationLayout& layout)
   const ImVec4 right_background_color = DarkerColor(UIStyle.ToastBackgroundColor, 0.8f);
   const bool blur_background = g_gpu_settings.display_blur_message_backgrounds && !FullscreenUI::HasActiveWindow() &&
                                FullscreenUI::CanBlurBackground();
-  ImDrawList* const dl = ImGui::GetForegroundDrawList();
+  ImDrawList* const dl = ImGuiManager::GetOverlayDrawList();
 
   for (auto iter = s_achievements_locals.notifications.begin(); iter != s_achievements_locals.notifications.end();)
   {

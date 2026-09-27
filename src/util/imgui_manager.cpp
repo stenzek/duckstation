@@ -232,11 +232,15 @@ struct ALIGN_TO_CACHE_LINE State
   std::array<s8, 2> left_stick_axis_state = {};
   InputManager::GamepadButtonType gamepad_button_type = InputManager::GamepadButtonType::Unknown;
   bool swap_gamepad_face_buttons = false;
+  bool notification_draw_list_used = false;
 
   std::unique_ptr<GPUPipeline> imgui_pipeline;
 
   ImFont* text_font = nullptr;
   ImFont* fixed_font = nullptr;
+
+  ImDrawList notification_draw_list{nullptr};
+  ImDrawData notification_draw_data;
 
   std::deque<OSDMessage> osd_active_messages;
   float osd_messages_end_y = 0.0f;
@@ -389,6 +393,8 @@ bool ImGuiManager::Initialize(Error* error)
   s_state.gamepad_button_type = InputManager::GetLastGamepadButtonType();
 
   s_state.imgui_context = ImGui::CreateContext();
+  s_state.notification_draw_list._SetDrawListSharedData(ImGui::GetDrawListSharedData());
+  s_state.notification_draw_list._OwnerName = "##Notifications";
 
   ImGuiIO& io = s_state.imgui_context->IO;
   io.IniFilename = nullptr;
@@ -430,6 +436,9 @@ void ImGuiManager::Shutdown()
   FullscreenUI::SetFont(nullptr);
 
   s_state.imgui_pipeline.reset();
+  s_state.notification_draw_data.Clear();
+  s_state.notification_draw_list._SetDrawListSharedData(nullptr);
+  s_state.notification_draw_list_used = false;
 
   if (s_state.imgui_context)
   {
@@ -562,6 +571,7 @@ void ImGuiManager::NewFrame(u64 current_time)
   }
 
   ImGui::NewFrame();
+  s_state.notification_draw_list_used = false;
 
   // Disable nav input on the implicit (Debug##Default) window. Otherwise we end up requesting keyboard
   // focus when there's nothing there. We use GetCurrentWindowRead() because otherwise it'll make it visible.
@@ -630,6 +640,41 @@ void ImGuiManager::CreateDrawLists()
   ImGui::EndFrame();
   ImGui::Render();
   UpdateTextures(ImGui::GetDrawData());
+}
+
+ImDrawList* ImGuiManager::GetOverlayDrawList()
+{
+  if (!FullscreenUI::IsTransitionActive())
+    return ImGui::GetForegroundDrawList();
+
+  ImDrawList* const dl = &s_state.notification_draw_list;
+  if (!s_state.notification_draw_list_used)
+  {
+    const ImGuiIO& io = ImGui::GetIO();
+    dl->_ResetForNewFrame();
+    dl->PushTexture(io.Fonts->TexRef);
+    dl->PushClipRect(ImVec2(), io.DisplaySize, false);
+    s_state.notification_draw_list_used = true;
+  }
+
+  return dl;
+}
+
+const ImDrawData* ImGuiManager::GetOverlayDrawData()
+{
+  if (!s_state.notification_draw_list_used || s_state.notification_draw_list.IdxBuffer.empty())
+    return nullptr;
+
+  const ImGuiIO& io = ImGui::GetIO();
+  ImDrawData& draw_data = s_state.notification_draw_data;
+  draw_data.Clear();
+  draw_data.Valid = true;
+  draw_data.DisplaySize = io.DisplaySize;
+  draw_data.FramebufferScale = io.DisplayFramebufferScale;
+  draw_data.OwnerViewport = ImGui::GetMainViewport();
+  draw_data.Textures = &io.Fonts->TexList;
+  draw_data.AddDrawList(&s_state.notification_draw_list);
+  return &draw_data;
 }
 
 void ImGuiManager::RenderDrawLists(const ImDrawData* draw_data, u32 window_width, u32 window_height,
@@ -1394,8 +1439,7 @@ void ImGuiManager::DrawOSDMessages(Timer::Value current_time)
     const ImVec2 pos = ImVec2(layout_pos.x, actual_y);
     const ImVec2 pos_max = ImVec2(pos.x + box_width, pos.y + box_height);
 
-    ImDrawList* const dl = ImGui::GetForegroundDrawList();
-
+    ImDrawList* const dl = GetOverlayDrawList();
     if (blur_background && FullscreenUI::BeginBlurBackground(dl, pos, pos_max))
     {
       dl->AddRectFilled(pos, pos_max, ImGui::GetColorU32(ModAlpha(left_background_color, opacity)), rounding);
@@ -1872,7 +1916,7 @@ void ImGuiManager::DrawSoftwareCursor(const SoftwareCursor& sc, const std::pair<
   const ImVec2 min(pos.first - sc.extent_x, pos.second - sc.extent_y);
   const ImVec2 max(pos.first + sc.extent_x, pos.second + sc.extent_y);
 
-  ImDrawList* dl = ImGui::GetForegroundDrawList();
+  ImDrawList* const dl = GetOverlayDrawList();
 
   dl->AddImage(reinterpret_cast<ImTextureID>(sc.texture.get()), min, max, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f),
                sc.color);

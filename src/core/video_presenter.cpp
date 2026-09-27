@@ -1484,14 +1484,14 @@ bool VideoPresenter::PresentFrame(GPUBackend* backend, u64 present_time)
 
   ImGuiManager::RenderDebugWindows();
 
-  FullscreenUI::DrawAchievementsOverlays();
-
   if (backend)
     ImGuiManager::RenderTextOverlays(backend);
 
   ImGuiManager::RenderOverlayWindows();
 
   FullscreenUI::Render();
+
+  FullscreenUI::DrawAchievementsOverlays();
 
   FullscreenUI::RenderOverlays();
 
@@ -1501,6 +1501,7 @@ bool VideoPresenter::PresentFrame(GPUBackend* backend, u64 present_time)
     ImGuiManager::RenderSoftwareCursors();
 
   ImGuiManager::CreateDrawLists();
+  const ImDrawData* const notification_draw_data = ImGuiManager::GetOverlayDrawData();
 
   GPUSwapChain* const swap_chain = g_gpu_device->GetMainSwapChain();
   DebugAssert(swap_chain);
@@ -1543,7 +1544,15 @@ bool VideoPresenter::PresentFrame(GPUBackend* backend, u64 present_time)
                                   swap_chain->GetPreRotation());
 
     if ((pres = g_gpu_device->BeginPresent(swap_chain)) == GPUPresentResult::OK)
+    {
       FullscreenUI::RenderTransitionBlend(swap_chain, transition_target);
+
+      if (notification_draw_data)
+      {
+        ImGuiManager::RenderDrawLists(notification_draw_data, swap_chain->GetWidth(), swap_chain->GetHeight(),
+                                      swap_chain->GetPreRotation());
+      }
+    }
   }
   else
   {
@@ -1553,6 +1562,13 @@ bool VideoPresenter::PresentFrame(GPUBackend* backend, u64 present_time)
     {
       ImGuiManager::RenderDrawLists(ImGui::GetDrawData(), swap_chain->GetWidth(), swap_chain->GetHeight(),
                                     swap_chain->GetPreRotation());
+
+      // A failed transition texture allocation can leave notifications on the separate list for this frame.
+      if (notification_draw_data)
+      {
+        ImGuiManager::RenderDrawLists(notification_draw_data, swap_chain->GetWidth(), swap_chain->GetHeight(),
+                                      swap_chain->GetPreRotation());
+      }
     }
   }
 

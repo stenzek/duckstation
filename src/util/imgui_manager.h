@@ -21,6 +21,7 @@ enum class WindowInfoPrerotation : u8;
 
 struct ImGuiContext;
 struct ImDrawData;
+struct ImDrawList;
 struct ImFont;
 
 union InputBindingKey;
@@ -143,6 +144,12 @@ void RenderDrawLists(const ImDrawData* draw_data, u32 window_width, u32 window_h
 
 /// Renders any on-screen display elements.
 void RenderOSDMessages();
+
+/// Returns the shared foreground list, or a separate list while a FullscreenUI transition is active.
+ImDrawList* GetOverlayDrawList();
+
+/// Returns the auxiliary draw data if notifications were drawn to it this frame.
+const ImDrawData* GetOverlayDrawData();
 
 /// Returns the scale of all on-screen elements.
 float GetGlobalScale();
