@@ -402,7 +402,7 @@ void MetalDevice::SetFeatures(CreateFlags create_flags)
   m_features.texture_copy_to_self = !HasCreateFlag(create_flags, CreateFlags::DisableTextureCopyToSelf);
   m_features.texture_buffers = !HasCreateFlag(create_flags, CreateFlags::DisableTextureBuffers);
   m_features.texture_buffers_emulated_with_ssbo = true;
-  m_features.feedback_loops = (m_features.framebuffer_fetch || supports_barriers);
+  m_features.feedback_loops = false;
   m_features.geometry_shaders = false;
   m_features.partial_msaa_resolve = false;
   m_features.memory_import = true;
@@ -422,9 +422,8 @@ void MetalDevice::SetFeatures(CreateFlags create_flags)
 u16 MetalDevice::GetShaderCacheVersion() const
 {
   // Incorporate feature bits into the archive version so that device capability changes don't load the wrong shaders.
-  const bool barriers = (!m_features.framebuffer_fetch && m_features.feedback_loops);
   return (BoolToUInt16(m_features.dual_source_blend) << 15) | (BoolToUInt16(m_features.framebuffer_fetch) << 14) |
-         (BoolToUInt16(m_features.texture_buffers) << 13) | (BoolToUInt16(barriers) << 12);
+         (BoolToUInt16(m_features.texture_buffers) << 13);
 }
 
 bool MetalDevice::LoadShaders(Error* error)
@@ -1906,9 +1905,7 @@ void MetalDevice::SetRenderTargets(GPUTexture* const* rts, u32 num_rts, GPUTextu
 {
   bool changed = (m_num_current_render_targets != num_rts || m_current_depth_target != ds ||
                   ((flags & GPUPipeline::BindRenderTargetsAsImages) !=
-                   (m_current_render_pass_flags & GPUPipeline::BindRenderTargetsAsImages)) ||
-                  (!m_features.framebuffer_fetch && ((flags & GPUPipeline::ColorFeedbackLoop) !=
-                                                     (m_current_render_pass_flags & GPUPipeline::ColorFeedbackLoop))));
+                   (m_current_render_pass_flags & GPUPipeline::BindRenderTargetsAsImages)));
   bool needs_ds_clear = (ds && ds->IsClearedOrInvalidated());
   bool needs_rt_clear = false;
 
@@ -2300,12 +2297,6 @@ void MetalDevice::SetInitialEncoderState()
   [m_render_encoder setFragmentTextures:m_current_textures.data() withRange:NSMakeRange(0, MAX_TEXTURE_SAMPLERS)];
   [m_render_encoder setFragmentSamplerStates:m_current_samplers.data() withRange:NSMakeRange(0, MAX_TEXTURE_SAMPLERS)];
 
-  if (!m_features.framebuffer_fetch && (m_current_render_pass_flags & GPUPipeline::ColorFeedbackLoop))
-  {
-    DebugAssert(m_current_render_targets[0]);
-    [m_render_encoder setFragmentTexture:m_current_render_targets[0]->GetMTLTexture() atIndex:MAX_TEXTURE_SAMPLERS];
-  }
-
   SetViewportInRenderEncoder();
   SetScissorInRenderEncoder();
 }
@@ -2398,109 +2389,6 @@ void MetalDevice::DrawIndexedWithPushConstants(u32 index_count, u32 base_index, 
                             instanceCount:1
                                baseVertex:base_vertex
                              baseInstance:0];
-}
-
-void MetalDevice::DrawIndexedWithBarrier(u32 index_count, u32 base_index, u32 base_vertex, DrawBarrier type)
-{
-  PreDrawCheck();
-
-  SubmitDrawIndexedWithBarrier(index_count, base_index, base_vertex, type);
-}
-
-void MetalDevice::DrawIndexedWithBarrierWithPushConstants(u32 index_count, u32 base_index, u32 base_vertex,
-                                                          const void* push_constants, u32 push_constants_size,
-                                                          DrawBarrier type)
-{
-  PreDrawCheck();
-
-  PushRenderUniformBuffer(push_constants, push_constants_size);
-
-  SubmitDrawIndexedWithBarrier(index_count, base_index, base_vertex, type);
-}
-
-void MetalDevice::SubmitDrawIndexedWithBarrier(u32 index_count, u32 base_index, u32 base_vertex, DrawBarrier type)
-{
-  // Shouldn't be using this with framebuffer fetch.
-  DebugAssert(!m_features.framebuffer_fetch);
-
-  const MTLPrimitiveType primitive = m_current_pipeline->GetPrimitive();
-  const id<MTLBuffer> index_buffer = m_index_buffer.GetBuffer();
-  u32 index_offset = base_index * sizeof(u16);
-
-  switch (type)
-  {
-    case GPUDevice::DrawBarrier::None:
-    {
-      s_stats.num_draws++;
-
-      [m_render_encoder drawIndexedPrimitives:primitive
-                                   indexCount:index_count
-                                    indexType:MTLIndexTypeUInt16
-                                  indexBuffer:index_buffer
-                            indexBufferOffset:index_offset
-                                instanceCount:1
-                                   baseVertex:base_vertex
-                                 baseInstance:0];
-    }
-    break;
-
-    case GPUDevice::DrawBarrier::One:
-    {
-      DebugAssert(m_num_current_render_targets == 1);
-      s_stats.num_draws++;
-
-      s_stats.num_barriers++;
-      [m_render_encoder memoryBarrierWithScope:MTLBarrierScopeRenderTargets
-                                   afterStages:MTLRenderStageFragment
-                                  beforeStages:MTLRenderStageFragment];
-
-      [m_render_encoder drawIndexedPrimitives:primitive
-                                   indexCount:index_count
-                                    indexType:MTLIndexTypeUInt16
-                                  indexBuffer:index_buffer
-                            indexBufferOffset:index_offset
-                                instanceCount:1
-                                   baseVertex:base_vertex
-                                 baseInstance:0];
-    }
-    break;
-
-    case GPUDevice::DrawBarrier::Full:
-    {
-      DebugAssert(m_num_current_render_targets == 1);
-
-      static constexpr const u8 vertices_per_primitive[][2] = {
-        {1, 1}, // MTLPrimitiveTypePoint
-        {2, 2}, // MTLPrimitiveTypeLine
-        {2, 1}, // MTLPrimitiveTypeLineStrip
-        {3, 3}, // MTLPrimitiveTypeTriangle
-        {3, 1}, // MTLPrimitiveTypeTriangleStrip
-      };
-
-      const u32 index_step = vertices_per_primitive[static_cast<size_t>(primitive)][1] * sizeof(u16);
-      const u32 end_offset = (base_index + index_count) * sizeof(u16);
-      for (; index_offset < end_offset; index_offset += index_step)
-      {
-        s_stats.num_barriers++;
-        s_stats.num_draws++;
-
-        [m_render_encoder memoryBarrierWithScope:MTLBarrierScopeRenderTargets
-                                     afterStages:MTLRenderStageFragment
-                                    beforeStages:MTLRenderStageFragment];
-        [m_render_encoder drawIndexedPrimitives:primitive
-                                     indexCount:vertices_per_primitive[static_cast<size_t>(primitive)][0]
-                                      indexType:MTLIndexTypeUInt16
-                                    indexBuffer:index_buffer
-                              indexBufferOffset:index_offset
-                                  instanceCount:1
-                                     baseVertex:base_vertex
-                                   baseInstance:0];
-      }
-    }
-    break;
-
-      DefaultCaseIsUnreachable();
-  }
 }
 
 void MetalDevice::Dispatch(u32 threads_x, u32 threads_y, u32 threads_z, u32 group_size_x, u32 group_size_y,

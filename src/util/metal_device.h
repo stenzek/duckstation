@@ -308,10 +308,6 @@ public:
   void DrawIndexed(u32 index_count, u32 base_index, u32 base_vertex) override;
   void DrawIndexedWithPushConstants(u32 index_count, u32 base_index, u32 base_vertex, const void* push_constants,
                                     u32 push_constants_size) override;
-  void DrawIndexedWithBarrier(u32 index_count, u32 base_index, u32 base_vertex, DrawBarrier type) override;
-  void DrawIndexedWithBarrierWithPushConstants(u32 index_count, u32 base_index, u32 base_vertex,
-                                               const void* push_constants, u32 push_constants_size,
-                                               DrawBarrier type) override;
   void Dispatch(u32 threads_x, u32 threads_y, u32 threads_z, u32 group_size_x, u32 group_size_y,
                 u32 group_size_z) override;
   void DispatchWithPushConstants(u32 threads_x, u32 threads_y, u32 threads_z, u32 group_size_x, u32 group_size_y,
@@ -402,7 +398,6 @@ private:
   void PreDrawCheck();
   void SetInitialEncoderState();
   void PushRenderUniformBuffer(const void* data, u32 data_size);
-  void SubmitDrawIndexedWithBarrier(u32 index_count, u32 base_index, u32 base_vertex, DrawBarrier type);
   void SetViewportInRenderEncoder();
   void SetScissorInRenderEncoder();
   void CommitRenderTargetClears();

@@ -719,32 +719,14 @@ void ShaderGen::DeclareFragmentEntryPoint(
         }
       }
 #endif
-#ifdef ENABLE_VULKAN
-      if (m_render_api == RenderAPI::Vulkan)
+#if defined(ENABLE_VULKAN) || defined(__APPLE__)
+      if (m_render_api == RenderAPI::Vulkan || (m_render_api == RenderAPI::Metal && m_supports_framebuffer_fetch))
       {
+        // Set doesn't matter for Metal, because it's transformed to color0.
         ss << "layout(input_attachment_index = 0, set = 2, binding = 0) uniform "
            << (msaa ? "subpassInputMS" : "subpassInput") << " u_input_rt; \n";
         ss << "#define LAST_FRAG_COLOR " << (msaa ? "subpassLoad(u_input_rt, gl_SampleID)" : "subpassLoad(u_input_rt)")
            << "\n";
-      }
-#endif
-#ifdef __APPLE__
-      if (m_render_api == RenderAPI::Metal)
-      {
-        if (m_supports_framebuffer_fetch)
-        {
-          // Set doesn't matter, because it's transformed to color0.
-          ss << "layout(input_attachment_index = 0, set = 2, binding = 0) uniform "
-             << (msaa ? "subpassInputMS" : "subpassInput") << " u_input_rt; \n";
-          ss << "#define LAST_FRAG_COLOR "
-             << (msaa ? "subpassLoad(u_input_rt, gl_SampleID)" : "subpassLoad(u_input_rt)") << "\n";
-        }
-        else
-        {
-          ss << "layout(set = 2, binding = 0) uniform " << (msaa ? "texture2DMS" : "texture2D") << " u_input_rt;\n";
-          ss << "#define LAST_FRAG_COLOR texelFetch(u_input_rt, int2(gl_FragCoord.xy), " << (msaa ? "gl_SampleID" : "0")
-             << ")\n";
-        }
       }
 #endif
     }
