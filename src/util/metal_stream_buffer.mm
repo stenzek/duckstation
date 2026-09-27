@@ -70,6 +70,9 @@ bool MetalStreamBuffer::ReserveMemory(u32 num_bytes, u32 alignment)
     return false;
   }
 
+  // Fence the data before the next allocation, since it may be used by later command buffers.
+  // This also lets earlier allocations be reclaimed independently of the most recent one.
+  UpdateCurrentFencePosition();
   UpdateGPUPosition();
 
   // Is the GPU behind or up to date with our current offset?
@@ -133,11 +136,14 @@ void MetalStreamBuffer::CommitMemory(u32 final_num_bytes)
 
   m_current_offset += final_num_bytes;
   m_current_space -= final_num_bytes;
-  UpdateCurrentFencePosition();
 }
 
 void MetalStreamBuffer::UpdateCurrentFencePosition()
 {
+  // There is no prior allocation to protect.
+  if (m_current_offset == m_current_gpu_position)
+    return;
+
   // Has the offset changed since the last fence?
   const u64 counter = MetalDevice::GetInstance().GetCurrentFenceCounter();
   if (!m_tracked_fences.empty() && m_tracked_fences.back().first == counter)
@@ -147,7 +153,7 @@ void MetalStreamBuffer::UpdateCurrentFencePosition()
     return;
   }
 
-  // New buffer, so update the GPU position while we're at it.
+  // The bytes before the next allocation may still be read by this command buffer.
   m_tracked_fences.emplace_back(counter, m_current_offset);
 }
 
