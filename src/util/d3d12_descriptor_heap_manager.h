@@ -136,7 +136,8 @@ public:
   bool Create(ID3D12Device* device, u32 num_descriptors, Error* error);
   void Destroy();
 
-  bool LookupSingle(ID3D12Device* device, D3D12DescriptorHandle* gpu_handle, const D3D12DescriptorHandle& cpu_handle);
+  bool LookupSingle(ID3D12Device* device, D3D12DescriptorHandle* gpu_handle, const D3D12DescriptorHandle& cpu_handle,
+                    const D3D12DescriptorHandle& fill_handle);
   bool LookupGroup(ID3D12Device* device, D3D12DescriptorHandle* gpu_handle, const D3D12DescriptorHandle* cpu_handles);
 
   // Clears cache but doesn't reset allocator.
@@ -182,12 +183,13 @@ void D3D12GroupedSamplerAllocator<NumSamplers>::InvalidateCache()
 
 template<u32 NumSamplers>
 bool D3D12GroupedSamplerAllocator<NumSamplers>::LookupSingle(ID3D12Device* device, D3D12DescriptorHandle* gpu_handle,
-                                                             const D3D12DescriptorHandle& cpu_handle)
+                                                             const D3D12DescriptorHandle& cpu_handle,
+                                                             const D3D12DescriptorHandle& fill_handle)
 {
   Key key;
   key.idx[0] = cpu_handle.index;
   for (u32 i = 1; i < NumSamplers; i++)
-    key.idx[i] = 0;
+    key.idx[i] = fill_handle.index;
 
   auto it = m_groups.find(key);
   if (it != m_groups.end())
@@ -196,10 +198,23 @@ bool D3D12GroupedSamplerAllocator<NumSamplers>::LookupSingle(ID3D12Device* devic
     return true;
   }
 
-  if (!Allocate(1, gpu_handle))
+  if (!Allocate(NumSamplers, gpu_handle))
     return false;
 
-  device->CopyDescriptorsSimple(1, *gpu_handle, cpu_handle, D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER);
+  D3D12_CPU_DESCRIPTOR_HANDLE dst_handle = *gpu_handle;
+  UINT dst_size = NumSamplers;
+  D3D12_CPU_DESCRIPTOR_HANDLE src_handles[NumSamplers];
+  UINT src_sizes[NumSamplers];
+  src_handles[0] = cpu_handle;
+  src_sizes[0] = 1;
+  for (u32 i = 1; i < NumSamplers; i++)
+  {
+    src_handles[i] = fill_handle;
+    src_sizes[i] = 1;
+  }
+  device->CopyDescriptors(1, &dst_handle, &dst_size, NumSamplers, src_handles, src_sizes,
+                          D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER);
+
   m_groups.emplace(key, *gpu_handle);
   return true;
 }

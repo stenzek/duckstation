@@ -2546,8 +2546,9 @@ bool D3D12Device::UpdateSingleTextureRootParameter(ID3D12GraphicsCommandList4* c
   if (dirty & DIRTY_FLAG_SAMPLERS)
   {
     D3D12DescriptorHandle handle;
-    if (!m_command_lists[m_current_command_list].sampler_allocator.LookupSingle(m_device.Get(), &handle,
-                                                                                m_current_samplers[0]->GetDescriptor()))
+    if (!m_command_lists[m_current_command_list].sampler_allocator.LookupSingle(
+          m_device.Get(), &handle, m_current_samplers[0]->GetDescriptor(),
+          static_cast<D3D12Sampler*>(m_nearest_sampler)->GetDescriptor()))
     {
       return false;
     }
