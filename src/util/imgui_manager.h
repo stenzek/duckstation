@@ -120,9 +120,6 @@ void UpdateFixedFont();
 bool CreateGPUResources(Error* error);
 void DestroyGPUResources();
 
-/// Returns main ImGui context.
-ImGuiContext* GetMainContext();
-
 /// Returns true if there is currently a context created.
 bool IsInitialized();
 

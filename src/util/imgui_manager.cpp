@@ -88,6 +88,7 @@ struct OSDMessage
 } // namespace
 
 static_assert(std::is_same_v<WCharType, ImWchar>);
+static_assert(std::extent_v<decltype(ImGuiIO::MouseDown)> == ImGuiMouseButton_COUNT);
 
 static float GetGlobalPrescale();
 static float GetFixedFontWeight();
@@ -208,6 +209,9 @@ struct ALIGN_TO_CACHE_LINE State
 {
   // Shared between both threads
 
+  // Mirror of context != nullptr that can be read atomically by core thread.
+  std::atomic_bool imgui_has_context{false};
+
   // Cached ImGui input requests, used to know when to dispatch events.
   std::atomic_bool imgui_wants_keyboard{false};
   std::atomic_bool imgui_wants_mouse{false};
@@ -218,11 +222,9 @@ struct ALIGN_TO_CACHE_LINE State
   std::deque<PostedOSDMessage> osd_posted_messages;
   Threading::Mutex osd_messages_lock;
 
-  // Read by both threads
-  ALIGN_TO_CACHE_LINE ImGuiContext* imgui_context = nullptr;
-
   // Owned by GPU thread
-  ALIGN_TO_CACHE_LINE Timer::Value last_render_time = 0;
+  ALIGN_TO_CACHE_LINE ImGuiContext* imgui_context = nullptr;
+  Timer::Value last_render_time = 0;
 
   float global_scale = 0.0f;
   GPUTextureFormat window_format = GPUTextureFormat::Unknown;
@@ -421,11 +423,15 @@ bool ImGuiManager::Initialize(Error* error)
   NewFrame(Timer::GetCurrentValue());
 
   CreateSoftwareCursorTextures();
+
+  s_state.imgui_has_context.store(true, std::memory_order_release);
   return true;
 }
 
 void ImGuiManager::Shutdown()
 {
+  s_state.imgui_has_context.store(false, std::memory_order_release);
+
   DestroySoftwareCursorTextures();
 
   FullscreenUI::Shutdown();
@@ -485,11 +491,6 @@ void ImGuiManager::DestroyGPUResources()
 
   if (s_state.imgui_context)
     DestroyTextures(false);
-}
-
-ImGuiContext* ImGuiManager::GetMainContext()
-{
-  return s_state.imgui_context;
 }
 
 bool ImGuiManager::IsInitialized()
@@ -1640,7 +1641,7 @@ bool ImGuiManager::WantsMouseInput()
 
 void ImGuiManager::AddTextInput(std::string str)
 {
-  if (!s_state.imgui_context || !s_state.imgui_wants_text_input.load(std::memory_order_acquire))
+  if (!s_state.imgui_wants_text_input.load(std::memory_order_acquire))
     return;
 
   VideoThread::RunOnThread([str = std::move(str)]() {
@@ -1660,7 +1661,7 @@ void ImGuiManager::SetCommonIOOptions(ImGuiIO& io, ImGuiPlatformIO& pio)
 
 bool ImGuiManager::ProcessPointerButtonEvent(InputBindingKey key, float value)
 {
-  if (!s_state.imgui_context || key.data >= std::size(ImGui::GetIO().MouseDown))
+  if (key.data >= ImGuiMouseButton_COUNT || !s_state.imgui_has_context.load(std::memory_order_acquire))
     return false;
 
   // still update state anyway
@@ -1678,7 +1679,7 @@ bool ImGuiManager::ProcessPointerButtonEvent(InputBindingKey key, float value)
 
 bool ImGuiManager::ProcessPointerAxisEvent(InputBindingKey key, float value)
 {
-  if (!s_state.imgui_context || key.data < static_cast<u32>(InputPointerAxis::WheelX))
+  if (!s_state.imgui_has_context.load(std::memory_order_acquire) || key.data < static_cast<u32>(InputPointerAxis::WheelX))
     return false;
 
   // still update state anyway
@@ -1695,7 +1696,7 @@ bool ImGuiManager::ProcessPointerAxisEvent(InputBindingKey key, float value)
 
 bool ImGuiManager::ProcessHostKeyEvent(InputBindingKey key, float value)
 {
-  if (!s_state.imgui_context)
+  if (!s_state.imgui_has_context.load(std::memory_order_acquire))
     return false;
 
   if (const std::optional<ImGuiKey> imkey = MapHostKeyEventToImGuiKey(key.data))
@@ -1726,8 +1727,7 @@ void ImGuiManager::SetImKeyState(ImGuiIO& io, ImGuiKey imkey, bool pressed)
 
 bool ImGuiManager::ProcessGenericInputEvent(GenericInputBinding key, float value)
 {
-  // Racey read, but that's okay, worst case we push a couple of keys during shutdown.
-  if (!s_state.imgui_context)
+  if (!s_state.imgui_has_context.load(std::memory_order_acquire))
     return false;
 
   static constexpr std::array key_map = {
@@ -1807,7 +1807,7 @@ bool ImGuiManager::ProcessGenericInputEvent(GenericInputBinding key, float value
 
 void ImGuiManager::ClearMouseButtonState()
 {
-  if (!s_state.imgui_context)
+  if (!s_state.imgui_has_context.load(std::memory_order_acquire))
     return;
 
   VideoThread::RunOnThread([]() {
@@ -2257,7 +2257,7 @@ bool ImGuiManager::RenderAuxiliaryRenderWindow(AuxiliaryRenderWindowState* state
     g_gpu_device->EndPresent(state->swap_chain.get(), false);
   }
 
-  ImGui::SetCurrentContext(GetMainContext());
+  ImGui::SetCurrentContext(s_state.imgui_context);
   return true;
 }
 
