@@ -237,13 +237,6 @@ No obstante, el modo hardcore también impide el uso de los estados de guardado,
         <source>100%</source>
         <translation>100 %</translation>
     </message>
-    <message numerus="yes">
-        <source>%n seconds</source>
-        <translation>
-            <numerusform>%n segundo</numerusform>
-            <numerusform>%n segundos</numerusform>
-        </translation>
-    </message>
     <message>
         <source>Logout</source>
         <translation>Cerrar sesión</translation>
@@ -259,6 +252,14 @@ No obstante, el modo hardcore también impide el uso de los estados de guardado,
     <message>
         <source>Register</source>
         <translation>Registrarse</translation>
+    </message>
+    <message>
+        <source>Reset Achievement Notification Duration</source>
+        <translation>Restablecer duración de notificaciones de logros</translation>
+    </message>
+    <message>
+        <source>Reset Leaderboard Notification Duration</source>
+        <translation>Restablecer duración de notificaciones de tablas de clasificación</translation>
     </message>
     <message>
         <source>Notification Location:</source>
@@ -305,8 +306,24 @@ No obstante, el modo hardcore también impide el uso de los estados de guardado,
         <translation>(personalizar)</translation>
     </message>
     <message>
+        <source> seconds</source>
+        <translation> segundos</translation>
+    </message>
+    <message>
         <source>When enabled, DuckStation will track unofficial achievements. Unlocks will be saved locally and not sent to RetroAchievements.</source>
         <translation>Al activar esta opción, DuckStation hará un seguimiento de logros no oficiales. Sus desbloqueos se guardarán de forma local y no se enviarán a RetroAchievements.</translation>
+    </message>
+    <message>
+        <source>N/A</source>
+        <translation>No disponible</translation>
+    </message>
+    <message>
+        <source>Resets the duration to the global setting.</source>
+        <translation>Restablece el valor de la duración a la configuración global.</translation>
+    </message>
+    <message>
+        <source>Resets the duration to the default.</source>
+        <translation>Restablece el valor de la duración a la predeterminada.</translation>
     </message>
     <message>
         <source>Downloads all locked achievement badges while starting the game. This will reduce delays in the images being shown when unlocking achievements.</source>
@@ -1142,22 +1159,6 @@ La petición seguirá reenviándose.</translation>
 <context>
     <name>AnalogController</name>
     <message>
-        <source>Controller {} switched to analog mode.</source>
-        <translation>Mando {} cambiado a modo analógico.</translation>
-    </message>
-    <message>
-        <source>Controller {} switched to digital mode.</source>
-        <translation>Mando {} cambiado a modo digital.</translation>
-    </message>
-    <message>
-        <source>Controller {} is locked to analog mode by the game.</source>
-        <translation>Mando {} bloqueado en modo analógico por el juego.</translation>
-    </message>
-    <message>
-        <source>Controller {} is locked to digital mode by the game.</source>
-        <translation>Mando {} bloqueado en modo digital por el juego.</translation>
-    </message>
-    <message>
         <source>D-Pad Up</source>
         <translation>Botón de dirección hacia arriba</translation>
     </message>
@@ -1392,10 +1393,6 @@ La petición seguirá reenviándose.</translation>
     <message>
         <source>Allows you to use the right analog stick to control the trigger buttons (L2/R2), as well as the buttons.</source>
         <translation>Permite usar el stick analógico derecho para controlar los gatillos (L2/R2) y los botones de acción.</translation>
-    </message>
-    <message>
-        <source>Mode LED</source>
-        <translation>Led de modo</translation>
     </message>
 </context>
 <context>
@@ -1652,6 +1649,10 @@ La petición seguirá reenviándose.</translation>
         <translation>%</translation>
     </message>
     <message>
+        <source> ms</source>
+        <translation> ms</translation>
+    </message>
+    <message>
         <source>%1 ms</source>
         <translation>%1 ms</translation>
     </message>
@@ -1712,16 +1713,16 @@ La petición seguirá reenviándose.</translation>
         <translation>Latencia máxima: %1 ms (latencia de salida mínima desconocida)</translation>
     </message>
     <message>
-        <source>%1%</source>
-        <translation>%1%</translation>
-    </message>
-    <message>
         <source>Reset Output Volume</source>
         <translation>Restablecer volumen de salida</translation>
     </message>
     <message>
         <source>Reset Buffer Size</source>
         <translation>Restablecer tamaño de búfer</translation>
+    </message>
+    <message>
+        <source>Reset Output Latency</source>
+        <translation>Restablecer latencia de salida</translation>
     </message>
     <message>
         <source>Maximum Latency: 0 ms (0 ms stretch + 0 ms buffer + 0 ms output)</source>
@@ -2905,6 +2906,14 @@ Esta advertencia se mostrará solo una vez.</translation>
         <translation>Control {} cambiado a modo digital.</translation>
     </message>
     <message>
+        <source>Controller {} is locked to analog mode by the game.</source>
+        <translation>Mando {} bloqueado en modo analógico por el juego.</translation>
+    </message>
+    <message>
+        <source>Controller {} is locked to digital mode by the game.</source>
+        <translation>Mando {} bloqueado en modo digital por el juego.</translation>
+    </message>
+    <message>
         <source>Controller {} switched to JogCon mode.</source>
         <translation>Control {} cambiado a modo JogCon.</translation>
     </message>
@@ -2966,6 +2975,14 @@ Esta advertencia se mostrará solo una vez.</translation>
     <message>
         <source>Automatic Mapping Failed</source>
         <translation>Error en la asignación automática</translation>
+    </message>
+    <message>
+        <source>Multiple Devices</source>
+        <translation>Varios dispositivos</translation>
+    </message>
+    <message>
+        <source>%1 (%2)</source>
+        <translation>%1 (%2)</translation>
     </message>
     <message>
         <source>Controller %1 %2</source>
@@ -3608,10 +3625,6 @@ Esta advertencia se mostrará solo una vez.</translation>
         <translation>Cambia los ajustes de las luces LED para aquellos mandos que tengan LED configurables.</translation>
     </message>
     <message>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enables the SDL input source and detection of controllers.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Activa el origen de entrada y la detección de mandos mediante SDL.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
-    </message>
-    <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Allows rumble and LED effects for DualShock 4 / DualSense controllers in Bluetooth mode. This option is not required for wired connections.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Enabling enhanced reports may result in your controller being unusable in other applications until it is turned off and on again.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Permite el uso de la vibración y los efectos del indicador de jugador en mandos DualShock 4/DualSense funcionando en modo Bluetooth. No es necesario activar esta opción si se conectan por cable.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Si activas el control mejorado, tu mando podría dejar de funcionar en otras aplicaciones hasta que lo apagues y lo vuelvas a encender.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
@@ -3622,6 +3635,22 @@ Esta advertencia se mostrará solo una vez.</translation>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The SDL input source supports most controllers, and is the preferred option. Enhanced mode may be required for the Vibration/LED functionality of DualShock 4 / DualSense pads in Bluetooth mode. You can also edit &lt;a href=&quot;ADVANCED_SDL_OPTIONS&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#99ebff;&quot;&gt;advanced options&lt;/span&gt;&lt;/a&gt; which control device-specific behavior.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;El origen de entrada SDL es compatible con la mayoría de mandos y es la opción más recomendada. Tal vez necesites habilitar el modo mejorado para poder utilizar la vibración y los indicadores de jugador de los mandos DualShock 4/DualSense conectados por Bluetooth. También puedes cambiar &lt;a href=&quot;ADVANCED_SDL_OPTIONS&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#99ebff;&quot;&gt;opciones avanzadas&lt;/span&gt;&lt;/a&gt; que gestionan comportamientos concretos de los dispositivos.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+    </message>
+    <message>
+        <source>LEDs</source>
+        <translation>LEDs</translation>
+    </message>
+    <message>
+        <source>Enables the SDL input source and detection of controllers.</source>
+        <translation>Habilita la fuente de entrada SDL y la detección de controladores.</translation>
+    </message>
+    <message>
+        <source>Saves supported controllers by serial or device identity so bindings survive port and connection-order changes when possible.</source>
+        <translation>Guarda los controladores compatibles según su número de serie o identificador de dispositivo, de modo que las asignaciones se mantengan incluso tras cambios de puerto o del orden de conexión, siempre que sea posible.</translation>
+    </message>
+    <message>
+        <source>Use Persistent Device Identifiers</source>
+        <translation>Utilizar identificadores de dispositivo persistentes</translation>
     </message>
     <message>
         <source>Enable XInput Source</source>
@@ -7293,6 +7322,10 @@ Comprueba el nombre de usuario y contraseña e intenta de nuevo.</translation>
         <translation>Modo mejorado para DualShock 4/DualSense de SDL</translation>
     </message>
     <message>
+        <source>SDL Persistent Device Identifiers</source>
+        <translation>Identificadores persistentes de dispositivo de SDL</translation>
+    </message>
+    <message>
         <source>Samples 16-bit direct-color textures at native resolution when upscaling. This can fix filtering of FMVs/backgrounds in some games, but may reduce the quality of render-to-texture effects.</source>
         <translation>Muestrea texturas de color directo de 16 bits a resolución nativa al aumentar la resolución. Esto puede solucionar el filtrado de los vídeos FMV y los fondos en algunos juegos, pero puede reducir la calidad de los efectos de renderizado a textura.</translation>
     </message>
@@ -7315,6 +7348,10 @@ Comprueba el nombre de usuario y contraseña e intenta de nuevo.</translation>
     <message>
         <source>Saves state periodically so you can rewind any mistakes while playing.</source>
         <translation>Guarda estados periódicamente para poder rebobinar/retroceder en el tiempo mientras juegas.</translation>
+    </message>
+    <message>
+        <source>Saves supported controllers by serial or device identity so bindings survive port and connection-order changes when possible.</source>
+        <translation>Guarda los controladores compatibles según su número de serie o identificador de dispositivo, de modo que las asignaciones se mantengan incluso tras cambios de puerto o del orden de conexión, siempre que sea posible.</translation>
     </message>
     <message>
         <source>Scaling</source>
@@ -15451,104 +15488,37 @@ Error: {1}</translation>
         <source>Sets scaling for left trigger.</source>
         <translation>Establece el escalado del gatillo izquierdo.</translation>
     </message>
-</context>
-<context>
-    <name>NeGconRumble</name>
-    <message>
-        <source>D-Pad Up</source>
-        <translation>Botón de dirección hacia arriba</translation>
-    </message>
-    <message>
-        <source>D-Pad Right</source>
-        <translation>Botón de dirección hacia la derecha</translation>
-    </message>
-    <message>
-        <source>D-Pad Down</source>
-        <translation>Botón de dirección hacia abajo</translation>
-    </message>
-    <message>
-        <source>D-Pad Left</source>
-        <translation>Botón de dirección hacia la izquierda</translation>
-    </message>
-    <message>
-        <source>Start</source>
-        <translation>Start</translation>
-    </message>
-    <message>
-        <source>A Button</source>
-        <translation>Botón A</translation>
-    </message>
-    <message>
-        <source>B Button</source>
-        <translation>Botón B</translation>
-    </message>
-    <message>
-        <source>I Button</source>
-        <translation>Botón I</translation>
-    </message>
-    <message>
-        <source>II Button</source>
-        <translation>Botón II</translation>
-    </message>
-    <message>
-        <source>Left Trigger</source>
-        <translation>Gatillo izquierdo</translation>
-    </message>
-    <message>
-        <source>Right Trigger</source>
-        <translation>Gatillo derecho</translation>
-    </message>
-    <message>
-        <source>Steering (Twist) Left</source>
-        <translation>Girar hacia la izquierda</translation>
-    </message>
-    <message>
-        <source>Steering (Twist) Right</source>
-        <translation>Girar hacia la derecha</translation>
-    </message>
     <message>
         <source>Analog Toggle</source>
         <translation>Alternar analógico</translation>
     </message>
     <message>
-        <source>Disable Simultaneous Opposing Cardinal Directions</source>
-        <translation>Desactivar direcciones opuestas simultáneas</translation>
+        <source>Large Motor</source>
+        <translation>Motor grande</translation>
     </message>
     <message>
-        <source>Prevents concurrent left/right or up/down inputs from being presented to the game.</source>
-        <translation>Impide que el juego reciba pulsaciones simultáneas de izquierda/derecha o arriba/abajo.</translation>
+        <source>Small Motor</source>
+        <translation>Motor pequeño</translation>
     </message>
     <message>
-        <source>Steering Axis Deadzone</source>
-        <translation>Zona muerta del eje de dirección</translation>
-    </message>
-    <message>
-        <source>Sets deadzone size for steering axis.</source>
-        <translation>Establece el tamaño para la zona muerta del eje de dirección.</translation>
-    </message>
-    <message>
-        <source>Steering Axis Sensitivity</source>
-        <translation>Sensibilidad del eje de dirección</translation>
-    </message>
-    <message>
-        <source>Sets the steering axis scaling factor.</source>
-        <translation>Establece el factor de escala del eje de dirección.</translation>
+        <source>Mode LED</source>
+        <translation>Led de modo</translation>
     </message>
     <message>
         <source>Large Motor Vibration Bias</source>
-        <translation>Fuerza de vibración del motor grande</translation>
+        <translation>Margen de error de la vibración del motor grande</translation>
     </message>
     <message>
         <source>Sets the bias value for the large vibration motor. If vibration in some games is too weak or not functioning, try increasing this value. Negative values will decrease the intensity of vibration.</source>
-        <translation>Indica la medida de la vibración para el motor grande. Si la vibración es débil o no funciona en algunos juegos, intenta incrementar este valor. Valores negativos disminuirán la intensidad de la vibración.</translation>
+        <translation>Establece el margen de error para la vibración del motor grande. Si en algunos juegos la vibración es muy débil o no funciona, prueba a aumentar este valor. Un valor negativo reducirá la intensidad de la vibración.</translation>
     </message>
     <message>
         <source>Small Motor Vibration Bias</source>
-        <translation>Fuerza de vibración del motor pequeño</translation>
+        <translation>Margen de error de la vibración del motor pequeño</translation>
     </message>
     <message>
         <source>Sets the bias value for the small vibration motor. If vibration in some games is too weak or not functioning, try increasing this value. Negative values will decrease the intensity of vibration.</source>
-        <translation>Indica la medida de la vibración para el motor pequeño. Si la vibración es débil o no funciona en algunos juegos, intenta incrementar este valor. Valores negativos disminuirán la intensidad de la vibración.</translation>
+        <translation>Establece el margen de error para la vibración del motor pequeño. Si en algunos juegos la vibración es muy débil o no funciona, prueba a aumentar este valor. Un valor negativo reducirá la intensidad de la vibración.</translation>
     </message>
 </context>
 <context>
@@ -17189,7 +17159,7 @@ Do you want to create this directory?</source>
     <message>
         <source>Monotonic Cubic (Very Slow)</source>
         <comment>GPUTextureFilter</comment>
-        <translation>Cúbico monótono (muy lenta)</translation>
+        <translation>Cúbico monótono (muy lento)</translation>
     </message>
     <message>
         <source>Monotonic Cubic (Very Slow, No Edge Blending)</source>
@@ -17199,12 +17169,12 @@ Do you want to create this directory?</source>
     <message>
         <source>Adaptive Diagonal (Slow)</source>
         <comment>GPUTextureFilter</comment>
-        <translation>Diagonal adaptativa (lenta)</translation>
+        <translation>Diagonal adaptativo (lento)</translation>
     </message>
     <message>
         <source>Adaptive Diagonal (Slow, No Edge Blending)</source>
         <comment>GPUTextureFilter</comment>
-        <translation>Diagonal adaptativa (lenta, sin unión de bordes)</translation>
+        <translation>Diagonal adaptativo (lento, sin unión de bordes)</translation>
     </message>
     <message>
         <source>DCCI (Extremely Slow)</source>
@@ -17304,7 +17274,7 @@ Do you want to create this directory?</source>
     <message>
         <source>Triangles (Aggressive)</source>
         <comment>GPULineDetectMode</comment>
-        <translation>Triángulos (agresivo)</translation>
+        <translation>Triángulos (agresiva)</translation>
     </message>
     <message>
         <source>Disabled</source>
