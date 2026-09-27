@@ -16,6 +16,7 @@
 #include "util/http_cache.h"
 #include "util/image.h"
 #include "util/imgui_animated.h"
+#include "util/imgui_gsvector.h"
 #include "util/imgui_manager.h"
 #include "util/input_manager.h"
 #include "util/object_archive.h"
@@ -99,6 +100,8 @@ static GPUTexture* LookupCachedTextureAsync(std::string_view path, std::string_v
 static bool CompilePipelines(Error* error);
 
 static void DrawWithBlurTexture(const ImDrawList* parent_list, const ImDrawCmd* cmd, u32 base_vertex, u32 base_index);
+static void RenderGaussianBlur(GPUTexture* source, GPUTexture* intermediate, GPUTexture* output,
+                               const GSVector4i& blur_rect);
 
 static void CreateFooterTextString(SmallStringBase& dest,
                                    std::span<const std::pair<const char*, std::string_view>> items);
@@ -492,6 +495,7 @@ struct WidgetsState
   s8 has_pending_nav_move = static_cast<s8>(ImGuiDir_None);
   bool blur_active = false;
   bool blur_valid = false;
+  bool header_background_valid = false;
 
   ImVec2 horizontal_menu_button_size = {};
 
@@ -518,6 +522,11 @@ struct WidgetsState
   std::unique_ptr<GPUPipeline> blur_render_pipeline;
   std::unique_ptr<GPUPipeline> blur_apply_pipeline;
   std::unique_ptr<GPUPipeline> present_copy_pipeline;
+
+  // The header image uses the same blur pipelines, but has its own cached render targets.
+  std::string header_background_image_key;
+  std::unique_ptr<GPUTexture> header_background_intermediate_texture;
+  std::unique_ptr<GPUTexture> header_background_output_texture;
 
   SmallString fullscreen_footer_text;
   SmallString last_fullscreen_footer_text;
@@ -598,6 +607,8 @@ FullscreenUI::WidgetsState::~WidgetsState()
   DebugAssert(!blur_render_pipeline);
   DebugAssert(!blur_apply_pipeline);
   DebugAssert(!present_copy_pipeline);
+  DebugAssert(!header_background_intermediate_texture);
+  DebugAssert(!header_background_output_texture);
 }
 
 #endif
@@ -711,6 +722,10 @@ void FullscreenUI::DestroyWidgetsGPUResources()
   g_gpu_device->RecycleTexture(std::move(s_state.blur_source_texture));
   g_gpu_device->RecycleTexture(std::move(s_state.blur_intermediate_texture));
   g_gpu_device->RecycleTexture(std::move(s_state.blur_output_texture));
+  g_gpu_device->RecycleTexture(std::move(s_state.header_background_intermediate_texture));
+  g_gpu_device->RecycleTexture(std::move(s_state.header_background_output_texture));
+  s_state.header_background_image_key = {};
+  s_state.header_background_valid = false;
   s_state.blur_render_pipeline.reset();
   s_state.blur_apply_pipeline.reset();
   s_state.present_copy_pipeline.reset();
@@ -1604,24 +1619,35 @@ void FullscreenUI::RenderBlur(GPUSwapChain* const swap_chain, GPUTexture* const 
     source_texture = s_state.blur_output_texture.get();
   }
 
+  RenderGaussianBlur(source_texture, s_state.blur_intermediate_texture.get(), s_state.blur_output_texture.get(),
+                     scaled_blur_rect);
+  s_state.blur_valid = true;
+}
+
+void FullscreenUI::RenderGaussianBlur(GPUTexture* source, GPUTexture* intermediate, GPUTexture* output,
+                                      const GSVector4i& blur_rect)
+{
+  static constexpr s32 BLUR_RADIUS = 30 + 1;
+  const GSVector2i size_vec = output->GetSizeVec();
+  const GSVector4i viewport = GSVector4i::loadh(size_vec);
+  const GSVector2 texel_size = GSVector2::cxpr(1.0f) / GSVector2(size_vec);
+
+  source->MakeReadyForSampling();
+  g_gpu_device->SetViewportAndScissor(viewport);
   g_gpu_device->SetPipeline(s_state.blur_render_pipeline.get());
 
-  // We run the blur at a reduced number of taps but multiple passes for a stronger effect.
-  // Two full passes (H+V, H+V) gives a visually pleasing result.
+  // Keep the horizontal pass wider so the vertical pass has enough samples at the edges.
   {
-    // First pass needs to sample a wider range, since we'll be pulling from this for the vertical pass.
     const GSVector4i draw_rect =
-      scaled_blur_rect.add32(GSVector4i::cxpr(-BLUR_RADIUS, -BLUR_RADIUS, BLUR_RADIUS, BLUR_RADIUS))
-        .rintersect(viewport);
+      blur_rect.add32(GSVector4i::cxpr(-BLUR_RADIUS, -BLUR_RADIUS, BLUR_RADIUS, BLUR_RADIUS)).rintersect(viewport);
     GSVector4 uv_rect = GSVector4(draw_rect) * GSVector4::xyxy(texel_size);
     if (g_gpu_device->UsesLowerLeftOrigin())
       uv_rect = uv_rect.blend32<10>(GSVector4::cxpr(1.0f) - uv_rect);
 
     GL_SCOPE_FMT("Horizontal Blur: Rect={}", draw_rect);
-    s_state.blur_source_texture->MakeReadyForSampling();
-    g_gpu_device->InvalidateRenderTarget(s_state.blur_intermediate_texture.get());
-    g_gpu_device->SetRenderTarget(s_state.blur_intermediate_texture.get());
-    g_gpu_device->SetTextureSampler(0, source_texture, g_gpu_device->GetLinearSampler());
+    g_gpu_device->InvalidateRenderTarget(intermediate);
+    g_gpu_device->SetRenderTarget(intermediate);
+    g_gpu_device->SetTextureSampler(0, source, g_gpu_device->GetLinearSampler());
 
     const GSVector2 uniforms = texel_size.insert32<1, 1>(GSVector2::zero());
     VideoPresenter::DrawScreenQuad(draw_rect, uv_rect, size_vec, size_vec, DisplayRotation::Normal,
@@ -1630,24 +1656,94 @@ void FullscreenUI::RenderBlur(GPUSwapChain* const swap_chain, GPUTexture* const 
 
   {
     // Second pass can be clamped to the actual sampled area. Add one for bilinear filtering.
-    const GSVector4i draw_rect = scaled_blur_rect.add32(GSVector4i::cxpr(-1, -1, 1, 1)).rintersect(viewport);
+    const GSVector4i draw_rect = blur_rect.add32(GSVector4i::cxpr(-1, -1, 1, 1)).rintersect(viewport);
     GSVector4 uv_rect = GSVector4(draw_rect) * GSVector4::xyxy(texel_size);
     if (g_gpu_device->UsesLowerLeftOrigin())
       uv_rect = uv_rect.blend32<10>(GSVector4::cxpr(1.0f) - uv_rect);
 
     GL_SCOPE_FMT("Vertical Blur: Rect={}", draw_rect);
-    s_state.blur_intermediate_texture->MakeReadyForSampling();
-    g_gpu_device->InvalidateRenderTarget(s_state.blur_output_texture.get());
-    g_gpu_device->SetRenderTarget(s_state.blur_output_texture.get());
-    g_gpu_device->SetTextureSampler(0, s_state.blur_intermediate_texture.get(), g_gpu_device->GetLinearSampler());
+    intermediate->MakeReadyForSampling();
+    g_gpu_device->InvalidateRenderTarget(output);
+    g_gpu_device->SetRenderTarget(output);
+    g_gpu_device->SetTextureSampler(0, intermediate, g_gpu_device->GetLinearSampler());
 
     const GSVector2 uniforms = texel_size.insert32<0, 0>(GSVector2::zero());
     VideoPresenter::DrawScreenQuad(draw_rect, uv_rect, size_vec, size_vec, DisplayRotation::Normal,
                                    WindowInfoPrerotation::Identity, &uniforms, sizeof(uniforms));
   }
 
-  s_state.blur_output_texture->MakeReadyForSampling();
-  s_state.blur_valid = true;
+  output->MakeReadyForSampling();
+}
+
+GPUTexture* FullscreenUI::GetBlurredHeaderBackground(GPUTexture* image, std::string_view image_key, const ImVec2& size)
+{
+  // Don't blur the placeholder texture or invalid sizes.
+  if (!image || image == s_state.placeholder_texture.get() || size.x <= 0.0f || size.y <= 0.0f)
+    return nullptr;
+
+  // Keep the blur radius comparable to the display blur at different output resolutions.
+  const float scale =
+    std::min({1.0f, static_cast<float>(BLUR_TARGET_WIDTH) / size.x, static_cast<float>(BLUR_TARGET_HEIGHT) / size.y});
+  const u32 width = std::max(1u, static_cast<u32>(std::ceil(size.x * scale)));
+  const u32 height = std::max(1u, static_cast<u32>(std::ceil(size.y * scale)));
+  const GPUTextureFormat format =
+    g_gpu_device->HasMainSwapChain() ? g_gpu_device->GetMainSwapChain()->GetFormat() : GPUTextureFormat::RGBA8;
+
+  if (!s_state.header_background_output_texture || s_state.header_background_output_texture->GetWidth() != width ||
+      s_state.header_background_output_texture->GetHeight() != height ||
+      s_state.header_background_output_texture->GetFormat() != format)
+  {
+    if (!g_gpu_device->ResizeTexture(&s_state.header_background_intermediate_texture, width, height,
+                                     GPUTexture::Type::RenderTarget, format, GPUTexture::Flags::None, false) ||
+        !g_gpu_device->ResizeTexture(&s_state.header_background_output_texture, width, height,
+                                     GPUTexture::Type::RenderTarget, format, GPUTexture::Flags::None, false))
+    {
+      ERROR_LOG("Failed to allocate {}x{} header background textures.", width, height);
+      g_gpu_device->RecycleTexture(std::move(s_state.header_background_intermediate_texture));
+      g_gpu_device->RecycleTexture(std::move(s_state.header_background_output_texture));
+      s_state.header_background_valid = false;
+      return nullptr;
+    }
+
+    s_state.header_background_valid = false;
+  }
+
+  // If the size nor image have changed, keep using the old image to avoid GPU load.
+  if (s_state.header_background_image_key != image_key)
+  {
+    s_state.header_background_image_key = image_key;
+    s_state.header_background_valid = false;
+  }
+
+  GPUTexture* const target = s_state.header_background_output_texture.get();
+  if (s_state.header_background_valid)
+    return target;
+
+  GSVector4 uv_rect =
+    ImRectToGSVector(FitImage(ImVec2(static_cast<float>(width), static_cast<float>(height)),
+                              ImVec2(static_cast<float>(image->GetWidth()), static_cast<float>(image->GetHeight()))));
+  if (g_gpu_device->UsesLowerLeftOrigin())
+    uv_rect = uv_rect.blend32<10>(GSVector4::cxpr(1.0f) - uv_rect);
+
+  image->MakeReadyForSampling();
+
+  // Downsample first.
+  const GSVector2i target_size(static_cast<s32>(width), static_cast<s32>(height));
+  const GSVector4i target_rect = GSVector4i::loadh(target_size);
+  g_gpu_device->InvalidateRenderTarget(target);
+  g_gpu_device->SetRenderTarget(target);
+  g_gpu_device->SetViewportAndScissor(target_rect);
+  g_gpu_device->SetPipeline(s_state.present_copy_pipeline.get());
+  g_gpu_device->SetTextureSampler(0, image, g_gpu_device->GetLinearSampler());
+  VideoPresenter::DrawScreenQuad(target_rect, uv_rect, target_size, target_size, DisplayRotation::Normal,
+                                 WindowInfoPrerotation::Identity, nullptr, 0);
+
+  RenderGaussianBlur(s_state.header_background_output_texture.get(),
+                     s_state.header_background_intermediate_texture.get(),
+                     s_state.header_background_output_texture.get(), target_rect);
+
+  s_state.header_background_valid = true;
+  return s_state.header_background_output_texture.get();
 }
 
 bool FullscreenUI::BeginBlurBackground(ImDrawList* const dl, const ImVec2& bb_min, const ImVec2& bb_max)

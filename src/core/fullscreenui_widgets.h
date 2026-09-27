@@ -335,6 +335,9 @@ void RenderBlur(GPUSwapChain* const swap_chain, GPUTexture* const blur_render_te
 bool BeginBlurBackground(ImDrawList* const dl, const ImVec2& bb_min, const ImVec2& bb_max);
 void EndBlurBackground(ImDrawList* const dl);
 
+/// Blurred image backdrop for a header.
+GPUTexture* GetBlurredHeaderBackground(GPUTexture* image, std::string_view image_key, const ImVec2& size);
+
 /// Layout helpers.
 void BeginLayout();
 void EndLayout();

@@ -28,8 +28,6 @@
 
 LOG_CHANNEL(FullscreenUI);
 
-#ifndef __ANDROID__
-
 namespace FullscreenUI {
 
 static constexpr const char* ACHEIVEMENT_DETAILS_URL_TEMPLATE = "https://retroachievements.org/achievement/{}";
@@ -38,6 +36,7 @@ static constexpr float WINDOW_ALPHA = 0.9f;
 static constexpr float WINDOW_HEADING_ALPHA = 0.95f;
 static constexpr float PROGRESS_BAR_ALPHA = 0.5f;
 static constexpr float PROGRESS_BAR_ANIMATION_TIME = 0.25f;
+static constexpr ImU32 HEADING_BACKGROUND_COLOR = IM_COL32(180, 180, 180, 255);
 
 static constexpr u32 LEADERBOARD_NEARBY_ENTRIES_TO_FETCH = 20;
 static constexpr u32 LEADERBOARD_ALL_FETCH_SIZE = 50;
@@ -2049,26 +2048,36 @@ void FullscreenUI::DrawAchievementsWindow()
   const ImVec4 heading_background = ModAlpha(DarkerColor(UIStyle.BackgroundColor, 1.5f), WINDOW_HEADING_ALPHA);
   const ImVec2 display_size = ImGui::GetIO().DisplaySize;
   const float heading_height = LayoutScale(heading_height_unscaled);
+  const ImVec2 heading_size = ImVec2(display_size.x, heading_height);
   bool close_window = false;
 
-  if (BeginFullscreenWindow(ImVec2(), ImVec2(display_size.x, heading_height), "achievements_heading",
-                            heading_background, 0.0f, ImVec2(10.0f, 10.0f),
+  GPUTexture* badge = nullptr;
+  GPUTexture* heading_background_image = nullptr;
+  if (const std::string& badge_url = Achievements::GetCurrentGameBadgeURL(); !badge_url.empty())
+  {
+    if ((badge = GetCachedTextureAsync(badge_url)))
+      heading_background_image = GetBlurredHeaderBackground(badge, badge_url, heading_size);
+  }
+
+  if (BeginFullscreenWindow(ImVec2(), heading_size, "achievements_heading", heading_background, 0.0f,
+                            ImVec2(10.0f, 10.0f),
                             ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoScrollWithMouse,
-                            true))
+                            !heading_background_image))
   {
     const ImVec2 pos = ImGui::GetCursorScreenPos() + ImGui::GetStyle().FramePadding;
     const float spacing = LayoutScale(LAYOUT_MENU_ITEM_TITLE_SUMMARY_SPACING);
     const float image_size = LayoutScale(75.0f);
 
-    if (const std::string& badge_url = Achievements::GetCurrentGameBadgeURL(); !badge_url.empty())
+    if (badge)
     {
-      GPUTexture* badge = GetCachedTextureAsync(badge_url);
-      if (badge)
+      if (heading_background_image)
       {
-        const ImRect image_bb = CenterImage(ImRectFromExtent(pos, image_size, image_size), badge);
-        ImGui::GetWindowDrawList()->AddImage(badge, image_bb.Min, image_bb.Max, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f),
-                                             IM_COL32(255, 255, 255, 255));
+        ImGui::GetWindowDrawList()->AddImage(heading_background_image, ImVec2(), heading_size, ImVec2(),
+                                             ImVec2(1.0f, 1.0f), HEADING_BACKGROUND_COLOR);
       }
+
+      const ImRect image_bb = CenterImage(ImRectFromExtent(pos, image_size, image_size), badge);
+      ImGui::GetWindowDrawList()->AddImage(badge, image_bb.Min, image_bb.Max);
     }
 
     float left = pos.x + image_size + LayoutScale(10.0f);
@@ -2808,24 +2817,34 @@ void FullscreenUI::DrawLeaderboardsWindow()
   const float spacing = LayoutScale(10.0f);
   const float spacing_small = ImFloor(spacing * 0.5f);
   const float heading_height = LayoutScale(heading_height_unscaled);
+  const ImVec2 heading_size = ImVec2(display_size.x, heading_height);
 
-  if (BeginFullscreenWindow(ImVec2(), ImVec2(display_size.x, heading_height), "leaderboards_heading",
-                            heading_background, 0.0f, ImVec2(10.0f, 10.0f),
+  GPUTexture* badge = nullptr;
+  GPUTexture* heading_background_image = nullptr;
+  if (const std::string& badge_url = Achievements::GetCurrentGameBadgeURL(); !badge_url.empty())
+  {
+    if ((badge = GetCachedTextureAsync(badge_url)))
+      heading_background_image = GetBlurredHeaderBackground(badge, badge_url, heading_size);
+  }
+
+  if (BeginFullscreenWindow(ImVec2(), heading_size, "leaderboards_heading", heading_background, 0.0f,
+                            ImVec2(10.0f, 10.0f),
                             ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoScrollWithMouse,
-                            true))
+                            !heading_background_image))
   {
     const ImVec2 heading_pos = ImGui::GetCursorScreenPos() + ImGui::GetStyle().FramePadding;
     const float image_size = LayoutScale(75.0f);
 
-    if (const std::string& badge_url = Achievements::GetCurrentGameBadgeURL(); !badge_url.empty())
+    if (badge)
     {
-      GPUTexture* badge = GetCachedTextureAsync(badge_url);
-      if (badge)
+      if (heading_background_image)
       {
-        const ImRect image_bb = CenterImage(ImRectFromExtent(heading_pos, image_size, image_size), badge);
-        ImGui::GetWindowDrawList()->AddImage(badge, image_bb.Min, image_bb.Max, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f),
-                                             IM_COL32(255, 255, 255, 255));
+        ImGui::GetWindowDrawList()->AddImage(heading_background_image, ImVec2(), heading_size, ImVec2(),
+                                             ImVec2(1.0f, 1.0f), HEADING_BACKGROUND_COLOR);
       }
+
+      const ImRect image_bb = CenterImage(ImRectFromExtent(heading_pos, image_size, image_size), badge);
+      ImGui::GetWindowDrawList()->AddImage(badge, image_bb.Min, image_bb.Max);
     }
 
     float left = heading_pos.x + image_size + spacing;
@@ -2840,8 +2859,8 @@ void FullscreenUI::DrawLeaderboardsWindow()
 
     top += UIStyle.LargeFontSize + spacing_small;
 
-    RenderShadowedTextClipped(UIStyle.Font, UIStyle.LargeFontSize, UIStyle.BoldFontWeight, title_bb.Min, title_bb.Max,
-                              text_color, text, nullptr, ImVec2(0.0f, 0.0f), 0.0f, &title_bb);
+    RenderShadowedTextClipped(UIStyle.Font, UIStyle.LargeFontSize, 600.0f, title_bb.Min, title_bb.Max, text_color, text,
+                              nullptr, ImVec2(0.0f, 0.0f), 0.0f, &title_bb);
 
     u32 summary_color;
     if (is_leaderboard_open)
@@ -3445,5 +3464,3 @@ void FullscreenUI::CloseLeaderboard()
   s_achievements_locals.has_fetched_all_leaderboard_entries = false;
   s_achievements_locals.is_showing_all_leaderboard_entries = false;
 }
-
-#endif // __ANDROID__
