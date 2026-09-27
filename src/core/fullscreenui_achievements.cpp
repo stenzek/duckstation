@@ -148,6 +148,7 @@ static void CollectSubsetsFromList(const T* list, bool include_achievements, boo
 template<typename T>
 static bool IsBucketVisibleInCurrentSubset(const T& bucket);
 static void SortLockedAchievements();
+static const std::string& GetHeadingBadgeURL();
 
 template<typename T>
 static void CachePauseMenuAchievementInfo(const rc_client_achievement_t* achievement, std::optional<T>& value);
@@ -1976,6 +1977,13 @@ void FullscreenUI::SortLockedAchievements()
   }
 }
 
+const std::string& FullscreenUI::GetHeadingBadgeURL()
+{
+  return (s_achievements_locals.open_subset && !s_achievements_locals.open_subset->badge_path.empty()) ?
+           s_achievements_locals.open_subset->badge_path :
+           Achievements::GetCurrentGameBadgeURL();
+}
+
 void FullscreenUI::SwitchToAchievements(u32 scroll_to_achievement_id /*= 0*/)
 {
   const auto lock = Achievements::GetLock();
@@ -2053,7 +2061,7 @@ void FullscreenUI::DrawAchievementsWindow()
 
   GPUTexture* badge = nullptr;
   GPUTexture* heading_background_image = nullptr;
-  if (const std::string& badge_url = Achievements::GetCurrentGameBadgeURL(); !badge_url.empty())
+  if (const std::string& badge_url = GetHeadingBadgeURL(); !badge_url.empty())
   {
     if ((badge = GetCachedTextureAsync(badge_url)))
       heading_background_image = GetBlurredHeaderBackground(badge, badge_url, heading_size);
@@ -2821,7 +2829,7 @@ void FullscreenUI::DrawLeaderboardsWindow()
 
   GPUTexture* badge = nullptr;
   GPUTexture* heading_background_image = nullptr;
-  if (const std::string& badge_url = Achievements::GetCurrentGameBadgeURL(); !badge_url.empty())
+  if (const std::string& badge_url = GetHeadingBadgeURL(); !badge_url.empty())
   {
     if ((badge = GetCachedTextureAsync(badge_url)))
       heading_background_image = GetBlurredHeaderBackground(badge, badge_url, heading_size);
