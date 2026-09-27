@@ -1341,7 +1341,7 @@ bool FullscreenUI::CompilePipelines(Error* error)
                                        GPUPipeline::VertexAttribute::Type::UNorm8, 4, OFFSETOF(ImDrawVert, col)),
   };
 
-  plconfig.layout = GPUPipeline::Layout::MultiTextureAndUBOAndPushConstants;
+  plconfig.layout = GPUPipeline::Layout::SingleTextureAndUBO;
   plconfig.input_layout.vertex_attributes = imgui_attributes;
   plconfig.input_layout.vertex_stride = sizeof(ImDrawVert);
   plconfig.primitive = GPUPipeline::Primitive::Triangles;
@@ -1551,6 +1551,11 @@ GPUTexture* FullscreenUI::GetBlurRenderTexture(GPUSwapChain* const swap_chain)
   return s_state.blur_valid ? nullptr : s_state.blur_source_texture.get();
 }
 
+const GSVector2& FullscreenUI::GetBlurTextureScale()
+{
+  return s_state.blur_texture_scale;
+}
+
 void FullscreenUI::RenderBlur(GPUSwapChain* const swap_chain, GPUTexture* const blur_render_texture)
 {
   DebugAssert(s_state.blur_source_texture && s_state.blur_source_texture.get() == blur_render_texture);
@@ -1699,20 +1704,9 @@ void FullscreenUI::EndBlurBackground(ImDrawList* const dl)
 void FullscreenUI::DrawWithBlurTexture(const ImDrawList* parent_list, const ImDrawCmd* cmd, u32 base_vertex,
                                        u32 base_index)
 {
-  struct Uniforms
-  {
-    float blur_texture_scale[2];
-    float blur_background_weight;
-    float inv_blur_background_weight;
-  } uniforms;
-  uniforms.blur_background_weight = UIStyle.BlurBackgroundWeight;
-  uniforms.inv_blur_background_weight = 1.0f - UIStyle.BlurBackgroundWeight;
-  GSVector2::store<true>(uniforms.blur_texture_scale, s_state.blur_texture_scale);
-
   g_gpu_device->SetPipeline(s_state.blur_apply_pipeline.get());
   g_gpu_device->SetTextureSampler(0, s_state.blur_output_texture.get(), g_gpu_device->GetLinearSampler());
-  g_gpu_device->DrawIndexedWithPushConstants(cmd->ElemCount, base_index + cmd->IdxOffset, base_vertex + cmd->VtxOffset,
-                                             &uniforms, sizeof(uniforms));
+  g_gpu_device->DrawIndexed(cmd->ElemCount, base_index + cmd->IdxOffset, base_vertex + cmd->VtxOffset);
 }
 
 bool FullscreenUI::UpdateLayoutScale()

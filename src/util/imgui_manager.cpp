@@ -635,6 +635,14 @@ void ImGuiManager::CreateDrawLists()
 void ImGuiManager::RenderDrawLists(const ImDrawData* draw_data, u32 window_width, u32 window_height,
                                    WindowInfoPrerotation prerotation)
 {
+  struct alignas(VECTOR_ALIGNMENT) ImGuiUniforms
+  {
+    GSMatrix4x4 mproj;
+    float blur_texture_scale[2];
+    float blur_background_weight;
+    float inv_blur_background_weight;
+  };
+
   UpdateTextures(draw_data);
 
   if (draw_data->CmdListsCount == 0)
@@ -650,11 +658,19 @@ void ImGuiManager::RenderDrawLists(const ImDrawData* draw_data, u32 window_width
   g_gpu_device->SetPipeline(s_state.imgui_pipeline.get());
 
   const bool prerotated = (prerotation != WindowInfoPrerotation::Identity);
-  GSMatrix4x4 mproj = GSMatrix4x4::OffCenterOrthographicProjection(0.0f, 0.0f, static_cast<float>(window_width),
-                                                                   static_cast<float>(window_height), 0.0f, 1.0f);
+
+  // Include the blur in the uniforms so we don't need a second buffer. The texture scale might be invalid if
+  // blur isn't active, but it won't be used in that case. We use a UBO rather than push constants in case
+  // the command buffer needs to be flushed mid-render.
+  ImGuiUniforms uniforms;
+  uniforms.mproj = GSMatrix4x4::OffCenterOrthographicProjection(0.0f, 0.0f, static_cast<float>(window_width),
+                                                                static_cast<float>(window_height), 0.0f, 1.0f);
   if (prerotated)
-    mproj = GSMatrix4x4::RotationZ(WindowInfo::GetZRotationForPreRotation(prerotation)) * mproj;
-  g_gpu_device->UploadUniformBuffer(&mproj, sizeof(mproj));
+    uniforms.mproj = GSMatrix4x4::RotationZ(WindowInfo::GetZRotationForPreRotation(prerotation)) * uniforms.mproj;
+  GSVector2::store<true>(uniforms.blur_texture_scale, FullscreenUI::GetBlurTextureScale());
+  uniforms.blur_background_weight = FullscreenUI::UIStyle.BlurBackgroundWeight;
+  uniforms.inv_blur_background_weight = 1.0f - FullscreenUI::UIStyle.BlurBackgroundWeight;
+  g_gpu_device->UploadUniformBuffer(&uniforms, sizeof(uniforms));
 
   // Render command lists
   const bool flip = g_gpu_device->UsesLowerLeftOrigin();

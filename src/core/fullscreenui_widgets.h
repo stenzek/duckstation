@@ -27,6 +27,7 @@
 #include <vector>
 
 class Error;
+class GSVector2;
 class Image;
 class ProgressCallbackWithPrompt;
 
@@ -329,6 +330,7 @@ void UpdateTransitionState();
 bool CanBlurBackground();
 void InvalidateBlurBackground();
 GPUTexture* GetBlurRenderTexture(GPUSwapChain* const swap_chain);
+const GSVector2& GetBlurTextureScale();
 void RenderBlur(GPUSwapChain* const swap_chain, GPUTexture* const blur_render_texture);
 bool BeginBlurBackground(ImDrawList* const dl, const ImVec2& bb_min, const ImVec2& bb_max);
 void EndBlurBackground(ImDrawList* const dl);

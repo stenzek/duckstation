@@ -67,6 +67,8 @@ public:
                             bool feedback_loop = false, bool rov = false) const;
 
 protected:
+  void DeclareImGuiUniformBuffer(std::stringstream& ss) const;
+
   RenderAPI m_render_api;
   GPUShaderLanguage m_shader_language;
   bool m_glsl;

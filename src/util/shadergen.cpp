@@ -888,11 +888,19 @@ std::string ShaderGen::GenerateCopyFragmentShader(bool offset) const
   return std::move(ss).str();
 }
 
+void ShaderGen::DeclareImGuiUniformBuffer(std::stringstream& ss) const
+{
+  DeclareUniformBuffer(ss,
+                       {"float4x4 ProjectionMatrix", "float2 BlurTextureScale", "float BlurBackgroundWeight",
+                        "float InvBlurBackgroundWeight"},
+                       false);
+}
+
 std::string ShaderGen::GenerateImGuiVertexShader() const
 {
   std::stringstream ss;
   WriteHeader(ss);
-  DeclareUniformBuffer(ss, {"float4x4 ProjectionMatrix"}, false);
+  DeclareImGuiUniformBuffer(ss);
   DeclareVertexEntryPoint(ss, {"float2 a_pos", "float2 a_tex0", "float4 a_col0"}, 1, 1, {}, false);
   ss << R"(
 {
@@ -912,7 +920,7 @@ std::string ShaderGen::GenerateImGuiFragmentShader() const
 {
   std::stringstream ss;
   WriteHeader(ss);
-  DeclareUniformBuffer(ss, {"float4x4 ProjectionMatrix"}, false); // needs the descriptor set defined
+  DeclareImGuiUniformBuffer(ss);
   DeclareTexture(ss, "samp0", 0);
   DeclareFragmentEntryPoint(ss, 1, 1);
 
@@ -929,9 +937,7 @@ std::string ShaderGen::GenerateImGuiBlurVertexShader() const
 {
   std::stringstream ss;
   WriteHeader(ss);
-  DeclareUniformBuffer(ss, {"float4x4 ProjectionMatrix"}, false);
-  DeclareUniformBuffer(ss, {"float2 BlurTextureScale", "float BlurBackgroundWeight", "float InvBlurBackgroundWeight"},
-                       true);
+  DeclareImGuiUniformBuffer(ss);
   DeclareVertexEntryPoint(ss, {"float2 a_pos", "float4 a_col0"}, 1, 0, {}, false);
   ss << R"(
 {
@@ -950,9 +956,7 @@ std::string ShaderGen::GenerateImGuiBlurFragmentShader() const
 {
   std::stringstream ss;
   WriteHeader(ss);
-  DeclareUniformBuffer(ss, {"float4x4 ProjectionMatrix"}, false); // needs the descriptor set defined
-  DeclareUniformBuffer(ss, {"float2 BlurTextureScale", "float BlurBackgroundWeight", "float InvBlurBackgroundWeight"},
-                       true);
+  DeclareImGuiUniformBuffer(ss);
   DeclareTexture(ss, "samp0", 0);
   DeclareFragmentEntryPoint(ss, 1, 0, {}, true);
 
