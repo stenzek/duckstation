@@ -223,8 +223,16 @@ Vuoi abilitare la modalità hardcore?</translation>
         <translation>Mostra notifiche obiettivi</translation>
     </message>
     <message>
+        <source>Reset Achievement Notification Duration</source>
+        <translation>Reimposta durata delle notifiche degli obiettivi</translation>
+    </message>
+    <message>
         <source>Show Leaderboard Notifications</source>
         <translation>Mostra notifiche classifiche</translation>
+    </message>
+    <message>
+        <source>Reset Leaderboard Notification Duration</source>
+        <translation>Reimposta durata delle notifiche delle classifiche</translation>
     </message>
     <message>
         <source>Show Leaderboard Trackers</source>
@@ -269,6 +277,18 @@ Vuoi abilitare la modalità hardcore?</translation>
     <message>
         <source>Displays popup messages on events such as achievement unlocks and game completion.</source>
         <translation>Mostra messaggi popup su eventi quali gli sblocchi degli obiettivi e il completamento dei giochi.</translation>
+    </message>
+    <message>
+        <source>N/A</source>
+        <translation>N/A</translation>
+    </message>
+    <message>
+        <source>Resets the duration to the global setting.</source>
+        <translation>Reimposta la durata all&apos;impostazione globale.</translation>
+    </message>
+    <message>
+        <source>Resets the duration to the default.</source>
+        <translation>Reimposta la durata all&apos;impostazione predefinita.</translation>
     </message>
     <message>
         <source>Displays popup messages when starting, submitting, or failing a leaderboard challenge.</source>
@@ -397,15 +417,12 @@ Token generato %2</translation>
         <translation>Quando è abilitato, ogni sessione si comporterà come se nessun obiettivo fosse stato sbloccato.</translation>
     </message>
     <message>
+        <source> seconds</source>
+        <translation> secondi</translation>
+    </message>
+    <message>
         <source>When enabled, DuckStation will assume all achievements are locked and not send any unlock notifications to the server.</source>
         <translation>Quando abilitato, DuckStation presumerà che tutti gli obiettivi siano bloccati e non invierà notifiche di sblocco al server.</translation>
-    </message>
-    <message numerus="yes">
-        <source>%n seconds</source>
-        <translation>
-            <numerusform>%n secondo</numerusform>
-            <numerusform>%n secondi</numerusform>
-        </translation>
     </message>
     <message>
         <source>Logout</source>
@@ -1156,14 +1173,6 @@ Messaggi non letti: {}</translation>
 <context>
     <name>AnalogController</name>
     <message>
-        <source>Controller {} switched to analog mode.</source>
-        <translation>Controller {} passato in modalità analogica.</translation>
-    </message>
-    <message>
-        <source>Controller {} switched to digital mode.</source>
-        <translation>Controller {} passato in modalità digitale.</translation>
-    </message>
-    <message>
         <source>Never</source>
         <translation>Mai</translation>
     </message>
@@ -1242,14 +1251,6 @@ Messaggi non letti: {}</translation>
     <message>
         <source>Circle</source>
         <translation>Cerchio</translation>
-    </message>
-    <message>
-        <source>Controller {} is locked to analog mode by the game.</source>
-        <translation>Il controller {} è bloccato in modalità analogica dal gioco.</translation>
-    </message>
-    <message>
-        <source>Controller {} is locked to digital mode by the game.</source>
-        <translation>Il controller {} è bloccato in modalità digitale dal gioco.</translation>
     </message>
     <message>
         <source>D-Pad Up</source>
@@ -1409,10 +1410,6 @@ Messaggi non letti: {}</translation>
     <message>
         <source>Inverts the direction of the right analog stick.</source>
         <translation>Inverte la direzione della levetta analogica destra.</translation>
-    </message>
-    <message>
-        <source>Mode LED</source>
-        <translation>LED della modalità</translation>
     </message>
 </context>
 <context>
@@ -1649,6 +1646,10 @@ Messaggi non letti: {}</translation>
         <translation>Ripristina dimensione del buffer predefinita</translation>
     </message>
     <message>
+        <source>Reset Output Latency</source>
+        <translation>Ripristina latenza in uscita predefinita</translation>
+    </message>
+    <message>
         <source>Maximum Latency: 0 ms (0 ms stretch + 0 ms buffer + 0 ms output)</source>
         <translation>Latenza massima: 0 ms (0 ms di allungamento + 0 ms di buffer + 0 ms di uscita)</translation>
     </message>
@@ -1761,6 +1762,10 @@ Messaggi non letti: {}</translation>
         <translation>Deselezionato</translation>
     </message>
     <message>
+        <source> ms</source>
+        <translation> ms</translation>
+    </message>
+    <message>
         <source>Fast Forward Volume</source>
         <translation>Volume avanzamento veloce</translation>
     </message>
@@ -1859,10 +1864,6 @@ Messaggi non letti: {}</translation>
     <message>
         <source>Maximum Latency: %1 ms (minimum output latency unknown)</source>
         <translation>Latenza massima: %1 ms (latenza minima in uscita sconosciuta)</translation>
-    </message>
-    <message>
-        <source>%1%</source>
-        <translation>%1%</translation>
     </message>
 </context>
 <context>
@@ -2927,6 +2928,14 @@ Questo avvertimento verrà mostrato solo una volta.</translation>
         <translation>Controller {} passato in modalità digitale.</translation>
     </message>
     <message>
+        <source>Controller {} is locked to analog mode by the game.</source>
+        <translation>Il controller {} è bloccato in modalità analogica dal gioco.</translation>
+    </message>
+    <message>
+        <source>Controller {} is locked to digital mode by the game.</source>
+        <translation>Il controller {} è bloccato in modalità digitale dal gioco.</translation>
+    </message>
+    <message>
         <source>Controller {} switched to JogCon mode.</source>
         <translation>Controller {} passato in modalità JogCon.</translation>
     </message>
@@ -2960,6 +2969,14 @@ Questo avvertimento verrà mostrato solo una volta.</translation>
     <message>
         <source>Clear Mapping</source>
         <translation>Azzera mappatura</translation>
+    </message>
+    <message>
+        <source>Multiple Devices</source>
+        <translation>Dispositivi multipli</translation>
+    </message>
+    <message>
+        <source>%1 (%2)</source>
+        <translation>%1 (%2)</translation>
     </message>
     <message>
         <source>Multiple devices...</source>
@@ -3587,10 +3604,6 @@ Questo avvertimento verrà mostrato solo una volta.</translation>
         <translation>Regola le impostazioni dei LED per i controller con LED configurabili.</translation>
     </message>
     <message>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enables the SDL input source and detection of controllers.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Abilita la sorgente di input SDL e il rilevamento dei controller.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
-    </message>
-    <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Allows rumble and LED effects for DualShock 4 / DualSense controllers in Bluetooth mode. This option is not required for wired connections.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Enabling enhanced reports may result in your controller being unusable in other applications until it is turned off and on again.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Consente gli effetti di vibrazione e LED per i controller DualShock 4 / DualSense in modalità Bluetooth. Questa opzione non è necessaria per le connessioni cablate.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;L&apos;abilitazione dei report avanzati potrebbe rendere inutilizzabile il controller in altre applicazioni finché non viene spento e riacceso.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
@@ -3603,12 +3616,28 @@ Questo avvertimento verrà mostrato solo una volta.</translation>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;La sorgente di input SDL supporta la maggior parte dei controller ed è l&apos;opzione preferita. La modalità avanzata potrebbe essere necessaria per la funzionalità di vibrazione/LED dei controller DualShock 4 / DualSense in modalità Bluetooth. Puoi anche modificare le &lt;a href=&quot;ADVANCED_SDL_OPTIONS&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#99ebff;&quot;&gt;opzioni avanzate&lt;/span&gt;&lt;/a&gt; che controllano il comportamento specifico dei dispositivi.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
+        <source>LEDs</source>
+        <translation>LED</translation>
+    </message>
+    <message>
+        <source>Enables the SDL input source and detection of controllers.</source>
+        <translation>Abilita la sorgente di input SDL e il rilevamento dei controller.</translation>
+    </message>
+    <message>
         <source>Allows use of the touchpad for DualShock 4 / DualSense controllers as a pointer, for use with lightguns.</source>
         <translation>Consente di utilizzare il touchpad dei controller DualShock 4 / DualSense come puntatore, per usarli con le pistole ottiche.</translation>
     </message>
     <message>
         <source>Enable Touchpad</source>
         <translation>Abilita touchpad</translation>
+    </message>
+    <message>
+        <source>Saves supported controllers by serial or device identity so bindings survive port and connection-order changes when possible.</source>
+        <translation>Salva i controller supportati in base al numero di serie o all&apos;identificativo del dispositivo, in modo che le associazioni dei comandi rimangano valide, se possibile, anche in caso di cambi di porta o di ordine di connessione.</translation>
+    </message>
+    <message>
+        <source>Use Persistent Device Identifiers</source>
+        <translation>Usa identificativi persistenti per i dispositivi</translation>
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The XInput source provides support for controllers that use the XInput protocol. This source should &lt;span style=&quot; font-weight:700;&quot;&gt;only&lt;/span&gt; be used if you are using a XInput wrapper library.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
@@ -4098,8 +4127,8 @@ Questo file ha una dimensione di circa 206 KB. Vuoi scaricarlo ora?</translation
         <translation>DuckStation può scaricare automaticamente le copertine per i giochi che non ne hanno ancora una. Non ospitiamo immagini di copertina: l&apos;utente deve fornire la propria fonte per le immagini.</translation>
     </message>
     <message>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Depending on your jurisdiction, &lt;span style=&quot; font-weight:700;&quot;&gt;game covers may be copyrighted&lt;/span&gt;. You are only authorized to use this tool with &lt;span style=&quot; font-weight:700;&quot;&gt;your own servers and images&lt;/span&gt;.&lt;/p&gt;&lt;p&gt;In the box below, specify the URLs to download covers from, with one template URL per line. The following variables are available:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${title}:&lt;/span&gt; Title of the game.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${savetitle}:&lt;/span&gt; Title of the game including the region.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${localizedtitle}:&lt;/span&gt; Localized (native language) title of the game.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${filetitle}:&lt;/span&gt; Name component of the game&apos;s filename.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${serial}:&lt;/span&gt; Serial of the game.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Example:&lt;/span&gt; https://www.example-not-a-real-domain.com/covers/${serial}.jpg&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;A seconda della giurisdizione, &lt;span style=&quot; font-weight:700;&quot;&gt;le copertine dei giochi potrebbero essere protette da copyright&lt;/span&gt;. Sei autorizzato a utilizzare questo strumento solo con &lt;span style=&quot; font-weight:700;&quot;&gt;server e immagini di tua proprietà&lt;/span&gt;.&lt;/p&gt;&lt;p&gt;Nella casella sottostante, specifica gli URL da cui scaricare le copertine, con un URL modello per riga. Sono disponibili le seguenti variabili:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${title}:&lt;/span&gt; Titolo del gioco.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${savetitle}:&lt;/span&gt; Titolo del gioco comprensivo della regione.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${localizedtitle}:&lt;/span&gt; Titolo localizzato (nella lingua nativa) del gioco.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${filetitle}:&lt;/span&gt; Componente del nome file del gioco.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${serial}:&lt;/span&gt; Seriale del gioco.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Esempio:&lt;/span&gt; https://www.example-not-a-real-domain.com/covers/${serial}.jpg&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Depending on your jurisdiction, &lt;span style=&quot; font-weight:700;&quot;&gt;game covers may be copyrighted&lt;/span&gt;. You are only authorized to use this tool with &lt;span style=&quot; font-weight:700;&quot;&gt;your own servers and images&lt;/span&gt;.&lt;/p&gt;&lt;p&gt;In the box below, specify the URLs to download covers from, with one template URL per line. The following variables are available:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${title}:&lt;/span&gt; Title of the game.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${savetitle}:&lt;/span&gt; Save title for the game, including the region suffix.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${localizedtitle}:&lt;/span&gt; Localized title for the game in its native language.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${filetitle}:&lt;/span&gt; Name component of the game&apos;s filename.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${serial}:&lt;/span&gt; Serial of the game.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Example:&lt;/span&gt; https://www.example-not-a-real-domain.com/covers/${serial}.jpg&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;A seconda della giurisdizione, &lt;span style=&quot; font-weight:700;&quot;&gt;le copertine dei giochi potrebbero essere protette da copyright&lt;/span&gt;. Sei autorizzato a utilizzare questo strumento solo con &lt;span style=&quot; font-weight:700;&quot;&gt;server e immagini di tua proprietà&lt;/span&gt;.&lt;/p&gt;&lt;p&gt;Nella casella sottostante, specifica gli URL da cui scaricare le copertine, con un URL modello per riga. Sono disponibili le seguenti variabili:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${title}:&lt;/span&gt; Titolo del gioco.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${savetitle}:&lt;/span&gt; Titolo dei salvataggi del gioco, inclusa la regione.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${localizedtitle}:&lt;/span&gt; Titolo localizzato del gioco nella lingua originale.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${filetitle}:&lt;/span&gt; Nome del file del gioco.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${serial}:&lt;/span&gt; Seriale del gioco.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Esempio:&lt;/span&gt; https://www.example-not-a-real-domain.com/covers/${serial}.jpg&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>By default, the downloaded covers will be saved with the game&apos;s title. If this is not desired, you can check the &quot;Use Serial File Names&quot; box below. Using serials instead of game titles will prevent conflicts when multiple regions of the same game are used.</source>
@@ -4347,6 +4376,10 @@ Questo file ha una dimensione di circa 206 KB. Vuoi scaricarlo ora?</translation
         <translation>Breakpoint</translation>
     </message>
     <message>
+        <source>Toolbar</source>
+        <translation>Barra degli strumenti</translation>
+    </message>
+    <message>
         <source>Disassembly</source>
         <translation>Disassemblato</translation>
     </message>
@@ -4589,10 +4622,6 @@ Questo file può pesare anche diversi GB, quindi bisogna tenere conto dell&apos;
         <translation>Applica &amp;patch all&apos;istruzione</translation>
     </message>
     <message>
-        <source>&amp;Nop Instruction</source>
-        <translation>Istruzione &amp;NOP</translation>
-    </message>
-    <message>
         <source>&amp;Follow Load/Store</source>
         <translation>&amp;Segui caricamento/scrittura</translation>
     </message>
@@ -4611,10 +4640,6 @@ Questo file può pesare anche diversi GB, quindi bisogna tenere conto dell&apos;
     <message>
         <source>Invalid Instruction</source>
         <translation>Istruzione non valida</translation>
-    </message>
-    <message>
-        <source>Failed to write patched instruction to 0x%1.</source>
-        <translation>Impossibile scrivere l&apos;istruzione modificata all&apos;indirizzo 0x%1.</translation>
     </message>
     <message>
         <source>Patched instruction at 0x%1.</source>
@@ -4643,9 +4668,43 @@ Questo file può pesare anche diversi GB, quindi bisogna tenere conto dell&apos;
         <source>Failed to add step-out breakpoint, are you in a valid function?</source>
         <translation>Impossibile aggiungere breakpoint step-out, sei in una funzione valida?</translation>
     </message>
+    <message numerus="yes">
+        <source>&amp;Nop %n Instruction(s)</source>
+        <translation>
+            <numerusform>Trasforma %n istruzione in &amp;NOP</numerusform>
+            <numerusform>Trasforma %n istruzioni in &amp;NOP</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>&amp;Copy %n Instruction(s)</source>
+        <translation>
+            <numerusform>&amp;Copia %n istruzione</numerusform>
+            <numerusform>&amp;Copia %n istruzioni</numerusform>
+        </translation>
+    </message>
     <message>
         <source>View in &amp;Dump</source>
         <translation>Visualizza in &amp;dump</translation>
+    </message>
+    <message>
+        <source>Failed to write one or more patched instructions. Patched %1 of %2 instructions; the first failure was at 0x%3.</source>
+        <translation>Impossibile scrivere una o più istruzioni modificate. Modificate %1 istruzioni su %2; il primo errore si è verificato all&apos;indirizzo 0x%3.</translation>
+    </message>
+    <message>
+        <source>Patched %1 of %2 selected instructions.</source>
+        <translation>Modificate %1 delle %2 istruzioni selezionate.</translation>
+    </message>
+    <message>
+        <source>Patched %1 instructions.</source>
+        <translation>Modificate %1 istruzioni.</translation>
+    </message>
+    <message numerus="yes">
+        <source>Copied %n instruction(s) to the clipboard.</source>
+        <comment>CopyRange</comment>
+        <translation>
+            <numerusform>Copiata %n istruzione negli appunti.</numerusform>
+            <numerusform>Copiate %n istruzioni negli appunti.</numerusform>
+        </translation>
     </message>
     <message>
         <source>Invalid search pattern. It should contain hex digits or question marks.</source>
@@ -5229,14 +5288,6 @@ Facendo clic su Ripristina, il seriale verrà ripristinato al valore rilevato da
 <context>
     <name>FullscreenUI</name>
     <message>
-        <source>${title}: Title of the game.
-${filetitle}: Name component of the game&apos;s filename.
-${serial}: Serial of the game.</source>
-        <translation>${title}: Titolo del gioco.
-${filetitle}: Nome del file del gioco.
-${serial}: Numero seriale del gioco.</translation>
-    </message>
-    <message>
         <source>-</source>
         <translation>-</translation>
     </message>
@@ -5507,7 +5558,7 @@ ${serial}: Numero seriale del gioco.</translation>
     </message>
     <message>
         <source>Back To Pause Menu</source>
-        <translation>Torna al menu di pausa</translation>
+        <translation>Torna al menu pausa</translation>
     </message>
     <message>
         <source>Backend Settings</source>
@@ -6224,6 +6275,26 @@ L&apos;errore è:</translation>
         <translation> (%u MB su disco)</translation>
     </message>
     <message>
+        <source>${filetitle}: Name component of the game&apos;s filename.</source>
+        <translation>${filetitle}: Nome del file del gioco.</translation>
+    </message>
+    <message>
+        <source>${localizedtitle}: Localized title for the game in its native language.</source>
+        <translation>${localizedtitle}: Titolo localizzato del gioco nella lingua originale.</translation>
+    </message>
+    <message>
+        <source>${savetitle}: Save title for the game, including the region suffix.</source>
+        <translation>${savetitle}: Titolo dei salvataggi del gioco, inclusa la regione.</translation>
+    </message>
+    <message>
+        <source>${serial}: Serial of the game.</source>
+        <translation>${serial}: Seriale del gioco.</translation>
+    </message>
+    <message>
+        <source>${title}: Title of the game.</source>
+        <translation>${title}: Titolo del gioco.</translation>
+    </message>
+    <message>
         <source>%.1f ms</source>
         <translation>%.1f ms</translation>
     </message>
@@ -6338,6 +6409,10 @@ Vuoi eliminare il salvataggio di stato e avviare comunque il gioco?</translation
     <message>
         <source>Applies a blur effect to the background when a menu is open to improve readability.</source>
         <translation>Applica un effetto sfocato allo sfondo quando è aperto un menu per migliorarne la leggibilità.</translation>
+    </message>
+    <message>
+        <source>Applies the selected sprite texture filter to framebuffer uploads. This can smooth backgrounds in some games while preserving texture data and 24-bit video.</source>
+        <translation>Applica il filtro sprite selezionato ai caricamenti nel framebuffer. Ciò può smussare gli sfondi in alcuni giochi, preservando allo stesso tempo i dati delle texture e i filmati a 24 bit.</translation>
     </message>
     <message>
         <source>Are you sure you want to clear all mappings for this controller?
@@ -6604,6 +6679,10 @@ Questa azione non può essere annullata.</translation>
         <translation>Valore predefinito</translation>
     </message>
     <message>
+        <source>Default: {}</source>
+        <translation>Valore predefinito: {}</translation>
+    </message>
+    <message>
         <source>Deinterlacing Mode</source>
         <translation>Modalità deinterlacciamento</translation>
     </message>
@@ -6726,6 +6805,10 @@ Questa azione non può essere annullata.</translation>
     <message>
         <source>Disable Textures</source>
         <translation>Disabilita texture</translation>
+    </message>
+    <message>
+        <source>Disable Upscaled Direct Textures</source>
+        <translation>Disabilita ingrandimento delle texture dirette</translation>
     </message>
     <message>
         <source>Disable Vertex Lighting</source>
@@ -6972,6 +7055,10 @@ Questa azione non può essere annullata.</translation>
         <translation>Accelera il processo di caricamento iniziale durante l&apos;avvio rapido, risparmiando tempo. I risultati possono variare a seconda del gioco.</translation>
     </message>
     <message>
+        <source>Filter Framebuffer Uploads</source>
+        <translation>Filtra caricamenti del framebuffer</translation>
+    </message>
+    <message>
         <source>Fine Crop Amount</source>
         <translation>Quantità di ritaglio preciso</translation>
     </message>
@@ -7160,6 +7247,11 @@ Questa azione non può essere annullata.</translation>
         <translation>Sinistra: </translation>
     </message>
     <message>
+        <source>Length: {}</source>
+        <translatorcomment>CD track length</translatorcomment>
+        <translation>Durata: {}</translation>
+    </message>
+    <message>
         <source>Light</source>
         <translation>Chiaro</translation>
     </message>
@@ -7232,6 +7324,10 @@ Controlla il nome utente e la password, quindi riprova.</translation>
         <translation>Cicli massimi di accelerazione della ricerca</translation>
     </message>
     <message>
+        <source>Maximum: {}</source>
+        <translation>Massimo: {}</translation>
+    </message>
+    <message>
         <source>Memory Card Busy</source>
         <translation>Memory card occupata</translation>
     </message>
@@ -7258,6 +7354,18 @@ Controlla il nome utente e la password, quindi riprova.</translation>
     <message>
         <source>Minimal Output Latency</source>
         <translation>Latenza minima in uscita</translation>
+    </message>
+    <message>
+        <source>Minimum Framebuffer Upload Height</source>
+        <translation>Altezza minima del caricamento del framebuffer</translation>
+    </message>
+    <message>
+        <source>Minimum Framebuffer Upload Width</source>
+        <translation>Larghezza minima del caricamento del framebuffer</translation>
+    </message>
+    <message>
+        <source>Minimum: {}</source>
+        <translation>Minimo: {}</translation>
     </message>
     <message>
         <source>Move Cursor</source>
@@ -7334,6 +7442,14 @@ Controlla il nome utente e la password, quindi riprova.</translation>
     <message>
         <source>No patches are available for this game.</source>
         <translation>Non sono disponibili patch per questo gioco.</translation>
+    </message>
+    <message>
+        <source>Only filters framebuffer uploads at least this tall. Increase this value to avoid filtering texture data.</source>
+        <translation>Filtra solo i caricamenti del framebuffer con una altezza pari o superiore a questo valore. Aumenta questo valore per evitare di filtrare i dati delle texture.</translation>
+    </message>
+    <message>
+        <source>Only filters framebuffer uploads at least this wide. Increase this value to avoid filtering texture data.</source>
+        <translation>Filtra solo i caricamenti del framebuffer con una larghezza pari o superiore a questo valore. Aumenta questo valore per evitare di filtrare i dati delle texture.</translation>
     </message>
     <message>
         <source>PGXP Depth Buffer</source>
@@ -7416,8 +7532,16 @@ Controlla il nome utente e la password, quindi riprova.</translation>
         <translation>LED giocatore su DualSense con SDL</translation>
     </message>
     <message>
+        <source>SDL Persistent Device Identifiers</source>
+        <translation>Identificativi persistenti per i dispositivi SDL</translation>
+    </message>
+    <message>
         <source>Safe Mode</source>
         <translation>Modalità sicura</translation>
+    </message>
+    <message>
+        <source>Samples 16-bit direct-color textures at native resolution when upscaling. This can fix filtering of FMVs/backgrounds in some games, but may reduce the quality of render-to-texture effects.</source>
+        <translation>Campiona le texture a colori diretti a 16 bit alla risoluzione nativa durante l&apos;upscaling. Ciò può correggere il filtraggio di filmati (FMV) e sfondi in alcuni giochi, ma potrebbe ridurre la qualità degli effetti &quot;render-to-texture&quot;.</translation>
     </message>
     <message>
         <source>Save</source>
@@ -7454,6 +7578,10 @@ Controlla il nome utente e la password, quindi riprova.</translation>
     <message>
         <source>Save state deleted.</source>
         <translation>Salvataggio di stato eliminato.</translation>
+    </message>
+    <message>
+        <source>Saves supported controllers by serial or device identity so bindings survive port and connection-order changes when possible.</source>
+        <translation>Salva i controller supportati in base al numero di serie o all&apos;identificativo del dispositivo, in modo che le associazioni dei comandi rimangano valide, se possibile, anche in caso di cambi di porta o di ordine di connessione.</translation>
     </message>
     <message>
         <source>Scaled Interlacing</source>
@@ -7530,6 +7658,10 @@ Controlla il nome utente e la password, quindi riprova.</translation>
     <message>
         <source>Smooths out the blockiness of magnified textures on 2D objects.</source>
         <translation>Smussa la blocchettatura delle texture ingrandite sugli oggetti 2D.</translation>
+    </message>
+    <message>
+        <source>Start: {}</source>
+        <translation>Inizio: {}</translation>
     </message>
     <message>
         <source>The unlock state for &apos;{}&apos; will be removed. This cannot be undone.</source>
@@ -7632,6 +7764,10 @@ Controlla il nome utente e la password, quindi riprova.</translation>
         <translation>Usa la configurazione specifica del gioco per le sorgenti di input. Se disabilitata, verrà usata la configurazione globale.</translation>
     </message>
     <message>
+        <source>Value: {}</source>
+        <translation>Valore: {}</translation>
+    </message>
+    <message>
         <source>When enabled, DuckStation will track unofficial achievements. Unlocks will be saved locally and not sent to RetroAchievements.</source>
         <translation>Quando abilitato, DuckStation terrà traccia degli obiettivi non ufficiali. Gli obiettivi non ufficiali sbloccati verranno salvati in locale e non saranno inviati a RetroAchievements.</translation>
     </message>
@@ -7698,10 +7834,6 @@ Vuoi comunque {1}?</translation>
     <message>
         <source>{} unpinned.</source>
         <translation>{} non fissato.</translation>
-    </message>
-    <message>
-        <source>{} | Start: {} | Length: {}</source>
-        <translation>{} | Inizio: {} | Durata: {}</translation>
     </message>
     <message>
         <source>No Game Selected</source>
@@ -8719,7 +8851,7 @@ Vuoi comunque {1}?</translation>
     </message>
     <message>
         <source>Texture Modulation Cropping (&quot;Old/v0&quot; GPU)</source>
-        <translation>Restrizione della modulazione delle texture (GPU &quot;vecchia/v0&quot;)</translation>
+        <translation>Troncamento della modulazione delle texture (GPU &quot;vecchia/v0&quot;)</translation>
     </message>
     <message>
         <source>Texture Replacements</source>
@@ -8735,7 +8867,7 @@ Vuoi comunque {1}?</translation>
     </message>
     <message>
         <source>The SDL input source supports most controllers.</source>
-        <translation>La fonte di input SDL supporta la maggior parte dei controller.</translation>
+        <translation>La sorgente di input SDL supporta la maggior parte dei controller.</translation>
     </message>
     <message>
         <source>The audio backend determines how frames produced by the emulator are submitted to the host.</source>
@@ -8914,10 +9046,6 @@ Vuoi comunque {1}?</translation>
         <translation>Intervallo di valori</translation>
     </message>
     <message>
-        <source>Value: {} | Default: {} | Minimum: {} | Maximum: {}</source>
-        <translation>Valore: {} | Predefinito: {} | Minimo: {} | Massimo {}</translation>
-    </message>
-    <message>
         <source>Verify</source>
         <translation>Verifica</translation>
     </message>
@@ -8939,7 +9067,7 @@ Vuoi comunque {1}?</translation>
     </message>
     <message>
         <source>WARNING: Activating game patches can cause unpredictable behavior, crashing, soft-locks, or broken saved games.</source>
-        <translation>ATTENZIONE: l&apos;attivazione delle patch di gioco può causare comportamenti imprevedibili, arresti anomali, blocchi del gioco o danneggiare i salvataggi.</translation>
+        <translation>ATTENZIONE: l&apos;attivazione delle patch del gioco può causare comportamenti imprevedibili, arresti anomali, blocchi del gioco o danneggiare i salvataggi.</translation>
     </message>
     <message>
         <source>WARNING: Your game is still saving to the memory card. Continuing to {0} may IRREVERSIBLY DESTROY YOUR MEMORY CARD. We recommend resuming your game and waiting 5 seconds for it to finish saving.
@@ -9622,6 +9750,16 @@ Sei sicuro di voler continuare?</translation>
         <translation>È protetto da LibCrypt</translation>
     </message>
     <message>
+        <source>Disable Upscaled Direct Textures</source>
+        <comment>GameDatabase::Trait</comment>
+        <translation>Disabilita ingrandimento delle texture dirette</translation>
+    </message>
+    <message>
+        <source>Filter Framebuffer Uploads</source>
+        <comment>GameDatabase::Trait</comment>
+        <translation>Filtra caricamenti del framebuffer</translation>
+    </message>
+    <message>
         <source>Unknown</source>
         <translation>Sconosciuto</translation>
     </message>
@@ -9862,6 +10000,14 @@ Sei sicuro di voler continuare?</translation>
         <translation>Runahead massimo della GPU</translation>
     </message>
     <message>
+        <source>Filter Framebuffer Uploads Minimum Width</source>
+        <translation>Larghezza minima per filtrare i caricamenti del framebuffer</translation>
+    </message>
+    <message>
+        <source>Filter Framebuffer Uploads Minimum Height</source>
+        <translation>Altezza minima per filtrare i caricamenti del framebuffer</translation>
+    </message>
+    <message>
         <source>GPU Line Detect Mode</source>
         <translation>Modalità di rilevamento delle linee della GPU</translation>
     </message>
@@ -9940,13 +10086,13 @@ Sei sicuro di voler continuare?</translation>
         <translation>Scansione di &apos;{}&apos; in corso...</translation>
     </message>
     <message>
+        <source>URL template must contain at least one of ${title}, ${localizedtitle}, ${savetitle}, ${filetitle}, or ${serial}.</source>
+        <translation>Il modello di URL deve contenere almeno uno tra ${title}, ${localizedtitle}, ${savetitle}, ${filetitle}, o ${serial}.</translation>
+    </message>
+    <message>
         <source>Unknown</source>
         <translatorcomment>Feminine because it refers to disc size/game size (&quot;dimensione&quot;)</translatorcomment>
         <translation>Sconosciuta</translation>
-    </message>
-    <message>
-        <source>URL template must contain at least one of ${title}, ${savetitle}, ${filetitle}, or ${serial}.</source>
-        <translation>Il modello di URL deve contenere almeno uno tra ${title}, ${savetitle}, ${filetitle} o ${serial}.</translation>
     </message>
     <message>
         <source>No URLs to download enumerated.</source>
@@ -10104,6 +10250,14 @@ Cercare ricorsivamente richiede più tempo, ma permette di identificare file anc
     <message>
         <source>Select Directory</source>
         <translation>Seleziona cartella</translation>
+    </message>
+    <message>
+        <source>Add File...</source>
+        <translation>Aggiungi file...</translation>
+    </message>
+    <message>
+        <source>Add Folder...</source>
+        <translation>Aggiungi cartella...</translation>
     </message>
 </context>
 <context>
@@ -10585,7 +10739,7 @@ Cercare ricorsivamente richiede più tempo, ma permette di identificare file anc
     </message>
     <message>
         <source>Fine Crop Mode:</source>
-        <translation>Modalità ritaglio preciso</translation>
+        <translation>Modalità ritaglio preciso:</translation>
     </message>
     <message>
         <source>Reset Fine Cropping</source>
@@ -10593,7 +10747,7 @@ Cercare ricorsivamente richiede più tempo, ma permette di identificare file anc
     </message>
     <message>
         <source>Fine Crop Size:</source>
-        <translation>Dimensione ritaglio preciso:</translation>
+        <translation>Dimensioni ritaglio preciso:</translation>
     </message>
     <message>
         <source>Left:</source>
@@ -10618,10 +10772,6 @@ Cercare ricorsivamente richiede più tempo, ma permette di identificare file anc
     <message>
         <source>Max Queued Frames:</source>
         <translation>Fotogrammi in coda massimi:</translation>
-    </message>
-    <message>
-        <source>Texture Modulation Cropping (&quot;Old/v0 GPU&quot;)</source>
-        <translation>Restrizione modulazione texture (GPU &quot;vecchia/v0&quot;)</translation>
     </message>
     <message>
         <source>Scaled Interlacing</source>
@@ -10706,6 +10856,18 @@ Cercare ricorsivamente richiede più tempo, ma permette di identificare file anc
     <message>
         <source>Disable Dual-Source Blending</source>
         <translation>Disabilita blending a doppia sorgente</translation>
+    </message>
+    <message>
+        <source>Filter Framebuffer Uploads</source>
+        <translation>Filtra caricamenti del framebuffer</translation>
+    </message>
+    <message>
+        <source>Minimum Size:</source>
+        <translation>Dimensioni minime:</translation>
+    </message>
+    <message>
+        <source>Disable Upscaled Direct Textures</source>
+        <translation>Disabilita ingrandimento texture dirette</translation>
     </message>
     <message>
         <source>Disable on 2D Polygons</source>
@@ -10909,7 +11071,7 @@ Cercare ricorsivamente richiede più tempo, ma permette di identificare file anc
     </message>
     <message>
         <source>Texture Modulation Cropping (&quot;Old/v0&quot; GPU)</source>
-        <translation>Restrizione modulazione texture (GPU &quot;vecchia/v0&quot;)</translation>
+        <translation>Troncamento modulazione texture (GPU &quot;vecchia/v0&quot;)</translation>
     </message>
     <message>
         <source>Crops vertex colours to 5:5:5 before modulating with the texture colour, which typically results in more visible banding. This is a characteristic of the &quot;old&quot; GPUs found in early model consoles.</source>
@@ -11093,6 +11255,34 @@ Cercare ricorsivamente richiede più tempo, ma permette di identificare file anc
         <translation>Usa l&apos;antialiasing multicampionato quando renderizza poligoni 3D. Può migliorare la grafica con un requisito di performance più basso rispetto al ridimensionamento,&lt;strong&gt;ma spesso introduce errori di rendering.&lt;/strong&gt;</translation>
     </message>
     <message>
+        <source>Samples 16-bit direct-color textures at native resolution when upscaling. This can fix filtering of FMVs/backgrounds in some games, but may reduce the quality of render-to-texture effects.</source>
+        <translation>Campiona le texture a colori diretti a 16 bit alla risoluzione nativa durante l&apos;upscaling. Ciò può correggere il filtraggio di filmati (FMV) e sfondi in alcuni giochi, ma potrebbe ridurre la qualità degli effetti &quot;render-to-texture&quot;.</translation>
+    </message>
+    <message>
+        <source>Applies the selected sprite texture filter to framebuffer uploads. This can smooth backgrounds in some games while preserving texture data and 24-bit video.</source>
+        <translation>Applica il filtro sprite selezionato ai caricamenti nel framebuffer. Ciò può smussare gli sfondi in alcuni giochi, preservando allo stesso tempo i dati delle texture e i filmati a 24 bit.</translation>
+    </message>
+    <message>
+        <source>Minimum Framebuffer Upload Width</source>
+        <translation>Larghezza minima del caricamento del framebuffer</translation>
+    </message>
+    <message>
+        <source>1 px</source>
+        <translation>1 px</translation>
+    </message>
+    <message>
+        <source>Only filters framebuffer uploads at least this wide. Increase this value to avoid filtering texture data.</source>
+        <translation>Filtra solo i caricamenti del framebuffer con una larghezza pari o superiore a questo valore. Aumenta questo valore per evitare di filtrare i dati delle texture.</translation>
+    </message>
+    <message>
+        <source>Minimum Framebuffer Upload Height</source>
+        <translation>Altezza minima del caricamento del framebuffer</translation>
+    </message>
+    <message>
+        <source>Only filters framebuffer uploads at least this tall. Increase this value to avoid filtering texture data.</source>
+        <translation>Filtra solo i caricamenti del framebuffer con una altezza pari o superiore a questo valore. Aumenta questo valore per evitare di filtrare i dati delle texture.</translation>
+    </message>
+    <message>
         <source>Runs the software renderer in parallel for VRAM readbacks. On some systems, this may result in greater performance when using graphical enhancements with the hardware renderer.</source>
         <translation>Esegue il renderer software in parallelo per i readback dalla VRAM. Su alcuni sistemi, questo potrebbe avere come risultato prestazioni migliori quando si usano miglioramenti grafici con il renderer hardware.</translation>
     </message>
@@ -11251,10 +11441,6 @@ Cercare ricorsivamente richiede più tempo, ma permette di identificare file anc
     <message>
         <source>%1 [Unavailable]</source>
         <translation>%1 [non disponibile]</translation>
-    </message>
-    <message>
-        <source>Use Global Setting</source>
-        <translation>Usa impostazione globale</translation>
     </message>
     <message>
         <source>%1x MSAA</source>
@@ -11543,14 +11729,6 @@ Cercare ricorsivamente richiede più tempo, ma permette di identificare file anc
         <translation>Apri menu pausa</translation>
     </message>
     <message>
-        <source>Open Achievement List</source>
-        <translation>Apri lista degli obiettivi</translation>
-    </message>
-    <message>
-        <source>Open Leaderboard List</source>
-        <translation>Apri lista delle classifiche</translation>
-    </message>
-    <message>
         <source>System</source>
         <translation>Sistema</translation>
     </message>
@@ -11568,15 +11746,15 @@ Cercare ricorsivamente richiede più tempo, ma permette di identificare file anc
     </message>
     <message>
         <source>Increase Emulation Speed</source>
-        <translation>Aumenta velocità emulazione</translation>
+        <translation>Aumenta velocità di emulazione</translation>
     </message>
     <message>
         <source>Decrease Emulation Speed</source>
-        <translation>Riduci velocità emulazione</translation>
+        <translation>Riduci velocità di emulazione</translation>
     </message>
     <message>
         <source>Reset Emulation Speed</source>
-        <translation>Reimposta velocità emulazione</translation>
+        <translation>Ripristina velocità di emulazione predefinita</translation>
     </message>
     <message>
         <source>Decrease Resolution Scale</source>
@@ -11605,6 +11783,22 @@ Cercare ricorsivamente richiede più tempo, ma permette di identificare file anc
     <message>
         <source>Save States</source>
         <translation>Salvataggi di stato</translation>
+    </message>
+    <message>
+        <source>Toggle Pause Menu</source>
+        <translation>Apri/chiudi menu pausa</translation>
+    </message>
+    <message>
+        <source>Toggle Cheat List</source>
+        <translation>Apri/chiudi lista dei trucchi</translation>
+    </message>
+    <message>
+        <source>Toggle Achievement List</source>
+        <translation>Apri/chiudi lista degli obiettivi</translation>
+    </message>
+    <message>
+        <source>Toggle Leaderboard List</source>
+        <translation>Apri/chiudi lista delle classifiche</translation>
     </message>
     <message>
         <source>Load From Selected Slot</source>
@@ -11679,10 +11873,6 @@ Cercare ricorsivamente richiede più tempo, ma permette di identificare file anc
         <translation>Interfaccia</translation>
     </message>
     <message>
-        <source>Open Cheat Settings</source>
-        <translation>Apri impostazioni dei trucchi</translation>
-    </message>
-    <message>
         <source>Fast Forward (Hold)</source>
         <translation>Avanzamento veloce (tenere premuto)</translation>
     </message>
@@ -11736,7 +11926,7 @@ Cercare ricorsivamente richiede più tempo, ma permette di identificare file anc
     </message>
     <message>
         <source>Toggle Texture Modulation Cropping</source>
-        <translation>Attiva/disattiva restrizione della modulazione delle texture</translation>
+        <translation>Attiva/disattiva troncamento della modulazione delle texture</translation>
     </message>
     <message>
         <source>Record Single Frame GPU Trace</source>
@@ -13761,11 +13951,11 @@ Fai clic tenendo premuto Maiusc per impostare più associazioni.</translation>
     </message>
     <message>
         <source>Cover Already Exists</source>
-        <translation>La copertina esiste già</translation>
+        <translation>Copertina già esistente</translation>
     </message>
     <message>
         <source>A cover image for this game already exists, do you wish to replace it?</source>
-        <translation>Un&apos;immagine di copertina esiste già per questo gioco, desideri sostituirla?</translation>
+        <translation>Un&apos;immagine di copertina esiste già per questo gioco, vuoi sostituirla?</translation>
     </message>
     <message>
         <source>Copy Error</source>
@@ -15346,104 +15536,37 @@ Errore: {1}</translation>
         <source>Sets scaling for left trigger.</source>
         <translation>Imposta ridimensionamento per grilletto sinistro.</translation>
     </message>
-</context>
-<context>
-    <name>NeGconRumble</name>
-    <message>
-        <source>D-Pad Up</source>
-        <translation>Tasto direzionale su</translation>
-    </message>
-    <message>
-        <source>D-Pad Right</source>
-        <translation>Tasto direzionale destra</translation>
-    </message>
-    <message>
-        <source>D-Pad Down</source>
-        <translation>Tasto direzionale giù</translation>
-    </message>
-    <message>
-        <source>D-Pad Left</source>
-        <translation>Tasto direzionale sinistra</translation>
-    </message>
-    <message>
-        <source>Start</source>
-        <translation>START</translation>
-    </message>
-    <message>
-        <source>A Button</source>
-        <translation>Pulsante A</translation>
-    </message>
-    <message>
-        <source>B Button</source>
-        <translation>Pulsante B</translation>
-    </message>
-    <message>
-        <source>I Button</source>
-        <translation>Pulsante I</translation>
-    </message>
-    <message>
-        <source>II Button</source>
-        <translation>Pulsante II</translation>
-    </message>
-    <message>
-        <source>Left Trigger</source>
-        <translation>Grilletto Sinistro</translation>
-    </message>
-    <message>
-        <source>Right Trigger</source>
-        <translation>Grilletto Destro</translation>
-    </message>
-    <message>
-        <source>Steering (Twist) Left</source>
-        <translation>Sterzo (Torsione) a Sinistra</translation>
-    </message>
-    <message>
-        <source>Steering (Twist) Right</source>
-        <translation>Sterzo (Torsione) a Destra</translation>
-    </message>
     <message>
         <source>Analog Toggle</source>
         <translation>Tasto modalità ANALOG</translation>
     </message>
     <message>
-        <source>Disable Simultaneous Opposing Cardinal Directions</source>
-        <translation>Disabilita direzioni cardinali opposte simultanee</translation>
+        <source>Large Motor</source>
+        <translation>Motore grande</translation>
     </message>
     <message>
-        <source>Prevents concurrent left/right or up/down inputs from being presented to the game.</source>
-        <translation>Impedisce che input simultanei a sinistra/destra o su/giù vengano inviati al gioco.</translation>
+        <source>Small Motor</source>
+        <translation>Motore piccolo</translation>
     </message>
     <message>
-        <source>Steering Axis Deadzone</source>
-        <translation>Zona morta asse di sterzata</translation>
-    </message>
-    <message>
-        <source>Sets deadzone size for steering axis.</source>
-        <translation>Imposta la dimensione della zona morta per l&apos;asse di sterzata.</translation>
-    </message>
-    <message>
-        <source>Steering Axis Sensitivity</source>
-        <translation>Sensibilità asse di sterzata</translation>
-    </message>
-    <message>
-        <source>Sets the steering axis scaling factor.</source>
-        <translation>Imposta il fattore di ridimensionamento per l&apos;asse di sterzata.</translation>
+        <source>Mode LED</source>
+        <translation>LED della modalità</translation>
     </message>
     <message>
         <source>Large Motor Vibration Bias</source>
-        <translation>Compensazione motore grande della vibrazione</translation>
+        <translation>Bilanciamento della vibrazione del motore grande</translation>
     </message>
     <message>
         <source>Sets the bias value for the large vibration motor. If vibration in some games is too weak or not functioning, try increasing this value. Negative values will decrease the intensity of vibration.</source>
-        <translation>Imposta il valore di compensazione per il motore grande della vibrazione. Se la vibrazione in alcuni giochi è troppo debole o non funziona, prova ad aumentare questo valore. I valori negativi ridurranno l&apos;intensità della vibrazione.</translation>
+        <translation>Imposta il valore di bilanciamento per il motore a vibrazione grande. Se la vibrazione in alcuni giochi è troppo debole o non funziona, prova ad aumentare questo valore. I valori negativi ridurranno l&apos;intensità della vibrazione.</translation>
     </message>
     <message>
         <source>Small Motor Vibration Bias</source>
-        <translation>Compensazione motore piccolo della vibrazione</translation>
+        <translation>Bilanciamento della vibrazione del motore piccolo</translation>
     </message>
     <message>
         <source>Sets the bias value for the small vibration motor. If vibration in some games is too weak or not functioning, try increasing this value. Negative values will decrease the intensity of vibration.</source>
-        <translation>Imposta il valore di compensazione per il motore piccolo della vibrazione. Se la vibrazione in alcuni giochi è troppo debole o non funziona, prova ad aumentare questo valore. I valori negativi ridurranno l&apos;intensità della vibrazione.</translation>
+        <translation>Imposta il valore di bilanciamento per il motore a vibrazione piccolo. Se la vibrazione in alcuni giochi è troppo debole o non funziona, prova ad aumentare questo valore. I valori negativi ridurranno l&apos;intensità della vibrazione.</translation>
     </message>
 </context>
 <context>
@@ -15518,11 +15641,11 @@ Errore: {1}</translation>
     </message>
     <message>
         <source>Texture modulation cropping is now enabled.</source>
-        <translation>Ritaglio della modulazione delle texture abilitato.</translation>
+        <translation>Troncamento della modulazione delle texture abilitato.</translation>
     </message>
     <message>
         <source>Texture modulation cropping is now disabled.</source>
-        <translation>Ritaglio della modulazione delle texture disabilitato.</translation>
+        <translation>Troncamento della modulazione delle texture disabilitato.</translation>
     </message>
     <message>
         <source>Volume: {}%</source>
@@ -17069,7 +17192,7 @@ Vuoi creare la cartella?</translation>
     <message>
         <source>Bilinear (No Edge Blending)</source>
         <comment>GPUTextureFilter</comment>
-        <translation>Bilineare (senza blending dei bordi)</translation>
+        <translation>Bilineare (senza fusione dei bordi)</translation>
     </message>
     <message>
         <source>JINC2 (Slow)</source>
@@ -17079,7 +17202,37 @@ Vuoi creare la cartella?</translation>
     <message>
         <source>JINC2 (Slow, No Edge Blending)</source>
         <comment>GPUTextureFilter</comment>
-        <translation>JINC2 (lento, senza blending dei bordi)</translation>
+        <translation>JINC2 (lento, senza fusione dei bordi)</translation>
+    </message>
+    <message>
+        <source>Monotonic Cubic (Very Slow)</source>
+        <comment>GPUTextureFilter</comment>
+        <translation>Cubico monotono (molto lento)</translation>
+    </message>
+    <message>
+        <source>Monotonic Cubic (Very Slow, No Edge Blending)</source>
+        <comment>GPUTextureFilter</comment>
+        <translation>Cubico monotono (molto lento, senza fusione dei bordi)</translation>
+    </message>
+    <message>
+        <source>Adaptive Diagonal (Slow)</source>
+        <comment>GPUTextureFilter</comment>
+        <translation>Diagonale adattivo (lento)</translation>
+    </message>
+    <message>
+        <source>Adaptive Diagonal (Slow, No Edge Blending)</source>
+        <comment>GPUTextureFilter</comment>
+        <translation>Diagonale adattivo (lento, senza fusione dei bordi)</translation>
+    </message>
+    <message>
+        <source>DCCI (Extremely Slow)</source>
+        <comment>GPUTextureFilter</comment>
+        <translation>DCCI (estremamente lento)</translation>
+    </message>
+    <message>
+        <source>DCCI (Extremely Slow, No Edge Blending)</source>
+        <comment>GPUTextureFilter</comment>
+        <translation>DCCI (estremamente lento, senza fusione dei bordi)</translation>
     </message>
     <message>
         <source>xBR (Very Slow)</source>
@@ -17089,7 +17242,12 @@ Vuoi creare la cartella?</translation>
     <message>
         <source>xBR (Very Slow, No Edge Blending)</source>
         <comment>GPUTextureFilter</comment>
-        <translation>xBR (molto lento, senza blending dei bordi)</translation>
+        <translation>xBR (molto lento, senza fusione dei bordi)</translation>
+    </message>
+    <message>
+        <source>Sharp Bilinear</source>
+        <comment>GPUTextureFilter</comment>
+        <translation>Bilineare nitido</translation>
     </message>
     <message>
         <source>Scale2x (EPX)</source>
@@ -18655,7 +18813,7 @@ Devi salvare su una memory card e riavviare il gioco per eliminare ogni effetto.
     </message>
     <message>
         <source>Texture modulation cropping disabled.</source>
-        <translation>Ritaglio della modulazione delle texture disabilitato.</translation>
+        <translation>Troncamento della modulazione delle texture disabilitato.</translation>
     </message>
     <message>
         <source>GPU texture cache disabled.</source>

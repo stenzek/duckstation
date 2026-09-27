@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>776</width>
-    <height>551</height>
+    <height>616</height>
    </rect>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_3">
@@ -640,7 +640,7 @@
             <item row="2" column="0">
              <widget class="QCheckBox" name="modulationCrop">
               <property name="text">
-               <string>Texture Modulation Cropping (&quot;Old/v0 GPU&quot;)</string>
+               <string>Texture Modulation Cropping (&quot;Old/v0&quot; GPU)</string>
               </property>
              </widget>
             </item>
