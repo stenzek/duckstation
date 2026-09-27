@@ -612,6 +612,7 @@ public:
   static constexpr u32 VERTEX_BUFFER_SIZE = 32 * 1024 * 1024;
   static constexpr u32 INDEX_BUFFER_SIZE = 16 * 1024 * 1024;
   static constexpr u32 UNIFORM_BUFFER_SIZE = 8 * 1024 * 1024;
+  static constexpr u32 UNIFORM_PUSH_CONSTANTS_SIZE = 128;
   static constexpr u32 SMALL_TEXTURE_BUFFER_SIZE = 16 * 1024 * 1024;
   static constexpr u32 LARGE_TEXTURE_BUFFER_SIZE = 64 * 1024 * 1024;
 

@@ -550,7 +550,7 @@ bool D3D11Device::CreateBuffers(Error* error)
     return false;
   }
 
-  const CD3D11_BUFFER_DESC pc_desc(PUSH_CONSTANT_BUFFER_SIZE, D3D11_BIND_CONSTANT_BUFFER, D3D11_USAGE_DYNAMIC,
+  const CD3D11_BUFFER_DESC pc_desc(UNIFORM_PUSH_CONSTANTS_SIZE, D3D11_BIND_CONSTANT_BUFFER, D3D11_USAGE_DYNAMIC,
                                    D3D11_CPU_ACCESS_WRITE);
   if (const HRESULT hr = m_device->CreateBuffer(&pc_desc, nullptr, m_push_constant_buffer.GetAddressOf()); FAILED(hr))
   {
@@ -938,7 +938,7 @@ void D3D11Device::UnmapIndexBuffer(u32 used_index_count)
 
 void D3D11Device::PushUniformBuffer(const void* data, u32 data_size)
 {
-  DebugAssert(data_size <= PUSH_CONSTANT_BUFFER_SIZE);
+  DebugAssert(data_size <= UNIFORM_PUSH_CONSTANTS_SIZE);
 
   D3D11_MAPPED_SUBRESOURCE mapped;
   if (const HRESULT hr = m_context->Map(m_push_constant_buffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped);

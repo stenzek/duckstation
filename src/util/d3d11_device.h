@@ -144,7 +144,6 @@ private:
   static constexpr u32 MIN_UNIFORM_BUFFER_SIZE = 16;
   static constexpr u32 UNIFORM_BUFFER_ALIGNMENT = 256;
   static constexpr u32 UNIFORM_BUFFER_ALIGNMENT_DISCARD = 16;
-  static constexpr u32 PUSH_CONSTANT_BUFFER_SIZE = 128;
   static constexpr u8 NUM_TIMESTAMP_QUERIES = 3;
 
   // Texture buffers occupy slot #1.

@@ -1173,6 +1173,7 @@ void OpenGLDevice::UnmapIndexBuffer(u32 used_index_count)
 
 void OpenGLDevice::PushUniformBuffer(const void* data, u32 data_size)
 {
+  DebugAssert(data_size <= UNIFORM_PUSH_CONSTANTS_SIZE);
   const auto res = m_push_constant_buffer->Map(m_uniform_buffer_alignment, data_size);
   std::memcpy(res.pointer, data, data_size);
   m_push_constant_buffer->Unmap(data_size);

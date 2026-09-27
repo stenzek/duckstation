@@ -2331,6 +2331,7 @@ void MetalDevice::PreDrawCheck()
 void MetalDevice::PushRenderUniformBuffer(const void* data, u32 data_size)
 {
   DebugAssert(InRenderPass() && m_current_pipeline);
+  DebugAssert(data_size <= UNIFORM_PUSH_CONSTANTS_SIZE);
   s_stats.buffer_streamed += data_size;
 
   // Maybe we'd be better off with another buffer...
