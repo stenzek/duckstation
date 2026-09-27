@@ -134,9 +134,6 @@ public:
     // 128 byte UBO via push constants, 1 texture.
     SingleTextureAndPushConstants,
 
-    // Multiple textures, 1 streamed UBO.
-    MultiTextureAndUBO,
-
     // Multiple textures, 128 byte UBO via push constants.
     MultiTextureAndPushConstants,
 
@@ -668,7 +665,6 @@ public:
     constexpr std::array<u8, static_cast<u8>(GPUPipeline::Layout::MaxCount)> counts = {
       1,                    // SingleTextureAndUBO
       1,                    // SingleTextureAndPushConstants
-      MAX_TEXTURE_SAMPLERS, // MultiTextureAndUBO
       MAX_TEXTURE_SAMPLERS, // MultiTextureAndPushConstants
       MAX_TEXTURE_SAMPLERS, // MultiTextureAndUBOAndPushConstants
       1,                    // HWBatch

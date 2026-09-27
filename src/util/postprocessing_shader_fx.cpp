@@ -1476,7 +1476,7 @@ bool PostProcessing::ReShadeFXShader::CompilePipeline(GPUTextureFormat format, u
   };
 
   GPUPipeline::GraphicsConfig plconfig;
-  plconfig.layout = GPUPipeline::Layout::MultiTextureAndUBO;
+  plconfig.layout = GPUPipeline::Layout::MultiTextureAndUBOAndPushConstants;
   plconfig.primitive = GPUPipeline::Primitive::Triangles;
   plconfig.depth_format = GPUTextureFormat::Unknown;
   plconfig.rasterization = GPUPipeline::RasterizationState::GetNoCullState();
