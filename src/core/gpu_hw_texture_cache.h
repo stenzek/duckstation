@@ -115,7 +115,7 @@ bool UpdateSettings(bool use_texture_cache, const GPUSettings& old_settings, Err
 bool GetStateSize(StateWrapper& sw, u32* size);
 bool DoState(StateWrapper& sw, bool skip);
 
-void Shutdown();
+void Shutdown(bool keep_vram_write_replacements);
 
 void Invalidate();
 

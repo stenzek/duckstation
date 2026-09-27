@@ -843,7 +843,7 @@ bool GPUTextureCache::DoState(StateWrapper& sw, bool skip)
   return !sw.HasError();
 }
 
-void GPUTextureCache::Shutdown()
+void GPUTextureCache::Shutdown(bool keep_vram_write_replacements)
 {
   Invalidate();
   ClearHashCache();
@@ -862,7 +862,8 @@ void GPUTextureCache::Shutdown()
   s_state.gpu_replacement_image_cache_vram_usage = 0;
 
   s_state.replacement_image_cache.clear();
-  s_state.vram_replacements.clear();
+  if (!keep_vram_write_replacements)
+    s_state.vram_replacements.clear();
   s_state.vram_write_texture_replacements.clear();
   s_state.texture_page_texture_replacements.clear();
   s_state.dumped_textures.clear();

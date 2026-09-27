@@ -248,7 +248,7 @@ GPU_HW::GPU_HW() : GPUBackend()
 
 GPU_HW::~GPU_HW()
 {
-  GPUTextureCache::Shutdown();
+  GPUTextureCache::Shutdown(false);
 }
 
 ALWAYS_INLINE void GPU_HW::BatchVertex::Set(float x_, float y_, float z_, float w_, u32 color_, u32 texpage_,
@@ -691,7 +691,7 @@ bool GPU_HW::UpdateSettings(const GPUSettings& old_settings, Error* error)
   }
   else if (!m_use_texture_cache && old_settings.gpu_texture_cache)
   {
-    GPUTextureCache::Shutdown();
+    GPUTextureCache::Shutdown(g_gpu_settings.texture_replacements.enable_vram_write_replacements);
   }
 
   if (!GPUTextureCache::UpdateSettings(m_use_texture_cache, old_settings, error))
