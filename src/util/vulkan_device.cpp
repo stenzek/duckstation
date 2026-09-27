@@ -62,6 +62,8 @@ enum : u32
 
   UNIFORM_PUSH_CONSTANTS_STAGES = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
 
+  // This is needed here as an upper bound because the descriptor needs an upper bound, and it's invalid to
+  // read past the end of that even if we're actually using less.
   MAX_UNIFORM_BUFFER_SIZE = 1024,
 };
 

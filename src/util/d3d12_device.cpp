@@ -40,8 +40,6 @@ enum : u32
   MAX_PERSISTENT_RTVS = 512,
   MAX_PERSISTENT_DSVS = 128,
   MAX_PERSISTENT_SAMPLERS = 512,
-
-  MAX_UNIFORM_BUFFER_SIZE = 1024,
 };
 
 // We need to synchronize instance creation because of adapter enumeration from the UI thread.
@@ -1635,12 +1633,10 @@ void D3D12Device::PushUniformBuffer(ID3D12GraphicsCommandList4* const cmdlist, b
 void* D3D12Device::MapUniformBuffer(u32 size)
 {
   const u32 used_space = Common::AlignUpPow2(size, D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT);
-  if (!m_uniform_buffer.ReserveMemory(used_space + MAX_UNIFORM_BUFFER_SIZE,
-                                      D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT))
+  if (!m_uniform_buffer.ReserveMemory(used_space, D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT))
   {
     SubmitCommandListAndRestartRenderPass("out of uniform space");
-    if (!m_uniform_buffer.ReserveMemory(used_space + MAX_UNIFORM_BUFFER_SIZE,
-                                        D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT))
+    if (!m_uniform_buffer.ReserveMemory(used_space, D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT))
       Panic("Failed to allocate uniform space.");
   }
 
