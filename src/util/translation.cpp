@@ -7,10 +7,10 @@
 #include "common/heterogeneous_containers.h"
 #include "common/log.h"
 #include "common/string_util.h"
+#include "common/threading.h"
 #include "common/time_helpers.h"
 
 #include <cstdarg>
-#include <shared_mutex>
 
 LOG_CHANNEL(Host);
 
@@ -25,7 +25,7 @@ using TranslationStringContextMap = UnorderedStringMap<TranslationStringMap>;
 
 struct TranslationLocals
 {
-  std::shared_mutex translation_string_mutex;
+  Threading::SharedMutex translation_string_mutex;
   TranslationStringContextMap translation_string_map;
   std::vector<char> translation_string_cache;
   u32 translation_string_cache_pos;

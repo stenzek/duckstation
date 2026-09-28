@@ -10,6 +10,7 @@
 #include "vulkan_stream_buffer.h"
 
 #include "common/dimensional_array.h"
+#include "common/threading.h"
 
 #include <array>
 #include <atomic>
@@ -17,7 +18,6 @@
 #include <deque>
 #include <functional>
 #include <memory>
-#include <shared_mutex>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -439,7 +439,7 @@ private:
   VkQueryPool m_timestamp_query_pool = VK_NULL_HANDLE;
 
   std::unordered_map<RenderPassCacheKey, VkRenderPass, RenderPassCacheKeyHash> m_render_pass_cache;
-  std::shared_mutex m_render_pass_cache_mutex;
+  Threading::SharedMutex m_render_pass_cache_mutex;
   GPUFramebufferManager<VkFramebuffer, CreateFramebuffer, DestroyFramebuffer> m_framebuffer_manager;
   VkPipelineCache m_pipeline_cache = VK_NULL_HANDLE;
 
