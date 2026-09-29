@@ -1510,14 +1510,16 @@ void GPU::UpdateCRTCTickEvent()
     lines_until_event = (s_locals.crtc_state.current_scanline >= s_locals.crtc_state.vertical_display_end) ?
                           (s_locals.crtc_state.vertical_total - s_locals.crtc_state.current_scanline +
                            s_locals.crtc_state.vertical_display_start) :
-                          (s_locals.crtc_state.vertical_display_end - s_locals.crtc_state.current_scanline);
+                          ((s_locals.crtc_state.current_scanline < s_locals.crtc_state.vertical_display_start) ?
+                             (s_locals.crtc_state.vertical_display_start - s_locals.crtc_state.current_scanline) :
+                             (s_locals.crtc_state.vertical_display_end - s_locals.crtc_state.current_scanline));
   }
   else
   {
-    lines_until_event = (s_locals.crtc_state.current_scanline >= s_locals.crtc_state.vertical_display_end ?
-                           (s_locals.crtc_state.vertical_total - s_locals.crtc_state.current_scanline +
-                            s_locals.crtc_state.vertical_display_end) :
-                           (s_locals.crtc_state.vertical_display_end - s_locals.crtc_state.current_scanline));
+    lines_until_event = (s_locals.crtc_state.current_scanline >= s_locals.crtc_state.vertical_display_end) ?
+                          (s_locals.crtc_state.vertical_total - s_locals.crtc_state.current_scanline +
+                           s_locals.crtc_state.vertical_display_end) :
+                          (s_locals.crtc_state.vertical_display_end - s_locals.crtc_state.current_scanline);
   }
   if (Timers::IsExternalIRQEnabled(HBLANK_TIMER_INDEX))
     lines_until_event = std::min(lines_until_event, Timers::GetTicksUntilIRQ(HBLANK_TIMER_INDEX));
