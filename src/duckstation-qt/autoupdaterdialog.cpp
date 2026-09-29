@@ -50,7 +50,9 @@ using namespace Qt::StringLiterals;
 #elif defined(__APPLE__)
 #include "common/cocoa_tools.h"
 #else
+#include <spawn.h>
 #include <sys/stat.h>
+#include <unistd.h>
 #endif
 
 // Logic to detect whether we can use the auto updater.
@@ -1030,13 +1032,43 @@ bool AutoUpdaterDialog::processUpdate(const std::vector<u8>& update_data)
     return false;
   }
 
-  // Execute new appimage.
-  QProcess* new_process = new QProcess();
-  new_process->setProgram(QString::fromUtf8(appimage_path));
-  new_process->setArguments(QStringList{u"-updatecleanup"_s});
-  if (!new_process->startDetached())
+  // Launch from outside the AppImage after this process has exited.
+  static constexpr char relaunch_script[] =
+    "while kill -0 \"$1\" 2>/dev/null; do sleep 0.1; done\n"
+    "exec \"$2\" -updatecleanup\n";
+
+  posix_spawn_file_actions_t file_actions;
+  int spawn_error = posix_spawn_file_actions_init(&file_actions);
+  if (spawn_error != 0)
   {
-    reportError("Failed to execute new AppImage.");
+    reportError(Error::TranslateErrnoError("Failed to initialize AppImage relaunch helper: ", spawn_error));
+    return false;
+  }
+
+  posix_spawnattr_t attributes;
+  spawn_error = posix_spawnattr_init(&attributes);
+  if (spawn_error == 0)
+  {
+    // Do not let the helper inherit the old AppImage's mount descriptor or other open files.
+    spawn_error = posix_spawn_file_actions_addclosefrom_np(&file_actions, 3);
+    if (spawn_error == 0)
+      spawn_error = posix_spawnattr_setflags(&attributes, POSIX_SPAWN_SETSID);
+    if (spawn_error == 0)
+    {
+      const std::string parent_pid = fmt::format("{}", QCoreApplication::applicationPid());
+      char* const arguments[] = {const_cast<char*>("sh"), const_cast<char*>("-c"),
+                                 const_cast<char*>(relaunch_script), const_cast<char*>("--"),
+                                 const_cast<char*>(parent_pid.c_str()), const_cast<char*>(appimage_path), nullptr};
+      pid_t helper_pid;
+      spawn_error = posix_spawn(&helper_pid, "/bin/sh", &file_actions, &attributes, arguments, environ);
+    }
+    posix_spawnattr_destroy(&attributes);
+  }
+  posix_spawn_file_actions_destroy(&file_actions);
+
+  if (spawn_error != 0)
+  {
+    reportError(Error::TranslateErrnoError("Failed to start AppImage relaunch helper: ", spawn_error));
     return false;
   }
 
