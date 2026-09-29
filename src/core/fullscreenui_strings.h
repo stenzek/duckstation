@@ -489,6 +489,7 @@ TRANSLATE_NOOP("FullscreenUI", "Load Global State");
 TRANSLATE_NOOP("FullscreenUI", "Load Preset");
 TRANSLATE_NOOP("FullscreenUI", "Load Resume State");
 TRANSLATE_NOOP("FullscreenUI", "Load State");
+TRANSLATE_NOOP("FullscreenUI", "Loading Game List...");
 TRANSLATE_NOOP("FullscreenUI", "Loads all replacement texture to RAM, reducing stuttering at runtime.");
 TRANSLATE_NOOP("FullscreenUI", "Loads the game image into RAM. Useful for network paths that may become unreliable during gameplay.");
 TRANSLATE_NOOP("FullscreenUI", "Log File Timestamps");

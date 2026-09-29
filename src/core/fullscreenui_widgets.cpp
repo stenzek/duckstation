@@ -7059,6 +7059,12 @@ FullscreenUI::LoadingScreenProgressCallback::LoadingScreenProgressCallback()
   m_image = System::GetImageForLoadingScreen(m_on_video_thread ? VideoThread::GetGamePath() : System::GetGamePath());
 }
 
+FullscreenUI::LoadingScreenProgressCallback::LoadingScreenProgressCallback(std::string image_path)
+  : ProgressCallback(), m_open_time(Timer::GetCurrentValue()), m_on_video_thread(VideoThread::IsOnThread()),
+    m_image(std::move(image_path))
+{
+}
+
 FullscreenUI::LoadingScreenProgressCallback::~LoadingScreenProgressCallback()
 {
   Close();

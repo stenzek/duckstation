@@ -73,6 +73,7 @@ class LoadingScreenProgressCallback final : public ProgressCallback
 {
 public:
   LoadingScreenProgressCallback();
+  LoadingScreenProgressCallback(std::string image_path);
   ~LoadingScreenProgressCallback() override;
 
   ALWAYS_INLINE void SetOpenDelay(float delay) { m_open_delay = delay; }

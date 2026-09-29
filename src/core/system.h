@@ -469,6 +469,7 @@ DisplayAspectRatio GetConfigurationAspectRatio();
 
 /// Returns the path to a possible cover image for the current serial.
 std::string GetImageForLoadingScreen(const std::string& game_path, bool fallback_to_achievement_game_icon = true);
+std::string GetImageForLoadingScreen(const GameList::Entry& entry, bool fallback_to_achievement_game_icon = true);
 
 //////////////////////////////////////////////////////////////////////////
 // Memory Save States (Rewind and Runahead)

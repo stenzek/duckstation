@@ -9,6 +9,7 @@
 #include "fullscreenui_widgets.h"
 #include "game_list.h"
 #include "host.h"
+#include "imgui_overlays.h"
 #include "sound_effect_manager.h"
 #include "system.h"
 #include "video_thread.h"
@@ -1079,7 +1080,24 @@ void FullscreenUI::BeginChangeDiscOnCoreThread(bool return_to_game)
 
   if (const GameDatabase::Entry* entry = System::GetGameDatabaseEntry(); entry && entry->disc_set)
   {
+    // Another load request cannot start because we have the lock held.
     auto lock = GameList::GetLock();
+    if (!GameList::IsGameListLoaded())
+    {
+      // We're on the core thread, so don't need to worry about getting cancelled.
+      // Must use the image path, because otherwise it'll try to lock the game list to get the image.
+      std::string image_path;
+      if (GameList::Entry entry; System::PopulateGameListEntryFromCurrentGame(&entry, nullptr))
+        image_path = System::GetImageForLoadingScreen(entry);
+      else
+        image_path = ImGuiManager::LOGO_IMAGE_NAME;
+      FullscreenUI::LoadingScreenProgressCallback progress(std::move(image_path));
+      progress.SetTitle(FSUI_VSTR("Loading Game List..."));
+      progress.SetOpenDelay(0.0f);
+      GameList::Refresh(lock, false, false, &progress);
+    }
+
+    // This is still needed because a scan-in-progress will report loaded.
     GameList::EnsureLoaded(lock);
     auto matches = GameList::GetEntriesInDiscSet(entry->disc_set, GameList::ShouldShowLocalizedTitles());
     if (matches.size() > 1)

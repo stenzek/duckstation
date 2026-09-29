@@ -6309,19 +6309,22 @@ std::string System::GetImageForLoadingScreen(const std::string& game_path,
 {
   const auto lock = GameList::GetLock();
   const GameList::Entry* entry = GameList::GetEntryForPath(game_path);
+  return entry ? GetImageForLoadingScreen(*entry, fallback_to_achievement_game_icon) :
+                 std::string(ImGuiManager::LOGO_IMAGE_NAME);
+}
 
-  if (entry)
+std::string System::GetImageForLoadingScreen(const GameList::Entry& entry,
+                                             bool fallback_to_achievement_game_icon /*= true*/)
+{
+  std::string path = GameList::GetCoverImagePathForEntry(&entry);
+  if (!path.empty())
+    return path;
+
+  if (fallback_to_achievement_game_icon && entry.achievements_game_id != 0)
   {
-    std::string path = GameList::GetCoverImagePathForEntry(entry);
+    path = Achievements::GetGameBadgeURL(entry.achievements_game_id);
     if (!path.empty())
       return path;
-
-    if (fallback_to_achievement_game_icon && entry->achievements_game_id != 0)
-    {
-      path = Achievements::GetGameBadgeURL(entry->achievements_game_id);
-      if (!path.empty())
-        return path;
-    }
   }
 
   return ImGuiManager::LOGO_IMAGE_NAME;

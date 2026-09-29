@@ -128,8 +128,6 @@ static void ScanFile(std::unique_lock<std::recursive_mutex>& lock, std::string p
                      const PlayedTimeMap& played_time_map, const INISettingsInterface& custom_attributes_ini,
                      const Achievements::ProgressDatabase& achievements_progress, const std::string& path_for_cache,
                      BinaryFileWriter& cache_writer);
-static void Refresh(std::unique_lock<std::recursive_mutex>& lock, bool invalidate_cache, bool only_cache,
-                    ProgressCallback* progress);
 
 static bool LoadOrInitializeCache(std::FILE* fp, bool invalidate_cache);
 static bool LoadEntriesFromCache(BinaryFileReader& reader);
