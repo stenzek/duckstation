@@ -1087,8 +1087,8 @@ void FullscreenUI::BeginChangeDiscOnCoreThread(bool return_to_game)
       // We're on the core thread, so don't need to worry about getting cancelled.
       // Must use the image path, because otherwise it'll try to lock the game list to get the image.
       std::string image_path;
-      if (GameList::Entry entry; System::PopulateGameListEntryFromCurrentGame(&entry, nullptr))
-        image_path = System::GetImageForLoadingScreen(entry);
+      if (GameList::Entry temp_entry; System::PopulateGameListEntryFromCurrentGame(&temp_entry, nullptr))
+        image_path = System::GetImageForLoadingScreen(temp_entry);
       else
         image_path = ImGuiManager::LOGO_IMAGE_NAME;
       FullscreenUI::LoadingScreenProgressCallback progress(std::move(image_path));
