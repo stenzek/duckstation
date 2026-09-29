@@ -6939,7 +6939,8 @@ void FullscreenUI::DrawLoadingScreen(ImDrawList* dl, std::string_view image, std
   const float item_spacing = LayoutScale(10.0f);
   const float frame_rounding = LayoutScale(6.0f);
   const float bar_height = (has_progress || is_persistent) ? LayoutScale(10.0f) : 0.0f;
-  const float content_width = LayoutScale(450.0f);
+  const float content_width = LayoutScale(800.0f);
+  const float progress_width = LayoutScale(450.0f);
   const float image_width = LayoutScale(260.0f);
   const float image_height = LayoutScale(260.0f);
   const float image_spacing = LayoutScale(20.0f);
@@ -7008,8 +7009,8 @@ void FullscreenUI::DrawLoadingScreen(ImDrawList* dl, std::string_view image, std
 
   if (bar_height > 0.0f)
   {
-    const ImVec2& box_start = current_pos;
-    const ImVec2 box_end = box_start + ImVec2(content_width, bar_height);
+    const ImVec2 box_start = ImVec2(ImCeil((io.DisplaySize.x - progress_width) * 0.5f), current_pos.y);
+    const ImVec2 box_end = box_start + ImVec2(progress_width, bar_height);
     dl->AddRectFilled(box_start, box_end, ImGui::GetColorU32(UIStyle.PopupFrameBackgroundColor), frame_rounding);
 
     if (has_progress)
@@ -7017,7 +7018,7 @@ void FullscreenUI::DrawLoadingScreen(ImDrawList* dl, std::string_view image, std
       const float fraction =
         static_cast<float>(progress_value - progress_min) / static_cast<float>(progress_max - progress_min);
       ImGui::RenderRectFilledInRangeH(dl, ImRect(box_start, box_end), ImGui::GetColorU32(UIStyle.SecondaryColor),
-                                      box_start.x, box_start.x + (fraction * content_width), frame_rounding);
+                                      box_start.x, box_start.x + (fraction * progress_width), frame_rounding);
     }
     else
     {
