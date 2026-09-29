@@ -1502,35 +1502,33 @@ ALWAYS_INLINE_RELEASE TickCount GPU::GetPendingCommandTicks()
 
 void GPU::UpdateCRTCTickEvent()
 {
+  CRTCState& cs = s_locals.crtc_state;
+
   // figure out how many GPU ticks until the next vblank or event
   TickCount lines_until_event;
   if (Timers::IsSyncEnabled(HBLANK_TIMER_INDEX))
   {
     // when the timer sync is enabled we need to sync at vblank start and end
-    lines_until_event = (s_locals.crtc_state.current_scanline >= s_locals.crtc_state.vertical_display_end) ?
-                          (s_locals.crtc_state.vertical_total - s_locals.crtc_state.current_scanline +
-                           s_locals.crtc_state.vertical_display_start) :
-                          ((s_locals.crtc_state.current_scanline < s_locals.crtc_state.vertical_display_start) ?
-                             (s_locals.crtc_state.vertical_display_start - s_locals.crtc_state.current_scanline) :
-                             (s_locals.crtc_state.vertical_display_end - s_locals.crtc_state.current_scanline));
+    lines_until_event =
+      (cs.current_scanline >= cs.vertical_display_end) ?
+        (cs.vertical_total - cs.current_scanline + cs.vertical_display_start) :
+        ((cs.current_scanline < cs.vertical_display_start) ? (cs.vertical_display_start - cs.current_scanline) :
+                                                             (cs.vertical_display_end - cs.current_scanline));
   }
   else
   {
-    lines_until_event = (s_locals.crtc_state.current_scanline >= s_locals.crtc_state.vertical_display_end) ?
-                          (s_locals.crtc_state.vertical_total - s_locals.crtc_state.current_scanline +
-                           s_locals.crtc_state.vertical_display_end) :
-                          (s_locals.crtc_state.vertical_display_end - s_locals.crtc_state.current_scanline);
+    lines_until_event = (cs.current_scanline >= cs.vertical_display_end) ?
+                          (cs.vertical_total - cs.current_scanline + cs.vertical_display_end) :
+                          (cs.vertical_display_end - cs.current_scanline);
   }
   if (Timers::IsExternalIRQEnabled(HBLANK_TIMER_INDEX))
     lines_until_event = std::min(lines_until_event, Timers::GetTicksUntilIRQ(HBLANK_TIMER_INDEX));
 
-  TickCount ticks_until_event =
-    lines_until_event * s_locals.crtc_state.horizontal_total - s_locals.crtc_state.current_tick_in_scanline;
+  TickCount ticks_until_event = lines_until_event * cs.horizontal_total - cs.current_tick_in_scanline;
   if (Timers::IsExternalIRQEnabled(DOT_TIMER_INDEX))
   {
     const TickCount dots_until_irq = Timers::GetTicksUntilIRQ(DOT_TIMER_INDEX);
-    const TickCount ticks_until_irq =
-      (dots_until_irq * s_locals.crtc_state.dot_clock_divider) - s_locals.crtc_state.fractional_dot_ticks;
+    const TickCount ticks_until_irq = (dots_until_irq * cs.dot_clock_divider) - cs.fractional_dot_ticks;
     ticks_until_event = std::min(ticks_until_event, std::max<TickCount>(ticks_until_irq, 0));
   }
 
@@ -1539,42 +1537,33 @@ void GPU::UpdateCRTCTickEvent()
     // This could potentially be optimized to skip the time the gate is active, if we're resetting and free running.
     // But realistically, I've only seen sync off (most games), or reset+pause on gate (Konami Lightgun games).
     TickCount ticks_until_hblank_start_or_end;
-    if (s_locals.crtc_state.current_tick_in_scanline >= s_locals.crtc_state.horizontal_active_end)
-    {
-      ticks_until_hblank_start_or_end = s_locals.crtc_state.horizontal_total -
-                                        s_locals.crtc_state.current_tick_in_scanline +
-                                        s_locals.crtc_state.horizontal_active_start;
-    }
-    else if (s_locals.crtc_state.current_tick_in_scanline < s_locals.crtc_state.horizontal_active_start)
-    {
-      ticks_until_hblank_start_or_end =
-        s_locals.crtc_state.horizontal_active_start - s_locals.crtc_state.current_tick_in_scanline;
-    }
+    if (cs.current_tick_in_scanline >= cs.horizontal_active_end)
+      ticks_until_hblank_start_or_end = cs.horizontal_total - cs.current_tick_in_scanline + cs.horizontal_active_start;
+    else if (cs.current_tick_in_scanline < cs.horizontal_active_start)
+      ticks_until_hblank_start_or_end = cs.horizontal_active_start - cs.current_tick_in_scanline;
     else
-    {
-      ticks_until_hblank_start_or_end =
-        s_locals.crtc_state.horizontal_active_end - s_locals.crtc_state.current_tick_in_scanline;
-    }
+      ticks_until_hblank_start_or_end = cs.horizontal_active_end - cs.current_tick_in_scanline;
 
     ticks_until_event = std::min(ticks_until_event, ticks_until_hblank_start_or_end);
   }
 
   if (!System::IsReplayingGPUDump()) [[likely]]
-    s_locals.crtc_tick_event.Schedule(CRTCTicksToSystemTicks(ticks_until_event, s_locals.crtc_state.fractional_ticks));
+    s_locals.crtc_tick_event.Schedule(CRTCTicksToSystemTicks(ticks_until_event, cs.fractional_ticks));
 }
 
 bool GPU::IsCRTCScanlinePending()
 {
   // TODO: Most of these should be fields, not lines.
-  const TickCount ticks = (GetPendingCRTCTicks() + s_locals.crtc_state.current_tick_in_scanline);
-  return (ticks >= s_locals.crtc_state.horizontal_total);
+  CRTCState& cs = s_locals.crtc_state;
+  const TickCount ticks = (GetPendingCRTCTicks() + cs.current_tick_in_scanline);
+  return (ticks >= cs.horizontal_total);
 }
 
 ALWAYS_INLINE void GPU::UpdateCRTCHBlankFlag()
 {
-  s_locals.crtc_state.in_hblank =
-    (s_locals.crtc_state.current_tick_in_scanline < s_locals.crtc_state.horizontal_active_start ||
-     s_locals.crtc_state.current_tick_in_scanline >= s_locals.crtc_state.horizontal_active_end);
+  CRTCState& cs = s_locals.crtc_state;
+  cs.in_hblank = (cs.current_tick_in_scanline < cs.horizontal_active_start ||
+                  cs.current_tick_in_scanline >= cs.horizontal_active_end);
 }
 
 ALWAYS_INLINE_RELEASE bool GPU::IsCommandCompletionPending()
@@ -1584,31 +1573,31 @@ ALWAYS_INLINE_RELEASE bool GPU::IsCommandCompletionPending()
 
 void GPU::CRTCTickEvent(void*, TickCount ticks)
 {
+  CRTCState& cs = s_locals.crtc_state;
+
   // convert cpu/master clock to GPU ticks, accounting for partial cycles because of the non-integer divider
-  const TickCount prev_tick = s_locals.crtc_state.current_tick_in_scanline;
-  const TickCount gpu_ticks = SystemTicksToCRTCTicks(ticks, &s_locals.crtc_state.fractional_ticks);
-  s_locals.crtc_state.current_tick_in_scanline += gpu_ticks;
+  const TickCount prev_tick = cs.current_tick_in_scanline;
+  const TickCount gpu_ticks = SystemTicksToCRTCTicks(ticks, &cs.fractional_ticks);
+  cs.current_tick_in_scanline += gpu_ticks;
 
   if (Timers::IsUsingExternalClock(DOT_TIMER_INDEX))
   {
-    s_locals.crtc_state.fractional_dot_ticks += gpu_ticks;
-    const TickCount dots = s_locals.crtc_state.fractional_dot_ticks / s_locals.crtc_state.dot_clock_divider;
-    s_locals.crtc_state.fractional_dot_ticks =
-      s_locals.crtc_state.fractional_dot_ticks % s_locals.crtc_state.dot_clock_divider;
+    cs.fractional_dot_ticks += gpu_ticks;
+    const TickCount dots = cs.fractional_dot_ticks / cs.dot_clock_divider;
+    cs.fractional_dot_ticks = cs.fractional_dot_ticks % cs.dot_clock_divider;
     if (dots > 0)
       Timers::AddTicks(DOT_TIMER_INDEX, dots);
   }
 
-  if (s_locals.crtc_state.current_tick_in_scanline < s_locals.crtc_state.horizontal_total)
+  if (cs.current_tick_in_scanline < cs.horizontal_total)
   {
     // short path when we execute <1 line.. this shouldn't occur often, except when gated (konami lightgun games).
     UpdateCRTCHBlankFlag();
-    Timers::SetGate(DOT_TIMER_INDEX, s_locals.crtc_state.in_hblank);
+    Timers::SetGate(DOT_TIMER_INDEX, cs.in_hblank);
     if (Timers::IsUsingExternalClock(HBLANK_TIMER_INDEX))
     {
-      const u32 hblank_timer_ticks =
-        BoolToUInt32(s_locals.crtc_state.current_tick_in_scanline >= s_locals.crtc_state.horizontal_active_end) -
-        BoolToUInt32(prev_tick >= s_locals.crtc_state.horizontal_active_end);
+      const u32 hblank_timer_ticks = BoolToUInt32(cs.current_tick_in_scanline >= cs.horizontal_active_end) -
+                                     BoolToUInt32(prev_tick >= cs.horizontal_active_end);
       if (hblank_timer_ticks > 0)
         Timers::AddTicks(HBLANK_TIMER_INDEX, static_cast<TickCount>(hblank_timer_ticks));
     }
@@ -1617,15 +1606,15 @@ void GPU::CRTCTickEvent(void*, TickCount ticks)
     return;
   }
 
-  u32 lines_to_draw = s_locals.crtc_state.current_tick_in_scanline / s_locals.crtc_state.horizontal_total;
-  s_locals.crtc_state.current_tick_in_scanline %= s_locals.crtc_state.horizontal_total;
+  u32 lines_to_draw = cs.current_tick_in_scanline / cs.horizontal_total;
+  cs.current_tick_in_scanline %= cs.horizontal_total;
 #if 0
-  WARNING_LOG("Old line: {}, new line: {}, drawing {}", s_locals.crtc_state.current_scanline,
-              s_locals.crtc_state.current_scanline + lines_to_draw, lines_to_draw);
+  WARNING_LOG("Old line: {}, new line: {}, drawing {}", cs.current_scanline, cs.current_scanline + lines_to_draw,
+              lines_to_draw);
 #endif
 
   UpdateCRTCHBlankFlag();
-  Timers::SetGate(DOT_TIMER_INDEX, s_locals.crtc_state.in_hblank);
+  Timers::SetGate(DOT_TIMER_INDEX, cs.in_hblank);
 
   if (Timers::IsUsingExternalClock(HBLANK_TIMER_INDEX))
   {
@@ -1633,9 +1622,8 @@ void GPU::CRTCTickEvent(void*, TickCount ticks)
     // Subtract one if we were previously in hblank, but only on that line. If it was previously less than
     // horizontal_active_start, we still want to add one, because hblank would have gone inactive, and then active again
     // during the line. Finally add the current line being drawn, if hblank went inactive->active during the line.
-    const u32 hblank_timer_ticks =
-      lines_to_draw - BoolToUInt32(prev_tick >= s_locals.crtc_state.horizontal_active_end) +
-      BoolToUInt32(s_locals.crtc_state.current_tick_in_scanline >= s_locals.crtc_state.horizontal_active_end);
+    const u32 hblank_timer_ticks = lines_to_draw - BoolToUInt32(prev_tick >= cs.horizontal_active_end) +
+                                   BoolToUInt32(cs.current_tick_in_scanline >= cs.horizontal_active_end);
     if (hblank_timer_ticks > 0)
       Timers::AddTicks(HBLANK_TIMER_INDEX, static_cast<TickCount>(hblank_timer_ticks));
   }
@@ -1643,25 +1631,24 @@ void GPU::CRTCTickEvent(void*, TickCount ticks)
   bool frame_done = false;
   while (lines_to_draw > 0)
   {
-    const u32 lines_to_draw_this_loop = std::min(
-      lines_to_draw, static_cast<u32>(s_locals.crtc_state.vertical_total - s_locals.crtc_state.current_scanline));
-    const u32 prev_scanline = s_locals.crtc_state.current_scanline;
-    s_locals.crtc_state.current_scanline = Truncate16(s_locals.crtc_state.current_scanline + lines_to_draw_this_loop);
-    DebugAssert(s_locals.crtc_state.current_scanline <= s_locals.crtc_state.vertical_total);
+    const u32 lines_to_draw_this_loop =
+      std::min(lines_to_draw, static_cast<u32>(cs.vertical_total - cs.current_scanline));
+    const u32 prev_scanline = cs.current_scanline;
+    cs.current_scanline = Truncate16(cs.current_scanline + lines_to_draw_this_loop);
+    DebugAssert(cs.current_scanline <= cs.vertical_total);
     lines_to_draw -= lines_to_draw_this_loop;
 
     // clear the vblank flag if the beam would pass through the display area
-    if (prev_scanline < s_locals.crtc_state.vertical_display_start &&
-        s_locals.crtc_state.current_scanline >= s_locals.crtc_state.vertical_display_end)
+    if (prev_scanline < cs.vertical_display_start && cs.current_scanline >= cs.vertical_display_end)
     {
       Timers::SetGate(HBLANK_TIMER_INDEX, false);
       InterruptController::SetLineState(InterruptController::IRQ::VBLANK, false);
-      s_locals.crtc_state.in_vblank = false;
+      cs.in_vblank = false;
     }
 
-    const bool new_vblank = s_locals.crtc_state.current_scanline < s_locals.crtc_state.vertical_display_start ||
-                            s_locals.crtc_state.current_scanline >= s_locals.crtc_state.vertical_display_end;
-    if (s_locals.crtc_state.in_vblank != new_vblank)
+    const bool new_vblank =
+      cs.current_scanline < cs.vertical_display_start || cs.current_scanline >= cs.vertical_display_end;
+    if (cs.in_vblank != new_vblank)
     {
       if (new_vblank)
       {
@@ -1682,29 +1669,29 @@ void GPU::CRTCTickEvent(void*, TickCount ticks)
 
         // switch fields early. this is needed so we draw to the correct one.
         if (s_locals.GPUSTAT.InInterleaved480iMode())
-          s_locals.crtc_state.interlaced_display_field = s_locals.crtc_state.interlaced_field ^ 1u;
+          cs.interlaced_display_field = cs.interlaced_field ^ 1u;
         else
-          s_locals.crtc_state.interlaced_display_field = 0;
+          cs.interlaced_display_field = 0;
       }
 
       Timers::SetGate(HBLANK_TIMER_INDEX, new_vblank);
       InterruptController::SetLineState(InterruptController::IRQ::VBLANK, new_vblank);
-      s_locals.crtc_state.in_vblank = new_vblank;
+      cs.in_vblank = new_vblank;
     }
 
     // past the end of vblank?
-    if (s_locals.crtc_state.current_scanline == s_locals.crtc_state.vertical_total)
+    if (cs.current_scanline == cs.vertical_total)
     {
       // start the new frame
-      s_locals.crtc_state.current_scanline = 0;
+      cs.current_scanline = 0;
       if (s_locals.GPUSTAT.vertical_interlace)
       {
-        s_locals.crtc_state.interlaced_field ^= 1u;
-        s_locals.GPUSTAT.interlaced_field = BoolToUInt8(!ConvertToBoolUnchecked(s_locals.crtc_state.interlaced_field));
+        cs.interlaced_field ^= 1u;
+        s_locals.GPUSTAT.interlaced_field = BoolToUInt8(!ConvertToBoolUnchecked(cs.interlaced_field));
       }
       else
       {
-        s_locals.crtc_state.interlaced_field = 0;
+        cs.interlaced_field = 0;
         s_locals.GPUSTAT.interlaced_field = 0u; // new GPU = 1, old GPU = 0
       }
     }
@@ -1713,18 +1700,14 @@ void GPU::CRTCTickEvent(void*, TickCount ticks)
   // alternating even line bit in 240-line mode
   if (s_locals.GPUSTAT.InInterleaved480iMode())
   {
-    s_locals.crtc_state.active_line_lsb =
-      Truncate8((s_locals.crtc_state.regs.Y + BoolToUInt32(s_locals.crtc_state.interlaced_display_field)) & u32(1));
+    cs.active_line_lsb = Truncate8((cs.regs.Y + BoolToUInt32(cs.interlaced_display_field)) & u32(1));
     s_locals.GPUSTAT.display_line_lsb =
-      ConvertToBoolUnchecked((s_locals.crtc_state.regs.Y + (BoolToUInt8(!s_locals.crtc_state.in_vblank) &
-                                                            s_locals.crtc_state.interlaced_display_field)) &
-                             u32(1));
+      ConvertToBoolUnchecked((cs.regs.Y + (BoolToUInt8(!cs.in_vblank) & cs.interlaced_display_field)) & u32(1));
   }
   else
   {
-    s_locals.crtc_state.active_line_lsb = 0;
-    s_locals.GPUSTAT.display_line_lsb =
-      ConvertToBoolUnchecked((s_locals.crtc_state.regs.Y + s_locals.crtc_state.current_scanline) & u32(1));
+    cs.active_line_lsb = 0;
+    s_locals.GPUSTAT.display_line_lsb = ConvertToBoolUnchecked((cs.regs.Y + cs.current_scanline) & u32(1));
   }
 
   UpdateCRTCTickEvent();
