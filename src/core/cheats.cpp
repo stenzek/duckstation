@@ -121,11 +121,7 @@ public:
     if (m_zip)
       return true;
 
-#ifndef __ANDROID__
     const char* name = cheats ? "cheats.zip" : "patches.zip";
-#else
-    const char* name = cheats ? "patchcodes.zip" : "patches.zip";
-#endif
 
     Error error;
     std::optional<DynamicHeapArray<u8>> data = Host::ReadResourceFile(name, false, &error);

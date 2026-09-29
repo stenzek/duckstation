@@ -32,8 +32,6 @@
 
 LOG_CHANNEL(FullscreenUI);
 
-#ifndef __ANDROID__
-
 namespace FullscreenUI {
 
 enum class PauseSubMenu : u8
@@ -2556,5 +2554,3 @@ void FullscreenUI::DrawAboutWindow()
 
   EndFixedPopupDialog();
 }
-
-#endif // __ANDROID__

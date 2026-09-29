@@ -11,8 +11,6 @@ namespace GameList {
 struct Entry;
 }
 
-#ifndef __ANDROID__
-
 namespace FullscreenUI {
 
 enum class MainWindowType : u8
@@ -151,5 +149,3 @@ void DrawAchievementsWindow();
 void DrawLeaderboardsWindow();
 
 } // namespace FullscreenUI
-
-#endif // __ANDROID__
