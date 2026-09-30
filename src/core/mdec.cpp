@@ -436,7 +436,6 @@ void MDEC::Execute()
         s_state.status.data_output_signed = cw.data_output_signed;
         s_state.status.data_output_bit15 = cw.data_output_bit15;
         s_state.data_in_fifo.Remove(2);
-        s_state.data_out_fifo.Clear();
 
         u32 num_words;
         State new_state;
