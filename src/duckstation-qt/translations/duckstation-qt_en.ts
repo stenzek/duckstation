@@ -2,16 +2,6 @@
 <!DOCTYPE TS>
 <TS version="2.1" language="en_US">
 <context>
-    <name>AchievementSettingsWidget</name>
-    <message numerus="yes">
-        <source>%n seconds</source>
-        <translation>
-            <numerusform>%n second</numerusform>
-            <numerusform>%n seconds</numerusform>
-        </translation>
-    </message>
-</context>
-<context>
     <name>Achievements</name>
     <message numerus="yes">
         <source>Prefetching achievement badges (%n remaining)...</source>
@@ -168,6 +158,28 @@
 </context>
 <context>
     <name>DebuggerWindow</name>
+    <message numerus="yes">
+        <source>&amp;Nop %n Instruction(s)</source>
+        <translation>
+            <numerusform>&amp;Nop %n Instruction</numerusform>
+            <numerusform>&amp;Nop %n Instruction(s)</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>&amp;Copy %n Instruction(s)</source>
+        <translation>
+            <numerusform>&amp;Copy %n Instruction</numerusform>
+            <numerusform>&amp;Copy %n Instructions</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>Copied %n instruction(s) to the clipboard.</source>
+        <comment>CopyRange</comment>
+        <translation>
+            <numerusform>Copied %n instruction to the clipboard.</numerusform>
+            <numerusform>Copied %n instructions to the clipboard.</numerusform>
+        </translation>
+    </message>
     <message numerus="yes">
         <source>Loaded %n saved breakpoint(s).</source>
         <translation>
