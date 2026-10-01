@@ -334,8 +334,13 @@ void FullscreenUI::DrawGameListWindow()
                           s_game_list_locals.game_list_search_string,
                           sizeof(s_game_list_locals.game_list_search_string), search_width, search_font_size,
                           search_font_weight,
-                          ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_EnterReturnsTrue | extra_flags))
+                          ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_EnterReturnsTrue | extra_flags) ||
+        (ImGui::IsItemDeactivated() && ImGui::IsKeyPressed(ImGuiKey_Escape, false)))
     {
+      // Clear search on escape press.
+      if (ImGui::IsKeyPressed(ImGuiKey_Escape, false))
+        s_game_list_locals.game_list_search_string[0] = '\0';
+
       QueueResetFocus(FocusResetType::Other);
       ForceKeyNavEnabled();
     }
