@@ -222,8 +222,16 @@ Wilt u de hardcoremodus inschakelen?</translation>
         <translation>Meldingen over prestaties tonen</translation>
     </message>
     <message>
+        <source>Reset Achievement Notification Duration</source>
+        <translation>Duur van prestatiemeldingen herstellen</translation>
+    </message>
+    <message>
         <source>Show Leaderboard Notifications</source>
         <translation>Meldingen over klassementen tonen</translation>
+    </message>
+    <message>
+        <source>Reset Leaderboard Notification Duration</source>
+        <translation>Duur van klassementsmeldingen herstellen</translation>
     </message>
     <message>
         <source>Show Leaderboard Trackers</source>
@@ -268,6 +276,18 @@ Wilt u de hardcoremodus inschakelen?</translation>
     <message>
         <source>Displays popup messages on events such as achievement unlocks and game completion.</source>
         <translation>Geeft pop-upberichten weer bij gebeurtenissen zoals het ontgrendelen van prestaties en het voltooien van games.</translation>
+    </message>
+    <message>
+        <source>N/A</source>
+        <translation>N.v.t.</translation>
+    </message>
+    <message>
+        <source>Resets the duration to the global setting.</source>
+        <translation>Herstelt de duur naar de globale instelling.</translation>
+    </message>
+    <message>
+        <source>Resets the duration to the default.</source>
+        <translation>Herstelt de duur naar de standaardwaarde.</translation>
     </message>
     <message>
         <source>Displays popup messages when starting, submitting, or failing a leaderboard challenge.</source>
@@ -396,15 +416,12 @@ Token gegenereerd %2</translation>
         <translation>Indien ingeschakeld, gedraagt elke sessie zich alsof er geen prestaties zijn ontgrendeld.</translation>
     </message>
     <message>
+        <source> seconds</source>
+        <translation> seconden</translation>
+    </message>
+    <message>
         <source>When enabled, DuckStation will assume all achievements are locked and not send any unlock notifications to the server.</source>
         <translation>Indien ingeschakeld, gaat DuckStation ervan uit dat alle prestaties vergrendeld zijn en worden er geen ontgrendelingsmeldingen naar de server verzonden.</translation>
-    </message>
-    <message numerus="yes">
-        <source>%n seconds</source>
-        <translation>
-            <numerusform>%n seconde</numerusform>
-            <numerusform>%n seconden</numerusform>
-        </translation>
     </message>
     <message>
         <source>Logout</source>
@@ -428,10 +445,6 @@ Token gegenereerd %2</translation>
     <message>
         <source>Resuming state</source>
         <translation>Status hervatten</translation>
-    </message>
-    <message>
-        <source>{} (Unofficial)</source>
-        <translation>{} (Onofficieel)</translation>
     </message>
     <message numerus="yes">
         <source>Prefetching achievement badges (%n remaining)...</source>
@@ -1147,14 +1160,6 @@ Ongelezen berichten: {}</translation>
 <context>
     <name>AnalogController</name>
     <message>
-        <source>Controller {} switched to analog mode.</source>
-        <translation>Controller {} overgeschakeld naar analoge modus.</translation>
-    </message>
-    <message>
-        <source>Controller {} switched to digital mode.</source>
-        <translation>Controller {} overgeschakeld naar digitale modus.</translation>
-    </message>
-    <message>
         <source>Analog Deadzone</source>
         <translation>Dode zone van analoge stick</translation>
     </message>
@@ -1181,14 +1186,6 @@ Ongelezen berichten: {}</translation>
     <message>
         <source>Triangle</source>
         <translation>Driehoekje</translation>
-    </message>
-    <message>
-        <source>Controller {} is locked to analog mode by the game.</source>
-        <translation>Controller {} is door de game vergrendeld op analoge modus.</translation>
-    </message>
-    <message>
-        <source>Controller {} is locked to digital mode by the game.</source>
-        <translation>Controller {} is door de game vergrendeld op digitale modus.</translation>
     </message>
     <message>
         <source>D-Pad Up</source>
@@ -1398,10 +1395,6 @@ Ongelezen berichten: {}</translation>
         <source>Square</source>
         <translation>Vierkantje</translation>
     </message>
-    <message>
-        <source>Mode LED</source>
-        <translation>Modus-led</translation>
-    </message>
 </context>
 <context>
     <name>AnalogJoystick</name>
@@ -1593,6 +1586,10 @@ Ongelezen berichten: {}</translation>
         <translation>Minimaal</translation>
     </message>
     <message>
+        <source>Reset Output Latency</source>
+        <translation>Uitvoervertraging herstellen</translation>
+    </message>
+    <message>
         <source>Maximum Latency: 0 ms (0 ms stretch + 0 ms buffer + 0 ms output)</source>
         <translation>Maximale latentie: 0 ms (0 ms rekken + 0 ms buffer + 0 ms uitvoer)</translation>
     </message>
@@ -1745,6 +1742,10 @@ Ongelezen berichten: {}</translation>
         <translation>De buffergrootte bepaald de grootte van de audio &apos;chunks&apos; die gespeeld worden door de host. Kleinere waardes verkleinen de vertraging, maar kunnen voor storinkjes zorgen als de snelheid van de emulator inconsistent is. Merk op dat de &apos;Cubeb&apos; backend kleinere chunks gebruikt, ongeacht deze waarde, uds een kleine waarde zal de vertraging niet significant beperken.</translation>
     </message>
     <message>
+        <source> ms</source>
+        <translation> ms</translation>
+    </message>
+    <message>
         <source>Unchecked</source>
         <translation>Uit</translation>
     </message>
@@ -1843,10 +1844,6 @@ Ongelezen berichten: {}</translation>
     <message>
         <source>Maximum Latency: %1 ms (minimum output latency unknown)</source>
         <translation>Maximale latentie: %1 ms (minimale uitvoervertraging onbekend)</translation>
-    </message>
-    <message>
-        <source>%1%</source>
-        <translation>%1%</translation>
     </message>
 </context>
 <context>
@@ -2231,6 +2228,24 @@ WAV-bestanden moeten 16-bit stereo zijn en een samplefrequentie van 44100 Hz geb
 Your dump may be corrupted, or the physical disc is scratched.</source>
         <translation>De game crasht nu waarschijnlijk.
 Uw dump is mogelijk beschadigd of de fysieke schijf is bekrast.</translation>
+    </message>
+</context>
+<context>
+    <name>CPU</name>
+    <message>
+        <source>Execute</source>
+        <comment>BreakpointType</comment>
+        <translation>Uitvoeren</translation>
+    </message>
+    <message>
+        <source>Read</source>
+        <comment>BreakpointType</comment>
+        <translation>Lezen</translation>
+    </message>
+    <message>
+        <source>Write</source>
+        <comment>BreakpointType</comment>
+        <translation>Schrijven</translation>
     </message>
 </context>
 <context>
@@ -2894,6 +2909,14 @@ Deze waarschuwing wordt maar een keer getoond.</translation>
         <translation>Controller {} overgeschakeld naar digitale modus.</translation>
     </message>
     <message>
+        <source>Controller {} is locked to analog mode by the game.</source>
+        <translation>Controller {} is door de game vergrendeld op analoge modus.</translation>
+    </message>
+    <message>
+        <source>Controller {} is locked to digital mode by the game.</source>
+        <translation>Controller {} is door de game vergrendeld op digitale modus.</translation>
+    </message>
+    <message>
         <source>Controller {} switched to JogCon mode.</source>
         <translation>Controller {} overgeschakeld naar JogCon-modus.</translation>
     </message>
@@ -2927,6 +2950,14 @@ Deze waarschuwing wordt maar een keer getoond.</translation>
     <message>
         <source>Clear Mapping</source>
         <translation>Toewijzing wissen</translation>
+    </message>
+    <message>
+        <source>Multiple Devices</source>
+        <translation>Meerdere apparaten</translation>
+    </message>
+    <message>
+        <source>%1 (%2)</source>
+        <translation>%1 (%2)</translation>
     </message>
     <message>
         <source>Multiple devices...</source>
@@ -3545,10 +3576,6 @@ Deze waarschuwing wordt maar een keer getoond.</translation>
         <translation>Past led-instellingen aan voor controllers met instelbare leds.</translation>
     </message>
     <message>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enables the SDL input source and detection of controllers.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Schakelt de SDL-invoerbron en detectie van controllers in.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
-    </message>
-    <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Allows rumble and LED effects for DualShock 4 / DualSense controllers in Bluetooth mode. This option is not required for wired connections.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Enabling enhanced reports may result in your controller being unusable in other applications until it is turned off and on again.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Staat tril- en led-effecten toe voor DualShock 4- en DualSense-controllers in Bluetooth-modus. Deze optie is niet nodig voor bekabelde verbindingen.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Het inschakelen van uitgebreide rapporten kan ertoe leiden dat uw controller onbruikbaar is in andere toepassingen totdat deze uit- en weer ingeschakeld wordt.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
@@ -3561,12 +3588,28 @@ Deze waarschuwing wordt maar een keer getoond.</translation>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;De SDL-invoerbron ondersteunt de meeste controllers en heeft de voorkeur. De verbeterde modus kan vereist zijn voor de tril-/led-functionaliteit van DualShock 4-/DualSense-controllers in Bluetooth-modus. U kunt ook &lt;a href=&quot;ADVANCED_SDL_OPTIONS&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#99ebff;&quot;&gt;geavanceerde opties&lt;/span&gt;&lt;/a&gt; bewerken die apparaatspecifiek gedrag bepalen.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
+        <source>LEDs</source>
+        <translation>Leds</translation>
+    </message>
+    <message>
+        <source>Enables the SDL input source and detection of controllers.</source>
+        <translation>Schakelt de SDL-invoerbron en detectie van controllers in.</translation>
+    </message>
+    <message>
         <source>Allows use of the touchpad for DualShock 4 / DualSense controllers as a pointer, for use with lightguns.</source>
         <translation>Staat het gebruik van het touchpad van DualShock 4- en DualSense-controllers als aanwijzer toe voor gebruik met lichtpistolen.</translation>
     </message>
     <message>
         <source>Enable Touchpad</source>
         <translation>Touchpad inschakelen</translation>
+    </message>
+    <message>
+        <source>Saves supported controllers by serial or device identity so bindings survive port and connection-order changes when possible.</source>
+        <translation>Slaat ondersteunde controllers op op basis van hun serienummer of apparaatidentiteit, zodat toewijzingen waar mogelijk behouden blijven bij wijzigingen in poorten en aansluitvolgorde.</translation>
+    </message>
+    <message>
+        <source>Use Persistent Device Identifiers</source>
+        <translation>Permanente apparaatidentificaties gebruiken</translation>
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The XInput source provides support for controllers that use the XInput protocol. This source should &lt;span style=&quot; font-weight:700;&quot;&gt;only&lt;/span&gt; be used if you are using a XInput wrapper library.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
@@ -4056,8 +4099,8 @@ Dit bestand is ongeveer 206 KB groot. Wilt u het nu downloaden?</translation>
         <translation>DuckStation kan automatisch covers downloaden voor games waarvoor momenteel geen cover is ingesteld. Wij hosten geen coverafbeeldingen; de gebruiker moet een eigen bron voor afbeeldingen opgeven.</translation>
     </message>
     <message>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Depending on your jurisdiction, &lt;span style=&quot; font-weight:700;&quot;&gt;game covers may be copyrighted&lt;/span&gt;. You are only authorized to use this tool with &lt;span style=&quot; font-weight:700;&quot;&gt;your own servers and images&lt;/span&gt;.&lt;/p&gt;&lt;p&gt;In the box below, specify the URLs to download covers from, with one template URL per line. The following variables are available:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${title}:&lt;/span&gt; Title of the game.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${savetitle}:&lt;/span&gt; Title of the game including the region.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${localizedtitle}:&lt;/span&gt; Localized (native language) title of the game.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${filetitle}:&lt;/span&gt; Name component of the game&apos;s filename.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${serial}:&lt;/span&gt; Serial of the game.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Example:&lt;/span&gt; https://www.example-not-a-real-domain.com/covers/${serial}.jpg&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Afhankelijk van uw rechtsgebied kunnen &lt;span style=&quot; font-weight:700;&quot;&gt;gamecovers auteursrechtelijk beschermd zijn&lt;/span&gt;. U bent alleen bevoegd deze functie te gebruiken met &lt;span style=&quot; font-weight:700;&quot;&gt;uw eigen servers en afbeeldingen&lt;/span&gt;.&lt;/p&gt;&lt;p&gt;Geef in het onderstaande vak de URL&apos;s op waarvan covers moeten worden gedownload, met één sjabloon-URL per regel. De volgende variabelen zijn beschikbaar:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${title}:&lt;/span&gt; Titel van de game.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${savetitle}:&lt;/span&gt; Titel van de game inclusief de regio.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${localizedtitle}:&lt;/span&gt; Gelokaliseerde titel van de game (in de moedertaal).&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${filetitle}:&lt;/span&gt; Naamcomponent van de bestandsnaam van de game.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${serial}:&lt;/span&gt; Serienummer van de game.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Voorbeeld:&lt;/span&gt; https://www.example-not-a-real-domain.com/covers/${serial}.jpg&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Depending on your jurisdiction, &lt;span style=&quot; font-weight:700;&quot;&gt;game covers may be copyrighted&lt;/span&gt;. You are only authorized to use this tool with &lt;span style=&quot; font-weight:700;&quot;&gt;your own servers and images&lt;/span&gt;.&lt;/p&gt;&lt;p&gt;In the box below, specify the URLs to download covers from, with one template URL per line. The following variables are available:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${title}:&lt;/span&gt; Title of the game.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${savetitle}:&lt;/span&gt; Save title for the game, including the region suffix.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${localizedtitle}:&lt;/span&gt; Localized title for the game in its native language.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${filetitle}:&lt;/span&gt; Name component of the game&apos;s filename.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${serial}:&lt;/span&gt; Serial of the game.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Example:&lt;/span&gt; https://www.example-not-a-real-domain.com/covers/${serial}.jpg&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Afhankelijk van uw rechtsgebied kunnen &lt;span style=&quot; font-weight:700;&quot;&gt;gamecovers auteursrechtelijk beschermd zijn&lt;/span&gt;. U bent alleen bevoegd deze functie te gebruiken met &lt;span style=&quot; font-weight:700;&quot;&gt;uw eigen servers en afbeeldingen&lt;/span&gt;.&lt;/p&gt;&lt;p&gt;Geef in het onderstaande vak de URL&apos;s op waarvan covers moeten worden gedownload, met één sjabloon-URL per regel. De volgende variabelen zijn beschikbaar:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${title}:&lt;/span&gt; Titel van de game.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${savetitle}:&lt;/span&gt; Titel waarmee de game wordt opgeslagen, inclusief het regioachtervoegsel.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${localizedtitle}:&lt;/span&gt; Gelokaliseerde titel van de game in de oorspronkelijke taal.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${filetitle}:&lt;/span&gt; Naamcomponent van de bestandsnaam van de game.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${serial}:&lt;/span&gt; Serienummer van de game.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Voorbeeld:&lt;/span&gt; https://www.example-not-a-real-domain.com/covers/${serial}.jpg&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>By default, the downloaded covers will be saved with the game&apos;s title. If this is not desired, you can check the &quot;Use Serial File Names&quot; box below. Using serials instead of game titles will prevent conflicts when multiple regions of the same game are used.</source>
@@ -4243,6 +4286,17 @@ Dit bestand is ongeveer 206 KB groot. Wilt u het nu downloaden?</translation>
     </message>
 </context>
 <context>
+    <name>DebuggerCallStackModel</name>
+    <message>
+        <source>Address</source>
+        <translation>Adres</translation>
+    </message>
+    <message>
+        <source>Frame</source>
+        <translation>Stackframe</translation>
+    </message>
+</context>
+<context>
     <name>DebuggerRegistersModel</name>
     <message>
         <source>Register</source>
@@ -4269,6 +4323,17 @@ Dit bestand is ongeveer 206 KB groot. Wilt u het nu downloaden?</translation>
     </message>
 </context>
 <context>
+    <name>DebuggerThreadsModel</name>
+    <message>
+        <source>Name</source>
+        <translation>Naam</translation>
+    </message>
+    <message>
+        <source>Value</source>
+        <translation>Waarde</translation>
+    </message>
+</context>
+<context>
     <name>DebuggerWindow</name>
     <message>
         <source>CPU Debugger</source>
@@ -4281,10 +4346,6 @@ Dit bestand is ongeveer 206 KB groot. Wilt u het nu downloaden?</translation>
     <message>
         <source>Breakpoints</source>
         <translation>Breekpunten</translation>
-    </message>
-    <message>
-        <source>toolBar</source>
-        <translation>toolBar</translation>
     </message>
     <message>
         <source>Disassembly</source>
@@ -4345,6 +4406,14 @@ Dit bestand is ongeveer 206 KB groot. Wilt u het nu downloaden?</translation>
     <message>
         <source>Stack</source>
         <translation>Stack</translation>
+    </message>
+    <message>
+        <source>Threads</source>
+        <translation>Threads</translation>
+    </message>
+    <message>
+        <source>Call Stack</source>
+        <translation>Aanroepstack</translation>
     </message>
     <message>
         <source>Pause/Continue</source>
@@ -4463,6 +4532,10 @@ Dit bestand is ongeveer 206 KB groot. Wilt u het nu downloaden?</translation>
         <translation>Naar &amp;adres gaan</translation>
     </message>
     <message>
+        <source>Toolbar</source>
+        <translation>Werkbalk</translation>
+    </message>
+    <message>
         <source>&amp;Add Breakpoint</source>
         <translation>&amp;Breekpunt toevoegen</translation>
     </message>
@@ -4516,6 +4589,20 @@ Dit bestand kan meerdere gigabytes groot worden, dus let op SSD-slijtage.</trans
         <source>&amp;Remove</source>
         <translation>&amp;Verwijderen</translation>
     </message>
+    <message numerus="yes">
+        <source>&amp;Nop %n Instruction(s)</source>
+        <translation>
+            <numerusform>%n instructie door &amp;NOP vervangen</numerusform>
+            <numerusform>%n instructies door &amp;NOP vervangen</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>&amp;Copy %n Instruction(s)</source>
+        <translation>
+            <numerusform>%n instructie &amp;kopiëren</numerusform>
+            <numerusform>%n instructies &amp;kopiëren</numerusform>
+        </translation>
+    </message>
     <message>
         <source>&amp;Follow Load/Store</source>
         <translation>&amp;Laden/opslaan volgen</translation>
@@ -4536,9 +4623,12 @@ Dit bestand kan meerdere gigabytes groot worden, dus let op SSD-slijtage.</trans
         <source>Invalid Instruction</source>
         <translation>Ongeldige instructie</translation>
     </message>
-    <message>
-        <source>Failed to write patched instruction to 0x%1.</source>
-        <translation>Kan de gepatchte instructie niet naar 0x%1 schrijven.</translation>
+    <message numerus="yes">
+        <source>Loaded %n saved breakpoint(s).</source>
+        <translation>
+            <numerusform>%n opgeslagen breekpunt geladen.</numerusform>
+            <numerusform>%n opgeslagen breekpunten geladen.</numerusform>
+        </translation>
     </message>
     <message>
         <source>Patched instruction at 0x%1.</source>
@@ -4565,12 +4655,28 @@ Dit bestand kan meerdere gigabytes groot worden, dus let op SSD-slijtage.</trans
         <translation>&amp;Instructie patchen</translation>
     </message>
     <message>
-        <source>&amp;Nop Instruction</source>
-        <translation>&amp;NOP-instructie</translation>
-    </message>
-    <message>
         <source>View in &amp;Dump</source>
         <translation>In &amp;dump bekijken</translation>
+    </message>
+    <message>
+        <source>Failed to write one or more patched instructions. Patched %1 of %2 instructions; the first failure was at 0x%3.</source>
+        <translation>Schrijven van een of meer gepatchte instructies mislukt. %1 van %2 instructies gepatcht; de eerste fout trad op bij 0x%3.</translation>
+    </message>
+    <message>
+        <source>Patched %1 of %2 selected instructions.</source>
+        <translation>%1 van %2 geselecteerde instructies gepatcht.</translation>
+    </message>
+    <message>
+        <source>Patched %1 instructions.</source>
+        <translation>%1 instructies gepatcht.</translation>
+    </message>
+    <message numerus="yes">
+        <source>Copied %n instruction(s) to the clipboard.</source>
+        <comment>CopyRange</comment>
+        <translation>
+            <numerusform>%n instructie naar het klembord gekopieerd.</numerusform>
+            <numerusform>%n instructies naar het klembord gekopieerd.</numerusform>
+        </translation>
     </message>
     <message>
         <source>Invalid search pattern. It should contain hex digits or question marks.</source>
@@ -5148,14 +5254,6 @@ Als u op Resetten klikt, wordt het serienummer teruggezet naar de waarde die uit
 </context>
 <context>
     <name>FullscreenUI</name>
-    <message>
-        <source>${title}: Title of the game.
-${filetitle}: Name component of the game&apos;s filename.
-${serial}: Serial of the game.</source>
-        <translation>${title}: Titel van de game.
-${filetitle}: Naamcomponent van de bestandsnaam van de game.
-${serial}: Serienummer van de game.</translation>
-    </message>
     <message>
         <source>-</source>
         <translation>-</translation>
@@ -6163,6 +6261,26 @@ De fout was:</translation>
         <translation> (%u MB op schijf)</translation>
     </message>
     <message>
+        <source>${filetitle}: Name component of the game&apos;s filename.</source>
+        <translation>${filetitle}: Naamcomponent van de bestandsnaam van de game.</translation>
+    </message>
+    <message>
+        <source>${localizedtitle}: Localized title for the game in its native language.</source>
+        <translation>${localizedtitle}: Gelokaliseerde titel van de game in de oorspronkelijke taal.</translation>
+    </message>
+    <message>
+        <source>${savetitle}: Save title for the game, including the region suffix.</source>
+        <translation>${savetitle}: Titel waarmee de game wordt opgeslagen, inclusief het regioachtervoegsel.</translation>
+    </message>
+    <message>
+        <source>${serial}: Serial of the game.</source>
+        <translation>${serial}: Serienummer van de game.</translation>
+    </message>
+    <message>
+        <source>${title}: Title of the game.</source>
+        <translation>${title}: Titel van de game.</translation>
+    </message>
+    <message>
         <source>%.1f ms</source>
         <translation>%.1f ms</translation>
     </message>
@@ -6293,6 +6411,10 @@ Wilt u de save state verwijderen en de game toch opstarten?</translation>
     <message>
         <source>Applies a blur effect to the background when a menu is open to improve readability.</source>
         <translation>Past een vervagingseffect toe op de achtergrond wanneer een menu is geopend om de leesbaarheid te verbeteren.</translation>
+    </message>
+    <message>
+        <source>Applies the selected sprite texture filter to framebuffer uploads. This can smooth backgrounds in some games while preserving texture data and 24-bit video.</source>
+        <translation>Past het geselecteerde textuurfilter voor sprites toe op framebufferuploads. Dit kan achtergronden in sommige games gladder maken terwijl textuurgegevens en 24-bits video behouden blijven.</translation>
     </message>
     <message>
         <source>Are you sure you want to clear all mappings for this controller?
@@ -6563,6 +6685,10 @@ U kunt deze actie niet ongedaan maken.</translation>
         <translation>Standaardwaarde</translation>
     </message>
     <message>
+        <source>Default: {}</source>
+        <translation>Standaard: {}</translation>
+    </message>
+    <message>
         <source>Deinterlacing Mode</source>
         <translation>Deïnterlacemodus</translation>
     </message>
@@ -6685,6 +6811,10 @@ U kunt deze actie niet ongedaan maken.</translation>
     <message>
         <source>Disable Textures</source>
         <translation>Texturen uitschakelen</translation>
+    </message>
+    <message>
+        <source>Disable Upscaled Direct Textures</source>
+        <translation>Opschalen van texturen met directe kleuren uitschakelen</translation>
     </message>
     <message>
         <source>Disable Vertex Lighting</source>
@@ -6931,6 +7061,10 @@ U kunt deze actie niet ongedaan maken.</translation>
         <translation>Versnelt het vroege laadproces bij snel opstarten, waardoor tijd wordt bespaard. Resultaten kunnen per game verschillen.</translation>
     </message>
     <message>
+        <source>Filter Framebuffer Uploads</source>
+        <translation>Framebufferuploads filteren</translation>
+    </message>
+    <message>
         <source>Fine Crop Amount</source>
         <translation>Mate van fijn bijsnijden</translation>
     </message>
@@ -7119,6 +7253,10 @@ U kunt deze actie niet ongedaan maken.</translation>
         <translation>Links: </translation>
     </message>
     <message>
+        <source>Length: {}</source>
+        <translation>Lengte: {}</translation>
+    </message>
+    <message>
         <source>Light</source>
         <translation>Licht</translation>
     </message>
@@ -7145,6 +7283,10 @@ U kunt deze actie niet ongedaan maken.</translation>
     <message>
         <source>Load Preset</source>
         <translation>Voorinstelling laden</translation>
+    </message>
+    <message>
+        <source>Loading Game List...</source>
+        <translation>Gamelijst laden...</translation>
     </message>
     <message>
         <source>Log File Timestamps</source>
@@ -7191,6 +7333,10 @@ Controleer uw gebruikersnaam en wachtwoord en probeer het opnieuw.</translation>
         <translation>Maximum aantal cycli voor zoekversnelling</translation>
     </message>
     <message>
+        <source>Maximum: {}</source>
+        <translation>Maximum: {}</translation>
+    </message>
+    <message>
         <source>Memory Card Busy</source>
         <translation>Geheugenkaart bezet</translation>
     </message>
@@ -7213,6 +7359,18 @@ Controleer uw gebruikersnaam en wachtwoord en probeer het opnieuw.</translation>
     <message>
         <source>Message Location</source>
         <translation>Locatie van bericht</translation>
+    </message>
+    <message>
+        <source>Minimum Framebuffer Upload Height</source>
+        <translation>Minimale hoogte van framebufferuploads</translation>
+    </message>
+    <message>
+        <source>Minimum Framebuffer Upload Width</source>
+        <translation>Minimale breedte van framebufferuploads</translation>
+    </message>
+    <message>
+        <source>Minimum: {}</source>
+        <translation>Minimum: {}</translation>
     </message>
     <message>
         <source>Move Cursor</source>
@@ -7321,6 +7479,14 @@ Controleer uw gebruikersnaam en wachtwoord en probeer het opnieuw.</translation>
     <message>
         <source>On-Screen Display Message Durations</source>
         <translation>Duur van OSD-meldingen</translation>
+    </message>
+    <message>
+        <source>Only filters framebuffer uploads at least this tall. Increase this value to avoid filtering texture data.</source>
+        <translation>Filtert alleen framebufferuploads die minstens zo hoog zijn. Verhoog deze waarde om te voorkomen dat textuurgegevens worden gefilterd.</translation>
+    </message>
+    <message>
+        <source>Only filters framebuffer uploads at least this wide. Increase this value to avoid filtering texture data.</source>
+        <translation>Filtert alleen framebufferuploads die minstens zo breed zijn. Verhoog deze waarde om te voorkomen dat textuurgegevens worden gefilterd.</translation>
     </message>
     <message>
         <source>Only measured achievements can be pinned.</source>
@@ -7467,8 +7633,16 @@ Controleer uw gebruikersnaam en wachtwoord en probeer het opnieuw.</translation>
         <translation>SDL-spelers-led van DualSense</translation>
     </message>
     <message>
+        <source>SDL Persistent Device Identifiers</source>
+        <translation>Permanente SDL-apparaatidentificaties</translation>
+    </message>
+    <message>
         <source>Safe Mode</source>
         <translation>Veilige modus</translation>
+    </message>
+    <message>
+        <source>Samples 16-bit direct-color textures at native resolution when upscaling. This can fix filtering of FMVs/backgrounds in some games, but may reduce the quality of render-to-texture effects.</source>
+        <translation>Bemonstert 16-bits texturen met directe kleuren op de oorspronkelijke resolutie bij het opschalen. Dit kan de filtering van FMV&apos;s/achtergronden in sommige games corrigeren, maar kan de kwaliteit van effecten die naar texturen worden gerenderd verminderen.</translation>
     </message>
     <message>
         <source>Save</source>
@@ -7505,6 +7679,10 @@ Controleer uw gebruikersnaam en wachtwoord en probeer het opnieuw.</translation>
     <message>
         <source>Save state deleted.</source>
         <translation>Savestate verwijderd.</translation>
+    </message>
+    <message>
+        <source>Saves supported controllers by serial or device identity so bindings survive port and connection-order changes when possible.</source>
+        <translation>Slaat ondersteunde controllers op op basis van hun serienummer of apparaatidentiteit, zodat toewijzingen waar mogelijk behouden blijven bij wijzigingen in poorten en aansluitvolgorde.</translation>
     </message>
     <message>
         <source>Scaled Interlacing</source>
@@ -7619,6 +7797,10 @@ Controleer uw gebruikersnaam en wachtwoord en probeer het opnieuw.</translation>
         <translation>Maakt de blokvorming van vergrote texturen op 2D-objecten vloeiender.</translation>
     </message>
     <message>
+        <source>Start: {}</source>
+        <translation>Begin: {}</translation>
+    </message>
+    <message>
         <source>Starts the application in Big Picture Mode instead of the desktop interface.</source>
         <translation>Start de toepassing in de Big Picture-modus in plaats van de desktopinterface.</translation>
     </message>
@@ -7731,6 +7913,10 @@ Controleer uw gebruikersnaam en wachtwoord en probeer het opnieuw.</translation>
         <translation>Gebruikt gamespecifieke configuratie voor invoerbronnen. Als dit is uitgeschakeld, wordt de globale configuratie gebruikt.</translation>
     </message>
     <message>
+        <source>Value: {}</source>
+        <translation>Waarde: {}</translation>
+    </message>
+    <message>
         <source>When enabled, DuckStation will track unofficial achievements. Unlocks will be saved locally and not sent to RetroAchievements.</source>
         <translation>Wanneer ingeschakeld, houdt DuckStation niet-officiële prestaties bij. Ontgrendelingen worden lokaal opgeslagen en niet naar RetroAchievements verzonden.</translation>
     </message>
@@ -7773,10 +7959,6 @@ Controleer uw gebruikersnaam en wachtwoord en probeer het opnieuw.</translation>
     <message>
         <source>{} unpinned.</source>
         <translation>{} niet meer vastgezet.</translation>
-    </message>
-    <message>
-        <source>{} | Start: {} | Length: {}</source>
-        <translation>{} | Start: {} | Lengte: {}</translation>
     </message>
     <message>
         <source>PGXP Geometry Correction</source>
@@ -8807,10 +8989,6 @@ Controleer uw gebruikersnaam en wachtwoord en probeer het opnieuw.</translation>
         <translation>Waardenbereik</translation>
     </message>
     <message>
-        <source>Value: {} | Default: {} | Minimum: {} | Maximum: {}</source>
-        <translation>Waarde: {} | Standaard: {} | Minimum: {} | Maximum: {}</translation>
-    </message>
-    <message>
         <source>Verify</source>
         <translation>Verifiëren</translation>
     </message>
@@ -9539,6 +9717,16 @@ Weet u zeker dat u wilt doorgaan?</translation>
         <translation>Is beveiligd met LibCrypt</translation>
     </message>
     <message>
+        <source>Disable Upscaled Direct Textures</source>
+        <comment>GameDatabase::Trait</comment>
+        <translation>Opschalen van texturen met directe kleuren uitschakelen</translation>
+    </message>
+    <message>
+        <source>Filter Framebuffer Uploads</source>
+        <comment>GameDatabase::Trait</comment>
+        <translation>Framebufferuploads filteren</translation>
+    </message>
+    <message>
         <source>Unknown</source>
         <translation>Onbekend</translation>
     </message>
@@ -9779,6 +9967,14 @@ Weet u zeker dat u wilt doorgaan?</translation>
         <translation>GPU-maximale vooruitloop</translation>
     </message>
     <message>
+        <source>Filter Framebuffer Uploads Minimum Width</source>
+        <translation>Minimale breedte voor het filteren van framebufferuploads</translation>
+    </message>
+    <message>
+        <source>Filter Framebuffer Uploads Minimum Height</source>
+        <translation>Minimale hoogte voor het filteren van framebufferuploads</translation>
+    </message>
+    <message>
         <source>GPU Line Detect Mode</source>
         <translation>GPU-lijndetectiemodus</translation>
     </message>
@@ -9828,6 +10024,11 @@ Weet u zeker dat u wilt doorgaan?</translation>
         <translation>Schijfset</translation>
     </message>
     <message>
+        <source>Audio CD</source>
+        <comment>EntryType</comment>
+        <translation>Audio-cd</translation>
+    </message>
+    <message>
         <source>PS-EXE</source>
         <comment>EntryType</comment>
         <translation>PS-EXE</translation>
@@ -9851,12 +10052,12 @@ Weet u zeker dat u wilt doorgaan?</translation>
         <translation>&apos;{}&apos; wordt gescand...</translation>
     </message>
     <message>
-        <source>Unknown</source>
-        <translation>Onbekend</translation>
+        <source>URL template must contain at least one of ${title}, ${localizedtitle}, ${savetitle}, ${filetitle}, or ${serial}.</source>
+        <translation>De URL-sjabloon moet ten minste een van ${title}, ${localizedtitle}, ${savetitle}, ${filetitle} of ${serial} bevatten.</translation>
     </message>
     <message>
-        <source>URL template must contain at least one of ${title}, ${savetitle}, ${filetitle}, or ${serial}.</source>
-        <translation>De URL-sjabloon moet ten minste een van ${title}, ${savetitle}, ${filetitle} of ${serial} bevatten.</translation>
+        <source>Unknown</source>
+        <translation>Onbekend</translation>
     </message>
     <message>
         <source>No URLs to download enumerated.</source>
@@ -10014,6 +10215,14 @@ Recursief doorzoeken kost meer tijd, maar zal bestanden in subfolders vinden.</t
     <message>
         <source>Select Directory</source>
         <translation>Map selecteren</translation>
+    </message>
+    <message>
+        <source>Add File...</source>
+        <translation>Bestand toevoegen...</translation>
+    </message>
+    <message>
+        <source>Add Folder...</source>
+        <translation>Map toevoegen...</translation>
     </message>
 </context>
 <context>
@@ -10212,10 +10421,6 @@ Recursief doorzoeken kost meer tijd, maar zal bestanden in subfolders vinden.</t
         <translation>Controllers:</translation>
     </message>
     <message>
-        <source>Tracks:</source>
-        <translation>Nummers:</translation>
-    </message>
-    <message>
         <source>Release Info:</source>
         <translation>Release-informatie:</translation>
     </message>
@@ -10292,6 +10497,10 @@ Recursief doorzoeken kost meer tijd, maar zal bestanden in subfolders vinden.</t
     <message>
         <source>Game Specific Configuration</source>
         <translation>Spelspecifieke configuratie</translation>
+    </message>
+    <message>
+        <source>Game ID: %1</source>
+        <translation>Game-ID: %1</translation>
     </message>
     <message>
         <source>Track %1</source>
@@ -10493,8 +10702,12 @@ Recursief doorzoeken kost meer tijd, maar zal bestanden in subfolders vinden.</t
         <translation>Maximaal aantal frames in wachtrij:</translation>
     </message>
     <message>
-        <source>Texture Modulation Cropping (&quot;Old/v0 GPU&quot;)</source>
-        <translation>Textuurmodulatiebijsnijden (&quot;Oude/v0-GPU&quot;)</translation>
+        <source>Filter Framebuffer Uploads</source>
+        <translation>Framebufferuploads filteren</translation>
+    </message>
+    <message>
+        <source>Minimum Size:</source>
+        <translation>Minimale grootte:</translation>
     </message>
     <message>
         <source>Scaled Interlacing</source>
@@ -10503,6 +10716,10 @@ Recursief doorzoeken kost meer tijd, maar zal bestanden in subfolders vinden.</t
     <message>
         <source>Software Renderer Readbacks</source>
         <translation>Terugleesbewerkingen door software-renderer</translation>
+    </message>
+    <message>
+        <source>Disable Upscaled Direct Textures</source>
+        <translation>Opschalen van texturen met directe kleuren uitschakelen</translation>
     </message>
     <message>
         <source>PGXP</source>
@@ -10949,6 +11166,34 @@ Recursief doorzoeken kost meer tijd, maar zal bestanden in subfolders vinden.</t
         <translation>Schaalt het overslaan van lijnen bij geïnterlinieerde rendering naar de interne resolutie. Hierdoor valt het kam-effect bij hogere resoluties minder op. Doorgaans veilig om in te schakelen.</translation>
     </message>
     <message>
+        <source>Samples 16-bit direct-color textures at native resolution when upscaling. This can fix filtering of FMVs/backgrounds in some games, but may reduce the quality of render-to-texture effects.</source>
+        <translation>Bemonstert 16-bits texturen met directe kleuren op de oorspronkelijke resolutie bij het opschalen. Dit kan de filtering van FMV&apos;s/achtergronden in sommige games corrigeren, maar kan de kwaliteit van effecten die naar texturen worden gerenderd verminderen.</translation>
+    </message>
+    <message>
+        <source>Applies the selected sprite texture filter to framebuffer uploads. This can smooth backgrounds in some games while preserving texture data and 24-bit video.</source>
+        <translation>Past het geselecteerde textuurfilter voor sprites toe op framebufferuploads. Dit kan achtergronden in sommige games gladder maken terwijl textuurgegevens en 24-bits video behouden blijven.</translation>
+    </message>
+    <message>
+        <source>Minimum Framebuffer Upload Width</source>
+        <translation>Minimale breedte van framebufferuploads</translation>
+    </message>
+    <message>
+        <source>1 px</source>
+        <translation>1 px</translation>
+    </message>
+    <message>
+        <source>Only filters framebuffer uploads at least this wide. Increase this value to avoid filtering texture data.</source>
+        <translation>Filtert alleen framebufferuploads die minstens zo breed zijn. Verhoog deze waarde om te voorkomen dat textuurgegevens worden gefilterd.</translation>
+    </message>
+    <message>
+        <source>Minimum Framebuffer Upload Height</source>
+        <translation>Minimale hoogte van framebufferuploads</translation>
+    </message>
+    <message>
+        <source>Only filters framebuffer uploads at least this tall. Increase this value to avoid filtering texture data.</source>
+        <translation>Filtert alleen framebufferuploads die minstens zo hoog zijn. Verhoog deze waarde om te voorkomen dat textuurgegevens worden gefilterd.</translation>
+    </message>
+    <message>
         <source>Runs the software renderer in parallel for VRAM readbacks. On some systems, this may result in greater performance when using graphical enhancements with the hardware renderer.</source>
         <translation>Voert de software-renderer parallel uit voor VRAM-terugleesbewerkingen. Op sommige systemen kan dit de prestaties verbeteren wanneer grafische verbeteringen met de hardware-renderer worden gebruikt.</translation>
     </message>
@@ -11119,10 +11364,6 @@ Recursief doorzoeken kost meer tijd, maar zal bestanden in subfolders vinden.</t
     <message>
         <source>%1 [Unavailable]</source>
         <translation>%1 [Niet beschikbaar]</translation>
-    </message>
-    <message>
-        <source>Use Global Setting</source>
-        <translation>Globale instelling gebruiken</translation>
     </message>
     <message>
         <source>%1x MSAA</source>
@@ -11419,14 +11660,6 @@ Recursief doorzoeken kost meer tijd, maar zal bestanden in subfolders vinden.</t
         <translation>Pauzemenu openen</translation>
     </message>
     <message>
-        <source>Open Achievement List</source>
-        <translation>Prestatielijst openen</translation>
-    </message>
-    <message>
-        <source>Open Leaderboard List</source>
-        <translation>Ranglijst openen</translation>
-    </message>
-    <message>
         <source>System</source>
         <translation>Systeem</translation>
     </message>
@@ -11511,6 +11744,22 @@ Recursief doorzoeken kost meer tijd, maar zal bestanden in subfolders vinden.</t
         <translation>Save States</translation>
     </message>
     <message>
+        <source>Toggle Pause Menu</source>
+        <translation>Pauzemenu tonen/verbergen</translation>
+    </message>
+    <message>
+        <source>Toggle Cheat List</source>
+        <translation>Cheatlijst tonen/verbergen</translation>
+    </message>
+    <message>
+        <source>Toggle Achievement List</source>
+        <translation>Prestatielijst tonen/verbergen</translation>
+    </message>
+    <message>
+        <source>Toggle Leaderboard List</source>
+        <translation>Klassementslijst tonen/verbergen</translation>
+    </message>
+    <message>
         <source>Load From Selected Slot</source>
         <translation>Laden vanaf geselecteerde positie</translation>
     </message>
@@ -11581,10 +11830,6 @@ Recursief doorzoeken kost meer tijd, maar zal bestanden in subfolders vinden.</t
     <message>
         <source>Interface</source>
         <translation>Interface</translation>
-    </message>
-    <message>
-        <source>Open Cheat Settings</source>
-        <translation>Cheatinstellingen openen</translation>
     </message>
     <message>
         <source>Fast Forward (Hold)</source>
@@ -14370,16 +14615,12 @@ Fout: {1}</translation>
         <translation>Kaart formatteren</translation>
     </message>
     <message>
-        <source>Import File...</source>
-        <translation>Bestand importeren...</translation>
-    </message>
-    <message>
-        <source>Import Card...</source>
-        <translation>Kaart importeren...</translation>
-    </message>
-    <message>
         <source>Save</source>
         <translation>Opslaan</translation>
+    </message>
+    <message>
+        <source>Import...</source>
+        <translation>Importeren...</translation>
     </message>
     <message numerus="yes">
         <source>%n block(s) free</source>
@@ -14395,6 +14636,10 @@ Fout: {1}</translation>
     <message>
         <source>Failed to load memory card: %1</source>
         <translation>Kan geheugenkaart niet laden: %1</translation>
+    </message>
+    <message>
+        <source>Select Single Save File</source>
+        <translation>Enkel savebestand selecteren</translation>
     </message>
     <message>
         <source>Extract Animated Icon</source>
@@ -14417,6 +14662,14 @@ Fout: {1}</translation>
 %2</source>
         <translation>Kan savebestand %1 niet hernoemen:
 %2</translation>
+    </message>
+    <message>
+        <source>Import Single Save File...</source>
+        <translation>Enkel savebestand importeren...</translation>
+    </message>
+    <message>
+        <source>Import Entire Memory Card...</source>
+        <translation>Volledige geheugenkaart importeren...</translation>
     </message>
     <message>
         <source>Failed to import memory card from %1:
@@ -14465,10 +14718,6 @@ Fout: {1}</translation>
     <message>
         <source>Failed to undelete file %1. The file may have been partially overwritten by another save.</source>
         <translation>Kan bestand %1 niet herstellen. Het bestand is mogelijk gedeeltelijk overschreven door een andere save.</translation>
-    </message>
-    <message>
-        <source>Select Single Savefile</source>
-        <translation>Enkel savebestand selecteren</translation>
     </message>
     <message>
         <source>Select Import File</source>
@@ -15240,88 +15489,21 @@ Fout: {1}</translation>
         <source>Sets scaling for left trigger.</source>
         <translation>Stelt de schaal van de linkertrigger in.</translation>
     </message>
-</context>
-<context>
-    <name>NeGconRumble</name>
-    <message>
-        <source>D-Pad Up</source>
-        <translation>D-pad omhoog</translation>
-    </message>
-    <message>
-        <source>D-Pad Right</source>
-        <translation>D-pad rechts</translation>
-    </message>
-    <message>
-        <source>D-Pad Down</source>
-        <translation>D-pad omlaag</translation>
-    </message>
-    <message>
-        <source>D-Pad Left</source>
-        <translation>D-pad links</translation>
-    </message>
-    <message>
-        <source>Start</source>
-        <translation>Start</translation>
-    </message>
-    <message>
-        <source>A Button</source>
-        <translation>A-knop</translation>
-    </message>
-    <message>
-        <source>B Button</source>
-        <translation>B-knop</translation>
-    </message>
-    <message>
-        <source>I Button</source>
-        <translation>I-knop</translation>
-    </message>
-    <message>
-        <source>II Button</source>
-        <translation>II-knop</translation>
-    </message>
-    <message>
-        <source>Left Trigger</source>
-        <translation>Linkertrigger</translation>
-    </message>
-    <message>
-        <source>Right Trigger</source>
-        <translation>Rechtertrigger</translation>
-    </message>
-    <message>
-        <source>Steering (Twist) Left</source>
-        <translation>Sturen (draaien) naar links</translation>
-    </message>
-    <message>
-        <source>Steering (Twist) Right</source>
-        <translation>Sturen (draaien) naar rechts</translation>
-    </message>
     <message>
         <source>Analog Toggle</source>
-        <translation>Analoge modus wisselen</translation>
+        <translation>Analoge modus schakelen</translation>
     </message>
     <message>
-        <source>Disable Simultaneous Opposing Cardinal Directions</source>
-        <translation>Gelijktijdige tegengestelde hoofdrichtingen uitschakelen</translation>
+        <source>Large Motor</source>
+        <translation>Grote motor</translation>
     </message>
     <message>
-        <source>Prevents concurrent left/right or up/down inputs from being presented to the game.</source>
-        <translation>Voorkomt dat gelijktijdige invoer naar links/rechts of omhoog/omlaag aan het spel wordt doorgegeven.</translation>
+        <source>Small Motor</source>
+        <translation>Kleine motor</translation>
     </message>
     <message>
-        <source>Steering Axis Deadzone</source>
-        <translation>Dode zone van stuuras</translation>
-    </message>
-    <message>
-        <source>Sets deadzone size for steering axis.</source>
-        <translation>Grootte van dode zone van stuuras</translation>
-    </message>
-    <message>
-        <source>Steering Axis Sensitivity</source>
-        <translation>Gevoeligheid van stuuras</translation>
-    </message>
-    <message>
-        <source>Sets the steering axis scaling factor.</source>
-        <translation>Stelt de schaalfactor van de stuuras in.</translation>
+        <source>Mode LED</source>
+        <translation>Modus-led</translation>
     </message>
     <message>
         <source>Large Motor Vibration Bias</source>
@@ -15329,7 +15511,7 @@ Fout: {1}</translation>
     </message>
     <message>
         <source>Sets the bias value for the large vibration motor. If vibration in some games is too weak or not functioning, try increasing this value. Negative values will decrease the intensity of vibration.</source>
-        <translation>Stelt de biaswaarde voor de grote trilmotor in. Als de trilling in sommige spellen te zwak is of niet werkt, probeer deze waarde dan te verhogen. Negatieve waarden verlagen de trillingsintensiteit.</translation>
+        <translation>Stelt de biaswaarde van de grote trilmotor in. Als de trilling in sommige games te zwak is of niet werkt, probeer deze waarde dan te verhogen. Negatieve waarden verlagen de trillingsintensiteit.</translation>
     </message>
     <message>
         <source>Small Motor Vibration Bias</source>
@@ -15337,7 +15519,7 @@ Fout: {1}</translation>
     </message>
     <message>
         <source>Sets the bias value for the small vibration motor. If vibration in some games is too weak or not functioning, try increasing this value. Negative values will decrease the intensity of vibration.</source>
-        <translation>Stelt de biaswaarde voor de kleine trilmotor in. Als de trilling in sommige spellen te zwak is of niet werkt, probeer deze waarde dan te verhogen. Negatieve waarden verlagen de trillingsintensiteit.</translation>
+        <translation>Stelt de biaswaarde van de kleine trilmotor in. Als de trilling in sommige games te zwak is of niet werkt, probeer deze waarde dan te verhogen. Negatieve waarden verlagen de trillingsintensiteit.</translation>
     </message>
 </context>
 <context>
@@ -16172,6 +16354,22 @@ Fout: {1}</translation>
 <context>
     <name>QtHost</name>
     <message>
+        <source>We have detected that LD_LIBRARY_PATH has been set to the following value:
+
+%1
+
+This will likely prevent DuckStation from working correctly. You should modify your environment to leave LD_LIBRARY_PATH unset.</source>
+        <translation>We hebben vastgesteld dat LD_LIBRARY_PATH is ingesteld op de volgende waarde:
+
+%1
+
+Dit zal waarschijnlijk verhinderen dat DuckStation correct werkt. Pas uw omgeving aan zodat LD_LIBRARY_PATH niet is ingesteld.</translation>
+    </message>
+    <message>
+        <source>Don&apos;t show again</source>
+        <translation>Niet meer tonen</translation>
+    </message>
+    <message>
         <source>Would you like to create a launcher shortcut for DuckStation?
 
 This will add DuckStation to your application menu, allowing you to launch it more easily.
@@ -16845,19 +17043,19 @@ Wilt u deze map maken?</translation>
         <translation>PAL (Europa, Australië)</translation>
     </message>
     <message>
-        <source>NTSC-J (Japan)</source>
+        <source>NTSC-J</source>
         <comment>DiscRegion</comment>
-        <translation>NTSC-J (Japan)</translation>
+        <translation>NTSC-J</translation>
     </message>
     <message>
-        <source>NTSC-U/C (US, Canada)</source>
+        <source>NTSC-U/C</source>
         <comment>DiscRegion</comment>
-        <translation>NTSC-U/C (VS, Canada)</translation>
+        <translation>NTSC-U/C</translation>
     </message>
     <message>
-        <source>PAL (Europe, Australia)</source>
+        <source>PAL</source>
         <comment>DiscRegion</comment>
-        <translation>PAL (Europa, Australië)</translation>
+        <translation>PAL</translation>
     </message>
     <message>
         <source>Other</source>
@@ -16960,6 +17158,36 @@ Wilt u deze map maken?</translation>
         <translation>JINC2 (Traag, geen randvervaging)</translation>
     </message>
     <message>
+        <source>Monotonic Cubic (Very Slow)</source>
+        <comment>GPUTextureFilter</comment>
+        <translation>Monotoon kubisch (Zeer traag)</translation>
+    </message>
+    <message>
+        <source>Monotonic Cubic (Very Slow, No Edge Blending)</source>
+        <comment>GPUTextureFilter</comment>
+        <translation>Monotoon kubisch (Zeer traag, geen randvervaging)</translation>
+    </message>
+    <message>
+        <source>Adaptive Diagonal (Slow)</source>
+        <comment>GPUTextureFilter</comment>
+        <translation>Adaptief diagonaal (Traag)</translation>
+    </message>
+    <message>
+        <source>Adaptive Diagonal (Slow, No Edge Blending)</source>
+        <comment>GPUTextureFilter</comment>
+        <translation>Adaptief diagonaal (Traag, geen randvervaging)</translation>
+    </message>
+    <message>
+        <source>DCCI (Extremely Slow)</source>
+        <comment>GPUTextureFilter</comment>
+        <translation>DCCI (Extreem traag)</translation>
+    </message>
+    <message>
+        <source>DCCI (Extremely Slow, No Edge Blending)</source>
+        <comment>GPUTextureFilter</comment>
+        <translation>DCCI (Extreem traag, geen randvervaging)</translation>
+    </message>
+    <message>
         <source>xBR (Very Slow)</source>
         <comment>GPUTextureFilter</comment>
         <translation>xBR (Zeer traag)</translation>
@@ -16968,6 +17196,11 @@ Wilt u deze map maken?</translation>
         <source>xBR (Very Slow, No Edge Blending)</source>
         <comment>GPUTextureFilter</comment>
         <translation>xBR (Zeer traag, geen randvervaging)</translation>
+    </message>
+    <message>
+        <source>Sharp Bilinear</source>
+        <comment>GPUTextureFilter</comment>
+        <translation>Scherp bilineair</translation>
     </message>
     <message>
         <source>Scale2x (EPX)</source>
@@ -18297,6 +18530,10 @@ De game zal waarschijnlijk niet correct werken.
 Raadpleeg de README voor instructies over het toevoegen van een SBI-bestand.
 
 Wilt u doorgaan?</translation>
+    </message>
+    <message>
+        <source>This save state was created with a different console region, and may be unstable.</source>
+        <translation>Deze savestate is gemaakt met een andere consoleregio en kan instabiel zijn.</translation>
     </message>
     <message>
         <source>This save state was created with a different BIOS. This may cause stability issues.</source>

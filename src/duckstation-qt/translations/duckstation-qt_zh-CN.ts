@@ -146,6 +146,18 @@ Do you want to enable hardcore mode?</source>
         <translation>在成就解锁和游戏完成等事件上显示弹出消息。</translation>
     </message>
     <message>
+        <source>N/A</source>
+        <translation>N/A</translation>
+    </message>
+    <message>
+        <source>Resets the duration to the global setting.</source>
+        <translation>将持续时间重置为全局设置。</translation>
+    </message>
+    <message>
+        <source>Resets the duration to the default.</source>
+        <translation>将持续时间重置为默认值。</translation>
+    </message>
+    <message>
         <source>Shows a timer in the selected location when leaderboard challenges are active.</source>
         <translation>当排行榜挑战处于活动状态时，在所选位置显示计时器。</translation>
     </message>
@@ -302,6 +314,14 @@ Do you want to enable hardcore mode?</source>
         <translation>预取徽章</translation>
     </message>
     <message>
+        <source>Reset Achievement Notification Duration</source>
+        <translation>重置成就通知持续时间</translation>
+    </message>
+    <message>
+        <source>Reset Leaderboard Notification Duration</source>
+        <translation>重置排行榜通知持续时间</translation>
+    </message>
+    <message>
         <source>Notification Location:</source>
         <translation>通知位置:</translation>
     </message>
@@ -361,12 +381,6 @@ Do you want to enable hardcore mode?</source>
         <source>5 seconds</source>
         <translation>5秒</translation>
     </message>
-    <message numerus="yes">
-        <source>%n seconds</source>
-        <translation>
-            <numerusform>%n秒</numerusform>
-        </translation>
-    </message>
     <message>
         <source>Checked</source>
         <translation>已勾选</translation>
@@ -374,6 +388,10 @@ Do you want to enable hardcore mode?</source>
     <message>
         <source>(Customize)</source>
         <translation>(自定义)</translation>
+    </message>
+    <message>
+        <source> seconds</source>
+        <translation> 秒</translation>
     </message>
     <message>
         <source>Unchecked</source>
@@ -442,10 +460,6 @@ Token generated %2</source>
         <translation>
             <numerusform>%n成就不被DuckStation支持。</numerusform>
         </translation>
-    </message>
-    <message>
-        <source>{} (Unofficial)</source>
-        <translation>{} (非官方)</translation>
     </message>
     <message>
         <source>Leaderboard attempt started.</source>
@@ -1197,10 +1211,6 @@ Unread messages: {}</source>
         <translation>翻转右模拟遥杆的方向。</translation>
     </message>
     <message>
-        <source>Controller {} is locked to digital mode by the game.</source>
-        <translation>控制器{}被游戏锁定为数字模式。</translation>
-    </message>
-    <message>
         <source>Circle</source>
         <translation>圆圈</translation>
     </message>
@@ -1209,20 +1219,12 @@ Unread messages: {}</source>
         <translation>翻转右摇杆</translation>
     </message>
     <message>
-        <source>Controller {} switched to analog mode.</source>
-        <translation>控制器{}切换为模拟模式。</translation>
-    </message>
-    <message>
         <source>Select</source>
         <translation>选择</translation>
     </message>
     <message>
         <source>Square</source>
         <translation>方块</translation>
-    </message>
-    <message>
-        <source>Controller {} is locked to analog mode by the game.</source>
-        <translation>控制器{}被游戏锁定为模拟模式。</translation>
     </message>
     <message>
         <source>Analog LED</source>
@@ -1291,10 +1293,6 @@ Unread messages: {}</source>
     <message>
         <source>Invert Up/Down</source>
         <translation>翻转 上/下</translation>
-    </message>
-    <message>
-        <source>Controller {} switched to digital mode.</source>
-        <translation>控制器{}切换为数字模式。</translation>
     </message>
     <message>
         <source>D-Pad Up</source>
@@ -1383,10 +1381,6 @@ Unread messages: {}</source>
     <message>
         <source>Sets the analog stick deadzone, i.e. the fraction of the stick movement which will be ignored.</source>
         <translation>设置模拟摇杆的死区，也就是摇杆移动中会被忽略的小部分。</translation>
-    </message>
-    <message>
-        <source>Mode LED</source>
-        <translation>模式指示灯</translation>
     </message>
 </context>
 <context>
@@ -1555,10 +1549,6 @@ Unread messages: {}</source>
 <context>
     <name>AudioSettingsWidget</name>
     <message>
-        <source>%1%</source>
-        <translation>%1%</translation>
-    </message>
-    <message>
         <source>100%</source>
         <translation>100%</translation>
     </message>
@@ -1581,6 +1571,10 @@ Unread messages: {}</source>
     <message>
         <source>Reset Buffer Size</source>
         <translation>重置缓冲区大小</translation>
+    </message>
+    <message>
+        <source>Reset Output Latency</source>
+        <translation>重置输出延迟</translation>
     </message>
     <message>
         <source>Maximum Latency: 0 ms (0 ms stretch + 0 ms buffer + 0 ms output)</source>
@@ -1809,6 +1803,10 @@ Unread messages: {}</source>
     <message>
         <source>%</source>
         <translation>%</translation>
+    </message>
+    <message>
+        <source> ms</source>
+        <translation> 毫秒</translation>
     </message>
     <message>
         <source>%1 ms</source>
@@ -2215,6 +2213,24 @@ WAV 文件必须为 16 位立体声，且采样率为 44100Hz。</translation>
 Your dump may be corrupted, or the physical disc is scratched.</source>
         <translation>游戏现在很可能会崩溃。
 您的转储可能已损坏，或者实体光盘有划痕。</translation>
+    </message>
+</context>
+<context>
+    <name>CPU</name>
+    <message>
+        <source>Execute</source>
+        <comment>BreakpointType</comment>
+        <translation>执行</translation>
+    </message>
+    <message>
+        <source>Read</source>
+        <comment>BreakpointType</comment>
+        <translation>读取</translation>
+    </message>
+    <message>
+        <source>Write</source>
+        <comment>BreakpointType</comment>
+        <translation>写入</translation>
     </message>
 </context>
 <context>
@@ -2874,6 +2890,14 @@ This warning will only be shown once.</source>
         <translation>控制器{}切换为数字模式。</translation>
     </message>
     <message>
+        <source>Controller {} is locked to analog mode by the game.</source>
+        <translation>控制器{}被游戏锁定为模拟模式。</translation>
+    </message>
+    <message>
+        <source>Controller {} is locked to digital mode by the game.</source>
+        <translation>控制器{}被游戏锁定为数字模式。</translation>
+    </message>
+    <message>
         <source>Controller {} switched to JogCon mode.</source>
         <translation>控制器{}切换为JogCon模式。</translation>
     </message>
@@ -2923,6 +2947,14 @@ This warning will only be shown once.</source>
     <message>
         <source>Axes</source>
         <translation>轴</translation>
+    </message>
+    <message>
+        <source>Multiple Devices</source>
+        <translation>多个设备</translation>
+    </message>
+    <message>
+        <source>%1 (%2)</source>
+        <translation>%1 (%2)</translation>
     </message>
     <message>
         <source>Buttons</source>
@@ -3561,10 +3593,6 @@ This warning will only be shown once.</source>
         <translation>调整带有可配置LED的控制器的LED设置。</translation>
     </message>
     <message>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enables the SDL input source and detection of controllers.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;启用SDL输入源和控制器检测。&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
-    </message>
-    <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Allows rumble and LED effects for DualShock 4 / DualSense controllers in Bluetooth mode. This option is not required for wired connections.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Enabling enhanced reports may result in your controller being unusable in other applications until it is turned off and on again.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;允许蓝牙模式下的DualShock 4 / DualSense控制器使用震动和LED效果。有线连接不需要此选项。&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;启用增强报告可能导致控制器在其他应用程序中无法使用，直到将其关闭并再次开启。&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
@@ -3577,8 +3605,24 @@ This warning will only be shown once.</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;SDL输入源支持大多数控制器，是首选选项。蓝牙模式下DualShock 4 / DualSense手柄的震动/LED功能可能需要增强模式。您还可以编辑用于控制设备特定行为的&lt;a href=&quot;ADVANCED_SDL_OPTIONS&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#99ebff;&quot;&gt;高级选项&lt;/span&gt;&lt;/a&gt;。&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
+        <source>LEDs</source>
+        <translation>指示灯</translation>
+    </message>
+    <message>
+        <source>Enables the SDL input source and detection of controllers.</source>
+        <translation>启用SDL输入源和控制器检测。</translation>
+    </message>
+    <message>
         <source>Allows use of the touchpad for DualShock 4 / DualSense controllers as a pointer, for use with lightguns.</source>
         <translation>允许将DualShock 4 / DualSense控制器的触摸板用作指针，以便搭配光枪使用。</translation>
+    </message>
+    <message>
+        <source>Saves supported controllers by serial or device identity so bindings survive port and connection-order changes when possible.</source>
+        <translation>通过序列号或设备身份信息保存受支持的控制器，以便在端口或连接顺序发生变化时尽可能保留绑定。</translation>
+    </message>
+    <message>
+        <source>Use Persistent Device Identifiers</source>
+        <translation>使用持久设备标识符</translation>
     </message>
     <message>
         <source>Enable XInput Source</source>
@@ -4035,8 +4079,8 @@ This file is approximately 206KB, do you want to download it now?</source>
         <translation>DuckStation可以自动为尚未设置封面的游戏下载封面图。我们不托管任何封面图片，用户必须自行提供图片来源。</translation>
     </message>
     <message>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Depending on your jurisdiction, &lt;span style=&quot; font-weight:700;&quot;&gt;game covers may be copyrighted&lt;/span&gt;. You are only authorized to use this tool with &lt;span style=&quot; font-weight:700;&quot;&gt;your own servers and images&lt;/span&gt;.&lt;/p&gt;&lt;p&gt;In the box below, specify the URLs to download covers from, with one template URL per line. The following variables are available:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${title}:&lt;/span&gt; Title of the game.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${savetitle}:&lt;/span&gt; Title of the game including the region.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${localizedtitle}:&lt;/span&gt; Localized (native language) title of the game.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${filetitle}:&lt;/span&gt; Name component of the game&apos;s filename.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${serial}:&lt;/span&gt; Serial of the game.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Example:&lt;/span&gt; https://www.example-not-a-real-domain.com/covers/${serial}.jpg&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;根据您所在的司法管辖区，&lt;span style=&quot; font-weight:700;&quot;&gt;游戏封面可能受版权保护&lt;/span&gt;。您只能将此工具用于&lt;span style=&quot; font-weight:700;&quot;&gt;您自己的服务器和图像&lt;/span&gt;。&lt;/p&gt;&lt;p&gt;请在下框中指定封面下载URL，每行一个模板URL。可以使用以下变量:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${title}:&lt;/span&gt; 游戏标题。&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${savetitle}:&lt;/span&gt; 包含区域信息的游戏标题。&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${localizedtitle}:&lt;/span&gt; 游戏的本地化 (母语) 标题。&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${filetitle}:&lt;/span&gt; 游戏文件名中的名称部分。&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${serial}:&lt;/span&gt; 游戏序列号。&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;示例:&lt;/span&gt; https://www.example-not-a-real-domain.com/covers/${serial}.jpg&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Depending on your jurisdiction, &lt;span style=&quot; font-weight:700;&quot;&gt;game covers may be copyrighted&lt;/span&gt;. You are only authorized to use this tool with &lt;span style=&quot; font-weight:700;&quot;&gt;your own servers and images&lt;/span&gt;.&lt;/p&gt;&lt;p&gt;In the box below, specify the URLs to download covers from, with one template URL per line. The following variables are available:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${title}:&lt;/span&gt; Title of the game.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${savetitle}:&lt;/span&gt; Save title for the game, including the region suffix.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${localizedtitle}:&lt;/span&gt; Localized title for the game in its native language.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${filetitle}:&lt;/span&gt; Name component of the game&apos;s filename.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${serial}:&lt;/span&gt; Serial of the game.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Example:&lt;/span&gt; https://www.example-not-a-real-domain.com/covers/${serial}.jpg&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;根据您所在的司法管辖区，&lt;span style=&quot; font-weight:700;&quot;&gt;游戏封面可能受版权保护&lt;/span&gt;。您只能将此工具用于&lt;span style=&quot; font-weight:700;&quot;&gt;您自己的服务器和图像&lt;/span&gt;。&lt;/p&gt;&lt;p&gt;请在下框中指定封面下载URL，每行一个模板URL。可以使用以下变量:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${title}:&lt;/span&gt; 游戏标题。&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${savetitle}:&lt;/span&gt; 用于保存的游戏标题，包含区域后缀。&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${localizedtitle}:&lt;/span&gt; 游戏原生语言的本地化标题。&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${filetitle}:&lt;/span&gt; 游戏文件名中的名称部分。&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${serial}:&lt;/span&gt; 游戏序列号。&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;示例:&lt;/span&gt; https://www.example-not-a-real-domain.com/covers/${serial}.jpg&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>By default, the downloaded covers will be saved with the game&apos;s title. If this is not desired, you can check the &quot;Use Serial File Names&quot; box below. Using serials instead of game titles will prevent conflicts when multiple regions of the same game are used.</source>
@@ -4222,6 +4266,17 @@ This file is approximately 206KB, do you want to download it now?</source>
     </message>
 </context>
 <context>
+    <name>DebuggerCallStackModel</name>
+    <message>
+        <source>Address</source>
+        <translation>地址</translation>
+    </message>
+    <message>
+        <source>Frame</source>
+        <translation>栈帧</translation>
+    </message>
+</context>
+<context>
     <name>DebuggerRegistersModel</name>
     <message>
         <source>Value</source>
@@ -4245,6 +4300,17 @@ This file is approximately 206KB, do you want to download it now?</source>
     <message>
         <source>Address</source>
         <translation>地址</translation>
+    </message>
+</context>
+<context>
+    <name>DebuggerThreadsModel</name>
+    <message>
+        <source>Name</source>
+        <translation>名称</translation>
+    </message>
+    <message>
+        <source>Value</source>
+        <translation>值</translation>
     </message>
 </context>
 <context>
@@ -4338,6 +4404,10 @@ This file is approximately 206KB, do you want to download it now?</source>
         <translation>Ctrl+G</translation>
     </message>
     <message>
+        <source>Toolbar</source>
+        <translation>工具栏</translation>
+    </message>
+    <message>
         <source>VRAM</source>
         <translation>VRAM</translation>
     </message>
@@ -4348,6 +4418,14 @@ This file is approximately 206KB, do you want to download it now?</source>
     <message>
         <source>Type</source>
         <translation>类型</translation>
+    </message>
+    <message>
+        <source>Threads</source>
+        <translation>线程</translation>
+    </message>
+    <message>
+        <source>Call Stack</source>
+        <translation>调用栈</translation>
     </message>
     <message>
         <source>&amp;Add Breakpoint</source>
@@ -4436,10 +4514,6 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <translation>反汇编</translation>
     </message>
     <message>
-        <source>toolBar</source>
-        <translation>工具栏</translation>
-    </message>
-    <message>
         <source>Ctrl+F10</source>
         <translation>Ctrl+F10</translation>
     </message>
@@ -4487,9 +4561,17 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <source>&amp;Patch Instruction</source>
         <translation>修补指令(&amp;P)</translation>
     </message>
-    <message>
-        <source>&amp;Nop Instruction</source>
-        <translation>空操作指令(&amp;N)</translation>
+    <message numerus="yes">
+        <source>&amp;Nop %n Instruction(s)</source>
+        <translation>
+            <numerusform>将%n条指令替换为空操作(&amp;N)</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>&amp;Copy %n Instruction(s)</source>
+        <translation>
+            <numerusform>复制%n条指令(&amp;C)</numerusform>
+        </translation>
     </message>
     <message>
         <source>View in &amp;Dump</source>
@@ -4516,12 +4598,33 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <translation>无效指令</translation>
     </message>
     <message>
-        <source>Failed to write patched instruction to 0x%1.</source>
-        <translation>无法写入位于0x%1的修补指令。</translation>
+        <source>Failed to write one or more patched instructions. Patched %1 of %2 instructions; the first failure was at 0x%3.</source>
+        <translation>无法写入一条或多条修补后的指令。已修补%2条指令中的%1条；首次失败发生在0x%3。</translation>
+    </message>
+    <message>
+        <source>Patched %1 of %2 selected instructions.</source>
+        <translation>已修补所选%2条指令中的%1条。</translation>
+    </message>
+    <message numerus="yes">
+        <source>Loaded %n saved breakpoint(s).</source>
+        <translation>
+            <numerusform>已加载%n个保存的断点。</numerusform>
+        </translation>
     </message>
     <message>
         <source>Patched instruction at 0x%1.</source>
         <translation>已修补位于0x%1的指令。</translation>
+    </message>
+    <message>
+        <source>Patched %1 instructions.</source>
+        <translation>已修补%1条指令。</translation>
+    </message>
+    <message numerus="yes">
+        <source>Copied %n instruction(s) to the clipboard.</source>
+        <comment>CopyRange</comment>
+        <translation>
+            <numerusform>已将%n条指令复制到剪贴板。</numerusform>
+        </translation>
     </message>
     <message>
         <source>Failed to add breakpoint. A breakpoint may already exist at this address.</source>
@@ -5438,14 +5541,6 @@ Clicking Reset will restore the serial back to the value scanned from in the dis
         <translation> (磁盘上有%uMB)</translation>
     </message>
     <message>
-        <source>${title}: Title of the game.
-${filetitle}: Name component of the game&apos;s filename.
-${serial}: Serial of the game.</source>
-        <translation>${title}: 游戏标题。
-${filetitle}: 含游戏文件名的组合名称。
-${serial}: 游戏序号。</translation>
-    </message>
-    <message>
         <source>%.1f ms</source>
         <translation>%.1f毫秒</translation>
     </message>
@@ -6244,10 +6339,6 @@ Do you want to {0} anyway?</source>
     <message>
         <source>Port {} Controller Type</source>
         <translation>接口{}控制器类型</translation>
-    </message>
-    <message>
-        <source>Value: {} | Default: {} | Minimum: {} | Maximum: {}</source>
-        <translation>值: {} | 默认: {} | 最小: {} | 最大: {}</translation>
     </message>
     <message>
         <source>Sound Effects</source>
@@ -7504,12 +7595,36 @@ Error was:</source>
         <translation>%.2f秒</translation>
     </message>
     <message>
+        <source>${filetitle}: Name component of the game&apos;s filename.</source>
+        <translation>${filetitle}: 游戏文件名中的名称部分。</translation>
+    </message>
+    <message>
+        <source>${localizedtitle}: Localized title for the game in its native language.</source>
+        <translation>${localizedtitle}: 游戏原生语言的本地化标题。</translation>
+    </message>
+    <message>
+        <source>${savetitle}: Save title for the game, including the region suffix.</source>
+        <translation>${savetitle}: 用于保存的游戏标题，包含区域后缀。</translation>
+    </message>
+    <message>
+        <source>${serial}: Serial of the game.</source>
+        <translation>${serial}: 游戏序列号。</translation>
+    </message>
+    <message>
+        <source>${title}: Title of the game.</source>
+        <translation>${title}: 游戏标题。</translation>
+    </message>
+    <message>
         <source>%d Frames</source>
         <translation>%d帧</translation>
     </message>
     <message>
         <source>%d sectors</source>
         <translation>%d扇区</translation>
+    </message>
+    <message>
+        <source>Applies the selected sprite texture filter to framebuffer uploads. This can smooth backgrounds in some games while preserving texture data and 24-bit video.</source>
+        <translation>对上传到帧缓冲的数据应用所选的精灵纹理过滤器。这可以平滑某些游戏中的背景，同时保持纹理数据和24位视频不变。</translation>
     </message>
     <message>
         <source>BIOS &apos;{}&apos; installed as &apos;{}&apos;.</source>
@@ -7534,6 +7649,10 @@ Error was:</source>
     <message>
         <source>Copies a BIOS image to the configured global BIOS directory.</source>
         <translation>将 BIOS 镜像复制到配置的全局 BIOS 目录。</translation>
+    </message>
+    <message>
+        <source>Default: {}</source>
+        <translation>默认值: {}</translation>
     </message>
     <message>
         <source>Delete</source>
@@ -7574,6 +7693,10 @@ Error was:</source>
     <message>
         <source>Determines the rotation of the simulated TV screen.</source>
         <translation>确定模拟电视屏幕的旋转。</translation>
+    </message>
+    <message>
+        <source>Disable Upscaled Direct Textures</source>
+        <translation>禁用直接颜色纹理分辨率提升</translation>
     </message>
     <message>
         <source>Disable on 2D Polygons</source>
@@ -7720,6 +7843,10 @@ Error was:</source>
         <translation>快速启动时会快进通过早期加载过程，以节省时间。结果可能因游戏而异。</translation>
     </message>
     <message>
+        <source>Filter Framebuffer Uploads</source>
+        <translation>过滤上传到帧缓冲的数据</translation>
+    </message>
+    <message>
         <source>Force 4:3 For FMVs</source>
         <translation>FMV强制4:3</translation>
     </message>
@@ -7824,6 +7951,10 @@ Error was:</source>
         <translation>左: </translation>
     </message>
     <message>
+        <source>Length: {}</source>
+        <translation>长度: {}</translation>
+    </message>
+    <message>
         <source>Light</source>
         <translation>浅色</translation>
     </message>
@@ -7838,6 +7969,10 @@ Error was:</source>
     <message>
         <source>Load Preset</source>
         <translation>加载预设</translation>
+    </message>
+    <message>
+        <source>Loading Game List...</source>
+        <translation>正在加载游戏列表…</translation>
     </message>
     <message>
         <source>Log File Timestamps</source>
@@ -7876,6 +8011,10 @@ Please check your username and password, and try again.</source>
         <translation>最大寻道加速周期</translation>
     </message>
     <message>
+        <source>Maximum: {}</source>
+        <translation>最大值: {}</translation>
+    </message>
+    <message>
         <source>Menu Background</source>
         <translation>菜单背景</translation>
     </message>
@@ -7886,6 +8025,18 @@ Please check your username and password, and try again.</source>
     <message>
         <source>Message Location</source>
         <translation>消息位置</translation>
+    </message>
+    <message>
+        <source>Minimum Framebuffer Upload Height</source>
+        <translation>帧缓冲上传的最小高度</translation>
+    </message>
+    <message>
+        <source>Minimum Framebuffer Upload Width</source>
+        <translation>帧缓冲上传的最小宽度</translation>
+    </message>
+    <message>
+        <source>Minimum: {}</source>
+        <translation>最小值: {}</translation>
     </message>
     <message>
         <source>Move Cursor</source>
@@ -7946,6 +8097,14 @@ Please check your username and password, and try again.</source>
     <message>
         <source>On-Screen Display Message Durations</source>
         <translation>同屏显示消息持续时间</translation>
+    </message>
+    <message>
+        <source>Only filters framebuffer uploads at least this tall. Increase this value to avoid filtering texture data.</source>
+        <translation>仅过滤高度不小于此值的帧缓冲上传数据。增大此值可避免过滤纹理数据。</translation>
+    </message>
+    <message>
+        <source>Only filters framebuffer uploads at least this wide. Increase this value to avoid filtering texture data.</source>
+        <translation>仅过滤宽度不小于此值的帧缓冲上传数据。增大此值可避免过滤纹理数据。</translation>
     </message>
     <message>
         <source>Only measured achievements can be pinned.</source>
@@ -8144,8 +8303,16 @@ Please check your username and password, and try again.</source>
         <translation>SDL双感应手柄玩家指示灯</translation>
     </message>
     <message>
+        <source>SDL Persistent Device Identifiers</source>
+        <translation>SDL持久设备标识符</translation>
+    </message>
+    <message>
         <source>Safe Mode</source>
         <translation>安全模式</translation>
+    </message>
+    <message>
+        <source>Samples 16-bit direct-color textures at native resolution when upscaling. This can fix filtering of FMVs/backgrounds in some games, but may reduce the quality of render-to-texture effects.</source>
+        <translation>提升分辨率时，以原生分辨率采样16位直接颜色纹理。这可以修复某些游戏中全动态视频(FMV)/背景的过滤问题，但可能降低渲染到纹理效果的质量。</translation>
     </message>
     <message>
         <source>Save Controller Preset</source>
@@ -8170,6 +8337,10 @@ Please check your username and password, and try again.</source>
     <message>
         <source>Saved {}</source>
         <translation>保存{}</translation>
+    </message>
+    <message>
+        <source>Saves supported controllers by serial or device identity so bindings survive port and connection-order changes when possible.</source>
+        <translation>通过序列号或设备身份信息保存受支持的控制器，以便在端口或连接顺序发生变化时尽可能保留绑定。</translation>
     </message>
     <message>
         <source>Scaled Interlacing</source>
@@ -8436,6 +8607,10 @@ Please check your username and password, and try again.</source>
         <translation>以您电脑DVD驱动器中的光盘来启动游戏。</translation>
     </message>
     <message>
+        <source>Start: {}</source>
+        <translation>起点: {}</translation>
+    </message>
+    <message>
         <source>Starts the application in Big Picture Mode instead of the desktop interface.</source>
         <translation>启动应用程序时进入大视画模式，而非桌面界面。</translation>
     </message>
@@ -8576,6 +8751,10 @@ Please check your username and password, and try again.</source>
         <translation>在创建倒带用即时档案时使用软件渲染器，以避免额外的显存消耗。在放大时尤其有用。</translation>
     </message>
     <message>
+        <source>Value: {}</source>
+        <translation>值: {}</translation>
+    </message>
+    <message>
         <source>Verify</source>
         <translation>校验</translation>
     </message>
@@ -8634,10 +8813,6 @@ Do you want to {1} anyway?</source>
     <message>
         <source>{} unpinned.</source>
         <translation>{}已取消固定。</translation>
-    </message>
-    <message>
-        <source>{} | Start: {} | Length: {}</source>
-        <translation>{} | 起点: {} | 长度: {}</translation>
     </message>
     <message>
         <source>Uncompressed Size</source>
@@ -9509,6 +9684,16 @@ Are you sure you want to continue?</source>
         <translation>受LibCrypt保护</translation>
     </message>
     <message>
+        <source>Disable Upscaled Direct Textures</source>
+        <comment>GameDatabase::Trait</comment>
+        <translation>禁用直接颜色纹理分辨率提升</translation>
+    </message>
+    <message>
+        <source>Filter Framebuffer Uploads</source>
+        <comment>GameDatabase::Trait</comment>
+        <translation>过滤上传到帧缓冲的数据</translation>
+    </message>
+    <message>
         <source>Fast boot disabled.</source>
         <translation>快速启动已禁用。</translation>
     </message>
@@ -9753,6 +9938,14 @@ Are you sure you want to continue?</source>
         <translation>GPU最大超前运行</translation>
     </message>
     <message>
+        <source>Filter Framebuffer Uploads Minimum Width</source>
+        <translation>帧缓冲上传过滤的最小宽度</translation>
+    </message>
+    <message>
+        <source>Filter Framebuffer Uploads Minimum Height</source>
+        <translation>帧缓冲上传过滤的最小高度</translation>
+    </message>
+    <message>
         <source>Verifying Image</source>
         <translation>正在验证镜像</translation>
     </message>
@@ -9802,6 +9995,11 @@ Are you sure you want to continue?</source>
         <translation>光盘组</translation>
     </message>
     <message>
+        <source>Audio CD</source>
+        <comment>EntryType</comment>
+        <translation>音频CD</translation>
+    </message>
+    <message>
         <source>PS-EXE</source>
         <comment>EntryType</comment>
         <translation>PS-EXE</translation>
@@ -9817,12 +10015,12 @@ Are you sure you want to continue?</source>
         <translation>PSF</translation>
     </message>
     <message>
-        <source>Unknown</source>
-        <translation>未知</translation>
+        <source>URL template must contain at least one of ${title}, ${localizedtitle}, ${savetitle}, ${filetitle}, or ${serial}.</source>
+        <translation>URL模板必须包含${title}、${localizedtitle}、${savetitle}、${filetitle}或${serial}中的至少一个变量。</translation>
     </message>
     <message>
-        <source>URL template must contain at least one of ${title}, ${savetitle}, ${filetitle}, or ${serial}.</source>
-        <translation>URL模板必须至少包含${title}，${savetitle}，${filetitle}，或${serial}当中之一。</translation>
+        <source>Unknown</source>
+        <translation>未知</translation>
     </message>
     <message>
         <source>No URLs to download enumerated.</source>
@@ -9948,6 +10146,14 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <source>Select Directory</source>
         <translation>选择目录</translation>
+    </message>
+    <message>
+        <source>Add File...</source>
+        <translation>添加文件…</translation>
+    </message>
+    <message>
+        <source>Add Folder...</source>
+        <translation>添加文件夹…</translation>
     </message>
     <message>
         <source>Scan For New Games</source>
@@ -10238,6 +10444,10 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         </translation>
     </message>
     <message>
+        <source>Game ID: %1</source>
+        <translation>游戏ID: %1</translation>
+    </message>
+    <message>
         <source>Track %1</source>
         <translation>轨道%1</translation>
     </message>
@@ -10276,10 +10486,6 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <source>Serial:</source>
         <translation>序号:</translation>
-    </message>
-    <message>
-        <source>Tracks:</source>
-        <translation>轨道:</translation>
     </message>
     <message>
         <source>Edit...</source>
@@ -10447,6 +10653,18 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <source>px</source>
         <translation>px</translation>
+    </message>
+    <message>
+        <source>Filter Framebuffer Uploads</source>
+        <translation>过滤上传到帧缓冲的数据</translation>
+    </message>
+    <message>
+        <source>Minimum Size:</source>
+        <translation>最小尺寸:</translation>
+    </message>
+    <message>
+        <source>Disable Upscaled Direct Textures</source>
+        <translation>禁用直接颜色纹理分辨率提升</translation>
     </message>
     <message>
         <source>Depth Clear Threshold:</source>
@@ -10623,10 +10841,6 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <source>Bottom:</source>
         <translation>下:</translation>
-    </message>
-    <message>
-        <source>Texture Modulation Cropping (&quot;Old/v0 GPU&quot;)</source>
-        <translation>纹理调制裁剪 (&quot;旧版/v0 GPU&quot;)</translation>
     </message>
     <message>
         <source>Reset Geometry Tolerance</source>
@@ -10993,6 +11207,34 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>启用半透明多边形的深度测试。通常这些多边形包含阴影，并且在启用深度测试时往往会穿过地面。无论此设置如何，半透明多边形的深度写入都会被禁用。</translation>
     </message>
     <message>
+        <source>Samples 16-bit direct-color textures at native resolution when upscaling. This can fix filtering of FMVs/backgrounds in some games, but may reduce the quality of render-to-texture effects.</source>
+        <translation>提升分辨率时，以原生分辨率采样16位直接颜色纹理。这可以修复某些游戏中全动态视频(FMV)/背景的过滤问题，但可能降低渲染到纹理效果的质量。</translation>
+    </message>
+    <message>
+        <source>Applies the selected sprite texture filter to framebuffer uploads. This can smooth backgrounds in some games while preserving texture data and 24-bit video.</source>
+        <translation>对上传到帧缓冲的数据应用所选的精灵纹理过滤器。这可以平滑某些游戏中的背景，同时保持纹理数据和24位视频不变。</translation>
+    </message>
+    <message>
+        <source>Minimum Framebuffer Upload Width</source>
+        <translation>帧缓冲上传的最小宽度</translation>
+    </message>
+    <message>
+        <source>1 px</source>
+        <translation>1 像素</translation>
+    </message>
+    <message>
+        <source>Only filters framebuffer uploads at least this wide. Increase this value to avoid filtering texture data.</source>
+        <translation>仅过滤宽度不小于此值的帧缓冲上传数据。增大此值可避免过滤纹理数据。</translation>
+    </message>
+    <message>
+        <source>Minimum Framebuffer Upload Height</source>
+        <translation>帧缓冲上传的最小高度</translation>
+    </message>
+    <message>
+        <source>Only filters framebuffer uploads at least this tall. Increase this value to avoid filtering texture data.</source>
+        <translation>仅过滤高度不小于此值的帧缓冲上传数据。增大此值可避免过滤纹理数据。</translation>
+    </message>
+    <message>
         <source>Enables caching of guest textures, required for texture replacement. &lt;strong&gt;The texture cache is currently experimental, and may cause rendering errors in some games.&lt;/strong&gt;</source>
         <translation>启用缓存客户纹理，这是纹理替换所必需的。&lt;strong&gt;纹理缓存目前还处于试验阶段，并可能在某些游戏中导致渲染错误。&lt;/strong&gt;</translation>
     </message>
@@ -11087,10 +11329,6 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <source>&lt;h3&gt;Changing the renderer is not recommended!&lt;/h3&gt;&lt;p&gt;The &lt;strong&gt;Automatic&lt;/strong&gt; option provides the best experience, selecting the optimal renderer for your graphics adapter. There is &lt;strong&gt;no visual or performance advantage&lt;/strong&gt; to using a different renderer, and you risk the application breaking due to driver bugs.&lt;br&gt;&lt;br&gt;If you continue with changing the renderer, &lt;strong&gt;do not ask for support&lt;/strong&gt;.&lt;br&gt;&lt;br&gt;Are you sure you want to change the renderer?&lt;/p&gt;</source>
         <translation>&lt;h3&gt;不建议更改渲染器！&lt;/h3&gt;&lt;p&gt;&lt;strong&gt;自动&lt;/strong&gt;选项会为您的图形适配器选择最佳渲染器，从而提供最佳体验。使用其他渲染器&lt;strong&gt;不会带来任何视觉或性能优势&lt;/strong&gt;，并可能因驱动程序错误导致应用程序发生故障。&lt;br&gt;&lt;br&gt;如果您坚持更改渲染器，&lt;strong&gt;请勿寻求支持&lt;/strong&gt;。&lt;br&gt;&lt;br&gt;您确定想要更改渲染器吗？&lt;/p&gt;</translation>
-    </message>
-    <message>
-        <source>Use Global Setting</source>
-        <translation>使用全局设置</translation>
     </message>
     <message>
         <source>Selects the backend to use for rendering the console/game visuals. &lt;br&gt;Depending on your system and hardware, Direct3D 11 and OpenGL hardware backends may be available. &lt;br&gt;The software renderer offers the best compatibility, but is the slowest and does not offer any enhancements.</source>
@@ -11493,10 +11731,6 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>保存全局即时档案9</translation>
     </message>
     <message>
-        <source>Open Achievement List</source>
-        <translation>打开成就列表</translation>
-    </message>
-    <message>
         <source>Decrease Resolution Scale</source>
         <translation>降低分辨率比例</translation>
     </message>
@@ -11535,6 +11769,22 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <source>Interface</source>
         <translation>界面</translation>
+    </message>
+    <message>
+        <source>Toggle Pause Menu</source>
+        <translation>切换暂停菜单</translation>
+    </message>
+    <message>
+        <source>Toggle Cheat List</source>
+        <translation>切换金手指列表</translation>
+    </message>
+    <message>
+        <source>Toggle Achievement List</source>
+        <translation>切换成就列表</translation>
+    </message>
+    <message>
+        <source>Toggle Leaderboard List</source>
+        <translation>切换排行榜列表</translation>
     </message>
     <message>
         <source>Rotate Display Counterclockwise</source>
@@ -11607,10 +11857,6 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <source>Swap Memory Card Slots</source>
         <translation>交换记忆卡档位</translation>
-    </message>
-    <message>
-        <source>Open Cheat Settings</source>
-        <translation>打开金手指设置</translation>
     </message>
     <message>
         <source>Fast Forward (Hold)</source>
@@ -11807,10 +12053,6 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <source>Load Game State 9</source>
         <translation>载入游戏即时档案9</translation>
-    </message>
-    <message>
-        <source>Open Leaderboard List</source>
-        <translation>打开排行榜列表</translation>
     </message>
     <message>
         <source>Toggle CD Audio Mute</source>
@@ -14311,14 +14553,6 @@ Error: {1}</source>
         <translation>格式化记忆卡</translation>
     </message>
     <message>
-        <source>Import File...</source>
-        <translation>导入文件…</translation>
-    </message>
-    <message>
-        <source>Import Card...</source>
-        <translation>导入记忆卡…</translation>
-    </message>
-    <message>
         <source>Save</source>
         <translation>保存</translation>
     </message>
@@ -14353,6 +14587,10 @@ Error: {1}</source>
         <translation>提取图标</translation>
     </message>
     <message>
+        <source>Import...</source>
+        <translation>导入…</translation>
+    </message>
+    <message>
         <source>Select Memory Card</source>
         <translation>选择记忆卡</translation>
     </message>
@@ -14371,6 +14609,10 @@ Error: {1}</source>
     <message>
         <source>Insufficient blocks, this file needs %1 but only %2 are available.</source>
         <translation>块不足，此文件需要%1格，但仅有%2格可用。</translation>
+    </message>
+    <message>
+        <source>Select Single Save File</source>
+        <translation>选择单个保存文件</translation>
     </message>
     <message>
         <source>Extract Animated Icon</source>
@@ -14393,6 +14635,14 @@ Error: {1}</source>
 %2</source>
         <translation>无法重命名保存文件%1:
 %2</translation>
+    </message>
+    <message>
+        <source>Import Single Save File...</source>
+        <translation>导入单个保存文件…</translation>
+    </message>
+    <message>
+        <source>Import Entire Memory Card...</source>
+        <translation>导入整张记忆卡…</translation>
     </message>
     <message>
         <source>Failed to import memory card from %1:
@@ -14425,10 +14675,6 @@ Error: {1}</source>
     <message>
         <source>Failed to undelete file %1. The file may have been partially overwritten by another save.</source>
         <translation>无法还原文件%1。该文件可能已被其他保存部分覆盖。</translation>
-    </message>
-    <message>
-        <source>Select Single Savefile</source>
-        <translation>选择单个保存文件</translation>
     </message>
     <message>
         <source>Select Import File</source>
@@ -15199,88 +15445,21 @@ Error: {1}</source>
         <source>Steering Axis Deadzone</source>
         <translation>转向轴死区</translation>
     </message>
-</context>
-<context>
-    <name>NeGconRumble</name>
-    <message>
-        <source>D-Pad Up</source>
-        <translation>十字方向键 上</translation>
-    </message>
-    <message>
-        <source>D-Pad Right</source>
-        <translation>十字方向键 右</translation>
-    </message>
-    <message>
-        <source>D-Pad Down</source>
-        <translation>十字方向键 下</translation>
-    </message>
-    <message>
-        <source>D-Pad Left</source>
-        <translation>十字方向键 左</translation>
-    </message>
-    <message>
-        <source>Start</source>
-        <translation>开始</translation>
-    </message>
-    <message>
-        <source>A Button</source>
-        <translation>A按钮</translation>
-    </message>
-    <message>
-        <source>B Button</source>
-        <translation>B按钮</translation>
-    </message>
-    <message>
-        <source>I Button</source>
-        <translation>I按钮</translation>
-    </message>
-    <message>
-        <source>II Button</source>
-        <translation>II按钮</translation>
-    </message>
-    <message>
-        <source>Left Trigger</source>
-        <translation>左触发器</translation>
-    </message>
-    <message>
-        <source>Right Trigger</source>
-        <translation>右触发器</translation>
-    </message>
-    <message>
-        <source>Steering (Twist) Left</source>
-        <translation>转向 (扭转) 左</translation>
-    </message>
-    <message>
-        <source>Steering (Twist) Right</source>
-        <translation>转向 (扭转) 右</translation>
-    </message>
     <message>
         <source>Analog Toggle</source>
         <translation>模拟切换</translation>
     </message>
     <message>
-        <source>Disable Simultaneous Opposing Cardinal Directions</source>
-        <translation>禁止同时输入相反方向</translation>
+        <source>Large Motor</source>
+        <translation>大电机</translation>
     </message>
     <message>
-        <source>Prevents concurrent left/right or up/down inputs from being presented to the game.</source>
-        <translation>防止将同时输入的左/右或上/下方向传递给游戏。</translation>
+        <source>Small Motor</source>
+        <translation>小电机</translation>
     </message>
     <message>
-        <source>Steering Axis Deadzone</source>
-        <translation>转向轴死区</translation>
-    </message>
-    <message>
-        <source>Sets deadzone size for steering axis.</source>
-        <translation>设置转向轴死区大小。</translation>
-    </message>
-    <message>
-        <source>Steering Axis Sensitivity</source>
-        <translation>转向轴灵敏度</translation>
-    </message>
-    <message>
-        <source>Sets the steering axis scaling factor.</source>
-        <translation>设置转向轴的缩放系数。</translation>
+        <source>Mode LED</source>
+        <translation>模式指示灯</translation>
     </message>
     <message>
         <source>Large Motor Vibration Bias</source>
@@ -16131,6 +16310,22 @@ Error: {1}</source>
 <context>
     <name>QtHost</name>
     <message>
+        <source>We have detected that LD_LIBRARY_PATH has been set to the following value:
+
+%1
+
+This will likely prevent DuckStation from working correctly. You should modify your environment to leave LD_LIBRARY_PATH unset.</source>
+        <translation>我们检测到LD_LIBRARY_PATH已设置为以下值:
+
+%1
+
+这很可能导致DuckStation无法正常运行。您应修改环境设置，使LD_LIBRARY_PATH保持未设置状态。</translation>
+    </message>
+    <message>
+        <source>Don&apos;t show again</source>
+        <translation>不再显示</translation>
+    </message>
+    <message>
         <source>Would you like to create a launcher shortcut for DuckStation?
 
 This will add DuckStation to your application menu, allowing you to launch it more easily.
@@ -16804,19 +16999,19 @@ Do you want to create this directory?</source>
         <translation>PAL (欧洲，澳大利亚)</translation>
     </message>
     <message>
-        <source>NTSC-J (Japan)</source>
+        <source>NTSC-J</source>
         <comment>DiscRegion</comment>
-        <translation>NTSC-J (日本)</translation>
+        <translation>NTSC-J</translation>
     </message>
     <message>
-        <source>NTSC-U/C (US, Canada)</source>
+        <source>NTSC-U/C</source>
         <comment>DiscRegion</comment>
-        <translation>NTSC-U/C (美国，加拿大)</translation>
+        <translation>NTSC-U/C</translation>
     </message>
     <message>
-        <source>PAL (Europe, Australia)</source>
+        <source>PAL</source>
         <comment>DiscRegion</comment>
-        <translation>PAL (欧洲，澳大利亚)</translation>
+        <translation>PAL</translation>
     </message>
     <message>
         <source>Other</source>
@@ -16919,6 +17114,36 @@ Do you want to create this directory?</source>
         <translation>JINC2 (慢，无边缘混合)</translation>
     </message>
     <message>
+        <source>Monotonic Cubic (Very Slow)</source>
+        <comment>GPUTextureFilter</comment>
+        <translation>单调三次插值 (非常慢)</translation>
+    </message>
+    <message>
+        <source>Monotonic Cubic (Very Slow, No Edge Blending)</source>
+        <comment>GPUTextureFilter</comment>
+        <translation>单调三次插值 (非常慢，无边缘混合)</translation>
+    </message>
+    <message>
+        <source>Adaptive Diagonal (Slow)</source>
+        <comment>GPUTextureFilter</comment>
+        <translation>自适应对角线插值 (慢)</translation>
+    </message>
+    <message>
+        <source>Adaptive Diagonal (Slow, No Edge Blending)</source>
+        <comment>GPUTextureFilter</comment>
+        <translation>自适应对角线插值 (慢，无边缘混合)</translation>
+    </message>
+    <message>
+        <source>DCCI (Extremely Slow)</source>
+        <comment>GPUTextureFilter</comment>
+        <translation>DCCI (极慢)</translation>
+    </message>
+    <message>
+        <source>DCCI (Extremely Slow, No Edge Blending)</source>
+        <comment>GPUTextureFilter</comment>
+        <translation>DCCI (极慢，无边缘混合)</translation>
+    </message>
+    <message>
         <source>xBR (Very Slow)</source>
         <comment>GPUTextureFilter</comment>
         <translation>xBR (非常慢)</translation>
@@ -16927,6 +17152,11 @@ Do you want to create this directory?</source>
         <source>xBR (Very Slow, No Edge Blending)</source>
         <comment>GPUTextureFilter</comment>
         <translation>xBR (非常慢，无边缘混合)</translation>
+    </message>
+    <message>
+        <source>Sharp Bilinear</source>
+        <comment>GPUTextureFilter</comment>
+        <translation>锐化双线性</translation>
     </message>
     <message>
         <source>Scale2x (EPX)</source>
@@ -18392,6 +18622,10 @@ SBI文件的名称必须匹配光盘镜像的名称。</translation>
         <source>Memory Card Mismatch</source>
         <comment>Taint</comment>
         <translation>记忆卡不匹配</translation>
+    </message>
+    <message>
+        <source>This save state was created with a different console region, and may be unstable.</source>
+        <translation>此即时存档是在不同的主机区域设置下创建的，可能导致运行不稳定。</translation>
     </message>
     <message>
         <source>Global Save Slot {}</source>

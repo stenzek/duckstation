@@ -171,6 +171,14 @@ Do you want to enable hardcore mode?</source>
         <translation>Предварительная загрузка значков</translation>
     </message>
     <message>
+        <source>Reset Achievement Notification Duration</source>
+        <translation>Сбросить длительность уведомлений о достижениях</translation>
+    </message>
+    <message>
+        <source>Reset Leaderboard Notification Duration</source>
+        <translation>Сбросить длительность уведомлений списка лидеров</translation>
+    </message>
+    <message>
         <source>Show Leaderboard Trackers</source>
         <translation>Показывать отслеживание рейтингов</translation>
     </message>
@@ -280,12 +288,28 @@ Do you want to enable hardcore mode?</source>
         <translation>Режим &quot;Испытаний&quot; для достижений, включая отслеживание списка лидеров. Отключает функции сохранения состояния, читов и замедления.</translation>
     </message>
     <message>
+        <source> seconds</source>
+        <translation> секунды</translation>
+    </message>
+    <message>
         <source>When enabled, DuckStation will track unofficial achievements. Unlocks will be saved locally and not sent to RetroAchievements.</source>
         <translation>Если включено, DuckStation будет отслеживать неофициальные достижения. Разблокировки будут сохранены локально и не будут отправлены в RetroAchievements.</translation>
     </message>
     <message>
         <source>Checked</source>
         <translation>Выбран</translation>
+    </message>
+    <message>
+        <source>N/A</source>
+        <translation>Н/Д</translation>
+    </message>
+    <message>
+        <source>Resets the duration to the global setting.</source>
+        <translation>Сбрасывает длительность до значения из глобальных настроек.</translation>
+    </message>
+    <message>
+        <source>Resets the duration to the default.</source>
+        <translation>Сбрасывает длительность до значения по умолчанию.</translation>
     </message>
     <message>
         <source>Plays sound effects for events such as achievement unlocks and leaderboard submissions.</source>
@@ -401,14 +425,6 @@ Token generated %2</source>
         <translation>Авторизован под именем %1
 Токен сгенерирован %2</translation>
     </message>
-    <message numerus="yes">
-        <source>%n seconds</source>
-        <translation>
-            <numerusform>%n секунда</numerusform>
-            <numerusform>%n секунды</numerusform>
-            <numerusform>%n секунд</numerusform>
-        </translation>
-    </message>
     <message>
         <source>Logout</source>
         <translatorcomment>*Выход*</translatorcomment>
@@ -433,10 +449,6 @@ Token generated %2</source>
     <message>
         <source>Resuming state</source>
         <translation>Возобновление состояния</translation>
-    </message>
-    <message>
-        <source>{} (Unofficial)</source>
-        <translation>{} (Неофициально)</translation>
     </message>
     <message numerus="yes">
         <source>%n points</source>
@@ -1185,24 +1197,6 @@ We will keep trying to submit this request.</source>
         <translation>Чувствительность аналога</translation>
     </message>
     <message>
-        <source>Controller {} switched to analog mode.</source>
-        <translatorcomment>*Переключилися</translatorcomment>
-        <translation>Контроллер {} переключен в аналоговый режим.</translation>
-    </message>
-    <message>
-        <source>Controller {} switched to digital mode.</source>
-        <translatorcomment>*Переключилися</translatorcomment>
-        <translation>Контроллер {} переключен в цифровой режим.</translation>
-    </message>
-    <message>
-        <source>Controller {} is locked to analog mode by the game.</source>
-        <translation>Контроллер {} заблокирован игрой в аналоговом режиме.</translation>
-    </message>
-    <message>
-        <source>Controller {} is locked to digital mode by the game.</source>
-        <translation>Контроллер {} заблокирован игрой в цифровом режиме.</translation>
-    </message>
-    <message>
         <source>D-Pad Up</source>
         <translation>Крестовина вверх</translation>
     </message>
@@ -1425,10 +1419,6 @@ We will keep trying to submit this request.</source>
     <message>
         <source>Inverts the direction of the right analog stick.</source>
         <translation>Инвертирует направление правого аналогового джойстика.</translation>
-    </message>
-    <message>
-        <source>Mode LED</source>
-        <translation>Режим светодиодной подсветки</translation>
     </message>
 </context>
 <context>
@@ -1668,6 +1658,10 @@ We will keep trying to submit this request.</source>
         <translation>Сбросить размер буфера</translation>
     </message>
     <message>
+        <source>Reset Output Latency</source>
+        <translation>Сбросить задержку вывода</translation>
+    </message>
+    <message>
         <source>Maximum Latency: 0 ms (0 ms stretch + 0 ms buffer + 0 ms output)</source>
         <translation>Максимальная задержка: 0 мс (0 мс растяжение + 0 мс буфер + 0 мс вывод)</translation>
     </message>
@@ -1730,6 +1724,10 @@ We will keep trying to submit this request.</source>
     <message>
         <source>%</source>
         <translation>%</translation>
+    </message>
+    <message>
+        <source> ms</source>
+        <translation> мс</translation>
     </message>
     <message>
         <source>Unchecked</source>
@@ -1875,10 +1873,6 @@ We will keep trying to submit this request.</source>
     <message>
         <source>Maximum Latency: %1 ms (minimum output latency unknown)</source>
         <translation>Максимальная задержка: %1 мс (минимальная задержка вывода неизвестна)</translation>
-    </message>
-    <message>
-        <source>%1%</source>
-        <translation>%1%</translation>
     </message>
 </context>
 <context>
@@ -2265,6 +2259,24 @@ WAV files must be 16-bit stereo and use a sample rate of 44100hz.</source>
 Your dump may be corrupted, or the physical disc is scratched.</source>
         <translation>Скорее всего, игра сейчас вылетит.
 Возможно, ваш дамп поврежден или физический диск поцарапан.</translation>
+    </message>
+</context>
+<context>
+    <name>CPU</name>
+    <message>
+        <source>Execute</source>
+        <comment>BreakpointType</comment>
+        <translation>Выполнение</translation>
+    </message>
+    <message>
+        <source>Read</source>
+        <comment>BreakpointType</comment>
+        <translation>Чтение</translation>
+    </message>
+    <message>
+        <source>Write</source>
+        <comment>BreakpointType</comment>
+        <translation>Запись</translation>
     </message>
 </context>
 <context>
@@ -2942,6 +2954,14 @@ This warning will only be shown once.</source>
         <translation>Контроллер {} переключен в цифровой режим.</translation>
     </message>
     <message>
+        <source>Controller {} is locked to analog mode by the game.</source>
+        <translation>Контроллер {} заблокирован игрой в аналоговом режиме.</translation>
+    </message>
+    <message>
+        <source>Controller {} is locked to digital mode by the game.</source>
+        <translation>Контроллер {} заблокирован игрой в цифровом режиме.</translation>
+    </message>
+    <message>
         <source>Controller {} switched to JogCon mode.</source>
         <translation>Контроллер {} переключен в режим JogCon.</translation>
     </message>
@@ -3004,6 +3024,14 @@ This warning will only be shown once.</source>
         <source>Axes</source>
         <translatorcomment>*Аналоги</translatorcomment>
         <translation>Оси</translation>
+    </message>
+    <message>
+        <source>Multiple Devices</source>
+        <translation>Несколько устройств</translation>
+    </message>
+    <message>
+        <source>%1 (%2)</source>
+        <translation>%1 (%2)</translation>
     </message>
     <message>
         <source>Buttons</source>
@@ -3591,10 +3619,6 @@ This warning will only be shown once.</source>
         <translation>Настраивает параметры светодиодов для контроллеров с настраиваемыми светодиодами.</translation>
     </message>
     <message>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enables the SDL input source and detection of controllers.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Включает источник ввода SDL и обнаружение контроллеров.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
-    </message>
-    <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Allows rumble and LED effects for DualShock 4 / DualSense controllers in Bluetooth mode. This option is not required for wired connections.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Enabling enhanced reports may result in your controller being unusable in other applications until it is turned off and on again.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Включает вибрацию и светодиодные эффекты для контроллеров DualShock 4 / DualSense в режиме Bluetooth. Для проводного подключения эта опция не требуется.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Включение расширенных отчетов может привести к тому, что контроллер перестанет работать в других приложениях до тех пор, пока его не выключат и снова не включат.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
@@ -3607,8 +3631,24 @@ This warning will only be shown once.</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Источник ввода SDL поддерживает большинство контроллеров и является предпочтительным вариантом. Для работы функций вибрации и светодиодов контроллеров DualShock 4 / DualSense в режиме Bluetooth может потребоваться расширенный режим. Вы также можете редактировать &lt;a href=&quot;ADVANCED_SDL_OPTIONS&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#99ebff;&quot;&gt;расширенные настройки&lt;/span&gt;&lt;/a&gt;, которые управляют поведением конкретных устройств.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
+        <source>LEDs</source>
+        <translation>Светодиоды</translation>
+    </message>
+    <message>
+        <source>Enables the SDL input source and detection of controllers.</source>
+        <translation>Включает источник ввода SDL и обнаружение контроллеров.</translation>
+    </message>
+    <message>
         <source>Allows use of the touchpad for DualShock 4 / DualSense controllers as a pointer, for use with lightguns.</source>
         <translation>Позволяет использовать тачпад контроллеров DualShock 4 / DualSense в качестве указателя при игре с лазерными пистолетами.</translation>
+    </message>
+    <message>
+        <source>Saves supported controllers by serial or device identity so bindings survive port and connection-order changes when possible.</source>
+        <translation>Запоминает поддерживаемые контроллеры по серийному номеру или идентификатору устройства, чтобы по возможности сохранять привязки при смене порта или порядка подключения.</translation>
+    </message>
+    <message>
+        <source>Use Persistent Device Identifiers</source>
+        <translation>Использовать постоянные идентификаторы устройств</translation>
     </message>
     <message>
         <source>Enable XInput Source</source>
@@ -4107,8 +4147,8 @@ This file is approximately 206KB, do you want to download it now?</source>
         <translation>DuckStation может автоматически загружать обложки для игр, для которых в настоящее время нет набора обложек. Мы не храним никаких изображений обложек, пользователь должен предоставить свой собственный источник изображений.</translation>
     </message>
     <message>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Depending on your jurisdiction, &lt;span style=&quot; font-weight:700;&quot;&gt;game covers may be copyrighted&lt;/span&gt;. You are only authorized to use this tool with &lt;span style=&quot; font-weight:700;&quot;&gt;your own servers and images&lt;/span&gt;.&lt;/p&gt;&lt;p&gt;In the box below, specify the URLs to download covers from, with one template URL per line. The following variables are available:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${title}:&lt;/span&gt; Title of the game.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${savetitle}:&lt;/span&gt; Title of the game including the region.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${localizedtitle}:&lt;/span&gt; Localized (native language) title of the game.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${filetitle}:&lt;/span&gt; Name component of the game&apos;s filename.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${serial}:&lt;/span&gt; Serial of the game.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Example:&lt;/span&gt; https://www.example-not-a-real-domain.com/covers/${serial}.jpg&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;В зависимости от законодательства вашей страны, &lt;span style=&quot; font-weight:700;&quot;&gt;обложки игр могут быть защищены авторским правом&lt;/span&gt;. Вы имеете право использовать данный инструмент только с &lt;span style=&quot; font-weight:700;&quot;&gt;своими собственными серверами и изображениями&lt;/span&gt;. &lt;/p&gt;&lt;p&gt;В поле ниже укажите URL-адреса, с которых следует загружать обложки, по одному URL-адресу шаблона в строке. Доступны следующие переменные:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${title}:&lt;/span&gt; Название игры.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${savetitle}:&lt;/span&gt; Название игры с указанием региона. &lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${localizedtitle}:&lt;/span&gt; Локализованное (на родном языке) название игры.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${filetitle}:&lt;/span&gt; Компонент имени файла игры. &lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${serial}:&lt;/span&gt; Серийный номер игры.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Пример:&lt;/span&gt; https://www.example-not-a-real-domain.com/covers/${serial}.jpg&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Depending on your jurisdiction, &lt;span style=&quot; font-weight:700;&quot;&gt;game covers may be copyrighted&lt;/span&gt;. You are only authorized to use this tool with &lt;span style=&quot; font-weight:700;&quot;&gt;your own servers and images&lt;/span&gt;.&lt;/p&gt;&lt;p&gt;In the box below, specify the URLs to download covers from, with one template URL per line. The following variables are available:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${title}:&lt;/span&gt; Title of the game.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${savetitle}:&lt;/span&gt; Save title for the game, including the region suffix.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${localizedtitle}:&lt;/span&gt; Localized title for the game in its native language.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${filetitle}:&lt;/span&gt; Name component of the game&apos;s filename.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${serial}:&lt;/span&gt; Serial of the game.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Example:&lt;/span&gt; https://www.example-not-a-real-domain.com/covers/${serial}.jpg&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;В зависимости от законодательства вашей страны, &lt;span style=&quot; font-weight:700;&quot;&gt;обложки игр могут быть защищены авторским правом&lt;/span&gt;. Вы имеете право использовать данный инструмент только с &lt;span style=&quot; font-weight:700;&quot;&gt;своими собственными серверами и изображениями&lt;/span&gt;.&lt;/p&gt;&lt;p&gt;В поле ниже укажите URL-адреса, с которых следует загружать обложки, по одному шаблону URL в строке. Доступны следующие переменные:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${title}:&lt;/span&gt; Название игры.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${savetitle}:&lt;/span&gt; Название игры для сохранений, включая суффикс региона.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${localizedtitle}:&lt;/span&gt; Локализованное название игры на её родном языке.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${filetitle}:&lt;/span&gt; Имя файла игры без расширения.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${serial}:&lt;/span&gt; Серийный номер игры.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Пример:&lt;/span&gt; https://www.example-not-a-real-domain.com/covers/${serial}.jpg&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>By default, the downloaded covers will be saved with the game&apos;s title. If this is not desired, you can check the &quot;Use Serial File Names&quot; box below. Using serials instead of game titles will prevent conflicts when multiple regions of the same game are used.</source>
@@ -4295,6 +4335,17 @@ This file is approximately 206KB, do you want to download it now?</source>
     </message>
 </context>
 <context>
+    <name>DebuggerCallStackModel</name>
+    <message>
+        <source>Address</source>
+        <translation>Адрес</translation>
+    </message>
+    <message>
+        <source>Frame</source>
+        <translation>Кадр стека</translation>
+    </message>
+</context>
+<context>
     <name>DebuggerRegistersModel</name>
     <message>
         <source>Register</source>
@@ -4321,6 +4372,17 @@ This file is approximately 206KB, do you want to download it now?</source>
     </message>
 </context>
 <context>
+    <name>DebuggerThreadsModel</name>
+    <message>
+        <source>Name</source>
+        <translation>Имя</translation>
+    </message>
+    <message>
+        <source>Value</source>
+        <translation>Значение</translation>
+    </message>
+</context>
+<context>
     <name>DebuggerWindow</name>
     <message>
         <source>CPU Debugger</source>
@@ -4334,10 +4396,6 @@ This file is approximately 206KB, do you want to download it now?</source>
     <message>
         <source>Breakpoints</source>
         <translation>Точки останова</translation>
-    </message>
-    <message>
-        <source>toolBar</source>
-        <translation>Панель инструментов</translation>
     </message>
     <message>
         <source>Disassembly</source>
@@ -4399,6 +4457,14 @@ This file is approximately 206KB, do you want to download it now?</source>
     <message>
         <source>Stack</source>
         <translation>Стек</translation>
+    </message>
+    <message>
+        <source>Threads</source>
+        <translation>Потоки</translation>
+    </message>
+    <message>
+        <source>Call Stack</source>
+        <translation>Стек вызовов</translation>
     </message>
     <message>
         <source>Pause/Continue</source>
@@ -4519,6 +4585,10 @@ This file is approximately 206KB, do you want to download it now?</source>
         <translation>Перейти по &amp;адресу</translation>
     </message>
     <message>
+        <source>Toolbar</source>
+        <translation>Панель инструментов</translation>
+    </message>
+    <message>
         <source>&amp;Add Breakpoint</source>
         <translation>&amp;Добавить точку останова</translation>
     </message>
@@ -4577,10 +4647,6 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <translation>&amp;Изменить инструкцию</translation>
     </message>
     <message>
-        <source>&amp;Nop Instruction</source>
-        <translation>&amp;Инструкция NOP</translation>
-    </message>
-    <message>
         <source>&amp;Follow Load/Store</source>
         <translation>&amp;Отслеживать загрузку/сохранение</translation>
     </message>
@@ -4599,10 +4665,6 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <source>Invalid Instruction</source>
         <translation>Недействительная инструкция</translation>
-    </message>
-    <message>
-        <source>Failed to write patched instruction to 0x%1.</source>
-        <translation>Не удалось записать изменённую инструкцию по адресу 0x%1.</translation>
     </message>
     <message>
         <source>Patched instruction at 0x%1.</source>
@@ -4624,9 +4686,46 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <source>Failed to add step-out breakpoint, are you in a valid function?</source>
         <translation>Не удалось добавить точку останова, вы находитесь в допустимой функции?</translation>
     </message>
+    <message numerus="yes">
+        <source>&amp;Nop %n Instruction(s)</source>
+        <translation>
+            <numerusform>&amp;Заменить %n инструкцию на NOP</numerusform>
+            <numerusform>&amp;Заменить %n инструкции на NOP</numerusform>
+            <numerusform>&amp;Заменить %n инструкций на NOP</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>&amp;Copy %n Instruction(s)</source>
+        <translation>
+            <numerusform>&amp;Копировать %n инструкцию</numerusform>
+            <numerusform>&amp;Копировать %n инструкции</numerusform>
+            <numerusform>&amp;Копировать %n инструкций</numerusform>
+        </translation>
+    </message>
     <message>
         <source>View in &amp;Dump</source>
         <translation>Посмотреть в &amp;дампе</translation>
+    </message>
+    <message>
+        <source>Failed to write one or more patched instructions. Patched %1 of %2 instructions; the first failure was at 0x%3.</source>
+        <translation>Не удалось записать одну или несколько изменённых инструкций. Изменено %1 из %2 инструкций; первая ошибка произошла по адресу 0x%3.</translation>
+    </message>
+    <message>
+        <source>Patched %1 of %2 selected instructions.</source>
+        <translation>Изменено %1 из %2 выбранных инструкций.</translation>
+    </message>
+    <message>
+        <source>Patched %1 instructions.</source>
+        <translation>Изменено инструкций: %1.</translation>
+    </message>
+    <message numerus="yes">
+        <source>Copied %n instruction(s) to the clipboard.</source>
+        <comment>CopyRange</comment>
+        <translation>
+            <numerusform>%n инструкция скопирована в буфер обмена.</numerusform>
+            <numerusform>%n инструкции скопированы в буфер обмена.</numerusform>
+            <numerusform>%n инструкций скопировано в буфер обмена.</numerusform>
+        </translation>
     </message>
     <message>
         <source>Invalid search pattern. It should contain hex digits or question marks.</source>
@@ -4644,6 +4743,14 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <source>Pattern found at 0x%1.</source>
         <translation>Шаблон обнаружен в 0x%1.</translation>
+    </message>
+    <message numerus="yes">
+        <source>Loaded %n saved breakpoint(s).</source>
+        <translation>
+            <numerusform>Загружена %n сохранённая точка останова.</numerusform>
+            <numerusform>Загружены %n сохранённые точки останова.</numerusform>
+            <numerusform>Загружено %n сохранённых точек останова.</numerusform>
+        </translation>
     </message>
     <message>
         <source>Invalid address. It should be in hex (0x12345678 or 12345678)</source>
@@ -5484,14 +5591,6 @@ Clicking Reset will restore the serial back to the value scanned from in the dis
         <translation>Добавляет дополнительную точность постпроецированию данных PGXP. Может улучшить визуальную составляющую в некоторых играх.</translation>
     </message>
     <message>
-        <source>${title}: Title of the game.
-${filetitle}: Name component of the game&apos;s filename.
-${serial}: Serial of the game.</source>
-        <translation>${title}: Название игры.
-${filetitle}: Компонент имени файла игры.
-${serial}: Серийный номер игры.</translation>
-    </message>
-    <message>
         <source>%.1f ms</source>
         <translation>%.1f мс</translation>
     </message>
@@ -5524,6 +5623,10 @@ ${serial}: Серийный номер игры.</translation>
     <message>
         <source>Allow Booting Without SBI File</source>
         <translation>Разрешить загрузку без файла SBI</translation>
+    </message>
+    <message>
+        <source>Applies the selected sprite texture filter to framebuffer uploads. This can smooth backgrounds in some games while preserving texture data and 24-bit video.</source>
+        <translation>Применяет выбранный фильтр текстур спрайтов к данным, загружаемым в буфер кадра. Это может сгладить фон в некоторых играх, сохраняя данные текстур и 24-битное видео.</translation>
     </message>
     <message>
         <source>Apply Image Patches</source>
@@ -6014,6 +6117,10 @@ You cannot undo this action.</source>
         <translation>По умолчанию: включено</translation>
     </message>
     <message>
+        <source>Default: {}</source>
+        <translation>По умолчанию: {}</translation>
+    </message>
+    <message>
         <source>Delete</source>
         <translation>Удалить</translation>
     </message>
@@ -6150,6 +6257,10 @@ You cannot undo this action.</source>
     <message>
         <source>Disable Subdirectory Scanning</source>
         <translation>Отключить сканирование подкаталогов</translation>
+    </message>
+    <message>
+        <source>Disable Upscaled Direct Textures</source>
+        <translation>Отключить повышение разрешения текстур с прямым цветом</translation>
     </message>
     <message>
         <source>Disable Window Resizing</source>
@@ -6466,6 +6577,10 @@ Error was:</source>
         <translation>Размер файла</translation>
     </message>
     <message>
+        <source>Filter Framebuffer Uploads</source>
+        <translation>Фильтровать данные, загружаемые в буфер кадра</translation>
+    </message>
+    <message>
         <source>Force 4:3 For FMVs</source>
         <translation>Принудительно 4:3 для FMV</translation>
     </message>
@@ -6573,6 +6688,10 @@ Error was:</source>
         <translation>Слева: </translation>
     </message>
     <message>
+        <source>Length: {}</source>
+        <translation>Длина: {}</translation>
+    </message>
+    <message>
         <source>Light</source>
         <translatorcomment>Тема</translatorcomment>
         <translation>Светлая</translation>
@@ -6598,6 +6717,10 @@ Error was:</source>
     <message>
         <source>Load Preset</source>
         <translation>Загрузка предустановки</translation>
+    </message>
+    <message>
+        <source>Loading Game List...</source>
+        <translation>Загрузка списка игр...</translation>
     </message>
     <message>
         <source>Log File Timestamps</source>
@@ -6637,12 +6760,28 @@ Please check your username and password, and try again.</source>
         <translation>Максимальное ускорение циклов поиска</translation>
     </message>
     <message>
+        <source>Maximum: {}</source>
+        <translation>Максимум: {}</translation>
+    </message>
+    <message>
         <source>Menu Background</source>
         <translation>Фон меню</translation>
     </message>
     <message>
         <source>Menu Borders</source>
         <translation>Границы меню</translation>
+    </message>
+    <message>
+        <source>Minimum Framebuffer Upload Height</source>
+        <translation>Минимальная высота данных, загружаемых в буфер кадра</translation>
+    </message>
+    <message>
+        <source>Minimum Framebuffer Upload Width</source>
+        <translation>Минимальная ширина данных, загружаемых в буфер кадра</translation>
+    </message>
+    <message>
+        <source>Minimum: {}</source>
+        <translation>Минимум: {}</translation>
     </message>
     <message>
         <source>Move Cursor</source>
@@ -6693,6 +6832,14 @@ Please check your username and password, and try again.</source>
     <message>
         <source>None</source>
         <translation>Нет</translation>
+    </message>
+    <message>
+        <source>Only filters framebuffer uploads at least this tall. Increase this value to avoid filtering texture data.</source>
+        <translation>Фильтрует только данные, загружаемые в буфер кадра, высота которых не меньше этого значения. Увеличьте это значение, чтобы избежать фильтрации данных текстур.</translation>
+    </message>
+    <message>
+        <source>Only filters framebuffer uploads at least this wide. Increase this value to avoid filtering texture data.</source>
+        <translation>Фильтрует только данные, загружаемые в буфер кадра, ширина которых не меньше этого значения. Увеличьте это значение, чтобы избежать фильтрации данных текстур.</translation>
     </message>
     <message>
         <source>PGXP Depth Buffer</source>
@@ -6818,8 +6965,16 @@ Please check your username and password, and try again.</source>
         <translation>Индикатор игрока SDL DualSense</translation>
     </message>
     <message>
+        <source>SDL Persistent Device Identifiers</source>
+        <translation>Постоянные идентификаторы устройств SDL</translation>
+    </message>
+    <message>
         <source>Safe Mode</source>
         <translation>Безопасный режим</translation>
+    </message>
+    <message>
+        <source>Samples 16-bit direct-color textures at native resolution when upscaling. This can fix filtering of FMVs/backgrounds in some games, but may reduce the quality of render-to-texture effects.</source>
+        <translation>При повышении разрешения выполняет выборку из 16-битных текстур с прямым цветом в исходном разрешении. Это может исправить фильтрацию видеороликов и фона в некоторых играх, но может снизить качество эффектов рендеринга в текстуру.</translation>
     </message>
     <message>
         <source>Save Controller Preset</source>
@@ -6833,6 +6988,10 @@ Please check your username and password, and try again.</source>
         <source>Save as Serial File Names</source>
         <translatorcomment>#Настройка списка игр/Настройки обложек/Скачивание обложек</translatorcomment>
         <translation>Сохранить в виде серийных имен файлов</translation>
+    </message>
+    <message>
+        <source>Saves supported controllers by serial or device identity so bindings survive port and connection-order changes when possible.</source>
+        <translation>Запоминает поддерживаемые контроллеры по серийному номеру или идентификатору устройства, чтобы по возможности сохранять привязки при смене порта или порядка подключения.</translation>
     </message>
     <message>
         <source>Scaled Interlacing</source>
@@ -7031,6 +7190,10 @@ Please check your username and password, and try again.</source>
         <translation>Запустить игру с диска в DVD-приводе вашего компьютера.</translation>
     </message>
     <message>
+        <source>Start: {}</source>
+        <translation>Начало: {}</translation>
+    </message>
+    <message>
         <source>Stores the current settings to a controller preset.</source>
         <translation>Сохраняет текущие настройки в предустановке контроллера.</translation>
     </message>
@@ -7115,6 +7278,10 @@ Please check your username and password, and try again.</source>
         <translation>Диапазон значений</translation>
     </message>
     <message>
+        <source>Value: {}</source>
+        <translation>Значение: {}</translation>
+    </message>
+    <message>
         <source>When enabled, DuckStation will track unofficial achievements. Unlocks will be saved locally and not sent to RetroAchievements.</source>
         <translation>Если включено, DuckStation будет отслеживать неофициальные достижения. Разблокировки будут сохранены локально и не будут отправлены в RetroAchievements.</translation>
     </message>
@@ -7176,6 +7343,26 @@ Do you want to {1} anyway?</source>
     <message>
         <source> (%u MB on disk)</source>
         <translation> (%u МБ на диске)</translation>
+    </message>
+    <message>
+        <source>${filetitle}: Name component of the game&apos;s filename.</source>
+        <translation>${filetitle}: Имя файла игры без расширения.</translation>
+    </message>
+    <message>
+        <source>${localizedtitle}: Localized title for the game in its native language.</source>
+        <translation>${localizedtitle}: Локализованное название игры на её родном языке.</translation>
+    </message>
+    <message>
+        <source>${savetitle}: Save title for the game, including the region suffix.</source>
+        <translation>${savetitle}: Название игры для сохранений, включая суффикс региона.</translation>
+    </message>
+    <message>
+        <source>${serial}: Serial of the game.</source>
+        <translation>${serial}: Серийный номер игры.</translation>
+    </message>
+    <message>
+        <source>${title}: Title of the game.</source>
+        <translation>${title}: Название игры.</translation>
     </message>
     <message>
         <source>%.2f Seconds</source>
@@ -8407,10 +8594,6 @@ Do you want to delete the save state and boot the game anyway?</source>
         <translation>{} откреплено.</translation>
     </message>
     <message>
-        <source>{} | Start: {} | Length: {}</source>
-        <translation>{} | Начало: {} | Продолжительность: {}</translation>
-    </message>
-    <message>
         <source>Reset Play Time</source>
         <translation>Сбросить время игры</translation>
     </message>
@@ -9055,10 +9238,6 @@ Do you want to delete the save state and boot the game anyway?</source>
     <message>
         <source>Utilizes the chosen frame rate regardless of the game&apos;s setting.</source>
         <translation>Используется выбранная частота кадров независимо от настроек игры.</translation>
-    </message>
-    <message>
-        <source>Value: {} | Default: {} | Minimum: {} | Maximum: {}</source>
-        <translation>Значение: {} | По умолчанию: {} | Минимум: {} | Максимум: {}</translation>
     </message>
     <message>
         <source>Vertex Cache</source>
@@ -9877,6 +10056,16 @@ Are you sure you want to continue?</source>
         <translation>Защищен ли LibCrypt</translation>
     </message>
     <message>
+        <source>Disable Upscaled Direct Textures</source>
+        <comment>GameDatabase::Trait</comment>
+        <translation>Отключить повышение разрешения текстур с прямым цветом</translation>
+    </message>
+    <message>
+        <source>Filter Framebuffer Uploads</source>
+        <comment>GameDatabase::Trait</comment>
+        <translation>Фильтровать данные, загружаемые в буфер кадра</translation>
+    </message>
+    <message>
         <source>Fast forward memory card access disabled.</source>
         <translation>Ускоренный доступ к карте памяти отключён.</translation>
     </message>
@@ -9899,6 +10088,14 @@ Are you sure you want to continue?</source>
     <message>
         <source>Deinterlacing set to {}.</source>
         <translation>Деинтерлейсинг установлен на {}.</translation>
+    </message>
+    <message>
+        <source>Filter Framebuffer Uploads Minimum Width</source>
+        <translation>Минимальная ширина данных для фильтрации при загрузке в буфер кадра</translation>
+    </message>
+    <message>
+        <source>Filter Framebuffer Uploads Minimum Height</source>
+        <translation>Минимальная высота данных для фильтрации при загрузке в буфер кадра</translation>
     </message>
     <message>
         <source>Verifying Image</source>
@@ -10084,6 +10281,11 @@ Are you sure you want to continue?</source>
         <translation>Набор дисков</translation>
     </message>
     <message>
+        <source>Audio CD</source>
+        <comment>EntryType</comment>
+        <translation>Аудио-CD</translation>
+    </message>
+    <message>
         <source>PS-EXE</source>
         <comment>EntryType</comment>
         <translation>PS-EXE</translation>
@@ -10107,12 +10309,12 @@ Are you sure you want to continue?</source>
         <translation>Сканирование &apos;{}&apos;...</translation>
     </message>
     <message>
-        <source>Unknown</source>
-        <translation>Неизвестный</translation>
+        <source>URL template must contain at least one of ${title}, ${localizedtitle}, ${savetitle}, ${filetitle}, or ${serial}.</source>
+        <translation>Шаблон URL должен содержать хотя бы один из следующих элементов: ${title}, ${localizedtitle}, ${savetitle}, ${filetitle} или ${serial}.</translation>
     </message>
     <message>
-        <source>URL template must contain at least one of ${title}, ${savetitle}, ${filetitle}, or ${serial}.</source>
-        <translation>Шаблон URL должен содержать хотя бы один из следующих элементов: ${title}, ${savetitle}, ${filetitle} или ${serial}.</translation>
+        <source>Unknown</source>
+        <translation>Неизвестный</translation>
     </message>
     <message>
         <source>No URLs to download enumerated.</source>
@@ -10273,6 +10475,14 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <source>Select Directory</source>
         <translatorcomment>**Выберите **Выбрать</translatorcomment>
         <translation>Выбор каталога</translation>
+    </message>
+    <message>
+        <source>Add File...</source>
+        <translation>Добавить файл...</translation>
+    </message>
+    <message>
+        <source>Add Folder...</source>
+        <translation>Добавить папку...</translation>
     </message>
 </context>
 <context>
@@ -10471,10 +10681,6 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>Контроллеры:</translation>
     </message>
     <message>
-        <source>Tracks:</source>
-        <translation>Дорожки:</translation>
-    </message>
-    <message>
         <source>Release Info:</source>
         <translation>Информация о выпуске:</translation>
     </message>
@@ -10580,6 +10786,10 @@ Scanning recursively takes more time, but will identify files in subdirectories.
             <numerusform>%n блока карты памяти</numerusform>
             <numerusform>%n блоков карты памяти</numerusform>
         </translation>
+    </message>
+    <message>
+        <source>Game ID: %1</source>
+        <translation>ID игры: %1</translation>
     </message>
     <message>
         <source>Search on redump.info</source>
@@ -10715,8 +10925,20 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>Положение экрана:</translation>
     </message>
     <message>
+        <source>Filter Framebuffer Uploads</source>
+        <translation>Фильтровать данные, загружаемые в буфер кадра</translation>
+    </message>
+    <message>
+        <source>Minimum Size:</source>
+        <translation>Минимальный размер:</translation>
+    </message>
+    <message>
         <source>Scaled Interlacing</source>
         <translation>Масштабированная чересстрочная развертка</translation>
+    </message>
+    <message>
+        <source>Disable Upscaled Direct Textures</source>
+        <translation>Отключить повышение разрешения текстур с прямым цветом</translation>
     </message>
     <message>
         <source>Texture Replacement</source>
@@ -10930,10 +11152,6 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>Внизу:</translation>
     </message>
     <message>
-        <source>Texture Modulation Cropping (&quot;Old/v0 GPU&quot;)</source>
-        <translation>Обрезка с модуляцией текстуры («Старая версия/v0 GPU»)</translation>
-    </message>
-    <message>
         <source>Reset Geometry Tolerance</source>
         <translation>Сбросить допуск геометрии</translation>
     </message>
@@ -11124,6 +11342,34 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <source>Checked</source>
         <translation>Выбран</translation>
+    </message>
+    <message>
+        <source>Samples 16-bit direct-color textures at native resolution when upscaling. This can fix filtering of FMVs/backgrounds in some games, but may reduce the quality of render-to-texture effects.</source>
+        <translation>При повышении разрешения выполняет выборку из 16-битных текстур с прямым цветом в исходном разрешении. Это может исправить фильтрацию видеороликов и фона в некоторых играх, но может снизить качество эффектов рендеринга в текстуру.</translation>
+    </message>
+    <message>
+        <source>Applies the selected sprite texture filter to framebuffer uploads. This can smooth backgrounds in some games while preserving texture data and 24-bit video.</source>
+        <translation>Применяет выбранный фильтр текстур спрайтов к данным, загружаемым в буфер кадра. Это может сгладить фон в некоторых играх, сохраняя данные текстур и 24-битное видео.</translation>
+    </message>
+    <message>
+        <source>Minimum Framebuffer Upload Width</source>
+        <translation>Минимальная ширина данных, загружаемых в буфер кадра</translation>
+    </message>
+    <message>
+        <source>1 px</source>
+        <translation>1 пикс.</translation>
+    </message>
+    <message>
+        <source>Only filters framebuffer uploads at least this wide. Increase this value to avoid filtering texture data.</source>
+        <translation>Фильтрует только данные, загружаемые в буфер кадра, ширина которых не меньше этого значения. Увеличьте это значение, чтобы избежать фильтрации данных текстур.</translation>
+    </message>
+    <message>
+        <source>Minimum Framebuffer Upload Height</source>
+        <translation>Минимальная высота данных, загружаемых в буфер кадра</translation>
+    </message>
+    <message>
+        <source>Only filters framebuffer uploads at least this tall. Increase this value to avoid filtering texture data.</source>
+        <translation>Фильтрует только данные, загружаемые в буфер кадра, высота которых не меньше этого значения. Увеличьте это значение, чтобы избежать фильтрации данных текстур.</translation>
     </message>
     <message>
         <source>Disables texture emulation in the GPU, forcing all primitives to only show vertex colours.</source>
@@ -11439,10 +11685,6 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>%1x нативно</translation>
     </message>
     <message>
-        <source>Use Global Setting</source>
-        <translation>Использовать глобальную настройку</translation>
-    </message>
-    <message>
         <source>%1x MSAA</source>
         <translation>%1x MSAA</translation>
     </message>
@@ -11737,10 +11979,6 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>Открыть: Меню паузы</translation>
     </message>
     <message>
-        <source>Open Cheat Settings</source>
-        <translation>Открыть: Настройки читов</translation>
-    </message>
-    <message>
         <source>Record Single Frame GPU Trace</source>
         <translation>Запись: Одного кадра трассировки ГП</translation>
     </message>
@@ -11751,14 +11989,6 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <source>Toggle Media Capture</source>
         <translation>Переключить: Запись мультимедиа</translation>
-    </message>
-    <message>
-        <source>Open Achievement List</source>
-        <translation>Открыть: Cписок достижений</translation>
-    </message>
-    <message>
-        <source>Open Leaderboard List</source>
-        <translation>Открыть: Список лидеров</translation>
     </message>
     <message>
         <source>System</source>
@@ -11823,6 +12053,22 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <source>Interface</source>
         <translation>Интерфейс</translation>
+    </message>
+    <message>
+        <source>Toggle Pause Menu</source>
+        <translation>Переключить: Меню паузы</translation>
+    </message>
+    <message>
+        <source>Toggle Cheat List</source>
+        <translation>Переключить: Список чит-кодов</translation>
+    </message>
+    <message>
+        <source>Toggle Achievement List</source>
+        <translation>Переключить: Список достижений</translation>
+    </message>
+    <message>
+        <source>Toggle Leaderboard List</source>
+        <translation>Переключить: Список лидеров</translation>
     </message>
     <message>
         <source>Fast Forward (Hold)</source>
@@ -14664,14 +14910,6 @@ Error: {1}</source>
         <translation>Форматировать карту</translation>
     </message>
     <message>
-        <source>Import File...</source>
-        <translation>Импортировать файл...</translation>
-    </message>
-    <message>
-        <source>Import Card...</source>
-        <translation>Импортировать карту...</translation>
-    </message>
-    <message>
         <source>Save</source>
         <translation>Сохранить</translation>
     </message>
@@ -14682,6 +14920,10 @@ Error: {1}</source>
     <message>
         <source> (Deleted)</source>
         <translation> (Удален)</translation>
+    </message>
+    <message>
+        <source>Import...</source>
+        <translation>Импорт...</translation>
     </message>
     <message>
         <source>Select Memory Card</source>
@@ -14704,10 +14946,22 @@ Error: {1}</source>
         <translation>Недостаточно блоков, этому файлу нужен %1, но доступно только %2.</translation>
     </message>
     <message>
+        <source>Select Single Save File</source>
+        <translation>Выбрать отдельный файл сохранения</translation>
+    </message>
+    <message>
         <source>Failed to rename save file %1:
 %2</source>
         <translation>Не удалось переименовать файл сохранения %1:
 %2</translation>
+    </message>
+    <message>
+        <source>Import Single Save File...</source>
+        <translation>Импортировать отдельный файл сохранения...</translation>
+    </message>
+    <message>
+        <source>Import Entire Memory Card...</source>
+        <translation>Импортировать всю карту памяти...</translation>
     </message>
     <message>
         <source>Failed to import memory card from %1:
@@ -14756,10 +15010,6 @@ Error: {1}</source>
     <message>
         <source>Failed to undelete file %1. The file may have been partially overwritten by another save.</source>
         <translation>Не удалось восстановить файл %1. Возможно, файл был частично перезаписан другим сохранением.</translation>
-    </message>
-    <message>
-        <source>Select Single Savefile</source>
-        <translation>Выбрать одиночный файл сохранения</translation>
     </message>
     <message>
         <source>Extract Animated Icon</source>
@@ -15554,88 +15804,21 @@ Error: {1}</source>
         <source>Sets scaling for left trigger.</source>
         <translation>Устанавливает масштабирование левого курка.</translation>
     </message>
-</context>
-<context>
-    <name>NeGconRumble</name>
-    <message>
-        <source>D-Pad Up</source>
-        <translation>Крестовина вверх</translation>
-    </message>
-    <message>
-        <source>D-Pad Right</source>
-        <translation>Крестовина вправо</translation>
-    </message>
-    <message>
-        <source>D-Pad Down</source>
-        <translation>Крестовина вниз</translation>
-    </message>
-    <message>
-        <source>D-Pad Left</source>
-        <translation>Крестовина влево</translation>
-    </message>
-    <message>
-        <source>Start</source>
-        <translation>Start</translation>
-    </message>
-    <message>
-        <source>A Button</source>
-        <translation>Кнопка A</translation>
-    </message>
-    <message>
-        <source>B Button</source>
-        <translation>Кнопка B</translation>
-    </message>
-    <message>
-        <source>I Button</source>
-        <translation>Кнопка I</translation>
-    </message>
-    <message>
-        <source>II Button</source>
-        <translation>Кнопка II</translation>
-    </message>
-    <message>
-        <source>Left Trigger</source>
-        <translation>Левый курок</translation>
-    </message>
-    <message>
-        <source>Right Trigger</source>
-        <translation>Правый курок</translation>
-    </message>
-    <message>
-        <source>Steering (Twist) Left</source>
-        <translation>Рулевое управление (поворот) влево</translation>
-    </message>
-    <message>
-        <source>Steering (Twist) Right</source>
-        <translation>Рулевое управление (поворот) вправо</translation>
-    </message>
     <message>
         <source>Analog Toggle</source>
         <translation>Переключить аналог</translation>
     </message>
     <message>
-        <source>Disable Simultaneous Opposing Cardinal Directions</source>
-        <translation>Запретить одновременные противоположные направления</translation>
+        <source>Large Motor</source>
+        <translation>Большой мотор</translation>
     </message>
     <message>
-        <source>Prevents concurrent left/right or up/down inputs from being presented to the game.</source>
-        <translation>Не позволяет игре одновременно получать ввод противоположных направлений: влево и вправо или вверх и вниз.</translation>
+        <source>Small Motor</source>
+        <translation>Малый мотор</translation>
     </message>
     <message>
-        <source>Steering Axis Deadzone</source>
-        <translation>Мёртвая зона рулевой оси</translation>
-    </message>
-    <message>
-        <source>Sets deadzone size for steering axis.</source>
-        <translation>Устанавливает размер мертвой зоны для оси рулевого управления.</translation>
-    </message>
-    <message>
-        <source>Steering Axis Sensitivity</source>
-        <translation>Чувствительность рулевой оси</translation>
-    </message>
-    <message>
-        <source>Sets the steering axis scaling factor.</source>
-        <translation>Устанавливает коэффициент масштабирования оси рулевого управления.</translation>
+        <source>Mode LED</source>
+        <translation>Светодиодный индикатор режима</translation>
     </message>
     <message>
         <source>Large Motor Vibration Bias</source>
@@ -16525,6 +16708,22 @@ The shortcut will be created at:
 %1</translation>
     </message>
     <message>
+        <source>We have detected that LD_LIBRARY_PATH has been set to the following value:
+
+%1
+
+This will likely prevent DuckStation from working correctly. You should modify your environment to leave LD_LIBRARY_PATH unset.</source>
+        <translation>Обнаружено, что переменной LD_LIBRARY_PATH присвоено следующее значение:
+
+%1
+
+Это, вероятно, помешает корректной работе DuckStation. Измените окружение так, чтобы переменная LD_LIBRARY_PATH не была задана.</translation>
+    </message>
+    <message>
+        <source>Don&apos;t show again</source>
+        <translation>Больше не показывать</translation>
+    </message>
+    <message>
         <source>Don&apos;t ask again</source>
         <translation>Больше не спрашивать</translation>
     </message>
@@ -17167,19 +17366,19 @@ Do you want to create this directory?</source>
         <translation>PAL (Европа, Австралия)</translation>
     </message>
     <message>
-        <source>NTSC-J (Japan)</source>
+        <source>NTSC-J</source>
         <comment>DiscRegion</comment>
-        <translation>NTSC-J (Япония)</translation>
+        <translation>NTSC-J</translation>
     </message>
     <message>
-        <source>NTSC-U/C (US, Canada)</source>
+        <source>NTSC-U/C</source>
         <comment>DiscRegion</comment>
-        <translation>NTSC-U/C (США, Канада)</translation>
+        <translation>NTSC-U/C</translation>
     </message>
     <message>
-        <source>PAL (Europe, Australia)</source>
+        <source>PAL</source>
         <comment>DiscRegion</comment>
-        <translation>PAL (Европа, Австралия)</translation>
+        <translation>PAL</translation>
     </message>
     <message>
         <source>Other</source>
@@ -17282,6 +17481,36 @@ Do you want to create this directory?</source>
         <translation>JINC2 (медленно, без смешивания краев)</translation>
     </message>
     <message>
+        <source>Monotonic Cubic (Very Slow)</source>
+        <comment>GPUTextureFilter</comment>
+        <translation>Монотонная кубическая (очень медленно)</translation>
+    </message>
+    <message>
+        <source>Monotonic Cubic (Very Slow, No Edge Blending)</source>
+        <comment>GPUTextureFilter</comment>
+        <translation>Монотонная кубическая (очень медленно, без смешивания краев)</translation>
+    </message>
+    <message>
+        <source>Adaptive Diagonal (Slow)</source>
+        <comment>GPUTextureFilter</comment>
+        <translation>Адаптивная диагональная (медленно)</translation>
+    </message>
+    <message>
+        <source>Adaptive Diagonal (Slow, No Edge Blending)</source>
+        <comment>GPUTextureFilter</comment>
+        <translation>Адаптивная диагональная (медленно, без смешивания краев)</translation>
+    </message>
+    <message>
+        <source>DCCI (Extremely Slow)</source>
+        <comment>GPUTextureFilter</comment>
+        <translation>DCCI (крайне медленно)</translation>
+    </message>
+    <message>
+        <source>DCCI (Extremely Slow, No Edge Blending)</source>
+        <comment>GPUTextureFilter</comment>
+        <translation>DCCI (крайне медленно, без смешивания краев)</translation>
+    </message>
+    <message>
         <source>xBR (Very Slow)</source>
         <comment>GPUTextureFilter</comment>
         <translation>xBR (очень медленно)</translation>
@@ -17290,6 +17519,11 @@ Do you want to create this directory?</source>
         <source>xBR (Very Slow, No Edge Blending)</source>
         <comment>GPUTextureFilter</comment>
         <translation>xBR (очень медленно, без смешивания краев)</translation>
+    </message>
+    <message>
+        <source>Sharp Bilinear</source>
+        <comment>GPUTextureFilter</comment>
+        <translation>Чёткая билинейная</translation>
     </message>
     <message>
         <source>Scale2x (EPX)</source>
@@ -18781,6 +19015,10 @@ You must save to a memory card and reset the game to clear any effects.</source>
         <source>Memory Card Mismatch</source>
         <comment>Taint</comment>
         <translation>Несоответствие карты памяти</translation>
+    </message>
+    <message>
+        <source>This save state was created with a different console region, and may be unstable.</source>
+        <translation>Это состояние сохранения было создано с другим регионом консоли и может работать нестабильно.</translation>
     </message>
     <message>
         <source>CPU Overclock Changed</source>

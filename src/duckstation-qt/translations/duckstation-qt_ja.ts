@@ -198,6 +198,14 @@ Do you want to enable hardcore mode?</source>
         <translation>５秒</translation>
     </message>
     <message>
+        <source>Reset Achievement Notification Duration</source>
+        <translation>実績通知の表示時間をリセット</translation>
+    </message>
+    <message>
+        <source>Reset Leaderboard Notification Duration</source>
+        <translation>リーダーボード通知の表示時間をリセット</translation>
+    </message>
+    <message>
         <source>Notification Location:</source>
         <translation>通知の位置:</translation>
     </message>
@@ -256,6 +264,18 @@ Do you want to enable hardcore mode?</source>
     <message>
         <source>Displays popup messages on events such as achievement unlocks and game completion.</source>
         <translation>実績のアンロックやゲームクリアなどのイベント時にポップアップメッセージを表示します。</translation>
+    </message>
+    <message>
+        <source>N/A</source>
+        <translation>なし</translation>
+    </message>
+    <message>
+        <source>Resets the duration to the global setting.</source>
+        <translation>表示時間をグローバル設定の値にリセットします。</translation>
+    </message>
+    <message>
+        <source>Resets the duration to the default.</source>
+        <translation>表示時間を既定値にリセットします。</translation>
     </message>
     <message>
         <source>Displays popup messages when starting, submitting, or failing a leaderboard challenge.</source>
@@ -388,6 +408,10 @@ Token generated %2</source>
         <translation>リーダーボードの追跡を含む、実績用の &quot;チャレンジ&quot; モード。ステートセーブ、チート、スローダウン機能を無効にします。</translation>
     </message>
     <message>
+        <source> seconds</source>
+        <translation> 秒</translation>
+    </message>
+    <message>
         <source>Checked</source>
         <translation>オン</translation>
     </message>
@@ -398,12 +422,6 @@ Token generated %2</source>
     <message>
         <source>Plays sound effects for events such as achievement unlocks and leaderboard submissions.</source>
         <translation>実績の解除やリーダーボードへのスコア送信などのイベント時に効果音を再生します。</translation>
-    </message>
-    <message numerus="yes">
-        <source>%n seconds</source>
-        <translation>
-            <numerusform>%n 秒</numerusform>
-        </translation>
     </message>
     <message>
         <source>Logout</source>
@@ -427,10 +445,6 @@ Token generated %2</source>
     <message>
         <source>Resuming state</source>
         <translation>ステートセーブからの再開</translation>
-    </message>
-    <message>
-        <source>{} (Unofficial)</source>
-        <translation>{} (非公式)</translation>
     </message>
     <message>
         <source>Leaderboard attempt started.</source>
@@ -1133,22 +1147,6 @@ Unread messages: {}</source>
 <context>
     <name>AnalogController</name>
     <message>
-        <source>Controller {} switched to analog mode.</source>
-        <translation>コントローラー {} がアナログモードに切り替わりました。</translation>
-    </message>
-    <message>
-        <source>Controller {} switched to digital mode.</source>
-        <translation>コントローラー {} がデジタルモードに切り替わりました。</translation>
-    </message>
-    <message>
-        <source>Controller {} is locked to analog mode by the game.</source>
-        <translation>コントローラー {} は、ゲームによってアナログモードにロックされています。</translation>
-    </message>
-    <message>
-        <source>Controller {} is locked to digital mode by the game.</source>
-        <translation>コントローラー {} は、ゲームによってデジタルモードにロックされています。</translation>
-    </message>
-    <message>
         <source>D-Pad Up</source>
         <translation>方向キー上</translation>
     </message>
@@ -1383,10 +1381,6 @@ Unread messages: {}</source>
     <message>
         <source>Inverts the direction of the right analog stick.</source>
         <translation>右アナログスティックの向きを反転します。</translation>
-    </message>
-    <message>
-        <source>Mode LED</source>
-        <translation>モード LED</translation>
     </message>
 </context>
 <context>
@@ -1623,6 +1617,10 @@ Unread messages: {}</source>
         <translation>バッファサイズをリセット</translation>
     </message>
     <message>
+        <source>Reset Output Latency</source>
+        <translation>出力遅延をリセット</translation>
+    </message>
+    <message>
         <source>Maximum Latency: 0 ms (0 ms stretch + 0 ms buffer + 0 ms output)</source>
         <translation>最大遅延: 0 ms (ストレッチ 0 ms + バッファ 0 ms + 出力 0 ms)</translation>
     </message>
@@ -1693,6 +1691,10 @@ Unread messages: {}</source>
     <message>
         <source>%</source>
         <translation>%</translation>
+    </message>
+    <message>
+        <source> ms</source>
+        <translation> ms</translation>
     </message>
     <message>
         <source>%1 ms</source>
@@ -1829,10 +1831,6 @@ Unread messages: {}</source>
     <message>
         <source>Maximum Latency: %1 ms (minimum output latency unknown)</source>
         <translation>最大レイテンシー: %1 ms (最小出力レイテンシーは不明)</translation>
-    </message>
-    <message>
-        <source>%1%</source>
-        <translation>%1%</translation>
     </message>
 </context>
 <context>
@@ -2215,6 +2213,24 @@ WAV ファイルは 16 ビットのステレオで、サンプルレート 44100
 Your dump may be corrupted, or the physical disc is scratched.</source>
         <translation>ゲームはこのままクラッシュする可能性が高いです。
 ダンプが破損しているか、物理ディスクに傷がある可能性があります。</translation>
+    </message>
+</context>
+<context>
+    <name>CPU</name>
+    <message>
+        <source>Execute</source>
+        <comment>BreakpointType</comment>
+        <translation>実行</translation>
+    </message>
+    <message>
+        <source>Read</source>
+        <comment>BreakpointType</comment>
+        <translation>読み込み</translation>
+    </message>
+    <message>
+        <source>Write</source>
+        <comment>BreakpointType</comment>
+        <translation>書き込み</translation>
     </message>
 </context>
 <context>
@@ -2874,6 +2890,14 @@ This warning will only be shown once.</source>
         <translation>コントローラー {} がデジタルモードに切り替わりました。</translation>
     </message>
     <message>
+        <source>Controller {} is locked to analog mode by the game.</source>
+        <translation>コントローラー {} は、ゲームによってアナログモードにロックされています。</translation>
+    </message>
+    <message>
+        <source>Controller {} is locked to digital mode by the game.</source>
+        <translation>コントローラー {} は、ゲームによってデジタルモードにロックされています。</translation>
+    </message>
+    <message>
         <source>Controller {} switched to JogCon mode.</source>
         <translation>コントローラー {} を JogCon モードに切り替えました。</translation>
     </message>
@@ -2907,6 +2931,14 @@ This warning will only be shown once.</source>
     <message>
         <source>Clear Mapping</source>
         <translation>マッピングをクリア</translation>
+    </message>
+    <message>
+        <source>Multiple Devices</source>
+        <translation>複数のデバイス</translation>
+    </message>
+    <message>
+        <source>%1 (%2)</source>
+        <translation>%1 (%2)</translation>
     </message>
     <message>
         <source>Multiple devices...</source>
@@ -3525,10 +3557,6 @@ This warning will only be shown once.</source>
         <translation>LED を設定可能なコントローラーの LED 設定を調整します。</translation>
     </message>
     <message>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enables the SDL input source and detection of controllers.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;SDL 入力ソースとコントローラーの検出を有効にします。&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
-    </message>
-    <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Allows rumble and LED effects for DualShock 4 / DualSense controllers in Bluetooth mode. This option is not required for wired connections.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Enabling enhanced reports may result in your controller being unusable in other applications until it is turned off and on again.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Bluetooth モードの DualShock 4 / DualSense コントローラーで振動と LED エフェクトを使用できるようにします。有線接続ではこのオプションは不要です。&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;拡張レポートを有効にすると、コントローラーの電源を入れ直すまで、ほかのアプリケーションで使用できなくなる場合があります。&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
@@ -3541,12 +3569,28 @@ This warning will only be shown once.</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;SDL 入力ソースはほとんどのコントローラーをサポートしており、推奨されるオプションです。Bluetooth モードの DualShock 4 / DualSense パッドで振動/LED 機能を使用するには、拡張モードが必要な場合があります。デバイス固有の動作を制御する&lt;a href=&quot;ADVANCED_SDL_OPTIONS&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#99ebff;&quot;&gt;詳細オプション&lt;/span&gt;&lt;/a&gt;も編集できます。&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
+        <source>LEDs</source>
+        <translation>LEDs</translation>
+    </message>
+    <message>
+        <source>Enables the SDL input source and detection of controllers.</source>
+        <translation>SDL 入力ソースとコントローラーの検出を有効にします。</translation>
+    </message>
+    <message>
         <source>Allows use of the touchpad for DualShock 4 / DualSense controllers as a pointer, for use with lightguns.</source>
         <translation>DualShock 4 / DualSense コントローラーのタッチパッドを、ライトガン用のポインターとして使用できるようにします。</translation>
     </message>
     <message>
         <source>Enable Touchpad</source>
         <translation>タッチパッドを有効化</translation>
+    </message>
+    <message>
+        <source>Saves supported controllers by serial or device identity so bindings survive port and connection-order changes when possible.</source>
+        <translation>対応するコントローラーをシリアル番号またはデバイスの識別情報で保存し、ポートや接続順序が変わっても、可能な限り入力割り当てを維持します。</translation>
+    </message>
+    <message>
+        <source>Use Persistent Device Identifiers</source>
+        <translation>永続的なデバイス識別子を使用する</translation>
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The XInput source provides support for controllers that use the XInput protocol. This source should &lt;span style=&quot; font-weight:700;&quot;&gt;only&lt;/span&gt; be used if you are using a XInput wrapper library.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
@@ -4036,8 +4080,8 @@ This file is approximately 206KB, do you want to download it now?</source>
         <translation>DuckStation は現在カバーが設定されていないゲームのカバーを自動でダウンロードすることができます。我々はカバー画像を提供していません。ユーザーが自分で画像のダウンロード元を指定する必要があります。</translation>
     </message>
     <message>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Depending on your jurisdiction, &lt;span style=&quot; font-weight:700;&quot;&gt;game covers may be copyrighted&lt;/span&gt;. You are only authorized to use this tool with &lt;span style=&quot; font-weight:700;&quot;&gt;your own servers and images&lt;/span&gt;.&lt;/p&gt;&lt;p&gt;In the box below, specify the URLs to download covers from, with one template URL per line. The following variables are available:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${title}:&lt;/span&gt; Title of the game.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${savetitle}:&lt;/span&gt; Title of the game including the region.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${localizedtitle}:&lt;/span&gt; Localized (native language) title of the game.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${filetitle}:&lt;/span&gt; Name component of the game&apos;s filename.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${serial}:&lt;/span&gt; Serial of the game.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Example:&lt;/span&gt; https://www.example-not-a-real-domain.com/covers/${serial}.jpg&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;お住まいの国や地域によっては、&lt;span style=&quot; font-weight:700;&quot;&gt;ゲームのカバーは著作権で保護されている場合があります&lt;/span&gt;。このツールは、&lt;span style=&quot; font-weight:700;&quot;&gt;自分のサーバーと画像&lt;/span&gt;に対してのみ使用できます。&lt;/p&gt;&lt;p&gt;下のボックスに、カバーのダウンロード元 URL を1 行に 1 つのテンプレート URL として指定してください。次の変数を使用できます:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${title}:&lt;/span&gt; ゲームのタイトル。&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${savetitle}:&lt;/span&gt; 地域を含むゲームのタイトル。&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${localizedtitle}:&lt;/span&gt; ローカライズされた (現地語の) ゲームのタイトル。&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${filetitle}:&lt;/span&gt; ゲームのファイル名の名称部分。&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${serial}:&lt;/span&gt; ゲームのシリアル番号。&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;例:&lt;/span&gt; https://www.example-not-a-real-domain.com/covers/${serial}.jpg&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Depending on your jurisdiction, &lt;span style=&quot; font-weight:700;&quot;&gt;game covers may be copyrighted&lt;/span&gt;. You are only authorized to use this tool with &lt;span style=&quot; font-weight:700;&quot;&gt;your own servers and images&lt;/span&gt;.&lt;/p&gt;&lt;p&gt;In the box below, specify the URLs to download covers from, with one template URL per line. The following variables are available:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${title}:&lt;/span&gt; Title of the game.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${savetitle}:&lt;/span&gt; Save title for the game, including the region suffix.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${localizedtitle}:&lt;/span&gt; Localized title for the game in its native language.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${filetitle}:&lt;/span&gt; Name component of the game&apos;s filename.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${serial}:&lt;/span&gt; Serial of the game.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Example:&lt;/span&gt; https://www.example-not-a-real-domain.com/covers/${serial}.jpg&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;お住まいの国や地域によっては、&lt;span style=&quot; font-weight:700;&quot;&gt;ゲームのカバーは著作権で保護されている場合があります&lt;/span&gt;。このツールは、&lt;span style=&quot; font-weight:700;&quot;&gt;自分のサーバーと画像&lt;/span&gt;に対してのみ使用できます。&lt;/p&gt;&lt;p&gt;下のボックスに、カバーのダウンロード元 URL を、1 行に 1 つのテンプレート URL として指定してください。次の変数を使用できます:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${title}:&lt;/span&gt; ゲームのタイトル。&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${savetitle}:&lt;/span&gt; 地域を示す接尾辞を含む、ゲームの保存用タイトル。&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${localizedtitle}:&lt;/span&gt; ゲームの本来の言語でローカライズされたタイトル。&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${filetitle}:&lt;/span&gt; ゲームのファイル名の名称部分。&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${serial}:&lt;/span&gt; ゲームのシリアル番号。&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;例:&lt;/span&gt; https://www.example-not-a-real-domain.com/covers/${serial}.jpg&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>By default, the downloaded covers will be saved with the game&apos;s title. If this is not desired, you can check the &quot;Use Serial File Names&quot; box below. Using serials instead of game titles will prevent conflicts when multiple regions of the same game are used.</source>
@@ -4223,6 +4267,17 @@ This file is approximately 206KB, do you want to download it now?</source>
     </message>
 </context>
 <context>
+    <name>DebuggerCallStackModel</name>
+    <message>
+        <source>Address</source>
+        <translation>アドレス</translation>
+    </message>
+    <message>
+        <source>Frame</source>
+        <translation>スタックフレーム</translation>
+    </message>
+</context>
+<context>
     <name>DebuggerRegistersModel</name>
     <message>
         <source>Register</source>
@@ -4249,6 +4304,17 @@ This file is approximately 206KB, do you want to download it now?</source>
     </message>
 </context>
 <context>
+    <name>DebuggerThreadsModel</name>
+    <message>
+        <source>Name</source>
+        <translation>名前</translation>
+    </message>
+    <message>
+        <source>Value</source>
+        <translation>値</translation>
+    </message>
+</context>
+<context>
     <name>DebuggerWindow</name>
     <message>
         <source>CPU Debugger</source>
@@ -4261,10 +4327,6 @@ This file is approximately 206KB, do you want to download it now?</source>
     <message>
         <source>Breakpoints</source>
         <translation>ブレークポイント</translation>
-    </message>
-    <message>
-        <source>toolBar</source>
-        <translation>ツールバー</translation>
     </message>
     <message>
         <source>Disassembly</source>
@@ -4325,6 +4387,14 @@ This file is approximately 206KB, do you want to download it now?</source>
     <message>
         <source>Stack</source>
         <translation>スタック</translation>
+    </message>
+    <message>
+        <source>Threads</source>
+        <translation>スレッド</translation>
+    </message>
+    <message>
+        <source>Call Stack</source>
+        <translation>コールスタック</translation>
     </message>
     <message>
         <source>Pause/Continue</source>
@@ -4443,6 +4513,10 @@ This file is approximately 206KB, do you want to download it now?</source>
         <translation>アドレスに移動(&amp;A)</translation>
     </message>
     <message>
+        <source>Toolbar</source>
+        <translation>ツールバー</translation>
+    </message>
+    <message>
         <source>&amp;Add Breakpoint</source>
         <translation>ブレークポイントを追加(&amp;A)</translation>
     </message>
@@ -4501,10 +4575,6 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <translation>命令をパッチ(&amp;P)</translation>
     </message>
     <message>
-        <source>&amp;Nop Instruction</source>
-        <translation>命令を NOP 化(&amp;N)</translation>
-    </message>
-    <message>
         <source>&amp;Follow Load/Store</source>
         <translation>ロード/ストアを追跡(&amp;F)</translation>
     </message>
@@ -4523,10 +4593,6 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <source>Invalid Instruction</source>
         <translation>無効な命令</translation>
-    </message>
-    <message>
-        <source>Failed to write patched instruction to 0x%1.</source>
-        <translation>0x%1 にパッチ済み命令を書き込めませんでした。</translation>
     </message>
     <message>
         <source>Patched instruction at 0x%1.</source>
@@ -4548,9 +4614,40 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <source>Failed to add step-out breakpoint, are you in a valid function?</source>
         <translation>ステップアウトブレークポイントの追加に失敗しました。有効な関数内にいますか？</translation>
     </message>
+    <message numerus="yes">
+        <source>&amp;Nop %n Instruction(s)</source>
+        <translation>
+            <numerusform>%n 個の命令を NOP 化(&amp;N)</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>&amp;Copy %n Instruction(s)</source>
+        <translation>
+            <numerusform>%n 個の命令をコピー(&amp;C)</numerusform>
+        </translation>
+    </message>
     <message>
         <source>View in &amp;Dump</source>
         <translation>ダンプに表示(&amp;D)</translation>
+    </message>
+    <message>
+        <source>Failed to write one or more patched instructions. Patched %1 of %2 instructions; the first failure was at 0x%3.</source>
+        <translation>パッチを適用した命令の一部を書き込めませんでした。%2 個中 %1 個の命令にパッチを適用しました。最初の失敗は 0x%3 で発生しました。</translation>
+    </message>
+    <message>
+        <source>Patched %1 of %2 selected instructions.</source>
+        <translation>選択した %2 個中 %1 個の命令にパッチを適用しました。</translation>
+    </message>
+    <message>
+        <source>Patched %1 instructions.</source>
+        <translation>%1 個の命令にパッチを適用しました。</translation>
+    </message>
+    <message numerus="yes">
+        <source>Copied %n instruction(s) to the clipboard.</source>
+        <comment>CopyRange</comment>
+        <translation>
+            <numerusform>%n 個の命令をクリップボードにコピーしました。</numerusform>
+        </translation>
     </message>
     <message>
         <source>Invalid search pattern. It should contain hex digits or question marks.</source>
@@ -4567,6 +4664,12 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <source>Pattern found at 0x%1.</source>
         <translation>0x%1 でパターンが見つかりました。</translation>
+    </message>
+    <message numerus="yes">
+        <source>Loaded %n saved breakpoint(s).</source>
+        <translation>
+            <numerusform>保存された %n 個のブレークポイントを読み込みました。</numerusform>
+        </translation>
     </message>
     <message>
         <source>Invalid address. It should be in hex (0x12345678 or 12345678)</source>
@@ -5313,6 +5416,10 @@ Clicking Reset will restore the serial back to the value scanned from in the dis
         <translation>SBI ファイルなしでの起動を許可する</translation>
     </message>
     <message>
+        <source>Applies the selected sprite texture filter to framebuffer uploads. This can smooth backgrounds in some games while preserving texture data and 24-bit video.</source>
+        <translation>選択したスプライトテクスチャフィルターを、フレームバッファへのアップロードに適用します。テクスチャデータと 24 ビット映像を維持しながら、一部のゲームの背景を滑らかにできます。</translation>
+    </message>
+    <message>
         <source>Apply Image Patches</source>
         <translation>ディスクイメージパッチの適用</translation>
     </message>
@@ -5677,6 +5784,10 @@ You cannot undo this action.</source>
         <translation>デフォルト: 有効</translation>
     </message>
     <message>
+        <source>Default: {}</source>
+        <translation>既定値: {}</translation>
+    </message>
+    <message>
         <source>Delete</source>
         <translation>削除</translation>
     </message>
@@ -5787,6 +5898,10 @@ You cannot undo this action.</source>
     <message>
         <source>Disable Textures</source>
         <translation>テクスチャを無効化</translation>
+    </message>
+    <message>
+        <source>Disable Upscaled Direct Textures</source>
+        <translation>ダイレクトカラーテクスチャのアップスケーリングを無効化</translation>
     </message>
     <message>
         <source>Disable Vertex Lighting</source>
@@ -6035,6 +6150,10 @@ Error was:</source>
         <translation>ファイル名</translation>
     </message>
     <message>
+        <source>Filter Framebuffer Uploads</source>
+        <translation>フレームバッファへのアップロードにフィルターを適用</translation>
+    </message>
+    <message>
         <source>Forces a full rescan of all games previously identified.</source>
         <translation>検出済みのすべてのゲームを強制的に完全再スキャンします。</translation>
     </message>
@@ -6203,6 +6322,10 @@ Error was:</source>
         <translation>リーダーボード</translation>
     </message>
     <message>
+        <source>Length: {}</source>
+        <translation>長さ: {}</translation>
+    </message>
+    <message>
         <source>Load Devices From Save States</source>
         <translation>ステートセーブからデバイスを読み込む</translation>
     </message>
@@ -6213,6 +6336,10 @@ Error was:</source>
     <message>
         <source>Load State</source>
         <translation>ステートロード</translation>
+    </message>
+    <message>
+        <source>Loading Game List...</source>
+        <translation>ゲームリストを読み込み中...</translation>
     </message>
     <message>
         <source>Loads all replacement texture to RAM, reducing stuttering at runtime.</source>
@@ -6303,6 +6430,10 @@ Please check your username and password, and try again.</source>
         <translation>シーク高速化の最大サイクル数</translation>
     </message>
     <message>
+        <source>Maximum: {}</source>
+        <translation>最大値: {}</translation>
+    </message>
+    <message>
         <source>Memory Card Directory</source>
         <translation>メモリーカードディレクトリ</translation>
     </message>
@@ -6325,14 +6456,6 @@ Please check your username and password, and try again.</source>
     <message>
         <source> (%u MB on disk)</source>
         <translation> (ディスク上で %u MB)</translation>
-    </message>
-    <message>
-        <source>${title}: Title of the game.
-${filetitle}: Name component of the game&apos;s filename.
-${serial}: Serial of the game.</source>
-        <translation>${title}: ゲームのタイトル。
-${filetitle}: ゲームのファイル名の名称部分。
-${serial}: ゲームのシリアル。</translation>
     </message>
     <message>
         <source>%.1f ms</source>
@@ -7071,6 +7194,10 @@ You cannot undo this action.</source>
         <translation>このゲーム固有の入力ソース設定を使用します。無効にするとグローバル設定が使用されます。</translation>
     </message>
     <message>
+        <source>Value: {}</source>
+        <translation>値: {}</translation>
+    </message>
+    <message>
         <source>When enabled, DuckStation will track unofficial achievements. Unlocks will be saved locally and not sent to RetroAchievements.</source>
         <translation>有効にすると、DuckStation は非公式の実績を追跡します。解除状況はローカルに保存され、RetroAchievements には送信されません。</translation>
     </message>
@@ -7119,16 +7246,32 @@ Do you want to {1} anyway?</source>
         <translation>{} の固定を解除しました。</translation>
     </message>
     <message>
-        <source>{} | Start: {} | Length: {}</source>
-        <translation>{} | 開始: {} | 長さ: {}</translation>
-    </message>
-    <message>
         <source>Determines the format that screenshots will be saved/compressed with.</source>
         <translation>スクリーンショットの保存/圧縮形式を設定します。</translation>
     </message>
     <message>
         <source>All unofficial achievement progress for the current game will be removed. This cannot be undone.</source>
         <translation>現在のゲームの非公式実績の進行状況をすべて削除します。この操作は元に戻せません。</translation>
+    </message>
+    <message>
+        <source>${filetitle}: Name component of the game&apos;s filename.</source>
+        <translation>${filetitle}: ゲームのファイル名の名称部分。</translation>
+    </message>
+    <message>
+        <source>${localizedtitle}: Localized title for the game in its native language.</source>
+        <translation>${localizedtitle}: ゲームの本来の言語でローカライズされたタイトル。</translation>
+    </message>
+    <message>
+        <source>${savetitle}: Save title for the game, including the region suffix.</source>
+        <translation>${savetitle}: 地域を示す接尾辞を含む、ゲームの保存用タイトル。</translation>
+    </message>
+    <message>
+        <source>${serial}: Serial of the game.</source>
+        <translation>${serial}: ゲームのシリアル番号。</translation>
+    </message>
+    <message>
+        <source>${title}: Title of the game.</source>
+        <translation>${title}: ゲームのタイトル。</translation>
     </message>
     <message>
         <source>Determines the rotation of the simulated TV screen.</source>
@@ -7519,6 +7662,18 @@ Do you want to {1} anyway?</source>
         <translation>最小出力遅延</translation>
     </message>
     <message>
+        <source>Minimum Framebuffer Upload Height</source>
+        <translation>フレームバッファへのアップロードの最小高さ</translation>
+    </message>
+    <message>
+        <source>Minimum Framebuffer Upload Width</source>
+        <translation>フレームバッファへのアップロードの最小幅</translation>
+    </message>
+    <message>
+        <source>Minimum: {}</source>
+        <translation>最小値: {}</translation>
+    </message>
+    <message>
         <source>Move Down</source>
         <translation>下へ</translation>
     </message>
@@ -7625,6 +7780,14 @@ Do you want to {1} anyway?</source>
     <message>
         <source>On-Screen Display Message Durations</source>
         <translation>オンスクリーンディスプレイメッセージの表示時間</translation>
+    </message>
+    <message>
+        <source>Only filters framebuffer uploads at least this tall. Increase this value to avoid filtering texture data.</source>
+        <translation>この高さ以上のフレームバッファへのアップロードにのみフィルターを適用します。テクスチャデータへのフィルター適用を避けるには、この値を大きくしてください。</translation>
+    </message>
+    <message>
+        <source>Only filters framebuffer uploads at least this wide. Increase this value to avoid filtering texture data.</source>
+        <translation>この幅以上のフレームバッファへのアップロードにのみフィルターを適用します。テクスチャデータへのフィルター適用を避けるには、この値を大きくしてください。</translation>
     </message>
     <message>
         <source>Only measured achievements can be pinned.</source>
@@ -7991,8 +8154,24 @@ Do you want to {1} anyway?</source>
         <translation>すべての設定をデフォルトに戻します (割り当てを含む)。</translation>
     </message>
     <message>
+        <source>SDL Persistent Device Identifiers</source>
+        <translation>SDL の永続的なデバイス識別子</translation>
+    </message>
+    <message>
+        <source>Samples 16-bit direct-color textures at native resolution when upscaling. This can fix filtering of FMVs/backgrounds in some games, but may reduce the quality of render-to-texture effects.</source>
+        <translation>アップスケーリング時に、16 ビットのダイレクトカラーテクスチャを元の解像度でサンプリングします。一部のゲームで FMV や背景のフィルタリングを改善できますが、テクスチャへのレンダリングを使用したエフェクトの品質が低下する場合があります。</translation>
+    </message>
+    <message>
+        <source>Saves supported controllers by serial or device identity so bindings survive port and connection-order changes when possible.</source>
+        <translation>対応するコントローラーをシリアル番号またはデバイスの識別情報で保存し、ポートや接続順序が変わっても、可能な限り入力割り当てを維持します。</translation>
+    </message>
+    <message>
         <source>Start Disc</source>
         <translation>ディスク起動</translation>
+    </message>
+    <message>
+        <source>Start: {}</source>
+        <translation>開始: {}</translation>
     </message>
     <message>
         <source>Starts the application in Big Picture Mode instead of the desktop interface.</source>
@@ -8793,10 +8972,6 @@ Do you want to {1} anyway?</source>
         <translation>値の範囲</translation>
     </message>
     <message>
-        <source>Value: {} | Default: {} | Minimum: {} | Maximum: {}</source>
-        <translation>値: {} | デフォルト: {} | 最小: {} | 最大: {}</translation>
-    </message>
-    <message>
         <source>Verify</source>
         <translation>検証</translation>
     </message>
@@ -9534,6 +9709,16 @@ Are you sure you want to continue?</source>
         <translation>LibCryptで保護されている</translation>
     </message>
     <message>
+        <source>Disable Upscaled Direct Textures</source>
+        <comment>GameDatabase::Trait</comment>
+        <translation>ダイレクトカラーテクスチャのアップスケーリングを無効化</translation>
+    </message>
+    <message>
+        <source>Filter Framebuffer Uploads</source>
+        <comment>GameDatabase::Trait</comment>
+        <translation>フレームバッファへのアップロードにフィルターを適用</translation>
+    </message>
+    <message>
         <source>CPU recompiler disabled.</source>
         <translation>CPUリコンパイラーが無効になりました。</translation>
     </message>
@@ -9758,6 +9943,14 @@ Are you sure you want to continue?</source>
         <translation>GPU最大先行実行数</translation>
     </message>
     <message>
+        <source>Filter Framebuffer Uploads Minimum Width</source>
+        <translation>フレームバッファへのアップロードにフィルターを適用する最小幅</translation>
+    </message>
+    <message>
+        <source>Filter Framebuffer Uploads Minimum Height</source>
+        <translation>フレームバッファへのアップロードにフィルターを適用する最小高さ</translation>
+    </message>
+    <message>
         <source>Verifying Image</source>
         <translation>イメージを検証中</translation>
     </message>
@@ -9807,6 +10000,11 @@ Are you sure you want to continue?</source>
         <translation>ディスクセット</translation>
     </message>
     <message>
+        <source>Audio CD</source>
+        <comment>EntryType</comment>
+        <translation>オーディオ CD</translation>
+    </message>
+    <message>
         <source>PS-EXE</source>
         <comment>EntryType</comment>
         <translation>PS 用 EXE ファイル</translation>
@@ -9830,12 +10028,12 @@ Are you sure you want to continue?</source>
         <translation>「{}」をスキャンしています...</translation>
     </message>
     <message>
-        <source>Unknown</source>
-        <translation>不明</translation>
+        <source>URL template must contain at least one of ${title}, ${localizedtitle}, ${savetitle}, ${filetitle}, or ${serial}.</source>
+        <translation>URL テンプレートには、${title}、${localizedtitle}、${savetitle}、${filetitle}、${serial} のうち少なくとも 1 つを含める必要があります。</translation>
     </message>
     <message>
-        <source>URL template must contain at least one of ${title}, ${savetitle}, ${filetitle}, or ${serial}.</source>
-        <translation>URL テンプレートには ${title}、${savetitle}、${filetitle}、${serial} のいずれかを含める必要があります。</translation>
+        <source>Unknown</source>
+        <translation>不明</translation>
     </message>
     <message>
         <source>No URLs to download enumerated.</source>
@@ -9993,6 +10191,14 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <source>Select Directory</source>
         <translation>ディレクトリ選択</translation>
+    </message>
+    <message>
+        <source>Add File...</source>
+        <translation>ファイルを追加...</translation>
+    </message>
+    <message>
+        <source>Add Folder...</source>
+        <translation>フォルダーを追加...</translation>
     </message>
 </context>
 <context>
@@ -10187,10 +10393,6 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>コントローラー:</translation>
     </message>
     <message>
-        <source>Tracks:</source>
-        <translation>トラック:</translation>
-    </message>
-    <message>
         <source>Release Info:</source>
         <translation>リリース情報:</translation>
     </message>
@@ -10269,6 +10471,10 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <source>Game Specific Configuration</source>
         <translation>ゲーム固有設定</translation>
+    </message>
+    <message>
+        <source>Game ID: %1</source>
+        <translation>ゲーム ID: %1</translation>
     </message>
     <message>
         <source>Track %1</source>
@@ -10506,10 +10712,6 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>キューに入れる最大フレーム数:</translation>
     </message>
     <message>
-        <source>Texture Modulation Cropping (&quot;Old/v0 GPU&quot;)</source>
-        <translation>テクスチャ変調の切り詰め (「旧/v0 GPU」)</translation>
-    </message>
-    <message>
         <source>Scaled Interlacing</source>
         <translation>スケーリングしたインターレース</translation>
     </message>
@@ -10592,6 +10794,18 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <source>Disable Dual-Source Blending</source>
         <translation>デュアルソースブレンディングを無効化</translation>
+    </message>
+    <message>
+        <source>Filter Framebuffer Uploads</source>
+        <translation>フレームバッファへのアップロードにフィルターを適用</translation>
+    </message>
+    <message>
+        <source>Minimum Size:</source>
+        <translation>最小サイズ:</translation>
+    </message>
+    <message>
+        <source>Disable Upscaled Direct Textures</source>
+        <translation>ダイレクトカラーテクスチャのアップスケーリングを無効化</translation>
     </message>
     <message>
         <source>Disable on 2D Polygons</source>
@@ -10978,6 +11192,34 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>3Dポリゴンのレンダリング時にマルチサンプルアンチエイリアスを使用します。アップスケーリングに比べて低いパフォーマンス要件でビジュアルを改善できますが、&lt;strong&gt;レンダリングエラーが発生することがよくあります。&lt;/strong&gt;</translation>
     </message>
     <message>
+        <source>Samples 16-bit direct-color textures at native resolution when upscaling. This can fix filtering of FMVs/backgrounds in some games, but may reduce the quality of render-to-texture effects.</source>
+        <translation>アップスケーリング時に、16 ビットのダイレクトカラーテクスチャを元の解像度でサンプリングします。一部のゲームで FMV や背景のフィルタリングを改善できますが、テクスチャへのレンダリングを使用したエフェクトの品質が低下する場合があります。</translation>
+    </message>
+    <message>
+        <source>Applies the selected sprite texture filter to framebuffer uploads. This can smooth backgrounds in some games while preserving texture data and 24-bit video.</source>
+        <translation>選択したスプライトテクスチャフィルターを、フレームバッファへのアップロードに適用します。テクスチャデータと 24 ビット映像を維持しながら、一部のゲームの背景を滑らかにできます。</translation>
+    </message>
+    <message>
+        <source>Minimum Framebuffer Upload Width</source>
+        <translation>フレームバッファへのアップロードの最小幅</translation>
+    </message>
+    <message>
+        <source>1 px</source>
+        <translation>1 px</translation>
+    </message>
+    <message>
+        <source>Only filters framebuffer uploads at least this wide. Increase this value to avoid filtering texture data.</source>
+        <translation>この幅以上のフレームバッファへのアップロードにのみフィルターを適用します。テクスチャデータへのフィルター適用を避けるには、この値を大きくしてください。</translation>
+    </message>
+    <message>
+        <source>Minimum Framebuffer Upload Height</source>
+        <translation>フレームバッファへのアップロードの最小高さ</translation>
+    </message>
+    <message>
+        <source>Only filters framebuffer uploads at least this tall. Increase this value to avoid filtering texture data.</source>
+        <translation>この高さ以上のフレームバッファへのアップロードにのみフィルターを適用します。テクスチャデータへのフィルター適用を避けるには、この値を大きくしてください。</translation>
+    </message>
+    <message>
         <source>Runs the software renderer in parallel for VRAM readbacks. On some systems, this may result in greater performance when using graphical enhancements with the hardware renderer.</source>
         <translation>VRAM リードバックのためにソフトウェアレンダラーを並行して実行します。一部のシステムでは、ハードウェアレンダラーでグラフィカルな拡張機能を使用すると、&lt;br&gt;パフォーマンスが向上する場合があります。</translation>
     </message>
@@ -11136,10 +11378,6 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <source>%1 [Unavailable]</source>
         <translation>%1 [利用不可]</translation>
-    </message>
-    <message>
-        <source>Use Global Setting</source>
-        <translation>グローバル設定を使用</translation>
     </message>
     <message>
         <source>%1x MSAA</source>
@@ -11422,14 +11660,6 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>一時停止メニューを開く</translation>
     </message>
     <message>
-        <source>Open Achievement List</source>
-        <translation>実績リストを開く</translation>
-    </message>
-    <message>
-        <source>Open Leaderboard List</source>
-        <translation>リーダーボードリストを開く</translation>
-    </message>
-    <message>
         <source>System</source>
         <translation>システム</translation>
     </message>
@@ -11476,6 +11706,22 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <source>Toggle On-Screen Display</source>
         <translation>オンスクリーン表示を切り替え</translation>
+    </message>
+    <message>
+        <source>Toggle Pause Menu</source>
+        <translation>一時停止メニューの表示/非表示を切り替え</translation>
+    </message>
+    <message>
+        <source>Toggle Cheat List</source>
+        <translation>チートリストの表示/非表示を切り替え</translation>
+    </message>
+    <message>
+        <source>Toggle Achievement List</source>
+        <translation>実績リストの表示/非表示を切り替え</translation>
+    </message>
+    <message>
+        <source>Toggle Leaderboard List</source>
+        <translation>リーダーボードリストの表示/非表示を切り替え</translation>
     </message>
     <message>
         <source>Save States</source>
@@ -11552,10 +11798,6 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <source>Interface</source>
         <translation>インターフェース</translation>
-    </message>
-    <message>
-        <source>Open Cheat Settings</source>
-        <translation>チート設定を開く</translation>
     </message>
     <message>
         <source>Fast Forward (Hold)</source>
@@ -14324,14 +14566,6 @@ Error: {1}</source>
         <translation>カードをフォーマット</translation>
     </message>
     <message>
-        <source>Import File...</source>
-        <translation>データをインポート...</translation>
-    </message>
-    <message>
-        <source>Import Card...</source>
-        <translation>カードをインポート...</translation>
-    </message>
-    <message>
         <source>Save</source>
         <translation>保存</translation>
     </message>
@@ -14376,6 +14610,10 @@ Error: {1}</source>
         <translation>アイコンを抽出</translation>
     </message>
     <message>
+        <source>Import...</source>
+        <translation>インポート...</translation>
+    </message>
+    <message>
         <source>Select Memory Card</source>
         <translation>メモリーカードを選択</translation>
     </message>
@@ -14397,6 +14635,10 @@ Error: {1}</source>
         <translation>空ブロックが不十分です、このファイルには %1 が必要ですが、使用できるのは %2 のみです。</translation>
     </message>
     <message>
+        <source>Select Single Save File</source>
+        <translation>単一のセーブファイルを選択</translation>
+    </message>
+    <message>
         <source>Extract Animated Icon</source>
         <translation>アニメーションアイコンを抽出</translation>
     </message>
@@ -14411,6 +14653,14 @@ Error: {1}</source>
 %2</source>
         <translation>セーブファイル %1 からアニメーションアイコンを抽出できませんでした:
 %2</translation>
+    </message>
+    <message>
+        <source>Import Single Save File...</source>
+        <translation>単一のセーブファイルをインポート...</translation>
+    </message>
+    <message>
+        <source>Import Entire Memory Card...</source>
+        <translation>メモリーカード全体をインポート...</translation>
     </message>
     <message>
         <source>Failed to import memory card from %1:
@@ -14431,10 +14681,6 @@ Error: {1}</source>
     <message>
         <source>Failed to undelete file %1. The file may have been partially overwritten by another save.</source>
         <translation>ファイル %1の削除を取り消せませんでした。ファイルが別の保存によって部分的に上書きされた可能性があります。</translation>
-    </message>
-    <message>
-        <source>Select Single Savefile</source>
-        <translation>単一の保存ファイルを選択</translation>
     </message>
     <message>
         <source>Select Import File</source>
@@ -15205,88 +15451,21 @@ Error: {1}</source>
         <source>Sets scaling for left trigger.</source>
         <translation>左トリガーのスケーリングを設定します。</translation>
     </message>
-</context>
-<context>
-    <name>NeGconRumble</name>
-    <message>
-        <source>D-Pad Up</source>
-        <translation>方向キー上</translation>
-    </message>
-    <message>
-        <source>D-Pad Right</source>
-        <translation>方向キー右</translation>
-    </message>
-    <message>
-        <source>D-Pad Down</source>
-        <translation>方向キー下</translation>
-    </message>
-    <message>
-        <source>D-Pad Left</source>
-        <translation>方向キー左</translation>
-    </message>
-    <message>
-        <source>Start</source>
-        <translation>スタート</translation>
-    </message>
-    <message>
-        <source>A Button</source>
-        <translation>A ボタン</translation>
-    </message>
-    <message>
-        <source>B Button</source>
-        <translation>B ボタン</translation>
-    </message>
-    <message>
-        <source>I Button</source>
-        <translation>I ボタン</translation>
-    </message>
-    <message>
-        <source>II Button</source>
-        <translation>II ボタン</translation>
-    </message>
-    <message>
-        <source>Left Trigger</source>
-        <translation>左トリガー</translation>
-    </message>
-    <message>
-        <source>Right Trigger</source>
-        <translation>右トリガー</translation>
-    </message>
-    <message>
-        <source>Steering (Twist) Left</source>
-        <translation>ステアリング (ねじり) 左</translation>
-    </message>
-    <message>
-        <source>Steering (Twist) Right</source>
-        <translation>ステアリング (ねじり) 右</translation>
-    </message>
     <message>
         <source>Analog Toggle</source>
         <translation>アナログ切り替え</translation>
     </message>
     <message>
-        <source>Disable Simultaneous Opposing Cardinal Directions</source>
-        <translation>反対方向の同時入力を無効化</translation>
+        <source>Large Motor</source>
+        <translation>大型モーター</translation>
     </message>
     <message>
-        <source>Prevents concurrent left/right or up/down inputs from being presented to the game.</source>
-        <translation>左右または上下の同時入力がゲームに入力されないようにします。</translation>
+        <source>Small Motor</source>
+        <translation>小型モーター</translation>
     </message>
     <message>
-        <source>Steering Axis Deadzone</source>
-        <translation>ねじり軸遊び量</translation>
-    </message>
-    <message>
-        <source>Sets deadzone size for steering axis.</source>
-        <translation>ねじり軸の遊び量を設定します。</translation>
-    </message>
-    <message>
-        <source>Steering Axis Sensitivity</source>
-        <translation>ねじり軸の感度</translation>
-    </message>
-    <message>
-        <source>Sets the steering axis scaling factor.</source>
-        <translation>ねじり軸の倍率を設定します。</translation>
+        <source>Mode LED</source>
+        <translation>モード LED</translation>
     </message>
     <message>
         <source>Large Motor Vibration Bias</source>
@@ -16137,6 +16316,22 @@ Error: {1}</source>
 <context>
     <name>QtHost</name>
     <message>
+        <source>We have detected that LD_LIBRARY_PATH has been set to the following value:
+
+%1
+
+This will likely prevent DuckStation from working correctly. You should modify your environment to leave LD_LIBRARY_PATH unset.</source>
+        <translation>LD_LIBRARY_PATH が次の値に設定されていることを検出しました:
+
+%1
+
+これにより DuckStation が正常に動作しなくなる可能性があります。LD_LIBRARY_PATH が未設定になるように環境を変更してください。</translation>
+    </message>
+    <message>
+        <source>Don&apos;t show again</source>
+        <translation>今後表示しない</translation>
+    </message>
+    <message>
         <source>Would you like to create a launcher shortcut for DuckStation?
 
 This will add DuckStation to your application menu, allowing you to launch it more easily.
@@ -16810,19 +17005,19 @@ Do you want to create this directory?</source>
         <translation>PAL (ヨーロッパ, オーストラリア)</translation>
     </message>
     <message>
-        <source>NTSC-J (Japan)</source>
+        <source>NTSC-J</source>
         <comment>DiscRegion</comment>
-        <translation>NTSC-J (日本)</translation>
+        <translation>NTSC-J</translation>
     </message>
     <message>
-        <source>NTSC-U/C (US, Canada)</source>
+        <source>NTSC-U/C</source>
         <comment>DiscRegion</comment>
-        <translation>NTSC-U/C (US, カナダ)</translation>
+        <translation>NTSC-U/C</translation>
     </message>
     <message>
-        <source>PAL (Europe, Australia)</source>
+        <source>PAL</source>
         <comment>DiscRegion</comment>
-        <translation>PAL (ヨーロッパ, オーストラリア)</translation>
+        <translation>PAL</translation>
     </message>
     <message>
         <source>Other</source>
@@ -16925,6 +17120,36 @@ Do you want to create this directory?</source>
         <translation>JINC2 (遅い, エッジブレンディングなし)</translation>
     </message>
     <message>
+        <source>Monotonic Cubic (Very Slow)</source>
+        <comment>GPUTextureFilter</comment>
+        <translation>単調三次補間 (非常に遅い)</translation>
+    </message>
+    <message>
+        <source>Monotonic Cubic (Very Slow, No Edge Blending)</source>
+        <comment>GPUTextureFilter</comment>
+        <translation>単調三次補間 (非常に遅い, エッジブレンディングなし)</translation>
+    </message>
+    <message>
+        <source>Adaptive Diagonal (Slow)</source>
+        <comment>GPUTextureFilter</comment>
+        <translation>適応型対角補間 (遅い)</translation>
+    </message>
+    <message>
+        <source>Adaptive Diagonal (Slow, No Edge Blending)</source>
+        <comment>GPUTextureFilter</comment>
+        <translation>適応型対角補間 (遅い, エッジブレンディングなし)</translation>
+    </message>
+    <message>
+        <source>DCCI (Extremely Slow)</source>
+        <comment>GPUTextureFilter</comment>
+        <translation>DCCI (極めて遅い)</translation>
+    </message>
+    <message>
+        <source>DCCI (Extremely Slow, No Edge Blending)</source>
+        <comment>GPUTextureFilter</comment>
+        <translation>DCCI (極めて遅い, エッジブレンディングなし)</translation>
+    </message>
+    <message>
         <source>xBR (Very Slow)</source>
         <comment>GPUTextureFilter</comment>
         <translation>xBR (非常に遅い)</translation>
@@ -16933,6 +17158,11 @@ Do you want to create this directory?</source>
         <source>xBR (Very Slow, No Edge Blending)</source>
         <comment>GPUTextureFilter</comment>
         <translation>xBR (非常に遅い, エッジブレンディングなし)</translation>
+    </message>
+    <message>
+        <source>Sharp Bilinear</source>
+        <comment>GPUTextureFilter</comment>
+        <translation>シャープバイリニア</translation>
     </message>
     <message>
         <source>Scale2x (EPX)</source>
@@ -18290,6 +18520,10 @@ Do you wish to continue?</source>
 SBIファイルの追加方法についてはREADMEを確認してください。
 
 続行しますか?</translation>
+    </message>
+    <message>
+        <source>This save state was created with a different console region, and may be unstable.</source>
+        <translation>このセーブステートは異なる本体地域の設定で作成されたため、動作が不安定になる可能性があります。</translation>
     </message>
     <message>
         <source>CPU Overclock Changed</source>

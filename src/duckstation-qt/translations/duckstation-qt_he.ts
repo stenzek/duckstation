@@ -222,8 +222,16 @@ Do you want to enable hardcore mode?</source>
         <translation>הצגת התראות הישגים</translation>
     </message>
     <message>
+        <source>Reset Achievement Notification Duration</source>
+        <translation>איפוס משך התראת הישג</translation>
+    </message>
+    <message>
         <source>Show Leaderboard Notifications</source>
         <translation>הצגת התראות לוחות תוצאות</translation>
+    </message>
+    <message>
+        <source>Reset Leaderboard Notification Duration</source>
+        <translation>איפוס משך התראת לוח תוצאות</translation>
     </message>
     <message>
         <source>Show Leaderboard Trackers</source>
@@ -268,6 +276,18 @@ Do you want to enable hardcore mode?</source>
     <message>
         <source>Displays popup messages on events such as achievement unlocks and game completion.</source>
         <translation>מציג הודעות קופצות באירועים כגון פתיחת הישגים וסיום משחק.</translation>
+    </message>
+    <message>
+        <source>N/A</source>
+        <translation>לא זמין</translation>
+    </message>
+    <message>
+        <source>Resets the duration to the global setting.</source>
+        <translation>מאפס את משך הזמן להגדרה הכללית.</translation>
+    </message>
+    <message>
+        <source>Resets the duration to the default.</source>
+        <translation>מאפס את משך הזמן לברירת המחדל.</translation>
     </message>
     <message>
         <source>Displays popup messages when starting, submitting, or failing a leaderboard challenge.</source>
@@ -396,15 +416,12 @@ Token generated %2</source>
         <translation>כאשר האפשרות מופעלת, כל הפעלה תתנהג כאילו אף הישג לא נפתח.</translation>
     </message>
     <message>
+        <source> seconds</source>
+        <translation> שניות</translation>
+    </message>
+    <message>
         <source>When enabled, DuckStation will assume all achievements are locked and not send any unlock notifications to the server.</source>
         <translation>כאשר האפשרות מופעלת, DuckStation יניח שכל ההישגים נעולים ולא ישלח לשרת התראות על פתיחתם.</translation>
-    </message>
-    <message numerus="yes">
-        <source>%n seconds</source>
-        <translation>
-            <numerusform>%n שנייה</numerusform>
-            <numerusform>%n שניות</numerusform>
-        </translation>
     </message>
     <message>
         <source>Logout</source>
@@ -428,10 +445,6 @@ Token generated %2</source>
     <message>
         <source>Resuming state</source>
         <translation>מחדש מצב</translation>
-    </message>
-    <message>
-        <source>{} (Unofficial)</source>
-        <translation>{} (לא רשמי)</translation>
     </message>
     <message numerus="yes">
         <source>Prefetching achievement badges (%n remaining)...</source>
@@ -1146,22 +1159,6 @@ Unread messages: {}</source>
 <context>
     <name>AnalogController</name>
     <message>
-        <source>Controller {} switched to analog mode.</source>
-        <translation>בקר {} עבר למצב אנלוגי.</translation>
-    </message>
-    <message>
-        <source>Controller {} switched to digital mode.</source>
-        <translation>בקר {} עבר למצב דיגיטלי.</translation>
-    </message>
-    <message>
-        <source>Controller {} is locked to analog mode by the game.</source>
-        <translation>המשחק נעל את בקר {} במצב אנלוגי.</translation>
-    </message>
-    <message>
-        <source>Controller {} is locked to digital mode by the game.</source>
-        <translation>המשחק נעל את בקר {} במצב דיגיטלי.</translation>
-    </message>
-    <message>
         <source>D-Pad Up</source>
         <translation>D-Pad למעלה</translation>
     </message>
@@ -1397,10 +1394,6 @@ Unread messages: {}</source>
         <source>Inverts the direction of the right analog stick.</source>
         <translation>הופך את הכיוון של המקל האנלוגי הימני.</translation>
     </message>
-    <message>
-        <source>Mode LED</source>
-        <translation>נורית מצב</translation>
-    </message>
 </context>
 <context>
     <name>AnalogJoystick</name>
@@ -1592,6 +1585,10 @@ Unread messages: {}</source>
         <translation>מינימלי</translation>
     </message>
     <message>
+        <source>Reset Output Latency</source>
+        <translation>איפוס השהיית הפלט</translation>
+    </message>
+    <message>
         <source>Maximum Latency: 0 ms (0 ms stretch + 0 ms buffer + 0 ms output)</source>
         <translation>השהיה מרבית: 0 ms (מתיחת 0 ms + מאגר 0 ms + פלט 0 ms)</translation>
     </message>
@@ -1690,6 +1687,10 @@ Unread messages: {}</source>
     <message>
         <source>%</source>
         <translation>%</translation>
+    </message>
+    <message>
+        <source> ms</source>
+        <translation> ms</translation>
     </message>
     <message>
         <source>Buffer Size</source>
@@ -1842,10 +1843,6 @@ Unread messages: {}</source>
     <message>
         <source>Maximum Latency: %1 ms (minimum output latency unknown)</source>
         <translation>השהיה מרבית: %1 ms (השהיית פלט מינימלית לא ידועה)</translation>
-    </message>
-    <message>
-        <source>%1%</source>
-        <translation>%1%</translation>
     </message>
 </context>
 <context>
@@ -2229,6 +2226,24 @@ WAV files must be 16-bit stereo and use a sample rate of 44100hz.</source>
 Your dump may be corrupted, or the physical disc is scratched.</source>
         <translation>המשחק כנראה יקרוס כעת.
 קובץ התמונה שלך עלול להיות פגום, או שהתקליטור הפיזי שרוט.</translation>
+    </message>
+</context>
+<context>
+    <name>CPU</name>
+    <message>
+        <source>Execute</source>
+        <comment>BreakpointType</comment>
+        <translation>ביצוע</translation>
+    </message>
+    <message>
+        <source>Read</source>
+        <comment>BreakpointType</comment>
+        <translation>קריאה</translation>
+    </message>
+    <message>
+        <source>Write</source>
+        <comment>BreakpointType</comment>
+        <translation>כתיבה</translation>
     </message>
 </context>
 <context>
@@ -2892,6 +2907,14 @@ This warning will only be shown once.</source>
         <translation>הבקר {} עבר למצב דיגיטלי.</translation>
     </message>
     <message>
+        <source>Controller {} is locked to analog mode by the game.</source>
+        <translation>המשחק נעל את בקר {} במצב אנלוגי.</translation>
+    </message>
+    <message>
+        <source>Controller {} is locked to digital mode by the game.</source>
+        <translation>המשחק נעל את בקר {} במצב דיגיטלי.</translation>
+    </message>
+    <message>
         <source>Controller {} switched to JogCon mode.</source>
         <translation>הבקר {} עבר למצב JogCon.</translation>
     </message>
@@ -2925,6 +2948,14 @@ This warning will only be shown once.</source>
     <message>
         <source>Clear Mapping</source>
         <translation>נקה מיפוי</translation>
+    </message>
+    <message>
+        <source>Multiple Devices</source>
+        <translation>התקנים מרובים</translation>
+    </message>
+    <message>
+        <source>%1 (%2)</source>
+        <translation>%1 (%2)</translation>
     </message>
     <message>
         <source>Multiple devices...</source>
@@ -3543,10 +3574,6 @@ This warning will only be shown once.</source>
         <translation>מכוונן את הגדרות הנוריות עבור בקרים עם נוריות הניתנות להגדרה.</translation>
     </message>
     <message>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enables the SDL input source and detection of controllers.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;מפעיל את מקור קלט SDL ואת זיהוי הבקרים.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
-    </message>
-    <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Allows rumble and LED effects for DualShock 4 / DualSense controllers in Bluetooth mode. This option is not required for wired connections.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Enabling enhanced reports may result in your controller being unusable in other applications until it is turned off and on again.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;מאפשר אפקטי רטט ונורית עבור בקרי DualShock 4 / DualSense במצב Bluetooth. אפשרות זו אינה נדרשת עבור חיבורים קוויים.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;הפעלת דוחות משופרים עלולה לגרום לכך שלא ניתן יהיה להשתמש בבקר ביישומים אחרים עד לכיבויו והפעלתו מחדש.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
@@ -3559,12 +3586,28 @@ This warning will only be shown once.</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;מקור קלט SDL תומך ברוב הבקרים, והוא האפשרות המועדפת. ייתכן שמצב משופר יידרש עבור פונקציונליות הרטט/נורית של בקרי DualShock 4 / DualSense במצב Bluetooth. ניתן גם לערוך &lt;a href=&quot;ADVANCED_SDL_OPTIONS&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#99ebff;&quot;&gt;אפשרויות מתקדמות&lt;/span&gt;&lt;/a&gt; השולטות בהתנהגות ספציפית למכשיר.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
+        <source>LEDs</source>
+        <translation>נוריות</translation>
+    </message>
+    <message>
+        <source>Enables the SDL input source and detection of controllers.</source>
+        <translation>מפעיל את מקור קלט SDL ואת זיהוי הבקרים.</translation>
+    </message>
+    <message>
         <source>Allows use of the touchpad for DualShock 4 / DualSense controllers as a pointer, for use with lightguns.</source>
         <translation>מאפשר שימוש במשטח המגע של בקרי DualShock 4 / DualSense כמצביע, לשימוש עם אקדחים קלים.</translation>
     </message>
     <message>
         <source>Enable Touchpad</source>
         <translation>הפעלת משטח המגע</translation>
+    </message>
+    <message>
+        <source>Saves supported controllers by serial or device identity so bindings survive port and connection-order changes when possible.</source>
+        <translation>שומר בקרים נתמכים לפי מספר סידורי או זהות התקן, כדי לשמר את הקצאות הלחצנים לאחר שינוי יציאות או סדר החיבור, במידת האפשר.</translation>
+    </message>
+    <message>
+        <source>Use Persistent Device Identifiers</source>
+        <translation>שימוש במזהי התקנים קבועים</translation>
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The XInput source provides support for controllers that use the XInput protocol. This source should &lt;span style=&quot; font-weight:700;&quot;&gt;only&lt;/span&gt; be used if you are using a XInput wrapper library.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
@@ -4054,8 +4097,8 @@ This file is approximately 206KB, do you want to download it now?</source>
         <translation>DuckStation יכול להוריד באופן אוטומטי עטיפות למשחקים שאין להם כרגע עטיפה מוגדרת. איננו מארחים תמונות עטיפה, ועל המשתמש לספק מקור תמונות משלו.</translation>
     </message>
     <message>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Depending on your jurisdiction, &lt;span style=&quot; font-weight:700;&quot;&gt;game covers may be copyrighted&lt;/span&gt;. You are only authorized to use this tool with &lt;span style=&quot; font-weight:700;&quot;&gt;your own servers and images&lt;/span&gt;.&lt;/p&gt;&lt;p&gt;In the box below, specify the URLs to download covers from, with one template URL per line. The following variables are available:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${title}:&lt;/span&gt; Title of the game.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${savetitle}:&lt;/span&gt; Title of the game including the region.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${localizedtitle}:&lt;/span&gt; Localized (native language) title of the game.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${filetitle}:&lt;/span&gt; Name component of the game&apos;s filename.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${serial}:&lt;/span&gt; Serial of the game.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Example:&lt;/span&gt; https://www.example-not-a-real-domain.com/covers/${serial}.jpg&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;בהתאם לתחום השיפוט שלך, &lt;span style=&quot; font-weight:700;&quot;&gt;עטיפות משחק עשויות להיות מוגנות בזכויות יוצרים&lt;/span&gt;. מותר לך להשתמש בכלי זה רק עם &lt;span style=&quot; font-weight:700;&quot;&gt;השרתים והתמונות שלך&lt;/span&gt;.&lt;/p&gt;&lt;p&gt;בתיבה שלהלן, ציין את כתובות ה־URL שמהן יש להוריד עטיפות, עם כתובת תבנית אחת בכל שורה. המשתנים הבאים זמינים:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${title}:&lt;/span&gt; שם המשחק.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${savetitle}:&lt;/span&gt; שם המשחק כולל האזור.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${localizedtitle}:&lt;/span&gt; שם המשחק בתרגום (בשפת המקור).&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${filetitle}:&lt;/span&gt; רכיב השם של קובץ המשחק.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${serial}:&lt;/span&gt; המספר הסידורי של המשחק.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;דוגמה:&lt;/span&gt; https://www.example-not-a-real-domain.com/covers/${serial}.jpg&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Depending on your jurisdiction, &lt;span style=&quot; font-weight:700;&quot;&gt;game covers may be copyrighted&lt;/span&gt;. You are only authorized to use this tool with &lt;span style=&quot; font-weight:700;&quot;&gt;your own servers and images&lt;/span&gt;.&lt;/p&gt;&lt;p&gt;In the box below, specify the URLs to download covers from, with one template URL per line. The following variables are available:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${title}:&lt;/span&gt; Title of the game.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${savetitle}:&lt;/span&gt; Save title for the game, including the region suffix.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${localizedtitle}:&lt;/span&gt; Localized title for the game in its native language.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${filetitle}:&lt;/span&gt; Name component of the game&apos;s filename.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${serial}:&lt;/span&gt; Serial of the game.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Example:&lt;/span&gt; https://www.example-not-a-real-domain.com/covers/${serial}.jpg&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;בהתאם לתחום השיפוט שלך, &lt;span style=&quot; font-weight:700;&quot;&gt;עטיפות משחק עשויות להיות מוגנות בזכויות יוצרים&lt;/span&gt;. מותר לך להשתמש בכלי זה רק עם &lt;span style=&quot; font-weight:700;&quot;&gt;השרתים והתמונות שלך&lt;/span&gt;.&lt;/p&gt;&lt;p&gt;בתיבה שלהלן, ציין את כתובות ה־URL שמהן יש להוריד עטיפות, עם כתובת תבנית אחת בכל שורה. המשתנים הבאים זמינים:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${title}:&lt;/span&gt; שם המשחק.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${savetitle}:&lt;/span&gt; שם השמירה של המשחק, כולל סיומת האזור.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${localizedtitle}:&lt;/span&gt; שם המשחק בשפת המקור שלו.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${filetitle}:&lt;/span&gt; רכיב השם של קובץ המשחק.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${serial}:&lt;/span&gt; המספר הסידורי של המשחק.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;דוגמה:&lt;/span&gt; https://www.example-not-a-real-domain.com/covers/${serial}.jpg&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>By default, the downloaded covers will be saved with the game&apos;s title. If this is not desired, you can check the &quot;Use Serial File Names&quot; box below. Using serials instead of game titles will prevent conflicts when multiple regions of the same game are used.</source>
@@ -4241,6 +4284,17 @@ This file is approximately 206KB, do you want to download it now?</source>
     </message>
 </context>
 <context>
+    <name>DebuggerCallStackModel</name>
+    <message>
+        <source>Address</source>
+        <translation>כתובת</translation>
+    </message>
+    <message>
+        <source>Frame</source>
+        <translation>מסגרת מחסנית</translation>
+    </message>
+</context>
+<context>
     <name>DebuggerRegistersModel</name>
     <message>
         <source>Register</source>
@@ -4267,6 +4321,17 @@ This file is approximately 206KB, do you want to download it now?</source>
     </message>
 </context>
 <context>
+    <name>DebuggerThreadsModel</name>
+    <message>
+        <source>Name</source>
+        <translation>שם</translation>
+    </message>
+    <message>
+        <source>Value</source>
+        <translation>ערך</translation>
+    </message>
+</context>
+<context>
     <name>DebuggerWindow</name>
     <message>
         <source>CPU Debugger</source>
@@ -4279,10 +4344,6 @@ This file is approximately 206KB, do you want to download it now?</source>
     <message>
         <source>Breakpoints</source>
         <translation>נקודות עצירה</translation>
-    </message>
-    <message>
-        <source>toolBar</source>
-        <translation>סרגל</translation>
     </message>
     <message>
         <source>Disassembly</source>
@@ -4343,6 +4404,14 @@ This file is approximately 206KB, do you want to download it now?</source>
     <message>
         <source>Stack</source>
         <translation>מחסנית</translation>
+    </message>
+    <message>
+        <source>Threads</source>
+        <translation>תהליכונים</translation>
+    </message>
+    <message>
+        <source>Call Stack</source>
+        <translation>מחסנית קריאות</translation>
     </message>
     <message>
         <source>Pause/Continue</source>
@@ -4461,6 +4530,10 @@ This file is approximately 206KB, do you want to download it now?</source>
         <translation>מעבר ל&amp;כתובת</translation>
     </message>
     <message>
+        <source>Toolbar</source>
+        <translation>סרגל כלים</translation>
+    </message>
+    <message>
         <source>&amp;Add Breakpoint</source>
         <translation>&amp;הוספת נקודת עצירה</translation>
     </message>
@@ -4514,6 +4587,20 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <source>&amp;Remove</source>
         <translation>&amp;הסרה</translation>
     </message>
+    <message numerus="yes">
+        <source>&amp;Nop %n Instruction(s)</source>
+        <translation>
+            <numerusform>&amp;החלפת פקודה %n ב־NOP</numerusform>
+            <numerusform>&amp;החלפת %n פקודות ב־NOP</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>&amp;Copy %n Instruction(s)</source>
+        <translation>
+            <numerusform>&amp;העתקת פקודה %n</numerusform>
+            <numerusform>&amp;העתקת %n פקודות</numerusform>
+        </translation>
+    </message>
     <message>
         <source>&amp;Follow Load/Store</source>
         <translation>&amp;מעקב אחר טעינה/שמירה</translation>
@@ -4534,9 +4621,12 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <source>Invalid Instruction</source>
         <translation>פקודה לא חוקית</translation>
     </message>
-    <message>
-        <source>Failed to write patched instruction to 0x%1.</source>
-        <translation>נכשל בכתיבת הפקודה המתוקנת ל־0x%1.</translation>
+    <message numerus="yes">
+        <source>Loaded %n saved breakpoint(s).</source>
+        <translation>
+            <numerusform>נטענה נקודת עצירה שמורה %n.</numerusform>
+            <numerusform>נטענו %n נקודות עצירה שמורות.</numerusform>
+        </translation>
     </message>
     <message>
         <source>Patched instruction at 0x%1.</source>
@@ -4563,12 +4653,28 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <translation>&amp;תיקון פקודה</translation>
     </message>
     <message>
-        <source>&amp;Nop Instruction</source>
-        <translation>&amp;פקודת NOP</translation>
-    </message>
-    <message>
         <source>View in &amp;Dump</source>
         <translation>הצגה ב־&amp;Dump</translation>
+    </message>
+    <message>
+        <source>Failed to write one or more patched instructions. Patched %1 of %2 instructions; the first failure was at 0x%3.</source>
+        <translation>כתיבת פקודה מתוקנת אחת או יותר נכשלה. תוקנו %1 מתוך %2 פקודות; הכשל הראשון אירע בכתובת 0x%3.</translation>
+    </message>
+    <message>
+        <source>Patched %1 of %2 selected instructions.</source>
+        <translation>תוקנו %1 מתוך %2 הפקודות שנבחרו.</translation>
+    </message>
+    <message>
+        <source>Patched %1 instructions.</source>
+        <translation>תוקנו %1 פקודות.</translation>
+    </message>
+    <message numerus="yes">
+        <source>Copied %n instruction(s) to the clipboard.</source>
+        <comment>CopyRange</comment>
+        <translation>
+            <numerusform>הועתקה פקודה %n ללוח.</numerusform>
+            <numerusform>הועתקו %n פקודות ללוח.</numerusform>
+        </translation>
     </message>
     <message>
         <source>Invalid search pattern. It should contain hex digits or question marks.</source>
@@ -5146,14 +5252,6 @@ Clicking Reset will restore the serial back to the value scanned from in the dis
 </context>
 <context>
     <name>FullscreenUI</name>
-    <message>
-        <source>${title}: Title of the game.
-${filetitle}: Name component of the game&apos;s filename.
-${serial}: Serial of the game.</source>
-        <translation>${title}: שם המשחק.
-${filetitle}: רכיב השם של קובץ המשחק.
-${serial}: המספר הסידורי של המשחק.</translation>
-    </message>
     <message>
         <source>-</source>
         <translation>-</translation>
@@ -6161,6 +6259,26 @@ Error was:</source>
         <translation> (%u MB בדיסק)</translation>
     </message>
     <message>
+        <source>${filetitle}: Name component of the game&apos;s filename.</source>
+        <translation>${filetitle}: רכיב השם של קובץ המשחק.</translation>
+    </message>
+    <message>
+        <source>${localizedtitle}: Localized title for the game in its native language.</source>
+        <translation>${localizedtitle}: שם המשחק בשפת המקור שלו.</translation>
+    </message>
+    <message>
+        <source>${savetitle}: Save title for the game, including the region suffix.</source>
+        <translation>${savetitle}: שם השמירה של המשחק, כולל סיומת האזור.</translation>
+    </message>
+    <message>
+        <source>${serial}: Serial of the game.</source>
+        <translation>${serial}: המספר הסידורי של המשחק.</translation>
+    </message>
+    <message>
+        <source>${title}: Title of the game.</source>
+        <translation>${title}: שם המשחק.</translation>
+    </message>
+    <message>
         <source>%.1f ms</source>
         <translation>%.1f מילישניות</translation>
     </message>
@@ -6291,6 +6409,10 @@ Do you want to delete the save state and boot the game anyway?</source>
     <message>
         <source>Applies a blur effect to the background when a menu is open to improve readability.</source>
         <translation>מחיל אפקט טשטוש על הרקע כאשר תפריט פתוח כדי לשפר את הקריאות.</translation>
+    </message>
+    <message>
+        <source>Applies the selected sprite texture filter to framebuffer uploads. This can smooth backgrounds in some games while preserving texture data and 24-bit video.</source>
+        <translation>מחיל את מסנן טקסטורות הספרייטים שנבחר על העלאות למאגר הפריימים. פעולה זו יכולה להחליק רקעים במשחקים מסוימים תוך שימור נתוני טקסטורות ווידאו של 24 סיביות.</translation>
     </message>
     <message>
         <source>Are you sure you want to clear all mappings for this controller?
@@ -6561,6 +6683,10 @@ You cannot undo this action.</source>
         <translation>ערך ברירת מחדל</translation>
     </message>
     <message>
+        <source>Default: {}</source>
+        <translation>ברירת מחדל: {}</translation>
+    </message>
+    <message>
         <source>Deinterlacing Mode</source>
         <translation>מצב ביטול שזירה</translation>
     </message>
@@ -6683,6 +6809,10 @@ You cannot undo this action.</source>
     <message>
         <source>Disable Textures</source>
         <translation>השבתת מרקמים</translation>
+    </message>
+    <message>
+        <source>Disable Upscaled Direct Textures</source>
+        <translation>השבתת הגדלת טקסטורות בצבע ישיר</translation>
     </message>
     <message>
         <source>Disable Vertex Lighting</source>
@@ -6929,6 +7059,10 @@ You cannot undo this action.</source>
         <translation>מריץ קדימה במהירות את תהליך הטעינה המוקדם בעת אתחול מהיר, ובכך חוסך זמן. התוצאות עשויות להשתנות בין משחקים.</translation>
     </message>
     <message>
+        <source>Filter Framebuffer Uploads</source>
+        <translation>סינון העלאות למאגר הפריימים</translation>
+    </message>
+    <message>
         <source>Fine Crop Amount</source>
         <translation>כמות חיתוך עדין</translation>
     </message>
@@ -7117,6 +7251,10 @@ You cannot undo this action.</source>
         <translation>שמאל: </translation>
     </message>
     <message>
+        <source>Length: {}</source>
+        <translation>אורך: {}</translation>
+    </message>
+    <message>
         <source>Light</source>
         <translation>בהיר</translation>
     </message>
@@ -7143,6 +7281,10 @@ You cannot undo this action.</source>
     <message>
         <source>Load Preset</source>
         <translation>טעינת קביעה</translation>
+    </message>
+    <message>
+        <source>Loading Game List...</source>
+        <translation>טוען את רשימת המשחקים...</translation>
     </message>
     <message>
         <source>Log File Timestamps</source>
@@ -7189,6 +7331,10 @@ Please check your username and password, and try again.</source>
         <translation>מחזורי האצת חיפוש מרביים</translation>
     </message>
     <message>
+        <source>Maximum: {}</source>
+        <translation>מקסימום: {}</translation>
+    </message>
+    <message>
         <source>Memory Card Busy</source>
         <translation>כרטיס זיכרון בשימוש</translation>
     </message>
@@ -7211,6 +7357,18 @@ Please check your username and password, and try again.</source>
     <message>
         <source>Message Location</source>
         <translation>מיקום הודעה</translation>
+    </message>
+    <message>
+        <source>Minimum Framebuffer Upload Height</source>
+        <translation>גובה מינימלי להעלאה למאגר הפריימים</translation>
+    </message>
+    <message>
+        <source>Minimum Framebuffer Upload Width</source>
+        <translation>רוחב מינימלי להעלאה למאגר הפריימים</translation>
+    </message>
+    <message>
+        <source>Minimum: {}</source>
+        <translation>מינימום: {}</translation>
     </message>
     <message>
         <source>Move Cursor</source>
@@ -7319,6 +7477,14 @@ Please check your username and password, and try again.</source>
     <message>
         <source>On-Screen Display Message Durations</source>
         <translation>משכי הצגת הודעות בתצוגה על המסך</translation>
+    </message>
+    <message>
+        <source>Only filters framebuffer uploads at least this tall. Increase this value to avoid filtering texture data.</source>
+        <translation>מסנן רק העלאות למאגר הפריימים שגובהן לפחות כערך זה. הגדל ערך זה כדי להימנע מסינון נתוני טקסטורות.</translation>
+    </message>
+    <message>
+        <source>Only filters framebuffer uploads at least this wide. Increase this value to avoid filtering texture data.</source>
+        <translation>מסנן רק העלאות למאגר הפריימים שרוחבן לפחות כערך זה. הגדל ערך זה כדי להימנע מסינון נתוני טקסטורות.</translation>
     </message>
     <message>
         <source>Only measured achievements can be pinned.</source>
@@ -7465,8 +7631,16 @@ Please check your username and password, and try again.</source>
         <translation>נורית שחקן SDL DualSense</translation>
     </message>
     <message>
+        <source>SDL Persistent Device Identifiers</source>
+        <translation>מזהי התקנים קבועים של SDL</translation>
+    </message>
+    <message>
         <source>Safe Mode</source>
         <translation>מצב בטוח</translation>
+    </message>
+    <message>
+        <source>Samples 16-bit direct-color textures at native resolution when upscaling. This can fix filtering of FMVs/backgrounds in some games, but may reduce the quality of render-to-texture effects.</source>
+        <translation>דוגם טקסטורות בצבע ישיר של 16 סיביות ברזולוציה המקורית בעת הגדלה. פעולה זו יכולה לתקן סינון של סרטוני FMV או רקעים במשחקים מסוימים, אך עלולה להפחית את איכות האפקטים של רינדור לטקסטורה.</translation>
     </message>
     <message>
         <source>Save</source>
@@ -7503,6 +7677,10 @@ Please check your username and password, and try again.</source>
     <message>
         <source>Save state deleted.</source>
         <translation>מצב השמירה נמחק.</translation>
+    </message>
+    <message>
+        <source>Saves supported controllers by serial or device identity so bindings survive port and connection-order changes when possible.</source>
+        <translation>שומר בקרים נתמכים לפי מספר סידורי או זהות התקן, כדי לשמר את הקצאות הלחצנים לאחר שינוי יציאות או סדר החיבור, במידת האפשר.</translation>
     </message>
     <message>
         <source>Scaled Interlacing</source>
@@ -7617,6 +7795,10 @@ Please check your username and password, and try again.</source>
         <translation>מחליק את המדרגתיות של מרקמים מוגדלים באובייקטים דו־ממדיים.</translation>
     </message>
     <message>
+        <source>Start: {}</source>
+        <translation>התחלה: {}</translation>
+    </message>
+    <message>
         <source>Starts the application in Big Picture Mode instead of the desktop interface.</source>
         <translation>מפעיל את היישום במצב Big Picture במקום בממשק שולחן העבודה.</translation>
     </message>
@@ -7729,6 +7911,10 @@ Please check your username and password, and try again.</source>
         <translation>משתמש בתצורה ספציפית למשחק עבור מקורות קלט. אם מושבת, ייעשה שימוש בתצורה הגלובלית.</translation>
     </message>
     <message>
+        <source>Value: {}</source>
+        <translation>ערך: {}</translation>
+    </message>
+    <message>
         <source>When enabled, DuckStation will track unofficial achievements. Unlocks will be saved locally and not sent to RetroAchievements.</source>
         <translation>כאשר אפשרות זו מופעלת, DuckStation יעקוב אחר הישגים לא רשמיים. פתיחות יישמרו מקומית ולא יישלחו אל RetroAchievements.</translation>
     </message>
@@ -7771,10 +7957,6 @@ Please check your username and password, and try again.</source>
     <message>
         <source>{} unpinned.</source>
         <translation>{} בוטל ההצמדה שלו.</translation>
-    </message>
-    <message>
-        <source>{} | Start: {} | Length: {}</source>
-        <translation>{} | התחלה: {} | אורך: {}</translation>
     </message>
     <message>
         <source>PGXP Geometry Correction</source>
@@ -8805,10 +8987,6 @@ Please check your username and password, and try again.</source>
         <translation>טווח ערכים</translation>
     </message>
     <message>
-        <source>Value: {} | Default: {} | Minimum: {} | Maximum: {}</source>
-        <translation>ערך: {} | ברירת מחדל: {} | מינימום: {} | מקסימום: {}</translation>
-    </message>
-    <message>
         <source>Verify</source>
         <translation>אימות</translation>
     </message>
@@ -9537,6 +9715,16 @@ Are you sure you want to continue?</source>
         <translation>מוגן ב־LibCrypt</translation>
     </message>
     <message>
+        <source>Disable Upscaled Direct Textures</source>
+        <comment>GameDatabase::Trait</comment>
+        <translation>השבתת הגדלת טקסטורות בצבע ישיר</translation>
+    </message>
+    <message>
+        <source>Filter Framebuffer Uploads</source>
+        <comment>GameDatabase::Trait</comment>
+        <translation>סינון העלאות למאגר הפריימים</translation>
+    </message>
+    <message>
         <source>Unknown</source>
         <translation>לא ידוע</translation>
     </message>
@@ -9777,6 +9965,14 @@ Are you sure you want to continue?</source>
         <translation>הרצה מקדימה מרבית של GPU</translation>
     </message>
     <message>
+        <source>Filter Framebuffer Uploads Minimum Width</source>
+        <translation>רוחב מינימלי לסינון העלאות למאגר הפריימים</translation>
+    </message>
+    <message>
+        <source>Filter Framebuffer Uploads Minimum Height</source>
+        <translation>גובה מינימלי לסינון העלאות למאגר הפריימים</translation>
+    </message>
+    <message>
         <source>GPU Line Detect Mode</source>
         <translation>מצב זיהוי שורות של GPU</translation>
     </message>
@@ -9826,6 +10022,11 @@ Are you sure you want to continue?</source>
         <translation>אוסף תקליטורים</translation>
     </message>
     <message>
+        <source>Audio CD</source>
+        <comment>EntryType</comment>
+        <translation>תקליטור שמע</translation>
+    </message>
+    <message>
         <source>PS-EXE</source>
         <comment>EntryType</comment>
         <translation>PS-EXE</translation>
@@ -9849,12 +10050,12 @@ Are you sure you want to continue?</source>
         <translation>סורק את &apos;{}&apos;...</translation>
     </message>
     <message>
-        <source>Unknown</source>
-        <translation>לא ידוע</translation>
+        <source>URL template must contain at least one of ${title}, ${localizedtitle}, ${savetitle}, ${filetitle}, or ${serial}.</source>
+        <translation>תבנית כתובת ה־URL חייבת להכיל לפחות אחד מהמשתנים ${title}, ${localizedtitle}, ${savetitle}, ${filetitle} או ${serial}.</translation>
     </message>
     <message>
-        <source>URL template must contain at least one of ${title}, ${savetitle}, ${filetitle}, or ${serial}.</source>
-        <translation>תבנית כתובת ה־URL חייבת להכיל לפחות אחד מהמשתנים ${title}, ${savetitle}, ${filetitle} או ${serial}.</translation>
+        <source>Unknown</source>
+        <translation>לא ידוע</translation>
     </message>
     <message>
         <source>No URLs to download enumerated.</source>
@@ -10012,6 +10213,14 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <source>Select Directory</source>
         <translation>בחירת תיקייה</translation>
+    </message>
+    <message>
+        <source>Add File...</source>
+        <translation>הוספת קובץ...</translation>
+    </message>
+    <message>
+        <source>Add Folder...</source>
+        <translation>הוספת תיקייה...</translation>
     </message>
 </context>
 <context>
@@ -10210,10 +10419,6 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>:בקרים</translation>
     </message>
     <message>
-        <source>Tracks:</source>
-        <translation>:רצועות</translation>
-    </message>
-    <message>
         <source>Release Info:</source>
         <translation>:פרטי הפצה</translation>
     </message>
@@ -10290,6 +10495,10 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <source>Game Specific Configuration</source>
         <translation>תצורה ספציפית למשחק</translation>
+    </message>
+    <message>
+        <source>Game ID: %1</source>
+        <translation>מזהה משחק: %1</translation>
     </message>
     <message>
         <source>Track %1</source>
@@ -10491,8 +10700,12 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>:מקסימום פריימים בתור</translation>
     </message>
     <message>
-        <source>Texture Modulation Cropping (&quot;Old/v0 GPU&quot;)</source>
-        <translation>חיתוך ויסות טקסטורות (&quot;GPU ישן/v0&quot;)</translation>
+        <source>Filter Framebuffer Uploads</source>
+        <translation>סינון העלאות למאגר הפריימים</translation>
+    </message>
+    <message>
+        <source>Minimum Size:</source>
+        <translation>גודל מינימלי:</translation>
     </message>
     <message>
         <source>Scaled Interlacing</source>
@@ -10501,6 +10714,10 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <source>Software Renderer Readbacks</source>
         <translation>קריאות חוזרות של מרנדר תוכנה</translation>
+    </message>
+    <message>
+        <source>Disable Upscaled Direct Textures</source>
+        <translation>השבתת הגדלת טקסטורות בצבע ישיר</translation>
     </message>
     <message>
         <source>PGXP</source>
@@ -10947,6 +11164,34 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>מגדיל את קנה המידה של דילוג על קווים ברינדור משולב לרזולוציה הפנימית. פעולה זו הופכת את אפקט המסרק לפחות בולט ברזולוציות גבוהות יותר. בדרך כלל בטוח להפעלה.</translation>
     </message>
     <message>
+        <source>Samples 16-bit direct-color textures at native resolution when upscaling. This can fix filtering of FMVs/backgrounds in some games, but may reduce the quality of render-to-texture effects.</source>
+        <translation>דוגם טקסטורות בצבע ישיר של 16 סיביות ברזולוציה המקורית בעת הגדלה. פעולה זו יכולה לתקן סינון של סרטוני FMV או רקעים במשחקים מסוימים, אך עלולה להפחית את איכות האפקטים של רינדור לטקסטורה.</translation>
+    </message>
+    <message>
+        <source>Applies the selected sprite texture filter to framebuffer uploads. This can smooth backgrounds in some games while preserving texture data and 24-bit video.</source>
+        <translation>מחיל את מסנן טקסטורות הספרייטים שנבחר על העלאות למאגר הפריימים. פעולה זו יכולה להחליק רקעים במשחקים מסוימים תוך שימור נתוני טקסטורות ווידאו של 24 סיביות.</translation>
+    </message>
+    <message>
+        <source>Minimum Framebuffer Upload Width</source>
+        <translation>רוחב מינימלי להעלאה למאגר הפריימים</translation>
+    </message>
+    <message>
+        <source>1 px</source>
+        <translation>1 פיקסל</translation>
+    </message>
+    <message>
+        <source>Only filters framebuffer uploads at least this wide. Increase this value to avoid filtering texture data.</source>
+        <translation>מסנן רק העלאות למאגר הפריימים שרוחבן לפחות כערך זה. הגדל ערך זה כדי להימנע מסינון נתוני טקסטורות.</translation>
+    </message>
+    <message>
+        <source>Minimum Framebuffer Upload Height</source>
+        <translation>גובה מינימלי להעלאה למאגר הפריימים</translation>
+    </message>
+    <message>
+        <source>Only filters framebuffer uploads at least this tall. Increase this value to avoid filtering texture data.</source>
+        <translation>מסנן רק העלאות למאגר הפריימים שגובהן לפחות כערך זה. הגדל ערך זה כדי להימנע מסינון נתוני טקסטורות.</translation>
+    </message>
+    <message>
         <source>Runs the software renderer in parallel for VRAM readbacks. On some systems, this may result in greater performance when using graphical enhancements with the hardware renderer.</source>
         <translation>מריץ את המרנדר התוכנתי במקביל עבור קריאות חוזרות של VRAM. במערכות מסוימות הדבר עשוי לשפר ביצועים בעת שימוש בשיפורים גרפיים עם המרנדר החומרתי.</translation>
     </message>
@@ -11117,10 +11362,6 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <source>%1 [Unavailable]</source>
         <translation>%1 [לא זמין]</translation>
-    </message>
-    <message>
-        <source>Use Global Setting</source>
-        <translation>שימוש בהגדרה הגלובלית</translation>
     </message>
     <message>
         <source>%1x MSAA</source>
@@ -11417,14 +11658,6 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>שמירת צילום מסך</translation>
     </message>
     <message>
-        <source>Open Achievement List</source>
-        <translation>פתיחת רשימת הישגים</translation>
-    </message>
-    <message>
-        <source>Open Leaderboard List</source>
-        <translation>פתיחת רשימת לוחות תוצאות</translation>
-    </message>
-    <message>
         <source>System</source>
         <translation>מערכת</translation>
     </message>
@@ -11439,6 +11672,22 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <source>Frame Step</source>
         <translation>צעד פריים</translation>
+    </message>
+    <message>
+        <source>Toggle Pause Menu</source>
+        <translation>פתיחה/סגירה של תפריט ההשהיה</translation>
+    </message>
+    <message>
+        <source>Toggle Cheat List</source>
+        <translation>פתיחה/סגירה של רשימת הצ&apos;יטים</translation>
+    </message>
+    <message>
+        <source>Toggle Achievement List</source>
+        <translation>פתיחה/סגירה של רשימת ההישגים</translation>
+    </message>
+    <message>
+        <source>Toggle Leaderboard List</source>
+        <translation>פתיחה/סגירה של רשימת לוחות התוצאות</translation>
     </message>
     <message>
         <source>Rewind</source>
@@ -11511,10 +11760,6 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <source>Interface</source>
         <translation>ממשק</translation>
-    </message>
-    <message>
-        <source>Open Cheat Settings</source>
-        <translation>פתיחת הגדרות צ&apos;יטים</translation>
     </message>
     <message>
         <source>Fast Forward (Hold)</source>
@@ -14368,16 +14613,12 @@ Error: {1}</source>
         <translation>פרמוט כרטיס</translation>
     </message>
     <message>
-        <source>Import File...</source>
-        <translation>ייבוא קובץ...</translation>
-    </message>
-    <message>
-        <source>Import Card...</source>
-        <translation>ייבוא כרטיס...</translation>
-    </message>
-    <message>
         <source>Save</source>
         <translation>שמירה</translation>
+    </message>
+    <message>
+        <source>Import...</source>
+        <translation>ייבוא...</translation>
     </message>
     <message numerus="yes">
         <source>%n block(s) free</source>
@@ -14393,6 +14634,10 @@ Error: {1}</source>
     <message>
         <source>Failed to load memory card: %1</source>
         <translation>טעינת כרטיס הזיכרון נכשלה: %1</translation>
+    </message>
+    <message>
+        <source>Select Single Save File</source>
+        <translation>בחר קובץ שמירה יחיד</translation>
     </message>
     <message>
         <source>Extract Animated Icon</source>
@@ -14415,6 +14660,14 @@ Error: {1}</source>
 %2</source>
         <translation>שינוי שם קובץ השמירה %1 נכשל:
 %2</translation>
+    </message>
+    <message>
+        <source>Import Single Save File...</source>
+        <translation>ייבוא קובץ שמירה יחיד...</translation>
+    </message>
+    <message>
+        <source>Import Entire Memory Card...</source>
+        <translation>ייבוא כרטיס זיכרון שלם...</translation>
     </message>
     <message>
         <source>Failed to import memory card from %1:
@@ -14463,10 +14716,6 @@ Error: {1}</source>
     <message>
         <source>Failed to undelete file %1. The file may have been partially overwritten by another save.</source>
         <translation>ביטול מחיקת הקובץ %1 נכשל. ייתכן שהקובץ נדרס חלקית על ידי שמירה אחרת.</translation>
-    </message>
-    <message>
-        <source>Select Single Savefile</source>
-        <translation>בחר קובץ שמירה יחיד</translation>
     </message>
     <message>
         <source>Select Import File</source>
@@ -15238,92 +15487,25 @@ Error: {1}</source>
         <source>Sets scaling for left trigger.</source>
         <translation>מגדיר את קנה המידה של ההדק השמאלי.</translation>
     </message>
-</context>
-<context>
-    <name>NeGconRumble</name>
-    <message>
-        <source>D-Pad Up</source>
-        <translation>משטח־כיוון למעלה</translation>
-    </message>
-    <message>
-        <source>D-Pad Right</source>
-        <translation>משטח־כיוון ימינה</translation>
-    </message>
-    <message>
-        <source>D-Pad Down</source>
-        <translation>משטח־כיוון למטה</translation>
-    </message>
-    <message>
-        <source>D-Pad Left</source>
-        <translation>משטח־כיוון שמאלה</translation>
-    </message>
-    <message>
-        <source>Start</source>
-        <translation>התחלה</translation>
-    </message>
-    <message>
-        <source>A Button</source>
-        <translation>כפתור A</translation>
-    </message>
-    <message>
-        <source>B Button</source>
-        <translation>כפתור B</translation>
-    </message>
-    <message>
-        <source>I Button</source>
-        <translation>כפתור I</translation>
-    </message>
-    <message>
-        <source>II Button</source>
-        <translation>כפתור II</translation>
-    </message>
-    <message>
-        <source>Left Trigger</source>
-        <translation>הדק שמאלי</translation>
-    </message>
-    <message>
-        <source>Right Trigger</source>
-        <translation>הדק ימני</translation>
-    </message>
-    <message>
-        <source>Steering (Twist) Left</source>
-        <translation>היגוי (סיבוב) שמאלה</translation>
-    </message>
-    <message>
-        <source>Steering (Twist) Right</source>
-        <translation>היגוי (סיבוב) ימינה</translation>
-    </message>
     <message>
         <source>Analog Toggle</source>
         <translation>החלפת מצב אנלוגי</translation>
     </message>
     <message>
-        <source>Disable Simultaneous Opposing Cardinal Directions</source>
-        <translation>השבת כיוונים מנוגדים בו־זמנית</translation>
+        <source>Large Motor</source>
+        <translation>מנוע גדול</translation>
     </message>
     <message>
-        <source>Prevents concurrent left/right or up/down inputs from being presented to the game.</source>
-        <translation>מונע מהקלטים שמאלה/ימינה או למעלה/למטה בו־זמנית להישלח למשחק.</translation>
+        <source>Small Motor</source>
+        <translation>מנוע קטן</translation>
     </message>
     <message>
-        <source>Steering Axis Deadzone</source>
-        <translation>אזור מת של ציר ההיגוי</translation>
-    </message>
-    <message>
-        <source>Sets deadzone size for steering axis.</source>
-        <translation>מגדיר את גודל האזור המת של ציר ההיגוי.</translation>
-    </message>
-    <message>
-        <source>Steering Axis Sensitivity</source>
-        <translation>רגישות ציר ההיגוי</translation>
-    </message>
-    <message>
-        <source>Sets the steering axis scaling factor.</source>
-        <translation>מגדיר את גורם קנה המידה של ציר ההיגוי.</translation>
+        <source>Mode LED</source>
+        <translation>נורית מצב</translation>
     </message>
     <message>
         <source>Large Motor Vibration Bias</source>
-        <translation>הטיית מנוע הרטט הגדול</translation>
+        <translation>הטיית הרטט של המנוע הגדול</translation>
     </message>
     <message>
         <source>Sets the bias value for the large vibration motor. If vibration in some games is too weak or not functioning, try increasing this value. Negative values will decrease the intensity of vibration.</source>
@@ -15331,7 +15513,7 @@ Error: {1}</source>
     </message>
     <message>
         <source>Small Motor Vibration Bias</source>
-        <translation>הטיית מנוע הרטט הקטן</translation>
+        <translation>הטיית רטט של המנוע הקטן</translation>
     </message>
     <message>
         <source>Sets the bias value for the small vibration motor. If vibration in some games is too weak or not functioning, try increasing this value. Negative values will decrease the intensity of vibration.</source>
@@ -16170,6 +16352,22 @@ Error: {1}</source>
 <context>
     <name>QtHost</name>
     <message>
+        <source>We have detected that LD_LIBRARY_PATH has been set to the following value:
+
+%1
+
+This will likely prevent DuckStation from working correctly. You should modify your environment to leave LD_LIBRARY_PATH unset.</source>
+        <translation>זיהינו שהמשתנה LD_LIBRARY_PATH הוגדר לערך הבא:
+
+%1
+
+הגדרה זו כנראה תמנע מ־DuckStation לפעול כראוי. עליך לשנות את סביבת העבודה כך ש־LD_LIBRARY_PATH לא יהיה מוגדר.</translation>
+    </message>
+    <message>
+        <source>Don&apos;t show again</source>
+        <translation>אל תציג שוב</translation>
+    </message>
+    <message>
         <source>Would you like to create a launcher shortcut for DuckStation?
 
 This will add DuckStation to your application menu, allowing you to launch it more easily.
@@ -16843,19 +17041,19 @@ Do you want to create this directory?</source>
         <translation>PAL (אירופה, אוסטרליה)</translation>
     </message>
     <message>
-        <source>NTSC-J (Japan)</source>
+        <source>NTSC-J</source>
         <comment>DiscRegion</comment>
-        <translation>NTSC-J (יפן)</translation>
+        <translation>NTSC-J</translation>
     </message>
     <message>
-        <source>NTSC-U/C (US, Canada)</source>
+        <source>NTSC-U/C</source>
         <comment>DiscRegion</comment>
-        <translation>NTSC-U/C (ארה&quot;ב, קנדה)</translation>
+        <translation>NTSC-U/C</translation>
     </message>
     <message>
-        <source>PAL (Europe, Australia)</source>
+        <source>PAL</source>
         <comment>DiscRegion</comment>
-        <translation>PAL (אירופה, אוסטרליה)</translation>
+        <translation>PAL</translation>
     </message>
     <message>
         <source>Other</source>
@@ -16958,6 +17156,36 @@ Do you want to create this directory?</source>
         <translation>JINC2 (איטי, ללא מיזוג קצוות)</translation>
     </message>
     <message>
+        <source>Monotonic Cubic (Very Slow)</source>
+        <comment>GPUTextureFilter</comment>
+        <translation>קובי מונוטוני (איטי מאוד)</translation>
+    </message>
+    <message>
+        <source>Monotonic Cubic (Very Slow, No Edge Blending)</source>
+        <comment>GPUTextureFilter</comment>
+        <translation>קובי מונוטוני (איטי מאוד, ללא מיזוג קצוות)</translation>
+    </message>
+    <message>
+        <source>Adaptive Diagonal (Slow)</source>
+        <comment>GPUTextureFilter</comment>
+        <translation>אלכסוני מסתגל (איטי)</translation>
+    </message>
+    <message>
+        <source>Adaptive Diagonal (Slow, No Edge Blending)</source>
+        <comment>GPUTextureFilter</comment>
+        <translation>אלכסוני מסתגל (איטי, ללא מיזוג קצוות)</translation>
+    </message>
+    <message>
+        <source>DCCI (Extremely Slow)</source>
+        <comment>GPUTextureFilter</comment>
+        <translation>DCCI (איטי ביותר)</translation>
+    </message>
+    <message>
+        <source>DCCI (Extremely Slow, No Edge Blending)</source>
+        <comment>GPUTextureFilter</comment>
+        <translation>DCCI (איטי ביותר, ללא מיזוג קצוות)</translation>
+    </message>
+    <message>
         <source>xBR (Very Slow)</source>
         <comment>GPUTextureFilter</comment>
         <translation>xBR (איטי מאוד)</translation>
@@ -16966,6 +17194,11 @@ Do you want to create this directory?</source>
         <source>xBR (Very Slow, No Edge Blending)</source>
         <comment>GPUTextureFilter</comment>
         <translation>xBR (איטי מאוד, ללא מיזוג קצוות)</translation>
+    </message>
+    <message>
+        <source>Sharp Bilinear</source>
+        <comment>GPUTextureFilter</comment>
+        <translation>ביליניארי חד</translation>
     </message>
     <message>
         <source>Scale2x (EPX)</source>
@@ -18295,6 +18528,10 @@ Do you wish to continue?</source>
 עיין בקובץ README לקבלת הוראות להוספת קובץ SBI.
 
 האם ברצונך להמשיך?</translation>
+    </message>
+    <message>
+        <source>This save state was created with a different console region, and may be unstable.</source>
+        <translation>מצב שמירה זה נוצר עם אזור קונסולה אחר, ועלול להיות לא יציב.</translation>
     </message>
     <message>
         <source>This save state was created with a different BIOS. This may cause stability issues.</source>

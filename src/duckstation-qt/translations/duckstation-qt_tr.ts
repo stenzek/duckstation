@@ -190,8 +190,16 @@ Zor (Hardcore) modunu açmak ister misiniz?</translation>
         <translation>Rozetleri Önceden İndir</translation>
     </message>
     <message>
+        <source>Reset Achievement Notification Duration</source>
+        <translation>Başarım Bildirimi Süresini Sıfırla</translation>
+    </message>
+    <message>
         <source>Show Leaderboard Notifications</source>
         <translation>Lider Tahtası Bildirimlerini Göster</translation>
+    </message>
+    <message>
+        <source>Reset Leaderboard Notification Duration</source>
+        <translation>Lider Tahtası Bildirimi Süresini Sıfırla</translation>
     </message>
     <message>
         <source>Show Leaderboard Trackers</source>
@@ -268,6 +276,18 @@ Zor (Hardcore) modunu açmak ister misiniz?</translation>
     <message>
         <source>Displays popup messages on events such as achievement unlocks and game completion.</source>
         <translation>Başarım kazanılması ve oyunun bitirlmesi durumlarında ekrana mesaj gönderir.</translation>
+    </message>
+    <message>
+        <source>N/A</source>
+        <translation>Yok</translation>
+    </message>
+    <message>
+        <source>Resets the duration to the global setting.</source>
+        <translation>Süreyi genel ayardaki değere sıfırlar.</translation>
+    </message>
+    <message>
+        <source>Resets the duration to the default.</source>
+        <translation>Süreyi varsayılan değere sıfırlar.</translation>
     </message>
     <message>
         <source>Displays popup messages when starting, submitting, or failing a leaderboard challenge.</source>
@@ -396,14 +416,12 @@ Belirteç %2 oluşturuldu</translation>
         <translation>Aktifleştirildiğinde, başarımlar o oturumda hiç kazanılmamış gibi davranılır.</translation>
     </message>
     <message>
+        <source> seconds</source>
+        <translation> saniye</translation>
+    </message>
+    <message>
         <source>When enabled, DuckStation will assume all achievements are locked and not send any unlock notifications to the server.</source>
         <translation>Etkinleştirildiğinde, Duckstation tüm başarımları kilitli kabul edip sunucuya başarım elde edilme verisi göndermez.</translation>
-    </message>
-    <message numerus="yes">
-        <source>%n seconds</source>
-        <translation>
-            <numerusform>%n saniye</numerusform>
-        </translation>
     </message>
     <message>
         <source>Logout</source>
@@ -427,10 +445,6 @@ Belirteç %2 oluşturuldu</translation>
     <message>
         <source>Resuming state</source>
         <translation>Durumdan Devam Ediliyor</translation>
-    </message>
-    <message>
-        <source>{} (Unofficial)</source>
-        <translation>{} (Üçüncü Parti)</translation>
     </message>
     <message>
         <source>Leaderboard attempt started.</source>
@@ -1153,14 +1167,6 @@ Okunmamış mesajlar: {}</translation>
         <translation>Halka</translation>
     </message>
     <message>
-        <source>Controller {} is locked to analog mode by the game.</source>
-        <translation>Kol {} oyun tarafından analog moduna alındı.</translation>
-    </message>
-    <message>
-        <source>Controller {} is locked to digital mode by the game.</source>
-        <translation>Kol {} oyun tarafından dijital moduna alında.</translation>
-    </message>
-    <message>
         <source>D-Pad Up</source>
         <translation>Yukarı Tuşu</translation>
     </message>
@@ -1207,14 +1213,6 @@ Okunmamış mesajlar: {}</translation>
     <message>
         <source>R3</source>
         <translation>Sağ Analog Tuş R3</translation>
-    </message>
-    <message>
-        <source>Controller {} switched to analog mode.</source>
-        <translation>Kol {} analog moda geçirildi.</translation>
-    </message>
-    <message>
-        <source>Controller {} switched to digital mode.</source>
-        <translation>Kol {} dijital moda geçirildi.</translation>
     </message>
     <message>
         <source>Left Stick Left</source>
@@ -1383,10 +1381,6 @@ Okunmamış mesajlar: {}</translation>
     <message>
         <source>Sets the analog stick axis scaling factor. A value between 130% and 140% is recommended when using recent controllers, e.g. DualShock 4, Xbox One Controller.</source>
         <translation>Analog çubuğun eksen ölçeğini ayarlar. Şu iki değer arası 130% ve 140% günümüz kollarını kullanırken tavsiye edilir mesela DualShock 4 ve Xbox One Kolu.</translation>
-    </message>
-    <message>
-        <source>Mode LED</source>
-        <translation>Mod LED&apos;i</translation>
     </message>
 </context>
 <context>
@@ -1627,6 +1621,10 @@ Okunmamış mesajlar: {}</translation>
         <translation>CD Müziğini Kapat</translation>
     </message>
     <message>
+        <source>Reset Output Latency</source>
+        <translation>Çıkış Gecikmesini Sıfırla</translation>
+    </message>
+    <message>
         <source>Maximum Latency: 0 ms (0 ms stretch + 0 ms buffer + 0 ms output)</source>
         <translation>Maksimum Gecikme: 0 ms (0 ms esnetme + 0 ms tampon + 0 ms çıkış)</translation>
     </message>
@@ -1685,6 +1683,10 @@ Okunmamış mesajlar: {}</translation>
     <message>
         <source>%</source>
         <translation>%</translation>
+    </message>
+    <message>
+        <source> ms</source>
+        <translation> ms</translation>
     </message>
     <message>
         <source>%1 ms</source>
@@ -1829,10 +1831,6 @@ Okunmamış mesajlar: {}</translation>
     <message>
         <source>Maximum Latency: %1 ms (minimum output latency unknown)</source>
         <translation>Maksimum Gecikme: %1 ms (minimum çıktı latency/gecikme bilinmiyor)</translation>
-    </message>
-    <message>
-        <source>%1%</source>
-        <translation>%1%</translation>
     </message>
 </context>
 <context>
@@ -2215,6 +2213,24 @@ WAV dosyaları 16 bit stereo olmalı ve 44100 Hz örnekleme hızı kullanmalıd�
 Your dump may be corrupted, or the physical disc is scratched.</source>
         <translation>Oyun muhtemelen şimdi çökecek.
 Dökümünüz bozulmuş olabilir veya fiziksel disk çizilmiştir.</translation>
+    </message>
+</context>
+<context>
+    <name>CPU</name>
+    <message>
+        <source>Execute</source>
+        <comment>BreakpointType</comment>
+        <translation>Yürütme</translation>
+    </message>
+    <message>
+        <source>Read</source>
+        <comment>BreakpointType</comment>
+        <translation>Okuma</translation>
+    </message>
+    <message>
+        <source>Write</source>
+        <comment>BreakpointType</comment>
+        <translation>Yazma</translation>
     </message>
 </context>
 <context>
@@ -2874,6 +2890,14 @@ Bu son uyarıdır.</translation>
         <translation>Kol {} dijital moda geçirildi.</translation>
     </message>
     <message>
+        <source>Controller {} is locked to analog mode by the game.</source>
+        <translation>Kol {} oyun tarafından analog moduna kilitlendi.</translation>
+    </message>
+    <message>
+        <source>Controller {} is locked to digital mode by the game.</source>
+        <translation>Kol {} oyun tarafından dijital moduna kilitlendi.</translation>
+    </message>
+    <message>
         <source>Controller {} switched to JogCon mode.</source>
         <translation>Kol {} JogCon moduna alındı..</translation>
     </message>
@@ -2935,6 +2959,14 @@ Bu son uyarıdır.</translation>
     <message>
         <source>Axes</source>
         <translation>Eksenler</translation>
+    </message>
+    <message>
+        <source>Multiple Devices</source>
+        <translation>Birden Çok Cihaz</translation>
+    </message>
+    <message>
+        <source>%1 (%2)</source>
+        <translation>%1 (%2)</translation>
     </message>
     <message>
         <source>Buttons</source>
@@ -3525,10 +3557,6 @@ Bu son uyarıdır.</translation>
         <translation>Yapılandırılabilir LED&apos;lere sahip denetleyicilerin LED ayarlarını düzenler.</translation>
     </message>
     <message>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enables the SDL input source and detection of controllers.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;SDL giriş kaynağını ve denetleyici algılamayı etkinleştirir.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
-    </message>
-    <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Allows rumble and LED effects for DualShock 4 / DualSense controllers in Bluetooth mode. This option is not required for wired connections.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Enabling enhanced reports may result in your controller being unusable in other applications until it is turned off and on again.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Bluetooth modundaki DualShock 4 / DualSense denetleyicileri için titreşim ve LED efektlerine izin verir. Bu seçenek kablolu bağlantılar için gerekli değildir.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Geliştirilmiş raporların etkinleştirilmesi, denetleyiciniz tekrar kapatılıp açılana kadar diğer uygulamalarda kullanılamamasına neden olabilir.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
@@ -3541,8 +3569,24 @@ Bu son uyarıdır.</translation>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;SDL giriş kaynağı çoğu denetleyiciyi destekler ve tercih edilen seçenektir. Bluetooth modundaki DualShock 4 / DualSense kollarında Titreşim/LED işlevi için geliştirilmiş mod gerekebilir. Ayrıca cihaza özgü davranışı denetleyen &lt;a href=&quot;ADVANCED_SDL_OPTIONS&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#99ebff;&quot;&gt;gelişmiş seçenekleri&lt;/span&gt;&lt;/a&gt; düzenleyebilirsiniz.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
+        <source>LEDs</source>
+        <translation>LED&apos;ler</translation>
+    </message>
+    <message>
+        <source>Enables the SDL input source and detection of controllers.</source>
+        <translation>SDL giriş kaynağını ve denetleyici algılamayı etkinleştirir.</translation>
+    </message>
+    <message>
         <source>Allows use of the touchpad for DualShock 4 / DualSense controllers as a pointer, for use with lightguns.</source>
         <translation>DualShock 4 / DualSense denetleyicilerindeki dokunmatik yüzeyin ışık tabancalarıyla kullanım için işaretçi olarak kullanılmasına izin verir.</translation>
+    </message>
+    <message>
+        <source>Saves supported controllers by serial or device identity so bindings survive port and connection-order changes when possible.</source>
+        <translation>Desteklenen denetleyicileri seri numarasına veya cihaz kimliğine göre kaydeder; böylece bağlantı noktası ve bağlanma sırası değiştiğinde tuş atamaları mümkün olduğunca korunur.</translation>
+    </message>
+    <message>
+        <source>Use Persistent Device Identifiers</source>
+        <translation>Kalıcı Cihaz Tanımlayıcılarını Kullan</translation>
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The XInput source provides support for controllers that use the XInput protocol. This source should &lt;span style=&quot; font-weight:700;&quot;&gt;only&lt;/span&gt; be used if you are using a XInput wrapper library.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
@@ -4035,8 +4079,8 @@ Bu dosya aşşağı yukarı 206KB&apos;dır. Şimdi indirmek ister misiniz?</tra
         <translation>DuckStation, henüz kapak atanmamış oyunların kapaklarını otomatik olarak indirebilir. Hiçbir kapak görselini biz barındırmıyoruz; görseller için kendi kaynağınızı sağlamalısınız.</translation>
     </message>
     <message>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Depending on your jurisdiction, &lt;span style=&quot; font-weight:700;&quot;&gt;game covers may be copyrighted&lt;/span&gt;. You are only authorized to use this tool with &lt;span style=&quot; font-weight:700;&quot;&gt;your own servers and images&lt;/span&gt;.&lt;/p&gt;&lt;p&gt;In the box below, specify the URLs to download covers from, with one template URL per line. The following variables are available:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${title}:&lt;/span&gt; Title of the game.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${savetitle}:&lt;/span&gt; Title of the game including the region.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${localizedtitle}:&lt;/span&gt; Localized (native language) title of the game.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${filetitle}:&lt;/span&gt; Name component of the game&apos;s filename.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${serial}:&lt;/span&gt; Serial of the game.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Example:&lt;/span&gt; https://www.example-not-a-real-domain.com/covers/${serial}.jpg&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Yargı alanınıza bağlı olarak &lt;span style=&quot; font-weight:700;&quot;&gt;oyun kapakları telif hakkına tabi olabilir&lt;/span&gt;. Bu aracı yalnızca &lt;span style=&quot; font-weight:700;&quot;&gt;kendi sunucularınız ve görsellerinizle&lt;/span&gt; kullanmaya yetkilisiniz.&lt;/p&gt;&lt;p&gt;Aşağıdaki kutuya kapakların indirileceği URL&apos;leri, her satıra bir şablon URL gelecek şekilde belirtin. Aşağıdaki değişkenler kullanılabilir:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${title}:&lt;/span&gt; Oyunun adı.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${savetitle}:&lt;/span&gt; Bölge bilgisi dahil oyunun adı.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${localizedtitle}:&lt;/span&gt; Oyunun yerelleştirilmiş (yerel dildeki) adı.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${filetitle}:&lt;/span&gt; Oyunun dosya adındaki ad bileşeni.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${serial}:&lt;/span&gt; Oyunun seri numarası.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Örnek:&lt;/span&gt; https://www.example-not-a-real-domain.com/covers/${serial}.jpg&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Depending on your jurisdiction, &lt;span style=&quot; font-weight:700;&quot;&gt;game covers may be copyrighted&lt;/span&gt;. You are only authorized to use this tool with &lt;span style=&quot; font-weight:700;&quot;&gt;your own servers and images&lt;/span&gt;.&lt;/p&gt;&lt;p&gt;In the box below, specify the URLs to download covers from, with one template URL per line. The following variables are available:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${title}:&lt;/span&gt; Title of the game.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${savetitle}:&lt;/span&gt; Save title for the game, including the region suffix.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${localizedtitle}:&lt;/span&gt; Localized title for the game in its native language.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${filetitle}:&lt;/span&gt; Name component of the game&apos;s filename.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${serial}:&lt;/span&gt; Serial of the game.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Example:&lt;/span&gt; https://www.example-not-a-real-domain.com/covers/${serial}.jpg&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Yargı alanınıza bağlı olarak &lt;span style=&quot; font-weight:700;&quot;&gt;oyun kapakları telif hakkına tabi olabilir&lt;/span&gt;. Bu aracı yalnızca &lt;span style=&quot; font-weight:700;&quot;&gt;kendi sunucularınız ve görsellerinizle&lt;/span&gt; kullanmaya yetkilisiniz.&lt;/p&gt;&lt;p&gt;Aşağıdaki kutuya kapakların indirileceği URL&apos;leri, her satıra bir şablon URL gelecek şekilde belirtin. Aşağıdaki değişkenler kullanılabilir:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${title}:&lt;/span&gt; Oyunun adı.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${savetitle}:&lt;/span&gt; Bölge son eki dahil oyunun kayıt adı.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${localizedtitle}:&lt;/span&gt; Oyunun kendi dilindeki yerelleştirilmiş adı.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${filetitle}:&lt;/span&gt; Oyunun dosya adındaki ad bileşeni.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${serial}:&lt;/span&gt; Oyunun seri numarası.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Örnek:&lt;/span&gt; https://www.example-not-a-real-domain.com/covers/${serial}.jpg&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>By default, the downloaded covers will be saved with the game&apos;s title. If this is not desired, you can check the &quot;Use Serial File Names&quot; box below. Using serials instead of game titles will prevent conflicts when multiple regions of the same game are used.</source>
@@ -4222,6 +4266,17 @@ Bu dosya aşşağı yukarı 206KB&apos;dır. Şimdi indirmek ister misiniz?</tra
     </message>
 </context>
 <context>
+    <name>DebuggerCallStackModel</name>
+    <message>
+        <source>Address</source>
+        <translation>Adres</translation>
+    </message>
+    <message>
+        <source>Frame</source>
+        <translation>Yığın Çerçevesi</translation>
+    </message>
+</context>
+<context>
     <name>DebuggerRegistersModel</name>
     <message>
         <source>Register</source>
@@ -4248,6 +4303,17 @@ Bu dosya aşşağı yukarı 206KB&apos;dır. Şimdi indirmek ister misiniz?</tra
     </message>
 </context>
 <context>
+    <name>DebuggerThreadsModel</name>
+    <message>
+        <source>Name</source>
+        <translation>Ad</translation>
+    </message>
+    <message>
+        <source>Value</source>
+        <translation>Değer</translation>
+    </message>
+</context>
+<context>
     <name>DebuggerWindow</name>
     <message>
         <source>CPU Debugger</source>
@@ -4260,10 +4326,6 @@ Bu dosya aşşağı yukarı 206KB&apos;dır. Şimdi indirmek ister misiniz?</tra
     <message>
         <source>Breakpoints</source>
         <translation>Breakpoints</translation>
-    </message>
-    <message>
-        <source>toolBar</source>
-        <translation>toolBar</translation>
     </message>
     <message>
         <source>Disassembly</source>
@@ -4324,6 +4386,14 @@ Bu dosya aşşağı yukarı 206KB&apos;dır. Şimdi indirmek ister misiniz?</tra
     <message>
         <source>Stack</source>
         <translation>Stack</translation>
+    </message>
+    <message>
+        <source>Threads</source>
+        <translation>İş Parçacıkları</translation>
+    </message>
+    <message>
+        <source>Call Stack</source>
+        <translation>Çağrı Yığını</translation>
     </message>
     <message>
         <source>Pause/Continue</source>
@@ -4442,6 +4512,10 @@ Bu dosya aşşağı yukarı 206KB&apos;dır. Şimdi indirmek ister misiniz?</tra
         <translation>Go To &amp;Address</translation>
     </message>
     <message>
+        <source>Toolbar</source>
+        <translation>Araç Çubuğu</translation>
+    </message>
+    <message>
         <source>&amp;Add Breakpoint</source>
         <translation>&amp;Add Breakpoint</translation>
     </message>
@@ -4500,10 +4574,6 @@ This file can be several gigabytes, so be aware of SSD wear.</translation>
         <translation>&amp;Yönergeyi Yamala</translation>
     </message>
     <message>
-        <source>&amp;Nop Instruction</source>
-        <translation>&amp;Nop Yönergesi</translation>
-    </message>
-    <message>
         <source>&amp;Follow Load/Store</source>
         <translation>&amp;Follow Load/Store</translation>
     </message>
@@ -4522,10 +4592,6 @@ This file can be several gigabytes, so be aware of SSD wear.</translation>
     <message>
         <source>Invalid Instruction</source>
         <translation>Geçersiz Yönerge</translation>
-    </message>
-    <message>
-        <source>Failed to write patched instruction to 0x%1.</source>
-        <translation>Yamalanmış yönerge 0x%1 adresine yazılamadı.</translation>
     </message>
     <message>
         <source>Patched instruction at 0x%1.</source>
@@ -4547,9 +4613,40 @@ This file can be several gigabytes, so be aware of SSD wear.</translation>
         <source>Failed to add step-out breakpoint, are you in a valid function?</source>
         <translation>Failed to add step-out breakpoint, are you in a valid function?</translation>
     </message>
+    <message numerus="yes">
+        <source>&amp;Nop %n Instruction(s)</source>
+        <translation>
+            <numerusform>%n Yönergeyi &amp;Nop ile Değiştir</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>&amp;Copy %n Instruction(s)</source>
+        <translation>
+            <numerusform>%n Yönergeyi &amp;Kopyala</numerusform>
+        </translation>
+    </message>
     <message>
         <source>View in &amp;Dump</source>
         <translation>View in &amp;Dump</translation>
+    </message>
+    <message>
+        <source>Failed to write one or more patched instructions. Patched %1 of %2 instructions; the first failure was at 0x%3.</source>
+        <translation>Bir veya daha fazla yamalanmış yönerge yazılamadı. %2 yönergeden %1 tanesi yamalandı; ilk hata 0x%3 adresinde oluştu.</translation>
+    </message>
+    <message>
+        <source>Patched %1 of %2 selected instructions.</source>
+        <translation>Seçilen %2 yönergeden %1 tanesi yamalandı.</translation>
+    </message>
+    <message>
+        <source>Patched %1 instructions.</source>
+        <translation>%1 yönerge yamalandı.</translation>
+    </message>
+    <message numerus="yes">
+        <source>Copied %n instruction(s) to the clipboard.</source>
+        <comment>CopyRange</comment>
+        <translation>
+            <numerusform>%n yönerge panoya kopyalandı.</numerusform>
+        </translation>
     </message>
     <message>
         <source>Invalid search pattern. It should contain hex digits or question marks.</source>
@@ -4566,6 +4663,12 @@ This file can be several gigabytes, so be aware of SSD wear.</translation>
     <message>
         <source>Pattern found at 0x%1.</source>
         <translation>Pattern found at 0x%1.</translation>
+    </message>
+    <message numerus="yes">
+        <source>Loaded %n saved breakpoint(s).</source>
+        <translation>
+            <numerusform>%n kayıtlı kesme noktası yüklendi.</numerusform>
+        </translation>
     </message>
     <message>
         <source>Invalid address. It should be in hex (0x12345678 or 12345678)</source>
@@ -5318,6 +5421,10 @@ Sıfırla&apos;ya tıklamak, seri numarasını disk görüntüsünden taranan de
         <translation>SBI Dosyası Olmadan Başlatmayı Etkinleştir</translation>
     </message>
     <message>
+        <source>Applies the selected sprite texture filter to framebuffer uploads. This can smooth backgrounds in some games while preserving texture data and 24-bit video.</source>
+        <translation>Seçilen sprite doku filtresini kare arabelleğine yapılan yüklemelere uygular. Bu, doku verilerini ve 24 bit videoyu korurken bazı oyunlarda arka planları yumuşatabilir.</translation>
+    </message>
+    <message>
         <source>Apply Image Patches</source>
         <translation>CD Yamalarını Uygula</translation>
     </message>
@@ -5714,6 +5821,10 @@ Bu işlemi geri alamazsınız.</translation>
         <translation>Varsayılan: Açık</translation>
     </message>
     <message>
+        <source>Default: {}</source>
+        <translation>Varsayılan: {}</translation>
+    </message>
+    <message>
         <source>Delete</source>
         <translation>Sil</translation>
     </message>
@@ -5836,6 +5947,10 @@ Bu işlemi geri alamazsınız.</translation>
     <message>
         <source>Disable Subdirectory Scanning</source>
         <translation>Alt Dizin Taramayı Kapat</translation>
+    </message>
+    <message>
+        <source>Disable Upscaled Direct Textures</source>
+        <translation>Büyütülmüş Doğrudan Renkli Dokuları Devre Dışı Bırak</translation>
     </message>
     <message>
         <source>Disabled</source>
@@ -6028,6 +6143,10 @@ Hata şuydu:</translation>
         <translation>Dosya İsmi</translation>
     </message>
     <message>
+        <source>Filter Framebuffer Uploads</source>
+        <translation>Kare Arabelleğine Yapılan Yüklemeleri Filtrele</translation>
+    </message>
+    <message>
         <source>Forces a full rescan of all games previously identified.</source>
         <translation>Eklenen tüm oyunların tekrardan taranmasını zorlar.</translation>
     </message>
@@ -6188,6 +6307,10 @@ Hata şuydu:</translation>
         <translation>Lider Tahtaları</translation>
     </message>
     <message>
+        <source>Length: {}</source>
+        <translation>Uzunluk: {}</translation>
+    </message>
+    <message>
         <source>Load Devices From Save States</source>
         <translation>Cihazları Durum Kayıtlarından Yükle</translation>
     </message>
@@ -6198,6 +6321,10 @@ Hata şuydu:</translation>
     <message>
         <source>Load State</source>
         <translation>Durum Kaydı Yükle</translation>
+    </message>
+    <message>
+        <source>Loading Game List...</source>
+        <translation>Oyun Listesi Yükleniyor...</translation>
     </message>
     <message>
         <source>Loads all replacement texture to RAM, reducing stuttering at runtime.</source>
@@ -6252,12 +6379,28 @@ Hata şuydu:</translation>
         <translation>Logs messages to the debug console where supported.</translation>
     </message>
     <message>
+        <source>Maximum: {}</source>
+        <translation>En Yüksek: {}</translation>
+    </message>
+    <message>
         <source>Merge Multi-Disc Games</source>
         <translation>Çoklu CD Kullanan Oyunları Birleştir</translation>
     </message>
     <message>
         <source>Merges multi-disc games into one item in the game list.</source>
         <translation>Birden çok CD kullanan oyunları listede tek olacak şekilde birleştirir.</translation>
+    </message>
+    <message>
+        <source>Minimum Framebuffer Upload Height</source>
+        <translation>Kare Arabelleğine Yapılan Yüklemelerin En Düşük Yüksekliği</translation>
+    </message>
+    <message>
+        <source>Minimum Framebuffer Upload Width</source>
+        <translation>Kare Arabelleğine Yapılan Yüklemelerin En Düşük Genişliği</translation>
+    </message>
+    <message>
+        <source>Minimum: {}</source>
+        <translation>En Düşük: {}</translation>
     </message>
     <message>
         <source>Move Cursor</source>
@@ -6274,6 +6417,14 @@ Hata şuydu:</translation>
     <message>
         <source>No devices with vibration motors were detected.</source>
         <translation>Titreşim özellikli bir cihaz bulunamadı.</translation>
+    </message>
+    <message>
+        <source>Only filters framebuffer uploads at least this tall. Increase this value to avoid filtering texture data.</source>
+        <translation>Yalnızca en az bu yükseklikteki kare arabelleği yüklemelerini filtreler. Doku verilerinin filtrelenmesini önlemek için bu değeri artırın.</translation>
+    </message>
+    <message>
+        <source>Only filters framebuffer uploads at least this wide. Increase this value to avoid filtering texture data.</source>
+        <translation>Yalnızca en az bu genişlikteki kare arabelleği yüklemelerini filtreler. Doku verilerinin filtrelenmesini önlemek için bu değeri artırın.</translation>
     </message>
     <message>
         <source>PGXP Depth Buffer</source>
@@ -6410,6 +6561,26 @@ Hata şuydu:</translation>
     <message>
         <source>%.2f Seconds</source>
         <translation>%.2f Saniye</translation>
+    </message>
+    <message>
+        <source>${filetitle}: Name component of the game&apos;s filename.</source>
+        <translation>${filetitle}: Oyunun dosya adındaki ad bileşeni.</translation>
+    </message>
+    <message>
+        <source>${localizedtitle}: Localized title for the game in its native language.</source>
+        <translation>${localizedtitle}: Oyunun kendi dilindeki yerelleştirilmiş adı.</translation>
+    </message>
+    <message>
+        <source>${savetitle}: Save title for the game, including the region suffix.</source>
+        <translation>${savetitle}: Bölge son eki dahil oyunun kayıt adı.</translation>
+    </message>
+    <message>
+        <source>${serial}: Serial of the game.</source>
+        <translation>${serial}: Oyunun seri numarası.</translation>
+    </message>
+    <message>
+        <source>${title}: Title of the game.</source>
+        <translation>${title}: Oyunun adı.</translation>
     </message>
     <message>
         <source>%d Frames</source>
@@ -6712,8 +6883,16 @@ Hata şuydu:</translation>
         <translation>Readback VRAM tekrar okumaları için yazılımsal çiziciyi kullanır. Bazı sistemlerde donanımsal çizicilere performans verebilir.</translation>
     </message>
     <message>
+        <source>SDL Persistent Device Identifiers</source>
+        <translation>SDL Kalıcı Cihaz Tanımlayıcıları</translation>
+    </message>
+    <message>
         <source>Safe Mode</source>
         <translation>Güvenli Mod</translation>
+    </message>
+    <message>
+        <source>Samples 16-bit direct-color textures at native resolution when upscaling. This can fix filtering of FMVs/backgrounds in some games, but may reduce the quality of render-to-texture effects.</source>
+        <translation>Büyütme sırasında 16 bit doğrudan renkli dokuları doğal çözünürlükte örnekler. Bu, bazı oyunlarda FMV&apos;lerin/arka planların filtrelenmesini düzeltebilir, ancak dokuya çizim efektlerinin kalitesini düşürebilir.</translation>
     </message>
     <message>
         <source>Save</source>
@@ -6730,6 +6909,10 @@ Hata şuydu:</translation>
     <message>
         <source>Save Preset</source>
         <translation>Profili Kaydet</translation>
+    </message>
+    <message>
+        <source>Saves supported controllers by serial or device identity so bindings survive port and connection-order changes when possible.</source>
+        <translation>Desteklenen denetleyicileri seri numarasına veya cihaz kimliğine göre kaydeder; böylece bağlantı noktası ve bağlanma sırası değiştiğinde tuş atamaları mümkün olduğunca korunur.</translation>
     </message>
     <message>
         <source>Scaled Interlacing</source>
@@ -6936,6 +7119,10 @@ Hata şuydu:</translation>
         <translation>Büyük Resim Modunda Başlat</translation>
     </message>
     <message>
+        <source>Start: {}</source>
+        <translation>Başlangıç: {}</translation>
+    </message>
+    <message>
         <source>Starts the application in Big Picture Mode instead of the desktop interface.</source>
         <translation>Masaüstü arayüzü yerine uygulamayı Büyük Resim Modunda başlatır.</translation>
     </message>
@@ -7100,6 +7287,10 @@ Hata şuydu:</translation>
         <translation>Oyunun kendi sistemini esgeçip seçtiğiniz kare hızını ayarlar.</translation>
     </message>
     <message>
+        <source>Value: {}</source>
+        <translation>Değer: {}</translation>
+    </message>
+    <message>
         <source>WARNING: Activating cheats can cause unpredictable behavior, crashing, soft-locks, or broken saved games.</source>
         <translation>DİKKAT: Hileleri açmak oyunun çökmesine, görevlerin buglanmasına ve kayıtlı oyunların bozuk çıkmasına sebep olabilir.</translation>
     </message>
@@ -7126,14 +7317,6 @@ Hata şuydu:</translation>
     <message>
         <source> (%u MB on disk)</source>
         <translation> (%u MB diskte)</translation>
-    </message>
-    <message>
-        <source>${title}: Title of the game.
-${filetitle}: Name component of the game&apos;s filename.
-${serial}: Serial of the game.</source>
-        <translation>${title}: Oyunun adı.
-${filetitle}: Oyunun dosya adındaki ad bileşeni.
-${serial}: Oyunun seri numarası.</translation>
     </message>
     <message>
         <source>%.1f ms</source>
@@ -8109,10 +8292,6 @@ Yine de {1} işlemine devam etmek istiyor musunuz?</translation>
         <translation>{} sabitlemesi kaldırıldı.</translation>
     </message>
     <message>
-        <source>{} | Start: {} | Length: {}</source>
-        <translation>{} | Başlangıç: {} | Uzunluk: {}</translation>
-    </message>
-    <message>
         <source>Preserve Projection Precision</source>
         <translation>Model Döşeme Kalitesini Koru</translation>
     </message>
@@ -8799,10 +8978,6 @@ Yine de {1} işlemine devam etmek istiyor musunuz?</translation>
     <message>
         <source>Value Range</source>
         <translation>Değer Aralığı</translation>
-    </message>
-    <message>
-        <source>Value: {} | Default: {} | Minimum: {} | Maximum: {}</source>
-        <translation>Deper: {} | Varsayılan: {} | Minimum: {} | Maksimum: {}</translation>
     </message>
     <message>
         <source>Verify</source>
@@ -9574,6 +9749,16 @@ Devam etmekten emin misiniz?</translation>
         <translation>LibCrypt Korumalı</translation>
     </message>
     <message>
+        <source>Disable Upscaled Direct Textures</source>
+        <comment>GameDatabase::Trait</comment>
+        <translation>Büyütülmüş Doğrudan Renkli Dokuları Devre Dışı Bırak</translation>
+    </message>
+    <message>
+        <source>Filter Framebuffer Uploads</source>
+        <comment>GameDatabase::Trait</comment>
+        <translation>Kare Arabelleğine Yapılan Yüklemeleri Filtrele</translation>
+    </message>
+    <message>
         <source>Fast boot disabled.</source>
         <translation>Hızlı Başlangıç Kapatıldı.</translation>
     </message>
@@ -9636,6 +9821,14 @@ Devam etmekten emin misiniz?</translation>
     <message>
         <source>Compatibility settings for this game have been applied.</source>
         <translation>Bu oyun için uyumluluk ayarları uygulandı.</translation>
+    </message>
+    <message>
+        <source>Filter Framebuffer Uploads Minimum Width</source>
+        <translation>Kare Arabelleği Yüklemelerini Filtreleme için En Düşük Genişlik</translation>
+    </message>
+    <message>
+        <source>Filter Framebuffer Uploads Minimum Height</source>
+        <translation>Kare Arabelleği Yüklemelerini Filtreleme için En Düşük Yükseklik</translation>
     </message>
     <message>
         <source>Verifying Image</source>
@@ -9803,6 +9996,11 @@ Devam etmekten emin misiniz?</translation>
         <translation>Disc Seç</translation>
     </message>
     <message>
+        <source>Audio CD</source>
+        <comment>EntryType</comment>
+        <translation>Ses CD&apos;si</translation>
+    </message>
+    <message>
         <source>PS-EXE</source>
         <comment>EntryType</comment>
         <translation>PS-EXE</translation>
@@ -9826,12 +10024,12 @@ Devam etmekten emin misiniz?</translation>
         <translation>Taranıyor &apos;{}&apos;...</translation>
     </message>
     <message>
-        <source>Unknown</source>
-        <translation>Bilinmiyor</translation>
+        <source>URL template must contain at least one of ${title}, ${localizedtitle}, ${savetitle}, ${filetitle}, or ${serial}.</source>
+        <translation>URL şablonu ${title}, ${localizedtitle}, ${savetitle}, ${filetitle} veya ${serial} değişkenlerinden en az birini içermelidir.</translation>
     </message>
     <message>
-        <source>URL template must contain at least one of ${title}, ${savetitle}, ${filetitle}, or ${serial}.</source>
-        <translation>URL şablonu ${title}, ${savetitle}, ${filetitle} veya ${serial} değişkenlerinden en az birini içermelidir.</translation>
+        <source>Unknown</source>
+        <translation>Bilinmiyor</translation>
     </message>
     <message>
         <source>No URLs to download enumerated.</source>
@@ -9989,6 +10187,14 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
     <message>
         <source>Select Directory</source>
         <translation>Dizin Seç</translation>
+    </message>
+    <message>
+        <source>Add File...</source>
+        <translation>Dosya Ekle...</translation>
+    </message>
+    <message>
+        <source>Add Folder...</source>
+        <translation>Dizin Ekle...</translation>
     </message>
 </context>
 <context>
@@ -10187,10 +10393,6 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
         <translation>Kollar:</translation>
     </message>
     <message>
-        <source>Tracks:</source>
-        <translation>Disk Sektörleri:</translation>
-    </message>
-    <message>
         <source>Release Info:</source>
         <translation>Yayım Bilgisi:</translation>
     </message>
@@ -10265,6 +10467,10 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
     <message>
         <source>Game Specific Configuration</source>
         <translation>Oyuna Özel Ayar</translation>
+    </message>
+    <message>
+        <source>Game ID: %1</source>
+        <translation>Oyun Kimliği: %1</translation>
     </message>
     <message>
         <source>Verifying Image</source>
@@ -10414,6 +10620,14 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
         <translation>Çizgi Tespit Etme:</translation>
     </message>
     <message>
+        <source>Filter Framebuffer Uploads</source>
+        <translation>Kare Arabelleğine Yapılan Yüklemeleri Filtrele</translation>
+    </message>
+    <message>
+        <source>Minimum Size:</source>
+        <translation>En Düşük Boyut:</translation>
+    </message>
+    <message>
         <source>Software Renderer Readbacks</source>
         <translation>Readbackler İçin Yazılımsal Çiziciyi Kullan</translation>
     </message>
@@ -10530,6 +10744,10 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
         <translation>Use Debug Device</translation>
     </message>
     <message>
+        <source>Disable Upscaled Direct Textures</source>
+        <translation>Büyütülmüş Doğrudan Renkli Dokuları Devre Dışı Bırak</translation>
+    </message>
+    <message>
         <source>Texture Replacement</source>
         <translation>Doku Paketi Açma</translation>
     </message>
@@ -10600,10 +10818,6 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
     <message>
         <source>Bottom:</source>
         <translation>Alt:</translation>
-    </message>
-    <message>
-        <source>Texture Modulation Cropping (&quot;Old/v0 GPU&quot;)</source>
-        <translation>Doku Modülasyonu Kırpması (&quot;Eski/v0 GPU&quot;)</translation>
     </message>
     <message>
         <source>Reset Geometry Tolerance</source>
@@ -10974,6 +11188,34 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
         <translation>Interlaced çizimde hat atlama çözünürlüğünü oyunun çözünrülüğüne ayarlar ve daha az belirgin yapar. Açmak genellikle sorun çıkarmaz.</translation>
     </message>
     <message>
+        <source>Samples 16-bit direct-color textures at native resolution when upscaling. This can fix filtering of FMVs/backgrounds in some games, but may reduce the quality of render-to-texture effects.</source>
+        <translation>Büyütme sırasında 16 bit doğrudan renkli dokuları doğal çözünürlükte örnekler. Bu, bazı oyunlarda FMV&apos;lerin/arka planların filtrelenmesini düzeltebilir, ancak dokuya çizim efektlerinin kalitesini düşürebilir.</translation>
+    </message>
+    <message>
+        <source>Applies the selected sprite texture filter to framebuffer uploads. This can smooth backgrounds in some games while preserving texture data and 24-bit video.</source>
+        <translation>Seçilen sprite doku filtresini kare arabelleğine yapılan yüklemelere uygular. Bu, doku verilerini ve 24 bit videoyu korurken bazı oyunlarda arka planları yumuşatabilir.</translation>
+    </message>
+    <message>
+        <source>Minimum Framebuffer Upload Width</source>
+        <translation>Kare Arabelleğine Yapılan Yüklemelerin En Düşük Genişliği</translation>
+    </message>
+    <message>
+        <source>1 px</source>
+        <translation>1 px</translation>
+    </message>
+    <message>
+        <source>Only filters framebuffer uploads at least this wide. Increase this value to avoid filtering texture data.</source>
+        <translation>Yalnızca en az bu genişlikteki kare arabelleği yüklemelerini filtreler. Doku verilerinin filtrelenmesini önlemek için bu değeri artırın.</translation>
+    </message>
+    <message>
+        <source>Minimum Framebuffer Upload Height</source>
+        <translation>Kare Arabelleğine Yapılan Yüklemelerin En Düşük Yüksekliği</translation>
+    </message>
+    <message>
+        <source>Only filters framebuffer uploads at least this tall. Increase this value to avoid filtering texture data.</source>
+        <translation>Yalnızca en az bu yükseklikteki kare arabelleği yüklemelerini filtreler. Doku verilerinin filtrelenmesini önlemek için bu değeri artırın.</translation>
+    </message>
+    <message>
         <source>Enables depth testing for semi-transparent polygons. Usually these include shadows, and tend to clip through the ground when depth testing is enabled. Depth writes for semi-transparent polygons are disabled regardless of this setting.</source>
         <translation>Yarı saydam poligonlar için derinlik testini açar. Genellikle gölgeler için işe yarar ve zeminde kaybolabilirler bu ayar açılıysa.</translation>
     </message>
@@ -11108,10 +11350,6 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
     <message>
         <source>&lt;h3&gt;Changing the renderer is not recommended!&lt;/h3&gt;&lt;p&gt;The &lt;strong&gt;Automatic&lt;/strong&gt; option provides the best experience, selecting the optimal renderer for your graphics adapter. There is &lt;strong&gt;no visual or performance advantage&lt;/strong&gt; to using a different renderer, and you risk the application breaking due to driver bugs.&lt;br&gt;&lt;br&gt;If you continue with changing the renderer, &lt;strong&gt;do not ask for support&lt;/strong&gt;.&lt;br&gt;&lt;br&gt;Are you sure you want to change the renderer?&lt;/p&gt;</source>
         <translation>&lt;h3&gt;Oluşturucuyu değiştirmek önerilmez!&lt;/h3&gt;&lt;p&gt;&lt;strong&gt;Otomatik&lt;/strong&gt; seçeneği, grafik bağdaştırıcınız için en uygun oluşturucuyu seçerek en iyi deneyimi sunar. Farklı bir oluşturucu kullanmanın &lt;strong&gt;görsel veya performans açısından hiçbir avantajı yoktur&lt;/strong&gt; ve sürücü hataları nedeniyle uygulamanın bozulması riskini taşırsınız.&lt;br&gt;&lt;br&gt;Oluşturucuyu değiştirmeye devam ederseniz &lt;strong&gt;destek istemeyin&lt;/strong&gt;.&lt;br&gt;&lt;br&gt;Oluşturucuyu değiştirmek istediğinizden emin misiniz?&lt;/p&gt;</translation>
-    </message>
-    <message>
-        <source>Use Global Setting</source>
-        <translation>Evrensel Ayarı Kullan</translation>
     </message>
     <message>
         <source>Select Textures Directory</source>
@@ -11386,14 +11624,6 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
         <translation>Medya Yakalama Aç/Kapa</translation>
     </message>
     <message>
-        <source>Open Achievement List</source>
-        <translation>Başarımlar Listesini Aç</translation>
-    </message>
-    <message>
-        <source>Open Leaderboard List</source>
-        <translation>Liderler Sıralaması Listesini Aç</translation>
-    </message>
-    <message>
         <source>System</source>
         <translation>Sistem</translation>
     </message>
@@ -11484,10 +11714,6 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
     <message>
         <source>Interface</source>
         <translation>Arayüz</translation>
-    </message>
-    <message>
-        <source>Open Cheat Settings</source>
-        <translation>Hile Ayarlarını Aç</translation>
     </message>
     <message>
         <source>Fast Forward (Hold)</source>
@@ -11680,6 +11906,22 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
     <message>
         <source>Toggle PGXP Preserve Projection Precision</source>
         <translation>PGXP Model Döşeme Hassasiyeti Aç/Kapa</translation>
+    </message>
+    <message>
+        <source>Toggle Pause Menu</source>
+        <translation>Duraklama Menüsünü Aç/Kapat</translation>
+    </message>
+    <message>
+        <source>Toggle Cheat List</source>
+        <translation>Hile Listesini Aç/Kapat</translation>
+    </message>
+    <message>
+        <source>Toggle Achievement List</source>
+        <translation>Başarım Listesini Aç/Kapat</translation>
+    </message>
+    <message>
+        <source>Toggle Leaderboard List</source>
+        <translation>Lider Tahtası Listesini Aç/Kapat</translation>
     </message>
     <message>
         <source>Toggle VRAM View</source>
@@ -14324,16 +14566,12 @@ Hata: {1}</translation>
         <translation>Kartı Formatla</translation>
     </message>
     <message>
-        <source>Import File...</source>
-        <translation>İçeri Dosya Aktar...</translation>
-    </message>
-    <message>
-        <source>Import Card...</source>
-        <translation>İçeri Kart Aktar...</translation>
-    </message>
-    <message>
         <source>Save</source>
         <translation>Kaydet</translation>
+    </message>
+    <message>
+        <source>Import...</source>
+        <translation>İçeri Aktar...</translation>
     </message>
     <message numerus="yes">
         <source>%n block(s) free</source>
@@ -14350,10 +14588,22 @@ Hata: {1}</translation>
         <translation>Hafıza kartı yüklenemedi: %1</translation>
     </message>
     <message>
+        <source>Select Single Save File</source>
+        <translation>Tekli Kayıt Dosyası Seç</translation>
+    </message>
+    <message>
         <source>Failed to rename save file %1:
 %2</source>
         <translation>Kayıt dosyası yeniden adlandırılamadı %1:
 %2</translation>
+    </message>
+    <message>
+        <source>Import Single Save File...</source>
+        <translation>Tekli Kayıt Dosyasını İçeri Aktar...</translation>
+    </message>
+    <message>
+        <source>Import Entire Memory Card...</source>
+        <translation>Bellek Kartının Tamamını İçeri Aktar...</translation>
     </message>
     <message>
         <source>Failed to import memory card from %1:
@@ -14410,10 +14660,6 @@ Hata: {1}</translation>
     <message>
         <source>Failed to undelete file %1. The file may have been partially overwritten by another save.</source>
         <translation>Şu dosya kurtarılamadı %1. Başka bir kayıt dosyası tarafından üstüne yazılmış olunulabilir.</translation>
-    </message>
-    <message>
-        <source>Select Single Savefile</source>
-        <translation>Tekli Kayıt Dosyası Seç</translation>
     </message>
     <message>
         <source>Extract Animated Icon</source>
@@ -15200,88 +15446,21 @@ Hata: {1}</translation>
         <source>Sets scaling for left trigger.</source>
         <translation>Sol tetik için hassaslığı ayarlar.</translation>
     </message>
-</context>
-<context>
-    <name>NeGconRumble</name>
-    <message>
-        <source>D-Pad Up</source>
-        <translation>Yukarı Tuşı</translation>
-    </message>
-    <message>
-        <source>D-Pad Right</source>
-        <translation>Sağ Tuşu</translation>
-    </message>
-    <message>
-        <source>D-Pad Down</source>
-        <translation>Aşşağı Tuşu</translation>
-    </message>
-    <message>
-        <source>D-Pad Left</source>
-        <translation>Sol Tuşu</translation>
-    </message>
-    <message>
-        <source>Start</source>
-        <translation>Start</translation>
-    </message>
-    <message>
-        <source>A Button</source>
-        <translation>A Tuşu</translation>
-    </message>
-    <message>
-        <source>B Button</source>
-        <translation>B Tuşu</translation>
-    </message>
-    <message>
-        <source>I Button</source>
-        <translation>I Tuşu</translation>
-    </message>
-    <message>
-        <source>II Button</source>
-        <translation>II Tuşu</translation>
-    </message>
-    <message>
-        <source>Left Trigger</source>
-        <translation>Sol Tetik</translation>
-    </message>
-    <message>
-        <source>Right Trigger</source>
-        <translation>Sol Tetik</translation>
-    </message>
-    <message>
-        <source>Steering (Twist) Left</source>
-        <translation>Direksiyon (Çevirme) Sol</translation>
-    </message>
-    <message>
-        <source>Steering (Twist) Right</source>
-        <translation>Direksiyon (Çevirme) Sağ</translation>
-    </message>
     <message>
         <source>Analog Toggle</source>
         <translation>Analog Aç/Kapa</translation>
     </message>
     <message>
-        <source>Disable Simultaneous Opposing Cardinal Directions</source>
-        <translation>Karşıt Ana Yönlerin Eşzamanlı Kullanımını Devre Dışı Bırak</translation>
+        <source>Large Motor</source>
+        <translation>Büyük Motor</translation>
     </message>
     <message>
-        <source>Prevents concurrent left/right or up/down inputs from being presented to the game.</source>
-        <translation>Sol/sağ veya yukarı/aşağı girişlerinin aynı anda oyuna iletilmesini önler.</translation>
+        <source>Small Motor</source>
+        <translation>Küçük Motor</translation>
     </message>
     <message>
-        <source>Steering Axis Deadzone</source>
-        <translation>Direksiyon Ekseni Deadzone</translation>
-    </message>
-    <message>
-        <source>Sets deadzone size for steering axis.</source>
-        <translation>Direksiyon ekseni için ölü bölge (deadzone) ayarlar.</translation>
-    </message>
-    <message>
-        <source>Steering Axis Sensitivity</source>
-        <translation>Direksiyon Ekseni Hassasiyeti</translation>
-    </message>
-    <message>
-        <source>Sets the steering axis scaling factor.</source>
-        <translation>Direksiyon ekseni için eğri ayarlar.</translation>
+        <source>Mode LED</source>
+        <translation>Mod LED&apos;i</translation>
     </message>
     <message>
         <source>Large Motor Vibration Bias</source>
@@ -16172,6 +16351,22 @@ Hata: {1}</translation>
         <translation>Kol {} çıkarıldı.</translation>
     </message>
     <message>
+        <source>We have detected that LD_LIBRARY_PATH has been set to the following value:
+
+%1
+
+This will likely prevent DuckStation from working correctly. You should modify your environment to leave LD_LIBRARY_PATH unset.</source>
+        <translation>LD_LIBRARY_PATH değişkeninin aşağıdaki değere ayarlandığını tespit ettik:
+
+%1
+
+Bu, DuckStation&apos;ın düzgün çalışmasını büyük olasılıkla engelleyecektir. Ortamınızı LD_LIBRARY_PATH değişkeni tanımlanmamış olacak şekilde değiştirmelisiniz.</translation>
+    </message>
+    <message>
+        <source>Don&apos;t show again</source>
+        <translation>Bir daha gösterme</translation>
+    </message>
+    <message>
         <source>Would you like to create a launcher shortcut for DuckStation?
 
 This will add DuckStation to your application menu, allowing you to launch it more easily.
@@ -16805,19 +17000,19 @@ Bu dizini oluşturmak istiyor musunuz?</translation>
         <translation>PAL (Avrupa Türkiye Avustralya)</translation>
     </message>
     <message>
-        <source>NTSC-J (Japan)</source>
+        <source>NTSC-J</source>
         <comment>DiscRegion</comment>
-        <translation>NTSC-J (Japonya)</translation>
+        <translation>NTSC-J</translation>
     </message>
     <message>
-        <source>NTSC-U/C (US, Canada)</source>
+        <source>NTSC-U/C</source>
         <comment>DiscRegion</comment>
-        <translation>NTSC-U/C (ABD/Kanada)</translation>
+        <translation>NTSC-U/C</translation>
     </message>
     <message>
-        <source>PAL (Europe, Australia)</source>
+        <source>PAL</source>
         <comment>DiscRegion</comment>
-        <translation>PAL (Avrupa Türkiye Avustralya)</translation>
+        <translation>PAL</translation>
     </message>
     <message>
         <source>Other</source>
@@ -16920,6 +17115,36 @@ Bu dizini oluşturmak istiyor musunuz?</translation>
         <translation>JINC2 (Yavaş, Kenar Yumuşatmasız)</translation>
     </message>
     <message>
+        <source>Monotonic Cubic (Very Slow)</source>
+        <comment>GPUTextureFilter</comment>
+        <translation>Monotonik Kübik (Çok Yavaş)</translation>
+    </message>
+    <message>
+        <source>Monotonic Cubic (Very Slow, No Edge Blending)</source>
+        <comment>GPUTextureFilter</comment>
+        <translation>Monotonik Kübik (Çok Yavaş, Kenar Yumuşatmasız)</translation>
+    </message>
+    <message>
+        <source>Adaptive Diagonal (Slow)</source>
+        <comment>GPUTextureFilter</comment>
+        <translation>Uyarlanabilir Çapraz (Yavaş)</translation>
+    </message>
+    <message>
+        <source>Adaptive Diagonal (Slow, No Edge Blending)</source>
+        <comment>GPUTextureFilter</comment>
+        <translation>Uyarlanabilir Çapraz (Yavaş, Kenar Yumuşatmasız)</translation>
+    </message>
+    <message>
+        <source>DCCI (Extremely Slow)</source>
+        <comment>GPUTextureFilter</comment>
+        <translation>DCCI (Son Derece Yavaş)</translation>
+    </message>
+    <message>
+        <source>DCCI (Extremely Slow, No Edge Blending)</source>
+        <comment>GPUTextureFilter</comment>
+        <translation>DCCI (Son Derece Yavaş, Kenar Yumuşatmasız)</translation>
+    </message>
+    <message>
         <source>xBR (Very Slow)</source>
         <comment>GPUTextureFilter</comment>
         <translation>xBR (Çok Yavaş)</translation>
@@ -16928,6 +17153,11 @@ Bu dizini oluşturmak istiyor musunuz?</translation>
         <source>xBR (Very Slow, No Edge Blending)</source>
         <comment>GPUTextureFilter</comment>
         <translation>xBR (Çok Yavaş, Kenar Yumuşatmasız)</translation>
+    </message>
+    <message>
+        <source>Sharp Bilinear</source>
+        <comment>GPUTextureFilter</comment>
+        <translation>Keskin Bilinear</translation>
     </message>
     <message>
         <source>Scale2x (EPX)</source>
@@ -18369,6 +18599,10 @@ SBI dosyasının ismi oyununuzun disk imajı dosyasıyla aynı adda olmalı.</tr
         <translation>
             <numerusform>Başka %n saniye geçene kadar duraklatamazsınız.</numerusform>
         </translation>
+    </message>
+    <message>
+        <source>This save state was created with a different console region, and may be unstable.</source>
+        <translation>Bu durum kaydı farklı bir konsol bölgesiyle oluşturulmuştur ve kararsız çalışabilir.</translation>
     </message>
     <message>
         <source>CPU Overclock Changed</source>

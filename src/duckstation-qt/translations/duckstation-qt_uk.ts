@@ -170,6 +170,14 @@ Do you want to enable hardcore mode?</source>
         <translation>Попереднє завантаження значків</translation>
     </message>
     <message>
+        <source>Reset Achievement Notification Duration</source>
+        <translation>Скинути тривалість сповіщень про досягнення</translation>
+    </message>
+    <message>
+        <source>Reset Leaderboard Notification Duration</source>
+        <translation>Скинути тривалість сповіщень таблиць лідерів</translation>
+    </message>
+    <message>
         <source>Show Leaderboard Trackers</source>
         <translation>Показувати трекери таблиць лідерів</translation>
     </message>
@@ -278,12 +286,28 @@ Do you want to enable hardcore mode?</source>
         <translation>Режим &quot;Випробування&quot; для досягнень, включаючи відстеження таблиць лідерів. Вимикає функції збереження стану, читів та уповільнення.</translation>
     </message>
     <message>
+        <source> seconds</source>
+        <translation> сек.</translation>
+    </message>
+    <message>
         <source>When enabled, DuckStation will track unofficial achievements. Unlocks will be saved locally and not sent to RetroAchievements.</source>
         <translation>Якщо ввімкнено, DuckStation відстежуватиме неофіційні досягнення. Розблокування зберігатимуться локально й не надсилатимуться до RetroAchievements.</translation>
     </message>
     <message>
         <source>Checked</source>
         <translation>Позначено</translation>
+    </message>
+    <message>
+        <source>N/A</source>
+        <translation>Н/Д</translation>
+    </message>
+    <message>
+        <source>Resets the duration to the global setting.</source>
+        <translation>Скидає тривалість до значення з глобальних налаштувань.</translation>
+    </message>
+    <message>
+        <source>Resets the duration to the default.</source>
+        <translation>Скидає тривалість до типової.</translation>
     </message>
     <message>
         <source>Plays sound effects for events such as achievement unlocks and leaderboard submissions.</source>
@@ -399,14 +423,6 @@ Token generated %2</source>
         <translation>Виконано вхід як %1
 Токен згенеровано %2</translation>
     </message>
-    <message numerus="yes">
-        <source>%n seconds</source>
-        <translation>
-            <numerusform>%n секунда</numerusform>
-            <numerusform>%n секунди</numerusform>
-            <numerusform>%n секунд</numerusform>
-        </translation>
-    </message>
     <message>
         <source>Logout</source>
         <translation>Вийти</translation>
@@ -429,10 +445,6 @@ Token generated %2</source>
     <message>
         <source>Resuming state</source>
         <translation>Відновлення стану</translation>
-    </message>
-    <message>
-        <source>{} (Unofficial)</source>
-        <translation>{} (Неофіційно)</translation>
     </message>
     <message numerus="yes">
         <source>%n points</source>
@@ -1171,22 +1183,6 @@ We will keep trying to submit this request.</source>
         <translation>Чутливість аналога</translation>
     </message>
     <message>
-        <source>Controller {} switched to analog mode.</source>
-        <translation>Контролер {} перемкнуто в аналоговий режим.</translation>
-    </message>
-    <message>
-        <source>Controller {} switched to digital mode.</source>
-        <translation>Контролер {} перемкнуто в цифровий режим.</translation>
-    </message>
-    <message>
-        <source>Controller {} is locked to analog mode by the game.</source>
-        <translation>Контролер {} заблоковано грою в аналоговому режимі.</translation>
-    </message>
-    <message>
-        <source>Controller {} is locked to digital mode by the game.</source>
-        <translation>Контролер {} заблоковано грою в цифровому режимі.</translation>
-    </message>
-    <message>
         <source>D-Pad Up</source>
         <translation>Хрестовина вгору</translation>
     </message>
@@ -1409,10 +1405,6 @@ We will keep trying to submit this request.</source>
     <message>
         <source>Inverts the direction of the right analog stick.</source>
         <translation>Інвертує напрямок правого аналогового стіка.</translation>
-    </message>
-    <message>
-        <source>Mode LED</source>
-        <translation>Індикатор режиму</translation>
     </message>
 </context>
 <context>
@@ -1649,6 +1641,10 @@ We will keep trying to submit this request.</source>
         <translation>Скинути розмір буфера</translation>
     </message>
     <message>
+        <source>Reset Output Latency</source>
+        <translation>Скинути затримку виведення</translation>
+    </message>
+    <message>
         <source>Maximum Latency: 0 ms (0 ms stretch + 0 ms buffer + 0 ms output)</source>
         <translation>Максимальна затримка: 0 мс (0 мс розтягування + 0 мс буфера + 0 мс виведення)</translation>
     </message>
@@ -1711,6 +1707,10 @@ We will keep trying to submit this request.</source>
     <message>
         <source>%</source>
         <translation>%</translation>
+    </message>
+    <message>
+        <source> ms</source>
+        <translation> мс</translation>
     </message>
     <message>
         <source>Unchecked</source>
@@ -1855,10 +1855,6 @@ We will keep trying to submit this request.</source>
     <message>
         <source>Maximum Latency: %1 ms (minimum output latency unknown)</source>
         <translation>Максимальна затримка: %1 мс (мінімальна затримка виведення невідома)</translation>
-    </message>
-    <message>
-        <source>%1%</source>
-        <translation>%1%</translation>
     </message>
 </context>
 <context>
@@ -2243,6 +2239,24 @@ WAV files must be 16-bit stereo and use a sample rate of 44100hz.</source>
 Your dump may be corrupted, or the physical disc is scratched.</source>
         <translation>Найімовірніше, гра зараз аварійно завершить роботу.
 Можливо, ваш дамп пошкоджено або фізичний диск подряпано.</translation>
+    </message>
+</context>
+<context>
+    <name>CPU</name>
+    <message>
+        <source>Execute</source>
+        <comment>BreakpointType</comment>
+        <translation>Виконання</translation>
+    </message>
+    <message>
+        <source>Read</source>
+        <comment>BreakpointType</comment>
+        <translation>Читання</translation>
+    </message>
+    <message>
+        <source>Write</source>
+        <comment>BreakpointType</comment>
+        <translation>Запис</translation>
     </message>
 </context>
 <context>
@@ -2910,6 +2924,14 @@ This warning will only be shown once.</source>
         <translation>Контролер {} перемкнуто в цифровий режим.</translation>
     </message>
     <message>
+        <source>Controller {} is locked to analog mode by the game.</source>
+        <translation>Контролер {} заблоковано грою в аналоговому режимі.</translation>
+    </message>
+    <message>
+        <source>Controller {} is locked to digital mode by the game.</source>
+        <translation>Контролер {} заблоковано грою в цифровому режимі.</translation>
+    </message>
+    <message>
         <source>Controller {} switched to JogCon mode.</source>
         <translation>Контролер {} переведено в режим JogCon.</translation>
     </message>
@@ -2971,6 +2993,14 @@ This warning will only be shown once.</source>
     <message>
         <source>Axes</source>
         <translation>Осі</translation>
+    </message>
+    <message>
+        <source>Multiple Devices</source>
+        <translation>Декілька пристроїв</translation>
+    </message>
+    <message>
+        <source>%1 (%2)</source>
+        <translation>%1 (%2)</translation>
     </message>
     <message>
         <source>Buttons</source>
@@ -3557,10 +3587,6 @@ This warning will only be shown once.</source>
         <translation>Налаштовує параметри світлодіодів для контролерів із світлодіодами, що налаштовуються.</translation>
     </message>
     <message>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enables the SDL input source and detection of controllers.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Увімкне джерело введення SDL та виявлення контролерів.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
-    </message>
-    <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Allows rumble and LED effects for DualShock 4 / DualSense controllers in Bluetooth mode. This option is not required for wired connections.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Enabling enhanced reports may result in your controller being unusable in other applications until it is turned off and on again.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Увімкне вібрацію та світлодіодні ефекти для контролерів DualShock 4 / DualSense у режимі Bluetooth. Для дротового підключення ця опція не потрібна.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Увімкнення розширених звітів може призвести до того, що контролер перестане працювати в інших додатках, доки його не вимкнуть і знову не ввімкнуть.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
@@ -3573,8 +3599,24 @@ This warning will only be shown once.</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Джерело введення SDL підтримує більшість контролерів і є кращим варіантом. Для роботи функцій вібрації та світлодіодів контролерів DualShock 4 / DualSense у режимі Bluetooth може знадобитися розширений режим. Ви також можете редагувати &lt;a href=&quot;ADVANCED_SDL_OPTIONS&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#99ebff;&quot;&gt;розширені параметри&lt;/span&gt;&lt;/a&gt;, які керують поведінкою конкретних пристроїв.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
+        <source>LEDs</source>
+        <translation>Світлодіоди</translation>
+    </message>
+    <message>
+        <source>Enables the SDL input source and detection of controllers.</source>
+        <translation>Увімкне джерело введення SDL та виявлення контролерів.</translation>
+    </message>
+    <message>
         <source>Allows use of the touchpad for DualShock 4 / DualSense controllers as a pointer, for use with lightguns.</source>
         <translation>Дозволяє використовувати тачпад контролерів DualShock 4 / DualSense як вказівник при грі зі світловими пістолетами.</translation>
+    </message>
+    <message>
+        <source>Saves supported controllers by serial or device identity so bindings survive port and connection-order changes when possible.</source>
+        <translation>Запам’ятовує підтримувані контролери за серійним номером або ідентифікатором пристрою, щоб за можливості зберігати прив’язки при зміні порту чи порядку підключення.</translation>
+    </message>
+    <message>
+        <source>Use Persistent Device Identifiers</source>
+        <translation>Використовувати постійні ідентифікатори пристроїв</translation>
     </message>
     <message>
         <source>Enable XInput Source</source>
@@ -4073,8 +4115,8 @@ This file is approximately 206KB, do you want to download it now?</source>
         <translation>DuckStation може автоматично завантажувати обкладинки для ігор, у яких їх ще немає. Ми не зберігаємо зображення обкладинок; користувач має самостійно вказати джерело зображень.</translation>
     </message>
     <message>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Depending on your jurisdiction, &lt;span style=&quot; font-weight:700;&quot;&gt;game covers may be copyrighted&lt;/span&gt;. You are only authorized to use this tool with &lt;span style=&quot; font-weight:700;&quot;&gt;your own servers and images&lt;/span&gt;.&lt;/p&gt;&lt;p&gt;In the box below, specify the URLs to download covers from, with one template URL per line. The following variables are available:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${title}:&lt;/span&gt; Title of the game.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${savetitle}:&lt;/span&gt; Title of the game including the region.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${localizedtitle}:&lt;/span&gt; Localized (native language) title of the game.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${filetitle}:&lt;/span&gt; Name component of the game&apos;s filename.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${serial}:&lt;/span&gt; Serial of the game.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Example:&lt;/span&gt; https://www.example-not-a-real-domain.com/covers/${serial}.jpg&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Залежно від законодавства вашої країни, &lt;span style=&quot; font-weight:700;&quot;&gt;обкладинки ігор можуть бути захищені авторським правом&lt;/span&gt;. Ви маєте право використовувати цей інструмент лише з &lt;span style=&quot; font-weight:700;&quot;&gt;власними серверами та зображеннями&lt;/span&gt;.&lt;/p&gt;&lt;p&gt;У полі нижче вкажіть URL-адреси, з яких потрібно завантажувати обкладинки (по одному шаблону в рядку). Доступні такі змінні:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${title}:&lt;/span&gt; Назва гри.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${savetitle}:&lt;/span&gt; Назва гри з регіоном.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${localizedtitle}:&lt;/span&gt; Локалізована назва гри.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${filetitle}:&lt;/span&gt; Частина імені файлу гри.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${serial}:&lt;/span&gt; Серійний номер гри.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Приклад:&lt;/span&gt; https://www.example-not-a-real-domain.com/covers/${serial}.jpg&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Depending on your jurisdiction, &lt;span style=&quot; font-weight:700;&quot;&gt;game covers may be copyrighted&lt;/span&gt;. You are only authorized to use this tool with &lt;span style=&quot; font-weight:700;&quot;&gt;your own servers and images&lt;/span&gt;.&lt;/p&gt;&lt;p&gt;In the box below, specify the URLs to download covers from, with one template URL per line. The following variables are available:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${title}:&lt;/span&gt; Title of the game.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${savetitle}:&lt;/span&gt; Save title for the game, including the region suffix.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${localizedtitle}:&lt;/span&gt; Localized title for the game in its native language.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${filetitle}:&lt;/span&gt; Name component of the game&apos;s filename.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${serial}:&lt;/span&gt; Serial of the game.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Example:&lt;/span&gt; https://www.example-not-a-real-domain.com/covers/${serial}.jpg&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Залежно від законодавства вашої країни, &lt;span style=&quot; font-weight:700;&quot;&gt;обкладинки ігор можуть бути захищені авторським правом&lt;/span&gt;. Ви маєте право використовувати цей інструмент лише з &lt;span style=&quot; font-weight:700;&quot;&gt;власними серверами та зображеннями&lt;/span&gt;.&lt;/p&gt;&lt;p&gt;У полі нижче вкажіть URL-адреси, з яких потрібно завантажувати обкладинки (по одному шаблону в рядку). Доступні такі змінні:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${title}:&lt;/span&gt; Назва гри.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${savetitle}:&lt;/span&gt; Назва гри для збережень із суфіксом регіону.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${localizedtitle}:&lt;/span&gt; Локалізована назва гри її рідною мовою.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${filetitle}:&lt;/span&gt; Частина імені файлу гри, що містить назву.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${serial}:&lt;/span&gt; Серійний номер гри.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Приклад:&lt;/span&gt; https://www.example-not-a-real-domain.com/covers/${serial}.jpg&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>By default, the downloaded covers will be saved with the game&apos;s title. If this is not desired, you can check the &quot;Use Serial File Names&quot; box below. Using serials instead of game titles will prevent conflicts when multiple regions of the same game are used.</source>
@@ -4260,6 +4302,17 @@ This file is approximately 206KB, do you want to download it now?</source>
     </message>
 </context>
 <context>
+    <name>DebuggerCallStackModel</name>
+    <message>
+        <source>Address</source>
+        <translation>Адреса</translation>
+    </message>
+    <message>
+        <source>Frame</source>
+        <translation>Кадр стека</translation>
+    </message>
+</context>
+<context>
     <name>DebuggerRegistersModel</name>
     <message>
         <source>Register</source>
@@ -4286,6 +4339,17 @@ This file is approximately 206KB, do you want to download it now?</source>
     </message>
 </context>
 <context>
+    <name>DebuggerThreadsModel</name>
+    <message>
+        <source>Name</source>
+        <translation>Назва</translation>
+    </message>
+    <message>
+        <source>Value</source>
+        <translation>Значення</translation>
+    </message>
+</context>
+<context>
     <name>DebuggerWindow</name>
     <message>
         <source>CPU Debugger</source>
@@ -4298,10 +4362,6 @@ This file is approximately 206KB, do you want to download it now?</source>
     <message>
         <source>Breakpoints</source>
         <translation>Точки зупину</translation>
-    </message>
-    <message>
-        <source>toolBar</source>
-        <translation>Панель інструментів</translation>
     </message>
     <message>
         <source>Disassembly</source>
@@ -4362,6 +4422,14 @@ This file is approximately 206KB, do you want to download it now?</source>
     <message>
         <source>Stack</source>
         <translation>Стек</translation>
+    </message>
+    <message>
+        <source>Threads</source>
+        <translation>Потоки</translation>
+    </message>
+    <message>
+        <source>Call Stack</source>
+        <translation>Стек викликів</translation>
     </message>
     <message>
         <source>Pause/Continue</source>
@@ -4446,6 +4514,10 @@ This file is approximately 206KB, do you want to download it now?</source>
     <message>
         <source>Go To &amp;Address</source>
         <translation>Перейти за &amp;адресою</translation>
+    </message>
+    <message>
+        <source>Toolbar</source>
+        <translation>Панель інструментів</translation>
     </message>
     <message>
         <source>F5</source>
@@ -4538,10 +4610,6 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <translation>&amp;Виправити інструкцію</translation>
     </message>
     <message>
-        <source>&amp;Nop Instruction</source>
-        <translation>&amp;Занулити інструкцію</translation>
-    </message>
-    <message>
         <source>&amp;Follow Load/Store</source>
         <translation>&amp;Відстежувати завантаження/збереження</translation>
     </message>
@@ -4560,10 +4628,6 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <source>Invalid Instruction</source>
         <translation>Некоректна інструкція</translation>
-    </message>
-    <message>
-        <source>Failed to write patched instruction to 0x%1.</source>
-        <translation>Не вдалося записати виправлену інструкцію за адресою 0x%1.</translation>
     </message>
     <message>
         <source>Patched instruction at 0x%1.</source>
@@ -4585,9 +4649,46 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <source>Failed to add step-out breakpoint, are you in a valid function?</source>
         <translation>Не вдалося додати точку зупини для виходу з функції. Перевірте, чи ви перебуваєте у допустимій функції.</translation>
     </message>
+    <message numerus="yes">
+        <source>&amp;Nop %n Instruction(s)</source>
+        <translation>
+            <numerusform>&amp;Замінити %n інструкцію на NOP</numerusform>
+            <numerusform>&amp;Замінити %n інструкції на NOP</numerusform>
+            <numerusform>&amp;Замінити %n інструкцій на NOP</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>&amp;Copy %n Instruction(s)</source>
+        <translation>
+            <numerusform>&amp;Копіювати %n інструкцію</numerusform>
+            <numerusform>&amp;Копіювати %n інструкції</numerusform>
+            <numerusform>&amp;Копіювати %n інструкцій</numerusform>
+        </translation>
+    </message>
     <message>
         <source>View in &amp;Dump</source>
         <translation>Переглянути в &amp;дампі</translation>
+    </message>
+    <message>
+        <source>Failed to write one or more patched instructions. Patched %1 of %2 instructions; the first failure was at 0x%3.</source>
+        <translation>Не вдалося записати одну або кілька змінених інструкцій. Змінено %1 із %2 інструкцій; перша помилка сталася за адресою 0x%3.</translation>
+    </message>
+    <message>
+        <source>Patched %1 of %2 selected instructions.</source>
+        <translation>Змінено %1 із %2 вибраних інструкцій.</translation>
+    </message>
+    <message>
+        <source>Patched %1 instructions.</source>
+        <translation>Змінено %1 інструкцій.</translation>
+    </message>
+    <message numerus="yes">
+        <source>Copied %n instruction(s) to the clipboard.</source>
+        <comment>CopyRange</comment>
+        <translation>
+            <numerusform>Скопійовано %n інструкцію до буфера обміну.</numerusform>
+            <numerusform>Скопійовано %n інструкції до буфера обміну.</numerusform>
+            <numerusform>Скопійовано %n інструкцій до буфера обміну.</numerusform>
+        </translation>
     </message>
     <message>
         <source>Invalid search pattern. It should contain hex digits or question marks.</source>
@@ -4604,6 +4705,14 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <source>Pattern found at 0x%1.</source>
         <translation>Шаблон виявлено за адресою 0x%1.</translation>
+    </message>
+    <message numerus="yes">
+        <source>Loaded %n saved breakpoint(s).</source>
+        <translation>
+            <numerusform>Завантажено %n збережену точку зупину.</numerusform>
+            <numerusform>Завантажено %n збережені точки зупину.</numerusform>
+            <numerusform>Завантажено %n збережених точок зупину.</numerusform>
+        </translation>
     </message>
     <message>
         <source>Invalid address. It should be in hex (0x12345678 or 12345678)</source>
@@ -5436,14 +5545,6 @@ Clicking Reset will restore the serial back to the value scanned from in the dis
         <translation>Додає додаткову точність постпроектування даних PGXP. Може покращити візуальну складову у деяких іграх.</translation>
     </message>
     <message>
-        <source>${title}: Title of the game.
-${filetitle}: Name component of the game&apos;s filename.
-${serial}: Serial of the game.</source>
-        <translation>${title}: Назва гри.
-${filetitle}: Компонент імені файлу гри.
-${serial}: Серійний номер гри.</translation>
-    </message>
-    <message>
         <source>%.1f ms</source>
         <translation>%.1f мс</translation>
     </message>
@@ -5474,6 +5575,10 @@ ${serial}: Серійний номер гри.</translation>
     <message>
         <source>Allow Booting Without SBI File</source>
         <translation>Дозволити завантаження без SBI</translation>
+    </message>
+    <message>
+        <source>Applies the selected sprite texture filter to framebuffer uploads. This can smooth backgrounds in some games while preserving texture data and 24-bit video.</source>
+        <translation>Застосовує вибраний фільтр текстур спрайтів до даних, що завантажуються в буфер кадру. Це може згладити фони в деяких іграх, зберігаючи дані текстур і 24-бітне відео.</translation>
     </message>
     <message>
         <source>Apply Image Patches</source>
@@ -5928,6 +6033,10 @@ You cannot undo this action.</source>
         <translation>За замовчуванням: увімкнено</translation>
     </message>
     <message>
+        <source>Default: {}</source>
+        <translation>За замовчуванням: {}</translation>
+    </message>
+    <message>
         <source>Delete</source>
         <translation>Видалити</translation>
     </message>
@@ -6062,6 +6171,10 @@ You cannot undo this action.</source>
     <message>
         <source>Disable Subdirectory Scanning</source>
         <translation>Вимкнути сканування підкаталогів</translation>
+    </message>
+    <message>
+        <source>Disable Upscaled Direct Textures</source>
+        <translation>Вимкнути масштабування текстур із прямим кодуванням кольору</translation>
     </message>
     <message>
         <source>Disable Window Resizing</source>
@@ -6370,6 +6483,10 @@ Error was:</source>
         <translation>Розмір файлу</translation>
     </message>
     <message>
+        <source>Filter Framebuffer Uploads</source>
+        <translation>Фільтрувати дані, що завантажуються в буфер кадру</translation>
+    </message>
+    <message>
         <source>Force 4:3 For FMVs</source>
         <translation>Примусово 4:3 для FMV</translation>
     </message>
@@ -6474,6 +6591,10 @@ Error was:</source>
         <translation>Зліва:</translation>
     </message>
     <message>
+        <source>Length: {}</source>
+        <translation>Довжина: {}</translation>
+    </message>
+    <message>
         <source>Light</source>
         <translation>Світла</translation>
     </message>
@@ -6496,6 +6617,10 @@ Error was:</source>
     <message>
         <source>Load Preset</source>
         <translation>Завантаження попередньої установки</translation>
+    </message>
+    <message>
+        <source>Loading Game List...</source>
+        <translation>Завантаження списку ігор...</translation>
     </message>
     <message>
         <source>Log File Timestamps</source>
@@ -6534,12 +6659,28 @@ Please check your username and password, and try again.</source>
         <translation>Максимальне прискорення циклів пошуку</translation>
     </message>
     <message>
+        <source>Maximum: {}</source>
+        <translation>Максимум: {}</translation>
+    </message>
+    <message>
         <source>Menu Background</source>
         <translation>Меню фону</translation>
     </message>
     <message>
         <source>Menu Borders</source>
         <translation>Рамки меню</translation>
+    </message>
+    <message>
+        <source>Minimum Framebuffer Upload Height</source>
+        <translation>Мінімальна висота даних, що завантажуються в буфер кадру</translation>
+    </message>
+    <message>
+        <source>Minimum Framebuffer Upload Width</source>
+        <translation>Мінімальна ширина даних, що завантажуються в буфер кадру</translation>
+    </message>
+    <message>
+        <source>Minimum: {}</source>
+        <translation>Мінімум: {}</translation>
     </message>
     <message>
         <source>Multitap</source>
@@ -6580,6 +6721,14 @@ Please check your username and password, and try again.</source>
     <message>
         <source>None</source>
         <translation>Немає</translation>
+    </message>
+    <message>
+        <source>Only filters framebuffer uploads at least this tall. Increase this value to avoid filtering texture data.</source>
+        <translation>Фільтрує лише дані, що завантажуються в буфер кадру, з висотою не меншою за це значення. Збільште це значення, щоб уникнути фільтрування даних текстур.</translation>
+    </message>
+    <message>
+        <source>Only filters framebuffer uploads at least this wide. Increase this value to avoid filtering texture data.</source>
+        <translation>Фільтрує лише дані, що завантажуються в буфер кадру, з шириною не меншою за це значення. Збільште це значення, щоб уникнути фільтрування даних текстур.</translation>
     </message>
     <message>
         <source>PGXP Depth Buffer</source>
@@ -6702,8 +6851,16 @@ Please check your username and password, and try again.</source>
         <translation>Підсвічування гравця SDL DualSense</translation>
     </message>
     <message>
+        <source>SDL Persistent Device Identifiers</source>
+        <translation>Постійні ідентифікатори пристроїв SDL</translation>
+    </message>
+    <message>
         <source>Safe Mode</source>
         <translation>Безпечний режим</translation>
+    </message>
+    <message>
+        <source>Samples 16-bit direct-color textures at native resolution when upscaling. This can fix filtering of FMVs/backgrounds in some games, but may reduce the quality of render-to-texture effects.</source>
+        <translation>Під час масштабування виконує вибірку 16-бітних текстур із прямим кодуванням кольору в оригінальній роздільності. Це може виправити фільтрування FMV і фонів у деяких іграх, але може знизити якість ефектів рендерингу в текстуру.</translation>
     </message>
     <message>
         <source>Save Controller Preset</source>
@@ -6716,6 +6873,10 @@ Please check your username and password, and try again.</source>
     <message>
         <source>Save as Serial File Names</source>
         <translation>Зберегти як серійні імена файлів</translation>
+    </message>
+    <message>
+        <source>Saves supported controllers by serial or device identity so bindings survive port and connection-order changes when possible.</source>
+        <translation>Запам’ятовує підтримувані контролери за серійним номером або ідентифікатором пристрою, щоб за можливості зберігати прив’язки при зміні порту чи порядку підключення.</translation>
     </message>
     <message>
         <source>Scaled Interlacing</source>
@@ -6898,6 +7059,10 @@ Please check your username and password, and try again.</source>
         <translation>Запустити гру з диска у DVD-приводі комп&apos;ютера.</translation>
     </message>
     <message>
+        <source>Start: {}</source>
+        <translation>Початок: {}</translation>
+    </message>
+    <message>
         <source>Stores the current settings to a controller preset.</source>
         <translation>Зберігає поточні налаштування у пресет контролера.</translation>
     </message>
@@ -6974,6 +7139,10 @@ Please check your username and password, and try again.</source>
         <translation>Діапазон значень</translation>
     </message>
     <message>
+        <source>Value: {}</source>
+        <translation>Значення: {}</translation>
+    </message>
+    <message>
         <source>When enabled, DuckStation will track unofficial achievements. Unlocks will be saved locally and not sent to RetroAchievements.</source>
         <translation>Якщо ввімкнено, DuckStation відстежуватиме неофіційні досягнення. Розблокування зберігатимуться локально й не надсилатимуться до RetroAchievements.</translation>
     </message>
@@ -7032,6 +7201,26 @@ Do you want to {1} anyway?</source>
     <message>
         <source> (%u MB on disk)</source>
         <translation>(%u МБ на диску)</translation>
+    </message>
+    <message>
+        <source>${filetitle}: Name component of the game&apos;s filename.</source>
+        <translation>${filetitle}: Частина імені файлу гри, що містить назву.</translation>
+    </message>
+    <message>
+        <source>${localizedtitle}: Localized title for the game in its native language.</source>
+        <translation>${localizedtitle}: Локалізована назва гри її рідною мовою.</translation>
+    </message>
+    <message>
+        <source>${savetitle}: Save title for the game, including the region suffix.</source>
+        <translation>${savetitle}: Назва гри для збережень із суфіксом регіону.</translation>
+    </message>
+    <message>
+        <source>${serial}: Serial of the game.</source>
+        <translation>${serial}: Серійний номер гри.</translation>
+    </message>
+    <message>
+        <source>${title}: Title of the game.</source>
+        <translation>${title}: Назва гри.</translation>
     </message>
     <message>
         <source>%.2f Seconds</source>
@@ -8222,10 +8411,6 @@ Do you want to delete the save state and boot the game anyway?</source>
         <translation>{} відкріплено.</translation>
     </message>
     <message>
-        <source>{} | Start: {} | Length: {}</source>
-        <translation>{} | Початок: {} | Тривалість: {}</translation>
-    </message>
-    <message>
         <source>Reset Play Time</source>
         <translation>Скинути час гри</translation>
     </message>
@@ -8836,10 +9021,6 @@ Do you want to delete the save state and boot the game anyway?</source>
     <message>
         <source>Utilizes the chosen frame rate regardless of the game&apos;s setting.</source>
         <translation>Використовується вибрана частота кадрів незалежно від налаштувань гри.</translation>
-    </message>
-    <message>
-        <source>Value: {} | Default: {} | Minimum: {} | Maximum: {}</source>
-        <translation>Значення: {} | За замовчуванням: {} | Мінімум: {} | Максимум: {}</translation>
     </message>
     <message>
         <source>Vertex Cache</source>
@@ -9645,6 +9826,16 @@ Are you sure you want to continue?</source>
         <translation>Чи захищено LibCrypt</translation>
     </message>
     <message>
+        <source>Disable Upscaled Direct Textures</source>
+        <comment>GameDatabase::Trait</comment>
+        <translation>Вимкнути масштабування текстур із прямим кодуванням кольору</translation>
+    </message>
+    <message>
+        <source>Filter Framebuffer Uploads</source>
+        <comment>GameDatabase::Trait</comment>
+        <translation>Фільтрувати дані, що завантажуються в буфер кадру</translation>
+    </message>
+    <message>
         <source>Fast forward memory card access disabled.</source>
         <translation>Прискорений доступ до картки пам&apos;яті вимкнено.</translation>
     </message>
@@ -9667,6 +9858,14 @@ Are you sure you want to continue?</source>
     <message>
         <source>Deinterlacing set to {}.</source>
         <translation>Деінтерлейсинг встановлено на {}.</translation>
+    </message>
+    <message>
+        <source>Filter Framebuffer Uploads Minimum Width</source>
+        <translation>Мінімальна ширина даних для фільтрування при завантаженні в буфер кадру</translation>
+    </message>
+    <message>
+        <source>Filter Framebuffer Uploads Minimum Height</source>
+        <translation>Мінімальна висота даних для фільтрування при завантаженні в буфер кадру</translation>
     </message>
     <message>
         <source>Verifying Image</source>
@@ -9850,6 +10049,11 @@ Are you sure you want to continue?</source>
         <translation>Набір дисків</translation>
     </message>
     <message>
+        <source>Audio CD</source>
+        <comment>EntryType</comment>
+        <translation>Аудіо CD</translation>
+    </message>
+    <message>
         <source>PS-EXE</source>
         <comment>EntryType</comment>
         <translation>PS-EXE</translation>
@@ -9873,12 +10077,12 @@ Are you sure you want to continue?</source>
         <translation>Сканування &apos;{}&apos;...</translation>
     </message>
     <message>
-        <source>Unknown</source>
-        <translation>Невідомий</translation>
+        <source>URL template must contain at least one of ${title}, ${localizedtitle}, ${savetitle}, ${filetitle}, or ${serial}.</source>
+        <translation>Шаблон URL-адреси має містити принаймні одну зі змінних ${title}, ${localizedtitle}, ${savetitle}, ${filetitle} або ${serial}.</translation>
     </message>
     <message>
-        <source>URL template must contain at least one of ${title}, ${savetitle}, ${filetitle}, or ${serial}.</source>
-        <translation>Шаблон URL повинен містити хоча б один із таких елементів: ${title}, ${savetitle}, ${filetitle} або ${serial}.</translation>
+        <source>Unknown</source>
+        <translation>Невідомий</translation>
     </message>
     <message>
         <source>No URLs to download enumerated.</source>
@@ -10036,6 +10240,14 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <source>Select Directory</source>
         <translation>Вибрати каталог</translation>
+    </message>
+    <message>
+        <source>Add File...</source>
+        <translation>Додати файл...</translation>
+    </message>
+    <message>
+        <source>Add Folder...</source>
+        <translation>Додати папку...</translation>
     </message>
 </context>
 <context>
@@ -10230,10 +10442,6 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>Контролери:</translation>
     </message>
     <message>
-        <source>Tracks:</source>
-        <translation>Доріжки:</translation>
-    </message>
-    <message>
         <source>Release Info:</source>
         <translation>Інформація про випуск:</translation>
     </message>
@@ -10336,6 +10544,10 @@ Scanning recursively takes more time, but will identify files in subdirectories.
             <numerusform>%n блоки картки пам&apos;яті</numerusform>
             <numerusform>%n блоків картки пам&apos;яті</numerusform>
         </translation>
+    </message>
+    <message>
+        <source>Game ID: %1</source>
+        <translation>Ідентифікатор гри: %1</translation>
     </message>
     <message>
         <source>Search on redump.info</source>
@@ -10469,8 +10681,20 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>Положення екрана:</translation>
     </message>
     <message>
+        <source>Filter Framebuffer Uploads</source>
+        <translation>Фільтрувати дані, що завантажуються в буфер кадру</translation>
+    </message>
+    <message>
+        <source>Minimum Size:</source>
+        <translation>Мінімальний розмір:</translation>
+    </message>
+    <message>
         <source>Scaled Interlacing</source>
         <translation>Масштабована черезрядкова розгортка</translation>
+    </message>
+    <message>
+        <source>Disable Upscaled Direct Textures</source>
+        <translation>Вимкнути масштабування текстур із прямим кодуванням кольору</translation>
     </message>
     <message>
         <source>Texture Replacement</source>
@@ -10681,10 +10905,6 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>Внизу:</translation>
     </message>
     <message>
-        <source>Texture Modulation Cropping (&quot;Old/v0 GPU&quot;)</source>
-        <translation>Обрізання модул. текст. (&quot;Old/v0 GPU&quot;)</translation>
-    </message>
-    <message>
         <source>Reset Geometry Tolerance</source>
         <translation>Скинути допуск геометрії</translation>
     </message>
@@ -10875,6 +11095,34 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <source>Checked</source>
         <translation>Позначено</translation>
+    </message>
+    <message>
+        <source>Samples 16-bit direct-color textures at native resolution when upscaling. This can fix filtering of FMVs/backgrounds in some games, but may reduce the quality of render-to-texture effects.</source>
+        <translation>Під час масштабування виконує вибірку 16-бітних текстур із прямим кодуванням кольору в оригінальній роздільності. Це може виправити фільтрування FMV і фонів у деяких іграх, але може знизити якість ефектів рендерингу в текстуру.</translation>
+    </message>
+    <message>
+        <source>Applies the selected sprite texture filter to framebuffer uploads. This can smooth backgrounds in some games while preserving texture data and 24-bit video.</source>
+        <translation>Застосовує вибраний фільтр текстур спрайтів до даних, що завантажуються в буфер кадру. Це може згладити фони в деяких іграх, зберігаючи дані текстур і 24-бітне відео.</translation>
+    </message>
+    <message>
+        <source>Minimum Framebuffer Upload Width</source>
+        <translation>Мінімальна ширина даних, що завантажуються в буфер кадру</translation>
+    </message>
+    <message>
+        <source>1 px</source>
+        <translation>1 пікс.</translation>
+    </message>
+    <message>
+        <source>Only filters framebuffer uploads at least this wide. Increase this value to avoid filtering texture data.</source>
+        <translation>Фільтрує лише дані, що завантажуються в буфер кадру, з шириною не меншою за це значення. Збільште це значення, щоб уникнути фільтрування даних текстур.</translation>
+    </message>
+    <message>
+        <source>Minimum Framebuffer Upload Height</source>
+        <translation>Мінімальна висота даних, що завантажуються в буфер кадру</translation>
+    </message>
+    <message>
+        <source>Only filters framebuffer uploads at least this tall. Increase this value to avoid filtering texture data.</source>
+        <translation>Фільтрує лише дані, що завантажуються в буфер кадру, з висотою не меншою за це значення. Збільште це значення, щоб уникнути фільтрування даних текстур.</translation>
     </message>
     <message>
         <source>Disables texture emulation in the GPU, forcing all primitives to only show vertex colours.</source>
@@ -11185,10 +11433,6 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>%1x нативна</translation>
     </message>
     <message>
-        <source>Use Global Setting</source>
-        <translation>Використовувати глобальне налашт.</translation>
-    </message>
-    <message>
         <source>%1x MSAA</source>
         <translation>%1x MSAA</translation>
     </message>
@@ -11481,10 +11725,6 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>Відкрити: Меню паузи</translation>
     </message>
     <message>
-        <source>Open Cheat Settings</source>
-        <translation>Відкрити: Налаштування читів</translation>
-    </message>
-    <message>
         <source>Record Single Frame GPU Trace</source>
         <translation>Запис: Одного кадру трасування ГП</translation>
     </message>
@@ -11495,14 +11735,6 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <source>Toggle Media Capture</source>
         <translation>Переключити: Запис мультимедіа</translation>
-    </message>
-    <message>
-        <source>Open Achievement List</source>
-        <translation>Відкрити: Список досягнень</translation>
-    </message>
-    <message>
-        <source>Open Leaderboard List</source>
-        <translation>Відкрити: Список лідерів</translation>
     </message>
     <message>
         <source>System</source>
@@ -11567,6 +11799,22 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <source>Interface</source>
         <translation>Інтерфейс</translation>
+    </message>
+    <message>
+        <source>Toggle Pause Menu</source>
+        <translation>Переключити: Меню паузи</translation>
+    </message>
+    <message>
+        <source>Toggle Cheat List</source>
+        <translation>Переключити: Список читів</translation>
+    </message>
+    <message>
+        <source>Toggle Achievement List</source>
+        <translation>Переключити: Список досягнень</translation>
+    </message>
+    <message>
+        <source>Toggle Leaderboard List</source>
+        <translation>Переключити: Список таблиць лідерів</translation>
     </message>
     <message>
         <source>Fast Forward (Hold)</source>
@@ -14390,14 +14638,6 @@ Error: {1}</source>
         <translation>Форматувати картку</translation>
     </message>
     <message>
-        <source>Import File...</source>
-        <translation>Імпортувати файл...</translation>
-    </message>
-    <message>
-        <source>Import Card...</source>
-        <translation>Імпортувати картку...</translation>
-    </message>
-    <message>
         <source>Save</source>
         <translation>Зберегти</translation>
     </message>
@@ -14408,6 +14648,10 @@ Error: {1}</source>
     <message>
         <source> (Deleted)</source>
         <translation> (Видалено)</translation>
+    </message>
+    <message>
+        <source>Import...</source>
+        <translation>Імпорт...</translation>
     </message>
     <message>
         <source>Select Memory Card</source>
@@ -14430,10 +14674,22 @@ Error: {1}</source>
         <translation>Недостатньо блоків: для цього файлу потрібно %1, але доступно лише %2.</translation>
     </message>
     <message>
+        <source>Select Single Save File</source>
+        <translation>Вибрати окремий файл збереження</translation>
+    </message>
+    <message>
         <source>Failed to rename save file %1:
 %2</source>
         <translation>Не вдалося перейменувати файл збереження %1:
 %2</translation>
+    </message>
+    <message>
+        <source>Import Single Save File...</source>
+        <translation>Імпортувати окремий файл збереження...</translation>
+    </message>
+    <message>
+        <source>Import Entire Memory Card...</source>
+        <translation>Імпортувати всю карту пам’яті...</translation>
     </message>
     <message>
         <source>Failed to import memory card from %1:
@@ -14482,10 +14738,6 @@ Error: {1}</source>
     <message>
         <source>Failed to undelete file %1. The file may have been partially overwritten by another save.</source>
         <translation>Не вдалося відновити файл %1. Можливо, файл був частково перезаписаний іншим збереженням.</translation>
-    </message>
-    <message>
-        <source>Select Single Savefile</source>
-        <translation>Вибрати окремий файл збереження</translation>
     </message>
     <message>
         <source>Extract Animated Icon</source>
@@ -15274,104 +15526,37 @@ Error: {1}</source>
         <source>Sets scaling for left trigger.</source>
         <translation>Встановлює масштабування лівого курка.</translation>
     </message>
-</context>
-<context>
-    <name>NeGconRumble</name>
-    <message>
-        <source>D-Pad Up</source>
-        <translation>Хрестовина вгору</translation>
-    </message>
-    <message>
-        <source>D-Pad Right</source>
-        <translation>Хрестовина вправо</translation>
-    </message>
-    <message>
-        <source>D-Pad Down</source>
-        <translation>Хрестовина вниз</translation>
-    </message>
-    <message>
-        <source>D-Pad Left</source>
-        <translation>Хрестовина вліво</translation>
-    </message>
-    <message>
-        <source>Start</source>
-        <translation>START</translation>
-    </message>
-    <message>
-        <source>A Button</source>
-        <translation>Кнопка A</translation>
-    </message>
-    <message>
-        <source>B Button</source>
-        <translation>Кнопка B</translation>
-    </message>
-    <message>
-        <source>I Button</source>
-        <translation>Кнопка I</translation>
-    </message>
-    <message>
-        <source>II Button</source>
-        <translation>Кнопка II</translation>
-    </message>
-    <message>
-        <source>Left Trigger</source>
-        <translation>Лівий курок</translation>
-    </message>
-    <message>
-        <source>Right Trigger</source>
-        <translation>Правий курок</translation>
-    </message>
-    <message>
-        <source>Steering (Twist) Left</source>
-        <translation>Рульове керування (поворот) вліво</translation>
-    </message>
-    <message>
-        <source>Steering (Twist) Right</source>
-        <translation>Рульове керування (поворот) праворуч</translation>
-    </message>
     <message>
         <source>Analog Toggle</source>
-        <translation>Перемикання аналога</translation>
+        <translation>Перемкнути аналог</translation>
     </message>
     <message>
-        <source>Disable Simultaneous Opposing Cardinal Directions</source>
-        <translation>Вимкнути одночасні протилежні напрямки</translation>
+        <source>Large Motor</source>
+        <translation>Великий вібромотор</translation>
     </message>
     <message>
-        <source>Prevents concurrent left/right or up/down inputs from being presented to the game.</source>
-        <translation>Запобігає одночасному передаванню грі натискань ліворуч/праворуч або вгору/вниз.</translation>
+        <source>Small Motor</source>
+        <translation>Малий вібромотор</translation>
     </message>
     <message>
-        <source>Steering Axis Deadzone</source>
-        <translation>Мертва зона осі рульового керування</translation>
-    </message>
-    <message>
-        <source>Sets deadzone size for steering axis.</source>
-        <translation>Встановлює розмір мертвої зони для осі рульового керування.</translation>
-    </message>
-    <message>
-        <source>Steering Axis Sensitivity</source>
-        <translation>Чутливість осі рульового керування</translation>
-    </message>
-    <message>
-        <source>Sets the steering axis scaling factor.</source>
-        <translation>Встановлює коефіцієнт масштабування осі рульового керування.</translation>
+        <source>Mode LED</source>
+        <translation>Індикатор режиму</translation>
     </message>
     <message>
         <source>Large Motor Vibration Bias</source>
-        <translation>Зміщення вібрації великого двигуна</translation>
+        <translation>Зміщення вібрації великого вібромотора</translation>
     </message>
     <message>
         <source>Sets the bias value for the large vibration motor. If vibration in some games is too weak or not functioning, try increasing this value. Negative values will decrease the intensity of vibration.</source>
-        <translation>Встановлює значення зміщення великого вібраційного двигуна. Якщо вібрація в деяких іграх занадто слабка або не працює, спробуйте збільшити це значення. Негативні значення зменшують інтенсивність вібрації.</translation>
+        <translation>Встановлює значення зміщення для великого вібромотора. Якщо вібрація в деяких іграх занадто слабка або не працює, спробуйте збільшити це значення. Негативні значення зменшують інтенсивність вібрації.</translation>
     </message>
     <message>
         <source>Small Motor Vibration Bias</source>
-        <translation>Зміщення вібрації малого двигуна</translation>
+        <translation>Зміщення вібрації малого вібромотора</translation>
     </message>
     <message>
         <source>Sets the bias value for the small vibration motor. If vibration in some games is too weak or not functioning, try increasing this value. Negative values will decrease the intensity of vibration.</source>
-        <translation>Встановлює значення усунення для маленького вібраційного двигуна. Якщо вібрація в деяких іграх занадто слабка або не працює, спробуйте збільшити це значення. Негативні значення зменшують інтенсивність вібрації.</translation>
+        <translation>Встановлює значення зміщення для малого вібромотора. Якщо вібрація в деяких іграх занадто слабка або не працює, спробуйте збільшити це значення. Негативні значення зменшують інтенсивність вібрації.</translation>
     </message>
 </context>
 <context>
@@ -16240,6 +16425,22 @@ The shortcut will be created at:
 %1</translation>
     </message>
     <message>
+        <source>We have detected that LD_LIBRARY_PATH has been set to the following value:
+
+%1
+
+This will likely prevent DuckStation from working correctly. You should modify your environment to leave LD_LIBRARY_PATH unset.</source>
+        <translation>Ми виявили, що LD_LIBRARY_PATH має таке значення:
+
+%1
+
+Це, ймовірно, завадить коректній роботі DuckStation. Вам слід змінити середовище так, щоб змінна LD_LIBRARY_PATH була невстановленою.</translation>
+    </message>
+    <message>
+        <source>Don&apos;t show again</source>
+        <translation>Більше не показувати</translation>
+    </message>
+    <message>
         <source>Don&apos;t ask again</source>
         <translation>Більше не питати</translation>
     </message>
@@ -16879,19 +17080,19 @@ Do you want to create this directory?</source>
         <translation>PAL (Європа, Австралія)</translation>
     </message>
     <message>
-        <source>NTSC-J (Japan)</source>
+        <source>NTSC-J</source>
         <comment>DiscRegion</comment>
-        <translation>NTSC-J (Японія)</translation>
+        <translation>NTSC-J</translation>
     </message>
     <message>
-        <source>NTSC-U/C (US, Canada)</source>
+        <source>NTSC-U/C</source>
         <comment>DiscRegion</comment>
-        <translation>NTSC-U/C (США, Canada)</translation>
+        <translation>NTSC-U/C</translation>
     </message>
     <message>
-        <source>PAL (Europe, Australia)</source>
+        <source>PAL</source>
         <comment>DiscRegion</comment>
-        <translation>PAL (Європа, Австралія)</translation>
+        <translation>PAL</translation>
     </message>
     <message>
         <source>Other</source>
@@ -16994,6 +17195,36 @@ Do you want to create this directory?</source>
         <translation>JINC2 (повільно, без змішування країв)</translation>
     </message>
     <message>
+        <source>Monotonic Cubic (Very Slow)</source>
+        <comment>GPUTextureFilter</comment>
+        <translation>Монотонна кубічна (дуже повільно)</translation>
+    </message>
+    <message>
+        <source>Monotonic Cubic (Very Slow, No Edge Blending)</source>
+        <comment>GPUTextureFilter</comment>
+        <translation>Монотонна кубічна (дуже повільно, без змішування країв)</translation>
+    </message>
+    <message>
+        <source>Adaptive Diagonal (Slow)</source>
+        <comment>GPUTextureFilter</comment>
+        <translation>Адаптивна діагональна (повільно)</translation>
+    </message>
+    <message>
+        <source>Adaptive Diagonal (Slow, No Edge Blending)</source>
+        <comment>GPUTextureFilter</comment>
+        <translation>Адаптивна діагональна (повільно, без змішування країв)</translation>
+    </message>
+    <message>
+        <source>DCCI (Extremely Slow)</source>
+        <comment>GPUTextureFilter</comment>
+        <translation>DCCI (надзвичайно повільно)</translation>
+    </message>
+    <message>
+        <source>DCCI (Extremely Slow, No Edge Blending)</source>
+        <comment>GPUTextureFilter</comment>
+        <translation>DCCI (надзвичайно повільно, без змішування країв)</translation>
+    </message>
+    <message>
         <source>xBR (Very Slow)</source>
         <comment>GPUTextureFilter</comment>
         <translation>xBR (дуже повільно)</translation>
@@ -17002,6 +17233,11 @@ Do you want to create this directory?</source>
         <source>xBR (Very Slow, No Edge Blending)</source>
         <comment>GPUTextureFilter</comment>
         <translation>xBR (дуже повільно, без змішування країв)</translation>
+    </message>
+    <message>
+        <source>Sharp Bilinear</source>
+        <comment>GPUTextureFilter</comment>
+        <translation>Різка білінійна</translation>
     </message>
     <message>
         <source>Scale2x (EPX)</source>
@@ -18489,6 +18725,10 @@ You must save to a memory card and reset the game to clear any effects.</source>
         <source>Memory Card Mismatch</source>
         <comment>Taint</comment>
         <translation>Невідповідність картки пам&apos;яті</translation>
+    </message>
+    <message>
+        <source>This save state was created with a different console region, and may be unstable.</source>
+        <translation>Цей збережений стан створено з іншим регіоном консолі, тому він може працювати нестабільно.</translation>
     </message>
     <message>
         <source>CPU Overclock Changed</source>

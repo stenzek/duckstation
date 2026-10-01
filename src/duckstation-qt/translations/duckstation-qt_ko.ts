@@ -170,6 +170,14 @@ Do you want to enable hardcore mode?</source>
         <translation>배지 미리 가져오기</translation>
     </message>
     <message>
+        <source>Reset Achievement Notification Duration</source>
+        <translation>도전 과제 알림 표시 시간 초기화</translation>
+    </message>
+    <message>
+        <source>Reset Leaderboard Notification Duration</source>
+        <translation>순위표 알림 표시 시간 초기화</translation>
+    </message>
+    <message>
         <source>Show Leaderboard Trackers</source>
         <oldsource>Show Leaderboard Notifications</oldsource>
         <translation>순위표 추적기 표시</translation>
@@ -281,12 +289,28 @@ Do you want to enable hardcore mode?</source>
         <translation>순위표 추적을 포함한 도전 과제를 위한 &quot;도전&quot; 모드. 저장 상태, 치트, 속도 저하 기능 비활성화.</translation>
     </message>
     <message>
+        <source> seconds</source>
+        <translation> 초</translation>
+    </message>
+    <message>
         <source>When enabled, DuckStation will track unofficial achievements. Unlocks will be saved locally and not sent to RetroAchievements.</source>
         <translation>활성화하면 DuckStation이 비공식 도전 과제를 추적합니다. 잠금 해제 정보는 로컬에 저장되며 RetroAchievements로 전송되지 않습니다.</translation>
     </message>
     <message>
         <source>Checked</source>
         <translation>선택됨</translation>
+    </message>
+    <message>
+        <source>N/A</source>
+        <translation>해당 없음</translation>
+    </message>
+    <message>
+        <source>Resets the duration to the global setting.</source>
+        <translation>표시 시간을 전역 설정값으로 초기화합니다.</translation>
+    </message>
+    <message>
+        <source>Resets the duration to the default.</source>
+        <translation>표시 시간을 기본값으로 초기화합니다.</translation>
     </message>
     <message>
         <source>Plays sound effects for events such as achievement unlocks and leaderboard submissions.</source>
@@ -403,12 +427,6 @@ Token generated %2</source>
         <translation>%1(으)로 로그인됨
 토큰 생성: %2</translation>
     </message>
-    <message numerus="yes">
-        <source>%n seconds</source>
-        <translation>
-            <numerusform>%n초</numerusform>
-        </translation>
-    </message>
     <message>
         <source>Logout</source>
         <translation>로그아웃</translation>
@@ -458,10 +476,6 @@ Token generated %2</source>
     <message>
         <source>Hardcore mode will be enabled on game restart.</source>
         <translation>게임을 다시 시작하면 하드코어 모드가 활성화됩니다.</translation>
-    </message>
-    <message>
-        <source>{} (Unofficial)</source>
-        <translation>{}(비공식)</translation>
     </message>
     <message>
         <source>Game complete.
@@ -1139,22 +1153,6 @@ Error: {}</source>
 <context>
     <name>AnalogController</name>
     <message>
-        <source>Controller {} switched to analog mode.</source>
-        <translation>컨트롤러{}가 아날로그 모드로 전환되었습니다.</translation>
-    </message>
-    <message>
-        <source>Controller {} switched to digital mode.</source>
-        <translation>컨트롤러{}이(가) 디지털 모드로 전환되었습니다.</translation>
-    </message>
-    <message>
-        <source>Controller {} is locked to analog mode by the game.</source>
-        <translation>컨트롤러{}가 게임에서 아날로그 모드로 잠겨 있습니다.</translation>
-    </message>
-    <message>
-        <source>Controller {} is locked to digital mode by the game.</source>
-        <translation>컨트롤러{}가 게임에 의해 디지털 모드로 잠겨 있습니다.</translation>
-    </message>
-    <message>
         <source>D-Pad Up</source>
         <translation>십자 버튼 ↑</translation>
     </message>
@@ -1390,10 +1388,6 @@ Error: {}</source>
         <source>R3</source>
         <translation>R3</translation>
     </message>
-    <message>
-        <source>Mode LED</source>
-        <translation>모드 LED</translation>
-    </message>
 </context>
 <context>
     <name>AnalogJoystick</name>
@@ -1621,6 +1615,10 @@ Error: {}</source>
         <translation>버퍼 크기 초기화</translation>
     </message>
     <message>
+        <source>Reset Output Latency</source>
+        <translation>출력 대기 시간 초기화</translation>
+    </message>
+    <message>
         <source>Maximum Latency: 0 ms (0 ms stretch + 0 ms buffer + 0 ms output)</source>
         <translation>최대 대기 시간: 0밀리초 (스트레치 0밀리초 + 버퍼 0밀리초 + 출력 0밀리초)</translation>
     </message>
@@ -1737,6 +1735,10 @@ Error: {}</source>
         <translation>%</translation>
     </message>
     <message>
+        <source> ms</source>
+        <translation> 밀리초</translation>
+    </message>
+    <message>
         <source>%1 ms</source>
         <translation>%1밀리초</translation>
     </message>
@@ -1839,10 +1841,6 @@ Error: {}</source>
     <message>
         <source>Maximum Latency: %1 ms (minimum output latency unknown)</source>
         <translation>최대 대기 시간 : %1밀리초(최소 출력 대기 시간은 알 수 없음)</translation>
-    </message>
-    <message>
-        <source>%1%</source>
-        <translation>%1%</translation>
     </message>
 </context>
 <context>
@@ -2226,6 +2224,24 @@ WAV 파일은 16비트 스테레오이며 샘플 레이트는 44100Hz여야 합�
 Your dump may be corrupted, or the physical disc is scratched.</source>
         <translation>게임이 곧 충돌할 수 있습니다.
 덤프가 손상되었거나 실제 디스크에 흠집이 있을 수 있습니다.</translation>
+    </message>
+</context>
+<context>
+    <name>CPU</name>
+    <message>
+        <source>Execute</source>
+        <comment>BreakpointType</comment>
+        <translation>실행</translation>
+    </message>
+    <message>
+        <source>Read</source>
+        <comment>BreakpointType</comment>
+        <translation>읽기</translation>
+    </message>
+    <message>
+        <source>Write</source>
+        <comment>BreakpointType</comment>
+        <translation>쓰기</translation>
     </message>
 </context>
 <context>
@@ -2885,6 +2901,14 @@ This warning will only be shown once.</source>
         <translation>{} 컨트롤러가 디지털 모드로 전환되었습니다.</translation>
     </message>
     <message>
+        <source>Controller {} is locked to analog mode by the game.</source>
+        <translation>컨트롤러 {}가 게임에 의해 아날로그 모드로 고정되어 있습니다.</translation>
+    </message>
+    <message>
+        <source>Controller {} is locked to digital mode by the game.</source>
+        <translation>컨트롤러 {}가 게임에 의해 디지털 모드로 고정되어 있습니다.</translation>
+    </message>
+    <message>
         <source>Controller {} switched to JogCon mode.</source>
         <translation>{} 컨트롤러가 JogCon 모드로 전환되었습니다.</translation>
     </message>
@@ -2946,6 +2970,14 @@ This warning will only be shown once.</source>
     <message>
         <source>Axes</source>
         <translation>축</translation>
+    </message>
+    <message>
+        <source>Multiple Devices</source>
+        <translation>여러 장치</translation>
+    </message>
+    <message>
+        <source>%1 (%2)</source>
+        <translation>%1(%2)</translation>
     </message>
     <message>
         <source>Buttons</source>
@@ -3548,10 +3580,6 @@ This warning will only be shown once.</source>
         <translation>LED를 구성할 수 있는 컨트롤러의 LED 설정을 조정합니다.</translation>
     </message>
     <message>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enables the SDL input source and detection of controllers.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;SDL 입력 소스 및 컨트롤러 감지를 활성화합니다.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
-    </message>
-    <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Allows rumble and LED effects for DualShock 4 / DualSense controllers in Bluetooth mode. This option is not required for wired connections.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Enabling enhanced reports may result in your controller being unusable in other applications until it is turned off and on again.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;블루투스 모드에서 DualShock 4 / DualSense 컨트롤러의 진동 및 LED 효과를 활성화합니다. 유선 연결에는 이 옵션이 필요하지 않습니다.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;향상된 보고를 활성화하면 껐다가 다시 켤 때까지 다른 애플리케이션에서 컨트롤러를 사용할 수 없게 될 수 있습니다.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
@@ -3564,8 +3592,24 @@ This warning will only be shown once.</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;SDL 입력 소스는 대부분의 컨트롤러를 지원하며 권장되는 옵션입니다. 블루투스 모드에서 DualShock 4 / DualSense 패드의 진동/LED 기능을 사용하려면 향상 모드가 필요할 수 있습니다. 장치별 동작을 제어하는 &lt;a href=&quot;ADVANCED_SDL_OPTIONS&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#99ebff;&quot;&gt;고급 옵션&lt;/span&gt;&lt;/a&gt;도 편집할 수 있습니다.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
+        <source>LEDs</source>
+        <translation>LED</translation>
+    </message>
+    <message>
+        <source>Enables the SDL input source and detection of controllers.</source>
+        <translation>SDL 입력 소스 및 컨트롤러 감지를 활성화합니다.</translation>
+    </message>
+    <message>
         <source>Allows use of the touchpad for DualShock 4 / DualSense controllers as a pointer, for use with lightguns.</source>
         <translation>라이트건에 사용할 포인터로 DualShock 4 / DualSense 컨트롤러의 터치패드를 사용할 수 있습니다.</translation>
+    </message>
+    <message>
+        <source>Saves supported controllers by serial or device identity so bindings survive port and connection-order changes when possible.</source>
+        <translation>지원되는 컨트롤러를 일련 번호 또는 장치 식별 정보로 저장하여, 가능한 경우 포트나 연결 순서가 바뀌어도 입력 할당이 유지되도록 합니다.</translation>
+    </message>
+    <message>
+        <source>Use Persistent Device Identifiers</source>
+        <translation>영구 장치 식별자 사용</translation>
     </message>
     <message>
         <source>Enable XInput Source</source>
@@ -4049,8 +4093,8 @@ This file is approximately 206KB, do you want to download it now?</source>
         <translation>DuckStation은 현재 커버가 없는 게임 표지를 자동으로 내려받을 수 있습니다. DuckStation은 어떠한 커버 이미지도 호스팅하지 않으며, 사용자가 직접 이미지 소스를 제공해야 합니다.</translation>
     </message>
     <message>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Depending on your jurisdiction, &lt;span style=&quot; font-weight:700;&quot;&gt;game covers may be copyrighted&lt;/span&gt;. You are only authorized to use this tool with &lt;span style=&quot; font-weight:700;&quot;&gt;your own servers and images&lt;/span&gt;.&lt;/p&gt;&lt;p&gt;In the box below, specify the URLs to download covers from, with one template URL per line. The following variables are available:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${title}:&lt;/span&gt; Title of the game.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${savetitle}:&lt;/span&gt; Title of the game including the region.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${localizedtitle}:&lt;/span&gt; Localized (native language) title of the game.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${filetitle}:&lt;/span&gt; Name component of the game&apos;s filename.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${serial}:&lt;/span&gt; Serial of the game.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Example:&lt;/span&gt; https://www.example-not-a-real-domain.com/covers/${serial}.jpg&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;관할 지역에 따라 &lt;span style=&quot; font-weight:700;&quot;&gt;게임 커버에는 저작권이 있을 수 있습니다&lt;/span&gt;. 이 도구는 &lt;span style=&quot; font-weight:700;&quot;&gt;자신의 서버와 이미지&lt;/span&gt;에만 사용할 권한이 있습니다.&lt;/p&gt;&lt;p&gt;아래 상자에 커버를 다운로드할 URL을 한 줄에 하나씩 템플릿 URL 형식으로 지정하세요. 다음 변수를 사용할 수 있습니다:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${title}:&lt;/span&gt; 게임 제목.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${savetitle}:&lt;/span&gt; 지역을 포함한 게임 제목.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${localizedtitle}:&lt;/span&gt; 현지화된(모국어) 게임 제목.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${filetitle}:&lt;/span&gt; 게임 파일 이름의 이름 구성 요소.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${serial}:&lt;/span&gt; 게임의 일련 번호.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;예:&lt;/span&gt; https://www.example-not-a-real-domain.com/covers/${serial}.jpg&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Depending on your jurisdiction, &lt;span style=&quot; font-weight:700;&quot;&gt;game covers may be copyrighted&lt;/span&gt;. You are only authorized to use this tool with &lt;span style=&quot; font-weight:700;&quot;&gt;your own servers and images&lt;/span&gt;.&lt;/p&gt;&lt;p&gt;In the box below, specify the URLs to download covers from, with one template URL per line. The following variables are available:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${title}:&lt;/span&gt; Title of the game.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${savetitle}:&lt;/span&gt; Save title for the game, including the region suffix.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${localizedtitle}:&lt;/span&gt; Localized title for the game in its native language.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${filetitle}:&lt;/span&gt; Name component of the game&apos;s filename.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${serial}:&lt;/span&gt; Serial of the game.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Example:&lt;/span&gt; https://www.example-not-a-real-domain.com/covers/${serial}.jpg&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;관할 지역에 따라 &lt;span style=&quot; font-weight:700;&quot;&gt;게임 커버에는 저작권이 있을 수 있습니다&lt;/span&gt;. 이 도구는 &lt;span style=&quot; font-weight:700;&quot;&gt;자신의 서버와 이미지&lt;/span&gt;에만 사용할 권한이 있습니다.&lt;/p&gt;&lt;p&gt;아래 상자에 커버를 다운로드할 URL을 한 줄에 하나씩 템플릿 URL 형식으로 지정하세요. 다음 변수를 사용할 수 있습니다:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${title}:&lt;/span&gt; 게임 제목.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${savetitle}:&lt;/span&gt; 지역 접미사를 포함한 게임의 저장용 제목.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${localizedtitle}:&lt;/span&gt; 게임의 원래 언어로 현지화된 제목.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${filetitle}:&lt;/span&gt; 게임 파일 이름의 이름 부분.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${serial}:&lt;/span&gt; 게임의 일련 번호.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;예:&lt;/span&gt; https://www.example-not-a-real-domain.com/covers/${serial}.jpg&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>By default, the downloaded covers will be saved with the game&apos;s title. If this is not desired, you can check the &quot;Use Serial File Names&quot; box below. Using serials instead of game titles will prevent conflicts when multiple regions of the same game are used.</source>
@@ -4243,6 +4287,17 @@ This file is approximately 206KB, do you want to download it now?</source>
     </message>
 </context>
 <context>
+    <name>DebuggerCallStackModel</name>
+    <message>
+        <source>Address</source>
+        <translation>주소</translation>
+    </message>
+    <message>
+        <source>Frame</source>
+        <translation>스택 프레임</translation>
+    </message>
+</context>
+<context>
     <name>DebuggerRegistersModel</name>
     <message>
         <source>Register</source>
@@ -4269,6 +4324,17 @@ This file is approximately 206KB, do you want to download it now?</source>
     </message>
 </context>
 <context>
+    <name>DebuggerThreadsModel</name>
+    <message>
+        <source>Name</source>
+        <translation>이름</translation>
+    </message>
+    <message>
+        <source>Value</source>
+        <translation>값</translation>
+    </message>
+</context>
+<context>
     <name>DebuggerWindow</name>
     <message>
         <source>CPU Debugger</source>
@@ -4281,10 +4347,6 @@ This file is approximately 206KB, do you want to download it now?</source>
     <message>
         <source>Breakpoints</source>
         <translation>브레이크포인트</translation>
-    </message>
-    <message>
-        <source>toolBar</source>
-        <translation>도구 모음</translation>
     </message>
     <message>
         <source>Disassembly</source>
@@ -4345,6 +4407,14 @@ This file is approximately 206KB, do you want to download it now?</source>
     <message>
         <source>Stack</source>
         <translation>스택</translation>
+    </message>
+    <message>
+        <source>Threads</source>
+        <translation>스레드</translation>
+    </message>
+    <message>
+        <source>Call Stack</source>
+        <translation>호출 스택</translation>
     </message>
     <message>
         <source>Pause/Continue</source>
@@ -4463,6 +4533,10 @@ This file is approximately 206KB, do you want to download it now?</source>
         <translation>주소로 이동(&amp;A)</translation>
     </message>
     <message>
+        <source>Toolbar</source>
+        <translation>도구 모음</translation>
+    </message>
+    <message>
         <source>&amp;Add Breakpoint</source>
         <translation>중단점 추가(&amp;A)</translation>
     </message>
@@ -4528,9 +4602,31 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <source>&amp;Patch Instruction</source>
         <translation>&amp;패치 명령어</translation>
     </message>
+    <message numerus="yes">
+        <source>&amp;Nop %n Instruction(s)</source>
+        <translation>
+            <numerusform>명령어 %n개를 Nop으로 변경(&amp;N)</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>&amp;Copy %n Instruction(s)</source>
+        <translation>
+            <numerusform>명령어 %n개 복사(&amp;C)</numerusform>
+        </translation>
+    </message>
     <message>
-        <source>&amp;Nop Instruction</source>
-        <translation>&amp;Nop 명령어</translation>
+        <source>Failed to write one or more patched instructions. Patched %1 of %2 instructions; the first failure was at 0x%3.</source>
+        <translation>패치된 명령어 중 하나 이상을 기록하지 못했습니다. 명령어 %2개 중 %1개를 패치했으며, 처음 실패한 주소는 0x%3입니다.</translation>
+    </message>
+    <message>
+        <source>Patched %1 of %2 selected instructions.</source>
+        <translation>선택한 명령어 %2개 중 %1개를 패치했습니다.</translation>
+    </message>
+    <message numerus="yes">
+        <source>Loaded %n saved breakpoint(s).</source>
+        <translation>
+            <numerusform>저장된 중단점 %n개를 불러왔습니다.</numerusform>
+        </translation>
     </message>
     <message>
         <source>View in &amp;Dump</source>
@@ -4557,12 +4653,19 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <translation>잘못된 명령어</translation>
     </message>
     <message>
-        <source>Failed to write patched instruction to 0x%1.</source>
-        <translation>패치된 명령어를 0x%1에 기록하지 못했습니다.</translation>
-    </message>
-    <message>
         <source>Patched instruction at 0x%1.</source>
         <translation>0x%1의 명령어를 패치했습니다.</translation>
+    </message>
+    <message>
+        <source>Patched %1 instructions.</source>
+        <translation>명령어 %1개를 패치했습니다.</translation>
+    </message>
+    <message numerus="yes">
+        <source>Copied %n instruction(s) to the clipboard.</source>
+        <comment>CopyRange</comment>
+        <translation>
+            <numerusform>명령어 %n개를 클립보드에 복사했습니다.</numerusform>
+        </translation>
     </message>
     <message>
         <source>Invalid search pattern. It should contain hex digits or question marks.</source>
@@ -5367,14 +5470,6 @@ Clicking Reset will restore the serial back to the value scanned from in the dis
         <translation>(디스크 공간 %uMB)</translation>
     </message>
     <message>
-        <source>${title}: Title of the game.
-${filetitle}: Name component of the game&apos;s filename.
-${serial}: Serial of the game.</source>
-        <translation>${title} : 게임 타이틀.
-${filetitle} : 게임 파일명의 이름 구성 요소.
-${serial} : 게임 일련번호.</translation>
-    </message>
-    <message>
         <source>About</source>
         <translation>정보</translation>
     </message>
@@ -5393,6 +5488,10 @@ ${serial} : 게임 일련번호.</translation>
     <message>
         <source>Allow Booting Without SBI File</source>
         <translation>SBI 파일 없이 부팅 허용</translation>
+    </message>
+    <message>
+        <source>Applies the selected sprite texture filter to framebuffer uploads. This can smooth backgrounds in some games while preserving texture data and 24-bit video.</source>
+        <translation>선택한 스프라이트 텍스처 필터를 프레임버퍼 업로드에 적용합니다. 텍스처 데이터와 24비트 영상을 유지하면서 일부 게임의 배경을 부드럽게 만들 수 있습니다.</translation>
     </message>
     <message>
         <source>Apply Image Patches</source>
@@ -5773,6 +5872,10 @@ You cannot undo this action.</source>
         <translation>기본값 : 활성화</translation>
     </message>
     <message>
+        <source>Default: {}</source>
+        <translation>기본값: {}</translation>
+    </message>
+    <message>
         <source>Delete</source>
         <translation>삭제</translation>
     </message>
@@ -5883,6 +5986,10 @@ You cannot undo this action.</source>
     <message>
         <source>Disable Subdirectory Scanning</source>
         <translation>하위 디렉터리 검색 비활성화</translation>
+    </message>
+    <message>
+        <source>Disable Upscaled Direct Textures</source>
+        <translation>직접 색상 텍스처 업스케일링 비활성화</translation>
     </message>
     <message>
         <source>Disable on 2D Polygons</source>
@@ -6140,6 +6247,10 @@ Error was:</source>
         <translation>파일 크기</translation>
     </message>
     <message>
+        <source>Filter Framebuffer Uploads</source>
+        <translation>프레임버퍼 업로드 필터링</translation>
+    </message>
+    <message>
         <source>Force 4:3 For FMVs</source>
         <translation>FMV에 4:3 강제 적용</translation>
     </message>
@@ -6239,6 +6350,10 @@ Error was:</source>
         <translation>← : </translation>
     </message>
     <message>
+        <source>Length: {}</source>
+        <translation>길이: {}</translation>
+    </message>
+    <message>
         <source>Light</source>
         <translation>→</translation>
     </message>
@@ -6261,6 +6376,10 @@ Error was:</source>
     <message>
         <source>Load Preset</source>
         <translation>사전 설정 불러오기</translation>
+    </message>
+    <message>
+        <source>Loading Game List...</source>
+        <translation>게임 목록 불러오는 중...</translation>
     </message>
     <message>
         <source>Log File Timestamps</source>
@@ -6291,8 +6410,24 @@ Please check your username and password, and try again.</source>
         <translation>로그인 토큰 생성: {}</translation>
     </message>
     <message>
+        <source>Maximum: {}</source>
+        <translation>최댓값: {}</translation>
+    </message>
+    <message>
         <source>Menu Background</source>
         <translation>메뉴 배경</translation>
+    </message>
+    <message>
+        <source>Minimum Framebuffer Upload Height</source>
+        <translation>프레임버퍼 업로드 최소 높이</translation>
+    </message>
+    <message>
+        <source>Minimum Framebuffer Upload Width</source>
+        <translation>프레임버퍼 업로드 최소 너비</translation>
+    </message>
+    <message>
+        <source>Minimum: {}</source>
+        <translation>최솟값: {}</translation>
     </message>
     <message>
         <source>Move Cursor</source>
@@ -6326,6 +6461,14 @@ Please check your username and password, and try again.</source>
     <message>
         <source>None</source>
         <translation>없음</translation>
+    </message>
+    <message>
+        <source>Only filters framebuffer uploads at least this tall. Increase this value to avoid filtering texture data.</source>
+        <translation>높이가 이 값 이상인 프레임버퍼 업로드만 필터링합니다. 텍스처 데이터가 필터링되지 않도록 하려면 이 값을 늘리세요.</translation>
+    </message>
+    <message>
+        <source>Only filters framebuffer uploads at least this wide. Increase this value to avoid filtering texture data.</source>
+        <translation>너비가 이 값 이상인 프레임버퍼 업로드만 필터링합니다. 텍스처 데이터가 필터링되지 않도록 하려면 이 값을 늘리세요.</translation>
     </message>
     <message>
         <source>PGXP Depth Buffer</source>
@@ -6404,12 +6547,24 @@ Please check your username and password, and try again.</source>
         <translation>비디오램 다시 읽어오기를 위해 소프트웨어 렌더러를 병렬로 실행합니다. 일부 시스템에서는 하드웨어 렌더러와 함께 그래픽 향상 기능을 사용할 때 성능이 향상될 수 있습니다.</translation>
     </message>
     <message>
+        <source>SDL Persistent Device Identifiers</source>
+        <translation>SDL 영구 장치 식별자</translation>
+    </message>
+    <message>
+        <source>Samples 16-bit direct-color textures at native resolution when upscaling. This can fix filtering of FMVs/backgrounds in some games, but may reduce the quality of render-to-texture effects.</source>
+        <translation>업스케일링 시 16비트 직접 색상 텍스처를 원래 해상도로 샘플링합니다. 일부 게임에서 FMV나 배경의 필터링 문제를 해결할 수 있지만, 텍스처에 렌더링하는 효과의 품질이 떨어질 수 있습니다.</translation>
+    </message>
+    <message>
         <source>Save Controller Preset</source>
         <translation>컨트롤러 사전 설정 저장</translation>
     </message>
     <message>
         <source>Save Preset</source>
         <translation>사전 설정 저장</translation>
+    </message>
+    <message>
+        <source>Saves supported controllers by serial or device identity so bindings survive port and connection-order changes when possible.</source>
+        <translation>지원되는 컨트롤러를 일련 번호 또는 장치 식별 정보로 저장하여, 가능한 경우 포트나 연결 순서가 바뀌어도 입력 할당이 유지되도록 합니다.</translation>
     </message>
     <message>
         <source>Screen Margins</source>
@@ -6540,6 +6695,10 @@ Please check your username and password, and try again.</source>
         <translation>PC의 DVD 드라이브에 있는 디스크에서 게임을 시작합니다.</translation>
     </message>
     <message>
+        <source>Start: {}</source>
+        <translation>시작: {}</translation>
+    </message>
+    <message>
         <source>Stores the current settings to a controller preset.</source>
         <translation>현재 설정을 컨트롤러 사전 설정에 저장합니다.</translation>
     </message>
@@ -6616,6 +6775,10 @@ Please check your username and password, and try again.</source>
         <translation>여러 디스크로 구성된 게임의 경우 각 디스크에 별도의 게임 설정을 사용합니다. 1번째/메인 디스크에만 설정할 수 있습니다.</translation>
     </message>
     <message>
+        <source>Value: {}</source>
+        <translation>값: {}</translation>
+    </message>
+    <message>
         <source>Vertex Cache</source>
         <translation>버텍스 캐시</translation>
     </message>
@@ -6642,6 +6805,26 @@ Please check your username and password, and try again.</source>
     <message>
         <source>%.1f ms</source>
         <translation>%.1f밀리초</translation>
+    </message>
+    <message>
+        <source>${filetitle}: Name component of the game&apos;s filename.</source>
+        <translation>${filetitle}: 게임 파일 이름의 이름 부분.</translation>
+    </message>
+    <message>
+        <source>${localizedtitle}: Localized title for the game in its native language.</source>
+        <translation>${localizedtitle}: 게임의 원래 언어로 현지화된 제목.</translation>
+    </message>
+    <message>
+        <source>${savetitle}: Save title for the game, including the region suffix.</source>
+        <translation>${savetitle}: 지역 접미사를 포함한 게임의 저장용 제목.</translation>
+    </message>
+    <message>
+        <source>${serial}: Serial of the game.</source>
+        <translation>${serial}: 게임의 일련 번호.</translation>
+    </message>
+    <message>
+        <source>${title}: Title of the game.</source>
+        <translation>${title}: 게임 제목.</translation>
     </message>
     <message>
         <source>%.2f Seconds</source>
@@ -8154,10 +8337,6 @@ Do you want to delete the save state and boot the game anyway?</source>
         <translation>{} 고정을 해제했습니다.</translation>
     </message>
     <message>
-        <source>{} | Start: {} | Length: {}</source>
-        <translation>{} | 시작: {} | 길이: {}</translation>
-    </message>
-    <message>
         <source>Reset Play Time</source>
         <translation>플레이 시간 초기화</translation>
     </message>
@@ -8820,10 +8999,6 @@ Do you want to delete the save state and boot the game anyway?</source>
     <message>
         <source>Uses the software renderer when creating rewind states to prevent additional VRAM usage. Especially useful when upscaling.</source>
         <translation>되감기 상태를 생성할 때 추가 VRAM 사용을 방지하기 위해 소프트웨어 렌더러를 사용합니다. 특히 업스케일링 시 유용합니다.</translation>
-    </message>
-    <message>
-        <source>Value: {} | Default: {} | Minimum: {} | Maximum: {}</source>
-        <translation>값 : {} | 기본값 : {} | 최소값 : {} | 최대값 : {}</translation>
     </message>
     <message>
         <source>Verify</source>
@@ -9579,6 +9754,16 @@ Are you sure you want to continue?</source>
         <translation>LibCrypt는 보호되나요?</translation>
     </message>
     <message>
+        <source>Disable Upscaled Direct Textures</source>
+        <comment>GameDatabase::Trait</comment>
+        <translation>직접 색상 텍스처 업스케일링 비활성화</translation>
+    </message>
+    <message>
+        <source>Filter Framebuffer Uploads</source>
+        <comment>GameDatabase::Trait</comment>
+        <translation>프레임버퍼 업로드 필터링</translation>
+    </message>
+    <message>
         <source>Fast boot disabled.</source>
         <translation>빠른 부팅이 비활성화되었습니다.</translation>
     </message>
@@ -9609,6 +9794,14 @@ Are you sure you want to continue?</source>
     <message>
         <source>PGXP preserve projection precision disabled.</source>
         <translation>PGXP 투사 정밀도 보존 기능이 비활성화되었습니다.</translation>
+    </message>
+    <message>
+        <source>Filter Framebuffer Uploads Minimum Width</source>
+        <translation>프레임버퍼 업로드 필터링 최소 너비</translation>
+    </message>
+    <message>
+        <source>Filter Framebuffer Uploads Minimum Height</source>
+        <translation>프레임버퍼 업로드 필터링 최소 높이</translation>
     </message>
     <message>
         <source>Verifying Image</source>
@@ -9843,6 +10036,11 @@ Are you sure you want to continue?</source>
         <translation>디스크 세트</translation>
     </message>
     <message>
+        <source>Audio CD</source>
+        <comment>EntryType</comment>
+        <translation>오디오 CD</translation>
+    </message>
+    <message>
         <source>PS-EXE</source>
         <comment>EntryType</comment>
         <translation>PS-EXE</translation>
@@ -9866,12 +10064,12 @@ Are you sure you want to continue?</source>
         <translation>&apos;{}&apos; 스캔 중...</translation>
     </message>
     <message>
-        <source>Unknown</source>
-        <translation>알 수 없음</translation>
+        <source>URL template must contain at least one of ${title}, ${localizedtitle}, ${savetitle}, ${filetitle}, or ${serial}.</source>
+        <translation>URL 템플릿에는 ${title}, ${localizedtitle}, ${savetitle}, ${filetitle} 또는 ${serial} 중 하나 이상이 포함되어야 합니다.</translation>
     </message>
     <message>
-        <source>URL template must contain at least one of ${title}, ${savetitle}, ${filetitle}, or ${serial}.</source>
-        <translation>URL 템플릿에는 ${title}, ${savetitle}, ${filetitle} 또는 ${serial} 중 하나 이상이 포함되어야 합니다.</translation>
+        <source>Unknown</source>
+        <translation>알 수 없음</translation>
     </message>
     <message>
         <source>No URLs to download enumerated.</source>
@@ -10034,6 +10232,14 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <source>Select Directory</source>
         <translation>디렉터리 선택</translation>
+    </message>
+    <message>
+        <source>Add File...</source>
+        <translation>파일 추가...</translation>
+    </message>
+    <message>
+        <source>Add Folder...</source>
+        <translation>폴더 추가...</translation>
     </message>
 </context>
 <context>
@@ -10229,10 +10435,6 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>컨트롤러 :</translation>
     </message>
     <message>
-        <source>Tracks:</source>
-        <translation>트랙 :</translation>
-    </message>
-    <message>
         <source>Release Info:</source>
         <translation>출시 정보 :</translation>
     </message>
@@ -10311,6 +10513,10 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>
             <numerusform>%n블록</numerusform>
         </translation>
+    </message>
+    <message>
+        <source>Game ID: %1</source>
+        <translation>게임 ID: %1</translation>
     </message>
     <message>
         <source>Track %1</source>
@@ -10470,10 +10676,6 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <source>Bottom:</source>
         <translation>아래쪽:</translation>
-    </message>
-    <message>
-        <source>Texture Modulation Cropping (&quot;Old/v0 GPU&quot;)</source>
-        <translation>텍스처 변조 자르기(&quot;Old/v0&quot; GPU)</translation>
     </message>
     <message>
         <source>Scaled Interlacing</source>
@@ -10695,6 +10897,18 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <source>Enable VRAM Write Dumping</source>
         <translation>비디오램 쓰기 덤핑 활성화</translation>
+    </message>
+    <message>
+        <source>Filter Framebuffer Uploads</source>
+        <translation>프레임버퍼 업로드 필터링</translation>
+    </message>
+    <message>
+        <source>Minimum Size:</source>
+        <translation>최소 크기:</translation>
+    </message>
+    <message>
+        <source>Disable Upscaled Direct Textures</source>
+        <translation>직접 색상 텍스처 업스케일링 비활성화</translation>
     </message>
     <message>
         <source>Debugging</source>
@@ -11126,6 +11340,34 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>덤프 디렉터리에 교체할 수 있는 배경을 씁니다.</translation>
     </message>
     <message>
+        <source>Samples 16-bit direct-color textures at native resolution when upscaling. This can fix filtering of FMVs/backgrounds in some games, but may reduce the quality of render-to-texture effects.</source>
+        <translation>업스케일링 시 16비트 직접 색상 텍스처를 원래 해상도로 샘플링합니다. 일부 게임에서 FMV나 배경의 필터링 문제를 해결할 수 있지만, 텍스처에 렌더링하는 효과의 품질이 떨어질 수 있습니다.</translation>
+    </message>
+    <message>
+        <source>Applies the selected sprite texture filter to framebuffer uploads. This can smooth backgrounds in some games while preserving texture data and 24-bit video.</source>
+        <translation>선택한 스프라이트 텍스처 필터를 프레임버퍼 업로드에 적용합니다. 텍스처 데이터와 24비트 영상을 유지하면서 일부 게임의 배경을 부드럽게 만들 수 있습니다.</translation>
+    </message>
+    <message>
+        <source>Minimum Framebuffer Upload Width</source>
+        <translation>프레임버퍼 업로드 최소 너비</translation>
+    </message>
+    <message>
+        <source>1 px</source>
+        <translation>1픽셀</translation>
+    </message>
+    <message>
+        <source>Only filters framebuffer uploads at least this wide. Increase this value to avoid filtering texture data.</source>
+        <translation>너비가 이 값 이상인 프레임버퍼 업로드만 필터링합니다. 텍스처 데이터가 필터링되지 않도록 하려면 이 값을 늘리세요.</translation>
+    </message>
+    <message>
+        <source>Minimum Framebuffer Upload Height</source>
+        <translation>프레임버퍼 업로드 최소 높이</translation>
+    </message>
+    <message>
+        <source>Only filters framebuffer uploads at least this tall. Increase this value to avoid filtering texture data.</source>
+        <translation>높이가 이 값 이상인 프레임버퍼 업로드만 필터링합니다. 텍스처 데이터가 필터링되지 않도록 하려면 이 값을 늘리세요.</translation>
+    </message>
+    <message>
         <source>Disables texture emulation in the GPU, forcing all primitives to only show vertex colours.</source>
         <translation>GPU의 텍스처 에뮬레이션을 비활성화하여 모든 프리미티브가 정점 색상만 표시하도록 강제합니다.</translation>
     </message>
@@ -11180,10 +11422,6 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <source>%1x Native</source>
         <translation>기본 %1배</translation>
-    </message>
-    <message>
-        <source>Use Global Setting</source>
-        <translation>전체 설정 사용</translation>
     </message>
     <message>
         <source>%1x MSAA</source>
@@ -11466,14 +11704,6 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>일시 중지 메뉴 열기</translation>
     </message>
     <message>
-        <source>Open Achievement List</source>
-        <translation>도전 과제 목록 열기</translation>
-    </message>
-    <message>
-        <source>Open Leaderboard List</source>
-        <translation>순위표 목록 열기</translation>
-    </message>
-    <message>
         <source>System</source>
         <translation>시스템</translation>
     </message>
@@ -11496,10 +11726,6 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <source>Toggle Media Capture</source>
         <translation>미디어 캡처 전환</translation>
-    </message>
-    <message>
-        <source>Open Cheat Settings</source>
-        <translation>치트 설정 열기</translation>
     </message>
     <message>
         <source>Record Single Frame GPU Trace</source>
@@ -11544,6 +11770,22 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <source>Interface</source>
         <translation>인터페이스</translation>
+    </message>
+    <message>
+        <source>Toggle Pause Menu</source>
+        <translation>일시 중지 메뉴 전환</translation>
+    </message>
+    <message>
+        <source>Toggle Cheat List</source>
+        <translation>치트 목록 전환</translation>
+    </message>
+    <message>
+        <source>Toggle Achievement List</source>
+        <translation>도전 과제 목록 전환</translation>
+    </message>
+    <message>
+        <source>Toggle Leaderboard List</source>
+        <translation>순위표 목록 전환</translation>
     </message>
     <message>
         <source>Fast Forward (Hold)</source>
@@ -14376,14 +14618,6 @@ Error: {1}</source>
         <translation>카드 초기화</translation>
     </message>
     <message>
-        <source>Import File...</source>
-        <translation>파일 가져오기...</translation>
-    </message>
-    <message>
-        <source>Import Card...</source>
-        <translation>카드 가져오기...</translation>
-    </message>
-    <message>
         <source>Save</source>
         <translation>저장</translation>
     </message>
@@ -14400,6 +14634,10 @@ Error: {1}</source>
     <message>
         <source> (Deleted)</source>
         <translation> (삭제됨)</translation>
+    </message>
+    <message>
+        <source>Import...</source>
+        <translation>가져오기...</translation>
     </message>
     <message>
         <source>Select Memory Card</source>
@@ -14422,10 +14660,22 @@ Error: {1}</source>
         <translation>블록이 부족합니다. 이 파일에 %1이 필요하지만 사용할 수 있는 블록은 %2개뿐입니다.</translation>
     </message>
     <message>
+        <source>Select Single Save File</source>
+        <translation>단일 저장 파일 선택</translation>
+    </message>
+    <message>
         <source>Failed to rename save file %1:
 %2</source>
         <translation>저장 파일 %1 이름 바꾸기 실패 :
 %2</translation>
+    </message>
+    <message>
+        <source>Import Single Save File...</source>
+        <translation>단일 저장 파일 가져오기...</translation>
+    </message>
+    <message>
+        <source>Import Entire Memory Card...</source>
+        <translation>전체 메모리 카드 가져오기...</translation>
     </message>
     <message>
         <source>Failed to import memory card from %1:
@@ -14466,10 +14716,6 @@ Error: {1}</source>
     <message>
         <source>Failed to undelete file %1. The file may have been partially overwritten by another save.</source>
         <translation>%1 삭제 파일 복구에 실패했습니다. 파일이 다른 저장에 의해 부분적으로 덮어씌워졌을 수 있습니다.</translation>
-    </message>
-    <message>
-        <source>Select Single Savefile</source>
-        <translation>단일 저장 파일 선택</translation>
     </message>
     <message>
         <source>Extract Animated Icon</source>
@@ -15257,88 +15503,21 @@ Error: {1}</source>
         <source>Sets scaling for left trigger.</source>
         <translation>좌측 트리거의 스케일링을 설정합니다.</translation>
     </message>
-</context>
-<context>
-    <name>NeGconRumble</name>
-    <message>
-        <source>D-Pad Up</source>
-        <translation>십자 버튼 ↑</translation>
-    </message>
-    <message>
-        <source>D-Pad Right</source>
-        <translation>십자 버튼 →</translation>
-    </message>
-    <message>
-        <source>D-Pad Down</source>
-        <translation>십자 버튼 ↓</translation>
-    </message>
-    <message>
-        <source>D-Pad Left</source>
-        <translation>십자 버튼 ←</translation>
-    </message>
-    <message>
-        <source>Start</source>
-        <translation>시작</translation>
-    </message>
-    <message>
-        <source>A Button</source>
-        <translation>A 버튼</translation>
-    </message>
-    <message>
-        <source>B Button</source>
-        <translation>B 버튼</translation>
-    </message>
-    <message>
-        <source>I Button</source>
-        <translation>I 버튼</translation>
-    </message>
-    <message>
-        <source>II Button</source>
-        <translation>II 버튼</translation>
-    </message>
-    <message>
-        <source>Left Trigger</source>
-        <translation>왼쪽 트리거</translation>
-    </message>
-    <message>
-        <source>Right Trigger</source>
-        <translation>오른쪽 트리거</translation>
-    </message>
-    <message>
-        <source>Steering (Twist) Left</source>
-        <translation>스티어링 축(비틀기) 좌측</translation>
-    </message>
-    <message>
-        <source>Steering (Twist) Right</source>
-        <translation>스티어링 축(비틀기) 우측</translation>
-    </message>
     <message>
         <source>Analog Toggle</source>
         <translation>아날로그 전환</translation>
     </message>
     <message>
-        <source>Disable Simultaneous Opposing Cardinal Directions</source>
-        <translation>동시 반대 방향 입력 비활성화</translation>
+        <source>Large Motor</source>
+        <translation>대형 모터</translation>
     </message>
     <message>
-        <source>Prevents concurrent left/right or up/down inputs from being presented to the game.</source>
-        <translation>왼쪽/오른쪽 또는 위쪽/아래쪽 입력이 동시에 게임에 전달되는 것을 방지합니다.</translation>
+        <source>Small Motor</source>
+        <translation>소형 모터</translation>
     </message>
     <message>
-        <source>Steering Axis Deadzone</source>
-        <translation>스티어링 축 데드 존</translation>
-    </message>
-    <message>
-        <source>Sets deadzone size for steering axis.</source>
-        <translation>스티어링 축 데드 존 크기를 설정합니다.</translation>
-    </message>
-    <message>
-        <source>Steering Axis Sensitivity</source>
-        <translation>스티어링 축 감도</translation>
-    </message>
-    <message>
-        <source>Sets the steering axis scaling factor.</source>
-        <translation>스티어링 축 배율을 설정합니다.</translation>
+        <source>Mode LED</source>
+        <translation>모드 LED</translation>
     </message>
     <message>
         <source>Large Motor Vibration Bias</source>
@@ -15354,7 +15533,7 @@ Error: {1}</source>
     </message>
     <message>
         <source>Sets the bias value for the small vibration motor. If vibration in some games is too weak or not functioning, try increasing this value. Negative values will decrease the intensity of vibration.</source>
-        <translation>소형진동모터의 편향값을 설정합니다. 일부 게임에서 진동이 너무 약하거나 작동하지 않는 경우 이 값을 늘려보세요. 음수 값은 진동 강도를 감소시킵니다.</translation>
+        <translation>소형 진동 모터의 편향값을 설정합니다. 일부 게임에서 진동이 너무 약하거나 작동하지 않는 경우 이 값을 늘려보세요. 음수 값은 진동 강도를 감소시킵니다.</translation>
     </message>
 </context>
 <context>
@@ -16225,6 +16404,22 @@ The shortcut will be created at:
 %1</translation>
     </message>
     <message>
+        <source>We have detected that LD_LIBRARY_PATH has been set to the following value:
+
+%1
+
+This will likely prevent DuckStation from working correctly. You should modify your environment to leave LD_LIBRARY_PATH unset.</source>
+        <translation>LD_LIBRARY_PATH가 다음 값으로 설정되어 있는 것을 감지했습니다:
+
+%1
+
+이로 인해 DuckStation이 제대로 작동하지 않을 가능성이 높습니다. LD_LIBRARY_PATH가 설정되지 않도록 환경을 수정해야 합니다.</translation>
+    </message>
+    <message>
+        <source>Don&apos;t show again</source>
+        <translation>다시 표시하지 않기</translation>
+    </message>
+    <message>
         <source>Don&apos;t ask again</source>
         <translation>다시 묻지 않기</translation>
     </message>
@@ -16876,19 +17071,19 @@ Do you want to create this directory?</source>
         <translation>PAL(유럽/호주)</translation>
     </message>
     <message>
-        <source>NTSC-J (Japan)</source>
+        <source>NTSC-J</source>
         <comment>DiscRegion</comment>
-        <translation>NTSC-J(일본)</translation>
+        <translation>NTSC-J</translation>
     </message>
     <message>
-        <source>NTSC-U/C (US, Canada)</source>
+        <source>NTSC-U/C</source>
         <comment>DiscRegion</comment>
-        <translation>NTSC-U/C(미국/캐나다)</translation>
+        <translation>NTSC-U/C</translation>
     </message>
     <message>
-        <source>PAL (Europe, Australia)</source>
+        <source>PAL</source>
         <comment>DiscRegion</comment>
-        <translation>PAL(유럽/호주)</translation>
+        <translation>PAL</translation>
     </message>
     <message>
         <source>Other</source>
@@ -16991,6 +17186,36 @@ Do you want to create this directory?</source>
         <translation>JINC2(느림, 에지 블렌딩 없음)</translation>
     </message>
     <message>
+        <source>Monotonic Cubic (Very Slow)</source>
+        <comment>GPUTextureFilter</comment>
+        <translation>단조 3차 보간(매우 느림)</translation>
+    </message>
+    <message>
+        <source>Monotonic Cubic (Very Slow, No Edge Blending)</source>
+        <comment>GPUTextureFilter</comment>
+        <translation>단조 3차 보간(매우 느림, 에지 블렌딩 없음)</translation>
+    </message>
+    <message>
+        <source>Adaptive Diagonal (Slow)</source>
+        <comment>GPUTextureFilter</comment>
+        <translation>적응형 대각선 보간(느림)</translation>
+    </message>
+    <message>
+        <source>Adaptive Diagonal (Slow, No Edge Blending)</source>
+        <comment>GPUTextureFilter</comment>
+        <translation>적응형 대각선 보간(느림, 에지 블렌딩 없음)</translation>
+    </message>
+    <message>
+        <source>DCCI (Extremely Slow)</source>
+        <comment>GPUTextureFilter</comment>
+        <translation>DCCI(극도로 느림)</translation>
+    </message>
+    <message>
+        <source>DCCI (Extremely Slow, No Edge Blending)</source>
+        <comment>GPUTextureFilter</comment>
+        <translation>DCCI(극도로 느림, 에지 블렌딩 없음)</translation>
+    </message>
+    <message>
         <source>xBR (Very Slow)</source>
         <comment>GPUTextureFilter</comment>
         <translation>xBR(매우 느림)</translation>
@@ -16999,6 +17224,11 @@ Do you want to create this directory?</source>
         <source>xBR (Very Slow, No Edge Blending)</source>
         <comment>GPUTextureFilter</comment>
         <translation>xBR(매우 느림, 에지 블렌딩 없음)</translation>
+    </message>
+    <message>
+        <source>Sharp Bilinear</source>
+        <comment>GPUTextureFilter</comment>
+        <translation>선명한 쌍선형</translation>
     </message>
     <message>
         <source>Scale2x (EPX)</source>
@@ -18417,6 +18647,10 @@ SBI 파일 이름은 디스크 이미지의 이름과 일치해야 합니다.</t
         <translation>
             <numerusform>추가로 %n초가 지나기 전에는 일시 정지할 수 없습니다.</numerusform>
         </translation>
+    </message>
+    <message>
+        <source>This save state was created with a different console region, and may be unstable.</source>
+        <translation>이 저장 상태는 다른 콘솔 지역 설정으로 생성되었으며, 불안정할 수 있습니다.</translation>
     </message>
     <message>
         <source>CPU Overclock Changed</source>

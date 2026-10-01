@@ -158,6 +158,14 @@ Apakah ingin mengaktifkan Mode Hardcore?</translation>
         <translation>Pramuat Lencana</translation>
     </message>
     <message>
+        <source>Reset Achievement Notification Duration</source>
+        <translation>Atur Ulang Durasi Pemberitahuan Pencapaian</translation>
+    </message>
+    <message>
+        <source>Reset Leaderboard Notification Duration</source>
+        <translation>Atur Ulang Durasi Pemberitahuan Papan Peringkat</translation>
+    </message>
+    <message>
         <source>Show Leaderboard Trackers</source>
         <translation>Tampilkan Pelacak Papan Peringkat</translation>
     </message>
@@ -256,6 +264,18 @@ Apakah ingin mengaktifkan Mode Hardcore?</translation>
     <message>
         <source>Checked</source>
         <translation>Dicentang</translation>
+    </message>
+    <message>
+        <source>N/A</source>
+        <translation>N/A</translation>
+    </message>
+    <message>
+        <source>Resets the duration to the global setting.</source>
+        <translation>Mengembalikan durasi ke pengaturan global.</translation>
+    </message>
+    <message>
+        <source>Resets the duration to the default.</source>
+        <translation>Mengembalikan durasi ke nilai bawaan.</translation>
     </message>
     <message>
         <source>Shows a timer in the selected location when leaderboard challenges are active.</source>
@@ -388,6 +408,10 @@ Token dibuat pada %2</translation>
         <translation>Jika diaktifkan dan telah masuk, DuckStation akan memindai pencapaian saat memulai.</translation>
     </message>
     <message>
+        <source> seconds</source>
+        <translation> detik</translation>
+    </message>
+    <message>
         <source>(Customize)</source>
         <translation>(Sesuaikan)</translation>
     </message>
@@ -398,12 +422,6 @@ Token dibuat pada %2</translation>
     <message>
         <source>When enabled, DuckStation will assume all achievements are locked and not send any unlock notifications to the server.</source>
         <translation>Ketika diaktifkan, DuckStation akan menganggap semua pencapaian terkunci dan tidak akan mengirimkan notifikasi pembukaan pencapaian ke server.</translation>
-    </message>
-    <message numerus="yes">
-        <source>%n seconds</source>
-        <translation>
-            <numerusform>%n detik</numerusform>
-        </translation>
     </message>
     <message>
         <source>Logout</source>
@@ -508,10 +526,6 @@ Kesalahan: {}</translation>
     <message>
         <source>Hardcore mode will be enabled on game restart.</source>
         <translation>Mode Hardcore akan diaktifkan saat permainan dimulai ulang.</translation>
-    </message>
-    <message>
-        <source>{} (Unofficial)</source>
-        <translation>{} (Tidak Resmi)</translation>
     </message>
     <message>
         <source>Game complete.
@@ -1133,22 +1147,6 @@ Pesan belum dibaca: {}</translation>
 <context>
     <name>AnalogController</name>
     <message>
-        <source>Controller {} switched to analog mode.</source>
-        <translation>Kontroler {} telah beralih ke mode analog.</translation>
-    </message>
-    <message>
-        <source>Controller {} switched to digital mode.</source>
-        <translation>Kontroler {} telah beralih ke mode digital.</translation>
-    </message>
-    <message>
-        <source>Controller {} is locked to analog mode by the game.</source>
-        <translation>Kontroler {} dikunci ke mode analog oleh game.</translation>
-    </message>
-    <message>
-        <source>Controller {} is locked to digital mode by the game.</source>
-        <translation>Kontroler {} dikunci ke mode digital oleh game.</translation>
-    </message>
-    <message>
         <source>D-Pad Up</source>
         <translation>D-Pad Atas</translation>
     </message>
@@ -1384,10 +1382,6 @@ Pesan belum dibaca: {}</translation>
         <source>Inverts the direction of the right analog stick.</source>
         <translation>Membalikan arah analog stik kanan.</translation>
     </message>
-    <message>
-        <source>Mode LED</source>
-        <translation>Mode LED</translation>
-    </message>
 </context>
 <context>
     <name>AnalogJoystick</name>
@@ -1615,6 +1609,10 @@ Pesan belum dibaca: {}</translation>
         <translation>Minimal</translation>
     </message>
     <message>
+        <source>Reset Output Latency</source>
+        <translation>Atur Ulang Latensi Output</translation>
+    </message>
+    <message>
         <source>Maximum Latency: 0 ms (0 ms stretch + 0 ms buffer + 0 ms output)</source>
         <translation>Latensi Maksimum: 0 ms (0 ms peregangan + 0 ms buffer + 0 ms output)</translation>
     </message>
@@ -1661,6 +1659,10 @@ Pesan belum dibaca: {}</translation>
     <message>
         <source>Output Latency</source>
         <translation>Latensi Output</translation>
+    </message>
+    <message>
+        <source> ms</source>
+        <translation> ms</translation>
     </message>
     <message>
         <source>Stretch Sequence Length</source>
@@ -1725,10 +1727,6 @@ Pesan belum dibaca: {}</translation>
     <message>
         <source>Maximum Latency: %1 ms (%2 ms stretch + %3 ms buffer, minimum output latency unknown)</source>
         <translation>Latensi Maksimum: %1 ms (%2 ms peregangan + %3 ms buffer, latensi output minimum tidak diketahui)</translation>
-    </message>
-    <message>
-        <source>%1%</source>
-        <translation>%1%</translation>
     </message>
     <message>
         <source>N/A</source>
@@ -2215,6 +2213,24 @@ Berkas WAV harus berupa stereo 16 bit dan menggunakan laju sampel 44100 Hz.</tra
 Your dump may be corrupted, or the physical disc is scratched.</source>
         <translation>Permainan mungkin akan mogok sekarang.
 Dump Anda mungkin rusak, atau disk fisiknya tergores.</translation>
+    </message>
+</context>
+<context>
+    <name>CPU</name>
+    <message>
+        <source>Execute</source>
+        <comment>BreakpointType</comment>
+        <translation>Jalankan</translation>
+    </message>
+    <message>
+        <source>Read</source>
+        <comment>BreakpointType</comment>
+        <translation>Baca</translation>
+    </message>
+    <message>
+        <source>Write</source>
+        <comment>BreakpointType</comment>
+        <translation>Tulis</translation>
     </message>
 </context>
 <context>
@@ -2874,6 +2890,14 @@ Peringatan ini hanya akan ditampilkan sekali.</translation>
         <translation>Kontroler {} beralih ke mode digital.</translation>
     </message>
     <message>
+        <source>Controller {} is locked to analog mode by the game.</source>
+        <translation>Kontroler {} dikunci ke mode analog oleh game.</translation>
+    </message>
+    <message>
+        <source>Controller {} is locked to digital mode by the game.</source>
+        <translation>Kontroler {} dikunci ke mode digital oleh game.</translation>
+    </message>
+    <message>
         <source>Controller {} switched to JogCon mode.</source>
         <translation>Kontroler {} beralih ke mode JogCon.</translation>
     </message>
@@ -2931,6 +2955,14 @@ Peringatan ini hanya akan ditampilkan sekali.</translation>
     <message>
         <source>Axes</source>
         <translation>Sumbu</translation>
+    </message>
+    <message>
+        <source>Multiple Devices</source>
+        <translation>Beberapa Perangkat</translation>
+    </message>
+    <message>
+        <source>%1 (%2)</source>
+        <translation>%1 (%2)</translation>
     </message>
     <message>
         <source>Buttons</source>
@@ -3529,10 +3561,6 @@ Peringatan ini hanya akan ditampilkan sekali.</translation>
         <translation>Menyesuaikan pengaturan LED untuk kontroler dengan LED yang dapat dikonfigurasi.</translation>
     </message>
     <message>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enables the SDL input source and detection of controllers.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Mengaktifkan sumber masukan SDL dan pendeteksian kontroler.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
-    </message>
-    <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Allows rumble and LED effects for DualShock 4 / DualSense controllers in Bluetooth mode. This option is not required for wired connections.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Enabling enhanced reports may result in your controller being unusable in other applications until it is turned off and on again.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Mengizinkan efek getar dan LED untuk kontroler DualShock 4 / DualSense dalam mode Bluetooth. Opsi ini tidak diperlukan untuk koneksi kabel.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Mengaktifkan laporan yang ditingkatkan dapat menyebabkan kontroler Anda tidak dapat digunakan di aplikasi lain hingga dimatikan dan dinyalakan kembali.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
@@ -3625,6 +3653,22 @@ Warna &quot;alternatif&quot; digunakan saat mode analog aktif.</translation>
     <message>
         <source>Mouse/Pointer Source</source>
         <translation>Sumber Mouse/Penunjuk</translation>
+    </message>
+    <message>
+        <source>LEDs</source>
+        <translation>Lampu LED</translation>
+    </message>
+    <message>
+        <source>Enables the SDL input source and detection of controllers.</source>
+        <translation>Mengaktifkan sumber masukan SDL dan pendeteksian kontroler.</translation>
+    </message>
+    <message>
+        <source>Saves supported controllers by serial or device identity so bindings survive port and connection-order changes when possible.</source>
+        <translation>Menyimpan kontroler yang didukung berdasarkan nomor seri atau identitas perangkat agar pengikatan tombol tetap berlaku saat port dan urutan koneksi berubah, jika memungkinkan.</translation>
+    </message>
+    <message>
+        <source>Use Persistent Device Identifiers</source>
+        <translation>Gunakan Pengenal Perangkat Persisten</translation>
     </message>
     <message>
         <source>Mapping Settings</source>
@@ -4035,8 +4079,8 @@ Ukuran file ini sekitar 206 KB. Apakah Anda ingin mengunduhnya sekarang?</transl
         <translation>DuckStation dapat mengunduh sampul secara otomatis untuk game yang saat ini belum memiliki sampul. Kami tidak menyediakan gambar sampul apa pun; pengguna harus menyediakan sumber gambar mereka sendiri.</translation>
     </message>
     <message>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Depending on your jurisdiction, &lt;span style=&quot; font-weight:700;&quot;&gt;game covers may be copyrighted&lt;/span&gt;. You are only authorized to use this tool with &lt;span style=&quot; font-weight:700;&quot;&gt;your own servers and images&lt;/span&gt;.&lt;/p&gt;&lt;p&gt;In the box below, specify the URLs to download covers from, with one template URL per line. The following variables are available:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${title}:&lt;/span&gt; Title of the game.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${savetitle}:&lt;/span&gt; Title of the game including the region.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${localizedtitle}:&lt;/span&gt; Localized (native language) title of the game.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${filetitle}:&lt;/span&gt; Name component of the game&apos;s filename.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${serial}:&lt;/span&gt; Serial of the game.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Example:&lt;/span&gt; https://www.example-not-a-real-domain.com/covers/${serial}.jpg&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Tergantung pada yurisdiksi Anda, &lt;span style=&quot; font-weight:700;&quot;&gt;sampul game mungkin dilindungi hak cipta&lt;/span&gt;. Anda hanya berwenang menggunakan alat ini dengan &lt;span style=&quot; font-weight:700;&quot;&gt;server dan gambar milik Anda sendiri&lt;/span&gt;.&lt;/p&gt;&lt;p&gt;Dalam kotak di bawah, tentukan URL untuk mengunduh sampul, dengan satu templat URL per baris. Variabel berikut tersedia:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${title}:&lt;/span&gt; Judul game.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${savetitle}:&lt;/span&gt; Judul game termasuk wilayahnya.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${localizedtitle}:&lt;/span&gt; Judul game yang dilokalkan (bahasa asli).&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${filetitle}:&lt;/span&gt; Komponen nama dari nama berkas game.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${serial}:&lt;/span&gt; Nomor seri game.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Contoh:&lt;/span&gt; https://www.example-not-a-real-domain.com/covers/${serial}.jpg&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Depending on your jurisdiction, &lt;span style=&quot; font-weight:700;&quot;&gt;game covers may be copyrighted&lt;/span&gt;. You are only authorized to use this tool with &lt;span style=&quot; font-weight:700;&quot;&gt;your own servers and images&lt;/span&gt;.&lt;/p&gt;&lt;p&gt;In the box below, specify the URLs to download covers from, with one template URL per line. The following variables are available:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${title}:&lt;/span&gt; Title of the game.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${savetitle}:&lt;/span&gt; Save title for the game, including the region suffix.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${localizedtitle}:&lt;/span&gt; Localized title for the game in its native language.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${filetitle}:&lt;/span&gt; Name component of the game&apos;s filename.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${serial}:&lt;/span&gt; Serial of the game.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Example:&lt;/span&gt; https://www.example-not-a-real-domain.com/covers/${serial}.jpg&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Tergantung pada yurisdiksi Anda, &lt;span style=&quot; font-weight:700;&quot;&gt;sampul game mungkin dilindungi hak cipta&lt;/span&gt;. Anda hanya berwenang menggunakan alat ini dengan &lt;span style=&quot; font-weight:700;&quot;&gt;server dan gambar milik Anda sendiri&lt;/span&gt;.&lt;/p&gt;&lt;p&gt;Dalam kotak di bawah, tentukan URL untuk mengunduh sampul, dengan satu templat URL per baris. Variabel berikut tersedia:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${title}:&lt;/span&gt; Judul game.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${savetitle}:&lt;/span&gt; Judul simpanan game, termasuk akhiran wilayah.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${localizedtitle}:&lt;/span&gt; Judul game yang dilokalkan dalam bahasa aslinya.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${filetitle}:&lt;/span&gt; Komponen nama dari nama berkas game.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${serial}:&lt;/span&gt; Nomor seri game.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Contoh:&lt;/span&gt; https://www.example-not-a-real-domain.com/covers/${serial}.jpg&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>By default, the downloaded covers will be saved with the game&apos;s title. If this is not desired, you can check the &quot;Use Serial File Names&quot; box below. Using serials instead of game titles will prevent conflicts when multiple regions of the same game are used.</source>
@@ -4222,6 +4266,17 @@ Ukuran file ini sekitar 206 KB. Apakah Anda ingin mengunduhnya sekarang?</transl
     </message>
 </context>
 <context>
+    <name>DebuggerCallStackModel</name>
+    <message>
+        <source>Address</source>
+        <translation>Alamat</translation>
+    </message>
+    <message>
+        <source>Frame</source>
+        <translation>Bingkai</translation>
+    </message>
+</context>
+<context>
     <name>DebuggerRegistersModel</name>
     <message>
         <source>Register</source>
@@ -4248,6 +4303,17 @@ Ukuran file ini sekitar 206 KB. Apakah Anda ingin mengunduhnya sekarang?</transl
     </message>
 </context>
 <context>
+    <name>DebuggerThreadsModel</name>
+    <message>
+        <source>Name</source>
+        <translation>Nama</translation>
+    </message>
+    <message>
+        <source>Value</source>
+        <translation>Nilai</translation>
+    </message>
+</context>
+<context>
     <name>DebuggerWindow</name>
     <message>
         <source>CPU Debugger</source>
@@ -4262,8 +4328,8 @@ Ukuran file ini sekitar 206 KB. Apakah Anda ingin mengunduhnya sekarang?</transl
         <translation>Breakpoint</translation>
     </message>
     <message>
-        <source>toolBar</source>
-        <translation>bilahAlat</translation>
+        <source>Toolbar</source>
+        <translation>Bilah Alat</translation>
     </message>
     <message>
         <source>Disassembly</source>
@@ -4324,6 +4390,14 @@ Ukuran file ini sekitar 206 KB. Apakah Anda ingin mengunduhnya sekarang?</transl
     <message>
         <source>Stack</source>
         <translation>Tumpukan</translation>
+    </message>
+    <message>
+        <source>Threads</source>
+        <translation>Utas</translation>
+    </message>
+    <message>
+        <source>Call Stack</source>
+        <translation>Tumpukan Panggilan</translation>
     </message>
     <message>
         <source>&amp;Pause/Continue</source>
@@ -4511,9 +4585,31 @@ Berkas ini dapat berukuran beberapa gigabita, jadi perhatikan keausan SSD.</tran
         <source>&amp;Patch Instruction</source>
         <translation>&amp;Tambal Instruksi</translation>
     </message>
+    <message numerus="yes">
+        <source>&amp;Nop %n Instruction(s)</source>
+        <translation>
+            <numerusform>Ubah %n Instruksi menjadi &amp;Nop</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>&amp;Copy %n Instruction(s)</source>
+        <translation>
+            <numerusform>&amp;Salin %n Instruksi</numerusform>
+        </translation>
+    </message>
     <message>
-        <source>&amp;Nop Instruction</source>
-        <translation>Instruksi &amp;Nop</translation>
+        <source>Failed to write one or more patched instructions. Patched %1 of %2 instructions; the first failure was at 0x%3.</source>
+        <translation>Gagal menulis satu atau beberapa instruksi yang ditambal. %1 dari %2 instruksi ditambal; kegagalan pertama terjadi pada 0x%3.</translation>
+    </message>
+    <message>
+        <source>Patched %1 of %2 selected instructions.</source>
+        <translation>%1 dari %2 instruksi yang dipilih ditambal.</translation>
+    </message>
+    <message numerus="yes">
+        <source>Loaded %n saved breakpoint(s).</source>
+        <translation>
+            <numerusform>%n breakpoint tersimpan dimuat.</numerusform>
+        </translation>
     </message>
     <message>
         <source>View in &amp;Dump</source>
@@ -4540,12 +4636,19 @@ Berkas ini dapat berukuran beberapa gigabita, jadi perhatikan keausan SSD.</tran
         <translation>Instruksi Tidak Valid</translation>
     </message>
     <message>
-        <source>Failed to write patched instruction to 0x%1.</source>
-        <translation>Gagal menulis instruksi yang ditambal ke 0x%1.</translation>
-    </message>
-    <message>
         <source>Patched instruction at 0x%1.</source>
         <translation>Instruksi ditambal pada 0x%1.</translation>
+    </message>
+    <message>
+        <source>Patched %1 instructions.</source>
+        <translation>%1 instruksi ditambal.</translation>
+    </message>
+    <message numerus="yes">
+        <source>Copied %n instruction(s) to the clipboard.</source>
+        <comment>CopyRange</comment>
+        <translation>
+            <numerusform>%n instruksi disalin ke papan klip.</numerusform>
+        </translation>
     </message>
     <message>
         <source>Invalid search pattern. It should contain hex digits or question marks.</source>
@@ -5178,14 +5281,6 @@ Mengklik Atur Ulang akan mengembalikan nomor seri ke nilai yang dipindai dari ci
         <translation> (%u MB di disk)</translation>
     </message>
     <message>
-        <source>${title}: Title of the game.
-${filetitle}: Name component of the game&apos;s filename.
-${serial}: Serial of the game.</source>
-        <translation>${title}: Judul permainan.
-${filetitle}: Komponen nama berkas permainan.
-${serial}: Nomor seri permainan.</translation>
-    </message>
-    <message>
         <source>%.1f ms</source>
         <translation>%.1f ms</translation>
     </message>
@@ -5396,6 +5491,10 @@ ${serial}: Nomor seri permainan.</translation>
     <message>
         <source>Applies a blur effect to the background when a menu is open to improve readability.</source>
         <translation>Menerapkan efek buram pada latar belakang saat menu terbuka untuk meningkatkan keterbacaan.</translation>
+    </message>
+    <message>
+        <source>Applies the selected sprite texture filter to framebuffer uploads. This can smooth backgrounds in some games while preserving texture data and 24-bit video.</source>
+        <translation>Menerapkan filter tekstur sprite yang dipilih pada unggahan framebuffer. Ini dapat menghaluskan latar belakang di beberapa game sambil mempertahankan data tekstur dan video 24-bit.</translation>
     </message>
     <message>
         <source>Apply Image Patches</source>
@@ -5710,6 +5809,10 @@ Tindakan ini tidak dapat dibatalkan.</translation>
         <translation>Bawaan: Diaktifkan</translation>
     </message>
     <message>
+        <source>Default: {}</source>
+        <translation>Bawaan: {}</translation>
+    </message>
+    <message>
         <source>Deinterlacing Mode</source>
         <translation>Mode Deinterlacing</translation>
     </message>
@@ -5796,6 +5899,10 @@ Tindakan ini tidak dapat dibatalkan.</translation>
     <message>
         <source>Device Settings</source>
         <translation>Pengaturan Perangkat</translation>
+    </message>
+    <message>
+        <source>Disable Upscaled Direct Textures</source>
+        <translation>Nonaktifkan Peningkatan Resolusi Tekstur Langsung</translation>
     </message>
     <message>
         <source>Disable on 2D Polygons</source>
@@ -6088,6 +6195,10 @@ Kesalahannya:</translation>
         <translation>Ukuran File</translation>
     </message>
     <message>
+        <source>Filter Framebuffer Uploads</source>
+        <translation>Filter Unggahan Framebuffer</translation>
+    </message>
+    <message>
         <source>Force 4:3 For FMVs</source>
         <translation>Paksa 4:3 untuk FMV</translation>
     </message>
@@ -6204,6 +6315,10 @@ Kesalahannya:</translation>
         <translation>Kontrol Latensi</translation>
     </message>
     <message>
+        <source>Length: {}</source>
+        <translation>Panjang: {}</translation>
+    </message>
+    <message>
         <source>Line Detection</source>
         <translation>Deteksi Garis</translation>
     </message>
@@ -6218,6 +6333,10 @@ Kesalahannya:</translation>
     <message>
         <source>Load Preset</source>
         <translation>Muat Preset</translation>
+    </message>
+    <message>
+        <source>Loading Game List...</source>
+        <translation>Memuat Daftar Game...</translation>
     </message>
     <message>
         <source>Loads all replacement texture to RAM, reducing stuttering at runtime.</source>
@@ -6292,6 +6411,10 @@ Silakan periksa nama pengguna dan kata sandi Anda, lalu coba lagi.</translation>
         <translation>Siklus Percepatan Pencarian Maksimum</translation>
     </message>
     <message>
+        <source>Maximum: {}</source>
+        <translation>Maksimum: {}</translation>
+    </message>
+    <message>
         <source>Memory Card Busy</source>
         <translation>Kartu Memori Sibuk</translation>
     </message>
@@ -6318,6 +6441,18 @@ Silakan periksa nama pengguna dan kata sandi Anda, lalu coba lagi.</translation>
     <message>
         <source>Merges multi-disc games into one item in the game list.</source>
         <translation>Menggabungkan game multi-disc menjadi satu item dalam daftar game.</translation>
+    </message>
+    <message>
+        <source>Minimum Framebuffer Upload Height</source>
+        <translation>Tinggi Minimum Unggahan Framebuffer</translation>
+    </message>
+    <message>
+        <source>Minimum Framebuffer Upload Width</source>
+        <translation>Lebar Minimum Unggahan Framebuffer</translation>
+    </message>
+    <message>
+        <source>Minimum: {}</source>
+        <translation>Minimum: {}</translation>
     </message>
     <message>
         <source>Move Cursor</source>
@@ -6370,6 +6505,14 @@ Silakan periksa nama pengguna dan kata sandi Anda, lalu coba lagi.</translation>
     <message>
         <source>None (Normal Speed)</source>
         <translation>Tidak Ada (Kecepatan Normal)</translation>
+    </message>
+    <message>
+        <source>Only filters framebuffer uploads at least this tall. Increase this value to avoid filtering texture data.</source>
+        <translation>Hanya memfilter unggahan framebuffer dengan tinggi setidaknya sebesar nilai ini. Tingkatkan nilai ini untuk menghindari pemfilteran data tekstur.</translation>
+    </message>
+    <message>
+        <source>Only filters framebuffer uploads at least this wide. Increase this value to avoid filtering texture data.</source>
+        <translation>Hanya memfilter unggahan framebuffer dengan lebar setidaknya sebesar nilai ini. Tingkatkan nilai ini untuk menghindari pemfilteran data tekstur.</translation>
     </message>
     <message>
         <source>Open Containing Directory</source>
@@ -6604,8 +6747,16 @@ Silakan periksa nama pengguna dan kata sandi Anda, lalu coba lagi.</translation>
         <translation>Menjalankan perender perangkat lunak secara paralel untuk pembacaan balik VRAM. Pada beberapa sistem, ini dapat meningkatkan performa saat menggunakan penyempurnaan grafis dengan perender perangkat keras.</translation>
     </message>
     <message>
+        <source>SDL Persistent Device Identifiers</source>
+        <translation>Pengenal Perangkat Persisten SDL</translation>
+    </message>
+    <message>
         <source>Safe Mode</source>
         <translation>Mode Aman</translation>
+    </message>
+    <message>
+        <source>Samples 16-bit direct-color textures at native resolution when upscaling. This can fix filtering of FMVs/backgrounds in some games, but may reduce the quality of render-to-texture effects.</source>
+        <translation>Mengambil sampel tekstur warna langsung 16-bit pada resolusi asli saat meningkatkan resolusi. Ini dapat memperbaiki pemfilteran FMV/latar belakang di beberapa game, tetapi dapat mengurangi kualitas efek rendering ke tekstur.</translation>
     </message>
     <message>
         <source>Save Controller Preset</source>
@@ -6626,6 +6777,10 @@ Silakan periksa nama pengguna dan kata sandi Anda, lalu coba lagi.</translation>
     <message>
         <source>Saves state periodically so you can rewind any mistakes while playing.</source>
         <translation>Menyimpan status secara berkala agar Anda dapat mundur dari kesalahan saat bermain.</translation>
+    </message>
+    <message>
+        <source>Saves supported controllers by serial or device identity so bindings survive port and connection-order changes when possible.</source>
+        <translation>Menyimpan kontroler yang didukung berdasarkan nomor seri atau identitas perangkat agar pengikatan tombol tetap berlaku saat port dan urutan koneksi berubah, jika memungkinkan.</translation>
     </message>
     <message>
         <source>Scaled Interlacing</source>
@@ -6890,6 +7045,10 @@ Silakan periksa nama pengguna dan kata sandi Anda, lalu coba lagi.</translation>
     <message>
         <source>Stage {}: {}</source>
         <translation>Tahap {}: {}</translation>
+    </message>
+    <message>
+        <source>Start: {}</source>
+        <translation>Awal: {}</translation>
     </message>
     <message>
         <source>Stores the current settings to a controller preset.</source>
@@ -7580,10 +7739,6 @@ Silakan periksa nama pengguna dan kata sandi Anda, lalu coba lagi.</translation>
         <translation>Rentang Nilai</translation>
     </message>
     <message>
-        <source>Value: {} | Default: {} | Minimum: {} | Maximum: {}</source>
-        <translation>Nilai: {} | Bawaan: {} | Minimum: {} | Maksimum: {}</translation>
-    </message>
-    <message>
         <source>Verify</source>
         <translation>Verifikasi</translation>
     </message>
@@ -7926,6 +8081,26 @@ Apakah Anda tetap ingin {1}?</translation>
     <message>
         <source>Game Grid</source>
         <translation>Tampilan Kisi</translation>
+    </message>
+    <message>
+        <source>${filetitle}: Name component of the game&apos;s filename.</source>
+        <translation>${filetitle}: Komponen nama dari nama berkas game.</translation>
+    </message>
+    <message>
+        <source>${localizedtitle}: Localized title for the game in its native language.</source>
+        <translation>${localizedtitle}: Judul game yang dilokalkan dalam bahasa aslinya.</translation>
+    </message>
+    <message>
+        <source>${savetitle}: Save title for the game, including the region suffix.</source>
+        <translation>${savetitle}: Judul simpanan game, termasuk akhiran wilayah.</translation>
+    </message>
+    <message>
+        <source>${serial}: Serial of the game.</source>
+        <translation>${serial}: Nomor seri game.</translation>
+    </message>
+    <message>
+        <source>${title}: Title of the game.</source>
+        <translation>${title}: Judul game.</translation>
     </message>
     <message>
         <source>&lt;not computed&gt;</source>
@@ -8584,6 +8759,10 @@ Apakah Anda ingin menghapus status simpanan tersebut dan tetap mem-boot game?</t
         <translation>Pembukaan pencapaian tidak resmi telah diatur ulang.</translation>
     </message>
     <message>
+        <source>Value: {}</source>
+        <translation>Nilai: {}</translation>
+    </message>
+    <message>
         <source>When enabled, DuckStation will track unofficial achievements. Unlocks will be saved locally and not sent to RetroAchievements.</source>
         <translation>Saat diaktifkan, DuckStation akan melacak pencapaian tidak resmi. Pembukaan akan disimpan secara lokal dan tidak dikirim ke RetroAchievements.</translation>
     </message>
@@ -8602,10 +8781,6 @@ Apakah Anda ingin menghapus status simpanan tersebut dan tetap mem-boot game?</t
     <message>
         <source>{} unpinned.</source>
         <translation>{} dilepas sematannya.</translation>
-    </message>
-    <message>
-        <source>{} | Start: {} | Length: {}</source>
-        <translation>{} | Mulai: {} | Durasi: {}</translation>
     </message>
     <message>
         <source>Serial</source>
@@ -9513,6 +9688,16 @@ Apakah Anda yakin ingin melanjutkan?</translation>
         <translation>Dilindungi LibCrypt</translation>
     </message>
     <message>
+        <source>Disable Upscaled Direct Textures</source>
+        <comment>GameDatabase::Trait</comment>
+        <translation>Nonaktifkan Peningkatan Resolusi Tekstur Langsung</translation>
+    </message>
+    <message>
+        <source>Filter Framebuffer Uploads</source>
+        <comment>GameDatabase::Trait</comment>
+        <translation>Filter Unggahan Framebuffer</translation>
+    </message>
+    <message>
         <source>Unknown</source>
         <translation>Tidak Diketahui</translation>
     </message>
@@ -9635,6 +9820,14 @@ Apakah Anda yakin ingin melanjutkan?</translation>
     <message>
         <source>Compatibility settings for this game have been applied.</source>
         <translation>Pengaturan kompatibilitas untuk game ini telah diterapkan.</translation>
+    </message>
+    <message>
+        <source>Filter Framebuffer Uploads Minimum Width</source>
+        <translation>Lebar Minimum Pemfilteran Unggahan Framebuffer</translation>
+    </message>
+    <message>
+        <source>Filter Framebuffer Uploads Minimum Height</source>
+        <translation>Tinggi Minimum Pemfilteran Unggahan Framebuffer</translation>
     </message>
     <message>
         <source>Verifying Image</source>
@@ -9806,6 +9999,11 @@ Apakah Anda yakin ingin melanjutkan?</translation>
         <translation>Set Cakram</translation>
     </message>
     <message>
+        <source>Audio CD</source>
+        <comment>EntryType</comment>
+        <translation>CD Audio</translation>
+    </message>
+    <message>
         <source>PS-EXE</source>
         <comment>EntryType</comment>
         <translation>PS-EXE</translation>
@@ -9829,8 +10027,8 @@ Apakah Anda yakin ingin melanjutkan?</translation>
         <translation>Memindai &apos;{}&apos;...</translation>
     </message>
     <message>
-        <source>URL template must contain at least one of ${title}, ${savetitle}, ${filetitle}, or ${serial}.</source>
-        <translation>Templat URL harus memuat setidaknya salah satu dari ${title}, ${savetitle}, ${filetitle}, atau ${serial}.</translation>
+        <source>URL template must contain at least one of ${title}, ${localizedtitle}, ${savetitle}, ${filetitle}, or ${serial}.</source>
+        <translation>Templat URL harus memuat setidaknya salah satu dari ${title}, ${localizedtitle}, ${savetitle}, ${filetitle}, atau ${serial}.</translation>
     </message>
     <message>
         <source>No URLs to download enumerated.</source>
@@ -9988,6 +10186,14 @@ Pemindaian rekursif akan membuat proses pencarian menjadi lebih lama, namun dapa
     <message>
         <source>Select Directory</source>
         <translation>Pilih Direktori</translation>
+    </message>
+    <message>
+        <source>Add File...</source>
+        <translation>Tambah Berkas...</translation>
+    </message>
+    <message>
+        <source>Add Folder...</source>
+        <translation>Tambah Folder...</translation>
     </message>
 </context>
 <context>
@@ -10182,10 +10388,6 @@ Pemindaian rekursif akan membuat proses pencarian menjadi lebih lama, namun dapa
         <translation>Edit...</translation>
     </message>
     <message>
-        <source>Tracks:</source>
-        <translation>Trek:</translation>
-    </message>
-    <message>
         <source>#</source>
         <translation>#</translation>
     </message>
@@ -10264,6 +10466,10 @@ Pemindaian rekursif akan membuat proses pencarian menjadi lebih lama, namun dapa
         <translation>
             <numerusform>%n blok kartu memori</numerusform>
         </translation>
+    </message>
+    <message>
+        <source>Game ID: %1</source>
+        <translation>ID Game: %1</translation>
     </message>
     <message>
         <source>Track %1</source>
@@ -10485,6 +10691,34 @@ Pemindaian rekursif akan membuat proses pencarian menjadi lebih lama, namun dapa
         <translation>Menggunakan anti-aliasing multi-sampel saat merender poligon 3D. Dapat meningkatkan visual dengan kebutuhan performa yang lebih rendah dibandingkan peningkatan skala, &lt;strong&gt;tetapi sering menimbulkan kesalahan rendering.&lt;/strong&gt;</translation>
     </message>
     <message>
+        <source>Samples 16-bit direct-color textures at native resolution when upscaling. This can fix filtering of FMVs/backgrounds in some games, but may reduce the quality of render-to-texture effects.</source>
+        <translation>Mengambil sampel tekstur warna langsung 16-bit pada resolusi asli saat meningkatkan resolusi. Ini dapat memperbaiki pemfilteran FMV/latar belakang di beberapa game, tetapi dapat mengurangi kualitas efek rendering ke tekstur.</translation>
+    </message>
+    <message>
+        <source>Applies the selected sprite texture filter to framebuffer uploads. This can smooth backgrounds in some games while preserving texture data and 24-bit video.</source>
+        <translation>Menerapkan filter tekstur sprite yang dipilih pada unggahan framebuffer. Ini dapat menghaluskan latar belakang di beberapa game sambil mempertahankan data tekstur dan video 24-bit.</translation>
+    </message>
+    <message>
+        <source>Minimum Framebuffer Upload Width</source>
+        <translation>Lebar Minimum Unggahan Framebuffer</translation>
+    </message>
+    <message>
+        <source>1 px</source>
+        <translation>1 px</translation>
+    </message>
+    <message>
+        <source>Only filters framebuffer uploads at least this wide. Increase this value to avoid filtering texture data.</source>
+        <translation>Hanya memfilter unggahan framebuffer dengan lebar setidaknya sebesar nilai ini. Tingkatkan nilai ini untuk menghindari pemfilteran data tekstur.</translation>
+    </message>
+    <message>
+        <source>Minimum Framebuffer Upload Height</source>
+        <translation>Tinggi Minimum Unggahan Framebuffer</translation>
+    </message>
+    <message>
+        <source>Only filters framebuffer uploads at least this tall. Increase this value to avoid filtering texture data.</source>
+        <translation>Hanya memfilter unggahan framebuffer dengan tinggi setidaknya sebesar nilai ini. Tingkatkan nilai ini untuk menghindari pemfilteran data tekstur.</translation>
+    </message>
+    <message>
         <source>Wireframe Mode</source>
         <translation>Mode Wireframe</translation>
     </message>
@@ -10685,10 +10919,6 @@ Pemindaian rekursif akan membuat proses pencarian menjadi lebih lama, namun dapa
         <translation>%1 [Tidak Tersedia]</translation>
     </message>
     <message>
-        <source>Use Global Setting</source>
-        <translation>Gunakan Pengaturan Global</translation>
-    </message>
-    <message>
         <source>%1x MSAA</source>
         <translation>%1x MSAA</translation>
     </message>
@@ -10799,10 +11029,6 @@ Pemindaian rekursif akan membuat proses pencarian menjadi lebih lama, namun dapa
     <message>
         <source>Bottom:</source>
         <translation>Bawah:</translation>
-    </message>
-    <message>
-        <source>Texture Modulation Cropping (&quot;Old/v0 GPU&quot;)</source>
-        <translation>Pemotongan Modulasi Tekstur (GPU &quot;Old/v0&quot;)</translation>
     </message>
     <message>
         <source>Reset Geometry Tolerance</source>
@@ -10991,6 +11217,18 @@ Pemindaian rekursif akan membuat proses pencarian menjadi lebih lama, namun dapa
     <message>
         <source>Preserve Projection Precision</source>
         <translation>Pertahankan Presisi Proyeksi</translation>
+    </message>
+    <message>
+        <source>Filter Framebuffer Uploads</source>
+        <translation>Filter Unggahan Framebuffer</translation>
+    </message>
+    <message>
+        <source>Minimum Size:</source>
+        <translation>Ukuran Minimum:</translation>
+    </message>
+    <message>
+        <source>Disable Upscaled Direct Textures</source>
+        <translation>Nonaktifkan Peningkatan Resolusi Tekstur Langsung</translation>
     </message>
     <message>
         <source>Culling Correction</source>
@@ -11405,18 +11643,6 @@ Pemindaian rekursif akan membuat proses pencarian menjadi lebih lama, namun dapa
         <translation>Antarmuka</translation>
     </message>
     <message>
-        <source>Open Cheat Settings</source>
-        <translation>Buka Pengaturan Cheat</translation>
-    </message>
-    <message>
-        <source>Open Achievement List</source>
-        <translation>Buka Daftar Pencapaian</translation>
-    </message>
-    <message>
-        <source>Open Leaderboard List</source>
-        <translation>Buka Daftar Papan Peringkat</translation>
-    </message>
-    <message>
         <source>Fast Forward (Hold)</source>
         <translation>Percepat (Tahan)</translation>
     </message>
@@ -11463,6 +11689,22 @@ Pemindaian rekursif akan membuat proses pencarian menjadi lebih lama, namun dapa
     <message>
         <source>Toggle Media Capture</source>
         <translation>Aktifkan/Nonaktifkan Tangkap Media</translation>
+    </message>
+    <message>
+        <source>Toggle Pause Menu</source>
+        <translation>Buka/Tutup Menu Jeda</translation>
+    </message>
+    <message>
+        <source>Toggle Cheat List</source>
+        <translation>Buka/Tutup Daftar Cheat</translation>
+    </message>
+    <message>
+        <source>Toggle Achievement List</source>
+        <translation>Buka/Tutup Daftar Pencapaian</translation>
+    </message>
+    <message>
+        <source>Toggle Leaderboard List</source>
+        <translation>Buka/Tutup Daftar Papan Peringkat</translation>
     </message>
     <message>
         <source>Restart Game</source>
@@ -14319,6 +14561,14 @@ Kesalahan: {1}</translation>
         <translation>Ekstrak Ikon</translation>
     </message>
     <message>
+        <source>Import...</source>
+        <translation>Impor...</translation>
+    </message>
+    <message>
+        <source>Select Single Save File</source>
+        <translation>Pilih Satu Berkas Simpanan</translation>
+    </message>
+    <message>
         <source>Extract Animated Icon</source>
         <translation>Ekstrak Ikon Animasi</translation>
     </message>
@@ -14345,14 +14595,6 @@ Kesalahan: {1}</translation>
     <message>
         <source>Format Card</source>
         <translation>Format Kartu</translation>
-    </message>
-    <message>
-        <source>Import File...</source>
-        <translation>Impor Berkas...</translation>
-    </message>
-    <message>
-        <source>Import Card...</source>
-        <translation>Impor Kartu...</translation>
     </message>
     <message>
         <source>Save</source>
@@ -14401,14 +14643,18 @@ Kesalahan: {1}</translation>
         <translation>Gagal membatalkan penghapusan berkas %1. Berkas mungkin telah sebagian ditimpa oleh simpanan lain.</translation>
     </message>
     <message>
-        <source>Select Single Savefile</source>
-        <translation>Pilih Satu Berkas Simpanan</translation>
-    </message>
-    <message>
         <source>Failed to rename save file %1:
 %2</source>
         <translation>Gagal mengganti nama berkas simpanan %1:
 %2</translation>
+    </message>
+    <message>
+        <source>Import Single Save File...</source>
+        <translation>Impor Satu Berkas Simpanan...</translation>
+    </message>
+    <message>
+        <source>Import Entire Memory Card...</source>
+        <translation>Impor Seluruh Kartu Memori...</translation>
     </message>
     <message>
         <source>Select Import File</source>
@@ -15199,88 +15445,21 @@ Kesalahan: {1}</translation>
         <source>Sets scaling for left trigger.</source>
         <translation>Mengatur penskalaan untuk pemicu kiri.</translation>
     </message>
-</context>
-<context>
-    <name>NeGconRumble</name>
-    <message>
-        <source>D-Pad Up</source>
-        <translation>D-Pad Atas</translation>
-    </message>
-    <message>
-        <source>D-Pad Right</source>
-        <translation>D-Pad Kanan</translation>
-    </message>
-    <message>
-        <source>D-Pad Down</source>
-        <translation>D-Pad Bawah</translation>
-    </message>
-    <message>
-        <source>D-Pad Left</source>
-        <translation>D-Pad Kiri</translation>
-    </message>
-    <message>
-        <source>Start</source>
-        <translation>Mulai</translation>
-    </message>
-    <message>
-        <source>A Button</source>
-        <translation>Tombol A</translation>
-    </message>
-    <message>
-        <source>B Button</source>
-        <translation>Tombol B</translation>
-    </message>
-    <message>
-        <source>I Button</source>
-        <translation>Tombol I</translation>
-    </message>
-    <message>
-        <source>II Button</source>
-        <translation>Tombol II</translation>
-    </message>
-    <message>
-        <source>Left Trigger</source>
-        <translation>Pemicu Kiri</translation>
-    </message>
-    <message>
-        <source>Right Trigger</source>
-        <translation>Pemicu Kanan</translation>
-    </message>
-    <message>
-        <source>Steering (Twist) Left</source>
-        <translation>Kemudi (Putar) Kiri</translation>
-    </message>
-    <message>
-        <source>Steering (Twist) Right</source>
-        <translation>Kemudi (Putar) Kanan</translation>
-    </message>
     <message>
         <source>Analog Toggle</source>
         <translation>Alihkan Mode Analog</translation>
     </message>
     <message>
-        <source>Disable Simultaneous Opposing Cardinal Directions</source>
-        <translation>Nonaktifkan Input Arah Berlawanan Secara Bersamaan</translation>
+        <source>Large Motor</source>
+        <translation>Motor Besar</translation>
     </message>
     <message>
-        <source>Prevents concurrent left/right or up/down inputs from being presented to the game.</source>
-        <translation>Mencegah input kiri/kanan atau atas/bawah secara bersamaan diteruskan ke game.</translation>
+        <source>Small Motor</source>
+        <translation>Motor Kecil</translation>
     </message>
     <message>
-        <source>Steering Axis Deadzone</source>
-        <translation>Zona Mati Sumbu Kemudi</translation>
-    </message>
-    <message>
-        <source>Sets deadzone size for steering axis.</source>
-        <translation>Mengatur ukuran zona mati untuk sumbu kemudi.</translation>
-    </message>
-    <message>
-        <source>Steering Axis Sensitivity</source>
-        <translation>Sensitivitas Sumbu Kemudi</translation>
-    </message>
-    <message>
-        <source>Sets the steering axis scaling factor.</source>
-        <translation>Mengatur faktor penskalaan sumbu kemudi.</translation>
+        <source>Mode LED</source>
+        <translation>Mode LED</translation>
     </message>
     <message>
         <source>Large Motor Vibration Bias</source>
@@ -15288,7 +15467,7 @@ Kesalahan: {1}</translation>
     </message>
     <message>
         <source>Sets the bias value for the large vibration motor. If vibration in some games is too weak or not functioning, try increasing this value. Negative values will decrease the intensity of vibration.</source>
-        <translation>Menetapkan nilai bias untuk motor getar besar. Jika getaran di beberapa game terlalu lemah atau tidak berfungsi, coba tingkatkan nilai ini. Nilai negatif akan mengurangi intensitas getaran.</translation>
+        <translation>Mengatur nilai bias untuk motor getaran besar. Jika getaran di beberapa game terlalu lemah atau tidak berfungsi, coba tingkatkan nilai ini. Nilai negatif akan mengurangi intensitas getaran.</translation>
     </message>
     <message>
         <source>Small Motor Vibration Bias</source>
@@ -15296,7 +15475,7 @@ Kesalahan: {1}</translation>
     </message>
     <message>
         <source>Sets the bias value for the small vibration motor. If vibration in some games is too weak or not functioning, try increasing this value. Negative values will decrease the intensity of vibration.</source>
-        <translation>Menetapkan nilai bias untuk motor getar kecil. Jika getaran di beberapa game terlalu lemah atau tidak berfungsi, coba tingkatkan nilai ini. Nilai negatif akan mengurangi intensitas getaran.</translation>
+        <translation>Mengatur nilai bias untuk motor getaran kecil. Jika getaran di beberapa game terlalu lemah atau tidak berfungsi, coba tingkatkan nilai ini. Nilai negatif akan mengurangi intensitas getaran.</translation>
     </message>
 </context>
 <context>
@@ -16171,6 +16350,22 @@ Kesalahan: {1}</translation>
         <translation>Kontroler {} terputus.</translation>
     </message>
     <message>
+        <source>We have detected that LD_LIBRARY_PATH has been set to the following value:
+
+%1
+
+This will likely prevent DuckStation from working correctly. You should modify your environment to leave LD_LIBRARY_PATH unset.</source>
+        <translation>Kami mendeteksi bahwa LD_LIBRARY_PATH telah diatur ke nilai berikut:
+
+%1
+
+Ini kemungkinan akan menghalangi DuckStation berfungsi dengan benar. Anda sebaiknya mengubah lingkungan Anda agar LD_LIBRARY_PATH tidak diatur.</translation>
+    </message>
+    <message>
+        <source>Don&apos;t show again</source>
+        <translation>Jangan tampilkan lagi</translation>
+    </message>
+    <message>
         <source>Would you like to create a launcher shortcut for DuckStation?
 
 This will add DuckStation to your application menu, allowing you to launch it more easily.
@@ -16804,19 +16999,19 @@ Apakah Anda ingin membuat direktori ini?</translation>
         <translation>PAL (Eropa, Australia)</translation>
     </message>
     <message>
-        <source>NTSC-J (Japan)</source>
+        <source>NTSC-J</source>
         <comment>DiscRegion</comment>
-        <translation>NTSC-J (Jepang)</translation>
+        <translation>NTSC-J</translation>
     </message>
     <message>
-        <source>NTSC-U/C (US, Canada)</source>
+        <source>NTSC-U/C</source>
         <comment>DiscRegion</comment>
-        <translation>NTSC-U/C (AS, Kanada)</translation>
+        <translation>NTSC-U/C</translation>
     </message>
     <message>
-        <source>PAL (Europe, Australia)</source>
+        <source>PAL</source>
         <comment>DiscRegion</comment>
-        <translation>PAL (Eropa, Australia)</translation>
+        <translation>PAL</translation>
     </message>
     <message>
         <source>Other</source>
@@ -16919,6 +17114,36 @@ Apakah Anda ingin membuat direktori ini?</translation>
         <translation>JINC2 (Lambat, Tanpa Pembauran Tepi)</translation>
     </message>
     <message>
+        <source>Monotonic Cubic (Very Slow)</source>
+        <comment>GPUTextureFilter</comment>
+        <translation>Kubik Monoton (Sangat Lambat)</translation>
+    </message>
+    <message>
+        <source>Monotonic Cubic (Very Slow, No Edge Blending)</source>
+        <comment>GPUTextureFilter</comment>
+        <translation>Kubik Monoton (Sangat Lambat, Tanpa Pembauran Tepi)</translation>
+    </message>
+    <message>
+        <source>Adaptive Diagonal (Slow)</source>
+        <comment>GPUTextureFilter</comment>
+        <translation>Diagonal Adaptif (Lambat)</translation>
+    </message>
+    <message>
+        <source>Adaptive Diagonal (Slow, No Edge Blending)</source>
+        <comment>GPUTextureFilter</comment>
+        <translation>Diagonal Adaptif (Lambat, Tanpa Pembauran Tepi)</translation>
+    </message>
+    <message>
+        <source>DCCI (Extremely Slow)</source>
+        <comment>GPUTextureFilter</comment>
+        <translation>DCCI (Amat Sangat Lambat)</translation>
+    </message>
+    <message>
+        <source>DCCI (Extremely Slow, No Edge Blending)</source>
+        <comment>GPUTextureFilter</comment>
+        <translation>DCCI (Amat Sangat Lambat, Tanpa Pembauran Tepi)</translation>
+    </message>
+    <message>
         <source>xBR (Very Slow)</source>
         <comment>GPUTextureFilter</comment>
         <translation>xBR (Sangat Lambat)</translation>
@@ -16927,6 +17152,11 @@ Apakah Anda ingin membuat direktori ini?</translation>
         <source>xBR (Very Slow, No Edge Blending)</source>
         <comment>GPUTextureFilter</comment>
         <translation>xBR (Sangat Lambat, Tanpa Pembauran Tepi)</translation>
+    </message>
+    <message>
+        <source>Sharp Bilinear</source>
+        <comment>GPUTextureFilter</comment>
+        <translation>Bilinear Tajam</translation>
     </message>
     <message>
         <source>Scale2x (EPX)</source>
@@ -18388,6 +18618,10 @@ Nama file SBI harus sama dengan nama citra disc.</translation>
         <translation>
             <numerusform>Anda tidak dapat menjeda hingga %n detik lagi berlalu.</numerusform>
         </translation>
+    </message>
+    <message>
+        <source>This save state was created with a different console region, and may be unstable.</source>
+        <translation>Status simpanan ini dibuat dengan wilayah konsol yang berbeda dan mungkin tidak stabil.</translation>
     </message>
     <message>
         <source>CPU Overclock Changed</source>
