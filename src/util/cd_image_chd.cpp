@@ -505,7 +505,7 @@ bool CDImageCHD::ReadSectorFromIndex(void* buffer, const Index& index, LBA lba_i
   if (index.mode == TrackMode::Audio)
     CopyAndSwap(buffer, &m_hunk_buffer[hunk_offset]);
   else
-    std::memcpy(buffer, &m_hunk_buffer[hunk_offset], RAW_SECTOR_SIZE);
+    std::memcpy(buffer, &m_hunk_buffer[hunk_offset], GetBytesPerSector(index.mode));
 
   return true;
 }
