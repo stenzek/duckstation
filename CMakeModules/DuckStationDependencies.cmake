@@ -86,11 +86,11 @@ find_package(SDL3 3.4.16 REQUIRED
 # All our builds include Qt, so this is not a problem.
 set(QT_NO_PRIVATE_MODULE_WARNING ON)
 if(LINUX)
-  find_package(Qt6 6.11.2 REQUIRED
+  find_package(Qt6 6.12.0 REQUIRED
                 NO_DEFAULT_PATH PATHS "${DEPS_PATH}/lib/cmake/Qt6"
                 COMPONENTS Core Gui GuiPrivate Widgets LinguistTools DBus)
 else()
-  find_package(Qt6 6.11.2 REQUIRED
+  find_package(Qt6 6.12.0 REQUIRED
                 NO_DEFAULT_PATH PATHS "${DEPS_PATH}/lib/cmake/Qt6"
                 COMPONENTS Core Gui GuiPrivate Widgets LinguistTools)
 endif()
@@ -125,7 +125,7 @@ if(NOT APPLE)
   endif()
 endif()
 
-find_package(FFMPEG 9.0 COMPONENTS avcodec avformat avutil swresample swscale)
+find_package(FFMPEG 9.0.2 COMPONENTS avcodec avformat avutil swresample swscale)
 if(NOT FFMPEG_FOUND)
   message(WARNING "FFmpeg not found, using bundled headers.")
   set(FFMPEG_INCLUDE_DIRS "${CMAKE_SOURCE_DIR}/dep/ffmpeg/include")
