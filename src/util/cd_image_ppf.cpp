@@ -408,25 +408,52 @@ bool CDImagePPF::AddPatch(u64 offset, std::span<const u8> patch, std::span<const
 
   u32 remaining_patch_size = static_cast<u32>(patch.size());
   u32 patch_offset = 0;
+  const Index* index = nullptr;
+  u64 index_file_start = 0;
   while (remaining_patch_size > 0)
   {
-    const u32 sector_index = Truncate32(offset / RAW_SECTOR_SIZE) + m_replacement_offset;
-    const u32 sector_offset = Truncate32(offset % RAW_SECTOR_SIZE);
-    if (sector_index >= m_parent_image->GetLBACount())
+    // Offsets are relative to the image file, i.e. all indices with stored data, in their native sector size.
+    if (!index || offset < index_file_start ||
+        (offset - index_file_start) >= (static_cast<u64>(index->length) * GetBytesPerSector(index->mode)))
     {
-      WARNING_LOG("Ignoring out-of-range sector {} (max {})", sector_index, m_parent_image->GetLBACount());
-      return true;
+      index = nullptr;
+      index_file_start = 0;
+      for (u32 i = 0; i < m_parent_image->GetIndexCount(); i++)
+      {
+        const Index& cur_index = m_parent_image->GetIndex(i);
+        // Track 1's pregap is skipped as it's not part of the file in PBP images.
+        if (cur_index.file_sector_size == 0 || (cur_index.track_number == 1 && cur_index.is_pregap))
+          continue;
+
+        const u64 index_size = static_cast<u64>(cur_index.length) * GetBytesPerSector(cur_index.mode);
+        if ((offset - index_file_start) < index_size)
+        {
+          index = &cur_index;
+          break;
+        }
+
+        index_file_start += index_size;
+      }
+
+      if (!index)
+      {
+        WARNING_LOG("Ignoring out-of-range patch at offset {}", offset);
+        return true;
+      }
     }
 
-    const u32 bytes_to_patch = std::min(remaining_patch_size, RAW_SECTOR_SIZE - sector_offset);
+    const u32 sector_size = GetBytesPerSector(index->mode);
+    const LBA lba_in_index = static_cast<LBA>((offset - index_file_start) / sector_size);
+    const u32 sector_index = index->start_lba_on_disc + lba_in_index;
+    const u32 sector_offset = static_cast<u32>((offset - index_file_start) % sector_size);
+    const u32 bytes_to_patch = std::min(remaining_patch_size, sector_size - sector_offset);
 
     auto iter = m_replacement_map.find(sector_index);
     if (iter == m_replacement_map.end())
     {
       const u32 replacement_buffer_start = static_cast<u32>(m_replacement_data.size());
-      m_replacement_data.resize(m_replacement_data.size() + RAW_SECTOR_SIZE);
-      if (!m_parent_image->Seek(sector_index) ||
-          !m_parent_image->ReadRawSector(&m_replacement_data[replacement_buffer_start], nullptr))
+      m_replacement_data.resize(m_replacement_data.size() + sector_size);
+      if (!m_parent_image->ReadSectorFromIndex(&m_replacement_data[replacement_buffer_start], *index, lba_in_index))
       {
         Error::SetStringFmt(error, "Failed to read sector {} from parent image", sector_index);
         return false;
@@ -486,7 +513,7 @@ bool CDImagePPF::ReadSectorFromIndex(void* buffer, const Index& index, LBA lba_i
   if (it == m_replacement_map.end())
     return m_parent_image->ReadSectorFromIndex(buffer, index, lba_in_index);
 
-  std::memcpy(buffer, &m_replacement_data[it->second], RAW_SECTOR_SIZE);
+  std::memcpy(buffer, &m_replacement_data[it->second], GetBytesPerSector(index.mode));
   return true;
 }
 
