@@ -2469,7 +2469,7 @@ void QtHost::UpdateApplicationLanguage(QWidget* dialog_parent)
 
   // install the base qt translation first
 #ifndef __APPLE__
-  const QString base_dir = QStringLiteral("%1/translations").arg(qApp->applicationDirPath());
+  const QString base_dir = QString::fromStdString(Path::Combine(EmuFolders::AppRoot, "translations"));
 #else
   QString base_dir;
   if (const std::optional<std::string> bundle_path = CocoaTools::GetBundlePath(); bundle_path.has_value())
