@@ -91,7 +91,8 @@ bool CDImageMemory::CopyImage(CDImage* image, ProgressCallback* progress, Error*
   m_indices.reserve(image->GetIndexCount());
   for (u32 i = 0; i < image->GetIndexCount(); i++)
   {
-    Index& index = m_indices.emplace_back(image->GetIndex(i));
+    const Index& src_index = image->GetIndex(i);
+    Index& index = m_indices.emplace_back(src_index);
     if (index.file_sector_size == 0)
     {
       progress->SetProgressValue(sectors_read += index.length);
@@ -101,24 +102,19 @@ bool CDImageMemory::CopyImage(CDImage* image, ProgressCallback* progress, Error*
     progress->FormatStatusText(TRANSLATE_FS("CDImage", "Loading Track {0} ({1})..."), index.track_number,
                                GetTrackModeDisplayName(index.mode));
 
-    if (!image->Seek(index.start_lba_on_disc))
-    {
-      ERROR_LOG("Failed to seek to LBA {} in index {}", index.start_lba_on_disc, i);
-      return false;
-    }
-
     index.file_index = 0;
     index.file_offset = memory_offset;
     index.file_sector_size = GetBytesPerSector(index.mode) + (m_has_subchannel_data ? SUBCHANNEL_BYTES_PER_FRAME : 0);
 
     for (u32 lba = 0; lba < index.length; lba++)
     {
+      // read the sector in its native format, ReadRawSector() would expand it to a full raw sector
       u8* const sector_ptr = m_memory + memory_offset;
-      SubChannelQ* const subq_ptr =
-        m_has_subchannel_data ?
-          reinterpret_cast<SubChannelQ*>(sector_ptr + index.file_sector_size - SUBCHANNEL_BYTES_PER_FRAME) :
-          nullptr;
-      if (!image->ReadRawSector(sector_ptr, subq_ptr))
+      if (!image->ReadSectorFromIndex(sector_ptr, src_index, lba) ||
+          (m_has_subchannel_data &&
+           !image->ReadSubChannelQ(
+             reinterpret_cast<SubChannelQ*>(sector_ptr + index.file_sector_size - SUBCHANNEL_BYTES_PER_FRAME),
+             src_index, lba)))
       {
         ERROR_LOG("Failed to read LBA {} in index {} (disc LBA {})", lba, i, index.start_lba_on_disc + lba);
         return false;
