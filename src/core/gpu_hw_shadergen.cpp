@@ -44,8 +44,8 @@ void GPU_HW_ShaderGen::DeclareTextureBuffer(std::stringstream& ss, const char* n
   }
 }
 
-void GPU_HW_ShaderGen::DeclareImage(std::stringstream& ss, const char* name, u32 index, bool is_float /* = false */,
-                                    bool is_int /* = false */, bool is_unsigned /* = false */) const
+void GPU_HW_ShaderGen::DeclareImage(std::stringstream& ss, const char* name, u32 index, const char* hlsl_format,
+                                    const char* glsl_format) const
 {
   if (m_glsl)
   {
@@ -54,14 +54,11 @@ void GPU_HW_ShaderGen::DeclareImage(std::stringstream& ss, const char* name, u32
     else
       ss << "layout(binding = " << index;
 
-    ss << ", " << (is_int ? (is_unsigned ? "rgba8ui" : "rgba8i") : "rgba8") << ") "
-       << "uniform restrict coherent image2D " << name << ";\n";
+    ss << ", " << glsl_format << ") uniform restrict coherent image2D " << name << ";\n";
   }
   else
   {
-    ss << "RasterizerOrderedTexture2D<"
-       << (is_int ? (is_unsigned ? "uint4" : "int4") : (is_float ? "float4" : "unorm float4")) << "> " << name
-       << " : register(u" << index << ");\n";
+    ss << "RasterizerOrderedTexture2D<" << hlsl_format << "> " << name << " : register(u" << index << ");\n";
   }
 }
 
@@ -2782,9 +2779,9 @@ std::string GPU_HW_ShaderGen::GenerateBatchFragmentShader(const BatchFragmentSha
 
   if (sel.use_rov)
   {
-    DeclareImage(ss, "rov_color", 0);
+    DeclareImage(ss, "rov_color", 0, "unorm float4", "rgba8");
     if (sel.use_rov_depth)
-      DeclareImage(ss, "rov_depth", 1, true);
+      DeclareImage(ss, "rov_depth", 1, "float", "r32f");
   }
 
   if (m_glsl)
@@ -3166,7 +3163,7 @@ float4 SampleFromVRAM(TEXPAGE_VALUE texpage, DECLARE_UV_LIMITS(float2 coords, fl
       {
         ROV_STORE(rov_color, fragpos, o_col0);
         #if USE_ROV_DEPTH && ROV_DEPTH_WRITE
-          ROV_STORE(rov_depth, fragpos, float4(v_pos.z, 0.0, 0.0, 0.0));
+          ROV_STORE_SCALAR(rov_depth, fragpos, v_pos.z);
         #endif
       }
       END_ROV_REGION;

@@ -87,8 +87,8 @@ public:
 
 private:
   void DeclareTextureBuffer(std::stringstream& ss, const char* name, bool is_int, bool is_unsigned) const;
-  void DeclareImage(std::stringstream& ss, const char* name, u32 index, bool is_float = false, bool is_int = false,
-                    bool is_unsigned = false) const;
+  void DeclareImage(std::stringstream& ss, const char* name, u32 index, const char* hlsl_format,
+                    const char* glsl_format) const;
   void WriteColorConversionFunctions(std::stringstream& ss) const;
   void WriteBatchUniformBuffer(std::stringstream& ss) const;
   void WriteBatchTextureFilter(std::stringstream& ss, GPUTextureFilter texture_filter) const;

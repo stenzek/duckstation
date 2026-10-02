@@ -695,6 +695,7 @@ void ShaderGen::DeclareFragmentEntryPoint(
       ss << "layout(pixel_interlock_ordered) in;\n";
       ss << "#define ROV_LOAD(name, coords) imageLoad(name, ivec2(coords))\n";
       ss << "#define ROV_STORE(name, coords, value) imageStore(name, ivec2(coords), value)\n";
+      ss << "#define ROV_STORE_SCALAR(name, coords, value) imageStore(name, ivec2(coords), vec4(value, 0.0, 0.0, 0.0))\n";
       ss << "#define BEGIN_ROV_REGION beginInvocationInterlockARB()\n";
       ss << "#define END_ROV_REGION endInvocationInterlockARB()\n";
     }
@@ -734,6 +735,7 @@ void ShaderGen::DeclareFragmentEntryPoint(
     {
       ss << "#define ROV_LOAD(name, coords) name[uint2(coords)]\n";
       ss << "#define ROV_STORE(name, coords, value) name[uint2(coords)] = value\n";
+      ss << "#define ROV_STORE_SCALAR(name, coords, value) name[uint2(coords)] = value\n";
       ss << "#define BEGIN_ROV_REGION\n";
       ss << "#define END_ROV_REGION\n";
     }
