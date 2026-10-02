@@ -540,16 +540,11 @@ void INISettingsInterface::DeleteValue(const char* section, const char* key)
 void INISettingsInterface::ClearSection(const char* section)
 {
   auto sit = FindSection(section);
-  if (sit != m_sections.end())
-  {
-    sit->entries.clear();
-    m_dirty = true;
-  }
-  else
-  {
-    GetOrCreateSection(section);
-    m_dirty = true;
-  }
+  if (sit == m_sections.end())
+    return;
+
+  sit->entries.clear();
+  m_dirty = true;
 }
 
 void INISettingsInterface::RemoveSection(const char* section)

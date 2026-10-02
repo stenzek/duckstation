@@ -601,16 +601,31 @@ TEST(INISettingsInterface, ClearSection)
   EXPECT_FALSE(si.ContainsValue("S", "b"));
   auto kvlist = si.GetKeyValueList("S");
   EXPECT_TRUE(kvlist.empty());
+  EXPECT_EQ(si.SaveToString(), "[S]\n");
+  EXPECT_TRUE(si.IsDirty());
 }
 
-TEST(INISettingsInterface, ClearSectionCreatesIfMissing)
+TEST(INISettingsInterface, ClearSectionMissingFromEmptySettings)
 {
   INISettingsInterface si;
   si.LoadFromString("");
   si.ClearSection("NewSection");
+  EXPECT_EQ(si.SaveToString(), "");
+  EXPECT_FALSE(si.IsDirty());
+}
+
+TEST(INISettingsInterface, ClearSectionMissingPreservesContentsAndDirtyFlag)
+{
+  INISettingsInterface si;
+  si.LoadFromString("[S]\nkey = value\n");
+  si.ClearSection("Missing");
+  EXPECT_EQ(si.SaveToString(), "[S]\nkey = value\n");
+  EXPECT_FALSE(si.IsDirty());
+
+  si.SetStringValue("S", "key", "changed");
+  si.ClearSection("Missing");
+  EXPECT_EQ(si.SaveToString(), "[S]\nkey = changed\n");
   EXPECT_TRUE(si.IsDirty());
-  auto kvlist = si.GetKeyValueList("NewSection");
-  EXPECT_TRUE(kvlist.empty());
 }
 
 TEST(INISettingsInterface, RemoveSection)
