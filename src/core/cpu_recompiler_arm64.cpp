@@ -1505,7 +1505,7 @@ void CPU::ARM64Recompiler::Compile_variable_shift(
 
   if (cf.const_s)
   {
-    if (const u32 shift = GetConstantRegU32(cf.MipsS()); shift != 0)
+    if (const u32 shift = GetConstantRegU32(cf.MipsS()) & 0x1Fu; shift != 0)
       (armAsm->*op_const)(rd, rt, shift);
     else if (rd.GetCode() != rt.GetCode())
       armAsm->mov(rd, rt);
