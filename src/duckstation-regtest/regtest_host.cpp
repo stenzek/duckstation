@@ -255,9 +255,12 @@ void Host::OnSystemStarting()
   //
 }
 
-void Host::OnSystemStarted()
+void Host::OnSystemStarted(const std::string& disc_path, const std::string& game_serial, const std::string& game_name,
+                           GameHash game_hash)
 {
-  //
+  INFO_LOG("Disc Path: {}", disc_path);
+  INFO_LOG("Game Serial: {}", game_serial);
+  INFO_LOG("Game Name: {}", game_name);
 }
 
 void Host::OnSystemStopping()
@@ -304,9 +307,7 @@ void Host::OnPerformanceCountersUpdated(const GPUBackend* gpu_backend)
 void Host::OnSystemGameChanged(const std::string& disc_path, const std::string& game_serial,
                                const std::string& game_name, GameHash hash)
 {
-  INFO_LOG("Disc Path: {}", disc_path);
-  INFO_LOG("Game Serial: {}", game_serial);
-  INFO_LOG("Game Name: {}", game_name);
+  //
 }
 
 void Host::OnSystemUndoStateAvailabilityChanged(bool available, u64 timestamp)

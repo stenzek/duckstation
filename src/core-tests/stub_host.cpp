@@ -181,7 +181,8 @@ void Host::OnSystemStarting()
 {
 }
 
-void Host::OnSystemStarted()
+void Host::OnSystemStarted(const std::string& disc_path, const std::string& game_serial, const std::string& game_name,
+                           GameHash game_hash)
 {
 }
 
@@ -247,12 +248,12 @@ void Host::PumpMessagesOnCoreThread()
 {
 }
 
-void Host::RunOnCoreThread(std::function<void()> function, bool block /* = false */)
+void Host::RunOnCoreThread(MoveOnlyFunction<void()> function, bool block /* = false */)
 {
   function();
 }
 
-void Host::RunOnUIThread(std::function<void()> function, bool block /* = false */)
+void Host::RunOnUIThread(MoveOnlyFunction<void()> function, bool block /* = false */)
 {
   function();
 }

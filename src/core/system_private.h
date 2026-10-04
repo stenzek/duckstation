@@ -79,7 +79,8 @@ void OnSettingsReloaded();
 void OnSystemStarting();
 
 /// Called when the VM is created.
-void OnSystemStarted();
+void OnSystemStarted(const std::string& disc_path, const std::string& game_serial, const std::string& game_name,
+                     GameHash game_hash);
 
 /// Called when the VM is shutting down.
 void OnSystemStopping();
