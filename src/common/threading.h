@@ -49,6 +49,11 @@ public:
   bool operator==(const ThreadHandle& other) const;
   bool operator!=(const ThreadHandle& other) const;
 
+  ALWAYS_INLINE void* GetNativeHandle() const { return m_native_handle; }
+#if defined(_WIN32) || defined(__linux__)
+  ALWAYS_INLINE unsigned int GetNativeID() const { return m_native_id; }
+#endif
+
   /// Returns the amount of CPU time consumed by the thread, at the GetThreadTicksPerSecond() frequency.
   u64 GetCPUTime() const;
 
@@ -255,20 +260,27 @@ public:
   void notify_all();
 
   template<typename LockType>
-  void wait(LockType& lock)
+  ALWAYS_INLINE void wait(LockType& lock)
   {
     Wait(*lock.mutex());
   }
 
   template<typename LockType, typename Predicate>
-  void wait(LockType& lock, Predicate predicate)
+  ALWAYS_INLINE void wait(LockType& lock, Predicate predicate)
   {
     while (!predicate())
       wait(lock);
   }
 
+  template<typename LockType>
+  ALWAYS_INLINE void wait_for(LockType& lock, u32 milliseconds)
+  {
+    WaitFor(*lock.mutex(), milliseconds);
+  }
+
 private:
   void Wait(Mutex& mutex);
+  void WaitFor(Mutex& mutex, u32 milliseconds);
 
 #if defined(_WIN32)
   void* m_data = nullptr;
