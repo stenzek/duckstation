@@ -46,7 +46,7 @@ namespace {
 enum : u32
 {
   GAME_DATABASE_CACHE_SIGNATURE = 0x45434C48,
-  GAME_DATABASE_CACHE_VERSION = 34,
+  GAME_DATABASE_CACHE_VERSION = 35,
 };
 
 /// Map of track hashes for image verification
@@ -349,6 +349,16 @@ const GameDatabase::Entry* GameDatabase::GetEntryForSerial(std::string_view seri
     std::lower_bound(s_state.entries.cbegin(), s_state.entries.cend(), serial,
                      [](const Entry& entry, const std::string_view& search) { return (entry.serial < search); });
   return (it != s_state.entries.end() && it->serial == serial) ? &(*it) : nullptr;
+}
+
+const GameDatabase::DiscSetEntry* GameDatabase::GetDiscSetForSaveTitle(std::string_view save_title)
+{
+  EnsureLoaded();
+
+  const auto it = std::lower_bound(
+    s_state.disc_sets.cbegin(), s_state.disc_sets.cend(), save_title,
+    [](const DiscSetEntry& entry, const std::string_view& search) { return (entry.save_title < search); });
+  return (it != s_state.disc_sets.cend() && it->save_title == save_title) ? &(*it) : nullptr;
 }
 
 const char* GameDatabase::GetTraitName(Trait trait)
@@ -1492,6 +1502,8 @@ bool GameDatabase::LoadGameDBYaml()
     }
 
     s_state.disc_sets.shrink_to_fit();
+    std::sort(s_state.disc_sets.begin(), s_state.disc_sets.end(),
+              [](const DiscSetEntry& lhs, const DiscSetEntry& rhs) { return (lhs.save_title < rhs.save_title); });
     BindDiscSetsToEntries();
   }
 
