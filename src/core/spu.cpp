@@ -1929,6 +1929,20 @@ void SPU::Voice::DecodeBlock(const ADPCMBlock& block)
   s32 last_sample_1 = adpcm_last_samples[1];
   s16* output = &current_block_samples[NUM_SAMPLES_FROM_LAST_ADPCM_BLOCK];
 
+  // Zero predictors have no feedback; shifted nibbles already fit in s16.
+  if (filter_pos == 0 && filter_neg == 0)
+  {
+    for (const u8 data : block.data)
+    {
+      *(output++) = static_cast<s16>(ZeroExtend16(data & 0x0F) << 12) >> shift;
+      *(output++) = static_cast<s16>(ZeroExtend16(data >> 4) << 12) >> shift;
+    }
+    adpcm_last_samples[0] = output[-1];
+    adpcm_last_samples[1] = output[-2];
+    current_block_flags.bits = block.flags.bits;
+    return;
+  }
+
   // decode pairs of nibbles on each iteration instead of alternating
   for (u32 i = 0; i < static_cast<u32>(std::size(block.data)); i++)
   {
