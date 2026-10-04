@@ -1020,7 +1020,8 @@ void CPU::X64Recompiler::CheckBranchTarget(const Xbyak::Reg32& pcreg)
   SwitchToFarCode(true, &CodeGenerator::jnz);
 
   BackupHostState();
-  EndBlockWithException(Exception::AdEL);
+  StoreHostRegToCPUPointer(pcreg.getIdx(), &g_state.cop0_regs.BadVaddr);
+  EndBlockWithBranchTargetException();
 
   RestoreHostState();
   SwitchToNearCode(false);
