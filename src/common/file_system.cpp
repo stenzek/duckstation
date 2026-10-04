@@ -66,6 +66,41 @@ static bool IsUNCPath(const T& path)
 }
 #endif
 
+std::string_view Path::StripTrailingSlashes(std::string_view path)
+{
+  size_t new_length = path.length();
+  while (new_length > 0 && (path[new_length - 1] == '/' || path[new_length - 1] == '\\'))
+    new_length--;
+  return path.substr(0, new_length);
+}
+
+void Path::StripTrailingSlashes(std::string* path)
+{
+  while (path->length() > 0 && (path->back() == '/' || path->back() == '\\'))
+    path->pop_back();
+}
+
+bool Path::ContainsTraversal(std::string_view path)
+{
+  // Check for any .. or . components in the path.
+  size_t pos = 0;
+  while (pos < path.length())
+  {
+    pos = path.find_first_of("/\\", pos);
+    if (pos == std::string_view::npos)
+      break;
+    if (pos + 1 < path.length() && path[pos + 1] == '.')
+    {
+      if (pos + 2 < path.length() && path[pos + 2] == '.')
+        return true; // found a .. component
+      else if (pos + 2 == path.length() || path[pos + 2] == '/' || path[pos + 2] == '\\')
+        return true; // found a . component
+    }
+    pos++;
+  }
+  return false;
+}
+
 static inline bool FileSystemCharacterIsSane(char32_t c, bool strip_slashes)
 {
   // no newlines, don't be silly. or other control characters...
@@ -93,6 +128,20 @@ static inline bool FileSystemCharacterIsSane(char32_t c, bool strip_slashes)
     return false;
 #endif
 #endif
+
+  return true;
+}
+
+bool Path::IsValidFileName(std::string_view str, bool allow_slashes /*= false*/)
+{
+  size_t pos = 0;
+  while (pos < str.length())
+  {
+    char32_t ch;
+    pos += StringUtil::DecodeUTF8(str, pos, &ch);
+    if (!FileSystemCharacterIsSane(ch, !allow_slashes))
+      return false;
+  }
 
   return true;
 }

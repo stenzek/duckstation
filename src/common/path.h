@@ -29,9 +29,19 @@ std::string BuildRelativePath(std::string_view filename, std::string_view new_fi
 std::string Combine(std::string_view base, std::string_view next);
 std::string Combine(std::string_view base, std::string_view subdir, std::string_view next);
 
+/// Strips any trailing slashes from a path.
+std::string_view StripTrailingSlashes(std::string_view path);
+void StripTrailingSlashes(std::string* path);
+
 /// Removes all .. and . components from a path.
 std::string Canonicalize(std::string_view path);
 void Canonicalize(std::string* path);
+
+/// Returns true if the path contains any traversal components (e.g. .. or .).
+bool ContainsTraversal(std::string_view path);
+
+/// Returns true if the filename does not contain any illegal characters for the filesystem.
+bool IsValidFileName(std::string_view str, bool allow_slashes = false);
 
 /// Sanitizes a filename for use in a filesystem.
 std::string SanitizeFileName(std::string_view str, bool strip_slashes = true);
