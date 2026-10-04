@@ -1811,7 +1811,8 @@ void CPU::Recompiler::Recompiler::Compile_jr_const(CompileFlags cf)
   const u32 newpc = GetConstantRegU32(cf.MipsS());
   if (newpc & 3 && g_settings.cpu_recompiler_memory_exceptions)
   {
-    EndBlockWithException(Exception::AdEL);
+    StoreConstantToCPUPointer(newpc, &g_state.cop0_regs.BadVaddr);
+    EndBlockWithBranchTargetException();
     return;
   }
 
@@ -1834,6 +1835,13 @@ void CPU::Recompiler::Recompiler::Compile_jalr_const(CompileFlags cf)
   if (MipsD() != Reg::zero)
     SetConstantReg(MipsD(), GetBranchReturnAddress({}));
 
+  if (newpc & 3 && g_settings.cpu_recompiler_memory_exceptions)
+  {
+    StoreConstantToCPUPointer(newpc, &g_state.cop0_regs.BadVaddr);
+    EndBlockWithBranchTargetException();
+    return;
+  }
+
   CompileBranchDelaySlot();
   EndBlock(newpc, true);
 }
@@ -1841,6 +1849,20 @@ void CPU::Recompiler::Recompiler::Compile_jalr_const(CompileFlags cf)
 void CPU::Recompiler::Recompiler::Compile_syscall()
 {
   EndBlockWithException(Exception::Syscall);
+}
+
+void CPU::Recompiler::Recompiler::EndBlockWithBranchTargetException()
+{
+  Flush(FLUSH_END_BLOCK | FLUSH_FOR_EXCEPTION | FLUSH_FOR_C_CALL);
+  const u32 cause_reg = AllocateTempHostReg();
+  const u32 epc_reg = AllocateTempHostReg();
+  LoadHostRegWithConstant(cause_reg, Cop0Registers::CAUSE::MakeValueForException(Exception::AdEL, false, false, 0));
+  LoadHostRegFromCPUPointer(epc_reg, &g_state.cop0_regs.BadVaddr);
+  GenerateCall(reinterpret_cast<const void*>(static_cast<void (*)(u32, u32)>(&CPU::RaiseException)), cause_reg, epc_reg);
+  FreeHostReg(cause_reg);
+  FreeHostReg(epc_reg);
+  m_dirty_pc = false;
+  EndBlock(std::nullopt, true);
 }
 
 void CPU::Recompiler::Recompiler::Compile_break()

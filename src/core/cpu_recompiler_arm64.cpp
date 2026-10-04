@@ -1272,7 +1272,8 @@ void CPU::ARM64Recompiler::CheckBranchTarget(const vixl::aarch64::Register& pcre
   SwitchToFarCode(true, ne);
 
   BackupHostState();
-  EndBlockWithException(Exception::AdEL);
+  StoreHostRegToCPUPointer(pcreg.GetCode(), &g_state.cop0_regs.BadVaddr);
+  EndBlockWithBranchTargetException();
 
   RestoreHostState();
   SwitchToNearCode(false);

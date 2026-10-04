@@ -282,6 +282,7 @@ protected:
   virtual void GenerateCall(const void* func, s32 arg1reg = -1, s32 arg2reg = -1, s32 arg3reg = -1) = 0;
   virtual void EndBlock(const std::optional<u32>& newpc, bool do_event_test) = 0;
   virtual void EndBlockWithException(Exception excode) = 0;
+  void EndBlockWithBranchTargetException();
   virtual const void* EndCompile(u32* code_size, u32* far_code_size) = 0;
 
   ALWAYS_INLINE bool IsHostRegAllocated(u32 r) const { return (m_host_regs[r].flags & HR_ALLOCATED) != 0; }

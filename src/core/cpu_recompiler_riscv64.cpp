@@ -1079,7 +1079,8 @@ void CPU::RISCV64Recompiler::CheckBranchTarget(const biscuit::GPR& pcreg)
   SwitchToFarCode(true, &Assembler::BEQ, RSCRATCH, zero);
 
   BackupHostState();
-  EndBlockWithException(Exception::AdEL);
+  StoreHostRegToCPUPointer(pcreg.Index(), &g_state.cop0_regs.BadVaddr);
+  EndBlockWithBranchTargetException();
 
   RestoreHostState();
   SwitchToNearCode(false);
