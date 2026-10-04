@@ -1966,6 +1966,20 @@ bool FileSystem::CopyFilePath(const char* source, const char* destination, bool 
 #endif
 }
 
+static void SortFindResultsByName(FileSystem::FindResultsArray* results)
+{
+  std::sort(results->begin(), results->end(), [](const FILESYSTEM_FIND_DATA& lhs, const FILESYSTEM_FIND_DATA& rhs) {
+    // directories first
+    if ((lhs.Attributes & FILESYSTEM_FILE_ATTRIBUTE_DIRECTORY) !=
+        (rhs.Attributes & FILESYSTEM_FILE_ATTRIBUTE_DIRECTORY))
+    {
+      return ((lhs.Attributes & FILESYSTEM_FILE_ATTRIBUTE_DIRECTORY) != 0);
+    }
+
+    return (StringUtil::Strcasecmp(lhs.FileName.c_str(), rhs.FileName.c_str()) < 0);
+  });
+}
+
 #ifdef _WIN32
 
 static u32 TranslateWin32Attributes(u32 w32attrs)
@@ -2134,18 +2148,7 @@ bool FileSystem::FindFiles(const char* path, const char* pattern, u32 flags, Fin
     return false;
 
   if (flags & FILESYSTEM_FIND_SORT_BY_NAME)
-  {
-    std::sort(results->begin(), results->end(), [](const FILESYSTEM_FIND_DATA& lhs, const FILESYSTEM_FIND_DATA& rhs) {
-      // directories first
-      if ((lhs.Attributes & FILESYSTEM_FILE_ATTRIBUTE_DIRECTORY) !=
-          (rhs.Attributes & FILESYSTEM_FILE_ATTRIBUTE_DIRECTORY))
-      {
-        return ((lhs.Attributes & FILESYSTEM_FILE_ATTRIBUTE_DIRECTORY) != 0);
-      }
-
-      return (StringUtil::Strcasecmp(lhs.FileName.c_str(), rhs.FileName.c_str()) < 0);
-    });
-  }
+    SortFindResultsByName(results);
 
   return true;
 }
@@ -2754,18 +2757,7 @@ bool FileSystem::FindFiles(const char* path, const char* pattern, u32 flags, Fin
     return false;
 
   if (flags & FILESYSTEM_FIND_SORT_BY_NAME)
-  {
-    std::sort(results->begin(), results->end(), [](const FILESYSTEM_FIND_DATA& lhs, const FILESYSTEM_FIND_DATA& rhs) {
-      // directories first
-      if ((lhs.Attributes & FILESYSTEM_FILE_ATTRIBUTE_DIRECTORY) !=
-          (rhs.Attributes & FILESYSTEM_FILE_ATTRIBUTE_DIRECTORY))
-      {
-        return ((lhs.Attributes & FILESYSTEM_FILE_ATTRIBUTE_DIRECTORY) != 0);
-      }
-
-      return (StringUtil::Strcasecmp(lhs.FileName.c_str(), rhs.FileName.c_str()) < 0);
-    });
-  }
+    SortFindResultsByName(results);
 
   return true;
 }
