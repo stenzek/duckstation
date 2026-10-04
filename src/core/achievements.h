@@ -17,6 +17,7 @@
 
 class Error;
 class ProgressCallback;
+class SettingsInterface;
 namespace Threading {
 class Mutex;
 }
@@ -36,6 +37,14 @@ enum class LoginRequestReason
 
 inline constexpr size_t GAME_HASH_LENGTH = 16;
 using GameHash = std::array<u8, GAME_HASH_LENGTH>;
+
+/// Credentials returned by a successful password login, ready for the frontend to persist.
+struct LoginResult
+{
+  std::string username;
+  std::string encrypted_token;
+  s64 timestamp;
+};
 
 class ProgressDatabase
 {
@@ -114,8 +123,14 @@ bool DoState(StateWrapper& sw);
 
 /// Attempts to log in to RetroAchievements using the specified credentials.
 /// If the login is successful, the token returned by the server will be saved.
-using LoginCompletionCallback = std::function<void(bool result, std::string&& error_message)>;
+using LoginCompletionCallback = std::function<void(bool result, std::string&& error_message, LoginResult&& details)>;
 void LoginAsync(const char* username, const char* password, LoginCompletionCallback callback);
+
+/// Stores credentials from a successful login in the specified settings interface.
+void SaveLoginSettings(SettingsInterface& si, const LoginResult& result);
+
+/// Removes saved achievement credentials from the specified settings interface.
+void ClearLoginSettings(SettingsInterface& si);
 
 /// Logs out of RetroAchievements, clearing any credentials.
 void Logout();

@@ -5978,9 +5978,16 @@ void FullscreenUI::DrawAchievementsLoginWindow()
 
     Achievements::LoginAsync(
       s_settings_locals.achievements_login_username, s_settings_locals.achievements_login_password,
-      [](bool result, std::string&& error_message) {
+      [](bool result, std::string&& error_message, Achievements::LoginResult&& data) {
         // callback runs on core thread
         DebugAssert(Host::IsOnCoreThread());
+        if (result)
+        {
+          const auto settings_lock = Core::GetSettingsLock();
+          Achievements::SaveLoginSettings(*Core::GetBaseSettingsLayer(), data);
+          Host::CommitBaseSettingChanges();
+        }
+
         VideoThread::RunOnThread([result, error_message = std::move(error_message)]() {
           CloseBackgroundProgressDialog(LOGIN_PROGRESS_NAME);
 
