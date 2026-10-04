@@ -332,11 +332,7 @@ void Core::SetDefaultSettings(SettingsInterface& si, bool host, bool system, boo
     Host::SetDefaultSettings(si);
 
   if (system)
-  {
     System::SetDefaultSettings(si, ignore_user_prefs);
-    EmuFolders::SetDefaults();
-    EmuFolders::Save(si);
-  }
 
   if (controller)
   {
