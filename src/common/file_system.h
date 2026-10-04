@@ -114,7 +114,7 @@ ManagedCFilePtr OpenExistingOrCreateManagedCFile(const char* path, s32 retry_ms 
 
 int FSeek64(std::FILE* fp, s64 offset, int whence);
 bool FSeek64(std::FILE* fp, s64 offset, int whence, Error* error);
-s64 FTell64(std::FILE* fp);
+s64 FTell64(std::FILE* fp, Error* error = nullptr);
 s64 FSize64(std::FILE* fp, Error* error = nullptr);
 bool FTruncate64(std::FILE* fp, s64 size, Error* error = nullptr);
 

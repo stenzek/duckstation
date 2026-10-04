@@ -1472,12 +1472,18 @@ bool FileSystem::FSeek64(std::FILE* fp, s64 offset, int whence, Error* error)
   return false;
 }
 
-s64 FileSystem::FTell64(std::FILE* fp)
+s64 FileSystem::FTell64(std::FILE* fp, Error* error)
 {
 #ifdef _WIN32
-  return static_cast<s64>(_ftelli64(fp));
+  const s64 result = static_cast<s64>(_ftelli64(fp));
+  if (result < 0)
+    Error::SetErrno(error, "_ftelli64() failed: ", errno);
+  return result;
 #else
-  return static_cast<s64>(ftello(fp));
+  const s64 result = static_cast<s64>(ftello(fp));
+  if (result < 0)
+    Error::SetErrno(error, "ftello() failed: ", errno);
+  return result;
 #endif
 }
 
